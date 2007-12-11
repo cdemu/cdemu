@@ -1,0 +1,128 @@
+.TH CDEMU 1 "September 22, 2007"
+.SH NAME
+cdemu \- a simple command-line CDEmu client
+.SH SYNOPSIS
+.B cdemu
+[options]
+<command>
+<command parameters>
+.SH DESCRIPTION
+This is cdemu-client, a simple command-line client for controlling CDEmu daemon.
+It is part of the userspace-cdemu suite, a free, GPL CD/DVD-ROM device emulator 
+for linux.
+
+It provides a way to perform the key tasks related to controlling the CDEmu
+daemon, such as loading and unloading devices, displaying devices' status and
+retrieving/setting devices' debug masks.
+
+By default, cdemu-client uses session bus when connecting to daemon. This behavior
+can be changed using
+.B --bus
+option.
+.SH OPTIONS
+.TP
+.B \-h --help
+Display the help message. If command is specified, help message with 
+synopsis and description for that command is displayed.
+.TP
+.B \-v --version
+Print version info and exit.
+.TP
+.B \-b --bus
+Set the D-BUS bus type to use for connection. Valid values are
+.I session
+and
+.I system
+. If no bus is specified, session bus is used by default.
+.SH COMMANDS
+.TP 
+.B load <device> <filename> [...]
+Load the device;
+.B device
+is the number of the device that should be loaded.
+.B filename
+is the image filename. For multi-file images, multiple filenames 
+can be provided.
+.TP
+.B unload <device>
+Unload the device;
+.B device
+is the number of the device that should be unloaded.
+.TP
+.B status
+Display devices' status
+.TP
+.B device-debug <device> <type> [new-value]
+Display/set debug mask for the device;
+.B device
+is the number of the desired device.
+.B type
+is the component for which debug mask is to be retrieved/set. Valid values
+are
+.I daemon
+and
+.IR library .
+.B new-value
+is the new debug mask value. If this argument is omitted, current debug mask is
+displayed.
+.TP
+.B supported-parsers [parser_id]
+Display the list of supported parsers, which contains parsers' IDs, image descriptions
+and image suffixes. If 
+.B parser_id
+is provided, information about specific parser is displayed instead.
+.TP
+.B supported-fragments [fragment_id]
+Display the list of supported fragments, which fragments' IDs, implemented interface
+and data file suffixes. If 
+.B fragment_id
+is provided, information about specific fragment is displayed instead.
+.TP
+.B device-debug-masks <type>
+Display the list of supported debug masks;
+.B type
+is component for which supported debug masks are to be listed. Valid values are
+.I daemon
+and
+.IR library .
+.TP
+.B version
+Display version information
+.SH EXAMPLES
+.TP
+.B Loading a single image to first device:
+cdemu load 0 ~/image.mds
+.TP
+.B Loading multiple-file image to first device:
+cdemu load 0 ~/session1.toc ~/session2.toc ~/session3.toc
+.TP
+.B Unloading first device:
+cdemu load 0
+.TP
+.B Listing supported parsers:
+cdemu supported-parsers
+.TP
+.B Obtaining information about specific parser:
+cdemu supported-parsers PARSER-TOC
+.TP
+.B Listing supported fragments:
+cdemu supported-fragments
+.TP
+.B Obtaining information about specific fragment:
+cdemu supported-fragments FRAGMENT-BINARY
+.TP
+.B Listing supported debug masks for library:
+cdemu device-debug-masks library
+.TP
+.B Obtaining library debug mask for the first device:
+cdemu device-debug 0 library
+.TP 
+.B Setting daemon debug mask for the first device:
+cdemu device-debug 0 daemon 0x01
+.SH AUTHORS
+.PP
+Rok Mandeljc <rok.mandeljc@email.si>
+.PP
+CDEmu project's web page: http://cdemu.sourceforge.net
+.PP
+CDEmu project's mailing list: cdemu-devel@lists.sourceforge.net

@@ -1,0 +1,26 @@
+<!-- ##### SECTION Title ##### -->
+MIRAGE_FInterface_NULL interface
+
+<!-- ##### SECTION Short_Description ##### -->
+NULL Fragment interface
+
+<!-- ##### SECTION Long_Description ##### -->
+<para>
+#MIRAGE_FInterface_NULL is NULL Fragment interface that can be implemented
+by a #MIRAGE_Fragment implementation.
+</para>
+
+<!-- ##### SECTION See_Also ##### -->
+<para>
+
+</para>
+
+<!-- ##### SECTION Stability_Level ##### -->
+
+
+<!-- ##### STRUCT MIRAGE_FInterface_NULL ##### -->
+<para>
+
+</para>
+
+

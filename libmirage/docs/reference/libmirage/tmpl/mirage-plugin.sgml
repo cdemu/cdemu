@@ -1,0 +1,50 @@
+<!-- ##### SECTION Title ##### -->
+MIRAGE_Plugin object
+
+<!-- ##### SECTION Short_Description ##### -->
+Plugin object
+
+<!-- ##### SECTION Long_Description ##### -->
+<para>
+#MIRAGE_Plugin object is a base object of libMirage's plugin system and derives
+from #GTypeModule. It provides support for loadable modules that contain either
+image parsers or fragment implementations.
+</para>
+<para>
+Plugin objects are created by #MIRAGE_Mirage, using mirage_plugin_new(). Every
+plugin exports two functions: mirage_plugin_load_plugin() and mirage_plugin_unload_plugin()
+which are used by plugin object to load and unload module, respectively.
+</para>
+<para>
+The plugin system is used internally by #MIRAGE_Mirage, and should generally not
+be used elsewhere.
+</para>
+
+<!-- ##### SECTION See_Also ##### -->
+<para>
+#MIRAGE_Mirage, #MIRAGE_Disc, #MIRAGE_Fragment
+</para>
+
+<!-- ##### SECTION Stability_Level ##### -->
+
+
+<!-- ##### STRUCT MIRAGE_Plugin ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### ARG MIRAGE_Plugin:filename ##### -->
+<para>
+
+</para>
+
+<!-- ##### FUNCTION mirage_plugin_new ##### -->
+<para>
+
+</para>
+
+@filename: 
+@Returns: 
+
+

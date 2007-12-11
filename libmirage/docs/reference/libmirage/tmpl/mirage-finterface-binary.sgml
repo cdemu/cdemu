@@ -1,0 +1,246 @@
+<!-- ##### SECTION Title ##### -->
+MIRAGE_FInterface_BINARY interface
+
+<!-- ##### SECTION Short_Description ##### -->
+BINARY Fragment interface
+
+<!-- ##### SECTION Long_Description ##### -->
+<para>
+#MIRAGE_FInterface_BINARY is BINARY Fragment interface that can be implemented
+by a #MIRAGE_Fragment implementation.
+</para>
+
+<!-- ##### SECTION See_Also ##### -->
+<para>
+
+</para>
+
+<!-- ##### SECTION Stability_Level ##### -->
+
+
+<!-- ##### ENUM MIRAGE_BINARY_TrackFile_Format ##### -->
+<para>
+
+</para>
+
+@FR_BIN_TFILE_AUDIO: 
+@FR_BIN_TFILE_DATA: 
+
+<!-- ##### ENUM MIRAGE_BINARY_SubchannelFile_Format ##### -->
+<para>
+
+</para>
+
+@FR_BIN_SFILE_INT: 
+@FR_BIN_SFILE_EXT: 
+@FR_BIN_SFILE_PW96_INT: 
+@FR_BIN_SFILE_PW96_LIN: 
+@FR_BIN_SFILE_RW96: 
+@FR_BIN_SFILE_PQ16: 
+
+<!-- ##### STRUCT MIRAGE_FInterface_BINARY ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### FUNCTION mirage_finterface_binary_track_file_set_handle ##### -->
+<para>
+
+</para>
+
+@self: 
+@file: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION mirage_finterface_binary_track_file_get_handle ##### -->
+<para>
+
+</para>
+
+@self: 
+@file: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION mirage_finterface_binary_track_file_set_offset ##### -->
+<para>
+
+</para>
+
+@self: 
+@offset: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION mirage_finterface_binary_track_file_get_offset ##### -->
+<para>
+
+</para>
+
+@self: 
+@offset: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION mirage_finterface_binary_track_file_set_sectsize ##### -->
+<para>
+
+</para>
+
+@self: 
+@sectsize: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION mirage_finterface_binary_track_file_get_sectsize ##### -->
+<para>
+
+</para>
+
+@self: 
+@sectsize: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION mirage_finterface_binary_track_file_set_format ##### -->
+<para>
+
+</para>
+
+@self: 
+@format: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION mirage_finterface_binary_track_file_get_format ##### -->
+<para>
+
+</para>
+
+@self: 
+@format: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION mirage_finterface_binary_track_file_get_position ##### -->
+<para>
+
+</para>
+
+@self: 
+@address: 
+@position: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION mirage_finterface_binary_subchannel_file_set_handle ##### -->
+<para>
+
+</para>
+
+@self: 
+@file: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION mirage_finterface_binary_subchannel_file_get_handle ##### -->
+<para>
+
+</para>
+
+@self: 
+@file: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION mirage_finterface_binary_subchannel_file_set_offset ##### -->
+<para>
+
+</para>
+
+@self: 
+@offset: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION mirage_finterface_binary_subchannel_file_get_offset ##### -->
+<para>
+
+</para>
+
+@self: 
+@offset: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION mirage_finterface_binary_subchannel_file_set_sectsize ##### -->
+<para>
+
+</para>
+
+@self: 
+@sectsize: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION mirage_finterface_binary_subchannel_file_get_sectsize ##### -->
+<para>
+
+</para>
+
+@self: 
+@sectsize: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION mirage_finterface_binary_subchannel_file_set_format ##### -->
+<para>
+
+</para>
+
+@self: 
+@format: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION mirage_finterface_binary_subchannel_file_get_format ##### -->
+<para>
+
+</para>
+
+@self: 
+@format: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION mirage_finterface_binary_subchannel_file_get_position ##### -->
+<para>
+
+</para>
+
+@self: 
+@address: 
+@position: 
+@error: 
+@Returns: 
+
+

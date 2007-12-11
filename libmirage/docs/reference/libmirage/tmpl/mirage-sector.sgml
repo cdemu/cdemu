@@ -1,0 +1,156 @@
+<!-- ##### SECTION Title ##### -->
+MIRAGE_Sector object
+
+<!-- ##### SECTION Short_Description ##### -->
+Object representing a sector
+
+<!-- ##### SECTION Long_Description ##### -->
+<para>
+#MIRAGE_Sector object represents a sector. It provides access to the sector
+data, generating it if needed.
+</para>
+
+<!-- ##### SECTION See_Also ##### -->
+<para>
+#MIRAGE_Track
+</para>
+
+<!-- ##### SECTION Stability_Level ##### -->
+
+
+<!-- ##### ENUM MIRAGE_Sector_MCSB ##### -->
+<para>
+
+</para>
+
+@MIRAGE_MCSB_SYNC: 
+@MIRAGE_MCSB_SUBHEADER: 
+@MIRAGE_MCSB_HEADER: 
+@MIRAGE_MCSB_DATA: 
+@MIRAGE_MCSB_EDC_ECC: 
+@MIRAGE_MCSB_C2_2: 
+@MIRAGE_MCSB_C2_1: 
+
+<!-- ##### ENUM MIRAGE_Sector_SubchannelFormat ##### -->
+<para>
+
+</para>
+
+@MIRAGE_SUBCHANNEL_PW: 
+@MIRAGE_SUBCHANNEL_PQ: 
+@MIRAGE_SUBCHANNEL_RW: 
+
+<!-- ##### ENUM MIRAGE_Sector_ValidData ##### -->
+<para>
+
+</para>
+
+@MIRAGE_VALID_SYNC: 
+@MIRAGE_VALID_HEADER: 
+@MIRAGE_VALID_SUBHEADER: 
+@MIRAGE_VALID_DATA: 
+@MIRAGE_VALID_EDC_ECC: 
+@MIRAGE_VALID_SUBCHAN: 
+
+<!-- ##### STRUCT MIRAGE_Sector ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### FUNCTION mirage_sector_feed_data ##### -->
+<para>
+
+</para>
+
+@self: 
+@address: 
+@track: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION mirage_sector_get_sector_type ##### -->
+<para>
+
+</para>
+
+@self: 
+@type: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION mirage_sector_get_sync ##### -->
+<para>
+
+</para>
+
+@self: 
+@ret_buf: 
+@ret_len: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION mirage_sector_get_header ##### -->
+<para>
+
+</para>
+
+@self: 
+@ret_buf: 
+@ret_len: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION mirage_sector_get_subheader ##### -->
+<para>
+
+</para>
+
+@self: 
+@ret_buf: 
+@ret_len: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION mirage_sector_get_data ##### -->
+<para>
+
+</para>
+
+@self: 
+@ret_buf: 
+@ret_len: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION mirage_sector_get_edc_ecc ##### -->
+<para>
+
+</para>
+
+@self: 
+@ret_buf: 
+@ret_len: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION mirage_sector_get_subchannel ##### -->
+<para>
+
+</para>
+
+@self: 
+@format: 
+@ret_buf: 
+@ret_len: 
+@error: 
+@Returns: 
+
+

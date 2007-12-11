@@ -1,0 +1,153 @@
+<!-- ##### SECTION Title ##### -->
+MIRAGE_Fragment object
+
+<!-- ##### SECTION Short_Description ##### -->
+Base object for fragment implementations
+
+<!-- ##### SECTION Long_Description ##### -->
+<para>
+#MIRAGE_Fragment object is a base object for fragment implementations. It provides
+functions that are used by image parsers to provide access to data in image files.
+</para>
+
+<para>
+#MIRAGE_Fragment provides two virtual functions: mirage_fragment_get_fragment_info(),
+mirage_fragment_can_handle_data_format(). These must be implemented
+by fragment implementations which derive from #MIRAGE_Fragment object.
+</para>
+
+<para>
+Every fragment implementation needs to implement one of fragment interfaces: 
+#MIRAGE_FInterface_NULL, #MIRAGE_FInterface_BINARY or #MIRAGE_FInterface_AUDIO.
+Which interface a fragment implementation implements depends on the way the
+implementation handles data.
+</para>
+
+<!-- ##### SECTION See_Also ##### -->
+<para>
+
+</para>
+
+<!-- ##### SECTION Stability_Level ##### -->
+
+
+<!-- ##### STRUCT MIRAGE_FragmentInfo ##### -->
+<para>
+
+</para>
+
+@id: 
+@name: 
+@version: 
+@author: 
+@interface: 
+@suffixes: 
+
+<!-- ##### STRUCT MIRAGE_Fragment ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### FUNCTION mirage_fragment_get_fragment_info ##### -->
+<para>
+
+</para>
+
+@self: 
+@fragment_info: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION mirage_fragment_can_handle_data_format ##### -->
+<para>
+
+</para>
+
+@self: 
+@filename: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION mirage_fragment_set_address ##### -->
+<para>
+
+</para>
+
+@self: 
+@address: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION mirage_fragment_get_address ##### -->
+<para>
+
+</para>
+
+@self: 
+@address: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION mirage_fragment_set_length ##### -->
+<para>
+
+</para>
+
+@self: 
+@length: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION mirage_fragment_get_length ##### -->
+<para>
+
+</para>
+
+@self: 
+@length: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION mirage_fragment_use_the_rest_of_file ##### -->
+<para>
+
+</para>
+
+@self: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION mirage_fragment_read_main_data ##### -->
+<para>
+
+</para>
+
+@self: 
+@address: 
+@buf: 
+@length: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION mirage_fragment_read_subchannel_data ##### -->
+<para>
+
+</para>
+
+@self: 
+@address: 
+@buf: 
+@length: 
+@error: 
+@Returns: 
+
+

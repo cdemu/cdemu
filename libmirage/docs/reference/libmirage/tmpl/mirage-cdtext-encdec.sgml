@@ -1,0 +1,152 @@
+<!-- ##### SECTION Title ##### -->
+MIRAGE_CDTextEncDec object
+
+<!-- ##### SECTION Short_Description ##### -->
+General purpose CD-TEXT encoder/decoder.
+
+<!-- ##### SECTION Long_Description ##### -->
+<para>
+#MIRAGE_CDTextEncDec object is a general-purpose CD-TEXT encoder/decoder. It was
+designed to be used by #MIRAGE_Session objects to encode and decode CD-TEXT data, 
+but it should be suitable for use in other applications as well.
+</para>
+<para>
+It is losely based on the CD-TEXT encoding/decoding code found in cdrdao and supports
+8 CD-TEXT blocks with pack types from 0x80 to 0x8F. When encoding data, pack size 
+data (pack type 0x8F) is always generated.
+</para>
+<para>
+To be used as encoder, a #MIRAGE_CDTextEncDec encoder must be first initialized
+with mirage_cdtext_encoder_init(). Then, information for at least one CD-TEXT
+block (up to 8 are supported) should be set with mirage_cdtext_encoder_set_block_info().
+After all the CD-TEXT data is added to encoder with mirage_cdtext_encoder_add_data(), 
+buffer containing the encoded data can be obtained with mirage_cdtext_encoder_encode().
+</para>
+<para>
+To use a #MIRAGE_CDTextEncDec as CD-TEXT decoder, one should first initialize it
+with mirage_cdtext_decoder_init(). This function already performs all the decoding;
+block information can be obtained with mirage_cdtext_decoder_get_block_info() and
+data for each block can be obtained with mirage_cdtext_decoder_get_data() and the
+appropriate callback function.
+</para>
+
+<!-- ##### SECTION See_Also ##### -->
+<para>
+#MIRAGE_Language, #MIRAGE_Session
+</para>
+
+<!-- ##### SECTION Stability_Level ##### -->
+
+
+<!-- ##### USER_FUNCTION MIRAGE_CDTextDataCallback ##### -->
+<para>
+
+</para>
+
+@langcode: 
+@type: 
+@track: 
+@data: 
+@data_len: 
+@user_data: 
+@Returns: 
+
+
+<!-- ##### STRUCT MIRAGE_CDTextEncDec ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### FUNCTION mirage_cdtext_encoder_init ##### -->
+<para>
+
+</para>
+
+@self: 
+@buffer: 
+@buflen: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION mirage_cdtext_encoder_set_block_info ##### -->
+<para>
+
+</para>
+
+@self: 
+@block: 
+@langcode: 
+@charset: 
+@copyright: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION mirage_cdtext_encoder_add_data ##### -->
+<para>
+
+</para>
+
+@self: 
+@langcode: 
+@type: 
+@track: 
+@data: 
+@data_len: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION mirage_cdtext_encoder_encode ##### -->
+<para>
+
+</para>
+
+@self: 
+@buffer: 
+@buflen: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION mirage_cdtext_decoder_init ##### -->
+<para>
+
+</para>
+
+@self: 
+@buffer: 
+@buflen: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION mirage_cdtext_decoder_get_block_info ##### -->
+<para>
+
+</para>
+
+@self: 
+@block: 
+@langcode: 
+@charset: 
+@copyright: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION mirage_cdtext_decoder_get_data ##### -->
+<para>
+
+</para>
+
+@self: 
+@block: 
+@callback_func: 
+@user_data: 
+@error: 
+@Returns: 
+
+

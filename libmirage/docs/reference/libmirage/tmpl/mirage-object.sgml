@@ -1,0 +1,133 @@
+<!-- ##### SECTION Title ##### -->
+MIRAGE_Object object
+
+<!-- ##### SECTION Short_Description ##### -->
+Base object class
+
+<!-- ##### SECTION Long_Description ##### -->
+<para>
+#MIRAGE_Object is used as a base object class throughout libMirage. It implements
+support for layout definitions (setting object's parent and children), debugging
+via debug contexts and passing reference to #MIRAGE_Mirage object.
+</para>
+
+<!-- ##### SECTION See_Also ##### -->
+<para>
+#MIRAGE_Mirage, #MIRAGE_DebugContext
+</para>
+
+<!-- ##### SECTION Stability_Level ##### -->
+
+
+<!-- ##### STRUCT MIRAGE_Object ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SIGNAL MIRAGE_Object::object-modified ##### -->
+<para>
+
+</para>
+
+@mirage_object: the object which received the signal.
+
+<!-- ##### FUNCTION mirage_object_set_debug_context ##### -->
+<para>
+
+</para>
+
+@self: 
+@debug_context: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION mirage_object_get_debug_context ##### -->
+<para>
+
+</para>
+
+@self: 
+@debug_context: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION mirage_object_debug_message ##### -->
+<para>
+
+</para>
+
+@self: 
+@level: 
+@format: 
+@Varargs: 
+
+
+<!-- ##### FUNCTION mirage_object_debug_messagev ##### -->
+<para>
+
+</para>
+
+@self: 
+@level: 
+@format: 
+@args: 
+
+
+<!-- ##### FUNCTION mirage_object_set_mirage ##### -->
+<para>
+
+</para>
+
+@self: 
+@mirage: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION mirage_object_get_mirage ##### -->
+<para>
+
+</para>
+
+@self: 
+@mirage: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION mirage_object_set_parent ##### -->
+<para>
+
+</para>
+
+@self: 
+@parent: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION mirage_object_get_parent ##### -->
+<para>
+
+</para>
+
+@self: 
+@parent: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION mirage_object_attach_child ##### -->
+<para>
+
+</para>
+
+@self: 
+@child: 
+@error: 
+@Returns: 
+
+

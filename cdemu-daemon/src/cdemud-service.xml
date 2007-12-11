@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<node name="/">
+    <interface name="net.sf.cdemu.CDEMUD_Daemon">
+        <annotation name="org.freedesktop.DBus.GLib.CSymbol" value="cdemud_daemon"/>
+        
+        <method name="Hail"></method>
+        
+        <method name="StopDaemon"></method>
+        
+        <!-- Information-related methods -->
+        <method name="GetVersion">
+            <arg name="type"                type="s"        direction="in"/>
+            <arg name="version"             type="s"        direction="out"/>
+        </method>
+        
+        <method name="GetDeviceDebugMasks">
+            <arg name="type"                type="s"        direction="in"/>
+            <arg name="masks"               type="a(si)"    direction="out"/>
+        </method>
+        
+        <method name="GetSupportedParsers">
+            <arg name="image_types"              type="a(ssssbsas)"  direction="out"/>             
+        </method>
+        
+        <method name="GetSupportedFragments">
+            <arg name="image_types"              type="a(sssssas)"  direction="out"/>             
+        </method>
+        
+        <!-- Device control methods -->
+        <method name="GetNumberOfDevices">
+            <arg name="number_of_devices"   type="u"        direction="out"/>
+        </method>
+                
+        <method name="DeviceGetStatus">
+            <arg name="device_number"       type="u"        direction="in"/>
+            <arg name="loaded"              type="b"        direction="out"/>
+            <arg name="image_type"          type="s"        direction="out"/>
+            <arg name="file_names"          type="as"       direction="out"/>
+        </method>
+        
+        <method name="DeviceLoad">
+            <arg name="device_number"       type="u"        direction="in"/>
+            <arg name="file_names"          type="as"       direction="in"/>
+        </method>
+
+        <method name="DeviceUnload">
+            <arg name="device_number"       type="u"        direction="in"/>
+        </method>
+        
+        <method name="DeviceGetDebugMask">
+            <arg name="device_number"       type="u"        direction="in"/>
+            <arg name="type"                type="s"        direction="in"/>
+            <arg name="dbg_mask"            type="u"        direction="out"/>
+        </method>
+        
+        <method name="DeviceSetDebugMask">
+            <arg name="device_number"       type="u"        direction="in"/>
+            <arg name="type"                type="s"        direction="in"/>
+            <arg name="dbg_mask"            type="u"        direction="in"/>
+        </method>
+        
+        <!-- Notification signals -->
+        <signal name="DaemonChange">
+            <arg name="change_type"         type="u"        direction="out"/>
+        </signal>
+
+        <signal name="DeviceChange">
+            <arg name="device_number"       type="u"        direction="out"/>
+            <arg name="change_type"         type="u"        direction="out"/>
+        </signal>
+
+    </interface>
+</node>

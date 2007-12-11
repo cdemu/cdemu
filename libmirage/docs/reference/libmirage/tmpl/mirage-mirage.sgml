@@ -1,0 +1,122 @@
+<!-- ##### SECTION Title ##### -->
+MIRAGE_Mirage object
+
+<!-- ##### SECTION Short_Description ##### -->
+Core object of the libMirage library
+
+<!-- ##### SECTION Long_Description ##### -->
+<para>
+#MIRAGE_Mirage is core object of libMirage library. All applications using 
+libMirage should create this object and use it to create objects that represent
+data stored in image files.
+</para>
+
+<para>
+libMirage uses a plugin system for image parsers and data fragments implementations.
+#MIRAGE_Mirage keeps a list of these plugins and uses it when image parser or data 
+fragment needs to be created by mirage_mirage_create_disc() or mirage_mirage_create_fragment(). 
+It also supports listing of supported parsers and data fragments via mirage_mirage_for_each_parser() 
+and mirage_mirage_for_each_fragment().
+</para>
+
+<para>
+Library version string can be obtained by calling mirage_mirage_get_version() and the list
+of supported debug masks can be obtained by calling mirage_mirage_get_supported_debug_masks().
+</para>
+
+<!-- ##### SECTION See_Also ##### -->
+<para>
+
+</para>
+
+<!-- ##### SECTION Stability_Level ##### -->
+
+
+<!-- ##### USER_FUNCTION MIRAGE_CallbackFunction ##### -->
+<para>
+
+</para>
+
+@data: 
+@user_data: 
+@Returns: 
+
+
+<!-- ##### STRUCT MIRAGE_Mirage ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### FUNCTION mirage_mirage_get_version ##### -->
+<para>
+
+</para>
+
+@self: 
+@version: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION mirage_mirage_create_disc ##### -->
+<para>
+
+</para>
+
+@self: 
+@filenames: 
+@ret_disc: 
+@debug_context: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION mirage_mirage_create_fragment ##### -->
+<para>
+
+</para>
+
+@self: 
+@fragment_interface: 
+@filename: 
+@ret_fragment: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION mirage_mirage_for_each_parser ##### -->
+<para>
+
+</para>
+
+@self: 
+@func: 
+@user_data: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION mirage_mirage_for_each_fragment ##### -->
+<para>
+
+</para>
+
+@self: 
+@func: 
+@user_data: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION mirage_mirage_get_supported_debug_masks ##### -->
+<para>
+
+</para>
+
+@self: 
+@masks: 
+@error: 
+@Returns: 
+
+
