@@ -366,7 +366,7 @@ static int vhba_queuecommand(struct scsi_cmnd *cmd, void (*done)(struct scsi_cmn
 	struct vhba_device *vdev;
 	int retval;
 
-	scmd_dbg(cmd, "queue %lu\n", cmd->pid);
+	scmd_dbg(cmd, "queue %lu\n", cmd->serial_number);
 
 	vdev = vhba_lookup_device(cmd->device->id);
 	if (!vdev)
@@ -392,7 +392,7 @@ static int vhba_abort(struct scsi_cmnd *cmd)
 	struct vhba_device *vdev;
 	int retval = SUCCESS;
 
-	scmd_warn(cmd, "abort %lu\n", cmd->pid);
+	scmd_warn(cmd, "abort %lu\n", cmd->serial_number);
 
 	vdev = vhba_lookup_device(cmd->device->id);
 	if (vdev)
@@ -425,7 +425,7 @@ static ssize_t do_request(const struct scsi_cmnd *cmd, char __user *buf, size_t 
 	ssize_t ret;
 
 	scmd_dbg(cmd, "request %lu, cdb 0x%x, bufflen %d, use_sg %d\n",
-			cmd->pid, cmd->cmnd[0], cmd->request_bufflen, cmd->use_sg);
+			cmd->serial_number, cmd->cmnd[0], cmd->request_bufflen, cmd->use_sg);
 
 	ret = sizeof(vreq);
 	if (DATA_TO_DEVICE(cmd->sc_data_direction))
@@ -438,7 +438,7 @@ static ssize_t do_request(const struct scsi_cmnd *cmd, char __user *buf, size_t 
 		return -EIO;
 	}
 
-	vreq.tag = cmd->pid;
+	vreq.tag = cmd->serial_number;
 	vreq.lun = cmd->device->lun;
 	memcpy(vreq.cdb, cmd->cmnd, MAX_COMMAND_SIZE);
 	vreq.cdb_len = cmd->cmd_len;
@@ -464,7 +464,7 @@ static ssize_t do_response(struct scsi_cmnd *cmd, const char __user *buf, size_t
 	ssize_t ret = 0;
        
 	scmd_dbg(cmd, "response %lu, status %x, data len %d, use_sg %d\n",
-			cmd->pid, res->status, res->data_len, cmd->use_sg);
+			cmd->serial_number, res->status, res->data_len, cmd->use_sg);
 
 	if (res->status)
 	{
@@ -570,7 +570,7 @@ static inline struct vhba_command *match_command(struct vhba_device *vdev, u32 t
 
 	list_for_each_entry(vcmd, &vdev->cmd_list, entry)
 	{
-		if (vcmd->cmd->pid == tag)
+		if (vcmd->cmd->serial_number == tag)
 			break;
 	}
 
@@ -740,7 +740,7 @@ static int vhba_ctl_release(struct inode *inode, struct file *file)
 	{
 		WARN_ON(vcmd->status == VHBA_REQ_READING || vcmd->status == VHBA_REQ_WRITING);
 
-		scmd_warn(vcmd->cmd, "device released with command %lu\n", vcmd->cmd->pid);
+		scmd_warn(vcmd->cmd, "device released with command %lu\n", vcmd->cmd->serial_number);
 		vcmd->cmd->result = DID_NO_CONNECT << 16;
 		vcmd->cmd->scsi_done(vcmd->cmd);
 
