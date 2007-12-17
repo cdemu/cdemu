@@ -1,0 +1,75 @@
+.TH CDEMUD 8 "September 22, 2007"
+.SH NAME
+cdemud \- The CDEmu daemon
+.SH SYNOPSIS
+.B cdemud
+[options]
+.SH DESCRIPTION
+This is CDEmu daemon, the userspace daemon part of the userspace-cdemu suite, a 
+free, GPL CD/DVD-ROM device emulator for linux.
+
+It receives SCSI commands from kernel module and processes them, passing the 
+requested data back to the kernel. Daemon implements the actual virtual device; 
+one instance per each device registered by kernel module. It uses libMirage, an 
+image access library that is part of userspace-cdemu suite, for the image access 
+(e.g. sector reading).
+
+The daemon registers itself on D-BUS' system or session bus (depending on the
+options passed to it) where it exposes an interface that can be used by clients
+to control it.
+.SH OPTIONS
+.TP
+.B \-k --kill
+Kill daemon. This will kill a CDEmu daemon instance that is running in daemon mode.
+Note that daemon running in local mode is not affected by this.
+.TP
+.B \-d --daemonize
+Daemonize. The daemon will be ran in daemon mode (i.e. forked into background, 
+with PID file created  and syslog used for logging). Note that running daemon
+in daemon mode automatically implies the usage of system bus. By default, daemon 
+is ran in local mode.
+.TP
+.B \-n --num-devices=N
+Number of devices. Specifies the number of virtual devices the daemon instance should
+register with kernel module and control
+.TP
+.B \-c --ctl-device=path
+Control device. Specifies the control device path. Control device is a character device
+provided by kernel module; it is used for communication between kernel and userspace
+part of CDEmu suite.
+.TP
+.B \-a --audio=backend
+Audio play backend. Specifies audio backend to be used by daemon's virtual devices'
+audio play. Valid option is
+.B alsa
+or
+.B none
+which disables audio play. By default, audio play is disabled.
+.TP
+.B \-o --audio-device=device
+Audio play device. Specifies audio device to be used be audio backend.
+.TP
+.B \-s --system-bus
+Use system bus. Causes the daemon to use system bus.
+.B \-? --help
+Display the help message. 
+.SH EXAMPLES
+.TP
+.B Running daemon in local mode, with ALSA audio backend, default audio device and 4 virtual devices:
+cdemud --num-devices=4 --audio=alsa --audio-device=default
+.TP
+.B Running daemon in local mode with 2 virtual devices and on system bus:
+cdemud --num-devices=2 --system-bus
+.TP
+.B Running daemon in daemon mode with 8 virtual devices:
+cdemud --num-devices=8 --daemonize
+.TP
+.B Killing a daemonized instance of daemon:
+cdemud --kill
+.SH AUTHORS
+.PP
+Rok Mandeljc <rok.mandeljc@email.si>
+.PP
+CDEmu project's web page: http://cdemu.sourceforge.net
+.PP
+CDEmu project's mailing list: cdemu-devel@lists.sourceforge.net
