@@ -1,0 +1,568 @@
+<!-- ##### SECTION Title ##### -->
+MIRAGE_Track object
+
+<!-- ##### SECTION Short_Description ##### -->
+Object representing a track
+
+<!-- ##### SECTION Long_Description ##### -->
+<para>
+#MIRAGE_Track object represents a track in the disc layout. It provides 
+functions for manipulating track data and layout; setting track type and flags,
+adding and removing fragments, indices and languages, accessing and reading of 
+sectors, etc.
+</para>
+
+<!-- ##### SECTION See_Also ##### -->
+<para>
+
+</para>
+
+<!-- ##### SECTION Stability_Level ##### -->
+
+
+<!-- ##### MACRO MIRAGE_ISRC_SIZE ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### ENUM MIRAGE_TrackFlags ##### -->
+<para>
+
+</para>
+
+@MIRAGE_TRACKF_FOURCHANNEL: 
+@MIRAGE_TRACKF_COPYPERMITTED: 
+@MIRAGE_TRACKF_PREEMPHASIS: 
+
+<!-- ##### ENUM MIRAGE_TrackModes ##### -->
+<para>
+
+</para>
+
+@MIRAGE_MODE_MODE0: 
+@MIRAGE_MODE_AUDIO: 
+@MIRAGE_MODE_MODE1: 
+@MIRAGE_MODE_MODE2: 
+@MIRAGE_MODE_MODE2_FORM1: 
+@MIRAGE_MODE_MODE2_FORM2: 
+@MIRAGE_MODE_MODE2_MIXED: 
+
+<!-- ##### ENUM MIRAGE_TrackConstants ##### -->
+<para>
+
+</para>
+
+@MIRAGE_TRACK_LEADIN: 
+@MIRAGE_TRACK_LEADOUT: 
+
+<!-- ##### STRUCT MIRAGE_Track ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### FUNCTION mirage_track_set_flags ##### -->
+<para>
+
+</para>
+
+@self: 
+@flags: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION mirage_track_get_flags ##### -->
+<para>
+
+</para>
+
+@self: 
+@flags: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION mirage_track_set_mode ##### -->
+<para>
+
+</para>
+
+@self: 
+@mode: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION mirage_track_get_mode ##### -->
+<para>
+
+</para>
+
+@self: 
+@mode: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION mirage_track_get_adr ##### -->
+<para>
+
+</para>
+
+@self: 
+@adr: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION mirage_track_set_ctl ##### -->
+<para>
+
+</para>
+
+@self: 
+@ctl: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION mirage_track_get_ctl ##### -->
+<para>
+
+</para>
+
+@self: 
+@ctl: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION mirage_track_set_isrc ##### -->
+<para>
+
+</para>
+
+@self: 
+@isrc: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION mirage_track_get_isrc ##### -->
+<para>
+
+</para>
+
+@self: 
+@isrc: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION mirage_track_get_sector ##### -->
+<para>
+
+</para>
+
+@self: 
+@address: 
+@abs: 
+@sector: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION mirage_track_read_sector ##### -->
+<para>
+
+</para>
+
+@self: 
+@address: 
+@abs: 
+@main_sel: 
+@subc_sel: 
+@ret_buf: 
+@ret_len: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION mirage_track_layout_get_session_number ##### -->
+<para>
+
+</para>
+
+@self: 
+@session_number: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION mirage_track_layout_set_track_number ##### -->
+<para>
+
+</para>
+
+@self: 
+@track_number: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION mirage_track_layout_get_track_number ##### -->
+<para>
+
+</para>
+
+@self: 
+@track_number: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION mirage_track_layout_set_start_sector ##### -->
+<para>
+
+</para>
+
+@self: 
+@start_sector: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION mirage_track_layout_get_start_sector ##### -->
+<para>
+
+</para>
+
+@self: 
+@start_sector: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION mirage_track_layout_get_length ##### -->
+<para>
+
+</para>
+
+@self: 
+@length: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION mirage_track_get_number_of_fragments ##### -->
+<para>
+
+</para>
+
+@self: 
+@number_of_fragments: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION mirage_track_add_fragment ##### -->
+<para>
+
+</para>
+
+@self: 
+@index: 
+@fragment: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION mirage_track_remove_fragment_by_index ##### -->
+<para>
+
+</para>
+
+@self: 
+@index: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION mirage_track_remove_fragment_by_object ##### -->
+<para>
+
+</para>
+
+@self: 
+@fragment: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION mirage_track_get_fragment_by_index ##### -->
+<para>
+
+</para>
+
+@self: 
+@index: 
+@fragment: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION mirage_track_get_fragment_by_address ##### -->
+<para>
+
+</para>
+
+@self: 
+@address: 
+@fragment: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION mirage_track_for_each_fragment ##### -->
+<para>
+
+</para>
+
+@self: 
+@func: 
+@user_data: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION mirage_track_find_fragment_with_subchannel ##### -->
+<para>
+
+</para>
+
+@self: 
+@fragment: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION mirage_track_set_track_start ##### -->
+<para>
+
+</para>
+
+@self: 
+@track_start: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION mirage_track_get_track_start ##### -->
+<para>
+
+</para>
+
+@self: 
+@track_start: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION mirage_track_get_number_of_indices ##### -->
+<para>
+
+</para>
+
+@self: 
+@number_of_indices: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION mirage_track_add_index ##### -->
+<para>
+
+</para>
+
+@self: 
+@address: 
+@index: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION mirage_track_remove_index_by_number ##### -->
+<para>
+
+</para>
+
+@self: 
+@number: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION mirage_track_remove_index_by_object ##### -->
+<para>
+
+</para>
+
+@self: 
+@index: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION mirage_track_get_index_by_number ##### -->
+<para>
+
+</para>
+
+@self: 
+@number: 
+@index: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION mirage_track_get_index_by_address ##### -->
+<para>
+
+</para>
+
+@self: 
+@address: 
+@index: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION mirage_track_for_each_index ##### -->
+<para>
+
+</para>
+
+@self: 
+@func: 
+@user_data: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION mirage_track_get_number_of_languages ##### -->
+<para>
+
+</para>
+
+@self: 
+@number_of_languages: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION mirage_track_add_language ##### -->
+<para>
+
+</para>
+
+@self: 
+@langcode: 
+@language: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION mirage_track_remove_language_by_index ##### -->
+<para>
+
+</para>
+
+@self: 
+@index: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION mirage_track_remove_language_by_code ##### -->
+<para>
+
+</para>
+
+@self: 
+@langcode: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION mirage_track_remove_language_by_object ##### -->
+<para>
+
+</para>
+
+@self: 
+@language: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION mirage_track_get_language_by_index ##### -->
+<para>
+
+</para>
+
+@self: 
+@index: 
+@language: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION mirage_track_get_language_by_code ##### -->
+<para>
+
+</para>
+
+@self: 
+@langcode: 
+@language: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION mirage_track_for_each_language ##### -->
+<para>
+
+</para>
+
+@self: 
+@func: 
+@user_data: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION mirage_track_get_prev ##### -->
+<para>
+
+</para>
+
+@self: 
+@prev_track: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION mirage_track_get_next ##### -->
+<para>
+
+</para>
+
+@self: 
+@next_track: 
+@error: 
+@Returns: 
+
+

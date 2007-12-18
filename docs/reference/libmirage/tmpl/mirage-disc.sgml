@@ -1,0 +1,546 @@
+<!-- ##### SECTION Title ##### -->
+MIRAGE_Disc object
+
+<!-- ##### SECTION Short_Description ##### -->
+Object representing a disc and a base object for image parser implementations
+
+<!-- ##### SECTION Long_Description ##### -->
+<para>
+#MIRAGE_Disc object is a base object for parser implementations. It is also top-level
+object in the disc layout representation, representing the actual disc image.
+</para>
+<para>
+It provides functions for manipulating the disc layout; adding and removing 
+sessions and tracks, manipulating disc's MCN and medium type, and convenience
+functions for accessing and reading of sectors within the disc layout.
+</para>
+<para>
+#MIRAGE_Disc provides three virtual functions: mirage_disc_get_parser_info(),
+mirage_disc_can_load_file() and mirage_disc_load_image(). These must be implemented
+by image parsers which derive from #MIRAGE_Disc object.
+</para>
+<para>
+Most applications, unless specialized and trying to construct their own disc layouts,
+should never create a #MIRAGE_Disc object via g_object_new(). Instead, an actual disc 
+implementation should be with mirage_mirage_create_disc().
+</para>
+
+<!-- ##### SECTION See_Also ##### -->
+<para>
+#MIRAGE_Mirage, #MIRAGE_Session, #MIRAGE_Track, #MIRAGE_Object
+</para>
+
+<!-- ##### SECTION Stability_Level ##### -->
+
+
+<!-- ##### MACRO MIRAGE_MCN_SIZE ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### STRUCT MIRAGE_ParserInfo ##### -->
+<para>
+
+</para>
+
+@id: 
+@name: 
+@version: 
+@author: 
+@multi_file: 
+@description: 
+@suffixes: 
+
+<!-- ##### ENUM MIRAGE_MediumTypes ##### -->
+<para>
+
+</para>
+
+@MIRAGE_MEDIUM_CD: 
+@MIRAGE_MEDIUM_DVD: 
+@MIRAGE_MEDIUM_BD: 
+
+<!-- ##### STRUCT MIRAGE_Disc ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### FUNCTION mirage_disc_get_parser_info ##### -->
+<para>
+
+</para>
+
+@self: 
+@parser_info: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION mirage_disc_can_load_file ##### -->
+<para>
+
+</para>
+
+@self: 
+@filename: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION mirage_disc_load_image ##### -->
+<para>
+
+</para>
+
+@self: 
+@filenames: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION mirage_disc_set_medium_type ##### -->
+<para>
+
+</para>
+
+@self: 
+@medium_type: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION mirage_disc_get_medium_type ##### -->
+<para>
+
+</para>
+
+@self: 
+@medium_type: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION mirage_disc_set_filenames ##### -->
+<para>
+
+</para>
+
+@self: 
+@filenames: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION mirage_disc_get_filenames ##### -->
+<para>
+
+</para>
+
+@self: 
+@filenames: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION mirage_disc_set_mcn ##### -->
+<para>
+
+</para>
+
+@self: 
+@mcn: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION mirage_disc_get_mcn ##### -->
+<para>
+
+</para>
+
+@self: 
+@mcn: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION mirage_disc_layout_set_first_session ##### -->
+<para>
+
+</para>
+
+@self: 
+@first_session: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION mirage_disc_layout_get_first_session ##### -->
+<para>
+
+</para>
+
+@self: 
+@first_session: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION mirage_disc_layout_set_first_track ##### -->
+<para>
+
+</para>
+
+@self: 
+@first_track: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION mirage_disc_layout_get_first_track ##### -->
+<para>
+
+</para>
+
+@self: 
+@first_track: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION mirage_disc_layout_set_start_sector ##### -->
+<para>
+
+</para>
+
+@self: 
+@start_sector: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION mirage_disc_layout_get_start_sector ##### -->
+<para>
+
+</para>
+
+@self: 
+@start_sector: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION mirage_disc_layout_get_length ##### -->
+<para>
+
+</para>
+
+@self: 
+@length: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION mirage_disc_get_number_of_sessions ##### -->
+<para>
+
+</para>
+
+@self: 
+@number_of_sessions: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION mirage_disc_add_session_by_index ##### -->
+<para>
+
+</para>
+
+@self: 
+@index: 
+@session: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION mirage_disc_add_session_by_number ##### -->
+<para>
+
+</para>
+
+@self: 
+@number: 
+@session: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION mirage_disc_remove_session_by_index ##### -->
+<para>
+
+</para>
+
+@self: 
+@index: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION mirage_disc_remove_session_by_number ##### -->
+<para>
+
+</para>
+
+@self: 
+@number: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION mirage_disc_remove_session_by_object ##### -->
+<para>
+
+</para>
+
+@self: 
+@session: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION mirage_disc_get_session_by_index ##### -->
+<para>
+
+</para>
+
+@self: 
+@index: 
+@session: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION mirage_disc_get_session_by_number ##### -->
+<para>
+
+</para>
+
+@self: 
+@number: 
+@session: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION mirage_disc_get_session_by_address ##### -->
+<para>
+
+</para>
+
+@self: 
+@address: 
+@session: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION mirage_disc_get_session_by_track ##### -->
+<para>
+
+</para>
+
+@self: 
+@track: 
+@session: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION mirage_disc_for_each_session ##### -->
+<para>
+
+</para>
+
+@self: 
+@func: 
+@user_data: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION mirage_disc_get_session_before ##### -->
+<para>
+
+</para>
+
+@self: 
+@cur_session: 
+@prev_session: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION mirage_disc_get_session_after ##### -->
+<para>
+
+</para>
+
+@self: 
+@cur_session: 
+@next_session: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION mirage_disc_get_number_of_tracks ##### -->
+<para>
+
+</para>
+
+@self: 
+@number_of_tracks: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION mirage_disc_add_track_by_index ##### -->
+<para>
+
+</para>
+
+@self: 
+@index: 
+@track: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION mirage_disc_add_track_by_number ##### -->
+<para>
+
+</para>
+
+@self: 
+@number: 
+@track: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION mirage_disc_remove_track_by_index ##### -->
+<para>
+
+</para>
+
+@self: 
+@index: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION mirage_disc_remove_track_by_number ##### -->
+<para>
+
+</para>
+
+@self: 
+@number: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION mirage_disc_get_track_by_index ##### -->
+<para>
+
+</para>
+
+@self: 
+@index: 
+@track: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION mirage_disc_get_track_by_number ##### -->
+<para>
+
+</para>
+
+@self: 
+@number: 
+@track: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION mirage_disc_get_track_by_address ##### -->
+<para>
+
+</para>
+
+@self: 
+@address: 
+@track: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION mirage_disc_set_disc_structure ##### -->
+<para>
+
+</para>
+
+@self: 
+@layer: 
+@type: 
+@data: 
+@len: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION mirage_disc_get_disc_structure ##### -->
+<para>
+
+</para>
+
+@self: 
+@layer: 
+@type: 
+@data: 
+@len: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION mirage_disc_get_sector ##### -->
+<para>
+
+</para>
+
+@self: 
+@address: 
+@sector: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION mirage_disc_read_sector ##### -->
+<para>
+
+</para>
+
+@self: 
+@address: 
+@main_sel: 
+@subc_sel: 
+@ret_buf: 
+@ret_len: 
+@error: 
+@Returns: 
+
+

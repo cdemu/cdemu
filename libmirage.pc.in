@@ -1,0 +1,12 @@
+prefix=@prefix@
+exec_prefix=@exec_prefix@
+libdir=@libdir@
+includedir=@includedir@
+plugindir=@MIRAGE_PLUGIN_DIR@
+
+Name: @PACKAGE_NAME@
+Description: CD-ROM image access library
+Version: @PACKAGE_VERSION@
+Requires: glib-2.0 
+Libs: -L${libdir} -lmirage
+Cflags: -I${includedir}/libmirage-1.0

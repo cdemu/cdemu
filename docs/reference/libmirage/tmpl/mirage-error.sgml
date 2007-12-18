@@ -1,0 +1,92 @@
+<!-- ##### SECTION Title ##### -->
+Error reporting
+
+<!-- ##### SECTION Short_Description ##### -->
+libMirage's error reporting facilities
+
+<!-- ##### SECTION Long_Description ##### -->
+<para>
+libMirage uses GLib's #GError system for reporting errors. Most functions provided
+by libMirage's objects take an optional @error parameter. If @error is not %NULL,
+in case that such function should fail, a #GError error is set into it using 
+mirage_error().
+</para>
+
+<para>
+Unless coming from underlying GLib's systems, the returned error code is one of 
+#MIRAGE_ErrorCodes.
+</para>
+
+<!-- ##### SECTION See_Also ##### -->
+<para>
+
+</para>
+
+<!-- ##### SECTION Stability_Level ##### -->
+
+
+<!-- ##### ENUM MIRAGE_ErrorCodes ##### -->
+<para>
+
+</para>
+
+@MIRAGE_E_INVALIDARG: 
+@MIRAGE_E_NOTIMPL: 
+@MIRAGE_E_ITERCANCELLED: 
+@MIRAGE_E_INVALIDOBJTYPE: 
+@MIRAGE_E_DATANOTSET: 
+@MIRAGE_E_DATAFIXED: 
+@MIRAGE_E_NOTINLAYOUT: 
+@MIRAGE_E_INDEXOUTOFRANGE: 
+@MIRAGE_E_SECTOROUTOFRANGE: 
+@MIRAGE_E_PLUGINDIR: 
+@MIRAGE_E_PLUGINNOTLOADED: 
+@MIRAGE_E_NOPARSERFOUND: 
+@MIRAGE_E_NOFRAGMENTFOUND: 
+@MIRAGE_E_IMAGEFILE: 
+@MIRAGE_E_PARSER: 
+@MIRAGE_E_SINGLEFILE: 
+@MIRAGE_E_NODEBUGCONTEXT: 
+@MIRAGE_E_NOPARENT: 
+@MIRAGE_E_NOMIRAGE: 
+@MIRAGE_E_SESSIONNOTFOUND: 
+@MIRAGE_E_SESSIONEXISTS: 
+@MIRAGE_E_INVALIDMEDIUM: 
+@MIRAGE_E_TRACKNOTFOUND: 
+@MIRAGE_E_LANGNOTFOUND: 
+@MIRAGE_E_TRACKEXISTS: 
+@MIRAGE_E_LANGEXISTS: 
+@MIRAGE_E_INDEXNOTFOUND: 
+@MIRAGE_E_FRAGMENTNOTFOUND: 
+@MIRAGE_E_FILENOTSET: 
+@MIRAGE_E_READFAILED: 
+@MIRAGE_E_DATAFILE: 
+@MIRAGE_E_SECTORTYPE: 
+@MIRAGE_E_INVALIDPACKTYPE: 
+@MIRAGE_E_PACKNOTSET: 
+@MIRAGE_E_GENERIC: 
+
+<!-- ##### MACRO MIRAGE_ERROR ##### -->
+<para>
+
+</para>
+
+
+
+<!-- ##### FUNCTION mirage_error_quark ##### -->
+<para>
+
+</para>
+
+@Returns: 
+
+
+<!-- ##### FUNCTION mirage_error ##### -->
+<para>
+
+</para>
+
+@errcode: 
+@error: 
+
+

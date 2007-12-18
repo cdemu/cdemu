@@ -1,0 +1,436 @@
+<!-- ##### SECTION Title ##### -->
+MIRAGE_Session object
+
+<!-- ##### SECTION Short_Description ##### -->
+Object representing a session
+
+<!-- ##### SECTION Long_Description ##### -->
+<para>
+#MIRAGE_Session object represents a session in the disc layout. It provides 
+functions for manipulating session layout; setting session type, adding and removing
+tracks and languages, setting CD-TEXT data, etc.
+</para>
+
+<!-- ##### SECTION See_Also ##### -->
+<para>
+#MIRAGE_Disc, #MIRAGE_Track, #MIRAGE_Language, #MIRAGE_CDTextEncDec
+</para>
+
+<!-- ##### SECTION Stability_Level ##### -->
+
+
+<!-- ##### ENUM MIRAGE_SessionTypes ##### -->
+<para>
+
+</para>
+
+@MIRAGE_SESSION_CD_DA: 
+@MIRAGE_SESSION_CD_ROM: 
+@MIRAGE_SESSION_CD_I: 
+@MIRAGE_SESSION_CD_ROM_XA: 
+
+<!-- ##### STRUCT MIRAGE_Session ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### FUNCTION mirage_session_set_session_type ##### -->
+<para>
+
+</para>
+
+@self: 
+@type: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION mirage_session_get_session_type ##### -->
+<para>
+
+</para>
+
+@self: 
+@type: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION mirage_session_layout_set_session_number ##### -->
+<para>
+
+</para>
+
+@self: 
+@number: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION mirage_session_layout_get_session_number ##### -->
+<para>
+
+</para>
+
+@self: 
+@number: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION mirage_session_layout_set_first_track ##### -->
+<para>
+
+</para>
+
+@self: 
+@first_track: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION mirage_session_layout_get_first_track ##### -->
+<para>
+
+</para>
+
+@self: 
+@first_track: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION mirage_session_layout_set_start_sector ##### -->
+<para>
+
+</para>
+
+@self: 
+@start_sector: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION mirage_session_layout_get_start_sector ##### -->
+<para>
+
+</para>
+
+@self: 
+@start_sector: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION mirage_session_layout_get_length ##### -->
+<para>
+
+</para>
+
+@self: 
+@length: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION mirage_session_set_leadout_length ##### -->
+<para>
+
+</para>
+
+@self: 
+@length: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION mirage_session_get_leadout_length ##### -->
+<para>
+
+</para>
+
+@self: 
+@length: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION mirage_session_get_number_of_tracks ##### -->
+<para>
+
+</para>
+
+@self: 
+@number_of_tracks: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION mirage_session_add_track_by_index ##### -->
+<para>
+
+</para>
+
+@self: 
+@index: 
+@track: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION mirage_session_add_track_by_number ##### -->
+<para>
+
+</para>
+
+@self: 
+@number: 
+@track: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION mirage_session_remove_track_by_index ##### -->
+<para>
+
+</para>
+
+@self: 
+@index: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION mirage_session_remove_track_by_number ##### -->
+<para>
+
+</para>
+
+@self: 
+@number: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION mirage_session_remove_track_by_object ##### -->
+<para>
+
+</para>
+
+@self: 
+@track: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION mirage_session_get_track_by_index ##### -->
+<para>
+
+</para>
+
+@self: 
+@index: 
+@track: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION mirage_session_get_track_by_number ##### -->
+<para>
+
+</para>
+
+@self: 
+@number: 
+@track: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION mirage_session_get_track_by_address ##### -->
+<para>
+
+</para>
+
+@self: 
+@address: 
+@track: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION mirage_session_for_each_track ##### -->
+<para>
+
+</para>
+
+@self: 
+@func: 
+@user_data: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION mirage_session_get_track_before ##### -->
+<para>
+
+</para>
+
+@self: 
+@cur_track: 
+@prev_track: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION mirage_session_get_track_after ##### -->
+<para>
+
+</para>
+
+@self: 
+@cur_track: 
+@next_track: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION mirage_session_get_number_of_languages ##### -->
+<para>
+
+</para>
+
+@self: 
+@number_of_languages: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION mirage_session_add_language ##### -->
+<para>
+
+</para>
+
+@self: 
+@langcode: 
+@language: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION mirage_session_remove_language_by_index ##### -->
+<para>
+
+</para>
+
+@self: 
+@index: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION mirage_session_remove_language_by_code ##### -->
+<para>
+
+</para>
+
+@self: 
+@langcode: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION mirage_session_remove_language_by_object ##### -->
+<para>
+
+</para>
+
+@self: 
+@language: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION mirage_session_get_language_by_index ##### -->
+<para>
+
+</para>
+
+@self: 
+@index: 
+@language: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION mirage_session_get_language_by_code ##### -->
+<para>
+
+</para>
+
+@self: 
+@langcode: 
+@language: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION mirage_session_for_each_language ##### -->
+<para>
+
+</para>
+
+@self: 
+@func: 
+@user_data: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION mirage_session_set_cdtext_data ##### -->
+<para>
+
+</para>
+
+@self: 
+@data: 
+@len: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION mirage_session_get_cdtext_data ##### -->
+<para>
+
+</para>
+
+@self: 
+@data: 
+@len: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION mirage_session_get_prev ##### -->
+<para>
+
+</para>
+
+@self: 
+@prev_session: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION mirage_session_get_next ##### -->
+<para>
+
+</para>
+
+@self: 
+@next_session: 
+@error: 
+@Returns: 
+
+

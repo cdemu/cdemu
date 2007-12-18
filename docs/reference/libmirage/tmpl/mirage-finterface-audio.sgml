@@ -1,0 +1,70 @@
+<!-- ##### SECTION Title ##### -->
+MIRAGE_FInterface_AUDIO interface
+
+<!-- ##### SECTION Short_Description ##### -->
+AUDIO Fragment interface
+
+<!-- ##### SECTION Long_Description ##### -->
+<para>
+#MIRAGE_FInterface_AUDIO is AUDIO Fragment interface that can be implemented
+by a #MIRAGE_Fragment implementation.
+</para>
+
+<!-- ##### SECTION See_Also ##### -->
+<para>
+
+</para>
+
+<!-- ##### SECTION Stability_Level ##### -->
+
+
+<!-- ##### STRUCT MIRAGE_FInterface_AUDIO ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### FUNCTION mirage_finterface_audio_set_file ##### -->
+<para>
+
+</para>
+
+@self: 
+@filename: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION mirage_finterface_audio_get_file ##### -->
+<para>
+
+</para>
+
+@self: 
+@filename: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION mirage_finterface_audio_set_offset ##### -->
+<para>
+
+</para>
+
+@self: 
+@offset: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION mirage_finterface_audio_get_offset ##### -->
+<para>
+
+</para>
+
+@self: 
+@offset: 
+@error: 
+@Returns: 
+
+

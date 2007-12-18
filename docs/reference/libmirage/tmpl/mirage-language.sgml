@@ -1,0 +1,97 @@
+<!-- ##### SECTION Title ##### -->
+MIRAGE_Language object
+
+<!-- ##### SECTION Short_Description ##### -->
+Object representing a language for session or track
+
+<!-- ##### SECTION Long_Description ##### -->
+<para>
+#MIRAGE_Language object represents a CD-TEXT language for session or track. It
+is a container object that stores language code and CD-TEXT pack data for different
+pack types.
+</para>
+
+<!-- ##### SECTION See_Also ##### -->
+<para>
+
+</para>
+
+<!-- ##### SECTION Stability_Level ##### -->
+
+
+<!-- ##### ENUM MIRAGE_Language_PackTypes ##### -->
+<para>
+
+</para>
+
+@MIRAGE_LANGUAGE_PACK_TITLE: 
+@MIRAGE_LANGUAGE_PACK_PERFORMER: 
+@MIRAGE_LANGUAGE_PACK_SONGWRITER: 
+@MIRAGE_LANGUAGE_PACK_COMPOSER: 
+@MIRAGE_LANGUAGE_PACK_ARRANGER: 
+@MIRAGE_LANGUAGE_PACK_MESSAGE: 
+@MIRAGE_LANGUAGE_PACK_DISC_ID: 
+@MIRAGE_LANGUAGE_PACK_GENRE: 
+@MIRAGE_LANGUAGE_PACK_TOC: 
+@MIRAGE_LANGUAGE_PACK_TOC2: 
+@MIRAGE_LANGUAGE_PACK_RES_8A: 
+@MIRAGE_LANGUAGE_PACK_RES_8B: 
+@MIRAGE_LANGUAGE_PACK_RES_8C: 
+@MIRAGE_LANGUAGE_PACK_CLOSED_INFO: 
+@MIRAGE_LANGUAGE_PACK_UPC_ISRC: 
+@MIRAGE_LANGUAGE_PACK_SIZE: 
+
+<!-- ##### STRUCT MIRAGE_Language ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### FUNCTION mirage_language_set_langcode ##### -->
+<para>
+
+</para>
+
+@self: 
+@langcode: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION mirage_language_get_langcode ##### -->
+<para>
+
+</para>
+
+@self: 
+@langcode: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION mirage_language_set_pack_data ##### -->
+<para>
+
+</para>
+
+@self: 
+@pack_type: 
+@pack_data: 
+@length: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION mirage_language_get_pack_data ##### -->
+<para>
+
+</para>
+
+@self: 
+@pack_type: 
+@pack_data: 
+@length: 
+@error: 
+@Returns: 
+
+
