@@ -273,6 +273,12 @@ gboolean mirage_sector_feed_data (MIRAGE_Sector *self, gint address, GObject *tr
             /* Valid data: Data should always be valid */
             _priv->valid_data |= MIRAGE_VALID_DATA;
             
+            /* We mark the rest as valid as well, so that we don't need 
+               additional checks in fake data generation code */
+            _priv->valid_data |= MIRAGE_VALID_SYNC;
+            _priv->valid_data |= MIRAGE_VALID_HEADER;
+            _priv->valid_data |= MIRAGE_VALID_EDC_ECC;
+                
             break;
         }
         case MIRAGE_MODE_MODE0: {
