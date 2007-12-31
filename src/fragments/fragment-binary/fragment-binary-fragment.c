@@ -307,8 +307,13 @@ static gboolean __mirage_fragment_binary_read_main_data (MIRAGE_Fragment *self, 
         read_len = fread(buf, 1, _priv->tfile_sectsize, _priv->tfile_handle);
         
         if (read_len != _priv->tfile_sectsize) {
-            mirage_error(MIRAGE_E_READFAILED, error);
-            return FALSE;
+            /* If we were really strict, we'd bail with error here. However, since
+               we live in a world with mini images, we should turn our backs here
+               and hope that things work out for the best... If we're indeed reading
+               from mini image, then at this point, data we should've read won't 
+               matter at anyway. */
+            /*mirage_error(MIRAGE_E_READFAILED, error);
+            return FALSE;*/
         }
     }
     
