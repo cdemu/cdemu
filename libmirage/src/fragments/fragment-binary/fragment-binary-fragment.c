@@ -315,6 +315,15 @@ static gboolean __mirage_fragment_binary_read_main_data (MIRAGE_Fragment *self, 
             /*mirage_error(MIRAGE_E_READFAILED, error);
             return FALSE;*/
         }
+        
+        /* Binary audio files may need to be swapped from BE to LE */
+        if (_priv->tfile_format == FR_BIN_TFILE_AUDIO_SWAP) {
+            gint i;
+            for (i = 0; i < read_len; i+=2) {
+                guint16 *ptr = (guint16 *)&buf[i];
+                *ptr = GUINT16_SWAP_LE_BE(*ptr);
+            }
+        }
     }
     
     if (length) {

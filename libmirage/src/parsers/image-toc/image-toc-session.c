@@ -203,7 +203,10 @@ gboolean __mirage_session_toc_add_track_fragment (MIRAGE_Session *self, gint typ
             return FALSE;
         }
         
-        if (type == TOC_DATA_TYPE_DATA) {
+        /* BINARY can be either explicitly requested; or it can be assumed from
+           *.bin suffix (with TOC_DATA_TYPE_AUDIO), which is a bit hacky, but
+           should work for now... */
+        if (type == TOC_DATA_TYPE_DATA || mirage_helper_has_suffix(filename_string, ".bin")) {
             /* Binary data; we'd like a BINARY fragment */
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: creating BINARY fragment\n", __func__);
             mirage_mirage_create_fragment(MIRAGE_MIRAGE(mirage), MIRAGE_TYPE_FINTERFACE_BINARY, filename, &data_fragment, error);
@@ -227,7 +230,8 @@ gboolean __mirage_session_toc_add_track_fragment (MIRAGE_Session *self, gint typ
             tfile_sectsize = _priv->cur_tfile_sectsize;
         
             if (type == TOC_DATA_TYPE_AUDIO) {
-                tfile_format = FR_BIN_TFILE_AUDIO;
+                /* By default TOC's BIN audio files need to be swapped */
+                tfile_format = FR_BIN_TFILE_AUDIO_SWAP;
             } else {
                 tfile_format = FR_BIN_TFILE_DATA;
             }

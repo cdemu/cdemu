@@ -143,16 +143,18 @@ GType mirage_finterface_null_get_type (void);
 \******************************************************************************/
 /**
  * MIRAGE_BINARY_TrackFile_Format:
- * @FR_BIN_TFILE_AUDIO: audio data
  * @FR_BIN_TFILE_DATA: binary data
+ * @FR_BIN_TFILE_AUDIO: audio data
+ * @FR_BIN_TFILE_AUDIO_SWAP: audio data that needs to be swapped
  *
  * <para>
  * Track file data formats.
  * </para>
  **/
 typedef enum {
-    FR_BIN_TFILE_AUDIO = 0x01,
-    FR_BIN_TFILE_DATA  = 0x02,
+    FR_BIN_TFILE_DATA  = 0x01,
+    FR_BIN_TFILE_AUDIO = 0x02,
+    FR_BIN_TFILE_AUDIO_SWAP = 0x04,
 } MIRAGE_BINARY_TrackFile_Format;
 
 /**
