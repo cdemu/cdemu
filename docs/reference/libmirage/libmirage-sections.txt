@@ -455,6 +455,7 @@ mirage_plugin_get_type
 MIRAGE_SubChannel
 MIRAGE_CHECK_ARG
 G_LIST_FOR_EACH
+mirage_helper_find_data_file
 mirage_helper_get_suffix
 mirage_helper_has_suffix
 mirage_helper_match_suffixes

@@ -54,56 +54,6 @@ typedef struct {
 } MIRAGE_Disc_B6TPrivate;
 
 
-static gchar *__helper_find_data_file (gchar *declared_filename, gchar *b6t_filename) {
-    gchar* b6t_path = NULL;
-    gchar* data_filename = NULL;
-    gchar* data_filename_u = NULL;
-    gchar* data_filename_l = NULL;
-    gchar* data_fullpath = NULL;
-    
-    b6t_path = g_path_get_dirname(b6t_filename);
-    data_filename = g_path_get_basename(declared_filename);
-    
-    /* Prepare upper and lowercased name */
-    data_filename_u = g_strdup(data_filename);
-    g_strup(data_filename_u);
-    
-    data_filename_l = g_strdup(data_filename);
-    g_strdown(data_filename_l);
-
-    /* We expect to find data files in same place as B6T file */
-    data_fullpath = g_build_filename(b6t_path, data_filename, NULL);
-    if (g_file_test(data_fullpath, G_FILE_TEST_IS_REGULAR)) {
-        goto end;
-    }
-    g_free(data_fullpath);
-    
-    /* Try lowercasing filename */
-    data_fullpath = g_build_filename(b6t_path, data_filename_l, NULL);
-    if (g_file_test(data_fullpath, G_FILE_TEST_IS_REGULAR)) {
-        goto end;
-    }
-    g_free(data_fullpath);
-    
-    /* Try uppercasing filename */
-    data_fullpath = g_build_filename(b6t_path, data_filename_u, NULL);
-    if (g_file_test(data_fullpath, G_FILE_TEST_IS_REGULAR)) {
-        goto end;
-    }
-    g_free(data_fullpath);
-        
-    /* We didn't find the data file */
-    data_fullpath = NULL;
-    
-end:
-    g_free(b6t_path); 
-    g_free(data_filename); 
-    g_free(data_filename_l); 
-    g_free(data_filename_u);
-    
-    return data_fullpath;
-}
-
 static gboolean __mirage_disc_b6t_setup_track_fragments (MIRAGE_Disc *self, GObject *cur_track, gint start_sector, gint length, GError **error) {
     MIRAGE_Disc_B6TPrivate *_priv = MIRAGE_DISC_B6T_GET_PRIVATE(self);
     GList *entry = NULL;
@@ -144,7 +94,7 @@ static gboolean __mirage_disc_b6t_setup_track_fragments (MIRAGE_Disc *self, GObj
             GObject *data_fragment = NULL;
             
             /* Find filename */
-            gchar *filename = __helper_find_data_file(data_block->filename, _priv->b6t_filename);
+            gchar *filename = mirage_helper_find_data_file(data_block->filename, _priv->b6t_filename);
             if (!filename) {
                 MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to find data file '%s'\n", __func__, data_block->filename);
                 g_object_unref(mirage);

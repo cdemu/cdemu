@@ -114,6 +114,16 @@ following functionality:
 @list: 
 
 
+<!-- ##### FUNCTION mirage_helper_find_data_file ##### -->
+<para>
+
+</para>
+
+@filename: 
+@path: 
+@Returns: 
+
+
 <!-- ##### FUNCTION mirage_helper_get_suffix ##### -->
 <para>
 
