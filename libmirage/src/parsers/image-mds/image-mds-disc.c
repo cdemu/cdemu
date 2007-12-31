@@ -77,25 +77,21 @@ static gint __mirage_disc_mds_convert_track_mode (MIRAGE_Disc *self, gint mode) 
 
 
 static gchar *__helper_find_binary_file (gchar *declared_filename, gchar *mds_filename) {
+    gchar *bin_filename = NULL;
     gchar *bin_fullpath = NULL;
         
     gchar ext[4] = "";
     if (sscanf(declared_filename, "*.%s", ext) == 1) {
         /* Use MDS filename and replace its extension with the one of the data file */
-        bin_fullpath = g_strdup(mds_filename);
+        bin_filename = g_strdup(mds_filename);
         gint len = strlen(bin_fullpath);
         sprintf(bin_fullpath+len-3, ext);
     } else {
-        gchar *image_path = g_path_get_dirname(mds_filename);
-        bin_fullpath = g_strjoin("/", image_path, declared_filename, NULL);
-        g_free(image_path);
+        bin_filename = g_strdup(declared_filename);
     }
     
-    /* Test */
-    if (!g_file_test(bin_fullpath, G_FILE_TEST_IS_REGULAR)) {
-        g_free(bin_fullpath);
-        bin_fullpath = NULL;
-    }
+    bin_fullpath = mirage_helper_find_data_file(declared_filename, mds_filename);
+    g_free(bin_filename);
     
     return bin_fullpath;
 }

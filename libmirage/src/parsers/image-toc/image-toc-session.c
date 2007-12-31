@@ -40,94 +40,6 @@ typedef struct {
 /******************************************************************************\
  *                       Session private functions                            *
 \******************************************************************************/
-static gchar *__helper_find_data_file (gchar *declared_filename, gchar *toc_filename) {
-    gchar* toc_path = NULL;
-    gchar* data_filename = NULL;
-    gchar* data_filename_u = NULL;
-    gchar* data_filename_l = NULL;
-    gchar* data_fullpath = NULL;
-    
-    toc_path = g_path_get_dirname(toc_filename);
-    data_filename = g_path_get_basename(declared_filename);
-    
-    /* Prepare upper and lowercased name */
-    data_filename_u = g_strdup(data_filename);
-    g_strup(data_filename_u);
-    
-    data_filename_l = g_strdup(data_filename);
-    g_strdown(data_filename_l);
-
-    /* First try using TOC file's path (this is because it may happen you have 
-       another data file with same name in your current directory (happened to 
-       me few times... and besides, it's quite likely that TOC and BIN are 
-       placed in the same directory) */
-    data_fullpath = g_build_filename(toc_path, data_filename, NULL);
-    if (g_file_test(data_fullpath, G_FILE_TEST_IS_REGULAR)) {
-        goto end;
-    }
-    g_free(data_fullpath);
-    
-    /* Try lowercasing filename */
-    data_fullpath = g_build_filename(toc_path, data_filename_l, NULL);
-    if (g_file_test(data_fullpath, G_FILE_TEST_IS_REGULAR)) {
-        goto end;
-    }
-    g_free(data_fullpath);
-    
-    /* Try uppercasing filename */
-    data_fullpath = g_build_filename(toc_path, data_filename_u, NULL);
-    if (g_file_test(data_fullpath, G_FILE_TEST_IS_REGULAR)) {
-        goto end;
-    }
-    g_free(data_fullpath);
-        
-    /* Then try the path as it is given in CUE/TOC file
-       this should only work with good CUE/TOC files... not with "standard"
-       Windows-generated ones */
-    data_fullpath = g_strdup(declared_filename);
-    if (g_file_test(data_fullpath, G_FILE_TEST_IS_REGULAR)) {
-        goto end;
-    }
-    g_free(data_fullpath);
-        
-    /* Now let's try the current directory (filename only) */
-    data_fullpath = g_strdup(data_filename);
-    if (g_file_test(data_fullpath, G_FILE_TEST_IS_REGULAR)) {
-        goto end;
-    }
-    g_free(data_fullpath);
-    
-    /* Try lowercasing filename */
-    data_fullpath = g_strdup(data_filename_l);
-    if (g_file_test(data_fullpath, G_FILE_TEST_IS_REGULAR)) {
-        goto end;
-    }
-    g_free(data_fullpath);
-    
-    /* Try uppercasing filename */
-    data_fullpath = g_strdup(data_filename_u);
-    if (g_file_test(data_fullpath, G_FILE_TEST_IS_REGULAR)) {
-        goto end;
-    }
-    g_free(data_fullpath);
-    
-    /* We didn't find the BIN file; guess we could try removing the suffix, and 
-       then try various image-type suffixes. But, we'd have to do it for all
-       three of above steps, and we could actually load something completely
-       unrelated. So report the error... after all, it's not our job to fix every
-       user's mistake, is it? */
-    data_fullpath = NULL;
-    
-end:
-    g_free(toc_path); 
-    g_free(data_filename); 
-    g_free(data_filename_l); 
-    g_free(data_filename_u);
-    
-    return data_fullpath;
-}
-
-
 gboolean __mirage_session_toc_set_toc_filename (MIRAGE_Session *self, gchar *filename, GError **error) {
     MIRAGE_Session_TOC *self_toc = MIRAGE_SESSION_TOC(self);
     MIRAGE_Session_TOCPrivate *_priv = MIRAGE_SESSION_TOC_GET_PRIVATE(self_toc);
@@ -283,7 +195,7 @@ gboolean __mirage_session_toc_add_track_fragment (MIRAGE_Session *self, gint typ
         }
     } else {
         /* Find filename */
-        gchar *filename = __helper_find_data_file(filename_string, _priv->toc_filename);
+        gchar *filename = mirage_helper_find_data_file(filename_string, _priv->toc_filename);
         if (!filename) {
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to find data file!\n", __func__);
             g_object_unref(cur_track);

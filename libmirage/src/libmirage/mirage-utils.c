@@ -25,6 +25,86 @@
 
 
 /**
+ * mirage_helper_find_data_file:
+ * @filename: declared filename
+ * @path: location to store output filename, or %NULL
+ *
+ * <para>
+ * Attempts to find a file with filename @filename and path @path. @filename can
+ * be file's basename or an absolute path. @path can be either directory path (in
+ * this case, it must end with '/') or a filename (i.e. of file descriptor).
+ * </para>
+ * <para>If @filename is an absolute path, its existence is first checked. If it
+ * doesn't exist, @path's dirname is combined with @filename's basename, and the
+ * combination's existence is checked. If that fails as well, then directory, 
+ * specified by @path's dirname is opened and its content is case-insensitively
+ * compared to @filename's basename. This way, all possible case variations are
+ * taken into account (i.e. file.iso, FILE.ISO, FiLe.IsO, etc.). If at any of 
+ * above steps the result is positive, the resulting filename is returned as a
+ * newly allocated string.
+ * </para>
+ * <para>
+ * The returned string should be freed when no longer needed.
+ * </para>
+ *
+ * Returns: a newly allocated string containing the fullpath of file, or %NULL.
+ **/
+gchar *mirage_helper_find_data_file (const gchar *filename, const gchar *path) {
+    gchar *ret_filename = NULL;
+    gchar *dirname = NULL;
+    gchar *basename = NULL;
+    GDir *dir = NULL;
+    
+    /* If filename is an absolute path, try using it first */
+    if (g_path_is_absolute(filename)) {
+        if (g_file_test(filename, G_FILE_TEST_IS_REGULAR)) {
+            ret_filename = g_strdup(filename);
+            goto end;
+        }
+    }
+    
+    /* Get basename from filename and dirname from path */
+    basename = g_path_get_basename(filename);
+    dirname = g_path_get_dirname(path);
+    
+    /* Try combination of dirname and basename */
+    ret_filename = g_build_filename(dirname, basename, NULL);
+    if (g_file_test(ret_filename, G_FILE_TEST_IS_REGULAR)) {
+        goto end;
+    }
+    g_free(ret_filename);
+    
+    /* Do case-insensitive search */
+    dir = g_dir_open(dirname, 0, NULL);
+    if (dir) {
+        const gchar *cur_filename = NULL;
+        
+        /* Read name of every file in dir, and compare the names ignoring case */
+        while ((cur_filename = g_dir_read_name(dir))) {
+            if (!mirage_helper_strcasecmp(cur_filename, basename)) {
+                ret_filename = g_build_filename(dirname, cur_filename, NULL);
+                if (g_file_test(ret_filename, G_FILE_TEST_IS_REGULAR)) {
+                    g_dir_close(dir);
+                    goto end;
+                }
+                g_free(ret_filename);
+            }
+        }
+    }
+    g_dir_close(dir);
+    
+    /* Search failed */
+    ret_filename = NULL;
+    
+end:
+    g_free(dirname);
+    g_free(basename);
+        
+    return ret_filename;
+}
+
+
+/**
  * mirage_helper_get_suffix:
  * @filename: filename
  *
@@ -105,7 +185,7 @@ gboolean mirage_helper_match_suffixes (gchar *filename, gchar **suffixes) {
  * Returns: an integer less than, equal to, or greater than zero  if  @str1  
  * is  found, respectively, to  be less than, to match, or be greater than @str2.
  **/
-gint mirage_helper_strcasecmp (gchar *str1, gchar *str2) {
+gint mirage_helper_strcasecmp (const gchar *str1, const gchar *str2) {
     gchar *s1 = g_utf8_casefold(str1, -1);
 	gchar *s2 = g_utf8_casefold(str2, -1);
 	gint rv;
@@ -137,7 +217,7 @@ gint mirage_helper_strcasecmp (gchar *str1, gchar *str2) {
  * characters of @str1 is found, respectively, to  be less than, to match, or 
  * be greater than first @len characters of @str2.
  **/
-gint mirage_helper_strncasecmp (gchar *str1, gchar *str2, gint len) {
+gint mirage_helper_strncasecmp (const gchar *str1, const gchar *str2, gint len) {
     gchar *s1 = g_utf8_casefold(str1, len);
 	gchar *s2 = g_utf8_casefold(str2, len);
 	gint rv;

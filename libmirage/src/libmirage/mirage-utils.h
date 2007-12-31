@@ -54,6 +54,8 @@ G_BEGIN_DECLS
 #define G_LIST_FOR_EACH(cursor,list) \
     for ((cursor) = (list); (cursor); (cursor) = (cursor)->next)
 
+/* File finding */
+gchar *mirage_helper_find_data_file (const gchar *filename, const gchar *path);
 
 /* File suffix retrieval and matching */
 gchar *mirage_helper_get_suffix (gchar *filename);
@@ -61,8 +63,8 @@ gboolean mirage_helper_has_suffix (gchar *filename, gchar *suffix);
 gboolean mirage_helper_match_suffixes (gchar *filename, gchar **suffixes);
 
 /* Case-insensitive string comparison; works on UTF-8 strings */
-gint mirage_helper_strcasecmp (gchar *str1, gchar *str2);
-gint mirage_helper_strncasecmp (gchar *str1, gchar *str2, gint len);
+gint mirage_helper_strcasecmp (const gchar *str1, const gchar *str2);
+gint mirage_helper_strncasecmp (const gchar *str1, const gchar *str2, gint len);
 
 /* Parser and fragment info utility functions */
 MIRAGE_ParserInfo *mirage_helper_create_parser_info (gchar *id, gchar *name, gchar *version, gchar *author, gboolean multi_file, gchar *description, gint num_suffixes, ...);
