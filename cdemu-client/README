@@ -72,12 +72,23 @@ Setting daemon debug mask for the first device:
  cdemu device-debug 0 daemon 0x01
 
 
-By default, cdemu client uses session bus when connecting to daemon. This behavior
-can be changed by using --bus option. E.g.:
- cdemu status
-is equivalent to:
+System vs. session bus:
+~~~~~~~~~~~~~~~~~~~~~~~
+When connecting to daemon, cdemu client can use either session or system bus. By
+hard-coded default, it uses system bus. The default bus to be used can be specified
+in ~/.cdemu file, with following format:
+
+# This is example cdemu client config file. Save it as ~/.cdemu.
+
+[defaults]
+#bus=system
+bus=session
+
+# End of config file
+
+The default can be overriden by using --bus option. E.g.:
  cdemu --bus=session status
-If daemon is registered on system bus, use:
+or
  cdemu --bus=system status
 
  

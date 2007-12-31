@@ -55,7 +55,7 @@ class gCDEmu_Applet (gnomeapplet.Applet):
     __gconf_key_path = None
 
     __show_notifications = True
-    __use_system_bus = False
+    __use_system_bus = True
     
     # *** UI ***
     __pixbuf_logo = None

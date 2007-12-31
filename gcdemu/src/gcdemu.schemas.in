@@ -13,7 +13,7 @@
             <key>/schemas/apps/gcdemu-applet/prefs/use_system_bus</key>
             <owner>gcdemu-applet</owner>
             <type>bool</type>
-            <default>false</default>
+            <default>true</default>
             <locale name="C">
                 <short>Use system bus (instead of session bus)?</short>
             </locale>

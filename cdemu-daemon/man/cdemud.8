@@ -49,8 +49,12 @@ which disables audio play. By default, audio play is disabled.
 .B \-o --audio-device=device
 Audio play device. Specifies audio device to be used be audio backend.
 .TP
-.B \-s --system-bus
-Use system bus. Causes the daemon to use system bus.
+.B \-b --bus=bus_type
+Bus type. Valid options are
+.B system
+or
+.B session.
+By default, system bus is used.
 .B \-? --help
 Display the help message. 
 .SH EXAMPLES
@@ -58,8 +62,8 @@ Display the help message.
 .B Running daemon in local mode, with ALSA audio backend, default audio device and 4 virtual devices:
 cdemud --num-devices=4 --audio=alsa --audio-device=default
 .TP
-.B Running daemon in local mode with 2 virtual devices and on system bus:
-cdemud --num-devices=2 --system-bus
+.B Running daemon in local mode with 2 virtual devices and on session bus:
+cdemud --num-devices=2 --bus=session
 .TP
 .B Running daemon in daemon mode with 8 virtual devices:
 cdemud --num-devices=8 --daemonize

@@ -45,7 +45,8 @@ Troubleshooting:
 
 Q: gCDEmu's tray icon is greyed and the applet does nothing!
 A: Greyed-out icon means that the applet failed to connect to the CDEmu daemon. 
-   Please make sure the daemon is running.
+   Please make sure the daemon is running and that you're connecting via 
+   appropriate bus.
 
 
 Contact information:
