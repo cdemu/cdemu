@@ -1,0 +1,22 @@
+<gconfschemafile>
+    <schemalist>
+        <schema>
+            <key>/schemas/apps/gcdemu-applet/prefs/notifications</key>
+            <owner>gcdemu-applet</owner>
+            <type>bool</type>
+            <default>true</default>
+            <locale name="C">
+                <short>Show notifications?</short>
+            </locale>
+        </schema>
+        <schema>
+            <key>/schemas/apps/gcdemu-applet/prefs/use_system_bus</key>
+            <owner>gcdemu-applet</owner>
+            <type>bool</type>
+            <default>true</default>
+            <locale name="C">
+                <short>Use system bus (instead of session bus)?</short>
+            </locale>
+        </schema>
+    </schemalist>
+</gconfschemafile>

@@ -1,0 +1,100 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
+# gCDEmu: Applet
+# Copyright (C) 2006-2007 Rok Mandeljc
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; if not, write to the Free Software
+# Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+
+import sys
+import getopt
+
+import gtk
+import gnome
+import gnomeapplet
+
+from gettext import gettext as _
+from gettext import bindtextdomain, textdomain
+
+from gcdemu import globals as config
+from gcdemu.applet import gCDEmu_Applet
+
+bindtextdomain(config.name)
+textdomain(config.name)
+
+# Applet factory
+def applet_factory (applet, iid):
+    "Applet factory function"
+    
+    if iid == "OAFIID:GNOME_gCDEmu_Applet":
+        applet.setup_applet()
+        return True
+    else:
+        applet.destroy()
+        return False
+
+# Standalone version
+def run_standalone ():    
+    main_window = gtk.Window(gtk.WINDOW_TOPLEVEL)
+    main_window.set_title("gCDEmu Applet")
+    main_window.connect("destroy", gtk.main_quit) 
+    applet = gCDEmu_Applet()
+    applet.get_orient = lambda: gnomeapplet.ORIENT_DOWN
+    applet_factory(applet, "OAFIID:GNOME_gCDEmu_Applet")
+    applet.reparent(main_window)
+    main_window.show_all()
+    gtk.main()
+    sys.exit()
+        
+def print_usage ():
+    print """=== gCDEmu applet: Usage
+$ gcdemu [OPTIONS]
+
+OPTIONS:
+    -h, --help      Print this help notice.
+    -w, --window    Launch the applet in a standalone window for test purposes (default=no).
+    """
+    sys.exit()
+    
+if __name__ == "__main__":    
+    standalone = False
+    
+    try:
+        opts, args = getopt.getopt(sys.argv[1:], "hw", ["help", "window"])
+    except getopt.GetoptError:
+        # Unknown args were passed, we fallback to bahave as if
+        # no options were passed
+        print "WARNING: Unknown arguments passed, using defaults."
+        opts = []
+        args = sys.argv[1:]
+    
+    for o, a in opts:
+        if o in ("-h", "--help"):
+            print_usage()
+        elif o in ("-w", "--window"):
+            standalone = True
+    
+    gnome.init(config.name, config.version)
+        
+    if standalone:
+        run_standalone()        
+    else:
+        gnomeapplet.bonobo_factory(
+            "OAFIID:GNOME_gCDEmu_Applet_Factory",
+            gCDEmu_Applet.__gtype__,
+            config.name, 
+            config.version,
+            applet_factory
+        )

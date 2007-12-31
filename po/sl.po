@@ -1,0 +1,221 @@
+# Slovenian translation of gCDEmu.
+# Copyright (C) 2006-2007 Rok Mandeljc
+# This file is distributed under the same license as the gCDEmu package.
+# Rok Mandeljc <rok.mandeljc@email.si>, 2006-2007.
+# , fuzzy
+# 
+# 
+msgid ""
+msgstr ""
+"Project-Id-Version: gCDEmu 1.0.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2007-12-09 00:36+0100\n"
+"PO-Revision-Date: 2007-12-09 00:37+0100\n"
+"Last-Translator: Rok Mandeljc <rok.mandeljc@email.si>\n"
+"Language-Team: Slovenian\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit"
+
+#: ../src/applet.py:107
+msgid "Use _system bus"
+msgstr "Uporabi _sistemsko vodilo"
+
+#: ../src/applet.py:109
+msgid "Show _Notifications"
+msgstr "Prikaži o_bvestila"
+
+#: ../src/applet.py:111
+msgid "_About"
+msgstr "_O programu"
+
+#: ../src/applet.py:174
+msgid "Daemon started"
+msgstr "Demon zagnan"
+
+#: ../src/applet.py:175
+msgid "CDEmu daemon has been started."
+msgstr "CDEmu demon je bil zagnan."
+
+#: ../src/applet.py:195
+msgid "Daemon stopped"
+msgstr "Demon ustavljen"
+
+#: ../src/applet.py:196
+msgid "CDEmu daemon has been stopped."
+msgstr "CDEmu demon je bil ustavljen."
+
+#: ../src/applet.py:223
+#, python-format
+msgid "Device %i has been loaded."
+msgstr "Naprava %i je bila naložena."
+
+#: ../src/applet.py:225
+#, python-format
+msgid "Device %i has been emptied."
+msgstr "Naprava %i je bila izpraznjena."
+
+#: ../src/applet.py:228 ../src/applet.py:243 ../src/applet.py:257
+msgid "Device change"
+msgstr "Sprememba stanja naprave"
+
+#: ../src/applet.py:244
+#, python-format
+msgid "Device %i has been changed its daemon debug mask."
+msgstr "Napravi %i je bila spremenjena demonova razhroščevalna maska."
+
+#: ../src/applet.py:258
+#, python-format
+msgid "Device %i has been changed its library debug mask."
+msgstr "Napravi %i je bila spremenjena razhroščevalna maska knjižnice."
+
+#: ../src/applet.py:331
+msgid "gCDEmu is an applet for controlling CDEmu devices via CDEmu daemon."
+msgstr "gCDEmu je programček za upravljanje CDEmu naprav prek CDEmu demona."
+
+#: ../src/applet.py:334
+msgid "translator-credits"
+msgstr "Rok Mandeljc <rok.mandeljc@email.si>"
+
+#: ../src/applet.py:528
+#, python-format
+msgid ""
+"Failed to unload device %i:\n"
+"%s"
+msgstr ""
+"Napaka pri praznjenju naprave %i:\n"
+"%s"
+
+#: ../src/applet.py:529 ../src/applet.py:553 ../src/applet.py:591
+msgid "Error"
+msgstr "Napaka"
+
+#: ../src/applet.py:552
+#, python-format
+msgid ""
+"Failed to load image %s to device %i:\n"
+"%s"
+msgstr ""
+"Napaka pri nalaganju slike %s v napravo %i:\n"
+"%s"
+
+#: ../src/applet.py:590
+#, python-format
+msgid ""
+"Failed to set debug mask (type: '%s') for device %i to 0x%X:\n"
+"%s"
+msgstr ""
+"Napaka pri nastavljanju razhroščevalne maske (vrsta: '%s') naprave %i na 0x%"
+"X:\n"
+"%s"
+
+#: ../src/gcdemu.schemas.in.h:1
+msgid "Show notifications?"
+msgstr "Prikaži o_bvestila?"
+
+#: ../src/gcdemu.schemas.in.h:2
+msgid "Use system bus (instead of session bus)?"
+msgstr "Uporabi sistemsko vodilo (namesto sejnega vodila)?"
+
+#: ../src/ui.py:41
+msgid "Open file"
+msgstr "Odpri datoteko"
+
+#: ../src/ui.py:53
+msgid "All files"
+msgstr "Vse datoteke"
+
+#: ../src/ui.py:58
+msgid "All image files"
+msgstr "Vse slike"
+
+#. *** Frame: Debug mask ***
+#: ../src/ui.py:122
+msgid "Debug mask: "
+msgstr "Razhroščevalna maska: "
+
+#: ../src/ui.py:144
+msgid "Set debug mask"
+msgstr "Nastavi masko"
+
+#. *** Frame: Status ***
+#: ../src/ui.py:170
+msgid "Status"
+msgstr "Stanje"
+
+#: ../src/ui.py:182
+msgid "Loaded: "
+msgstr "Naložena: "
+
+#: ../src/ui.py:190
+msgid "Image type: "
+msgstr "Vrsta slike: "
+
+#: ../src/ui.py:198
+msgid "File name: "
+msgstr "Ime datoteke: "
+
+#. Debug mask frames
+#: ../src/ui.py:216
+msgid "Daemon"
+msgstr "Demon"
+
+#: ../src/ui.py:219
+msgid "Library"
+msgstr "Knjižnica"
+
+#. Dialog title
+#: ../src/ui.py:274
+#, python-format
+msgid "Device %i properties"
+msgstr "Lastnosti naprave %i"
+
+#. Device X label
+#: ../src/ui.py:277
+#, python-format
+msgid "Device %i"
+msgstr "Naprava %i"
+
+#: ../src/ui.py:281
+msgid "Yes"
+msgstr "Da"
+
+#: ../src/ui.py:284
+msgid "Unload Device"
+msgstr "Izprazni napravo"
+
+#: ../src/ui.py:286
+msgid "No"
+msgstr "Ne"
+
+#: ../src/ui.py:289
+msgid "Load Device"
+msgstr "Naloži napravo"
+
+#. Indicate there's more than one file
+#: ../src/ui.py:347 ../src/ui.py:349
+msgid "Device"
+msgstr "Naprava"
+
+#: ../src/ui.py:349
+msgid "Empty"
+msgstr "Prazna"
+
+#~ msgid "Device %i has been changed its module debug mask."
+#~ msgstr "Napravi %i je bila spremenjena modulova razhroščevalna maska."
+
+#~ msgid "Module"
+#~ msgstr "Modul"
+
+#~ msgid ""
+#~ "Failed to set daemon's debug mask for device %i to 0x%X:\n"
+#~ "%s"
+#~ msgstr ""
+#~ "Napaka pri nastavljanju demonove maske naprave %i na 0x%X:\n"
+#~ "%s"
+
+#~ msgid "Module debug mask"
+#~ msgstr "Modulova razhroščevalna maska"
+
+#~ msgid "Daemon debug mask"
+#~ msgstr "Demonova razhroščevalna maska"

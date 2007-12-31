@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<omf>
+    <resource>
+        <subject category="GNOME|Applets|Utility"/>
+        <type>user's guide</type>
+        <rights type="GNU FDL" license.version="1.1" holder="Rok Mandeljc"/>
+        <relation seriesid="d19e8e78-3859-11dc-9790-fdc1a51fb5b1"/>
+    </resource>
+</omf>
