@@ -188,8 +188,12 @@ static gboolean __mirage_disc_toc_load_image (MIRAGE_Disc *self, gchar **filenam
             mirage_fragment_set_length(MIRAGE_FRAGMENT(pregap_fragment), 150, NULL);
             g_object_unref(pregap_fragment);
             
-            /* Track starts at 150 */
-            mirage_track_set_track_start(MIRAGE_TRACK(ftrack), 150, NULL);
+            /* Track starts at 150... well, unless it already has a pregap, in
+               which case they should stack */
+            gint old_start = 0;
+            mirage_track_get_track_start(MIRAGE_TRACK(ftrack), &old_start, NULL);
+            old_start += 150;
+            mirage_track_set_track_start(MIRAGE_TRACK(ftrack), old_start, NULL);
         
             g_object_unref(ftrack);
             g_object_unref(session);
