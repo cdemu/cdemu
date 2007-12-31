@@ -20,6 +20,7 @@ import getopt
 import sys
 import os.path
 import string
+import ConfigParser
 
 import dbus
 from dbus.mainloop.glib import DBusGMainLoop
@@ -35,9 +36,26 @@ class CDEmu (object):
     __dbus_proxy = None
     __dbus_iface = None
     
-    __use_system_bus = False
+    __bus_type = "system" # Use system bus as hard-coded default
     
     def __init__ (self):
+        # Load options; look only in ~/.cdemu (which has to be created manually)
+        path = '~/.cdemu'
+        
+        try:
+            config = ConfigParser.ConfigParser()
+            config.read([os.path.expanduser(path)])
+        
+            if config.has_section("defaults"):
+                # Read default bus type
+                if config.has_option("defaults","bus"):
+                    self.__bus_type = config.get("defaults","bus")
+        except:
+            # No harm, just print a warning
+            self.__print_error(_("Failed to load configuration from file '%s': %s") % (path, sys.exc_value))
+            pass
+
+            
         return
     
     def process_command (self, argv):
@@ -59,22 +77,17 @@ class CDEmu (object):
                 self.__print_version()
                 return
             elif opt in ("-b", "--bus"):
-                # Bus type
-                if arg == "session":
-                    self.__use_system_bus = False
-                elif arg == "system":
-                    self.__use_system_bus = True                    
-                else:
-                    self.__print_warning(_("Invalid bus parameter '%s', using session bus!") % (arg))
-                    self.__use_system_bus = False
+                # Bus type; don't check the value here, __connect() will do it
+                # for us
+                self.__bus_type = arg                    
         
         if len(arguments) == 0:
             self.__print_full_usage()
             return
-        
+                
         # Connect        
         if self.__connect() != True:
-            self.__print_error(_("Failed to connect to daemon!"))
+            self.__print_error(_("Failed to connect to daemon (bus: '%s')!") % (self.__bus_type))
             return
         
         # Command switch
@@ -325,10 +338,16 @@ class CDEmu (object):
 
     def __connect (self):
         try:
-            if self.__use_system_bus:
+            if self.__bus_type == "system":
                 self.__dbus_bus = dbus.SystemBus()
+            elif self.__bus_type == "session":
+                self.__dbus_bus = dbus.SessionBus()
             else:
-                self.__dbus_bus = dbus.SessionBus()                
+                self.__print_warning(_("Invalid bus parameter '%s', using default!") % (self.__bus_type))
+                # Use system bus by default
+                self.__bus_type = "system"
+                self.__dbus_bus = dbus.SystemBus()
+                
             self.__dbus_proxy = self.__dbus_bus.get_object("net.sf.cdemu.CDEMUD_Daemon", "/CDEMUD_Daemon")
             self.__dbus_iface = dbus.Interface(self.__dbus_proxy, "net.sf.cdemu.CDEMUD_Daemon")
         except:
