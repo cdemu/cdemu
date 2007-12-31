@@ -153,7 +153,7 @@ ALSA audio backend can be disabled with --disable-alsa switch.
 
 
 The daemon can register its interface on either system or session D-BUS' bus. By 
-default, session bus is used. To use system bus, use --bus=system when running daemon. 
+default, system bus is used. To use session bus, use --bus=session when running daemon. 
 If daemon is ran in daemon mode, usage of system bus is automatically implied.
 
 If you wish to run CDEmu daemon on system bus, CDEmu daemon's configuration files
