@@ -127,7 +127,7 @@ static gboolean __cdemud_daemon_io_handler (GIOChannel *source, GIOCondition con
     CDEMUD_Device *dev = CDEMUD_DEVICE(data);
     gint fd = g_io_channel_unix_get_fd(source);
     CDEMUD_Command cmd;
-    guchar buf[BUF_SIZE];
+    guchar buf[BUF_SIZE] = {0};
     struct vhba_request *vreq = (void *) buf;
     struct vhba_response *vres = (void *) buf;
     
