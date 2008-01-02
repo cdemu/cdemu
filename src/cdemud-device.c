@@ -2787,7 +2787,7 @@ gboolean cdemud_device_get_status (CDEMUD_Device *self, gboolean *loaded, gchar 
     } else {
         _loaded = FALSE;
         _image_type = g_strdup("N/A");
-        _file_names = g_new0(gchar*, 1);
+        _file_names = g_new0(gchar*, 2); /* NULL-terminated, hence 2 */
         _file_names[0] = g_strdup("N/A");
     }
     
