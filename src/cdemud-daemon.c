@@ -179,6 +179,7 @@ gboolean cdemud_daemon_initialize (CDEMUD_Daemon *self, gint num_devices, gchar 
     mirage_debug_context_set_name(MIRAGE_DEBUG_CONTEXT(debug_context), "cdemud", NULL);
     mirage_debug_context_set_domain(MIRAGE_DEBUG_CONTEXT(debug_context), "CDEMUD", NULL);
     mirage_object_set_debug_context(MIRAGE_OBJECT(self), debug_context, NULL);
+    g_object_unref(debug_context);
     
     /* Control device */
     _priv->ctl_device = g_strdup(ctl_device);

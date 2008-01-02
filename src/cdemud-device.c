@@ -2706,6 +2706,7 @@ gboolean cdemud_device_initialize (CDEMUD_Device *self, gint number, gchar *audi
     mirage_debug_context_set_name(MIRAGE_DEBUG_CONTEXT(debug_context), _priv->device_name, NULL);
     mirage_debug_context_set_domain(MIRAGE_DEBUG_CONTEXT(debug_context), "CDEMUD", NULL);
     mirage_object_set_debug_context(MIRAGE_OBJECT(self), debug_context, NULL);
+    g_object_unref(debug_context);
     
     /* Allocate buffer/"cache"; 4kB should be enough for everything, I think */
     _priv->buffer = g_malloc0(4096);
