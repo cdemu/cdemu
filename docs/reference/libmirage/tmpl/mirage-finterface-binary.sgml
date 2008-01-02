@@ -23,8 +23,9 @@ by a #MIRAGE_Fragment implementation.
 
 </para>
 
-@FR_BIN_TFILE_AUDIO: 
 @FR_BIN_TFILE_DATA: 
+@FR_BIN_TFILE_AUDIO: 
+@FR_BIN_TFILE_AUDIO_SWAP: 
 
 <!-- ##### ENUM MIRAGE_BINARY_SubchannelFile_Format ##### -->
 <para>
