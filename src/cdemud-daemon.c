@@ -193,6 +193,26 @@ gboolean cdemud_daemon_initialize (CDEMUD_Daemon *self, gint num_devices, gchar 
     /* Glib's main loop */
     _priv->main_loop = g_main_loop_new(NULL, FALSE);
     
+    /* Initialize our DBUS interface; unless told to use system bus, we'll use
+       session one */
+    dbus_g_object_type_install_info(CDEMUD_TYPE_DAEMON, &dbus_glib_cdemud_daemon_object_info);
+    _priv->bus = dbus_g_bus_get(bus_type, error);
+    if (!_priv->bus) {
+        CDEMUD_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: failed to get %s bus!\n", __func__, system_bus ? "system" : "session");
+        cdemud_error(CDEMUD_E_DBUSCONNECT, error);
+        return FALSE;
+    }
+    
+    bus_proxy = dbus_g_proxy_new_for_name(_priv->bus, "org.freedesktop.DBus", "/org/freedesktop/DBus", "org.freedesktop.DBus");
+    
+    if (!dbus_g_proxy_call(bus_proxy, "RequestName", error, G_TYPE_STRING, "net.sf.cdemu.CDEMUD_Daemon", G_TYPE_UINT, 0, G_TYPE_INVALID, G_TYPE_UINT, &result, G_TYPE_INVALID)) {
+        CDEMUD_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: failed to get name on %s bus!\n", __func__, system_bus ? "system" : "session");
+        cdemud_error(CDEMUD_E_DBUSNAMEREQUEST, error);
+        return FALSE;
+    }
+
+    dbus_g_connection_register_g_object(_priv->bus, "/CDEMUD_Daemon", G_OBJECT(self));
+    
     /* Create desired number of devices */   
     for (i = 0; i < _priv->number_of_devices; i++) {
         GObject *dev = g_object_new(CDEMUD_TYPE_DEVICE, NULL);
@@ -230,26 +250,6 @@ gboolean cdemud_daemon_initialize (CDEMUD_Daemon *self, gint num_devices, gchar 
             return FALSE;
         }            
     }
-
-    /* Initialize our DBUS interface; unless told to use system bus, we'll use
-       session one */
-    dbus_g_object_type_install_info(CDEMUD_TYPE_DAEMON, &dbus_glib_cdemud_daemon_object_info);
-    _priv->bus = dbus_g_bus_get(bus_type, error);
-    if (!_priv->bus) {
-        CDEMUD_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: failed to get %s bus!\n", __func__, system_bus ? "system" : "session");
-        cdemud_error(CDEMUD_E_DBUSCONNECT, error);
-        return FALSE;
-    }
-    
-    bus_proxy = dbus_g_proxy_new_for_name(_priv->bus, "org.freedesktop.DBus", "/org/freedesktop/DBus", "org.freedesktop.DBus");
-    
-    if (!dbus_g_proxy_call(bus_proxy, "RequestName", error, G_TYPE_STRING, "net.sf.cdemu.CDEMUD_Daemon", G_TYPE_UINT, 0, G_TYPE_INVALID, G_TYPE_UINT, &result, G_TYPE_INVALID)) {
-        CDEMUD_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: failed to get name on %s bus!\n", __func__, system_bus ? "system" : "session");
-        cdemud_error(CDEMUD_E_DBUSNAMEREQUEST, error);
-        return FALSE;
-    }
-
-    dbus_g_connection_register_g_object(_priv->bus, "/CDEMUD_Daemon", G_OBJECT(self));
     
     /* We successfully finished initialization */
     _priv->initialized = TRUE;
