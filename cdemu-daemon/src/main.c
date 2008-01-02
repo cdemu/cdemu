@@ -43,7 +43,8 @@ static gboolean __cdemud_daemon_signal_handler (GIOChannel *source, GIOCondition
     /* Dispatch signal */
     switch (sig) {
         case SIGINT:
-        case SIGQUIT: {
+        case SIGQUIT: 
+        case SIGTERM: {
             cdemud_daemon_stop_daemon(self, NULL);
             break;
         }
@@ -171,7 +172,7 @@ int main (int argc, char *argv[]) {
             }
     
             /* Initialize signal handling */
-            if (daemon_signal_init(SIGINT, SIGQUIT, SIGHUP, 0) < 0) {
+            if (daemon_signal_init(SIGINT, SIGQUIT, SIGHUP, SIGTERM, 0) < 0) {
                 g_warning("%s: Could not register signal handlers: %s.", __func__, strerror(errno));
                 goto remove_pid;
             }
