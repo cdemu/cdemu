@@ -31,6 +31,54 @@ typedef struct {
     MIRAGE_ParserInfo *parser_info;
 } MIRAGE_Disc_NRGPrivate;
 
+static gboolean __mirage_disc_nrg_load_medium_type (MIRAGE_Disc *self, FILE *file, guint64 pos, GError **error) {
+    guint8 block_id[4] = {};
+    gint mtyp_len = 0;
+    gint mtyp_data = 0;
+    
+    /* We expect to find 'CDTX' at given pos */
+    fseeko(file, pos, SEEK_SET);
+    fread(block_id, sizeof(block_id), 1, file);
+    if (memcmp(block_id, "MTYP", 4)) {
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: expected to find MTYP but found %c%c%c%c instead!\n", __func__, block_id[0], block_id[1], block_id[2], block_id[3]);
+        mirage_error(MIRAGE_E_PARSER, error);
+        return FALSE;
+    }
+    /* Read MTYP length */
+    fread((void *)&mtyp_len, sizeof(mtyp_len), 1, file);
+    mtyp_len = GINT32_FROM_BE(mtyp_len);
+    
+    /* So far, I've only seen it 4-byte... */
+    if (mtyp_len != 4) {
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: MTYP length is %d (expected 4)!\n", __func__, mtyp_len);
+        mirage_error(MIRAGE_E_PARSER, error);
+        return FALSE;
+    }
+    
+    fread((void *)&mtyp_data, mtyp_len, 1, file);
+    mtyp_data = GINT32_FROM_BE(mtyp_data);
+    
+    /* Decode medium type */
+    switch (mtyp_data) {
+        case 0x01: {
+            /* CD-ROM */
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: medium type: CD-ROM\n", __func__);
+            mirage_disc_set_medium_type(self, MIRAGE_MEDIUM_CD, NULL);
+            break;
+        }
+        case 0x1C: {
+            /* DVD-ROM */
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: medium type: DVD-ROM\n", __func__);
+            mirage_disc_set_medium_type(self, MIRAGE_MEDIUM_DVD, NULL);
+            break;
+        }
+        default: {
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: unhandled medium type: %d!\n", __func__, mtyp_data);
+        }
+    }
+    
+    return TRUE;
+}
 
 static gboolean __mirage_disc_nrg_decode_mode (MIRAGE_Disc *self, gint code, gint *mode, gint *main_sectsize, gint *sub_sectsize, GError **error) {    
     /* The meaning of the following codes was determined experimentally; we're
@@ -726,7 +774,8 @@ static gboolean __mirage_disc_nrg_load_image (MIRAGE_Disc *self, gchar **filenam
         }
     }
     
-    /* Medium type; FIXME: only CD-ROM for now */
+    /* Medium type; CD-ROM by default, if there's MTYP block, it'll be changed
+       accordingly */
     mirage_disc_set_medium_type(self, MIRAGE_MEDIUM_CD, NULL);
         
     /* Get to the start of index data */
@@ -768,8 +817,12 @@ static gboolean __mirage_disc_nrg_load_image (MIRAGE_Disc *self, gchar **filenam
         } else if (!memcmp(block_id, "SINF", 4)) {
             /* SINF block: AFAIK contains no useful data (except number of tracks in session, 
                but we don't really need that one anyway) */
-        } else if (!memcmp(block_id, "MTYPE", 4)) {
-            /* MTYPE: medium type... might be useful to determine if we have CD-ROM or DVD-ROM? */    
+        } else if (!memcmp(block_id, "MTYP", 4)) {
+            /* MTYP: medium type */            
+            if (!__mirage_disc_nrg_load_medium_type(self, file, pos - sizeof(block_id) - sizeof(block_length), error)) {
+                succeeded = FALSE;
+                break;
+            }
         } else if (!memcmp(block_id, "!END", 4)) {
             /* !END: self-explanatory */
         }
