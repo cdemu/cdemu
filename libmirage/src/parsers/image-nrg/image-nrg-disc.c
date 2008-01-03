@@ -690,9 +690,9 @@ static gboolean __mirage_disc_nrg_load_image (MIRAGE_Disc *self, gchar **filenam
     mirage_disc_set_filenames(self, filenames, NULL);
 
     /* Get filesize */
-    gint filesize = 0;
+    guint64 filesize = 0;
     fseeko(file, 0, SEEK_END);
-    filesize = ftell(file);
+    filesize = ftello(file);
     
     /* Read signature */
     gchar sig[4] = "";
