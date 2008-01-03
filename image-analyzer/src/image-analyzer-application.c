@@ -115,8 +115,9 @@ static gchar *__dump_medium_type (gint medium_type) {
 
 static gchar *__dump_binary_fragment_tfile_format (gint format) {
     static DUMP_Value values[] = {
-        { FR_BIN_TFILE_AUDIO, "Audio data" },
         { FR_BIN_TFILE_DATA, "Binary data" },
+        { FR_BIN_TFILE_AUDIO, "Audio data" },
+        { FR_BIN_TFILE_AUDIO_SWAP, "Audio data (swapped)" },
     };
     
     return __dump_flags(format, values, G_N_ELEMENTS(values));    
