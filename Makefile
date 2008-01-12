@@ -1,7 +1,7 @@
 VHBA_VERSION = 1.0.0
 PACKAGE = vhba-module-$(VHBA_VERSION)
 
-CFLAGS += -DVHBA_VERSION=\"$(VHBA_VERSION)\"
+CFLAGS += -DVHBA_VERSION=\"$(VHBA_VERSION)\" -I$(PWD)
 
 obj-m += vhba.o
 
@@ -9,7 +9,10 @@ PWD	?= `pwd`
 KDIR := /lib/modules/`uname -r`/build
 KMAKE := $(MAKE) -C $(KDIR) M=$(PWD)
 
-all: modules
+all: kernel.api.h modules
+
+kernel.api.h: kat/*.c
+	kat/kat ${KDIR} $@ $^
 
 modules:
 	$(KMAKE) modules
@@ -25,7 +28,7 @@ distdir:
 
 clean:
 	$(KMAKE) clean
-	rm -fr $(PACKAGE)    
+	rm -fr $(PACKAGE) kernel.api.h
 
 dist: dist-gzip
 
