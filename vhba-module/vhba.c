@@ -32,6 +32,8 @@
 #include <scsi/scsi_cmnd.h>
 #include <scsi/scsi_device.h>
 
+#include <kernel.api.h>
+
 MODULE_AUTHOR("Chia-I Wu");
 MODULE_VERSION(VHBA_VERSION);
 MODULE_DESCRIPTION("Virtual SCSI HBA");
@@ -520,7 +522,11 @@ static ssize_t do_response(struct scsi_cmnd *cmd, const char __user *buf, size_t
 				}
 				uaddr += len;
 
+#ifdef KAT_SCATTERLIST_HAS_PAGE
 				kaddr = kmap_atomic(sg[i].page, KM_USER0);
+#else
+				kaddr = kmap_atomic(sg_page(&sg[i]), KM_USER0);
+#endif				
 				memcpy(kaddr + sg[i].offset, kbuf, len);
 				kunmap_atomic(kaddr, KM_USER0);
 
