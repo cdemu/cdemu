@@ -1,7 +1,7 @@
 VHBA_VERSION = 1.0.0
 PACKAGE = vhba-module-$(VHBA_VERSION)
 
-CFLAGS += -DVHBA_VERSION=\"$(VHBA_VERSION)\" -I$(PWD)
+EXTRA_CFLAGS += -DVHBA_VERSION=\"$(VHBA_VERSION)\" -I$(PWD)
 
 obj-m += vhba.o
 
