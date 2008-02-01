@@ -2732,14 +2732,15 @@ gboolean cdemud_device_initialize (CDEMUD_Device *self, gint number, gchar *audi
             return FALSE;
         }
     }
-    if (!cdemud_audio_initialize(CDEMUD_AUDIO(_priv->audio_play), audio_device, &_priv->current_sector, error)) {
-        CDEMUD_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: failed to initialize audio backend!\n", __func__);
-        return FALSE;
-    }
     /* Set parent */
     mirage_object_set_parent(MIRAGE_OBJECT(_priv->audio_play), G_OBJECT(self), NULL);
     /* Attach child... so that it'll get device's debug context */
     mirage_object_attach_child(MIRAGE_OBJECT(self), _priv->audio_play, NULL);
+    /* Initialize */
+    if (!cdemud_audio_initialize(CDEMUD_AUDIO(_priv->audio_play), audio_device, &_priv->current_sector, error)) {
+        CDEMUD_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: failed to initialize audio backend!\n", __func__);
+        return FALSE;
+    }
     
     /* Create debug context for disc */
     _priv->disc_debug = g_object_new(MIRAGE_TYPE_DEBUG_CONTEXT, NULL);
