@@ -125,35 +125,35 @@ static gboolean __cdemud_audio_alsa_set_hwparams (CDEMUD_Audio_ALSA *self, GErro
 	/* Get current parameters */
 	err = snd_pcm_hw_params_any(_priv->handle, _priv->hwparams);
 	if (err < 0) {
-		CDEMUD_DEBUG(self, DAEMON_DEBUG_DEV_AUDIOPLAY, "%s: broken configuration for playback: no configuration available: %s\n", __func__, snd_strerror(err));
+		CDEMUD_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: broken configuration for playback: no configuration available: %s\n", __func__, snd_strerror(err));
 		return FALSE;
 	}
     
 	/* Set hardware resampling */
 	err = snd_pcm_hw_params_set_rate_resample(_priv->handle, _priv->hwparams, 1);
 	if (err < 0) {
-		CDEMUD_DEBUG(self, DAEMON_DEBUG_DEV_AUDIOPLAY, "%s: resampling setup failed for playback: %s\n", __func__, snd_strerror(err));
+		CDEMUD_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: resampling setup failed for playback: %s\n", __func__, snd_strerror(err));
 		return FALSE;
 	}
     
 	/* Set the interleaved read/write format */
 	err = snd_pcm_hw_params_set_access(_priv->handle, _priv->hwparams, SND_PCM_ACCESS_RW_INTERLEAVED);
 	if (err < 0) {
-		CDEMUD_DEBUG(self, DAEMON_DEBUG_DEV_AUDIOPLAY, "%s: access type not available for playback: %s\n", __func__, snd_strerror(err));
+		CDEMUD_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: access type not available for playback: %s\n", __func__, snd_strerror(err));
 		return FALSE;
 	}
     
 	/* Set the sample format */
 	err = snd_pcm_hw_params_set_format(_priv->handle, _priv->hwparams, SND_PCM_FORMAT_S16);
 	if (err < 0) {
-		CDEMUD_DEBUG(self, DAEMON_DEBUG_DEV_AUDIOPLAY, "%s: sample format not available for playback: %s\n", __func__, snd_strerror(err));
+		CDEMUD_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: sample format not available for playback: %s\n", __func__, snd_strerror(err));
 		return FALSE;
 	}
     
 	/* Set the count of channels */
 	err = snd_pcm_hw_params_set_channels(_priv->handle, _priv->hwparams, channels);
 	if (err < 0) {
-		CDEMUD_DEBUG(self, DAEMON_DEBUG_DEV_AUDIOPLAY, "%s: channels count (%i) not available for playbacks: %s\n", __func__, channels, snd_strerror(err));
+		CDEMUD_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: channels count (%i) not available for playbacks: %s\n", __func__, channels, snd_strerror(err));
 		return FALSE;
 	}
     
@@ -161,42 +161,42 @@ static gboolean __cdemud_audio_alsa_set_hwparams (CDEMUD_Audio_ALSA *self, GErro
     rrate = rate;
 	err = snd_pcm_hw_params_set_rate_near(_priv->handle, _priv->hwparams, &rrate, 0);
 	if (err < 0) {
-		CDEMUD_DEBUG(self, DAEMON_DEBUG_DEV_AUDIOPLAY, "%s: rate %iHz not available for playback: %s\n", __func__, rate, snd_strerror(err));
+		CDEMUD_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: rate %iHz not available for playback: %s\n", __func__, rate, snd_strerror(err));
 		return FALSE;
 	}
 	if (rrate != rate) {
-		CDEMUD_DEBUG(self, DAEMON_DEBUG_DEV_AUDIOPLAY, "%s: rate doesn't match (requested %iHz, got %iHz)\n", __func__, rate, err);
+		CDEMUD_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: rate doesn't match (requested %iHz, got %iHz)\n", __func__, rate, err);
 		return FALSE;
 	}
     
 	/* Set the buffer time */
 	err = snd_pcm_hw_params_set_buffer_size_near(_priv->handle, _priv->hwparams, &buffer_size);
 	if (err < 0) {
-		CDEMUD_DEBUG(self, DAEMON_DEBUG_DEV_AUDIOPLAY, "%s: failed to set buffer frames %li for playback: %s\n", __func__, buffer_size, snd_strerror(err));
+		CDEMUD_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: failed to set buffer frames %li for playback: %s\n", __func__, buffer_size, snd_strerror(err));
 		return FALSE;
 	}
 	err = snd_pcm_hw_params_get_buffer_size(_priv->hwparams, &_priv->buffer_size);
 	if (err < 0) {
-		CDEMUD_DEBUG(self, DAEMON_DEBUG_DEV_AUDIOPLAY, "%s: failed to get buffer size for playback: %s\n", __func__, snd_strerror(err));
+		CDEMUD_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: failed to get buffer size for playback: %s\n", __func__, snd_strerror(err));
 		return FALSE;
 	}
     
 	/* Set the period time */
 	err = snd_pcm_hw_params_set_period_size_near(_priv->handle, _priv->hwparams, &period_size, &dir);
 	if (err < 0) {
-		CDEMUD_DEBUG(self, DAEMON_DEBUG_DEV_AUDIOPLAY, "%s: failed to set period time %li for playback: %s\n", __func__, period_size, snd_strerror(err));
+		CDEMUD_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: failed to set period time %li for playback: %s\n", __func__, period_size, snd_strerror(err));
 		return FALSE;
 	}
 	err = snd_pcm_hw_params_get_period_size(_priv->hwparams, &_priv->period_size, &dir);
 	if (err < 0) {
-		CDEMUD_DEBUG(self, DAEMON_DEBUG_DEV_AUDIOPLAY, "%s: failed to get period size for playback: %s\n", __func__, snd_strerror(err));
+		CDEMUD_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: failed to get period size for playback: %s\n", __func__, snd_strerror(err));
 		return FALSE;
 	}
     
 	/* Write the parameters to device */
 	err = snd_pcm_hw_params(_priv->handle, _priv->hwparams);
 	if (err < 0) {
-		CDEMUD_DEBUG(self, DAEMON_DEBUG_DEV_AUDIOPLAY, "%s: failed to set hw params for playback: %s\n", __func__, snd_strerror(err));
+		CDEMUD_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: failed to set hw params for playback: %s\n", __func__, snd_strerror(err));
 		return FALSE;
 	}
     
@@ -211,35 +211,35 @@ static gboolean __cdemud_audio_alsa_set_swparams (CDEMUD_Audio_ALSA *self, GErro
 	/* Get current parameters */
 	err = snd_pcm_sw_params_current(_priv->handle, _priv->swparams);
 	if (err < 0) {
-		CDEMUD_DEBUG(self, DAEMON_DEBUG_DEV_AUDIOPLAY, "%s: failed to determine current swparams for playback: %s\n", __func__, snd_strerror(err));
+		CDEMUD_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: failed to determine current swparams for playback: %s\n", __func__, snd_strerror(err));
 		return FALSE;
 	}
     
 	/* Start the transfer when the buffer is almost full */
 	err = snd_pcm_sw_params_set_start_threshold(_priv->handle, _priv->swparams, 0/*(_priv->buffer_size / _priv->period_size) * _priv->period_size*/);
 	if (err < 0) {
-		CDEMUD_DEBUG(self, DAEMON_DEBUG_DEV_AUDIOPLAY, "%s: failed to set start threshold mode for playback: %s\n", __func__, snd_strerror(err));
+		CDEMUD_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: failed to set start threshold mode for playback: %s\n", __func__, snd_strerror(err));
 		return FALSE;
 	}
     
 	/* Allow the transfer when at least one CD-ROM sector of samples can be processed */
 	err = snd_pcm_sw_params_set_avail_min(_priv->handle, _priv->swparams, 588/*_priv->period_size*/);
 	if (err < 0) {
-		CDEMUD_DEBUG(self, DAEMON_DEBUG_DEV_AUDIOPLAY, "%s: failed to set avail min for playback: %s\n", __func__, snd_strerror(err));
+		CDEMUD_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: failed to set avail min for playback: %s\n", __func__, snd_strerror(err));
 		return FALSE;
 	}
     
 	/* Align all transfers to 1 sample */
 	err = snd_pcm_sw_params_set_xfer_align(_priv->handle, _priv->swparams, 1);
 	if (err < 0) {
-		CDEMUD_DEBUG(self, DAEMON_DEBUG_DEV_AUDIOPLAY, "%s: failed to set transfer align for playback: %s\n", __func__, snd_strerror(err));
+		CDEMUD_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: failed to set transfer align for playback: %s\n", __func__, snd_strerror(err));
 		return FALSE;
 	}
     
 	/* Write the parameters to the playback device */
 	err = snd_pcm_sw_params(_priv->handle, _priv->swparams);
 	if (err < 0) {
-		CDEMUD_DEBUG(self, DAEMON_DEBUG_DEV_AUDIOPLAY, "%s: failed to set sw params for playback: %s\n", __func__, snd_strerror(err));
+		CDEMUD_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: failed to set sw params for playback: %s\n", __func__, snd_strerror(err));
 		return FALSE;
 	}
     
@@ -252,13 +252,13 @@ static gboolean __cdemud_audio_alsa_start_playing (CDEMUD_Audio_ALSA *self, GErr
         
     err = snd_pcm_prepare(_priv->handle);
 	if (err < 0) {
-		CDEMUD_DEBUG(self, DAEMON_DEBUG_DEV_AUDIOPLAY, "%s: snd_pcm_prepare error: %s\n", __func__, snd_strerror(err));
+		CDEMUD_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: snd_pcm_prepare error: %s\n", __func__, snd_strerror(err));
         return FALSE;
 	}
     
 	err = snd_pcm_start(_priv->handle);
 	if (err < 0) {
-		CDEMUD_DEBUG(self, DAEMON_DEBUG_DEV_AUDIOPLAY, "%s: snd_pcm_start error: %s\n", __func__, snd_strerror(err));
+		CDEMUD_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: snd_pcm_start error: %s\n", __func__, snd_strerror(err));
         return FALSE;
 	}
     
@@ -277,7 +277,7 @@ static gboolean __cdemud_audio_alsa_stop_playing (CDEMUD_Audio_ALSA *self, GErro
     gint err = 0;
     
     if ((err = snd_pcm_drop(_priv->handle)) < 0) {
-        CDEMUD_DEBUG(self, DAEMON_DEBUG_DEV_AUDIOPLAY, "%s: snd_pcm_drop error: %s\n", __func__, snd_strerror(err));
+        CDEMUD_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: snd_pcm_drop error: %s\n", __func__, snd_strerror(err));
         cdemud_error(CDEMUD_E_GENERIC, error);
         return FALSE;
     }
@@ -344,7 +344,7 @@ static gboolean __cdemud_audio_alsa_initialize (CDEMUD_Audio *self, gchar *devic
     
     /* Open PCM */
     if ((err = snd_pcm_open(&_priv->handle, device, SND_PCM_STREAM_PLAYBACK, 0)) < 0) {
-        CDEMUD_DEBUG(self, DAEMON_DEBUG_DEV_AUDIOPLAY, "%s: failed to open device '%s': %s\n", __func__, device, snd_strerror(err));
+        CDEMUD_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: failed to open device '%s': %s\n", __func__, device, snd_strerror(err));
         return FALSE;
     }
     
@@ -361,7 +361,7 @@ static gboolean __cdemud_audio_alsa_initialize (CDEMUD_Audio *self, gchar *devic
     /* Register asynchronous handler */
 	err = snd_async_add_pcm_handler(&_priv->ahandler, _priv->handle, __cdemud_audio_alsa_async_callback, self);
 	if (err < 0) {
-		CDEMUD_DEBUG(self, DAEMON_DEBUG_DEV_AUDIOPLAY, "%s: failed to register async handler\n", __func__);
+		CDEMUD_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: failed to register async handler: %s\n", __func__, snd_strerror(err));
 		return FALSE;
 	}
     
