@@ -1,0 +1,220 @@
+# Norwegian translation of gCDEmu.
+# Copyright (C) 2006-2007 Henrik Stokseth
+# This file is distributed under the same license as the gCDEmu package.
+# Henrik Stokseth <henrik@kablekaos.net>, 2006-2007.
+# , fuzzy
+# 
+# 
+msgid ""
+msgstr ""
+"Project-Id-Version: gCDEmu 1.0.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2008-02-03 22:00+0100\n"
+"PO-Revision-Date: 2008-02-03 22:00+0100\n"
+"Last-Translator: Henrik Stokseth <henrik@kabelkaos.net>\n"
+"Language-Team: Norwegian\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit"
+
+#: ../src/applet.py:107
+msgid "Use _system bus"
+msgstr "Benytt _system buss"
+
+#: ../src/applet.py:109
+msgid "Show _Notifications"
+msgstr "Vis _beskjeder"
+
+#: ../src/applet.py:111
+msgid "_About"
+msgstr "_Om"
+
+#: ../src/applet.py:174
+msgid "Daemon started"
+msgstr "Demon startet"
+
+#: ../src/applet.py:175
+msgid "CDEmu daemon has been started."
+msgstr "CDEmu demon har blitt startet."
+
+#: ../src/applet.py:195
+msgid "Daemon stopped"
+msgstr "Demon stoppet"
+
+#: ../src/applet.py:196
+msgid "CDEmu daemon has been stopped."
+msgstr "CDEmu demon har blitt stoppet."
+
+#: ../src/applet.py:223
+#, python-format
+msgid "Device %i has been loaded."
+msgstr "Enhet %i har blitt lastet."
+
+#: ../src/applet.py:225
+#, python-format
+msgid "Device %i has been emptied."
+msgstr "Enhet %i har blitt utløst."
+
+#: ../src/applet.py:228 ../src/applet.py:243 ../src/applet.py:257
+msgid "Device change"
+msgstr "Enhet byttet"
+
+#: ../src/applet.py:244
+#, python-format
+msgid "Device %i has been changed its daemon debug mask."
+msgstr "Enhet %i har fått byttet sin demon avlusings maske."
+
+#: ../src/applet.py:258
+#, python-format
+msgid "Device %i has been changed its library debug mask."
+msgstr "Enhet %i har fått byttet sin bibliotek avlusings maske."
+
+#: ../src/applet.py:331
+msgid "gCDEmu is an applet for controlling CDEmu devices via CDEmu daemon."
+msgstr "gCDEmu er en applet for å kontrollere CDEmu enheter via CDEmu demonen."
+
+#: ../src/applet.py:334
+msgid "translator-credits"
+msgstr "Henrik Stokseth <henrik@kabelkaos.net>"
+
+#: ../src/applet.py:528
+#, python-format
+msgid ""
+"Failed to unload device %i:\n"
+"%s"
+msgstr ""
+"Mislyktes i utløsing av enhet %i:\n"
+"%s"
+
+#: ../src/applet.py:529 ../src/applet.py:553 ../src/applet.py:591
+msgid "Error"
+msgstr "Feil"
+
+#: ../src/applet.py:552
+#, python-format
+msgid ""
+"Failed to load image %s to device %i:\n"
+"%s"
+msgstr ""
+"Mislyktes i å laste bilde %s til enhet %i:\n"
+"%s"
+
+#: ../src/applet.py:590
+#, python-format
+msgid ""
+"Failed to set debug mask (type: '%s') for device %i to 0x%X:\n"
+"%s"
+msgstr ""
+"Mislyktes i å sette avlusnings-maske (type: '%s') for enhet %i til 0x%X:\n"
+"%s"
+
+#: ../src/gcdemu.schemas.in.h:1
+msgid "Show notifications?"
+msgstr "Vis beskjeder?"
+
+#: ../src/gcdemu.schemas.in.h:2
+msgid "Use system bus (instead of session bus)?"
+msgstr "Benytt system buss (i stedet for sesjons buss)?"
+
+#: ../src/ui.py:41
+msgid "Open file"
+msgstr "Åpne fil"
+
+#: ../src/ui.py:53
+msgid "All files"
+msgstr "Alle filer"
+
+#: ../src/ui.py:58
+msgid "All image files"
+msgstr "Alle bilde filer"
+
+#. *** Frame: Debug mask ***
+#: ../src/ui.py:122
+msgid "Debug mask: "
+msgstr "Avlusnings-maske: "
+
+#: ../src/ui.py:144
+msgid "Set debug mask"
+msgstr "Sett avlusnings-maske"
+
+#. *** Frame: Status ***
+#: ../src/ui.py:170
+msgid "Status"
+msgstr "Status"
+
+#: ../src/ui.py:182
+msgid "Loaded: "
+msgstr "Lastet: "
+
+#: ../src/ui.py:190
+msgid "Image type: "
+msgstr "Bilde type: "
+
+#: ../src/ui.py:198
+msgid "File name: "
+msgstr "Fil navn: "
+
+#. Debug mask frames
+#: ../src/ui.py:216
+msgid "Daemon"
+msgstr "Demon"
+
+#: ../src/ui.py:219
+msgid "Library"
+msgstr "Bibliotek"
+
+#. Dialog title
+#: ../src/ui.py:274
+#, python-format
+msgid "Device %i properties"
+msgstr "Enhet %i egenskaper"
+
+#. Device X label
+#: ../src/ui.py:277
+#, python-format
+msgid "Device %i"
+msgstr "Enhet %i"
+
+#: ../src/ui.py:281
+msgid "Yes"
+msgstr "Ja"
+
+#: ../src/ui.py:284
+msgid "Unload Device"
+msgstr "Utløs enhet"
+
+#: ../src/ui.py:286
+msgid "No"
+msgstr "Nei"
+
+#: ../src/ui.py:289
+msgid "Load Device"
+msgstr "Last enhet"
+
+#. Indicate there's more than one file
+#: ../src/ui.py:347 ../src/ui.py:349
+msgid "Device"
+msgstr "Enhet"
+
+#: ../src/ui.py:349
+msgid "Empty"
+msgstr "Tom"
+
+#~ msgid "Device %i has been changed its module debug mask."
+#~ msgstr "Enhet %i har fått byttet sin modul avlusnings-maske."
+
+#~ msgid "Module"
+#~ msgstr "Modul"
+
+#~ msgid ""
+#~ "Failed to set daemon's debug mask for device %i to 0x%X:\n"
+#~ "%s"
+#~ msgstr ""
+#~ "Mislyktes å sette demonen sin avlusnings-maske for enhet %i til 0x%X:\n"
+#~ "%s"
+
+#~ msgid "Module debug mask"
+#~ msgstr "Modul avlusnings-maske"
+
+#~ msgid "Daemon debug mask"
+#~ msgstr "Demon avlusnings-maske"
