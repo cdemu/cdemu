@@ -1,0 +1,361 @@
+# Norwegian translation of cdemu-client.
+# Copyright (C) 2006-2007 Henrik Stokseth
+# This file is distributed under the same license as the cdemu-client package.
+# Henrik Stokseth <henrik@kabelkaos.net>, 2006-2007.
+# 
+# 
+msgid ""
+msgstr ""
+"Project-Id-Version: cdemu-client 1.0.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2008-02-04 18:00+0100\n"
+"PO-Revision-Date: 2008-02-04 18:00+0100\n"
+"Last-Translator:  <>\n"
+"Language-Team: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: \n"
+
+#: ../src/cdemu.py:50
+msgid "Unknown option"
+msgstr "Ukjent valg"
+
+#: ../src/cdemu.py:68
+#, python-format
+msgid "Invalid bus parameter '%s', using session bus!"
+msgstr "Ukjent buss parameter '%s', benytter sesjons buss!"
+
+#: ../src/cdemu.py:77
+msgid "Failed to connect to daemon!"
+msgstr "Mislyktes i å koble til demon!"
+
+#: ../src/cdemu.py:89
+#, python-format
+msgid "Unknown command: %s"
+msgstr "Ukjent kommando: %s"
+
+#: ../src/cdemu.py:112
+#, python-format
+msgid "Failed to load image: %s"
+msgstr "Mislyktes i å laste bilde: %s"
+
+#: ../src/cdemu.py:126
+#, python-format
+msgid "Failed to unload device %i: %s"
+msgstr "Mislyktes i å utløse enhet %i: %s"
+
+#: ../src/cdemu.py:134 ../src/cdemu.py:160 ../src/cdemu.py:191
+#, python-format
+msgid "Failed to get number of devices: %s"
+msgstr "Mislyktes i å innhente antall enheter: %s"
+
+#: ../src/cdemu.py:137
+msgid "Devices status:"
+msgstr "Status enheter:"
+
+#: ../src/cdemu.py:138 ../src/cdemu.py:164
+msgid "DEV"
+msgstr "ENH"
+
+#: ../src/cdemu.py:138
+msgid "LOADED"
+msgstr "LASTET"
+
+#: ../src/cdemu.py:138
+msgid "TYPE"
+msgstr "TYPE"
+
+#: ../src/cdemu.py:138
+msgid "FILENAME"
+msgstr "FIL NAVN"
+
+#: ../src/cdemu.py:143
+#, python-format
+msgid "Failed to get status for device %i: %s"
+msgstr "Mislyktes i å innhente ststus for enhet %i: %s"
+
+#: ../src/cdemu.py:163
+#, python-format
+msgid "Debug masks for devices (type: '%s'):"
+msgstr "Avlusnings-masker for enheter (type: '%s'):"
+
+#: ../src/cdemu.py:164
+msgid "DEBUG MASK"
+msgstr "AVLUSNINGS-MASKE"
+
+#: ../src/cdemu.py:170 ../src/cdemu.py:179
+#, python-format
+msgid "Failed to get debug mask for device %i: %s"
+msgstr "Mislyktes i å innhente avlusnings-maske for enhet %i: %s"
+
+#: ../src/cdemu.py:182
+#, python-format
+msgid "Debug mask for device %i: 0x%X (type: '%s')"
+msgstr "Avlusnings-maske for enhet %i: 0x%X (type: '%s')"
+
+#: ../src/cdemu.py:194
+#, python-format
+msgid "Setting debug mask for all devices to 0x%X (type: '%s')."
+msgstr "Setter avlusnings-maske for alle enheter til 0x%X (type: '%s')."
+
+#: ../src/cdemu.py:199 ../src/cdemu.py:207
+#, python-format
+msgid "Failed to set debug mask for device %i to 0x%X: %s"
+msgstr "Mislyktes i å sette avlusnings-maske for enhet %i til 0x%X: %s"
+
+#: ../src/cdemu.py:203
+#, python-format
+msgid "Setting debug mask for device %i to 0x%X (type: '%s')."
+msgstr "Setter avlusnings-maske for enhet %i til 0x%X (type: '%s')."
+
+#: ../src/cdemu.py:218
+#, python-format
+msgid "Failed to get list of supported parsers: %s"
+msgstr "Mislyktes i å innhente liste over støttede bilde-tolkere: %s"
+
+#. Print all parsers
+#: ../src/cdemu.py:223
+msgid "Supported parsers:"
+msgstr "Støttede bilde-tolkere:"
+
+#: ../src/cdemu.py:233
+#, python-format
+msgid "Parser information: '%s'"
+msgstr "Bilde-tolker informasjon: '%s'"
+
+#: ../src/cdemu.py:234 ../src/cdemu.py:273
+#, python-format
+msgid " - Name: %s"
+msgstr " - Navn: %s"
+
+#: ../src/cdemu.py:235 ../src/cdemu.py:274
+#, python-format
+msgid " - Version: %s"
+msgstr " - Versjon: %s"
+
+#: ../src/cdemu.py:236 ../src/cdemu.py:275
+#, python-format
+msgid " - Author: %s"
+msgstr " - Forfatter: %s"
+
+#: ../src/cdemu.py:237
+#, python-format
+msgid " - Multiple files support: %i"
+msgstr " - Støtte for flere filer: %i"
+
+#: ../src/cdemu.py:238
+#, python-format
+msgid " - Image files description: %s"
+msgstr " - Beskrivelse av bilde filer: %s"
+
+#: ../src/cdemu.py:239
+msgid " - Image files suffixes:"
+msgstr " - Etterstavelser for bilde filer:"
+
+#: ../src/cdemu.py:246
+#, python-format
+msgid "Parser with ID '%s' not found!"
+msgstr "Bilde-tolker med ID '%s' ble ikke funnet!"
+
+#: ../src/cdemu.py:257
+#, python-format
+msgid "Failed to get list of supported fragments: %s"
+msgstr "Mislyktes i å innhente liste over støttede fragmenter: %s"
+
+#. Print all fragments
+#: ../src/cdemu.py:262
+msgid "Supported fragments:"
+msgstr "Støttede fragmenter:"
+
+#: ../src/cdemu.py:272
+#, python-format
+msgid "Fragment information: '%s'"
+msgstr "Fragment informasjon: '%s'"
+
+#: ../src/cdemu.py:276
+#, python-format
+msgid " - Interface: %s"
+msgstr " - Grensesnitt: %s"
+
+#: ../src/cdemu.py:277
+msgid " - Data files suffixes:"
+msgstr " - Data fil etterstavelser:"
+
+#: ../src/cdemu.py:284
+#, python-format
+msgid "Fragment with ID '%s' not found!"
+msgstr "Fragment med ID '%s' ble ikke funnet!"
+
+#: ../src/cdemu.py:301
+#, python-format
+msgid "Failed to get list of supported device debug masks: %s"
+msgstr ""
+"Mislyktes i å innhente liste over støttede avlusnings-masker for enhet: %s"
+
+#: ../src/cdemu.py:304
+#, python-format
+msgid "Supported debug masks (type: '%s'):"
+msgstr "Støttede avlusnings-masker (type: '%s'):"
+
+#: ../src/cdemu.py:315
+#, python-format
+msgid "Failed to get library version: %s"
+msgstr "Mislyktes i å innhente biblioteks versjon: %s"
+
+#: ../src/cdemu.py:320
+#, python-format
+msgid "Failed to get daemon version: %s"
+msgstr "Mislyktes i å innhente demon versjon: %s"
+
+#: ../src/cdemu.py:323
+#, python-format
+msgid "Library version: %s"
+msgstr "Bibliotek versjon: %s"
+
+#: ../src/cdemu.py:324
+#, python-format
+msgid "Daemon version: %s"
+msgstr "Demon versjon: %s"
+
+#: ../src/cdemu.py:335
+#, python-format
+msgid "Failed to connect to CDEmu daemon: %s"
+msgstr "Mislyktes i å koble til CDEmu demon: %s"
+
+#. We need to make sure we're not trying to 'translate' empty
+#. string for the third argument
+#: ../src/cdemu.py:345
+#, python-format
+msgid "Usage: %s %s %s"
+msgstr "Bruk: %s %s %s"
+
+#: ../src/cdemu.py:348
+#, python-format
+msgid "Usage: %s [options] <command> <command parameters>"
+msgstr "Bruk: %s [valg] <kommando> <kommando valg>"
+
+#: ../src/cdemu.py:350
+msgid "Commands:"
+msgstr "Kommandoer:"
+
+#: ../src/cdemu.py:354
+msgid "Options:"
+msgstr "Valg:"
+
+#: ../src/cdemu.py:355
+msgid "displays help message"
+msgstr "viser hjelpetekst"
+
+#: ../src/cdemu.py:356
+msgid "displays program version"
+msgstr "viser program versjon"
+
+#: ../src/cdemu.py:357
+msgid "sets D-BUS bus type to use; valid values are 'session' and 'system'"
+msgstr ""
+"setter D-BUS buss type som skal benyttes; gyldige verdier er 'session' og 'system'"
+
+#: ../src/cdemu.py:360
+#, python-format
+msgid "Invalid number of parameters for command '%s'!"
+msgstr "Feil antall valg for kommando '%s'!"
+
+#: ../src/cdemu.py:367
+#, python-format
+msgid "ERROR: %s"
+msgstr "FEIL: %s"
+
+#: ../src/cdemu.py:370
+#, python-format
+msgid "WARNING: %s"
+msgstr "ADVARSEL: %s"
+
+#: ../src/cdemu.py:377
+msgid "<device> <image file> [...]"
+msgstr "<enhet> <bilde fil> [...]"
+
+#: ../src/cdemu.py:378
+msgid "loads the device"
+msgstr "laster enheten"
+
+#: ../src/cdemu.py:384
+msgid "<device>"
+msgstr "<enheter>"
+
+#: ../src/cdemu.py:385
+msgid "unloads the device"
+msgstr "utløser enheten"
+
+#: ../src/cdemu.py:392
+msgid "displays the devices' status"
+msgstr "viser enhetenes status"
+
+#: ../src/cdemu.py:398
+msgid "<device> <type> [new value]"
+msgstr "<enhet> <type> [ny verdi]"
+
+#: ../src/cdemu.py:399
+msgid "displays/sets debug mask for the device"
+msgstr "viser/setter avlusnings-maske for enheten"
+
+#: ../src/cdemu.py:406
+msgid "displays the information about supported parsers"
+msgstr "viser informasjonen om støttede bilde-tolkere"
+
+#: ../src/cdemu.py:413
+msgid "displays the information about supported fragments"
+msgstr "viser informasjonen om støttede fragmenter"
+
+#: ../src/cdemu.py:420
+msgid "displays the list of valid debug masks"
+msgstr "viser listen over gyldige avlusnings-masker"
+
+#: ../src/cdemu.py:427
+msgid "displays version information"
+msgstr "viser versjons informasjon"
+
+#~ msgid "Failed to get module version: %s"
+#~ msgstr "Mislyktes i å innhente modul versjon: %s"
+
+#~ msgid "Module version: %s"
+#~ msgstr "Modul versjon: %s"
+
+#~ msgid "Module's debug masks for devices:"
+#~ msgstr "Modulens avlusnings-masker for enheter:"
+
+#~ msgid "Failed to get module's debug mask for device %i: %s"
+#~ msgstr "Mislyktes i å innhente modulens avlusnings-masker for enhet %i: %s"
+
+#~ msgid "Setting module's debug mask for all devices to 0x%X."
+#~ msgstr "Setter modulens avlusnings-maske for alle enheter til 0x%X."
+
+#~ msgid "Setting module's debug mask for device %i to 0x%X."
+#~ msgstr "Setter modulens avlusnings-maske for enhet %i til 0x%X."
+
+#~ msgid "Failed to set daemon's debug mask for device %i to 0x%X: %s"
+#~ msgstr "Mislyktes i å sette demonens avlusnings-maske for enhet %i til 0x%X: %s"
+
+#~ msgid "Debug masks supported by module:"
+#~ msgstr "Avlusnings-masker som er støttet av modul:"
+
+#~ msgid "Failed to get list of supported debug masks for daemon: %s"
+#~ msgstr "Mislyktes i å innhente liste over støttede avlusnings-masker for demon: %s"
+
+#~ msgid "Debug masks supported by daemon:"
+#~ msgstr "Avlusnings-masker som er støttet av demon:"
+
+#~ msgid "displays/sets daemon's debug mask for the device"
+#~ msgstr "viser/setter demonens avlusnings-maske for enheten"
+
+#~ msgid "displays the list of valid debug masks for kernel module"
+#~ msgstr "viser listen over gyldige avlusnings-masker for kjerne-modul"
+
+#~ msgid "Devices' debug masks:"
+#~ msgstr "Enhetenes avlusnings-masker:"
+
+#~ msgid "Image types supported by daemon:"
+#~ msgstr "Bilde typer som er støttet av demonen:"
+
+#~ msgid "displays the status for the device"
+#~ msgstr "viser statusen for enheten"
+
