@@ -20,7 +20,7 @@ AC_PROG_INTLTOOL([0.21])
 AM_PATH_PYTHON
 
 # Internationalization
-ALL_LINGUAS="sl"
+ALL_LINGUAS="sl no"
 
 GETTEXT_PACKAGE=cdemu-client
 AC_SUBST(GETTEXT_PACKAGE)
