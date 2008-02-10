@@ -41,6 +41,34 @@ G_BEGIN_DECLS
     }
 
 /**
+ * MIRAGE_CAST_DATA:
+ * @buf: buffer to get data from
+ * @off: offset in buffer at which to get data
+ * @type: data type (i.e. 'guint64')
+ *
+ * <para>
+ * A macro for easy retrieval of data from (unsigned integer) buffer. Mostly to
+ * be used in binary image parsers, for example, to retrieve guint32 or guint16
+ * value from buffer.
+ * </para>
+**/
+#define MIRAGE_CAST_DATA(buf,off,type) (*((type *)(buf+off)))
+
+/**
+ * MIRAGE_CAST_PTR:
+ * @buf: buffer to place pointer in
+ * @off: offset in buffer at which to place pointer
+ * @type: pointer type (i.e. 'gchar *')
+ *
+ * <para>
+ * A macro for easy placing of pointers within (unsigned integer) buffer. Mostly 
+ * to be used in binary image parsers, for example, to retrieve a string or a 
+ * structure from buffer.
+ * </para>
+**/
+#define MIRAGE_CAST_PTR(buf,off,type) ((type)(buf+off))
+
+/**
  * G_LIST_FOR_EACH:
  * @cursor: cursor
  * @list: list
