@@ -411,7 +411,7 @@ static gboolean __mirage_disc_b6t_parse_disc_blocks (MIRAGE_Disc *self, GError *
     /* Then there's 32 bytes of ISO volume descriptor; they represent volume ID,
        if it is a data CD, or they're set to AUDIO CD in case of audio CD */
     gchar *volume_id = MIRAGE_CAST_PTR(_priv->cur_ptr, 0, gchar *);
-    _priv->cur_ptr += sizeof(32);
+    _priv->cur_ptr += 32;
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: volume ID: %.32s\n", __func__, volume_id);
     
     
@@ -513,7 +513,7 @@ static gboolean __mirage_disc_b6t_parse_data_blocks (MIRAGE_Disc *self, GError *
     
     /* Store the current pointer (for length calculation) */
     length = (gsize)_priv->cur_ptr;
-    
+        
     /* First four bytes are number of data blocks */
     guint32 num_data_blocks = MIRAGE_CAST_DATA(_priv->cur_ptr, 0, guint32);
     _priv->cur_ptr += sizeof(guint32);
@@ -533,8 +533,8 @@ static gboolean __mirage_disc_b6t_parse_data_blocks (MIRAGE_Disc *self, GError *
         
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: data block #%i\n", __func__, i);
         /* Read data block up to the filename */
-        memcpy(data_block, MIRAGE_CAST_PTR(_priv->cur_ptr, 0, B6T_DataBlock *), sizeof(B6T_DataBlock));
-        _priv->cur_ptr += sizeof(B6T_DataBlock);
+        memcpy(data_block, MIRAGE_CAST_PTR(_priv->cur_ptr, 0, B6T_DataBlock *), offsetof(B6T_DataBlock, filename));
+        _priv->cur_ptr += offsetof(B6T_DataBlock, filename);
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  type: 0x%X\n", __func__, data_block->type);
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  length (bytes): 0x%X\n", __func__, data_block->length_bytes);
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  offset: 0x%X\n", __func__, data_block->offset);
@@ -555,12 +555,12 @@ static gboolean __mirage_disc_b6t_parse_data_blocks (MIRAGE_Disc *self, GError *
         /* Add block to the list */
         _priv->data_blocks_list = g_list_insert_sorted(_priv->data_blocks_list, data_block, (GCompareFunc)__sort_data_blocks);
     }
-    
+        
     /* Calculate length of data we've processed */
     length = (gsize)_priv->cur_ptr - length;
     
     if (length != _priv->disc_block_2->datablocks_length) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: I'm afraid Dave... we read 0x%zX bytes, declared size is 0x%X bytes\n", __func__, num_data_blocks, length, _priv->disc_block_2->datablocks_length);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: I'm afraid Dave... we read 0x%zX bytes, declared size is 0x%X bytes (%d data blocks)\n", __func__, length, _priv->disc_block_2->datablocks_length, num_data_blocks);
     }
     
     return TRUE;
@@ -637,6 +637,7 @@ static gboolean __mirage_disc_b6t_parse_track_entry (MIRAGE_Disc *self, GError *
         - 1: Audio track
         - 2: Mode 1 track
         - 3: Mode 2 track (probably Form 1)
+        - 4: Mode 1 track (FIXME: what's difference from 2?)
         - 6: DVD track
     */
     switch (track->type) {
@@ -645,7 +646,8 @@ static gboolean __mirage_disc_b6t_parse_track_entry (MIRAGE_Disc *self, GError *
             mirage_track_set_mode(MIRAGE_TRACK(cur_track), MIRAGE_MODE_AUDIO, NULL);
             break;
         }
-        case 2: {
+        case 2: 
+        case 4: {
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: Mode 1 track\n", __func__);
             mirage_track_set_mode(MIRAGE_TRACK(cur_track), MIRAGE_MODE_MODE1, NULL);
             break;
@@ -884,7 +886,7 @@ static gboolean __mirage_disc_b6t_can_load_file (MIRAGE_Disc *self, gchar *filen
 
 static gboolean __mirage_disc_b6t_load_image (MIRAGE_Disc *self, gchar **filenames, GError **error) {   
     MIRAGE_Disc_B6TPrivate *_priv = MIRAGE_DISC_B6T_GET_PRIVATE(self);
-    GError *local_error;
+    GError *local_error = NULL;
     gboolean succeeded = TRUE;
     
     /* For now, B6T parser supports only one-file images */
