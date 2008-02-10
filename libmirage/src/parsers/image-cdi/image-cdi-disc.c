@@ -53,8 +53,6 @@ typedef struct {
     -- Rok
 */
 
-#define MAKE_CAST(type, field) (*((type *)&field))
-
 /* Self-explanatory */
 #define WHINE_ON_UNEXPECTED
 
@@ -243,16 +241,16 @@ static gboolean __mirage_disc_cdi_parse_header (MIRAGE_Disc *self, GError **erro
     __mirage_disc_cdi_whine_on_unexpected(self, _priv->cur_ptr, fields, G_N_ELEMENTS(fields), (gchar *)__func__, "Pre-filename fields");
     }
 #endif
-    num_all_tracks = MAKE_CAST(guint8, _priv->cur_ptr[15]);
+    num_all_tracks = MIRAGE_CAST_DATA(_priv->cur_ptr, 15, guint8);
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: number of all tracks: %d\n", __func__, num_all_tracks);
     _priv->cur_ptr += 16;
     
     /* 17th byte is filename length */
-    filename_length = MAKE_CAST(guint8, _priv->cur_ptr[0]);
+    filename_length = MIRAGE_CAST_DATA(_priv->cur_ptr, 0, guint8);
     _priv->cur_ptr += sizeof(guint8);
     
     /* At 18th byte, filename starts */
-    filename = (gchar *)_priv->cur_ptr;
+    filename = MIRAGE_CAST_PTR(_priv->cur_ptr, 0, gchar *);
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: filename length: %d\n", __func__, filename_length);
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: filename: %.*s\n", __func__, filename_length, filename);
     _priv->cur_ptr += filename_length;
@@ -295,12 +293,12 @@ static gboolean __mirage_disc_cdi_parse_header (MIRAGE_Disc *self, GError **erro
     __mirage_disc_cdi_whine_on_unexpected(self, _priv->cur_ptr, fields, G_N_ELEMENTS(fields), (gchar *)__func__, "Post-filename fields");
     }
 #endif
-    disc_capacity = MAKE_CAST(guint32, _priv->cur_ptr[23]);
+    disc_capacity = MIRAGE_CAST_DATA(_priv->cur_ptr, 23, guint32);
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: disc capacity: 0x%X\n", __func__, disc_capacity);
     _priv->cur_ptr += 29;
     
     /* Medium type */
-    medium_type = MAKE_CAST(guint16, _priv->cur_ptr[0]);
+    medium_type = MIRAGE_CAST_DATA(_priv->cur_ptr, 0, guint16);
     _priv->cur_ptr += sizeof(guint16);
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: medium type: 0x%X\n", __func__, medium_type);
     
@@ -318,7 +316,7 @@ static gboolean __mirage_disc_cdi_parse_cdtext (MIRAGE_Disc *self, GError **erro
        denoting length of field it represents; if it's non-zero, it's followed by declared
        size of bytes... */
     for (i = 0; i < 18; i++) {
-        gint length = MAKE_CAST(guint8, _priv->cur_ptr[0]);
+        gint length = MIRAGE_CAST_DATA(_priv->cur_ptr, 0, guint8);
         _priv->cur_ptr += sizeof(guint8);
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: field [%i] length: %i\n", __func__, i, length);
         if (length) {
@@ -366,19 +364,19 @@ static gboolean __mirage_disc_cdi_load_track (MIRAGE_Disc *self, GError **error)
     }
     
     /* Index fields follow */
-    num_indices = MAKE_CAST(guint16, _priv->cur_ptr[0]);
+    num_indices = MIRAGE_CAST_DATA(_priv->cur_ptr, 0, guint16);
     _priv->cur_ptr += sizeof(guint16);
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: number of indices: %d\n", __func__, num_indices);
     
     indices = g_new0(gint, num_indices);
     for (i = 0; i < num_indices; i++) {
-        indices[i] = MAKE_CAST(guint32, _priv->cur_ptr[0]);
+        indices[i] = MIRAGE_CAST_DATA(_priv->cur_ptr, 0, guint32);
         _priv->cur_ptr += sizeof(guint32);
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: index %i: 0x%X\n", __func__, i, indices[i]);
     }
     
     /* Next is (4-byte?) field that, if set to 1, indicates presence of CD-Text data */
-    num_cdtext_blocks = MAKE_CAST(guint32, _priv->cur_ptr[0]);
+    num_cdtext_blocks = MIRAGE_CAST_DATA(_priv->cur_ptr, 0, guint32);
     _priv->cur_ptr += sizeof(guint32);
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: number of CD-TEXT blocks: %i\n", __func__, num_cdtext_blocks);
     
@@ -401,7 +399,7 @@ static gboolean __mirage_disc_cdi_load_track (MIRAGE_Disc *self, GError **error)
     
     
     /* Track mode follows (FIXME: is it really 4-byte?) */
-    track_mode = MAKE_CAST(guint32, _priv->cur_ptr[0]);
+    track_mode = MIRAGE_CAST_DATA(_priv->cur_ptr, 0, guint32);
     _priv->cur_ptr += sizeof(guint32);
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: track mode: %i\n", __func__, track_mode);
 
@@ -421,24 +419,24 @@ static gboolean __mirage_disc_cdi_load_track (MIRAGE_Disc *self, GError **error)
     
     
     /* Session index (i.e. which session block this track block belongs to)... */
-    session_idx = MAKE_CAST(guint32, _priv->cur_ptr[0]);
+    session_idx = MIRAGE_CAST_DATA(_priv->cur_ptr, 0, guint32);
     _priv->cur_ptr += sizeof(guint32);
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: session index: %i\n", __func__, session_idx);
     
     /* Track index (i.e. which track block is this)... */
-    track_idx = MAKE_CAST(guint32, _priv->cur_ptr[0]);
+    track_idx = MIRAGE_CAST_DATA(_priv->cur_ptr, 0, guint32);
     _priv->cur_ptr += sizeof(guint32);
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: track index: %i\n", __func__, track_idx);
     
     
     
     /* Next is track start address... */
-    start_address = MAKE_CAST(guint32, _priv->cur_ptr[0]);
+    start_address = MIRAGE_CAST_DATA(_priv->cur_ptr, 0, guint32);
     _priv->cur_ptr += sizeof(guint32);
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: track start: 0x%X\n", __func__, start_address);
     
     /* ... followed by track length */
-    track_length = MAKE_CAST(guint32, _priv->cur_ptr[0]);
+    track_length = MIRAGE_CAST_DATA(_priv->cur_ptr, 0, guint32);
     _priv->cur_ptr += sizeof(guint32);
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: track length: 0x%X\n", __func__, track_length);
     
@@ -471,13 +469,13 @@ static gboolean __mirage_disc_cdi_load_track (MIRAGE_Disc *self, GError **error)
     
     
     /* Field that indicates read mode */
-    read_mode = MAKE_CAST(guint32, _priv->cur_ptr[0]);
+    read_mode = MIRAGE_CAST_DATA(_priv->cur_ptr, 0, guint32);
     _priv->cur_ptr += sizeof(guint32);
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: read mode: %d\n", __func__, read_mode);
     
     
     /* Field that has track's CTL stored */
-    track_ctl = MAKE_CAST(guint32, _priv->cur_ptr[0]);
+    track_ctl = MIRAGE_CAST_DATA(_priv->cur_ptr, 0, guint32);
     _priv->cur_ptr += sizeof(guint32);
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: track's CTL: %X\n", __func__, track_ctl);
     
@@ -505,9 +503,9 @@ static gboolean __mirage_disc_cdi_load_track (MIRAGE_Disc *self, GError **error)
     
     
     /* ISRC and ISRC valid */
-    isrc = (gchar *)_priv->cur_ptr;
+    isrc = MIRAGE_CAST_PTR(_priv->cur_ptr, 0, gchar *);
     _priv->cur_ptr += 12;
-    isrc_valid  = MAKE_CAST(guint32, _priv->cur_ptr[0]);
+    isrc_valid = MIRAGE_CAST_DATA(_priv->cur_ptr, 0, guint32);
     _priv->cur_ptr += sizeof(guint32);    
     
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: ISRC valid: %i\n", __func__, isrc_valid);
@@ -627,9 +625,9 @@ static gboolean __mirage_disc_cdi_load_track (MIRAGE_Disc *self, GError **error)
     __mirage_disc_cdi_whine_on_unexpected(self, _priv->cur_ptr, fields, G_N_ELEMENTS(fields), (gchar *)__func__, "99 bytes at the end");
     }
 #endif
-    session_type = MAKE_CAST(guint8, _priv->cur_ptr[87]);
-    not_last_track = MAKE_CAST(guint8, _priv->cur_ptr[93]);
-    address_at_the_end = MAKE_CAST(guint32, _priv->cur_ptr[95]);
+    session_type = MIRAGE_CAST_DATA(_priv->cur_ptr, 87, guint8);
+    not_last_track = MIRAGE_CAST_DATA(_priv->cur_ptr, 93, guint8);
+    address_at_the_end = MIRAGE_CAST_DATA(_priv->cur_ptr, 95, guint32);
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: session type: %i\n", __func__, session_type);
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: not the last track: %i\n", __func__, not_last_track);
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: address at the end: 0x%X\n", __func__, address_at_the_end);
@@ -835,7 +833,7 @@ static gboolean __mirage_disc_cdi_load_disc (MIRAGE_Disc *self, GError **error) 
     gint i;
     
     /* First byte seems to be number of sessions */
-    num_sessions = MAKE_CAST(guint8, _priv->cur_ptr[0]);
+    num_sessions = MIRAGE_CAST_DATA(_priv->cur_ptr, 0, guint8);
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: number of sessions: %d\n", __func__, num_sessions);
     
     /* Load sessions (note that the equal sign in for loop is there to account
@@ -870,16 +868,16 @@ static gboolean __mirage_disc_cdi_load_disc (MIRAGE_Disc *self, GError **error) 
     }
     
     /* First 4 bytes seem to be overall size of the disc */
-    disc_length = MAKE_CAST(guint32, _priv->cur_ptr[0]);
+    disc_length = MIRAGE_CAST_DATA(_priv->cur_ptr, 0, guint32);
     _priv->cur_ptr += sizeof(guint32);
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: disc length: 0x%X\n", __func__, disc_length);
     
     /* One byte that follows is length of volume identifier... this is ISO9660
        volume identifier, found on data discs */
-    volume_id_length = MAKE_CAST(guint8, _priv->cur_ptr[0]);
+    volume_id_length = MIRAGE_CAST_DATA(_priv->cur_ptr, 0, guint8);
     _priv->cur_ptr += sizeof(guint8);
     
-    volume_id = (gchar *)_priv->cur_ptr;
+    volume_id = MIRAGE_CAST_PTR(_priv->cur_ptr, 0, gchar *);
     _priv->cur_ptr += volume_id_length;
     
     if (volume_id_length) {
@@ -907,19 +905,19 @@ static gboolean __mirage_disc_cdi_load_disc (MIRAGE_Disc *self, GError **error) 
     _priv->cur_ptr += 9;
     
     /* MCN */
-    mcn = (gchar *)_priv->cur_ptr;
+    mcn = MIRAGE_CAST_PTR(_priv->cur_ptr, 0, gchar *);
     _priv->cur_ptr += 13;
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: MCN: %.13s\n", __func__, mcn);
 
-    mcn_valid = MAKE_CAST(guint32, _priv->cur_ptr[0]);
+    mcn_valid = MIRAGE_CAST_DATA(_priv->cur_ptr, 0, guint32);
     _priv->cur_ptr += sizeof(guint32);
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: MCN valid: %i\n", __func__, mcn_valid);
     
     /* CD-TEXT */
-    cdtext_length = MAKE_CAST(guint32, _priv->cur_ptr[0]);
+    cdtext_length = MIRAGE_CAST_DATA(_priv->cur_ptr, 0, guint32);
     _priv->cur_ptr += sizeof(guint32);
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: raw CD-TEXT data length: %i\n", __func__, cdtext_length);
-    cdtext_data = (guint8 *)_priv->cur_ptr;
+    cdtext_data = MIRAGE_CAST_PTR(_priv->cur_ptr, 0, guint8 *);
     
     if (cdtext_length) {
         /* FIXME: CD-TEXT data is for the first session only, I think... */
