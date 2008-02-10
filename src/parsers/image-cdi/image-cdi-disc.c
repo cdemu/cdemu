@@ -77,8 +77,7 @@ static void __mirage_disc_cdi_whine_on_unexpected (MIRAGE_Disc *self, guint8 *da
 
 
 static gboolean __mirage_disc_cdi_decode_medium_type (MIRAGE_Disc *self, gint medium_type, GError **error) {
-    MIRAGE_Disc_CDI *self_cdi = MIRAGE_DISC_CDI(self);
-    MIRAGE_Disc_CDIPrivate *_priv = MIRAGE_DISC_CDI_GET_PRIVATE(self_cdi);
+    MIRAGE_Disc_CDIPrivate *_priv = MIRAGE_DISC_CDI_GET_PRIVATE(self);
     
     /* Decode and set medium type only if we haven't done it yet */
     if (!_priv->medium_type_set) {        
@@ -205,9 +204,7 @@ static gboolean __mirage_disc_cdi_decode_session_type (MIRAGE_Disc *self, gint r
 /* Function for parsing header that appears at the beginning of every track block
    and at the beginning of the disc block */
 static gboolean __mirage_disc_cdi_parse_header (MIRAGE_Disc *self, GError **error) {
-    MIRAGE_Disc_CDI *self_cdi = MIRAGE_DISC_CDI(self);
-    MIRAGE_Disc_CDIPrivate *_priv = MIRAGE_DISC_CDI_GET_PRIVATE(self_cdi);
-    
+    MIRAGE_Disc_CDIPrivate *_priv = MIRAGE_DISC_CDI_GET_PRIVATE(self);
     /* Recongised fields */
     gint num_all_tracks = 0;
     gint filename_length = 0;
@@ -313,9 +310,8 @@ static gboolean __mirage_disc_cdi_parse_header (MIRAGE_Disc *self, GError **erro
 }
 
 static gboolean __mirage_disc_cdi_parse_cdtext (MIRAGE_Disc *self, GError **error) {
-    MIRAGE_Disc_CDI *self_cdi = MIRAGE_DISC_CDI(self);
-    MIRAGE_Disc_CDIPrivate *_priv = MIRAGE_DISC_CDI_GET_PRIVATE(self_cdi);
-    
+    MIRAGE_Disc_CDIPrivate *_priv = MIRAGE_DISC_CDI_GET_PRIVATE(self);
+
     gint i;
     
     /* It would seem that each CD-TEXT block for track consists of 18 bytes, each (?)
@@ -336,9 +332,7 @@ static gboolean __mirage_disc_cdi_parse_cdtext (MIRAGE_Disc *self, GError **erro
 }
 
 static gboolean __mirage_disc_cdi_load_track (MIRAGE_Disc *self, GError **error) {
-    MIRAGE_Disc_CDI *self_cdi = MIRAGE_DISC_CDI(self);
-    MIRAGE_Disc_CDIPrivate *_priv = MIRAGE_DISC_CDI_GET_PRIVATE(self_cdi);
-    
+    MIRAGE_Disc_CDIPrivate *_priv = MIRAGE_DISC_CDI_GET_PRIVATE(self);
     gboolean succeeded = TRUE;
     gint i;
     
@@ -777,9 +771,7 @@ end:
 }
 
 static gboolean __mirage_disc_cdi_load_session (MIRAGE_Disc *self, GError **error) {
-    MIRAGE_Disc_CDI *self_cdi = MIRAGE_DISC_CDI(self);
-    MIRAGE_Disc_CDIPrivate *_priv = MIRAGE_DISC_CDI_GET_PRIVATE(self_cdi);
-    
+    MIRAGE_Disc_CDIPrivate *_priv = MIRAGE_DISC_CDI_GET_PRIVATE(self);    
     gint num_tracks = 0;
     gint i;
     
