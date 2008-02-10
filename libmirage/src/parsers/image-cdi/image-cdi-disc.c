@@ -29,6 +29,9 @@ typedef struct {
     
     guint64 cur_offset; /* Current offset within track file */
     
+    guint8 *cdi_data;
+    guint8 *cur_ptr;
+    
     /* Parser info */
     MIRAGE_ParserInfo *parser_info;
 } MIRAGE_Disc_CDIPrivate;
@@ -201,9 +204,10 @@ static gboolean __mirage_disc_cdi_decode_session_type (MIRAGE_Disc *self, gint r
 
 /* Function for parsing header that appears at the beginning of every track block
    and at the beginning of the disc block */
-static gboolean __mirage_disc_cdi_parse_header (MIRAGE_Disc *self, guint8 **descriptor_data, GError **error) {
-    guint8 *data = *descriptor_data;
-
+static gboolean __mirage_disc_cdi_parse_header (MIRAGE_Disc *self, GError **error) {
+    MIRAGE_Disc_CDI *self_cdi = MIRAGE_DISC_CDI(self);
+    MIRAGE_Disc_CDIPrivate *_priv = MIRAGE_DISC_CDI_GET_PRIVATE(self_cdi);
+    
     /* Recongised fields */
     gint num_all_tracks = 0;
     gint filename_length = 0;
@@ -239,22 +243,22 @@ static gboolean __mirage_disc_cdi_parse_header (MIRAGE_Disc *self, guint8 **desc
         { 14, 0x2A },
         { 15, 0x06 }*/
     };
-    __mirage_disc_cdi_whine_on_unexpected(self, data, fields, G_N_ELEMENTS(fields), (gchar *)__func__, "Pre-filename fields");
+    __mirage_disc_cdi_whine_on_unexpected(self, _priv->cur_ptr, fields, G_N_ELEMENTS(fields), (gchar *)__func__, "Pre-filename fields");
     }
 #endif
-    num_all_tracks = MAKE_CAST(guint8, data[15]);
+    num_all_tracks = MAKE_CAST(guint8, _priv->cur_ptr[15]);
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: number of all tracks: %d\n", __func__, num_all_tracks);
-    data += 16;
+    _priv->cur_ptr += 16;
     
     /* 17th byte is filename length */
-    filename_length = MAKE_CAST(guint8, data[0]);
-    data += sizeof(guint8);
+    filename_length = MAKE_CAST(guint8, _priv->cur_ptr[0]);
+    _priv->cur_ptr += sizeof(guint8);
     
     /* At 18th byte, filename starts */
-    filename = (gchar *)data;
+    filename = (gchar *)_priv->cur_ptr;
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: filename length: %d\n", __func__, filename_length);
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: filename: %.*s\n", __func__, filename_length, filename);
-    data += filename_length;
+    _priv->cur_ptr += filename_length;
     
     /* 31 bytes after filename aren't deciphered yet */
 #ifdef WHINE_ON_UNEXPECTED
@@ -291,52 +295,50 @@ static gboolean __mirage_disc_cdi_parse_header (MIRAGE_Disc *self, guint8 **desc
         { 27, 0x00 },
         { 28, 0x00 },
     };
-    __mirage_disc_cdi_whine_on_unexpected(self, data, fields, G_N_ELEMENTS(fields), (gchar *)__func__, "Post-filename fields");
+    __mirage_disc_cdi_whine_on_unexpected(self, _priv->cur_ptr, fields, G_N_ELEMENTS(fields), (gchar *)__func__, "Post-filename fields");
     }
 #endif
-    disc_capacity = MAKE_CAST(guint32, data[23]);
+    disc_capacity = MAKE_CAST(guint32, _priv->cur_ptr[23]);
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: disc capacity: 0x%X\n", __func__, disc_capacity);
-    data += 29;
+    _priv->cur_ptr += 29;
     
     /* Medium type */
-    medium_type = MAKE_CAST(guint16, data[0]);
-    data += sizeof(guint16);
+    medium_type = MAKE_CAST(guint16, _priv->cur_ptr[0]);
+    _priv->cur_ptr += sizeof(guint16);
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: medium type: 0x%X\n", __func__, medium_type);
     
     __mirage_disc_cdi_decode_medium_type(self, medium_type, NULL);
-    
-    *descriptor_data = data;
-    
+        
     return TRUE;
 }
 
-static gboolean __mirage_disc_cdi_parse_cdtext (MIRAGE_Disc *self, guint8 **descriptor_data, GError **error) {
-    guint8 *data = *descriptor_data;
+static gboolean __mirage_disc_cdi_parse_cdtext (MIRAGE_Disc *self, GError **error) {
+    MIRAGE_Disc_CDI *self_cdi = MIRAGE_DISC_CDI(self);
+    MIRAGE_Disc_CDIPrivate *_priv = MIRAGE_DISC_CDI_GET_PRIVATE(self_cdi);
+    
     gint i;
     
     /* It would seem that each CD-TEXT block for track consists of 18 bytes, each (?)
        denoting length of field it represents; if it's non-zero, it's followed by declared
        size of bytes... */
     for (i = 0; i < 18; i++) {
-        gint length = MAKE_CAST(guint8, data[0]);
-        data += sizeof(guint8);
+        gint length = MAKE_CAST(guint8, _priv->cur_ptr[0]);
+        _priv->cur_ptr += sizeof(guint8);
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: field [%i] length: %i\n", __func__, i, length);
         if (length) {
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: field [%i] data: %.*s\n", __func__, i, length, data);
-            data += length;
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: field [%i] data: %.*s\n", __func__, i, length, _priv->cur_ptr);
+            _priv->cur_ptr += length;
         }
             
     }
     
-    *descriptor_data = data;
     return TRUE;
 }
 
-static gboolean __mirage_disc_cdi_load_track (MIRAGE_Disc *self, guint8 **descriptor_data, GError **error) {
+static gboolean __mirage_disc_cdi_load_track (MIRAGE_Disc *self, GError **error) {
     MIRAGE_Disc_CDI *self_cdi = MIRAGE_DISC_CDI(self);
     MIRAGE_Disc_CDIPrivate *_priv = MIRAGE_DISC_CDI_GET_PRIVATE(self_cdi);
     
-    guint8 *data = *descriptor_data;
     gboolean succeeded = TRUE;
     gint i;
     
@@ -363,32 +365,32 @@ static gboolean __mirage_disc_cdi_load_track (MIRAGE_Disc *self, guint8 **descri
     \**********************************************************************/
     
     /* Header */
-    if (!__mirage_disc_cdi_parse_header(self, &data, error)) {
+    if (!__mirage_disc_cdi_parse_header(self, error)) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to parse header!\n", __func__);
         succeeded = FALSE;
         goto end;
     }
     
     /* Index fields follow */
-    num_indices = MAKE_CAST(guint16, data[0]);
-    data += sizeof(guint16);
+    num_indices = MAKE_CAST(guint16, _priv->cur_ptr[0]);
+    _priv->cur_ptr += sizeof(guint16);
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: number of indices: %d\n", __func__, num_indices);
     
     indices = g_new0(gint, num_indices);
     for (i = 0; i < num_indices; i++) {
-        indices[i] = MAKE_CAST(guint32, data[0]);
-        data += sizeof(guint32);
+        indices[i] = MAKE_CAST(guint32, _priv->cur_ptr[0]);
+        _priv->cur_ptr += sizeof(guint32);
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: index %i: 0x%X\n", __func__, i, indices[i]);
     }
     
     /* Next is (4-byte?) field that, if set to 1, indicates presence of CD-Text data */
-    num_cdtext_blocks = MAKE_CAST(guint32, data[0]);
-    data += sizeof(guint32);
+    num_cdtext_blocks = MAKE_CAST(guint32, _priv->cur_ptr[0]);
+    _priv->cur_ptr += sizeof(guint32);
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: number of CD-TEXT blocks: %i\n", __func__, num_cdtext_blocks);
     
     for (i = 0; i < num_cdtext_blocks; i++) {
         /* Parse CD-Text */
-        __mirage_disc_cdi_parse_cdtext(self, &data, error);
+        __mirage_disc_cdi_parse_cdtext(self, error);
     }
     
     /* 2 bytes after indices are undeciphered yet */
@@ -398,15 +400,15 @@ static gboolean __mirage_disc_cdi_load_track (MIRAGE_Disc *self, guint8 **descri
         { 0, 0x00 },
         { 1, 0x00 },
     };
-    __mirage_disc_cdi_whine_on_unexpected(self, data, fields, G_N_ELEMENTS(fields), (gchar *)__func__, "2 bytes after CD-TEXT");
+    __mirage_disc_cdi_whine_on_unexpected(self, _priv->cur_ptr, fields, G_N_ELEMENTS(fields), (gchar *)__func__, "2 bytes after CD-TEXT");
     }
 #endif
-    data += 2;
+    _priv->cur_ptr += 2;
     
     
     /* Track mode follows (FIXME: is it really 4-byte?) */
-    track_mode = MAKE_CAST(guint32, data[0]);
-    data += sizeof(guint32);
+    track_mode = MAKE_CAST(guint32, _priv->cur_ptr[0]);
+    _priv->cur_ptr += sizeof(guint32);
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: track mode: %i\n", __func__, track_mode);
 
     /* 4 bytes follow that have not been deciphered yet */
@@ -418,32 +420,32 @@ static gboolean __mirage_disc_cdi_load_track (MIRAGE_Disc *self, guint8 **descri
         {  2, 0x00 },
         {  3, 0x00 },
     };
-    __mirage_disc_cdi_whine_on_unexpected(self, data, fields, G_N_ELEMENTS(fields), (gchar *)__func__, "4 bytes after track mode");
+    __mirage_disc_cdi_whine_on_unexpected(self, _priv->cur_ptr, fields, G_N_ELEMENTS(fields), (gchar *)__func__, "4 bytes after track mode");
     }
 #endif
-    data += 4;
+    _priv->cur_ptr += 4;
     
     
     /* Session index (i.e. which session block this track block belongs to)... */
-    session_idx = MAKE_CAST(guint32, data[0]);
-    data += sizeof(guint32);
+    session_idx = MAKE_CAST(guint32, _priv->cur_ptr[0]);
+    _priv->cur_ptr += sizeof(guint32);
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: session index: %i\n", __func__, session_idx);
     
     /* Track index (i.e. which track block is this)... */
-    track_idx = MAKE_CAST(guint32, data[0]);
-    data += sizeof(guint32);
+    track_idx = MAKE_CAST(guint32, _priv->cur_ptr[0]);
+    _priv->cur_ptr += sizeof(guint32);
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: track index: %i\n", __func__, track_idx);
     
     
     
     /* Next is track start address... */
-    start_address = MAKE_CAST(guint32, data[0]);
-    data += sizeof(guint32);
+    start_address = MAKE_CAST(guint32, _priv->cur_ptr[0]);
+    _priv->cur_ptr += sizeof(guint32);
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: track start: 0x%X\n", __func__, start_address);
     
     /* ... followed by track length */
-    track_length = MAKE_CAST(guint32, data[0]);
-    data += sizeof(guint32);
+    track_length = MAKE_CAST(guint32, _priv->cur_ptr[0]);
+    _priv->cur_ptr += sizeof(guint32);
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: track length: 0x%X\n", __func__, track_length);
     
     
@@ -468,21 +470,21 @@ static gboolean __mirage_disc_cdi_load_track (MIRAGE_Disc *self, guint8 **descri
         { 14, 0x00 },
         { 15, 0x00 },
     };
-    __mirage_disc_cdi_whine_on_unexpected(self, data, fields, G_N_ELEMENTS(fields), (gchar *)__func__, "16 bytes after track length");
+    __mirage_disc_cdi_whine_on_unexpected(self, _priv->cur_ptr, fields, G_N_ELEMENTS(fields), (gchar *)__func__, "16 bytes after track length");
     }
 #endif
-    data += 16;
+    _priv->cur_ptr += 16;
     
     
     /* Field that indicates read mode */
-    read_mode = MAKE_CAST(guint32, data[0]);
-    data += sizeof(guint32);
+    read_mode = MAKE_CAST(guint32, _priv->cur_ptr[0]);
+    _priv->cur_ptr += sizeof(guint32);
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: read mode: %d\n", __func__, read_mode);
     
     
     /* Field that has track's CTL stored */
-    track_ctl = MAKE_CAST(guint32, data[0]);
-    data += sizeof(guint32);
+    track_ctl = MAKE_CAST(guint32, _priv->cur_ptr[0]);
+    _priv->cur_ptr += sizeof(guint32);
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: track's CTL: %X\n", __func__, track_ctl);
     
     
@@ -502,17 +504,17 @@ static gboolean __mirage_disc_cdi_load_track (MIRAGE_Disc *self, guint8 **descri
         {  7, 0x00 },
         {  8, 0x00 },
     };
-    __mirage_disc_cdi_whine_on_unexpected(self, data, fields, G_N_ELEMENTS(fields), (gchar *)__func__, "9 bytes after track CTL");
+    __mirage_disc_cdi_whine_on_unexpected(self, _priv->cur_ptr, fields, G_N_ELEMENTS(fields), (gchar *)__func__, "9 bytes after track CTL");
     }
 #endif
-    data += 9;
+    _priv->cur_ptr += 9;
     
     
     /* ISRC and ISRC valid */
-    isrc = (gchar *)data;
-    data += 12;
-    isrc_valid  = MAKE_CAST(guint32, data[0]);
-    data += sizeof(guint32);    
+    isrc = (gchar *)_priv->cur_ptr;
+    _priv->cur_ptr += 12;
+    isrc_valid  = MAKE_CAST(guint32, _priv->cur_ptr[0]);
+    _priv->cur_ptr += sizeof(guint32);    
     
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: ISRC valid: %i\n", __func__, isrc_valid);
     if (isrc_valid) {
@@ -628,16 +630,16 @@ static gboolean __mirage_disc_cdi_load_track (MIRAGE_Disc *self, guint8 **descri
         { 97, 0xFF },
         { 98, 0xFF },*/
     };
-    __mirage_disc_cdi_whine_on_unexpected(self, data, fields, G_N_ELEMENTS(fields), (gchar *)__func__, "99 bytes at the end");
+    __mirage_disc_cdi_whine_on_unexpected(self, _priv->cur_ptr, fields, G_N_ELEMENTS(fields), (gchar *)__func__, "99 bytes at the end");
     }
 #endif
-    session_type = MAKE_CAST(guint8, data[87]);
-    not_last_track = MAKE_CAST(guint8, data[93]);
-    address_at_the_end = MAKE_CAST(guint32, data[95]);
+    session_type = MAKE_CAST(guint8, _priv->cur_ptr[87]);
+    not_last_track = MAKE_CAST(guint8, _priv->cur_ptr[93]);
+    address_at_the_end = MAKE_CAST(guint32, _priv->cur_ptr[95]);
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: session type: %i\n", __func__, session_type);
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: not the last track: %i\n", __func__, not_last_track);
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: address at the end: 0x%X\n", __func__, address_at_the_end);
-    data += 99;    
+    _priv->cur_ptr += 99;    
     
     /**********************************************************************\
      *                         Track data setting                         *
@@ -771,17 +773,18 @@ free_session:
 end:
     g_strfreev(filenames);
     
-    *descriptor_data = data;
     return succeeded;
 }
 
-static gboolean __mirage_disc_cdi_load_session (MIRAGE_Disc *self, guint8 **descriptor_data, GError **error) {
-    guint8 *data = *descriptor_data;
+static gboolean __mirage_disc_cdi_load_session (MIRAGE_Disc *self, GError **error) {
+    MIRAGE_Disc_CDI *self_cdi = MIRAGE_DISC_CDI(self);
+    MIRAGE_Disc_CDIPrivate *_priv = MIRAGE_DISC_CDI_GET_PRIVATE(self_cdi);
+    
     gint num_tracks = 0;
     gint i;
     
     /* As far as session descriptor goes, second byte is number of tracks... */
-    num_tracks = MAKE_CAST(guint8, data[1]);
+    num_tracks = MAKE_CAST(guint8, _priv->cur_ptr[1]);
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: number of tracks: %d\n", __func__, num_tracks);
 
 #ifdef WHINE_ON_UNEXPECTED
@@ -803,26 +806,24 @@ static gboolean __mirage_disc_cdi_load_session (MIRAGE_Disc *self, guint8 **desc
         { 13, 0xFF },
         { 14, 0xFF },
     };
-    __mirage_disc_cdi_whine_on_unexpected(self, data, fields, G_N_ELEMENTS(fields), (gchar *)__func__, "Session fields");
+    __mirage_disc_cdi_whine_on_unexpected(self, _priv->cur_ptr, fields, G_N_ELEMENTS(fields), (gchar *)__func__, "Session fields");
     }
 #endif
     
-    data += 15;
+    _priv->cur_ptr += 15;
     
     if (num_tracks) {
         /* Add session */
         if (!mirage_disc_add_session_by_index(self, -1, NULL, error)) {
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: failed to add session to disc!\n", __func__);
-            *descriptor_data = data;
             return FALSE;
         }
         
         /* Load tracks */
         for (i = 0; i < num_tracks; i++) {
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: *** Loading track %i ***\n", __func__, i);
-            if (!__mirage_disc_cdi_load_track(self, &data, error)) {
+            if (!__mirage_disc_cdi_load_track(self, error)) {
                 MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: failed to load track!\n", __func__);
-                *descriptor_data = data;
                 return FALSE;
             }
         }
@@ -832,27 +833,26 @@ static gboolean __mirage_disc_cdi_load_session (MIRAGE_Disc *self, guint8 **desc
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: number of tracks in session is 0... this is alright if this is the descriptor that follows last track entry in last session... otherwise we might have a problem, Dave...\n", __func__);
     }
     
-    *descriptor_data = data;
     return TRUE;
 }
 
-static gboolean __mirage_disc_cdi_load_disc (MIRAGE_Disc *self, guint8 **descriptor_data, GError **error) {
-    guint8 *data = *descriptor_data;
-    gboolean succeeded = FALSE;
+static gboolean __mirage_disc_cdi_load_disc (MIRAGE_Disc *self, GError **error) {
+    MIRAGE_Disc_CDIPrivate *_priv = MIRAGE_DISC_CDI_GET_PRIVATE(self);
+    gboolean succeeded = TRUE;
     gint num_sessions = 0;
     gint i;
     
     /* First byte seems to be number of sessions */
-    num_sessions = MAKE_CAST(guint8, data[0]);
+    num_sessions = MAKE_CAST(guint8, _priv->cur_ptr[0]);
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: number of sessions: %d\n", __func__, num_sessions);
     
     /* Load sessions (note that the equal sign in for loop is there to account
        for the last, empty session) */
-    data += 1; /* Set pointer at start of first session descriptor */
+    _priv->cur_ptr += 1; /* Set pointer at start of first session descriptor */
     for (i = 0; i <= num_sessions; i++) {
         /* Load session */
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: *** Loading session %i ***\n", __func__, i);
-        if (!__mirage_disc_cdi_load_session(self, &data, error)) {
+        if (!__mirage_disc_cdi_load_session(self, error)) {
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: failed to load session!\n", __func__);
             succeeded = FALSE;
             goto end;
@@ -871,24 +871,24 @@ static gboolean __mirage_disc_cdi_load_disc (MIRAGE_Disc *self, guint8 **descrip
     guint8 *cdtext_data = NULL;
     
     /* Header */
-    if (!__mirage_disc_cdi_parse_header(self, &data, error)) {
+    if (!__mirage_disc_cdi_parse_header(self, error)) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: failes to parse header!\n", __func__);
         succeeded = FALSE;
         goto end;
     }
     
     /* First 4 bytes seem to be overall size of the disc */
-    disc_length = MAKE_CAST(guint32, data[0]);
-    data += sizeof(guint32);
+    disc_length = MAKE_CAST(guint32, _priv->cur_ptr[0]);
+    _priv->cur_ptr += sizeof(guint32);
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: disc length: 0x%X\n", __func__, disc_length);
     
     /* One byte that follows is length of volume identifier... this is ISO9660
        volume identifier, found on data discs */
-    volume_id_length = MAKE_CAST(guint8, data[0]);
-    data += sizeof(guint8);
+    volume_id_length = MAKE_CAST(guint8, _priv->cur_ptr[0]);
+    _priv->cur_ptr += sizeof(guint8);
     
-    volume_id = (gchar *)data;
-    data += volume_id_length;
+    volume_id = (gchar *)_priv->cur_ptr;
+    _priv->cur_ptr += volume_id_length;
     
     if (volume_id_length) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: volume ID: %.*s\n", __func__, volume_id_length, volume_id);
@@ -909,25 +909,25 @@ static gboolean __mirage_disc_cdi_load_disc (MIRAGE_Disc *self, guint8 **descrip
         { 7, 0x00 },
         { 8, 0x00 },
     };
-    __mirage_disc_cdi_whine_on_unexpected(self, data, fields, G_N_ELEMENTS(fields), (gchar *)__func__, "9 bytes after volume ID");
+    __mirage_disc_cdi_whine_on_unexpected(self, _priv->cur_ptr, fields, G_N_ELEMENTS(fields), (gchar *)__func__, "9 bytes after volume ID");
     }
 #endif
-    data += 9;
+    _priv->cur_ptr += 9;
     
     /* MCN */
-    mcn = (gchar *)data;
-    data += 13;
+    mcn = (gchar *)_priv->cur_ptr;
+    _priv->cur_ptr += 13;
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: MCN: %.13s\n", __func__, mcn);
 
-    mcn_valid = MAKE_CAST(guint32, data[0]);
-    data += sizeof(guint32);
+    mcn_valid = MAKE_CAST(guint32, _priv->cur_ptr[0]);
+    _priv->cur_ptr += sizeof(guint32);
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: MCN valid: %i\n", __func__, mcn_valid);
     
     /* CD-TEXT */
-    cdtext_length = MAKE_CAST(guint32, data[0]);
-    data += sizeof(guint32);
+    cdtext_length = MAKE_CAST(guint32, _priv->cur_ptr[0]);
+    _priv->cur_ptr += sizeof(guint32);
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: raw CD-TEXT data length: %i\n", __func__, cdtext_length);
-    cdtext_data = (guint8 *)data;
+    cdtext_data = (guint8 *)_priv->cur_ptr;
     
     if (cdtext_length) {
         /* FIXME: CD-TEXT data is for the first session only, I think... */
@@ -938,7 +938,7 @@ static gboolean __mirage_disc_cdi_load_disc (MIRAGE_Disc *self, guint8 **descrip
         }
         g_object_unref(first_session);
         
-        data += cdtext_length;
+        _priv->cur_ptr += cdtext_length;
     }
     
     
@@ -959,14 +959,13 @@ static gboolean __mirage_disc_cdi_load_disc (MIRAGE_Disc *self, guint8 **descrip
         { 10, 0x00 },
         { 11, 0x80 },
     };
-    __mirage_disc_cdi_whine_on_unexpected(self, data, fields, G_N_ELEMENTS(fields), (gchar *)__func__, "Last 12 bytes");
+    __mirage_disc_cdi_whine_on_unexpected(self, _priv->cur_ptr, fields, G_N_ELEMENTS(fields), (gchar *)__func__, "Last 12 bytes");
     }
 #endif
-    data += 12;
+    _priv->cur_ptr += 12;
     
 end:    
-    *descriptor_data = data;
-    return TRUE;    
+    return succeeded;    
 }
 
 /******************************************************************************\
@@ -991,10 +990,12 @@ static gboolean __mirage_disc_cdi_can_load_file (MIRAGE_Disc *self, gchar *filen
 }
 
 static gboolean __mirage_disc_cdi_load_image (MIRAGE_Disc *self, gchar **filenames, GError **error) {
+    MIRAGE_Disc_CDI *self_cdi = MIRAGE_DISC_CDI(self);
+    MIRAGE_Disc_CDIPrivate *_priv = MIRAGE_DISC_CDI_GET_PRIVATE(self_cdi);
+    
     gboolean succeeded = TRUE;
     guint64 offset = 0;
     gint32 descriptor_length = 0;
-    guint8 *descriptor_data, *descriptor_ptr = NULL;
     
     /* For now, CDI parser supports only one-file images */
     if (g_strv_length(filenames) > 1) {
@@ -1022,21 +1023,21 @@ static gboolean __mirage_disc_cdi_load_image (MIRAGE_Disc *self, gchar **filenam
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: CDI descriptor length: 0x%X\n", __func__, descriptor_length);
     
     /* Allocate descriptor data and read it */
-    descriptor_data = descriptor_ptr = g_malloc0(descriptor_length);
+    _priv->cur_ptr = _priv->cdi_data = g_malloc0(descriptor_length);
     offset = -(guint64)(descriptor_length);
     fseeko(file, offset, SEEK_END);
-    fread(descriptor_data, descriptor_length, 1, file);
+    fread(_priv->cdi_data, descriptor_length, 1, file);
     
     /* Close file */
     fclose(file);
     
     /* Parse the descriptor */
-    succeeded = __mirage_disc_cdi_load_disc(self, &descriptor_ptr, error);
+    succeeded = __mirage_disc_cdi_load_disc(self, error);
     
     /* Dirty test: check if size of parsed descriptor equals to declared size
        (minus 4 bytes which make up declared size...) */
-    if (descriptor_ptr - descriptor_data != descriptor_length - 4) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: size of parsed descriptor mismatch, Dave. Expect trouble... (%d != %d)\n", __func__, descriptor_ptr - descriptor_data, descriptor_length);
+    if (_priv->cur_ptr - _priv->cdi_data != descriptor_length - 4) {
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: size of parsed descriptor mismatch, Dave. Expect trouble... (%d != %d)\n", __func__, _priv->cur_ptr - _priv->cdi_data, descriptor_length);
     } else {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: disc seems to have been loaded successfully\n", __func__);
     }
@@ -1046,7 +1047,7 @@ static gboolean __mirage_disc_cdi_load_image (MIRAGE_Disc *self, gchar **filenam
     mirage_disc_layout_set_start_sector(self, -150, NULL);
     
     /* Free descriptor data */
-    g_free(descriptor_data);
+    g_free(_priv->cdi_data);
 
     return succeeded;
 }
