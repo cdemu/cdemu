@@ -774,7 +774,7 @@ static gboolean __mirage_disc_cdi_load_session (MIRAGE_Disc *self, GError **erro
     gint i;
     
     /* As far as session descriptor goes, second byte is number of tracks... */
-    num_tracks = MAKE_CAST(guint8, _priv->cur_ptr[1]);
+    num_tracks = MIRAGE_CAST_DATA(_priv->cur_ptr, 1, guint8);
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: number of tracks: %d\n", __func__, num_tracks);
 
 #ifdef WHINE_ON_UNEXPECTED
