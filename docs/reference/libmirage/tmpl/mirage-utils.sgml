@@ -97,6 +97,26 @@ following functionality:
 @SUBCHANNEL_Q: 
 @SUBCHANNEL_P: 
 
+<!-- ##### MACRO MIRAGE_CAST_DATA ##### -->
+<para>
+
+</para>
+
+@buf: 
+@off: 
+@type: 
+
+
+<!-- ##### MACRO MIRAGE_CAST_PTR ##### -->
+<para>
+
+</para>
+
+@buf: 
+@off: 
+@type: 
+
+
 <!-- ##### MACRO MIRAGE_CHECK_ARG ##### -->
 <para>
 
