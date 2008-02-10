@@ -19,8 +19,6 @@
 
 #include "image-b6t.h"
 
-#define MAKE_CAST(type, field) (*((type *)&field))
-
 /* Self-explanatory */
 #define WHINE_ON_UNEXPECTED(field, expected) \
     if (field != expected) MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: unexpected value in field %s: expected 0x%X, got 0x%X\n", __func__, #field, expected, field);
