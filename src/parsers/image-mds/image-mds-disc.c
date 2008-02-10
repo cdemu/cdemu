@@ -19,7 +19,6 @@
 
 #include "image-mds.h"
 
-#define MAKE_CAST(type, field) (*((type *)&field))
 
 /******************************************************************************\
  *                              Private structure                             *
@@ -112,16 +111,16 @@ static gboolean __mirage_disc_mds_parse_dpm_block (MIRAGE_Disc *self, guint32 dp
     cur_ptr = _priv->mds_data + dpm_block_offset;
     
     /* */
-    dpm_block_number = MAKE_CAST(guint32, cur_ptr[0]);
+    dpm_block_number = MIRAGE_CAST_DATA(cur_ptr, 0, guint32);
     cur_ptr += sizeof(guint32);
     
-    dpm_start_sector = MAKE_CAST(guint32, cur_ptr[0]);
+    dpm_start_sector = MIRAGE_CAST_DATA(cur_ptr, 0, guint32);
     cur_ptr += sizeof(guint32);
     
-    dpm_resolution = MAKE_CAST(guint32, cur_ptr[0]);
+    dpm_resolution = MIRAGE_CAST_DATA(cur_ptr, 0, guint32);
     cur_ptr += sizeof(guint32);
     
-    dpm_num_entries = MAKE_CAST(guint32, cur_ptr[0]);
+    dpm_num_entries = MIRAGE_CAST_DATA(cur_ptr, 0, guint32);
     cur_ptr += sizeof(guint32);
     
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: Block number: %d\n", __func__, dpm_block_number);
@@ -130,7 +129,7 @@ static gboolean __mirage_disc_mds_parse_dpm_block (MIRAGE_Disc *self, guint32 dp
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: Number of entries: %d\n", __func__, dpm_num_entries);
     
     /* Read all entries */
-    dpm_data = (guint32 *)cur_ptr;
+    dpm_data = MIRAGE_CAST_PTR(cur_ptr, 0, guint32 *);
     
     /* FIXME: someday, somehow, I'm gonna make it alright, but not right now...
        (do something useful with it once libMirage gets whole DPM infrastructure
@@ -158,12 +157,12 @@ static gboolean __mirage_disc_mds_parse_dpm_data (MIRAGE_Disc *self, GError **er
     
     /* It would seem the first field is number of DPM data sets, followed by
        appropriate number of offsets for those data sets */
-    num_dpm_blocks = MAKE_CAST(guint32, cur_ptr[0]);
+    num_dpm_blocks = MIRAGE_CAST_DATA(cur_ptr, 0, guint32);
     cur_ptr += sizeof(guint32);
     
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: number of DPM data blocks: %d\n", __func__, num_dpm_blocks);
     
-    dpm_block_offset = (guint32 *)cur_ptr;
+    dpm_block_offset = MIRAGE_CAST_PTR(cur_ptr, 0, guint32 *);
         
     /* Read each block */
     for (i = 0; i < num_dpm_blocks; i++) {
@@ -202,15 +201,15 @@ static gboolean __mirage_disc_mds_parse_disc_structures (MIRAGE_Disc *self, GErr
         cur_ptr = _priv->mds_data + _priv->header->disc_structures_offset;
         
         /* DVD copyright information */
-        copy_info = (MIRAGE_DiscStruct_Copyright *)cur_ptr;
+        copy_info = MIRAGE_CAST_PTR(cur_ptr, 0, MIRAGE_DiscStruct_Copyright *);
         cur_ptr += sizeof(MIRAGE_DiscStruct_Copyright);
                         
         /* DVD manufacture information */
-        manu_info = (MIRAGE_DiscStruct_Manufacture *)cur_ptr;
+        manu_info = MIRAGE_CAST_PTR(cur_ptr, 0, MIRAGE_DiscStruct_Manufacture *);
         cur_ptr += sizeof(MIRAGE_DiscStruct_Manufacture);
                 
         /* Physical information */
-        phys_info = (MIRAGE_DiscStruct_PhysInfo *)cur_ptr;
+        phys_info = MIRAGE_CAST_PTR(cur_ptr, 0, MIRAGE_DiscStruct_PhysInfo *);
         cur_ptr += sizeof(MIRAGE_DiscStruct_PhysInfo);
                 
         mirage_disc_set_disc_structure(self, 0, 0x0000, (guint8 *)phys_info, sizeof(MIRAGE_DiscStruct_Copyright), NULL);
@@ -222,15 +221,15 @@ static gboolean __mirage_disc_mds_parse_disc_structures (MIRAGE_Disc *self, GErr
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: dual-layer disc; reading disc structures for second layer\n", __func__);
                         
             /* DVD copyright information */
-            copy_info = (MIRAGE_DiscStruct_Copyright *)cur_ptr;
+            copy_info = MIRAGE_CAST_PTR(cur_ptr, 0, MIRAGE_DiscStruct_Copyright *);
             cur_ptr += sizeof(MIRAGE_DiscStruct_Copyright);
                             
             /* DVD manufacture information */
-            manu_info = (MIRAGE_DiscStruct_Manufacture *)cur_ptr;
+            manu_info = MIRAGE_CAST_PTR(cur_ptr, 0, MIRAGE_DiscStruct_Manufacture *);
             cur_ptr += sizeof(MIRAGE_DiscStruct_Manufacture);
                     
             /* Physical information */
-            phys_info = (MIRAGE_DiscStruct_PhysInfo *)cur_ptr;
+            phys_info = MIRAGE_CAST_PTR(cur_ptr, 0, MIRAGE_DiscStruct_PhysInfo *);
             cur_ptr += sizeof(MIRAGE_DiscStruct_PhysInfo);
             
             mirage_disc_set_disc_structure(self, 0, 0x0000, (guint8 *)phys_info, sizeof(MIRAGE_DiscStruct_Copyright), NULL);
@@ -252,7 +251,7 @@ static gboolean __mirage_disc_mds_parse_bca (MIRAGE_Disc *self, GError **error) 
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: reading BCA data (0x%X bytes)\n", __func__, _priv->header->bca_len);
         
         cur_ptr = _priv->mds_data + _priv->header->bca_data_offset;
-        mirage_disc_set_disc_structure(self, 0, 0x0003, cur_ptr, _priv->header->bca_len, NULL);
+        mirage_disc_set_disc_structure(self, 0, 0x0003, MIRAGE_CAST_PTR(cur_ptr, 0, guint8 *), _priv->header->bca_len, NULL);
     }
     
     return TRUE;
@@ -286,7 +285,7 @@ static gboolean __mirage_disc_mds_parse_track_entries (MIRAGE_Disc *self, MDS_Se
         MDS_Footer *footer_block = NULL;
         
         /* Read main track block */
-        block = (MDS_TrackBlock *)cur_ptr;
+        block = MIRAGE_CAST_PTR(cur_ptr, 0, MDS_TrackBlock *);
         cur_ptr += sizeof(MDS_TrackBlock);
         
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: track block #%i:\n", __func__, i);
@@ -501,7 +500,7 @@ static gboolean __mirage_disc_mds_parse_sessions (MIRAGE_Disc *self, GError **er
     
     /* Read sessions */
     for (i = 0; i < _priv->header->num_sessions; i++) {
-        MDS_SessionBlock *session = (MDS_SessionBlock *)cur_ptr;
+        MDS_SessionBlock *session = MIRAGE_CAST_PTR(cur_ptr, 0, MDS_SessionBlock *);
         cur_ptr += sizeof(MDS_SessionBlock);
         
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: session block #%i:\n", __func__, i);        
@@ -657,7 +656,7 @@ static gboolean __mirage_disc_mds_load_image (MIRAGE_Disc *self, gchar **filenam
     _priv->mds_data = (guint8 *)g_mapped_file_get_contents(_priv->mds_mapped);
     cur_ptr = _priv->mds_data;
     
-    _priv->header = (MDS_Header *)cur_ptr;
+    _priv->header = MIRAGE_CAST_PTR(cur_ptr, 0, MDS_Header *);
     cur_ptr += sizeof(MDS_Header);
     
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: MDS header:\n", __func__);
