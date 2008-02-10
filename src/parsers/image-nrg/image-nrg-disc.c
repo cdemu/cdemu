@@ -19,7 +19,6 @@
 
 #include "image-nrg.h"
 
-#define MAKE_CAST(type, field) (*((type *)&field))
 
 /******************************************************************************\
  *                              Private structure                             *
@@ -50,7 +49,7 @@ static gboolean __mirage_disc_nrg_load_medium_type (MIRAGE_Disc *self, GError **
     guint32 mtyp_data = 0;
         
     /* We expect to find 'CDTX' at given pos */
-    block_id = _priv->cur_ptr;
+    block_id = MIRAGE_CAST_PTR(_priv->cur_ptr, 0, guint8 *);
     _priv->cur_ptr += 4;
     if (memcmp(block_id, "MTYP", 4)) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: expected to find MTYP but found %.4s instead!\n", __func__, block_id);
@@ -59,7 +58,7 @@ static gboolean __mirage_disc_nrg_load_medium_type (MIRAGE_Disc *self, GError **
     }
     
     /* Read MTYP length */
-    mtyp_len = MAKE_CAST(guint32, _priv->cur_ptr[0]);
+    mtyp_len = MIRAGE_CAST_DATA(_priv->cur_ptr, 0, guint32);
     _priv->cur_ptr += sizeof(guint32);
     mtyp_len = GINT32_FROM_BE(mtyp_len);
     
@@ -70,7 +69,7 @@ static gboolean __mirage_disc_nrg_load_medium_type (MIRAGE_Disc *self, GError **
         return FALSE;
     }
     
-    mtyp_data = MAKE_CAST(guint32, _priv->cur_ptr[0]);
+    mtyp_data = MIRAGE_CAST_DATA(_priv->cur_ptr, 0, guint32);
     _priv->cur_ptr += sizeof(guint32);
     mtyp_data = GINT32_FROM_BE(mtyp_data);
     
@@ -193,7 +192,7 @@ static gboolean __mirage_disc_nrg_load_cue_data (MIRAGE_Disc *self, GError **err
     gint i;
             
     /* We expect to find 'CUEX'/'CUES' at current posisition */
-    block_id = _priv->cur_ptr;
+    block_id = MIRAGE_CAST_PTR(_priv->cur_ptr, 0, guint8 *);
     _priv->cur_ptr += 4;
 
     if (!memcmp(block_id, "CUEX", 4)) {
@@ -209,7 +208,7 @@ static gboolean __mirage_disc_nrg_load_cue_data (MIRAGE_Disc *self, GError **err
     }
         
     /* Read CUEX/CUES length */
-    block_length = MAKE_CAST(guint32, _priv->cur_ptr[0]);
+    block_length = MIRAGE_CAST_DATA(_priv->cur_ptr, 0, guint32);
     _priv->cur_ptr += sizeof(guint32);
     block_length = GINT32_FROM_BE(block_length);
     
@@ -227,7 +226,7 @@ static gboolean __mirage_disc_nrg_load_cue_data (MIRAGE_Disc *self, GError **err
     }
     
     /* Read CUE blocks */
-    memcpy(_priv->cue_blocks, _priv->cur_ptr, block_length);
+    memcpy(_priv->cue_blocks, MIRAGE_CAST_PTR(_priv->cur_ptr, 0, guint8 *), block_length);
     _priv->cur_ptr += block_length;
     
     /* Conversion */
@@ -266,7 +265,7 @@ static gboolean __mirage_disc_nrg_load_dao_data (MIRAGE_Disc *self, GError **err
     gint i;
     
     /* We expect 'DAOX'/'DAOI' at current position */
-    block_id = _priv->cur_ptr;
+    block_id = MIRAGE_CAST_PTR(_priv->cur_ptr, 0, guint8 *);
     _priv->cur_ptr += 4;
     
     if (!memcmp(block_id, "DAOX", 4)) {
@@ -282,7 +281,7 @@ static gboolean __mirage_disc_nrg_load_dao_data (MIRAGE_Disc *self, GError **err
     }
     
     /* Read DAOX/DAOI length */
-    block_length = MAKE_CAST(guint32, _priv->cur_ptr[0]);
+    block_length = MIRAGE_CAST_DATA(_priv->cur_ptr, 0, guint32);
     _priv->cur_ptr += sizeof(guint32);
     block_length = GINT32_FROM_BE(block_length);
     
@@ -303,7 +302,7 @@ static gboolean __mirage_disc_nrg_load_dao_data (MIRAGE_Disc *self, GError **err
         mirage_error(MIRAGE_E_PARSER, error);
         return FALSE;
     }
-    memcpy(_priv->dao_header, _priv->cur_ptr, sizeof(NRG_DAO_Header));
+    memcpy(_priv->dao_header, MIRAGE_CAST_PTR(_priv->cur_ptr, 0, NRG_DAO_Header *), sizeof(NRG_DAO_Header));
     _priv->cur_ptr += sizeof(NRG_DAO_Header);
     
     /* Allocate space and read DAO blocks */
@@ -315,21 +314,21 @@ static gboolean __mirage_disc_nrg_load_dao_data (MIRAGE_Disc *self, GError **err
 
         /* We read each block separately because the last fields are different 
            between formats */
-        memcpy(block, _priv->cur_ptr, 18); /* First 18 bytes are common */
+        memcpy(block, MIRAGE_CAST_PTR(_priv->cur_ptr, 0, guint8 *), 18); /* First 18 bytes are common */
         _priv->cur_ptr += 18;
         
         /* Handle big-endianess */
         block->sector_size = GUINT16_FROM_BE(block->sector_size);
                 
         if (old_format) {
-            gint32 *tmp_int = (gint32 *)_priv->cur_ptr;
+            gint32 *tmp_int = MIRAGE_CAST_PTR(_priv->cur_ptr, 0, gint32 *);
             _priv->cur_ptr += 3*sizeof(gint32);
             /* Conversion */
             block->pregap_offset = GINT32_FROM_BE(tmp_int[0]);
             block->start_offset = GINT32_FROM_BE(tmp_int[1]);
             block->end_offset = GINT32_FROM_BE(tmp_int[2]);            
         } else {
-            gint64 *tmp_int = (gint64 *)_priv->cur_ptr;
+            gint64 *tmp_int = MIRAGE_CAST_PTR(_priv->cur_ptr, 0, gint64 *);
             _priv->cur_ptr += 3*sizeof(gint64);
             /* Conversion */
             block->pregap_offset = GINT64_FROM_BE(tmp_int[0]);
@@ -637,7 +636,7 @@ static gboolean __mirage_disc_nrg_load_cdtext (MIRAGE_Disc *self, GError **error
     gboolean succeeded = TRUE;
     
     /* We expect to find 'CDTX' at given pos */
-    block_id = _priv->cur_ptr;
+    block_id = MIRAGE_CAST_PTR(_priv->cur_ptr, 0, guint8 *);
     _priv->cur_ptr += 4;
 
     if (memcmp(block_id, "CDTX", 4)) {
@@ -648,7 +647,7 @@ static gboolean __mirage_disc_nrg_load_cdtext (MIRAGE_Disc *self, GError **error
     }
     
     /* Read CDTX length */
-    cdtx_len = MAKE_CAST(guint32, _priv->cur_ptr[0]);
+    cdtx_len = MIRAGE_CAST_DATA(_priv->cur_ptr, 0, guint32);
     _priv->cur_ptr += sizeof(guint32);
     cdtx_len = GINT32_FROM_BE(cdtx_len);
     
@@ -804,11 +803,11 @@ static gboolean __mirage_disc_nrg_load_image (MIRAGE_Disc *self, gchar **filenam
         _priv->cur_ptr = cur_ptr;
         
         /* Read block ID (4 bytes) */
-        block_id = (gchar *)cur_ptr;
+        block_id = MIRAGE_CAST_PTR(cur_ptr, 0, gchar *);
         cur_ptr += 4;
         
         /* Read block length (4 bytes) */
-        block_length = MAKE_CAST(guint32, cur_ptr[0]);
+        block_length = MIRAGE_CAST_DATA(cur_ptr, 0, guint32);
         cur_ptr += sizeof(guint32);        
         
         /* Convert block length from Big-Endian... */
