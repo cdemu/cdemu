@@ -453,6 +453,8 @@ mirage_plugin_get_type
 <FILE>mirage-utils</FILE>
 <TITLE>Utility functions</TITLE>
 MIRAGE_SubChannel
+MIRAGE_CAST_DATA
+MIRAGE_CAST_PTR
 MIRAGE_CHECK_ARG
 G_LIST_FOR_EACH
 mirage_helper_find_data_file
