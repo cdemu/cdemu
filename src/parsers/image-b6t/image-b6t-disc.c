@@ -181,7 +181,7 @@ static gboolean __mirage_disc_b6t_parse_header (MIRAGE_Disc *self, GError **erro
     gchar *header = NULL;
     
     /* Read header (16 bytes) */
-    header = (gchar *)_priv->cur_ptr;
+    header = MIRAGE_CAST_PTR(_priv->cur_ptr, 0, gchar *);
     _priv->cur_ptr += 16;
     
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: file header: %.16s\n", __func__, header);
@@ -226,7 +226,7 @@ static gboolean __mirage_disc_b6t_parse_cdtext_data (MIRAGE_Disc *self, GError *
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: reading CD-TEXT data; 0x%X bytes\n", __func__, _priv->disc_block_1->cdtext_data_length);
         /* Read; we don't set data here, because at this point we don't have
            disc layout set up yet */
-        _priv->cdtext_data = _priv->cur_ptr;
+        _priv->cdtext_data = MIRAGE_CAST_PTR(_priv->cur_ptr, 0, guint8 *);
         _priv->cur_ptr += _priv->disc_block_1->cdtext_data_length;
     }
     
@@ -240,7 +240,7 @@ static gboolean __mirage_disc_b6t_parse_bca (MIRAGE_Disc *self, GError **error) 
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: reading BCA data; 0x%X bytes\n", __func__, _priv->disc_block_1->dvdrom_bca_length);
         
         /* Read */
-        guint8 *bca_data = _priv->cur_ptr;
+        guint8 *bca_data = MIRAGE_CAST_PTR(_priv->cur_ptr, 0, guint8 *);
         _priv->cur_ptr += _priv->disc_block_1->dvdrom_bca_length;
         
         if (!mirage_disc_set_disc_structure(self, 0, 0x0003, bca_data, _priv->disc_block_1->dvdrom_bca_length, error)) {
@@ -261,7 +261,7 @@ static gboolean __mirage_disc_b6t_parse_dvd_structures (MIRAGE_Disc *self, GErro
     }
     
     /* Hmm... it seems there are two bytes set to 0 preceeding the structures */
-    guint16 dummy = MAKE_CAST(guint16, _priv->cur_ptr[0]);
+    guint16 dummy = MIRAGE_CAST_DATA(_priv->cur_ptr, 0, guint16);
     _priv->cur_ptr += sizeof(guint16);
     WHINE_ON_UNEXPECTED(dummy, 0);
     length = sizeof(dummy);
@@ -279,13 +279,13 @@ static gboolean __mirage_disc_b6t_parse_dvd_structures (MIRAGE_Disc *self, GErro
         guint8 *struct_data = NULL;
         
         /* Read structure number and data length */
-        struct_number = MAKE_CAST(guint16, _priv->cur_ptr[0]);
+        struct_number = MIRAGE_CAST_DATA(_priv->cur_ptr, 0, guint16);
         _priv->cur_ptr += sizeof(guint16);
         
-        struct_length = MAKE_CAST(guint16, _priv->cur_ptr[0]);
+        struct_length = MIRAGE_CAST_DATA(_priv->cur_ptr, 0, guint16);
         _priv->cur_ptr += sizeof(guint16);
         
-        struct_reserved = MAKE_CAST(guint16, _priv->cur_ptr[0]);
+        struct_reserved = MIRAGE_CAST_DATA(_priv->cur_ptr, 0, guint16);
         _priv->cur_ptr += sizeof(guint16);
         
         /* Length in header is big-endian; and it also includes two reserved 
@@ -294,7 +294,7 @@ static gboolean __mirage_disc_b6t_parse_dvd_structures (MIRAGE_Disc *self, GErro
         WHINE_ON_UNEXPECTED(struct_reserved, 0x0000);
         
         /* Allocate buffer and read data */
-        struct_data = _priv->cur_ptr;
+        struct_data = MIRAGE_CAST_PTR(_priv->cur_ptr, 0, guint8 *);
         _priv->cur_ptr += struct_length;
         
         /* Set structure */
@@ -340,7 +340,7 @@ static gboolean __mirage_disc_b6t_parse_disc_blocks (MIRAGE_Disc *self, GError *
     
     /* 112 bytes a.k.a. first disc block */
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: reading 'disc block 1'\n", __func__);
-    _priv->disc_block_1 = (B6T_DiscBlock_1 *)_priv->cur_ptr;
+    _priv->disc_block_1 = MIRAGE_CAST_PTR(_priv->cur_ptr, 0, B6T_DiscBlock_1 *);
     _priv->cur_ptr += sizeof(B6T_DiscBlock_1);
     
     /* Since most of these fields are not deciphered yet, watch out for 
@@ -401,7 +401,7 @@ static gboolean __mirage_disc_b6t_parse_disc_blocks (MIRAGE_Disc *self, GError *
     
     /* Next 28 bytes are drive identifiers; these are part of data returned by 
        INQUIRY command */
-    B6T_DriveIdentifiers *inquiry_id = (B6T_DriveIdentifiers *)_priv->cur_ptr;
+    B6T_DriveIdentifiers *inquiry_id = MIRAGE_CAST_PTR(_priv->cur_ptr, 0, B6T_DriveIdentifiers *);
     _priv->cur_ptr += sizeof(B6T_DriveIdentifiers);
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: image was created with following drive:\n", __func__);
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  vendor: %.8s\n", __func__, inquiry_id->vendor);
@@ -412,7 +412,7 @@ static gboolean __mirage_disc_b6t_parse_disc_blocks (MIRAGE_Disc *self, GError *
     
     /* Then there's 32 bytes of ISO volume descriptor; they represent volume ID,
        if it is a data CD, or they're set to AUDIO CD in case of audio CD */
-    gchar *volume_id = (gchar *)_priv->cur_ptr;
+    gchar *volume_id = MIRAGE_CAST_PTR(_priv->cur_ptr, 0, gchar *);
     _priv->cur_ptr += sizeof(32);
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: volume ID: %.32s\n", __func__, volume_id);
     
@@ -420,7 +420,7 @@ static gboolean __mirage_disc_b6t_parse_disc_blocks (MIRAGE_Disc *self, GError *
     /* What comes next is 20 bytes that are seemingly organised into 32-bit 
        integers... experimenting with different layouts show that these are
        indeed lengths of blocks that follow */
-    _priv->disc_block_2 = (B6T_DiscBlock_2 *)_priv->cur_ptr;
+    _priv->disc_block_2 = MIRAGE_CAST_PTR(_priv->cur_ptr, 0, B6T_DiscBlock_2 *);
     _priv->cur_ptr += sizeof(B6T_DiscBlock_2);
         
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: reading 'disc block 2'\n", __func__);
@@ -517,13 +517,13 @@ static gboolean __mirage_disc_b6t_parse_data_blocks (MIRAGE_Disc *self, GError *
     length = (gsize)_priv->cur_ptr;
     
     /* First four bytes are number of data blocks */
-    guint32 num_data_blocks = MAKE_CAST(guint32, _priv->cur_ptr[0]);
+    guint32 num_data_blocks = MIRAGE_CAST_DATA(_priv->cur_ptr, 0, guint32);
     _priv->cur_ptr += sizeof(guint32);
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: number of data blocks: %i\n", __func__, num_data_blocks);
     
     /* Then there's drive path; it seems it's awfully important to B6T image which
        drive it's been created on... it's irrelevant to us, so skip it */
-    guint32 drive_path_length = MAKE_CAST(guint32, _priv->cur_ptr[0]);
+    guint32 drive_path_length = MIRAGE_CAST_DATA(_priv->cur_ptr, 0, guint32);
     _priv->cur_ptr += sizeof(guint32);
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: skipping 0x%X bytes of drive path\n", __func__, drive_path_length);    
     _priv->cur_ptr += drive_path_length;
@@ -535,7 +535,7 @@ static gboolean __mirage_disc_b6t_parse_data_blocks (MIRAGE_Disc *self, GError *
         
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: data block #%i\n", __func__, i);
         /* Read data block up to the filename */
-        memcpy(data_block, _priv->cur_ptr, sizeof(B6T_DataBlock));
+        memcpy(data_block, MIRAGE_CAST_PTR(_priv->cur_ptr, 0, B6T_DataBlock *), sizeof(B6T_DataBlock));
         _priv->cur_ptr += sizeof(B6T_DataBlock);
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  type: 0x%X\n", __func__, data_block->type);
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  length (bytes): 0x%X\n", __func__, data_block->length_bytes);
@@ -545,13 +545,13 @@ static gboolean __mirage_disc_b6t_parse_data_blocks (MIRAGE_Disc *self, GError *
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  filename_length: %i\n", __func__, data_block->filename_length);
         /* Temporary UTF-16 filename... note that filename_length is actual 
            length in bytes, not characters! */
-        gunichar2 *tmp_filename = (gunichar2 *)_priv->cur_ptr;
+        gunichar2 *tmp_filename = MIRAGE_CAST_PTR(_priv->cur_ptr, 0, gunichar2 *);
         _priv->cur_ptr += data_block->filename_length;
         /* Convert filename */
         data_block->filename = g_utf16_to_utf8(tmp_filename, data_block->filename_length/2, NULL, NULL, NULL);
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  filename: %s\n", __func__, data_block->filename);        
         /* Read the trailing four bytes */
-        data_block->__dummy8__ = MAKE_CAST(guint32, _priv->cur_ptr);
+        data_block->__dummy8__ = MIRAGE_CAST_DATA(_priv->cur_ptr, 0, guint32);
         _priv->cur_ptr += sizeof(guint32);
         
         /* Add block to the list */
@@ -573,7 +573,7 @@ static gboolean __mirage_disc_b6t_parse_track_entry (MIRAGE_Disc *self, GError *
     GObject *cur_track = NULL;
     B6T_Track *track = NULL;
     
-    track = (B6T_Track *)_priv->cur_ptr;
+    track = MIRAGE_CAST_PTR(_priv->cur_ptr, 0, B6T_Track *);
     _priv->cur_ptr += sizeof(B6T_Track);
         
     /* We have no use for non-track descriptors at the moment */
@@ -689,7 +689,7 @@ static gboolean __mirage_disc_b6t_parse_session (MIRAGE_Disc *self, GError **err
     gint i;
     B6T_Session *session;
     
-    session = (B6T_Session *)_priv->cur_ptr;
+    session = MIRAGE_CAST_PTR(_priv->cur_ptr, 0, B6T_Session *);
     _priv->cur_ptr += sizeof(B6T_Session);
     
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: loading session:\n", __func__);
@@ -775,7 +775,7 @@ static gboolean __mirage_disc_b6t_parse_footer (MIRAGE_Disc *self, GError **erro
     MIRAGE_Disc_B6TPrivate *_priv = MIRAGE_DISC_B6T_GET_PRIVATE(self);
     
     /* Read footer */
-    gchar *footer = (gchar *)_priv->cur_ptr;
+    gchar *footer = MIRAGE_CAST_PTR(_priv->cur_ptr, 0, gchar *);
     _priv->cur_ptr += 16;
 
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: file footer: %.16s\n", __func__, footer);
@@ -821,7 +821,7 @@ static gboolean __mirage_disc_b6t_load_disc (MIRAGE_Disc *self, GError **error) 
     }
     
     /* Read B6T file length */
-    guint32 b6t_length = MAKE_CAST(guint32, _priv->cur_ptr[0]);    
+    guint32 b6t_length = MIRAGE_CAST_DATA(_priv->cur_ptr, 0, guint32);
     _priv->cur_ptr += sizeof(guint32);
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: declared B6T file length: %i (0x%X) bytes\n", __func__, b6t_length, b6t_length);
     
