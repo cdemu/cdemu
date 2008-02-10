@@ -19,6 +19,8 @@
 
 #include "image-nrg.h"
 
+#define MAKE_CAST(type, field) (*((type *)&field))
+
 /******************************************************************************\
  *                              Private structure                             *
 \******************************************************************************/
@@ -27,25 +29,38 @@
 typedef struct {
     gint32 prev_session_end;
     
+    guint8 *nrg_data;
+    guint8 *cur_ptr;
+    
+    NRG_CUE_Block *cue_blocks;
+    gint num_cue_blocks;
+    
+    NRG_DAO_Header *dao_header;
+    NRG_DAO_Block *dao_blocks;
+    gint num_dao_blocks;
+
     /* Parser info */
     MIRAGE_ParserInfo *parser_info;
 } MIRAGE_Disc_NRGPrivate;
 
-static gboolean __mirage_disc_nrg_load_medium_type (MIRAGE_Disc *self, FILE *file, guint64 pos, GError **error) {
-    guint8 block_id[4] = {};
-    gint mtyp_len = 0;
-    gint mtyp_data = 0;
-    
+static gboolean __mirage_disc_nrg_load_medium_type (MIRAGE_Disc *self, GError **error) {
+    MIRAGE_Disc_NRGPrivate *_priv = MIRAGE_DISC_NRG_GET_PRIVATE(self);
+    guint8 *block_id = NULL;
+    guint32 mtyp_len = 0;
+    guint32 mtyp_data = 0;
+        
     /* We expect to find 'CDTX' at given pos */
-    fseeko(file, pos, SEEK_SET);
-    fread(block_id, sizeof(block_id), 1, file);
+    block_id = _priv->cur_ptr;
+    _priv->cur_ptr += 4;
     if (memcmp(block_id, "MTYP", 4)) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: expected to find MTYP but found %c%c%c%c instead!\n", __func__, block_id[0], block_id[1], block_id[2], block_id[3]);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: expected to find MTYP but found %.4s instead!\n", __func__, block_id);
         mirage_error(MIRAGE_E_PARSER, error);
         return FALSE;
     }
+    
     /* Read MTYP length */
-    fread((void *)&mtyp_len, sizeof(mtyp_len), 1, file);
+    mtyp_len = MAKE_CAST(guint32, _priv->cur_ptr[0]);
+    _priv->cur_ptr += sizeof(guint32);
     mtyp_len = GINT32_FROM_BE(mtyp_len);
     
     /* So far, I've only seen it 4-byte... */
@@ -55,7 +70,8 @@ static gboolean __mirage_disc_nrg_load_medium_type (MIRAGE_Disc *self, FILE *fil
         return FALSE;
     }
     
-    fread((void *)&mtyp_data, mtyp_len, 1, file);
+    mtyp_data = MAKE_CAST(guint32, _priv->cur_ptr[0]);
+    _priv->cur_ptr += sizeof(guint32);
     mtyp_data = GINT32_FROM_BE(mtyp_data);
     
     /* Decode medium type */
@@ -168,16 +184,18 @@ static gboolean __mirage_disc_nrg_decode_mode (MIRAGE_Disc *self, gint code, gin
     return TRUE;
 }
 
-static gboolean __mirage_disc_nrg_load_cue_data (MIRAGE_Disc *self, FILE *file, NRG_CUE_Block **blocks, gint *num_blocks, GError **error) {
-    guint8 block_id[4] = {};
-    gint block_length = 0;
+static gboolean __mirage_disc_nrg_load_cue_data (MIRAGE_Disc *self, GError **error) {
+    MIRAGE_Disc_NRGPrivate *_priv = MIRAGE_DISC_NRG_GET_PRIVATE(self);
+    guint8 *block_id = NULL;
+    guint32 block_length = 0;
     gboolean old_format = FALSE;
-    
-    gint _num_blocks = 0;
+        
     gint i;
             
     /* We expect to find 'CUEX'/'CUES' at current posisition */
-    fread(block_id, sizeof(block_id), 1, file);
+    block_id = _priv->cur_ptr;
+    _priv->cur_ptr += 4;
+
     if (!memcmp(block_id, "CUEX", 4)) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: new format\n", __func__);
         old_format = FALSE;
@@ -185,33 +203,36 @@ static gboolean __mirage_disc_nrg_load_cue_data (MIRAGE_Disc *self, FILE *file, 
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: old format\n", __func__);
         old_format = TRUE;
     } else {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: expected to find CUEX/CUES but found %c%c%c%c instead!\n", __func__, block_id[0], block_id[1], block_id[2], block_id[3]);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: expected to find CUEX/CUES but found %.4s instead!\n", __func__, block_id);
         mirage_error(MIRAGE_E_PARSER, error);
         return FALSE;
     }
         
     /* Read CUEX/CUES length */
-    fread((void *)&block_length, sizeof(block_length), 1, file);
+    block_length = MAKE_CAST(guint32, _priv->cur_ptr[0]);
+    _priv->cur_ptr += sizeof(guint32);
     block_length = GINT32_FROM_BE(block_length);
     
     /* CUEX and CUES blocks have same length, regardless of version: 8 bytes */
-    _num_blocks = block_length / 8;
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: %d CUE blocks\n", __func__, _num_blocks);
+    _priv->num_cue_blocks = block_length / 8;
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: %d CUE blocks\n", __func__, _priv->num_cue_blocks);
         
-    /* Allocate space and read CUE data */
-    *blocks = g_new0(NRG_CUE_Block, _num_blocks);
-    if (!*blocks) {
+    /* Allocate space and read CUE data (we need to copy data because we'll have
+       to modify it) */
+    _priv->cue_blocks = g_new0(NRG_CUE_Block, _priv->num_cue_blocks);
+    if (!_priv->cue_blocks) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to allocate space for CUE blocks!\n", __func__);
         mirage_error(MIRAGE_E_PARSER, error);
         return FALSE;
     }
     
     /* Read CUE blocks */
-    fread(*blocks, 1, block_length, file);
+    memcpy(_priv->cue_blocks, _priv->cur_ptr, block_length);
+    _priv->cur_ptr += block_length;
     
     /* Conversion */
-    for (i = 0; i < _num_blocks; i++) {
-        NRG_CUE_Block *block = (*blocks)+i;
+    for (i = 0; i < _priv->num_cue_blocks; i++) {
+        NRG_CUE_Block *block = _priv->cue_blocks + i;
 
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: CUE block #%i\n", __func__, i);
 
@@ -233,24 +254,21 @@ static gboolean __mirage_disc_nrg_load_cue_data (MIRAGE_Disc *self, FILE *file, 
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  start_sector: 0x%X\n", __func__, block->start_sector);
     }
     
-    if (num_blocks) {
-        *num_blocks = _num_blocks;
-    }
-    
     return TRUE;
-        
 }
 
-static gboolean __mirage_disc_nrg_load_dao_data (MIRAGE_Disc *self, FILE *file, NRG_DAO_Header **header, NRG_DAO_Block **blocks, gint *num_blocks, GError **error) {
-    guint8 block_id[4] = {};
-    gint block_length = 0;
+static gboolean __mirage_disc_nrg_load_dao_data (MIRAGE_Disc *self, GError **error) {
+    MIRAGE_Disc_NRGPrivate *_priv = MIRAGE_DISC_NRG_GET_PRIVATE(self);
+    guint8 *block_id = NULL;
+    guint32 block_length = 0;
     gboolean old_format = FALSE;
     
-    gint _num_blocks = 0;
     gint i;
     
     /* We expect 'DAOX'/'DAOI' at current position */
-    fread(block_id, sizeof(block_id), 1, file);
+    block_id = _priv->cur_ptr;
+    _priv->cur_ptr += 4;
+    
     if (!memcmp(block_id, "DAOX", 4)) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: new format\n", __func__);
         old_format = FALSE;
@@ -258,62 +276,65 @@ static gboolean __mirage_disc_nrg_load_dao_data (MIRAGE_Disc *self, FILE *file, 
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: old format\n", __func__);
         old_format = TRUE;
     } else {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: expected to find DAOX/DAOI but found %c%c%c%c instead!\n", __func__, block_id[0], block_id[1], block_id[2], block_id[3]);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: expected to find DAOX/DAOI but found %.4s instead!\n", __func__, block_id);
         mirage_error(MIRAGE_E_PARSER, error);
         return FALSE;
     }
     
     /* Read DAOX/DAOI length */
-    fread((void *)&block_length, sizeof(block_length), 1, file);
+    block_length = MAKE_CAST(guint32, _priv->cur_ptr[0]);
+    _priv->cur_ptr += sizeof(guint32);
     block_length = GINT32_FROM_BE(block_length);
     
-    _num_blocks = block_length - 22; /* DAO header has same length in both formats: 22 bytes */
+    _priv->num_dao_blocks = block_length - 22; /* DAO header has same length in both formats: 22 bytes */
     /* DAO blocks have different length; old format has 30 bytes, new format has 42 bytes */
     if (old_format) {
-        _num_blocks /= 30;
+        _priv->num_dao_blocks /= 30;
     } else {
-        _num_blocks /= 42;
+        _priv->num_dao_blocks /= 42;
     }
 
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: %d DAO blocks\n", __func__, _num_blocks);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: %d DAO blocks\n", __func__, _priv->num_dao_blocks);
     
     /* Allocate space and read DAO header */
-    *header = g_new0(NRG_DAO_Header, 1);
-    if (!*header) {
+    _priv->dao_header = g_new0(NRG_DAO_Header, 1);
+    if (!_priv->dao_header) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to allocate space for DAO header!\n", __func__);
         mirage_error(MIRAGE_E_PARSER, error);
         return FALSE;
     }
-    fread(*header, 1, sizeof(NRG_DAO_Header), file);
+    memcpy(_priv->dao_header, _priv->cur_ptr, sizeof(NRG_DAO_Header));
+    _priv->cur_ptr += sizeof(NRG_DAO_Header);
     
     /* Allocate space and read DAO blocks */
-    *blocks = g_new0(NRG_DAO_Block, _num_blocks);
-    for (i = 0; i < _num_blocks; i++) {
-        NRG_DAO_Block *block = (*blocks)+i;
+    _priv->dao_blocks = g_new0(NRG_DAO_Block, _priv->num_dao_blocks);
+    for (i = 0; i < _priv->num_dao_blocks; i++) {
+        NRG_DAO_Block *block = _priv->dao_blocks + i;
 
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: DAO block #%i\n", __func__, i);
 
         /* We read each block separately because the last fields are different 
            between formats */
-        fread(block, 1, 18, file); /* First 18 bytes are common */
+        memcpy(block, _priv->cur_ptr, 18); /* First 18 bytes are common */
+        _priv->cur_ptr += 18;
         
         /* Handle big-endianess */
         block->sector_size = GUINT16_FROM_BE(block->sector_size);
                 
         if (old_format) {
-            gint32 tmp_int[3] = {0,0,0};
-            fread(tmp_int, sizeof(gint32), 3, file);
+            gint32 *tmp_int = (gint32 *)_priv->cur_ptr;
+            _priv->cur_ptr += 3*sizeof(gint32);
             /* Conversion */
-            block->pregap_offset = GUINT32_FROM_BE(tmp_int[0]);
-            block->start_offset = GUINT32_FROM_BE(tmp_int[1]);
-            block->end_offset = GUINT32_FROM_BE(tmp_int[2]);            
+            block->pregap_offset = GINT32_FROM_BE(tmp_int[0]);
+            block->start_offset = GINT32_FROM_BE(tmp_int[1]);
+            block->end_offset = GINT32_FROM_BE(tmp_int[2]);            
         } else {
-            gint64 tmp_int[3] = {0,0,0};
-            fread(tmp_int, sizeof(gint64), 3, file);
+            gint64 *tmp_int = (gint64 *)_priv->cur_ptr;
+            _priv->cur_ptr += 3*sizeof(gint64);
             /* Conversion */
-            block->pregap_offset = GUINT64_FROM_BE(tmp_int[0]);
-            block->start_offset = GUINT64_FROM_BE(tmp_int[1]);
-            block->end_offset = GUINT64_FROM_BE(tmp_int[2]);
+            block->pregap_offset = GINT64_FROM_BE(tmp_int[0]);
+            block->start_offset = GINT64_FROM_BE(tmp_int[1]);
+            block->end_offset = GINT64_FROM_BE(tmp_int[2]);
         }
         
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  ISRC: %.12s\n", __func__, block->isrc);
@@ -324,46 +345,33 @@ static gboolean __mirage_disc_nrg_load_dao_data (MIRAGE_Disc *self, FILE *file, 
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  end offset: 0x%llX\n", __func__, block->end_offset);
     }
     
-    if (num_blocks) {
-        *num_blocks = _num_blocks;
-    }
-    
     return TRUE;
 }
 
-static gboolean __mirage_disc_nrg_load_session (MIRAGE_Disc *self, FILE *file, guint64 pos, GError **error) {
+static gboolean __mirage_disc_nrg_load_session (MIRAGE_Disc *self, GError **error) {
     MIRAGE_Disc_NRGPrivate *_priv = MIRAGE_DISC_NRG_GET_PRIVATE(self);
     gboolean succeeded = TRUE;
     
-    NRG_CUE_Block *cue_blocks = NULL;
-    NRG_DAO_Header *dao_header = NULL;
-    NRG_DAO_Block *dao_blocks = NULL;
-    gint num_cue_blocks = 0;
-    gint num_dao_blocks = 0;
-    
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: loading session\n", __func__);
-
-    /* Seek to position of session's data blocks */
-    fseeko(file, pos, SEEK_SET);
     
     /* Read CUEX/CUES blocks */
-    if (!__mirage_disc_nrg_load_cue_data(self, file, &cue_blocks, &num_cue_blocks, error)) {
+    if (!__mirage_disc_nrg_load_cue_data(self, error)) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to load CUE blocks!\n", __func__);
         succeeded = FALSE;
         goto end;
     }
     
     /* Read DAOX/DAOI blocks */
-    if (!__mirage_disc_nrg_load_dao_data(self, file, &dao_header, &dao_blocks, &num_dao_blocks, error)) {
+    if (!__mirage_disc_nrg_load_dao_data(self, error)) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to load DAO blocks!\n", __func__);
         succeeded = FALSE;
         goto end;
     }
     
     /* Set disc's MCN */
-    if (dao_header->mcn) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: MCN: %.13s\n", __func__, dao_header->mcn);
-        mirage_disc_set_mcn(self, dao_header->mcn, NULL);
+    if (_priv->dao_header->mcn) {
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: MCN: %.13s\n", __func__, _priv->dao_header->mcn);
+        mirage_disc_set_mcn(self, _priv->dao_header->mcn, NULL);
     } 
     
     /* Build session */
@@ -377,8 +385,8 @@ static gboolean __mirage_disc_nrg_load_session (MIRAGE_Disc *self, FILE *file, g
     }
     
     /* Use DAO blocks to build tracks */
-    for (i = 0; i < num_dao_blocks; i++) {
-        NRG_DAO_Block *dao_block = dao_blocks+i;
+    for (i = 0; i < _priv->num_dao_blocks; i++) {
+        NRG_DAO_Block *dao_block = _priv->dao_blocks + i;
         
         GObject *cur_track = NULL;        
         gint mode = 0;
@@ -549,8 +557,8 @@ static gboolean __mirage_disc_nrg_load_session (MIRAGE_Disc *self, FILE *file, g
     
     /* Use CUE blocks to set pregaps and indices */
     gint track_start = 0;
-    for (i = 0; i < num_cue_blocks; i++) {
-        NRG_CUE_Block *cue_block = cue_blocks+i;
+    for (i = 0; i < _priv->num_cue_blocks; i++) {
+        NRG_CUE_Block *cue_block = _priv->cue_blocks + i;
                 
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: track %i, index %i, sector 0x%X\n", __func__, cue_block->track, cue_block->index, cue_block->start_sector);
         
@@ -608,45 +616,45 @@ static gboolean __mirage_disc_nrg_load_session (MIRAGE_Disc *self, FILE *file, g
     g_object_unref(cur_session);
     
 end:
-    /* Free data (it's safe to g_free NULL pointers...) */
-    g_free(cue_blocks);
-    g_free(dao_header);
-    g_free(dao_blocks);
+    /* Free data */
+    g_free(_priv->cue_blocks);
+    _priv->num_cue_blocks = 0;
+    g_free(_priv->dao_header);
+    g_free(_priv->dao_blocks);
+    _priv->num_dao_blocks = 0;
     
     return succeeded;
 }
 
 
-static gboolean __mirage_disc_nrg_load_cdtext (MIRAGE_Disc *self, FILE *file, guint64 pos, GError **error) {
-    guint8 block_id[4] = {};
-    gint cdtx_len = 0;
+static gboolean __mirage_disc_nrg_load_cdtext (MIRAGE_Disc *self, GError **error) {
+    MIRAGE_Disc_NRGPrivate *_priv = MIRAGE_DISC_NRG_GET_PRIVATE(self);
+    guint8 *block_id = NULL;
+    guint32 cdtx_len = 0;
     guint8 *cdtx_data = NULL;
-    
+       
     GObject *session = NULL;   
     gboolean succeeded = TRUE;
     
     /* We expect to find 'CDTX' at given pos */
-    fseeko(file, pos, SEEK_SET);
-    fread(block_id, sizeof(block_id), 1, file);
+    block_id = _priv->cur_ptr;
+    _priv->cur_ptr += 4;
+
     if (memcmp(block_id, "CDTX", 4)) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: expected to find CDTX but found %c%c%c%c instead!\n", __func__, block_id[0], block_id[1], block_id[2], block_id[3]);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: expected to find CDTX but found %.4s instead!\n", __func__, block_id);
         mirage_error(MIRAGE_E_PARSER, error);
         succeeded = FALSE;
         goto end;
     }
-    /* Read CDTX length */
-    fread((void *)&cdtx_len, sizeof(cdtx_len), 1, file);
-    cdtx_len = GINT32_FROM_BE(cdtx_len);
-    /* Allocate space and read CUEX data */
-    cdtx_data = g_malloc0(cdtx_len);
-    if (!cdtx_data) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to allocate space for CDTX data!\n", __func__);
-        mirage_error(MIRAGE_E_PARSER, error);
-        succeeded = FALSE;
-        goto end;
-    }
-    fread(cdtx_data, 1, cdtx_len, file);
     
+    /* Read CDTX length */
+    cdtx_len = MAKE_CAST(guint32, _priv->cur_ptr[0]);
+    _priv->cur_ptr += sizeof(guint32);
+    cdtx_len = GINT32_FROM_BE(cdtx_len);
+    
+    /* Read CDTX data */
+    cdtx_data = _priv->cur_ptr;
+        
     if (mirage_disc_get_session_by_index(self, 0, &session, error)) {
         if (!mirage_session_set_cdtext_data(MIRAGE_SESSION(session), cdtx_data, cdtx_len, error)) {
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to set CD-TEXT data!\n", __func__);
@@ -658,10 +666,7 @@ static gboolean __mirage_disc_nrg_load_cdtext (MIRAGE_Disc *self, FILE *file, gu
         succeeded = FALSE;
     }
         
-end:
-    /* Free data (it's safe to g_free NULL pointers...) */
-    g_free(cdtx_data);
-    
+end:    
     return succeeded;
 }
 
@@ -717,9 +722,10 @@ static gboolean __mirage_disc_nrg_can_load_file (MIRAGE_Disc *self, gchar *filen
 }
 
 static gboolean __mirage_disc_nrg_load_image (MIRAGE_Disc *self, gchar **filenames, GError **error) {
+    MIRAGE_Disc_NRGPrivate *_priv = MIRAGE_DISC_NRG_GET_PRIVATE(self);
     gboolean succeeded = TRUE;
     
-    /* For now, MDS parser supports only one-file images */
+    /* For now, NRG parser supports only one-file images */
     if (g_strv_length(filenames) > 1) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: only single-file images supported!\n", __func__);
         mirage_error(MIRAGE_E_SINGLEFILE, error);
@@ -777,40 +783,49 @@ static gboolean __mirage_disc_nrg_load_image (MIRAGE_Disc *self, gchar **filenam
     /* Medium type; CD-ROM by default, if there's MTYP block, it'll be changed
        accordingly */
     mirage_disc_set_medium_type(self, MIRAGE_MEDIUM_CD, NULL);
-        
-    /* Get to the start of index data */
+    
+    /* Read descriptor data */
+    guint64 desc_len = (filesize - 12) - trailer_offset;
+    _priv->nrg_data = g_malloc0(desc_len);
     fseeko(file, trailer_offset, SEEK_SET);
+    fread(_priv->nrg_data, desc_len, 1, file);
+    
+    /* We use our own cur_ptr here, which we pass as _priv->cur_ptr when calling
+       a function */
+    guint8 *cur_ptr = NULL;
     
     /* Go over the blocks and do what's to be done... */
-    guint64 pos;
-    for (pos = trailer_offset; pos < (filesize - 12); /* it gets calculated within loop */) {
-        gchar block_id[4] = {};
-        gint block_length = 0;
+    for (cur_ptr = _priv->nrg_data; cur_ptr < _priv->nrg_data + desc_len; /* adjusted within loop */) {
+        gchar *block_id = NULL;
+        guint32 block_length = 0;
         
-        /* Seek to the given i... that's to allow the loading code to do seeks on its own */
-        fseeko(file, pos, SEEK_SET);
-            
-        /* Read block ID */
-        fread(block_id, sizeof(block_id), 1, file);
-        pos += sizeof(block_id); /* Can't use fread's return because that'd be item count >.< */
-        /* Read block length */
-        fread((void *)&block_length, sizeof(block_length), 1, file);
-        pos += sizeof(block_length); /* Can't use fread's return because that'd be item count >.< */
+        /* We set _priv->cur_ptr before moving cur_ptr, because functions expect
+           it to be pointing at the beginning of the block (i.e. at the block ID) */
+        _priv->cur_ptr = cur_ptr;
+        
+        /* Read block ID (4 bytes) */
+        block_id = (gchar *)cur_ptr;
+        cur_ptr += 4;
+        
+        /* Read block length (4 bytes) */
+        block_length = MAKE_CAST(guint32, cur_ptr[0]);
+        cur_ptr += sizeof(guint32);        
+        
         /* Convert block length from Big-Endian... */
         block_length = GINT32_FROM_BE(block_length);
         
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: found block '%c%c%c%c', length: %i (0x%X)\n", __func__, block_id[0], block_id[1], block_id[2], block_id[3], block_length, block_length);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: found block '%.4s', length: %i (0x%X)\n", __func__, block_id, block_length, block_length);
         
         if ((!memcmp(block_id, "CUEX", 4)) || (!memcmp(block_id, "CUES", 4))) {
             /* CUEX/CUES block: means we need to make new session */
-            if (!__mirage_disc_nrg_load_session(self, file, pos - sizeof(block_id) - sizeof(block_length), error)) {
+            if (!__mirage_disc_nrg_load_session(self, error)) {
                 succeeded = FALSE;
                 break;
             }
         } else if ((!memcmp(block_id, "DAOX", 4)) || (!memcmp(block_id, "DAOI", 4))) {
             /* DAOX/DAOI block: we skip this one, because it should've been read together with CUEX/CUES */
         } else if (!memcmp(block_id, "CDTX", 4)) {
-            if (!__mirage_disc_nrg_load_cdtext(self, file, pos - sizeof(block_id) - sizeof(block_length), error)) {
+            if (!__mirage_disc_nrg_load_cdtext(self, error)) {
                 succeeded = FALSE;
                 break;
             }
@@ -819,18 +834,21 @@ static gboolean __mirage_disc_nrg_load_image (MIRAGE_Disc *self, gchar **filenam
                but we don't really need that one anyway) */
         } else if (!memcmp(block_id, "MTYP", 4)) {
             /* MTYP: medium type */            
-            if (!__mirage_disc_nrg_load_medium_type(self, file, pos - sizeof(block_id) - sizeof(block_length), error)) {
+            if (!__mirage_disc_nrg_load_medium_type(self, error)) {
                 succeeded = FALSE;
                 break;
             }
-        } else if (!memcmp(block_id, "!END", 4)) {
+        } else if (!memcmp(block_id, "END!", 4)) {
             /* !END: self-explanatory */
+        } else {
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: unknown block '%.4s'!\n", __func__, block_id);
         }
         
-        /* Skip the content */
-        pos += block_length;
+        /* Skip block ID, block lengths and block's content */
+        cur_ptr += block_length;
     }
     
+    g_free(_priv->nrg_data);
     fclose(file);
     
     return succeeded;
