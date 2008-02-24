@@ -55,7 +55,6 @@ class CDEmu (object):
             self.__print_error(_("Failed to load configuration from file '%s': %s") % (path, sys.exc_value))
             pass
 
-            
         return
     
     def process_command (self, argv):
@@ -105,13 +104,13 @@ class CDEmu (object):
         return
 
     # Command handlers
-    def __load_device (self, arguments):
+    def __cmd_load_device (self, arguments):
         if len(arguments) < 2:
             self.__print_invalid_number_of_parameters("load")
             return
         
         # Load device
-        device = int(arguments[0])
+        device = string.atoi(arguments[0], 0)
         filenames = arguments[1:]
         
         # We need to pass absolute filenames to daemon, because its working
@@ -125,13 +124,13 @@ class CDEmu (object):
             self.__print_error(_("Failed to load image: %s") % (sys.exc_value))
             return
     
-    def __unload_device (self, arguments):
+    def __cmd_unload_device (self, arguments):
         if len(arguments) != 1:
             self.__print_invalid_number_of_parameters("unload")
             return
         
         # Unload device
-        device = int(arguments[0])
+        device = string.atoi(arguments[0], 0)
         
         try:
             self.__dbus_iface.DeviceUnload(device)
@@ -139,7 +138,7 @@ class CDEmu (object):
             self.__print_error(_("Failed to unload device %i: %s") % (device, sys.exc_value))
             return
 
-    def __display_status (self, arguments):
+    def __cmd_display_status (self, arguments):
         # Print status for all devices
         try:
             nr_devices = self.__dbus_iface.GetNumberOfDevices()
@@ -161,10 +160,9 @@ class CDEmu (object):
             for i in range(1, len(filenames)):
                 print "%-5s %-10s %-10s %s" % ("", "", "", filenames[i])
                     
-    def __device_debug (self, arguments):
-        # Get debug mask
-        if len(arguments) == 2:
-            type = arguments[1]
+    def __cmd_daemon_debug_mask (self, arguments):
+        # Get daemon debug mask
+        if len(arguments) == 1:
             # Particular device vs. all devices
             if arguments[0] == "all":
                 try:
@@ -173,30 +171,32 @@ class CDEmu (object):
                     self.__print_error(_("Failed to get number of devices: %s") % (sys.exc_value))
                     return
                 
-                print _("Debug masks for devices (type: '%s'):") % (type)
+                print _("Daemon debug masks for devices:")
                 print "%-5s %-10s" % (_("DEV"), _("DEBUG MASK"))
                 
                 for device in range(0, nr_devices):
                     try:
-                        dbg_mask = self.__dbus_iface.DeviceGetDebugMask(device, type)
+                        values = self.__dbus_iface.DeviceGetOption(device, "daemon-debug-mask")
+                        dbg_mask = values[0]
                     except:
-                        self.__print_error(_("Failed to get debug mask for device %i: %s") % (device, sys.exc_value))
+                        self.__print_error(_("Failed to get daemon debug mask for device %i: %s") % (device, sys.exc_value))
                         continue
                         
-                    print "%-5s 0x%04X" % (device, dbg_mask)
+                    print "%-5s 0x%08X" % (device, dbg_mask)
             else:
-                device = string.atoi(arguments[0])
+                device = string.atoi(arguments[0], 0)
                 try:
-                    dbg_mask = self.__dbus_iface.DeviceGetDebugMask(device, type)
+                    values = self.__dbus_iface.DeviceGetOption(device, "daemon-debug-mask")
+                    dbg_mask = values[0]
                 except:
-                    self.__print_error(_("Failed to get debug mask for device %i: %s") % (device, sys.exc_value))
-                    sys.exit(-1)
+                    self.__print_error(_("Failed to get daemon debug mask for device %i: %s") % (device, sys.exc_value))
+                    return
                 
-                print _("Debug mask for device %i: 0x%X (type: '%s')") % (device, dbg_mask, type)
-        # Set debug mask
-        elif len(arguments) == 3:
-            type = arguments[1]
-            dbg_mask = string.atoi(arguments[2], 0)
+                print _("Daemon debug mask for device %i: 0x%X") % (device, dbg_mask)
+                
+        # Set daemon debug mask
+        elif len(arguments) == 2:
+            dbg_mask = string.atoi(arguments[1], 0)
             if arguments[0] == "all":
                 try:
                     nr_devices = self.__dbus_iface.GetNumberOfDevices()
@@ -204,29 +204,292 @@ class CDEmu (object):
                     self.__print_error(_("Failed to get number of devices: %s") % (sys.exc_value))
                     return
                 
-                print _("Setting debug mask for all devices to 0x%X (type: '%s').") % (dbg_mask, type)
+                print _("Setting daemon debug mask for all devices to 0x%X.") % (dbg_mask)
                 for device in range(0, nr_devices):
                     try:
-                        self.__dbus_iface.DeviceSetDebugMask(device, type, dbg_mask)
+                        self.__dbus_iface.DeviceSetOption(device, "daemon-debug-mask", [ dbg_mask ])
                     except:
-                        self.__print_error(_("Failed to set debug mask for device %i to 0x%X: %s") % (device, dbg_mask, sys.exc_value))
+                        self.__print_error(_("Failed to set daemon debug mask for device %i to 0x%X: %s") % (device, dbg_mask, sys.exc_value))
                         continue
             else:
                 device = string.atoi(arguments[0], 0)
-                print _("Setting debug mask for device %i to 0x%X (type: '%s').") % (device, dbg_mask, type)
+                print _("Setting daemon debug mask for device %i to 0x%X.") % (device, dbg_mask)
                 try:
-                    self.__dbus_iface.DeviceSetDebugMask(device, type, dbg_mask)
+                    self.__dbus_iface.DeviceSetOption(device, "daemon-debug-mask", [ dbg_mask ])
                 except:
-                    self.__print_error(_("Failed to set debug mask for device %i to 0x%X: %s") % (device, dbg_mask, sys.exc_value))
+                    self.__print_error(_("Failed to set daemon debug mask for device %i to 0x%X: %s") % (device, dbg_mask, sys.exc_value))
                     return
         else:
-            self.__print_invalid_number_of_parameters("device-debug")
+            self.__print_invalid_number_of_parameters("daemon-debug-mask")
             return
+        
+        return
     
-    def __supported_parsers (self, arguments):
+    def __cmd_library_debug_mask (self, arguments):
+        # Get debug mask
+        if len(arguments) == 1:
+            # Particular device vs. all devices
+            if arguments[0] == "all":
+                try:
+                    nr_devices = self.__dbus_iface.GetNumberOfDevices()
+                except:
+                    self.__print_error(_("Failed to get number of devices: %s") % (sys.exc_value))
+                    return
+                
+                print _("Library debug masks for devices:")
+                print "%-5s %-10s" % (_("DEV"), _("DEBUG MASK"))
+                
+                for device in range(0, nr_devices):
+                    try:
+                        values = self.__dbus_iface.DeviceGetOption(device, "library-debug-mask")
+                        dbg_mask = values[0]
+                    except:
+                        self.__print_error(_("Failed to get library debug mask for device %i: %s") % (device, sys.exc_value))
+                        continue
+                        
+                    print "%-5s 0x%08X" % (device, dbg_mask)
+            else:
+                device = string.atoi(arguments[0], 0)
+                try:
+                    values = self.__dbus_iface.DeviceGetOption(device, "library-debug-mask")
+                    dbg_mask = values[0]
+                except:
+                    self.__print_error(_("Failed to get library debug mask for device %i: %s") % (device, sys.exc_value))
+                    return
+                
+                print _("Library debug mask for device %i: 0x%X") % (device, dbg_mask)
+                
+        # Set debug mask
+        elif len(arguments) == 2:
+            dbg_mask = string.atoi(arguments[1], 0)
+            if arguments[0] == "all":
+                try:
+                    nr_devices = self.__dbus_iface.GetNumberOfDevices()
+                except:
+                    self.__print_error(_("Failed to get number of devices: %s") % (sys.exc_value))
+                    return
+                
+                print _("Setting library debug mask for all devices to 0x%X.") % (dbg_mask)
+                for device in range(0, nr_devices):
+                    try:
+                        self.__dbus_iface.DeviceSetOption(device, "library-debug-mask", [ dbg_mask ])
+                    except:
+                        self.__print_error(_("Failed to set library debug mask for device %i to 0x%X: %s") % (device, dbg_mask, sys.exc_value))
+                        continue
+            else:
+                device = string.atoi(arguments[0], 0)
+                print _("Setting library debug mask for device %i to 0x%X.") % (device, dbg_mask)
+                try:
+                    self.__dbus_iface.DeviceSetOption(device, "library-debug-mask", [ dbg_mask ])
+                except:
+                    self.__print_error(_("Failed to set library debug mask for device %i to 0x%X: %s") % (device, dbg_mask, sys.exc_value))
+                    return
+        else:
+            self.__print_invalid_number_of_parameters("library-debug-mask")
+            return
+        
+        return
+    
+    def __cmd_dpm_emulation (self, arguments):
+        # Get DPM emulation flag
+        if len(arguments) == 1:
+            # Particular device vs. all devices
+            if arguments[0] == "all":
+                try:
+                    nr_devices = self.__dbus_iface.GetNumberOfDevices()
+                except:
+                    self.__print_error(_("Failed to get number of devices: %s") % (sys.exc_value))
+                    return
+                
+                print _("DPM emulation flag for devices:")
+                print "%-5s %-10s" % (_("DEV"), _("ENABLED"))
+                
+                for device in range(0, nr_devices):
+                    try:
+                        [ enabled ] = self.__dbus_iface.DeviceGetOption(device, "dpm-emulation")
+                    except:
+                        self.__print_error(_("Failed to get DPM emulation flag for device %i: %s") % (device, sys.exc_value))
+                        continue
+                        
+                    print "%-5s %i" % (device, enabled)
+            else:
+                device = string.atoi(arguments[0], 0)
+                try:
+                    [ enabled ] = self.__dbus_iface.DeviceGetOption(device, "dpm-emulation")
+                except:
+                    self.__print_error(_("Failed to get DPM emulation flag for device %i: %s") % (device, sys.exc_value))
+                    return
+                
+                print _("DPM emulation flag for device %i: %i") % (device, enabled)
+                
+        # Set DPM emulation flag
+        elif len(arguments) == 2:
+            enabled = string.atoi(arguments[1], 0) and True or False
+            if arguments[0] == "all":
+                try:
+                    nr_devices = self.__dbus_iface.GetNumberOfDevices()
+                except:
+                    self.__print_error(_("Failed to get number of devices: %s") % (sys.exc_value))
+                    return
+                
+                print _("Setting DPM emulation flag for all devices to %i.") % (enabled)
+                for device in range(0, nr_devices):
+                    try:
+                        self.__dbus_iface.DeviceSetOption(device, "dpm-emulation", [ enabled ])
+                    except:
+                        self.__print_error(_("Failed to set DPM emulation for device %i to %i: %s") % (device, enabled, sys.exc_value))
+                        continue
+            else:
+                device = string.atoi(arguments[0], 0)
+                print _("Setting DPM emulation flag for device %i to %i.") % (device, enabled)
+                try:
+                    self.__dbus_iface.DeviceSetOption(device, "dpm-emulation", [ enabled ])
+                except:
+                    self.__print_error(_("Failed to set DPM emulation flag for device %i to %i: %s") % (device, enabled, sys.exc_value))
+                    return
+        else:
+            self.__print_invalid_number_of_parameters("dpm-emulation")
+            return
+        
+        return
+        
+    def __cmd_tr_emulation (self, arguments):
+        # Get TR emulation flag
+        if len(arguments) == 1:
+            # Particular device vs. all devices
+            if arguments[0] == "all":
+                try:
+                    nr_devices = self.__dbus_iface.GetNumberOfDevices()
+                except:
+                    self.__print_error(_("Failed to get number of devices: %s") % (sys.exc_value))
+                    return
+                
+                print _("Transfer rate emulation flag for devices:")
+                print "%-5s %-10s" % (_("DEV"), _("ENABLED"))
+                
+                for device in range(0, nr_devices):
+                    try:
+                        [ enabled ] = self.__dbus_iface.DeviceGetOption(device, "tr-emulation")
+                    except:
+                        self.__print_error(_("Failed to get transfer rate emulation flag for device %i: %s") % (device, sys.exc_value))
+                        continue
+                        
+                    print "%-5s %i" % (device, enabled)
+            else:
+                device = string.atoi(arguments[0], 0)
+                try:
+                    [ enabled ] = self.__dbus_iface.DeviceGetOption(device, "tr-emulation")
+                except:
+                    self.__print_error(_("Failed to get transfer rate emulation flag for device %i: %s") % (device, sys.exc_value))
+                    return
+                
+                print _("Transfer rate emulation flag for device %i: %i") % (device, enabled)
+                
+        # Set DPM emulation flag
+        elif len(arguments) == 2:
+            enabled = string.atoi(arguments[1], 0) and True or False
+            if arguments[0] == "all":
+                try:
+                    nr_devices = self.__dbus_iface.GetNumberOfDevices()
+                except:
+                    self.__print_error(_("Failed to get number of devices: %s") % (sys.exc_value))
+                    return
+                
+                print _("Setting transfer rate emulation flag for all devices to %i.") % (enabled)
+                for device in range(0, nr_devices):
+                    try:
+                        self.__dbus_iface.DeviceSetOption(device, "tr-emulation", [ enabled ])
+                    except:
+                        self.__print_error(_("Failed to set transfer rate emulation for device %i to %i: %s") % (device, enabled, sys.exc_value))
+                        continue
+            else:
+                device = string.atoi(arguments[0], 0)
+                print _("Setting transfer rate emulation flag for device %i to %i.") % (device, enabled)
+                try:
+                    self.__dbus_iface.DeviceSetOption(device, "tr-emulation", [ enabled ])
+                except:
+                    self.__print_error(_("Failed to set transfer rate emulation flag for device %i to %i: %s") % (device, enabled, sys.exc_value))
+                    return
+        else:
+            self.__print_invalid_number_of_parameters("tr-emulation")
+            return
+        
+        return
+    
+    def __cmd_device_id (self, arguments):
+        # Get device ID
+        if len(arguments) == 1:
+            # Particular device vs. all devices
+            if arguments[0] == "all":
+                try:
+                    nr_devices = self.__dbus_iface.GetNumberOfDevices()
+                except:
+                    self.__print_error(_("Failed to get number of devices: %s") % (sys.exc_value))
+                    return
+                
+                print _("Device ID flag for devices:")
+                print "%-5s %s" % (_("DEV"), _("DEVICE ID"))
+                
+                for device in range(0, nr_devices):
+                    try:
+                        values = self.__dbus_iface.DeviceGetOption(device, "device-id")
+                        device_id = []
+                        for value in values:
+                            device_id.append(str(value))
+                    except:
+                        self.__print_error(_("Failed to get device ID for device %i: %s") % (device, sys.exc_value))
+                        continue
+                        
+                    print "%-5s %s" % (device, device_id)
+            else:
+                device = string.atoi(arguments[0], 0)
+                try:
+                    values = self.__dbus_iface.DeviceGetOption(device, "device-id")
+                    device_id = []
+                    for value in values:
+                        device_id.append(str(value))
+                except:
+                    self.__print_error(_("Failed to get device ID for device %i: %s") % (device, sys.exc_value))
+                    return
+                
+                print _("Device ID for device %i: %s") % (device, device_id)
+                
+        # Set device ID
+        elif len(arguments) == 5:
+            device_id = [ arguments[1], arguments[2], arguments[3], arguments[4] ]
+            
+            if arguments[0] == "all":
+                try:
+                    nr_devices = self.__dbus_iface.GetNumberOfDevices()
+                except:
+                    self.__print_error(_("Failed to get number of devices: %s") % (sys.exc_value))
+                    return
+                
+                print _("Setting device ID for all devices to %s.") % (device_id)
+                for device in range(0, nr_devices):
+                    try:
+                        self.__dbus_iface.DeviceSetOption(device, "device-id", device_id)
+                    except:
+                        self.__print_error(_("Failed to set device ID for device %i to %s: %s") % (device, device_id, sys.exc_value))
+                        continue
+            else:
+                device = string.atoi(arguments[0], 0)
+                print _("Setting device ID for device %i to %s.") % (device, device_id)
+                try:
+                    self.__dbus_iface.DeviceSetOption(device, "device-id", device_id)
+                except:
+                    self.__print_error(_("Failed to set device ID for device %i to %s: %s") % (device, device_id, sys.exc_value))
+                    return
+        else:
+            self.__print_invalid_number_of_parameters("device-id")
+            return
+        
+        return
+    
+    def __cmd_enum_supported_parsers (self, arguments):
         # Display supported parsers
         try:
-            parsers = self.__dbus_iface.GetSupportedParsers()
+            parsers = self.__dbus_iface.EnumSupportedParsers()
         except:
             self.__print_error(_("Failed to get list of supported parsers: %s") % (sys.exc_value))
             return
@@ -259,13 +522,15 @@ class CDEmu (object):
                 print _("Parser with ID '%s' not found!") % (arguments[0])
                 return
         else:
-            self.__print_invalid_number_of_parameters("supported-parsers")
+            self.__print_invalid_number_of_parameters("enum-supported-parsers")
             return
-    
-    def __supported_fragments (self, arguments):
+        
+        return
+        
+    def __cmd_enum_supported_fragments (self, arguments):
         # Display supported fragments
         try:
-            fragments = self.__dbus_iface.GetSupportedFragments()
+            fragments = self.__dbus_iface.EnumSupportedFragments()
         except:
             self.__print_error(_("Failed to get list of supported fragments: %s") % (sys.exc_value))
             return
@@ -297,45 +562,67 @@ class CDEmu (object):
                 print _("Fragment with ID '%s' not found!") % (arguments[0])
                 return
         else:
-            self.__print_invalid_number_of_parameters("supported-fragments")
-            return
-    
-    def __device_debug_masks (self, arguments):
-        if len(arguments) != 1:
-            self.__print_invalid_number_of_parameters("device-debug-masks")
+            self.__print_invalid_number_of_parameters("enum-supported-fragments")
             return
         
-        type = arguments[0]
+        return
         
+    def __cmd_enum_daemon_debug_masks (self, arguments):
+        if len(arguments) != 0:
+            self.__print_invalid_number_of_parameters("enum-daemon-debug-masks")
+            return
+                
         # Print module's debug masks
         try:
-            debug_masks = self.__dbus_iface.GetDeviceDebugMasks(type)
+            debug_masks = self.__dbus_iface.EnumDaemonDebugMasks()
         except:
-            self.__print_error(_("Failed to get list of supported device debug masks: %s") % (sys.exc_value))
+            self.__print_error(_("Failed to get list of supported daemon debug masks: %s") % (sys.exc_value))
             return
         
-        print _("Supported debug masks (type: '%s'):") % (type)
+        print _("Supported daemon debug masks:")
         for debug_mask in debug_masks:
             print "  %-25s: 0x%04X" % (debug_mask[0], debug_mask[1])
+        
+        return
+        
+    def __cmd_enum_library_debug_masks (self, arguments):
+        if len(arguments) != 0:
+            self.__print_invalid_number_of_parameters("enum-library-debug-masks")
+            return
+                
+        # Print module's debug masks
+        try:
+            debug_masks = self.__dbus_iface.EnumLibraryDebugMasks()
+        except:
+            self.__print_error(_("Failed to get list of supported library debug masks: %s") % (sys.exc_value))
+            return
+        
+        print _("Supported library debug masks:")
+        for debug_mask in debug_masks:
+            print "  %-25s: 0x%04X" % (debug_mask[0], debug_mask[1])
+        
+        return
     
-    def __version (self, arguments):
+    def __cmd_version (self, arguments):
         # Print version information
         library_version = ""
         daemon_version  = ""
         try:
-            library_version = self.__dbus_iface.GetVersion("library")
+            library_version = self.__dbus_iface.GetLibraryVersion()
         except:
             self.__print_error(_("Failed to get library version: %s") % (sys.exc_value))
-            sys.exit(-1)
+            return
         try:
-            daemon_version = self.__dbus_iface.GetVersion("daemon")
+            daemon_version = self.__dbus_iface.GetDaemonVersion()
         except:
             self.__print_error(_("Failed to get daemon version: %s") % (sys.exc_value))
-            sys.exit(-1)
+            return
                 
         print _("Library version: %s") % (str(library_version))
         print _("Daemon version: %s")  % (str(daemon_version))
-
+        
+        return
+        
     def __connect (self):
         try:
             if self.__bus_type == "system":
@@ -353,7 +640,12 @@ class CDEmu (object):
         except:
             self.__print_error(_("Failed to connect to CDEmu daemon: %s") % (sys.exc_value))
             return False
-            
+        
+        daemon_version = self.__dbus_iface.GetDaemonVersion()
+        if daemon_version < config.min_daemon_version:
+            self.__print_error(_("CDEmu daemon version %s detected, but at least version %s is required!") % (daemon_version, config.min_daemon_version))
+            return False
+        
         return True
         
     def __print_command_usage (self, command):
@@ -362,31 +654,39 @@ class CDEmu (object):
                 # We need to make sure we're not trying to 'translate' empty 
                 # string for the third argument
                 print _("Usage: %s %s %s") % ("cdemu", cur_command[0], cur_command[1] != "" and _(cur_command[1]) or "")
-    
+        
+        return
+        
     def __print_full_usage (self):
         print _("Usage: %s [options] <command> <command parameters>") % ("cdemu")
         print ""
         print _("Commands:")
         for cur_command in self.__commands:
-            print "  %-20s %s" % (cur_command[0], _(cur_command[2]))
+            print "  %-25s %s" % (cur_command[0], _(cur_command[2]))
         print ""
         print _("Options:")
-        print "  %-20s %s" % ("-h, --help", _("displays help message"))
-        print "  %-20s %s" % ("-v, --version", _("displays program version"))
-        print "  %-20s %s" % ("-b, --bus", _("sets D-BUS bus type to use; valid values are 'session' and 'system'"))
-    
+        print "  %-25s %s" % ("-h, --help", _("displays help message"))
+        print "  %-25s %s" % ("-v, --version", _("displays program version"))
+        print "  %-25s %s" % ("-b, --bus", _("sets D-BUS bus type to use; valid values are 'session' and 'system'"))
+        
+        return
+        
     def __print_invalid_number_of_parameters (self, command):
         self.__print_error(_("Invalid number of parameters for command '%s'!") % (command))
         self.__print_command_usage(command)
-    
+        return
+        
     def __print_version (self):
         print "%s %s - (C) Rok Mandeljc" % (config.name, config.version)
-    
+        return
+        
     def __print_error (self, message):
         print _("ERROR: %s") % (message)
-    
+        return
+        
     def __print_warning (self, message):
         print _("WARNING: %s") % (message)
+        return
     
     # Commands
     __commands = [
@@ -395,59 +695,90 @@ class CDEmu (object):
             "load",
             _("<device> <image file> [...]"),    
             _("loads the device"),
-            __load_device
+            __cmd_load_device
         ],
         # Unload
         [
             "unload",
             _("<device>"),
             _("unloads the device"),
-            __unload_device
+            __cmd_unload_device
         ],
         # Status
         [
             "status",
             "",
             _("displays the devices' status"),
-            __display_status
+            __cmd_display_status
         ],
-        # Device-debug
+        # Daemon-debug-mask
         [
-            "device-debug",
-            _("<device> <type> [new value]"),
-            _("displays/sets debug mask for the device"),
-            __device_debug
+            "daemon-debug-mask",
+            _("<device> [new value]"),
+            _("displays/sets daemon debug mask"),
+            __cmd_daemon_debug_mask
         ],
-        # Supported-parsers
+        # Library-debug-mask
         [
-            "supported-parsers",
-            "[parser_id]",
-            _("displays the information about supported parsers"),
-            __supported_parsers
+            "library-debug-mask",
+            _("<device> [new value]"),
+            _("displays/sets library debug mask"),
+            __cmd_library_debug_mask
         ],
-        # Supported-fragments
+        # DPM-emulation
         [
-            "supported-fragments",
-            "[fragment_id]",
-            _("displays the information about supported fragments"),
-            __supported_fragments
+            "dpm-emulation",
+            _("<device> [new value]"),
+            _("displays/sets DPM emulation flag"),
+            __cmd_dpm_emulation
         ],
-        # Device-debug-masks
+        # TR-emulation
         [
-            "device-debug-masks",
-            "<type>",
-            _("displays the list of valid debug masks"),
-            __device_debug_masks
+            "tr-emulation",
+            _("<device> [new value]"),
+            _("displays/sets transfer rate emulation flag"),
+            __cmd_tr_emulation
+        ],
+        # Device-ID
+        [
+            "device-id",
+            _("<device> [new vendor_id] [new product_id] [new revision] [new vendor_specific]"),
+            _("displays/sets device ID"),
+            __cmd_device_id
+        ],
+        # Enum-supported-parsers
+        [
+            "enum-supported-parsers",
+            _("[parser_id]"),
+            _("enumerates supported parsers"),
+            __cmd_enum_supported_parsers
+        ],
+        # Enum-supported-fragments
+        [
+            "enum-supported-fragments",
+            _("[fragment_id]"),
+            _("enumerates supported fragments"),
+            __cmd_enum_supported_fragments
+        ],
+        # Enum-daemon-debug-masks
+        [
+            "enum-daemon-debug-masks",
+            "",
+            _("enumerates valid daemon debug masks"),
+            __cmd_enum_daemon_debug_masks
+        ],
+        # Enum-library-debug-masks
+        [
+            "enum-library-debug-masks",
+            "",
+            _("enumerates valid library debug masks"),
+            __cmd_enum_library_debug_masks
         ],
         # Version
         [
             "version",
             "",
             _("displays version information"),
-            __version
+            __cmd_version
         ]
     ]
-    
-if __name__ == "__main__":
-    cdemu = CDEmu()
-    cdemu.process_command(sys.argv[1:])
