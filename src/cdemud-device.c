@@ -2632,7 +2632,13 @@ static gboolean __cdemud_device_pc_start_stop_unit (CDEMUD_Device *self, guint8 
     
     if (cdb->lo_ej) {
         if (!cdb->start) {
-            cdemud_device_unload_disc(self, NULL);
+            if (!cdemud_device_unload_disc(self, NULL)) {
+                CDEMUD_DEBUG(self, DAEMON_DEBUG_DEV_PC_TRACE, "%s: failed to unload disc\n", __func__);
+                __cdemud_device_write_sense(self, SK_NOT_READY, MEDIUM_REMOVAL_PREVENTED);
+                return FALSE;
+            } else {
+                CDEMUD_DEBUG(self, DAEMON_DEBUG_DEV_PC_TRACE, "%s: successfully unloaded disc\n", __func__);                
+            }
         }
     }
     
