@@ -15,16 +15,13 @@ AM_CONFIG_HEADER(config.h)
 
 AM_MAINTAINER_MODE
 
+# Programs
+AC_PROG_CC_STDC
+AC_PROG_INSTALL
+AC_PROG_MAKE_SET
+
 # Standard C headers
 AC_HEADER_STDC
-
-# Languages
-AC_LANG_C
-
-# Programs
-AC_PROG_INSTALL
-AM_PROG_LIBTOOL
-AC_PROG_MAKE_SET
 
 # Mandatory libraries
 PKG_CHECK_MODULES(glib, glib-2.0 >= 2.6)
@@ -63,7 +60,6 @@ if test "$GCC" = "yes" -a "$set_more_warnings" != "no"; then
     -Wchar-subscripts -Wmissing-declarations -Wmissing-prototypes \
     -Wnested-externs -Wpointer-arith \
     -Wcast-align -Wsign-compare \
-    -std=gnu89 \
     $CFLAGS"
 
     for option in -Wno-strict-aliasing -Wno-sign-compare; do
