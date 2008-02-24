@@ -2079,8 +2079,73 @@ gboolean mirage_disc_get_dpm_data (MIRAGE_Disc *self, gint *start, gint *resolut
  **/
 gboolean mirage_disc_get_dpm_data_for_sector (MIRAGE_Disc *self, gint address, gdouble *angle, gdouble *density, GError **error) {
     MIRAGE_DiscPrivate *_priv = MIRAGE_DISC_GET_PRIVATE(self);
-    /* Stub */
-    return FALSE;
+    gint rel_address = 0;
+    gint idx_bottom = 0;
+    
+    gdouble tmp_angle = 0;
+    gdouble tmp_density = 0;
+    
+    if (!_priv->dpm_num_entries) {
+        mirage_error(MIRAGE_E_DATANOTSET, error);
+        return FALSE;
+    }
+    
+    /* We'll operate with address relative to DPM data start sector */
+    rel_address = address - _priv->dpm_start;
+    
+    /* Check if relative address is out of range (account for possibility of 
+       sectors lying behind last DPM entry) */
+    if (rel_address < 0 || rel_address >= (_priv->dpm_num_entries+1)*_priv->dpm_resolution) {
+        mirage_error(MIRAGE_E_INVALIDARG, error);
+        return FALSE;
+    }
+    
+    /* Calculate index of DPM data entry belonging to the requested address */
+    idx_bottom = rel_address/_priv->dpm_resolution;
+            
+    /* Three possibilities; in all three cases we calculate tmp_density as the
+       difference between top and bottom angle, converted to rotations and 
+       divided by resolution. Because our DPM data entries don't contain entry
+       for address 0, but start with 1*dpm_resolution instead, we'll have to
+       readjust bottom index... (actual entry index is bottom index minus 1) */
+    if (idx_bottom == 0) {
+        /* If bottom index is 0, we have address between 0 and 1*dpm_resolution;
+           this means bottom angle is 0 and top angle is first DPM entry (with
+           index 0, which equals idx_bottom). */
+        tmp_density = _priv->dpm_data[idx_bottom];
+    } else if (idx_bottom == _priv->dpm_num_entries) {
+        /* Special case; we allow addresses past last DPM entry's address, but
+           only as long as they don't get past the address that would belong to 
+           next DPM entry. This is because resolution is not a factor of disc
+           length and therefore some sectors might remain past last DPM entry.
+           In this case, we use angles from previous interval. */
+        tmp_density = (_priv->dpm_data[idx_bottom-1] - _priv->dpm_data[idx_bottom-2]);
+    } else {
+        /* Regular case; top angle minus bottom angle, where we need to decrease
+           idx_bottom by one to account for index difference as described above */
+        tmp_density = (_priv->dpm_data[idx_bottom] - _priv->dpm_data[idx_bottom-1]);
+    }
+    tmp_density /= 256.0; /* Convert hex degrees into rotations */
+    tmp_density /= _priv->dpm_resolution; /* Rotations per sector */
+    
+    if (angle) {
+        tmp_angle = (rel_address - idx_bottom*_priv->dpm_resolution)*tmp_density; /* Angle difference */
+        /* Add base angle, but only if it's not 0 (which is the case when 
+           idx_bottom is 0) */
+        if (idx_bottom > 0) {
+            tmp_angle += _priv->dpm_data[idx_bottom-1]/256.0; /* Add bottom angle */
+        }
+        
+        *angle = tmp_angle;
+    }
+    
+    if (density) {
+        tmp_density *= 360; /* Degrees per sector */
+        
+        *density = tmp_density;
+    }
+        
+    return TRUE;
 }
 
 
