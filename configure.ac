@@ -23,6 +23,7 @@ PKG_CHECK_MODULES(glib, glib-2.0 >= 2.6)
 PKG_CHECK_MODULES(gobject, gobject-2.0 >= 2.6)
 PKG_CHECK_MODULES(gtk, gtk+-2.0 >= 2.6)
 PKG_CHECK_MODULES(libmirage, libmirage >= 1.0)
+PKG_CHECK_MODULES(gtkextra, gtkextra-2.0 >= 2.0.0)
 
 # Compile with more warnings
 AC_ARG_ENABLE(more-warnings,
