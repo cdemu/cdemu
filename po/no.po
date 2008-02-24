@@ -9,13 +9,13 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gCDEmu 1.0.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2008-02-03 22:00+0100\n"
+"POT-Creation-Date: 2008-02-21 19:49+0100\n"
 "PO-Revision-Date: 2008-02-03 22:00+0100\n"
 "Last-Translator: Henrik Stokseth <henrik@kabelkaos.net>\n"
 "Language-Team: Norwegian\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
-"Content-Transfer-Encoding: 8bit"
+"Content-Transfer-Encoding: 8bit\n"
 
 #: ../src/applet.py:107
 msgid "Use _system bus"
@@ -138,7 +138,7 @@ msgid "Set debug mask"
 msgstr "Sett avlusnings-maske"
 
 #. *** Frame: Status ***
-#: ../src/ui.py:170
+#: ../src/ui.py:170 ../src/ui.py:173
 msgid "Status"
 msgstr "Status"
 
@@ -155,11 +155,11 @@ msgid "File name: "
 msgstr "Fil navn: "
 
 #. Debug mask frames
-#: ../src/ui.py:216
+#: ../src/ui.py:216 ../src/ui.py:217
 msgid "Daemon"
 msgstr "Demon"
 
-#: ../src/ui.py:219
+#: ../src/ui.py:219 ../src/ui.py:220
 msgid "Library"
 msgstr "Bibliotek"
 
