@@ -1,4 +1,4 @@
-.TH CDEMU 1 "December 28, 2007"
+.TH CDEMU 1 "February 23, 2008"
 .SH NAME
 cdemu \- a simple command-line CDEmu client
 .SH SYNOPSIS
@@ -8,7 +8,7 @@ cdemu \- a simple command-line CDEmu client
 <command parameters>
 .SH DESCRIPTION
 This is cdemu-client, a simple command-line client for controlling CDEmu daemon.
-It is part of the userspace-cdemu suite, a free, GPL CD/DVD-ROM device emulator 
+It is part of the userspace-cdemu suite, a free, GPL CD/DVD-ROM device emulator
 for linux.
 
 It provides a way to perform the key tasks related to controlling the CDEmu
@@ -24,72 +24,105 @@ option.
 .SH OPTIONS
 .TP
 .B \-h --help
-Display the help message. If command is specified, help message with 
+Displays the help message. If command is specified, help message with 
 synopsis and description for that command is displayed.
 .TP
 .B \-v --version
-Print version info and exit.
+Prints version info and exits.
 .TP
 .B \-b --bus
-Set the D-BUS bus type to use for connection. Valid values are
+Sets the D-BUS bus type to use for connection. Valid values are
 .I session
 and
-.I system
-. If no bus is specified, session bus is used by default.
+.I system. 
+If no bus is specified, the default bus is used.
 .SH COMMANDS
 .TP 
 .B load <device> <filename> [...]
-Load the device;
+Loads the device;
 .B device
-is the number of the device that should be loaded.
+is the number of the desired device.
 .B filename
 is the image filename. For multi-file images, multiple filenames 
 can be provided.
 .TP
 .B unload <device>
-Unload the device;
+Unloads the device;
 .B device
-is the number of the device that should be unloaded.
+is the number of the desired device, or
+.I all.
 .TP
 .B status
-Display devices' status
+Displays devices' status
 .TP
-.B device-debug <device> <type> [new-value]
-Display/set debug mask for the device;
+.B daemon-debug-mask <device> [new-value]
+Displays/sets daemon debug mask;
 .B device
-is the number of the desired device.
-.B type
-is the component for which debug mask is to be retrieved/set. Valid values
-are
-.I daemon
-and
-.IR library .
+is the number of the desired device, or
+.I all.
 .B new-value
 is the new debug mask value. If this argument is omitted, current debug mask is
 displayed.
 .TP
-.B supported-parsers [parser_id]
-Display the list of supported parsers, which contains parsers' IDs, image descriptions
-and image suffixes. If 
+.B library-debug-mask <device> [new-value]
+Displays/sets library debug mask;
+.B device
+is the number of the desired device, or
+.I all.
+.B new-value
+is the new debug mask value. If this argument is omitted, current debug mask is
+displayed.
+.TP
+.B dpm-emulation <device> [new-value]
+Displays/sets DPM emulation flag.
+.B device
+is the number of the desired device, or
+.I all.
+.B new-value
+is the new value to be set. If this argument is ommited, currently set value is
+displayed.
+.TP
+.B tr-emulation <device> [new-value]
+Displays/sets transfer rate emulation flag.
+.B device
+is the number of the desired device, or 
+.I all.
+.B new-value
+is the new value to be set. If this argument is ommited, currently set value is
+displayed.
+.TP
+.B device-id <device> [new-vendor-id] [new-product-id] [new-revision] [new-vendor-specific]
+Displays/sets device ID.
+.B device
+is the number of the desired device.
+.B new-vendor-id
+is the new vendor ID string to be set (8 characters max).
+.B new-product-id
+is the new product ID string to be set (16 characters max).
+.B new-revision
+is the new revision string to be set (4 characters max).
+.B new-vendor-specific
+is the new vendor-specific string to be set (20 characters max).
+If new values are ommitted, currently set values are displayed.
+.TP
+.B enum-supported-parsers [parser_id]
+Enumerates supported parsers. If 
 .B parser_id
 is provided, information about specific parser is displayed instead.
 .TP
-.B supported-fragments [fragment_id]
-Display the list of supported fragments, which fragments' IDs, implemented interface
-and data file suffixes. If 
+.B enum-supported-fragments [fragment_id]
+Enumerates supported fragments. If 
 .B fragment_id
 is provided, information about specific fragment is displayed instead.
 .TP
-.B device-debug-masks <type>
-Display the list of supported debug masks;
-.B type
-is component for which supported debug masks are to be listed. Valid values are
-.I daemon
-and
-.IR library .
+.B enum-daemon-debug-masks
+Enumerates supported daemon debug masks.
+.TP
+.B enum-library-debug-masks
+Enumerates supported library debug masks;
 .TP
 .B version
-Display version information
+Displays version information
 .SH EXAMPLES
 .TP
 .B Loading a single image to first device:
@@ -101,26 +134,44 @@ cdemu load 0 ~/session1.toc ~/session2.toc ~/session3.toc
 .B Unloading first device:
 cdemu load 0
 .TP
-.B Listing supported parsers:
-cdemu supported-parsers
+.B Displaying device status:
+cdemu status
 .TP
-.B Obtaining information about specific parser:
-cdemu supported-parsers PARSER-TOC
-.TP
-.B Listing supported fragments:
-cdemu supported-fragments
-.TP
-.B Obtaining information about specific fragment:
-cdemu supported-fragments FRAGMENT-BINARY
-.TP
-.B Listing supported debug masks for library:
-cdemu device-debug-masks library
+.B Setting daemon debug mask for the first device:
+cdemu daemon-debug-mask 0 0x01
 .TP
 .B Obtaining library debug mask for the first device:
-cdemu device-debug 0 library
-.TP 
-.B Setting daemon debug mask for the first device:
-cdemu device-debug 0 daemon 0x01
+cdemu library-debug-mask 0
+.TP
+.B Disabling DPM emulation on all devices:
+cdemu dpm-emulation all 0
+.TP
+.B Enabling transfer rate emulation on first device:
+cdemu tr-emulation 0 1
+.TP
+.B Changing device ID of first device:
+cdemu device-id 0 "MyVendor" "MyProduct" "1.0.0" "Test device ID"
+.TP
+.B Enumerating supported parsers:
+cdemu enum-supported-parsers
+.TP
+.B Obtaining information about specific parser:
+cdemu enum-supported-parsers PARSER-TOC
+.TP
+.B Enumerating supported fragments:
+cdemu enum-supported-fragments
+.TP
+.B Obtaining information about specific fragment:
+cdemu enum-supported-fragments FRAGMENT-BINARY
+.TP
+.B Enumerating supported daemon debug masks:
+cdemu enum-daemon-debug-masks
+.TP
+.B Enumerating supported library debug masks:
+cdemu enum-library-debug-masks
+.TP
+.B Displaying daemon and library version:
+cdemu version
 .SH AUTHORS
 .PP
 Rok Mandeljc <rok.mandeljc@email.si>

@@ -1,5 +1,5 @@
 CDEmu client
-v.1.0.0
+v.1.1.0
 ~~~~~~~~~~~~~
 
 This is cdemu-client, a simple command-line client for controlling CDEmu daemon.
@@ -48,29 +48,45 @@ Loading multiple-file image to first device:
  
 Unloading first device:
  cdemu load 0
+
+Displaying device status:
+ cdemu status
+
+Setting daemon debug mask for the first device:
+ cdemu daemon-debug-mask 0 0x01
  
-Listing supported parsers:
- cdemu supported-parsers
+Obtaining library debug mask for the first device:
+ cdemu library-debug-mask 0
+
+Disabling DPM emulation on all devices:
+ cdemu dpm-emulation all 0
+ 
+Enabling transfer rate emulation on first device:
+ cdemu tr-emulation 0 1
+ 
+Changing device ID of first device:
+ cdemu device-id 0 "MyVendor" "MyProduct" "1.0.0" "Test device ID"
+ 
+Enumerating supported parsers:
+ cdemu enum-supported-parsers
 
 Obtaining information about specific parser:
- cdemu supported-parsers PARSER-TOC
+ cdemu enum-supported-parsers PARSER-TOC
 
-Listing supported fragments:
- cdemu supported-fragments
+Enumerating supported fragments:
+ cdemu enum-supported-fragments
 
 Obtaining information about specific fragment:
- cdemu supported-fragments FRAGMENT-BINARY
+ cdemu enum-supported-fragments FRAGMENT-BINARY
  
-Listing supported debug masks for library and daemon:
- cdemu device-debug-masks library
- cdemu device-debug-masks daemon
+Enumerating supported daemon debug masks:
+ cdemu enum-daemon-debug-masks
 
-Obtaining library debug mask for the first device:
- cdemu device-debug 0 library
- 
-Setting daemon debug mask for the first device:
- cdemu device-debug 0 daemon 0x01
+Enumerating supported library debug masks:
+ cdemu enum-library-debug-masks
 
+Displaying daemon and library version:
+ cdemu version
 
 System vs. session bus:
 ~~~~~~~~~~~~~~~~~~~~~~~
