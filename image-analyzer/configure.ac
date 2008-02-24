@@ -1,7 +1,7 @@
 # Process this file with autoconf to produce a configure script.
 
 # Project init
-AC_INIT(mirage-image-analyzer, [1.0.0], rok.mandeljc@email.si)
+AC_INIT(mirage-image-analyzer, [1.1.0], rok.mandeljc@email.si)
 AC_CONFIG_SRCDIR(src/main.c)
 AM_INIT_AUTOMAKE(AC_PACKAGE_NAME, AC_PACKAGE_VERSION)
 AM_CONFIG_HEADER(config.h)
@@ -20,7 +20,7 @@ AC_HEADER_STDC
 PKG_CHECK_MODULES(glib, glib-2.0 >= 2.6)
 PKG_CHECK_MODULES(gobject, gobject-2.0 >= 2.6)
 PKG_CHECK_MODULES(gtk, gtk+-2.0 >= 2.6)
-PKG_CHECK_MODULES(libmirage, libmirage >= 1.0)
+PKG_CHECK_MODULES(libmirage, libmirage >= 1.1.0)
 PKG_CHECK_MODULES(gtkextra, gtkextra-2.0 >= 2.0.0)
 
 # Compile with more warnings
