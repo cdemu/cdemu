@@ -14,6 +14,7 @@ DOC_FIGURES = \
     figures/gcdemu-fig6.png \
     figures/gcdemu-fig7.png \
     figures/gcdemu-fig8.png \
-    figures/gcdemu-fig9.png
+    figures/gcdemu-fig9.png \
+    figures/gcdemu-fig10.png
 
 DOC_LINGUAS = 

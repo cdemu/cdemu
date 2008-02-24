@@ -2,9 +2,9 @@
 <!DOCTYPE article PUBLIC "-//OASIS//DTD DocBook XML V4.1.2//EN" 
 "http://www.oasis-open.org/docbook/xml/4.1.2/docbookx.dtd" [
   <!ENTITY legal SYSTEM "legal.xml">
-  <!ENTITY appletversion "1.0.0">
-  <!ENTITY manrevision "1.0">
-  <!ENTITY date "September 2007">
+  <!ENTITY appletversion "1.1.0">
+  <!ENTITY manrevision "1.1">
+  <!ENTITY date "February 2008">
   <!ENTITY applet "gCDEmu">
 ]>
 
@@ -283,11 +283,13 @@
         </sect2>
 <!-- ================ Usage Subsection ================================ -->
         <sect2 id="gcdemu-usage-devdiag">
-            <title>Device dialog</title>
+            <title>Device properties dialog</title>
             <para>
-                Device dialog can be obtained by right-clicking on the device
-                entry in device menu. It has multiple tabs which allow you to
-                load and unload device and manipulate device's debug masks.
+                Device properties dialog can be obtained by right-clicking on 
+                the device entry in device menu. It has multiple tabs which 
+                allow you to load and unload device and change device's options,
+                such as device's ID, debug masks or DPM and transfer rate 
+                emulation flags.
             </para>
             
             <sect3 id="gcdemu-usage-devdiag-load">
@@ -339,7 +341,48 @@
                     button.
                 </para>
             </sect3>
-            
+            <sect3 id="gcdemu-usage-devdiag-options">
+                <title>Device options</title>
+                <para>
+                    The <guilabel>Options</guilabel> tab allows you to control
+                    device's options. Currently, these are:
+                    <itemizedlist>
+                        <listitem>Device ID</listitem>
+                        <listitem>DPM emulation flag</listitem>
+                        <listitem>Transfer rate emulation flag</listitem>
+                    </itemizedlist>
+                </para>
+                <figure id="applet-fig10">
+                    <title>Options tab</title>
+                    <screenshot>
+                        <mediaobject>
+                            <imageobject>
+                                <imagedata fileref="figures/gcdemu-fig10" format="PNG"/>
+                            </imageobject>
+                            <textobject>
+                                <phrase>
+                                    Screen shot of <guilabel>Options</guilabel> tab.
+                                </phrase>
+                            </textobject>
+                        </mediaobject>
+                    </screenshot>
+                </figure>
+                <para>
+                    Currently set device ID values are displayed in text entries
+                    within <guilabel>Device ID</guilabel> frame. To change device
+                    ID, change the values and click on the <guilabel>Set device 
+                    ID</guilabel> button.
+                </para>
+                <para>
+                    To change the value of DPM emulation flag, simply check/uncheck
+                    <guilabel>DPM emulation</guilabel> checkbox.
+                </para>
+                <para>
+                    To change the value of transfer rate emulation flag, simply 
+                    check/uncheck <guilabel>Transfer rate emulation</guilabel> 
+                    checkbox.
+                </para>
+            </sect3>
             <sect3 id="gcdemu-usage-devdiag-debug">
                 <title>Debug masks manipulation</title>
                 <para>
@@ -393,8 +436,8 @@
                     on the <guilabel>Set debug mask</guilabel> button.
                 </para>
                 <para>
-                    Note that both device status and device debug mask display are
-                    updated when the applet receives notification from the daemon.
+                    Note that all appropriate device properties are updated and
+                    displayed when the applet receives notification from the daemon.
                     This means that they get updated even if the change is faciliated
                     from another client.
                 </para>
