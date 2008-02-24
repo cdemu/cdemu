@@ -12,8 +12,9 @@ Table of contents
 4. Installation and set-up
 5. Troubleshooting
 6. CDEmu daemon D-BUS interface
-7. Debugging
-8. Contact information
+7. Device options
+8. Debugging
+9. Contact information
 
 
 1. Introduction
@@ -236,50 +237,58 @@ language-specific data type mappings, please consult the D-BUS documentation.
 CDEmu daemon's interface consists of the following methods that can be used to
 control the daemon:
 
-* Hail ()
-    - This method is intended as a simple means to determine whether
-      the daemon is running or not. It succeeds if daemon is running and fails if
-      it is not.
-
-* StopDaemon ()
-    - As implied in its name, this method stops the daemon. It is
-      included for testing purposes only and it should not be used in clients
-      (i.e. it can be used to stop daemon that's running in non-daemon mode and
-      testing the cleanup routines)
-
-* GetVersion (type, version)
-    + type: in; "s"
-        String denoting component you are requesting information for; either 
-        'daemon' or 'library'.
+* GetDaemonVersion (version)
     + version: out; "s"
-        Version string for requested component.
+        Daemon version string.
     
-    - This method returns version string for the specified component.
+    - Returns daemon version string.
+
+* GetLibraryVersion (version)
+    + version: out; "s"
+        Library version string
     
-* GetDeviceDebugMasks (type, masks)
-    + type: in; "s"
-        String denoting component you are requesting information for; either 
-        'daemon' or 'library'.
+    - Returns library version string of libMirage library used by
+      the daemon.
+    
+* EnumDaemonDebugMasks (type, masks)
     + masks: out; "a(si)"
         Array of structures containing supported debug masks. Each structure
         has two fields; debug mask name (string) and debug mask value (int).
         
-    - This method returns supported debug masks for the specified component.
-   
-  
-* GetSupportedImageTypes (image_types)
-    + image_types: out; "a(sass)"
-        Array of structures containing information about supported image types.
-        Each structure has three fields; parser ID (string), supported suffixes
-        (array of strings) and image description (string).
-        
-    - This method returns the image types that CDEmu daemon can handle.
+    - Returns debug masks supported by the daemon.
 
+* EnumLibraryDebugMasks (type, masks)
+    + masks: out; "a(si)"
+        Array of structures containing supported debug masks. Each structure
+        has two fields; debug mask name (string) and debug mask value (int).
+        
+    - Returns debug masks supported by the libMirage library that is used by 
+      the daemon.
+  
+* EnumSupportedParsers (parsers)
+    + parsers: out; "a(ssssbsas)"
+        Array of structures containing information about supported parsers.
+        Each structure has multiple fields; parser ID (string), parser name 
+        (string), parser version (string), parser author (string), multiple
+        files support flag (boolean), parser description (string) and supported 
+        suffixes (array of strings).
+        
+    - Returns supported image parsers.
+    
+* EnumSupportedFragments (fragments)
+    + framgents: out; "a(sssssas)"
+        Array of structures containing information about supported fragments.
+        Each structure has multiple fields; fragment ID (string), fragment name 
+        (string), fragment version (string), fragment author (string), supported
+        interface (string) and supported suffixes (array of strings).
+        
+    - Returns supported fragments.
+    
 * GetNumberOfDevices (number_of_devices)
     + number_of_devices: out; "i"
         Number of devices (int).
     
-    - This method returns number of virtual devices.
+    - Returns number of virtual devices.
   
 * DeviceGetStatus (device_number, loaded, image_type, file_names)
     + device_number: in; "u"
@@ -291,7 +300,7 @@ control the daemon:
     + file_names: out; "as"
         Image's file name(s) (string).
     
-    - This method returns the status for specified device.
+    - Returns the status of specified device.
   
 * DeviceLoad (device_number, file_names)
     + device_number: in; "u"
@@ -299,37 +308,37 @@ control the daemon:
     + file_names: in; "as"
         File name(s) of the image to be loaded (array of strings).
         
-    - This method attempts to load the image into device.
+    - Attempts to load the image into specified device.
     
 * DeviceUnload (device_number)
     + device_number: in; "u"
         Device that is to be unloaded (int).
         
-    - This method unloads the device.
+    - Attempts to unload the device.
   
-* DeviceGetDebugMask (device_number, type, dbg_mask)
+* DeviceGetOption (device_number, option_name, option_values)
     + device_number: in; "u"
-        Device for which debug mask is to be retrieved (int).
-    + type: in; "s"
-        Component for which debug mask is to be retrieved (string); either
-        'daemon' or 'library'.
-    + dbg_mask: out; "u"
-        Debug mask value (int).
+        Device for which the specified option's value is to be retrieved (int).
+    + option_name: in; "s"
+        Name of the option (string).
+    + option_values: out; "av"
+        Option value(s) (array of variants). The actual content depends on the 
+        option.
     
-    - This method retrieves the debug mask of specified component for specified
-      device.
+    - This method retrieves the value(s) of specified option for specified device.
+      For more information on supported options, see Section 7.
   
-* DeviceSetDebugMask (device_number, type, dbg_mask)
+* DeviceSetOption (device_number, option_name, option_values)
     + device_number: in; "u"
-        Device for which debug mask is to be set (int).
-    + type: in; "s"
-        Component for which debug mask is to be set (string); either
-        'daemon' or 'library'.
-    + dbg_mask: in; "u"
-        Debug mask value (int).
+        Device for which the specified option's value is to be set (int).
+    + option_name: in; "s"
+        Name of the option (string).
+    + option_values: in; "av"
+        Option value(s) (array of variants). The actual content depends on the 
+        option.
     
-    - This method sets the debug mask of specified component for specified
-      device.
+    - This method sets the value(s) of specified option for specified device.
+      For more information on supported options, see Section 7.
 
 6.3. Signals
 ~~~~~~~~~~~~
@@ -337,23 +346,74 @@ control the daemon:
 In addition to the methods, CDEmu daemon's interface emits the following signals 
 in response to the change of status of either the daemon or one of the devices:
 
-* DaemonChange
-    + change_type: "u"
-        Change type (int); values are:
-        1: daemon has been started
-        2: daemon has been stopped
-       
-* DeviceChange
+* DaemonStarted
+    - emitted when daemon is started
+
+* DaemonStopped
+    - emitted when daemon is stopped
+
+* DeviceStatusChange
     + device_number: "u"
         Device that emitted the signal (int).
-    + change_type: "u"
-        Change type (int); values are:
-        1: change of device status (i.e. load/unload)
-        2: change of daemon's debug mask for the device
-        3: change of library's debug mask for the device
         
+    - emitted when device is loaded/unloaded
 
-7. Debugging
+* DeviceOptionChange
+    + device_number: "u"
+        Device that emitted the signal (int).
+    + option: "s"
+        Option that has been changed (string).
+        
+    - emitted when device's option is changed
+
+ 
+7. Device options
+~~~~~~~~~~~~~~~~~
+
+CDEmu virtual devices have the following options that can be get/set via the
+DeviceGetOption/DeviceSetOption API. Please note that number of arguments and
+argument types for DeviceSetOption function are strictly checked; i.e. tbe
+method call will fail, for example, if argument for the 'dpm-emulation option' 
+is of type G_TYPE_INT.
+
+* dpm-emulation
+   + arguments: enabled (G_TYPE_BOOLEAN)
+   
+   - DPM emulation flag. Determines whether DPM emulation is performed.
+   
+* tr-emulation
+   + arguments: enabled (G_TYPE_BOOLEAN)
+   
+   - Transfer rate emulation flag. Determines whether transfer rate emulation is
+     performed
+     
+* device-id
+   + arguments: vendor_id (G_TYPE_STRING), product_id (G_TYPE_STRING), revision
+     (G_TYPE_STRING), vendor_specific (G_TYPE_STRING)
+     
+   - Device ID. Determines the device identifier (vendor identifier, product 
+     identifier, product revision and vendor-specific string) as returned by 
+     INQUIRY command. Changing the ID might be useful in cases when an 
+     application doesn't like the default ID for some reason.
+     
+   - Note that the length of argument strings should be as following: vendor_id 
+     8 characters, product_id 16 characters, revision 4 characters and 
+     vendor_specific 20 characters. The actual arguments can surpass these 
+     lengths, but only specified amount of characters will actually be used by
+     the device.
+     
+* daemon-debug-mask
+   + arguments: mask (G_TYPE_INT)
+   
+   - Daemon debug mask. Determines the amount of verbosity of daemon's code.
+   
+* library-debug-mask
+   + arguments: mask (G_TYPE_INT)
+   
+   - Library debug mask. Determines the amount of verbosity of libMirage library
+     used by the daemon.
+
+8. Debugging
 ~~~~~~~~~~~~
 
 Both CDEmu daemon and the underlying libMirage contain debugging code that 
@@ -374,7 +434,7 @@ can be quickly found, be it either a failure in loading an image or incorrect
 response to the given command.
 
 
-8. Contact information
+9. Contact information
 ~~~~~~~~~~~~~~~~~~~~~~
 
 CDEmu project's web page: http://cdemu.sourceforge.net

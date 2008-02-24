@@ -418,10 +418,10 @@ struct INQUIRY_Data {
         guint8  reladr      : 1;
     #endif
 
-    guint8  vendor_id[8];
-    guint8  product_id[16];
-    guint8  product_rev[4];
-    guint8  vendor_spec1[20];
+    gchar  vendor_id[8];
+    gchar  product_id[16];
+    gchar  product_rev[4];
+    gchar  vendor_spec1[20];
     
     #if BIG_ENDIAN_BITFIELD
         guint8  __dummy10__ : 4;

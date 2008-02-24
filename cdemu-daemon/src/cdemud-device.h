@@ -30,12 +30,6 @@ G_BEGIN_DECLS
 #define CDEMUD_IS_DEVICE_CLASS(klass) (G_TYPE_CHECK_CLASS_TYPE((klass), CDEMUD_TYPE_DEVICE))
 #define CDEMUD_DEVICE_GET_CLASS(obj)  (G_TYPE_INSTANCE_GET_CLASS((obj), CDEMUD_TYPE_DEVICE, CDEMUD_DeviceClass))
 
-typedef enum {
-    CDEMUD_DEVICE_CHANGE_STATUS           = 1,
-    CDEMUD_DEVICE_CHANGE_DAEMONDEBUGMASK  = 2,
-    CDEMUD_DEVICE_CHANGE_LIBRARYDEBUGMASK = 3,
-} CDEMUD_DeviceChangeType;
-
 typedef struct {
     MIRAGE_Object parent;
 } CDEMUD_Device;
@@ -44,7 +38,7 @@ typedef struct {
     MIRAGE_ObjectClass parent;
     
     /* Class members */
-    guint signals[1]; /* Signals */
+    guint signals[2]; /* Signals */
 } CDEMUD_DeviceClass;
 
 
@@ -65,8 +59,9 @@ gboolean cdemud_device_get_device_number (CDEMUD_Device *self, gint *number, GEr
 gboolean cdemud_device_get_status (CDEMUD_Device *self, gboolean *loaded, gchar **image_type, gchar ***file_names, GError **error);
 gboolean cdemud_device_load_disc (CDEMUD_Device *self, gchar **file_names, GError **error);
 gboolean cdemud_device_unload_disc (CDEMUD_Device *self, GError **error);
-gboolean cdemud_device_get_debug_mask (CDEMUD_Device *self, gchar *type, gint *dbg_mask, GError **error);
-gboolean cdemud_device_set_debug_mask (CDEMUD_Device *self, gchar *type, gint dbg_mask, GError **error);
+gboolean cdemud_device_get_option (CDEMUD_Device *self, gchar *option_name, GPtrArray **option_values, GError **error);
+gboolean cdemud_device_set_option (CDEMUD_Device *self, gchar *option_name, GPtrArray *option_values, GError **error);
+
 gint cdemud_device_execute(CDEMUD_Device *self, CDEMUD_Command *cmd);
 
 G_END_DECLS
