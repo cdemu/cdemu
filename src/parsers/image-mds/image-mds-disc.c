@@ -174,6 +174,8 @@ static gboolean __mirage_disc_mds_parse_dpm_data (MIRAGE_Disc *self, GError **er
     for (i = 0; i < num_dpm_blocks; i++) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: block[%i]: offset: 0x%X\n", __func__, i, dpm_block_offset[i]);
         __mirage_disc_mds_parse_dpm_block(self, dpm_block_offset[i], NULL);
+        /* FIXME: currently, only first DPM block is loaded */
+        break;
     }
      
     return TRUE;
