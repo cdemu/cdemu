@@ -176,6 +176,11 @@ gboolean mirage_disc_get_disc_structure (MIRAGE_Disc *self, gint layer, gint typ
 gboolean mirage_disc_get_sector (MIRAGE_Disc *self, gint address, GObject **sector, GError **error);
 gboolean mirage_disc_read_sector (MIRAGE_Disc *self, gint address, guint8 main_sel, guint8 subc_sel, guint8 *ret_buf, gint *ret_len, GError **error);
 
+/* DPM */
+gboolean mirage_disc_set_dpm_data (MIRAGE_Disc *self, gint start, gint resolution, gint num_entries, guint32 *data, GError **error);
+gboolean mirage_disc_get_dpm_data (MIRAGE_Disc *self, gint *start, gint *resolution, gint *num_entries, guint32 **data, GError **error);
+gboolean mirage_disc_get_dpm_data_for_sector (MIRAGE_Disc *self, gint address, gdouble *angle, gdouble *density, GError **error);
+
 G_END_DECLS
 
 #endif /* __MIRAGE_DISC_H__ */

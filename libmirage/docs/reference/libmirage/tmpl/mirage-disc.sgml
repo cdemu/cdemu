@@ -544,3 +544,44 @@ implementation should be with mirage_mirage_create_disc().
 @Returns: 
 
 
+<!-- ##### FUNCTION mirage_disc_set_dpm_data ##### -->
+<para>
+
+</para>
+
+@self: 
+@start: 
+@resolution: 
+@num_entries: 
+@data: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION mirage_disc_get_dpm_data ##### -->
+<para>
+
+</para>
+
+@self: 
+@start: 
+@resolution: 
+@num_entries: 
+@data: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION mirage_disc_get_dpm_data_for_sector ##### -->
+<para>
+
+</para>
+
+@self: 
+@address: 
+@angle: 
+@density: 
+@error: 
+@Returns: 
+
+

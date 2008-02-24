@@ -71,6 +71,9 @@ mirage_disc_set_disc_structure
 mirage_disc_get_disc_structure
 mirage_disc_get_sector
 mirage_disc_read_sector
+mirage_disc_set_dpm_data
+mirage_disc_get_dpm_data
+mirage_disc_get_dpm_data_for_sector
 <SUBSECTION Standard>
 MIRAGE_DISC
 MIRAGE_IS_DISC
