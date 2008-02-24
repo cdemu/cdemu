@@ -205,8 +205,16 @@ gboolean cdemud_daemon_initialize (CDEMUD_Daemon *self, gint num_devices, gchar 
     
     bus_proxy = dbus_g_proxy_new_for_name(_priv->bus, "org.freedesktop.DBus", "/org/freedesktop/DBus", "org.freedesktop.DBus");
     
-    if (!dbus_g_proxy_call(bus_proxy, "RequestName", error, G_TYPE_STRING, "net.sf.cdemu.CDEMUD_Daemon", G_TYPE_UINT, 0, G_TYPE_INVALID, G_TYPE_UINT, &result, G_TYPE_INVALID)) {
-        CDEMUD_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: failed to get name on %s bus!\n", __func__, system_bus ? "system" : "session");
+    if (!dbus_g_proxy_call(bus_proxy, "RequestName", error, G_TYPE_STRING, "net.sf.cdemu.CDEMUD_Daemon", G_TYPE_UINT, DBUS_NAME_FLAG_DO_NOT_QUEUE, G_TYPE_INVALID, G_TYPE_UINT, &result, G_TYPE_INVALID)) {
+        CDEMUD_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: failed to request name on %s bus!\n", __func__, system_bus ? "system" : "session");
+        cdemud_error(CDEMUD_E_DBUSNAMEREQUEST, error);
+        return FALSE;
+    }
+    
+    /* Make sure we're primary owner of requested name... otherwise it's likely
+       that an instance is already running on that bus */
+    if (result != DBUS_REQUEST_NAME_REPLY_PRIMARY_OWNER) {
+        CDEMUD_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: failed to become primary owner of name on %s bus; is there another instance already running?\n", __func__, system_bus ? "system" : "session");
         cdemud_error(CDEMUD_E_DBUSNAMEREQUEST, error);
         return FALSE;
     }
