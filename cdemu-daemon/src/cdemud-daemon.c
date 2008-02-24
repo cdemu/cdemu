@@ -338,9 +338,10 @@ static gboolean __cdemud_daemon_get_device_debug_masks_daemon (CDEMUD_Daemon *se
         gint mask_value;
         gchar *mask_name;
     } dbg_masks[] = {
-        { DAEMON_DEBUG_DEV_PC_FIXME, "DAEMON_DEBUG_DEV_PC_FIXME" },
+        { DAEMON_DEBUG_DEV_FIXME, "DAEMON_DEBUG_DEV_FIXME" },
         { DAEMON_DEBUG_DEV_PC_TRACE, "DAEMON_DEBUG_DEV_PC_TRACE" },
         { DAEMON_DEBUG_DEV_PC_DUMP, "DAEMON_DEBUG_DEV_PC_DUMP" },
+        { DAEMON_DEBUG_DEV_DELAY, "DAEMON_DEBUG_DEV_DELAY" },
         { DAEMON_DEBUG_DEV_AUDIOPLAY,"DAEMON_DEBUG_DEV_AUDIOPLAY" },
     };
     
