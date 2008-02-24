@@ -43,11 +43,6 @@ typedef struct {
 GType image_analyzer_sector_read_get_type (void);
 
 
-/******************************************************************************\
- *                                 Public API                                 *
-\******************************************************************************/
-gboolean image_analyzer_sector_read_set_application (IMAGE_ANALYZER_SectorRead *self, GObject *application, GError **error);
-
 G_END_DECLS
 
 #endif /* __IMAGE_ANALYZER_SECTOR_READ_H__ */
