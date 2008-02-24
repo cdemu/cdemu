@@ -3194,8 +3194,6 @@ static gboolean __option_get_device_id (CDEMUD_Device *self, GPtrArray **option_
 }
 
 static gboolean __option_set_device_id (CDEMUD_Device *self, GPtrArray *option_values, GError **error) {
-    CDEMUD_DevicePrivate *_priv = CDEMUD_DEVICE_GET_PRIVATE(self);
-
     const gchar *vendor_id = g_value_get_string(g_ptr_array_index(option_values, 0));
     const gchar *product_id = g_value_get_string(g_ptr_array_index(option_values, 1));
     const gchar *revision = g_value_get_string(g_ptr_array_index(option_values, 2));
