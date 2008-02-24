@@ -2949,7 +2949,7 @@ gboolean cdemud_device_initialize (CDEMUD_Device *self, gint number, gchar *audi
     mirage_debug_context_set_domain(MIRAGE_DEBUG_CONTEXT(_priv->disc_debug), "libMirage", NULL);
     
     /* Set up default device ID */
-    __cdemud_device_set_device_id(self, "CDEmu   ", "Virt. CD/DVD-ROM", "0.01", "    cdemu.sf.net    ");
+    __cdemud_device_set_device_id(self, "CDEmu   ", "Virt. CD/DVD-ROM", "1.10", "    cdemu.sf.net    ");
     
     /* Initialise mode pages and features and set profile */
     __cdemud_device_init_mode_pages(self);
