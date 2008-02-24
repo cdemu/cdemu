@@ -234,7 +234,7 @@ gboolean image_analyzer_disc_topology_create (IMAGE_ANALYZER_DiscTopology *self,
     
     /* Prepare data for plot */
     if (!mirage_disc_get_dpm_data(MIRAGE_DISC(disc), &dpm_start, &dpm_resolution, &dpm_entries, NULL, NULL)) {
-        g_debug("%s: no DPM data...\n", __func__);
+        /*g_debug("%s: no DPM data...\n", __func__);*/
         return TRUE;
     }
     
@@ -248,7 +248,7 @@ gboolean image_analyzer_disc_topology_create (IMAGE_ANALYZER_DiscTopology *self,
         gdouble density = 0;
         
         if (!mirage_disc_get_dpm_data_for_sector(MIRAGE_DISC(disc), address, NULL, &density, NULL)) {
-            g_debug("%s: failed to get DPM data for address 0x%X\n", __func__, address);
+            /*g_debug("%s: failed to get DPM data for address 0x%X\n", __func__, address);*/
             continue;
         }
         
