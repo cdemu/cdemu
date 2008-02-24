@@ -83,6 +83,11 @@ typedef struct {
     gint current_profile;
     /* Features */
     GList *features_list;
+    
+    /* Delay emulation */
+    struct timeval delay_begin;
+    gint delay_amount;
+    gdouble current_angle;
 } CDEMUD_DevicePrivate;
 
 
@@ -736,6 +741,150 @@ static void __cdemud_device_set_profile (CDEMUD_Device *self, gint profile) {
 
 
 /******************************************************************************\
+ *                               Delay emulation                              *
+\******************************************************************************/
+static void __cdemud_device_delay_begin (CDEMUD_Device *self) {
+    CDEMUD_DevicePrivate *_priv = CDEMUD_DEVICE_GET_PRIVATE(self);
+
+    /* Simply get current time here; we'll need it to compensate for processing 
+       time when performing actual delay */
+    if (gettimeofday(&_priv->delay_begin, NULL) < 0) {
+        gchar errbuf[256] = "";
+        strerror_r(errno, errbuf, sizeof(errbuf));
+        CDEMUD_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: gettimeofday() failed: %s\n", __func__, errbuf);
+    }
+    
+    /* Reset delay */
+    _priv->delay_amount = 0;
+    
+    return;
+}
+
+static void __cdemud_device_delay_finalize (CDEMUD_Device *self) {
+    CDEMUD_DevicePrivate *_priv = CDEMUD_DEVICE_GET_PRIVATE(self);
+    
+    struct timeval delay_now;
+    struct timeval delay_diff;
+    
+    gint delay;
+    
+    /* If there's no delay to perform, don't bother doing anything... */
+    if (!_priv->delay_amount) {
+        CDEMUD_DEBUG(self, DAEMON_DEBUG_DEV_DELAY, "%s: no delay to perform\n", __func__);
+        return;
+    }
+    
+    /* Get current time */
+    if (gettimeofday(&delay_now, NULL) < 0) {
+        gchar errbuf[256] = "";
+        strerror_r(errno, errbuf, sizeof(errbuf));
+        CDEMUD_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: gettimeofday() failed: %s\n", __func__, errbuf);
+        return;
+    }
+    
+    timersub(&delay_now, &_priv->delay_begin, &delay_diff);
+    
+    CDEMUD_DEBUG(self, DAEMON_DEBUG_DEV_DELAY, "%s: calculated delay: %i microseconds\n", __func__, _priv->delay_amount);
+    CDEMUD_DEBUG(self, DAEMON_DEBUG_DEV_DELAY, "%s: processing time: %i seconds, %i microseconds\n", __func__, delay_diff.tv_sec, delay_diff.tv_usec);
+    
+    /* Compensate for the processing time */
+    delay = _priv->delay_amount - (delay_diff.tv_sec*1000000 + delay_diff.tv_usec);
+    CDEMUD_DEBUG(self, DAEMON_DEBUG_DEV_DELAY, "%s: actual delay: %i microseconds\n", __func__, delay);
+    
+    if (delay < 0) {
+        CDEMUD_DEBUG(self, DAEMON_DEBUG_DEV_DELAY, "%s: spent too much time processing, bailing out!\n", __func__);
+        return;
+    }
+    
+    if (usleep(delay) < 0) {
+        gchar errbuf[256] = "";
+        strerror_r(errno, errbuf, sizeof(errbuf));
+        CDEMUD_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: usleep() failed: %s\n", __func__, errbuf);
+    }
+    
+    return;
+}
+
+static void __cdemud_device_delay_calculate (CDEMUD_Device *self, gint address, gint num_sectors) {
+    CDEMUD_DevicePrivate *_priv = CDEMUD_DEVICE_GET_PRIVATE(self);
+    gdouble rps = 12000.0/60; /* Rotations per second; fixed at 12000 RPMs for now */
+    gdouble dpm_angle = 0;
+    gdouble dpm_density = 0;
+    
+    if (!mirage_disc_get_dpm_data_for_sector(MIRAGE_DISC(_priv->disc), address, &dpm_angle, &dpm_density, NULL)) {
+        CDEMUD_DEBUG(self, DAEMON_DEBUG_DEV_DELAY, "%s: failed to get DPM data for sector 0x%X\n", __func__, address);
+        return;
+    }
+    
+    /* Seek delay; emulates the time the laser head needs to move to the sector
+       you want to read. Related to random access. Also the part that makes 
+       certain copy protections believe they're dealing with the real disc.
+    
+       Essentially, number of rotations needed to seek over certain amount of
+       sectors changes with the sector density. Therefore, reading time depends 
+       on where on the disc the seek is performed, again, in the same way that 
+       sector density changes.
+    
+       Copy protections seem to issue a series of seeks (actually, it's READ 10
+       commands, but they skip over bunch of sectors) at different locations on
+       the disc. It seems to follow the following pattern: first seek is "short"
+       (~13 sectors), followed by a "long" seek (~300 sectors), and then the 
+       whole thing is repeated. The times per-se don't matter (as they're 
+       determined by drive speed and other factors), but the ratios between them 
+       do - they represent sector density pattern. The catch is, the ratios seem
+       to be determined for "short" seeks and for "long" seeks, separately. And 
+       it would seem that if one of ratio sequences is close enough to expected 
+       sector density pattern, disc passes the test.
+    
+       Now the problem is that for long seeks, the time doesn't seem to be
+       proportional to the amount of rotations. It makes sense, because to seek
+       from beginning to end of the disc, it would take alot of rotations. The 
+       only logical conclusion would be that the laser head doesn't follow the 
+       spiral, like it does in case of small seeks, but takes a shortcut instead,
+       thereby saving time.
+    
+       So until I figure how exactly to emulate that shortcutting time, we're
+       emulating delays only for less than 100 rotations. This gives 500 ms of
+       delay max, which should be acceptable and may work with some of the games.
+       And then everyone lives happily ever after. If not, we'll have to figure
+       out something else and I'll add couple more blocks of a long-winded 
+       comment... */
+    if (1 /*_priv->emulate_seek_delay*/) {
+        gdouble rotations = 0;
+        
+        /* Actually, if we were to read a sector we've just read, we'd have to
+           perform a full rotation... but I guess we could say we've cached the
+           data? */
+        rotations = fabs(dpm_angle - _priv->current_angle);
+        _priv->current_angle = dpm_angle;
+        
+        CDEMUD_DEBUG(self, DAEMON_DEBUG_DEV_DELAY, "%s: 0x%X->0x%X (%d): %f rotations\n", __func__, _priv->current_sector, address, abs(_priv->current_sector - address), rotations);
+        if (rotations <= 100.0) {
+            _priv->delay_amount += rotations/rps*1000000; /* Delay, in microseconds */
+        }
+    }
+    
+    /* Transfer delay; emulates the time needed to read all the sectors. Related
+       to sequential access. Not really a crucial thing to emulate, but it gives
+       a nice(r) CAV curve in Nero CDSpeed.
+       
+       This works on the same principle as the seek delay emulation above. It 
+       could've been done by emulating seek delay for every sector to be read, 
+       but it takes less function calls to do it here this way...
+    */
+    if (1 /*_priv->emulate_transfer_delay*/) {
+        gdouble spr = 360.0/dpm_density; /* Sectors per rotation */
+        gdouble sps = spr*rps; /* Sectors per second */
+        
+        CDEMUD_DEBUG(self, DAEMON_DEBUG_DEV_DELAY, "%s: %d sectors at %f sectors/second\n", __func__, num_sectors, sps);
+        _priv->delay_amount += num_sectors/sps*1000000; /* Delay, in microseconds */
+    }
+    
+    return;
+}
+
+
+/******************************************************************************\
  *           Packet commands and packet command switch implementation         *
 \******************************************************************************/
 /* GET CONFIGURATION implementation */
@@ -802,7 +951,7 @@ static gboolean __cdemud_device_pc_get_event_status_notification (CDEMUD_Device 
     _priv->buffer_size = sizeof(struct GET_EVENT_STATUS_NOTIFICATION_Header);
     
     if (!cdb->immed) {
-        CDEMUD_DEBUG(self, DAEMON_DEBUG_DEV_PC_FIXME, "%s: asynchronous type not supported yet!\n", __func__);
+        CDEMUD_DEBUG(self, DAEMON_DEBUG_DEV_FIXME, "%s: asynchronous type not supported yet!\n", __func__);
         __cdemud_device_write_sense(self, SK_ILLEGAL_REQUEST, INVALID_FIELD_IN_CDB);
         return FALSE;
     }
@@ -1254,7 +1403,11 @@ static gboolean __cdemud_device_pc_read (CDEMUD_Device *self, guint8 *raw_cdb) {
     MIRAGE_Disc *disc = MIRAGE_DISC(_priv->disc);
     
     gint sector = 0;    
-
+    
+    /* Set up delay emulation */
+    __cdemud_device_delay_begin(self);
+    __cdemud_device_delay_calculate(self, start_sector, num_sectors);
+    
     /* Process each sector */
     for (sector = start_sector; sector < start_sector + num_sectors; sector++) {
         GObject *cur_sector = NULL;
@@ -1290,7 +1443,10 @@ static gboolean __cdemud_device_pc_read (CDEMUD_Device *self, guint8 *raw_cdb) {
         /* Write sector */
         __cdemud_device_write_buffer(self, _priv->buffer_size);
     }
-        
+    
+    /* Perform delay emulation */
+    __cdemud_device_delay_finalize(self);
+    
     return TRUE;
 }
 
@@ -1391,10 +1547,11 @@ static gboolean __cdemud_device_pc_read_cd (CDEMUD_Device *self, guint8 *raw_cdb
        there's transfer length > 0x00 and thus subchannel is verified */
     if (subchan_mode == 0x04) {
         /* invalid subchannel requested (don't support R-W yet) */
-        CDEMUD_DEBUG(self, DAEMON_DEBUG_DEV_PC_FIXME, "%s: R-W subchannel reading not supported yet\n", __func__);
+        CDEMUD_DEBUG(self, DAEMON_DEBUG_DEV_FIXME, "%s: R-W subchannel reading not supported yet\n", __func__);
         __cdemud_device_write_sense(self, SK_ILLEGAL_REQUEST, INVALID_FIELD_IN_CDB);
         return FALSE;
     }    
+    
     
     MIRAGE_Disc* disc = MIRAGE_DISC(_priv->disc);
     GObject* first_sector = NULL;
@@ -1411,6 +1568,10 @@ static gboolean __cdemud_device_pc_read_cd (CDEMUD_Device *self, guint8 *raw_cdb
     }
     mirage_sector_get_sector_type(MIRAGE_SECTOR(first_sector), &prev_sector_type, NULL);
     g_object_unref(first_sector);
+    
+    /* Set up delay emulation */
+    __cdemud_device_delay_begin(self);
+    __cdemud_device_delay_calculate(self, start_sector, num_sectors);
     
     /* Process each sector */
     CDEMUD_DEBUG(self, DAEMON_DEBUG_DEV_PC_TRACE, "%s: start sector: 0x%X (%i); start + num: 0x%X (%i)\n", __func__, start_sector, start_sector, start_sector+num_sectors, start_sector+num_sectors);
@@ -1482,6 +1643,9 @@ static gboolean __cdemud_device_pc_read_cd (CDEMUD_Device *self, guint8 *raw_cdb
         __cdemud_device_write_buffer(self, _priv->buffer_size);
     }
     
+    /* Perform delay emulation */
+    __cdemud_device_delay_finalize(self);
+    
     return TRUE;
 }
 
@@ -1503,7 +1667,7 @@ static gboolean __cdemud_device_pc_read_disc_information (CDEMUD_Device *self, g
             struct READ_DISC_INFORMATION_Data *ret_data = (struct READ_DISC_INFORMATION_Data *)_priv->buffer;
             _priv->buffer_size = sizeof(struct READ_DISC_INFORMATION_Data);
         
-            CDEMUD_DEBUG(self, DAEMON_DEBUG_DEV_PC_FIXME, "%s: standard disc information\n", __func__);
+            CDEMUD_DEBUG(self, DAEMON_DEBUG_DEV_FIXME, "%s: standard disc information\n", __func__);
             
             ret_data->length = GUINT16_TO_BE(_priv->buffer_size - 2);
             ret_data->lsession_state = 0x03; /* complete */
@@ -1567,7 +1731,7 @@ static gboolean __cdemud_device_pc_read_disc_information (CDEMUD_Device *self, g
             break;
         }
         default: {
-            CDEMUD_DEBUG(self, DAEMON_DEBUG_DEV_PC_FIXME, "%s: data type 0x%X not supported!\n", __func__, cdb->type);
+            CDEMUD_DEBUG(self, DAEMON_DEBUG_DEV_FIXME, "%s: data type 0x%X not supported!\n", __func__, cdb->type);
             __cdemud_device_write_sense(self, SK_ILLEGAL_REQUEST, INVALID_FIELD_IN_CDB);
             return FALSE;
         }
@@ -2233,7 +2397,7 @@ static gboolean __cdemud_device_pc_read_toc_pma_atip (CDEMUD_Device *self, guint
             break;
         }
         default: {
-            CDEMUD_DEBUG(self, DAEMON_DEBUG_DEV_PC_FIXME, "%s: format %X not suppoted yet\n", __func__, cdb->format);
+            CDEMUD_DEBUG(self, DAEMON_DEBUG_DEV_FIXME, "%s: format %X not suppoted yet\n", __func__, cdb->format);
             __cdemud_device_write_sense(self, SK_ILLEGAL_REQUEST, INVALID_FIELD_IN_CDB);
             return FALSE;
         }    
@@ -2434,7 +2598,7 @@ static gboolean __cdemud_device_pc_seek (CDEMUD_Device *self, guint8 *raw_cdb) {
     /*CDEMUD_DevicePrivate *_priv = CDEMUD_DEVICE_GET_PRIVATE(self);
     struct SET_CD_SPEED_CDB *cdb = (struct SET_CD_SPEED_CDB *)raw_cdb;*/
     
-    CDEMUD_DEBUG(self, DAEMON_DEBUG_DEV_PC_FIXME, "%s: nothing to do here yet...\n", __func__);
+    CDEMUD_DEBUG(self, DAEMON_DEBUG_DEV_FIXME, "%s: nothing to do here yet...\n", __func__);
     
     return TRUE;
 }
@@ -2675,7 +2839,7 @@ gint cdemud_device_execute(CDEMUD_Device *self, CDEMUD_Command *cmd) {
     }
     
     /* Command not found */
-    CDEMUD_DEBUG(self, DAEMON_DEBUG_DEV_PC_FIXME, "%s: packet command %02Xh not implemented yet!\n\n", __func__, cmd->cdb[0]);
+    CDEMUD_DEBUG(self, DAEMON_DEBUG_DEV_FIXME, "%s: packet command %02Xh not implemented yet!\n\n", __func__, cmd->cdb[0]);
     __cdemud_device_write_sense(self, SK_ILLEGAL_REQUEST, INVALID_COMMAND_OPERATION_CODE);
     _priv->cmd->out_len = _priv->cur_len;
 
