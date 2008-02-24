@@ -5,8 +5,8 @@ gcdemudir = $(pythondir)/gcdemu
 gcdemu_PYTHON = \
    __init__.py \
    applet.py \
-   globals.py \
-   ui.py
+   device.py \
+   globals.py
 
 # GConf Preference Schemas
 schemasdir = $(GCONF_SCHEMA_FILE_DIR)

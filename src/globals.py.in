@@ -26,3 +26,6 @@ version = "@VERSION@"
 # Paths
 appdir = string.lower(name)
 image_dir = "@prefix@/share/pixmaps/" + appdir + "/"
+
+# Minimum daemon version
+min_daemon_version = "1.1.0"
