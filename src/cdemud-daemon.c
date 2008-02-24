@@ -73,15 +73,26 @@ typedef struct {
 /******************************************************************************\
  *                              Private functions                             *
 \******************************************************************************/
-static void __cdemud_daemon_device_change_handler (GObject *device, gint change_type, CDEMUD_Daemon *self) {
+static void __cdemud_daemon_device_status_changed_handler (GObject *device, CDEMUD_Daemon *self) {
     /*CDEMUD_DaemonPrivate *_priv = CDEMUD_DAEMON_GET_PRIVATE(self);*/
     gint number = 0;
         
     cdemud_device_get_device_number(CDEMUD_DEVICE(device), &number, NULL);
-    g_signal_emit_by_name(self, "device-change", number, change_type, NULL);
+    g_signal_emit_by_name(self, "device-status-changed", number, NULL);
     
     return;
 }
+
+static void __cdemud_daemon_device_option_changed_handler (GObject *device, gchar *option, CDEMUD_Daemon *self) {
+    /*CDEMUD_DaemonPrivate *_priv = CDEMUD_DAEMON_GET_PRIVATE(self);*/
+    gint number = 0;
+        
+    cdemud_device_get_device_number(CDEMUD_DEVICE(device), &number, NULL);
+    g_signal_emit_by_name(self, "device-option-changed", number, option, NULL);
+    
+    return;
+}
+
 
 static void __cdemud_daemon_io_close (gpointer data) {
     GIOChannel *ch = data;
@@ -233,8 +244,10 @@ gboolean cdemud_daemon_initialize (CDEMUD_Daemon *self, gint num_devices, gchar 
             mirage_object_set_parent(MIRAGE_OBJECT(dev), G_OBJECT(self), NULL);
             /* Don't attach child... MIRAGE_Objects pass debug context to children,
                and CDEMUD_Devices have each its own context... */
-            /* Add media changed notification signal handling */
-            g_signal_connect(dev, "device-change", (GCallback)__cdemud_daemon_device_change_handler, self);
+            /* Add handling for signals from the device... this allows us to 
+               pass them on via DBUS */
+            g_signal_connect(dev, "status-changed", (GCallback)__cdemud_daemon_device_status_changed_handler, self);
+            g_signal_connect(dev, "option-changed", (GCallback)__cdemud_daemon_device_option_changed_handler, self);
             
             /* Open control device and set up I/O channel */
             fd = open(_priv->ctl_device, O_RDWR | O_SYNC | O_NONBLOCK);
@@ -273,7 +286,7 @@ gboolean cdemud_daemon_start_daemon (CDEMUD_Daemon *self, GError **error) {
         return FALSE;
     }
     
-    g_signal_emit_by_name(G_OBJECT(self), "daemon-change", CDEMUD_DAEMON_CHANGE_STARTED, NULL);
+    g_signal_emit_by_name(G_OBJECT(self), "daemon-started", NULL);
     g_main_loop_run(_priv->main_loop);
     
     return TRUE;
@@ -283,7 +296,7 @@ gboolean cdemud_daemon_stop_daemon (CDEMUD_Daemon *self, GError **error) {
     CDEMUD_DaemonPrivate *_priv = CDEMUD_DAEMON_GET_PRIVATE(self);
 
     g_main_loop_quit(_priv->main_loop);
-    g_signal_emit_by_name(G_OBJECT(self), "daemon-change", CDEMUD_DAEMON_CHANGE_STOPPED, NULL);
+    g_signal_emit_by_name(G_OBJECT(self), "daemon-stopped", NULL);
     
     return TRUE;
 }
@@ -298,37 +311,20 @@ gboolean cdemud_daemon_hail (CDEMUD_Daemon *self, GError **error) {
     return TRUE;
 }
 
-static gboolean __cdemud_daemon_get_version_library (CDEMUD_Daemon *self, gchar **version, GError **error) {
-    CDEMUD_DaemonPrivate *_priv = CDEMUD_DAEMON_GET_PRIVATE(self);
-    /* Read version */
-    return mirage_mirage_get_version(MIRAGE_MIRAGE(_priv->mirage), version, error);
-}
-
-static gboolean __cdemud_daemon_get_version_daemon (CDEMUD_Daemon *self, gchar **version, GError **error) {
+gboolean cdemud_daemon_get_daemon_version (CDEMUD_Daemon *self, gchar **version, GError **error) {
     CDEMUD_DaemonPrivate *_priv = CDEMUD_DAEMON_GET_PRIVATE(self);
     /* Copy version string */
     *version = g_strdup(_priv->version);
     return TRUE;
 }
 
-gboolean cdemud_daemon_get_version (CDEMUD_Daemon *self, gchar *type, gchar **version, GError **error) {    
-    CDEMUD_CHECK_ARG(type);
-    CDEMUD_CHECK_ARG(version);
-    
-    if (!g_ascii_strcasecmp(type, "daemon")) {
-        /* Return daemon's version */
-        return __cdemud_daemon_get_version_daemon(self, version, error);
-    } else if (!g_ascii_strcasecmp(type, "library")) {
-        /* Return libary's version */
-        return __cdemud_daemon_get_version_library(self, version, error);
-    }
-    
-    /* Invalid type */
-    cdemud_error(CDEMUD_E_INVALIDARG, error);
-    return FALSE;    
+gboolean cdemud_daemon_get_library_version (CDEMUD_Daemon *self, gchar **version, GError **error) {
+    CDEMUD_DaemonPrivate *_priv = CDEMUD_DAEMON_GET_PRIVATE(self);
+    /* Read version */
+    return mirage_mirage_get_version(MIRAGE_MIRAGE(_priv->mirage), version, error);
 }
 
-static gboolean __cdemud_daemon_get_device_debug_masks_daemon (CDEMUD_Daemon *self, GPtrArray **masks, GError **error) {
+gboolean cdemud_daemon_enum_daemon_debug_masks (CDEMUD_Daemon *self, GPtrArray **masks, GError **error) {
     /*CDEMUD_DaemonPrivate *_priv = CDEMUD_DAEMON_GET_PRIVATE(self);*/
     gint i = 0;
     
@@ -363,27 +359,10 @@ static gboolean __cdemud_daemon_get_device_debug_masks_daemon (CDEMUD_Daemon *se
     return TRUE;
 }
 
-static gboolean __cdemud_daemon_get_device_debug_masks_library (CDEMUD_Daemon *self, GPtrArray **masks, GError **error) {
+gboolean cdemud_daemon_enum_library_debug_masks (CDEMUD_Daemon *self, GPtrArray **masks, GError **error) {
     CDEMUD_DaemonPrivate *_priv = CDEMUD_DAEMON_GET_PRIVATE(self);
     /* Relay to libMirage */
     return mirage_mirage_get_supported_debug_masks(MIRAGE_MIRAGE(_priv->mirage), masks, error);
-}
-
-gboolean cdemud_daemon_get_device_debug_masks (CDEMUD_Daemon *self, gchar *type, GPtrArray **masks, GError **error) {   
-    CDEMUD_CHECK_ARG(type);
-    CDEMUD_CHECK_ARG(masks);
-    
-    if (!g_ascii_strcasecmp(type, "daemon")) {
-        /* Return daemon's debug masks */
-        return __cdemud_daemon_get_device_debug_masks_daemon(self, masks, error);
-    } else if (!g_ascii_strcasecmp(type, "library")) {
-        /* Return library's debug masks */
-        return __cdemud_daemon_get_device_debug_masks_library(self, masks, error);
-    }
-    
-    /* Invalid type */
-    cdemud_error(CDEMUD_E_INVALIDARG, error);
-    return FALSE;
 }
 
 static gboolean __cdemud_daemon_add_supported_parser (gpointer data, gpointer user_data) {
@@ -436,7 +415,7 @@ static gboolean __cdemud_daemon_add_supported_parser (gpointer data, gpointer us
     return TRUE;
 }
 
-gboolean cdemud_daemon_get_supported_parsers (CDEMUD_Daemon *self, GPtrArray **parsers, GError **error) {
+gboolean cdemud_daemon_enum_supported_parsers (CDEMUD_Daemon *self, GPtrArray **parsers, GError **error) {
     CDEMUD_DaemonPrivate *_priv = CDEMUD_DAEMON_GET_PRIVATE(self);
     
     CDEMUD_CHECK_ARG(parsers);
@@ -494,7 +473,7 @@ static gboolean __cdemud_daemon_add_supported_fragment (gpointer data, gpointer 
     return TRUE;
 }
 
-gboolean cdemud_daemon_get_supported_fragments (CDEMUD_Daemon *self, GPtrArray **fragments, GError **error) {
+gboolean cdemud_daemon_enum_supported_fragments (CDEMUD_Daemon *self, GPtrArray **fragments, GError **error) {
     CDEMUD_DaemonPrivate *_priv = CDEMUD_DAEMON_GET_PRIVATE(self);
     
     CDEMUD_CHECK_ARG(fragments);
@@ -554,25 +533,12 @@ gboolean cdemud_daemon_device_unload (CDEMUD_Daemon *self, gint device_number, G
     return FALSE;
 }
 
-gboolean cdemud_daemon_device_get_debug_mask (CDEMUD_Daemon *self, gint device_number, gchar *type, gint *dbg_mask, GError **error) {
+gboolean cdemud_daemon_device_get_option (CDEMUD_Daemon *self, gint device_number, gchar *option_name, GPtrArray **option_values, GError **error) {
     /*CDEMUD_DaemonPrivate *_priv = CDEMUD_DAEMON_GET_PRIVATE(self);*/
     GObject *dev = NULL;
         
     if (__cdemud_daemon_get_device(self, device_number, &dev, error)) {
-        if (cdemud_device_get_debug_mask(CDEMUD_DEVICE(dev), type, dbg_mask, error)) {
-            return TRUE;
-        }
-    }   
-    
-    return FALSE;
-}
-
-gboolean cdemud_daemon_device_set_debug_mask (CDEMUD_Daemon *self, gint device_number, gchar *type, gint dbg_mask, GError **error) {
-    /*CDEMUD_DaemonPrivate *_priv = CDEMUD_DAEMON_GET_PRIVATE(self);*/
-    GObject *dev = NULL;
-        
-    if (__cdemud_daemon_get_device(self, device_number, &dev, error)) {
-        if (cdemud_device_set_debug_mask(CDEMUD_DEVICE(dev), type, dbg_mask, error)) {
+        if (cdemud_device_get_option(CDEMUD_DEVICE(dev), option_name, option_values, error)) {
             return TRUE;
         }
     }
@@ -580,6 +546,18 @@ gboolean cdemud_daemon_device_set_debug_mask (CDEMUD_Daemon *self, gint device_n
     return FALSE;
 }
 
+gboolean cdemud_daemon_device_set_option (CDEMUD_Daemon *self, gint device_number, gchar *option_name, GPtrArray *option_values, GError **error) {
+    /*CDEMUD_DaemonPrivate *_priv = CDEMUD_DAEMON_GET_PRIVATE(self);*/
+    GObject *dev = NULL;
+        
+    if (__cdemud_daemon_get_device(self, device_number, &dev, error)) {
+        if (cdemud_device_set_option(CDEMUD_DEVICE(dev), option_name, option_values, error)) {
+            return TRUE;
+        }
+    }
+    
+    return FALSE;
+}
 
 /******************************************************************************\
  *                                 Object init                                *
@@ -631,8 +609,10 @@ static void __cdemud_daemon_class_init (gpointer g_class, gpointer g_class_data)
     gobject_class->finalize = __cdemud_daemon_finalize;
     
     /* Signal handlers */        
-    klass->signals[0] = g_signal_new("daemon-change", G_OBJECT_CLASS_TYPE(klass), (G_SIGNAL_RUN_LAST | G_SIGNAL_DETAILED), 0, NULL, NULL, g_cclosure_user_marshal_VOID__INT, G_TYPE_NONE, 1, G_TYPE_INT, NULL);
-    klass->signals[1] = g_signal_new("device-change", G_OBJECT_CLASS_TYPE(klass), (G_SIGNAL_RUN_LAST | G_SIGNAL_DETAILED), 0, NULL, NULL, g_cclosure_user_marshal_VOID__INT_INT, G_TYPE_NONE, 2, G_TYPE_INT, G_TYPE_INT, NULL);
+    klass->signals[0] = g_signal_new("daemon-started", G_OBJECT_CLASS_TYPE(klass), (G_SIGNAL_RUN_LAST | G_SIGNAL_DETAILED), 0, NULL, NULL, g_cclosure_user_marshal_VOID__VOID, G_TYPE_NONE, 0, NULL);
+    klass->signals[1] = g_signal_new("daemon-stopped", G_OBJECT_CLASS_TYPE(klass), (G_SIGNAL_RUN_LAST | G_SIGNAL_DETAILED), 0, NULL, NULL, g_cclosure_user_marshal_VOID__VOID, G_TYPE_NONE, 0, NULL);
+    klass->signals[2] = g_signal_new("device-status-changed", G_OBJECT_CLASS_TYPE(klass), (G_SIGNAL_RUN_LAST | G_SIGNAL_DETAILED), 0, NULL, NULL, g_cclosure_user_marshal_VOID__INT, G_TYPE_NONE, 1, G_TYPE_INT, NULL);
+    klass->signals[3] = g_signal_new("device-option-changed", G_OBJECT_CLASS_TYPE(klass), (G_SIGNAL_RUN_LAST | G_SIGNAL_DETAILED), 0, NULL, NULL, g_cclosure_user_marshal_VOID__INT_STRING, G_TYPE_NONE, 2, G_TYPE_INT, G_TYPE_STRING, NULL);
     
     return;
 }
