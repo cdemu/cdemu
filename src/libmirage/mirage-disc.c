@@ -49,6 +49,12 @@ typedef struct {
         
     /* Session list */
     GList *sessions_list;
+        
+    /* DPM */
+    gint dpm_start;
+    gint dpm_resolution;
+    gint dpm_num_entries;
+    guint32 *dpm_data;
 } MIRAGE_DiscPrivate;
 
 
@@ -1982,6 +1988,102 @@ gboolean mirage_disc_read_sector (MIRAGE_Disc *self, gint address, guint8 main_s
 }
 
 
+/**
+ * mirage_disc_set_dpm_data:
+ * @self: a #MIRAGE_Disc
+ * @start: DPM start sector
+ * @resolution: DPM data resolution
+ * @num_entries: number of DPM entries
+ * @data: buffer containing DPM data
+ * @error: location to store error, or %NULL
+ *
+ * <para>
+ * Sets the DPM data for disc. If @num_entries is not positive, DPM data is reset.
+ * @start is the address at which DPM data begins, @resolution is resolution of
+ * DPM data and @num_entries is the number of DPM entries in buffer pointed to by
+ * @data.
+ * </para>
+ *
+ * Returns: %TRUE on success, %FALSE on failure
+ **/
+gboolean mirage_disc_set_dpm_data (MIRAGE_Disc *self, gint start, gint resolution, gint num_entries, guint32 *data, GError **error) {
+    MIRAGE_DiscPrivate *_priv = MIRAGE_DISC_GET_PRIVATE(self);
+    
+    /* Free old DPM data */
+    g_free(_priv->dpm_data);
+    _priv->dpm_data = NULL;
+    
+    /* Set new DPM data */
+    _priv->dpm_start = start;
+    _priv->dpm_resolution = resolution;
+    _priv->dpm_num_entries = num_entries;
+    /* Allocate and copy data only if number of entries is positive (otherwise 
+       the data is simply reset) */
+    if (_priv->dpm_num_entries > 0) {
+        _priv->dpm_data = g_new0(guint32, _priv->dpm_num_entries);
+        memcpy(_priv->dpm_data, data, sizeof(guint32)*_priv->dpm_num_entries);
+    }
+    
+    return TRUE;
+}
+
+/**
+ * mirage_disc_get_dpm_data:
+ * @self: a #MIRAGE_Disc
+ * @start: location to store DPM start sector, or %NULL
+ * @resolution: location to store DPM data resolution, or %NULL
+ * @num_entries: location to store number of DPM entries, or %NULL
+ * @data: location to store pointer to buffer containing DPM data, or %NULL
+ * @error: location to store error, or %NULL
+ *
+ * <para>
+ * Retrieves DPM data for disc. The pointer to object's private buffer containing
+ * DPM data entries is stored in @data; as such it should not be freed.
+ * </para>
+ *
+ * Returns: %TRUE on success, %FALSE on failure
+ **/
+gboolean mirage_disc_get_dpm_data (MIRAGE_Disc *self, gint *start, gint *resolution, gint *num_entries, guint32 **data, GError **error) {
+    MIRAGE_DiscPrivate *_priv = MIRAGE_DISC_GET_PRIVATE(self);
+    
+    /* Make sure DPM data has been set */
+    if (!_priv->dpm_num_entries) {
+        mirage_error(MIRAGE_E_DATANOTSET, error);
+        return FALSE;
+    }
+    
+    if (start) *start = _priv->dpm_start;
+    if (resolution) *resolution = _priv->dpm_resolution;
+    if (num_entries) *num_entries = _priv->dpm_num_entries;
+    if (data) *data = _priv->dpm_data;
+    
+    return TRUE;
+}
+
+/**
+ * mirage_disc_get_dpm_data_for_sector:
+ * @self: a #MIRAGE_Disc
+ * @address: address of sector to retrieve DPM data for
+ * @angle: location to store sector angle, or %NULL
+ * @density: location to store sector density, or %NULL
+ * @error: location to store error, or %NULL
+ *
+ * <para>
+ * Retrieves DPM data for sector at address @address. Two pieces of data can be
+ * retrieved; first one is sector angle, expressed in rotations (i.e. 0.25 would
+ * mean 1/4 of rotation or 90˚ and 1.0 means one full rotation or 360˚), and the
+ * other one is sector density at given address, expressed in degrees per sector).
+ * </para>
+ *
+ * Returns: %TRUE on success, %FALSE on failure
+ **/
+gboolean mirage_disc_get_dpm_data_for_sector (MIRAGE_Disc *self, gint address, gdouble *angle, gdouble *density, GError **error) {
+    MIRAGE_DiscPrivate *_priv = MIRAGE_DISC_GET_PRIVATE(self);
+    /* Stub */
+    return FALSE;
+}
+
+
 /******************************************************************************\
  *                                 Object init                                *
 \******************************************************************************/
@@ -2025,6 +2127,8 @@ static void __mirage_disc_finalize (GObject *obj) {
     
     g_strfreev(_priv->filenames);
     g_free(_priv->mcn);
+    
+    g_free(_priv->dpm_data);
     
     g_hash_table_destroy(_priv->disc_structures);
     
