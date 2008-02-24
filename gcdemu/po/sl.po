@@ -2,83 +2,193 @@
 # Copyright (C) 2006-2008 Rok Mandeljc
 # This file is distributed under the same license as the gCDEmu package.
 # Rok Mandeljc <rok.mandeljc@email.si>, 2006-2008.
-# , fuzzy
-# Rok Mandeljc <rok.mandeljc@email.si>, 2008.
 # 
 # 
 msgid ""
 msgstr ""
-"Project-Id-Version: gCDEmu 1.0.0\n"
+"Project-Id-Version: gCDEmu 1.1.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2008-02-21 19:48+0100\n"
-"PO-Revision-Date: 2008-02-19 22:52+0100\n"
-"Last-Translator:  Rok Mandeljc <rok.mandeljc@email.si>\n"
+"POT-Creation-Date: 2008-02-24 17:14+0100\n"
+"PO-Revision-Date: 2008-02-24 16:55+0100\n"
+"Last-Translator: Rok Mandeljc <rok.mandeljc@email.si>\n"
 "Language-Team: Slovenian\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: ../src/applet.py:107
+#: ../src/applet.py:85
 msgid "Use _system bus"
 msgstr "Uporabi _sistemsko vodilo"
 
-#: ../src/applet.py:109
-msgid "Show _Notifications"
+#: ../src/applet.py:87
+msgid "Show _notifications"
 msgstr "Prikaži o_bvestila"
 
-#: ../src/applet.py:111
+#: ../src/applet.py:89
 msgid "_About"
 msgstr "_O programu"
 
-#: ../src/applet.py:174
+#: ../src/applet.py:143
 msgid "Daemon started"
 msgstr "Demon zagnan"
 
-#: ../src/applet.py:175
+#: ../src/applet.py:143
 msgid "CDEmu daemon has been started."
 msgstr "CDEmu demon je bil zagnan."
 
-#: ../src/applet.py:195
+#: ../src/applet.py:151
 msgid "Daemon stopped"
 msgstr "Demon ustavljen"
 
-#: ../src/applet.py:196
+#: ../src/applet.py:151
 msgid "CDEmu daemon has been stopped."
 msgstr "CDEmu demon je bil ustavljen."
 
-#: ../src/applet.py:223
+#: ../src/applet.py:214
+msgid "gCDEmu is an applet for controlling CDEmu devices via CDEmu daemon."
+msgstr "gCDEmu je programček za upravljanje CDEmu naprav prek CDEmu demona."
+
+#: ../src/applet.py:217
+msgid "translator-credits"
+msgstr "Rok Mandeljc <rok.mandeljc@email.si>"
+
+#: ../src/applet.py:346
+#, python-format
+msgid "CDEmu daemon version %s detected, but at least version %s is required!"
+msgstr ""
+"Zaznal sem CDEmu daemon različice %s, potrebna pa je vsaj različica %s!"
+
+#: ../src/applet.py:350
+msgid "Incompatible daemon version"
+msgstr "Nezdružljiva različica demona"
+
+#: ../src/device.py:45
+msgid "Open file"
+msgstr "Odpri datoteko"
+
+#: ../src/device.py:54
+msgid "All files"
+msgstr "Vse datoteke"
+
+#: ../src/device.py:59
+msgid "All image files"
+msgstr "Vse slike"
+
+#: ../src/device.py:76
+#, python-format
+msgid "Device %i properties"
+msgstr "Lastnosti naprave %i"
+
+#: ../src/device.py:84
+#, python-format
+msgid "Device %i"
+msgstr "Naprava %i"
+
+#. *** Frame: status ***
+#: ../src/device.py:97 ../src/device.py:124
+msgid "Status"
+msgstr "Stanje"
+
+#: ../src/device.py:100
+msgid "Options"
+msgstr "Možnosti"
+
+#: ../src/device.py:107
+msgid "Daemon debug mask"
+msgstr "Demonova razhroščevalna maska"
+
+#: ../src/device.py:108
+msgid "Daemon"
+msgstr "Demon"
+
+#: ../src/device.py:115
+msgid "Library debug mask"
+msgstr "Knjižničina razhrošćevalna maska"
+
+#: ../src/device.py:116
+msgid "Library"
+msgstr "Knjižnica"
+
+#: ../src/device.py:135
+msgid "Loaded: "
+msgstr "Naložena: "
+
+#: ../src/device.py:144
+msgid "Image type: "
+msgstr "Vrsta slike: "
+
+#: ../src/device.py:153
+msgid "File name: "
+msgstr "Ime datoteke: "
+
+#. Device ID
+#: ../src/device.py:179
+msgid "Device ID"
+msgstr "ID naprave"
+
+#: ../src/device.py:191
+msgid "Vendor ID: "
+msgstr "Proizvajalec: "
+
+#: ../src/device.py:201
+msgid "Product ID: "
+msgstr "Model: "
+
+#: ../src/device.py:211
+msgid "Revision: "
+msgstr "Revizija: "
+
+#: ../src/device.py:221
+msgid "Vendor-specific: "
+msgstr "Proizvajalčev niz: "
+
+#: ../src/device.py:235
+msgid "Set device ID"
+msgstr "Nastavi ID naprave"
+
+#. DPM emulation
+#: ../src/device.py:241
+msgid "DPM emulation"
+msgstr "DPM emulacija"
+
+#. Transfer rate emulation
+#: ../src/device.py:248
+msgid "Transfer rate emulation"
+msgstr "Emulacija hitrosti prenosa"
+
+#: ../src/device.py:280
+msgid "Set debug mask"
+msgstr "Nastavi masko"
+
+#: ../src/device.py:393 ../src/device.py:395 ../src/device.py:418
+msgid "Device change"
+msgstr "Sprememba stanja naprave"
+
+#: ../src/device.py:393
 #, python-format
 msgid "Device %i has been loaded."
 msgstr "Naprava %i je bila naložena."
 
-#: ../src/applet.py:225
+#: ../src/device.py:395
 #, python-format
 msgid "Device %i has been emptied."
 msgstr "Naprava %i je bila izpraznjena."
 
-#: ../src/applet.py:228 ../src/applet.py:243 ../src/applet.py:257
-msgid "Device change"
-msgstr "Sprememba stanja naprave"
-
-#: ../src/applet.py:244
+#: ../src/device.py:418
 #, python-format
-msgid "Device %i has been changed its daemon debug mask."
-msgstr "Napravi %i je bila spremenjena demonova razhroščevalna maska."
+msgid ""
+"Device %i has been changed its option:\n"
+"%s."
+msgstr ""
+"Napravi %i je bila spremenjena možnost:\n"
+"%s."
 
-#: ../src/applet.py:258
-#, python-format
-msgid "Device %i has been changed its library debug mask."
-msgstr "Napravi %i je bila spremenjena razhroščevalna maska knjižnice."
+#: ../src/device.py:431
+msgid "Error"
+msgstr "Napaka"
 
-#: ../src/applet.py:331
-msgid "gCDEmu is an applet for controlling CDEmu devices via CDEmu daemon."
-msgstr "gCDEmu je programček za upravljanje CDEmu naprav prek CDEmu demona."
-
-#: ../src/applet.py:334
-msgid "translator-credits"
-msgstr "Rok Mandeljc <rok.mandeljc@email.si>"
-
-#: ../src/applet.py:528
+#. Show error dialog
+#: ../src/device.py:473
 #, python-format
 msgid ""
 "Failed to unload device %i:\n"
@@ -87,11 +197,7 @@ msgstr ""
 "Napaka pri praznjenju naprave %i:\n"
 "%s"
 
-#: ../src/applet.py:529 ../src/applet.py:553 ../src/applet.py:591
-msgid "Error"
-msgstr "Napaka"
-
-#: ../src/applet.py:552
+#: ../src/device.py:487
 #, python-format
 msgid ""
 "Failed to load image %s to device %i:\n"
@@ -100,15 +206,75 @@ msgstr ""
 "Napaka pri nalaganju slike %s v napravo %i:\n"
 "%s"
 
-#: ../src/applet.py:590
+#: ../src/device.py:506
 #, python-format
 msgid ""
-"Failed to set debug mask (type: '%s') for device %i to 0x%X:\n"
+"Failed to set device ID for device %i to %s:\n"
 "%s"
 msgstr ""
-"Napaka pri nastavljanju razhroščevalne maske (vrsta: '%s') naprave %i na 0x%"
-"X:\n"
+"Napaka pri nastavljanju ID naprave %i na %s:\n"
 "%s"
+
+#: ../src/device.py:523
+#, python-format
+msgid ""
+"Failed to set DPM emulation for device %i to %i:\n"
+"%s"
+msgstr ""
+"Napaka pri nastavljanju DPM emulacije naprave %i na %i:\n"
+"%s"
+
+#: ../src/device.py:540
+#, python-format
+msgid ""
+"Failed to set transfer rate emulation for device %i to %i:\n"
+"%s"
+msgstr ""
+"Napaka pri nastavljanju emulacije hitrosti prenosa naprave %i na %i:\n"
+"%s"
+
+#: ../src/device.py:550
+#, python-format
+msgid ""
+"Failed to set daemon debug mask for device %i to 0x%X:\n"
+"%s"
+msgstr ""
+"Napaka pri nastavljanju demonove maske naprave %i na 0x%X:\n"
+"%s"
+
+#: ../src/device.py:560
+#, python-format
+msgid ""
+"Failed to set library debug mask for device %i to 0x%X:\n"
+"%s"
+msgstr ""
+"Napaka pri nastavljanju knjižničine maske naprave %i na 0x%X:\n"
+"%s"
+
+#. Indicate there's more than one file
+#: ../src/device.py:579 ../src/device.py:581
+msgid "Device"
+msgstr "Naprava"
+
+#: ../src/device.py:581
+msgid "Empty"
+msgstr "Prazna"
+
+#: ../src/device.py:587
+msgid "Yes"
+msgstr "Da"
+
+#: ../src/device.py:590
+msgid "Unload"
+msgstr "Izprazni"
+
+#: ../src/device.py:592
+msgid "No"
+msgstr "Ne"
+
+#: ../src/device.py:595
+msgid "Load"
+msgstr "Naloži"
 
 #: ../src/gcdemu.schemas.in.h:1
 msgid "Show notifications?"
@@ -117,106 +283,3 @@ msgstr "Prikaži o_bvestila?"
 #: ../src/gcdemu.schemas.in.h:2
 msgid "Use system bus (instead of session bus)?"
 msgstr "Uporabi sistemsko vodilo (namesto sejnega vodila)?"
-
-#: ../src/ui.py:41
-msgid "Open file"
-msgstr "Odpri datoteko"
-
-#: ../src/ui.py:53
-msgid "All files"
-msgstr "Vse datoteke"
-
-#: ../src/ui.py:58
-msgid "All image files"
-msgstr "Vse slike"
-
-#. *** Frame: Debug mask ***
-#: ../src/ui.py:122
-msgid "Debug mask: "
-msgstr "Razhroščevalna maska: "
-
-#: ../src/ui.py:144
-msgid "Set debug mask"
-msgstr "Nastavi masko"
-
-#. *** Frame: Status ***
-#: ../src/ui.py:170 ../src/ui.py:173
-msgid "Status"
-msgstr "Stanje"
-
-#: ../src/ui.py:182
-msgid "Loaded: "
-msgstr "Naložena: "
-
-#: ../src/ui.py:190
-msgid "Image type: "
-msgstr "Vrsta slike: "
-
-#: ../src/ui.py:198
-msgid "File name: "
-msgstr "Ime datoteke: "
-
-#. Debug mask frames
-#: ../src/ui.py:216 ../src/ui.py:217
-msgid "Daemon"
-msgstr "Demon"
-
-#: ../src/ui.py:219 ../src/ui.py:220
-msgid "Library"
-msgstr "Knjižnica"
-
-#. Dialog title
-#: ../src/ui.py:274
-#, python-format
-msgid "Device %i properties"
-msgstr "Lastnosti naprave %i"
-
-#. Device X label
-#: ../src/ui.py:277
-#, python-format
-msgid "Device %i"
-msgstr "Naprava %i"
-
-#: ../src/ui.py:281
-msgid "Yes"
-msgstr "Da"
-
-#: ../src/ui.py:284
-msgid "Unload Device"
-msgstr "Izprazni napravo"
-
-#: ../src/ui.py:286
-msgid "No"
-msgstr "Ne"
-
-#: ../src/ui.py:289
-msgid "Load Device"
-msgstr "Naloži napravo"
-
-#. Indicate there's more than one file
-#: ../src/ui.py:347 ../src/ui.py:349
-msgid "Device"
-msgstr "Naprava"
-
-#: ../src/ui.py:349
-msgid "Empty"
-msgstr "Prazna"
-
-#~ msgid "Device %i has been changed its module debug mask."
-#~ msgstr "Napravi %i je bila spremenjena modulova razhroščevalna maska."
-
-#~ msgid "Module"
-#~ msgstr "Modul"
-
-#~ msgid ""
-#~ "Failed to set daemon's debug mask for device %i to 0x%X:\n"
-#~ "%s"
-#~ msgstr ""
-#~ "Napaka pri nastavljanju demonove maske naprave %i na 0x%X:\n"
-#~ "%s"
-
-#~ msgid "Module debug mask"
-#~ msgstr "Modulova razhroščevalna maska"
-
-#~ msgid "Daemon debug mask"
-#~ msgstr "Demonova razhroščevalna maska"
