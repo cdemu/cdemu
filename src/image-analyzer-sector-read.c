@@ -1,5 +1,5 @@
 /*
- *  MIRAGE Image Analyzer: Parser log window
+ *  MIRAGE Image Analyzer: Sector read window
  *  Copyright (C) 2007 Rok Mandeljc
  *
  *  This program is free software; you can redistribute it and/or modify
