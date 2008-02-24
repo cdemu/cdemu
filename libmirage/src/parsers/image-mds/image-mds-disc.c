@@ -131,9 +131,11 @@ static gboolean __mirage_disc_mds_parse_dpm_block (MIRAGE_Disc *self, guint32 dp
     /* Read all entries */
     dpm_data = MIRAGE_CAST_PTR(cur_ptr, 0, guint32 *);
     
-    /* FIXME: someday, somehow, I'm gonna make it alright, but not right now...
-       (do something useful with it once libMirage gets whole DPM infrastructure
-       sorted out */
+    /* Set DPM data */
+    if (!mirage_disc_set_dpm_data(self, dpm_start_sector, dpm_resolution, dpm_num_entries, dpm_data, error)) {
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to set DPM data!\n", __func__);
+        return FALSE;
+    }
     
     return TRUE;
 }
