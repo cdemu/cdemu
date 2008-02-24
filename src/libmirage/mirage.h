@@ -26,6 +26,7 @@
 #include <glib-object.h>
 #include <gmodule.h>
 
+#include <math.h>
 #include <string.h>
 
 #include <linux/cdrom.h>
