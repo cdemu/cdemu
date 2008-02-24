@@ -170,7 +170,7 @@ class gCDEmu_DevicePropertiesDialog (gtk.Dialog):
         frame = gtk.Frame(_("Status"))
         frame.set_label_align(0.50, 0.50)
         frame.show()
-        notebook.append_page(frame, gtk.Label("Status"))
+        notebook.append_page(frame, gtk.Label(_("Status")))
         frame.set_border_width(2)
         
         table = gtk.Table()
@@ -214,10 +214,10 @@ class gCDEmu_DevicePropertiesDialog (gtk.Dialog):
         
         # Debug mask frames        
         frame = self.__create_debug_mask_frame(_("Daemon"), self.__debug_masks_d, "daemon")
-        notebook.append_page(frame, gtk.Label("Daemon"))
+        notebook.append_page(frame, gtk.Label(_("Daemon")))
         
         frame = self.__create_debug_mask_frame(_("Library"), self.__debug_masks_l, "library")
-        notebook.append_page(frame, gtk.Label("Library"))
+        notebook.append_page(frame, gtk.Label(_("Library")))
     
     # *************************************************************************    
     # *                             UI Callbacks                              *
@@ -271,10 +271,10 @@ class gCDEmu_DevicePropertiesDialog (gtk.Dialog):
         self.__device = device[0]
 
         # Dialog title
-        self.set_title(_("Device %i properties" % (device[0])))
+        self.set_title(_("Device %i properties") % (device[0]))
 
         # Device X label
-        self.__labelDevice.set_label("<b><big><u>" + _("Device %i" % (device[0])) + "</u></big></b>")
+        self.__labelDevice.set_label("<b><big><u>" + (_("Device %i") % (device[0])) + "</u></big></b>")
         
         # Set status
         if device[1]:
