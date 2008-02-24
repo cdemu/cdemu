@@ -497,6 +497,11 @@ static gboolean __image_analyzer_dump_disc (gpointer data, gpointer user_data) {
     gint number_of_sessions = 0;
     gint number_of_tracks = 0;
     
+    gint dpm_start = 0;
+    gint dpm_resolution = 0;
+    gint dpm_entries = 0;
+    guint32 *dpm_data = NULL;
+    
     IMAGE_ANALYZER_DumpContext tmp_context;
     
     GtkTreeStore *treestore = context->treestore;
@@ -575,6 +580,24 @@ static gboolean __image_analyzer_dump_disc (gpointer data, gpointer user_data) {
         tmp_context.parent = __image_analyzer_add_node(treestore, node, "Sessions");
         mirage_disc_for_each_session(MIRAGE_DISC(disc), __image_analyzer_dump_session, &tmp_context, NULL);
     }
+    
+    if (mirage_disc_get_dpm_data(MIRAGE_DISC(disc), &dpm_start, &dpm_resolution, &dpm_entries, &dpm_data, NULL)) {
+        gint i = 0;
+        GtkTreeIter *dpm = NULL;
+        GtkTreeIter *data_entries = NULL;
+        
+        /* DPM */
+        dpm = __image_analyzer_add_node(treestore, node, "DPM");
+        
+        __image_analyzer_add_node(treestore, dpm, "Start sector: %d (0x%X)", dpm_start, dpm_start);
+        __image_analyzer_add_node(treestore, dpm, "Resolution: %d (0x%X)", dpm_resolution, dpm_resolution);
+        __image_analyzer_add_node(treestore, dpm, "Number of entries: %d (0x%X)", dpm_entries, dpm_entries);
+        
+        data_entries = __image_analyzer_add_node(treestore, dpm, "Data entries");
+        for (i = 0; i < dpm_entries; i++) {
+            __image_analyzer_add_node(treestore, data_entries, "0x%08X | %d", dpm_data[i], (i+1)*dpm_resolution);
+        }
+    }    
     
     return TRUE;
 }
