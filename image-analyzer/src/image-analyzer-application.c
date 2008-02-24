@@ -28,6 +28,7 @@
 #include "image-analyzer-application.h"
 #include "image-analyzer-parser-log.h"
 #include "image-analyzer-sector-read.h"
+#include "image-analyzer-disc-topology.h"
 
 
 /******************************************************************************\
@@ -47,7 +48,8 @@ typedef struct {
     GtkWidget *filedialog;
     GtkWidget *parserdialog;
     GtkWidget *sectordialog;
-            
+    GtkWidget *topologydialog;
+    
     /* Window */
     GtkWidget *window;
     
@@ -653,6 +655,9 @@ static gboolean __image_analyzer_close_image (IMAGE_ANALYZER_Application *self, 
        load call... */
     image_analyzer_parser_log_clear_log(IMAGE_ANALYZER_PARSER_LOG(_priv->parserdialog), NULL);
     
+    /* Clear disc topology */
+    image_analyzer_disc_topology_clear(IMAGE_ANALYZER_DISC_TOPOLOGY(_priv->topologydialog), NULL);
+    
     /* Check if we're loaded */
     if (!_priv->loaded) {
         /* Not loaded, nothing to do here */
@@ -701,6 +706,9 @@ static gboolean __image_analyzer_open_image (IMAGE_ANALYZER_Application *self, g
 
     /* Remove log handler */
     g_log_remove_handler(DEBUG_DOMAIN_PARSER, log_handler);
+    
+    /* Disc topology */
+    image_analyzer_disc_topology_create(IMAGE_ANALYZER_DISC_TOPOLOGY(_priv->topologydialog), _priv->disc, NULL);    
     
     /* Dump disc */
     context.parent = NULL;
@@ -793,6 +801,17 @@ static void __image_analyzer_application_ui_callback_sector (GtkAction *action, 
     /* Make window (re)appear by first hiding, then showing it */
     gtk_widget_hide(_priv->sectordialog);
     gtk_widget_show_all(_priv->sectordialog);
+    
+    return;
+}
+
+static void __image_analyzer_application_ui_callback_topology (GtkAction *action, gpointer user_data) {
+    IMAGE_ANALYZER_Application *self = IMAGE_ANALYZER_APPLICATION(user_data);
+    IMAGE_ANALYZER_ApplicationPrivate *_priv = IMAGE_ANALYZER_APPLICATION_GET_PRIVATE(self);
+    
+    /* Make window (re)appear by first hiding, then showing it */
+    gtk_widget_hide(_priv->topologydialog);
+    gtk_widget_show_all(_priv->topologydialog);
     
     return;
 }
@@ -905,6 +924,13 @@ static GtkWidget *__image_analyzer_application_build_sector_dialog (IMAGE_ANALYZ
     return dialog;
 }
 
+static GtkWidget *__image_analyzer_application_build_topology_dialog (IMAGE_ANALYZER_Application *self) {
+    GtkWidget *dialog = NULL;
+    dialog = g_object_new(IMAGE_ANALYZER_TYPE_DISC_TOPOLOGY, "application",self, NULL);
+    g_signal_connect(dialog, "delete_event", G_CALLBACK(gtk_widget_hide_on_delete), NULL);
+    return dialog;
+}
+
 static GtkWidget *__image_analyzer_application_build_menu (IMAGE_ANALYZER_Application *self) {
     IMAGE_ANALYZER_ApplicationPrivate *_priv = IMAGE_ANALYZER_APPLICATION_GET_PRIVATE(self);
 
@@ -919,6 +945,7 @@ static GtkWidget *__image_analyzer_application_build_menu (IMAGE_ANALYZER_Applic
         
         { "ParserLogAction", GTK_STOCK_DIALOG_INFO, "_Parser log", "<control>P", "Parser log", G_CALLBACK(__image_analyzer_application_ui_callback_parser_log) },
         { "SectorAction", GTK_STOCK_EXECUTE, "_Read sector", "<control>R", "Read sector", G_CALLBACK(__image_analyzer_application_ui_callback_sector) },
+        { "TopologyAction", GTK_STOCK_EXECUTE, "Disc _topology", "<control>T", "Disc topology", G_CALLBACK(__image_analyzer_application_ui_callback_topology) },
 
         { "AboutAction", GTK_STOCK_ABOUT, "_About", NULL, "About", G_CALLBACK(__image_analyzer_application_ui_callback_about) },
     };
@@ -937,6 +964,7 @@ static GtkWidget *__image_analyzer_application_build_menu (IMAGE_ANALYZER_Applic
                 <menu name='Image' action='ImageMenuAction'> \
                     <menuitem name='Parser log' action='ParserLogAction' /> \
                     <menuitem name='Read sector' action='SectorAction' /> \
+                    <menuitem name='Disc topology' action='TopologyAction' /> \
                 </menu> \
                 <menu name='HelpMenu' action='HelpMenuAction'> \
                     <menuitem name='About' action='AboutAction' /> \
@@ -1074,6 +1102,7 @@ static void __image_analyzer_application_instance_init (GTypeInstance *instance,
     _priv->filedialog = __image_analyzer_application_build_file_dialog(self);
     _priv->parserdialog = __image_analyzer_application_build_parser_dialog(self);
     _priv->sectordialog = __image_analyzer_application_build_sector_dialog(self);
+    _priv->topologydialog = __image_analyzer_application_build_topology_dialog(self);
     
     /* Accelerator group */
     accel_group = gtk_ui_manager_get_accel_group(_priv->ui_manager);
@@ -1097,7 +1126,8 @@ static void __image_analyzer_application_finalize (GObject *obj) {
     gtk_widget_destroy(_priv->filedialog);
     gtk_widget_destroy(_priv->parserdialog);
     gtk_widget_destroy(_priv->sectordialog);
-    
+    gtk_widget_destroy(_priv->topologydialog);
+
     /* Chain up to the parent class */
     return G_OBJECT_CLASS(parent_class)->finalize(obj);
 }
