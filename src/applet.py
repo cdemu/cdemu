@@ -43,33 +43,33 @@ import globals as config
 from device import gCDEmu_Device
 
 class gCDEmu_Applet (gnomeapplet.Applet):    
-    __gconf_client = None
-    __gconf_key_path = None
-
-    __show_notifications = True
-    __use_system_bus = True
-    
-
-    __pixbuf_logo = None
-    __pixbuf_icon = None
-    __image = None
-    
-    __panel_size = 24
-        
-
-    __dbus_bus = None
-    __dbus_iface = None
-
-    __connected = False
-    
-    __menu = None
-    __devices = []    
-    
-    
     def __init__(self):
-        gnomeapplet.Applet.__init__(self)
+        self.__gobject_init__()
+        return
 
     def setup_applet (self):
+        # Initialize variables
+        self.__gconf_client = None
+        self.__gconf_key_path = None
+
+        self.__show_notifications = True
+        self.__use_system_bus = True
+    
+        self.__pixbuf_logo = None
+        self.__pixbuf_icon = None
+        self.__image = None
+    
+        self.__panel_size = 24
+        
+        self.__dbus_bus = None
+        self.__dbus_iface = None
+
+        self.__connected = False
+        self.__signal_started = None
+    
+        self.__menu = None
+        self.__devices = []
+        
         # Init applet
         self.set_applet_flags(gnomeapplet.EXPAND_MINOR)
                                     
@@ -84,7 +84,7 @@ class gCDEmu_Applet (gnomeapplet.Applet):
         popup_menu_xml = "<popup name='button3'>"
         popup_menu_xml += "<menuitem name='system_bus' verb='system_bus' label='%s' type='toggle'/>" % (_("Use _system bus"))
         if has_pynotify:
-            popup_menu_xml += "<menuitem name='notifications' verb='notifications' label='%s' type='toggle'/>" % (_("Show _Notifications"))
+            popup_menu_xml += "<menuitem name='notifications' verb='notifications' label='%s' type='toggle'/>" % (_("Show _notifications"))
         popup_menu_xml += "<separator />"
         popup_menu_xml += "<menuitem name='about' verb='about' label='%s' pixtype='stock' pixname='gnome-stock-about' />" % (_("_About"))
         popup_menu_xml += "</popup>"
@@ -263,6 +263,9 @@ class gCDEmu_Applet (gnomeapplet.Applet):
     def __refresh_icon (self):
         size = self.__panel_size - 4
         
+        if size <= 0:
+            size = 1
+        
         scaled_pixbuf = self.__pixbuf_icon.scale_simple(size, size, gtk.gdk.INTERP_TILES)
         
         if self.__connected == False:
@@ -275,14 +278,15 @@ class gCDEmu_Applet (gnomeapplet.Applet):
         # Some variables
         self.__connected = False
         
+        # Destroy devices
+        for device in self.__devices:
+            device.destroy()
+        self.__devices = []
+        
         # Destroy menu
         if self.__menu:
             self.__menu.destroy()
         self.__menu = None
-        
-        # Destroy devices
-        print "FIXME: destroy devices!"
-        self.__devices = []
         
         # D-BUS proxy and interface
         self.__dbus_proxy_obj = None
@@ -295,12 +299,7 @@ class gCDEmu_Applet (gnomeapplet.Applet):
     def __switch_bus (self):        
         # Close existing D-BUS connection
         if self.__dbus_bus:
-            self.__dbus_bus.remove_signal_receiver(self.__signal_daemon_started,
-                'DaemonStarted',
-                'net.sf.cdemu.CDEMUD_Daemon',
-                None, # Don't request interface because we don't need it at this point
-                '/CDEMUD_Daemon')
-            
+            self.__signal_started.remove()
             self.__dbus_bus = None
         
         # Init D-BUS connection
@@ -312,7 +311,7 @@ class gCDEmu_Applet (gnomeapplet.Applet):
             self.__dbus_bus = dbus.SessionBus()
             
         # Set up signal handlers
-        self.__dbus_bus.add_signal_receiver(self.__signal_daemon_started,
+        self.__signal_started = self.__dbus_bus.add_signal_receiver(self.__signal_daemon_started,
             'DaemonStarted',
             'net.sf.cdemu.CDEMUD_Daemon',
             None, # Don't request interface because we don't need it at this point
@@ -344,8 +343,9 @@ class gCDEmu_Applet (gnomeapplet.Applet):
                 0, 
                 gtk.MESSAGE_ERROR, 
                 gtk.BUTTONS_CLOSE, 
-                _("CDEmu daemon version %s detected, but at least version %s is required!") % (daemon_version, config.min_daemon_version))
+                _("CDEmu daemon version %s detected, but at least version %s is required!") % (daemon_version, config.min_daemon_version)
             )
+            
                   
             message.set_title(_("Incompatible daemon version"))
             message.run()
@@ -377,3 +377,5 @@ class gCDEmu_Applet (gnomeapplet.Applet):
         self.__refresh_icon()
         
         return True
+
+gobject.type_register(gCDEmu_Applet)
