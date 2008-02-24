@@ -34,37 +34,6 @@ def helper_combine_images_list (images_list, separator):
     return separator.join(new_list)
       
 class gCDEmu_Device ():
-    __dbus_iface = None
-    __number = 0
-    __parent = None
-    
-    # File dialog
-    __file_dialog = None
-    
-    # Menu item
-    __menu_item = None
-    
-    # Device properties
-    __loaded = False
-    __image_type = ""
-    __filenames = []
-    
-    __label_loaded = None
-    __label_image_type = None
-    __label_filename = None
-    __button_load = None
-    
-    __dpm_emulation = False
-    __tr_emulation = False
-    
-    __entry_vendor_id = None
-    __entry_product_id = None
-    __entry_revision = None
-    __entry_vendor_specific = None
-    __checkbutton_dpm = None
-    __checkbutton_tr = None
-    
-    
     def __setup_file_dialog (self):
         # Enumerate supported parsers and build up file selection dialog
         try:
@@ -104,7 +73,7 @@ class gCDEmu_Device ():
     
     def __setup_properties_dialog (self):
         dialog = gtk.Dialog(
-            (_("Device %i properties)") % (self.__number)),
+            (_("Device %i properties") % (self.__number)),
             None,
             gtk.DIALOG_DESTROY_WITH_PARENT,
             (gtk.STOCK_CLOSE, gtk.RESPONSE_CLOSE)
@@ -135,7 +104,7 @@ class gCDEmu_Device ():
         self.__daemon_debug_masks = []
         for mask in masks:
             self.__daemon_debug_masks.append([ mask[0], mask[1] ])
-        page = self.__create_page_debug_mask(_("Daemon debug mask"), self.__daemon_debug_masks, lambda b: self.__cb_button_set_daemon_debug_mask())
+        page = self.__create_page_debug_mask(_("Daemon debug mask"), self.__daemon_debug_masks, lambda b: self.__set_daemon_debug_mask())
         notebook.append_page(page, gtk.Label(_("Daemon")))
         
         # Page: Library debug mask
@@ -143,7 +112,7 @@ class gCDEmu_Device ():
         self.__library_debug_masks = []
         for mask in masks:
             self.__library_debug_masks.append([ mask[0], mask[1] ])
-        page = self.__create_page_debug_mask(_("Library debug mask"), self.__library_debug_masks, lambda b: self.__cb_button_set_library_debug_mask())
+        page = self.__create_page_debug_mask(_("Library debug mask"), self.__library_debug_masks, lambda b: self.__set_library_debug_mask())
         notebook.append_page(page, gtk.Label(_("Library")))
         
         self.__properties_dialog = dialog
@@ -316,11 +285,40 @@ class gCDEmu_Device ():
         return frame
     
     def __init__ (self, number, parent, menu, dbus_iface):        
+        # Initialize all variables
+        self.__dbus_iface = None
+        self.__number = 0
+        self.__parent = None
+    
+        self.__file_dialog = None
+        self.__properties_dialog = None
+    
+        self.__menu_item = None
+    
+        self.__loaded = False
+        self.__image_type = ""
+        self.__filenames = []
+    
+        self.__label_loaded = None
+        self.__label_image_type = None
+        self.__label_filename = None
+        self.__button_load = None
+    
+        self.__dpm_emulation = False
+        self.__tr_emulation = False
+    
+        self.__entry_vendor_id = None
+        self.__entry_product_id = None
+        self.__entry_revision = None
+        self.__entry_vendor_specific = None
+        self.__checkbutton_dpm = None
+        self.__checkbutton_tr = None
+        
         # Set variables
         self.__number = number
         self.__dbus_iface = dbus_iface
         self.__parent = parent
-        
+                
         # Create menu entry
         item = gtk.MenuItem("Device %i" % (number))
         item.connect("button-press-event", self.__cb_menu_item_button_press_event)
@@ -338,8 +336,9 @@ class gCDEmu_Device ():
         self.__setup_properties_dialog()
         
         # Setup signal receivers 
-        self.__dbus_iface.connect_to_signal("DeviceStatusChanged", self.__signal_status_changed)
-        self.__dbus_iface.connect_to_signal("DeviceOptionChanged", self.__signal_option_changed)
+        self.__signals = []
+        self.__signals.append(self.__dbus_iface.connect_to_signal("DeviceStatusChanged", self.__signal_status_changed))
+        self.__signals.append(self.__dbus_iface.connect_to_signal("DeviceOptionChanged", self.__signal_option_changed))
         
         # Initial update
         self.__update_status()
@@ -352,6 +351,35 @@ class gCDEmu_Device ():
         return
     
     
+    def destroy (self):        
+        # Remove references
+        self.__parent = None
+        self.__dbus_iface = None
+        
+        self.__label_loaded = None
+        self.__label_image_type = None
+        self.__label_filename = None
+        self.__button_load = None
+        
+        self.__entry_vendor_id = None
+        self.__entry_product_id = None
+        self.__entry_revision = None
+        self.__entry_vendor_specific = None
+        self.__checkbutton_dpm = None
+        self.__checkbutton_tr = None
+        
+        # Destroy widgets
+        self.__properties_dialog.destroy()
+        self.__file_dialog.destroy()
+        self.__menu_item.destroy()
+        
+        # Disconnect signals
+        for signal in self.__signals:
+            signal.remove()
+        self.__signals = []
+        
+        return
+        
     def __signal_status_changed (self, device):
         # Skip signals not meant for us
         if device != self.__number:
@@ -387,7 +415,7 @@ class gCDEmu_Device ():
         else:
             print "Unhandled option: '%s'" % (option)
         
-        self.__parent.notification(_("Device change"), _("Device %i has been changed its option: %s.") % (self.__number, option))
+        self.__parent.notification(_("Device change"), _("Device %i has been changed its option:\n%s.") % (self.__number, option))
         
         return
     
@@ -559,12 +587,12 @@ class gCDEmu_Device ():
             self.__label_loaded.set_label(_("Yes"))
             self.__label_filename.set_label(helper_combine_images_list(self.__filenames, "\n"))
             self.__label_image_type.set_label(self.__image_type)
-            self.__button_load.set_label(_("Unload Device"))
+            self.__button_load.set_label(_("Unload"))
         else:
             self.__label_loaded.set_label(_("No"))
-            self.__label_filename.set_label(helper_combine_images_list(self.__filenames, "\n"))
+            self.__label_filename.set_label(self.__filenames[0])
             self.__label_image_type.set_label(self.__image_type)
-            self.__button_load.set_label(_("Load Device"))
+            self.__button_load.set_label(_("Load"))
         
         return
     

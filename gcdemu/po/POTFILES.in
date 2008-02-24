@@ -2,6 +2,6 @@
 # Please keep this file sorted alphabetically.
 servers/GNOME_gCDEmuApplet.server.in.in
 src/applet.py
+src/device.py
 src/gcdemu
 src/gcdemu.schemas.in
-src/ui.py
