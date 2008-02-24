@@ -121,6 +121,9 @@ static void __image_analyzer_sector_read_ui_callback_read (GtkWidget *button, gp
     gchar *address_msf = NULL;
     gint sector_type = 0;
     
+    gdouble dpm_angle = 0;
+    gdouble dpm_density = 0;
+    
     guint8 *tmp_buf = NULL;
     gint tmp_len = 0;
     
@@ -159,7 +162,17 @@ static void __image_analyzer_sector_read_ui_callback_read (GtkWidget *button, gp
     __image_analyzer_read_sector_append_text(self, NULL, "0x%X (%s)\n", sector_type, __dump_sector_type(sector_type));
     
     __image_analyzer_read_sector_append_text(self, NULL, "\n");
+    
+    /* DPM */
+    if (mirage_disc_get_dpm_data_for_sector(MIRAGE_DISC(disc), address, &dpm_angle, &dpm_density, NULL)) {
+        __image_analyzer_read_sector_append_text(self, "tag_section", "Sector angle: ");
+        __image_analyzer_read_sector_append_text(self, NULL, "%f rotations\n", dpm_angle);
         
+        __image_analyzer_read_sector_append_text(self, "tag_section", "Sector density: ");
+        __image_analyzer_read_sector_append_text(self, NULL, "%f degrees per sector\n", dpm_density);
+    }
+    __image_analyzer_read_sector_append_text(self, NULL, "\n");
+    
      /* PQ subchannel */
     __image_analyzer_read_sector_append_text(self, "tag_section", "PQ subchannel:\n");
     mirage_sector_get_subchannel(MIRAGE_SECTOR(sector), MIRAGE_SUBCHANNEL_PQ, &tmp_buf, &tmp_len, NULL);
