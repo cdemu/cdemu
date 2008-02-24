@@ -165,7 +165,11 @@ static gboolean __mirage_disc_mds_parse_dpm_data (MIRAGE_Disc *self, GError **er
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: number of DPM data blocks: %d\n", __func__, num_dpm_blocks);
     
     dpm_block_offset = MIRAGE_CAST_PTR(cur_ptr, 0, guint32 *);
-        
+    
+    if (num_dpm_blocks > 1) {
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: cannot correctly handle more than 1 DPM block yet!\n", __func__);
+    }
+    
     /* Read each block */
     for (i = 0; i < num_dpm_blocks; i++) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: block[%i]: offset: 0x%X\n", __func__, i, dpm_block_offset[i]);
