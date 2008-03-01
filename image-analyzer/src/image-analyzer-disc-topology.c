@@ -290,7 +290,9 @@ gboolean image_analyzer_disc_topology_clear (IMAGE_ANALYZER_DiscTopology *self, 
     gtk_plot_data_set_points(_priv->plotdata, NULL, NULL, NULL, NULL, 0);
     
     g_free(_priv->data_x);
+    _priv->data_x = NULL;
     g_free(_priv->data_y);
+    _priv->data_y = NULL;
     
     /* Clear the zoom list */
     g_slist_free(_priv->zoom_steps);
