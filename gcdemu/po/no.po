@@ -1,16 +1,15 @@
 # Norwegian translation of gCDEmu.
-# Copyright (C) 2006-2007 Henrik Stokseth
+# Copyright (C) 2006-2008 Henrik Stokseth
 # This file is distributed under the same license as the gCDEmu package.
-# Henrik Stokseth <henrik@kablekaos.net>, 2006-2007.
-# , fuzzy
+# Henrik Stokseth <henrik@kablekaos.net>, 2006-2008.
 # 
 # 
 msgid ""
 msgstr ""
-"Project-Id-Version: gCDEmu 1.0.0\n"
+"Project-Id-Version: gCDEmu 1.1.0\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2008-02-21 19:49+0100\n"
-"PO-Revision-Date: 2008-02-03 22:00+0100\n"
+"PO-Revision-Date: 2008-03-01 22:00+0100\n"
 "Last-Translator: Henrik Stokseth <henrik@kabelkaos.net>\n"
 "Language-Team: Norwegian\n"
 "MIME-Version: 1.0\n"
