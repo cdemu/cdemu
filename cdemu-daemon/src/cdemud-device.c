@@ -875,11 +875,12 @@ static void __cdemud_device_delay_calculate (CDEMUD_Device *self, gint address, 
        thereby saving time.
     
        So until I figure how exactly to emulate that shortcutting time, we're
-       emulating delays only for less than 100 rotations. This gives 500 ms of
-       delay max, which should be acceptable and may work with some of the games.
-       And then everyone lives happily ever after. If not, we'll have to figure
-       out something else and I'll add couple more blocks of a long-winded 
-       comment... */
+       doing it the following way: for all seeks that require less than 10
+       rotations, emulate delay time that's proportional to number of rotations
+       (~50 ms max). If seek requires more than 10 rotations, we "move" head so
+       that it requires less than 10 rotations; head moving always requires 20 ms. 
+       This way, the delay shouldn't be getting longer than ~70 ms, and sector
+       density measurements should still pass. */
     if (_priv->dpm_emulation) {
         gdouble rotations = 0;
         
@@ -890,9 +891,17 @@ static void __cdemud_device_delay_calculate (CDEMUD_Device *self, gint address, 
         _priv->current_angle = dpm_angle;
         
         CDEMUD_DEBUG(self, DAEMON_DEBUG_DEV_DELAY, "%s: 0x%X->0x%X (%d): %f rotations\n", __func__, _priv->current_sector, address, abs(_priv->current_sector - address), rotations);
-        if (rotations <= 100.0) {
-            _priv->delay_amount += rotations/rps*1000000; /* Delay, in microseconds */
+        
+        /* We emulate moving the head if amount of rotations exceeds 10 */
+        if (rotations >= 10.0) {
+            /* Reduce the number of rotations */
+            while (rotations >= 10.0) {
+                rotations -= 10.0;
+            }
+            _priv->delay_amount += 20.0*1000; /* Shortcut takes about 20 ms */
         }
+        
+        _priv->delay_amount += rotations/rps*1000000; /* Delay, in microseconds */
     }
     
     /* Transfer delay; emulates the time needed to read all the sectors. Related
