@@ -410,6 +410,11 @@ static gboolean __mirage_disc_b6t_decode_disc_type (MIRAGE_Disc *self, GError **
             mirage_disc_set_medium_type(self, MIRAGE_MEDIUM_DVD, NULL);
             break;
         }
+        case 0x11: {
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: DVD-R disc\n", __func__);
+            mirage_disc_set_medium_type(self, MIRAGE_MEDIUM_DVD, NULL);
+            break;
+        }
         default: {
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: unknown disc type: 0x%X!\n", __func__, _priv->disc_block_1->disc_type);
             mirage_error(MIRAGE_E_PARSER, error);
