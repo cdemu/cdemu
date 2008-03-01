@@ -128,7 +128,7 @@ static gboolean __mirage_disc_b6t_setup_track_fragments (MIRAGE_Disc *self, GObj
                 MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: track file sector size implies subchannel data...\n", __func__);
                 /* If it's more than full sector, we have subchannel with us */
                 sfile_sectsize = tfile_sectsize - 2352;
-                sfile_format = FR_BIN_SFILE_PW96_INT | FR_BIN_SFILE_INT; /* Internal subchannel, PW96 */
+                sfile_format = FR_BIN_SFILE_PW96_LIN | FR_BIN_SFILE_INT; /* Internal subchannel, linear PW96 */
                 tfile_sectsize = 2352;
                 MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: subchannel sector size: %i (0x%X)\n", __func__, sfile_sectsize, sfile_sectsize);
                 WHINE_ON_UNEXPECTED(sfile_sectsize, 96);
@@ -636,8 +636,9 @@ static gboolean __mirage_disc_b6t_parse_track_entry (MIRAGE_Disc *self, GError *
         - 0: non-track descriptor
         - 1: Audio track
         - 2: Mode 1 track
-        - 3: Mode 2 track (probably Form 1)
-        - 4: Mode 1 track (FIXME: what's difference from 2?)
+        - 3: Mode 2 Formless track
+        - 4: Mode 2 Form 1 track
+        - 5: Mode 2 Form 2 track
         - 6: DVD track
     */
     switch (track->type) {
@@ -646,8 +647,7 @@ static gboolean __mirage_disc_b6t_parse_track_entry (MIRAGE_Disc *self, GError *
             mirage_track_set_mode(MIRAGE_TRACK(cur_track), MIRAGE_MODE_AUDIO, NULL);
             break;
         }
-        case 2: 
-        case 4: {
+        case 2: {
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: Mode 1 track\n", __func__);
             mirage_track_set_mode(MIRAGE_TRACK(cur_track), MIRAGE_MODE_MODE1, NULL);
             break;
@@ -657,6 +657,16 @@ static gboolean __mirage_disc_b6t_parse_track_entry (MIRAGE_Disc *self, GError *
             mirage_track_set_mode(MIRAGE_TRACK(cur_track), MIRAGE_MODE_MODE2_MIXED, NULL);
             break;
         }
+        case 4: {
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: Mode 2 Form 1 track\n", __func__);
+            mirage_track_set_mode(MIRAGE_TRACK(cur_track), MIRAGE_MODE_MODE2_FORM1, NULL);
+            break;
+        }
+        case 5: {
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: Mode 2 Form 2 track\n", __func__);
+            mirage_track_set_mode(MIRAGE_TRACK(cur_track), MIRAGE_MODE_MODE2_FORM2, NULL);
+            break;
+        }            
         case 6: {
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: DVD track\n", __func__);
             mirage_track_set_mode(MIRAGE_TRACK(cur_track), MIRAGE_MODE_MODE1, NULL);
