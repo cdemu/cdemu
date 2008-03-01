@@ -82,7 +82,7 @@ typedef struct {
     guint32 unknown1_length; /* Unknown; seems to be always 4 bytes? */
     guint32 datablocks_length; /* Length of data-blocks data */
     guint32 sessions_length; /* Length of sessions data */
-    guint32 unknown2_length; /* Unknown; seems to be always 0 bytes? */
+    guint32 dpm_data_length; /* Length of internal DPM data */
 } B6T_DiscBlock_2;
 
 
