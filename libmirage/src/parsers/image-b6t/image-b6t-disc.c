@@ -95,6 +95,10 @@ static gboolean __mirage_disc_b6t_load_bwa_file (MIRAGE_Disc *self, GError **err
             __dummy3__ = MIRAGE_CAST_DATA(cur_ptr, 0, guint32);
             cur_ptr += sizeof(guint32);
             
+            WHINE_ON_UNEXPECTED(__dummy1__, 0x00000001);
+            WHINE_ON_UNEXPECTED(__dummy2__, 0x00000008);
+            WHINE_ON_UNEXPECTED(__dummy3__, 0x00000001);
+            
             /* The next three fields are start sector, resolution and number
                of entries */
             dpm_start_sector = MIRAGE_CAST_DATA(cur_ptr, 0, guint32);
@@ -134,6 +138,100 @@ static gboolean __mirage_disc_b6t_load_bwa_file (MIRAGE_Disc *self, GError **err
     g_free(bwa_filename);
     
     return succeeded;
+}
+
+static gboolean __mirage_disc_b6t_parse_internal_dpm_data (MIRAGE_Disc *self, GError **error) {
+    MIRAGE_Disc_B6TPrivate *_priv = MIRAGE_DISC_B6T_GET_PRIVATE(self);
+    
+    if (_priv->disc_block_2->dpm_data_length) {
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: reading internal DPM data; 0x%X bytes\n", __func__, _priv->disc_block_2->dpm_data_length);
+        
+        guint8 *cur_ptr = _priv->cur_ptr;
+        
+        /* FIXME: by the look of it, this should actually support multiple blocks? */
+        guint32 __dummy1__ = 0;
+        guint32 __dummy2__ = 0;
+        guint32 __dummy3__ = 0;
+        guint32 __dummy4__ = 0;
+        guint32 block_len1 = 0;
+        guint32 block_len2 = 0;
+        guint32 __dummy5__ = 0;
+        guint32 __dummy6__ = 0;
+        
+        guint32 dpm_start_sector = 0;
+        guint32 dpm_resolution = 0;
+        guint32 dpm_num_entries = 0;
+            
+        guint32 *dpm_data = NULL;
+        
+        /* Four fields that seem to have fixed values */
+        __dummy1__ = MIRAGE_CAST_DATA(cur_ptr, 0, guint32);
+        cur_ptr += sizeof(guint32);
+        __dummy2__ = MIRAGE_CAST_DATA(cur_ptr, 0, guint32);
+        cur_ptr += sizeof(guint32);
+        __dummy3__ = MIRAGE_CAST_DATA(cur_ptr, 0, guint32);
+        cur_ptr += sizeof(guint32);
+        __dummy4__ = MIRAGE_CAST_DATA(cur_ptr, 0, guint32);
+        cur_ptr += sizeof(guint32);
+        
+        WHINE_ON_UNEXPECTED(__dummy1__, 0x00000001);
+        WHINE_ON_UNEXPECTED(__dummy2__, 0x00000001);
+        WHINE_ON_UNEXPECTED(__dummy3__, 0x00000000);
+        WHINE_ON_UNEXPECTED(__dummy4__, 0x00000000);
+        
+        /* Next two fields seem to have same value, which appears to be length
+           of DPM data */
+        block_len1 = MIRAGE_CAST_DATA(cur_ptr, 0, guint32);
+        cur_ptr += sizeof(guint32);
+        block_len2 = MIRAGE_CAST_DATA(cur_ptr, 0, guint32);
+        cur_ptr += sizeof(guint32);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: DPM block length: 0x%X, 0x%X (numbers should be same)\n", __func__, block_len1, block_len2);
+        
+        /* Two more undeciphered fields */
+        __dummy5__ = MIRAGE_CAST_DATA(cur_ptr, 0, guint32);
+        cur_ptr += sizeof(guint32);
+        __dummy6__ = MIRAGE_CAST_DATA(cur_ptr, 0, guint32);
+        cur_ptr += sizeof(guint32);
+        
+        WHINE_ON_UNEXPECTED(__dummy5__, 0x00000000);
+        WHINE_ON_UNEXPECTED(__dummy6__, 0x00000001);
+        
+        /* The next three fields are start sector, resolution and number
+            of entries */
+        dpm_start_sector = MIRAGE_CAST_DATA(cur_ptr, 0, guint32);
+        cur_ptr += sizeof(guint32);
+            
+        dpm_resolution = MIRAGE_CAST_DATA(cur_ptr, 0, guint32);
+        cur_ptr += sizeof(guint32);
+            
+        dpm_num_entries = MIRAGE_CAST_DATA(cur_ptr, 0, guint32);
+        cur_ptr += sizeof(guint32);
+            
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: Start sector: 0x%X\n", __func__, dpm_start_sector);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: Resolution: %d\n", __func__, dpm_resolution);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: Number of entries: %d\n", __func__, dpm_num_entries);
+            
+        /* The rest is DPM data */
+        dpm_data = MIRAGE_CAST_PTR(cur_ptr, 0, guint32 *);
+        cur_ptr += dpm_num_entries * sizeof(guint32);
+        
+        /* Set DPM data */
+        if (!mirage_disc_set_dpm_data(self, dpm_start_sector, dpm_resolution, dpm_num_entries, dpm_data, error)) {
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to set DPM data!\n", __func__);
+            return FALSE;
+        }
+        
+        /* Calculate length of data we've processed */
+        gsize length = (gsize)cur_ptr - (gsize)_priv->cur_ptr;
+        if (length != _priv->disc_block_2->dpm_data_length) {
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: I'm afraid Dave... we read 0x%zX bytes, declared size is 0x%X bytes\n", __func__, length, _priv->disc_block_2->dpm_data_length);
+        }
+        
+        /* Skip the whole block, so that parsing errors here aren't fatal */
+        _priv->cur_ptr += _priv->disc_block_2->dpm_data_length;
+    }
+    
+    return TRUE;
 }
 
 static gboolean __mirage_disc_b6t_setup_track_fragments (MIRAGE_Disc *self, GObject *cur_track, gint start_sector, gint length, GError **error) {
@@ -518,7 +616,7 @@ static gboolean __mirage_disc_b6t_parse_disc_blocks (MIRAGE_Disc *self, GError *
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  unknown block 1 data length: 0x%X\n", __func__, _priv->disc_block_2->unknown1_length);
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  data-blocks data length: 0x%X\n", __func__, _priv->disc_block_2->datablocks_length);
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  sessions data length: 0x%X\n", __func__, _priv->disc_block_2->sessions_length);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  unknown block 2 data length: 0x%X\n", __func__, _priv->disc_block_2->unknown2_length);   
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  DPM data length: 0x%X\n", __func__, _priv->disc_block_2->dpm_data_length);   
     
     
     /* Right, you thought so far everything was pretty much straightforward? Well,
@@ -922,6 +1020,12 @@ static gboolean __mirage_disc_b6t_load_disc (MIRAGE_Disc *self, GError **error) 
         return FALSE;
     }
     
+    /* Read internal DPM data */
+    if (!__mirage_disc_b6t_parse_internal_dpm_data(self, error)) {
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to parse internal DPM data!\n");
+        return FALSE;
+    }
+    
     /* Read B6T file length */
     guint32 b6t_length = MIRAGE_CAST_DATA(_priv->cur_ptr, 0, guint32);
     _priv->cur_ptr += sizeof(guint32);
@@ -934,7 +1038,11 @@ static gboolean __mirage_disc_b6t_load_disc (MIRAGE_Disc *self, GError **error) 
         return FALSE;
     }
     
-    /* Try to load external BWA file */
+    /* Try to load external BWA file; the internal DPM data does not necessarily
+       contain entries for whole disc, but rather just for beginning of the disc
+       (which is usually checked by copy protection). BWA file, on the other hand,
+       usually contains DPM data for the whole disc. So, if we have both internal
+       DPM data and a BWA available, we'll use the latter... */
     if (!__mirage_disc_b6t_load_bwa_file(self, error)) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to load BWA file!\n");
         return FALSE;
