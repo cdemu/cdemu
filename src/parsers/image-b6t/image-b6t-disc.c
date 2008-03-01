@@ -48,6 +48,93 @@ typedef struct {
     MIRAGE_ParserInfo *parser_info;
 } MIRAGE_Disc_B6TPrivate;
 
+static gboolean __mirage_disc_b6t_load_bwa_file (MIRAGE_Disc *self, GError **error) {
+    MIRAGE_Disc_B6TPrivate *_priv = MIRAGE_DISC_B6T_GET_PRIVATE(self);
+    gboolean succeeded = TRUE;
+    
+    gchar *bwa_filename = NULL;
+    gchar *bwa_fullpath = NULL;
+    
+    /* Use B6T filename and replace its extension with BWA */
+    bwa_filename = g_strdup(_priv->b6t_filename);
+    gint len = strlen(bwa_filename);
+    sprintf(bwa_filename+len-3, "bwa");
+    
+    bwa_fullpath = mirage_helper_find_data_file(bwa_filename, _priv->b6t_filename);
+    
+    if (bwa_fullpath) {
+        GMappedFile *bwa_mapped = NULL;
+        GError *local_error = NULL;
+        
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: found BWA file: '%s'\n", __func__, bwa_fullpath);
+        
+        /* Map BWA file */
+        bwa_mapped = g_mapped_file_new(bwa_fullpath, FALSE, &local_error);
+        
+        if (bwa_mapped) {
+            guint8 *cur_ptr = (guint8 *)g_mapped_file_get_contents(bwa_mapped);
+            
+            guint32 __dummy1__ = 0;
+            guint32 __dummy2__ = 0;
+            guint32 __dummy3__ = 0;
+            
+            guint32 dpm_start_sector = 0;
+            guint32 dpm_resolution = 0;
+            guint32 dpm_num_entries = 0;
+            
+            guint32 *dpm_data = NULL;
+            
+            /* First three fields seem to have fixed values; probably some sort of
+               header? */
+            __dummy1__ = MIRAGE_CAST_DATA(cur_ptr, 0, guint32);
+            cur_ptr += sizeof(guint32);
+            
+            __dummy2__ = MIRAGE_CAST_DATA(cur_ptr, 0, guint32);
+            cur_ptr += sizeof(guint32);
+            
+            __dummy3__ = MIRAGE_CAST_DATA(cur_ptr, 0, guint32);
+            cur_ptr += sizeof(guint32);
+            
+            /* The next three fields are start sector, resolution and number
+               of entries */
+            dpm_start_sector = MIRAGE_CAST_DATA(cur_ptr, 0, guint32);
+            cur_ptr += sizeof(guint32);
+            
+            dpm_resolution = MIRAGE_CAST_DATA(cur_ptr, 0, guint32);
+            cur_ptr += sizeof(guint32);
+            
+            dpm_num_entries = MIRAGE_CAST_DATA(cur_ptr, 0, guint32);
+            cur_ptr += sizeof(guint32);
+            
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: Start sector: 0x%X\n", __func__, dpm_start_sector);
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: Resolution: %d\n", __func__, dpm_resolution);
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: Number of entries: %d\n", __func__, dpm_num_entries);
+            
+            /* The rest is DPM data */
+            dpm_data = MIRAGE_CAST_PTR(cur_ptr, 0, guint32 *);
+            
+            /* Set DPM data */
+            if (!mirage_disc_set_dpm_data(self, dpm_start_sector, dpm_resolution, dpm_num_entries, dpm_data, error)) {
+                MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to set DPM data!\n", __func__);
+                succeeded = FALSE;
+            }
+            
+            g_mapped_file_free(bwa_mapped);
+        } else {
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to map file '%s': %s!\n", __func__, bwa_fullpath, local_error->message);
+            g_error_free(local_error);
+            mirage_error(MIRAGE_E_IMAGEFILE, error);
+            succeeded = FALSE;
+        }
+    } else {
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: no accompanying BWA file found\n", __func__);
+    }
+    
+    g_free(bwa_fullpath);
+    g_free(bwa_filename);
+    
+    return succeeded;
+}
 
 static gboolean __mirage_disc_b6t_setup_track_fragments (MIRAGE_Disc *self, GObject *cur_track, gint start_sector, gint length, GError **error) {
     MIRAGE_Disc_B6TPrivate *_priv = MIRAGE_DISC_B6T_GET_PRIVATE(self);
@@ -839,6 +926,12 @@ static gboolean __mirage_disc_b6t_load_disc (MIRAGE_Disc *self, GError **error) 
     /* Read footer */
     if (!__mirage_disc_b6t_parse_footer(self, error)) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to parse footer!\n");
+        return FALSE;
+    }
+    
+    /* Try to load external BWA file */
+    if (!__mirage_disc_b6t_load_bwa_file(self, error)) {
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to load BWA file!\n");
         return FALSE;
     }
     
