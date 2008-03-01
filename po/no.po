@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gCDEmu 1.1.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2008-02-21 19:49+0100\n"
+"POT-Creation-Date: 2008-03-01 18:15+0100\n"
 "PO-Revision-Date: 2008-03-01 22:00+0100\n"
 "Last-Translator: Henrik Stokseth <henrik@kabelkaos.net>\n"
 "Language-Team: Norwegian\n"
@@ -16,67 +16,174 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: ../src/applet.py:107
+#: src/applet.py:85
 msgid "Use _system bus"
 msgstr "Benytt _system buss"
 
-#: ../src/applet.py:109
-msgid "Show _Notifications"
+#: src/applet.py:87
+#, fuzzy
+msgid "Show _notifications"
 msgstr "Vis _beskjeder"
 
-#: ../src/applet.py:111
+#: src/applet.py:89
 msgid "_About"
 msgstr "_Om"
 
-#: ../src/applet.py:174
+#: src/applet.py:143
 msgid "Daemon started"
 msgstr "Demon startet"
 
-#: ../src/applet.py:175
+#: src/applet.py:143
 msgid "CDEmu daemon has been started."
 msgstr "CDEmu demon har blitt startet."
 
-#: ../src/applet.py:195
+#: src/applet.py:151
 msgid "Daemon stopped"
 msgstr "Demon stoppet"
 
-#: ../src/applet.py:196
+#: src/applet.py:151
 msgid "CDEmu daemon has been stopped."
 msgstr "CDEmu demon har blitt stoppet."
 
-#: ../src/applet.py:223
+#: src/applet.py:214
+msgid "gCDEmu is an applet for controlling CDEmu devices via CDEmu daemon."
+msgstr "gCDEmu er en applet for å kontrollere CDEmu enheter via CDEmu demonen."
+
+#: src/applet.py:217
+msgid "translator-credits"
+msgstr "Henrik Stokseth <henrik@kabelkaos.net>"
+
+#: src/applet.py:346
+#, python-format
+msgid "CDEmu daemon version %s detected, but at least version %s is required!"
+msgstr "CDEmu demon versjon %s er detektert, men det kreves minimum versjon %s!"
+
+#: src/applet.py:350
+msgid "Incompatible daemon version"
+msgstr "Ukompatibel versjon av demon"
+
+#: src/device.py:45
+msgid "Open file"
+msgstr "Åpne fil"
+
+#: src/device.py:54
+msgid "All files"
+msgstr "Alle filer"
+
+#: src/device.py:59
+msgid "All image files"
+msgstr "Alle bilde filer"
+
+#: src/device.py:76
+#, python-format
+msgid "Device %i properties"
+msgstr "Enhet %i egenskaper"
+
+#: src/device.py:84
+#, python-format
+msgid "Device %i"
+msgstr "Enhet %i"
+
+#: src/device.py:97 src/device.py:124
+msgid "Status"
+msgstr "Status"
+
+#: src/device.py:100
+msgid "Options"
+msgstr "Valg"
+
+#: src/device.py:107
+msgid "Daemon debug mask"
+msgstr "Demon avlusnings-maske"
+
+#: src/device.py:108
+msgid "Daemon"
+msgstr "Demon"
+
+#: src/device.py:115
+#, fuzzy
+msgid "Library debug mask"
+msgstr "Sett avlusnings-maske"
+
+#: src/device.py:116
+msgid "Library"
+msgstr "Bibliotek"
+
+#: src/device.py:135
+msgid "Loaded: "
+msgstr "Lastet: "
+
+#: src/device.py:144
+msgid "Image type: "
+msgstr "Bilde type: "
+
+#: src/device.py:153
+msgid "File name: "
+msgstr "Fil navn: "
+
+#: src/device.py:179
+#, fuzzy
+msgid "Device ID"
+msgstr "Enhet"
+
+#: src/device.py:191
+msgid "Vendor ID: "
+msgstr "Fabrikant ID: "
+
+#: src/device.py:201
+msgid "Product ID: "
+msgstr "Produkt ID: "
+
+#: src/device.py:211
+msgid "Revision: "
+msgstr "Revisjon: "
+
+#: src/device.py:221
+msgid "Vendor-specific: "
+msgstr "Fabrikant-spesifikt: "
+
+#: src/device.py:235
+msgid "Set device ID"
+msgstr "Set enhets ID"
+
+#: src/device.py:241
+msgid "DPM emulation"
+msgstr "DPM emulasjon"
+
+#: src/device.py:248
+msgid "Transfer rate emulation"
+msgstr "Overførings-hastighet emulasjon"
+
+#: src/device.py:280
+msgid "Set debug mask"
+msgstr "Sett avlusnings-maske"
+
+#: src/device.py:393 src/device.py:395 src/device.py:418
+msgid "Device change"
+msgstr "Enhet byttet"
+
+#: src/device.py:393
 #, python-format
 msgid "Device %i has been loaded."
 msgstr "Enhet %i har blitt lastet."
 
-#: ../src/applet.py:225
+#: src/device.py:395
 #, python-format
 msgid "Device %i has been emptied."
 msgstr "Enhet %i har blitt utløst."
 
-#: ../src/applet.py:228 ../src/applet.py:243 ../src/applet.py:257
-msgid "Device change"
-msgstr "Enhet byttet"
-
-#: ../src/applet.py:244
-#, python-format
-msgid "Device %i has been changed its daemon debug mask."
+#: src/device.py:418
+#, fuzzy, python-format
+msgid ""
+"Device %i has been changed its option:\n"
+"%s."
 msgstr "Enhet %i har fått byttet sin demon avlusings maske."
 
-#: ../src/applet.py:258
-#, python-format
-msgid "Device %i has been changed its library debug mask."
-msgstr "Enhet %i har fått byttet sin bibliotek avlusings maske."
+#: src/device.py:431
+msgid "Error"
+msgstr "Feil"
 
-#: ../src/applet.py:331
-msgid "gCDEmu is an applet for controlling CDEmu devices via CDEmu daemon."
-msgstr "gCDEmu er en applet for å kontrollere CDEmu enheter via CDEmu demonen."
-
-#: ../src/applet.py:334
-msgid "translator-credits"
-msgstr "Henrik Stokseth <henrik@kabelkaos.net>"
-
-#: ../src/applet.py:528
+#: src/device.py:473
 #, python-format
 msgid ""
 "Failed to unload device %i:\n"
@@ -85,11 +192,7 @@ msgstr ""
 "Mislyktes i utløsing av enhet %i:\n"
 "%s"
 
-#: ../src/applet.py:529 ../src/applet.py:553 ../src/applet.py:591
-msgid "Error"
-msgstr "Feil"
-
-#: ../src/applet.py:552
+#: src/device.py:487
 #, python-format
 msgid ""
 "Failed to load image %s to device %i:\n"
@@ -98,106 +201,98 @@ msgstr ""
 "Mislyktes i å laste bilde %s til enhet %i:\n"
 "%s"
 
-#: ../src/applet.py:590
-#, python-format
+#: src/device.py:506
+#, fuzzy, python-format
 msgid ""
-"Failed to set debug mask (type: '%s') for device %i to 0x%X:\n"
+"Failed to set device ID for device %i to %s:\n"
 "%s"
 msgstr ""
-"Mislyktes i å sette avlusnings-maske (type: '%s') for enhet %i til 0x%X:\n"
+"Mislyktes å sette demonen sin avlusnings-maske for enhet %i til 0x%X:\n"
 "%s"
 
-#: ../src/gcdemu.schemas.in.h:1
-msgid "Show notifications?"
-msgstr "Vis beskjeder?"
+#: src/device.py:523
+#, fuzzy, python-format
+msgid ""
+"Failed to set DPM emulation for device %i to %i:\n"
+"%s"
+msgstr ""
+"Mislyktes å sette demonen sin avlusnings-maske for enhet %i til 0x%X:\n"
+"%s"
 
-#: ../src/gcdemu.schemas.in.h:2
-msgid "Use system bus (instead of session bus)?"
-msgstr "Benytt system buss (i stedet for sesjons buss)?"
+#: src/device.py:540
+#, fuzzy, python-format
+msgid ""
+"Failed to set transfer rate emulation for device %i to %i:\n"
+"%s"
+msgstr ""
+"Mislyktes å sette demonen sin avlusnings-maske for enhet %i til 0x%X:\n"
+"%s"
 
-#: ../src/ui.py:41
-msgid "Open file"
-msgstr "Åpne fil"
+#: src/device.py:550
+#, fuzzy, python-format
+msgid ""
+"Failed to set daemon debug mask for device %i to 0x%X:\n"
+"%s"
+msgstr ""
+"Mislyktes å sette demonen sin avlusnings-maske for enhet %i til 0x%X:\n"
+"%s"
 
-#: ../src/ui.py:53
-msgid "All files"
-msgstr "Alle filer"
+#: src/device.py:560
+#, fuzzy, python-format
+msgid ""
+"Failed to set library debug mask for device %i to 0x%X:\n"
+"%s"
+msgstr ""
+"Mislyktes å sette demonen sin avlusnings-maske for enhet %i til 0x%X:\n"
+"%s"
 
-#: ../src/ui.py:58
-msgid "All image files"
-msgstr "Alle bilde filer"
-
-#. *** Frame: Debug mask ***
-#: ../src/ui.py:122
-msgid "Debug mask: "
-msgstr "Avlusnings-maske: "
-
-#: ../src/ui.py:144
-msgid "Set debug mask"
-msgstr "Sett avlusnings-maske"
-
-#. *** Frame: Status ***
-#: ../src/ui.py:170 ../src/ui.py:173
-msgid "Status"
-msgstr "Status"
-
-#: ../src/ui.py:182
-msgid "Loaded: "
-msgstr "Lastet: "
-
-#: ../src/ui.py:190
-msgid "Image type: "
-msgstr "Bilde type: "
-
-#: ../src/ui.py:198
-msgid "File name: "
-msgstr "Fil navn: "
-
-#. Debug mask frames
-#: ../src/ui.py:216 ../src/ui.py:217
-msgid "Daemon"
-msgstr "Demon"
-
-#: ../src/ui.py:219 ../src/ui.py:220
-msgid "Library"
-msgstr "Bibliotek"
-
-#. Dialog title
-#: ../src/ui.py:274
-#, python-format
-msgid "Device %i properties"
-msgstr "Enhet %i egenskaper"
-
-#. Device X label
-#: ../src/ui.py:277
-#, python-format
-msgid "Device %i"
-msgstr "Enhet %i"
-
-#: ../src/ui.py:281
-msgid "Yes"
-msgstr "Ja"
-
-#: ../src/ui.py:284
-msgid "Unload Device"
-msgstr "Utløs enhet"
-
-#: ../src/ui.py:286
-msgid "No"
-msgstr "Nei"
-
-#: ../src/ui.py:289
-msgid "Load Device"
-msgstr "Last enhet"
-
-#. Indicate there's more than one file
-#: ../src/ui.py:347 ../src/ui.py:349
+#: src/device.py:579 src/device.py:581
 msgid "Device"
 msgstr "Enhet"
 
-#: ../src/ui.py:349
+#: src/device.py:581
 msgid "Empty"
 msgstr "Tom"
+
+#: src/device.py:587
+msgid "Yes"
+msgstr "Ja"
+
+#: src/device.py:590
+#, fuzzy
+msgid "Unload"
+msgstr "Utløs enhet"
+
+#: src/device.py:592
+msgid "No"
+msgstr "Nei"
+
+#: src/device.py:595
+#, fuzzy
+msgid "Load"
+msgstr "Lastet: "
+
+#~ msgid "Device %i has been changed its library debug mask."
+#~ msgstr "Enhet %i har fått byttet sin bibliotek avlusings maske."
+
+#~ msgid ""
+#~ "Failed to set debug mask (type: '%s') for device %i to 0x%X:\n"
+#~ "%s"
+#~ msgstr ""
+#~ "Mislyktes i å sette avlusnings-maske (type: '%s') for enhet %i til 0x%X:\n"
+#~ "%s"
+
+#~ msgid "Show notifications?"
+#~ msgstr "Vis beskjeder?"
+
+#~ msgid "Use system bus (instead of session bus)?"
+#~ msgstr "Benytt system buss (i stedet for sesjons buss)?"
+
+#~ msgid "Debug mask: "
+#~ msgstr "Avlusnings-maske: "
+
+#~ msgid "Load Device"
+#~ msgstr "Last enhet"
 
 #~ msgid "Device %i has been changed its module debug mask."
 #~ msgstr "Enhet %i har fått byttet sin modul avlusnings-maske."
@@ -205,15 +300,6 @@ msgstr "Tom"
 #~ msgid "Module"
 #~ msgstr "Modul"
 
-#~ msgid ""
-#~ "Failed to set daemon's debug mask for device %i to 0x%X:\n"
-#~ "%s"
-#~ msgstr ""
-#~ "Mislyktes å sette demonen sin avlusnings-maske for enhet %i til 0x%X:\n"
-#~ "%s"
-
 #~ msgid "Module debug mask"
 #~ msgstr "Modul avlusnings-maske"
 
-#~ msgid "Daemon debug mask"
-#~ msgstr "Demon avlusnings-maske"
