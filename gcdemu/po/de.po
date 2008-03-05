@@ -1,0 +1,285 @@
+# German translation of gCDEmu.
+# Copyright (C) 2008 Marcel Hoppe
+# This file is distributed under the same license as the gCDEmu package.
+# Marcel Hoppe <hoppe.marcel@gmx.de>, 2008.
+# 
+# 
+msgid ""
+msgstr ""
+"Project-Id-Version: gCDEmu 1.1.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2008-03-01 18:24+0100\n"
+"PO-Revision-Date: 2008-03-04 22:26+0100\n"
+"Last-Translator: Marcel Hoppe <hoppe.marcel@gmx.de>\n"
+"Language-Team: German\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: ../src/applet.py:85
+msgid "Use _system bus"
+msgstr "Benutze _System Bus"
+
+#: ../src/applet.py:87
+msgid "Show _notifications"
+msgstr "Zeige _Notiz"
+
+#: ../src/applet.py:89
+msgid "_About"
+msgstr "_Über"
+
+#: ../src/applet.py:143
+msgid "Daemon started"
+msgstr "Daemon gestartet"
+
+#: ../src/applet.py:143
+msgid "CDEmu daemon has been started."
+msgstr "CDEmu Daemon wurde gestartet."
+
+#: ../src/applet.py:151
+msgid "Daemon stopped"
+msgstr "Daemon gestoppt"
+
+#: ../src/applet.py:151
+msgid "CDEmu daemon has been stopped."
+msgstr "CDEmu Daemon wurde gestoppt"
+
+#: ../src/applet.py:214
+msgid "gCDEmu is an applet for controlling CDEmu devices via CDEmu daemon."
+msgstr ""
+"gCDEmu ist ein Applet zum kontrollieren der CDEmu Laufwerke des CDEmu Daemon."
+
+#: ../src/applet.py:217
+msgid "translator-credits"
+msgstr "Marcel Hoppe <hoppe.marcel@gmx.de>"
+
+#: ../src/applet.py:346
+#, python-format
+msgid "CDEmu daemon version %s detected, but at least version %s is required!"
+msgstr "CDEmu Daemon Version %s gefunden, aber die Version %s wird benötigt!"
+
+#: ../src/applet.py:350
+msgid "Incompatible daemon version"
+msgstr "Unverträgliche Daemon Version"
+
+#: ../src/device.py:45
+msgid "Open file"
+msgstr "Öffne Datei"
+
+#: ../src/device.py:54
+msgid "All files"
+msgstr "Alle Dateien"
+
+#: ../src/device.py:59
+msgid "All image files"
+msgstr "Alle Image Dateien"
+
+#: ../src/device.py:76
+#, python-format
+msgid "Device %i properties"
+msgstr "Einstellungen von Laufwerk %i "
+
+#: ../src/device.py:84
+#, python-format
+msgid "Device %i"
+msgstr "Laufwerk %i"
+
+#. *** Frame: status ***
+#: ../src/device.py:97 ../src/device.py:124
+msgid "Status"
+msgstr "Status"
+
+#: ../src/device.py:100
+msgid "Options"
+msgstr "Einstellungen"
+
+#: ../src/device.py:107
+msgid "Daemon debug mask"
+msgstr "Daemon Debug Maske"
+
+#: ../src/device.py:108
+msgid "Daemon"
+msgstr "Daemon"
+
+#: ../src/device.py:115
+msgid "Library debug mask"
+msgstr "Library Debug Maske"
+
+#: ../src/device.py:116
+msgid "Library"
+msgstr "Bibliothek"
+
+#: ../src/device.py:135
+msgid "Loaded: "
+msgstr "Geladen: "
+
+#: ../src/device.py:144
+msgid "Image type: "
+msgstr "Image Type: "
+
+#: ../src/device.py:153
+msgid "File name: "
+msgstr "Datei Name: "
+
+#. Device ID
+#: ../src/device.py:179
+msgid "Device ID"
+msgstr "Laufwerks ID:"
+
+#: ../src/device.py:191
+msgid "Vendor ID: "
+msgstr "Anbieter ID:"
+
+#: ../src/device.py:201
+msgid "Product ID: "
+msgstr "Produkt ID: "
+
+#: ../src/device.py:211
+msgid "Revision: "
+msgstr "Revision: "
+
+#: ../src/device.py:221
+msgid "Vendor-specific: "
+msgstr "Anbieterspezifisch:"
+
+#: ../src/device.py:235
+msgid "Set device ID"
+msgstr "Setzte Laufwerks ID"
+
+#. DPM emulation
+#: ../src/device.py:241
+msgid "DPM emulation"
+msgstr "DPM Emulation"
+
+#. Transfer rate emulation
+#: ../src/device.py:248
+msgid "Transfer rate emulation"
+msgstr "Übertragungsraten Emulation"
+
+#: ../src/device.py:280
+msgid "Set debug mask"
+msgstr "Setzte Debug Maske"
+
+#: ../src/device.py:393 ../src/device.py:395 ../src/device.py:418
+msgid "Device change"
+msgstr "Laufwerkänderung"
+
+#: ../src/device.py:393
+#, python-format
+msgid "Device %i has been loaded."
+msgstr "Laufwerk %i wurde geladen."
+
+#: ../src/device.py:395
+#, python-format
+msgid "Device %i has been emptied."
+msgstr "Laufwerk %i wurde ausgeworfen."
+
+#: ../src/device.py:418
+#, python-format
+msgid ""
+"Device %i has been changed its option:\n"
+"%s."
+msgstr ""
+"Laufwerk %i wurde geändert:\n"
+"%s."
+
+#: ../src/device.py:431
+msgid "Error"
+msgstr "Fehler"
+
+#. Show error dialog
+#: ../src/device.py:473
+#, python-format
+msgid ""
+"Failed to unload device %i:\n"
+"%s"
+msgstr ""
+"Fehler beim Auswerfen von Laufwerk %i:\n"
+"%s"
+
+#: ../src/device.py:487
+#, python-format
+msgid ""
+"Failed to load image %s to device %i:\n"
+"%s"
+msgstr ""
+"Fehler beim Laden vom Image %s nach Laufwerk %i:\n"
+"%s"
+
+#: ../src/device.py:506
+#, python-format
+msgid ""
+"Failed to set device ID for device %i to %s:\n"
+"%s"
+msgstr ""
+"Fehler beim Setzten der Laufwerks ID für Laufwerk %i nach %s:\n"
+"%s"
+
+#: ../src/device.py:523
+#, python-format
+msgid ""
+"Failed to set DPM emulation for device %i to %i:\n"
+"%s"
+msgstr ""
+"Fehler beim Setzten der DPM Emulation für Laufwerk %i nach %i: \n"
+"%s"
+
+#: ../src/device.py:540
+#, python-format
+msgid ""
+"Failed to set transfer rate emulation for device %i to %i:\n"
+"%s"
+msgstr ""
+"Fehler beim Setzten der Übertragungsraten Emulation für Laufwerk %i auf %i:\n"
+"%s"
+
+#: ../src/device.py:550
+#, python-format
+msgid ""
+"Failed to set daemon debug mask for device %i to 0x%X:\n"
+"%s"
+msgstr ""
+"Fehler beim Setzten der Daemon Debug Maske für Laufwerk %i auf 0x%X:\n"
+"%s"
+
+#: ../src/device.py:560
+#, python-format
+msgid ""
+"Failed to set library debug mask for device %i to 0x%X:\n"
+"%s"
+msgstr ""
+"Fehler beim Setzten der Library Debug Maske für Laufwerk %i auf 0x%X:\n"
+"%s"
+
+#. Indicate there's more than one file
+#: ../src/device.py:579 ../src/device.py:581
+msgid "Device"
+msgstr "Laufwerk"
+
+#: ../src/device.py:581
+msgid "Empty"
+msgstr "Leer"
+
+#: ../src/device.py:587
+msgid "Yes"
+msgstr "Ja"
+
+#: ../src/device.py:590
+msgid "Unload"
+msgstr "Auswerfen"
+
+#: ../src/device.py:592
+msgid "No"
+msgstr "Nein"
+
+#: ../src/device.py:595
+msgid "Load"
+msgstr "Laden"
+
+#: ../src/gcdemu.schemas.in.h:1
+msgid "Show notifications?"
+msgstr "Zeige Notiz"
+
+#: ../src/gcdemu.schemas.in.h:2
+msgid "Use system bus (instead of session bus)?"
+msgstr "Benutze System Bus (anstelle des Sitzungs Bus)?"
