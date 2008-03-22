@@ -206,12 +206,14 @@ gboolean mirage_mirage_create_disc (MIRAGE_Mirage *self, gchar **filenames, GObj
             }
             
             break;
+        } else {
+            g_object_unref(disc);
         }
     }
     
     g_free(parsers);
 
-    if (!succeeded) {
+    if (i == num_parsers) {
         mirage_error(MIRAGE_E_NOPARSERFOUND, error);
     }
     
