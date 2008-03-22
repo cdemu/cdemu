@@ -421,17 +421,25 @@ static struct scsi_host_template vhba_template = {
 	.sg_tablesize = 256,
 };
 
-static ssize_t do_request(const struct scsi_cmnd *cmd, char __user *buf, size_t buf_len)
+static ssize_t do_request(struct scsi_cmnd *cmd, char __user *buf, size_t buf_len)
 {
 	struct vhba_request vreq;
 	ssize_t ret;
 
 	scmd_dbg(cmd, "request %lu, cdb 0x%x, bufflen %d, use_sg %d\n",
-			cmd->serial_number, cmd->cmnd[0], cmd->request_bufflen, cmd->use_sg);
-
+#ifdef KAT_HAVE_SCSI_MACROS
+		cmd->serial_number, cmd->cmnd[0], scsi_bufflen(cmd), scsi_sg_count(cmd));
+#else
+        cmd->serial_number, cmd->cmnd[0], cmd->request_bufflen, cmd->use_sg);
+#endif
+    
 	ret = sizeof(vreq);
 	if (DATA_TO_DEVICE(cmd->sc_data_direction))
-		ret += cmd->request_bufflen;
+#ifdef KAT_HAVE_SCSI_MACROS
+        ret += scsi_bufflen(cmd);
+#else
+        ret += cmd->request_bufflen;
+#endif
 
 	if (ret > buf_len)
 	{
@@ -444,7 +452,11 @@ static ssize_t do_request(const struct scsi_cmnd *cmd, char __user *buf, size_t 
 	vreq.lun = cmd->device->lun;
 	memcpy(vreq.cdb, cmd->cmnd, MAX_COMMAND_SIZE);
 	vreq.cdb_len = cmd->cmd_len;
+#ifdef KAT_HAVE_SCSI_MACROS
+	vreq.data_len = scsi_bufflen(cmd);
+#else
 	vreq.data_len = cmd->request_bufflen;
+#endif
 
 	if (copy_to_user(buf, &vreq, sizeof(vreq)))
 		return -EFAULT;
@@ -454,7 +466,11 @@ static ssize_t do_request(const struct scsi_cmnd *cmd, char __user *buf, size_t 
 		buf += sizeof(vreq);
 
 		/* XXX use_sg? */
-		if (copy_to_user(buf, cmd->request_buffer, vreq.data_len))
+#ifdef KAT_HAVE_SCSI_MACROS
+        if (copy_to_user(buf, scsi_sglist(cmd), vreq.data_len))
+#else
+        if (copy_to_user(buf, cmd->request_buffer, vreq.data_len))
+#endif
 			return -EFAULT;
 	}
 
@@ -466,7 +482,11 @@ static ssize_t do_response(struct scsi_cmnd *cmd, const char __user *buf, size_t
 	ssize_t ret = 0;
        
 	scmd_dbg(cmd, "response %lu, status %x, data len %d, use_sg %d\n",
-			cmd->serial_number, res->status, res->data_len, cmd->use_sg);
+#ifdef KAT_HAVE_SCSI_MACROS
+             cmd->serial_number, res->status, res->data_len, scsi_sg_count(cmd));
+#else
+             cmd->serial_number, res->status, res->data_len, cmd->use_sg);
+#endif
 
 	if (res->status)
 	{
@@ -483,23 +503,43 @@ static ssize_t do_response(struct scsi_cmnd *cmd, const char __user *buf, size_t
 
 		ret += res->data_len;
 	}
+#ifdef KAT_HAVE_SCSI_MACROS
+	else if (DATA_FROM_DEVICE(cmd->sc_data_direction) && scsi_bufflen(cmd))
+#else
 	else if (DATA_FROM_DEVICE(cmd->sc_data_direction) && cmd->request_bufflen)
+#endif
 	{
 		size_t to_read;
 	       
-		if (res->data_len > cmd->request_bufflen)
+#ifdef KAT_HAVE_SCSI_MACROS
+        if (res->data_len > scsi_bufflen(cmd))
+        {
+			scmd_warn(cmd, "truncate data (%d < %d)\n", scsi_bufflen(cmd), res->data_len);
+			res->data_len = scsi_bufflen(cmd);
+		}
+#else
+        if (res->data_len > cmd->request_bufflen)
 		{
 			scmd_warn(cmd, "truncate data (%d < %d)\n", cmd->request_bufflen, res->data_len);
 			res->data_len = cmd->request_bufflen;
 		}
-
+#endif
+        
 		to_read = res->data_len;
 
-		if (cmd->use_sg)
+#ifdef KAT_HAVE_SCSI_MACROS
+        if (scsi_sg_count(cmd))
+#else
+        if (cmd->use_sg)
+#endif
 		{
 			unsigned char buf_stack[64];
 			unsigned char *kaddr, *uaddr, *kbuf;
-			struct scatterlist *sg = cmd->request_buffer;
+#ifdef KAT_HAVE_SCSI_MACROS
+            struct scatterlist *sg = scsi_sglist(cmd);
+#else
+            struct scatterlist *sg = cmd->request_buffer;
+#endif
 			int i;
 
 			uaddr = (unsigned char *) buf;
@@ -509,7 +549,11 @@ static ssize_t do_response(struct scsi_cmnd *cmd, const char __user *buf, size_t
 			else
 				kbuf = buf_stack;
 
+#ifdef KAT_HAVE_SCSI_MACROS
+			for (i = 0; i < scsi_sg_count(cmd); i++)
+#else
 			for (i = 0; i < cmd->use_sg; i++)
+#endif
 			{
 				size_t len = (sg[i].length < to_read) ? sg[i].length : to_read;
 
@@ -540,13 +584,21 @@ static ssize_t do_response(struct scsi_cmnd *cmd, const char __user *buf, size_t
 		}
 		else
 		{
-			if (copy_from_user(cmd->request_buffer, buf, res->data_len))
+#ifdef KAT_HAVE_SCSI_MACROS
+            if (copy_from_user(scsi_sglist(cmd), buf, res->data_len))
+#else
+            if (copy_from_user(cmd->request_buffer, buf, res->data_len))
+#endif
 				return -EFAULT;
 
 			to_read -= res->data_len;
 		}
 
-		cmd->resid = to_read;
+#ifdef KAT_HAVE_SCSI_MACROS
+        scsi_set_resid(cmd, to_read);
+#else
+        cmd->resid = to_read;
+#endif
 
 		ret += res->data_len - to_read;
 	}
