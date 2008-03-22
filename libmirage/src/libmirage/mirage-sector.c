@@ -889,13 +889,28 @@ GType mirage_sector_get_type (void) {
 static gint __subchannel_generate_p (MIRAGE_Sector *self, guint8 *buf) {
     MIRAGE_SectorPrivate *_priv = MIRAGE_SECTOR_GET_PRIVATE(self);
     gint address = _priv->address;
+
+    GObject *track = NULL;
+    gint track_start = 0;
+
+    /* Get sector's parent track */
+    if (!mirage_object_get_parent(MIRAGE_OBJECT(self), &track, NULL)) {
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to get sector's parent!\n", __func__);
+        return 12;
+    }
     
-    /* P subchannel being 1 indicates we're in the pregap */
-    if (address < 0) {
-        memset(buf, 1, 12);
+    mirage_track_get_track_start(MIRAGE_TRACK(track), &track_start, NULL);
+    
+    /* P subchannel being 0xFF indicates we're in the pregap */
+    if (address < track_start) {
+        memset(buf, 0xFF, 12);
     } else {
         memset(buf, 0, 12);        
     }
+    
+    /* Release sector's parent track */
+    g_object_unref(track);
+    
     return 12;
 }
 
@@ -995,7 +1010,7 @@ static gint __subchannel_generate_q (MIRAGE_Sector *self, guint8 *buf) {
             } else {
                 /* No index... check if address is in a pregap (strictly less than track start) */
                 if (address < track_start) {
-                    MIRAGE_DEBUG(self, MIRAGE_DEBUG_SECTOR, "%s: address 0x%X is part of pregap\n", __func__, address);
+                    MIRAGE_DEBUG(self, MIRAGE_DEBUG_SECTOR, "%s: address 0x%X is part of a pregap\n", __func__, address);
                     buf[2] = 0;
                 } else {
                     MIRAGE_DEBUG(self, MIRAGE_DEBUG_SECTOR, "%s: address 0x%X belongs to index 1\n", __func__, address);
