@@ -49,6 +49,12 @@ PKG_CHECK_MODULES(gobject, gobject-2.0 >= 2.6)
 PKG_CHECK_MODULES(gmodule, gmodule-2.0 >= 2.6)
 PKG_CHECK_MODULES(sndfile, sndfile >= 1.0.0)
 
+# Zlib check
+AC_CHECK_LIB([z], [inflate],, AC_MSG_ERROR("*** zlib library not found ***"))
+AC_CHECK_HEADERS([zlib.h],, AC_MSG_ERROR("*** zlib headers not found ***"))
+zlib_LIBS="-lz"
+AC_SUBST(zlib_LIBS)
+
 # Compile with more warnings
 AC_ARG_ENABLE(more-warnings,
 [  --enable-more-warnings  Maximum compiler warnings],
@@ -107,6 +113,7 @@ AC_CONFIG_FILES([
     src/parsers/image-ccd/Makefile
     src/parsers/image-cdi/Makefile
     src/parsers/image-cue/Makefile
+    src/parsers/image-daa/Makefile
     src/parsers/image-iso/Makefile
     src/parsers/image-mds/Makefile
     src/parsers/image-nrg/Makefile

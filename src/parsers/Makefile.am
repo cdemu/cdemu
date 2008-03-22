@@ -3,6 +3,7 @@ SUBDIRS = \
    image-ccd \
    image-cdi \
    image-cue \
+   image-daa \
    image-iso \
    image-mds \
    image-nrg \
