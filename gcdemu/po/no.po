@@ -1,16 +1,16 @@
 # Norwegian translation of gCDEmu.
 # Copyright (C) 2006-2008 Henrik Stokseth
 # This file is distributed under the same license as the gCDEmu package.
-# Henrik Stokseth <henrik@kablekaos.net>, 2006-2008.
+# Henrik Stokseth <henrik AT kablekaos DOT net>, 2006-2008.
 # 
 # 
 msgid ""
 msgstr ""
 "Project-Id-Version: gCDEmu 1.1.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2008-03-01 18:15+0100\n"
+"POT-Creation-Date: 2008-04-06 20:21+0200\n"
 "PO-Revision-Date: 2008-03-01 22:00+0100\n"
-"Last-Translator: Henrik Stokseth <henrik@kabelkaos.net>\n"
+"Last-Translator: Henrik Stokseth <henrik AT kabelkaos DOT net>\n"
 "Language-Team: Norwegian\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -51,7 +51,7 @@ msgstr "gCDEmu er en applet for å kontrollere CDEmu enheter via CDEmu demonen."
 
 #: src/applet.py:217
 msgid "translator-credits"
-msgstr "Henrik Stokseth <henrik@kabelkaos.net>"
+msgstr "Henrik Stokseth <henrik AT kabelkaos DOT net>"
 
 #: src/applet.py:346
 #, python-format
@@ -177,7 +177,8 @@ msgstr "Enhet %i har blitt utløst."
 msgid ""
 "Device %i has been changed its option:\n"
 "%s."
-msgstr "Enhet %i har fått byttet sin demon avlusings maske."
+msgstr "Enhet %i har fått byttet sitt valg:\n"
+"%s."
 
 #: src/device.py:431
 msgid "Error"
@@ -185,65 +186,51 @@ msgstr "Feil"
 
 #: src/device.py:473
 #, python-format
-msgid ""
-"Failed to unload device %i:\n"
+msgid "Failed to unload device %i:\n"
 "%s"
-msgstr ""
-"Mislyktes i utløsing av enhet %i:\n"
+msgstr "Mislyktes i utløsing av enhet %i:\n"
 "%s"
 
 #: src/device.py:487
 #, python-format
-msgid ""
-"Failed to load image %s to device %i:\n"
+msgid "Failed to load image %s to device %i:\n"
 "%s"
-msgstr ""
-"Mislyktes i å laste bilde %s til enhet %i:\n"
+msgstr "Mislyktes i å laste bilde %s til enhet %i:\n"
 "%s"
 
 #: src/device.py:506
 #, fuzzy, python-format
-msgid ""
-"Failed to set device ID for device %i to %s:\n"
+msgid "Failed to set device ID for device %i to %s:\n"
 "%s"
-msgstr ""
-"Mislyktes å sette demonen sin avlusnings-maske for enhet %i til 0x%X:\n"
+msgstr "Mislyktes å sette demonen sin avlusnings-maske for enhet %i til 0x%X:\n"
 "%s"
 
 #: src/device.py:523
 #, fuzzy, python-format
-msgid ""
-"Failed to set DPM emulation for device %i to %i:\n"
+msgid "Failed to set DPM emulation for device %i to %i:\n"
 "%s"
-msgstr ""
-"Mislyktes å sette demonen sin avlusnings-maske for enhet %i til 0x%X:\n"
+msgstr "Mislyktes å sette demonen sin avlusnings-maske for enhet %i til 0x%X:\n"
 "%s"
 
 #: src/device.py:540
 #, fuzzy, python-format
-msgid ""
-"Failed to set transfer rate emulation for device %i to %i:\n"
+msgid "Failed to set transfer rate emulation for device %i to %i:\n"
 "%s"
-msgstr ""
-"Mislyktes å sette demonen sin avlusnings-maske for enhet %i til 0x%X:\n"
+msgstr "Mislyktes å sette demonen sin avlusnings-maske for enhet %i til 0x%X:\n"
 "%s"
 
 #: src/device.py:550
 #, fuzzy, python-format
-msgid ""
-"Failed to set daemon debug mask for device %i to 0x%X:\n"
+msgid "Failed to set daemon debug mask for device %i to 0x%X:\n"
 "%s"
-msgstr ""
-"Mislyktes å sette demonen sin avlusnings-maske for enhet %i til 0x%X:\n"
+msgstr "Mislyktes å sette demonen sin avlusnings-maske for enhet %i til 0x%X:\n"
 "%s"
 
 #: src/device.py:560
 #, fuzzy, python-format
-msgid ""
-"Failed to set library debug mask for device %i to 0x%X:\n"
+msgid "Failed to set library debug mask for device %i to 0x%X:\n"
 "%s"
-msgstr ""
-"Mislyktes å sette demonen sin avlusnings-maske for enhet %i til 0x%X:\n"
+msgstr "Mislyktes å sette demonen sin avlusnings-maske for enhet %i til 0x%X:\n"
 "%s"
 
 #: src/device.py:579 src/device.py:581
@@ -272,34 +259,4 @@ msgstr "Nei"
 msgid "Load"
 msgstr "Lastet: "
 
-#~ msgid "Device %i has been changed its library debug mask."
-#~ msgstr "Enhet %i har fått byttet sin bibliotek avlusings maske."
-
-#~ msgid ""
-#~ "Failed to set debug mask (type: '%s') for device %i to 0x%X:\n"
-#~ "%s"
-#~ msgstr ""
-#~ "Mislyktes i å sette avlusnings-maske (type: '%s') for enhet %i til 0x%X:\n"
-#~ "%s"
-
-#~ msgid "Show notifications?"
-#~ msgstr "Vis beskjeder?"
-
-#~ msgid "Use system bus (instead of session bus)?"
-#~ msgstr "Benytt system buss (i stedet for sesjons buss)?"
-
-#~ msgid "Debug mask: "
-#~ msgstr "Avlusnings-maske: "
-
-#~ msgid "Load Device"
-#~ msgstr "Last enhet"
-
-#~ msgid "Device %i has been changed its module debug mask."
-#~ msgstr "Enhet %i har fått byttet sin modul avlusnings-maske."
-
-#~ msgid "Module"
-#~ msgstr "Modul"
-
-#~ msgid "Module debug mask"
-#~ msgstr "Modul avlusnings-maske"
 
