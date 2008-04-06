@@ -1,16 +1,16 @@
 # Norwegian translation of cdemu-client.
 # Copyright (C) 2006-2008 Henrik Stokseth
 # This file is distributed under the same license as the cdemu-client package.
-# Henrik Stokseth <henrik@kabelkaos.net>, 2006-2008.
+# Henrik Stokseth <henrik AT kabelkaos DOT net>, 2006-2008.
 # 
 # 
 msgid ""
 msgstr ""
 "Project-Id-Version: cdemu-client 1.1.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2008-03-01 18:24+0100\n"
+"POT-Creation-Date: 2008-04-06 20:06+0200\n"
 "PO-Revision-Date: 2008-03-01 18:00+0100\n"
-"Last-Translator: Henrik Stokseth <henrik@kabelkaos.net>\n"
+"Last-Translator: Henrik Stokseth <henrik AT kabelkaos DOT net>\n"
 "Language-Team: Norwegian\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -106,8 +106,7 @@ msgstr "Setter modulens avlusnings-maske for alle enheter til 0x%X."
 #: src/cdemu.py:212 src/cdemu.py:220
 #, fuzzy, python-format
 msgid "Failed to set daemon debug mask of device %i to 0x%X: %s"
-msgstr ""
-"Mislyktes i å sette demonens avlusnings-maske for enhet %i til 0x%X: %s"
+msgstr "Mislyktes i å sette demonens avlusnings-maske for enhet %i til 0x%X: %s"
 
 #: src/cdemu.py:216
 #, fuzzy, python-format
@@ -184,7 +183,7 @@ msgstr "Enhetenes overførings-hastighet emulasjons flagg:"
 #: src/cdemu.py:374 src/cdemu.py:383
 #, fuzzy, python-format
 msgid "Failed to get transfer rate emulation flag of device %i: %s"
-msgstr "Mislyktes i å innhente ststus for enhet %i: %s"
+msgstr "Mislyktes i å innhente status for enhet %i: %s"
 
 #: src/cdemu.py:386
 #, python-format
@@ -199,8 +198,7 @@ msgstr "Setter modulens avlusnings-maske for alle enheter til 0x%X."
 #: src/cdemu.py:403 src/cdemu.py:411
 #, fuzzy, python-format
 msgid "Failed to set transfer rate emulation flag of device %i to %i: %s"
-msgstr ""
-"Mislyktes i å sette demonens avlusnings-maske for enhet %i til 0x%X: %s"
+msgstr "Mislyktes i å sette demonens avlusnings-maske for enhet %i til 0x%X: %s"
 
 #: src/cdemu.py:407
 #, fuzzy, python-format
@@ -320,8 +318,7 @@ msgstr "Fragment med ID '%s' ble ikke funnet!"
 #: src/cdemu.py:579
 #, fuzzy, python-format
 msgid "Failed to enumerate supported daemon debug masks: %s"
-msgstr ""
-"Mislyktes i å innhente liste over støttede avlusnings-masker for enhet: %s"
+msgstr "Mislyktes i å innhente liste over støttede avlusnings-masker for enhet: %s"
 
 #: src/cdemu.py:582
 #, fuzzy
@@ -331,8 +328,7 @@ msgstr "Støttede avlusnings-masker (type: '%s'):"
 #: src/cdemu.py:597
 #, fuzzy, python-format
 msgid "Failed to enumerate supported library debug masks: %s"
-msgstr ""
-"Mislyktes i å innhente liste over støttede avlusnings-masker for enhet: %s"
+msgstr "Mislyktes i å innhente liste over støttede avlusnings-masker for enhet: %s"
 
 #: src/cdemu.py:600
 #, fuzzy
@@ -402,9 +398,7 @@ msgstr "viser program versjon"
 
 #: src/cdemu.py:670
 msgid "sets D-BUS bus type to use; valid values are 'session' and 'system'"
-msgstr ""
-"setter D-BUS buss type som skal benyttes; gyldige verdier er 'session' og "
-"'system'"
+msgstr "setter D-BUS buss type som skal benyttes; gyldige verdier er 'session' og 'system'"
 
 #: src/cdemu.py:675
 #, python-format
@@ -465,12 +459,8 @@ msgid "displays/sets transfer rate emulation flag"
 msgstr "viser/setter overførings-hastighet emulerings flagg"
 
 #: src/cdemu.py:745
-msgid ""
-"<device> [new vendor_id] [new product_id] [new revision] [new "
-"vendor_specific]"
-msgstr ""
-"<enhet> [ny fabrikat_id] [ny produkt_id] [ny revisjon] [ny "
-"fabrikat_spesifikt]"
+msgid "<device> [new vendor_id] [new product_id] [new revision] [new vendor_specific]"
+msgstr "<enhet> [ny fabrikat_id] [ny produkt_id] [ny revisjon] [ny fabrikat_spesifikt]"
 
 #: src/cdemu.py:746
 #, fuzzy
@@ -508,55 +498,4 @@ msgstr "viser listen over gyldige bibliotek avlusnings-masker"
 msgid "displays version information"
 msgstr "viser versjons informasjon"
 
-#~ msgid "Debug masks for devices (type: '%s'):"
-#~ msgstr "Avlusnings-masker for enheter (type: '%s'):"
-
-#~ msgid "Debug mask for device %i: 0x%X (type: '%s')"
-#~ msgstr "Avlusnings-maske for enhet %i: 0x%X (type: '%s')"
-
-#~ msgid "Setting debug mask for all devices to 0x%X (type: '%s')."
-#~ msgstr "Setter avlusnings-maske for alle enheter til 0x%X (type: '%s')."
-
-#~ msgid "Setting debug mask for device %i to 0x%X (type: '%s')."
-#~ msgstr "Setter avlusnings-maske for enhet %i til 0x%X (type: '%s')."
-
-#~ msgid "displays/sets debug mask for the device"
-#~ msgstr "viser/setter avlusnings-maske for enheten"
-
-#~ msgid "displays the information about supported parsers"
-#~ msgstr "viser informasjonen om støttede bilde-tolkere"
-
-#~ msgid "displays the information about supported fragments"
-#~ msgstr "viser informasjonen om støttede fragmenter"
-
-#~ msgid "Failed to get module version: %s"
-#~ msgstr "Mislyktes i å innhente modul versjon: %s"
-
-#~ msgid "Module version: %s"
-#~ msgstr "Modul versjon: %s"
-
-#~ msgid "Module's debug masks for devices:"
-#~ msgstr "Modulens avlusnings-masker for enheter:"
-
-#~ msgid "Failed to get module's debug mask for device %i: %s"
-#~ msgstr "Mislyktes i å innhente modulens avlusnings-masker for enhet %i: %s"
-
-#~ msgid "Debug masks supported by module:"
-#~ msgstr "Avlusnings-masker som er støttet av modul:"
-
-#~ msgid "Failed to get list of supported debug masks for daemon: %s"
-#~ msgstr ""
-#~ "Mislyktes i å innhente liste over støttede avlusnings-masker for demon: %s"
-
-#~ msgid "Debug masks supported by daemon:"
-#~ msgstr "Avlusnings-masker som er støttet av demon:"
-
-#~ msgid "displays the list of valid debug masks for kernel module"
-#~ msgstr "viser listen over gyldige avlusnings-masker for kjerne-modul"
-
-#~ msgid "Image types supported by daemon:"
-#~ msgstr "Bilde typer som er støttet av demonen:"
-
-#~ msgid "displays the status for the device"
-#~ msgstr "viser statusen for enheten"
 
