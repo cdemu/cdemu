@@ -30,7 +30,10 @@ typedef struct {
     
     guint8 *nrg_data;
     guint8 *cur_ptr;
-    
+
+    NRG_ETN_Block *etn_blocks;
+    gint num_etn_blocks;
+
     NRG_CUE_Block *cue_blocks;
     gint num_cue_blocks;
     
@@ -48,7 +51,7 @@ static gboolean __mirage_disc_nrg_load_medium_type (MIRAGE_Disc *self, GError **
     guint32 mtyp_len = 0;
     guint32 mtyp_data = 0;
         
-    /* We expect to find 'CDTX' at given pos */
+    /* We expect to find 'MTYP' at given pos */
     block_id = MIRAGE_CAST_PTR(_priv->cur_ptr, 0, guint8 *);
     _priv->cur_ptr += 4;
     if (memcmp(block_id, "MTYP", 4)) {
@@ -180,6 +183,82 @@ static gboolean __mirage_disc_nrg_decode_mode (MIRAGE_Disc *self, gint code, gin
         }
     }
     
+    return TRUE;
+}
+
+static gboolean __mirage_disc_nrg_load_etn_data (MIRAGE_Disc *self, GError **error) {
+    MIRAGE_Disc_NRGPrivate *_priv = MIRAGE_DISC_NRG_GET_PRIVATE(self);
+    guint8 *block_id = NULL;
+    guint32 block_length = 0;
+    gboolean old_format = FALSE;
+        
+    gint i;
+            
+    /* We expect to find 'ETNF'/'ETN2' at current posisition */
+    block_id = MIRAGE_CAST_PTR(_priv->cur_ptr, 0, guint8 *);
+    _priv->cur_ptr += 4;
+
+    if (!memcmp(block_id, "ETN2", 4)) {
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: new format\n", __func__);
+        old_format = FALSE;
+    } else if (!memcmp(block_id, "ETNF", 4)) {
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: old format\n", __func__);
+        old_format = TRUE;
+    } else {
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: expected to find ETNF/ETN2 but found %.4s instead!\n", __func__, block_id);
+        mirage_error(MIRAGE_E_PARSER, error);
+        return FALSE;
+    }
+        
+    /* Read ETNF/ETN2 length */
+    block_length = MIRAGE_CAST_DATA(_priv->cur_ptr, 0, guint32);
+    _priv->cur_ptr += sizeof(guint32);
+    block_length = GINT32_FROM_BE(block_length);
+    
+    /* ETNF and ETN2 blocks have length 20 and 32 bytes */
+    if (old_format) {
+        _priv->num_etn_blocks = block_length / 20;
+    } else {
+        _priv->num_etn_blocks = block_length / 32;
+    }
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: %d ETN blocks\n", __func__, _priv->num_etn_blocks);
+        
+    /* Allocate space and read ETN data (we need to copy data because we'll have
+       to modify it) */
+    _priv->etn_blocks = g_new0(NRG_ETN_Block, _priv->num_etn_blocks);
+    if (!_priv->etn_blocks) {
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to allocate space for ETN blocks!\n", __func__);
+        mirage_error(MIRAGE_E_PARSER, error);
+        return FALSE;
+    }
+    
+    /* Read ETN blocks */
+    for (i = 0; i < _priv->num_etn_blocks; i++) {
+        NRG_ETN_Block *block = _priv->etn_blocks + i;
+
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: ETN block #%i\n", __func__, i);
+
+        if (old_format) {
+            block->offset = GINT32_FROM_BE(MIRAGE_CAST_DATA(_priv->cur_ptr, 0, guint32));
+            block->size   = GINT32_FROM_BE(MIRAGE_CAST_DATA(_priv->cur_ptr, 4, guint32));
+            block->mode   = MIRAGE_CAST_DATA(_priv->cur_ptr, 11, guint8);
+            block->sector = GINT32_FROM_BE(MIRAGE_CAST_DATA(_priv->cur_ptr, 12, guint32));
+            _priv->cur_ptr += 20;
+        }
+        else {
+            block->offset = GINT64_FROM_BE(MIRAGE_CAST_DATA(_priv->cur_ptr, 0, guint64));
+            block->size   = GINT64_FROM_BE(MIRAGE_CAST_DATA(_priv->cur_ptr, 8, guint64));
+            block->mode   = MIRAGE_CAST_DATA(_priv->cur_ptr, 19, guint8);
+            block->sector = GINT32_FROM_BE(MIRAGE_CAST_DATA(_priv->cur_ptr, 20, guint32));
+            _priv->cur_ptr += 32;
+        }
+        
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  offset: %u\n", __func__, block->offset);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  size: %u\n", __func__, block->size);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  mode: 0x%X\n", __func__, block->mode);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  sector: %u\n", __func__, block->sector);
+    }
+
     return TRUE;
 }
 
@@ -625,6 +704,163 @@ end:
     return succeeded;
 }
 
+static gboolean __mirage_disc_nrg_load_session_tao (MIRAGE_Disc *self, GError **error) {
+    MIRAGE_Disc_NRGPrivate *_priv = MIRAGE_DISC_NRG_GET_PRIVATE(self);
+    gboolean succeeded = TRUE;
+    
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: loading of Track-at-Once images not supported yet!\n", __func__);
+
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: loading session\n", __func__);
+    
+    /* Read ETNF/ETN2 blocks */
+    if (!__mirage_disc_nrg_load_etn_data(self, error)) {
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to load ETNF/ETN2 blocks!\n", __func__);
+        succeeded = FALSE;
+        goto end_tao;
+    }
+    
+    /* Build session */
+    GObject *cur_session = NULL;
+    gint i;
+    
+    if (!mirage_disc_add_session_by_index(self, -1, &cur_session, error)) {
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to add session!\n", __func__);
+        succeeded = FALSE;
+        goto end_tao;
+    }
+    
+    /* Use ETN blocks to build tracks */
+    for (i = 0; i < _priv->num_etn_blocks; i++) {
+        NRG_ETN_Block *etn_block = _priv->etn_blocks + i;
+        
+        GObject *cur_track = NULL;        
+        gint mode = 0;
+        gint main_sectsize = 0;
+        gint sub_sectsize = 0;
+        
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: creating track for ETN block #%i\n", __func__, i);
+        /* Add track */
+        if (!mirage_session_add_track_by_index(MIRAGE_SESSION(cur_session), i, &cur_track, error)) {
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to add track!\n", __func__);
+            g_object_unref(cur_session);
+            succeeded = FALSE;
+            goto end_tao;
+        }
+        
+        /* Decode mode */
+        __mirage_disc_nrg_decode_mode(self, etn_block->mode, &mode, &main_sectsize, &sub_sectsize, NULL);
+        mirage_track_set_mode(MIRAGE_TRACK(cur_track), mode, NULL);
+        
+        /* Prepare data fragment: we use two fragments, one for pregap and one
+           for track itself; we could use only one that spans across both, but
+           I'm not sure why image file has the offsets separated - maybe they
+           don't have to be adjacent?
+        */
+        FILE *tfile_handle = NULL;
+        gint tfile_sectsize = 0;
+        guint64 tfile_offset = 0;
+        guint64 tfile_format = 0;
+        
+        gint sfile_sectsize = 0;
+        guint64 sfile_format = 0;
+        
+        gint fragment_len = 0;
+        
+        GObject *data_fragment = NULL;
+	GObject *pregap_fragment = NULL;
+
+        gchar **filenames = NULL;
+        mirage_disc_get_filenames(self, &filenames, NULL);
+
+        /* Create mirage object */
+        GObject *mirage = NULL;
+
+        if (!mirage_object_get_mirage(MIRAGE_OBJECT(self), &mirage, error)) {
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to get Mirage object!\n", __func__);
+            succeeded = FALSE;
+            g_object_unref(cur_track);
+            g_object_unref(cur_session);
+            goto end_tao;
+        }
+
+        /* Pregap fragment */
+        mirage_mirage_create_fragment(MIRAGE_MIRAGE(mirage), MIRAGE_TYPE_FINTERFACE_NULL, "NULL", &pregap_fragment, error);
+
+        if (!pregap_fragment) {
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: failed to create pregap fragment!\n", __func__);
+            g_object_unref(cur_session);
+            g_object_unref(cur_track);
+            goto end_tao;
+        }
+        mirage_track_add_fragment(MIRAGE_TRACK(cur_track), 0, &pregap_fragment, NULL);
+        mirage_fragment_set_length(MIRAGE_FRAGMENT(pregap_fragment), 150, NULL);
+
+        g_object_unref(pregap_fragment);
+
+        mirage_track_set_track_start(MIRAGE_TRACK(cur_track), 150, NULL);
+
+        /* Data fragment */
+        fragment_len = etn_block->size / main_sectsize;
+        if (fragment_len) {
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: creating data fragment\n", __func__);
+
+            mirage_mirage_create_fragment(MIRAGE_MIRAGE(mirage), MIRAGE_TYPE_FINTERFACE_BINARY, filenames[0], &data_fragment, error);
+            g_object_unref(mirage);
+            if (!data_fragment) {
+                MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to create fragment!\n", __func__);
+                succeeded = FALSE;
+                g_object_unref(cur_track);
+                g_object_unref(cur_session);
+                goto end_tao;
+            }
+            
+            /* Main channel data */
+            tfile_handle = g_fopen(filenames[0], "r");
+            tfile_sectsize = main_sectsize; /* We use the one from decoded mode code */
+            tfile_offset = etn_block->offset;
+            if (mode == MIRAGE_MODE_AUDIO) {
+                tfile_format = FR_BIN_TFILE_AUDIO;
+            } else {
+                tfile_format = FR_BIN_TFILE_DATA;
+            }
+            
+            /* Subchannel */
+            if (sub_sectsize) {
+                sfile_sectsize = sub_sectsize; /* We use the one from decoded mode code */
+                sfile_format = FR_BIN_SFILE_PW96_INT | FR_BIN_SFILE_INT; /* PW96 interleaved, internal */
+            }
+            
+            mirage_fragment_set_length(MIRAGE_FRAGMENT(data_fragment), fragment_len, NULL);
+                
+            mirage_finterface_binary_track_file_set_handle(MIRAGE_FINTERFACE_BINARY(data_fragment), tfile_handle, NULL);
+            mirage_finterface_binary_track_file_set_offset(MIRAGE_FINTERFACE_BINARY(data_fragment), tfile_offset, NULL);
+            mirage_finterface_binary_track_file_set_sectsize(MIRAGE_FINTERFACE_BINARY(data_fragment), tfile_sectsize, NULL);
+            mirage_finterface_binary_track_file_set_format(MIRAGE_FINTERFACE_BINARY(data_fragment), tfile_format, NULL);
+            
+            mirage_finterface_binary_subchannel_file_set_sectsize(MIRAGE_FINTERFACE_BINARY(data_fragment), sfile_sectsize, NULL);
+            mirage_finterface_binary_subchannel_file_set_format(MIRAGE_FINTERFACE_BINARY(data_fragment), sfile_format, NULL);
+            
+            mirage_track_add_fragment(MIRAGE_TRACK(cur_track), -1, &data_fragment, NULL);
+            
+            g_object_unref(data_fragment);
+        }
+
+        g_object_unref(mirage);
+
+        g_strfreev(filenames);
+        
+        g_object_unref(cur_track);
+    }
+
+    g_object_unref(cur_session);
+    
+end_tao:
+    /* Free data */
+    g_free(_priv->etn_blocks);
+    _priv->num_etn_blocks = 0;
+    
+    return succeeded;
+}
 
 static gboolean __mirage_disc_nrg_load_cdtext (MIRAGE_Disc *self, GError **error) {
     MIRAGE_Disc_NRGPrivate *_priv = MIRAGE_DISC_NRG_GET_PRIVATE(self);
@@ -770,7 +1006,6 @@ static gboolean __mirage_disc_nrg_load_image (MIRAGE_Disc *self, gchar **filenam
             old_format = TRUE;
             fread((void *)&tmp_offset, 4, 1, file);
             trailer_offset = GUINT32_FROM_BE(tmp_offset);
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: loading of old format ('NERO') not supported yet!\n", __func__);
         } else {
             /* Error */
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: unknown signature!\n", __func__);
@@ -821,6 +1056,12 @@ static gboolean __mirage_disc_nrg_load_image (MIRAGE_Disc *self, gchar **filenam
                 succeeded = FALSE;
                 break;
             }
+        } else if ((!memcmp(block_id, "ETNF", 4)) || (!memcmp(block_id, "ETN2", 4))) {
+            /* ETNF/ETN2 block: means we need to make new session */
+            if (!__mirage_disc_nrg_load_session_tao(self, error)) {
+                succeeded = FALSE;
+                break;
+            }
         } else if ((!memcmp(block_id, "DAOX", 4)) || (!memcmp(block_id, "DAOI", 4))) {
             /* DAOX/DAOI block: we skip this one, because it should've been read together with CUEX/CUES */
         } else if (!memcmp(block_id, "CDTX", 4)) {
@@ -838,7 +1079,7 @@ static gboolean __mirage_disc_nrg_load_image (MIRAGE_Disc *self, gchar **filenam
                 break;
             }
         } else if (!memcmp(block_id, "END!", 4)) {
-            /* !END: self-explanatory */
+            /* END!: self-explanatory */
         } else {
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: unknown block '%.4s'!\n", __func__, block_id);
         }
