@@ -62,6 +62,15 @@ typedef struct {
     guint32 start_sector;
 } NRG_CUE_Block;
 
+typedef struct {
+    guint64 offset;
+    guint64 size;
+    guint8  __dummy1__[3];
+    guint8  mode;
+    guint32 sector;
+    guint64 __dummy2__;
+} NRG_ETN_Block;
+
 #pragma pack()
 
 
