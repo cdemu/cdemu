@@ -93,6 +93,7 @@ static void __image_analyzer_parser_log_instance_init (GTypeInstance *instance, 
     
     /* Text */
     _priv->text_view = gtk_text_view_new();
+    gtk_text_view_set_editable(_priv->text_view, FALSE);
     gtk_container_add(GTK_CONTAINER(scrolledwindow), _priv->text_view);
 
     return;
