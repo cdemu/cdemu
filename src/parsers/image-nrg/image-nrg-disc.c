@@ -708,8 +708,6 @@ static gboolean __mirage_disc_nrg_load_session_tao (MIRAGE_Disc *self, GError **
     MIRAGE_Disc_NRGPrivate *_priv = MIRAGE_DISC_NRG_GET_PRIVATE(self);
     gboolean succeeded = TRUE;
     
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: loading of Track-at-Once images not supported yet!\n", __func__);
-
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: loading session\n", __func__);
     
     /* Read ETNF/ETN2 blocks */
