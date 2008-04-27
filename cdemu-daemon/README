@@ -123,7 +123,7 @@ CDEmu daemon has the following software requirements:
  
  - ALSA 1.0.0 or newer (optional audio backend)
  
- - libMirage 1.0.0 or newer (part of the suite)
+ - libMirage 1.1.0 or newer (part of the suite)
  - VHBA module (part of the suite)
 
  
