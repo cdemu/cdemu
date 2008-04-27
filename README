@@ -11,7 +11,7 @@ handled by libMirage.
 Requirements:
 ~~~~~~~~~~~~~
   - Gtk+ 2.6 or newer
-  - libMirage 1.0.0 or newer
+  - libMirage 1.1.0 or newer
   - GtkExtra 2.0.0 or newer
 
  
