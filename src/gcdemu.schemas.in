@@ -18,5 +18,14 @@
                 <short>Use system bus (instead of session bus)?</short>
             </locale>
         </schema>
+        <schema>
+            <key>/schemas/apps/gcdemu-applet/prefs/icon_name</key>
+            <owner>gcdemu-applet</owner>
+            <type>string</type>
+            <default>gcdemu.svg</default>
+            <locale name="C">
+                <short>Name of icon to use (relative to gCDEmu's pixmap dir)</short>
+            </locale>
+        </schema>
     </schemalist>
 </gconfschemafile>

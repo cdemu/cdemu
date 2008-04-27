@@ -16,6 +16,6 @@
 		</oaf_attribute>
 		<oaf_attribute name="name" type="string" value="gCDEmu Applet"/>
 		<oaf_attribute name="description" type="string" value="An applet for controlling CDEmu devices"/>
-		<oaf_attribute name="panel:icon" type="string" value="@DATADIR@/pixmaps/gcdemu/gcdemu-icon.png"/>
+		<oaf_attribute name="panel:icon" type="string" value="@DATADIR@/pixmaps/gcdemu/gcdemu.svg"/>
 	</oaf_server>
 </oaf_info>

@@ -39,7 +39,9 @@ def applet_factory (applet, iid):
     "Applet factory function"
     
     if iid == "OAFIID:GNOME_gCDEmu_Applet":
-        applet.setup_applet()
+        if applet.setup_applet() == False:
+            applet.destroy()
+            return False
         return True
     else:
         applet.destroy()
@@ -53,10 +55,10 @@ def run_standalone ():
     main_window.connect("destroy", gtk.main_quit) 
     applet = gCDEmu_Applet()
     applet.get_orient = lambda: gnomeapplet.ORIENT_DOWN
-    applet_factory(applet, "OAFIID:GNOME_gCDEmu_Applet")
-    applet.reparent(main_window)
-    main_window.show_all()
-    gtk.main()
+    if applet_factory(applet, "OAFIID:GNOME_gCDEmu_Applet"):
+        applet.reparent(main_window)
+        main_window.show_all()
+        gtk.main()
     sys.exit()
         
 def print_usage ():
