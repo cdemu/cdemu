@@ -1,5 +1,5 @@
 gCDEmu
-v.1.0.0
+v.1.1.0
 ~~~~~~~~~~~~
 
 This is gCDEmu, a GNOME applet for controlling CDEmu daemon. It is part of the 
@@ -32,7 +32,7 @@ INSTALL file.
 
 
 Note that if during make, you get the following error:
-    make[1]: Entering directory `/tmp/gcdemu-1.0.0/po'
+    make[1]: Entering directory `/tmp/gcdemu-1.1.0/po'
     file=`echo sl | sed 's,.*/,,'`.gmo \
     && rm -f $file && -o $file sl.po
     /bin/sh: -o: not found
