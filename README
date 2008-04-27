@@ -25,7 +25,7 @@ INSTALL file.
 
 
 Note that if during make, you get the following error:
-    make[1]: Entering directory `/tmp/cdemu-client-1.0.0/po'
+    make[1]: Entering directory `/tmp/cdemu-client-1.1.0/po'
     file=`echo sl | sed 's,.*/,,'`.gmo \
     && rm -f $file && -o $file sl.po
     /bin/sh: -o: not found
