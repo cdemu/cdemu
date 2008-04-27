@@ -54,7 +54,9 @@ class gCDEmu_Applet (gnomeapplet.Applet):
 
         self.__show_notifications = True
         self.__use_system_bus = True
-    
+        
+        self.__about = None
+        
         self.__pixbuf_logo = None
         self.__pixbuf_icon = None
         self.__image = None
@@ -72,14 +74,52 @@ class gCDEmu_Applet (gnomeapplet.Applet):
         
         # Init applet
         self.set_applet_flags(gnomeapplet.EXPAND_MINOR)
-                                    
-        # Init UI
-        self.__pixbuf_logo = gtk.gdk.pixbuf_new_from_file(config.image_dir + "gcdemu-logo.png")
-        self.__pixbuf_icon = gtk.gdk.pixbuf_new_from_file(config.image_dir + "gcdemu-icon.png")
+        
+        # Init G-conf
+        self.add_preferences("/schemas/apps/gcdemu-applet/prefs");
+        self.__gconf_client = gconf.client_get_default()
+        self.__gconf_key_path = self.get_preferences_key()
+        if self.__gconf_key_path == None:
+            self.__gconf_key_path = "/apps/gcdemu-applet-standalone"
+        
+        # Logo; load the SVG, scaled to 156x156
+        self.__pixbuf_logo = gtk.gdk.pixbuf_new_from_file_at_size(config.image_dir + "gcdemu.svg", 156, 156)
+        
+        # Icon; we support icon overriding via G-conf key (the path is assumed to
+        # be relative to gCDEmu's pixmap dir). Maximum possible size of menu is 
+        # 204, so upon loading we scale the icon to that...
+        icon_name = self.__gconf_client.get_string(self.__gconf_key_path + "/icon_name")
+        if icon_name == None:
+            icon_name = "gcdemu.svg"
+        # And since we allow users to mess with this, we have to provide them
+        # with error message when things get FUBAR...
+        try:
+            self.__pixbuf_icon = gtk.gdk.pixbuf_new_from_file_at_size(config.image_dir + icon_name, 204, 204)
+        except gobject.GError, e:
+            message = gtk.MessageDialog(None, 0, gtk.MESSAGE_ERROR, gtk.BUTTONS_CLOSE, e.message)
+            message.set_title(_("Error"))
+            message.run()
+            message.destroy()
+            return False
 
         self.__image = gtk.Image()
         self.add(self.__image)
-                
+        self.set_background_widget(self)
+        
+        # Set up About dialog
+        self.__about = gtk.AboutDialog()
+        self.__about.set_name("gCDEmu")
+        self.__about.set_version(config.version)
+        self.__about.set_copyright("Copyright (C) 2006-2008 Rok Mandeljc")
+        self.__about.set_comments(_("gCDEmu is an applet for controlling CDEmu\ndevices via CDEmu daemon."))
+        self.__about.set_website("http://cdemu.sf.net")
+        self.__about.set_website_label(_("The CDEmu project website"))
+        self.__about.set_authors([ "Rok Mandeljc <rok.mandeljc@email.si>" ])
+        self.__about.set_documenters([ "Rok Mandeljc <rok.mandeljc@email.si>" ])
+        self.__about.set_artists([ "Rômulo Fernandes <abra185@gmail.com>" ])
+        self.__about.set_translator_credits(_("translator-credits"))
+        self.__about.set_logo(self.__pixbuf_logo)
+            
         # Set up popup menu
         popup_menu_xml = "<popup name='button3'>"
         popup_menu_xml += "<menuitem name='system_bus' verb='system_bus' label='%s' type='toggle'/>" % (_("Use _system bus"))
@@ -105,13 +145,6 @@ class gCDEmu_Applet (gnomeapplet.Applet):
         
         self.connect("size-allocate", self.__cb_applet_size_allocate) # The best way (TM) to monitor panel size change; "change-size" is useless...
         self.connect("button-press-event", self.__cb_applet_button_press_event)        
-        
-        # Init G-conf
-        self.add_preferences("/schemas/apps/gcdemu-applet/prefs");
-        self.__gconf_client = gconf.client_get_default()
-        self.__gconf_key_path = self.get_preferences_key()
-        if self.__gconf_key_path == None:
-            self.__gconf_key_path = "/apps/gcdemu-applet-standalone"
         
         # Init PyNotify
         if has_pynotify:            
@@ -207,17 +240,10 @@ class gCDEmu_Applet (gnomeapplet.Applet):
         return
     
     def __verb_about (self):
-        about = gnome.ui.About(
-            "gCDEmu",
-            config.version,
-            "Copyright (C) 2006-2008 Rok Mandeljc",
-            _("gCDEmu is an applet for controlling CDEmu devices via CDEmu daemon."),
-            ["Rok Mandeljc <rok.mandeljc@email.si>"],
-            None,
-            _("translator-credits"),
-            self.__pixbuf_logo
-        )
-        about.run()
+        # Run About dialog
+        self.__about.run()
+        self.__about.hide()
+        
         return
     
     
@@ -263,8 +289,8 @@ class gCDEmu_Applet (gnomeapplet.Applet):
     def __refresh_icon (self):
         size = self.__panel_size - 4
         
-        if size <= 0:
-            size = 1
+        # Don't let icon size go below 16...
+        size = max(size, 16)
         
         scaled_pixbuf = self.__pixbuf_icon.scale_simple(size, size, gtk.gdk.INTERP_TILES)
         

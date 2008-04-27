@@ -4,7 +4,7 @@
   <!ENTITY legal SYSTEM "legal.xml">
   <!ENTITY appletversion "1.1.0">
   <!ENTITY manrevision "1.1">
-  <!ENTITY date "February 2008">
+  <!ENTITY date "April 2008">
   <!ENTITY applet "gCDEmu">
 ]>
 
@@ -236,6 +236,11 @@
             this case, applet attempts to verify the connection, and upon failure 
             enters inactive state. This might happen if daemon crashes.
         </para>
+        <para>
+            If you wish to change the applet's icon, you can do so by manually editing 
+            applet's <guilabel>icon_name</guilabel> G-Conf key. Please note that icon 
+            name is relative to gCDEmu's pixmap dir (i.e. /usr/share/pixmaps/gcdemu).
+        </para>
 <!-- ================ Usage Subsection ================================ -->
         <sect2 id="gcdemu-usage-menu">
             <title>Device menu</title>
@@ -347,9 +352,9 @@
                     The <guilabel>Options</guilabel> tab allows you to control
                     device's options. Currently, these are:
                     <itemizedlist>
-                        <listitem>Device ID</listitem>
-                        <listitem>DPM emulation flag</listitem>
-                        <listitem>Transfer rate emulation flag</listitem>
+                        <listitem><para>Device ID</para></listitem>
+                        <listitem><para>DPM emulation flag</para></listitem>
+                        <listitem><para>Transfer rate emulation flag</para></listitem>
                     </itemizedlist>
                 </para>
                 <figure id="applet-fig10">
