@@ -1,5 +1,5 @@
 libMirage
-v.1.0.0
+v.1.1.0
 ~~~~~~~~~~~~
 
 This is libMirage library, a CD-ROM image access library, and part of the 
@@ -17,10 +17,11 @@ header, ECC/EDC codes or subchannel. When this missing data is requested,
 libMirage will transparently generate it.
 
 Currently supported image formats:
- - B6T: BlindWrite 5/6 file format (experimental)
+ - B6T: BlindWrite 5/6 file format
  - CCD: CloneCD image format
  - CDI: DiscJuggler image format (experimental)
  - CUE: CDRwin CUE/BIN image format
+ - DAA: PowerISO Direct Access Archive
  - ISO: classic ISO9660 image format
  - MDS: Alcohol 120% image format
  - NRG: Nero image format
@@ -36,6 +37,7 @@ Requirements:
 ~~~~~~~~~~~~~
  - GLib 2.6 or newer
  - libsndfile 1.0.0 or newer
+ - zlib
  
  - flex 2.5.33 or newer, bison (for parser code re-generation only)
 
