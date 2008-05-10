@@ -66,7 +66,10 @@ typedef struct {
     gchar *ctl_device;
     
     gint number_of_devices;
-    GList *list_of_devices;    
+    GList *list_of_devices;
+    
+    guint mapping_id;
+    gint mapping_attempt;
 } CDEMUD_DaemonPrivate;
 
 
@@ -173,6 +176,125 @@ static gboolean __cdemud_daemon_io_handler (GIOChannel *source, GIOCondition con
     return TRUE;
 }
 
+static gboolean __cdemud_daemon_build_device_mapping_callback (gpointer data) {
+    CDEMUD_Daemon *self = data;
+    CDEMUD_DaemonPrivate *_priv = CDEMUD_DAEMON_GET_PRIVATE(self);
+    gboolean run_again = FALSE;
+    gint i;
+    
+    for (i = 0; i < _priv->number_of_devices; i++) {
+        GObject *dev = NULL;
+        GIOChannel *ch = NULL;
+        gint fd = 0;
+        gint ioctl_ret = 0;
+        gint32 id[4];
+        
+        __cdemud_daemon_get_device(self, i, &dev, NULL);
+        ch = g_object_get_data(dev, "iochannel");
+        fd = g_io_channel_unix_get_fd(ch);
+        
+        ioctl_ret = ioctl(fd, 0xBEEF001, id);
+                
+        if (ioctl_ret == -ENODEV) {
+            /* ENODEV means the device hasn't been registered yet; try again later */
+            run_again = TRUE;
+            break;
+        } else if (ioctl_ret < 0) {
+            /* Other errors */
+            CDEMUD_DEBUG(dev, DAEMON_DEBUG_WARNING, "%s: error while performing ioctl; device mapping info will not be available\n", __func__);
+            run_again = FALSE;
+            break;
+        } else {
+            /* FIXME: until we figure how to get SCSI CD-ROM and SCSI Generic Device
+               device paths directly from kernel, we'll have to live with parsing of the
+               sysfs dir :/ */
+            struct sysfs_device *sysfs_dev = NULL;
+            gchar *scsi_bus_id = g_strdup_printf("%i:%i:%i:%i", id[0], id[1], id[2], id[3]);
+        
+            sysfs_dev = sysfs_open_device("scsi", scsi_bus_id);
+            g_free(scsi_bus_id);
+            
+            if (!sysfs_dev) {
+                CDEMUD_DEBUG(dev, DAEMON_DEBUG_WARNING, "%s: sysfs device for device #%i could not be opened; device mapping info for this device will not be available\n", __func__, i);
+                continue;
+            }
+            
+            /* Actually, we use sysfs only to get ourselves the device path (for
+               example, if sysfs is not mounted under /sys, etc.). For the rest,
+               we'll use GDir and its content listing */
+            GDir *dir_dev = g_dir_open(sysfs_dev->path, 0, NULL);
+            const gchar *entry_name = NULL;
+            gchar path_sr[16] = "";
+            gchar path_sg[16] = "";
+                
+            if (dir_dev) {
+                while ((entry_name = g_dir_read_name(dir_dev))) {                    
+                    /* Found SCSI CD-ROM device */
+                    if (sscanf(entry_name, "block:%s", path_sr)) {
+                        continue;
+                    }
+                        
+                    /* Found SCSI generic device */
+#if 0
+                    if (sscanf(entry_name, "scsi_generic:%s", path_sg)) {
+                        continue;
+                    }
+#else
+                    if (!g_ascii_strcasecmp(entry_name, "generic")) {
+                        gchar *symlink = g_build_filename(sysfs_dev->path, entry_name, NULL);
+                        gchar *tmp_path = g_file_read_link(symlink, NULL);
+                        gchar *tmp_sg = g_path_get_basename(tmp_path);
+                        
+                        strcpy(path_sg, tmp_sg);
+                        
+                        g_free(tmp_sg);
+                        g_free(tmp_path);
+                        g_free(symlink);
+                        
+                        continue;
+                    }
+#endif
+                }
+                g_dir_close(dir_dev);
+            }
+
+            sysfs_close_device(sysfs_dev);
+
+            /* Actual path building */
+            gchar *fullpath_sr = NULL;
+            gchar *fullpath_sg = NULL;
+            
+            if (strlen(path_sr)) {
+                fullpath_sr = g_strconcat("/dev/", path_sr, NULL);
+            } else {
+                CDEMUD_DEBUG(dev, DAEMON_DEBUG_WARNING, "%s: device mapping (SCSI CD-ROM) for device #%i could not be determined; device mapping info for this device will not be available\n", __func__, i);
+            }
+            
+            if (strlen(path_sg)) {
+                fullpath_sg = g_strconcat("/dev/", path_sg, NULL);
+            } else {
+                CDEMUD_DEBUG(dev, DAEMON_DEBUG_WARNING, "%s: device mapping (SCSI generic) for device #%i could not be determined; device mapping info for this device will not be available\n", __func__, i);
+            }
+            
+            cdemud_device_set_mapping(CDEMUD_DEVICE(dev), fullpath_sr, fullpath_sg, NULL);
+            
+            g_free(fullpath_sr);
+            g_free(fullpath_sg);
+        }
+    }
+    
+    /* After five attempts, give up */
+    if (_priv->mapping_attempt++ > 5) {
+        run_again = FALSE;
+    }
+        
+    /* If we're done here, it's time to send the "daemon-started" signal */
+    if (!run_again) {
+        g_signal_emit_by_name(G_OBJECT(self), "daemon-started", NULL);
+    }
+    
+    return run_again;
+}
 
 /******************************************************************************\
  *                                 Public API                                 *
@@ -272,6 +394,12 @@ gboolean cdemud_daemon_initialize (CDEMUD_Daemon *self, gint num_devices, gchar 
         }            
     }
     
+    /* In order to build device mapping, we'll have to fire our callback sometime
+       after the daemon actually starts (so that command handler is actually
+       active and the SCSI layer actually does device registration on the kernel
+       side)... */
+    _priv->mapping_id = g_timeout_add(1000, __cdemud_daemon_build_device_mapping_callback, self);
+    
     /* We successfully finished initialization */
     _priv->initialized = TRUE;
     
@@ -285,8 +413,9 @@ gboolean cdemud_daemon_start_daemon (CDEMUD_Daemon *self, GError **error) {
         cdemud_error(CDEMUD_E_OBJNOTINIT, error);
         return FALSE;
     }
-    
-    g_signal_emit_by_name(G_OBJECT(self), "daemon-started", NULL);
+        
+    /* We don't emit "daemon-started" signal here anymore; we do it after the
+       device maps are complete... */
     g_main_loop_run(_priv->main_loop);
     
     return TRUE;
@@ -500,6 +629,19 @@ gboolean cdemud_daemon_device_get_status (CDEMUD_Daemon *self, gint device_numbe
 
     if (__cdemud_daemon_get_device(self, device_number, &dev, error)) {
         if (cdemud_device_get_status(CDEMUD_DEVICE(dev), loaded, image_type, file_names, error)) {
+            return TRUE;
+        }
+    }
+    
+    return FALSE;
+}
+
+gboolean cdemud_daemon_device_get_mapping (CDEMUD_Daemon *self, gint device_number, gchar **sr_device, gchar **sg_device, GError **error) {
+    /*CDEMUD_DaemonPrivate *_priv = CDEMUD_DAEMON_GET_PRIVATE(self);*/
+    GObject *dev = NULL;
+
+    if (__cdemud_daemon_get_device(self, device_number, &dev, error)) {
+        if (cdemud_device_get_mapping(CDEMUD_DEVICE(dev), sr_device, sg_device, error)) {
             return TRUE;
         }
     }

@@ -61,6 +61,8 @@ gboolean cdemud_device_load_disc (CDEMUD_Device *self, gchar **file_names, GErro
 gboolean cdemud_device_unload_disc (CDEMUD_Device *self, GError **error);
 gboolean cdemud_device_get_option (CDEMUD_Device *self, gchar *option_name, GPtrArray **option_values, GError **error);
 gboolean cdemud_device_set_option (CDEMUD_Device *self, gchar *option_name, GPtrArray *option_values, GError **error);
+gboolean cdemud_device_set_mapping (CDEMUD_Device *self, gchar *sr_device, gchar *sg_device, GError **error);
+gboolean cdemud_device_get_mapping (CDEMUD_Device *self, gchar **sr_device, gchar **sg_device, GError **error);
 
 gint cdemud_device_execute(CDEMUD_Device *self, CDEMUD_Command *cmd);
 

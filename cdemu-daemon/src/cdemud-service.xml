@@ -34,6 +34,12 @@
             <arg name="number_of_devices"   type="u"        direction="out"/>
         </method>
                 
+        <method name="DeviceGetMapping">
+            <arg name="device_number"       type="u"        direction="in"/>
+            <arg name="sr_device"           type="s"        direction="out"/>
+            <arg name="sg_device"           type="s"        direction="out"/>
+        </method>
+        
         <method name="DeviceGetStatus">
             <arg name="device_number"       type="u"        direction="in"/>
             <arg name="loaded"              type="b"        direction="out"/>

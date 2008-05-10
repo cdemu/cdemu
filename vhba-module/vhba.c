@@ -743,6 +743,43 @@ static ssize_t vhba_ctl_write(struct file *file, const char __user *buf, size_t 
 	return ret;
 }
 
+static int vhba_ctl_ioctl (struct inode *inode, struct file *file, unsigned int cmd, unsigned long arg)
+{
+    struct vhba_device *vdev = file->private_data;
+    
+    switch (cmd) {
+        case 0xBEEF001: {
+            struct vhba_host *vhost;
+            struct scsi_device *sdev;
+            
+            vhost = platform_get_drvdata(&vhba_platform_device);
+            sdev = scsi_device_lookup(vhost->shost, 0, vdev->id, 0);
+            
+            if (sdev)
+            {
+                int id[4] = {
+                    sdev->host->host_no,
+                    sdev->channel,
+                    sdev->id,
+                    sdev->lun };
+                
+                scsi_device_put(sdev);
+
+                if (copy_to_user((void *)arg, id, sizeof(id)))
+                    return -EFAULT;
+                
+                return 0;
+            } 
+            else 
+            {
+                return -ENODEV;
+            }
+        }
+    }
+    
+    return -ENOTTY;
+}
+
 static unsigned int vhba_ctl_poll(struct file *file, poll_table *wait)
 {
 	struct vhba_device *vdev = file->private_data;
@@ -819,6 +856,7 @@ static struct file_operations vhba_ctl_fops = {
 	.read = vhba_ctl_read,
 	.write = vhba_ctl_write,
 	.poll = vhba_ctl_poll,
+	.ioctl = vhba_ctl_ioctl,
 };
 
 static struct miscdevice vhba_miscdev = {

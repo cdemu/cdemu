@@ -97,6 +97,10 @@ typedef struct {
     gchar *id_product_id;
     gchar *id_revision;
     gchar *id_vendor_specific;
+    
+    /* Device mapping */
+    gchar *device_sr;
+    gchar *device_sg;
 } CDEMUD_DevicePrivate;
 
 
@@ -3402,6 +3406,45 @@ gboolean cdemud_device_set_option (CDEMUD_Device *self, gchar *option_name, GPtr
     return FALSE;
 }
 
+gboolean cdemud_device_set_mapping (CDEMUD_Device *self, gchar *sr_device, gchar *sg_device, GError **error) {
+    CDEMUD_DevicePrivate *_priv = CDEMUD_DEVICE_GET_PRIVATE(self);
+
+    /* Free and clear old values */
+    g_free(_priv->device_sr);
+    _priv->device_sr = NULL;
+    g_free(_priv->device_sg);
+    _priv->device_sg = NULL;
+    
+    /* Set new values, if provided */
+    if (sr_device) {
+        _priv->device_sr = g_strdup(sr_device);
+    }
+    if (sg_device) {
+        _priv->device_sg = g_strdup(sg_device);
+    }
+    
+    return TRUE;
+}
+
+gboolean cdemud_device_get_mapping (CDEMUD_Device *self, gchar **sr_device, gchar **sg_device, GError **error) {
+    CDEMUD_DevicePrivate *_priv = CDEMUD_DEVICE_GET_PRIVATE(self);
+    
+    /* Return values, if applicable */
+    if (_priv->device_sr) {
+        *sr_device = g_strdup(_priv->device_sr);
+    } else {
+        *sr_device = g_strdup("N/A");        
+    }
+    
+    if (_priv->device_sg) {
+        *sg_device = g_strdup(_priv->device_sg);
+    } else {
+        *sg_device = g_strdup("N/A");        
+    }
+    
+    return TRUE;
+}
+
 
 /******************************************************************************\
  *                                 Object init                                *
@@ -3445,6 +3488,10 @@ static void __cdemud_device_finalize (GObject *obj) {
         }
     }
     g_list_free(_priv->mode_pages_list);
+    
+    /* Free device map */
+    g_free(_priv->device_sg);
+    g_free(_priv->device_sr);
     
     /* Free features list */
     G_LIST_FOR_EACH(entry, _priv->features_list) {

@@ -52,6 +52,9 @@ Unloading first device:
 Displaying device status:
  cdemu status
 
+Displaying device mapping information:
+ cdemu device-mapping
+
 Setting daemon debug mask for the first device:
  cdemu daemon-debug-mask 0 0x01
  

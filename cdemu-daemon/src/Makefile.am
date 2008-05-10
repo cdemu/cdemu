@@ -50,7 +50,8 @@ cdemud_LDADD = \
     $(dbus_LIBS) \
     $(libdaemon_LIBS) \
     $(libmirage_LIBS) \
-    $(alsa_LIBS)
+    $(alsa_LIBS) \
+    $(sysfs_LIBS)
 
 # Some ugly hacks for building built sources out of source tree... until I 
 # figure how to do this properly (mainly needed to for 'make distcheck' pass)

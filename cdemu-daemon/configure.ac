@@ -31,6 +31,12 @@ PKG_CHECK_MODULES(dbus, dbus-1 >= 0.60 dbus-glib-1 >= 0.61)
 PKG_CHECK_MODULES(libdaemon, libdaemon >= 0.10)
 PKG_CHECK_MODULES(libmirage, libmirage >= 1.1.0)
 
+# libsysfs check
+AC_CHECK_LIB([sysfs], [sysfs_open_device],, AC_MSG_ERROR("*** libsysfs library not found ***"))
+AC_CHECK_HEADERS([sysfs/libsysfs.h],, AC_MSG_ERROR("*** libsysfs headers not found ***"))
+sysfs_LIBS="-lsysfs"
+AC_SUBST(sysfs_LIBS)
+
 # Optional ALSA check
 AC_ARG_ENABLE(alsa,
         AS_HELP_STRING([--disable-alsa],[Disable ALSA audio backend]),
