@@ -22,10 +22,6 @@ module_install:
 
 install: module_install
 
-distdir:
-	cp vhba.c $(distdir)
-	cp Makefile $(distdir)
-
 clean:
 	$(KMAKE) clean
 	rm -fr $(PACKAGE) kernel.api.h
@@ -36,6 +32,7 @@ dist-dir:
 	rm -fr $(PACKAGE)
 	mkdir $(PACKAGE)
 	cp vhba.c Makefile $(PACKAGE)
+	cp -fr kat $(PACKAGE)
 
 dist-gzip: dist-dir
 	tar -czf $(PACKAGE).tar.gz $(PACKAGE)
