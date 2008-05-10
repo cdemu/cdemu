@@ -24,15 +24,7 @@
 /* Don't ask... it just happens that some fields are of 3-byte size... >.< */
 #define GUINT24_FROM_BE(x) (GUINT32_FROM_BE(x) >> 8)
 #define GUINT24_TO_BE(x)   (GUINT32_TO_BE(x) >> 8)
-    
-/* List of audio backends */
-static const CDEMUD_AudioBackend audio_backends[] = {
-#ifdef ALSA_BACKEND
-    { "alsa", cdemud_audio_alsa_get_type },
-#endif
-    /* Last entry as it's also our fallback */
-    { "null", cdemud_audio_null_get_type },
-};
+
 
 /******************************************************************************\
  *                              Private structure                             *
@@ -1864,12 +1856,14 @@ static gboolean __cdemud_device_pc_read_subchannel (CDEMUD_Device *self, guint8 
                 struct READ_SUBCHANNEL_Data1 *ret_data = (struct READ_SUBCHANNEL_Data1 *)(_priv->buffer+_priv->buffer_size);
                 _priv->buffer_size += sizeof(struct READ_SUBCHANNEL_Data1);
                 
-                CDEMUD_DEBUG(self, DAEMON_DEBUG_DEV_PC_TRACE, "%s: current position (sector 0x%X)\n", __func__, _priv->current_sector);
+                gint current_position = _priv->current_sector;
+                
+                CDEMUD_DEBUG(self, DAEMON_DEBUG_DEV_PC_TRACE, "%s: current position (sector 0x%X)\n", __func__, current_position);
                 ret_data->fmt_code = 0x01;
                 
                 /* Read current sector's PQ subchannel */
                 guint8 tmp_buf[16];
-                mirage_disc_read_sector(MIRAGE_DISC(_priv->disc), _priv->current_sector, 0x00, MIRAGE_SUBCHANNEL_PQ, tmp_buf, NULL, NULL);
+                mirage_disc_read_sector(MIRAGE_DISC(_priv->disc), current_position, 0x00, MIRAGE_SUBCHANNEL_PQ, tmp_buf, NULL, NULL);
                 
                 /* Copy ADR/CTL, track number and index */
                 ret_data->adr = tmp_buf[0] & 0x0F; 
@@ -1892,7 +1886,7 @@ static gboolean __cdemud_device_pc_read_subchannel (CDEMUD_Device *self, guint8 
                 while((tmp_buf[0] & 0x0F) != 0x01) {
                     CDEMUD_DEBUG(self, DAEMON_DEBUG_DEV_PC_TRACE, "%s: got a sector that's not Mode-1 Q; taking next one!\n", __func__);
                     /* Read from next sector */
-                    mirage_disc_read_sector(MIRAGE_DISC(_priv->disc), _priv->current_sector+correction, 0x00, MIRAGE_SUBCHANNEL_PQ, tmp_buf, NULL, NULL);
+                    mirage_disc_read_sector(MIRAGE_DISC(_priv->disc), current_position+correction, 0x00, MIRAGE_SUBCHANNEL_PQ, tmp_buf, NULL, NULL);
                     correction++;
                 }
                 
@@ -2900,7 +2894,7 @@ gint cdemud_device_execute(CDEMUD_Device *self, CDEMUD_Command *cmd) {
 /******************************************************************************\
  *                                 Public API                                 *
 \******************************************************************************/
-gboolean cdemud_device_initialize (CDEMUD_Device *self, gint number, gchar *audio_backend, gchar *audio_device, GObject *mirage, GError **error) {
+gboolean cdemud_device_initialize (CDEMUD_Device *self, gint number, gchar *audio_driver, GObject *mirage, GError **error) {
     CDEMUD_DevicePrivate *_priv = CDEMUD_DEVICE_GET_PRIVATE(self);
     GObject *debug_context = NULL;
     
@@ -2930,28 +2924,14 @@ gboolean cdemud_device_initialize (CDEMUD_Device *self, gint number, gchar *audi
         return FALSE;
     }
     
-    /* Create audio backend object */
-    gint i;
-    for (i = 0; i < G_N_ELEMENTS(audio_backends); i++) {
-        if (audio_backend && !strcmp(audio_backend, audio_backends[i].name)) {
-            _priv->audio_play = g_object_new(audio_backends[i].get_type_func(), NULL);
-            break;
-        }
-    }
-    if (!_priv->audio_play) {
-        _priv->audio_play = g_object_new(CDEMUD_TYPE_AUDIO_NULL, NULL);
-        if (!_priv->audio_play) {
-            CDEMUD_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: failed to create audio backend!\n", __func__);
-            cdemud_error(CDEMUD_E_AUDIOBACKEND, error);
-            return FALSE;
-        }
-    }
+    /* Create audio play object */
+    _priv->audio_play = g_object_new(CDEMUD_TYPE_AUDIO, NULL);
     /* Set parent */
     mirage_object_set_parent(MIRAGE_OBJECT(_priv->audio_play), G_OBJECT(self), NULL);
     /* Attach child... so that it'll get device's debug context */
     mirage_object_attach_child(MIRAGE_OBJECT(self), _priv->audio_play, NULL);
     /* Initialize */
-    if (!cdemud_audio_initialize(CDEMUD_AUDIO(_priv->audio_play), audio_device, &_priv->current_sector, error)) {
+    if (!cdemud_audio_initialize(CDEMUD_AUDIO(_priv->audio_play), audio_driver, &_priv->current_sector, error)) {
         CDEMUD_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: failed to initialize audio backend!\n", __func__);
         return FALSE;
     }

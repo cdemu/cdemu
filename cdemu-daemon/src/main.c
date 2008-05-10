@@ -67,8 +67,7 @@ static gboolean daemon_kill = FALSE;
 static gboolean daemonize = FALSE;
 static gint num_devices = 1;
 static gchar *ctl_device = "/dev/vhba_ctl";
-static gchar *audio_backend = NULL;
-static gchar *audio_device = NULL;
+static gchar *audio_driver = "null";
 static gchar *bus = "system";
 
 static GOptionEntry option_entries[] = {
@@ -76,9 +75,8 @@ static GOptionEntry option_entries[] = {
     { "daemonize",    'd', 0, G_OPTION_ARG_NONE,   &daemonize,     "Daemonize",          NULL },
     { "num-devices",  'n', 0, G_OPTION_ARG_INT,    &num_devices,   "Number of devices",  "N" },
     { "ctl-device",   'c', 0, G_OPTION_ARG_STRING, &ctl_device,    "Control device",     "path" },
-    { "audio",        'a', 0, G_OPTION_ARG_STRING, &audio_backend, "Audio play backend", "backend" },
-    { "audio-device", 'o', 0, G_OPTION_ARG_STRING, &audio_device,  "Audio play device",  "device" },
-    { "bus",          'b', 0, G_OPTION_ARG_STRING, &bus,           "Bus type to use",     "bus_type" },
+    { "audio-driver", 'a', 0, G_OPTION_ARG_STRING, &audio_driver,  "Audio driver",       "driver" },
+    { "bus",          'b', 0, G_OPTION_ARG_STRING, &bus,           "Bus type to use",    "bus_type" },
     { NULL }
 };
 
@@ -89,6 +87,8 @@ int main (int argc, char *argv[]) {
     GError *error = NULL;
     GOptionContext *option_context = NULL;
     gboolean succeeded = FALSE;
+    
+    g_thread_init(NULL);
     
     option_context = g_option_context_new("- CDEmu Daemon");
     g_option_context_add_main_entries(option_context, option_entries, NULL);
@@ -183,7 +183,7 @@ int main (int argc, char *argv[]) {
             obj = g_object_new(CDEMUD_TYPE_DAEMON, NULL);
             
             /* Initialize daemon; when running in daemon mode, we -always- use system bus */
-            if (!cdemud_daemon_initialize(CDEMUD_DAEMON(obj), num_devices, ctl_device, audio_backend, audio_device, TRUE, &error) < 0) {
+            if (!cdemud_daemon_initialize(CDEMUD_DAEMON(obj), num_devices, ctl_device, audio_driver, TRUE, &error) < 0) {
                 g_warning("Daemon initialization failed: %s\n", error->message);
                 goto signal_done;
             }
@@ -230,11 +230,10 @@ return_err:
         gboolean use_system_bus = TRUE;
         
         g_debug("Starting daemon locally with following parameters:\n"
-                " - num_devices: %i\n"
-                " - ctl_device: %s\n"
-                " - audio_backend: %s\n"
-                " - audio_device: %s\n"
-                " - bus type: %s\n", num_devices, ctl_device, audio_backend, audio_device, bus);
+                " - num devices: %i\n"
+                " - ctl device: %s\n"
+                " - audio driver: %s\n"
+                " - bus type: %s\n", num_devices, ctl_device, audio_driver, bus);
         
         if (!mirage_helper_strcasecmp(bus, "system")) {
             use_system_bus = TRUE;
@@ -249,7 +248,7 @@ return_err:
         obj = g_object_new(CDEMUD_TYPE_DAEMON, NULL);
 
         /* Initialize daemon, passing commandline options to initialization */
-        if (cdemud_daemon_initialize(CDEMUD_DAEMON(obj), num_devices, ctl_device, audio_backend, audio_device, use_system_bus, &error)) {
+        if (cdemud_daemon_initialize(CDEMUD_DAEMON(obj), num_devices, ctl_device, audio_driver, use_system_bus, &error)) {
             /* Start the daemon */
             if (!cdemud_daemon_start_daemon(CDEMUD_DAEMON(obj), &error)) {
                 g_warning("Failed to start daemon: %s\n", error->message);

@@ -120,8 +120,8 @@ CDEmu daemon has the following software requirements:
  - GLib 2.6 or newer
  - D-BUS 0.60 or newer
  - libdaemon 0.10 or newer
- 
- - ALSA 1.0.0 or newer (optional audio backend)
+ - libao 0.8.0 or newer
+ - libsysfs 
  
  - libMirage 1.1.0 or newer (part of the suite)
  - VHBA module (part of the suite)
@@ -149,8 +149,6 @@ be run as "PKG_CONFIG_PATH=/usr/local/lib/pkg-config ./configure".
 
 Vhba module is not a build-time dependency, but it might be a good idea to have 
 it installed at this point. 
-
-ALSA audio backend can be disabled with --disable-alsa switch.
 
 
 The daemon can register its interface on either system or session D-BUS' bus. By 

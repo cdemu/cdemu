@@ -299,7 +299,7 @@ static gboolean __cdemud_daemon_build_device_mapping_callback (gpointer data) {
 /******************************************************************************\
  *                                 Public API                                 *
 \******************************************************************************/
-gboolean cdemud_daemon_initialize (CDEMUD_Daemon *self, gint num_devices, gchar *ctl_device, gchar *audio_backend, gchar *audio_device, gboolean system_bus, GError **error) {
+gboolean cdemud_daemon_initialize (CDEMUD_Daemon *self, gint num_devices, gchar *ctl_device, gchar *audio_driver, gboolean system_bus, GError **error) {
     CDEMUD_DaemonPrivate *_priv = CDEMUD_DAEMON_GET_PRIVATE(self);
     GObject *debug_context = NULL;
     DBusGProxy *bus_proxy = NULL;
@@ -358,7 +358,7 @@ gboolean cdemud_daemon_initialize (CDEMUD_Daemon *self, gint num_devices, gchar 
     for (i = 0; i < _priv->number_of_devices; i++) {
         GObject *dev = g_object_new(CDEMUD_TYPE_DEVICE, NULL);
         
-        if (cdemud_device_initialize(CDEMUD_DEVICE(dev), i, audio_backend, audio_device, _priv->mirage, NULL)) {
+        if (cdemud_device_initialize(CDEMUD_DEVICE(dev), i, audio_driver, _priv->mirage, NULL)) {
             gint fd = 0;
             GIOChannel *ch = NULL;
             

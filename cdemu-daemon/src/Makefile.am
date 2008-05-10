@@ -2,10 +2,11 @@ INCLUDES = \
     -I$(top_builddir)/include \
     $(glib_CFLAGS) \
     $(gobject_CFLAGS) \
+    $(gthread_CFLAGS) \
     $(dbus_CFLAGS) \
     $(libdaemon_CFLAGS) \
     $(libmirage_CFLAGS) \
-    $(alsa_CFLAGS)
+    $(libao_CFLAGS)
 
 BUILT_SOURCES = \
     cdemud-marshallers.h \
@@ -20,8 +21,6 @@ EXTRA_DIST = \
 noinst_HEADERS = \
     cdemud.h \
     cdemud-audio.h \
-    cdemud-audio-alsa.h \
-    cdemud-audio-null.h \
     cdemud-daemon.h \
     cdemud-debug.h \
     cdemud-device.h \
@@ -36,8 +35,6 @@ bin_PROGRAMS = cdemud
 
 cdemud_SOURCES = \
     cdemud-audio.c \
-    cdemud-audio-alsa.c \
-    cdemud-audio-null.c \
     cdemud-daemon.c \
     cdemud-device.c \
     cdemud-error.c \
@@ -47,10 +44,11 @@ cdemud_SOURCES = \
 cdemud_LDADD = \
     $(glib_LIBS) \
     $(gobject_LIBS) \
+    $(gthread_LIBS) \
     $(dbus_LIBS) \
     $(libdaemon_LIBS) \
     $(libmirage_LIBS) \
-    $(alsa_LIBS) \
+    $(libao_LIBS) \
     $(sysfs_LIBS)
 
 # Some ugly hacks for building built sources out of source tree... until I 
