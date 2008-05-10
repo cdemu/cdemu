@@ -120,12 +120,16 @@ class gCDEmu_Device ():
         return
         
     def __create_page_status (self):
+        vbox = gtk.VBox()
+        vbox.show()
+    
         # *** Frame: status ***
         frame = gtk.Frame(_("Status"))
         frame.set_label_align(0.50, 0.50)
         frame.show()
         frame.set_border_width(2)
-        
+        vbox.pack_start(frame, expand=False, fill=False)
+
         table = gtk.Table()
         table.show()
         frame.add(table)
@@ -159,17 +163,46 @@ class gCDEmu_Device ():
         table.attach(label, 1, 2, 2, 3, xoptions=gtk.FILL|gtk.EXPAND, yoptions=0)
         self.__label_filename = label
         
-        separator = gtk.HSeparator()
-        separator.show()
-        table.attach(separator, 0, 2, 3, 4, xoptions=gtk.FILL|gtk.EXPAND, yoptions=0)
-        
         button = gtk.Button()
         button.show()
         table.attach(button, 0, 2, 4, 5, gtk.EXPAND, 0)
         button.connect("clicked", lambda b: self.__device_load_unload())
         self.__button_load = button
         
-        return frame
+        # *** Frame: mapping ***
+        [dev_sr, dev_sg] = self.__dbus_iface.DeviceGetMapping(self.__number)
+                
+        frame = gtk.Frame(_("Device mapping"))
+        frame.set_label_align(0.50, 0.50)
+        frame.show()
+        frame.set_border_width(2)
+        vbox.pack_start(frame, expand=False, fill=False)
+        
+        table = gtk.Table()
+        table.show()
+        frame.add(table)
+        table.set_border_width(5)
+        table.set_row_spacings(2)
+        
+        label = gtk.Label(_("SCSI CD-ROM device: "))
+        label.show()
+        table.attach(label, 0, 1, 0, 1, xoptions=gtk.FILL|gtk.EXPAND, yoptions=0)
+        
+        label = gtk.Label(dev_sr)
+        label.show()
+        table.attach(label, 1, 2, 0, 1, xoptions=gtk.FILL|gtk.EXPAND, yoptions=0)
+        self.__label_dev_sr = label
+        
+        label = gtk.Label(_("SCSI generic device: "))
+        label.show()
+        table.attach(label, 0, 1, 1, 2, xoptions=gtk.FILL|gtk.EXPAND, yoptions=0)
+        
+        label = gtk.Label(dev_sg)
+        label.show()
+        table.attach(label, 1, 2, 1, 2, xoptions=gtk.FILL|gtk.EXPAND, yoptions=0)
+        self.__label_dev_sg = label
+        
+        return vbox
     
     def __create_page_options (self):
         vbox = gtk.VBox()

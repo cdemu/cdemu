@@ -303,6 +303,15 @@
                     The <guilabel>Status</guilabel> tab shows the current device
                     status and allows you to load or unload the device.
                 </para>
+                <para>
+                    In addition, you can find information on device mapping in
+                    <guilabel>Device mapping</guilabel> frame. It displays 
+                    information on which SCSI CD-ROM device and which SCSI generic
+                    device correspond to the given CDEmu device (if this information 
+                    is provided by daemon). This can be useful for example if you 
+                    need to pass the path of the CDEmu device to a command-line 
+                    application, like mplayer.
+                </para>
                 <figure id="applet-fig4">
                     <title>Device tab of an empty device</title>
                     <screenshot>
