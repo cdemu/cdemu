@@ -159,6 +159,25 @@ class CDEmu (object):
             print "%-5s %-10s %-10s %s" % (device, loaded, image_type, filenames[0])
             for i in range(1, len(filenames)):
                 print "%-5s %-10s %-10s %s" % ("", "", "", filenames[i])
+    
+    def __cmd_device_mapping (self, arguments):
+        # Print device mapping for all devices
+        try:
+            nr_devices = self.__dbus_iface.GetNumberOfDevices()
+        except:
+            self.__print_error(_("Failed to get number of devices: %s") % (sys.exc_value))
+            return
+        
+        print _("Device mapping:")
+        print "%-5s %-15s %-15s" % (_("DEV"), _("SCSI CD-ROM"), _("SCSI generic"))
+        for device in range (0, nr_devices):
+            try:
+                [dev_sr, dev_sg] = self.__dbus_iface.DeviceGetMapping(device)
+            except:
+                self.__print_error(_("Failed to get device mapping of device %i: %s") % (device, sys.exc_value))
+                continue
+            
+            print "%-5s %-15s %-15s" % (device, dev_sr, dev_sg)
                     
     def __cmd_daemon_debug_mask (self, arguments):
         # Get daemon debug mask
@@ -710,6 +729,13 @@ class CDEmu (object):
             "",
             _("displays the devices' status"),
             __cmd_display_status
+        ],
+        # Device mapping
+        [
+            "device-mapping",
+            "",
+            _("displays the device mapping information"),
+            __cmd_device_mapping
         ],
         # Daemon-debug-mask
         [

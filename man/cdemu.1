@@ -1,4 +1,4 @@
-.TH CDEMU 1 "February 23, 2008"
+.TH CDEMU 1 "May 4, 2008"
 .SH NAME
 cdemu \- a simple command-line CDEmu client
 .SH SYNOPSIS
@@ -54,6 +54,8 @@ is the number of the desired device, or
 .TP
 .B status
 Displays devices' status
+.B device-mapping
+Displays device mapping information
 .TP
 .B daemon-debug-mask <device> [new-value]
 Displays/sets daemon debug mask;
@@ -136,6 +138,9 @@ cdemu load 0
 .TP
 .B Displaying device status:
 cdemu status
+.TP
+.B Displaying device mapping information:
+cdemu device-mapping
 .TP
 .B Setting daemon debug mask for the first device:
 cdemu daemon-debug-mask 0 0x01
