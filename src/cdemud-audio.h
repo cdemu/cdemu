@@ -20,7 +20,6 @@
 #ifndef __CDEMUD_AUDIO_H__
 #define __CDEMUD_AUDIO_H__
 
-
 G_BEGIN_DECLS
 
 #define CDEMUD_TYPE_AUDIO            (cdemud_audio_get_type())
@@ -30,35 +29,21 @@ G_BEGIN_DECLS
 #define CDEMUD_IS_AUDIO_CLASS(klass) (G_TYPE_CHECK_CLASS_TYPE((klass), CDEMUD_TYPE_AUDIO))
 #define CDEMUD_AUDIO_GET_CLASS(obj)  (G_TYPE_INSTANCE_GET_CLASS((obj), CDEMUD_TYPE_AUDIO, CDEMUD_AudioClass))
 
-typedef struct {
-    gchar *name;
-    GType (*get_type_func) (void); 
-    /* It might be preferrable to have GType here, but we're using this struct
-       for our const array of supported audio backends... since it's not 
-       initialized at runtime, we have to use function pointers instead of GTypes */
-} CDEMUD_AudioBackend;
 
 typedef struct {
     MIRAGE_Object parent;
-}CDEMUD_Audio;
+} CDEMUD_Audio;
 
 typedef struct {
     MIRAGE_ObjectClass parent;
-    
-    /* Class members */   
-    gboolean (*initialize) (CDEMUD_Audio *self, gchar *device, gint *cur_sector_ptr, GError **error);
-    gboolean (*start) (CDEMUD_Audio *self, gint start, gint end, GObject *disc, GError **error);
-    gboolean (*resume) (CDEMUD_Audio *self, GError **error);
-    gboolean (*pause) (CDEMUD_Audio *self, GError **error);
-    gboolean (*stop) (CDEMUD_Audio *self, GError **error);
-    gboolean (*get_status) (CDEMUD_Audio *self, gint *status, GError **error);
 } CDEMUD_AudioClass;
+
 
 /* Used by CDEMUD_TYPE_AUDIO */
 GType cdemud_audio_get_type (void);
 
 /* Public API */
-gboolean cdemud_audio_initialize (CDEMUD_Audio *self, gchar *device, gint *cur_sector_ptr, GError **error);
+gboolean cdemud_audio_initialize (CDEMUD_Audio *self, gchar *driver, gint *cur_sector_ptr, GError **error);
 gboolean cdemud_audio_start (CDEMUD_Audio *self, gint start, gint end, GObject *disc, GError **error);
 gboolean cdemud_audio_resume (CDEMUD_Audio *self, GError **error);
 gboolean cdemud_audio_pause (CDEMUD_Audio *self, GError **error);

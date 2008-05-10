@@ -37,14 +37,14 @@
 
 #include <sysfs/libsysfs.h>
 
+#include <ao/ao.h>
+
 #include <glib-object.h>
 #include <dbus/dbus-glib.h>
 #include <mirage.h>
 
 
 #include "cdemud-audio.h"
-#include "cdemud-audio-null.h"
-#include "cdemud-audio-alsa.h"
 
 #include "cdemud-mmc-features.h"
 #include "cdemud-mode-pages.h"

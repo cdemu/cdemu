@@ -47,7 +47,7 @@ typedef struct {
 GType cdemud_daemon_get_type (void);
 
 /* Public API */
-gboolean cdemud_daemon_initialize (CDEMUD_Daemon *self, gint num_devices, gchar *ctl_device, gchar *audio_backend, gchar *audio_device, gboolean system_bus, GError **error);
+gboolean cdemud_daemon_initialize (CDEMUD_Daemon *self, gint num_devices, gchar *ctl_device, gchar *audio_driver, gboolean system_bus, GError **error);
 gboolean cdemud_daemon_start_daemon (CDEMUD_Daemon *self, GError **error);
 gboolean cdemud_daemon_stop_daemon (CDEMUD_Daemon *self, GError **error);
 

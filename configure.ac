@@ -27,7 +27,9 @@ AC_HEADER_STDC
 PKG_CHECK_MODULES(glib, glib-2.0 >= 2.6)
 PKG_CHECK_MODULES(gobject, gobject-2.0 >= 2.6)
 PKG_CHECK_MODULES(gmodule, gmodule-2.0 >= 2.6)
+PKG_CHECK_MODULES(gthread, gthread-2.0 >= 2.6)
 PKG_CHECK_MODULES(dbus, dbus-1 >= 0.60 dbus-glib-1 >= 0.61)
+PKG_CHECK_MODULES(libao, ao >= 0.8.0,)
 PKG_CHECK_MODULES(libdaemon, libdaemon >= 0.10)
 PKG_CHECK_MODULES(libmirage, libmirage >= 1.1.0)
 
@@ -36,21 +38,6 @@ AC_CHECK_LIB([sysfs], [sysfs_open_device],, AC_MSG_ERROR("*** libsysfs library n
 AC_CHECK_HEADERS([sysfs/libsysfs.h],, AC_MSG_ERROR("*** libsysfs headers not found ***"))
 sysfs_LIBS="-lsysfs"
 AC_SUBST(sysfs_LIBS)
-
-# Optional ALSA check
-AC_ARG_ENABLE(alsa,
-        AS_HELP_STRING([--disable-alsa],[Disable ALSA audio backend]),
-        [case "${enableval}" in
-                yes) ALSA_BACKEND=yes ;;
-                no)  ALSA_BACKEND=no ;;
-                *) AC_MSG_ERROR(bad value ${enableval} for --enable-alsa) ;;
-        esac],
-        [ALSA_BACKEND=yes])
-
-if test "x$ALSA_BACKEND" = "xyes" ; then
-    PKG_CHECK_MODULES(alsa, [ alsa >= 1.0.0 ], AC_DEFINE(ALSA_BACKEND, 1, [Build ALSA audio backend?]), ALSA_BACKEND=no)
-fi
-AM_CONDITIONAL(ALSA_BACKEND, test "x$ALSA_BACKEND" = "xyes")
 
 # Compile with more warnings
 AC_ARG_ENABLE(more-warnings,
@@ -114,5 +101,4 @@ $PACKAGE_NAME $VERSION configure summary:
  dbus-1 system.d dir:       ${DBUS_SYS_DIR}
  C Compiler:                ${CC}
  CFLAGS:                    ${CFLAGS}
- Enable ALSA audio backed:  ${ALSA_BACKEND}
 "
