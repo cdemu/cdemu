@@ -43,6 +43,9 @@ typedef struct {
     
     /* Status */
     gint status;
+    
+    /* A hack to account for null driver's behaviour */
+    gboolean null_hack;
 } CDEMUD_AudioPrivate;
 
 
@@ -100,6 +103,15 @@ static gpointer __cdemud_audio_playback_thread (gpointer data) {
             CDEMUD_DEBUG(self, DAEMON_DEBUG_ERROR, "%s: playback error!\n", __func__);
             _priv->status = AUDIO_STATUS_ERROR; /* Audio operation stopped due to error */
             goto end;
+        }
+        
+        /* Hack: account for null driver's behaviour; for other libao drivers, ao_play
+           seems to return after the data is played, which is what we rely on for our
+           timing. However, null driver, as it has no device to write to, returns
+           immediately. Until this is fixed in libao, we'll have to emulate the delay
+           ourselves */
+        if (_priv->null_hack) {
+            g_usleep(1*G_USEC_PER_SEC/75); /* One sector = 1/75th of second */
         }
         
         /* Save current position */
@@ -171,6 +183,11 @@ gboolean cdemud_audio_initialize (CDEMUD_Audio *self, gchar *driver, gint *cur_s
     if (driver_id == -1) {
         CDEMUD_DEBUG(self, DAEMON_DEBUG_ERROR, "%s: cannot find driver '%s'!\n", __func__, driver);
         return FALSE;
+    }
+    
+    /* Activate null driver hack */
+    if (driver_id == ao_driver_id("null")) {
+        _priv->null_hack = TRUE;
     }
     
 	format.bits = 16;
