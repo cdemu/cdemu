@@ -32,7 +32,10 @@
 #include <errno.h>
 #include <signal.h>
 #include <fcntl.h>
+#include <sys/ioctl.h>
 #include <sys/time.h>
+
+#include <sysfs/libsysfs.h>
 
 #include <glib-object.h>
 #include <dbus/dbus-glib.h>
