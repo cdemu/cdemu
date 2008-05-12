@@ -32,7 +32,8 @@ dist-dir:
 	rm -fr $(PACKAGE)
 	mkdir $(PACKAGE)
 	cp vhba.c Makefile $(PACKAGE)
-	cp -fr kat $(PACKAGE)
+	mkdir $(PACKAGE)/kat
+	cp -fr $(shell ls kat/*) $(PACKAGE)/kat
 
 dist-gzip: dist-dir
 	tar -czf $(PACKAGE).tar.gz $(PACKAGE)
