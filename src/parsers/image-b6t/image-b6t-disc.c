@@ -310,13 +310,27 @@ static gboolean __mirage_disc_b6t_setup_track_fragments (MIRAGE_Disc *self, GObj
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: track file offset: 0x%llX\n", __func__, tfile_offset);
             /* Adjust sector size to account for subchannel */
             if (tfile_sectsize > 2352) {
+                /* If it's more than full sector, we have subchannel */
                 MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: track file sector size implies subchannel data...\n", __func__);
-                /* If it's more than full sector, we have subchannel with us */
                 sfile_sectsize = tfile_sectsize - 2352;
-                sfile_format = FR_BIN_SFILE_PW96_LIN | FR_BIN_SFILE_INT; /* Internal subchannel, linear PW96 */
                 tfile_sectsize = 2352;
                 MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: subchannel sector size: %i (0x%X)\n", __func__, sfile_sectsize, sfile_sectsize);
-                WHINE_ON_UNEXPECTED(sfile_sectsize, 96);
+                switch (sfile_sectsize) {
+                    case 16: {
+                        /* Internal subchannel, PQ */
+                        sfile_format = FR_BIN_SFILE_PQ16 | FR_BIN_SFILE_INT;                        
+                        break;
+                    }
+                    case 96: {
+                        /* Internal subchannel, linear PW96 */
+                        sfile_format = FR_BIN_SFILE_PW96_LIN | FR_BIN_SFILE_INT;
+                        break;
+                    }
+                    default: {
+                        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: unhandled subchannel sector size: %i (0x%X)\n", __func__, sfile_sectsize, sfile_sectsize);
+                        break;
+                    }
+                }
             }
             
             /* Data format: */
