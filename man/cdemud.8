@@ -1,4 +1,4 @@
-.TH CDEMUD 8 "May 4, 2008"
+.TH CDEMUD 8 "May 19, 2008"
 .SH NAME
 cdemud \- The CDEmu daemon
 .SH SYNOPSIS
@@ -19,43 +19,37 @@ options passed to it) where it exposes an interface that can be used by clients
 to control it.
 .SH OPTIONS
 .TP
-.B \-k --kill
+.B -k --kill
 Kill daemon. This will kill a CDEmu daemon instance that is running in daemon mode.
 Note that daemon running in local mode is not affected by this.
 .TP
-.B \-d --daemonize
+.B -d --daemonize
 Daemonize. The daemon will be ran in daemon mode (i.e. forked into background, 
 with PID file created  and syslog used for logging). Note that running daemon
 in daemon mode automatically implies the usage of system bus. By default, daemon 
 is ran in local mode.
 .TP
-.B \-n --num-devices=N
+.B -n --num-devices=N
 Number of devices. Specifies the number of virtual devices the daemon instance should
 register with kernel module and control
 .TP
-.B \-c --ctl-device=path
+.B -c --ctl-device=path
 Control device. Specifies the control device path. Control device is a character device
 provided by kernel module; it is used for communication between kernel and userspace
 part of CDEmu suite.
 .TP
-.B \-a --audio-driver=driver
+.B -a --audio-driver=driver
 Audio driver. Specifies audio driver to be used by virtual devices' audio play.
-Since libao is used for audio playback, any valid libao driver can be specified. 
-For all drivers, default device is used. Few examples of valid libao drivers:
-.B alsa,
-.B oss,
-.B pulse
-or
-.B null
-(default).
+Since libao is used for audio playback, any valid libao driver can be specified.
+If \fBdefault\fR is used as a driver, then libao's default driver is used. Few 
+examples of valid libao drivers are \fBalsa\fR, \fBoss\fR, \fBpulse\fR or \fBnull\fR. 
+For all drivers, default device is used. By default, if audio driver is not explicitly
+specified via this option, \fBnull\fR is used.
 .TP
-.B \-b --bus=bus_type
-Bus type. Valid options are
-.B system
-or
-.B session.
-By default, system bus is used.
-.B \-? --help
+.B -b --bus=bus_type
+Bus type. Valid options are \fBsystem\fR or \fBsession\fR. By default, system bus is used.
+.TP
+.B -? --help
 Display the help message. 
 .SH EXAMPLES
 .TP
