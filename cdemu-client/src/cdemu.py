@@ -131,14 +131,27 @@ class CDEmu (object):
             self.__print_invalid_number_of_parameters("unload")
             return False
         
-        # Unload device
-        device = string.atoi(arguments[0], 0)
-        
-        try:
-            self.__dbus_iface.DeviceUnload(device)
-        except:
-            self.__print_error(_("Failed to unload device %i: %s") % (device, sys.exc_value))
-            return False
+        # Particular device vs. all devices
+        if arguments[0] == "all":
+            try:
+                nr_devices = self.__dbus_iface.GetNumberOfDevices()
+            except:
+                self.__print_error(_("Failed to get number of devices: %s") % (sys.exc_value))
+                return False
+             
+            for device in range(0, nr_devices):
+                try:
+                    self.__dbus_iface.DeviceUnload(device)
+                except:
+                    self.__print_error(_("Failed to unload device %i: %s") % (device, sys.exc_value))
+                    continue
+        else:
+            device = string.atoi(arguments[0], 0)
+            try:
+                self.__dbus_iface.DeviceUnload(device)
+            except:
+                self.__print_error(_("Failed to unload device %i: %s") % (device, sys.exc_value))
+                return False
         
         return True
         
