@@ -1,4 +1,4 @@
-.TH CDEMU 1 "May 4, 2008"
+.TH CDEMU 1 "May 19, 2008"
 .SH NAME
 cdemu \- a simple command-line CDEmu client
 .SH SYNOPSIS
@@ -23,37 +23,26 @@ be overriden using
 option.
 .SH OPTIONS
 .TP
-.B \-h --help
+.B -h --help
 Displays the help message. If command is specified, help message with 
 synopsis and description for that command is displayed.
 .TP
-.B \-v --version
+.B -v --version
 Prints version info and exits.
 .TP
-.B \-b --bus
-Sets the D-BUS bus type to use for connection. Valid values are
-.I session
-and
-.I system. 
-If no bus is specified, the default bus is used.
+.B -b --bus
+Sets the D-BUS bus type to use for connection. Valid values are \fIsession\fR
+and \fIsystem\fR. If no bus is specified, the default bus is used.
 .SH COMMANDS
 .TP 
 .B load <device> <filename> [...]
-Loads the device;
-.B device
-is the number of the desired device, or
-.I any.
-If the latter is used, then the client will attempt to load the image into
-the first empty device it finds (provided there is one available).
-.B filename
-is the image filename. For multi-file images, multiple filenames 
-can be provided.
+Loads the device; \fBdevice\fR is the number of the desired device, or \fIany\fR.
+If \fIany\fR is used, then the client will attempt to load the image into the 
+first empty device it finds (provided there is one available). \fBfilename\fR is 
+the image filename. For multi-file images, multiple filenames can be provided.
 .TP
 .B unload <device>
-Unloads the device;
-.B device
-is the number of the desired device, or
-.I all.
+Unloads the device; \fBdevice\fR is the number of the desired device, or \fIall\fR.
 .TP
 .B status
 Displays devices' status
@@ -62,64 +51,40 @@ Displays devices' status
 Displays device mapping information
 .TP
 .B daemon-debug-mask <device> [new-value]
-Displays/sets daemon debug mask;
-.B device
-is the number of the desired device, or
-.I all.
-.B new-value
-is the new debug mask value. If this argument is omitted, current debug mask is
-displayed.
+Displays/sets daemon debug mask; \fBdevice\fR is the number of the desired 
+device, or \fIall\fR. \fBnew-value\fR is the new debug mask value. If this 
+argument is omitted, current debug mask is displayed.
 .TP
 .B library-debug-mask <device> [new-value]
-Displays/sets library debug mask;
-.B device
-is the number of the desired device, or
-.I all.
-.B new-value
-is the new debug mask value. If this argument is omitted, current debug mask is
-displayed.
+Displays/sets library debug mask; \fBdevice\fR is the number of the desired 
+device, or \fIall\fR. \fBnew-value\fR is the new debug mask value. If this 
+argument is omitted, current debug mask is displayed.
 .TP
 .B dpm-emulation <device> [new-value]
-Displays/sets DPM emulation flag.
-.B device
-is the number of the desired device, or
-.I all.
-.B new-value
-is the new value to be set. If this argument is ommited, currently set value is
-displayed.
+Displays/sets DPM emulation flag. \fBdevice\fR is the number of the desired 
+device, or \fIall\fR. \fBnew-value\fR is the new value to be set. If this 
+argument is ommited, currently set value is displayed.
 .TP
 .B tr-emulation <device> [new-value]
-Displays/sets transfer rate emulation flag.
-.B device
-is the number of the desired device, or 
-.I all.
-.B new-value
-is the new value to be set. If this argument is ommited, currently set value is
-displayed.
+Displays/sets transfer rate emulation flag. \fBdevice\fR is the number of the 
+desired device, or \fIall\fR. \fBnew-value\fR is the new value to be set. 
+If this argument is ommited, currently set value is displayed.
 .TP
 .B device-id <device> [new-vendor-id] [new-product-id] [new-revision] [new-vendor-specific]
-Displays/sets device ID.
-.B device
-is the number of the desired device.
-.B new-vendor-id
-is the new vendor ID string to be set (8 characters max).
-.B new-product-id
-is the new product ID string to be set (16 characters max).
-.B new-revision
-is the new revision string to be set (4 characters max).
-.B new-vendor-specific
-is the new vendor-specific string to be set (20 characters max).
+Displays/sets device ID. \fBdevice\fR is the number of the desired device.
+\fBnew-vendor-id\fR is the new vendor ID string to be set (8 characters max).
+\fBnew-product-id\fR is the new product ID string to be set (16 characters max).
+\fBnew-revision\fR is the new revision string to be set (4 characters max).
+\fBnew-vendor-specific\fR is the new vendor-specific string to be set (20 characters max).
 If new values are ommitted, currently set values are displayed.
 .TP
 .B enum-supported-parsers [parser_id]
-Enumerates supported parsers. If 
-.B parser_id
-is provided, information about specific parser is displayed instead.
+Enumerates supported parsers. If \fBparser_id\fR is provided, information about 
+specific parser is displayed instead.
 .TP
 .B enum-supported-fragments [fragment_id]
-Enumerates supported fragments. If 
-.B fragment_id
-is provided, information about specific fragment is displayed instead.
+Enumerates supported fragments. If \fBfragment_id\fR is provided, information 
+about specific fragment is displayed instead.
 .TP
 .B enum-daemon-debug-masks
 Enumerates supported daemon debug masks.
