@@ -2664,13 +2664,19 @@ static gboolean __cdemud_device_pc_set_cd_speed (CDEMUD_Device *self, guint8 *ra
 
 
 /* START/STOP unit implementation */
+static gboolean __cdemud_device_unload_disc (CDEMUD_Device *self, GError **error);
+
 static gboolean __cdemud_device_pc_start_stop_unit (CDEMUD_Device *self, guint8 *raw_cdb) {
     /*CDEMUD_DevicePrivate *_priv = CDEMUD_DEVICE_GET_PRIVATE(self);*/
     struct START_STOP_UNIT_CDB *cdb = (struct START_STOP_UNIT_CDB *)raw_cdb;
     
+    CDEMUD_DEBUG(self, DAEMON_DEBUG_DEV_PC_TRACE, "%s: lo_ej: %d; start: %d\n", __func__, cdb->lo_ej, cdb->start);
+    
     if (cdb->lo_ej) {
         if (!cdb->start) {
-            if (!cdemud_device_unload_disc(self, NULL)) {
+            
+            CDEMUD_DEBUG(self, DAEMON_DEBUG_DEV_PC_TRACE, "%s: unloading disc...\n", __func__);
+            if (!__cdemud_device_unload_disc(self, NULL)) {
                 CDEMUD_DEBUG(self, DAEMON_DEBUG_DEV_PC_TRACE, "%s: failed to unload disc\n", __func__);
                 __cdemud_device_write_sense(self, SK_NOT_READY, MEDIUM_REMOVAL_PREVENTED);
                 return FALSE;
@@ -2968,15 +2974,12 @@ gboolean cdemud_device_get_device_number (CDEMUD_Device *self, gint *number, GEr
     return TRUE;
 }
 
-gboolean cdemud_device_get_status (CDEMUD_Device *self, gboolean *loaded, gchar **image_type, gchar ***file_names, GError **error) {
+static gboolean __cdemud_device_get_status (CDEMUD_Device *self, gboolean *loaded, gchar **image_type, gchar ***file_names, GError **error) {
     CDEMUD_DevicePrivate *_priv = CDEMUD_DEVICE_GET_PRIVATE(self);
     
     gboolean _loaded = FALSE;
     gchar *_image_type = NULL;
     gchar **_file_names = NULL;
-    
-    /* Lock */
-    g_static_mutex_lock(&_priv->device_mutex);
     
     if (_priv->loaded) {
         MIRAGE_Disc *disc = MIRAGE_DISC(_priv->disc);
@@ -3007,8 +3010,59 @@ gboolean cdemud_device_get_status (CDEMUD_Device *self, gboolean *loaded, gchar 
         g_strfreev(_file_names);
     }
     
-    /* Unlock */
+    return TRUE;
+}
+
+gboolean cdemud_device_get_status (CDEMUD_Device *self, gboolean *loaded, gchar **image_type, gchar ***file_names, GError **error) {
+    CDEMUD_DevicePrivate *_priv = CDEMUD_DEVICE_GET_PRIVATE(self);
+    gboolean succeeded = TRUE;
+    
+    g_static_mutex_lock(&_priv->device_mutex);
+    succeeded = __cdemud_device_get_status(self, loaded, image_type, file_names, error);
     g_static_mutex_unlock(&_priv->device_mutex);
+    
+    return succeeded;
+}
+
+static gboolean __cdemud_device_load_disc (CDEMUD_Device *self, gchar **file_names, GError **error) {
+    CDEMUD_DevicePrivate *_priv = CDEMUD_DEVICE_GET_PRIVATE(self);
+    gint media_type = 0;
+    
+     /* Well, we won't do anything if we're already loaded */
+    if (_priv->loaded) {
+        CDEMUD_DEBUG(self, DAEMON_DEBUG_DEV_PC_TRACE, "%s: device already loaded\n", __func__);
+        cdemud_error(CDEMUD_E_ALREADYLOADED, error);
+        return FALSE;
+    }
+    
+    /* Load... */
+    if (!mirage_mirage_create_disc(MIRAGE_MIRAGE(_priv->mirage), file_names, &_priv->disc, _priv->disc_debug, error)) {
+        return FALSE;
+    }
+    
+    /* Loading succeeded */
+    _priv->loaded = TRUE;
+    _priv->media_changed = TRUE;
+    
+    /* Set current profile (and modify feature flags accordingly */
+    mirage_disc_get_medium_type(MIRAGE_DISC(_priv->disc), &media_type, NULL);
+    switch (media_type) {
+        case MIRAGE_MEDIUM_CD: {
+            __cdemud_device_set_profile(self, PROFILE_CDROM);
+            break;
+        }
+        case MIRAGE_MEDIUM_DVD: {
+            __cdemud_device_set_profile(self, PROFILE_DVDROM);                    
+            break;
+        }
+        default: {
+            CDEMUD_DEBUG(self, DAEMON_DEBUG_DEV_PC_TRACE, "%s: unknown media type: 0x%X!\n", __func__, media_type);
+            break;
+        }
+    }
+    
+    /* Send notification */
+    g_signal_emit_by_name(self, "status-changed", NULL);
     
     return TRUE;
 }
@@ -3017,71 +3071,22 @@ gboolean cdemud_device_load_disc (CDEMUD_Device *self, gchar **file_names, GErro
     CDEMUD_DevicePrivate *_priv = CDEMUD_DEVICE_GET_PRIVATE(self);
     gboolean succeeded = TRUE;
         
-    /* Lock */
     g_static_mutex_lock(&_priv->device_mutex);
-    
-    /* Well, we won't do anything if we're already loaded */
-    if (!_priv->loaded) {
-        /* If loading succeeded... */
-        if (mirage_mirage_create_disc(MIRAGE_MIRAGE(_priv->mirage), file_names, &_priv->disc, _priv->disc_debug, error)) {
-            gint media_type = 0;
-
-            _priv->loaded = TRUE;
-            _priv->media_changed = TRUE;
-            
-            /* Set current profile (and modify feature flags accordingly */
-            mirage_disc_get_medium_type(MIRAGE_DISC(_priv->disc), &media_type, NULL);
-            switch (media_type) {
-                case MIRAGE_MEDIUM_CD: {
-                    __cdemud_device_set_profile(self, PROFILE_CDROM);
-                    break;
-                }
-                case MIRAGE_MEDIUM_DVD: {
-                    __cdemud_device_set_profile(self, PROFILE_DVDROM);                    
-                    break;
-                }
-                default: {
-                    CDEMUD_DEBUG(self, DAEMON_DEBUG_DEV_PC_TRACE, "%s: unknown media type: 0x%X!\n", __func__, media_type);
-                    break;
-                }
-            }
-            
-            /* Send notification */
-            g_signal_emit_by_name(self, "status-changed", NULL);
-            
-            succeeded = TRUE;
-            goto end;
-        } else {
-            /* Error already set */
-            succeeded = FALSE;
-            goto end;
-        }        
-    } else {
-        CDEMUD_DEBUG(self, DAEMON_DEBUG_DEV_PC_TRACE, "%s: device already loaded\n", __func__);
-        cdemud_error(CDEMUD_E_ALREADYLOADED, error);
-        succeeded = FALSE;
-    }
-
-end:
-    /* Unlock */
+    succeeded = __cdemud_device_load_disc(self, file_names, error);
     g_static_mutex_unlock(&_priv->device_mutex);
     
     return succeeded;
 }
 
-gboolean cdemud_device_unload_disc (CDEMUD_Device *self, GError **error) {
+
+static gboolean __cdemud_device_unload_disc (CDEMUD_Device *self, GError **error) {
     CDEMUD_DevicePrivate *_priv = CDEMUD_DEVICE_GET_PRIVATE(self);
-    gboolean succeeded = TRUE;
-        
-    /* Lock */
-    g_static_mutex_lock(&_priv->device_mutex);
-    
+
     /* Check if the door is locked */
     if (_priv->locked) {
         CDEMUD_DEBUG(self, DAEMON_DEBUG_DEV_PC_TRACE, "%s: device is locked\n", __func__);
         cdemud_error(CDEMUD_E_DEVLOCKED, error);
-        succeeded = FALSE;
-        goto end;
+        return FALSE;
     }
     
     /* Unload only if we're loaded */
@@ -3098,8 +3103,15 @@ gboolean cdemud_device_unload_disc (CDEMUD_Device *self, GError **error) {
         g_signal_emit_by_name(self, "status-changed", NULL);
     }
     
-end:
-    /* Unlock */
+    return TRUE;
+}
+
+gboolean cdemud_device_unload_disc (CDEMUD_Device *self, GError **error) {
+    CDEMUD_DevicePrivate *_priv = CDEMUD_DEVICE_GET_PRIVATE(self);
+    gboolean succeeded = TRUE;
+    
+    g_static_mutex_lock(&_priv->device_mutex);
+    succeeded = __cdemud_device_unload_disc(self, error);
     g_static_mutex_unlock(&_priv->device_mutex);
     
     return succeeded;
