@@ -31,4 +31,8 @@ textdomain(config.name)
 
 if __name__ == '__main__':
     cdemu = cdemu.cdemu.CDEmu()
-    cdemu.process_command(sys.argv[1:])
+    
+    ret = cdemu.process_command(sys.argv[1:])
+    # ret is either True or False; we need to return 0 or -1, though...
+    sys.exit(ret - 1)
+    
