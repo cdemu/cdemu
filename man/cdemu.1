@@ -41,7 +41,10 @@ If no bus is specified, the default bus is used.
 .B load <device> <filename> [...]
 Loads the device;
 .B device
-is the number of the desired device.
+is the number of the desired device, or
+.I any.
+If the latter is used, then the client will attempt to load the image into
+the first empty device it finds (provided there is one available).
 .B filename
 is the image filename. For multi-file images, multiple filenames 
 can be provided.
@@ -54,6 +57,7 @@ is the number of the desired device, or
 .TP
 .B status
 Displays devices' status
+.TP
 .B device-mapping
 Displays device mapping information
 .TP

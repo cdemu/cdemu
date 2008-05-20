@@ -109,8 +109,6 @@ class CDEmu (object):
             self.__print_invalid_number_of_parameters("load")
             return False
         
-        # Load device
-        device = string.atoi(arguments[0], 0)
         filenames = arguments[1:]
         
         # We need to pass absolute filenames to daemon, because its working
@@ -118,11 +116,45 @@ class CDEmu (object):
         for i in range(0, len(filenames)):
             filenames[i] = os.path.abspath(filenames[i])
         
-        try:
-            self.__dbus_iface.DeviceLoad(device, filenames)
-        except:
-            self.__print_error(_("Failed to load image: %s") % (sys.exc_value))
+        # Particular device vs. any device
+        if arguments[0] == "any":
+            try:
+                nr_devices = self.__dbus_iface.GetNumberOfDevices()
+            except:
+                self.__print_error(_("Failed to get number of devices: %s") % (sys.exc_value))
+                return False
+            
+            for device in range (0, nr_devices):
+                # Device's status
+                try:
+                    status = self.__dbus_iface.DeviceGetStatus(device)
+                except:
+                    self.__print_error(_("Failed to get status of device %i: %s") % (device, sys.exc_value))
+                    continue
+                
+                # If device is already loaded, skip it
+                if status[0]:
+                    continue
+                
+                # Try to load it
+                try:
+                    self.__dbus_iface.DeviceLoad(device, filenames)
+                    return True
+                except:
+                    self.__print_error(_("Failed to load image: %s") % (sys.exc_value))
+                    return False
+            
+            # If we're here, it means we didn't get an empty device
+            self.__print_error(_("No empty device found"))
             return False
+        else:
+            device = string.atoi(arguments[0], 0)
+        
+            try:
+                self.__dbus_iface.DeviceLoad(device, filenames)
+            except:
+                self.__print_error(_("Failed to load image: %s") % (sys.exc_value))
+                return False
         
         return True
         
