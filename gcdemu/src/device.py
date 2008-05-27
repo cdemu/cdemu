@@ -42,7 +42,7 @@ def case_insensitive_ext_filter (filter_info, data):
     # Check if lowercased filename ends with lowercased extension
     return filename.endswith(ext)
     
-class gCDEmu_Device ():
+class gCDEmu_Device:
     def __setup_file_dialog (self):
         # Enumerate supported parsers and build up file selection dialog
         try:
