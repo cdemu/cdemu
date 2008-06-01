@@ -17,7 +17,7 @@ DOC_MAIN_SGML_FILE = $(DOC_MODULE)-docs.sgml
 # The directory containing the source code. Relative to $(srcdir).
 # gtk-doc will search all .c & .h files beneath here for inline comments
 # documenting the functions and macros.
-# e.g. DOC_SOURCE_DIR=../sr
+# e.g. DOC_SOURCE_DIR=../src
 DOC_SOURCE_DIR = ../../../src/libmirage/
 
 # Extra options to pass to gtkdoc-scangobj. Not normally needed.
@@ -56,7 +56,8 @@ HTML_IMAGES =
 
 # Extra SGML files that are included by $(DOC_MAIN_SGML_FILE).
 # e.g. content_files=running.sgml building.sgml changes-2.0.sgml
-content_files =
+content_files = \
+    version.xml
 
 # SGML files where gtk-doc abbrevations (#GtkWidget) are expanded
 # These files must be listed here *and* in content_files
