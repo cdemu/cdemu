@@ -224,6 +224,18 @@ track_fragment  :   ZERO_ NUMBER_ {
                             return -1;
                         }
                     }
+                    /* DATAFILE filename #base_offset length */
+                |   DATA_FILE_ STRING_ HASH_ NUMBER_ NUMBER_  {
+                        if (!__mirage_session_toc_add_track_fragment(self, TOC_DATA_TYPE_DATA, $2, $4, 0, $5, error)) {
+                            return -1;
+                        }
+                    }
+                    /* DATAFILE filename #base_offset */
+                |   DATA_FILE_ STRING_ HASH_ NUMBER_  {
+                        if (!__mirage_session_toc_add_track_fragment(self, TOC_DATA_TYPE_DATA, $2, $4, 0, 0, error)) {
+                            return -1;
+                        }
+                    }
                     /* DATAFILE filename */
                 |   DATA_FILE_ STRING_ {
                         if (!__mirage_session_toc_add_track_fragment(self, TOC_DATA_TYPE_DATA, $2, 0, 0, 0, error)) {
