@@ -35,6 +35,9 @@ typedef struct {
     
     gint cur_langcode;
     GHashTable *lang_map;
+    
+    gchar *mixed_mode_bin;
+    gint mixed_mode_offset;
 } MIRAGE_Session_TOCPrivate;
 
 /******************************************************************************\
@@ -236,6 +239,32 @@ gboolean __mirage_session_toc_add_track_fragment (MIRAGE_Session *self, gint typ
                 tfile_format = FR_BIN_TFILE_DATA;
             }
             
+            
+            /* Some TOC files don't seem to contain #base_offset entries that 
+               are used in case of mixed mode CD... which means we have to 
+               calculate base_offset ourselves :( */
+            if (!base_offset) {
+                /* If we don't have mixed mode BIN filename set yet or if it 
+                   differs from  the one currently set, we're dealing with new 
+                   file... so we reset offset and store the filename */
+                if (!_priv->mixed_mode_bin || mirage_helper_strcasecmp(_priv->mixed_mode_bin, filename)) {
+                    _priv->mixed_mode_offset = 0;
+                    g_free(_priv->mixed_mode_bin);
+                    _priv->mixed_mode_bin = g_strdup(filename);
+                }
+                
+                base_offset = _priv->mixed_mode_offset;
+                
+                /* I guess it's safe to calculate this here; if length isn't
+                   provided, it means whole file is used, so most likely we'll 
+                   get file changed next time we're called...*/
+                if (type == TOC_DATA_TYPE_DATA) {
+                    /* Increase only if it's data... */
+                    _priv->mixed_mode_offset += length * (_priv->cur_tfile_sectsize + _priv->cur_sfile_sectsize);
+                }
+            }
+            
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: using base offset: 0x%lX\n", __func__, base_offset);
             tfile_offset = base_offset + start * (_priv->cur_tfile_sectsize + _priv->cur_sfile_sectsize);
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: calculated track file offset: 0x%llX\n", __func__, tfile_offset);
   
@@ -491,6 +520,7 @@ static void __mirage_session_toc_finalize (GObject *obj) {
 
     g_hash_table_destroy(_priv->lang_map);
     g_free(_priv->toc_filename);
+    g_free(_priv->mixed_mode_bin);
     
     /* Chain up to the parent class */
     MIRAGE_DEBUG(self_toc, MIRAGE_DEBUG_GOBJECT, "%s: chaining up to parent\n", __func__);
