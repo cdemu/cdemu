@@ -2,19 +2,19 @@
 # Copyright (C) 2006-2008 Rok Mandeljc
 # This file is distributed under the same license as the cdemu-client package.
 # Rok Mandeljc <rok.mandeljc@email.si>, 2006-2008.
-# 
-# 
+#
+#
 msgid ""
 msgstr ""
 "Project-Id-Version: cdemu-client 1.1.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2008-05-04 12:05+0200\n"
-"PO-Revision-Date: 2008-05-04 12:09+0200\n"
+"POT-Creation-Date: 2008-05-31 17:17+0200\n"
+"PO-Revision-Date: 2008-05-31 17:17+0200\n"
 "Last-Translator: Rok Mandeljc <rok.mandeljc@email.si>\n"
 "Language-Team: Slovenian\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
-"Content-Transfer-Encoding: 8bit"
+"Content-Transfer-Encoding: 8bit\n"
 
 #. No harm, just print a warning
 #: ../src/cdemu.py:55
@@ -26,7 +26,7 @@ msgstr "Napaka pri nalaganju iz nastavitvene datoteke '%s': %s"
 msgid "Unknown option"
 msgstr "Neznana možnost"
 
-#: ../src/cdemu.py:89
+#: ../src/cdemu.py:90
 #, python-format
 msgid "Failed to connect to daemon (bus: '%s')!"
 msgstr "Napaka pri povezovanju z demonom (vodilo: '%s')!"
@@ -36,354 +36,360 @@ msgstr "Napaka pri povezovanju z demonom (vodilo: '%s')!"
 msgid "Unknown command: %s"
 msgstr "Neznan ukaz: %s"
 
-#: ../src/cdemu.py:124
-#, python-format
-msgid "Failed to load image: %s"
-msgstr "Napaka pri nalaganju slike: %s"
-
-#: ../src/cdemu.py:138
-#, python-format
-msgid "Failed to unload device %i: %s"
-msgstr "Naprava pri praznjenju naprave %i: %s"
-
-#: ../src/cdemu.py:146 ../src/cdemu.py:168 ../src/cdemu.py:190
-#: ../src/cdemu.py:223 ../src/cdemu.py:255 ../src/cdemu.py:288
-#: ../src/cdemu.py:320 ../src/cdemu.py:351 ../src/cdemu.py:383
-#: ../src/cdemu.py:414 ../src/cdemu.py:446 ../src/cdemu.py:484
+#: ../src/cdemu.py:124 ../src/cdemu.py:171 ../src/cdemu.py:195
+#: ../src/cdemu.py:219 ../src/cdemu.py:243 ../src/cdemu.py:276
+#: ../src/cdemu.py:308 ../src/cdemu.py:341 ../src/cdemu.py:373
+#: ../src/cdemu.py:404 ../src/cdemu.py:436 ../src/cdemu.py:467
+#: ../src/cdemu.py:499 ../src/cdemu.py:537
 #, python-format
 msgid "Failed to get number of devices: %s"
 msgstr "Napaka pri pridobivanju števila naprav: %s"
 
-#: ../src/cdemu.py:149
-msgid "Devices' status:"
-msgstr "Stanje naprav:"
-
-#: ../src/cdemu.py:150 ../src/cdemu.py:172 ../src/cdemu.py:194
-#: ../src/cdemu.py:259 ../src/cdemu.py:324 ../src/cdemu.py:387
-#: ../src/cdemu.py:450
-msgid "DEV"
-msgstr "NPR"
-
-#: ../src/cdemu.py:150
-msgid "LOADED"
-msgstr "NALOŽENA"
-
-#: ../src/cdemu.py:150
-msgid "TYPE"
-msgstr "VRSTA"
-
-#: ../src/cdemu.py:150
-msgid "FILENAME"
-msgstr "IME DATOTEKE"
-
-#: ../src/cdemu.py:155
+#: ../src/cdemu.py:132 ../src/cdemu.py:204
 #, python-format
 msgid "Failed to get status of device %i: %s"
 msgstr "Napaka pri pridobivanju podatkov o stanju naprave %i: %s"
 
-#: ../src/cdemu.py:171
+#: ../src/cdemu.py:144 ../src/cdemu.py:156
+#, python-format
+msgid "Failed to load image: %s"
+msgstr "Napaka pri nalaganju slike: %s"
+
+#. If we're here, it means we didn't get an empty device
+#: ../src/cdemu.py:148
+msgid "No empty device found"
+msgstr "Ne najdem nobene prazne naprave"
+
+#: ../src/cdemu.py:178 ../src/cdemu.py:185
+#, python-format
+msgid "Failed to unload device %i: %s"
+msgstr "Naprava pri praznjenju naprave %i: %s"
+
+#: ../src/cdemu.py:198
+msgid "Devices' status:"
+msgstr "Stanje naprav:"
+
+#: ../src/cdemu.py:199 ../src/cdemu.py:223 ../src/cdemu.py:247
+#: ../src/cdemu.py:312 ../src/cdemu.py:377 ../src/cdemu.py:440
+#: ../src/cdemu.py:503
+msgid "DEV"
+msgstr "NPR"
+
+#: ../src/cdemu.py:199
+msgid "LOADED"
+msgstr "NALOŽENA"
+
+#: ../src/cdemu.py:199
+msgid "TYPE"
+msgstr "VRSTA"
+
+#: ../src/cdemu.py:199
+msgid "FILENAME"
+msgstr "IME DATOTEKE"
+
+#: ../src/cdemu.py:222
 msgid "Device mapping:"
 msgstr "Preslikave naprav:"
 
-#: ../src/cdemu.py:172
+#: ../src/cdemu.py:223
 msgid "SCSI CD-ROM"
 msgstr "SCSI CD-ROM"
 
-#: ../src/cdemu.py:172
+#: ../src/cdemu.py:223
 msgid "SCSI generic"
 msgstr "SCSI generična"
 
-#: ../src/cdemu.py:177
+#: ../src/cdemu.py:228
 #, python-format
 msgid "Failed to get device mapping of device %i: %s"
 msgstr "Napaka pri pridobivanju podatkov o preslikavi naprave %i: %s"
 
-#: ../src/cdemu.py:193
+#: ../src/cdemu.py:246
 msgid "Devices' daemon debug masks:"
 msgstr "Razhroščevalne maske naprav:"
 
-#: ../src/cdemu.py:194 ../src/cdemu.py:259
+#: ../src/cdemu.py:247 ../src/cdemu.py:312
 msgid "DEBUG MASK"
 msgstr "MASKA"
 
-#: ../src/cdemu.py:201 ../src/cdemu.py:211
+#: ../src/cdemu.py:254 ../src/cdemu.py:264
 #, python-format
 msgid "Failed to get daemon debug mask of device %i: %s"
 msgstr "Napaka pri pridobivanju demonove maske za napravo %i: %s"
 
-#: ../src/cdemu.py:214
+#: ../src/cdemu.py:267
 #, python-format
 msgid "Daemon debug mask of device %i: 0x%X"
 msgstr "Demonova maska  naprave %i: 0x%X"
 
-#: ../src/cdemu.py:226
+#: ../src/cdemu.py:279
 #, python-format
 msgid "Setting daemon debug mask of all devices to 0x%X."
 msgstr "Nastavljam demonovo masko vseh naprav na 0x%X."
 
-#: ../src/cdemu.py:231 ../src/cdemu.py:239
+#: ../src/cdemu.py:284 ../src/cdemu.py:292
 #, python-format
 msgid "Failed to set daemon debug mask of device %i to 0x%X: %s"
 msgstr "Napaka pri nastavljanju demonove maske naprave %i na 0x%X: %s"
 
-#: ../src/cdemu.py:235
+#: ../src/cdemu.py:288
 #, python-format
 msgid "Setting daemon debug mask of device %i to 0x%X."
 msgstr "Nastavljam demonovo masko naprave %i na 0x%X."
 
-#: ../src/cdemu.py:258
+#: ../src/cdemu.py:311
 msgid "Devices' library debug masks:"
 msgstr "Knjižničine maske naprav:"
 
-#: ../src/cdemu.py:266 ../src/cdemu.py:276
+#: ../src/cdemu.py:319 ../src/cdemu.py:329
 #, python-format
 msgid "Failed to get library debug mask of device %i: %s"
 msgstr "Napaka pri pridobivanju knjižničine maske za napravo %i: %s"
 
-#: ../src/cdemu.py:279
+#: ../src/cdemu.py:332
 #, python-format
 msgid "Library debug mask of device %i: 0x%X"
 msgstr "Knjižničina maska naprave %i: 0x%X"
 
-#: ../src/cdemu.py:291
+#: ../src/cdemu.py:344
 #, python-format
 msgid "Setting library debug mask of all devices to 0x%X."
 msgstr "Nastavljam knjižničino masko vseh naprav na 0x%X."
 
-#: ../src/cdemu.py:296 ../src/cdemu.py:304
+#: ../src/cdemu.py:349 ../src/cdemu.py:357
 #, python-format
 msgid "Failed to set library debug mask of device %i to 0x%X: %s"
 msgstr "Napaka pri nastavljanju knjižničine maske naprave %i na 0x%X: %s"
 
-#: ../src/cdemu.py:300
+#: ../src/cdemu.py:353
 #, python-format
 msgid "Setting library debug mask of device %i to 0x%X."
 msgstr "Nastavljam knjižničino masko naprave %i na 0x%X."
 
-#: ../src/cdemu.py:323
+#: ../src/cdemu.py:376
 msgid "Devices' DPM emulation flag:"
 msgstr "Nastavitev DPM emulacije naprav:"
 
-#: ../src/cdemu.py:324 ../src/cdemu.py:387
+#: ../src/cdemu.py:377 ../src/cdemu.py:440
 msgid "ENABLED"
 msgstr "VKLJUČENO"
 
-#: ../src/cdemu.py:330 ../src/cdemu.py:339
+#: ../src/cdemu.py:383 ../src/cdemu.py:392
 #, python-format
 msgid "Failed to get DPM emulation flag of device %i: %s"
 msgstr "Napaka pri pridobivanju nastavitve DPM emulacije naprave %i: %s"
 
-#: ../src/cdemu.py:342
+#: ../src/cdemu.py:395
 #, python-format
 msgid "DPM emulation flag of device %i: %i"
 msgstr "Nastavitev DPM emulacije naprave %i: %i"
 
-#: ../src/cdemu.py:354
+#: ../src/cdemu.py:407
 #, python-format
 msgid "Setting DPM emulation flag of all devices to %i."
 msgstr "Nastavljam DPM emulacijo vseh naprav na %i."
 
-#: ../src/cdemu.py:359 ../src/cdemu.py:367
+#: ../src/cdemu.py:412 ../src/cdemu.py:420
 #, python-format
 msgid "Failed to set DPM emulation flag of device %i to %i: %s"
 msgstr "Napaka pri nastavljanju DPM emulacije naprave %i na %i: %s"
 
-#: ../src/cdemu.py:363
+#: ../src/cdemu.py:416
 #, python-format
 msgid "Setting DPM emulation flag of device %i to %i."
 msgstr "Nastavljam DPM emulacijo naprave %i na %i."
 
-#: ../src/cdemu.py:386
+#: ../src/cdemu.py:439
 msgid "Devices' transfer rate emulation flag:"
 msgstr "Nastavitve emulacije hitrosti prenosa naprav:"
 
-#: ../src/cdemu.py:393 ../src/cdemu.py:402
+#: ../src/cdemu.py:446 ../src/cdemu.py:455
 #, python-format
 msgid "Failed to get transfer rate emulation flag of device %i: %s"
 msgstr ""
 "Napaka pri pridobivanju nastavitve emulacije hitrosti prenosa naprave %i: %s"
 
-#: ../src/cdemu.py:405
+#: ../src/cdemu.py:458
 #, python-format
 msgid "Transfer rate emulation flag of device %i: %i"
 msgstr "Nastavitev emulacije hitrosti prenosa naprave %i: %i"
 
-#: ../src/cdemu.py:417
+#: ../src/cdemu.py:470
 #, python-format
 msgid "Setting transfer rate emulation flag of all devices to %i."
 msgstr "Nastavljam emulacijo hitrosti prenosa vseh naprav na %i."
 
-#: ../src/cdemu.py:422 ../src/cdemu.py:430
+#: ../src/cdemu.py:475 ../src/cdemu.py:483
 #, python-format
 msgid "Failed to set transfer rate emulation flag of device %i to %i: %s"
 msgstr ""
 "Napaka pri nastavljanju emulacije hitrosti prenosa naprave %i na %i: %s"
 
-#: ../src/cdemu.py:426
+#: ../src/cdemu.py:479
 #, python-format
 msgid "Setting transfer rate emulation flag of device %i to %i."
 msgstr "Nastavljam emulacijo hitrosti prenosa naprave %i na %i."
 
-#: ../src/cdemu.py:449
+#: ../src/cdemu.py:502
 msgid "Devices' IDs:"
 msgstr "ID naprav:"
 
-#: ../src/cdemu.py:450
+#: ../src/cdemu.py:503
 msgid "DEVICE ID"
 msgstr "ID NAPRAVE"
 
-#: ../src/cdemu.py:459 ../src/cdemu.py:471
+#: ../src/cdemu.py:512 ../src/cdemu.py:524
 #, python-format
 msgid "Failed to get device ID of device %i: %s"
 msgstr "Napaka pri pridobivanju ID naprave %i: %s"
 
-#: ../src/cdemu.py:474
+#: ../src/cdemu.py:527
 #, python-format
 msgid "Device ID of device %i: %s"
 msgstr "ID naprave %i: %s"
 
-#: ../src/cdemu.py:487
+#: ../src/cdemu.py:540
 #, python-format
 msgid "Setting device ID of all devices to %s."
 msgstr "Nastavljam ID vseh naprav na %s."
 
-#: ../src/cdemu.py:492 ../src/cdemu.py:500
+#: ../src/cdemu.py:545 ../src/cdemu.py:553
 #, python-format
 msgid "Failed to set device ID of device %i to %s: %s"
 msgstr "Napaka pri nastavljanju ID naprave %i na %s: %s"
 
-#: ../src/cdemu.py:496
+#: ../src/cdemu.py:549
 #, python-format
 msgid "Setting device ID of device %i to %s."
 msgstr "Nastavljam ID naprave %i na %s."
 
-#: ../src/cdemu.py:513
+#: ../src/cdemu.py:566
 #, python-format
 msgid "Failed to enumerate supported parsers: %s"
 msgstr "Napaka pri pridobivanju seznama podprtih parserjev: %s"
 
 #. Print all parsers
-#: ../src/cdemu.py:518
+#: ../src/cdemu.py:571
 msgid "Supported parsers:"
 msgstr "Podprti parserji:"
 
-#: ../src/cdemu.py:528
+#: ../src/cdemu.py:581
 #, python-format
 msgid "Parser information: '%s'"
 msgstr "Podatki o parserju: '%s'"
 
-#: ../src/cdemu.py:529 ../src/cdemu.py:570
+#: ../src/cdemu.py:582 ../src/cdemu.py:623
 #, python-format
 msgid " - Name: %s"
 msgstr " - Ime: %s"
 
-#: ../src/cdemu.py:530 ../src/cdemu.py:571
+#: ../src/cdemu.py:583 ../src/cdemu.py:624
 #, python-format
 msgid " - Version: %s"
 msgstr " - Različica: %s"
 
-#: ../src/cdemu.py:531 ../src/cdemu.py:572
+#: ../src/cdemu.py:584 ../src/cdemu.py:625
 #, python-format
 msgid " - Author: %s"
 msgstr " - Avtor: %s"
 
-#: ../src/cdemu.py:532
+#: ../src/cdemu.py:585
 #, python-format
 msgid " - Multiple files support: %i"
 msgstr ".-.Podpora za več datotek: %i"
 
-#: ../src/cdemu.py:533
+#: ../src/cdemu.py:586
 #, python-format
 msgid " - Image files description: %s"
 msgstr " - Opis vrste slike: %s"
 
-#: ../src/cdemu.py:534
+#: ../src/cdemu.py:587
 msgid " - Image files suffixes:"
 msgstr " - Končnice datotek:"
 
-#: ../src/cdemu.py:541
+#: ../src/cdemu.py:594
 #, python-format
 msgid "Parser with ID '%s' not found!"
 msgstr "Parser z ID '%s' ne obstaja!"
 
-#: ../src/cdemu.py:554
+#: ../src/cdemu.py:607
 #, python-format
 msgid "Failed to enumerate supported fragments: %s"
 msgstr "Napaka pri pridobivanju seznama podprtih fragmentov: %s"
 
 #. Print all fragments
-#: ../src/cdemu.py:559
+#: ../src/cdemu.py:612
 msgid "Supported fragments:"
 msgstr "Podprti fragmenti:"
 
-#: ../src/cdemu.py:569
+#: ../src/cdemu.py:622
 #, python-format
 msgid "Fragment information: '%s'"
 msgstr "Podatki o fragmentu: '%s'"
 
-#: ../src/cdemu.py:573
+#: ../src/cdemu.py:626
 #, python-format
 msgid " - Interface: %s"
 msgstr " - Interface: %s"
 
-#: ../src/cdemu.py:574
+#: ../src/cdemu.py:627
 msgid " - Data files suffixes:"
 msgstr " - Končnice datotek:"
 
-#: ../src/cdemu.py:581
+#: ../src/cdemu.py:634
 #, python-format
 msgid "Fragment with ID '%s' not found!"
 msgstr "Fragment z ID '%s' ne obstaja!"
 
-#: ../src/cdemu.py:598
+#: ../src/cdemu.py:651
 #, python-format
 msgid "Failed to enumerate supported daemon debug masks: %s"
 msgstr "Napaka pri pridobivanju seznama podprtih demonovih mask: %s"
 
-#: ../src/cdemu.py:601
+#: ../src/cdemu.py:654
 msgid "Supported daemon debug masks:"
 msgstr "Podprte demonove maske:"
 
-#: ../src/cdemu.py:616
+#: ../src/cdemu.py:669
 #, python-format
 msgid "Failed to enumerate supported library debug masks: %s"
 msgstr "Napaka pri pridobivanju seznama podprtih knjižničinih mask: %s"
 
-#: ../src/cdemu.py:619
+#: ../src/cdemu.py:672
 msgid "Supported library debug masks:"
 msgstr "Podprte knjižničine maske:"
 
-#: ../src/cdemu.py:632
+#: ../src/cdemu.py:685
 #, python-format
 msgid "Failed to get library version: %s"
 msgstr "Napaka pri pridobivanju različice knjižnice: %s"
 
-#: ../src/cdemu.py:637
+#: ../src/cdemu.py:690
 #, python-format
 msgid "Failed to get daemon version: %s"
 msgstr "Napaka pri pridobivanju različice demona: %s"
 
-#: ../src/cdemu.py:640
+#: ../src/cdemu.py:693
 #, python-format
 msgid "Library version: %s"
 msgstr "Različica knjižnice: %s"
 
-#: ../src/cdemu.py:641
+#: ../src/cdemu.py:694
 #, python-format
 msgid "Daemon version: %s"
 msgstr "Različica demona: %s"
 
-#: ../src/cdemu.py:652
+#: ../src/cdemu.py:705
 #, python-format
 msgid "Invalid bus parameter '%s', using default!"
 msgstr "Neveljaven parameter za vodilo '%s'; uporabljam privzeto vodilo!"
 
-#: ../src/cdemu.py:660
+#: ../src/cdemu.py:713
 #, python-format
 msgid "Failed to connect to CDEmu daemon: %s"
 msgstr "Napaka pri povezovanju s CDEmu demonom: %s"
 
-#: ../src/cdemu.py:665
+#: ../src/cdemu.py:718
 #, python-format
 msgid "CDEmu daemon version %s detected, but at least version %s is required!"
 msgstr ""
@@ -391,99 +397,99 @@ msgstr ""
 
 #. We need to make sure we're not trying to 'translate' empty
 #. string for the third argument
-#: ../src/cdemu.py:675
+#: ../src/cdemu.py:728
 #, python-format
 msgid "Usage: %s %s %s"
 msgstr "Uporaba: %s %s %s"
 
-#: ../src/cdemu.py:680
+#: ../src/cdemu.py:733
 #, python-format
 msgid "Usage: %s [options] <command> <command parameters>"
 msgstr "Uporaba: %s [možnosti] <ukaz> <parametri ukaza>"
 
-#: ../src/cdemu.py:682
+#: ../src/cdemu.py:735
 msgid "Commands:"
 msgstr "Ukazi:"
 
-#: ../src/cdemu.py:686
+#: ../src/cdemu.py:739
 msgid "Options:"
 msgstr "Možnosti:"
 
-#: ../src/cdemu.py:687
+#: ../src/cdemu.py:740
 msgid "displays help message"
 msgstr "prikaže sporočilo s pomočjo"
 
-#: ../src/cdemu.py:688
+#: ../src/cdemu.py:741
 msgid "displays program version"
 msgstr "prikaže različico programa"
 
-#: ../src/cdemu.py:689
+#: ../src/cdemu.py:742
 msgid "sets D-BUS bus type to use; valid values are 'session' and 'system'"
 msgstr ""
 "nastavi vrsto D-BUS vodila, ki naj bo uporabljeno; veljavni vrednosti sta "
 "'session' in 'system'"
 
-#: ../src/cdemu.py:694
+#: ../src/cdemu.py:747
 #, python-format
 msgid "Invalid number of parameters for command '%s'!"
 msgstr "Neveljavno število parametrov za ukaz '%s'!"
 
-#: ../src/cdemu.py:703
+#: ../src/cdemu.py:756
 #, python-format
 msgid "ERROR: %s"
 msgstr "NAPAKA: %s"
 
-#: ../src/cdemu.py:707
+#: ../src/cdemu.py:760
 #, python-format
 msgid "WARNING: %s"
 msgstr "OPOZORILO: %s"
 
-#: ../src/cdemu.py:715
+#: ../src/cdemu.py:768
 msgid "<device> <image file> [...]"
 msgstr "<naprava> <ime datoteke> [...]"
 
-#: ../src/cdemu.py:716
+#: ../src/cdemu.py:769
 msgid "loads the device"
 msgstr "naloži napravo"
 
-#: ../src/cdemu.py:722
+#: ../src/cdemu.py:775
 msgid "<device>"
 msgstr "<naprava>"
 
-#: ../src/cdemu.py:723
+#: ../src/cdemu.py:776
 msgid "unloads the device"
 msgstr "izprazni napravo"
 
-#: ../src/cdemu.py:730
+#: ../src/cdemu.py:783
 msgid "displays the devices' status"
 msgstr "prikaže stanje naprav(e)"
 
-#: ../src/cdemu.py:737
+#: ../src/cdemu.py:790
 msgid "displays the device mapping information"
 msgstr "prikaže podatke o preslikavah naprav"
 
-#: ../src/cdemu.py:743 ../src/cdemu.py:750 ../src/cdemu.py:757
-#: ../src/cdemu.py:764
+#: ../src/cdemu.py:796 ../src/cdemu.py:803 ../src/cdemu.py:810
+#: ../src/cdemu.py:817
 msgid "<device> [new value]"
 msgstr "<naprava> [nova vrednost]"
 
-#: ../src/cdemu.py:744
+#: ../src/cdemu.py:797
 msgid "displays/sets daemon debug mask"
 msgstr "prikaže/nastavi demonovo razhroščevalno masko"
 
-#: ../src/cdemu.py:751
+#: ../src/cdemu.py:804
 msgid "displays/sets library debug mask"
 msgstr "prikaže/nastavi knjižničino razhroščevalno masko"
 
-#: ../src/cdemu.py:758
+#: ../src/cdemu.py:811
 msgid "displays/sets DPM emulation flag"
 msgstr "prikaže/nastavi DPM emulacijo"
 
-#: ../src/cdemu.py:765
+#: ../src/cdemu.py:818
 msgid "displays/sets transfer rate emulation flag"
 msgstr "prikaže/nastavi emulacijo hitrosti prenosa"
 
-#: ../src/cdemu.py:771
+#: ../src/cdemu.py:824
 msgid ""
 "<device> [new vendor_id] [new product_id] [new revision] [new "
 "vendor_specific]"
@@ -491,35 +497,34 @@ msgstr ""
 "<naprava> [nov vendor_id] [nov product_id] [nov revision] [nov "
 "vendor_specific]"
 
-#: ../src/cdemu.py:772
+#: ../src/cdemu.py:825
 msgid "displays/sets device ID"
 msgstr "prikaže/nastavi ID naprave"
 
-#: ../src/cdemu.py:778
+#: ../src/cdemu.py:831
 msgid "[parser_id]"
 msgstr "[parser_id]"
 
-#: ../src/cdemu.py:779
+#: ../src/cdemu.py:832
 msgid "enumerates supported parsers"
 msgstr "našteje podprte parserje"
 
-#: ../src/cdemu.py:785
+#: ../src/cdemu.py:838
 msgid "[fragment_id]"
 msgstr "[fragment_id]"
 
-#: ../src/cdemu.py:786
+#: ../src/cdemu.py:839
 msgid "enumerates supported fragments"
 msgstr "našteje podprte fragmente"
 
-#: ../src/cdemu.py:793
+#: ../src/cdemu.py:846
 msgid "enumerates valid daemon debug masks"
 msgstr "našteje veljavne demonove maske"
 
-#: ../src/cdemu.py:800
+#: ../src/cdemu.py:853
 msgid "enumerates valid library debug masks"
 msgstr "našteje veljavne knjižničine maske"
 
-#: ../src/cdemu.py:807
+#: ../src/cdemu.py:860
 msgid "displays version information"
 msgstr "prikaže podatke o različicah"
-
