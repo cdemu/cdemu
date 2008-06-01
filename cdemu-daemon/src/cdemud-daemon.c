@@ -228,32 +228,46 @@ static gboolean __cdemud_daemon_build_device_mapping_callback (gpointer data) {
             gchar path_sg[16] = "";
                 
             if (dir_dev) {
-                while ((entry_name = g_dir_read_name(dir_dev))) {                    
-                    /* Found SCSI CD-ROM device */
-                    if (sscanf(entry_name, "block:%s", path_sr)) {
-                        continue;
+                while ((entry_name = g_dir_read_name(dir_dev))) {
+                    /* SCSI CD-ROM device */
+                    if (!strlen(path_sr)) {
+                        if (sscanf(entry_name, "block:%s", path_sr) == 1) {
+                            continue;
+                        }
+                    
+                        if (!g_ascii_strcasecmp(entry_name, "block")) {
+                            gchar *dirpath = g_build_filename(sysfs_dev->path, entry_name, NULL);
+                            GDir *tmp_dir = g_dir_open(dirpath, 0, NULL);
+                            const gchar *tmp_sr = g_dir_read_name(tmp_dir);
+                                                
+                            strcpy(path_sr, tmp_sr);
+                        
+                            g_dir_close(tmp_dir);
+                            g_free(dirpath);
+                            continue;
+                        }
                     }
-                        
-                    /* Found SCSI generic device */
-#if 0
-                    if (sscanf(entry_name, "scsi_generic:%s", path_sg)) {
-                        continue;
+                    
+                    /* SCSI generic device */
+                    if (!strlen(path_sg)) {
+                        if (sscanf(entry_name, "scsi_generic:%s", path_sg) == 1) {
+                            continue;
+                        }
+
+                        if (!g_ascii_strcasecmp(entry_name, "generic")) {
+                            gchar *symlink = g_build_filename(sysfs_dev->path, entry_name, NULL);
+                            gchar *tmp_path = g_file_read_link(symlink, NULL);
+                            gchar *tmp_sg = g_path_get_basename(tmp_path);
+                            
+                            strcpy(path_sg, tmp_sg);
+                            
+                            g_free(tmp_sg);
+                            g_free(tmp_path);
+                            g_free(symlink);
+                            
+                            continue;
+                        }
                     }
-#else
-                    if (!g_ascii_strcasecmp(entry_name, "generic")) {
-                        gchar *symlink = g_build_filename(sysfs_dev->path, entry_name, NULL);
-                        gchar *tmp_path = g_file_read_link(symlink, NULL);
-                        gchar *tmp_sg = g_path_get_basename(tmp_path);
-                        
-                        strcpy(path_sg, tmp_sg);
-                        
-                        g_free(tmp_sg);
-                        g_free(tmp_path);
-                        g_free(symlink);
-                        
-                        continue;
-                    }
-#endif
                 }
                 g_dir_close(dir_dev);
             }
