@@ -30,3 +30,9 @@ image_ccd_la_LIBADD = \
 image_ccd_la_LDFLAGS = \
     -module \
     -avoid-version
+
+
+mimedir = $(datadir)/mime/packages
+mime_DATA = libmirage-image-ccd.xml
+
+EXTRA_DIST = $(mime_DATA)

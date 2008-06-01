@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mime-info xmlns="http://www.freedesktop.org/standards/shared-mime-info">
+    <mime-type type="application/libmirage-daa">
+        <sub-class-of type="application/libmirage-image"/>
+        <sub-class-of type="application/octet-stream"/>
+        
+        <alias type="application/x-daa"/>
+        
+        <comment>PowerISO Direct Access Archive image file</comment>
+        
+        <glob pattern="*.daa"/>
+        
+        <magic priority="50">
+            <match value="DAA" type="string" offset="0"/>
+        </magic>
+    </mime-type>
+</mime-info>

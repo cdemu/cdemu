@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mime-info xmlns="http://www.freedesktop.org/standards/shared-mime-info">
+    <mime-type type="application/libmirage-toc">
+        <sub-class-of type="application/libmirage-image"/>
+        <sub-class-of type="text/plain"/>
+        
+        <alias type="application/x-toc"/>
+        
+        <comment>Cdrdao TOC image file</comment>
+        
+        <glob pattern="*.toc"/>
+        
+        <magic priority="50">
+            <match value="CD_DA" type="string" offset="0:10"/>
+            <match value="CD_ROM" type="string" offset="0:10"/>
+            <match value="CD_ROM_XA" type="string" offset="0:10"/>
+            <match value="CD_TEXT" type="string" offset="0:10"/>
+            <match value="CATALOG" type="string" offset="0:10"/>
+        </magic>
+    </mime-type>
+</mime-info>

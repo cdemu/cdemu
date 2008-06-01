@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mime-info xmlns="http://www.freedesktop.org/standards/shared-mime-info">
+    <mime-type type="application/libmirage-ccd">
+        <sub-class-of type="application/libmirage-image"/>
+        <sub-class-of type="text/plain"/>
+        
+        <alias type="application/x-ccd"/>
+        
+        <comment>CloneCD image file</comment>
+        
+        <glob pattern="*.ccd"/>
+        
+        <magic priority="50">
+            <match value="[CloneCD]" type="string" offset="0:10"/>
+        </magic>
+    </mime-type>
+</mime-info>

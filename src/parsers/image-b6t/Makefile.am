@@ -24,3 +24,9 @@ image_b6t_la_LIBADD = \
 image_b6t_la_LDFLAGS = \
     -module \
     -avoid-version
+
+
+mimedir = $(datadir)/mime/packages
+mime_DATA = libmirage-image-b6t.xml
+
+EXTRA_DIST = $(mime_DATA)

@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mime-info xmlns="http://www.freedesktop.org/standards/shared-mime-info">
+    <mime-type type="application/libmirage-cue">
+        <sub-class-of type="application/libmirage-image"/>
+        <sub-class-of type="text/plain"/>
+        
+        <alias type="application/x-cue"/>
+
+        <comment>CDRWrite CUE image file</comment>
+        
+        <glob pattern="*.cue"/>
+    </mime-type>
+</mime-info>
+

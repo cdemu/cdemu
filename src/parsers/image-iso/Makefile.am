@@ -24,3 +24,9 @@ image_iso_la_LIBADD = \
 image_iso_la_LDFLAGS = \
     -module \
     -avoid-version
+
+
+mimedir = $(datadir)/mime/packages
+mime_DATA = libmirage-image-iso.xml
+
+EXTRA_DIST = $(mime_DATA)
