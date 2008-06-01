@@ -32,3 +32,9 @@ image_toc_la_LIBADD = \
 image_toc_la_LDFLAGS = \
     -module \
     -avoid-version
+
+
+mimedir = $(datadir)/mime/packages
+mime_DATA = libmirage-image-toc.xml
+
+EXTRA_DIST = $(mime_DATA)

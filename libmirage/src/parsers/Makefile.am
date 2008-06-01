@@ -8,3 +8,20 @@ SUBDIRS = \
    image-mds \
    image-nrg \
    image-toc
+
+
+mimedir = $(datadir)/mime/packages
+mime_DATA = libmirage-image.xml
+
+EXTRA_DIST = $(mime_DATA)
+
+install-data-hook: update-mime-database
+uninstall-hook: update-mime-database
+
+# Update mime only when system-wide installation takes place
+update-mime-database:
+	if [ -f $(DESTDIR)$(mimedir)/freedesktop.org.xml ]; then \
+		if which update-mime-database>/dev/null 2>&1; then \
+			update-mime-database $(DESTDIR)$(datadir)/mime; \
+		fi \
+	fi

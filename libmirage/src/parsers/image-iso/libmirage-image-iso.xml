@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mime-info xmlns="http://www.freedesktop.org/standards/shared-mime-info">
+    <mime-type type="application/libmirage-iso">
+        <sub-class-of type="application/libmirage-image"/>
+        <sub-class-of type="application/octet-stream"/>
+
+        <alias type="application/x-iso"/>
+        
+        <comment>ISO9660 image file</comment>
+        
+        <glob pattern="*.iso"/>
+        <glob pattern="*.img"/>
+        
+        <magic priority="50">
+            <match value="\x01\x43\x44\x30\x30\x31\x01\x00" type="string" offset="32768"/>
+        </magic>
+    </mime-type>
+</mime-info>

@@ -27,3 +27,9 @@ image_daa_la_LIBADD = \
 image_daa_la_LDFLAGS = \
     -module \
     -avoid-version
+
+
+mimedir = $(datadir)/mime/packages
+mime_DATA = libmirage-image-daa.xml
+
+EXTRA_DIST = $(mime_DATA)

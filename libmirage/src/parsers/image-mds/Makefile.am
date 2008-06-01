@@ -24,3 +24,9 @@ image_mds_la_LIBADD = \
 image_mds_la_LDFLAGS = \
     -module \
     -avoid-version
+
+
+mimedir = $(datadir)/mime/packages
+mime_DATA = libmirage-image-mds.xml
+
+EXTRA_DIST = $(mime_DATA)

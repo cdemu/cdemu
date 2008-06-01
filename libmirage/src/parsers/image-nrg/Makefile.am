@@ -24,3 +24,9 @@ image_nrg_la_LIBADD = \
 image_nrg_la_LDFLAGS = \
     -module \
     -avoid-version
+
+
+mimedir = $(datadir)/mime/packages
+mime_DATA = libmirage-image-nrg.xml
+
+EXTRA_DIST = $(mime_DATA)

@@ -57,7 +57,7 @@ AC_SUBST(zlib_LIBS)
 
 # Compile with more warnings
 AC_ARG_ENABLE(more-warnings,
-[  --enable-more-warnings  Maximum compiler warnings],
+[  --enable-more-warnings  maximum compiler warnings],
 set_more_warnings="$enableval",[
     set_more_warnings=no
 ])

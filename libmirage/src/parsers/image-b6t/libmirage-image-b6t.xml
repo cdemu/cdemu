@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mime-info xmlns="http://www.freedesktop.org/standards/shared-mime-info">
+    <mime-type type="application/libmirage-b6t">
+        <sub-class-of type="application/libmirage-image"/>
+        <sub-class-of type="application/octet-stream"/>
+        
+        <alias type="application/x-b6t"/>
+        
+        <comment>BlindWrite 5/6 image file</comment>
+        
+        <glob pattern="*.b5t"/>
+        <glob pattern="*.b6t"/>
+        
+        <magic priority="50">
+            <match value="BWT5 STREAM SIGN" type="string" offset="0"/>
+        </magic>
+    </mime-type>
+</mime-info>

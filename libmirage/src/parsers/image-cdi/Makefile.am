@@ -24,3 +24,9 @@ image_cdi_la_LIBADD = \
 image_cdi_la_LDFLAGS = \
     -module \
     -avoid-version
+
+
+mimedir = $(datadir)/mime/packages
+mime_DATA = libmirage-image-cdi.xml
+
+EXTRA_DIST = $(mime_DATA)
