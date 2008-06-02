@@ -8,173 +8,197 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gCDEmu 1.1.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2008-03-01 18:24+0100\n"
-"PO-Revision-Date: 2008-03-04 22:26+0100\n"
+"POT-Creation-Date: 2008-05-22 17:55+0200\n"
+"PO-Revision-Date: 2008-06-02 13:11+0200\n"
 "Last-Translator: Marcel Hoppe <hoppe.marcel@gmx.de>\n"
 "Language-Team: German\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: ../src/applet.py:85
-msgid "Use _system bus"
-msgstr "Benutze _System Bus"
+#: ../src/applet.py:100 ../src/device.py:475
+msgid "Error"
+msgstr "Fehler"
 
-#: ../src/applet.py:87
-msgid "Show _notifications"
-msgstr "Zeige _Notiz"
-
-#: ../src/applet.py:89
-msgid "_About"
-msgstr "_Über"
-
-#: ../src/applet.py:143
-msgid "Daemon started"
-msgstr "Daemon gestartet"
-
-#: ../src/applet.py:143
-msgid "CDEmu daemon has been started."
-msgstr "CDEmu Daemon wurde gestartet."
-
-#: ../src/applet.py:151
-msgid "Daemon stopped"
-msgstr "Daemon gestoppt"
-
-#: ../src/applet.py:151
-msgid "CDEmu daemon has been stopped."
-msgstr "CDEmu Daemon wurde gestoppt"
-
-#: ../src/applet.py:214
-msgid "gCDEmu is an applet for controlling CDEmu devices via CDEmu daemon."
+#: ../src/applet.py:114
+msgid ""
+"gCDEmu is an applet for controlling CDEmu\n"
+"devices via CDEmu daemon."
 msgstr ""
-"gCDEmu ist ein Applet zum kontrollieren der CDEmu Laufwerke des CDEmu Daemon."
+"gCDEmu ist ein Applet zum kontrollieren des CDEmu\n"
+"Laufwerke über CDEmu Daemon."
 
-#: ../src/applet.py:217
+#: ../src/applet.py:116
+msgid "The CDEmu project website"
+msgstr "Die Webseite des CDEmu Projekts"
+
+#: ../src/applet.py:120
 msgid "translator-credits"
 msgstr "Marcel Hoppe <hoppe.marcel@gmx.de>"
 
-#: ../src/applet.py:346
+#: ../src/applet.py:125
+msgid "Use _system bus"
+msgstr "Benutze _System Bus"
+
+#: ../src/applet.py:127
+msgid "Show _notifications"
+msgstr "Zeige _Notiz"
+
+#: ../src/applet.py:129
+msgid "_About"
+msgstr "_Über"
+
+#: ../src/applet.py:176
+msgid "Daemon started"
+msgstr "Daemon gestartet"
+
+#: ../src/applet.py:176
+msgid "CDEmu daemon has been started."
+msgstr "CDEmu Daemon wurde gestartet."
+
+#: ../src/applet.py:184
+msgid "Daemon stopped"
+msgstr "Daemon gestoppt"
+
+#: ../src/applet.py:184
+msgid "CDEmu daemon has been stopped."
+msgstr "CDEmu Daemon wurde gestoppt"
+
+#: ../src/applet.py:372
 #, python-format
 msgid "CDEmu daemon version %s detected, but at least version %s is required!"
 msgstr "CDEmu Daemon Version %s gefunden, aber die Version %s wird benötigt!"
 
-#: ../src/applet.py:350
+#: ../src/applet.py:376
 msgid "Incompatible daemon version"
 msgstr "Unverträgliche Daemon Version"
 
-#: ../src/device.py:45
+#: ../src/device.py:54
 msgid "Open file"
 msgstr "Öffne Datei"
 
-#: ../src/device.py:54
+#: ../src/device.py:63
 msgid "All files"
 msgstr "Alle Dateien"
 
-#: ../src/device.py:59
+#: ../src/device.py:68
 msgid "All image files"
 msgstr "Alle Image Dateien"
 
-#: ../src/device.py:76
+#: ../src/device.py:87
 #, python-format
 msgid "Device %i properties"
 msgstr "Einstellungen von Laufwerk %i "
 
-#: ../src/device.py:84
+#: ../src/device.py:95
 #, python-format
 msgid "Device %i"
 msgstr "Laufwerk %i"
 
 #. *** Frame: status ***
-#: ../src/device.py:97 ../src/device.py:124
+#: ../src/device.py:108 ../src/device.py:138
 msgid "Status"
 msgstr "Status"
 
-#: ../src/device.py:100
+#: ../src/device.py:111
 msgid "Options"
 msgstr "Einstellungen"
 
-#: ../src/device.py:107
+#: ../src/device.py:118
 msgid "Daemon debug mask"
 msgstr "Daemon Debug Maske"
 
-#: ../src/device.py:108
+#: ../src/device.py:119
 msgid "Daemon"
 msgstr "Daemon"
 
-#: ../src/device.py:115
+#: ../src/device.py:126
 msgid "Library debug mask"
 msgstr "Library Debug Maske"
 
-#: ../src/device.py:116
+#: ../src/device.py:127
 msgid "Library"
 msgstr "Bibliothek"
 
-#: ../src/device.py:135
+#: ../src/device.py:150
 msgid "Loaded: "
 msgstr "Geladen: "
 
-#: ../src/device.py:144
+#: ../src/device.py:159
 msgid "Image type: "
 msgstr "Image Type: "
 
-#: ../src/device.py:153
+#: ../src/device.py:168
 msgid "File name: "
 msgstr "Datei Name: "
 
+#: ../src/device.py:186
+msgid "Device mapping"
+msgstr "Laufwerk mapping"
+""
+
+#: ../src/device.py:198
+msgid "SCSI CD-ROM device: "
+msgstr "SCSI CD-ROM Laufwerk: "
+
+#: ../src/device.py:207
+msgid "SCSI generic device: "
+msgstr "SCSI generic Laufwerk: "
+
 #. Device ID
-#: ../src/device.py:179
+#: ../src/device.py:223
 msgid "Device ID"
 msgstr "Laufwerks ID:"
 
-#: ../src/device.py:191
+#: ../src/device.py:235
 msgid "Vendor ID: "
 msgstr "Anbieter ID:"
 
-#: ../src/device.py:201
+#: ../src/device.py:245
 msgid "Product ID: "
 msgstr "Produkt ID: "
 
-#: ../src/device.py:211
+#: ../src/device.py:255
 msgid "Revision: "
 msgstr "Revision: "
 
-#: ../src/device.py:221
+#: ../src/device.py:265
 msgid "Vendor-specific: "
 msgstr "Anbieterspezifisch:"
 
-#: ../src/device.py:235
+#: ../src/device.py:279
 msgid "Set device ID"
 msgstr "Setzte Laufwerks ID"
 
 #. DPM emulation
-#: ../src/device.py:241
+#: ../src/device.py:285
 msgid "DPM emulation"
 msgstr "DPM Emulation"
 
 #. Transfer rate emulation
-#: ../src/device.py:248
+#: ../src/device.py:292
 msgid "Transfer rate emulation"
 msgstr "Übertragungsraten Emulation"
 
-#: ../src/device.py:280
+#: ../src/device.py:324
 msgid "Set debug mask"
 msgstr "Setzte Debug Maske"
 
-#: ../src/device.py:393 ../src/device.py:395 ../src/device.py:418
+#: ../src/device.py:437 ../src/device.py:439 ../src/device.py:462
 msgid "Device change"
 msgstr "Laufwerkänderung"
 
-#: ../src/device.py:393
+#: ../src/device.py:437
 #, python-format
 msgid "Device %i has been loaded."
 msgstr "Laufwerk %i wurde geladen."
 
-#: ../src/device.py:395
+#: ../src/device.py:439
 #, python-format
 msgid "Device %i has been emptied."
 msgstr "Laufwerk %i wurde ausgeworfen."
 
-#: ../src/device.py:418
+#: ../src/device.py:462
 #, python-format
 msgid ""
 "Device %i has been changed its option:\n"
@@ -183,12 +207,8 @@ msgstr ""
 "Laufwerk %i wurde geändert:\n"
 "%s."
 
-#: ../src/device.py:431
-msgid "Error"
-msgstr "Fehler"
-
 #. Show error dialog
-#: ../src/device.py:473
+#: ../src/device.py:517
 #, python-format
 msgid ""
 "Failed to unload device %i:\n"
@@ -197,7 +217,7 @@ msgstr ""
 "Fehler beim Auswerfen von Laufwerk %i:\n"
 "%s"
 
-#: ../src/device.py:487
+#: ../src/device.py:531
 #, python-format
 msgid ""
 "Failed to load image %s to device %i:\n"
@@ -206,7 +226,7 @@ msgstr ""
 "Fehler beim Laden vom Image %s nach Laufwerk %i:\n"
 "%s"
 
-#: ../src/device.py:506
+#: ../src/device.py:550
 #, python-format
 msgid ""
 "Failed to set device ID for device %i to %s:\n"
@@ -215,7 +235,7 @@ msgstr ""
 "Fehler beim Setzten der Laufwerks ID für Laufwerk %i nach %s:\n"
 "%s"
 
-#: ../src/device.py:523
+#: ../src/device.py:567
 #, python-format
 msgid ""
 "Failed to set DPM emulation for device %i to %i:\n"
@@ -224,7 +244,7 @@ msgstr ""
 "Fehler beim Setzten der DPM Emulation für Laufwerk %i nach %i: \n"
 "%s"
 
-#: ../src/device.py:540
+#: ../src/device.py:584
 #, python-format
 msgid ""
 "Failed to set transfer rate emulation for device %i to %i:\n"
@@ -233,7 +253,7 @@ msgstr ""
 "Fehler beim Setzten der Übertragungsraten Emulation für Laufwerk %i auf %i:\n"
 "%s"
 
-#: ../src/device.py:550
+#: ../src/device.py:594
 #, python-format
 msgid ""
 "Failed to set daemon debug mask for device %i to 0x%X:\n"
@@ -242,7 +262,7 @@ msgstr ""
 "Fehler beim Setzten der Daemon Debug Maske für Laufwerk %i auf 0x%X:\n"
 "%s"
 
-#: ../src/device.py:560
+#: ../src/device.py:604
 #, python-format
 msgid ""
 "Failed to set library debug mask for device %i to 0x%X:\n"
@@ -252,34 +272,39 @@ msgstr ""
 "%s"
 
 #. Indicate there's more than one file
-#: ../src/device.py:579 ../src/device.py:581
+#: ../src/device.py:623 ../src/device.py:625
 msgid "Device"
 msgstr "Laufwerk"
 
-#: ../src/device.py:581
+#: ../src/device.py:625
 msgid "Empty"
 msgstr "Leer"
 
-#: ../src/device.py:587
+#: ../src/device.py:631
 msgid "Yes"
 msgstr "Ja"
 
-#: ../src/device.py:590
+#: ../src/device.py:634
 msgid "Unload"
 msgstr "Auswerfen"
 
-#: ../src/device.py:592
+#: ../src/device.py:636
 msgid "No"
 msgstr "Nein"
 
-#: ../src/device.py:595
+#: ../src/device.py:639
 msgid "Load"
 msgstr "Laden"
 
 #: ../src/gcdemu.schemas.in.h:1
+msgid "Name of icon to use (relative to gCDEmu's pixmap dir)"
+msgstr "Name des benutzen Icon (bezogen auf gCDEmu's pixmap Verzeichnis)"
+
+#: ../src/gcdemu.schemas.in.h:2
 msgid "Show notifications?"
 msgstr "Zeige Notiz"
 
-#: ../src/gcdemu.schemas.in.h:2
+#: ../src/gcdemu.schemas.in.h:3
 msgid "Use system bus (instead of session bus)?"
 msgstr "Benutze System Bus (anstelle des Sitzungs Bus)?"
+
