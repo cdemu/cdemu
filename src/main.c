@@ -149,13 +149,13 @@ static gboolean __run_daemon () {
             g_io_channel_unref(signal_channel);
         } else {
             g_warning("Could not initialize signal handling: %s.", strerror(errno));
-            daemon_retval_send(-1);
+            daemon_retval_send(1);
             succeeded = FALSE;
         }
     } else {
         g_warning("Daemon initialization failed: %s\n", error->message);
         g_error_free(error);
-        daemon_retval_send(-1);
+        daemon_retval_send(1);
         succeeded = FALSE;
     }
     
