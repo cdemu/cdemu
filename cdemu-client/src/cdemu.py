@@ -176,7 +176,7 @@ class CDEmu (object):
                     self.__dbus_iface.DeviceUnload(device)
                 except:
                     self.__print_error(_("Failed to unload device %i: %s") % (device, sys.exc_value))
-                    continue
+                    return False
         else:
             device = string.atoi(arguments[0], 0)
             try:
