@@ -6,7 +6,10 @@ EXTRA_CFLAGS += -DVHBA_VERSION=\"$(VHBA_VERSION)\" -I$(PWD)
 obj-m += vhba.o
 
 PWD	?= `pwd`
-KDIR := /lib/modules/`uname -r`/build
+ifndef KERNELRELEASE
+	KERNELRELEASE := `uname -r`
+endif
+KDIR := /lib/modules/$(KERNELRELEASE)/build
 KMAKE := $(MAKE) -C $(KDIR) M=$(PWD)
 
 all: kernel.api.h modules
