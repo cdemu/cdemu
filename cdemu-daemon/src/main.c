@@ -39,17 +39,14 @@ static gboolean __cdemud_daemon_signal_handler (GIOChannel *source, GIOCondition
     if ((sig = daemon_signal_next()) <= 0) {
         cdemud_daemon_stop_daemon(self, NULL);
     }
-            
+        
     /* Dispatch signal */
     switch (sig) {
         case SIGINT:
         case SIGQUIT: 
-        case SIGTERM: {
-            cdemud_daemon_stop_daemon(self, NULL);
-            break;
-        }
+        case SIGTERM:
         case SIGHUP: {
-            /* FIXME: nothing here yet */
+            cdemud_daemon_stop_daemon(self, NULL);
             break;
         }
         default: {
@@ -80,14 +77,107 @@ static GOptionEntry option_entries[] = {
     { NULL }
 };
 
+static gboolean __run_daemon () {
+    gboolean succeeded = TRUE;
+    
+    GError *error = NULL;        
+    GObject *obj = NULL;
+
+    gboolean use_system_bus = TRUE;
+    
+    /* If ran in daemon mode, we always use system bus */
+    if (daemonize) {
+        bus = "system";
+    }
+    
+    g_debug("Starting daemon in %s mode with following parameters:\n"
+            " - num devices: %i\n"
+            " - ctl device: %s\n"
+            " - audio driver: %s\n"
+            " - bus type: %s\n",
+            daemonize ? "daemon" : "local", 
+            num_devices, 
+            ctl_device, 
+            audio_driver, 
+            bus);
+    
+    /* Decipher bus type */
+    if (!mirage_helper_strcasecmp(bus, "system")) {
+        use_system_bus = TRUE;
+    } else if (!mirage_helper_strcasecmp(bus, "session")) {
+        use_system_bus = FALSE;
+    } else {
+        g_warning("Invalid bus argument '%s', using default bus!\n", bus);
+        use_system_bus = TRUE;
+    }
+    
+    /* If ran in daemon mode, create PID file */
+    if (daemonize) {
+        if (daemon_pid_file_create() < 0) {
+            g_warning("Could not create PID file: %s.", strerror(errno));
+            daemon_retval_send(-1);
+            return FALSE;
+        }
+    }
+    
+    /* Create daemon */
+    obj = g_object_new(CDEMUD_TYPE_DAEMON, NULL);
+    
+    /* Initialize daemon */
+    if (cdemud_daemon_initialize(CDEMUD_DAEMON(obj), num_devices, ctl_device, audio_driver, use_system_bus, &error)) {
+        /* Initialize signal handling */
+        if (daemon_signal_init(SIGINT, SIGQUIT, SIGHUP, SIGTERM, 0) == 0) {
+            gint signal_fd = daemon_signal_fd();
+            GIOChannel *signal_channel = g_io_channel_unix_new(signal_fd);
+            
+            g_io_add_watch(signal_channel, G_IO_IN, __cdemud_daemon_signal_handler, CDEMUD_DAEMON(obj));
+            
+            /* If ran in daemon mode, send signal to parent */
+            if (daemonize) {
+                daemon_retval_send(0);
+            }
+        
+            /* Start the daemon */
+            if (!cdemud_daemon_start_daemon(CDEMUD_DAEMON(obj), &error)) {
+                g_warning("Failed to start daemon: %s\n", error->message);
+                g_error_free(error);
+                succeeded = FALSE;
+            }
+        
+            /* Close signal handling */
+            daemon_signal_done();
+            g_io_channel_unref(signal_channel);
+        } else {
+            g_warning("Could not initialize signal handling: %s.", strerror(errno));
+            daemon_retval_send(-1);
+            succeeded = FALSE;
+        }
+    } else {
+        g_warning("Daemon initialization failed: %s\n", error->message);
+        g_error_free(error);
+        daemon_retval_send(-1);
+        succeeded = FALSE;
+    }
+    
+    g_object_unref(obj);
+
+    /* If ran in daemon mode, remove PID file */
+    if (daemonize) {
+        daemon_pid_file_remove();
+    }
+    
+    return succeeded;
+}
+
 int main (int argc, char *argv[]) {    
+    gint retval;
     pid_t pid;
     
     /* Glib's commandline parser */
     GError *error = NULL;
     GOptionContext *option_context = NULL;
     gboolean succeeded = FALSE;
-    
+        
     g_thread_init(NULL);
     
     option_context = g_option_context_new("- CDEmu Daemon");
@@ -98,7 +188,7 @@ int main (int argc, char *argv[]) {
     if (!succeeded) {
         g_print("Failed to parse options: %s\n", error->message);
         g_error_free(error);
-        return 1;
+        return -1;
     }
     
     /* Set indetification string for the daemon for both syslog and PID file */
@@ -109,13 +199,12 @@ int main (int argc, char *argv[]) {
     
     /* Check if we are called with -k parameter */
     if (daemon_kill) {
-        gint ret;
         /* Kill daemon with SIGINT */
-        if ((ret = daemon_pid_file_kill_wait(SIGINT, 5)) < 0) {
+        if ((retval = daemon_pid_file_kill_wait(SIGINT, 5)) < 0) {
             g_print("Failed to kill daemon.\n");
         }
         
-        return ret < 0 ? 1 : 0;
+        return retval;
     }
     
     g_type_init();
@@ -123,12 +212,6 @@ int main (int argc, char *argv[]) {
     /* Now, either we're called in non-daemon/local or in daemon mode */
     if (daemonize) {
         /* *** Daemon mode *** */
-        /* Basically, we hook libdaemon's functionality in here; as cdemud-daemon
-           and cdemud-device part are free of anything specific to libdaemon, we
-           need to install pid file, signal handler, appropriate I/O channel, and
-           notification via daemon_log/syslog */
-        gint signal_fd = 0;
-        GIOChannel *signal_channel = NULL;
         
         /* Log handler */
         g_log_set_default_handler(__cdemud_daemon_daemon_log_handler, NULL);
@@ -136,7 +219,7 @@ int main (int argc, char *argv[]) {
         /* Check that the daemon is not rung twice a the same time */
         if ((pid = daemon_pid_file_is_running()) >= 0) {
             g_warning("Daemon already running on PID file %u\n", pid);
-            return 1;
+            return -1;
         }
         
         /* Prepare for return value passing from the initialization procedure of 
@@ -147,120 +230,31 @@ int main (int argc, char *argv[]) {
         if ((pid = daemon_fork()) < 0) {
             /* Exit on error */
             daemon_retval_done();
-            return 1;
-        } else if (pid) { /* The parent */
-            gint ret;
-        
+            return -1;
+        } else if (pid) { /* The parent */        
             /* Wait for 20 seconds for the return value passed from the daemon process */
-            if ((ret = daemon_retval_wait(20)) < 0) {
+            if ((retval = daemon_retval_wait(20)) < 0) {
                 g_warning("Could not recieve return value from daemon process.\n");
-                return 255;
+                return retval;
             }
             
-            if (ret) {
-                g_warning("Daemon returned %i.", ret);
+            if (retval) {
+                g_warning("Daemon returned %i.", retval);
             } else {
-                g_debug("Daemon returned %i.", ret);
+                g_debug("Daemon returned %i.", retval);
             }
 
-            return ret;
-        } else {
-            /* Create the PID file */
-            if (daemon_pid_file_create() < 0) {
-                g_warning("%s: Could not create PID file: %s.", __func__, strerror(errno));
-                goto return_err;
-            }
-    
-            /* Initialize signal handling */
-            if (daemon_signal_init(SIGINT, SIGQUIT, SIGHUP, SIGTERM, 0) < 0) {
-                g_warning("%s: Could not register signal handlers: %s.", __func__, strerror(errno));
-                goto remove_pid;
-            }
-            
-            /* Create daemon and initialize it */
-            GError *error = NULL;
-            GObject *obj = NULL;
-            obj = g_object_new(CDEMUD_TYPE_DAEMON, NULL);
-            
-            /* Initialize daemon; when running in daemon mode, we -always- use system bus */
-            if (!cdemud_daemon_initialize(CDEMUD_DAEMON(obj), num_devices, ctl_device, audio_driver, TRUE, &error) < 0) {
-                g_warning("Daemon initialization failed: %s\n", error->message);
-                goto signal_done;
-            }
-            
-            /* Create signal handle and put I/O channel on top of it */
-            signal_fd = daemon_signal_fd();
-            signal_channel = g_io_channel_unix_new(signal_fd);
-            g_io_add_watch(signal_channel, G_IO_IN, __cdemud_daemon_signal_handler, CDEMUD_DAEMON(obj));
-            
-            /* Send OK to parent */
-            daemon_retval_send(0);
-            
-            /* Start the daemon */
-            if (!cdemud_daemon_start_daemon(CDEMUD_DAEMON(obj), &error)) {
-                g_warning("Failed to start daemon: %s\n", error->message);
-                goto signal_done;
-            }
-            /* *** */
-            
-            /* Close signal handle */
-            daemon_signal_done();
-            
-            /* Remove PID file */
-            daemon_pid_file_remove();
-            
-            g_debug("Goodbye, galaxy...\n");
-            return 0;
-            
-            /* Error bail path */
-signal_done:
-            daemon_signal_done();
-//destroy_obj:
-            g_object_unref(obj);
-remove_pid:
-            daemon_pid_file_remove();
-return_err:
-            daemon_retval_send(1);
-            return -1;
+            return retval;
+        } else {           
+            retval = __run_daemon(); 
+            retval -= 1; /* True/False -> 0/-1 */
         }
     } else {
-        /* *** Local service mode *** */
-        GError *error = NULL;        
-        GObject *obj = NULL;
-        gboolean use_system_bus = TRUE;
+        /* *** Local mode *** */
         
-        g_debug("Starting daemon locally with following parameters:\n"
-                " - num devices: %i\n"
-                " - ctl device: %s\n"
-                " - audio driver: %s\n"
-                " - bus type: %s\n", num_devices, ctl_device, audio_driver, bus);
-        
-        if (!mirage_helper_strcasecmp(bus, "system")) {
-            use_system_bus = TRUE;
-        } else if (!mirage_helper_strcasecmp(bus, "session")) {
-            use_system_bus = FALSE;
-        } else {
-            g_warning("Invalid bus argument '%s', using default bus!\n", bus);
-            use_system_bus = TRUE;
-        }
-        
-        /* Create daemon */
-        obj = g_object_new(CDEMUD_TYPE_DAEMON, NULL);
-
-        /* Initialize daemon, passing commandline options to initialization */
-        if (cdemud_daemon_initialize(CDEMUD_DAEMON(obj), num_devices, ctl_device, audio_driver, use_system_bus, &error)) {
-            /* Start the daemon */
-            if (!cdemud_daemon_start_daemon(CDEMUD_DAEMON(obj), &error)) {
-                g_warning("Failed to start daemon: %s\n", error->message);
-                g_error_free(error);
-            }
-        } else {
-            g_warning("Daemon initialization failed: %s\n", error->message);
-            g_error_free(error);
-        }
-        g_object_unref(obj);
-        return 0;
+        retval = __run_daemon(); 
+        retval -= 1; /* True/False -> 0/-1 */
     }
     
-    return 0;
+    return retval;
 }
