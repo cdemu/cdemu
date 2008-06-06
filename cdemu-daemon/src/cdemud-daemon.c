@@ -187,7 +187,7 @@ static gboolean __cdemud_daemon_build_device_mapping_callback (gpointer data) {
         GIOChannel *ch = NULL;
         gint fd = 0;
         gint ioctl_ret = 0;
-        gint32 id[4];
+        gint32 id[4] = {0};
         
         __cdemud_daemon_get_device(self, i, &dev, NULL);
         ch = g_object_get_data(dev, "iochannel");
@@ -746,7 +746,7 @@ static void __cdemud_daemon_finalize (GObject *obj) {
     
     /* Free version string */
     g_free(_priv->version);
-    
+        
     /* Chain up to the parent class */
     return G_OBJECT_CLASS(parent_class)->finalize(obj);
 }
