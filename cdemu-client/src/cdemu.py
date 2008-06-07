@@ -170,13 +170,18 @@ class CDEmu (object):
             except:
                 self.__print_error(_("Failed to get number of devices: %s") % (sys.exc_value))
                 return False
-             
+
+            unload_fail = False
             for device in range(0, nr_devices):
                 try:
                     self.__dbus_iface.DeviceUnload(device)
                 except:
                     self.__print_error(_("Failed to unload device %i: %s") % (device, sys.exc_value))
-                    return False
+                    unload_fail = True
+                    continue
+            if unload_fail:
+                return False
+
         else:
             device = string.atoi(arguments[0], 0)
             try:
