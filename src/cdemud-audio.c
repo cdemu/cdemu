@@ -169,9 +169,6 @@ gboolean cdemud_audio_initialize (CDEMUD_Audio *self, gchar *driver, gint *cur_s
     _priv->cur_sector_ptr = cur_sector_ptr;
     
     _priv->status = AUDIO_STATUS_NOSTATUS;
-        
-    /* Initialize libao */
-    ao_initialize();
 	
 	/* Get driver ID */
     if (!strcmp(driver, "default")) {
@@ -349,7 +346,6 @@ static void __cdemud_audio_finalize (GObject *obj) {
         
     /* Close device */
     ao_close(_priv->device);
-    ao_shutdown();    
     
     /* Chain up to the parent class */
     return G_OBJECT_CLASS(parent_class)->finalize(obj);
