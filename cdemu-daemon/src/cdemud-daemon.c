@@ -340,6 +340,9 @@ gboolean cdemud_daemon_initialize (CDEMUD_Daemon *self, gint num_devices, gchar 
     /* Glib's main loop */
     _priv->main_loop = g_main_loop_new(NULL, FALSE);
     
+    /* Initialize libao */
+    ao_initialize();
+    
     /* Initialize our DBUS interface; unless told to use system bus, we'll use
        session one */
     dbus_g_object_type_install_info(CDEMUD_TYPE_DAEMON, &dbus_glib_cdemud_daemon_object_info);
@@ -746,7 +749,10 @@ static void __cdemud_daemon_finalize (GObject *obj) {
     
     /* Free version string */
     g_free(_priv->version);
-        
+    
+    /* Shutdown libao */
+    ao_shutdown();
+    
     /* Chain up to the parent class */
     return G_OBJECT_CLASS(parent_class)->finalize(obj);
 }
