@@ -37,9 +37,9 @@ typedef struct {
     /* Device stuff */
     gint number;
     gchar *device_name;
-    
+
     /* Device mutex */
-    GStaticMutex device_mutex;
+    GMutex *device_mutex;
     
     /* Command */
     CDEMUD_Command *cmd;
@@ -2861,7 +2861,7 @@ gint cdemud_device_execute(CDEMUD_Device *self, CDEMUD_Command *cmd) {
             CDEMUD_DEBUG(self, DAEMON_DEBUG_DEV_PC_DUMP, "%s: command: %s\n", __func__, packet_commands[i].debug_name);
             
             /* Lock */
-            g_static_mutex_lock(&_priv->device_mutex);
+            g_mutex_lock(_priv->device_mutex);
             
             /* FIXME: If there is deferred error sense available, return CHECK CONDITION
                with that sense. We do not execute requested command. */
@@ -2880,7 +2880,7 @@ gint cdemud_device_execute(CDEMUD_Device *self, CDEMUD_Command *cmd) {
             _priv->cmd->out_len = _priv->cur_len;
 
             /* Unlock */
-            g_static_mutex_unlock(&_priv->device_mutex);
+            g_mutex_unlock(_priv->device_mutex);
             
             CDEMUD_DEBUG(self, DAEMON_DEBUG_DEV_PC_TRACE, "%s: command completed with status %d\n\n", __func__, status);
             
@@ -2909,7 +2909,7 @@ gboolean cdemud_device_initialize (CDEMUD_Device *self, gint number, gchar *audi
     _priv->device_name = g_strdup_printf("cdemu%i", number);
     
     /* Init device mutex */
-    g_static_mutex_init(&_priv->device_mutex);
+    _priv->device_mutex = g_mutex_new();
     
     /* Set mirage object */
     _priv->mirage = mirage;
@@ -3017,9 +3017,9 @@ gboolean cdemud_device_get_status (CDEMUD_Device *self, gboolean *loaded, gchar 
     CDEMUD_DevicePrivate *_priv = CDEMUD_DEVICE_GET_PRIVATE(self);
     gboolean succeeded = TRUE;
     
-    g_static_mutex_lock(&_priv->device_mutex);
+    g_mutex_lock(_priv->device_mutex);
     succeeded = __cdemud_device_get_status(self, loaded, image_type, file_names, error);
-    g_static_mutex_unlock(&_priv->device_mutex);
+    g_mutex_unlock(_priv->device_mutex);
     
     return succeeded;
 }
@@ -3071,9 +3071,9 @@ gboolean cdemud_device_load_disc (CDEMUD_Device *self, gchar **file_names, GErro
     CDEMUD_DevicePrivate *_priv = CDEMUD_DEVICE_GET_PRIVATE(self);
     gboolean succeeded = TRUE;
         
-    g_static_mutex_lock(&_priv->device_mutex);
+    g_mutex_lock(_priv->device_mutex);
     succeeded = __cdemud_device_load_disc(self, file_names, error);
-    g_static_mutex_unlock(&_priv->device_mutex);
+    g_mutex_unlock(_priv->device_mutex);
     
     return succeeded;
 }
@@ -3110,9 +3110,9 @@ gboolean cdemud_device_unload_disc (CDEMUD_Device *self, GError **error) {
     CDEMUD_DevicePrivate *_priv = CDEMUD_DEVICE_GET_PRIVATE(self);
     gboolean succeeded = TRUE;
     
-    g_static_mutex_lock(&_priv->device_mutex);
+    g_mutex_lock(_priv->device_mutex);
     succeeded = __cdemud_device_unload_disc(self, error);
-    g_static_mutex_unlock(&_priv->device_mutex);
+    g_mutex_unlock(_priv->device_mutex);
     
     return succeeded;
 }
@@ -3337,11 +3337,11 @@ gboolean cdemud_device_get_option (CDEMUD_Device *self, gchar *option_name, GPtr
             gboolean succeeded = FALSE;
             
             /* Lock */
-            g_static_mutex_lock(&_priv->device_mutex);
+            g_mutex_lock(_priv->device_mutex);
             /* Get option */
             succeeded = device_options[i].get_func(self, option_values, error);
             /* Unlock */
-            g_static_mutex_unlock(&_priv->device_mutex);
+            g_mutex_unlock(_priv->device_mutex);
 
             return succeeded;
         }
@@ -3377,11 +3377,11 @@ gboolean cdemud_device_set_option (CDEMUD_Device *self, gchar *option_name, GPtr
             }
             
             /* Lock */
-            g_static_mutex_lock(&_priv->device_mutex);
+            g_mutex_lock(_priv->device_mutex);
             /* Get option */
             succeeded = device_options[i].set_func(self, option_values, error);
             /* Unlock */
-            g_static_mutex_unlock(&_priv->device_mutex);
+            g_mutex_unlock(_priv->device_mutex);
             
             /* Signal that option has been changed */
             if (succeeded) {
@@ -3504,6 +3504,9 @@ static void __cdemud_device_finalize (GObject *obj) {
     g_free(_priv->id_product_id);
     g_free(_priv->id_revision);
     g_free(_priv->id_vendor_specific);
+    
+    /* Free mutex */
+    g_mutex_free(_priv->device_mutex);
     
     /* Chain up to the parent class */
     return G_OBJECT_CLASS(parent_class)->finalize(obj);
