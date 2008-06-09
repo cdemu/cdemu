@@ -42,6 +42,7 @@ typedef struct {
 /* Used by IMAGE_ANALYZER_TYPE_APPLICATION */
 GType image_analyzer_application_get_type (void);
 
+extern gchar *file_to_open;
 
 /******************************************************************************\
  *                                 Public API                                 *
