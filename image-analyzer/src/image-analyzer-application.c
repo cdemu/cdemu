@@ -1041,6 +1041,16 @@ static GtkWidget *__image_analyzer_application_build_treeview (IMAGE_ANALYZER_Ap
 gboolean image_analyzer_application_run (IMAGE_ANALYZER_Application *self, GError **error) {
     IMAGE_ANALYZER_ApplicationPrivate *_priv = IMAGE_ANALYZER_APPLICATION_GET_PRIVATE(self);
     
+    /* Open file specified on command line */
+    if(file_to_open && g_file_test (file_to_open, G_FILE_TEST_EXISTS)) {
+        gchar **filenames = NULL;
+
+        filenames = g_new0(gchar *, 2); /* NULL-terminated */
+        filenames[0] = file_to_open;
+        __image_analyzer_open_image(self, filenames, NULL);
+        g_strfreev (filenames);
+    }
+
     /* Show window */
     gtk_widget_show_all(_priv->window);
     
