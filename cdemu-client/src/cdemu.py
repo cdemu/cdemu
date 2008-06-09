@@ -39,12 +39,17 @@ class CDEmu (object):
     __bus_type = "system" # Use system bus as hard-coded default
     
     def __init__ (self):
-        # Load options; look only in ~/.cdemu (which has to be created manually)
-        path = '~/.cdemu'
-        
+        # Load options; Try "~/.cdemu" first, then try "/etc/cdemu.conf" next.
+        paths = (os.path.expanduser("~/.cdemu"), "/etc/cdemu.conf")
+        path = "(not found)"
+        for path_inst in paths:
+            if os.path.exists(path_inst):
+                path = path_inst
+                break
+
         try:
             config = ConfigParser.ConfigParser()
-            config.read([os.path.expanduser(path)])
+            config.read([path])
         
             if config.has_section("defaults"):
                 # Read default bus type
