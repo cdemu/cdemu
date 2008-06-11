@@ -17,6 +17,7 @@
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
 import sys
+import os
 import traceback
 
 import gconf
@@ -127,12 +128,14 @@ class gCDEmu_Applet (gnomeapplet.Applet):
             popup_menu_xml += "<menuitem name='notifications' verb='notifications' label='%s' type='toggle'/>" % (_("Show _notifications"))
         popup_menu_xml += "<separator />"
         popup_menu_xml += "<menuitem name='about' verb='about' label='%s' pixtype='stock' pixname='gnome-stock-about' />" % (_("_About"))
+        popup_menu_xml += "<menuitem name='help' verb='help' label='%s' pixtype='stock' pixname='gtk-help' />" % (_("_Help"))
         popup_menu_xml += "</popup>"
         
         # We will install custom UI handlers for other menu elements, so verbs
         # are not needed
         popup_menu_verbs = [
             ( "about", lambda w,d: self.__verb_about() ),
+            ( "help",  lambda w,d: self.__verb_help()  ),
         ]
         
         popup = self.get_popup_component()
@@ -245,7 +248,14 @@ class gCDEmu_Applet (gnomeapplet.Applet):
         self.__about.hide()
         
         return
-    
+
+    def __verb_help (self):
+        # Try to launch GNOME 2 Help Browser
+        yelp_uri = "file://" + config.yelp_dir + "C/gcdemu.xml"
+        print "Launching %s in help browser." % (yelp_uri)
+        os.system("yelp " + yelp_uri)
+
+        return
     
     def notification (self, summary, body, icon_name=None):
         if self.__show_notifications:
