@@ -253,7 +253,7 @@ class gCDEmu_Applet (gnomeapplet.Applet):
         # Try to launch GNOME 2 Help Browser
         yelp_uri = "file://" + config.yelp_dir + "C/gcdemu.xml"
         print "Launching %s in help browser." % (yelp_uri)
-        os.system("yelp " + yelp_uri)
+        os.spawnlp(os.P_NOWAIT, 'yelp', 'yelp', yelp_uri)
 
         return
     
