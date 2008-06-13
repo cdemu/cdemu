@@ -2,25 +2,25 @@
 # Copyright (C) 2006-2008 Rok Mandeljc
 # This file is distributed under the same license as the gCDEmu package.
 # Rok Mandeljc <rok.mandeljc@email.si>, 2006-2008.
-#
-#
+# 
+# 
 msgid ""
 msgstr ""
 "Project-Id-Version: gCDEmu 1.1.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2008-05-31 17:18+0200\n"
-"PO-Revision-Date: 2008-05-04 12:11+0200\n"
+"POT-Creation-Date: 2008-06-13 15:11+0200\n"
+"PO-Revision-Date: 2008-06-13 15:12+0200\n"
 "Last-Translator: Rok Mandeljc <rok.mandeljc@email.si>\n"
 "Language-Team: Slovenian\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
-"Content-Transfer-Encoding: 8bit\n"
+"Content-Transfer-Encoding: 8bit"
 
-#: ../src/applet.py:100 ../src/device.py:475
+#: ../src/applet.py:101 ../src/device.py:475
 msgid "Error"
 msgstr "Napaka"
 
-#: ../src/applet.py:114
+#: ../src/applet.py:115
 msgid ""
 "gCDEmu is an applet for controlling CDEmu\n"
 "devices via CDEmu daemon."
@@ -28,49 +28,53 @@ msgstr ""
 "gCDEmu je programček za upravljanje CDEmu\n"
 "naprav prek CDEmu demona."
 
-#: ../src/applet.py:116
+#: ../src/applet.py:117
 msgid "The CDEmu project website"
 msgstr "Domača stran projekta CDEmu"
 
-#: ../src/applet.py:120
+#: ../src/applet.py:121
 msgid "translator-credits"
 msgstr "Rok Mandeljc <rok.mandeljc@email.si>"
 
-#: ../src/applet.py:125
+#: ../src/applet.py:126
 msgid "Use _system bus"
 msgstr "Uporabi _sistemsko vodilo"
 
-#: ../src/applet.py:127
+#: ../src/applet.py:128
 msgid "Show _notifications"
 msgstr "Prikaži o_bvestila"
 
-#: ../src/applet.py:129
+#: ../src/applet.py:130
 msgid "_About"
 msgstr "_O programu"
 
-#: ../src/applet.py:176
+#: ../src/applet.py:131
+msgid "_Help"
+msgstr "_Pomoč"
+
+#: ../src/applet.py:179
 msgid "Daemon started"
 msgstr "Demon zagnan"
 
-#: ../src/applet.py:176
+#: ../src/applet.py:179
 msgid "CDEmu daemon has been started."
 msgstr "CDEmu demon je bil zagnan."
 
-#: ../src/applet.py:184
+#: ../src/applet.py:187
 msgid "Daemon stopped"
 msgstr "Demon ustavljen"
 
-#: ../src/applet.py:184
+#: ../src/applet.py:187
 msgid "CDEmu daemon has been stopped."
 msgstr "CDEmu demon je bil ustavljen."
 
-#: ../src/applet.py:372
+#: ../src/applet.py:382
 #, python-format
 msgid "CDEmu daemon version %s detected, but at least version %s is required!"
 msgstr ""
 "Zaznal sem CDEmu daemon različice %s, potrebna pa je vsaj različica %s!"
 
-#: ../src/applet.py:376
+#: ../src/applet.py:386
 msgid "Incompatible daemon version"
 msgstr "Nezdružljiva različica demona"
 
@@ -307,3 +311,4 @@ msgstr "Prikaži o_bvestila?"
 #: ../src/gcdemu.schemas.in.h:3
 msgid "Use system bus (instead of session bus)?"
 msgstr "Uporabi sistemsko vodilo (namesto sejnega vodila)?"
+
