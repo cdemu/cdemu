@@ -95,9 +95,10 @@ System vs. session bus:
 ~~~~~~~~~~~~~~~~~~~~~~~
 When connecting to daemon, cdemu client can use either session or system bus. By
 hard-coded default, it uses system bus. The default bus to be used can be specified
-in ~/.cdemu file, with following format:
+via /etc/cdemu.conf or ~/.cdemu file, in following format:
 
-# This is example cdemu client config file. Save it as ~/.cdemu.
+# This is example cdemu client config file. 
+# Save it as /etc/cdemu.conf or ~/.cdemu.
 
 [defaults]
 #bus=system
