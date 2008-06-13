@@ -81,7 +81,7 @@ class gCDEmu_Applet (gnomeapplet.Applet):
         self.__gconf_client = gconf.client_get_default()
         self.__gconf_key_path = self.get_preferences_key()
         if self.__gconf_key_path == None:
-            self.__gconf_key_path = "/apps/gcdemu-applet-standalone"
+            self.__gconf_key_path = "/apps/gcdemu-applet-standalone/prefs"
         
         # Logo; load the SVG, scaled to 156x156
         self.__pixbuf_logo = gtk.gdk.pixbuf_new_from_file_at_size(config.image_dir + "gcdemu.svg", 156, 156)
