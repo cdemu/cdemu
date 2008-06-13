@@ -2,6 +2,7 @@
     <schemalist>
         <schema>
             <key>/schemas/apps/gcdemu-applet/prefs/notifications</key>
+            <applyto>/apps/gcdemu-applet-standalone/prefs/notifications</applyto>
             <owner>gcdemu-applet</owner>
             <type>bool</type>
             <default>true</default>
@@ -11,6 +12,7 @@
         </schema>
         <schema>
             <key>/schemas/apps/gcdemu-applet/prefs/use_system_bus</key>
+            <applyto>/apps/gcdemu-applet-standalone/prefs/use_system_bus</applyto>
             <owner>gcdemu-applet</owner>
             <type>bool</type>
             <default>true</default>
@@ -20,6 +22,7 @@
         </schema>
         <schema>
             <key>/schemas/apps/gcdemu-applet/prefs/icon_name</key>
+            <applyto>/apps/gcdemu-applet-standalone/prefs/icon_name</applyto>
             <owner>gcdemu-applet</owner>
             <type>string</type>
             <default>gcdemu.svg</default>
