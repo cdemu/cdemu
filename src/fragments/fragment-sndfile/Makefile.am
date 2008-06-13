@@ -2,7 +2,6 @@ INCLUDES = \
     -I$(top_srcdir)/src/libmirage \
     $(glib_CFLAGS) \
     $(gobject_CFLAGS) \
-    $(gmodule_CFLAGS) \
     $(libsndfile_CFLAGS)
 
 plugindir = $(MIRAGE_PLUGIN_DIR)
@@ -20,7 +19,6 @@ fragment_sndfile_la_SOURCES = \
 fragment_sndfile_la_LIBADD = \
     $(glib_LIBS) \
     $(gobject_LIBS) \
-    $(gmodule_LIBS) \
     $(libsndfile_LIBS)
 
 fragment_sndfile_la_LDFLAGS = \

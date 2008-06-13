@@ -1,8 +1,7 @@
 INCLUDES = \
     -I$(top_srcdir)/src/libmirage \
     $(glib_CFLAGS) \
-    $(gobject_CFLAGS) \
-    $(gmodule_CFLAGS)
+    $(gobject_CFLAGS)
     
 plugindir = $(MIRAGE_PLUGIN_DIR)
 
@@ -21,7 +20,6 @@ image_daa_la_SOURCES = \
 image_daa_la_LIBADD = \
     $(glib_LIBS) \
     $(gobject_LIBS) \
-    $(gmodule_LIBS) \
     $(zlib_LIBS)
 
 image_daa_la_LDFLAGS = \

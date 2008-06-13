@@ -5,8 +5,7 @@ BUILT_SOURCES = image-cue-parser.h
 INCLUDES = \
     -I$(top_srcdir)/src/libmirage \
     $(glib_CFLAGS) \
-    $(gobject_CFLAGS) \
-    $(gmodule_CFLAGS)
+    $(gobject_CFLAGS)
 
 plugindir = $(MIRAGE_PLUGIN_DIR)
 
@@ -26,8 +25,7 @@ image_cue_la_SOURCES = \
     
 image_cue_la_LIBADD = \
     $(glib_LIBS) \
-    $(gobject_LIBS) \
-    $(gmodule_LIBS)
+    $(gobject_LIBS)
 
 image_cue_la_LDFLAGS = \
     -module \
