@@ -2,13 +2,13 @@
 # Copyright (C) 2008 Marcel Hoppe
 # This file is distributed under the same license as the gCDEmu package.
 # Marcel Hoppe <hoppe.marcel@gmx.de>, 2008.
-# 
-# 
+#
+#
 msgid ""
 msgstr ""
 "Project-Id-Version: gCDEmu 1.1.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2008-05-22 17:55+0200\n"
+"POT-Creation-Date: 2008-06-13 12:04+0200\n"
 "PO-Revision-Date: 2008-06-02 13:11+0200\n"
 "Last-Translator: Marcel Hoppe <hoppe.marcel@gmx.de>\n"
 "Language-Team: German\n"
@@ -16,11 +16,11 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: ../src/applet.py:100 ../src/device.py:475
+#: ../src/applet.py:101 ../src/device.py:475
 msgid "Error"
 msgstr "Fehler"
 
-#: ../src/applet.py:114
+#: ../src/applet.py:115
 msgid ""
 "gCDEmu is an applet for controlling CDEmu\n"
 "devices via CDEmu daemon."
@@ -28,48 +28,52 @@ msgstr ""
 "gCDEmu ist ein Applet zum kontrollieren des CDEmu\n"
 "Laufwerke über CDEmu Daemon."
 
-#: ../src/applet.py:116
+#: ../src/applet.py:117
 msgid "The CDEmu project website"
 msgstr "Die Webseite des CDEmu Projekts"
 
-#: ../src/applet.py:120
+#: ../src/applet.py:121
 msgid "translator-credits"
 msgstr "Marcel Hoppe <hoppe.marcel@gmx.de>"
 
-#: ../src/applet.py:125
+#: ../src/applet.py:126
 msgid "Use _system bus"
 msgstr "Benutze _System Bus"
 
-#: ../src/applet.py:127
+#: ../src/applet.py:128
 msgid "Show _notifications"
 msgstr "Zeige _Notiz"
 
-#: ../src/applet.py:129
+#: ../src/applet.py:130
 msgid "_About"
 msgstr "_Über"
 
-#: ../src/applet.py:176
+#: ../src/applet.py:131
+msgid "_Help"
+msgstr "_Hilfe"
+
+#: ../src/applet.py:179
 msgid "Daemon started"
 msgstr "Daemon gestartet"
 
-#: ../src/applet.py:176
+#: ../src/applet.py:179
 msgid "CDEmu daemon has been started."
 msgstr "CDEmu Daemon wurde gestartet."
 
-#: ../src/applet.py:184
+#: ../src/applet.py:187
 msgid "Daemon stopped"
 msgstr "Daemon gestoppt"
 
-#: ../src/applet.py:184
+#: ../src/applet.py:187
 msgid "CDEmu daemon has been stopped."
 msgstr "CDEmu Daemon wurde gestoppt"
 
-#: ../src/applet.py:372
+#: ../src/applet.py:382
 #, python-format
 msgid "CDEmu daemon version %s detected, but at least version %s is required!"
 msgstr "CDEmu Daemon Version %s gefunden, aber die Version %s wird benötigt!"
 
-#: ../src/applet.py:376
+#: ../src/applet.py:386
 msgid "Incompatible daemon version"
 msgstr "Unverträgliche Daemon Version"
 
@@ -135,7 +139,6 @@ msgstr "Datei Name: "
 #: ../src/device.py:186
 msgid "Device mapping"
 msgstr "Laufwerk mapping"
-""
 
 #: ../src/device.py:198
 msgid "SCSI CD-ROM device: "
@@ -307,4 +310,3 @@ msgstr "Zeige Notiz"
 #: ../src/gcdemu.schemas.in.h:3
 msgid "Use system bus (instead of session bus)?"
 msgstr "Benutze System Bus (anstelle des Sitzungs Bus)?"
-
