@@ -29,12 +29,8 @@
 /******************************************************************************\
  *                                Main function                               *
 \******************************************************************************/
-
-gchar *file_to_open = NULL;
-
 static GOptionEntry option_entries[] = {
-    { "file", 'f', 0, G_OPTION_ARG_FILENAME, &file_to_open, "File to open", "path" },
-    { NULL }
+       { NULL }
 };
 
 int main (int argc, char **argv) {
@@ -42,7 +38,10 @@ int main (int argc, char **argv) {
     GError *error = NULL;
     GOptionContext *option_context = NULL;
     gboolean succeeded = FALSE;
-
+    
+    gchar **open_image = NULL;
+    gint i;
+    
     /* Parse command line */
     option_context = g_option_context_new("- Mirage Image Analyzer");
     g_option_context_add_main_entries(option_context, option_entries, NULL);
@@ -54,7 +53,14 @@ int main (int argc, char **argv) {
         g_error_free(error);
         return -1;
     }
-
+    
+    /* Command-line parser has removed all options from argv; so it's just app
+       name and image files now */
+    open_image = g_new0(gchar *, argc); /* App name + filenames = filenames + NULL */
+    for (i = 0; i < argc; i++) {
+        open_image[i] = g_strdup(argv[i+1]);
+    }
+    
     /* Initialize GType */
     g_type_init();
     
@@ -66,12 +72,13 @@ int main (int argc, char **argv) {
     application = g_object_new(IMAGE_ANALYZER_TYPE_APPLICATION, NULL);
     
     /* Run application */
-    if (!image_analyzer_application_run(IMAGE_ANALYZER_APPLICATION(application), &error)) {
+    if (!image_analyzer_application_run(IMAGE_ANALYZER_APPLICATION(application), open_image, &error)) {
         g_warning("Failed to run application: %s\n", error->message);
         g_error_free(error);
     }
         
     g_object_unref(application);
+    g_strfreev(open_image);
     
     return 0;
 }

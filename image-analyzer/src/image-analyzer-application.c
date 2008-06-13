@@ -1038,17 +1038,12 @@ static GtkWidget *__image_analyzer_application_build_treeview (IMAGE_ANALYZER_Ap
 /******************************************************************************\
  *                                 Public API                                 *
 \******************************************************************************/
-gboolean image_analyzer_application_run (IMAGE_ANALYZER_Application *self, GError **error) {
+gboolean image_analyzer_application_run (IMAGE_ANALYZER_Application *self, gchar **open_image, GError **error) {
     IMAGE_ANALYZER_ApplicationPrivate *_priv = IMAGE_ANALYZER_APPLICATION_GET_PRIVATE(self);
     
-    /* Open file specified on command line */
-    if(file_to_open && g_file_test (file_to_open, G_FILE_TEST_EXISTS)) {
-        gchar **filenames = NULL;
-
-        filenames = g_new0(gchar *, 2); /* NULL-terminated */
-        filenames[0] = file_to_open;
-        __image_analyzer_open_image(self, filenames, NULL);
-        g_strfreev (filenames);
+    /* Open image, if provided */
+    if (g_strv_length(open_image)) {
+        __image_analyzer_open_image(self, open_image, NULL);
     }
 
     /* Show window */

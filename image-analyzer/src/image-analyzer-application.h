@@ -42,12 +42,11 @@ typedef struct {
 /* Used by IMAGE_ANALYZER_TYPE_APPLICATION */
 GType image_analyzer_application_get_type (void);
 
-extern gchar *file_to_open;
 
 /******************************************************************************\
  *                                 Public API                                 *
 \******************************************************************************/
-gboolean image_analyzer_application_run (IMAGE_ANALYZER_Application *self, GError **error);
+gboolean image_analyzer_application_run (IMAGE_ANALYZER_Application *self, gchar **open_image, GError **error);
 gboolean image_analyzer_application_get_loaded_image (IMAGE_ANALYZER_Application *self, GObject **disc, GError **error);
 
 G_END_DECLS
