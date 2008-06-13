@@ -48,6 +48,48 @@ class gCDEmu_Applet (gnomeapplet.Applet):
         self.__gobject_init__()
         return
 
+    def __cb_gconf_client_notify (self, client, id, entry, user_data):        
+        if entry.get_key() == self.__gconf_key_path + "/icon_name":
+            icon_name = entry.get_value().get_string()
+            print "Icon name changed to: %s" % (icon_name)
+                        
+            try:
+                self.__pixbuf_icon = gtk.gdk.pixbuf_new_from_file_at_size(config.image_dir + icon_name, 204, 204)
+            except gobject.GError, e:
+                message = gtk.MessageDialog(None, 0, gtk.MESSAGE_ERROR, gtk.BUTTONS_CLOSE, e.message)
+                message.set_title(_("Error"))
+                message.run()
+                message.destroy()
+            
+            self.__refresh_icon()
+            
+        elif entry.get_key() == self.__gconf_key_path + "/notifications":
+            value = entry.get_value().get_bool()
+            print "Show notifications changed to: %i" % (value)
+            
+            # Does user want us to use notifications?
+            self.__show_notifications = value
+            
+            # Update popup menu
+            self.__popup.set_prop("/commands/notifications", "state", "%i" % (self.__show_notifications))
+        elif entry.get_key() == self.__gconf_key_path + "/use_system_bus":
+            value = entry.get_value().get_bool()
+            print "Use system bus changed to: %i" % (value)
+            
+            # Should we use system bus?
+            self.__use_system_bus = value
+            
+            # Update popup menu
+            self.__popup.set_prop("/commands/system_bus", "state", "%i" % (self.__use_system_bus))
+
+            # Switch bus and reconnect
+            self.__switch_bus()
+            self.__cleanup()
+            self.__connect()
+        else:
+            print "Unhandled key: %s\n" % (entry.get_key())
+        
+            
     def setup_applet (self):
         # Initialize variables
         self.__gconf_client = None
@@ -81,31 +123,23 @@ class gCDEmu_Applet (gnomeapplet.Applet):
         self.__gconf_client = gconf.client_get_default()
         self.__gconf_key_path = self.get_preferences_key()
         if self.__gconf_key_path == None:
+            self.__gconf_client.add_dir('/apps/gcdemu-applet-standalone/prefs', gconf.CLIENT_PRELOAD_NONE)
             self.__gconf_key_path = "/apps/gcdemu-applet-standalone/prefs"
+        
+        # Watch over our config
+        self.__gconf_client.notify_add(self.__gconf_key_path, self.__cb_gconf_client_notify)
         
         # Logo; load the SVG, scaled to 156x156
         self.__pixbuf_logo = gtk.gdk.pixbuf_new_from_file_at_size(config.image_dir + "gcdemu.svg", 156, 156)
         
-        # Icon; we support icon overriding via G-conf key (the path is assumed to
-        # be relative to gCDEmu's pixmap dir). Maximum possible size of menu is 
-        # 204, so upon loading we scale the icon to that...
-        icon_name = self.__gconf_client.get_string(self.__gconf_key_path + "/icon_name")
-        if icon_name == None:
-            icon_name = "gcdemu.svg"
-        # And since we allow users to mess with this, we have to provide them
-        # with error message when things get FUBAR...
-        try:
-            self.__pixbuf_icon = gtk.gdk.pixbuf_new_from_file_at_size(config.image_dir + icon_name, 204, 204)
-        except gobject.GError, e:
-            message = gtk.MessageDialog(None, 0, gtk.MESSAGE_ERROR, gtk.BUTTONS_CLOSE, e.message)
-            message.set_title(_("Error"))
-            message.run()
-            message.destroy()
-            return False
-
+        # Icon image
         self.__image = gtk.Image()
         self.add(self.__image)
         self.set_background_widget(self)
+        
+        # To load the icon, we pretend that icon path g-conf key has changed and
+        # let the callback do the rest for us...
+        self.__gconf_client.notify(self.__gconf_key_path + "/icon_name")
         
         # Set up About dialog
         self.__about = gtk.AboutDialog()
@@ -140,6 +174,7 @@ class gCDEmu_Applet (gnomeapplet.Applet):
         
         popup = self.get_popup_component()
         popup.connect("ui-event", self.__cb_popup_ui_event)
+        self.__popup = popup
 
         # Setup menu        
         self.setup_menu(popup_menu_xml, popup_menu_verbs, None)
@@ -201,24 +236,17 @@ class gCDEmu_Applet (gnomeapplet.Applet):
         # For some reason, it seems that callback is called every time menu is
         # dropped and one of the toggle buttons is set; we need to do some additional
         # filtering (i.e. compare state string with current flag setting)
+        value = bool(int(state_string))
         if verb == "notifications":
-            if bool(int(state_string)) != self.__show_notifications:
+            if value != self.__show_notifications:
                 print "Notifications flag change"
-                # Does user want us to use notifications?
-                self.__show_notifications = bool(int(state_string))
                 # Store the settings
-                self.__gconf_client.set_bool(self.__gconf_key_path + "/notifications", self.__show_notifications)
+                self.__gconf_client.set_bool(self.__gconf_key_path + "/notifications", value)
         elif verb == "system_bus":
-            if bool(int(state_string)) != self.__use_system_bus:
+            if value != self.__use_system_bus:
                 print "System bus flag change"
-                # Should we use system bus?
-                self.__use_system_bus = bool(int(state_string))
                 # Store the settings
-                self.__gconf_client.set_bool(self.__gconf_key_path + "/use_system_bus", self.__use_system_bus)
-                # Switch bus and reconnect
-                self.__switch_bus()
-                self.__cleanup()
-                self.__connect()
+                self.__gconf_client.set_bool(self.__gconf_key_path + "/use_system_bus", value)
         else:
             print "Unknown verb: %s!" % (verb)
         
