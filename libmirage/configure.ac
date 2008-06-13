@@ -50,9 +50,8 @@ PKG_CHECK_MODULES(gmodule, gmodule-2.0 >= 2.6)
 PKG_CHECK_MODULES(sndfile, sndfile >= 1.0.0)
 
 # Zlib check
-AC_CHECK_LIB([z], [inflate],, AC_MSG_ERROR("*** zlib library not found ***"))
 AC_CHECK_HEADERS([zlib.h],, AC_MSG_ERROR("*** zlib headers not found ***"))
-zlib_LIBS="-lz"
+AC_CHECK_LIB([z], [inflate], [zlib_LIBS="-lz"], AC_MSG_ERROR("*** zlib library not found ***"))
 AC_SUBST(zlib_LIBS)
 
 # Compile with more warnings
