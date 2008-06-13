@@ -18,7 +18,7 @@ msgstr ""
 
 #. No harm, just print a warning
 #: ../src/cdemu.py:60
-#, fuzzy, python-format
+#, python-format
 msgid "Failed to load configuration from file '%s': %s"
 msgstr "Mislyktes i å laste konfigurasjon fra filen '%s': %s"
 
@@ -27,7 +27,7 @@ msgid "Unknown option"
 msgstr "Ukjent valg"
 
 #: ../src/cdemu.py:95
-#, fuzzy, python-format
+#, python-format
 msgid "Failed to connect to daemon (bus: '%s')!"
 msgstr "Mislyktes i å koble til demon (buss: '%s')!"
 
@@ -46,7 +46,7 @@ msgid "Failed to get number of devices: %s"
 msgstr "Mislyktes i å innhente antall enheter: %s"
 
 #: ../src/cdemu.py:137 ../src/cdemu.py:214
-#, fuzzy, python-format
+#, python-format
 msgid "Failed to get status of device %i: %s"
 msgstr "Mislyktes i å innhente status for enhet %i: %s"
 
@@ -66,7 +66,6 @@ msgid "Failed to unload device %i: %s"
 msgstr "Mislyktes i å løse ut enhet %i: %s"
 
 #: ../src/cdemu.py:208
-#, fuzzy
 msgid "Devices' status:"
 msgstr "Status enheter:"
 
@@ -89,7 +88,6 @@ msgid "FILENAME"
 msgstr "FIL NAVN"
 
 #: ../src/cdemu.py:232
-#, fuzzy
 msgid "Device mapping:"
 msgstr "Enhetenes tilordninger:"
 
@@ -102,12 +100,11 @@ msgid "SCSI generic"
 msgstr "SCSI generisk"
 
 #: ../src/cdemu.py:238
-#, fuzzy, python-format
+#, python-format
 msgid "Failed to get device mapping of device %i: %s"
 msgstr "Mislyktes i å innhente avlusnings-maske for enhet %i: %s"
 
 #: ../src/cdemu.py:256
-#, fuzzy
 msgid "Devices' daemon debug masks:"
 msgstr "Enhetenes demon avlusnings-masker:"
 
@@ -116,58 +113,57 @@ msgid "DEBUG MASK"
 msgstr "AVLUSNINGS-MASKE"
 
 #: ../src/cdemu.py:264 ../src/cdemu.py:274
-#, fuzzy, python-format
+#, python-format
 msgid "Failed to get daemon debug mask of device %i: %s"
 msgstr "Mislyktes i å innhente demon avlusnings-maske for enhet %i: %s"
 
 #: ../src/cdemu.py:277
-#, fuzzy, python-format
+#, python-format
 msgid "Daemon debug mask of device %i: 0x%X"
 msgstr "Demon avlusnings-maske for enhet %i: 0x%X"
 
 #: ../src/cdemu.py:289
-#, fuzzy, python-format
+#, python-format
 msgid "Setting daemon debug mask of all devices to 0x%X."
 msgstr "Setter demonens avlusnings-maske for alle enheter til 0x%X."
 
 #: ../src/cdemu.py:294 ../src/cdemu.py:302
-#, fuzzy, python-format
+#, python-format
 msgid "Failed to set daemon debug mask of device %i to 0x%X: %s"
 msgstr ""
 "Mislyktes i å sette demonens avlusnings-maske for enhet %i til 0x%X: %s"
 
 #: ../src/cdemu.py:298
-#, fuzzy, python-format
+#, python-format
 msgid "Setting daemon debug mask of device %i to 0x%X."
 msgstr "Setter demonens avlusnings-maske for enhet %i til 0x%X."
 
 #: ../src/cdemu.py:321
-#, fuzzy
 msgid "Devices' library debug masks:"
 msgstr "Enhetenes bibliotek avlusnings-masker:"
 
 #: ../src/cdemu.py:329 ../src/cdemu.py:339
-#, fuzzy, python-format
+#, python-format
 msgid "Failed to get library debug mask of device %i: %s"
 msgstr "Mislyktes i å innhente bibliotek avlusnings-maske for enhet %i: %s"
 
 #: ../src/cdemu.py:342
-#, fuzzy, python-format
+#, python-format
 msgid "Library debug mask of device %i: 0x%X"
 msgstr "Bibliotek avlusnings-maske for enhet %i: 0x%X"
 
 #: ../src/cdemu.py:354
-#, fuzzy, python-format
+#, python-format
 msgid "Setting library debug mask of all devices to 0x%X."
 msgstr "Setter bibliotek avlusnings-maske for alle enheter til 0x%X."
 
 #: ../src/cdemu.py:359 ../src/cdemu.py:367
-#, fuzzy, python-format
+#, python-format
 msgid "Failed to set library debug mask of device %i to 0x%X: %s"
 msgstr "Mislyktes i å sette bibliotek avlusnings-maske for enhet %i til 0x%X: %s"
 
 #: ../src/cdemu.py:363
-#, fuzzy, python-format
+#, python-format
 msgid "Setting library debug mask of device %i to 0x%X."
 msgstr "Setter bibliotek avlusnings-maske for enhet %i til 0x%X."
 
@@ -180,7 +176,7 @@ msgid "ENABLED"
 msgstr "AKTIVERT"
 
 #: ../src/cdemu.py:393 ../src/cdemu.py:402
-#, fuzzy, python-format
+#, python-format
 msgid "Failed to get DPM emulation flag of device %i: %s"
 msgstr "Mislyktes i å innhente DPM emulerings flagg for enhet %i: %s"
 
@@ -190,17 +186,17 @@ msgid "DPM emulation flag of device %i: %i"
 msgstr "DPM emulerings flaggene til enheten %i: %i"
 
 #: ../src/cdemu.py:417
-#, fuzzy, python-format
+#, python-format
 msgid "Setting DPM emulation flag of all devices to %i."
 msgstr "Setter DPM emulerings flagg for alle enheter til %i."
 
 #: ../src/cdemu.py:422 ../src/cdemu.py:430
-#, fuzzy, python-format
+#, python-format
 msgid "Failed to set DPM emulation flag of device %i to %i: %s"
 msgstr "Mislyktes i å sette DPM emulerings flagg for enhet %i til %i: %s"
 
 #: ../src/cdemu.py:426
-#, fuzzy, python-format
+#, python-format
 msgid "Setting DPM emulation flag of device %i to %i."
 msgstr "Setter DPM emulerings flagg for enhet %i til %i."
 
@@ -209,7 +205,7 @@ msgid "Devices' transfer rate emulation flag:"
 msgstr "Enhetenes overførings-hastighet emulasjons flagg:"
 
 #: ../src/cdemu.py:456 ../src/cdemu.py:465
-#, fuzzy, python-format
+#, python-format
 msgid "Failed to get transfer rate emulation flag of device %i: %s"
 msgstr "Mislyktes i å innhente overførings-hastighet emulerings flagg for enhet %i: %s"
 
@@ -219,23 +215,22 @@ msgid "Transfer rate emulation flag of device %i: %i"
 msgstr "Overførings-hastighet emulerings flagg for enhet %i: %i"
 
 #: ../src/cdemu.py:480
-#, fuzzy, python-format
+#, python-format
 msgid "Setting transfer rate emulation flag of all devices to %i."
 msgstr "Setter overførings-hastighet emulerings flagg for alle enheter til %i."
 
 #: ../src/cdemu.py:485 ../src/cdemu.py:493
-#, fuzzy, python-format
+#, python-format
 msgid "Failed to set transfer rate emulation flag of device %i to %i: %s"
 msgstr ""
 "Mislyktes i å sette overførings-hastighet emulerings flagg for enhet %i til %i: %s"
 
 #: ../src/cdemu.py:489
-#, fuzzy, python-format
+#, python-format
 msgid "Setting transfer rate emulation flag of device %i to %i."
 msgstr "Setter overførings-hastighet emulerings flagg for enhet %i til %i."
 
 #: ../src/cdemu.py:512
-#, fuzzy
 msgid "Devices' IDs:"
 msgstr "Enhetenes IDer:"
 
@@ -244,32 +239,32 @@ msgid "DEVICE ID"
 msgstr "ENHETS ID"
 
 #: ../src/cdemu.py:522 ../src/cdemu.py:534
-#, fuzzy, python-format
+#, python-format
 msgid "Failed to get device ID of device %i: %s"
 msgstr "Mislyktes i å innhente enhets ID for enhet %i: %s"
 
 #: ../src/cdemu.py:537
-#, fuzzy, python-format
+#, python-format
 msgid "Device ID of device %i: %s"
 msgstr "Enhets ID for enhet %i: %s"
 
 #: ../src/cdemu.py:550
-#, fuzzy, python-format
+#, python-format
 msgid "Setting device ID of all devices to %s."
 msgstr "Setter enhets ID for alle enheter til %s."
 
 #: ../src/cdemu.py:555 ../src/cdemu.py:563
-#, fuzzy, python-format
+#, python-format
 msgid "Failed to set device ID of device %i to %s: %s"
 msgstr "Mislyktes i å sette enhets ID for enhet %i til %s: %s"
 
 #: ../src/cdemu.py:559
-#, fuzzy, python-format
+#, python-format
 msgid "Setting device ID of device %i to %s."
 msgstr "Setter enhets ID for enhet %i til %s."
 
 #: ../src/cdemu.py:576
-#, fuzzy, python-format
+#, python-format
 msgid "Failed to enumerate supported parsers: %s"
 msgstr "Mislyktes i å innhente liste over støttede bilde-tolkere: %s"
 
@@ -318,7 +313,7 @@ msgid "Parser with ID '%s' not found!"
 msgstr "Bilde-tolker med ID '%s' ble ikke funnet!"
 
 #: ../src/cdemu.py:617
-#, fuzzy, python-format
+#, python-format
 msgid "Failed to enumerate supported fragments: %s"
 msgstr "Mislyktes i å innhente liste over støttede fragmenter: %s"
 
@@ -347,24 +342,22 @@ msgid "Fragment with ID '%s' not found!"
 msgstr "Fragment med ID '%s' ble ikke funnet!"
 
 #: ../src/cdemu.py:661
-#, fuzzy, python-format
+#, python-format
 msgid "Failed to enumerate supported daemon debug masks: %s"
 msgstr ""
 "Mislyktes i å innhente liste over støttede demon avlusnings-masker: %s"
 
 #: ../src/cdemu.py:664
-#, fuzzy
 msgid "Supported daemon debug masks:"
 msgstr "Støttede demon avlusnings-masker:"
 
 #: ../src/cdemu.py:679
-#, fuzzy, python-format
+#, python-format
 msgid "Failed to enumerate supported library debug masks: %s"
 msgstr ""
 "Mislyktes i å innhente liste over støttede bibliotek avlusnings-masker: %s"
 
 #: ../src/cdemu.py:682
-#, fuzzy
 msgid "Supported library debug masks:"
 msgstr "Støttede bibliotek avlusnings-masker:"
 
@@ -389,7 +382,7 @@ msgid "Daemon version: %s"
 msgstr "Demon versjon: %s"
 
 #: ../src/cdemu.py:715
-#, fuzzy, python-format
+#, python-format
 msgid "Invalid bus parameter '%s', using default!"
 msgstr "Ugyldig buss parameter '%s', benytter uteblivelses-instilling!"
 
@@ -463,7 +456,7 @@ msgstr "laster enheten"
 
 #: ../src/cdemu.py:785
 msgid "<device>"
-msgstr "<enheter>"
+msgstr "<enhet>"
 
 #: ../src/cdemu.py:786
 msgid "unloads the device"
@@ -474,23 +467,19 @@ msgid "displays the devices' status"
 msgstr "viser enhetenes status"
 
 #: ../src/cdemu.py:800
-#, fuzzy
 msgid "displays the device mapping information"
 msgstr "viser enhetstilordnings-informasjonen"
 
 #: ../src/cdemu.py:806 ../src/cdemu.py:813 ../src/cdemu.py:820
 #: ../src/cdemu.py:827
-#, fuzzy
 msgid "<device> [new value]"
 msgstr "<enhet> [ny verdi]"
 
 #: ../src/cdemu.py:807
-#, fuzzy
 msgid "displays/sets daemon debug mask"
 msgstr "viser/setter demonens avlusnings-maske"
 
 #: ../src/cdemu.py:814
-#, fuzzy
 msgid "displays/sets library debug mask"
 msgstr "viser/setter bibliotek avlusnings-maske"
 
@@ -511,7 +500,6 @@ msgstr ""
 "fabrikat_spesifikt]"
 
 #: ../src/cdemu.py:835
-#, fuzzy
 msgid "displays/sets device ID"
 msgstr "viser/setter enhets ID"
 
@@ -520,21 +508,18 @@ msgid "[parser_id]"
 msgstr "[tolker_id]"
 
 #: ../src/cdemu.py:842
-#, fuzzy
 msgid "enumerates supported parsers"
-msgstr "viser listen over støttede bilde-tolkere:"
+msgstr "viser listen over støttede bilde-tolkere"
 
 #: ../src/cdemu.py:848
 msgid "[fragment_id]"
 msgstr "[fragment_id]"
 
 #: ../src/cdemu.py:849
-#, fuzzy
 msgid "enumerates supported fragments"
-msgstr "viser listen over støttede fragmenter:"
+msgstr "viser listen over støttede fragmenter"
 
 #: ../src/cdemu.py:856
-#, fuzzy
 msgid "enumerates valid daemon debug masks"
 msgstr "viser listen over gyldige demon avlusnings-masker"
 

@@ -21,7 +21,6 @@ msgid "Error"
 msgstr "Feil"
 
 #: ../src/applet.py:115
-#, fuzzy
 msgid ""
 "gCDEmu is an applet for controlling CDEmu\n"
 "devices via CDEmu daemon."
@@ -41,7 +40,6 @@ msgid "Use _system bus"
 msgstr "Benytt _system buss"
 
 #: ../src/applet.py:128
-#, fuzzy
 msgid "Show _notifications"
 msgstr "Vis _beskjeder"
 
@@ -119,7 +117,6 @@ msgid "Daemon"
 msgstr "Demon"
 
 #: ../src/device.py:126
-#, fuzzy
 msgid "Library debug mask"
 msgstr "Bibliotek avlusnings-maske"
 
@@ -140,7 +137,6 @@ msgid "File name: "
 msgstr "Fil navn: "
 
 #: ../src/device.py:186
-#, fuzzy
 msgid "Device mapping"
 msgstr "Enhets tilordning"
 
@@ -154,7 +150,6 @@ msgstr "SCSI generisk enhet: "
 
 #. Device ID
 #: ../src/device.py:223
-#, fuzzy
 msgid "Device ID"
 msgstr "Enhets ID"
 
@@ -207,7 +202,7 @@ msgid "Device %i has been emptied."
 msgstr "Enhet %i har blitt løst ut."
 
 #: ../src/device.py:462
-#, fuzzy, python-format
+#, python-format
 msgid ""
 "Device %i has been changed its option:\n"
 "%s."
@@ -235,7 +230,7 @@ msgstr ""
 "%s"
 
 #: ../src/device.py:550
-#, fuzzy, python-format
+#, python-format
 msgid ""
 "Failed to set device ID for device %i to %s:\n"
 "%s"
@@ -244,7 +239,7 @@ msgstr ""
 "%s"
 
 #: ../src/device.py:567
-#, fuzzy, python-format
+#, python-format
 msgid ""
 "Failed to set DPM emulation for device %i to %i:\n"
 "%s"
@@ -253,7 +248,7 @@ msgstr ""
 "%s"
 
 #: ../src/device.py:584
-#, fuzzy, python-format
+#, python-format
 msgid ""
 "Failed to set transfer rate emulation for device %i to %i:\n"
 "%s"
@@ -262,7 +257,7 @@ msgstr ""
 "%s"
 
 #: ../src/device.py:594
-#, fuzzy, python-format
+#, python-format
 msgid ""
 "Failed to set daemon debug mask for device %i to 0x%X:\n"
 "%s"
@@ -271,7 +266,7 @@ msgstr ""
 "%s"
 
 #: ../src/device.py:604
-#, fuzzy, python-format
+#, python-format
 msgid ""
 "Failed to set library debug mask for device %i to 0x%X:\n"
 "%s"
@@ -293,7 +288,6 @@ msgid "Yes"
 msgstr "Ja"
 
 #: ../src/device.py:634
-#, fuzzy
 msgid "Unload"
 msgstr "Løs ut"
 
@@ -302,7 +296,6 @@ msgid "No"
 msgstr "Nei"
 
 #: ../src/device.py:639
-#, fuzzy
 msgid "Load"
 msgstr "Last inn"
 
@@ -311,7 +304,6 @@ msgid "Name of icon to use (relative to gCDEmu's pixmap dir)"
 msgstr "Navn på ikonet som skal brukes (relativt til gCDEmu sin pixmap folder)"
 
 #: ../src/gcdemu.schemas.in.h:2
-#, fuzzy
 msgid "Show notifications?"
 msgstr "Vis beskjeder?"
 
