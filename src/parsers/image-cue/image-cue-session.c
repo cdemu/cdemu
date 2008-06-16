@@ -189,7 +189,9 @@ gboolean __mirage_session_cue_add_index (MIRAGE_Session *self, gint number, gint
         if (number == 1 && _priv->cur_pregap_set) {
             /* If we have a pregap and this is index 1, we just need to 
                set the address where the track really starts */
-            gint track_start = address - _priv->cur_track_start;
+            gint track_start = 0;
+            mirage_track_get_track_start(MIRAGE_TRACK(cur_track), &track_start, NULL);
+            track_start += address - _priv->cur_track_start;
             mirage_track_set_track_start(MIRAGE_TRACK(cur_track), track_start, NULL);
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: track with pregap; setting track start to 0x%X\n", __func__, track_start);
         } else {
@@ -338,9 +340,39 @@ gboolean __mirage_session_cue_set_isrc (MIRAGE_Session *self, gchar *isrc, GErro
     return TRUE;
 }
 
+gboolean __mirage_session_cue_add_pregap (MIRAGE_Session *self, gint length, GError **error) {
+    GObject *cur_track = NULL;
+    gint track_start = 0;
+    
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: adding pregap (0x%X)\n", __func__, length);
+    
+    /* Add empty part */
+    if (!__mirage_session_cue_add_empty_part(self, length, error)) {
+        return FALSE;
+    }
+    
+    /* Adjust track start */
+    if (!mirage_session_get_track_by_index(self, -1, &cur_track, error)) {
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to get current track!\n", __func__);
+        return FALSE;
+    }
+    
+    mirage_track_get_track_start(MIRAGE_TRACK(cur_track), &track_start, NULL);
+    track_start += length;
+    mirage_track_set_track_start(MIRAGE_TRACK(cur_track), track_start, NULL);
+    
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: readjusted track start to 0x%X (%i)\n", __func__, track_start, track_start);
+    
+    g_object_unref(cur_track); /* Unref current track */
+    
+    return TRUE;
+}
+
 gboolean __mirage_session_cue_add_empty_part (MIRAGE_Session *self, gint length, GError **error) {
     GObject *cur_track = NULL;
     
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: adding empty part (0x%X)\n", __func__, length);
+
     if (!mirage_session_get_track_by_index(self, -1, &cur_track, error)) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to get current track!\n", __func__);
         return FALSE;

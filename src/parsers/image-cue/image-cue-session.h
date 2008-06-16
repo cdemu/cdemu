@@ -50,6 +50,7 @@ gboolean __mirage_session_cue_add_track (MIRAGE_Session *self, gint number, gcha
 gboolean __mirage_session_cue_add_index (MIRAGE_Session *self, gint number, gint address, GError **error);
 gboolean __mirage_session_cue_set_flag (MIRAGE_Session *self, gint flag, GError **error);
 gboolean __mirage_session_cue_set_isrc (MIRAGE_Session *self, gchar *isrc, GError **error);
+gboolean __mirage_session_cue_add_pregap (MIRAGE_Session *self, gint length, GError **error);
 gboolean __mirage_session_cue_add_empty_part (MIRAGE_Session *self, gint length, GError **error);
 
 G_END_DECLS
