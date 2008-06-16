@@ -79,6 +79,10 @@ gint yyerror (YYLTYPE *locp, void *scanner, MIRAGE_Disc *self, GError **error, c
 %token  <number>  PFRAME_
 %token  <number>  PLBA_
 
+%token  <number>  HEAD_TRACK_
+%token  <number>  MODE_
+%token  <number>  INDEX1_
+
 %start ccd_file
 
 %%
@@ -92,6 +96,7 @@ ccd_element     :   clonecd_section;
                 |   disc_section;
                 |   session_section;
                 |   entry_section;
+                |   track_section;
 
 clonecd_section :   HEAD_CLONECD_ VERSION_ { /* nothing to be done at the moment */ }
                     
@@ -107,6 +112,29 @@ entry_section   :   HEAD_ENTRY_ SESSION_ POINT_ ADR_ CONTROL_ TRACKNO_
                     AMIN_ ASEC_ AFRAME_ ALBA_ ZERO_ PMIN_ PSEC_ PFRAME_ 
                     PLBA_ {
                         if (!__mirage_disc_ccd_decode_entry_section(self, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, error)) {
+                            return -1;
+                        }
+                    }
+
+track_section   :   HEAD_TRACK_ {
+                        if (!__mirage_disc_ccd_set_current_track(self, $1, error)) {
+                            return -1;
+                        }
+                    } track_elements
+
+track_elements  :   track_element
+                |   track_elements track_element
+
+track_element   :   track_mode;
+                |   track_index1;
+
+track_mode      :   MODE_ {
+                        /* Nothing to do here; track type is already determined
+                           via other means */
+                    }
+
+track_index1    :   INDEX1_ {
+                        if (!__mirage_disc_ccd_track_set_index1(self, $1, error)) {
                             return -1;
                         }
                     }
