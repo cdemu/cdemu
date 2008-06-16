@@ -39,6 +39,8 @@ typedef struct {
     gchar *img_filename;
     gchar *sub_filename;
     
+    gint cur_track;
+    
     /* Parser info */
     MIRAGE_ParserInfo *parser_info;
 } MIRAGE_Disc_CCDPrivate;
@@ -70,6 +72,7 @@ static gboolean __mirage_disc_ccd_load_image (MIRAGE_Disc *self, gchar **filenam
 
     void *scanner = NULL;
     FILE *file = NULL;
+    gint i;
     
     /* For now, CCD parser supports only one-file images */
     if (g_strv_length(filenames) > 1) {
@@ -141,8 +144,64 @@ static gboolean __mirage_disc_ccd_load_image (MIRAGE_Disc *self, gchar **filenam
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: disc length implies DVD-ROM image\n", __func__);
         mirage_disc_set_medium_type(self, MIRAGE_MEDIUM_DVD, NULL);
     } else {
+        gint num_sessions = 0;
+        
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: disc length implies CD-ROM image\n", __func__);
         mirage_disc_set_medium_type(self, MIRAGE_MEDIUM_CD, NULL);
+        
+        /* CD-ROMs start at -150 as per Red Book... */
+        mirage_disc_layout_set_start_sector(self, -150, NULL);
+        
+        mirage_disc_get_number_of_sessions(self, &num_sessions, NULL);
+        
+        /* Give each first track in a session 150-sector pregap... */
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: since this is CD-ROM, we're adding 150-sector pregap to first tracks in all sessions\n", __func__);
+        for (i = 0; i < num_sessions; i++) {
+            GObject *session = NULL;
+            GObject *ftrack = NULL;
+            
+            if (!mirage_disc_get_session_by_index(self, i, &session, error)) {
+                MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: failed to get session with index %i!\n", __func__, i);
+                return FALSE;
+            }
+            
+            if (!mirage_session_get_track_by_index(MIRAGE_SESSION(session), 0, &ftrack, NULL)) {
+                MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: failed to first track of session with index %i!\n", __func__, i);
+                g_object_unref(session);
+                return FALSE;
+            }
+            
+            /* Add pregap fragment (empty) */
+            GObject *mirage = NULL;
+            if (!mirage_object_get_mirage(MIRAGE_OBJECT(self), &mirage, error)) {
+                MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: failed to get Mirage object!\n", __func__);
+                g_object_unref(session);
+                g_object_unref(ftrack);
+                return FALSE;
+            }
+            GObject *pregap_fragment = NULL;
+            mirage_mirage_create_fragment(MIRAGE_MIRAGE(mirage), MIRAGE_TYPE_FINTERFACE_NULL, "NULL", &pregap_fragment, error);
+            g_object_unref(mirage);
+            if (!pregap_fragment) {
+                MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: failed to create pregap fragment!\n", __func__);
+                g_object_unref(session);
+                g_object_unref(ftrack);
+                return FALSE;
+            }
+            mirage_track_add_fragment(MIRAGE_TRACK(ftrack), 0, &pregap_fragment, NULL);
+            mirage_fragment_set_length(MIRAGE_FRAGMENT(pregap_fragment), 150, NULL);
+            g_object_unref(pregap_fragment);
+            
+            /* Track starts at 150... well, unless it already has a pregap, in
+               which case they should stack */
+            gint old_start = 0;
+            mirage_track_get_track_start(MIRAGE_TRACK(ftrack), &old_start, NULL);
+            old_start += 150;
+            mirage_track_set_track_start(MIRAGE_TRACK(ftrack), old_start, NULL);
+        
+            g_object_unref(ftrack);
+            g_object_unref(session);
+        }
     }   
     
     return TRUE;
@@ -152,6 +211,40 @@ static gboolean __mirage_disc_ccd_load_image (MIRAGE_Disc *self, gchar **filenam
 /******************************************************************************\
  *                         Disc private functions                             *
 \******************************************************************************/
+gboolean __mirage_disc_ccd_track_set_index1 (MIRAGE_Disc *self, gint address, GError **error) {
+    MIRAGE_Disc_CCD *self_ccd = MIRAGE_DISC_CCD(self);
+    MIRAGE_Disc_CCDPrivate *_priv = MIRAGE_DISC_CCD_GET_PRIVATE(self_ccd);
+    GObject *track = NULL;
+    gint base_address = 0;
+    gint track_start = 0;
+    
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: setting start of Track %02i to address 0x%X (%i)\n", __func__, _priv->cur_track, address, address);
+    if (!mirage_disc_get_track_by_number(self, _priv->cur_track, &track, NULL)) {
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to get Track %02i!\n", __func__, _priv->cur_track);
+        return FALSE;
+    }
+    
+    mirage_track_layout_get_start_sector(MIRAGE_TRACK(track), &base_address, NULL);
+    track_start = address - base_address;
+    
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: base address 0x%X, track_start: 0x%X (%i)\n", __func__, base_address, track_start, track_start);
+    mirage_track_set_track_start(MIRAGE_TRACK(track), track_start, NULL);
+    
+    g_object_unref(track);
+    
+    return TRUE;
+}
+
+gboolean __mirage_disc_ccd_set_current_track (MIRAGE_Disc *self, gint track, GError **error) {
+    MIRAGE_Disc_CCD *self_ccd = MIRAGE_DISC_CCD(self);
+    MIRAGE_Disc_CCDPrivate *_priv = MIRAGE_DISC_CCD_GET_PRIVATE(self_ccd);
+    
+    _priv->cur_track = track;
+    
+    return TRUE;
+}
+
+
 gboolean __mirage_disc_ccd_decode_disc_section (MIRAGE_Disc *self, gint session, GError **error) {
     /* Nothing to do here, actually */
     return TRUE;
@@ -196,7 +289,7 @@ gboolean __mirage_disc_ccd_decode_entry_section (MIRAGE_Disc *self, gint session
             if (mirage_session_get_track_by_index(MIRAGE_SESSION(cur_session), -1, &prev_track, NULL)) {
                 gint prev_fragment_length = plba - _priv->prev_plba;
                 GObject *prev_fragment = NULL;
-                MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: setting length of previous track's fragment to 0x%X\n", __func__, prev_fragment_length);
+                MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: setting length of previous track's fragment to 0x%X\n", __func__, prev_fragment_length);
                 mirage_track_get_fragment_by_index(MIRAGE_TRACK(prev_track), -1, &prev_fragment, NULL);
                 mirage_fragment_set_length(MIRAGE_FRAGMENT(prev_fragment), prev_fragment_length, NULL);
                 g_object_unref(prev_fragment);
@@ -210,7 +303,7 @@ gboolean __mirage_disc_ccd_decode_entry_section (MIRAGE_Disc *self, gint session
                 return FALSE;
             }
             
-            /* Get Mirage and have it make us binary fragment */
+            /* Get Mirage and have it make us fragment */
             GObject *mirage = NULL;
 
             if (!mirage_object_get_mirage(MIRAGE_OBJECT(self), &mirage, error)) {
@@ -219,7 +312,27 @@ gboolean __mirage_disc_ccd_decode_entry_section (MIRAGE_Disc *self, gint session
                 g_object_unref(cur_session);
                 return FALSE;
             }
-
+            
+            if (point == 1 && plba) {
+                GObject *pregap_fragment = NULL;
+                MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: first track appears to contain %i-sector pregap\n", __func__, plba);
+                
+                mirage_mirage_create_fragment(MIRAGE_MIRAGE(mirage), MIRAGE_TYPE_FINTERFACE_NULL, "NULL", &pregap_fragment, error);
+                if (!pregap_fragment) {
+                    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: failed to create pregap fragment!\n", __func__);
+                    g_object_unref(mirage);
+                    g_object_unref(cur_track);
+                    g_object_unref(cur_session);
+                    return FALSE;
+                }
+                
+                mirage_track_add_fragment(MIRAGE_TRACK(cur_track), 0, &pregap_fragment, NULL);
+                mirage_fragment_set_length(MIRAGE_FRAGMENT(pregap_fragment), plba, NULL);
+                g_object_unref(pregap_fragment);
+                mirage_track_set_track_start(MIRAGE_TRACK(cur_track), plba, NULL);
+            }
+            
+            
             GObject *data_fragment = NULL;
             mirage_mirage_create_fragment(MIRAGE_MIRAGE(mirage), MIRAGE_TYPE_FINTERFACE_BINARY, _priv->img_filename, &data_fragment, error);
             g_object_unref(mirage);

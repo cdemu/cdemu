@@ -38,7 +38,7 @@
 NUMBER_     \-?[0-9]+|0x[0-9a-f]+
 
 HEADER_     \[[a-zA-Z0-9 ]+\]
-KEY_        [a-zA-Z0-9]+={NUMBER_}
+KEY_        [a-zA-Z0-9 ]+={NUMBER_}
 
 %{
 #include "image-ccd.h"
@@ -61,6 +61,9 @@ KEY_        [a-zA-Z0-9]+={NUMBER_}
         } else if (sscanf(yytext, "[Entry %i]", &value)) {
             yylval->number = value;
             return HEAD_ENTRY_;
+        } else if (sscanf(yytext, "[TRACK %i]", &value)) {
+            yylval->number = value;
+            return HEAD_TRACK_;
         }
     }
 }
@@ -137,6 +140,14 @@ KEY_        [a-zA-Z0-9]+={NUMBER_}
     } else if (sscanf(yytext, "PLBA = %i", &value)) {
         yylval->number = value;
         return PLBA_;
+    }
+    /* from [TRACK X] */
+    if (sscanf(yytext, "MODE = %i", &value)) {
+        yylval->number = value;
+        return MODE_;
+    } else if (sscanf(yytext, "INDEX 1 = %i", &value)) {
+        yylval->number = value;
+        return INDEX1_;
     }
 }
 
