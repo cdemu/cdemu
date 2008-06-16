@@ -176,10 +176,11 @@ songwriter_t    :   SONGWRITER_ STRING_ { g_free($2); /* Free STRING_ */ }
 title_t         :   TITLE_ STRING_ { g_free($2); /* Free STRING_ */ }
 
 track_empty_part:   PREGAP_ NUMBER_ {
-                        if (!__mirage_session_cue_add_empty_part(self, $2, error)) {
+                        /* Pregap takes some more work than postgap... */
+                        if (!__mirage_session_cue_add_pregap(self, $2, error)) {
                             return -1;
                         }
-                                            }
+                    }
                 |   POSTGAP_ NUMBER_ {
                         if (!__mirage_session_cue_add_empty_part(self, $2, error)) {
                             return -1;
