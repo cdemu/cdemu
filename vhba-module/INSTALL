@@ -1,0 +1,40 @@
+Installation Instructions
+*************************
+
+Copyright (C) 2008 The CDEMU Project.
+
+This file is free documentation; the CDEmu project gives
+unlimited permission to copy, distribute and modify it.
+
+Basic Installation
+==================
+
+The simplest way to compile this package is:
+
+  1. `cd' to the directory containing the package's source code.
+
+  2. Type `make' to compile the package.
+
+  4. Type `make install' to install the kernel module and other files. 
+     (Needs root permission)
+
+  5. You can remove the program binaries and object files from the
+     source code directory by typing `make clean'.  
+
+Compilers and Options
+=====================
+
+You can explicitly specify the kernel for which to compile the module for
+by setting the environment variable KERNELRELEASE. The default if it is not
+specified is 'uname -r' in other words your running kernel.
+
+It is also possible to set extra compiler flags through the EXTRA_CFLAGS 
+environment variable.
+
+Compiling For Multiple Architectures
+====================================
+
+This device driver was initially developed for use on 32 bit intel compatible
+processor architectures but may with differing levels of success be compiled
+for other kinds of processor architectures.
+
