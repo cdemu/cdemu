@@ -1,0 +1,35 @@
+VHBA
+v.1.1.0
+~~~~~~~~~~~~
+
+This is VHBA (Virtual SCSI Host Bus adapter), a Linux kernel module which
+acts as a low-level SCSI driver and which provides the SCSI layer with a 
+virtual SCSI adapter which can have multiple virtual devices. It is part of 
+the userspace-cdemu suite, a free, GPL CD/DVD-ROM device emulator for linux. 
+It is written in C.
+
+Its typical use in the CDEmu software suite is to provide virtual devices 
+that emulates real SCSI Optical (CD-ROM) devices. It works in cooperation with
+the CDEmu daemon and libMirage to emulate an Optical (CD-ROM) drive and disc
+with information contained in a disc image. For your information, a disc image
+is just a copy of the information stored on an actual disc.
+
+Requirements:
+~~~~~~~~~~~~~
+ - Kernel development headers.
+
+Installation:
+~~~~~~~~~~~~~
+
+Installation process is generic make, make install as described in
+INSTALL file.
+
+
+Contact information:
+~~~~~~~~~~~~~~~~~~~~
+
+CDEmu project's web page: http://cdemu.sourceforge.net
+CDEmu project's mailing list: cdemu-devel@lists.sourceforge.net
+
+Author can be directly contacted via e-mail address listed in AUTHORS file.
+
