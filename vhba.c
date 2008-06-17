@@ -1,7 +1,7 @@
 /*
  * vhba.c
  *
- * Copyright (C) 2007 Chia-I Wu
+ * Copyright (C) 2007 Chia-I Wu <b90201047 AT ntu DOT edu DOT tw>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
