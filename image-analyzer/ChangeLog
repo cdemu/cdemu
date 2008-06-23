@@ -1,0 +1,21 @@
+==========================================================================
+ Version 1.1.0   2008-06-29
+==========================================================================
+
+Rok Mandeljc:
+	* Many bugfixes.
+	* Many improvements to the code.
+	* Update documentation.
+	* Added disc topology graph.
+	* Make use of DPM data.
+
+Henrik Stokseth:
+	* Bugfixes.
+
+==========================================================================
+ Version 1.0.0   2007-12-24
+==========================================================================
+
+Rok Mandeljc:
+	* Initially wrote the whole Mirage Image Analyzer.
+
