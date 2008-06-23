@@ -1,0 +1,26 @@
+==========================================================================
+ Version 1.1.0   2008-06-29
+==========================================================================
+
+Henrik Stokseth:
+	* Added documentation.
+	* Bugfixes.
+
+Rok Mandeljc:
+	* Bugfixes.
+	* Added support for reporting device mappings.
+
+Pawel Rozanski:
+	* Bugfixes.
+	* Added kernel API tester.
+
+==========================================================================
+ Version 1.0.0   2007-12-24
+==========================================================================
+
+Pawel Rozanski:
+	* Bugfixes.
+
+Chia-I Wu:
+	* Added a complete rewrite of the CDEmu kernel module. 
+
