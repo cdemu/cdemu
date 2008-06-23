@@ -1,7 +1,9 @@
 SUBDIRS = \
    image-b6t \
+   image-c2d \
    image-ccd \
    image-cdi \
+   image-cif \
    image-cue \
    image-daa \
    image-iso \
