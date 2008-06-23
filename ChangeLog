@@ -1,0 +1,29 @@
+==========================================================================
+ Version 1.1.0   2008-06-29
+==========================================================================
+
+Rok Mandeljc:
+	* Many bugfixes.
+	* Many improvements to the code.
+	* Added mime-type support.
+	* Added documentation.
+	* Added DAA parser.
+	* Added DPM support to MDS parser.
+	* Added initial support for mmap'ed files.
+
+Henrik Stokseth:
+	* Bugfixes.
+	* Added support for TaO mode to NRG parser.
+	* Added CIF parser.
+	* Added C2D parser.
+
+==========================================================================
+ Version 1.0.0   2007-12-24
+==========================================================================
+
+Rok Mandeljc:
+	* Initially wrote the whole library.
+
+Henrik Stokseth:
+	* Reverse engineering work for MDS and NRG parsers.
+
