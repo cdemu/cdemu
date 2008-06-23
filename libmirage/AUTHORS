@@ -1,6 +1,9 @@
-Rok Mandeljc <rok DOT mandeljc AT email DOT si>
-    Initially wrote the whole libary.
+Rok Mandeljc <rok DOT mandeljc AT email DOT si>:
+	* Initially wrote the whole library.
+	* Wrote DAA parser.
+	* Added DPM support and transfer-rate emulation to MDS parser.
 
-Henrik Stokseth <henrik AT kabelkaos DOT net>
-    Reverse-engineering work (NRG+MDS parsers)
+Henrik Stokseth <henrik AT kabelkaos DOT net>:
+	* Reverse-engineering work (NRG and MDS parsers)
+	* Wrote CIF and C2D parsers.
 
