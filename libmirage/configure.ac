@@ -109,8 +109,10 @@ AC_CONFIG_FILES([
     src/libmirage/Makefile
     src/parsers/Makefile
     src/parsers/image-b6t/Makefile
+    src/parsers/image-c2d/Makefile
     src/parsers/image-ccd/Makefile
     src/parsers/image-cdi/Makefile
+    src/parsers/image-cif/Makefile
     src/parsers/image-cue/Makefile
     src/parsers/image-daa/Makefile
     src/parsers/image-iso/Makefile
