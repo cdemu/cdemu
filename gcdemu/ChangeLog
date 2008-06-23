@@ -1,1 +1,30 @@
+==========================================================================
+ Version 1.1.0   2008-06-29
+==========================================================================
+
+Marcel Hoppe:
+	* German translation.
+
+Rômulo Fernandes:
+	* Added new icon/logo.
+
+Rok Mandeljc:
+	* Many improvements to the code.
+	* Many bugfixes.
+	* Slovenian translation.
+	* Added reporting of device mappings.
+	* Added documentation.
+	* Added configuration parser.
+
+Henrik Stokseth:
+	* Norwegian translation.
+	* Bugfixes.
+	* Code improvements.
+
+==========================================================================
+ Version 1.0.0   2007-12-24
+==========================================================================
+
+Rok Mandeljc:
+	* Initially wrote the whole gCDEmu applet.
 
