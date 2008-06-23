@@ -1,0 +1,26 @@
+==========================================================================
+ Version 1.1.0   2008-06-29
+==========================================================================
+
+Marcel Hoppe:
+	* German translation.
+
+Rok Mandeljc:
+	* Added documentation.
+	* Slovenian translation.
+	* Added 'any' and 'all' keywords.
+	* Many improvements to the code.
+	* Added reporting of device mappings.
+	* Many bugfixes.
+
+Henrik Stokseth:
+	* Norwegian translation.
+	* Code improvements and bugfixes.
+
+==========================================================================
+ Version 1.0.0   2007-12-24
+==========================================================================
+
+Rok Mandeljc:
+	* Initially wrote the whole CDEmu client.
+
