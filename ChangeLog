@@ -1,0 +1,28 @@
+==========================================================================
+ Version 1.1.0   2008-06-29
+==========================================================================
+
+Rok Mandeljc:
+	* Many bugfixes.
+	* Many improvements to the code.
+	* Documentation.
+	* Wrote libao audio backend.
+	* Added reporting of device mappings.
+	* Added DPM and transfer-rate emulation.
+	* Added option interface.
+	* Improved signal handling.
+
+Henrik Stokseth:
+	* Bugfixes.
+
+==========================================================================
+ Version 1.0.0   2007-12-24
+==========================================================================
+
+Pawel Rozanski:
+	* Bugfixes.
+
+Rok Mandeljc:
+	* Bugfixes.
+	* Initially wrote the whole CDEmu daemon.
+
