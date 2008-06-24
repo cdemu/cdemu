@@ -23,7 +23,7 @@
 
 #include <endian.h>
 
-#define BIG_ENDIAN_BITLFIELD    (__BYTE_ORDER == __BIG_ENDIAN)
+#define BIG_ENDIAN_BITFIELD    (__BYTE_ORDER == __BIG_ENDIAN)
 #define LITTLE_ENDIAN_BITFIELD  (__BYTE_ORDER == __LITTLE_ENDIAN)
 
 
