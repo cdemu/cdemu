@@ -81,7 +81,9 @@ gint yyerror (YYLTYPE *locp, void *scanner, MIRAGE_Disc *self, GError **error, c
 
 %token  <number>  HEAD_TRACK_
 %token  <number>  MODE_
+%token  <number>  INDEX0_
 %token  <number>  INDEX1_
+%token  <string>  ISRC_
 
 %start ccd_file
 
@@ -126,15 +128,18 @@ track_elements  :   track_element
                 |   track_elements track_element
 
 track_element   :   track_mode;
+                |   track_index0;
                 |   track_index1;
+                |   track_isrc;
 
-track_mode      :   MODE_ {
-                        /* Nothing to do here; track type is already determined
-                           via other means */
-                    }
+track_mode      :   MODE_ { /* Nothing to do here */ }
+track_index0    :   INDEX0_ { /* Nothing to do here */ }
+track_index1    :   INDEX1_ { /* Nothing to do here */ }
 
-track_index1    :   INDEX1_ {
-                        if (!__mirage_disc_ccd_track_set_index1(self, $1, error)) {
+track_isrc      :   ISRC_ {
+                        gboolean succeeded = __mirage_disc_ccd_track_set_isrc(self, $1, error);
+                        g_free($1); /* Free ISRC_ */
+                        if (!succeeded) {
                             return -1;
                         }
                     }
