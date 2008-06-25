@@ -36,9 +36,10 @@
 
 /* Some general stuff */
 NUMBER_     \-?[0-9]+|0x[0-9a-f]+
+WORD_       [A-Za-z_0-9]+
 
 HEADER_     \[[a-zA-Z0-9 ]+\]
-KEY_        [a-zA-Z0-9 ]+={NUMBER_}
+KEY_        [a-zA-Z0-9 ]+={NUMBER_}|[a-zA-Z0-9 ]+={WORD_}
 
 %{
 #include "image-ccd.h"
@@ -70,6 +71,7 @@ KEY_        [a-zA-Z0-9 ]+={NUMBER_}
 
 {KEY_}        {
     int value;
+    char str[256] = "";
     /* from [CloneCD] */
     if (sscanf(yytext, "Version = %i", &value)) {
         yylval->number = value;
@@ -145,9 +147,15 @@ KEY_        [a-zA-Z0-9 ]+={NUMBER_}
     if (sscanf(yytext, "MODE = %i", &value)) {
         yylval->number = value;
         return MODE_;
+    } else if (sscanf(yytext, "INDEX 0 = %i", &value)) {
+        yylval->number = value;
+        return INDEX0_;
     } else if (sscanf(yytext, "INDEX 1 = %i", &value)) {
         yylval->number = value;
         return INDEX1_;
+    } else if (sscanf(yytext, "ISRC=%s", str)) {
+        yylval->string = g_strdup(str);
+        return ISRC_;
     }
 }
 
