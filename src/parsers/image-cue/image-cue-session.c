@@ -223,6 +223,14 @@ gboolean __mirage_session_cue_add_index (MIRAGE_Session *self, gint number, gint
                 }
                 
                 g_object_unref(prev_track);
+            } else {
+                /* If this is the first track, index is 1 and its address isn't
+                   zero, we also have a pregap (first track doesn't seem to have
+                   index 0) */
+                if (number == 1 && address != 0) {
+                    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: first track has pregap; setting track start to 0x%X\n", __func__, address);
+                    mirage_track_set_track_start(MIRAGE_TRACK(cur_track), address, NULL);
+                }
             }
             
             /* Now current track; we only create fragment here and set its offset */
