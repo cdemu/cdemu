@@ -197,17 +197,17 @@ msgstr "Błąd ustawiania flagi emulacji DPM dla urządzenia %i na %i: %s"
 #: ../src/cdemu.py:426
 #, python-format
 msgid "Setting DPM emulation flag of device %i to %i."
-msgstr "Ustawiam DPM emulacijo naprave %i na %i."
+msgstr "Ustawiam flagę emulacji DPM dla urządzenia %i na %i."
 
 #: ../src/cdemu.py:449
 msgid "Devices' transfer rate emulation flag:"
-msgstr "Nastavitve emulacije hitrosti prenosa naprav:"
+msgstr "Flaga emulacji szybkości transferu dla urządzeń:"
 
 #: ../src/cdemu.py:456 ../src/cdemu.py:465
 #, python-format
 msgid "Failed to get transfer rate emulation flag of device %i: %s"
 msgstr ""
-"Błąd podczas pridobivanju nastavitve emulacije hitrosti prenosa naprave %i: %"
+"Błąd pobrania flagi emulacji szybkości urządzenia %i: %"
 "s"
 
 #: ../src/cdemu.py:468
@@ -218,61 +218,61 @@ msgstr "Flaga emulacji szybkości transmisji urządzenia %i: %i"
 #: ../src/cdemu.py:480
 #, python-format
 msgid "Setting transfer rate emulation flag of all devices to %i."
-msgstr "Ustawiam emulacijo hitrosti prenosa vseh naprav na %i."
+msgstr "Ustawiam flagę emulacji szybkości wszystkich urządzeń na %i."
 
 #: ../src/cdemu.py:485 ../src/cdemu.py:493
 #, python-format
 msgid "Failed to set transfer rate emulation flag of device %i to %i: %s"
 msgstr ""
-"Błąd podczas nastavljanju emulacije hitrosti prenosa naprave %i na %i: %s"
+"Błąd ustawiania flagi emulacji szybkości urządzenia %i na %i: %s"
 
 #: ../src/cdemu.py:489
 #, python-format
 msgid "Setting transfer rate emulation flag of device %i to %i."
-msgstr "Ustawiam emulacijo hitrosti prenosa naprave %i na %i."
+msgstr "Ustawiam flagę emulacji szybkości urządzenia %i na %i."
 
 #: ../src/cdemu.py:512
 msgid "Devices' IDs:"
-msgstr "ID naprav:"
+msgstr "ID urządzenia:"
 
 #: ../src/cdemu.py:513
 msgid "DEVICE ID"
-msgstr "ID NAPRAVE"
+msgstr "ID URZĄDZENIA"
 
 #: ../src/cdemu.py:522 ../src/cdemu.py:534
 #, python-format
 msgid "Failed to get device ID of device %i: %s"
-msgstr "Błąd podczas pridobivanju ID naprave %i: %s"
+msgstr "Błąd pobrania ID urządzenia %i: %s"
 
 #: ../src/cdemu.py:537
 #, python-format
 msgid "Device ID of device %i: %s"
-msgstr "ID naprave %i: %s"
+msgstr "ID urządzenia %i: %s"
 
 #: ../src/cdemu.py:550
 #, python-format
 msgid "Setting device ID of all devices to %s."
-msgstr "Ustawiam ID vseh naprav na %s."
+msgstr "Ustawiam ID wszystkich urządzeń na %s."
 
 #: ../src/cdemu.py:555 ../src/cdemu.py:563
 #, python-format
 msgid "Failed to set device ID of device %i to %s: %s"
-msgstr "Błąd podczas nastavljanju ID naprave %i na %s: %s"
+msgstr "Błąd podczas ustawiania ID urządzenia %i na %s: %s"
 
 #: ../src/cdemu.py:559
 #, python-format
 msgid "Setting device ID of device %i to %s."
-msgstr "Ustawiam ID naprave %i na %s."
+msgstr "Ustawiam ID urządzenia %i na %s."
 
 #: ../src/cdemu.py:576
 #, python-format
 msgid "Failed to enumerate supported parsers: %s"
-msgstr "Błąd podczas pridobivanju seznama podprtih parserjev: %s"
+msgstr "Błąd wyliczenia wspieranych parserów: %s"
 
 #. Print all parsers
 #: ../src/cdemu.py:581
 msgid "Supported parsers:"
-msgstr "Podprti parserji:"
+msgstr "Wspierane parsery:"
 
 #: ../src/cdemu.py:591
 #, python-format
@@ -460,11 +460,11 @@ msgstr "opróżnia urządzenie"
 
 #: ../src/cdemu.py:793
 msgid "displays the devices' status"
-msgstr "wyświetla stanje naprav(e)"
+msgstr "wyświetla status urządzeń"
 
 #: ../src/cdemu.py:800
 msgid "displays the device mapping information"
-msgstr "wyświetla podatke o preslikavah naprav"
+msgstr "wyświetla przypisania wszystkich urządzeń"
 
 #: ../src/cdemu.py:806 ../src/cdemu.py:813 ../src/cdemu.py:820
 #: ../src/cdemu.py:827
@@ -492,7 +492,7 @@ msgid ""
 "<device> [new vendor_id] [new product_id] [new revision] [new "
 "vendor_specific]"
 msgstr ""
-"<naprava> [nov vendor_id] [nov product_id] [nov revision] [nov "
+"<urządzenie> [nowy vendor_id] [nowy product_id] [nowy revision] [nowy "
 "vendor_specific]"
 
 #: ../src/cdemu.py:835
@@ -526,3 +526,4 @@ msgstr "Wylicza maski debug biblioteki"
 #: ../src/cdemu.py:870
 msgid "displays version information"
 msgstr "Wyświetla informacje o wersji"
+
