@@ -75,6 +75,16 @@ typedef struct {
 
 #pragma pack()
 
+typedef struct {
+    gchar	block_id[4];
+    guint64     offset;
+    guint32     length;
+
+    guint64     subblocks_offset;
+    guint32     subblocks_length;
+    guint32     num_subblocks;
+} NRGBlockIndexEntry;
+
 
 GTypeModule *global_module;
 
