@@ -6,7 +6,7 @@
 
         <alias type="application/x-c2d"/>
         
-        <comment>Roxio Easy Media Creator image file</comment>
+        <comment>Roxio WinOnCD image file</comment>
         
         <glob pattern="*.c2d"/>
 
