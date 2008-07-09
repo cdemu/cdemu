@@ -162,9 +162,10 @@ static gboolean __mirage_disc_nrg_destroy_block_index(MIRAGE_Disc *self, GError 
 }
 
 static gint __mirage_disc_nrg_find_block_entry_helper(gconstpointer a, gconstpointer b) {
-    NRGBlockIndexEntry     *block_a = (NRGBlockIndexEntry *) a, *block_b = (NRGBlockIndexEntry *) b;
+    NRGBlockIndexEntry     *blockentry = (NRGBlockIndexEntry *) a;
+    gchar                  *block_id = (gchar *) b;
 
-    return memcmp(block_a->block_id, block_b->block_id, 4);
+    return memcmp(blockentry->block_id, block_id, 4);
 }
 
 static NRGBlockIndexEntry *__mirage_disc_nrg_find_block_entry(MIRAGE_Disc *self, gchar *block_id, GError **error) {
