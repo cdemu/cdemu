@@ -26,12 +26,9 @@
 #define MIRAGE_DISC_CIF_GET_PRIVATE(obj) (G_TYPE_INSTANCE_GET_PRIVATE((obj), MIRAGE_TYPE_DISC_CIF, MIRAGE_Disc_CIFPrivate))
 
 typedef struct {   
-    CIFBlockIndexEntry *block_index;
-    gint               block_index_entries;
+    GList *block_index;
+    gint  block_index_entries;
     
-    gint               disc_block_entry;
-    gint               ofs_block_entry;
-
     gchar *cif_filename;
     
     GMappedFile *cif_mapped;
@@ -41,7 +38,126 @@ typedef struct {
     MIRAGE_ParserInfo *parser_info;
 } MIRAGE_Disc_CIFPrivate;
 
+static gboolean __mirage_disc_cif_build_block_index(MIRAGE_Disc *self, GError **error) {
+    MIRAGE_Disc_CIFPrivate *_priv = MIRAGE_DISC_CIF_GET_PRIVATE(self);
+    GList                  *blockindex = NULL;
+    CIFBlockIndexEntry     *blockentry = NULL;
+    gint                   num_blocks = 0, index = 0, success = TRUE;
+    guint8                 *cur_ptr = NULL;
+    CIF_BlockHeader        *block = NULL;
 
+    /* Populate block index */
+    cur_ptr = _priv->cif_data;
+    index = 0;
+    do {
+        blockentry = g_new(CIFBlockIndexEntry, 1);
+        if (!blockentry) {
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to allocate memory for block index!\n", __func__);
+            return FALSE;
+        }
+        block = MIRAGE_CAST_PTR(cur_ptr, 0, CIF_BlockHeader *);
+        if(memcmp(block->signature, "RIFF", 4)) {
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: expected 'RIFF' block signature!\n", __func__);
+            return FALSE;
+        }
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: Block: %2i, ID: %4s, start: %p, length: %i (0x%X).\n", \
+            __func__, index, block->block_id, block, block->length, block->length);
+        blockentry->block_header = block;
+
+        if(!memcmp(block->block_id, "info", 4)) {
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: This parser does not yet support binary tracks.\n", __func__);
+            //success = FALSE;
+        }
+
+        /* Got sub-blocks? */
+        if(!memcmp(block->block_id, "disc", 4)) {
+            guint16 *skip_ahead = (guint16 *) (cur_ptr + CIF_BLOCK_HEADER_SIZE);
+            guint16 *subblocks = (guint16 *) (cur_ptr + CIF_BLOCK_HEADER_SIZE + *skip_ahead + 2);
+            guint16 *blocksize = (guint16 *) (cur_ptr + CIF_BLOCK_HEADER_SIZE + *skip_ahead + 18);
+
+            blockentry->subblocks_start = (guint8 *) cur_ptr + CIF_BLOCK_HEADER_SIZE + *skip_ahead + 18;
+            blockentry->num_subblocks = *subblocks;
+            blockentry->subblocks_length = *blocksize;
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   Sub-blocks: %i, blocksize: %i.\n", __func__, *subblocks, *blocksize);
+        } else if(!memcmp(block->block_id, "ofs ", 4)) {
+            guint16         *subblocks = (guint16 *) (cur_ptr + CIF_BLOCK_HEADER_SIZE);
+            guint16         blocksize = CIF_BLOCK_HEADER_SIZE + 2;
+
+            blockentry->subblocks_start = (guint8 *) cur_ptr + CIF_BLOCK_HEADER_SIZE + 2;
+            blockentry->num_subblocks = *subblocks;
+            blockentry->subblocks_length = blocksize;
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   Sub-blocks: %i, blocksize: %i.\n", __func__, *subblocks, blocksize);
+        } else {
+            blockentry->subblocks_start = NULL; /* This block has no sub-blocks */
+            blockentry->num_subblocks = 0;
+            blockentry->subblocks_length = 0;
+        }
+
+        /* Add entry to list */
+        blockindex = g_list_prepend(blockindex, blockentry);
+        if (!blockindex) {
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to allocate memory for block index!\n", __func__);
+            return FALSE;
+        }
+
+        /* Get ready for next block */
+        index++;
+        cur_ptr += (block->length + CIF_BLOCK_LENGTH_ADJUST);
+        if(block->length % 2) cur_ptr++; /* Padding byte if length is not even */
+    } while((cur_ptr - _priv->cif_data) < g_mapped_file_get_length (_priv->cif_mapped));
+    blockindex = g_list_reverse(blockindex);
+    num_blocks = g_list_length(blockindex);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: counted %i 'RIFF' blocks.\n", __func__, num_blocks);
+
+    /* Link to block index */
+    _priv->block_index = blockindex;
+    _priv->block_index_entries = num_blocks;
+
+    return success;
+}
+
+static void __mirage_disc_cif_destroy_block_index_helper(gpointer data, gpointer user_data) {
+    if(data) {
+        g_free(data);
+    }
+}
+
+static gboolean __mirage_disc_cif_destroy_block_index(MIRAGE_Disc *self, GError **error) {
+    MIRAGE_Disc_CIFPrivate *_priv = MIRAGE_DISC_CIF_GET_PRIVATE(self);
+
+    if (_priv->block_index) {
+        g_list_foreach(_priv->block_index, __mirage_disc_cif_destroy_block_index_helper, NULL);
+        g_list_free(_priv->block_index);
+        _priv->block_index = NULL;
+        _priv->block_index_entries = 0;
+    }
+    else {
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to free memory for block index!\n", __func__);
+        return FALSE;
+    }
+
+    return TRUE;
+}
+
+static gint __mirage_disc_cif_find_block_entry_helper(gconstpointer a, gconstpointer b) {
+    CIFBlockIndexEntry     *blockentry = (CIFBlockIndexEntry *) a;
+    gchar                  *block_id = (gchar *) b;
+
+    return memcmp(blockentry->block_header->block_id, block_id, 4);
+}
+
+static CIFBlockIndexEntry *__mirage_disc_cif_find_block_entry(MIRAGE_Disc *self, gchar *block_id, GError **error) {
+    MIRAGE_Disc_CIFPrivate *_priv = MIRAGE_DISC_CIF_GET_PRIVATE(self);
+    GList *listentry = NULL;
+
+    listentry = g_list_find_custom(_priv->block_index, block_id, __mirage_disc_cif_find_block_entry_helper);
+
+    if(listentry) {
+        return (CIFBlockIndexEntry *) listentry->data;
+    } else {
+        return (CIFBlockIndexEntry *) NULL;
+    }
+}
 
 static gint __mirage_disc_cif_convert_track_mode (MIRAGE_Disc *self, guint32 mode, guint16 sector_size) {
     if(mode == CIF_TRACK_AUDIO) {
@@ -97,11 +213,9 @@ static gboolean __mirage_disc_cif_parse_track_entries (MIRAGE_Disc *self, GError
     }
 
     /* Initialize disc block and ofs block pointers first */
-    if((_priv->disc_block_entry != -1) && (_priv->ofs_block_entry != -1)) {
-        disc_block_ptr = &_priv->block_index[_priv->disc_block_entry];
-        ofs_block_ptr = &_priv->block_index[_priv->ofs_block_entry];
-    }
-    else {
+    disc_block_ptr = __mirage_disc_cif_find_block_entry(self, "disc", error);
+    ofs_block_ptr = __mirage_disc_cif_find_block_entry(self, "ofs ", error);
+    if (!(disc_block_ptr && ofs_block_ptr)) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: \"disc\" or \"ofs\" blocks not located. Can not proceed.\n", __func__);
         return FALSE;
     }
@@ -117,7 +231,6 @@ static gboolean __mirage_disc_cif_parse_track_entries (MIRAGE_Disc *self, GError
         guint8             *track_mode = ofs_subblock->block_id;
         guint32            *hex_track_mode = (guint32 *) track_mode;
         guint8             *track_start = track_block + CIF_BLOCK_HEADER_SIZE;
-        guint32            block_length = ofs_subblock->length - CIF_BLOCK_HEADER_SIZE + CIF_BLOCK_LENGTH_ADJUST;
         guint16            *sector_size = (guint16 *) (disc_subblock + 22);
         guint16            real_sector_size = *sector_size;
         //guint16            *pregap = (guint16 *) (disc_subblock + 24); /* only valid for binary tracks? */
@@ -257,106 +370,6 @@ static gboolean __mirage_disc_cif_parse_track_entries (MIRAGE_Disc *self, GError
     }
     g_object_unref(cur_session);
    
-    return TRUE;
-}
-
-static gboolean __mirage_disc_cif_build_block_index(MIRAGE_Disc *self, GError **error) {
-    MIRAGE_Disc_CIFPrivate *_priv = MIRAGE_DISC_CIF_GET_PRIVATE(self);
-    CIFBlockIndexEntry     *blockindex = NULL;
-    gint                   num_blocks = 0, index = 0, success = TRUE;
-    guint8                 *cur_ptr = NULL;
-    CIF_BlockHeader        *block = NULL;
-
-    /* Determine number of blocks in image */
-    num_blocks = 0;
-    cur_ptr = _priv->cif_data;
-    do {
-        block = MIRAGE_CAST_PTR(cur_ptr, 0, CIF_BlockHeader *);
-        if(memcmp(block->signature, "RIFF", 4)) {
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: Expected 'RIFF' signature.\n", __func__);
-            return FALSE;
-        }
-        cur_ptr += (block->length + CIF_BLOCK_LENGTH_ADJUST);
-        if(block->length % 2) cur_ptr++; /* Padding byte if length is not even */
-        num_blocks++;
-    } while((cur_ptr - _priv->cif_data) < g_mapped_file_get_length (_priv->cif_mapped));
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: counted %i 'RIFF' blocks.\n", __func__, num_blocks);
-
-    /* Create block index and link to it */
-    blockindex = g_new(CIFBlockIndexEntry, num_blocks);
-    if (!blockindex) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to allocate memory for block index!\n", __func__);
-        return FALSE;
-    }
-    _priv->block_index = blockindex;
-    _priv->block_index_entries = num_blocks;
-    _priv->disc_block_entry = -1;
-    _priv->ofs_block_entry = -1;
-
-    /* Populate block index */
-    cur_ptr = _priv->cif_data;
-    for (index = 0; index < num_blocks; index++) {
-        block = MIRAGE_CAST_PTR(cur_ptr, 0, CIF_BlockHeader *);
-        if(memcmp(block->signature, "RIFF", 4)) {
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: expected 'RIFF' block signature!\n", __func__);
-            return FALSE;
-        }
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: Block: %2i, ID: %4s, start: %p, length: %i (0x%X).\n", \
-            __func__, index, block->block_id, block, block->length, block->length);
-        blockindex[index].block_header = block;
-
-        if(!memcmp(block->block_id, "info", 4)) {
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: This parser does not yet support binary tracks.\n", __func__);
-            //success = FALSE;
-        }
-
-        /* Got sub-blocks? */
-        if(!memcmp(block->block_id, "disc", 4)) {
-            guint16 *skip_ahead = (guint16 *) (cur_ptr + CIF_BLOCK_HEADER_SIZE);
-            guint16 *subblocks = (guint16 *) (cur_ptr + CIF_BLOCK_HEADER_SIZE + *skip_ahead + 2);
-            guint16 *blocksize = (guint16 *) (cur_ptr + CIF_BLOCK_HEADER_SIZE + *skip_ahead + 18);
-
-            _priv->disc_block_entry = index;
-            blockindex[index].subblocks_start = (guint8 *) cur_ptr + CIF_BLOCK_HEADER_SIZE + *skip_ahead + 18;
-            blockindex[index].num_subblocks = *subblocks;
-            blockindex[index].subblocks_length = *blocksize;
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   Sub-blocks: %i, blocksize: %i.\n", __func__, *subblocks, *blocksize);
-        } else if(!memcmp(block->block_id, "ofs ", 4)) {
-            guint16         *subblocks = (guint16 *) (cur_ptr + CIF_BLOCK_HEADER_SIZE);
-            guint16         blocksize = CIF_BLOCK_HEADER_SIZE + 2;
-
-            _priv->ofs_block_entry = index;
-            blockindex[index].subblocks_start = (guint8 *) cur_ptr + CIF_BLOCK_HEADER_SIZE + 2;
-            blockindex[index].num_subblocks = *subblocks;
-            blockindex[index].subblocks_length = blocksize;
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   Sub-blocks: %i, blocksize: %i.\n", __func__, *subblocks, blocksize);
-        } else {
-            blockindex[index].subblocks_start = NULL; /* This block has no sub-blocks */
-            blockindex[index].num_subblocks = 0;
-            blockindex[index].subblocks_length = 0;
-        }
-
-        /* Get ready for next block */
-        cur_ptr += (block->length + CIF_BLOCK_LENGTH_ADJUST);
-        if(block->length % 2) cur_ptr++; /* Padding byte if length is not even */
-    } 
-
-    return success;
-}
-
-static gboolean __mirage_disc_cif_destroy_block_index(MIRAGE_Disc *self, GError **error) {
-    MIRAGE_Disc_CIFPrivate *_priv = MIRAGE_DISC_CIF_GET_PRIVATE(self);
-
-    if (_priv->block_index) {
-        g_free(_priv->block_index);
-        _priv->block_index = NULL;
-        _priv->block_index_entries = 0;
-    }
-    else {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to free memory for block index!\n", __func__);
-        return FALSE;
-    }
-
     return TRUE;
 }
 
