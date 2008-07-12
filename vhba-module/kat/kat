@@ -6,6 +6,10 @@
 # Tries to run gcc on test files & generate output file which contains selected
 # definitions from test files
 #
+if [ ! -d "$1" ]; then
+  echo "There is no kernel build dir $1"
+  exit 1
+fi
 if [ -z "${CC}" ]; then CC=gcc; fi
 echo -n "KAT will test if C compiler works..."
 echo "main(){}" | ${CC} -x c - -o /dev/null
