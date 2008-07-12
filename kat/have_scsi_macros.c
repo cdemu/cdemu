@@ -12,5 +12,8 @@ void testfunc () {
     scsi_bufflen(&cmd);
 }
 
-//T#define KAT_HAVE_SCSI_MACROS
-//F
+//  If current kernel is soo old - inject macros
+//F#define scsi_sg_count(cmd) ((cmd)->use_sg)
+//F#define scsi_sglist(cmd) ((cmd)->request_buffer)
+//F#define scsi_bufflen(cmd) ((cmd)->request_bufflen)
+//F#define scsi_set_resid(cmd, to_read) {(cmd)->resid = (to_read);}
