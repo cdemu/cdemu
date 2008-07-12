@@ -566,10 +566,10 @@ static ssize_t do_response(struct scsi_cmnd *cmd, const char __user *buf, size_t
 				}
 				uaddr += len;
 
-#ifdef KAT_SCATTERLIST_HAS_PAGE
-				kaddr = kmap_atomic(sg[i].page, KM_USER0);
-#else
+#ifdef KAT_SCATTERLIST_HAS_PAGE_LINK
 				kaddr = kmap_atomic(sg_page(&sg[i]), KM_USER0);
+#else
+				kaddr = kmap_atomic(sg[i].page, KM_USER0);
 #endif				
 				memcpy(kaddr + sg[i].offset, kbuf, len);
 				kunmap_atomic(kaddr, KM_USER0);
