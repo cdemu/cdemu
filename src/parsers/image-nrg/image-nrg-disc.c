@@ -201,24 +201,28 @@ static gboolean __mirage_disc_nrg_load_medium_type (MIRAGE_Disc *self, GError **
     cur_ptr += sizeof(guint32);
     
     /* Decode medium type */
-    switch (mtyp_data) {
-        case 0x01: {
-            /* CD-ROM */
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: medium type: CD-ROM\n", __func__);
-            mirage_disc_set_medium_type(self, MIRAGE_MEDIUM_CD, NULL);
-            break;
-        }
-        case 0x1C: {
-            /* DVD-ROM */
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: medium type: DVD-ROM\n", __func__);
-            mirage_disc_set_medium_type(self, MIRAGE_MEDIUM_DVD, NULL);
-            break;
-        }
-        default: {
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: unhandled medium type: %d!\n", __func__, mtyp_data);
-        }
+    NERO_MEDIA_TYPE CD_EQUIV  = MEDIA_CD | MEDIA_CDROM;
+    NERO_MEDIA_TYPE DVD_EQUIV = MEDIA_DVD_ANY | MEDIA_DVD_ROM;
+    NERO_MEDIA_TYPE BD_EQUIV  = MEDIA_BD_ANY;
+    NERO_MEDIA_TYPE HD_EQUIV  = MEDIA_HD_DVD_ANY;
+
+    if(mtyp_data & CD_EQUIV) {
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: medium type: CD-ROM\n", __func__);
+        mirage_disc_set_medium_type(self, MIRAGE_MEDIUM_CD, NULL);
+    } else if (mtyp_data & DVD_EQUIV) {
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: medium type: DVD-ROM\n", __func__);
+        mirage_disc_set_medium_type(self, MIRAGE_MEDIUM_DVD, NULL);
+    } else if (mtyp_data & BD_EQUIV) {
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: medium type: Blue-ray\n", __func__);
+        mirage_disc_set_medium_type(self, MIRAGE_MEDIUM_BD, NULL);
+    } else if (mtyp_data & HD_EQUIV) {
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: medium type: HD-DVD\n", __func__);
+        mirage_disc_set_medium_type(self, MIRAGE_MEDIUM_HD, NULL);
+    } else {
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: unhandled medium type: %d!\n", __func__, mtyp_data);
+        return FALSE;
     }
-    
+
     return TRUE;
 }
 

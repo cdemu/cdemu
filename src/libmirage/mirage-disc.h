@@ -71,6 +71,7 @@ typedef struct {
  * @MIRAGE_MEDIUM_CD: CD disc
  * @MIRAGE_MEDIUM_DVD: DVD disc
  * @MIRAGE_MEDIUM_BD: BD (Blue-Ray) disc
+ * @MIRAGE_MEDIUM_HD: HD-DVD disc
  *
  * <para>
  * Medium types.
@@ -80,6 +81,7 @@ typedef enum {
     MIRAGE_MEDIUM_CD  = 0x01,
     MIRAGE_MEDIUM_DVD = 0x02,
     MIRAGE_MEDIUM_BD  = 0x03,
+    MIRAGE_MEDIUM_HD  = 0x04,
 } MIRAGE_MediumTypes;
 
 

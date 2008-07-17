@@ -61,6 +61,7 @@ implementation should be with mirage_mirage_create_disc().
 @MIRAGE_MEDIUM_CD: 
 @MIRAGE_MEDIUM_DVD: 
 @MIRAGE_MEDIUM_BD: 
+@MIRAGE_MEDIUM_HD: 
 
 <!-- ##### STRUCT MIRAGE_Disc ##### -->
 <para>
