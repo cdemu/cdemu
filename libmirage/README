@@ -18,8 +18,10 @@ libMirage will transparently generate it.
 
 Currently supported image formats:
  - B6T: BlindWrite 5/6 file format
+ - C2D: Roxio / WinOnCD file format (experimental)
  - CCD: CloneCD image format
  - CDI: DiscJuggler image format (experimental)
+ - CIF: Easy CD Creator image format (experimental)
  - CUE: CDRwin CUE/BIN image format
  - DAA: PowerISO Direct Access Archive
  - ISO: classic ISO9660 image format
