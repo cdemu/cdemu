@@ -20,6 +20,8 @@
 #ifndef __IMAGE_ISO_H__
 #define __IMAGE_ISO_H__
 
+#include <linux/iso_fs.h>
+
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif

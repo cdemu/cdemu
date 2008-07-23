@@ -55,10 +55,12 @@ static gboolean __mirage_disc_iso_can_load_file (MIRAGE_Disc *self, gchar *filen
     
     /* Mode 1/Mode 2 Form 1 Images need to pass extra check */
     if (mirage_helper_has_suffix(filename, ".iso") 
+        || mirage_helper_has_suffix(filename, ".udf")
         || mirage_helper_has_suffix(filename, ".img")) {
         struct stat st;
         FILE *file = NULL;
-        
+        struct iso_volume_descriptor VSD;
+
         /* Stat */
         if (g_stat(filename, &st) < 0) {
             return FALSE;
@@ -70,19 +72,18 @@ static gboolean __mirage_disc_iso_can_load_file (MIRAGE_Disc *self, gchar *filen
             return FALSE;
         }
     
-        /* Last test; ISO9660 image has the following pattern at the beginning of 
-           16th sector: 0x01, 0x43, 0x44, 0x30, 0x30, 0x31, 0x01, 0x00 */
+        /* Last test; ISO-9660 or UDF image has a valid Volume Structure Descriptor 
+           at the beginning of the 16th sector */
         file = g_fopen(filename, "r");
         if (!file) {
             return FALSE;
         }
-    
-        guint8 buf[8] = {};
-        guint8 pattern[8] = {0x01, 0x43, 0x44, 0x30, 0x30, 0x31, 0x01, 0x00};
+
         fseeko(file, 16*2048, SEEK_SET);
-        fread(buf, 8, 1, file);
+        fread(&VSD, sizeof(struct iso_volume_descriptor), 1, file);
         fclose(file);
-        if (memcmp(buf, pattern, 8)) {
+        if (memcmp(VSD.id, ISO_STANDARD_ID, sizeof(VSD.id))) {
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: Did not find a valid Volume Structure Descriptor!\n", __func__);
             return FALSE;
         }
     }
@@ -283,7 +284,7 @@ static void __mirage_disc_iso_instance_init (GTypeInstance *instance, gpointer g
         "Rok Mandeljc",
         TRUE,
         "ISO images",
-        4, ".iso", ".img", ".wav", NULL
+        5, ".iso", ".udf", ".img", ".wav", NULL
     );
     
     return;
