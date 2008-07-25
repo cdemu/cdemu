@@ -29,9 +29,6 @@
 #include <math.h>
 #include <string.h>
 
-/* Contents from "linux/cdrom.h" to avoid depending on Linux */
-#include <mirage-cdrom.h>
-
 #include "mirage-debug.h"
 #include "mirage-error.h"
 #include "mirage-plugin.h"

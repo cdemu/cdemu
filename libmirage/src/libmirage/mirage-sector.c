@@ -23,6 +23,9 @@
 
 #include "mirage.h"
 
+#define CD_SYNC_SIZE 12
+#define CD_HEAD_SIZE 4
+#define CD_SUBHEAD_SIZE 8
 
 /******************************************************************************\
  *                              Private structure                             *
