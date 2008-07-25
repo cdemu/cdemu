@@ -44,10 +44,17 @@ GType mirage_disc_ccd_get_type (GTypeModule *module);
 
 
 /* Helpers */
-gboolean __mirage_disc_ccd_set_current_track (MIRAGE_Disc *self, gint track, GError **error);
-gboolean __mirage_disc_ccd_track_set_isrc (MIRAGE_Disc *self, gchar *isrc, GError **error);
-gboolean __mirage_disc_ccd_decode_disc_section (MIRAGE_Disc *self, gint session, GError **error);
-gboolean __mirage_disc_ccd_decode_entry_section (MIRAGE_Disc *self, gint session, gint point, gint adr, gint ctl, gint tno, gint amin, gint asec, gint aframe, gint alba, gint zero, gint pmin, gint psec, gint pframe, gint plba, GError **error);
+gboolean __mirage_disc_ccd_read_header (MIRAGE_Disc *self, CCD_CloneCD *header, GError **error);
+gboolean __mirage_disc_ccd_read_disc (MIRAGE_Disc *self, CCD_Disc *disc, GError **error);
+gboolean __mirage_disc_ccd_read_disc_catalog (MIRAGE_Disc *self, gchar *catalog, GError **error);
+gboolean __mirage_disc_ccd_read_session (MIRAGE_Disc *self, CCD_Session *session, GError **error);
+gboolean __mirage_disc_ccd_read_entry (MIRAGE_Disc *self, CCD_Entry *entry, GError **error);
+
+gboolean __mirage_disc_ccd_read_track (MIRAGE_Disc *self, gint number, GError **error);
+gboolean __mirage_disc_ccd_read_track_mode (MIRAGE_Disc *self, gint mode, GError **error);
+gboolean __mirage_disc_ccd_read_track_index0 (MIRAGE_Disc *self, gint index0, GError **error);
+gboolean __mirage_disc_ccd_read_track_index1 (MIRAGE_Disc *self, gint index1, GError **error);
+gboolean __mirage_disc_ccd_read_track_isrc (MIRAGE_Disc *self, gchar *isrc, GError **error);
 
 G_END_DECLS
 
