@@ -66,8 +66,7 @@ gboolean __mirage_session_cue_finish_last_track (MIRAGE_Session *self, GError **
 
 
 gboolean __mirage_session_cue_set_cue_filename (MIRAGE_Session *self, gchar *filename, GError **error) {
-    MIRAGE_Session_CUE *self_cue = MIRAGE_SESSION_CUE(self);
-    MIRAGE_Session_CUEPrivate *_priv = MIRAGE_SESSION_CUE_GET_PRIVATE(self_cue);
+    MIRAGE_Session_CUEPrivate *_priv = MIRAGE_SESSION_CUE_GET_PRIVATE(self);
     
     _priv->cue_filename = g_strdup(filename);
     
@@ -89,8 +88,7 @@ gboolean __mirage_session_cue_set_mcn (MIRAGE_Session *self, gchar *mcn, GError 
 }
 
 gboolean __mirage_session_cue_set_new_file (MIRAGE_Session *self, gchar *filename_string, gchar *file_type, GError **error) {
-    MIRAGE_Session_CUE *self_cue = MIRAGE_SESSION_CUE(self);
-    MIRAGE_Session_CUEPrivate *_priv = MIRAGE_SESSION_CUE_GET_PRIVATE(self_cue);
+    MIRAGE_Session_CUEPrivate *_priv = MIRAGE_SESSION_CUE_GET_PRIVATE(self);
     
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: new file...\n", __func__);
     
@@ -120,8 +118,7 @@ gboolean __mirage_session_cue_set_new_file (MIRAGE_Session *self, gchar *filenam
 }
 
 gboolean __mirage_session_cue_add_track (MIRAGE_Session *self, gint number, gchar *mode_string, GError **error) {
-    MIRAGE_Session_CUE *self_cue = MIRAGE_SESSION_CUE(self);
-    MIRAGE_Session_CUEPrivate *_priv = MIRAGE_SESSION_CUE_GET_PRIVATE(self_cue);
+    MIRAGE_Session_CUEPrivate *_priv = MIRAGE_SESSION_CUE_GET_PRIVATE(self);
     GObject *cur_track = NULL;
     
     if (!mirage_session_add_track_by_number(self, number, &cur_track, error)) {
@@ -168,8 +165,7 @@ gboolean __mirage_session_cue_add_track (MIRAGE_Session *self, gint number, gcha
 };
 
 gboolean __mirage_session_cue_add_index (MIRAGE_Session *self, gint number, gint address, GError **error) {
-    MIRAGE_Session_CUE *self_cue = MIRAGE_SESSION_CUE(self);
-    MIRAGE_Session_CUEPrivate *_priv = MIRAGE_SESSION_CUE_GET_PRIVATE(self_cue);
+    MIRAGE_Session_CUEPrivate *_priv = MIRAGE_SESSION_CUE_GET_PRIVATE(self);
     
     GObject *cur_track = NULL;
     

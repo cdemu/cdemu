@@ -980,8 +980,7 @@ static gboolean __mirage_disc_cdi_can_load_file (MIRAGE_Disc *self, gchar *filen
 }
 
 static gboolean __mirage_disc_cdi_load_image (MIRAGE_Disc *self, gchar **filenames, GError **error) {
-    MIRAGE_Disc_CDI *self_cdi = MIRAGE_DISC_CDI(self);
-    MIRAGE_Disc_CDIPrivate *_priv = MIRAGE_DISC_CDI_GET_PRIVATE(self_cdi);
+    MIRAGE_Disc_CDIPrivate *_priv = MIRAGE_DISC_CDI_GET_PRIVATE(self);
     
     gboolean succeeded = TRUE;
     guint64 offset = 0;

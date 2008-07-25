@@ -740,10 +740,10 @@ static void __mirage_disc_mds_instance_init (GTypeInstance *instance, gpointer g
 }
 
 static void __mirage_disc_mds_finalize (GObject *obj) {
-    MIRAGE_Disc_MDS *self_mds = MIRAGE_DISC_MDS(obj);
-    MIRAGE_Disc_MDSPrivate *_priv = MIRAGE_DISC_MDS_GET_PRIVATE(self_mds);
+    MIRAGE_Disc_MDS *self = MIRAGE_DISC_MDS(obj);
+    MIRAGE_Disc_MDSPrivate *_priv = MIRAGE_DISC_MDS_GET_PRIVATE(self);
     
-    MIRAGE_DEBUG(self_mds, MIRAGE_DEBUG_GOBJECT, "%s:\n", __func__);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_GOBJECT, "%s:\n", __func__);
 
     g_free(_priv->mds_filename);
     
@@ -751,7 +751,7 @@ static void __mirage_disc_mds_finalize (GObject *obj) {
     mirage_helper_destroy_parser_info(_priv->parser_info);
 
     /* Chain up to the parent class */
-    MIRAGE_DEBUG(self_mds, MIRAGE_DEBUG_GOBJECT, "%s: chaining up to parent\n", __func__);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_GOBJECT, "%s: chaining up to parent\n", __func__);
     return G_OBJECT_CLASS(parent_class)->finalize(obj);
 }
 
