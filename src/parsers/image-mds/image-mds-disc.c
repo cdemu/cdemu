@@ -267,6 +267,44 @@ static gboolean __mirage_disc_mds_parse_bca (MIRAGE_Disc *self, GError **error) 
     return TRUE;
 }
 
+static gchar *__mirage_disc_mds_get_track_filename (MIRAGE_Disc *self, MDS_Footer *footer_block, GError **error) {
+    MIRAGE_Disc_MDSPrivate *_priv = MIRAGE_DISC_MDS_GET_PRIVATE(self);
+    gchar *tmp_mdf_filename = NULL;
+    gchar *mdf_filename = NULL;
+    
+    /* Track file: it seems all tracks have the same extra block, and that 
+       filename is located at the end of it... meaning filename's length is 
+       from filename_offset to end of the file */
+    if (!footer_block) {
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: track block does not have a footer, but we're supposed to get filename from it!\n", __func__);
+        mirage_error(MIRAGE_E_PARSER, error);
+        return NULL;
+    }
+    
+    /* Newer versions of format (>= 1.5) seem to store filename in 16-bit characters,
+       whereas older versions use 8-bit characters. */
+    if (_priv->header->version[1] >= 5) {
+        gunichar2 *tmp_ptr = MIRAGE_CAST_PTR(_priv->mds_data, footer_block->filename_offset, gunichar2 *);
+        tmp_mdf_filename = g_utf16_to_utf8(tmp_ptr, -1, NULL, NULL, NULL);
+    } else {
+        gchar *tmp_ptr = MIRAGE_CAST_PTR(_priv->mds_data, footer_block->filename_offset, gchar *);
+        tmp_mdf_filename = g_strdup(tmp_ptr);
+    }
+            
+    /* Find binary file */
+    mdf_filename = __helper_find_binary_file(tmp_mdf_filename, _priv->mds_filename);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: MDF filename: <%s> -> <%s>\n", __func__, tmp_mdf_filename, mdf_filename);
+    g_free(tmp_mdf_filename);
+    
+    if (!mdf_filename) {
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: failed to find data file!\n", __func__);
+        mirage_error(MIRAGE_E_DATAFILE, error);
+        return NULL;
+    }
+    
+    return mdf_filename;
+}
+
 static gboolean __mirage_disc_mds_parse_track_entries (MIRAGE_Disc *self, MDS_SessionBlock *session_block, GError **error) {
     MIRAGE_Disc_MDSPrivate *_priv = MIRAGE_DISC_MDS_GET_PRIVATE(self);
     GObject *cur_session = NULL;
@@ -352,30 +390,17 @@ static gboolean __mirage_disc_mds_parse_track_entries (MIRAGE_Disc *self, MDS_Se
                     
             /* Flags: decoded from Ctl */
             mirage_track_set_ctl(MIRAGE_TRACK(cur_track), block->adr_ctl & 0x0F, NULL);
-                
-            /* Track file: it seems all tracks have the same extra block, and
-               that filename is located at the end of it... meaning filename's 
-               length is from filename_offset to end of the file */
-            if (!footer_block) {
-                MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: track block does not have a footer, but we're supposed to get filename from it!\n", __func__);
-                mirage_error(MIRAGE_E_PARSER, error);
-                g_object_unref(cur_track);
-                g_object_unref(cur_session);
-                return FALSE;
-            }
             
-            gchar *tmp_mdf_filename = (gchar *)(_priv->mds_data + footer_block->filename_offset);
-            gchar *mdf_filename = __helper_find_binary_file(tmp_mdf_filename, _priv->mds_filename);
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: MDF filename: <%s> -> <%s>\n", __func__, tmp_mdf_filename, mdf_filename);
+            /* Track file */
+            gchar *mdf_filename = __mirage_disc_mds_get_track_filename(self, footer_block, error);
             
             if (!mdf_filename) {
-                MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: failed to find data file!\n", __func__);
-                mirage_error(MIRAGE_E_DATAFILE, error);
+                MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to get track filename!\n", __func__);
                 g_object_unref(cur_track);
                 g_object_unref(cur_session);
                 return FALSE;
             }
-                
+                            
             /* Get Mirage and have it make us fragments */
             GObject *mirage = NULL;
     
