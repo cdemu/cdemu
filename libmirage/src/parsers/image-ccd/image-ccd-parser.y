@@ -59,6 +59,8 @@ gint yyerror (YYLTYPE *locp, void *scanner, MIRAGE_Disc *self, GError **error, c
 %token  <number>  DATATRACKSSCRAMBLED_
 %token  <number>  CDTEXTLENGTH_
 
+%token  <string>  CATALOG_
+
 %token  <number>  HEAD_SESSION_
 %token  <number>  PREGAPMODE_
 %token  <number>  PREGAPSUBC_
@@ -96,32 +98,72 @@ ccd_elements    :   ccd_element;
 
 ccd_element     :   clonecd_section;
                 |   disc_section;
+                |   disc_catalog;
                 |   session_section;
                 |   entry_section;
                 |   track_section;
 
-clonecd_section :   HEAD_CLONECD_ VERSION_ { /* nothing to be done at the moment */ }
-                    
-disc_section    :   HEAD_DISC_ TOCENTRIES_ SESSIONS_ DATATRACKSSCRAMBLED_ CDTEXTLENGTH_ {
-                        if (!__mirage_disc_ccd_decode_disc_section(self, $3, error)) {
-                            return -1;
-                        }
+clonecd_section :   HEAD_CLONECD_ VERSION_ {
+                        CCD_CloneCD *header = g_new0(CCD_CloneCD, 1);
+                        
+                        header->Version = $2;
+                        
+                        __mirage_disc_ccd_read_header(self, header, NULL);
                     }
                     
-session_section :   HEAD_SESSION_ PREGAPMODE_ PREGAPSUBC_ { /* nothing to be done at the moment */}
+disc_section    :   HEAD_DISC_ TOCENTRIES_ SESSIONS_ DATATRACKSSCRAMBLED_ CDTEXTLENGTH_ {
+                        CCD_Disc *disc = g_new0(CCD_Disc, 1);
+                        
+                        disc->TocEntries = $2;
+                        disc->Sessions = $3;
+                        disc->DataTracksScrambled = $4;
+                        disc->CDTextLength = $5;
+                        
+                        __mirage_disc_ccd_read_disc(self, disc, NULL);
+                    }
+
+disc_catalog    :   CATALOG_ {
+                        __mirage_disc_ccd_read_disc_catalog(self, $1, NULL);
+                    }
+                    
+session_section :   HEAD_SESSION_ PREGAPMODE_ PREGAPSUBC_ { 
+                        CCD_Session *session = g_new0(CCD_Session, 1);
+                        
+                        session->number = $1;
+                        
+                        session->PreGapMode = $2;
+                        session->PreGapSubC = $3;
+                                                
+                        __mirage_disc_ccd_read_session(self, session, NULL);
+                    }
                     
 entry_section   :   HEAD_ENTRY_ SESSION_ POINT_ ADR_ CONTROL_ TRACKNO_ 
                     AMIN_ ASEC_ AFRAME_ ALBA_ ZERO_ PMIN_ PSEC_ PFRAME_ 
                     PLBA_ {
-                        if (!__mirage_disc_ccd_decode_entry_section(self, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, error)) {
-                            return -1;
-                        }
+                        CCD_Entry *entry = g_new0(CCD_Entry, 1);
+                        
+                        entry->number = $1;
+                        
+                        entry->Session = $2;
+                        entry->Point = $3;
+                        entry->ADR = $4;
+                        entry->Control = $5;
+                        entry->TrackNo = $6;
+                        entry->AMin = $7;
+                        entry->ASec = $8;
+                        entry->AFrame = $9;
+                        entry->ALBA = $10;
+                        entry->Zero = $11;
+                        entry->PMin = $12;
+                        entry->PSec = $13;
+                        entry->PFrame = $14;
+                        entry->PLBA = $15;
+                        
+                        __mirage_disc_ccd_read_entry(self, entry, NULL);
                     }
 
 track_section   :   HEAD_TRACK_ {
-                        if (!__mirage_disc_ccd_set_current_track(self, $1, error)) {
-                            return -1;
-                        }
+                        __mirage_disc_ccd_read_track(self, $1, NULL);
                     } track_elements
 
 track_elements  :   track_element
@@ -132,16 +174,20 @@ track_element   :   track_mode;
                 |   track_index1;
                 |   track_isrc;
 
-track_mode      :   MODE_ { /* Nothing to do here */ }
-track_index0    :   INDEX0_ { /* Nothing to do here */ }
-track_index1    :   INDEX1_ { /* Nothing to do here */ }
+track_mode      :   MODE_ {
+                        __mirage_disc_ccd_read_track_mode(self, $1, NULL);
+                    }
+                    
+track_index0    :   INDEX0_ {
+                        __mirage_disc_ccd_read_track_index0(self, $1, NULL);
+                    }
+                    
+track_index1    :   INDEX1_ {
+                        __mirage_disc_ccd_read_track_index1(self, $1, NULL);
+                    }
 
 track_isrc      :   ISRC_ {
-                        gboolean succeeded = __mirage_disc_ccd_track_set_isrc(self, $1, error);
-                        g_free($1); /* Free ISRC_ */
-                        if (!succeeded) {
-                            return -1;
-                        }
+                        __mirage_disc_ccd_read_track_isrc(self, $1, NULL);
                     }
 
 %%

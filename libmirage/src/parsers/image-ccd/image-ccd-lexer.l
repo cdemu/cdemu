@@ -90,6 +90,9 @@ KEY_        [a-zA-Z0-9 ]+={NUMBER_}|[a-zA-Z0-9 ]+={WORD_}
     } else if (sscanf(yytext, "CDTextLength = %i", &value)) {
         yylval->number = value;
         return CDTEXTLENGTH_;
+    } else if (sscanf(yytext, "CATALOG = %s", str)) {
+        yylval->string = g_strdup(str);
+        return CATALOG_;
     }
     /* from [Session X] */
     if (sscanf(yytext, "PreGapMode = %i", &value)) {

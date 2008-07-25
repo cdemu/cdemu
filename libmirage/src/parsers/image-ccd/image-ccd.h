@@ -26,12 +26,64 @@
 
 #include "mirage.h"
 #include "image-ccd-parser.h"
-#include "image-ccd-disc.h"
 
 G_BEGIN_DECLS
+
+typedef struct {
+    /* [CloneCD] */
+    gint Version;
+} CCD_CloneCD;
+
+typedef struct {
+    /* [Disc] */
+    gint TocEntries;
+    gint Sessions;
+    gint DataTracksScrambled;
+    gint CDTextLength;
+    
+    /* Optional */
+    gchar *Catalog;
+} CCD_Disc;
+
+typedef struct {
+    gint number;
+    
+    /* [Session] */
+    gint PreGapMode;
+    gint PreGapSubC;
+} CCD_Session;
+
+typedef struct {
+    gint number;
+        
+    /* [Entry] */
+    gint Session;
+    gint Point;
+    gint ADR;
+    gint Control;
+    gint TrackNo;
+    gint AMin;
+    gint ASec;
+    gint AFrame;
+    gint ALBA;
+    gint Zero;
+    gint PMin;
+    gint PSec;
+    gint PFrame;
+    gint PLBA;
+    
+    /* [Track] */
+    gint Mode;
+    gint Index0;
+    gint Index1;
+    gchar *ISRC;
+} CCD_Entry;
+
 
 GTypeModule *global_module;
 
 G_END_DECLS
+
+#include "image-ccd-disc.h"
 
 #endif /* __IMAGE_CCD_H__ */
