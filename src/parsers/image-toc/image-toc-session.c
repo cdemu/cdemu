@@ -44,8 +44,7 @@ typedef struct {
  *                       Session private functions                            *
 \******************************************************************************/
 gboolean __mirage_session_toc_set_toc_filename (MIRAGE_Session *self, gchar *filename, GError **error) {
-    MIRAGE_Session_TOC *self_toc = MIRAGE_SESSION_TOC(self);
-    MIRAGE_Session_TOCPrivate *_priv = MIRAGE_SESSION_TOC_GET_PRIVATE(self_toc);
+    MIRAGE_Session_TOCPrivate *_priv = MIRAGE_SESSION_TOC_GET_PRIVATE(self);
     
     _priv->toc_filename = g_strdup(filename);
     
@@ -92,8 +91,7 @@ gboolean __mirage_session_toc_set_session_type (MIRAGE_Session *self, gchar *typ
 }
 
 gboolean __mirage_session_toc_add_track (MIRAGE_Session *self, gchar *mode_string, gchar *subchan_string, GError **error) {
-    MIRAGE_Session_TOC *self_toc = MIRAGE_SESSION_TOC(self);
-    MIRAGE_Session_TOCPrivate *_priv = MIRAGE_SESSION_TOC_GET_PRIVATE(self_toc);
+    MIRAGE_Session_TOCPrivate *_priv = MIRAGE_SESSION_TOC_GET_PRIVATE(self);
 
     GObject *cur_track = NULL;
     
@@ -166,8 +164,7 @@ gboolean __mirage_session_toc_add_track (MIRAGE_Session *self, gchar *mode_strin
 
 
 gboolean __mirage_session_toc_add_track_fragment (MIRAGE_Session *self, gint type, gchar *filename_string, gint base_offset, gint start, gint length, GError **error) {
-    MIRAGE_Session_TOC *self_toc = MIRAGE_SESSION_TOC(self);
-    MIRAGE_Session_TOCPrivate *_priv = MIRAGE_SESSION_TOC_GET_PRIVATE(self_toc);
+    MIRAGE_Session_TOCPrivate *_priv = MIRAGE_SESSION_TOC_GET_PRIVATE(self);
        
     GObject *cur_track = NULL;
     
@@ -409,8 +406,7 @@ gboolean __mirage_session_toc_set_isrc (MIRAGE_Session *self, gchar *isrc, GErro
 }
 
 gboolean __mirage_session_toc_add_language_mapping (MIRAGE_Session *self, gint index, gint langcode, GError **error) {
-    MIRAGE_Session_TOC *self_toc = MIRAGE_SESSION_TOC(self);
-    MIRAGE_Session_TOCPrivate *_priv = MIRAGE_SESSION_TOC_GET_PRIVATE(self_toc);
+    MIRAGE_Session_TOCPrivate *_priv = MIRAGE_SESSION_TOC_GET_PRIVATE(self);
     
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: adding language map: index %i -> langcode %i\n", __func__, index, langcode);
     
@@ -420,8 +416,7 @@ gboolean __mirage_session_toc_add_language_mapping (MIRAGE_Session *self, gint i
 }
 
 gboolean __mirage_session_toc_add_g_laguage (MIRAGE_Session *self, gint index, GError **error) {
-    MIRAGE_Session_TOC *self_toc = MIRAGE_SESSION_TOC(self);
-    MIRAGE_Session_TOCPrivate *_priv = MIRAGE_SESSION_TOC_GET_PRIVATE(self_toc);
+    MIRAGE_Session_TOCPrivate *_priv = MIRAGE_SESSION_TOC_GET_PRIVATE(self);
     
     gint langcode = GPOINTER_TO_INT(g_hash_table_lookup(_priv->lang_map, GINT_TO_POINTER(index)));
     
@@ -434,8 +429,7 @@ gboolean __mirage_session_toc_add_g_laguage (MIRAGE_Session *self, gint index, G
 }
 
 gboolean __mirage_session_toc_add_t_laguage (MIRAGE_Session *self, gint index, GError **error) {
-    MIRAGE_Session_TOC *self_toc = MIRAGE_SESSION_TOC(self);
-    MIRAGE_Session_TOCPrivate *_priv = MIRAGE_SESSION_TOC_GET_PRIVATE(self_toc);
+    MIRAGE_Session_TOCPrivate *_priv = MIRAGE_SESSION_TOC_GET_PRIVATE(self);
     
     gint langcode = GPOINTER_TO_INT(g_hash_table_lookup(_priv->lang_map, GINT_TO_POINTER(index)));
     
@@ -455,8 +449,7 @@ gboolean __mirage_session_toc_add_t_laguage (MIRAGE_Session *self, gint index, G
 }
 
 gboolean __mirage_session_toc_set_g_cdtext_data (MIRAGE_Session *self, gint pack_type, gchar *data, GError **error) {
-    MIRAGE_Session_TOC *self_toc = MIRAGE_SESSION_TOC(self);
-    MIRAGE_Session_TOCPrivate *_priv = MIRAGE_SESSION_TOC_GET_PRIVATE(self_toc);
+    MIRAGE_Session_TOCPrivate *_priv = MIRAGE_SESSION_TOC_GET_PRIVATE(self);
     
     GObject *language = NULL;
     
@@ -472,8 +465,7 @@ gboolean __mirage_session_toc_set_g_cdtext_data (MIRAGE_Session *self, gint pack
 }
 
 gboolean __mirage_session_toc_set_t_cdtext_data (MIRAGE_Session *self, gint pack_type, gchar *data, GError **error) {
-    MIRAGE_Session_TOC *self_toc = MIRAGE_SESSION_TOC(self);
-    MIRAGE_Session_TOCPrivate *_priv = MIRAGE_SESSION_TOC_GET_PRIVATE(self_toc);
+    MIRAGE_Session_TOCPrivate *_priv = MIRAGE_SESSION_TOC_GET_PRIVATE(self);
     
     GObject *track = NULL;
     GObject *language = NULL;
@@ -502,9 +494,8 @@ gboolean __mirage_session_toc_set_t_cdtext_data (MIRAGE_Session *self, gint pack
 static MIRAGE_SessionClass *parent_class = NULL;
 
 static void __mirage_session_toc_instance_init (GTypeInstance *instance, gpointer g_class) {
-    MIRAGE_Session *self = MIRAGE_SESSION(instance);
-    MIRAGE_Session_TOC *self_toc = MIRAGE_SESSION_TOC(self);                                                
-    MIRAGE_Session_TOCPrivate *_priv = MIRAGE_SESSION_TOC_GET_PRIVATE(self_toc);
+    MIRAGE_Session_TOC *self = MIRAGE_SESSION_TOC(instance);                                                
+    MIRAGE_Session_TOCPrivate *_priv = MIRAGE_SESSION_TOC_GET_PRIVATE(self);
     
     /* Create language map hash table */
     _priv->lang_map = g_hash_table_new(g_direct_hash, g_direct_equal);
@@ -513,17 +504,17 @@ static void __mirage_session_toc_instance_init (GTypeInstance *instance, gpointe
 }
 
 static void __mirage_session_toc_finalize (GObject *obj) {
-    MIRAGE_Session_TOC *self_toc = MIRAGE_SESSION_TOC(obj);                                                
-    MIRAGE_Session_TOCPrivate *_priv = MIRAGE_SESSION_TOC_GET_PRIVATE(self_toc);
+    MIRAGE_Session_TOC *self = MIRAGE_SESSION_TOC(obj);                                                
+    MIRAGE_Session_TOCPrivate *_priv = MIRAGE_SESSION_TOC_GET_PRIVATE(self);
     
-    MIRAGE_DEBUG(self_toc, MIRAGE_DEBUG_GOBJECT, "%s:\n", __func__);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_GOBJECT, "%s:\n", __func__);
 
     g_hash_table_destroy(_priv->lang_map);
     g_free(_priv->toc_filename);
     g_free(_priv->mixed_mode_bin);
     
     /* Chain up to the parent class */
-    MIRAGE_DEBUG(self_toc, MIRAGE_DEBUG_GOBJECT, "%s: chaining up to parent\n", __func__);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_GOBJECT, "%s: chaining up to parent\n", __func__);
     return G_OBJECT_CLASS(parent_class)->finalize(obj);
 }
 
