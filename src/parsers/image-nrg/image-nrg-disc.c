@@ -168,17 +168,31 @@ static gint __mirage_disc_nrg_find_block_entry_helper(gconstpointer a, gconstpoi
     return memcmp(blockentry->block_id, block_id, 4);
 }
 
-static NRGBlockIndexEntry *__mirage_disc_nrg_find_block_entry(MIRAGE_Disc *self, gchar *block_id, GError **error) {
+static NRGBlockIndexEntry *__mirage_disc_nrg_find_block_entry(MIRAGE_Disc *self, gchar *block_id, gint index, GError **error) {
     MIRAGE_Disc_NRGPrivate *_priv = MIRAGE_DISC_NRG_GET_PRIVATE(self);
-    GList *listentry = NULL;
+    GList *list_entry = NULL;
+    GList *list_start = _priv->block_index;
+    gint cur_index = 0;
 
-    listentry = g_list_find_custom(_priv->block_index, block_id, __mirage_disc_nrg_find_block_entry_helper);
+    do {
+        list_entry = g_list_find_custom(list_start, block_id, __mirage_disc_nrg_find_block_entry_helper);
 
-    if(listentry) {
-        return (NRGBlockIndexEntry *) listentry->data;
-    } else {
-        return (NRGBlockIndexEntry *) NULL;
-    }
+        if(list_entry) {
+            if(cur_index == index) {
+                return (NRGBlockIndexEntry *) list_entry->data;
+            } else {
+                if(list_entry->next) {
+                    list_start = list_entry->next;
+                } else {
+                    break;
+                }
+            }
+        } else {
+            break;
+        }
+    } while(cur_index++ < index);
+
+    return NULL;
 }
 
 static gboolean __mirage_disc_nrg_load_medium_type (MIRAGE_Disc *self, GError **error) {
@@ -188,7 +202,7 @@ static gboolean __mirage_disc_nrg_load_medium_type (MIRAGE_Disc *self, GError **
     guint32                mtyp_data = 0;
 
     /* Look up MTYP block */
-    blockentry = __mirage_disc_nrg_find_block_entry(self, "MTYP", error);
+    blockentry = __mirage_disc_nrg_find_block_entry(self, "MTYP", 0, error);
     if (!blockentry) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to look up 'MTYP' block!\n", __func__);
         mirage_error(MIRAGE_E_PARSER, error);
@@ -314,16 +328,16 @@ static gboolean __mirage_disc_nrg_decode_mode (MIRAGE_Disc *self, gint code, gin
     return TRUE;
 }
 
-static gboolean __mirage_disc_nrg_load_etn_data (MIRAGE_Disc *self, GError **error) {
+static gboolean __mirage_disc_nrg_load_etn_data (MIRAGE_Disc *self, gint session_num, GError **error) {
     MIRAGE_Disc_NRGPrivate *_priv = MIRAGE_DISC_NRG_GET_PRIVATE(self);
     NRGBlockIndexEntry     *blockentry = NULL;
     guint8                 *cur_ptr = NULL;
 
     /* Look up ETN2 / ETNF block */
     if(!_priv->old_format) {
-        blockentry = __mirage_disc_nrg_find_block_entry(self, "ETN2", error);
+        blockentry = __mirage_disc_nrg_find_block_entry(self, "ETN2", session_num, error);
     } else {
-        blockentry = __mirage_disc_nrg_find_block_entry(self, "ETNF", error);
+        blockentry = __mirage_disc_nrg_find_block_entry(self, "ETNF", session_num, error);
     }
     if (!blockentry) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to look up 'ETN2' or 'ETNF' block!\n", __func__);
@@ -374,16 +388,16 @@ static gboolean __mirage_disc_nrg_load_etn_data (MIRAGE_Disc *self, GError **err
     return TRUE;
 }
 
-static gboolean __mirage_disc_nrg_load_cue_data (MIRAGE_Disc *self, GError **error) {
+static gboolean __mirage_disc_nrg_load_cue_data (MIRAGE_Disc *self, gint session_num, GError **error) {
     MIRAGE_Disc_NRGPrivate *_priv = MIRAGE_DISC_NRG_GET_PRIVATE(self);
     NRGBlockIndexEntry     *blockentry = NULL;
     guint8                 *cur_ptr = NULL;
 
     /* Look up CUEX / CUES block */
     if(!_priv->old_format) {
-        blockentry = __mirage_disc_nrg_find_block_entry(self, "CUEX", error);
+        blockentry = __mirage_disc_nrg_find_block_entry(self, "CUEX", session_num, error);
     } else {
-        blockentry = __mirage_disc_nrg_find_block_entry(self, "CUES", error);
+        blockentry = __mirage_disc_nrg_find_block_entry(self, "CUES", session_num, error);
     }
     if (!blockentry) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to look up 'CUEX' or 'CUES' block!\n", __func__);
@@ -436,16 +450,16 @@ static gboolean __mirage_disc_nrg_load_cue_data (MIRAGE_Disc *self, GError **err
     return TRUE;
 }
 
-static gboolean __mirage_disc_nrg_load_dao_data (MIRAGE_Disc *self, GError **error) {
+static gboolean __mirage_disc_nrg_load_dao_data (MIRAGE_Disc *self, gint session_num, GError **error) {
     MIRAGE_Disc_NRGPrivate *_priv = MIRAGE_DISC_NRG_GET_PRIVATE(self);
     NRGBlockIndexEntry     *blockentry = NULL;
     guint8                 *cur_ptr = NULL;
 
     /* Look up DAOX / DAOI block */
     if(!_priv->old_format) {
-        blockentry = __mirage_disc_nrg_find_block_entry(self, "DAOX", error);
+        blockentry = __mirage_disc_nrg_find_block_entry(self, "DAOX", session_num, error);
     } else {
-        blockentry = __mirage_disc_nrg_find_block_entry(self, "DAOI", error);
+        blockentry = __mirage_disc_nrg_find_block_entry(self, "DAOI", session_num, error);
     }
     if (!blockentry) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to look up 'DAOX' or 'DAOI' block!\n", __func__);
@@ -510,21 +524,21 @@ static gboolean __mirage_disc_nrg_load_dao_data (MIRAGE_Disc *self, GError **err
     return TRUE;
 }
 
-static gboolean __mirage_disc_nrg_load_session (MIRAGE_Disc *self, GError **error) {
+static gboolean __mirage_disc_nrg_load_session (MIRAGE_Disc *self, gint session_num, GError **error) {
     MIRAGE_Disc_NRGPrivate *_priv = MIRAGE_DISC_NRG_GET_PRIVATE(self);
     gboolean succeeded = TRUE;
     
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: loading session\n", __func__);
     
     /* Read CUEX/CUES blocks */
-    if (!__mirage_disc_nrg_load_cue_data(self, error)) {
+    if (!__mirage_disc_nrg_load_cue_data(self, session_num, error)) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to load CUE blocks!\n", __func__);
         succeeded = FALSE;
         goto end;
     }
     
     /* Read DAOX/DAOI blocks */
-    if (!__mirage_disc_nrg_load_dao_data(self, error)) {
+    if (!__mirage_disc_nrg_load_dao_data(self, session_num, error)) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to load DAO blocks!\n", __func__);
         succeeded = FALSE;
         goto end;
@@ -788,14 +802,14 @@ end:
     return succeeded;
 }
 
-static gboolean __mirage_disc_nrg_load_session_tao (MIRAGE_Disc *self, GError **error) {
+static gboolean __mirage_disc_nrg_load_session_tao (MIRAGE_Disc *self, gint session_num, GError **error) {
     MIRAGE_Disc_NRGPrivate *_priv = MIRAGE_DISC_NRG_GET_PRIVATE(self);
     gboolean succeeded = TRUE;
     
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: loading session\n", __func__);
     
     /* Read ETNF/ETN2 blocks */
-    if (!__mirage_disc_nrg_load_etn_data(self, error)) {
+    if (!__mirage_disc_nrg_load_etn_data(self, session_num, error)) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to load ETNF/ETN2 blocks!\n", __func__);
         succeeded = FALSE;
         goto end_tao;
@@ -953,7 +967,7 @@ static gboolean __mirage_disc_nrg_load_cdtext (MIRAGE_Disc *self, GError **error
     gboolean               succeeded = TRUE;
 
     /* Look up CDTX block */
-    blockentry = __mirage_disc_nrg_find_block_entry(self, "CDTX", error);
+    blockentry = __mirage_disc_nrg_find_block_entry(self, "CDTX", 0, error);
     if (!blockentry) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to look up 'CDTX' block!\n", __func__);
         mirage_error(MIRAGE_E_PARSER, error);
@@ -1107,26 +1121,37 @@ static gboolean __mirage_disc_nrg_load_image (MIRAGE_Disc *self, gchar **filenam
     }
 
     /* Load disc sessions. */
-    if (__mirage_disc_nrg_find_block_entry(self, "CUEX", error) || __mirage_disc_nrg_find_block_entry(self, "CUES", error)) {
-        /* CUEX/CUES block: means we need to make new session */
-        if (!__mirage_disc_nrg_load_session(self, error)) {
-            succeeded = FALSE;
+    gint session_num = 0;
+
+    for (session_num = 0;; session_num++) {
+        if (__mirage_disc_nrg_find_block_entry(self, "CUEX", session_num, error) || __mirage_disc_nrg_find_block_entry(self, "CUES", session_num, error)) {
+            /* CUEX/CUES block: means we need to make new session */
+            if (!__mirage_disc_nrg_load_session(self, session_num, error)) {
+                MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to load session!\n", __func__);
+                mirage_error(MIRAGE_E_IMAGEFILE, error);
+                succeeded = FALSE;
+            }
+        } else if (__mirage_disc_nrg_find_block_entry(self, "ETN2", session_num, error) || __mirage_disc_nrg_find_block_entry(self, "ETNF", session_num, error)) {
+            /* ETNF/ETN2 block: means we need to make new session */
+            if (!__mirage_disc_nrg_load_session_tao(self, session_num, error)) {
+                MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to load session!\n", __func__);
+                mirage_error(MIRAGE_E_IMAGEFILE, error);
+                succeeded = FALSE;
+            }
+        } else {
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: Loaded a total of %i sessions.\n", __func__, session_num);
+            break;
         }
-    } else if (__mirage_disc_nrg_find_block_entry(self, "ETN2", error) || __mirage_disc_nrg_find_block_entry(self, "ETNF", error)) {
-        /* ETNF/ETN2 block: means we need to make new session */
-        if (!__mirage_disc_nrg_load_session_tao(self, error)) {
-            succeeded = FALSE;
-        }
-    } 
+    }
 
     /* Load CD text, medium type etc. */
-    if (__mirage_disc_nrg_find_block_entry(self, "CDTX", error)) {
+    if (__mirage_disc_nrg_find_block_entry(self, "CDTX", 0, error)) {
         if (!__mirage_disc_nrg_load_cdtext(self, error)) {
             succeeded = FALSE;
         }
     } 
 
-    if (__mirage_disc_nrg_find_block_entry(self, "MTYP", error)) {
+    if (__mirage_disc_nrg_find_block_entry(self, "MTYP", 0, error)) {
         /* MTYP: medium type */            
         if (!__mirage_disc_nrg_load_medium_type(self, error)) {
             succeeded = FALSE;
