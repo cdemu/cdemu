@@ -396,7 +396,9 @@ gboolean mirage_session_layout_get_start_sector (MIRAGE_Session *self, gint *sta
  * @error: location to store error, or %NULL
  *
  * <para>
- * Retrieves length of the session layout.
+ * Retrieves length of the session layout. This means the length of 
+ * all tracks combined, including lead-in and lead-out tracks. The returned
+ * length is given in sectors.
  * </para>
  *
  * Returns: %TRUE on success, %FALSE on failure
@@ -419,7 +421,7 @@ gboolean mirage_session_layout_get_length (MIRAGE_Session *self, gint *length, G
  * <para>
  * Sets session's leadout length to @length. It does so by creating NULL fragment 
  * and adding it to leadout. This function is internally used to properly handle 
- * multi-session disc layouts.
+ * multi-session disc layouts. The length is given in sectors.
  * </para>
  *
  * <note>
@@ -483,7 +485,7 @@ gboolean mirage_session_set_leadout_length (MIRAGE_Session *self, gint length, G
  * @error: location to store error, or %NULL
  *
  * <para>
- * Retrieves session's leadout length.
+ * Retrieves session's leadout length. The returned length is given in sectors.
  * </para>
  *
  * <note>
