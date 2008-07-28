@@ -102,7 +102,7 @@ gboolean mirage_fragment_can_handle_data_format (MIRAGE_Fragment *self, gchar *f
  * @error: location to store error, or %NULL
  *
  * <para>
- * Sets fragment's start address.
+ * Sets fragment's start address. The @address is given in sectors.
  * </para>
  *
  * <note>
@@ -131,7 +131,7 @@ gboolean mirage_fragment_set_address (MIRAGE_Fragment *self, gint address, GErro
  * @error: location to store error, or %NULL
  *
  * <para>
- * Retrieves fragment's start address.
+ * Retrieves fragment's start address. The @address is given in sectors.
  * </para>
  *
  * <note>
@@ -155,7 +155,7 @@ gboolean mirage_fragment_get_address (MIRAGE_Fragment *self, gint *address, GErr
  * @error: location to store error, or %NULL
  *
  * <para>
- * Sets fragment's length.
+ * Sets fragment's length. The @length is given in sectors.
  * </para>
  *
  * <note>
@@ -184,7 +184,7 @@ gboolean mirage_fragment_set_length (MIRAGE_Fragment *self, gint length, GError 
  * @error: location to store error, or %NULL
  *
  * <para>
- * Retrieves fragment's length.
+ * Retrieves fragment's length. The returned @length is given in sectors.
  * </para>
  *
  * <note>
@@ -231,6 +231,7 @@ gboolean mirage_fragment_use_the_rest_of_file (MIRAGE_Fragment *self, GError **e
  * <para>
  * Reads main channel selection data for sector at fragment-relative 
  * @address into @buf and stores read length into @length.
+ * Both @address and and @length is given in sectors.
  * </para>
  *
  * Returns: %TRUE on success, %FALSE on failure
@@ -251,6 +252,7 @@ gboolean mirage_fragment_read_main_data (MIRAGE_Fragment *self, gint address, gu
  * <para>
  * Reads subchannel channel selection data for sector at fragment-relative 
  * @address into @buf and stores read length into @length.
+ * Both @address and @length is given in sectors.
  * </para>
  *
  * Returns: %TRUE on success, %FALSE on failure
