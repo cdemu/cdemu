@@ -753,7 +753,7 @@ gboolean mirage_disc_layout_get_start_sector (MIRAGE_Disc *self, gint *start_sec
  * @error: location to store error, or %NULL
  *
  * <para>
- * Retrieves length of the disc layout.
+ * Retrieves length of the disc layout. The returned length is given in sectors.
  * </para>
  *
  * Returns: %TRUE on success, %FALSE on failure

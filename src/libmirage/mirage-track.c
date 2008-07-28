@@ -880,7 +880,7 @@ gboolean mirage_track_layout_get_start_sector (MIRAGE_Track *self, gint *start_s
  * @error: location to store error, or %NULL
  *
  * <para>
- * Retrieves track's length.
+ * Retrieves track's length. The returned length is given in sectors.
  * </para>
  *
  * Returns: %TRUE on success, %FALSE on failure
