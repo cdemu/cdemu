@@ -86,7 +86,7 @@ gboolean mirage_index_get_number (MIRAGE_Index *self, gint *number, GError **err
  * @error: location to store error, or %NULL
  *
  * <para>
- * Sets index' start address.
+ * Sets index' start address. The @address is given in sectors.
  * </para>
  *
  * Returns: %TRUE on success, %FALSE on failure
@@ -105,7 +105,7 @@ gboolean mirage_index_set_address (MIRAGE_Index *self, gint address, GError **er
  * @error: location to store error, or %NULL
  *
  * <para>
- * Retrieves index' start adddress.
+ * Retrieves index' start adddress. The @address is given in sectors.
  * </para>
  *
  * Returns: %TRUE on success, %FALSE on failure
