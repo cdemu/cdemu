@@ -41,6 +41,19 @@ typedef struct {
 /* Used by MIRAGE_TYPE_DISC_CUE */
 GType mirage_disc_cue_get_type (GTypeModule *module);
 
+/* Helpers */
+gboolean __mirage_disc_cue_finish_last_track (MIRAGE_Disc *self, GError **error);
+gboolean __mirage_disc_cue_set_cue_filename (MIRAGE_Disc *self, gchar *filename, GError **error);
+gboolean __mirage_disc_cue_set_mcn (MIRAGE_Disc *self, gchar *mcn, GError **error);
+gboolean __mirage_disc_cue_set_new_file (MIRAGE_Disc *self, gchar *filename_string, gchar *file_type, GError **error);
+gboolean __mirage_disc_cue_add_track (MIRAGE_Disc *self, gint number, gchar *mode_string, GError **error);
+gboolean __mirage_disc_cue_add_index (MIRAGE_Disc *self, gint number, gint address, GError **error);
+gboolean __mirage_disc_cue_set_flag (MIRAGE_Disc *self, gint flag, GError **error);
+gboolean __mirage_disc_cue_set_isrc (MIRAGE_Disc *self, gchar *isrc, GError **error);
+gboolean __mirage_disc_cue_add_pregap (MIRAGE_Disc *self, gint length, GError **error);
+gboolean __mirage_disc_cue_add_empty_part (MIRAGE_Disc *self, gint length, GError **error);
+gboolean __mirage_disc_cue_add_session (MIRAGE_Disc *self, gint number, GError **error);
+
 G_END_DECLS
 
 #endif /* __IMAGE_CUE_DISC_H__ */

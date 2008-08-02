@@ -171,6 +171,10 @@ TITLE_          TITLE
 
 
 {COMMENT_} {
+    /* Catch UltraISO/IsoBuster-specific session directive within comment... */
+    if (sscanf(yytext, "REM SESSION %d", &yylval->number) == 1) {
+        return SESSION_;
+    }
 }
 
 {MSF_} {

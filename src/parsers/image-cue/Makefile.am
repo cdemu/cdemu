@@ -13,16 +13,14 @@ plugin_LTLIBRARIES = image-cue.la
 
 noinst_HEADERS = \
     image-cue.h \
-    image-cue-disc.h \
-    image-cue-session.h
-
+    image-cue-disc.h
+    
 image_cue_la_SOURCES = \
    image-cue-parser.y \
    image-cue-lexer.l \
    image-cue-disc.c \
-   image-cue-plugin.c \
-   image-cue-session.c
-    
+   image-cue-plugin.c
+   
 image_cue_la_LIBADD = \
     $(glib_LIBS) \
     $(gobject_LIBS)
