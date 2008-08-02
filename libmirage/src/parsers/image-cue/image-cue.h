@@ -27,7 +27,6 @@
 #include "mirage.h"
 #include "image-cue-parser.h"
 #include "image-cue-disc.h"
-#include "image-cue-session.h"
 
 
 G_BEGIN_DECLS
