@@ -2664,7 +2664,7 @@ static gboolean __cdemud_device_pc_set_cd_speed (CDEMUD_Device *self, guint8 *ra
 
 
 /* START/STOP unit implementation */
-static gboolean __cdemud_device_unload_disc (CDEMUD_Device *self, GError **error);
+static gboolean __cdemud_device_unload_disc (CDEMUD_Device *self, gboolean force, GError **error);
 
 static gboolean __cdemud_device_pc_start_stop_unit (CDEMUD_Device *self, guint8 *raw_cdb) {
     /*CDEMUD_DevicePrivate *_priv = CDEMUD_DEVICE_GET_PRIVATE(self);*/
@@ -2676,7 +2676,7 @@ static gboolean __cdemud_device_pc_start_stop_unit (CDEMUD_Device *self, guint8 
         if (!cdb->start) {
             
             CDEMUD_DEBUG(self, DAEMON_DEBUG_DEV_PC_TRACE, "%s: unloading disc...\n", __func__);
-            if (!__cdemud_device_unload_disc(self, NULL)) {
+            if (!__cdemud_device_unload_disc(self, FALSE, NULL)) {
                 CDEMUD_DEBUG(self, DAEMON_DEBUG_DEV_PC_TRACE, "%s: failed to unload disc\n", __func__);
                 __cdemud_device_write_sense(self, SK_NOT_READY, MEDIUM_REMOVAL_PREVENTED);
                 return FALSE;
@@ -3079,11 +3079,11 @@ gboolean cdemud_device_load_disc (CDEMUD_Device *self, gchar **file_names, GErro
 }
 
 
-static gboolean __cdemud_device_unload_disc (CDEMUD_Device *self, GError **error) {
+static gboolean __cdemud_device_unload_disc (CDEMUD_Device *self, gboolean force, GError **error) {
     CDEMUD_DevicePrivate *_priv = CDEMUD_DEVICE_GET_PRIVATE(self);
 
     /* Check if the door is locked */
-    if (_priv->locked) {
+    if (!force && _priv->locked) {
         CDEMUD_DEBUG(self, DAEMON_DEBUG_DEV_PC_TRACE, "%s: device is locked\n", __func__);
         cdemud_error(CDEMUD_E_DEVLOCKED, error);
         return FALSE;
@@ -3111,7 +3111,7 @@ gboolean cdemud_device_unload_disc (CDEMUD_Device *self, GError **error) {
     gboolean succeeded = TRUE;
     
     g_mutex_lock(_priv->device_mutex);
-    succeeded = __cdemud_device_unload_disc(self, error);
+    succeeded = __cdemud_device_unload_disc(self, TRUE, error);
     g_mutex_unlock(_priv->device_mutex);
     
     return succeeded;
