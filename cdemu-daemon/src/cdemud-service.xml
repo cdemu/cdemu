@@ -31,39 +31,39 @@
         
         <!-- Device control methods -->
         <method name="GetNumberOfDevices">
-            <arg name="number_of_devices"   type="u"        direction="out"/>
+            <arg name="number_of_devices"   type="i"        direction="out"/>
         </method>
                 
         <method name="DeviceGetMapping">
-            <arg name="device_number"       type="u"        direction="in"/>
+            <arg name="device_number"       type="i"        direction="in"/>
             <arg name="sr_device"           type="s"        direction="out"/>
             <arg name="sg_device"           type="s"        direction="out"/>
         </method>
         
         <method name="DeviceGetStatus">
-            <arg name="device_number"       type="u"        direction="in"/>
+            <arg name="device_number"       type="i"        direction="in"/>
             <arg name="loaded"              type="b"        direction="out"/>
             <arg name="image_type"          type="s"        direction="out"/>
             <arg name="file_names"          type="as"       direction="out"/>
         </method>
         
         <method name="DeviceLoad">
-            <arg name="device_number"       type="u"        direction="in"/>
+            <arg name="device_number"       type="i"        direction="in"/>
             <arg name="file_names"          type="as"       direction="in"/>
         </method>
 
         <method name="DeviceUnload">
-            <arg name="device_number"       type="u"        direction="in"/>
+            <arg name="device_number"       type="i"        direction="in"/>
         </method>
         
         <method name="DeviceGetOption">
-            <arg name="device_number"       type="u"        direction="in"/>
+            <arg name="device_number"       type="i"        direction="in"/>
             <arg name="option_name"         type="s"        direction="in"/>
             <arg name="option_values"       type="av"       direction="out"/>
         </method>
         
         <method name="DeviceSetOption">
-            <arg name="device_number"       type="u"        direction="in"/>
+            <arg name="device_number"       type="i"        direction="in"/>
             <arg name="option_name"         type="s"        direction="in"/>
             <arg name="option_values"       type="av"       direction="in"/>
         </method>
