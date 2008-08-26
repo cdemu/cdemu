@@ -74,11 +74,11 @@
         <signal name="DaemonStopped" />
         
         <signal name="DeviceStatusChanged">
-            <arg name="device_number"       type="u"        direction="out"/>
+            <arg name="device_number"       type="i"        direction="out"/>
         </signal>
         
         <signal name="DeviceOptionChanged">
-            <arg name="device_number"       type="u"        direction="out"/>
+            <arg name="device_number"       type="i"        direction="out"/>
             <arg name="option"              type="s"        direction="out"/>
         </signal>
         
