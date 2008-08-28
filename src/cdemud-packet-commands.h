@@ -287,6 +287,14 @@ struct GET_EVENT_STATUS_NOTIFICATION_MediaEventDescriptor {
     guint8  end;
 };
 
+enum MEDIA_EVENTS {
+    MEDIA_EVENT_NOCHANGE = 0,
+    MEDIA_EVENT_EJECTREQUEST = 1,
+    MEDIA_EVENT_NEW_MEDIA = 2,
+    MEDIA_EVENT_MEDIA_REMOVAL = 3,
+    MEDIA_EVENT_MEDIA_CHANGE = 4,
+};
+
 /* ************************************************************************** *\
  *                              GET PERFORMANCE                               *
 \* ************************************************************************** */
