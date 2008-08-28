@@ -63,7 +63,7 @@ typedef struct {
     /* Locked flag */
     gboolean locked;
     /* Media changed flag */
-    gboolean media_changed;
+    gint media_event;
             
     /* Last accessed sector */
     gint current_sector;
@@ -1008,12 +1008,10 @@ static gboolean __cdemud_device_pc_get_event_status_notification (CDEMUD_Device 
         ret_header->nea = 0;
         ret_header->not_class = 4; /* Media notification class */
         
-        /* Media changed? */
-        if (_priv->media_changed) {
-            CDEMUD_DEBUG(self, DAEMON_DEBUG_DEV_PC_TRACE, "%s: medium has changed; reporting\n", __func__);
-            ret_desc->event = 4; /* Media Changed */
-            _priv->media_changed = FALSE;
-        }
+        /* Report current media event and then reset it */
+        CDEMUD_DEBUG(self, DAEMON_DEBUG_DEV_PC_TRACE, "%s: reporting media event 0x%X\n", __func__, _priv->media_event);
+        ret_desc->event = _priv->media_event;
+        _priv->media_event = MEDIA_EVENT_NOCHANGE;
         
         /* Media status */
         ret_desc->present = _priv->loaded;
@@ -2705,9 +2703,9 @@ static gboolean __cdemud_device_pc_test_unit_ready (CDEMUD_Device *self, guint8 
     /* SCSI requires us to report UNIT ATTENTION with NOT READY TO READY CHANGE, 
        MEDIUM MAY HAVE CHANGED whenever medium changes... this is required for
        linux SCSI layer to set medium block size properly upon disc insertion */
-    if (_priv->media_changed) {
+    if (_priv->media_event == MEDIA_EVENT_NEW_MEDIA) {
         CDEMUD_DEBUG(self, DAEMON_DEBUG_DEV_PC_TRACE, "%s: reporting media changed\n", __func__);
-	    _priv->media_changed = FALSE;
+        _priv->media_event = MEDIA_EVENT_NOCHANGE;
         __cdemud_device_write_sense(self, SK_UNIT_ATTENTION, NOT_READY_TO_READY_CHANGE_MEDIUM_MAY_HAVE_CHANGED);
         return FALSE;
     }
@@ -3042,7 +3040,7 @@ static gboolean __cdemud_device_load_disc (CDEMUD_Device *self, gchar **file_nam
     
     /* Loading succeeded */
     _priv->loaded = TRUE;
-    _priv->media_changed = TRUE;
+    _priv->media_event = MEDIA_EVENT_NEW_MEDIA;
     
     /* Set current profile (and modify feature flags accordingly */
     mirage_disc_get_medium_type(MIRAGE_DISC(_priv->disc), &media_type, NULL);
@@ -3082,6 +3080,11 @@ gboolean cdemud_device_load_disc (CDEMUD_Device *self, gchar **file_names, GErro
 static gboolean __cdemud_device_unload_disc (CDEMUD_Device *self, gboolean force, GError **error) {
     CDEMUD_DevicePrivate *_priv = CDEMUD_DEVICE_GET_PRIVATE(self);
 
+    /* We have to report eject request, even if it doesn't actually get carried
+       out, for example because device is locked. However, this should give 
+       HAL a clue that it might be good idea to unlock the device... */
+    _priv->media_event = MEDIA_EVENT_EJECTREQUEST;
+    
     /* Check if the door is locked */
     if (!force && _priv->locked) {
         CDEMUD_DEBUG(self, DAEMON_DEBUG_DEV_PC_TRACE, "%s: device is locked\n", __func__);
@@ -3095,7 +3098,7 @@ static gboolean __cdemud_device_unload_disc (CDEMUD_Device *self, gboolean force
         g_object_unref(_priv->disc);
         /* We're not loaded anymore, and media got changed */
         _priv->loaded = FALSE;
-        _priv->media_changed = TRUE;
+        _priv->media_event = MEDIA_EVENT_MEDIA_REMOVAL;
         /* Current profile: None */
         __cdemud_device_set_profile(self, PROFILE_NONE);       
         
@@ -3111,10 +3114,16 @@ gboolean cdemud_device_unload_disc (CDEMUD_Device *self, GError **error) {
     gboolean succeeded = TRUE;
     
     g_mutex_lock(_priv->device_mutex);
-    succeeded = __cdemud_device_unload_disc(self, TRUE, error);
+    succeeded = __cdemud_device_unload_disc(self, FALSE, error);
     g_mutex_unlock(_priv->device_mutex);
     
-    return succeeded;
+    /* Currently, the only case of unload command failing is when device is
+       locked. However, in that case, the unload attempt is reported, and if
+       HAL daemon is running, it will try to unlock the device and unload it 
+       again. So in order not to bother clients with device locked error when 
+       device will most likely get unloaded anyway, we ignore the command's 
+       return status here... */
+    return TRUE;
 }
 
 
