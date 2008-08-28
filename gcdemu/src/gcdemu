@@ -89,7 +89,8 @@ if __name__ == "__main__":
         elif o in ("-w", "--window"):
             standalone = True
     
-    gnome.init(config.name, config.version)
+    app_properties = {'app-datadir': config.prefix + "/share"}
+    gnome.init(config.name, config.version, properties = app_properties)
         
     if standalone:
         run_standalone()        

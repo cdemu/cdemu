@@ -24,9 +24,8 @@ name = "@PACKAGE_NAME@"
 version = "@VERSION@"
 
 # Paths
-appdir = string.lower(name)
-image_dir = "@prefix@/share/pixmaps/" + appdir + "/"
-yelp_dir = "@prefix@/share/gnome/help/" + appdir + "/"
+prefix = "@prefix@"
+image_dir = prefix + "/share/pixmaps/" + name
 
 # Minimum daemon version
 min_daemon_version = "1.1.0"
