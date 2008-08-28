@@ -23,6 +23,7 @@ import traceback
 import gconf
 import gobject
 import gtk, gtk.gdk
+import gnome
 import gnome.ui
 import gnomeapplet
 
@@ -54,7 +55,7 @@ class gCDEmu_Applet (gnomeapplet.Applet):
             print "Icon name changed to: %s" % (icon_name)
                         
             try:
-                self.__pixbuf_icon = gtk.gdk.pixbuf_new_from_file_at_size(config.image_dir + icon_name, 204, 204)
+                self.__pixbuf_icon = gtk.gdk.pixbuf_new_from_file_at_size(config.image_dir + "/" + icon_name, 204, 204)
             except gobject.GError, e:
                 message = gtk.MessageDialog(None, 0, gtk.MESSAGE_ERROR, gtk.BUTTONS_CLOSE, e.message)
                 message.set_title(_("Error"))
@@ -130,7 +131,7 @@ class gCDEmu_Applet (gnomeapplet.Applet):
         self.__gconf_client.notify_add(self.__gconf_key_path, self.__cb_gconf_client_notify)
         
         # Logo; load the SVG, scaled to 156x156
-        self.__pixbuf_logo = gtk.gdk.pixbuf_new_from_file_at_size(config.image_dir + "gcdemu.svg", 156, 156)
+        self.__pixbuf_logo = gtk.gdk.pixbuf_new_from_file_at_size(config.image_dir + "/" + "gcdemu.svg", 156, 156)
         
         # Icon image
         self.__image = gtk.Image()
@@ -278,11 +279,7 @@ class gCDEmu_Applet (gnomeapplet.Applet):
         return
 
     def __verb_help (self):
-        # Try to launch GNOME 2 Help Browser
-        yelp_uri = "file://" + config.yelp_dir + "C/gcdemu.xml"
-        print "Launching %s in help browser." % (yelp_uri)
-        os.spawnlp(os.P_NOWAIT, 'yelp', 'yelp', yelp_uri)
-
+        gnome.help_display(config.name)
         return
     
     def notification (self, summary, body, icon_name=None):
