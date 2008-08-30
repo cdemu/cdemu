@@ -20,6 +20,7 @@
 #ifndef __IMAGE_C2D_DISC_H__
 #define __IMAGE_C2D_DISC_H__
 
+#include <string.h>
 
 G_BEGIN_DECLS
 

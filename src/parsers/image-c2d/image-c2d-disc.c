@@ -27,7 +27,6 @@
 
 typedef struct {   
     C2D_HeaderBlock  *header_block;
-    C2D_SessionBlock *session_block;
     C2D_TrackBlock   *track_block;
     
     gchar *c2d_filename;
@@ -41,7 +40,7 @@ typedef struct {
 
 
 static gint __mirage_disc_c2d_convert_track_mode (MIRAGE_Disc *self, guint32 mode, guint16 sector_size) {
-    if(mode == 0) {
+    if(mode == C2D_MODE_AUDIO) {
         switch(sector_size) {
             case 2352:
                 return MIRAGE_MODE_AUDIO;
@@ -51,7 +50,7 @@ static gint __mirage_disc_c2d_convert_track_mode (MIRAGE_Disc *self, guint32 mod
                 MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: unknown sector size %i!\n", __func__, sector_size);
                 return -1;
         }
-    } else if(mode == 20) {
+    } else if(mode & C2D_MODE_DATA) {
         switch(sector_size) {
             /* FIXME: This needs some work */
             case 2048:
@@ -79,23 +78,18 @@ static gint __mirage_disc_c2d_convert_track_mode (MIRAGE_Disc *self, guint32 mod
 static gboolean __mirage_disc_c2d_parse_track_entries (MIRAGE_Disc *self, GError **error) {
     MIRAGE_Disc_C2DPrivate *_priv = MIRAGE_DISC_C2D_GET_PRIVATE(self);
 
-    GObject            *cur_session = NULL;
-    gint               medium_type = 0;
-    gint               track;
+    gint    last_session = 0;
+    gint    medium_type = 0;
+    gint    track;
     
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: reading track blocks\n", __func__);        
     
     /* Fetch medium type which we'll need later */
     mirage_disc_get_medium_type(self, &medium_type, NULL);
 
-    /* Get current session */
-    if (!mirage_disc_get_session_by_index(self, -1, &cur_session, error)) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to get current session!\n", __func__);
-        return FALSE;
-    }
-
     /* Read track entries */
     for (track = 0; track < _priv->header_block->track_blocks; track++) {
+        GObject *cur_session = NULL;
         GObject *cur_track = NULL;
 
         /* Read main blocks related to track */
@@ -105,12 +99,28 @@ static gboolean __mirage_disc_c2d_parse_track_entries (MIRAGE_Disc *self, GError
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   last sector: %i\n", __func__, _priv->track_block[track].last_sector);
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   image offset: %i\n", __func__, _priv->track_block[track].image_offset);
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   sector size: %i\n", __func__, _priv->track_block[track].sector_size);
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   mode?: %i\n", __func__, _priv->track_block[track].mode);
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   session?: %i\n", __func__, _priv->track_block[track].session);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   mode: %i\n", __func__, _priv->track_block[track].mode);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   session: %i\n", __func__, _priv->track_block[track].session);
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   point: %i\n", __func__, _priv->track_block[track].point);
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   index?: %i\n", __func__, _priv->track_block[track].index);
 
-        if (!mirage_session_add_track_by_number(MIRAGE_SESSION(cur_session), track+1, &cur_track, error)) {
+        /* Create a new session? */
+        if (_priv->track_block[track].session > last_session) {
+            if (!mirage_disc_add_session_by_number(self, _priv->track_block[track].session, &cur_session, error)) {
+                MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to add session!\n", __func__);        
+                return FALSE;
+            }
+            last_session = _priv->track_block[track].session;
+        }
+
+        /* Get current session */
+        if (!mirage_disc_get_session_by_index(self, -1, &cur_session, error)) {
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to get current session!\n", __func__);
+            return FALSE;
+        }
+
+        /* Add track to session */
+        if (!mirage_session_add_track_by_number(MIRAGE_SESSION(cur_session), _priv->track_block[track].point, &cur_track, error)) {
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to add track!\n", __func__);
             g_object_unref(cur_session);
             return FALSE;
@@ -184,10 +194,10 @@ static gboolean __mirage_disc_c2d_parse_track_entries (MIRAGE_Disc *self, GError
         mirage_finterface_binary_track_file_set_sectsize(MIRAGE_FINTERFACE_BINARY(data_fragment), tfile_sectsize, NULL);
         mirage_finterface_binary_track_file_set_format(MIRAGE_FINTERFACE_BINARY(data_fragment), tfile_format, NULL);
 
-#ifdef JALLA
+#ifdef WAIT_FOR_CONFIRMATION
         /* Subchannel */
         switch (_priv->track_block[track].sector_size) {
-            case 2352: {
+            case 2448: {
                 gint sfile_sectsize = 96;
                 gint sfile_format = FR_BIN_SFILE_PW96_INT | FR_BIN_SFILE_INT;
 
@@ -204,24 +214,19 @@ static gboolean __mirage_disc_c2d_parse_track_entries (MIRAGE_Disc *self, GError
 
                 break;
             }
-            case 2048: {
+            default: {
                 MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: no subchannel\n", __func__);
                 break;
             }
-            default: {
-                MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: unknown subchannel type 0x%X!\n", __func__, real_sector_size);
-                break;
-            }
         }
-#endif /* JALLA */
+#endif /* WAIT_FOR_CONFIRMATION */
 
         mirage_track_add_fragment(MIRAGE_TRACK(cur_track), -1, &data_fragment, error);
 
         g_object_unref(data_fragment);
         g_object_unref(cur_track);
-
+        g_object_unref(cur_session);
     }
-    g_object_unref(cur_session);
    
     return TRUE;
 }
@@ -233,14 +238,15 @@ static gboolean __mirage_disc_c2d_load_disc (MIRAGE_Disc *self, GError **error) 
     /* Init some block pointers */
     _priv->header_block = (C2D_HeaderBlock *) (_priv->c2d_data);
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: HEADER:\n", __func__);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   Signature: %s\n", __func__, &_priv->header_block->signature);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   Signature: %.32s\n", __func__, &_priv->header_block->signature);
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   Track blocks: %i\n", __func__, _priv->header_block->track_blocks);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   Session block size: %i\n", __func__, _priv->header_block->session_size);
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   Offset to track blocks: %i\n", __func__, _priv->header_block->offset_tracks);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   Length of header: %i\n", __func__, _priv->header_block->block_size);
-    if(_priv->header_block->session_size) {
-        _priv->session_block = (C2D_SessionBlock *) (_priv->c2d_data + _priv->header_block->block_size);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   Length of header: %i\n", __func__, _priv->header_block->header_size);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   Has description: %i\n", __func__, _priv->header_block->has_description);
+    if(_priv->header_block->has_description) {
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   Description: %s\n", __func__, &_priv->header_block->description);
     }
+
     _priv->track_block = (C2D_TrackBlock *) (_priv->c2d_data + _priv->header_block->offset_tracks);
 
     /* For now we only support (and assume) CD media */    
@@ -249,12 +255,6 @@ static gboolean __mirage_disc_c2d_load_disc (MIRAGE_Disc *self, GError **error) 
 
     /* CD-ROMs start at -150 as per Red Book... */
     mirage_disc_layout_set_start_sector(self, -150, NULL);
-
-    /* Add session */
-    if (!mirage_disc_add_session_by_number(self, 0, NULL, error)) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to add session!\n", __func__);        
-        return FALSE;
-    }
 
     /* Load tracks */
     if (!__mirage_disc_c2d_parse_track_entries(self, error)) {
@@ -293,15 +293,22 @@ static gboolean __mirage_disc_c2d_can_load_file (MIRAGE_Disc *self, gchar *filen
     if (!file) {
         return FALSE;
     }
-    
-    gchar sig[27] = {0};
-    fread(sig, 27, 1, file);
-    fclose(file);
-    if (memcmp(sig, C2D_SIGNATURE, 27)) {
+
+    gchar sig[32] = {0};
+    if(!fread(sig, 32, 1, file)) {
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read image file!\n", __func__);
         return FALSE;
     }
+    fclose(file);
+
+    if (!memcmp(sig, C2D_SIGNATURE_1, strnlen(C2D_SIGNATURE_1, 32))) {
+        return TRUE;
+    }
+    if (!memcmp(sig, C2D_SIGNATURE_2, strnlen(C2D_SIGNATURE_2, 32))) {
+        return TRUE;
+    }
     
-    return TRUE;
+    return FALSE;
 }
 
 static gboolean __mirage_disc_c2d_load_image (MIRAGE_Disc *self, gchar **filenames, GError **error) {
