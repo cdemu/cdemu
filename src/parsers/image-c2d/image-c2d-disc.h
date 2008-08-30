@@ -20,8 +20,6 @@
 #ifndef __IMAGE_C2D_DISC_H__
 #define __IMAGE_C2D_DISC_H__
 
-#include <string.h>
-
 G_BEGIN_DECLS
 
 #define MIRAGE_TYPE_DISC_C2D            (mirage_disc_c2d_get_type(global_module))
