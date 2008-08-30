@@ -30,24 +30,30 @@
 
 G_BEGIN_DECLS
 
-#define C2D_SIGNATURE "Roxio Image File Format 3.0"
+#define C2D_SIGNATURE_1 "Adaptec CeQuadrat VirtualCD File"
+#define C2D_SIGNATURE_2 "Roxio Image File Format 3.0"
+
+/*
+ * I've found the following mode values: 
+ * 0x00 0x08 = Audio, 0x04 0x14 = CDROM mode 1.
+ */
+
+#define C2D_MODE_AUDIO 0x00
+#define C2D_MODE_DATA  0x04
 
 #pragma pack(1)
 
 typedef struct {
-    guint8  signature[28]; /* "Roxio Image File Format 3.0" + \0 */
-    guint16 dummy[2];      /* (unknown) */
-    guint32 block_size;    /* Length of header block (200) */
-    guint16 dummy2[7];     /* (unknown) */
-    guint16 track_blocks;  /* Number of track blocks */
-    guint32 session_size;  /* Size of session(?) block */
-    guint64 offset_tracks; /* Offset to track blocks */
-    guint32 dummy3[35];    /* (unknown) */
-} C2D_HeaderBlock;  /* length: 200 bytes */
-
-typedef struct {
-    guint32 dummy[18];     /* (unknown) */
-} C2D_SessionBlock;  /* length: 72 bytes */
+    guint8  signature[32];   /* "Roxio Image File Format 3.0" || "Adaptec CeQuadrat VirtualCD File" */
+    guint32 header_size;     /* Length of header block? */
+    guint16 dummy1[7];       /* (unknown) */
+    guint16 track_blocks;    /* Number of track blocks  */
+    guint32 dummy2;          /* (unknown) */
+    guint32 offset_tracks;   /* Offset to track blocks  */
+    guint16 dummy3;          /* (unknown) */
+    guint16 has_description; /* Boolean flag */
+    guint8  description[32]; /* Zero terminated description string, max. length unknown. */
+} C2D_HeaderBlock;  /* length: (unknown) */
 
 typedef struct {
     guint32 block_size;   /* Length of this track block (44) */
@@ -56,10 +62,10 @@ typedef struct {
     guint64 image_offset; /* Image offset of track */
     guint32 sector_size;  /* Bytes per sector */
     guint16 dummy[6];     /* (unknown) */
-    guint8  mode;
-    guint8  session;
-    guint8  point;
-    guint8  index;
+    guint8  mode;         /* Track mode*/
+    guint8  session;      /* Track session */
+    guint8  point;        /* Track point */
+    guint8  index;        /* Index? */
     guint32 dummy2;       /* (unknown) */
 } C2D_TrackBlock;  /* length: 44 bytes */
 
