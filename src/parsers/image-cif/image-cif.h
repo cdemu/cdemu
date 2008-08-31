@@ -45,22 +45,53 @@ http://en.wikipedia.org/wiki/Resource_Interchange_File_Format
 #pragma pack(1)
 
 typedef struct {
+    /* main part */
+    guint8  signature[4];  /* "RIFF" */
+    guint32 length;        /* Length of block from this point onwards */
+    /* actually part of block content */
+    guint8  block_id[4];   /* "imag", "disc", "adio", "info", "ofs " */
+    /* TODO: Get rid of this eventually */
+    guint32 dummy[2];      /* (unknown) */
+} CIF_BlockHeader;  /* length: 20 bytes */
+
+typedef struct {
+    guint8  block_id[4];   /* "imag", "disc", "adio", "info", "ofs " */
+    guint32 dummy1[2];     /* (unknown) */
+} CIF_General_HeaderBlock; /* length: 12 bytes */
+
+typedef struct {
+    guint8  block_id[4];   /* "ofs " */
+    guint32 dummy1[2];     /* (unknown) */
+    guint16 num_subblocks; /* number of subblocks */
+} CIF_OFS_HeaderBlock; /* length: 14 bytes */
+
+typedef struct {
     guint8  signature[4];  /* "RIFF" */
     guint32 length;        /* Length of block from this point onwards */
     guint8  block_id[4];   /* "imag", "disc", "adio", "info", "ofs " */
-    guint32 ofs_offset;    /* Offset of track block in image (+ 8) || 0x00 */
-    guint32 reserved;
-} CIF_BlockHeader;  /* length: 20 bytes */
+    guint32 ofs_offset;    /* Offset of track block in image */
+    guint32 dummy;         /* (unknown) */
+} CIF_OFS_SubBlock;  /* length: 20 bytes */
+
+typedef struct {
+    guint16 length;        /* Length of subblock including this variable */
+    /* ... */
+} CIF_DISC_SubBlock; /* length: variable */
 
 #pragma pack()
 
 typedef struct {
+    gint            block_offset; /* offset in image */
     CIF_BlockHeader *block_header;
 
-    guint8          *subblocks_start;
-    guint           subblocks_length;
+    GList           *subblock_index;
     guint           num_subblocks;    
 } CIFBlockIndexEntry;
+
+typedef struct {
+    guint8          *start;
+    guint           length;
+} CIFSubBlockIndexEntry;
 
 
 GTypeModule *global_module;
