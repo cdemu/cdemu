@@ -50,47 +50,82 @@ static gboolean __mirage_disc_cif_build_block_index(MIRAGE_Disc *self, GError **
     cur_ptr = _priv->cif_data;
     index = 0;
     do {
-        blockentry = g_new(CIFBlockIndexEntry, 1);
-        if (!blockentry) {
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to allocate memory for block index!\n", __func__);
-            return FALSE;
-        }
         block = MIRAGE_CAST_PTR(cur_ptr, 0, CIF_BlockHeader *);
         if(memcmp(block->signature, "RIFF", 4)) {
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: expected 'RIFF' block signature!\n", __func__);
             return FALSE;
         }
+
+        blockentry = g_new(CIFBlockIndexEntry, 1);
+        if (!blockentry) {
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to allocate memory for block index!\n", __func__);
+            return FALSE;
+        }
+        blockentry->block_offset = cur_ptr - _priv->cif_data;
+        blockentry->block_header = block;
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: Block: %2i, ID: %4s, start: %p, length: %i (0x%X).\n", \
             __func__, index, block->block_id, block, block->length, block->length);
-        blockentry->block_header = block;
 
+        /* TODO FIXME */
         if(!memcmp(block->block_id, "info", 4)) {
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: This parser does not yet support binary tracks.\n", __func__);
-            //success = FALSE;
+            /* success = FALSE; */
         }
 
         /* Got sub-blocks? */
-        if(!memcmp(block->block_id, "disc", 4)) {
-            guint16 *skip_ahead = (guint16 *) (cur_ptr + CIF_BLOCK_HEADER_SIZE);
-            guint16 *subblocks = (guint16 *) (cur_ptr + CIF_BLOCK_HEADER_SIZE + *skip_ahead + 2);
-            guint16 *blocksize = (guint16 *) (cur_ptr + CIF_BLOCK_HEADER_SIZE + *skip_ahead + 18);
+        if(!memcmp(block->block_id, "disc", 4) || !memcmp(block->block_id, "ofs ", 4)) {
+            GList                  *subblockindex = NULL;
+            CIFSubBlockIndexEntry  *subblockentry = NULL;
+            gint                   num_subblocks = 0;
+            guint8                 *cur_ptr_sub = NULL;
 
-            blockentry->subblocks_start = (guint8 *) cur_ptr + CIF_BLOCK_HEADER_SIZE + *skip_ahead + 18;
-            blockentry->num_subblocks = *subblocks;
-            blockentry->subblocks_length = *blocksize;
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   Sub-blocks: %i, blocksize: %i.\n", __func__, *subblocks, *blocksize);
-        } else if(!memcmp(block->block_id, "ofs ", 4)) {
-            guint16         *subblocks = (guint16 *) (cur_ptr + CIF_BLOCK_HEADER_SIZE);
-            guint16         blocksize = CIF_BLOCK_HEADER_SIZE + 2;
+            if (!memcmp(block->block_id, "disc", 4)) {
+                cur_ptr_sub = cur_ptr + CIF_BLOCK_LENGTH_ADJUST + sizeof(CIF_General_HeaderBlock);
+            } else if(!memcmp(block->block_id, "ofs ", 4)) {
+                cur_ptr_sub = cur_ptr + CIF_BLOCK_LENGTH_ADJUST + sizeof(CIF_OFS_HeaderBlock);
+            }
 
-            blockentry->subblocks_start = (guint8 *) cur_ptr + CIF_BLOCK_HEADER_SIZE + 2;
-            blockentry->num_subblocks = *subblocks;
-            blockentry->subblocks_length = blocksize;
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   Sub-blocks: %i, blocksize: %i.\n", __func__, *subblocks, blocksize);
+            do {
+                subblockentry = g_new(CIFSubBlockIndexEntry, 1);
+                if (!subblockentry) {
+                    MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to allocate memory for sub-block index!\n", __func__);
+                    return FALSE;
+                }
+                subblockentry->start = cur_ptr_sub;
+                if (!memcmp(block->block_id, "disc", 4)) {
+                    CIF_DISC_SubBlock *subblock = MIRAGE_CAST_PTR(cur_ptr_sub, 0, CIF_DISC_SubBlock *);
+
+                    subblockentry->length = subblock->length;
+                } else if(!memcmp(block->block_id, "ofs ", 4)) {
+                    /* CIF_OFS_SubBlock *subblock = MIRAGE_CAST_PTR(cur_ptr_sub, 0, CIF_OFS_SubBlock *); */
+
+                    subblockentry->length = 22;
+                }
+                MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   Sub-Block: start: %p, length: %i (0x%X).\n", \
+                    __func__, subblockentry->start, subblockentry->length, subblockentry->length);
+
+                /* Add entry to list */
+                subblockindex = g_list_prepend(subblockindex, subblockentry);
+                if (!subblockindex) {
+                    MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to allocate memory for sub-block index!\n", __func__);
+                    return FALSE;
+                }
+
+                /* Get ready for next block */
+                cur_ptr_sub += subblockentry->length;
+            } while(cur_ptr_sub < (guint8 *) block + block->length + CIF_BLOCK_LENGTH_ADJUST);
+            subblockindex = g_list_reverse(subblockindex);
+            num_subblocks = g_list_length(subblockindex);
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: counted %i sub-blocks.\n", __func__, num_subblocks);
+
+            /* Link sub-block index to block entry */
+            blockentry->subblock_index = subblockindex;
+            blockentry->num_subblocks = num_subblocks;
+
+        /* Seems we don't have sub-blocks */
         } else {
-            blockentry->subblocks_start = NULL; /* This block has no sub-blocks */
-            blockentry->num_subblocks = 0;
-            blockentry->subblocks_length = 0;
+            blockentry->num_subblocks = 0; /* This block has no sub-blocks */
+            blockentry->subblock_index = NULL;
         }
 
         /* Add entry to list */
@@ -116,9 +151,21 @@ static gboolean __mirage_disc_cif_build_block_index(MIRAGE_Disc *self, GError **
     return success;
 }
 
+static void __mirage_disc_cif_destroy_block_index_helper2(gpointer data, gpointer user_data) {
+    CIFSubBlockIndexEntry *list_entry = (CIFSubBlockIndexEntry *) data;
+
+    if(list_entry) {
+        g_free(list_entry);
+    }
+}
+
 static void __mirage_disc_cif_destroy_block_index_helper(gpointer data, gpointer user_data) {
-    if(data) {
-        g_free(data);
+    CIFBlockIndexEntry *list_entry = (CIFBlockIndexEntry *) data;
+
+    if(list_entry) {
+        g_list_foreach(list_entry->subblock_index, __mirage_disc_cif_destroy_block_index_helper2, NULL);
+        g_list_free(list_entry->subblock_index);
+        g_free(list_entry);
     }
 }
 
@@ -140,15 +187,15 @@ static gboolean __mirage_disc_cif_destroy_block_index(MIRAGE_Disc *self, GError 
 }
 
 static gint __mirage_disc_cif_find_block_entry_helper(gconstpointer a, gconstpointer b) {
-    CIFBlockIndexEntry     *blockentry = (CIFBlockIndexEntry *) a;
-    gchar                  *block_id = (gchar *) b;
+    CIFBlockIndexEntry *blockentry = (CIFBlockIndexEntry *) a;
+    gchar              *block_id = (gchar *) b;
 
     return memcmp(blockentry->block_header->block_id, block_id, 4);
 }
 
 static CIFBlockIndexEntry *__mirage_disc_cif_find_block_entry(MIRAGE_Disc *self, gchar *block_id, GError **error) {
     MIRAGE_Disc_CIFPrivate *_priv = MIRAGE_DISC_CIF_GET_PRIVATE(self);
-    GList *listentry = NULL;
+    GList                  *listentry = NULL;
 
     listentry = g_list_find_custom(_priv->block_index, block_id, __mirage_disc_cif_find_block_entry_helper);
 
@@ -197,12 +244,21 @@ static gboolean __mirage_disc_cif_parse_track_entries (MIRAGE_Disc *self, GError
     MIRAGE_Disc_CIFPrivate *_priv = MIRAGE_DISC_CIF_GET_PRIVATE(self);
     CIFBlockIndexEntry *disc_block_ptr = NULL;
     CIFBlockIndexEntry *ofs_block_ptr = NULL;
-    GObject            *cur_session = NULL;
-    gint               medium_type = 0;
-    gint               track, tracks;
-    
+
+    CIFSubBlockIndexEntry *disc_subblock_entry = NULL;
+    guint8                *disc_subblock_data = NULL;
+    CIFSubBlockIndexEntry *ofs_subblock_entry = NULL;
+    CIF_OFS_SubBlock      *ofs_subblock_data = NULL;
+    guint8                *track_block = NULL;
+
+    GObject *cur_session = NULL;
+    gint    medium_type = 0;
+
+    guint16 *tracks = NULL;    
+    guint   track = 0;
+
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: reading track blocks\n", __func__);        
-    
+
     /* Fetch medium type which we'll need later */
     mirage_disc_get_medium_type(self, &medium_type, NULL);
 
@@ -219,40 +275,50 @@ static gboolean __mirage_disc_cif_parse_track_entries (MIRAGE_Disc *self, GError
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: \"disc\" or \"ofs\" blocks not located. Can not proceed.\n", __func__);
         return FALSE;
     }
- 
-    tracks = disc_block_ptr->num_subblocks;
+
+    /* Fetch number of tracks */
+    disc_subblock_entry = (CIFSubBlockIndexEntry *) g_list_nth_data(disc_block_ptr->subblock_index, 1);
+    disc_subblock_data = (guint8 *) disc_subblock_entry->start;
+    tracks = (guint16*) (disc_subblock_data + 2);
 
     /* Read track entries */
-    for (track = 0; track < tracks; track++) {
-        CIF_BlockHeader    *ofs_subblock = (CIF_BlockHeader *) (ofs_block_ptr->subblocks_start + track * ofs_block_ptr->subblocks_length);
-        guint8             *disc_subblock = (guint8 *) (disc_block_ptr->subblocks_start + track * disc_block_ptr->subblocks_length);
-        guint8             *track_block = (guint8 *) (_priv->cif_data + ofs_subblock->ofs_offset + OFS_OFFSET_ADJUST);
+    for (track = 0; track < *tracks; track++) {
+        ofs_subblock_entry = (CIFSubBlockIndexEntry *) g_list_nth_data(ofs_block_ptr->subblock_index, track);
+        ofs_subblock_data = (CIF_OFS_SubBlock *) ofs_subblock_entry->start;
+        disc_subblock_entry = (CIFSubBlockIndexEntry *) g_list_nth_data(disc_block_ptr->subblock_index, track + 2);
+        disc_subblock_data = (guint8 *) disc_subblock_entry->start;
+        track_block = (guint8 *) (_priv->cif_data + ofs_subblock_data->ofs_offset + OFS_OFFSET_ADJUST);
 
-        guint8             *track_mode = ofs_subblock->block_id;
-        guint32            *hex_track_mode = (guint32 *) track_mode;
-        guint8             *track_start = track_block + CIF_BLOCK_HEADER_SIZE;
-        guint16            *sector_size = (guint16 *) (disc_subblock + 22);
-        guint16            real_sector_size = *sector_size;
-        //guint16            *pregap = (guint16 *) (disc_subblock + 24); /* only valid for binary tracks? */
-        //guint16            *postgap = (guint16 *) (disc_subblock + 26); /* only valid for binary tracks? */
-        guint32            *sectors = (guint32 *) (disc_subblock + 4); /* not correct for binary tracks? */
+        guint8     *track_mode = ofs_subblock_data->block_id;
+        guint32    *hex_track_mode = (guint32 *) track_mode;
+        guint8     *track_start = track_block + CIF_BLOCK_LENGTH_ADJUST + sizeof(CIF_General_HeaderBlock);
+        guint32    *sectors = (guint32 *) (disc_subblock_data + 4); /* not correct for binary tracks? */
+        guint16    *sector_size = (guint16 *) (disc_subblock_data + 22);
+        guint16    real_sector_size = *sector_size;
+        gchar      *isrc = (gchar *) (disc_subblock_data + 229); /* 12 bytes */
+        gchar      *title = (gchar *) (disc_subblock_data + 293); /* Zero terminated string. */
 
-        GObject            *cur_track = NULL;
+        GObject    *cur_track = NULL;
 
         /* CIF binary tracks seems to use 2332 bytes sectors in the image file */
         if(*hex_track_mode == CIF_TRACK_BINARY) {
             real_sector_size = 2332;
             track_start -= 16; /* shameless hack */
         }
+
         /* Read main blocks related to track */
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: track #%i:\n", __func__, track);
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   mode: %c%c%c%c\n", __func__, track_mode[0], track_mode[1], track_mode[2], track_mode[3]);
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   sector size: %i\n", __func__, real_sector_size);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   sector size: %i\n", __func__, *sector_size);
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   sectors: %i\n", __func__, *sectors);
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   start: %p\n", __func__, track_start);
-        //MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   pregap: %i\n", __func__, *pregap);
-        //MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   postgap: %i\n", __func__, *postgap);
+        /* TODO: Figure out a better way to check if there are ISRC and title */
+        if(*hex_track_mode == CIF_TRACK_AUDIO) {
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   ISRC: %.12s\n", __func__, isrc);
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   Title: %s\n", __func__, title);
+        }
 
+        /* Add track */
         if (!mirage_session_add_track_by_number(MIRAGE_SESSION(cur_session), track+1, &cur_track, error)) {
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to add track!\n", __func__);
             g_object_unref(cur_session);
@@ -261,6 +327,11 @@ static gboolean __mirage_disc_cif_parse_track_entries (MIRAGE_Disc *self, GError
         gint converted_mode = __mirage_disc_cif_convert_track_mode(self, *hex_track_mode, *sector_size);
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   track mode: 0x%X\n", __func__, converted_mode);
         mirage_track_set_mode(MIRAGE_TRACK(cur_track), converted_mode, NULL);
+
+        /* Set ISRC */
+        if (isrc[0]) {
+            mirage_track_set_isrc(MIRAGE_TRACK(cur_track), isrc, NULL);
+        }
 
         /* Get Mirage and have it make us fragments */
         GObject *mirage = NULL;
@@ -332,10 +403,10 @@ static gboolean __mirage_disc_cif_parse_track_entries (MIRAGE_Disc *self, GError
         mirage_finterface_binary_track_file_set_sectsize(MIRAGE_FINTERFACE_BINARY(data_fragment), tfile_sectsize, NULL);
         mirage_finterface_binary_track_file_set_format(MIRAGE_FINTERFACE_BINARY(data_fragment), tfile_format, NULL);
 
-#ifdef JALLA
+#ifdef WAIT_FOR_CONFIRMATION
         /* Subchannel */
         switch (real_sector_size) {
-            case 2352: {
+            case 2448: {
                 gint sfile_sectsize = 96;
                 gint sfile_format = FR_BIN_SFILE_PW96_INT | FR_BIN_SFILE_INT;
 
@@ -352,16 +423,12 @@ static gboolean __mirage_disc_cif_parse_track_entries (MIRAGE_Disc *self, GError
 
                 break;
             }
-            case 2048: {
+            default: {
                 MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: no subchannel\n", __func__);
                 break;
             }
-            default: {
-                MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: unknown subchannel type 0x%X!\n", __func__, real_sector_size);
-                break;
-            }
         }
-#endif /* JALLA */
+#endif /* WAIT_FOR_CONFIRMATION */
 
         mirage_track_add_fragment(MIRAGE_TRACK(cur_track), -1, &data_fragment, error);
 
@@ -375,6 +442,7 @@ static gboolean __mirage_disc_cif_parse_track_entries (MIRAGE_Disc *self, GError
 
 static gboolean __mirage_disc_cif_load_disc (MIRAGE_Disc *self, GError **error) {
     /*MIRAGE_Disc_CIFPrivate *_priv = MIRAGE_DISC_CIF_GET_PRIVATE(self);*/
+    CIFBlockIndexEntry *disc_block_ptr = NULL;
 
     /* Build an index over blocks contained in the disc image */
     if (!__mirage_disc_cif_build_block_index(self, error)) {
@@ -383,7 +451,7 @@ static gboolean __mirage_disc_cif_load_disc (MIRAGE_Disc *self, GError **error) 
         return FALSE;
     }
 
-    /* For now we only support (and assume) CD media */    
+    /* The shitty CIF format does not support DVDs etc. */    
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: CD-ROM image\n", __func__);
     mirage_disc_set_medium_type(self, MIRAGE_MEDIUM_CD, NULL);
 
@@ -394,6 +462,31 @@ static gboolean __mirage_disc_cif_load_disc (MIRAGE_Disc *self, GError **error) 
     if (!mirage_disc_add_session_by_number(self, 0, NULL, error)) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to add session!\n", __func__);        
         return FALSE;
+    }
+
+    /* Print some extra information that seems to only be found on AUDIO discs */
+    /* TODO: Figure out a better way to check if there are disc title and artist */
+    disc_block_ptr = __mirage_disc_cif_find_block_entry(self, "disc", error);
+    if (!disc_block_ptr) {
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: \"disc\" block not located. Can not proceed.\n", __func__);
+        return FALSE;
+    }
+
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: disc:\n", __func__);
+    CIFSubBlockIndexEntry *disc_subblock_entry = (CIFSubBlockIndexEntry *) g_list_nth_data(disc_block_ptr->subblock_index, 0);
+    guint8                *disc_subblock_data = (guint8 *) disc_subblock_entry->start;
+
+    guint16 *title_length = (guint16 *) (disc_subblock_data + 6);
+    if (*title_length) {
+        gchar *title = (gchar *) (disc_subblock_data + 16); /* Not zero terminated */
+        gchar *title_dup = g_strndup(title, *title_length);
+        gchar *artist = (gchar *) (title + *title_length); /* Zero terminated */
+
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   title: %s\n", __func__, title_dup);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   artist: %s\n", __func__, artist);
+        g_free(title_dup);
+    } else {
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   Looks like there's no title + artist.\n", __func__);
     }
 
     /* Load tracks */
