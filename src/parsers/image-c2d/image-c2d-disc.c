@@ -43,7 +43,7 @@ typedef struct {
 
 
 static gint __mirage_disc_c2d_convert_track_mode (MIRAGE_Disc *self, guint32 mode, guint16 sector_size) {
-    if(!(mode & C2D_MODE_DATA)) {
+    if(mode == C2D_MODE_AUDIO) {
         switch(sector_size) {
             case 2352:
                 return MIRAGE_MODE_AUDIO;
@@ -53,15 +53,18 @@ static gint __mirage_disc_c2d_convert_track_mode (MIRAGE_Disc *self, guint32 mod
                 MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: unknown sector size %i!\n", __func__, sector_size);
                 return -1;
         }
-    } else if(mode & C2D_MODE_DATA) {
+    } else if(mode == C2D_MODE_MODE1) {
         switch(sector_size) {
-            /* FIXME: This needs some work */
             case 2048:
                 return MIRAGE_MODE_MODE1;
             case 2448:
                 return MIRAGE_MODE_MODE1;
-            case 2332:
-                return MIRAGE_MODE_MODE2_MIXED;
+            default: 
+                MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: unknown sector size %i!\n", __func__, sector_size);
+                return -1;
+        }
+    } else if(mode == C2D_MODE_MODE2) {
+        switch(sector_size) {
             case 2336:
                 return MIRAGE_MODE_MODE2_MIXED;
             case 2328:
@@ -103,7 +106,8 @@ static gboolean __mirage_disc_c2d_parse_track_entries (MIRAGE_Disc *self, GError
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   image offset: %i\n", __func__, _priv->track_block[track].image_offset);
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   sector size: %i\n", __func__, _priv->track_block[track].sector_size);
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   ISRC: %.12s\n", __func__, &_priv->track_block[track].isrc);
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   mode_flags: %i\n", __func__, _priv->track_block[track].mode_flags);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   flags: %i\n", __func__, _priv->track_block[track].flags);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   mode: %i\n", __func__, _priv->track_block[track].mode);
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   session: %i\n", __func__, _priv->track_block[track].session);
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   point: %i\n", __func__, _priv->track_block[track].point);
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   compressed: %i\n", __func__, _priv->track_block[track].compressed);
@@ -135,7 +139,13 @@ static gboolean __mirage_disc_c2d_parse_track_entries (MIRAGE_Disc *self, GError
             g_object_unref(cur_session);
             return FALSE;
         }
-        gint converted_mode = __mirage_disc_c2d_convert_track_mode(self, _priv->track_block[track].mode_flags, _priv->track_block[track].sector_size);
+
+        gint converted_mode = 0;
+        if(_priv->track_block[track].flags & C2D_FLAG_DATA) {
+            converted_mode = __mirage_disc_c2d_convert_track_mode(self, _priv->track_block[track].mode, _priv->track_block[track].sector_size);
+        } else {
+            converted_mode = __mirage_disc_c2d_convert_track_mode(self, C2D_MODE_AUDIO /* HACK ALERT! */, _priv->track_block[track].sector_size);
+        }
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   converted mode: 0x%X\n", __func__, converted_mode);
         mirage_track_set_mode(MIRAGE_TRACK(cur_track), converted_mode, NULL);
 

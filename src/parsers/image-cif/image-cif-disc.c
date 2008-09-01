@@ -207,7 +207,7 @@ static CIFBlockIndexEntry *__mirage_disc_cif_find_block_entry(MIRAGE_Disc *self,
 }
 
 static gint __mirage_disc_cif_convert_track_mode (MIRAGE_Disc *self, guint32 mode, guint16 sector_size) {
-    if(mode == CIF_TRACK_AUDIO) {
+    if(mode == CIF_MODE_AUDIO) {
         switch(sector_size) {
             case 2352:
                 return MIRAGE_MODE_AUDIO;
@@ -217,13 +217,16 @@ static gint __mirage_disc_cif_convert_track_mode (MIRAGE_Disc *self, guint32 mod
                 MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: unknown sector size %i!\n", __func__, sector_size);
                 return -1;
         }
-    } else if(mode == CIF_TRACK_BINARY) {
+    } else if(mode == CIF_MODE_MODE1) {
         switch(sector_size) {
-            /* FIXME: This needs some work */
             case 2048:
                 return MIRAGE_MODE_MODE1;
-            case 2332:
-                return MIRAGE_MODE_MODE2_MIXED;
+            default:
+                MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: unknown sector size %i!\n", __func__, sector_size);
+                return -1;
+        }
+    } else if(mode == CIF_MODE_MODE2) {
+        switch(sector_size) {
             case 2336:
                 return MIRAGE_MODE_MODE2_MIXED;
             case 2328:
@@ -289,10 +292,11 @@ static gboolean __mirage_disc_cif_parse_track_entries (MIRAGE_Disc *self, GError
         disc_subblock_data = (guint8 *) disc_subblock_entry->start;
         track_block = (guint8 *) (_priv->cif_data + ofs_subblock_data->ofs_offset + OFS_OFFSET_ADJUST);
 
-        guint8     *track_mode = ofs_subblock_data->block_id;
-        guint32    *hex_track_mode = (guint32 *) track_mode;
+        guint8     *track_type = ofs_subblock_data->block_id;
+        guint32    *hex_track_type = (guint32 *) track_type;
         guint8     *track_start = track_block + CIF_BLOCK_LENGTH_ADJUST + sizeof(CIF_General_HeaderBlock);
         guint32    *sectors = (guint32 *) (disc_subblock_data + 4); /* not correct for binary tracks? */
+        guint16    *track_mode = (guint16 *) (disc_subblock_data + 10);
         guint16    *sector_size = (guint16 *) (disc_subblock_data + 22);
         guint16    real_sector_size = *sector_size;
         gchar      *isrc = (gchar *) (disc_subblock_data + 229); /* 12 bytes */
@@ -301,19 +305,20 @@ static gboolean __mirage_disc_cif_parse_track_entries (MIRAGE_Disc *self, GError
         GObject    *cur_track = NULL;
 
         /* CIF binary tracks seems to use 2332 bytes sectors in the image file */
-        if(*hex_track_mode == CIF_TRACK_BINARY) {
+        if(*hex_track_type == CIF_TRACK_BINARY) {
             real_sector_size = 2332;
             track_start -= 16; /* shameless hack */
         }
 
         /* Read main blocks related to track */
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: track #%i:\n", __func__, track);
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   mode: %c%c%c%c\n", __func__, track_mode[0], track_mode[1], track_mode[2], track_mode[3]);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   type: %c%c%c%c\n", __func__, track_type[0], track_type[1], track_type[2], track_type[3]);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   mode: %i\n", __func__, *track_mode);
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   sector size: %i\n", __func__, *sector_size);
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   sectors: %i\n", __func__, *sectors);
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   start: %p\n", __func__, track_start);
         /* TODO: Figure out a better way to check if there are ISRC and title */
-        if(*hex_track_mode == CIF_TRACK_AUDIO) {
+        if(*hex_track_type == CIF_TRACK_AUDIO) {
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   ISRC: %.12s\n", __func__, isrc);
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   Title: %s\n", __func__, title);
         }
@@ -324,8 +329,14 @@ static gboolean __mirage_disc_cif_parse_track_entries (MIRAGE_Disc *self, GError
             g_object_unref(cur_session);
             return FALSE;
         }
-        gint converted_mode = __mirage_disc_cif_convert_track_mode(self, *hex_track_mode, *sector_size);
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   track mode: 0x%X\n", __func__, converted_mode);
+
+        gint converted_mode = 0;
+        if(*hex_track_type == CIF_TRACK_AUDIO) {
+            converted_mode = __mirage_disc_cif_convert_track_mode(self, CIF_MODE_AUDIO /* HACK ALERT! */, *sector_size);
+        } else {
+            converted_mode = __mirage_disc_cif_convert_track_mode(self, *track_mode, *sector_size);
+        }
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   converted mode: 0x%X\n", __func__, converted_mode);
         mirage_track_set_mode(MIRAGE_TRACK(cur_track), converted_mode, NULL);
 
         /* Set ISRC */

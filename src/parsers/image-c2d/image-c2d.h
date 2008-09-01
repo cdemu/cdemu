@@ -33,16 +33,19 @@ G_BEGIN_DECLS
 #define C2D_SIGNATURE_1 "Adaptec CeQuadrat VirtualCD File"
 #define C2D_SIGNATURE_2 "Roxio Image File Format 3.0"
 
-/*
- * I've found the following mode values: 
- * 0x00 0x10 = Audio, 0x04 0x14 = CDROM mode 1.
- */
+#define C2D_FLAG_COPYRIGHT   0x01 /* Copyright */
+#define C2D_FLAG_PREEMPHASIS 0x02 /* Pre-emphasis */
+#define C2D_FLAG_DATA        0x04 /* Set if data track, unset if audio track */
+#define C2D_FLAG_UNKNOWN     0x08 /* I don't know */
+#define C2D_FLAG_O           0x10 /* WinOnCD says it is the "O" flag. */
 
-#define C2D_MODE_COPYRIGHT   0x01
-#define C2D_MODE_PREEMPHASIS 0x02
-#define C2D_MODE_DATA        0x04 /* Set if data track, unset if audio track */
-#define C2D_MODE_UNKNOWN     0x08 /* I don't know */
-#define C2D_MODE_O           0x10 /* WinOnCD says it is the "O" flag. Usually set. */
+/* TODO: Doesn't work for old images, where it seems to always be 0x01 regardless of it being audio or data.
+ * Newer versions of the software seems to recognize it though.
+ */
+#define C2D_MODE_MODE1       0x01 /* CD-ROM */
+#define C2D_MODE_MODE2       0x02 /* CD-ROM XA */
+#define C2D_MODE_AUDIO       0xFF /* Audio */
+
 
 #pragma pack(1)
 
@@ -57,7 +60,7 @@ typedef struct {
     guint32 offset_tracks;   /* Offset to track blocks  */
     guint32 dummy2;          /* (unknown) */
     gchar   description[80]; /* Description string. Zero terminated. */
-    guint32 offset_c2ck;     /* Offset to "c2ck" block */
+    guint32 offset_c2ck;     /* Offset to "c2ck" block || 0x00 */
 } C2D_HeaderBlock;  /* length: 196 bytes */
 
 typedef struct {
@@ -72,7 +75,7 @@ typedef struct {
     guint8  cdtext[12];    /* CD-Text */
     guint8  dummy2[6];     /* (misc. stuff) */
     /* etc. */
-} C2D_CDTextBlock; /* length: variable */
+} C2D_CDTextBlock; /* length: as given in header block */
 
 typedef struct {
     guint32 block_size;   /* Length of this track block (44) */
@@ -81,10 +84,11 @@ typedef struct {
     guint64 image_offset; /* Image offset of track */
     guint32 sector_size;  /* Bytes per sector */
     gchar   isrc[12];     /* ISRC string */
-    guint8  mode_flags;   /* Track mode and flags */
+    guint8  flags;        /* Track flags */
     guint8  session;      /* Track session */
     guint8  point;        /* Track point */
-    guint16 dummy1;       /* (unknown) */
+    guint8  mode;         /* Track mode? */
+    guint8  dummy1;       /* (unknown) */
     guint8  compressed;   /* Boolean flag */
     guint16 dummy2;       /* (unknown) */
 } C2D_TrackBlock;  /* length: 44 bytes */
