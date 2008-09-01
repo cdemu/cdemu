@@ -37,6 +37,16 @@ G_BEGIN_DECLS
 #define CIF_TRACK_BINARY    0x6f666e69 /* "info" */
 #define CIF_TRACK_AUDIO     0x6f696461 /* "adio" */
 
+#define CIF_MEDIA_AUDIO   0x03
+#define CIF_MEDIA_DATA    0x01
+
+/* Only valid for Data discs */
+#define CIF_MODE_MODE1    0x01
+#define CIF_MODE_MODE2    0x04
+/* Note: The following is not used in image, only by this parser! */
+#define CIF_MODE_AUDIO    0xFF
+#define CIF_MODE_AUDIO2   0x00
+
 /* The CIF file format is compatible with the joint IBM/Microsoft 
 Resource Interchange File Format (RIFF) standard of 1991, see references:
 http://en.wikipedia.org/wiki/Resource_Interchange_File_Format
@@ -77,6 +87,41 @@ typedef struct {
     guint16 length;        /* Length of subblock including this variable */
     /* ... */
 } CIF_DISC_SubBlock; /* length: variable */
+
+typedef struct {
+    guint16 length;        /* Length of subblock including this variable */
+    guint16 dummy1;
+    guint16 tracks;        /* Tracks in image */
+    guint16 title_length;  /* Length of title substring */
+    guint16 length2;       /* Length of subblock including this variable */
+    guint16 dummy2;
+    guint16 media_type;    /* 3=audio, 1=data */
+    guint16 dummy3;
+    /* The next is just for AUDIO discs */
+    /* Disc title and arist, where title_length marks the end of the first substring */
+} CIF_DISC_FirstSubBlock; /* length: 16 */
+
+typedef struct {
+    guint16 length;        /* Length of subblock including this variable */
+    guint16 tracks;        /* Tracks in image */
+    guint8  dummy[14];
+} CIF_DISC_SecondSubBlock; /* length: 18 */
+
+typedef struct {
+    guint16 length;        /* Length of subblock including this variable */
+    guint16 dummy1;
+    guint32 sectors;       /* Number of sectors in track */
+    guint16 dummy2;
+    guint16 mode;          /* 1 = cdrom/mode1, 4 = cdrom-xa/mode2, 0 || 255 = cd-da/audio */
+    guint8  dummy3[10];
+    guint16 sector_size;   /* Sector size */
+    /* this far things are common between audio and data tracks */
+    guint8  dummy4[205];
+    gchar   isrc[12];      /* ISRC */  
+    guint8  dummy5[52];
+    /* The next is just for AUDIO discs */
+    /* Track title */
+} CIF_DISC_TrackSubBlock; /* length: variable */
 
 #pragma pack()
 
