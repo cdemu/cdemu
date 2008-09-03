@@ -1,4 +1,20 @@
 ==========================================================================
+ Version 1.1.1   2008-09-13
+==========================================================================
+
+Henrik Stokseth:
+	* Improvements to CIF and C2D parsers including general parsing, 
+	  multi-session, mode detection, ISRCs, MCNs and CD-Text.
+	* Misc. fixes. and improvements to library and documentation. For
+	  example changing parsers to use a two-stage process.
+	* Improved media detection in Nero parser.
+
+Rok Mandeljc:
+	* Make CUE parser handle multisession extension used by Isobuster.
+	* Misc. fixes. and improvements to library and documentation.
+	* Rewrite of CCD parser.
+
+==========================================================================
  Version 1.1.0   2008-06-29
 ==========================================================================
 
