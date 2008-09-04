@@ -42,9 +42,13 @@ int main (int argc, char **argv) {
     gchar **open_image = NULL;
     gint i;
     
+    /* Initialize GType */
+    g_type_init();
+    
     /* Parse command line */
     option_context = g_option_context_new("- Mirage Image Analyzer");
     g_option_context_add_main_entries(option_context, option_entries, NULL);
+    g_option_context_add_group(option_context, gtk_get_option_group(TRUE));
     succeeded = g_option_context_parse(option_context, &argc, &argv, &error);
     g_option_context_free(option_context);
     
@@ -60,13 +64,6 @@ int main (int argc, char **argv) {
     for (i = 0; i < argc; i++) {
         open_image[i] = g_strdup(argv[i+1]);
     }
-    
-    /* Initialize GType */
-    g_type_init();
-    
-    /* Initialize Gtk */
-    gtk_set_locale();
-    gtk_init(&argc, &argv);
     
     /* Create application object */
     application = g_object_new(IMAGE_ANALYZER_TYPE_APPLICATION, NULL);
