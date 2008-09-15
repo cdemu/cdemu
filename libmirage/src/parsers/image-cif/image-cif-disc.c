@@ -66,12 +66,6 @@ static gboolean __mirage_disc_cif_build_block_index(MIRAGE_Disc *self, GError **
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: Block: %2i, ID: %4s, start: %p, length: %i (0x%X).\n", \
             __func__, index, block->block_id, block, block->length, block->length);
 
-        /* TODO FIXME */
-        if(!memcmp(block->block_id, "info", 4)) {
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: This parser does not yet support binary tracks.\n", __func__);
-            /* success = FALSE; */
-        }
-
         /* Got sub-blocks? */
         if(!memcmp(block->block_id, "disc", 4) || !memcmp(block->block_id, "ofs ", 4)) {
             GList                  *subblockindex = NULL;
@@ -252,7 +246,8 @@ static gboolean __mirage_disc_cif_parse_track_entries (MIRAGE_Disc *self, GError
     guint8                *disc_subblock_data = NULL;
     CIFSubBlockIndexEntry *ofs_subblock_entry = NULL;
     CIF_OFS_SubBlock      *ofs_subblock_data = NULL;
-    guint8                *track_block = NULL;
+    CIF_BlockHeader       *track_block = NULL;
+    guint8                *track_block_data = NULL;
 
     GObject *cur_session = NULL;
     gint    medium_type = 0;
@@ -290,12 +285,14 @@ static gboolean __mirage_disc_cif_parse_track_entries (MIRAGE_Disc *self, GError
         ofs_subblock_data = (CIF_OFS_SubBlock *) ofs_subblock_entry->start;
         disc_subblock_entry = (CIFSubBlockIndexEntry *) g_list_nth_data(disc_block_ptr->subblock_index, track + 2);
         disc_subblock_data = (guint8 *) disc_subblock_entry->start;
-        track_block = (guint8 *) (_priv->cif_data + ofs_subblock_data->ofs_offset + OFS_OFFSET_ADJUST);
+        track_block = (CIF_BlockHeader *) (_priv->cif_data + ofs_subblock_data->ofs_offset + OFS_OFFSET_ADJUST);
+        track_block_data = (guint8 *) (_priv->cif_data + ofs_subblock_data->ofs_offset + OFS_OFFSET_ADJUST);
 
         guint8     *track_type = ofs_subblock_data->block_id;
         guint32    *hex_track_type = (guint32 *) track_type;
-        guint8     *track_start = track_block + CIF_BLOCK_LENGTH_ADJUST + sizeof(CIF_General_HeaderBlock);
-        guint32    *sectors = (guint32 *) (disc_subblock_data + 4); /* not correct for binary tracks? */
+        guint8     *track_start = track_block_data + CIF_BLOCK_LENGTH_ADJUST + sizeof(CIF_General_HeaderBlock);
+        guint32    track_length = track_block->length - 4;
+        guint32    *sectors = (guint32 *) (disc_subblock_data + 4); /* NOTE: not correct for binary tracks! */
         guint16    *track_mode = (guint16 *) (disc_subblock_data + 10);
         guint16    *sector_size = (guint16 *) (disc_subblock_data + 22);
         guint16    real_sector_size = *sector_size;
@@ -317,6 +314,7 @@ static gboolean __mirage_disc_cif_parse_track_entries (MIRAGE_Disc *self, GError
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   sector size: %i\n", __func__, *sector_size);
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   sectors: %i\n", __func__, *sectors);
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   start: %p\n", __func__, track_start);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   length (including header): %i (0x%X)\n", __func__, track_length, track_length);
         /* TODO: Figure out a better way to check if there are ISRC and title */
         if(*hex_track_type == CIF_TRACK_AUDIO) {
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   ISRC: %.12s\n", __func__, isrc);
@@ -403,9 +401,9 @@ static gboolean __mirage_disc_cif_parse_track_entries (MIRAGE_Disc *self, GError
 	if (converted_mode == MIRAGE_MODE_AUDIO) {
             fragment_len = *sectors;
         } else {
-            fragment_len = *sectors / 2; /* shameless hack #2 */
+            fragment_len = track_length / real_sector_size; /* shameless hack. */
         }
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   length: %i\n", __func__, fragment_len);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   fragment length: %i\n", __func__, fragment_len);
 
         mirage_fragment_set_length(MIRAGE_FRAGMENT(data_fragment), fragment_len, NULL);
 
