@@ -304,7 +304,7 @@ static gboolean __mirage_disc_cif_parse_track_entries (MIRAGE_Disc *self, GError
 
         gchar      *track_type = ofs_subblock_data->block_id;
         guint8     *track_start = track_block_data;
-        guint32    track_length = track_block->length - 4;
+        guint32    track_length = track_block->length - sizeof(guint32) - sizeof(CIF_General_HeaderBlock);
         guint32    sectors = disc_subblock_data->track.sectors; /* NOTE: not correct for binary tracks! */
         guint16    track_mode = disc_subblock_data->track.mode;
         guint16    sector_size = disc_subblock_data->track.sector_size;
@@ -327,7 +327,7 @@ static gboolean __mirage_disc_cif_parse_track_entries (MIRAGE_Disc *self, GError
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   sector size: %i\n", __func__, sector_size);
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   sectors: %i\n", __func__, sectors);
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   start: %p\n", __func__, track_start);
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   length (including header): %i (0x%X)\n", __func__, track_length, track_length);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   length: %i (0x%X)\n", __func__, track_length, track_length);
         /* TODO: Figure out a better way to check if there are ISRC and title */
         if(!memcmp(track_type, "adio", 4)) {
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   ISRC: %.12s\n", __func__, isrc);
@@ -617,7 +617,7 @@ static void __mirage_disc_cif_instance_init (GTypeInstance *instance, gpointer g
         "1.0.0",
         "Henrik Stokseth",
         FALSE,
-        "CIF (Easy CD Creator <= v5.0) images",
+        "CIF (Adaptec Easy CD Creator) images",
         2, ".cif", NULL
     );
     
