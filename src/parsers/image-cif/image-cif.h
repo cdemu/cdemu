@@ -30,7 +30,6 @@
 
 G_BEGIN_DECLS
 
-#define CIF_BLOCK_HEADER_SIZE      20
 #define CIF_BLOCK_LENGTH_ADJUST    8
 #define OFS_OFFSET_ADJUST          -8
 
@@ -57,16 +56,16 @@ typedef struct {
     guint32 length;        /* Length of block from this point onwards */
     /* actually part of block content */
     gchar   block_id[4];   
-} CIF_BlockHeader;  /* length: 8 (+4) bytes */
+} CIF_BlockHeader;  /* length: 8 bytes (+4) */
 
 typedef struct {
     gchar   block_id[4];   /* "imag", "disc", "adio", "info", "ofs " */
-    guint32 dummy1[2];     /* (unknown) */
+    guint32 dummy[2];      /* (unknown) */
 } CIF_General_HeaderBlock; /* length: 12 bytes */
 
 typedef struct {
     gchar   block_id[4];   /* "ofs " */
-    guint32 dummy1[2];     /* (unknown) */
+    guint32 dummy[2];      /* (unknown) */
     guint16 num_subblocks; /* number of subblocks */
 } CIF_OFS_HeaderBlock; /* length: 14 bytes */
 
