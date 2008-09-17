@@ -34,9 +34,6 @@ G_BEGIN_DECLS
 #define CIF_BLOCK_LENGTH_ADJUST    8
 #define OFS_OFFSET_ADJUST          -8
 
-#define CIF_TRACK_BINARY    0x6f666e69 /* "info" */
-#define CIF_TRACK_AUDIO     0x6f696461 /* "adio" */
-
 #define CIF_MEDIA_AUDIO   0x03
 #define CIF_MEDIA_DATA    0x01
 
@@ -56,37 +53,30 @@ http://en.wikipedia.org/wiki/Resource_Interchange_File_Format
 
 typedef struct {
     /* main part */
-    guint8  signature[4];  /* "RIFF" */
+    gchar   signature[4];  /* "RIFF" */
     guint32 length;        /* Length of block from this point onwards */
     /* actually part of block content */
-    guint8  block_id[4];   /* "imag", "disc", "adio", "info", "ofs " */
-    /* TODO: Get rid of this eventually */
-    guint32 dummy[2];      /* (unknown) */
-} CIF_BlockHeader;  /* length: 20 bytes */
+    gchar   block_id[4];   
+} CIF_BlockHeader;  /* length: 8 (+4) bytes */
 
 typedef struct {
-    guint8  block_id[4];   /* "imag", "disc", "adio", "info", "ofs " */
+    gchar   block_id[4];   /* "imag", "disc", "adio", "info", "ofs " */
     guint32 dummy1[2];     /* (unknown) */
 } CIF_General_HeaderBlock; /* length: 12 bytes */
 
 typedef struct {
-    guint8  block_id[4];   /* "ofs " */
+    gchar   block_id[4];   /* "ofs " */
     guint32 dummy1[2];     /* (unknown) */
     guint16 num_subblocks; /* number of subblocks */
 } CIF_OFS_HeaderBlock; /* length: 14 bytes */
 
 typedef struct {
-    guint8  signature[4];  /* "RIFF" */
+    gchar   signature[4];  /* "RIFF" */
     guint32 length;        /* Length of block from this point onwards */
-    guint8  block_id[4];   /* "imag", "disc", "adio", "info", "ofs " */
+    gchar   block_id[4];   /* "imag", "disc", "adio", "info", "ofs " */
     guint32 ofs_offset;    /* Offset of track block in image */
     guint32 dummy;         /* (unknown) */
 } CIF_OFS_SubBlock;  /* length: 20 bytes */
-
-typedef struct {
-    guint16 length;        /* Length of subblock including this variable */
-    /* ... */
-} CIF_DISC_SubBlock; /* length: variable */
 
 typedef struct {
     guint16 length;        /* Length of subblock including this variable */
@@ -98,8 +88,8 @@ typedef struct {
     guint16 media_type;    /* 3=audio, 1=data */
     guint16 dummy3;
     /* The next is just for AUDIO discs */
-    /* Disc title and arist, where title_length marks the end of the first substring */
-} CIF_DISC_FirstSubBlock; /* length: 16 */
+    gchar   title_and_artist[]; /* zero-terminated, use title_length */
+} CIF_DISC_FirstSubBlock; /* length: 16 bytes + variable */
 
 typedef struct {
     guint16 length;        /* Length of subblock including this variable */
@@ -120,8 +110,14 @@ typedef struct {
     gchar   isrc[12];      /* ISRC */  
     guint8  dummy5[52];
     /* The next is just for AUDIO discs */
-    /* Track title */
-} CIF_DISC_TrackSubBlock; /* length: variable */
+    gchar title[];         /* zero-terminated string. */
+} CIF_DISC_TrackSubBlock; /* length: 24 bytes + variable */
+
+typedef union {
+    CIF_DISC_FirstSubBlock  first;
+    CIF_DISC_SecondSubBlock second;
+    CIF_DISC_TrackSubBlock  track;
+} CIF_DISC_SubBlock; /* length: variable */
 
 #pragma pack()
 
