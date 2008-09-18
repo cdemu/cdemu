@@ -38,6 +38,7 @@ typedef struct {
     MIRAGE_ParserInfo *parser_info;
 } MIRAGE_Disc_CIFPrivate;
 
+#ifdef DEFINED_BUT_NOT_USED
 typedef struct {
     gchar     *block_id;
     gboolean  has_subblocks;
@@ -52,6 +53,7 @@ static CIF_BlockIDs CIFBlockID[] = {
     { "info", 0, 0                               }, 
     { "ofs ", 1, sizeof(CIF_OFS_HeaderBlock)     }
 };
+#endif /* DEFINED_BUT_NOT_USED */
 
 static gboolean __mirage_disc_cif_build_block_index(MIRAGE_Disc *self, GError **error) {
     MIRAGE_Disc_CIFPrivate *_priv = MIRAGE_DISC_CIF_GET_PRIVATE(self);
@@ -309,8 +311,8 @@ static gboolean __mirage_disc_cif_parse_track_entries (MIRAGE_Disc *self, GError
         guint16    track_mode = disc_subblock_data->track.mode;
         guint16    sector_size = disc_subblock_data->track.sector_size;
         guint16    real_sector_size = sector_size;
-        gchar      *isrc = disc_subblock_data->track.isrc;
-        gchar      *title = disc_subblock_data->track.title; 
+        gchar      *isrc = NULL;
+        gchar      *title = NULL; 
 
         GObject    *cur_track = NULL;
 
@@ -328,10 +330,18 @@ static gboolean __mirage_disc_cif_parse_track_entries (MIRAGE_Disc *self, GError
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   sectors: %i\n", __func__, sectors);
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   start: %p\n", __func__, track_start);
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   length: %i (0x%X)\n", __func__, track_length, track_length);
-        /* TODO: Figure out a better way to check if there are ISRC and title */
+
         if(!memcmp(track_type, "adio", 4)) {
+            isrc = disc_subblock_data->track.isrc;
+            title = disc_subblock_data->track.title; 
+
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   ISRC: %.12s\n", __func__, isrc);
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   Title: %s\n", __func__, title);
+
+            /* Set ISRC */
+            if (isrc[0]) {
+                mirage_track_set_isrc(MIRAGE_TRACK(cur_track), isrc, NULL);
+            }
         }
 
         /* Add track */
@@ -349,11 +359,6 @@ static gboolean __mirage_disc_cif_parse_track_entries (MIRAGE_Disc *self, GError
         }
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   converted mode: 0x%X\n", __func__, converted_mode);
         mirage_track_set_mode(MIRAGE_TRACK(cur_track), converted_mode, NULL);
-
-        /* Set ISRC */
-        if (isrc[0]) {
-            mirage_track_set_isrc(MIRAGE_TRACK(cur_track), isrc, NULL);
-        }
 
         /* Get Mirage and have it make us fragments */
         GObject *mirage = NULL;
@@ -415,6 +420,7 @@ static gboolean __mirage_disc_cif_parse_track_entries (MIRAGE_Disc *self, GError
             fragment_len = sectors;
         } else {
             fragment_len = track_length / real_sector_size; /* shameless hack */
+            if (track_length % real_sector_size) fragment_len++; /* round up */
         }
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   fragment length: %i\n", __func__, fragment_len);
 
@@ -499,7 +505,7 @@ static gboolean __mirage_disc_cif_load_disc (MIRAGE_Disc *self, GError **error) 
     CIF_DISC_SubBlock     *disc_subblock_data = (CIF_DISC_SubBlock *) disc_subblock_entry->start;
 
     gint title_length = disc_subblock_data->first.title_length;
-    if (title_length) {
+    if ((disc_subblock_data->first.media_type == CIF_MEDIA_AUDIO) && (title_length > 0)) {
         gchar *title_and_artist = disc_subblock_data->first.title_and_artist; 
         gchar *title = g_strndup(title_and_artist, title_length);
         gchar *artist = (gchar *) (title_and_artist + title_length);
