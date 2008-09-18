@@ -80,7 +80,7 @@ typedef struct {
 typedef struct {
     gchar   signature[4];  /* "RIFF" */
     guint32 length;        /* Length of block from this point onwards */
-    gchar   block_id[4];   /* "imag", "disc", "adio", "info", "ofs " */
+    gchar   block_id[4];   /* "adio", "info" */
     guint32 ofs_offset;    /* Offset of track block in image */
     guint32 dummy;         /* (unknown) */
 } CIF_OFS_SubBlock; /* length: 20 bytes */
@@ -90,9 +90,9 @@ typedef struct {
     guint16 dummy1;
     guint16 tracks;        /* Tracks in image */
     guint16 title_length;  /* Length of title substring */
-    guint16 length2;       /* Length of subblock including this variable */
+    guint16 length2;       /* (length2 = length) */
     guint16 dummy2;
-    guint16 media_type;    /* 3=audio, 1=data */
+    guint16 media_type;    /* 3 = audio, 1 = data */
     guint16 dummy3;
     /* The next is just for AUDIO discs */
     gchar   title_and_artist[]; /* zero-terminated, use title_length */
@@ -101,8 +101,20 @@ typedef struct {
 typedef struct {
     guint16 length;        /* Length of subblock including this variable */
     guint16 tracks;        /* Tracks in image */
-    guint8  dummy[14];
+    guint8  dummy[14];     /* MCN placeholder? */
 } CIF_DISC_SecondSubBlock; /* length: 18 */
+
+typedef struct {
+    guint16 length;        /* Length of subblock including this variable */
+    guint16 dummy1;
+    guint32 sectors;       /* Number of sectors in track */
+    guint16 dummy2;
+    guint16 mode;          /* 1 = cdrom/mode1, 4 = cdrom-xa/mode2, 0 || 255 = cd-da/audio */
+    guint8  dummy3[10];
+    guint16 sector_size;   /* Sector size */
+    /* this far things are common between audio and data tracks */
+    guint8  dummy4[272];
+} CIF_DISC_BinarySubBlock; /* length: 24 bytes + variable */
 
 typedef struct {
     guint16 length;        /* Length of subblock including this variable */
@@ -116,14 +128,15 @@ typedef struct {
     guint8  dummy4[205];
     gchar   isrc[12];      /* ISRC */  
     guint8  dummy5[52];
-    /* The next is just for AUDIO discs */
-    gchar title[];         /* zero-terminated string. */
-} CIF_DISC_TrackSubBlock; /* length: 24 bytes + variable */
+    gchar   title[];       /* zero-terminated string. */
+} CIF_DISC_AudioSubBlock; /* length: 24 bytes + variable */
 
 typedef union {
     CIF_DISC_FirstSubBlock  first;
     CIF_DISC_SecondSubBlock second;
-    CIF_DISC_TrackSubBlock  track;
+    CIF_DISC_AudioSubBlock  track;  /* NOTE: temporary */
+    CIF_DISC_BinarySubBlock binary;
+    CIF_DISC_AudioSubBlock  audio;
 } CIF_DISC_SubBlock; /* length: variable */
 
 #pragma pack()
