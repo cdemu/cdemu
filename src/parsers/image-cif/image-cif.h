@@ -59,9 +59,17 @@ typedef struct {
 } CIF_BlockHeader;  /* length: 8 bytes (+4) */
 
 typedef struct {
-    gchar   block_id[4];   /* "imag", "disc", "adio", "info", "ofs " */
+    gchar   block_id[4];   /* "imag" */
     guint32 dummy[2];      /* (unknown) */
-} CIF_General_HeaderBlock; /* length: 12 bytes */
+    guint16 length_rest;   /* length of rest of block from this point onwards */
+    guint16 version;       /* file format version? */
+    gchar   signature[];   /* zero-terminated string */
+} CIF_IMAG_HeaderBlock; /* length: 16 bytes + variable */
+
+typedef struct {
+    gchar   block_id[4];   /* "disc" */
+    guint32 dummy[2];      /* (unknown) */
+} CIF_DISC_HeaderBlock; /* length: 12 bytes */
 
 typedef struct {
     gchar   block_id[4];   /* "ofs " */
@@ -75,7 +83,7 @@ typedef struct {
     gchar   block_id[4];   /* "imag", "disc", "adio", "info", "ofs " */
     guint32 ofs_offset;    /* Offset of track block in image */
     guint32 dummy;         /* (unknown) */
-} CIF_OFS_SubBlock;  /* length: 20 bytes */
+} CIF_OFS_SubBlock; /* length: 20 bytes */
 
 typedef struct {
     guint16 length;        /* Length of subblock including this variable */
