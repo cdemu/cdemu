@@ -47,7 +47,7 @@ typedef struct {
 /* NULL terminated list of valid block IDs and subblock offset */
 static CIF_BlockIDs CIFBlockID[] = {
     { "imag", 0, 0                               }, 
-    { "disc", 1, sizeof(CIF_General_HeaderBlock) }, 
+    { "disc", 1, sizeof(CIF_DISC_HeaderBlock)    }, 
     { "adio", 0, 0                               }, 
     { "info", 0, 0                               }, 
     { "ofs ", 1, sizeof(CIF_OFS_HeaderBlock)     }
@@ -89,7 +89,7 @@ static gboolean __mirage_disc_cif_build_block_index(MIRAGE_Disc *self, GError **
             guint8                 *cur_ptr_sub = NULL;
 
             if (!memcmp(block->block_id, "disc", 4)) {
-                cur_ptr_sub = cur_ptr + CIF_BLOCK_LENGTH_ADJUST + sizeof(CIF_General_HeaderBlock);
+                cur_ptr_sub = cur_ptr + CIF_BLOCK_LENGTH_ADJUST + sizeof(CIF_DISC_HeaderBlock);
             } else if(!memcmp(block->block_id, "ofs ", 4)) {
                 cur_ptr_sub = cur_ptr + CIF_BLOCK_LENGTH_ADJUST + sizeof(CIF_OFS_HeaderBlock);
             }
@@ -300,11 +300,11 @@ static gboolean __mirage_disc_cif_parse_track_entries (MIRAGE_Disc *self, GError
         disc_subblock_entry = (CIFSubBlockIndexEntry *) g_list_nth_data(disc_block_ptr->subblock_index, track + 2);
         disc_subblock_data = (CIF_DISC_SubBlock *) disc_subblock_entry->start;
         track_block = (CIF_BlockHeader *) (_priv->cif_data + ofs_subblock_data->ofs_offset + OFS_OFFSET_ADJUST);
-        track_block_data = (guint8 *) (_priv->cif_data + ofs_subblock_data->ofs_offset + sizeof(CIF_General_HeaderBlock));
+        track_block_data = (guint8 *) (_priv->cif_data + ofs_subblock_data->ofs_offset + sizeof(CIF_DISC_HeaderBlock));
 
         gchar      *track_type = ofs_subblock_data->block_id;
         guint8     *track_start = track_block_data;
-        guint32    track_length = track_block->length - sizeof(guint32) - sizeof(CIF_General_HeaderBlock);
+        guint32    track_length = track_block->length - sizeof(guint32) - sizeof(CIF_DISC_HeaderBlock);
         guint32    sectors = disc_subblock_data->track.sectors; /* NOTE: not correct for binary tracks! */
         guint16    track_mode = disc_subblock_data->track.mode;
         guint16    sector_size = disc_subblock_data->track.sector_size;
