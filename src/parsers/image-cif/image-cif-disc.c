@@ -331,6 +331,13 @@ static gboolean __mirage_disc_cif_parse_track_entries (MIRAGE_Disc *self, GError
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   start: %p\n", __func__, track_start);
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   length: %i (0x%X)\n", __func__, track_length, track_length);
 
+        /* Add track */
+        if (!mirage_session_add_track_by_number(MIRAGE_SESSION(cur_session), track+1, &cur_track, error)) {
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to add track!\n", __func__);
+            g_object_unref(cur_session);
+            return FALSE;
+        }
+
         if(!memcmp(track_type, "adio", 4)) {
             isrc = disc_subblock_data->track.isrc;
             title = disc_subblock_data->track.title; 
@@ -342,13 +349,6 @@ static gboolean __mirage_disc_cif_parse_track_entries (MIRAGE_Disc *self, GError
             if (isrc[0]) {
                 mirage_track_set_isrc(MIRAGE_TRACK(cur_track), isrc, NULL);
             }
-        }
-
-        /* Add track */
-        if (!mirage_session_add_track_by_number(MIRAGE_SESSION(cur_session), track+1, &cur_track, error)) {
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to add track!\n", __func__);
-            g_object_unref(cur_session);
-            return FALSE;
         }
 
         gint converted_mode = 0;
