@@ -33,15 +33,16 @@ G_BEGIN_DECLS
 #define CIF_BLOCK_LENGTH_ADJUST    8
 #define OFS_OFFSET_ADJUST          -8
 
-#define CIF_MEDIA_AUDIO   0x03
-#define CIF_MEDIA_DATA    0x01
+#define CIF_IMAGE_AUDIO   0x03
+#define CIF_IMAGE_DATA    0x01
 
-/* Only valid for Data discs */
+#define CIF_MEDIA_AUDIO   0x00
+#define CIF_MEDIA_MODE1   0x01
+#define CIF_MEDIA_MODE2   0x03
+
+#define CIF_MODE_AUDIO    0x00
 #define CIF_MODE_MODE1    0x01
 #define CIF_MODE_MODE2    0x04
-/* Note: The following is not used in image, only by this parser! */
-#define CIF_MODE_AUDIO    0xFF
-#define CIF_MODE_AUDIO2   0x00
 
 /* The CIF file format is compatible with the joint IBM/Microsoft 
 Resource Interchange File Format (RIFF) standard of 1991, see references:
@@ -72,6 +73,10 @@ typedef struct {
 } CIF_DISC_HeaderBlock; /* length: 12 bytes */
 
 typedef struct {
+    gchar   block_id[4];   /* "adio", "info" */
+} CIF_TRACK_HeaderBlock; /* length: 4 bytes */
+
+typedef struct {
     gchar   block_id[4];   /* "ofs " */
     guint32 dummy[2];      /* (unknown) */
     guint16 num_subblocks; /* number of subblocks */
@@ -92,7 +97,7 @@ typedef struct {
     guint16 title_length;  /* Length of title substring */
     guint16 length2;       /* (length2 = length) */
     guint16 dummy2;
-    guint16 media_type;    /* 3 = audio, 1 = data */
+    guint16 image_type;    /* 3 = audio, 1 = data */
     guint16 dummy3;
     /* The next is just for AUDIO discs */
     gchar   title_and_artist[]; /* zero-terminated, use title_length */
@@ -101,7 +106,9 @@ typedef struct {
 typedef struct {
     guint16 length;        /* Length of subblock including this variable */
     guint16 tracks;        /* Tracks in image */
-    guint8  dummy[14];     /* MCN placeholder? */
+    guint8  dummy1[6];     /* (unknown) */
+    guint   media_type;    /* 0 = cd-da/audio, 1 = cdrom/mode1, 3 = cdrom-xa/mode2 */
+    guint8  dummy[6];      /* (unknown) */
 } CIF_DISC_SecondSubBlock; /* length: 18 */
 
 typedef struct {
@@ -109,11 +116,13 @@ typedef struct {
     guint16 dummy1;
     guint32 sectors;       /* Number of sectors in track */
     guint16 dummy2;
-    guint16 mode;          /* 1 = cdrom/mode1, 4 = cdrom-xa/mode2, 0 || 255 = cd-da/audio */
+    guint16 mode;          /* 0 = cd-da/audio, 1 = cdrom/mode1, 4 = cdrom-xa/mode2 */
     guint8  dummy3[10];
-    guint16 sector_size;   /* Sector size */
+    guint16 sector_size;   /* Sector size (invalid for cdrom-xa) */
+    guint16 pregap;        /* pregap? 0x96 */
+    guint16 need_hack;     /* this value is 0x98 for some images */
     /* this far things are common between audio and data tracks */
-    guint8  dummy4[272];
+    guint8  dummy4[268];
 } CIF_DISC_BinarySubBlock; /* length: 24 bytes + variable */
 
 typedef struct {
@@ -121,11 +130,13 @@ typedef struct {
     guint16 dummy1;
     guint32 sectors;       /* Number of sectors in track */
     guint16 dummy2;
-    guint16 mode;          /* 1 = cdrom/mode1, 4 = cdrom-xa/mode2, 0 || 255 = cd-da/audio */
+    guint16 mode;          /* 0 = cd-da/audio, 1 = cdrom/mode1, 4 = cdrom-xa/mode2 */
     guint8  dummy3[10];
-    guint16 sector_size;   /* Sector size */
+    guint16 sector_size;   /* Sector size (invalid for cdrom-xa) */
+    guint16 pregap;        /* pregap? 0x96 */
+    guint16 need_hack;     /* this value is 0x98 for some images */
     /* this far things are common between audio and data tracks */
-    guint8  dummy4[205];
+    guint8  dummy4[201];
     gchar   isrc[12];      /* ISRC */  
     guint8  dummy5[52];
     gchar   title[];       /* zero-terminated string. */
