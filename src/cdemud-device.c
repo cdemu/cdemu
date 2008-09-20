@@ -1636,13 +1636,18 @@ static gboolean __cdemud_device_pc_read_cd (CDEMUD_Device *self, guint8 *raw_cdb
             __cdemud_device_write_sense_full(self, SK_ILLEGAL_REQUEST, ILLEGAL_MODE_FOR_THIS_TRACK, 1, sector);
             return FALSE;
         }
+
+#if 0
         /* Break if mode (sector type) has changed */
+        /* NOTE: if we're going to be doing this, we need to account for the
+           fact that Mode 2 Form 1 and Mode 2 Form 2 can alternate... */
         if (prev_sector_type != cur_sector_type) {
             CDEMUD_DEBUG(self, DAEMON_DEBUG_DEV_PC_TRACE, "%s: previous sector type (%i) different from current one (%i)!\n", __func__, prev_sector_type, cur_sector_type);
             __cdemud_device_write_sense_full(self, SK_ILLEGAL_REQUEST, ILLEGAL_MODE_FOR_THIS_TRACK, 0, sector);
             return FALSE;
         }
-
+#endif
+        
         /* Map the MCSB: operation performed on raw Byte9 */
         if (__helper_map_mcsb(&raw_cdb[9], cur_sector_type) == -1) {
             CDEMUD_DEBUG(self, DAEMON_DEBUG_DEV_PC_TRACE, "%s: invalid MCSB: %X\n", __func__, raw_cdb[9]);
