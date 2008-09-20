@@ -217,7 +217,15 @@ static gint __mirage_disc_cif_convert_track_mode (MIRAGE_Disc *self, guint32 mod
                 MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: unknown sector size %i!\n", __func__, sector_size);
                 return -1;
         }
-    } else if(mode == CIF_MODE_MODE2) {
+    } else if(mode == CIF_MODE_MODE2_FORM1) {
+        switch(sector_size) {
+            case 2056:
+                return MIRAGE_MODE_MODE2_MIXED;
+            default: 
+                MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: unknown sector size %i!\n", __func__, sector_size);
+                return -1;
+        }
+    } else if(mode == CIF_MODE_MODE2_FORM2) {
         switch(sector_size) {
             case 2332:
                 return MIRAGE_MODE_MODE2_MIXED;
@@ -293,13 +301,13 @@ static gboolean __mirage_disc_cif_parse_track_entries (MIRAGE_Disc *self, GError
 
         GObject    *cur_track = NULL;
 
-        /* do we have cd-rom xa? */
-        if (track_mode == CIF_MODE_MODE2) {
+        /* workaround for mode2 form2 */
+        if (track_mode == CIF_MODE_MODE2_FORM2) {
             real_sector_size = 2332;
         }
 
-        /* workaround: some tracks has incorrect num. sectors */
-	if (track_mode == CIF_MODE_MODE2) {
+        /* workaround: cdrom-xa/mode2 has incorrect num. sectors */
+	if ((track_mode == CIF_MODE_MODE2_FORM1) || (track_mode == CIF_MODE_MODE2_FORM2)) {
             sectors = track_length / real_sector_size; 
             if (track_length % real_sector_size) sectors++; /* round up */
         }
@@ -314,7 +322,7 @@ static gboolean __mirage_disc_cif_parse_track_entries (MIRAGE_Disc *self, GError
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   start: %p\n", __func__, track_start);
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   length: %i (0x%X)\n", __func__, track_length, track_length);
 
-        if (track_mode == CIF_MODE_MODE2) {
+	if ((track_mode == CIF_MODE_MODE2_FORM1) || (track_mode == CIF_MODE_MODE2_FORM2)) {
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: Workaround enabled for image with incorrect num. sectors!\n", __func__, track_length, track_length);   
         }
 
