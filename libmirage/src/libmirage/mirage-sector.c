@@ -393,26 +393,25 @@ gboolean mirage_sector_feed_data (MIRAGE_Sector *self, gint address, GObject *tr
                Mode 2 Form 2 sectors, it is subheader (8 bytes), user data (2324
                bytes) and 4 spare bytes.
                    
-               Some image formats seem to use 2332 bytes; for Mode 2 Form 2 
-               sectors, this means subheader and user data is included, while 
-               spare bytes are omitted. I'm not entirely sure of the logic 
-               behind it, but for Mode 2 Form 1 sectors, the last 4 bytes of ECC
-               seem to be cut. 
-                   
-               Thus, we treat 2332 and 2336-byte sectors as the same, with the
-               unfortunate side effect that in the former case, last four bytes
-               of ECC will be set to 0; if that causes problems, we could force 
-               EDC/ECC regeneration for 2332-byte sectors */
+               Some image formats like CIF uses 2056 and 2332 bytes; for Mode 2 
+               Form 1 & 2 sectors, we treat this as Mode 2 Mixed and the sectors
+               contain 2048 or 2324 bytes data pluss an 8 byte filler. */
             
             /* Data offset */
-            if (sectsize == 2332 || sectsize == 2336) {
+            if (sectsize == 2056) {
+                data_offset = CD_SYNC_SIZE + CD_HEAD_SIZE + CD_SUBHEAD_SIZE;
+            } else if ((sectsize == 2332) || (sectsize == 2336)) {
                 data_offset = CD_SYNC_SIZE + CD_HEAD_SIZE;
             }
             
             /* Valid data */
-            if (sectsize >= 2332) {
+            if (sectsize >= 2056) {
                 _priv->valid_data |= MIRAGE_VALID_DATA;
+            }
+            if (sectsize >= 2332) {
                 _priv->valid_data |= MIRAGE_VALID_SUBHEADER;
+            }
+            if (sectsize >= 2336) {
                 _priv->valid_data |= MIRAGE_VALID_EDC_ECC;
             }
             if (sectsize >= 2352) {
@@ -423,7 +422,7 @@ gboolean mirage_sector_feed_data (MIRAGE_Sector *self, gint address, GObject *tr
             break;
         }
     }
-    
+
     /* Read */
     if (!mirage_fragment_read_main_data(MIRAGE_FRAGMENT(data_fragment), address, _priv->sector_data+data_offset, &sectsize, error)) {
         g_object_unref(data_fragment);
