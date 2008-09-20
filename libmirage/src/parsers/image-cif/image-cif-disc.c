@@ -38,23 +38,6 @@ typedef struct {
     MIRAGE_ParserInfo *parser_info;
 } MIRAGE_Disc_CIFPrivate;
 
-#ifdef DEFINED_BUT_NOT_USED
-typedef struct {
-    gchar     *block_id;
-    gboolean  has_subblocks;
-    gint      subblock_offset;
-} CIF_BlockIDs;
-
-/* NULL terminated list of valid block IDs and subblock offset */
-static CIF_BlockIDs CIFBlockID[] = {
-    { "imag", 0, 0                               }, 
-    { "disc", 1, sizeof(CIF_DISC_HeaderBlock)    }, 
-    { "adio", 0, 0                               }, 
-    { "info", 0, 0                               }, 
-    { "ofs ", 1, sizeof(CIF_OFS_HeaderBlock)     }
-};
-#endif /* DEFINED_BUT_NOT_USED */
-
 static gboolean __mirage_disc_cif_build_block_index(MIRAGE_Disc *self, GError **error) {
     MIRAGE_Disc_CIFPrivate *_priv = MIRAGE_DISC_CIF_GET_PRIVATE(self);
     GList                  *blockindex = NULL;
@@ -236,15 +219,7 @@ static gint __mirage_disc_cif_convert_track_mode (MIRAGE_Disc *self, guint32 mod
         }
     } else if(mode == CIF_MODE_MODE2) {
         switch(sector_size) {
-            case 2048:
-                return MIRAGE_MODE_MODE2_FORM1;
-            case 2324:
-                return MIRAGE_MODE_MODE2_FORM2;
             case 2332:
-                return MIRAGE_MODE_MODE2_MIXED;
-            case 2336:
-                return MIRAGE_MODE_MODE2_MIXED;
-            case 2352:
                 return MIRAGE_MODE_MODE2_MIXED;
             default: 
                 MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: unknown sector size %i!\n", __func__, sector_size);
