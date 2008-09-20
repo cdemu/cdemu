@@ -383,13 +383,34 @@ gboolean mirage_sector_feed_data (MIRAGE_Sector *self, gint address, GObject *tr
             break;
         }
         case MIRAGE_MODE_MODE2_MIXED: {
+            /* Mode 2 Mixed consists of both Mode 2 Form 1 and Mode 2 Form 2
+               sectors. Therefore, in order to be able to distinguish between
+               them, we need both subheader and user data.
+             
+               Most image formats use 2336 bytes to provide this information.
+               For Mode 2 Form 1 sectors, this includes subheader (8 bytes), 
+               user data (2048 bytes), EDC (4 bytes) and ECC (276 bytes). For 
+               Mode 2 Form 2 sectors, it is subheader (8 bytes), user data (2324
+               bytes) and 4 spare bytes.
+                   
+               Some image formats seem to use 2332 bytes; for Mode 2 Form 2 
+               sectors, this means subheader and user data is included, while 
+               spare bytes are omitted. I'm not entirely sure of the logic 
+               behind it, but for Mode 2 Form 1 sectors, the last 4 bytes of ECC
+               seem to be cut. 
+                   
+               Thus, we treat 2332 and 2336-byte sectors as the same, with the
+               unfortunate side effect that in the former case, last four bytes
+               of ECC will be set to 0; if that causes problems, we could force 
+               EDC/ECC regeneration for 2332-byte sectors */
+            
             /* Data offset */
-            if (sectsize == 2336) {
+            if (sectsize == 2332 || sectsize == 2336) {
                 data_offset = CD_SYNC_SIZE + CD_HEAD_SIZE;
             }
             
             /* Valid data */
-            if (sectsize >= 2336) {
+            if (sectsize >= 2332) {
                 _priv->valid_data |= MIRAGE_VALID_DATA;
                 _priv->valid_data |= MIRAGE_VALID_SUBHEADER;
                 _priv->valid_data |= MIRAGE_VALID_EDC_ECC;
