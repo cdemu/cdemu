@@ -240,6 +240,8 @@ static gint __mirage_disc_cif_convert_track_mode (MIRAGE_Disc *self, guint32 mod
                 return MIRAGE_MODE_MODE2_FORM1;
             case 2324:
                 return MIRAGE_MODE_MODE2_FORM2;
+            case 2332:
+                return MIRAGE_MODE_MODE2_MIXED;
             case 2336:
                 return MIRAGE_MODE_MODE2_MIXED;
             case 2352:
@@ -337,7 +339,7 @@ static gboolean __mirage_disc_cif_parse_track_entries (MIRAGE_Disc *self, GError
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   start: %p\n", __func__, track_start);
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   length: %i (0x%X)\n", __func__, track_length, track_length);
 
-	if (disc_subblock_data->track.need_hack) {
+        if (track_mode == CIF_MODE_MODE2) {
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: Workaround enabled for image with incorrect num. sectors!\n", __func__, track_length, track_length);   
         }
 
@@ -361,7 +363,7 @@ static gboolean __mirage_disc_cif_parse_track_entries (MIRAGE_Disc *self, GError
             }
         }
 
-        gint converted_mode = __mirage_disc_cif_convert_track_mode(self, track_mode, sector_size);
+        gint converted_mode = __mirage_disc_cif_convert_track_mode(self, track_mode, real_sector_size);
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   converted mode: 0x%X\n", __func__, converted_mode);
 	if(converted_mode != -1) {
             mirage_track_set_mode(MIRAGE_TRACK(cur_track), converted_mode, NULL);
@@ -495,14 +497,12 @@ static gboolean __mirage_disc_cif_load_disc (MIRAGE_Disc *self, GError **error) 
     }
 
     /* Print some extra information that seems to only be found on AUDIO discs */
-    /* TODO: Figure out a better way to check if there are disc title and artist */
     disc_block_ptr = __mirage_disc_cif_find_block_entry(self, "disc", error);
     if (!disc_block_ptr) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: \"disc\" block not located. Can not proceed.\n", __func__);
         return FALSE;
     }
 
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: disc:\n", __func__);
     CIFSubBlockIndexEntry *disc_subblock_entry = (CIFSubBlockIndexEntry *) g_list_nth_data(disc_block_ptr->subblock_index, 0);
     CIF_DISC_SubBlock     *disc_subblock_data = (CIF_DISC_SubBlock *) disc_subblock_entry->start;
 
@@ -512,11 +512,10 @@ static gboolean __mirage_disc_cif_load_disc (MIRAGE_Disc *self, GError **error) 
         gchar *title = g_strndup(title_and_artist, title_length);
         gchar *artist = (gchar *) (title_and_artist + title_length);
 
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: disc:\n", __func__);
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   title: %s\n", __func__, title);
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   artist: %s\n", __func__, artist);
         g_free(title);
-    } else {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   Looks like there's no title + artist.\n", __func__);
     }
 
     /* Load tracks */
