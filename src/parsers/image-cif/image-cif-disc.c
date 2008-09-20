@@ -306,12 +306,6 @@ static gboolean __mirage_disc_cif_parse_track_entries (MIRAGE_Disc *self, GError
             real_sector_size = 2332;
         }
 
-        /* workaround: cdrom-xa/mode2 has incorrect num. sectors */
-	if ((track_mode == CIF_MODE_MODE2_FORM1) || (track_mode == CIF_MODE_MODE2_FORM2)) {
-            sectors = track_length / real_sector_size; 
-            if (track_length % real_sector_size) sectors++; /* round up */
-        }
-
         /* Read main blocks related to track */
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: track #%i:\n", __func__, track);
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   type: %.4s\n", __func__, track_type);
@@ -322,8 +316,11 @@ static gboolean __mirage_disc_cif_parse_track_entries (MIRAGE_Disc *self, GError
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   start: %p\n", __func__, track_start);
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   length: %i (0x%X)\n", __func__, track_length, track_length);
 
+        /* workaround: cdrom-xa/mode2 has incorrect num. sectors */
 	if ((track_mode == CIF_MODE_MODE2_FORM1) || (track_mode == CIF_MODE_MODE2_FORM2)) {
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: Workaround enabled for image with incorrect num. sectors!\n", __func__, track_length, track_length);   
+            sectors = track_length / real_sector_size; 
+            if (track_length % real_sector_size) sectors++; /* round up */
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s:   Workaround enabled; Corrected sector count: %i\n", __func__, sectors);   
         }
 
         /* Add track */
