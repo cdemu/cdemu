@@ -753,7 +753,7 @@ gboolean mirage_sector_get_edc_ecc (MIRAGE_Sector *self, guint8 **ret_buf, gint 
             break;
         }
         case MIRAGE_MODE_MODE2_FORM2: {
-            buf = _priv->sector_data+2324;
+            buf = _priv->sector_data+2348;
             len = 4;
             break;
         }
