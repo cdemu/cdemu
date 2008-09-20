@@ -219,7 +219,7 @@ static gint __mirage_disc_cif_convert_track_mode (MIRAGE_Disc *self, guint32 mod
         }
     } else if(mode == CIF_MODE_MODE2_FORM1) {
         switch(sector_size) {
-            case 2056:
+            case 2057:
                 return MIRAGE_MODE_MODE2_MIXED;
             default: 
                 MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: unknown sector size %i!\n", __func__, sector_size);
@@ -301,8 +301,10 @@ static gboolean __mirage_disc_cif_parse_track_entries (MIRAGE_Disc *self, GError
 
         GObject    *cur_track = NULL;
 
-        /* workaround for mode2 form2 */
-        if (track_mode == CIF_MODE_MODE2_FORM2) {
+        /* workaround for mode2/cdrom-xa modes */
+        if (track_mode == CIF_MODE_MODE2_FORM1) {
+            real_sector_size = 2057;
+        } else if (track_mode == CIF_MODE_MODE2_FORM2) {
             real_sector_size = 2332;
         }
 
