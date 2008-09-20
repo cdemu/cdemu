@@ -40,9 +40,10 @@ G_BEGIN_DECLS
 #define CIF_MEDIA_MODE1   0x01
 #define CIF_MEDIA_MODE2   0x03
 
-#define CIF_MODE_AUDIO    0x00
-#define CIF_MODE_MODE1    0x01
-#define CIF_MODE_MODE2    0x04
+#define CIF_MODE_AUDIO        0x00 /* 2352 bytes/sector */
+#define CIF_MODE_MODE1        0x01 /* 2048 bytes/sector */
+#define CIF_MODE_MODE2_FORM1  0x02 /* 2048 bytes/sector, stored internally as 2056 bytes/sector */
+#define CIF_MODE_MODE2_FORM2  0x04 /* 2324 bytes/sector, stored internally as 2332 bytes/sector */
 
 /* The CIF file format is compatible with the joint IBM/Microsoft 
 Resource Interchange File Format (RIFF) standard of 1991, see references:
@@ -106,8 +107,8 @@ typedef struct {
     guint16 length;        /* Length of subblock including this variable */
     guint16 tracks;        /* Tracks in image */
     guint8  dummy1[6];     /* (unknown) */
-    guint   media_type;    /* 0 = cd-da/audio, 1 = cdrom/mode1, 3 = cdrom-xa/mode2 */
-    guint8  dummy[6];      /* (unknown) */
+    guint16 media_type;    /* 0 = cd-da/audio, 1 = cdrom/mode1, 3 = mode2/cdrom-xa */
+    guint8  dummy2[6];     /* (unknown) */
 } CIF_DISC_SecondSubBlock; /* length: 18 */
 
 typedef struct {
@@ -115,7 +116,7 @@ typedef struct {
     guint16 dummy1;
     guint32 sectors;       /* Number of sectors in track */
     guint16 dummy2;
-    guint16 mode;          /* 0 = cd-da/audio, 1 = cdrom/mode1, 4 = cdrom-xa/mode2 */
+    guint16 mode;          /* 0 = audio, 1 = mode1, 2 = mode2 form1 , 4 = mode2 form2 */
     guint8  dummy3[10];
     guint16 sector_size;   /* Sector size (invalid for cdrom-xa) */
     /* this far things are common between audio and data tracks */
@@ -127,7 +128,7 @@ typedef struct {
     guint16 dummy1;
     guint32 sectors;       /* Number of sectors in track */
     guint16 dummy2;
-    guint16 mode;          /* 0 = cd-da/audio, 1 = cdrom/mode1, 4 = cdrom-xa/mode2 */
+    guint16 mode;          /* 0 = audio, 1 = mode1, 2 = mode2 form1 , 4 = mode2 form2 */
     guint8  dummy3[10];
     guint16 sector_size;   /* Sector size (invalid for cdrom-xa) */
     /* this far things are common between audio and data tracks */
