@@ -42,7 +42,7 @@ G_BEGIN_DECLS
 
 #define CIF_MODE_AUDIO        0x00 /* 2352 bytes/sector */
 #define CIF_MODE_MODE1        0x01 /* 2048 bytes/sector */
-#define CIF_MODE_MODE2_FORM1  0x02 /* 2048 bytes/sector, stored internally as 2056 bytes/sector */
+#define CIF_MODE_MODE2_FORM1  0x02 /* 2048 bytes/sector, stored internally as 2057 bytes/sector */
 #define CIF_MODE_MODE2_FORM2  0x04 /* 2324 bytes/sector, stored internally as 2332 bytes/sector */
 
 /* The CIF file format is compatible with the joint IBM/Microsoft 
