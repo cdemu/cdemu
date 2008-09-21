@@ -23,9 +23,6 @@
 
 #include "mirage.h"
 
-#define CD_SYNC_SIZE 12
-#define CD_HEAD_SIZE 4
-#define CD_SUBHEAD_SIZE 8
 
 /******************************************************************************\
  *                              Private structure                             *
@@ -177,15 +174,15 @@ static void __mirage_sector_generate_edc_ecc (MIRAGE_Sector *self) {
             guint8 tmp_header[4];
             /* Zero the header, because it is not supposed to be included in the 
                calculation; copy, calculate, then copy back */
-            memcpy(tmp_header, _priv->sector_data+12, CD_HEAD_SIZE);
-            memset(_priv->sector_data+12, 0, CD_HEAD_SIZE);
+            memcpy(tmp_header, _priv->sector_data+12, 4);
+            memset(_priv->sector_data+12, 0, 4);
             /* Generate EDC */
             mirage_helper_sector_edc_ecc_compute_edc_block(_priv->sector_data+0x10, 0x808, _priv->sector_data+0x818);
             /* Generate ECC P/Q codes */
             mirage_helper_sector_edc_ecc_compute_ecc_block(_priv->sector_data+0xC, 86, 24, 2, 86, _priv->sector_data+0x81C); /* P */
             mirage_helper_sector_edc_ecc_compute_ecc_block(_priv->sector_data+0xC, 52, 43, 86, 88, _priv->sector_data+0x8C8); /* Q */
             /* Unzero */
-            memcpy(_priv->sector_data+12, tmp_header, CD_HEAD_SIZE);
+            memcpy(_priv->sector_data+12, tmp_header, 4);
             
             break;            
         }
@@ -271,152 +268,452 @@ gboolean mirage_sector_feed_data (MIRAGE_Sector *self, gint address, GObject *tr
     /* Now, calculate offset and valid data based on mode and sector size */
     switch (mode) {
         case MIRAGE_MODE_AUDIO: {
-            /* Data offset: 0, because it should always be 2352 */
-            
-            /* Valid data: Data should always be valid */
-            _priv->valid_data |= MIRAGE_VALID_DATA;
-            
-            /* We mark the rest as valid as well, so that we don't need 
-               additional checks in fake data generation code */
-            _priv->valid_data |= MIRAGE_VALID_SYNC;
-            _priv->valid_data |= MIRAGE_VALID_HEADER;
-            _priv->valid_data |= MIRAGE_VALID_EDC_ECC;
-                
+            /* Audio sector structure:
+                data (2352) */
+            switch (sectsize) {
+                case 2352: {
+                    /* Audio data */
+                    data_offset = 0; /* Offset: 0 */
+                    
+                    /* Valid */
+                    _priv->valid_data |= MIRAGE_VALID_DATA;
+                    
+                    /* We mark the rest as valid as well, so that we don't need 
+                       additional checks in fake data generation code */
+                    _priv->valid_data |= MIRAGE_VALID_SYNC;
+                    _priv->valid_data |= MIRAGE_VALID_HEADER;
+                    _priv->valid_data |= MIRAGE_VALID_EDC_ECC;
+                    break;
+                }
+                default: {
+                    MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: unhandled sector size %d for Audio sector!\n", __func__, sectsize);
+                    mirage_error(MIRAGE_E_GENERIC, error);
+                    return FALSE;
+                }
+            }
             break;
         }
         case MIRAGE_MODE_MODE0: {
-            /* Data offset */
-            if (sectsize == 2336) {
-                data_offset = CD_SYNC_SIZE + CD_HEAD_SIZE;
-            }
-            
-            /* Set valid data */
-            if (sectsize >= 2336) {
-                _priv->valid_data |= MIRAGE_VALID_DATA;
-            }
-            if (sectsize >= 2352) {
-                _priv->valid_data |= MIRAGE_VALID_SYNC;
-                _priv->valid_data |= MIRAGE_VALID_HEADER;
+            /* Mode 0 sector structue:
+                sync (12) + header (4) + data (2336) */
+            switch (sectsize) {
+                case 2336: {
+                    /* Data only */
+                    data_offset = 12 + 4; /* Offset: sync + header */
+                    
+                    /* Valid */
+                    _priv->valid_data |= MIRAGE_VALID_DATA;
+                    
+                    break;
+                }
+                case 2340: {
+                    /* Data + header */
+                    data_offset = 12; /* Offset: sync */
+                    
+                    /* Valid */
+                    _priv->valid_data |= MIRAGE_VALID_HEADER;
+                    _priv->valid_data |= MIRAGE_VALID_DATA;
+                    
+                    break;
+                }
+                case 2352: {
+                    /* Sync + header + data */
+                    data_offset = 0; /* Offset: 0 */
+                    
+                    /* Valid */
+                    _priv->valid_data |= MIRAGE_VALID_SYNC;
+                    _priv->valid_data |= MIRAGE_VALID_HEADER;
+                    _priv->valid_data |= MIRAGE_VALID_DATA;
+                    
+                    break;
+                }
+                default: {
+                    MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: unhandled sector size %d for Mode 0 sector!\n", __func__, sectsize);
+                    mirage_error(MIRAGE_E_GENERIC, error);
+                    return FALSE;
+                }
             }
             
             break;
         }
         case MIRAGE_MODE_MODE1: {
-            /* Data offset */
-            if (sectsize == 2048) {
-                data_offset = CD_SYNC_SIZE + CD_HEAD_SIZE;
-            }
-            
-            /* Valid data */
-            if (sectsize >= 2048) {
-                _priv->valid_data |= MIRAGE_VALID_DATA;
-            }
-            if (sectsize >= 2352) {
-                _priv->valid_data |= MIRAGE_VALID_SYNC;
-                _priv->valid_data |= MIRAGE_VALID_HEADER;
-                _priv->valid_data |= MIRAGE_VALID_EDC_ECC;
+            /* Mode 1 sector structue:
+                sync (12) + header (4) + data (2048) + EDC/ECC (288) */
+            switch (sectsize) {
+                case 2048: {
+                    /* Data only */
+                    data_offset = 12 + 4; /* Offset: sync + header */
+                    
+                    /* Valid */
+                    _priv->valid_data |= MIRAGE_VALID_DATA;
+                    
+                    break;
+                }
+                case 2052: {
+                    /* Header + data */
+                    data_offset = 12; /* Offset: sync */
+                    
+                    /* Valid */
+                    _priv->valid_data |= MIRAGE_VALID_HEADER;
+                    _priv->valid_data |= MIRAGE_VALID_DATA;
+                    
+                    break;
+                }
+                case 2064: {
+                    /* Sync + header + data */
+                    data_offset = 0; /* Offset: 0 */
+                    
+                    /* Valid */
+                    _priv->valid_data |= MIRAGE_VALID_SYNC;
+                    _priv->valid_data |= MIRAGE_VALID_HEADER;
+                    _priv->valid_data |= MIRAGE_VALID_DATA;
+                    
+                    break;
+                }
+                case 2336: {
+                    /* Data + EDC/ECC */
+                    data_offset = 12 + 4; /* Offset: sync + header */
+                    
+                    /* Valid */
+                    _priv->valid_data |= MIRAGE_VALID_DATA;
+                    _priv->valid_data |= MIRAGE_VALID_EDC_ECC;
+                    
+                    break;
+                }
+                case 2340: {
+                    /* Header + data + EDC/ECC */
+                    data_offset = 12; /* Offset: sync */
+                    
+                    /* Valid */
+                    _priv->valid_data |= MIRAGE_VALID_HEADER;
+                    _priv->valid_data |= MIRAGE_VALID_DATA;
+                    _priv->valid_data |= MIRAGE_VALID_EDC_ECC;
+                    
+                    break;
+                }
+                case 2352: {
+                    /* Sync + header + data + EDC/ECC */
+                    data_offset = 0; /* Offset: 0 */
+                    
+                    /* Valid */
+                    _priv->valid_data |= MIRAGE_VALID_SYNC;
+                    _priv->valid_data |= MIRAGE_VALID_HEADER;
+                    _priv->valid_data |= MIRAGE_VALID_DATA;
+                    _priv->valid_data |= MIRAGE_VALID_EDC_ECC;
+                    
+                    break;
+                }
+                default: {
+                    MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: unhandled sector size %d for Mode 1 sector!\n", __func__, sectsize);
+                    mirage_error(MIRAGE_E_GENERIC, error);
+                    return FALSE;
+                }
             }
             
             break;
         }
         case MIRAGE_MODE_MODE2: {
-            /* Data offset */
-            if (sectsize == 2336) {
-                data_offset = CD_SYNC_SIZE + CD_HEAD_SIZE;
-            }
-            
-            /* Valid data */
-            if (sectsize >= 2336) {
-                _priv->valid_data |= MIRAGE_VALID_DATA;
-            }
-            if (sectsize >= 2352) {
-                _priv->valid_data |= MIRAGE_VALID_SYNC;
-                _priv->valid_data |= MIRAGE_VALID_HEADER;
+            /* Mode 2 formless sector structue:
+                sync (12) + header (4) + data (2336) */
+            switch (sectsize) {
+                case 2336: {
+                    /* Data only */
+                    data_offset = 12 + 4; /* Offset: sync + header */
+                    
+                    /* Valid */
+                    _priv->valid_data |= MIRAGE_VALID_DATA;
+                    
+                    break;
+                }
+                case 2340: {
+                    /* Header + data */
+                    data_offset = 12; /* Offset: sync */
+                    
+                    /* Valid */
+                    _priv->valid_data |= MIRAGE_VALID_HEADER;
+                    _priv->valid_data |= MIRAGE_VALID_DATA;
+                    
+                    break;
+                }
+                case 2352: {
+                    /* Sync + header + data */
+                    data_offset = 0; /* Offset: 0 */
+                    
+                    /* Valid */
+                    _priv->valid_data |= MIRAGE_VALID_SYNC;
+                    _priv->valid_data |= MIRAGE_VALID_HEADER;
+                    _priv->valid_data |= MIRAGE_VALID_DATA;
+                    
+                    break;
+                }
+                default: {
+                    MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: unhandled sector size %d for Mode 1 sector!\n", __func__, sectsize);
+                    mirage_error(MIRAGE_E_GENERIC, error);
+                    return FALSE;
+                }
             }
             
             break;
         }
         case MIRAGE_MODE_MODE2_FORM1: {
-            /* Data offset */
-            if (sectsize == 2048) {
-                data_offset = CD_SYNC_SIZE + CD_HEAD_SIZE + CD_SUBHEAD_SIZE;
-            } else if (sectsize == 2336) {
-                data_offset = CD_SYNC_SIZE + CD_HEAD_SIZE;
-            }
-            
-            /* Valid data */
-            if (sectsize >= 2048) {
-                _priv->valid_data |= MIRAGE_VALID_DATA;
-            }
-            if (sectsize >= 2336) {
-                _priv->valid_data |= MIRAGE_VALID_SUBHEADER;
-                _priv->valid_data |= MIRAGE_VALID_EDC_ECC;
-            }
-            if (sectsize >= 2352) {
-                _priv->valid_data |= MIRAGE_VALID_SYNC;
-                _priv->valid_data |= MIRAGE_VALID_HEADER;
+            /* Mode 2 Form 1 sector structue:
+                sync (12) + header (4) + subheader (8) + data (2048) + EDC/ECC (280) */
+            switch (sectsize) {
+                case 2048: {
+                    /* Data only */
+                    data_offset = 12 + 4 + 8; /* Offset: sync + header + subheader */
+                    
+                    /* Valid */
+                    _priv->valid_data |= MIRAGE_VALID_DATA;
+                    
+                    break;
+                }
+                case 2056: {
+                    /* Subheader + data */
+                    data_offset = 12 + 4; /* Offset: sync + header */
+                    
+                    /* Valid */
+                    _priv->valid_data |= MIRAGE_VALID_SUBHEADER;
+                    _priv->valid_data |= MIRAGE_VALID_DATA;
+                    
+                    break;
+                }
+                case 2060: {
+                    /* Header + subheader + data */
+                    data_offset = 12; /* Offset: sync */
+                    
+                    /* Valid */
+                    _priv->valid_data |= MIRAGE_VALID_HEADER;
+                    _priv->valid_data |= MIRAGE_VALID_SUBHEADER;
+                    _priv->valid_data |= MIRAGE_VALID_DATA;
+                    
+                    break;
+                }
+                case 2072: {
+                    /* Sync + header + subheader + data */
+                    data_offset = 0; /* Offset: 0 */
+                    
+                    /* Valid */
+                    _priv->valid_data |= MIRAGE_VALID_SYNC;
+                    _priv->valid_data |= MIRAGE_VALID_HEADER;
+                    _priv->valid_data |= MIRAGE_VALID_SUBHEADER;
+                    _priv->valid_data |= MIRAGE_VALID_DATA;
+                    
+                    break;
+                }
+                case 2328: {
+                    /* Data + EDC/ECC */
+                    data_offset = 12 + 4 + 8; /* Offset: sync + header + subheader */
+                    
+                    /* Valid */
+                    _priv->valid_data |= MIRAGE_VALID_DATA;
+                    _priv->valid_data |= MIRAGE_VALID_EDC_ECC;
+                    
+                    break;
+                }
+                case 2336: {
+                    /* Subheader + data + EDC/ECC */
+                    data_offset = 12 + 4; /* Offset: sync + header */
+                    
+                    /* Valid */
+                    _priv->valid_data |= MIRAGE_VALID_SUBHEADER;
+                    _priv->valid_data |= MIRAGE_VALID_DATA;
+                    _priv->valid_data |= MIRAGE_VALID_EDC_ECC;
+
+                    break;
+                }
+                case 2340: {
+                    /* Header + subheader + data + EDC/ECC */
+                    data_offset = 12; /* Offset: sync */
+                    
+                    /* Valid */
+                    _priv->valid_data |= MIRAGE_VALID_HEADER;
+                    _priv->valid_data |= MIRAGE_VALID_SUBHEADER;
+                    _priv->valid_data |= MIRAGE_VALID_DATA;
+                    _priv->valid_data |= MIRAGE_VALID_EDC_ECC;
+                    
+                    break;
+                }
+                case 2352: {
+                    /* Sync + header + subheader + data + EDC/ECC */
+                    data_offset = 0; /* Offset: 0 */
+                    
+                    /* Valid */
+                    _priv->valid_data |= MIRAGE_VALID_SYNC;
+                    _priv->valid_data |= MIRAGE_VALID_HEADER;
+                    _priv->valid_data |= MIRAGE_VALID_SUBHEADER;
+                    _priv->valid_data |= MIRAGE_VALID_DATA;
+                    _priv->valid_data |= MIRAGE_VALID_EDC_ECC;
+                    
+                    break;
+                }
+                default: {
+                    MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: unhandled sector size %d for Mode 2 Form 1 sector!\n", __func__, sectsize);
+                    mirage_error(MIRAGE_E_GENERIC, error);
+                    return FALSE;
+                }
             }
     
             break;
         }
         case MIRAGE_MODE_MODE2_FORM2: {
-            /* Data offset */
-            if (sectsize == 2324) {
-                data_offset = CD_SYNC_SIZE + CD_HEAD_SIZE + CD_SUBHEAD_SIZE;
-            } else if (sectsize == 2336) {
-                data_offset = CD_SYNC_SIZE + CD_HEAD_SIZE;
+            /* Mode 2 Form 2 sector structue:
+                sync (12) + header (4) + subheader (8) + data (2324) + EDC/ECC (4) */
+            switch (sectsize) {
+                case 2324: {
+                    /* Data only */
+                    data_offset = 12 + 4 + 8; /* Offset: sync + header + subheader */
+                    
+                    /* Valid */
+                    _priv->valid_data |= MIRAGE_VALID_DATA;
+                    
+                    break;
+                }
+                case 2332: {
+                    /* Subheader + data */
+                    data_offset = 12 + 4; /* Offset: sync + header */
+                    
+                    /* Valid */
+                    _priv->valid_data |= MIRAGE_VALID_SUBHEADER;
+                    _priv->valid_data |= MIRAGE_VALID_DATA;
+                    
+                    break;
+                }
+#if 0
+                /* This one yields same size as subheader + data + EDC/ECC, 
+                   which is actually used, while this one most likely isn't. */
+                case 2336: {
+                    /* Header + subheader + data */
+                    data_offset = 12; /* Offset: sync */
+                    
+                    /* Valid */
+                    _priv->valid_data |= MIRAGE_VALID_HEADER;
+                    _priv->valid_data |= MIRAGE_VALID_SUBHEADER;
+                    _priv->valid_data |= MIRAGE_VALID_DATA;
+                    
+                    break;
+                }
+#endif
+                case 2348: {
+                    /* Sync + header + subheader + data */
+                    data_offset = 0; /* Offset: 0 */
+                    
+                    /* Valid */
+                    _priv->valid_data |= MIRAGE_VALID_SYNC;
+                    _priv->valid_data |= MIRAGE_VALID_HEADER;
+                    _priv->valid_data |= MIRAGE_VALID_SUBHEADER;
+                    _priv->valid_data |= MIRAGE_VALID_DATA;
+                    
+                    break;
+                }
+                case 2328: {
+                    /* Data + EDC/ECC */
+                    data_offset = 12 + 4 + 8; /* Offset: sync + header + subheader */
+                    
+                    /* Valid */
+                    _priv->valid_data |= MIRAGE_VALID_DATA;
+                    _priv->valid_data |= MIRAGE_VALID_EDC_ECC;
+                    
+                    break;
+                }
+                case 2336: {
+                    /* Subheader + data + EDC/ECC */
+                    data_offset = 12 + 4; /* Offset: sync + header */
+                    
+                    /* Valid */
+                    _priv->valid_data |= MIRAGE_VALID_SUBHEADER;
+                    _priv->valid_data |= MIRAGE_VALID_DATA;
+                    _priv->valid_data |= MIRAGE_VALID_EDC_ECC;
+
+                    break;
+                }
+                case 2340: {
+                    /* Header + subheader + data + EDC/ECC */
+                    data_offset = 12; /* Offset: sync */
+                    
+                    /* Valid */
+                    _priv->valid_data |= MIRAGE_VALID_HEADER;
+                    _priv->valid_data |= MIRAGE_VALID_SUBHEADER;
+                    _priv->valid_data |= MIRAGE_VALID_DATA;
+                    _priv->valid_data |= MIRAGE_VALID_EDC_ECC;
+                    
+                    break;
+                }
+                case 2352: {
+                    /* Sync + header + subheader + data + EDC/ECC */
+                    data_offset = 0; /* Offset: 0 */
+                    
+                    /* Valid */
+                    _priv->valid_data |= MIRAGE_VALID_SYNC;
+                    _priv->valid_data |= MIRAGE_VALID_HEADER;
+                    _priv->valid_data |= MIRAGE_VALID_SUBHEADER;
+                    _priv->valid_data |= MIRAGE_VALID_DATA;
+                    _priv->valid_data |= MIRAGE_VALID_EDC_ECC;
+                    
+                    break;
+                }
+                default: {
+                    MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: unhandled sector size %d for Mode 2 Form 2 sector!\n", __func__, sectsize);
+                    mirage_error(MIRAGE_E_GENERIC, error);
+                    return FALSE;
+                }
             }
-            
-            /* Valid data */
-            if (sectsize >= 2324) {
-                _priv->valid_data |= MIRAGE_VALID_DATA;
-            }
-            if (sectsize >= 2336) {
-                _priv->valid_data |= MIRAGE_VALID_SUBHEADER;
-                _priv->valid_data |= MIRAGE_VALID_EDC_ECC;
-            }
-            if (sectsize >= 2352) {
-                _priv->valid_data |= MIRAGE_VALID_SYNC;
-                _priv->valid_data |= MIRAGE_VALID_HEADER;
-            }
-            
+    
             break;
         }
         case MIRAGE_MODE_MODE2_MIXED: {
             /* Mode 2 Mixed consists of both Mode 2 Form 1 and Mode 2 Form 2
-               sectors. Therefore, in order to be able to distinguish between
-               them, we need both subheader and user data.
-             
-               Most image formats use 2336 bytes to provide this information.
-               For Mode 2 Form 1 sectors, this includes subheader (8 bytes), 
-               user data (2048 bytes), EDC (4 bytes) and ECC (276 bytes). For 
-               Mode 2 Form 2 sectors, it is subheader (8 bytes), user data (2324
-               bytes) and 4 spare bytes.
-                   
-               Some image formats like CIF uses 2056 and 2332 bytes; for Mode 2 
-               Form 1 & 2 sectors, we treat this as Mode 2 Mixed and the sectors
-               contain 2048 or 2324 bytes data pluss an 8 byte filler. */
-            
-            /* Data offset */
-            if (sectsize == 2056) {
-                data_offset = CD_SYNC_SIZE + CD_HEAD_SIZE + CD_SUBHEAD_SIZE;
-            } else if ((sectsize == 2332) || (sectsize == 2336)) {
-                data_offset = CD_SYNC_SIZE + CD_HEAD_SIZE;
-            }
-            
-            /* Valid data */
-            if (sectsize >= 2056) {
-                _priv->valid_data |= MIRAGE_VALID_DATA;
-            }
-            if (sectsize >= 2332) {
-                _priv->valid_data |= MIRAGE_VALID_SUBHEADER;
-            }
-            if (sectsize >= 2336) {
-                _priv->valid_data |= MIRAGE_VALID_EDC_ECC;
-            }
-            if (sectsize >= 2352) {
-                _priv->valid_data |= MIRAGE_VALID_SYNC;
-                _priv->valid_data |= MIRAGE_VALID_HEADER;
+               sectors, which are distinguished by subheader. In addition to
+               having to provide subheader data, both Form 1 and Form 2 sectors
+               must be of same size; this is true only if at least subheader,
+               data and EDC/ECC are provided */
+            switch (sectsize) {
+                case 2332:
+                    /* This one's a special case; it is same as 2336, except 
+                       that last four bytes (for Form 2 sectors, that's optional
+                       EDC, and for Form 1 sectors, it's last four bytes of ECC)
+                       are omitted */
+                case 2336: {
+                    /* Subheader + data + EDC/ECC */
+                    data_offset = 12 + 4; /* Offset: sync + header */
+                    
+                    /* Valid */
+                    _priv->valid_data |= MIRAGE_VALID_SUBHEADER;
+                    _priv->valid_data |= MIRAGE_VALID_DATA;
+                    _priv->valid_data |= MIRAGE_VALID_EDC_ECC;
+                    
+                    break;
+                }
+                case 2340: {
+                    /* Header + subheader + data + EDC/ECC */
+                    data_offset = 12 + 4; /* Offset: sync */
+                    
+                    /* Valid */
+                    _priv->valid_data |= MIRAGE_VALID_HEADER;
+                    _priv->valid_data |= MIRAGE_VALID_SUBHEADER;
+                    _priv->valid_data |= MIRAGE_VALID_DATA;
+                    _priv->valid_data |= MIRAGE_VALID_EDC_ECC;
+                    
+                    break;
+                }
+                case 2352: {
+                    /* Sync + header + subheader + data + EDC/ECC */
+                    data_offset = 0; /* Offset: 0 */
+                    
+                    /* Valid */
+                    _priv->valid_data |= MIRAGE_VALID_SYNC;
+                    _priv->valid_data |= MIRAGE_VALID_HEADER;
+                    _priv->valid_data |= MIRAGE_VALID_SUBHEADER;
+                    _priv->valid_data |= MIRAGE_VALID_DATA;
+                    _priv->valid_data |= MIRAGE_VALID_EDC_ECC;
+                    
+                    break;
+                }
+                default: {
+                    MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: unhandled sector size %d for Mode 2 Mixed sector!\n", __func__, sectsize);
+                    mirage_error(MIRAGE_E_GENERIC, error);
+                    return FALSE;
+                }
             }
             
             break;
