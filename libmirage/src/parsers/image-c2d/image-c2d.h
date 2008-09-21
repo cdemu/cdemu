@@ -65,14 +65,14 @@ typedef struct {
 
 typedef struct {
     guint32 block_size;   /* Length of this c2ck block (32) */
-    guint8  signature;    /* Signature string: "C2CK" */
+    gchar   signature[4]; /* Signature string: "C2CK" */
     guint32 dummy1[2];    /* (unknown) */
     guint32 offset_art;   /* Offset to the artwork block */
 } C2D_C2CKBlock;  /* length: 32 bytes */
 
 typedef struct {
     guint32 dummy1;        /* (unknown) */
-    guint8  cdtext[12];    /* CD-Text */
+    gchar   cdtext[12];    /* CD-Text */
     guint8  dummy2[6];     /* (misc. stuff) */
     /* etc. */
 } C2D_CDTextBlock; /* length: as given in header block */

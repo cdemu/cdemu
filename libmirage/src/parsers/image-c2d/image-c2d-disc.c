@@ -431,7 +431,7 @@ static void __mirage_disc_c2d_instance_init (GTypeInstance *instance, gpointer g
         "1.0.0",
         "Henrik Stokseth",
         FALSE,
-        "C2D (WinOnCD) images",
+        "C2D (CeQuadrat WinOnCD) images",
         2, ".c2d", NULL
     );
     
