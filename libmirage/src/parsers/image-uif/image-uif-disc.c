@@ -212,6 +212,12 @@ static gboolean __mirage_disc_uif_load_disc (MIRAGE_Disc *self, GError **error) 
                 return FALSE;
             }
 
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: BLMS BLOCK:\n", __func__);
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   Signature: %.4s\n", __func__, _priv->blms_block.sign);
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   Block size (+8): %i\n", __func__, _priv->blms_block.block_size);
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   Compressed: %i\n", __func__, _priv->blms_block.compressed);
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   Number of data blocks: %i\n", __func__, _priv->blms_block.num_blocks);
+
             /* Read blms data blocks */
             _priv->blms_data = (guint8 *) blhr_unzip(_priv->uif_file, &_priv->z, _priv->blms_block.block_size - 8, _priv->blms_block.num_blocks, _priv->blms_block.compressed);
             if (!_priv->blms_data) {
@@ -227,6 +233,12 @@ static gboolean __mirage_disc_uif_load_disc (MIRAGE_Disc *self, GError **error) 
                 MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: Expected 'blss' signature!\n", __func__);
                 return FALSE;
             }
+
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: BLSS BLOCK:\n", __func__);
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   Signature: %.4s\n", __func__, _priv->blss_block.sign);
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   Block size (+8): %i\n", __func__, _priv->blss_block.block_size);
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   Compressed: %i\n", __func__, _priv->blss_block.compressed);
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   Number of data blocks: %i\n", __func__, _priv->blss_block.num_blocks);
 
             /* Read blss data blocks if appropriate */
             if(_priv->blss_block.num_blocks) {
