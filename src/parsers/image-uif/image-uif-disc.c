@@ -236,7 +236,7 @@ static gboolean __mirage_disc_uif_load_disc (MIRAGE_Disc *self, GError **error) 
 
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: BLSS BLOCK:\n", __func__);
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   Signature: %.4s\n", __func__, _priv->blss_block.sign);
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   Block size (+8): %i\n", __func__, _priv->blss_block.block_size);
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   Block size (+12): %i\n", __func__, _priv->blss_block.block_size);
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   Compressed: %i\n", __func__, _priv->blss_block.compressed);
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   Number of data blocks: %i\n", __func__, _priv->blss_block.num_blocks);
 

@@ -57,7 +57,7 @@ typedef struct {
     guint32     block_size;  /* size of the data blocks plus the rest of this struct */
     guint32     compressed;  /* true if data blocks are compressed */
     guint32     num_blocks;  /* number of blhr_data structures */
-} blhr_t; /* size: 16 bytes */
+} blhr_t; /* size: 16 or 20 bytes */
 
 typedef struct {
     guint64     offset;      /* input offset */
