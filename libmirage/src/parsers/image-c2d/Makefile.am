@@ -5,27 +5,26 @@ INCLUDES = \
     
 plugindir = $(MIRAGE_PLUGIN_DIR)
 
-plugin_LTLIBRARIES = image-uif.la
+plugin_LTLIBRARIES = image-c2d.la
 
 noinst_HEADERS = \
-    image-uif.h \
-    image-uif-disc.h
+    image-c2d.h \
+    image-c2d-disc.h
 
-image_uif_la_SOURCES = \
-    image-uif-disc.c \
-    image-uif-plugin.c
+image_c2d_la_SOURCES = \
+    image-c2d-disc.c \
+    image-c2d-plugin.c
 
-image_uif_la_LIBADD = \
+image_c2d_la_LIBADD = \
      $(glib_LIBS) \
-     $(gobject_LIBS) \
-     $(zlib_LIBS)
+     $(gobject_LIBS)
 
-image_uif_la_LDFLAGS = \
+image_c2d_la_LDFLAGS = \
     -module \
     -avoid-version
 
 
 mimedir = $(datadir)/mime/packages
-mime_DATA = libmirage-image-uif.xml
+mime_DATA = libmirage-image-c2d.xml
 
 EXTRA_DIST = $(mime_DATA)
