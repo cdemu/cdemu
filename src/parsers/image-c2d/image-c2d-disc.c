@@ -17,8 +17,6 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
 
-#include <string.h>
-
 #include "image-c2d.h"
 
 
@@ -57,19 +55,25 @@ static gint __mirage_disc_c2d_convert_track_mode (MIRAGE_Disc *self, guint32 mod
         switch(sector_size) {
             case 2048:
                 return MIRAGE_MODE_MODE1;
+            case 2352:
+                return MIRAGE_MODE_MODE2_MIXED; /* HACK to support sector size */
             case 2448:
-                return MIRAGE_MODE_MODE1;
+                return MIRAGE_MODE_MODE2_MIXED; /* HACK to support sector size */
             default: 
                 MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: unknown sector size %i!\n", __func__, sector_size);
                 return -1;
         }
     } else if(mode == C2D_MODE_MODE2) {
         switch(sector_size) {
-            case 2336:
-                return MIRAGE_MODE_MODE2_MIXED;
-            case 2328:
+            case 2048:
+                return MIRAGE_MODE_MODE2_FORM1;
+            case 2324:
                 return MIRAGE_MODE_MODE2_FORM2;
+            case 2336:
+                return MIRAGE_MODE_MODE2;
             case 2352:
+                return MIRAGE_MODE_MODE2_MIXED;
+            case 2448:
                 return MIRAGE_MODE_MODE2_MIXED;
             default: 
                 MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: unknown sector size %i!\n", __func__, sector_size);
@@ -219,7 +223,6 @@ static gboolean __mirage_disc_c2d_parse_track_entries (MIRAGE_Disc *self, GError
         mirage_finterface_binary_track_file_set_sectsize(MIRAGE_FINTERFACE_BINARY(data_fragment), tfile_sectsize, NULL);
         mirage_finterface_binary_track_file_set_format(MIRAGE_FINTERFACE_BINARY(data_fragment), tfile_format, NULL);
 
-#ifdef WAIT_FOR_CONFIRMATION
         /* Subchannel */
         switch (_priv->track_block[track].sector_size) {
             case 2448: {
@@ -234,7 +237,7 @@ static gboolean __mirage_disc_c2d_parse_track_entries (MIRAGE_Disc *self, GError
                 /* We need to correct the data for track sector size...
                    C2D format has already added 96 bytes to sector size,
                    so we need to subtract it */
-                tfile_sectsize = real_sector_size - sfile_sectsize;
+                tfile_sectsize = _priv->track_block[track].sector_size - sfile_sectsize;
                 mirage_finterface_binary_track_file_set_sectsize(MIRAGE_FINTERFACE_BINARY(data_fragment), tfile_sectsize, NULL);
 
                 break;
@@ -244,7 +247,6 @@ static gboolean __mirage_disc_c2d_parse_track_entries (MIRAGE_Disc *self, GError
                 break;
             }
         }
-#endif /* WAIT_FOR_CONFIRMATION */
 
         mirage_track_add_fragment(MIRAGE_TRACK(cur_track), -1, &data_fragment, error);
 
@@ -368,13 +370,13 @@ static gboolean __mirage_disc_c2d_can_load_file (MIRAGE_Disc *self, gchar *filen
     }
     fclose(file);
 
-    if (!memcmp(sig, C2D_SIGNATURE_1, strnlen(C2D_SIGNATURE_1, 32))) {
+    if (!memcmp(sig, C2D_SIGNATURE_1, sizeof(C2D_SIGNATURE_1) - 1)) {
         return TRUE;
     }
-    if (!memcmp(sig, C2D_SIGNATURE_2, strnlen(C2D_SIGNATURE_2, 32))) {
+    if (!memcmp(sig, C2D_SIGNATURE_2, sizeof(C2D_SIGNATURE_2) - 1)) {
         return TRUE;
     }
-    
+
     return FALSE;
 }
 
