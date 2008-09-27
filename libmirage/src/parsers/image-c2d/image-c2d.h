@@ -35,16 +35,14 @@ G_BEGIN_DECLS
 
 #define C2D_FLAG_COPYRIGHT   0x01 /* Copyright */
 #define C2D_FLAG_PREEMPHASIS 0x02 /* Pre-emphasis */
-#define C2D_FLAG_DATA        0x04 /* Set if data track, unset if audio track */
-#define C2D_FLAG_UNKNOWN     0x08 /* I don't know */
-#define C2D_FLAG_O           0x10 /* WinOnCD says it is the "O" flag. */
+#define C2D_FLAG_DATA        0x04 /* Set on data tracks. */
+#define C2D_FLAG_UNKNOWN     0x08 /* ? */
+#define C2D_FLAG_O           0x10 /* WinOnCD says it is the "O" flag. Set on data tracks. */
 
-/* TODO: Doesn't work for old images, where it seems to always be 0x01 regardless of it being audio or data.
- * Newer versions of the software seems to recognize it though.
- */
+#define C2D_MODE_AUDIO       0x00 /* CD-DA */
 #define C2D_MODE_MODE1       0x01 /* CD-ROM */
 #define C2D_MODE_MODE2       0x02 /* CD-ROM XA */
-#define C2D_MODE_AUDIO       0xFF /* Audio */
+#define C2D_MODE_AUDIO2      0xFF /* CD-DA */
 
 
 #pragma pack(1)
@@ -87,10 +85,10 @@ typedef struct {
     guint8  flags;        /* Track flags */
     guint8  session;      /* Track session */
     guint8  point;        /* Track point */
-    guint8  mode;         /* Track mode? */
-    guint8  dummy1;       /* (unknown) */
+    guint8  index;        /* Index */
+    guint8  mode;         /* Track mode */
     guint8  compressed;   /* Boolean flag */
-    guint16 dummy2;       /* (unknown) */
+    guint16 dummy;        /* (unknown) */
 } C2D_TrackBlock;  /* length: 44 bytes */
 
 #pragma pack()
