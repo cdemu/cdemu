@@ -39,7 +39,7 @@ typedef struct {
 
 
 static gint __mirage_disc_c2d_convert_track_mode (MIRAGE_Disc *self, guint32 mode, guint16 sector_size) {
-    if(mode == C2D_MODE_AUDIO) {
+    if((mode == C2D_MODE_AUDIO) || (mode == C2D_MODE_AUDIO2)) {
         switch(sector_size) {
             case 2352:
                 return MIRAGE_MODE_AUDIO;
@@ -53,8 +53,6 @@ static gint __mirage_disc_c2d_convert_track_mode (MIRAGE_Disc *self, guint32 mod
         switch(sector_size) {
             case 2048:
                 return MIRAGE_MODE_MODE1;
-            case 2352:
-                return MIRAGE_MODE_MODE2_MIXED; /* HACK to support sector size */
             case 2448:
                 return MIRAGE_MODE_MODE2_MIXED; /* HACK to support sector size */
             default: 
@@ -105,11 +103,12 @@ static gboolean __mirage_disc_c2d_parse_track_entries (MIRAGE_Disc *self, GError
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   block size: %i\n", __func__, _priv->track_block[track].block_size);
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   first sector: %i\n", __func__, _priv->track_block[track].first_sector);
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   last sector: %i\n", __func__, _priv->track_block[track].last_sector);
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   image offset: %i\n", __func__, _priv->track_block[track].image_offset);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   image offset: 0x%X\n", __func__, _priv->track_block[track].image_offset);
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   sector size: %i\n", __func__, _priv->track_block[track].sector_size);
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   ISRC: %.12s\n", __func__, &_priv->track_block[track].isrc);
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   flags: %i\n", __func__, _priv->track_block[track].flags);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   flags: 0x%X\n", __func__, _priv->track_block[track].flags);
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   mode: %i\n", __func__, _priv->track_block[track].mode);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   index: %i\n", __func__, _priv->track_block[track].index);
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   session: %i\n", __func__, _priv->track_block[track].session);
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   point: %i\n", __func__, _priv->track_block[track].point);
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   compressed: %i\n", __func__, _priv->track_block[track].compressed);
@@ -142,11 +141,12 @@ static gboolean __mirage_disc_c2d_parse_track_entries (MIRAGE_Disc *self, GError
             return FALSE;
         }
 
+        /* Decode mode */
         gint converted_mode = 0;
+        converted_mode = __mirage_disc_c2d_convert_track_mode(self, _priv->track_block[track].mode, _priv->track_block[track].sector_size);
         if(_priv->track_block[track].flags & C2D_FLAG_DATA) {
-            converted_mode = __mirage_disc_c2d_convert_track_mode(self, _priv->track_block[track].mode, _priv->track_block[track].sector_size);
-        } else {
-            converted_mode = __mirage_disc_c2d_convert_track_mode(self, C2D_MODE_AUDIO /* HACK ALERT! */, _priv->track_block[track].sector_size);
+            if((_priv->track_block[track].mode == C2D_MODE_AUDIO) || (_priv->track_block[track].mode == C2D_MODE_AUDIO2)) {
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: audio track has wrong mode!\n", __func__);
         }
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   converted mode: 0x%X\n", __func__, converted_mode);
         mirage_track_set_mode(MIRAGE_TRACK(cur_track), converted_mode, NULL);
@@ -271,7 +271,7 @@ static gboolean __mirage_disc_c2d_load_cdtext(MIRAGE_Disc *self, GError **error)
     cdtext_length = _priv->header_block->size_cdtext - sizeof(guint32);
 
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: CD-TEXT:\n", __func__);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   Loading %i bytes from offset %i.\n", __func__, cdtext_length, _priv->header_block->header_size);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   Loading %i bytes from offset 0x%X.\n", __func__, cdtext_length, _priv->header_block->header_size);
 
     if (mirage_disc_get_session_by_index(self, 0, &session, error)) {
         if (!mirage_session_set_cdtext_data(MIRAGE_SESSION(session), cdtext_data, cdtext_length, error)) {
@@ -299,8 +299,8 @@ static gboolean __mirage_disc_c2d_load_disc (MIRAGE_Disc *self, GError **error) 
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   Has UPC / EAN: %i\n", __func__, _priv->header_block->has_upc_ean);
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   Track blocks: %i\n", __func__, _priv->header_block->track_blocks);
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   Size of CD-Text block: %i\n", __func__, _priv->header_block->size_cdtext);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   Offset to track blocks: %i\n", __func__, _priv->header_block->offset_tracks);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   Offset to C2CK block: %i\n", __func__, _priv->header_block->offset_c2ck);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   Offset to track blocks: 0x%X\n", __func__, _priv->header_block->offset_tracks);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   Offset to C2CK block: 0x%X\n", __func__, _priv->header_block->offset_c2ck);
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   Description: %.80s\n", __func__, &_priv->header_block->description);
 
     /* Set disc's MCN */
