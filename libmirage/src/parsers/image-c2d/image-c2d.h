@@ -61,7 +61,7 @@ typedef struct {
     guint32 dummy2;          /* (unknown) */
     gchar   description[80]; /* Description string. Zero terminated. */
     guint32 offset_c2ck;     /* Offset to "c2ck" block || 0x00 */
-} C2D_HeaderBlock;  /* length: 196 bytes */
+} C2D_HeaderBlock;  /* length: as given in header block */
 
 typedef struct {
     guint32 block_size;   /* Length of this c2ck block (32) */
