@@ -37,7 +37,7 @@ G_BEGIN_DECLS
 #define C2D_FLAG_PREEMPHASIS 0x02 /* Pre-emphasis */
 #define C2D_FLAG_DATA        0x04 /* Set on data tracks. */
 #define C2D_FLAG_UNKNOWN     0x08 /* ? */
-#define C2D_FLAG_O           0x10 /* WinOnCD says it is the "O" flag. Set on data tracks. */
+#define C2D_FLAG_O           0x10 /* WinOnCD says it is the "O" flag. */
 
 #define C2D_MODE_AUDIO       0x00 /* CD-DA */
 #define C2D_MODE_MODE1       0x01 /* CD-ROM */
@@ -79,9 +79,9 @@ typedef struct {
     guint32 block_size;   /* Length of this track block (44) */
     guint32 first_sector; /* First sector in track */   
     guint32 last_sector;  /* Last sector in track */
-    guint64 image_offset; /* Image offset of track */
+    guint64 image_offset; /* Image offset of track || 0xFFFFFFFF if index > 1 */
     guint32 sector_size;  /* Bytes per sector */
-    gchar   isrc[12];     /* ISRC string */
+    gchar   isrc[12];     /* ISRC string if index == 1 */
     guint8  flags;        /* Track flags */
     guint8  session;      /* Track session */
     guint8  point;        /* Track point */
