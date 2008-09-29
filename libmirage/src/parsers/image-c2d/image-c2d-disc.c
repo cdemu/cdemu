@@ -309,30 +309,33 @@ static gboolean __mirage_disc_c2d_parse_track_entries (MIRAGE_Disc *self, GError
 
 static gboolean __mirage_disc_c2d_load_cdtext(MIRAGE_Disc *self, GError **error) {
     MIRAGE_Disc_C2DPrivate *_priv = MIRAGE_DISC_C2D_GET_PRIVATE(self);
-    guint8                 *cdtext_data = NULL;
-    guint                  cdtext_length = 0;
-    GObject                *session = NULL;   
-    gboolean               succeeded = TRUE;
+
+    GObject *session = NULL;   
+    guint8  *cdtext_data = NULL;
+    gint    cdtext_length = 0;
 
     /* Read CD-Text data */
-    cdtext_data = (guint8 *) _priv->cdtext_block + sizeof(guint32);
-    cdtext_length = _priv->header_block->size_cdtext - sizeof(guint32);
-
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: CD-TEXT:\n", __func__);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   Loading %i bytes from offset 0x%X.\n", __func__, cdtext_length, _priv->header_block->header_size);
 
-    if (mirage_disc_get_session_by_index(self, 0, &session, error)) {
-        if (!mirage_session_set_cdtext_data(MIRAGE_SESSION(session), cdtext_data, cdtext_length, error)) {
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to set CD-TEXT data!\n", __func__);
-            succeeded = FALSE;
-        }
-        g_object_unref(session);
-    } else {
+    if (!mirage_disc_get_session_by_index(self, 0, &session, error)) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to get session!\n", __func__);
-        succeeded = FALSE;
+        return FALSE;
     }
 
-    return succeeded;
+    cdtext_data = (guint8 *) _priv->cdtext_block;
+    cdtext_length = _priv->header_block->size_cdtext;
+    if (!mirage_session_set_cdtext_data(MIRAGE_SESSION(session), cdtext_data, cdtext_length, error)) {
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to set CD-TEXT data!\n", __func__);
+        g_object_unref(session);
+        return FALSE;
+    }
+
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   loaded a total of %i blocks.\n", __func__, cdtext_length / sizeof(C2D_CDTextBlock));
+    g_assert(cdtext_length % sizeof(C2D_CDTextBlock) == 0);
+
+    g_object_unref(session);
+
+    return TRUE;
 }
 
 static gboolean __mirage_disc_c2d_load_disc (MIRAGE_Disc *self, GError **error) {

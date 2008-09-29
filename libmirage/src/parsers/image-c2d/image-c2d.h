@@ -49,12 +49,12 @@ G_BEGIN_DECLS
 
 typedef struct {
     gchar   signature[32];    /* Signature string: "Roxio Image File Format 3.0" || "Adaptec CeQuadrat VirtualCD File" */
-    guint16 header_size;      /* Length of header block? */
+    guint16 header_size;      /* Length of header block */
     guint16 has_upc_ean;      /* Boolean flag */
     gchar   upc_ean[13];      /* UPC / EAN string */
     guint8  dummy1;           /* (unknown) */
     guint16 track_blocks;     /* Number of track blocks  */
-    guint32 size_cdtext;      /* Size of CD-Text block. CD-Text block follows header. */
+    guint32 size_cdtext;      /* Size of CD-Text blocks. CD-Text blocks follows header. */
     guint32 offset_tracks;    /* Offset to track blocks  */
     guint32 dummy2;           /* Offset to something? || 0x00000000 */
     gchar   description[128]; /* Description string. Zero terminated. */
@@ -64,16 +64,18 @@ typedef struct {
 typedef struct {
     guint32 block_size;   /* Length of this c2ck block (32) */
     gchar   signature[4]; /* Signature string: "C2CK" */
-    guint32 dummy1[2];    /* (unknown) */
+    guint32 dummy[2];     /* (unknown) */
     guint32 offset_art;   /* Offset to the artwork block */
 } C2D_C2CKBlock;  /* length: 32 bytes */
 
 typedef struct {
-    guint32 dummy1;        /* (unknown) */
-    gchar   cdtext[12];    /* CD-Text */
-    guint8  dummy2[6];     /* (misc. stuff) */
-    /* etc. */
-} C2D_CDTextBlock; /* length: as given in header block */
+    guint8 pack_type;
+    guint8 track_number;
+    guint8 seq_number;
+    guint8 block_number;
+    guint8 data[12];
+    guint8 crc[2];
+} C2D_CDTextBlock; /* length: 18 bytes */
 
 typedef struct {
     guint32 block_size;   /* Length of this track block (44) */
