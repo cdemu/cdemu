@@ -170,7 +170,7 @@ gboolean cdemud_audio_initialize (CDEMUD_Audio *self, gchar *driver, gint *cur_s
     
     _priv->status = AUDIO_STATUS_NOSTATUS;
 	
-	/* Get driver ID */
+    /* Get driver ID */
     if (!strcmp(driver, "default")) {
         driver_id = ao_default_driver_id();
     } else {
@@ -187,18 +187,18 @@ gboolean cdemud_audio_initialize (CDEMUD_Audio *self, gchar *driver, gint *cur_s
         _priv->null_hack = TRUE;
     }
     
-	format.bits = 16;
-	format.channels = 2;
-	format.rate = 44100;
-	format.byte_format = AO_FMT_LITTLE;
-	
-	/* Open driver -- */
-	_priv->device = ao_open_live(driver_id, &format, NULL /* no options */);
-	if (_priv->device == NULL) {
-        CDEMUD_DEBUG(self, DAEMON_DEBUG_ERROR, "%s: failed to open audio device (driver: '%s')!\n", __func__, driver);
-		return FALSE;
-	}
-    
+    format.bits = 16;
+    format.channels = 2;
+    format.rate = 44100;
+    format.byte_format = AO_FMT_LITTLE;
+
+    /* Open driver -- */
+    _priv->device = ao_open_live(driver_id, &format, NULL /* no options */);
+    if (_priv->device == NULL) {
+        CDEMUD_DEBUG(self, DAEMON_DEBUG_ERROR, "%s: failed to initialize libao driver '%s'!\n", __func__, driver);
+        return FALSE;
+    }
+
     return TRUE;
 }
 
