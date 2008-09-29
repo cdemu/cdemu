@@ -95,44 +95,47 @@ static gboolean __mirage_disc_c2d_parse_track_entries (MIRAGE_Disc *self, GError
     gint     track_last_sector = 0;
     gboolean new_track = FALSE;
 
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: reading track blocks\n", __func__);        
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: Reading track blocks\n", __func__);        
 
     /* Fetch medium type which we'll need later */
     mirage_disc_get_medium_type(self, &medium_type, NULL);
 
     /* Read track entries */
     for (track = 0; track < _priv->header_block->track_blocks; track++) {
-        GObject *cur_session = NULL;
-        GObject *cur_point = NULL;
+        C2D_TrackBlock *cur_tb = NULL;
+        GObject        *cur_session = NULL;
+        GObject        *cur_point = NULL;
+
+        cur_tb = &_priv->track_block[track];
 
         /* Read main blocks related to track */
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: TRACK BLOCK %2i:\n", __func__, track);
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   block size: %i\n", __func__, _priv->track_block[track].block_size);
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   first sector: %i\n", __func__, _priv->track_block[track].first_sector);
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   last sector: %i\n", __func__, _priv->track_block[track].last_sector);
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   image offset: 0x%X\n", __func__, _priv->track_block[track].image_offset);
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   sector size: %i\n", __func__, _priv->track_block[track].sector_size);
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   ISRC: %.12s\n", __func__, &_priv->track_block[track].isrc);
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   flags: 0x%X\n", __func__, _priv->track_block[track].flags);
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   mode: %i\n", __func__, _priv->track_block[track].mode);
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   index: %i\n", __func__, _priv->track_block[track].index);
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   session: %i\n", __func__, _priv->track_block[track].session);
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   point: %i\n", __func__, _priv->track_block[track].point);
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   compressed: %i\n", __func__, _priv->track_block[track].compressed);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   block size: %i\n", __func__, cur_tb->block_size);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   first sector: %i\n", __func__, cur_tb->first_sector);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   last sector: %i\n", __func__, cur_tb->last_sector);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   image offset: 0x%X\n", __func__, cur_tb->image_offset);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   sector size: %i\n", __func__, cur_tb->sector_size);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   ISRC: %.12s\n", __func__, cur_tb->isrc);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   flags: 0x%X\n", __func__, cur_tb->flags);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   mode: %i\n", __func__, cur_tb->mode);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   index: %i\n", __func__, cur_tb->index);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   session: %i\n", __func__, cur_tb->session);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   point: %i\n", __func__, cur_tb->point);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   compressed: %i\n", __func__, cur_tb->compressed);
 
         /* Abort on compressed track data */
-        if (_priv->track_block[track].compressed) {
+        if (cur_tb->compressed) {
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: Sorry! We don't handle compressed data tracks yet!\n", __func__);
             return FALSE;
         }
 
         /* Create a new session? */
-        if (_priv->track_block[track].session > last_session) {
-            if (!mirage_disc_add_session_by_number(self, _priv->track_block[track].session, &cur_session, error)) {
+        if (cur_tb->session > last_session) {
+            if (!mirage_disc_add_session_by_number(self, cur_tb->session, &cur_session, error)) {
                 MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to add session!\n", __func__);        
                 return FALSE;
             }
-            last_session = _priv->track_block[track].session;
+            last_session = cur_tb->session;
             last_point = 0;
         }
 
@@ -144,13 +147,13 @@ static gboolean __mirage_disc_c2d_parse_track_entries (MIRAGE_Disc *self, GError
 
         /* Add a new track? */
         new_track = FALSE; /* reset */
-        if (_priv->track_block[track].point > last_point) {
-            if (!mirage_session_add_track_by_number(MIRAGE_SESSION(cur_session), _priv->track_block[track].point, &cur_point, error)) {
+        if (cur_tb->point > last_point) {
+            if (!mirage_session_add_track_by_number(MIRAGE_SESSION(cur_session), cur_tb->point, &cur_point, error)) {
                 MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to add track!\n", __func__);
                 g_object_unref(cur_session);
                 return FALSE;
             }
-            last_point = _priv->track_block[track].point;
+            last_point = cur_tb->point;
             last_index = 1;
             new_track = TRUE;
         }
@@ -165,29 +168,29 @@ static gboolean __mirage_disc_c2d_parse_track_entries (MIRAGE_Disc *self, GError
         if (new_track) {
             gint t;
 
-            if(_priv->track_block[track].point == 1) {
+            if(cur_tb->point == 1) {
                 mirage_track_set_track_start(MIRAGE_TRACK(cur_point), 150, NULL);
             }
             mirage_track_get_track_start(MIRAGE_TRACK(cur_point), &track_start, NULL);
 
             for(t=track; t < _priv->header_block->track_blocks; t++) {
-                if (_priv->track_block[track].point != _priv->track_block[t].point) break;
+                if (cur_tb->point != _priv->track_block[t].point) break;
             }
             t--;
-            track_first_sector = _priv->track_block[track].first_sector;
+            track_first_sector = cur_tb->first_sector;
             track_last_sector = _priv->track_block[t].last_sector;
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   track's first sector: %i, last sector: %i.\n", __func__, track_first_sector, track_last_sector);
         }
 
         /* Add new index? */
-        if (_priv->track_block[track].index > last_index) {
-            if (!mirage_track_add_index(MIRAGE_TRACK(cur_point), _priv->track_block[track].first_sector - track_first_sector + track_start, NULL, NULL)) {
+        if (cur_tb->index > last_index) {
+            if (!mirage_track_add_index(MIRAGE_TRACK(cur_point), cur_tb->first_sector - track_first_sector + track_start, NULL, NULL)) {
                 MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to add index!\n", __func__);
                 g_object_unref(cur_point);
                 g_object_unref(cur_session);
                 return FALSE;
             }
-            last_index = _priv->track_block[track].index;
+            last_index = cur_tb->index;
 
             /* If index > 1 then skip making fragments */
             goto skip_making_fragments;
@@ -195,13 +198,13 @@ static gboolean __mirage_disc_c2d_parse_track_entries (MIRAGE_Disc *self, GError
 
         /* Decode mode */
         gint converted_mode = 0;
-        converted_mode = __mirage_disc_c2d_convert_track_mode(self, _priv->track_block[track].mode, _priv->track_block[track].sector_size);
+        converted_mode = __mirage_disc_c2d_convert_track_mode(self, cur_tb->mode, cur_tb->sector_size);
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   converted mode: 0x%X\n", __func__, converted_mode);
         mirage_track_set_mode(MIRAGE_TRACK(cur_point), converted_mode, NULL);
 
         /* Set ISRC */
-        if (_priv->track_block[track].isrc[0]) {
-            mirage_track_set_isrc(MIRAGE_TRACK(cur_point), &_priv->track_block[track].isrc, NULL);
+        if (cur_tb->isrc[0]) {
+            mirage_track_set_isrc(MIRAGE_TRACK(cur_point), cur_tb->isrc, NULL);
         }
 
         /* Get Mirage and have it make us fragments */
@@ -218,7 +221,7 @@ static gboolean __mirage_disc_c2d_parse_track_entries (MIRAGE_Disc *self, GError
         mirage_disc_get_filenames(self, &filenames, NULL);
 
         /* Pregap fragment at the beginning of track */
-        if((_priv->track_block[track].point == 1) && (_priv->track_block[track].index == 1)) {
+        if((cur_tb->point == 1) && (cur_tb->index == 1)) {
             GObject *pregap_fragment = NULL;
 
             mirage_mirage_create_fragment(MIRAGE_MIRAGE(mirage), MIRAGE_TYPE_FINTERFACE_NULL, "NULL", &pregap_fragment, error);
@@ -250,8 +253,8 @@ static gboolean __mirage_disc_c2d_parse_track_entries (MIRAGE_Disc *self, GError
             
         /* Prepare data fragment */
         FILE *tfile_handle = g_fopen(filenames[0], "r");
-        guint64 tfile_offset = _priv->track_block[track].image_offset;
-        gint tfile_sectsize = _priv->track_block[track].sector_size;
+        guint64 tfile_offset = cur_tb->image_offset;
+        gint tfile_sectsize = cur_tb->sector_size;
         gint tfile_format = 0;
 
         if (converted_mode == MIRAGE_MODE_AUDIO) {
@@ -271,7 +274,7 @@ static gboolean __mirage_disc_c2d_parse_track_entries (MIRAGE_Disc *self, GError
         mirage_finterface_binary_track_file_set_format(MIRAGE_FINTERFACE_BINARY(data_fragment), tfile_format, NULL);
 
         /* Subchannel */
-        switch (_priv->track_block[track].sector_size) {
+        switch (cur_tb->sector_size) {
             case 2448: {
                 gint sfile_sectsize = 96;
                 gint sfile_format = FR_BIN_SFILE_PW96_INT | FR_BIN_SFILE_INT;
@@ -284,7 +287,7 @@ static gboolean __mirage_disc_c2d_parse_track_entries (MIRAGE_Disc *self, GError
                 /* We need to correct the data for track sector size...
                    C2D format has already added 96 bytes to sector size,
                    so we need to subtract it */
-                tfile_sectsize = _priv->track_block[track].sector_size - sfile_sectsize;
+                tfile_sectsize = cur_tb->sector_size - sfile_sectsize;
                 mirage_finterface_binary_track_file_set_sectsize(MIRAGE_FINTERFACE_BINARY(data_fragment), tfile_sectsize, NULL);
 
                 break;
