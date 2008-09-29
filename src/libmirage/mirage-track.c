@@ -84,6 +84,7 @@ static gboolean __mirage_track_rearrange_indices (MIRAGE_Track *self, GError **e
        track start, remove it (it most likely means track start got changed
        after indices were added) */
     gint cur_index = 2;
+    g_assert(_priv->indices_list != NULL);
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_TRACK, "%s: rearranging indices (%d indices found)...\n", __func__, g_list_length(_priv->indices_list));
     G_LIST_FOR_EACH(entry, _priv->indices_list) {
         GObject *index = entry->data;
@@ -1397,6 +1398,7 @@ gboolean mirage_track_add_index (MIRAGE_Track *self, gint address, GObject **ind
     } else {
         new_index = g_object_new(MIRAGE_TYPE_INDEX, NULL);
     }
+    g_assert(new_index != NULL);
     
     /* Set index address */
     mirage_index_set_address(MIRAGE_INDEX(new_index), address, NULL);
@@ -1407,6 +1409,7 @@ gboolean mirage_track_add_index (MIRAGE_Track *self, gint address, GObject **ind
     
     /* Insert index into indices list */
     _priv->indices_list = g_list_insert_sorted(_priv->indices_list, new_index, (GCompareFunc)__sort_indices_by_address);
+    g_assert(_priv->indices_list != NULL);
     
     /* Rearrange indices; note that indices do *not* trigger a bottom-up change */
     __mirage_track_rearrange_indices(self, NULL);
