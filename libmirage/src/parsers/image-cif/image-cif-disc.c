@@ -294,7 +294,7 @@ static gboolean __mirage_disc_cif_parse_track_entries (MIRAGE_Disc *self, GError
         guint32    sectors = disc_subblock_data->track.sectors; /* NOTE: not always correct! */
         guint16    sector_size = disc_subblock_data->track.sector_size; /* NOTE: not always correct! */
         guint16    real_sector_size = sector_size;
-        guint8     *track_start  = track_block_data + sizeof(CIF_TRACK_HeaderBlock);
+        guint32    track_start = ofs_subblock_data->ofs_offset + sizeof(CIF_TRACK_HeaderBlock);
         guint32    track_length = track_block->length - sizeof(CIF_TRACK_HeaderBlock);
         gchar      *isrc = NULL;
         gchar      *title = NULL; 
@@ -310,13 +310,13 @@ static gboolean __mirage_disc_cif_parse_track_entries (MIRAGE_Disc *self, GError
         }
 
         /* Read main blocks related to track */
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: track #%i:\n", __func__, track);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: TRACK %2i:\n", __func__, track);
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   type: %.4s\n", __func__, track_type);
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   mode: %i\n", __func__, track_mode);
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   sector size: %i\n", __func__, sector_size);
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   real sector size: %i\n", __func__, real_sector_size);
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   sectors: %i\n", __func__, sectors);
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   start: %p\n", __func__, track_start);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   start: %i (0x%X)\n", __func__, track_start, track_start);
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   length: %i (0x%X)\n", __func__, track_length, track_length);
 
         /* workaround: cdrom-xa/mode2 has incorrect num. sectors */
@@ -399,7 +399,7 @@ static gboolean __mirage_disc_cif_parse_track_entries (MIRAGE_Disc *self, GError
 
         /* Prepare data fragment */
         FILE *tfile_handle = g_fopen(_priv->cif_filename, "r");
-        guint64 tfile_offset = (guint64) (track_start - _priv->cif_data);
+        guint64 tfile_offset = (guint64) track_start;
         gint tfile_sectsize = real_sector_size;
         gint tfile_format = 0;
 
