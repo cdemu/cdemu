@@ -90,6 +90,7 @@ static gboolean __mirage_disc_c2d_parse_track_entries (MIRAGE_Disc *self, GError
 
     gint     medium_type = 0;
     gint     track = 0;
+    gint     tracks = _priv->header_block->track_blocks;
     gint     track_start = 0;
     gint     track_first_sector = 0;
     gint     track_last_sector = 0;
@@ -101,12 +102,10 @@ static gboolean __mirage_disc_c2d_parse_track_entries (MIRAGE_Disc *self, GError
     mirage_disc_get_medium_type(self, &medium_type, NULL);
 
     /* Read track entries */
-    for (track = 0; track < _priv->header_block->track_blocks; track++) {
-        C2D_TrackBlock *cur_tb = NULL;
+    for (track = 0; track < tracks; track++) {
+        C2D_TrackBlock *cur_tb = &_priv->track_block[track];
         GObject        *cur_session = NULL;
         GObject        *cur_point = NULL;
-
-        cur_tb = &_priv->track_block[track];
 
         /* Read main blocks related to track */
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: TRACK BLOCK %2i:\n", __func__, track);
@@ -173,12 +172,12 @@ static gboolean __mirage_disc_c2d_parse_track_entries (MIRAGE_Disc *self, GError
             }
             mirage_track_get_track_start(MIRAGE_TRACK(cur_point), &track_start, NULL);
 
-            for(t=track; t < _priv->header_block->track_blocks; t++) {
-                if (cur_tb->point != _priv->track_block[t].point) break;
+            for(t=0; t < tracks-track; t++) {
+                if (cur_tb->point != cur_tb[t].point) break;
             }
             t--;
             track_first_sector = cur_tb->first_sector;
-            track_last_sector = _priv->track_block[t].last_sector;
+            track_last_sector = cur_tb[t].last_sector;
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   track's first sector: %i, last sector: %i.\n", __func__, track_first_sector, track_last_sector);
         }
 
@@ -314,8 +313,8 @@ static gboolean __mirage_disc_c2d_load_cdtext(MIRAGE_Disc *self, GError **error)
     MIRAGE_Disc_C2DPrivate *_priv = MIRAGE_DISC_C2D_GET_PRIVATE(self);
 
     GObject *session = NULL;   
-    guint8  *cdtext_data = NULL;
-    gint    cdtext_length = 0;
+    guint8  *cdtext_data = (guint8 *) _priv->cdtext_block;
+    gint    cdtext_length = _priv->header_block->size_cdtext;
 
     /* Read CD-Text data */
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: CD-TEXT:\n", __func__);
@@ -325,8 +324,6 @@ static gboolean __mirage_disc_c2d_load_cdtext(MIRAGE_Disc *self, GError **error)
         return FALSE;
     }
 
-    cdtext_data = (guint8 *) _priv->cdtext_block;
-    cdtext_length = _priv->header_block->size_cdtext;
     if (!mirage_session_set_cdtext_data(MIRAGE_SESSION(session), cdtext_data, cdtext_length, error)) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to set CD-TEXT data!\n", __func__);
         g_object_unref(session);
@@ -344,27 +341,32 @@ static gboolean __mirage_disc_c2d_load_cdtext(MIRAGE_Disc *self, GError **error)
 static gboolean __mirage_disc_c2d_load_disc (MIRAGE_Disc *self, GError **error) {
     MIRAGE_Disc_C2DPrivate *_priv = MIRAGE_DISC_C2D_GET_PRIVATE(self);
 
+    C2D_HeaderBlock *hb = (C2D_HeaderBlock *) _priv->c2d_data;
+
     /* Init some block pointers */
     _priv->header_block = (C2D_HeaderBlock *) _priv->c2d_data;
+    _priv->track_block  = (C2D_TrackBlock *) (_priv->c2d_data + hb->offset_tracks);
+    _priv->cdtext_block = (C2D_CDTextBlock *) (_priv->c2d_data + hb->header_size);
 
+    /* Print some info from the header */
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: HEADER:\n", __func__);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   Signature: %.32s\n", __func__, &_priv->header_block->signature);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   Length of header: %i\n", __func__, _priv->header_block->header_size);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   Has UPC / EAN: %i\n", __func__, _priv->header_block->has_upc_ean);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   Track blocks: %i\n", __func__, _priv->header_block->track_blocks);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   Size of CD-Text block: %i\n", __func__, _priv->header_block->size_cdtext);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   Offset to track blocks: 0x%X\n", __func__, _priv->header_block->offset_tracks);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   Offset to C2CK block: 0x%X\n", __func__, _priv->header_block->offset_c2ck);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   Description: %.80s\n", __func__, &_priv->header_block->description);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   Signature: %.32s\n", __func__, &hb->signature);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   Length of header: %i\n", __func__, hb->header_size);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   Has UPC / EAN: %i\n", __func__, hb->has_upc_ean);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   Track blocks: %i\n", __func__, hb->track_blocks);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   Size of CD-Text block: %i\n", __func__, hb->size_cdtext);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   Offset to track blocks: 0x%X\n", __func__, hb->offset_tracks);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   Offset to C2CK block: 0x%X\n", __func__, hb->offset_c2ck);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   Description: %.80s\n", __func__, &hb->description);
 #if 1
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   Dummy1: 0x%X\n", __func__, _priv->header_block->dummy1);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   Dummy2: 0x%X\n", __func__, _priv->header_block->dummy2);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   Dummy1: 0x%X\n", __func__, hb->dummy1);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   Dummy2: 0x%X\n", __func__, hb->dummy2);
 #endif
 
     /* Set disc's MCN */
-    if(_priv->header_block->has_upc_ean) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   UPC / EAN: %.13s\n", __func__, &_priv->header_block->upc_ean);
-        mirage_disc_set_mcn(self, _priv->header_block->upc_ean, NULL);
+    if(hb->has_upc_ean) {
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   UPC / EAN: %.13s\n", __func__, &hb->upc_ean);
+        mirage_disc_set_mcn(self, hb->upc_ean, NULL);
     } 
 
     /* For now we only support (and assume) CD media */    
@@ -375,15 +377,13 @@ static gboolean __mirage_disc_c2d_load_disc (MIRAGE_Disc *self, GError **error) 
     mirage_disc_layout_set_start_sector(self, -150, NULL);
 
     /* Load tracks */
-    _priv->track_block = (C2D_TrackBlock *) (_priv->c2d_data + _priv->header_block->offset_tracks);
     if (!__mirage_disc_c2d_parse_track_entries(self, error)) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to parse track entries!\n", __func__);
         return FALSE;
     }
 
     /* Load CD-Text */
-    if(_priv->header_block->size_cdtext) {
-        _priv->cdtext_block = (C2D_CDTextBlock *) (_priv->c2d_data + _priv->header_block->header_size);
+    if(hb->size_cdtext) {
         if(!__mirage_disc_c2d_load_cdtext(self, error)) {
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to parse CD-Text!\n", __func__);
             return FALSE;
