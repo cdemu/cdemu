@@ -149,16 +149,17 @@ typedef union {
 #pragma pack()
 
 typedef struct {
-    gint            block_offset; /* offset in image */
+    guint32         offset;
     CIF_BlockHeader *block_header;
 
     GList           *subblock_index;
-    guint           num_subblocks;    
+    gint            num_subblocks;    
 } CIFBlockIndexEntry;
 
 typedef struct {
+    guint32         offset;
     guint8          *start;
-    guint           length;
+    guint32         length;
 } CIFSubBlockIndexEntry;
 
 
