@@ -81,6 +81,39 @@ static gint __mirage_disc_c2d_convert_track_mode (MIRAGE_Disc *self, guint32 mod
     }
 }
 
+static gboolean __mirage_disc_c2d_parse_compressed_track(MIRAGE_Disc *self, guint64 offset, GError **error) {
+    MIRAGE_Disc_C2DPrivate *_priv = MIRAGE_DISC_C2D_GET_PRIVATE(self);
+
+    FILE  *infile = NULL;
+    gchar **filenames = NULL;
+    gint  num = 0;
+
+    C2D_Z_Info_Header header;
+    C2D_Z_Info        zinfo;
+
+    mirage_disc_get_filenames(self, &filenames, NULL);
+    infile = fopen(filenames[0], "r");
+    if(!infile) {
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to open file!\n", __func__);
+        return FALSE;
+    }
+    fseeko(infile, offset, SEEK_SET);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: Compression info blocks!\n", __func__);
+
+    fread(&header, sizeof(C2D_Z_Info_Header), 1, infile);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: Dummy: 0x%X\n", __func__, header.dummy);
+
+    do {
+        fread(&zinfo, sizeof(C2D_Z_Info), 1, infile);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: [%03X] size: 0x%X offset: 0x%X\n", __func__, num, zinfo.compressed_size, zinfo.image_offset);
+        num++;
+    } while(zinfo.image_offset);
+
+    fclose(infile);
+
+    return FALSE;
+}
+
 static gboolean __mirage_disc_c2d_parse_track_entries (MIRAGE_Disc *self, GError **error) {
     MIRAGE_Disc_C2DPrivate *_priv = MIRAGE_DISC_C2D_GET_PRIVATE(self);
 
@@ -124,8 +157,10 @@ static gboolean __mirage_disc_c2d_parse_track_entries (MIRAGE_Disc *self, GError
 
         /* Abort on compressed track data */
         if (cur_tb->compressed) {
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: Sorry! We don't handle compressed data tracks yet!\n", __func__);
-            return FALSE;
+            if(!__mirage_disc_c2d_parse_compressed_track(self, cur_tb->image_offset, error)) {
+                MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to parse compressed track!\n", __func__);        
+                return FALSE;
+            }
         }
 
         /* Create a new session? */
@@ -292,7 +327,7 @@ static gboolean __mirage_disc_c2d_parse_track_entries (MIRAGE_Disc *self, GError
                 break;
             }
             default: {
-                MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: no subchannel\n", __func__);
+                MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   no subchannel\n", __func__);
                 break;
             }
         }

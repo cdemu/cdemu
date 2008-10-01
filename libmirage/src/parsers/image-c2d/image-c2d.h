@@ -62,13 +62,6 @@ typedef struct {
 } C2D_HeaderBlock;  /* length: as given in header block */
 
 typedef struct {
-    guint32 block_size;   /* Length of this c2ck block (32) */
-    gchar   signature[4]; /* Signature string: "C2CK" */
-    guint32 dummy[2];     /* (unknown) */
-    guint32 offset_art;   /* Offset to the artwork block */
-} C2D_C2CKBlock;  /* length: 32 bytes */
-
-typedef struct {
     guint8 pack_type;
     guint8 track_number;
     guint8 seq_number;
@@ -76,6 +69,14 @@ typedef struct {
     guint8 data[12];
     guint8 crc[2];
 } C2D_CDTextBlock; /* length: 18 bytes */
+
+typedef struct {
+    guint32 block_size;   /* Length of this c2ck block (32) */
+    gchar   signature[4]; /* Signature string: "C2CK" */
+    guint32 dummy1[2];    /* (unknown) */
+    guint64 next_offset;  /* Offset to the blocks after track data: WOCD, C2AW etc. */
+    guint32 dummy2[2]     /* (unknown) */
+} C2D_C2CKBlock;  /* length: 32 bytes */
 
 typedef struct {
     guint32 block_size;   /* Length of this track block (44) */
@@ -92,6 +93,29 @@ typedef struct {
     guint8  compressed;   /* Boolean flag */
     guint16 dummy;        /* (unknown) */
 } C2D_TrackBlock;  /* length: 44 bytes */
+
+typedef struct {
+    guint32 dummy; /* (unknown) */
+} C2D_Z_Info_Header; /* length: 4 bytes */
+
+typedef struct {
+    guint32 compressed_size; /* Size of compressed data */
+    guint64 image_offset;    /* Offset of compressed data */
+} C2D_Z_Info; /* length: 12  bytes */
+
+typedef struct {
+    guint32 block_size;   /* Length of this c2aw block (32) */
+    gchar   signature[4]; /* Signature string: "C2AW" */
+    guint64 info_size;    /* size of artwork info; follows this block */
+    guint64 next_offset;  /* Offset to next block */
+    guint32 dummy[2];     /* (unknown) */
+} C2D_C2AWBlock; /* length: 32 bytes */
+
+typedef struct {
+    guint32 block_size;   /* Length of this wocd block (32) */
+    gchar   signature[4]; /* Signature string: "WOCD" */
+    guint32 dummy[6];     /* (unknown) */
+} C2D_WOCDBlock;  /* length: 32 bytes */
 
 #pragma pack()
 
