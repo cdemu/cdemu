@@ -251,46 +251,14 @@ static gboolean __mirage_disc_iso_load_image (MIRAGE_Disc *self, gchar **filenam
         }
     }
     
-    /* Now get length and if it surpasses length of 90min CD, assume we
-       have a DVD */
-    mirage_disc_layout_get_length(self, &length, NULL);
-    if (length > 90*60*75) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: DVD-ROM image\n", __func__);
-        mirage_disc_set_medium_type(self, MIRAGE_MEDIUM_DVD, NULL);
+    /* Now guess medium type and if it's a CD-ROM, add Red Book pregap */
+    gint medium_type = mirage_helper_guess_medium_type(self);
+    mirage_disc_set_medium_type(self, medium_type, NULL);
+    if (medium_type == MIRAGE_MEDIUM_CD) {
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: disc length implies CD-ROM image; setting Red Book pregaps\n", __func__);
+        mirage_helper_add_redbook_pregap(self);
     } else {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: CD-ROM image\n", __func__);
-        mirage_disc_set_medium_type(self, MIRAGE_MEDIUM_CD, NULL);
-
-        /* If we got CD-ROM, we assume Red Book for now... which means disc starts
-           at -150 and first track has 150 sector pregap */
-        mirage_disc_layout_set_start_sector(self, -150, NULL);
-        
-        GObject *ftrack = NULL;
-        mirage_disc_get_track_by_index(self, 0, &ftrack, NULL);
-        
-        /* Add pregap fragment (empty) */
-        GObject *mirage = NULL;
-        if (!mirage_object_get_mirage(MIRAGE_OBJECT(self), &mirage, error)) {
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to get Mirage object!\n", __func__);
-            g_object_unref(ftrack);
-            return FALSE;
-        }
-        GObject *pregap_fragment = NULL;
-        mirage_mirage_create_fragment(MIRAGE_MIRAGE(mirage), MIRAGE_TYPE_FINTERFACE_NULL, "NULL", &pregap_fragment, error);
-        g_object_unref(mirage);
-        if (!pregap_fragment) {
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to create pregap fragment\n", __func__);
-            g_object_unref(ftrack);
-            return FALSE;
-        }
-        mirage_track_add_fragment(MIRAGE_TRACK(ftrack), 0, &pregap_fragment, NULL);
-        mirage_fragment_set_length(MIRAGE_FRAGMENT(pregap_fragment), 150, NULL);
-        g_object_unref(pregap_fragment);
-        
-        /* Track starts at 150 */
-        mirage_track_set_track_start(MIRAGE_TRACK(ftrack), 150, NULL);
-        
-        g_object_unref(ftrack);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: disc length implies non CD-ROM image\n", __func__);
     }
     
     return TRUE;

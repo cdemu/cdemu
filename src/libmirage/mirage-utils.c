@@ -227,6 +227,130 @@ gint mirage_helper_strncasecmp (const gchar *str1, const gchar *str2, gint len) 
 	return rv;
 }
 
+/******************************************************************************\
+ *                           Disc utility functions                           *
+\******************************************************************************/
+/**
+ * mirage_helper_guess_medium_type:
+ * @disc: disc object
+ *
+ * <para>
+ * Attempts to guess medium type by looking at the length of the disc layout.
+ * Currently, it supports identification of CD-ROM media, which are assumed to
+ * have layout length of 90 minutes or less.
+ * </para>
+ *
+ * <para>
+ * Note that this function does not set the medium type to disc object; you still
+ * need to do it via mirage_disc_set_medium_type().
+ * </para>
+ *
+ * Returns: a value from #MIRAGE_TrackModes, according to the guessed medium type.
+ **/
+gint mirage_helper_guess_medium_type (MIRAGE_Disc *disc) {
+    gint length = 0;
+    
+    mirage_disc_layout_get_length(disc, &length, NULL);
+    
+    /* FIXME: add other media types? */
+    if (length <= 90*60*75) {
+        return MIRAGE_MEDIUM_CD;
+    } else {
+        return MIRAGE_MEDIUM_DVD;
+    };
+}
+
+/**
+ * mirage_helper_add_redbook_pregap:
+ * @disc: disc object
+ *
+ * <para>
+ * A helper function, intended to be used in simpler parsers that don't get proper
+ * pregap information from the image file. 
+ * </para>
+ *
+ * <para>
+ * First, it sets disc layout start to -150. Then, it adds 150-sector pregap to
+ * first track of each session found on the layout; for this, a NULL fragment is
+ * used. If track already has a pregap, then the pregaps are stacked.
+ * </para>
+ *
+ * <para>
+ * Note that the function works only on discs which have medium type set to 
+ * CD-ROM.
+ * </para>
+ *
+ * Returns: %TRUE on success, %FALSE on failure
+ **/
+gboolean mirage_helper_add_redbook_pregap (MIRAGE_Disc *disc) {
+    gint medium_type = 0;
+    gint num_sessions = 0;
+    gint i;
+    
+    mirage_disc_get_medium_type(disc, &medium_type, NULL);
+    
+    /* Red Book pregap is found only on CD-ROMs */
+    if (medium_type != MIRAGE_MEDIUM_CD) {
+        MIRAGE_DEBUG(disc, MIRAGE_DEBUG_WARNING, "%s: Red Book pregap exists only on CD-ROMs!\n", __func__);
+        return FALSE;
+    }
+    
+    /* CD-ROMs start at -150 as per Red Book... */
+    mirage_disc_layout_set_start_sector(disc, -150, NULL);
+        
+    mirage_disc_get_number_of_sessions(disc, &num_sessions, NULL);
+
+    /* Put 150 sector pregap into every first track of each session */
+    for (i = 0; i < num_sessions; i++) {
+        GObject *session = NULL;
+        GObject *ftrack = NULL;
+            
+        if (!mirage_disc_get_session_by_index(disc, i, &session, NULL)) {
+            MIRAGE_DEBUG(disc, MIRAGE_DEBUG_WARNING, "%s: failed to get session with index %i!\n", __func__, i);
+            return FALSE;
+        }
+            
+        if (!mirage_session_get_track_by_index(MIRAGE_SESSION(session), 0, &ftrack, NULL)) {
+            MIRAGE_DEBUG(disc, MIRAGE_DEBUG_WARNING, "%s: failed to first track of session with index %i!\n", __func__, i);
+            g_object_unref(session);
+            return FALSE;
+        }
+            
+        /* Add pregap fragment (empty) */
+        GObject *mirage = NULL;
+        if (!mirage_object_get_mirage(MIRAGE_OBJECT(disc), &mirage, NULL)) {
+            MIRAGE_DEBUG(disc, MIRAGE_DEBUG_WARNING, "%s: failed to get Mirage object!\n", __func__);
+            g_object_unref(session);
+            g_object_unref(ftrack);
+            return FALSE;
+        }
+        GObject *pregap_fragment = NULL;
+        mirage_mirage_create_fragment(MIRAGE_MIRAGE(mirage), MIRAGE_TYPE_FINTERFACE_NULL, "NULL", &pregap_fragment, NULL);
+        g_object_unref(mirage);
+        if (!pregap_fragment) {
+            MIRAGE_DEBUG(disc, MIRAGE_DEBUG_WARNING, "%s: failed to create pregap fragment!\n", __func__);
+            g_object_unref(session);
+            g_object_unref(ftrack);
+            return FALSE;
+        }
+        mirage_track_add_fragment(MIRAGE_TRACK(ftrack), 0, &pregap_fragment, NULL);
+        mirage_fragment_set_length(MIRAGE_FRAGMENT(pregap_fragment), 150, NULL);
+        g_object_unref(pregap_fragment);
+            
+        /* Track starts at 150... well, unless it already has a pregap, in
+           which case they should stack */
+        gint old_start = 0;
+        mirage_track_get_track_start(MIRAGE_TRACK(ftrack), &old_start, NULL);
+        old_start += 150;
+        mirage_track_set_track_start(MIRAGE_TRACK(ftrack), old_start, NULL);
+        
+        g_object_unref(ftrack);
+        g_object_unref(session);
+    }
+    
+    return TRUE;
+}
+
 
 /******************************************************************************\
  *                 Parser and fragment info utility functions                 *
