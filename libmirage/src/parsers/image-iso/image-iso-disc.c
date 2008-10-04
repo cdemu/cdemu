@@ -155,7 +155,8 @@ static gboolean __mirage_disc_iso_load_track (MIRAGE_Disc *self, gchar *filename
     
     /* Determine whether we have Mode 1 (ISO) or Audio (WAV) file */
     if (mirage_helper_has_suffix(filename, ".iso")
-        || mirage_helper_has_suffix(filename, ".img")) {
+        || mirage_helper_has_suffix(filename, ".img")
+        || mirage_helper_has_suffix(filename, ".udf")) {
         /* Mode 1/Mode 2 Form 1... BINARY fragment interface is used */
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: data file, using BINARY fragment interface\n", __func__);
 
