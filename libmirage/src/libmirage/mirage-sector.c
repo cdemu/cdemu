@@ -74,26 +74,9 @@ static void __mirage_sector_generate_header (MIRAGE_Sector *self) {
 
     guint8 *head = _priv->sector_data+12;
     gint start_sector = 0;
-
+    
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_SECTOR, "%s: generating header\n", __func__);
-    
-    /* We need to convert track-relative address into disc-relative one */
-    GObject *track = NULL;
-    
-    if (!mirage_object_get_parent(MIRAGE_OBJECT(self), &track, NULL)) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to get sector's parent!\n", __func__);
-        return;
-    }
-    mirage_track_layout_get_start_sector(MIRAGE_TRACK(track), &start_sector, NULL);
-    g_object_unref(track);
-    
-    /* Address */
-    mirage_helper_lba2msf(_priv->address + start_sector, TRUE, &head[0], &head[1], &head[2]);
-    head[0] = mirage_helper_hex2bcd(head[0]);
-    head[1] = mirage_helper_hex2bcd(head[1]);
-    head[2] = mirage_helper_hex2bcd(head[2]);
-    _priv->valid_data |= MIRAGE_VALID_HEADER;
-    
+        
     /* Set mode */
     switch (_priv->type) {
         case MIRAGE_MODE_MODE0: {
@@ -114,6 +97,24 @@ static void __mirage_sector_generate_header (MIRAGE_Sector *self) {
             return;
         }
     }
+    
+    /* We need to convert track-relative address into disc-relative one */
+    GObject *track = NULL;
+    
+    if (!mirage_object_get_parent(MIRAGE_OBJECT(self), &track, NULL)) {
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to get sector's parent!\n", __func__);
+        return;
+    }
+    mirage_track_layout_get_start_sector(MIRAGE_TRACK(track), &start_sector, NULL);
+    g_object_unref(track);
+    
+    /* Address */
+    mirage_helper_lba2msf(_priv->address + start_sector, TRUE, &head[0], &head[1], &head[2]);
+    head[0] = mirage_helper_hex2bcd(head[0]);
+    head[1] = mirage_helper_hex2bcd(head[1]);
+    head[2] = mirage_helper_hex2bcd(head[2]);
+    
+    _priv->valid_data |= MIRAGE_VALID_HEADER;
     
     return;
 }
@@ -271,6 +272,10 @@ gboolean mirage_sector_feed_data (MIRAGE_Sector *self, gint address, GObject *tr
             /* Audio sector structure:
                 data (2352) */
             switch (sectsize) {
+                case 0: {
+                    /* Nothing; pregap */
+                    break;
+                }
                 case 2352: {
                     /* Audio data */
                     data_offset = 0; /* Offset: 0 */
@@ -297,6 +302,10 @@ gboolean mirage_sector_feed_data (MIRAGE_Sector *self, gint address, GObject *tr
             /* Mode 0 sector structue:
                 sync (12) + header (4) + data (2336) */
             switch (sectsize) {
+                case 0: {
+                    /* Nothing; pregap */
+                    break;
+                }
                 case 2336: {
                     /* Data only */
                     data_offset = 12 + 4; /* Offset: sync + header */
@@ -340,6 +349,10 @@ gboolean mirage_sector_feed_data (MIRAGE_Sector *self, gint address, GObject *tr
             /* Mode 1 sector structue:
                 sync (12) + header (4) + data (2048) + EDC/ECC (288) */
             switch (sectsize) {
+                case 0: {
+                    /* Nothing; pregap */
+                    break;
+                }
                 case 2048: {
                     /* Data only */
                     data_offset = 12 + 4; /* Offset: sync + header */
@@ -416,6 +429,10 @@ gboolean mirage_sector_feed_data (MIRAGE_Sector *self, gint address, GObject *tr
             /* Mode 2 formless sector structue:
                 sync (12) + header (4) + data (2336) */
             switch (sectsize) {
+                case 0: {
+                    /* Nothing; pregap */
+                    break;
+                }
                 case 2336: {
                     /* Data only */
                     data_offset = 12 + 4; /* Offset: sync + header */
@@ -459,6 +476,10 @@ gboolean mirage_sector_feed_data (MIRAGE_Sector *self, gint address, GObject *tr
             /* Mode 2 Form 1 sector structue:
                 sync (12) + header (4) + subheader (8) + data (2048) + EDC/ECC (280) */
             switch (sectsize) {
+                case 0: {
+                    /* Nothing; pregap */
+                    break;
+                }
                 case 2048: {
                     /* Data only */
                     data_offset = 12 + 4 + 8; /* Offset: sync + header + subheader */
@@ -560,6 +581,10 @@ gboolean mirage_sector_feed_data (MIRAGE_Sector *self, gint address, GObject *tr
             /* Mode 2 Form 2 sector structue:
                 sync (12) + header (4) + subheader (8) + data (2324) + EDC/ECC (4) */
             switch (sectsize) {
+                case 0: {
+                    /* Nothing; pregap */
+                    break;
+                }
                 case 2324: {
                     /* Data only */
                     data_offset = 12 + 4 + 8; /* Offset: sync + header + subheader */
@@ -668,6 +693,10 @@ gboolean mirage_sector_feed_data (MIRAGE_Sector *self, gint address, GObject *tr
                must be of same size; this is true only if at least subheader,
                data and EDC/ECC are provided */
             switch (sectsize) {
+                case 0: {
+                    /* Nothing; pregap */
+                    break;
+                }
                 case 2332:
                     /* This one's a special case; it is same as 2336, except 
                        that last four bytes (for Form 2 sectors, that's optional
