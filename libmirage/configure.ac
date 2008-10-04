@@ -115,6 +115,7 @@ AC_CONFIG_FILES([
     src/parsers/image-cif/Makefile
     src/parsers/image-cue/Makefile
     src/parsers/image-daa/Makefile
+    src/parsers/image-daa/lzma-sdk/Makefile
     src/parsers/image-iso/Makefile
     src/parsers/image-mds/Makefile
     src/parsers/image-nrg/Makefile
