@@ -29,6 +29,8 @@
 
 #include <errno.h>
 #include <zlib.h>
+#include "LzmaDec.h"
+#include "Bra.h"
 
 #include "mirage.h"
 #include "image-daa-disc.h"
@@ -38,6 +40,11 @@
 G_BEGIN_DECLS
 
 #pragma pack(1)
+
+enum {
+    DAA_FORMAT_100 = 0x100,
+    DAA_FORMAT_110 = 0x110,
+};
 
 typedef struct {
     guint32 size_offset; /* Offset of sizes of zipped chunk */
@@ -60,6 +67,30 @@ typedef struct {
 
 #pragma pack()
 
+/* Luigi Auriemma's bit packing function */
+static inline guint read_bits (guint bits, guint8 *in, guint in_bits) {
+    gint seek_bits;
+    gint rem;
+    gint seek = 0;
+    gint ret = 0;
+    gint mask = 0xFFFFFFFF;
+
+    if (bits > 32) return 0;
+    if (bits < 32) mask = (1 << bits) - 1;
+    for(;;) {
+        seek_bits = in_bits & 7;
+        ret |= ((in[in_bits >> 3] >> seek_bits) & mask) << seek;
+        rem = 8 - seek_bits;
+        if (rem >= bits)
+            break;
+        bits -= rem;
+        in_bits += rem;
+        seek += rem;
+        mask = (1 << bits) - 1;
+    }
+    
+    return ret;
+}
 
 GTypeModule *global_module;
 
