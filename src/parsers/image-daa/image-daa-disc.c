@@ -42,6 +42,7 @@ static gboolean __mirage_disc_daa_get_parser_info (MIRAGE_Disc *self, MIRAGE_Par
 
 static gboolean __mirage_disc_daa_can_load_file (MIRAGE_Disc *self, gchar *filename, GError **error) {
     MIRAGE_Disc_DAAPrivate *_priv = MIRAGE_DISC_DAA_GET_PRIVATE(self);
+    size_t blocks_read;
 
     /* Does file exist? */
     if (!g_file_test(filename, G_FILE_TEST_IS_REGULAR)) {
@@ -63,7 +64,8 @@ static gboolean __mirage_disc_daa_can_load_file (MIRAGE_Disc *self, gchar *filen
     
     /* Read signature */
     fseeko(file, 0, SEEK_SET);
-    fread(signature, 16, 1, file);
+    blocks_read = fread(signature, 16, 1, file);
+    if (blocks_read < 1) return FALSE;
     
     fclose(file);
     
@@ -79,7 +81,8 @@ static gboolean __mirage_disc_daa_can_load_file (MIRAGE_Disc *self, gchar *filen
 static gboolean __mirage_disc_daa_load_image (MIRAGE_Disc *self, gchar **filenames, GError **error) {   
     /*MIRAGE_Disc_DAAPrivate *_priv = MIRAGE_DISC_DAA_GET_PRIVATE(self);*/
     gboolean succeeded = TRUE;
-    
+    size_t blocks_read;
+
     /* For now, DAA parser supports only one-file images */
     if (g_strv_length(filenames) > 1) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: only single-file images supported!\n", __func__);
@@ -104,8 +107,9 @@ static gboolean __mirage_disc_daa_load_image (MIRAGE_Disc *self, gchar **filenam
     
     /* Read signature */
     fseeko(file, 0, SEEK_SET);
-    fread(signature, 16, 1, file);
-    
+    blocks_read = fread(signature, 16, 1, file);
+    if (blocks_read < 1) return FALSE;
+
     fclose(file);
     
     if (memcmp(signature, daa_signature, sizeof(daa_signature))) {

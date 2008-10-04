@@ -1076,6 +1076,7 @@ static gboolean __mirage_disc_b6t_get_parser_info (MIRAGE_Disc *self, MIRAGE_Par
 
 static gboolean __mirage_disc_b6t_can_load_file (MIRAGE_Disc *self, gchar *filename, GError **error) {
     MIRAGE_Disc_B6TPrivate *_priv = MIRAGE_DISC_B6T_GET_PRIVATE(self);
+    size_t blocks_read;
 
     /* Does file exist? */
     if (!g_file_test(filename, G_FILE_TEST_IS_REGULAR)) {
@@ -1098,11 +1099,13 @@ static gboolean __mirage_disc_b6t_can_load_file (MIRAGE_Disc *self, gchar *filen
     
     /* Read header */
     fseeko(file, 0, SEEK_SET);
-    fread(header, 16, 1, file);
+    blocks_read = fread(header, 16, 1, file);
+    if (blocks_read < 1) return FALSE;
         
     /* Read footer */
     fseeko(file, -16, SEEK_END);
-    fread(footer, 16, 1, file);    
+    blocks_read = fread(footer, 16, 1, file);    
+    if (blocks_read < 1) return FALSE;
     
     fclose(file);
     

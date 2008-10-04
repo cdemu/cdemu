@@ -182,6 +182,7 @@ gboolean mirage_fragment_daa_set_file (MIRAGE_Fragment *self, gchar *filename, G
     guint64 tmp_offset = 0;
     FILE *file = NULL;
     gint i;
+    size_t blocks_read;
     
     gchar daa_signature[16] = "DAA";
     gchar daa_vol_signature[16] = "DAA VOL";
@@ -199,7 +200,8 @@ gboolean mirage_fragment_daa_set_file (MIRAGE_Fragment *self, gchar *filename, G
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_FRAGMENT, "%s: main filename: %s\n", __func__, _priv->main_filename);
 
     /* Read signature */
-    fread(signature, sizeof(signature), 1, file);
+    blocks_read = fread(signature, sizeof(signature), 1, file);
+    if (blocks_read < 1) return FALSE;
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_FRAGMENT, "%s:  signature: %.16s\n", __func__, signature);
     if (memcmp(signature, daa_signature, sizeof(daa_signature))) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: invalid signature!\n", __func__);
@@ -211,7 +213,8 @@ gboolean mirage_fragment_daa_set_file (MIRAGE_Fragment *self, gchar *filename, G
     /* Parse header */
     DAA_Main_Header header;
 
-    fread(&header, sizeof(DAA_Main_Header), 1, file);
+    blocks_read = fread(&header, sizeof(DAA_Main_Header), 1, file);
+    if (blocks_read < 1) return FALSE;
     
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_FRAGMENT, "%s: DAA main file header:\n", __func__);
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_FRAGMENT, "%s:  size_offset: 0x%X (%d)\n", __func__, header.size_offset, header.size_offset);
@@ -253,8 +256,10 @@ gboolean mirage_fragment_daa_set_file (MIRAGE_Fragment *self, gchar *filename, G
         guint32 type = 0;
         guint32 len = 0;
         
-        fread(&type, sizeof(guint32), 1, file);
-        fread(&len, sizeof(guint32), 1, file);
+        blocks_read = fread(&type, sizeof(guint32), 1, file);
+        if (blocks_read < 1) return FALSE;
+        blocks_read = fread(&len, sizeof(guint32), 1, file);
+        if (blocks_read < 1) return FALSE;
         
         len -= 2*sizeof(guint32); /* Block length includes type and length fields; I like to operate with pure data length */
         
@@ -276,12 +281,14 @@ gboolean mirage_fragment_daa_set_file (MIRAGE_Fragment *self, gchar *filename, G
                 MIRAGE_DEBUG(self, MIRAGE_DEBUG_FRAGMENT, "%s:  split archive information\n", __func__);
                 
                 /* First field is number of parts (files) */
-                fread(&num_parts, sizeof(guint32), 1, file);
+                blocks_read = fread(&num_parts, sizeof(guint32), 1, file);
+                if (blocks_read < 1) return FALSE;
                 len -= sizeof(guint32);
                 _priv->num_parts = num_parts;
                 
                 /* Next field is always 0x01? */
-                fread(&b1, sizeof(guint32), 1, file);
+                blocks_read = fread(&b1, sizeof(guint32), 1, file);
+                if (blocks_read < 1) return FALSE;
                 len -= sizeof(guint32);
                                 
                 /* Determine filename format and set appropriate function */
@@ -348,8 +355,9 @@ gboolean mirage_fragment_daa_set_file (MIRAGE_Fragment *self, gchar *filename, G
         guint8 size_entry[3]; /* 3-byte fields */
         guint32 tmp_length;
         
-        fread(size_entry, 3, 1, file);
-        
+        blocks_read = fread(size_entry, 3, 1, file);
+        if (blocks_read < 1) return FALSE;
+
         /* I mean, seriously... :/ */
         tmp_length = (size_entry[0] << 16) | (size_entry[2] << 8) | size_entry[1];
         
@@ -398,16 +406,19 @@ gboolean mirage_fragment_daa_set_file (MIRAGE_Fragment *self, gchar *filename, G
         g_free(filename);
         
         /* Read signature */
-        fread(signature, sizeof(signature), 1, part->file);
+        blocks_read = fread(signature, sizeof(signature), 1, part->file);
+        if (blocks_read < 1) return FALSE;
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_FRAGMENT, "%s:   signature: %.16s\n", __func__, signature);
         
         if (!memcmp(signature, daa_signature, sizeof(daa_signature))) {
             DAA_Main_Header header;
-            fread(&header, sizeof(DAA_Main_Header), 1, part->file);
+            blocks_read = fread(&header, sizeof(DAA_Main_Header), 1, part->file);
+            if (blocks_read < 1) return FALSE;
             part->offset = header.data_offset;
         } else if (!memcmp(signature, daa_vol_signature, sizeof(daa_vol_signature))) {
             DAA_Part_Header header;
-            fread(&header, sizeof(DAA_Part_Header), 1, part->file);
+            blocks_read = fread(&header, sizeof(DAA_Part_Header), 1, part->file);
+            if (blocks_read < 1) return FALSE;
             part->offset = header.data_offset;
         } else {
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: invalid signature!\n", __func__);

@@ -1005,7 +1005,8 @@ static gboolean __mirage_disc_nrg_get_parser_info (MIRAGE_Disc *self, MIRAGE_Par
 static gboolean __mirage_disc_nrg_can_load_file (MIRAGE_Disc *self, gchar *filename, GError **error) {
     MIRAGE_Disc_NRGPrivate *_priv = MIRAGE_DISC_NRG_GET_PRIVATE(self);
     gboolean succeeded = FALSE;
-    
+    size_t blocks_read;
+
     /* Does file exist? */
     if (!g_file_test(filename, G_FILE_TEST_IS_REGULAR)) {
         return FALSE;
@@ -1026,13 +1027,15 @@ static gboolean __mirage_disc_nrg_can_load_file (MIRAGE_Disc *self, gchar *filen
     
     /* New format */
     fseeko(file, -12, SEEK_END);
-    fread(sig, 4, 1, file);
+    blocks_read = fread(sig, 4, 1, file);
+    if (blocks_read < 1) return FALSE;
     if (!memcmp(sig, "NER5", 4)) {
         succeeded = TRUE;
     } else {
         /* Old format */
         fseeko(file, -8, SEEK_END);
-        fread(sig, 4, 1, file);
+        blocks_read = fread(sig, 4, 1, file);
+        if (blocks_read < 1) return FALSE;
         if (!memcmp(sig, "NERO", 4)) {
             succeeded = TRUE;
         }
@@ -1046,7 +1049,8 @@ static gboolean __mirage_disc_nrg_can_load_file (MIRAGE_Disc *self, gchar *filen
 static gboolean __mirage_disc_nrg_load_image (MIRAGE_Disc *self, gchar **filenames, GError **error) {
     MIRAGE_Disc_NRGPrivate *_priv = MIRAGE_DISC_NRG_GET_PRIVATE(self);
     gboolean succeeded = TRUE;
-    
+    size_t blocks_read;
+
     /* For now, NRG parser supports only one-file images */
     if (g_strv_length(filenames) > 1) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: only single-file images supported!\n", __func__);
@@ -1076,24 +1080,28 @@ static gboolean __mirage_disc_nrg_load_image (MIRAGE_Disc *self, gchar **filenam
     guint64 trailer_offset = 0;
     
     fseeko(file, -12, SEEK_END);
-    fread(sig, 4, 1, file);
+    blocks_read = fread(sig, 4, 1, file);
+    if (blocks_read < 1) return FALSE;
     if (!memcmp(sig, "NER5", 4)) {
         /* New format, 64-bit offset */
         guint64 tmp_offset = 0;
         _priv->old_format = FALSE;
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: new format\n", __func__);
-        fread((void *)&tmp_offset, 8, 1, file);
+        blocks_read = fread((void *)&tmp_offset, 8, 1, file);
+        if (blocks_read < 1) return FALSE;
         trailer_offset = GUINT64_FROM_BE(tmp_offset);
         _priv->nrg_data_length = (filesize - 12) - trailer_offset;
     } else {
         /* Try old format, with 32-bit offset */
         fseeko(file, -8, SEEK_END);
-        fread(sig, 4, 1, file);
+        blocks_read = fread(sig, 4, 1, file);
+        if (blocks_read < 1) return FALSE;
         if (!memcmp(sig, "NERO", 4)) {
             guint32 tmp_offset = 0;
             _priv->old_format = TRUE;
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: old format\n", __func__);
-            fread((void *)&tmp_offset, 4, 1, file);
+            blocks_read = fread((void *)&tmp_offset, 4, 1, file);
+            if (blocks_read < 1) return FALSE;
             trailer_offset = GUINT32_FROM_BE(tmp_offset);
             _priv->nrg_data_length = (filesize - 8) - trailer_offset;
         } else {
@@ -1111,8 +1119,9 @@ static gboolean __mirage_disc_nrg_load_image (MIRAGE_Disc *self, gchar **filenam
     /* Read descriptor data */
     _priv->nrg_data = g_malloc(_priv->nrg_data_length);
     fseeko(file, trailer_offset, SEEK_SET);
-    fread(_priv->nrg_data, _priv->nrg_data_length, 1, file);
-    
+    blocks_read = fread(_priv->nrg_data, _priv->nrg_data_length, 1, file);
+    if (blocks_read < 1) return FALSE;
+
     /* Build an index over blocks contained in the disc image */
     if(!__mirage_disc_nrg_build_block_index(self, error)) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to build block index!\n", __func__);

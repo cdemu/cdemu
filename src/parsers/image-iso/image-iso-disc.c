@@ -71,6 +71,7 @@ static gboolean __mirage_disc_iso_can_load_file (MIRAGE_Disc *self, gchar *filen
         FILE *file = NULL;
         struct iso_volume_descriptor VSD;
         gchar *type_str = NULL;
+        size_t blocks_read;
 
         /* Stat */
         if (g_stat(filename, &st) < 0) {
@@ -94,7 +95,8 @@ static gboolean __mirage_disc_iso_can_load_file (MIRAGE_Disc *self, gchar *filen
         fseeko(file, 16 * ISOFS_BLOCK_SIZE, SEEK_SET);
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: Volume Descriptors:\n", __func__);
         do {
-            fread(&VSD, sizeof(struct iso_volume_descriptor), 1, file);
+            blocks_read = fread(&VSD, sizeof(struct iso_volume_descriptor), 1, file);
+            if (blocks_read < 1) return FALSE;
             switch(VSD.type) {
                 case ISO_VD_BOOT_RECORD:
                 case ISO_VD_PRIMARY:

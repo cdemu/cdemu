@@ -499,6 +499,7 @@ static gboolean __mirage_disc_cif_get_parser_info (MIRAGE_Disc *self, MIRAGE_Par
 
 static gboolean __mirage_disc_cif_can_load_file (MIRAGE_Disc *self, gchar *filename, GError **error) {
     MIRAGE_Disc_CIFPrivate *_priv = MIRAGE_DISC_CIF_GET_PRIVATE(self);
+    size_t blocks_read;
 
     /* Does file exist? */
     if (!g_file_test(filename, G_FILE_TEST_IS_REGULAR)) {
@@ -518,7 +519,8 @@ static gboolean __mirage_disc_cif_can_load_file (MIRAGE_Disc *self, gchar *filen
     }
     
     gchar sig[4] = {0};
-    fread(sig, 4, 1, file);
+    blocks_read = fread(sig, 4, 1, file);
+    if (blocks_read < 1) return FALSE;
     fclose(file);
     if (memcmp(sig, "RIFF", 4)) {
         return FALSE;

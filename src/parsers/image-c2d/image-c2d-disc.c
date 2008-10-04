@@ -85,6 +85,7 @@ static gboolean __mirage_disc_c2d_parse_compressed_track(MIRAGE_Disc *self, guin
     MIRAGE_Disc_C2DPrivate *_priv = MIRAGE_DISC_C2D_GET_PRIVATE(self);
 
     FILE  *infile = NULL;
+    size_t blocks_read;
     gchar **filenames = NULL;
     gint  num = 0;
 
@@ -100,11 +101,13 @@ static gboolean __mirage_disc_c2d_parse_compressed_track(MIRAGE_Disc *self, guin
     fseeko(infile, offset, SEEK_SET);
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: Compression info blocks!\n", __func__);
 
-    fread(&header, sizeof(C2D_Z_Info_Header), 1, infile);
+    blocks_read = fread(&header, sizeof(C2D_Z_Info_Header), 1, infile);
+    if (blocks_read < 1) return FALSE;
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: Dummy: 0x%X\n", __func__, header.dummy);
 
     do {
-        fread(&zinfo, sizeof(C2D_Z_Info), 1, infile);
+        blocks_read = fread(&zinfo, sizeof(C2D_Z_Info), 1, infile);
+        if (blocks_read < 1) return FALSE;
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: [%03X] size: 0x%X offset: 0x%X\n", __func__, num, zinfo.compressed_size, zinfo.image_offset);
         num++;
     } while(zinfo.image_offset);

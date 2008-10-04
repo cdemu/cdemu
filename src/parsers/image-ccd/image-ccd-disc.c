@@ -202,6 +202,7 @@ static gboolean __mirage_disc_ccd_determine_track_mode (MIRAGE_Disc *self, GObje
     GObject *data_fragment = NULL;
     guint64 offset = 0;
     FILE *file = NULL;
+    size_t blocks_read;
     guint8 sync[12] = { 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0x00 };
     guint8 buf[24] = {0};
 
@@ -217,8 +218,8 @@ static gboolean __mirage_disc_ccd_determine_track_mode (MIRAGE_Disc *self, GObje
     
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: checking for track type in data file at location 0x%llX\n", __func__, offset);
     fseeko(file, offset, SEEK_SET);
-    fread(buf, 1, 24, file);
-    
+    blocks_read = fread(buf, 24, 1, file);
+    if (blocks_read < 1) return FALSE;
     if (!memcmp(buf, sync, 12)) {
         switch (buf[15]) {
             case 0x01: {

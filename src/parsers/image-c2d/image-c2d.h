@@ -75,7 +75,7 @@ typedef struct {
     gchar   signature[4]; /* Signature string: "C2CK" */
     guint32 dummy1[2];    /* (unknown) */
     guint64 next_offset;  /* Offset to the blocks after track data: WOCD, C2AW etc. */
-    guint32 dummy2[2]     /* (unknown) */
+    guint32 dummy2[2];    /* (unknown) */
 } C2D_C2CKBlock;  /* length: 32 bytes */
 
 typedef struct {
