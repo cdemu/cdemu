@@ -39,7 +39,7 @@ typedef struct {
 /******************************************************************************\
  *                      Interface implementation: AUDIO                       *
 \******************************************************************************/
-static gboolean __mirage_fragment_sndfile_set_file (MIRAGE_Fragment_SNDFILE *self, gchar *filename, GError **error) {
+static gboolean __mirage_fragment_sndfile_set_file (MIRAGE_FInterface_AUDIO *self, gchar *filename, GError **error) {
     MIRAGE_Fragment_SNDFILEPrivate *_priv = MIRAGE_FRAGMENT_SNDFILE_GET_PRIVATE(self);
     
     /* If file's already set, close it and reset format */
@@ -76,21 +76,21 @@ static gboolean __mirage_fragment_sndfile_set_file (MIRAGE_Fragment_SNDFILE *sel
     return TRUE;    
 }
 
-static gboolean __mirage_fragment_sndfile_get_file (MIRAGE_Fragment_SNDFILE *self, gchar **filename, GError **error) {
+static gboolean __mirage_fragment_sndfile_get_file (MIRAGE_FInterface_AUDIO *self, gchar **filename, GError **error) {
     MIRAGE_Fragment_SNDFILEPrivate *_priv = MIRAGE_FRAGMENT_SNDFILE_GET_PRIVATE(self);
     /* Return filename */
     *filename = g_strdup(_priv->filename);
     return TRUE;
 }
 
-static gboolean __mirage_fragment_sndfile_set_offset (MIRAGE_Fragment_SNDFILE *self, gint offset, GError **error) {
+static gboolean __mirage_fragment_sndfile_set_offset (MIRAGE_FInterface_AUDIO *self, gint offset, GError **error) {
     MIRAGE_Fragment_SNDFILEPrivate *_priv = MIRAGE_FRAGMENT_SNDFILE_GET_PRIVATE(self);
     /* Set offset */
     _priv->offset = offset*SNDFILE_FRAMES_PER_SECTOR;
     return TRUE;    
 }
 
-static gboolean __mirage_fragment_sndfile_get_offset (MIRAGE_Fragment_SNDFILE *self, gint *offset, GError **error) {
+static gboolean __mirage_fragment_sndfile_get_offset (MIRAGE_FInterface_AUDIO *self, gint *offset, GError **error) {
     MIRAGE_Fragment_SNDFILEPrivate *_priv = MIRAGE_FRAGMENT_SNDFILE_GET_PRIVATE(self);
     /* Return */
     *offset = _priv->offset/SNDFILE_FRAMES_PER_SECTOR;
@@ -245,12 +245,10 @@ static void __mirage_fragment_sndfile_interface_init (gpointer g_iface, gpointer
     MIRAGE_FInterface_AUDIOClass *klass = (MIRAGE_FInterface_AUDIOClass *)g_iface;
     
     /* Initialize MIRAGE_FInterface_AUDIO methods */
-    /* NOTE: because of the way interfaces are defined in GLib, casting is
-       necessary to avoid incompatible assignments warnings... */
-    klass->set_file = (gboolean (*) (MIRAGE_FInterface_AUDIO*, gchar *, GError **))__mirage_fragment_sndfile_set_file;
-    klass->get_file = (gboolean (*) (MIRAGE_FInterface_AUDIO*, gchar **, GError **))__mirage_fragment_sndfile_get_file;
-    klass->set_offset = (gboolean (*) (MIRAGE_FInterface_AUDIO *, gint, GError **))__mirage_fragment_sndfile_set_offset;
-    klass->get_offset = (gboolean (*) (MIRAGE_FInterface_AUDIO *, gint *, GError **))__mirage_fragment_sndfile_get_offset;
+    klass->set_file = __mirage_fragment_sndfile_set_file;
+    klass->get_file = __mirage_fragment_sndfile_get_file;
+    klass->set_offset = __mirage_fragment_sndfile_set_offset;
+    klass->get_offset = __mirage_fragment_sndfile_get_offset;
 
     return;
 }
