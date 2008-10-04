@@ -2,6 +2,7 @@ SUBDIRS = lzma-sdk
 
 INCLUDES = \
     -I$(top_srcdir)/src/libmirage \
+    -I$(srcdir)/lzma-sdk \
     $(glib_CFLAGS) \
     $(gobject_CFLAGS)
     
@@ -22,7 +23,8 @@ image_daa_la_SOURCES = \
 image_daa_la_LIBADD = \
     $(glib_LIBS) \
     $(gobject_LIBS) \
-    $(zlib_LIBS)
+    $(zlib_LIBS) \
+    $(builddir)/lzma-sdk/liblzma-sdk.la
 
 image_daa_la_LDFLAGS = \
     -module \
