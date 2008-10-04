@@ -1,3 +1,5 @@
+SUBDIRS = lzma-sdk
+
 INCLUDES = \
     -I$(top_srcdir)/src/libmirage \
     $(glib_CFLAGS) \
