@@ -985,6 +985,7 @@ static gboolean __mirage_disc_cdi_load_image (MIRAGE_Disc *self, gchar **filenam
     gboolean succeeded = TRUE;
     guint64 offset = 0;
     gint32 descriptor_length = 0;
+    size_t blocks_read;
     
     /* For now, CDI parser supports only one-file images */
     if (g_strv_length(filenames) > 1) {
@@ -1008,14 +1009,16 @@ static gboolean __mirage_disc_cdi_load_image (MIRAGE_Disc *self, gchar **filenam
        last four bytes represent length of descriptor data */
     offset = -(guint64)(sizeof(descriptor_length));
     fseeko(file, offset, SEEK_END);
-    fread(&descriptor_length, sizeof(descriptor_length), 1, file);
+    blocks_read = fread(&descriptor_length, sizeof(descriptor_length), 1, file);
+    if (blocks_read < 1) return FALSE;
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: CDI descriptor length: 0x%X\n", __func__, descriptor_length);
     
     /* Allocate descriptor data and read it */
     _priv->cur_ptr = _priv->cdi_data = g_malloc0(descriptor_length);
     offset = -(guint64)(descriptor_length);
     fseeko(file, offset, SEEK_END);
-    fread(_priv->cdi_data, descriptor_length, 1, file);
+    blocks_read = fread(_priv->cdi_data, descriptor_length, 1, file);
+    if (blocks_read < 1) return FALSE;
     
     /* Close file */
     fclose(file);

@@ -635,6 +635,7 @@ static gboolean __mirage_disc_mds_get_parser_info (MIRAGE_Disc *self, MIRAGE_Par
 
 static gboolean __mirage_disc_mds_can_load_file (MIRAGE_Disc *self, gchar *filename, GError **error) {
     MIRAGE_Disc_MDSPrivate *_priv = MIRAGE_DISC_MDS_GET_PRIVATE(self);
+    size_t blocks_read;
 
     /* Does file exist? */
     if (!g_file_test(filename, G_FILE_TEST_IS_REGULAR)) {
@@ -654,7 +655,8 @@ static gboolean __mirage_disc_mds_can_load_file (MIRAGE_Disc *self, gchar *filen
     }
     
     gchar sig[16] = {0};
-    fread(sig, 16, 1, file);
+    blocks_read = fread(sig, 16, 1, file);
+    if (blocks_read < 1) return FALSE;
     fclose(file);
     if (memcmp(sig, "MEDIA DESCRIPTOR", 16)) {
         return FALSE;
