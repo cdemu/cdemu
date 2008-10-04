@@ -194,6 +194,24 @@ following functionality:
 @Returns: 
 
 
+<!-- ##### FUNCTION mirage_helper_add_redbook_pregap ##### -->
+<para>
+
+</para>
+
+@disc: 
+@Returns: 
+
+
+<!-- ##### FUNCTION mirage_helper_guess_medium_type ##### -->
+<para>
+
+</para>
+
+@disc: 
+@Returns: 
+
+
 <!-- ##### FUNCTION mirage_helper_create_parser_info ##### -->
 <para>
 
