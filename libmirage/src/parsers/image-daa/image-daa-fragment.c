@@ -2,6 +2,9 @@
  *  libMirage: DAA image parser: Fragment object
  *  Copyright (C) 2008 Rok Mandeljc
  *
+ *  Derived from code of GPLed utility daa2iso, written by Luigi Auriemma:
+ *  http://aluigi.altervista.org/mytoolz.htm
+ * 
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
  *  the Free Software Foundation; either version 2 of the License, or
@@ -218,13 +221,20 @@ gboolean mirage_fragment_daa_set_file (MIRAGE_Fragment *self, gchar *filename, G
     
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_FRAGMENT, "%s: DAA main file header:\n", __func__);
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_FRAGMENT, "%s:  size_offset: 0x%X (%d)\n", __func__, header.size_offset, header.size_offset);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_FRAGMENT, "%s:  b100: 0x%X\n", __func__, header.b100);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_FRAGMENT, "%s:  format: 0x%X\n", __func__, header.format);
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_FRAGMENT, "%s:  data_offset: 0x%X (%d)\n", __func__, header.data_offset, header.data_offset);
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_FRAGMENT, "%s:  b1: 0x%X\n", __func__, header.b1);
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_FRAGMENT, "%s:  b0: 0x%X\n", __func__, header.b0);
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_FRAGMENT, "%s:  chunksize: 0x%X (%d)\n", __func__, header.chunksize, header.chunksize);
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_FRAGMENT, "%s:  isosize: 0x%llX (%lld)\n", __func__, header.isosize, header.isosize);
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_FRAGMENT, "%s:  filesize: 0x%llX (%lld)\n", __func__, header.filesize, header.filesize);
+
+    /* We currently support old format only */
+    if (header.format != 0x100) {
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: format 0x%X not supported yet!\n", __func__, header.format);
+        mirage_error(MIRAGE_E_GENERIC, error);
+        return FALSE;
+    }
     
     /* Allocate inflate buffer */
     _priv->buffer = g_malloc0(header.chunksize);

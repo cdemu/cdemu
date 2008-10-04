@@ -2,6 +2,9 @@
  *  libMirage: DAA image plugin
  *  Copyright (C) 2008 Rok Mandeljc
  *
+ *  Derived from code of GPLed utility daa2iso, written by Luigi Auriemma:
+ *  http://aluigi.altervista.org/mytoolz.htm
+ *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
  *  the Free Software Foundation; either version 2 of the License, or
@@ -38,20 +41,20 @@ G_BEGIN_DECLS
 
 typedef struct {
     guint32 size_offset; /* Offset of sizes of zipped chunk */
-    guint32 b100; /* 0x100 */
+    guint32 format; /* Format */
     guint32 data_offset; /* Offset of zipped chunks */
     guint32 b1; /* 1 */
     guint32 b0; /* 0 */
     guint32 chunksize; /* Size of each output chunk */
     guint64 isosize; /* Total size of the ISO file */
     guint64 filesize; /* Total size of the DAA file */
-    guint8 zero[16]; /* Zeros */
+    guint8 hdata[16]; /* Data used in 0x110 format */
     guint32 crc; /* Checksum calculated over the first 72 bytes of main file */ 
 } DAA_Main_Header;
 
 typedef struct {
     guint32 data_offset; /* Offset of zipped chunks */
-    guint8 zero[16]; /* Zeros */
+    guint8 hdata[16]; /* Data used in 0x110 format */
     guint32 crc; /* Checksum calculated over the first 36 bytes of part file? */ 
 } DAA_Part_Header;
 
