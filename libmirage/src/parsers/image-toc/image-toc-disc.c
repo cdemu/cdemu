@@ -135,71 +135,16 @@ static gboolean __mirage_disc_toc_load_image (MIRAGE_Disc *self, gchar **filenam
         g_object_unref(session);
     }
     
-    /* Now get length and if it surpasses length of 90min CD, assume we
-       have a DVD */
-    mirage_disc_layout_get_length(self, &length, NULL);
-    if (length > 90*60*75) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: disc length implies DVD-ROM image\n", __func__);
-        mirage_disc_set_medium_type(self, MIRAGE_MEDIUM_DVD, NULL);
+    /* Now guess medium type and if it's a CD-ROM, add Red Book pregap */
+    gint medium_type = mirage_helper_guess_medium_type(self);
+    mirage_disc_set_medium_type(self, medium_type, NULL);
+    if (medium_type == MIRAGE_MEDIUM_CD) {
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: disc length implies CD-ROM image; setting Red Book pregaps\n", __func__);
+        mirage_helper_add_redbook_pregap(self);
     } else {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: disc length implies CD-ROM image\n", __func__);
-        mirage_disc_set_medium_type(self, MIRAGE_MEDIUM_CD, NULL);
-        
-        /* CD-ROMs start at -150 as per Red Book... */
-        mirage_disc_layout_set_start_sector(self, -150, NULL);
-        
-        /* Additional complication (TM)... it would seem that on multisession CD-ROMs,
-           every first track in session needs to have 150-sector pregap... aaaaand I
-           sing to myself, what a wonderful world... >.< */
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: since this is CD-ROM, we're adding 150-sector pregap to first tracks in all sessions\n", __func__);
-        for (i = 0; i < g_strv_length(filenames); i++) {
-            GObject *session = NULL;
-            GObject *ftrack = NULL;
-            
-            if (!mirage_disc_get_session_by_index(self, i, &session, error)) {
-                MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: failed to get session with index %i!\n", __func__, i);
-                return FALSE;
-            }
-            
-            if (!mirage_session_get_track_by_index(MIRAGE_SESSION(session), 0, &ftrack, NULL)) {
-                MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: failed to first track of session with index %i!\n", __func__, i);
-                g_object_unref(session);
-                return FALSE;
-            }
-            
-            /* Add pregap fragment (empty) */
-            GObject *mirage = NULL;
-            if (!mirage_object_get_mirage(MIRAGE_OBJECT(self), &mirage, error)) {
-                MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: failed to get Mirage object!\n", __func__);
-                g_object_unref(session);
-                g_object_unref(ftrack);
-                return FALSE;
-            }
-            GObject *pregap_fragment = NULL;
-            mirage_mirage_create_fragment(MIRAGE_MIRAGE(mirage), MIRAGE_TYPE_FINTERFACE_NULL, "NULL", &pregap_fragment, error);
-            g_object_unref(mirage);
-            if (!pregap_fragment) {
-                MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: failed to create pregap fragment!\n", __func__);
-                g_object_unref(session);
-                g_object_unref(ftrack);
-                return FALSE;
-            }
-            mirage_track_add_fragment(MIRAGE_TRACK(ftrack), 0, &pregap_fragment, NULL);
-            mirage_fragment_set_length(MIRAGE_FRAGMENT(pregap_fragment), 150, NULL);
-            g_object_unref(pregap_fragment);
-            
-            /* Track starts at 150... well, unless it already has a pregap, in
-               which case they should stack */
-            gint old_start = 0;
-            mirage_track_get_track_start(MIRAGE_TRACK(ftrack), &old_start, NULL);
-            old_start += 150;
-            mirage_track_set_track_start(MIRAGE_TRACK(ftrack), old_start, NULL);
-        
-            g_object_unref(ftrack);
-            g_object_unref(session);
-        }
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: disc length implies non CD-ROM image\n", __func__);
     }
-    
+   
     return TRUE;
 }
 

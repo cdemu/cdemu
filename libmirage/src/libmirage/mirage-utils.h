@@ -94,6 +94,10 @@ gboolean mirage_helper_match_suffixes (gchar *filename, gchar **suffixes);
 gint mirage_helper_strcasecmp (const gchar *str1, const gchar *str2);
 gint mirage_helper_strncasecmp (const gchar *str1, const gchar *str2, gint len);
 
+/* Disc utility functions */
+gint mirage_helper_guess_medium_type (MIRAGE_Disc *disc);
+gboolean mirage_helper_add_redbook_pregap (MIRAGE_Disc *disc);
+
 /* Parser and fragment info utility functions */
 MIRAGE_ParserInfo *mirage_helper_create_parser_info (gchar *id, gchar *name, gchar *version, gchar *author, gboolean multi_file, gchar *description, gint num_suffixes, ...);
 void mirage_helper_destroy_parser_info (MIRAGE_ParserInfo *info);

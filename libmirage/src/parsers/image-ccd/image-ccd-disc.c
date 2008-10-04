@@ -245,85 +245,6 @@ static gboolean __mirage_disc_ccd_determine_track_mode (MIRAGE_Disc *self, GObje
     return TRUE;
 }
 
-static gboolean __mirage_disc_ccd_finish_disc_layout (MIRAGE_Disc *self, GError **error) {
-    gint length = 0;
-    
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "\n");
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: finishing disc layout\n", __func__);
-    
-    /* Now get length and if it surpasses length of 90min CD, assume we
-       have a DVD */
-    mirage_disc_layout_get_length(self, &length, NULL);
-    
-    if (length > 90*60*75) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: disc length implies DVD-ROM image\n", __func__);
-        mirage_disc_set_medium_type(self, MIRAGE_MEDIUM_DVD, NULL);
-    } else {
-        gint num_sessions = 0;
-        gint i;
-        
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: disc length implies CD-ROM image\n", __func__);
-        mirage_disc_set_medium_type(self, MIRAGE_MEDIUM_CD, NULL);
-        
-        /* CD-ROMs start at -150 as per Red Book... */
-        mirage_disc_layout_set_start_sector(self, -150, NULL);
-        
-        mirage_disc_get_number_of_sessions(self, &num_sessions, NULL);
-        
-        /* Give each first track in a session 150-sector pregap... */
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: since this is CD-ROM, we're adding 150-sector pregap to first tracks in all sessions\n", __func__);
-        for (i = 0; i < num_sessions; i++) {
-            GObject *session = NULL;
-            GObject *ftrack = NULL;
-            
-            if (!mirage_disc_get_session_by_index(self, i, &session, error)) {
-                MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: failed to get session with index %i!\n", __func__, i);
-                return FALSE;
-            }
-            
-            if (!mirage_session_get_track_by_index(MIRAGE_SESSION(session), 0, &ftrack, NULL)) {
-                MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: failed to first track of session with index %i!\n", __func__, i);
-                g_object_unref(session);
-                return FALSE;
-            }
-            
-            /* Add pregap fragment (empty) */
-            GObject *mirage = NULL;
-            if (!mirage_object_get_mirage(MIRAGE_OBJECT(self), &mirage, error)) {
-                MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: failed to get Mirage object!\n", __func__);
-                g_object_unref(session);
-                g_object_unref(ftrack);
-                return FALSE;
-            }
-            GObject *pregap_fragment = NULL;
-            mirage_mirage_create_fragment(MIRAGE_MIRAGE(mirage), MIRAGE_TYPE_FINTERFACE_NULL, "NULL", &pregap_fragment, error);
-            g_object_unref(mirage);
-            if (!pregap_fragment) {
-                MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: failed to create pregap fragment!\n", __func__);
-                g_object_unref(session);
-                g_object_unref(ftrack);
-                return FALSE;
-            }
-            mirage_track_add_fragment(MIRAGE_TRACK(ftrack), 0, &pregap_fragment, NULL);
-            mirage_fragment_set_length(MIRAGE_FRAGMENT(pregap_fragment), 150, NULL);
-            g_object_unref(pregap_fragment);
-            
-            /* Track starts at 150... well, unless it already has a pregap, in
-               which case they should stack */
-            gint old_start = 0;
-            mirage_track_get_track_start(MIRAGE_TRACK(ftrack), &old_start, NULL);
-            old_start += 150;
-            mirage_track_set_track_start(MIRAGE_TRACK(ftrack), old_start, NULL);
-        
-            g_object_unref(ftrack);
-            g_object_unref(session);
-        }
-    }   
-
-    return TRUE;
-}
-
-
 static gboolean __mirage_disc_ccd_clean_parsed_structures (MIRAGE_Disc *self, GError **error) {
     MIRAGE_Disc_CCDPrivate *_priv = MIRAGE_DISC_CCD_GET_PRIVATE(self);
     GList *entry = NULL;
@@ -556,10 +477,14 @@ static gboolean __mirage_disc_ccd_build_disc_layout (MIRAGE_Disc *self, GError *
         
     }
     
-    /* Finish disc layout (i.e. set medium type, add 150 pregaps to first tracks
-       in sessions, etc.) */
-    if (!__mirage_disc_ccd_finish_disc_layout(self, error)) {
-        return FALSE;
+    /* Finish disc layout (i.e. guess medium type and set pregaps if necessary) */
+    gint medium_type = mirage_helper_guess_medium_type(self);
+    mirage_disc_set_medium_type(self, medium_type, NULL);
+    if (medium_type == MIRAGE_MEDIUM_CD) {
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: disc length implies CD-ROM image; setting Red Book pregaps\n", __func__);
+        mirage_helper_add_redbook_pregap(self);
+    } else {
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: disc length implies non CD-ROM image\n", __func__);
     }
     
     /* Clean the parsed structures as they aren't needed anymore */
