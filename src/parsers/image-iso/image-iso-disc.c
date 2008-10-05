@@ -71,18 +71,6 @@ static gboolean __mirage_disc_iso_can_load_file (MIRAGE_Disc *self, gchar *filen
         if (st.st_size % ISO_BLOCK_SIZE) {
             return FALSE;
         }
-    
-        /* Last test; ISO-9660 or UDF image has a valid ISO volume descriptor 
-           at the beginning of the 16th sector. For the fun of it we list all
-           volume descriptors. */
-        file = g_fopen(filename, "r");
-        if (!file) {
-            return FALSE;
-        }
-
-        valid_iso = mirage_helper_valid_iso_volume_descriptors(self, file, 0);
-
-        fclose(file);
     }
 
     return valid_iso;
