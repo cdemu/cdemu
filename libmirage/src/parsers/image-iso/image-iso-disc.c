@@ -40,15 +40,6 @@ static gboolean __mirage_disc_iso_get_parser_info (MIRAGE_Disc *self, MIRAGE_Par
     return TRUE;
 }
 
-static gchar *vd_type[] = {
-    "BOOT",
-    "PRI",
-    "SUPP",
-    "PART",
-    "TERM",
-    "N/A"
-};
-
 static gboolean __mirage_disc_iso_can_load_file (MIRAGE_Disc *self, gchar *filename, GError **error) {
     MIRAGE_Disc_ISOPrivate *_priv = MIRAGE_DISC_ISO_GET_PRIVATE(self);
     gboolean valid_iso = FALSE;
@@ -69,9 +60,6 @@ static gboolean __mirage_disc_iso_can_load_file (MIRAGE_Disc *self, gchar *filen
         || mirage_helper_has_suffix(filename, ".img")) {
         struct stat st;
         FILE *file = NULL;
-        struct iso_volume_descriptor VSD;
-        gchar *type_str = NULL;
-        size_t blocks_read;
 
         /* Stat */
         if (g_stat(filename, &st) < 0) {
@@ -80,7 +68,7 @@ static gboolean __mirage_disc_iso_can_load_file (MIRAGE_Disc *self, gchar *filen
         
         /* Since it's Mode 1/Mode 2 Form 1 track, its length should be divisible
            by 2048 */
-        if (st.st_size % ISOFS_BLOCK_SIZE) {
+        if (st.st_size % ISO_BLOCK_SIZE) {
             return FALSE;
         }
     
@@ -92,30 +80,8 @@ static gboolean __mirage_disc_iso_can_load_file (MIRAGE_Disc *self, gchar *filen
             return FALSE;
         }
 
-        fseeko(file, 16 * ISOFS_BLOCK_SIZE, SEEK_SET);
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: Volume Descriptors:\n", __func__);
-        do {
-            blocks_read = fread(&VSD, sizeof(struct iso_volume_descriptor), 1, file);
-            if (blocks_read < 1) return FALSE;
-            switch(VSD.type) {
-                case ISO_VD_BOOT_RECORD:
-                case ISO_VD_PRIMARY:
-                case ISO_VD_SUPPLEMENTARY:
-                case ISO_VD_PARTITION:
-                    type_str = vd_type[VSD.type];
-                    break;
-                case ISO_VD_END: /* 255 */
-                    type_str = vd_type[4];
-                    break;
-                default:
-                    type_str = vd_type[5];
-                    break;
-            }
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   Type: %s (%i), ID: '%.5s', version: %i.\n", __func__, type_str, VSD.type, VSD.id, VSD.version);
-            if (!memcmp(VSD.id, ISO_STANDARD_ID, sizeof(VSD.id)) && (VSD.type == ISO_VD_PRIMARY)) {
-                valid_iso = TRUE;
-            }
-        } while((VSD.type != ISO_VD_END) && !feof(file));
+        valid_iso = mirage_helper_valid_iso_volume_descriptors(self, file, 0);
+
         fclose(file);
     }
 
@@ -170,7 +136,7 @@ static gboolean __mirage_disc_iso_load_track (MIRAGE_Disc *self, gchar *filename
         
         /* Set track file */
         mirage_finterface_binary_track_file_set_handle(MIRAGE_FINTERFACE_BINARY(data_fragment), g_fopen(filename, "r"), NULL);
-        mirage_finterface_binary_track_file_set_sectsize(MIRAGE_FINTERFACE_BINARY(data_fragment), ISOFS_BLOCK_SIZE, NULL);
+        mirage_finterface_binary_track_file_set_sectsize(MIRAGE_FINTERFACE_BINARY(data_fragment), ISO_BLOCK_SIZE, NULL);
         mirage_finterface_binary_track_file_set_format(MIRAGE_FINTERFACE_BINARY(data_fragment), FR_BIN_TFILE_DATA, NULL);        
         
         /* Set track mode */
@@ -226,7 +192,6 @@ static gboolean __mirage_disc_iso_load_track (MIRAGE_Disc *self, gchar *filename
 
 static gboolean __mirage_disc_iso_load_image (MIRAGE_Disc *self, gchar **filenames, GError **error) {
     GObject *session = NULL;
-    gint length = 0;
     gint i;
     
     /* Set filenames */

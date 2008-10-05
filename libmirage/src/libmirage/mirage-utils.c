@@ -351,6 +351,92 @@ gboolean mirage_helper_add_redbook_pregap (MIRAGE_Disc *disc) {
     return TRUE;
 }
 
+typedef struct {
+    guint8 type; 
+    gchar  id[5];
+    guint8 version;
+    guint8 data[2041];
+} ISO_Volume_Descriptor;
+
+#define ISO_VD_BOOT_RECORD   0
+#define ISO_VD_PRIMARY       1
+#define ISO_VD_SUPPLEMENTARY 2
+#define ISO_VD_PARTITION     3
+#define ISO_VD_END           255
+
+#define ISO_STANDARD_ID      "CD001"
+#define ISO_BLOCK_SIZE       2048
+
+/**
+ * mirage_helper_valid_iso_volume_descriptors:
+ * @file: handle to image file
+ * @offset: offset to the beginning of the track
+ *
+ * <para>
+ * A helper function, intended to check that the image file has valid ISO-9660 
+ * Volume Descriptors. 
+ * </para>
+ *
+ * Returns: %TRUE on success, %FALSE on failure
+ **/
+gboolean mirage_helper_valid_iso_volume_descriptors(MIRAGE_Disc *self, FILE *file, off_t offset) {
+    gchar *vd_type_string[] = {
+        "BOOT",
+        "PRI",
+        "SUPP",
+        "PART",
+        "TERM",
+        "N/A"
+    };
+
+    ISO_Volume_Descriptor VD;
+
+    gboolean valid_iso = FALSE;
+    size_t   blocks_read = 0;
+    gint     ret = 0;
+    gchar    *type_str = NULL;
+
+    /* Sanity check */
+    if (!file) return FALSE;
+
+    /* Locate first Descriptor block */
+    ret = fseeko(file, offset + (16 * ISO_BLOCK_SIZE), SEEK_SET);
+    if(ret != 0) return FALSE;
+
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: Volume Descriptors:\n", __func__);
+    do {
+        blocks_read = fread(&VD, sizeof(ISO_Volume_Descriptor), 1, file);
+        if (blocks_read < 1) return FALSE;
+
+        /* List Volume Descriptor */
+        switch(VD.type) {
+            case ISO_VD_BOOT_RECORD:
+            case ISO_VD_PRIMARY:
+            case ISO_VD_SUPPLEMENTARY:
+            case ISO_VD_PARTITION:
+                type_str = vd_type_string[VD.type];
+                break;
+            case ISO_VD_END:
+                type_str = vd_type_string[4];
+                break;
+            default:
+                type_str = vd_type_string[5];
+                break;
+        }
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   Type: %s (%i), ID: '%.5s', version: %i.\n", __func__, type_str, VD.type, VD.id, VD.version);
+
+        /* Validity check */
+        if (!memcmp(VD.id, ISO_STANDARD_ID, sizeof(VD.id))) {
+            if(VD.type == ISO_VD_PRIMARY) valid_iso = TRUE;
+        } else {
+            valid_iso = FALSE;
+            break;
+        }
+    } while((VD.type != ISO_VD_END) && !feof(file));
+
+    return valid_iso;
+}
+
 
 /******************************************************************************\
  *                 Parser and fragment info utility functions                 *
