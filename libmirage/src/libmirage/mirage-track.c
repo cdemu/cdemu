@@ -1997,6 +1997,78 @@ gboolean mirage_track_get_next (MIRAGE_Track *self, GObject **next_track, GError
     return succeeded;
 }
 
+typedef struct {
+    guint8 type; 
+    gchar  id[5];
+    guint8 version;
+    guint8 data[2041];
+} ISO_VolDesc;
+
+#define ISO_VD_BOOT_RECORD   0
+#define ISO_VD_PRIMARY       1
+#define ISO_VD_SUPPLEMENTARY 2
+#define ISO_VD_PARTITION     3
+#define ISO_VD_END           255
+
+#define ISO_STANDARD_ID      "CD001"
+
+/**
+ * mirage_track_has_iso9660:
+ * @self: reference to track object
+ * @error: location to store error, or %NULL
+ *
+ * <para>
+ * Checks that the track has valid ISO-9660 Volume Descriptors.
+ * </para>
+ *
+ * Returns: %TRUE on success, %FALSE on failure
+ **/
+gboolean mirage_track_has_iso9660(MIRAGE_Track *self, GError **error) {
+    guint8      *buffer = NULL;
+    ISO_VolDesc *VD = NULL;
+    gint        sector = 16;
+    gint        ret_len = 0;
+    gboolean    valid_iso = FALSE;
+
+    /* Sanity check */
+    if (!self) {
+        mirage_error(MIRAGE_E_INVALIDARG, NULL);
+        return FALSE;
+    }
+
+    /* Get us a buffer */
+    buffer = g_try_malloc(2500);
+    if(!buffer) return FALSE;
+    VD = (ISO_VolDesc *) buffer;
+
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: Volume Descriptors:\n", __func__);
+    do {
+        /* Read Volume Descriptor */
+        if(!mirage_track_read_sector(self, sector, FALSE, MIRAGE_MCSB_DATA, 0, buffer, &ret_len, error)) {
+            valid_iso = FALSE;
+            break;
+        }
+        g_assert(ret_len <= 2500);
+
+        /* List Volume Descriptor */
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   Type: %i, ID: '%.5s', Version: %i.\n", __func__, VD->type, VD->id, VD->version);
+
+        /* Validity check */
+        if (!memcmp(VD->id, ISO_STANDARD_ID, sizeof(VD->id))) {
+            if(VD->type == ISO_VD_PRIMARY) valid_iso = TRUE;
+        } else {
+            valid_iso = FALSE;
+            break;
+        }
+
+        sector++;
+    } while((VD->type != ISO_VD_END));
+
+    if(buffer) g_free(buffer);
+
+    return valid_iso;
+}
+
 
 /******************************************************************************\
  *                                 Object init                                *

@@ -183,7 +183,10 @@ gboolean mirage_track_for_each_language (MIRAGE_Track *self, MIRAGE_CallbackFunc
 /* Two nice convenience functions */
 gboolean mirage_track_get_prev (MIRAGE_Track *self, GObject **prev_track, GError **error);
 gboolean mirage_track_get_next (MIRAGE_Track *self, GObject **next_track, GError **error);
-    
+
+/* Validation checks, filesystem etc. */
+gboolean mirage_track_has_iso9660(MIRAGE_Track *self, GError **error);
+
 G_END_DECLS
 
 #endif /* __MIRAGE_TRACK_H__ */
