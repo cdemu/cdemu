@@ -73,9 +73,6 @@ typedef struct {
     /* Streams */
     z_stream z;
     CLzmaDec lzma;
-    
-    /* Fragment info */
-    MIRAGE_FragmentInfo *fragment_info;
 } MIRAGE_Fragment_DAAPrivate;
 
 
@@ -566,12 +563,6 @@ gboolean mirage_fragment_daa_set_file (MIRAGE_Fragment *self, gchar *filename, G
 /******************************************************************************\
  *                   MIRAGE_Fragment methods implementations                  *
 \******************************************************************************/
-static gboolean __mirage_fragment_daa_get_fragment_info (MIRAGE_Fragment *self, MIRAGE_FragmentInfo **fragment_info, GError **error) {
-    MIRAGE_Fragment_DAAPrivate *_priv = MIRAGE_FRAGMENT_DAA_GET_PRIVATE(self);
-    *fragment_info = _priv->fragment_info;
-    return TRUE;
-}
-
 static gboolean __mirage_fragment_daa_can_handle_data_format (MIRAGE_Fragment *self, gchar *filename, GError **error) {
     /* Not implemented */
     mirage_error(MIRAGE_E_NOTIMPL, error);
@@ -704,11 +695,8 @@ static gboolean __mirage_fragment_daa_read_subchannel_data (MIRAGE_Fragment *sel
 static MIRAGE_FragmentClass *parent_class = NULL;
 
 static void __mirage_fragment_daa_instance_init (GTypeInstance *instance, gpointer g_class) {
-    MIRAGE_Fragment_DAA *self = MIRAGE_FRAGMENT_DAA(instance);
-    MIRAGE_Fragment_DAAPrivate *_priv = MIRAGE_FRAGMENT_DAA_GET_PRIVATE(self);
-    
     /* Create fragment info */
-    _priv->fragment_info = mirage_helper_create_fragment_info(
+    mirage_fragment_generate_fragment_info(MIRAGE_FRAGMENT(instance),
         "FRAGMENT-DAA",
         "DAA Fragment",
         "1.0.0",
@@ -747,10 +735,7 @@ static void __mirage_fragment_daa_finalize (GObject *obj) {
     
     /* Free buffer */
     g_free(_priv->buffer);
-    
-    /* Free fragment info */
-    mirage_helper_destroy_fragment_info(_priv->fragment_info);
-    
+        
     /* Chain up to the parent class */
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_GOBJECT, "%s: chaining up to parent\n", __func__);
     return G_OBJECT_CLASS(parent_class)->finalize(obj);
@@ -771,7 +756,6 @@ static void __mirage_fragment_daa_class_init (gpointer g_class, gpointer g_class
     class_gobject->finalize = __mirage_fragment_daa_finalize;
     
     /* Initialize MIRAGE_Fragment methods */
-    class_fragment->get_fragment_info = __mirage_fragment_daa_get_fragment_info;
     class_fragment->can_handle_data_format = __mirage_fragment_daa_can_handle_data_format;
     class_fragment->use_the_rest_of_file = __mirage_fragment_daa_use_the_rest_of_file;
     class_fragment->read_main_data = __mirage_fragment_daa_read_main_data;

@@ -212,30 +212,6 @@ following functionality:
 @Returns: 
 
 
-<!-- ##### FUNCTION mirage_helper_create_parser_info ##### -->
-<para>
-
-</para>
-
-@id: 
-@name: 
-@version: 
-@author: 
-@multi_file: 
-@description: 
-@num_suffixes: 
-@Varargs: 
-@Returns: 
-
-
-<!-- ##### FUNCTION mirage_helper_destroy_parser_info ##### -->
-<para>
-
-</para>
-
-@info: 
-
-
 <!-- ##### FUNCTION mirage_helper_create_fragment_info ##### -->
 <para>
 

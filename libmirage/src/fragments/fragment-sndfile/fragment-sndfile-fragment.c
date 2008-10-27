@@ -30,9 +30,6 @@ typedef struct {
     SNDFILE *sndfile;
     SF_INFO format;
     sf_count_t offset;
-    
-    /* Fragment info */
-    MIRAGE_FragmentInfo *fragment_info;
 } MIRAGE_Fragment_SNDFILEPrivate;
 
 
@@ -101,17 +98,13 @@ static gboolean __mirage_fragment_sndfile_get_offset (MIRAGE_FInterface_AUDIO *s
 /******************************************************************************\
  *                   MIRAGE_Fragment methods implementations                  *
 \******************************************************************************/
-static gboolean __mirage_fragment_sndfile_get_fragment_info (MIRAGE_Fragment *self, MIRAGE_FragmentInfo **fragment_info, GError **error) {
-    MIRAGE_Fragment_SNDFILEPrivate *_priv = MIRAGE_FRAGMENT_SNDFILE_GET_PRIVATE(self);
-    *fragment_info = _priv->fragment_info;
-    return TRUE;
-}
-
 static gboolean __mirage_fragment_sndfile_can_handle_data_format (MIRAGE_Fragment *self, gchar *filename, GError **erro) {
-    MIRAGE_Fragment_SNDFILEPrivate *_priv = MIRAGE_FRAGMENT_SNDFILE_GET_PRIVATE(self);
+    MIRAGE_FragmentInfo *info = NULL;
+    
     /* Check supported file suffixes */
     /* FIXME: maybe calling a sf_open() and checking its return is a better idea? */
-    return mirage_helper_match_suffixes(filename, _priv->fragment_info->suffixes);
+    mirage_fragment_get_fragment_info(self, &info, NULL);
+    return mirage_helper_match_suffixes(filename, info->suffixes);
 }
 
 static gboolean __mirage_fragment_sndfile_use_the_rest_of_file (MIRAGE_Fragment *self, GError **error) {
@@ -181,12 +174,9 @@ static gboolean __mirage_fragment_sndfile_read_subchannel_data (MIRAGE_Fragment 
 /* Our parent class */
 static MIRAGE_FragmentClass *parent_class = NULL;
 
-static void __mirage_fragment_sndfile_instance_init (GTypeInstance *instance, gpointer g_class) {
-    MIRAGE_Fragment_SNDFILE *self = MIRAGE_FRAGMENT_SNDFILE(instance);
-    MIRAGE_Fragment_SNDFILEPrivate *_priv = MIRAGE_FRAGMENT_SNDFILE_GET_PRIVATE(self);
-    
+static void __mirage_fragment_sndfile_instance_init (GTypeInstance *instance, gpointer g_class) {   
     /* Create fragment info */
-    _priv->fragment_info = mirage_helper_create_fragment_info(
+    mirage_fragment_generate_fragment_info(MIRAGE_FRAGMENT(instance),
         "FRAGMENT-SNDFILE",
         "libsndfile Fragment",
         "1.0.0",
@@ -208,10 +198,7 @@ static void __mirage_fragment_sndfile_finalize (GObject *obj) {
     if (_priv->sndfile) {
         sf_close(_priv->sndfile);
     }
-    
-    /* Free fragment info */
-    mirage_helper_destroy_fragment_info(_priv->fragment_info);
-    
+        
     /* Chain up to the parent class */
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_GOBJECT, "%s: chaining up to parent\n", __func__);
     return G_OBJECT_CLASS(parent_class)->finalize(obj);
@@ -232,7 +219,6 @@ static void __mirage_fragment_sndfile_class_init (gpointer g_class, gpointer g_c
     class_gobject->finalize = __mirage_fragment_sndfile_finalize;
     
     /* Initialize MIRAGE_Fragment methods */
-    class_fragment->get_fragment_info = __mirage_fragment_sndfile_get_fragment_info;
     class_fragment->can_handle_data_format = __mirage_fragment_sndfile_can_handle_data_format;
     class_fragment->use_the_rest_of_file = __mirage_fragment_sndfile_use_the_rest_of_file;
     class_fragment->read_main_data = __mirage_fragment_sndfile_read_main_data;
