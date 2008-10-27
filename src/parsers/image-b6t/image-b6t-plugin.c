@@ -27,7 +27,7 @@ G_MODULE_EXPORT void mirage_plugin_unload_plugin (MIRAGE_Plugin *plugin);
 
 G_MODULE_EXPORT void mirage_plugin_load_plugin (MIRAGE_Plugin *plugin) {
     global_module = G_TYPE_MODULE(plugin);
-    mirage_disc_b6t_get_type(G_TYPE_MODULE(plugin));
+    mirage_parser_b6t_get_type(G_TYPE_MODULE(plugin));
     return;
 }
 

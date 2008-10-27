@@ -9,10 +9,10 @@ plugin_LTLIBRARIES = image-b6t.la
 
 noinst_HEADERS = \
     image-b6t.h \
-    image-b6t-disc.h
+    image-b6t-parser.h
 
 image_b6t_la_SOURCES = \
-    image-b6t-disc.c \
+    image-b6t-parser.c \
     image-b6t-plugin.c
 
 image_b6t_la_LIBADD = \

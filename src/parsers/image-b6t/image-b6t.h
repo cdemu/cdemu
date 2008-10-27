@@ -25,7 +25,7 @@
 #endif
 
 #include "mirage.h"
-#include "image-b6t-disc.h"
+#include "image-b6t-parser.h"
 
 
 G_BEGIN_DECLS
