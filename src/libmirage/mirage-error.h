@@ -55,6 +55,7 @@ GQuark mirage_error_quark (void);
  * @MIRAGE_E_CANTHANDLE: parser cannot handle given image file(s)
  * @MIRAGE_E_NEEDPASSWORD: image is encrypted and requires password
  * @MIRAGE_E_WRONGPASSWORD: wrong password
+ * @MIRAGE_E_NOPASSWORD: no password provided
  * @MIRAGE_E_NODEBUGCONTEXT: debug context is not set
  * @MIRAGE_E_NOPARENT: parent object is not set
  * @MIRAGE_E_SESSIONNOTFOUND: session not found
@@ -105,6 +106,7 @@ typedef enum {
     MIRAGE_E_CANTHANDLE,
     MIRAGE_E_NEEDPASSWORD,
     MIRAGE_E_WRONGPASSWORD,
+    MIRAGE_E_NOPASSWORD,
     
     /* Object */
     MIRAGE_E_NODEBUGCONTEXT,
