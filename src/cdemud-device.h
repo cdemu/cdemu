@@ -54,9 +54,9 @@ typedef struct {
 GType cdemud_device_get_type (void);
 
 /* Public API */
-gboolean cdemud_device_initialize (CDEMUD_Device *self, gint number, gchar *audio_driver, GObject *mirage, GError **error);
+gboolean cdemud_device_initialize (CDEMUD_Device *self, gint number, gchar *audio_driver, GError **error);
 gboolean cdemud_device_get_device_number (CDEMUD_Device *self, gint *number, GError **error);
-gboolean cdemud_device_get_status (CDEMUD_Device *self, gboolean *loaded, gchar **image_type, gchar ***file_names, GError **error);
+gboolean cdemud_device_get_status (CDEMUD_Device *self, gboolean *loaded, gchar ***file_names, GError **error);
 gboolean cdemud_device_load_disc (CDEMUD_Device *self, gchar **file_names, GError **error);
 gboolean cdemud_device_unload_disc (CDEMUD_Device *self, GError **error);
 gboolean cdemud_device_get_option (CDEMUD_Device *self, gchar *option_name, GPtrArray **option_values, GError **error);

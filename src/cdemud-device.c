@@ -51,10 +51,7 @@ typedef struct {
     
     /* Audio play */
     GObject *audio_play;
-    
-    /* Mirage */
-    GObject *mirage;
-    
+        
     /* Disc */
     gboolean loaded;
     GObject *disc;
@@ -2903,7 +2900,7 @@ gint cdemud_device_execute(CDEMUD_Device *self, CDEMUD_Command *cmd) {
 /******************************************************************************\
  *                                 Public API                                 *
 \******************************************************************************/
-gboolean cdemud_device_initialize (CDEMUD_Device *self, gint number, gchar *audio_driver, GObject *mirage, GError **error) {
+gboolean cdemud_device_initialize (CDEMUD_Device *self, gint number, gchar *audio_driver, GError **error) {
     CDEMUD_DevicePrivate *_priv = CDEMUD_DEVICE_GET_PRIVATE(self);
     GObject *debug_context = NULL;
     
@@ -2913,11 +2910,7 @@ gboolean cdemud_device_initialize (CDEMUD_Device *self, gint number, gchar *audi
     
     /* Init device mutex */
     _priv->device_mutex = g_mutex_new();
-    
-    /* Set mirage object */
-    _priv->mirage = mirage;
-    g_object_ref(_priv->mirage);
-    
+        
     /* Create debug context for device */
     debug_context = g_object_new(MIRAGE_TYPE_DEBUG_CONTEXT, NULL);
     mirage_debug_context_set_name(MIRAGE_DEBUG_CONTEXT(debug_context), _priv->device_name, NULL);
@@ -2977,35 +2970,25 @@ gboolean cdemud_device_get_device_number (CDEMUD_Device *self, gint *number, GEr
     return TRUE;
 }
 
-static gboolean __cdemud_device_get_status (CDEMUD_Device *self, gboolean *loaded, gchar **image_type, gchar ***file_names, GError **error) {
+static gboolean __cdemud_device_get_status (CDEMUD_Device *self, gboolean *loaded, gchar ***file_names, GError **error) {
     CDEMUD_DevicePrivate *_priv = CDEMUD_DEVICE_GET_PRIVATE(self);
     
     gboolean _loaded = FALSE;
-    gchar *_image_type = NULL;
     gchar **_file_names = NULL;
     
     if (_priv->loaded) {
         MIRAGE_Disc *disc = MIRAGE_DISC(_priv->disc);
-        MIRAGE_ParserInfo *parser_info = NULL;
         
         _loaded = TRUE;
         mirage_disc_get_filenames(disc, &_file_names, NULL);
-        mirage_disc_get_parser_info(disc, &parser_info, NULL);
-        _image_type = g_strdup(parser_info->id);
     } else {
         _loaded = FALSE;
-        _image_type = g_strdup("N/A");
         _file_names = g_new0(gchar*, 2); /* NULL-terminated, hence 2 */
         _file_names[0] = g_strdup("N/A");
     }
     
     if (loaded) {
         *loaded = _loaded;
-    }
-    if (image_type) {
-        *image_type = _image_type;
-    } else {
-        g_free(_image_type);
     }
     if (file_names) {
         *file_names = _file_names;
@@ -3016,12 +2999,12 @@ static gboolean __cdemud_device_get_status (CDEMUD_Device *self, gboolean *loade
     return TRUE;
 }
 
-gboolean cdemud_device_get_status (CDEMUD_Device *self, gboolean *loaded, gchar **image_type, gchar ***file_names, GError **error) {
+gboolean cdemud_device_get_status (CDEMUD_Device *self, gboolean *loaded, gchar ***file_names, GError **error) {
     CDEMUD_DevicePrivate *_priv = CDEMUD_DEVICE_GET_PRIVATE(self);
     gboolean succeeded = TRUE;
     
     g_mutex_lock(_priv->device_mutex);
-    succeeded = __cdemud_device_get_status(self, loaded, image_type, file_names, error);
+    succeeded = __cdemud_device_get_status(self, loaded, file_names, error);
     g_mutex_unlock(_priv->device_mutex);
     
     return succeeded;
@@ -3039,7 +3022,8 @@ static gboolean __cdemud_device_load_disc (CDEMUD_Device *self, gchar **file_nam
     }
     
     /* Load... */
-    if (!mirage_mirage_create_disc(MIRAGE_MIRAGE(_priv->mirage), file_names, &_priv->disc, _priv->disc_debug, error)) {
+    _priv->disc = libmirage_create_disc(file_names, _priv->disc_debug, error);
+    if (!_priv->disc) {
         return FALSE;
     }
     
@@ -3465,11 +3449,6 @@ static void __cdemud_device_finalize (GObject *obj) {
     
     /* Unload disc */
     cdemud_device_unload_disc(self, NULL);
-    
-    /* Unref Mirage object */
-    if (_priv->mirage) {
-        g_object_unref(_priv->mirage);
-    }
     
     /* Unref audio play object */
     if (_priv->audio_play) {
