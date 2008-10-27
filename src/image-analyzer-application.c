@@ -620,7 +620,47 @@ static void __image_analyzer_application_message (IMAGE_ANALYZER_Application *se
 /******************************************************************************\
  *                               Open/close image                             *
 \******************************************************************************/
-static gboolean __image_analyzer_close_image (IMAGE_ANALYZER_Application *self, GError **error) {
+static gchar *__image_analyzer_application_get_password (gpointer user_data, GError **error) {
+    IMAGE_ANALYZER_Application *self = user_data;
+    IMAGE_ANALYZER_ApplicationPrivate *_priv = IMAGE_ANALYZER_APPLICATION_GET_PRIVATE(self);
+    gchar *password;
+    GtkDialog *dialog;
+    GtkWidget *entry, *label;
+    gint result;
+        
+    dialog = GTK_DIALOG(gtk_dialog_new_with_buttons("Enter password", GTK_WINDOW(_priv->window), GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT, GTK_STOCK_OK, GTK_RESPONSE_OK, GTK_STOCK_CANCEL, GTK_RESPONSE_REJECT, NULL));
+    gtk_dialog_set_default_response(GTK_DIALOG(dialog), GTK_RESPONSE_ACCEPT);
+        
+    gtk_box_set_spacing(GTK_BOX(dialog->vbox), 5);
+    
+    label = gtk_label_new("The image you are trying to load is encrypted. Please enter password:");
+    gtk_widget_show(label);
+    gtk_box_pack_start(GTK_BOX(dialog->vbox), label, FALSE, FALSE, 0);    
+    gtk_label_set_line_wrap(GTK_LABEL(label), TRUE);
+    
+    entry = gtk_entry_new();
+    gtk_widget_show(entry);
+    gtk_box_pack_start(GTK_BOX(dialog->vbox), entry, FALSE, FALSE, 0);
+    gtk_entry_set_visibility(GTK_ENTRY(entry), FALSE);
+    
+    /* Run dialog */
+    result = gtk_dialog_run(dialog);
+    switch (result) {
+        case GTK_RESPONSE_OK: {
+            password = g_strdup(gtk_entry_get_text(GTK_ENTRY(entry)));
+            break;
+        }
+        default: {
+            password = NULL;
+            break;
+        }
+    }
+    gtk_widget_destroy(GTK_WIDGET(dialog));
+    
+    return password;
+}
+
+static gboolean __image_analyzer_close_image (IMAGE_ANALYZER_Application *self) {
     IMAGE_ANALYZER_ApplicationPrivate *_priv = IMAGE_ANALYZER_APPLICATION_GET_PRIVATE(self);
     
     /* Clear log whether we're loaded or not... it doesn't really hurt to do it
@@ -651,14 +691,15 @@ static gboolean __image_analyzer_close_image (IMAGE_ANALYZER_Application *self, 
     return TRUE;
 }
 
-static gboolean __image_analyzer_open_image (IMAGE_ANALYZER_Application *self, gchar **filenames, GError **error) {
+static gboolean __image_analyzer_open_image (IMAGE_ANALYZER_Application *self, gchar **filenames) {
     IMAGE_ANALYZER_ApplicationPrivate *_priv = IMAGE_ANALYZER_APPLICATION_GET_PRIVATE(self);
-    GObject *debug_context = NULL;
+    GObject *debug_context;
     IMAGE_ANALYZER_DumpContext context;
-    guint log_handler = 0;
+    guint log_handler;
+    GError *error = NULL;
     
     /* Close image */
-    __image_analyzer_close_image(self, NULL);
+    __image_analyzer_close_image(self);
     
     /* Create debug context for disc */
     debug_context = g_object_new(MIRAGE_TYPE_DEBUG_CONTEXT, NULL);
@@ -669,10 +710,11 @@ static gboolean __image_analyzer_open_image (IMAGE_ANALYZER_Application *self, g
     log_handler = g_log_set_handler(DEBUG_DOMAIN_PARSER, G_LOG_LEVEL_MASK, __image_analyzer_capture_parser_log, self);
 
     /* Create disc */
-    _priv->disc = libmirage_create_disc(filenames, debug_context, error);
+    _priv->disc = libmirage_create_disc(filenames, debug_context, &error);
     if (!_priv->disc) {
-        g_warning("Failed to create disc!\n");
-        __image_analyzer_application_message(self, "Failed to open image!");
+        g_warning("Failed to create disc: %s\n", error->message);
+        __image_analyzer_application_message(self, "Failed to open image: %s", error->message);
+        g_error_free(error);
         return FALSE;
     }
     
@@ -731,7 +773,7 @@ static void __image_analyzer_application_ui_callback_open (GtkAction *action, gp
             entry = g_slist_next(entry);
         }
         
-        __image_analyzer_open_image(self, filenames, NULL);
+        __image_analyzer_open_image(self, filenames);
         
         /* Free filenames list */
         g_slist_free(filenames_list);
@@ -748,7 +790,7 @@ static void __image_analyzer_application_ui_callback_close (GtkAction *action, g
     IMAGE_ANALYZER_Application *self = IMAGE_ANALYZER_APPLICATION(user_data);
     /*IMAGE_ANALYZER_ApplicationPrivate *_priv = IMAGE_ANALYZER_APPLICATION_GET_PRIVATE(self);*/
     
-    __image_analyzer_close_image(self, NULL);
+    __image_analyzer_close_image(self);
     
     return;
 }
@@ -1013,12 +1055,12 @@ static GtkWidget *__image_analyzer_application_build_treeview (IMAGE_ANALYZER_Ap
 /******************************************************************************\
  *                                 Public API                                 *
 \******************************************************************************/
-gboolean image_analyzer_application_run (IMAGE_ANALYZER_Application *self, gchar **open_image, GError **error) {
+gboolean image_analyzer_application_run (IMAGE_ANALYZER_Application *self, gchar **open_image) {
     IMAGE_ANALYZER_ApplicationPrivate *_priv = IMAGE_ANALYZER_APPLICATION_GET_PRIVATE(self);
     
     /* Open image, if provided */
     if (g_strv_length(open_image)) {
-        __image_analyzer_open_image(self, open_image, NULL);
+        __image_analyzer_open_image(self, open_image);
     }
 
     /* Show window */
@@ -1030,7 +1072,7 @@ gboolean image_analyzer_application_run (IMAGE_ANALYZER_Application *self, gchar
     return TRUE;
 }
 
-gboolean image_analyzer_application_get_loaded_image (IMAGE_ANALYZER_Application *self, GObject **disc, GError **error) {
+gboolean image_analyzer_application_get_loaded_image (IMAGE_ANALYZER_Application *self, GObject **disc) {
     IMAGE_ANALYZER_ApplicationPrivate *_priv = IMAGE_ANALYZER_APPLICATION_GET_PRIVATE(self);
     
     if (!_priv->loaded) {
@@ -1103,6 +1145,9 @@ static void __image_analyzer_application_instance_init (GTypeInstance *instance,
     accel_group = gtk_ui_manager_get_accel_group(_priv->ui_manager);
     gtk_window_add_accel_group(GTK_WINDOW(_priv->window), accel_group);
     
+    /* Set libMirage password function */
+    libmirage_set_password_function (__image_analyzer_application_get_password, self, NULL);
+    
     return;
 }
 
@@ -1111,7 +1156,7 @@ static void __image_analyzer_application_finalize (GObject *obj) {
     IMAGE_ANALYZER_ApplicationPrivate *_priv = IMAGE_ANALYZER_APPLICATION_GET_PRIVATE(self);
     
     /* Close image */
-    __image_analyzer_close_image(self, NULL);
+    __image_analyzer_close_image(self);
     
     gtk_widget_destroy(_priv->window);
     
