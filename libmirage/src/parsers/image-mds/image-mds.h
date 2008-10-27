@@ -113,7 +113,9 @@ typedef struct {
 
 typedef struct {
     guint32 filename_offset; /* Start offset of image filename. */
-    guint32 __dummy1__[3]; /* Three more offsets to something, I'd imagine */
+    guint32 widechar_filename; /* Seems to be set to 1 if widechar filename is used */
+    guint32 __dummy1__;
+    guint32 __dummy2__;
 } MDS_Footer; /* length: 16 bytes */
 
 #pragma pack()
