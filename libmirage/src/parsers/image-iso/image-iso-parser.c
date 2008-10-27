@@ -33,7 +33,8 @@ typedef struct {
 } MIRAGE_Parser_ISOPrivate;
 
 
-static guint8 iso_pattern[] = {0x01, 0x43, 0x44, 0x30, 0x30, 0x31, 0x01, 0x00};
+static guint8 cd001_pattern[] = {0x01, 0x43, 0x44, 0x30, 0x30, 0x31, 0x01, 0x00};
+static guint8 bea01_pattern[] = {0x00, 0x42, 0x45, 0x41, 0x30, 0x31, 0x01, 0x00};
 static guint8 sync_pattern[] = {0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0x00};
 
 /******************************************************************************\
@@ -58,24 +59,25 @@ static gboolean __mirage_parser_iso_is_file_valid (MIRAGE_Parser *self, gchar *f
         return FALSE;
     }
 
-    /* 2048-byte standard ISO image check */
+    /* 2048-byte standard ISO9660/UDF image check */
     if (st.st_size % 2048 == 0) {
         guint8 buf[8] = {};
         
         fseeko(file, 16*2048, SEEK_SET);
         
         if (fread(buf, 8, 1, file) < 1) {
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read ISO pattern!\n", __func__);
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read 8-byte pattern!\n", __func__);
             mirage_error(MIRAGE_E_READFAILED, error);
             succeeded = FALSE;
             goto end;
         }
         
-        if (!memcmp(buf, iso_pattern, sizeof(iso_pattern))) {
+        if (!memcmp(buf, cd001_pattern, sizeof(cd001_pattern))
+            || !memcmp(buf, bea01_pattern, sizeof(bea01_pattern))) {
             _priv->track_sectsize = 2048;
             _priv->track_mode = MIRAGE_MODE_MODE1;
             
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: standard 2048-byte ISO9660 track, Mode 1 assumed\n", __func__);
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: standard 2048-byte ISO9660/UDF track, Mode 1 assumed\n", __func__);
             
             succeeded = TRUE;
             goto end;
