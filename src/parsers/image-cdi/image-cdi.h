@@ -25,7 +25,7 @@
 #endif
 
 #include "mirage.h"
-#include "image-cdi-disc.h"
+#include "image-cdi-parser.h"
 
 
 G_BEGIN_DECLS
