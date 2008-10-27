@@ -98,10 +98,6 @@ gint mirage_helper_strncasecmp (const gchar *str1, const gchar *str2, gint len);
 gint mirage_helper_guess_medium_type (MIRAGE_Disc *disc);
 gboolean mirage_helper_add_redbook_pregap (MIRAGE_Disc *disc);
 
-/* Fragment info utility functions */
-MIRAGE_FragmentInfo *mirage_helper_create_fragment_info (gchar *id, gchar *name, gchar *version, gchar *author, gchar *interface, gint num_suffixes, ...);
-void mirage_helper_destroy_fragment_info (MIRAGE_FragmentInfo *info);
-
 /* MSF/LBA utility functions */
 void mirage_helper_lba2msf (gint lba, gboolean diff, guint8 *m, guint8 *s, guint8 *f);
 gchar *mirage_helper_lba2msf_str (gint lba, gboolean diff);

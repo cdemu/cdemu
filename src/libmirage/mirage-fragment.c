@@ -32,12 +32,32 @@
 typedef struct {        
     gint address; /* Address (relative to track start) */
     gint length; /* Length, in sectors */
+    
+    MIRAGE_FragmentInfo *fragment_info;
 } MIRAGE_FragmentPrivate;
 
 
 /******************************************************************************\
  *                              Private functions                             *
 \******************************************************************************/
+static void __destroy_fragment_info (MIRAGE_FragmentInfo *info) {
+    /* Free info and its content */
+    if (info) {
+        g_free(info->id);
+        g_free(info->name);
+        g_free(info->version);
+        g_free(info->author);
+    
+        g_free(info->interface);
+    
+        g_strfreev(info->suffixes);
+           
+        g_free(info);
+    }
+    
+    return;
+}
+
 static gboolean __mirage_fragment_commit_topdown_change (MIRAGE_Fragment *self, GError **error) {
     /* Nothing to do here */
     return TRUE;
@@ -55,6 +75,57 @@ static gboolean __mirage_fragment_commit_bottomup_change (MIRAGE_Fragment *self,
  *                                 Public API                                 *
 \******************************************************************************/
 /**
+ * mirage_fragment_generate_fragment_info:
+ * @self: a #MIRAGE_Fragment
+ * @id: fragment ID
+ * @name: fragment name
+ * @version: fragment version
+ * @author: author name
+ * @interface: interface fragment implements
+ * @num_suffixes: number of filename suffixes
+ * @Varargs: filename suffixes
+ *
+ * <para>
+ * Generates fragment information from the input fields. It is intended as a function
+ * for creating fragment information in fragment implementations.
+ * </para>
+ *
+ * <para>
+ * @num_suffixes is number of provided suffixes (including terminating NULL),
+ * while @Varargs is a NULL-terminated list of suffixes.
+ * </para>
+ **/
+void mirage_fragment_generate_fragment_info (MIRAGE_Fragment *self, gchar *id, gchar *name, gchar *version, gchar *author, gchar *interface, gint num_suffixes, ...) {
+    MIRAGE_FragmentPrivate *_priv = MIRAGE_FRAGMENT_GET_PRIVATE(self);
+    va_list args;
+    gint i;
+    
+    /* Free old info */
+    __destroy_fragment_info(_priv->fragment_info);
+    
+    /* Create new info */
+    _priv->fragment_info = g_new0(MIRAGE_FragmentInfo, 1);
+    
+    _priv->fragment_info->id = g_strdup(id);
+    _priv->fragment_info->name = g_strdup(name);
+    _priv->fragment_info->version = g_strdup(version);
+    _priv->fragment_info->author = g_strdup(author);
+        
+    _priv->fragment_info->interface = g_strdup(interface);
+    
+    va_start(args, num_suffixes); 
+
+    _priv->fragment_info->suffixes = g_new0(gchar *, num_suffixes);
+    for (i = 0; i < num_suffixes; i++) {
+        _priv->fragment_info->suffixes[i] = g_strdup(va_arg(args, gchar *));
+    }
+    
+    va_end(args);
+    
+    return;
+}
+
+/**
  * mirage_fragment_get_fragment_info:
  * @self: a #MIRAGE_Fragment
  * @fragment_info: location to store fragment info
@@ -65,15 +136,22 @@ static gboolean __mirage_fragment_commit_bottomup_change (MIRAGE_Fragment *self,
  * </para>
  *
  * <para>
- * @fragment_info points to fragment information that belongs to fragment implementation, 
+ * @fragment_info points to fragment information that belongs to fragment implementation,
  * and therefore should not be freed.
  * </para>
  *
  * Returns: %TRUE on success, %FALSE on failure
  **/
 gboolean mirage_fragment_get_fragment_info (MIRAGE_Fragment *self, MIRAGE_FragmentInfo **fragment_info, GError **error) {
-    /* Provided by implementation */
-    return MIRAGE_FRAGMENT_GET_CLASS(self)->get_fragment_info(self, fragment_info, error);
+    MIRAGE_FragmentPrivate *_priv = MIRAGE_FRAGMENT_GET_PRIVATE(self);
+
+    if (!_priv->fragment_info) {
+        mirage_error(MIRAGE_E_DATANOTSET, error);
+        return FALSE;
+    }
+    
+    *fragment_info = _priv->fragment_info;
+    return TRUE;
 }
 
 
@@ -269,7 +347,23 @@ gboolean mirage_fragment_read_subchannel_data (MIRAGE_Fragment *self, gint addre
 /* Our parent class */
 static MIRAGE_ObjectClass *parent_class = NULL;
 
+static void __mirage_fragment_finalize (GObject *obj) {
+    MIRAGE_Fragment *self = MIRAGE_FRAGMENT(obj);
+    MIRAGE_FragmentPrivate *_priv = MIRAGE_FRAGMENT_GET_PRIVATE(self);
+    
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_GOBJECT, "%s:\n", __func__);
+    
+    /* Free fragment info */
+    __destroy_fragment_info(_priv->fragment_info);
+    
+    /* Chain up to the parent class */
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_GOBJECT, "%s: chaining up to parent\n", __func__);
+    return G_OBJECT_CLASS(parent_class)->finalize(obj);
+}
+
+
 static void __mirage_fragment_class_init (gpointer g_class, gpointer g_class_data) {
+    GObjectClass *class_gobject = G_OBJECT_CLASS(g_class);
     MIRAGE_FragmentClass *klass = MIRAGE_FRAGMENT_CLASS(g_class);
     
     /* Set parent class */
@@ -277,9 +371,11 @@ static void __mirage_fragment_class_init (gpointer g_class, gpointer g_class_dat
     
     /* Register private structure */
     g_type_class_add_private(klass, sizeof(MIRAGE_FragmentPrivate));
-        
+    
+    /* Initialize GObject methods */
+    class_gobject->finalize = __mirage_fragment_finalize;
+    
     /* Initialize MIRAGE_Fragment members */    
-    klass->get_fragment_info = NULL;
     klass->can_handle_data_format = NULL;
     klass->use_the_rest_of_file = NULL;
     klass->read_main_data = NULL;

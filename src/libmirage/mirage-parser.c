@@ -86,7 +86,7 @@ void mirage_parser_generate_parser_info (MIRAGE_Parser *self, gchar *id, gchar *
     gint i;
     
     /* Free old info */
-    g_free(_priv->parser_info);
+    __destroy_parser_info(_priv->parser_info);
     
     /* Create new info */
     _priv->parser_info = g_new0(MIRAGE_ParserInfo, 1);
@@ -123,8 +123,8 @@ void mirage_parser_generate_parser_info (MIRAGE_Parser *self, gchar *id, gchar *
  * </para>
  *
  * <para>
- * A copy of parser information is stored to @parser_info; it should be freed 
- * with g_free() when no longer needed.
+ * @parser_info points to parser information that belongs to parser implementation,
+ * and therefore should not be freed.
  * </para>
  *
  * Returns: %TRUE on success, %FALSE on failure
@@ -137,7 +137,7 @@ gboolean mirage_parser_get_parser_info (MIRAGE_Parser *self, MIRAGE_ParserInfo *
         return FALSE;
     }
     
-    *parser_info = g_memdup(_priv->parser_info, sizeof(MIRAGE_ParserInfo));
+    *parser_info = _priv->parser_info;
     return TRUE;
 }
 

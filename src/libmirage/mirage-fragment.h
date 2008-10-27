@@ -81,9 +81,7 @@ typedef struct {
 typedef struct {
     MIRAGE_ObjectClass parent;
         
-    /* Class members */
-    gboolean (*get_fragment_info) (MIRAGE_Fragment *self, MIRAGE_FragmentInfo **fragment_info, GError **error);
-    
+    /* Class members */    
     gboolean (*can_handle_data_format) (MIRAGE_Fragment *self, gchar *filename, GError **error);
     
     gboolean (*use_the_rest_of_file) (MIRAGE_Fragment *self, GError **error);
@@ -97,6 +95,7 @@ GType mirage_fragment_get_type (void);
 
 
 /* Public API */
+void mirage_fragment_generate_fragment_info (MIRAGE_Fragment *self, gchar *id, gchar *name, gchar *version, gchar *author, gchar *interface, gint num_suffixes, ...);
 gboolean mirage_fragment_get_fragment_info (MIRAGE_Fragment *self, MIRAGE_FragmentInfo **fragment_info, GError **error);
 
 gboolean mirage_fragment_can_handle_data_format (MIRAGE_Fragment *self, gchar *filename, GError **error);

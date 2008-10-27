@@ -35,9 +35,6 @@ typedef struct {
     gint sfile_sectsize;  /* Subchannel file sector size*/
     gint sfile_format;    /* Subchannel file format */
     guint64 sfile_offset; /* Subchannel offset in subchannel file */
-    
-    /* Fragment info */
-    MIRAGE_FragmentInfo *fragment_info;
 } MIRAGE_Fragment_BINARYPrivate;
 
 
@@ -237,12 +234,6 @@ static gboolean __mirage_fragment_binary_subchannel_file_get_position (MIRAGE_FI
 /******************************************************************************\
  *                   MIRAGE_Fragment methods implementations                  *
 \******************************************************************************/
-static gboolean __mirage_fragment_binary_get_fragment_info (MIRAGE_Fragment *self, MIRAGE_FragmentInfo **fragment_info, GError **error) {
-    MIRAGE_Fragment_BINARYPrivate *_priv = MIRAGE_FRAGMENT_BINARY_GET_PRIVATE(MIRAGE_FRAGMENT_BINARY(self));
-    *fragment_info = _priv->fragment_info;
-    return TRUE;
-}
-
 static gboolean __mirage_fragment_binary_can_handle_data_format (MIRAGE_Fragment *self, gchar *filename, GError **error) {
     /* BINARY should support any file... (crucial is interface type, which is filtered
        out elsewhere) */
@@ -423,11 +414,8 @@ static gboolean __mirage_fragment_binary_read_subchannel_data (MIRAGE_Fragment *
 static MIRAGE_FragmentClass *parent_class = NULL;
 
 static void __mirage_fragment_binary_instance_init (GTypeInstance *instance, gpointer g_class) {
-    MIRAGE_Fragment_BINARY *self = MIRAGE_FRAGMENT_BINARY(instance);
-    MIRAGE_Fragment_BINARYPrivate *_priv = MIRAGE_FRAGMENT_BINARY_GET_PRIVATE(self);
-    
     /* Create fragment info */
-    _priv->fragment_info = mirage_helper_create_fragment_info(
+    mirage_fragment_generate_fragment_info(MIRAGE_FRAGMENT(instance),
         "FRAGMENT-BINARY",
         "Binary Fragment",
         "1.0.0",
@@ -451,10 +439,7 @@ static void __mirage_fragment_binary_finalize (GObject *obj) {
     if (_priv->sfile_handle) {
         fclose(_priv->sfile_handle);
     }
-    
-    /* Free fragment info */
-    mirage_helper_destroy_fragment_info(_priv->fragment_info);
-    
+        
     /* Chain up to the parent class */
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_GOBJECT, "%s: chaining up to parent\n", __func__);
     return G_OBJECT_CLASS(parent_class)->finalize(obj);
@@ -475,7 +460,6 @@ static void __mirage_fragment_binary_class_init (gpointer g_class, gpointer g_cl
     class_gobject->finalize = __mirage_fragment_binary_finalize;
     
     /* Initialize MIRAGE_Fragment methods */
-    class_fragment->get_fragment_info = __mirage_fragment_binary_get_fragment_info;
     class_fragment->can_handle_data_format = __mirage_fragment_binary_can_handle_data_format;
     class_fragment->use_the_rest_of_file = __mirage_fragment_binary_use_the_rest_of_file;
     class_fragment->read_main_data = __mirage_fragment_binary_read_main_data;
