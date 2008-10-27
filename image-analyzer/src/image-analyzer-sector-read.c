@@ -134,7 +134,7 @@ static void __image_analyzer_sector_read_ui_callback_read (GtkWidget *button, gp
     __image_analyzer_read_sector_clear_text(self);
     
     /* Get image */
-    if (!image_analyzer_application_get_loaded_image(IMAGE_ANALYZER_APPLICATION(_priv->application), &disc, NULL)) {
+    if (!image_analyzer_application_get_loaded_image(IMAGE_ANALYZER_APPLICATION(_priv->application), &disc)) {
         __image_analyzer_read_sector_append_text(self, NULL, "No image loaded!\n");
         return;
     }
