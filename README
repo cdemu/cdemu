@@ -1,5 +1,5 @@
 gCDEmu
-v.1.1.0
+v.1.2.0
 ~~~~~~~~~~~~
 
 This is gCDEmu, a GNOME applet for controlling CDEmu daemon. It is part of the 
@@ -47,6 +47,15 @@ Q: gCDEmu's tray icon is greyed and the applet does nothing!
 A: Greyed-out icon means that the applet failed to connect to the CDEmu daemon. 
    Please make sure the daemon is running and that you're connecting via 
    appropriate bus.
+
+A note on encrypted images and password supplying:
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+As of version 1.2.0, CDEmu daemon offers support for encrypted images. When password
+is required to load an image, gCDEmu will prompt for it and then send it to daemon.
+
+NOTE, HOWEVER, THAT THE PASSWORD IS SENT OVER D-BUS IN A PLAIN STRING FORM, WITHOUT 
+ANY PROTECTION. DEPENDING ON YOUR PRIVACY CONCERNS YOU MIGHT WISH TO AVOID LOADING 
+SUCH IMAGES.
 
 
 Contact information:
