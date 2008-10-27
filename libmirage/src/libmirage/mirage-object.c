@@ -303,6 +303,31 @@ gboolean mirage_object_attach_child (MIRAGE_Object *self, GObject *child, GError
     return TRUE;
 }
 
+/**
+ * mirage_object_detach_child:
+ * @self: a #MIRAGE_Object
+ * @child: child
+ * @error: location to store error, or %NULL
+ *
+ * <para>
+ * Detaches child from the object. Note that the child will keep the debug context
+ * it may have been passed to while being attached to the parent.
+ * </para>
+ *
+ * Returns: %TRUE on success, %FALSE on failure
+ **/
+gboolean mirage_object_detach_child (MIRAGE_Object *self, GObject *child, GError **error) {
+    MIRAGE_ObjectPrivate *_priv = MIRAGE_OBJECT_GET_PRIVATE(self);
+    
+    /* Remove child from our children list */
+    _priv->children_list = g_list_remove(_priv->children_list, child);
+    
+    /* Remove weak reference to child */
+    g_object_weak_unref(child, (GWeakNotify)__child_destroyed_handler, self);
+    
+    return TRUE;
+}
+
 
 /******************************************************************************\
  *                                 Object init                                *
