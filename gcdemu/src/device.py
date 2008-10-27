@@ -26,6 +26,9 @@ import dbus
 from dbus.mainloop.glib import DBusGMainLoop
 DBusGMainLoop(set_as_default=True)
 
+# This needs to be kept in sync with Daemon/libMirage
+MIRAGE_E_NEEDSPASSWORD = "org.freedesktop.DBus.GLib.UnmappedError.MirageErrorQuark.Code233492496"
+
 def helper_combine_images_list (images_list, separator):
     new_list = []
     for filename in images_list:
@@ -48,7 +51,7 @@ class gCDEmu_Device:
         try:
             parsers = self.__dbus_iface.EnumSupportedParsers()
         except dbus.DBusException, e:
-            print "Failed to enumerate supported parsers: %s" % e
+            print "Failed to enumerate supported parsers: %s" % e.get_dbus_message()
         
         file_dialog = gtk.FileChooserDialog(
                         _("Open file"), 
@@ -159,7 +162,7 @@ class gCDEmu_Device:
         table.attach(label, 1, 2, 0, 1, xoptions=gtk.FILL|gtk.EXPAND, yoptions=0)
         self.__label_loaded = label 
                 
-        label = gtk.Label(_("File name: "))
+        label = gtk.Label(_("File name(s): "))
         label.show()
         table.attach(label, 0, 1, 1, 2, xoptions=gtk.FILL|gtk.EXPAND, yoptions=0)
         
@@ -518,6 +521,67 @@ class gCDEmu_Device:
         self.__update_daemon_debug_mask(False)
         self.__update_library_debug_mask(False)
     
+    def __get_password (self):
+        dialog = gtk.Dialog(
+            _("Enter password"), 
+            None,
+            gtk.DIALOG_DESTROY_WITH_PARENT, 
+            (gtk.STOCK_OK, gtk.RESPONSE_OK, 
+            gtk.STOCK_CANCEL, gtk.RESPONSE_REJECT)
+        )
+        dialog.set_default_response(gtk.RESPONSE_OK)
+        
+        dialog.vbox.set_spacing(5)
+        
+        label = gtk.Label(_("The image you are trying to load is encrypted."))
+        dialog.vbox.pack_start(label, True, True, 0)
+                
+        # Create the text input field  
+        entry = gtk.Entry()  
+        entry.connect("activate", lambda w: dialog.response(gtk.RESPONSE_OK)) # Allow the user to press enter to do OK
+        entry.set_visibility(False)
+
+        # Create a horizontal box to pack the entry and a label  
+        hbox = gtk.HBox(False, 5)  
+        hbox.pack_start(gtk.Label(_("Password: ")), False, False, 0)
+        hbox.pack_start(entry, True, True, 0)
+        dialog.vbox.pack_start(hbox, False, False, 0)
+        
+        dialog.show_all()  
+
+        # Run dialog
+        result = dialog.run()
+        if result == gtk.RESPONSE_OK:
+            password = entry.get_text()
+        else:
+            password = None
+        
+        dialog.destroy()
+        
+        return password
+    
+    # Device loading with password query support
+    def __load_device (self, device, filenames, params={}):
+        # Try to load it
+        try:
+            self.__dbus_iface.DeviceLoad(device, filenames, params)
+            return True
+        except dbus.DBusException, e:
+            if e.get_dbus_name() == MIRAGE_E_NEEDSPASSWORD:
+                # We need password
+                password = self.__get_password()
+                
+                if password == None:
+                    self.__display_error(_("Failed to load image %s to device %i:\n%s") % (";".join(filenames), self.__number, e.get_dbus_message()))
+                    return
+                else:
+                    # Try again
+                    return self.__load_device(device, filenames, {"password":password})
+            else:
+                self.__display_error(_("Failed to load image %s to device %i:\n%s") % (";".join(filenames), self.__number, e.get_dbus_message()))
+                # Check the connection
+                self.__parent.check_connection()
+    
     def __device_load_unload (self):
         if self.__loaded:
             # Unload
@@ -525,7 +589,7 @@ class gCDEmu_Device:
                 self.__dbus_iface.DeviceUnload(self.__number)
             except dbus.DBusException, e:
                 # Show error dialog
-                self.__display_error(_("Failed to unload device %i:\n%s") % (self.__number, e))
+                self.__display_error(_("Failed to unload device %i:\n%s") % (self.__number, e.get_dbus_message()))
                 # Check the connection
                 self.__parent.check_connection()
         else:
@@ -536,12 +600,7 @@ class gCDEmu_Device:
                 # Get filename
                 filenames = self.__file_dialog.get_filenames()
                 # Try loading
-                try:
-                    self.__dbus_iface.DeviceLoad(self.__number, filenames)
-                except dbus.DBusException, e:
-                    self.__display_error(_("Failed to load image %s to device %i:\n%s") % (";".join(filenames), self.__number, e))
-                    # Check the connection
-                    self.__parent.check_connection()
+                self.__load_device(self.__number, filenames)
             else:
                 self.__file_dialog.hide()
             
@@ -558,7 +617,7 @@ class gCDEmu_Device:
         try:
             self.__dbus_iface.DeviceSetOption(self.__number, "device-id", self.__device_id)
         except dbus.DBusException, e:
-            self.__display_error(_("Failed to set device ID for device %i to %s:\n%s") % (self.__number, self.__device_id, e))
+            self.__display_error(_("Failed to set device ID for device %i to %s:\n%s") % (self.__number, self.__device_id, e.get_dbus_message()))
             self.__parent.check_connection()
         
         return
@@ -576,7 +635,7 @@ class gCDEmu_Device:
         try:
             self.__dbus_iface.DeviceSetOption(self.__number, "dpm-emulation", [ enabled ])
         except dbus.DBusException, e:
-            self.__display_error(_("Failed to set DPM emulation for device %i to %i:\n%s") % (self.__number, enabled, e))
+            self.__display_error(_("Failed to set DPM emulation for device %i to %i:\n%s") % (self.__number, enabled, e.get_dbus_message()))
             self.__parent.check_connection()
             
         return
@@ -594,7 +653,7 @@ class gCDEmu_Device:
         try:
             self.__dbus_iface.DeviceSetOption(self.__number, "tr-emulation", [ enabled ])
         except dbus.DBusException, e:
-            self.__display_error(_("Failed to set transfer rate emulation for device %i to %i:\n%s") % (self.__number, enabled, e))
+            self.__display_error(_("Failed to set transfer rate emulation for device %i to %i:\n%s") % (self.__number, enabled, e.get_dbus_message()))
             self.__parent.check_connection()
             
         return
@@ -604,7 +663,7 @@ class gCDEmu_Device:
         try:
             self.__dbus_iface.DeviceSetOption(self.__number, "daemon-debug-mask", [ self.__daemon_debug ])
         except dbus.DBusException, e:
-            self.__display_error(_("Failed to set daemon debug mask for device %i to 0x%X:\n%s") % (self.__number, value, e))
+            self.__display_error(_("Failed to set daemon debug mask for device %i to 0x%X:\n%s") % (self.__number, value, e.get_dbus_message()))
             self.__parent.check_connection()
             
         return
@@ -614,7 +673,7 @@ class gCDEmu_Device:
         try:
             self.__dbus_iface.DeviceSetOption(self.__number, "library-debug-mask", [ self.__library_debug ])
         except dbus.DBusException, e:
-            self.__display_error(_("Failed to set library debug mask for device %i to 0x%X:\n%s") % (self.__number, value, e))
+            self.__display_error(_("Failed to set library debug mask for device %i to 0x%X:\n%s") % (self.__number, value, e.get_dbus_message()))
             self.__parent.check_connection()
             
         return
@@ -625,7 +684,7 @@ class gCDEmu_Device:
             try:
                 [ self.__loaded, self.__filenames ] = self.__dbus_iface.DeviceGetStatus(self.__number)
             except dbus.DBusException, e:
-                print "Failed to acquire device status: %s" % e
+                print "Failed to acquire device status: %s" % e.get_dbus_message()
                 self.__parent.check_connection()
             
         # Set label on menu item (label is its child...)
@@ -657,7 +716,7 @@ class gCDEmu_Device:
             try:
                 [ self.__dpm_emulation ] = self.__dbus_iface.DeviceGetOption(self.__number, "dpm-emulation")
             except dbus.DBusException, e:
-                print "Failed to acquire DPM emulation flag: %s" % e
+                print "Failed to acquire DPM emulation flag: %s" % e.get_dbus_message()
                 self.__parent.check_connection()
         
         # Set the checkbutton
@@ -671,7 +730,7 @@ class gCDEmu_Device:
             try:
                 [ self.__tr_emulation ] = self.__dbus_iface.DeviceGetOption(self.__number, "tr-emulation")
             except dbus.DBusException, e:
-                print "Failed to acquire TR emulation flag: %s" % e
+                print "Failed to acquire TR emulation flag: %s" % e.get_dbus_message()
                 self.__parent.check_connection()
         
         # Set the checkbutton
@@ -685,7 +744,7 @@ class gCDEmu_Device:
             try:
                 self.__device_id = self.__dbus_iface.DeviceGetOption(self.__number, "device-id")
             except dbus.DBusException, e:
-                print "Failed to acquire device ID: %s" % e
+                print "Failed to acquire device ID: %s" % e.get_dbus_message()
                 self.__parent.check_connection()
         
         # Set textboxes
@@ -702,7 +761,7 @@ class gCDEmu_Device:
             try:
                 [ self.__daemon_debug ] = self.__dbus_iface.DeviceGetOption(self.__number, "daemon-debug-mask")
             except dbus.DBusException, e:
-                print "Failed to acquire daemon debug mask: %s" % e
+                print "Failed to acquire daemon debug mask: %s" % e.get_dbus_message()
                 self.__parent.check_connection()
         
         self.__set_debug_mask_value(self.__daemon_debug_masks, self.__daemon_debug)
@@ -715,7 +774,7 @@ class gCDEmu_Device:
             try:
                 [ self.__library_debug ] = self.__dbus_iface.DeviceGetOption(self.__number, "library-debug-mask")
             except dbus.DBusException, e:
-                print "Failed to acquire library debug mask: %s" % e
+                print "Failed to acquire library debug mask: %s" % e.get_dbus_message()
                 self.__parent.check_connection()
             
         self.__set_debug_mask_value(self.__library_debug_masks, self.__library_debug)
