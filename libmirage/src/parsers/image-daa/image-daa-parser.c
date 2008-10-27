@@ -100,6 +100,7 @@ static gboolean __mirage_parser_daa_load_image (MIRAGE_Parser *self, gchar **fil
         goto end;
     }
     
+    g_debug("%s: setting\n", __func__);
     if (!mirage_fragment_daa_set_file(MIRAGE_FRAGMENT(data_fragment), filenames[0], error)) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to set file to fragment!\n", __func__);
         g_object_unref(data_fragment);

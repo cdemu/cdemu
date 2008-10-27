@@ -73,6 +73,10 @@ typedef struct {
     /* Streams */
     z_stream z;
     CLzmaDec lzma;
+    
+    /* Encryption */
+    gboolean encrypted;
+    guint8 pwd_key[128];
 } MIRAGE_Fragment_DAAPrivate;
 
 
@@ -83,7 +87,7 @@ static ISzAlloc lzma_alloc = { sz_alloc, sz_free };
 
 
 /******************************************************************************\
-*
+ *                         Part filename generation                           *
 \******************************************************************************/
 /* Format: volname.part01.daa, volname.part02.daa, ... */
 static gchar *__create_filename_func_1 (gchar *main_filename, gint index) {
@@ -127,6 +131,154 @@ static gchar *__create_filename_func_3 (gchar *main_filename, gint index) {
 }
 
 
+/******************************************************************************\
+ *                      DAA decryption (Luigi Auriemma)                       *
+\******************************************************************************/
+static guint8 daa_crypt_table[128][256];
+
+static void __daa_crypt_key (gchar *pass, gint num) {
+    gint a, b, c, d, s, i, p;
+    gint passlen;
+    gshort tmp[256];
+    guint8 *tab;
+    
+    passlen = strlen(pass);
+    tab = daa_crypt_table[num - 1];
+    d = num << 1;
+
+    for (i = 0; i < 256; i++) {
+        tmp[i] = i;
+    }
+    memset(tab, 0, 256);
+
+    if (d <= 64) {
+        a = pass[0] >> 5;
+        if (a >= d) a = d - 1;
+        for (c = 0; c < d; c++) {
+            for (s = 0; s != 11;) {
+                a++;
+                if (a == d) a = 0;
+                if (tmp[a] != -1) s++;
+            }
+            tab[c] = a;
+            tmp[a] = -1;
+        }
+        return;
+    }
+    
+    a = pass[0];
+    b = d - 32;
+    a >>= 5;
+    tmp[a + 32] = -1;
+    tab[0] = a + 32;
+    p = 1;
+    
+    for (s = 1; s < b; s++) {
+        c = 11;
+        if (p < passlen) {
+            c = pass[p];
+            p++;
+            if (!c) c = 11;
+        }
+        for (i = 0; i != c;) {
+            a++;
+            if (a == d) a = 32;
+            if (tmp[a] != -1) i++;
+        }
+        tmp[a] = -1;
+        tab[s] = a;
+    }
+    
+    i = pass[0] & 7;
+    if(!i) i = 7;
+    
+    for (; s < d; s++) {
+        for (c = 0; c != i;) {
+            a++;
+            if (a == d) a = 0;
+            if (tmp[a] != -1) c++;
+        }
+        tmp[a] = -1;
+        tab[s] = a;
+    }
+    
+    for (i = 0; i < d; i++) {
+        tmp[i] = tab[i];
+    }
+    
+    i = pass[0] & 24;
+    if (i) {
+        a = 0;
+        for (s = 0; s < d; s++) {
+            for(c = 0; c != i;) {
+                a++;
+                if(a == d) a = 0;
+                if(tmp[a] != -1) c++;
+            }
+            c = tmp[a];
+            tmp[a] = -1;
+            tab[s] = c;
+        }
+    }
+    
+    return;
+}
+
+static void __daa_crypt_block (guint8 *ret, guint8 *data, gint size) {
+    gint i;
+    guint8 c, t, *tab;
+
+    if (!size) return;
+    tab = daa_crypt_table[size - 1];
+
+    memset(ret, 0, size);
+    for (i = 0; i < size; i++) {
+        c = data[i] & 15;
+        t = tab[i << 1];
+        if (t & 1) c <<= 4;
+        ret[t >> 1] |= c;
+
+        c = data[i] >> 4;
+        t = tab[(i << 1) + 1];
+        if (t & 1) c <<= 4;
+        ret[t >> 1] |= c;
+    }
+    
+    return;
+}
+
+static void __daa_crypt (guint8 *key, guint8 *data, gint size) {
+    gint blocks, rem;
+    guint8 tmp[128];
+    guint8 *p;
+
+    blocks = size >> 7;
+    for (p = data; blocks--; p += 128) {
+        __daa_crypt_block(tmp, p, 128);
+        memcpy(p, tmp, 128);
+    }
+
+    rem = size & 127;
+    if (rem) {
+        __daa_crypt_block(tmp, p, rem);
+        memcpy(p, tmp, rem);
+    }
+}
+
+static void __daa_crypt_init (guint8 *pwdkey, gchar *pass, guint8 *daakey) {
+    int i;
+
+    for(i = 1; i <= 128; i++) {
+        __daa_crypt_key(pass, i);
+    }
+    
+    __daa_crypt_block(pwdkey, daakey, 128);
+}
+
+
+/******************************************************************************\
+ *                              Data access                                   *
+\******************************************************************************/
 static gboolean __mirage_fragment_daa_read_from_stream (MIRAGE_Fragment *self, guint64 offset, guint32 length, guint8 *buffer, GError **error) {
     MIRAGE_Fragment_DAAPrivate *_priv = MIRAGE_FRAGMENT_DAA_GET_PRIVATE(self);
     guint8 *buf_ptr = buffer;
@@ -185,7 +337,6 @@ static gboolean __mirage_fragment_daa_read_from_stream (MIRAGE_Fragment *self, g
     
     return TRUE;
 }
-
 
 /******************************************************************************\
  *                     Interface implementation: <private>                    *
@@ -309,7 +460,7 @@ gboolean mirage_fragment_daa_set_file (MIRAGE_Fragment *self, gchar *filename, G
 
     /* Set number of parts to 1 (true for non-split images); if image consists
        of multiple parts, this will be set accordingly by the code below */
-    _priv->num_parts = 1;
+    gint num_parts = 1;
     
     /* Parse blocks */
     while (ftell(file) < header.size_offset) {
@@ -344,7 +495,6 @@ gboolean mirage_fragment_daa_set_file (MIRAGE_Fragment *self, gchar *filename, G
             }
             case 0x02: {
                 /* Block 0x02: Split archive information */
-                guint32 num_parts = 0;
                 guint32 b1 = 0;
                                 
                 MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  split archive information\n", __func__);
@@ -357,7 +507,6 @@ gboolean mirage_fragment_daa_set_file (MIRAGE_Fragment *self, gchar *filename, G
                     return FALSE;
                 }
                 len -= sizeof(guint32);
-                _priv->num_parts = num_parts;
                 
                 /* Next field is always 0x01? */
                 if (fread(&b1, sizeof(guint32), 1, file) < 1) {
@@ -401,12 +550,61 @@ gboolean mirage_fragment_daa_set_file (MIRAGE_Fragment *self, gchar *filename, G
                 break;
             }
             case 0x03: {
-                /* Block 0x03: Password block */
-                MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s:  password-protected images not supported!\n", __func__);
-                mirage_error(MIRAGE_E_GENERIC, error);
-                fclose(file);
-                return FALSE;
-            }                 
+                /* Block 0x03: Password block */                
+                guint32 pwd_type;
+                guint32 pwd_crc;
+                
+                guint8 daa_key[128];
+                
+                gchar *password;
+                                
+                if (fread(&pwd_type, sizeof(guint32), 1, file) < 1) {
+                    MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s:  failed to read password type!\n", __func__);
+                    fclose(file);
+                    mirage_error(MIRAGE_E_READFAILED, error);
+                    return FALSE;
+                }
+
+                if (fread(&pwd_crc, sizeof(guint32), 1, file) < 1) {
+                    MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s:  failed to read password CRC!\n", __func__);
+                    fclose(file);
+                    mirage_error(MIRAGE_E_READFAILED, error);
+                    return FALSE;
+                }
+                
+                if (fread(daa_key, 128, 1, file) < 1) {
+                    MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s:  failed to read DAA ley!\n", __func__);
+                    fclose(file);
+                    mirage_error(MIRAGE_E_READFAILED, error);
+                    return FALSE;
+                }
+                
+                if (pwd_type != 0) {
+                    MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s:  type of encryption '%d' might not be supported!\n", __func__, pwd_type);
+                }
+                
+                /* Get password from user */
+                password = libmirage_obtain_password(NULL);
+                if (!password) {
+                    /* Password not provided (or password function is not set) */
+                    MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s:  failed to obtain password for encrypted image!\n", __func__);
+                    fclose(file);
+                    mirage_error(MIRAGE_E_NEEDPASSWORD, error);
+                    return FALSE;
+                }
+                
+                /* Encryption key */
+                __daa_crypt_init(_priv->pwd_key, password, daa_key);
+                g_free(password);
+                if (pwd_crc != crc32(0, _priv->pwd_key, 128)) {
+                    MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s:  incorrect password!\n", __func__);
+                    mirage_error(MIRAGE_E_WRONGPASSWORD, error);
+                    return FALSE;
+                }
+                
+                /* Set encrypted flag - used later, when reading data */
+                _priv->encrypted = TRUE;
+            }
             default: {
                 MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s:  unhandled block type 0x%X; skipping\n", __func__, type);
                 fseek(file, len, SEEK_CUR);
@@ -508,6 +706,7 @@ gboolean mirage_fragment_daa_set_file (MIRAGE_Fragment *self, gchar *filename, G
     fclose(file);
     
     /* Build parts table */
+    _priv->num_parts = num_parts;
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: building parts table (%d entries)...\n", __func__, _priv->num_parts);
     
     _priv->part_table = g_new0(DAA_Part, _priv->num_parts);
@@ -674,6 +873,12 @@ static gboolean __mirage_fragment_daa_read_main_data (MIRAGE_Fragment *self, gin
             return FALSE;
         }
         
+        /* Decrypt if encrypted */
+        if (_priv->encrypted) {
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_FRAGMENT, "%s: decrypting...\n", __func__);
+            __daa_crypt(_priv->pwd_key, tmp_buffer, tmp_buflen);
+        }
+                
         /* Inflate */
         gint inflated = 0;
         switch (chunk->compression) {
@@ -764,7 +969,7 @@ static void __mirage_fragment_daa_finalize (GObject *obj) {
     /* Free part table */
     for (i = 0; i < _priv->num_parts; i++) {
         DAA_Part *part = &_priv->part_table[i];
-        fclose(part->file);
+        if (part->file) fclose(part->file);
     }
     g_free(_priv->part_table);
     
