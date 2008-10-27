@@ -9,10 +9,10 @@ plugin_LTLIBRARIES = image-mds.la
 
 noinst_HEADERS = \
     image-mds.h \
-    image-mds-disc.h
+    image-mds-parser.h
 
 image_mds_la_SOURCES = \
-    image-mds-disc.c \
+    image-mds-parser.c \
     image-mds-plugin.c
 
 image_mds_la_LIBADD = \
