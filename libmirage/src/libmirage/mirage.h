@@ -51,4 +51,10 @@
 
 #include "mirage-utils.h"
 
+extern GObject *libmirage_m;
+
+/* libMirage functions */
+GObject *libmirage_init();
+void libmirage_destroy();
+
 #endif /* __MIRAGE_H__ */

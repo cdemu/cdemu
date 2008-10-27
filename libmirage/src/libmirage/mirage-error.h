@@ -52,10 +52,9 @@ GQuark mirage_error_quark (void);
  * @MIRAGE_E_NOFRAGMENTFOUND: no parser can handle given data
  * @MIRAGE_E_IMAGEFILE: image file cannot be opened or read
  * @MIRAGE_E_PARSER: parser error
- * @MIRAGE_E_SINGLEFILE: parser supports only single-file images
+ * @MIRAGE_E_CANTHANDLE: parser cannot handle given image file(s)
  * @MIRAGE_E_NODEBUGCONTEXT: debug context is not set
  * @MIRAGE_E_NOPARENT: parent object is not set
- * @MIRAGE_E_NOMIRAGE: Mirage object is not set
  * @MIRAGE_E_SESSIONNOTFOUND: session not found
  * @MIRAGE_E_SESSIONEXISTS: session already exists
  * @MIRAGE_E_INVALIDMEDIUM: invalid medium type
@@ -101,12 +100,11 @@ typedef enum {
     
     /* Plugins */
     MIRAGE_E_PARSER,
-    MIRAGE_E_SINGLEFILE,
+    MIRAGE_E_CANTHANDLE,
     
     /* Object */
     MIRAGE_E_NODEBUGCONTEXT,
     MIRAGE_E_NOPARENT,
-    MIRAGE_E_NOMIRAGE,
 
     /* Disc */    
     MIRAGE_E_SESSIONNOTFOUND,

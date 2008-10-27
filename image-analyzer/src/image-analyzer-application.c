@@ -509,29 +509,6 @@ static gboolean __image_analyzer_dump_disc (gpointer data, gpointer user_data) {
     GtkTreeStore *treestore = context->treestore;
     GtkTreeIter *node = __image_analyzer_add_node(treestore, context->parent, "Disc");
     
-    /* Parser info */
-    if (mirage_disc_get_parser_info(MIRAGE_DISC(disc), &parser_info, NULL)) {
-        GtkTreeIter *parser = NULL;
-        GtkTreeIter *suffixes = NULL;
-        gint i = 0;
-        
-        parser = __image_analyzer_add_node(treestore, node, "Parser information");
-        
-        __image_analyzer_add_node(treestore, parser, "ID: %s", parser_info->id);
-        __image_analyzer_add_node(treestore, parser, "Name: %s", parser_info->name);
-        __image_analyzer_add_node(treestore, parser, "Version: %s", parser_info->version);
-        __image_analyzer_add_node(treestore, parser, "Author: %s", parser_info->author);
-        __image_analyzer_add_node(treestore, parser, "Multi-file image support: %s", parser_info->multi_file ? "TRUE" : "FALSE");
-        __image_analyzer_add_node(treestore, parser, "Description: %s", parser_info->description);
-        
-        /* Suffixes */
-        suffixes = __image_analyzer_add_node(treestore, parser, "Suffixes");
-        while (parser_info->suffixes[i]) {
-            __image_analyzer_add_node(treestore, suffixes, "%s", parser_info->suffixes[i]);
-            i++;
-        }
-    }
-    
     if (mirage_disc_get_medium_type(MIRAGE_DISC(disc), &medium_type, NULL)) {
         __image_analyzer_add_node(treestore, node, "Medium type: 0x%X (%s)", medium_type, __dump_medium_type(medium_type));
     }
@@ -1088,7 +1065,7 @@ static void __image_analyzer_application_instance_init (GTypeInstance *instance,
     GtkAccelGroup *accel_group = NULL;
     
     /* libMirage core object */
-    _priv->mirage = g_object_new(MIRAGE_TYPE_MIRAGE, NULL);
+    _priv->mirage = libmirage_init();
     
     /* UI manager */
     _priv->ui_manager = gtk_ui_manager_new();
@@ -1142,7 +1119,7 @@ static void __image_analyzer_application_finalize (GObject *obj) {
     __image_analyzer_close_image(self, NULL);
 
     /* Release reference to libMirage core object */
-    g_object_unref(_priv->mirage);
+    libmirage_destroy();
     
     gtk_widget_destroy(_priv->window);
     

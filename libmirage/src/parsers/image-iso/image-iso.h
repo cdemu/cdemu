@@ -25,12 +25,10 @@
 #endif
 
 #include "mirage.h"
-#include "image-iso-disc.h"
+#include "image-iso-parser.h"
 
 
 G_BEGIN_DECLS
-
-#define ISO_BLOCK_SIZE       2048
 
 GTypeModule *global_module;
 

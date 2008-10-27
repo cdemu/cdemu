@@ -95,6 +95,8 @@ gboolean mirage_parser_get_parser_info (MIRAGE_Parser *self, MIRAGE_ParserInfo *
 
 gboolean mirage_parser_load_image (MIRAGE_Parser *self, gchar **filenames, GObject **disc, GError **error);
 
+gint mirage_parser_guess_medium_type (MIRAGE_Parser *self, GObject *disc);
+gboolean mirage_parser_add_redbook_pregap (MIRAGE_Parser *self, GObject *disc, GError **error);
 
 G_END_DECLS
 

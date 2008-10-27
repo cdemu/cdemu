@@ -83,12 +83,11 @@ void mirage_error (gint errcode, GError **error) {
         
         /* Plugins */
         { MIRAGE_E_PARSER, "Parser error." },
-        { MIRAGE_E_SINGLEFILE, "Parser supports only single-file images." },
+        { MIRAGE_E_CANTHANDLE, "Parser cannot handle given image file(s)." },
         
         /* Object */
         { MIRAGE_E_NODEBUGCONTEXT, "Debug context is not set." },
         { MIRAGE_E_NOPARENT, "Parent object is not set." },
-        { MIRAGE_E_NOMIRAGE, "Mirage object is not set." },
     
         /* Disc */    
         { MIRAGE_E_SESSIONNOTFOUND, "Session not found." },

@@ -30,7 +30,6 @@
 #define MIRAGE_OBJECT_GET_PRIVATE(obj) (G_TYPE_INSTANCE_GET_PRIVATE((obj), MIRAGE_TYPE_OBJECT, MIRAGE_ObjectPrivate))
 
 typedef struct {    
-    GObject *mirage; /* Hard-reference to Mirage object */
     GObject *parent; /* Soft-reference (= no ref) to parent */
     
     GObject *debug_context; /* Debug context */
@@ -208,82 +207,6 @@ void mirage_object_debug_message (MIRAGE_Object *self, gint level, gchar *format
 }
 
 /**
- * mirage_object_set_mirage:
- * @self: a #MIRAGE_Object
- * @mirage: libMirage core object
- * @error: location to store error, or %NULL
- *
- * <para>
- * Sets object's libMirage core object.
- * </para>
- *
- * <note>
- * Intended for internal use only.
- * </note>
- *
- * Returns: %TRUE on success, %FALSE on failure
- **/
-gboolean mirage_object_set_mirage (MIRAGE_Object *self, GObject *mirage, GError **error) {
-    MIRAGE_ObjectPrivate *_priv = MIRAGE_OBJECT_GET_PRIVATE(self);
-    GList *entry = NULL;
-        
-    /* Remove previous reference */
-    if (_priv->mirage) {
-        g_object_unref(_priv->mirage);
-    }
-    
-    /* Set Mirage and ref it */
-    _priv->mirage = mirage;
-    g_object_ref(_priv->mirage);
-    
-    /* Propagate the change to all children */
-    G_LIST_FOR_EACH(entry, _priv->children_list) {
-        GObject *object = entry->data;
-        mirage_object_set_mirage(MIRAGE_OBJECT(object), mirage, NULL);
-    }
-    
-    return TRUE;
-}
-
-/**
- * mirage_object_get_mirage:
- * @self: a #MIRAGE_Object
- * @mirage: location to store libMirage core object, or %NULL
- * @error: location to store error, or %NULL
- *
- * <para>
- * Retrieves object's libMirage core object. A reference to libMirage core object 
- * is stored in @mirage; it should be released with g_object_unref() when no 
- * longer needed.
- * </para>
- *
- * <note>
- * Intented for internal use only.
- * </note>
- *
- * Returns: %TRUE on success, %FALSE on failure
- **/
-gboolean mirage_object_get_mirage (MIRAGE_Object *self, GObject **mirage, GError **error) {
-    MIRAGE_ObjectPrivate *_priv = MIRAGE_OBJECT_GET_PRIVATE(self);
-    MIRAGE_CHECK_ARG(mirage);
-    
-    /* Make sure we have Mirage set */
-    if (!_priv->mirage) {
-        mirage_error(MIRAGE_E_NOMIRAGE, error);
-        return FALSE;
-    }
-    
-    if (mirage) {
-        /* Return Mirage and ref it */
-        *mirage = _priv->mirage;
-        g_object_ref(*mirage);
-    }
-    
-    return TRUE;
-}
-
-
-/**
  * mirage_object_set_parent:
  * @self: a #MIRAGE_Object
  * @parent: parent
@@ -369,14 +292,7 @@ gboolean mirage_object_attach_child (MIRAGE_Object *self, GObject *child, GError
     /* Add weak reference to child (so that when it gets destroyed, our callback
        will remove it from list) */
     g_object_weak_ref(child, (GWeakNotify)__child_destroyed_handler, self);
-    
-    /* If we have Mirage set, set it to child as well */
-    if (_priv->mirage) {
-        if (!mirage_object_set_mirage(MIRAGE_OBJECT(child), _priv->mirage, error)) {
-            return FALSE;
-        }
-    }
-    
+        
     /* If we have debug context set, set it to child as well */
     if (_priv->debug_context) {
         if (!mirage_object_set_debug_context(MIRAGE_OBJECT(child), _priv->debug_context, error)) {
@@ -397,12 +313,7 @@ static GObjectClass *parent_class = NULL;
 static void __mirage_object_finalize (GObject *obj) {
     MIRAGE_Object *self = MIRAGE_OBJECT(obj);
     MIRAGE_ObjectPrivate *_priv = MIRAGE_OBJECT_GET_PRIVATE(self);
-    
-    /* Unref Mirage (if we have it) */
-    if (_priv->mirage) {
-        g_object_unref(_priv->mirage);
-    }
-    
+        
     /* Remove weak reference pointer to parent */
     if (_priv->parent) {
         g_object_remove_weak_pointer(G_OBJECT(_priv->parent), (gpointer *)&_priv->parent);
