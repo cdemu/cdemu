@@ -166,6 +166,11 @@ gboolean libmirage_shutdown (GError **error) {
  * that support encrypted images to obtain password for unlocking such images.
  * </para>
  *
+ * <para>
+ * Both @func and @user_data can be %NULL; in that case the appropriate setting
+ * will be reset.
+ * </para>
+ *
  * Returns: %TRUE on success, %FALSE on failure
  **/
 gboolean libmirage_set_password_function (MIRAGE_PasswordFunction func, gpointer user_data, GError **error) {
