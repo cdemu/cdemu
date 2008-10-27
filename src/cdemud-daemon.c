@@ -660,12 +660,12 @@ gboolean cdemud_daemon_device_get_mapping (CDEMUD_Daemon *self, gint device_numb
     return FALSE;
 }
 
-gboolean cdemud_daemon_device_load (CDEMUD_Daemon *self, gint device_number, gchar **file_names, GError **error) {
+gboolean cdemud_daemon_device_load (CDEMUD_Daemon *self, gint device_number, gchar **file_names, GHashTable *parameters, GError **error) {
     /*CDEMUD_DaemonPrivate *_priv = CDEMUD_DAEMON_GET_PRIVATE(self);*/
     GObject *dev = NULL;
         
     if (__cdemud_daemon_get_device(self, device_number, &dev, error)) {
-        if (cdemud_device_load_disc(CDEMUD_DEVICE(dev), file_names, error)) {
+        if (cdemud_device_load_disc(CDEMUD_DEVICE(dev), file_names, parameters, error)) {
             return TRUE;
         }
     }
