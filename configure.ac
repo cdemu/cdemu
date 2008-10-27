@@ -1,7 +1,7 @@
 # Process this file with autoconf to produce a configure script.
 
 # Project init
-AC_INIT(mirage-image-analyzer, [1.1.0], rok.mandeljc@email.si)
+AC_INIT(mirage-image-analyzer, [1.2.0], rok.mandeljc@email.si)
 AC_CONFIG_SRCDIR(src/main.c)
 AM_INIT_AUTOMAKE(AC_PACKAGE_NAME, AC_PACKAGE_VERSION)
 AM_CONFIG_HEADER(config.h)
