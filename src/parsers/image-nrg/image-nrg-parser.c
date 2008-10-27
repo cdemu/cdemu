@@ -1103,7 +1103,7 @@ end:
     g_free(_priv->nrg_data);
     fclose(file);
     
-        /* Return disc */
+    /* Return disc */
     if (succeeded) {
         *disc = _priv->disc;
     } else {

@@ -57,7 +57,7 @@ typedef struct {
 
 
 /******************************************************************************\
- *                         Parser private functions                             *
+ *                         Parser private functions                           *
 \******************************************************************************/
 gboolean __mirage_parser_cue_finish_last_track (MIRAGE_Parser *self, GError **error) {
     MIRAGE_Parser_CUEPrivate *_priv = MIRAGE_PARSER_CUE_GET_PRIVATE(self);
@@ -458,7 +458,7 @@ gboolean __mirage_parser_cue_add_session (MIRAGE_Parser *self, gint number, GErr
 }
 
 /******************************************************************************\
- *                     MIRAGE_Parser methods implementation                     *
+ *                     MIRAGE_Parser methods implementation                   *
 \******************************************************************************/
 static gboolean __mirage_parser_cue_load_image (MIRAGE_Parser *self, gchar **filenames, GObject **disc, GError **error) {
     MIRAGE_Parser_CUEPrivate *_priv = MIRAGE_PARSER_CUE_GET_PRIVATE(self);
