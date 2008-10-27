@@ -29,9 +29,13 @@ with PID file created  and syslog used for logging). Note that running daemon
 in daemon mode automatically implies the usage of system bus. By default, daemon 
 is ran in local mode.
 .TP
+.B -p --pidfile=path
+PID file. In daemon mode, specifies the path of the file used to record the
+process identifier.
+.TP
 .B -n --num-devices=N
 Number of devices. Specifies the number of virtual devices the daemon instance should
-register with kernel module and control
+register with kernel module and control.
 .TP
 .B -c --ctl-device=path
 Control device. Specifies the control device path. Control device is a character device
