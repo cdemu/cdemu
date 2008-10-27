@@ -589,7 +589,7 @@ class gCDEmu_Device:
         return
         
     def __set_library_debug_mask (self):
-        value = self.__get_debug_mask_value(self.__daemon_debug_masks)
+        value = self.__get_debug_mask_value(self.__library_debug_masks)
         try:
             self.__dbus_iface.DeviceSetOption(self.__number, "library-debug-mask", [ value ])
         except dbus.DBusException, e:
