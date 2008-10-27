@@ -256,7 +256,6 @@ const gchar *libmirage_get_version (GError **error) {
  * the object should be released using g_object_unref() when no longer needed.
  **/
 GObject *libmirage_create_disc (gchar **filenames, GObject *debug_context, GError **error) {
-    gboolean succeeded = TRUE;
     GObject *disc;
     gint i;
     
@@ -276,8 +275,10 @@ GObject *libmirage_create_disc (gchar **filenames, GObject *debug_context, GErro
     
     /* Go over all parsers */
     for (i = 0; i < libmirage.num_parsers; i++) {
+        GError *local_error = NULL;
+        gboolean succeeded;
         GObject *parser;
-        
+
         /* Create parser object */
         parser = g_object_new(libmirage.parsers[i], NULL);
         
@@ -287,14 +288,23 @@ GObject *libmirage_create_disc (gchar **filenames, GObject *debug_context, GErro
         }
                 
         /* Try loading image */
-        succeeded = mirage_parser_load_image(MIRAGE_PARSER(parser), filenames, &disc, NULL);
-        
+        succeeded = mirage_parser_load_image(MIRAGE_PARSER(parser), filenames, &disc, &local_error);
+
         /* Free parser */
         g_object_unref(parser);
         
         /* If loading succeeded, break the loop */
-        if (succeeded) {
+        if (succeeded) {          
             return disc;
+        } else {
+            /* MIRAGE_E_CANTHANDLE is the only acceptable error here; anything
+               other indicates that parser attempted to handle image and failed */
+            if (local_error->code == MIRAGE_E_CANTHANDLE) {
+                g_error_free(local_error);
+            } else {
+                *error = local_error;
+                return NULL;
+            }
         }
     }
     
