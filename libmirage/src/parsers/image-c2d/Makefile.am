@@ -9,10 +9,10 @@ plugin_LTLIBRARIES = image-c2d.la
 
 noinst_HEADERS = \
     image-c2d.h \
-    image-c2d-disc.h
+    image-c2d-parser.h
 
 image_c2d_la_SOURCES = \
-    image-c2d-disc.c \
+    image-c2d-parser.c \
     image-c2d-plugin.c
 
 image_c2d_la_LIBADD = \

@@ -1,6 +1,6 @@
 /*
  *  libMirage: C2D image parser: Plugin exports
- *  Copyright (C) 2006-2008 Henrik Stokseth.
+ *  Copyright (C) 2008 Henrik Stokseth.
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -27,7 +27,7 @@ G_MODULE_EXPORT void mirage_plugin_unload_plugin (MIRAGE_Plugin *plugin);
 
 G_MODULE_EXPORT void mirage_plugin_load_plugin (MIRAGE_Plugin *plugin) {
     global_module = G_TYPE_MODULE(plugin);
-    mirage_disc_c2d_get_type(G_TYPE_MODULE(plugin));
+    mirage_parser_c2d_get_type(G_TYPE_MODULE(plugin));
     return;
 }
 
