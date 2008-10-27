@@ -279,9 +279,9 @@ static gchar *__mirage_parser_mds_get_track_filename (MIRAGE_Parser *self, MDS_F
         return NULL;
     }
     
-    /* Newer versions of format (>= 1.5) seem to store filename in 16-bit characters,
-       whereas older versions use 8-bit characters. */
-    if (_priv->header->version[1] >= 5) {
+    /* If footer_block->widechar_filename is set, filename is stored using 16-bit 
+       (wide) characters, otherwise 8-bit characters are used. */
+    if (footer_block->widechar_filename) {
         gunichar2 *tmp_ptr = MIRAGE_CAST_PTR(_priv->mds_data, footer_block->filename_offset, gunichar2 *);
         tmp_mdf_filename = g_utf16_to_utf8(tmp_ptr, -1, NULL, NULL, NULL);
     } else {
@@ -367,6 +367,9 @@ static gboolean __mirage_parser_mds_parse_track_entries (MIRAGE_Parser *self, MD
             
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: footer block #%i:\n", __func__, i);
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  filename offset: 0x%X\n", __func__, footer_block->filename_offset);
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  widechar filename: 0x%X\n", __func__, footer_block->widechar_filename);
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  dummy1: 0x%X\n", __func__, footer_block->__dummy1__);
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  dummy2: 0x%X\n", __func__, footer_block->__dummy2__);            
         }
             
         if (block->point > 0 && block->point < 99) {
