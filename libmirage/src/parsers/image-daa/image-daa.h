@@ -33,13 +33,16 @@
 #include "Bra.h"
 
 #include "mirage.h"
-#include "image-daa-disc.h"
+#include "image-daa-parser.h"
 #include "image-daa-fragment.h"
 
 
 G_BEGIN_DECLS
 
 #pragma pack(1)
+
+static const gchar daa_main_signature[16] = "DAA";
+static const gchar daa_part_signature[16] = "DAA VOL";
 
 enum {
     DAA_FORMAT_100 = 0x100,

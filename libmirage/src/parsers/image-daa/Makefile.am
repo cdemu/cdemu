@@ -13,11 +13,11 @@ plugin_LTLIBRARIES = image-daa.la
 noinst_HEADERS = \
     image-daa.h \
     image-daa-fragment.h \
-    image-daa-disc.h
+    image-daa-parser.h
 
 image_daa_la_SOURCES = \
-    image-daa-disc.c \
     image-daa-fragment.c \
+    image-daa-parser.c \
     image-daa-plugin.c
 
 image_daa_la_LIBADD = \
