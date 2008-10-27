@@ -1,5 +1,5 @@
 CDEmu Daemon
-v.1.1.0
+v.1.2.0
 ~~~~~~~~~~~~~
 
 
@@ -14,7 +14,8 @@ Table of contents
 6. CDEmu daemon D-BUS interface
 7. Device options
 8. Debugging
-9. Contact information
+9. Encrypted images and password supplying
+10. Contact information
 
 
 1. Introduction
@@ -123,7 +124,7 @@ CDEmu daemon has the following software requirements:
  - libao 0.8.0 or newer
  - libsysfs 
  
- - libMirage 1.1.0 or newer (part of the suite)
+ - libMirage 1.2.0 or newer (part of the suite)
  - VHBA module (part of the suite)
 
  
@@ -165,8 +166,9 @@ directory using --with-dbus-system-dir switch.
 
 With the cdemu-daemon 1.1.0 release the ALSA audio backend was replaced with a
 single libao backend which allows you to select from a number of available 
-audio drivers. CDEmu is usually configured to use the "default" audio driver, 
-which means that the audio driver specified in "/etc/libao.conf" is used.
+audio drivers. CDEmu is usually configured to use the "default" libao audio 
+driver, which means that the audio driver specified in libao's config file
+("/etc/libao.conf" or "~/.libao") is used.
 
 Unlike previous (experimental snapshot) releases, this release of CDEmu daemon
 does not provide initscripts. After some thought it was decided it was too much
@@ -210,8 +212,12 @@ Q: Daemon fails to start with the following message:
    cdemu0: cdemud_audio_initialize: failed to open audio device 
    (driver: 'default')!
 
-A: Most likely you will need to specify a working audio driver in
-   /etc/libao.conf or alternatively /etc/default/cdemu-daemon.
+A: Most likely you will need to specify a working audio driver in libao's config
+   file (/etc/libao.conf or ~/.libao), or, if you are using initscripts that came
+   with the package for your distribution, in the config file it provided. 
+   
+   Also, please note that running system-wide (daemonized) instance of the 
+   daemon and pulseaudio output doesn't work if pulseaudio is run per-session.
 
 
 6. CDEmu daemon D-BUS interface (a.k.a. writing your own client)
@@ -260,7 +266,14 @@ control the daemon:
     
     - Returns library version string of libMirage library used by
       the daemon.
+
+* GetInterfaceVersion (version)
+    + version: out; "i"
+        Daemon interface version number
     
+    - Returns daemon interface version number, which should be used to detect
+      if client can use the interface or not.
+
 * EnumDaemonDebugMasks (type, masks)
     + masks: out; "a(si)"
         Array of structures containing supported debug masks. Each structure
@@ -301,25 +314,31 @@ control the daemon:
     
     - Returns number of virtual devices.
   
-* DeviceGetStatus (device_number, loaded, image_type, file_names)
+* DeviceGetStatus (device_number, loaded, file_names)
     + device_number: in; "u"
         Device you are requesting status for (int).
     + loaded: out; "b"
         Boolean denoting whether device is loaded or not.
-    + image_type: out; "s"
-        Image type (string).
     + file_names: out; "as"
         Image's file name(s) (string).
     
     - Returns the status of specified device.
   
-* DeviceLoad (device_number, file_names)
+* DeviceLoad (device_number, file_names, parameters)
     + device_number: in; "u"
         Device that is to be loaded (int).
     + file_names: in; "as"
         File name(s) of the image to be loaded (array of strings).
+    + parameters: in; "a{sv}"
+        Additional (optional) parameters, stored in a D-BUS dictionary type. If 
+        no parameters are needed, empty dictionary should be sent.
+        Currently supported parameters:
+            - "password":"password_string"; password for encrypted images
         
-    - Attempts to load the image into specified device.
+    - Attempts to load the image into specified device. 
+    - The client might wish to detect MIRAGE_E_NEEDPASSWORD error, which 
+      indicates that the image is encrypted and needs a password provided via 
+      parameters.
     
 * DeviceUnload (device_number)
     + device_number: in; "u"
@@ -444,8 +463,46 @@ Using appropriate debug mask and monitoring the output, the source of problem
 can be quickly found, be it either a failure in loading an image or incorrect
 response to the given command.
 
+9. Encrypted images and password supplying
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-9. Contact information
+As of version 1.2.0, libMirage offers basic support for encrypted images and as 
+of version 1.2.0, CDEmu daemon supports that functionality as well.
+
+Encrypted images require password to decrypt the data. When image loading is 
+performed in libMirage, the parser detects whether password is required, and if
+it is, it issues a callback to obtain it from the user.
+
+The problem is that CDEmu daemon and its clients use synchronous communication,
+which means that there is no way to propagate the password request from the 
+callback back to the client, i.e. by the means of emitting signal from daemon
+(because technically, the image loading function is still in progress and the
+client is waiting for its return status).
+
+Therefore, if no password is provided via 'parameters' argument of DeviceLoad
+method and the image loading requires password, the method will fail and return
+error MIRAGE_E_NEEDPASSWORD. In this case, client might want to prompt the user
+for password and then call DeviceLoad again, this time with password set in
+'parameters' argument. If password is incorrect, the method will fail, returning
+error MIRAGE_E_WRONGPASSWORD. Otherwise, the image should be loaded successfully
+(provided no other errors occured).
+
+Of course, nothing prevents the client to allow the user to enter password as an
+optional argument the first time image is loaded.
+
+DISCLAIMER: 
+~~~~~~~~~~~
+the encrypted images support in CDEmu is not -meant- to be secure. In author's 
+opinion the formats that provide encryption support offer no real benefit over 
+other formats and should not be considered for making backups in the first place. 
+However, every now and then one might come across such an image and in those 
+cases the ability to simply load them might be useful. 
+
+Therefore, the password is sent from clients to daemon in plain string form, 
+with no real protection. Live with it, or don't use it.
+
+
+10. Contact information
 ~~~~~~~~~~~~~~~~~~~~~~
 
 CDEmu project's web page: http://cdemu.sourceforge.net
