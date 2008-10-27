@@ -166,48 +166,30 @@ gboolean mirage_mirage_create_disc (MIRAGE_Mirage *self, gchar **filenames, GObj
         }
     }
     
-    /* Get all registered children of type MIRAGE_TYPE_DISC... these are our
-       parsers */
-    parsers = g_type_children(MIRAGE_TYPE_DISC, &num_parsers);
+    /* Get all registered children of type MIRAGE_TYPE_PARSER */
+    parsers = g_type_children(MIRAGE_TYPE_PARSER, &num_parsers);
     for (i = 0; i < num_parsers; i++) {
-        gint j;
+        GObject *parser = NULL;
         
-        /* Create disc object and try to load the image... if we fail, we try 
-           next one */
-        disc = g_object_new(parsers[i], NULL);
+        /* Create parser object */
+        parser = g_object_new(parsers[i], NULL);
         
-        /* Set Mirage (= self) to disc */
-        mirage_object_set_mirage(MIRAGE_OBJECT(disc), G_OBJECT(self), NULL);
-        /* If provided, attach the debug context to disc */
+        /* Set Mirage (= self) to parser */
+        mirage_object_set_mirage(MIRAGE_OBJECT(parser), G_OBJECT(self), NULL);
+        /* If provided, attach the debug context to parser */
         if (debug_context) {
-            mirage_object_set_debug_context(MIRAGE_OBJECT(disc), debug_context, NULL);
+            mirage_object_set_debug_context(MIRAGE_OBJECT(parser), debug_context, NULL);
         }
+                
+        /* Try loading image */
+        succeeded = mirage_parser_load_image(MIRAGE_PARSER(parser), filenames, &disc, error);
         
-        /* Check whether given parser can handle given filename(s) */
-        gboolean can_handle_one_image = FALSE;
-        for (j = 0; j < g_strv_length(filenames); j++) {
-            succeeded = mirage_disc_can_load_file(MIRAGE_DISC(disc), filenames[j], NULL);
-            /* We break the loop in case previous filename could be handled,
-               but this one cannot be */
-            if (can_handle_one_image && !succeeded) {
-                break;
-            }
-            can_handle_one_image = TRUE;
-        }
+        /* Free parser */
+        g_object_unref(parser);
         
-        /* If the parser can handle all of 'em, go ahead and load the disc */
+        /* If loading succeeded, break the loop */
         if (succeeded) {
-            /* Try loading image */
-            succeeded = mirage_disc_load_image(MIRAGE_DISC(disc), filenames, error);
-            if (!succeeded) {
-                /* Loading failed; delete disc and return false */
-                g_object_unref(disc);
-                break;
-            }
-            
             break;
-        } else {
-            g_object_unref(disc);
         }
     }
     
@@ -314,18 +296,18 @@ gboolean mirage_mirage_for_each_parser (MIRAGE_Mirage *self, MIRAGE_CallbackFunc
     
     MIRAGE_CHECK_ARG(func);
     
-    parsers = g_type_children(MIRAGE_TYPE_DISC, &num_parsers);
+    parsers = g_type_children(MIRAGE_TYPE_PARSER, &num_parsers);
     
     for (i = 0; i < num_parsers; i++) {
         MIRAGE_ParserInfo *parser_info = NULL;
-        GObject *disc = g_object_new(parsers[i], NULL);
+        GObject *parser = g_object_new(parsers[i], NULL);
         gboolean succeeded = TRUE;
 
-        mirage_disc_get_parser_info(MIRAGE_DISC(disc), &parser_info, NULL);
+        mirage_parser_get_parser_info(MIRAGE_PARSER(parser), &parser_info, NULL);
         
         succeeded = (*func)(parser_info, user_data);
         
-        g_object_unref(disc);
+        g_object_unref(parser);
         if (!succeeded) {
             mirage_error(MIRAGE_E_ITERCANCELLED, error);
             return FALSE;

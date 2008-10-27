@@ -154,14 +154,14 @@ gboolean mirage_parser_get_parser_info (MIRAGE_Parser *self, MIRAGE_ParserInfo *
  *
  * Returns: %TRUE on success, %FALSE on failure
  **/
-gboolean mirage_parser_load_image (MIRAGE_Parser *self, gchar **filenames, GError **error) {
+gboolean mirage_parser_load_image (MIRAGE_Parser *self, gchar **filenames, GObject **disc, GError **error) {
     /* Provided by implementation */
     if (!MIRAGE_PARSER_GET_CLASS(self)->load_image) {
         mirage_error(MIRAGE_E_NOTIMPL, error);
         return FALSE;
     }
     
-    return MIRAGE_PARSER_GET_CLASS(self)->load_image(self, filenames, error);
+    return MIRAGE_PARSER_GET_CLASS(self)->load_image(self, filenames, disc, error);
 }
 
 
