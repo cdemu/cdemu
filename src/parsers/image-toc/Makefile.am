@@ -1,6 +1,6 @@
 AM_YFLAGS = -d
 
-BUILT_SOURCES = image-toc-parser.h
+BUILT_SOURCES = image-toc-yacc.h
 
 INCLUDES = \
     -I$(top_srcdir)/src/libmirage \
@@ -13,15 +13,13 @@ plugin_LTLIBRARIES = image-toc.la
 
 noinst_HEADERS = \
     image-toc.h \
-    image-toc-disc.h \
-    image-toc-session.h
+    image-toc-parser.h
 
 image_toc_la_SOURCES = \
-    image-toc-parser.y \
-    image-toc-lexer.l \
-    image-toc-disc.c \
-    image-toc-plugin.c \
-    image-toc-session.c
+    image-toc-yacc.y \
+    image-toc-lex.l \
+    image-toc-parser.c \
+    image-toc-plugin.c
     
 image_toc_la_LIBADD = \
     $(glib_LIBS) \

@@ -25,9 +25,8 @@
 #endif
 
 #include "mirage.h"
+#include "image-toc-yacc.h"
 #include "image-toc-parser.h"
-#include "image-toc-disc.h"
-#include "image-toc-session.h"
 
 
 G_BEGIN_DECLS

@@ -1,5 +1,5 @@
 /*
- *  libMirage: TOC image parser: Session object
+ *  libMirage: TOC image parser: Parser object
  *  Copyright (C) 2006-2008 Rok Mandeljc
  *
  *  This program is free software; you can redistribute it and/or modify
@@ -20,14 +20,30 @@
 #include "image-toc.h"
 
 
+/* Some prototypes from flex/bison */
+int yylex_init (void *scanner);
+void yyset_in  (FILE *in_str, void *yyscanner);
+int yylex_destroy (void *yyscanner);
+int yyparse (void *scanner, MIRAGE_Parser *self, GError **error);
+
+
 /******************************************************************************\
  *                              Private structure                             *
 \******************************************************************************/
-#define MIRAGE_SESSION_TOC_GET_PRIVATE(obj) (G_TYPE_INSTANCE_GET_PRIVATE((obj), MIRAGE_TYPE_SESSION_TOC, MIRAGE_Session_TOCPrivate))
+#define MIRAGE_PARSER_TOC_GET_PRIVATE(obj) (G_TYPE_INSTANCE_GET_PRIVATE((obj), MIRAGE_TYPE_PARSER_TOC, MIRAGE_Parser_TOCPrivate))
 
-typedef struct {   
+typedef struct {  
+    GObject *disc;
+    
+    /* Pointers to current session and current track object, so that we don't
+       have to retrieve them all the time; note that no reference is not kept 
+       for them */
+    GObject *cur_session;
+    GObject *cur_track;
+    
+    /* Per-session data */
     gchar *toc_filename;
-        
+    
     gint cur_tfile_sectsize;
     
     gint cur_sfile_sectsize;
@@ -38,37 +54,34 @@ typedef struct {
     
     gchar *mixed_mode_bin;
     gint mixed_mode_offset;
-} MIRAGE_Session_TOCPrivate;
+} MIRAGE_Parser_TOCPrivate;
 
 /******************************************************************************\
- *                       Session private functions                            *
+ *                         Parser private functions                           *
 \******************************************************************************/
-gboolean __mirage_session_toc_set_toc_filename (MIRAGE_Session *self, gchar *filename, GError **error) {
-    MIRAGE_Session_TOCPrivate *_priv = MIRAGE_SESSION_TOC_GET_PRIVATE(self);
+gboolean __mirage_parser_toc_set_toc_filename (MIRAGE_Parser *self, gchar *filename, GError **error) {
+    MIRAGE_Parser_TOCPrivate *_priv = MIRAGE_PARSER_TOC_GET_PRIVATE(self);
     
+    g_free(_priv->toc_filename);
     _priv->toc_filename = g_strdup(filename);
     
     return TRUE;
 }
 
-gboolean __mirage_session_toc_set_mcn (MIRAGE_Session *self, gchar *mcn, GError **error) {
-    GObject *disc = NULL;
-    
+gboolean __mirage_parser_toc_set_mcn (MIRAGE_Parser *self, gchar *mcn, GError **error) {
+    MIRAGE_Parser_TOCPrivate *_priv = MIRAGE_PARSER_TOC_GET_PRIVATE(self);
+
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: setting MCN: <%s>\n", __func__, mcn);
-    
-    if (mirage_object_get_parent(MIRAGE_OBJECT(self), &disc, NULL)) {
-        mirage_disc_set_mcn(MIRAGE_DISC(disc), mcn, NULL);
-        g_object_unref(disc);
-    } else {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to get parent!\n", __func__);
-    }
+    mirage_disc_set_mcn(MIRAGE_DISC(_priv->disc), mcn, NULL);
     
     return TRUE;
 }
 
-gboolean __mirage_session_toc_set_session_type (MIRAGE_Session *self, gchar *type_string, GError **error) {
+gboolean __mirage_parser_toc_set_session_type (MIRAGE_Parser *self, gchar *type_string, GError **error) {
+    MIRAGE_Parser_TOCPrivate *_priv = MIRAGE_PARSER_TOC_GET_PRIVATE(self);
+
     /* Decipher session type */
-    static struct {
+    static const struct {
         gchar *str;
         gint type;
     } session_types[] = {
@@ -82,7 +95,7 @@ gboolean __mirage_session_toc_set_session_type (MIRAGE_Session *self, gchar *typ
     for (i = 0; i < G_N_ELEMENTS(session_types); i++) {
         if (!mirage_helper_strcasecmp(session_types[i].str, type_string)) {
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: session type: %s\n", __func__, session_types[i].str);
-            mirage_session_set_session_type(self, session_types[i].type, NULL);
+            mirage_session_set_session_type(MIRAGE_SESSION(_priv->cur_session), session_types[i].type, NULL);
             break;
         }
     }
@@ -90,16 +103,17 @@ gboolean __mirage_session_toc_set_session_type (MIRAGE_Session *self, gchar *typ
     return TRUE;
 }
 
-gboolean __mirage_session_toc_add_track (MIRAGE_Session *self, gchar *mode_string, gchar *subchan_string, GError **error) {
-    MIRAGE_Session_TOCPrivate *_priv = MIRAGE_SESSION_TOC_GET_PRIVATE(self);
+gboolean __mirage_parser_toc_add_track (MIRAGE_Parser *self, gchar *mode_string, gchar *subchan_string, GError **error) {
+    MIRAGE_Parser_TOCPrivate *_priv = MIRAGE_PARSER_TOC_GET_PRIVATE(self);
 
-    GObject *cur_track = NULL;
-    
-    if (!mirage_session_add_track_by_index(self, -1, &cur_track, error)) {
+    /* Add track */
+    _priv->cur_track = NULL;
+    if (!mirage_session_add_track_by_index(MIRAGE_SESSION(_priv->cur_session), -1, &_priv->cur_track, error)) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to add track!\n", __func__);
         return FALSE;
     }
-    
+    g_object_unref(_priv->cur_track); /* Don't keep reference */
+
     /* Clear internal data */
     _priv->cur_tfile_sectsize = 0;
     _priv->cur_sfile_sectsize = 0;
@@ -127,7 +141,7 @@ gboolean __mirage_session_toc_add_track (MIRAGE_Session *self, gchar *mode_strin
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: track mode: %s\n", __func__, track_modes[i].str);
             
             /* Set track mode */
-            mirage_track_set_mode(MIRAGE_TRACK(cur_track), track_modes[i].mode, NULL);
+            mirage_track_set_mode(MIRAGE_TRACK(_priv->cur_track), track_modes[i].mode, NULL);
             /* Store sector size */
             _priv->cur_tfile_sectsize = track_modes[i].sectsize;
             
@@ -157,40 +171,21 @@ gboolean __mirage_session_toc_add_track (MIRAGE_Session *self, gchar *mode_strin
         }
     }
     
-    g_object_unref(cur_track);
-    
     return TRUE;
 };
 
 
-gboolean __mirage_session_toc_add_track_fragment (MIRAGE_Session *self, gint type, gchar *filename_string, gint base_offset, gint start, gint length, GError **error) {
-    MIRAGE_Session_TOCPrivate *_priv = MIRAGE_SESSION_TOC_GET_PRIVATE(self);
-       
-    GObject *cur_track = NULL;
-    
-    if (!mirage_session_get_track_by_index(self, -1, &cur_track, error)) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to get current track!\n", __func__);
-        return FALSE;
-    }
-    
-    /* Get Mirage and have it make us a fragment */
-    GObject *mirage = NULL;
-    if (!mirage_object_get_mirage(MIRAGE_OBJECT(self), &mirage, error)) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to get Mirage object!\n", __func__);
-        g_object_unref(cur_track);
-        return FALSE;
-    }
+gboolean __mirage_parser_toc_add_track_fragment (MIRAGE_Parser *self, gint type, gchar *filename_string, gint base_offset, gint start, gint length, GError **error) {
+    MIRAGE_Parser_TOCPrivate *_priv = MIRAGE_PARSER_TOC_GET_PRIVATE(self);
+    GObject *data_fragment;
     
     /* Create appropriate fragment */
-    GObject *data_fragment = NULL;
     if (type == TOC_DATA_TYPE_NONE) {
         /* Empty fragment; we'd like a NULL fragment */
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: creating NULL fragment\n", __func__);
-        mirage_mirage_create_fragment(MIRAGE_MIRAGE(mirage), MIRAGE_TYPE_FINTERFACE_NULL, "NULL", &data_fragment, error);
-        g_object_unref(mirage);
+        data_fragment = libmirage_create_fragment(MIRAGE_TYPE_FINTERFACE_NULL, "NULL", error);
         if (!data_fragment) {
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to create NULL fragment!\n", __func__);
-            g_object_unref(cur_track);
             return FALSE;
         }
     } else {
@@ -198,7 +193,6 @@ gboolean __mirage_session_toc_add_track_fragment (MIRAGE_Session *self, gint typ
         gchar *filename = mirage_helper_find_data_file(filename_string, _priv->toc_filename);
         if (!filename) {
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to find data file!\n", __func__);
-            g_object_unref(cur_track);
             mirage_error(MIRAGE_E_DATAFILE, error);
             return FALSE;
         }
@@ -209,11 +203,9 @@ gboolean __mirage_session_toc_add_track_fragment (MIRAGE_Session *self, gint typ
         if (type == TOC_DATA_TYPE_DATA || mirage_helper_has_suffix(filename_string, ".bin")) {
             /* Binary data; we'd like a BINARY fragment */
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: creating BINARY fragment\n", __func__);
-            mirage_mirage_create_fragment(MIRAGE_MIRAGE(mirage), MIRAGE_TYPE_FINTERFACE_BINARY, filename, &data_fragment, error);
-            g_object_unref(mirage);
+            data_fragment = libmirage_create_fragment(MIRAGE_TYPE_FINTERFACE_BINARY, filename, error);
             if (!data_fragment) {
                 MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to create BINARY fragment!\n", __func__);
-                g_object_unref(cur_track);
                 return FALSE;
             }
             
@@ -280,11 +272,9 @@ gboolean __mirage_session_toc_add_track_fragment (MIRAGE_Session *self, gint typ
             /* Audio data; we'd like an AUDIO fragment, and hopefully Mirage can
                find one that can handle given file format */
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: creating AUDIO fragment\n", __func__);
-            mirage_mirage_create_fragment(MIRAGE_MIRAGE(mirage), MIRAGE_TYPE_FINTERFACE_AUDIO, filename, &data_fragment, error);
-            g_object_unref(mirage);
+            data_fragment = libmirage_create_fragment(MIRAGE_TYPE_FINTERFACE_AUDIO, filename, error);
             if (!data_fragment) {
                 MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to create appropriate AUDIO fragment!\n", __func__);
-                g_object_unref(cur_track);
                 return FALSE;
             }
             
@@ -292,7 +282,6 @@ gboolean __mirage_session_toc_add_track_fragment (MIRAGE_Session *self, gint typ
             if (!mirage_finterface_audio_set_file(MIRAGE_FINTERFACE_AUDIO(data_fragment), filename, error)) {
                 MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to set file to AUDIO fragment!\n", __func__);
                 g_object_unref(data_fragment);
-                g_object_unref(cur_track);
                 return FALSE;
             }
             
@@ -314,68 +303,46 @@ gboolean __mirage_session_toc_add_track_fragment (MIRAGE_Session *self, gint typ
         if (!mirage_fragment_use_the_rest_of_file(MIRAGE_FRAGMENT(data_fragment), error)) {
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to use whole file!\n", __func__);
             g_object_unref(data_fragment);
-            g_object_unref(cur_track);
             return FALSE;
         }
     }
     
     /* Add fragment */
-    mirage_track_add_fragment(MIRAGE_TRACK(cur_track), -1, &data_fragment, NULL);
+    mirage_track_add_fragment(MIRAGE_TRACK(_priv->cur_track), -1, &data_fragment, NULL);
     g_object_unref(data_fragment);
     
-    g_object_unref(cur_track); /* Unref current track */
-
     return TRUE;
 };
 
-gboolean __mirage_session_toc_set_track_start (MIRAGE_Session *self, gint start, GError **error) {
-    GObject *cur_track = NULL;
-    
-    if (!mirage_session_get_track_by_index(self, -1, &cur_track, error)) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to get current track!\n", __func__);
-        return FALSE;
-    }
-    
+gboolean __mirage_parser_toc_set_track_start (MIRAGE_Parser *self, gint start, GError **error) {
+    MIRAGE_Parser_TOCPrivate *_priv = MIRAGE_PARSER_TOC_GET_PRIVATE(self);
+        
     /* If start is not given (-1), we use current track length */
     if (start == -1) {
-        mirage_track_layout_get_length(MIRAGE_TRACK(cur_track), &start, NULL);
+        mirage_track_layout_get_length(MIRAGE_TRACK(_priv->cur_track), &start, NULL);
     }
     
-    mirage_track_set_track_start(MIRAGE_TRACK(cur_track), start, NULL);
-    
-    g_object_unref(cur_track); /* Unref current track */
-    
+    mirage_track_set_track_start(MIRAGE_TRACK(_priv->cur_track), start, NULL);
+        
     return TRUE;
 }
 
-gboolean __mirage_session_toc_add_index (MIRAGE_Session *self, gint address, GError **error) {
-    GObject *cur_track = NULL;
-    gint track_start = 0;
-    
-    if (!mirage_session_get_track_by_index(self, -1, &cur_track, error)) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to get current track!\n", __func__);
-        return FALSE;
-    }
-    
+gboolean __mirage_parser_toc_add_index (MIRAGE_Parser *self, gint address, GError **error) {
+    MIRAGE_Parser_TOCPrivate *_priv = MIRAGE_PARSER_TOC_GET_PRIVATE(self);
+    gint track_start;
+        
     /* Indices in TOC file are track-start relative... */
-    mirage_track_get_track_start(MIRAGE_TRACK(cur_track), &track_start, NULL);
-    mirage_track_add_index(MIRAGE_TRACK(cur_track), track_start + address, NULL, NULL);
-    
-    g_object_unref(cur_track); /* Unref current track */
-    
+    mirage_track_get_track_start(MIRAGE_TRACK(_priv->cur_track), &track_start, NULL);
+    mirage_track_add_index(MIRAGE_TRACK(_priv->cur_track), track_start + address, NULL, NULL);
+        
     return TRUE;
 }
 
-gboolean __mirage_session_toc_set_flag (MIRAGE_Session *self, gint flag, gboolean set, GError **error) {
-    GObject *cur_track = NULL;
+gboolean __mirage_parser_toc_set_flag (MIRAGE_Parser *self, gint flag, gboolean set, GError **error) {
+    MIRAGE_Parser_TOCPrivate *_priv = MIRAGE_PARSER_TOC_GET_PRIVATE(self);
+    gint flags;
     
-    if (!mirage_session_get_track_by_index(self, -1, &cur_track, error)) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to get current track!\n", __func__);
-        return FALSE;
-    }
-    
-    gint flags = 0;
-    mirage_track_get_flags(MIRAGE_TRACK(cur_track), &flags, NULL);
+    mirage_track_get_flags(MIRAGE_TRACK(_priv->cur_track), &flags, NULL);
     if (set) {
         /* Set flag */
         flags |= flag;
@@ -383,30 +350,22 @@ gboolean __mirage_session_toc_set_flag (MIRAGE_Session *self, gint flag, gboolea
         /* Clear flag */
         flags &= ~flag;
     }
-    mirage_track_set_flags(MIRAGE_TRACK(cur_track), flags, NULL);
+    mirage_track_set_flags(MIRAGE_TRACK(_priv->cur_track), flags, NULL);
     
-    g_object_unref(cur_track); /* Unref current track */
+    return TRUE;
+}
+
+gboolean __mirage_parser_toc_set_isrc (MIRAGE_Parser *self, gchar *isrc, GError **error) {
+    MIRAGE_Parser_TOCPrivate *_priv = MIRAGE_PARSER_TOC_GET_PRIVATE(self);
+
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: setting ISRC: <%s>\n", __func__, isrc);
+    mirage_track_set_isrc(MIRAGE_TRACK(_priv->cur_track), isrc, NULL);
 
     return TRUE;
 }
 
-gboolean __mirage_session_toc_set_isrc (MIRAGE_Session *self, gchar *isrc, GError **error) {
-    GObject *cur_track = NULL;
-       
-    if (!mirage_session_get_track_by_index(self, -1, &cur_track, error)) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to get current track!\n", __func__);
-        return FALSE;
-    }
-
-    mirage_track_set_isrc(MIRAGE_TRACK(cur_track), isrc, NULL);
-    
-    g_object_unref(cur_track); /* Unref current track */
-
-    return TRUE;
-}
-
-gboolean __mirage_session_toc_add_language_mapping (MIRAGE_Session *self, gint index, gint langcode, GError **error) {
-    MIRAGE_Session_TOCPrivate *_priv = MIRAGE_SESSION_TOC_GET_PRIVATE(self);
+gboolean __mirage_parser_toc_add_language_mapping (MIRAGE_Parser *self, gint index, gint langcode, GError **error) {
+    MIRAGE_Parser_TOCPrivate *_priv = MIRAGE_PARSER_TOC_GET_PRIVATE(self);
     
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: adding language map: index %i -> langcode %i\n", __func__, index, langcode);
     
@@ -415,45 +374,34 @@ gboolean __mirage_session_toc_add_language_mapping (MIRAGE_Session *self, gint i
     return TRUE;
 }
 
-gboolean __mirage_session_toc_add_g_laguage (MIRAGE_Session *self, gint index, GError **error) {
-    MIRAGE_Session_TOCPrivate *_priv = MIRAGE_SESSION_TOC_GET_PRIVATE(self);
-    
+gboolean __mirage_parser_toc_add_g_laguage (MIRAGE_Parser *self, gint index, GError **error) {
+    MIRAGE_Parser_TOCPrivate *_priv = MIRAGE_PARSER_TOC_GET_PRIVATE(self);
     gint langcode = GPOINTER_TO_INT(g_hash_table_lookup(_priv->lang_map, GINT_TO_POINTER(index)));
     
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: adding global language: index %i -> langcode %i\n", __func__, index, langcode);
     
-    mirage_session_add_language(self, langcode, NULL, NULL);
+    mirage_session_add_language(MIRAGE_SESSION(_priv->cur_session), langcode, NULL, NULL);
     _priv->cur_langcode = langcode;
     
     return TRUE;
 }
 
-gboolean __mirage_session_toc_add_t_laguage (MIRAGE_Session *self, gint index, GError **error) {
-    MIRAGE_Session_TOCPrivate *_priv = MIRAGE_SESSION_TOC_GET_PRIVATE(self);
-    
+gboolean __mirage_parser_toc_add_t_laguage (MIRAGE_Parser *self, gint index, GError **error) {
+    MIRAGE_Parser_TOCPrivate *_priv = MIRAGE_PARSER_TOC_GET_PRIVATE(self);
     gint langcode = GPOINTER_TO_INT(g_hash_table_lookup(_priv->lang_map, GINT_TO_POINTER(index)));
-    
-    GObject *track = NULL;
-    if (!mirage_session_get_track_by_index(self, -1, &track, error)) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to get current track!\n", __func__);
-        return FALSE;
-    }
-   
+       
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: adding track language: index %i -> langcode %i\n", __func__, index, langcode);
-    mirage_track_add_language(MIRAGE_TRACK(track), langcode, NULL, NULL);
+    mirage_track_add_language(MIRAGE_TRACK(_priv->cur_track), langcode, NULL, NULL);
     _priv->cur_langcode = langcode;
-
-    g_object_unref(track);
     
     return TRUE;
 }
 
-gboolean __mirage_session_toc_set_g_cdtext_data (MIRAGE_Session *self, gint pack_type, gchar *data, GError **error) {
-    MIRAGE_Session_TOCPrivate *_priv = MIRAGE_SESSION_TOC_GET_PRIVATE(self);
-    
+gboolean __mirage_parser_toc_set_g_cdtext_data (MIRAGE_Parser *self, gint pack_type, gchar *data, GError **error) {
+    MIRAGE_Parser_TOCPrivate *_priv = MIRAGE_PARSER_TOC_GET_PRIVATE(self);
     GObject *language = NULL;
     
-    if (mirage_session_get_language_by_code(self, _priv->cur_langcode, &language, NULL)) {
+    if (mirage_session_get_language_by_code(MIRAGE_SESSION(_priv->cur_session), _priv->cur_langcode, &language, NULL)) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: pack type: 0x%X, data: <%s>\n", __func__, pack_type, data);
         mirage_language_set_pack_data(MIRAGE_LANGUAGE(language), pack_type, data, strlen(data)+1, NULL);
         g_object_unref(language);
@@ -464,18 +412,11 @@ gboolean __mirage_session_toc_set_g_cdtext_data (MIRAGE_Session *self, gint pack
     return TRUE;
 }
 
-gboolean __mirage_session_toc_set_t_cdtext_data (MIRAGE_Session *self, gint pack_type, gchar *data, GError **error) {
-    MIRAGE_Session_TOCPrivate *_priv = MIRAGE_SESSION_TOC_GET_PRIVATE(self);
-    
-    GObject *track = NULL;
+gboolean __mirage_parser_toc_set_t_cdtext_data (MIRAGE_Parser *self, gint pack_type, gchar *data, GError **error) {
+    MIRAGE_Parser_TOCPrivate *_priv = MIRAGE_PARSER_TOC_GET_PRIVATE(self);
     GObject *language = NULL;
-            
-    if (!mirage_session_get_track_by_index(self, -1, &track, error)) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to get current track!\n", __func__);
-        return FALSE;
-    }
     
-    if (mirage_track_get_language_by_code(MIRAGE_TRACK(track), _priv->cur_langcode, &language, NULL)) {
+    if (mirage_track_get_language_by_code(MIRAGE_TRACK(_priv->cur_track), _priv->cur_langcode, &language, NULL)) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: pack type: 0x%X, data: <%s>\n", __func__, pack_type, data);
         mirage_language_set_pack_data(MIRAGE_LANGUAGE(language), pack_type, data, strlen(data)+1, NULL);
         g_object_unref(language);
@@ -483,73 +424,210 @@ gboolean __mirage_session_toc_set_t_cdtext_data (MIRAGE_Session *self, gint pack
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to get language object!\n", __func__);
     }
     
-    g_object_unref(track);
     return TRUE;
 }
+
+
+/******************************************************************************\
+ *                     MIRAGE_Parser methods implementation                     *
+\******************************************************************************/
+static void __init_session_data (MIRAGE_Parser *self) {
+    MIRAGE_Parser_TOCPrivate *_priv = MIRAGE_PARSER_TOC_GET_PRIVATE(self);
+
+    /* Init langmap */
+    _priv->lang_map = g_hash_table_new(g_direct_hash, g_direct_equal);
+
+    return;
+}
+
+static void __cleanup_session_data (MIRAGE_Parser *self) {
+    MIRAGE_Parser_TOCPrivate *_priv = MIRAGE_PARSER_TOC_GET_PRIVATE(self);
+
+    /* No reference is kept for these, so just set them to NULL */
+    _priv->cur_session = NULL;
+    _priv->cur_track = NULL;
+    
+    /* Cleanup per-session data */
+    g_free(_priv->toc_filename);
+    _priv->toc_filename = NULL;
+    
+    _priv->cur_tfile_sectsize = 0;
+    
+    _priv->cur_sfile_sectsize = 0;
+    _priv->cur_sfile_format = 0;
+    
+    _priv->cur_langcode = 0;
+    g_hash_table_destroy(_priv->lang_map);
+
+    g_free(_priv->mixed_mode_bin);
+    _priv->mixed_mode_bin = NULL;
+    _priv->mixed_mode_offset = 0;
+    
+    return;
+}
+
+static gboolean __mirage_parser_toc_load_image (MIRAGE_Parser *self, gchar **filenames, GObject **disc, GError **error) {
+    MIRAGE_Parser_TOCPrivate *_priv = MIRAGE_PARSER_TOC_GET_PRIVATE(self);
+    gboolean succeeded = TRUE;
+    gint i;
+    
+    /* Check if we can load file(s); we check the suffix */
+    for (i = 0; i < g_strv_length(filenames); i++) {
+        if (!mirage_helper_has_suffix(filenames[i], ".toc")) {
+            mirage_error(MIRAGE_E_CANTHANDLE, error);
+            return FALSE;
+        }
+    }
+    
+    /* Create disc */
+    _priv->disc = g_object_new(MIRAGE_TYPE_DISC, NULL);
+    
+    mirage_disc_set_filenames(MIRAGE_DISC(_priv->disc), filenames, NULL);
+    
+    /* Each TOC/BIN is one session, so we load all given filenames */
+    for (i = 0; i < g_strv_length(filenames); i++) {
+        void *scanner;
+        FILE *file;
+        
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: loading session #%i: '%s'!\n", __func__, i, filenames[i]);
+        __init_session_data(self);
+        __mirage_parser_toc_set_toc_filename(self, filenames[i], NULL);
+        
+        /* There's slight problem with multi-session TOC images, namely that each
+           TOC can be used independently... in order words, there's no way to determine
+           the length of leadouts for sessions (since all sessions start at sector 0).
+           So we use what multisession FAQ from cdrecord docs tells us... */
+        if (i > 0) {
+            GObject *prev_session = NULL;
+            gint leadout_length = 0;
+
+            if (!mirage_disc_get_session_by_index(MIRAGE_DISC(_priv->disc), -1, &prev_session, error)) {
+                MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: failed to get previous session!\n", __func__);
+                succeeded = FALSE;
+                goto end;
+            }
+            
+            /* Second session has index 1... */
+            if (i == 1) {
+                leadout_length = 11250; /* Actually, it should be 6750 previous leadout, 4500 current leadin */
+            } else {
+                leadout_length = 6750; /* Actually, it should be 2250 previous leadout, 4500 current leadin */                
+            }
+            
+            mirage_session_set_leadout_length(MIRAGE_SESSION(prev_session), leadout_length, NULL);
+            
+            g_object_unref(prev_session);
+        }
+        
+        /* Open file */
+        file = g_fopen(filenames[i], "r");
+        if (!file) {
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: failed to open file '%s'!\n", __func__, filenames[i]);
+            mirage_error(MIRAGE_E_IMAGEFILE, error);
+            succeeded = FALSE;
+            goto end;
+        }
+        
+        /* Create session */
+        _priv->cur_session = NULL;
+        if (!mirage_disc_add_session_by_index(MIRAGE_DISC(_priv->disc), -1, &_priv->cur_session, error)) {
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: failed to add session!\n", __func__);
+            succeeded = FALSE;
+            goto end;
+        }
+        g_object_unref(_priv->cur_session); /* Don't keep reference */
+
+        /* Prepare scanner */
+        yylex_init(&scanner);
+        yyset_in(file, scanner);
+        
+        /* Load */
+        if (yyparse(scanner, self, error)) {
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: failed to parse TOC file!\n", __func__);
+            fclose(file);
+            succeeded = FALSE;
+            goto end;
+        }
+        
+        /* Destroy scanner */
+        yylex_destroy(scanner);        
+        fclose(file);
+        
+        __cleanup_session_data(self);
+    }
+    
+    /* Now guess medium type and if it's a CD-ROM, add Red Book pregap */
+    gint medium_type = mirage_parser_guess_medium_type(self, _priv->disc);
+    mirage_disc_set_medium_type(MIRAGE_DISC(_priv->disc), medium_type, NULL);
+    if (medium_type == MIRAGE_MEDIUM_CD) {
+        mirage_parser_add_redbook_pregap(self, _priv->disc, NULL);
+    }
+
+end:    
+    /* Return disc */
+    if (succeeded) {
+        *disc = _priv->disc;
+    } else {
+        g_object_unref(_priv->disc);
+        *disc = NULL;
+    }
+        
+    return succeeded;
+}
+
 
 /******************************************************************************\
  *                                Object init                                 *
 \******************************************************************************/
 /* Our parent class */
-static MIRAGE_SessionClass *parent_class = NULL;
+static MIRAGE_ParserClass *parent_class = NULL;
 
-static void __mirage_session_toc_instance_init (GTypeInstance *instance, gpointer g_class) {
-    MIRAGE_Session_TOC *self = MIRAGE_SESSION_TOC(instance);                                                
-    MIRAGE_Session_TOCPrivate *_priv = MIRAGE_SESSION_TOC_GET_PRIVATE(self);
-    
-    /* Create language map hash table */
-    _priv->lang_map = g_hash_table_new(g_direct_hash, g_direct_equal);
+static void __mirage_parser_toc_instance_init (GTypeInstance *instance, gpointer g_class) {
+    mirage_parser_generate_parser_info(MIRAGE_PARSER(instance),
+        "PARSER-TOC",
+        "TOC Image Parser",
+        "1.0.0",
+        "Rok Mandeljc",
+        TRUE,
+        "TOC files",
+        2, ".toc", NULL
+    );
     
     return;
 }
 
-static void __mirage_session_toc_finalize (GObject *obj) {
-    MIRAGE_Session_TOC *self = MIRAGE_SESSION_TOC(obj);                                                
-    MIRAGE_Session_TOCPrivate *_priv = MIRAGE_SESSION_TOC_GET_PRIVATE(self);
-    
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_GOBJECT, "%s:\n", __func__);
-
-    g_hash_table_destroy(_priv->lang_map);
-    g_free(_priv->toc_filename);
-    g_free(_priv->mixed_mode_bin);
-    
-    /* Chain up to the parent class */
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_GOBJECT, "%s: chaining up to parent\n", __func__);
-    return G_OBJECT_CLASS(parent_class)->finalize(obj);
-}
-
-static void __mirage_session_toc_class_init (gpointer g_class, gpointer g_class_data) {
-    GObjectClass *class_gobject = G_OBJECT_CLASS(g_class);
-    MIRAGE_Session_TOCClass *klass = MIRAGE_SESSION_TOC_CLASS(g_class);
+static void __mirage_parser_toc_class_init (gpointer g_class, gpointer g_class_data) {
+    MIRAGE_ParserClass *class_parser = MIRAGE_PARSER_CLASS(g_class);
+    MIRAGE_Parser_TOCClass *klass = MIRAGE_PARSER_TOC_CLASS(g_class);
     
     /* Set parent class */
     parent_class = g_type_class_peek_parent(klass);
     
     /* Register private structure */
-    g_type_class_add_private(klass, sizeof(MIRAGE_Session_TOCPrivate));
+    g_type_class_add_private(klass, sizeof(MIRAGE_Parser_TOCPrivate));
         
-    /* Initialize GObject members */
-    class_gobject->finalize = __mirage_session_toc_finalize;
-    
+    /* Initialize MIRAGE_Parser methods */
+    class_parser->load_image = __mirage_parser_toc_load_image;
+        
     return;
 }
 
-GType mirage_session_toc_get_type (GTypeModule *module) {
+GType mirage_parser_toc_get_type (GTypeModule *module) {
     static GType type = 0;
     if (type == 0) {
         static const GTypeInfo info = {
-            sizeof(MIRAGE_Session_TOCClass),
+            sizeof(MIRAGE_Parser_TOCClass),
             NULL,   /* base_init */
             NULL,   /* base_finalize */
-            __mirage_session_toc_class_init,   /* class_init */
+            __mirage_parser_toc_class_init,   /* class_init */
             NULL,   /* class_finalize */
             NULL,   /* class_data */
-            sizeof(MIRAGE_Session_TOC),
+            sizeof(MIRAGE_Parser_TOC),
             0,      /* n_preallocs */
-            __mirage_session_toc_instance_init    /* instance_init */
+            __mirage_parser_toc_instance_init    /* instance_init */
         };
         
-        type = g_type_module_register_type(module, MIRAGE_TYPE_SESSION, "MIRAGE_Session_TOC", &info, 0);
+        type = g_type_module_register_type(module, MIRAGE_TYPE_PARSER, "MIRAGE_Parser_TOC", &info, 0);
     }
     
     return type;
