@@ -56,6 +56,7 @@ gboolean cdemud_daemon_hail (CDEMUD_Daemon *self, GError **error);
 
 gboolean cdemud_daemon_get_daemon_version (CDEMUD_Daemon *self, gchar **version, GError **error);
 gboolean cdemud_daemon_get_library_version (CDEMUD_Daemon *self, gchar **version, GError **error);
+gboolean cdemud_daemon_get_daemon_interface_version (CDEMUD_Daemon *self, gint *version, GError **error);
 
 gboolean cdemud_daemon_enum_daemon_debug_masks (CDEMUD_Daemon *self, GPtrArray **masks, GError **error);
 gboolean cdemud_daemon_enum_library_debug_masks (CDEMUD_Daemon *self, GPtrArray **masks, GError **error);

@@ -6,12 +6,14 @@ m4_define([cdemud_minor_version], [1])
 m4_define([cdemud_micro_version], [0])
 m4_define([cdemud_version], [cdemud_major_version.cdemud_minor_version.cdemud_micro_version])
 
-
 # Project init
 AC_INIT(cdemu-daemon, [cdemud_version], http://cdemu.sf.net)
 AC_CONFIG_SRCDIR(src/main.c)
 AM_INIT_AUTOMAKE(AC_PACKAGE_NAME, AC_PACKAGE_VERSION)
 AM_CONFIG_HEADER(config.h)
+
+# D-BUS interface version (change whenever interface changes)
+AC_DEFINE(DAEMON_INTERFACE_VERSION, 1, [D-BUS interface version])
 
 AM_MAINTAINER_MODE
 
