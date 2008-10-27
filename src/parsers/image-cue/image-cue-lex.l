@@ -25,6 +25,7 @@
 
 /* Don't use these */
 %option noyywrap
+%option noinput
 %option nounput
 
 /* Use line numbers */
@@ -69,6 +70,9 @@ TITLE_          TITLE
 #include "image-cue.h"
 
 #define YY_USER_ACTION yylloc->first_line = yylineno;
+
+int yyget_column (yyscan_t yyscanner);
+void yyset_column (int column_no, yyscan_t yyscanner);
 %}
 
 %%

@@ -25,6 +25,7 @@
 
 /* Don't use these */
 %option noyywrap
+%option noinput
 %option nounput
 
 /* Use line numbers */
@@ -81,6 +82,9 @@ CDTEXT_PACK_        TITLE|PERFORMER|SONGWRITER|COMPOSER|ARRANGER|MESSAGE|DISC_ID
 #include "image-toc.h"
 
 #define YY_USER_ACTION yylloc->first_line = yylineno;
+
+int yyget_column (yyscan_t yyscanner);
+void yyset_column (int column_no, yyscan_t yyscanner);
 %}
 
 %%
