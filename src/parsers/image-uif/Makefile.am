@@ -9,10 +9,10 @@ plugin_LTLIBRARIES = image-uif.la
 
 noinst_HEADERS = \
     image-uif.h \
-    image-uif-disc.h
+    image-uif-parser.h
 
 image_uif_la_SOURCES = \
-    image-uif-disc.c \
+    image-uif-parser.c \
     image-uif-plugin.c
 
 image_uif_la_LIBADD = \

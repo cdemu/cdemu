@@ -1,6 +1,6 @@
 /*
  *  libMirage: UIF image parser: Plugin exports
- *  Copyright (C) 2006-2008 Henrik Stokseth.
+ *  Copyright (C) 2008 Henrik Stokseth.
  *
  *  Thanks to Luigi Auriemma for reverse engineering work.
  *
@@ -29,7 +29,7 @@ G_MODULE_EXPORT void mirage_plugin_unload_plugin (MIRAGE_Plugin *plugin);
 
 G_MODULE_EXPORT void mirage_plugin_load_plugin (MIRAGE_Plugin *plugin) {
     global_module = G_TYPE_MODULE(plugin);
-    mirage_disc_uif_get_type(G_TYPE_MODULE(plugin));
+    mirage_parser_uif_get_type(G_TYPE_MODULE(plugin));
     return;
 }
 
