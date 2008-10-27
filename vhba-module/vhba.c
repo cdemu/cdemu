@@ -154,9 +154,9 @@ static int vhba_device_queue(struct vhba_device *vdev, struct scsi_cmnd *cmd)
 
 	vcmd->cmd = cmd;
 
-	spin_lock_bh(&vdev->cmd_lock);
+	spin_lock_irq(&vdev->cmd_lock);
 	list_add_tail(&vcmd->entry, &vdev->cmd_list);
-	spin_unlock_bh(&vdev->cmd_lock);
+	spin_unlock_irq(&vdev->cmd_lock);
 
 	wake_up_interruptible(&vdev->cmd_wq);
 
@@ -168,7 +168,7 @@ static int vhba_device_dequeue(struct vhba_device *vdev, struct scsi_cmnd *cmd)
 	struct vhba_command *vcmd;
 	int retval;
 
-	spin_lock_bh(&vdev->cmd_lock);
+	spin_lock_irq(&vdev->cmd_lock);
 	list_for_each_entry(vcmd, &vdev->cmd_list, entry)
 	{
 		if (vcmd->cmd == cmd)
@@ -182,24 +182,24 @@ static int vhba_device_dequeue(struct vhba_device *vdev, struct scsi_cmnd *cmd)
 	/* command not found */
 	if (&vcmd->entry == &vdev->cmd_list)
 	{
-		spin_unlock_bh(&vdev->cmd_lock);
+		spin_unlock_irq(&vdev->cmd_lock);
 
 		return SUCCESS;
 	}
 
 	while (vcmd->status == VHBA_REQ_READING || vcmd->status == VHBA_REQ_WRITING)
 	{
-		spin_unlock_bh(&vdev->cmd_lock);
+		spin_unlock_irq(&vdev->cmd_lock);
 		scmd_dbg(cmd, "wait for I/O before aborting\n");
 		schedule_timeout(1);
-		spin_lock_bh(&vdev->cmd_lock);
+		spin_lock_irq(&vdev->cmd_lock);
 	}
 
 	retval = (vcmd->status == VHBA_REQ_SENT) ? FAILED : SUCCESS;
 
 	vhba_free_command(vcmd);
 
-	spin_unlock_bh(&vdev->cmd_lock);
+	spin_unlock_irq(&vdev->cmd_lock);
 
 	return retval;
 }
@@ -214,10 +214,10 @@ static void vhba_scan_devices(struct work_struct *work)
 	{
 		int remove;
 
-		spin_lock_bh(&vhost->dev_lock);
+		spin_lock_irq(&vhost->dev_lock);
 		clear_bit(id, vhost->chgmap);
 		remove = !(vhost->devices[id]);
-		spin_unlock_bh(&vhost->dev_lock);
+		spin_unlock_irq(&vhost->dev_lock);
 
 		dev_dbg(&vhost->shost->shost_gendev, "try to %s target 0:%d:0\n",
 				(remove) ? "remove" : "add", id);
@@ -247,10 +247,10 @@ static int vhba_add_device(struct vhba_device *vdev)
 
 	vhba_device_get(vdev);
 
-	spin_lock_bh(&vhost->dev_lock);
+	spin_lock_irq(&vhost->dev_lock);
 	if (vhost->num_devices >= vhost->shost->max_id)
 	{
-		spin_unlock_bh(&vhost->dev_lock);
+		spin_unlock_irq(&vhost->dev_lock);
 		vhba_device_put(vdev);
 
 		return -EBUSY;
@@ -268,7 +268,7 @@ static int vhba_add_device(struct vhba_device *vdev)
 			break;
 		}
 	}
-	spin_unlock_bh(&vhost->dev_lock);
+	spin_unlock_irq(&vhost->dev_lock);
 
 	schedule_work(&vhost->scan_devices);
 
@@ -281,12 +281,12 @@ static int vhba_remove_device(struct vhba_device *vdev)
 
 	vhost = platform_get_drvdata(&vhba_platform_device);
 
-	spin_lock_bh(&vhost->dev_lock);
+	spin_lock_irq(&vhost->dev_lock);
 	set_bit(vdev->id, vhost->chgmap);
 	vhost->devices[vdev->id] = NULL;
 	vhost->num_devices--;
 	vdev->id = VHBA_INVALID_ID;
-	spin_unlock_bh(&vhost->dev_lock);
+	spin_unlock_irq(&vhost->dev_lock);
 
 	vhba_device_put(vdev);
 
@@ -304,11 +304,11 @@ static struct vhba_device *vhba_lookup_device(int id)
 
 	if (likely(id < vhost->shost->max_id))
 	{
-		spin_lock_bh(&vhost->dev_lock);
+		spin_lock_irq(&vhost->dev_lock);
 		vdev = vhost->devices[id];
 		if (vdev)
 			vdev = vhba_device_get(vdev);
-		spin_unlock_bh(&vhost->dev_lock);
+		spin_unlock_irq(&vhost->dev_lock);
 	}
 
 	return vdev;
@@ -322,7 +322,7 @@ static struct vhba_command *vhba_alloc_command(void)
 
 	vhost = platform_get_drvdata(&vhba_platform_device);
 
-	spin_lock_bh(&vhost->cmd_lock);
+	spin_lock_irq(&vhost->cmd_lock);
 
 	vcmd = vhost->commands + vhost->cmd_next++;
 	if (vcmd->status != VHBA_REQ_FREE)
@@ -347,7 +347,7 @@ static struct vhba_command *vhba_alloc_command(void)
 		vcmd->status = VHBA_REQ_PENDING;
 	vhost->cmd_next %= vhost->shost->can_queue;
 
-	spin_unlock_bh(&vhost->cmd_lock);
+	spin_unlock_irq(&vhost->cmd_lock);
 
 	return vcmd;
 }
@@ -358,9 +358,9 @@ static void vhba_free_command(struct vhba_command *vcmd)
 
 	vhost = platform_get_drvdata(&vhba_platform_device);
 
-	spin_lock_bh(&vhost->cmd_lock);
+    spin_lock_irq(&vhost->cmd_lock);
 	vcmd->status = VHBA_REQ_FREE;
-	spin_unlock_bh(&vhost->cmd_lock);
+	spin_unlock_irq(&vhost->cmd_lock);
 }
 
 static int vhba_queuecommand(struct scsi_cmnd *cmd, void (*done)(struct scsi_cmnd *))
@@ -435,7 +435,7 @@ static ssize_t do_request(struct scsi_cmnd *cmd, char __user *buf, size_t buf_le
 
 	if (ret > buf_len)
 	{
-		scmd_warn(cmd, "buffer too small (%d < %d) for a request\n", buf_len, ret);
+		scmd_warn(cmd, "buffer too small (%zd < %zd) for a request\n", buf_len, ret);
 
 		return -EIO;
 	}
@@ -598,11 +598,11 @@ static struct vhba_command *wait_command(struct vhba_device *vdev)
 
 		prepare_to_wait(&vdev->cmd_wq, &wait, TASK_INTERRUPTIBLE);
 
-		spin_unlock_bh(&vdev->cmd_lock);
+		spin_unlock_irq(&vdev->cmd_lock);
 
 		schedule();
 
-		spin_lock_bh(&vdev->cmd_lock);
+		spin_lock_irq(&vdev->cmd_lock);
 	}
 
 	finish_wait(&vdev->cmd_wq, &wait);
@@ -620,16 +620,16 @@ static ssize_t vhba_ctl_read(struct file *file, char __user *buf, size_t buf_len
 
 	vdev = file->private_data;
 
-	spin_lock_bh(&vdev->cmd_lock);
+	spin_lock_irq(&vdev->cmd_lock);
 	vcmd = wait_command(vdev);
-	spin_unlock_bh(&vdev->cmd_lock);
+	spin_unlock_irq(&vdev->cmd_lock);
 
 	if (!vcmd)
 		return -ERESTARTSYS;
 
 	ret = do_request(vcmd->cmd, buf, buf_len);
 
-	spin_lock_bh(&vdev->cmd_lock);
+	spin_lock_irq(&vdev->cmd_lock);
 	if (ret >= 0)
 	{
 		vcmd->status = VHBA_REQ_SENT;
@@ -637,7 +637,7 @@ static ssize_t vhba_ctl_read(struct file *file, char __user *buf, size_t buf_len
 	}
 	else
 		vcmd->status = VHBA_REQ_PENDING;
-	spin_unlock_bh(&vdev->cmd_lock);
+	spin_unlock_irq(&vdev->cmd_lock);
 
 	return ret;
 }
@@ -657,21 +657,21 @@ static ssize_t vhba_ctl_write(struct file *file, const char __user *buf, size_t 
 
 	vdev = file->private_data;
 
-	spin_lock_bh(&vdev->cmd_lock);
+	spin_lock_irq(&vdev->cmd_lock);
 	vcmd = match_command(vdev, res.tag);
 	if (!vcmd || vcmd->status != VHBA_REQ_SENT)
 	{
-		spin_unlock_bh(&vdev->cmd_lock);
+		spin_unlock_irq(&vdev->cmd_lock);
 		DPRINTK("not expecting response\n");
 
 		return -EIO;
 	}
 	vcmd->status = VHBA_REQ_WRITING;
-	spin_unlock_bh(&vdev->cmd_lock);
+	spin_unlock_irq(&vdev->cmd_lock);
 
 	ret = do_response(vcmd->cmd, buf + sizeof(res), buf_len - sizeof(res), &res);
 
-	spin_lock_bh(&vdev->cmd_lock);
+	spin_lock_irq(&vdev->cmd_lock);
 	if (ret >= 0)
 	{
 		vcmd->cmd->scsi_done(vcmd->cmd);
@@ -686,7 +686,7 @@ static ssize_t vhba_ctl_write(struct file *file, const char __user *buf, size_t 
 	}
 	else
 		vcmd->status = VHBA_REQ_SENT;
-	spin_unlock_bh(&vdev->cmd_lock);
+	spin_unlock_irq(&vdev->cmd_lock);
 
 	return ret;
 }
@@ -735,10 +735,10 @@ static unsigned int vhba_ctl_poll(struct file *file, poll_table *wait)
 
 	poll_wait(file, &vdev->cmd_wq, wait);
 
-	spin_lock_bh(&vdev->cmd_lock);
+	spin_lock_irq(&vdev->cmd_lock);
 	if (next_command(vdev))
 		mask |= POLLIN | POLLRDNORM;
-	spin_unlock_bh(&vdev->cmd_lock);
+	spin_unlock_irq(&vdev->cmd_lock);
 
 	return mask;
 }
@@ -778,7 +778,7 @@ static int vhba_ctl_release(struct inode *inode, struct file *file)
 	vhba_device_get(vdev);
 	vhba_remove_device(vdev);
 
-	spin_lock_bh(&vdev->cmd_lock);
+	spin_lock_irq(&vdev->cmd_lock);
 	list_for_each_entry(vcmd, &vdev->cmd_list, entry)
 	{
 		WARN_ON(vcmd->status == VHBA_REQ_READING || vcmd->status == VHBA_REQ_WRITING);
@@ -790,7 +790,7 @@ static int vhba_ctl_release(struct inode *inode, struct file *file)
 		vhba_free_command(vcmd);
 	}
 	INIT_LIST_HEAD(&vdev->cmd_list);
-	spin_unlock_bh(&vdev->cmd_lock);
+	spin_unlock_irq(&vdev->cmd_lock);
 
 	vhba_device_put(vdev);
 
