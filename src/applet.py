@@ -90,7 +90,15 @@ class gCDEmu_Applet (gnomeapplet.Applet):
         else:
             print "Unhandled key: %s\n" % (entry.get_key())
         
-            
+    def __display_error (self, text):
+         # Show error dialog
+        message = gtk.MessageDialog(None, 0, gtk.MESSAGE_ERROR, gtk.BUTTONS_CLOSE, text)
+        message.set_title(_("Error"))
+        message.run()
+        message.destroy()
+        
+        return
+        
     def setup_applet (self):
         # Initialize variables
         self.__gconf_client = None
@@ -292,7 +300,7 @@ class gCDEmu_Applet (gnomeapplet.Applet):
         try:
             self.__dbus_iface.GetDaemonVersion()
         except:
-            print "Daemon doesn't respond to GetDaemonConnection... trying to reconnect"
+            print "Daemon doesn't respond to GetDaemonVersion... trying to reconnect"
             # Connection failed, try to reconnect
             self.__cleanup()
             self.__connect()
@@ -386,32 +394,20 @@ class gCDEmu_Applet (gnomeapplet.Applet):
             self.__dbus_proxy_obj = self.__dbus_bus.get_object('net.sf.cdemu.CDEMUD_Daemon', '/CDEMUD_Daemon')
             self.__dbus_iface = dbus.Interface(self.__dbus_proxy_obj, 'net.sf.cdemu.CDEMUD_Daemon')
         except dbus.DBusException, e:
-            print "Failed to connect: %s" % e
+            self.__display_error(_("Failed to connect: %s") % e.get_dbus_message())
             return False
         
-        # Get daemon version
+        # Get daemon interface version
         try:
-            daemon_version = self.__dbus_iface.GetDaemonVersion()
+            interface_version = self.__dbus_iface.GetDaemonInterfaceVersion()
         except dbus.DBusException, e:
-            print "Failed to acquire daemon version: %s" % e
+            self.__display_error(_("Failed to acquire daemon interface version (this most likely means your daemon is out-of-date): %s") % e.get_dbus_message())
             return False
         
         # Check daemon version; we should get away with direct string comparison
         # in Python...
-        if (daemon_version < config.min_daemon_version):
-            message = gtk.MessageDialog(
-                None, 
-                0, 
-                gtk.MESSAGE_ERROR, 
-                gtk.BUTTONS_CLOSE, 
-                _("CDEmu daemon version %s detected, but at least version %s is required!") % (daemon_version, config.min_daemon_version)
-            )
-            
-                  
-            message.set_title(_("Incompatible daemon version"))
-            message.run()
-            message.destroy()
-            
+        if (interface_version != config.daemon_interface_version):
+            self.__display_error(_("CDEmu daemon interface version %i detected, but version %i is required!") % (interface_version, config.daemon_interface_version))
             return False
         
         # Signal receivers
@@ -421,7 +417,7 @@ class gCDEmu_Applet (gnomeapplet.Applet):
         try:
             num_devices = self.__dbus_iface.GetNumberOfDevices()
         except dbus.DBusException, e:
-            print "Failed to acquire number of devices: %s" % e
+            self.__display_error(_("Failed to acquire number of devices: %s") % e.get_dbus_message())
             return False
         
         # Create menu
