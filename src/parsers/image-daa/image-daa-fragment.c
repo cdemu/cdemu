@@ -587,7 +587,7 @@ gboolean mirage_fragment_daa_set_file (MIRAGE_Fragment *self, gchar *filename, G
                 password = libmirage_obtain_password(NULL);
                 if (!password) {
                     /* Password not provided (or password function is not set) */
-                    MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s:  failed to obtain password for encrypted image!\n", __func__);
+                    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  failed to obtain password for encrypted image!\n", __func__);
                     fclose(file);
                     mirage_error(MIRAGE_E_NEEDPASSWORD, error);
                     return FALSE;
@@ -597,13 +597,14 @@ gboolean mirage_fragment_daa_set_file (MIRAGE_Fragment *self, gchar *filename, G
                 __daa_crypt_init(_priv->pwd_key, password, daa_key);
                 g_free(password);
                 if (pwd_crc != crc32(0, _priv->pwd_key, 128)) {
-                    MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s:  incorrect password!\n", __func__);
+                    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  incorrect password!\n", __func__);
                     mirage_error(MIRAGE_E_WRONGPASSWORD, error);
                     return FALSE;
                 }
                 
                 /* Set encrypted flag - used later, when reading data */
                 _priv->encrypted = TRUE;
+                break;
             }
             default: {
                 MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s:  unhandled block type 0x%X; skipping\n", __func__, type);
@@ -894,7 +895,9 @@ static gboolean __mirage_fragment_daa_read_main_data (MIRAGE_Fragment *self, gin
         
         g_free(tmp_buffer);
         
-        if (inflated != _priv->buflen && chunk_index != _priv->num_chunks) {
+        /* It's OK for the last chunk not to be fully inflated, because it doesn't
+           necessarily hold full number of sectors */
+        if (inflated != _priv->buflen && chunk_index != _priv->num_chunks-1) {
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to inflate whole chunk #%i (0x%X bytes instead of 0x%X)\n", __func__, chunk_index, _priv->z.total_out, _priv->buflen);
         } else {
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_FRAGMENT, "%s: successfully inflated chunk #%i (0x%X bytes)\n", __func__, chunk_index, _priv->z.total_out);
