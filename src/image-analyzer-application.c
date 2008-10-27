@@ -37,9 +37,6 @@
 #define IMAGE_ANALYZER_APPLICATION_GET_PRIVATE(obj) (G_TYPE_INSTANCE_GET_PRIVATE((obj), IMAGE_ANALYZER_TYPE_APPLICATION, IMAGE_ANALYZER_ApplicationPrivate))
 
 typedef struct {
-    /* Mirage core object */
-    GObject *mirage;
-    
     /* Disc */
     gboolean loaded;
     GObject *disc; /* Disc */
@@ -672,7 +669,8 @@ static gboolean __image_analyzer_open_image (IMAGE_ANALYZER_Application *self, g
     log_handler = g_log_set_handler(DEBUG_DOMAIN_PARSER, G_LOG_LEVEL_MASK, __image_analyzer_capture_parser_log, self);
 
     /* Create disc */
-    if (!mirage_mirage_create_disc(MIRAGE_MIRAGE(_priv->mirage), filenames, &_priv->disc, debug_context, error)) {
+    _priv->disc = libmirage_create_disc(filenames, debug_context, error);
+    if (!_priv->disc) {
         g_warning("Failed to create disc!\n");
         __image_analyzer_application_message(self, "Failed to open image!");
         return FALSE;
@@ -900,7 +898,7 @@ static GtkWidget *__image_analyzer_application_build_file_dialog (IMAGE_ANALYZER
     /* Per-parser filters */
     context.dialog = dialog;
     context.all_images = filter;
-    mirage_mirage_for_each_parser(MIRAGE_MIRAGE(_priv->mirage), __image_analyzer_application_add_file_filter, &context, NULL);
+    libmirage_for_each_parser(__image_analyzer_application_add_file_filter, &context, NULL);
     
     return dialog;    
 }
@@ -1063,10 +1061,7 @@ static void __image_analyzer_application_instance_init (GTypeInstance *instance,
     GtkWidget *treeview = NULL;
     
     GtkAccelGroup *accel_group = NULL;
-    
-    /* libMirage core object */
-    _priv->mirage = libmirage_init();
-    
+        
     /* UI manager */
     _priv->ui_manager = gtk_ui_manager_new();
     
@@ -1117,9 +1112,6 @@ static void __image_analyzer_application_finalize (GObject *obj) {
     
     /* Close image */
     __image_analyzer_close_image(self, NULL);
-
-    /* Release reference to libMirage core object */
-    libmirage_destroy();
     
     gtk_widget_destroy(_priv->window);
     
