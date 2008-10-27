@@ -137,6 +137,11 @@ gboolean mirage_helper_has_suffix (gchar *filename, gchar *suffix) {
     
     file_suffix = mirage_helper_get_suffix(filename);
     
+    /* If file has no suffix, don't bother */
+    if (!file_suffix) {
+        return FALSE;
+    }
+    
     return mirage_helper_strcasecmp(file_suffix, suffix) == 0;
 }
 
