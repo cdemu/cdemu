@@ -13,7 +13,7 @@
     <chapter id="api-reference">
         <title>libMirage API Reference</title>
         
-        <xi:include href="xml/mirage-mirage.xml"/>
+        <xi:include href="xml/mirage-libmirage.xml"/>
         <xi:include href="xml/mirage-disc.xml"/>
         <xi:include href="xml/mirage-session.xml"/>
         <xi:include href="xml/mirage-track.xml"/>
@@ -27,7 +27,8 @@
         <xi:include href="xml/mirage-finterface-audio.xml"/>
         <xi:include href="xml/mirage-language.xml"/>
         <xi:include href="xml/mirage-cdtext-encdec.xml"/>
-        <xi:include href="xml/mirage-plugin.xml"/>
+        <xi:include href="xml/mirage-parser.xml"/>
+	<xi:include href="xml/mirage-plugin.xml"/>
         <xi:include href="xml/mirage-utils.xml"/>
         <xi:include href="xml/mirage-error.xml"/>
     </chapter>

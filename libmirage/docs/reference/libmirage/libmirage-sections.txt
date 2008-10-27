@@ -1,41 +1,33 @@
 <INCLUDE>mirage.h</INCLUDE>
 
 <SECTION>
-<FILE>mirage-mirage</FILE>
-<TITLE>MIRAGE_Mirage object</TITLE>
+<FILE>mirage-libmirage</FILE>
+<TITLE>Main libMirage functions</TITLE>
 MIRAGE_CallbackFunction
-MIRAGE_Mirage
-mirage_mirage_get_version
-mirage_mirage_create_disc
-mirage_mirage_create_fragment
-mirage_mirage_for_each_parser
-mirage_mirage_for_each_fragment
-mirage_mirage_get_supported_debug_masks
-<SUBSECTION Standard>
-MIRAGE_MIRAGE
-MIRAGE_IS_MIRAGE
-MIRAGE_TYPE_MIRAGE
-MIRAGE_MIRAGE_CLASS
-MIRAGE_IS_MIRAGE_CLASS
-MIRAGE_MIRAGE_GET_CLASS
-<SUBSECTION Private>
-MIRAGE_MirageClass
-mirage_mirage_get_type
+MIRAGE_PasswordFunction
+MIRAGE_DebugMask
+libmirage_init
+libmirage_shutdown
+libmirage_get_version
+libmirage_set_password_function
+libmirage_obtain_password
+libmirage_create_disc
+libmirage_create_fragment
+libmirage_for_each_parser
+libmirage_for_each_fragment
+libmirage_get_supported_debug_masks
 </SECTION>
 
 <SECTION>
 <FILE>mirage-disc</FILE>
 <TITLE>MIRAGE_Disc object</TITLE>
 MIRAGE_MCN_SIZE
-MIRAGE_ParserInfo
 MIRAGE_MediumTypes
 MIRAGE_Disc
-mirage_disc_get_parser_info
-mirage_disc_can_load_file
-mirage_disc_load_image
 mirage_disc_set_medium_type
 mirage_disc_get_medium_type
 mirage_disc_set_filenames
+mirage_disc_set_filename
 mirage_disc_get_filenames
 mirage_disc_set_mcn
 mirage_disc_get_mcn
@@ -238,11 +230,10 @@ mirage_object_set_debug_context
 mirage_object_get_debug_context
 mirage_object_debug_message
 mirage_object_debug_messagev
-mirage_object_set_mirage
-mirage_object_get_mirage
 mirage_object_set_parent
 mirage_object_get_parent
 mirage_object_attach_child
+mirage_object_detach_child
 <SUBSECTION Standard>
 MIRAGE_OBJECT
 MIRAGE_IS_OBJECT
@@ -304,6 +295,7 @@ mirage_index_get_type
 <TITLE>MIRAGE_Fragment object</TITLE>
 MIRAGE_FragmentInfo
 MIRAGE_Fragment
+mirage_fragment_generate_fragment_info
 mirage_fragment_get_fragment_info
 mirage_fragment_can_handle_data_format
 mirage_fragment_set_address
@@ -437,6 +429,28 @@ mirage_cdtext_encdec_get_type
 </SECTION>
 
 <SECTION>
+<FILE>mirage-parser</FILE>
+<TITLE>MIRAGE_Parser object</TITLE>
+MIRAGE_ParserInfo
+MIRAGE_Parser
+mirage_parser_generate_parser_info
+mirage_parser_get_parser_info
+mirage_parser_load_image
+mirage_parser_add_redbook_pregap
+mirage_parser_guess_medium_type
+<SUBSECTION Standard>
+MIRAGE_PARSER
+MIRAGE_IS_PARSER
+MIRAGE_TYPE_PARSER
+MIRAGE_PARSER_CLASS
+MIRAGE_IS_PARSER_CLASS
+MIRAGE_PARSER_GET_CLASS
+<SUBSECTION Private>
+MIRAGE_ParserClass
+mirage_parser_get_type
+</SECTION>
+
+<SECTION>
 <FILE>mirage-plugin</FILE>
 <TITLE>MIRAGE_Plugin object</TITLE>
 MIRAGE_Plugin
@@ -467,12 +481,6 @@ mirage_helper_has_suffix
 mirage_helper_match_suffixes
 mirage_helper_strcasecmp
 mirage_helper_strncasecmp
-mirage_helper_add_redbook_pregap
-mirage_helper_guess_medium_type
-mirage_helper_create_parser_info
-mirage_helper_destroy_parser_info
-mirage_helper_create_fragment_info
-mirage_helper_destroy_fragment_info
 mirage_helper_lba2msf
 mirage_helper_lba2msf_str
 mirage_helper_msf2lba

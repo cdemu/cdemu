@@ -189,16 +189,15 @@ gboolean libmirage_set_password_function (MIRAGE_PasswordFunction func, gpointer
 
 /**
  * libmirage_obtain_password:
- * @func: a password function pointer
- * @user_data: pointer to user data to be passed to the password function
  * @error: location to store error, or %NULL
  *
  * <para>
- * Sets the password function to libMirage. The function is used by parsers
- * that support encrypted images to obtain password for unlocking such images.
+ * Obtains password string, using the #MIRAGE_PasswordFunction callback that was 
+ * provided via libmirage_set_password_function().
  * </para>
  *
- * Returns: %TRUE on success, %FALSE on failure
+ * Returns: password string on success, %NULL on failure. The string should be
+ * freed with g_free() when no longer needed.
  **/
 gchar *libmirage_obtain_password (GError **error) {
     gchar *password;
