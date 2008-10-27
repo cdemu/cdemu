@@ -42,7 +42,6 @@ static gboolean __mirage_disc_iso_get_parser_info (MIRAGE_Disc *self, MIRAGE_Par
 
 static gboolean __mirage_disc_iso_can_load_file (MIRAGE_Disc *self, gchar *filename, GError **error) {
     MIRAGE_Disc_ISOPrivate *_priv = MIRAGE_DISC_ISO_GET_PRIVATE(self);
-    gboolean valid_iso = FALSE;
 
     /* Does file exist? */
     if (!g_file_test(filename, G_FILE_TEST_IS_REGULAR)) {
@@ -73,7 +72,7 @@ static gboolean __mirage_disc_iso_can_load_file (MIRAGE_Disc *self, gchar *filen
         }
     }
 
-    return valid_iso;
+    return TRUE;
 }
 
 static gboolean __mirage_disc_iso_load_track (MIRAGE_Disc *self, gchar *filename, GError **error) {
