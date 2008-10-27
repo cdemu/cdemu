@@ -80,7 +80,7 @@ typedef struct {
     MIRAGE_ObjectClass parent;
     
     /* Class members */
-    gboolean (*load_image) (MIRAGE_Parser *self, gchar **filenames, GError **error);
+    gboolean (*load_image) (MIRAGE_Parser *self, gchar **filenames, GObject **disc, GError **error);
 } MIRAGE_ParserClass;
 
 /* Used by MIRAGE_TYPE_PARSER */
@@ -93,7 +93,7 @@ GType mirage_parser_get_type (void);
 void mirage_parser_generate_parser_info (MIRAGE_Parser *self, gchar *id, gchar *name, gchar *version, gchar *author, gboolean multi_file, gchar *description, gint num_suffixes, ...);
 gboolean mirage_parser_get_parser_info (MIRAGE_Parser *self, MIRAGE_ParserInfo **parser_info, GError **error);
 
-gboolean mirage_parser_load_image (MIRAGE_Parser *self, gchar **filenames, GError **error);
+gboolean mirage_parser_load_image (MIRAGE_Parser *self, gchar **filenames, GObject **disc, GError **error);
 
 
 G_END_DECLS
