@@ -2,13 +2,13 @@
 # Copyright (C) 2006-2008 Rok Mandeljc
 # This file is distributed under the same license as the gCDEmu package.
 # Rok Mandeljc <rok.mandeljc@email.si>, 2006-2008.
-# 
-# 
+#
+#
 msgid ""
 msgstr ""
 "Project-Id-Version: gCDEmu 1.2.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2008-10-26 17:42+0100\n"
+"POT-Creation-Date: 2008-10-27 22:09+0100\n"
 "PO-Revision-Date: 2008-10-26 17:42+0100\n"
 "Last-Translator: Rok Mandeljc <rok.mandeljc@email.si>\n"
 "Language-Team: Slovenian\n"
@@ -68,12 +68,12 @@ msgstr "Demon ustavljen"
 msgid "CDEmu daemon has been stopped."
 msgstr "CDEmu demon je bil ustavljen."
 
-#: ../src/applet.py:397
+#: ../src/applet.py:399
 #, python-format
 msgid "Failed to connect: %s"
 msgstr "Napaka pri povezovanju: %s"
 
-#: ../src/applet.py:404
+#: ../src/applet.py:409
 #, python-format
 msgid ""
 "Failed to acquire daemon interface version (this most likely means your "
@@ -82,13 +82,13 @@ msgstr ""
 "Napaka pri pridobivanju različice CDEmu demon vmesnika (najverjetneje "
 "uporabljate zastarelo različico demona): %s"
 
-#: ../src/applet.py:410
+#: ../src/applet.py:415
 #, python-format
 msgid "CDEmu daemon interface version %i detected, but version %i is required!"
 msgstr ""
 "Zaznal sem CDEmu demon vmesnik različice %i, potrebna pa je različica %i!"
 
-#: ../src/applet.py:420
+#: ../src/applet.py:425
 #, python-format
 msgid "Failed to acquire number of devices: %s"
 msgstr "Napaka pri pridobivanju števila naprav: %s"

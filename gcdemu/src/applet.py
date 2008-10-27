@@ -394,7 +394,12 @@ class gCDEmu_Applet (gnomeapplet.Applet):
             self.__dbus_proxy_obj = self.__dbus_bus.get_object('net.sf.cdemu.CDEMUD_Daemon', '/CDEMUD_Daemon')
             self.__dbus_iface = dbus.Interface(self.__dbus_proxy_obj, 'net.sf.cdemu.CDEMUD_Daemon')
         except dbus.DBusException, e:
-            self.__display_error(_("Failed to connect: %s") % e.get_dbus_message())
+            # Display dialog only for errors other than "Service not running"
+            if e.get_dbus_name() != "org.freedesktop.DBus.Error.ServiceUnknown":
+                self.__display_error(_("Failed to connect: %s") % e.get_dbus_message())
+            else:
+                print "Service not running"
+            
             return False
         
         # Get daemon interface version
