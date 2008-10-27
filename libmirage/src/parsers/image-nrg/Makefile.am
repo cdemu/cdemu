@@ -9,10 +9,10 @@ plugin_LTLIBRARIES = image-nrg.la
 
 noinst_HEADERS = \
     image-nrg.h \
-    image-nrg-disc.h
+    image-nrg-parser.h
 
 image_nrg_la_SOURCES = \
-    image-nrg-disc.c \
+    image-nrg-parser.c \
     image-nrg-plugin.c
 
 image_nrg_la_LIBADD = \
