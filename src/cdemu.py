@@ -206,18 +206,18 @@ class CDEmu (object):
             return False
         
         print _("Devices' status:")
-        print "%-5s %-10s %-10s %s" % (_("DEV"), _("LOADED"), _("TYPE"), _("FILENAME"))
+        print "%-5s %-10s %s" % (_("DEV"), _("LOADED"), _("FILENAME"))
         for device in range (0, nr_devices):
             try:
-                [loaded, image_type, filenames] = self.__dbus_iface.DeviceGetStatus(device)
+                [loaded, filenames] = self.__dbus_iface.DeviceGetStatus(device)
             except:
                 self.__print_error(_("Failed to get status of device %i: %s") % (device, sys.exc_value))
                 continue
             
             # First line is for all device's data, the rest are for additional filenames
-            print "%-5s %-10s %-10s %s" % (device, loaded, image_type, filenames[0])
+            print "%-5s %-10s %s" % (device, loaded, filenames[0])
             for i in range(1, len(filenames)):
-                print "%-5s %-10s %-10s %s" % ("", "", "", filenames[i])
+                print "%-5s %-10s %s" % ("", "", filenames[i])
         
         return True
         
