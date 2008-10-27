@@ -1,4 +1,4 @@
-.TH CDEMU 1 "May 19, 2008"
+.TH CDEMU 1 "Oct 26, 2008"
 .SH NAME
 cdemu \- a simple command-line CDEmu client
 .SH SYNOPSIS
@@ -21,6 +21,13 @@ in ~/.cdemu file; for more information, please read README file. The default can
 be overriden using
 .B --bus
 option.
+.SH ENCRYPTED IMAGES SUPPORT
+As of version 1.2.0, CDEmu daemon offers support for encrypted images. When password
+is required to load an image, cdemu-client will prompt for it and then send it to daemon.
+
+NOTE, HOWEVER, THAT THE PASSWORD IS SENT OVER D-BUS IN A PLAIN STRING FORM, WITHOUT 
+ANY PROTECTION. DEPENDING ON YOUR PRIVACY CONCERNS YOU MIGHT WISH TO AVOID LOADING 
+SUCH IMAGES.
 .SH OPTIONS
 .TP
 .B -h --help
