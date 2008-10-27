@@ -1,6 +1,6 @@
 /*
  *  libMirage: C2D image parser
- *  Copyright (C) 2006-2008 Henrik Stokseth
+ *  Copyright (C) 2008 Henrik Stokseth
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -25,7 +25,7 @@
 #endif
 
 #include "mirage.h"
-#include "image-c2d-disc.h"
+#include "image-c2d-parser.h"
 
 
 G_BEGIN_DECLS
@@ -39,27 +39,27 @@ G_BEGIN_DECLS
 #define C2D_FLAG_UNKNOWN     0x08 /* ? */
 #define C2D_FLAG_O           0x10 /* WinOnCD says it is the "O" flag. */
 
-#define C2D_MODE_AUDIO       0x00 /* CD-DA */
-#define C2D_MODE_MODE1       0x01 /* CD-ROM */
-#define C2D_MODE_MODE2       0x02 /* CD-ROM XA */
-#define C2D_MODE_AUDIO2      0xFF /* CD-DA */
+#define C2D_MODE_AUDIO  0x00 /* CD-DA */
+#define C2D_MODE_MODE1  0x01 /* CD-ROM */
+#define C2D_MODE_MODE2  0x02 /* CD-ROM XA */
+#define C2D_MODE_AUDIO2 0xFF /* CD-DA */
 
 
 #pragma pack(1)
 
 typedef struct {
-    gchar   signature[32];    /* Signature string: "Roxio Image File Format 3.0" || "Adaptec CeQuadrat VirtualCD File" */
-    guint16 header_size;      /* Length of header block */
-    guint16 has_upc_ean;      /* Boolean flag */
-    gchar   upc_ean[13];      /* UPC / EAN string */
-    guint8  dummy1;           /* (unknown) */
-    guint16 track_blocks;     /* Number of track blocks  */
-    guint32 size_cdtext;      /* Size of CD-Text blocks. CD-Text blocks follows header. */
-    guint32 offset_tracks;    /* Offset to track blocks  */
-    guint32 dummy2;           /* Offset to something? || 0x00000000 */
-    gchar   description[128]; /* Description string. Zero terminated. */
-    guint32 offset_c2ck;      /* Offset to "c2ck" block || 0x00000000 */
-} C2D_HeaderBlock;  /* length: as given in header block */
+    gchar signature[32]; /* Signature string: "Roxio Image File Format 3.0" || "Adaptec CeQuadrat VirtualCD File" */
+    guint16 header_size; /* Length of header block */
+    guint16 has_upc_ean; /* Boolean flag */
+    gchar upc_ean[13]; /* UPC / EAN string */
+    guint8 dummy1; /* (unknown) */
+    guint16 track_blocks; /* Number of track blocks  */
+    guint32 size_cdtext; /* Size of CD-Text blocks. CD-Text blocks follows header. */
+    guint32 offset_tracks; /* Offset to track blocks  */
+    guint32 dummy2; /* Offset to something? || 0x00000000 */
+    gchar description[128]; /* Description string. Zero terminated. */
+    guint32 offset_c2ck; /* Offset to "c2ck" block || 0x00000000 */
+} C2D_HeaderBlock; /* length: as given in header block */
 
 typedef struct {
     guint8 pack_type;
@@ -71,28 +71,28 @@ typedef struct {
 } C2D_CDTextBlock; /* length: 18 bytes */
 
 typedef struct {
-    guint32 block_size;   /* Length of this c2ck block (32) */
+    guint32 block_size; /* Length of this c2ck block (32) */
     gchar   signature[4]; /* Signature string: "C2CK" */
-    guint32 dummy1[2];    /* (unknown) */
-    guint64 next_offset;  /* Offset to the blocks after track data: WOCD, C2AW etc. */
-    guint32 dummy2[2];    /* (unknown) */
-} C2D_C2CKBlock;  /* length: 32 bytes */
+    guint32 dummy1[2]; /* (unknown) */
+    guint64 next_offset; /* Offset to the blocks after track data: WOCD, C2AW etc. */
+    guint32 dummy2[2]; /* (unknown) */
+} C2D_C2CKBlock; /* length: 32 bytes */
 
 typedef struct {
-    guint32 block_size;   /* Length of this track block (44) */
+    guint32 block_size; /* Length of this track block (44) */
     guint32 first_sector; /* First sector in track */   
-    guint32 last_sector;  /* Last sector in track */
+    guint32 last_sector; /* Last sector in track */
     guint64 image_offset; /* Image offset of track || 0xFFFFFFFF if index > 1 */
-    guint32 sector_size;  /* Bytes per sector */
-    gchar   isrc[12];     /* ISRC string if index == 1 */
-    guint8  flags;        /* Track flags */
-    guint8  session;      /* Track session */
-    guint8  point;        /* Track point */
-    guint8  index;        /* Index */
-    guint8  mode;         /* Track mode */
-    guint8  compressed;   /* Boolean flag */
-    guint16 dummy;        /* (unknown) */
-} C2D_TrackBlock;  /* length: 44 bytes */
+    guint32 sector_size; /* Bytes per sector */
+    gchar isrc[12]; /* ISRC string if index == 1 */
+    guint8 flags; /* Track flags */
+    guint8 session; /* Track session */
+    guint8 point; /* Track point */
+    guint8 index; /* Index */
+    guint8 mode; /* Track mode */
+    guint8 compressed; /* Boolean flag */
+    guint16 dummy; /* (unknown) */
+} C2D_TrackBlock; /* length: 44 bytes */
 
 typedef struct {
     guint32 dummy; /* (unknown) */
@@ -100,22 +100,22 @@ typedef struct {
 
 typedef struct {
     guint32 compressed_size; /* Size of compressed data */
-    guint64 image_offset;    /* Offset of compressed data */
+    guint64 image_offset; /* Offset of compressed data */
 } C2D_Z_Info; /* length: 12  bytes */
 
 typedef struct {
-    guint32 block_size;   /* Length of this c2aw block (32) */
-    gchar   signature[4]; /* Signature string: "C2AW" */
-    guint64 info_size;    /* size of artwork info; follows this block */
-    guint64 next_offset;  /* Offset to next block */
-    guint32 dummy[2];     /* (unknown) */
+    guint32 block_size; /* Length of this c2aw block (32) */
+    gchar signature[4]; /* Signature string: "C2AW" */
+    guint64 info_size; /* size of artwork info; follows this block */
+    guint64 next_offset; /* Offset to next block */
+    guint32 dummy[2]; /* (unknown) */
 } C2D_C2AWBlock; /* length: 32 bytes */
 
 typedef struct {
-    guint32 block_size;   /* Length of this wocd block (32) */
-    gchar   signature[4]; /* Signature string: "WOCD" */
-    guint32 dummy[6];     /* (unknown) */
-} C2D_WOCDBlock;  /* length: 32 bytes */
+    guint32 block_size; /* Length of this wocd block (32) */
+    gchar signature[4]; /* Signature string: "WOCD" */
+    guint32 dummy[6]; /* (unknown) */
+} C2D_WOCDBlock; /* length: 32 bytes */
 
 #pragma pack()
 
