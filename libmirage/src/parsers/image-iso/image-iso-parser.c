@@ -182,20 +182,13 @@ static gboolean __mirage_parser_iso_load_track (MIRAGE_Parser *self, gchar *file
     MIRAGE_Parser_ISOPrivate *_priv = MIRAGE_PARSER_ISO_GET_PRIVATE(self);
 
     gboolean succeeded = TRUE;
-    GObject *mirage = NULL;
     GObject *session = NULL;
     GObject *track = NULL;
     GObject *data_fragment = NULL;
 
     /* Create data fragment */
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: creating data fragment\n", __func__);
-    
-    if (!mirage_object_get_mirage(MIRAGE_OBJECT(self), &mirage, error)) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to get Mirage object!\n", __func__);
-        return FALSE;
-    }
-    mirage_mirage_create_fragment(MIRAGE_MIRAGE(mirage), MIRAGE_TYPE_FINTERFACE_BINARY, filename, &data_fragment, error);
-    g_object_unref(mirage);
+    data_fragment = libmirage_create_fragment(MIRAGE_TYPE_FINTERFACE_BINARY, filename, error);
     if (!data_fragment) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to create BINARY fragment!\n", __func__);
         return FALSE;

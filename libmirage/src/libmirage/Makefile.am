@@ -1,7 +1,7 @@
 lib_LTLIBRARIES = libmirage.la
 
 libmirage_la_SOURCES = \
-    mirage-mirage.c \
+    mirage.c \
     mirage-cdtext-encdec.c \
     mirage-debug.c \
     mirage-disc.c \

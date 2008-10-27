@@ -265,8 +265,7 @@ gboolean mirage_parser_add_redbook_pregap (MIRAGE_Parser *self, GObject *disc, G
         }
 
         /* Add pregap fragment (empty) */
-        GObject *pregap_fragment = NULL;
-        mirage_mirage_create_fragment(MIRAGE_MIRAGE(libmirage_m), MIRAGE_TYPE_FINTERFACE_NULL, "NULL", &pregap_fragment, NULL);
+        GObject *pregap_fragment = libmirage_create_fragment(MIRAGE_TYPE_FINTERFACE_NULL, "NULL", NULL);
         if (!pregap_fragment) {
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to create pregap fragment!\n", __func__);
             g_object_unref(session);
