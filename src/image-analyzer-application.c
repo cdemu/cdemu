@@ -625,25 +625,34 @@ static gchar *__image_analyzer_application_get_password (gpointer user_data, GEr
     IMAGE_ANALYZER_ApplicationPrivate *_priv = IMAGE_ANALYZER_APPLICATION_GET_PRIVATE(self);
     gchar *password;
     GtkDialog *dialog;
-    GtkWidget *entry, *label;
+    GtkWidget *hbox, *entry, *label;
     gint result;
         
-    dialog = GTK_DIALOG(gtk_dialog_new_with_buttons("Enter password", GTK_WINDOW(_priv->window), GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT, GTK_STOCK_OK, GTK_RESPONSE_OK, GTK_STOCK_CANCEL, GTK_RESPONSE_REJECT, NULL));
+    dialog = GTK_DIALOG(gtk_dialog_new_with_buttons(
+        "Enter password", 
+        GTK_WINDOW(_priv->window), 
+        GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT, 
+        GTK_STOCK_OK, GTK_RESPONSE_OK, 
+        GTK_STOCK_CANCEL, GTK_RESPONSE_REJECT, 
+        NULL));
     gtk_dialog_set_default_response(GTK_DIALOG(dialog), GTK_RESPONSE_ACCEPT);
-        
+    
     gtk_box_set_spacing(GTK_BOX(dialog->vbox), 5);
     
-    label = gtk_label_new("The image you are trying to load is encrypted. Please enter password:");
-    gtk_widget_show(label);
-    gtk_box_pack_start(GTK_BOX(dialog->vbox), label, FALSE, FALSE, 0);    
-    gtk_label_set_line_wrap(GTK_LABEL(label), TRUE);
+    label = gtk_label_new("The image you are trying to load is encrypted.");
+    gtk_box_pack_start(GTK_BOX(dialog->vbox), label, TRUE, TRUE, 0);    
     
     entry = gtk_entry_new();
-    gtk_widget_show(entry);
-    gtk_box_pack_start(GTK_BOX(dialog->vbox), entry, FALSE, FALSE, 0);
     gtk_entry_set_visibility(GTK_ENTRY(entry), FALSE);
     
+    hbox = gtk_hbox_new(FALSE, 5);
+    gtk_box_pack_start(GTK_BOX(hbox), gtk_label_new("Password: "), FALSE, FALSE, 0);
+    gtk_box_pack_start(GTK_BOX(hbox), entry, TRUE, TRUE, 0);
+    
+    gtk_box_pack_start(GTK_BOX(dialog->vbox), hbox, FALSE, FALSE, 0);
+    
     /* Run dialog */
+    gtk_widget_show_all(GTK_WIDGET(dialog));
     result = gtk_dialog_run(dialog);
     switch (result) {
         case GTK_RESPONSE_OK: {
