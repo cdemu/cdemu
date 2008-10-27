@@ -49,6 +49,7 @@
         <method name="DeviceLoad">
             <arg name="device_number"       type="i"        direction="in"/>
             <arg name="file_names"          type="as"       direction="in"/>
+            <arg name="parameters"          type="a{sv}"    direction="in"/>
         </method>
 
         <method name="DeviceUnload">
