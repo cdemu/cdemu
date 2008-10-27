@@ -9,10 +9,10 @@ plugin_LTLIBRARIES = image-cdi.la
 
 noinst_HEADERS = \
     image-cdi.h \
-    image-cdi-disc.h
+    image-cdi-parser.h
 
 image_cdi_la_SOURCES = \
-    image-cdi-disc.c \
+    image-cdi-parser.c \
     image-cdi-plugin.c
 
 image_cdi_la_LIBADD = \

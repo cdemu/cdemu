@@ -1,5 +1,5 @@
 /*
- *  libMirage: CDI image parser: Disc object
+ *  libMirage: CDI image parser: Parser object
  *  Copyright (C) 2007-2008 Rok Mandeljc
  *
  *  This program is free software; you can redistribute it and/or modify
@@ -22,19 +22,18 @@
 /******************************************************************************\
  *                              Private structure                             *
 \******************************************************************************/
-#define MIRAGE_DISC_CDI_GET_PRIVATE(obj) (G_TYPE_INSTANCE_GET_PRIVATE((obj), MIRAGE_TYPE_DISC_CDI, MIRAGE_Disc_CDIPrivate))
+#define MIRAGE_PARSER_CDI_GET_PRIVATE(obj) (G_TYPE_INSTANCE_GET_PRIVATE((obj), MIRAGE_TYPE_PARSER_CDI, MIRAGE_Parser_CDIPrivate))
 
-typedef struct {    
+typedef struct {
+    GObject *disc;
+    
     gboolean medium_type_set;
     
     guint64 cur_offset; /* Current offset within track file */
     
     guint8 *cdi_data;
     guint8 *cur_ptr;
-    
-    /* Parser info */
-    MIRAGE_ParserInfo *parser_info;
-} MIRAGE_Disc_CDIPrivate;
+} MIRAGE_Parser_CDIPrivate;
 
 
 /* NOTE: as far as my experiments show, descriptor has the following structure:
@@ -62,7 +61,7 @@ typedef struct {
     gint expected;
 } ExpectedField;
 
-static void __mirage_disc_cdi_whine_on_unexpected (MIRAGE_Disc *self, guint8 *data, ExpectedField *fields, gint fields_len, gchar *func_name, gchar *extra_comment) {
+static void __mirage_parser_cdi_whine_on_unexpected (MIRAGE_Parser *self, guint8 *data, ExpectedField *fields, gint fields_len, gchar *func_name, gchar *extra_comment) {
     gint z;
     
     for (z = 0; z < fields_len; z++) {
@@ -74,20 +73,20 @@ static void __mirage_disc_cdi_whine_on_unexpected (MIRAGE_Disc *self, guint8 *da
 #endif
 
 
-static gboolean __mirage_disc_cdi_decode_medium_type (MIRAGE_Disc *self, gint medium_type, GError **error) {
-    MIRAGE_Disc_CDIPrivate *_priv = MIRAGE_DISC_CDI_GET_PRIVATE(self);
+static gboolean __mirage_parser_cdi_decode_medium_type (MIRAGE_Parser *self, gint medium_type, GError **error) {
+    MIRAGE_Parser_CDIPrivate *_priv = MIRAGE_PARSER_CDI_GET_PRIVATE(self);
     
     /* Decode and set medium type only if we haven't done it yet */
     if (!_priv->medium_type_set) {        
         switch (medium_type) {
             case 0x98: {
                 /* CD-ROM */
-                mirage_disc_set_medium_type(self, MIRAGE_MEDIUM_CD, NULL);
+                mirage_disc_set_medium_type(MIRAGE_DISC(_priv->disc), MIRAGE_MEDIUM_CD, NULL);
                 break;
             }
             case 0x38: {
                 /* DVD-ROM */
-                mirage_disc_set_medium_type(self, MIRAGE_MEDIUM_DVD, NULL);
+                mirage_disc_set_medium_type(MIRAGE_DISC(_priv->disc), MIRAGE_MEDIUM_DVD, NULL);
                 break;
             }
             default: {
@@ -101,7 +100,7 @@ static gboolean __mirage_disc_cdi_decode_medium_type (MIRAGE_Disc *self, gint me
     return TRUE;
 }
 
-static gboolean __mirage_disc_cdi_decode_track_mode (MIRAGE_Disc *self, gint raw_mode, gint *decoded_mode, gint *tfile_format, GError **error) {
+static gboolean __mirage_parser_cdi_decode_track_mode (MIRAGE_Parser *self, gint raw_mode, gint *decoded_mode, gint *tfile_format, GError **error) {
     /* Simple; raw mode represents track mode. And if it happens to be audio, guess
        what the data format will be? */
     switch (raw_mode) {
@@ -131,7 +130,7 @@ static gboolean __mirage_disc_cdi_decode_track_mode (MIRAGE_Disc *self, gint raw
 }
 
 
-static gboolean __mirage_disc_cdi_decode_read_mode (MIRAGE_Disc *self, gint read_mode, gint *tfile_sectsize, gint *sfile_sectsize, gint *sfile_format, GError **error) {
+static gboolean __mirage_parser_cdi_decode_read_mode (MIRAGE_Parser *self, gint read_mode, gint *tfile_sectsize, gint *sfile_sectsize, gint *sfile_format, GError **error) {
     switch (read_mode) {
         case 0: {
             /* 2048-byte sectors (valid only with Mode 1 tracks) */
@@ -172,7 +171,7 @@ static gboolean __mirage_disc_cdi_decode_read_mode (MIRAGE_Disc *self, gint read
     return TRUE;
 }
 
-static gboolean __mirage_disc_cdi_decode_session_type (MIRAGE_Disc *self, gint raw_session_type, gint *session_type, GError **error) {
+static gboolean __mirage_parser_cdi_decode_session_type (MIRAGE_Parser *self, gint raw_session_type, gint *session_type, GError **error) {
     switch (raw_session_type) {
         case 0: {
             /* CD-DA */
@@ -201,8 +200,8 @@ static gboolean __mirage_disc_cdi_decode_session_type (MIRAGE_Disc *self, gint r
 
 /* Function for parsing header that appears at the beginning of every track block
    and at the beginning of the disc block */
-static gboolean __mirage_disc_cdi_parse_header (MIRAGE_Disc *self, GError **error) {
-    MIRAGE_Disc_CDIPrivate *_priv = MIRAGE_DISC_CDI_GET_PRIVATE(self);
+static gboolean __mirage_parser_cdi_parse_header (MIRAGE_Parser *self, GError **error) {
+    MIRAGE_Parser_CDIPrivate *_priv = MIRAGE_PARSER_CDI_GET_PRIVATE(self);
     /* Recongised fields */
     gint num_all_tracks = 0;
     gint filename_length = 0;
@@ -238,7 +237,7 @@ static gboolean __mirage_disc_cdi_parse_header (MIRAGE_Disc *self, GError **erro
         { 14, 0x2A },
         { 15, 0x06 }*/
     };
-    __mirage_disc_cdi_whine_on_unexpected(self, _priv->cur_ptr, fields, G_N_ELEMENTS(fields), (gchar *)__func__, "Pre-filename fields");
+    __mirage_parser_cdi_whine_on_unexpected(self, _priv->cur_ptr, fields, G_N_ELEMENTS(fields), (gchar *)__func__, "Pre-filename fields");
     }
 #endif
     num_all_tracks = MIRAGE_CAST_DATA(_priv->cur_ptr, 15, guint8);
@@ -290,7 +289,7 @@ static gboolean __mirage_disc_cdi_parse_header (MIRAGE_Disc *self, GError **erro
         { 27, 0x00 },
         { 28, 0x00 },
     };
-    __mirage_disc_cdi_whine_on_unexpected(self, _priv->cur_ptr, fields, G_N_ELEMENTS(fields), (gchar *)__func__, "Post-filename fields");
+    __mirage_parser_cdi_whine_on_unexpected(self, _priv->cur_ptr, fields, G_N_ELEMENTS(fields), (gchar *)__func__, "Post-filename fields");
     }
 #endif
     disc_capacity = MIRAGE_CAST_DATA(_priv->cur_ptr, 23, guint32);
@@ -302,13 +301,13 @@ static gboolean __mirage_disc_cdi_parse_header (MIRAGE_Disc *self, GError **erro
     _priv->cur_ptr += sizeof(guint16);
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: medium type: 0x%X\n", __func__, medium_type);
     
-    __mirage_disc_cdi_decode_medium_type(self, medium_type, NULL);
+    __mirage_parser_cdi_decode_medium_type(self, medium_type, NULL);
         
     return TRUE;
 }
 
-static gboolean __mirage_disc_cdi_parse_cdtext (MIRAGE_Disc *self, GError **error) {
-    MIRAGE_Disc_CDIPrivate *_priv = MIRAGE_DISC_CDI_GET_PRIVATE(self);
+static gboolean __mirage_parser_cdi_parse_cdtext (MIRAGE_Parser *self, GError **error) {
+    MIRAGE_Parser_CDIPrivate *_priv = MIRAGE_PARSER_CDI_GET_PRIVATE(self);
 
     gint i;
     
@@ -329,8 +328,8 @@ static gboolean __mirage_disc_cdi_parse_cdtext (MIRAGE_Disc *self, GError **erro
     return TRUE;
 }
 
-static gboolean __mirage_disc_cdi_load_track (MIRAGE_Disc *self, GError **error) {
-    MIRAGE_Disc_CDIPrivate *_priv = MIRAGE_DISC_CDI_GET_PRIVATE(self);
+static gboolean __mirage_parser_cdi_load_track (MIRAGE_Parser *self, GError **error) {
+    MIRAGE_Parser_CDIPrivate *_priv = MIRAGE_PARSER_CDI_GET_PRIVATE(self);
     gboolean succeeded = TRUE;
     gint i;
     
@@ -357,7 +356,7 @@ static gboolean __mirage_disc_cdi_load_track (MIRAGE_Disc *self, GError **error)
     \**********************************************************************/
     
     /* Header */
-    if (!__mirage_disc_cdi_parse_header(self, error)) {
+    if (!__mirage_parser_cdi_parse_header(self, error)) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to parse header!\n", __func__);
         succeeded = FALSE;
         goto end;
@@ -382,7 +381,7 @@ static gboolean __mirage_disc_cdi_load_track (MIRAGE_Disc *self, GError **error)
     
     for (i = 0; i < num_cdtext_blocks; i++) {
         /* Parse CD-Text */
-        __mirage_disc_cdi_parse_cdtext(self, error);
+        __mirage_parser_cdi_parse_cdtext(self, error);
     }
     
     /* 2 bytes after indices are undeciphered yet */
@@ -392,7 +391,7 @@ static gboolean __mirage_disc_cdi_load_track (MIRAGE_Disc *self, GError **error)
         { 0, 0x00 },
         { 1, 0x00 },
     };
-    __mirage_disc_cdi_whine_on_unexpected(self, _priv->cur_ptr, fields, G_N_ELEMENTS(fields), (gchar *)__func__, "2 bytes after CD-TEXT");
+    __mirage_parser_cdi_whine_on_unexpected(self, _priv->cur_ptr, fields, G_N_ELEMENTS(fields), (gchar *)__func__, "2 bytes after CD-TEXT");
     }
 #endif
     _priv->cur_ptr += 2;
@@ -412,7 +411,7 @@ static gboolean __mirage_disc_cdi_load_track (MIRAGE_Disc *self, GError **error)
         {  2, 0x00 },
         {  3, 0x00 },
     };
-    __mirage_disc_cdi_whine_on_unexpected(self, _priv->cur_ptr, fields, G_N_ELEMENTS(fields), (gchar *)__func__, "4 bytes after track mode");
+    __mirage_parser_cdi_whine_on_unexpected(self, _priv->cur_ptr, fields, G_N_ELEMENTS(fields), (gchar *)__func__, "4 bytes after track mode");
     }
 #endif
     _priv->cur_ptr += 4;
@@ -427,8 +426,6 @@ static gboolean __mirage_disc_cdi_load_track (MIRAGE_Disc *self, GError **error)
     track_idx = MIRAGE_CAST_DATA(_priv->cur_ptr, 0, guint32);
     _priv->cur_ptr += sizeof(guint32);
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: track index: %i\n", __func__, track_idx);
-    
-    
     
     /* Next is track start address... */
     start_address = MIRAGE_CAST_DATA(_priv->cur_ptr, 0, guint32);
@@ -462,7 +459,7 @@ static gboolean __mirage_disc_cdi_load_track (MIRAGE_Disc *self, GError **error)
         { 14, 0x00 },
         { 15, 0x00 },
     };
-    __mirage_disc_cdi_whine_on_unexpected(self, _priv->cur_ptr, fields, G_N_ELEMENTS(fields), (gchar *)__func__, "16 bytes after track length");
+    __mirage_parser_cdi_whine_on_unexpected(self, _priv->cur_ptr, fields, G_N_ELEMENTS(fields), (gchar *)__func__, "16 bytes after track length");
     }
 #endif
     _priv->cur_ptr += 16;
@@ -496,7 +493,7 @@ static gboolean __mirage_disc_cdi_load_track (MIRAGE_Disc *self, GError **error)
         {  7, 0x00 },
         {  8, 0x00 },
     };
-    __mirage_disc_cdi_whine_on_unexpected(self, _priv->cur_ptr, fields, G_N_ELEMENTS(fields), (gchar *)__func__, "9 bytes after track CTL");
+    __mirage_parser_cdi_whine_on_unexpected(self, _priv->cur_ptr, fields, G_N_ELEMENTS(fields), (gchar *)__func__, "9 bytes after track CTL");
     }
 #endif
     _priv->cur_ptr += 9;
@@ -622,7 +619,7 @@ static gboolean __mirage_disc_cdi_load_track (MIRAGE_Disc *self, GError **error)
         { 97, 0xFF },
         { 98, 0xFF },*/
     };
-    __mirage_disc_cdi_whine_on_unexpected(self, _priv->cur_ptr, fields, G_N_ELEMENTS(fields), (gchar *)__func__, "99 bytes at the end");
+    __mirage_parser_cdi_whine_on_unexpected(self, _priv->cur_ptr, fields, G_N_ELEMENTS(fields), (gchar *)__func__, "99 bytes at the end");
     }
 #endif
     session_type = MIRAGE_CAST_DATA(_priv->cur_ptr, 87, guint8);
@@ -636,8 +633,6 @@ static gboolean __mirage_disc_cdi_load_track (MIRAGE_Disc *self, GError **error)
     /**********************************************************************\
      *                         Track data setting                         *
     \**********************************************************************/
-    GObject *mirage = NULL;
-    
     FILE *tfile_handle = NULL;
     gint tfile_sectsize = 0;
     guint64 tfile_offset = _priv->cur_offset;
@@ -657,27 +652,26 @@ static gboolean __mirage_disc_cdi_load_track (MIRAGE_Disc *self, GError **error)
     
     
     /* Prepare stuff for BINARY fragment */
-    mirage_disc_get_filenames(self, &filenames, NULL);
+    mirage_disc_get_filenames(MIRAGE_DISC(_priv->disc), &filenames, NULL);
     tfile_handle = g_fopen(filenames[0], "r");    
     
     /* Track mode; also determines BINARY format */
     gint decoded_mode = 0;
-    if (!__mirage_disc_cdi_decode_track_mode(self, track_mode, &decoded_mode, &tfile_format, error)) {
+    if (!__mirage_parser_cdi_decode_track_mode(self, track_mode, &decoded_mode, &tfile_format, error)) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: failed to decode track mode!\n", __func__);
         succeeded = FALSE;
         goto end;
     }
     
     /* Read mode; determines sector size for both main channel and subchannel */
-    if (!__mirage_disc_cdi_decode_read_mode(self, read_mode, &tfile_sectsize, &sfile_sectsize, &sfile_format, error)) {
+    if (!__mirage_parser_cdi_decode_read_mode(self, read_mode, &tfile_sectsize, &sfile_sectsize, &sfile_format, error)) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: failed to decode read mode!\n", __func__);
         succeeded = FALSE;
         goto end;
     }
     
-    
     /* Fetch current session */
-    if (!mirage_disc_get_session_by_index(self, -1, &cur_session, error)) {
+    if (!mirage_disc_get_session_by_index(MIRAGE_DISC(_priv->disc), -1, &cur_session, error)) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: failed to get last session!\n", __func__);
         succeeded = FALSE;
         goto end;
@@ -694,14 +688,7 @@ static gboolean __mirage_disc_cdi_load_track (MIRAGE_Disc *self, GError **error)
     mirage_track_set_mode(MIRAGE_TRACK(cur_track), decoded_mode, NULL);
     
     /* Create BINARY fragment */    
-    if (!mirage_object_get_mirage(MIRAGE_OBJECT(self), &mirage, error)) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: failed to get Mirage object!\n", __func__);
-        succeeded = FALSE;
-        goto free_track;
-    }
-    
-    mirage_mirage_create_fragment(MIRAGE_MIRAGE(mirage), MIRAGE_TYPE_FINTERFACE_BINARY, filenames[0], &data_fragment, error);
-    g_object_unref(mirage);
+    data_fragment = libmirage_create_fragment(MIRAGE_TYPE_FINTERFACE_BINARY, filenames[0], error);
     if (!data_fragment) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: failed to create BINARY fragment!\n", __func__);
         goto free_track;
@@ -749,7 +736,7 @@ static gboolean __mirage_disc_cdi_load_track (MIRAGE_Disc *self, GError **error)
     
     /* Set session type, if this is the last track in session */
     if (!not_last_track) {
-        __mirage_disc_cdi_decode_session_type(self, session_type, &session_type, NULL);
+        __mirage_parser_cdi_decode_session_type(self, session_type, &session_type, NULL);
         mirage_session_set_session_type(MIRAGE_SESSION(cur_session), session_type, NULL);
     }
     
@@ -768,8 +755,8 @@ end:
     return succeeded;
 }
 
-static gboolean __mirage_disc_cdi_load_session (MIRAGE_Disc *self, GError **error) {
-    MIRAGE_Disc_CDIPrivate *_priv = MIRAGE_DISC_CDI_GET_PRIVATE(self);    
+static gboolean __mirage_parser_cdi_load_session (MIRAGE_Parser *self, GError **error) {
+    MIRAGE_Parser_CDIPrivate *_priv = MIRAGE_PARSER_CDI_GET_PRIVATE(self);    
     gint num_tracks = 0;
     gint i;
     
@@ -796,7 +783,7 @@ static gboolean __mirage_disc_cdi_load_session (MIRAGE_Disc *self, GError **erro
         { 13, 0xFF },
         { 14, 0xFF },
     };
-    __mirage_disc_cdi_whine_on_unexpected(self, _priv->cur_ptr, fields, G_N_ELEMENTS(fields), (gchar *)__func__, "Session fields");
+    __mirage_parser_cdi_whine_on_unexpected(self, _priv->cur_ptr, fields, G_N_ELEMENTS(fields), (gchar *)__func__, "Session fields");
     }
 #endif
     
@@ -804,15 +791,15 @@ static gboolean __mirage_disc_cdi_load_session (MIRAGE_Disc *self, GError **erro
     
     if (num_tracks) {
         /* Add session */
-        if (!mirage_disc_add_session_by_index(self, -1, NULL, error)) {
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: failed to add session to disc!\n", __func__);
+        if (!mirage_disc_add_session_by_index(MIRAGE_DISC(_priv->disc), -1, NULL, error)) {
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: failed to add session to parser!\n", __func__);
             return FALSE;
         }
         
         /* Load tracks */
         for (i = 0; i < num_tracks; i++) {
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: *** Loading track %i ***\n", __func__, i);
-            if (!__mirage_disc_cdi_load_track(self, error)) {
+            if (!__mirage_parser_cdi_load_track(self, error)) {
                 MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: failed to load track!\n", __func__);
                 return FALSE;
             }
@@ -826,8 +813,8 @@ static gboolean __mirage_disc_cdi_load_session (MIRAGE_Disc *self, GError **erro
     return TRUE;
 }
 
-static gboolean __mirage_disc_cdi_load_disc (MIRAGE_Disc *self, GError **error) {
-    MIRAGE_Disc_CDIPrivate *_priv = MIRAGE_DISC_CDI_GET_PRIVATE(self);
+static gboolean __mirage_parser_cdi_load_disc (MIRAGE_Parser *self, GError **error) {
+    MIRAGE_Parser_CDIPrivate *_priv = MIRAGE_PARSER_CDI_GET_PRIVATE(self);
     gboolean succeeded = TRUE;
     gint num_sessions = 0;
     gint i;
@@ -842,7 +829,7 @@ static gboolean __mirage_disc_cdi_load_disc (MIRAGE_Disc *self, GError **error) 
     for (i = 0; i <= num_sessions; i++) {
         /* Load session */
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: *** Loading session %i ***\n", __func__, i);
-        if (!__mirage_disc_cdi_load_session(self, error)) {
+        if (!__mirage_parser_cdi_load_session(self, error)) {
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: failed to load session!\n", __func__);
             succeeded = FALSE;
             goto end;
@@ -861,7 +848,7 @@ static gboolean __mirage_disc_cdi_load_disc (MIRAGE_Disc *self, GError **error) 
     guint8 *cdtext_data = NULL;
     
     /* Header */
-    if (!__mirage_disc_cdi_parse_header(self, error)) {
+    if (!__mirage_parser_cdi_parse_header(self, error)) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: failes to parse header!\n", __func__);
         succeeded = FALSE;
         goto end;
@@ -899,7 +886,7 @@ static gboolean __mirage_disc_cdi_load_disc (MIRAGE_Disc *self, GError **error) 
         { 7, 0x00 },
         { 8, 0x00 },
     };
-    __mirage_disc_cdi_whine_on_unexpected(self, _priv->cur_ptr, fields, G_N_ELEMENTS(fields), (gchar *)__func__, "9 bytes after volume ID");
+    __mirage_parser_cdi_whine_on_unexpected(self, _priv->cur_ptr, fields, G_N_ELEMENTS(fields), (gchar *)__func__, "9 bytes after volume ID");
     }
 #endif
     _priv->cur_ptr += 9;
@@ -922,7 +909,7 @@ static gboolean __mirage_disc_cdi_load_disc (MIRAGE_Disc *self, GError **error) 
     if (cdtext_length) {
         /* FIXME: CD-TEXT data is for the first session only, I think... */
         GObject *first_session = NULL;
-        mirage_disc_get_session_by_index(self, 0, &first_session, NULL);
+        mirage_disc_get_session_by_index(MIRAGE_DISC(_priv->disc), 0, &first_session, NULL);
         if (!mirage_session_set_cdtext_data(MIRAGE_SESSION(first_session), cdtext_data, cdtext_length, NULL)) {
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to load CD-TEXT!\n");
         }
@@ -949,7 +936,7 @@ static gboolean __mirage_disc_cdi_load_disc (MIRAGE_Disc *self, GError **error) 
         { 10, 0x00 },
         { 11, 0x80 },
     };
-    __mirage_disc_cdi_whine_on_unexpected(self, _priv->cur_ptr, fields, G_N_ELEMENTS(fields), (gchar *)__func__, "Last 12 bytes");
+    __mirage_parser_cdi_whine_on_unexpected(self, _priv->cur_ptr, fields, G_N_ELEMENTS(fields), (gchar *)__func__, "Last 12 bytes");
     }
 #endif
     _priv->cur_ptr += 12;
@@ -959,88 +946,88 @@ end:
 }
 
 /******************************************************************************\
- *                     MIRAGE_Disc methods implementation                     *
+ *                     MIRAGE_Parser methods implementation                     *
 \******************************************************************************/
-static gboolean __mirage_disc_cdi_get_parser_info (MIRAGE_Disc *self, MIRAGE_ParserInfo **parser_info, GError **error) {
-    MIRAGE_Disc_CDIPrivate *_priv = MIRAGE_DISC_CDI_GET_PRIVATE(self);
-    *parser_info = _priv->parser_info;
-    return TRUE;
-}
-
-static gboolean __mirage_disc_cdi_can_load_file (MIRAGE_Disc *self, gchar *filename, GError **error) {
-    MIRAGE_Disc_CDIPrivate *_priv = MIRAGE_DISC_CDI_GET_PRIVATE(self);
-
-    /* Does file exist? */
-    if (!g_file_test(filename, G_FILE_TEST_IS_REGULAR)) {
-        return FALSE;
-    }
-    
-    /* Check supported suffixes */
-    return mirage_helper_match_suffixes(filename, _priv->parser_info->suffixes);
-}
-
-static gboolean __mirage_disc_cdi_load_image (MIRAGE_Disc *self, gchar **filenames, GError **error) {
-    MIRAGE_Disc_CDIPrivate *_priv = MIRAGE_DISC_CDI_GET_PRIVATE(self);
-    
+static gboolean __mirage_parser_cdi_load_image (MIRAGE_Parser *self, gchar **filenames, GObject **disc, GError **error) {
+    MIRAGE_Parser_CDIPrivate *_priv = MIRAGE_PARSER_CDI_GET_PRIVATE(self);
     gboolean succeeded = TRUE;
-    guint64 offset = 0;
-    gint32 descriptor_length = 0;
-    size_t blocks_read;
+    FILE *file;
+    guint64 offset;
+    gint32 descriptor_length;
     
-    /* For now, CDI parser supports only one-file images */
-    if (g_strv_length(filenames) > 1) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: only single-file images supported!\n", __func__);
-        mirage_error(MIRAGE_E_SINGLEFILE, error);
+    
+    /* Check if we can load the file; we check the suffix */
+    if (!mirage_helper_has_suffix(filenames[0], ".cdi")) {
+        mirage_error(MIRAGE_E_CANTHANDLE, error);
         return FALSE;
     }
-    
+
     /* Open file */
-    FILE *file = g_fopen(filenames[0], "r");
+    file = g_fopen(filenames[0], "r");
     if (!file) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to open file '%s'!\n", __func__, filenames[0]);
         mirage_error(MIRAGE_E_IMAGEFILE, error);
         return FALSE;
     }
     
-    /* Set filename */
-    mirage_disc_set_filenames(self, filenames, NULL);
+    /* Create disc */
+    _priv->disc = g_object_new(MIRAGE_TYPE_DISC, NULL);
     
+    mirage_disc_set_filenames(MIRAGE_DISC(_priv->disc), filenames, NULL);
+
     /* The descriptor is stored at the end of CDI image; I'm quite positive that
        last four bytes represent length of descriptor data */
     offset = -(guint64)(sizeof(descriptor_length));
     fseeko(file, offset, SEEK_END);
-    blocks_read = fread(&descriptor_length, sizeof(descriptor_length), 1, file);
-    if (blocks_read < 1) return FALSE;
+    if (fread(&descriptor_length, sizeof(descriptor_length), 1, file) < 1) {
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read descriptor lenght!\n", __func__);
+        mirage_error(MIRAGE_E_READFAILED, error);
+        succeeded = FALSE;
+        goto end;
+    }
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: CDI descriptor length: 0x%X\n", __func__, descriptor_length);
     
     /* Allocate descriptor data and read it */
     _priv->cur_ptr = _priv->cdi_data = g_malloc0(descriptor_length);
     offset = -(guint64)(descriptor_length);
     fseeko(file, offset, SEEK_END);
-    blocks_read = fread(_priv->cdi_data, descriptor_length, 1, file);
-    if (blocks_read < 1) return FALSE;
-    
-    /* Close file */
-    fclose(file);
-    
+    if (fread(_priv->cdi_data, descriptor_length, 1, file) < 1) {
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read descriptor!\n", __func__);
+        mirage_error(MIRAGE_E_READFAILED, error);
+        succeeded = FALSE;
+        goto end;
+    }
+        
     /* Parse the descriptor */
-    succeeded = __mirage_disc_cdi_load_disc(self, error);
+    succeeded = __mirage_parser_cdi_load_disc(self, error);
     
     /* Dirty test: check if size of parsed descriptor equals to declared size
        (minus 4 bytes which make up declared size...) */
     if (_priv->cur_ptr - _priv->cdi_data != descriptor_length - 4) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: size of parsed descriptor mismatch, Dave. Expect trouble... (%d != %d)\n", __func__, _priv->cur_ptr - _priv->cdi_data, descriptor_length);
     } else {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: disc seems to have been loaded successfully\n", __func__);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: parser seems to have been loaded successfully\n", __func__);
     }
     
-    /* Make disc start at -150... it seems both CD and DVD images start at -150
+    /* Make parser start at -150... it seems both CD and DVD images start at -150
        in CDI (regardless of medium, there's 150 sectors pregap at the beginning) */
-    mirage_disc_layout_set_start_sector(self, -150, NULL);
-    
+    mirage_disc_layout_set_start_sector(MIRAGE_DISC(_priv->disc), -150, NULL);
+
+end:
     /* Free descriptor data */
     g_free(_priv->cdi_data);
+        
+    /* Close file */
+    fclose(file);
 
+    /* Return disc */
+    if (succeeded) {
+        *disc = _priv->disc;
+    } else {
+        g_object_unref(_priv->disc);
+        *disc = NULL;
+    }
+        
     return succeeded;
 }
 
@@ -1049,20 +1036,16 @@ static gboolean __mirage_disc_cdi_load_image (MIRAGE_Disc *self, gchar **filenam
  *                                Object init                                 *
 \******************************************************************************/
 /* Our parent class */
-static MIRAGE_DiscClass *parent_class = NULL;
+static MIRAGE_ParserClass *parent_class = NULL;
 
-static void __mirage_disc_cdi_instance_init (GTypeInstance *instance, gpointer g_class) {
-    MIRAGE_Disc_CDI *self = MIRAGE_DISC_CDI(instance);
-    MIRAGE_Disc_CDIPrivate *_priv = MIRAGE_DISC_CDI_GET_PRIVATE(self);
-    
-    /* Create parser info */
-    _priv->parser_info = mirage_helper_create_parser_info(
+static void __mirage_parser_cdi_instance_init (GTypeInstance *instance, gpointer g_class) {
+    mirage_parser_generate_parser_info(MIRAGE_PARSER(instance),
         "PARSER-CDI",
         "CDI Image Parser",
         "1.0.0",
         "Rok Mandeljc",
         FALSE,
-        "CDI (DiscJuggler) images",
+        "CDI (ParserJuggler) images",
         2, ".cdi", NULL
     );
     
@@ -1070,58 +1053,53 @@ static void __mirage_disc_cdi_instance_init (GTypeInstance *instance, gpointer g
 }
 
 
-static void __mirage_disc_cdi_finalize (GObject *obj) {
-    MIRAGE_Disc_CDI *self = MIRAGE_DISC_CDI(obj);
-    MIRAGE_Disc_CDIPrivate *_priv = MIRAGE_DISC_CDI_GET_PRIVATE(self);
+static void __mirage_parser_cdi_finalize (GObject *obj) {
+    MIRAGE_Parser_CDI *self = MIRAGE_PARSER_CDI(obj);
+    /*MIRAGE_Parser_CDIPrivate *_priv = MIRAGE_PARSER_CDI_GET_PRIVATE(self);*/
     
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_GOBJECT, "%s:\n", __func__);
-    
-    /* Free parser info */
-    mirage_helper_destroy_parser_info(_priv->parser_info);
-    
+        
     /* Chain up to the parent class */
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_GOBJECT, "%s: chaining up to parent\n", __func__);
     return G_OBJECT_CLASS(parent_class)->finalize(obj);
 }
 
-static void __mirage_disc_cdi_class_init (gpointer g_class, gpointer g_class_data) {
+static void __mirage_parser_cdi_class_init (gpointer g_class, gpointer g_class_data) {
     GObjectClass *class_gobject = G_OBJECT_CLASS(g_class);
-    MIRAGE_DiscClass *class_disc = MIRAGE_DISC_CLASS(g_class);
-    MIRAGE_Disc_CDIClass *klass = MIRAGE_DISC_CDI_CLASS(g_class);
+    MIRAGE_ParserClass *class_parser = MIRAGE_PARSER_CLASS(g_class);
+    MIRAGE_Parser_CDIClass *klass = MIRAGE_PARSER_CDI_CLASS(g_class);
     
     /* Set parent class */
     parent_class = g_type_class_peek_parent(klass);
             
     /* Register private structure */
-    g_type_class_add_private(klass, sizeof(MIRAGE_Disc_CDIPrivate));
+    g_type_class_add_private(klass, sizeof(MIRAGE_Parser_CDIPrivate));
     
     /* Initialize GObject methods */
-    class_gobject->finalize = __mirage_disc_cdi_finalize;
+    class_gobject->finalize = __mirage_parser_cdi_finalize;
     
-    /* Initialize MIRAGE_Disc methods */
-    class_disc->get_parser_info = __mirage_disc_cdi_get_parser_info;
-    class_disc->can_load_file = __mirage_disc_cdi_can_load_file;
-    class_disc->load_image = __mirage_disc_cdi_load_image;
+    /* Initialize MIRAGE_Parser methods */
+    class_parser->load_image = __mirage_parser_cdi_load_image;
         
     return;
 }
 
-GType mirage_disc_cdi_get_type (GTypeModule *module) {
+GType mirage_parser_cdi_get_type (GTypeModule *module) {
     static GType type = 0;
     if (type == 0) {
         static const GTypeInfo info = {
-            sizeof(MIRAGE_Disc_CDIClass),
+            sizeof(MIRAGE_Parser_CDIClass),
             NULL,   /* base_init */
             NULL,   /* base_finalize */
-            __mirage_disc_cdi_class_init,   /* class_init */
+            __mirage_parser_cdi_class_init,   /* class_init */
             NULL,   /* class_finalize */
             NULL,   /* class_data */
-            sizeof(MIRAGE_Disc_CDI),
+            sizeof(MIRAGE_Parser_CDI),
             0,      /* n_preallocs */
-            __mirage_disc_cdi_instance_init    /* instance_init */
+            __mirage_parser_cdi_instance_init    /* instance_init */
         };
         
-        type = g_type_module_register_type(module, MIRAGE_TYPE_DISC, "MIRAGE_Disc_CDI", &info, 0);
+        type = g_type_module_register_type(module, MIRAGE_TYPE_PARSER, "MIRAGE_Parser_CDI", &info, 0);
     }
     
     return type;
