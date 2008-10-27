@@ -9,10 +9,10 @@ plugin_LTLIBRARIES = image-cif.la
 
 noinst_HEADERS = \
     image-cif.h \
-    image-cif-disc.h
+    image-cif-parser.h
 
 image_cif_la_SOURCES = \
-    image-cif-disc.c \
+    image-cif-parser.c \
     image-cif-plugin.c
 
 image_cif_la_LIBADD = \
