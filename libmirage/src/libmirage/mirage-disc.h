@@ -86,6 +86,7 @@ gboolean mirage_disc_get_medium_type (MIRAGE_Disc *self, gint *medium_type, GErr
 
 /* Filename */
 gboolean mirage_disc_set_filenames (MIRAGE_Disc *self, gchar **filenames, GError **error);
+gboolean mirage_disc_set_filename (MIRAGE_Disc *self, gchar **filenames, GError **error);
 gboolean mirage_disc_get_filenames (MIRAGE_Disc *self, gchar ***filenames, GError **error);
 
 /* MCN */

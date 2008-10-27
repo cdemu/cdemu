@@ -27,6 +27,8 @@
 typedef struct {
     GObject *disc;
     
+    gchar *cdi_filename;
+    
     gboolean medium_type_set;
     
     guint64 cur_offset; /* Current offset within track file */
@@ -644,16 +646,13 @@ static gboolean __mirage_parser_cdi_load_track (MIRAGE_Parser *self, GError **er
     gint fragment_len = track_length;
     
     GObject *data_fragment = NULL;
-    
-    gchar **filenames = NULL;
-    
+        
     GObject *cur_session = NULL;
     GObject *cur_track = NULL;
     
     
     /* Prepare stuff for BINARY fragment */
-    mirage_disc_get_filenames(MIRAGE_DISC(_priv->disc), &filenames, NULL);
-    tfile_handle = g_fopen(filenames[0], "r");    
+    tfile_handle = g_fopen(_priv->cdi_filename, "r");    
     
     /* Track mode; also determines BINARY format */
     gint decoded_mode = 0;
@@ -688,7 +687,7 @@ static gboolean __mirage_parser_cdi_load_track (MIRAGE_Parser *self, GError **er
     mirage_track_set_mode(MIRAGE_TRACK(cur_track), decoded_mode, NULL);
     
     /* Create BINARY fragment */    
-    data_fragment = libmirage_create_fragment(MIRAGE_TYPE_FINTERFACE_BINARY, filenames[0], error);
+    data_fragment = libmirage_create_fragment(MIRAGE_TYPE_FINTERFACE_BINARY, _priv->cdi_filename, error);
     if (!data_fragment) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: failed to create BINARY fragment!\n", __func__);
         goto free_track;
@@ -750,7 +749,6 @@ free_session:
     g_object_unref(cur_session);
     
 end:
-    g_strfreev(filenames);
     
     return succeeded;
 }
@@ -973,7 +971,8 @@ static gboolean __mirage_parser_cdi_load_image (MIRAGE_Parser *self, gchar **fil
     /* Create disc */
     _priv->disc = g_object_new(MIRAGE_TYPE_DISC, NULL);
     
-    mirage_disc_set_filenames(MIRAGE_DISC(_priv->disc), filenames, NULL);
+    mirage_disc_set_filename(MIRAGE_DISC(_priv->disc), filenames, NULL);
+    _priv->cdi_filename = g_strdup(filenames[0]);
 
     /* The descriptor is stored at the end of CDI image; I'm quite positive that
        last four bytes represent length of descriptor data */
@@ -1055,10 +1054,12 @@ static void __mirage_parser_cdi_instance_init (GTypeInstance *instance, gpointer
 
 static void __mirage_parser_cdi_finalize (GObject *obj) {
     MIRAGE_Parser_CDI *self = MIRAGE_PARSER_CDI(obj);
-    /*MIRAGE_Parser_CDIPrivate *_priv = MIRAGE_PARSER_CDI_GET_PRIVATE(self);*/
+    MIRAGE_Parser_CDIPrivate *_priv = MIRAGE_PARSER_CDI_GET_PRIVATE(self);
     
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_GOBJECT, "%s:\n", __func__);
-        
+    
+    g_free(_priv->cdi_filename);
+    
     /* Chain up to the parent class */
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_GOBJECT, "%s: chaining up to parent\n", __func__);
     return G_OBJECT_CLASS(parent_class)->finalize(obj);

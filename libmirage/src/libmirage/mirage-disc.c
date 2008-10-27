@@ -392,7 +392,7 @@ gboolean mirage_disc_get_medium_type (MIRAGE_Disc *self, gint *medium_type, GErr
 /**
  * mirage_disc_set_filenames:
  * @self: a #MIRAGE_Disc
- * @filenames: filenames
+ * @filenames: %NULL-terminated array of filenames
  * @error: location to store error, or %NULL
  *
  * <para>
@@ -400,7 +400,7 @@ gboolean mirage_disc_get_medium_type (MIRAGE_Disc *self, gint *medium_type, GErr
  * </para>
  *
  * <note>
- * Intended for internal use only.
+ * Intended for internal use only, in image parser implementations.
  * </note>
  *
  * Returns: %TRUE on success, %FALSE on failure
@@ -412,6 +412,35 @@ gboolean mirage_disc_set_filenames (MIRAGE_Disc *self, gchar **filenames, GError
     g_strfreev(_priv->filenames);
     /* Set filenames */
     _priv->filenames = g_strdupv(filenames);
+    return TRUE;
+}
+
+/**
+ * mirage_disc_set_filename:
+ * @self: a #MIRAGE_Disc
+ * @filenames: %NULL terminated array of filenames
+ * @error: location to store error, or %NULL
+ *
+ * <para>
+ * Sets image filename. The functionality is similar to mirage_disc_set_filenames(), 
+ * except that only the first filename in @filenames is set. It is intended to be
+ * used in parsers which support only single-file images.
+ * </para>
+ *
+ * <note>
+ * Intended for internal use only, in image parser implementations.
+ * </note>
+ *
+ * Returns: %TRUE on success, %FALSE on failure
+ **/
+gboolean mirage_disc_set_filename (MIRAGE_Disc *self, gchar **filenames, GError **error) {
+    MIRAGE_DiscPrivate *_priv = MIRAGE_DISC_GET_PRIVATE(self);
+    MIRAGE_CHECK_ARG(filenames);
+    /* Free old filenames */
+    g_strfreev(_priv->filenames);
+    /* Set filenames */
+    _priv->filenames = g_new0(gchar*, 2);
+    _priv->filenames[0] = g_strdup(filenames[0]);
     return TRUE;
 }
 

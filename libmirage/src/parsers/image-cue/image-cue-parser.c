@@ -84,15 +84,6 @@ gboolean __mirage_parser_cue_finish_last_track (MIRAGE_Parser *self, GError **er
     return TRUE;
 }
 
-
-gboolean __mirage_parser_cue_set_cue_filename (MIRAGE_Parser *self, gchar *filename, GError **error) {
-    MIRAGE_Parser_CUEPrivate *_priv = MIRAGE_PARSER_CUE_GET_PRIVATE(self);
-    
-    _priv->cue_filename = g_strdup(filename);
-    
-    return TRUE;
-}
-
 gboolean __mirage_parser_cue_set_mcn (MIRAGE_Parser *self, gchar *mcn, GError **error) {    
     MIRAGE_Parser_CUEPrivate *_priv = MIRAGE_PARSER_CUE_GET_PRIVATE(self);
 
@@ -475,9 +466,9 @@ static gboolean __mirage_parser_cue_load_image (MIRAGE_Parser *self, gchar **fil
     /* Create disc */
     _priv->disc = g_object_new(MIRAGE_TYPE_DISC, NULL);
     
-    mirage_disc_set_filenames(MIRAGE_DISC(_priv->disc), filenames, NULL);
-    __mirage_parser_cue_set_cue_filename(self, filenames[0], NULL);
-    
+    mirage_disc_set_filename(MIRAGE_DISC(_priv->disc), filenames, NULL);
+    _priv->cue_filename = g_strdup(filenames[0]);
+
     /* First session is created manually (in case we're dealing with normal
        CUE file, which doesn't have session definitions anyway); note that we
        store only pointer, but release reference */
