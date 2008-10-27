@@ -620,7 +620,7 @@ static void __image_analyzer_application_message (IMAGE_ANALYZER_Application *se
 /******************************************************************************\
  *                               Open/close image                             *
 \******************************************************************************/
-static gchar *__image_analyzer_application_get_password (gpointer user_data, GError **error) {
+static gchar *__image_analyzer_application_get_password (gpointer user_data) {
     IMAGE_ANALYZER_Application *self = user_data;
     IMAGE_ANALYZER_ApplicationPrivate *_priv = IMAGE_ANALYZER_APPLICATION_GET_PRIVATE(self);
     gchar *password;
