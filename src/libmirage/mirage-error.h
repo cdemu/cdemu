@@ -46,8 +46,8 @@ GQuark mirage_error_quark (void);
  * @MIRAGE_E_NOTINLAYOUT: object is not part of the layout
  * @MIRAGE_E_INDEXOUTOFRANGE: requested index is out of range
  * @MIRAGE_E_SECTOROUTOFRANGE: requested sector is out of range
+ * @MIRAGE_E_NOTINIT: libMirage not initialized
  * @MIRAGE_E_PLUGINDIR: failed to open plugin directory
- * @MIRAGE_E_PLUGINNOTLOADED: plugin not loaded
  * @MIRAGE_E_NOPARSERFOUND: no parser can handle given image
  * @MIRAGE_E_NOFRAGMENTFOUND: no parser can handle given data
  * @MIRAGE_E_IMAGEFILE: image file cannot be opened or read
@@ -92,8 +92,8 @@ typedef enum {
     MIRAGE_E_SECTOROUTOFRANGE,
     
     /* Mirage */
+    MIRAGE_E_NOTINIT,
     MIRAGE_E_PLUGINDIR,
-    MIRAGE_E_PLUGINNOTLOADED,
     MIRAGE_E_NOPARSERFOUND,
     MIRAGE_E_NOFRAGMENTFOUND,
     MIRAGE_E_IMAGEFILE,

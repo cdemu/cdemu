@@ -75,8 +75,8 @@ void mirage_error (gint errcode, GError **error) {
         { MIRAGE_E_SECTOROUTOFRANGE, "Requested sector is out of range." },
     
         /* Mirage */
+        { MIRAGE_E_NOTINIT, "libMirage not initialized." },
         { MIRAGE_E_PLUGINDIR, "Failed to open plugins directory." },
-        { MIRAGE_E_PLUGINNOTLOADED, "Plugin not loaded." },
         { MIRAGE_E_NOPARSERFOUND, "No parser can handle given image." },
         { MIRAGE_E_NOFRAGMENTFOUND, "No fragment can handle given data." },
         { MIRAGE_E_IMAGEFILE, "Image file cannot be opened or read." },
