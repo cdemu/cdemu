@@ -33,40 +33,6 @@ G_BEGIN_DECLS
 #define MIRAGE_MCN_SIZE 13
 
 /**
- * MIRAGE_ParserInfo:
- * @id: parser ID
- * @name: parser name
- * @version: parser version
- * @author: author name
- * @multi_file: multi-file image support
- * @description: image file description
- * @suffixes: image file suffixes
- *
- * <para>
- * A structure containing parser information. It can be obtained with call to
- * mirage_disc_get_parser_info().
- * </para>
- * 
- * <para>
- * @description is a string contraining image file description (e.g. "CloneCD 
- * images") and @suffixes is a NULL-terminated array of strings representing
- * image file suffixes (e.g. ".ccd"). Together, this information is intended to 
- * be used for building file type filters in GUI applications.
- * </para>
- **/
-typedef struct {
-    gchar *id;
-    gchar *name;
-    gchar *version;
-    gchar *author;
-    
-    gboolean multi_file;
-    
-    gchar *description;
-    gchar **suffixes;
-} MIRAGE_ParserInfo;
-
-/**
  * MIRAGE_MediumTypes:
  * @MIRAGE_MEDIUM_CD: CD disc
  * @MIRAGE_MEDIUM_DVD: DVD disc
