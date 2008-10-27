@@ -2,9 +2,9 @@
 <!DOCTYPE article PUBLIC "-//OASIS//DTD DocBook XML V4.1.2//EN" 
 "http://www.oasis-open.org/docbook/xml/4.1.2/docbookx.dtd" [
   <!ENTITY legal SYSTEM "legal.xml">
-  <!ENTITY appletversion "1.1.0">
-  <!ENTITY manrevision "1.1">
-  <!ENTITY date "April 2008">
+  <!ENTITY appletversion "1.2.0">
+  <!ENTITY manrevision "1.2">
+  <!ENTITY date "October 2008">
   <!ENTITY applet "gCDEmu">
 ]>
 
@@ -354,6 +354,39 @@
                     To unload the device, click on the <guilabel>Unload</guilabel> 
                     button.
                 </para>
+                
+                <sect4 id="gcdemu-usage-devdiag-load-password">
+                    <title>Loading encrypted images</title>
+                    <para>
+                        If the image you are trying to load is encrypted (protected
+                        by password), gCDEmu will prompt you to enter it.
+                    </para>
+                    <figure id="applet-fig11">
+                    <title>Password prompt dialog</title>
+                    <screenshot>
+                        <mediaobject>
+                            <imageobject>
+                                <imagedata fileref="figures/gcdemu-fig11" format="PNG"/>
+                            </imageobject>
+                            <textobject>
+                                <phrase>
+                                    Screen shot of a <guilabel>Status</guilabel> tab of a loaded device.
+                                </phrase>
+                            </textobject>
+                        </mediaobject>
+                    </screenshot>
+                    </figure>
+                    <para>
+                        Entered password is then sent to the daemon.
+                    </para>
+                    <para>
+                        <warning>Note, however, that the password is sent over D-BUS in 
+                        a plain string form, without any protection. Depending 
+                        on your privacy concerns you might wish to avoid loading 
+                        such images.</warning>
+                    </para>
+                
+                </sect4>
             </sect3>
             <sect3 id="gcdemu-usage-devdiag-options">
                 <title>Device options</title>
