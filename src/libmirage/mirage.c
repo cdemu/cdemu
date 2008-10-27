@@ -33,6 +33,10 @@ static struct {
     GType *fragments;
     
     gchar *version;
+    
+    /* Password function */
+    MIRAGE_PasswordFunction password_func;
+    gpointer password_data;
 } libmirage;
 
 static const MIRAGE_DebugMask dbg_masks[] = {
@@ -109,6 +113,10 @@ gboolean libmirage_init (GError **error) {
     /* *** Version string *** */
     libmirage.version = g_strdup(PACKAGE_VERSION);
     
+    /* Reset password function pointers */
+    libmirage.password_func = NULL;
+    libmirage.password_data = NULL;
+    
     /* We're officially initialized now */
     libmirage.initialized = TRUE;
     
@@ -140,16 +148,68 @@ gboolean libmirage_shutdown (GError **error) {
     
     /* Free version */
     g_free(libmirage.version);
-    
-    /* Free debug masks */
-    
-    
+        
     /* We're not initialized anymore */
     libmirage.initialized = FALSE;
     
     return TRUE;
 }
 
+/**
+ * libmirage_set_password_function:
+ * @func: a password function pointer
+ * @user_data: pointer to user data to be passed to the password function
+ * @error: location to store error, or %NULL
+ *
+ * <para>
+ * Sets the password function to libMirage. The function is used by parsers
+ * that support encrypted images to obtain password for unlocking such images.
+ * </para>
+ *
+ * Returns: %TRUE on success, %FALSE on failure
+ **/
+gboolean libmirage_set_password_function (MIRAGE_PasswordFunction func, gpointer user_data, GError **error) {
+    /* Make sure libMirage is initialized */
+    if (!libmirage.initialized) {
+        mirage_error(MIRAGE_E_NOTINIT, error);
+        return FALSE;
+    }
+    
+    /* Store the pointers */
+    libmirage.password_func = func;
+    libmirage.password_data = user_data;
+    
+    return TRUE;
+}
+
+/**
+ * libmirage_obtain_password:
+ * @func: a password function pointer
+ * @user_data: pointer to user data to be passed to the password function
+ * @error: location to store error, or %NULL
+ *
+ * <para>
+ * Sets the password function to libMirage. The function is used by parsers
+ * that support encrypted images to obtain password for unlocking such images.
+ * </para>
+ *
+ * Returns: %TRUE on success, %FALSE on failure
+ **/
+gchar *libmirage_obtain_password (GError **error) {
+    /* Make sure libMirage is initialized */
+    if (!libmirage.initialized) {
+        mirage_error(MIRAGE_E_NOTINIT, error);
+        return NULL;
+    }
+    
+    if (!libmirage.password_func) {
+        mirage_error(MIRAGE_E_DATANOTSET, error);
+        return NULL;
+    }
+    
+    /* Call the function pointer */
+    return (*libmirage.password_func)(libmirage.password_data, error);
+}
 
 /**
  * libmirage_get_version:

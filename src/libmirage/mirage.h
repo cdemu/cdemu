@@ -52,6 +52,24 @@ G_BEGIN_DECLS
 typedef gboolean (*MIRAGE_CallbackFunction) (gpointer data, gpointer user_data);
 
 /**
+ * MIRAGE_PasswordFunction:
+ * @user_data: user data passed to password function
+ * @error: location to store error, or %NULL
+ *
+ * <para>
+ * Password function type used in libMirage's to obtain password for encrypted
+ * images. A password function needs to be set to libMirage via 
+ * libmirage_set_password_function(), along with @user_data that the password 
+ * function should be called with.
+ * </para>
+ *
+ * Returns: password string on success, otherwise %NULL. Password string should
+ * be a copy, allocated via function such as g_strdup(), and will be freed after
+ * it is used.
+ **/
+typedef gchar *(*MIRAGE_PasswordFunction) (gpointer user_data, GError **error);
+
+/**
  * MIRAGE_DebugMask:
  * @name: name
  * @value: value
@@ -71,6 +89,9 @@ gboolean libmirage_init (GError **error);
 gboolean libmirage_shutdown (GError **error);
 
 const gchar *libmirage_get_version (GError **error);
+
+gboolean libmirage_set_password_function (MIRAGE_PasswordFunction func, gpointer user_data, GError **error);
+gchar *libmirage_obtain_password (GError **error);
 
 GObject *libmirage_create_disc (gchar **filenames, GObject *debug_context, GError **error);
 GObject *libmirage_create_fragment (GType fragment_interface, gchar *filename, GError **error);
