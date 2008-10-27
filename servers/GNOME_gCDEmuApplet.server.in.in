@@ -6,6 +6,10 @@
 		</oaf_attribute>
 		<oaf_attribute name="name" type="string" value="gCDEmu Applet Factory"/>
 		<oaf_attribute name="description" type="string" value="Factory to create the gCDEmu applet"/>
+
+		<oaf_attribute name="bonobo:environment" type="stringv">
+			<item value="DBUS_SESSION_BUS_ADDRESS"/>
+		</oaf_attribute>
 	</oaf_server>
 
 	<oaf_server iid="OAFIID:GNOME_gCDEmu_Applet" type="factory" location="OAFIID:GNOME_gCDEmu_Applet_Factory">
