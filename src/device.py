@@ -128,6 +128,9 @@ class gCDEmu_Device:
         
         self.__properties_dialog = dialog
         
+        # Connect now that everything's created
+        notebook.connect("switch-page", self.__cb_notebook_switch_page)
+
         return
         
     def __create_page_status (self):
@@ -340,10 +343,15 @@ class gCDEmu_Device:
         self.__label_loaded = None
         self.__label_filename = None
         self.__button_load = None
-    
+
+        self.__daemon_debug = 0
+        self.__library_debug = 0
+        
+        self.__device_id = [ "", "", "", ""]
+
         self.__dpm_emulation = False
         self.__tr_emulation = False
-    
+            
         self.__entry_vendor_id = None
         self.__entry_product_id = None
         self.__entry_revision = None
@@ -378,12 +386,12 @@ class gCDEmu_Device:
         self.__signals.append(self.__dbus_iface.connect_to_signal("DeviceOptionChanged", self.__signal_option_changed))
         
         # Initial update
-        self.__update_status()
-        self.__update_device_id()
-        self.__update_dpm_emulation()
-        self.__update_tr_emulation()
-        self.__update_daemon_debug_mask()
-        self.__update_library_debug_mask()
+        self.__update_status(True)
+        self.__update_device_id(True)
+        self.__update_dpm_emulation(True)
+        self.__update_tr_emulation(True)
+        self.__update_daemon_debug_mask(True)
+        self.__update_library_debug_mask(True)
         
         return
     
@@ -422,7 +430,7 @@ class gCDEmu_Device:
             return
         
         # Update status
-        self.__update_status()
+        self.__update_status(True)
         
         # Notify
         if self.__loaded:
@@ -439,15 +447,15 @@ class gCDEmu_Device:
         
         # Option switch
         if option == "device-id":
-            self.__update_device_id()
+            self.__update_device_id(True)
         elif option == "dpm-emulation":
-            self.__update_dpm_emulation()
+            self.__update_dpm_emulation(True)
         elif option == "tr-emulation":
-            self.__update_tr_emulation()
+            self.__update_tr_emulation(True)
         elif option == "daemon-debug-mask":
-            self.__update_daemon_debug_mask()
+            self.__update_daemon_debug_mask(True)
         elif option == "library-debug-mask":
-            self.__update_library_debug_mask()
+            self.__update_library_debug_mask(True)
         else:
             print "Unhandled option: '%s'" % (option)
         
@@ -497,7 +505,18 @@ class gCDEmu_Device:
         elif event.button == 3:
             # Button 3: Device properties
             self.__device_show_properties()
+            # Reset certain tabs
+            self.__update_device_id(False)
+            self.__update_daemon_debug_mask(False)
+            self.__update_library_debug_mask(False)
     
+    def __cb_notebook_switch_page (self, notebook, page, page_num):
+        # We clear device ID and debug mask tabs, because they have fields whose 
+        # change doesn't trigger immediate setting change and therefore need to 
+        # be reset on page switch
+        self.__update_device_id(False)
+        self.__update_daemon_debug_mask(False)
+        self.__update_library_debug_mask(False)
     
     def __device_load_unload (self):
         if self.__loaded:
@@ -534,12 +553,12 @@ class gCDEmu_Device:
         revision = self.__entry_revision.get_text()
         vendor_specific = self.__entry_vendor_specific.get_text()
         
-        device_id = [ vendor_id, product_id, revision, vendor_specific ]
+        self.__device_id = [ vendor_id, product_id, revision, vendor_specific ]
         
         try:
-            self.__dbus_iface.DeviceSetOption(self.__number, "device-id", device_id)
+            self.__dbus_iface.DeviceSetOption(self.__number, "device-id", self.__device_id)
         except dbus.DBusException, e:
-            self.__display_error(_("Failed to set device ID for device %i to %s:\n%s") % (self.__number, device_id, e))
+            self.__display_error(_("Failed to set device ID for device %i to %s:\n%s") % (self.__number, self.__device_id, e))
             self.__parent.check_connection()
         
         return
@@ -547,11 +566,12 @@ class gCDEmu_Device:
     def __set_dpm_emulation (self):
         enabled = self.__checkbutton_dpm.get_active()
         
+        # Filter out calls made by __update_dpm_emulation()
         if enabled == self.__dpm_emulation:
             return
         
         self.__dpm_emulation = enabled
-        enabled = enabled and True or False
+        enabled = enabled and True or False # Because D-BUS API strictly requires boolean
         
         try:
             self.__dbus_iface.DeviceSetOption(self.__number, "dpm-emulation", [ enabled ])
@@ -564,11 +584,12 @@ class gCDEmu_Device:
     def __set_tr_emulation (self):
         enabled = self.__checkbutton_tr.get_active()
         
+        # Filter out calls made by __update_tr_emulation()
         if enabled == self.__tr_emulation:
             return
         
         self.__tr_emulation = enabled
-        enabled = enabled and True or False
+        enabled = enabled and True or False # Because D-BUS API strictly requires boolean
         
         try:
             self.__dbus_iface.DeviceSetOption(self.__number, "tr-emulation", [ enabled ])
@@ -579,9 +600,9 @@ class gCDEmu_Device:
         return
     
     def __set_daemon_debug_mask (self):
-        value = self.__get_debug_mask_value(self.__daemon_debug_masks)
+        self.__daemon_debug = self.__get_debug_mask_value(self.__daemon_debug_masks)
         try:
-            self.__dbus_iface.DeviceSetOption(self.__number, "daemon-debug-mask", [ value ])
+            self.__dbus_iface.DeviceSetOption(self.__number, "daemon-debug-mask", [ self.__daemon_debug ])
         except dbus.DBusException, e:
             self.__display_error(_("Failed to set daemon debug mask for device %i to 0x%X:\n%s") % (self.__number, value, e))
             self.__parent.check_connection()
@@ -589,24 +610,24 @@ class gCDEmu_Device:
         return
         
     def __set_library_debug_mask (self):
-        value = self.__get_debug_mask_value(self.__library_debug_masks)
+        self.__library_debug = self.__get_debug_mask_value(self.__library_debug_masks)
         try:
-            self.__dbus_iface.DeviceSetOption(self.__number, "library-debug-mask", [ value ])
+            self.__dbus_iface.DeviceSetOption(self.__number, "library-debug-mask", [ self.__library_debug ])
         except dbus.DBusException, e:
             self.__display_error(_("Failed to set library debug mask for device %i to 0x%X:\n%s") % (self.__number, value, e))
             self.__parent.check_connection()
             
         return
     
-
-    def __update_status (self):
+    def __update_status (self, refresh):
         # Get status
-        try:
-            [ self.__loaded, self.__filenames ] = self.__dbus_iface.DeviceGetStatus(self.__number)
-        except dbus.DBusException, e:
-            print "Failed to acquire device status: %s" % e
-            self.__parent.check_connection()
-        
+        if refresh:
+            try:
+                [ self.__loaded, self.__filenames ] = self.__dbus_iface.DeviceGetStatus(self.__number)
+            except dbus.DBusException, e:
+                print "Failed to acquire device status: %s" % e
+                self.__parent.check_connection()
+            
         # Set label on menu item (label is its child...)
         if self.__loaded:
             images = os.path.basename(self.__filenames[0]) # Make it short
@@ -625,74 +646,79 @@ class gCDEmu_Device:
             self.__button_load.set_label(_("Unload"))
         else:
             self.__label_loaded.set_label(_("No"))
-            self.__label_filename.set_label(self.__filenames[0])
+            self.__label_filename.set_label("")
             self.__button_load.set_label(_("Load"))
         
         return
     
-    def __update_dpm_emulation (self):
-        try:
-            [ enabled ] = self.__dbus_iface.DeviceGetOption(self.__number, "dpm-emulation")
-        except dbus.DBusException, e:
-            print "Failed to acquire DPM emulation flag: %s" % e
-            self.__parent.check_connection()
+    def __update_dpm_emulation (self, refresh):
+        # Get DPM emulation flag
+        if refresh:
+            try:
+                [ self.__dpm_emulation ] = self.__dbus_iface.DeviceGetOption(self.__number, "dpm-emulation")
+            except dbus.DBusException, e:
+                print "Failed to acquire DPM emulation flag: %s" % e
+                self.__parent.check_connection()
         
-        # Update only if value has changed, because check button emits signal
-        # that calls DeviceSetOption()...
-        if (self.__dpm_emulation != enabled):
-            self.__dpm_emulation = enabled
-            self.__checkbutton_dpm.set_active(enabled)
+        # Set the checkbutton
+        self.__checkbutton_dpm.set_active(self.__dpm_emulation)
         
         return
         
-    def __update_tr_emulation (self):
-        try:
-            [ enabled ] = self.__dbus_iface.DeviceGetOption(self.__number, "tr-emulation")
-        except dbus.DBusException, e:
-            print "Failed to acquire TR emulation flag: %s" % e
-            self.__parent.check_connection()
+    def __update_tr_emulation (self, refresh):
+        # Get TR emulation flag
+        if refresh:
+            try:
+                [ self.__tr_emulation ] = self.__dbus_iface.DeviceGetOption(self.__number, "tr-emulation")
+            except dbus.DBusException, e:
+                print "Failed to acquire TR emulation flag: %s" % e
+                self.__parent.check_connection()
         
-        # Update only if value has changed, because check button emits signal
-        # that calls DeviceSetOption()...
-        if (self.__tr_emulation != enabled):
-            self.__tr_emulation = enabled
-            self.__checkbutton_tr.set_active(enabled)
+        # Set the checkbutton
+        self.__checkbutton_tr.set_active(self.__tr_emulation)
         
         return
     
-    def __update_device_id (self):
-        try:
-            device_id = self.__dbus_iface.DeviceGetOption(self.__number, "device-id")
-        except dbus.DBusException, e:
-            print "Failed to acquire device ID: %s" % e
-            self.__parent.check_connection()
+    def __update_device_id (self, refresh):
+        # Get device ID
+        if refresh:
+            try:
+                self.__device_id = self.__dbus_iface.DeviceGetOption(self.__number, "device-id")
+            except dbus.DBusException, e:
+                print "Failed to acquire device ID: %s" % e
+                self.__parent.check_connection()
         
-        self.__entry_vendor_id.set_text(device_id[0])
-        self.__entry_product_id.set_text(device_id[1])
-        self.__entry_revision.set_text(device_id[2])
-        self.__entry_vendor_specific.set_text(str(device_id[3]))
+        # Set textboxes
+        self.__entry_vendor_id.set_text(self.__device_id[0])
+        self.__entry_product_id.set_text(self.__device_id[1])
+        self.__entry_revision.set_text(self.__device_id[2])
+        self.__entry_vendor_specific.set_text(str(self.__device_id[3]))
                 
         return
     
-    def __update_daemon_debug_mask (self):
-        try:
-            [ value ] = self.__dbus_iface.DeviceGetOption(self.__number, "daemon-debug-mask")
-        except dbus.DBusException, e:
-            print "Failed to acquire daemon debug mask: %s" % e
-            self.__parent.check_connection()
+    def __update_daemon_debug_mask (self, refresh):
+        # Get daemon debug mask
+        if refresh:
+            try:
+                [ self.__daemon_debug ] = self.__dbus_iface.DeviceGetOption(self.__number, "daemon-debug-mask")
+            except dbus.DBusException, e:
+                print "Failed to acquire daemon debug mask: %s" % e
+                self.__parent.check_connection()
         
-        self.__set_debug_mask_value(self.__daemon_debug_masks, value)
+        self.__set_debug_mask_value(self.__daemon_debug_masks, self.__daemon_debug)
         
         return
 
-    def __update_library_debug_mask (self):
-        try:
-            [ value ] = self.__dbus_iface.DeviceGetOption(self.__number, "library-debug-mask")
-        except dbus.DBusException, e:
-            print "Failed to acquire library debug mask: %s" % e
-            self.__parent.check_connection()
-        
-        self.__set_debug_mask_value(self.__library_debug_masks, value)
+    def __update_library_debug_mask (self, refresh):
+        # Get library debug mask
+        if refresh:
+            try:
+                [ self.__library_debug ] = self.__dbus_iface.DeviceGetOption(self.__number, "library-debug-mask")
+            except dbus.DBusException, e:
+                print "Failed to acquire library debug mask: %s" % e
+                self.__parent.check_connection()
+            
+        self.__set_debug_mask_value(self.__library_debug_masks, self.__library_debug)
         
         return
 
