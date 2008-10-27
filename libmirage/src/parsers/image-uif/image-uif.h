@@ -1,6 +1,6 @@
 /*
  *  libMirage: UIF image parser
- *  Copyright (C) 2006-2008 Henrik Stokseth
+ *  Copyright (C) 2008 Henrik Stokseth
  *
  *  Thanks to Luigi Auriemma for reverse engineering work.
  *
@@ -30,58 +30,58 @@
 #endif
 
 #include "mirage.h"
-#include "image-uif-disc.h"
+#include "image-uif-parser.h"
 
 G_BEGIN_DECLS
 
-#define OUT_ISO   0
-#define OUT_NRG   1
-#define OUT_CUE   2
+#define OUT_ISO 0
+#define OUT_NRG 1
+#define OUT_CUE 2
 
-#define IMAGE_TYPE_ISO           0x08
-#define IMAGE_TYPE_MIXED         0x09
+#define IMAGE_TYPE_ISO      0x08
+#define IMAGE_TYPE_MIXED    0x09
 
-#define DATA_TYPE_UNCOMPRESSED   0x01
-#define DATA_TYPE_MULTIBYTE      0x03
-#define DATA_TYPE_COMPRESSED     0x05
+#define DATA_TYPE_UNCOMPRESSED  0x01
+#define DATA_TYPE_MULTIBYTE     0x03
+#define DATA_TYPE_COMPRESSED    0x05
 
 #pragma pack(1)
 
 typedef struct {
-    gchar       id[4];
-    guint32     size;
+    gchar id[4];
+    guint32 size;
 } nrg_chunk_t; /* size: 8 bytes */
 
 typedef struct {
-    gchar       sign[4];     /* "blhr" || "bsdr" || "blms" || "blss" */
-    guint32     block_size;  /* size of the data blocks plus the rest of this struct */
-    guint32     compressed;  /* true if data blocks are compressed */
-    guint32     num_blocks;  /* number of blhr_data structures */
+    gchar sign[4]; /* "blhr" || "bsdr" || "blms" || "blss" */
+    guint32 block_size; /* size of the data blocks plus the rest of this struct */
+    guint32 compressed; /* true if data blocks are compressed */
+    guint32 num_blocks; /* number of blhr_data structures */
 } blhr_t; /* size: 16 or 20 bytes */
 
 typedef struct {
-    guint64     offset;      /* input offset */
-    guint32     zsize;       /* block size */
-    guint32     sector;      /* where to place the output */
-    guint32     size;        /* size in sectors! */
-    guint32     data_type;   /* 1 = uncompressed, 3 = multibyte, 5 = compressed */
+    guint64 offset; /* input offset */
+    guint32 zsize; /* block size */
+    guint32 sector; /* where to place the output */
+    guint32 size; /* size in sectors! */
+    guint32 data_type; /* 1 = uncompressed, 3 = multibyte, 5 = compressed */
 } blhr_data_t; /* size: 24 bytes */
 
 typedef struct {
-    gchar       sign[4];        /* "bbis" */
-    guint32     bbis_size;      /* size of the bbis block */
-    guint16     ver;            /* version, 1 */
-    guint16     image_type;     /* 8 = ISO, 9 = mixed */
-    guint16     unknown1;       /* ??? */
-    guint16     padding;        /* ignored */
-    guint32     sectors;        /* number of sectors of the ISO */
-    guint32     sector_size;    /* image sector size */
-    guint32     unknown2;       /* almost ignored */
-    guint64     blhr_ofs;       /* where is located the blhr header */
-    guint32     blhr_bbis_size; /* size of the blhr, blhr data and bbis areas */
-    guint8      hash[16];       /* hash, used with passwords */
-    guint32     fixedkey;       /* ignored */
-    guint32     unknown3;       /* ignored */
+    gchar sign[4]; /* "bbis" */
+    guint32 bbis_size; /* size of the bbis block */
+    guint16 ver; /* version, 1 */
+    guint16 image_type; /* 8 = ISO, 9 = mixed */
+    guint16 unknown1; /* ??? */
+    guint16 padding; /* ignored */
+    guint32 sectors; /* number of sectors of the ISO */
+    guint32 sector_size; /* image sector size */
+    guint32 unknown2; /* almost ignored */
+    guint64 blhr_ofs; /* where is located the blhr header */
+    guint32 blhr_bbis_size; /* size of the blhr, blhr data and bbis areas */
+    guint8 hash[16]; /* hash, used with passwords */
+    guint32 fixedkey; /* ignored */
+    guint32 unknown3; /* ignored */
 } bbis_t; /* size: 64 bytes */
 
 #pragma pack()
