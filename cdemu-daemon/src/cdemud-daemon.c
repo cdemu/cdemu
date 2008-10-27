@@ -201,7 +201,7 @@ static gboolean __cdemud_daemon_build_device_mapping_callback (gpointer data) {
             break;
         } else if (ioctl_ret < 0) {
             /* Other errors */
-            CDEMUD_DEBUG(dev, DAEMON_DEBUG_WARNING, "%s: error while performing ioctl; device mapping info will not be available\n", __func__);
+            CDEMUD_DEBUG(dev, DAEMON_DEBUG_WARNING, "%s: error while performing ioctl (%d); device mapping info will not be available\n", __func__, ioctl_ret);
             run_again = FALSE;
             break;
         } else {
