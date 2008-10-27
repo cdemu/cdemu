@@ -1,5 +1,5 @@
 /*
- *  libMirage: B6T image parser: Disc object
+ *  libMirage: B6T image parser: Parser object
  *  Copyright (C) 2007-2008 Rok Mandeljc
  *
  *  This program is free software; you can redistribute it and/or modify
@@ -27,9 +27,11 @@
 /******************************************************************************\
  *                              Private structure                             *
 \******************************************************************************/
-#define MIRAGE_DISC_B6T_GET_PRIVATE(obj) (G_TYPE_INSTANCE_GET_PRIVATE((obj), MIRAGE_TYPE_DISC_B6T, MIRAGE_Disc_B6TPrivate))
+#define MIRAGE_PARSER_B6T_GET_PRIVATE(obj) (G_TYPE_INSTANCE_GET_PRIVATE((obj), MIRAGE_TYPE_PARSER_B6T, MIRAGE_Parser_B6TPrivate))
 
 typedef struct {
+    GObject *disc;
+    
     gchar *b6t_filename;
     
     GMappedFile *b6t_mapped;
@@ -43,17 +45,14 @@ typedef struct {
     gint32 prev_session_end;
     
     GList *data_blocks_list;
-    
-    /* Parser info */
-    MIRAGE_ParserInfo *parser_info;
-} MIRAGE_Disc_B6TPrivate;
+} MIRAGE_Parser_B6TPrivate;
 
-static gboolean __mirage_disc_b6t_load_bwa_file (MIRAGE_Disc *self, GError **error) {
-    MIRAGE_Disc_B6TPrivate *_priv = MIRAGE_DISC_B6T_GET_PRIVATE(self);
+static gboolean __mirage_parser_b6t_load_bwa_file (MIRAGE_Parser *self, GError **error) {
+    MIRAGE_Parser_B6TPrivate *_priv = MIRAGE_PARSER_B6T_GET_PRIVATE(self);
     gboolean succeeded = TRUE;
     
-    gchar *bwa_filename = NULL;
-    gchar *bwa_fullpath = NULL;
+    gchar *bwa_filename;
+    gchar *bwa_fullpath;
     
     /* Use B6T filename and replace its extension with BWA */
     bwa_filename = g_strdup(_priv->b6t_filename);
@@ -63,7 +62,7 @@ static gboolean __mirage_disc_b6t_load_bwa_file (MIRAGE_Disc *self, GError **err
     bwa_fullpath = mirage_helper_find_data_file(bwa_filename, _priv->b6t_filename);
     
     if (bwa_fullpath) {
-        GMappedFile *bwa_mapped = NULL;
+        GMappedFile *bwa_mapped;
         GError *local_error = NULL;
         
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: found BWA file: '%s'\n", __func__, bwa_fullpath);
@@ -74,15 +73,15 @@ static gboolean __mirage_disc_b6t_load_bwa_file (MIRAGE_Disc *self, GError **err
         if (bwa_mapped) {
             guint8 *cur_ptr = (guint8 *)g_mapped_file_get_contents(bwa_mapped);
             
-            guint32 __dummy1__ = 0;
-            guint32 __dummy2__ = 0;
-            guint32 __dummy3__ = 0;
+            guint32 __dummy1__;
+            guint32 __dummy2__;
+            guint32 __dummy3__;
             
-            guint32 dpm_start_sector = 0;
-            guint32 dpm_resolution = 0;
-            guint32 dpm_num_entries = 0;
+            guint32 dpm_start_sector;
+            guint32 dpm_resolution;
+            guint32 dpm_num_entries;
             
-            guint32 *dpm_data = NULL;
+            guint32 *dpm_data;
             
             /* First three fields seem to have fixed values; probably some sort of
                header? */
@@ -118,7 +117,7 @@ static gboolean __mirage_disc_b6t_load_bwa_file (MIRAGE_Disc *self, GError **err
             dpm_data = MIRAGE_CAST_PTR(cur_ptr, 0, guint32 *);
             
             /* Set DPM data */
-            if (!mirage_disc_set_dpm_data(self, dpm_start_sector, dpm_resolution, dpm_num_entries, dpm_data, error)) {
+            if (!mirage_disc_set_dpm_data(MIRAGE_DISC(_priv->disc), dpm_start_sector, dpm_resolution, dpm_num_entries, dpm_data, error)) {
                 MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to set DPM data!\n", __func__);
                 succeeded = FALSE;
             }
@@ -140,8 +139,8 @@ static gboolean __mirage_disc_b6t_load_bwa_file (MIRAGE_Disc *self, GError **err
     return succeeded;
 }
 
-static gboolean __mirage_disc_b6t_parse_internal_dpm_data (MIRAGE_Disc *self, GError **error) {
-    MIRAGE_Disc_B6TPrivate *_priv = MIRAGE_DISC_B6T_GET_PRIVATE(self);
+static gboolean __mirage_parser_b6t_parse_internal_dpm_data (MIRAGE_Parser *self, GError **error) {
+    MIRAGE_Parser_B6TPrivate *_priv = MIRAGE_PARSER_B6T_GET_PRIVATE(self);
     
     if (_priv->disc_block_2->dpm_data_length) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: reading internal DPM data; 0x%X bytes\n", __func__, _priv->disc_block_2->dpm_data_length);
@@ -149,18 +148,18 @@ static gboolean __mirage_disc_b6t_parse_internal_dpm_data (MIRAGE_Disc *self, GE
         guint8 *cur_ptr = _priv->cur_ptr;
         
         /* FIXME: by the look of it, this should actually support multiple blocks? */
-        guint32 __dummy1__ = 0;
-        guint32 __dummy2__ = 0;
-        guint32 __dummy3__ = 0;
-        guint32 __dummy4__ = 0;
-        guint32 block_len1 = 0;
-        guint32 block_len2 = 0;
-        guint32 __dummy5__ = 0;
-        guint32 __dummy6__ = 0;
+        guint32 __dummy1__;
+        guint32 __dummy2__;
+        guint32 __dummy3__;
+        guint32 __dummy4__;
+        guint32 block_len1;
+        guint32 block_len2;
+        guint32 __dummy5__;
+        guint32 __dummy6__;
         
-        guint32 dpm_start_sector = 0;
-        guint32 dpm_resolution = 0;
-        guint32 dpm_num_entries = 0;
+        guint32 dpm_start_sector;
+        guint32 dpm_resolution;
+        guint32 dpm_num_entries;
             
         guint32 *dpm_data = NULL;
         
@@ -216,7 +215,7 @@ static gboolean __mirage_disc_b6t_parse_internal_dpm_data (MIRAGE_Disc *self, GE
         cur_ptr += dpm_num_entries * sizeof(guint32);
         
         /* Set DPM data */
-        if (!mirage_disc_set_dpm_data(self, dpm_start_sector, dpm_resolution, dpm_num_entries, dpm_data, error)) {
+        if (!mirage_disc_set_dpm_data(MIRAGE_DISC(_priv->disc), dpm_start_sector, dpm_resolution, dpm_num_entries, dpm_data, error)) {
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to set DPM data!\n", __func__);
             return FALSE;
         }
@@ -234,15 +233,15 @@ static gboolean __mirage_disc_b6t_parse_internal_dpm_data (MIRAGE_Disc *self, GE
     return TRUE;
 }
 
-static gboolean __mirage_disc_b6t_setup_track_fragments (MIRAGE_Disc *self, GObject *cur_track, gint start_sector, gint length, GError **error) {
-    MIRAGE_Disc_B6TPrivate *_priv = MIRAGE_DISC_B6T_GET_PRIVATE(self);
-    GList *entry = NULL;
+static gboolean __mirage_parser_b6t_setup_track_fragments (MIRAGE_Parser *self, GObject *cur_track, gint start_sector, gint length, GError **error) {
+    MIRAGE_Parser_B6TPrivate *_priv = MIRAGE_PARSER_B6T_GET_PRIVATE(self);
+    GList *entry;
     
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: setting up data blocks for track starting at sector 0x%X (%i), length 0x%X\n", __func__, start_sector, start_sector, length);
     
     /* Data blocks are nice concept that's similar to libMirage's fragments; they
        are chunks of continuous data, stored in the same file and read in the same
-       mode. To illustrate how it goes, consider a disc with single Mode 1 data track
+       mode. To illustrate how it goes, consider a parser with single Mode 1 data track
        and three Audio tracks - data track will be stored in one data block, and the
        three audio tracks in another, but both data blocks will be stored in the same
        file, just at different offsets. Note that since they are separated, one data
@@ -254,38 +253,27 @@ static gboolean __mirage_disc_b6t_setup_track_fragments (MIRAGE_Disc *self, GObj
     G_LIST_FOR_EACH(entry, _priv->data_blocks_list) {
         B6T_DataBlock *data_block = entry->data;
         
-        gint tmp_length = 0;
-        
         if (start_sector >= data_block->start_sector && start_sector < data_block->start_sector + data_block->length_sectors) {
+            gint tmp_length;
+            gchar *filename;
+            GObject *data_fragment;
+            
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: found a block %i\n", __func__, g_list_position(_priv->data_blocks_list, entry));
             
             tmp_length = MIN(length, data_block->length_sectors);
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: using length: 0x%X\n", __func__, tmp_length);
-            
-            
-            /* Get Mirage and have it make us a fragment */
-            GObject *mirage = NULL;
-            if (!mirage_object_get_mirage(MIRAGE_OBJECT(self), &mirage, error)) {
-                MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to get mirage object!\n", __func__);
-                return FALSE;
-            }
-            
-            /* Create appropriate fragment */
-            GObject *data_fragment = NULL;
-            
+                        
             /* Find filename */
-            gchar *filename = mirage_helper_find_data_file(data_block->filename, _priv->b6t_filename);
+            filename = mirage_helper_find_data_file(data_block->filename, _priv->b6t_filename);
             if (!filename) {
                 MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to find data file '%s'\n", __func__, data_block->filename);
-                g_object_unref(mirage);
                 mirage_error(MIRAGE_E_DATAFILE, error);
                 return FALSE;
             }
             
             /* We'd like a BINARY fragment */
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: creating BINARY fragment\n", __func__);
-            mirage_mirage_create_fragment(MIRAGE_MIRAGE(mirage), MIRAGE_TYPE_FINTERFACE_BINARY, filename, &data_fragment, error);
-            g_object_unref(mirage);
+            data_fragment = libmirage_create_fragment(MIRAGE_TYPE_FINTERFACE_BINARY, filename, error);
             if (!data_fragment) {
                 MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to create BINARY fragment!\n", __func__);
                 return FALSE;
@@ -373,9 +361,9 @@ static gboolean __mirage_disc_b6t_setup_track_fragments (MIRAGE_Disc *self, GObj
     return TRUE;
 }
 
-static gboolean __mirage_disc_b6t_parse_header (MIRAGE_Disc *self, GError **error) {
-    MIRAGE_Disc_B6TPrivate *_priv = MIRAGE_DISC_B6T_GET_PRIVATE(self);
-    gchar *header = NULL;
+static gboolean __mirage_parser_b6t_parse_header (MIRAGE_Parser *self, GError **error) {
+    MIRAGE_Parser_B6TPrivate *_priv = MIRAGE_PARSER_B6T_GET_PRIVATE(self);
+    gchar *header;
     
     /* Read header (16 bytes) */
     header = MIRAGE_CAST_PTR(_priv->cur_ptr, 0, gchar *);
@@ -394,8 +382,8 @@ static gboolean __mirage_disc_b6t_parse_header (MIRAGE_Disc *self, GError **erro
 }
 
 
-static gboolean __mirage_disc_b6t_parse_pma_data (MIRAGE_Disc *self, GError **error) {
-    MIRAGE_Disc_B6TPrivate *_priv = MIRAGE_DISC_B6T_GET_PRIVATE(self);
+static gboolean __mirage_parser_b6t_parse_pma_data (MIRAGE_Parser *self, GError **error) {
+    MIRAGE_Parser_B6TPrivate *_priv = MIRAGE_PARSER_B6T_GET_PRIVATE(self);
     
     if (_priv->disc_block_1->pma_data_length) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: PMA data not used yet; skipping 0x%X bytes\n", __func__, _priv->disc_block_1->pma_data_length);
@@ -405,8 +393,8 @@ static gboolean __mirage_disc_b6t_parse_pma_data (MIRAGE_Disc *self, GError **er
     return TRUE;
 }
 
-static gboolean __mirage_disc_b6t_parse_atip_data (MIRAGE_Disc *self, GError **error) {
-    MIRAGE_Disc_B6TPrivate *_priv = MIRAGE_DISC_B6T_GET_PRIVATE(self);
+static gboolean __mirage_parser_b6t_parse_atip_data (MIRAGE_Parser *self, GError **error) {
+    MIRAGE_Parser_B6TPrivate *_priv = MIRAGE_PARSER_B6T_GET_PRIVATE(self);
     
     if (_priv->disc_block_1->atip_data_length) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: ATIP data not used yet; skipping 0x%X bytes\n", __func__, _priv->disc_block_1->atip_data_length);
@@ -416,13 +404,13 @@ static gboolean __mirage_disc_b6t_parse_atip_data (MIRAGE_Disc *self, GError **e
     return TRUE;
 }
 
-static gboolean __mirage_disc_b6t_parse_cdtext_data (MIRAGE_Disc *self, GError **error) {
-    MIRAGE_Disc_B6TPrivate *_priv = MIRAGE_DISC_B6T_GET_PRIVATE(self);
+static gboolean __mirage_parser_b6t_parse_cdtext_data (MIRAGE_Parser *self, GError **error) {
+    MIRAGE_Parser_B6TPrivate *_priv = MIRAGE_PARSER_B6T_GET_PRIVATE(self);
     
     if (_priv->disc_block_1->cdtext_data_length) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: reading CD-TEXT data; 0x%X bytes\n", __func__, _priv->disc_block_1->cdtext_data_length);
         /* Read; we don't set data here, because at this point we don't have
-           disc layout set up yet */
+           parser layout set up yet */
         _priv->cdtext_data = MIRAGE_CAST_PTR(_priv->cur_ptr, 0, guint8 *);
         _priv->cur_ptr += _priv->disc_block_1->cdtext_data_length;
     }
@@ -430,8 +418,8 @@ static gboolean __mirage_disc_b6t_parse_cdtext_data (MIRAGE_Disc *self, GError *
     return TRUE;
 }
 
-static gboolean __mirage_disc_b6t_parse_bca (MIRAGE_Disc *self, GError **error) {
-    MIRAGE_Disc_B6TPrivate *_priv = MIRAGE_DISC_B6T_GET_PRIVATE(self);
+static gboolean __mirage_parser_b6t_parse_bca (MIRAGE_Parser *self, GError **error) {
+    MIRAGE_Parser_B6TPrivate *_priv = MIRAGE_PARSER_B6T_GET_PRIVATE(self);
     
     if (_priv->disc_block_1->dvdrom_bca_length) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: reading BCA data; 0x%X bytes\n", __func__, _priv->disc_block_1->dvdrom_bca_length);
@@ -440,7 +428,7 @@ static gboolean __mirage_disc_b6t_parse_bca (MIRAGE_Disc *self, GError **error) 
         guint8 *bca_data = MIRAGE_CAST_PTR(_priv->cur_ptr, 0, guint8 *);
         _priv->cur_ptr += _priv->disc_block_1->dvdrom_bca_length;
         
-        if (!mirage_disc_set_disc_structure(self, 0, 0x0003, bca_data, _priv->disc_block_1->dvdrom_bca_length, error)) {
+        if (!mirage_disc_set_disc_structure(MIRAGE_DISC(_priv->disc), 0, 0x0003, bca_data, _priv->disc_block_1->dvdrom_bca_length, error)) {
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to set BCA data!\n", __func__);
         }
     }
@@ -448,8 +436,8 @@ static gboolean __mirage_disc_b6t_parse_bca (MIRAGE_Disc *self, GError **error) 
     return TRUE;
 }
 
-static gboolean __mirage_disc_b6t_parse_dvd_structures (MIRAGE_Disc *self, GError **error) {
-    MIRAGE_Disc_B6TPrivate *_priv = MIRAGE_DISC_B6T_GET_PRIVATE(self);
+static gboolean __mirage_parser_b6t_parse_dvd_structures (MIRAGE_Parser *self, GError **error) {
+    MIRAGE_Parser_B6TPrivate *_priv = MIRAGE_PARSER_B6T_GET_PRIVATE(self);
     gint length = 0;
     
     /* Return if there's nothing to do */
@@ -466,14 +454,14 @@ static gboolean __mirage_disc_b6t_parse_dvd_structures (MIRAGE_Disc *self, GErro
     while (length < _priv->disc_block_1->dvdrom_structures_length) {
         /* It seems DVD structures are stored in following format:
              - 2 bytes, holding structure number
-             - 4 bytes, holding data header as returned by READ DISC STRUCTURE
+             - 4 bytes, holding data header as returned by READ PARSER STRUCTURE
                command (i.e. 2 bytes of data length and 2 reserved bytes)
              - actual data
         */
         guint16 struct_number;
         guint16 struct_length;
         guint16 struct_reserved;
-        guint8 *struct_data = NULL;
+        guint8 *struct_data;
         
         /* Read structure number and data length */
         struct_number = MIRAGE_CAST_DATA(_priv->cur_ptr, 0, guint16);
@@ -496,7 +484,7 @@ static gboolean __mirage_disc_b6t_parse_dvd_structures (MIRAGE_Disc *self, GErro
         
         /* Set structure */
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: structure 0x%X, length: 0x%X\n", __func__, struct_number, struct_length);
-        if (!mirage_disc_set_disc_structure(self, 0, struct_number, struct_data, struct_length, error)) {
+        if (!mirage_disc_set_disc_structure(MIRAGE_DISC(_priv->disc), 0, struct_number, struct_data, struct_length, error)) {
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to set structure data for structure 0x%X!\n", __func__, struct_number);
         }
                 
@@ -508,27 +496,27 @@ static gboolean __mirage_disc_b6t_parse_dvd_structures (MIRAGE_Disc *self, GErro
 }
 
 
-static gboolean __mirage_disc_b6t_decode_disc_type (MIRAGE_Disc *self, GError **error) {
-    MIRAGE_Disc_B6TPrivate *_priv = MIRAGE_DISC_B6T_GET_PRIVATE(self);
+static gboolean __mirage_parser_b6t_decode_parser_type (MIRAGE_Parser *self, GError **error) {
+    MIRAGE_Parser_B6TPrivate *_priv = MIRAGE_PARSER_B6T_GET_PRIVATE(self);
 
     switch (_priv->disc_block_1->disc_type) {
         case 0x08: {
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: CD-ROM disc\n", __func__);
-            mirage_disc_set_medium_type(self, MIRAGE_MEDIUM_CD, NULL);
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: CD-ROM parser\n", __func__);
+            mirage_disc_set_medium_type(MIRAGE_DISC(_priv->disc), MIRAGE_MEDIUM_CD, NULL);
             break;
         }
         case 0x10: {
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: DVD-ROM disc\n", __func__);
-            mirage_disc_set_medium_type(self, MIRAGE_MEDIUM_DVD, NULL);
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: DVD-ROM parser\n", __func__);
+            mirage_disc_set_medium_type(MIRAGE_DISC(_priv->disc), MIRAGE_MEDIUM_DVD, NULL);
             break;
         }
         case 0x11: {
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: DVD-R disc\n", __func__);
-            mirage_disc_set_medium_type(self, MIRAGE_MEDIUM_DVD, NULL);
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: DVD-R parser\n", __func__);
+            mirage_disc_set_medium_type(MIRAGE_DISC(_priv->disc), MIRAGE_MEDIUM_DVD, NULL);
             break;
         }
         default: {
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: unknown disc type: 0x%X!\n", __func__, _priv->disc_block_1->disc_type);
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: unknown parser type: 0x%X!\n", __func__, _priv->disc_block_1->disc_type);
             mirage_error(MIRAGE_E_PARSER, error);
             return FALSE;
         }
@@ -537,10 +525,10 @@ static gboolean __mirage_disc_b6t_decode_disc_type (MIRAGE_Disc *self, GError **
     return TRUE;
 }
 
-static gboolean __mirage_disc_b6t_parse_disc_blocks (MIRAGE_Disc *self, GError **error) {
-    MIRAGE_Disc_B6TPrivate *_priv = MIRAGE_DISC_B6T_GET_PRIVATE(self);
+static gboolean __mirage_parser_b6t_parse_disc_blocks (MIRAGE_Parser *self, GError **error) {
+    MIRAGE_Parser_B6TPrivate *_priv = MIRAGE_PARSER_B6T_GET_PRIVATE(self);
     
-    /* 112 bytes a.k.a. first disc block */
+    /* 112 bytes a.k.a. first parser block */
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: reading 'disc block 1'\n", __func__);
     _priv->disc_block_1 = MIRAGE_CAST_PTR(_priv->cur_ptr, 0, B6T_DiscBlock_1 *);
     _priv->cur_ptr += sizeof(B6T_DiscBlock_1);
@@ -556,7 +544,7 @@ static gboolean __mirage_disc_b6t_parse_disc_blocks (MIRAGE_Disc *self, GError *
     WHINE_ON_UNEXPECTED(_priv->disc_block_1->__dummy7__, 0x00000000);
     WHINE_ON_UNEXPECTED(_priv->disc_block_1->__dummy8__, 0x00000000);
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  disc type: 0x%X\n", __func__, _priv->disc_block_1->disc_type);
-    __mirage_disc_b6t_decode_disc_type(self, error);
+    __mirage_parser_b6t_decode_parser_type(self, error);
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  number of sessions: %i\n", __func__, _priv->disc_block_1->num_sessions);
     WHINE_ON_UNEXPECTED(_priv->disc_block_1->__dummy9__, 0x00000002);
     WHINE_ON_UNEXPECTED(_priv->disc_block_1->__dummy10__, 0x00000000);
@@ -587,7 +575,7 @@ static gboolean __mirage_disc_b6t_parse_disc_blocks (MIRAGE_Disc *self, GError *
     WHINE_ON_UNEXPECTED(_priv->disc_block_1->__dummy21__, 0x00000000);
     if (_priv->disc_block_1->disc_type == 0x10) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  BCA length: 0x%X\n", __func__, _priv->disc_block_1->dvdrom_bca_length);
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  disc structures length: 0x%X\n", __func__, _priv->disc_block_1->dvdrom_structures_length);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  parser structures length: 0x%X\n", __func__, _priv->disc_block_1->dvdrom_structures_length);
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  DVD-ROM info block length: 0x%X\n", __func__, _priv->disc_block_1->dvdrom_info_length);
     } else {
         WHINE_ON_UNEXPECTED(_priv->disc_block_1->dvdrom_bca_length, 0x00000000);
@@ -655,28 +643,28 @@ static gboolean __mirage_disc_b6t_parse_disc_blocks (MIRAGE_Disc *self, GError *
     _priv->cur_ptr += _priv->disc_block_2->unknown1_length;
             
     /* This is where PMA/ATIP/CD-TEXT data gets stored, in that order */
-    if (!__mirage_disc_b6t_parse_pma_data(self, error)) {
+    if (!__mirage_parser_b6t_parse_pma_data(self, error)) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to parse PMA data!\n", __func__);
         return FALSE;
     }
-    if (!__mirage_disc_b6t_parse_atip_data(self, error)) {
+    if (!__mirage_parser_b6t_parse_atip_data(self, error)) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to parse ATIP data!\n", __func__);
         return FALSE;
     }
-    if (!__mirage_disc_b6t_parse_cdtext_data(self, error)) {
+    if (!__mirage_parser_b6t_parse_cdtext_data(self, error)) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to parse CD-TEXT data!\n", __func__);
         return FALSE;
     }
     
     /* If we're dealing with DVD-ROM image, this is where BCA is stored, followed
-       by disc structures... Since I don't think PMA/ATIP/CD-TEXT can be obtained
+       by parser structures... Since I don't think PMA/ATIP/CD-TEXT can be obtained
        from DVD-ROMs, it doesn't really matter which should come first (though, 
        judging by order of length integers, I'd say this is correct order...) */
-    if (!__mirage_disc_b6t_parse_bca(self, error)) {
+    if (!__mirage_parser_b6t_parse_bca(self, error)) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to parse BCA!\n", __func__);
         return FALSE;
     }
-    if (!__mirage_disc_b6t_parse_dvd_structures(self, error)) {
+    if (!__mirage_parser_b6t_parse_dvd_structures(self, error)) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to parse DVD structures!\n", __func__);
         return FALSE;
     }
@@ -688,10 +676,10 @@ static gboolean __mirage_disc_b6t_parse_disc_blocks (MIRAGE_Disc *self, GError *
        returned by READ CAPACITY command. Again, this data is not really relevant, 
        so we're skipping it... */
     if (_priv->disc_block_1->disc_type == 0x08) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: skipping CD-ROM disc info block (0x%X bytes)\n", __func__, _priv->disc_block_1->cdrom_info_length);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: skipping CD-ROM parser info block (0x%X bytes)\n", __func__, _priv->disc_block_1->cdrom_info_length);
         _priv->cur_ptr += _priv->disc_block_1->cdrom_info_length;
     } else {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: skipping DVD-ROM disc info block (0x%X bytes)\n", __func__, _priv->disc_block_1->dvdrom_info_length);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: skipping DVD-ROM parser info block (0x%X bytes)\n", __func__, _priv->disc_block_1->dvdrom_info_length);
         _priv->cur_ptr += _priv->disc_block_1->dvdrom_info_length;
     }
     
@@ -709,8 +697,8 @@ static gint __sort_data_blocks (B6T_DataBlock *block1, B6T_DataBlock *block2) {
     }
 }
 
-static gboolean __mirage_disc_b6t_parse_data_blocks (MIRAGE_Disc *self, GError **error) {
-    MIRAGE_Disc_B6TPrivate *_priv = MIRAGE_DISC_B6T_GET_PRIVATE(self);
+static gboolean __mirage_parser_b6t_parse_data_blocks (MIRAGE_Parser *self, GError **error) {
+    MIRAGE_Parser_B6TPrivate *_priv = MIRAGE_PARSER_B6T_GET_PRIVATE(self);
     
     gsize length = 0;
     gint i;
@@ -770,8 +758,8 @@ static gboolean __mirage_disc_b6t_parse_data_blocks (MIRAGE_Disc *self, GError *
     return TRUE;
 }
 
-static gboolean __mirage_disc_b6t_parse_track_entry (MIRAGE_Disc *self, GError **error) {
-    MIRAGE_Disc_B6TPrivate *_priv = MIRAGE_DISC_B6T_GET_PRIVATE(self);
+static gboolean __mirage_parser_b6t_parse_track_entry (MIRAGE_Parser *self, GError **error) {
+    MIRAGE_Parser_B6TPrivate *_priv = MIRAGE_PARSER_B6T_GET_PRIVATE(self);
     GObject *cur_track = NULL;
     B6T_Track *track = NULL;
     
@@ -831,7 +819,7 @@ static gboolean __mirage_disc_b6t_parse_track_entry (MIRAGE_Disc *self, GError *
     }
     
     /* Create track now; we'll add it directly to disc, with disc and track number we have */
-    if (!mirage_disc_add_track_by_number(self, track->point, &cur_track, error)) {
+    if (!mirage_disc_add_track_by_number(MIRAGE_DISC(_priv->disc), track->point, &cur_track, error)) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to add track!\n", __func__);
         return FALSE;
     }
@@ -885,7 +873,7 @@ static gboolean __mirage_disc_b6t_parse_track_entry (MIRAGE_Disc *self, GError *
     }
     
     /* Set up track fragments */
-    if (!__mirage_disc_b6t_setup_track_fragments(self, cur_track, track->start_sector, track->length, error)) {
+    if (!__mirage_parser_b6t_setup_track_fragments(self, cur_track, track->start_sector, track->length, error)) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to set up track's fragments!\n", __func__);
         g_object_unref(cur_track);
         return FALSE;
@@ -898,8 +886,8 @@ static gboolean __mirage_disc_b6t_parse_track_entry (MIRAGE_Disc *self, GError *
     return TRUE;
 }
 
-static gboolean __mirage_disc_b6t_parse_session (MIRAGE_Disc *self, GError **error) {
-    MIRAGE_Disc_B6TPrivate *_priv = MIRAGE_DISC_B6T_GET_PRIVATE(self);
+static gboolean __mirage_parser_b6t_parse_session (MIRAGE_Parser *self, GError **error) {
+    MIRAGE_Parser_B6TPrivate *_priv = MIRAGE_PARSER_B6T_GET_PRIVATE(self);
     gint i;
     B6T_Session *session;
     
@@ -916,17 +904,17 @@ static gboolean __mirage_disc_b6t_parse_session (MIRAGE_Disc *self, GError **err
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   end track: 0x%X\n", __func__, session->last_track);
     
     /* If this is the first session, its starting address is also the starting address
-       of the disc... if not, we need to set the length of lead-out of previous session
+       of the parser... if not, we need to set the length of lead-out of previous session
        (which would equal difference between previous end and current start address) */
     if (session->number == 1) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: first session; setting disc's start to 0x%X (%i)\n", __func__, session->session_start, session->session_start);
-        mirage_disc_layout_set_start_sector(self, session->session_start, NULL);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: first session; setting parser's start to 0x%X (%i)\n", __func__, session->session_start, session->session_start);
+        mirage_disc_layout_set_start_sector(MIRAGE_DISC(_priv->disc), session->session_start, NULL);
     } else {
         guint32 leadout_length = session->session_start - _priv->prev_session_end;
         GObject *prev_session = NULL;
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: previous session's leadout length: 0x%X (%i)\n", __func__, leadout_length, leadout_length);
         
-        if (!mirage_disc_get_session_by_number(self, session->number - 1, &prev_session, error)) {
+        if (!mirage_disc_get_session_by_number(MIRAGE_DISC(_priv->disc), session->number - 1, &prev_session, error)) {
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to get previous session!\n", __func__);
             return FALSE;
         }
@@ -942,14 +930,14 @@ static gboolean __mirage_disc_b6t_parse_session (MIRAGE_Disc *self, GError **err
     _priv->prev_session_end = session->session_end;
     
     /* Add session */
-    if (!mirage_disc_add_session_by_number(self, session->number, NULL, error)) {
+    if (!mirage_disc_add_session_by_number(MIRAGE_DISC(_priv->disc), session->number, NULL, error)) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to add session!\n", __func__);
         return FALSE;
     }
     
     /* Load track entries */
     for (i = 0; i < session->num_entries; i++) {
-        if (!__mirage_disc_b6t_parse_track_entry(self, error)) {
+        if (!__mirage_parser_b6t_parse_track_entry(self, error)) {
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to parse track entry #%i!\n", __func__, i);
             return FALSE;
         }
@@ -959,8 +947,8 @@ static gboolean __mirage_disc_b6t_parse_session (MIRAGE_Disc *self, GError **err
     return TRUE;
 }
 
-static gboolean __mirage_disc_b6t_parse_sessions (MIRAGE_Disc *self, GError **error) {
-    MIRAGE_Disc_B6TPrivate *_priv = MIRAGE_DISC_B6T_GET_PRIVATE(self);   
+static gboolean __mirage_parser_b6t_parse_sessions (MIRAGE_Parser *self, GError **error) {
+    MIRAGE_Parser_B6TPrivate *_priv = MIRAGE_PARSER_B6T_GET_PRIVATE(self);   
     gsize length = 0;
     gint i;
     
@@ -969,7 +957,7 @@ static gboolean __mirage_disc_b6t_parse_sessions (MIRAGE_Disc *self, GError **er
     
     /* Load each session */
     for (i = 0; i < _priv->disc_block_1->num_sessions; i++) {
-        if (!__mirage_disc_b6t_parse_session(self, error)) {
+        if (!__mirage_parser_b6t_parse_session(self, error)) {
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to parse session #%i!\n", __func__, i);
             return FALSE;
         }
@@ -985,8 +973,8 @@ static gboolean __mirage_disc_b6t_parse_sessions (MIRAGE_Disc *self, GError **er
     return TRUE;
 }
 
-static gboolean __mirage_disc_b6t_parse_footer (MIRAGE_Disc *self, GError **error) {
-    MIRAGE_Disc_B6TPrivate *_priv = MIRAGE_DISC_B6T_GET_PRIVATE(self);
+static gboolean __mirage_parser_b6t_parse_footer (MIRAGE_Parser *self, GError **error) {
+    MIRAGE_Parser_B6TPrivate *_priv = MIRAGE_PARSER_B6T_GET_PRIVATE(self);
     
     /* Read footer */
     gchar *footer = MIRAGE_CAST_PTR(_priv->cur_ptr, 0, gchar *);
@@ -1004,38 +992,38 @@ static gboolean __mirage_disc_b6t_parse_footer (MIRAGE_Disc *self, GError **erro
     return TRUE;
 }
 
-static gboolean __mirage_disc_b6t_load_disc (MIRAGE_Disc *self, GError **error) {   
-    MIRAGE_Disc_B6TPrivate *_priv = MIRAGE_DISC_B6T_GET_PRIVATE(self);
+static gboolean __mirage_parser_b6t_load_parser (MIRAGE_Parser *self, GError **error) {   
+    MIRAGE_Parser_B6TPrivate *_priv = MIRAGE_PARSER_B6T_GET_PRIVATE(self);
 
     /* Start at the beginning */
     _priv->cur_ptr = _priv->b6t_data;
     
     /* Read header */
-    if (!__mirage_disc_b6t_parse_header(self, error)) {
+    if (!__mirage_parser_b6t_parse_header(self, error)) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to parse header!\n");
         return FALSE;
     }
     
-    /* Read disc blocks */
-    if (!__mirage_disc_b6t_parse_disc_blocks(self, error)) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to parse disc blocks!\n");
+    /* Read parser blocks */
+    if (!__mirage_parser_b6t_parse_disc_blocks(self, error)) {
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to parse parser blocks!\n");
         return FALSE;
     }
     
     /* Read data blocks */
-    if (!__mirage_disc_b6t_parse_data_blocks(self, error)) {
+    if (!__mirage_parser_b6t_parse_data_blocks(self, error)) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to parse data blocks!\n");
         return FALSE;
     }
     
     /* Read sessions */
-    if (!__mirage_disc_b6t_parse_sessions(self, error)) {
+    if (!__mirage_parser_b6t_parse_sessions(self, error)) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to parse sessions!\n");
         return FALSE;
     }
     
     /* Read internal DPM data */
-    if (!__mirage_disc_b6t_parse_internal_dpm_data(self, error)) {
+    if (!__mirage_parser_b6t_parse_internal_dpm_data(self, error)) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to parse internal DPM data!\n");
         return FALSE;
     }
@@ -1047,17 +1035,17 @@ static gboolean __mirage_disc_b6t_load_disc (MIRAGE_Disc *self, GError **error) 
     
 
     /* Read footer */
-    if (!__mirage_disc_b6t_parse_footer(self, error)) {
+    if (!__mirage_parser_b6t_parse_footer(self, error)) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to parse footer!\n");
         return FALSE;
     }
     
     /* Try to load external BWA file; the internal DPM data does not necessarily
-       contain entries for whole disc, but rather just for beginning of the disc
+       contain entries for whole parser, but rather just for beginning of the parser
        (which is usually checked by copy protection). BWA file, on the other hand,
-       usually contains DPM data for the whole disc. So, if we have both internal
+       usually contains DPM data for the whole parser. So, if we have both internal
        DPM data and a BWA available, we'll use the latter... */
-    if (!__mirage_disc_b6t_load_bwa_file(self, error)) {
+    if (!__mirage_parser_b6t_load_bwa_file(self, error)) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to load BWA file!\n");
         return FALSE;
     }
@@ -1066,71 +1054,41 @@ static gboolean __mirage_disc_b6t_load_disc (MIRAGE_Disc *self, GError **error) 
 }
 
 /******************************************************************************\
- *                     MIRAGE_Disc methods implementation                     *
+ *                     MIRAGE_Parser methods implementation                     *
 \******************************************************************************/
-static gboolean __mirage_disc_b6t_get_parser_info (MIRAGE_Disc *self, MIRAGE_ParserInfo **parser_info, GError **error) {
-    MIRAGE_Disc_B6TPrivate *_priv = MIRAGE_DISC_B6T_GET_PRIVATE(self);
-    *parser_info = _priv->parser_info;
-    return TRUE;
-}
-
-static gboolean __mirage_disc_b6t_can_load_file (MIRAGE_Disc *self, gchar *filename, GError **error) {
-    MIRAGE_Disc_B6TPrivate *_priv = MIRAGE_DISC_B6T_GET_PRIVATE(self);
-    size_t blocks_read;
-
-    /* Does file exist? */
-    if (!g_file_test(filename, G_FILE_TEST_IS_REGULAR)) {
-        return FALSE;
-    }
-    
-    /* Check supported suffixes */
-    if (!mirage_helper_match_suffixes(filename, _priv->parser_info->suffixes)) {
-        return FALSE;
-    }
-    
-    /* Now the real test... check header and footer */
-    gchar header[16] = "";
-    gchar footer[16] = "";
-    
-    FILE *file = g_fopen(filename, "r");
-    if (!file) {
-        return FALSE;
-    }
-    
-    /* Read header */
-    fseeko(file, 0, SEEK_SET);
-    blocks_read = fread(header, 16, 1, file);
-    if (blocks_read < 1) return FALSE;
-        
-    /* Read footer */
-    fseeko(file, -16, SEEK_END);
-    blocks_read = fread(footer, 16, 1, file);    
-    if (blocks_read < 1) return FALSE;
-    
-    fclose(file);
-    
-    if (memcmp(header, "BWT5 STREAM SIGN", 16)
-        || memcmp(footer, "BWT5 STREAM FOOT", 16)) {
-        return FALSE;
-    }
-    
-    return TRUE;
-}
-
-static gboolean __mirage_disc_b6t_load_image (MIRAGE_Disc *self, gchar **filenames, GError **error) {   
-    MIRAGE_Disc_B6TPrivate *_priv = MIRAGE_DISC_B6T_GET_PRIVATE(self);
+static gboolean __mirage_parser_b6t_load_image (MIRAGE_Parser *self, gchar **filenames, GObject **disc, GError **error) {   
+    MIRAGE_Parser_B6TPrivate *_priv = MIRAGE_PARSER_B6T_GET_PRIVATE(self);
     GError *local_error = NULL;
     gboolean succeeded = TRUE;
+    FILE *file;
+    guint8 header[16];
     
-    /* For now, B6T parser supports only one-file images */
-    if (g_strv_length(filenames) > 1) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: only single-file images supported!\n", __func__);
-        mirage_error(MIRAGE_E_SINGLEFILE, error);
+    /* Check if we can load the image */
+    file = g_fopen(filenames[0], "r");
+    if (!file) {
+        mirage_error(MIRAGE_E_IMAGEFILE, error);
         return FALSE;
     }
-        
-    /* Set filename */
-    mirage_disc_set_filenames(self, filenames, NULL);
+    
+    /* Read and verify header; we could also check the footer, but I think
+       header check only is sufficient */
+    fseeko(file, 0, SEEK_SET);
+    if (fread(header, 16, 1, file) < 1) {
+        fclose(file);
+        mirage_error(MIRAGE_E_READFAILED, error);
+        return FALSE;
+    }
+    fclose(file);
+
+    if (memcmp(header, "BWT5 STREAM SIGN", 16)) {
+        mirage_error(MIRAGE_E_CANTHANDLE, error);
+        return FALSE;
+    }
+    
+    /* Create disc */
+    _priv->disc = g_object_new(MIRAGE_TYPE_DISC, NULL);
+
+    mirage_disc_set_filenames(MIRAGE_DISC(_priv->disc), filenames, NULL);
     _priv->b6t_filename = g_strdup(filenames[0]);
     
     /* Map the file using GLib's GMappedFile */
@@ -1139,20 +1097,30 @@ static gboolean __mirage_disc_b6t_load_image (MIRAGE_Disc *self, gchar **filenam
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to map file '%s': %s!\n", __func__, filenames[0], local_error->message);
         g_error_free(local_error);
         mirage_error(MIRAGE_E_IMAGEFILE, error);
-        return FALSE;
+        succeeded = FALSE;
+        goto end;
     }
     
     _priv->b6t_data = (guint8 *)g_mapped_file_get_contents(_priv->b6t_mapped);
     
-    /* Load disc */
-    succeeded = __mirage_disc_b6t_load_disc(self, error);
+    /* Load parser */
+    succeeded = __mirage_parser_b6t_load_parser(self, error);
     if (!succeeded) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to load disc!\n", __func__);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to load parser!\n", __func__);
     }
     
     _priv->b6t_data = NULL;
     g_mapped_file_free(_priv->b6t_mapped);
-                                     
+
+end:    
+    /* Return disc */
+    if (succeeded) {
+        *disc = _priv->disc;
+    } else {
+        g_object_unref(_priv->disc);
+        *disc = NULL;
+    }
+        
     return succeeded;
 }
 
@@ -1161,14 +1129,10 @@ static gboolean __mirage_disc_b6t_load_image (MIRAGE_Disc *self, gchar **filenam
  *                                Object init                                 *
 \******************************************************************************/
 /* Our parent class */
-static MIRAGE_DiscClass *parent_class = NULL;
+static MIRAGE_ParserClass *parent_class = NULL;
 
-static void __mirage_disc_b6t_instance_init (GTypeInstance *instance, gpointer g_class) {
-    MIRAGE_Disc_B6T *self = MIRAGE_DISC_B6T(instance);
-    MIRAGE_Disc_B6TPrivate *_priv = MIRAGE_DISC_B6T_GET_PRIVATE(self);
-    
-    /* Create parser info */
-    _priv->parser_info = mirage_helper_create_parser_info(
+static void __mirage_parser_b6t_instance_init (GTypeInstance *instance, gpointer g_class) {
+    mirage_parser_generate_parser_info(MIRAGE_PARSER(instance),
         "PARSER-B6T",
         "B6T Image Parser",
         "1.0.0",
@@ -1181,10 +1145,10 @@ static void __mirage_disc_b6t_instance_init (GTypeInstance *instance, gpointer g
     return;
 }
 
-static void __mirage_disc_b6t_finalize (GObject *obj) {
-    MIRAGE_Disc_B6T *self = MIRAGE_DISC_B6T(obj);
-    MIRAGE_Disc_B6TPrivate *_priv = MIRAGE_DISC_B6T_GET_PRIVATE(self);
-    GList *entry = NULL;
+static void __mirage_parser_b6t_finalize (GObject *obj) {
+    MIRAGE_Parser_B6T *self = MIRAGE_PARSER_B6T(obj);
+    MIRAGE_Parser_B6TPrivate *_priv = MIRAGE_PARSER_B6T_GET_PRIVATE(self);
+    GList *entry;
     
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_GOBJECT, "%s:\n", __func__);
     
@@ -1202,9 +1166,6 @@ static void __mirage_disc_b6t_finalize (GObject *obj) {
     
     g_free(_priv->b6t_filename);
     g_free(_priv->cdtext_data);
-
-    /* Free parser info */
-    mirage_helper_destroy_parser_info(_priv->parser_info);
     
     /* Chain up to the parent class */
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_GOBJECT, "%s: chaining up to parent\n", __func__);
@@ -1212,44 +1173,42 @@ static void __mirage_disc_b6t_finalize (GObject *obj) {
 }
 
 
-static void __mirage_disc_b6t_class_init (gpointer g_class, gpointer g_class_data) {
+static void __mirage_parser_b6t_class_init (gpointer g_class, gpointer g_class_data) {
     GObjectClass *class_gobject = G_OBJECT_CLASS(g_class);
-    MIRAGE_DiscClass *class_disc = MIRAGE_DISC_CLASS(g_class);
-    MIRAGE_Disc_B6TClass *klass = MIRAGE_DISC_B6T_CLASS(g_class);
+    MIRAGE_ParserClass *class_parser = MIRAGE_PARSER_CLASS(g_class);
+    MIRAGE_Parser_B6TClass *klass = MIRAGE_PARSER_B6T_CLASS(g_class);
     
     /* Set parent class */
     parent_class = g_type_class_peek_parent(klass);
     
     /* Register private structure */
-    g_type_class_add_private(klass, sizeof(MIRAGE_Disc_B6TPrivate));
+    g_type_class_add_private(klass, sizeof(MIRAGE_Parser_B6TPrivate));
     
     /* Initialize GObject members */
-    class_gobject->finalize = __mirage_disc_b6t_finalize;
+    class_gobject->finalize = __mirage_parser_b6t_finalize;
     
-    /* Initialize MIRAGE_Disc members */
-    class_disc->get_parser_info = __mirage_disc_b6t_get_parser_info;
-    class_disc->can_load_file = __mirage_disc_b6t_can_load_file;
-    class_disc->load_image = __mirage_disc_b6t_load_image;
+    /* Initialize MIRAGE_Parser members */
+    class_parser->load_image = __mirage_parser_b6t_load_image;
         
     return;
 }
 
-GType mirage_disc_b6t_get_type (GTypeModule *module) {
+GType mirage_parser_b6t_get_type (GTypeModule *module) {
     static GType type = 0;
     if (type == 0) {
         static const GTypeInfo info = {
-            sizeof(MIRAGE_Disc_B6TClass),
+            sizeof(MIRAGE_Parser_B6TClass),
             NULL,   /* base_init */
             NULL,   /* base_finalize */
-            __mirage_disc_b6t_class_init,   /* class_init */
+            __mirage_parser_b6t_class_init,   /* class_init */
             NULL,   /* class_finalize */
             NULL,   /* class_data */
-            sizeof(MIRAGE_Disc_B6T),
+            sizeof(MIRAGE_Parser_B6T),
             0,      /* n_preallocs */
-            __mirage_disc_b6t_instance_init    /* instance_init */
+            __mirage_parser_b6t_instance_init    /* instance_init */
         };
         
-        type = g_type_module_register_type(module, MIRAGE_TYPE_DISC, "MIRAGE_Disc_B6T", &info, 0);
+        type = g_type_module_register_type(module, MIRAGE_TYPE_PARSER, "MIRAGE_Parser_B6T", &info, 0);
     }
     
     return type;
