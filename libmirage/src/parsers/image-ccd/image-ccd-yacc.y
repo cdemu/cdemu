@@ -21,11 +21,11 @@
 #include "image-ccd.h"
 
 /* Prototypes */
-gint yyerror (YYLTYPE *locp, void *scanner, MIRAGE_Disc *self, GError **error, const gchar *msg);
+gint yyerror (YYLTYPE *locp, void *scanner, MIRAGE_Parser *self, GError **error, const gchar *msg);
 gint yylex (YYSTYPE* yylval_param, YYLTYPE* yylloc_param, void *yyscanner);
 
 /* Error function */
-gint yyerror (YYLTYPE *locp, void *scanner, MIRAGE_Disc *self, GError **error, const gchar *msg) {
+gint yyerror (YYLTYPE *locp, void *scanner, MIRAGE_Parser *self, GError **error, const gchar *msg) {
     g_warning("Parse error in line %i: %s\n", locp->first_line, msg);
     g_set_error(error, MIRAGE_ERROR, MIRAGE_E_PARSER, "Parse error in line %i: %s\n", locp->first_line, msg);
     return 0;
@@ -36,7 +36,7 @@ gint yyerror (YYLTYPE *locp, void *scanner, MIRAGE_Disc *self, GError **error, c
 
 /* Parser parameters */
 %parse-param {void *scanner}
-%parse-param {MIRAGE_Disc *self}
+%parse-param {MIRAGE_Parser *self}
 %parse-param {GError **error}
 
 %union {
@@ -97,8 +97,8 @@ ccd_elements    :   ccd_element;
                 |   ccd_elements ccd_element;
 
 ccd_element     :   clonecd_section;
-                |   disc_section;
-                |   disc_catalog;
+                |   parser_section;
+                |   parser_catalog;
                 |   session_section;
                 |   entry_section;
                 |   track_section;
@@ -108,22 +108,22 @@ clonecd_section :   HEAD_CLONECD_ VERSION_ {
                         
                         header->Version = $2;
                         
-                        __mirage_disc_ccd_read_header(self, header, NULL);
+                        __mirage_parser_ccd_read_header(self, header, NULL);
                     }
                     
-disc_section    :   HEAD_DISC_ TOCENTRIES_ SESSIONS_ DATATRACKSSCRAMBLED_ CDTEXTLENGTH_ {
-                        CCD_Disc *disc = g_new0(CCD_Disc, 1);
+parser_section    :   HEAD_DISC_ TOCENTRIES_ SESSIONS_ DATATRACKSSCRAMBLED_ CDTEXTLENGTH_ {
+                        CCD_Disc *disc_data = g_new0(CCD_Disc, 1);
                         
-                        disc->TocEntries = $2;
-                        disc->Sessions = $3;
-                        disc->DataTracksScrambled = $4;
-                        disc->CDTextLength = $5;
+                        disc_data->TocEntries = $2;
+                        disc_data->Sessions = $3;
+                        disc_data->DataTracksScrambled = $4;
+                        disc_data->CDTextLength = $5;
                         
-                        __mirage_disc_ccd_read_disc(self, disc, NULL);
+                        __mirage_parser_ccd_read_disc(self, disc_data, NULL);
                     }
 
-disc_catalog    :   CATALOG_ {
-                        __mirage_disc_ccd_read_disc_catalog(self, $1, NULL);
+parser_catalog    :   CATALOG_ {
+                        __mirage_parser_ccd_read_disc_catalog(self, $1, NULL);
                     }
                     
 session_section :   HEAD_SESSION_ PREGAPMODE_ PREGAPSUBC_ { 
@@ -134,7 +134,7 @@ session_section :   HEAD_SESSION_ PREGAPMODE_ PREGAPSUBC_ {
                         session->PreGapMode = $2;
                         session->PreGapSubC = $3;
                                                 
-                        __mirage_disc_ccd_read_session(self, session, NULL);
+                        __mirage_parser_ccd_read_session(self, session, NULL);
                     }
                     
 entry_section   :   HEAD_ENTRY_ SESSION_ POINT_ ADR_ CONTROL_ TRACKNO_ 
@@ -159,11 +159,11 @@ entry_section   :   HEAD_ENTRY_ SESSION_ POINT_ ADR_ CONTROL_ TRACKNO_
                         entry->PFrame = $14;
                         entry->PLBA = $15;
                         
-                        __mirage_disc_ccd_read_entry(self, entry, NULL);
+                        __mirage_parser_ccd_read_entry(self, entry, NULL);
                     }
 
 track_section   :   HEAD_TRACK_ {
-                        __mirage_disc_ccd_read_track(self, $1, NULL);
+                        __mirage_parser_ccd_read_track(self, $1, NULL);
                     } track_elements
 
 track_elements  :   track_element
@@ -175,19 +175,19 @@ track_element   :   track_mode;
                 |   track_isrc;
 
 track_mode      :   MODE_ {
-                        __mirage_disc_ccd_read_track_mode(self, $1, NULL);
+                        __mirage_parser_ccd_read_track_mode(self, $1, NULL);
                     }
                     
 track_index0    :   INDEX0_ {
-                        __mirage_disc_ccd_read_track_index0(self, $1, NULL);
+                        __mirage_parser_ccd_read_track_index0(self, $1, NULL);
                     }
                     
 track_index1    :   INDEX1_ {
-                        __mirage_disc_ccd_read_track_index1(self, $1, NULL);
+                        __mirage_parser_ccd_read_track_index1(self, $1, NULL);
                     }
 
 track_isrc      :   ISRC_ {
-                        __mirage_disc_ccd_read_track_isrc(self, $1, NULL);
+                        __mirage_parser_ccd_read_track_isrc(self, $1, NULL);
                     }
 
 %%

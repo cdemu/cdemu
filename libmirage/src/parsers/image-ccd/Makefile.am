@@ -1,6 +1,6 @@
 AM_YFLAGS = -d
 
-BUILT_SOURCES = image-ccd-parser.h
+BUILT_SOURCES = image-ccd-yacc.h
 
 INCLUDES = \
     -I$(top_srcdir)/src/libmirage \
@@ -13,12 +13,12 @@ plugin_LTLIBRARIES = image-ccd.la
 
 noinst_HEADERS = \
     image-ccd.h \
-    image-ccd-disc.h
+    image-ccd-parser.h
 
 image_ccd_la_SOURCES = \
-   image-ccd-parser.y \
-   image-ccd-lexer.l \
-   image-ccd-disc.c \
+   image-ccd-yacc.y \
+   image-ccd-lex.l \
+   image-ccd-parser.c \
    image-ccd-plugin.c
     
 image_ccd_la_LIBADD = \

@@ -1,5 +1,5 @@
 /*
- *  libMirage: CCD image parser: Disc object
+ *  libMirage: CCD image parser: Parser object
  *  Copyright (C) 2006-2008 Rok Mandeljc
  *
  *  This program is free software; you can redistribute it and/or modify
@@ -24,15 +24,17 @@
 int yylex_init (void *scanner);
 void yyset_in  (FILE *in_str, void *yyscanner);
 int yylex_destroy (void *yyscanner);
-int yyparse (void *scanner, MIRAGE_Disc *self, GError **error);
+int yyparse (void *scanner, MIRAGE_Parser *self, GError **error);
 
 
 /******************************************************************************\
  *                              Private structure                             *
 \******************************************************************************/
-#define MIRAGE_DISC_CCD_GET_PRIVATE(obj) (G_TYPE_INSTANCE_GET_PRIVATE((obj), MIRAGE_TYPE_DISC_CCD, MIRAGE_Disc_CCDPrivate))
+#define MIRAGE_PARSER_CCD_GET_PRIVATE(obj) (G_TYPE_INSTANCE_GET_PRIVATE((obj), MIRAGE_TYPE_PARSER_CCD, MIRAGE_Parser_CCDPrivate))
 
-typedef struct {       
+typedef struct {
+    GObject *disc;
+    
     /* Data and subchannel filenames */
     gchar *img_filename;
     gchar *sub_filename;
@@ -43,44 +45,41 @@ typedef struct {
     /* Parsed data */
     CCD_CloneCD *header;
     
-    CCD_Disc *disc;
+    CCD_Disc *disc_data;
     
     GList *sessions_list;
     
     GList *entries_list;
     CCD_Entry *cur_track;
-    
-    /* Parser info */
-    MIRAGE_ParserInfo *parser_info;
-} MIRAGE_Disc_CCDPrivate;
+} MIRAGE_Parser_CCDPrivate;
 
 
 /******************************************************************************\
- *                         Disc private functions                             *
+ *                         Parser private functions                             *
 \******************************************************************************/
-gboolean __mirage_disc_ccd_read_header (MIRAGE_Disc *self, CCD_CloneCD *header, GError **error) {
-    MIRAGE_Disc_CCDPrivate *_priv = MIRAGE_DISC_CCD_GET_PRIVATE(self);
+gboolean __mirage_parser_ccd_read_header (MIRAGE_Parser *self, CCD_CloneCD *header, GError **error) {
+    MIRAGE_Parser_CCDPrivate *_priv = MIRAGE_PARSER_CCD_GET_PRIVATE(self);
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: reading header entry\n", __func__);
     _priv->header = header;
     return TRUE;
 }
 
-gboolean __mirage_disc_ccd_read_disc (MIRAGE_Disc *self, CCD_Disc *disc, GError **error) {
-    MIRAGE_Disc_CCDPrivate *_priv = MIRAGE_DISC_CCD_GET_PRIVATE(self);
+gboolean __mirage_parser_ccd_read_disc (MIRAGE_Parser *self, CCD_Disc *disc_data, GError **error) {
+    MIRAGE_Parser_CCDPrivate *_priv = MIRAGE_PARSER_CCD_GET_PRIVATE(self);
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: reading disc entry\n", __func__);
-    _priv->disc = disc;
+    _priv->disc_data = disc_data;
     return TRUE;
 }
 
-gboolean __mirage_disc_ccd_read_disc_catalog (MIRAGE_Disc *self, gchar *catalog, GError **error) {
-    MIRAGE_Disc_CCDPrivate *_priv = MIRAGE_DISC_CCD_GET_PRIVATE(self);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: reading disc catalog\n", __func__);
-    _priv->disc->Catalog = catalog;
+gboolean __mirage_parser_ccd_read_disc_catalog (MIRAGE_Parser *self, gchar *catalog, GError **error) {
+    MIRAGE_Parser_CCDPrivate *_priv = MIRAGE_PARSER_CCD_GET_PRIVATE(self);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: reading parser catalog\n", __func__);
+    _priv->disc_data->Catalog = catalog;
     return TRUE;
 }
 
-gboolean __mirage_disc_ccd_read_session (MIRAGE_Disc *self, CCD_Session *session, GError **error) {
-    MIRAGE_Disc_CCDPrivate *_priv = MIRAGE_DISC_CCD_GET_PRIVATE(self);
+gboolean __mirage_parser_ccd_read_session (MIRAGE_Parser *self, CCD_Session *session, GError **error) {
+    MIRAGE_Parser_CCDPrivate *_priv = MIRAGE_PARSER_CCD_GET_PRIVATE(self);
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: reading session entry\n", __func__);
     _priv->sessions_list = g_list_append(_priv->sessions_list, session);
     return TRUE;
@@ -111,8 +110,8 @@ static gint __find_entry_by_point (CCD_Entry *entry, gpointer data) {
     return !(entry->Point == point);
 }
 
-gboolean __mirage_disc_ccd_read_entry (MIRAGE_Disc *self, CCD_Entry *entry, GError **error) {
-    MIRAGE_Disc_CCDPrivate *_priv = MIRAGE_DISC_CCD_GET_PRIVATE(self);
+gboolean __mirage_parser_ccd_read_entry (MIRAGE_Parser *self, CCD_Entry *entry, GError **error) {
+    MIRAGE_Parser_CCDPrivate *_priv = MIRAGE_PARSER_CCD_GET_PRIVATE(self);
     
     /* As far as entries go, we need only entries with point 1-99, 0xA0 (lead-in) 
        and 0xA2 (lead-out). So we'll ignore the rest, plus we'll put 0xA2 at 
@@ -128,8 +127,8 @@ gboolean __mirage_disc_ccd_read_entry (MIRAGE_Disc *self, CCD_Entry *entry, GErr
     return TRUE;
 }
 
-gboolean __mirage_disc_ccd_read_track (MIRAGE_Disc *self, gint number, GError **error) {
-    MIRAGE_Disc_CCDPrivate *_priv = MIRAGE_DISC_CCD_GET_PRIVATE(self);
+gboolean __mirage_parser_ccd_read_track (MIRAGE_Parser *self, gint number, GError **error) {
+    MIRAGE_Parser_CCDPrivate *_priv = MIRAGE_PARSER_CCD_GET_PRIVATE(self);
     GList *entry = NULL;
     
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: reading track entry for track #%d\n", __func__, number);
@@ -146,8 +145,8 @@ gboolean __mirage_disc_ccd_read_track (MIRAGE_Disc *self, gint number, GError **
     return TRUE;
 }
 
-gboolean __mirage_disc_ccd_read_track_mode (MIRAGE_Disc *self, gint mode, GError **error) {
-    MIRAGE_Disc_CCDPrivate *_priv = MIRAGE_DISC_CCD_GET_PRIVATE(self);
+gboolean __mirage_parser_ccd_read_track_mode (MIRAGE_Parser *self, gint mode, GError **error) {
+    MIRAGE_Parser_CCDPrivate *_priv = MIRAGE_PARSER_CCD_GET_PRIVATE(self);
     
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: reading track mode (%d)\n", __func__, mode);
     
@@ -176,29 +175,29 @@ gboolean __mirage_disc_ccd_read_track_mode (MIRAGE_Disc *self, gint mode, GError
     return TRUE;
 }
 
-gboolean __mirage_disc_ccd_read_track_index0 (MIRAGE_Disc *self, gint index0, GError **error) {
-    MIRAGE_Disc_CCDPrivate *_priv = MIRAGE_DISC_CCD_GET_PRIVATE(self);
+gboolean __mirage_parser_ccd_read_track_index0 (MIRAGE_Parser *self, gint index0, GError **error) {
+    MIRAGE_Parser_CCDPrivate *_priv = MIRAGE_PARSER_CCD_GET_PRIVATE(self);
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: reading index 0\n", __func__);
     _priv->cur_track->Index0 = index0;
     return TRUE;
 }
 
-gboolean __mirage_disc_ccd_read_track_index1 (MIRAGE_Disc *self, gint index1, GError **error) {
-    MIRAGE_Disc_CCDPrivate *_priv = MIRAGE_DISC_CCD_GET_PRIVATE(self);
+gboolean __mirage_parser_ccd_read_track_index1 (MIRAGE_Parser *self, gint index1, GError **error) {
+    MIRAGE_Parser_CCDPrivate *_priv = MIRAGE_PARSER_CCD_GET_PRIVATE(self);
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: reading index 1\n", __func__);
     _priv->cur_track->Index1 = index1;
     return TRUE;
 }
 
-gboolean __mirage_disc_ccd_read_track_isrc (MIRAGE_Disc *self, gchar *isrc, GError **error) {
-    MIRAGE_Disc_CCDPrivate *_priv = MIRAGE_DISC_CCD_GET_PRIVATE(self);
+gboolean __mirage_parser_ccd_read_track_isrc (MIRAGE_Parser *self, gchar *isrc, GError **error) {
+    MIRAGE_Parser_CCDPrivate *_priv = MIRAGE_PARSER_CCD_GET_PRIVATE(self);
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: reading ISRC\n", __func__);
     _priv->cur_track->ISRC = isrc;
     return TRUE;
 }
 
 
-static gboolean __mirage_disc_ccd_determine_track_mode (MIRAGE_Disc *self, GObject *track, GError **error) {
+static gboolean __mirage_parser_ccd_determine_track_mode (MIRAGE_Parser *self, GObject *track, GError **error) {
     GObject *data_fragment = NULL;
     guint64 offset = 0;
     FILE *file = NULL;
@@ -245,16 +244,16 @@ static gboolean __mirage_disc_ccd_determine_track_mode (MIRAGE_Disc *self, GObje
     return TRUE;
 }
 
-static gboolean __mirage_disc_ccd_clean_parsed_structures (MIRAGE_Disc *self, GError **error) {
-    MIRAGE_Disc_CCDPrivate *_priv = MIRAGE_DISC_CCD_GET_PRIVATE(self);
+static gboolean __mirage_parser_ccd_clean_parsed_structures (MIRAGE_Parser *self, GError **error) {
+    MIRAGE_Parser_CCDPrivate *_priv = MIRAGE_PARSER_CCD_GET_PRIVATE(self);
     GList *entry = NULL;
         
     /* CloneCD header */
     g_free(_priv->header);
     
     /* Disc */
-    g_free(_priv->disc->Catalog);
-    g_free(_priv->disc);
+    g_free(_priv->disc_data->Catalog);
+    g_free(_priv->disc_data);
     
     /* Sessions list */
     G_LIST_FOR_EACH(entry, _priv->sessions_list) {
@@ -277,16 +276,16 @@ static gboolean __mirage_disc_ccd_clean_parsed_structures (MIRAGE_Disc *self, GE
     return TRUE;
 }
 
-static gboolean __mirage_disc_ccd_build_disc_layout (MIRAGE_Disc *self, GError **error) {
-    MIRAGE_Disc_CCDPrivate *_priv = MIRAGE_DISC_CCD_GET_PRIVATE(self);
+static gboolean __mirage_parser_ccd_build_disc_layout (MIRAGE_Parser *self, GError **error) {
+    MIRAGE_Parser_CCDPrivate *_priv = MIRAGE_PARSER_CCD_GET_PRIVATE(self);
     GList *entry = NULL;
     
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "\n");
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: building disc layout\n", __func__);
     
-    if (_priv->disc->Catalog) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: setting disc catalog to %.13s\n", __func__, _priv->disc->Catalog);
-        mirage_disc_set_mcn(self, _priv->disc->Catalog, NULL);
+    if (_priv->disc_data->Catalog) {
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: setting disc catalog to %.13s\n", __func__, _priv->disc_data->Catalog);
+        mirage_disc_set_mcn(MIRAGE_DISC(_priv->disc), _priv->disc_data->Catalog, NULL);
     }
     
     /* Go over stored entries and build the layout */
@@ -303,24 +302,24 @@ static gboolean __mirage_disc_ccd_build_disc_layout (MIRAGE_Disc *self, GError *
         
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: adding session #%i\n", __func__, ccd_cur_entry->Session);
         
-            if (!mirage_disc_add_session_by_number(self, ccd_cur_entry->Session, &cur_session, error)) {
+            if (!mirage_disc_add_session_by_number(MIRAGE_DISC(_priv->disc), ccd_cur_entry->Session, &cur_session, error)) {
                 MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to add session!\n", __func__);
                 return FALSE;
             }
-            mirage_session_set_session_type(MIRAGE_SESSION(cur_session), ccd_cur_entry->PSec, NULL); /* PSEC = Disc Type */
+            mirage_session_set_session_type(MIRAGE_SESSION(cur_session), ccd_cur_entry->PSec, NULL); /* PSEC = Parser Type */
             
             g_object_unref(cur_session);
         } else if (ccd_cur_entry->Point == 0xA2) {
             /* 0xA2 is entry each session should end with... */
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: closing session #%i\n", __func__, ccd_cur_entry->Session);
             
-            /* If there is next entry, we're dealing with multi-session disc; in 
+            /* If there is next entry, we're dealing with multi-session parser; in 
                this case, we need to set leadout length */
             if (ccd_next_entry) {
                 GObject *cur_session = NULL;
                 gint leadout_length = 0;
                 
-                if (!mirage_disc_get_session_by_number(self, ccd_cur_entry->Session, &cur_session, error)) {
+                if (!mirage_disc_get_session_by_number(MIRAGE_DISC(_priv->disc), ccd_cur_entry->Session, &cur_session, error)) {
                     MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to get session %i!\n", __func__, ccd_cur_entry->Session);
                     return FALSE;
                 }
@@ -351,7 +350,7 @@ static gboolean __mirage_disc_ccd_build_disc_layout (MIRAGE_Disc *self, GError *
             }
             
             /* Grab the session */
-            if (!mirage_disc_get_session_by_number(self, ccd_cur_entry->Session, &cur_session, error)) {
+            if (!mirage_disc_get_session_by_number(MIRAGE_DISC(_priv->disc), ccd_cur_entry->Session, &cur_session, error)) {
                 MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to get session %i!\n", __func__, ccd_cur_entry->Session);
                 return FALSE;
             }
@@ -363,19 +362,9 @@ static gboolean __mirage_disc_ccd_build_disc_layout (MIRAGE_Disc *self, GError *
                 return FALSE;
             }
             
-            /* Get Mirage and have it make us fragment */
-            GObject *mirage = NULL;
-
-            if (!mirage_object_get_mirage(MIRAGE_OBJECT(self), &mirage, error)) {
-                MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to get Mirage object!\n", __func__);
-                g_object_unref(cur_track);
-                g_object_unref(cur_session);
-                return FALSE;
-            }
             
-            GObject *data_fragment = NULL;
-            mirage_mirage_create_fragment(MIRAGE_MIRAGE(mirage), MIRAGE_TYPE_FINTERFACE_BINARY, _priv->img_filename, &data_fragment, error);
-            g_object_unref(mirage);
+            /* Data fragment */
+            GObject *data_fragment = libmirage_create_fragment(MIRAGE_TYPE_FINTERFACE_BINARY, _priv->img_filename, error);
             if (!data_fragment) {
                 MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to create data fragment!\n", __func__);
                 g_object_unref(cur_track);
@@ -383,7 +372,6 @@ static gboolean __mirage_disc_ccd_build_disc_layout (MIRAGE_Disc *self, GError *
                 return FALSE;
             }
             
-            /* Data fragment */
             FILE *tfile_file = g_fopen(_priv->img_filename, "r");
             gint tfile_sectsize = 2352; /* Always */
             guint64 tfile_offset = _priv->offset * 2352; /* Guess this one's always true, too */
@@ -414,7 +402,7 @@ static gboolean __mirage_disc_ccd_build_disc_layout (MIRAGE_Disc *self, GError *
             } else {
                 /* Determine it manually */
                 MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: track mode is not provided\n", __func__);
-                __mirage_disc_ccd_determine_track_mode(self, cur_track, NULL);
+                __mirage_parser_ccd_determine_track_mode(self, cur_track, NULL);
             }
             
             /* If track mode is determined to be audio, set fragment's format accordingly */
@@ -435,7 +423,7 @@ static gboolean __mirage_disc_ccd_build_disc_layout (MIRAGE_Disc *self, GError *
                not seem to need Index 0 entry. Another thing to note: Index addresses
                seem to be relative to session start; so we use their difference
                to calculate the pregap and then subtract it from PLBA, which is
-               relative to disc start */
+               relative to parser start */
             gint cur_pregap = 0;
             gint num_tracks = 0;
             mirage_session_get_number_of_tracks(MIRAGE_SESSION(cur_session), &num_tracks, NULL);
@@ -477,19 +465,11 @@ static gboolean __mirage_disc_ccd_build_disc_layout (MIRAGE_Disc *self, GError *
         
     }
     
-    /* Finish disc layout (i.e. guess medium type and set pregaps if necessary) */
-    gint medium_type = mirage_helper_guess_medium_type(self);
-    mirage_disc_set_medium_type(self, medium_type, NULL);
+    /* Finish parser layout (i.e. guess medium type and set pregaps if necessary) */
+    gint medium_type = mirage_parser_guess_medium_type(self, _priv->disc);
+    mirage_disc_set_medium_type(MIRAGE_DISC(_priv->disc), medium_type, NULL);
     if (medium_type == MIRAGE_MEDIUM_CD) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: disc length implies CD-ROM image; setting Red Book pregaps\n", __func__);
-        mirage_helper_add_redbook_pregap(self);
-    } else {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: disc length implies non CD-ROM image\n", __func__);
-    }
-    
-    /* Clean the parsed structures as they aren't needed anymore */
-    if (!__mirage_disc_ccd_clean_parsed_structures(self, error)) {
-        return FALSE;
+        mirage_parser_add_redbook_pregap(self, _priv->disc, NULL);
     }
     
     return TRUE;
@@ -497,62 +477,43 @@ static gboolean __mirage_disc_ccd_build_disc_layout (MIRAGE_Disc *self, GError *
 
 
 /******************************************************************************\
- *                     MIRAGE_Disc methods implementation                     *
+ *                     MIRAGE_Parser methods implementation                     *
 \******************************************************************************/
-static gboolean __mirage_disc_ccd_get_parser_info (MIRAGE_Disc *self, MIRAGE_ParserInfo **parser_info, GError **error) {
-    MIRAGE_Disc_CCDPrivate *_priv = MIRAGE_DISC_CCD_GET_PRIVATE(self);
-    *parser_info = _priv->parser_info;
-    return TRUE;
-}
-
-static gboolean __mirage_disc_ccd_can_load_file (MIRAGE_Disc *self, gchar *filename, GError **error) {
-    MIRAGE_Disc_CCDPrivate *_priv = MIRAGE_DISC_CCD_GET_PRIVATE(self);
+static gboolean __mirage_parser_ccd_load_image (MIRAGE_Parser *self, gchar **filenames, GObject **disc, GError **error) {
+    MIRAGE_Parser_CCDPrivate *_priv = MIRAGE_PARSER_CCD_GET_PRIVATE(self);
+    gboolean succeeded = TRUE;
+    void *scanner;
+    FILE *file;
     
-    /* Does file exist? */
-    if (!g_file_test(filename, G_FILE_TEST_IS_REGULAR)) {
+    /* Check if we can load the file; we check the suffix */
+    if (!mirage_helper_has_suffix(filenames[0], ".ccd")) {
+        mirage_error(MIRAGE_E_CANTHANDLE, error);
         return FALSE;
     }
     
-    /* Check the suffixes we support... */
-    return mirage_helper_match_suffixes(filename, _priv->parser_info->suffixes);
-}
+    /* Create disc */
+    _priv->disc = g_object_new(MIRAGE_TYPE_DISC, NULL);
+    mirage_disc_set_filenames(MIRAGE_DISC(_priv->disc), filenames, NULL);
 
-static gboolean __mirage_disc_ccd_load_image (MIRAGE_Disc *self, gchar **filenames, GError **error) {
-    MIRAGE_Disc_CCDPrivate *_priv = MIRAGE_DISC_CCD_GET_PRIVATE(self);
-
-    void *scanner = NULL;
-    FILE *file = NULL;
-    
-    /* For now, CCD parser supports only one-file images */
-    if (g_strv_length(filenames) > 1) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: only single-file images supported!\n", __func__);
-        mirage_error(MIRAGE_E_SINGLEFILE, error);
-        return FALSE;
-    }
-    
     /* Compose image and subchannel filename */
-    gchar *img_filename = g_strdup(filenames[0]);
-    gchar *sub_filename = g_strdup(filenames[0]);
     gint len = strlen(filenames[0]);
-    sprintf(img_filename+len-3, "img");
-    sprintf(sub_filename+len-3, "sub");
+    _priv->img_filename = g_strdup(filenames[0]);
+    _priv->sub_filename = g_strdup(filenames[0]);
+    sprintf(_priv->img_filename+len-3, "img");
+    sprintf(_priv->sub_filename+len-3, "sub");
     
-    _priv->img_filename = img_filename;
-    _priv->sub_filename = sub_filename;    
-    
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: assumed data file: %s\n", __func__, img_filename);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: assumed subchannel file: %s\n", __func__, sub_filename);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: assumed data file: %s\n", __func__, _priv->img_filename);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: assumed subchannel file: %s\n", __func__, _priv->sub_filename);
     
     /* Open file */
     file = g_fopen(filenames[0], "r");
     if (!file) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to open file '%s'!\n", __func__, filenames[0]);
         mirage_error(MIRAGE_E_IMAGEFILE, error);
-        return FALSE;
+        succeeded = FALSE;
+        goto end;
     }
-    
-    mirage_disc_set_filenames(self, filenames, NULL);
-    
+        
     /* Prepare scanner */
     yylex_init(&scanner);
     yyset_in(file, scanner);
@@ -560,10 +521,11 @@ static gboolean __mirage_disc_ccd_load_image (MIRAGE_Disc *self, gchar **filenam
     /* Load */
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "\n");
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: parsing\n", __func__);
-    if (yyparse(scanner, MIRAGE_DISC(self), error)) {
+    if (yyparse(scanner, MIRAGE_PARSER(self), error)) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to parse CCD file!\n", __func__);
         fclose(file);
-        return FALSE;
+        succeeded = FALSE;
+        goto end;
     }
     
     /* Destroy scanner */
@@ -571,7 +533,22 @@ static gboolean __mirage_disc_ccd_load_image (MIRAGE_Disc *self, gchar **filenam
     fclose(file);
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: finished parsing\n", __func__);
     
-    return __mirage_disc_ccd_build_disc_layout(self, error);
+    /* Build the layout */
+    succeeded = __mirage_parser_ccd_build_disc_layout(self, error);
+    
+    /* Clean the parsed structures as they aren't needed anymore */
+    __mirage_parser_ccd_clean_parsed_structures(self, NULL);
+    
+end:
+    /* Return disc */
+    if (succeeded) {
+        *disc = _priv->disc;
+    } else {
+        g_object_unref(_priv->disc);
+        *disc = NULL;
+    }
+        
+    return succeeded;
 }
 
 
@@ -579,14 +556,10 @@ static gboolean __mirage_disc_ccd_load_image (MIRAGE_Disc *self, gchar **filenam
  *                                Object init                                 *
 \******************************************************************************/
 /* Our parent class */
-static MIRAGE_DiscClass *parent_class = NULL;
+static MIRAGE_ParserClass *parent_class = NULL;
 
-static void __mirage_disc_b6t_instance_init (GTypeInstance *instance, gpointer g_class) {
-    MIRAGE_Disc_CCD *self = MIRAGE_DISC_CCD(instance);
-    MIRAGE_Disc_CCDPrivate *_priv = MIRAGE_DISC_CCD_GET_PRIVATE(self);
-    
-    /* Create parser info */
-    _priv->parser_info = mirage_helper_create_parser_info(
+static void __mirage_parser_b6t_instance_init (GTypeInstance *instance, gpointer g_class) {
+    mirage_parser_generate_parser_info(MIRAGE_PARSER(instance),
         "PARSER-CDI",
         "CDI Image Parser",
         "1.0.0",
@@ -599,61 +572,56 @@ static void __mirage_disc_b6t_instance_init (GTypeInstance *instance, gpointer g
     return;
 }
 
-static void __mirage_disc_ccd_finalize (GObject *obj) {
-    MIRAGE_Disc_CCD *self = MIRAGE_DISC_CCD(obj);
-    MIRAGE_Disc_CCDPrivate *_priv = MIRAGE_DISC_CCD_GET_PRIVATE(self);
+static void __mirage_parser_ccd_finalize (GObject *obj) {
+    MIRAGE_Parser_CCD *self = MIRAGE_PARSER_CCD(obj);
+    MIRAGE_Parser_CCDPrivate *_priv = MIRAGE_PARSER_CCD_GET_PRIVATE(self);
     
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_GOBJECT, "%s:\n", __func__);
 
     g_free(_priv->img_filename);
     g_free(_priv->sub_filename);
-    
-    /* Free parser info */
-    mirage_helper_destroy_parser_info(_priv->parser_info);
-    
+        
     /* Chain up to the parent class */
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_GOBJECT, "%s: chaining up to parent\n", __func__);
     return G_OBJECT_CLASS(parent_class)->finalize(obj);
 }
 
-static void __mirage_disc_ccd_class_init (gpointer g_class, gpointer g_class_data) {
+static void __mirage_parser_ccd_class_init (gpointer g_class, gpointer g_class_data) {
     GObjectClass *class_gobject = G_OBJECT_CLASS(g_class);
-    MIRAGE_DiscClass *class_disc = MIRAGE_DISC_CLASS(g_class);
-    MIRAGE_Disc_CCDClass *klass = MIRAGE_DISC_CCD_CLASS(g_class);
+    MIRAGE_ParserClass *class_parser = MIRAGE_PARSER_CLASS(g_class);
+    MIRAGE_Parser_CCDClass *klass = MIRAGE_PARSER_CCD_CLASS(g_class);
     
     /* Set parent class */
     parent_class = g_type_class_peek_parent(klass);
     
     /* Register private structure */
-    g_type_class_add_private(klass, sizeof(MIRAGE_Disc_CCDPrivate));
+    g_type_class_add_private(klass, sizeof(MIRAGE_Parser_CCDPrivate));
     
     /* Initialize GObject methods */
-    class_gobject->finalize = __mirage_disc_ccd_finalize;
+    class_gobject->finalize = __mirage_parser_ccd_finalize;
     
-    /* Initialize MIRAGE_Disc methods */
-    class_disc->get_parser_info = __mirage_disc_ccd_get_parser_info;
-    class_disc->can_load_file = __mirage_disc_ccd_can_load_file;
-    class_disc->load_image = __mirage_disc_ccd_load_image;
+    /* Initialize MIRAGE_Parser methods */
+    class_parser->load_image = __mirage_parser_ccd_load_image;
     
     return;
 }
 
-GType mirage_disc_ccd_get_type (GTypeModule *module) {
+GType mirage_parser_ccd_get_type (GTypeModule *module) {
     static GType type = 0;
     if (type == 0) {
         static const GTypeInfo info = {
-            sizeof(MIRAGE_Disc_CCDClass),
+            sizeof(MIRAGE_Parser_CCDClass),
             NULL,   /* base_init */
             NULL,   /* base_finalize */
-            __mirage_disc_ccd_class_init,   /* class_init */
+            __mirage_parser_ccd_class_init,   /* class_init */
             NULL,   /* class_finalize */
             NULL,   /* class_data */
-            sizeof(MIRAGE_Disc_CCD),
+            sizeof(MIRAGE_Parser_CCD),
             0,      /* n_preallocs */
-            __mirage_disc_b6t_instance_init    /* instance_init */
+            __mirage_parser_b6t_instance_init    /* instance_init */
         };
         
-        type = g_type_module_register_type(module, MIRAGE_TYPE_DISC, "MIRAGE_Disc_CCD", &info, 0);
+        type = g_type_module_register_type(module, MIRAGE_TYPE_PARSER, "MIRAGE_Parser_CCD", &info, 0);
     }
     
     return type;

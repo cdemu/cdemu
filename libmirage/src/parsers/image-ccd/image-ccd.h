@@ -25,7 +25,7 @@
 #endif
 
 #include "mirage.h"
-#include "image-ccd-parser.h"
+#include "image-ccd-yacc.h"
 
 G_BEGIN_DECLS
 
@@ -84,6 +84,6 @@ GTypeModule *global_module;
 
 G_END_DECLS
 
-#include "image-ccd-disc.h"
+#include "image-ccd-parser.h"
 
 #endif /* __IMAGE_CCD_H__ */
