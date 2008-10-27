@@ -968,8 +968,8 @@ static gboolean __mirage_parser_nrg_load_image (MIRAGE_Parser *self, gchar **fil
     
     if (fread(sig, 4, 1, file) < 1) {
         mirage_error(MIRAGE_E_READFAILED, error);
-        succeeded = FALSE;
-        goto end;
+        fclose(file);
+        return FALSE;
     }
     
     if (!memcmp(sig, "NER5", 4)) {
@@ -981,9 +981,9 @@ static gboolean __mirage_parser_nrg_load_image (MIRAGE_Parser *self, gchar **fil
         
         if (fread(&tmp_offset, 8, 1, file) < 1) {
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read trailer offset!\n", __func__);
+            fclose(file);
             mirage_error(MIRAGE_E_READFAILED, error);
-            succeeded = FALSE;
-            goto end;
+            return FALSE;
         }
         trailer_offset = GUINT64_FROM_BE(tmp_offset);
         _priv->nrg_data_length = (filesize - 12) - trailer_offset;
@@ -992,8 +992,8 @@ static gboolean __mirage_parser_nrg_load_image (MIRAGE_Parser *self, gchar **fil
         fseeko(file, -8, SEEK_END);
         if (fread(sig, 4, 1, file) < 1) {
             mirage_error(MIRAGE_E_READFAILED, error);
-            succeeded = FALSE;
-            goto end;
+            fclose(file);
+            return FALSE;
         }
         
         if (!memcmp(sig, "NERO", 4)) {
@@ -1004,18 +1004,18 @@ static gboolean __mirage_parser_nrg_load_image (MIRAGE_Parser *self, gchar **fil
             
             if (fread(&tmp_offset, 4, 1, file) < 1) {
                 MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read trailer offset!\n", __func__);
+                fclose(file);
                 mirage_error(MIRAGE_E_READFAILED, error);
-                succeeded = FALSE;
-                goto end;
+                return FALSE;
             }
             
             trailer_offset = GUINT32_FROM_BE(tmp_offset);
             _priv->nrg_data_length = (filesize - 8) - trailer_offset;
         } else {
             /* Unknown signature, can't handle the file */
+            fclose(file);
             mirage_error(MIRAGE_E_CANTHANDLE, error);
-            succeeded = FALSE;
-            goto end;
+            return FALSE;
         }
     }
     
