@@ -346,65 +346,6 @@ static gboolean __mirage_disc_check_for_encoded_mcn (MIRAGE_Disc *self, GError *
  *                                 Public API                                 *
 \******************************************************************************/
 /**
- * mirage_disc_get_parser_info:
- * @self: a #MIRAGE_Disc
- * @parser_info: location to store parser info
- * @error: location to store error, or %NULL
- *
- * <para>
- * Retrieves parser information.
- * </para>
- *
- * <para>
- * @parser_info points to parser information that belongs to parser implementation, 
- * and therefore should not be freed.
- * </para>
- *
- * Returns: %TRUE on success, %FALSE on failure
- **/
-gboolean mirage_disc_get_parser_info (MIRAGE_Disc *self, MIRAGE_ParserInfo **parser_info, GError **error) {
-    /* Provided by implementation */
-    return MIRAGE_DISC_GET_CLASS(self)->get_parser_info(self, parser_info, error);
-}
-
-
-/**
- * mirage_disc_can_load_file:
- * @self: a #MIRAGE_Disc
- * @filename: image filename
- * @error: location to store error, or %NULL
- *
- * <para>
- * Checks whether parser can load @filename.
- * </para>
- *
- * Returns: %TRUE if parser can load file, %FALSE if not
- **/
-gboolean mirage_disc_can_load_file (MIRAGE_Disc *self, gchar *filename, GError **error) {
-    /* Provided by implementation */
-    return MIRAGE_DISC_GET_CLASS(self)->can_load_file(self, filename, error);
-}
-
-
-/**
- * mirage_disc_load_image:
- * @self: a #MIRAGE_Disc
- * @filenames: image filename(s)
- * @error: location to store error, or %NULL
- *
- * <para>
- * Loads the image stored in @filenames.
- * </para>
- *
- * Returns: %TRUE on success, %FALSE on failure
- **/
-gboolean mirage_disc_load_image (MIRAGE_Disc *self, gchar **filenames, GError **error) {
-    /* Provided by implementation */
-    return MIRAGE_DISC_GET_CLASS(self)->load_image(self, filenames, error);
-}
-
-
-/**
  * mirage_disc_set_medium_type:
  * @self: a #MIRAGE_Disc
  * @medium_type: medium type
@@ -2214,12 +2155,7 @@ static void __mirage_disc_class_init (gpointer g_class, gpointer g_class_data) {
     
     /* Initialize GObject methods */
     class_gobject->finalize = __mirage_disc_finalize;
-    
-    /* Initialize MIRAGE_Disc methods */
-    klass->get_parser_info = NULL;
-    klass->can_load_file = NULL;
-    klass->load_image = NULL;
-    
+        
     return;
 }
 

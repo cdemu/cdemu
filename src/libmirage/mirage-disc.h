@@ -71,11 +71,6 @@ typedef struct {
 
 typedef struct {
     MIRAGE_ObjectClass parent;
-    
-    /* Class members */
-    gboolean (*get_parser_info) (MIRAGE_Disc *self, MIRAGE_ParserInfo **parser_info, GError **error);
-    gboolean (*can_load_file) (MIRAGE_Disc *self, gchar *filename, GError **error);
-    gboolean (*load_image) (MIRAGE_Disc *self, gchar **filenames, GError **error);
 } MIRAGE_DiscClass;
 
 /* Used by MIRAGE_TYPE_DISC */
@@ -85,11 +80,6 @@ GType mirage_disc_get_type (void);
 /******************************************************************************\
  *                                 Public API                                 *
 \******************************************************************************/
-/* Load/Save image */
-gboolean mirage_disc_get_parser_info (MIRAGE_Disc *self, MIRAGE_ParserInfo **parser_info, GError **error);
-gboolean mirage_disc_can_load_file (MIRAGE_Disc *self, gchar *filename, GError **error);
-gboolean mirage_disc_load_image (MIRAGE_Disc *self, gchar **filenames, GError **error);
-
 /* Medium type */
 gboolean mirage_disc_set_medium_type (MIRAGE_Disc *self, gint medium_type, GError **error);
 gboolean mirage_disc_get_medium_type (MIRAGE_Disc *self, gint *medium_type, GError **error);
