@@ -66,6 +66,7 @@ static gint num_devices = 1;
 static gchar *ctl_device = "/dev/vhba_ctl";
 static gchar *audio_driver = "null";
 static gchar *bus = "system";
+static gchar *pid_file = NULL;
 
 static GOptionEntry option_entries[] = {
     { "kill",         'k', 0, G_OPTION_ARG_NONE,   &daemon_kill,   "Kill daemon",        NULL },
@@ -74,8 +75,13 @@ static GOptionEntry option_entries[] = {
     { "ctl-device",   'c', 0, G_OPTION_ARG_STRING, &ctl_device,    "Control device",     "path" },
     { "audio-driver", 'a', 0, G_OPTION_ARG_STRING, &audio_driver,  "Audio driver",       "driver" },
     { "bus",          'b', 0, G_OPTION_ARG_STRING, &bus,           "Bus type to use",    "bus_type" },
+    { "pidfile",      'p', 0, G_OPTION_ARG_STRING, &pid_file,      "PID file",           "path" },
     { NULL }
 };
+
+static const gchar *__cdemud_custom_pid_file (void) {
+    return pid_file;
+}
 
 static gboolean __run_daemon () {
     gboolean succeeded = TRUE;
@@ -191,8 +197,12 @@ int main (int argc, char *argv[]) {
         return -1;
     }
     
-    /* Set indetification string for the daemon for both syslog and PID file */
+    /* Set identification string for the daemon for both syslog and PID file */
     daemon_pid_file_ident = daemon_log_ident = daemon_ident_from_argv0(argv[0]);
+    
+    /* Override default PID file callback if requested */
+    if (pid_file)
+        daemon_pid_file_proc = __cdemud_custom_pid_file;
     
     /* Log handler */
     g_log_set_default_handler(__cdemud_daemon_local_log_handler, NULL);
