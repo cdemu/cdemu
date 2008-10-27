@@ -1088,7 +1088,7 @@ static gboolean __mirage_parser_b6t_load_image (MIRAGE_Parser *self, gchar **fil
     /* Create disc */
     _priv->disc = g_object_new(MIRAGE_TYPE_DISC, NULL);
 
-    mirage_disc_set_filenames(MIRAGE_DISC(_priv->disc), filenames, NULL);
+    mirage_disc_set_filename(MIRAGE_DISC(_priv->disc), filenames, NULL);
     _priv->b6t_filename = g_strdup(filenames[0]);
     
     /* Map the file using GLib's GMappedFile */

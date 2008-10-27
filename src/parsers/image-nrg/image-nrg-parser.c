@@ -30,6 +30,8 @@
 typedef struct {
     GObject *disc;
     
+    gchar *nrg_filename;
+    
     GList *block_index;
     gint  block_index_entries;
 
@@ -595,17 +597,14 @@ static gboolean __mirage_parser_nrg_load_session (MIRAGE_Parser *self, gint sess
         gint fragment_len = 0;
         
         GObject *data_fragment = NULL;
-
-        gchar **filenames = NULL;
-        mirage_disc_get_filenames(MIRAGE_DISC(_priv->disc), &filenames, NULL);
-        
+       
         /* Pregap fragment */
         fragment_len = (dao_block->start_offset - dao_block->pregap_offset) / dao_block->sector_size;
         if (fragment_len) {
             /* Create a binary fragment */
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: creating pregap fragment\n", __func__);
 
-            data_fragment = libmirage_create_fragment(MIRAGE_TYPE_FINTERFACE_BINARY, filenames[0], error);
+            data_fragment = libmirage_create_fragment(MIRAGE_TYPE_FINTERFACE_BINARY, _priv->nrg_filename, error);
             if (!data_fragment) {
                 MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to create fragment!\n", __func__);
                 succeeded = FALSE;
@@ -615,7 +614,7 @@ static gboolean __mirage_parser_nrg_load_session (MIRAGE_Parser *self, gint sess
             }
             
             /* Main channel data */
-            tfile_handle = g_fopen(filenames[0], "r");
+            tfile_handle = g_fopen(_priv->nrg_filename, "r");
             tfile_sectsize = main_sectsize; /* We use the one from decoded mode code */
             tfile_offset = dao_block->pregap_offset;
             if (mode == MIRAGE_MODE_AUDIO) {
@@ -651,7 +650,7 @@ static gboolean __mirage_parser_nrg_load_session (MIRAGE_Parser *self, gint sess
             /* Create a binary fragment */
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: creating data fragment\n", __func__);
 
-            data_fragment = libmirage_create_fragment(MIRAGE_TYPE_FINTERFACE_BINARY, filenames[0], error);
+            data_fragment = libmirage_create_fragment(MIRAGE_TYPE_FINTERFACE_BINARY, _priv->nrg_filename, error);
             if (!data_fragment) {
                 MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to create fragment!\n", __func__);
                 succeeded = FALSE;
@@ -661,7 +660,7 @@ static gboolean __mirage_parser_nrg_load_session (MIRAGE_Parser *self, gint sess
             }
             
             /* Main channel data */
-            tfile_handle = g_fopen(filenames[0], "r");
+            tfile_handle = g_fopen(_priv->nrg_filename, "r");
             tfile_sectsize = main_sectsize; /* We use the one from decoded mode code */
             tfile_offset = dao_block->start_offset;
             if (mode == MIRAGE_MODE_AUDIO) {
@@ -691,8 +690,6 @@ static gboolean __mirage_parser_nrg_load_session (MIRAGE_Parser *self, gint sess
             g_object_unref(data_fragment);
         }
 
-        g_strfreev(filenames);
-        
         /* Set ISRC */
         if (dao_block->isrc) {
             mirage_track_set_isrc(MIRAGE_TRACK(cur_track), dao_block->isrc, NULL);
@@ -835,9 +832,6 @@ static gboolean __mirage_parser_nrg_load_session_tao (MIRAGE_Parser *self, gint 
         GObject *data_fragment = NULL;
         GObject *pregap_fragment = NULL;
 
-        gchar **filenames = NULL;
-        mirage_disc_get_filenames(MIRAGE_DISC(_priv->disc), &filenames, NULL);
-
         /* Pregap fragment */
         pregap_fragment = libmirage_create_fragment(MIRAGE_TYPE_FINTERFACE_NULL, "NULL", error);
         if (!pregap_fragment) {
@@ -859,7 +853,7 @@ static gboolean __mirage_parser_nrg_load_session_tao (MIRAGE_Parser *self, gint 
         if (fragment_len) {
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: creating data fragment\n", __func__);
 
-            data_fragment = libmirage_create_fragment(MIRAGE_TYPE_FINTERFACE_BINARY, filenames[0], error);
+            data_fragment = libmirage_create_fragment(MIRAGE_TYPE_FINTERFACE_BINARY, _priv->nrg_filename, error);
             if (!data_fragment) {
                 MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to create fragment!\n", __func__);
                 g_object_unref(cur_track);
@@ -869,7 +863,7 @@ static gboolean __mirage_parser_nrg_load_session_tao (MIRAGE_Parser *self, gint 
             }
             
             /* Main channel data */
-            tfile_handle = g_fopen(filenames[0], "r");
+            tfile_handle = g_fopen(_priv->nrg_filename, "r");
             tfile_sectsize = main_sectsize; /* We use the one from decoded mode code */
             tfile_offset = etn_block->offset;
             if (mode == MIRAGE_MODE_AUDIO) {
@@ -899,8 +893,6 @@ static gboolean __mirage_parser_nrg_load_session_tao (MIRAGE_Parser *self, gint 
             g_object_unref(data_fragment);
         }
 
-        g_strfreev(filenames);
-        
         g_object_unref(cur_track);
     }
 
@@ -1030,12 +1022,12 @@ static gboolean __mirage_parser_nrg_load_image (MIRAGE_Parser *self, gchar **fil
     /* Create disc */
     _priv->disc = g_object_new(MIRAGE_TYPE_DISC, NULL);
     
-    mirage_disc_set_filenames(MIRAGE_DISC(_priv->disc), filenames, NULL);
+    mirage_disc_set_filename(MIRAGE_DISC(_priv->disc), filenames, NULL);
+    _priv->nrg_filename = g_strdup(filenames[0]);
 
     /* Set CD-ROM as default medium type, will be changed accordingly if there
        is a MTYP block provided */
     mirage_disc_set_medium_type(MIRAGE_DISC(_priv->disc), MIRAGE_MEDIUM_CD, NULL);
-    
     
     /* Read descriptor data */
     _priv->nrg_data = g_malloc(_priv->nrg_data_length);
@@ -1137,10 +1129,12 @@ static void __mirage_parser_nrg_instance_init (GTypeInstance *instance, gpointer
 
 static void __mirage_parser_nrg_finalize (GObject *obj) {
     MIRAGE_Parser_NRG *self = MIRAGE_PARSER_NRG(obj);
-    /*MIRAGE_Parser_NRGPrivate *_priv = MIRAGE_PARSER_NRG_GET_PRIVATE(self);*/
+    MIRAGE_Parser_NRGPrivate *_priv = MIRAGE_PARSER_NRG_GET_PRIVATE(self);
     
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_GOBJECT, "%s:\n", __func__);
-        
+    
+    g_free(_priv->nrg_filename);
+    
     /* Chain up to the parent class */
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_GOBJECT, "%s: chaining up to parent\n", __func__);
     return G_OBJECT_CLASS(parent_class)->finalize(obj);

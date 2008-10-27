@@ -28,6 +28,8 @@
 typedef struct {
     GObject *disc;
     
+    gchar *c2d_filename;
+    
     C2D_HeaderBlock *header_block;
     C2D_CDTextBlock *cdtext_block;
     C2D_TrackBlock *track_block;
@@ -96,14 +98,12 @@ static gboolean __mirage_parser_c2d_parse_compressed_track (MIRAGE_Parser *self,
     MIRAGE_Parser_C2DPrivate *_priv = MIRAGE_PARSER_C2D_GET_PRIVATE(self);
 
     FILE *infile;
-    gchar **filenames = NULL;
     gint num = 0;
 
     C2D_Z_Info_Header header;
     C2D_Z_Info zinfo;
 
-    mirage_disc_get_filenames(MIRAGE_DISC(_priv->disc), &filenames, NULL);
-    infile = fopen(filenames[0], "r");
+    infile = fopen(_priv->c2d_filename, "r");
     if (!infile) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to open file!\n", __func__);
         mirage_error(MIRAGE_E_IMAGEFILE, error);
@@ -260,10 +260,6 @@ static gboolean __mirage_parser_c2d_parse_track_entries (MIRAGE_Parser *self, GE
             mirage_track_set_isrc(MIRAGE_TRACK(cur_point), cur_tb->isrc, NULL);
         }
 
-        /* Get Mirage and have it make us fragments */
-        gchar **filenames = NULL;
-        mirage_disc_get_filenames(MIRAGE_DISC(_priv->disc), &filenames, NULL);
-
         /* Pregap fragment at the beginning of track */
         if ((cur_tb->point == 1) && (cur_tb->index == 1)) {
             GObject *pregap_fragment = libmirage_create_fragment(MIRAGE_TYPE_FINTERFACE_NULL, "NULL", error);
@@ -281,7 +277,7 @@ static gboolean __mirage_parser_c2d_parse_track_entries (MIRAGE_Parser *self, GE
         }
 
         /* Data fragment */
-        GObject *data_fragment = libmirage_create_fragment(MIRAGE_TYPE_FINTERFACE_BINARY, filenames[0], error);
+        GObject *data_fragment = libmirage_create_fragment(MIRAGE_TYPE_FINTERFACE_BINARY, _priv->c2d_filename, error);
         if (!data_fragment) {
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: failed to create fragment!\n", __func__);
             g_object_unref(cur_point);
@@ -290,7 +286,7 @@ static gboolean __mirage_parser_c2d_parse_track_entries (MIRAGE_Parser *self, GE
         }
             
         /* Prepare data fragment */
-        FILE *tfile_handle = g_fopen(filenames[0], "r");
+        FILE *tfile_handle = g_fopen(_priv->c2d_filename, "r");
         guint64 tfile_offset = cur_tb->image_offset;
         gint tfile_sectsize = cur_tb->sector_size;
         gint tfile_format = 0;
@@ -452,7 +448,6 @@ static gboolean __mirage_parser_c2d_load_image (MIRAGE_Parser *self, gchar **fil
         mirage_error(MIRAGE_E_READFAILED, error);
         return FALSE;
     }
-
     
     if (memcmp(sig, C2D_SIGNATURE_1, sizeof(C2D_SIGNATURE_1) - 1)
         && memcmp(sig, C2D_SIGNATURE_2, sizeof(C2D_SIGNATURE_2) - 1)) {
@@ -461,15 +456,18 @@ static gboolean __mirage_parser_c2d_load_image (MIRAGE_Parser *self, gchar **fil
         return TRUE;
     }
     
+    fseek(file, 0, SEEK_SET); /* Reset position */
+    
     /* Create disc */
     _priv->disc = g_object_new(MIRAGE_TYPE_DISC, NULL);
     
-    mirage_disc_set_filenames(MIRAGE_DISC(_priv->disc), filenames, NULL);
+    mirage_disc_set_filename(MIRAGE_DISC(_priv->disc), filenames, NULL);
+    _priv->c2d_filename = g_strdup(filenames[0]);
     
     /* Load image header */
     _priv->c2d_data = g_malloc(sizeof(C2D_HeaderBlock));
     if (!_priv->c2d_data) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to allocate memory!\n", __func__);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to allocate memory for header (%d)!\n", __func__, sizeof(C2D_HeaderBlock));
         mirage_error(MIRAGE_E_IMAGEFILE, error);
         succeeded = FALSE;
         goto end;
@@ -490,7 +488,7 @@ static gboolean __mirage_parser_c2d_load_image (MIRAGE_Parser *self, gchar **fil
     g_free(_priv->c2d_data);
     _priv->c2d_data = g_malloc(_priv->c2d_data_length);
     if (!_priv->c2d_data) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to allocate memory!\n", __func__);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to allocate memory for descriptor (%d)!\n", __func__, _priv->c2d_data_length);
         mirage_error(MIRAGE_E_IMAGEFILE, error);
         succeeded = FALSE;
         goto end;
@@ -545,10 +543,12 @@ static void __mirage_parser_c2d_instance_init (GTypeInstance *instance, gpointer
 
 static void __mirage_parser_c2d_finalize (GObject *obj) {
     MIRAGE_Parser_C2D *self_c2d = MIRAGE_PARSER_C2D(obj);
-    /*MIRAGE_Parser_C2DPrivate *_priv = MIRAGE_PARSER_C2D_GET_PRIVATE(self_c2d);*/
+    MIRAGE_Parser_C2DPrivate *_priv = MIRAGE_PARSER_C2D_GET_PRIVATE(self_c2d);
     
     MIRAGE_DEBUG(self_c2d, MIRAGE_DEBUG_GOBJECT, "%s:\n", __func__);
 
+    g_free(_priv->c2d_filename);
+    
     /* Chain up to the parent class */
     MIRAGE_DEBUG(self_c2d, MIRAGE_DEBUG_GOBJECT, "%s: chaining up to parent\n", __func__);
     return G_OBJECT_CLASS(parent_class)->finalize(obj);

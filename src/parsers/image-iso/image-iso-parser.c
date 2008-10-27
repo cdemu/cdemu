@@ -26,10 +26,10 @@
 #define MIRAGE_PARSER_ISO_GET_PRIVATE(obj) (G_TYPE_INSTANCE_GET_PRIVATE((obj), MIRAGE_TYPE_PARSER_ISO, MIRAGE_Parser_ISOPrivate))
 
 typedef struct {
+    GObject *disc;
+    
     gint track_mode;
     gint track_sectsize;
-    
-    GObject *disc;
 } MIRAGE_Parser_ISOPrivate;
 
 
@@ -252,7 +252,7 @@ static gboolean __mirage_parser_iso_load_image (MIRAGE_Parser *self, gchar **fil
     _priv->disc = g_object_new(MIRAGE_TYPE_DISC, NULL);
 
     /* Set filenames */
-    mirage_disc_set_filenames(MIRAGE_DISC(_priv->disc), filenames, NULL);
+    mirage_disc_set_filename(MIRAGE_DISC(_priv->disc), filenames, NULL);
     
     /* Session: one session (with possibly multiple tracks) */
     GObject *session = NULL;
