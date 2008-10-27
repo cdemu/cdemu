@@ -379,13 +379,12 @@
                     <para>
                         Entered password is then sent to the daemon.
                     </para>
-                    <para>
-                        <warning>Note, however, that the password is sent over D-BUS in 
+                    <warning>
+                        <para>Note, however, that the password is sent over D-BUS in 
                         a plain string form, without any protection. Depending 
                         on your privacy concerns you might wish to avoid loading 
-                        such images.</warning>
-                    </para>
-                
+                        such images.</para>
+                    </warning>
                 </sect4>
             </sect3>
             <sect3 id="gcdemu-usage-devdiag-options">
