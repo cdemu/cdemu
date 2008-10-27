@@ -25,6 +25,7 @@
 
 /* Don't use these */
 %option noyywrap
+%option noinput
 %option nounput
 
 /* Use line numbers */
@@ -45,6 +46,9 @@ KEY_        [a-zA-Z0-9 ]+={NUMBER_}|[a-zA-Z0-9 ]+={WORD_}
 #include "image-ccd.h"
 
 #define YY_USER_ACTION yylloc->first_line = yylineno;
+
+int yyget_column (yyscan_t yyscanner);
+void yyset_column (int column_no, yyscan_t yyscanner);
 %}
 
 %%
