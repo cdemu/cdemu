@@ -453,7 +453,7 @@ static gboolean __mirage_parser_c2d_load_image (MIRAGE_Parser *self, gchar **fil
         && memcmp(sig, C2D_SIGNATURE_2, sizeof(C2D_SIGNATURE_2) - 1)) {
         fclose(file);
         mirage_error(MIRAGE_E_CANTHANDLE, error);
-        return TRUE;
+        return FALSE;
     }
     
     fseek(file, 0, SEEK_SET); /* Reset position */
