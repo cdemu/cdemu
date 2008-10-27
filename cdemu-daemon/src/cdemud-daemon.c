@@ -446,12 +446,6 @@ gboolean cdemud_daemon_stop_daemon (CDEMUD_Daemon *self, GError **error) {
 /******************************************************************************\
  *                           DBUS interface functions                         *
 \******************************************************************************/
-gboolean cdemud_daemon_hail (CDEMUD_Daemon *self, GError **error) {
-    /*DEMUD_DaemonPrivate *_priv = CDEMUD_DAEMON_GET_PRIVATE(self);*/
-
-    return TRUE;
-}
-
 gboolean cdemud_daemon_get_daemon_version (CDEMUD_Daemon *self, gchar **version, GError **error) {
     CDEMUD_DaemonPrivate *_priv = CDEMUD_DAEMON_GET_PRIVATE(self);
     /* Copy version string */
@@ -467,6 +461,11 @@ gboolean cdemud_daemon_get_library_version (CDEMUD_Daemon *self, gchar **version
     }
     
     *version = g_strdup(libver);
+    return TRUE;
+}
+
+gboolean cdemud_daemon_get_daemon_interface_version (CDEMUD_Daemon *self, gint *version, GError **error) {
+    *version = DAEMON_INTERFACE_VERSION;
     return TRUE;
 }
 

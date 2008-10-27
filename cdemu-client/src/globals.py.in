@@ -17,8 +17,8 @@
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
 # Program information
-name        = "@PACKAGE_NAME@"
-version     = "@VERSION@"
+name = "@PACKAGE_NAME@"
+version = "@VERSION@"
 
-# Minimum daemon version
-min_daemon_version = "1.1.0"
+# CDEmu daemon D-BUS interface version the client is designed for
+daemon_interface_version = 1

@@ -734,9 +734,16 @@ class CDEmu (object):
             self.__print_error(_("Failed to connect to CDEmu daemon: %s") % (e.get_dbus_message()))
             return False
         
-        daemon_version = self.__dbus_iface.GetDaemonVersion()
-        if daemon_version < config.min_daemon_version:
-            self.__print_error(_("CDEmu daemon version %s detected, but at least version %s is required!") % (daemon_version, config.min_daemon_version))
+        # Get daemon interface version
+        try:
+            interface_version = self.__dbus_iface.GetDaemonInterfaceVersion()
+        except dbus.DBusException, e:
+            self.__print_error(_("Failed to acquire daemon interface version (this most likely means your daemon is out-of-date): %s") % (e.get_dbus_message()))
+            return False
+        
+        # Check daemon interface version
+        if interface_version != config.daemon_interface_version:
+            self.__print_error(_("CDEmu daemon interface version %i detected, but version %i is required!") % (interface_version, config.daemon_interface_version))
             return False
         
         return True

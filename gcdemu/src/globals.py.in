@@ -27,5 +27,5 @@ version = "@VERSION@"
 prefix = "@prefix@"
 image_dir = prefix + "/share/pixmaps/" + name
 
-# Minimum daemon version
-min_daemon_version = "1.1.0"
+# CDEmu daemon D-BUS interface version the client is designed for
+daemon_interface_version = 1

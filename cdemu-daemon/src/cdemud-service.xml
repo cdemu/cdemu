@@ -13,6 +13,10 @@
             <arg name="version"             type="s"        direction="out"/>
         </method>
         
+        <method name="GetDaemonInterfaceVersion">
+            <arg name="version"             type="i"        direction="out"/>
+        </method>
+        
         <method name="EnumDaemonDebugMasks">
             <arg name="masks"               type="a(si)"    direction="out"/>
         </method>
