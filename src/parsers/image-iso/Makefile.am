@@ -9,10 +9,10 @@ plugin_LTLIBRARIES = image-iso.la
 
 noinst_HEADERS = \
     image-iso.h \
-    image-iso-disc.h
+    image-iso-parser.h
 
 image_iso_la_SOURCES = \
-    image-iso-disc.c \
+    image-iso-parser.c \
     image-iso-plugin.c
 
 image_iso_la_LIBADD = \

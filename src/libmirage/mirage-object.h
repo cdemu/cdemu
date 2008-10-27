@@ -61,9 +61,6 @@ gboolean mirage_object_get_debug_context (MIRAGE_Object *self, GObject **debug_c
 void mirage_object_debug_message (MIRAGE_Object *self, gint level, gchar *format, ...);
 void mirage_object_debug_messagev (MIRAGE_Object *self, gint level, gchar *format, va_list args);
 
-gboolean mirage_object_set_mirage (MIRAGE_Object *self, GObject *mirage, GError **error);
-gboolean mirage_object_get_mirage (MIRAGE_Object *self, GObject **mirage, GError **error);
-
 gboolean mirage_object_set_parent (MIRAGE_Object *self, GObject *parent, GError **error);
 gboolean mirage_object_get_parent (MIRAGE_Object *self, GObject **parent, GError **error);
 

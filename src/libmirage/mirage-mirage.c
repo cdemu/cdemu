@@ -24,6 +24,37 @@
 #include "mirage.h"
 
 
+GObject *libmirage_m = NULL;
+
+
+/**
+ * libmirage_init:
+ *
+ * <para>
+ * Initializes libMirage library by constructing a global #MIRAGE_Mirage object
+ * which is then utilized by the whole library.
+ * </para>
+ *
+ * Returns: a pointer to global #MIRAGE_Mirage object
+ **/
+GObject *libmirage_init() {
+    g_assert(libmirage_m == NULL);
+    libmirage_m = g_object_new(MIRAGE_TYPE_MIRAGE, NULL);
+    return libmirage_m;
+}
+
+/**
+ * libmirage_destroy:
+ *
+ * <para>
+ * Releases the last reference to the global #MIRAGE_Mirage object.
+ * </para>
+ **/
+void libmirage_destroy() {
+    g_assert(libmirage_m != NULL);
+    g_object_unref(libmirage_m);
+}
+
 /******************************************************************************\
  *                              Private structure                             *
 \******************************************************************************/

@@ -446,17 +446,8 @@ gboolean mirage_session_set_leadout_length (MIRAGE_Session *self, gint length, G
     GObject *null_fragment = NULL;
     
     if (!mirage_track_get_fragment_by_index(MIRAGE_TRACK(leadout), -1, &null_fragment, NULL)) {
-        /* Create NULL fragment; not that session should have Mirage object set
-           (i.e. it needs to be part of disc layout, or such) */
-        GObject *mirage = NULL;
-        
-        if (!mirage_object_get_mirage(MIRAGE_OBJECT(self), &mirage, error)) {
-            g_object_unref(leadout);
-            return FALSE;
-        }
-        
-        mirage_mirage_create_fragment(MIRAGE_MIRAGE(mirage), MIRAGE_TYPE_FINTERFACE_NULL, "NULL", &null_fragment, error);
-        g_object_unref(mirage);
+        /* Create NULL fragment */
+        mirage_mirage_create_fragment(MIRAGE_MIRAGE(libmirage_m), MIRAGE_TYPE_FINTERFACE_NULL, "NULL", &null_fragment, error);
         
         if (!null_fragment) {
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: failed to create NULL fragment\n", __func__);
