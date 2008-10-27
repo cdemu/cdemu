@@ -43,7 +43,6 @@
         <method name="DeviceGetStatus">
             <arg name="device_number"       type="i"        direction="in"/>
             <arg name="loaded"              type="b"        direction="out"/>
-            <arg name="image_type"          type="s"        direction="out"/>
             <arg name="file_names"          type="as"       direction="out"/>
         </method>
         

@@ -208,6 +208,11 @@ int main (int argc, char *argv[]) {
     }
     
     g_type_init();
+    if (!libmirage_init(&error)) {
+        g_print("Failed to initialize libMirage: %s!\n", error->message);
+        g_error_free(error);
+        return -1;
+    }
     
     /* Now, either we're called in non-daemon/local or in daemon mode */
     if (daemonize) {
@@ -255,6 +260,8 @@ int main (int argc, char *argv[]) {
         retval = __run_daemon(); 
         retval -= 1; /* True/False -> 0/-1 */
     }
+    
+    libmirage_shutdown(NULL);
     
     return retval;
 }

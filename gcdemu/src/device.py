@@ -155,28 +155,23 @@ class gCDEmu_Device:
         label.show()
         table.attach(label, 1, 2, 0, 1, xoptions=gtk.FILL|gtk.EXPAND, yoptions=0)
         self.__label_loaded = label 
-        
-        label = gtk.Label(_("Image type: "))
+                
+        label = gtk.Label(_("File name: "))
         label.show()
         table.attach(label, 0, 1, 1, 2, xoptions=gtk.FILL|gtk.EXPAND, yoptions=0)
         
         label = gtk.Label()
         label.show()
         table.attach(label, 1, 2, 1, 2, xoptions=gtk.FILL|gtk.EXPAND, yoptions=0)
-        self.__label_image_type = label
-        
-        label = gtk.Label(_("File name: "))
-        label.show()
-        table.attach(label, 0, 1, 2, 3, xoptions=gtk.FILL|gtk.EXPAND, yoptions=0)
-        
-        label = gtk.Label()
-        label.show()
-        table.attach(label, 1, 2, 2, 3, xoptions=gtk.FILL|gtk.EXPAND, yoptions=0)
         self.__label_filename = label
+        
+        separator = gtk.HSeparator()
+        separator.show()
+        table.attach(separator, 0, 2, 2, 3, xoptions=gtk.FILL|gtk.EXPAND, yoptions=0)
         
         button = gtk.Button()
         button.show()
-        table.attach(button, 0, 2, 4, 5, gtk.EXPAND, 0)
+        table.attach(button, 0, 2, 3, 4, xoptions=gtk.EXPAND, yoptions=0)
         button.connect("clicked", lambda b: self.__device_load_unload())
         self.__button_load = button
         
@@ -340,11 +335,9 @@ class gCDEmu_Device:
         self.__menu_item = None
     
         self.__loaded = False
-        self.__image_type = ""
         self.__filenames = []
     
         self.__label_loaded = None
-        self.__label_image_type = None
         self.__label_filename = None
         self.__button_load = None
     
@@ -401,7 +394,6 @@ class gCDEmu_Device:
         self.__dbus_iface = None
         
         self.__label_loaded = None
-        self.__label_image_type = None
         self.__label_filename = None
         self.__button_load = None
         
@@ -610,7 +602,7 @@ class gCDEmu_Device:
     def __update_status (self):
         # Get status
         try:
-            [ self.__loaded, self.__image_type, self.__filenames ] = self.__dbus_iface.DeviceGetStatus(self.__number)
+            [ self.__loaded, self.__filenames ] = self.__dbus_iface.DeviceGetStatus(self.__number)
         except dbus.DBusException, e:
             print "Failed to acquire device status: %s" % e
             self.__parent.check_connection()
@@ -630,12 +622,10 @@ class gCDEmu_Device:
         if self.__loaded:
             self.__label_loaded.set_label(_("Yes"))
             self.__label_filename.set_label(helper_combine_images_list(self.__filenames, "\n"))
-            self.__label_image_type.set_label(self.__image_type)
             self.__button_load.set_label(_("Unload"))
         else:
             self.__label_loaded.set_label(_("No"))
             self.__label_filename.set_label(self.__filenames[0])
-            self.__label_image_type.set_label(self.__image_type)
             self.__button_load.set_label(_("Load"))
         
         return

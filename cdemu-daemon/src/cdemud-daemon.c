@@ -56,9 +56,7 @@ typedef struct {
     
     gchar *version;
     gchar *audio_backend;
-    
-    GObject *mirage;
-    
+        
     GMainLoop *main_loop;
     
     DBusGConnection *bus;
@@ -333,10 +331,7 @@ gboolean cdemud_daemon_initialize (CDEMUD_Daemon *self, gint num_devices, gchar 
     
     /* Number of devices */
     _priv->number_of_devices = num_devices;
-    
-    /* Mirage */
-    _priv->mirage = g_object_new(MIRAGE_TYPE_MIRAGE, NULL);
-        
+            
     /* Glib's main loop */
     _priv->main_loop = g_main_loop_new(NULL, FALSE);
     
@@ -375,7 +370,7 @@ gboolean cdemud_daemon_initialize (CDEMUD_Daemon *self, gint num_devices, gchar 
     for (i = 0; i < _priv->number_of_devices; i++) {
         GObject *dev = g_object_new(CDEMUD_TYPE_DEVICE, NULL);
         
-        if (cdemud_device_initialize(CDEMUD_DEVICE(dev), i, audio_driver, _priv->mirage, NULL)) {
+        if (cdemud_device_initialize(CDEMUD_DEVICE(dev), i, audio_driver, NULL)) {
             gint fd = 0;
             GIOChannel *ch = NULL;
             
@@ -465,50 +460,64 @@ gboolean cdemud_daemon_get_daemon_version (CDEMUD_Daemon *self, gchar **version,
 }
 
 gboolean cdemud_daemon_get_library_version (CDEMUD_Daemon *self, gchar **version, GError **error) {
-    CDEMUD_DaemonPrivate *_priv = CDEMUD_DAEMON_GET_PRIVATE(self);
-    /* Read version */
-    return mirage_mirage_get_version(MIRAGE_MIRAGE(_priv->mirage), version, error);
+    const gchar *libver = libmirage_get_version(error);
+    
+    if (!libver) {
+        return FALSE;
+    }
+    
+    *version = g_strdup(libver);
+    return TRUE;
 }
 
-gboolean cdemud_daemon_enum_daemon_debug_masks (CDEMUD_Daemon *self, GPtrArray **masks, GError **error) {
-    /*CDEMUD_DaemonPrivate *_priv = CDEMUD_DAEMON_GET_PRIVATE(self);*/
-    gint i = 0;
+static GPtrArray *__encode_masks (const MIRAGE_DebugMask *masks, gint num_masks) {
+    GPtrArray *ret_masks = g_ptr_array_new();
+    gint i;
     
-    *masks = g_ptr_array_new();
-    
-    struct {
-        gint mask_value;
-        gchar *mask_name;
-    } dbg_masks[] = {
-        { DAEMON_DEBUG_DEV_FIXME, "DAEMON_DEBUG_DEV_FIXME" },
-        { DAEMON_DEBUG_DEV_PC_TRACE, "DAEMON_DEBUG_DEV_PC_TRACE" },
-        { DAEMON_DEBUG_DEV_PC_DUMP, "DAEMON_DEBUG_DEV_PC_DUMP" },
-        { DAEMON_DEBUG_DEV_DELAY, "DAEMON_DEBUG_DEV_DELAY" },
-        { DAEMON_DEBUG_DEV_AUDIOPLAY,"DAEMON_DEBUG_DEV_AUDIOPLAY" },
-    };
-    
-    for (i = 0; i < G_N_ELEMENTS(dbg_masks); i++) {
+    for (i = 0; i < num_masks; i++) {
         /* Create value array */
         GValueArray *mask_entry = g_value_array_new(2);
         /* Mask name */
         g_value_array_append(mask_entry, NULL);
         g_value_init(g_value_array_get_nth(mask_entry, 0), G_TYPE_STRING);
-        g_value_set_string(g_value_array_get_nth(mask_entry, 0), dbg_masks[i].mask_name);
+        g_value_set_string(g_value_array_get_nth(mask_entry, 0), masks[i].name);
         /* Mask value */
         g_value_array_append(mask_entry, NULL);
         g_value_init(g_value_array_get_nth(mask_entry, 1), G_TYPE_INT);
-        g_value_set_int(g_value_array_get_nth(mask_entry, 1), dbg_masks[i].mask_value);
+        g_value_set_int(g_value_array_get_nth(mask_entry, 1), masks[i].value);
         /* Add mask's value array to masks' pointer array */
-        g_ptr_array_add(*masks, mask_entry);
+        g_ptr_array_add(ret_masks, mask_entry);
     }
     
+    return ret_masks;
+}
+
+gboolean cdemud_daemon_enum_daemon_debug_masks (CDEMUD_Daemon *self, GPtrArray **masks, GError **error) {
+    /*CDEMUD_DaemonPrivate *_priv = CDEMUD_DAEMON_GET_PRIVATE(self);*/
+    static const MIRAGE_DebugMask dbg_masks[] = {
+        { "DAEMON_DEBUG_DEV_FIXME", DAEMON_DEBUG_DEV_FIXME },
+        { "DAEMON_DEBUG_DEV_PC_TRACE", DAEMON_DEBUG_DEV_PC_TRACE },
+        { "DAEMON_DEBUG_DEV_PC_DUMP", DAEMON_DEBUG_DEV_PC_DUMP },
+        { "DAEMON_DEBUG_DEV_DELAY", DAEMON_DEBUG_DEV_DELAY },
+        { "DAEMON_DEBUG_DEV_AUDIOPLAY", DAEMON_DEBUG_DEV_AUDIOPLAY },
+    };
+    
+    *masks = __encode_masks(dbg_masks, G_N_ELEMENTS(dbg_masks));
     return TRUE;
 }
 
 gboolean cdemud_daemon_enum_library_debug_masks (CDEMUD_Daemon *self, GPtrArray **masks, GError **error) {
-    CDEMUD_DaemonPrivate *_priv = CDEMUD_DAEMON_GET_PRIVATE(self);
-    /* Relay to libMirage */
-    return mirage_mirage_get_supported_debug_masks(MIRAGE_MIRAGE(_priv->mirage), masks, error);
+    /*CDEMUD_DaemonPrivate *_priv = CDEMUD_DAEMON_GET_PRIVATE(self);*/
+    const MIRAGE_DebugMask *dbg_masks;
+    gint num_dbg_masks;
+    
+    /* Get masks */
+    if (!libmirage_get_supported_debug_masks(&dbg_masks, &num_dbg_masks, error)) {
+        return FALSE;
+    }
+    
+    *masks = __encode_masks(dbg_masks, num_dbg_masks);
+    return TRUE;
 }
 
 static gboolean __cdemud_daemon_add_supported_parser (gpointer data, gpointer user_data) {
@@ -562,15 +571,9 @@ static gboolean __cdemud_daemon_add_supported_parser (gpointer data, gpointer us
 }
 
 gboolean cdemud_daemon_enum_supported_parsers (CDEMUD_Daemon *self, GPtrArray **parsers, GError **error) {
-    CDEMUD_DaemonPrivate *_priv = CDEMUD_DAEMON_GET_PRIVATE(self);
-    
-    CDEMUD_CHECK_ARG(parsers);
-    
+    /*CDEMUD_DaemonPrivate *_priv = CDEMUD_DAEMON_GET_PRIVATE(self);*/
     *parsers = g_ptr_array_new();
-    
-    mirage_mirage_for_each_parser(MIRAGE_MIRAGE(_priv->mirage), __cdemud_daemon_add_supported_parser, *parsers, NULL);
-    
-    return TRUE;
+    return libmirage_for_each_parser(__cdemud_daemon_add_supported_parser, *parsers, error);
 }
 
 
@@ -620,32 +623,23 @@ static gboolean __cdemud_daemon_add_supported_fragment (gpointer data, gpointer 
 }
 
 gboolean cdemud_daemon_enum_supported_fragments (CDEMUD_Daemon *self, GPtrArray **fragments, GError **error) {
-    CDEMUD_DaemonPrivate *_priv = CDEMUD_DAEMON_GET_PRIVATE(self);
-    
-    CDEMUD_CHECK_ARG(fragments);
-    
+    /*CDEMUD_DaemonPrivate *_priv = CDEMUD_DAEMON_GET_PRIVATE(self);*/
     *fragments = g_ptr_array_new();
-    
-    mirage_mirage_for_each_fragment(MIRAGE_MIRAGE(_priv->mirage), __cdemud_daemon_add_supported_fragment, *fragments, NULL);
-    
-    return TRUE;
+    return libmirage_for_each_fragment(__cdemud_daemon_add_supported_fragment, *fragments, error);
 }
 
 gboolean cdemud_daemon_get_number_of_devices (CDEMUD_Daemon *self, gint *number_of_devices, GError **error) {
     CDEMUD_DaemonPrivate *_priv = CDEMUD_DAEMON_GET_PRIVATE(self);
-    
-    CDEMUD_CHECK_ARG(number_of_devices);
     *number_of_devices = _priv->number_of_devices;
-    
     return TRUE;
 }
 
-gboolean cdemud_daemon_device_get_status (CDEMUD_Daemon *self, gint device_number, gboolean *loaded, gchar **image_type, gchar ***file_names, GError **error) {
+gboolean cdemud_daemon_device_get_status (CDEMUD_Daemon *self, gint device_number, gboolean *loaded, gchar ***file_names, GError **error) {
     /*CDEMUD_DaemonPrivate *_priv = CDEMUD_DAEMON_GET_PRIVATE(self);*/
     GObject *dev = NULL;
 
     if (__cdemud_daemon_get_device(self, device_number, &dev, error)) {
-        if (cdemud_device_get_status(CDEMUD_DEVICE(dev), loaded, image_type, file_names, error)) {
+        if (cdemud_device_get_status(CDEMUD_DEVICE(dev), loaded, file_names, error)) {
             return TRUE;
         }
     }
@@ -741,9 +735,7 @@ static void __cdemud_daemon_finalize (GObject *obj) {
     g_main_loop_unref(_priv->main_loop);
 
     __cdemud_daemon_destroy_devices(self, NULL);
-    
-    g_object_unref(_priv->mirage);
-    
+        
     /* Free control device path */
     g_free(_priv->ctl_device);
     
