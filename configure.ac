@@ -33,7 +33,7 @@ PKG_CHECK_MODULES(gthread, gthread-2.0 >= 2.6)
 PKG_CHECK_MODULES(dbus, dbus-1 >= 0.60 dbus-glib-1 >= 0.61)
 PKG_CHECK_MODULES(libao, ao >= 0.8.0,)
 PKG_CHECK_MODULES(libdaemon, libdaemon >= 0.10)
-PKG_CHECK_MODULES(libmirage, libmirage >= 1.1.0)
+PKG_CHECK_MODULES(libmirage, libmirage >= 1.2.0)
 
 # libsysfs check
 AC_CHECK_LIB([sysfs], [sysfs_open_device],, AC_MSG_ERROR("*** libsysfs library not found ***"))
