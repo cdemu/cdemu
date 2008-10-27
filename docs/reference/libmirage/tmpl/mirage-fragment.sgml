@@ -49,6 +49,21 @@ implementation handles data.
 </para>
 
 
+<!-- ##### FUNCTION mirage_fragment_generate_fragment_info ##### -->
+<para>
+
+</para>
+
+@self: 
+@id: 
+@name: 
+@version: 
+@author: 
+@interface: 
+@num_suffixes: 
+@Varargs: 
+
+
 <!-- ##### FUNCTION mirage_fragment_get_fragment_info ##### -->
 <para>
 

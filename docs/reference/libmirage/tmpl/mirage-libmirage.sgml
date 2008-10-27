@@ -1,0 +1,182 @@
+<!-- ##### SECTION Title ##### -->
+Main libMirage functions
+
+<!-- ##### SECTION Short_Description ##### -->
+Main libMirage functions
+
+<!-- ##### SECTION Long_Description ##### -->
+<para>
+These functions represent the core of the libMirage API. 
+</para>
+
+<para>
+Before libMirage is used, it must be initialized using libmirage_init(). This initializes the plugin
+system and loads the image parser and data fragment plugins. When library is no longer needed, it
+can be shut down using libmirage_shutdown(), which frees the plugin data.
+</para>
+
+<para>
+If libMirage is not initializes, the calls to all its functions will fail. You could still create basic
+objects, such as #MIRAGE_Disc or #MIRAGE_Session, using GLib's g_object_new(), however some of the objects' 
+function implementations rely on initialized libMirage library and therefore their behavior would be incorrect.
+</para>
+
+<para>
+Once library is initialized, its version string can be obtained by calling mirage_mirage_get_version().
+</para>
+
+<para>
+The password callback function can be set using libmirage libmirage_set_password_function(), which stores
+a #MIRAGE_PasswordFunction callback function and user data for the callback to be called with. The password
+callback function is used by libmirage_obtain_password(), which is usually called by image parser 
+implementation which is trying to load an encrypted image and needs password to do so.
+</para>
+
+<para>
+Image file(s) can be loaded using libmirage_create_disc(), which (if loading succeeded) returns a #MIRAGE_Disc
+object representing the disc stored in the image file(s). Function libmirage_create_fragment() creates a fragment
+implementation - this function is usually used by image parsers.
+</para>
+
+<para>
+Supported image parsers and fragments can be enumerated using libmirage_for_each_parser() and libmirage_for_each_fragment(),
+respectively. The list of supported debug masks can be obtained using libmirage_get_supported_debug_masks(). 
+</para>
+
+<!-- ##### SECTION See_Also ##### -->
+<para>
+
+</para>
+
+<!-- ##### SECTION Stability_Level ##### -->
+
+
+<!-- ##### USER_FUNCTION MIRAGE_CallbackFunction ##### -->
+<para>
+
+</para>
+
+@data: 
+@user_data: 
+@Returns: 
+
+
+<!-- ##### USER_FUNCTION MIRAGE_PasswordFunction ##### -->
+<para>
+
+</para>
+
+@user_data: 
+@Returns: 
+
+
+<!-- ##### STRUCT MIRAGE_DebugMask ##### -->
+<para>
+
+</para>
+
+@name: 
+@value: 
+
+<!-- ##### FUNCTION libmirage_init ##### -->
+<para>
+
+</para>
+
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION libmirage_shutdown ##### -->
+<para>
+
+</para>
+
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION libmirage_get_version ##### -->
+<para>
+
+</para>
+
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION libmirage_set_password_function ##### -->
+<para>
+
+</para>
+
+@func: 
+@user_data: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION libmirage_obtain_password ##### -->
+<para>
+
+</para>
+
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION libmirage_create_disc ##### -->
+<para>
+
+</para>
+
+@filenames: 
+@debug_context: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION libmirage_create_fragment ##### -->
+<para>
+
+</para>
+
+@fragment_interface: 
+@filename: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION libmirage_for_each_parser ##### -->
+<para>
+
+</para>
+
+@func: 
+@user_data: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION libmirage_for_each_fragment ##### -->
+<para>
+
+</para>
+
+@func: 
+@user_data: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION libmirage_get_supported_debug_masks ##### -->
+<para>
+
+</para>
+
+@masks: 
+@num_masks: 
+@error: 
+@Returns: 
+
+

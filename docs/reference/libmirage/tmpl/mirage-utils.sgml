@@ -12,6 +12,11 @@ following functionality:
 
 <itemizedlist>
   <listitem>
+  File finding:
+  mirage_helper_find_data_file
+  </listitem>
+
+  <listitem>
   File suffix retrieval and matching:
   mirage_helper_get_suffix(),
   mirage_helper_has_suffix(),
@@ -22,14 +27,6 @@ following functionality:
   UTF-8 compatible case-insensitive string comparison:
   mirage_helper_strcasecmp(),
   mirage_helper_strncasecmp().
-  </listitem>
-
-  <listitem>
-  Parser and fragment info utility functions (used in parser and fragment plugins):
-  mirage_helper_create_parser_info(),
-  mirage_helper_destroy_parser_info(),
-  mirage_helper_create_fragment_info(),
-  mirage_helper_destroy_fragment_info().
   </listitem>
 
   <listitem>
@@ -192,47 +189,6 @@ following functionality:
 @str2: 
 @len: 
 @Returns: 
-
-
-<!-- ##### FUNCTION mirage_helper_add_redbook_pregap ##### -->
-<para>
-
-</para>
-
-@disc: 
-@Returns: 
-
-
-<!-- ##### FUNCTION mirage_helper_guess_medium_type ##### -->
-<para>
-
-</para>
-
-@disc: 
-@Returns: 
-
-
-<!-- ##### FUNCTION mirage_helper_create_fragment_info ##### -->
-<para>
-
-</para>
-
-@id: 
-@name: 
-@version: 
-@author: 
-@interface: 
-@num_suffixes: 
-@Varargs: 
-@Returns: 
-
-
-<!-- ##### FUNCTION mirage_helper_destroy_fragment_info ##### -->
-<para>
-
-</para>
-
-@info: 
 
 
 <!-- ##### FUNCTION mirage_helper_lba2msf ##### -->

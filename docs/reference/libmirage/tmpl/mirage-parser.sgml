@@ -1,0 +1,107 @@
+<!-- ##### SECTION Title ##### -->
+MIRAGE_Parser object
+
+<!-- ##### SECTION Short_Description ##### -->
+Base object for parsers implementation
+
+<!-- ##### SECTION Long_Description ##### -->
+<para>
+#MIRAGE_Parser object is a base object for image parser implementations. In addition to 
+providing function for image loading and obtaining parser information, it also provides 
+some helper functions that can be used in parser implementations.
+</para>
+<para>
+#MIRAGE_Parser provides a single virtual function - mirage_parser_load_image(). This 
+function must be implemented by image parsers, which derive from #MIRAGE_Parser object.
+The function must first check if given file(s) are supported by the given parser, and
+then the actual loading is performed. The result is a #MIRAGE_Disc object, which 
+represents the disc stored in the image file(s).
+</para>
+
+<!-- ##### SECTION See_Also ##### -->
+<para>
+#MIRAGE_Disc
+</para>
+
+<!-- ##### SECTION Stability_Level ##### -->
+
+
+<!-- ##### STRUCT MIRAGE_ParserInfo ##### -->
+<para>
+
+</para>
+
+@id: 
+@name: 
+@version: 
+@author: 
+@multi_file: 
+@description: 
+@suffixes: 
+
+<!-- ##### STRUCT MIRAGE_Parser ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### FUNCTION mirage_parser_generate_parser_info ##### -->
+<para>
+
+</para>
+
+@self: 
+@id: 
+@name: 
+@version: 
+@author: 
+@multi_file: 
+@description: 
+@num_suffixes: 
+@Varargs: 
+
+
+<!-- ##### FUNCTION mirage_parser_get_parser_info ##### -->
+<para>
+
+</para>
+
+@self: 
+@parser_info: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION mirage_parser_load_image ##### -->
+<para>
+
+</para>
+
+@self: 
+@filenames: 
+@disc: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION mirage_parser_add_redbook_pregap ##### -->
+<para>
+
+</para>
+
+@self: 
+@disc: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION mirage_parser_guess_medium_type ##### -->
+<para>
+
+</para>
+
+@self: 
+@disc: 
+@Returns: 
+
+

@@ -146,6 +146,7 @@ gboolean mirage_parser_get_parser_info (MIRAGE_Parser *self, MIRAGE_ParserInfo *
  * mirage_parser_load_image:
  * @self: a #MIRAGE_Parser
  * @filenames: image filename(s)
+ * @disc: location to store the resulting #MIRAGE_Disc object
  * @error: location to store error, or %NULL
  *
  * <para>
@@ -166,7 +167,7 @@ gboolean mirage_parser_load_image (MIRAGE_Parser *self, gchar **filenames, GObje
 
 
 /**
- * mirage_helper_guess_medium_type:
+ * mirage_parser_guess_medium_type:
  * @self: a #MIRAGE_Parser
  * @disc: disc object
  *

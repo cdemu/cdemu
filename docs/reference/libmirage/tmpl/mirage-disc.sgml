@@ -2,32 +2,21 @@
 MIRAGE_Disc object
 
 <!-- ##### SECTION Short_Description ##### -->
-Object representing a disc and a base object for image parser implementations
+Object representing a disc
 
 <!-- ##### SECTION Long_Description ##### -->
 <para>
-#MIRAGE_Disc object is a base object for parser implementations. It is also top-level
-object in the disc layout representation, representing the actual disc image.
+#MIRAGE_Disc object is a top-level object in the disc layout representation, representing the actual disc.
 </para>
 <para>
 It provides functions for manipulating the disc layout; adding and removing 
 sessions and tracks, manipulating disc's MCN and medium type, and convenience
 functions for accessing and reading of sectors within the disc layout.
 </para>
-<para>
-#MIRAGE_Disc provides three virtual functions: mirage_disc_get_parser_info(),
-mirage_disc_can_load_file() and mirage_disc_load_image(). These must be implemented
-by image parsers which derive from #MIRAGE_Disc object.
-</para>
-<para>
-Most applications, unless specialized and trying to construct their own disc layouts,
-should never create a #MIRAGE_Disc object via g_object_new(). Instead, an actual disc 
-implementation should be with mirage_mirage_create_disc().
-</para>
 
 <!-- ##### SECTION See_Also ##### -->
 <para>
-#MIRAGE_Mirage, #MIRAGE_Session, #MIRAGE_Track, #MIRAGE_Object
+#MIRAGE_Session, #MIRAGE_Track, #MIRAGE_Object, #MIRAGE_Parser
 </para>
 
 <!-- ##### SECTION Stability_Level ##### -->
@@ -39,19 +28,6 @@ implementation should be with mirage_mirage_create_disc().
 </para>
 
 
-
-<!-- ##### STRUCT MIRAGE_ParserInfo ##### -->
-<para>
-
-</para>
-
-@id: 
-@name: 
-@version: 
-@author: 
-@multi_file: 
-@description: 
-@suffixes: 
 
 <!-- ##### ENUM MIRAGE_MediumTypes ##### -->
 <para>
@@ -67,39 +43,6 @@ implementation should be with mirage_mirage_create_disc().
 <para>
 
 </para>
-
-
-<!-- ##### FUNCTION mirage_disc_get_parser_info ##### -->
-<para>
-
-</para>
-
-@self: 
-@parser_info: 
-@error: 
-@Returns: 
-
-
-<!-- ##### FUNCTION mirage_disc_can_load_file ##### -->
-<para>
-
-</para>
-
-@self: 
-@filename: 
-@error: 
-@Returns: 
-
-
-<!-- ##### FUNCTION mirage_disc_load_image ##### -->
-<para>
-
-</para>
-
-@self: 
-@filenames: 
-@error: 
-@Returns: 
 
 
 <!-- ##### FUNCTION mirage_disc_set_medium_type ##### -->
@@ -125,6 +68,17 @@ implementation should be with mirage_mirage_create_disc().
 
 
 <!-- ##### FUNCTION mirage_disc_set_filenames ##### -->
+<para>
+
+</para>
+
+@self: 
+@filenames: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION mirage_disc_set_filename ##### -->
 <para>
 
 </para>
