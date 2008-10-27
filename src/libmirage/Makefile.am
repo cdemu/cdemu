@@ -10,6 +10,7 @@ libmirage_la_SOURCES = \
     mirage-index.c \
     mirage-language.c \
     mirage-object.c \
+    mirage-parser.c \
     mirage-plugin.c \
     mirage-sector.c \
     mirage-session.c \
@@ -46,6 +47,7 @@ libmirageinclude_HEADERS = \
     mirage-language.h \
     mirage-mirage.h \
     mirage-object.h \
+    mirage-parser.h \
     mirage-plugin.h \
     mirage-sector.h \
     mirage-session.h \

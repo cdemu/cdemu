@@ -36,6 +36,7 @@
 #include "mirage-object.h"
 
 #include "mirage-mirage.h"
+#include "mirage-parser.h"
 #include "mirage-disc.h"
 #include "mirage-fragment.h"
 #include "mirage-index.h"
