@@ -63,6 +63,7 @@ static gboolean __mirage_parser_daa_load_image (MIRAGE_Parser *self, gchar **fil
     
     /* Create disc */
     _priv->disc = g_object_new(MIRAGE_TYPE_DISC, NULL);
+    mirage_object_attach_child(MIRAGE_OBJECT(self), _priv->disc, NULL);
 
     mirage_disc_set_filename(MIRAGE_DISC(_priv->disc), filenames, NULL);
     
@@ -119,8 +120,9 @@ static gboolean __mirage_parser_daa_load_image (MIRAGE_Parser *self, gchar **fil
         mirage_parser_add_redbook_pregap(self, _priv->disc, NULL);
     }
 
-end:    
+end:
     /* Return disc */
+    mirage_object_detach_child(MIRAGE_OBJECT(self), _priv->disc, NULL);
     if (succeeded) {
         *disc = _priv->disc;
     } else {

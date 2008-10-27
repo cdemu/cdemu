@@ -65,6 +65,7 @@ gboolean mirage_object_set_parent (MIRAGE_Object *self, GObject *parent, GError 
 gboolean mirage_object_get_parent (MIRAGE_Object *self, GObject **parent, GError **error);
 
 gboolean mirage_object_attach_child (MIRAGE_Object *self, GObject *child, GError **error);
+gboolean mirage_object_detach_child (MIRAGE_Object *self, GObject *child, GError **error);
 
 G_END_DECLS
 
