@@ -201,6 +201,8 @@ gboolean libmirage_set_password_function (MIRAGE_PasswordFunction func, gpointer
  * Returns: %TRUE on success, %FALSE on failure
  **/
 gchar *libmirage_obtain_password (GError **error) {
+    gchar *password;
+    
     /* Make sure libMirage is initialized */
     if (!libmirage.initialized) {
         mirage_error(MIRAGE_E_NOTINIT, error);
@@ -213,7 +215,13 @@ gchar *libmirage_obtain_password (GError **error) {
     }
     
     /* Call the function pointer */
-    return (*libmirage.password_func)(libmirage.password_data, error);
+    password = (*libmirage.password_func)(libmirage.password_data);
+    
+    if (!password) {
+        mirage_error(MIRAGE_E_NOPASSWORD, error);
+    }
+    
+    return password;
 }
 
 /**

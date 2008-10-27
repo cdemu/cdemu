@@ -86,6 +86,7 @@ void mirage_error (gint errcode, GError **error) {
         { MIRAGE_E_CANTHANDLE, "Parser cannot handle given image file(s)." },
         { MIRAGE_E_NEEDPASSWORD, "Image is encrypted and requires password." },
         { MIRAGE_E_WRONGPASSWORD, "Wrong password." },
+        { MIRAGE_E_NOPASSWORD, "No password provided." },
         
         /* Object */
         { MIRAGE_E_NODEBUGCONTEXT, "Debug context is not set." },

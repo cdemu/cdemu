@@ -54,7 +54,6 @@ typedef gboolean (*MIRAGE_CallbackFunction) (gpointer data, gpointer user_data);
 /**
  * MIRAGE_PasswordFunction:
  * @user_data: user data passed to password function
- * @error: location to store error, or %NULL
  *
  * <para>
  * Password function type used in libMirage's to obtain password for encrypted
@@ -67,7 +66,7 @@ typedef gboolean (*MIRAGE_CallbackFunction) (gpointer data, gpointer user_data);
  * be a copy, allocated via function such as g_strdup(), and will be freed after
  * it is used.
  **/
-typedef gchar *(*MIRAGE_PasswordFunction) (gpointer user_data, GError **error);
+typedef gchar *(*MIRAGE_PasswordFunction) (gpointer user_data);
 
 /**
  * MIRAGE_DebugMask:

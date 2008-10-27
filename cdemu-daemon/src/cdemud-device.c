@@ -3010,7 +3010,7 @@ gboolean cdemud_device_get_status (CDEMUD_Device *self, gboolean *loaded, gchar 
     return succeeded;
 }
 
-static gchar *__return_password (gpointer user_data, GError **error) {
+static gchar *__return_password (gpointer user_data) {
     return g_strdup(user_data);
 }
 
