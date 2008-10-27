@@ -1,6 +1,6 @@
 AM_YFLAGS = -d
 
-BUILT_SOURCES = image-cue-parser.h
+BUILT_SOURCES = image-cue-yacc.h
 
 INCLUDES = \
     -I$(top_srcdir)/src/libmirage \
@@ -13,12 +13,12 @@ plugin_LTLIBRARIES = image-cue.la
 
 noinst_HEADERS = \
     image-cue.h \
-    image-cue-disc.h
+    image-cue-parser.h
     
 image_cue_la_SOURCES = \
-   image-cue-parser.y \
-   image-cue-lexer.l \
-   image-cue-disc.c \
+   image-cue-yacc.y \
+   image-cue-lex.l \
+   image-cue-parser.c \
    image-cue-plugin.c
    
 image_cue_la_LIBADD = \

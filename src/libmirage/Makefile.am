@@ -45,7 +45,6 @@ libmirageinclude_HEADERS = \
     mirage-fragment.h \
     mirage-index.h \
     mirage-language.h \
-    mirage-mirage.h \
     mirage-object.h \
     mirage-parser.h \
     mirage-plugin.h \

@@ -25,8 +25,8 @@
 #endif
 
 #include "mirage.h"
+#include "image-cue-yacc.h"
 #include "image-cue-parser.h"
-#include "image-cue-disc.h"
 
 
 G_BEGIN_DECLS

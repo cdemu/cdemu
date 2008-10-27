@@ -250,9 +250,7 @@ gboolean mirage_parser_add_redbook_pregap (MIRAGE_Parser *self, GObject *disc, G
     for (i = 0; i < num_sessions; i++) {
         GObject *session = NULL;
         GObject *ftrack = NULL;
-        
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: adding 150 pregap to first track in session %i\n", __func__, i);
-        
+                
         if (!mirage_disc_get_session_by_index(MIRAGE_DISC(disc), i, &session, error)) {
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to get session with index %i!\n", __func__, i);
             return FALSE;
