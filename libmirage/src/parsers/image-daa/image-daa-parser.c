@@ -92,6 +92,7 @@ static gboolean __mirage_parser_daa_load_image (MIRAGE_Parser *self, gchar **fil
 
     /* Fragment(s); we use private, DAA fragments for this */
     GObject *data_fragment = g_object_new(MIRAGE_TYPE_FRAGMENT_DAA, NULL);
+    GError *local_error = NULL;
     
     if (!mirage_track_add_fragment(MIRAGE_TRACK(track), -1, &data_fragment, error)) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to add fragment!\n", __func__);
@@ -101,8 +102,13 @@ static gboolean __mirage_parser_daa_load_image (MIRAGE_Parser *self, gchar **fil
         goto end;
     }
     
-    if (!mirage_fragment_daa_set_file(MIRAGE_FRAGMENT(data_fragment), filenames[0], error)) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to set file to fragment!\n", __func__);
+    if (!mirage_fragment_daa_set_file(MIRAGE_FRAGMENT(data_fragment), filenames[0], &local_error)) {
+        /* Don't make buzz for password failures */
+        if (local_error->code != MIRAGE_E_NEEDPASSWORD 
+            && local_error->code != MIRAGE_E_WRONGPASSWORD) {
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to set file to fragment!\n", __func__);
+        }
+        g_propagate_error(error, local_error);
         g_object_unref(data_fragment);
         g_object_unref(track);
         succeeded = FALSE;
