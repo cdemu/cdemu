@@ -1,5 +1,5 @@
 /*
- *  libMirage: NRG image parser: Disc object
+ *  libMirage: NRG image parser: Parser object
  *  Copyright (C) 2006-2008 Rok Mandeljc
  * 
  *  Reverse-engineering work in March, 2005 by Henrik Stokseth.
@@ -25,9 +25,11 @@
 /******************************************************************************\
  *                              Private structure                             *
 \******************************************************************************/
-#define MIRAGE_DISC_NRG_GET_PRIVATE(obj) (G_TYPE_INSTANCE_GET_PRIVATE((obj), MIRAGE_TYPE_DISC_NRG, MIRAGE_Disc_NRGPrivate))
+#define MIRAGE_PARSER_NRG_GET_PRIVATE(obj) (G_TYPE_INSTANCE_GET_PRIVATE((obj), MIRAGE_TYPE_PARSER_NRG, MIRAGE_Parser_NRGPrivate))
 
 typedef struct {
+    GObject *disc;
+    
     GList *block_index;
     gint  block_index_entries;
 
@@ -47,15 +49,12 @@ typedef struct {
     NRG_DAO_Header *dao_header;
     NRG_DAO_Block *dao_blocks;
     gint num_dao_blocks;
-
-    /* Parser info */
-    MIRAGE_ParserInfo *parser_info;
-} MIRAGE_Disc_NRGPrivate;
+} MIRAGE_Parser_NRGPrivate;
 
 typedef struct {
-    gchar     *block_id;
-    gint      subblock_offset;
-    gint      subblock_length;
+    gchar *block_id;
+    gint subblock_offset;
+    gint subblock_length;
 } NRG_BlockIDs;
 
 /* NULL terminated list of valid block IDs and subblock offset + length */
@@ -73,20 +72,22 @@ static NRG_BlockIDs NRGBlockID[] = {
     { NULL,   0,  0  }
 };
 
-static gboolean __mirage_disc_nrg_build_block_index(MIRAGE_Disc *self, GError **error) {
-    MIRAGE_Disc_NRGPrivate *_priv = MIRAGE_DISC_NRG_GET_PRIVATE(self);
-    GList                  *blockindex = NULL;
-    NRGBlockIndexEntry     *blockentry = NULL;
-    gint                   num_blocks = 0, index = 0, success = TRUE;
-    guint8                 *cur_ptr = NULL;
+static gboolean __mirage_parser_nrg_build_block_index (MIRAGE_Parser *self, GError **error) {
+    MIRAGE_Parser_NRGPrivate *_priv = MIRAGE_PARSER_NRG_GET_PRIVATE(self);
+    NRGBlockIndexEntry *blockentry;
+    GList *blockindex;
+    gint num_blocks;
+    gint index;
+    guint8 *cur_ptr;
 
     /* Populate block index */
     cur_ptr = _priv->nrg_data;
     index = 0;
     do {
-        blockentry = g_new(NRGBlockIndexEntry, 1);
+        blockentry = g_new0(NRGBlockIndexEntry, 1);
         if (!blockentry) {
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to allocate memory for block index!\n", __func__);
+            mirage_error(MIRAGE_E_PARSER, error);
             return FALSE;
         }
         blockentry->offset = (guint64) (cur_ptr - _priv->nrg_data);
@@ -94,14 +95,14 @@ static gboolean __mirage_disc_nrg_build_block_index(MIRAGE_Disc *self, GError **
         cur_ptr += 4;
         blockentry->length = GINT32_FROM_BE(MIRAGE_CAST_DATA(cur_ptr, 0, guint32));
         cur_ptr += sizeof(guint32);
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: Block %2i, ID: %.4s, offset: %Li (0x%LX), length: %i (0x%X).\n", \
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: block %2i, ID: %.4s, offset: %Li (0x%LX), length: %i (0x%X).\n", \
         __func__, index, blockentry->block_id, blockentry->offset, blockentry->offset, blockentry->length, blockentry->length);
 
         /* Got sub-blocks? */
         gint id_index;
-        for(id_index = 0; NRGBlockID[id_index].block_id; id_index++) {
-            if(!memcmp(blockentry->block_id, NRGBlockID[id_index].block_id, 4)) {
-                if(NRGBlockID[id_index].subblock_length) {
+        for (id_index = 0; NRGBlockID[id_index].block_id; id_index++) {
+            if (!memcmp(blockentry->block_id, NRGBlockID[id_index].block_id, 4)) {
+                if (NRGBlockID[id_index].subblock_length) {
                     blockentry->subblocks_offset = blockentry->offset + 8 + NRGBlockID[id_index].subblock_offset;
                     blockentry->subblocks_length = NRGBlockID[id_index].subblock_length;
                     blockentry->num_subblocks = (blockentry->length - NRGBlockID[id_index].subblock_offset) / blockentry->subblocks_length;
@@ -116,72 +117,62 @@ static gboolean __mirage_disc_nrg_build_block_index(MIRAGE_Disc *self, GError **
             }
         }
 
-        /* add entry to list */
+        /* Add entry to list */
         blockindex = g_list_prepend(blockindex, blockentry);
-        if (!blockindex) {
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to allocate memory for block index!\n", __func__);
-            return FALSE;
-        }
-
+        
         /* Get ready for next block */
         index++;
         cur_ptr += blockentry->length;
-    } while(cur_ptr < _priv->nrg_data + _priv->nrg_data_length);
+    } while (cur_ptr < _priv->nrg_data + _priv->nrg_data_length);
+    
     blockindex = g_list_reverse(blockindex);
     num_blocks = g_list_length(blockindex);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: Counted %i blocks.\n", __func__, num_blocks);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: counted %i blocks.\n", __func__, num_blocks);
 
     /* Link to block index */
     _priv->block_index = blockindex;
     _priv->block_index_entries = num_blocks;
 
-    return success;
+    return TRUE;
 }
 
-static void __mirage_disc_nrg_destroy_block_index_helper(gpointer data, gpointer user_data) {
-    if(data) {
-        g_free(data);
-    }
-}
-
-static gboolean __mirage_disc_nrg_destroy_block_index(MIRAGE_Disc *self, GError **error) {
-    MIRAGE_Disc_NRGPrivate *_priv = MIRAGE_DISC_NRG_GET_PRIVATE(self);
+static gboolean __mirage_parser_nrg_destroy_block_index (MIRAGE_Parser *self) {
+    MIRAGE_Parser_NRGPrivate *_priv = MIRAGE_PARSER_NRG_GET_PRIVATE(self);
 
     if (_priv->block_index) {
-        g_list_foreach(_priv->block_index, __mirage_disc_nrg_destroy_block_index_helper, NULL);
+        GList *entry;
+        
+        G_LIST_FOR_EACH(entry, _priv->block_index) {
+            g_free(entry->data);
+        }
         g_list_free(_priv->block_index);
         _priv->block_index = NULL;
         _priv->block_index_entries = 0;
-    }
-    else {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to free memory for block index!\n", __func__);
-        return FALSE;
     }
 
     return TRUE;
 }
 
-static gint __mirage_disc_nrg_find_block_entry_helper(gconstpointer a, gconstpointer b) {
-    NRGBlockIndexEntry     *blockentry = (NRGBlockIndexEntry *) a;
-    gchar                  *block_id = (gchar *) b;
+static gint __find_by_block_id (gconstpointer a, gconstpointer b) {
+    NRGBlockIndexEntry *blockentry = (NRGBlockIndexEntry *) a;
+    gchar *block_id = (gchar *) b;
 
     return memcmp(blockentry->block_id, block_id, 4);
 }
 
-static NRGBlockIndexEntry *__mirage_disc_nrg_find_block_entry(MIRAGE_Disc *self, gchar *block_id, gint index, GError **error) {
-    MIRAGE_Disc_NRGPrivate *_priv = MIRAGE_DISC_NRG_GET_PRIVATE(self);
-    GList *list_entry = NULL;
+static NRGBlockIndexEntry *__mirage_parser_nrg_find_block_entry (MIRAGE_Parser *self, gchar *block_id, gint index) {
+    MIRAGE_Parser_NRGPrivate *_priv = MIRAGE_PARSER_NRG_GET_PRIVATE(self);
     GList *list_start = _priv->block_index;
     gint cur_index = 0;
 
     do {
-        list_entry = g_list_find_custom(list_start, block_id, __mirage_disc_nrg_find_block_entry_helper);
+        GList *list_entry = g_list_find_custom(list_start, block_id, __find_by_block_id);
 
-        if(list_entry) {
-            if(cur_index == index) {
-                return (NRGBlockIndexEntry *) list_entry->data;
+        if (list_entry) {
+            if (cur_index == index) {
+                return list_entry->data;
             } else {
-                if(list_entry->next) {
+                if (list_entry->next) {
                     list_start = list_entry->next;
                 } else {
                     break;
@@ -190,19 +181,19 @@ static NRGBlockIndexEntry *__mirage_disc_nrg_find_block_entry(MIRAGE_Disc *self,
         } else {
             break;
         }
-    } while(cur_index++ < index);
+    } while (cur_index++ < index);
 
     return NULL;
 }
 
-static gboolean __mirage_disc_nrg_load_medium_type (MIRAGE_Disc *self, GError **error) {
-    MIRAGE_Disc_NRGPrivate *_priv = MIRAGE_DISC_NRG_GET_PRIVATE(self);
-    NRGBlockIndexEntry     *blockentry = NULL;
-    guint8                 *cur_ptr = NULL;
-    guint32                mtyp_data = 0;
+static gboolean __mirage_parser_nrg_load_medium_type (MIRAGE_Parser *self, GError **error) {
+    MIRAGE_Parser_NRGPrivate *_priv = MIRAGE_PARSER_NRG_GET_PRIVATE(self);
+    NRGBlockIndexEntry *blockentry;
+    guint8 *cur_ptr;
+    guint32 mtyp_data;
 
     /* Look up MTYP block */
-    blockentry = __mirage_disc_nrg_find_block_entry(self, "MTYP", 0, error);
+    blockentry = __mirage_parser_nrg_find_block_entry(self, "MTYP", 0);
     if (!blockentry) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to look up 'MTYP' block!\n", __func__);
         mirage_error(MIRAGE_E_PARSER, error);
@@ -215,32 +206,33 @@ static gboolean __mirage_disc_nrg_load_medium_type (MIRAGE_Disc *self, GError **
     cur_ptr += sizeof(guint32);
     
     /* Decode medium type */
-    NERO_MEDIA_TYPE CD_EQUIV  = MEDIA_CD | MEDIA_CDROM;
+    NERO_MEDIA_TYPE CD_EQUIV = MEDIA_CD | MEDIA_CDROM;
     NERO_MEDIA_TYPE DVD_EQUIV = MEDIA_DVD_ANY | MEDIA_DVD_ROM;
-    NERO_MEDIA_TYPE BD_EQUIV  = MEDIA_BD_ANY;
-    NERO_MEDIA_TYPE HD_EQUIV  = MEDIA_HD_DVD_ANY;
+    NERO_MEDIA_TYPE BD_EQUIV = MEDIA_BD_ANY;
+    NERO_MEDIA_TYPE HD_EQUIV = MEDIA_HD_DVD_ANY;
 
-    if(mtyp_data & CD_EQUIV) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: medium type: CD-ROM\n", __func__);
-        mirage_disc_set_medium_type(self, MIRAGE_MEDIUM_CD, NULL);
+    if (mtyp_data & CD_EQUIV) {
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: medium type: CD-ROM\n", __func__);
+        mirage_disc_set_medium_type(MIRAGE_DISC(_priv->disc), MIRAGE_MEDIUM_CD, NULL);
     } else if (mtyp_data & DVD_EQUIV) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: medium type: DVD-ROM\n", __func__);
-        mirage_disc_set_medium_type(self, MIRAGE_MEDIUM_DVD, NULL);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: medium type: DVD-ROM\n", __func__);
+        mirage_disc_set_medium_type(MIRAGE_DISC(_priv->disc), MIRAGE_MEDIUM_DVD, NULL);
     } else if (mtyp_data & BD_EQUIV) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: medium type: Blue-ray\n", __func__);
-        mirage_disc_set_medium_type(self, MIRAGE_MEDIUM_BD, NULL);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: medium type: Blue-ray\n", __func__);
+        mirage_disc_set_medium_type(MIRAGE_DISC(_priv->disc), MIRAGE_MEDIUM_BD, NULL);
     } else if (mtyp_data & HD_EQUIV) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: medium type: HD-DVD\n", __func__);
-        mirage_disc_set_medium_type(self, MIRAGE_MEDIUM_HD, NULL);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: medium type: HD-DVD\n", __func__);
+        mirage_disc_set_medium_type(MIRAGE_DISC(_priv->disc), MIRAGE_MEDIUM_HD, NULL);
     } else {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: unhandled medium type: %d!\n", __func__, mtyp_data);
+        mirage_error(MIRAGE_E_PARSER, error);
         return FALSE;
     }
 
     return TRUE;
 }
 
-static gboolean __mirage_disc_nrg_decode_mode (MIRAGE_Disc *self, gint code, gint *mode, gint *main_sectsize, gint *sub_sectsize, GError **error) {    
+static gboolean __mirage_parser_nrg_decode_mode (MIRAGE_Parser *self, gint code, gint *mode, gint *main_sectsize, gint *sub_sectsize, GError **error) {    
     /* The meaning of the following codes was determined experimentally; we're
        missing mappings for Mode 2 Formless, but that doesn't seem a very common
        format anyway */
@@ -328,16 +320,16 @@ static gboolean __mirage_disc_nrg_decode_mode (MIRAGE_Disc *self, gint code, gin
     return TRUE;
 }
 
-static gboolean __mirage_disc_nrg_load_etn_data (MIRAGE_Disc *self, gint session_num, GError **error) {
-    MIRAGE_Disc_NRGPrivate *_priv = MIRAGE_DISC_NRG_GET_PRIVATE(self);
-    NRGBlockIndexEntry     *blockentry = NULL;
-    guint8                 *cur_ptr = NULL;
+static gboolean __mirage_parser_nrg_load_etn_data (MIRAGE_Parser *self, gint session_num, GError **error) {
+    MIRAGE_Parser_NRGPrivate *_priv = MIRAGE_PARSER_NRG_GET_PRIVATE(self);
+    NRGBlockIndexEntry *blockentry;
+    guint8 *cur_ptr;
 
     /* Look up ETN2 / ETNF block */
-    if(!_priv->old_format) {
-        blockentry = __mirage_disc_nrg_find_block_entry(self, "ETN2", session_num, error);
+    if (!_priv->old_format) {
+        blockentry = __mirage_parser_nrg_find_block_entry(self, "ETN2", session_num);
     } else {
-        blockentry = __mirage_disc_nrg_find_block_entry(self, "ETNF", session_num, error);
+        blockentry = __mirage_parser_nrg_find_block_entry(self, "ETNF", session_num);
     }
     if (!blockentry) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to look up 'ETN2' or 'ETNF' block!\n", __func__);
@@ -367,14 +359,14 @@ static gboolean __mirage_disc_nrg_load_etn_data (MIRAGE_Disc *self, gint session
 
         if (_priv->old_format) {
             block->offset = GINT32_FROM_BE(MIRAGE_CAST_DATA(cur_ptr, 0, guint32));
-            block->size   = GINT32_FROM_BE(MIRAGE_CAST_DATA(cur_ptr, 4, guint32));
-            block->mode   = MIRAGE_CAST_DATA(cur_ptr, 11, guint8);
+            block->size = GINT32_FROM_BE(MIRAGE_CAST_DATA(cur_ptr, 4, guint32));
+            block->mode = MIRAGE_CAST_DATA(cur_ptr, 11, guint8);
             block->sector = GINT32_FROM_BE(MIRAGE_CAST_DATA(cur_ptr, 12, guint32));
         }
         else {
             block->offset = GINT64_FROM_BE(MIRAGE_CAST_DATA(cur_ptr, 0, guint64));
-            block->size   = GINT64_FROM_BE(MIRAGE_CAST_DATA(cur_ptr, 8, guint64));
-            block->mode   = MIRAGE_CAST_DATA(cur_ptr, 19, guint8);
+            block->size = GINT64_FROM_BE(MIRAGE_CAST_DATA(cur_ptr, 8, guint64));
+            block->mode = MIRAGE_CAST_DATA(cur_ptr, 19, guint8);
             block->sector = GINT32_FROM_BE(MIRAGE_CAST_DATA(cur_ptr, 20, guint32));
         }
         cur_ptr += blockentry->subblocks_length;
@@ -388,16 +380,16 @@ static gboolean __mirage_disc_nrg_load_etn_data (MIRAGE_Disc *self, gint session
     return TRUE;
 }
 
-static gboolean __mirage_disc_nrg_load_cue_data (MIRAGE_Disc *self, gint session_num, GError **error) {
-    MIRAGE_Disc_NRGPrivate *_priv = MIRAGE_DISC_NRG_GET_PRIVATE(self);
-    NRGBlockIndexEntry     *blockentry = NULL;
-    guint8                 *cur_ptr = NULL;
+static gboolean __mirage_parser_nrg_load_cue_data (MIRAGE_Parser *self, gint session_num, GError **error) {
+    MIRAGE_Parser_NRGPrivate *_priv = MIRAGE_PARSER_NRG_GET_PRIVATE(self);
+    NRGBlockIndexEntry *blockentry;
+    guint8 *cur_ptr;
 
     /* Look up CUEX / CUES block */
-    if(!_priv->old_format) {
-        blockentry = __mirage_disc_nrg_find_block_entry(self, "CUEX", session_num, error);
+    if (!_priv->old_format) {
+        blockentry = __mirage_parser_nrg_find_block_entry(self, "CUEX", session_num);
     } else {
-        blockentry = __mirage_disc_nrg_find_block_entry(self, "CUES", session_num, error);
+        blockentry = __mirage_parser_nrg_find_block_entry(self, "CUES", session_num);
     }
     if (!blockentry) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to look up 'CUEX' or 'CUES' block!\n", __func__);
@@ -450,16 +442,16 @@ static gboolean __mirage_disc_nrg_load_cue_data (MIRAGE_Disc *self, gint session
     return TRUE;
 }
 
-static gboolean __mirage_disc_nrg_load_dao_data (MIRAGE_Disc *self, gint session_num, GError **error) {
-    MIRAGE_Disc_NRGPrivate *_priv = MIRAGE_DISC_NRG_GET_PRIVATE(self);
-    NRGBlockIndexEntry     *blockentry = NULL;
-    guint8                 *cur_ptr = NULL;
+static gboolean __mirage_parser_nrg_load_dao_data (MIRAGE_Parser *self, gint session_num, GError **error) {
+    MIRAGE_Parser_NRGPrivate *_priv = MIRAGE_PARSER_NRG_GET_PRIVATE(self);
+    NRGBlockIndexEntry *blockentry;
+    guint8 *cur_ptr;
 
     /* Look up DAOX / DAOI block */
-    if(!_priv->old_format) {
-        blockentry = __mirage_disc_nrg_find_block_entry(self, "DAOX", session_num, error);
+    if (!_priv->old_format) {
+        blockentry = __mirage_parser_nrg_find_block_entry(self, "DAOX", session_num);
     } else {
-        blockentry = __mirage_disc_nrg_find_block_entry(self, "DAOI", session_num, error);
+        blockentry = __mirage_parser_nrg_find_block_entry(self, "DAOI", session_num);
     }
     if (!blockentry) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to look up 'DAOX' or 'DAOI' block!\n", __func__);
@@ -524,37 +516,37 @@ static gboolean __mirage_disc_nrg_load_dao_data (MIRAGE_Disc *self, gint session
     return TRUE;
 }
 
-static gboolean __mirage_disc_nrg_load_session (MIRAGE_Disc *self, gint session_num, GError **error) {
-    MIRAGE_Disc_NRGPrivate *_priv = MIRAGE_DISC_NRG_GET_PRIVATE(self);
+static gboolean __mirage_parser_nrg_load_session (MIRAGE_Parser *self, gint session_num, GError **error) {
+    MIRAGE_Parser_NRGPrivate *_priv = MIRAGE_PARSER_NRG_GET_PRIVATE(self);
     gboolean succeeded = TRUE;
     
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: loading session\n", __func__);
     
     /* Read CUEX/CUES blocks */
-    if (!__mirage_disc_nrg_load_cue_data(self, session_num, error)) {
+    if (!__mirage_parser_nrg_load_cue_data(self, session_num, error)) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to load CUE blocks!\n", __func__);
         succeeded = FALSE;
         goto end;
     }
     
     /* Read DAOX/DAOI blocks */
-    if (!__mirage_disc_nrg_load_dao_data(self, session_num, error)) {
+    if (!__mirage_parser_nrg_load_dao_data(self, session_num, error)) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to load DAO blocks!\n", __func__);
         succeeded = FALSE;
         goto end;
     }
     
-    /* Set disc's MCN */
+    /* Set parser's MCN */
     if (_priv->dao_header->mcn) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: MCN: %.13s\n", __func__, _priv->dao_header->mcn);
-        mirage_disc_set_mcn(self, _priv->dao_header->mcn, NULL);
+        mirage_disc_set_mcn(MIRAGE_DISC(_priv->disc), _priv->dao_header->mcn, NULL);
     } 
     
     /* Build session */
     GObject *cur_session = NULL;
     gint i;
     
-    if (!mirage_disc_add_session_by_index(self, -1, &cur_session, error)) {
+    if (!mirage_disc_add_session_by_index(MIRAGE_DISC(_priv->disc), -1, &cur_session, error)) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to add session!\n", __func__);
         succeeded = FALSE;
         goto end;
@@ -579,7 +571,7 @@ static gboolean __mirage_disc_nrg_load_session (MIRAGE_Disc *self, gint session_
         }
         
         /* Decode mode */
-        __mirage_disc_nrg_decode_mode(self, dao_block->mode_code, &mode, &main_sectsize, &sub_sectsize, NULL);
+        __mirage_parser_nrg_decode_mode(self, dao_block->mode_code, &mode, &main_sectsize, &sub_sectsize, NULL);
         mirage_track_set_mode(MIRAGE_TRACK(cur_track), mode, NULL);
         
         /* Shouldn't happen, but just in case I misinterpreted something */
@@ -605,26 +597,15 @@ static gboolean __mirage_disc_nrg_load_session (MIRAGE_Disc *self, gint session_
         GObject *data_fragment = NULL;
 
         gchar **filenames = NULL;
-        mirage_disc_get_filenames(self, &filenames, NULL);
+        mirage_disc_get_filenames(MIRAGE_DISC(_priv->disc), &filenames, NULL);
         
         /* Pregap fragment */
         fragment_len = (dao_block->start_offset - dao_block->pregap_offset) / dao_block->sector_size;
         if (fragment_len) {
-            /* Get Mirage and have it make us binary fragment */
-            GObject *mirage = NULL;
-
+            /* Create a binary fragment */
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: creating pregap fragment\n", __func__);
 
-            if (!mirage_object_get_mirage(MIRAGE_OBJECT(self), &mirage, error)) {
-                MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to get Mirage object!\n", __func__);
-                succeeded = FALSE;
-                g_object_unref(cur_track);
-                g_object_unref(cur_session);
-                goto end;
-            }
-
-            mirage_mirage_create_fragment(MIRAGE_MIRAGE(mirage), MIRAGE_TYPE_FINTERFACE_BINARY, filenames[0], &data_fragment, error);
-            g_object_unref(mirage);
+            data_fragment = libmirage_create_fragment(MIRAGE_TYPE_FINTERFACE_BINARY, filenames[0], error);
             if (!data_fragment) {
                 MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to create fragment!\n", __func__);
                 succeeded = FALSE;
@@ -667,21 +648,10 @@ static gboolean __mirage_disc_nrg_load_session (MIRAGE_Disc *self, gint session_
         /* Data fragment */
         fragment_len = (dao_block->end_offset - dao_block->start_offset) / dao_block->sector_size;
         if (fragment_len) {
-            /* Get Mirage and have it make us binary fragment */
-            GObject *mirage = NULL;
-            
+            /* Create a binary fragment */
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: creating data fragment\n", __func__);
 
-            if (!mirage_object_get_mirage(MIRAGE_OBJECT(self), &mirage, error)) {
-                MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to get Mirage object!\n", __func__);
-                succeeded = FALSE;
-                g_object_unref(cur_track);
-                g_object_unref(cur_session);
-                goto end;
-            }
-
-            mirage_mirage_create_fragment(MIRAGE_MIRAGE(mirage), MIRAGE_TYPE_FINTERFACE_BINARY, filenames[0], &data_fragment, error);
-            g_object_unref(mirage);
+            data_fragment = libmirage_create_fragment(MIRAGE_TYPE_FINTERFACE_BINARY, filenames[0], error);
             if (!data_fragment) {
                 MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to create fragment!\n", __func__);
                 succeeded = FALSE;
@@ -741,15 +711,15 @@ static gboolean __mirage_disc_nrg_load_session (MIRAGE_Disc *self, gint session_
         /* Track 0, index 0... lead-in */
         if (cue_block->track == 0 && cue_block->index == 0) {
             /* Try to get previous session; if we fail, it means this if first
-               session, so we use its lead-in block to set disc start; otherwise,
+               session, so we use its lead-in block to set parser start; otherwise,
                we calculate length of previous session's leadout based on this
-               session's start sector and length of disc so far */
+               session's start sector and length of parser so far */
             GObject *prev_session = NULL;
 
             /* Index is -1, because current session has already been added */
-            if (!mirage_disc_get_session_by_index(self, -2, &prev_session, NULL)) {
-                MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: lead-in block of first session; setting disc start to 0x%X\n", __func__, cue_block->start_sector);
-                mirage_disc_layout_set_start_sector(self, cue_block->start_sector, NULL);
+            if (!mirage_disc_get_session_by_index(MIRAGE_DISC(_priv->disc), -2, &prev_session, NULL)) {
+                MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: lead-in block of first session; setting parser start to 0x%X\n", __func__, cue_block->start_sector);
+                mirage_disc_layout_set_start_sector(MIRAGE_DISC(_priv->disc), cue_block->start_sector, NULL);
             } else {
                 gint leadout_length = 0;
                 
@@ -802,27 +772,27 @@ end:
     return succeeded;
 }
 
-static gboolean __mirage_disc_nrg_load_session_tao (MIRAGE_Disc *self, gint session_num, GError **error) {
-    MIRAGE_Disc_NRGPrivate *_priv = MIRAGE_DISC_NRG_GET_PRIVATE(self);
+static gboolean __mirage_parser_nrg_load_session_tao (MIRAGE_Parser *self, gint session_num, GError **error) {
+    MIRAGE_Parser_NRGPrivate *_priv = MIRAGE_PARSER_NRG_GET_PRIVATE(self);
     gboolean succeeded = TRUE;
     
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: loading session\n", __func__);
     
     /* Read ETNF/ETN2 blocks */
-    if (!__mirage_disc_nrg_load_etn_data(self, session_num, error)) {
+    if (!__mirage_parser_nrg_load_etn_data(self, session_num, error)) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to load ETNF/ETN2 blocks!\n", __func__);
         succeeded = FALSE;
-        goto end_tao;
+        goto end;
     }
     
     /* Build session */
     GObject *cur_session = NULL;
     gint i;
     
-    if (!mirage_disc_add_session_by_index(self, -1, &cur_session, error)) {
+    if (!mirage_disc_add_session_by_index(MIRAGE_DISC(_priv->disc), -1, &cur_session, error)) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to add session!\n", __func__);
         succeeded = FALSE;
-        goto end_tao;
+        goto end;
     }
     
     /* Use ETN blocks to build tracks */
@@ -840,11 +810,11 @@ static gboolean __mirage_disc_nrg_load_session_tao (MIRAGE_Disc *self, gint sess
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to add track!\n", __func__);
             g_object_unref(cur_session);
             succeeded = FALSE;
-            goto end_tao;
+            goto end;
         }
         
         /* Decode mode */
-        __mirage_disc_nrg_decode_mode(self, etn_block->mode, &mode, &main_sectsize, &sub_sectsize, NULL);
+        __mirage_parser_nrg_decode_mode(self, etn_block->mode, &mode, &main_sectsize, &sub_sectsize, NULL);
         mirage_track_set_mode(MIRAGE_TRACK(cur_track), mode, NULL);
         
         /* Prepare data fragment: we use two fragments, one for pregap and one
@@ -863,30 +833,19 @@ static gboolean __mirage_disc_nrg_load_session_tao (MIRAGE_Disc *self, gint sess
         gint fragment_len = 0;
         
         GObject *data_fragment = NULL;
-	GObject *pregap_fragment = NULL;
+        GObject *pregap_fragment = NULL;
 
         gchar **filenames = NULL;
-        mirage_disc_get_filenames(self, &filenames, NULL);
-
-        /* Create mirage object */
-        GObject *mirage = NULL;
-
-        if (!mirage_object_get_mirage(MIRAGE_OBJECT(self), &mirage, error)) {
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to get Mirage object!\n", __func__);
-            succeeded = FALSE;
-            g_object_unref(cur_track);
-            g_object_unref(cur_session);
-            goto end_tao;
-        }
+        mirage_disc_get_filenames(MIRAGE_DISC(_priv->disc), &filenames, NULL);
 
         /* Pregap fragment */
-        mirage_mirage_create_fragment(MIRAGE_MIRAGE(mirage), MIRAGE_TYPE_FINTERFACE_NULL, "NULL", &pregap_fragment, error);
-
+        pregap_fragment = libmirage_create_fragment(MIRAGE_TYPE_FINTERFACE_NULL, "NULL", error);
         if (!pregap_fragment) {
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: failed to create pregap fragment!\n", __func__);
             g_object_unref(cur_session);
             g_object_unref(cur_track);
-            goto end_tao;
+            succeeded = FALSE;
+            goto end;
         }
         mirage_track_add_fragment(MIRAGE_TRACK(cur_track), 0, &pregap_fragment, NULL);
         mirage_fragment_set_length(MIRAGE_FRAGMENT(pregap_fragment), 150, NULL);
@@ -900,14 +859,13 @@ static gboolean __mirage_disc_nrg_load_session_tao (MIRAGE_Disc *self, gint sess
         if (fragment_len) {
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: creating data fragment\n", __func__);
 
-            mirage_mirage_create_fragment(MIRAGE_MIRAGE(mirage), MIRAGE_TYPE_FINTERFACE_BINARY, filenames[0], &data_fragment, error);
-            g_object_unref(mirage);
+            data_fragment = libmirage_create_fragment(MIRAGE_TYPE_FINTERFACE_BINARY, filenames[0], error);
             if (!data_fragment) {
                 MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to create fragment!\n", __func__);
-                succeeded = FALSE;
                 g_object_unref(cur_track);
                 g_object_unref(cur_session);
-                goto end_tao;
+                succeeded = FALSE;
+                goto end;
             }
             
             /* Main channel data */
@@ -941,8 +899,6 @@ static gboolean __mirage_disc_nrg_load_session_tao (MIRAGE_Disc *self, gint sess
             g_object_unref(data_fragment);
         }
 
-        g_object_unref(mirage);
-
         g_strfreev(filenames);
         
         g_object_unref(cur_track);
@@ -950,7 +906,7 @@ static gboolean __mirage_disc_nrg_load_session_tao (MIRAGE_Disc *self, gint sess
 
     g_object_unref(cur_session);
     
-end_tao:
+end:
     /* Free data */
     g_free(_priv->etn_blocks);
     _priv->num_etn_blocks = 0;
@@ -958,16 +914,16 @@ end_tao:
     return succeeded;
 }
 
-static gboolean __mirage_disc_nrg_load_cdtext (MIRAGE_Disc *self, GError **error) {
-    MIRAGE_Disc_NRGPrivate *_priv = MIRAGE_DISC_NRG_GET_PRIVATE(self);
-    NRGBlockIndexEntry     *blockentry = NULL;
-    guint8                 *cur_ptr = NULL;
-    guint8                 *cdtx_data = NULL;
-    GObject                *session = NULL;   
-    gboolean               succeeded = TRUE;
+static gboolean __mirage_parser_nrg_load_cdtext (MIRAGE_Parser *self, GError **error) {
+    MIRAGE_Parser_NRGPrivate *_priv = MIRAGE_PARSER_NRG_GET_PRIVATE(self);
+    NRGBlockIndexEntry *blockentry;
+    guint8 *cur_ptr;
+    guint8 *cdtx_data;
+    GObject *session;   
+    gboolean succeeded = TRUE;
 
     /* Look up CDTX block */
-    blockentry = __mirage_disc_nrg_find_block_entry(self, "CDTX", 0, error);
+    blockentry = __mirage_parser_nrg_find_block_entry(self, "CDTX", 0);
     if (!blockentry) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to look up 'CDTX' block!\n", __func__);
         mirage_error(MIRAGE_E_PARSER, error);
@@ -978,7 +934,7 @@ static gboolean __mirage_disc_nrg_load_cdtext (MIRAGE_Disc *self, GError **error
     /* Read CDTX data */
     cdtx_data = cur_ptr;
 
-    if (mirage_disc_get_session_by_index(self, 0, &session, error)) {
+    if (mirage_disc_get_session_by_index(MIRAGE_DISC(_priv->disc), 0, &session, error)) {
         if (!mirage_session_set_cdtext_data(MIRAGE_SESSION(session), cdtx_data, blockentry->length, error)) {
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to set CD-TEXT data!\n", __func__);
             succeeded = FALSE;
@@ -994,187 +950,162 @@ static gboolean __mirage_disc_nrg_load_cdtext (MIRAGE_Disc *self, GError **error
 
 
 /******************************************************************************\
- *                     MIRAGE_Disc methods implementation                     *
+ *                     MIRAGE_Parser methods implementation                     *
 \******************************************************************************/
-static gboolean __mirage_disc_nrg_get_parser_info (MIRAGE_Disc *self, MIRAGE_ParserInfo **parser_info, GError **error) {
-    MIRAGE_Disc_NRGPrivate *_priv = MIRAGE_DISC_NRG_GET_PRIVATE(self);
-    *parser_info = _priv->parser_info;
-    return TRUE;
-}
-
-static gboolean __mirage_disc_nrg_can_load_file (MIRAGE_Disc *self, gchar *filename, GError **error) {
-    MIRAGE_Disc_NRGPrivate *_priv = MIRAGE_DISC_NRG_GET_PRIVATE(self);
-    gboolean succeeded = FALSE;
-    size_t blocks_read;
-
-    /* Does file exist? */
-    if (!g_file_test(filename, G_FILE_TEST_IS_REGULAR)) {
-        return FALSE;
-    }
-    
-    /* Check the suffixes */
-    if (!mirage_helper_match_suffixes(filename, _priv->parser_info->suffixes)) {
-        return FALSE;
-    }
-    
-    /* Also check that there's appropriate signature */
-    FILE *file = g_fopen(filename, "r");
-    gchar sig[4] = "";
-    
-    if (!file) {
-        return FALSE;
-    }
-    
-    /* New format */
-    fseeko(file, -12, SEEK_END);
-    blocks_read = fread(sig, 4, 1, file);
-    if (blocks_read < 1) return FALSE;
-    if (!memcmp(sig, "NER5", 4)) {
-        succeeded = TRUE;
-    } else {
-        /* Old format */
-        fseeko(file, -8, SEEK_END);
-        blocks_read = fread(sig, 4, 1, file);
-        if (blocks_read < 1) return FALSE;
-        if (!memcmp(sig, "NERO", 4)) {
-            succeeded = TRUE;
-        }
-    }
-
-    fclose(file);
-    
-    return succeeded;
-}
-
-static gboolean __mirage_disc_nrg_load_image (MIRAGE_Disc *self, gchar **filenames, GError **error) {
-    MIRAGE_Disc_NRGPrivate *_priv = MIRAGE_DISC_NRG_GET_PRIVATE(self);
+static gboolean __mirage_parser_nrg_load_image (MIRAGE_Parser *self, gchar **filenames, GObject **disc, GError **error) {
+    MIRAGE_Parser_NRGPrivate *_priv = MIRAGE_PARSER_NRG_GET_PRIVATE(self);
     gboolean succeeded = TRUE;
-    size_t blocks_read;
+    FILE *file;
+    guint64 filesize;
+    guint64 trailer_offset;
+    gchar sig[4];
 
-    /* For now, NRG parser supports only one-file images */
-    if (g_strv_length(filenames) > 1) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: only single-file images supported!\n", __func__);
-        mirage_error(MIRAGE_E_SINGLEFILE, error);
-        return FALSE;
-    }
-    
     /* Open file */
-    FILE *file = g_fopen(filenames[0], "r");
+    file = g_fopen(filenames[0], "r");
     if (!file) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to open file '%s'!\n", __func__, filenames[0]);
         mirage_error(MIRAGE_E_IMAGEFILE, error);
         return FALSE;
     }
     
-    /* Set filename */
-    mirage_disc_set_filenames(self, filenames, NULL);
-
     /* Get filesize */
-    guint64 filesize = 0;
     fseeko(file, 0, SEEK_END);
     filesize = ftello(file);
     
     /* Read signature */
-    gchar sig[4] = "";
-    /* Get offset with index data */
-    guint64 trailer_offset = 0;
-    
     fseeko(file, -12, SEEK_END);
-    blocks_read = fread(sig, 4, 1, file);
-    if (blocks_read < 1) return FALSE;
+    
+    if (fread(sig, 4, 1, file) < 1) {
+        mirage_error(MIRAGE_E_READFAILED, error);
+        return FALSE;
+    }
+    
     if (!memcmp(sig, "NER5", 4)) {
         /* New format, 64-bit offset */
         guint64 tmp_offset = 0;
         _priv->old_format = FALSE;
+        
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: new format\n", __func__);
-        blocks_read = fread((void *)&tmp_offset, 8, 1, file);
-        if (blocks_read < 1) return FALSE;
+        
+        if (fread(&tmp_offset, 8, 1, file) < 1) {
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read trailer offset!\n", __func__);
+            mirage_error(MIRAGE_E_READFAILED, error);
+            return FALSE;
+        }
         trailer_offset = GUINT64_FROM_BE(tmp_offset);
         _priv->nrg_data_length = (filesize - 12) - trailer_offset;
     } else {
         /* Try old format, with 32-bit offset */
         fseeko(file, -8, SEEK_END);
-        blocks_read = fread(sig, 4, 1, file);
-        if (blocks_read < 1) return FALSE;
+        if (fread(sig, 4, 1, file) < 1) {
+            mirage_error(MIRAGE_E_READFAILED, error);
+            return FALSE;
+        }
+        
         if (!memcmp(sig, "NERO", 4)) {
             guint32 tmp_offset = 0;
             _priv->old_format = TRUE;
+            
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: old format\n", __func__);
-            blocks_read = fread((void *)&tmp_offset, 4, 1, file);
-            if (blocks_read < 1) return FALSE;
+            
+            if (fread(&tmp_offset, 4, 1, file) < 1) {
+                MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read trailer offset!\n", __func__);
+                mirage_error(MIRAGE_E_READFAILED, error);
+                return FALSE;
+            }
+            
             trailer_offset = GUINT32_FROM_BE(tmp_offset);
             _priv->nrg_data_length = (filesize - 8) - trailer_offset;
         } else {
-            /* Error */
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: unknown signature!\n", __func__);
-            mirage_error(MIRAGE_E_PARSER, error);
+            /* Unknown signature, can't handle the file */
+            mirage_error(MIRAGE_E_CANTHANDLE, error);
             return FALSE;
         }
     }
     
-    /* Medium type; CD-ROM by default, if there's MTYP block, it'll be changed
-       accordingly */
-    mirage_disc_set_medium_type(self, MIRAGE_MEDIUM_CD, NULL);
+    /* Create disc */
+    _priv->disc = g_object_new(MIRAGE_TYPE_DISC, NULL);
+    
+    mirage_disc_set_filenames(MIRAGE_DISC(_priv->disc), filenames, NULL);
+
+    /* Set CD-ROM as default medium type, will be changed accordingly if there
+       is a MTYP block provided */
+    mirage_disc_set_medium_type(MIRAGE_DISC(_priv->disc), MIRAGE_MEDIUM_CD, NULL);
+    
     
     /* Read descriptor data */
     _priv->nrg_data = g_malloc(_priv->nrg_data_length);
     fseeko(file, trailer_offset, SEEK_SET);
-    blocks_read = fread(_priv->nrg_data, _priv->nrg_data_length, 1, file);
-    if (blocks_read < 1) return FALSE;
-
-    /* Build an index over blocks contained in the disc image */
-    if(!__mirage_disc_nrg_build_block_index(self, error)) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to build block index!\n", __func__);
-        mirage_error(MIRAGE_E_IMAGEFILE, error);
-        return FALSE;
+    if (fread(_priv->nrg_data, _priv->nrg_data_length, 1, file) < 1) {
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read descriptor!\n", __func__);
+        mirage_error(MIRAGE_E_READFAILED, error);
+        succeeded = FALSE;
+        goto end;
     }
 
-    /* Load disc sessions. */
+    /* Build an index over blocks contained in the parser image */
+    if(!__mirage_parser_nrg_build_block_index(self, error)) {
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to build block index!\n", __func__);
+        succeeded = FALSE;
+        goto end;
+    }
+
+    /* Load parser sessions */
     gint session_num = 0;
 
-    for (session_num = 0;; session_num++) {
-        if (__mirage_disc_nrg_find_block_entry(self, "CUEX", session_num, error) || __mirage_disc_nrg_find_block_entry(self, "CUES", session_num, error)) {
+    for (session_num = 0; ; session_num++) {
+        if (__mirage_parser_nrg_find_block_entry(self, "CUEX", session_num) || __mirage_parser_nrg_find_block_entry(self, "CUES", session_num)) {
             /* CUEX/CUES block: means we need to make new session */
-            if (!__mirage_disc_nrg_load_session(self, session_num, error)) {
+            if (!__mirage_parser_nrg_load_session(self, session_num, NULL)) {
                 MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to load session!\n", __func__);
-                mirage_error(MIRAGE_E_IMAGEFILE, error);
+                mirage_error(MIRAGE_E_PARSER, error);
                 succeeded = FALSE;
+                goto end;
             }
-        } else if (__mirage_disc_nrg_find_block_entry(self, "ETN2", session_num, error) || __mirage_disc_nrg_find_block_entry(self, "ETNF", session_num, error)) {
+        } else if (__mirage_parser_nrg_find_block_entry(self, "ETN2", session_num) || __mirage_parser_nrg_find_block_entry(self, "ETNF", session_num)) {
             /* ETNF/ETN2 block: means we need to make new session */
-            if (!__mirage_disc_nrg_load_session_tao(self, session_num, error)) {
+            if (!__mirage_parser_nrg_load_session_tao(self, session_num, NULL)) {
                 MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to load session!\n", __func__);
-                mirage_error(MIRAGE_E_IMAGEFILE, error);
+                mirage_error(MIRAGE_E_PARSER, error);
                 succeeded = FALSE;
+                goto end;
             }
         } else {
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: Loaded a total of %i sessions.\n", __func__, session_num);
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: loaded a total of %i sessions.\n", __func__, session_num);
             break;
         }
     }
 
     /* Load CD text, medium type etc. */
-    if (__mirage_disc_nrg_find_block_entry(self, "CDTX", 0, error)) {
-        if (!__mirage_disc_nrg_load_cdtext(self, error)) {
+    if (__mirage_parser_nrg_find_block_entry(self, "CDTX", 0)) {
+        if (!__mirage_parser_nrg_load_cdtext(self, error)) {
             succeeded = FALSE;
+            goto end;
         }
     } 
 
-    if (__mirage_disc_nrg_find_block_entry(self, "MTYP", 0, error)) {
+    if (__mirage_parser_nrg_find_block_entry(self, "MTYP", 0)) {
         /* MTYP: medium type */            
-        if (!__mirage_disc_nrg_load_medium_type(self, error)) {
+        if (!__mirage_parser_nrg_load_medium_type(self, error)) {
             succeeded = FALSE;
+            goto end;
         }
     }
 
+end:
     /* Destroy block index */
-    if(!__mirage_disc_nrg_destroy_block_index(self, error)) {
-        return FALSE;
-    }
+    __mirage_parser_nrg_destroy_block_index(self);
 
     g_free(_priv->nrg_data);
     fclose(file);
     
+        /* Return disc */
+    if (succeeded) {
+        *disc = _priv->disc;
+    } else {
+        g_object_unref(_priv->disc);
+        *disc = NULL;
+    }
+        
     return succeeded;
 }
 
@@ -1183,14 +1114,10 @@ static gboolean __mirage_disc_nrg_load_image (MIRAGE_Disc *self, gchar **filenam
  *                                Object init                                 *
 \******************************************************************************/
 /* Our parent class */
-static MIRAGE_DiscClass *parent_class = NULL;
+static MIRAGE_ParserClass *parent_class = NULL;
 
-static void __mirage_disc_nrg_instance_init (GTypeInstance *instance, gpointer g_class) {
-    MIRAGE_Disc_NRG *self = MIRAGE_DISC_NRG(instance);
-    MIRAGE_Disc_NRGPrivate *_priv = MIRAGE_DISC_NRG_GET_PRIVATE(self);
-    
-    /* Create parser info */
-    _priv->parser_info = mirage_helper_create_parser_info(
+static void __mirage_parser_nrg_instance_init (GTypeInstance *instance, gpointer g_class) {
+    mirage_parser_generate_parser_info(MIRAGE_PARSER(instance),
         "PARSER-NRG",
         "NRG Image Parser",
         "1.0.0",
@@ -1203,59 +1130,54 @@ static void __mirage_disc_nrg_instance_init (GTypeInstance *instance, gpointer g
     return;
 }
 
-static void __mirage_disc_nrg_finalize (GObject *obj) {
-    MIRAGE_Disc_NRG *self = MIRAGE_DISC_NRG(obj);
-    MIRAGE_Disc_NRGPrivate *_priv = MIRAGE_DISC_NRG_GET_PRIVATE(self);
+static void __mirage_parser_nrg_finalize (GObject *obj) {
+    MIRAGE_Parser_NRG *self = MIRAGE_PARSER_NRG(obj);
+    /*MIRAGE_Parser_NRGPrivate *_priv = MIRAGE_PARSER_NRG_GET_PRIVATE(self);*/
     
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_GOBJECT, "%s:\n", __func__);
-    
-    /* Free parser info */
-    mirage_helper_destroy_parser_info(_priv->parser_info);
-    
+        
     /* Chain up to the parent class */
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_GOBJECT, "%s: chaining up to parent\n", __func__);
     return G_OBJECT_CLASS(parent_class)->finalize(obj);
 }
 
 
-static void __mirage_disc_nrg_class_init (gpointer g_class, gpointer g_class_data) {
+static void __mirage_parser_nrg_class_init (gpointer g_class, gpointer g_class_data) {
     GObjectClass *class_gobject = G_OBJECT_CLASS(g_class);
-    MIRAGE_DiscClass *class_disc = MIRAGE_DISC_CLASS(g_class);
-    MIRAGE_Disc_NRGClass *klass = MIRAGE_DISC_NRG_CLASS(g_class);
+    MIRAGE_ParserClass *class_parser = MIRAGE_PARSER_CLASS(g_class);
+    MIRAGE_Parser_NRGClass *klass = MIRAGE_PARSER_NRG_CLASS(g_class);
     
     /* Set parent class */
     parent_class = g_type_class_peek_parent(klass);
     
     /* Register private structure */
-    g_type_class_add_private(klass, sizeof(MIRAGE_Disc_NRGPrivate));
+    g_type_class_add_private(klass, sizeof(MIRAGE_Parser_NRGPrivate));
     
     /* Initialize GObject methods */
-    class_gobject->finalize = __mirage_disc_nrg_finalize;
+    class_gobject->finalize = __mirage_parser_nrg_finalize;
     
-    /* Initialize MIRAGE_Disc methods */
-    class_disc->get_parser_info = __mirage_disc_nrg_get_parser_info;
-    class_disc->can_load_file = __mirage_disc_nrg_can_load_file;
-    class_disc->load_image = __mirage_disc_nrg_load_image;
+    /* Initialize MIRAGE_Parser methods */
+    class_parser->load_image = __mirage_parser_nrg_load_image;
         
     return;
 }
 
-GType mirage_disc_nrg_get_type (GTypeModule *module) {
+GType mirage_parser_nrg_get_type (GTypeModule *module) {
     static GType type = 0;
     if (type == 0) {
         static const GTypeInfo info = {
-            sizeof(MIRAGE_Disc_NRGClass),
+            sizeof(MIRAGE_Parser_NRGClass),
             NULL,   /* base_init */
             NULL,   /* base_finalize */
-            __mirage_disc_nrg_class_init,   /* class_init */
+            __mirage_parser_nrg_class_init,   /* class_init */
             NULL,   /* class_finalize */
             NULL,   /* class_data */
-            sizeof(MIRAGE_Disc_NRG),
+            sizeof(MIRAGE_Parser_NRG),
             0,      /* n_preallocs */
-            __mirage_disc_nrg_instance_init    /* instance_init */
+            __mirage_parser_nrg_instance_init    /* instance_init */
         };
         
-        type = g_type_module_register_type(module, MIRAGE_TYPE_DISC, "MIRAGE_Disc_NRG", &info, 0);
+        type = g_type_module_register_type(module, MIRAGE_TYPE_PARSER, "MIRAGE_Parser_NRG", &info, 0);
     }
     
     return type;
