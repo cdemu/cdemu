@@ -28,8 +28,7 @@ libmirage_la_LIBADD = \
     $(glib_LIBS) \
     $(gobject_LIBS) \
     $(gmodule_LIBS) \
-    $(sndfile_LIBS) \
-    -ldl
+    $(sndfile_LIBS)
 
 libmirage_la_LDFLAGS = \
 	$(LT_VERSION_INFO)
