@@ -90,7 +90,7 @@ else
 fi
 
 # Plugin directory
-MIRAGE_PLUGIN_DIR="${libdir}/libmirage"
+MIRAGE_PLUGIN_DIR="${libdir}/libmirage""libmirage_current"
 AC_SUBST(MIRAGE_PLUGIN_DIR)
 
 # Output files
