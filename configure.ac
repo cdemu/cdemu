@@ -1,5 +1,8 @@
 # Process this file with autoconf to produce a configure script.
 
+# Require autoconf >= 2.50
+AC_PREREQ(2.50)
+
 # libMirage release and libtool versioning:
 m4_define([libmirage_major_version], [1])
 m4_define([libmirage_minor_version], [2])
@@ -20,9 +23,11 @@ AC_CONFIG_SRCDIR(src/libmirage/mirage.c)
 AM_INIT_AUTOMAKE(AC_PACKAGE_NAME, AC_PACKAGE_VERSION)
 AM_CONFIG_HEADER(config.h)
 
-# Libtool versioning
+# Libtool versioning etc.
 AC_SUBST(LT_VERSION_INFO, 
     ["-version-info libmirage_current:libmirage_revision:libmirage_age"])
+AC_SUBST(LIB_VERSION, 
+    ["libmirage_major_version.libmirage_minor_version"])
 
 AM_MAINTAINER_MODE
 
