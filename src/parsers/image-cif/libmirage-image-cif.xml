@@ -9,9 +9,5 @@
         <comment>Adaptec Easy CD/DVD Creator image file</comment>
         
         <glob pattern="*.cif"/>
-
-        <magic priority="20">
-             <match value="RIFF" type="string" offset="0"/>
-        </magic>
     </mime-type>
 </mime-info>
