@@ -674,15 +674,14 @@ static ssize_t vhba_ctl_write(struct file *file, const char __user *buf, size_t 
 static int vhba_ctl_ioctl (struct inode *inode, struct file *file, unsigned int cmd, unsigned long arg)
 {
         struct vhba_device *vdev = file->private_data;
-    
+        struct vhba_host *vhost;
+        struct scsi_device *sdev;
+
         switch (cmd) {
-        case 0xBEEF001: 
-                struct vhba_host *vhost;
-                struct scsi_device *sdev;
-            
+        case 0xBEEF001:
                 vhost = platform_get_drvdata(&vhba_platform_device);
                 sdev = scsi_device_lookup(vhost->shost, 0, vdev->id, 0);
-    
+
                 if (sdev) {
                         int id[4] = {
                                 sdev->host->host_no,
