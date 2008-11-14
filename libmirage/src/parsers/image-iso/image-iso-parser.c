@@ -304,7 +304,7 @@ static void __mirage_parser_iso_instance_init (GTypeInstance *instance, gpointer
     mirage_parser_generate_parser_info(MIRAGE_PARSER(instance),
         "PARSER-ISO",
         "ISO Image Parser",
-        "1.0.0",
+        PACKAGE_VERSION,
         "Rok Mandeljc",
         FALSE,
         "ISO images",
