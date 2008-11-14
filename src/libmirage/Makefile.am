@@ -31,7 +31,7 @@ libmirage_la_LIBADD = \
 libmirage_la_LDFLAGS = \
 	$(LT_VERSION_INFO)
     
-libmirageincludedir=$(includedir)/libmirage-$(LIB_VERSION)
+libmirageincludedir=$(includedir)/libmirage
 libmirageinclude_HEADERS = \
     mirage.h \
     mirage-cdtext-encdec.h \

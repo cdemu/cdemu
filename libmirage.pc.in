@@ -9,4 +9,4 @@ Description: CD-ROM image access library
 Version: @PACKAGE_VERSION@
 Requires: glib-2.0 
 Libs: -L${libdir} -lmirage
-Cflags: -I${includedir}/libmirage-1.0
+Cflags: -I${includedir}/libmirage
