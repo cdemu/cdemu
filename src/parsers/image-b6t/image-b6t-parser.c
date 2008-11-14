@@ -1137,7 +1137,7 @@ static void __mirage_parser_b6t_instance_init (GTypeInstance *instance, gpointer
     mirage_parser_generate_parser_info(MIRAGE_PARSER(instance),
         "PARSER-B6T",
         "B6T Image Parser",
-        "1.0.0",
+        PACKAGE_VERSION,
         "Rok Mandeljc",
         FALSE,
         "BlindWrite 5/6 images",
