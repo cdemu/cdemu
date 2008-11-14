@@ -179,7 +179,7 @@ static void __mirage_fragment_sndfile_instance_init (GTypeInstance *instance, gp
     mirage_fragment_generate_fragment_info(MIRAGE_FRAGMENT(instance),
         "FRAGMENT-SNDFILE",
         "libsndfile Fragment",
-        "1.0.0",
+        PACKAGE_VERSION,
         "Rok Mandeljc",
         "MIRAGE_TYPE_FINTERFACE_AUDIO",
         3, ".wav", ".aiff", NULL
