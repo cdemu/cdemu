@@ -541,7 +541,7 @@ static void __mirage_parser_cue_instance_init (GTypeInstance *instance, gpointer
     mirage_parser_generate_parser_info(MIRAGE_PARSER(instance),
         "PARSER-CUE",
         "CUE Image Parser",
-        PACKAGE_VERSION,
+        "1.0.0",
         "Rok Mandeljc",
         TRUE,
         "CUE images",

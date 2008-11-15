@@ -1,6 +1,6 @@
 /*
- *  libMirage: CUE image parser: Plugin exports
- *  Copyright (C) 2006-2008 Rok Mandeljc
+ *  libMirage: Library version
+ *  Copyright (C) 2008 Rok Mandeljc
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -17,23 +17,23 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
 
-#include "image-cue.h"
+#ifndef __MIRAGE_VERSION_H__
+#define __MIRAGE_VERSION_H__
 
 
-GTypeModule *global_module = NULL;
+G_BEGIN_DECLS
 
-G_MODULE_EXPORT void mirage_plugin_load_plugin (MIRAGE_Plugin *plugin);
-G_MODULE_EXPORT void mirage_plugin_unload_plugin (MIRAGE_Plugin *plugin);
+#define MIRAGE_MAJOR_VERSION @MIRAGE_MAJOR_VERSION@
+#define MIRAGE_MINOR_VERSION @MIRAGE_MINOR_VERSION@
+#define MIRAGE_MICRO_VERSION @MIRAGE_MICRO_VERSION@
 
-G_MODULE_EXPORT gint mirage_plugin_lt_current = MIRAGE_LT_CURRENT;
+#define MIRAGE_LT_CURRENT @MIRAGE_LT_CURRENT@
+#define MIRAGE_LT_REVISION @MIRAGE_LT_REVISION@
+#define MIRAGE_LT_AGE @MIRAGE_LT_AGE@
 
-G_MODULE_EXPORT void mirage_plugin_load_plugin (MIRAGE_Plugin *plugin) {
-    global_module = G_TYPE_MODULE(plugin);
-    mirage_parser_cue_get_type(G_TYPE_MODULE(plugin));
-    return;
-}
+#define MIRAGE_VERSION_LONG "@MIRAGE_VERSION_LONG@"
+#define MIRAGE_VERSION_SHORT "@MIRAGE_VERSION_SHORT@"
 
-G_MODULE_EXPORT void mirage_plugin_unload_plugin (MIRAGE_Plugin *plugin) {
-    global_module = NULL;
-    return;
-}
+G_END_DECLS
+
+#endif /* __MIRAGE_PLUGIN_H__ */

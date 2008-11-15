@@ -731,7 +731,7 @@ static void __mirage_parser_mds_instance_init (GTypeInstance *instance, gpointer
     mirage_parser_generate_parser_info(MIRAGE_PARSER(instance),
         "PARSER-MDS",
         "MDS Image Parser",
-        PACKAGE_VERSION,
+        "1.0.0",
         "Rok Mandeljc",
         FALSE,
         "MDS (Media descriptor) images",

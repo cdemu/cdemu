@@ -48,4 +48,8 @@ libmirageinclude_HEADERS = \
     mirage-sector.h \
     mirage-session.h \
     mirage-track.h \
-    mirage-utils.h
+    mirage-utils.h \
+    mirage-version.h
+
+EXTRA_DIST = \
+    mirage-version.h.in

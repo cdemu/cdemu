@@ -70,6 +70,7 @@ MIRAGE_Plugin *mirage_plugin_new (const gchar *filename) {
 static gboolean __mirage_plugin_load_module (GTypeModule *gmodule) {
     MIRAGE_Plugin *self = MIRAGE_PLUGIN(gmodule);
     MIRAGE_PluginPrivate *_priv = MIRAGE_PLUGIN_GET_PRIVATE(self);
+    gint *plugin_lt_current;
     
     if (!_priv->filename) {
         return FALSE;
@@ -81,11 +82,26 @@ static gboolean __mirage_plugin_load_module (GTypeModule *gmodule) {
         return FALSE;
     }
     
+    /* Make sure that the loaded library contains the 'mirage_plugin_lt_current'
+       symbol which represents the ABI version that plugin was built against; make
+       sure it matches ABI used by the lib */
+    if (!g_module_symbol(_priv->library, "mirage_plugin_lt_current", (gpointer *)&plugin_lt_current)) {
+        g_warning("%s: plugin %s: does not contain 'mirage_plugin_lt_current'!\n", __func__, _priv->filename);
+        g_module_close(_priv->library);
+        return FALSE;
+    }
+    
+    if (*plugin_lt_current != MIRAGE_LT_CURRENT) {
+        g_warning("%s: plugin %s: is not built against current ABI (%d vs. %d)!\n", __func__, _priv->filename, *plugin_lt_current, MIRAGE_LT_CURRENT);
+        g_module_close(_priv->library);
+        return FALSE;
+    }
+    
     /* Make sure that the loaded library contains the required methods */
     if (!g_module_symbol(_priv->library, "mirage_plugin_load_plugin", (gpointer *)&_priv->mirage_plugin_load_plugin) ||
         !g_module_symbol(_priv->library, "mirage_plugin_unload_plugin", (gpointer *)&_priv->mirage_plugin_unload_plugin)) {
         
-        g_module_close (_priv->library);
+        g_module_close(_priv->library);
         return FALSE;
     }
     

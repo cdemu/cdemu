@@ -23,11 +23,24 @@ AC_CONFIG_SRCDIR(src/libmirage/mirage.c)
 AM_INIT_AUTOMAKE(AC_PACKAGE_NAME, AC_PACKAGE_VERSION)
 AM_CONFIG_HEADER(config.h)
 
-# Libtool versioning etc.
+# Versioning
+AC_SUBST(MIRAGE_MAJOR_VERSION, libmirage_major_version)
+AC_SUBST(MIRAGE_MINOR_VERSION, libmirage_minor_version)
+AC_SUBST(MIRAGE_MICRO_VERSION, libmirage_micro_version)
+
+AC_SUBST(MIRAGE_LT_CURRENT, libmirage_current)
+AC_SUBST(MIRAGE_LT_REVISION, libmirage_revision)
+AC_SUBST(MIRAGE_LT_AGE, libmirage_age)
+
+AC_SUBST(MIRAGE_VERSION_SHORT, 
+    ["libmirage_major_version.libmirage_minor_version"])
+
+AC_SUBST(MIRAGE_VERSION_LONG, 
+    ["libmirage_version"])
+    
+# Libtool versioning
 AC_SUBST(LT_VERSION_INFO, 
     ["-version-info libmirage_current:libmirage_revision:libmirage_age"])
-AC_SUBST(LIB_VERSION, 
-    ["libmirage_major_version.libmirage_minor_version"])
 
 AM_MAINTAINER_MODE
 
@@ -112,6 +125,7 @@ AC_CONFIG_FILES([
     src/fragments/fragment-sndfile/Makefile
     src/fragments/fragment-null/Makefile
     src/libmirage/Makefile
+    src/libmirage/mirage-version.h
     src/parsers/Makefile
     src/parsers/image-b6t/Makefile
     src/parsers/image-c2d/Makefile

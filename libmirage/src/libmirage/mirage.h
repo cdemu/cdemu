@@ -29,6 +29,8 @@
 #include <math.h>
 #include <string.h>
 
+#include "mirage-version.h"
+
 #include "mirage-debug.h"
 #include "mirage-error.h"
 #include "mirage-plugin.h"

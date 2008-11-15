@@ -588,7 +588,7 @@ static void __mirage_parser_toc_instance_init (GTypeInstance *instance, gpointer
     mirage_parser_generate_parser_info(MIRAGE_PARSER(instance),
         "PARSER-TOC",
         "TOC Image Parser",
-        PACKAGE_VERSION,
+        "1.0.0",
         "Rok Mandeljc",
         TRUE,
         "TOC files",
