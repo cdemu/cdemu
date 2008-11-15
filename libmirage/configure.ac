@@ -108,7 +108,12 @@ else
 fi
 
 # Plugin directory
-MIRAGE_PLUGIN_DIR="${libdir}/libmirage""libmirage_current"
+AC_ARG_WITH(plugin-dir, AS_HELP_STRING([--with-plugin-dir=<dir>], [Path to libMirage plugin directory]))
+if ! test -z "$with_plugin_dir" ; then
+    MIRAGE_PLUGIN_DIR="$with_plugin_dir"
+else
+    MIRAGE_PLUGIN_DIR="${libdir}/libmirage-$MIRAGE_VERSION_SHORT"
+fi
 AC_SUBST(MIRAGE_PLUGIN_DIR)
 
 # Output files
