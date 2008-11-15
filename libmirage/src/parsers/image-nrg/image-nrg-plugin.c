@@ -27,7 +27,7 @@ GTypeModule *global_module = NULL;
 G_MODULE_EXPORT void mirage_plugin_load_plugin (MIRAGE_Plugin *plugin);
 G_MODULE_EXPORT void mirage_plugin_unload_plugin (MIRAGE_Plugin *plugin);
 
-G_MODULE_EXPORT gint mirage_plugin_lt_current = MIRAGE_LT_CURRENT;
+G_MODULE_EXPORT guint mirage_plugin_lt_current = MIRAGE_LT_CURRENT;
 
 G_MODULE_EXPORT void mirage_plugin_load_plugin (MIRAGE_Plugin *plugin) {
     global_module = G_TYPE_MODULE(plugin);

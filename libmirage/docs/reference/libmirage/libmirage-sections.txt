@@ -8,7 +8,6 @@ MIRAGE_PasswordFunction
 MIRAGE_DebugMask
 libmirage_init
 libmirage_shutdown
-libmirage_get_version
 libmirage_set_password_function
 libmirage_obtain_password
 libmirage_create_disc
@@ -16,6 +15,27 @@ libmirage_create_fragment
 libmirage_for_each_parser
 libmirage_for_each_fragment
 libmirage_get_supported_debug_masks
+</SECTION>
+
+<SECTION>
+<FILE>mirage-version</FILE>
+<TITLE>Version information</TITLE>
+mirage_major_version
+mirage_minor_version
+mirage_micro_version
+mirage_version_long
+mirage_version_short
+mirage_lt_current
+mirage_lt_revision
+mirage_lt_age
+MIRAGE_MAJOR_VERSION
+MIRAGE_MINOR_VERSION
+MIRAGE_MICRO_VERSION
+MIRAGE_VERSION_LONG
+MIRAGE_VERSION_SHORT
+MIRAGE_LT_CURRENT
+MIRAGE_LT_REVISION
+MIRAGE_LT_AGE
 </SECTION>
 
 <SECTION>

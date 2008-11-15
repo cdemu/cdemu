@@ -23,16 +23,106 @@
 
 G_BEGIN_DECLS
 
+extern const guint mirage_major_version;
+extern const guint mirage_minor_version;
+extern const guint mirage_micro_version;
+
+extern const guint mirage_lt_current;
+extern const guint mirage_lt_revision;
+extern const guint mirage_lt_age;
+
+extern const gchar *mirage_version_long;
+extern const gchar *mirage_version_short;
+
+/**
+ * MIRAGE_MAJOR_VERSION:
+ *
+ * <para>
+ * The major version number of the libMirage library. Like #mirage_major_version, 
+ * but from the headers used at application compile time, rather than from the 
+ * library linked against at application run time.
+ * </para>
+ **/
 #define MIRAGE_MAJOR_VERSION @MIRAGE_MAJOR_VERSION@
+
+/**
+ * MIRAGE_MINOR_VERSION:
+ *
+ * <para>
+ * The minor version number of the libMirage library. Like #mirage_minor_version, 
+ * but from the headers used at application compile time, rather than from the 
+ * library linked against at application run time.
+ * </para>
+ **/
 #define MIRAGE_MINOR_VERSION @MIRAGE_MINOR_VERSION@
+
+/**
+ * MIRAGE_MICRO_VERSION:
+ *
+ * <para>
+ * The micro version number of the libMirage library. Like #mirage_micro_version, 
+ * but from the headers used at application compile time, rather than from the 
+ * library linked against at application run time.
+ * </para>
+ **/
 #define MIRAGE_MICRO_VERSION @MIRAGE_MICRO_VERSION@
 
-#define MIRAGE_LT_CURRENT @MIRAGE_LT_CURRENT@
-#define MIRAGE_LT_REVISION @MIRAGE_LT_REVISION@
-#define MIRAGE_LT_AGE @MIRAGE_LT_AGE@
 
+/**
+ * MIRAGE_VERSION_LONG:
+ *
+ * <para>
+ * The long version string of the libMirage library. Like #mirage_version_long, 
+ * but from the headers used at application compile time, rather than from the 
+ * library linked against at application run time.
+ * </para>
+ **/
 #define MIRAGE_VERSION_LONG "@MIRAGE_VERSION_LONG@"
+
+/**
+ * MIRAGE_VERSION_SHORT:
+ *
+ * <para>
+ * The short version string of the libMirage library. Like #mirage_version_long, 
+ * but from the headers used at application compile time, rather than from the 
+ * library linked against at application run time.
+ * </para>
+ **/
 #define MIRAGE_VERSION_SHORT "@MIRAGE_VERSION_SHORT@"
+
+
+/**
+ * MIRAGE_LT_CURRENT:
+ *
+ * <para>
+ * The current component of libtool version of the libMirage library. Like 
+ * #mirage_lt_current, but from the headers used at application compile time, 
+ * rather than from the library linked against at application run time.
+ * </para>
+ **/
+#define MIRAGE_LT_CURRENT @MIRAGE_LT_CURRENT@
+
+/**
+ * MIRAGE_LT_REVISION:
+ *
+ * <para>
+ * The revision component of libtool version of the libMirage library. Like 
+ * #mirage_lt_revision, but from the headers used at application compile time, 
+ * rather than from the library linked against at application run time.
+ * </para>
+ **/
+#define MIRAGE_LT_REVISION @MIRAGE_LT_REVISION@
+
+/**
+ * MIRAGE_LT_AGE:
+ *
+ * <para>
+ * The age component of libtool version of the libMirage library. Like 
+ * #mirage_lt_age, but from the headers used at application compile time, 
+ * rather than from the library linked against at application run time.
+ * </para>
+ **/
+#define MIRAGE_LT_AGE @MIRAGE_LT_AGE@
 
 G_END_DECLS
 
