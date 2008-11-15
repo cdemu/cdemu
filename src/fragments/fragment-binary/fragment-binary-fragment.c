@@ -418,7 +418,7 @@ static void __mirage_fragment_binary_instance_init (GTypeInstance *instance, gpo
     mirage_fragment_generate_fragment_info(MIRAGE_FRAGMENT(instance),
         "FRAGMENT-BINARY",
         "Binary Fragment",
-        PACKAGE_VERSION,
+        "1.0.0",
         "Rok Mandeljc",
         "MIRAGE_TYPE_FINTERFACE_BINARY",
         2, "N/A", NULL

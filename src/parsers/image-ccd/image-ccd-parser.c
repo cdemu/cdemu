@@ -565,7 +565,7 @@ static void __mirage_parser_b6t_instance_init (GTypeInstance *instance, gpointer
     mirage_parser_generate_parser_info(MIRAGE_PARSER(instance),
         "PARSER-CDI",
         "CDI Image Parser",
-        PACKAGE_VERSION,
+        "1.0.0",
         "Rok Mandeljc",
         TRUE,
         "CCD (CloneCD) images",
