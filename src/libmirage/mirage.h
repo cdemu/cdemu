@@ -89,8 +89,6 @@ typedef struct {
 gboolean libmirage_init (GError **error);
 gboolean libmirage_shutdown (GError **error);
 
-const gchar *libmirage_get_version (GError **error);
-
 gboolean libmirage_set_password_function (MIRAGE_PasswordFunction func, gpointer user_data, GError **error);
 gchar *libmirage_obtain_password (GError **error);
 

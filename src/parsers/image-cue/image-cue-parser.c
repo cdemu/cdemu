@@ -61,7 +61,8 @@ typedef struct {
 \******************************************************************************/
 gboolean __mirage_parser_cue_finish_last_track (MIRAGE_Parser *self, GError **error) {
     MIRAGE_Parser_CUEPrivate *_priv = MIRAGE_PARSER_CUE_GET_PRIVATE(self);
-    GObject *data_fragment = NULL;
+    GObject *data_fragment;
+    gboolean succeeded = TRUE;
     
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: finishing last track\n", __func__);
 
@@ -77,11 +78,22 @@ gboolean __mirage_parser_cue_finish_last_track (MIRAGE_Parser *self, GError **er
        not NULL... and of course, we go from behind) */
     /* FIXME: implement the latter part */
     if (mirage_track_get_fragment_by_index(MIRAGE_TRACK(_priv->cur_track), -1, &data_fragment, NULL)) {
+        gint fragment_length;
+        
         mirage_fragment_use_the_rest_of_file(MIRAGE_FRAGMENT(data_fragment), NULL);
+        mirage_fragment_get_length(MIRAGE_FRAGMENT(data_fragment), &fragment_length, NULL);
+        
+        if (fragment_length < 0) {
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: finishing last track resulted in negative fragment length!\n", __func__);
+            mirage_error(MIRAGE_E_PARSER, error);
+            succeeded = FALSE;
+        }
+        
+        
         g_object_unref(data_fragment);
     }
 
-    return TRUE;
+    return succeeded;
 }
 
 gboolean __mirage_parser_cue_set_mcn (MIRAGE_Parser *self, gchar *mcn, GError **error) {    
@@ -508,7 +520,10 @@ static gboolean __mirage_parser_cue_load_image (MIRAGE_Parser *self, gchar **fil
     /* Finish last track */
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "\n");
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: finishing last track in the layout\n", __func__);
-    __mirage_parser_cue_finish_last_track(self, NULL);
+    if (!__mirage_parser_cue_finish_last_track(self, error)) {
+        succeeded = FALSE;
+        goto end;
+    }
 
     /* Now guess medium type and if it's a CD-ROM, add Red Book pregap */
     gint medium_type = mirage_parser_guess_medium_type(self, _priv->disc);

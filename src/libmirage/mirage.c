@@ -31,9 +31,7 @@ static struct {
     
     guint num_fragments;
     GType *fragments;
-    
-    gchar *version;
-    
+        
     /* Password function */
     MIRAGE_PasswordFunction password_func;
     gpointer password_data;
@@ -109,10 +107,7 @@ gboolean libmirage_init (GError **error) {
     /* *** Get parsers and fragments *** */
     libmirage.parsers = g_type_children(MIRAGE_TYPE_PARSER, &libmirage.num_parsers);
     libmirage.fragments = g_type_children(MIRAGE_TYPE_FRAGMENT, &libmirage.num_fragments);
-    
-    /* *** Version string *** */
-    libmirage.version = g_strdup(MIRAGE_VERSION_LONG);
-    
+        
     /* Reset password function pointers */
     libmirage.password_func = NULL;
     libmirage.password_data = NULL;
@@ -146,9 +141,6 @@ gboolean libmirage_shutdown (GError **error) {
     g_free(libmirage.parsers);
     g_free(libmirage.fragments);
     
-    /* Free version */
-    g_free(libmirage.version);
-        
     /* We're not initialized anymore */
     libmirage.initialized = FALSE;
     
@@ -221,27 +213,6 @@ gchar *libmirage_obtain_password (GError **error) {
     }
     
     return password;
-}
-
-/**
- * libmirage_get_version:
- * @error: location to store error, or %NULL
- *
- * <para>
- * Retrieves libMirage version string.
- * </para>
- *
- * Returns: a pointer to the version string. The string belongs to libMirage
- * and should not be freed.
- **/
-const gchar *libmirage_get_version (GError **error) {
-    /* Make sure libMirage is initialized */
-    if (!libmirage.initialized) {
-        mirage_error(MIRAGE_E_NOTINIT, error);
-        return FALSE;
-    }
-    
-    return libmirage.version;
 }
 
 

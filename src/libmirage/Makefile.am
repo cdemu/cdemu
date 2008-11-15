@@ -15,7 +15,8 @@ libmirage_la_SOURCES = \
     mirage-sector.c \
     mirage-session.c \
     mirage-track.c \
-    mirage-utils.c
+    mirage-utils.c \
+    mirage-version.c
                         
 INCLUDES = \
     $(glib_CFLAGS) \

@@ -91,7 +91,7 @@ static gboolean __mirage_plugin_load_module (GTypeModule *gmodule) {
         return FALSE;
     }
     
-    if (*plugin_lt_current != MIRAGE_LT_CURRENT) {
+    if (*plugin_lt_current != mirage_lt_current) {
         g_warning("%s: plugin %s: is not built against current ABI (%d vs. %d)!\n", __func__, _priv->filename, *plugin_lt_current, MIRAGE_LT_CURRENT);
         g_module_close(_priv->library);
         return FALSE;

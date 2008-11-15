@@ -22,10 +22,6 @@ function implementations rely on initialized libMirage library and therefore the
 </para>
 
 <para>
-Once library is initialized, its version string can be obtained by calling mirage_mirage_get_version().
-</para>
-
-<para>
 The password callback function can be set using libmirage libmirage_set_password_function(), which stores
 a #MIRAGE_PasswordFunction callback function and user data for the callback to be called with. The password
 callback function is used by libmirage_obtain_password(), which is usually called by image parser 
@@ -88,15 +84,6 @@ respectively. The list of supported debug masks can be obtained using libmirage_
 
 
 <!-- ##### FUNCTION libmirage_shutdown ##### -->
-<para>
-
-</para>
-
-@error: 
-@Returns: 
-
-
-<!-- ##### FUNCTION libmirage_get_version ##### -->
 <para>
 
 </para>

@@ -14,6 +14,7 @@
         <title>libMirage API Reference</title>
         
         <xi:include href="xml/mirage-libmirage.xml"/>
+        <xi:include href="xml/mirage-version.xml"/>
         <xi:include href="xml/mirage-disc.xml"/>
         <xi:include href="xml/mirage-session.xml"/>
         <xi:include href="xml/mirage-track.xml"/>
