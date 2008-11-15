@@ -65,6 +65,7 @@ static const MIRAGE_DebugMask dbg_masks[] = {
 gboolean libmirage_init (GError **error) {
     const gchar *plugin_file;
     GDir *plugins_dir;
+    gint i;
     
     /* If already initialized, don't do anything */
     if (libmirage.initialized) {
@@ -106,13 +107,45 @@ gboolean libmirage_init (GError **error) {
     
     g_dir_close(plugins_dir);
     
+    /* *** Version string *** */
+    libmirage.version = g_strdup(PACKAGE_VERSION);
+
     /* *** Get parsers and fragments *** */
     libmirage.parsers = g_type_children(MIRAGE_TYPE_PARSER, &libmirage.num_parsers);
     libmirage.fragments = g_type_children(MIRAGE_TYPE_FRAGMENT, &libmirage.num_fragments);
-    
-    /* *** Version string *** */
-    libmirage.version = g_strdup(PACKAGE_VERSION);
-    
+
+    /* *** Check parser versions *** */
+    for (i = 0; i < libmirage.num_parsers; i++) {
+        MIRAGE_ParserInfo *parser_info;
+        GObject *parser;
+        
+        parser = g_object_new(libmirage.parsers[i], NULL);
+        mirage_parser_get_parser_info(MIRAGE_PARSER(parser), &parser_info, NULL);
+
+        if (g_strcmp0(libmirage.version, parser_info->version)) {
+            mirage_error(MIRAGE_E_NOPARSERFOUND, error);
+            return FALSE;
+        }
+
+        g_object_unref(parser);
+    }
+
+    /* *** Check fragment versions *** */
+    for (i = 0; i < libmirage.num_fragments; i++) {
+        MIRAGE_FragmentInfo *fragment_info;
+        GObject *fragment;
+        
+        fragment = g_object_new(libmirage.fragments[i], NULL);
+        mirage_fragment_get_fragment_info(MIRAGE_FRAGMENT(fragment), &fragment_info, NULL);
+
+        if (g_strcmp0(libmirage.version, fragment_info->version)) {
+            mirage_error(MIRAGE_E_NOFRAGMENTFOUND, error);
+            return FALSE;
+        }
+
+        g_object_unref(fragment);
+    }
+
     /* Reset password function pointers */
     libmirage.password_func = NULL;
     libmirage.password_data = NULL;
