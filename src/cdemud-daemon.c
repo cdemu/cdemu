@@ -454,13 +454,7 @@ gboolean cdemud_daemon_get_daemon_version (CDEMUD_Daemon *self, gchar **version,
 }
 
 gboolean cdemud_daemon_get_library_version (CDEMUD_Daemon *self, gchar **version, GError **error) {
-    const gchar *libver = libmirage_get_version(error);
-    
-    if (!libver) {
-        return FALSE;
-    }
-    
-    *version = g_strdup(libver);
+    *version = g_strdup(mirage_version_long);
     return TRUE;
 }
 
