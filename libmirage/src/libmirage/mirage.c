@@ -111,7 +111,7 @@ gboolean libmirage_init (GError **error) {
     libmirage.fragments = g_type_children(MIRAGE_TYPE_FRAGMENT, &libmirage.num_fragments);
     
     /* *** Version string *** */
-    libmirage.version = g_strdup(PACKAGE_VERSION);
+    libmirage.version = g_strdup(MIRAGE_VERSION_LONG);
     
     /* Reset password function pointers */
     libmirage.password_func = NULL;
