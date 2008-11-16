@@ -43,8 +43,8 @@ class CDEmu (object):
     __bus_type = "system" # Use system bus as hard-coded default
     
     def __init__ (self):
-        # Load options; Try "~/.cdemu" first, then try "/etc/cdemu.conf" next.
-        paths = (os.path.expanduser("~/.cdemu"), "/etc/cdemu.conf")
+        # Load options; Try "~/.cdemu-client" first, then try "/etc/cdemu-client.conf" next.
+        paths = (os.path.expanduser("~/.cdemu-client"), "/etc/cdemu-client.conf")
         path = "(not found)"
         for path_inst in paths:
             if os.path.exists(path_inst):
