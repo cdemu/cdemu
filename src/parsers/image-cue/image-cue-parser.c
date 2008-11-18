@@ -43,6 +43,8 @@ typedef struct {
     gint cur_data_format; /* Format (AUDIO vs DATA) in case BINARY fragment is used */
     gint cur_track_start; /* Used to determine pregap */
     
+    gint binary_offset; /* Offset within the binary file */
+    
     gboolean cur_pregap_set;
     
     gint leadout_correction;
@@ -133,6 +135,7 @@ gboolean __mirage_parser_cue_set_new_file (MIRAGE_Parser *self, gchar *filename_
     g_free(_priv->cur_data_type);
     _priv->cur_data_type = g_strdup(file_type);
     _priv->cur_track_start = 0;
+    _priv->binary_offset = 0;
     
     return TRUE;
 }
@@ -262,6 +265,18 @@ gboolean __mirage_parser_cue_add_index (MIRAGE_Parser *self, gint number, gint a
                         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: previous fragment already has length (%i)\n", __func__, fragment_length);
                     }
                     
+                    /* Binary fragments/files are pain because sector size can
+                       vary between the tracks; so in case we're dealing with
+                       binary, we need to keep track of the offset within file */
+                    if (MIRAGE_IS_FINTERFACE_BINARY(lfragment)) {
+                        gint tfile_sectsize, sfile_sectsize;
+                        
+                        mirage_finterface_binary_track_file_get_sectsize(MIRAGE_FINTERFACE_BINARY(lfragment), &tfile_sectsize, NULL);
+                        mirage_finterface_binary_subchannel_file_get_sectsize(MIRAGE_FINTERFACE_BINARY(lfragment), &sfile_sectsize, NULL);
+                        
+                        _priv->binary_offset += fragment_length * (tfile_sectsize + sfile_sectsize);
+                    }
+                    
                     g_object_unref(lfragment);
                 }
             }
@@ -274,7 +289,7 @@ gboolean __mirage_parser_cue_add_index (MIRAGE_Parser *self, gint number, gint a
                 
                 gint tfile_sectsize = 0;
                 gint sfile_sectsize = 0;
-                
+                                
                 /* Take into account possibility of having subchannel
                    (only for CD+G tracks, though) */
                 if (_priv->cur_data_sectsize == 2448) {
@@ -293,7 +308,7 @@ gboolean __mirage_parser_cue_add_index (MIRAGE_Parser *self, gint number, gint a
                 
                 mirage_finterface_binary_track_file_set_handle(MIRAGE_FINTERFACE_BINARY(data_fragment), g_fopen(_priv->cur_data_filename, "r"), NULL);
                 mirage_finterface_binary_track_file_set_sectsize(MIRAGE_FINTERFACE_BINARY(data_fragment), tfile_sectsize, NULL);
-                mirage_finterface_binary_track_file_set_offset(MIRAGE_FINTERFACE_BINARY(data_fragment), offset, NULL);
+                mirage_finterface_binary_track_file_set_offset(MIRAGE_FINTERFACE_BINARY(data_fragment), _priv->binary_offset, NULL);
                 mirage_finterface_binary_track_file_set_format(MIRAGE_FINTERFACE_BINARY(data_fragment), _priv->cur_data_format, NULL);
                     
                 if (sfile_sectsize) {
