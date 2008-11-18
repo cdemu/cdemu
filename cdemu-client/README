@@ -55,6 +55,12 @@ Displaying device status:
 Displaying device mapping information:
  cdemu device-mapping
 
+Enumerating supported daemon debug masks:
+ cdemu enum-daemon-debug-masks
+
+Enumerating supported library debug masks:
+ cdemu enum-library-debug-masks
+ 
 Setting daemon debug mask for the first device:
  cdemu daemon-debug-mask 0 0x01
  
@@ -82,12 +88,6 @@ Enumerating supported fragments:
 Obtaining information about specific fragment:
  cdemu enum-supported-fragments FRAGMENT-BINARY
  
-Enumerating supported daemon debug masks:
- cdemu enum-daemon-debug-masks
-
-Enumerating supported library debug masks:
- cdemu enum-library-debug-masks
-
 Displaying daemon and library version:
  cdemu version
 
