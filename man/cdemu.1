@@ -1,4 +1,4 @@
-.TH CDEMU 1 "Oct 26, 2008"
+.TH CDEMU 1 "Nov 18, 2008"
 .SH NAME
 cdemu \- a simple command-line CDEmu client
 .SH SYNOPSIS
@@ -17,8 +17,8 @@ retrieving/setting devices' debug masks.
 
 When connecting to daemon, cdemu client can use either session or system bus. By
 hard-coded default, it uses system bus. The default bus to be used can be specified
-in ~/.cdemu file; for more information, please read README file. The default can
-be overriden using
+via /etc/cdemu-client or ~/.cdemu-client file; for more information, please read README 
+file. The default can be overriden using
 .B --bus
 option.
 .SH ENCRYPTED IMAGES SUPPORT
@@ -60,12 +60,18 @@ Displays device mapping information
 .B daemon-debug-mask <device> [new-value]
 Displays/sets daemon debug mask; \fBdevice\fR is the number of the desired 
 device, or \fIall\fR. \fBnew-value\fR is the new debug mask value. If this 
-argument is omitted, current debug mask is displayed.
+argument is omitted, current debug mask is displayed. A list of supported 
+debug mask values can be obtained with
+.B enum-daemon-debug-masks
+command.
 .TP
 .B library-debug-mask <device> [new-value]
 Displays/sets library debug mask; \fBdevice\fR is the number of the desired 
 device, or \fIall\fR. \fBnew-value\fR is the new debug mask value. If this 
-argument is omitted, current debug mask is displayed.
+argument is omitted, current debug mask is displayed. A list of supported 
+debug mask values can be obtained with
+.B enum-library-debug-masks
+command.
 .TP
 .B dpm-emulation <device> [new-value]
 Displays/sets DPM emulation flag. \fBdevice\fR is the number of the desired 
