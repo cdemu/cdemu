@@ -178,7 +178,7 @@ static gboolean __cb_select_region (GtkPlotCanvas *canvas, gdouble x1, gdouble y
     gdouble xmin, ymin, xmax, ymax;
     gint px1, px2, py1, py2;
     
-    gdouble *region = NULL;
+    gdouble *region;
     
     /* There must be plot... */
     if (!_priv->plot) {
@@ -218,19 +218,15 @@ static gboolean __cb_select_region (GtkPlotCanvas *canvas, gdouble x1, gdouble y
 gboolean image_analyzer_disc_topology_create (IMAGE_ANALYZER_DiscTopology *self, GObject *disc, GError **error) {
     IMAGE_ANALYZER_DiscTopologyPrivate *_priv = IMAGE_ANALYZER_DISC_TOPOLOGY_GET_PRIVATE(self);
 
-    gint dpm_start = 0;
-    gint dpm_entries = 0;
-    gint dpm_resolution = 0;
+    gint dpm_start, dpm_entries, dpm_resolution;
     
     /* X and Y data... sector addresses and corresponding sector densities */
-    gdouble *data_x = NULL;
-    gdouble *data_y = NULL;
-    
+    gdouble *data_x, *data_y;
     gdouble ymin, ymax;
     
     gint i;
     
-    gdouble *region = NULL;
+    gdouble *region;
     
     /* Prepare data for plot */
     if (!mirage_disc_get_dpm_data(MIRAGE_DISC(disc), &dpm_start, &dpm_resolution, &dpm_entries, NULL, NULL)) {
@@ -351,10 +347,10 @@ static void __image_analyzer_disc_topology_instance_init (GTypeInstance *instanc
     IMAGE_ANALYZER_DiscTopology *self = IMAGE_ANALYZER_DISC_TOPOLOGY(instance);
     IMAGE_ANALYZER_DiscTopologyPrivate *_priv = IMAGE_ANALYZER_DISC_TOPOLOGY_GET_PRIVATE(self);
     
-    GtkWidget *vbox = NULL;
+    GtkWidget *vbox;
     
-    GtkPlotCanvasChild *child = NULL;
-    GtkPlotData *dataset = NULL;
+    GtkPlotCanvasChild *child;
+    GtkPlotData *dataset;
     GdkColor color;
     
     gtk_window_set_title(GTK_WINDOW(self), "Disc topology");

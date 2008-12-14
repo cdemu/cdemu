@@ -78,7 +78,7 @@ static gboolean __image_analyzer_read_sector_clear_text (IMAGE_ANALYZER_SectorRe
 static gboolean __image_analyzer_read_sector_append_text (IMAGE_ANALYZER_SectorRead *self, gchar *tag_name, gchar *format, ...) {
     IMAGE_ANALYZER_SectorReadPrivate *_priv = IMAGE_ANALYZER_SECTOR_READ_GET_PRIVATE(self);
     GtkTextIter iter;
-    gchar *string = NULL;
+    gchar *string;
     va_list args;
 
     gtk_text_buffer_get_end_iter(_priv->buffer, &iter);
@@ -114,18 +114,15 @@ static gboolean __image_analyzer_read_sector_append_sector_data (IMAGE_ANALYZER_
 static void __image_analyzer_sector_read_ui_callback_read (GtkWidget *button, gpointer user_data) {
     IMAGE_ANALYZER_SectorRead *self = IMAGE_ANALYZER_SECTOR_READ(user_data);
     IMAGE_ANALYZER_SectorReadPrivate *_priv = IMAGE_ANALYZER_SECTOR_READ_GET_PRIVATE(self);
-    GObject *disc = NULL;
-    GObject *sector = NULL;
+    GObject *disc, *sector;
     GError *error = NULL;
-    gint address = 0;
-    gchar *address_msf = NULL;
-    gint sector_type = 0;
+    gint address, sector_type;
+    gchar *address_msf;
     
-    gdouble dpm_angle = 0;
-    gdouble dpm_density = 0;
+    gdouble dpm_angle, dpm_density;
     
-    guint8 *tmp_buf = NULL;
-    gint tmp_len = 0;
+    guint8 *tmp_buf;
+    gint tmp_len;
     
     /* Read address from spin button */
     address = gtk_spin_button_get_value(GTK_SPIN_BUTTON(_priv->spinbutton));
@@ -254,11 +251,8 @@ static void __image_analyzer_sector_read_instance_init (GTypeInstance *instance,
     IMAGE_ANALYZER_SectorRead *self = IMAGE_ANALYZER_SECTOR_READ(instance);
     IMAGE_ANALYZER_SectorReadPrivate *_priv = IMAGE_ANALYZER_SECTOR_READ_GET_PRIVATE(self);
     
-    GtkWidget *vbox = NULL;
-    GtkWidget *scrolledwindow = NULL;
-    GtkObject *adjustment = NULL;
-    GtkWidget *hbox = NULL;
-    GtkWidget *button = NULL;
+    GtkWidget *vbox, *scrolledwindow, *hbox, *button;
+    GtkObject *adjustment;
     
     gtk_window_set_title(GTK_WINDOW(self), "Read sector");
     gtk_window_set_default_size(GTK_WINDOW(self), 600, 400);
@@ -295,7 +289,7 @@ static void __image_analyzer_sector_read_instance_init (GTypeInstance *instance,
     gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, FALSE, 0);
     
     /* Spin button */
-    adjustment = gtk_adjustment_new(0, G_MININT64, G_MAXINT64, 1, 75, 60*75);
+    adjustment = gtk_adjustment_new(0, G_MININT64, G_MAXINT64, 1, 75, 0);
     _priv->spinbutton = gtk_spin_button_new(GTK_ADJUSTMENT(adjustment), 1, 0);
     gtk_box_pack_start(GTK_BOX(hbox), _priv->spinbutton, TRUE, TRUE, 0);
     
