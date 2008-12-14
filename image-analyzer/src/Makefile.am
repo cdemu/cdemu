@@ -13,14 +13,16 @@ INCLUDES = \
     $(gobject_CFLAGS) \
     $(gtk_CFLAGS) \
     $(gtkextra_CFLAGS) \
-    $(libmirage_CFLAGS)
+    $(libmirage_CFLAGS) \
+    $(libxml_CFLAGS)
 
 image_analyzer_LDADD = \
     $(glib_LIBS) \
     $(gobject_LIBS) \
     $(gtk_LIBS) \
     $(gtkextra_LIBS) \
-    $(libmirage_LIBS)
+    $(libmirage_LIBS) \
+    $(libxml_LIBS)
 
 noinst_HEADERS = \
     image-analyzer-application.h \

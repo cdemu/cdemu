@@ -24,12 +24,109 @@
 #include <glib.h>
 #include <gtk/gtk.h>
 #include <mirage.h>
+#include <libxml/parser.h>
+#include <libxml/tree.h>
+
 #include "image-analyzer-dump.h"
 #include "image-analyzer-application.h"
 #include "image-analyzer-parser-log.h"
 #include "image-analyzer-sector-read.h"
 #include "image-analyzer-disc-topology.h"
 
+/* XML tags */
+#define TAG_IMAGE_ANALYZER_DUMP "image-analyzer-dump"
+#define TAG_PARSER_LOG "parser-log"
+
+#define TAG_DISC "disc"
+#define TAG_MEDIUM_TYPE "medium-type"
+#define TAG_FILENAMES "filenames"
+#define TAG_FILENAME "filename"
+#define TAG_MCN "mcn"
+#define TAG_FIRST_SESSION "first-session"
+#define TAG_FIRST_TRACK "first-track"
+#define TAG_START_SECTOR "start-sector"
+#define TAG_LENGTH "length"
+#define TAG_NUM_SESSIONS "num-sessions"
+#define TAG_NUM_TRACKS "num-tracks"
+#define TAG_SESSIONS "sessions"
+#define TAG_DPM "dpm"
+#define TAG_DPM_START "dpm-start"
+#define TAG_DPM_RESOLUTION "dpm-resolution"
+#define TAG_DPM_NUM_ENTRIES "dpm-num-entries"
+#define TAG_DPM_ENTRIES "dpm-entries"
+#define TAG_DPM_ENTRY "dpm-entry"
+
+#define TAG_SESSION "session"
+#define TAG_SESSION_TYPE "session-type"
+#define TAG_SESSION_NUMBER "session-number"
+#define TAG_FIRST_TRACK "first-track"
+#define TAG_START_SECTOR "start-sector"
+#define TAG_LENGTH "length"
+#define TAG_LEADOUT_LENGTH "leadout-length"
+#define TAG_NUM_TRACKS "num-tracks"
+#define TAG_TRACKS "tracks"
+#define TAG_NUM_LANGUAGES "num-languages"
+#define TAG_LANGUAGES "languages"
+
+#define TAG_TRACK "track"
+#define TAG_FLAGS "flags"
+#define TAG_MODE "mode"
+#define TAG_ADR "adr"
+#define TAG_CTL "ctl"
+#define TAG_ISRC "isrc"
+#define TAG_SESSION_NUMBER "session-number"
+#define TAG_TRACK_NUMBER "track-number"
+#define TAG_START_SECTOR "start-sector"
+#define TAG_LENGTH "length"
+#define TAG_NUM_FRAGMENTS "num-fragments"
+#define TAG_FRAGMENTS "fragments"
+#define TAG_TRACK_START "track-start"
+#define TAG_NUM_INDICES "num-indices"
+#define TAG_INDICES "indices"
+#define TAG_NUM_LANGUAGES "num-languages"
+#define TAG_LANGUAGES "languages"
+
+#define TAG_LANGUAGE "language"
+#define TAG_LANGUAGE_CODE "language-code"
+#define TAG_CONTENT "content"
+#define TAG_LENGTH "length"
+#define TAG_TITLE "title"
+#define TAG_PERFORMER "performer"
+#define TAG_SONGWRITER "songwriter"
+#define TAG_COMPOSER "composer"
+#define TAG_ARRANGER "arranger"
+#define TAG_MESSAGE "message"
+#define TAG_DISC_ID "disc-id"
+#define TAG_GENRE "genre"
+#define TAG_TOC "toc"
+#define TAG_TOC2 "toc2"
+#define TAG_RESERVED_8A "reserved-8a"
+#define TAG_RESERVED_8B "reserved-8b"
+#define TAG_RESERVED_8C "reserved-8c"
+#define TAG_CLOSED_INFO "closed-info"
+#define TAG_UPC_ISRC "upc-isrc"
+#define TAG_SIZE "size"
+
+#define ATTR_LENGTH "length"
+
+#define TAG_INDEX "index"
+#define TAG_NUMBER "number"
+#define TAG_ADDRESS "address"
+
+#define TAG_FRAGMENT "fragment"
+#define TAG_FRAGMENT_ID "fragment-id"
+#define TAG_ADDRESS "address"
+#define TAG_LENGTH "length"
+#define TAG_TFILE_HANDLE "tfile-handle"
+#define TAG_TFILE_OFFSET "tfile-offset"
+#define TAG_TFILE_SECTSIZE "tfile-sectsize"
+#define TAG_TFILE_FORMAT "tfile-format"
+#define TAG_SFILE_HANDLE "sfile-handle"
+#define TAG_SFILE_OFFSET "sfile-offset"
+#define TAG_SFILE_SECTSIZE "sfile-sectsize"
+#define TAG_SFILE_FORMAT "sfile-format"
+#define TAG_ADDRESS "address"
+#define TAG_OFFSET "offset"
 
 /******************************************************************************\
  *                              Private structure                             *
@@ -42,10 +139,12 @@ typedef struct {
     GObject *disc; /* Disc */
     
     /* Dialogs */
-    GtkWidget *filedialog;
-    GtkWidget *parserdialog;
-    GtkWidget *sectordialog;
-    GtkWidget *topologydialog;
+    GtkWidget *dialog_open_image;
+    GtkWidget *dialog_open_dump;
+    GtkWidget *dialog_save_dump;
+    GtkWidget *dialog_parser;
+    GtkWidget *dialog_sector;
+    GtkWidget *dialog_topology;
     
     /* Window */
     GtkWidget *window;
@@ -58,7 +157,9 @@ typedef struct {
     guint context_id;
     
     /* Model */
+    GString *parser_log;
     GtkTreeStore *treestore;
+    xmlDocPtr xml_doc;
 } IMAGE_ANALYZER_ApplicationPrivate;
 
 #define DEBUG_DOMAIN_PARSER "libMirage parser"
@@ -137,178 +238,180 @@ static gchar *__dump_binary_fragment_sfile_format (gint format) {
 }
 
 /******************************************************************************\
- *                             Disc dump functions                            *
+ *                              XML dump functions                            *
 \******************************************************************************/
-typedef struct {
-    GtkTreeStore *treestore;
-    GtkTreeIter *parent;
-} IMAGE_ANALYZER_DumpContext;
-
-static GtkTreeIter *__image_analyzer_add_node (GtkTreeStore *treestore, GtkTreeIter *parent, gchar *format, ...) {
-    GtkTreeIter *node = NULL;
-    gchar *node_string = NULL;
-    va_list args;
-    
-    va_start(args, format);
-    node_string = g_strdup_vprintf(format, args);
-    va_end(args);
-        
-    node = g_new0(GtkTreeIter, 1);
-    gtk_tree_store_append(treestore, node, parent);
-    gtk_tree_store_set(treestore, node, 0,node_string, -1);
-    
-    g_free(node_string);
-    
-    return node;
+static xmlNodePtr __xml_add_node (xmlNodePtr parent, gchar *name) {
+    return xmlNewChild(parent, NULL, BAD_CAST name, NULL);
 }
 
-static gboolean __image_analyzer_dump_fragment (gpointer data, gpointer user_data) {
-    IMAGE_ANALYZER_DumpContext *context = user_data;
-    GObject *fragment = data;
-        
-    MIRAGE_FragmentInfo *fragment_info = NULL;
-    gint address = 0;
-    gint length = 0;
+static xmlAttrPtr __xml_add_attribute (xmlNodePtr node, gchar *name, gchar *format, ...) {
+    va_list args;
+    gchar content[255] = "";
+
+    /* Create content string */
+    va_start(args, format); 
+    g_vsnprintf(content, sizeof(content), format, args);
+    va_end(args);
     
-    GtkTreeStore *treestore = context->treestore;
-    GtkTreeIter *node = __image_analyzer_add_node(treestore, context->parent, "Fragment");
+    /* Create the node */
+    return xmlNewProp(node, BAD_CAST name, BAD_CAST content);
+}
+
+static xmlNodePtr __xml_add_node_with_content (xmlNodePtr parent, gchar *name, gchar *format, ...) {
+    va_list args;
+    gchar content[255] = "";
+
+    /* Create content string */
+    va_start(args, format); 
+    g_vsnprintf(content, sizeof(content), format, args);
+    va_end(args);
+    
+    /* Create the node */
+    return xmlNewTextChild(parent, NULL, BAD_CAST name, BAD_CAST content);
+}
+
+
+static gboolean __xml_dump_fragment (gpointer data, gpointer user_data) {
+    GObject *fragment = data;
+    xmlNodePtr parent = user_data;
+
+    MIRAGE_FragmentInfo *fragment_info;
+    gint address, length;
+    
+    /* Make fragment node parent */
+    parent = __xml_add_node(parent, TAG_FRAGMENT);
     
     if (mirage_fragment_get_fragment_info(MIRAGE_FRAGMENT(fragment), &fragment_info, NULL)) {
-        __image_analyzer_add_node(treestore, node, "Fragment ID: %s", fragment_info->id);
+        __xml_add_node_with_content(parent, TAG_FRAGMENT_ID, "%s", fragment_info->id);
     }
     
     if (mirage_fragment_get_address(MIRAGE_FRAGMENT(fragment), &address, NULL)) {
-        __image_analyzer_add_node(treestore, node, "Address: %d (0x%X)", address, address);
+        __xml_add_node_with_content(parent, TAG_ADDRESS, "%d", address);
     }
     
     if (mirage_fragment_get_length(MIRAGE_FRAGMENT(fragment), &length, NULL)) {
-        __image_analyzer_add_node(treestore, node, "Length: %d (0x%X)", length, length);        
+        __xml_add_node_with_content(parent, TAG_LENGTH, "%d", length);
     }
     
     if (MIRAGE_IS_FINTERFACE_NULL(fragment)) {
         /* Nothing to do here*/
     } else if (MIRAGE_IS_FINTERFACE_BINARY(fragment)) {
-        FILE *tfile_handle = NULL;
-        guint64 tfile_offset = 0;
-        gint tfile_sectsize = 0;
-        gint tfile_format = 0;
-        FILE *sfile_handle = NULL;
-        guint64 sfile_offset = 0;
-        gint sfile_sectsize = 0;
-        gint sfile_format = 0;
+        FILE *tfile_handle, *sfile_handle;
+        guint64 tfile_offset, sfile_offset;
+        gint tfile_sectsize, sfile_sectsize;
+        gint tfile_format, sfile_format;
         
         if (mirage_finterface_binary_track_file_get_handle(MIRAGE_FINTERFACE_BINARY(fragment), &tfile_handle, NULL)) {
-            __image_analyzer_add_node(treestore, node, "Track file: Handle: %p", tfile_handle);
+            __xml_add_node_with_content(parent, TAG_TFILE_HANDLE, "%p", tfile_handle);
         }
         
         if (mirage_finterface_binary_track_file_get_offset(MIRAGE_FINTERFACE_BINARY(fragment), &tfile_offset, NULL)) {
-            __image_analyzer_add_node(treestore, node, "Track file: Offset: %lli (0x%llX)", tfile_offset, tfile_offset);
+            __xml_add_node_with_content(parent, TAG_TFILE_OFFSET, "%lld", tfile_offset);
         }
             
         if (mirage_finterface_binary_track_file_get_sectsize(MIRAGE_FINTERFACE_BINARY(fragment), &tfile_sectsize, NULL)) {
-            __image_analyzer_add_node(treestore, node, "Track file: Sector size: %d (0x%X)", tfile_sectsize, tfile_sectsize);
+            __xml_add_node_with_content(parent, TAG_TFILE_SECTSIZE, "%d", tfile_sectsize);
         }
             
         if (mirage_finterface_binary_track_file_get_format(MIRAGE_FINTERFACE_BINARY(fragment), &tfile_format, NULL)) {
-            __image_analyzer_add_node(treestore, node, "Track file: Format: 0x%X (%s)", tfile_format, __dump_binary_fragment_tfile_format(tfile_format));
+            __xml_add_node_with_content(parent, TAG_TFILE_FORMAT, "0x%X", tfile_format);
         }
 
         if (mirage_finterface_binary_subchannel_file_get_handle(MIRAGE_FINTERFACE_BINARY(fragment), &sfile_handle, NULL)) {
-            __image_analyzer_add_node(treestore, node, "Subchannel file: Handle: %p", sfile_handle);
+            __xml_add_node_with_content(parent, TAG_SFILE_HANDLE, "%p", sfile_handle);
         }
         
         if (mirage_finterface_binary_subchannel_file_get_offset(MIRAGE_FINTERFACE_BINARY(fragment), &sfile_offset, NULL)) {
-            __image_analyzer_add_node(treestore, node, "Subchannel file: Offset: %lli (0x%llX)", sfile_offset, sfile_offset);
+            __xml_add_node_with_content(parent, TAG_SFILE_OFFSET, "%lld", sfile_offset);
         }
 
         if (mirage_finterface_binary_subchannel_file_get_sectsize(MIRAGE_FINTERFACE_BINARY(fragment), &sfile_sectsize, NULL)) {
-            __image_analyzer_add_node(treestore, node, "Subchannel file: Sector size: %d (0x%X)", sfile_sectsize, sfile_sectsize);
+            __xml_add_node_with_content(parent, TAG_SFILE_SECTSIZE, "%d", sfile_sectsize);
         }
         
         if (mirage_finterface_binary_subchannel_file_get_format(MIRAGE_FINTERFACE_BINARY(fragment), &sfile_format, NULL)) {
-            __image_analyzer_add_node(treestore, node, "Subchannel file: Format: 0x%X (%s)", sfile_format, __dump_binary_fragment_sfile_format(sfile_format));
+            __xml_add_node_with_content(parent, TAG_SFILE_FORMAT, "0x%X", sfile_format);
         }
 
     } else if (MIRAGE_IS_FINTERFACE_AUDIO(fragment)) {
-        gchar *filename = NULL;
-        gint offset = 0;
+        gchar *filename;
+        gint offset;
         
         if (mirage_finterface_audio_get_file(MIRAGE_FINTERFACE_AUDIO(fragment), &filename, NULL)) {
-            __image_analyzer_add_node(treestore, node, "Filename: %s", filename);
+            __xml_add_node_with_content(parent, TAG_FILENAME, "%s", filename);
             g_free(filename);
         }
         
         if (mirage_finterface_audio_get_offset(MIRAGE_FINTERFACE_AUDIO(fragment), &offset, NULL)) {
-            __image_analyzer_add_node(treestore, node, "Offset (sectors): %d (0x%X)", offset, offset);
+            __xml_add_node_with_content(parent, TAG_OFFSET, "%d", offset);
         }
     }
     
     return TRUE;
 }
 
-static gboolean __image_analyzer_dump_index (gpointer data, gpointer user_data) {
-    IMAGE_ANALYZER_DumpContext *context = user_data;
+static gboolean __xml_dump_index (gpointer data, gpointer user_data) {
     GObject *index = data;
+    xmlNodePtr parent = user_data;
         
-    gint number = 0;
-    gint address = 0;
+    gint number, address;
     
-    GtkTreeStore *treestore = context->treestore;
-    GtkTreeIter *node = __image_analyzer_add_node(treestore, context->parent, "Index");
+    /* Make index node parent */
+    parent = __xml_add_node(parent, TAG_INDEX);
         
     if (mirage_index_get_number(MIRAGE_INDEX(index), &number, NULL)) {
-        __image_analyzer_add_node(treestore, node, "Number: %d", number);
+        __xml_add_node_with_content(parent, TAG_NUMBER, "%d", number);
     }
     
     if (mirage_index_get_address(MIRAGE_INDEX(index), &address, NULL)) {
-        __image_analyzer_add_node(treestore, node, "Address: %d (0x%X)", address, address);
+        __xml_add_node_with_content(parent, TAG_ADDRESS, "%d", address);
     }
     
     return TRUE;
 }
 
-static gboolean __image_analyzer_dump_language (gpointer data, gpointer user_data) {
-    IMAGE_ANALYZER_DumpContext *context = user_data;
+static gboolean __xml_dump_language (gpointer data, gpointer user_data) {
     GObject *language = data;
+    xmlNodePtr parent = user_data;
         
     static const struct {
-        gchar *name;
+        gchar *tag;
         gint code;
     } pack_types[] = {
-        { "Title", MIRAGE_LANGUAGE_PACK_TITLE },
-        { "Performer", MIRAGE_LANGUAGE_PACK_PERFORMER },
-        { "Songwriter", MIRAGE_LANGUAGE_PACK_SONGWRITER },
-        { "Composer", MIRAGE_LANGUAGE_PACK_COMPOSER },
-        { "Arranger", MIRAGE_LANGUAGE_PACK_ARRANGER },
-        { "Message", MIRAGE_LANGUAGE_PACK_MESSAGE },
-        { "Disc ID", MIRAGE_LANGUAGE_PACK_DISC_ID },
-        { "Genre", MIRAGE_LANGUAGE_PACK_GENRE },
-        { "TOC", MIRAGE_LANGUAGE_PACK_TOC },
-        { "TOC2", MIRAGE_LANGUAGE_PACK_TOC2 },
-        { "Reserved 8A", MIRAGE_LANGUAGE_PACK_RES_8A },
-        { "Reserved 8B", MIRAGE_LANGUAGE_PACK_RES_8B },
-        { "Reserved 8C", MIRAGE_LANGUAGE_PACK_RES_8C },
-        { "Closed info", MIRAGE_LANGUAGE_PACK_CLOSED_INFO },
-        { "UPC/ISRC", MIRAGE_LANGUAGE_PACK_UPC_ISRC },
-        { "Size", MIRAGE_LANGUAGE_PACK_SIZE },
+        { TAG_TITLE, MIRAGE_LANGUAGE_PACK_TITLE },
+        { TAG_PERFORMER, MIRAGE_LANGUAGE_PACK_PERFORMER },
+        { TAG_SONGWRITER, MIRAGE_LANGUAGE_PACK_SONGWRITER },
+        { TAG_COMPOSER, MIRAGE_LANGUAGE_PACK_COMPOSER },
+        { TAG_ARRANGER, MIRAGE_LANGUAGE_PACK_ARRANGER },
+        { TAG_MESSAGE, MIRAGE_LANGUAGE_PACK_MESSAGE },
+        { TAG_DISC_ID, MIRAGE_LANGUAGE_PACK_DISC_ID },
+        { TAG_GENRE, MIRAGE_LANGUAGE_PACK_GENRE },
+        { TAG_TOC, MIRAGE_LANGUAGE_PACK_TOC },
+        { TAG_TOC2, MIRAGE_LANGUAGE_PACK_TOC2 },
+        { TAG_RESERVED_8A, MIRAGE_LANGUAGE_PACK_RES_8A },
+        { TAG_RESERVED_8B, MIRAGE_LANGUAGE_PACK_RES_8B },
+        { TAG_RESERVED_8C, MIRAGE_LANGUAGE_PACK_RES_8C },
+        { TAG_CLOSED_INFO, MIRAGE_LANGUAGE_PACK_CLOSED_INFO },
+        { TAG_UPC_ISRC, MIRAGE_LANGUAGE_PACK_UPC_ISRC },
+        { TAG_SIZE, MIRAGE_LANGUAGE_PACK_SIZE },
     };
     
     gint i;
+    gint langcode;
     
-    gint langcode = 0;
-    
-    GtkTreeStore *treestore = context->treestore;
-    GtkTreeIter *node = __image_analyzer_add_node(treestore, context->parent, "Language");
+    /* Make language node parent */
+    parent = __xml_add_node(parent, TAG_LANGUAGE);
     
     if (mirage_language_get_langcode(MIRAGE_LANGUAGE(language), &langcode, NULL)) {
-        __image_analyzer_add_node(treestore, node, "Language code: %d", langcode);
+        __xml_add_node_with_content(parent, TAG_LANGUAGE_CODE, "%d", langcode);
     }
     
     for (i = 0; i < G_N_ELEMENTS(pack_types); i++) {
-        gchar *data = NULL;
-        gint len = 0;
+        gchar *data;
+        gint len;
         if (mirage_language_get_pack_data(MIRAGE_LANGUAGE(language), pack_types[i].code, &data, &len, NULL)) {
-            __image_analyzer_add_node(treestore, node, "%s: %s (%i)", pack_types[i].name, data, len);
+            xmlNodePtr pack_node = __xml_add_node_with_content(parent, pack_types[i].tag, "%s", data);
+            __xml_add_attribute(pack_node, ATTR_LENGTH, "%d", len);
             g_free(data);
         }
     }
@@ -317,163 +420,147 @@ static gboolean __image_analyzer_dump_language (gpointer data, gpointer user_dat
     return TRUE;
 }
 
-static gboolean __image_analyzer_dump_track (gpointer data, gpointer user_data) {
-    IMAGE_ANALYZER_DumpContext *context = user_data;
+static gboolean __xml_dump_track (gpointer data, gpointer user_data) {
     GObject *track = data;
+    xmlNodePtr parent = user_data;
         
-    gint flags = 0;
-    gint mode = 0;
-    gint adr = 0;
-    gint ctl = 0;
-    gchar *isrc = NULL;
-    gint session_number = 0;
-    gint track_number = 0;
-    gint start_sector = 0;
-    gint length = 0;
-    gint number_of_fragments = 0;
-    gint track_start = 0;
-    gint number_of_indices = 0;
-    gint number_of_languages = 0;
+    gint flags, mode;
+    gint adr, ctl;
+    gchar *isrc;
+    gint session_number, track_number;
+    gint start_sector, length;
+    gint num_fragments;
+    gint track_start;
+    gint num_indices, num_languages;
     
-    IMAGE_ANALYZER_DumpContext tmp_context;
-    
-    GtkTreeStore *treestore = context->treestore;
-    GtkTreeIter *node = __image_analyzer_add_node(treestore, context->parent, "Track");
+    /* Make track node parent */
+    parent = __xml_add_node(parent, TAG_TRACK);
     
     if (mirage_track_get_flags(MIRAGE_TRACK(track), &flags, NULL)) {
-        __image_analyzer_add_node(treestore, node, "Flags: 0x%X (%s)", flags, __dump_track_flags(flags));
+        __xml_add_node_with_content(parent, TAG_FLAGS, "0x%X", flags);
     }
 
     if (mirage_track_get_mode(MIRAGE_TRACK(track), &mode, NULL)) {
-        __image_analyzer_add_node(treestore, node, "Mode: 0x%X (%s)", mode, __dump_track_mode(mode));
+        __xml_add_node_with_content(parent, TAG_MODE, "0x%X", mode);
     }
 
     if (mirage_track_get_adr(MIRAGE_TRACK(track), &adr, NULL)) {
-        __image_analyzer_add_node(treestore, node, "ADR: %d", adr);
+        __xml_add_node_with_content(parent, TAG_ADR, "%d", adr);
     }
     
     if (mirage_track_get_ctl(MIRAGE_TRACK(track), &ctl, NULL)) {
-        __image_analyzer_add_node(treestore, node, "CTL: %d", ctl);
+        __xml_add_node_with_content(parent, TAG_CTL, "%d", ctl);
     }
 
     if (mirage_track_get_isrc(MIRAGE_TRACK(track), &isrc, NULL)) {
-        __image_analyzer_add_node(treestore, node, "ISRC: %s", isrc);
+        __xml_add_node_with_content(parent, TAG_ISRC, "%s", isrc);
         g_free(isrc);
     }
 
     if (mirage_track_layout_get_session_number(MIRAGE_TRACK(track), &session_number, NULL)) {
-        __image_analyzer_add_node(treestore, node, "Session number: %d", session_number);
+        __xml_add_node_with_content(parent, TAG_SESSION_NUMBER, "%d", session_number);
     }
     
     if (mirage_track_layout_get_track_number(MIRAGE_TRACK(track), &track_number, NULL)) {
-        __image_analyzer_add_node(treestore, node, "Track number: %d", track_number);
+        __xml_add_node_with_content(parent, TAG_TRACK_NUMBER, "%d", track_number);
     }
     
     if (mirage_track_layout_get_start_sector(MIRAGE_TRACK(track), &start_sector, NULL)) {
-        __image_analyzer_add_node(treestore, node, "Start sector: %d (0x%X)", start_sector, start_sector);
+        __xml_add_node_with_content(parent, TAG_START_SECTOR, "%d", start_sector);
     }
     
     if (mirage_track_layout_get_length(MIRAGE_TRACK(track), &length, NULL)) {
-        __image_analyzer_add_node(treestore, node, "Length: %d (0x%X)", length, length);
+        __xml_add_node_with_content(parent, TAG_LENGTH, "%d", length);
     }
 
-    if (mirage_track_get_number_of_fragments(MIRAGE_TRACK(track), &number_of_fragments, NULL)) {
-        __image_analyzer_add_node(treestore, node, "Number of fragments: %d", number_of_fragments);
+    if (mirage_track_get_number_of_fragments(MIRAGE_TRACK(track), &num_fragments, NULL)) {
+        __xml_add_node_with_content(parent, TAG_NUM_FRAGMENTS, "%d", num_fragments);
     }
     
-    if (number_of_fragments) {
-        tmp_context.treestore = treestore;
-        tmp_context.parent = __image_analyzer_add_node(treestore, node, "Fragments");
-        mirage_track_for_each_fragment(MIRAGE_TRACK(track), __image_analyzer_dump_fragment, &tmp_context, NULL);
+    if (num_fragments) {
+        xmlNodePtr node = __xml_add_node(parent, TAG_FRAGMENTS);
+        mirage_track_for_each_fragment(MIRAGE_TRACK(track), __xml_dump_fragment, node, NULL);
     }
 
     if (mirage_track_get_track_start(MIRAGE_TRACK(track), &track_start, NULL)) {
-        __image_analyzer_add_node(treestore, node, "Track start: %d (0x%X)", track_start, track_start);
+        __xml_add_node_with_content(parent, TAG_TRACK_START, "%d", track_start);
     }
 
-    if (mirage_track_get_number_of_indices(MIRAGE_TRACK(track), &number_of_indices, NULL)) {
-        __image_analyzer_add_node(treestore, node, "Number of indices: %d", number_of_indices);
+    if (mirage_track_get_number_of_indices(MIRAGE_TRACK(track), &num_indices, NULL)) {
+        __xml_add_node_with_content(parent, TAG_NUM_INDICES, "%d", num_indices);
     }
     
-    if (number_of_indices) {
-        tmp_context.treestore = treestore;
-        tmp_context.parent = __image_analyzer_add_node(treestore, node, "Indices");
-        mirage_track_for_each_index(MIRAGE_TRACK(track), __image_analyzer_dump_index, &tmp_context, NULL);
+    if (num_indices) {
+        xmlNodePtr node = __xml_add_node(parent, TAG_INDICES);
+        mirage_track_for_each_index(MIRAGE_TRACK(track), __xml_dump_index, node, NULL);
     }
      
-    if (mirage_track_get_number_of_languages(MIRAGE_TRACK(track), &number_of_languages, NULL)) {
-        __image_analyzer_add_node(treestore, node, "Number of languages: %d", number_of_languages);
+    if (mirage_track_get_number_of_languages(MIRAGE_TRACK(track), &num_languages, NULL)) {
+        __xml_add_node_with_content(parent, TAG_NUM_LANGUAGES, "%d", num_languages);
     }
     
-    if (number_of_languages) {
-        tmp_context.treestore = treestore;
-        tmp_context.parent = __image_analyzer_add_node(treestore, node, "Languages");
-        mirage_track_for_each_language(MIRAGE_TRACK(track), __image_analyzer_dump_language, &tmp_context, NULL);
+    if (num_languages) {
+        xmlNodePtr node = __xml_add_node(parent, TAG_LANGUAGES);
+        mirage_track_for_each_language(MIRAGE_TRACK(track), __xml_dump_language, node, NULL);
     }
 
     return TRUE;
 }
 
-static gboolean __image_analyzer_dump_session (gpointer data, gpointer user_data) {
-    IMAGE_ANALYZER_DumpContext *context = user_data;
+
+static gboolean __xml_dump_session (gpointer data, gpointer user_data) {
     GObject *session = data;
+    xmlNodePtr parent = user_data;
         
-    gint session_type = 0;
-    gint session_number = 0;
-    gint first_track = 0;
-    gint start_sector = 0;
-    gint length = 0;
-    gint leadout_length = 0;
-    gint number_of_tracks = 0;
-    gint number_of_languages = 0;
+    gint session_type, session_number;
+    gint first_track;
+    gint start_sector, length;
+    gint leadout_length;
+    gint num_tracks, num_languages;
     
-    IMAGE_ANALYZER_DumpContext tmp_context;
-    
-    GtkTreeStore *treestore = context->treestore;
-    GtkTreeIter *node = __image_analyzer_add_node(treestore, context->parent, "Session");
-    
+    /* Make session node parent */
+    parent = __xml_add_node(parent, TAG_SESSION);
+        
     if (mirage_session_get_session_type(MIRAGE_SESSION(session), &session_type, NULL)) {
-        __image_analyzer_add_node(treestore, node, "Session type: 0x%X (%s)", session_type, __dump_session_type(session_type));
+        __xml_add_node_with_content(parent, TAG_SESSION_TYPE, "0x%X", session_type);
     }
     
     if (mirage_session_layout_get_session_number(MIRAGE_SESSION(session), &session_number, NULL)) {
-        __image_analyzer_add_node(treestore, node, "Session number: %d", session_number);
+        __xml_add_node_with_content(parent, TAG_SESSION_NUMBER, "%d", session_number);
     }
     
     if (mirage_session_layout_get_first_track(MIRAGE_SESSION(session), &first_track, NULL)) {
-        __image_analyzer_add_node(treestore, node, "Layout: First track: %d", first_track);
+        __xml_add_node_with_content(parent, TAG_FIRST_TRACK, "%d", first_track);
     }
     
     if (mirage_session_layout_get_start_sector(MIRAGE_SESSION(session), &start_sector, NULL)) {
-        __image_analyzer_add_node(treestore, node, "Layout: Start sector: %d (0x%X)", start_sector);
+        __xml_add_node_with_content(parent, TAG_START_SECTOR, "%d", start_sector);
     }
     
     if (mirage_session_layout_get_length(MIRAGE_SESSION(session), &length, NULL)) {
-        __image_analyzer_add_node(treestore, node, "Layout: Length: %d (0x%X)", length, length);
+        __xml_add_node_with_content(parent, TAG_LENGTH, "%d", length);
     }
 
     if (mirage_session_get_leadout_length(MIRAGE_SESSION(session), &leadout_length, NULL)) {
-        __image_analyzer_add_node(treestore, node, "Leadout length: %d (0x%X)", leadout_length, leadout_length);
+        __xml_add_node_with_content(parent, TAG_LEADOUT_LENGTH, "%d", leadout_length);
     }
 
-    if (mirage_session_get_number_of_tracks(MIRAGE_SESSION(session), &number_of_tracks, NULL)) {
-        __image_analyzer_add_node(treestore, node, "Number of tracks: %d", number_of_tracks);
+    if (mirage_session_get_number_of_tracks(MIRAGE_SESSION(session), &num_tracks, NULL)) {
+        __xml_add_node_with_content(parent, TAG_NUM_TRACKS, "%d", num_tracks);
     }
     
-    if (number_of_tracks) {
-        tmp_context.treestore = treestore;
-        tmp_context.parent = __image_analyzer_add_node(treestore, node, "Tracks");
-        mirage_session_for_each_track(MIRAGE_SESSION(session), __image_analyzer_dump_track, &tmp_context, NULL);
+    if (num_tracks) {
+        xmlNodePtr node = __xml_add_node(parent, TAG_TRACKS);
+        mirage_session_for_each_track(MIRAGE_SESSION(session), __xml_dump_track, node, NULL);
     }
 
-    if (mirage_session_get_number_of_languages(MIRAGE_SESSION(session), &number_of_languages, NULL)) {
-        __image_analyzer_add_node(treestore, node, "Number of languages: %d", number_of_languages);
+    if (mirage_session_get_number_of_languages(MIRAGE_SESSION(session), &num_languages, NULL)) {
+        __xml_add_node_with_content(parent, TAG_NUM_LANGUAGES, "%d", num_languages);
     }
     
-    if (number_of_languages) {
-        tmp_context.treestore = treestore;
-        tmp_context.parent = __image_analyzer_add_node(treestore, node, "Languages");
-        mirage_session_for_each_language(MIRAGE_SESSION(session), __image_analyzer_dump_language, &tmp_context, NULL);
+    if (num_languages) {
+        xmlNodePtr node = __xml_add_node(parent, TAG_LANGUAGES);
+        mirage_session_for_each_language(MIRAGE_SESSION(session), __xml_dump_language, node, NULL);
     }
 
     //mirage_session_get_cdtext_data(MIRAGE_SESSION(session), guint8 **data, gint *len, NULL);
@@ -481,113 +568,614 @@ static gboolean __image_analyzer_dump_session (gpointer data, gpointer user_data
     return TRUE;
 }
 
-static gboolean __image_analyzer_dump_disc (gpointer data, gpointer user_data) {
-    IMAGE_ANALYZER_DumpContext *context = user_data;
+static gboolean __xml_dump_disc (gpointer data, gpointer user_data) {
     GObject *disc = data;
+    xmlNodePtr parent = user_data;
         
-    MIRAGE_ParserInfo *parser_info = NULL;
-    gint medium_type = 0;
-    gchar **filenames = NULL;
-    gchar *mcn = NULL;
-    gint first_session = 0;
-    gint first_track = 0;
-    gint start_sector = 0;
-    gint length = 0;
-    gint number_of_sessions = 0;
-    gint number_of_tracks = 0;
+    gint medium_type;
+    gchar **filenames;
+    gchar *mcn;
+    gint first_session, first_track;
+    gint start_sector, length;
+    gint num_sessions, num_tracks;
     
-    gint dpm_start = 0;
-    gint dpm_resolution = 0;
-    gint dpm_entries = 0;
-    guint32 *dpm_data = NULL;
+    gint dpm_start, dpm_resolution, dpm_entries;
+    guint32 *dpm_data;
     
-    IMAGE_ANALYZER_DumpContext tmp_context;
-    
-    GtkTreeStore *treestore = context->treestore;
-    GtkTreeIter *node = __image_analyzer_add_node(treestore, context->parent, "Disc");
+    /* Make disc node parent */
+    parent = __xml_add_node(parent, TAG_DISC);
     
     if (mirage_disc_get_medium_type(MIRAGE_DISC(disc), &medium_type, NULL)) {
-        __image_analyzer_add_node(treestore, node, "Medium type: 0x%X (%s)", medium_type, __dump_medium_type(medium_type));
+        __xml_add_node_with_content(parent, TAG_MEDIUM_TYPE, "0x%X", medium_type);
     }
     
     if (mirage_disc_get_filenames(MIRAGE_DISC(disc), &filenames, NULL)) {
         gint i = 0;
-        GtkTreeIter *files = NULL;
-        
+        xmlNodePtr node = __xml_add_node(parent, TAG_FILENAMES);
         /* Filenames */
-        files = __image_analyzer_add_node(treestore, node, "Filename(s)");
         while (filenames[i]) {
-            __image_analyzer_add_node(treestore, files, "%s", filenames[i]);
+            __xml_add_node_with_content(node, TAG_FILENAME, "%s", filenames[i]);
             i++;
         }
+        g_strfreev(filenames);
     }
     
     if (mirage_disc_get_mcn(MIRAGE_DISC(disc), &mcn, NULL)) {
-        __image_analyzer_add_node(treestore, node, "MCN: %s", mcn);
+        __xml_add_node_with_content(parent, TAG_MCN, "%s", mcn);
         g_free(mcn);
     }
 
     if (mirage_disc_layout_get_first_session(MIRAGE_DISC(disc), &first_session, NULL)) {
-        __image_analyzer_add_node(treestore, node, "Layout: First session: %d", first_session);
+        __xml_add_node_with_content(parent, TAG_FIRST_SESSION, "%d", first_session);
     }
     
     if (mirage_disc_layout_get_first_track(MIRAGE_DISC(disc), &first_track, NULL)) {
-        __image_analyzer_add_node(treestore, node, "Layout: First track: %d", first_track);
+        __xml_add_node_with_content(parent, TAG_FIRST_TRACK, "%d", first_track);
     }
     
     if (mirage_disc_layout_get_start_sector(MIRAGE_DISC(disc), &start_sector, NULL)) {
-        __image_analyzer_add_node(treestore, node, "Layout: Start sector: %d (0x%X)", start_sector, start_sector);
+        __xml_add_node_with_content(parent, TAG_START_SECTOR, "%d", start_sector);
     }
     
     if (mirage_disc_layout_get_length(MIRAGE_DISC(disc), &length, NULL)) {
-        __image_analyzer_add_node(treestore, node, "Layout: Length: %d (0x%X)", length, length);
+        __xml_add_node_with_content(parent, TAG_LENGTH, "%d", length);
     }
 
-    if (mirage_disc_get_number_of_sessions(MIRAGE_DISC(disc), &number_of_sessions, NULL)) {
-        __image_analyzer_add_node(treestore, node, "Number of sessions: %d", number_of_sessions);
+    if (mirage_disc_get_number_of_sessions(MIRAGE_DISC(disc), &num_sessions, NULL)) {
+        __xml_add_node_with_content(parent, TAG_NUM_SESSIONS, "%d", num_sessions);
     }
     
-    if (mirage_disc_get_number_of_tracks(MIRAGE_DISC(disc), &number_of_tracks, NULL)) {
-        __image_analyzer_add_node(treestore, node, "Number of tracks: %d", number_of_tracks);
+    if (mirage_disc_get_number_of_tracks(MIRAGE_DISC(disc), &num_tracks, NULL)) {
+        __xml_add_node_with_content(parent, TAG_NUM_TRACKS, "%d", num_tracks);
     }
     
-    if (number_of_sessions) {
-        tmp_context.treestore = treestore;
-        tmp_context.parent = __image_analyzer_add_node(treestore, node, "Sessions");
-        mirage_disc_for_each_session(MIRAGE_DISC(disc), __image_analyzer_dump_session, &tmp_context, NULL);
+    if (num_sessions) {
+        xmlNodePtr node = __xml_add_node(parent, TAG_SESSIONS);
+        mirage_disc_for_each_session(MIRAGE_DISC(disc), __xml_dump_session, node, NULL);
     }
     
     if (mirage_disc_get_dpm_data(MIRAGE_DISC(disc), &dpm_start, &dpm_resolution, &dpm_entries, &dpm_data, NULL)) {
-        gint i = 0;
-        GtkTreeIter *dpm = NULL;
-        GtkTreeIter *data_entries = NULL;
-        
+        gint i;
+        xmlNodePtr node = __xml_add_node(parent, TAG_DPM);
+
         /* DPM */
-        dpm = __image_analyzer_add_node(treestore, node, "DPM");
+        __xml_add_node_with_content(node, TAG_DPM_START, "%d", dpm_start);
+        __xml_add_node_with_content(node, TAG_DPM_RESOLUTION, "%d", dpm_resolution);
+        __xml_add_node_with_content(node, TAG_DPM_NUM_ENTRIES, "%d", dpm_entries);
         
-        __image_analyzer_add_node(treestore, dpm, "Start sector: %d (0x%X)", dpm_start, dpm_start);
-        __image_analyzer_add_node(treestore, dpm, "Resolution: %d (0x%X)", dpm_resolution, dpm_resolution);
-        __image_analyzer_add_node(treestore, dpm, "Number of entries: %d (0x%X)", dpm_entries, dpm_entries);
-        
-        data_entries = __image_analyzer_add_node(treestore, dpm, "Data entries");
+        node = __xml_add_node(node, TAG_DPM_ENTRIES);
         for (i = 0; i < dpm_entries; i++) {
-            __image_analyzer_add_node(treestore, data_entries, "0x%08X | %d", dpm_data[i], (i+1)*dpm_resolution);
+            __xml_add_node_with_content(node, TAG_DPM_ENTRY, "%d", dpm_data[i]);
         }
-    }    
+    }
     
     return TRUE;
 }
 
+static xmlDocPtr __xml_create_dump (GObject *disc, GString *parser_log) {
+    xmlDocPtr doc;
+    xmlNodePtr root_node;
+    
+    /* Create new XML tree */
+    doc = xmlNewDoc(BAD_CAST "1.0");
+    root_node = xmlNewNode(NULL, BAD_CAST TAG_IMAGE_ANALYZER_DUMP);
+    xmlDocSetRootElement(doc, root_node);
+    
+    /* Dump disc to XML tree */
+    __xml_dump_disc(disc, root_node);
+    
+    /* Add parser log */
+    xmlNewTextChild(root_node, NULL, BAD_CAST TAG_PARSER_LOG, BAD_CAST parser_log->str);
+    
+    return doc;
+}
+/******************************************************************************\
+ *                                 XML loading                                *
+\******************************************************************************/
+static inline gchar *__xml_node_get_string (xmlNodePtr node) {
+    xmlChar *xml_str = xmlNodeGetContent(node);
+    gchar *ret_str = g_strdup((gchar *)xml_str);
+    xmlFree(xml_str);
+    return ret_str;
+}
+
+static inline gdouble __xml_node_get_attr_double (xmlNodePtr node, gchar *attr) {
+    xmlChar *xml_str = xmlGetProp(node, BAD_CAST attr);
+    gdouble ret_double = g_strtod((gchar *)xml_str, NULL);
+    xmlFree(xml_str);
+    return ret_double;
+}
+
+static inline gdouble __xml_node_get_double (xmlNodePtr node) {
+    xmlChar *xml_str = xmlNodeGetContent(node);
+    gdouble ret_double = g_strtod((gchar *)xml_str, NULL);
+    xmlFree(xml_str);
+    return ret_double;
+}
+
+static inline guint64 __xml_node_get_uint64 (xmlNodePtr node) {
+    xmlChar *xml_str = xmlNodeGetContent(node);
+    guint64 ret_uint64 = g_ascii_strtoull((gchar *)xml_str, NULL, 0);
+    xmlFree(xml_str);
+    return ret_uint64;
+}
+
+static void __treestore_add_node (GtkTreeStore *treestore, GtkTreeIter *parent, GtkTreeIter *node, gchar *format, ...) {
+    GtkTreeIter tmp_node;
+
+    va_list args;
+    gchar content[255] = "";
+    
+    va_start(args, format);
+    g_vsnprintf(content, sizeof(content), format, args);
+    va_end(args);
+ 
+    if (!node) node = &tmp_node;
+    gtk_tree_store_append(treestore, node, parent);
+    gtk_tree_store_set(treestore, node, 0, content, -1);
+}
+
+static void __treestore_dump_fragment (GtkTreeStore *treestore, GtkTreeIter *parent, xmlNodePtr xml_node) {
+    GtkTreeIter node;
+    xmlNodePtr cur_node;
+    
+    __treestore_add_node(treestore, parent, &node, "Fragment");
+    
+    /* Go over nodes */
+    for (cur_node = xml_node->children; cur_node; cur_node = cur_node->next) {
+        /* Skip non-element nodes */
+        if (cur_node->type != XML_ELEMENT_NODE) {
+            continue;
+        }
+        
+        if (!g_strcasecmp((gchar *)cur_node->name, TAG_FRAGMENT_ID)) {
+            gchar *fragment_id = __xml_node_get_string(cur_node);
+            __treestore_add_node(treestore, &node, NULL, "Fragment ID: %s", fragment_id);
+            g_free(fragment_id);
+        } else if (!g_strcasecmp((gchar *)cur_node->name, TAG_ADDRESS)) {
+            gint address = __xml_node_get_double(cur_node);
+            __treestore_add_node(treestore, &node, NULL, "Address: %d (0x%X)", address, address);
+        } else if (!g_strcasecmp((gchar *)cur_node->name, TAG_LENGTH)) {
+            gint length = __xml_node_get_double(cur_node);
+            __treestore_add_node(treestore, &node, NULL, "Length: %d (0x%X)", length, length);        
+        } else if (!g_strcasecmp((gchar *)cur_node->name, TAG_TFILE_HANDLE)) {
+            FILE *tfile_handle = (FILE *)__xml_node_get_uint64(cur_node);
+            __treestore_add_node(treestore, &node, NULL, "Track file: Handle: %p", tfile_handle);
+        } else if (!g_strcasecmp((gchar *)cur_node->name, TAG_TFILE_OFFSET)) {
+            guint64 tfile_offset = __xml_node_get_uint64(cur_node);
+            __treestore_add_node(treestore, &node, NULL, "Track file: Offset: %lli (0x%llX)", tfile_offset, tfile_offset);
+        } else if (!g_strcasecmp((gchar *)cur_node->name, TAG_TFILE_SECTSIZE)) {
+            gint tfile_sectsize  = __xml_node_get_double(cur_node);
+            __treestore_add_node(treestore, &node, NULL, "Track file: Sector size: %d (0x%X)", tfile_sectsize, tfile_sectsize);
+        } else if (!g_strcasecmp((gchar *)cur_node->name, TAG_TFILE_FORMAT)) {
+            gint tfile_format = __xml_node_get_double(cur_node);
+            __treestore_add_node(treestore, &node, NULL, "Track file: Format: 0x%X (%s)", tfile_format, __dump_binary_fragment_tfile_format(tfile_format));
+        }  else if (!g_strcasecmp((gchar *)cur_node->name, TAG_SFILE_HANDLE)) {
+            FILE *sfile_handle = (FILE *)__xml_node_get_uint64(cur_node);
+            __treestore_add_node(treestore, &node, NULL, "Subchannel file: Handle: %p", sfile_handle);
+        } else if (!g_strcasecmp((gchar *)cur_node->name, TAG_SFILE_OFFSET)) {
+            guint64 sfile_offset = __xml_node_get_uint64(cur_node);
+            __treestore_add_node(treestore, &node, NULL, "Subchannel file: Offset: %lli (0x%llX)", sfile_offset, sfile_offset);
+        } else if (!g_strcasecmp((gchar *)cur_node->name, TAG_SFILE_SECTSIZE)) {
+            gint sfile_sectsize  = __xml_node_get_double(cur_node);
+            __treestore_add_node(treestore, &node, NULL, "Subchannel file: Sector size: %d (0x%X)", sfile_sectsize, sfile_sectsize);
+        } else if (!g_strcasecmp((gchar *)cur_node->name, TAG_SFILE_FORMAT)) {
+            gint sfile_format = __xml_node_get_double(cur_node);
+            __treestore_add_node(treestore, &node, NULL, "Subchannel file: Format: 0x%X (%s)", sfile_format, __dump_binary_fragment_sfile_format(sfile_format));
+        } else if (!g_strcasecmp((gchar *)cur_node->name, TAG_FILENAME)) {
+            gchar *filename = __xml_node_get_string(cur_node);
+            __treestore_add_node(treestore, &node, NULL, "Filename: %s", filename);
+            g_free(filename);
+        } else if (!g_strcasecmp((gchar *)cur_node->name, TAG_OFFSET)) {
+            gint offset = __xml_node_get_double(cur_node);
+            __treestore_add_node(treestore, &node, NULL, "Offset (sectors): %d (0x%X)", offset, offset);
+        } 
+    }
+}
+
+static void __treestore_dump_index (GtkTreeStore *treestore, GtkTreeIter *parent, xmlNodePtr xml_node) {
+    GtkTreeIter node;
+    xmlNodePtr cur_node;
+
+    __treestore_add_node(treestore, parent, &node, "Index");
+    
+    /* Go over nodes */
+    for (cur_node = xml_node->children; cur_node; cur_node = cur_node->next) {
+        /* Skip non-element nodes */
+        if (cur_node->type != XML_ELEMENT_NODE) {
+            continue;
+        }
+        
+        if (!g_strcasecmp((gchar *)cur_node->name, TAG_NUMBER)) {
+            gint number = __xml_node_get_double(cur_node);
+            __treestore_add_node(treestore, &node, NULL, "Number: %d", number);
+        } else if (!g_strcasecmp((gchar *)cur_node->name, TAG_ADDRESS)) {
+            gint address = __xml_node_get_double(cur_node);
+            __treestore_add_node(treestore, &node, NULL, "Address: %d (0x%X)", address, address);
+        }
+    }
+}
+
+static void __treestore_dump_language (GtkTreeStore *treestore, GtkTreeIter *parent, xmlNodePtr xml_node) {
+    GtkTreeIter node;
+    xmlNodePtr cur_node;
+    
+    static const struct {
+        gchar *name;
+        gchar *tag;
+    } pack_types[] = {
+        { "Title", TAG_TITLE },
+        { "Performer", TAG_PERFORMER },
+        { "Songwriter", TAG_SONGWRITER },
+        { "Composer", TAG_COMPOSER },
+        { "Arranger", TAG_ARRANGER },
+        { "Message", TAG_MESSAGE },
+        { "Disc ID", TAG_DISC_ID },
+        { "Genre", TAG_GENRE },
+        { "TOC", TAG_TOC },
+        { "TOC2", TAG_TOC2 },
+        { "Reserved 8A", TAG_RESERVED_8A },
+        { "Reserved 8B", TAG_RESERVED_8B },
+        { "Reserved 8C", TAG_RESERVED_8C },
+        { "Closed info", TAG_CLOSED_INFO },
+        { "UPC/ISRC", TAG_UPC_ISRC },
+        { "Size", TAG_SIZE },
+    };
+    
+    __treestore_add_node(treestore, parent, &node, "Language");
+
+    /* Go over nodes */
+    for (cur_node = xml_node->children; cur_node; cur_node = cur_node->next) {
+        /* Skip non-element nodes */
+        if (cur_node->type != XML_ELEMENT_NODE) {
+            continue;
+        }
+        
+        if (!g_strcasecmp((gchar *)cur_node->name, TAG_LANGUAGE_CODE)) {
+            gint langcode = __xml_node_get_double(cur_node);
+            __treestore_add_node(treestore, &node, NULL, "Language code: %d", langcode);
+        } else {
+            gint i;
+            
+            for (i = 0; i < G_N_ELEMENTS(pack_types); i++) {                
+                if (!g_strcasecmp((gchar *)cur_node->name, pack_types[i].tag)) {
+                    gchar *data = __xml_node_get_string(cur_node);
+                    gint len = __xml_node_get_attr_double(cur_node, ATTR_LENGTH);
+                    __treestore_add_node(treestore, &node, NULL, "%s: %s (%i)", pack_types[i].name, data, len);
+                    g_free(data);
+                }
+            }
+        }
+    }
+}
+
+static void __treestore_dump_track (GtkTreeStore *treestore, GtkTreeIter *parent, xmlNodePtr xml_node) {
+    GtkTreeIter node;
+    xmlNodePtr cur_node;
+
+    __treestore_add_node(treestore, parent, &node, "Track");
+
+    /* Go over nodes */
+    for (cur_node = xml_node->children; cur_node; cur_node = cur_node->next) {
+        /* Skip non-element nodes */
+        if (cur_node->type != XML_ELEMENT_NODE) {
+            continue;
+        }
+        
+        if (!g_strcasecmp((gchar *)cur_node->name, TAG_FLAGS)) {
+            gint flags = __xml_node_get_double(cur_node);
+            __treestore_add_node(treestore, &node, NULL, "Flags: 0x%X (%s)", flags, __dump_track_flags(flags));
+        } else if (!g_strcasecmp((gchar *)cur_node->name, TAG_MODE)) {
+            gint mode = __xml_node_get_double(cur_node);
+            __treestore_add_node(treestore, &node, NULL, "Mode: 0x%X (%s)", mode, __dump_track_mode(mode));
+        } else if (!g_strcasecmp((gchar *)cur_node->name, TAG_ADR)) {
+            gint adr = __xml_node_get_double(cur_node);
+            __treestore_add_node(treestore, &node, NULL, "ADR: %d", adr);
+        } else if (!g_strcasecmp((gchar *)cur_node->name, TAG_CTL)) {
+            gint ctl = __xml_node_get_double(cur_node);
+            __treestore_add_node(treestore, &node, NULL, "CTL: %d", ctl);
+        } else if (!g_strcasecmp((gchar *)cur_node->name, TAG_ISRC)) {
+            gchar *isrc = __xml_node_get_string(cur_node);
+            __treestore_add_node(treestore, &node, NULL, "ISRC: %s", isrc);
+            g_free(isrc);
+        } else if (!g_strcasecmp((gchar *)cur_node->name, TAG_SESSION_NUMBER)) {
+            gint session_number = __xml_node_get_double(cur_node);
+            __treestore_add_node(treestore, &node, NULL, "Session number: %d", session_number);
+        } else if (!g_strcasecmp((gchar *)cur_node->name, TAG_TRACK_NUMBER)) {
+            gint track_number = __xml_node_get_double(cur_node);
+            __treestore_add_node(treestore, &node, NULL, "Track number: %d", track_number);
+        } else if (!g_strcasecmp((gchar *)cur_node->name, TAG_START_SECTOR)) {
+            gint start_sector = __xml_node_get_double(cur_node);
+            __treestore_add_node(treestore, &node, NULL, "Start sector: %d (0x%X)", start_sector, start_sector);
+        } else if (!g_strcasecmp((gchar *)cur_node->name, TAG_LENGTH)) {
+            gint length = __xml_node_get_double(cur_node);
+            __treestore_add_node(treestore, &node, NULL, "Length: %d (0x%X)", length, length);
+        } else if (!g_strcasecmp((gchar *)cur_node->name, TAG_NUM_FRAGMENTS)) {
+            gint num_fragments = __xml_node_get_double(cur_node);
+            __treestore_add_node(treestore, &node, NULL, "Number of fragments: %d", num_fragments);
+        } else if (!g_strcasecmp((gchar *)cur_node->name, TAG_FRAGMENTS)) {
+            xmlNodePtr child_node;
+            GtkTreeIter fragments;
+            
+            __treestore_add_node(treestore, &node, &fragments, "Fragments");
+            for (child_node = cur_node->children; child_node; child_node = child_node->next) {
+                if (child_node->type != XML_ELEMENT_NODE) {
+                    continue;
+                }
+                
+                if (!g_strcasecmp((gchar *)child_node->name, TAG_FRAGMENT)) {
+                    __treestore_dump_fragment(treestore, &fragments, child_node);
+                }
+            }
+        } else if (!g_strcasecmp((gchar *)cur_node->name, TAG_TRACK_START)) {
+            gint track_start = __xml_node_get_double(cur_node);
+            __treestore_add_node(treestore, &node, NULL, "Track start: %d (0x%X)", track_start, track_start);
+        } else if (!g_strcasecmp((gchar *)cur_node->name, TAG_NUM_INDICES)) {
+            gint num_indices = __xml_node_get_double(cur_node);
+            __treestore_add_node(treestore, &node, NULL, "Number of indices: %d", num_indices);
+        } else if (!g_strcasecmp((gchar *)cur_node->name, TAG_INDICES)) {
+            xmlNodePtr child_node;
+            GtkTreeIter indices;
+            
+            __treestore_add_node(treestore, &node, &indices, "Indices");
+            for (child_node = cur_node->children; child_node; child_node = child_node->next) {
+                if (child_node->type != XML_ELEMENT_NODE) {
+                    continue;
+                }
+                
+                if (!g_strcasecmp((gchar *)child_node->name, TAG_INDEX)) {
+                    __treestore_dump_index(treestore, &indices, child_node);
+                }
+            }
+        } else if (!g_strcasecmp((gchar *)cur_node->name, TAG_NUM_LANGUAGES)) {
+            gint num_languages = __xml_node_get_double(cur_node);
+            __treestore_add_node(treestore, &node, NULL, "Number of languages: %d", num_languages);
+        } else if (!g_strcasecmp((gchar *)cur_node->name, TAG_LANGUAGES)) {
+            xmlNodePtr child_node;
+            GtkTreeIter languages;
+            
+            __treestore_add_node(treestore, &node, &languages, "Languages");
+            for (child_node = cur_node->children; child_node; child_node = child_node->next) {
+                if (child_node->type != XML_ELEMENT_NODE) {
+                    continue;
+                }
+                
+                if (!g_strcasecmp((gchar *)child_node->name, TAG_LANGUAGE)) {
+                    __treestore_dump_language(treestore, &languages, child_node);
+                }
+            }
+        }
+    }
+}
+
+static void __treestore_dump_session (GtkTreeStore *treestore, GtkTreeIter *parent, xmlNodePtr xml_node) {
+    GtkTreeIter node;
+    xmlNodePtr cur_node;
+
+    __treestore_add_node(treestore, parent, &node, "Session");
+
+    /* Go over nodes */
+    for (cur_node = xml_node->children; cur_node; cur_node = cur_node->next) {
+        /* Skip non-element nodes */
+        if (cur_node->type != XML_ELEMENT_NODE) {
+            continue;
+        }
+        
+        if (!g_strcasecmp((gchar *)cur_node->name, TAG_SESSION_TYPE)) {
+            gint session_type = __xml_node_get_double(cur_node);
+            __treestore_add_node(treestore, &node, NULL, "Session type: 0x%X (%s)", session_type, __dump_session_type(session_type));
+        } else if (!g_strcasecmp((gchar *)cur_node->name, TAG_SESSION_NUMBER)) {
+            gint session_number = __xml_node_get_double(cur_node);
+            __treestore_add_node(treestore, &node, NULL, "Session number: %d", session_number);
+        } else if (!g_strcasecmp((gchar *)cur_node->name, TAG_FIRST_TRACK)) {
+            gint first_track = __xml_node_get_double(cur_node);
+            __treestore_add_node(treestore, &node, NULL, "Layout: First track: %d", first_track);
+        } else if (!g_strcasecmp((gchar *)cur_node->name, TAG_START_SECTOR)) {
+            gint start_sector = __xml_node_get_double(cur_node);
+            __treestore_add_node(treestore, &node, NULL, "Layout: Start sector: %d (0x%X)", start_sector);
+        } else if (!g_strcasecmp((gchar *)cur_node->name, TAG_LENGTH)) {
+            gint length = __xml_node_get_double(cur_node);
+            __treestore_add_node(treestore, &node, NULL, "Layout: Length: %d (0x%X)", length, length);
+        } else if (!g_strcasecmp((gchar *)cur_node->name, TAG_LEADOUT_LENGTH)) {
+            gint leadout_length = __xml_node_get_double(cur_node);
+            __treestore_add_node(treestore, &node, NULL, "Leadout length: %d (0x%X)", leadout_length, leadout_length);
+        } else if (!g_strcasecmp((gchar *)cur_node->name, TAG_NUM_TRACKS)) {
+            gint num_tracks = __xml_node_get_double(cur_node);
+            __treestore_add_node(treestore, &node, NULL, "Number of tracks: %d", num_tracks);
+        } else if (!g_strcasecmp((gchar *)cur_node->name, TAG_TRACKS)) {
+            xmlNodePtr child_node;
+            GtkTreeIter tracks;
+            
+            __treestore_add_node(treestore, &node, &tracks, "Tracks");
+            for (child_node = cur_node->children; child_node; child_node = child_node->next) {
+                if (child_node->type != XML_ELEMENT_NODE) {
+                    continue;
+                }
+                
+                if (!g_strcasecmp((gchar *)child_node->name, TAG_TRACK)) {
+                    __treestore_dump_track(treestore, &tracks, child_node);
+                }
+            }
+        } else if (!g_strcasecmp((gchar *)cur_node->name, TAG_NUM_LANGUAGES)) {
+            gint num_languages = __xml_node_get_double(cur_node);
+            __treestore_add_node(treestore, &node, NULL, "Number of languages: %d", num_languages);
+        }  else if (!g_strcasecmp((gchar *)cur_node->name, TAG_LANGUAGES)) {
+            xmlNodePtr child_node;
+            GtkTreeIter languages;
+            
+            __treestore_add_node(treestore, &node, &languages, "Languages");
+            for (child_node = cur_node->children; child_node; child_node = child_node->next) {
+                __treestore_dump_language(treestore, &languages, child_node);
+            }
+        }
+    }
+}
+
+static void __treestore_dump_dpm (GtkTreeStore *treestore, GtkTreeIter *parent, xmlNodePtr xml_node) {
+    GtkTreeIter node;
+    xmlNodePtr cur_node;
+
+    __treestore_add_node(treestore, parent, &node, "DPM");
+
+    /* Go over nodes */
+    for (cur_node = xml_node->children; cur_node; cur_node = cur_node->next) {
+        /* Skip non-element nodes */
+        if (cur_node->type != XML_ELEMENT_NODE) {
+            continue;
+        }
+        
+        if (!g_strcasecmp((gchar *)cur_node->name, TAG_DPM_START)) {
+            gint dpm_start = __xml_node_get_double(cur_node);
+            __treestore_add_node(treestore, &node, NULL, "Start sector: %d (0x%X)", dpm_start, dpm_start);
+        } else if (!g_strcasecmp((gchar *)cur_node->name, TAG_DPM_RESOLUTION)) {
+            gint dpm_resolution = __xml_node_get_double(cur_node);
+            __treestore_add_node(treestore, &node, NULL, "Resolution: %d (0x%X)", dpm_resolution, dpm_resolution);
+        } else if (!g_strcasecmp((gchar *)cur_node->name, TAG_DPM_NUM_ENTRIES)) {
+            gint dpm_entries = __xml_node_get_double(cur_node);
+            __treestore_add_node(treestore, &node, NULL, "Number of entries: %d (0x%X)", dpm_entries, dpm_entries);
+        } else if (!g_strcasecmp((gchar *)cur_node->name, TAG_DPM_ENTRIES)) {
+            xmlNodePtr child_node;
+            GtkTreeIter dpm_entries;
+            
+            __treestore_add_node(treestore, &node, &dpm_entries, "Data entries");
+            for (child_node = cur_node->children; child_node; child_node = child_node->next) {
+                if (child_node->type != XML_ELEMENT_NODE) {
+                    continue;
+                }
+                
+                if (!g_strcasecmp((gchar *)child_node->name, TAG_DPM_ENTRY)) {
+                    guint32 dpm_entry = __xml_node_get_double(child_node);
+                    __treestore_add_node(treestore, &dpm_entries, NULL, "0x%08X", dpm_entry);
+                }
+            }
+        }
+    }
+}
+
+static void __treestore_dump_disc (GtkTreeStore *treestore, GtkTreeIter *parent, xmlNodePtr xml_node) {
+    GtkTreeIter node;
+    xmlNodePtr cur_node;
+
+    __treestore_add_node(treestore, parent, &node, "Disc");
+        
+    /* Go over nodes */
+    for (cur_node = xml_node->children; cur_node; cur_node = cur_node->next) {
+        /* Skip non-element nodes */
+        if (cur_node->type != XML_ELEMENT_NODE) {
+            continue;
+        }   
+        
+        if (!g_strcasecmp((gchar *)cur_node->name, TAG_MEDIUM_TYPE)) {
+            gint medium_type = __xml_node_get_double(cur_node);
+            __treestore_add_node(treestore, &node, NULL, "Medium type: 0x%X (%s)", medium_type, __dump_medium_type(medium_type));
+        } else if (!g_strcasecmp((gchar *)cur_node->name, TAG_FILENAMES)) {
+            xmlNodePtr child_node;
+            GtkTreeIter files;
+
+            __treestore_add_node(treestore, &node, &files, "Filename(s)");
+
+            for (child_node = cur_node->children; child_node; child_node = child_node->next) {
+                if (child_node->type != XML_ELEMENT_NODE) {
+                    continue;
+                }
+                
+                if (!g_strcasecmp((gchar *)child_node->name, TAG_FILENAME)) {
+                    gchar *filename = __xml_node_get_string(child_node);
+                    __treestore_add_node(treestore, &files, NULL, "%s", filename);
+                    g_free(filename);
+                }
+            }
+        } else if (!g_strcasecmp((gchar *)cur_node->name, TAG_MCN)) {
+            gchar *mcn = __xml_node_get_string(cur_node);
+            __treestore_add_node(treestore, &node, NULL, "MCN: %s", mcn);
+            g_free(mcn);
+        } else if (!g_strcasecmp((gchar *)cur_node->name, TAG_FIRST_SESSION)) {
+            gint first_session = __xml_node_get_double(cur_node);
+            __treestore_add_node(treestore, &node, NULL, "Layout: First session: %d", first_session);
+        } else if (!g_strcasecmp((gchar *)cur_node->name, TAG_FIRST_TRACK)) {
+            gint first_track = __xml_node_get_double(cur_node);
+            __treestore_add_node(treestore, &node, NULL, "Layout: First track: %d", first_track);
+        } else if (!g_strcasecmp((gchar *)cur_node->name, TAG_START_SECTOR)) {
+            gint start_sector = __xml_node_get_double(cur_node);
+            __treestore_add_node(treestore, &node, NULL, "Layout: Start sector: %d (0x%X)", start_sector, start_sector);
+        } else if (!g_strcasecmp((gchar *)cur_node->name, TAG_LENGTH)) {
+            gint length = __xml_node_get_double(cur_node);
+            __treestore_add_node(treestore, &node, NULL, "Layout: Length: %d (0x%X)", length, length);
+        } else if (!g_strcasecmp((gchar *)cur_node->name, TAG_NUM_SESSIONS)) {
+            gint num_sessions = __xml_node_get_double(cur_node);
+            __treestore_add_node(treestore, &node, NULL, "Number of sessions: %d", num_sessions);
+        } else if (!g_strcasecmp((gchar *)cur_node->name, TAG_NUM_TRACKS)) {
+            gint num_tracks = __xml_node_get_double(cur_node);
+            __treestore_add_node(treestore, &node, NULL, "Number of tracks: %d", num_tracks);
+        } else if (!g_strcasecmp((gchar *)cur_node->name, TAG_SESSIONS)) {
+            xmlNodePtr child_node;
+            GtkTreeIter sessions;
+            
+            __treestore_add_node(treestore, &node, &sessions, "Sessions");
+            for (child_node = cur_node->children; child_node; child_node = child_node->next) {
+                if (child_node->type != XML_ELEMENT_NODE) {
+                    continue;
+                }
+                
+                if (!g_strcasecmp((gchar *)child_node->name, TAG_SESSION)) {
+                    __treestore_dump_session(treestore, &sessions, child_node);
+                }
+            }
+        } else if (!g_strcasecmp((gchar *)cur_node->name, TAG_DPM)) {
+            __treestore_dump_dpm(treestore, &node, cur_node);
+        }
+    }
+}
+
+
+
+static gboolean __image_analyzer_application_load_xml_tree (IMAGE_ANALYZER_Application *self) {
+    IMAGE_ANALYZER_ApplicationPrivate *_priv = IMAGE_ANALYZER_APPLICATION_GET_PRIVATE(self);
+    xmlNodePtr root_node;
+    xmlNodePtr cur_node;
+    
+    /* Make sure XML tree is valid */
+    if (!_priv->xml_doc) {
+        return FALSE;
+    }
+    
+    /* Get root element and verify it */
+    root_node = xmlDocGetRootElement(_priv->xml_doc);
+    if (!root_node || root_node->type != XML_ELEMENT_NODE || g_strcasecmp((gchar *)root_node->name, TAG_IMAGE_ANALYZER_DUMP)) {
+        g_warning("Invalid XML tree!\n");
+        return FALSE;
+    }
+            
+    /* Go over nodes */
+    for (cur_node = root_node->children; cur_node; cur_node = cur_node->next) {
+        /* Skip non-element nodes */
+        if (cur_node->type != XML_ELEMENT_NODE) {
+            continue;
+        }
+        
+        if (!g_strcasecmp((gchar *)cur_node->name, TAG_DISC)) {
+            __treestore_dump_disc(_priv->treestore, NULL, cur_node);
+        } else if (!g_strcasecmp((gchar *)cur_node->name, TAG_PARSER_LOG)) {
+            gchar *log = __xml_node_get_string(cur_node);
+            image_analyzer_parser_log_append_to_log(IMAGE_ANALYZER_PARSER_LOG(_priv->dialog_parser), log, NULL);
+            g_free(log);
+        }
+    }
+
+    
+    return TRUE;
+}
 
 /******************************************************************************\
  *                              Logging redirection                           *
 \******************************************************************************/
-static void __image_analyzer_capture_parser_log (const gchar *log_domain, GLogLevelFlags log_level, const gchar *message, gpointer user_data) {
+static void __capture_parser_log (const gchar *log_domain, GLogLevelFlags log_level, const gchar *message, gpointer user_data) {
     IMAGE_ANALYZER_Application *self = IMAGE_ANALYZER_APPLICATION(user_data);
     IMAGE_ANALYZER_ApplicationPrivate *_priv = IMAGE_ANALYZER_APPLICATION_GET_PRIVATE(self);
     
-    image_analyzer_parser_log_append_to_log(IMAGE_ANALYZER_PARSER_LOG(_priv->parserdialog), (gchar *)message, NULL);
-    
+    /* Append to our log string */
+    _priv->parser_log = g_string_append(_priv->parser_log, message);
+        
     return;
 }
 
@@ -597,7 +1185,7 @@ static void __image_analyzer_capture_parser_log (const gchar *log_domain, GLogLe
 \******************************************************************************/
 static void __image_analyzer_application_message (IMAGE_ANALYZER_Application *self, gchar *format, ...) {
     IMAGE_ANALYZER_ApplicationPrivate *_priv = IMAGE_ANALYZER_APPLICATION_GET_PRIVATE(self);
-    gchar *message = NULL;
+    gchar *message;
     va_list args;
     
     /* Pop message (so that anything set previously will be removed */
@@ -669,46 +1257,51 @@ static gchar *__image_analyzer_application_get_password (gpointer user_data) {
     return password;
 }
 
-static gboolean __image_analyzer_close_image (IMAGE_ANALYZER_Application *self) {
+static gboolean __image_analyzer_application_close_image_or_dump (IMAGE_ANALYZER_Application *self) {
     IMAGE_ANALYZER_ApplicationPrivate *_priv = IMAGE_ANALYZER_APPLICATION_GET_PRIVATE(self);
     
     /* Clear log whether we're loaded or not... it doesn't really hurt to do it
        before the check, and it ensures the log is always cleared (i.e. if load
        call failed, we'd have error log but it wouldn't be cleared on subsequent
        load call... */
-    image_analyzer_parser_log_clear_log(IMAGE_ANALYZER_PARSER_LOG(_priv->parserdialog), NULL);
+    image_analyzer_parser_log_clear_log(IMAGE_ANALYZER_PARSER_LOG(_priv->dialog_parser), NULL);
     
     /* Clear disc topology */
-    image_analyzer_disc_topology_clear(IMAGE_ANALYZER_DISC_TOPOLOGY(_priv->topologydialog), NULL);
-    
-    /* Check if we're loaded */
-    if (!_priv->loaded) {
-        /* Not loaded, nothing to do here */
-        return FALSE;
-    }
+    image_analyzer_disc_topology_clear(IMAGE_ANALYZER_DISC_TOPOLOGY(_priv->dialog_topology), NULL);
         
     /* Clear TreeStore */
     gtk_tree_store_clear(_priv->treestore);
     
-    /* Release disc reference */
-    g_object_unref(_priv->disc);
+    /* Free XML doc */
+    if (_priv->xml_doc) {
+        xmlFreeDoc(_priv->xml_doc);
+        _priv->xml_doc = NULL;
+    }
     
-    __image_analyzer_application_message(self, "Image closed.");
+    /* Release disc reference */
+    if (_priv->disc) {
+        g_object_unref(_priv->disc);
+        _priv->disc = NULL;
+    }
+    
+    /* Print message only if something was loaded */
+    if (_priv->loaded) {
+        __image_analyzer_application_message(self, "Image/dump closed.");
+    }
 
     _priv->loaded = FALSE;
 
     return TRUE;
 }
 
-static gboolean __image_analyzer_open_image (IMAGE_ANALYZER_Application *self, gchar **filenames) {
+static gboolean __image_analyzer_application_open_image (IMAGE_ANALYZER_Application *self, gchar **filenames) {
     IMAGE_ANALYZER_ApplicationPrivate *_priv = IMAGE_ANALYZER_APPLICATION_GET_PRIVATE(self);
     GObject *debug_context;
-    IMAGE_ANALYZER_DumpContext context;
     guint log_handler;
     GError *error = NULL;
     
-    /* Close image */
-    __image_analyzer_close_image(self);
+    /* Close any opened image or dump */
+    __image_analyzer_application_close_image_or_dump(self);
     
     /* Create debug context for disc */
     debug_context = g_object_new(MIRAGE_TYPE_DEBUG_CONTEXT, NULL);
@@ -716,7 +1309,8 @@ static gboolean __image_analyzer_open_image (IMAGE_ANALYZER_Application *self, g
     mirage_debug_context_set_debug_mask(MIRAGE_DEBUG_CONTEXT(debug_context), MIRAGE_DEBUG_PARSER, NULL);
     
     /* Set log handler */
-    log_handler = g_log_set_handler(DEBUG_DOMAIN_PARSER, G_LOG_LEVEL_MASK, __image_analyzer_capture_parser_log, self);
+    _priv->parser_log = g_string_new("");
+    log_handler = g_log_set_handler(DEBUG_DOMAIN_PARSER, G_LOG_LEVEL_MASK, __capture_parser_log, self);
 
     /* Create disc */
     _priv->disc = libmirage_create_disc(filenames, debug_context, &error);
@@ -734,20 +1328,60 @@ static gboolean __image_analyzer_open_image (IMAGE_ANALYZER_Application *self, g
     g_log_remove_handler(DEBUG_DOMAIN_PARSER, log_handler);
     
     /* Disc topology */
-    image_analyzer_disc_topology_create(IMAGE_ANALYZER_DISC_TOPOLOGY(_priv->topologydialog), _priv->disc, NULL);    
+    image_analyzer_disc_topology_create(IMAGE_ANALYZER_DISC_TOPOLOGY(_priv->dialog_topology), _priv->disc, NULL);    
     
-    /* Dump disc */
-    context.parent = NULL;
-    context.treestore = _priv->treestore;
-    if (!__image_analyzer_dump_disc(_priv->disc, &context)) {
+    /* Make XML dump */
+    _priv->xml_doc = __xml_create_dump(_priv->disc, _priv->parser_log);
+    if (!_priv->xml_doc) {
         g_warning("Failed to dump disc!\n");
         __image_analyzer_application_message(self, "Failed to dump disc!");
         return FALSE;
     }
     
-    __image_analyzer_application_message(self, "Image successfully opened.");
+    /* Free parser log string */
+    g_string_free(_priv->parser_log, TRUE);
+
+    /* Convert XML to treestore */
+    __image_analyzer_application_load_xml_tree(self);    
 
     _priv->loaded = TRUE;
+
+    __image_analyzer_application_message(self, "Image successfully opened.");
+
+    return TRUE;
+}
+
+static gboolean __image_analyzer_application_open_dump (IMAGE_ANALYZER_Application *self, gchar *filename) {
+    IMAGE_ANALYZER_ApplicationPrivate *_priv = IMAGE_ANALYZER_APPLICATION_GET_PRIVATE(self);
+    
+    /* Close any opened image or dump */
+    __image_analyzer_application_close_image_or_dump(self);
+    
+    /* Load XML */
+    _priv->xml_doc = xmlReadFile(filename, NULL, 0);
+    if (!_priv->xml_doc) {
+        g_warning("Failed to dump disc!\n");
+        __image_analyzer_application_message(self, "Failed to load dump!");
+        return FALSE;
+    }
+    
+    /* Convert XML to treestore */
+    __image_analyzer_application_load_xml_tree(self);    
+
+    _priv->loaded = TRUE;
+
+    __image_analyzer_application_message(self, "Dump successfully opened.");
+
+    return TRUE;
+}
+
+static gboolean __image_analyzer_application_save_dump (IMAGE_ANALYZER_Application *self, gchar *filename) {
+    IMAGE_ANALYZER_ApplicationPrivate *_priv = IMAGE_ANALYZER_APPLICATION_GET_PRIVATE(self);
+    
+    /* Save the XML tree */
+    xmlSaveFormatFileEnc(filename, _priv->xml_doc, "UTF-8", 1);
+    
+    __image_analyzer_application_message(self, "Dump successfully saved.");
     
     return TRUE;
 }
@@ -756,20 +1390,20 @@ static gboolean __image_analyzer_open_image (IMAGE_ANALYZER_Application *self, g
 /******************************************************************************\
  *                                 UI callbacks                               *
 \******************************************************************************/
-static void __image_analyzer_application_ui_callback_open (GtkAction *action, gpointer user_data) {
+static void __ui_callback_open_image (GtkAction *action, gpointer user_data) {
     IMAGE_ANALYZER_Application *self = IMAGE_ANALYZER_APPLICATION(user_data);
     IMAGE_ANALYZER_ApplicationPrivate *_priv = IMAGE_ANALYZER_APPLICATION_GET_PRIVATE(self);
     
     /* Run the dialog */
-    if (gtk_dialog_run(GTK_DIALOG(_priv->filedialog)) == GTK_RESPONSE_ACCEPT) {
-        GSList *filenames_list = NULL;
-        GSList *entry = NULL;
-        gint num_filenames = 0;
-        gchar **filenames = NULL;
+    if (gtk_dialog_run(GTK_DIALOG(_priv->dialog_open_image)) == GTK_RESPONSE_ACCEPT) {
+        GSList *filenames_list;
+        GSList *entry;
+        gint num_filenames;
+        gchar **filenames;
         gint i = 0;
         
         /* Get filenames from dialog */
-        filenames_list = gtk_file_chooser_get_filenames(GTK_FILE_CHOOSER(_priv->filedialog));
+        filenames_list = gtk_file_chooser_get_filenames(GTK_FILE_CHOOSER(_priv->dialog_open_image));
         
         /* Create strings array */
         num_filenames = g_slist_length(filenames_list);
@@ -782,7 +1416,8 @@ static void __image_analyzer_application_ui_callback_open (GtkAction *action, gp
             entry = g_slist_next(entry);
         }
         
-        __image_analyzer_open_image(self, filenames);
+        /* Open image */
+        __image_analyzer_application_open_image(self, filenames);
         
         /* Free filenames list */
         g_slist_free(filenames_list);
@@ -790,59 +1425,110 @@ static void __image_analyzer_application_ui_callback_open (GtkAction *action, gp
         g_strfreev(filenames);
     }
     
-    gtk_widget_hide(GTK_WIDGET(_priv->filedialog));
+    gtk_widget_hide(GTK_WIDGET(_priv->dialog_open_image));
             
     return;
 }
 
-static void __image_analyzer_application_ui_callback_close (GtkAction *action, gpointer user_data) {
+static void __ui_callback_open_dump (GtkAction *action, gpointer user_data) {
     IMAGE_ANALYZER_Application *self = IMAGE_ANALYZER_APPLICATION(user_data);
-    /*IMAGE_ANALYZER_ApplicationPrivate *_priv = IMAGE_ANALYZER_APPLICATION_GET_PRIVATE(self);*/
+    IMAGE_ANALYZER_ApplicationPrivate *_priv = IMAGE_ANALYZER_APPLICATION_GET_PRIVATE(self);
     
-    __image_analyzer_close_image(self);
+    /* Run the dialog */
+    if (gtk_dialog_run(GTK_DIALOG(_priv->dialog_open_dump)) == GTK_RESPONSE_ACCEPT) {
+        gchar *filename;
+        
+        /* Get filenames from dialog */
+        filename = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(_priv->dialog_open_dump));
+        
+        /* Open dump */
+        __image_analyzer_application_open_dump(self, filename);
+        
+        /* Free filename */
+        g_free(filename);
+    }
+    
+    gtk_widget_hide(GTK_WIDGET(_priv->dialog_open_dump));
+            
+    return;
+}
+
+static void __ui_callback_save_dump (GtkAction *action, gpointer user_data) {
+    IMAGE_ANALYZER_Application *self = IMAGE_ANALYZER_APPLICATION(user_data);
+    IMAGE_ANALYZER_ApplicationPrivate *_priv = IMAGE_ANALYZER_APPLICATION_GET_PRIVATE(self);
+    
+    /* We need an opened image or dump for this */
+    if (!_priv->loaded) {
+        return;
+    }
+    
+    /* Run the dialog */
+    if (gtk_dialog_run(GTK_DIALOG(_priv->dialog_save_dump)) == GTK_RESPONSE_ACCEPT) {
+        gchar *filename;
+        
+        /* Get filenames from dialog */
+        filename = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(_priv->dialog_save_dump));
+        
+        /* Save */
+        __image_analyzer_application_save_dump(self, filename);
+        
+        /* Free filename */
+        g_free(filename);
+    }
+    
+    gtk_widget_hide(GTK_WIDGET(_priv->dialog_save_dump));
     
     return;
 }
 
-static void __image_analyzer_application_ui_callback_quit (GtkAction *action, gpointer user_data) {
+static void __ui_callback_close (GtkAction *action, gpointer user_data) {
+    IMAGE_ANALYZER_Application *self = IMAGE_ANALYZER_APPLICATION(user_data);
+    /*IMAGE_ANALYZER_ApplicationPrivate *_priv = IMAGE_ANALYZER_APPLICATION_GET_PRIVATE(self);*/
+    
+    __image_analyzer_application_close_image_or_dump(self);
+    
+    return;
+}
+
+static void __ui_callback_quit (GtkAction *action, gpointer user_data) {
     gtk_main_quit();
     return;
 }
 
-static void __image_analyzer_application_ui_callback_parser_log (GtkAction *action, gpointer user_data) {
+static void __ui_callback_parser_log (GtkAction *action, gpointer user_data) {
     IMAGE_ANALYZER_Application *self = IMAGE_ANALYZER_APPLICATION(user_data);
     IMAGE_ANALYZER_ApplicationPrivate *_priv = IMAGE_ANALYZER_APPLICATION_GET_PRIVATE(self);
     
     /* Make window (re)appear by first hiding, then showing it */
-    gtk_widget_hide(_priv->parserdialog);
-    gtk_widget_show_all(_priv->parserdialog);
+    gtk_widget_hide(_priv->dialog_parser);
+    gtk_widget_show_all(_priv->dialog_parser);
     
     return;
 }
 
-static void __image_analyzer_application_ui_callback_sector (GtkAction *action, gpointer user_data) {
+static void __ui_callback_sector (GtkAction *action, gpointer user_data) {
     IMAGE_ANALYZER_Application *self = IMAGE_ANALYZER_APPLICATION(user_data);
     IMAGE_ANALYZER_ApplicationPrivate *_priv = IMAGE_ANALYZER_APPLICATION_GET_PRIVATE(self);
     
     /* Make window (re)appear by first hiding, then showing it */
-    gtk_widget_hide(_priv->sectordialog);
-    gtk_widget_show_all(_priv->sectordialog);
+    gtk_widget_hide(_priv->dialog_sector);
+    gtk_widget_show_all(_priv->dialog_sector);
     
     return;
 }
 
-static void __image_analyzer_application_ui_callback_topology (GtkAction *action, gpointer user_data) {
+static void __ui_callback_topology (GtkAction *action, gpointer user_data) {
     IMAGE_ANALYZER_Application *self = IMAGE_ANALYZER_APPLICATION(user_data);
     IMAGE_ANALYZER_ApplicationPrivate *_priv = IMAGE_ANALYZER_APPLICATION_GET_PRIVATE(self);
     
     /* Make window (re)appear by first hiding, then showing it */
-    gtk_widget_hide(_priv->topologydialog);
-    gtk_widget_show_all(_priv->topologydialog);
+    gtk_widget_hide(_priv->dialog_topology);
+    gtk_widget_show_all(_priv->dialog_topology);
     
     return;
 }
 
-static void __image_analyzer_application_ui_callback_about (GtkAction *action, gpointer user_data) {
+static void __ui_callback_about (GtkAction *action, gpointer user_data) {
     IMAGE_ANALYZER_Application *self = IMAGE_ANALYZER_APPLICATION(user_data);
     IMAGE_ANALYZER_ApplicationPrivate *_priv = IMAGE_ANALYZER_APPLICATION_GET_PRIVATE(self);
     
@@ -854,14 +1540,14 @@ static void __image_analyzer_application_ui_callback_about (GtkAction *action, g
         "comments", "Image Analyzer displays tree structure of disc image created by libMirage.",
         "version", PACKAGE_VERSION,
         "authors", authors,
-        "copyright", "Copyright (C) 2007 Rok Mandeljc",
+        "copyright", "Copyright (C) 2007-2008 Rok Mandeljc",
         NULL);
     
     return;
 }
 
 
-static gboolean __image_analyzer_application_cb_window_delete_event (GtkWidget *widget, GdkEvent *event, gpointer user_data) {
+static gboolean __cb_window_delete_event (GtkWidget *widget, GdkEvent *event, gpointer user_data) {
     /* Quit the app */
     gtk_main_quit();
     /* Don't invoke other handlers, we'll cleanup stuff ourselves */
@@ -878,7 +1564,7 @@ typedef struct {
 } IMAGE_ANALYZER_FilterContext;
 
 static gboolean __case_insensitive_ext_filter (const GtkFileFilterInfo *filter_info, gpointer data) {
-    gchar *filename_ext = NULL;
+    gchar *filename_ext;
     gchar *pattern_ext = data;
         
     g_return_val_if_fail(data != NULL, FALSE);
@@ -896,7 +1582,7 @@ static gboolean __case_insensitive_ext_filter (const GtkFileFilterInfo *filter_i
     return !mirage_helper_strcasecmp(filename_ext, pattern_ext);
 }
 
-static gboolean __image_analyzer_application_add_file_filter (gpointer data, gpointer user_data) {
+static gboolean __add_file_filter (gpointer data, gpointer user_data) {
     IMAGE_ANALYZER_FilterContext *context = user_data;
     MIRAGE_ParserInfo *parser_info = data;
     gint i = 0;
@@ -918,12 +1604,12 @@ static gboolean __image_analyzer_application_add_file_filter (gpointer data, gpo
     return TRUE;
 }
 
-static GtkWidget *__image_analyzer_application_build_file_dialog (IMAGE_ANALYZER_Application *self) {
+static GtkWidget *__build_dialog_open_image (IMAGE_ANALYZER_Application *self) {
     IMAGE_ANALYZER_ApplicationPrivate *_priv = IMAGE_ANALYZER_APPLICATION_GET_PRIVATE(self);
     IMAGE_ANALYZER_FilterContext context;
     
-    GtkWidget *dialog = NULL;
-    GtkFileFilter *filter = NULL;
+    GtkWidget *dialog;
+    GtkFileFilter *filter;
     
     dialog = gtk_file_chooser_dialog_new(
         "Open File",
@@ -949,33 +1635,93 @@ static GtkWidget *__image_analyzer_application_build_file_dialog (IMAGE_ANALYZER
     /* Per-parser filters */
     context.dialog = dialog;
     context.all_images = filter;
-    libmirage_for_each_parser(__image_analyzer_application_add_file_filter, &context, NULL);
+    libmirage_for_each_parser(__add_file_filter, &context, NULL);
     
     return dialog;    
 }
 
-static GtkWidget *__image_analyzer_application_build_parser_dialog (IMAGE_ANALYZER_Application *self) {
-    GtkWidget *dialog = NULL;
+static GtkWidget *__build_dialog_open_dump (IMAGE_ANALYZER_Application *self) {
+    IMAGE_ANALYZER_ApplicationPrivate *_priv = IMAGE_ANALYZER_APPLICATION_GET_PRIVATE(self);
+    
+    GtkWidget *dialog;
+    GtkFileFilter *filter;
+    
+    dialog = gtk_file_chooser_dialog_new(
+        "Open File",
+        GTK_WINDOW(_priv->window),
+        GTK_FILE_CHOOSER_ACTION_OPEN,
+        GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
+        GTK_STOCK_OPEN, GTK_RESPONSE_ACCEPT,
+        NULL);
+    
+    /* "XML files" filter */
+    filter= gtk_file_filter_new();
+    gtk_file_filter_set_name(filter, "XML files");
+    gtk_file_filter_add_pattern(filter, "*.xml");
+    gtk_file_chooser_add_filter(GTK_FILE_CHOOSER(dialog), filter);
+    
+    /* "All files" filter */
+    filter = gtk_file_filter_new();
+    gtk_file_filter_set_name(filter, "All files");
+    gtk_file_filter_add_pattern(filter, "*");
+    gtk_file_chooser_add_filter(GTK_FILE_CHOOSER(dialog), filter);
+    
+    return dialog;    
+}
+
+static GtkWidget *__build_dialog_save_dump (IMAGE_ANALYZER_Application *self) {
+    IMAGE_ANALYZER_ApplicationPrivate *_priv = IMAGE_ANALYZER_APPLICATION_GET_PRIVATE(self);
+    
+    GtkWidget *dialog;
+    GtkFileFilter *filter;
+    
+    dialog = gtk_file_chooser_dialog_new(
+        "Save File",
+        GTK_WINDOW(_priv->window),
+        GTK_FILE_CHOOSER_ACTION_SAVE,
+        GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
+        GTK_STOCK_SAVE, GTK_RESPONSE_ACCEPT,
+        NULL);
+    
+    gtk_file_chooser_set_do_overwrite_confirmation(GTK_FILE_CHOOSER(dialog), TRUE);
+    
+    /* "XML files" filter */
+    filter= gtk_file_filter_new();
+    gtk_file_filter_set_name(filter, "XML files");
+    gtk_file_filter_add_pattern(filter, "*.xml");
+    gtk_file_chooser_add_filter(GTK_FILE_CHOOSER(dialog), filter);
+    
+    /* "All files" filter */
+    filter = gtk_file_filter_new();
+    gtk_file_filter_set_name(filter, "All files");
+    gtk_file_filter_add_pattern(filter, "*");
+    gtk_file_chooser_add_filter(GTK_FILE_CHOOSER(dialog), filter);
+    
+    return dialog;    
+}
+
+static GtkWidget *__build_dialog_parser (IMAGE_ANALYZER_Application *self) {
+    GtkWidget *dialog;
     dialog = g_object_new(IMAGE_ANALYZER_TYPE_PARSER_LOG, NULL);
     g_signal_connect(dialog, "delete_event", G_CALLBACK(gtk_widget_hide_on_delete), NULL);
     return dialog;
 }
 
-static GtkWidget *__image_analyzer_application_build_sector_dialog (IMAGE_ANALYZER_Application *self) {
-    GtkWidget *dialog = NULL;
+static GtkWidget *__build_dialog_sector (IMAGE_ANALYZER_Application *self) {
+    GtkWidget *dialog;
     dialog = g_object_new(IMAGE_ANALYZER_TYPE_SECTOR_READ, "application",self, NULL);
     g_signal_connect(dialog, "delete_event", G_CALLBACK(gtk_widget_hide_on_delete), NULL);
     return dialog;
 }
 
-static GtkWidget *__image_analyzer_application_build_topology_dialog (IMAGE_ANALYZER_Application *self) {
-    GtkWidget *dialog = NULL;
+static GtkWidget *__build_dialog_topology (IMAGE_ANALYZER_Application *self) {
+    GtkWidget *dialog;
     dialog = g_object_new(IMAGE_ANALYZER_TYPE_DISC_TOPOLOGY, "application",self, NULL);
     g_signal_connect(dialog, "delete_event", G_CALLBACK(gtk_widget_hide_on_delete), NULL);
     return dialog;
 }
 
-static GtkWidget *__image_analyzer_application_build_menu (IMAGE_ANALYZER_Application *self) {
+static GtkWidget *__build_menu (IMAGE_ANALYZER_Application *self) {
     IMAGE_ANALYZER_ApplicationPrivate *_priv = IMAGE_ANALYZER_APPLICATION_GET_PRIVATE(self);
 
     static GtkActionEntry entries[] = {
@@ -983,15 +1729,17 @@ static GtkWidget *__image_analyzer_application_build_menu (IMAGE_ANALYZER_Applic
         { "ImageMenuAction", NULL, "_Image" },
         { "HelpMenuAction", NULL, "_Help" },
 
-        { "OpenAction", GTK_STOCK_OPEN, "_Open", "<control>O", "Open", G_CALLBACK(__image_analyzer_application_ui_callback_open) },
-        { "CloseAction", GTK_STOCK_CLOSE, "_Close", "<control>W", "Close", G_CALLBACK(__image_analyzer_application_ui_callback_close) },
-        { "QuitAction", GTK_STOCK_QUIT, "_Quit", "<control>Q", "Quit", G_CALLBACK(__image_analyzer_application_ui_callback_quit) },
+        { "OpenImageAction", GTK_STOCK_OPEN, "_Open image", "<control>O", "Open image", G_CALLBACK(__ui_callback_open_image) },
+        { "OpenDumpAction", GTK_STOCK_OPEN, "Open _dump", "<control>D", "Open dump", G_CALLBACK(__ui_callback_open_dump) },
+        { "SaveDumpAction", GTK_STOCK_SAVE, "_Save dump", "<control>S", "Save dump", G_CALLBACK(__ui_callback_save_dump) },
+        { "CloseAction", GTK_STOCK_CLOSE, "_Close", "<control>W", "Close", G_CALLBACK(__ui_callback_close) },
+        { "QuitAction", GTK_STOCK_QUIT, "_Quit", "<control>Q", "Quit", G_CALLBACK(__ui_callback_quit) },
         
-        { "ParserLogAction", GTK_STOCK_DIALOG_INFO, "_Parser log", "<control>P", "Parser log", G_CALLBACK(__image_analyzer_application_ui_callback_parser_log) },
-        { "SectorAction", GTK_STOCK_EXECUTE, "_Read sector", "<control>R", "Read sector", G_CALLBACK(__image_analyzer_application_ui_callback_sector) },
-        { "TopologyAction", GTK_STOCK_EXECUTE, "Disc _topology", "<control>T", "Disc topology", G_CALLBACK(__image_analyzer_application_ui_callback_topology) },
+        { "ParserLogAction", GTK_STOCK_DIALOG_INFO, "_Parser log", "<control>P", "Parser log", G_CALLBACK(__ui_callback_parser_log) },
+        { "SectorAction", GTK_STOCK_EXECUTE, "_Read sector", "<control>R", "Read sector", G_CALLBACK(__ui_callback_sector) },
+        { "TopologyAction", GTK_STOCK_EXECUTE, "Disc _topology", "<control>T", "Disc topology", G_CALLBACK(__ui_callback_topology) },
 
-        { "AboutAction", GTK_STOCK_ABOUT, "_About", NULL, "About", G_CALLBACK(__image_analyzer_application_ui_callback_about) },
+        { "AboutAction", GTK_STOCK_ABOUT, "_About", NULL, "About", G_CALLBACK(__ui_callback_about) },
     };
     
     static guint n_entries = G_N_ELEMENTS(entries);
@@ -1000,9 +1748,12 @@ static GtkWidget *__image_analyzer_application_build_menu (IMAGE_ANALYZER_Applic
         <ui> \
             <menubar name='MenuBar'> \
                 <menu name='FileMenu' action='FileMenuAction'> \
-                    <menuitem name='Open' action='OpenAction' /> \
-                    <menuitem name='Close' action='CloseAction' /> \
+                    <menuitem name='Open image' action='OpenImageAction' /> \
                     <separator/> \
+                    <menuitem name='Open dump' action='OpenDumpAction' /> \
+                    <menuitem name='Save dump' action='SaveDumpAction' /> \
+                    <separator/> \
+                    <menuitem name='Close' action='CloseAction' /> \
                     <menuitem name='Quit' action='QuitAction' /> \
                 </menu> \
                 <menu name='Image' action='ImageMenuAction'> \
@@ -1017,7 +1768,7 @@ static GtkWidget *__image_analyzer_application_build_menu (IMAGE_ANALYZER_Applic
         </ui> \
         ";
     
-    GtkActionGroup *actiongroup = NULL;
+    GtkActionGroup *actiongroup;
     GError *error = NULL;
     
     /* Action group */
@@ -1034,13 +1785,13 @@ static GtkWidget *__image_analyzer_application_build_menu (IMAGE_ANALYZER_Applic
     return gtk_ui_manager_get_widget(_priv->ui_manager, "/MenuBar");
 }
 
-static GtkWidget *__image_analyzer_application_build_treeview (IMAGE_ANALYZER_Application *self) {
+static GtkWidget *__build_treeview (IMAGE_ANALYZER_Application *self) {
     IMAGE_ANALYZER_ApplicationPrivate *_priv = IMAGE_ANALYZER_APPLICATION_GET_PRIVATE(self);
     
-    GtkWidget *treeview = NULL;
+    GtkWidget *treeview;
     
-    GtkTreeViewColumn *column = NULL;
-    GtkCellRenderer *renderer = NULL;
+    GtkTreeViewColumn *column;
+    GtkCellRenderer *renderer;
     
     /* GtkTreeView */
     treeview = gtk_tree_view_new();
@@ -1069,7 +1820,12 @@ gboolean image_analyzer_application_run (IMAGE_ANALYZER_Application *self, gchar
     
     /* Open image, if provided */
     if (g_strv_length(open_image)) {
-        __image_analyzer_open_image(self, open_image);
+        /* If it ends with .xml, we treat it as a dump file */
+        if (mirage_helper_has_suffix(open_image[0], ".xml")) {
+            __image_analyzer_application_open_dump(self, open_image[0]);
+        } else {
+            __image_analyzer_application_open_image(self, open_image);
+        }
     }
 
     /* Show window */
@@ -1084,7 +1840,7 @@ gboolean image_analyzer_application_run (IMAGE_ANALYZER_Application *self, gchar
 gboolean image_analyzer_application_get_loaded_image (IMAGE_ANALYZER_Application *self, GObject **disc) {
     IMAGE_ANALYZER_ApplicationPrivate *_priv = IMAGE_ANALYZER_APPLICATION_GET_PRIVATE(self);
     
-    if (!_priv->loaded) {
+    if (!_priv->loaded || !_priv->disc) {
         return FALSE;
     }
     
@@ -1106,19 +1862,15 @@ static void __image_analyzer_application_instance_init (GTypeInstance *instance,
     IMAGE_ANALYZER_Application *self = IMAGE_ANALYZER_APPLICATION(instance);
     IMAGE_ANALYZER_ApplicationPrivate *_priv = IMAGE_ANALYZER_APPLICATION_GET_PRIVATE(self);
     
-    GtkWidget *vbox = NULL;
-    GtkWidget *menubar = NULL;
-    GtkWidget *scrolledwindow = NULL;
-    GtkWidget *treeview = NULL;
-    
-    GtkAccelGroup *accel_group = NULL;
+    GtkWidget *vbox, *menubar, *scrolledwindow, *treeview;
+    GtkAccelGroup *accel_group;
         
     /* UI manager */
     _priv->ui_manager = gtk_ui_manager_new();
     
     /* Window */
     _priv->window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
-    g_signal_connect(_priv->window, "delete_event", G_CALLBACK(__image_analyzer_application_cb_window_delete_event), self);
+    g_signal_connect(_priv->window, "delete_event", G_CALLBACK(__cb_window_delete_event), self);
     gtk_window_set_title(GTK_WINDOW(_priv->window), "MIRAGE Image analyzer");
     gtk_window_set_default_size(GTK_WINDOW(_priv->window), 300, 400);
     gtk_container_set_border_width(GTK_CONTAINER(_priv->window), 5);
@@ -1128,7 +1880,7 @@ static void __image_analyzer_application_instance_init (GTypeInstance *instance,
     gtk_container_add(GTK_CONTAINER(_priv->window), vbox);
     
     /* Menu */
-    menubar = __image_analyzer_application_build_menu(self);
+    menubar = __build_menu(self);
     gtk_box_pack_start(GTK_BOX(vbox), menubar, FALSE, FALSE, 0);
     
     /* Scrolled window */
@@ -1136,7 +1888,7 @@ static void __image_analyzer_application_instance_init (GTypeInstance *instance,
     gtk_box_pack_start(GTK_BOX(vbox), scrolledwindow, TRUE, TRUE, 0);
 
     /* Tree view widget */
-    treeview = __image_analyzer_application_build_treeview(self);
+    treeview = __build_treeview(self);
     gtk_container_add(GTK_CONTAINER(scrolledwindow), treeview);
     
     /* Status bar */
@@ -1145,10 +1897,12 @@ static void __image_analyzer_application_instance_init (GTypeInstance *instance,
     _priv->context_id = gtk_statusbar_get_context_id(GTK_STATUSBAR(_priv->statusbar), "Message");
     
     /* Dialogs */
-    _priv->filedialog = __image_analyzer_application_build_file_dialog(self);
-    _priv->parserdialog = __image_analyzer_application_build_parser_dialog(self);
-    _priv->sectordialog = __image_analyzer_application_build_sector_dialog(self);
-    _priv->topologydialog = __image_analyzer_application_build_topology_dialog(self);
+    _priv->dialog_open_image = __build_dialog_open_image(self);
+    _priv->dialog_open_dump = __build_dialog_open_dump(self);
+    _priv->dialog_save_dump = __build_dialog_save_dump(self);
+    _priv->dialog_parser = __build_dialog_parser(self);
+    _priv->dialog_sector = __build_dialog_sector(self);
+    _priv->dialog_topology = __build_dialog_topology(self);
     
     /* Accelerator group */
     accel_group = gtk_ui_manager_get_accel_group(_priv->ui_manager);
@@ -1165,15 +1919,19 @@ static void __image_analyzer_application_finalize (GObject *obj) {
     IMAGE_ANALYZER_ApplicationPrivate *_priv = IMAGE_ANALYZER_APPLICATION_GET_PRIVATE(self);
     
     /* Close image */
-    __image_analyzer_close_image(self);
+    __image_analyzer_application_close_image_or_dump(self);
     
+#if 1
     gtk_widget_destroy(_priv->window);
     
-    gtk_widget_destroy(_priv->filedialog);
-    gtk_widget_destroy(_priv->parserdialog);
-    gtk_widget_destroy(_priv->sectordialog);
-    gtk_widget_destroy(_priv->topologydialog);
-
+    gtk_widget_destroy(_priv->dialog_open_image);
+    gtk_widget_destroy(_priv->dialog_open_dump);
+    gtk_widget_destroy(_priv->dialog_save_dump);
+    gtk_widget_destroy(_priv->dialog_parser);
+    gtk_widget_destroy(_priv->dialog_sector);
+    gtk_widget_destroy(_priv->dialog_topology);
+#endif
+    
     /* Chain up to the parent class */
     return G_OBJECT_CLASS(parent_class)->finalize(obj);
 }

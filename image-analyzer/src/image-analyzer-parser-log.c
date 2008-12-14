@@ -42,7 +42,7 @@ typedef struct {
 \******************************************************************************/
 gboolean image_analyzer_parser_log_clear_log (IMAGE_ANALYZER_ParserLog *self, GError **error) {
     IMAGE_ANALYZER_ParserLogPrivate *_priv = IMAGE_ANALYZER_PARSER_LOG_GET_PRIVATE(self);
-    GtkTextBuffer *buffer = NULL;
+    GtkTextBuffer *buffer;
     
     buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(_priv->text_view));
     
@@ -53,7 +53,7 @@ gboolean image_analyzer_parser_log_clear_log (IMAGE_ANALYZER_ParserLog *self, GE
 
 gboolean image_analyzer_parser_log_append_to_log (IMAGE_ANALYZER_ParserLog *self, gchar *message, GError **error) {
     IMAGE_ANALYZER_ParserLogPrivate *_priv = IMAGE_ANALYZER_PARSER_LOG_GET_PRIVATE(self);
-    GtkTextBuffer *buffer = NULL;
+    GtkTextBuffer *buffer;
     GtkTextIter iter;
     
     buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(_priv->text_view));
@@ -76,8 +76,7 @@ static void __image_analyzer_parser_log_instance_init (GTypeInstance *instance, 
     IMAGE_ANALYZER_ParserLog *self = IMAGE_ANALYZER_PARSER_LOG(instance);
     IMAGE_ANALYZER_ParserLogPrivate *_priv = IMAGE_ANALYZER_PARSER_LOG_GET_PRIVATE(self);
     
-    GtkWidget *vbox = NULL;
-    GtkWidget *scrolledwindow = NULL;
+    GtkWidget *vbox, *scrolledwindow;
     
     gtk_window_set_title(GTK_WINDOW(self), "Parser log");
     gtk_window_set_default_size(GTK_WINDOW(self), 600, 400);
