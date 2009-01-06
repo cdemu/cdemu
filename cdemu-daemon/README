@@ -267,7 +267,7 @@ control the daemon:
     - Returns library version string of libMirage library used by
       the daemon.
 
-* GetInterfaceVersion (version)
+* GetDaemonInterfaceVersion (version)
     + version: out; "i"
         Daemon interface version number
     
@@ -315,7 +315,7 @@ control the daemon:
     - Returns number of virtual devices.
   
 * DeviceGetStatus (device_number, loaded, file_names)
-    + device_number: in; "u"
+    + device_number: in; "i"
         Device you are requesting status for (int).
     + loaded: out; "b"
         Boolean denoting whether device is loaded or not.
@@ -325,7 +325,7 @@ control the daemon:
     - Returns the status of specified device.
   
 * DeviceLoad (device_number, file_names, parameters)
-    + device_number: in; "u"
+    + device_number: in; "i"
         Device that is to be loaded (int).
     + file_names: in; "as"
         File name(s) of the image to be loaded (array of strings).
@@ -341,13 +341,13 @@ control the daemon:
       parameters.
     
 * DeviceUnload (device_number)
-    + device_number: in; "u"
+    + device_number: in; "i"
         Device that is to be unloaded (int).
         
     - Attempts to unload the device.
   
 * DeviceGetOption (device_number, option_name, option_values)
-    + device_number: in; "u"
+    + device_number: in; "i"
         Device for which the specified option's value is to be retrieved (int).
     + option_name: in; "s"
         Name of the option (string).
@@ -359,7 +359,7 @@ control the daemon:
       For more information on supported options, see Section 7.
   
 * DeviceSetOption (device_number, option_name, option_values)
-    + device_number: in; "u"
+    + device_number: in; "i"
         Device for which the specified option's value is to be set (int).
     + option_name: in; "s"
         Name of the option (string).
@@ -383,13 +383,13 @@ in response to the change of status of either the daemon or one of the devices:
     - emitted when daemon is stopped
 
 * DeviceStatusChange
-    + device_number: "u"
+    + device_number: "i"
         Device that emitted the signal (int).
         
     - emitted when device is loaded/unloaded
 
 * DeviceOptionChange
-    + device_number: "u"
+    + device_number: "i"
         Device that emitted the signal (int).
     + option: "s"
         Option that has been changed (string).
