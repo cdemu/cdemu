@@ -51,7 +51,7 @@ def applet_factory (applet, iid):
 def run_standalone ():    
     main_window = gtk.Window(gtk.WINDOW_TOPLEVEL)
     main_window.set_title("gCDEmu Applet")
-    main_window.set_default_size(30,30)
+    main_window.set_default_size(120, 60)
     main_window.connect("destroy", gtk.main_quit) 
     applet = gCDEmu_Applet()
     applet.get_orient = lambda: gnomeapplet.ORIENT_DOWN
