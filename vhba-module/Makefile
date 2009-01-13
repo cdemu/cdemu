@@ -28,6 +28,7 @@ install: module_install
 clean:
 	$(KMAKE) clean
 	rm -fr $(PACKAGE) kernel.api.h
+	make -C kat clean > /dev/null
 
 dist: dist-gzip
 
