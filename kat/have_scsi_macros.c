@@ -1,7 +1,8 @@
 #include <linux/autoconf.h>
 #include <scsi/scsi_cmnd.h>
 
-void testfunc () {
+void testfunc (void);
+void testfunc (void) {
     struct scsi_cmnd cmd;
     
     /* These have appeared in 2.6.23 */

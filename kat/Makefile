@@ -1,4 +1,5 @@
 PACKAGE = kat-test-$(TESTNAME)
+EXTRA_CFLAGS := -Werror-implicit-function-declaration -Werror
 
 obj-m += $(TESTNAME)
 
