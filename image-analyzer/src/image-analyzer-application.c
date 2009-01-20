@@ -1318,6 +1318,10 @@ static gboolean __image_analyzer_application_open_image (IMAGE_ANALYZER_Applicat
         g_warning("Failed to create disc: %s\n", error->message);
         __image_analyzer_application_message(self, "Failed to open image: %s", error->message);
         g_error_free(error);
+        
+        /* Manually fill in the log */
+        image_analyzer_parser_log_append_to_log(IMAGE_ANALYZER_PARSER_LOG(_priv->dialog_parser), _priv->parser_log->str, NULL);
+            
         return FALSE;
     }
     
