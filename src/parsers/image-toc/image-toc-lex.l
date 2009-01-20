@@ -38,6 +38,7 @@
 /* Some general stuff */
 COMMENT_            \/{2}[^\n]*
 HASH_               #
+COMMA_              ,
 LBRACE_             \{
 RBRACE_             \}
 COLON_              :
@@ -93,6 +94,10 @@ void yyset_column (int column_no, yyscan_t yyscanner);
 }
 
 {COMMENT_} {
+}
+
+{COMMA_} {
+    return COMMA_;
 }
 
 {HASH_} {

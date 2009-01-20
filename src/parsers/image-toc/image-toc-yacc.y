@@ -54,6 +54,7 @@ gint yyerror (YYLTYPE *locp, void *scanner, MIRAGE_Parser *self, GError **error,
 %token  <string>  WORD_
 %token  <number>  NUMBER_
 
+%token            COMMA_
 %token            LBRACE_
 %token            RBRACE_
 %token            COLON_
@@ -312,12 +313,18 @@ language_g      :   LANGUAGE_ NUMBER_ LBRACE_ {
                         __mirage_parser_toc_add_g_laguage(self, $2, NULL);
                     } cdtext_g_elements RBRACE_;
 
+cdtext_binary_data  :   NUMBER_ COMMA_ cdtext_binary_data;
+                    |   NUMBER_;
+
 cdtext_g_elements   :   /* Empty */
                     |   cdtext_g_elements cdtext_g_element;
                     
 cdtext_g_element    :   CDTEXT_PACK_ STRING_ {
                             __mirage_parser_toc_set_g_cdtext_data(self, $1, $2, NULL);
                             g_free($2); /* Free STRING_ */
+                        }
+                    |   CDTEXT_PACK_ LBRACE_ cdtext_binary_data RBRACE_ {
+                            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: skipping binary global CD-Text element 0x%X\n", __func__, $1);
                         }
 
 track_cdtext        :   CD_TEXT_ LBRACE_ { 
@@ -337,6 +344,9 @@ cdtext_t_elements   :   /* Empty */
 cdtext_t_element    :   CDTEXT_PACK_ STRING_ {
                             __mirage_parser_toc_set_t_cdtext_data(self, $1, $2, NULL);
                             g_free($2); /* Free STRING_ */
+                        }
+                    |   CDTEXT_PACK_ LBRACE_ cdtext_binary_data RBRACE_ {
+                            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: skipping binary track CD-Text element 0x%X\n", __func__, $1);
                         }
                     |   ISRC_ STRING_ {
                             __mirage_parser_toc_set_t_cdtext_data(self, MIRAGE_LANGUAGE_PACK_UPC_ISRC, $2, NULL);
