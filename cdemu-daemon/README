@@ -300,11 +300,11 @@ control the daemon:
     - Returns supported image parsers.
     
 * EnumSupportedFragments (fragments)
-    + framgents: out; "a(sssssas)"
+    + framgents: out; "a(sssss)"
         Array of structures containing information about supported fragments.
         Each structure has multiple fields; fragment ID (string), fragment name 
-        (string), fragment version (string), fragment author (string), supported
-        interface (string) and supported suffixes (array of strings).
+        (string), fragment version (string), fragment author (string) and supported
+        interface (string).
         
     - Returns supported fragments.
     

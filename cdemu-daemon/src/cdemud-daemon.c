@@ -603,13 +603,8 @@ static gboolean __cdemud_daemon_add_supported_fragment (gpointer data, gpointer 
     g_value_array_append(fragment_entry, NULL);
     g_value_init(g_value_array_get_nth(fragment_entry, 4), G_TYPE_STRING);
     g_value_set_string(g_value_array_get_nth(fragment_entry, 4), info->interface);
-    
-    /* Suffixes */
-    g_value_array_append(fragment_entry, NULL);
-    g_value_init(g_value_array_get_nth(fragment_entry, 5), G_TYPE_STRV);
-    g_value_set_boxed(g_value_array_get_nth(fragment_entry, 5), info->suffixes);
-    
-    /* Add mask's value array to masks' pointer array */
+        
+    /* Add fragment's array to fragments' pointer array */
     g_ptr_array_add(fragments, fragment_entry);
     
     return TRUE;

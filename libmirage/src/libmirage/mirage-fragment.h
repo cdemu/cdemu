@@ -30,7 +30,6 @@ G_BEGIN_DECLS
  * @version: fragment version
  * @author: author name
  * @interface: interface fragment implements
- * @suffixes: list of data file suffixes
  *
  * <para>
  * A structure containing fragment information. It can be obtained with call to
@@ -39,11 +38,7 @@ G_BEGIN_DECLS
  * 
  * <para>
  * @interface is a string contraining name of interface the fragment implements;
- * it is provided for debug and informational purposes. @suffixes is a NULL-terminated 
- * array of strings representing data file suffixes (e.g. ".wav"); some fragment
- * implementations might use it when checking whether they can handle 
- * given file. However, this depends on implementation. If fragment is not bound
- * to particular suffix, the list should contain only "N/A".
+ * it is provided for debug and informational purposes.
  * </para>
  **/
 typedef struct {
@@ -53,8 +48,6 @@ typedef struct {
     gchar *author;
     
     gchar *interface;
-    
-    gchar **suffixes;
 } MIRAGE_FragmentInfo;
 
 /******************************************************************************\
@@ -95,7 +88,7 @@ GType mirage_fragment_get_type (void);
 
 
 /* Public API */
-void mirage_fragment_generate_fragment_info (MIRAGE_Fragment *self, gchar *id, gchar *name, gchar *version, gchar *author, gchar *interface, gint num_suffixes, ...);
+void mirage_fragment_generate_fragment_info (MIRAGE_Fragment *self, gchar *id, gchar *name, gchar *version, gchar *author, gchar *interface);
 gboolean mirage_fragment_get_fragment_info (MIRAGE_Fragment *self, MIRAGE_FragmentInfo **fragment_info, GError **error);
 
 gboolean mirage_fragment_can_handle_data_format (MIRAGE_Fragment *self, gchar *filename, GError **error);

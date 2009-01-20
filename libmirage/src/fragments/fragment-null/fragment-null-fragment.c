@@ -24,11 +24,8 @@
  *                   MIRAGE_Fragment methods implementations                  *
 \******************************************************************************/
 static gboolean __mirage_fragment_null_can_handle_data_format (MIRAGE_Fragment *self, gchar *filename, GError **error) {
-    /* NULL fragment needs to be passed "NULL" as a filename */
-    if (strcmp(filename, "NULL")) {
-        return FALSE;
-    }
-    
+    /* NULL doesn't need any data file checks; what's important is interface type,
+       which is filtered out elsewhere */
     return TRUE;
 }
 
@@ -69,8 +66,7 @@ static void __mirage_fragment_null_instance_init (GTypeInstance *instance, gpoin
         "NULL Fragment",
         "1.0.0",
         "Rok Mandeljc",
-        "MIRAGE_TYPE_FINTERFACE_NULL",
-        2, "N/A", NULL
+        "MIRAGE_TYPE_FINTERFACE_NULL"
     );
     
     return;

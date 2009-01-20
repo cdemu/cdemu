@@ -632,10 +632,7 @@ class CDEmu (object):
             # Print all fragments
             print _("Supported fragments:")
             for fragment in fragments:
-                line = "  %s: %s:" % (fragment[0], fragment[4])
-                for suffix in fragment[5]:
-                    line += " %s" % (suffix)
-                print line
+                print "  %s: %s" % (fragment[0], fragment[4])
         elif len(arguments) == 1:
             # Print specific fragments
             for fragment in fragments:
@@ -645,11 +642,7 @@ class CDEmu (object):
                     print _(" - Version: %s") % (fragment[2])
                     print _(" - Author: %s") % (fragment[3])
                     print _(" - Interface: %s") % (fragment[4])
-                    line = _(" - Data files suffixes:")
-                    for suffix in fragment[5]:
-                        line += " %s" % (suffix)
-                    print line
-                    
+                                        
                     break
             else:
                 print _("Fragment with ID '%s' not found!") % (arguments[0])

@@ -49,9 +49,7 @@ static void __destroy_fragment_info (MIRAGE_FragmentInfo *info) {
         g_free(info->author);
     
         g_free(info->interface);
-    
-        g_strfreev(info->suffixes);
-           
+        
         g_free(info);
     }
     
@@ -82,8 +80,6 @@ static gboolean __mirage_fragment_commit_bottomup_change (MIRAGE_Fragment *self,
  * @version: fragment version
  * @author: author name
  * @interface: interface fragment implements
- * @num_suffixes: number of filename suffixes
- * @Varargs: filename suffixes
  *
  * <para>
  * Generates fragment information from the input fields. It is intended as a function
@@ -95,7 +91,7 @@ static gboolean __mirage_fragment_commit_bottomup_change (MIRAGE_Fragment *self,
  * while @Varargs is a NULL-terminated list of suffixes.
  * </para>
  **/
-void mirage_fragment_generate_fragment_info (MIRAGE_Fragment *self, gchar *id, gchar *name, gchar *version, gchar *author, gchar *interface, gint num_suffixes, ...) {
+void mirage_fragment_generate_fragment_info (MIRAGE_Fragment *self, gchar *id, gchar *name, gchar *version, gchar *author, gchar *interface) {
     MIRAGE_FragmentPrivate *_priv = MIRAGE_FRAGMENT_GET_PRIVATE(self);
     va_list args;
     gint i;
@@ -112,16 +108,7 @@ void mirage_fragment_generate_fragment_info (MIRAGE_Fragment *self, gchar *id, g
     _priv->fragment_info->author = g_strdup(author);
         
     _priv->fragment_info->interface = g_strdup(interface);
-    
-    va_start(args, num_suffixes); 
-
-    _priv->fragment_info->suffixes = g_new0(gchar *, num_suffixes);
-    for (i = 0; i < num_suffixes; i++) {
-        _priv->fragment_info->suffixes[i] = g_strdup(va_arg(args, gchar *));
-    }
-    
-    va_end(args);
-    
+        
     return;
 }
 
