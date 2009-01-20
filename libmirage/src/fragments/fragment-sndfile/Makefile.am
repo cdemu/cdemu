@@ -19,7 +19,7 @@ fragment_sndfile_la_SOURCES = \
 fragment_sndfile_la_LIBADD = \
     $(glib_LIBS) \
     $(gobject_LIBS) \
-    $(libsndfile_LIBS)
+    $(sndfile_LIBS)
 
 fragment_sndfile_la_LDFLAGS = \
     -module \
