@@ -15,12 +15,10 @@ Additionaly, libtool version is also exposed, which is primarily intended to
 be used in libMirage's plugin system.
 </para>
 
-
 <!-- ##### SECTION See_Also ##### -->
 <para>
 
 </para>
-
 
 <!-- ##### SECTION Stability_Level ##### -->
 

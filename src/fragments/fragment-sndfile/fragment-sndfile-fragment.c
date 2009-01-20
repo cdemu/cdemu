@@ -100,11 +100,24 @@ static gboolean __mirage_fragment_sndfile_get_offset (MIRAGE_FInterface_AUDIO *s
 \******************************************************************************/
 static gboolean __mirage_fragment_sndfile_can_handle_data_format (MIRAGE_Fragment *self, gchar *filename, GError **erro) {
     MIRAGE_FragmentInfo *info = NULL;
+    SNDFILE *sndfile;
+    SF_INFO format;
     
-    /* Check supported file suffixes */
-    /* FIXME: maybe calling a sf_open() and checking its return is a better idea? */
-    mirage_fragment_get_fragment_info(self, &info, NULL);
-    return mirage_helper_match_suffixes(filename, info->suffixes);
+    format.format = 0;
+    
+    /* Try opening the file */
+    sndfile = sf_open(filename, SFM_READ, &format);
+    if (!sndfile) {
+        return FALSE;
+    }
+    sf_close(sndfile);
+    
+    /* Check some additional requirements (e.g. two channels) */
+    if (format.channels != 2 || format.seekable == 0) {
+        return FALSE;
+    }
+    
+    return TRUE;
 }
 
 static gboolean __mirage_fragment_sndfile_use_the_rest_of_file (MIRAGE_Fragment *self, GError **error) {
@@ -181,8 +194,7 @@ static void __mirage_fragment_sndfile_instance_init (GTypeInstance *instance, gp
         "libsndfile Fragment",
         "1.0.0",
         "Rok Mandeljc",
-        "MIRAGE_TYPE_FINTERFACE_AUDIO",
-        3, ".wav", ".aiff", NULL
+        "MIRAGE_TYPE_FINTERFACE_AUDIO"
     );
     
     return;

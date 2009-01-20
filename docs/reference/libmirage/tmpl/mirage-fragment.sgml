@@ -41,7 +41,6 @@ implementation handles data.
 @version: 
 @author: 
 @interface: 
-@suffixes: 
 
 <!-- ##### STRUCT MIRAGE_Fragment ##### -->
 <para>
@@ -60,8 +59,6 @@ implementation handles data.
 @version: 
 @author: 
 @interface: 
-@num_suffixes: 
-@Varargs: 
 
 
 <!-- ##### FUNCTION mirage_fragment_get_fragment_info ##### -->

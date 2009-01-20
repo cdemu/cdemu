@@ -235,8 +235,8 @@ static gboolean __mirage_fragment_binary_subchannel_file_get_position (MIRAGE_FI
  *                   MIRAGE_Fragment methods implementations                  *
 \******************************************************************************/
 static gboolean __mirage_fragment_binary_can_handle_data_format (MIRAGE_Fragment *self, gchar *filename, GError **error) {
-    /* BINARY should support any file... (crucial is interface type, which is filtered
-       out elsewhere) */
+    /* BINARY doesn't need any data file checks; what's important is interface type,
+       which is filtered out elsewhere */
     return TRUE;
 }
 
@@ -420,8 +420,7 @@ static void __mirage_fragment_binary_instance_init (GTypeInstance *instance, gpo
         "Binary Fragment",
         "1.0.0",
         "Rok Mandeljc",
-        "MIRAGE_TYPE_FINTERFACE_BINARY",
-        2, "N/A", NULL
+        "MIRAGE_TYPE_FINTERFACE_BINARY"
     );
     
     return;

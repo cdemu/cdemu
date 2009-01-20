@@ -944,8 +944,7 @@ static void __mirage_fragment_daa_instance_init (GTypeInstance *instance, gpoint
         "DAA Fragment",
         "1.0.0",
         "Rok Mandeljc",
-        "<private>",
-        2, ".daa", NULL
+        "<private>"
     );
     
     return;
