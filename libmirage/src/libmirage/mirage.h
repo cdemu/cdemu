@@ -31,6 +31,7 @@
 
 #include "mirage-version.h"
 
+#include "mirage-types.h"
 #include "mirage-debug.h"
 #include "mirage-error.h"
 #include "mirage-plugin.h"
