@@ -23,40 +23,40 @@
 G_BEGIN_DECLS
 
 /**
- * mirage_byte_offset:
+ * mirage_b_offset:
  *
  * <para>
  * Mirage type specifying an offset given as a byte address.
  * </para>
  **/
-typedef goffset mirage_byte_offset;
+typedef goffset mirage_b_offset;
 
 /**
- * mirage_sector_offset:
+ * mirage_s_offset:
  *
  * <para>
  * Mirage type specifying an offset given as a sector address.
  * </para>
  **/
-typedef gint mirage_sector_offset;
+typedef gint mirage_s_offset;
 
 /**
- * mirage_bytes_size:
+ * mirage_b_size:
  *
  * <para>
  * Mirage type specifying a size given as a quantity of bytes.
  * </para>
  **/
-typedef gsize mirage_bytes_size;
+typedef gsize mirage_b_size;
 
 /**
- * mirage_sectors_size:
+ * mirage_s_size:
  *
  * <para>
  * Mirage type specifying a size given as a quantity of sectors.
  * </para>
  **/
-typedef gint mirage_sectors_size;
+typedef gint mirage_s_size;
 
 G_END_DECLS
 
