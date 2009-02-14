@@ -3010,18 +3010,6 @@ gboolean cdemud_device_get_status (CDEMUD_Device *self, gboolean *loaded, gchar 
     return succeeded;
 }
 
-static gchar *__return_password (gpointer user_data) {
-    return g_strdup(user_data);
-}
-
-static void __set_param (gpointer key, gpointer value, gpointer user_data) {
-    if (!g_strcasecmp(key, "password") && G_VALUE_HOLDS_STRING(value)) {
-        /* Set password function; since it will be set only during the loading
-           of the disc, we don't have to create a copy of password string contained
-           in GValue, which is owned by D-BUS system */
-        libmirage_set_password_function(__return_password, (gpointer *)g_value_get_string(value), NULL);
-    }
-}
 
 static gboolean __cdemud_device_load_disc (CDEMUD_Device *self, gchar **file_names, GHashTable *parameters, GError **error) {
     CDEMUD_DevicePrivate *_priv = CDEMUD_DEVICE_GET_PRIVATE(self);
@@ -3034,14 +3022,8 @@ static gboolean __cdemud_device_load_disc (CDEMUD_Device *self, gchar **file_nam
         return FALSE;
     }
     
-    /* Go over parameters list */
-    g_hash_table_foreach(parameters, __set_param, self);
-    
     /* Load... */
-    _priv->disc = libmirage_create_disc(file_names, _priv->disc_debug, error);
-    
-    /* Reset password function (in case it was set via parameters) */
-    libmirage_set_password_function(NULL, NULL, NULL);
+    _priv->disc = libmirage_create_disc(file_names, _priv->disc_debug, parameters, error);
     
     /* Check if loading succeeded */
     if (!_priv->disc) {
