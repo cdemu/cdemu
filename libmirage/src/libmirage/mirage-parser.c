@@ -44,13 +44,9 @@ static void __destroy_parser_info (MIRAGE_ParserInfo *info) {
     if (info) {
         g_free(info->id);
         g_free(info->name);
-        g_free(info->version);
-        g_free(info->author);
-    
         g_free(info->description);
-    
-        g_strfreev(info->suffixes);
-           
+        g_free(info->mime_type);
+        
         g_free(info);
     }
     
@@ -65,27 +61,16 @@ static void __destroy_parser_info (MIRAGE_ParserInfo *info) {
  * @self: a #MIRAGE_Parser
  * @id: parser ID
  * @name: parser name
- * @version: parser version
- * @author: author name
- * @multi_file: multi-file image support
  * @description: image file description
- * @num_suffixes: number of image file suffixes
- * @Varargs: image file suffixes
+ * @mime_type: image file MIME type
  *
  * <para>
  * Generates parser information from the input fields. It is intended as a function
  * for creating parser information in parser implementations.
  * </para>
- *
- * <para>
- * @num_suffixes is number of provided suffixes (including terminating NULL),
- * while @Varargs is a NULL-terminated list of suffixes.
- * </para>
  **/
-void mirage_parser_generate_parser_info (MIRAGE_Parser *self, gchar *id, gchar *name, gchar *version, gchar *author, gboolean multi_file, gchar *description, gint num_suffixes, ...) {
+void mirage_parser_generate_parser_info (MIRAGE_Parser *self, gchar *id, gchar *name, gchar *description, gchar *mime_type) {
     MIRAGE_ParserPrivate *_priv = MIRAGE_PARSER_GET_PRIVATE(self);
-    va_list args;
-    gint i;
     
     /* Free old info */
     __destroy_parser_info(_priv->parser_info);
@@ -95,21 +80,9 @@ void mirage_parser_generate_parser_info (MIRAGE_Parser *self, gchar *id, gchar *
     
     _priv->parser_info->id = g_strdup(id);
     _priv->parser_info->name = g_strdup(name);
-    _priv->parser_info->version = g_strdup(version);
-    _priv->parser_info->author = g_strdup(author);
-    
-    _priv->parser_info->multi_file = multi_file;
-    
+        
     _priv->parser_info->description = g_strdup(description);
-    
-    va_start(args, num_suffixes); 
-
-    _priv->parser_info->suffixes = g_new0(gchar *, num_suffixes);
-    for (i = 0; i < num_suffixes; i++) {
-        _priv->parser_info->suffixes[i] = g_strdup(va_arg(args, gchar *));
-    }
-    
-    va_end(args);
+    _priv->parser_info->mime_type = g_strdup(mime_type);
     
     return;
 }

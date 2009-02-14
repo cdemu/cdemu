@@ -26,11 +26,11 @@
         </method>
         
         <method name="EnumSupportedParsers">
-            <arg name="image_types"              type="a(ssssbsas)"  direction="out"/>             
+            <arg name="parsers"             type="a(ssss)"  direction="out"/>             
         </method>
         
         <method name="EnumSupportedFragments">
-            <arg name="image_types"              type="a(sssss)"  direction="out"/>             
+            <arg name="fragments"           type="a(ss)"  direction="out"/>             
         </method>
         
         <!-- Device control methods -->

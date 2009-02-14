@@ -88,15 +88,9 @@ Changing device ID of first device:
 Enumerating supported parsers:
  cdemu enum-supported-parsers
 
-Obtaining information about specific parser:
- cdemu enum-supported-parsers PARSER-TOC
-
 Enumerating supported fragments:
  cdemu enum-supported-fragments
 
-Obtaining information about specific fragment:
- cdemu enum-supported-fragments FRAGMENT-BINARY
- 
 Displaying daemon and library version:
  cdemu version
 

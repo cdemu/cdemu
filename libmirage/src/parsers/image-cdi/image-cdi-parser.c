@@ -1043,11 +1043,8 @@ static void __mirage_parser_cdi_instance_init (GTypeInstance *instance, gpointer
     mirage_parser_generate_parser_info(MIRAGE_PARSER(instance),
         "PARSER-CDI",
         "CDI Image Parser",
-        "1.0.0",
-        "Rok Mandeljc",
-        FALSE,
         "CDI (ParserJuggler) images",
-        2, ".cdi", NULL
+        "application/libmirage-cdi"
     );
     
     return;

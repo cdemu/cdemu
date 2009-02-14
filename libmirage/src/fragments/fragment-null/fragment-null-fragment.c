@@ -63,10 +63,7 @@ static void __mirage_fragment_null_instance_init (GTypeInstance *instance, gpoin
     /* Create fragment info */
     mirage_fragment_generate_fragment_info(MIRAGE_FRAGMENT(instance),
         "FRAGMENT-NULL",
-        "NULL Fragment",
-        "1.0.0",
-        "Rok Mandeljc",
-        "MIRAGE_TYPE_FINTERFACE_NULL"
+        "NULL Fragment"
     );
     
     return;

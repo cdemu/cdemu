@@ -533,11 +533,8 @@ static void __mirage_parser_c2d_instance_init (GTypeInstance *instance, gpointer
     mirage_parser_generate_parser_info(MIRAGE_PARSER(instance),
         "PARSER-C2D",
         "C2D Image Parser",
-        "1.0.0",
-        "Henrik Stokseth",
-        FALSE,
         "C2D (CeQuadrat WinOnCD) images",
-        2, ".c2d", NULL
+        "application/libmirage-c2d"
     );
     
     return;

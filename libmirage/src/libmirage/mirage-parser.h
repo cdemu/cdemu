@@ -27,11 +27,8 @@ G_BEGIN_DECLS
  * MIRAGE_ParserInfo:
  * @id: parser ID
  * @name: parser name
- * @version: parser version
- * @author: author name
- * @multi_file: multi-file image support
  * @description: image file description
- * @suffixes: image file suffixes
+ * @mime_type: image file MIME type
  *
  * <para>
  * A structure containing parser information. It can be obtained with call to
@@ -40,21 +37,16 @@ G_BEGIN_DECLS
  * 
  * <para>
  * @description is a string contraining image file description (e.g. "CloneCD 
- * images") and @suffixes is a NULL-terminated array of strings representing
- * image file suffixes (e.g. ".ccd"). Together, this information is intended to 
- * be used for building file type filters in GUI applications.
+ * images") and @mime_type is a string representing the image file MIME type
+ * (e.g. "application/libmirage-mds"). Together, this information is intended 
+ * to be used for building file type filters in GUI applications.
  * </para>
  **/
 typedef struct {
     gchar *id;
     gchar *name;
-    gchar *version;
-    gchar *author;
-    
-    gboolean multi_file;
-    
     gchar *description;
-    gchar **suffixes;
+    gchar *mime_type;
 } MIRAGE_ParserInfo;
 
 
@@ -90,7 +82,7 @@ GType mirage_parser_get_type (void);
 /******************************************************************************\
  *                                 Public API                                 *
 \******************************************************************************/
-void mirage_parser_generate_parser_info (MIRAGE_Parser *self, gchar *id, gchar *name, gchar *version, gchar *author, gboolean multi_file, gchar *description, gint num_suffixes, ...);
+void mirage_parser_generate_parser_info (MIRAGE_Parser *self, gchar *id, gchar *name, gchar *description, gchar *mime_type);
 gboolean mirage_parser_get_parser_info (MIRAGE_Parser *self, MIRAGE_ParserInfo **parser_info, GError **error);
 
 gboolean mirage_parser_load_image (MIRAGE_Parser *self, gchar **filenames, GObject **disc, GError **error);

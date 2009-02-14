@@ -1119,11 +1119,8 @@ static void __mirage_parser_nrg_instance_init (GTypeInstance *instance, gpointer
     mirage_parser_generate_parser_info(MIRAGE_PARSER(instance),
         "PARSER-NRG",
         "NRG Image Parser",
-        "1.0.0",
-        "Rok Mandeljc",
-        FALSE,
         "NRG (Nero Burning Rom) images",
-        2, ".nrg", NULL
+        "application/libmirage-nrg"
     );
     
     return;

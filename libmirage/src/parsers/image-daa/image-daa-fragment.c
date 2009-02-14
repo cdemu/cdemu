@@ -947,10 +947,7 @@ static void __mirage_fragment_daa_instance_init (GTypeInstance *instance, gpoint
     /* Create fragment info */
     mirage_fragment_generate_fragment_info(MIRAGE_FRAGMENT(instance),
         "FRAGMENT-DAA",
-        "DAA Fragment",
-        "1.0.0",
-        "Rok Mandeljc",
-        "<private>"
+        "DAA Fragment"
     );
     
     return;

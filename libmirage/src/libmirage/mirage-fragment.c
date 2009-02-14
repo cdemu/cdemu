@@ -45,10 +45,6 @@ static void __destroy_fragment_info (MIRAGE_FragmentInfo *info) {
     if (info) {
         g_free(info->id);
         g_free(info->name);
-        g_free(info->version);
-        g_free(info->author);
-    
-        g_free(info->interface);
         
         g_free(info);
     }
@@ -77,24 +73,14 @@ static gboolean __mirage_fragment_commit_bottomup_change (MIRAGE_Fragment *self,
  * @self: a #MIRAGE_Fragment
  * @id: fragment ID
  * @name: fragment name
- * @version: fragment version
- * @author: author name
- * @interface: interface fragment implements
  *
  * <para>
  * Generates fragment information from the input fields. It is intended as a function
  * for creating fragment information in fragment implementations.
  * </para>
- *
- * <para>
- * @num_suffixes is number of provided suffixes (including terminating NULL),
- * while @Varargs is a NULL-terminated list of suffixes.
- * </para>
  **/
-void mirage_fragment_generate_fragment_info (MIRAGE_Fragment *self, gchar *id, gchar *name, gchar *version, gchar *author, gchar *interface) {
+void mirage_fragment_generate_fragment_info (MIRAGE_Fragment *self, gchar *id, gchar *name) {
     MIRAGE_FragmentPrivate *_priv = MIRAGE_FRAGMENT_GET_PRIVATE(self);
-    va_list args;
-    gint i;
     
     /* Free old info */
     __destroy_fragment_info(_priv->fragment_info);
@@ -104,10 +90,6 @@ void mirage_fragment_generate_fragment_info (MIRAGE_Fragment *self, gchar *id, g
     
     _priv->fragment_info->id = g_strdup(id);
     _priv->fragment_info->name = g_strdup(name);
-    _priv->fragment_info->version = g_strdup(version);
-    _priv->fragment_info->author = g_strdup(author);
-        
-    _priv->fragment_info->interface = g_strdup(interface);
         
     return;
 }

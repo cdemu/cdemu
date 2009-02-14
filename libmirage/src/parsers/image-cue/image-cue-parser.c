@@ -1021,11 +1021,8 @@ static void __mirage_parser_cue_instance_init (GTypeInstance *instance, gpointer
     mirage_parser_generate_parser_info(MIRAGE_PARSER(instance),
         "PARSER-CUE",
         "CUE Image Parser",
-        "1.0.0",
-        "Rok Mandeljc",
-        TRUE,
         "CUE images",
-        2, ".cue", NULL
+        "application/libmirage-cue"
     );
     
     __mirage_parser_cue_init_regex_parser(MIRAGE_PARSER(instance));

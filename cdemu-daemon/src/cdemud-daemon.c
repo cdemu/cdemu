@@ -520,7 +520,7 @@ static gboolean __cdemud_daemon_add_supported_parser (gpointer data, gpointer us
     GValueArray *parser_entry = NULL;
     
     /* Create value array */
-    parser_entry = g_value_array_new(7);
+    parser_entry = g_value_array_new(4);
         
     /* ID */
     g_value_array_append(parser_entry, NULL);
@@ -532,30 +532,15 @@ static gboolean __cdemud_daemon_add_supported_parser (gpointer data, gpointer us
     g_value_init(g_value_array_get_nth(parser_entry, 1), G_TYPE_STRING);
     g_value_set_string(g_value_array_get_nth(parser_entry, 1), info->name);
     
-    /* Version */
-    g_value_array_append(parser_entry, NULL);
-    g_value_init(g_value_array_get_nth(parser_entry, 2), G_TYPE_STRING);
-    g_value_set_string(g_value_array_get_nth(parser_entry, 2), info->version);
-        
-    /* Author */
-    g_value_array_append(parser_entry, NULL);
-    g_value_init(g_value_array_get_nth(parser_entry, 3), G_TYPE_STRING);
-    g_value_set_string(g_value_array_get_nth(parser_entry, 3), info->author);
-    
-    /* Multiple files support */
-    g_value_array_append(parser_entry, NULL);
-    g_value_init(g_value_array_get_nth(parser_entry, 4), G_TYPE_BOOLEAN);
-    g_value_set_boolean(g_value_array_get_nth(parser_entry, 4), info->multi_file);
-    
     /* Description */
     g_value_array_append(parser_entry, NULL);
-    g_value_init(g_value_array_get_nth(parser_entry, 5), G_TYPE_STRING);
-    g_value_set_string(g_value_array_get_nth(parser_entry, 5), info->description);
+    g_value_init(g_value_array_get_nth(parser_entry, 2), G_TYPE_STRING);
+    g_value_set_string(g_value_array_get_nth(parser_entry, 2), info->description);
     
-    /* Suffixes */
+    /* MIME type */
     g_value_array_append(parser_entry, NULL);
-    g_value_init(g_value_array_get_nth(parser_entry, 6), G_TYPE_STRV);
-    g_value_set_boxed(g_value_array_get_nth(parser_entry, 6), info->suffixes);
+    g_value_init(g_value_array_get_nth(parser_entry, 3), G_TYPE_STRING);
+    g_value_set_string(g_value_array_get_nth(parser_entry, 3), info->mime_type);
     
     /* Add mask's value array to masks' pointer array */
     g_ptr_array_add(parsers, parser_entry);
@@ -577,7 +562,7 @@ static gboolean __cdemud_daemon_add_supported_fragment (gpointer data, gpointer 
     GValueArray *fragment_entry = NULL;
     
     /* Create value array */
-    fragment_entry = g_value_array_new(7);
+    fragment_entry = g_value_array_new(2);
     
     /* ID */
     g_value_array_append(fragment_entry, NULL);
@@ -588,22 +573,7 @@ static gboolean __cdemud_daemon_add_supported_fragment (gpointer data, gpointer 
     g_value_array_append(fragment_entry, NULL);
     g_value_init(g_value_array_get_nth(fragment_entry, 1), G_TYPE_STRING);
     g_value_set_string(g_value_array_get_nth(fragment_entry, 1), info->name);
-    
-    /* Version */
-    g_value_array_append(fragment_entry, NULL);
-    g_value_init(g_value_array_get_nth(fragment_entry, 2), G_TYPE_STRING);
-    g_value_set_string(g_value_array_get_nth(fragment_entry, 2), info->version);
-        
-    /* Author */
-    g_value_array_append(fragment_entry, NULL);
-    g_value_init(g_value_array_get_nth(fragment_entry, 3), G_TYPE_STRING);
-    g_value_set_string(g_value_array_get_nth(fragment_entry, 3), info->author);
-    
-    /* Interface */
-    g_value_array_append(fragment_entry, NULL);
-    g_value_init(g_value_array_get_nth(fragment_entry, 4), G_TYPE_STRING);
-    g_value_set_string(g_value_array_get_nth(fragment_entry, 4), info->interface);
-        
+            
     /* Add fragment's array to fragments' pointer array */
     g_ptr_array_add(fragments, fragment_entry);
     

@@ -1,4 +1,4 @@
-.TH CDEMU 1 "Nov 18, 2008"
+.TH CDEMU 1 "Feb 4, 2009"
 .SH NAME
 cdemu \- a simple command-line CDEmu client
 .SH SYNOPSIS
@@ -108,19 +108,17 @@ Displays/sets device ID. \fBdevice\fR is the number of the desired device.
 \fBnew-vendor-specific\fR is the new vendor-specific string to be set (20 characters max).
 If new values are ommitted, currently set values are displayed.
 .TP
-.B enum-supported-parsers [parser_id]
-Enumerates supported parsers. If \fBparser_id\fR is provided, information about 
-specific parser is displayed instead.
+.B enum-supported-parsers
+Enumerates supported parsers.
 .TP
-.B enum-supported-fragments [fragment_id]
-Enumerates supported fragments. If \fBfragment_id\fR is provided, information 
-about specific fragment is displayed instead.
+.B enum-supported-fragments
+Enumerates supported fragments.
 .TP
 .B enum-daemon-debug-masks
 Enumerates supported daemon debug masks.
 .TP
 .B enum-library-debug-masks
-Enumerates supported library debug masks;
+Enumerates supported library debug masks.
 .TP
 .B version
 Displays version information
@@ -165,14 +163,8 @@ cdemu device-id 0 "MyVendor" "MyProduct" "1.0.0" "Test device ID"
 .B Enumerating supported parsers:
 cdemu enum-supported-parsers
 .TP
-.B Obtaining information about specific parser:
-cdemu enum-supported-parsers PARSER-TOC
-.TP
 .B Enumerating supported fragments:
 cdemu enum-supported-fragments
-.TP
-.B Obtaining information about specific fragment:
-cdemu enum-supported-fragments FRAGMENT-BINARY
 .TP
 .B Enumerating supported daemon debug masks:
 cdemu enum-daemon-debug-masks

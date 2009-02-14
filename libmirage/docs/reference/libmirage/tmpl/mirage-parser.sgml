@@ -33,11 +33,8 @@ represents the disc stored in the image file(s).
 
 @id: 
 @name: 
-@version: 
-@author: 
-@multi_file: 
 @description: 
-@suffixes: 
+@mime_type: 
 
 <!-- ##### STRUCT MIRAGE_Parser ##### -->
 <para>
@@ -53,12 +50,8 @@ represents the disc stored in the image file(s).
 @self: 
 @id: 
 @name: 
-@version: 
-@author: 
-@multi_file: 
 @description: 
-@num_suffixes: 
-@Varargs: 
+@mime_type: 
 
 
 <!-- ##### FUNCTION mirage_parser_get_parser_info ##### -->

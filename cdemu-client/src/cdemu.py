@@ -598,29 +598,7 @@ class CDEmu (object):
             # Print all parsers
             print _("Supported parsers:")
             for parser in parsers:
-                line = "  %s: %s:" % (parser[0], parser[5])
-                for suffix in parser[6]:
-                    line += " %s" % (suffix)
-                print line
-        elif len(arguments) == 1:
-            # Print specific parser
-            for parser in parsers:
-                if parser[0] == arguments[0]:
-                    print _("Parser information: '%s'") % (parser[0])
-                    print _(" - Name: %s") % (parser[1])
-                    print _(" - Version: %s") % (parser[2])
-                    print _(" - Author: %s") % (parser[3])
-                    print _(" - Multiple files support: %i") % (parser[4])
-                    print _(" - Image files description: %s") % (parser[5])
-                    line = _(" - Image files suffixes:")
-                    for suffix in parser[6]:
-                        line += " %s" % (suffix)
-                    print line
-                    
-                    break
-            else:
-                print _("Parser with ID '%s' not found!") % (arguments[0])
-                return False
+                print "  %s: %s" % (parser[0], parser[2])
         else:
             self.__print_invalid_number_of_parameters("enum-supported-parsers")
             return False
@@ -639,21 +617,7 @@ class CDEmu (object):
             # Print all fragments
             print _("Supported fragments:")
             for fragment in fragments:
-                print "  %s: %s" % (fragment[0], fragment[4])
-        elif len(arguments) == 1:
-            # Print specific fragments
-            for fragment in fragments:
-                if fragment[0] == arguments[0]:
-                    print _("Fragment information: '%s'") % (fragment[0])
-                    print _(" - Name: %s") % (fragment[1])
-                    print _(" - Version: %s") % (fragment[2])
-                    print _(" - Author: %s") % (fragment[3])
-                    print _(" - Interface: %s") % (fragment[4])
-                                        
-                    break
-            else:
-                print _("Fragment with ID '%s' not found!") % (arguments[0])
-                return False
+                print "  %s: %s" % (fragment[0], fragment[1])
         else:
             self.__print_invalid_number_of_parameters("enum-supported-fragments")
             return False
@@ -860,14 +824,14 @@ class CDEmu (object):
         # Enum-supported-parsers
         [
             "enum-supported-parsers",
-            _("[parser_id]"),
+            "",
             _("enumerates supported parsers"),
             __cmd_enum_supported_parsers
         ],
         # Enum-supported-fragments
         [
             "enum-supported-fragments",
-            _("[fragment_id]"),
+            "",
             _("enumerates supported fragments"),
             __cmd_enum_supported_fragments
         ],
