@@ -42,6 +42,8 @@ class CDEmu (object):
     
     __bus_type = "system" # Use system bus as hard-coded default
     
+    __parser_params = {} # Parser parameters (for load command)
+
     def __init__ (self):
         # Load options; Try "~/.cdemu-client" first, then try "/etc/cdemu-client.conf" next.
         paths = (os.path.expanduser("~/.cdemu-client"), "/etc/cdemu-client.conf")
@@ -71,7 +73,7 @@ class CDEmu (object):
         
         # Separate options from arguments
         try:
-            options, arguments = getopt.gnu_getopt(argv, "hvb:", ["help", "version", "bus="])
+            options, arguments = getopt.gnu_getopt(argv, "hvb:", ["help", "version", "bus=", "password=", "encoding="])
         except getopt.GetoptError:
             self.__print_error(_("Unknown option"))
             self.__print_full_usage()
@@ -87,7 +89,12 @@ class CDEmu (object):
             elif opt in ("-b", "--bus"):
                 # Bus type; don't check the value here, __connect() will do it
                 # for us
-                self.__bus_type = arg                    
+                self.__bus_type = arg
+            # Parser parameters options
+            elif opt in ("--password"):
+                self.__parser_params["password"] = arg
+            elif opt in ("--encoding"):
+                self.__parser_params["encoding"] = arg
         
         if len(arguments) == 0:
             self.__print_full_usage()
@@ -121,9 +128,9 @@ class CDEmu (object):
         except dbus.DBusException, e:
             if e.get_dbus_name() == MIRAGE_E_NEEDSPASSWORD:
                 # We need password
-                print _("The image you are trying to load is encrypted.");
-                password = getpass.getpass(_("Password: "));
-                return self.__load_device(device, filenames, {"password":password})
+                print _("The image you are trying to load is encrypted.")
+                params["password"] = getpass.getpass(_("Password: ")) # Append password to params
+                return self.__load_device(device, filenames, params)
             else:
                 self.__print_error(_("Failed to load image: %s") % (e.get_dbus_message()))
                 return False
@@ -163,14 +170,14 @@ class CDEmu (object):
                     continue
                 
                 # Load device
-                return self.__load_device(device, filenames)
+                return self.__load_device(device, filenames, self.__parser_params)
             
             # If we're here, it means we didn't get an empty device
             self.__print_error(_("No empty device found"))
             return False
         else:
             device = string.atoi(arguments[0], 0)
-            return self.__load_device(device, filenames)
+            return self.__load_device(device, filenames, self.__parser_params)
         
         return True
         
@@ -761,6 +768,10 @@ class CDEmu (object):
         print "  %-25s %s" % ("-h, --help", _("displays help message"))
         print "  %-25s %s" % ("-v, --version", _("displays program version"))
         print "  %-25s %s" % ("-b, --bus", _("sets D-BUS bus type to use; valid values are 'session' and 'system'"))
+        print ""
+        print _("Optional parser parameters (valid only for 'load' command:")
+        print "  %-25s %s" % ("--password", _("password for encrypted images"))
+        print "  %-25s %s" % ("--encoding", _("encoding for text-based images"))
         
         return
         
