@@ -41,8 +41,6 @@ Requirements:
  - libsndfile 1.0.0 or newer
  - zlib
  
- - flex 2.5.33 or newer, bison (for parser code re-generation only)
-
  - gtk-doc (for documentation building)
 
 
