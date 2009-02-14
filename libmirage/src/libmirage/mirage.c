@@ -220,6 +220,7 @@ gchar *libmirage_obtain_password (GError **error) {
  * libmirage_create_disc:
  * @filenames: filename(s)
  * @debug_context: debug context to be attached to disc object, or %NULL
+ * @params: parser parameters, or %NULL
  * @error: location to store error, or %NULL
  *
  * <para>
@@ -231,6 +232,14 @@ gchar *libmirage_obtain_password (GError **error) {
  * </para>
  *
  * <para>
+ * @params, if not %NULL, is a #GHashTable containing parser parameters (such as
+ * password, encoding, etc.) - it must have strings for its keys and values of 
+ * #GValue type. The hash table is passed to the parser; whether parameters are 
+ * actually used (or supported) by the parser, however, depends on the parser 
+ * implementation. If parser does not support a parameter, it will be ignored.
+ * </para>
+ *
+ * <para>
  * If multiple filenames are provided and parser supports only single-file images,
  * only the first filename is used.
  * </para>
@@ -238,7 +247,7 @@ gchar *libmirage_obtain_password (GError **error) {
  * Returns: a #MIRAGE_Disc object on success, %NULL on failure. The reference to
  * the object should be released using g_object_unref() when no longer needed.
  **/
-GObject *libmirage_create_disc (gchar **filenames, GObject *debug_context, GError **error) {
+GObject *libmirage_create_disc (gchar **filenames, GObject *debug_context, GHashTable *params, GError **error) {
     GObject *disc;
     gint i;
     
@@ -268,6 +277,11 @@ GObject *libmirage_create_disc (gchar **filenames, GObject *debug_context, GErro
         /* If provided, attach the debug context to parser */
         if (debug_context) {
             mirage_object_set_debug_context(MIRAGE_OBJECT(parser), debug_context, NULL);
+        }
+        
+        /* Pass the parameters to parser */
+        if (params) {
+            mirage_parser_set_params(MIRAGE_PARSER(parser), params, NULL);
         }
                 
         /* Try loading image */
