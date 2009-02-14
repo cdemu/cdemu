@@ -1313,7 +1313,7 @@ static gboolean __image_analyzer_application_open_image (IMAGE_ANALYZER_Applicat
     log_handler = g_log_set_handler(DEBUG_DOMAIN_PARSER, G_LOG_LEVEL_MASK, __capture_parser_log, self);
 
     /* Create disc */
-    _priv->disc = libmirage_create_disc(filenames, debug_context, &error);
+    _priv->disc = libmirage_create_disc(filenames, debug_context, NULL, &error);
     if (!_priv->disc) {
         g_warning("Failed to create disc: %s\n", error->message);
         __image_analyzer_application_message(self, "Failed to open image: %s", error->message);
