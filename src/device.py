@@ -35,15 +35,6 @@ def helper_combine_images_list (images_list, separator):
         new_list.append(os.path.basename(filename))
     
     return separator.join(new_list)
-
-def case_insensitive_ext_filter (filter_info, data):
-    # Lowercase the filename
-    filename = filter_info[0].lower()
-    # Lowercase the extension
-    ext = data.lower()
-    
-    # Check if lowercased filename ends with lowercased extension
-    return filename.endswith(ext)
     
 class gCDEmu_Device:
     def __setup_file_dialog (self):
@@ -73,12 +64,12 @@ class gCDEmu_Device:
         
         for parser in parsers:
             filter = gtk.FileFilter()
-            filter.set_name(parser[5])
-            for pattern in parser[6]:
-                # Our custom filter function accepts pattern in form of .ext,
-                # without * in front (contrary to add_pattern())
-                filter.add_custom(gtk.FILE_FILTER_FILENAME, case_insensitive_ext_filter, pattern)
-                all_images.add_custom(gtk.FILE_FILTER_FILENAME, case_insensitive_ext_filter, pattern)
+            
+            filter.set_name(parser[2])
+            filter.add_mime_type(parser[3])
+            
+            all_images.add_mime_type(parser[3])
+            
             file_dialog.add_filter(filter)
         
         self.__file_dialog = file_dialog
