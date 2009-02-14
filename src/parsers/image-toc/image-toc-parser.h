@@ -48,23 +48,6 @@ enum {
     TOC_DATA_TYPE_DATA,
 };
 
-gboolean __mirage_parser_toc_set_toc_filename (MIRAGE_Parser *self, gchar *filename, GError **error);
-gboolean __mirage_parser_toc_set_mcn (MIRAGE_Parser *self, gchar *mcn, GError **error);
-gboolean __mirage_parser_toc_set_session_type (MIRAGE_Parser *self, gchar *type_string, GError **error);
-gboolean __mirage_parser_toc_add_track (MIRAGE_Parser *self, gchar *mode_string, gchar *subchan_string, GError **error);
-gboolean __mirage_parser_toc_add_track_fragment (MIRAGE_Parser *self, gint type, gchar *filename_string, gint base_offset, gint start, gint length, GError **error);
-gboolean __mirage_parser_toc_set_track_start (MIRAGE_Parser *self, gint start, GError **error);
-gboolean __mirage_parser_toc_add_index (MIRAGE_Parser *self, gint address, GError **error);
-gboolean __mirage_parser_toc_set_flag (MIRAGE_Parser *self, gint flag, gboolean set, GError **error);
-gboolean __mirage_parser_toc_set_isrc (MIRAGE_Parser *self, gchar *isrc, GError **error);
-
-gboolean __mirage_parser_toc_add_language_mapping (MIRAGE_Parser *self, gint index, gint langcode, GError **error);
-gboolean __mirage_parser_toc_add_g_laguage (MIRAGE_Parser *self, gint index, GError **error);
-gboolean __mirage_parser_toc_add_t_laguage (MIRAGE_Parser *self, gint index, GError **error);
-gboolean __mirage_parser_toc_set_g_cdtext_data (MIRAGE_Parser *self, gint pack_type, gchar *data, GError **error);
-gboolean __mirage_parser_toc_set_t_cdtext_data (MIRAGE_Parser *self, gint pack_type, gchar *data, GError **error);
-
-
 G_END_DECLS
 
 #endif /* __IMAGE_TOC_H__ */

@@ -24,8 +24,9 @@
 #include "config.h"
 #endif
 
+#include <stdlib.h>
+
 #include "mirage.h"
-#include "image-toc-yacc.h"
 #include "image-toc-parser.h"
 
 
