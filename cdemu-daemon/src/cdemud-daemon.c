@@ -22,6 +22,9 @@
 #include "cdemud-marshallers.h"
 
 
+#define __debug__ "Daemon"
+
+
 /* Userspace <-> Kernel bridge */
 #define TO_SECTOR(len) ((len + 511) / 512)
 #define MAX_SENSE 256
@@ -144,7 +147,7 @@ static gboolean __cdemud_daemon_io_handler (GIOChannel *source, GIOCondition con
     struct vhba_response *vres = (void *) buf;
     
     if (read(fd, vreq, BUF_SIZE) < sizeof(*vreq)) {
-        CDEMUD_DEBUG(dev, DAEMON_DEBUG_ERROR, "%s: failed to read request from control device!\n", __func__);
+        CDEMUD_DEBUG(dev, DAEMON_DEBUG_ERROR, "%s: failed to read request from control device!\n", __debug__);
         return FALSE;
     }
 
@@ -167,7 +170,7 @@ static gboolean __cdemud_daemon_io_handler (GIOChannel *source, GIOCondition con
     vres->data_len = cmd.out_len;
 
     if (write(fd, (void *)vres, BUF_SIZE) < sizeof(*vres)) {
-        CDEMUD_DEBUG(dev, DAEMON_DEBUG_ERROR, "%s: failed to write response to control device!\n", __func__);
+        CDEMUD_DEBUG(dev, DAEMON_DEBUG_ERROR, "%s: failed to write response to control device!\n", __debug__);
         return FALSE;
     }
 
@@ -199,7 +202,7 @@ static gboolean __cdemud_daemon_build_device_mapping_callback (gpointer data) {
             break;
         } else if (ioctl_ret < 0) {
             /* Other errors */
-            CDEMUD_DEBUG(dev, DAEMON_DEBUG_WARNING, "%s: error while performing ioctl (%d); device mapping info will not be available\n", __func__, ioctl_ret);
+            CDEMUD_DEBUG(dev, DAEMON_DEBUG_WARNING, "%s: error while performing ioctl (%d); device mapping info will not be available\n", __debug__, ioctl_ret);
             run_again = FALSE;
             break;
         } else {
@@ -213,7 +216,7 @@ static gboolean __cdemud_daemon_build_device_mapping_callback (gpointer data) {
             g_free(scsi_bus_id);
             
             if (!sysfs_dev) {
-                CDEMUD_DEBUG(dev, DAEMON_DEBUG_WARNING, "%s: sysfs device for device #%i could not be opened; device mapping info for this device will not be available\n", __func__, i);
+                CDEMUD_DEBUG(dev, DAEMON_DEBUG_WARNING, "%s: sysfs device for device #%i could not be opened; device mapping info for this device will not be available\n", __debug__, i);
                 continue;
             }
             
@@ -279,13 +282,13 @@ static gboolean __cdemud_daemon_build_device_mapping_callback (gpointer data) {
             if (strlen(path_sr)) {
                 fullpath_sr = g_strconcat("/dev/", path_sr, NULL);
             } else {
-                CDEMUD_DEBUG(dev, DAEMON_DEBUG_WARNING, "%s: device mapping (SCSI CD-ROM) for device #%i could not be determined; device mapping info for this device will not be available\n", __func__, i);
+                CDEMUD_DEBUG(dev, DAEMON_DEBUG_WARNING, "%s: device mapping (SCSI CD-ROM) for device #%i could not be determined; device mapping info for this device will not be available\n", __debug__, i);
             }
             
             if (strlen(path_sg)) {
                 fullpath_sg = g_strconcat("/dev/", path_sg, NULL);
             } else {
-                CDEMUD_DEBUG(dev, DAEMON_DEBUG_WARNING, "%s: device mapping (SCSI generic) for device #%i could not be determined; device mapping info for this device will not be available\n", __func__, i);
+                CDEMUD_DEBUG(dev, DAEMON_DEBUG_WARNING, "%s: device mapping (SCSI generic) for device #%i could not be determined; device mapping info for this device will not be available\n", __debug__, i);
             }
             
             cdemud_device_set_mapping(CDEMUD_DEVICE(dev), fullpath_sr, fullpath_sg, NULL);
@@ -343,7 +346,7 @@ gboolean cdemud_daemon_initialize (CDEMUD_Daemon *self, gint num_devices, gchar 
     dbus_g_object_type_install_info(CDEMUD_TYPE_DAEMON, &dbus_glib_cdemud_daemon_object_info);
     _priv->bus = dbus_g_bus_get(bus_type, error);
     if (!_priv->bus) {
-        CDEMUD_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: failed to get %s bus!\n", __func__, system_bus ? "system" : "session");
+        CDEMUD_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: failed to get %s bus!\n", __debug__, system_bus ? "system" : "session");
         cdemud_error(CDEMUD_E_DBUSCONNECT, error);
         return FALSE;
     }
@@ -351,7 +354,7 @@ gboolean cdemud_daemon_initialize (CDEMUD_Daemon *self, gint num_devices, gchar 
     bus_proxy = dbus_g_proxy_new_for_name(_priv->bus, "org.freedesktop.DBus", "/org/freedesktop/DBus", "org.freedesktop.DBus");
     
     if (!dbus_g_proxy_call(bus_proxy, "RequestName", error, G_TYPE_STRING, "net.sf.cdemu.CDEMUD_Daemon", G_TYPE_UINT, DBUS_NAME_FLAG_DO_NOT_QUEUE, G_TYPE_INVALID, G_TYPE_UINT, &result, G_TYPE_INVALID)) {
-        CDEMUD_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: failed to request name on %s bus!\n", __func__, system_bus ? "system" : "session");
+        CDEMUD_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: failed to request name on %s bus!\n", __debug__, system_bus ? "system" : "session");
         cdemud_error(CDEMUD_E_DBUSNAMEREQUEST, error);
         return FALSE;
     }
@@ -359,7 +362,7 @@ gboolean cdemud_daemon_initialize (CDEMUD_Daemon *self, gint num_devices, gchar 
     /* Make sure we're primary owner of requested name... otherwise it's likely
        that an instance is already running on that bus */
     if (result != DBUS_REQUEST_NAME_REPLY_PRIMARY_OWNER) {
-        CDEMUD_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: failed to become primary owner of name on %s bus; is there another instance already running?\n", __func__, system_bus ? "system" : "session");
+        CDEMUD_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: failed to become primary owner of name on %s bus; is there another instance already running?\n", __debug__, system_bus ? "system" : "session");
         cdemud_error(CDEMUD_E_DBUSNAMEREQUEST, error);
         return FALSE;
     }
@@ -386,7 +389,7 @@ gboolean cdemud_daemon_initialize (CDEMUD_Daemon *self, gint num_devices, gchar 
             /* Open control device and set up I/O channel */
             fd = open(_priv->ctl_device, O_RDWR | O_SYNC | O_NONBLOCK);
             if (fd < 0) {
-                CDEMUD_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: failed to open control device %s!\n", __func__, _priv->ctl_device);
+                CDEMUD_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: failed to open control device %s!\n", __debug__, _priv->ctl_device);
                 g_object_unref(dev);
                 cdemud_error(CDEMUD_E_CTLDEVICE, error);
                 return FALSE;
@@ -399,7 +402,7 @@ gboolean cdemud_daemon_initialize (CDEMUD_Daemon *self, gint num_devices, gchar 
             /* Add it to devices list */
             _priv->list_of_devices = g_list_append(_priv->list_of_devices, dev);
         } else {
-            CDEMUD_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: failed to initialize device %i!\n", __func__, i);
+            CDEMUD_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: failed to initialize device %i!\n", __debug__, i);
             g_object_unref(dev);
             cdemud_error(CDEMUD_E_DEVICEINITFAILED, error);
             return FALSE;
@@ -488,11 +491,10 @@ static GPtrArray *__encode_masks (const MIRAGE_DebugMask *masks, gint num_masks)
 gboolean cdemud_daemon_enum_daemon_debug_masks (CDEMUD_Daemon *self, GPtrArray **masks, GError **error) {
     /*CDEMUD_DaemonPrivate *_priv = CDEMUD_DAEMON_GET_PRIVATE(self);*/
     static const MIRAGE_DebugMask dbg_masks[] = {
-        { "DAEMON_DEBUG_DEV_FIXME", DAEMON_DEBUG_DEV_FIXME },
-        { "DAEMON_DEBUG_DEV_PC_TRACE", DAEMON_DEBUG_DEV_PC_TRACE },
-        { "DAEMON_DEBUG_DEV_PC_DUMP", DAEMON_DEBUG_DEV_PC_DUMP },
-        { "DAEMON_DEBUG_DEV_DELAY", DAEMON_DEBUG_DEV_DELAY },
-        { "DAEMON_DEBUG_DEV_AUDIOPLAY", DAEMON_DEBUG_DEV_AUDIOPLAY },
+        { "DAEMON_DEBUG_DEVICE", DAEMON_DEBUG_DEVICE },
+        { "DAEMON_DEBUG_MMC", DAEMON_DEBUG_MMC },
+        { "DAEMON_DEBUG_DELAY", DAEMON_DEBUG_DELAY },
+        { "DAEMON_DEBUG_AUDIOPLAY", DAEMON_DEBUG_AUDIOPLAY },
     };
     
     *masks = __encode_masks(dbg_masks, G_N_ELEMENTS(dbg_masks));

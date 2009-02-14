@@ -26,16 +26,15 @@ typedef enum {
     DAEMON_DEBUG_ERROR = MIRAGE_DEBUG_ERROR,
     DAEMON_DEBUG_WARNING = MIRAGE_DEBUG_WARNING,
     /* Debug masks */
-    DAEMON_DEBUG_DEV_FIXME = 0x0001,
-    DAEMON_DEBUG_DEV_PC_TRACE = 0x0002,
-    DAEMON_DEBUG_DEV_PC_DUMP = 0x0004,
-    DAEMON_DEBUG_DEV_DELAY = 0x0008,
-    DAEMON_DEBUG_DEV_AUDIOPLAY = 0x0010
+    DAEMON_DEBUG_DEVICE = 0x0001,
+    DAEMON_DEBUG_MMC = 0x0002,
+    DAEMON_DEBUG_DELAY = 0x0004,
+    DAEMON_DEBUG_AUDIOPLAY = 0x0008
 } CDEMUD_DeviceDebugMasks;
 
 /* Debug macro */
-#define CDEMUD_DEBUG(obj, lvl, format, msg...) {                        \
-    mirage_object_debug_message(MIRAGE_OBJECT(obj), lvl, format, msg);   \
+#define CDEMUD_DEBUG(obj, lvl, msg...) {                        \
+    mirage_object_debug_message(MIRAGE_OBJECT(obj), lvl, msg);  \
 }
 
 //#define CDEMUD_DEBUG_ON(dev, lvl) (CDEMUD_DEVICE_GET_PRIVATE(dev)->debug_mask & lvl)
