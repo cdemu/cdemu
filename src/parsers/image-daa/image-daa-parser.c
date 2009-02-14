@@ -153,11 +153,8 @@ static void __mirage_parser_daa_instance_init (GTypeInstance *instance, gpointer
     mirage_parser_generate_parser_info(MIRAGE_PARSER(instance),
         "PARSER-DAA",
         "DAA Image Parser",
-        "1.0.0",
-        "Rok Mandeljc",
-        FALSE,
         "PowerISO direct access archives",
-        2, ".daa", NULL
+        "application/libmirage-daa"
     );
     
     return;

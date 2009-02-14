@@ -588,11 +588,8 @@ static void __mirage_parser_toc_instance_init (GTypeInstance *instance, gpointer
     mirage_parser_generate_parser_info(MIRAGE_PARSER(instance),
         "PARSER-TOC",
         "TOC Image Parser",
-        "1.0.0",
-        "Rok Mandeljc",
-        TRUE,
         "TOC files",
-        2, ".toc", NULL
+        "application/libmirage-toc"
     );
     
     return;

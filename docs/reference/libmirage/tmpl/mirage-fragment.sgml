@@ -38,9 +38,6 @@ implementation handles data.
 
 @id: 
 @name: 
-@version: 
-@author: 
-@interface: 
 
 <!-- ##### STRUCT MIRAGE_Fragment ##### -->
 <para>
@@ -56,9 +53,6 @@ implementation handles data.
 @self: 
 @id: 
 @name: 
-@version: 
-@author: 
-@interface: 
 
 
 <!-- ##### FUNCTION mirage_fragment_get_fragment_info ##### -->

@@ -561,15 +561,12 @@ end:
 /* Our parent class */
 static MIRAGE_ParserClass *parent_class = NULL;
 
-static void __mirage_parser_b6t_instance_init (GTypeInstance *instance, gpointer g_class) {
+static void __mirage_parser_ccd_instance_init (GTypeInstance *instance, gpointer g_class) {
     mirage_parser_generate_parser_info(MIRAGE_PARSER(instance),
-        "PARSER-CDI",
-        "CDI Image Parser",
-        "1.0.0",
-        "Rok Mandeljc",
-        TRUE,
+        "PARSER-CCD",
+        "CCD Image Parser",
         "CCD (CloneCD) images",
-        2, ".ccd", NULL
+        "application/libmirage-ccd"
     );
     
     return;
@@ -621,7 +618,7 @@ GType mirage_parser_ccd_get_type (GTypeModule *module) {
             NULL,   /* class_data */
             sizeof(MIRAGE_Parser_CCD),
             0,      /* n_preallocs */
-            __mirage_parser_b6t_instance_init    /* instance_init */
+            __mirage_parser_ccd_instance_init    /* instance_init */
         };
         
         type = g_type_module_register_type(module, MIRAGE_TYPE_PARSER, "MIRAGE_Parser_CCD", &info, 0);
