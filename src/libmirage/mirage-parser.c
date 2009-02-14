@@ -350,8 +350,15 @@ gboolean mirage_parser_set_params (MIRAGE_Parser *self, GHashTable *params, GErr
  **/
 gboolean mirage_parser_get_param_string (MIRAGE_Parser *self, gchar *name, const gchar **ret_value, GError **error) {
     MIRAGE_ParserPrivate *_priv = MIRAGE_PARSER_GET_PRIVATE(self);
-    GValue *value = g_hash_table_lookup(_priv->parser_params, name);
+    GValue *value;
     
+    if (!_priv->parser_params) {
+        mirage_error(MIRAGE_E_GENERIC, error);
+        return FALSE;
+    }
+    
+    value = g_hash_table_lookup(_priv->parser_params, name);
+        
     if (!value) {
         mirage_error(MIRAGE_E_GENERIC, error);
         return FALSE;
