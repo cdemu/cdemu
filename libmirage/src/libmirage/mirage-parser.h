@@ -98,6 +98,10 @@ gboolean mirage_parser_load_image (MIRAGE_Parser *self, gchar **filenames, GObje
 gint mirage_parser_guess_medium_type (MIRAGE_Parser *self, GObject *disc);
 gboolean mirage_parser_add_redbook_pregap (MIRAGE_Parser *self, GObject *disc, GError **error);
 
+gboolean mirage_parser_set_params (MIRAGE_Parser *self, GHashTable *params, GError **error);
+gboolean mirage_parser_get_param_string (MIRAGE_Parser *self, gchar *name, const gchar **value, GError **error);
+
+
 G_END_DECLS
 
 #endif /* __MIRAGE_PARSER_H__ */

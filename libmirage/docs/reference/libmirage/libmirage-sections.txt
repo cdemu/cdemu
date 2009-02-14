@@ -458,6 +458,8 @@ mirage_parser_get_parser_info
 mirage_parser_load_image
 mirage_parser_add_redbook_pregap
 mirage_parser_guess_medium_type
+mirage_parser_get_param_string
+mirage_parser_set_params
 <SUBSECTION Standard>
 MIRAGE_PARSER
 MIRAGE_IS_PARSER

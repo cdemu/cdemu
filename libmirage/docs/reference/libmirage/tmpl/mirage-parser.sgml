@@ -105,3 +105,26 @@ represents the disc stored in the image file(s).
 @Returns: 
 
 
+<!-- ##### FUNCTION mirage_parser_get_param_string ##### -->
+<para>
+
+</para>
+
+@self: 
+@name: 
+@value: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION mirage_parser_set_params ##### -->
+<para>
+
+</para>
+
+@self: 
+@params: 
+@error: 
+@Returns: 
+
+
