@@ -812,7 +812,7 @@ static void __mirage_parser_cue_cleanup_regex_parser (MIRAGE_Parser *self) {
     g_list_free(_priv->regex_rules);
 }
 
-static gboolean __mirage_parser_detect_and_set_encoding (MIRAGE_Parser *self, GIOChannel *io_channel, GError **error) {
+static gboolean __mirage_parser_cue_detect_and_set_encoding (MIRAGE_Parser *self, GIOChannel *io_channel, GError **error) {
     static gchar bom_utf32_be[] = { 0x00, 0x00, 0xFE, 0xFF };
     static gchar bom_utf32_le[] = { 0xFF, 0xFE, 0x00, 0x00 };
     static gchar bom_utf16_be[] = { 0xFE, 0xFF };
@@ -868,8 +868,14 @@ static gboolean __mirage_parser_parse_cue_file (MIRAGE_Parser *self, gchar *file
         return FALSE;
     }
     
-    /* FIXME: get encoding via params */
-    __mirage_parser_detect_and_set_encoding(self, io_channel, NULL);
+    /* If provided, use the specified encoding; otherwise, try to detect it */
+    gchar *encoding = NULL;
+    if (mirage_parser_get_param_string(self, "encoding", &encoding, NULL)) {
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: using specified encoding: %s\n", __func__, encoding);
+        g_io_channel_set_encoding(io_channel, encoding, NULL);
+    } else {
+        __mirage_parser_cue_detect_and_set_encoding(self, io_channel, NULL);
+    }
     
     /* Read file line-by-line */
     gint line_nr;
