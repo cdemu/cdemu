@@ -41,19 +41,6 @@ typedef struct {
 /* Used by MIRAGE_TYPE_PARSER_CUE */
 GType mirage_parser_cue_get_type (GTypeModule *module);
 
-/* Helpers */
-gboolean __mirage_parser_cue_finish_last_track (MIRAGE_Parser *self, GError **error);
-gboolean __mirage_parser_cue_set_cue_filename (MIRAGE_Parser *self, gchar *filename, GError **error);
-gboolean __mirage_parser_cue_set_mcn (MIRAGE_Parser *self, gchar *mcn, GError **error);
-gboolean __mirage_parser_cue_set_new_file (MIRAGE_Parser *self, gchar *filename_string, gchar *file_type, GError **error);
-gboolean __mirage_parser_cue_add_track (MIRAGE_Parser *self, gint number, gchar *mode_string, GError **error);
-gboolean __mirage_parser_cue_add_index (MIRAGE_Parser *self, gint number, gint address, GError **error);
-gboolean __mirage_parser_cue_set_flag (MIRAGE_Parser *self, gint flag, GError **error);
-gboolean __mirage_parser_cue_set_isrc (MIRAGE_Parser *self, gchar *isrc, GError **error);
-gboolean __mirage_parser_cue_add_pregap (MIRAGE_Parser *self, gint length, GError **error);
-gboolean __mirage_parser_cue_add_empty_part (MIRAGE_Parser *self, gint length, GError **error);
-gboolean __mirage_parser_cue_add_session (MIRAGE_Parser *self, gint number, GError **error);
-
 G_END_DECLS
 
 #endif /* __IMAGE_CUE_PARSER_H__ */
