@@ -1871,8 +1871,10 @@ static gboolean __cdemud_device_pc_read_subchannel (CDEMUD_Device *self, guint8 
                 
                 /* Read current sector's PQ subchannel */
                 guint8 tmp_buf[16];
-                mirage_disc_read_sector(MIRAGE_DISC(_priv->disc), current_position, 0x00, MIRAGE_SUBCHANNEL_PQ, tmp_buf, NULL, NULL);
-                
+                if (!mirage_disc_read_sector(MIRAGE_DISC(_priv->disc), current_position, 0x00, MIRAGE_SUBCHANNEL_PQ, tmp_buf, NULL, NULL)) {
+                    CDEMUD_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: failed to read subchannel of sector 0x%X!\n", __debug__, current_position);
+                }
+
                 /* Copy ADR/CTL, track number and index */
                 ret_data->adr = tmp_buf[0] & 0x0F; 
                 ret_data->ctl = (tmp_buf[0] & 0xF0) >> 4;
@@ -1890,11 +1892,16 @@ static gboolean __cdemud_device_pc_read_subchannel (CDEMUD_Device *self, guint8 
                    We do the same, because at least 'grip' on linux seems to rely on
                    data returned by READ SUBCHANNEL being HEX... (and it seems MMC3
                    requires READ CD to return BCD data) */
-                gint correction = 0;
-                while((tmp_buf[0] & 0x0F) != 0x01) {
-                    CDEMUD_DEBUG(self, DAEMON_DEBUG_MMC, "%s: got a sector that's not Mode-1 Q; taking next one!\n", __debug__);
+                gint correction = 1;
+                while ((tmp_buf[0] & 0x0F) != 0x01) {
+                    CDEMUD_DEBUG(self, DAEMON_DEBUG_MMC, "%s: got a sector that's not Mode-1 Q; taking next one (0x%X)!\n", __debug__, current_position+correction);
+                    
                     /* Read from next sector */
-                    mirage_disc_read_sector(MIRAGE_DISC(_priv->disc), current_position+correction, 0x00, MIRAGE_SUBCHANNEL_PQ, tmp_buf, NULL, NULL);
+                    if (!mirage_disc_read_sector(MIRAGE_DISC(_priv->disc), current_position+correction, 0x00, MIRAGE_SUBCHANNEL_PQ, tmp_buf, NULL, NULL)) {
+                        CDEMUD_DEBUG(self, DAEMON_DEBUG_MMC, "%s: failed to read subchannel of sector 0x%X!\n", __debug__, current_position+correction);
+                        break;
+                    }
+                    
                     correction++;
                 }
                 
@@ -1932,7 +1939,7 @@ static gboolean __cdemud_device_pc_read_subchannel (CDEMUD_Device *self, guint8 
                     guint8 tmp_buf[16];
                     
                     if (!mirage_disc_read_sector(MIRAGE_DISC(_priv->disc), sector, 0, MIRAGE_SUBCHANNEL_PQ, tmp_buf, NULL, NULL)) {
-                        CDEMUD_DEBUG(self, DAEMON_DEBUG_MMC, "%s: failed to read subchannel of sector 0x%X\n", __debug__, sector);
+                        CDEMUD_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: failed to read subchannel of sector 0x%X!\n", __debug__, sector);
                         continue;
                     }
                     
@@ -2947,7 +2954,7 @@ gboolean cdemud_device_initialize (CDEMUD_Device *self, gint number, gchar *audi
     /* Attach child... so that it'll get device's debug context */
     mirage_object_attach_child(MIRAGE_OBJECT(self), _priv->audio_play, NULL);
     /* Initialize */
-    if (!cdemud_audio_initialize(CDEMUD_AUDIO(_priv->audio_play), audio_driver, &_priv->current_sector, error)) {
+    if (!cdemud_audio_initialize(CDEMUD_AUDIO(_priv->audio_play), audio_driver, &_priv->current_sector, _priv->device_mutex, error)) {
         CDEMUD_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: failed to initialize audio backend!\n", __debug__);
         return FALSE;
     }
