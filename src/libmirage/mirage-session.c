@@ -23,6 +23,8 @@
 
 #include "mirage.h"
 
+#define __debug__ "Session"
+
 
 /******************************************************************************\
  *                              Private structure                             *
@@ -450,7 +452,7 @@ gboolean mirage_session_set_leadout_length (MIRAGE_Session *self, gint length, G
         null_fragment = libmirage_create_fragment(MIRAGE_TYPE_FINTERFACE_NULL, "NULL", error);
         
         if (!null_fragment) {
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: failed to create NULL fragment\n", __func__);
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: failed to create NULL fragment\n", __debug__);
             g_object_unref(leadout);
             return FALSE;
         }
@@ -1573,7 +1575,7 @@ gboolean mirage_session_get_cdtext_data (MIRAGE_Session *self, guint8 **data, gi
             gint session_lang_len = 0;
             
             if (mirage_language_get_pack_data(MIRAGE_LANGUAGE(session_lang), pack_type, (gchar **)&session_lang_data, &session_lang_len, NULL)) {
-                MIRAGE_DEBUG(self, MIRAGE_DEBUG_SESSION, "%s: adding pack for session; pack type: %02Xh; pack len: %i; pack data: <%s>\n", __func__, pack_type, session_lang_len, session_lang_data);
+                MIRAGE_DEBUG(self, MIRAGE_DEBUG_SESSION, "%s: adding pack for session; pack type: %02Xh; pack len: %i; pack data: <%s>\n", __debug__, pack_type, session_lang_len, session_lang_data);
                 mirage_cdtext_encoder_add_data(MIRAGE_CDTEXT_ENCDEC(encoder), langcode, pack_type, 0, session_lang_data, session_lang_len, NULL);
             }
             
@@ -1592,12 +1594,12 @@ gboolean mirage_session_get_cdtext_data (MIRAGE_Session *self, guint8 **data, gi
                 mirage_track_layout_get_track_number(MIRAGE_TRACK(track), &number, NULL);
                                 
                 if (!mirage_track_get_language_by_code(MIRAGE_TRACK(track), langcode, &track_lang, NULL)) {
-                    MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: Failed to get language with code %i on track %i!\n", __func__, langcode, number);
+                    MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: Failed to get language with code %i on track %i!\n", __debug__, langcode, number);
                     continue;
                 }
                 
                 if (mirage_language_get_pack_data(MIRAGE_LANGUAGE(track_lang), pack_type, (gchar **)&track_lang_data, &track_lang_len, NULL)) {
-                    MIRAGE_DEBUG(self, MIRAGE_DEBUG_SESSION, "%s: adding pack for track %i; pack type: %02Xh; pack len: %i; pack data: <%s>\n", __func__, number, pack_type, track_lang_len, track_lang_data);
+                    MIRAGE_DEBUG(self, MIRAGE_DEBUG_SESSION, "%s: adding pack for track %i; pack type: %02Xh; pack len: %i; pack data: <%s>\n", __debug__, number, pack_type, track_lang_len, track_lang_data);
                     mirage_cdtext_encoder_add_data(MIRAGE_CDTEXT_ENCDEC(encoder), langcode, pack_type, number, track_lang_data, track_lang_len, NULL);
                 }
                    
@@ -1706,7 +1708,7 @@ static void __mirage_session_finalize (GObject *obj) {
     MIRAGE_SessionPrivate *_priv = MIRAGE_SESSION_GET_PRIVATE(self);
     GList *entry = NULL;
     
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_GOBJECT, "%s:\n", __func__);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_GOBJECT, "%s: finalizing object\n", __debug__);
 
     /* Free list of tracks */
     G_LIST_FOR_EACH(entry, _priv->tracks_list) {
@@ -1729,7 +1731,7 @@ static void __mirage_session_finalize (GObject *obj) {
     g_list_free(_priv->languages_list);
     
     /* Chain up to the parent class */
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_GOBJECT, "%s: chaining up to parent\n", __func__);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_GOBJECT, "%s: chaining up to parent\n", __debug__);
     return G_OBJECT_CLASS(parent_class)->finalize(obj);
 }
 

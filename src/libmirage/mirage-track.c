@@ -23,6 +23,8 @@
 
 #include "mirage.h"
 
+#define __debug__ "Track"
+
 
 /******************************************************************************\
  *                              Private structure                             *
@@ -85,18 +87,18 @@ static gboolean __mirage_track_rearrange_indices (MIRAGE_Track *self, GError **e
        after indices were added) */
     gint cur_index = 2;
     g_assert(_priv->indices_list != NULL);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_TRACK, "%s: rearranging indices (%d indices found)...\n", __func__, g_list_length(_priv->indices_list));
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_TRACK, "%s: rearranging indices (%d indices found)...\n", __debug__, g_list_length(_priv->indices_list));
     G_LIST_FOR_EACH(entry, _priv->indices_list) {
         GObject *index = entry->data;
         gint address = 0;
         mirage_index_get_address(MIRAGE_INDEX(index), &address, NULL);
         if (address <= _priv->track_start) {
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_TRACK, "%s: found an index that's set before track's start... removing\n", __func__);
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_TRACK, "%s: found an index that's set before track's start... removing\n", __debug__);
             entry = entry->next; /* Because we'll remove the entry */
             mirage_track_remove_index_by_object(self, index, NULL);
             continue;
         }
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_TRACK, "%s: setting index number to: %d\n", __func__, cur_index);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_TRACK, "%s: setting index number to: %d\n", __debug__, cur_index);
         mirage_index_set_number(MIRAGE_INDEX(index), cur_index++, NULL);
     }
     
@@ -263,14 +265,14 @@ static gboolean __mirage_track_check_for_encoded_isrc (MIRAGE_Track *self, GErro
                 gchar tmp_isrc[12];
                 
                 mirage_helper_subchannel_q_decode_isrc(&tmp_buf[1], tmp_isrc);
-                MIRAGE_DEBUG(self, MIRAGE_DEBUG_TRACK, "%s: found ISRC: <%s>\n", __func__, tmp_isrc);
+                MIRAGE_DEBUG(self, MIRAGE_DEBUG_TRACK, "%s: found ISRC: <%s>\n", __debug__, tmp_isrc);
                 
                 /* Set ISRC */
                 _priv->isrc = g_strndup(tmp_isrc, 12);
             }
         }
     } else {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_TRACK, "%s: no fragments with subchannel found\n", __func__);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_TRACK, "%s: no fragments with subchannel found\n", __debug__);
         _priv->isrc_encoded = FALSE;
     }
     
@@ -478,13 +480,13 @@ gboolean mirage_track_set_isrc (MIRAGE_Track *self, gchar *isrc, GError **error)
        libMirage), ISRC shouldn't be settable... */
     
     if (_priv->isrc_encoded) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_TRACK, "%s: ISRC is already encoded in subchannel!\n", __func__);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_TRACK, "%s: ISRC is already encoded in subchannel!\n", __debug__);
         mirage_error(MIRAGE_E_DATAFIXED, error);
         return FALSE;
     } else {
         g_free(_priv->isrc);
         _priv->isrc = g_strndup(isrc, 12);
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_TRACK, "%s: set ISRC to <%.12s>\n", __func__, _priv->isrc);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_TRACK, "%s: set ISRC to <%.12s>\n", __debug__, _priv->isrc);
     }
 
     return TRUE;
@@ -512,7 +514,7 @@ gboolean mirage_track_get_isrc (MIRAGE_Track *self, gchar **isrc, GError **error
     
     /* Check if ISRC is set */
     if (!(_priv->isrc && _priv->isrc[0])) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_TRACK, "%s: ISRC not set!\n", __func__);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_TRACK, "%s: ISRC not set!\n", __debug__);
         mirage_error(MIRAGE_E_DATANOTSET, error);
         return FALSE;
     }
@@ -554,7 +556,7 @@ gboolean mirage_track_get_sector (MIRAGE_Track *self, gint address, gboolean abs
     
     MIRAGE_CHECK_ARG(sector);
     
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_TRACK, "%s: getting sector for address 0x%X (%d); absolute: %i\n", __func__, address, address, abs);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_TRACK, "%s: getting sector for address 0x%X (%d); absolute: %i\n", __debug__, address, address, abs);
     
     /* If sector address is absolute, we need to subtract track's start sector,
        since sector feeding code assumes relative address */
@@ -949,7 +951,7 @@ gboolean mirage_track_add_fragment (MIRAGE_Track *self, gint index, GObject **fr
     GObject *new_fragment = NULL;
     gint num_fragments = 0;
     
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_TRACK, "%s: (index: %i, fragment: %p->%p)\n", __func__, index, fragment, fragment ? *fragment : NULL);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_TRACK, "%s: (index: %i, fragment: %p->%p)\n", __debug__, index, fragment, fragment ? *fragment : NULL);
     
     /* First fragment, last fragment... allow negative indexes to go from behind */
     mirage_track_get_number_of_fragments(self, &num_fragments, NULL);
@@ -1011,7 +1013,7 @@ gboolean mirage_track_add_fragment (MIRAGE_Track *self, gint index, GObject **fr
         *fragment = new_fragment;
     }
     
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_TRACK, "%s: end\n", __func__);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_TRACK, "%s: end\n", __debug__);
     
     return TRUE;
 }
@@ -1378,7 +1380,7 @@ gboolean mirage_track_add_index (MIRAGE_Track *self, gint address, GObject **ind
     MIRAGE_TrackPrivate *_priv = MIRAGE_TRACK_GET_PRIVATE(self);
     GObject *new_index = NULL;
     
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_TRACK, "%s: address: 0x%X\n", __func__, address);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_TRACK, "%s: address: 0x%X\n", __debug__, address);
     
     /* Make sure we're not trying to put index before track start (which has index 1) */
     if (address < _priv->track_start) {
@@ -2041,7 +2043,7 @@ gboolean mirage_track_has_iso9660(MIRAGE_Track *self, GError **error) {
     if(!buffer) return FALSE;
     VD = (ISO_VolDesc *) buffer;
 
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: Volume Descriptors:\n", __func__);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: Volume Descriptors:\n", __debug__);
     do {
         /* Read Volume Descriptor */
         if(!mirage_track_read_sector(self, sector, FALSE, MIRAGE_MCSB_DATA, 0, buffer, &ret_len, error)) {
@@ -2051,7 +2053,7 @@ gboolean mirage_track_has_iso9660(MIRAGE_Track *self, GError **error) {
         g_assert(ret_len <= 2500);
 
         /* List Volume Descriptor */
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   Type: %i, ID: '%.5s', Version: %i.\n", __func__, VD->type, VD->id, VD->version);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   Type: %i, ID: '%.5s', Version: %i.\n", __debug__, VD->type, VD->id, VD->version);
 
         /* Validity check */
         if (!memcmp(VD->id, ISO_STANDARD_ID, sizeof(VD->id))) {
@@ -2091,7 +2093,7 @@ static void __mirage_track_finalize (GObject *obj) {
     MIRAGE_TrackPrivate *_priv = MIRAGE_TRACK_GET_PRIVATE(self);
     GList *entry = NULL;
 
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_GOBJECT, "%s:\n", __func__);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_GOBJECT, "%s: finalizing object\n", __debug__);
     
     /* Free list of fragments */
     G_LIST_FOR_EACH(entry, _priv->fragments_list) {        
@@ -2125,7 +2127,7 @@ static void __mirage_track_finalize (GObject *obj) {
     g_free(_priv->isrc);
         
     /* Chain up to the parent class */
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_GOBJECT, "%s: chaining up to parent\n", __func__);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_GOBJECT, "%s: chaining up to parent\n", __debug__);
     return G_OBJECT_CLASS(parent_class)->finalize(obj);
 }
 

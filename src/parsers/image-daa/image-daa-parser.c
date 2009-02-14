@@ -19,6 +19,8 @@
 
 #include "image-daa.h"
 
+#define __debug__ "DAA-Parser"
+
 
 /******************************************************************************\
  *                              Private structure                             *
@@ -71,7 +73,7 @@ static gboolean __mirage_parser_daa_load_image (MIRAGE_Parser *self, gchar **fil
     GObject *session = NULL;
     
     if (!mirage_disc_add_session_by_number(MIRAGE_DISC(_priv->disc), 1, &session, error)) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to add session!\n", __func__);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to add session!\n", __debug__);
         succeeded = FALSE;
         goto end;
     }
@@ -83,7 +85,7 @@ static gboolean __mirage_parser_daa_load_image (MIRAGE_Parser *self, gchar **fil
     succeeded = mirage_session_add_track_by_index(MIRAGE_SESSION(session), -1, &track, error);
     g_object_unref(session);
     if (!succeeded) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to add track!\n", __func__);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to add track!\n", __debug__);
         succeeded = FALSE;
         goto end;
     }
@@ -99,7 +101,7 @@ static gboolean __mirage_parser_daa_load_image (MIRAGE_Parser *self, gchar **fil
     GError *local_error = NULL;
     
     if (!mirage_track_add_fragment(MIRAGE_TRACK(track), -1, &data_fragment, error)) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to add fragment!\n", __func__);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to add fragment!\n", __debug__);
         g_object_unref(data_fragment);
         g_object_unref(track);
         succeeded = FALSE;
@@ -110,7 +112,7 @@ static gboolean __mirage_parser_daa_load_image (MIRAGE_Parser *self, gchar **fil
         /* Don't make buzz for password failures */
         if (local_error->code != MIRAGE_E_NEEDPASSWORD 
             && local_error->code != MIRAGE_E_WRONGPASSWORD) {
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to set file to fragment!\n", __func__);
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to set file to fragment!\n", __debug__);
         }
         g_propagate_error(error, local_error);
         g_object_unref(data_fragment);
@@ -164,10 +166,10 @@ static void __mirage_parser_daa_finalize (GObject *obj) {
     MIRAGE_Parser_DAA *self = MIRAGE_PARSER_DAA(obj);
     /*MIRAGE_Parser_DAAPrivate *_priv = MIRAGE_PARSER_DAA_GET_PRIVATE(self);*/
     
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_GOBJECT, "%s:\n", __func__);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_GOBJECT, "%s: finalizing object\n", __debug__);
     
     /* Chain up to the parent class */
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_GOBJECT, "%s: chaining up to parent\n", __func__);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_GOBJECT, "%s: chaining up to parent\n", __debug__);
     return G_OBJECT_CLASS(parent_class)->finalize(obj);
 }
 

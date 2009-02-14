@@ -23,6 +23,8 @@
 
 #include "mirage.h"
 
+#define __debug__ "Language"
+
 
 /******************************************************************************\
  *                              Private structure                             *
@@ -221,7 +223,7 @@ static void __mirage_language_finalize (GObject *obj) {
     MIRAGE_LanguagePrivate *_priv = MIRAGE_LANGUAGE_GET_PRIVATE(self);
     gint i;
     
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_GOBJECT, "%s:\n", __func__);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_GOBJECT, "%s: finalizing object\n", __debug__);
 
     /* Free private structure elements */
     for (i = 0; i < _priv->packs_number; i++) {
@@ -230,7 +232,7 @@ static void __mirage_language_finalize (GObject *obj) {
     g_free(_priv->packs);
     
     /* Chain up to the parent class */
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_GOBJECT, "%s: chaining up to parent\n", __func__);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_GOBJECT, "%s: chaining up to parent\n", __debug__);
     return G_OBJECT_CLASS(parent_class)->finalize(obj);
 }
 

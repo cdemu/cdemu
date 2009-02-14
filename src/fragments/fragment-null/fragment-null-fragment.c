@@ -19,6 +19,8 @@
 
 #include "fragment-null.h"
 
+#define __debug__ "NULL-Fragment"
+
 
 /******************************************************************************\
  *                   MIRAGE_Fragment methods implementations                  *
@@ -36,7 +38,7 @@ static gboolean __mirage_fragment_null_use_the_rest_of_file (MIRAGE_Fragment *se
 
 static gboolean __mirage_fragment_null_read_main_data (MIRAGE_Fragment *self, gint address, guint8 *buf, gint *length, GError **error) {
     /* Nothing to read */
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_FRAGMENT, "%s: no data in NULL fragment\n", __func__);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_FRAGMENT, "%s: no data in NULL fragment\n", __debug__);
     if (length) {
         *length = 0;
     }    
@@ -45,7 +47,7 @@ static gboolean __mirage_fragment_null_read_main_data (MIRAGE_Fragment *self, gi
 
 static gboolean __mirage_fragment_null_read_subchannel_data (MIRAGE_Fragment *self, gint address, guint8 *buf, gint *length, GError **error) {
     /* Nothing to read */
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_FRAGMENT, "%s: no data in NULL fragment\n", __func__);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_FRAGMENT, "%s: no data in NULL fragment\n", __debug__);
     if (length) {
         *length = 0;
     }

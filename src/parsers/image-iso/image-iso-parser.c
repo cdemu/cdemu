@@ -19,6 +19,8 @@
 
 #include "image-iso.h"
 
+#define __debug__ "ISO-Parser"
+
 
 /******************************************************************************\
  *                              Private structure                             *
@@ -47,14 +49,14 @@ static gboolean __mirage_parser_iso_is_file_valid (MIRAGE_Parser *self, gchar *f
     FILE *file;
     
     if (g_stat(filename, &st) < 0) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to stat file!\n", __func__);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to stat file!\n", __debug__);
         mirage_error(MIRAGE_E_IMAGEFILE, error);
         return FALSE;
     }
     
     file = g_fopen(filename, "r");
     if (!file) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to open file!\n", __func__);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to open file!\n", __debug__);
         mirage_error(MIRAGE_E_IMAGEFILE, error);
         return FALSE;
     }
@@ -66,7 +68,7 @@ static gboolean __mirage_parser_iso_is_file_valid (MIRAGE_Parser *self, gchar *f
         fseeko(file, 16*2048, SEEK_SET);
         
         if (fread(buf, 8, 1, file) < 1) {
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read 8-byte pattern!\n", __func__);
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read 8-byte pattern!\n", __debug__);
             mirage_error(MIRAGE_E_READFAILED, error);
             succeeded = FALSE;
             goto end;
@@ -77,7 +79,7 @@ static gboolean __mirage_parser_iso_is_file_valid (MIRAGE_Parser *self, gchar *f
             _priv->track_sectsize = 2048;
             _priv->track_mode = MIRAGE_MODE_MODE1;
             
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: standard 2048-byte ISO9660/UDF track, Mode 1 assumed\n", __func__);
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: standard 2048-byte ISO9660/UDF track, Mode 1 assumed\n", __debug__);
             
             succeeded = TRUE;
             goto end;
@@ -91,7 +93,7 @@ static gboolean __mirage_parser_iso_is_file_valid (MIRAGE_Parser *self, gchar *f
         fseeko(file, 16*2352, SEEK_SET);
         
         if (fread(buf, 12, 1, file) < 1) {
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read sync pattern!\n", __func__);
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read sync pattern!\n", __debug__);
             mirage_error(MIRAGE_E_READFAILED, error);
             succeeded = FALSE;
             goto end;
@@ -105,7 +107,7 @@ static gboolean __mirage_parser_iso_is_file_valid (MIRAGE_Parser *self, gchar *f
             fseeko(file, 3, SEEK_CUR); /* We're at the end of sync, we just need to skip MSF */
             
             if (fread(&mode_byte, 1, 1, file) < 1) {
-                MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read mode byte!\n", __func__);
+                MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read mode byte!\n", __debug__);
                 mirage_error(MIRAGE_E_READFAILED, error);
                 succeeded = FALSE;
                 goto end;
@@ -116,7 +118,7 @@ static gboolean __mirage_parser_iso_is_file_valid (MIRAGE_Parser *self, gchar *f
                     _priv->track_sectsize = 2352;
                     _priv->track_mode = MIRAGE_MODE_MODE0;
                     
-                    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: 2352-byte track, Mode 0\n", __func__);
+                    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: 2352-byte track, Mode 0\n", __debug__);
                     
                     succeeded = TRUE;
                     goto end;
@@ -125,7 +127,7 @@ static gboolean __mirage_parser_iso_is_file_valid (MIRAGE_Parser *self, gchar *f
                     _priv->track_sectsize = 2352;
                     _priv->track_mode = MIRAGE_MODE_MODE1;
                     
-                    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: 2352-byte track, Mode 1\n", __func__);
+                    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: 2352-byte track, Mode 1\n", __debug__);
                     
                     succeeded = TRUE;
                     goto end;
@@ -134,7 +136,7 @@ static gboolean __mirage_parser_iso_is_file_valid (MIRAGE_Parser *self, gchar *f
                     _priv->track_sectsize = 2352;
                     _priv->track_mode = MIRAGE_MODE_MODE2_MIXED;
                     
-                    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: 2352-byte track, Mode 2 Mixed\n", __func__);
+                    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: 2352-byte track, Mode 2 Mixed\n", __debug__);
                     
                     succeeded = TRUE;
                     goto end;
@@ -144,7 +146,7 @@ static gboolean __mirage_parser_iso_is_file_valid (MIRAGE_Parser *self, gchar *f
             _priv->track_sectsize = 2352;
             _priv->track_mode = MIRAGE_MODE_AUDIO;
             
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: 2352-byte track w/o sync pattern, Audio assumed\n", __func__);
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: 2352-byte track w/o sync pattern, Audio assumed\n", __debug__);
             
             succeeded = TRUE;
             goto end;
@@ -156,7 +158,7 @@ static gboolean __mirage_parser_iso_is_file_valid (MIRAGE_Parser *self, gchar *f
         _priv->track_sectsize = 2332;
         _priv->track_mode = MIRAGE_MODE_MODE2_MIXED;
             
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: 2332-byte track, Mode 2 Mixed assumed (unreliable!)\n", __func__);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: 2332-byte track, Mode 2 Mixed assumed (unreliable!)\n", __debug__);
             
         succeeded = TRUE;
         goto end;
@@ -165,7 +167,7 @@ static gboolean __mirage_parser_iso_is_file_valid (MIRAGE_Parser *self, gchar *f
         _priv->track_sectsize = 2336;
         _priv->track_mode = MIRAGE_MODE_MODE2_MIXED;
             
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: 2336-byte track, Mode 2 Mixed assumed (unreliable!)\n", __func__);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: 2336-byte track, Mode 2 Mixed assumed (unreliable!)\n", __debug__);
             
         succeeded = TRUE;
         goto end;
@@ -188,11 +190,13 @@ static gboolean __mirage_parser_iso_load_track (MIRAGE_Parser *self, gchar *file
     GObject *track = NULL;
     GObject *data_fragment = NULL;
 
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: loading track from ISO file: %s\n", __debug__, filename);
+    
     /* Create data fragment */
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: creating data fragment\n", __func__);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: creating data fragment\n", __debug__);
     data_fragment = libmirage_create_fragment(MIRAGE_TYPE_FINTERFACE_BINARY, filename, error);
     if (!data_fragment) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to create BINARY fragment!\n", __func__);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to create BINARY fragment!\n", __debug__);
         return FALSE;
     }
         
@@ -203,19 +207,19 @@ static gboolean __mirage_parser_iso_load_track (MIRAGE_Parser *self, gchar *file
     
     /* Use whole file */
     if (!mirage_fragment_use_the_rest_of_file(MIRAGE_FRAGMENT(data_fragment), error)) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to use the rest of file!\n", __func__);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to use the rest of file!\n", __debug__);
         g_object_unref(data_fragment);
         return FALSE;
     }
     
     /* Add track */
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: adding track\n", __func__);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: adding track\n", __debug__);
 
     mirage_disc_get_session_by_index(MIRAGE_DISC(_priv->disc), -1, &session, NULL);
     succeeded = mirage_session_add_track_by_index(MIRAGE_SESSION(session), -1, &track, error);
     g_object_unref(session);
     if (!succeeded) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to add track!\n", __func__);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to add track!\n", __debug__);
         g_object_unref(data_fragment);
         return succeeded;
     }
@@ -225,7 +229,7 @@ static gboolean __mirage_parser_iso_load_track (MIRAGE_Parser *self, gchar *file
         
     /* Add fragment to track */
     if (!mirage_track_add_fragment(MIRAGE_TRACK(track), -1, &data_fragment, error)) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to add fragment!\n", __func__);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to add fragment!\n", __debug__);
         g_object_unref(data_fragment);
         g_object_unref(track);
         return FALSE;
@@ -234,7 +238,7 @@ static gboolean __mirage_parser_iso_load_track (MIRAGE_Parser *self, gchar *file
     g_object_unref(data_fragment);
     g_object_unref(track);
     
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: finished loading track\n", __func__);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: finished loading track\n", __debug__);
     
     return TRUE;
 }
@@ -258,7 +262,7 @@ static gboolean __mirage_parser_iso_load_image (MIRAGE_Parser *self, gchar **fil
     /* Session: one session (with possibly multiple tracks) */
     GObject *session = NULL;
     if (!mirage_disc_add_session_by_number(MIRAGE_DISC(_priv->disc), 1, &session, error)) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to add session!\n", __func__);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to add session!\n", __debug__);
         succeeded = FALSE;
         goto end;
     }
@@ -268,10 +272,13 @@ static gboolean __mirage_parser_iso_load_image (MIRAGE_Parser *self, gchar **fil
     
     /* Load track */
     if (!__mirage_parser_iso_load_track(self, filenames[0], error)) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to load track!\n", __func__);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to load track!\n", __debug__);
         succeeded = FALSE;
         goto end;
     }
+    
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "\n");
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: finishing the layout\n", __debug__);
     
     /* Now guess medium type and if it's a CD-ROM, add Red Book pregap */
     gint medium_type = mirage_parser_guess_medium_type(self, _priv->disc);
@@ -315,10 +322,10 @@ static void __mirage_parser_iso_finalize (GObject *obj) {
     MIRAGE_Parser_ISO *self = MIRAGE_PARSER_ISO(obj);
     /*MIRAGE_Parser_ISOPrivate *_priv = MIRAGE_PARSER_ISO_GET_PRIVATE(self);*/
     
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_GOBJECT, "%s:\n", __func__);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_GOBJECT, "%s: finalizing object\n", __debug__);
     
     /* Chain up to the parent class */
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_GOBJECT, "%s: chaining up to parent\n", __func__);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_GOBJECT, "%s: chaining up to parent\n", __debug__);
     return G_OBJECT_CLASS(parent_class)->finalize(obj);
 }
 

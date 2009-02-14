@@ -23,6 +23,8 @@
 
 #include "mirage.h"
 
+#define __debug__ "Disc"
+
 
 /******************************************************************************\
  *                              Private structure                             *
@@ -77,7 +79,7 @@ static gboolean __mirage_disc_commit_topdown_change (MIRAGE_Disc *self, GError *
     MIRAGE_DiscPrivate *_priv = MIRAGE_DISC_GET_PRIVATE(self);
     GList *entry = NULL;
     
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_CHAIN, "%s: start\n", __func__);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_CHAIN, "%s: start\n", __debug__);
     
     /* Rearrange sessions: set numbers, set first tracks, set start sectors */
     gint cur_session_address = _priv->start_sector;
@@ -104,7 +106,7 @@ static gboolean __mirage_disc_commit_topdown_change (MIRAGE_Disc *self, GError *
         cur_session_address += session_length;
     }
         
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_CHAIN, "%s: end\n", __func__);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_CHAIN, "%s: end\n", __debug__);
     
     return TRUE;
 }
@@ -113,7 +115,7 @@ static gboolean __mirage_disc_commit_bottomup_change (MIRAGE_Disc *self, GError 
     MIRAGE_DiscPrivate *_priv = MIRAGE_DISC_GET_PRIVATE(self);
     GList *entry = NULL;
         
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_CHAIN, "%s: start\n", __func__);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_CHAIN, "%s: start\n", __debug__);
     
     /* Calculate disc length and number of tracks */
     _priv->length = 0; /* Reset; it'll be recalculated */
@@ -134,18 +136,18 @@ static gboolean __mirage_disc_commit_bottomup_change (MIRAGE_Disc *self, GError 
     }
     
     /* Bottom-up change = eventual change in fragments, so MCN could've changed... */
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_CHAIN, "%s: checking for MCN change\n", __func__);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_CHAIN, "%s: checking for MCN change\n", __debug__);
     __mirage_disc_check_for_encoded_mcn(self, NULL);
     
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_CHAIN, "%s: emitting signal\n", __func__);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_CHAIN, "%s: emitting signal\n", __debug__);
     
     /* Signal disc change */
     g_signal_emit_by_name(MIRAGE_OBJECT(self), "object-modified", NULL);
     /* Disc is where we complete the arc by committing top-down change */
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_CHAIN, "%s: completing arc by committing top-down change\n", __func__);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_CHAIN, "%s: completing arc by committing top-down change\n", __debug__);
     __mirage_disc_commit_topdown_change(self, NULL);
     
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_CHAIN, "%s: end\n", __func__);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_CHAIN, "%s: end\n", __debug__);
     
     return TRUE;
 }
@@ -153,7 +155,7 @@ static gboolean __mirage_disc_commit_bottomup_change (MIRAGE_Disc *self, GError 
 static void __session_modified_handler (GObject *session, MIRAGE_Disc *self) {
     gint number_of_tracks = 0;
     
-    MIRAGE_DEBUG(self, (MIRAGE_DEBUG_DISC|MIRAGE_DEBUG_CHAIN), "%s: start\n", __func__);
+    MIRAGE_DEBUG(self, (MIRAGE_DEBUG_DISC|MIRAGE_DEBUG_CHAIN), "%s: start\n", __debug__);
 
     /* If session has been emptied, remove it (it'll do bottom-up change automatically);
        otherwise, signal bottom-up change */
@@ -164,7 +166,7 @@ static void __session_modified_handler (GObject *session, MIRAGE_Disc *self) {
         __mirage_disc_commit_bottomup_change(self, NULL);
     }
     
-    MIRAGE_DEBUG(self, (MIRAGE_DEBUG_DISC|MIRAGE_DEBUG_CHAIN), "%s: end\n", __func__);
+    MIRAGE_DEBUG(self, (MIRAGE_DEBUG_DISC|MIRAGE_DEBUG_CHAIN), "%s: end\n", __debug__);
     
     return;
 }
@@ -172,7 +174,7 @@ static void __session_modified_handler (GObject *session, MIRAGE_Disc *self) {
 static gboolean __remove_session_from_disc (MIRAGE_Disc *self, GObject *session, GError **error) {
     MIRAGE_DiscPrivate *_priv = MIRAGE_DISC_GET_PRIVATE(self);
     
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_DISC, "%s: start\n", __func__);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_DISC, "%s: start\n", __debug__);
 
     /* Disconnect signal handler (find it by handler function and user data) */
     g_signal_handlers_disconnect_by_func(MIRAGE_OBJECT(session), __session_modified_handler, self);
@@ -182,16 +184,16 @@ static gboolean __remove_session_from_disc (MIRAGE_Disc *self, GObject *session,
     g_object_unref(G_OBJECT(session));
     
     /* Bottom-up change */
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_DISC, "%s: commiting bottom-up change\n", __func__);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_DISC, "%s: commiting bottom-up change\n", __debug__);
     __mirage_disc_commit_bottomup_change(self, NULL);
     
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_DISC, "%s: end\n", __func__);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_DISC, "%s: end\n", __debug__);
     
     return TRUE;
 }
 
 static gboolean __generate_disc_structure (MIRAGE_Disc *self, gint layer, gint type, guint8 **data, gint *len, GError **error) {
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_DISC, "%s: start (layer: %d, type: 0x%X)\n", __func__, layer, type);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_DISC, "%s: start (layer: %d, type: 0x%X)\n", __debug__, layer, type);
 
     switch (type) {
         case 0x0000: {
@@ -290,7 +292,7 @@ static gboolean __mirage_disc_check_for_encoded_mcn (MIRAGE_Disc *self, GError *
         if (mirage_disc_get_track_by_index(self, i, &track, NULL)) {
             GObject *fragment = NULL;
             if (mirage_track_find_fragment_with_subchannel(MIRAGE_TRACK(track), &fragment, NULL)) {
-                MIRAGE_DEBUG(self, MIRAGE_DEBUG_DISC, "%s: track %i contains subchannel\n", __func__, i);
+                MIRAGE_DEBUG(self, MIRAGE_DEBUG_DISC, "%s: track %i contains subchannel\n", __debug__, i);
                 mirage_fragment_get_address(MIRAGE_FRAGMENT(fragment), &start_address, NULL);
                 g_object_unref(fragment);
                 break;
@@ -328,7 +330,7 @@ static gboolean __mirage_disc_check_for_encoded_mcn (MIRAGE_Disc *self, GError *
                 
                 mirage_helper_subchannel_q_decode_mcn(&tmp_buf[1], tmp_mcn);
                 
-                MIRAGE_DEBUG(self, MIRAGE_DEBUG_TRACK, "%s: found MCN: <%s>\n", __func__, tmp_mcn);
+                MIRAGE_DEBUG(self, MIRAGE_DEBUG_TRACK, "%s: found MCN: <%s>\n", __debug__, tmp_mcn);
                 
                 /* Set MCN */
                 _priv->mcn = g_strndup(tmp_mcn, 13);
@@ -507,7 +509,7 @@ gboolean mirage_disc_set_mcn (MIRAGE_Disc *self, gchar *mcn, GError **error) {
        be altered... */
     
     if (_priv->mcn_encoded) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_DISC, "%s: MCN is already encoded in subchannel!\n", __func__);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_DISC, "%s: MCN is already encoded in subchannel!\n", __debug__);
         mirage_error(MIRAGE_E_DATAFIXED, error);
         return FALSE;
     } else {
@@ -540,7 +542,7 @@ gboolean mirage_disc_get_mcn (MIRAGE_Disc *self, gchar **mcn, GError **error) {
     
     /* Check if MCN is set */
     if (!(_priv->mcn && _priv->mcn[0])) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_DISC, "%s: MCN not set!\n", __func__);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_DISC, "%s: MCN not set!\n", __debug__);
         mirage_error(MIRAGE_E_DATANOTSET, error);
         return FALSE;
     }
@@ -2145,7 +2147,7 @@ static void __mirage_disc_finalize (GObject *obj) {
     MIRAGE_DiscPrivate *_priv = MIRAGE_DISC_GET_PRIVATE(self);
     GList *entry = NULL;
     
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_GOBJECT, "%s:\n", __func__);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_GOBJECT, "%s: finalizing object\n", __debug__);
     
     /* Free list of sessions */
     G_LIST_FOR_EACH(entry, _priv->sessions_list) {
@@ -2155,7 +2157,7 @@ static void __mirage_disc_finalize (GObject *obj) {
             g_signal_handlers_disconnect_by_func(MIRAGE_OBJECT(session), __session_modified_handler, self);
             g_object_unref(session);
         } else {
-            MIRAGE_DEBUG(obj, MIRAGE_DEBUG_WARNING, "%s: session object = NULL!\n", __func__);
+            MIRAGE_DEBUG(obj, MIRAGE_DEBUG_WARNING, "%s: session object = NULL!\n", __debug__);
         }
     }
     g_list_free(_priv->sessions_list);
@@ -2168,7 +2170,7 @@ static void __mirage_disc_finalize (GObject *obj) {
     g_hash_table_destroy(_priv->disc_structures);
     
     /* Chain up to the parent class */
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_GOBJECT, "%s: chaining up to parent\n", __func__);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_GOBJECT, "%s: chaining up to parent\n", __debug__);
     return G_OBJECT_CLASS(parent_class)->finalize(obj);
 }
 
