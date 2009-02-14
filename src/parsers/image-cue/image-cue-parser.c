@@ -19,12 +19,13 @@
 
 #include "image-cue.h"
 
+/* Regex engine */
+typedef gboolean (*MIRAGE_RegexCallback) (MIRAGE_Parser *self, GMatchInfo *match_info, GError **error);
 
-/* Some prototypes from flex/bison */
-int yylex_init (void *scanner);
-void yyset_in  (FILE *in_str, void *yyscanner);
-int yylex_destroy (void *yyscanner);
-int yyparse (void *scanner, MIRAGE_Parser *self, GError **error);
+typedef struct {
+    GRegex *regex;
+    MIRAGE_RegexCallback callback_func;
+} MIRAGE_RegexRule;
 
 
 /******************************************************************************\
@@ -55,13 +56,16 @@ typedef struct {
     GObject *cur_session;
     GObject *cur_track;
     GObject *prev_track;
+        
+    /* Regex engine */
+    GList *regex_rules;
 } MIRAGE_Parser_CUEPrivate;
 
 
 /******************************************************************************\
  *                         Parser private functions                           *
 \******************************************************************************/
-gboolean __mirage_parser_cue_finish_last_track (MIRAGE_Parser *self, GError **error) {
+static gboolean __mirage_parser_cue_finish_last_track (MIRAGE_Parser *self, GError **error) {
     MIRAGE_Parser_CUEPrivate *_priv = MIRAGE_PARSER_CUE_GET_PRIVATE(self);
     GObject *data_fragment;
     gboolean succeeded = TRUE;
@@ -98,19 +102,9 @@ gboolean __mirage_parser_cue_finish_last_track (MIRAGE_Parser *self, GError **er
     return succeeded;
 }
 
-gboolean __mirage_parser_cue_set_mcn (MIRAGE_Parser *self, gchar *mcn, GError **error) {    
-    MIRAGE_Parser_CUEPrivate *_priv = MIRAGE_PARSER_CUE_GET_PRIVATE(self);
-
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: MCN: %.13s\n", __func__, mcn);
-    mirage_disc_set_mcn(MIRAGE_DISC(_priv->disc), mcn, NULL);
-    
-    return TRUE;
-}
-
-gboolean __mirage_parser_cue_set_new_file (MIRAGE_Parser *self, gchar *filename_string, gchar *file_type, GError **error) {
+static gboolean __mirage_parser_cue_set_new_file (MIRAGE_Parser *self, gchar *filename_string, gchar *file_type, GError **error) {
     MIRAGE_Parser_CUEPrivate *_priv = MIRAGE_PARSER_CUE_GET_PRIVATE(self);
     
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "\n");
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: new file...\n", __func__);
     
     /* We got new file; either we got it for the first time, which means we don't
@@ -140,10 +134,9 @@ gboolean __mirage_parser_cue_set_new_file (MIRAGE_Parser *self, gchar *filename_
     return TRUE;
 }
 
-gboolean __mirage_parser_cue_add_track (MIRAGE_Parser *self, gint number, gchar *mode_string, GError **error) {
+static gboolean __mirage_parser_cue_add_track (MIRAGE_Parser *self, gint number, gchar *mode_string, GError **error) {
     MIRAGE_Parser_CUEPrivate *_priv = MIRAGE_PARSER_CUE_GET_PRIVATE(self);
     
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "\n");
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: adding track %d\n", __func__, number);
     
     /* Current track becomes previous one */
@@ -157,7 +150,6 @@ gboolean __mirage_parser_cue_add_track (MIRAGE_Parser *self, gint number, gchar 
     }
     g_object_unref(_priv->cur_track);
 
-    
     /* Decipher mode */
     static const struct {
         gchar *str;
@@ -188,13 +180,19 @@ gboolean __mirage_parser_cue_add_track (MIRAGE_Parser *self, gint number, gchar 
         }
     }
     
+    if (i == G_N_ELEMENTS(track_modes)) {
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: invalid track mode string: %s!\n", __func__, mode_string);
+        mirage_error(MIRAGE_E_PARSER, error);
+        return FALSE;
+    }
+    
     /* Reset parser info on current track */
     _priv->cur_pregap_set = FALSE;
     
     return TRUE;
 };
 
-gboolean __mirage_parser_cue_add_index (MIRAGE_Parser *self, gint number, gint address, GError **error) {
+static gboolean __mirage_parser_cue_add_index (MIRAGE_Parser *self, gint number, gint address, GError **error) {
     MIRAGE_Parser_CUEPrivate *_priv = MIRAGE_PARSER_CUE_GET_PRIVATE(self);    
     
     /* Current track needs to be set at this point */
@@ -285,8 +283,6 @@ gboolean __mirage_parser_cue_add_index (MIRAGE_Parser *self, gint number, gint a
             GObject *data_fragment = NULL;
             if (!strcmp(_priv->cur_data_type, "BINARY")) {
                 /* Binary data; we'll request fragment with BINARY interface... */
-                gint offset = address*_priv->cur_data_sectsize;
-                
                 gint tfile_sectsize = 0;
                 gint sfile_sectsize = 0;
                                 
@@ -348,7 +344,7 @@ gboolean __mirage_parser_cue_add_index (MIRAGE_Parser *self, gint number, gint a
     return TRUE;
 }
 
-gboolean __mirage_parser_cue_set_flag (MIRAGE_Parser *self, gint flag, GError **error) {
+static gboolean __mirage_parser_cue_set_flags (MIRAGE_Parser *self, gint flags, GError **error) {
     MIRAGE_Parser_CUEPrivate *_priv = MIRAGE_PARSER_CUE_GET_PRIVATE(self);    
 
     /* Current track needs to be set at this point */
@@ -358,16 +354,12 @@ gboolean __mirage_parser_cue_set_flag (MIRAGE_Parser *self, gint flag, GError **
         return FALSE;
     }
     
-    gint flags = 0;
-    
-    mirage_track_get_flags(MIRAGE_TRACK(_priv->cur_track), &flags, NULL);
-    flags |= flag;
     mirage_track_set_flags(MIRAGE_TRACK(_priv->cur_track), flags, NULL);
-        
+    
     return TRUE;
 }
 
-gboolean __mirage_parser_cue_set_isrc (MIRAGE_Parser *self, gchar *isrc, GError **error) {
+static gboolean __mirage_parser_cue_set_isrc (MIRAGE_Parser *self, gchar *isrc, GError **error) {
     MIRAGE_Parser_CUEPrivate *_priv = MIRAGE_PARSER_CUE_GET_PRIVATE(self);    
 
     /* Current track needs to be set at this point */
@@ -382,35 +374,8 @@ gboolean __mirage_parser_cue_set_isrc (MIRAGE_Parser *self, gchar *isrc, GError 
     return TRUE;
 }
 
-gboolean __mirage_parser_cue_add_pregap (MIRAGE_Parser *self, gint length, GError **error) {
-    MIRAGE_Parser_CUEPrivate *_priv = MIRAGE_PARSER_CUE_GET_PRIVATE(self);    
-    gint track_start = 0;
-    
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: adding pregap (0x%X)\n", __func__, length);
-    
-    /* Current track needs to be set at this point */
-    if (!_priv->cur_track) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: current track is not set!\n", __func__);
-        mirage_error(MIRAGE_E_PARSER, error);
-        return FALSE;
-    }
-    
-    /* Add empty part */
-    if (!__mirage_parser_cue_add_empty_part(self, length, error)) {
-        return FALSE;
-    }
-    
-    /* Adjust track start */
-    mirage_track_get_track_start(MIRAGE_TRACK(_priv->cur_track), &track_start, NULL);
-    track_start += length;
-    mirage_track_set_track_start(MIRAGE_TRACK(_priv->cur_track), track_start, NULL);
-    
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: readjusted track start to 0x%X (%i)\n", __func__, track_start, track_start);
-        
-    return TRUE;
-}
 
-gboolean __mirage_parser_cue_add_empty_part (MIRAGE_Parser *self, gint length, GError **error) {
+static gboolean __mirage_parser_cue_add_empty_part (MIRAGE_Parser *self, gint length, GError **error) {
     MIRAGE_Parser_CUEPrivate *_priv = MIRAGE_PARSER_CUE_GET_PRIVATE(self);    
     
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: adding empty part (0x%X)\n", __func__, length);
@@ -438,7 +403,35 @@ gboolean __mirage_parser_cue_add_empty_part (MIRAGE_Parser *self, gint length, G
     return TRUE;
 }
 
-gboolean __mirage_parser_cue_add_session (MIRAGE_Parser *self, gint number, GError **error) {
+static gboolean __mirage_parser_cue_add_pregap (MIRAGE_Parser *self, gint length, GError **error) {
+    MIRAGE_Parser_CUEPrivate *_priv = MIRAGE_PARSER_CUE_GET_PRIVATE(self);    
+    gint track_start = 0;
+    
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: adding pregap (0x%X)\n", __func__, length);
+    
+    /* Current track needs to be set at this point */
+    if (!_priv->cur_track) {
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: current track is not set!\n", __func__);
+        mirage_error(MIRAGE_E_PARSER, error);
+        return FALSE;
+    }
+    
+    /* Add empty part */
+    if (!__mirage_parser_cue_add_empty_part(self, length, error)) {
+        return FALSE;
+    }
+    
+    /* Adjust track start */
+    mirage_track_get_track_start(MIRAGE_TRACK(_priv->cur_track), &track_start, NULL);
+    track_start += length;
+    mirage_track_set_track_start(MIRAGE_TRACK(_priv->cur_track), track_start, NULL);
+    
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: readjusted track start to 0x%X (%i)\n", __func__, track_start, track_start);
+        
+    return TRUE;
+}
+
+static gboolean __mirage_parser_cue_add_session (MIRAGE_Parser *self, gint number, GError **error) {
     MIRAGE_Parser_CUEPrivate *_priv = MIRAGE_PARSER_CUE_GET_PRIVATE(self);    
     gint leadout_length = 0;
     
@@ -472,7 +465,479 @@ gboolean __mirage_parser_cue_add_session (MIRAGE_Parser *self, gint number, GErr
     }
     g_object_unref(_priv->cur_session);
     
+    /* Reset current track */
+    _priv->cur_track = NULL;
+    
     return TRUE;
+}
+
+static gboolean __mirage_parser_cue_set_pack_data (MIRAGE_Parser *self, gint pack_type, gchar *data, GError **error) {
+    MIRAGE_Parser_CUEPrivate *_priv = MIRAGE_PARSER_CUE_GET_PRIVATE(self);    
+    GObject *language = NULL;
+    
+    /* FIXME: only one language code supported for now */
+    gint langcode = 9; 
+    
+    if (!_priv->cur_track) {
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: setting pack data for disc; type: 0x%X, data: %s\n", __func__, pack_type, data);
+        if (!mirage_session_get_language_by_code(MIRAGE_SESSION(_priv->cur_session), langcode, &language, NULL)) {
+            mirage_session_add_language(MIRAGE_SESSION(_priv->cur_session), langcode, &language, NULL);
+        }
+    } else {
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: setting pack data for track; type: 0x%X, data: %s\n", __func__, pack_type, data);        
+        if (!mirage_track_get_language_by_code(MIRAGE_TRACK(_priv->cur_track), langcode, &language, NULL)) {
+            mirage_track_add_language(MIRAGE_TRACK(_priv->cur_track), langcode, &language, NULL);
+        }
+    }
+    
+    mirage_language_set_pack_data(MIRAGE_LANGUAGE(language), pack_type, data, strlen(data)+1, NULL);
+    g_object_unref(language);
+    
+    return TRUE;
+}
+
+
+/******************************************************************************\
+ *                           Regex parsing engine                             *
+\******************************************************************************/
+static gchar *__strip_quotes (gchar *str) {
+    gint len = strlen(str);
+    
+    /* Due to UTF-8 being multi-byte, we need to deal with string on byte level,
+       not character level */
+    
+    /* Skip leading quote and trailing quote, but only if both are present */
+    if (str[0] == '"' && str[len-1] == '"') {
+        return g_strndup(str+1, len-2);
+    }
+    
+    /* Otherwise copy the string, for consistency */
+    return g_strdup(str);
+}
+
+static gboolean __mirage_parser_cue_callback_session (MIRAGE_Parser *self, GMatchInfo *match_info, GError **error) {
+    gboolean succeeded = TRUE;
+    gchar *number_raw = g_match_info_fetch_named(match_info, "number");
+    gint number = g_strtod(number_raw, NULL);
+    
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: parsed SESSION: %d\n", __func__, number);
+    succeeded = __mirage_parser_cue_add_session(self, number, error);
+    
+    g_free(number_raw);
+    
+    return TRUE;
+}
+
+static gboolean __mirage_parser_cue_callback_comment (MIRAGE_Parser *self, GMatchInfo *match_info, GError **error) {
+    gchar *comment = g_match_info_fetch_named(match_info, "comment");
+    
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: parsed COMMENT: %s\n", __func__, comment);
+    
+    g_free(comment);
+    
+    return TRUE;
+}
+
+static gboolean __mirage_parser_cue_callback_cdtext (MIRAGE_Parser *self, GMatchInfo *match_info, GError **error) {
+    gchar *filename_raw, *filename;
+    
+    filename_raw = g_match_info_fetch_named(match_info, "filename");
+    filename = __strip_quotes(filename_raw);
+    
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: parsed CDTEXT: %s; FIXME: not handled yet!\n", __func__, filename);
+    
+    g_free(filename);
+    g_free(filename_raw);
+    
+    return TRUE;
+}
+
+static gboolean __mirage_parser_cue_callback_catalog (MIRAGE_Parser *self, GMatchInfo *match_info, GError **error) {    
+    MIRAGE_Parser_CUEPrivate *_priv = MIRAGE_PARSER_CUE_GET_PRIVATE(self);
+    gchar *catalog = g_match_info_fetch_named(match_info, "catalog");
+    
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: parsed CATALOG: %.13s\n", __func__, catalog);
+    
+    mirage_disc_set_mcn(MIRAGE_DISC(_priv->disc), catalog, NULL);
+    
+    g_free(catalog);
+    
+    return TRUE;
+}
+
+static gboolean __mirage_parser_cue_callback_title (MIRAGE_Parser *self, GMatchInfo *match_info, GError **error) {
+    gboolean succeeded = TRUE;
+    gchar *title_raw, *title;
+    
+    title_raw = g_match_info_fetch_named(match_info, "title");
+    title = __strip_quotes(title_raw);
+
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: parsed TITLE: %s\n", __func__, title);
+    
+    succeeded = __mirage_parser_cue_set_pack_data(self, MIRAGE_LANGUAGE_PACK_TITLE, title, error);
+    
+    g_free(title);
+    g_free(title_raw);
+    
+    return succeeded;
+}
+
+static gboolean __mirage_parser_cue_callback_performer (MIRAGE_Parser *self, GMatchInfo *match_info, GError **error) {
+    gboolean succeeded = TRUE;
+    gchar *performer_raw, *performer;
+    
+    performer_raw = g_match_info_fetch_named(match_info, "performer");
+    performer = __strip_quotes(performer_raw);
+
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: parsed PERFORMER: %s\n", __func__, performer);
+    
+    succeeded = __mirage_parser_cue_set_pack_data(self, MIRAGE_LANGUAGE_PACK_PERFORMER, performer, error);
+
+    g_free(performer);
+    g_free(performer_raw);
+    
+    return succeeded;
+}
+
+static gboolean __mirage_parser_cue_callback_songwriter (MIRAGE_Parser *self, GMatchInfo *match_info, GError **error) {
+    gboolean succeeded = TRUE;
+    gchar *songwriter_raw, *songwriter;
+    
+    songwriter_raw = g_match_info_fetch_named(match_info, "songwriter");
+    songwriter = __strip_quotes(songwriter_raw);
+    
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: parsed SONGWRITER: %s\n", __func__, songwriter);
+    
+    succeeded = __mirage_parser_cue_set_pack_data(self, MIRAGE_LANGUAGE_PACK_SONGWRITER, songwriter, error);
+
+    g_free(songwriter);
+    g_free(songwriter_raw);
+
+    return succeeded;
+}
+
+static gboolean __mirage_parser_cue_callback_file (MIRAGE_Parser *self, GMatchInfo *match_info, GError **error) {
+    gboolean succeeded = TRUE;
+    gchar *filename_raw, *filename, *type; 
+    
+    type = g_match_info_fetch_named(match_info, "type");
+    filename_raw = g_match_info_fetch_named(match_info, "filename");
+    filename = __strip_quotes(filename_raw);
+    
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "\n"); /* To make log more readable */
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: parsed FILE; filename: %s, type: %s\n", __func__, filename, type);
+    
+    succeeded = __mirage_parser_cue_set_new_file(self, filename, type, error);
+    
+    g_free(filename);
+    g_free(filename_raw);
+    g_free(type);
+    
+    return succeeded;
+}
+
+static gboolean __mirage_parser_cue_callback_track (MIRAGE_Parser *self, GMatchInfo *match_info, GError **error) {
+    gboolean succeeded = TRUE;
+    gchar *number_raw, *mode_string;
+    gint number;
+    
+    number_raw = g_match_info_fetch_named(match_info, "number");
+    number = g_strtod(number_raw, NULL);
+    mode_string = g_match_info_fetch_named(match_info, "type");
+    
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "\n"); /* To make log more readable */
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: parsed TRACK; number: %d, mode_string: %s\n", __func__, number, mode_string);
+    
+    succeeded = __mirage_parser_cue_add_track(self, number, mode_string, error);
+    
+    g_free(mode_string);
+    g_free(number_raw);
+    
+    return succeeded;
+}
+
+static gboolean __mirage_parser_cue_callback_isrc (MIRAGE_Parser *self, GMatchInfo *match_info, GError **error) {
+    gboolean succeeded = TRUE;
+    gchar *isrc = g_match_info_fetch_named(match_info, "isrc");
+
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: parsed ISRC: %s\n", __func__, isrc);
+    
+    succeeded = __mirage_parser_cue_set_isrc(self, isrc, error);
+    
+    g_free(isrc);
+    
+    return succeeded;
+}
+
+static gboolean __mirage_parser_cue_callback_index (MIRAGE_Parser *self, GMatchInfo *match_info, GError **error) {
+    gboolean succeeded = TRUE;
+    gchar *number_raw, *address_raw;
+    gint number, address;
+    
+    number_raw = g_match_info_fetch_named(match_info, "index");
+    number = g_strtod(number_raw, NULL);
+    address_raw = g_match_info_fetch_named(match_info, "msf");
+    address = mirage_helper_msf2lba_str(address_raw, FALSE);
+    
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: parsed INDEX; number: %d, address: %s (%d)\n", __func__, number, address_raw, address);
+    
+    succeeded = __mirage_parser_cue_add_index(self, number, address, error);
+    
+    g_free(address_raw);
+    g_free(number_raw);
+    
+    return succeeded;
+}
+
+static gboolean __mirage_parser_cue_callback_pregap (MIRAGE_Parser *self, GMatchInfo *match_info, GError **error) {
+    gboolean succeeded = TRUE;
+    gchar *length_raw;
+    gint length;
+    
+    length_raw = g_match_info_fetch_named(match_info, "msf");
+    length = mirage_helper_msf2lba_str(length_raw, FALSE);
+    
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: parsed PREGAP; length: %s (%d)\n", __func__, length_raw, length);
+    
+    succeeded = __mirage_parser_cue_add_pregap(self, length, error);
+    
+    g_free(length_raw);
+    
+    return succeeded;
+}
+
+static gboolean __mirage_parser_cue_callback_postgap (MIRAGE_Parser *self, GMatchInfo *match_info, GError **error) {
+    gboolean succeeded = TRUE;
+    gchar *length_raw;
+    gint length;
+    
+    length_raw = g_match_info_fetch_named(match_info, "msf");
+    length = mirage_helper_msf2lba_str(length_raw, FALSE);
+    
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: parsed POSTGAP; length: %s (%d)\n", __func__, g_match_info_fetch_named(match_info, "msf"), length);
+    
+    succeeded = __mirage_parser_cue_add_empty_part(self, length, error);
+    
+    g_free(length_raw);
+    
+    return succeeded;
+}
+
+static gboolean __mirage_parser_cue_callback_flags (MIRAGE_Parser *self, GMatchInfo *match_info, GError **error) {
+    gchar *flags_dcp, *flags_4ch, *flags_pre, *flags_scms;
+    gint flags = 0;
+    
+    flags_dcp = g_match_info_fetch_named(match_info, "dcp");
+    flags_4ch = g_match_info_fetch_named(match_info, "4ch");
+    flags_pre = g_match_info_fetch_named(match_info, "pre");
+    flags_scms = g_match_info_fetch_named(match_info, "scms");
+    
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: parsed FLAGS\n", __func__);
+    
+    if (!g_strcmp0(flags_dcp, "DCP")) {
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: setting DCP flag\n", __func__);
+        flags |= MIRAGE_TRACKF_COPYPERMITTED;
+    }
+    if (!g_strcmp0(flags_4ch, "4CH")) {
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: setting 4CH flag\n", __func__);
+        flags |= MIRAGE_TRACKF_FOURCHANNEL;
+    }
+    if (!g_strcmp0(flags_pre, "PRE")) {
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: setting PRE flag\n", __func__);
+        flags |= MIRAGE_TRACKF_PREEMPHASIS;
+    }
+    if (!g_strcmp0(flags_scms, "SCMS")) {
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: SCMS flag not handled yet!\n", __func__);
+    }
+    
+    g_free(flags_dcp);
+    g_free(flags_4ch);
+    g_free(flags_pre);
+    g_free(flags_scms);
+    
+    return __mirage_parser_cue_set_flags(self, flags, error);
+}
+
+#define APPEND_REGEX_RULE(list,rule,callback) {                         \
+    MIRAGE_RegexRule *new_rule = g_new(MIRAGE_RegexRule, 1);            \
+    new_rule->regex = g_regex_new(rule, G_REGEX_OPTIMIZE, 0, NULL);     \
+    new_rule->callback_func = callback;                                 \
+                                                                        \
+    list = g_list_append(list, new_rule);                               \
+}
+
+static void __mirage_parser_cue_init_regex_parser (MIRAGE_Parser *self) {
+    MIRAGE_Parser_CUEPrivate *_priv = MIRAGE_PARSER_CUE_GET_PRIVATE(self);
+
+    /* Ignore empty lines */
+    APPEND_REGEX_RULE(_priv->regex_rules, "^[\\s]*$", NULL);
+    
+    /* "Extensions" that are embedded in the comments must appear before general
+       comment rule */
+    APPEND_REGEX_RULE(_priv->regex_rules, "REM SESSION (?<number>\\d+)$", __mirage_parser_cue_callback_session);
+    
+    APPEND_REGEX_RULE(_priv->regex_rules, "REM (?<comment>.+)$", __mirage_parser_cue_callback_comment);
+    
+    APPEND_REGEX_RULE(_priv->regex_rules, "CDTEXTFILE (?<filename>.+)$", __mirage_parser_cue_callback_cdtext);
+    
+    APPEND_REGEX_RULE(_priv->regex_rules, "CATALOG (?<catalog>\\d{13})$", __mirage_parser_cue_callback_catalog);
+    
+    APPEND_REGEX_RULE(_priv->regex_rules, "TITLE (?<title>.+)$", __mirage_parser_cue_callback_title);   
+    APPEND_REGEX_RULE(_priv->regex_rules, "PERFORMER (?<performer>.+)$", __mirage_parser_cue_callback_performer);
+    APPEND_REGEX_RULE(_priv->regex_rules, "SONGWRITER (?<songwriter>.+)$", __mirage_parser_cue_callback_songwriter);
+    
+    APPEND_REGEX_RULE(_priv->regex_rules, "FILE (?<filename>.+) (?<type>\\S+)$", __mirage_parser_cue_callback_file);
+    APPEND_REGEX_RULE(_priv->regex_rules, "TRACK (?<number>\\d+) (?<type>\\S+)$", __mirage_parser_cue_callback_track);
+    APPEND_REGEX_RULE(_priv->regex_rules, "ISRC (?<isrc>\\w{12})$", __mirage_parser_cue_callback_isrc);
+    APPEND_REGEX_RULE(_priv->regex_rules, "INDEX (?<index>\\d+) (?<msf>[\\d]+:[\\d]+:[\\d]+)$", __mirage_parser_cue_callback_index);
+    
+    APPEND_REGEX_RULE(_priv->regex_rules, "PREGAP (?<msf>[\\d]+:[\\d]+:[\\d]+)$", __mirage_parser_cue_callback_pregap);
+    APPEND_REGEX_RULE(_priv->regex_rules, "POSTGAP (?<msf>[\\d]+:[\\d]+:[\\d]+)$", __mirage_parser_cue_callback_postgap);
+    
+    APPEND_REGEX_RULE(_priv->regex_rules, "FLAGS (((?<dcp>DCP)|(?<4ch>4CH)|(?<pre>PRE)|(?<scms>SCMS)) *)+$", __mirage_parser_cue_callback_flags);
+    
+    return;
+}
+
+static void __mirage_parser_cue_cleanup_regex_parser (MIRAGE_Parser *self) {
+    MIRAGE_Parser_CUEPrivate *_priv = MIRAGE_PARSER_CUE_GET_PRIVATE(self);
+    GList *entry;
+    
+    G_LIST_FOR_EACH(entry, _priv->regex_rules) {
+        MIRAGE_RegexRule *rule = entry->data;
+        g_regex_unref(rule->regex);
+        g_free(rule);
+    }
+    
+    g_list_free(_priv->regex_rules);
+}
+
+static gboolean __mirage_parser_detect_and_set_encoding (MIRAGE_Parser *self, GIOChannel *io_channel, GError **error) {
+    static gchar bom_utf32_be[] = { 0x00, 0x00, 0xFE, 0xFF };
+    static gchar bom_utf32_le[] = { 0xFF, 0xFE, 0x00, 0x00 };
+    static gchar bom_utf16_be[] = { 0xFE, 0xFF };
+    static gchar bom_utf16_le[] = { 0xFF, 0xFE };
+    
+    gchar bom[4] = "";
+    
+    /* Set position at the beginning, and set encoding to NULL (raw bytes) */
+    g_io_channel_seek_position(io_channel, 0, G_SEEK_SET, NULL);
+    g_io_channel_set_encoding(io_channel, NULL, NULL);
+    
+    /* Read first four bytes */
+    g_io_channel_read_chars(io_channel, bom, sizeof(bom), NULL, NULL);
+    
+    /* Reset the position */
+    g_io_channel_seek_position(io_channel, 0, G_SEEK_SET, NULL);
+
+    /* Set the encoding */
+    if (!memcmp(bom, bom_utf32_be, sizeof(bom_utf32_be))) {
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: UTF-32 BE BOM found\n", __func__);
+        g_io_channel_set_encoding(io_channel, "utf-32be", NULL);
+    } else if (!memcmp(bom, bom_utf32_le, sizeof(bom_utf32_le))) {
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: UTF-32 LE BOM found\n", __func__);
+        g_io_channel_set_encoding(io_channel, "utf-32le", NULL);        
+    } else if (!memcmp(bom, bom_utf16_be, sizeof(bom_utf16_be))) {
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: UTF-16 BE BOM found\n", __func__);
+        g_io_channel_set_encoding(io_channel, "utf-16be", NULL);
+    } else if (!memcmp(bom, bom_utf16_le, sizeof(bom_utf16_le))) {
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: UTF-16 LE BOM found\n", __func__);
+        g_io_channel_set_encoding(io_channel, "utf-16le", NULL);
+    } else {
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: no BOM found, assuming UTF-8\n", __func__);
+        g_io_channel_set_encoding(io_channel, "utf-8", NULL);
+    }
+    
+    return TRUE;
+}
+
+static gboolean __mirage_parser_parse_cue_file (MIRAGE_Parser *self, gchar *filename, GError **error) {
+    MIRAGE_Parser_CUEPrivate *_priv = MIRAGE_PARSER_CUE_GET_PRIVATE(self);
+    GError *io_error = NULL;
+    GIOChannel *io_channel;
+    gboolean succeeded = TRUE;
+    
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: opening file: %s\n", __func__, filename);
+    
+    /* Create IO channel for file */
+    io_channel = g_io_channel_new_file(filename, "r", &io_error);
+    if (!io_channel) {
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to create IO channel: %s\n", __func__, io_error->message);
+        g_error_free(io_error);
+        mirage_error(MIRAGE_E_IMAGEFILE, error);
+        return FALSE;
+    }
+    
+    /* FIXME: get encoding via params */
+    __mirage_parser_detect_and_set_encoding(self, io_channel, NULL);
+    
+    /* Read file line-by-line */
+    gint line_nr;
+    for (line_nr = 1; ; line_nr++) {
+        GIOStatus status;
+        gchar *line_str;
+        gsize line_len;
+        
+        status = g_io_channel_read_line(io_channel, &line_str, &line_len, NULL, &io_error);
+        
+        /* Handle EOF */
+        if (status == G_IO_STATUS_EOF) {
+            break;
+        }
+        
+        /* Handle abnormal status */
+        if (status != G_IO_STATUS_NORMAL) {
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: status %d while reading line #%d from IO channel: %s\n", __func__, status, line_nr, io_error ? io_error->message : "no error message");
+            g_error_free(io_error);
+            
+            mirage_error(MIRAGE_E_IMAGEFILE, error);
+            succeeded = FALSE;
+            break;
+        }
+        
+        /* GRegex matching engine */
+        GMatchInfo *match_info = NULL;
+        gboolean matched = FALSE;
+        GList *entry;
+        
+        /* Go over all matching rules */
+        G_LIST_FOR_EACH(entry, _priv->regex_rules) {
+            MIRAGE_RegexRule *regex_rule = entry->data;
+                        
+            /* Try to match the given rule */
+            if (g_regex_match(regex_rule->regex, line_str, 0, &match_info)) {
+                if (regex_rule->callback_func) {
+                    succeeded = regex_rule->callback_func(self, match_info, error);
+                }
+                matched = TRUE;
+            }
+            
+            /* Must be freed in any case */
+            g_match_info_free(match_info);
+            
+            /* Break if we had a match */
+            if (matched) {
+                break;
+            }
+        }
+        
+        /* Complain if we failed to match the line (should it be fatal?) */
+        if (!matched) {
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to match line #%d: %s\n", __func__, line_nr, line_str);
+            /* succeeded = FALSE */
+        }
+        
+        g_free(line_str);
+                
+        /* In case callback didn't succeed... */
+        if (!succeeded) {
+            break;
+        }
+    }
+    
+    g_io_channel_unref(io_channel);
+    
+    return succeeded;
 }
 
 /******************************************************************************\
@@ -481,8 +946,6 @@ gboolean __mirage_parser_cue_add_session (MIRAGE_Parser *self, gint number, GErr
 static gboolean __mirage_parser_cue_load_image (MIRAGE_Parser *self, gchar **filenames, GObject **disc, GError **error) {
     MIRAGE_Parser_CUEPrivate *_priv = MIRAGE_PARSER_CUE_GET_PRIVATE(self);
     gboolean succeeded = TRUE;
-    void *scanner;
-    FILE *file;
     
     /* Check if we can load the file; we check the suffix */
     if (!mirage_helper_has_suffix(filenames[0], ".cue")) {
@@ -507,30 +970,11 @@ static gboolean __mirage_parser_cue_load_image (MIRAGE_Parser *self, gchar **fil
     }
     g_object_unref(_priv->cur_session);
     
-    /* Open file */
-    file = g_fopen(filenames[0], "r");
-    if (!file) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to open file '%s'!\n", __func__, filenames[0]);
-        mirage_error(MIRAGE_E_IMAGEFILE, error);
+    /* Parse the CUE */
+    if (!__mirage_parser_parse_cue_file(self, _priv->cue_filename, error)) {
         succeeded = FALSE;
         goto end;
     }
-    
-    /* Prepare scanner */
-    yylex_init(&scanner);
-    yyset_in(file, scanner);
-        
-    /* Load */
-    if (yyparse(scanner, self, error)) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to parse CUE file!\n", __func__);
-        fclose(file);
-        succeeded = FALSE;
-        goto end;
-    }
-        
-    /* Destroy scanner */
-    yylex_destroy(scanner);
-    fclose(file);
     
     /* Finish last track */
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "\n");
@@ -578,6 +1022,8 @@ static void __mirage_parser_cue_instance_init (GTypeInstance *instance, gpointer
         2, ".cue", NULL
     );
     
+    __mirage_parser_cue_init_regex_parser(MIRAGE_PARSER(instance));
+    
     return;
 }
 
@@ -591,7 +1037,10 @@ static void __mirage_parser_cue_finalize (GObject *obj) {
     g_free(_priv->cue_filename);
     g_free(_priv->cur_data_filename);
     g_free(_priv->cur_data_type);
-        
+    
+    /* Cleanup regex parser engine */
+    __mirage_parser_cue_cleanup_regex_parser(MIRAGE_PARSER(self));
+    
     /* Chain up to the parent class */
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_GOBJECT, "%s: chaining up to parent\n", __func__);
     return G_OBJECT_CLASS(parent_class)->finalize(obj);

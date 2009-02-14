@@ -25,7 +25,6 @@
 #endif
 
 #include "mirage.h"
-#include "image-cue-yacc.h"
 #include "image-cue-parser.h"
 
 
