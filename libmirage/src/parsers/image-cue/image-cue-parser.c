@@ -223,7 +223,7 @@ static gboolean __mirage_parser_cue_add_index (MIRAGE_Parser *self, gint number,
                last fragment of the previous track (which we might need to
                set length to) */            
             if (!_priv->prev_track) {
-                /* This is first track on the parser; first track doesn't seem to
+                /* This is first track on the disc; first track doesn't seem to
                    have index 0, so if its index 1 is non-zero, it indicates pregap */
                 if (number == 1 && address != 0) {
                     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: first track has pregap; setting track start to 0x%X\n", __func__, address);
@@ -851,7 +851,7 @@ static gboolean __mirage_parser_cue_detect_and_set_encoding (MIRAGE_Parser *self
     return TRUE;
 }
 
-static gboolean __mirage_parser_parse_cue_file (MIRAGE_Parser *self, gchar *filename, GError **error) {
+static gboolean __mirage_parser_cue_parse_cue_file (MIRAGE_Parser *self, gchar *filename, GError **error) {
     MIRAGE_Parser_CUEPrivate *_priv = MIRAGE_PARSER_CUE_GET_PRIVATE(self);
     GError *io_error = NULL;
     GIOChannel *io_channel;
@@ -870,7 +870,7 @@ static gboolean __mirage_parser_parse_cue_file (MIRAGE_Parser *self, gchar *file
     
     /* If provided, use the specified encoding; otherwise, try to detect it */
     gchar *encoding = NULL;
-    if (mirage_parser_get_param_string(self, "encoding", &encoding, NULL)) {
+    if (mirage_parser_get_param_string(self, "encoding", (const gchar **)&encoding, NULL)) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: using specified encoding: %s\n", __func__, encoding);
         g_io_channel_set_encoding(io_channel, encoding, NULL);
     } else {
@@ -977,7 +977,7 @@ static gboolean __mirage_parser_cue_load_image (MIRAGE_Parser *self, gchar **fil
     g_object_unref(_priv->cur_session);
     
     /* Parse the CUE */
-    if (!__mirage_parser_parse_cue_file(self, _priv->cue_filename, error)) {
+    if (!__mirage_parser_cue_parse_cue_file(self, _priv->cue_filename, error)) {
         succeeded = FALSE;
         goto end;
     }
@@ -990,6 +990,8 @@ static gboolean __mirage_parser_cue_load_image (MIRAGE_Parser *self, gchar **fil
         goto end;
     }
 
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "\n");
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: finishing the layout\n", __func__);
     /* Now guess medium type and if it's a CD-ROM, add Red Book pregap */
     gint medium_type = mirage_parser_guess_medium_type(self, _priv->disc);
     mirage_disc_set_medium_type(MIRAGE_DISC(_priv->disc), medium_type, NULL);
