@@ -30,6 +30,8 @@
 #define MIRAGE_PARSER_GET_PRIVATE(obj) (G_TYPE_INSTANCE_GET_PRIVATE((obj), MIRAGE_TYPE_PARSER, MIRAGE_ParserPrivate))
 
 typedef struct {
+    GHashTable *parser_params;
+    
     MIRAGE_ParserInfo *parser_info;
 } MIRAGE_ParserPrivate;
 
@@ -291,6 +293,82 @@ gboolean mirage_parser_add_redbook_pregap (MIRAGE_Parser *self, GObject *disc, G
     
     return TRUE;
 }
+
+
+/**
+ * mirage_parser_set_params:
+ * @self: a #MIRAGE_Parser
+ * @params: a #GHashTable containing parameters
+ * @error: location to store error, or %NULL
+ *
+ * <para>
+ * An internal function that sets the parsing parameters to parser 
+ * (such as password, encoding, etc.). It is meant to be used by libmirage_create_disc()
+ * to pass the parsing parameters to parser before performing the parsing.
+ * </para>
+ *
+ * <para>
+ * @params is a #GHashTable that must have strings for its keys and values of 
+ * #GValue type.
+ * </para>
+ *
+ * <para>
+ * Note that only pointer to @params is stored; therefore, the hash table must
+ * still be valid when mirage_parser_load_image() is called. Another thing to
+ * note is that whether parameter is used or not is up to the parser implementation.
+ * In case of unsupported parameter, the parser implementation should simply ignore it.
+ * </para>
+ *
+ * Returns: %TRUE on success, %FALSE on failure
+ **/
+gboolean mirage_parser_set_params (MIRAGE_Parser *self, GHashTable *params, GError **error) {
+    MIRAGE_ParserPrivate *_priv = MIRAGE_PARSER_GET_PRIVATE(self);
+    _priv->parser_params = params; /* Just store pointer */
+    return TRUE;
+}
+
+/**
+ * mirage_parser_get_param_string:
+ * @self: a #MIRAGE_Parser
+ * @name: parameter name (key)
+ * @value: location to store the string value, or %NULL
+ * @error: location to store error, or %NULL
+ *
+ * <para>
+ * An internal function that retrieves a string parameter named @name. It is meant
+ * to be used by parser implementation to retrieve the parameter value during the
+ * parsing.
+ * </para>
+ *
+ * <para>
+ * Note that pointer to string is returned; the string belongs to whoever owns
+ * the parameters hash table that was passed to the parser, and as such should
+ * not be freed after no longer needed.
+ * </para>
+ *
+ * Returns: %TRUE on success, %FALSE on failure
+ **/
+gboolean mirage_parser_get_param_string (MIRAGE_Parser *self, gchar *name, const gchar **ret_value, GError **error) {
+    MIRAGE_ParserPrivate *_priv = MIRAGE_PARSER_GET_PRIVATE(self);
+    GValue *value = g_hash_table_lookup(_priv->parser_params, name);
+    
+    if (!value) {
+        mirage_error(MIRAGE_E_GENERIC, error);
+        return FALSE;
+    }
+    
+    if (!G_VALUE_HOLDS_STRING(value)) {
+        mirage_error(MIRAGE_E_GENERIC, error);
+        return FALSE;
+    }
+    
+    if (ret_value) {
+        *ret_value = g_value_get_string(value);
+    }
+    
+    return TRUE;
+}
+
 
 /******************************************************************************\
  *                                 Object init                                *
