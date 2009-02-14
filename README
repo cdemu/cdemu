@@ -290,21 +290,19 @@ control the daemon:
       the daemon.
   
 * EnumSupportedParsers (parsers)
-    + parsers: out; "a(ssssbsas)"
+    + parsers: out; "a(ssss)"
         Array of structures containing information about supported parsers.
         Each structure has multiple fields; parser ID (string), parser name 
-        (string), parser version (string), parser author (string), multiple
-        files support flag (boolean), parser description (string) and supported 
-        suffixes (array of strings).
+        (string), image type description (string) and image file MIME type 
+        (string).
         
     - Returns supported image parsers.
     
 * EnumSupportedFragments (fragments)
-    + framgents: out; "a(sssss)"
+    + framgents: out; "a(ss)"
         Array of structures containing information about supported fragments.
-        Each structure has multiple fields; fragment ID (string), fragment name 
-        (string), fragment version (string), fragment author (string) and supported
-        interface (string).
+        Each structure has two fields; fragment ID (string) and fragment name 
+        (string).
         
     - Returns supported fragments.
     
