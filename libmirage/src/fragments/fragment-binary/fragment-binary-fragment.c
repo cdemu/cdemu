@@ -19,6 +19,8 @@
 
 #include "fragment-binary.h"
 
+#define __debug__ "BINARY-Fragment"
+
 
 /******************************************************************************\
  *                              Private structure                             *
@@ -122,7 +124,7 @@ static gboolean __mirage_fragment_binary_track_file_get_position (MIRAGE_FInterf
     
     sectsize_full = _priv->tfile_sectsize;
     if (_priv->sfile_format & FR_BIN_SFILE_INT) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_FRAGMENT, "%s: internal subchannel, adding %d to sector size %d\n", __func__, _priv->sfile_sectsize, sectsize_full);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_FRAGMENT, "%s: internal subchannel, adding %d to sector size %d\n", __debug__, _priv->sfile_sectsize, sectsize_full);
         sectsize_full += _priv->sfile_sectsize;
     }
     
@@ -210,7 +212,7 @@ static gboolean __mirage_fragment_binary_subchannel_file_get_position (MIRAGE_FI
     
     /* Either we have internal or external subchannel */
     if (_priv->sfile_format & FR_BIN_SFILE_INT) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_FRAGMENT, "%s: internal subchannel, position is at end of main channel data\n", __func__);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_FRAGMENT, "%s: internal subchannel, position is at end of main channel data\n", __debug__);
         /* Subchannel is contained in track file; get position in track file
            for that sector, and add to it length of track data sector */
         if (!mirage_finterface_binary_track_file_get_position(MIRAGE_FINTERFACE_BINARY(self), address, &tmp_offset, error)) {
@@ -219,7 +221,7 @@ static gboolean __mirage_fragment_binary_subchannel_file_get_position (MIRAGE_FI
         
         tmp_offset += _priv->tfile_sectsize;
     } else if (_priv->sfile_format & FR_BIN_SFILE_EXT) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_FRAGMENT, "%s: external subchannel, calculating position\n", __func__);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_FRAGMENT, "%s: external subchannel, calculating position\n", __debug__);
         /* We assume address is relative address */
         /* guint64 casts are required so that the product us 64-bit; product of two
            32-bit integers would be 32-bit, which would be truncated at overflow... */
@@ -247,14 +249,14 @@ static gboolean __mirage_fragment_binary_use_the_rest_of_file (MIRAGE_Fragment *
     gint fragment_len = 0;
     
     if (!_priv->tfile_handle) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: file not set!\n", __func__);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: file not set!\n", __debug__);
         mirage_error(MIRAGE_E_FILENOTSET, error);
         return FALSE;
     }
     
     /* Get file length */
     if (fstat(fileno(_priv->tfile_handle), &st) < 0) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to stat data file!\n", __func__);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to stat data file!\n", __debug__);
         mirage_error(MIRAGE_E_DATAFILE, error);
         return FALSE;
     }
@@ -266,7 +268,7 @@ static gboolean __mirage_fragment_binary_use_the_rest_of_file (MIRAGE_Fragment *
     }
     
     fragment_len = (st.st_size - _priv->tfile_offset) / full_sectsize;
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_FRAGMENT, "%s: using the rest of file (%d sectors)\n", __func__, fragment_len);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_FRAGMENT, "%s: using the rest of file (%d sectors)\n", __debug__, fragment_len);
     
     /* Set the length */
     return mirage_fragment_set_length(self, fragment_len, error);
@@ -280,7 +282,7 @@ static gboolean __mirage_fragment_binary_read_main_data (MIRAGE_Fragment *self, 
     /* We need file to read data from... but if it's missing, we don't read
        anything and this is not considered an error */
     if (!_priv->tfile_handle) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_FRAGMENT, "%s: no file handle!\n", __func__);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_FRAGMENT, "%s: no file handle!\n", __debug__);
         if (length) {
             *length = 0;
         }
@@ -293,7 +295,7 @@ static gboolean __mirage_fragment_binary_read_main_data (MIRAGE_Fragment *self, 
     }
     
     if (buf) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_FRAGMENT, "%s: reading from position 0x%llX\n", __func__, position);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_FRAGMENT, "%s: reading from position 0x%llX\n", __debug__, position);
         fseeko(_priv->tfile_handle, position, SEEK_SET);
         read_len = fread(buf, 1, _priv->tfile_sectsize, _priv->tfile_handle);
         
@@ -333,7 +335,7 @@ static gboolean __mirage_fragment_binary_read_subchannel_data (MIRAGE_Fragment *
     
     /* If there's no subchannel, return 0 for the length */
     if (!_priv->sfile_sectsize) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_FRAGMENT, "%s: no subchannel (sectsize = 0)!\n", __func__);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_FRAGMENT, "%s: no subchannel (sectsize = 0)!\n", __debug__);
         if (length) {
             *length = 0;
         }
@@ -343,15 +345,15 @@ static gboolean __mirage_fragment_binary_read_subchannel_data (MIRAGE_Fragment *
     /* We need file to read data from... but if it's missing, we don't read
        anything and this is not considered an error */
     if (_priv->sfile_format & FR_BIN_SFILE_INT) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_FRAGMENT, "%s: internal subchannel, using track file handle\n", __func__);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_FRAGMENT, "%s: internal subchannel, using track file handle\n", __debug__);
         file_handle = _priv->tfile_handle;
     } else {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_FRAGMENT, "%s: external subchannel, using track file handle\n", __func__);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_FRAGMENT, "%s: external subchannel, using track file handle\n", __debug__);
         file_handle = _priv->sfile_handle;        
     }
     
     if (!file_handle) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_FRAGMENT, "%s: no file handle!\n", __func__);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_FRAGMENT, "%s: no file handle!\n", __debug__);
         if (length) {
             *length = 0;
         }
@@ -368,7 +370,7 @@ static gboolean __mirage_fragment_binary_read_subchannel_data (MIRAGE_Fragment *
     if (buf) {
         guint8 tmp_buf[96];
                 
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_FRAGMENT, "%s: reading from position 0x%llX\n", __func__, position);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_FRAGMENT, "%s: reading from position 0x%llX\n", __debug__, position);
         /* We read into temporary buffer, because we might need to perform some
            magic on the data */
         fseeko(file_handle, position, SEEK_SET);
@@ -427,7 +429,7 @@ static void __mirage_fragment_binary_finalize (GObject *obj) {
     MIRAGE_Fragment_BINARY *self = MIRAGE_FRAGMENT_BINARY(obj);
     MIRAGE_Fragment_BINARYPrivate *_priv = MIRAGE_FRAGMENT_BINARY_GET_PRIVATE(self);
 
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_GOBJECT, "%s:\n", __func__);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_GOBJECT, "%s: finalizing object\n", __debug__);
 
     if (_priv->tfile_handle) {
         fclose(_priv->tfile_handle);
@@ -437,7 +439,7 @@ static void __mirage_fragment_binary_finalize (GObject *obj) {
     }
         
     /* Chain up to the parent class */
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_GOBJECT, "%s: chaining up to parent\n", __func__);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_GOBJECT, "%s: chaining up to parent\n", __debug__);
     return G_OBJECT_CLASS(parent_class)->finalize(obj);
 }
 

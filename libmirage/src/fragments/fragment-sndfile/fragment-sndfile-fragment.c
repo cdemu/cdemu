@@ -19,6 +19,8 @@
 
 #include "fragment-sndfile.h"
 
+#define __debug__ "SNDFILE-Fragment"
+
 
 /******************************************************************************\
  *                              Private structure                             *
@@ -62,7 +64,7 @@ static gboolean __mirage_fragment_sndfile_set_file (MIRAGE_FInterface_AUDIO *sel
             " -> format = 0x%X\n"
             " -> sections = %i\n"
             " -> seekable = %i\n",
-            __func__,
+            __debug__,
             _priv->format.frames, 
             _priv->format.samplerate, 
             _priv->format.channels, 
@@ -130,7 +132,7 @@ static gboolean __mirage_fragment_sndfile_use_the_rest_of_file (MIRAGE_Fragment 
     }
     
     fragment_len = (_priv->format.frames - _priv->offset)/SNDFILE_FRAMES_PER_SECTOR; 
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_FRAGMENT, "%s: using the rest of file (%d sectors)\n", __func__, fragment_len);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_FRAGMENT, "%s: using the rest of file (%d sectors)\n", __debug__, fragment_len);
 
     /* Set the length */
     return mirage_fragment_set_length(self, fragment_len, error);
@@ -154,7 +156,7 @@ static gboolean __mirage_fragment_sndfile_read_main_data (MIRAGE_Fragment *self,
     position = _priv->offset + address*SNDFILE_FRAMES_PER_SECTOR;
        
     if (buf) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_FRAGMENT, "%s: reading from position 0x%llX (frames)\n", __func__, position);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_FRAGMENT, "%s: reading from position 0x%llX (frames)\n", __debug__, position);
         sf_seek(_priv->sndfile, position, SEEK_SET);
         read_len = sf_readf_short(_priv->sndfile, (short *)buf, SNDFILE_FRAMES_PER_SECTOR);
         
@@ -200,7 +202,7 @@ static void __mirage_fragment_sndfile_finalize (GObject *obj) {
     MIRAGE_Fragment_SNDFILE *self = MIRAGE_FRAGMENT_SNDFILE(obj);
     MIRAGE_Fragment_SNDFILEPrivate *_priv = MIRAGE_FRAGMENT_SNDFILE_GET_PRIVATE(self);
     
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_GOBJECT, "%s:\n", __func__);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_GOBJECT, "%s: finalizing object\n", __debug__);
     
     g_free(_priv->filename);
     if (_priv->sndfile) {
@@ -208,7 +210,7 @@ static void __mirage_fragment_sndfile_finalize (GObject *obj) {
     }
         
     /* Chain up to the parent class */
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_GOBJECT, "%s: chaining up to parent\n", __func__);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_GOBJECT, "%s: chaining up to parent\n", __debug__);
     return G_OBJECT_CLASS(parent_class)->finalize(obj);
 }
 

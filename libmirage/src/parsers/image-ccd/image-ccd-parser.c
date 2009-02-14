@@ -19,6 +19,9 @@
  
 #include "image-ccd.h"
 
+#define __debug__ "CCD-Parser"
+
+
 /* Regex engine */
 typedef gboolean (*MIRAGE_RegexCallback) (MIRAGE_Parser *self, GMatchInfo *match_info, GError **error);
 
@@ -93,12 +96,12 @@ static gboolean __mirage_parser_ccd_sort_entries (MIRAGE_Parser *self, GError **
     GList *entry;
     
     /* First, remove the entries that we won't need */
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: removing redundant entries\n", __func__);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: removing redundant entries\n", __debug__);
     entry = g_list_find_custom(_priv->entries_list, NULL, (GCompareFunc)__find_redundant_entries);
     while (entry) {
         CCD_Entry *data = entry->data;
         
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: removing entry #%d, point 0x%X\n", __func__, data->number, data->Point);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: removing entry #%d, point 0x%X\n", __debug__, data->number, data->Point);
         
         g_free(data->ISRC);
         g_free(data);
@@ -108,7 +111,7 @@ static gboolean __mirage_parser_ccd_sort_entries (MIRAGE_Parser *self, GError **
     }
     
     /* Now, reorder the entries */
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: reordering entries\n", __func__);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: reordering entries\n", __debug__);
     _priv->entries_list = g_list_sort(_priv->entries_list, (GCompareFunc)__sort_entries);
     
     return TRUE;
@@ -124,7 +127,7 @@ static gboolean __mirage_parser_ccd_determine_track_mode (MIRAGE_Parser *self, G
 
     /* Get last fragment */
     if (!mirage_track_get_fragment_by_index(MIRAGE_TRACK(track), -1, &data_fragment, NULL)) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to get fragment\n", __func__);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to get fragment\n", __debug__);
         return FALSE;
     }
     
@@ -132,27 +135,27 @@ static gboolean __mirage_parser_ccd_determine_track_mode (MIRAGE_Parser *self, G
     mirage_finterface_binary_track_file_get_handle(MIRAGE_FINTERFACE_BINARY(data_fragment), &file, NULL);
     mirage_finterface_binary_track_file_get_position(MIRAGE_FINTERFACE_BINARY(data_fragment), 0, &offset, NULL);
     
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: checking for track type in data file at location 0x%llX\n", __func__, offset);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: checking for track type in data file at location 0x%llX\n", __debug__, offset);
     fseeko(file, offset, SEEK_SET);
     blocks_read = fread(buf, 24, 1, file);
     if (blocks_read < 1) return FALSE;
     if (!memcmp(buf, sync, 12)) {
         switch (buf[15]) {
             case 0x01: {
-                MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: Mode 1 track\n", __func__);
+                MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: Mode 1 track\n", __debug__);
                 mirage_track_set_mode(MIRAGE_TRACK(track), MIRAGE_MODE_MODE1, NULL);
                 break;
             }
             case 0x02: {
                 /* Mode 2; let's say we're Mode 2 Mixed and let the sector
                    code do the rest for us */
-                MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: Mode 2 track; setting to mixed...\n", __func__);
+                MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: Mode 2 track; setting to mixed...\n", __debug__);
                 mirage_track_set_mode(MIRAGE_TRACK(track), MIRAGE_MODE_MODE2_MIXED, NULL);
                 break;
             }
         }
     } else { 
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: Audio track\n", __func__);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: Audio track\n", __debug__);
         mirage_track_set_mode(MIRAGE_TRACK(track), MIRAGE_MODE_AUDIO, NULL);
     }
     
@@ -195,10 +198,10 @@ static gboolean __mirage_parser_ccd_build_disc_layout (MIRAGE_Parser *self, GErr
     GList *entry = NULL;
     
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "\n");
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: building disc layout\n", __func__);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: building disc layout\n", __debug__);
     
     if (_priv->disc_data->Catalog) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: setting disc catalog to %.13s\n", __func__, _priv->disc_data->Catalog);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: setting disc catalog to %.13s\n", __debug__, _priv->disc_data->Catalog);
         mirage_disc_set_mcn(MIRAGE_DISC(_priv->disc), _priv->disc_data->Catalog, NULL);
     }
     
@@ -211,17 +214,17 @@ static gboolean __mirage_parser_ccd_build_disc_layout (MIRAGE_Parser *self, GErr
         CCD_Entry *ccd_cur_entry = entry->data;
         CCD_Entry *ccd_next_entry = entry->next ? entry->next->data : NULL;
         
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "\n", __func__);
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: processing entry; point %02X, session %d\n", __func__, ccd_cur_entry->Point, ccd_cur_entry->Session);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "\n", __debug__);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: processing entry; point %02X, session %d\n", __debug__, ccd_cur_entry->Point, ccd_cur_entry->Session);
         
         if (ccd_cur_entry->Point == 0xA0) {
             /* 0xA0 is entry each session should begin with... so add the session here */
             GObject *cur_session = NULL;
         
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: adding session #%i\n", __func__, ccd_cur_entry->Session);
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: adding session #%i\n", __debug__, ccd_cur_entry->Session);
         
             if (!mirage_disc_add_session_by_number(MIRAGE_DISC(_priv->disc), ccd_cur_entry->Session, &cur_session, error)) {
-                MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to add session!\n", __func__);
+                MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to add session!\n", __debug__);
                 return FALSE;
             }
             mirage_session_set_session_type(MIRAGE_SESSION(cur_session), ccd_cur_entry->PSec, NULL); /* PSEC = Parser Type */
@@ -229,7 +232,7 @@ static gboolean __mirage_parser_ccd_build_disc_layout (MIRAGE_Parser *self, GErr
             g_object_unref(cur_session);
         } else if (ccd_cur_entry->Point == 0xA2) {
             /* 0xA2 is entry each session should end with... */
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: closing session #%i\n", __func__, ccd_cur_entry->Session);
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: closing session #%i\n", __debug__, ccd_cur_entry->Session);
             
             /* If there is next entry, we're dealing with multi-session disc; in 
                this case, we need to set leadout length */
@@ -238,7 +241,7 @@ static gboolean __mirage_parser_ccd_build_disc_layout (MIRAGE_Parser *self, GErr
                 gint leadout_length = 0;
                 
                 if (!mirage_disc_get_session_by_number(MIRAGE_DISC(_priv->disc), ccd_cur_entry->Session, &cur_session, error)) {
-                    MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to get session %i!\n", __func__, ccd_cur_entry->Session);
+                    MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to get session %i!\n", __debug__, ccd_cur_entry->Session);
                     return FALSE;
                 }
                 
@@ -258,24 +261,24 @@ static gboolean __mirage_parser_ccd_build_disc_layout (MIRAGE_Parser *self, GErr
             GObject *cur_track = NULL;
             gint fragment_length = 0;
             
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: adding track #%d\n", __func__, ccd_cur_entry->Point);
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: adding track #%d\n", __debug__, ccd_cur_entry->Point);
             
             /* Shouldn't really happen... */
             if (!ccd_next_entry) {
-                MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: ccd_next_entry == NULL; shouldn't happen!\n", __func__);
+                MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: ccd_next_entry == NULL; shouldn't happen!\n", __debug__);
                 mirage_error(MIRAGE_E_PARSER, error);
                 return FALSE;
             }
             
             /* Grab the session */
             if (!mirage_disc_get_session_by_number(MIRAGE_DISC(_priv->disc), ccd_cur_entry->Session, &cur_session, error)) {
-                MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to get session %i!\n", __func__, ccd_cur_entry->Session);
+                MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to get session %i!\n", __debug__, ccd_cur_entry->Session);
                 return FALSE;
             }
             
             /* Add the track */
             if (!mirage_session_add_track_by_number(MIRAGE_SESSION(cur_session), ccd_cur_entry->Point, &cur_track, error)) {
-                MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to add track!\n", __func__);
+                MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to add track!\n", __debug__);
                 g_object_unref(cur_session);
                 return FALSE;
             }
@@ -284,7 +287,7 @@ static gboolean __mirage_parser_ccd_build_disc_layout (MIRAGE_Parser *self, GErr
             /* Data fragment */
             GObject *data_fragment = libmirage_create_fragment(MIRAGE_TYPE_FINTERFACE_BINARY, _priv->img_filename, error);
             if (!data_fragment) {
-                MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to create data fragment!\n", __func__);
+                MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to create data fragment!\n", __debug__);
                 g_object_unref(cur_track);
                 g_object_unref(cur_session);
                 return FALSE;
@@ -315,7 +318,7 @@ static gboolean __mirage_parser_ccd_build_disc_layout (MIRAGE_Parser *self, GErr
             /* Track mode */
             if (ccd_cur_entry->Mode) {
                 /* Provided via [Track] entry */
-                MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: track mode is provided (0x%X)\n", __func__, ccd_cur_entry->Mode);
+                MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: track mode is provided (0x%X)\n", __debug__, ccd_cur_entry->Mode);
                 switch (ccd_cur_entry->Mode) {
                     case 0: {
                         mirage_track_set_mode(MIRAGE_TRACK(cur_track), MIRAGE_MODE_AUDIO, NULL);
@@ -330,12 +333,12 @@ static gboolean __mirage_parser_ccd_build_disc_layout (MIRAGE_Parser *self, GErr
                         break;
                     }
                     default: {
-                        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: invalid mode %d!\n", __func__, ccd_cur_entry->Mode);
+                        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: invalid mode %d!\n", __debug__, ccd_cur_entry->Mode);
                     }
                 }
             } else {
                 /* Determine it manually */
-                MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: track mode is not provided\n", __func__);
+                MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: track mode is not provided\n", __debug__);
                 __mirage_parser_ccd_determine_track_mode(self, cur_track, NULL);
             }
             
@@ -348,7 +351,7 @@ static gboolean __mirage_parser_ccd_build_disc_layout (MIRAGE_Parser *self, GErr
             
             /* ISRC */
             if (ccd_cur_entry->ISRC) {
-                MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: setting ISRC to %.12s\n", __func__, ccd_cur_entry->ISRC);
+                MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: setting ISRC to %.12s\n", __debug__, ccd_cur_entry->ISRC);
                 mirage_track_set_isrc(MIRAGE_TRACK(cur_track), ccd_cur_entry->ISRC, NULL);
             }
             
@@ -367,7 +370,7 @@ static gboolean __mirage_parser_ccd_build_disc_layout (MIRAGE_Parser *self, GErr
                    the formula still works */
                 cur_pregap = ccd_cur_entry->Index1 - ccd_cur_entry->Index0;
                 
-                MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: pregap determined to be 0x%X (%i)\n", __func__, cur_pregap, cur_pregap);
+                MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: pregap determined to be 0x%X (%i)\n", __debug__, cur_pregap, cur_pregap);
                 mirage_track_set_track_start(MIRAGE_TRACK(cur_track), cur_pregap, NULL);
             }
             
@@ -377,7 +380,7 @@ static gboolean __mirage_parser_ccd_build_disc_layout (MIRAGE_Parser *self, GErr
             gint next_pregap = 0;
             if (ccd_next_entry->Index0 && ccd_next_entry->Index1) {
                 next_pregap = ccd_next_entry->Index1 - ccd_next_entry->Index0;
-                MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: next track's pregap determined to be 0x%X (%i)\n", __func__, next_pregap, next_pregap);
+                MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: next track's pregap determined to be 0x%X (%i)\n", __debug__, next_pregap, next_pregap);
             }
             
             /* Fragment length calculation magic... */
@@ -386,7 +389,7 @@ static gboolean __mirage_parser_ccd_build_disc_layout (MIRAGE_Parser *self, GErr
             
             fragment_length = track_end - track_start;
             
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: fragment length determined to be 0x%X (%i)\n", __func__, fragment_length, fragment_length);
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: fragment length determined to be 0x%X (%i)\n", __debug__, fragment_length, fragment_length);
             mirage_fragment_set_length(MIRAGE_FRAGMENT(data_fragment), fragment_length, NULL);
             
             /* Update offset */
@@ -400,7 +403,7 @@ static gboolean __mirage_parser_ccd_build_disc_layout (MIRAGE_Parser *self, GErr
     }
     
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "\n");
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: finishing the layout\n", __func__);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: finishing the layout\n", __debug__);
     /* Finish disc layout (i.e. guess medium type and set pregaps if necessary) */
     gint medium_type = mirage_parser_guess_medium_type(self, _priv->disc);
     mirage_disc_set_medium_type(MIRAGE_DISC(_priv->disc), medium_type, NULL);
@@ -423,7 +426,7 @@ static gboolean __mirage_parser_ccd_callback_clonecd (MIRAGE_Parser *self, GMatc
     MIRAGE_Parser_CCDPrivate *_priv = MIRAGE_PARSER_CCD_GET_PRIVATE(self);
 
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "\n"); /* To make log more readable */
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: parsed [CloneCD] header\n", __func__);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: parsed [CloneCD] header\n", __debug__);
     
     _priv->header = g_new0(CCD_CloneCD, 1);
     _priv->cur_data = _priv->header;
@@ -438,7 +441,7 @@ static gboolean __mirage_parser_ccd_callback_clonecd_version (MIRAGE_Parser *sel
     CCD_CloneCD *clonecd = _priv->cur_data;
     gchar *value_str = g_match_info_fetch_named(match_info, "value");
     
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: parsed: Version = %s\n", __func__, value_str);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: parsed: Version = %s\n", __debug__, value_str);
     clonecd->Version = g_strtod(value_str, NULL);
     
     g_free(value_str);
@@ -452,7 +455,7 @@ static gboolean __mirage_parser_ccd_callback_disc (MIRAGE_Parser *self, GMatchIn
     MIRAGE_Parser_CCDPrivate *_priv = MIRAGE_PARSER_CCD_GET_PRIVATE(self);
 
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "\n"); /* To make log more readable */
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: parsed [Disc] header\n", __func__);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: parsed [Disc] header\n", __debug__);
     
     _priv->disc_data = g_new0(CCD_Disc, 1);
     _priv->cur_data = _priv->disc_data;
@@ -467,7 +470,7 @@ static gboolean __mirage_parser_ccd_callback_disc_toc_entries (MIRAGE_Parser *se
     CCD_Disc *disc = _priv->cur_data;
     gchar *value_str = g_match_info_fetch_named(match_info, "value");
     
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: parsed: TocEntries = %s\n", __func__, value_str);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: parsed: TocEntries = %s\n", __debug__, value_str);
     disc->TocEntries = g_strtod(value_str, NULL);
     
     g_free(value_str);
@@ -480,7 +483,7 @@ static gboolean __mirage_parser_ccd_callback_disc_sessions (MIRAGE_Parser *self,
     CCD_Disc *disc = _priv->cur_data;
     gchar *value_str = g_match_info_fetch_named(match_info, "value");
     
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: parsed: Sessions = %s\n", __func__, value_str);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: parsed: Sessions = %s\n", __debug__, value_str);
     disc->Sessions = g_strtod(value_str, NULL);
     
     g_free(value_str);
@@ -493,7 +496,7 @@ static gboolean __mirage_parser_ccd_callback_disc_data_tracks_scrambled (MIRAGE_
     CCD_Disc *disc = _priv->cur_data;
     gchar *value_str = g_match_info_fetch_named(match_info, "value");
     
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: parsed: DataTracksScrambled = %s\n", __func__, value_str);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: parsed: DataTracksScrambled = %s\n", __debug__, value_str);
     disc->DataTracksScrambled = g_strtod(value_str, NULL);
     
     g_free(value_str);
@@ -506,7 +509,7 @@ static gboolean __mirage_parser_ccd_callback_disc_cdtext_length (MIRAGE_Parser *
     CCD_Disc *disc = _priv->cur_data;
     gchar *value_str = g_match_info_fetch_named(match_info, "value");
     
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: parsed: CDTextLength = %s\n", __func__, value_str);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: parsed: CDTextLength = %s\n", __debug__, value_str);
     disc->CDTextLength = g_strtod(value_str, NULL);
     
     g_free(value_str);
@@ -519,7 +522,7 @@ static gboolean __mirage_parser_ccd_callback_disc_catalog (MIRAGE_Parser *self, 
     CCD_Disc *disc = _priv->cur_data;
     gchar *value_str = g_match_info_fetch_named(match_info, "value");
     
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: parsed: Catalog = %s\n", __func__, value_str);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: parsed: Catalog = %s\n", __debug__, value_str);
     disc->Catalog = value_str;
     
     /*g_free(value_str);*/
@@ -535,7 +538,7 @@ static gboolean __mirage_parser_ccd_callback_session (MIRAGE_Parser *self, GMatc
     CCD_Session *session;
     
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "\n"); /* To make log more readable */
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: parsed [Session %s] header\n", __func__, number_str);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: parsed [Session %s] header\n", __debug__, number_str);
     
     session = g_new0(CCD_Session, 1);
     session->number = g_strtod(number_str, NULL);
@@ -555,7 +558,7 @@ static gboolean __mirage_parser_ccd_callback_session_pregap_mode (MIRAGE_Parser 
     CCD_Session *session = _priv->cur_data;
     gchar *value_str = g_match_info_fetch_named(match_info, "value");
     
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: parsed: PreGapMode = %s\n", __func__, value_str);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: parsed: PreGapMode = %s\n", __debug__, value_str);
     session->PreGapMode = g_strtod(value_str, NULL);
     
     g_free(value_str);
@@ -568,7 +571,7 @@ static gboolean __mirage_parser_ccd_callback_session_pregap_subc (MIRAGE_Parser 
     CCD_Session *session = _priv->cur_data;
     gchar *value_str = g_match_info_fetch_named(match_info, "value");
     
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: parsed: PreGapSubC = %s\n", __func__, value_str);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: parsed: PreGapSubC = %s\n", __debug__, value_str);
     session->PreGapSubC = g_strtod(value_str, NULL);
     
     g_free(value_str);
@@ -584,7 +587,7 @@ static gboolean __mirage_parser_ccd_callback_entry (MIRAGE_Parser *self, GMatchI
     CCD_Entry *entry;
     
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "\n"); /* To make log more readable */
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: parsed [Entry %s] header\n", __func__, number_str);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: parsed [Entry %s] header\n", __debug__, number_str);
     
     entry = g_new0(CCD_Entry, 1);
     entry->number = g_strtod(number_str, NULL);
@@ -604,7 +607,7 @@ static gboolean __mirage_parser_ccd_callback_entry_session (MIRAGE_Parser *self,
     CCD_Entry *entry = _priv->cur_data;
     gchar *value_str = g_match_info_fetch_named(match_info, "value");
     
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: parsed: Session = %s\n", __func__, value_str);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: parsed: Session = %s\n", __debug__, value_str);
     entry->Session = g_strtod(value_str, NULL);
     
     g_free(value_str);
@@ -617,7 +620,7 @@ static gboolean __mirage_parser_ccd_callback_entry_point (MIRAGE_Parser *self, G
     CCD_Entry *entry = _priv->cur_data;
     gchar *value_str = g_match_info_fetch_named(match_info, "value");
     
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: parsed: Point = %s\n", __func__, value_str);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: parsed: Point = %s\n", __debug__, value_str);
     entry->Point = g_strtod(value_str, NULL);
     
     g_free(value_str);
@@ -630,7 +633,7 @@ static gboolean __mirage_parser_ccd_callback_entry_adr (MIRAGE_Parser *self, GMa
     CCD_Entry *entry = _priv->cur_data;
     gchar *value_str = g_match_info_fetch_named(match_info, "value");
     
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: parsed: ADR = %s\n", __func__, value_str);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: parsed: ADR = %s\n", __debug__, value_str);
     entry->ADR = g_strtod(value_str, NULL);
     
     g_free(value_str);
@@ -643,7 +646,7 @@ static gboolean __mirage_parser_ccd_callback_entry_control (MIRAGE_Parser *self,
     CCD_Entry *entry = _priv->cur_data;
     gchar *value_str = g_match_info_fetch_named(match_info, "value");
     
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: parsed: Control = %s\n", __func__, value_str);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: parsed: Control = %s\n", __debug__, value_str);
     entry->Control = g_strtod(value_str, NULL);
     
     g_free(value_str);
@@ -656,7 +659,7 @@ static gboolean __mirage_parser_ccd_callback_entry_trackno (MIRAGE_Parser *self,
     CCD_Entry *entry = _priv->cur_data;
     gchar *value_str = g_match_info_fetch_named(match_info, "value");
     
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: parsed: TrackNo = %s\n", __func__, value_str);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: parsed: TrackNo = %s\n", __debug__, value_str);
     entry->TrackNo = g_strtod(value_str, NULL);
     
     g_free(value_str);
@@ -669,7 +672,7 @@ static gboolean __mirage_parser_ccd_callback_entry_amin (MIRAGE_Parser *self, GM
     CCD_Entry *entry = _priv->cur_data;
     gchar *value_str = g_match_info_fetch_named(match_info, "value");
     
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: parsed: AMin = %s\n", __func__, value_str);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: parsed: AMin = %s\n", __debug__, value_str);
     entry->AMin = g_strtod(value_str, NULL);
     
     g_free(value_str);
@@ -682,7 +685,7 @@ static gboolean __mirage_parser_ccd_callback_entry_asec (MIRAGE_Parser *self, GM
     CCD_Entry *entry = _priv->cur_data;
     gchar *value_str = g_match_info_fetch_named(match_info, "value");
     
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: parsed: ASec = %s\n", __func__, value_str);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: parsed: ASec = %s\n", __debug__, value_str);
     entry->ASec = g_strtod(value_str, NULL);
     
     g_free(value_str);
@@ -695,7 +698,7 @@ static gboolean __mirage_parser_ccd_callback_entry_aframe (MIRAGE_Parser *self, 
     CCD_Entry *entry = _priv->cur_data;
     gchar *value_str = g_match_info_fetch_named(match_info, "value");
     
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: parsed: AFrame = %s\n", __func__, value_str);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: parsed: AFrame = %s\n", __debug__, value_str);
     entry->AFrame = g_strtod(value_str, NULL);
     
     g_free(value_str);
@@ -708,7 +711,7 @@ static gboolean __mirage_parser_ccd_callback_entry_alba (MIRAGE_Parser *self, GM
     CCD_Entry *entry = _priv->cur_data;
     gchar *value_str = g_match_info_fetch_named(match_info, "value");
     
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: parsed: ALBA = %s\n", __func__, value_str);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: parsed: ALBA = %s\n", __debug__, value_str);
     entry->ALBA = g_strtod(value_str, NULL);
     
     g_free(value_str);
@@ -721,7 +724,7 @@ static gboolean __mirage_parser_ccd_callback_entry_zero (MIRAGE_Parser *self, GM
     CCD_Entry *entry = _priv->cur_data;
     gchar *value_str = g_match_info_fetch_named(match_info, "value");
     
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: parsed: Zero = %s\n", __func__, value_str);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: parsed: Zero = %s\n", __debug__, value_str);
     entry->Zero = g_strtod(value_str, NULL);
     
     g_free(value_str);
@@ -734,7 +737,7 @@ static gboolean __mirage_parser_ccd_callback_entry_pmin (MIRAGE_Parser *self, GM
     CCD_Entry *entry = _priv->cur_data;
     gchar *value_str = g_match_info_fetch_named(match_info, "value");
     
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: parsed: PMin = %s\n", __func__, value_str);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: parsed: PMin = %s\n", __debug__, value_str);
     entry->PMin = g_strtod(value_str, NULL);
     
     g_free(value_str);
@@ -747,7 +750,7 @@ static gboolean __mirage_parser_ccd_callback_entry_psec (MIRAGE_Parser *self, GM
     CCD_Entry *entry = _priv->cur_data;
     gchar *value_str = g_match_info_fetch_named(match_info, "value");
     
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: parsed: PSec = %s\n", __func__, value_str);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: parsed: PSec = %s\n", __debug__, value_str);
     entry->PSec = g_strtod(value_str, NULL);
     
     g_free(value_str);
@@ -760,7 +763,7 @@ static gboolean __mirage_parser_ccd_callback_entry_pframe (MIRAGE_Parser *self, 
     CCD_Entry *entry = _priv->cur_data;
     gchar *value_str = g_match_info_fetch_named(match_info, "value");
     
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: parsed: PFrame = %s\n", __func__, value_str);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: parsed: PFrame = %s\n", __debug__, value_str);
     entry->PFrame = g_strtod(value_str, NULL);
     
     g_free(value_str);
@@ -773,7 +776,7 @@ static gboolean __mirage_parser_ccd_callback_entry_plba (MIRAGE_Parser *self, GM
     CCD_Entry *entry = _priv->cur_data;
     gchar *value_str = g_match_info_fetch_named(match_info, "value");
     
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: parsed: PLBA = %s\n", __func__, value_str);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: parsed: PLBA = %s\n", __debug__, value_str);
     entry->PLBA = g_strtod(value_str, NULL);
     
     g_free(value_str);
@@ -794,12 +797,12 @@ static gboolean __mirage_parser_ccd_callback_track (MIRAGE_Parser *self, GMatchI
     GList *entry;
 
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "\n"); /* To make log more readable */
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: parsed [TRACK %s] header\n", __func__, number_str);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: parsed [TRACK %s] header\n", __debug__, number_str);
     
     /* Get corresponding entry data and store the pointer */
     entry = g_list_find_custom(_priv->entries_list, GINT_TO_POINTER(number), (GCompareFunc)__find_entry_by_point);
     if (!entry) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to get entry with point #%d!\n", __func__, number);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to get entry with point #%d!\n", __debug__, number);
         mirage_error(MIRAGE_E_PARSER, error);
         return FALSE;
     }
@@ -817,7 +820,7 @@ static gboolean __mirage_parser_ccd_callback_track_mode (MIRAGE_Parser *self, GM
     CCD_Entry *entry = _priv->cur_data;
     gchar *value_str = g_match_info_fetch_named(match_info, "value");
     
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: parsed: MODE = %s\n", __func__, value_str);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: parsed: MODE = %s\n", __debug__, value_str);
     entry->Mode = g_strtod(value_str, NULL);
     
     g_free(value_str);
@@ -830,7 +833,7 @@ static gboolean __mirage_parser_ccd_callback_track_index0 (MIRAGE_Parser *self, 
     CCD_Entry *entry = _priv->cur_data;
     gchar *value_str = g_match_info_fetch_named(match_info, "value");
     
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: parsed: INDEX 0 = %s\n", __func__, value_str);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: parsed: INDEX 0 = %s\n", __debug__, value_str);
     entry->Index0 = g_strtod(value_str, NULL);
     
     g_free(value_str);
@@ -843,7 +846,7 @@ static gboolean __mirage_parser_ccd_callback_track_index1 (MIRAGE_Parser *self, 
     CCD_Entry *entry = _priv->cur_data;
     gchar *value_str = g_match_info_fetch_named(match_info, "value");
     
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: parsed: INDEX 1 = %s\n", __func__, value_str);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: parsed: INDEX 1 = %s\n", __debug__, value_str);
     entry->Index1 = g_strtod(value_str, NULL);
     
     g_free(value_str);
@@ -856,7 +859,7 @@ static gboolean __mirage_parser_ccd_callback_track_isrc (MIRAGE_Parser *self, GM
     CCD_Entry *entry = _priv->cur_data;
     gchar *value_str = g_match_info_fetch_named(match_info, "value");
     
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: parsed: ISRC = %s\n", __func__, value_str);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: parsed: ISRC = %s\n", __debug__, value_str);
     entry->ISRC = value_str;
     
     /*g_free(value_str);*/
@@ -952,12 +955,12 @@ static gboolean __mirage_parser_ccd_parse_ccd_file (MIRAGE_Parser *self, gchar *
     GIOChannel *io_channel;
     gboolean succeeded = TRUE;
     
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: opening file: %s\n", __func__, filename);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: opening file: %s\n", __debug__, filename);
     
     /* Create IO channel for file */
     io_channel = g_io_channel_new_file(filename, "r", &io_error);
     if (!io_channel) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to create IO channel: %s\n", __func__, io_error->message);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to create IO channel: %s\n", __debug__, io_error->message);
         g_error_free(io_error);
         mirage_error(MIRAGE_E_IMAGEFILE, error);
         return FALSE;
@@ -966,9 +969,12 @@ static gboolean __mirage_parser_ccd_parse_ccd_file (MIRAGE_Parser *self, gchar *
     /* If provided, use the specified encoding; otherwise, use default (UTF-8) */
     gchar *encoding = NULL;
     if (mirage_parser_get_param_string(self, "encoding", (const gchar **)&encoding, NULL)) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: using specified encoding: %s\n", __func__, encoding);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: using specified encoding: %s\n", __debug__, encoding);
         g_io_channel_set_encoding(io_channel, encoding, NULL);
     }
+    
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "\n");
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: parsing\n", __debug__);
     
     /* Read file line-by-line */
     gint line_nr;
@@ -986,7 +992,7 @@ static gboolean __mirage_parser_ccd_parse_ccd_file (MIRAGE_Parser *self, gchar *
         
         /* Handle abnormal status */
         if (status != G_IO_STATUS_NORMAL) {
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: status %d while reading line #%d from IO channel: %s\n", __func__, status, line_nr, io_error ? io_error->message : "no error message");
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: status %d while reading line #%d from IO channel: %s\n", __debug__, status, line_nr, io_error ? io_error->message : "no error message");
             g_error_free(io_error);
             
             mirage_error(MIRAGE_E_IMAGEFILE, error);
@@ -1047,7 +1053,7 @@ static gboolean __mirage_parser_ccd_parse_ccd_file (MIRAGE_Parser *self, gchar *
         
         /* Complain if we failed to match the line (should it be fatal?) */
         if (!matched) {
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to match line #%d: %s\n", __func__, line_nr, line_str);
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to match line #%d: %s\n", __debug__, line_nr, line_str);
             /* succeeded = FALSE */
         }
         
@@ -1090,8 +1096,8 @@ static gboolean __mirage_parser_ccd_load_image (MIRAGE_Parser *self, gchar **fil
     sprintf(_priv->img_filename+len-3, "img");
     sprintf(_priv->sub_filename+len-3, "sub");
     
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: assumed data file: %s\n", __func__, _priv->img_filename);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: assumed subchannel file: %s\n", __func__, _priv->sub_filename);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: assumed data file: %s\n", __debug__, _priv->img_filename);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: assumed subchannel file: %s\n", __debug__, _priv->sub_filename);
     
     /* Parse the CCD */
     if (!__mirage_parser_ccd_parse_ccd_file(self, filenames[0], error)) {
@@ -1142,7 +1148,7 @@ static void __mirage_parser_ccd_finalize (GObject *obj) {
     MIRAGE_Parser_CCD *self = MIRAGE_PARSER_CCD(obj);
     MIRAGE_Parser_CCDPrivate *_priv = MIRAGE_PARSER_CCD_GET_PRIVATE(self);
     
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_GOBJECT, "%s:\n", __func__);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_GOBJECT, "%s: finalizing object\n", __debug__);
 
     g_free(_priv->img_filename);
     g_free(_priv->sub_filename);
@@ -1151,7 +1157,7 @@ static void __mirage_parser_ccd_finalize (GObject *obj) {
     __mirage_parser_ccd_cleanup_regex_parser(MIRAGE_PARSER(self));
     
     /* Chain up to the parent class */
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_GOBJECT, "%s: chaining up to parent\n", __func__);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_GOBJECT, "%s: chaining up to parent\n", __debug__);
     return G_OBJECT_CLASS(parent_class)->finalize(obj);
 }
 

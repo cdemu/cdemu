@@ -21,6 +21,8 @@
 
 #include "image-mds.h"
 
+#define __debug__ "MDS-Parser"
+
 
 /******************************************************************************\
  *                              Private structure                             *
@@ -73,7 +75,7 @@ static gint __mirage_parser_mds_convert_track_mode (MIRAGE_Parser *self, gint mo
         }
     }
     
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: unknown track mode 0x%X!\n", __func__, mode);    
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: unknown track mode 0x%X!\n", __debug__, mode);    
     return -1;
 }
 
@@ -125,17 +127,17 @@ static gboolean __mirage_parser_mds_parse_dpm_block (MIRAGE_Parser *self, guint3
     dpm_num_entries = MIRAGE_CAST_DATA(cur_ptr, 0, guint32);
     cur_ptr += sizeof(guint32);
     
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: block number: %d\n", __func__, dpm_block_number);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: start sector: 0x%X\n", __func__, dpm_start_sector);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: resolution: %d\n", __func__, dpm_resolution);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: number of entries: %d\n", __func__, dpm_num_entries);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: block number: %d\n", __debug__, dpm_block_number);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: start sector: 0x%X\n", __debug__, dpm_start_sector);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: resolution: %d\n", __debug__, dpm_resolution);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: number of entries: %d\n", __debug__, dpm_num_entries);
     
     /* Read all entries */
     dpm_data = MIRAGE_CAST_PTR(cur_ptr, 0, guint32 *);
     
     /* Set DPM data */
     if (!mirage_disc_set_dpm_data(MIRAGE_DISC(_priv->disc), dpm_start_sector, dpm_resolution, dpm_num_entries, dpm_data, error)) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to set DPM data!\n", __func__);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to set DPM data!\n", __debug__);
         return FALSE;
     }
     
@@ -153,7 +155,7 @@ static gboolean __mirage_parser_mds_parse_dpm_data (MIRAGE_Parser *self, GError 
     
     if (!_priv->header->dpm_blocks_offset) {
         /* No DPM data, nothing to do */
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: no DPM data\n", __func__);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: no DPM data\n", __debug__);
         return TRUE;
     }
     
@@ -164,17 +166,17 @@ static gboolean __mirage_parser_mds_parse_dpm_data (MIRAGE_Parser *self, GError 
     num_dpm_blocks = MIRAGE_CAST_DATA(cur_ptr, 0, guint32);
     cur_ptr += sizeof(guint32);
     
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: number of DPM data blocks: %d\n", __func__, num_dpm_blocks);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: number of DPM data blocks: %d\n", __debug__, num_dpm_blocks);
     
     dpm_block_offset = MIRAGE_CAST_PTR(cur_ptr, 0, guint32 *);
     
     if (num_dpm_blocks > 1) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: cannot correctly handle more than 1 DPM block yet!\n", __func__);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: cannot correctly handle more than 1 DPM block yet!\n", __debug__);
     }
     
     /* Read each block */
     for (i = 0; i < num_dpm_blocks; i++) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: block[%i]: offset: 0x%X\n", __func__, i, dpm_block_offset[i]);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: block[%i]: offset: 0x%X\n", __debug__, i, dpm_block_offset[i]);
         __mirage_parser_mds_parse_dpm_block(self, dpm_block_offset[i], NULL);
         /* FIXME: currently, only first DPM block is loaded */
         break;
@@ -204,7 +206,7 @@ static gboolean __mirage_parser_mds_parse_disc_structures (MIRAGE_Parser *self, 
         MIRAGE_DiscStruct_Manufacture *manu_info;
         MIRAGE_DiscStruct_PhysInfo *phys_info;
         
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: reading disc structures\n", __func__);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: reading disc structures\n", __debug__);
         
         cur_ptr = _priv->mds_data + _priv->header->disc_structures_offset;
         
@@ -226,7 +228,7 @@ static gboolean __mirage_parser_mds_parse_disc_structures (MIRAGE_Parser *self, 
                     
         /* Second round if it's dual-layer... */
         if (phys_info->num_layers == 0x01) {
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: dual-layer disc; reading disc structures for second layer\n", __func__);
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: dual-layer disc; reading disc structures for second layer\n", __debug__);
                         
             /* DVD copyright information */
             copy_info = MIRAGE_CAST_PTR(cur_ptr, 0, MIRAGE_DiscStruct_Copyright *);
@@ -256,7 +258,7 @@ static gboolean __mirage_parser_mds_parse_bca (MIRAGE_Parser *self, GError **err
     /* It seems BCA (Burst Cutting Area) structure is stored as well, but in separate
        place (kinda makes sense, because it doesn't have fixed length) */
     if (_priv->header->bca_len) {       
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: reading BCA data (0x%X bytes)\n", __func__, _priv->header->bca_len);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: reading BCA data (0x%X bytes)\n", __debug__, _priv->header->bca_len);
         
         cur_ptr = _priv->mds_data + _priv->header->bca_data_offset;
         mirage_disc_set_disc_structure(MIRAGE_DISC(_priv->disc), 0, 0x0003, MIRAGE_CAST_PTR(cur_ptr, 0, guint8 *), _priv->header->bca_len, NULL);
@@ -274,7 +276,7 @@ static gchar *__mirage_parser_mds_get_track_filename (MIRAGE_Parser *self, MDS_F
        filename is located at the end of it... meaning filename's length is 
        from filename_offset to end of the file */
     if (!footer_block) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: track block does not have a footer, but we're supposed to get filename from it!\n", __func__);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: track block does not have a footer, but we're supposed to get filename from it!\n", __debug__);
         mirage_error(MIRAGE_E_PARSER, error);
         return NULL;
     }
@@ -291,11 +293,11 @@ static gchar *__mirage_parser_mds_get_track_filename (MIRAGE_Parser *self, MDS_F
             
     /* Find binary file */
     mdf_filename = __helper_find_binary_file(tmp_mdf_filename, _priv->mds_filename);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: MDF filename: <%s> -> <%s>\n", __func__, tmp_mdf_filename, mdf_filename);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: MDF filename: <%s> -> <%s>\n", __debug__, tmp_mdf_filename, mdf_filename);
     g_free(tmp_mdf_filename);
     
     if (!mdf_filename) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: failed to find data file!\n", __func__);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: failed to find data file!\n", __debug__);
         mirage_error(MIRAGE_E_DATAFILE, error);
         return NULL;
     }
@@ -310,14 +312,14 @@ static gboolean __mirage_parser_mds_parse_track_entries (MIRAGE_Parser *self, MD
     gint medium_type;
     gint i;
     
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: reading track blocks\n", __func__);        
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: reading track blocks\n", __debug__);        
     
     /* Fetch medium type which we'll need later */
     mirage_disc_get_medium_type(MIRAGE_DISC(_priv->disc), &medium_type, NULL);
     
     /* Get current session */
     if (!mirage_disc_get_session_by_index(MIRAGE_DISC(_priv->disc), -1, &cur_session, error)) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to get current session!\n", __func__);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to get current session!\n", __debug__);
         return FALSE;
     }
     
@@ -333,22 +335,22 @@ static gboolean __mirage_parser_mds_parse_track_entries (MIRAGE_Parser *self, MD
         block = MIRAGE_CAST_PTR(cur_ptr, 0, MDS_TrackBlock *);
         cur_ptr += sizeof(MDS_TrackBlock);
         
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: track block #%i:\n", __func__, i);
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  mode: 0x%X\n", __func__, block->mode);
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  subchannel: 0x%X\n", __func__, block->subchannel);
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  adr/ctl: 0x%X\n", __func__, block->adr_ctl);
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  dummy2: 0x%X\n", __func__, block->__dummy2__);
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  point: 0x%X\n", __func__, block->point);
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  dummy3: 0x%X\n", __func__, block->__dummy3__);
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  min: %i\n", __func__, block->min);
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  sec: %i\n", __func__, block->sec);
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  frame: %i\n", __func__, block->frame);
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  extra offset: 0x%X\n", __func__, block->extra_offset);
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  sector size: 0x%X\n", __func__, block->sector_size);
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  start sector: 0x%X\n", __func__, block->start_sector);
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  start offset: 0x%llX\n", __func__, block->start_offset);
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  session: 0x%X\n", __func__, block->session);
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  footer offset: 0x%X\n", __func__, block->footer_offset);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: track block #%i:\n", __debug__, i);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  mode: 0x%X\n", __debug__, block->mode);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  subchannel: 0x%X\n", __debug__, block->subchannel);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  adr/ctl: 0x%X\n", __debug__, block->adr_ctl);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  dummy2: 0x%X\n", __debug__, block->__dummy2__);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  point: 0x%X\n", __debug__, block->point);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  dummy3: 0x%X\n", __debug__, block->__dummy3__);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  min: %i\n", __debug__, block->min);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  sec: %i\n", __debug__, block->sec);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  frame: %i\n", __debug__, block->frame);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  extra offset: 0x%X\n", __debug__, block->extra_offset);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  sector size: 0x%X\n", __debug__, block->sector_size);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  start sector: 0x%X\n", __debug__, block->start_sector);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  start offset: 0x%llX\n", __debug__, block->start_offset);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  session: 0x%X\n", __debug__, block->session);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  footer offset: 0x%X\n", __debug__, block->footer_offset);
         
         /* Read extra track block, if applicable; it seems that only CD images
            have extra blocks, though. For DVD images, extra_offset seems to 
@@ -356,36 +358,36 @@ static gboolean __mirage_parser_mds_parse_track_entries (MIRAGE_Parser *self, MD
         if (medium_type == MIRAGE_MEDIUM_CD && block->extra_offset) {
             extra_block = (MDS_TrackExtraBlock *)(_priv->mds_data + block->extra_offset);
                         
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: extra block #%i:\n", __func__, i);
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  pregap: 0x%X\n", __func__, extra_block->pregap);
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  length: 0x%X\n", __func__, extra_block->length);
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: extra block #%i:\n", __debug__, i);
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  pregap: 0x%X\n", __debug__, extra_block->pregap);
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  length: 0x%X\n", __debug__, extra_block->length);
         }
         
         /* Read footer, if applicable */
         if (block->footer_offset) {
             footer_block = (MDS_Footer *)(_priv->mds_data + block->footer_offset);
             
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: footer block #%i:\n", __func__, i);
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  filename offset: 0x%X\n", __func__, footer_block->filename_offset);
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  widechar filename: 0x%X\n", __func__, footer_block->widechar_filename);
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  dummy1: 0x%X\n", __func__, footer_block->__dummy1__);
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  dummy2: 0x%X\n", __func__, footer_block->__dummy2__);            
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: footer block #%i:\n", __debug__, i);
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  filename offset: 0x%X\n", __debug__, footer_block->filename_offset);
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  widechar filename: 0x%X\n", __debug__, footer_block->widechar_filename);
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  dummy1: 0x%X\n", __debug__, footer_block->__dummy1__);
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  dummy2: 0x%X\n", __debug__, footer_block->__dummy2__);            
         }
             
         if (block->point > 0 && block->point < 99) {
             /* Track entry */
             GObject *cur_track = NULL;
             
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: entry is for track %i\n", __func__, block->point);
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: entry is for track %i\n", __debug__, block->point);
             
             if (!mirage_session_add_track_by_number(MIRAGE_SESSION(cur_session), block->point, &cur_track, error)) {
-                MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to add track!\n", __func__);
+                MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to add track!\n", __debug__);
                 g_object_unref(cur_session);
                 return FALSE;
             }
                     
             gint converted_mode = __mirage_parser_mds_convert_track_mode(self, block->mode);
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: track mode: 0x%X\n", __func__, converted_mode);
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: track mode: 0x%X\n", __debug__, converted_mode);
             mirage_track_set_mode(MIRAGE_TRACK(cur_track), converted_mode, NULL);
                     
             /* Flags: decoded from Ctl */
@@ -395,7 +397,7 @@ static gboolean __mirage_parser_mds_parse_track_entries (MIRAGE_Parser *self, MD
             gchar *mdf_filename = __mirage_parser_mds_get_track_filename(self, footer_block, error);
             
             if (!mdf_filename) {
-                MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to get track filename!\n", __func__);
+                MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to get track filename!\n", __debug__);
                 g_object_unref(cur_track);
                 g_object_unref(cur_session);
                 return FALSE;
@@ -406,11 +408,11 @@ static gboolean __mirage_parser_mds_parse_track_entries (MIRAGE_Parser *self, MD
             if (extra_block && extra_block->pregap) {
                 GObject *pregap_fragment;
                 
-                MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: track has pregap (0x%X); creating NULL fragment\n", __func__, extra_block->pregap);
+                MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: track has pregap (0x%X); creating NULL fragment\n", __debug__, extra_block->pregap);
                 
                 pregap_fragment = libmirage_create_fragment(MIRAGE_TYPE_FINTERFACE_NULL, "NULL", error);
                 if (!pregap_fragment) {
-                    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: failed to create NULL fragment!\n", __func__);
+                    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: failed to create NULL fragment!\n", __debug__);
                     g_object_unref(cur_track);
                     g_object_unref(cur_session);
                     return FALSE;
@@ -427,7 +429,7 @@ static gboolean __mirage_parser_mds_parse_track_entries (MIRAGE_Parser *self, MD
             /* Data fragment */
             GObject *data_fragment = libmirage_create_fragment(MIRAGE_TYPE_FINTERFACE_BINARY, mdf_filename, error);
             if (!data_fragment) {
-                MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: failed to create fragment!\n", __func__);
+                MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: failed to create fragment!\n", __debug__);
                 g_object_unref(cur_track);
                 g_object_unref(cur_session);
                 return FALSE;
@@ -453,11 +455,11 @@ static gboolean __mirage_parser_mds_parse_track_entries (MIRAGE_Parser *self, MD
             if (medium_type == MIRAGE_MEDIUM_DVD) {
                 /* Length: for DVD-ROMs, track length seems to be stored in extra_offset */
                 fragment_len = block->extra_offset;
-                MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: DVD-ROM; track's fragment length: 0x%X\n", __func__, fragment_len);
+                MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: DVD-ROM; track's fragment length: 0x%X\n", __debug__, fragment_len);
             } else {
                 /* Length: for CD-ROMs, track lengths are stored in extra blocks */
                 fragment_len = extra_block->length;
-                MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: CD-ROM; track's fragment length: 0x%X\n", __func__, fragment_len);
+                MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: CD-ROM; track's fragment length: 0x%X\n", __debug__, fragment_len);
             }
                 
             mirage_fragment_set_length(MIRAGE_FRAGMENT(data_fragment), fragment_len, NULL);
@@ -473,7 +475,7 @@ static gboolean __mirage_parser_mds_parse_track_entries (MIRAGE_Parser *self, MD
                     gint sfile_sectsize = 96;
                     gint sfile_format = FR_BIN_SFILE_PW96_INT | FR_BIN_SFILE_INT;
                     
-                    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: subchannel found; interleaved PW96\n", __func__);
+                    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: subchannel found; interleaved PW96\n", __debug__);
 
                     mirage_finterface_binary_subchannel_file_set_sectsize(MIRAGE_FINTERFACE_BINARY(data_fragment), sfile_sectsize, NULL);
                     mirage_finterface_binary_subchannel_file_set_format(MIRAGE_FINTERFACE_BINARY(data_fragment), sfile_format, NULL);
@@ -487,11 +489,11 @@ static gboolean __mirage_parser_mds_parse_track_entries (MIRAGE_Parser *self, MD
                     break;
                 }
                 case MDS_SUBCHAN_NONE: {
-                    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: no subchannel\n", __func__);
+                    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: no subchannel\n", __debug__);
                     break;
                 }
                 default: {
-                    MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: unknown subchannel type 0x%X!\n", __func__, block->subchannel);
+                    MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: unknown subchannel type 0x%X!\n", __debug__, block->subchannel);
                     break;
                 }
             }
@@ -502,7 +504,7 @@ static gboolean __mirage_parser_mds_parse_track_entries (MIRAGE_Parser *self, MD
             g_object_unref(cur_track);
         } else {
             /* Non-track block; skip */
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: skipping non-track entry 0x%X\n", __func__, block->point);
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: skipping non-track entry 0x%X\n", __debug__, block->point);
         }
     }
     
@@ -516,7 +518,7 @@ static gboolean __mirage_parser_mds_parse_sessions (MIRAGE_Parser *self, GError 
     guint8 *cur_ptr;
     gint i;
     
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: reading session blocks (%i)\n", __func__, _priv->header->num_sessions);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: reading session blocks (%i)\n", __debug__, _priv->header->num_sessions);
    
     cur_ptr = _priv->mds_data + _priv->header->sessions_blocks_offset;
     
@@ -525,36 +527,36 @@ static gboolean __mirage_parser_mds_parse_sessions (MIRAGE_Parser *self, GError 
         MDS_SessionBlock *session = MIRAGE_CAST_PTR(cur_ptr, 0, MDS_SessionBlock *);
         cur_ptr += sizeof(MDS_SessionBlock);
         
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: session block #%i:\n", __func__, i);        
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  start address: 0x%X\n", __func__, session->session_start);
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  length: 0x%X\n", __func__, session->session_end);
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  number: %i\n", __func__, session->session_number);
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  number of all blocks: %i\n", __func__, session->num_all_blocks);
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  number of non-track block: %i\n", __func__, session->num_nontrack_blocks);
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  first track: %i\n", __func__, session->first_track);
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  last track: %i\n", __func__, session->last_track);
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  dummy2: 0x%X\n", __func__, session->__dummy2__);
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  track blocks offset: 0x%X\n", __func__, session->tracks_blocks_offset);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: session block #%i:\n", __debug__, i);        
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  start address: 0x%X\n", __debug__, session->session_start);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  length: 0x%X\n", __debug__, session->session_end);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  number: %i\n", __debug__, session->session_number);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  number of all blocks: %i\n", __debug__, session->num_all_blocks);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  number of non-track block: %i\n", __debug__, session->num_nontrack_blocks);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  first track: %i\n", __debug__, session->first_track);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  last track: %i\n", __debug__, session->last_track);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  dummy2: 0x%X\n", __debug__, session->__dummy2__);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  track blocks offset: 0x%X\n", __debug__, session->tracks_blocks_offset);
         
         /* If this is first session, we'll use its start address as disc start address;
            if not, we need to calculate previous session's leadout length, based on 
            this session's start address and previous session's end... */
         if (i == 0) {
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: first session; setting disc's start to 0x%X (%i)\n", __func__, session->session_start, session->session_start);
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: first session; setting disc's start to 0x%X (%i)\n", __debug__, session->session_start, session->session_start);
             mirage_disc_layout_set_start_sector(MIRAGE_DISC(_priv->disc), session->session_start, NULL);
         } else {
             guint32 leadout_length = session->session_start - _priv->prev_session_end;
             GObject *prev_session = NULL;
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: previous session's leadout length: 0x%X (%i)\n", __func__, leadout_length, leadout_length);
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: previous session's leadout length: 0x%X (%i)\n", __debug__, leadout_length, leadout_length);
             
             /* Use -1 as an index, since we still haven't added current session */
             if (!mirage_disc_get_session_by_index(MIRAGE_DISC(_priv->disc), -1, &prev_session, error)) {
-                MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to get previous session!\n", __func__);
+                MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to get previous session!\n", __debug__);
                 return FALSE;
             }
             
             if (!mirage_session_set_leadout_length(MIRAGE_SESSION(prev_session), leadout_length, error)) {
-                MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to set leadout length!\n", __func__);
+                MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to set leadout length!\n", __debug__);
                 g_object_unref(prev_session);
                 return FALSE;
             }
@@ -567,13 +569,13 @@ static gboolean __mirage_parser_mds_parse_sessions (MIRAGE_Parser *self, GError 
         
         /* Add session */
         if (!mirage_disc_add_session_by_number(MIRAGE_DISC(_priv->disc), session->session_number, NULL, error)) {
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to add session!\n", __func__);        
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to add session!\n", __debug__);        
             return FALSE;
         }
         
         /* Load tracks */
         if (!__mirage_parser_mds_parse_track_entries(self, session, error)) {
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to parse track entries!\n", __func__);
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to parse track entries!\n", __debug__);
             return FALSE;
         }
     }
@@ -586,25 +588,25 @@ static gboolean __mirage_parser_mds_load_disc (MIRAGE_Parser *self, GError **err
     
     /* Read parser structures */
     if (!__mirage_parser_mds_parse_disc_structures(self, error)) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to parse disc structures!\n", __func__);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to parse disc structures!\n", __debug__);
         return FALSE;
     }
     
     /* Read BCA */
     if (!__mirage_parser_mds_parse_bca(self, error)) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to parse BCA!\n", __func__);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to parse BCA!\n", __debug__);
         return FALSE;
     }
     
     /* Sessions */
     if (!__mirage_parser_mds_parse_sessions(self, error)) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to parse sessions!\n", __func__);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to parse sessions!\n", __debug__);
         return FALSE;
     }
     
     /* DPM data */
     if (!__mirage_parser_mds_parse_dpm_data(self, error)) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to parse DPM data!\n", __func__);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to parse DPM data!\n", __debug__);
         return FALSE;
     }
     
@@ -652,7 +654,7 @@ static gboolean __mirage_parser_mds_load_image (MIRAGE_Parser *self, gchar **fil
     /* Map the file using GLib's GMappedFile */
     _priv->mds_mapped = g_mapped_file_new(filenames[0], FALSE, &local_error);
     if (!_priv->mds_mapped) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to map file '%s': %s!\n", __func__, filenames[0], local_error->message);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to map file '%s': %s!\n", __debug__, filenames[0], local_error->message);
         g_error_free(local_error);
         mirage_error(MIRAGE_E_IMAGEFILE, error);
         succeeded = FALSE;
@@ -665,39 +667,39 @@ static gboolean __mirage_parser_mds_load_image (MIRAGE_Parser *self, gchar **fil
     _priv->header = MIRAGE_CAST_PTR(cur_ptr, 0, MDS_Header *);
     cur_ptr += sizeof(MDS_Header);
     
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: MDS header:\n", __func__);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  signature: %.16s\n", __func__, _priv->header->signature);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  version (?): %u.%u\n", __func__, _priv->header->version[0], _priv->header->version[1]);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  medium type: 0x%X\n", __func__, _priv->header->medium_type);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  number of sessions: 0x%X\n", __func__, _priv->header->num_sessions);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  dummy1: 0x%X, 0x%X\n", __func__, _priv->header->__dummy1__[0], _priv->header->__dummy1__[1]);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  BCA length: 0x%X\n", __func__, _priv->header->bca_len);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  dummy2: 0x%X, 0x%X\n", __func__, _priv->header->__dummy2__[0], _priv->header->__dummy2__[1]);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  BCA data offset: 0x%X\n", __func__, _priv->header->bca_data_offset);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  dummy3: 0x%X, 0x%X, 0x%X, 0x%X, 0x%X, 0x%X\n", __func__, _priv->header->__dummy3__[0], _priv->header->__dummy3__[1], _priv->header->__dummy3__[2], _priv->header->__dummy3__[3], _priv->header->__dummy3__[4], _priv->header->__dummy3__[5]);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  disc structures offset: 0x%X\n", __func__, _priv->header->disc_structures_offset);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  dummy4: 0x%X, 0x%X, 0x%X\n", __func__, _priv->header->__dummy4__[0], _priv->header->__dummy4__[1], _priv->header->__dummy4__[2]);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  session blocks offset: 0x%X\n", __func__, _priv->header->sessions_blocks_offset);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  DPM blocks offset: 0x%X\n", __func__, _priv->header->dpm_blocks_offset);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: MDS header:\n", __debug__);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  signature: %.16s\n", __debug__, _priv->header->signature);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  version (?): %u.%u\n", __debug__, _priv->header->version[0], _priv->header->version[1]);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  medium type: 0x%X\n", __debug__, _priv->header->medium_type);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  number of sessions: 0x%X\n", __debug__, _priv->header->num_sessions);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  dummy1: 0x%X, 0x%X\n", __debug__, _priv->header->__dummy1__[0], _priv->header->__dummy1__[1]);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  BCA length: 0x%X\n", __debug__, _priv->header->bca_len);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  dummy2: 0x%X, 0x%X\n", __debug__, _priv->header->__dummy2__[0], _priv->header->__dummy2__[1]);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  BCA data offset: 0x%X\n", __debug__, _priv->header->bca_data_offset);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  dummy3: 0x%X, 0x%X, 0x%X, 0x%X, 0x%X, 0x%X\n", __debug__, _priv->header->__dummy3__[0], _priv->header->__dummy3__[1], _priv->header->__dummy3__[2], _priv->header->__dummy3__[3], _priv->header->__dummy3__[4], _priv->header->__dummy3__[5]);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  disc structures offset: 0x%X\n", __debug__, _priv->header->disc_structures_offset);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  dummy4: 0x%X, 0x%X, 0x%X\n", __debug__, _priv->header->__dummy4__[0], _priv->header->__dummy4__[1], _priv->header->__dummy4__[2]);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  session blocks offset: 0x%X\n", __debug__, _priv->header->sessions_blocks_offset);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  DPM blocks offset: 0x%X\n", __debug__, _priv->header->dpm_blocks_offset);
     
     switch (_priv->header->medium_type) {
         case MDS_MEDIUM_CD:
         case MDS_MEDIUM_CD_R:
         case MDS_MEDIUM_CD_RW: {
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: CD-ROM image\n", __func__);
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: CD-ROM image\n", __debug__);
             mirage_disc_set_medium_type(MIRAGE_DISC(_priv->disc), MIRAGE_MEDIUM_CD, NULL);
             succeeded = __mirage_parser_mds_load_disc(self, error);
             break;
         }
         case MDS_MEDIUM_DVD: 
         case MDS_MEDIUM_DVD_MINUS_R: {
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: DVD-ROM image\n", __func__);
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: DVD-ROM image\n", __debug__);
             mirage_disc_set_medium_type(MIRAGE_DISC(_priv->disc), MIRAGE_MEDIUM_DVD, NULL);
             succeeded = __mirage_parser_mds_load_disc(self, error);            
             break;
         }
         default: {
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: medium of type 0x%X not supported yet!\n", __func__, _priv->header->medium_type);
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: medium of type 0x%X not supported yet!\n", __debug__, _priv->header->medium_type);
             mirage_error(MIRAGE_E_NOTIMPL, error);
             succeeded = FALSE;
             break;
@@ -742,12 +744,12 @@ static void __mirage_parser_mds_finalize (GObject *obj) {
     MIRAGE_Parser_MDS *self = MIRAGE_PARSER_MDS(obj);
     MIRAGE_Parser_MDSPrivate *_priv = MIRAGE_PARSER_MDS_GET_PRIVATE(self);
     
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_GOBJECT, "%s:\n", __func__);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_GOBJECT, "%s: finalizing object\n", __debug__);
 
     g_free(_priv->mds_filename);
     
     /* Chain up to the parent class */
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_GOBJECT, "%s: chaining up to parent\n", __func__);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_GOBJECT, "%s: chaining up to parent\n", __debug__);
     return G_OBJECT_CLASS(parent_class)->finalize(obj);
 }
 

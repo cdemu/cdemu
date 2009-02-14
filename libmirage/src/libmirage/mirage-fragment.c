@@ -23,6 +23,8 @@
 
 #include "mirage.h"
 
+#define __debug__ "Fragment"
+
 
 /******************************************************************************\
  *                              Private structure                             *
@@ -320,13 +322,13 @@ static void __mirage_fragment_finalize (GObject *obj) {
     MIRAGE_Fragment *self = MIRAGE_FRAGMENT(obj);
     MIRAGE_FragmentPrivate *_priv = MIRAGE_FRAGMENT_GET_PRIVATE(self);
     
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_GOBJECT, "%s:\n", __func__);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_GOBJECT, "%s: finalizing object\n", __debug__);
     
     /* Free fragment info */
     __destroy_fragment_info(_priv->fragment_info);
     
     /* Chain up to the parent class */
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_GOBJECT, "%s: chaining up to parent\n", __func__);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_GOBJECT, "%s: chaining up to parent\n", __debug__);
     return G_OBJECT_CLASS(parent_class)->finalize(obj);
 }
 

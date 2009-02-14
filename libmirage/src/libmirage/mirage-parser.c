@@ -23,6 +23,8 @@
 
 #include "mirage.h"
 
+#define __debug__ "Parser"
+
 
 /******************************************************************************\
  *                              Private structure                             *
@@ -167,10 +169,10 @@ gint mirage_parser_guess_medium_type (MIRAGE_Parser *self, GObject *disc) {
     
     /* FIXME: add other media types? */
     if (length <= 90*60*75) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: disc layout size implies CD-ROM image\n", __func__);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: disc layout size implies CD-ROM image\n", __debug__);
         return MIRAGE_MEDIUM_CD;
     } else {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: disc layout size implies DVD-ROM image\n", __func__);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: disc layout size implies DVD-ROM image\n", __debug__);
         return MIRAGE_MEDIUM_DVD;
     };
 }
@@ -208,19 +210,19 @@ gboolean mirage_parser_add_redbook_pregap (MIRAGE_Parser *self, GObject *disc, G
     
     /* Red Book pregap is found only on CD-ROMs */
     if (medium_type != MIRAGE_MEDIUM_CD) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: Red Book pregap exists only on CD-ROMs!\n", __func__);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: Red Book pregap exists only on CD-ROMs!\n", __debug__);
         mirage_error(MIRAGE_E_INVALIDMEDIUM, error);
         return FALSE;
     }
 
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: adding Red Book pregaps to the disc...\n", __func__);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: adding Red Book pregaps to the disc...\n", __debug__);
     
     /* CD-ROMs start at -150 as per Red Book... */
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: setting disc layout start at -150\n", __func__);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: setting disc layout start at -150\n", __debug__);
     mirage_disc_layout_set_start_sector(MIRAGE_DISC(disc), -150, NULL);
         
     mirage_disc_get_number_of_sessions(MIRAGE_DISC(disc), &num_sessions, NULL);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: %d sessions\n", __func__, num_sessions);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: %d session(s)\n", __debug__, num_sessions);
 
     /* Put 150 sector pregap into every first track of each session */
     for (i = 0; i < num_sessions; i++) {
@@ -228,12 +230,12 @@ gboolean mirage_parser_add_redbook_pregap (MIRAGE_Parser *self, GObject *disc, G
         GObject *ftrack = NULL;
                 
         if (!mirage_disc_get_session_by_index(MIRAGE_DISC(disc), i, &session, error)) {
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to get session with index %i!\n", __func__, i);
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to get session with index %i!\n", __debug__, i);
             return FALSE;
         }
             
         if (!mirage_session_get_track_by_index(MIRAGE_SESSION(session), 0, &ftrack, error)) {
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to first track of session with index %i!\n", __func__, i);
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to first track of session with index %i!\n", __debug__, i);
             g_object_unref(session);
             return FALSE;
         }
@@ -241,7 +243,7 @@ gboolean mirage_parser_add_redbook_pregap (MIRAGE_Parser *self, GObject *disc, G
         /* Add pregap fragment (empty) */
         GObject *pregap_fragment = libmirage_create_fragment(MIRAGE_TYPE_FINTERFACE_NULL, "NULL", NULL);
         if (!pregap_fragment) {
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to create pregap fragment!\n", __func__);
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to create pregap fragment!\n", __debug__);
             g_object_unref(session);
             g_object_unref(ftrack);
             mirage_error(MIRAGE_E_PARSER, error);
@@ -261,7 +263,7 @@ gboolean mirage_parser_add_redbook_pregap (MIRAGE_Parser *self, GObject *disc, G
         g_object_unref(ftrack);
         g_object_unref(session);
         
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: added 150 pregap to first track in session %i\n", __func__, i);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: added 150 pregap to first track in session %i\n", __debug__, i);
     }
     
     return TRUE;
@@ -360,13 +362,13 @@ static void __mirage_parser_finalize (GObject *obj) {
     MIRAGE_Parser *self = MIRAGE_PARSER(obj);
     MIRAGE_ParserPrivate *_priv = MIRAGE_PARSER_GET_PRIVATE(self);
     
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_GOBJECT, "%s:\n", __func__);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_GOBJECT, "%s: finalizing object\n", __debug__);
     
     /* Free parser info */
     __destroy_parser_info(_priv->parser_info);
     
     /* Chain up to the parent class */
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_GOBJECT, "%s: chaining up to parent\n", __func__);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_GOBJECT, "%s: chaining up to parent\n", __debug__);
     return G_OBJECT_CLASS(parent_class)->finalize(obj);
 }
 
