@@ -99,7 +99,6 @@ static gboolean __mirage_fragment_sndfile_get_offset (MIRAGE_FInterface_AUDIO *s
  *                   MIRAGE_Fragment methods implementations                  *
 \******************************************************************************/
 static gboolean __mirage_fragment_sndfile_can_handle_data_format (MIRAGE_Fragment *self, gchar *filename, GError **erro) {
-    MIRAGE_FragmentInfo *info = NULL;
     SNDFILE *sndfile;
     SF_INFO format;
     
