@@ -24,8 +24,9 @@
 #include "config.h"
 #endif
 
+#include <stdlib.h>
+
 #include "mirage.h"
-#include "image-ccd-yacc.h"
 
 G_BEGIN_DECLS
 
