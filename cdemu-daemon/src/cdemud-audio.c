@@ -35,6 +35,8 @@ typedef struct {
     
     /* Pointer to disc */
     GObject *disc;
+
+    GMutex *device_mutex;
     
     /* Sector */
     gint cur_sector;
@@ -65,27 +67,33 @@ static gpointer __cdemud_audio_playback_thread (gpointer data) {
         guint8 *tmp_buffer = NULL;
         gint tmp_len = 0;
         gint type = 0;
-        
+                
         /* Make playback thread interruptible (i.e. if status is changed, it's
            going to end */
         if (_priv->status != AUDIO_STATUS_PLAYING) {
-            CDEMUD_DEBUG(self, DAEMON_DEBUG_AUDIOPLAY, "%s: playback interrupted\n", __debug__);        
-            goto end;
+            CDEMUD_DEBUG(self, DAEMON_DEBUG_AUDIOPLAY, "%s: playback interrupted\n", __debug__);
+            break;
         }
         
         /* Check if we have already reached the end */
         if (_priv->cur_sector > _priv->end_sector) {
             CDEMUD_DEBUG(self, DAEMON_DEBUG_AUDIOPLAY, "%s: reached the end\n", __debug__);
             _priv->status = AUDIO_STATUS_COMPLETED; /* Audio operation successfully completed */
-            goto end;
+            break;
         }
         
+        
+        /*** Lock device mutex ***/
+        g_mutex_lock(_priv->device_mutex);
+        
         /* Get sector */
+        CDEMUD_DEBUG(self, DAEMON_DEBUG_AUDIOPLAY, "%s: playing sector %d (0x%X)\n", __debug__, _priv->cur_sector, _priv->cur_sector);
         if (!mirage_disc_get_sector(MIRAGE_DISC(_priv->disc), _priv->cur_sector, &sector, &error)) {
             CDEMUD_DEBUG(self, DAEMON_DEBUG_AUDIOPLAY, "%s: failed to get sector 0x%X: %s\n", __debug__, _priv->cur_sector, error->message);
             g_error_free(error);
             _priv->status = AUDIO_STATUS_ERROR; /* Audio operation stopped due to error */
-            goto end;
+            g_mutex_unlock(_priv->device_mutex);
+            break;
         }
             
         /* This one covers both sector not being an audio one and sector changing 
@@ -95,15 +103,26 @@ static gpointer __cdemud_audio_playback_thread (gpointer data) {
             CDEMUD_DEBUG(self, DAEMON_DEBUG_AUDIOPLAY, "%s: non audio sector!\n", __debug__);
             g_object_unref(sector); /* Unref here; we won't need it anymore... */
             _priv->status = AUDIO_STATUS_ERROR; /* Audio operation stopped due to error */
-            goto end;
+            g_mutex_unlock(_priv->device_mutex);
+            break;
         }
+        
+        /* Save current position */
+        if (_priv->cur_sector_ptr) {
+            *_priv->cur_sector_ptr = _priv->cur_sector;
+        }
+        _priv->cur_sector++;
+        
+        /*** Unlock device mutex ***/
+        g_mutex_unlock(_priv->device_mutex);
+        
         
         /* Play sector */
         mirage_sector_get_data(MIRAGE_SECTOR(sector), &tmp_buffer, &tmp_len, NULL);
         if (ao_play(_priv->device, (gchar *)tmp_buffer, tmp_len) == 0) {
             CDEMUD_DEBUG(self, DAEMON_DEBUG_ERROR, "%s: playback error!\n", __debug__);
             _priv->status = AUDIO_STATUS_ERROR; /* Audio operation stopped due to error */
-            goto end;
+            break;
         }
         
         /* Hack: account for null driver's behaviour; for other libao drivers, ao_play
@@ -115,16 +134,9 @@ static gpointer __cdemud_audio_playback_thread (gpointer data) {
             g_usleep(1*G_USEC_PER_SEC/75); /* One sector = 1/75th of second */
         }
         
-        /* Save current position */
-        if (_priv->cur_sector_ptr) {
-            *_priv->cur_sector_ptr = _priv->cur_sector;
-        }
-        _priv->cur_sector++;
-        
         g_object_unref(sector);
     }
 
-end:
     CDEMUD_DEBUG(self, DAEMON_DEBUG_AUDIOPLAY, "%s: playback thread end\n", __debug__);
     return NULL;
 }
@@ -162,12 +174,13 @@ static gboolean __cdemud_audio_stop_playing (CDEMUD_Audio *self, gint status, GE
 /******************************************************************************\
  *                                 Public API                                 *
 \******************************************************************************/
-gboolean cdemud_audio_initialize (CDEMUD_Audio *self, gchar *driver, gint *cur_sector_ptr, GError **error) {
+gboolean cdemud_audio_initialize (CDEMUD_Audio *self, gchar *driver, gint *cur_sector_ptr, GMutex *device_mutex_ptr, GError **error) {
     CDEMUD_AudioPrivate *_priv = CDEMUD_AUDIO_GET_PRIVATE(CDEMUD_AUDIO(self));
-    gint driver_id = 0;
     ao_sample_format format;
+    gint driver_id;
         
     _priv->cur_sector_ptr = cur_sector_ptr;
+    _priv->device_mutex = device_mutex_ptr;
     
     _priv->status = AUDIO_STATUS_NOSTATUS;
 	

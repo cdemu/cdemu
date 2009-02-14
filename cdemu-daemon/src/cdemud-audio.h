@@ -43,7 +43,7 @@ typedef struct {
 GType cdemud_audio_get_type (void);
 
 /* Public API */
-gboolean cdemud_audio_initialize (CDEMUD_Audio *self, gchar *driver, gint *cur_sector_ptr, GError **error);
+gboolean cdemud_audio_initialize (CDEMUD_Audio *self, gchar *driver, gint *cur_sector_ptr, GMutex *device_mutex_ptr, GError **error);
 gboolean cdemud_audio_start (CDEMUD_Audio *self, gint start, gint end, GObject *disc, GError **error);
 gboolean cdemud_audio_resume (CDEMUD_Audio *self, GError **error);
 gboolean cdemud_audio_pause (CDEMUD_Audio *self, GError **error);
