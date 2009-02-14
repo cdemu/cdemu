@@ -1567,41 +1567,17 @@ typedef struct {
     GtkFileFilter *all_images;
 } IMAGE_ANALYZER_FilterContext;
 
-static gboolean __case_insensitive_ext_filter (const GtkFileFilterInfo *filter_info, gpointer data) {
-    gchar *filename_ext;
-    gchar *pattern_ext = data;
-        
-    g_return_val_if_fail(data != NULL, FALSE);
-    g_return_val_if_fail(filter_info != NULL, FALSE);
-
-    if (!filter_info->filename) {
-        return FALSE;
-    }
-    
-    filename_ext = mirage_helper_get_suffix((gchar *)filter_info->filename);
-    if (!filename_ext) {
-        return FALSE;
-    }
-        
-    return !mirage_helper_strcasecmp(filename_ext, pattern_ext);
-}
-
 static gboolean __add_file_filter (gpointer data, gpointer user_data) {
     IMAGE_ANALYZER_FilterContext *context = user_data;
     MIRAGE_ParserInfo *parser_info = data;
-    gint i = 0;
     
     GtkFileFilter *filter = gtk_file_filter_new();
     gtk_file_filter_set_name(filter, parser_info->description);
 
-    while (parser_info->suffixes[i]) {
-        /* Per-parser filter */
-        gtk_file_filter_add_custom(filter, GTK_FILE_FILTER_FILENAME, __case_insensitive_ext_filter, g_strdup(parser_info->suffixes[i]), g_free);
-        /* "All images" filter */
-        gtk_file_filter_add_custom(context->all_images, GTK_FILE_FILTER_FILENAME, __case_insensitive_ext_filter, g_strdup(parser_info->suffixes[i]), g_free);
-        
-        i++;
-    }
+    /* Per-parser filter */
+    gtk_file_filter_add_mime_type(filter, parser_info->mime_type);
+    /* "All images" filter */
+    gtk_file_filter_add_mime_type(context->all_images, parser_info->mime_type);
     
     gtk_file_chooser_add_filter(GTK_FILE_CHOOSER(context->dialog), filter);
     
