@@ -41,7 +41,7 @@ typedef struct {
 /* Used by MIRAGE_TYPE_FRAGMENT_DAA */
 GType mirage_fragment_daa_get_type (GTypeModule *module);
 
-gboolean mirage_fragment_daa_set_file (MIRAGE_Fragment *self, gchar *file, GError **error);
+gboolean mirage_fragment_daa_set_file (MIRAGE_Fragment *self, gchar *file, gchar *password, GError **error);
 
 G_END_DECLS
 

@@ -341,7 +341,7 @@ static gboolean __mirage_fragment_daa_read_from_stream (MIRAGE_Fragment *self, g
 /******************************************************************************\
  *                     Interface implementation: <private>                    *
 \******************************************************************************/
-gboolean mirage_fragment_daa_set_file (MIRAGE_Fragment *self, gchar *filename, GError **error) {
+gboolean mirage_fragment_daa_set_file (MIRAGE_Fragment *self, gchar *filename, gchar *password, GError **error) {
     MIRAGE_Fragment_DAAPrivate *_priv = MIRAGE_FRAGMENT_DAA_GET_PRIVATE(self);
     gchar signature[16];
     guint64 tmp_offset = 0;
@@ -555,9 +555,7 @@ gboolean mirage_fragment_daa_set_file (MIRAGE_Fragment *self, gchar *filename, G
                 guint32 pwd_crc;
                 
                 guint8 daa_key[128];
-                
-                gchar *password;
-                                
+                                                
                 if (fread(&pwd_type, sizeof(guint32), 1, file) < 1) {
                     MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s:  failed to read password type!\n", __func__);
                     fclose(file);
@@ -583,19 +581,27 @@ gboolean mirage_fragment_daa_set_file (MIRAGE_Fragment *self, gchar *filename, G
                     MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s:  type of encryption '%d' might not be supported!\n", __func__, pwd_type);
                 }
                 
-                /* Get password from user */
-                password = libmirage_obtain_password(NULL);
-                if (!password) {
-                    /* Password not provided (or password function is not set) */
-                    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  failed to obtain password for encrypted image!\n", __func__);
-                    fclose(file);
-                    mirage_error(MIRAGE_E_NEEDPASSWORD, error);
-                    return FALSE;
+                /* First, check if password has already been provided via parser parameters
+                   (separate code paths because if acquired via password function, the string
+                   must be freed) */
+                if (password) {
+                    __daa_crypt_init(_priv->pwd_key, password, daa_key);
+                } else {
+                    /* Get password from user via password function */
+                    password = libmirage_obtain_password(NULL);
+                    if (!password) {
+                        /* Password not provided (or password function is not set) */
+                        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  failed to obtain password for encrypted image!\n", __func__);
+                        fclose(file);
+                        mirage_error(MIRAGE_E_NEEDPASSWORD, error);
+                        return FALSE;
+                    }
+                    
+                    __daa_crypt_init(_priv->pwd_key, password, daa_key);
+                    g_free(password);
                 }
                 
-                /* Encryption key */
-                __daa_crypt_init(_priv->pwd_key, password, daa_key);
-                g_free(password);
+                /* Check if password is correct */
                 if (pwd_crc != crc32(0, _priv->pwd_key, 128)) {
                     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  incorrect password!\n", __func__);
                     mirage_error(MIRAGE_E_WRONGPASSWORD, error);

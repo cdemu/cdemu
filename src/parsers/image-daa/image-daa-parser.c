@@ -90,6 +90,10 @@ static gboolean __mirage_parser_daa_load_image (MIRAGE_Parser *self, gchar **fil
 
     mirage_track_set_mode(MIRAGE_TRACK(track), MIRAGE_MODE_MODE1, NULL);
 
+    /* Try to get password from parser parameters */
+    gchar *password = NULL;
+    mirage_parser_get_param_string(self, "password", (const gchar **)&password, NULL);
+    
     /* Fragment(s); we use private, DAA fragments for this */
     GObject *data_fragment = g_object_new(MIRAGE_TYPE_FRAGMENT_DAA, NULL);
     GError *local_error = NULL;
@@ -102,7 +106,7 @@ static gboolean __mirage_parser_daa_load_image (MIRAGE_Parser *self, gchar **fil
         goto end;
     }
     
-    if (!mirage_fragment_daa_set_file(MIRAGE_FRAGMENT(data_fragment), filenames[0], &local_error)) {
+    if (!mirage_fragment_daa_set_file(MIRAGE_FRAGMENT(data_fragment), filenames[0], password, &local_error)) {
         /* Don't make buzz for password failures */
         if (local_error->code != MIRAGE_E_NEEDPASSWORD 
             && local_error->code != MIRAGE_E_WRONGPASSWORD) {
