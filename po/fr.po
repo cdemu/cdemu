@@ -1,0 +1,318 @@
+# French translation of gCDEmu.
+# Copyright (C) 2009 Loïc Martin
+# This file is distributed under the same license as the gCDEmu package.
+# Loïc Martin <loic.martin3@gmail.com>, 2008.
+#
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: gCDEmu 1.1.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2009-02-02 20:04+0100\n"
+"PO-Revision-Date: 2009-02-02 20:04+0100\n"
+"Last-Translator: Loïc Martin <loic.martin3@gmail.com>\n"
+"Language-Team: French\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: ../src/applet.py:101 ../src/device.py:475
+msgid "Error"
+msgstr "Erreur"
+
+#: ../src/applet.py:115
+msgid ""
+"gCDEmu is an applet for controlling CDEmu\n"
+"devices via CDEmu daemon."
+msgstr ""
+"gCDEmu est une applet pour contrôler\n"
+"des périphériques CDEmu\n"
+"à l'aide du daemon CDEmu."
+
+#: ../src/applet.py:117
+msgid "The CDEmu project website"
+msgstr "Le site internet CDEmu"
+
+#: ../src/applet.py:121
+msgid "translator-credits"
+msgstr "Loïc Martin <loic.martin3@gmail.com>"
+
+#: ../src/applet.py:126
+msgid "Use _system bus"
+msgstr "Utiliser le bus _système "
+
+#: ../src/applet.py:128
+msgid "Show _notifications"
+msgstr "Afficher les _notifications"
+
+#: ../src/applet.py:130
+msgid "_About"
+msgstr "_À propos"
+
+#: ../src/applet.py:131
+msgid "_Help"
+msgstr "_Aide"
+
+#: ../src/applet.py:179
+msgid "Daemon started"
+msgstr "Daemon lancé"
+
+#: ../src/applet.py:179
+msgid "CDEmu daemon has been started."
+msgstr "Le daemon CDEmu a été lancé."
+
+#: ../src/applet.py:187
+msgid "Daemon stopped"
+msgstr "Daemon arrêté"
+
+#: ../src/applet.py:187
+msgid "CDEmu daemon has been stopped."
+msgstr "Le daemon CDEmu a été arrêté."
+
+#: ../src/applet.py:382
+#, python-format
+msgid "CDEmu daemon version %s detected, but at least version %s is required!"
+msgstr ""
+"Version %s du daemon CDEmu détectée, mais la version %s minimum est requise!"
+
+#: ../src/applet.py:386
+msgid "Incompatible daemon version"
+msgstr "Version du daemon incompatible"
+
+#: ../src/device.py:54
+msgid "Open file"
+msgstr "Ouvrir un fichier"
+
+#: ../src/device.py:63
+msgid "All files"
+msgstr "Tous les fichiers"
+
+#: ../src/device.py:68
+msgid "All image files"
+msgstr "Tous les fichiers image"
+
+#: ../src/device.py:87
+#, python-format
+msgid "Device %i properties"
+msgstr "Propriétés du périphérique %i "
+
+#: ../src/device.py:95
+#, python-format
+msgid "Device %i"
+msgstr "Périphérique %i"
+
+#. *** Frame: status ***
+#: ../src/device.py:108 ../src/device.py:138
+msgid "Status"
+msgstr "Status"
+
+#: ../src/device.py:111
+msgid "Options"
+msgstr "Options"
+
+#: ../src/device.py:118
+msgid "Daemon debug mask"
+msgstr "Masque de déboguage du daemon"
+
+#: ../src/device.py:119
+msgid "Daemon"
+msgstr "Daemon"
+
+#: ../src/device.py:126
+msgid "Library debug mask"
+msgstr "Masque de déboguage\n"
+"de la bibliothèque de fonctions"
+
+#: ../src/device.py:127
+msgid "Library"
+msgstr "Bibliothèque de fonctions"
+
+#: ../src/device.py:150
+msgid "Loaded: "
+msgstr "Chargé: "
+
+#: ../src/device.py:159
+msgid "Image type: "
+msgstr "Type d'image: "
+
+#: ../src/device.py:168
+msgid "File name: "
+msgstr "Nom de fichier: "
+
+#: ../src/device.py:186
+msgid "Device mapping"
+msgstr "Mapping du périphérique"
+
+#: ../src/device.py:198
+msgid "SCSI CD-ROM device: "
+msgstr "Périphérique CD-ROM SCSI: "
+
+#: ../src/device.py:207
+msgid "SCSI generic device: "
+msgstr "Périphérique générique SCSI: "
+
+#. Device ID
+#: ../src/device.py:223
+msgid "Device ID"
+msgstr "ID du périphérique:"
+
+#: ../src/device.py:235
+msgid "Vendor ID: "
+msgstr "ID du vendeur:"
+
+#: ../src/device.py:245
+msgid "Product ID: "
+msgstr "ID du produit: "
+
+#: ../src/device.py:255
+msgid "Revision: "
+msgstr "Révision: "
+
+#: ../src/device.py:265
+msgid "Vendor-specific: "
+msgstr "Propre au vendeur:"
+
+#: ../src/device.py:279
+msgid "Set device ID"
+msgstr "Appliquer l'ID du périphérique"
+
+#. DPM emulation
+#: ../src/device.py:285
+msgid "DPM emulation"
+msgstr "Émulation DPM"
+
+#. Transfer rate emulation
+#: ../src/device.py:292
+msgid "Transfer rate emulation"
+msgstr "Émulation du taux de transfert"
+
+#: ../src/device.py:324
+msgid "Set debug mask"
+msgstr "Appliquer le masque de déboguage"
+
+#: ../src/device.py:437 ../src/device.py:439 ../src/device.py:462
+msgid "Device change"
+msgstr "Changement de périphérique"
+
+#: ../src/device.py:437
+#, python-format
+msgid "Device %i has been loaded."
+msgstr "Le périphérique %i a été chargé."
+
+#: ../src/device.py:439
+#, python-format
+msgid "Device %i has been emptied."
+msgstr "Le périphérique %i a été vidé."
+
+#: ../src/device.py:462
+#, python-format
+msgid ""
+"Device %i has been changed its option:\n"
+"%s."
+msgstr ""
+"Les options du périphérique %i ont été modifiées\n"
+"%s."
+
+#. Show error dialog
+#: ../src/device.py:517
+#, python-format
+msgid ""
+"Failed to unload device %i:\n"
+"%s"
+msgstr ""
+"Impossible de vider le périphérique %i:\n"
+"%s"
+
+#: ../src/device.py:531
+#, python-format
+msgid ""
+"Failed to load image %s to device %i:\n"
+"%s"
+msgstr ""
+"Impossible de charger l'image %s sur le périphérique %i:\n"
+"%s"
+
+#: ../src/device.py:550
+#, python-format
+msgid ""
+"Failed to set device ID for device %i to %s:\n"
+"%s"
+msgstr ""
+"Impossible de mettre l'ID de périphérique du périphérique %i à %s:\n"
+"%s"
+
+#: ../src/device.py:567
+#, python-format
+msgid ""
+"Failed to set DPM emulation for device %i to %i:\n"
+"%s"
+msgstr ""
+"Impossible de mettre l'émulation DPM du périphérique %i à %i: \n"
+"%s"
+
+#: ../src/device.py:584
+#, python-format
+msgid ""
+"Failed to set transfer rate emulation for device %i to %i:\n"
+"%s"
+msgstr ""
+"Impossible de mettre l'émulation de taux de transfert du périphérique %i à %i:\n"
+"%s"
+
+#: ../src/device.py:594
+#, python-format
+msgid ""
+"Failed to set daemon debug mask for device %i to 0x%X:\n"
+"%s"
+msgstr ""
+"Impossible de mettre le masque de déboguage du daemon du périphérique %i à 0x%X:\n"
+"%s"
+
+#: ../src/device.py:604
+#, python-format
+msgid ""
+"Failed to set library debug mask for device %i to 0x%X:\n"
+"%s"
+msgstr ""
+"Impossible de mettre le masque de déboguage de la bibliothèque de fonctions\n"
+"du périphérique %i à 0x%X:\n"
+"%s"
+
+#. Indicate there's more than one file
+#: ../src/device.py:623 ../src/device.py:625
+msgid "Device"
+msgstr "Périphérique"
+
+#: ../src/device.py:625
+msgid "Empty"
+msgstr "Vide"
+
+#: ../src/device.py:631
+msgid "Yes"
+msgstr "Oui"
+
+#: ../src/device.py:634
+msgid "Unload"
+msgstr "Vider"
+
+#: ../src/device.py:636
+msgid "No"
+msgstr "Non"
+
+#: ../src/device.py:639
+msgid "Load"
+msgstr "Charger"
+
+#: ../src/gcdemu.schemas.in.h:1
+msgid "Name of icon to use (relative to gCDEmu's pixmap dir)"
+msgstr "Nom des icônes à utiliser (depuis le dossier de pixmaps de gCDEmu)"
+
+#: ../src/gcdemu.schemas.in.h:2
+msgid "Show notifications?"
+msgstr "Afficher les notifications?"
+
+#: ../src/gcdemu.schemas.in.h:3
+msgid "Use system bus (instead of session bus)?"
+msgstr "Utiliser le bus système (au lieu du bus de la session)?"
+
+ 	  	 

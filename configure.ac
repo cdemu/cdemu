@@ -32,7 +32,7 @@ AC_SUBST(pygtk_CFLAGS)
 AC_SUBST(pygtk_LIBS)
 
 # Internationalization
-ALL_LINGUAS="de no sl pl zh_CN"
+ALL_LINGUAS="de fr no sl pl zh_CN"
 
 GETTEXT_PACKAGE=gcdemu
 AC_SUBST(GETTEXT_PACKAGE)
