@@ -45,9 +45,18 @@ Loading a single image to first device:
  
 Loading multiple-file image to first device:
  cdemu load 0 ~/session1.toc ~/session2.toc ~/session3.toc
+
+Loading a text-based image in non-ASCII/non-Unicode encoding:
+ cdemu load 0 ~/image.cue --encoding=windows-1250
+
+Loading an encrypted image with password provided as an argument:
+ cdemu load 0 ~/image.daa --password=seeninplain
+ cdemu load 0 ~/image.daa
+(in the latter case, if image is actually encrypted, the client will prompt for
+the password using standard input without echo)
  
 Unloading first device:
- cdemu load 0
+ cdemu unload 0
 
 Displaying device status:
  cdemu status
@@ -114,7 +123,8 @@ or
 A note on encrypted images and password supplying:
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 As of version 1.2.0, CDEmu daemon offers support for encrypted images. When password
-is required to load an image, cdemu-client will prompt for it and then send it to daemon.
+is required to load an image (and it hasn't been provided via commandline using
+--password), cdemu-client will prompt for it and then send it to daemon.
 
 NOTE, HOWEVER, THAT THE PASSWORD IS SENT OVER D-BUS IN A PLAIN STRING FORM, WITHOUT 
 ANY PROTECTION. DEPENDING ON YOUR PRIVACY CONCERNS YOU MIGHT WISH TO AVOID LOADING 

@@ -23,7 +23,8 @@ read README file. The default can be overriden using
 option.
 .SH ENCRYPTED IMAGES SUPPORT
 As of version 1.2.0, CDEmu daemon offers support for encrypted images. When password
-is required to load an image, cdemu-client will prompt for it and then send it to daemon.
+is required to load an image (and it hasn't been provided via commandline using
+--password), cdemu-client will prompt for it and then send it to daemon.
 
 NOTE, HOWEVER, THAT THE PASSWORD IS SENT OVER D-BUS IN A PLAIN STRING FORM, WITHOUT 
 ANY PROTECTION. DEPENDING ON YOUR PRIVACY CONCERNS YOU MIGHT WISH TO AVOID LOADING 
@@ -40,6 +41,22 @@ Prints version info and exits.
 .B -b --bus
 Sets the D-BUS bus type to use for connection. Valid values are \fIsession\fR
 and \fIsystem\fR. If no bus is specified, the default bus is used.
+.SH PARSER PARAMETERS (used only with 'load' command)
+As of version 1.2.0, parser parameters can be passed to the image parsers when
+trying to load the image. Parameters are optional; whether they are supported
+by a particular parser or not depends on the parser implementation.
+
+The following parameters are valid:
+.TP
+.B --password
+Allows a password for an encrypted image to be specified via commandline; however,
+if an image requires password and it hasn't been specified via commandline, then
+the client will prompt for it using standard input without echo.
+.TP
+.B --encoding
+Allows an encoding for text-based image format (such as CUE) to be specified. This
+might be needed if the image descriptor file contains non-ASCII characters and does
+not use Unicode.
 .SH COMMANDS
 .TP 
 .B load <device> <filename> [...]
@@ -114,6 +131,12 @@ cdemu load 0 ~/image.mds
 .TP
 .B Loading multiple-file image to first device:
 cdemu load 0 ~/session1.toc ~/session2.toc ~/session3.toc
+.TP
+.B Loading a text-based image in non-ASCII/non-Unicode encoding:
+ cdemu load 0 ~/image.cue --encoding=windows-1250
+.TP
+.B Loading an encrypted image with password provided as an argument:
+ cdemu load 0 ~/image.daa --password=seeninplain
 .TP
 .B Unloading first device:
 cdemu unload 0
