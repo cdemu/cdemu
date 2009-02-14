@@ -773,31 +773,31 @@ static void __mirage_parser_cue_init_regex_parser (MIRAGE_Parser *self) {
     MIRAGE_Parser_CUEPrivate *_priv = MIRAGE_PARSER_CUE_GET_PRIVATE(self);
 
     /* Ignore empty lines */
-    APPEND_REGEX_RULE(_priv->regex_rules, "^[\\s]*$", NULL);
+    APPEND_REGEX_RULE(_priv->regex_rules, "^\\s*$", NULL);
     
     /* "Extensions" that are embedded in the comments must appear before general
        comment rule */
-    APPEND_REGEX_RULE(_priv->regex_rules, "REM SESSION (?<number>\\d+)$", __mirage_parser_cue_callback_session);
+    APPEND_REGEX_RULE(_priv->regex_rules, "REM\\s+SESSION\\s+(?<number>\\d+)$", __mirage_parser_cue_callback_session);
     
-    APPEND_REGEX_RULE(_priv->regex_rules, "REM (?<comment>.+)$", __mirage_parser_cue_callback_comment);
+    APPEND_REGEX_RULE(_priv->regex_rules, "REM\\s+(?<comment>.+)$", __mirage_parser_cue_callback_comment);
     
-    APPEND_REGEX_RULE(_priv->regex_rules, "CDTEXTFILE (?<filename>.+)$", __mirage_parser_cue_callback_cdtext);
+    APPEND_REGEX_RULE(_priv->regex_rules, "CDTEXTFILE\\s+(?<filename>.+)$", __mirage_parser_cue_callback_cdtext);
     
-    APPEND_REGEX_RULE(_priv->regex_rules, "CATALOG (?<catalog>\\d{13})$", __mirage_parser_cue_callback_catalog);
+    APPEND_REGEX_RULE(_priv->regex_rules, "CATALOG\\s+(?<catalog>\\d{13})$", __mirage_parser_cue_callback_catalog);
     
-    APPEND_REGEX_RULE(_priv->regex_rules, "TITLE (?<title>.+)$", __mirage_parser_cue_callback_title);   
-    APPEND_REGEX_RULE(_priv->regex_rules, "PERFORMER (?<performer>.+)$", __mirage_parser_cue_callback_performer);
-    APPEND_REGEX_RULE(_priv->regex_rules, "SONGWRITER (?<songwriter>.+)$", __mirage_parser_cue_callback_songwriter);
+    APPEND_REGEX_RULE(_priv->regex_rules, "TITLE\\s+(?<title>.+)$", __mirage_parser_cue_callback_title);   
+    APPEND_REGEX_RULE(_priv->regex_rules, "PERFORMER\\s+(?<performer>.+)$", __mirage_parser_cue_callback_performer);
+    APPEND_REGEX_RULE(_priv->regex_rules, "SONGWRITER\\s+(?<songwriter>.+)$", __mirage_parser_cue_callback_songwriter);
     
-    APPEND_REGEX_RULE(_priv->regex_rules, "FILE (?<filename>.+) (?<type>\\S+)$", __mirage_parser_cue_callback_file);
-    APPEND_REGEX_RULE(_priv->regex_rules, "TRACK (?<number>\\d+) (?<type>\\S+)$", __mirage_parser_cue_callback_track);
-    APPEND_REGEX_RULE(_priv->regex_rules, "ISRC (?<isrc>\\w{12})$", __mirage_parser_cue_callback_isrc);
-    APPEND_REGEX_RULE(_priv->regex_rules, "INDEX (?<index>\\d+) (?<msf>[\\d]+:[\\d]+:[\\d]+)$", __mirage_parser_cue_callback_index);
+    APPEND_REGEX_RULE(_priv->regex_rules, "FILE\\s+(?<filename>.+)\\s+(?<type>\\S+)$", __mirage_parser_cue_callback_file);
+    APPEND_REGEX_RULE(_priv->regex_rules, "TRACK\\s+(?<number>\\d+)\\s+(?<type>\\S+)$", __mirage_parser_cue_callback_track);
+    APPEND_REGEX_RULE(_priv->regex_rules, "ISRC\\s+(?<isrc>\\w{12})$", __mirage_parser_cue_callback_isrc);
+    APPEND_REGEX_RULE(_priv->regex_rules, "INDEX\\s+(?<index>\\d+)\\s+(?<msf>[\\d]+:[\\d]+:[\\d]+)$", __mirage_parser_cue_callback_index);
     
-    APPEND_REGEX_RULE(_priv->regex_rules, "PREGAP (?<msf>[\\d]+:[\\d]+:[\\d]+)$", __mirage_parser_cue_callback_pregap);
-    APPEND_REGEX_RULE(_priv->regex_rules, "POSTGAP (?<msf>[\\d]+:[\\d]+:[\\d]+)$", __mirage_parser_cue_callback_postgap);
+    APPEND_REGEX_RULE(_priv->regex_rules, "PREGAP\\s+(?<msf>[\\d]+:[\\d]+:[\\d]+)$", __mirage_parser_cue_callback_pregap);
+    APPEND_REGEX_RULE(_priv->regex_rules, "POSTGAP\\s+(?<msf>[\\d]+:[\\d]+:[\\d]+)$", __mirage_parser_cue_callback_postgap);
     
-    APPEND_REGEX_RULE(_priv->regex_rules, "FLAGS (((?<dcp>DCP)|(?<4ch>4CH)|(?<pre>PRE)|(?<scms>SCMS)) *)+$", __mirage_parser_cue_callback_flags);
+    APPEND_REGEX_RULE(_priv->regex_rules, "FLAGS\\+(((?<dcp>DCP)|(?<4ch>4CH)|(?<pre>PRE)|(?<scms>SCMS))\\s*)+$", __mirage_parser_cue_callback_flags);
     
     return;
 }
