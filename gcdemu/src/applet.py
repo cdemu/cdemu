@@ -396,7 +396,7 @@ class gCDEmu_Applet (gnomeapplet.Applet):
         except dbus.DBusException, e:
             # Display dialog only for errors other than "Service not running"
             if e.get_dbus_name() != "org.freedesktop.DBus.Error.ServiceUnknown":
-                self.__display_error(_("Failed to connect: %s") % e.get_dbus_message())
+                self.__display_error(_("Failed to connect: %s") % e.message)
             else:
                 print "Service not running"
             
@@ -406,7 +406,7 @@ class gCDEmu_Applet (gnomeapplet.Applet):
         try:
             interface_version = self.__dbus_iface.GetDaemonInterfaceVersion()
         except dbus.DBusException, e:
-            self.__display_error(_("Failed to acquire daemon interface version (this most likely means your daemon is out-of-date): %s") % e.get_dbus_message())
+            self.__display_error(_("Failed to acquire daemon interface version (this most likely means your daemon is out-of-date): %s") % e.message)
             return False
         
         # Check daemon version; we should get away with direct string comparison
@@ -422,7 +422,7 @@ class gCDEmu_Applet (gnomeapplet.Applet):
         try:
             num_devices = self.__dbus_iface.GetNumberOfDevices()
         except dbus.DBusException, e:
-            self.__display_error(_("Failed to acquire number of devices: %s") % e.get_dbus_message())
+            self.__display_error(_("Failed to acquire number of devices: %s") % e.message)
             return False
         
         # Create menu
