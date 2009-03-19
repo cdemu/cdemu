@@ -775,7 +775,7 @@ static gboolean __mirage_parser_nrg_load_session_tao (MIRAGE_Parser *self, gint 
     MIRAGE_Parser_NRGPrivate *_priv = MIRAGE_PARSER_NRG_GET_PRIVATE(self);
     gboolean succeeded = TRUE;
     
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: loading session\n", __debug__);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: loading session (TAO)\n", __debug__);
     
     /* Read ETNF/ETN2 blocks */
     if (!__mirage_parser_nrg_load_etn_data(self, session_num, error)) {
@@ -1049,7 +1049,12 @@ static gboolean __mirage_parser_nrg_load_image (MIRAGE_Parser *self, gchar **fil
         goto end;
     }
 
-    /* Load parser sessions */
+    /* We'll have to set disc layout start to -150 at some point, so we might
+       as well do it here (loading CUEX/CUES session will change this, if ever
+       needed) */
+    mirage_disc_layout_set_start_sector(MIRAGE_DISC(_priv->disc), -150, NULL);
+    
+    /* Load sessions */
     gint session_num = 0;
 
     for (session_num = 0; ; session_num++) {
