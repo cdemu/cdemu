@@ -31,6 +31,9 @@ typedef struct {
     GThread *playback_thread;
     
     /* libao device */
+    gint driver_id;
+    ao_sample_format format;
+
     ao_device *device;
     
     /* Pointer to disc */
@@ -56,6 +59,21 @@ static gpointer __cdemud_audio_playback_thread (gpointer data) {
     CDEMUD_Audio *self = data;
     CDEMUD_AudioPrivate *_priv = CDEMUD_AUDIO_GET_PRIVATE(self);
 
+    /* Open audio device */
+    CDEMUD_DEBUG(self, DAEMON_DEBUG_AUDIOPLAY, "%s: opening audio device\n", __debug__);
+    _priv->device = ao_open_live(_priv->driver_id, &_priv->format, NULL /* no options */);
+    if (_priv->device == NULL) {
+        CDEMUD_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: failed to open audio device!\n", __debug__);
+        return NULL;
+    }
+    
+    /* Activate null driver hack, if needed (otherwise disable it) */
+    if (_priv->driver_id == ao_driver_id("null")) {
+        _priv->null_hack = TRUE;
+    } else {
+        _priv->null_hack = FALSE;
+    }
+    
     CDEMUD_DEBUG(self, DAEMON_DEBUG_AUDIOPLAY, "%s: playback thread start\n", __debug__);
     
     while (1) {
@@ -67,17 +85,17 @@ static gpointer __cdemud_audio_playback_thread (gpointer data) {
         guint8 *tmp_buffer = NULL;
         gint tmp_len = 0;
         gint type = 0;
-                
+        
         /* Make playback thread interruptible (i.e. if status is changed, it's
            going to end */
         if (_priv->status != AUDIO_STATUS_PLAYING) {
-            CDEMUD_DEBUG(self, DAEMON_DEBUG_AUDIOPLAY, "%s: playback interrupted\n", __debug__);
+            CDEMUD_DEBUG(self, DAEMON_DEBUG_AUDIOPLAY, "%s: playback thread interrupted\n", __debug__);
             break;
         }
         
         /* Check if we have already reached the end */
         if (_priv->cur_sector > _priv->end_sector) {
-            CDEMUD_DEBUG(self, DAEMON_DEBUG_AUDIOPLAY, "%s: reached the end\n", __debug__);
+            CDEMUD_DEBUG(self, DAEMON_DEBUG_AUDIOPLAY, "%s: playback thread reached the end\n", __debug__);
             _priv->status = AUDIO_STATUS_COMPLETED; /* Audio operation successfully completed */
             break;
         }
@@ -100,7 +118,7 @@ static gpointer __cdemud_audio_playback_thread (gpointer data) {
            from audio to data one */
         mirage_sector_get_sector_type(MIRAGE_SECTOR(sector), &type, NULL);
         if (type != MIRAGE_MODE_AUDIO) {
-            CDEMUD_DEBUG(self, DAEMON_DEBUG_AUDIOPLAY, "%s: non audio sector!\n", __debug__);
+            CDEMUD_DEBUG(self, DAEMON_DEBUG_AUDIOPLAY, "%s: non-audio sector!\n", __debug__);
             g_object_unref(sector); /* Unref here; we won't need it anymore... */
             _priv->status = AUDIO_STATUS_ERROR; /* Audio operation stopped due to error */
             g_mutex_unlock(_priv->device_mutex);
@@ -138,6 +156,12 @@ static gpointer __cdemud_audio_playback_thread (gpointer data) {
     }
 
     CDEMUD_DEBUG(self, DAEMON_DEBUG_AUDIOPLAY, "%s: playback thread end\n", __debug__);
+    
+    /* Close audio device */
+    CDEMUD_DEBUG(self, DAEMON_DEBUG_AUDIOPLAY, "%s: closing audio device\n", __debug__);
+    ao_close(_priv->device);
+    _priv->device = 0;
+    
     return NULL;
 }
 
@@ -162,10 +186,12 @@ static gboolean __cdemud_audio_stop_playing (CDEMUD_Audio *self, gint status, GE
     _priv->status = status;
     
     /* Wait for the thread to finish */
-    CDEMUD_DEBUG(self, DAEMON_DEBUG_AUDIOPLAY, "%s: waiting for thread to finish\n", __debug__);
-    g_thread_join(_priv->playback_thread);
-    _priv->playback_thread = NULL;
-    CDEMUD_DEBUG(self, DAEMON_DEBUG_AUDIOPLAY, "%s: thread finished\n", __debug__);
+    if (_priv->playback_thread) {
+        CDEMUD_DEBUG(self, DAEMON_DEBUG_AUDIOPLAY, "%s: waiting for thread to finish\n", __debug__);
+        g_thread_join(_priv->playback_thread);
+        _priv->playback_thread = NULL;
+        CDEMUD_DEBUG(self, DAEMON_DEBUG_AUDIOPLAY, "%s: thread finished\n", __debug__);
+    }
     
     return TRUE;
 }
@@ -176,8 +202,6 @@ static gboolean __cdemud_audio_stop_playing (CDEMUD_Audio *self, gint status, GE
 \******************************************************************************/
 gboolean cdemud_audio_initialize (CDEMUD_Audio *self, gchar *driver, gint *cur_sector_ptr, GMutex *device_mutex_ptr, GError **error) {
     CDEMUD_AudioPrivate *_priv = CDEMUD_AUDIO_GET_PRIVATE(CDEMUD_AUDIO(self));
-    ao_sample_format format;
-    gint driver_id;
         
     _priv->cur_sector_ptr = cur_sector_ptr;
     _priv->device_mutex = device_mutex_ptr;
@@ -186,32 +210,23 @@ gboolean cdemud_audio_initialize (CDEMUD_Audio *self, gchar *driver, gint *cur_s
 	
     /* Get driver ID */
     if (!strcmp(driver, "default")) {
-        driver_id = ao_default_driver_id();
+        _priv->driver_id = ao_default_driver_id();
     } else {
-        driver_id = ao_driver_id(driver);
+        _priv->driver_id = ao_driver_id(driver);
     }
     
-    if (driver_id == -1) {
-        CDEMUD_DEBUG(self, DAEMON_DEBUG_ERROR, "%s: cannot find driver '%s'!\n", __debug__, driver);
-        return FALSE;
+    if (_priv->driver_id == -1) {
+        CDEMUD_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: cannot find driver '%s', using 'null' instead!\n", __debug__, driver);
+        _priv->driver_id = ao_driver_id("null");
     }
     
-    /* Activate null driver hack */
-    if (driver_id == ao_driver_id("null")) {
-        _priv->null_hack = TRUE;
-    }
-    
-    format.bits = 16;
-    format.channels = 2;
-    format.rate = 44100;
-    format.byte_format = AO_FMT_LITTLE;
+    /* Set the audio format */    
+    _priv->format.bits = 16;
+    _priv->format.channels = 2;
+    _priv->format.rate = 44100;
+    _priv->format.byte_format = AO_FMT_LITTLE;
 
-    /* Open driver -- */
-    _priv->device = ao_open_live(driver_id, &format, NULL /* no options */);
-    if (_priv->device == NULL) {
-        CDEMUD_DEBUG(self, DAEMON_DEBUG_ERROR, "%s: failed to initialize libao driver '%s'!\n", __debug__, driver);
-        return FALSE;
-    }
+    /* *Don't* open the device here; we'll do it when we actually start playing */
 
     return TRUE;
 }
@@ -356,10 +371,10 @@ static MIRAGE_ObjectClass *parent_class = NULL;
 
 static void __cdemud_audio_finalize (GObject *obj) {
     CDEMUD_Audio *self = CDEMUD_AUDIO(obj);                                                
-    CDEMUD_AudioPrivate *_priv = CDEMUD_AUDIO_GET_PRIVATE(self);
+    /*CDEMUD_AudioPrivate *_priv = CDEMUD_AUDIO_GET_PRIVATE(self);*/
         
-    /* Close device */
-    ao_close(_priv->device);
+    /* Force the playback to stop */
+    cdemud_audio_stop(self, NULL);
     
     /* Chain up to the parent class */
     return G_OBJECT_CLASS(parent_class)->finalize(obj);
