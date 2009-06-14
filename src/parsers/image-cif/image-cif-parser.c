@@ -69,13 +69,13 @@ static gboolean __mirage_parser_cif_build_block_index (MIRAGE_Parser *self, GErr
             __debug__, index, block->block_id, blockentry->offset, block->length, block->length);
 
         /* Got sub-blocks? */
-        if (!memcmp(block->block_id, "parser", 4) || !memcmp(block->block_id, "ofs ", 4)) {
+        if (!memcmp(block->block_id, "disc", 4) || !memcmp(block->block_id, "ofs ", 4)) {
             GList *subblockindex = NULL;
             CIFSubBlockIndexEntry *subblockentry;
             gint num_subblocks;
             guint8 *cur_ptr_sub;
 
-            if (!memcmp(block->block_id, "parser", 4)) {
+            if (!memcmp(block->block_id, "disc", 4)) {
                 cur_ptr_sub = cur_ptr + CIF_BLOCK_LENGTH_ADJUST + sizeof(CIF_DISC_HeaderBlock);
             } else if (!memcmp(block->block_id, "ofs ", 4)) {
                 cur_ptr_sub = cur_ptr + CIF_BLOCK_LENGTH_ADJUST + sizeof(CIF_OFS_HeaderBlock);
@@ -89,7 +89,7 @@ static gboolean __mirage_parser_cif_build_block_index (MIRAGE_Parser *self, GErr
                 }
                 subblockentry->start = cur_ptr_sub;
                 subblockentry->offset = cur_ptr_sub - _priv->cif_data;
-                if (!memcmp(block->block_id, "parser", 4)) {
+                if (!memcmp(block->block_id, "disc", 4)) {
                     CIF_DISC_SubBlock *subblock = MIRAGE_CAST_PTR(cur_ptr_sub, 0, CIF_DISC_SubBlock *);
 
                     subblockentry->length = subblock->track.length;
@@ -262,10 +262,10 @@ static gboolean __mirage_parser_cif_parse_track_entries (MIRAGE_Parser *self, GE
     }
 
     /* Initialize parser block and ofs block pointers first */
-    disc_block_ptr = __mirage_parser_cif_find_block_entry(self, "parser", error);
+    disc_block_ptr = __mirage_parser_cif_find_block_entry(self, "disc", error);
     ofs_block_ptr = __mirage_parser_cif_find_block_entry(self, "ofs ", error);
     if (!(disc_block_ptr && ofs_block_ptr)) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: 'parser' or 'ofs' blocks not located. Can not proceed.\n", __debug__);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: 'disc' or 'ofs' blocks not located. Can not proceed.\n", __debug__);
         g_object_unref(cur_session);
         mirage_error(MIRAGE_E_PARSER, error);
         return FALSE;
@@ -429,22 +429,22 @@ static gboolean __mirage_parser_cif_load_disc (MIRAGE_Parser *self, GError **err
     }
 
     /* Print some information about parser */
-    disc_block_ptr = __mirage_parser_cif_find_block_entry(self, "parser", error);
+    disc_block_ptr = __mirage_parser_cif_find_block_entry(self, "disc", error);
     if (!disc_block_ptr) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: \"parser\" block not located. Can not proceed.\n", __debug__);
         return FALSE;
     }
 
     CIFSubBlockIndexEntry *disc_subblock_entry = g_list_nth_data(disc_block_ptr->subblock_index, 0);
-    CIF_DISC_SubBlock *parser_subblock_data = (CIF_DISC_SubBlock *)disc_subblock_entry->start;
+    CIF_DISC_SubBlock *disc_subblock_data = (CIF_DISC_SubBlock *)disc_subblock_entry->start;
 
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: Parser:\n", __debug__);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   number of tracks: %i\n", __debug__, parser_subblock_data->first.tracks);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   image type: %i\n", __debug__, parser_subblock_data->first.image_type);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   number of tracks: %i\n", __debug__, disc_subblock_data->first.tracks);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   image type: %i\n", __debug__, disc_subblock_data->first.image_type);
 
-    gint title_length = parser_subblock_data->first.title_length;
-    if ((parser_subblock_data->first.image_type == CIF_IMAGE_AUDIO) && (title_length > 0)) {
-        gchar *title_and_artist = parser_subblock_data->first.title_and_artist; 
+    gint title_length = disc_subblock_data->first.title_length;
+    if ((disc_subblock_data->first.image_type == CIF_IMAGE_AUDIO) && (title_length > 0)) {
+        gchar *title_and_artist = disc_subblock_data->first.title_and_artist; 
         gchar *title = g_strndup(title_and_artist, title_length);
         gchar *artist = (gchar *) (title_and_artist + title_length);
 
