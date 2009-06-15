@@ -12,6 +12,8 @@ endif
 KDIR := /lib/modules/$(KERNELRELEASE)/build
 KMAKE := $(MAKE) -C $(KDIR) M=$(PWD)
 
+DOCS = AUTHORS ChangeLog COPYING INSTALL NEWS README
+
 all: kernel.api.h modules
 
 kernel.api.h: kat/*.c
@@ -35,7 +37,7 @@ dist: dist-gzip
 dist-dir:
 	rm -fr $(PACKAGE)
 	mkdir $(PACKAGE)
-	cp vhba.c Makefile $(PACKAGE)
+	cp vhba.c Makefile $(DOCS) $(PACKAGE)
 	mkdir $(PACKAGE)/kat
 	cp -fr $(shell ls kat/*) $(PACKAGE)/kat
 
