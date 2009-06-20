@@ -1,4 +1,40 @@
 ==========================================================================
+ Version 1.2.0   2009-06-28
+==========================================================================
+
+Henrik Stokseth:
+	* Improvements to CIF parser including handling of data and audio 
+	  tracks, mode detection.
+	* Improvements to C2D parser including support for 96 bytes 
+	  subchannels and loading of some images. Switched from mmap to
+	  manual buffer to handle large images. Fixes to mode detection.
+	  Support for indices. Fixes to cd-text. Reporting compressed
+	  tracks.
+	* Added incomplete UIF parser.
+	* Improvements to library, function to check for ISO volume 
+	  descriptors.
+	* Misc. fixes.
+
+Rok Mandeljc:
+	* Massive improvements to library, handling of rare sector sizes
+	  and revised the sector feeding code. Reworked fragment code.
+	  Added a number of utility functions. Password functions.
+	  Added MIRAGE_Parser framework. Added library versioning support.
+	  Improved library debugging messages.
+	* Improvements to DAA parser, added fileformat check, added 
+	  support for new formats, encryption support.
+	* Improvements to ISO parser.
+	* Improvements to MDS parser, handling of 16 bit characters.
+	* Improvements to CUE parser, handling of variable sector size.
+	  Rewrote parser from lexx/yacc to use glib regex functions.
+	* Improvements to TOC parser.
+	  Rewrote parser from lexx/yacc to use glib regex functions.
+	* Improvements to CCD parser.
+	  Rewrote parser from lexx/yacc to use glib regex functions.
+	* Adaptation of all parsers to new parser framework.
+	* A lot of misc. fixes.
+
+==========================================================================
  Version 1.1.1   2008-09-13
 ==========================================================================
 
