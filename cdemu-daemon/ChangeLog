@@ -1,4 +1,20 @@
 ==========================================================================
+ Version 1.2.0   2009-06-28
+==========================================================================
+
+Rok Mandeljc:
+	* Improvements to device unload and eject.
+	* Adaptations to new libmirage parser framework.
+	* Added password support.
+	* Added version checks.
+	* Improve debug messages.
+	* Fixes to audio handling.
+	* Misc. fixes.
+
+Henrik Stokseth:
+	* Documentation fixes.
+
+==========================================================================
  Version 1.1.0   2008-06-29
 ==========================================================================
 
