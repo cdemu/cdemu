@@ -733,7 +733,7 @@ class CDEmu (object):
         print "  %-25s %s" % ("-v, --version", _("displays program version"))
         print "  %-25s %s" % ("-b, --bus", _("sets D-BUS bus type to use; valid values are 'session' and 'system'"))
         print ""
-        print _("Optional parser parameters (valid only for 'load' command:")
+        print _("Optional parser parameters (valid only for 'load' command):")
         print "  %-25s %s" % ("--password", _("password for encrypted images"))
         print "  %-25s %s" % ("--encoding", _("encoding for text-based images"))
         
