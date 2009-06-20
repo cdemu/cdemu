@@ -1536,7 +1536,7 @@ static void __ui_callback_about (GtkAction *action, gpointer user_data) {
     IMAGE_ANALYZER_Application *self = IMAGE_ANALYZER_APPLICATION(user_data);
     IMAGE_ANALYZER_ApplicationPrivate *_priv = IMAGE_ANALYZER_APPLICATION_GET_PRIVATE(self);
     
-    gchar *authors[] = { "Rok Mandeljc <rok.mandeljc@email.si>", NULL };
+    gchar *authors[] = { "Rok Mandeljc <rok.mandeljc@gmail.com>", NULL };
     
     gtk_show_about_dialog(
         GTK_WINDOW(_priv->window),
