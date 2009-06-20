@@ -1,4 +1,19 @@
 ==========================================================================
+ Version 1.2.0   2009-06-28
+==========================================================================
+
+Rok Mandeljc:
+	* Adaptations to new libmirage parser framework.
+	* Password support.
+	* Versioning support.
+	* Updated Slovenian translation.
+	* Updated documentation.
+	* Misc. fixes.
+
+Loïc Martin:
+	* French translation.
+
+==========================================================================
  Version 1.1.0   2008-06-29
 ==========================================================================
 
