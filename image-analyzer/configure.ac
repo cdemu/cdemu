@@ -20,7 +20,7 @@ AC_HEADER_STDC
 PKG_CHECK_MODULES(glib, glib-2.0 >= 2.6)
 PKG_CHECK_MODULES(gobject, gobject-2.0 >= 2.6)
 PKG_CHECK_MODULES(gtk, gtk+-2.0 >= 2.6)
-PKG_CHECK_MODULES(libmirage, libmirage >= 1.1.0)
+PKG_CHECK_MODULES(libmirage, libmirage >= 1.2.0)
 PKG_CHECK_MODULES(gtkextra, gtkextra-2.0 >= 2.0.0)
 PKG_CHECK_MODULES(libxml, libxml-2.0 >= 2.0.0)
 
