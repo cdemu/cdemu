@@ -60,7 +60,7 @@
                 <surname>Mandeljc</surname>
                 <affiliation>
                     <orgname>CDEmu Project</orgname>
-                    <address> <email>rok.mandeljc@email.si</email> </address>
+                    <address> <email>rok.mandeljc@gmail.com</email> </address>
                 </affiliation>
             </author>
             <!-- This is appropriate place for other contributors: translators,
@@ -97,7 +97,7 @@
                 <revdescription>
                     <para role="author">
                         Rok Mandeljc
-                        <email>rok.mandeljc@email.si</email>
+                        <email>rok.mandeljc@gmail.com</email>
                     </para>
                     <para role="publisher">
                         GNOME Documentation Project
@@ -583,7 +583,7 @@
         <title>About &applet;</title>
         <para>
             <application>&applet;</application> was written by Rok Mandeljc
-            (<email>rok.mandeljc@email.si</email>). To find more information 
+            (<email>rok.mandeljc@gmail.com</email>). To find more information 
             about <application>&applet;</application>, please visit the <ulink
             url="http://cdemu.sf.net" type="http">CDEmu Project page</ulink>.
         </para>
