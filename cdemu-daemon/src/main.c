@@ -175,6 +175,29 @@ static gboolean __run_daemon () {
     return succeeded;
 }
 
+/* Check that the user has the privileges to spawn a daemon process */
+int check_permissions (void) {
+    uid_t uid;
+    gid_t gid;
+    struct group *ginfo;
+
+    uid = geteuid();
+    gid = getegid();
+
+    /* user or group ID is root ? */
+    if (uid == 0) return TRUE;
+    if (gid == 0) return TRUE;
+
+    /* user or group ID is daemon ? */
+    ginfo = getgrnam("daemon");
+    if (ginfo) {
+        if (uid == ginfo->gr_gid) return TRUE;
+        if (gid == ginfo->gr_gid) return TRUE;
+    }
+
+    return FALSE;
+}
+
 int main (int argc, char *argv[]) {    
     gint retval;
     pid_t pid;
@@ -230,7 +253,12 @@ int main (int argc, char *argv[]) {
         
         /* Log handler */
         g_log_set_default_handler(__cdemud_daemon_daemon_log_handler, NULL);
-                
+
+        /* Check that we have permission to spawn daemons */
+        if (!check_permissions()) {
+            g_warning("You do not seem to have permission to start a daemon.\n");
+        }
+
         /* Check that the daemon is not rung twice a the same time */
         if ((pid = daemon_pid_file_is_running()) >= 0) {
             g_warning("Daemon already running on PID file %u\n", pid);
