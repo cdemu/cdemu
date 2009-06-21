@@ -32,8 +32,10 @@
 #include <errno.h>
 #include <signal.h>
 #include <fcntl.h>
+#include <grp.h>
 #include <sys/ioctl.h>
 #include <sys/time.h>
+#include <sys/types.h>
 
 #include <sysfs/libsysfs.h>
 
