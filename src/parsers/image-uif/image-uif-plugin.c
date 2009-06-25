@@ -1,6 +1,6 @@
 /*
  *  libMirage: UIF image parser: Plugin exports
- *  Copyright (C) 2008 Henrik Stokseth.
+ *  Copyright (C) 2008-2009 Henrik Stokseth.
  *
  *  Thanks to Luigi Auriemma for reverse engineering work.
  *
