@@ -1,6 +1,6 @@
 /*
  *  libMirage: NRG image plugin
- *  Copyright (C) 2006-2008 Rok Mandeljc
+ *  Copyright (C) 2006-2009 Rok Mandeljc
  * 
  *  Reverse-engineering work in March, 2005 by Henrik Stokseth.
  *
