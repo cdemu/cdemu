@@ -469,6 +469,12 @@ Using appropriate debug mask and monitoring the output, the source of problem
 can be quickly found, be it either a failure in loading an image or incorrect
 response to the given command.
 
+If you are debugging the daemon using the GNU Debugger (gdb) and get an error 
+reading "failed to open control device" then you need to check your permissions.
+GDB doesn't honor any set-UID or set-GID flags on the daemon executable so you
+will have to make sure that your user has read and write permissions on the
+control device.
+
 9. Encrypted images and password supplying
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
