@@ -164,11 +164,19 @@ avoid this, you should pass --sysconfdir=/etc to configure, regardless of the
 prefix you are passing to configure. Alternatively, you can specify appropriate 
 directory using --with-dbus-system-dir switch.
 
-With the cdemu-daemon 1.1.0 release the ALSA audio backend was replaced with a
-single libao backend which allows you to select from a number of available 
-audio drivers. CDEmu is usually configured to use the "default" libao audio 
-driver, which means that the audio driver specified in libao's config file
-("/etc/libao.conf" or "~/.libao") is used.
+We use a single libao backend to support CD-audio playback. This allows you to 
+select from a number of available audio drivers. Valid choices are the driver
+names used by libao as well as "default" and "null". CDEmu is usually 
+configured to use the "default" libao audio driver, which means that the 
+audio driver specified in libao's config file ("/etc/libao.conf" or "~/.libao") 
+is used. If "null" is specified, audio is sent to the null driver, essentially
+turning off audio playback. For a full list of valid driver names have a look 
+at the libao documentation, in particular the "libao.conf" manpage. 
+
+Also note that most media players on Linux are capable of digital audio 
+extraction, meaning they can play CD-audio directly without relying on the 
+"analog" playback capabilities of the virtual optical device. Because of this
+it's possible to use the libao "null" driver and still play CDs normally.
 
 Unlike previous (experimental snapshot) releases, this release of CDEmu daemon
 does not provide initscripts. After some thought it was decided it was too much
