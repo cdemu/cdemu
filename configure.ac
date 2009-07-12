@@ -1,5 +1,8 @@
 # Process this file with autoconf to produce a configure script.
 
+# Require autoconf >= 2.59
+AC_PREREQ(2.59)
+
 # cdemu-client versioning:
 m4_define([cdemu_major_version], [1])
 m4_define([cdemu_minor_version], [2])
