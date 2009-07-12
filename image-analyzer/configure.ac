@@ -1,5 +1,8 @@
 # Process this file with autoconf to produce a configure script.
 
+# Require autoconf >= 2.59
+AC_PREREQ(2.59)
+
 # Project init
 AC_INIT(mirage-image-analyzer, [1.2.0], rok.mandeljc@email.si)
 AC_CONFIG_SRCDIR(src/main.c)

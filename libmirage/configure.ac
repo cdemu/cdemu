@@ -1,7 +1,7 @@
 # Process this file with autoconf to produce a configure script.
 
-# Require autoconf >= 2.50
-AC_PREREQ(2.50)
+# Require autoconf >= 2.59
+AC_PREREQ(2.59)
 
 # libMirage release and libtool versioning:
 m4_define([libmirage_major_version], [1])
