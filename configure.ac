@@ -1,5 +1,8 @@
 # Process this file with autoconf to produce a configure script.
 
+# Require autoconf >= 2.59
+AC_PREREQ(2.59)
+
 # gcdemu versioning:
 m4_define([gcdemu_major_version], [1])
 m4_define([gcdemu_minor_version], [2])
