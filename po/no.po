@@ -1,207 +1,218 @@
 # Norwegian translation of gCDEmu.
-# Copyright (C) 2006-2008 Henrik Stokseth
+# Copyright (C) 2006-2009 Henrik Stokseth
 # This file is distributed under the same license as the gCDEmu package.
-# Henrik Stokseth <henrik AT kablekaos DOT net>, 2006-2008.
+# Henrik Stokseth <henrik AT hw0 DOT org>, 2006-2009.
 #
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: gCDEmu 1.1.0\n"
+"Project-Id-Version: gCDEmu 1.2.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2008-06-13 01:50+0200\n"
-"PO-Revision-Date: 2008-06-13 22:00+0100\n"
-"Last-Translator: Henrik Stokseth <henrik AT kabelkaos DOT net>\n"
+"PO-Creation-Date: 2008-06-13 22:00+0100\n"
+"POT-Revision-Date: 2009-07-25 22:48+0200\n"
+"Last-Translator: Henrik Stokseth <henrik AT hw0 DOT org>\n"
 "Language-Team: Norwegian\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: ../src/applet.py:101 ../src/device.py:475
+#: ../src/applet.py:61 ../src/applet.py:96 ../src/device.py:469
 msgid "Error"
 msgstr "Feil"
 
-#: ../src/applet.py:115
+#: ../src/applet.py:158
 msgid ""
 "gCDEmu is an applet for controlling CDEmu\n"
 "devices via CDEmu daemon."
-msgstr "gCDEmu er en applet for å kontrollere CDEmu\n"
+msgstr ""
+"gCDEmu er en applet for å kontrollere CDEmu\n"
 "enheter via CDEmu demonen."
 
-#: ../src/applet.py:117
+#: ../src/applet.py:160
 msgid "The CDEmu project website"
-msgstr "CDEmu prosjektet sin hjemmeside"
+msgstr "CDEmu prosjektet sin nettside"
 
-#: ../src/applet.py:121
+#: ../src/applet.py:164
 msgid "translator-credits"
-msgstr "Henrik Stokseth <henrik AT kabelkaos DOT net>"
+msgstr "Henrik Stokseth <henrik AT hw0 DOT org>"
 
-#: ../src/applet.py:126
+#: ../src/applet.py:169
 msgid "Use _system bus"
 msgstr "Benytt _system buss"
 
-#: ../src/applet.py:128
+#: ../src/applet.py:171
 msgid "Show _notifications"
 msgstr "Vis _beskjeder"
 
-#: ../src/applet.py:130
+#: ../src/applet.py:173
 msgid "_About"
 msgstr "_Om"
 
-#: ../src/applet.py:131
+#: ../src/applet.py:174
 msgid "_Help"
 msgstr "_Hjelp"
 
-#: ../src/applet.py:179
+#: ../src/applet.py:223
 msgid "Daemon started"
 msgstr "Demon startet"
 
-#: ../src/applet.py:179
+#: ../src/applet.py:223
 msgid "CDEmu daemon has been started."
 msgstr "CDEmu demon har blitt startet."
 
-#: ../src/applet.py:187
+#: ../src/applet.py:231
 msgid "Daemon stopped"
 msgstr "Demon stoppet"
 
-#: ../src/applet.py:187
+#: ../src/applet.py:231
 msgid "CDEmu daemon has been stopped."
 msgstr "CDEmu demon har blitt stoppet."
 
-#: ../src/applet.py:382
+#: ../src/applet.py:399
 #, python-format
-msgid "CDEmu daemon version %s detected, but at least version %s is required!"
+msgid "Failed to connect: %s"
+msgstr "Mislyktes i å koble til: %s"
+
+#: ../src/applet.py:409
+#, python-format
+msgid ""
+"Failed to acquire daemon interface version (this most likely means your "
+"daemon is out-of-date): %s"
 msgstr ""
-"CDEmu demon versjon %s er detektert, men det kreves minimum versjon %s!"
+"Mislyktes i å innhente demon grensesnitt versjon (Dette betyr mest sannsynlig"
+"at demonen har gått ut på dato): %s"
 
-#: ../src/applet.py:386
-msgid "Incompatible daemon version"
-msgstr "Ukompatibel versjon av demon"
+#: ../src/applet.py:415
+#, python-format
+msgid "CDEmu daemon interface version %i detected, but version %i is required!"
+msgstr "CDEmu demon grensesnitt versjon %i er detektert, men versjon %i er påkrevd!"
 
-#: ../src/device.py:54
+#: ../src/applet.py:425
+#, python-format
+msgid "Failed to acquire number of devices: %s"
+msgstr "Mislyktes i å innhente antall enheter: %s"
+
+#: ../src/device.py:48
 msgid "Open file"
 msgstr "Åpne fil"
 
-#: ../src/device.py:63
+#: ../src/device.py:57
 msgid "All files"
 msgstr "Alle filer"
 
-#: ../src/device.py:68
+#: ../src/device.py:62
 msgid "All image files"
 msgstr "Alle bilde filer"
 
-#: ../src/device.py:87
+#: ../src/device.py:81
 #, python-format
 msgid "Device %i properties"
 msgstr "Enhet %i sine egenskaper"
 
-#: ../src/device.py:95
+#: ../src/device.py:89
 #, python-format
 msgid "Device %i"
 msgstr "Enhet %i"
 
 #. *** Frame: status ***
-#: ../src/device.py:108 ../src/device.py:138
+#: ../src/device.py:102 ../src/device.py:135
 msgid "Status"
 msgstr "Status"
 
-#: ../src/device.py:111
+#: ../src/device.py:105
 msgid "Options"
 msgstr "Valg"
 
-#: ../src/device.py:118
+#: ../src/device.py:112
 msgid "Daemon debug mask"
 msgstr "Demon avlusnings-maske"
 
-#: ../src/device.py:119
+#: ../src/device.py:113
 msgid "Daemon"
 msgstr "Demon"
 
-#: ../src/device.py:126
+#: ../src/device.py:120
 msgid "Library debug mask"
 msgstr "Bibliotek avlusnings-maske"
 
-#: ../src/device.py:127
+#: ../src/device.py:121
 msgid "Library"
 msgstr "Bibliotek"
 
-#: ../src/device.py:150
+#: ../src/device.py:147
 msgid "Loaded: "
 msgstr "Lastet: "
 
-#: ../src/device.py:159
-msgid "Image type: "
-msgstr "Bilde type: "
-
-#: ../src/device.py:168
-msgid "File name: "
+#: ../src/device.py:156
+msgid "File name(s): "
 msgstr "Fil navn: "
 
-#: ../src/device.py:186
+#: ../src/device.py:178
 msgid "Device mapping"
 msgstr "Enhets tilordning"
 
-#: ../src/device.py:198
+#: ../src/device.py:190
 msgid "SCSI CD-ROM device: "
 msgstr "SCSI CD-ROM enhet: "
 
-#: ../src/device.py:207
+#: ../src/device.py:199
 msgid "SCSI generic device: "
 msgstr "SCSI generisk enhet: "
 
 #. Device ID
-#: ../src/device.py:223
+#: ../src/device.py:215
 msgid "Device ID"
 msgstr "Enhets ID"
 
-#: ../src/device.py:235
+#: ../src/device.py:227
 msgid "Vendor ID: "
 msgstr "Fabrikant ID: "
 
-#: ../src/device.py:245
+#: ../src/device.py:237
 msgid "Product ID: "
 msgstr "Produkt ID: "
 
-#: ../src/device.py:255
+#: ../src/device.py:247
 msgid "Revision: "
 msgstr "Revisjon: "
 
-#: ../src/device.py:265
+#: ../src/device.py:257
 msgid "Vendor-specific: "
 msgstr "Fabrikant-spesifikt: "
 
-#: ../src/device.py:279
+#: ../src/device.py:271
 msgid "Set device ID"
-msgstr "Set enhets ID"
+msgstr "Sett enhets ID"
 
 #. DPM emulation
-#: ../src/device.py:285
+#: ../src/device.py:277
 msgid "DPM emulation"
 msgstr "DPM emulering"
 
 #. Transfer rate emulation
-#: ../src/device.py:292
+#: ../src/device.py:284
 msgid "Transfer rate emulation"
 msgstr "Overførings-hastighet emulering"
 
-#: ../src/device.py:324
+#: ../src/device.py:316
 msgid "Set debug mask"
 msgstr "Sett avlusnings-maske"
 
-#: ../src/device.py:437 ../src/device.py:439 ../src/device.py:462
+#: ../src/device.py:431 ../src/device.py:433 ../src/device.py:456
 msgid "Device change"
-msgstr "Enhet byttet"
+msgstr "Enhets-bytte"
 
-#: ../src/device.py:437
+#: ../src/device.py:431
 #, python-format
 msgid "Device %i has been loaded."
 msgstr "Enhet %i har blitt lastet."
 
-#: ../src/device.py:439
+#: ../src/device.py:433
 #, python-format
 msgid "Device %i has been emptied."
 msgstr "Enhet %i har blitt løst ut."
 
-#: ../src/device.py:462
+#: ../src/device.py:456
 #, python-format
 msgid ""
 "Device %i has been changed its option:\n"
@@ -210,17 +221,19 @@ msgstr ""
 "Enhet %i har fått byttet sitt valg:\n"
 "%s."
 
-#. Show error dialog
 #: ../src/device.py:517
-#, python-format
-msgid ""
-"Failed to unload device %i:\n"
-"%s"
-msgstr ""
-"Mislyktes i å løse ut enhet %i:\n"
-"%s"
+msgid "Enter password"
+msgstr "Oppgi passord"
 
-#: ../src/device.py:531
+#: ../src/device.py:527
+msgid "The image you are trying to load is encrypted."
+msgstr "Bilde-filen du prøver å laste er kryptert."
+
+#: ../src/device.py:537
+msgid "Password: "
+msgstr "Passord: "
+
+#: ../src/device.py:566 ../src/device.py:572
 #, python-format
 msgid ""
 "Failed to load image %s to device %i:\n"
@@ -229,7 +242,17 @@ msgstr ""
 "Mislyktes i å laste bilde %s til enhet %i:\n"
 "%s"
 
-#: ../src/device.py:550
+#. Show error dialog
+#: ../src/device.py:583
+#, python-format
+msgid ""
+"Failed to unload device %i:\n"
+"%s"
+msgstr ""
+"Mislyktes i å løse ut enhet %i:\n"
+"%s"
+
+#: ../src/device.py:611
 #, python-format
 msgid ""
 "Failed to set device ID for device %i to %s:\n"
@@ -238,7 +261,7 @@ msgstr ""
 "Mislyktes i å sette enhets ID for enhet %i til %s:\n"
 "%s"
 
-#: ../src/device.py:567
+#: ../src/device.py:629
 #, python-format
 msgid ""
 "Failed to set DPM emulation for device %i to %i:\n"
@@ -247,7 +270,7 @@ msgstr ""
 "Mislyktes i å sette DPM emulering for enhet %i til %i:\n"
 "%s"
 
-#: ../src/device.py:584
+#: ../src/device.py:647
 #, python-format
 msgid ""
 "Failed to set transfer rate emulation for device %i to %i:\n"
@@ -256,7 +279,7 @@ msgstr ""
 "Mislyktes i å sette overførings-hastighet emulering for enhet %i til %i:\n"
 "%s"
 
-#: ../src/device.py:594
+#: ../src/device.py:657
 #, python-format
 msgid ""
 "Failed to set daemon debug mask for device %i to 0x%X:\n"
@@ -265,7 +288,7 @@ msgstr ""
 "Mislyktes i å sette demonens avlusnings-maske for enhet %i til 0x%X:\n"
 "%s"
 
-#: ../src/device.py:604
+#: ../src/device.py:667
 #, python-format
 msgid ""
 "Failed to set library debug mask for device %i to 0x%X:\n"
@@ -275,27 +298,27 @@ msgstr ""
 "%s"
 
 #. Indicate there's more than one file
-#: ../src/device.py:623 ../src/device.py:625
+#: ../src/device.py:686 ../src/device.py:688
 msgid "Device"
 msgstr "Enhet"
 
-#: ../src/device.py:625
+#: ../src/device.py:688
 msgid "Empty"
 msgstr "Tom"
 
-#: ../src/device.py:631
+#: ../src/device.py:694
 msgid "Yes"
 msgstr "Ja"
 
-#: ../src/device.py:634
+#: ../src/device.py:696
 msgid "Unload"
 msgstr "Løs ut"
 
-#: ../src/device.py:636
+#: ../src/device.py:698
 msgid "No"
 msgstr "Nei"
 
-#: ../src/device.py:639
+#: ../src/device.py:700
 msgid "Load"
 msgstr "Last inn"
 
@@ -310,3 +333,5 @@ msgstr "Vis beskjeder?"
 #: ../src/gcdemu.schemas.in.h:3
 msgid "Use system bus (instead of session bus)?"
 msgstr "Benytt system buss (i stedet for sesjons buss)?"
+
+
