@@ -1,0 +1,3 @@
+debian/cdemu-client.desktop usr/share/applications/
+debian/cdemu-client.conf    etc/
+
