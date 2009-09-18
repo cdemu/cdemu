@@ -1,0 +1,18 @@
+Source: vhba-module
+Section: misc
+Priority: optional
+Homepage: http://cdemu.sourceforge.net/
+Maintainer: Henrik Stokseth <henrik@hw0.org>
+Build-Depends: quilt, debhelper (>= 7)
+Build-Depends-Indep: sed (>= 4)
+Standards-Version: 3.8.0
+
+
+Package: vhba-dkms
+Architecture: all
+Depends: build-essential, dkms, ${misc:Depends}
+Replaces: vhba-module
+Description: VHBA virtual host bus adapter module
+ VHBA kernel module, a virtual SCSI host bus adapter used by CDEmu daemon from
+ userspace-cdemu suite.
+
