@@ -1,0 +1,3 @@
+usr/lib/lib*.so.*
+usr/lib/libmirage-1.2/*.so
+

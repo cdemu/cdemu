@@ -1,0 +1,57 @@
+#!/usr/bin/make -f
+# -*- makefile -*-
+
+
+include /usr/share/quilt/quilt.make
+
+#export DH_VERBOSE=1
+export DH_ALWAYS_EXCLUDE="CVS:.svn"
+
+export DEB_HOST_GNU_TYPE  ?= $(shell dpkg-architecture -qDEB_HOST_GNU_TYPE)
+export DEB_BUILD_GNU_TYPE ?= $(shell dpkg-architecture -qDEB_BUILD_GNU_TYPE)
+
+CONFIGURE_FLAGS = --build $(DEB_BUILD_GNU_TYPE) --host $(DEB_HOST_GNU_TYPE)
+
+
+build: $(QUILT_STAMPFN) build-stamp
+build-stamp:
+	dh build --before configure
+
+	test -r config.sub && mv -f config.sub config.sub.save 
+	test -r config.guess && mv -f config.guess config.guess.save
+	test -r /usr/share/misc/config.sub && cp -f /usr/share/misc/config.sub config.sub
+	test -r /usr/share/misc/config.guess && cp -f /usr/share/misc/config.guess config.guess
+
+	dh_auto_configure  -- --disable-static --enable-gtk-doc $(CONFIGURE_FLAGS)
+	dh build --after configure
+	touch $@
+
+
+clean: unpatch
+	test -r config.sub.save && mv -f config.sub.save config.sub || echo "not found"
+	test -r config.guess.save && mv -f config.guess.save config.guess || echo "not found"
+
+	# Hack! Because GTK-Doc is bloody retarded!
+	rm -f docs/reference/libmirage/html/*.html
+
+	dh clean
+
+
+install: build install-stamp
+install-stamp:
+	dh install
+	touch $@
+
+
+binary-indep: install
+	dh binary-indep
+
+binary-arch: install
+	dh binary-arch --before strip
+	dh_strip --dbg-package=libmirage2-dbg
+	dh binary-arch --after strip
+
+binary: binary-indep binary-arch
+
+.PHONY: build clean install binary-indep binary-arch binary
+
