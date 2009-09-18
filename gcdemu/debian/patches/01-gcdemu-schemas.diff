@@ -1,0 +1,11 @@
+--- /home/henrik/development/cdemu-svn/trunk/gcdemu/src/gcdemu.schemas.in	2008-06-13 02:12:26.000000000 +0200
++++ gcdemu/src/gcdemu.schemas.in	2008-06-13 02:18:18.000000000 +0200
+@@ -15,7 +15,7 @@
+             <applyto>/apps/gcdemu-applet-standalone/prefs/use_system_bus</applyto>
+             <owner>gcdemu-applet</owner>
+             <type>bool</type>
+-            <default>true</default>
++            <default>false</default>
+             <locale name="C">
+                 <short>Use system bus (instead of session bus)?</short>
+             </locale>
