@@ -1,0 +1,41 @@
+#!/bin/sh
+# prerm script for vhba-dkms
+#
+
+myerror ()
+{
+	echo "ERROR: $1" >&2
+	exit 1
+}
+
+mywarning ()
+{
+	echo "WARNING: $1" >&2
+}
+
+case "$1" in
+    remove|upgrade|deconfigure)
+        # sanity check
+        test -n "${VERSION}" || myerror "Version not set."
+
+        cd "/usr/src/vhba-${VERSION}" || myerror "chdir failed."
+
+        # Remove all instances of module/module-version from DKMS registry
+        dkms remove -m vhba -v ${VERSION} --all || myerror "dkms remove failed."
+
+        # Remove the cdemu group
+        delgroup --system cdemu || mywarning "failed to remove group 'cdemu'."
+    ;;
+
+    failed-upgrade)
+    ;;
+
+    *)
+        myerror "prerm called with unknown argument \`$1'."
+    ;;
+esac
+
+#DEBHELPER#
+
+exit 0
+

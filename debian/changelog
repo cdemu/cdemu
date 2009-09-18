@@ -1,0 +1,7 @@
+vhba-module (1.2.1-0ubuntu1) jaunty; urgency=low
+
+  * Added patch: Static KAT configuration.
+  * Initial Release. Closes: (LP: #105452, LP: #184637)
+
+ -- Henrik Stokseth (Henrik) <henrik@hw0.org>  Fri, 18 Sep 2009 12:00:00 +0100
+
