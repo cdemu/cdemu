@@ -1,0 +1,10 @@
+Document: libmirage2-doc
+Title: LibMirage Reference Manual
+Author: Rok Mandeljc <rok.mandeljc@email.si>
+Abstract: This manual describes LibMirage, and how it can be used.
+Section: Programming
+
+Format: HTML
+Index: /usr/share/gtk-doc/html/libmirage/index.html
+Files: /usr/share/gtk-doc/html/libmirage/*.html
+
