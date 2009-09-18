@@ -1,0 +1,4 @@
+version=3
+
+http://sf.net/cdemu/ mirage-image-analyzer-(.+)\.tar\.bz2
+

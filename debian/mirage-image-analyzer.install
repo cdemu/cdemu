@@ -1,0 +1,4 @@
+usr/bin/*
+
+debian/mirage-image-analyzer.desktop usr/share/applications/
+
