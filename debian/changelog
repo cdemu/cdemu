@@ -1,0 +1,6 @@
+cdemu-client (1.2.0-0ubuntu1) jaunty; urgency=low
+
+  * Initial Release. Closes: (LP: #105452, LP: #184657)
+
+ -- Henrik Stokseth (Henrik) <henrik@hw0.org>  Fri, 18 Sep 2009 12:00:00 +0100
+

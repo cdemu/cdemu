@@ -1,0 +1,23 @@
+Source: cdemu-client
+Section: utils
+Priority: optional
+Homepage: http://cdemu.sourceforge.net/
+Maintainer: Henrik Stokseth <henrik@hw0.org>
+Build-Depends: quilt, debhelper (>= 7)
+Build-Depends-Indep: python, gettext, intltool, python-support (>= 0.5.3), autotools-dev
+Standards-Version: 3.8.0
+
+
+Package: cdemu-client
+Architecture: all
+Depends: python, python-dbus, cdemu-daemon (>= 1.1.0), ${python:Depends}, ${misc:Depends}
+Provides: ${python:Provides}
+Description: A simple command-line client to control CDEmu daemon
+ This is cdemu-client, a simple command-line client for controlling the
+ CDEmu daemon. It is part of the CDEmu suite, a free, GPL CD/DVD-ROM device 
+ emulator for Linux.
+ .
+ It provides a way to perform the key tasks related to controlling the CDEmu
+ daemon, such as loading and unloading devices, displaying devices' status and
+ retrieving/setting devices' debug masks.
+

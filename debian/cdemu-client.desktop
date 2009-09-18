@@ -1,0 +1,15 @@
+[Desktop Entry]
+Version=1.0
+Type=Application
+Name=CDEmu client
+Name[fr]=CDEmu client
+Comment=Client for handling optical media (CD/DVD) images
+Comment[fr]=Client pour gérer les images de médias optiques (CD/DVD)
+NoDisplay=true
+TryExec=cdemu
+Exec=cdemu load any %F
+MimeType=application/libmirage-image;
+Icon=gcdemu
+Terminal=false
+Categories=AudioVideo;
+
