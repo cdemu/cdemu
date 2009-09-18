@@ -1,0 +1,529 @@
+# Swedish translation of cdemu-client.
+# Copyright (C) 2009 Niklas 'Nille' Åkerström
+# This file is distributed under the same license as the cdemu-client package.
+# Niklas 'Nille' Åkerström <nille.kungen@gmail.com>, 2009.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: cdemu-client 1.2.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2009-08-12 00:51+0200\n"
+"PO-Revision-Date: 2009-08-12 03:57+0100\n"
+"Last-Translator: Niklas 'Nille' Åkerström <nille.kungen@gmail.com>\n"
+"Language-Team: Swedish <tp-sv@listor.tp-sv.se>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#. No harm, just print a warning
+#: ../src/cdemu.py:66
+#, python-format
+msgid "Failed to load configuration from file '%s': %s"
+msgstr "Misslyckades att ladda konfiguration från filen '%s': %s"
+
+#: ../src/cdemu.py:78
+msgid "Unknown option"
+msgstr "Okänt val"
+
+#: ../src/cdemu.py:106
+#, python-format
+msgid "Failed to connect to daemon (bus: '%s')!"
+msgstr "Misslyckades med att ansluta till bakgrundsprocessen (buss: '%s')!"
+
+#: ../src/cdemu.py:117
+#, python-format
+msgid "Unknown command: %s"
+msgstr "Okänt kommando: %s"
+
+#. We need password
+#: ../src/cdemu.py:131
+msgid "The image you are trying to load is encrypted."
+msgstr "Avbildsfilen du försöker ladda är krypterad."
+
+#: ../src/cdemu.py:132
+msgid "Password: "
+msgstr "Lösenord:"
+
+#: ../src/cdemu.py:135
+#, python-format
+msgid "Failed to load image: %s"
+msgstr "Misslyckades med att montera avbildsfil: %s"
+
+#: ../src/cdemu.py:157
+#: ../src/cdemu.py:194
+#: ../src/cdemu.py:223
+#: ../src/cdemu.py:247
+#: ../src/cdemu.py:271
+#: ../src/cdemu.py:304
+#: ../src/cdemu.py:336
+#: ../src/cdemu.py:369
+#: ../src/cdemu.py:401
+#: ../src/cdemu.py:432
+#: ../src/cdemu.py:464
+#: ../src/cdemu.py:495
+#: ../src/cdemu.py:527
+#: ../src/cdemu.py:565
+#, python-format
+msgid "Failed to get number of devices: %s"
+msgstr "Misslyckades att erhålla antal enheter: %s"
+
+#: ../src/cdemu.py:165
+#: ../src/cdemu.py:232
+#, python-format
+msgid "Failed to get status of device %i: %s"
+msgstr "Misslyckades med att erhålla status för enhet %i: %s"
+
+#. If we're here, it means we didn't get an empty device
+#: ../src/cdemu.py:176
+msgid "No empty device found"
+msgstr "Hittade ingen tom enhet"
+
+#: ../src/cdemu.py:202
+#: ../src/cdemu.py:213
+#, python-format
+msgid "Failed to unload device %i: %s"
+msgstr "misslyckades med att frigöra enhet %i: %s"
+
+#: ../src/cdemu.py:226
+msgid "Devices' status:"
+msgstr "Enhetsstaus:"
+
+#: ../src/cdemu.py:227
+#: ../src/cdemu.py:251
+#: ../src/cdemu.py:275
+#: ../src/cdemu.py:340
+#: ../src/cdemu.py:405
+#: ../src/cdemu.py:468
+#: ../src/cdemu.py:531
+msgid "DEV"
+msgstr "ENHET"
+
+#: ../src/cdemu.py:227
+msgid "LOADED"
+msgstr "Laddad"
+
+#: ../src/cdemu.py:227
+msgid "FILENAME"
+msgstr "FILNAMN"
+
+#: ../src/cdemu.py:250
+msgid "Device mapping:"
+msgstr "Enhets tilldelning:"
+
+#: ../src/cdemu.py:251
+msgid "SCSI CD-ROM"
+msgstr "SCSI CD-ROM"
+
+#: ../src/cdemu.py:251
+msgid "SCSI generic"
+msgstr "SCSI generisk"
+
+#: ../src/cdemu.py:256
+#, python-format
+msgid "Failed to get device mapping of device %i: %s"
+msgstr "Misslyckades att erhålla enhets-tilldelning från enhet %i: %s"
+
+#: ../src/cdemu.py:274
+msgid "Devices' daemon debug masks:"
+msgstr "Avlusnings-maskar för enheternas bakgrundsprocess:"
+
+#: ../src/cdemu.py:275
+#: ../src/cdemu.py:340
+msgid "DEBUG MASK"
+msgstr "AVLUSNINGS-MASK"
+
+#: ../src/cdemu.py:282
+#: ../src/cdemu.py:292
+#, python-format
+msgid "Failed to get daemon debug mask of device %i: %s"
+msgstr "Misslyckades att erhålla bakgrundsprocessens avlusnings-mask för enhet %i: %s"
+
+#: ../src/cdemu.py:295
+#, python-format
+msgid "Daemon debug mask of device %i: 0x%X"
+msgstr "Bakgrundsprocessens avlusnings-mask för enhet %i: 0x%X"
+
+#: ../src/cdemu.py:307
+#, python-format
+msgid "Setting daemon debug mask of all devices to 0x%X."
+msgstr "Ställer in bakgrundsprocessens avlusnings-mask för samtliga enheter till 0x%X."
+
+#: ../src/cdemu.py:312
+#: ../src/cdemu.py:320
+#, python-format
+msgid "Failed to set daemon debug mask of device %i to 0x%X: %s"
+msgstr "Misslyckades att ställa in bakgrundsprocessens avlusnings-mask för enhet %i till 0x%X: %s"
+
+#: ../src/cdemu.py:316
+#, python-format
+msgid "Setting daemon debug mask of device %i to 0x%X."
+msgstr "Ställer in bakgrundsprocessens avlusnings-mask för enhet %i till 0x%X."
+
+#: ../src/cdemu.py:339
+msgid "Devices' library debug masks:"
+msgstr "Enheternas biblioteks-avlusnings-maskar:"
+
+#: ../src/cdemu.py:347
+#: ../src/cdemu.py:357
+#, python-format
+msgid "Failed to get library debug mask of device %i: %s"
+msgstr "Misslyckades att erhålla bibliotekets avlusnings-mask för enhet %i: %s"
+
+#: ../src/cdemu.py:360
+#, python-format
+msgid "Library debug mask of device %i: 0x%X"
+msgstr "Bibliotekets avlusnings-mask för enhet %i: 0x%X"
+
+#: ../src/cdemu.py:372
+#, python-format
+msgid "Setting library debug mask of all devices to 0x%X."
+msgstr "Ställer in bibliotekets avlusnings-mask för samtliga enheter till 0x%X."
+
+#: ../src/cdemu.py:377
+#: ../src/cdemu.py:385
+#, python-format
+msgid "Failed to set library debug mask of device %i to 0x%X: %s"
+msgstr "Misslyckades att ställa in bibliotekets avlusnings-mask för enhet %i till 0x%X: %s"
+
+#: ../src/cdemu.py:381
+#, python-format
+msgid "Setting library debug mask of device %i to 0x%X."
+msgstr "Ställer in bibliotekets avlusnings-mask för enhet %i till 0x%X."
+
+#: ../src/cdemu.py:404
+msgid "Devices' DPM emulation flag:"
+msgstr "Enheternas DPM emulerings-flagga:"
+
+#: ../src/cdemu.py:405
+#: ../src/cdemu.py:468
+msgid "ENABLED"
+msgstr "AKTIVERAD"
+
+#: ../src/cdemu.py:411
+#: ../src/cdemu.py:420
+#, python-format
+msgid "Failed to get DPM emulation flag of device %i: %s"
+msgstr "Misslyckades erhålla DPM emulerings-flagga av enhet %i: %s"
+
+#: ../src/cdemu.py:423
+#, python-format
+msgid "DPM emulation flag of device %i: %i"
+msgstr "DPM emulerings-flagga för enhet %i: %i"
+
+#: ../src/cdemu.py:435
+#, python-format
+msgid "Setting DPM emulation flag of all devices to %i."
+msgstr "Ställ in DPM emulerings-flagga för samtliga enheter till %i."
+
+#: ../src/cdemu.py:440
+#: ../src/cdemu.py:448
+#, python-format
+msgid "Failed to set DPM emulation flag of device %i to %i: %s"
+msgstr "Misslyckades ställa in DPM emulerings-flagga av enhet %i till %i: %s"
+
+#: ../src/cdemu.py:444
+#, python-format
+msgid "Setting DPM emulation flag of device %i to %i."
+msgstr "Ställer in DPM emulerings-flagga för enhet %i till %i."
+
+#: ../src/cdemu.py:467
+msgid "Devices' transfer rate emulation flag:"
+msgstr "Enheternas överföringshastighets flagga:"
+
+#: ../src/cdemu.py:474
+#: ../src/cdemu.py:483
+#, python-format
+msgid "Failed to get transfer rate emulation flag of device %i: %s"
+msgstr "Misslyckades att erhålla överföringshastighets flagga för enhet %i: %s"
+
+#: ../src/cdemu.py:486
+#, python-format
+msgid "Transfer rate emulation flag of device %i: %i"
+msgstr "Överföringshastighetens emulerings-flagga för enhet %i: %i"
+
+#: ../src/cdemu.py:498
+#, python-format
+msgid "Setting transfer rate emulation flag of all devices to %i."
+msgstr "Ställer in överföringshastighetens emulerings-flagga samtliga enheter till %i."
+
+#: ../src/cdemu.py:503
+#: ../src/cdemu.py:511
+#, python-format
+msgid "Failed to set transfer rate emulation flag of device %i to %i: %s"
+msgstr "Misslyckades att ställa in överföringshastighetens emulerings-flagga för enhet %i till %i: %s"
+
+#: ../src/cdemu.py:507
+#, python-format
+msgid "Setting transfer rate emulation flag of device %i to %i."
+msgstr "Ställer in överföringshastighetens emulerings-flagga för enhet %i till %i."
+
+#: ../src/cdemu.py:530
+msgid "Devices' IDs:"
+msgstr "Enhets ID:n"
+
+#: ../src/cdemu.py:531
+msgid "DEVICE ID"
+msgstr "ENHETS ID"
+
+#: ../src/cdemu.py:540
+#: ../src/cdemu.py:552
+#, python-format
+msgid "Failed to get device ID of device %i: %s"
+msgstr "Misslyckades att erhålla enhets-ID för enhet %i: %s"
+
+#: ../src/cdemu.py:555
+#, python-format
+msgid "Device ID of device %i: %s"
+msgstr "Enhets ID för enhet %i: %s"
+
+#: ../src/cdemu.py:568
+#, python-format
+msgid "Setting device ID of all devices to %s."
+msgstr "Ställer in enhets-ID för samtliga enheter till %s."
+
+#: ../src/cdemu.py:573
+#: ../src/cdemu.py:581
+#, python-format
+msgid "Failed to set device ID of device %i to %s: %s"
+msgstr "Misslyckades att ställa in enhets-ID för enhet %i till %s: %s"
+
+#: ../src/cdemu.py:577
+#, python-format
+msgid "Setting device ID of device %i to %s."
+msgstr "Ställer in enhets ID för enhet %i till %s."
+
+#: ../src/cdemu.py:594
+#, python-format
+msgid "Failed to enumerate supported parsers: %s"
+msgstr "Misslyckades att erhålla en lista med stödda avbilds-tolkar: %s"
+
+#. Print all parsers
+#: ../src/cdemu.py:599
+msgid "Supported parsers:"
+msgstr "Stödda avbilds-tolkare:"
+
+#: ../src/cdemu.py:613
+#, python-format
+msgid "Failed to enumerate supported fragments: %s"
+msgstr "Misslyckades att erhålla en lista med stödda fragment: %s"
+
+#. Print all fragments
+#: ../src/cdemu.py:618
+msgid "Supported fragments:"
+msgstr "Fragments-stöd:"
+
+#: ../src/cdemu.py:636
+#, python-format
+msgid "Failed to enumerate supported daemon debug masks: %s"
+msgstr "Misslyckades att erhålla en lista med stödda avlusnings-maskar för bakgrundsprocessen: %s"
+
+#: ../src/cdemu.py:639
+msgid "Supported daemon debug masks:"
+msgstr "Stödda avlusningas-maskar för bakgrundsprocessen:"
+
+#: ../src/cdemu.py:654
+#, python-format
+msgid "Failed to enumerate supported library debug masks: %s"
+msgstr "Misslyckades att erhålla en lista med stödda biblioteks-avlusnings-maskar: %s"
+
+#: ../src/cdemu.py:657
+msgid "Supported library debug masks:"
+msgstr "Stödda biblioteks-avlusnings-maskar:"
+
+#: ../src/cdemu.py:670
+#, python-format
+msgid "Failed to get library version: %s"
+msgstr "Misslyckades att erhålla biblioteks-version: %s"
+
+#: ../src/cdemu.py:675
+#, python-format
+msgid "Failed to get daemon version: %s"
+msgstr "Misslyckades att erhålla bagrundsprocess-version: %s"
+
+#: ../src/cdemu.py:678
+#, python-format
+msgid "Library version: %s"
+msgstr "Biblioteksversion: %s"
+
+#: ../src/cdemu.py:679
+#, python-format
+msgid "Daemon version: %s"
+msgstr "Bakgrundsprocess-version: %s"
+
+#: ../src/cdemu.py:690
+#, python-format
+msgid "Invalid bus parameter '%s', using default!"
+msgstr "Felaktig buss parameter '%s', använder standard!"
+
+#: ../src/cdemu.py:698
+#, python-format
+msgid "Failed to connect to CDEmu daemon: %s"
+msgstr "Misslyckades att ansluta till CDEmu bakgrundsprocessen: %s"
+
+#: ../src/cdemu.py:705
+#, python-format
+msgid "Failed to acquire daemon interface version (this most likely means your daemon is out-of-date): %s"
+msgstr "Misslyckades att erhålla bakgrundsprocessens gränssnitts-version (detta betyder med största sannolikhet att din bakgrundsprocess är av för gammal version): %s"
+
+#: ../src/cdemu.py:710
+#, python-format
+msgid "CDEmu daemon interface version %i detected, but version %i is required!"
+msgstr "CDEmu bakgrundsprocess av version %i upptäcktes, med det krävs minst version %i"
+
+#. We need to make sure we're not trying to 'translate' empty
+#. string for the third argument
+#: ../src/cdemu.py:720
+#, python-format
+msgid "Usage: %s %s %s"
+msgstr "Användning: %s %s %s"
+
+#: ../src/cdemu.py:725
+#, python-format
+msgid "Usage: %s [options] <command> <command parameters>"
+msgstr "Användning: %s [Val] <kommando> <kommando parametrar>"
+
+#: ../src/cdemu.py:727
+msgid "Commands:"
+msgstr "Kommandon:"
+
+#: ../src/cdemu.py:731
+msgid "Options:"
+msgstr "Val:"
+
+#: ../src/cdemu.py:732
+msgid "displays help message"
+msgstr "visa hjälpmeddelande"
+
+#: ../src/cdemu.py:733
+msgid "displays program version"
+msgstr "visa program-version"
+
+#: ../src/cdemu.py:734
+msgid "sets D-BUS bus type to use; valid values are 'session' and 'system'"
+msgstr "ställ in vilken typ av D-BUS buss som ska användas; giltiga värden är 'session' och 'system'"
+
+#: ../src/cdemu.py:736
+msgid "Optional parser parameters (valid only for 'load' command):"
+msgstr "Valfria avbilds-tolkningsparametrar (endast giltig för 'load' kommandot):"
+
+#: ../src/cdemu.py:737
+msgid "password for encrypted images"
+msgstr "lösenord för krypterade avbildsfiler"
+
+#: ../src/cdemu.py:738
+msgid "encoding for text-based images"
+msgstr "teckenkodning för text-baserade avbildsfiler"
+
+#: ../src/cdemu.py:743
+#, python-format
+msgid "Invalid number of parameters for command '%s'!"
+msgstr "Felaktigt antal parametrar för kommandot '%s'!"
+
+#: ../src/cdemu.py:752
+#, python-format
+msgid "ERROR: %s"
+msgstr "FEL: %s"
+
+#: ../src/cdemu.py:756
+#, python-format
+msgid "WARNING: %s"
+msgstr "VARNING: %s"
+
+#: ../src/cdemu.py:764
+msgid "<device> <image file> [...]"
+msgstr "<enhet> <avbildsfil> [...]"
+
+#: ../src/cdemu.py:765
+msgid "loads the device"
+msgstr "laddar enheten"
+
+#: ../src/cdemu.py:771
+msgid "<device>"
+msgstr "<enhet>"
+
+#: ../src/cdemu.py:772
+msgid "unloads the device"
+msgstr "frigör enheten"
+
+#: ../src/cdemu.py:779
+msgid "displays the devices' status"
+msgstr "visar enheternas status"
+
+#: ../src/cdemu.py:786
+msgid "displays the device mapping information"
+msgstr "visa information om enhets-tilldelning"
+
+#: ../src/cdemu.py:792
+#: ../src/cdemu.py:799
+#: ../src/cdemu.py:806
+#: ../src/cdemu.py:813
+msgid "<device> [new value]"
+msgstr "<enhet> [nytt värde]"
+
+#: ../src/cdemu.py:793
+msgid "displays/sets daemon debug mask"
+msgstr "visa/ställ in bakgrundsprocessens avlusnings-mask"
+
+#: ../src/cdemu.py:800
+msgid "displays/sets library debug mask"
+msgstr "visa/ställ in bibliotekets avlusnings-mask"
+
+#: ../src/cdemu.py:807
+msgid "displays/sets DPM emulation flag"
+msgstr "visar/ställer in DPM emulerings-flagga"
+
+#: ../src/cdemu.py:814
+msgid "displays/sets transfer rate emulation flag"
+msgstr "visar/ställer in överförfingshastighets emulerings-flagga"
+
+#: ../src/cdemu.py:820
+msgid "<device> [new vendor_id] [new product_id] [new revision] [new vendor_specific]"
+msgstr "<enhet> [ny tillverkare_id] [ny produkt_id] [ny omarbetningsversion] [ny tillverkare_specifik]"
+
+#: ../src/cdemu.py:821
+msgid "displays/sets device ID"
+msgstr "visar/ställer in enhets ID"
+
+#: ../src/cdemu.py:828
+msgid "enumerates supported parsers"
+msgstr "Visar en lista över stödda avbilds-tolkare"
+
+#: ../src/cdemu.py:835
+msgid "enumerates supported fragments"
+msgstr "visar en lista över stödda fragment"
+
+#: ../src/cdemu.py:842
+msgid "enumerates valid daemon debug masks"
+msgstr "visar en lista över giltiga avlusnings-maskar för bakgrundsprocessen"
+
+#: ../src/cdemu.py:849
+msgid "enumerates valid library debug masks"
+msgstr "visar en lista över giltiga avlusnings-maskar för bibliotek"
+
+#: ../src/cdemu.py:856
+msgid "displays version information"
+msgstr "visa versionsinformation"
+
+#~ msgid " - Name: %s"
+#~ msgstr " - Namn: %s"
+#~ msgid " - Version: %s"
+#~ msgstr " - Version: %s"
+#~ msgid " - Author: %s"
+#~ msgstr " - Upphovsman: %s"
+#~ msgid " - Multiple files support: %i"
+#~ msgstr " - Stöd för flera samtida filer: %i"
+#~ msgid " - Image files description: %s"
+#~ msgstr " - Beskrivning av avbildfiler: %s"
+#~ msgid " - Image files suffixes:"
+#~ msgstr " - Filändelser för avbildsfiler:"
+#~ msgid "Fragment information: '%s'"
+#~ msgstr "Fragmentsinformation: '%s'"
+#~ msgid " - Interface: %s"
+#~ msgstr " - Gränssnitt: %s"
+#~ msgid " - Data files suffixes:"
+#~ msgstr " - Filändelser för data-filer:"
+#~ msgid "[parser_id]"
+#~ msgstr "[analyserings_id]"
+#~ msgid "[fragment_id]"
+#~ msgstr "[fragment_id]"
+
