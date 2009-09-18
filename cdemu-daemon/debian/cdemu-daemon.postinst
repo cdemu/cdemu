@@ -1,0 +1,34 @@
+#!/bin/sh
+# postinst script for cdemu-daemon
+#
+
+myerror ()
+{
+	echo "ERROR: $1" >&2
+	exit 1
+}
+
+mywarning ()
+{
+	echo "WARNING: $1" >&2
+}
+
+case "$1" in
+    configure)
+        # Set GID on cdemu daemon
+        dpkg-statoverride --update --add root cdemu 2755 "/usr/bin/cdemud" || mywarning "Adding statoverride failed."
+    ;;
+
+    abort-upgrade|abort-remove|abort-deconfigure)
+    ;;
+
+    *)
+        echo "postinst called with unknown argument \`$1'" >&2
+        exit 1
+    ;;
+esac
+
+#DEBHELPER#
+
+exit 0
+

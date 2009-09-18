@@ -1,0 +1,15 @@
+[Desktop Entry]
+Version=1.0
+Type=Application
+Name=CDEmu daemon session launcher
+Name[fr]=CDEmu (daemon) - Lanceur de session
+Comment=Launches the CDEmu daemon in session mode
+Comment[fr]=Lance le daemon CDEmu en mode session
+NoDisplay=true
+TryExec=/usr/lib/cdemu-daemon/cdemu-daemon.session
+Exec=/usr/lib/cdemu-daemon/cdemu-daemon.session
+Icon=gcdemu
+Terminal=false
+StartupNotify=true
+Categories=System;
+

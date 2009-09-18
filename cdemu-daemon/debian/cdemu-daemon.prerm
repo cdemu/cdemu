@@ -1,0 +1,42 @@
+#!/bin/sh
+# prerm script for cdemu-daemon
+#
+
+myerror ()
+{
+	echo "ERROR: $1" >&2
+	exit 1
+}
+
+mywarning ()
+{
+	echo "WARNING: $1" >&2
+}
+
+case "$1" in
+    remove|upgrade|deconfigure)
+        # Source config
+        test -f /etc/default/cdemu-daemon && . /etc/default/cdemu-daemon
+
+        # Kill any session instances of cdemu-daemon running.
+        if [ "${LOAD_DAEMON}" != "0" ]; then
+            pgrep \^cdemud\$ && killall "cdemud"
+        fi
+
+        # Unset GID on cdemu daemon
+        dpkg-statoverride --remove "/usr/bin/cdemud" || mywarning "Removing statoverride failed."
+    ;;
+
+    failed-upgrade)
+    ;;
+
+    *)
+        echo "prerm called with unknown argument \`$1'" >&2
+        exit 1
+    ;;
+esac
+
+#DEBHELPER#
+
+exit 0
+
