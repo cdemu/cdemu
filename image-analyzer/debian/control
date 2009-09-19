@@ -3,14 +3,14 @@ Section: utils
 Priority: optional
 Homepage: http://cdemu.sourceforge.net/
 Maintainer: Henrik Stokseth <henrik@hw0.org>
-Build-Depends: libgtk2.0-dev, libgtkextra-x11-2.0-dev, libmirage2-dev (>= 1.1.0), 
+Build-Depends: libgtk2.0-dev, libgtkextra-x11-2.0-dev, libmirage2-dev (>= 1.2.0), 
  quilt, debhelper (>= 7), autotools-dev
 Standards-Version: 3.8.0
 
 
 Package: mirage-image-analyzer
 Architecture: any
-Depends: libmirage2 (>= 1.1.0), ${shlibs:Depends}, ${misc:Depends}
+Depends: libmirage2 (>= 1.2.0), ${shlibs:Depends}, ${misc:Depends}
 Description: Mirage Image Analyzer
  Image Analyzer is a simple Gtk+ application that displays tree structure 
  of disc image created by libMirage.
