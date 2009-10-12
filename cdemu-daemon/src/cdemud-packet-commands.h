@@ -203,7 +203,7 @@ struct GET_EVENT_STATUS_NOTIFICATION_CDB {
     
     guint8  __dummy3__[2];
     
-    #if BIGF_ENDIAN_BITFIELD
+    #if BIG_ENDIAN_BITFIELD
         guint8  __dummy5__  : 1;
         guint8  dev_busy    : 1;
         guint8  multi_init  : 1;
@@ -243,7 +243,7 @@ struct GET_EVENT_STATUS_NOTIFICATION_Header {
         guint8  nea         : 1;
     #endif
     
-    #if BIGF_ENDIAN_BITFIELD
+    #if BIG_ENDIAN_BITFIELD
         guint8  __dummy5__  : 1;
         guint8  dev_busy    : 1;
         guint8  multi_init  : 1;
