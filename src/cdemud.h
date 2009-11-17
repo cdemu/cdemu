@@ -35,8 +35,6 @@
 #include <sys/ioctl.h>
 #include <sys/time.h>
 
-#include <sysfs/libsysfs.h>
-
 #include <ao/ao.h>
 
 #include <glib-object.h>

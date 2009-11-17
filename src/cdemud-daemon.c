@@ -209,26 +209,17 @@ static gboolean __cdemud_daemon_build_device_mapping_callback (gpointer data) {
             /* FIXME: until we figure how to get SCSI CD-ROM and SCSI Generic Device
                device paths directly from kernel, we'll have to live with parsing of the
                sysfs dir :/ */
-            struct sysfs_device *sysfs_dev = NULL;
-            gchar *scsi_bus_id = g_strdup_printf("%i:%i:%i:%i", id[0], id[1], id[2], id[3]);
-        
-            sysfs_dev = sysfs_open_device("scsi", scsi_bus_id);
-            g_free(scsi_bus_id);
-            
-            if (!sysfs_dev) {
-                CDEMUD_DEBUG(dev, DAEMON_DEBUG_WARNING, "%s: sysfs device for device #%i could not be opened; device mapping info for this device will not be available\n", __debug__, i);
-                continue;
-            }
-            
-            /* Actually, we use sysfs only to get ourselves the device path (for
-               example, if sysfs is not mounted under /sys, etc.). For the rest,
-               we'll use GDir and its content listing */
-            GDir *dir_dev = g_dir_open(sysfs_dev->path, 0, NULL);
-            const gchar *entry_name = NULL;
+            gchar *sysfs_dev_path = g_strdup_printf("/sys/bus/scsi/devices/%i:%i:%i:%i", id[0], id[1], id[2], id[3]);
+            GDir *dir_dev = g_dir_open(sysfs_dev_path, 0, NULL);
+
             gchar path_sr[16] = "";
             gchar path_sg[16] = "";
-                
-            if (dir_dev) {
+            
+            if (!dir_dev) {
+                CDEMUD_DEBUG(dev, DAEMON_DEBUG_WARNING, "%s: sysfs device for device #%i (%s) could not be opened; device mapping info for this device will not be available\n", __debug__, i, sysfs_dev_path);
+            } else {
+                /* Iterate through sysfs dir */
+                const gchar *entry_name;
                 while ((entry_name = g_dir_read_name(dir_dev))) {
                     /* SCSI CD-ROM device */
                     if (!strlen(path_sr)) {
@@ -237,7 +228,7 @@ static gboolean __cdemud_daemon_build_device_mapping_callback (gpointer data) {
                         }
                     
                         if (!g_ascii_strcasecmp(entry_name, "block")) {
-                            gchar *dirpath = g_build_filename(sysfs_dev->path, entry_name, NULL);
+                            gchar *dirpath = g_build_filename(sysfs_dev_path, entry_name, NULL);
                             GDir *tmp_dir = g_dir_open(dirpath, 0, NULL);
                             const gchar *tmp_sr = g_dir_read_name(tmp_dir);
                                                 
@@ -256,7 +247,7 @@ static gboolean __cdemud_daemon_build_device_mapping_callback (gpointer data) {
                         }
 
                         if (!g_ascii_strcasecmp(entry_name, "generic")) {
-                            gchar *symlink = g_build_filename(sysfs_dev->path, entry_name, NULL);
+                            gchar *symlink = g_build_filename(sysfs_dev_path, entry_name, NULL);
                             gchar *tmp_path = g_file_read_link(symlink, NULL);
                             gchar *tmp_sg = g_path_get_basename(tmp_path);
                             
@@ -271,30 +262,30 @@ static gboolean __cdemud_daemon_build_device_mapping_callback (gpointer data) {
                     }
                 }
                 g_dir_close(dir_dev);
+
+                /* Actual path building */
+                gchar *fullpath_sr = NULL;
+                gchar *fullpath_sg = NULL;
+                
+                if (strlen(path_sr)) {
+                    fullpath_sr = g_strconcat("/dev/", path_sr, NULL);
+                } else {
+                    CDEMUD_DEBUG(dev, DAEMON_DEBUG_WARNING, "%s: device mapping (SCSI CD-ROM) for device #%i could not be determined; device mapping info for this device will not be available\n", __debug__, i);
+                }
+                
+                if (strlen(path_sg)) {
+                    fullpath_sg = g_strconcat("/dev/", path_sg, NULL);
+                } else {
+                    CDEMUD_DEBUG(dev, DAEMON_DEBUG_WARNING, "%s: device mapping (SCSI generic) for device #%i could not be determined; device mapping info for this device will not be available\n", __debug__, i);
+                }
+                
+                cdemud_device_set_mapping(CDEMUD_DEVICE(dev), fullpath_sr, fullpath_sg, NULL);
+                
+                g_free(fullpath_sr);
+                g_free(fullpath_sg);
             }
 
-            sysfs_close_device(sysfs_dev);
-
-            /* Actual path building */
-            gchar *fullpath_sr = NULL;
-            gchar *fullpath_sg = NULL;
-            
-            if (strlen(path_sr)) {
-                fullpath_sr = g_strconcat("/dev/", path_sr, NULL);
-            } else {
-                CDEMUD_DEBUG(dev, DAEMON_DEBUG_WARNING, "%s: device mapping (SCSI CD-ROM) for device #%i could not be determined; device mapping info for this device will not be available\n", __debug__, i);
-            }
-            
-            if (strlen(path_sg)) {
-                fullpath_sg = g_strconcat("/dev/", path_sg, NULL);
-            } else {
-                CDEMUD_DEBUG(dev, DAEMON_DEBUG_WARNING, "%s: device mapping (SCSI generic) for device #%i could not be determined; device mapping info for this device will not be available\n", __debug__, i);
-            }
-            
-            cdemud_device_set_mapping(CDEMUD_DEVICE(dev), fullpath_sr, fullpath_sg, NULL);
-            
-            g_free(fullpath_sr);
-            g_free(fullpath_sg);
+            g_free(sysfs_dev_path);
         }
     }
     
