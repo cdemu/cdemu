@@ -38,12 +38,6 @@ PKG_CHECK_MODULES(libao, ao >= 0.8.0,)
 PKG_CHECK_MODULES(libdaemon, libdaemon >= 0.10)
 PKG_CHECK_MODULES(libmirage, libmirage >= 1.2.0)
 
-# libsysfs check
-AC_CHECK_LIB([sysfs], [sysfs_open_device],, AC_MSG_ERROR("*** libsysfs library not found ***"))
-AC_CHECK_HEADERS([sysfs/libsysfs.h],, AC_MSG_ERROR("*** libsysfs headers not found ***"))
-sysfs_LIBS="-lsysfs"
-AC_SUBST(sysfs_LIBS)
-
 # Compile with more warnings
 AC_ARG_ENABLE(more-warnings,
 [  --enable-more-warnings  Maximum compiler warnings],
