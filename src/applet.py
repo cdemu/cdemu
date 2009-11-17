@@ -57,7 +57,7 @@ class gCDEmu_Applet (gnomeapplet.Applet):
             try:
                 self.__pixbuf_icon = gtk.gdk.pixbuf_new_from_file_at_size(config.image_dir + "/" + icon_name, 204, 204)
             except gobject.GError, e:
-                message = gtk.MessageDialog(None, 0, gtk.MESSAGE_ERROR, gtk.BUTTONS_CLOSE, e.message)
+                message = gtk.MessageDialog(None, 0, gtk.MESSAGE_ERROR, gtk.BUTTONS_CLOSE, e)
                 message.set_title(_("Error"))
                 message.run()
                 message.destroy()
@@ -396,7 +396,7 @@ class gCDEmu_Applet (gnomeapplet.Applet):
         except dbus.DBusException, e:
             # Display dialog only for errors other than "Service not running"
             if e.get_dbus_name() != "org.freedesktop.DBus.Error.ServiceUnknown":
-                self.__display_error(_("Failed to connect: %s") % e.message)
+                self.__display_error(_("Failed to connect: %s") % e)
             else:
                 print "Service not running"
             
@@ -406,7 +406,7 @@ class gCDEmu_Applet (gnomeapplet.Applet):
         try:
             interface_version = self.__dbus_iface.GetDaemonInterfaceVersion()
         except dbus.DBusException, e:
-            self.__display_error(_("Failed to acquire daemon interface version (this most likely means your daemon is out-of-date): %s") % e.message)
+            self.__display_error(_("Failed to acquire daemon interface version (this most likely means your daemon is out-of-date): %s") % e)
             return False
         
         # Check daemon version; we should get away with direct string comparison
@@ -422,7 +422,7 @@ class gCDEmu_Applet (gnomeapplet.Applet):
         try:
             num_devices = self.__dbus_iface.GetNumberOfDevices()
         except dbus.DBusException, e:
-            self.__display_error(_("Failed to acquire number of devices: %s") % e.message)
+            self.__display_error(_("Failed to acquire number of devices: %s") % e)
             return False
         
         # Create menu
