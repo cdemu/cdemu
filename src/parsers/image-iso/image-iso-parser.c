@@ -257,7 +257,7 @@ static gboolean __mirage_parser_iso_load_image (MIRAGE_Parser *self, gchar **fil
     mirage_object_attach_child(MIRAGE_OBJECT(self), _priv->disc, NULL);
 
     /* Set filenames */
-    mirage_disc_set_filename(MIRAGE_DISC(_priv->disc), filenames, NULL);
+    mirage_disc_set_filename(MIRAGE_DISC(_priv->disc), filenames[0], NULL);
     
     /* Session: one session (with possibly multiple tracks) */
     GObject *session = NULL;

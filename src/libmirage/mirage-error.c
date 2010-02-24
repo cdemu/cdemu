@@ -54,9 +54,9 @@ GQuark mirage_error_quark (void) {
  * </para>
  **/
 void mirage_error (gint errcode, GError **error) {
-    struct {
+    static struct {
         gint errcode;
-        gchar *errstring;
+        const gchar *errstring;
     } errors[] = {
         /* General */
         { MIRAGE_E_INVALIDARG, "Invalid argument." },

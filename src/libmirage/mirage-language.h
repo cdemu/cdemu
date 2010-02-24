@@ -100,8 +100,8 @@ gboolean mirage_language_set_langcode (MIRAGE_Language *self, gint langcode, GEr
 gboolean mirage_language_get_langcode (MIRAGE_Language *self, gint *langcode, GError **error);
 
 /* Field: set/get */
-gboolean mirage_language_set_pack_data (MIRAGE_Language *self, gint pack_type, gchar *pack_data, gint length, GError **error);
-gboolean mirage_language_get_pack_data (MIRAGE_Language *self, gint pack_type, gchar **pack_data, gint *length, GError **error);
+gboolean mirage_language_set_pack_data (MIRAGE_Language *self, gint pack_type, const gchar *pack_data, gint length, GError **error);
+gboolean mirage_language_get_pack_data (MIRAGE_Language *self, gint pack_type, const gchar **pack_data, gint *length, GError **error);
 
 G_END_DECLS
 

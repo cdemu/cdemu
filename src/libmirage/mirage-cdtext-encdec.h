@@ -50,7 +50,7 @@ G_BEGIN_DECLS
  *
  * Returns: %TRUE on success, %FALSE on failure
  **/
-typedef gboolean (*MIRAGE_CDTextDataCallback) (gint langcode, gint type, gint track, guint8 *data, gint data_len, gpointer user_data);
+typedef gboolean (*MIRAGE_CDTextDataCallback) (gint langcode, gint type, gint track, const guint8 *data, gint data_len, gpointer user_data);
 
 /******************************************************************************\
  *                               CD-TEXT EncDec                              *
@@ -83,7 +83,7 @@ GType mirage_cdtext_encdec_get_type (void);
 /* Public API: Encoder */
 gboolean mirage_cdtext_encoder_init (MIRAGE_CDTextEncDec *self, guint8 *buffer, gint buflen, GError **error);
 gboolean mirage_cdtext_encoder_set_block_info (MIRAGE_CDTextEncDec *self, gint block, gint langcode, gint charset, gint copyright, GError **error);
-gboolean mirage_cdtext_encoder_add_data (MIRAGE_CDTextEncDec *self, gint langcode, gint type, gint track, guint8 *data, gint data_len, GError **error);
+gboolean mirage_cdtext_encoder_add_data (MIRAGE_CDTextEncDec *self, gint langcode, gint type, gint track, const guint8 *data, gint data_len, GError **error);
 gboolean mirage_cdtext_encoder_encode (MIRAGE_CDTextEncDec *self, guint8 **buffer, gint *buflen, GError **error);
 
 /* Public API: Decoder */

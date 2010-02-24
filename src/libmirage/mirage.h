@@ -31,7 +31,6 @@
 
 #include "mirage-version.h"
 
-#include "mirage-types.h"
 #include "mirage-debug.h"
 #include "mirage-error.h"
 #include "mirage-plugin.h"
@@ -44,15 +43,15 @@ G_BEGIN_DECLS
  * @user_data: user data passed to iteration function
  *
  * <para>
- * Callback function type used in libMirage's iteration functions. @data is data 
- * that the iteration function iterates for. Depending on the iteration function, 
- * it may need to be freed or released. @user_data is user data passed to iteration
+ * Callback function type used in libMirage's iteration functions. A pointer to
+ * data buffer is stored in @data; the buffer usually belongs to the object and
+ * therefore should not be modified. @user_data is user data passed to iteration
  * function.
  * </para>
  *
  * Returns: %TRUE on success, otherwise %FALSE
  **/
-typedef gboolean (*MIRAGE_CallbackFunction) (gpointer data, gpointer user_data);
+typedef gboolean (*MIRAGE_CallbackFunction) (const gpointer data, gpointer user_data);
 
 /**
  * MIRAGE_PasswordFunction:
@@ -94,7 +93,7 @@ gboolean libmirage_set_password_function (MIRAGE_PasswordFunction func, gpointer
 gchar *libmirage_obtain_password (GError **error);
 
 GObject *libmirage_create_disc (gchar **filenames, GObject *debug_context, GHashTable *params, GError **error);
-GObject *libmirage_create_fragment (GType fragment_interface, gchar *filename, GError **error);
+GObject *libmirage_create_fragment (GType fragment_interface, const gchar *filename, GError **error);
 
 gboolean libmirage_for_each_parser (MIRAGE_CallbackFunction func, gpointer user_data, GError **error);
 gboolean libmirage_for_each_fragment (MIRAGE_CallbackFunction func, gpointer user_data, GError **error);

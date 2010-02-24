@@ -160,16 +160,6 @@ following functionality:
 @Returns: 
 
 
-<!-- ##### FUNCTION mirage_helper_match_suffixes ##### -->
-<para>
-
-</para>
-
-@filename: 
-@suffixes: 
-@Returns: 
-
-
 <!-- ##### FUNCTION mirage_helper_strcasecmp ##### -->
 <para>
 

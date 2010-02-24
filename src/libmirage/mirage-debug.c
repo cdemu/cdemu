@@ -52,7 +52,7 @@ typedef struct {
  *
  * Returns: %TRUE on success, %FALSE on failure
  **/
-gboolean mirage_debug_context_set_domain (MIRAGE_DebugContext *self, gchar *domain, GError **error) {
+gboolean mirage_debug_context_set_domain (MIRAGE_DebugContext *self, const gchar *domain, GError **error) {
     MIRAGE_DebugContextPrivate *_priv = MIRAGE_DEBUG_CONTEXT_GET_PRIVATE(self);
     /* Set domain */
     g_free(_priv->domain);
@@ -63,7 +63,7 @@ gboolean mirage_debug_context_set_domain (MIRAGE_DebugContext *self, gchar *doma
 /**
  * mirage_debug_context_get_domain:
  * @self: a #MIRAGE_DebugContext
- * @domain: location to store domain name
+ * @domain: location to store pointer to domain name buffer
  * @error: location to store error, or %NULL
  *
  * <para>
@@ -71,19 +71,16 @@ gboolean mirage_debug_context_set_domain (MIRAGE_DebugContext *self, gchar *doma
  * </para>
  *
  * <para>
- * A copy of domain name is stored into @domain; it should be freed with
- * g_free() when no longer needed.
+ * Pointer to buffer containing the domain name is stored into @domain; buffer
+ * belongs to the object and therefore should not be modified.
  * </para>
  *
  * Returns: %TRUE on success, %FALSE on failure
  **/
-gboolean mirage_debug_context_get_domain (MIRAGE_DebugContext *self, gchar **domain, GError **error) {
+gboolean mirage_debug_context_get_domain (MIRAGE_DebugContext *self, const gchar **domain, GError **error) {
     MIRAGE_DebugContextPrivate *_priv = MIRAGE_DEBUG_CONTEXT_GET_PRIVATE(self);
     MIRAGE_CHECK_ARG(domain);
-    /* Return domain, if it's set */
-    if (_priv->domain) {
-        *domain = g_strdup(_priv->domain);
-    }
+    *domain = _priv->domain;
     return TRUE;
 }
 
@@ -100,7 +97,7 @@ gboolean mirage_debug_context_get_domain (MIRAGE_DebugContext *self, gchar **dom
  *
  * Returns: %TRUE on success, %FALSE on failure
  **/
-gboolean mirage_debug_context_set_name (MIRAGE_DebugContext *self, gchar *name, GError **error) {
+gboolean mirage_debug_context_set_name (MIRAGE_DebugContext *self, const gchar *name, GError **error) {
     MIRAGE_DebugContextPrivate *_priv = MIRAGE_DEBUG_CONTEXT_GET_PRIVATE(self);
     /* Set name */
     g_free(_priv->name);
@@ -111,7 +108,7 @@ gboolean mirage_debug_context_set_name (MIRAGE_DebugContext *self, gchar *name, 
 /**
  * mirage_debug_context_get_name:
  * @self: a #MIRAGE_DebugContext
- * @name: location to store name
+ * @name: location to store pointer to name buffer
  * @error: location to store error, or %NULL
  *
  * <para>
@@ -119,19 +116,16 @@ gboolean mirage_debug_context_set_name (MIRAGE_DebugContext *self, gchar *name, 
  * </para>
  *
  * <para>
- * A copy of name is stored into @name; it should be freed with g_free() when 
- * no longer needed.
+ * Pointer to buffer containing the name is stored into @name; buffer
+ * belongs to the object and therefore should not be modified.
  * </para>
  *
  * Returns: %TRUE on success, %FALSE on failure
  **/
-gboolean mirage_debug_context_get_name (MIRAGE_DebugContext *self, gchar **name, GError **error) {
+gboolean mirage_debug_context_get_name (MIRAGE_DebugContext *self, const gchar **name, GError **error) {
     MIRAGE_DebugContextPrivate *_priv = MIRAGE_DEBUG_CONTEXT_GET_PRIVATE(self);
-    MIRAGE_CHECK_ARG(name);    
-    /* Return name, if it's set */
-    if (_priv->name) {
-        *name= g_strdup(_priv->name);
-    }
+    MIRAGE_CHECK_ARG(name);
+    *name = _priv->name;
     return TRUE;
 }
 

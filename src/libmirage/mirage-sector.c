@@ -819,7 +819,8 @@ gboolean mirage_sector_get_sector_type (MIRAGE_Sector *self, gint *type, GError 
  *
  * <para>
  * Retrieves sector's sync pattern. The pointer to appropriate location in
- * sector's data buffer is stored into @ret_buf; as such, it should not be freed.
+ * sector's data buffer is stored into @ret_buf; therefore, the buffer should not
+ * be modified.
  * </para>
  *
  * <para>
@@ -828,7 +829,7 @@ gboolean mirage_sector_get_sector_type (MIRAGE_Sector *self, gint *type, GError 
  *
  * Returns: %TRUE on success, %FALSE on failure
  **/
-gboolean mirage_sector_get_sync (MIRAGE_Sector *self, guint8 **ret_buf, gint *ret_len, GError **error) {
+gboolean mirage_sector_get_sync (MIRAGE_Sector *self, const guint8 **ret_buf, gint *ret_len, GError **error) {
     MIRAGE_SectorPrivate *_priv = MIRAGE_SECTOR_GET_PRIVATE(self);
     gboolean succeeded = TRUE;
     guint8 *buf = NULL;
@@ -878,7 +879,8 @@ gboolean mirage_sector_get_sync (MIRAGE_Sector *self, guint8 **ret_buf, gint *re
  *
  * <para>
  * Retrieves sector's header. The pointer to appropriate location in
- * sector's data buffer is stored into @ret_buf; as such, it should not be freed.
+ * sector's data buffer is stored into @ret_buf; therefore, the buffer should not
+ * be modified.
  * </para>
  *
  * <para>
@@ -887,7 +889,7 @@ gboolean mirage_sector_get_sync (MIRAGE_Sector *self, guint8 **ret_buf, gint *re
  *
  * Returns: %TRUE on success, %FALSE on failure
  **/
-gboolean mirage_sector_get_header (MIRAGE_Sector *self, guint8 **ret_buf, gint *ret_len, GError **error) {
+gboolean mirage_sector_get_header (MIRAGE_Sector *self, const guint8 **ret_buf, gint *ret_len, GError **error) {
     MIRAGE_SectorPrivate *_priv = MIRAGE_SECTOR_GET_PRIVATE(self);
     gboolean succeeded = TRUE;
     guint8 *buf = NULL;
@@ -937,7 +939,8 @@ gboolean mirage_sector_get_header (MIRAGE_Sector *self, guint8 **ret_buf, gint *
  *
  * <para>
  * Retrieves sector's subheader. The pointer to appropriate location in
- * sector's data buffer is stored into @ret_buf; as such, it should not be freed.
+ * sector's data buffer is stored into @ret_buf;  therefore, the buffer should not
+ * be modified.
  * </para>
  *
  * <para>
@@ -946,7 +949,7 @@ gboolean mirage_sector_get_header (MIRAGE_Sector *self, guint8 **ret_buf, gint *
  *
  * Returns: %TRUE on success, %FALSE on failure
  **/
-gboolean mirage_sector_get_subheader (MIRAGE_Sector *self, guint8 **ret_buf, gint *ret_len, GError **error) {
+gboolean mirage_sector_get_subheader (MIRAGE_Sector *self, const guint8 **ret_buf, gint *ret_len, GError **error) {
     MIRAGE_SectorPrivate *_priv = MIRAGE_SECTOR_GET_PRIVATE(self);
     gboolean succeeded = TRUE;
     guint8 *buf = NULL;
@@ -993,12 +996,13 @@ gboolean mirage_sector_get_subheader (MIRAGE_Sector *self, guint8 **ret_buf, gin
  *
  * <para>
  * Retrieves sector's user data. The pointer to appropriate location in
- * sector's data buffer is stored into @ret_buf; as such, it should not be freed.
+ * sector's data buffer is stored into @ret_buf;  therefore, the buffer should not
+ * be modified.
  * </para>
  *
  * Returns: %TRUE on success, %FALSE on failure
  **/
-gboolean mirage_sector_get_data (MIRAGE_Sector *self, guint8 **ret_buf, gint *ret_len, GError **error) {
+gboolean mirage_sector_get_data (MIRAGE_Sector *self, const guint8 **ret_buf, gint *ret_len, GError **error) {
     MIRAGE_SectorPrivate *_priv = MIRAGE_SECTOR_GET_PRIVATE(self);
     gboolean succeeded = TRUE;
     guint8 *buf = NULL;
@@ -1067,7 +1071,8 @@ gboolean mirage_sector_get_data (MIRAGE_Sector *self, guint8 **ret_buf, gint *re
  *
  * <para>
  * Retrieves sector's EDC/ECC data. The pointer to appropriate location in
- * sector's data buffer is stored into @ret_buf; as such, it should not be freed.
+ * sector's data buffer is stored into @ret_buf;  therefore, the buffer should not
+ * be modified.
  * </para>
  *
  * <para>
@@ -1076,7 +1081,7 @@ gboolean mirage_sector_get_data (MIRAGE_Sector *self, guint8 **ret_buf, gint *re
  *
  * Returns: %TRUE on success, %FALSE on failure
  **/
-gboolean mirage_sector_get_edc_ecc (MIRAGE_Sector *self, guint8 **ret_buf, gint *ret_len, GError **error) {
+gboolean mirage_sector_get_edc_ecc (MIRAGE_Sector *self, const guint8 **ret_buf, gint *ret_len, GError **error) {
     MIRAGE_SectorPrivate *_priv = MIRAGE_SECTOR_GET_PRIVATE(self);
     gboolean succeeded = TRUE;
     guint8 *buf = NULL;
@@ -1134,7 +1139,7 @@ gboolean mirage_sector_get_edc_ecc (MIRAGE_Sector *self, guint8 **ret_buf, gint 
  * <para>
  * Retrieves sector's subchannel. @type must be one of #MIRAGE_Sector_SubchannelFormat.
  * The pointer to appropriate location in sector's data buffer is stored into 
- * @ret_buf; as such, it should not be freed.
+ * @ret_buf;  therefore, the buffer should not be modified.
  * </para>
  *
  * <para>
@@ -1143,7 +1148,7 @@ gboolean mirage_sector_get_edc_ecc (MIRAGE_Sector *self, guint8 **ret_buf, gint 
  *
  * Returns: %TRUE on success, %FALSE on failure
  **/
-gboolean mirage_sector_get_subchannel (MIRAGE_Sector *self, gint format, guint8 **ret_buf, gint *ret_len, GError **error) {
+gboolean mirage_sector_get_subchannel (MIRAGE_Sector *self, gint format, const guint8 **ret_buf, gint *ret_len, GError **error) {
     MIRAGE_SectorPrivate *_priv = MIRAGE_SECTOR_GET_PRIVATE(self);
     
     /* Generate subchannel if it's not provided */
@@ -1396,7 +1401,7 @@ static gint __subchannel_generate_q (MIRAGE_Sector *self, guint8 *buf) {
             GObject *session = NULL;
             GObject *disc = NULL;
 
-            gchar *mcn = NULL;
+            const gchar *mcn = NULL;
             
             mirage_object_get_parent(MIRAGE_OBJECT(track), &session, NULL);
             mirage_object_get_parent(MIRAGE_OBJECT(session), &disc, NULL);
@@ -1407,7 +1412,6 @@ static gint __subchannel_generate_q (MIRAGE_Sector *self, guint8 *buf) {
             g_object_unref(session);
             
             mirage_helper_subchannel_q_encode_mcn(&buf[1], mcn);
-            g_free(mcn);
             buf[8] = 0; /* zero */
             /* AFRAME */
             mirage_helper_lba2msf(address + start_sector, TRUE, NULL, NULL, &buf[9]);
@@ -1424,11 +1428,10 @@ static gint __subchannel_generate_q (MIRAGE_Sector *self, guint8 *buf) {
             buf[0] = (ctl << 0x04) | 0x03; /* Mode-3 Q */
             
             /* ISRC*/
-            gchar *isrc = NULL;
+            const gchar *isrc = NULL;
             mirage_track_get_isrc(MIRAGE_TRACK(track), &isrc, NULL);
             mirage_helper_subchannel_q_encode_isrc(&buf[1], isrc);
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_SECTOR, "%s: ISRC string: %s bytes: %02X %02X %02X %02X %02X %02X %02X %02X\n", __debug__, isrc, buf[1], buf[2], buf[3], buf[4], buf[5], buf[6], buf[7], buf[8]);
-            g_free(isrc);
             /* AFRAME */
             mirage_helper_lba2msf(address + start_sector, TRUE, NULL, NULL, &buf[9]);
             buf[9] = mirage_helper_hex2bcd(buf[9]);

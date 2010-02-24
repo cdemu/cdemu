@@ -114,7 +114,7 @@ end:
  *
  * Returns: pointer to character in @filename at which the suffix starts.
  **/
-gchar *mirage_helper_get_suffix (gchar *filename) {
+gchar *mirage_helper_get_suffix (const gchar *filename) {
     return g_strrstr(filename, ".");
 }
 
@@ -129,7 +129,7 @@ gchar *mirage_helper_get_suffix (gchar *filename) {
  *
  * Returns: %TRUE if @filename contains suffix @suffix, %FALSE if not
  **/
-gboolean mirage_helper_has_suffix (gchar *filename, gchar *suffix) {
+gboolean mirage_helper_has_suffix (const gchar *filename, const gchar *suffix) {
     gchar *file_suffix = NULL;
     
     g_return_val_if_fail(filename != NULL, FALSE);
@@ -143,31 +143,6 @@ gboolean mirage_helper_has_suffix (gchar *filename, gchar *suffix) {
     }
     
     return mirage_helper_strcasecmp(file_suffix, suffix) == 0;
-}
-
-/**
- * mirage_helper_match_suffixes:
- * @filename: filename
- * @suffixes: NULL-terminated array of suffixes
- *
- * <para>
- * Checks whether @filename ends with a suffix from @suffixes.
- * </para>
- *
- * Returns: %TRUE if @filename contains suffix from @suffixes, %FALSE if not
- **/
-gboolean mirage_helper_match_suffixes (gchar *filename, gchar **suffixes) {
-    gint i;
-    g_return_val_if_fail(filename != NULL, FALSE);
-    g_return_val_if_fail(suffixes != NULL, FALSE);
-    
-    for (i = 0; suffixes[i] != NULL; i++) {
-        if (mirage_helper_has_suffix(filename, suffixes[i])) {
-            return TRUE;
-        }
-    }
-    
-    return FALSE;
 }
 
 
@@ -343,7 +318,7 @@ gint mirage_helper_msf2lba (guint8 m, guint8 s, guint8 f, gboolean diff) {
  *
  * Returns: integer representing LBA address
  **/
-gint mirage_helper_msf2lba_str (gchar *msf, gboolean diff) {
+gint mirage_helper_msf2lba_str (const gchar *msf, gboolean diff) {
     gint m, s, f;
     
     sscanf(msf, "%d:%d:%d", &m, &s, &f);
@@ -487,7 +462,7 @@ static guint16 q_crc_lut[256] = {
  *
  * Returns: CRC-16 checksum of Q subchannel data
  **/
-guint16 mirage_helper_subchannel_q_calculate_crc (guint8 *data) {
+guint16 mirage_helper_subchannel_q_calculate_crc (const guint8 *data) {
     guint16 crc = 0;
     int i;
     
@@ -507,7 +482,7 @@ guint16 mirage_helper_subchannel_q_calculate_crc (guint8 *data) {
  * Encodes MCN string @mcn into buffer @buf.
  * </para>
  **/
-void mirage_helper_subchannel_q_encode_mcn (guint8 *buf, gchar *mcn) {
+void mirage_helper_subchannel_q_encode_mcn (guint8 *buf, const gchar *mcn) {
     buf[0] = ((mcn[0] - '0') << 4)  | ((mcn[1] - '0') & 0x0F);
     buf[1] = ((mcn[2] - '0') << 4)  | ((mcn[3] - '0') & 0x0F);
     buf[2] = ((mcn[4] - '0') << 4)  | ((mcn[5] - '0') & 0x0F);
@@ -528,7 +503,7 @@ void mirage_helper_subchannel_q_encode_mcn (guint8 *buf, gchar *mcn) {
  * Decodes MCN stored in @buf into string @mcn.
  * </para>
  **/
-void mirage_helper_subchannel_q_decode_mcn (guint8 *buf, gchar *mcn) {
+void mirage_helper_subchannel_q_decode_mcn (const guint8 *buf, gchar *mcn) {
     mcn[0]  = ((buf[0] >> 4) & 0x0F) + '0';
     mcn[1]  = (buf[0] & 0x0F) + '0';
     mcn[2]  = ((buf[1] >> 4) & 0x0F) + '0';
@@ -556,7 +531,7 @@ void mirage_helper_subchannel_q_decode_mcn (guint8 *buf, gchar *mcn) {
  * Encodes ISRC string @isrc into buffer @buf.
  * </para>
  **/
-void mirage_helper_subchannel_q_encode_isrc (guint8 *buf, gchar *isrc) {
+void mirage_helper_subchannel_q_encode_isrc (guint8 *buf, const gchar *isrc) {
     guint8 d;
     
     buf[0] = mirage_helper_ascii2isrc(isrc[0]) << 2;
@@ -590,7 +565,7 @@ void mirage_helper_subchannel_q_encode_isrc (guint8 *buf, gchar *isrc) {
  * Decodes ISRC stored in @buf into string @isrc.
  * </para>
  **/
-void mirage_helper_subchannel_q_decode_isrc (guint8 *buf, gchar *isrc) {
+void mirage_helper_subchannel_q_decode_isrc (const guint8 *buf, gchar *isrc) {
     guint8 d;
     
     d = (buf[0] >> 2) & 0x3F;
@@ -630,7 +605,7 @@ void mirage_helper_subchannel_q_decode_isrc (guint8 *buf, gchar *isrc) {
  * subchannel data stored in @subchannel96.
  * </para>
  **/
-void mirage_helper_subchannel_interleave (gint subchan, guint8 *channel12, guint8 *channel96) {
+void mirage_helper_subchannel_interleave (gint subchan, const guint8 *channel12, guint8 *channel96) {
     gint i, j;
     guint8 *ptr = channel96;
     
@@ -656,7 +631,7 @@ void mirage_helper_subchannel_interleave (gint subchan, guint8 *channel12, guint
  * @channel96 and writes the resulting subhcannel data into @subchannel12.
  * </para>
  **/
-void mirage_helper_subchannel_deinterleave (gint subchan, guint8 *channel96, guint8 *channel12) {
+void mirage_helper_subchannel_deinterleave (gint subchan, const guint8 *channel96, guint8 *channel12) {
     gint i, j;
     
     for (i = 0; i < 12; i++) {
@@ -858,7 +833,7 @@ void mirage_helper_sector_edc_ecc_compute_edc_block (const guint8 *src, guint16 
  * (This is assuming all other sector data, including EDC, is already stored in sector_buffer and that sector_buffer is 2532 bytes long)
  * </para>
  **/
-void mirage_helper_sector_edc_ecc_compute_ecc_block (guint8 *src, guint32 major_count, guint32 minor_count, guint32 major_mult, guint32 minor_inc, guint8 *dest) {
+void mirage_helper_sector_edc_ecc_compute_ecc_block (const guint8 *src, guint32 major_count, guint32 minor_count, guint32 major_mult, guint32 minor_inc, guint8 *dest) {
     guint32 size = major_count * minor_count;
     guint32 major = 0, minor = 0;
     

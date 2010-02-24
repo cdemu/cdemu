@@ -86,9 +86,8 @@ G_BEGIN_DECLS
 gchar *mirage_helper_find_data_file (const gchar *filename, const gchar *path);
 
 /* File suffix retrieval and matching */
-gchar *mirage_helper_get_suffix (gchar *filename);
-gboolean mirage_helper_has_suffix (gchar *filename, gchar *suffix);
-gboolean mirage_helper_match_suffixes (gchar *filename, gchar **suffixes);
+gchar *mirage_helper_get_suffix (const gchar *filename);
+gboolean mirage_helper_has_suffix (const gchar *filename, const gchar *suffix);
 
 /* Case-insensitive string comparison; works on UTF-8 strings */
 gint mirage_helper_strcasecmp (const gchar *str1, const gchar *str2);
@@ -98,7 +97,7 @@ gint mirage_helper_strncasecmp (const gchar *str1, const gchar *str2, gint len);
 void mirage_helper_lba2msf (gint lba, gboolean diff, guint8 *m, guint8 *s, guint8 *f);
 gchar *mirage_helper_lba2msf_str (gint lba, gboolean diff);
 gint mirage_helper_msf2lba (guint8 m, guint8 s, guint8 f, gboolean diff);
-gint mirage_helper_msf2lba_str (gchar *msf, gboolean diff);
+gint mirage_helper_msf2lba_str (const gchar *msf, gboolean diff);
 
 /* Hex/BCD utility functions */
 gint mirage_helper_hex2bcd (gint hex);
@@ -109,11 +108,11 @@ guint8 mirage_helper_ascii2isrc (gchar c);
 gchar mirage_helper_isrc2ascii (guint8 c);
 
 /* Subchannel utility functions */
-guint16 mirage_helper_subchannel_q_calculate_crc (guint8 *data);
-void mirage_helper_subchannel_q_encode_mcn (guint8 *buf, gchar *mcn);
-void mirage_helper_subchannel_q_decode_mcn (guint8 *buf, gchar *mcn);
-void mirage_helper_subchannel_q_encode_isrc (guint8 *buf, gchar *isrc);
-void mirage_helper_subchannel_q_decode_isrc (guint8 *buf, gchar *isrc);
+guint16 mirage_helper_subchannel_q_calculate_crc (const guint8 *data);
+void mirage_helper_subchannel_q_encode_mcn (guint8 *buf, const gchar *mcn);
+void mirage_helper_subchannel_q_decode_mcn (const guint8 *buf, gchar *mcn);
+void mirage_helper_subchannel_q_encode_isrc (guint8 *buf, const gchar *isrc);
+void mirage_helper_subchannel_q_decode_isrc (const guint8 *buf, gchar *isrc);
 
 /**
  * MIRAGE_SubChannel:
@@ -139,12 +138,12 @@ typedef enum {
     SUBCHANNEL_P = 7,
 } MIRAGE_SubChannel;
 
-void mirage_helper_subchannel_interleave (gint subchan, guint8 *channel12, guint8 *channel96);
-void mirage_helper_subchannel_deinterleave (gint subchan, guint8 *channel96, guint8 *channel12);
+void mirage_helper_subchannel_interleave (gint subchan, const guint8 *channel12, guint8 *channel96);
+void mirage_helper_subchannel_deinterleave (gint subchan, const guint8 *channel96, guint8 *channel12);
 
 /* EDC/ECC utility functions */
 void mirage_helper_sector_edc_ecc_compute_edc_block (const guint8 *src, guint16 size, guint8 *dest);
-void mirage_helper_sector_edc_ecc_compute_ecc_block (guint8 *src, guint32 major_count, guint32 minor_count, guint32 major_mult, guint32 minor_inc, guint8 *dest);
+void mirage_helper_sector_edc_ecc_compute_ecc_block (const guint8 *src, guint32 major_count, guint32 minor_count, guint32 major_mult, guint32 minor_inc, guint8 *dest);
 
 G_END_DECLS
 

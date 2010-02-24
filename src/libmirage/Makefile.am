@@ -49,7 +49,6 @@ libmirageinclude_HEADERS = \
     mirage-sector.h \
     mirage-session.h \
     mirage-track.h \
-    mirage-types.h \
     mirage-utils.h \
     mirage-version.h
 

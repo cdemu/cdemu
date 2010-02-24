@@ -82,8 +82,8 @@ GType mirage_parser_get_type (void);
 /******************************************************************************\
  *                                 Public API                                 *
 \******************************************************************************/
-void mirage_parser_generate_parser_info (MIRAGE_Parser *self, gchar *id, gchar *name, gchar *description, gchar *mime_type);
-gboolean mirage_parser_get_parser_info (MIRAGE_Parser *self, MIRAGE_ParserInfo **parser_info, GError **error);
+void mirage_parser_generate_parser_info (MIRAGE_Parser *self, const gchar *id, const gchar *name, const gchar *description, const gchar *mime_type);
+gboolean mirage_parser_get_parser_info (MIRAGE_Parser *self, const MIRAGE_ParserInfo **parser_info, GError **error);
 
 gboolean mirage_parser_load_image (MIRAGE_Parser *self, gchar **filenames, GObject **disc, GError **error);
 
@@ -91,7 +91,7 @@ gint mirage_parser_guess_medium_type (MIRAGE_Parser *self, GObject *disc);
 gboolean mirage_parser_add_redbook_pregap (MIRAGE_Parser *self, GObject *disc, GError **error);
 
 gboolean mirage_parser_set_params (MIRAGE_Parser *self, GHashTable *params, GError **error);
-gboolean mirage_parser_get_param_string (MIRAGE_Parser *self, gchar *name, const gchar **value, GError **error);
+gboolean mirage_parser_get_param_string (MIRAGE_Parser *self, const gchar *name, const gchar **value, GError **error);
 
 
 G_END_DECLS
