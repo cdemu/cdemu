@@ -486,8 +486,9 @@ gboolean cdemud_daemon_enum_daemon_debug_masks (CDEMUD_Daemon *self, GPtrArray *
         { "DAEMON_DEBUG_MMC", DAEMON_DEBUG_MMC },
         { "DAEMON_DEBUG_DELAY", DAEMON_DEBUG_DELAY },
         { "DAEMON_DEBUG_AUDIOPLAY", DAEMON_DEBUG_AUDIOPLAY },
+        { "DAEMON_DEBUG_KERNEL_IO", DAEMON_DEBUG_KERNEL_IO },
     };
-    
+
     *masks = __encode_masks(dbg_masks, G_N_ELEMENTS(dbg_masks));
     return TRUE;
 }
