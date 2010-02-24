@@ -699,7 +699,7 @@ gboolean mirage_cdtext_decoder_init (MIRAGE_CDTextEncDec *self, guint8 *buffer, 
                 /*g_debug("%s: block: %i; pack type: 0x%X; track: %i; len: %i; data: %s\n", __debug__, block, _priv->cur_pack->pack_type, cur_track, tmp_len, tmp_buffer);*/
                 
                 /* Pack the data and add it to the list; as simple as that... */
-                GValueArray *pack_data = __create_value_array(block, _priv->cur_pack->pack_type, cur_track, g_memdup(tmp_buffer, tmp_len), tmp_len); 
+                GValueArray *pack_data = __create_value_array(block, _priv->cur_pack->pack_type, cur_track, tmp_buffer, tmp_len); 
                 _priv->blocks[block].packs_list = g_list_insert_sorted(_priv->blocks[block].packs_list, pack_data, (GCompareFunc)__sort_pack_data);
 
                 /* Clear the temporary buffer */
