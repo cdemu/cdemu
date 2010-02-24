@@ -26,6 +26,9 @@
 #include <linux/platform_device.h>
 #include <linux/miscdevice.h>
 #include <linux/poll.h>
+#ifdef CONFIG_COMPAT
+#include <linux/compat.h>
+#endif
 #include <asm/uaccess.h>
 #include <scsi/scsi.h>
 #include <scsi/scsi_host.h>
@@ -671,7 +674,7 @@ static ssize_t vhba_ctl_write(struct file *file, const char __user *buf, size_t 
         return ret;
 }
 
-static int vhba_ctl_ioctl (struct inode *inode, struct file *file, unsigned int cmd, unsigned long arg)
+static long vhba_ctl_ioctl (struct file *file, unsigned int cmd, unsigned long arg)
 {
         struct vhba_device *vdev = file->private_data;
         struct vhba_host *vhost;
@@ -703,6 +706,15 @@ static int vhba_ctl_ioctl (struct inode *inode, struct file *file, unsigned int 
     
         return -ENOTTY;
 }
+
+#ifdef CONFIG_COMPAT
+static long vhba_ctl_compat_ioctl (struct file *file, unsigned int cmd, unsigned long arg)
+{
+	unsigned long compat_arg = (unsigned long)compat_ptr(arg);
+
+	return vhba_ctl_ioctl(file, cmd, compat_arg);
+}	
+#endif
 
 static unsigned int vhba_ctl_poll(struct file *file, poll_table *wait)
 {
@@ -781,7 +793,10 @@ static struct file_operations vhba_ctl_fops = {
         .read = vhba_ctl_read,
         .write = vhba_ctl_write,
         .poll = vhba_ctl_poll,
-        .ioctl = vhba_ctl_ioctl,
+        .unlocked_ioctl = vhba_ctl_ioctl,
+#ifdef CONFIG_COMPAT
+	.compat_ioctl = vhba_ctl_compat_ioctl,
+#endif
 };
 
 static struct miscdevice vhba_miscdev = {
