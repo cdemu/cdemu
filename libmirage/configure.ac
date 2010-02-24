@@ -141,6 +141,7 @@ AC_CONFIG_FILES([
     src/parsers/image-iso/Makefile
     src/parsers/image-mds/Makefile
     src/parsers/image-nrg/Makefile
-    src/parsers/image-toc/Makefile])
+    src/parsers/image-toc/Makefile
+    src/parsers/image-xcdroast/Makefile])
 
 AC_OUTPUT
