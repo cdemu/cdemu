@@ -1210,10 +1210,10 @@ static gboolean __check_toc_file (MIRAGE_Parser *self, const gchar *filename) {
         
         /* Try to match the rule */
         if (g_regex_match(_priv->regex_header_ptr, line_str, 0, &match_info)) {
-            /* Free match info */
-            g_match_info_free(match_info);
             succeeded = TRUE;
         }
+        /* Free match info */
+        g_match_info_free(match_info);
         
         g_free(line_str);
                 
