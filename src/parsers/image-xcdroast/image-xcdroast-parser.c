@@ -739,10 +739,9 @@ static gboolean __check_toc_file (MIRAGE_Parser *self, const gchar *filename) {
             }
             
             g_free(comment);
-
-            /* Free match info */
-            g_match_info_free(match_info);
         }
+        /* Free match info */
+        g_match_info_free(match_info);
         
         g_free(line_str);
                 
@@ -847,6 +846,7 @@ static void __mirage_parser_xcdroast_finalize (GObject *obj) {
     g_free(_priv->xinf_track.file);
     g_free(_priv->xinf_track.title);
     g_free(_priv->xinf_track.artist);
+    g_free(_priv->xinf_track.cd_title);
     g_free(_priv->xinf_track.cd_artist);
     g_free(_priv->xinf_track.cd_discid);
     
