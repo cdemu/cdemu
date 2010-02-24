@@ -32,6 +32,14 @@
 
 G_BEGIN_DECLS
 
+typedef struct {
+    gint number;
+    gint type;
+    gint size;
+    gint startsec;
+    gchar *file;
+} TOC_Track;
+
 GTypeModule *global_module;
 
 G_END_DECLS
