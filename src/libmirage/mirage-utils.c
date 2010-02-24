@@ -27,7 +27,7 @@
 /**
  * mirage_helper_find_data_file:
  * @filename: declared filename
- * @path: location to store output filename, or %NULL
+ * @path: path where to look for file (can be a filename)
  *
  * <para>
  * Attempts to find a file with filename @filename and path @path. @filename can
