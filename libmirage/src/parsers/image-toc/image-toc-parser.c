@@ -67,6 +67,9 @@ typedef struct {
     GRegex *regex_language;
     GRegex *regex_langdata;
     GRegex *regex_binary;
+
+    /* Header matching for TOC file verification */
+    GRegex *regex_header_ptr; /* Pointer, do not free! */
 } MIRAGE_Parser_TOCPrivate;
 
 /******************************************************************************\
@@ -872,6 +875,11 @@ static void __mirage_parser_toc_init_regex_parser (MIRAGE_Parser *self) {
     APPEND_REGEX_RULE(_priv->regex_rules, "^\\s*\\/{2}(?<comment>.+)$", __mirage_parser_toc_callback_comment);
 
     APPEND_REGEX_RULE(_priv->regex_rules, "^\\s*(?<type>(CD_DA|CD_ROM_XA|CD_ROM|CD_I))", __mirage_parser_toc_callback_session_type);
+    /* Store pointer to header's regex rule */
+    GList *elem_header = g_list_last(_priv->regex_rules);
+    MIRAGE_RegexRule *rule_header = elem_header->data;
+    _priv->regex_header_ptr = rule_header->regex;
+    
     APPEND_REGEX_RULE(_priv->regex_rules, "^\\s*CATALOG\\s*\"(?<catalog>\\d{13,13})\"", __mirage_parser_toc_callback_catalog);
 
     APPEND_REGEX_RULE(_priv->regex_rules, "^\\s*TRACK\\s*(?<type>(AUDIO|MODE1_RAW|MODE1|MODE2_FORM1|MODE2_FORM2|MODE2_FORM_MIX|MODE2_RAW|MODE2))\\s*(?<subchan>(RW_RAW|RW))?", __mirage_parser_toc_callback_track);
@@ -1150,15 +1158,85 @@ static void __cleanup_session_data (MIRAGE_Parser *self) {
     return;
 }
 
+
+static gboolean __check_toc_file (MIRAGE_Parser *self, const gchar *filename) {
+    MIRAGE_Parser_TOCPrivate *_priv = MIRAGE_PARSER_TOC_GET_PRIVATE(self);
+    gboolean succeeded = FALSE;
+
+    /* Check suffix - must be .toc */
+    if (!mirage_helper_has_suffix(filename, ".toc")) {
+        return FALSE;
+    }
+
+    /* *** Additional check ***
+       Because X-CD Roast also uses .toc for its images, we need to make
+       sure this one was created by cdrdao... for that, we check for presence
+       of CD_DA/CD_ROM_XA/CD_ROM/CD_I directive. */
+    GIOChannel *io_channel;
+        
+    /* Create IO channel for file */
+    io_channel = g_io_channel_new_file(filename, "r", NULL);
+    if (!io_channel) {
+        return FALSE;
+    }
+    
+    /* If provided, use the specified encoding; otherwise, use default (since 
+       .toc file is linux-specific and should be fine with UTF-8 anyway) */
+    const gchar *encoding = NULL;
+    if (mirage_parser_get_param_string(self, "encoding", &encoding, NULL)) {
+        g_io_channel_set_encoding(io_channel, encoding, NULL);
+    }
+        
+    /* Read file line-by-line */
+    gint line_nr;
+    for (line_nr = 1; ; line_nr++) {
+        GIOStatus status;
+        gchar *line_str;
+        gsize line_len;
+
+        GMatchInfo *match_info = NULL;
+
+        status = g_io_channel_read_line(io_channel, &line_str, &line_len, NULL, NULL);
+        
+        /* Handle EOF */
+        if (status == G_IO_STATUS_EOF) {
+            break;
+        }
+        
+        /* Handle abnormal status */
+        if (status != G_IO_STATUS_NORMAL) {
+            break;
+        }
+        
+        /* Try to match the rule */
+        if (g_regex_match(_priv->regex_header_ptr, line_str, 0, &match_info)) {
+            /* Free match info */
+            g_match_info_free(match_info);
+            succeeded = TRUE;
+        }
+        
+        g_free(line_str);
+                
+        /* If we found the header, break the loop */
+        if (succeeded) {
+            break;
+        }
+    }
+    
+    g_io_channel_unref(io_channel);
+    
+    return succeeded;
+}
+
 static gboolean __mirage_parser_toc_load_image (MIRAGE_Parser *self, gchar **filenames, GObject **disc, GError **error) {
     MIRAGE_Parser_TOCPrivate *_priv = MIRAGE_PARSER_TOC_GET_PRIVATE(self);
     gboolean succeeded = TRUE;
     gint i;
     
-    /* Check if we can load file(s); we check the suffix */
+    /* Check if we can load file(s) */
     for (i = 0; i < g_strv_length(filenames); i++) {
-        if (!mirage_helper_has_suffix(filenames[i], ".toc")) {
-            mirage_error(MIRAGE_E_CANTHANDLE, error);
+        if (!__check_toc_file(self, filenames[i])) {
+            mirage_error(MIRAGE_E_CANTHANDLE, error);            
             return FALSE;
         }
     }
