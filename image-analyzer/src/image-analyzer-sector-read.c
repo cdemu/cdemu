@@ -75,7 +75,7 @@ static gboolean __image_analyzer_read_sector_clear_text (IMAGE_ANALYZER_SectorRe
     return TRUE;
 }
 
-static gboolean __image_analyzer_read_sector_append_text (IMAGE_ANALYZER_SectorRead *self, gchar *tag_name, gchar *format, ...) {
+static gboolean __image_analyzer_read_sector_append_text (IMAGE_ANALYZER_SectorRead *self, const gchar *tag_name, const gchar *format, ...) {
     IMAGE_ANALYZER_SectorReadPrivate *_priv = IMAGE_ANALYZER_SECTOR_READ_GET_PRIVATE(self);
     GtkTextIter iter;
     gchar *string;
@@ -98,7 +98,7 @@ static gboolean __image_analyzer_read_sector_append_text (IMAGE_ANALYZER_SectorR
     return TRUE;
 }
 
-static gboolean __image_analyzer_read_sector_append_sector_data (IMAGE_ANALYZER_SectorRead *self, guint8 *data, gint data_len, gchar *tag_name) {
+static gboolean __image_analyzer_read_sector_append_sector_data (IMAGE_ANALYZER_SectorRead *self, const guint8 *data, gint data_len, const gchar *tag_name) {
     gint i;
     
     for (i = 0; i < data_len; i++) {
@@ -121,7 +121,7 @@ static void __image_analyzer_sector_read_ui_callback_read (GtkWidget *button, gp
     
     gdouble dpm_angle, dpm_density;
     
-    guint8 *tmp_buf;
+    const guint8 *tmp_buf;
     gint tmp_len;
     
     /* Read address from spin button */
