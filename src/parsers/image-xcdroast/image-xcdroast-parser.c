@@ -82,31 +82,59 @@ static gboolean __mirage_parser_xcdroast_add_track (MIRAGE_Parser *self, TOC_Tra
         return FALSE;
     }
 
-    /* Setup basic track info */
+    /* Determine data/audio file's full path */
+    gchar *data_file = mirage_helper_find_data_file(track_info->file, _priv->toc_filename);
+    if (!data_file) {
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: file '%s' not found!\n", __debug__, track_info->file);
+        g_object_unref(track);
+        return FALSE;
+    }
+
+    /* Setup basic track info, add fragment */
     switch (track_info->type) {
+        case 0: {
+            /* Data (Mode 1) track */
+            mirage_track_set_mode(MIRAGE_TRACK(track), MIRAGE_MODE_MODE1, NULL);
+
+            /* Create and add binary fragment, using whole file */
+            GObject *data_fragment = libmirage_create_fragment(MIRAGE_TYPE_FINTERFACE_BINARY, data_file, error);
+            if (!data_fragment) {
+                MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to create BINARY fragment for file: %s\n", __debug__, data_file);
+                g_free(data_file);
+                g_object_unref(track);
+                return FALSE;
+            }
+            mirage_finterface_binary_track_file_set_handle(MIRAGE_FINTERFACE_BINARY(data_fragment), g_fopen(data_file, "r"), NULL);
+            mirage_finterface_binary_track_file_set_sectsize(MIRAGE_FINTERFACE_BINARY(data_fragment), 2048, NULL);
+            mirage_finterface_binary_track_file_set_offset(MIRAGE_FINTERFACE_BINARY(data_fragment), 0, NULL);
+            mirage_finterface_binary_track_file_set_format(MIRAGE_FINTERFACE_BINARY(data_fragment), FR_BIN_TFILE_DATA, NULL);
+
+            mirage_fragment_use_the_rest_of_file(MIRAGE_FRAGMENT(data_fragment), NULL);
+
+            mirage_track_add_fragment(MIRAGE_TRACK(track), -1, &data_fragment, NULL);
+            g_object_unref(data_fragment);
+            
+            break;
+        }
         case 1: {
             /* Audio track */
             mirage_track_set_mode(MIRAGE_TRACK(track), MIRAGE_MODE_AUDIO, NULL);
 
-            gchar *audio_file = mirage_helper_find_data_file(track_info->file, _priv->toc_filename);
-            if (!audio_file) {
-                MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: file '%s' not found!\n", __debug__, track_info->file);
-                return FALSE;
-            }
-
-            /* Create and add audio fragment - use whole file (FIXME: is this alright?) */
-            GObject *data_fragment = libmirage_create_fragment(MIRAGE_TYPE_FINTERFACE_AUDIO, audio_file, error);
+            /* Create and add audio fragment, using whole file */
+            GObject *data_fragment = libmirage_create_fragment(MIRAGE_TYPE_FINTERFACE_AUDIO, data_file, error);
             if (!data_fragment) {
-                MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: unknown/unsupported file type: %s\n", __debug__, audio_file);
-                g_free(audio_file);
+                MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to create AUDIO fragment for file: %s\n", __debug__, data_file);
+                g_free(data_file);
+                g_object_unref(track);
                 return FALSE;
             }
-            mirage_finterface_audio_set_file(MIRAGE_FINTERFACE_AUDIO(data_fragment), audio_file, NULL);
-            mirage_fragment_use_the_rest_of_file(MIRAGE_FRAGMENT(data_fragment), NULL);
-            
-            mirage_track_add_fragment(MIRAGE_TRACK(track), -1, &data_fragment, NULL);
+            mirage_finterface_audio_set_file(MIRAGE_FINTERFACE_AUDIO(data_fragment), data_file, NULL);
 
-            g_free(audio_file);
+            mirage_fragment_use_the_rest_of_file(MIRAGE_FRAGMENT(data_fragment), NULL);            
+
+            mirage_track_add_fragment(MIRAGE_TRACK(track), -1, &data_fragment, NULL);
+            g_object_unref(data_fragment);
+
             break;
         }
         default: {
@@ -114,12 +142,23 @@ static gboolean __mirage_parser_xcdroast_add_track (MIRAGE_Parser *self, TOC_Tra
             break;
         }
     }
+    g_free(data_file);
 
     /* Try to get a XINF file and read additional info from it */
     gchar *xinf_filename = __create_xinf_filename(track_info->file);
     gchar *real_xinf_filename = mirage_helper_find_data_file(xinf_filename, _priv->toc_filename);
     
     if (__mirage_parser_xcdroast_parse_xinf_file(self, real_xinf_filename, NULL)) {
+        /* Track flags */
+        gint flags = 0;
+        if (_priv->xinf_track.copyperm) flags |= MIRAGE_TRACKF_COPYPERMITTED;
+        if (_priv->xinf_track.preemp) flags |= MIRAGE_TRACKF_PREEMPHASIS;
+
+        /* This is valid only for audio track (because data track in non-stereo
+           by default */
+        if (!track_info->type && !_priv->xinf_track.stereo) flags |= MIRAGE_TRACKF_FOURCHANNEL;
+
+        mirage_track_set_flags(MIRAGE_TRACK(track), flags, NULL);
     }
     g_free(real_xinf_filename);
     g_free(xinf_filename);
