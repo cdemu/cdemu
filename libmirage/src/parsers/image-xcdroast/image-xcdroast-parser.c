@@ -55,15 +55,33 @@ typedef struct {
 /******************************************************************************\
  *                         Parser private functions                           *
 \******************************************************************************/
+static gboolean __mirage_parser_xcdroast_parse_xinf_file (MIRAGE_Parser *self, gchar *filename, GError **error);
+
+static gchar *__create_xinf_filename (gchar *track_filename) {
+    gchar *xinf_filename;
+    int baselen = strlen(track_filename);
+    int suffixlen = strlen(mirage_helper_get_suffix(track_filename));
+
+    baselen -= suffixlen;
+    
+    xinf_filename = g_new0(gchar, baselen + 6); /* baselen + . + xinf + \0 */
+    strncpy(xinf_filename, track_filename, baselen); /* Copy basename */
+    sprintf(xinf_filename+baselen, ".xinf");
+
+    return xinf_filename;    
+}
+
 static gboolean __mirage_parser_xcdroast_add_track (MIRAGE_Parser *self, TOC_Track *track_info, GError **error) {
     MIRAGE_Parser_XCDROASTPrivate *_priv = MIRAGE_PARSER_XCDROAST_GET_PRIVATE(self);
     GObject *track = NULL;
 
+    /* Add track */
     if (!mirage_session_add_track_by_number(MIRAGE_SESSION(_priv->cur_session), track_info->number, &track, error)) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to add track!\n", __debug__);
         return FALSE;
     }
 
+    /* Setup basic track info */
     switch (track_info->type) {
         case 1: {
             /* Audio track */
@@ -86,6 +104,13 @@ static gboolean __mirage_parser_xcdroast_add_track (MIRAGE_Parser *self, TOC_Tra
             break;
         }
     }
+
+    /* Try to get a XINF file and read additional info from it */
+    gchar *xinf_filename = __create_xinf_filename(track_info->file);
+    
+    if (__mirage_parser_xcdroast_parse_xinf_file(self, xinf_filename, NULL)) {
+    }
+    g_free(xinf_filename);
 
     g_object_unref(track);
     
@@ -258,13 +283,102 @@ static void __mirage_parser_xcdroast_cleanup_regex_parser (MIRAGE_Parser *self) 
 }
 
 
+static gboolean __mirage_parser_xcdroast_parse_xinf_file (MIRAGE_Parser *self, gchar *filename, GError **error) {
+    MIRAGE_Parser_XCDROASTPrivate *_priv = MIRAGE_PARSER_XCDROAST_GET_PRIVATE(self);
+    GError *io_error = NULL;
+    GIOChannel *io_channel;
+    gboolean succeeded = TRUE;
+    
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: opening XINF file: %s\n", __debug__, filename);
+
+    /* Create IO channel for file */
+    io_channel = g_io_channel_new_file(filename, "r", &io_error);
+    if (!io_channel) {
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to create IO channel: %s\n", __debug__, io_error->message);
+        g_error_free(io_error);
+        mirage_error(MIRAGE_E_IMAGEFILE, error);
+        return FALSE;
+    }
+
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "\n");
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: parsing\n", __debug__);
+
+    /* Read file line-by-line */
+    gint line_nr;
+    for (line_nr = 1; ; line_nr++) {
+        GIOStatus status;
+        gchar *line_str;
+        gsize line_len;
+        
+        status = g_io_channel_read_line(io_channel, &line_str, &line_len, NULL, &io_error);
+        
+        /* Handle EOF */
+        if (status == G_IO_STATUS_EOF) {
+            break;
+        }
+        
+        /* Handle abnormal status */
+        if (status != G_IO_STATUS_NORMAL) {
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: status %d while reading line #%d from IO channel: %s\n", __debug__, status, line_nr, io_error ? io_error->message : "no error message");
+            g_error_free(io_error);
+            
+            mirage_error(MIRAGE_E_IMAGEFILE, error);
+            succeeded = FALSE;
+            break;
+        }
+        
+        /* GRegex matching engine */
+        GMatchInfo *match_info = NULL;
+        gboolean matched = FALSE;
+        GList *entry;
+        
+        /* Go over all matching rules */
+        G_LIST_FOR_EACH(entry, _priv->regex_rules_xinf) {
+            MIRAGE_RegexRule *regex_rule = entry->data;
+                        
+            /* Try to match the given rule */
+            if (g_regex_match(regex_rule->regex, line_str, 0, &match_info)) {
+                if (regex_rule->callback_func) {
+                    succeeded = regex_rule->callback_func(self, match_info, error);
+                }
+                matched = TRUE;
+            }
+            
+            /* Must be freed in any case */
+            g_match_info_free(match_info);
+            
+            /* Break if we had a match */
+            if (matched) {
+                break;
+            }
+        }
+        
+        /* Complain if we failed to match the line (should it be fatal?) */
+        if (!matched) {
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to match line #%d: %s\n", __debug__, line_nr, line_str);
+            /* succeeded = FALSE */
+        }
+        
+        g_free(line_str);
+                
+        /* In case callback didn't succeed... */
+        if (!succeeded) {
+            break;
+        }
+    }
+    
+    g_io_channel_unref(io_channel);
+    
+    return succeeded;
+}
+
 static gboolean __mirage_parser_xcdroast_parse_toc_file (MIRAGE_Parser *self, gchar *filename, GError **error) {
     MIRAGE_Parser_XCDROASTPrivate *_priv = MIRAGE_PARSER_XCDROAST_GET_PRIVATE(self);
     GError *io_error = NULL;
     GIOChannel *io_channel;
     gboolean succeeded = TRUE;
     
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: opening file: %s\n", __debug__, filename);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: opening TOC file: %s\n", __debug__, filename);
     
     /* Create IO channel for file */
     io_channel = g_io_channel_new_file(filename, "r", &io_error);
