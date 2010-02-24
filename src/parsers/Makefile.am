@@ -9,7 +9,8 @@ SUBDIRS = \
    image-iso \
    image-mds \
    image-nrg \
-   image-toc
+   image-toc \
+   image-xcdroast
 
 
 mimedir = $(datadir)/mime/packages
