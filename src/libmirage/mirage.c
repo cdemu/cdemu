@@ -336,6 +336,12 @@ GObject *libmirage_create_fragment (GType fragment_interface, const gchar *filen
         mirage_error(MIRAGE_E_NOTINIT, error);
         return NULL;
     }
+
+    /* Check if filename is valid */
+    if (!g_file_test(filename, G_FILE_TEST_IS_REGULAR)) {
+        mirage_error(MIRAGE_E_DATAFILE, error);
+        return NULL;
+    }
     
     /* Go over all fragments */    
     for (i = 0; i < libmirage.num_fragments; i++) {
