@@ -65,7 +65,7 @@ cdemud-marshallers.h: $(MARSHALLERS_IN)
 	glib-genmarshal --header $(MARSHALLERS_IN) > $(MARSHALLERS_H_OUT)
 
 cdemud-marshallers.c: $(MARSHALLERS_IN)
-	glib-genmarshal --body $(MARSHALLERS_IN) > $(MARSHALLERS_C_OUT)
+	glib-genmarshal --header --body $(MARSHALLERS_IN) > $(MARSHALLERS_C_OUT)
 
 DISTCLEANFILES = \
     $(SERVICE_GLUE_OUT) \
