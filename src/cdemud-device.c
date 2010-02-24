@@ -20,9 +20,6 @@
 #include "cdemud.h"
 #include "cdemud-marshallers.h"
 
-#define __debug__ "MMC-3"
-
-
 /* Don't ask... it just happens that some fields are of 3-byte size... >.< */
 #define GUINT24_FROM_BE(x) (GUINT32_FROM_BE(x) >> 8)
 #define GUINT24_TO_BE(x)   (GUINT32_TO_BE(x) >> 8)
@@ -207,15 +204,22 @@ static gint __helper_map_mcsb (guint8 *byte9, gint mode_code) {
 /******************************************************************************\
  *                    Kernel <-> Userspace bridge functions                   *
 \******************************************************************************/
+#undef __debug__
+#define __debug__ "Kernel I/O"
+
 static void __cdemud_device_write_buffer (CDEMUD_Device *self, guint32 length) {
     CDEMUD_DevicePrivate *_priv = CDEMUD_DEVICE_GET_PRIVATE(self);
     guint32 len;
 
+    CDEMUD_DEBUG(self, DAEMON_DEBUG_KERNEL_IO, "%s: write request (%d bytes)\n", __debug__, length);
+
     len = MIN(_priv->buffer_size, length);
     if (_priv->cur_len + len > _priv->cmd->out_len) {
+        CDEMUD_DEBUG(self, DAEMON_DEBUG_KERNEL_IO, "%s: OUT buffer too small, truncating!\n", __debug__);
         len = _priv->cmd->out_len - _priv->cur_len;
     }
 
+    CDEMUD_DEBUG(self, DAEMON_DEBUG_KERNEL_IO, "%s: copying %d bytes to OUT buffer at offset %d\n", __debug__, len, _priv->cur_len);
     memcpy(_priv->cmd->out + _priv->cur_len, _priv->buffer, len);
     _priv->cur_len += len;
     return;
@@ -225,7 +229,10 @@ static void __cdemud_device_read_buffer (CDEMUD_Device *self, guint32 length) {
     CDEMUD_DevicePrivate *_priv = CDEMUD_DEVICE_GET_PRIVATE(self);
     guint32 len;
 
+    CDEMUD_DEBUG(self, DAEMON_DEBUG_KERNEL_IO, "%s: read request (%d bytes)\n", __debug__, length);
+
     len = MIN(_priv->cmd->in_len, length);
+    CDEMUD_DEBUG(self, DAEMON_DEBUG_KERNEL_IO, "%s: copying %d bytes from IN buffer\n", __debug__, len);
     memcpy(_priv->buffer, _priv->cmd->in, len);
     _priv->buffer_size = len;
     return;
@@ -253,6 +260,8 @@ static void __cdemud_device_write_sense_full (CDEMUD_Device *self, guint8 sense_
     sense.cmd_info[1] = (command_info & 0x00FF0000) >> 16;
     sense.cmd_info[2] = (command_info & 0x0000FF00) >>  8;
     sense.cmd_info[3] = (command_info & 0x000000FF) >>  0;
+
+    CDEMUD_DEBUG(self, DAEMON_DEBUG_KERNEL_IO, "%s: writing sense (%d bytes) to OUT buffer\n", __debug__, sizeof(struct REQUEST_SENSE_SenseFixed));
     
     memcpy(_priv->cmd->out, &sense, sizeof(struct REQUEST_SENSE_SenseFixed));
     _priv->cur_len = sizeof(struct REQUEST_SENSE_SenseFixed);
@@ -265,6 +274,8 @@ static void __cdemud_device_write_sense_full (CDEMUD_Device *self, guint8 sense_
 static void __cdemud_device_flush_buffer (CDEMUD_Device *self) {
     CDEMUD_DevicePrivate *_priv = CDEMUD_DEVICE_GET_PRIVATE(self);
 
+    CDEMUD_DEBUG(self, DAEMON_DEBUG_KERNEL_IO, "%s: flushing buffer\n", __debug__);
+
     memset(_priv->buffer, 0, _priv->buffer_size);
     _priv->buffer_size = 0;
 }
@@ -273,6 +284,9 @@ static void __cdemud_device_flush_buffer (CDEMUD_Device *self) {
 /******************************************************************************\
  *                             Mode pages handling                            *
 \******************************************************************************/
+#undef __debug__
+#define __debug__ "MMC-3"
+
 /* Mode pages: we initialize three instances of each supported page; one to 
    store current values, one to store default values, and one to store mask 
    which indicates which values can be changed. We pack the pointers into 
@@ -654,6 +668,9 @@ static void __cdemud_device_init_features (CDEMUD_Device *self) {
 /******************************************************************************\
  *                                 Profile handling                           *
 \******************************************************************************/
+#undef __debug__
+#define __debug__ "MMC-3"
+
 /* Here we define profiles and features associated with them. When we set a 
    certain profile, features get their 'current' bit reset (unless 'persistent'
    bit is set), and then if they are associated with the profile, they are set
@@ -770,7 +787,7 @@ static void __cdemud_device_set_device_id (CDEMUD_Device *self, const gchar *ven
  *                               Delay emulation                              *
 \******************************************************************************/
 #undef __debug__
-#define __debug__ "DelayEmulation"
+#define __debug__ "Delay Emulation"
 
 static void __cdemud_device_delay_begin (CDEMUD_Device *self) {
     CDEMUD_DevicePrivate *_priv = CDEMUD_DEVICE_GET_PRIVATE(self);
