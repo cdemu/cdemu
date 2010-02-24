@@ -43,6 +43,7 @@ typedef struct {
 
     GObject *cur_session;
 
+    DISC_Info disc_info;
     TOC_Track toc_track;
     XINF_Track xinf_track;
     
@@ -51,6 +52,8 @@ typedef struct {
     GList *regex_rules_xinf;
 
     GRegex *regex_comment_ptr; /* Pointer, do not free! */
+
+    gint set_pregap;
 } MIRAGE_Parser_XCDROASTPrivate;
 
 /******************************************************************************\
@@ -82,6 +85,26 @@ static gboolean __mirage_parser_xcdroast_add_track (MIRAGE_Parser *self, TOC_Tra
         return FALSE;
     }
 
+    /* Add pregap, if needed */
+    if (_priv->set_pregap) {
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: adding %d sector pregap\n", __debug__, _priv->set_pregap);
+        
+        GObject *null_fragment = libmirage_create_fragment(MIRAGE_TYPE_FINTERFACE_NULL, "NULL", error);
+        if (!null_fragment) {
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to create NULL fragment for pregap!\n", __debug__);
+            g_object_unref(track);
+            return FALSE;
+        }
+        mirage_fragment_set_length(MIRAGE_FRAGMENT(null_fragment), _priv->set_pregap, NULL);
+
+        mirage_track_add_fragment(MIRAGE_TRACK(track), -1, &null_fragment, NULL);
+        mirage_track_set_track_start(MIRAGE_TRACK(track), _priv->set_pregap, NULL);
+
+        g_object_unref(null_fragment);
+        
+        _priv->set_pregap = 0;
+    }
+
     /* Determine data/audio file's full path */
     gchar *data_file = mirage_helper_find_data_file(track_info->file, _priv->toc_filename);
     if (!data_file) {
@@ -92,7 +115,7 @@ static gboolean __mirage_parser_xcdroast_add_track (MIRAGE_Parser *self, TOC_Tra
 
     /* Setup basic track info, add fragment */
     switch (track_info->type) {
-        case 0: {
+        case TRACK_TYPE_DATA: {
             /* Data (Mode 1) track */
             mirage_track_set_mode(MIRAGE_TRACK(track), MIRAGE_MODE_MODE1, NULL);
 
@@ -112,11 +135,27 @@ static gboolean __mirage_parser_xcdroast_add_track (MIRAGE_Parser *self, TOC_Tra
             mirage_fragment_use_the_rest_of_file(MIRAGE_FRAGMENT(data_fragment), NULL);
 
             mirage_track_add_fragment(MIRAGE_TRACK(track), -1, &data_fragment, NULL);
+
+            /* Verify fragment's length vs. declared track length */
+            gint fragment_length = 0;
+            mirage_fragment_get_length(MIRAGE_FRAGMENT(data_fragment), &fragment_length, NULL);
+            if (fragment_length != track_info->size) {
+                MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: data track size mismatch! Declared %d sectors, actual fragment size: %d\n", __debug__, track_info->size, fragment_length);
+
+                /* Data track size mismatch is usually found on mixed-mode
+                   CDs... it seems to be around 152 sectors. 150 come from
+                   the pregap between data and following audio tracks. No
+                   idea where the 2 come from, though (we'll put it all into
+                   next track's pregap) */
+                _priv->set_pregap = track_info->size - fragment_length;
+                MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: compensating data track size difference with %d sector pregap to next track\n", __debug__, _priv->set_pregap);
+            }
+
             g_object_unref(data_fragment);
             
             break;
         }
-        case 1: {
+        case TRACK_TYPE_AUDIO: {
             /* Audio track */
             mirage_track_set_mode(MIRAGE_TRACK(track), MIRAGE_MODE_AUDIO, NULL);
 
@@ -133,6 +172,14 @@ static gboolean __mirage_parser_xcdroast_add_track (MIRAGE_Parser *self, TOC_Tra
             mirage_fragment_use_the_rest_of_file(MIRAGE_FRAGMENT(data_fragment), NULL);            
 
             mirage_track_add_fragment(MIRAGE_TRACK(track), -1, &data_fragment, NULL);
+
+            /* Verify fragment's length vs. declared track length */
+            gint fragment_length = 0;
+            mirage_fragment_get_length(MIRAGE_FRAGMENT(data_fragment), &fragment_length, NULL);
+            if (fragment_length != track_info->size) {
+                MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: audio track size mismatch! Declared %d sectors, actual fragment size: %d\n", __debug__, track_info->size, fragment_length);
+            }
+            
             g_object_unref(data_fragment);
 
             break;
@@ -156,7 +203,7 @@ static gboolean __mirage_parser_xcdroast_add_track (MIRAGE_Parser *self, TOC_Tra
 
         /* This is valid only for audio track (because data track in non-stereo
            by default */
-        if (!track_info->type && !_priv->xinf_track.stereo) flags |= MIRAGE_TRACKF_FOURCHANNEL;
+        if (track_info->type == TRACK_TYPE_AUDIO && !_priv->xinf_track.stereo) flags |= MIRAGE_TRACKF_FOURCHANNEL;
 
         mirage_track_set_flags(MIRAGE_TRACK(track), flags, NULL);
     }
@@ -183,19 +230,21 @@ static gboolean __callback_toc_comment (MIRAGE_Parser *self, GMatchInfo *match_i
 
 
 static gboolean __callback_toc_cdtitle (MIRAGE_Parser *self, GMatchInfo *match_info, GError **error) {
-    gchar *cdtitle = g_match_info_fetch_named(match_info, "cdtitle");
+    MIRAGE_Parser_XCDROASTPrivate *_priv = MIRAGE_PARSER_XCDROAST_GET_PRIVATE(self);
     
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: CD Title: %s\n", __debug__, cdtitle);
-    
-    g_free(cdtitle);
+    g_free(_priv->disc_info.cdtitle);
+    _priv->disc_info.cdtitle = g_match_info_fetch_named(match_info, "cdtitle");
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: CD Title: %s\n", __debug__, _priv->disc_info.cdtitle);
     
     return TRUE;
 }
 
 static gboolean __callback_toc_cdsize (MIRAGE_Parser *self, GMatchInfo *match_info, GError **error) {
+    MIRAGE_Parser_XCDROASTPrivate *_priv = MIRAGE_PARSER_XCDROAST_GET_PRIVATE(self);
     gchar *cdsize = g_match_info_fetch_named(match_info, "cdsize");
-    
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: CD Size: %s\n", __debug__, cdsize);
+
+    _priv->disc_info.cdsize = g_strtod(cdsize, NULL);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: CD Size: %d\n", __debug__, _priv->disc_info.cdsize);
     
     g_free(cdsize);
     
@@ -203,12 +252,12 @@ static gboolean __callback_toc_cdsize (MIRAGE_Parser *self, GMatchInfo *match_in
 }
 
 static gboolean __callback_toc_discid (MIRAGE_Parser *self, GMatchInfo *match_info, GError **error) {
-    gchar *discid = g_match_info_fetch_named(match_info, "discid");
-    
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: Disc ID: %s\n", __debug__, discid);
-    
-    g_free(discid);
-    
+    MIRAGE_Parser_XCDROASTPrivate *_priv = MIRAGE_PARSER_XCDROAST_GET_PRIVATE(self);
+
+    g_free(_priv->disc_info.discid);
+    _priv->disc_info.discid = g_match_info_fetch_named(match_info, "discid");
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: Disc ID: %s\n", __debug__, _priv->disc_info.discid);
+        
     return TRUE;
 }
 
@@ -229,7 +278,7 @@ static gboolean __callback_toc_type (MIRAGE_Parser *self, GMatchInfo *match_info
     MIRAGE_Parser_XCDROASTPrivate *_priv = MIRAGE_PARSER_XCDROAST_GET_PRIVATE(self);
     gchar *type = g_match_info_fetch_named(match_info, "type");
 
-    _priv->toc_track.type  = g_strtod(type, NULL);
+    _priv->toc_track.type = g_strtod(type, NULL);
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: Type: %d\n", __debug__, _priv->toc_track.type);
     
     g_free(type);
@@ -785,6 +834,14 @@ static gboolean __mirage_parser_xcdroast_load_image (MIRAGE_Parser *self, gchar 
     if (!__mirage_parser_xcdroast_parse_toc_file(self, _priv->toc_filename, error)) {
         succeeded = FALSE;
         goto end;
+    }
+
+    /* Verify layout length (this has to be done before Red Book pregap
+       is added... */
+    gint layout_length = 0;
+    mirage_disc_layout_get_length(MIRAGE_DISC(_priv->disc), &layout_length, NULL);
+    if (layout_length != _priv->disc_info.cdsize) {
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: layout size mismatch! Declared %d sectors, actual layout size: %d\n", __debug__, _priv->disc_info.cdsize, layout_length);
     }
 
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "\n");
