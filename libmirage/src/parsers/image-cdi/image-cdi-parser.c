@@ -1046,7 +1046,7 @@ static void __mirage_parser_cdi_instance_init (GTypeInstance *instance, gpointer
     mirage_parser_generate_parser_info(MIRAGE_PARSER(instance),
         "PARSER-CDI",
         "CDI Image Parser",
-        "CDI (ParserJuggler) images",
+        "CDI (DiscJuggler) images",
         "application/libmirage-cdi"
     );
     
