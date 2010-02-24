@@ -50,13 +50,13 @@ typedef struct {
 
     gint size;
 
-    gint type;
+    gint type; /* 0: data,  1: audio */
 
-    gint rec_type;
-
-    gint preemp;
-    gint copyperm;
-    gint stereo;
+    gint rec_type; /* 0: incremental, 1: uninterrupted */
+    
+    gint preemp; /* 0: linear, 1: preemp */
+    gint copyperm; /* 0: denied, 1: allowed */
+    gint stereo; /* 0: quadro, 1: stereo */
 
     gchar *cd_title;
     gchar *cd_artist;
