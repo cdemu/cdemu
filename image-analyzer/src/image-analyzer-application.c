@@ -275,7 +275,7 @@ static gboolean __xml_dump_fragment (gpointer data, gpointer user_data) {
     GObject *fragment = data;
     xmlNodePtr parent = user_data;
 
-    MIRAGE_FragmentInfo *fragment_info;
+    const MIRAGE_FragmentInfo *fragment_info;
     gint address, length;
     
     /* Make fragment node parent */
@@ -334,12 +334,11 @@ static gboolean __xml_dump_fragment (gpointer data, gpointer user_data) {
         }
 
     } else if (MIRAGE_IS_FINTERFACE_AUDIO(fragment)) {
-        gchar *filename;
+        const gchar *filename;
         gint offset;
         
         if (mirage_finterface_audio_get_file(MIRAGE_FINTERFACE_AUDIO(fragment), &filename, NULL)) {
             __xml_add_node_with_content(parent, TAG_FILENAME, "%s", filename);
-            g_free(filename);
         }
         
         if (mirage_finterface_audio_get_offset(MIRAGE_FINTERFACE_AUDIO(fragment), &offset, NULL)) {
@@ -407,12 +406,11 @@ static gboolean __xml_dump_language (gpointer data, gpointer user_data) {
     }
     
     for (i = 0; i < G_N_ELEMENTS(pack_types); i++) {
-        gchar *data;
+        const gchar *data;
         gint len;
         if (mirage_language_get_pack_data(MIRAGE_LANGUAGE(language), pack_types[i].code, &data, &len, NULL)) {
             xmlNodePtr pack_node = __xml_add_node_with_content(parent, pack_types[i].tag, "%s", data);
             __xml_add_attribute(pack_node, ATTR_LENGTH, "%d", len);
-            g_free(data);
         }
     }
     
@@ -426,7 +424,7 @@ static gboolean __xml_dump_track (gpointer data, gpointer user_data) {
         
     gint flags, mode;
     gint adr, ctl;
-    gchar *isrc;
+    const gchar *isrc;
     gint session_number, track_number;
     gint start_sector, length;
     gint num_fragments;
@@ -454,7 +452,6 @@ static gboolean __xml_dump_track (gpointer data, gpointer user_data) {
 
     if (mirage_track_get_isrc(MIRAGE_TRACK(track), &isrc, NULL)) {
         __xml_add_node_with_content(parent, TAG_ISRC, "%s", isrc);
-        g_free(isrc);
     }
 
     if (mirage_track_layout_get_session_number(MIRAGE_TRACK(track), &session_number, NULL)) {
@@ -574,13 +571,13 @@ static gboolean __xml_dump_disc (gpointer data, gpointer user_data) {
         
     gint medium_type;
     gchar **filenames;
-    gchar *mcn;
+    const gchar *mcn;
     gint first_session, first_track;
     gint start_sector, length;
     gint num_sessions, num_tracks;
     
     gint dpm_start, dpm_resolution, dpm_entries;
-    guint32 *dpm_data;
+    const guint32 *dpm_data;
     
     /* Make disc node parent */
     parent = __xml_add_node(parent, TAG_DISC);
@@ -597,12 +594,10 @@ static gboolean __xml_dump_disc (gpointer data, gpointer user_data) {
             __xml_add_node_with_content(node, TAG_FILENAME, "%s", filenames[i]);
             i++;
         }
-        g_strfreev(filenames);
     }
     
     if (mirage_disc_get_mcn(MIRAGE_DISC(disc), &mcn, NULL)) {
         __xml_add_node_with_content(parent, TAG_MCN, "%s", mcn);
-        g_free(mcn);
     }
 
     if (mirage_disc_layout_get_first_session(MIRAGE_DISC(disc), &first_session, NULL)) {
