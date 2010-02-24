@@ -33,12 +33,21 @@
 G_BEGIN_DECLS
 
 typedef struct {
+    gchar *cdtitle;
+    gint cdsize;
+    gchar *discid;
+} DISC_Info;
+
+typedef struct {
     gint number;
     gint type;
     gint size;
     gint startsec;
     gchar *file;
 } TOC_Track;
+
+#define TRACK_TYPE_DATA  0
+#define TRACK_TYPE_AUDIO 1
 
 typedef struct {
     gchar *file;
