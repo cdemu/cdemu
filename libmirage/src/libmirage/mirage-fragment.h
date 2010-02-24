@@ -63,7 +63,7 @@ typedef struct {
     MIRAGE_ObjectClass parent;
         
     /* Class members */    
-    gboolean (*can_handle_data_format) (MIRAGE_Fragment *self, gchar *filename, GError **error);
+    gboolean (*can_handle_data_format) (MIRAGE_Fragment *self, const gchar *filename, GError **error);
     
     gboolean (*use_the_rest_of_file) (MIRAGE_Fragment *self, GError **error);
     
@@ -76,10 +76,10 @@ GType mirage_fragment_get_type (void);
 
 
 /* Public API */
-void mirage_fragment_generate_fragment_info (MIRAGE_Fragment *self, gchar *id, gchar *name);
-gboolean mirage_fragment_get_fragment_info (MIRAGE_Fragment *self, MIRAGE_FragmentInfo **fragment_info, GError **error);
+void mirage_fragment_generate_fragment_info (MIRAGE_Fragment *self, const gchar *id, const gchar *name);
+gboolean mirage_fragment_get_fragment_info (MIRAGE_Fragment *self, const MIRAGE_FragmentInfo **fragment_info, GError **error);
 
-gboolean mirage_fragment_can_handle_data_format (MIRAGE_Fragment *self, gchar *filename, GError **error);
+gboolean mirage_fragment_can_handle_data_format (MIRAGE_Fragment *self, const gchar *filename, GError **error);
 
 gboolean mirage_fragment_set_address (MIRAGE_Fragment *self, gint address, GError **error);
 gboolean mirage_fragment_get_address (MIRAGE_Fragment *self, gint *address, GError **error);
@@ -251,8 +251,8 @@ typedef struct {
     GTypeInterface parent;
     
     /* Interface methods */
-    gboolean (*set_file) (MIRAGE_FInterface_AUDIO *self, gchar *filename, GError **error);
-    gboolean (*get_file) (MIRAGE_FInterface_AUDIO *self, gchar **filename, GError **error);
+    gboolean (*set_file) (MIRAGE_FInterface_AUDIO *self, const gchar *filename, GError **error);
+    gboolean (*get_file) (MIRAGE_FInterface_AUDIO *self, const gchar **filename, GError **error);
     gboolean (*set_offset) (MIRAGE_FInterface_AUDIO *self, gint offset, GError **error);
     gboolean (*get_offset) (MIRAGE_FInterface_AUDIO *self, gint *offset, GError **error);
 } MIRAGE_FInterface_AUDIOClass;
@@ -260,8 +260,8 @@ typedef struct {
 /* Used by MIRAGE_TYPE_FINTERFACE_AUDIO */
 GType mirage_finterface_audio_get_type (void);
 
-gboolean mirage_finterface_audio_set_file (MIRAGE_FInterface_AUDIO *self, gchar *filename, GError **error);
-gboolean mirage_finterface_audio_get_file (MIRAGE_FInterface_AUDIO *self, gchar **filename, GError **error);
+gboolean mirage_finterface_audio_set_file (MIRAGE_FInterface_AUDIO *self, const gchar *filename, GError **error);
+gboolean mirage_finterface_audio_get_file (MIRAGE_FInterface_AUDIO *self, const gchar **filename, GError **error);
 gboolean mirage_finterface_audio_set_offset (MIRAGE_FInterface_AUDIO *self, gint offset, GError **error);
 gboolean mirage_finterface_audio_get_offset (MIRAGE_FInterface_AUDIO *self, gint *offset, GError **error);
 

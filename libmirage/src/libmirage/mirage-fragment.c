@@ -81,7 +81,7 @@ static gboolean __mirage_fragment_commit_bottomup_change (MIRAGE_Fragment *self,
  * for creating fragment information in fragment implementations.
  * </para>
  **/
-void mirage_fragment_generate_fragment_info (MIRAGE_Fragment *self, gchar *id, gchar *name) {
+void mirage_fragment_generate_fragment_info (MIRAGE_Fragment *self, const gchar *id, const gchar *name) {
     MIRAGE_FragmentPrivate *_priv = MIRAGE_FRAGMENT_GET_PRIVATE(self);
     
     /* Free old info */
@@ -107,13 +107,13 @@ void mirage_fragment_generate_fragment_info (MIRAGE_Fragment *self, gchar *id, g
  * </para>
  *
  * <para>
- * @fragment_info points to fragment information that belongs to fragment implementation,
- * and therefore should not be freed.
+ * A pointer to fragment information structure is stored in @fragment_info; the
+ * structure belongs to object and therefore should not be modified.
  * </para>
  *
  * Returns: %TRUE on success, %FALSE on failure
  **/
-gboolean mirage_fragment_get_fragment_info (MIRAGE_Fragment *self, MIRAGE_FragmentInfo **fragment_info, GError **error) {
+gboolean mirage_fragment_get_fragment_info (MIRAGE_Fragment *self, const MIRAGE_FragmentInfo **fragment_info, GError **error) {
     MIRAGE_FragmentPrivate *_priv = MIRAGE_FRAGMENT_GET_PRIVATE(self);
 
     if (!_priv->fragment_info) {
@@ -138,7 +138,7 @@ gboolean mirage_fragment_get_fragment_info (MIRAGE_Fragment *self, MIRAGE_Fragme
  *
  * Returns: %TRUE if fragment can handle data file, %FALSE if not
  **/
-gboolean mirage_fragment_can_handle_data_format (MIRAGE_Fragment *self, gchar *filename, GError **error) {
+gboolean mirage_fragment_can_handle_data_format (MIRAGE_Fragment *self, const gchar *filename, GError **error) {
     /* Provided by implementation */
     return MIRAGE_FRAGMENT_GET_CLASS(self)->can_handle_data_format(self, filename, error);
 }
@@ -742,7 +742,7 @@ GType mirage_finterface_binary_get_type (void) {
  *
  * Returns: %TRUE on success, %FALSE on failure
  **/
-gboolean mirage_finterface_audio_set_file (MIRAGE_FInterface_AUDIO *self, gchar *filename, GError **error) {
+gboolean mirage_finterface_audio_set_file (MIRAGE_FInterface_AUDIO *self, const gchar *filename, GError **error) {
     return MIRAGE_FINTERFACE_AUDIO_GET_CLASS(self)->set_file(self, filename, error);
 }
 
@@ -753,13 +753,13 @@ gboolean mirage_finterface_audio_set_file (MIRAGE_FInterface_AUDIO *self, gchar 
  * @error: location to store error, or %NULL
  *
  * <para>
- * Retrieves filename of audio file. A copy of filename is stored to @filename;
- * it should be freed with g_free() when no longer needed.
+ * Retrieves filename of audio file. A pointer to filename string is stored to @filename;
+ * the string belongs to the object and therefore should not be modified.
  * </para>
  *
  * Returns: %TRUE on success, %FALSE on failure
  **/
-gboolean mirage_finterface_audio_get_file (MIRAGE_FInterface_AUDIO *self, gchar **filename, GError **error) {
+gboolean mirage_finterface_audio_get_file (MIRAGE_FInterface_AUDIO *self, const gchar **filename, GError **error) {
     return MIRAGE_FINTERFACE_AUDIO_GET_CLASS(self)->get_file(self, filename, error);
 }
 

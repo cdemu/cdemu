@@ -67,7 +67,7 @@ static gboolean __mirage_parser_daa_load_image (MIRAGE_Parser *self, gchar **fil
     _priv->disc = g_object_new(MIRAGE_TYPE_DISC, NULL);
     mirage_object_attach_child(MIRAGE_OBJECT(self), _priv->disc, NULL);
 
-    mirage_disc_set_filename(MIRAGE_DISC(_priv->disc), filenames, NULL);
+    mirage_disc_set_filename(MIRAGE_DISC(_priv->disc), filenames[0], NULL);
     
     /* Add session */
     GObject *session = NULL;

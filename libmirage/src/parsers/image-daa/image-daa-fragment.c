@@ -806,7 +806,7 @@ gboolean mirage_fragment_daa_set_file (MIRAGE_Fragment *self, gchar *filename, g
 /******************************************************************************\
  *                   MIRAGE_Fragment methods implementations                  *
 \******************************************************************************/
-static gboolean __mirage_fragment_daa_can_handle_data_format (MIRAGE_Fragment *self, gchar *filename, GError **error) {
+static gboolean __mirage_fragment_daa_can_handle_data_format (MIRAGE_Fragment *self, const gchar *filename, GError **error) {
     /* Not implemented */
     mirage_error(MIRAGE_E_NOTIMPL, error);
     return FALSE;

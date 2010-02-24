@@ -470,7 +470,7 @@ gboolean mirage_track_get_ctl (MIRAGE_Track *self, gint *ctl, GError **error) {
  *
  * Returns: %TRUE on success, %FALSE on failure
  **/
-gboolean mirage_track_set_isrc (MIRAGE_Track *self, gchar *isrc, GError **error) {
+gboolean mirage_track_set_isrc (MIRAGE_Track *self, const gchar *isrc, GError **error) {
     MIRAGE_TrackPrivate *_priv = MIRAGE_TRACK_GET_PRIVATE(self);
 
     MIRAGE_CHECK_ARG(isrc);
@@ -503,13 +503,13 @@ gboolean mirage_track_set_isrc (MIRAGE_Track *self, gchar *isrc, GError **error)
  * </para>
  *
  * <para>
- * A copy of ISRC string is stored in @isrc; it should be freed with g_free() 
- * when no longer needed.
+ * A pointer to buffer containing ISRC is stored in @isrc; the buffer belongs
+ * to the object and therefore should not be modified.
  * </para>
  *
  * Returns: %TRUE on success, %FALSE on failure
  **/
-gboolean mirage_track_get_isrc (MIRAGE_Track *self, gchar **isrc, GError **error) {
+gboolean mirage_track_get_isrc (MIRAGE_Track *self, const gchar **isrc, GError **error) {
     MIRAGE_TrackPrivate *_priv = MIRAGE_TRACK_GET_PRIVATE(self);
     
     /* Check if ISRC is set */
@@ -521,7 +521,7 @@ gboolean mirage_track_get_isrc (MIRAGE_Track *self, gchar **isrc, GError **error
     
     /* Return ISRC */
     if (isrc) {
-        *isrc = g_strndup(_priv->isrc, 12);
+        *isrc = _priv->isrc;
     }
     
     return TRUE;
@@ -641,7 +641,7 @@ gboolean mirage_track_read_sector (MIRAGE_Track *self, gint address, gboolean ab
        be appropriate for sector we're dealing with... (FIXME: checking?) */
     /* Sync */
     if (main_sel & MIRAGE_MCSB_SYNC) {
-        guint8 *tmp_buf = NULL;
+        const guint8 *tmp_buf = NULL;
         gint tmp_len = 0;
         
         mirage_sector_get_sync(MIRAGE_SECTOR(cur_sector), &tmp_buf, &tmp_len, NULL);
@@ -653,7 +653,7 @@ gboolean mirage_track_read_sector (MIRAGE_Track *self, gint address, gboolean ab
     }
     /* Header */
     if (main_sel & MIRAGE_MCSB_HEADER) {
-        guint8 *tmp_buf = NULL;
+        const guint8 *tmp_buf = NULL;
         gint tmp_len = 0;
                     
         mirage_sector_get_header(MIRAGE_SECTOR(cur_sector), &tmp_buf, &tmp_len, NULL);
@@ -665,7 +665,7 @@ gboolean mirage_track_read_sector (MIRAGE_Track *self, gint address, gboolean ab
     }                
     /* Sub-Header */
     if (main_sel & MIRAGE_MCSB_SUBHEADER) {
-        guint8 *tmp_buf = NULL;
+        const guint8 *tmp_buf = NULL;
         gint tmp_len = 0;
                     
         mirage_sector_get_subheader(MIRAGE_SECTOR(cur_sector), &tmp_buf, &tmp_len, NULL);
@@ -677,7 +677,7 @@ gboolean mirage_track_read_sector (MIRAGE_Track *self, gint address, gboolean ab
     }    
     /* User Data */
     if (main_sel & MIRAGE_MCSB_DATA) {
-        guint8 *tmp_buf = NULL;
+        const guint8 *tmp_buf = NULL;
         gint tmp_len = 0;
                     
         mirage_sector_get_data(MIRAGE_SECTOR(cur_sector), &tmp_buf, &tmp_len, NULL);
@@ -689,7 +689,7 @@ gboolean mirage_track_read_sector (MIRAGE_Track *self, gint address, gboolean ab
     }
     /* EDC/ECC */
     if (main_sel & MIRAGE_MCSB_EDC_ECC) {
-        guint8 *tmp_buf = NULL;
+        const guint8 *tmp_buf = NULL;
         gint tmp_len = 0;
                 
         mirage_sector_get_edc_ecc(MIRAGE_SECTOR(cur_sector), &tmp_buf, &tmp_len, NULL);
@@ -717,7 +717,7 @@ gboolean mirage_track_read_sector (MIRAGE_Track *self, gint address, gboolean ab
     switch (subc_sel) {
         case MIRAGE_SUBCHANNEL_PW: {
             /* RAW P-W */
-            guint8 *tmp_buf = NULL;
+            const guint8 *tmp_buf = NULL;
             gint tmp_len = 0;
                     
             mirage_sector_get_subchannel(MIRAGE_SECTOR(cur_sector), MIRAGE_SUBCHANNEL_PW, &tmp_buf, &tmp_len, NULL);
@@ -731,7 +731,7 @@ gboolean mirage_track_read_sector (MIRAGE_Track *self, gint address, gboolean ab
         }
         case MIRAGE_SUBCHANNEL_PQ: {
             /* Q */
-            guint8 *tmp_buf = NULL;
+            const guint8 *tmp_buf = NULL;
             gint tmp_len = 0;
                     
             mirage_sector_get_subchannel(MIRAGE_SECTOR(cur_sector), MIRAGE_SUBCHANNEL_PQ, &tmp_buf, &tmp_len, NULL);
@@ -1997,78 +1997,6 @@ gboolean mirage_track_get_next (MIRAGE_Track *self, GObject **next_track, GError
     g_object_unref(session);
     
     return succeeded;
-}
-
-typedef struct {
-    guint8 type; 
-    gchar  id[5];
-    guint8 version;
-    guint8 data[2041];
-} ISO_VolDesc;
-
-#define ISO_VD_BOOT_RECORD   0
-#define ISO_VD_PRIMARY       1
-#define ISO_VD_SUPPLEMENTARY 2
-#define ISO_VD_PARTITION     3
-#define ISO_VD_END           255
-
-#define ISO_STANDARD_ID      "CD001"
-
-/**
- * mirage_track_has_iso9660:
- * @self: reference to track object
- * @error: location to store error, or %NULL
- *
- * <para>
- * Checks that the track has valid ISO-9660 Volume Descriptors.
- * </para>
- *
- * Returns: %TRUE on success, %FALSE on failure
- **/
-gboolean mirage_track_has_iso9660(MIRAGE_Track *self, GError **error) {
-    guint8      *buffer = NULL;
-    ISO_VolDesc *VD = NULL;
-    gint        sector = 16;
-    gint        ret_len = 0;
-    gboolean    valid_iso = FALSE;
-
-    /* Sanity check */
-    if (!self) {
-        mirage_error(MIRAGE_E_INVALIDARG, NULL);
-        return FALSE;
-    }
-
-    /* Get us a buffer */
-    buffer = g_try_malloc(2500);
-    if(!buffer) return FALSE;
-    VD = (ISO_VolDesc *) buffer;
-
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: Volume Descriptors:\n", __debug__);
-    do {
-        /* Read Volume Descriptor */
-        if(!mirage_track_read_sector(self, sector, FALSE, MIRAGE_MCSB_DATA, 0, buffer, &ret_len, error)) {
-            valid_iso = FALSE;
-            break;
-        }
-        g_assert(ret_len <= 2500);
-
-        /* List Volume Descriptor */
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   Type: %i, ID: '%.5s', Version: %i.\n", __debug__, VD->type, VD->id, VD->version);
-
-        /* Validity check */
-        if (!memcmp(VD->id, ISO_STANDARD_ID, sizeof(VD->id))) {
-            if(VD->type == ISO_VD_PRIMARY) valid_iso = TRUE;
-        } else {
-            valid_iso = FALSE;
-            break;
-        }
-
-        sector++;
-    } while((VD->type != ISO_VD_END));
-
-    if(buffer) g_free(buffer);
-
-    return valid_iso;
 }
 
 

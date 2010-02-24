@@ -566,13 +566,3 @@ sectors, etc.
 @Returns: 
 
 
-<!-- ##### FUNCTION mirage_track_has_iso9660 ##### -->
-<para>
-
-</para>
-
-@self: 
-@error: 
-@Returns: 
-
-

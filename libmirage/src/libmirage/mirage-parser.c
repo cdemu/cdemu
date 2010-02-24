@@ -71,7 +71,7 @@ static void __destroy_parser_info (MIRAGE_ParserInfo *info) {
  * for creating parser information in parser implementations.
  * </para>
  **/
-void mirage_parser_generate_parser_info (MIRAGE_Parser *self, gchar *id, gchar *name, gchar *description, gchar *mime_type) {
+void mirage_parser_generate_parser_info (MIRAGE_Parser *self, const gchar *id, const gchar *name, const gchar *description, const gchar *mime_type) {
     MIRAGE_ParserPrivate *_priv = MIRAGE_PARSER_GET_PRIVATE(self);
     
     /* Free old info */
@@ -100,13 +100,13 @@ void mirage_parser_generate_parser_info (MIRAGE_Parser *self, gchar *id, gchar *
  * </para>
  *
  * <para>
- * @parser_info points to parser information that belongs to parser implementation,
- * and therefore should not be freed.
+ * A pointer to parser information structure is stored in @parser_info; the structure
+ * belongs to the object and therefore should not be modified.
  * </para>
  *
  * Returns: %TRUE on success, %FALSE on failure
  **/
-gboolean mirage_parser_get_parser_info (MIRAGE_Parser *self, MIRAGE_ParserInfo **parser_info, GError **error) {
+gboolean mirage_parser_get_parser_info (MIRAGE_Parser *self, const MIRAGE_ParserInfo **parser_info, GError **error) {
     MIRAGE_ParserPrivate *_priv = MIRAGE_PARSER_GET_PRIVATE(self);
 
     if (!_priv->parser_info) {
@@ -323,7 +323,7 @@ gboolean mirage_parser_set_params (MIRAGE_Parser *self, GHashTable *params, GErr
  *
  * Returns: %TRUE on success, %FALSE on failure
  **/
-gboolean mirage_parser_get_param_string (MIRAGE_Parser *self, gchar *name, const gchar **ret_value, GError **error) {
+gboolean mirage_parser_get_param_string (MIRAGE_Parser *self, const gchar *name, const gchar **ret_value, GError **error) {
     MIRAGE_ParserPrivate *_priv = MIRAGE_PARSER_GET_PRIVATE(self);
     GValue *value;
     

@@ -123,7 +123,7 @@ typedef struct {
 /******************************************************************************\
  *                              Private functions                             *
 \******************************************************************************/
-static GValueArray *__create_value_array (gint block, gint type, gint track, guint8 *data, gint data_len) {
+static GValueArray *__create_value_array (gint block, gint type, gint track, const guint8 *data, gint data_len) {
     GValueArray *pack_data = g_value_array_new(5);
     
     /* Internal representation of pack: block, type, track, data, length */
@@ -473,7 +473,7 @@ gboolean mirage_cdtext_encoder_set_block_info (MIRAGE_CDTextEncDec *self, gint b
  *
  * Returns: %TRUE on success, %FALSE on failure
  **/
-gboolean mirage_cdtext_encoder_add_data (MIRAGE_CDTextEncDec *self, gint langcode, gint type, gint track, guint8 *data, gint data_len, GError **error) {
+gboolean mirage_cdtext_encoder_add_data (MIRAGE_CDTextEncDec *self, gint langcode, gint type, gint track, const guint8 *data, gint data_len, GError **error) {
     MIRAGE_CDTextEncDecPrivate *_priv = MIRAGE_CDTEXT_ENCDEC_GET_PRIVATE(self);
     GValueArray *pack_data = NULL;
     

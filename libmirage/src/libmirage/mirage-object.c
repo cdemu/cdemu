@@ -143,8 +143,8 @@ void mirage_object_debug_messagev (MIRAGE_Object *self, gint level, gchar *forma
     MIRAGE_ObjectPrivate *_priv = MIRAGE_OBJECT_GET_PRIVATE(self);
     gint debug_mask = 0;
     
-    gchar *name = NULL;
-    gchar *domain = NULL;
+    const gchar *name = NULL;
+    const gchar *domain = NULL;
     
     gchar *new_format = NULL;
     
@@ -175,8 +175,6 @@ void mirage_object_debug_messagev (MIRAGE_Object *self, gint level, gchar *forma
         }
     }
     
-    g_free(name);
-    g_free(domain);
     g_free(new_format);
     
     return;

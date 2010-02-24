@@ -1571,15 +1571,13 @@ gboolean mirage_session_get_cdtext_data (MIRAGE_Session *self, guint8 **data, gi
         for (j = 0; j < G_N_ELEMENTS(pack_types); j++) {
             gint pack_type = pack_types[j];
             
-            guint8 *session_lang_data = NULL;
+            const guint8 *session_lang_data = NULL;
             gint session_lang_len = 0;
             
-            if (mirage_language_get_pack_data(MIRAGE_LANGUAGE(session_lang), pack_type, (gchar **)&session_lang_data, &session_lang_len, NULL)) {
+            if (mirage_language_get_pack_data(MIRAGE_LANGUAGE(session_lang), pack_type, (const gchar **)&session_lang_data, &session_lang_len, NULL)) {
                 MIRAGE_DEBUG(self, MIRAGE_DEBUG_SESSION, "%s: adding pack for session; pack type: %02Xh; pack len: %i; pack data: <%s>\n", __debug__, pack_type, session_lang_len, session_lang_data);
                 mirage_cdtext_encoder_add_data(MIRAGE_CDTEXT_ENCDEC(encoder), langcode, pack_type, 0, session_lang_data, session_lang_len, NULL);
             }
-            
-            g_free(session_lang_data);
             
             /* Now get and pack the same data for the all tracks */
             for (k = 0; k < num_tracks; k++) {
@@ -1587,7 +1585,7 @@ gboolean mirage_session_get_cdtext_data (MIRAGE_Session *self, guint8 **data, gi
                 gint number = 0;
                 
                 GObject *track_lang = NULL;
-                guint8 *track_lang_data = NULL;
+                const guint8 *track_lang_data = NULL;
                 gint track_lang_len = 0;
                 
                 mirage_session_get_track_by_index(self, k, &track, NULL);
@@ -1598,7 +1596,7 @@ gboolean mirage_session_get_cdtext_data (MIRAGE_Session *self, guint8 **data, gi
                     continue;
                 }
                 
-                if (mirage_language_get_pack_data(MIRAGE_LANGUAGE(track_lang), pack_type, (gchar **)&track_lang_data, &track_lang_len, NULL)) {
+                if (mirage_language_get_pack_data(MIRAGE_LANGUAGE(track_lang), pack_type, (const gchar **)&track_lang_data, &track_lang_len, NULL)) {
                     MIRAGE_DEBUG(self, MIRAGE_DEBUG_SESSION, "%s: adding pack for track %i; pack type: %02Xh; pack len: %i; pack data: <%s>\n", __debug__, number, pack_type, track_lang_len, track_lang_data);
                     mirage_cdtext_encoder_add_data(MIRAGE_CDTEXT_ENCDEC(encoder), langcode, pack_type, number, track_lang_data, track_lang_len, NULL);
                 }

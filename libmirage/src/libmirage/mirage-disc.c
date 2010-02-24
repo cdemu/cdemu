@@ -420,13 +420,13 @@ gboolean mirage_disc_set_filenames (MIRAGE_Disc *self, gchar **filenames, GError
 /**
  * mirage_disc_set_filename:
  * @self: a #MIRAGE_Disc
- * @filenames: %NULL terminated array of filenames
+ * @filename: filename
  * @error: location to store error, or %NULL
  *
  * <para>
  * Sets image filename. The functionality is similar to mirage_disc_set_filenames(), 
- * except that only the first filename in @filenames is set. It is intended to be
- * used in parsers which support only single-file images.
+ * except that only one filename is set. It is intended to be used in parsers which 
+ * support only single-file images.
  * </para>
  *
  * <note>
@@ -435,21 +435,21 @@ gboolean mirage_disc_set_filenames (MIRAGE_Disc *self, gchar **filenames, GError
  *
  * Returns: %TRUE on success, %FALSE on failure
  **/
-gboolean mirage_disc_set_filename (MIRAGE_Disc *self, gchar **filenames, GError **error) {
+gboolean mirage_disc_set_filename (MIRAGE_Disc *self, const gchar *filename, GError **error) {
     MIRAGE_DiscPrivate *_priv = MIRAGE_DISC_GET_PRIVATE(self);
-    MIRAGE_CHECK_ARG(filenames);
+    MIRAGE_CHECK_ARG(filename);
     /* Free old filenames */
     g_strfreev(_priv->filenames);
     /* Set filenames */
     _priv->filenames = g_new0(gchar*, 2);
-    _priv->filenames[0] = g_strdup(filenames[0]);
+    _priv->filenames[0] = g_strdup(filename);
     return TRUE;
 }
 
 /**
  * mirage_disc_get_filenames:
  * @self: a #MIRAGE_Disc
- * @filenames: location to store image filename(s)
+ * @filenames: location to store the pointer to array of image filename(s)
  * @error: location to store error, or %NULL
  *
  * <para>
@@ -457,8 +457,8 @@ gboolean mirage_disc_set_filename (MIRAGE_Disc *self, gchar **filenames, GError 
  * </para>
  *
  * <para>
- * A copy of filenames array is stored in @filenames; it should be freed with 
- * g_strfreev() when no longer needed.
+ * Pointer to filenames array is stored in @filenames; the array belongs to the 
+ * object and therefore should not be modified.
  * </para>
  *
  * Returns: %TRUE on success, %FALSE on failure
@@ -472,7 +472,7 @@ gboolean mirage_disc_get_filenames (MIRAGE_Disc *self, gchar ***filenames, GErro
         return FALSE;
     }
     /* Return filenames */
-    *filenames = g_strdupv(_priv->filenames);
+    *filenames = _priv->filenames;
     return TRUE;
 }
 
@@ -499,7 +499,7 @@ gboolean mirage_disc_get_filenames (MIRAGE_Disc *self, gchar ***filenames, GErro
  *
  * Returns: %TRUE on success, %FALSE on failure
  **/
-gboolean mirage_disc_set_mcn (MIRAGE_Disc *self, gchar *mcn, GError **error) {
+gboolean mirage_disc_set_mcn (MIRAGE_Disc *self, const gchar *mcn, GError **error) {
     MIRAGE_DiscPrivate *_priv = MIRAGE_DISC_GET_PRIVATE(self);
     
     MIRAGE_CHECK_ARG(mcn);
@@ -531,13 +531,13 @@ gboolean mirage_disc_set_mcn (MIRAGE_Disc *self, gchar *mcn, GError **error) {
  * </para>
  *
  * <para>
- * A copy of MCN string is stored in @mcn; it should be freed with g_free() 
- * when no longer needed.
+ * A pointer to MCN string is stored in @mcn; the string belongs to the object
+ * and therefore should not be modified.
  * </para>
  *
  * Returns: %TRUE on success, %FALSE on failure
  **/
-gboolean mirage_disc_get_mcn (MIRAGE_Disc *self, gchar **mcn, GError **error) {
+gboolean mirage_disc_get_mcn (MIRAGE_Disc *self, const gchar **mcn, GError **error) {
     MIRAGE_DiscPrivate *_priv = MIRAGE_DISC_GET_PRIVATE(self);
     
     /* Check if MCN is set */
@@ -547,9 +547,9 @@ gboolean mirage_disc_get_mcn (MIRAGE_Disc *self, gchar **mcn, GError **error) {
         return FALSE;
     }
     
-    /* Return MCN */
+    /* Return pointer to MCN */
     if (mcn) {
-        *mcn = g_strndup(_priv->mcn, 13);
+        *mcn = _priv->mcn;
     }
     
     return TRUE;
@@ -1791,7 +1791,7 @@ gboolean mirage_disc_get_track_by_address (MIRAGE_Disc *self, gint address, GObj
  *
  * Returns: %TRUE on success, %FALSE on failure
  **/
-gboolean mirage_disc_set_disc_structure (MIRAGE_Disc *self, gint layer, gint type, guint8 *data, gint len, GError **error) {
+gboolean mirage_disc_set_disc_structure (MIRAGE_Disc *self, gint layer, gint type, const guint8 *data, gint len, GError **error) {
     MIRAGE_DiscPrivate *_priv = MIRAGE_DISC_GET_PRIVATE(self);
     GValueArray *array = NULL;
     gint key = ((layer & 0x0000FFFF) << 16) | (type & 0x0000FFFF);
@@ -1828,9 +1828,9 @@ gboolean mirage_disc_set_disc_structure (MIRAGE_Disc *self, gint layer, gint typ
  * @error: location to store error, or %NULL
  *
  * <para>
- * Retrieves disc structure of type @type from layer @layer. The buffer containing 
- * copy of disc structure is stored to @data; it should be freed with g_free() 
- * when no longer needed.
+ * Retrieves disc structure of type @type from layer @layer. The pointer to buffer 
+ * containing the disc structure is stored in @data; the buffer belongs to the 
+ * object and therefore should not be modified.
  * </para>
  *
  * <note>
@@ -1841,7 +1841,7 @@ gboolean mirage_disc_set_disc_structure (MIRAGE_Disc *self, gint layer, gint typ
  *
  * Returns: %TRUE on success, %FALSE on failure
  **/
-gboolean mirage_disc_get_disc_structure (MIRAGE_Disc *self, gint layer, gint type, guint8 **data, gint *len, GError **error) {
+gboolean mirage_disc_get_disc_structure (MIRAGE_Disc *self, gint layer, gint type, const guint8 **data, gint *len, GError **error) {
     MIRAGE_DiscPrivate *_priv = MIRAGE_DISC_GET_PRIVATE(self);
     gint key = ((layer & 0x0000FFFF) << 16) | (type & 0x0000FFFF);
     GValueArray *array = NULL;
@@ -1869,7 +1869,7 @@ gboolean mirage_disc_get_disc_structure (MIRAGE_Disc *self, gint layer, gint typ
     
     if (data) {
         /* Return data to user if she wants it */
-        *data = g_memdup(tmp_data, tmp_len);
+        *data = tmp_data;
     }
     if (len) {
         *len = tmp_len;
@@ -1978,7 +1978,7 @@ gboolean mirage_disc_read_sector (MIRAGE_Disc *self, gint address, guint8 main_s
  *
  * Returns: %TRUE on success, %FALSE on failure
  **/
-gboolean mirage_disc_set_dpm_data (MIRAGE_Disc *self, gint start, gint resolution, gint num_entries, guint32 *data, GError **error) {
+gboolean mirage_disc_set_dpm_data (MIRAGE_Disc *self, gint start, gint resolution, gint num_entries, const guint32 *data, GError **error) {
     MIRAGE_DiscPrivate *_priv = MIRAGE_DISC_GET_PRIVATE(self);
     
     /* Free old DPM data */
@@ -2009,13 +2009,14 @@ gboolean mirage_disc_set_dpm_data (MIRAGE_Disc *self, gint start, gint resolutio
  * @error: location to store error, or %NULL
  *
  * <para>
- * Retrieves DPM data for disc. The pointer to object's private buffer containing
- * DPM data entries is stored in @data; as such it should not be freed.
+ * Retrieves DPM data for disc. The pointer to buffer containing DPM data entries 
+ * is stored in @data; the buffer belongs to object and therefore should not be
+ * modified.
  * </para>
  *
  * Returns: %TRUE on success, %FALSE on failure
  **/
-gboolean mirage_disc_get_dpm_data (MIRAGE_Disc *self, gint *start, gint *resolution, gint *num_entries, guint32 **data, GError **error) {
+gboolean mirage_disc_get_dpm_data (MIRAGE_Disc *self, gint *start, gint *resolution, gint *num_entries, const guint32 **data, GError **error) {
     MIRAGE_DiscPrivate *_priv = MIRAGE_DISC_GET_PRIVATE(self);
     
     /* Make sure DPM data has been set */

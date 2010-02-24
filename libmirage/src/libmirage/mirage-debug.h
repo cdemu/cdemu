@@ -114,11 +114,11 @@ GType mirage_debug_context_get_type (void);
 gboolean mirage_debug_context_set_debug_mask (MIRAGE_DebugContext *self, gint debug_mask, GError **error);
 gboolean mirage_debug_context_get_debug_mask (MIRAGE_DebugContext *self, gint *debug_mask, GError **error);
 
-gboolean mirage_debug_context_set_domain (MIRAGE_DebugContext *self, gchar *domain, GError **error);
-gboolean mirage_debug_context_get_domain (MIRAGE_DebugContext *self, gchar **domain, GError **error);
+gboolean mirage_debug_context_set_domain (MIRAGE_DebugContext *self, const gchar *domain, GError **error);
+gboolean mirage_debug_context_get_domain (MIRAGE_DebugContext *self, const gchar **domain, GError **error);
 
-gboolean mirage_debug_context_set_name (MIRAGE_DebugContext *self, gchar *name, GError **error);
-gboolean mirage_debug_context_get_name (MIRAGE_DebugContext *self, gchar **name, GError **error);
+gboolean mirage_debug_context_set_name (MIRAGE_DebugContext *self, const gchar *name, GError **error);
+gboolean mirage_debug_context_get_name (MIRAGE_DebugContext *self, const gchar **name, GError **error);
 
 
 G_END_DECLS

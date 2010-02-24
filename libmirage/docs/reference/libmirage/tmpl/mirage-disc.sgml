@@ -84,7 +84,7 @@ functions for accessing and reading of sectors within the disc layout.
 </para>
 
 @self: 
-@filenames: 
+@filename: 
 @error: 
 @Returns: 
 

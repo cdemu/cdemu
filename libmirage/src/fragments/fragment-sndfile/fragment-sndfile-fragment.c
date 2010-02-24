@@ -38,7 +38,7 @@ typedef struct {
 /******************************************************************************\
  *                      Interface implementation: AUDIO                       *
 \******************************************************************************/
-static gboolean __mirage_fragment_sndfile_set_file (MIRAGE_FInterface_AUDIO *self, gchar *filename, GError **error) {
+static gboolean __mirage_fragment_sndfile_set_file (MIRAGE_FInterface_AUDIO *self, const gchar *filename, GError **error) {
     MIRAGE_Fragment_SNDFILEPrivate *_priv = MIRAGE_FRAGMENT_SNDFILE_GET_PRIVATE(self);
     
     /* If file's already set, close it and reset format */
@@ -75,10 +75,10 @@ static gboolean __mirage_fragment_sndfile_set_file (MIRAGE_FInterface_AUDIO *sel
     return TRUE;    
 }
 
-static gboolean __mirage_fragment_sndfile_get_file (MIRAGE_FInterface_AUDIO *self, gchar **filename, GError **error) {
+static gboolean __mirage_fragment_sndfile_get_file (MIRAGE_FInterface_AUDIO *self, const gchar **filename, GError **error) {
     MIRAGE_Fragment_SNDFILEPrivate *_priv = MIRAGE_FRAGMENT_SNDFILE_GET_PRIVATE(self);
     /* Return filename */
-    *filename = g_strdup(_priv->filename);
+    *filename = _priv->filename;
     return TRUE;
 }
 
@@ -100,7 +100,7 @@ static gboolean __mirage_fragment_sndfile_get_offset (MIRAGE_FInterface_AUDIO *s
 /******************************************************************************\
  *                   MIRAGE_Fragment methods implementations                  *
 \******************************************************************************/
-static gboolean __mirage_fragment_sndfile_can_handle_data_format (MIRAGE_Fragment *self, gchar *filename, GError **erro) {
+static gboolean __mirage_fragment_sndfile_can_handle_data_format (MIRAGE_Fragment *self, const gchar *filename, GError **erro) {
     SNDFILE *sndfile;
     SF_INFO format;
     

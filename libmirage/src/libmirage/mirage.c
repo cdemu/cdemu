@@ -326,7 +326,7 @@ GObject *libmirage_create_disc (gchar **filenames, GObject *debug_context, GHash
  * Returns: a #MIRAGE_Fragment object on success, %NULL on failure. The reference 
  * to the object should be released using g_object_unref() when no longer needed.
  **/
-GObject *libmirage_create_fragment (GType fragment_interface, gchar *filename, GError **error) {
+GObject *libmirage_create_fragment (GType fragment_interface, const gchar *filename, GError **error) {
     gboolean succeeded = TRUE;
     GObject *fragment;
     gint i;
@@ -396,13 +396,13 @@ gboolean libmirage_for_each_parser (MIRAGE_CallbackFunction func, gpointer user_
     
     /* Go over all parsers */
     for (i = 0; i < libmirage.num_parsers; i++) {
-        MIRAGE_ParserInfo *parser_info;
+        const MIRAGE_ParserInfo *parser_info;
         gboolean succeeded;
         GObject *parser;
         
         parser = g_object_new(libmirage.parsers[i], NULL);
         mirage_parser_get_parser_info(MIRAGE_PARSER(parser), &parser_info, NULL);
-        succeeded = (*func)(parser_info, user_data);
+        succeeded = (*func)((const gpointer)parser_info, user_data);
         g_object_unref(parser);
         if (!succeeded) {
             mirage_error(MIRAGE_E_ITERCANCELLED, error);
@@ -447,13 +447,13 @@ gboolean libmirage_for_each_fragment (MIRAGE_CallbackFunction func, gpointer use
     
     /* Go over all fragments */
     for (i = 0; i < libmirage.num_fragments; i++) {
-        MIRAGE_FragmentInfo *fragment_info;
+        const MIRAGE_FragmentInfo *fragment_info;
         gboolean succeeded;
         GObject *fragment;
         
         fragment = g_object_new(libmirage.fragments[i], NULL);
         mirage_fragment_get_fragment_info(MIRAGE_FRAGMENT(fragment), &fragment_info, NULL);
-        succeeded = (*func)(fragment_info, user_data);
+        succeeded = (*func)((const gpointer)fragment_info, user_data);
         g_object_unref(fragment);
         if (!succeeded) {
             mirage_error(MIRAGE_E_ITERCANCELLED, error);

@@ -139,7 +139,7 @@ gboolean mirage_language_get_langcode (MIRAGE_Language *self, gint *langcode, GE
  *
  * Returns: %TRUE on success, %FALSE on failure
  **/
-gboolean mirage_language_set_pack_data (MIRAGE_Language *self, gint pack_type, gchar *pack_data, gint length, GError **error) {
+gboolean mirage_language_set_pack_data (MIRAGE_Language *self, gint pack_type, const gchar *pack_data, gint length, GError **error) {
     /*MIRAGE_LanguagePrivate *_priv = MIRAGE_LANGUAGE_GET_PRIVATE(self);*/
     MIRAGE_Language_Pack *pack = NULL;
     
@@ -170,13 +170,14 @@ gboolean mirage_language_set_pack_data (MIRAGE_Language *self, gint pack_type, g
  * @error: location to store error, or %NULL
  *
  * <para>
- * Retrieves pack data of type @pack_type. Copy of pack data is stored in
- * @pack data; it should be freed with g_free() when no longer needed.
+ * Retrieves pack data of type @pack_type. A pointer to buffer containing pack 
+ * data is stored in @pack data; the buffer belongs to the object and therefore
+ * should not be modified.
  * </para>
  *
  * Returns: %TRUE on success, %FALSE on failure
  **/
-gboolean mirage_language_get_pack_data (MIRAGE_Language *self, gint pack_type, gchar **pack_data, gint *length, GError **error) {
+gboolean mirage_language_get_pack_data (MIRAGE_Language *self, gint pack_type, const gchar **pack_data, gint *length, GError **error) {
     /*MIRAGE_LanguagePrivate *_priv = MIRAGE_LANGUAGE_GET_PRIVATE(self);*/
     MIRAGE_Language_Pack *pack = NULL;
     
@@ -191,7 +192,7 @@ gboolean mirage_language_get_pack_data (MIRAGE_Language *self, gint pack_type, g
     
     /* Return what was asked for */
     if (pack_data) {
-        *pack_data = g_memdup(pack->data, pack->length);
+        *pack_data = pack->data;
     }
     if (length) {
         *length = pack->length;

@@ -236,7 +236,7 @@ static gboolean __mirage_fragment_binary_subchannel_file_get_position (MIRAGE_FI
 /******************************************************************************\
  *                   MIRAGE_Fragment methods implementations                  *
 \******************************************************************************/
-static gboolean __mirage_fragment_binary_can_handle_data_format (MIRAGE_Fragment *self, gchar *filename, GError **error) {
+static gboolean __mirage_fragment_binary_can_handle_data_format (MIRAGE_Fragment *self, const gchar *filename, GError **error) {
     /* BINARY doesn't need any data file checks; what's important is interface type,
        which is filtered out elsewhere */
     return TRUE;
