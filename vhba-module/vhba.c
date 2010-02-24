@@ -52,7 +52,7 @@ MODULE_LICENSE("GPL");
         dev_warn(&(scmd)->device->sdev_gendev, fmt, ##a)
 
 
-#define VHBA_MAX_SECTORS_PER_IO 128
+#define VHBA_MAX_SECTORS_PER_IO 256
 #define VHBA_MAX_ID 32
 #define VHBA_CAN_QUEUE 32
 #define VHBA_INVALID_ID VHBA_MAX_ID
