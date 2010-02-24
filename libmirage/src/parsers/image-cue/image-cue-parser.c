@@ -872,8 +872,8 @@ static gboolean __mirage_parser_cue_parse_cue_file (MIRAGE_Parser *self, gchar *
     }
     
     /* If provided, use the specified encoding; otherwise, try to detect it */
-    gchar *encoding = NULL;
-    if (mirage_parser_get_param_string(self, "encoding", (const gchar **)&encoding, NULL)) {
+    const gchar *encoding = NULL;
+    if (mirage_parser_get_param_string(self, "encoding", &encoding, NULL)) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: using specified encoding: %s\n", __debug__, encoding);
         g_io_channel_set_encoding(io_channel, encoding, NULL);
     } else {
