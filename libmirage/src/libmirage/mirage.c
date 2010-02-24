@@ -337,8 +337,8 @@ GObject *libmirage_create_fragment (GType fragment_interface, const gchar *filen
         return NULL;
     }
 
-    /* Check if filename is valid */
-    if (!g_file_test(filename, G_FILE_TEST_IS_REGULAR)) {
+    /* Check if filename is valid, but only if we're not dealing with NULL fragment */
+    if (fragment_interface != MIRAGE_TYPE_FINTERFACE_NULL && !g_file_test(filename, G_FILE_TEST_IS_REGULAR)) {
         mirage_error(MIRAGE_E_DATAFILE, error);
         return NULL;
     }
