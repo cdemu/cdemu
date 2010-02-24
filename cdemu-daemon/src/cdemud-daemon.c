@@ -28,7 +28,7 @@
 /* Userspace <-> Kernel bridge */
 #define TO_SECTOR(len) ((len + 511) / 512)
 #define MAX_SENSE 256
-#define MAX_SECTORS 128
+#define MAX_SECTORS 256
 #define OTHER_SECTORS TO_SECTOR(MAX_SENSE + sizeof(struct vhba_response))
 #define BUF_SIZE (512 * (MAX_SECTORS + OTHER_SECTORS))
 
