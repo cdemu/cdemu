@@ -1461,7 +1461,7 @@ static gboolean __cdemud_device_pc_read (CDEMUD_Device *self, guint8 *raw_cdb) {
         
         /* READ 10/12 should support only sectors with 2048-byte user data */
         gint tmp_len = 0;
-        guint8 *tmp_buf = NULL;
+        const guint8 *tmp_buf = NULL;
         guint8 *cache_ptr = _priv->buffer+_priv->buffer_size;
         
         mirage_sector_get_data(MIRAGE_SECTOR(cur_sector), &tmp_buf, &tmp_len, NULL);
@@ -1809,7 +1809,7 @@ static gboolean __cdemud_device_pc_read_dvd_structure (CDEMUD_Device *self, guin
     }
     
     /* Try to get the structure */
-    guint8 *tmp_data = NULL;
+    const guint8 *tmp_data = NULL;
     gint tmp_len = 0;
     
     CDEMUD_DEBUG(self, DAEMON_DEBUG_MMC, "%s: requested structure: 0x%X; layer: %d\n", __debug__, cdb->format, cdb->layer);
@@ -1821,9 +1821,7 @@ static gboolean __cdemud_device_pc_read_dvd_structure (CDEMUD_Device *self, guin
     
     memcpy(_priv->buffer+sizeof(struct READ_DVD_STRUCTURE_Header), tmp_data, tmp_len);
     _priv->buffer_size += tmp_len;
-    
-    g_free(tmp_data);
-    
+        
     /* Header */
     head->length = GUINT16_TO_BE(_priv->buffer_size - 2);
     
@@ -2993,28 +2991,29 @@ gboolean cdemud_device_get_device_number (CDEMUD_Device *self, gint *number, GEr
 
 static gboolean __cdemud_device_get_status (CDEMUD_Device *self, gboolean *loaded, gchar ***file_names, GError **error) {
     CDEMUD_DevicePrivate *_priv = CDEMUD_DEVICE_GET_PRIVATE(self);
-    
-    gboolean _loaded = FALSE;
-    gchar **_file_names = NULL;
-    
+        
     if (_priv->loaded) {
         MIRAGE_Disc *disc = MIRAGE_DISC(_priv->disc);
-        
-        _loaded = TRUE;
-        mirage_disc_get_filenames(disc, &_file_names, NULL);
+
+        if (loaded) {
+            *loaded = TRUE;
+        }
+
+        if (file_names) {
+            gchar **tmp_filenames;
+            mirage_disc_get_filenames(disc, &tmp_filenames, NULL);
+            *file_names = g_strdupv(tmp_filenames);
+        }
     } else {
-        _loaded = FALSE;
-        _file_names = g_new0(gchar*, 2); /* NULL-terminated, hence 2 */
-        _file_names[0] = g_strdup("N/A");
-    }
-    
-    if (loaded) {
-        *loaded = _loaded;
-    }
-    if (file_names) {
-        *file_names = _file_names;
-    } else {
-        g_strfreev(_file_names);
+
+        if (loaded) {
+            *loaded = FALSE;
+        }
+
+        if (file_names) {
+            *file_names = g_new0(gchar *, 2); /* NULL-terminated, hence 2 */
+            **file_names = g_strdup("N/A");
+        }
     }
     
     return TRUE;

@@ -82,7 +82,7 @@ static gpointer __cdemud_audio_playback_thread (gpointer data) {
            function should keep our timing */
         GObject *sector = NULL;
         GError *error = NULL;
-        guint8 *tmp_buffer = NULL;
+        const guint8 *tmp_buffer = NULL;
         gint tmp_len = 0;
         gint type = 0;
         
