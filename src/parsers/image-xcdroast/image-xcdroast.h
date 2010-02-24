@@ -40,6 +40,29 @@ typedef struct {
     gchar *file;
 } TOC_Track;
 
+typedef struct {
+    gchar *file;
+    gint track;
+    gint num_tracks;
+
+    gchar *title;
+    gchar *artist;
+
+    gint size;
+
+    gint type;
+
+    gint rec_type;
+
+    gint preemp;
+    gint copyperm;
+    gint stereo;
+
+    gchar *cd_title;
+    gchar *cd_artist;
+    gchar *cd_discid;
+} XINF_Track;
+
 GTypeModule *global_module;
 
 G_END_DECLS

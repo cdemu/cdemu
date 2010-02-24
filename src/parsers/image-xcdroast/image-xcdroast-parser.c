@@ -44,6 +44,7 @@ typedef struct {
     GObject *cur_session;
 
     TOC_Track toc_track;
+    XINF_Track xinf_track;
     
     /* Regex engine */
     GList *regex_rules_toc;
@@ -87,16 +88,25 @@ static gboolean __mirage_parser_xcdroast_add_track (MIRAGE_Parser *self, TOC_Tra
             /* Audio track */
             mirage_track_set_mode(MIRAGE_TRACK(track), MIRAGE_MODE_AUDIO, NULL);
 
-            /* Create and add audio fragment - use whole file (FIXME: is this alright?) */
-            GObject *data_fragment = libmirage_create_fragment(MIRAGE_TYPE_FINTERFACE_AUDIO, track_info->file, error);
-            if (!data_fragment) {
-                MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: unknown/unsupported file type: %s\n", __debug__, track_info->file);
+            gchar *audio_file = mirage_helper_find_data_file(track_info->file, _priv->toc_filename);
+            if (!audio_file) {
+                MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: file '%s' not found!\n", __debug__, track_info->file);
                 return FALSE;
             }
-            mirage_finterface_audio_set_file(MIRAGE_FINTERFACE_AUDIO(data_fragment), track_info->file, NULL);
+
+            /* Create and add audio fragment - use whole file (FIXME: is this alright?) */
+            GObject *data_fragment = libmirage_create_fragment(MIRAGE_TYPE_FINTERFACE_AUDIO, audio_file, error);
+            if (!data_fragment) {
+                MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: unknown/unsupported file type: %s\n", __debug__, audio_file);
+                g_free(audio_file);
+                return FALSE;
+            }
+            mirage_finterface_audio_set_file(MIRAGE_FINTERFACE_AUDIO(data_fragment), audio_file, NULL);
             mirage_fragment_use_the_rest_of_file(MIRAGE_FRAGMENT(data_fragment), NULL);
             
             mirage_track_add_fragment(MIRAGE_TRACK(track), -1, &data_fragment, NULL);
+
+            g_free(audio_file);
             break;
         }
         default: {
@@ -107,9 +117,11 @@ static gboolean __mirage_parser_xcdroast_add_track (MIRAGE_Parser *self, TOC_Tra
 
     /* Try to get a XINF file and read additional info from it */
     gchar *xinf_filename = __create_xinf_filename(track_info->file);
+    gchar *real_xinf_filename = mirage_helper_find_data_file(xinf_filename, _priv->toc_filename);
     
-    if (__mirage_parser_xcdroast_parse_xinf_file(self, xinf_filename, NULL)) {
+    if (__mirage_parser_xcdroast_parse_xinf_file(self, real_xinf_filename, NULL)) {
     }
+    g_free(real_xinf_filename);
     g_free(xinf_filename);
 
     g_object_unref(track);
@@ -213,15 +225,171 @@ static gboolean __callback_toc_startsec (MIRAGE_Parser *self, GMatchInfo *match_
 static gboolean __callback_toc_file (MIRAGE_Parser *self, GMatchInfo *match_info, GError **error) {
     MIRAGE_Parser_XCDROASTPrivate *_priv = MIRAGE_PARSER_XCDROAST_GET_PRIVATE(self);
 
-    if (_priv->toc_track.file) {
-        g_free(_priv->toc_track.file);
-    }
+    g_free(_priv->toc_track.file);
     _priv->toc_track.file = g_match_info_fetch_named(match_info, "file");
 
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: File: %s\n", __debug__, _priv->toc_track.file);
 
     /* Add track */
     return __mirage_parser_xcdroast_add_track(self, &_priv->toc_track, error);
+}
+
+
+static gboolean __callback_xinf_comment (MIRAGE_Parser *self, GMatchInfo *match_info, GError **error) {
+    gchar *comment = g_match_info_fetch_named(match_info, "comment");
+    
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: parsed COMMENT: %s\n", __debug__, comment);
+    
+    g_free(comment);
+    
+    return TRUE;
+}
+
+static gboolean __callback_xinf_file (MIRAGE_Parser *self, GMatchInfo *match_info, GError **error) {
+    MIRAGE_Parser_XCDROASTPrivate *_priv = MIRAGE_PARSER_XCDROAST_GET_PRIVATE(self);
+
+    g_free(_priv->xinf_track.file);
+    _priv->xinf_track.file = g_match_info_fetch_named(match_info, "file");    
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: File: %s\n", __debug__, _priv->xinf_track.file);
+        
+    return TRUE;
+}
+
+static gboolean __callback_xinf_track (MIRAGE_Parser *self, GMatchInfo *match_info, GError **error) {
+    MIRAGE_Parser_XCDROASTPrivate *_priv = MIRAGE_PARSER_XCDROAST_GET_PRIVATE(self);
+    gchar *track = g_match_info_fetch_named(match_info, "track");
+    gchar *num_tracks = g_match_info_fetch_named(match_info, "num_tracks");
+
+    _priv->xinf_track.track = g_strtod(track, NULL);
+    _priv->xinf_track.num_tracks = g_strtod(num_tracks, NULL);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: Track: %d / %d\n", __debug__, _priv->xinf_track.track, _priv->xinf_track.num_tracks);
+    
+    g_free(track);
+    g_free(num_tracks);
+    
+    return TRUE;
+}
+
+static gboolean __callback_xinf_title (MIRAGE_Parser *self, GMatchInfo *match_info, GError **error) {
+    MIRAGE_Parser_XCDROASTPrivate *_priv = MIRAGE_PARSER_XCDROAST_GET_PRIVATE(self);
+
+    g_free(_priv->xinf_track.title);
+    _priv->xinf_track.title = g_match_info_fetch_named(match_info, "title");    
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: Title: %s\n", __debug__, _priv->xinf_track.title);
+        
+    return TRUE;
+}
+
+static gboolean __callback_xinf_artist (MIRAGE_Parser *self, GMatchInfo *match_info, GError **error) {
+    MIRAGE_Parser_XCDROASTPrivate *_priv = MIRAGE_PARSER_XCDROAST_GET_PRIVATE(self);
+
+    g_free(_priv->xinf_track.artist);
+    _priv->xinf_track.artist = g_match_info_fetch_named(match_info, "artist");    
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: Artist: %s\n", __debug__, _priv->xinf_track.artist);
+        
+    return TRUE;
+}
+
+static gboolean __callback_xinf_size (MIRAGE_Parser *self, GMatchInfo *match_info, GError **error) {
+    MIRAGE_Parser_XCDROASTPrivate *_priv = MIRAGE_PARSER_XCDROAST_GET_PRIVATE(self);
+    gchar *size = g_match_info_fetch_named(match_info, "size");
+
+    _priv->xinf_track.size  = g_strtod(size, NULL);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: Size: %d\n", __debug__, _priv->xinf_track.size);
+    
+    g_free(size);
+    
+    return TRUE;
+}
+
+static gboolean __callback_xinf_type (MIRAGE_Parser *self, GMatchInfo *match_info, GError **error) {
+    MIRAGE_Parser_XCDROASTPrivate *_priv = MIRAGE_PARSER_XCDROAST_GET_PRIVATE(self);
+    gchar *type = g_match_info_fetch_named(match_info, "type");
+
+    _priv->xinf_track.type  = g_strtod(type, NULL);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: Type: %d\n", __debug__, _priv->xinf_track.type);
+    
+    g_free(type);
+    
+    return TRUE;
+}
+
+static gboolean __callback_xinf_rec_type (MIRAGE_Parser *self, GMatchInfo *match_info, GError **error) {
+    MIRAGE_Parser_XCDROASTPrivate *_priv = MIRAGE_PARSER_XCDROAST_GET_PRIVATE(self);
+    gchar *rec_type = g_match_info_fetch_named(match_info, "rec_type");
+
+    _priv->xinf_track.rec_type  = g_strtod(rec_type, NULL);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: Rec type: %d\n", __debug__, _priv->xinf_track.rec_type);
+    
+    g_free(rec_type);
+    
+    return TRUE;
+}
+
+static gboolean __callback_xinf_preemp (MIRAGE_Parser *self, GMatchInfo *match_info, GError **error) {
+    MIRAGE_Parser_XCDROASTPrivate *_priv = MIRAGE_PARSER_XCDROAST_GET_PRIVATE(self);
+    gchar *preemp = g_match_info_fetch_named(match_info, "preemp");
+
+    _priv->xinf_track.preemp  = g_strtod(preemp, NULL);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: Preemp: %d\n", __debug__, _priv->xinf_track.preemp);
+    
+    g_free(preemp);
+    
+    return TRUE;
+}
+
+static gboolean __callback_xinf_copyperm (MIRAGE_Parser *self, GMatchInfo *match_info, GError **error) {
+    MIRAGE_Parser_XCDROASTPrivate *_priv = MIRAGE_PARSER_XCDROAST_GET_PRIVATE(self);
+    gchar *copyperm = g_match_info_fetch_named(match_info, "copyperm");
+
+    _priv->xinf_track.copyperm  = g_strtod(copyperm, NULL);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: Copy perm: %d\n", __debug__, _priv->xinf_track.copyperm);
+    
+    g_free(copyperm);
+    
+    return TRUE;
+}
+
+static gboolean __callback_xinf_stereo (MIRAGE_Parser *self, GMatchInfo *match_info, GError **error) {
+    MIRAGE_Parser_XCDROASTPrivate *_priv = MIRAGE_PARSER_XCDROAST_GET_PRIVATE(self);
+    gchar *stereo = g_match_info_fetch_named(match_info, "stereo");
+
+    _priv->xinf_track.stereo  = g_strtod(stereo, NULL);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: Stereo: %d\n", __debug__, _priv->xinf_track.stereo);
+    
+    g_free(stereo);
+    
+    return TRUE;
+}
+
+static gboolean __callback_xinf_cd_title (MIRAGE_Parser *self, GMatchInfo *match_info, GError **error) {
+    MIRAGE_Parser_XCDROASTPrivate *_priv = MIRAGE_PARSER_XCDROAST_GET_PRIVATE(self);
+
+    g_free(_priv->xinf_track.cd_title);
+    _priv->xinf_track.cd_title = g_match_info_fetch_named(match_info, "cd_title");    
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: CD Title: %s\n", __debug__, _priv->xinf_track.cd_title);
+        
+    return TRUE;
+}
+
+static gboolean __callback_xinf_cd_artist (MIRAGE_Parser *self, GMatchInfo *match_info, GError **error) {
+    MIRAGE_Parser_XCDROASTPrivate *_priv = MIRAGE_PARSER_XCDROAST_GET_PRIVATE(self);
+
+    g_free(_priv->xinf_track.cd_artist);
+    _priv->xinf_track.cd_artist = g_match_info_fetch_named(match_info, "cd_artist");    
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: CD Artist: %s\n", __debug__, _priv->xinf_track.cd_artist);
+        
+    return TRUE;
+}
+
+static gboolean __callback_xinf_cd_discid (MIRAGE_Parser *self, GMatchInfo *match_info, GError **error) {
+    MIRAGE_Parser_XCDROASTPrivate *_priv = MIRAGE_PARSER_XCDROAST_GET_PRIVATE(self);
+
+    g_free(_priv->xinf_track.cd_discid);
+    _priv->xinf_track.cd_discid = g_match_info_fetch_named(match_info, "cd_discid");    
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: CD Disc ID: %s\n", __debug__, _priv->xinf_track.cd_discid);
+        
+    return TRUE;
 }
 
 #define APPEND_REGEX_RULE(list,rule,callback) {                         \
@@ -257,6 +425,20 @@ static void __mirage_parser_xcdroast_init_regex_parser (MIRAGE_Parser *self) {
     APPEND_REGEX_RULE(_priv->regex_rules_toc, "^\\s*file\\s*=\\s*\"(?<file>.+)\"\\s*$", __callback_toc_file);
 
     /* *** XINF parser ***/
+    APPEND_REGEX_RULE(_priv->regex_rules_xinf, "^#(?<comment>.*)$", __callback_xinf_comment);
+    APPEND_REGEX_RULE(_priv->regex_rules_xinf, "^\\s*file\\s*=\\s*\"(?<file>.+)\"\\s*$", __callback_xinf_file);
+    APPEND_REGEX_RULE(_priv->regex_rules_xinf, "^\\s*track\\s*=\\s*(?<track>[\\d]+)\\s+of\\s*(?<num_tracks>[\\d]+)\\s*$", __callback_xinf_track);
+    APPEND_REGEX_RULE(_priv->regex_rules_xinf, "^\\s*title\\s*=\\s*\"(?<title>.*)\"\\s*$", __callback_xinf_title);
+    APPEND_REGEX_RULE(_priv->regex_rules_xinf, "^\\s*artist\\s*=\\s*\"(?<artist>.*)\"\\s*$", __callback_xinf_artist);
+    APPEND_REGEX_RULE(_priv->regex_rules_xinf, "^\\s*size\\s*=\\s*(?<size>[\\d]+)\\s*$", __callback_xinf_size);
+    APPEND_REGEX_RULE(_priv->regex_rules_xinf, "^\\s*type\\s*=\\s*(?<type>[\\d]+)\\s*$", __callback_xinf_type);
+    APPEND_REGEX_RULE(_priv->regex_rules_xinf, "^\\s*rec_type\\s*=\\s*(?<rec_type>[\\d]+)\\s*$", __callback_xinf_rec_type);
+    APPEND_REGEX_RULE(_priv->regex_rules_xinf, "^\\s*preemp\\s*=\\s*(?<preemp>[\\d]+)\\s*$", __callback_xinf_preemp);
+    APPEND_REGEX_RULE(_priv->regex_rules_xinf, "^\\s*copyperm\\s*=\\s*(?<copyperm>[\\d]+)\\s*$", __callback_xinf_copyperm);
+    APPEND_REGEX_RULE(_priv->regex_rules_xinf, "^\\s*stereo\\s*=\\s*(?<stereo>[\\d]+)\\s*$", __callback_xinf_stereo);
+    APPEND_REGEX_RULE(_priv->regex_rules_xinf, "^\\s*cd_title\\s*=\\s*\"(?<cd_title>.*)\"\\s*$", __callback_xinf_cd_title);
+    APPEND_REGEX_RULE(_priv->regex_rules_xinf, "^\\s*cd_artist\\s*=\\s*\"(?<cd_artist>.*)\"\\s*$", __callback_xinf_cd_artist);
+    APPEND_REGEX_RULE(_priv->regex_rules_xinf, "^\\s*cd_discid\\s*=\\s*\"(?<cd_discid>.*)\"\\s*$", __callback_xinf_cd_discid);
     
     return;
 }
@@ -301,7 +483,7 @@ static gboolean __mirage_parser_xcdroast_parse_xinf_file (MIRAGE_Parser *self, g
     }
 
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "\n");
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: parsing\n", __debug__);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: parsing XINF\n", __debug__);
 
     /* Read file line-by-line */
     gint line_nr;
@@ -366,7 +548,8 @@ static gboolean __mirage_parser_xcdroast_parse_xinf_file (MIRAGE_Parser *self, g
             break;
         }
     }
-    
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: done parsing XINF\n\n", __debug__);
+
     g_io_channel_unref(io_channel);
     
     return succeeded;
@@ -390,7 +573,7 @@ static gboolean __mirage_parser_xcdroast_parse_toc_file (MIRAGE_Parser *self, gc
     }
 
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "\n");
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: parsing\n", __debug__);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: parsing TOC\n", __debug__);
     
     /* Read file line-by-line */
     gint line_nr;
@@ -455,7 +638,8 @@ static gboolean __mirage_parser_xcdroast_parse_toc_file (MIRAGE_Parser *self, gc
             break;
         }
     }
-    
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: parsing TOC\n", __debug__);
+   
     g_io_channel_unref(io_channel);
     
     return succeeded;
@@ -474,9 +658,9 @@ static gboolean __check_toc_file (MIRAGE_Parser *self, const gchar *filename) {
     }
 
     /* *** Additional check ***
-       Because X-CD Roast also uses .toc for its images, we need to make
-       sure this one was created by cdrdao... for that, we check for presence
-       of CD_DA/CD_ROM_XA/CD_ROM/CD_I directive. */
+       Because cdrdao also uses .toc for its images, we need to make
+       sure this one was created by X-CD-Roast... for that, we check for 
+       of comment containing "X-CD-Roast" */
     GIOChannel *io_channel;
         
     /* Create IO channel for file */
@@ -583,7 +767,7 @@ end:
         g_object_unref(_priv->disc);
         *disc = NULL;
     }
-        
+    
     return succeeded;
 }
 
@@ -617,6 +801,15 @@ static void __mirage_parser_xcdroast_finalize (GObject *obj) {
     
     /* Cleanup regex parser engine */
     __mirage_parser_xcdroast_cleanup_regex_parser(MIRAGE_PARSER(self));
+
+    /* Cleanup the parser structures */
+    g_free(_priv->toc_track.file);
+
+    g_free(_priv->xinf_track.file);
+    g_free(_priv->xinf_track.title);
+    g_free(_priv->xinf_track.artist);
+    g_free(_priv->xinf_track.cd_artist);
+    g_free(_priv->xinf_track.cd_discid);
     
     /* Chain up to the parent class */
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_GOBJECT, "%s: chaining up to parent\n", __debug__);
