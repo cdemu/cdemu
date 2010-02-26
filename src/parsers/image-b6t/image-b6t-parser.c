@@ -498,27 +498,27 @@ static gboolean __mirage_parser_b6t_parse_dvd_structures (MIRAGE_Parser *self, G
 }
 
 
-static gboolean __mirage_parser_b6t_decode_parser_type (MIRAGE_Parser *self, GError **error) {
+static gboolean __mirage_parser_b6t_decode_disc_type (MIRAGE_Parser *self, GError **error) {
     MIRAGE_Parser_B6TPrivate *_priv = MIRAGE_PARSER_B6T_GET_PRIVATE(self);
 
     switch (_priv->disc_block_1->disc_type) {
         case 0x08: {
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: CD-ROM parser\n", __debug__);
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: CD-ROM disc\n", __debug__);
             mirage_disc_set_medium_type(MIRAGE_DISC(_priv->disc), MIRAGE_MEDIUM_CD, NULL);
             break;
         }
         case 0x10: {
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: DVD-ROM parser\n", __debug__);
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: DVD-ROM disc\n", __debug__);
             mirage_disc_set_medium_type(MIRAGE_DISC(_priv->disc), MIRAGE_MEDIUM_DVD, NULL);
             break;
         }
         case 0x11: {
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: DVD-R parser\n", __debug__);
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: DVD-R disc\n", __debug__);
             mirage_disc_set_medium_type(MIRAGE_DISC(_priv->disc), MIRAGE_MEDIUM_DVD, NULL);
             break;
         }
         default: {
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: unknown parser type: 0x%X!\n", __debug__, _priv->disc_block_1->disc_type);
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: unknown disc type: 0x%X!\n", __debug__, _priv->disc_block_1->disc_type);
             mirage_error(MIRAGE_E_PARSER, error);
             return FALSE;
         }
@@ -546,7 +546,7 @@ static gboolean __mirage_parser_b6t_parse_disc_blocks (MIRAGE_Parser *self, GErr
     WHINE_ON_UNEXPECTED(_priv->disc_block_1->__dummy7__, 0x00000000);
     WHINE_ON_UNEXPECTED(_priv->disc_block_1->__dummy8__, 0x00000000);
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  disc type: 0x%X\n", __debug__, _priv->disc_block_1->disc_type);
-    __mirage_parser_b6t_decode_parser_type(self, error);
+    __mirage_parser_b6t_decode_disc_type(self, error);
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  number of sessions: %i\n", __debug__, _priv->disc_block_1->num_sessions);
     WHINE_ON_UNEXPECTED(_priv->disc_block_1->__dummy9__, 0x00000002);
     WHINE_ON_UNEXPECTED(_priv->disc_block_1->__dummy10__, 0x00000000);
