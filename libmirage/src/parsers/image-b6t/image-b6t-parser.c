@@ -507,6 +507,16 @@ static gboolean __mirage_parser_b6t_decode_disc_type (MIRAGE_Parser *self, GErro
             mirage_disc_set_medium_type(MIRAGE_DISC(_priv->disc), MIRAGE_MEDIUM_CD, NULL);
             break;
         }
+        case 0x09: {
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: CD-R disc\n", __debug__);
+            mirage_disc_set_medium_type(MIRAGE_DISC(_priv->disc), MIRAGE_MEDIUM_CD, NULL);
+            break;
+        }
+        case 0x0A: {
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: CD-RW disc\n", __debug__);
+            mirage_disc_set_medium_type(MIRAGE_DISC(_priv->disc), MIRAGE_MEDIUM_CD, NULL);
+            break;
+        }
         case 0x10: {
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: DVD-ROM disc\n", __debug__);
             mirage_disc_set_medium_type(MIRAGE_DISC(_priv->disc), MIRAGE_MEDIUM_DVD, NULL);
@@ -514,6 +524,21 @@ static gboolean __mirage_parser_b6t_decode_disc_type (MIRAGE_Parser *self, GErro
         }
         case 0x11: {
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: DVD-R disc\n", __debug__);
+            mirage_disc_set_medium_type(MIRAGE_DISC(_priv->disc), MIRAGE_MEDIUM_DVD, NULL);
+            break;
+        }
+        case 0x12: {
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: DVD-RAM disc\n", __debug__);
+            mirage_disc_set_medium_type(MIRAGE_DISC(_priv->disc), MIRAGE_MEDIUM_DVD, NULL);
+            break;
+        }
+        case 0x13: {
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: DVD-RW Restricted Overwrite disc\n", __debug__);
+            mirage_disc_set_medium_type(MIRAGE_DISC(_priv->disc), MIRAGE_MEDIUM_DVD, NULL);
+            break;
+        }
+        case 0x14: {
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: DVD-RW Sequential Recording disc\n", __debug__);
             mirage_disc_set_medium_type(MIRAGE_DISC(_priv->disc), MIRAGE_MEDIUM_DVD, NULL);
             break;
         }
@@ -677,11 +702,11 @@ static gboolean __mirage_parser_b6t_parse_disc_blocks (MIRAGE_Parser *self, GErr
        of the data itself, expect that the last 8 bytes are verbatim copy of data 
        returned by READ CAPACITY command. Again, this data is not really relevant, 
        so we're skipping it... */
-    if (_priv->disc_block_1->disc_type == 0x08) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: skipping CD-ROM parser info block (0x%X bytes)\n", __debug__, _priv->disc_block_1->cdrom_info_length);
+    if (_priv->disc_block_1->disc_type == 0x08 || _priv->disc_block_1->disc_type == 0x09 || _priv->disc_block_1->disc_type == 0x0A) {
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: skipping CD-ROM disc info block (0x%X bytes)\n", __debug__, _priv->disc_block_1->cdrom_info_length);
         _priv->cur_ptr += _priv->disc_block_1->cdrom_info_length;
     } else {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: skipping DVD-ROM parser info block (0x%X bytes)\n", __debug__, _priv->disc_block_1->dvdrom_info_length);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: skipping DVD-ROM disc info block (0x%X bytes)\n", __debug__, _priv->disc_block_1->dvdrom_info_length);
         _priv->cur_ptr += _priv->disc_block_1->dvdrom_info_length;
     }
     
