@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 # gCDEmu: Applet class
-# Copyright (C) 2006-2009 Rok Mandeljc
+# Copyright (C) 2006-2010 Rok Mandeljc
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -154,7 +154,7 @@ class gCDEmu_Applet (gnomeapplet.Applet):
         self.__about = gtk.AboutDialog()
         self.__about.set_name("gCDEmu")
         self.__about.set_version(config.version)
-        self.__about.set_copyright("Copyright (C) 2006-2008 Rok Mandeljc")
+        self.__about.set_copyright("Copyright (C) 2006-2010 Rok Mandeljc")
         self.__about.set_comments(_("gCDEmu is an applet for controlling CDEmu\ndevices via CDEmu daemon."))
         self.__about.set_website("http://cdemu.sf.net")
         self.__about.set_website_label(_("The CDEmu project website"))
