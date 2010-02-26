@@ -1,6 +1,6 @@
 /*
  *  libMirage: B6T image parser: Plugin exports
- *  Copyright (C) 2007-2009 Rok Mandeljc
+ *  Copyright (C) 2007-2010 Rok Mandeljc
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by

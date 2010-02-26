@@ -1,6 +1,6 @@
 /*
  *  libMirage: DAA image plugin
- *  Copyright (C) 2008-2009 Rok Mandeljc
+ *  Copyright (C) 2008-2010 Rok Mandeljc
  *
  *  Derived from code of GPLed utility daa2iso, written by Luigi Auriemma:
  *  http://aluigi.altervista.org/mytoolz.htm
