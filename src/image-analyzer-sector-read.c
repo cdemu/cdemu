@@ -167,6 +167,16 @@ static void __image_analyzer_sector_read_ui_callback_read (GtkWidget *button, gp
         
         __image_analyzer_read_sector_append_text(self, "tag_section", "Sector density: ");
         __image_analyzer_read_sector_append_text(self, NULL, "%f degrees per sector\n", dpm_density);
+
+        __image_analyzer_read_sector_append_text(self, NULL, "\n");
+    }
+
+    /* L-EC verification */
+    __image_analyzer_read_sector_append_text(self, "tag_section", "L-EC verification: ");
+    if (mirage_sector_verify_lec(MIRAGE_SECTOR(sector))) {
+        __image_analyzer_read_sector_append_text(self, NULL, "passed\n");
+    } else {
+        __image_analyzer_read_sector_append_text(self, NULL, "bad sector\n");
     }
     __image_analyzer_read_sector_append_text(self, NULL, "\n");
     
