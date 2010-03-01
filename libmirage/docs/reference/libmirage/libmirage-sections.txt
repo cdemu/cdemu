@@ -202,7 +202,6 @@ mirage_track_get_language_by_code
 mirage_track_for_each_language
 mirage_track_get_prev
 mirage_track_get_next
-mirage_track_has_iso9660
 <SUBSECTION Standard>
 MIRAGE_TRACK
 MIRAGE_IS_TRACK
@@ -230,6 +229,7 @@ mirage_sector_get_subheader
 mirage_sector_get_data
 mirage_sector_get_edc_ecc
 mirage_sector_get_subchannel
+mirage_sector_verify_lec
 <SUBSECTION Standard>
 MIRAGE_SECTOR
 MIRAGE_IS_SECTOR
@@ -500,7 +500,6 @@ G_LIST_FOR_EACH
 mirage_helper_find_data_file
 mirage_helper_get_suffix
 mirage_helper_has_suffix
-mirage_helper_match_suffixes
 mirage_helper_strcasecmp
 mirage_helper_strncasecmp
 mirage_helper_lba2msf

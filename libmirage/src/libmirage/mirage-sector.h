@@ -126,6 +126,8 @@ gboolean mirage_sector_get_data (MIRAGE_Sector *self, const guint8 **ret_buf, gi
 gboolean mirage_sector_get_edc_ecc (MIRAGE_Sector *self, const guint8 **ret_buf, gint *ret_len, GError **error);
 gboolean mirage_sector_get_subchannel (MIRAGE_Sector *self, gint format, const guint8 **ret_buf, gint *ret_len, GError **error);
 
+gboolean mirage_sector_verify_lec (MIRAGE_Sector *self);
+
 
 G_END_DECLS
 
