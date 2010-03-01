@@ -1429,9 +1429,11 @@ static gboolean __cdemud_device_pc_prevent_allow_medium_removal (CDEMUD_Device *
 /* READ (10) and READ (12) implementation */
 static gboolean __cdemud_device_pc_read (CDEMUD_Device *self, guint8 *raw_cdb) {
     CDEMUD_DevicePrivate *_priv = CDEMUD_DEVICE_GET_PRIVATE(self);
-    gint start_sector = 0; /* MUST be signed because it may be negative! */
-    gint num_sectors  = 0;
-        
+    gint start_sector; /* MUST be signed because it may be negative! */
+    gint num_sectors;
+
+    struct ModePage_0x01 *p_0x01 = __cdemud_device_get_mode_page(self, 0x01, MODE_PAGE_CURRENT);
+
     /* READ 10 vs READ 12 */
     if (raw_cdb[0] == PC_READ_10) {
         struct READ_10_CDB *cdb = (struct READ_10_CDB *)raw_cdb;    
@@ -1458,7 +1460,7 @@ static gboolean __cdemud_device_pc_read (CDEMUD_Device *self, guint8 *raw_cdb) {
     }
     MIRAGE_Disc *disc = MIRAGE_DISC(_priv->disc);
     
-    gint sector = 0;    
+    gint sector;    
     
     /* Set up delay emulation */
     __cdemud_device_delay_begin(self);
@@ -1475,6 +1477,19 @@ static gboolean __cdemud_device_pc_read (CDEMUD_Device *self, guint8 *raw_cdb) {
         }
         
         __cdemud_device_flush_buffer(self);
+
+        /* Here we do the emulation of "bad sectors"... if we're dealing with
+           a bad sector, then its EDC/ECC won't correspond to actual data. So
+           we verify sector's EDC and in case DCR (Disable Corrections) bit in
+           Mode Page 1 is not enabled, we report the read error. */
+        if (!p_0x01->dcr) {
+            if (!mirage_sector_verify_lec(MIRAGE_SECTOR(cur_sector))) {
+                CDEMUD_DEBUG(self, DAEMON_DEBUG_MMC, "%s: bad sector detected, triggering read error!\n", __debug__);
+                g_object_unref(cur_sector);
+                __cdemud_device_write_sense_full(self, SK_MEDIUM_ERROR, UNRECOVERED_READ_ERROR, 0, sector);
+                return FALSE;
+            }
+        }
         
         /* READ 10/12 should support only sectors with 2048-byte user data */
         gint tmp_len = 0;
@@ -1548,11 +1563,13 @@ static gboolean __cdemud_device_pc_read_capacity (CDEMUD_Device *self, guint8 *r
 /* READ CD and READ CD MSF implementation */
 static gboolean __cdemud_device_pc_read_cd (CDEMUD_Device *self, guint8 *raw_cdb) {
     CDEMUD_DevicePrivate *_priv = CDEMUD_DEVICE_GET_PRIVATE(self);
-    gint start_sector = 0; /* MUST be signed because it may be negative! */
-    gint num_sectors = 0;
-    gint exp_sect_type = 0;
-    gint subchan_mode = 0;
-        
+    gint start_sector; /* MUST be signed because it may be negative! */
+    gint num_sectors;
+    gint exp_sect_type;
+    gint subchan_mode;
+
+    struct ModePage_0x01 *p_0x01 = __cdemud_device_get_mode_page(self, 0x01, MODE_PAGE_CURRENT);
+
     /* READ CD vs READ CD MSF */
     if (raw_cdb[0] == PC_READ_CD) {
         struct READ_CD_CDB *cdb = (struct READ_CD_CDB *)raw_cdb;
@@ -1613,7 +1630,7 @@ static gboolean __cdemud_device_pc_read_cd (CDEMUD_Device *self, guint8 *raw_cdb
     GObject* first_sector = NULL;
     gint prev_sector_type = 0;
     
-    gint sector = 0;
+    gint sector = start_sector;
     
     /* Read first sector to determine its type */
     mirage_disc_get_sector(disc, start_sector, &first_sector, NULL);
@@ -1655,6 +1672,7 @@ static gboolean __cdemud_device_pc_read_cd (CDEMUD_Device *self, guint8 *raw_cdb
         /* Break if current sector type doesn't match expected one*/
         if (exp_sect_type && (cur_sector_type != exp_sect_type)) {
             CDEMUD_DEBUG(self, DAEMON_DEBUG_MMC, "%s: expected sector type mismatch (expecting %i, got %i)!\n", __debug__, exp_sect_type, cur_sector_type);
+            g_object_unref(cur_sector);
             __cdemud_device_write_sense_full(self, SK_ILLEGAL_REQUEST, ILLEGAL_MODE_FOR_THIS_TRACK, 1, sector);
             return FALSE;
         }
@@ -1665,14 +1683,29 @@ static gboolean __cdemud_device_pc_read_cd (CDEMUD_Device *self, guint8 *raw_cdb
            fact that Mode 2 Form 1 and Mode 2 Form 2 can alternate... */
         if (prev_sector_type != cur_sector_type) {
             CDEMUD_DEBUG(self, DAEMON_DEBUG_MMC, "%s: previous sector type (%i) different from current one (%i)!\n", __debug__, prev_sector_type, cur_sector_type);
+            g_object_unref(cur_sector);
             __cdemud_device_write_sense_full(self, SK_ILLEGAL_REQUEST, ILLEGAL_MODE_FOR_THIS_TRACK, 0, sector);
             return FALSE;
         }
 #endif
+
+        /* Here we do the emulation of "bad sectors"... if we're dealing with
+           a bad sector, then its EDC/ECC won't correspond to actual data. So
+           we verify sector's EDC and in case DCR (Disable Corrections) bit in
+           Mode Page 1 is not enabled, we report the read error. */
+        if (!p_0x01->dcr) {
+            if (!mirage_sector_verify_lec(MIRAGE_SECTOR(cur_sector))) {
+                CDEMUD_DEBUG(self, DAEMON_DEBUG_MMC, "%s: bad sector detected, triggering read error!\n", __debug__);
+                g_object_unref(cur_sector);
+                __cdemud_device_write_sense_full(self, SK_MEDIUM_ERROR, UNRECOVERED_READ_ERROR, 0, sector);
+                return FALSE;
+            }
+        }
         
         /* Map the MCSB: operation performed on raw Byte9 */
         if (__helper_map_mcsb(&raw_cdb[9], cur_sector_type) == -1) {
             CDEMUD_DEBUG(self, DAEMON_DEBUG_MMC, "%s: invalid MCSB: %X\n", __debug__, raw_cdb[9]);
+            g_object_unref(cur_sector);
             __cdemud_device_write_sense(self, SK_ILLEGAL_REQUEST, INVALID_FIELD_IN_CDB);
             return FALSE;
         }
@@ -1687,6 +1720,7 @@ static gboolean __cdemud_device_pc_read_cd (CDEMUD_Device *self, guint8 *raw_cdb
         GError *read_err = NULL;
         if (!mirage_disc_read_sector(disc, sector, raw_cdb[9], subchan_mode, ptr, &read_length, &read_err)) {
             CDEMUD_DEBUG(self, DAEMON_DEBUG_MMC, "%s: failed to read sector 0x%X: %s\n", __debug__, sector, read_err->message);
+            g_object_unref(cur_sector);
             __cdemud_device_write_sense_full(self, SK_ILLEGAL_REQUEST, ILLEGAL_MODE_FOR_THIS_TRACK, 0, sector);
             return FALSE;
         }
