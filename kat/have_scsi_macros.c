@@ -1,4 +1,3 @@
-#include <linux/autoconf.h>
 #include <scsi/scsi_cmnd.h>
 
 void testfunc (void);

@@ -1,4 +1,3 @@
-#include <linux/autoconf.h>
 #include <linux/scatterlist.h>
 
 /* Note: scatterlist.page_link is used in kernel (2.6.24 <= version < X) */
