@@ -2592,6 +2592,7 @@ static gboolean __cdemud_device_pc_read_track_information (CDEMUD_Device *self, 
     mirage_track_get_mode(MIRAGE_TRACK(track), &mode, NULL);
     mirage_track_layout_get_start_sector(MIRAGE_TRACK(track), &start_sector, NULL);
     mirage_track_layout_get_length(MIRAGE_TRACK(track), &length, NULL);
+    g_object_unref(track);
     
     ret_data->length = GUINT16_TO_BE(_priv->buffer_size - 2);
     ret_data->track_number0 = track_number >> 8;
