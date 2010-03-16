@@ -1593,6 +1593,7 @@ gboolean mirage_session_get_cdtext_data (MIRAGE_Session *self, guint8 **data, gi
                                 
                 if (!mirage_track_get_language_by_code(MIRAGE_TRACK(track), langcode, &track_lang, NULL)) {
                     MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: Failed to get language with code %i on track %i!\n", __debug__, langcode, number);
+                    g_object_unref(track);
                     continue;
                 }
                 
