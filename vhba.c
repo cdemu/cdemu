@@ -26,6 +26,7 @@
 #include <linux/platform_device.h>
 #include <linux/miscdevice.h>
 #include <linux/poll.h>
+#include <linux/slab.h>
 #ifdef CONFIG_COMPAT
 #include <linux/compat.h>
 #endif
