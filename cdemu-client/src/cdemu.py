@@ -40,7 +40,7 @@ class CDEmu (object):
     __dbus_proxy = None
     __dbus_iface = None
     
-    __bus_type = "system" # Use system bus as hard-coded default
+    __bus_type = "session" # Use session bus as hard-coded default
     
     __parser_params = {} # Parser parameters (for load command)
 

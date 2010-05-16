@@ -106,7 +106,7 @@ static gboolean daemonize = FALSE;
 static gint num_devices = 1;
 static gchar *ctl_device = "/dev/vhba_ctl";
 static gchar *audio_driver = "null";
-static gchar *bus = "system";
+static gchar *bus = "session";
 static gchar *pid_file = NULL;
 
 static GOptionEntry option_entries[] = {
@@ -141,7 +141,7 @@ static gboolean __run_daemon () {
     g_message(" - num devices: %i\n", num_devices);
     g_message(" - ctl device: %s\n", ctl_device);
     g_message(" - audio driver: %s\n", audio_driver);
-    g_message(" - bus type: %s\n", bus);
+    g_message(" - bus type: %s\n\n", bus);
     
     /* Decipher bus type */
     if (!mirage_helper_strcasecmp(bus, "system")) {
@@ -150,7 +150,12 @@ static gboolean __run_daemon () {
         use_system_bus = FALSE;
     } else {
         g_warning("Invalid bus argument '%s', using default bus!\n", bus);
-        use_system_bus = TRUE;
+        use_system_bus = FALSE;
+    }
+
+    /* Discourage the use of system bus */
+    if (use_system_bus) {
+        g_message("WARNING: using CDEmu on system bus is deprecated and might lead to security issues on multi-user systems! Consult the README file for more details.\n\n");
     }
     
     /* If ran in daemon mode, create PID file */
