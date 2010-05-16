@@ -15,7 +15,9 @@ Table of contents
 7. Device options
 8. Debugging
 9. Encrypted images and password supplying
-10. Contact information
+10. System bus vs. session bus
+11. Deprecation of running on system bus
+12. Contact information
 
 
 1. Introduction
@@ -513,8 +515,44 @@ cases the ability to simply load them might be useful.
 Therefore, the password is sent from clients to daemon in plain string form, 
 with no real protection. Live with it, or don't use it.
 
+10. System bus vs. session bus
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-10. Contact information
+CDEmu daemon registers a D-BUS interface that can be used by clients to communicate with it;
+from the initial release on, the interface could be registered either on system or session bus.
+
+A session bus instance is created for every user session, and is visible only within that session.
+On the other hand, there's only one instance of system bus, which is visible system-wide.
+
+This means that when session bus is used, every user can run its own instance of CDEmu daemon, as
+long as device number limit of VHBA module is not reached. There can be only one instance of the
+daemon running on system bus, but it is visible to all users. Also, a single instance of daemon on
+system bus and multiple instances on session busses can be running at the same time.
+
+Note that running on system bus requires special permissions; to this end, CDEmu daemon installs a
+D-BUS config file which by default allows root to run daemon on system bus. Session bus requires
+no such permissions, but the user running the daemon must have read/write permissions to VHBA
+character control device.
+
+11. Deprecation of running on system bus
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+As of version 1.3.0, however, running the daemon on system bus is considered deprecated and
+should be avoided for various reasons listed below.
+
+First and foremost, running the CDEmu daemon on the system bus leads to security issues in
+multi-user environment; any user with access to the daemon over D-BUS is able to load every single
+image on the whole system (assuming the daemon is running as root). Effectively, it is also possible
+to check existence of files in folders where the user does not have access (by attempting to load a
+file as an image and look at the error).
+
+Additionally, some of the services that CDEmu might (indirectly) depend on, are nowdays run in session
+mode as well, and require to be accessed from within the session. One example would be PulseAudio audio
+daemon, which is commonly configured to be run in per-session mode and might be use by CDEmu's audio
+backend. The other example would be GVFS, which might provide the user access to images stored on remote
+filesystems (e.g. via CIFS or SSH).
+
+12. Contact information
 ~~~~~~~~~~~~~~~~~~~~~~
 
 CDEmu project's web page: http://cdemu.sourceforge.net
