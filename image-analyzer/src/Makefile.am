@@ -22,7 +22,8 @@ image_analyzer_LDADD = \
     $(gtk_LIBS) \
     $(gtkextra_LIBS) \
     $(libmirage_LIBS) \
-    $(libxml_LIBS)
+    $(libxml_LIBS) \
+    -lm
 
 noinst_HEADERS = \
     image-analyzer-application.h \
