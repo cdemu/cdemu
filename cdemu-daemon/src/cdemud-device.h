@@ -36,7 +36,7 @@ typedef struct {
 
 typedef struct {
     MIRAGE_ObjectClass parent;
-    
+
     /* Class members */
     guint signals[2]; /* Signals */
 } CDEMUD_DeviceClass;
@@ -53,18 +53,17 @@ typedef struct {
 /* Used by CDEMUD_TYPE_DEVICE */
 GType cdemud_device_get_type (void);
 
+gboolean cdemud_device_setup_mapping (CDEMUD_Device *self);
+
 /* Public API */
-gboolean cdemud_device_initialize (CDEMUD_Device *self, gint number, gchar *audio_driver, GError **error);
+gboolean cdemud_device_initialize (CDEMUD_Device *self, gint number, gchar *ctl_device, gchar *audio_driver, GError **error);
 gboolean cdemud_device_get_device_number (CDEMUD_Device *self, gint *number, GError **error);
 gboolean cdemud_device_get_status (CDEMUD_Device *self, gboolean *loaded, gchar ***file_names, GError **error);
 gboolean cdemud_device_load_disc (CDEMUD_Device *self, gchar **file_names, GHashTable *parameters, GError **error);
 gboolean cdemud_device_unload_disc (CDEMUD_Device *self, GError **error);
 gboolean cdemud_device_get_option (CDEMUD_Device *self, gchar *option_name, GPtrArray **option_values, GError **error);
 gboolean cdemud_device_set_option (CDEMUD_Device *self, gchar *option_name, GPtrArray *option_values, GError **error);
-gboolean cdemud_device_set_mapping (CDEMUD_Device *self, gchar *sr_device, gchar *sg_device, GError **error);
 gboolean cdemud_device_get_mapping (CDEMUD_Device *self, gchar **sr_device, gchar **sg_device, GError **error);
-
-gint cdemud_device_execute(CDEMUD_Device *self, CDEMUD_Command *cmd);
 
 G_END_DECLS
 
