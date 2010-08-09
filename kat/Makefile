@@ -16,4 +16,4 @@ modules:
 
 clean:
 	$(KMAKE) clean
-	rm -f *odule*
+	rm -f *odule* kat.out
