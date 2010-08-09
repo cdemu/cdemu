@@ -13,7 +13,7 @@ if [ ! -d "$1" ]; then
 fi
 if [ -z "${CC}" ]; then CC=gcc; fi
 echo -n "KAT will test if C compiler works..."
-echo "main(){}" | ${CC} -x c - -o /dev/null
+echo "main(){}" | ${CC} -x c - -o kat.out
 if [ $? -ne 0 ]; then
   echo "${CC}" failed
   echo "Please set CC to working compiler or set it to empty (for default gcc)"
