@@ -4,7 +4,7 @@
 AC_PREREQ(2.59)
 
 # Project init
-AC_INIT(mirage-image-analyzer, [1.2.0], rok.mandeljc@email.si)
+AC_INIT(mirage-image-analyzer, [1.3.0], http://cdemu.sf.net)
 AC_CONFIG_SRCDIR(src/main.c)
 AM_INIT_AUTOMAKE(AC_PACKAGE_NAME, AC_PACKAGE_VERSION)
 AM_CONFIG_HEADER(config.h)
@@ -23,7 +23,7 @@ AC_HEADER_STDC
 PKG_CHECK_MODULES(glib, glib-2.0 >= 2.6)
 PKG_CHECK_MODULES(gobject, gobject-2.0 >= 2.6)
 PKG_CHECK_MODULES(gtk, gtk+-2.0 >= 2.6)
-PKG_CHECK_MODULES(libmirage, libmirage >= 1.2.0)
+PKG_CHECK_MODULES(libmirage, libmirage >= 1.3.0)
 PKG_CHECK_MODULES(gtkextra, gtkextra-2.0 >= 2.0.0)
 PKG_CHECK_MODULES(libxml, libxml-2.0 >= 2.0.0)
 
