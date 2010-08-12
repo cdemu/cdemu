@@ -23,6 +23,9 @@ be used in libMirage's plugin system.
 <!-- ##### SECTION Stability_Level ##### -->
 
 
+<!-- ##### SECTION Image ##### -->
+
+
 <!-- ##### VARIABLE mirage_major_version ##### -->
 <para>
 

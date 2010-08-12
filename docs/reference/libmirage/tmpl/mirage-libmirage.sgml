@@ -47,6 +47,9 @@ respectively. The list of supported debug masks can be obtained using libmirage_
 <!-- ##### SECTION Stability_Level ##### -->
 
 
+<!-- ##### SECTION Image ##### -->
+
+
 <!-- ##### USER_FUNCTION MIRAGE_CallbackFunction ##### -->
 <para>
 

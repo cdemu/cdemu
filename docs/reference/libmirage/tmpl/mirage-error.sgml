@@ -25,6 +25,9 @@ Unless coming from underlying GLib's systems, the returned error code is one of
 <!-- ##### SECTION Stability_Level ##### -->
 
 
+<!-- ##### SECTION Image ##### -->
+
+
 <!-- ##### ENUM MIRAGE_ErrorCodes ##### -->
 <para>
 
@@ -80,6 +83,7 @@ Unless coming from underlying GLib's systems, the returned error code is one of
 
 </para>
 
+@void: 
 @Returns: 
 
 
