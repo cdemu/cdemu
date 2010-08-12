@@ -22,6 +22,9 @@ functions for accessing and reading of sectors within the disc layout.
 <!-- ##### SECTION Stability_Level ##### -->
 
 
+<!-- ##### SECTION Image ##### -->
+
+
 <!-- ##### MACRO MIRAGE_MCN_SIZE ##### -->
 <para>
 
