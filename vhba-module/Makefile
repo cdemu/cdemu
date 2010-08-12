@@ -12,9 +12,13 @@ KMAKE := $(MAKE) -C $(KDIR) M=$(PWD)
 
 DOCS = AUTHORS ChangeLog COPYING INSTALL NEWS README
 
+KAT_TESTS = \
+	kat/have_scsi_macros.c \
+	kat/scatterlist_has_page_link.c
+
 all: modules
 
-kernel.api.h: kat/*.c
+kernel.api.h: ${KAT_TESTS}
 	kat/kat ${KDIR} $@ $^
 
 modules: kernel.api.h
