@@ -1,4 +1,3 @@
-PACKAGE = kat-test-$(TESTNAME)
 EXTRA_CFLAGS := -Werror-implicit-function-declaration -Werror
 
 obj-m += $(TESTNAME)
@@ -15,3 +14,5 @@ modules:
 clean:
 	$(KMAKE) clean
 	rm -f *odule* kat.out
+
+.PHONY: clean
