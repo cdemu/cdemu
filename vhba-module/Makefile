@@ -46,3 +46,5 @@ dist-gzip: dist-dir
 dist-bzip2: dist-dir
 	tar -cjf $(PACKAGE).tar.bz2 $(PACKAGE)
 	rm -rf $(PACKAGE)
+
+.PHONY: clean kernel.api.h
