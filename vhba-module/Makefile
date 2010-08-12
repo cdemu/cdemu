@@ -6,10 +6,8 @@ EXTRA_CFLAGS += -DVHBA_VERSION=\"$(VHBA_VERSION)\" -I$(PWD)
 obj-m += vhba.o
 
 PWD	?= `pwd`
-ifndef KERNELRELEASE
-	KERNELRELEASE := `uname -r`
-endif
-KDIR := /lib/modules/$(KERNELRELEASE)/build
+KERNELRELEASE ?= `uname -r`
+KDIR ?= /lib/modules/$(KERNELRELEASE)/build
 KMAKE := $(MAKE) -C $(KDIR) M=$(PWD)
 
 DOCS = AUTHORS ChangeLog COPYING INSTALL NEWS README
