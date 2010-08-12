@@ -14,12 +14,12 @@ KMAKE := $(MAKE) -C $(KDIR) M=$(PWD)
 
 DOCS = AUTHORS ChangeLog COPYING INSTALL NEWS README
 
-all: kernel.api.h modules
+all: modules
 
 kernel.api.h: kat/*.c
 	kat/kat ${KDIR} $@ $^
 
-modules:
+modules: kernel.api.h
 	$(KMAKE) modules
 
 module_install:
