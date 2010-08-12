@@ -1,14 +1,14 @@
 <?xml version="1.0"?>
-<!DOCTYPE article PUBLIC "-//OASIS//DTD DocBook XML V4.1.2//EN" 
+<!DOCTYPE article PUBLIC "-//OASIS//DTD DocBook XML V4.1.2//EN"
 "http://www.oasis-open.org/docbook/xml/4.1.2/docbookx.dtd" [
   <!ENTITY legal SYSTEM "legal.xml">
-  <!ENTITY appletversion "1.2.0">
+  <!ENTITY appletversion "1.3.0">
   <!ENTITY manrevision "1.2">
   <!ENTITY date "October 2008">
   <!ENTITY applet "gCDEmu">
 ]>
 
-<!-- 
+<!--
   (Do not remove this comment block.)
   Maintained by the GNOME Documentation Project
   http://developer.gnome.org/projects/gdp
@@ -21,15 +21,15 @@
 <!-- appropriate code -->
     <articleinfo>
         <title>&applet; Applet Manual</title>
-        
+
         <abstract role="description">
             <para>
                 The <application>&applet;</application> applet is a GNOME applet for
-                controlling CDEmu daemon. It is part of the userspace-cdemu suite, a 
+                controlling CDEmu daemon. It is part of the userspace-cdemu suite, a
                 free, GPL CD/DVD-ROM device emulator for linux.
             </para>
         </abstract>
-        
+
         <copyright>
             <year>2007-2010</year>
             <holder>Rok Mandeljc</holder>
@@ -42,18 +42,18 @@
         </copyright>
 
 -->
-<!-- An address can be added to the publisher information.  If a role is 
-     not specified, the publisher/author is the same for all versions of the 
+<!-- An address can be added to the publisher information.  If a role is
+     not specified, the publisher/author is the same for all versions of the
      document.  -->
          <publisher role="maintainer">
-            <publishername> GNOME Documentation Project </publishername> 
+            <publishername> GNOME Documentation Project </publishername>
          </publisher>
 
 &legal;
-<!-- This file  contains link to license for the documentation (GNU FDL), and 
-     other legal stuff such as "NO WARRANTY" statement. Please do not change 
+<!-- This file  contains link to license for the documentation (GNU FDL), and
+     other legal stuff such as "NO WARRANTY" statement. Please do not change
      any of this. -->
-     
+
          <authorgroup>
             <author>
                 <firstname>Rok</firstname>
@@ -76,7 +76,7 @@
             </othercredit>
             -->
         </authorgroup>
-    
+
 <!-- According to GNU FDL, revision history is mandatory if you are -->
 <!-- modifying/reusing someone else's document.  If not, you can omit it. -->
 <!-- Remember to remove the &manrevision; entity from the revision entries other
@@ -89,7 +89,7 @@
 <!-- For example, if the GNOME desktop release is V2.x, the first version of the manual that -->
 <!-- is written in that desktop timeframe is V2.0, the second version of the manual is V2.1, etc. -->
 <!-- When the desktop release version changes to V3.x, the revision number of the manual changes -->
-<!-- to V3.0, and so on. -->  
+<!-- to V3.0, and so on. -->
         <revhistory>
             <revision>
                 <revnumber>&applet; Applet Manual V&manrevision;</revnumber>
@@ -105,14 +105,14 @@
                 </revdescription>
             </revision>
         </revhistory>
-        <releaseinfo> 
+        <releaseinfo>
             This manual describes version &appletversion; of &applet;.
         </releaseinfo>
         <legalnotice>
             <title>Feedback</title>
             <para>
                 To report a bug or make a suggestion regarding the &applet; applet or this
-                manual, follow the directions in the 
+                manual, follow the directions in the
                 <ulink url="ghelp:gnome-feedback" type="help">GNOME Feedback Page</ulink>.
             </para>
         </legalnotice>
@@ -127,7 +127,7 @@
 <!-- Use the Introduction section to give a brief overview of what
      the applet is and what it does. -->
     <sect1 id="gcdemu-introduction">
-        <title>Introduction</title> 
+        <title>Introduction</title>
 	 <!-- You should start the Introduction with a screenshot of the applet in a panel -->
 <!-- ==== Figure ============================================= -->
         <figure id="gcdemu-fig">
@@ -144,22 +144,22 @@
                     </textobject>
                 </mediaobject>
             </screenshot>
-        </figure> 
+        </figure>
 <!-- ==== End of Figure ======================================= -->
         <para>
             The <application>&applet;</application> applet is a GNOME applet for
-            controlling CDEmu daemon. It is part of the userspace-cdemu suite, a 
+            controlling CDEmu daemon. It is part of the userspace-cdemu suite, a
             free, GPL CD/DVD-ROM device emulator for linux.
         </para>
-        <para>  
-            It provides a graphic interface that allows performing the key tasks 
-            related to controlling the CDEmu daemon, such as loading and unloading 
-            devices, displaying devices' status and retrieving/setting devices' 
+        <para>
+            It provides a graphic interface that allows performing the key tasks
+            related to controlling the CDEmu daemon, such as loading and unloading
+            devices, displaying devices' status and retrieving/setting devices'
             debug masks. It supports connection on both system and session bus.
         </para>
         <para>
-            In addition, applet listens to the signals emitted by CDEmu daemon 
-            and provides the notification via libnotify's notifications (provided 
+            In addition, applet listens to the signals emitted by CDEmu daemon
+            and provides the notification via libnotify's notifications (provided
             that python bindings are installed).
         </para>
         <sect2 id="gcdemu-introduction-add">
@@ -190,7 +190,7 @@
         </sect2>
     </sect1>
 <!-- ================ Usage ================================ -->
-<!-- Use this section to describe how to use the applet to perform the tasks for 
+<!-- Use this section to describe how to use the applet to perform the tasks for
      which the applet is designed. -->
     <sect1 id="gcdemu-usage">
         <title>Usage</title>
@@ -203,7 +203,7 @@
         </para>
         <para>
             <figure id="gcdemu-fig1">
-                <title>Active applet</title> 
+                <title>Active applet</title>
                 <screenshot>
                     <mediaobject>
                         <imageobject>
@@ -216,7 +216,7 @@
                 </screenshot>
             </figure>
             <figure id="gcdemu-fig2">
-                <title>Inactive applet</title> 
+                <title>Inactive applet</title>
                 <screenshot>
                     <mediaobject>
                         <imageobject>
@@ -233,12 +233,12 @@
             The state of applet changes when daemon emits appropriate signal (i.e.
             when it is started or when it is properly stopped). Alternatively, the
             state can also change after a command has been sent to daemon fails. In
-            this case, applet attempts to verify the connection, and upon failure 
+            this case, applet attempts to verify the connection, and upon failure
             enters inactive state. This might happen if daemon crashes.
         </para>
         <para>
-            If you wish to change the applet's icon, you can do so by manually editing 
-            applet's <guilabel>icon_name</guilabel> G-Conf key. Please note that icon 
+            If you wish to change the applet's icon, you can do so by manually editing
+            applet's <guilabel>icon_name</guilabel> G-Conf key. Please note that icon
             name is relative to gCDEmu's pixmap dir (i.e. /usr/share/pixmaps/gcdemu).
         </para>
 <!-- ================ Usage Subsection ================================ -->
@@ -269,12 +269,12 @@
         <sect2 id="gcdemu-usage-quick">
             <title>Quick loading and unloading</title>
             <para>
-                Quick device loading/unloading can be done by left-clicking on 
-                the device entry in device menu. 
+                Quick device loading/unloading can be done by left-clicking on
+                the device entry in device menu.
             </para>
             <para>
                 If clicked on empty device, a file selection dialog will appear,
-                allowing you to select image file(s), which the applet will then 
+                allowing you to select image file(s), which the applet will then
                 attempted to load.
             </para>
             <para>
@@ -290,13 +290,13 @@
         <sect2 id="gcdemu-usage-devdiag">
             <title>Device properties dialog</title>
             <para>
-                Device properties dialog can be obtained by right-clicking on 
-                the device entry in device menu. It has multiple tabs which 
+                Device properties dialog can be obtained by right-clicking on
+                the device entry in device menu. It has multiple tabs which
                 allow you to load and unload device and change device's options,
-                such as device's ID, debug masks or DPM and transfer rate 
+                such as device's ID, debug masks or DPM and transfer rate
                 emulation flags.
             </para>
-            
+
             <sect3 id="gcdemu-usage-devdiag-load">
                 <title>Loading and unloading</title>
                 <para>
@@ -305,11 +305,11 @@
                 </para>
                 <para>
                     In addition, you can find information on device mapping in
-                    <guilabel>Device mapping</guilabel> frame. It displays 
+                    <guilabel>Device mapping</guilabel> frame. It displays
                     information on which SCSI CD-ROM device and which SCSI generic
-                    device correspond to the given CDEmu device (if this information 
-                    is provided by daemon). This can be useful for example if you 
-                    need to pass the path of the CDEmu device to a command-line 
+                    device correspond to the given CDEmu device (if this information
+                    is provided by daemon). This can be useful for example if you
+                    need to pass the path of the CDEmu device to a command-line
                     application, like mplayer.
                 </para>
                 <figure id="applet-fig4">
@@ -328,7 +328,7 @@
                     </screenshot>
                 </figure>
                 <para>
-                    To load the device, click on the <guilabel>Load</guilabel> 
+                    To load the device, click on the <guilabel>Load</guilabel>
                     button and a file selection dialog will appear, allowing you to select
                     image file(s).
                 </para>
@@ -351,10 +351,10 @@
                     </screenshot>
                 </figure>
                 <para>
-                    To unload the device, click on the <guilabel>Unload</guilabel> 
+                    To unload the device, click on the <guilabel>Unload</guilabel>
                     button.
                 </para>
-                
+
                 <sect4 id="gcdemu-usage-devdiag-load-password">
                     <title>Loading encrypted images</title>
                     <para>
@@ -380,9 +380,9 @@
                         Entered password is then sent to the daemon.
                     </para>
                     <warning>
-                        <para>Note, however, that the password is sent over D-BUS in 
-                        a plain string form, without any protection. Depending 
-                        on your privacy concerns you might wish to avoid loading 
+                        <para>Note, however, that the password is sent over D-BUS in
+                        a plain string form, without any protection. Depending
+                        on your privacy concerns you might wish to avoid loading
                         such images.</para>
                     </warning>
                 </sect4>
@@ -416,7 +416,7 @@
                 <para>
                     Currently set device ID values are displayed in text entries
                     within <guilabel>Device ID</guilabel> frame. To change device
-                    ID, change the values and click on the <guilabel>Set device 
+                    ID, change the values and click on the <guilabel>Set device
                     ID</guilabel> button.
                 </para>
                 <para>
@@ -424,8 +424,8 @@
                     <guilabel>DPM emulation</guilabel> checkbox.
                 </para>
                 <para>
-                    To change the value of transfer rate emulation flag, simply 
-                    check/uncheck <guilabel>Transfer rate emulation</guilabel> 
+                    To change the value of transfer rate emulation flag, simply
+                    check/uncheck <guilabel>Transfer rate emulation</guilabel>
                     checkbox.
                 </para>
             </sect3>
@@ -438,7 +438,7 @@
                 <para>
                     To manipulate the verbosity of the daemon part, select the
                     <guilabel>Daemon</guilabel> tab.
-                    
+
                     <figure id="applet-fig6">
                         <title>Daemon debug mask tab</title>
                         <screenshot>
@@ -458,7 +458,7 @@
                 <para>
                     To manipulate the verbosity of libMirage library, select the
                     <guilabel>Library</guilabel> tab.
-                    
+
                     <figure id="applet-fig7">
                         <title>Library debug mask tab</title>
                         <screenshot>
@@ -495,11 +495,11 @@
     <sect1 id="gcdemu-prefs">
         <title>Settings</title>
         <para>
-            For the time being, there are two settings to be set in 
-            <application>&applet;</application>. 
+            For the time being, there are two settings to be set in
+            <application>&applet;</application>.
         </para>
         <para>
-            The first one is whether the applet should display notifications 
+            The first one is whether the applet should display notifications
             from daemon or not; it is available only if pynotify module is available.
         </para>
         <para>
@@ -510,11 +510,11 @@
 <!-- Use a new section to describe different tabbed sections on the Settings or Preferences
      dialog. -->
      <sect2 id="gcdemu-prefs-system-bus">
-            <title>System/session bus</title> 
+            <title>System/session bus</title>
             <para>
                 You can set the applet to use system/session bus to connect to daemon
-                by right clicking on the applet icon and selecting <guilabel>Use system 
-                bus</guilabel> menu item. If the item is checked, system 
+                by right clicking on the applet icon and selecting <guilabel>Use system
+                bus</guilabel> menu item. If the item is checked, system
                 bus is used, otherwise session bus is used.
             </para>
             <figure id="applet-fig8">
@@ -534,12 +534,12 @@
                 </screenshot>
             </figure>
         </sect2>
-        
+
         <sect2 id="gcdemu-prefs-notifications">
-            <title>Enabling/Disabling notifications</title> 
+            <title>Enabling/Disabling notifications</title>
             <para>
                 You can enable/disable notifications by right clicking on the applet
-                icon and selecting <guilabel>Show Notifications</guilabel> menu item. 
+                icon and selecting <guilabel>Show Notifications</guilabel> menu item.
                 If checked, notifications are enabled, otherwise they are disabled.
             </para>
             <figure id="applet-fig9">
@@ -561,11 +561,11 @@
         </sect2>
     </sect1>
 <!-- ============= Bugs ================================== -->
-<!-- This section is optional and is commented out by default. 
-     You can use it to describe known bugs and limitations of the 
+<!-- This section is optional and is commented out by default.
+     You can use it to describe known bugs and limitations of the
      program if there are any - please be frank and list all
      problems you know of.
-     
+
     <sect1 id="myapplet-bugs">
         <title>Known Bugs and Limitations</title>
         <para> </para>
@@ -576,21 +576,21 @@
      author's name(s), web page, license, feedback address. This
      section is optional: primary place for this info is "About.." box of
      the program. However, if you do wish to include this info in the
-     manual, this is the place to put it. Alternatively, you can put this 
+     manual, this is the place to put it. Alternatively, you can put this
      information in the title page.-->
-     
+
      <sect1 id="gcdemu-about">
         <title>About &applet;</title>
         <para>
             <application>&applet;</application> was written by Rok Mandeljc
-            (<email>rok.mandeljc@gmail.com</email>). To find more information 
+            (<email>rok.mandeljc@gmail.com</email>). To find more information
             about <application>&applet;</application>, please visit the <ulink
             url="http://cdemu.sf.net" type="http">CDEmu Project page</ulink>.
         </para>
         <para>
-            If you have some comments or suggestions regarding this application 
-            or documentation, need help, or want to report a bug, please contact 
-            us! CDEmu project's mailing list is 
+            If you have some comments or suggestions regarding this application
+            or documentation, need help, or want to report a bug, please contact
+            us! CDEmu project's mailing list is
             <email>cdemu-devel@lists.sourceforge.net</email>.
         </para>
 <!-- For translations: uncomment this:
@@ -600,7 +600,7 @@
             (<email>MYNAME@MYADDRESS</email>). Please send all  comments  and
             suggestions regarding this translation to SOMEWHERE.
         </para>
-            
+
 -->
         <para>
             This program is distributed under the terms of the GNU General
@@ -610,6 +610,6 @@
             type="help" url="ghelp:gpl">link</ulink>, or in the file COPYING
             included with the source code of this program.
         </para>
-    </sect1> 
+    </sect1>
 
-</article> 
+</article>

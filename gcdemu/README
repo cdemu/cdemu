@@ -1,12 +1,12 @@
 gCDEmu
-v.1.2.0
+v.1.3.0
 ~~~~~~~~~~~~
 
-This is gCDEmu, a GNOME applet for controlling CDEmu daemon. It is part of the 
+This is gCDEmu, a GNOME applet for controlling CDEmu daemon. It is part of the
 userspace-cdemu suite, a free, GPL CD/DVD-ROM device emulator for linux.
 
 It provides a graphic interface that allows performing the key tasks related to
-controlling the CDEmu daemon, such as loading and unloading devices, displaying 
+controlling the CDEmu daemon, such as loading and unloading devices, displaying
 devices' status and retrieving/setting devices' debug masks.
 
 In addition, the applet listens to signals emitted by CDEmu daemon and provides
@@ -16,14 +16,14 @@ notifications via libnotify (provided that python bindings are installed).
 Requirements:
 ~~~~~~~~~~~~~
  - python 2.4 or newer
- - PyGTK, PyGObject and PyGNOME 2.6 or newer; 
+ - PyGTK, PyGObject and PyGNOME 2.6 or newer;
    (gnomeapplet and gconf modules are required)
  - D-BUS python bindings
  - intltool
- 
+
  - notify-python (optional)
 
- 
+
 Installation:
 ~~~~~~~~~~~~~
 
@@ -44,8 +44,8 @@ Troubleshooting:
 ~~~~~~~~~~~~~~~~
 
 Q: gCDEmu's tray icon is greyed and the applet does nothing!
-A: Greyed-out icon means that the applet failed to connect to the CDEmu daemon. 
-   Please make sure the daemon is running and that you're connecting via 
+A: Greyed-out icon means that the applet failed to connect to the CDEmu daemon.
+   Please make sure the daemon is running and that you're connecting via
    appropriate bus.
 
 A note on encrypted images and password supplying:
@@ -53,8 +53,8 @@ A note on encrypted images and password supplying:
 As of version 1.2.0, CDEmu daemon offers support for encrypted images. When password
 is required to load an image, gCDEmu will prompt for it and then send it to daemon.
 
-NOTE, HOWEVER, THAT THE PASSWORD IS SENT OVER D-BUS IN A PLAIN STRING FORM, WITHOUT 
-ANY PROTECTION. DEPENDING ON YOUR PRIVACY CONCERNS YOU MIGHT WISH TO AVOID LOADING 
+NOTE, HOWEVER, THAT THE PASSWORD IS SENT OVER D-BUS IN A PLAIN STRING FORM, WITHOUT
+ANY PROTECTION. DEPENDING ON YOUR PRIVACY CONCERNS YOU MIGHT WISH TO AVOID LOADING
 SUCH IMAGES.
 
 

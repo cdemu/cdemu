@@ -5,14 +5,14 @@ AC_PREREQ(2.59)
 
 # libMirage release and libtool versioning:
 m4_define([libmirage_major_version], [1])
-m4_define([libmirage_minor_version], [2])
+m4_define([libmirage_minor_version], [3])
 m4_define([libmirage_micro_version], [0])
 m4_define([libmirage_version], [libmirage_major_version.libmirage_minor_version.libmirage_micro_version])
 # Increment if the interface has additions, changes, removals.
-m4_define([libmirage_current], [2])
+m4_define([libmirage_current], [3])
 # Increment any time the source changes; set to 0 if you increment CURRENT
 m4_define([libmirage_revision], [0])
-# Increment if any interfaces have been added; set to 0 if any interfaces have 
+# Increment if any interfaces have been added; set to 0 if any interfaces have
 # been removed. Removal has precedence over adding, so set to 0 if both happened.
 m4_define([libmirage_age], [0])
 
@@ -32,14 +32,14 @@ AC_SUBST(MIRAGE_LT_CURRENT, libmirage_current)
 AC_SUBST(MIRAGE_LT_REVISION, libmirage_revision)
 AC_SUBST(MIRAGE_LT_AGE, libmirage_age)
 
-AC_SUBST(MIRAGE_VERSION_SHORT, 
+AC_SUBST(MIRAGE_VERSION_SHORT,
     ["libmirage_major_version.libmirage_minor_version"])
 
-AC_SUBST(MIRAGE_VERSION_LONG, 
+AC_SUBST(MIRAGE_VERSION_LONG,
     ["libmirage_version"])
-    
+
 # Libtool versioning
-AC_SUBST(LT_VERSION_INFO, 
+AC_SUBST(LT_VERSION_INFO,
     ["-version-info libmirage_current:libmirage_revision:libmirage_age"])
 
 AM_MAINTAINER_MODE
@@ -115,7 +115,7 @@ fi
 AC_SUBST(MIRAGE_PLUGIN_DIR)
 
 # Output files
-AC_CONFIG_FILES([    
+AC_CONFIG_FILES([
     Makefile
     libmirage.pc
     docs/Makefile
