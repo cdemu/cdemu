@@ -3,8 +3,8 @@ Section: libs
 Priority: optional
 Homepage: http://cdemu.sourceforge.net/
 Maintainer: Henrik Stokseth <henrik@hw0.org>
-Build-Depends: pkg-config (>= 0.14), libglib2.0-dev, libsndfile1-dev, 
- zlib1g-dev, gtk-doc-tools, quilt, debhelper (>= 7), autotools-dev
+Build-Depends: pkg-config (>= 0.14), libglib2.0-dev, libsndfile1-dev,
+ zlib1g-dev, gtk-doc-tools, quilt, debhelper (>= 7), autotools-dev, autoconf, libtool
 Standards-Version: 3.8.0
 
 
@@ -14,12 +14,12 @@ Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends}
 Recommends: libmirage2-data
 Description: A CD-ROM image access library
- This is libMirage library, a CD-ROM image access library, and part of the 
+ This is libMirage library, a CD-ROM image access library, and part of the
  CDEmu suite, a free, GPL CD/DVD-ROM device emulator for Linux. It is
  written in C and based on GLib.
  .
- The aim of libMirage is to provide uniform access to the data stored in 
- different image formats, by creating a representation of disc stored in image 
+ The aim of libMirage is to provide uniform access to the data stored in
+ different image formats, by creating a representation of disc stored in image
  file, which is based on GObjects.
 
 
