@@ -34,8 +34,8 @@ install-stamp:
 	install -m 644 -D $(CURDIR)/*.c                   $(CURDIR)/debian/vhba-dkms/usr/src/vhba-$(UPSTREAM_VERSION)/
 	install -m 644 -D $(CURDIR)/*.h                   $(CURDIR)/debian/vhba-dkms/usr/src/vhba-$(UPSTREAM_VERSION)/
 	install -d                                        $(CURDIR)/debian/vhba-dkms/usr/src/vhba-$(UPSTREAM_VERSION)/kat
-	install -m 755 -D $(CURDIR)/kat/kat               $(CURDIR)/debian/vhba-dkms/usr/src/vhba-$(UPSTREAM_VERSION)/kat/
 	install -m 644 -D $(CURDIR)/kat/*                 $(CURDIR)/debian/vhba-dkms/usr/src/vhba-$(UPSTREAM_VERSION)/kat/
+	install -m 755 -D $(CURDIR)/kat/kat               $(CURDIR)/debian/vhba-dkms/usr/src/vhba-$(UPSTREAM_VERSION)/kat/
 
 	dh install --after auto_install
 	touch $@
