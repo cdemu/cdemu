@@ -7,12 +7,12 @@
  * modify it under the terms of the GNU General Public License
  * as published by the Free Software Foundation; either version 2
  * of the License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
@@ -36,7 +36,7 @@
 #include <scsi/scsi_cmnd.h>
 #include <scsi/scsi_device.h>
 
-#include <kernel.api.h>
+#include "kernel.api.h"
 
 MODULE_AUTHOR("Chia-I Wu");
 MODULE_VERSION(VHBA_VERSION);
@@ -426,7 +426,7 @@ static ssize_t do_request(struct scsi_cmnd *cmd, char __user *buf, size_t buf_le
 
         scmd_dbg(cmd, "request %lu, cdb 0x%x, bufflen %d, use_sg %d\n",
                 cmd->serial_number, cmd->cmnd[0], scsi_bufflen(cmd), scsi_sg_count(cmd));
-    
+
         ret = sizeof(vreq);
         if (DATA_TO_DEVICE(cmd->sc_data_direction))
                 ret += scsi_bufflen(cmd);
@@ -460,7 +460,7 @@ static ssize_t do_request(struct scsi_cmnd *cmd, char __user *buf, size_t buf_le
 static ssize_t do_response(struct scsi_cmnd *cmd, const char __user *buf, size_t buf_len, struct vhba_response *res)
 {
         ssize_t ret = 0;
-       
+
         scmd_dbg(cmd, "response %lu, status %x, data len %d, use_sg %d\n",
              cmd->serial_number, res->status, res->data_len, scsi_sg_count(cmd));
 
@@ -478,12 +478,12 @@ static ssize_t do_response(struct scsi_cmnd *cmd, const char __user *buf, size_t
                 ret += res->data_len;
         } else if (DATA_FROM_DEVICE(cmd->sc_data_direction) && scsi_bufflen(cmd))       {
                 size_t to_read;
-               
+
                 if (res->data_len > scsi_bufflen(cmd)) {
                         scmd_warn(cmd, "truncate data (%d < %d)\n", scsi_bufflen(cmd), res->data_len);
                         res->data_len = scsi_bufflen(cmd);
                 }
-        
+
                 to_read = res->data_len;
 
                 if (scsi_sg_count(cmd)) {
@@ -515,7 +515,7 @@ static ssize_t do_response(struct scsi_cmnd *cmd, const char __user *buf, size_t
                                 kaddr = kmap_atomic(sg_page(&sg[i]), KM_USER0);
 #else
                                 kaddr = kmap_atomic(sg[i].page, KM_USER0);
-#endif                          
+#endif
                                 memcpy(kaddr + sg[i].offset, kbuf, len);
                                 kunmap_atomic(kaddr, KM_USER0);
 
@@ -634,7 +634,7 @@ static ssize_t vhba_ctl_write(struct file *file, const char __user *buf, size_t 
         struct vhba_response res;
         ssize_t ret;
         unsigned long flags;
-       
+
         if (buf_len < sizeof(res))
                 return -EIO;
 
@@ -660,7 +660,7 @@ static ssize_t vhba_ctl_write(struct file *file, const char __user *buf, size_t 
         if (ret >= 0) {
                 vcmd->cmd->scsi_done(vcmd->cmd);
                 ret += sizeof(res);
-                
+
                 /* don't compete with vhba_device_dequeue */
                 if (!list_empty(&vcmd->entry)) {
                         list_del_init(&vcmd->entry);
@@ -693,18 +693,18 @@ static long vhba_ctl_ioctl (struct file *file, unsigned int cmd, unsigned long a
                                 sdev->id,
                                 sdev->lun
                         };
-        
+
                         scsi_device_put(sdev);
 
                         if (copy_to_user((void *)arg, id, sizeof(id)))
                                 return -EFAULT;
-        
+
                         return 0;
                 } else {
                         return -ENODEV;
                 }
         }
-    
+
         return -ENOTTY;
 }
 
@@ -714,7 +714,7 @@ static long vhba_ctl_compat_ioctl (struct file *file, unsigned int cmd, unsigned
 	unsigned long compat_arg = (unsigned long)compat_ptr(arg);
 
 	return vhba_ctl_ioctl(file, cmd, compat_arg);
-}	
+}
 #endif
 
 static unsigned int vhba_ctl_poll(struct file *file, poll_table *wait)
