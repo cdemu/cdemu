@@ -15,6 +15,7 @@ CONFIGURE_FLAGS = --build $(DEB_BUILD_GNU_TYPE) --host $(DEB_HOST_GNU_TYPE)
 
 build: $(QUILT_STAMPFN) build-stamp
 build-stamp:
+	./autogen.sh
 	dh build --before configure
 
 	test -r config.sub && mv -f config.sub config.sub.save 
