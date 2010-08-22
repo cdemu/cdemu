@@ -34,6 +34,9 @@ clean:
 	rm -fr $(PACKAGE) kernel.api.h
 	make -C kat clean > /dev/null
 
+dist-dirs = kat debian debian/patches
+dist-files = vhba.c Makefile $(wildcard kat/*)
+
 dist: dist-gzip
 
 dist-dir:
@@ -41,7 +44,11 @@ dist-dir:
 	mkdir $(PACKAGE)
 	cp vhba.c Makefile $(DOCS) $(PACKAGE)
 	mkdir $(PACKAGE)/kat
-	cp -fr $(shell ls kat/*) $(PACKAGE)/kat
+	cp -f $(wildcard kat/*) $(PACKAGE)/kat
+	mkdir $(PACKAGE)/debian
+	cp -f $(subst debian/patches,,$(wildcard debian/*)) $(PACKAGE)/debian
+	mkdir $(PACKAGE)/debian/patches
+	cp -f $(wildcard debian/patches/*) $(PACKAGE)/debian/patches
 
 dist-gzip: dist-dir
 	tar -czf $(PACKAGE).tar.gz $(PACKAGE)
