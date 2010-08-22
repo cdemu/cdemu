@@ -34,9 +34,6 @@ clean:
 	rm -fr $(PACKAGE) kernel.api.h
 	make -C kat clean > /dev/null
 
-dist-dirs = kat debian debian/patches
-dist-files = vhba.c Makefile $(wildcard kat/*)
-
 dist: dist-gzip
 
 dist-dir:
