@@ -4,15 +4,16 @@ Priority: optional
 Homepage: http://cdemu.sourceforge.net/
 Maintainer: Henrik Stokseth <henrik@hw0.org>
 Build-Depends: pkg-config (>= 0.14), libglib2.0-dev, libsndfile1-dev,
- zlib1g-dev, gtk-doc-tools, quilt, debhelper (>= 7), autotools-dev, autoconf, libtool
+ zlib1g-dev, gtk-doc-tools, autotools-dev, autoconf, automake, grep, libtool,
+ quilt, debhelper (>= 7)
 Standards-Version: 3.8.0
 
 
-Package: libmirage2
+Package: libmirage3
 Section: libs
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends}
-Recommends: libmirage2-data
+Recommends: libmirage3-data
 Description: A CD-ROM image access library
  This is libMirage library, a CD-ROM image access library, and part of the
  CDEmu suite, a free, GPL CD/DVD-ROM device emulator for Linux. It is
@@ -23,16 +24,16 @@ Description: A CD-ROM image access library
  file, which is based on GObjects.
 
 
-Package: libmirage2-dbg
+Package: libmirage3-dbg
 Section: libs
 Priority: extra
 Architecture: any
-Depends: libmirage2 (= ${binary:Version}), ${shlibs:Depends}, ${misc:Depends}
+Depends: libmirage3 (= ${binary:Version}), ${shlibs:Depends}, ${misc:Depends}
 Description: A CD-ROM image access library (debugging symbols)
  This package provides detached debugging symbols.
 
 
-Package: libmirage2-data
+Package: libmirage3-data
 Section: misc
 Architecture: all
 Depends: ${shlibs:Depends}, ${misc:Depends}
@@ -40,16 +41,16 @@ Description: A CD-ROM image access library (mime data files)
  This package contains MIME data files.
 
 
-Package: libmirage2-dev
+Package: libmirage3-dev
 Section: libdevel
 Architecture: any
-Depends: libmirage2 (= ${binary:Version}), ${shlibs:Depends}, ${misc:Depends}
+Depends: libmirage3 (= ${binary:Version}), ${shlibs:Depends}, ${misc:Depends}
 Recommends: devhelp
 Description: A CD-ROM image access library (development files)
  This package contains files needed to develop with libMirage.
 
 
-Package: libmirage2-doc
+Package: libmirage3-doc
 Section: doc
 Architecture: all
 Depends: ${shlibs:Depends}, ${misc:Depends}
