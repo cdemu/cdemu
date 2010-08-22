@@ -1,4 +1,4 @@
-VHBA_VERSION = 1.3
+VHBA_VERSION = $(shell date +%Y%m%d)
 PACKAGE = vhba-module-$(VHBA_VERSION)
 
 EXTRA_CFLAGS += -DVHBA_VERSION=\"$(VHBA_VERSION)\" -I$(PWD)
