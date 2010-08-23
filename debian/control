@@ -6,7 +6,7 @@ Maintainer: Henrik Stokseth <henrik@hw0.org>
 Build-Depends: quilt, debhelper (>= 7)
 Build-Depends-Indep: python, gettext, intltool, gnome-doc-utils, rarian-compat,
  python-gtk2-dev, python-support (>= 0.5.3), autotools-dev, autoconf,
- automake, libgconf2-dev
+ automake, libgconf2-dev, gnome-common
 Standards-Version: 3.8.0
 
 
