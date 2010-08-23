@@ -1,4 +1,4 @@
-gcdemu (1.2.0-0ubuntu1) jaunty; urgency=low
+gcdemu (1.3.0-0ubuntu1) lucid; urgency=low
 
   * Initial Release. Closes: (LP: #105452, LP: #184662)
 
