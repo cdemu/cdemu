@@ -1,4 +1,4 @@
-cdemu-daemon (1.2.0-0ubuntu1) jaunty; urgency=low
+cdemu-daemon (1.3.0-0ubuntu1) lucid; urgency=low
 
   * Added patch to fix DBUS configuration.
   * Initial Release. Closes: (LP: #105452, LP: #184649)
