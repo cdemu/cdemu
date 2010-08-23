@@ -4,7 +4,7 @@ Priority: optional
 Homepage: http://cdemu.sourceforge.net/
 Maintainer: Henrik Stokseth <henrik@hw0.org>
 Build-Depends: quilt, debhelper (>= 7)
-Build-Depends-Indep: python, gettext, intltool, python-support (>= 0.5.3),
+Build-Depends-Indep: python, gettext, libglib2.0-dev, intltool, python-support (>= 0.5.3),
  autotools-dev, autoconf, automake
 Standards-Version: 3.8.0
 
