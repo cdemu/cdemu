@@ -6,7 +6,7 @@
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: gCDEmu 1.1.0\n"
+"Project-Id-Version: gCDEmu 1.3.0\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2008-06-13 12:04+0200\n"
 "PO-Revision-Date: 2008-06-02 13:11+0200\n"
