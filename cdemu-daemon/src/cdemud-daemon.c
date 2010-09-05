@@ -137,8 +137,9 @@ static gboolean __cdemud_daemon_build_device_mapping_callback (gpointer data) {
 \******************************************************************************/
 gboolean cdemud_daemon_initialize (CDEMUD_Daemon *self, gint num_devices, gchar *ctl_device, gchar *audio_driver, gboolean system_bus, GError **error) {
     CDEMUD_DaemonPrivate *_priv = CDEMUD_DAEMON_GET_PRIVATE(self);
-    GObject *debug_context = NULL;
-    DBusGProxy *bus_proxy = NULL;
+    GObject *debug_context;
+    DBusGProxy *bus_proxy;
+    GError *dbus_error = NULL;
     gint bus_type = system_bus ? DBUS_BUS_SYSTEM : DBUS_BUS_SESSION;
     guint result = 0;
     gint i;
@@ -165,17 +166,19 @@ gboolean cdemud_daemon_initialize (CDEMUD_Daemon *self, gint num_devices, gchar 
     /* Initialize our DBUS interface; unless told to use system bus, we'll use
        session one */
     dbus_g_object_type_install_info(CDEMUD_TYPE_DAEMON, &dbus_glib_cdemud_daemon_object_info);
-    _priv->bus = dbus_g_bus_get(bus_type, error);
+    _priv->bus = dbus_g_bus_get(bus_type, &dbus_error);
     if (!_priv->bus) {
-        CDEMUD_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: failed to get %s bus!\n", __debug__, system_bus ? "system" : "session");
+        CDEMUD_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: failed to get %s bus: %s!\n", __debug__, system_bus ? "system" : "session", dbus_error->message);
+        g_error_free(dbus_error);
         cdemud_error(CDEMUD_E_DBUSCONNECT, error);
         return FALSE;
     }
 
     bus_proxy = dbus_g_proxy_new_for_name(_priv->bus, "org.freedesktop.DBus", "/org/freedesktop/DBus", "org.freedesktop.DBus");
 
-    if (!dbus_g_proxy_call(bus_proxy, "RequestName", error, G_TYPE_STRING, "net.sf.cdemu.CDEMUD_Daemon", G_TYPE_UINT, DBUS_NAME_FLAG_DO_NOT_QUEUE, G_TYPE_INVALID, G_TYPE_UINT, &result, G_TYPE_INVALID)) {
+    if (!dbus_g_proxy_call(bus_proxy, "RequestName", &dbus_error, G_TYPE_STRING, "net.sf.cdemu.CDEMUD_Daemon", G_TYPE_UINT, DBUS_NAME_FLAG_DO_NOT_QUEUE, G_TYPE_INVALID, G_TYPE_UINT, &result, G_TYPE_INVALID)) {
         CDEMUD_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: failed to request name on %s bus!\n", __debug__, system_bus ? "system" : "session");
+        g_error_free(dbus_error);
         cdemud_error(CDEMUD_E_DBUSNAMEREQUEST, error);
         return FALSE;
     }
