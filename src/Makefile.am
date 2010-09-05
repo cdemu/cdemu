@@ -4,7 +4,6 @@ INCLUDES = \
     $(gobject_CFLAGS) \
     $(gthread_CFLAGS) \
     $(dbus_CFLAGS) \
-    $(libdaemon_CFLAGS) \
     $(libmirage_CFLAGS) \
     $(libao_CFLAGS)
 
@@ -17,7 +16,7 @@ EXTRA_DIST = \
     cdemud-dbus.conf \
     cdemud-marshallers.list \
     cdemud-service.xml
-    
+
 noinst_HEADERS = \
     cdemud.h \
     cdemud-audio.h \
@@ -46,12 +45,11 @@ cdemud_LDADD = \
     $(gobject_LIBS) \
     $(gthread_LIBS) \
     $(dbus_LIBS) \
-    $(libdaemon_LIBS) \
     $(libmirage_LIBS) \
     $(libao_LIBS) \
     $(sysfs_LIBS)
 
-# Some ugly hacks for building built sources out of source tree... until I 
+# Some ugly hacks for building built sources out of source tree... until I
 # figure how to do this properly (mainly needed to for 'make distcheck' pass)
 SERVICE_GLUE_IN = $(top_srcdir)/src/cdemud-service.xml
 SERVICE_GLUE_OUT = $(top_builddir)/src/cdemud-service-glue.h
