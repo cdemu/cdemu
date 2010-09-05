@@ -1,5 +1,5 @@
 CDEmu Daemon
-v.1.3.0
+v.1.3.1
 ~~~~~~~~~~~~~
 
 
@@ -17,7 +17,8 @@ Table of contents
 9. Encrypted images and password supplying
 10. System bus vs. session bus
 11. Deprecation of running on system bus
-12. Contact information
+12. CDEmu as D-BUS on-demand service (the daemon autostart)
+13. Contact information
 
 
 1. Introduction
@@ -28,7 +29,7 @@ free, GPL CD/DVD-ROM device emulator for linux.
 
 This document describes both the userspace-cdemu suit in general, and the
 specifics of CDEmu daemon, such as installation quirks, troubleshooting, and
-daemon's D-Bus interface.
+daemon's D-BUS interface.
 
 
 2. Userspace-cdemu suite overview
@@ -137,7 +138,7 @@ However, there are some quirks one should be aware of.
 
 Make sure you have installed all the required libraries; GLib, D-BUS and libao
 should be provided by most of the modern distributions and should as such be
- detected properly by configure script.
+detected properly by configure script.
 
 libMirage, which is also part of userspace-cdemu suite, is also required. If you
 are building and installing it yourself, make sure that its .pc file is visible
@@ -146,15 +147,17 @@ case /usr/local or something else is used and you haven't set up pkg-config to
 look there, you might need to force it to do so.
 
 For example, if libMirage was installed to /usr/local, configure would have to
-be run as "PKG_CONFIG_PATH=/usr/local/lib/pkg-config ./configure".
+be run as "PKG_CONFIG_PATH=/usr/local/lib/pkgconfig ./configure".
 
-Vhba module is not a build-time dependency, but it might be a good idea to have
+VHBA module is not a build-time dependency, but it might be a good idea to have
 it installed at this point.
 
 
 The daemon can register its interface on either system or session D-BUS' bus. By
-default, system bus is used. To use session bus, use --bus=session when running daemon.
-If daemon is ran in daemon mode, usage of system bus is automatically implied.
+default, session bus is used. To use system bus, use --bus=system when running daemon.
+
+As of version 1.3.1, we provide an option to install the daemon as a D-BUS on-demand
+service on both buses. For more information, see Section 12.
 
 If you wish to run CDEmu daemon on system bus, CDEmu daemon's configuration files
 for D-BUS must be installed in appropriate directory. On most systems, this is
@@ -162,7 +165,9 @@ for D-BUS must be installed in appropriate directory. On most systems, this is
 prefixed and therefore config file ends up installed into ${prefix}/etc/. To
 avoid this, you should pass --sysconfdir=/etc to configure, regardless of the
 prefix you are passing to configure. Alternatively, you can specify appropriate
-directory using --with-dbus-system-dir switch.
+directory using --with-dbus-system-dir switch. (NOTE: as of version 1.3.1, this
+switch is effective only if daemon is set to be installed as system bus on-demand
+service).
 
 We use a single libao backend to support CD-audio playback. This allows you to
 select from a number of available audio drivers. Valid choices are the driver
@@ -177,14 +182,6 @@ Also note that most media players on Linux are capable of digital audio
 extraction, meaning they can play CD-audio directly without relying on the
 "analog" playback capabilities of the virtual optical device. Because of this
 it's possible to use the libao "null" driver and still play CDs normally.
-
-Unlike previous (experimental snapshot) releases, this release of CDEmu daemon
-does not provide initscripts. After some thought it was decided it was too much
-hassle to write initscripts for different distributions, especially with alternatives
-to SysV init system becoming more and more popular. Packagers are welcome to add
-initscripts specific to distribution they are packaging for, of course. Bear in
-mind, though, that daemon started by initscripts should be ran in daemon mode
-(and therefore use system bus).
 
 
 5. Troubleshooting (When bad things happen to good people)
@@ -211,21 +208,20 @@ Q: Daemon fails to start with the following message:
      Daemon initialization failed: Name request on D-BUS failed.'
 
 A: The message indicates that name registration on the system bus has failed.
-   The most likely cause of this is improper permissions. Make sure that CDEmu
-   daemon's D-BUS configuration file is in proper place and that you are running
-   the daemon as root.
-
+   In case you are trying to run the daemon on system bus, the most likely cause
+   of error are improper permissions. Make sure that CDEmu daemon's D-BUS configuration
+   file is in proper place and that you are running the daemon as root.
+   If you are trying to run the daemon on session bus, you need to run the daemon
+   as the user who owns the (X11) session. Running from Virtual Terminals (VTs) with
+   session bus might also fail (depending on your configuration), because by default,
+   D-BUS' session bus is tied to the X11 log-in session.
 
 Q: Daemon fails to start with the following message:
    cdemu0: cdemud_audio_initialize: failed to open audio device
    (driver: 'default')!
 
 A: Most likely you will need to specify a working audio driver in libao's config
-   file (/etc/libao.conf or ~/.libao), or, if you are using initscripts that came
-   with the package for your distribution, in the config file it provided.
-
-   Also, please note that running system-wide (daemonized) instance of the
-   daemon and pulseaudio output doesn't work if pulseaudio is run per-session.
+   file (/etc/libao.conf or ~/.libao).
 
 
 6. CDEmu daemon D-BUS interface (a.k.a. writing your own client)
@@ -550,7 +546,47 @@ daemon, which is commonly configured to be run in per-session mode and might be 
 backend. The other example would be GVFS, which might provide the user access to images stored on remote
 filesystems (e.g. via CIFS or SSH).
 
-12. Contact information
+12. CDEmu as D-BUS on-demand service (the daemon autostart)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+D-BUS offers on-demand startup of services; when a client attempts to contact a service that is not running,
+D-BUS can launch that service.
+
+In order to do so, a .service describing the service needs to be placed either into /usr/share/dbus-1/services
+(for session bus service autostart) or /usr/share/dbus-1/system-services (for system bus service autostart).
+
+As of version 1.3.1, CDEmu daemon provides the .service files for both system and session bus service autostart.
+The daemon is launched via wrapper scripts that allow setting of the following parameters: number of devices,
+audio driver and log file.
+
+Session bus service autostart:
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Session bus service autostart installs the cdemu-daemon-session.service file and the cdemu-daemon-session.sh
+wrapper script. The default parameters (2 devices, PulseAudio as audio driver and ~/.cdemu-daemon.log as logfile)
+can be overridden by specifying variables NUM_DEVICES, AUDIO_DRIVER and LOG_FILE in ~/.cdemu-daemon config file.
+
+Installation of session bus service autostart can be controlled via --enable-session-bus-service and
+--disable-session-bus-service switches in daemon's configure script. By default, installation is enabled.
+
+System bus service autostart:
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+System bus service autostart installs the cdemu-daemon-system.service file and the cdemu-daemon-system.sh
+wrapper script. The default parameters (2 devices, no audio driver and /tmp/cdemu-daemon.log as logfile)
+can be overridden by specifying variables NUM_DEVICES, AUDIO_DRIVER and LOG_FILE in /etc/sysconfig/cdemu-daemon
+config file.
+
+In addition to service file and wrapper script, the D-BUS config file is also installed. As described in
+Section 4, the installation destination for this file can be controlled via --with-dbus-system-dir switch.
+
+Installation of system bus service autostart can be controlled via --enable-system-bus-service and
+--disable-system-bus-service switches in daemon's configure script. By default, installation is enabled.
+
+NOTE: if system bus service autostart installation is disabled, the D-BUS config file for running on system
+bus is also not installed.
+
+13. Contact information
 ~~~~~~~~~~~~~~~~~~~~~~
 
 CDEmu project's web page: http://cdemu.sourceforge.net

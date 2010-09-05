@@ -1,17 +1,17 @@
-.TH CDEMUD 8 "Ap 9, 2010"
+.TH CDEMUD 8 "September 5, 2010"
 .SH NAME
 cdemud \- The CDEmu daemon
 .SH SYNOPSIS
 .B cdemud
 [options]
 .SH DESCRIPTION
-This is CDEmu daemon, the userspace daemon part of the userspace-cdemu suite, a 
+This is CDEmu daemon, the userspace daemon part of the userspace-cdemu suite, a
 free, GPL CD/DVD-ROM device emulator for linux.
 
-It receives SCSI commands from kernel module and processes them, passing the 
-requested data back to the kernel. Daemon implements the actual virtual device; 
-one instance per each device registered by kernel module. It uses libMirage, an 
-image access library that is part of userspace-cdemu suite, for the image access 
+It receives SCSI commands from kernel module and processes them, passing the
+requested data back to the kernel. Daemon implements the actual virtual device;
+one instance per each device registered by kernel module. It uses libMirage, an
+image access library that is part of userspace-cdemu suite, for the image access
 (e.g. sector reading).
 
 The daemon registers itself on D-BUS' system or session bus (depending on the
@@ -19,34 +19,20 @@ options passed to it) where it exposes an interface that can be used by clients
 to control it.
 .SH OPTIONS
 .TP
-.B -k --kill
-Kill daemon. This will kill a CDEmu daemon instance that is running in daemon mode.
-Note that daemon running in local mode is not affected by this.
-.TP
-.B -d --daemonize
-Daemonize. The daemon will be ran in daemon mode (i.e. forked into background, 
-with PID file created  and syslog used for logging). Note that running daemon
-in daemon mode automatically implies the usage of system bus. By default, daemon 
-is ran in local mode.
-.TP
-.B -p --pidfile=path
-PID file. In daemon mode, specifies the path of the file used to record the
-process identifier.
-.TP
 .B -n --num-devices=N
 Number of devices. Specifies the number of virtual devices the daemon instance should
-register with kernel module and control.
+register with kernel module and control. By default, 1 virtual device is created.
 .TP
 .B -c --ctl-device=path
 Control device. Specifies the control device path. Control device is a character device
 provided by kernel module; it is used for communication between kernel and userspace
-part of CDEmu suite.
+part of CDEmu suite. By default, /dev/vhba_ctl is used.
 .TP
 .B -a --audio-driver=driver
 Audio driver. Specifies audio driver to be used by virtual devices' audio play.
 Since libao is used for audio playback, any valid libao driver can be specified.
-If \fBdefault\fR is used as a driver, then libao's default driver is used. Few 
-examples of valid libao drivers are \fBalsa\fR, \fBoss\fR, \fBpulse\fR or \fBnull\fR. 
+If \fBdefault\fR is used as a driver, then libao's default driver is used. Few
+examples of valid libao drivers are \fBalsa\fR, \fBoss\fR, \fBpulse\fR or \fBnull\fR.
 For all drivers, default device is used. By default, if audio driver is not explicitly
 specified via this option, \fBnull\fR is used.
 .TP
@@ -55,21 +41,20 @@ Bus type. Valid options are \fBsystem\fR or \fBsession\fR. By default, session b
 (Please note that since v.1.3.0, the running of CDEmu daemon on system bus is considered
 deprecated and is discouraged for security reasons).
 .TP
+.B -l --logfile=logfile
+Log file to write logging output into. By default, use of log file is disabled and messages
+are written to stdout.
+.TP
 .B -? --help
-Display the help message. 
+Display the help message.
 .SH EXAMPLES
 .TP
-.B Running daemon in local mode, with PulseAudio audio driver and 4 virtual devices:
+.B Running daemon on default bus with PulseAudio audio driver and 4 virtual devices:
 cdemud --num-devices=4 --audio-driver=pulse
 .TP
-.B Running daemon in local mode with 2 virtual devices and on session bus:
-cdemud --num-devices=2 --bus=session
+.B Running daemon on system bus with 2 virtual devices and logging redirected to a file:
+cdemud --num-devices=2 --bus=system --logfile=/tmp/cdemu-daemon.log
 .TP
-.B Running daemon in daemon mode with 8 virtual devices:
-cdemud --num-devices=8 --daemonize
-.TP
-.B Killing a daemonized instance of daemon:
-cdemud --kill
 .SH AUTHORS
 .PP
 Rok Mandeljc <rok.mandeljc@gmail.com>
