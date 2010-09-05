@@ -20,25 +20,34 @@
 #include "cdemud.h"
 
 GObject *daemon_obj;
+FILE *logfile;
 
 static gint num_devices = 1;
 static gchar *ctl_device = "/dev/vhba_ctl";
 static gchar *audio_driver = "null";
 static gchar *bus = "session";
+static gchar *log_filename = NULL;
 
 static GOptionEntry option_entries[] = {
-    { "num-devices",  'n', 0, G_OPTION_ARG_INT,    &num_devices,   "Number of devices",  "N" },
-    { "ctl-device",   'c', 0, G_OPTION_ARG_STRING, &ctl_device,    "Control device",     "path" },
-    { "audio-driver", 'a', 0, G_OPTION_ARG_STRING, &audio_driver,  "Audio driver",       "driver" },
-    { "bus",          'b', 0, G_OPTION_ARG_STRING, &bus,           "Bus type to use",    "bus_type" },
+    { "num-devices", 'n', 0, G_OPTION_ARG_INT, &num_devices, "Number of devices", "N" },
+    { "ctl-device", 'c', 0, G_OPTION_ARG_STRING, &ctl_device, "Control device", "path" },
+    { "audio-driver", 'a', 0, G_OPTION_ARG_STRING, &audio_driver, "Audio driver", "driver" },
+    { "bus", 'b', 0, G_OPTION_ARG_STRING, &bus, "Bus type to use", "bus_type" },
+    { "logfile", 'l', 0, G_OPTION_ARG_STRING, &log_filename, "Logfile", "logfile" },
     { NULL }
 };
 
 
-/* Log handler for non-daemon */
-static void __local_log_handler (const gchar *log_domain, GLogLevelFlags log_level, const gchar *message, gpointer unused_data) {
+/* Log handler: writing to stdout */
+static void __log_handler_stdout (const gchar *log_domain, GLogLevelFlags log_level, const gchar *message, gpointer unused_data) {
     g_print("%s", message);
 }
+
+static void __log_handler_logfile (const gchar *log_domain, GLogLevelFlags log_level, const gchar *message, gpointer unused_data) {
+    fprintf(logfile, "%s", message);
+    fflush(logfile);
+}
+
 
 /* Signal handler */
 void __unix_signal_handler (int signal)
@@ -67,7 +76,7 @@ int main (int argc, char **argv) {
     g_thread_init(NULL);
 
     /* Default log handler is local */
-    g_log_set_default_handler(__local_log_handler, NULL);
+    g_log_set_default_handler(__log_handler_stdout, NULL);
 
     /* Glib's commandline parser */
     GError *error = NULL;
@@ -83,6 +92,16 @@ int main (int argc, char **argv) {
         g_warning("Failed to parse options: %s\n", error->message);
         g_error_free(error);
         return -1;
+    }
+
+    /* Set up logfile handler, if necessary */
+    if (log_filename) {
+        logfile = fopen(log_filename, "w"); /* Overwrite log file */
+        if (!log) {
+            g_warning("Failed to open log file %s for writing!\n", log_filename);
+            return -1;
+        }
+        g_log_set_default_handler(__log_handler_logfile, NULL);
     }
 
     /* Initialize libMirage */
@@ -160,6 +179,11 @@ int main (int argc, char **argv) {
 
     /* Shutdown libMirage */
     libmirage_shutdown(NULL);
+
+    /* Close log file, if necessary */
+    if (log_filename) {
+        fclose(logfile);
+    }
 
     return succeeded ? 0 : -1;
 }
