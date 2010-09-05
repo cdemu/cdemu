@@ -13,7 +13,6 @@ BUILT_SOURCES = \
     cdemud-service-glue.h
 
 EXTRA_DIST = \
-    cdemud-dbus.conf \
     cdemud-marshallers.list \
     cdemud-service.xml
 
@@ -69,7 +68,3 @@ DISTCLEANFILES = \
     $(SERVICE_GLUE_OUT) \
     $(MARSHALLERS_H_OUT) \
     $(MARSHALLERS_C_OUT)
-
-# D-BUS config
-dbusservicedir=$(DBUS_SYS_DIR)
-dbusservice_DATA = cdemud-dbus.conf
