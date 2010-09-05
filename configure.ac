@@ -72,9 +72,28 @@ else
     AC_MSG_RESULT(no)
 fi
 
+# System-bus service
+AC_ARG_ENABLE(system-bus-service,
+    [  --enable-system-bus-service    Install CDEmu daemon as D-Bus system bus service],
+    [case "${enableval}" in
+        yes) system_bus_service=true ;;
+        no)  system_bus_service=false ;;
+        *) AC_MSG_ERROR(bad value ${enableval} for --enable-system-bus-service) ;;
+    esac], [system_bus_service=true])
+AM_CONDITIONAL(SYSTEM_BUS_SERVICE, test x$system_bus_service = xtrue)
+
+# Session-bus service
+AC_ARG_ENABLE(session-bus-service,
+    [  --enable-session-bus-service    Install CDEmu daemon as D-Bus session bus service],
+    [case "${enableval}" in
+        yes) session_bus_service=true ;;
+        no)  session_bus_service=false ;;
+        *) AC_MSG_ERROR(bad value ${enableval} for --enable-session-bus-service) ;;
+    esac], [session_bus_service=true])
+AM_CONDITIONAL(SESSION_BUS_SERVICE, test x$session_bus_service = xtrue)
+
 # D-BUS system dir
 AC_ARG_WITH(dbus-system-dir, AS_HELP_STRING([--with-dbus-system-dir=<dir>], [Path to D-BUS system.d directory]))
-
 if ! test -z "$with_dbus_system_dir" ; then
     DBUS_SYS_DIR="$with_dbus_system_dir"
 else
@@ -86,7 +105,9 @@ AC_SUBST(DBUS_SYS_DIR)
 AC_CONFIG_FILES([
     Makefile
     man/Makefile
+    session/Makefile
     src/Makefile
+    system/Makefile
 ])
 
 AC_OUTPUT
@@ -95,8 +116,11 @@ AC_OUTPUT
 echo "
 $PACKAGE_NAME $VERSION configure summary:
 
- Prefix:                    ${prefix}
- dbus-1 system.d dir:       ${DBUS_SYS_DIR}
- C Compiler:                ${CC}
- CFLAGS:                    ${CFLAGS}
+C Compiler: ${CC}
+CFLAGS: ${CFLAGS}
+Prefix: ${prefix}
+Install as system bus service: ${system_bus_service}
+dbus-1 system.d dir: ${DBUS_SYS_DIR}
+Install as session bus service: ${session_bus_service}
+
 "
