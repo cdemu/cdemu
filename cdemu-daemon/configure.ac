@@ -6,7 +6,7 @@ AC_PREREQ(2.59)
 # cdemu-daemon versioning:
 m4_define([cdemud_major_version], [1])
 m4_define([cdemud_minor_version], [3])
-m4_define([cdemud_micro_version], [0])
+m4_define([cdemud_micro_version], [1])
 m4_define([cdemud_version], [cdemud_major_version.cdemud_minor_version.cdemud_micro_version])
 
 # Project init
@@ -35,7 +35,6 @@ PKG_CHECK_MODULES(gmodule, gmodule-2.0 >= 2.6)
 PKG_CHECK_MODULES(gthread, gthread-2.0 >= 2.6)
 PKG_CHECK_MODULES(dbus, dbus-1 >= 0.60 dbus-glib-1 >= 0.61)
 PKG_CHECK_MODULES(libao, ao >= 0.8.0,)
-PKG_CHECK_MODULES(libdaemon, libdaemon >= 0.10)
 PKG_CHECK_MODULES(libmirage, libmirage >= 1.3.0)
 
 # Compile with more warnings
