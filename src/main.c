@@ -97,7 +97,7 @@ int main (int argc, char **argv) {
     /* Set up logfile handler, if necessary */
     if (log_filename) {
         logfile = fopen(log_filename, "w"); /* Overwrite log file */
-        if (!log) {
+        if (!logfile) {
             g_warning("Failed to open log file %s for writing!\n", log_filename);
             return -1;
         }
