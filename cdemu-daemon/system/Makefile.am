@@ -11,7 +11,7 @@ bin_SCRIPTS = cdemu-daemon-system.sh
 
 # D-Bus .service file
 dbussystemservicedir = $(datadir)/dbus-1/system-services/
-dbussystemservice_DATA = cdemu-daemon-system.service
+dbussystemservice_DATA = net.sf.cdemu.CDEMUD_Daemon.service
 
 # D-Bus system bus policy
 dbussystemconfdir = $(DBUS_SYS_DIR)

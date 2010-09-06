@@ -1,3 +1,4 @@
 [D-BUS Service]
 Name=net.sf.cdemu.CDEMUD_Daemon
-Exec=cdemu-daemon-session.sh
+Exec=/usr/bin/cdemu-daemon-system.sh
+User=root

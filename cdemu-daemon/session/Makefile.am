@@ -10,6 +10,6 @@ bin_SCRIPTS = cdemu-daemon-session.sh
 
 # D-Bus .service file
 dbussystemservicedir = $(datadir)/dbus-1/services/
-dbussystemservice_DATA = cdemu-daemon-session.service
+dbussystemservice_DATA = net.sf.cdemu.CDEMUD_Daemon.service
 
 endif
