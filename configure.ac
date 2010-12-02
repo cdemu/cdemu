@@ -6,12 +6,12 @@ AC_PREREQ(2.59)
 # libMirage release and libtool versioning:
 m4_define([libmirage_major_version], [1])
 m4_define([libmirage_minor_version], [3])
-m4_define([libmirage_micro_version], [0])
+m4_define([libmirage_micro_version], [1])
 m4_define([libmirage_version], [libmirage_major_version.libmirage_minor_version.libmirage_micro_version])
 # Increment if the interface has additions, changes, removals.
 m4_define([libmirage_current], [3])
 # Increment any time the source changes; set to 0 if you increment CURRENT
-m4_define([libmirage_revision], [0])
+m4_define([libmirage_revision], [1])
 # Increment if any interfaces have been added; set to 0 if any interfaces have
 # been removed. Removal has precedence over adding, so set to 0 if both happened.
 m4_define([libmirage_age], [0])
