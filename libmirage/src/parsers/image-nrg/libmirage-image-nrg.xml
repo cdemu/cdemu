@@ -1,13 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <mime-info xmlns="http://www.freedesktop.org/standards/shared-mime-info">
-    <mime-type type="application/libmirage-nrg">
-        <sub-class-of type="application/libmirage-image"/>
+    <mime-type type="application/x-nrg">
         <sub-class-of type="application/octet-stream"/>
 
-        <alias type="application/x-nrg"/>
-
         <comment>Nero Burning ROM image file</comment>
-        
+
         <glob pattern="*.nrg"/>
     </mime-type>
 </mime-info>

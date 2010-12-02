@@ -1,15 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <mime-info xmlns="http://www.freedesktop.org/standards/shared-mime-info">
-    <mime-type type="application/libmirage-xcdroast">
-        <sub-class-of type="application/libmirage-image"/>
+    <mime-type type="application/x-xcdroast">
         <sub-class-of type="text/plain"/>
-        
-        <alias type="application/x-xcdroast"/>
-        
+
         <comment>X-CD Roast TOC image file</comment>
-        
+
         <glob pattern="*.toc"/>
-        
+
         <magic priority="50">
             <match value="#\n# X-CD-Roast" type="string" offset="0:13"/>
         </magic>

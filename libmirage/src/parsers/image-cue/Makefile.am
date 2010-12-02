@@ -10,11 +10,11 @@ plugin_LTLIBRARIES = image-cue.la
 noinst_HEADERS = \
     image-cue.h \
     image-cue-parser.h
-    
+
 image_cue_la_SOURCES = \
    image-cue-parser.c \
    image-cue-plugin.c
-   
+
 image_cue_la_LIBADD = \
     $(glib_LIBS) \
     $(gobject_LIBS)
@@ -22,9 +22,3 @@ image_cue_la_LIBADD = \
 image_cue_la_LDFLAGS = \
     -module \
     -avoid-version
-
-
-mimedir = $(datadir)/mime/packages
-mime_DATA = libmirage-image-cue.xml
-
-EXTRA_DIST = $(mime_DATA)

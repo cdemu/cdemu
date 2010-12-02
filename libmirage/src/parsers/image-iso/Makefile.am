@@ -2,7 +2,7 @@ INCLUDES = \
     -I$(top_srcdir)/src/libmirage \
     $(glib_CFLAGS) \
     $(gobject_CFLAGS)
-    
+
 plugindir = $(MIRAGE_PLUGIN_DIR)
 
 plugin_LTLIBRARIES = image-iso.la
@@ -22,9 +22,3 @@ image_iso_la_LIBADD = \
 image_iso_la_LDFLAGS = \
     -module \
     -avoid-version
-
-
-mimedir = $(datadir)/mime/packages
-mime_DATA = libmirage-image-iso.xml
-
-EXTRA_DIST = $(mime_DATA)

@@ -14,9 +14,6 @@ SUBDIRS = \
 
 
 mimedir = $(datadir)/mime/packages
-mime_DATA = libmirage-image.xml
-
-EXTRA_DIST = $(mime_DATA)
 
 install-data-hook: update-mime-database
 uninstall-hook: update-mime-database
