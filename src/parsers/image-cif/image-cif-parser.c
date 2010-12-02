@@ -29,12 +29,12 @@
 
 typedef struct {
     GObject *disc;
-    
+
     GList *block_index;
     gint  block_index_entries;
-    
+
     gchar *cif_filename;
-    
+
     GMappedFile *cif_mapped;
     guint8 *cif_data;
 } MIRAGE_Parser_CIFPrivate;
@@ -103,7 +103,7 @@ static gboolean __mirage_parser_cif_build_block_index (MIRAGE_Parser *self, GErr
 
                 /* Add entry to list */
                 subblockindex = g_list_prepend(subblockindex, subblockentry);
-                
+
                 /* Get ready for next block */
                 cur_ptr_sub += subblockentry->length;
             } while (cur_ptr_sub < (guint8 *) block + block->length + CIF_BLOCK_LENGTH_ADJUST);
@@ -123,7 +123,7 @@ static gboolean __mirage_parser_cif_build_block_index (MIRAGE_Parser *self, GErr
 
         /* Add entry to list */
         blockindex = g_list_prepend(blockindex, blockentry);
-        
+
         /* Get ready for next block */
         index++;
         cur_ptr += (block->length + CIF_BLOCK_LENGTH_ADJUST);
@@ -147,21 +147,21 @@ static gboolean __mirage_parser_cif_destroy_block_index (MIRAGE_Parser *self, GE
         GList *entry;
         G_LIST_FOR_EACH(entry, _priv->block_index) {
             CIFBlockIndexEntry *list_entry = entry->data;
-            
+
             if (list_entry->subblock_index) {
                 GList *subentry;
-                
+
                 G_LIST_FOR_EACH(subentry, list_entry->subblock_index) {
                     g_free(subentry->data);
                 }
             }
-            
+
             g_list_free(list_entry->subblock_index);
             g_free(list_entry);
         }
-        
+
         g_list_free(_priv->block_index);
-        
+
         _priv->block_index = NULL;
         _priv->block_index_entries = 0;
     }
@@ -231,7 +231,7 @@ static gint __mirage_parser_cif_convert_track_mode (MIRAGE_Parser *self, guint32
             }
         }
     } else {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: unknown track mode 0x%X!\n", __debug__, mode);    
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: unknown track mode 0x%X!\n", __debug__, mode);
         return -1;
     }
 }
@@ -253,7 +253,7 @@ static gboolean __mirage_parser_cif_parse_track_entries (MIRAGE_Parser *self, GE
     gint tracks;
     gint track;
 
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: reading track blocks\n", __debug__);        
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: reading track blocks\n", __debug__);
 
     /* Get current session */
     if (!mirage_disc_get_session_by_index(MIRAGE_DISC(_priv->disc), -1, &cur_session, error)) {
@@ -293,7 +293,7 @@ static gboolean __mirage_parser_cif_parse_track_entries (MIRAGE_Parser *self, GE
         guint32 track_start = ofs_subblock_data->ofs_offset + sizeof(CIF_TRACK_HeaderBlock);
         guint32 track_length = track_block->length - sizeof(CIF_TRACK_HeaderBlock);
         gchar *isrc = NULL;
-        gchar *title = NULL; 
+        gchar *title = NULL;
 
         GObject *cur_track = NULL;
 
@@ -317,9 +317,9 @@ static gboolean __mirage_parser_cif_parse_track_entries (MIRAGE_Parser *self, GE
 
         /* workaround: cdrom-xa/mode2 has incorrect num. sectors */
         if ((track_mode == CIF_MODE_MODE2_FORM1) || (track_mode == CIF_MODE_MODE2_FORM2)) {
-            sectors = track_length / real_sector_size; 
+            sectors = track_length / real_sector_size;
             if (track_length % real_sector_size) sectors++; /* round up */
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s:   Workaround enabled; Corrected sector count: %i\n", __debug__, sectors);   
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s:   Workaround enabled; Corrected sector count: %i\n", __debug__, sectors);
         }
 
         /* Add track */
@@ -331,7 +331,7 @@ static gboolean __mirage_parser_cif_parse_track_entries (MIRAGE_Parser *self, GE
 
         if (track_mode == CIF_MODE_AUDIO) {
             isrc = disc_subblock_data->track.isrc;
-            title = disc_subblock_data->track.title; 
+            title = disc_subblock_data->track.title;
 
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   ISRC: %.12s\n", __debug__, isrc);
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   Title: %s\n", __debug__, title);
@@ -400,7 +400,7 @@ static gboolean __mirage_parser_cif_parse_track_entries (MIRAGE_Parser *self, GE
         g_object_unref(cur_track);
     }
     g_object_unref(cur_session);
-   
+
     return TRUE;
 }
 
@@ -415,7 +415,7 @@ static gboolean __mirage_parser_cif_load_disc (MIRAGE_Parser *self, GError **err
         return FALSE;
     }
 
-    /* The shitty CIF format does not support DVDs etc. */    
+    /* The shitty CIF format does not support DVDs etc. */
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: CD-ROM image\n", __debug__);
     mirage_disc_set_medium_type(MIRAGE_DISC(_priv->disc), MIRAGE_MEDIUM_CD, NULL);
 
@@ -424,7 +424,7 @@ static gboolean __mirage_parser_cif_load_disc (MIRAGE_Parser *self, GError **err
 
     /* Add session */
     if (!mirage_disc_add_session_by_number(MIRAGE_DISC(_priv->disc), 0, NULL, error)) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to add session!\n", __debug__);        
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to add session!\n", __debug__);
         return FALSE;
     }
 
@@ -444,7 +444,7 @@ static gboolean __mirage_parser_cif_load_disc (MIRAGE_Parser *self, GError **err
 
     gint title_length = disc_subblock_data->first.title_length;
     if ((disc_subblock_data->first.image_type == CIF_IMAGE_AUDIO) && (title_length > 0)) {
-        gchar *title_and_artist = disc_subblock_data->first.title_and_artist; 
+        gchar *title_and_artist = disc_subblock_data->first.title_and_artist;
         gchar *title = g_strndup(title_and_artist, title_length);
         gchar *artist = (gchar *) (title_and_artist + title_length);
 
@@ -476,40 +476,40 @@ static gboolean __mirage_parser_cif_load_image (MIRAGE_Parser *self, gchar **fil
     gboolean succeeded = TRUE;
     FILE *file;
     gchar sig[4] = "";
-    
+
     /* Check file signature */
     file = g_fopen(filenames[0], "r");
     if (!file) {
         mirage_error(MIRAGE_E_IMAGEFILE, error);
         return FALSE;
     }
-    
+
     if (fread(sig, 4, 1, file) < 1) {
         fclose(file);
         mirage_error(MIRAGE_E_READFAILED, error);
         return FALSE;
     }
-    
+
     fclose(file);
-    
+
     if (memcmp(sig, "RIFF", 4)) {
         mirage_error(MIRAGE_E_CANTHANDLE, error);
         return FALSE;
     }
-    
+
     /* Since RIFF is used also for other files, we also check the suffix */
     if (!mirage_helper_has_suffix(filenames[0], ".cif")) {
         mirage_error(MIRAGE_E_CANTHANDLE, error);
         return FALSE;
     }
-    
+
     /* Create disc */
     _priv->disc = g_object_new(MIRAGE_TYPE_DISC, NULL);
     mirage_object_attach_child(MIRAGE_OBJECT(self), _priv->disc, NULL);
 
     mirage_disc_set_filename(MIRAGE_DISC(_priv->disc), filenames[0], NULL);
     _priv->cif_filename = g_strdup(filenames[0]);
-    
+
     /* Map the file using GLib's GMappedFile */
     _priv->cif_mapped = g_mapped_file_new(_priv->cif_filename, FALSE, &local_error);
     if (!_priv->cif_mapped) {
@@ -519,9 +519,9 @@ static gboolean __mirage_parser_cif_load_image (MIRAGE_Parser *self, gchar **fil
         succeeded = FALSE;
         goto end;
     }
-    
+
     _priv->cif_data = (guint8 *)g_mapped_file_get_contents(_priv->cif_mapped);
-    
+
     /* Load parser */
     succeeded = __mirage_parser_cif_load_disc(self, error);
 
@@ -537,8 +537,8 @@ end:
         g_object_unref(_priv->disc);
         *disc = NULL;
     }
-        
-    return succeeded;   
+
+    return succeeded;
 }
 
 
@@ -553,20 +553,20 @@ static void __mirage_parser_cif_instance_init (GTypeInstance *instance, gpointer
         "PARSER-CIF",
         "CIF Image Parser",
         "CIF (Adaptec Easy CD Creator) images",
-        "application/libmirage-cif"
+        "application/x-cif"
     );
-    
+
     return;
 }
 
 static void __mirage_parser_cif_finalize (GObject *obj) {
     MIRAGE_Parser_CIF *self_cif = MIRAGE_PARSER_CIF(obj);
     MIRAGE_Parser_CIFPrivate *_priv = MIRAGE_PARSER_CIF_GET_PRIVATE(self_cif);
-    
+
     MIRAGE_DEBUG(self_cif, MIRAGE_DEBUG_GOBJECT, "%s: finalizing object\n", __debug__);
 
     g_free(_priv->cif_filename);
-    
+
     /* Chain up to the parent class */
     MIRAGE_DEBUG(self_cif, MIRAGE_DEBUG_GOBJECT, "%s: chaining up to parent\n", __debug__);
     return G_OBJECT_CLASS(parent_class)->finalize(obj);
@@ -576,19 +576,19 @@ static void __mirage_parser_cif_class_init (gpointer g_class, gpointer g_class_d
     GObjectClass *class_gobject = G_OBJECT_CLASS(g_class);
     MIRAGE_ParserClass *class_parser = MIRAGE_PARSER_CLASS(g_class);
     MIRAGE_Parser_CIFClass *klass = MIRAGE_PARSER_CIF_CLASS(g_class);
-    
+
     /* Set parent class */
     parent_class = g_type_class_peek_parent(klass);
-    
+
     /* Register private structure */
     g_type_class_add_private(klass, sizeof(MIRAGE_Parser_CIFPrivate));
-    
+
     /* Initialize GObject methods */
     class_gobject->finalize = __mirage_parser_cif_finalize;
-    
+
     /* Initialize MIRAGE_Parser methods */
     class_parser->load_image = __mirage_parser_cif_load_image;
-        
+
     return;
 }
 
@@ -606,10 +606,10 @@ GType mirage_parser_cif_get_type (GTypeModule *module) {
             0,      /* n_preallocs */
             __mirage_parser_cif_instance_init    /* instance_init */
         };
-        
+
         type = g_type_module_register_type(module, MIRAGE_TYPE_PARSER, "MIRAGE_Parser_CIF", &info, 0);
     }
-    
+
     return type;
 }
 

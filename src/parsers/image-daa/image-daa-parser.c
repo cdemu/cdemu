@@ -35,19 +35,19 @@ typedef struct {
 /******************************************************************************\
  *                     MIRAGE_Parser methods implementation                     *
 \******************************************************************************/
-static gboolean __mirage_parser_daa_load_image (MIRAGE_Parser *self, gchar **filenames, GObject **disc, GError **error) {   
+static gboolean __mirage_parser_daa_load_image (MIRAGE_Parser *self, gchar **filenames, GObject **disc, GError **error) {
     MIRAGE_Parser_DAAPrivate *_priv = MIRAGE_PARSER_DAA_GET_PRIVATE(self);
     gboolean succeeded = TRUE;
     FILE *file;
     gchar signature[16] = "";
-    
+
     /* Open file */
     file = g_fopen(filenames[0], "r");
     if (!file) {
         mirage_error(MIRAGE_E_IMAGEFILE, error);
         return FALSE;
     }
-        
+
     /* Read signature */
     fseeko(file, 0, SEEK_SET);
     if (fread(signature, 16, 1, file) < 1) {
@@ -56,30 +56,30 @@ static gboolean __mirage_parser_daa_load_image (MIRAGE_Parser *self, gchar **fil
         return FALSE;
     }
     fclose(file);
-        
+
     /* Check signature (we're comparing -all- 16 bytes!) */
     if (memcmp(signature, daa_main_signature, sizeof(daa_main_signature))) {
         mirage_error(MIRAGE_E_CANTHANDLE, error);
         return FALSE;
     }
-    
+
     /* Create disc */
     _priv->disc = g_object_new(MIRAGE_TYPE_DISC, NULL);
     mirage_object_attach_child(MIRAGE_OBJECT(self), _priv->disc, NULL);
 
     mirage_disc_set_filename(MIRAGE_DISC(_priv->disc), filenames[0], NULL);
-    
+
     /* Add session */
     GObject *session = NULL;
-    
+
     if (!mirage_disc_add_session_by_number(MIRAGE_DISC(_priv->disc), 1, &session, error)) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to add session!\n", __debug__);
         succeeded = FALSE;
         goto end;
     }
-    
+
     mirage_session_set_session_type(MIRAGE_SESSION(session), MIRAGE_SESSION_CD_ROM, NULL);
-    
+
     /* Add track */
     GObject *track = NULL;
     succeeded = mirage_session_add_track_by_index(MIRAGE_SESSION(session), -1, &track, error);
@@ -95,11 +95,11 @@ static gboolean __mirage_parser_daa_load_image (MIRAGE_Parser *self, gchar **fil
     /* Try to get password from parser parameters */
     gchar *password = NULL;
     mirage_parser_get_param_string(self, "password", (const gchar **)&password, NULL);
-    
+
     /* Fragment(s); we use private, DAA fragments for this */
     GObject *data_fragment = g_object_new(MIRAGE_TYPE_FRAGMENT_DAA, NULL);
     GError *local_error = NULL;
-    
+
     if (!mirage_track_add_fragment(MIRAGE_TRACK(track), -1, &data_fragment, error)) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to add fragment!\n", __debug__);
         g_object_unref(data_fragment);
@@ -107,10 +107,10 @@ static gboolean __mirage_parser_daa_load_image (MIRAGE_Parser *self, gchar **fil
         succeeded = FALSE;
         goto end;
     }
-    
+
     if (!mirage_fragment_daa_set_file(MIRAGE_FRAGMENT(data_fragment), filenames[0], password, &local_error)) {
         /* Don't make buzz for password failures */
-        if (local_error->code != MIRAGE_E_NEEDPASSWORD 
+        if (local_error->code != MIRAGE_E_NEEDPASSWORD
             && local_error->code != MIRAGE_E_WRONGPASSWORD) {
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to set file to fragment!\n", __debug__);
         }
@@ -120,7 +120,7 @@ static gboolean __mirage_parser_daa_load_image (MIRAGE_Parser *self, gchar **fil
         succeeded = FALSE;
         goto end;
     }
-    
+
     g_object_unref(data_fragment);
     g_object_unref(track);
 
@@ -140,7 +140,7 @@ end:
         g_object_unref(_priv->disc);
         *disc = NULL;
     }
-        
+
     return succeeded;
 }
 
@@ -156,18 +156,18 @@ static void __mirage_parser_daa_instance_init (GTypeInstance *instance, gpointer
         "PARSER-DAA",
         "DAA Image Parser",
         "PowerISO direct access archives",
-        "application/libmirage-daa"
+        "application/x-daa"
     );
-    
+
     return;
 }
 
 static void __mirage_parser_daa_finalize (GObject *obj) {
     MIRAGE_Parser_DAA *self = MIRAGE_PARSER_DAA(obj);
     /*MIRAGE_Parser_DAAPrivate *_priv = MIRAGE_PARSER_DAA_GET_PRIVATE(self);*/
-    
+
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_GOBJECT, "%s: finalizing object\n", __debug__);
-    
+
     /* Chain up to the parent class */
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_GOBJECT, "%s: chaining up to parent\n", __debug__);
     return G_OBJECT_CLASS(parent_class)->finalize(obj);
@@ -178,19 +178,19 @@ static void __mirage_parser_daa_class_init (gpointer g_class, gpointer g_class_d
     GObjectClass *class_gobject = G_OBJECT_CLASS(g_class);
     MIRAGE_ParserClass *class_parser = MIRAGE_PARSER_CLASS(g_class);
     MIRAGE_Parser_DAAClass *klass = MIRAGE_PARSER_DAA_CLASS(g_class);
-    
+
     /* Set parent class */
     parent_class = g_type_class_peek_parent(klass);
-    
+
     /* Register private structure */
     g_type_class_add_private(klass, sizeof(MIRAGE_Parser_DAAPrivate));
-    
+
     /* Initialize GObject members */
     class_gobject->finalize = __mirage_parser_daa_finalize;
-    
+
     /* Initialize MIRAGE_Parser members */
     class_parser->load_image = __mirage_parser_daa_load_image;
-        
+
     return;
 }
 
@@ -208,9 +208,9 @@ GType mirage_parser_daa_get_type (GTypeModule *module) {
             0,      /* n_preallocs */
             __mirage_parser_daa_instance_init    /* instance_init */
         };
-        
+
         type = g_type_module_register_type(module, MIRAGE_TYPE_PARSER, "MIRAGE_Parser_DAA", &info, 0);
     }
-    
+
     return type;
 }

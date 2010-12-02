@@ -31,7 +31,7 @@
 
 typedef struct {
     GObject *disc;
-    
+
     bbis_t bbis_block;
     blhr_t blhr_block, blms_block, blss_block;
     blhr_data_t *blhr_data;
@@ -51,9 +51,9 @@ static gboolean __mirage_parser_uif_parse_iso (MIRAGE_Parser *self, GError **err
     MIRAGE_Parser_UIFPrivate *_priv = MIRAGE_PARSER_UIF_GET_PRIVATE(self);
 
     GObject *cur_session = NULL;
-    
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: reading ISO blocks\n", __debug__);        
-    
+
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: reading ISO blocks\n", __debug__);
+
     /* Get current session */
     if (!mirage_disc_get_session_by_index(MIRAGE_DISC(_priv->disc), -1, &cur_session, error)) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to get current session!\n", __debug__);
@@ -105,7 +105,7 @@ static guint8 *__blhr_unzip(FILE *fd, z_stream *z, guint32 zsize, guint32 unzsiz
         if (!in_data) return NULL;
         out_data = g_malloc(unzsize);
         if (!out_data) return NULL;
-          
+
         if (fread(in_data, 1, zsize, fd) != zsize) {
             return NULL;
         }
@@ -141,12 +141,12 @@ static gboolean __mirage_parser_uif_load_disc (MIRAGE_Parser *self, GError **err
     cur_pos = _priv->uif_file_size - sizeof(bbis_t);
     fseeko(_priv->uif_file, cur_pos, SEEK_SET);
     if (fread(&_priv->bbis_block, sizeof(bbis_t), 1, _priv->uif_file) < 1) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read 'bbis' block!\n", __debug__);        
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read 'bbis' block!\n", __debug__);
         mirage_error(MIRAGE_E_READFAILED, error);
         return FALSE;
     }
     if (memcmp(_priv->bbis_block.sign, "bbis", 4)) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: expected 'bbis' signature!\n", __debug__);        
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: expected 'bbis' signature!\n", __debug__);
         mirage_error(MIRAGE_E_PARSER, error);
         return FALSE;
     }
@@ -181,7 +181,7 @@ static gboolean __mirage_parser_uif_load_disc (MIRAGE_Parser *self, GError **err
     cur_pos = _priv->bbis_block.blhr_ofs;
     fseeko(_priv->uif_file, cur_pos, SEEK_SET);
     if (fread(&_priv->blhr_block, sizeof(blhr_t), 1, _priv->uif_file) < 1) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read 'blhr' block!\n", __debug__);        
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read 'blhr' block!\n", __debug__);
         mirage_error(MIRAGE_E_READFAILED, error);
         return FALSE;
     }
@@ -215,7 +215,7 @@ static gboolean __mirage_parser_uif_load_disc (MIRAGE_Parser *self, GError **err
             cur_pos = _priv->bbis_block.blhr_ofs + sizeof(blhr_t) + (_priv->blhr_block.block_size - 8);
             fseeko(_priv->uif_file, cur_pos, SEEK_SET);
             if (fread(&_priv->blms_block, sizeof(blhr_t), 1, _priv->uif_file) < 1) {
-                MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read 'blms' block!\n", __debug__);        
+                MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read 'blms' block!\n", __debug__);
                 mirage_error(MIRAGE_E_READFAILED, error);
                 return FALSE;
             }
@@ -243,7 +243,7 @@ static gboolean __mirage_parser_uif_load_disc (MIRAGE_Parser *self, GError **err
             cur_pos = _priv->bbis_block.blhr_ofs + sizeof(blhr_t) + (_priv->blhr_block.block_size - 8) + (_priv->blms_block.block_size - 8);
             fseeko(_priv->uif_file, cur_pos, SEEK_SET);
             if (fread(&_priv->blss_block, sizeof(blhr_t), 1, _priv->uif_file) < 1) {
-                MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read 'blss' block!\n", __debug__);        
+                MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read 'blss' block!\n", __debug__);
                 mirage_error(MIRAGE_E_READFAILED, error);
                 return FALSE;
             }
@@ -288,7 +288,7 @@ static gboolean __mirage_parser_uif_load_disc (MIRAGE_Parser *self, GError **err
         }
     }
 
-    /* For now we only support (and assume) CD media */    
+    /* For now we only support (and assume) CD media */
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: CD-ROM image\n", __debug__);
     mirage_disc_set_medium_type(MIRAGE_DISC(_priv->disc), MIRAGE_MEDIUM_CD, NULL);
 
@@ -297,7 +297,7 @@ static gboolean __mirage_parser_uif_load_disc (MIRAGE_Parser *self, GError **err
 
     /* Add session */
     if (!mirage_disc_add_session_by_number(MIRAGE_DISC(_priv->disc), 0, NULL, error)) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to add session!\n", __debug__);        
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to add session!\n", __debug__);
         return FALSE;
     }
 
@@ -343,7 +343,7 @@ static gboolean __mirage_parser_uif_load_image (MIRAGE_Parser *self, gchar **fil
         mirage_error(MIRAGE_E_IMAGEFILE, error);
         return FALSE;
     }
-    
+
     /* Check the signature */
     cur_pos -= sizeof(bbis_t);
     fseeko(file, cur_pos, SEEK_END);
@@ -360,7 +360,7 @@ static gboolean __mirage_parser_uif_load_image (MIRAGE_Parser *self, gchar **fil
     }
 
     _priv->uif_file = file;
-    
+
     /* Create disc */
     _priv->disc = g_object_new(MIRAGE_TYPE_DISC, NULL);
     mirage_object_attach_child(MIRAGE_OBJECT(self), _priv->disc, NULL);
@@ -389,7 +389,7 @@ static gboolean __mirage_parser_uif_load_image (MIRAGE_Parser *self, gchar **fil
 
 end:
     fclose(_priv->uif_file);
-        
+
     /* Return disc */
     mirage_object_detach_child(MIRAGE_OBJECT(self), _priv->disc, NULL);
     if (succeeded) {
@@ -398,8 +398,8 @@ end:
         g_object_unref(_priv->disc);
         *disc = NULL;
     }
-        
-    return succeeded;  
+
+    return succeeded;
 }
 
 
@@ -414,16 +414,16 @@ static void __mirage_parser_uif_instance_init (GTypeInstance *instance, gpointer
         "PARSER-UIF",
         "UIF Image Parser",
         "UIF (Universal Image Format) images",
-        "application/libmirage-uif"
+        "application/x-uif"
     );
-    
+
     return;
 }
 
 static void __mirage_parser_uif_finalize (GObject *obj) {
     MIRAGE_Parser_UIF *self_uif = MIRAGE_PARSER_UIF(obj);
     MIRAGE_Parser_UIFPrivate *_priv = MIRAGE_PARSER_UIF_GET_PRIVATE(self_uif);
-    
+
     MIRAGE_DEBUG(self_uif, MIRAGE_DEBUG_GOBJECT, "%s: finalizing object\n", __debug__);
 
     g_free(_priv->uif_filename);
@@ -431,7 +431,7 @@ static void __mirage_parser_uif_finalize (GObject *obj) {
     if (_priv->blhr_data) g_free(_priv->blhr_data);
     if (_priv->blms_data) g_free(_priv->blms_data);
     if (_priv->blss_data) g_free(_priv->blss_data);
-    
+
     /* Chain up to the parent class */
     MIRAGE_DEBUG(self_uif, MIRAGE_DEBUG_GOBJECT, "%s: chaining up to parent\n", __debug__);
     return G_OBJECT_CLASS(parent_class)->finalize(obj);
@@ -441,19 +441,19 @@ static void __mirage_parser_uif_class_init (gpointer g_class, gpointer g_class_d
     GObjectClass *class_gobject = G_OBJECT_CLASS(g_class);
     MIRAGE_ParserClass *class_parser = MIRAGE_PARSER_CLASS(g_class);
     MIRAGE_Parser_UIFClass *klass = MIRAGE_PARSER_UIF_CLASS(g_class);
-    
+
     /* Set parent class */
     parent_class = g_type_class_peek_parent(klass);
-    
+
     /* Register private structure */
     g_type_class_add_private(klass, sizeof(MIRAGE_Parser_UIFPrivate));
-    
+
     /* Initialize GObject methods */
     class_gobject->finalize = __mirage_parser_uif_finalize;
-    
+
     /* Initialize MIRAGE_Parser methods */
     class_parser->load_image = __mirage_parser_uif_load_image;
-        
+
     return;
 }
 
@@ -471,10 +471,10 @@ GType mirage_parser_uif_get_type (GTypeModule *module) {
             0,      /* n_preallocs */
             __mirage_parser_uif_instance_init    /* instance_init */
         };
-        
+
         type = g_type_module_register_type(module, MIRAGE_TYPE_PARSER, "MIRAGE_Parser_UIF", &info, 0);
     }
-    
+
     return type;
 }
 

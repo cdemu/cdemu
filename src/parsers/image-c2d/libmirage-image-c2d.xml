@@ -1,13 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <mime-info xmlns="http://www.freedesktop.org/standards/shared-mime-info">
-    <mime-type type="application/libmirage-c2d">
-        <sub-class-of type="application/libmirage-image"/>
+    <mime-type type="application/x-c2d">
         <sub-class-of type="application/octet-stream"/>
 
-        <alias type="application/x-c2d"/>
-        
         <comment>Roxio WinOnCD image file</comment>
-        
+
         <glob pattern="*.c2d"/>
 
         <magic priority="50">

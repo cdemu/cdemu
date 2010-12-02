@@ -1,11 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <mime-info xmlns="http://www.freedesktop.org/standards/shared-mime-info">
-    <mime-type type="application/libmirage-cdi">
-        <sub-class-of type="application/libmirage-image"/>
+    <mime-type type="application/x-cdi">
         <sub-class-of type="application/octet-stream"/>
 
         <comment>DiscJuggler image file</comment>
-        
+
         <glob pattern="*.cdi"/>
     </mime-type>
 </mime-info>

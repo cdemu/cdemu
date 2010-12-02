@@ -14,7 +14,7 @@ noinst_HEADERS = \
 image_toc_la_SOURCES = \
     image-toc-parser.c \
     image-toc-plugin.c
-    
+
 image_toc_la_LIBADD = \
     $(glib_LIBS) \
     $(gobject_LIBS)
@@ -22,9 +22,3 @@ image_toc_la_LIBADD = \
 image_toc_la_LDFLAGS = \
     -module \
     -avoid-version
-
-
-mimedir = $(datadir)/mime/packages
-mime_DATA = libmirage-image-toc.xml
-
-EXTRA_DIST = $(mime_DATA)

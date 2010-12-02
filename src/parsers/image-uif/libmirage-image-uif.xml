@@ -1,13 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <mime-info xmlns="http://www.freedesktop.org/standards/shared-mime-info">
-    <mime-type type="application/libmirage-uif">
-        <sub-class-of type="application/libmirage-image"/>
+    <mime-type type="application/x-uif">
         <sub-class-of type="application/octet-stream"/>
 
-        <alias type="application/x-uif"/>
-        
         <comment>Universal Image Format file</comment>
-        
+
         <glob pattern="*.uif"/>
     </mime-type>
 </mime-info>

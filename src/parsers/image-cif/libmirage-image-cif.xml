@@ -1,13 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <mime-info xmlns="http://www.freedesktop.org/standards/shared-mime-info">
-    <mime-type type="application/libmirage-cif">
-        <sub-class-of type="application/libmirage-image"/>
+    <mime-type type="application/x-cif">
         <sub-class-of type="application/octet-stream"/>
 
-        <alias type="application/x-cif"/>
-        
         <comment>Adaptec Easy CD/DVD Creator image file</comment>
-        
+
         <glob pattern="*.cif"/>
     </mime-type>
 </mime-info>
