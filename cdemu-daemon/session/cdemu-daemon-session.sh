@@ -9,7 +9,7 @@ AUDIO_DRIVER=pulse
 LOG_FILE=~/.cdemu-daemon.log
 
 # Read the settings
-CONFIG_FILE=~./cdemu-daemon
+CONFIG_FILE=~/.cdemu-daemon
 
 if [ -f ${CONFIG_FILE} ]; then
     . ${CONFIG_FILE};
