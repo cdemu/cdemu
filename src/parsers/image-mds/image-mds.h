@@ -1,7 +1,7 @@
 /*
  *  libMirage: MDS image parser
  *  Copyright (C) 2006-2010 Rok Mandeljc
- * 
+ *
  *  Reverse-engineering work in March, 2005 by Henrik Stokseth.
  *
  *  This program is free software; you can redistribute it and/or modify
@@ -37,7 +37,7 @@ G_BEGIN_DECLS
 #define MDS_MEDIUM_CD_RW        0x02 /* CD-RW */
 #define MDS_MEDIUM_DVD          0x10 /* DVD-ROM */
 #define MDS_MEDIUM_DVD_MINUS_R  0x12 /* DVD-R */
- 
+
 #define MDS_TRACKMODE_UNKNOWN       0x00
 #define MDS_TRACKMODE_AUDIO         0xA9 /* sector size = 2352 */
 #define MDS_TRACKMODE_MODE1         0xAA /* sector size = 2048 */
@@ -89,19 +89,18 @@ typedef struct {
     guint8 adr_ctl; /* Adr/Ctl */
     guint8 __dummy2__; /* Track flags? */
     guint8 point; /* Track number. (>0x99 is lead-in track) */
-    
+
     guint32 __dummy3__;
     guint8 min; /* Min */
     guint8 sec; /* Sec */
     guint8 frame; /* Frame */
     guint32 extra_offset; /* Start offset of this track's extra block. */
     guint16 sector_size; /* Sector size. */
-    
+
     guint8 __dummy4__[18];
     guint32 start_sector; /* Track start sector (PLBA). */
     guint64 start_offset; /* Track start offset. */
-    guint8 session; /* Session or index? */
-    guint8 __dummy5__[3];
+    guint32 number_of_files; /* Number of files */
     guint32 footer_offset; /* Start offset of footer. */
     guint8 __dummy6__[24];
 } MDS_TrackBlock; /* length: 80 bytes */

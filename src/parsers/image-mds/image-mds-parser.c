@@ -349,7 +349,7 @@ static gboolean __mirage_parser_mds_parse_track_entries (MIRAGE_Parser *self, MD
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  sector size: 0x%X\n", __debug__, block->sector_size);
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  start sector: 0x%X\n", __debug__, block->start_sector);
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  start offset: 0x%llX\n", __debug__, block->start_offset);
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  session: 0x%X\n", __debug__, block->session);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  number of files: 0x%X\n", __debug__, block->number_of_files);
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  footer offset: 0x%X\n", __debug__, block->footer_offset);
 
         /* Read extra track block, if applicable; it seems that only CD images
@@ -365,13 +365,17 @@ static gboolean __mirage_parser_mds_parse_track_entries (MIRAGE_Parser *self, MD
 
         /* Read footer, if applicable */
         if (block->footer_offset) {
-            footer_block = (MDS_Footer *)(_priv->mds_data + block->footer_offset);
+            gint j;
 
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: footer block #%i:\n", __debug__, i);
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  filename offset: 0x%X\n", __debug__, footer_block->filename_offset);
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  widechar filename: 0x%X\n", __debug__, footer_block->widechar_filename);
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  dummy1: 0x%X\n", __debug__, footer_block->__dummy1__);
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  dummy2: 0x%X\n", __debug__, footer_block->__dummy2__);
+            for (j = 0; j < block->number_of_files; j++) {
+                footer_block = (MDS_Footer *)(_priv->mds_data + block->footer_offset + j*sizeof(MDS_Footer));
+
+                MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: footer block #%i - %i:\n", __debug__, i, j);
+                MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  filename offset: 0x%X\n", __debug__, footer_block->filename_offset);
+                MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  widechar filename: 0x%X\n", __debug__, footer_block->widechar_filename);
+                MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  dummy1: 0x%X\n", __debug__, footer_block->__dummy1__);
+                MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  dummy2: 0x%X\n", __debug__, footer_block->__dummy2__);
+            }
         }
 
         if (block->point > 0 && block->point < 99) {
@@ -392,16 +396,6 @@ static gboolean __mirage_parser_mds_parse_track_entries (MIRAGE_Parser *self, MD
 
             /* Flags: decoded from Ctl */
             mirage_track_set_ctl(MIRAGE_TRACK(cur_track), block->adr_ctl & 0x0F, NULL);
-
-            /* Track file */
-            gchar *mdf_filename = __mirage_parser_mds_get_track_filename(self, footer_block, error);
-
-            if (!mdf_filename) {
-                MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to get track filename!\n", __debug__);
-                g_object_unref(cur_track);
-                g_object_unref(cur_session);
-                return FALSE;
-            }
 
             /* MDS format doesn't seem to store pregap data in its data file;
                therefore, we need to provide NULL fragment for pregap */
@@ -426,80 +420,112 @@ static gboolean __mirage_parser_mds_parse_track_entries (MIRAGE_Parser *self, MD
                 mirage_track_set_track_start(MIRAGE_TRACK(cur_track), extra_block->pregap, NULL);
             }
 
-            /* Data fragment */
-            GObject *data_fragment = libmirage_create_fragment(MIRAGE_TYPE_FINTERFACE_BINARY, mdf_filename, error);
-            if (!data_fragment) {
-                MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: failed to create fragment!\n", __debug__);
-                g_object_unref(cur_track);
-                g_object_unref(cur_session);
-                return FALSE;
-            }
+            /* Data fragment(s): it seems that MDS allows splitting of MDF files into multiple files; it also seems
+               files are split on (2048) sector boundary, which means we can simply represent them with multiple data
+               fragments */
+            gint j;
+            for (j = 0; j < block->number_of_files; j++) {
+                MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: creating data fragment for file #%i\n", __debug__, j);
 
-            /* Prepare data fragment */
-            FILE *tfile_handle = g_fopen(mdf_filename, "r");
-            guint64 tfile_offset = block->start_offset;
-            gint tfile_sectsize = block->sector_size;
-            gint tfile_format = 0;
+                footer_block = (MDS_Footer *)(_priv->mds_data + block->footer_offset + j*sizeof(MDS_Footer));
 
-            if (converted_mode == MIRAGE_MODE_AUDIO) {
-                tfile_format = FR_BIN_TFILE_AUDIO;
-            } else {
-                tfile_format = FR_BIN_TFILE_DATA;
-            }
+                /* Fragment properties */
+                guint64 tfile_offset = 0; /* Corrected below, if needed */
+                gint tfile_sectsize = block->sector_size;
+                gint tfile_format = 0;
 
-            gint fragment_len = 0;
+                gint sfile_sectsize = 0;
+                gint sfile_format = 0;
 
-            g_free(mdf_filename);
-
-            /* Depending on medium type, we determine track's length... */
-            if (medium_type == MIRAGE_MEDIUM_DVD) {
-                /* Length: for DVD-ROMs, track length seems to be stored in extra_offset */
-                fragment_len = block->extra_offset;
-                MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: DVD-ROM; track's fragment length: 0x%X\n", __debug__, fragment_len);
-            } else {
-                /* Length: for CD-ROMs, track lengths are stored in extra blocks */
-                fragment_len = extra_block->length;
-                MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: CD-ROM; track's fragment length: 0x%X\n", __debug__, fragment_len);
-            }
-
-            mirage_fragment_set_length(MIRAGE_FRAGMENT(data_fragment), fragment_len, NULL);
-
-            mirage_finterface_binary_track_file_set_handle(MIRAGE_FINTERFACE_BINARY(data_fragment), tfile_handle, NULL);
-            mirage_finterface_binary_track_file_set_offset(MIRAGE_FINTERFACE_BINARY(data_fragment), tfile_offset, NULL);
-            mirage_finterface_binary_track_file_set_sectsize(MIRAGE_FINTERFACE_BINARY(data_fragment), tfile_sectsize, NULL);
-            mirage_finterface_binary_track_file_set_format(MIRAGE_FINTERFACE_BINARY(data_fragment), tfile_format, NULL);
-
-            /* Subchannel */
-            switch (block->subchannel) {
-                case MDS_SUBCHAN_PW_INTERLEAVED: {
-                    gint sfile_sectsize = 96;
-                    gint sfile_format = FR_BIN_SFILE_PW96_INT | FR_BIN_SFILE_INT;
-
-                    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: subchannel found; interleaved PW96\n", __debug__);
-
-                    mirage_finterface_binary_subchannel_file_set_sectsize(MIRAGE_FINTERFACE_BINARY(data_fragment), sfile_sectsize, NULL);
-                    mirage_finterface_binary_subchannel_file_set_format(MIRAGE_FINTERFACE_BINARY(data_fragment), sfile_format, NULL);
-
-                    /* We need to correct the data for track sector size...
-                       MDS format has already added 96 bytes to sector size,
-                       so we need to subtract it */
-                    tfile_sectsize = block->sector_size - sfile_sectsize;
-                    mirage_finterface_binary_track_file_set_sectsize(MIRAGE_FINTERFACE_BINARY(data_fragment), tfile_sectsize, NULL);
-
-                    break;
+                if (j == 0) {
+                    /* Apply offset only if it's the first file... */
+                    block->start_offset;
                 }
-                case MDS_SUBCHAN_NONE: {
-                    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: no subchannel\n", __debug__);
-                    break;
-                }
-                default: {
-                    MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: unknown subchannel type 0x%X!\n", __debug__, block->subchannel);
-                    break;
-                }
-            }
 
-            mirage_track_add_fragment(MIRAGE_TRACK(cur_track), -1, &data_fragment, error);
-            g_object_unref(data_fragment);
+                if (converted_mode == MIRAGE_MODE_AUDIO) {
+                    tfile_format = FR_BIN_TFILE_AUDIO;
+                } else {
+                    tfile_format = FR_BIN_TFILE_DATA;
+                }
+
+                /* Subchannel */
+                switch (block->subchannel) {
+                    case MDS_SUBCHAN_PW_INTERLEAVED: {
+                        sfile_sectsize = 96;
+                        sfile_format = FR_BIN_SFILE_PW96_INT | FR_BIN_SFILE_INT;
+
+                        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: subchannel found; interleaved PW96\n", __debug__);
+
+                        /* We need to correct the data for track sector size...
+                           MDS format has already added 96 bytes to sector size,
+                           so we need to subtract it */
+                        tfile_sectsize = block->sector_size - sfile_sectsize;
+
+                        break;
+                    }
+                    case MDS_SUBCHAN_NONE: {
+                        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: no subchannel\n", __debug__);
+                        break;
+                    }
+                    default: {
+                        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: unknown subchannel type 0x%X!\n", __debug__, block->subchannel);
+                        break;
+                    }
+                }
+
+
+                /* Track file */
+                gchar *mdf_filename = __mirage_parser_mds_get_track_filename(self, footer_block, error);
+
+                if (!mdf_filename) {
+                    MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to get track filename!\n", __debug__);
+                    g_object_unref(cur_track);
+                    g_object_unref(cur_session);
+                    return FALSE;
+                }
+
+                FILE *tfile_handle = g_fopen(mdf_filename, "r");
+
+                gint fragment_len = 0;
+
+                /* Determine fragment's length */
+                if (medium_type == MIRAGE_MEDIUM_CD) {
+                    /* For CDs, track lengths are stored in extra block... and we assume
+                       this is the same as fragment's length */
+                    fragment_len = extra_block->length;
+                    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: CD-ROM; track's fragment length: 0x%X\n", __debug__, fragment_len);
+                } else {
+                    /* For DVDs, -track- length seems to be stored in extra_offset;
+                       however, since DVD images can have split MDF files, we need
+                       to calculate the individual framgents' lengths ourselves... */
+                    fseek(tfile_handle, 0, SEEK_END);
+                    fragment_len = (ftell(tfile_handle) - tfile_offset)/(tfile_sectsize + sfile_sectsize); /* We could've just divided by 2048, too :) */
+                    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: DVD-ROM; track's fragment length: 0x%X\n", __debug__, fragment_len);
+                }
+
+                /* Create data fragment */
+                GObject *data_fragment = libmirage_create_fragment(MIRAGE_TYPE_FINTERFACE_BINARY, mdf_filename, error);
+                g_free(mdf_filename);
+                if (!data_fragment) {
+                    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: failed to create fragment!\n", __debug__);
+                    g_object_unref(cur_track);
+                    g_object_unref(cur_session);
+                    return FALSE;
+                }
+
+                mirage_fragment_set_length(MIRAGE_FRAGMENT(data_fragment), fragment_len, NULL);
+
+                mirage_finterface_binary_track_file_set_handle(MIRAGE_FINTERFACE_BINARY(data_fragment), tfile_handle, NULL);
+                mirage_finterface_binary_track_file_set_offset(MIRAGE_FINTERFACE_BINARY(data_fragment), tfile_offset, NULL);
+                mirage_finterface_binary_track_file_set_sectsize(MIRAGE_FINTERFACE_BINARY(data_fragment), tfile_sectsize, NULL);
+                mirage_finterface_binary_track_file_set_format(MIRAGE_FINTERFACE_BINARY(data_fragment), tfile_format, NULL);
+
+                mirage_finterface_binary_subchannel_file_set_sectsize(MIRAGE_FINTERFACE_BINARY(data_fragment), sfile_sectsize, NULL);
+                mirage_finterface_binary_subchannel_file_set_format(MIRAGE_FINTERFACE_BINARY(data_fragment), sfile_format, NULL);
+
+                mirage_track_add_fragment(MIRAGE_TRACK(cur_track), -1, &data_fragment, error);
+                g_object_unref(data_fragment);
+            }
 
             g_object_unref(cur_track);
         } else {
