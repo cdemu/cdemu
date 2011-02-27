@@ -315,6 +315,7 @@ static gboolean __mirage_parser_ccd_build_disc_layout (MIRAGE_Parser *self, GErr
 
             mirage_track_add_fragment(MIRAGE_TRACK(cur_track), -1, &data_fragment, NULL);
 
+#if 0
             /* Track mode */
             if (ccd_cur_entry->Mode) {
                 /* Provided via [Track] entry */
@@ -341,6 +342,12 @@ static gboolean __mirage_parser_ccd_build_disc_layout (MIRAGE_Parser *self, GErr
                 MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: track mode is not provided\n", __debug__);
                 __mirage_parser_ccd_determine_track_mode(self, cur_track, NULL);
             }
+#else
+            /* Always determine track mode manually, because I've come across some images with
+               [Track] entry containing wrong mode... */
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: determining track mode\n", __debug__);
+            __mirage_parser_ccd_determine_track_mode(self, cur_track, NULL);
+#endif
 
             /* If track mode is determined to be audio, set fragment's format accordingly */
             gint mode = 0;
