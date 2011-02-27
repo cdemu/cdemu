@@ -363,7 +363,7 @@ static void vhba_free_command(struct vhba_command *vcmd)
         spin_unlock_irqrestore(&vhost->cmd_lock, flags);
 }
 
-static int vhba_queuecommand(struct scsi_cmnd *cmd, void (*done)(struct scsi_cmnd *))
+static int vhba_queuecommand_lck(struct scsi_cmnd *cmd, void (*done)(struct scsi_cmnd *))
 {
         struct vhba_device *vdev;
         int retval;
@@ -387,6 +387,12 @@ static int vhba_queuecommand(struct scsi_cmnd *cmd, void (*done)(struct scsi_cmn
 
         return retval;
 }
+
+#ifdef DEF_SCSI_QCMD
+DEF_SCSI_QCMD(vhba_queuecommand)
+#else
+#define vhba_queuecommand vhba_queuecommand_lck
+#endif
 
 static int vhba_abort(struct scsi_cmnd *cmd)
 {
@@ -796,7 +802,7 @@ static struct file_operations vhba_ctl_fops = {
         .poll = vhba_ctl_poll,
         .unlocked_ioctl = vhba_ctl_ioctl,
 #ifdef CONFIG_COMPAT
-	.compat_ioctl = vhba_ctl_compat_ioctl,
+        .compat_ioctl = vhba_ctl_compat_ioctl,
 #endif
 };
 
