@@ -15,13 +15,8 @@ mywarning ()
 
 case "$1" in
     remove|upgrade|deconfigure)
-        # Source config
-        test -f /etc/default/cdemu-daemon && . /etc/default/cdemu-daemon
-
         # Kill any session instances of cdemu-daemon running.
-        if [ "${LOAD_DAEMON}" != "0" ]; then
-            pgrep \^cdemud\$ && killall "cdemud"
-        fi
+        pgrep \^cdemud\$ && killall "cdemud"
 
         # Unset GID on cdemu daemon
         dpkg-statoverride --remove "/usr/bin/cdemud" || mywarning "Removing statoverride failed."

@@ -1,5 +1,5 @@
---- cdemu-daemon/src/cdemud-dbus.conf.old	2009-09-18 12:33:05.000000000 +0200
-+++ cdemu-daemon/src/cdemud-dbus.conf	2009-09-18 12:33:41.000000000 +0200
+--- cdemu-daemon/system/cdemud-dbus.conf.old	2009-09-18 12:33:05.000000000 +0200
++++ cdemu-daemon/system/cdemud-dbus.conf	2009-09-18 12:33:41.000000000 +0200
 @@ -7,7 +7,7 @@
      <policy user="root">
          <allow own="net.sf.cdemu.CDEMUD_Daemon"/>
