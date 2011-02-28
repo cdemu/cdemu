@@ -10,7 +10,7 @@ export DH_ALWAYS_EXCLUDE="CVS:.svn"
 export DEB_HOST_GNU_TYPE  ?= $(shell dpkg-architecture -qDEB_HOST_GNU_TYPE)
 export DEB_BUILD_GNU_TYPE ?= $(shell dpkg-architecture -qDEB_BUILD_GNU_TYPE)
 
-CONFIGURE_FLAGS = --build $(DEB_BUILD_GNU_TYPE) --host $(DEB_HOST_GNU_TYPE)
+CONFIGURE_FLAGS = --build $(DEB_BUILD_GNU_TYPE) --host $(DEB_HOST_GNU_TYPE) --enable-session-bus-service --disable-system-bus-service
 
 
 build: $(QUILT_STAMPFN) build-stamp
@@ -45,13 +45,6 @@ binary-indep: install
 # We have nothing to do by default.
 
 binary-arch: install
-	dh binary-arch --until auto_install
-
-	install -d                                              $(CURDIR)/debian/cdemu-daemon/etc/xdg/autostart
-	install -m 644 -D $(CURDIR)/debian/cdemu-daemon.desktop $(CURDIR)/debian/cdemu-daemon/etc/xdg/autostart/
-	install -d                                              $(CURDIR)/debian/cdemu-daemon/usr/lib/cdemu-daemon
-	install -m 755 -D $(CURDIR)/debian/cdemu-daemon.session $(CURDIR)/debian/cdemu-daemon/usr/lib/cdemu-daemon/
-
 	dh binary-arch --before strip
 	dh_strip --dbg-package=cdemu-daemon-dbg
 	dh binary-arch --after strip
