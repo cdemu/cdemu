@@ -1,7 +1,7 @@
 VHBA_VERSION = $(shell date +%Y%m%d)
 PACKAGE = vhba-module-$(VHBA_VERSION)
 
-EXTRA_CFLAGS += -DVHBA_VERSION=\"$(VHBA_VERSION)\" -I$(PWD)
+EXTRA_CFLAGS += -DVHBA_VERSION=\"$(VHBA_VERSION)\" -I$(PWD) -Werror
 
 obj-m += vhba.o
 
