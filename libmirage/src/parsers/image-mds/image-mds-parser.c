@@ -649,6 +649,7 @@ static gboolean __mirage_parser_mds_load_image (MIRAGE_Parser *self, gchar **fil
     guint8 *cur_ptr;
     FILE *file;
     gchar sig[16] = "";
+    guint8 ver[2];
 
     /* Check if we can load the image */
     file = g_fopen(filenames[0], "r");
@@ -657,7 +658,8 @@ static gboolean __mirage_parser_mds_load_image (MIRAGE_Parser *self, gchar **fil
         return FALSE;
     }
 
-    if (fread(sig, 16, 1, file) < 1) {
+    /* Read signature and version */
+    if ((fread(sig, 16, 1, file) < 1) || (fread(ver, 2, 1, file) < 1)) {
         fclose(file);
         mirage_error(MIRAGE_E_READFAILED, error);
         return FALSE;
@@ -666,6 +668,12 @@ static gboolean __mirage_parser_mds_load_image (MIRAGE_Parser *self, gchar **fil
     fclose(file);
 
     if (memcmp(sig, "MEDIA DESCRIPTOR", 16)) {
+        mirage_error(MIRAGE_E_CANTHANDLE, error);
+        return FALSE;
+    }
+
+    /* We can handle only v.1.X images (Alcohol 120% format) */
+    if (ver[0] != 1 ) {
         mirage_error(MIRAGE_E_CANTHANDLE, error);
         return FALSE;
     }
