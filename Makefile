@@ -43,9 +43,11 @@ dist-dir:
 	mkdir $(PACKAGE)/kat
 	cp -f $(wildcard kat/*) $(PACKAGE)/kat
 	mkdir $(PACKAGE)/debian
-	cp -f $(subst debian/patches,,$(wildcard debian/*)) $(PACKAGE)/debian
+	cp -f $(subst debian/source,,$(subst debian/patches,,$(wildcard debian/*))) $(PACKAGE)/debian
 	mkdir $(PACKAGE)/debian/patches
 	cp -f $(wildcard debian/patches/*) $(PACKAGE)/debian/patches
+	mkdir $(PACKAGE)/debian/source
+	cp -f $(wildcard debian/source/*) $(PACKAGE)/debian/source
 
 dist-gzip: dist-dir
 	tar -czf $(PACKAGE).tar.gz $(PACKAGE)
