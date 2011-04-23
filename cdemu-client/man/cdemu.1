@@ -1,4 +1,4 @@
-.TH CDEMU 1 "Feb 4, 2009"
+.TH CDEMU 1 "Apr 22, 2011"
 .SH NAME
 cdemu \- a simple command-line CDEmu client
 .SH SYNOPSIS
@@ -7,8 +7,8 @@ cdemu \- a simple command-line CDEmu client
 <command>
 <command parameters>
 .SH DESCRIPTION
-This is cdemu-client, a simple command-line client for controlling CDEmu daemon.
-It is part of the userspace-cdemu suite, a free, GPL CD/DVD-ROM device emulator
+This is cdemu, a command-line client for controlling CDEmu daemon. It is
+part of the userspace-cdemu suite, a free, GPL CD/DVD-ROM device emulator
 for linux.
 
 It provides a way to perform the key tasks related to controlling the CDEmu
@@ -17,7 +17,7 @@ retrieving/setting devices' debug masks.
 
 When connecting to daemon, cdemu client can use either session or system bus. By
 hard-coded default, it uses system bus. The default bus to be used can be specified
-via /etc/cdemu-client.conf or ~/.cdemu-client file; for more information, please 
+via /etc/cdemu-client.conf or ~/.cdemu-client file; for more information, please
 read README file. The default can be overriden using
 .B --bus
 option.
@@ -26,13 +26,13 @@ As of version 1.2.0, CDEmu daemon offers support for encrypted images. When pass
 is required to load an image (and it hasn't been provided via commandline using
 --password), cdemu-client will prompt for it and then send it to daemon.
 
-NOTE, HOWEVER, THAT THE PASSWORD IS SENT OVER D-BUS IN A PLAIN STRING FORM, WITHOUT 
-ANY PROTECTION. DEPENDING ON YOUR PRIVACY CONCERNS YOU MIGHT WISH TO AVOID LOADING 
+NOTE, HOWEVER, THAT THE PASSWORD IS SENT OVER D-BUS IN A PLAIN STRING FORM, WITHOUT
+ANY PROTECTION. DEPENDING ON YOUR PRIVACY CONCERNS YOU MIGHT WISH TO AVOID LOADING
 SUCH IMAGES.
 .SH OPTIONS
 .TP
 .B -h --help
-Displays the help message. If command is specified, help message with 
+Displays the help message. If command is specified, help message with
 synopsis and description for that command is displayed.
 .TP
 .B -v --version
@@ -58,11 +58,11 @@ Allows an encoding for text-based image format (such as CUE) to be specified. Th
 might be needed if the image descriptor file contains non-ASCII characters and does
 not use Unicode.
 .SH COMMANDS
-.TP 
+.TP
 .B load <device> <filename> [...]
 Loads the device; \fBdevice\fR is the number of the desired device, or \fIany\fR.
-If \fIany\fR is used, then the client will attempt to load the image into the 
-first empty device it finds (provided there is one available). \fBfilename\fR is 
+If \fIany\fR is used, then the client will attempt to load the image into the
+first empty device it finds (provided there is one available). \fBfilename\fR is
 the image filename. For multi-file images, multiple filenames can be provided.
 .TP
 .B unload <device>
@@ -75,29 +75,29 @@ Displays devices' status
 Displays device mapping information
 .TP
 .B daemon-debug-mask <device> [new-value]
-Displays/sets daemon debug mask; \fBdevice\fR is the number of the desired 
-device, or \fIall\fR. \fBnew-value\fR is the new debug mask value. If this 
-argument is omitted, current debug mask is displayed. A list of supported 
+Displays/sets daemon debug mask; \fBdevice\fR is the number of the desired
+device, or \fIall\fR. \fBnew-value\fR is the new debug mask value. If this
+argument is omitted, current debug mask is displayed. A list of supported
 debug mask values can be obtained with
 .B enum-daemon-debug-masks
 command.
 .TP
 .B library-debug-mask <device> [new-value]
-Displays/sets library debug mask; \fBdevice\fR is the number of the desired 
-device, or \fIall\fR. \fBnew-value\fR is the new debug mask value. If this 
-argument is omitted, current debug mask is displayed. A list of supported 
+Displays/sets library debug mask; \fBdevice\fR is the number of the desired
+device, or \fIall\fR. \fBnew-value\fR is the new debug mask value. If this
+argument is omitted, current debug mask is displayed. A list of supported
 debug mask values can be obtained with
 .B enum-library-debug-masks
 command.
 .TP
 .B dpm-emulation <device> [new-value]
-Displays/sets DPM emulation flag. \fBdevice\fR is the number of the desired 
-device, or \fIall\fR. \fBnew-value\fR is the new value to be set. If this 
+Displays/sets DPM emulation flag. \fBdevice\fR is the number of the desired
+device, or \fIall\fR. \fBnew-value\fR is the new value to be set. If this
 argument is ommited, currently set value is displayed.
 .TP
 .B tr-emulation <device> [new-value]
-Displays/sets transfer rate emulation flag. \fBdevice\fR is the number of the 
-desired device, or \fIall\fR. \fBnew-value\fR is the new value to be set. 
+Displays/sets transfer rate emulation flag. \fBdevice\fR is the number of the
+desired device, or \fIall\fR. \fBnew-value\fR is the new value to be set.
 If this argument is ommited, currently set value is displayed.
 .TP
 .B device-id <device> [new-vendor-id] [new-product-id] [new-revision] [new-vendor-specific]

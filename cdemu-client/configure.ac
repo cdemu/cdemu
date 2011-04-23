@@ -5,7 +5,7 @@ AC_PREREQ(2.59)
 
 # cdemu-client versioning:
 m4_define([cdemu_major_version], [1])
-m4_define([cdemu_minor_version], [3])
+m4_define([cdemu_minor_version], [4])
 m4_define([cdemu_micro_version], [0])
 m4_define([cdemu_version], [cdemu_major_version.cdemu_minor_version.cdemu_micro_version])
 
@@ -18,9 +18,6 @@ AM_MAINTAINER_MODE
 
 # Intltool
 AC_PROG_INTLTOOL([0.21])
-
-# Python
-AM_PATH_PYTHON
 
 # Internationalization
 ALL_LINGUAS="de fr no sl sv pl"
@@ -36,6 +33,5 @@ AC_OUTPUT([
     Makefile
     man/Makefile
     po/Makefile.in
-    src/globals.py
     src/Makefile
 ])
