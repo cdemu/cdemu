@@ -1,220 +1,239 @@
 # Slovenian translation of gCDEmu.
 # Copyright (C) 2006-2009 Rok Mandeljc
 # This file is distributed under the same license as the gCDEmu package.
-# Rok Mandeljc <rok.mandeljc@gmail.com>, 2006-2009.
-#
+# Rok Mandeljc <rok.mandeljc@gmail.com>, 2006-2009, 2011.
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: gCDEmu 1.3.0\n"
+"Project-Id-Version: gCDEmu 1.4.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2011-04-23 10:44+0200\n"
-"PO-Revision-Date: 2009-06-20 22:01+0200\n"
+"POT-Creation-Date: 2011-04-23 22:49+0200\n"
+"PO-Revision-Date: 2011-04-23 22:47+0200\n"
 "Last-Translator: Rok Mandeljc <rok.mandeljc@gmail.com>\n"
 "Language-Team: Slovenian\n"
 "Language: \n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
-"Content-Transfer-Encoding: 8bit\n"
+"Content-Transfer-Encoding: 8bits\n"
 
 #: ../data/gcdemu.desktop.in.h:1
 msgid "CDEmu GUI"
-msgstr ""
+msgstr "CDEmu grafični vmesnik"
 
 #: ../data/gcdemu.desktop.in.h:2
 msgid "gCDEmu"
-msgstr ""
+msgstr "gCDEmu"
 
 #: ../data/gcdemu.schemas.in.h:1
-msgid "Icon name"
+msgid ""
+"After connecting to bus, start the daemon via D-Bus' service activation "
+"facility"
 msgstr ""
+"Po povezavi na vodilo poskusi samodejno zagnati demon prek D-Bus sistema za "
+"aktivacijo storitev"
 
 #: ../data/gcdemu.schemas.in.h:2
-msgid "Show notifications?"
-msgstr "Prikaži o_bvestila?"
+msgid ""
+"Icon display policy. Valid options: \"always\", \"never\" and "
+"\"when_connected\""
+msgstr ""
+"Način prikaza ikone. Možnosti: \"always\", \"never\" in \"when_connected\""
 
 #: ../data/gcdemu.schemas.in.h:3
+msgid "Icon name"
+msgstr "Ime ikone"
+
+#: ../data/gcdemu.schemas.in.h:4
+msgid "Show notifications?"
+msgstr "Prikaži obvestila?"
+
+#: ../data/gcdemu.schemas.in.h:5
 msgid "Use system bus (instead of session bus)?"
 msgstr "Uporabi sistemsko vodilo (namesto sejnega vodila)?"
 
-#: ../src/gcdemu:129
+#: ../src/gcdemu:137
+msgid "Daemon autostart error"
+msgstr "Napaka pri zagonu demona"
+
+#: ../src/gcdemu:137
+#, c-format
+msgid ""
+"Daemon autostart failed. Error: %s\n"
+"%s"
+msgstr ""
+"Zagon demona ni uspel. Napaka: %s\n"
+"%s"
+
+#: ../src/gcdemu:149
+msgid "Incompatible daemon interface"
+msgstr "Nezdružljiva različica"
+
+#: ../src/gcdemu:149
 #, c-format
 msgid "CDEmu daemon interface version %i detected, but version %i is required!"
 msgstr ""
 "Zaznal sem CDEmu demon vmesnik različice %i, potrebna pa je različica %i!"
 
-#: ../src/gcdemu:267
+#: ../src/gcdemu:287
 #, c-format
 msgid ""
-"Failed to unload device %i:\n"
+"Failed to unload device #%02d:\n"
 "%s"
 msgstr ""
-"Napaka pri praznjenju naprave %i:\n"
+"Napaka pri praznjenju naprave #%02d:\n"
 "%s"
 
-#: ../src/gcdemu:278
-#, fuzzy, c-format
+#: ../src/gcdemu:298
+#, c-format
 msgid ""
 "Failed to load image %s to device #%02d:\n"
 "%s"
 msgstr ""
-"Napaka pri nalaganju slike %s v napravo %i:\n"
+"Napaka pri nalaganju slike %s v napravo #%02d:\n"
 "%s"
 
-#: ../src/gcdemu:288
-#, fuzzy, c-format
+#: ../src/gcdemu:308
+#, c-format
 msgid ""
 "Failed to set device ID for device #%02d to %s:\n"
 "%s"
 msgstr ""
-"Napaka pri nastavljanju ID naprave %i na %s:\n"
+"Napaka pri nastavljanju ID naprave #%02d na %s:\n"
 "%s"
 
-#: ../src/gcdemu:297
-#, fuzzy, c-format
+#: ../src/gcdemu:317
+#, c-format
 msgid ""
 "Failed to set DPM emulation for device #%02d to %i:\n"
 "%s"
 msgstr ""
-"Napaka pri nastavljanju DPM emulacije naprave %i na %i:\n"
+"Napaka pri nastavljanju DPM emulacije naprave #%02d na %i:\n"
 "%s"
 
-#: ../src/gcdemu:307
-#, fuzzy, c-format
+#: ../src/gcdemu:327
+#, c-format
 msgid ""
 "Failed to set TR emulation for device #%02d to %i:\n"
 "%s"
 msgstr ""
-"Napaka pri nastavljanju DPM emulacije naprave %i na %i:\n"
+"Napaka pri nastavljanju TR emulacije naprave #%02d na %i:\n"
 "%s"
 
-#: ../src/gcdemu:316
+#: ../src/gcdemu:336
 #, c-format
 msgid ""
-"Failed to set daemon debug mask for device %i to 0x%X:\n"
+"Failed to set daemon debug mask for device #%02d to 0x%X:\n"
 "%s"
 msgstr ""
-"Napaka pri nastavljanju demonove maske naprave %i na 0x%X:\n"
+"Napaka pri nastavljanju demonove maske naprave #%02d na 0x%X:\n"
 "%s"
 
-#: ../src/gcdemu:325
+#: ../src/gcdemu:345
 #, c-format
 msgid ""
-"Failed to set library debug mask for device %i to 0x%X:\n"
+"Failed to set library debug mask for device #%02d to 0x%X:\n"
 "%s"
 msgstr ""
-"Napaka pri nastavljanju knjižničine maske naprave %i na 0x%X:\n"
+"Napaka pri nastavljanju knjižničine maske naprave #%02d na 0x%X:\n"
 "%s"
 
-#: ../src/gcdemu:485
-#, fuzzy
+#: ../src/gcdemu:528
 msgid "A GUI for controlling CDEmu devices."
-msgstr ""
-"gCDEmu je programček za upravljanje CDEmu\n"
-"naprav prek CDEmu demona."
+msgstr "Grafični vmesnik za upravljanje CDEmu naprav."
 
-#: ../src/gcdemu:487
+#: ../src/gcdemu:530
 msgid "The CDEmu project website"
 msgstr "Domača stran projekta CDEmu"
 
-#: ../src/gcdemu:490
+#: ../src/gcdemu:533
 msgid "translator-credits"
 msgstr "Rok Mandeljc <rok.mandeljc@gmail.com>"
 
-#: ../src/gcdemu:497
-#, fuzzy
-msgid "Use system bus"
+#: ../src/gcdemu:540
+msgid "Use _system bus"
 msgstr "Uporabi _sistemsko vodilo"
 
-#: ../src/gcdemu:504
-#, fuzzy
-msgid "Show notifications"
-msgstr "Prikaži o_bvestila?"
+#: ../src/gcdemu:547
+msgid "Show _notifications"
+msgstr "Prikaži o_bvestila"
 
-#: ../src/gcdemu:533
-#, fuzzy
+#: ../src/gcdemu:576
 msgid "Devices"
-msgstr "Naprava"
+msgstr "Naprave"
 
-#: ../src/gcdemu:616
+#: ../src/gcdemu:665
 msgid "Daemon started"
 msgstr "Demon zagnan"
 
-#: ../src/gcdemu:616
+#: ../src/gcdemu:665
 msgid "CDEmu daemon has been started."
 msgstr "CDEmu demon je bil zagnan."
 
-#: ../src/gcdemu:619
+#: ../src/gcdemu:668
 msgid "Daemon stopped"
 msgstr "Demon ustavljen"
 
-#: ../src/gcdemu:619
+#: ../src/gcdemu:668
 msgid "CDEmu daemon has been stopped."
 msgstr "CDEmu demon je bil ustavljen."
 
-#: ../src/gcdemu:633
-msgid "Error"
-msgstr "Napaka"
-
-#: ../src/gcdemu:677
-#, fuzzy, c-format
+#: ../src/gcdemu:726
+#, c-format
 msgid "Device #%02d"
-msgstr "Naprava %i"
+msgstr "Naprava #%02d"
 
-#: ../src/gcdemu:692 ../src/gcdemu:863
+#: ../src/gcdemu:741 ../src/gcdemu:912
 msgid "Status"
 msgstr "Stanje"
 
-#: ../src/gcdemu:698
+#: ../src/gcdemu:747
 msgid "Options"
 msgstr "Možnosti"
 
-#: ../src/gcdemu:704
+#: ../src/gcdemu:753
 msgid "Daemon debug mask"
 msgstr "Demonova razhroščevalna maska"
 
-#: ../src/gcdemu:705
+#: ../src/gcdemu:754
 msgid "Daemon"
 msgstr "Demon"
 
-#: ../src/gcdemu:709
+#: ../src/gcdemu:758
 msgid "Library debug mask"
 msgstr "Knjižničina razhrošćevalna maska"
 
-#: ../src/gcdemu:710
+#: ../src/gcdemu:759
 msgid "Library"
 msgstr "Knjižnica"
 
-#: ../src/gcdemu:756 ../src/gcdemu:758
+#: ../src/gcdemu:805 ../src/gcdemu:807
 msgid "Device"
 msgstr "Naprava"
 
-#: ../src/gcdemu:758
+#: ../src/gcdemu:807
 msgid "Empty"
 msgstr "Prazna"
 
-#: ../src/gcdemu:767 ../src/gcdemu:769
-#, fuzzy
+#: ../src/gcdemu:816 ../src/gcdemu:818
 msgid "Device status change"
 msgstr "Sprememba stanja naprave"
 
-#: ../src/gcdemu:767
-#, fuzzy, c-format
+#: ../src/gcdemu:816
+#, c-format
 msgid "Device #%02d has been loaded."
-msgstr "Naprava %i je bila naložena."
+msgstr "Naprava #%02d je bila naložena."
 
-#: ../src/gcdemu:769
-#, fuzzy, c-format
+#: ../src/gcdemu:818
+#, c-format
 msgid "Device #%02d has been emptied."
-msgstr "Naprava %i je bila izpraznjena."
+msgstr "Naprava #%02d je bila izpraznjena."
 
-#: ../src/gcdemu:774 ../src/gcdemu:779 ../src/gcdemu:784 ../src/gcdemu:789
-#: ../src/gcdemu:794
-#, fuzzy
+#: ../src/gcdemu:823 ../src/gcdemu:828 ../src/gcdemu:833 ../src/gcdemu:838
+#: ../src/gcdemu:843
 msgid "Device option change"
-msgstr "Sprememba stanja naprave"
+msgstr "Sprememba nastavitev naprave"
 
-#: ../src/gcdemu:774
+#: ../src/gcdemu:823
 #, c-format
 msgid ""
 "Device #%02d has been changed its device ID:\n"
@@ -223,136 +242,144 @@ msgid ""
 "  Revision: '%s'\n"
 "  Vendor-specific: '%s'"
 msgstr ""
+"Napravi #%02d je bil spremenjen ID naprave:\n"
+"  Proizvajalec: '%s'\n"
+"  Model: '%s'\n"
+"  Revizija: '%s'\n"
+"  Proizvajalčev niz: '%s'"
 
-#: ../src/gcdemu:779
-#, fuzzy, c-format
+#: ../src/gcdemu:828
+#, c-format
 msgid "Device #%02d has been changed its DPM emulation option. New value: %s"
 msgstr ""
-"Napravi %i je bila spremenjena možnost:\n"
-"%s."
+"Napravi #%02d je bila spremenjena nastavitev DPM emulacije. Nova vrednost: %s"
 
-#: ../src/gcdemu:784
-#, fuzzy, c-format
+#: ../src/gcdemu:833
+#, c-format
 msgid "Device #%02d has been changed its TR emulation option. New value: %s"
 msgstr ""
-"Napravi %i je bila spremenjena možnost:\n"
-"%s."
+"Napravi #%02d je bila spremenjena nastavitev TR emulacije. Nova vrednost: %s"
 
-#: ../src/gcdemu:789
-#, fuzzy, c-format
+#: ../src/gcdemu:838
+#, c-format
 msgid "Device #%02d has been changed its daemon debug mask. New value: 0x%X"
 msgstr ""
-"Napravi %i je bila spremenjena možnost:\n"
-"%s."
+"Napravi #%02d je bila spremenjena demonova razhroščevalna maska. Nova "
+"vrednost: 0x%X"
 
-#: ../src/gcdemu:794
+#: ../src/gcdemu:843
 #, c-format
 msgid "Device #%02d has been changed its library debug mask. New value: 0x%X"
 msgstr ""
+"Napravi #%02d je bila spremenjena knjižničina razhroščevalna maska. Nova "
+"vrednost: 0x%X"
 
-#: ../src/gcdemu:842
-#, fuzzy
+#: ../src/gcdemu:891
 msgid "Device error"
-msgstr "Naprava %i"
+msgstr "Napaka naprave"
 
-#: ../src/gcdemu:875
+#: ../src/gcdemu:924
 msgid "Loaded: "
 msgstr "Naložena: "
 
-#: ../src/gcdemu:884
+#: ../src/gcdemu:933
 msgid "File name(s): "
 msgstr "Ime datotek(e): "
 
-#: ../src/gcdemu:897 ../src/gcdemu:954
+#: ../src/gcdemu:946 ../src/gcdemu:1003
 msgid "Load"
 msgstr "Naloži"
 
-#: ../src/gcdemu:904
+#: ../src/gcdemu:953
 msgid "Device mapping"
 msgstr "Preslikava naprave"
 
-#: ../src/gcdemu:916
+#: ../src/gcdemu:965
 msgid "SCSI CD-ROM device: "
 msgstr "SCSI CD-ROM naprava: "
 
-#: ../src/gcdemu:925
+#: ../src/gcdemu:974
 msgid "SCSI generic device: "
 msgstr "SCSI generična naprava: "
 
-#: ../src/gcdemu:948
+#: ../src/gcdemu:997
 msgid "Yes"
 msgstr "Da"
 
-#: ../src/gcdemu:950
+#: ../src/gcdemu:999
 msgid "Unload"
 msgstr "Izprazni"
 
-#: ../src/gcdemu:952
+#: ../src/gcdemu:1001
 msgid "No"
 msgstr "Ne"
 
-#: ../src/gcdemu:975
+#: ../src/gcdemu:1024
 msgid "Device ID"
 msgstr "ID naprave"
 
-#: ../src/gcdemu:987
+#: ../src/gcdemu:1036
 msgid "Vendor ID: "
 msgstr "Proizvajalec: "
 
-#: ../src/gcdemu:997
+#: ../src/gcdemu:1046
 msgid "Product ID: "
 msgstr "Model: "
 
-#: ../src/gcdemu:1007
+#: ../src/gcdemu:1056
 msgid "Revision: "
 msgstr "Revizija: "
 
-#: ../src/gcdemu:1017
+#: ../src/gcdemu:1066
 msgid "Vendor-specific: "
 msgstr "Proizvajalčev niz: "
 
-#: ../src/gcdemu:1031
+#: ../src/gcdemu:1080
 msgid "Set device ID"
 msgstr "Nastavi ID naprave"
 
-#: ../src/gcdemu:1037
+#: ../src/gcdemu:1086
 msgid "DPM emulation"
 msgstr "DPM emulacija"
 
-#: ../src/gcdemu:1044
+#: ../src/gcdemu:1093
 msgid "Transfer rate emulation"
 msgstr "Emulacija hitrosti prenosa"
 
-#: ../src/gcdemu:1117
+#: ../src/gcdemu:1166
 msgid "Set debug mask"
 msgstr "Nastavi masko"
 
-#: ../src/gcdemu:1149
+#: ../src/gcdemu:1198
 msgid "Open file"
 msgstr "Odpri datoteko"
 
-#: ../src/gcdemu:1154
+#: ../src/gcdemu:1203
 msgid "All files"
 msgstr "Vse datoteke"
 
-#: ../src/gcdemu:1159
+#: ../src/gcdemu:1208
 msgid "All image files"
 msgstr "Vse slike"
 
-#: ../src/gcdemu:1178
+#: ../src/gcdemu:1227
 msgid "Enter password"
 msgstr "Vnesite geslo"
 
-#: ../src/gcdemu:1183
+#: ../src/gcdemu:1232
 msgid "The image you are trying to load is encrypted."
 msgstr "Slika, ki jo poskušate naložiti, je zaščitena z geslom."
 
-#: ../src/gcdemu:1194
+#: ../src/gcdemu:1243
 msgid "Password: "
 msgstr "Geslo: "
 
-#~ msgid "Show _notifications"
-#~ msgstr "Prikaži o_bvestila"
+#, fuzzy
+#~ msgid "Show notifications"
+#~ msgstr "Prikaži o_bvestila?"
+
+#~ msgid "Error"
+#~ msgstr "Napaka"
 
 #~ msgid "_About"
 #~ msgstr "_O programu"
