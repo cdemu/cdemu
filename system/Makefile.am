@@ -1,5 +1,5 @@
 EXTRA_DIST = \
-	cdemu-daemon-system.service \
+	net.sf.cdemu.CDEMUD_Daemon.service \
 	cdemu-daemon-system.sh \
 	cdemud-dbus.conf
 
