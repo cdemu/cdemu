@@ -192,6 +192,8 @@ gboolean cdemud_daemon_initialize (CDEMUD_Daemon *self, gint num_devices, gchar 
     }
 
     dbus_g_connection_register_g_object(_priv->bus, "/CDEMUD_Daemon", G_OBJECT(self));
+    dbus_g_error_domain_register(CDEMUD_ERROR, "net.sf.cdemu.CDEMUD_Daemon.CDEmuDaemon", CDEMUD_TYPE_ERROR);
+    dbus_g_error_domain_register(MIRAGE_ERROR, "net.sf.cdemu.CDEMUD_Daemon.libMirage", MIRAGE_TYPE_ERROR);
 
     /* Create desired number of devices */
     for (i = 0; i < _priv->number_of_devices; i++) {
