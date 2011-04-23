@@ -1,0 +1,9 @@
+[Desktop Entry]
+_Name=gCDEmu
+_Comment=CDEmu GUI
+Icon=gcdemu
+Terminal=false
+Type=Application
+StartupNotify=true
+Categories=GTK;System;
+Exec=gcdemu

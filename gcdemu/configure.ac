@@ -5,7 +5,7 @@ AC_PREREQ(2.59)
 
 # gcdemu versioning:
 m4_define([gcdemu_major_version], [1])
-m4_define([gcdemu_minor_version], [3])
+m4_define([gcdemu_minor_version], [4])
 m4_define([gcdemu_micro_version], [0])
 m4_define([gcdemu_version], [gcdemu_major_version.gcdemu_minor_version.gcdemu_micro_version])
 
@@ -16,23 +16,12 @@ AM_INIT_AUTOMAKE(AC_PACKAGE_NAME, AC_PACKAGE_VERSION)
 
 AM_MAINTAINER_MODE
 
-# GNOME docs
-GNOME_DOC_INIT
-
 # GConf
 AC_PATH_PROG(GCONFTOOL, gconftool-2)
 AM_GCONF_SOURCE_2
 
 # Intltool
 AC_PROG_INTLTOOL([0.21])
-
-# Python
-AM_PATH_PYTHON
-
-# PyGTK
-PKG_CHECK_MODULES(pygtk, pygtk-2.0 >= 2.6)
-AC_SUBST(pygtk_CFLAGS)
-AC_SUBST(pygtk_LIBS)
 
 # Internationalization
 ALL_LINGUAS="de fr no sl pl zh_CN"
@@ -46,10 +35,7 @@ AM_GLIB_GNU_GETTEXT
 # Output files
 AC_OUTPUT([
     Makefile
-    docs/Makefile
-    pixmaps/Makefile
+    data/Makefile
     po/Makefile.in
-    servers/Makefile
-    src/globals.py
     src/Makefile
 ])

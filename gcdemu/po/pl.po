@@ -8,211 +8,42 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gCDEmu 1.3.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2008-06-28 00:49+0200\n"
+"POT-Creation-Date: 2011-04-23 10:44+0200\n"
 "PO-Revision-Date: 2008-06-20 17:17+0200\n"
 "Last-Translator: Paweł Różański <Pawel.Rozanski@gmail.com>\n"
 "Language-Team: Polish\n"
+"Language: \n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: ../src/applet.py:60 ../src/device.py:475
-msgid "Error"
-msgstr "Błąd"
-
-#: ../src/applet.py:149
-msgid ""
-"gCDEmu is an applet for controlling CDEmu\n"
-"devices via CDEmu daemon."
+#: ../data/gcdemu.desktop.in.h:1
+msgid "CDEmu GUI"
 msgstr ""
-"Aplet gCDEmu zarządza urządzeniami CDEmu\n"
-"poprzez CDEmu daemona."
 
-#: ../src/applet.py:151
-msgid "The CDEmu project website"
-msgstr "Strona domowa projektu CDEmu"
+#: ../data/gcdemu.desktop.in.h:2
+msgid "gCDEmu"
+msgstr ""
 
-#: ../src/applet.py:155
-msgid "translator-credits"
-msgstr "Paweł Różański <Pawel.Rozanski@gmail.com>"
+#: ../data/gcdemu.schemas.in.h:1
+msgid "Icon name"
+msgstr ""
 
-#: ../src/applet.py:160
-msgid "Use _system bus"
-msgstr "Przełącz na szynę _sesji"
+#: ../data/gcdemu.schemas.in.h:2
+msgid "Show notifications?"
+msgstr "Powiadomienia"
 
-#: ../src/applet.py:162
-msgid "Show _notifications"
-msgstr "Pokazuj _powiadomienia"
+#: ../data/gcdemu.schemas.in.h:3
+msgid "Use system bus (instead of session bus)?"
+msgstr "Użyj szyny systemowej (zamiast sesyjnej)"
 
-#: ../src/applet.py:164
-msgid "_About"
-msgstr "_O programie"
-
-#: ../src/applet.py:165
-msgid "_Help"
-msgstr "Pomoc"
-
-#: ../src/applet.py:214
-msgid "Daemon started"
-msgstr "Daemon wystartowany"
-
-#: ../src/applet.py:214
-msgid "CDEmu daemon has been started."
-msgstr "Daemon został wystartowany."
-
-#: ../src/applet.py:222
-msgid "Daemon stopped"
-msgstr "Daemon zatrzymany"
-
-#: ../src/applet.py:222
-msgid "CDEmu daemon has been stopped."
-msgstr "Daemon został zatrzymany."
-
-#: ../src/applet.py:410
-#, python-format
-msgid "CDEmu daemon version %s detected, but at least version %s is required!"
+#: ../src/gcdemu:129
+#, fuzzy, c-format
+msgid "CDEmu daemon interface version %i detected, but version %i is required!"
 msgstr "Wykryta wersja CDEmu daemona to %s, a potrzebna jest przynajmniej %s!"
 
-#: ../src/applet.py:414
-msgid "Incompatible daemon version"
-msgstr "Niekompatybilna wersja daemona"
-
-#: ../src/device.py:54
-msgid "Open file"
-msgstr "Otwórz plik"
-
-#: ../src/device.py:63
-msgid "All files"
-msgstr "Wszystkie pliki"
-
-#: ../src/device.py:68
-msgid "All image files"
-msgstr "Wszystkie pliki obrazów"
-
-#: ../src/device.py:87
-#, python-format
-msgid "Device %i properties"
-msgstr "Właściwości urządzenia %i"
-
-#: ../src/device.py:95
-#, python-format
-msgid "Device %i"
-msgstr "Urządzenie %i"
-
-#. *** Frame: status ***
-#: ../src/device.py:108 ../src/device.py:138
-msgid "Status"
-msgstr "Status"
-
-#: ../src/device.py:111
-msgid "Options"
-msgstr "Opcje"
-
-#: ../src/device.py:118
-msgid "Daemon debug mask"
-msgstr "Maska debug daemona"
-
-#: ../src/device.py:119
-msgid "Daemon"
-msgstr "Daemon"
-
-#: ../src/device.py:126
-msgid "Library debug mask"
-msgstr "Maska debug biblioteki"
-
-#: ../src/device.py:127
-msgid "Library"
-msgstr "Biblioteka"
-
-#: ../src/device.py:150
-msgid "Loaded: "
-msgstr "Załadowany: "
-
-#: ../src/device.py:159
-msgid "Image type: "
-msgstr "Typ obrazu: "
-
-#: ../src/device.py:168
-msgid "File name: "
-msgstr "Nazwa pliku: "
-
-#: ../src/device.py:186
-msgid "Device mapping"
-msgstr "Przypisy urządzeń"
-
-#: ../src/device.py:198
-msgid "SCSI CD-ROM device: "
-msgstr "Urządzenie SCSI CD-ROM: "
-
-#: ../src/device.py:207
-msgid "SCSI generic device: "
-msgstr "Ogólne urządzenie SCSI: "
-
-#. Device ID
-#: ../src/device.py:223
-msgid "Device ID"
-msgstr "ID urządzenia"
-
-#: ../src/device.py:235
-msgid "Vendor ID: "
-msgstr "Producent: "
-
-#: ../src/device.py:245
-msgid "Product ID: "
-msgstr "Model: "
-
-#: ../src/device.py:255
-msgid "Revision: "
-msgstr "Rewizja: "
-
-#: ../src/device.py:265
-msgid "Vendor-specific: "
-msgstr "Dane producenta: "
-
-#: ../src/device.py:279
-msgid "Set device ID"
-msgstr "Ustaw ID urządzenia"
-
-#. DPM emulation
-#: ../src/device.py:285
-msgid "DPM emulation"
-msgstr "Emulacja DPM"
-
-#. Transfer rate emulation
-#: ../src/device.py:292
-msgid "Transfer rate emulation"
-msgstr "Emulacja szybkości transferu"
-
-#: ../src/device.py:324
-msgid "Set debug mask"
-msgstr "Ustaw maskę"
-
-#: ../src/device.py:437 ../src/device.py:439 ../src/device.py:462
-msgid "Device change"
-msgstr "Zmień urządzenie"
-
-#: ../src/device.py:437
-#, python-format
-msgid "Device %i has been loaded."
-msgstr "Urządzenie %i załadowane."
-
-#: ../src/device.py:439
-#, python-format
-msgid "Device %i has been emptied."
-msgstr "Obraz z urządzenia %i został wyciągnięty."
-
-#: ../src/device.py:462
-#, python-format
-msgid ""
-"Device %i has been changed its option:\n"
-"%s."
-msgstr ""
-"Zmieniły się opcje urządzenia %i:\n"
-"%s."
-
-#. Show error dialog
-#: ../src/device.py:517
-#, python-format
+#: ../src/gcdemu:267
+#, c-format
 msgid ""
 "Failed to unload device %i:\n"
 "%s"
@@ -220,44 +51,44 @@ msgstr ""
 "Błąd z opróżnieniem urządzenia %i:\n"
 "%s"
 
-#: ../src/device.py:531
-#, python-format
+#: ../src/gcdemu:278
+#, fuzzy, c-format
 msgid ""
-"Failed to load image %s to device %i:\n"
+"Failed to load image %s to device #%02d:\n"
 "%s"
 msgstr ""
 "Błąd z włożeniem obrazu %s dla urządzenia %i:\n"
 "%s"
 
-#: ../src/device.py:550
-#, python-format
+#: ../src/gcdemu:288
+#, fuzzy, c-format
 msgid ""
-"Failed to set device ID for device %i to %s:\n"
+"Failed to set device ID for device #%02d to %s:\n"
 "%s"
 msgstr ""
 "Błąd podczas ustawiania ID urządzenia %i na %s:\n"
 "%s"
 
-#: ../src/device.py:567
-#, python-format
+#: ../src/gcdemu:297
+#, fuzzy, c-format
 msgid ""
-"Failed to set DPM emulation for device %i to %i:\n"
+"Failed to set DPM emulation for device #%02d to %i:\n"
 "%s"
 msgstr ""
 "Błąd podczas ustawiania emulacji DPM urządzenia %i na %i:\n"
 "%s"
 
-#: ../src/device.py:584
-#, python-format
+#: ../src/gcdemu:307
+#, fuzzy, c-format
 msgid ""
-"Failed to set transfer rate emulation for device %i to %i:\n"
+"Failed to set TR emulation for device #%02d to %i:\n"
 "%s"
 msgstr ""
-"Błąd podczas ustawiania emulowanej szybkości transferu urządzenia %i na %i:\n"
+"Błąd podczas ustawiania emulacji DPM urządzenia %i na %i:\n"
 "%s"
 
-#: ../src/device.py:594
-#, python-format
+#: ../src/gcdemu:316
+#, c-format
 msgid ""
 "Failed to set daemon debug mask for device %i to 0x%X:\n"
 "%s"
@@ -265,8 +96,8 @@ msgstr ""
 "Błąd podczas ustawiania maski debug daemona urządzenia %i na 0x%X:\n"
 "%s"
 
-#: ../src/device.py:604
-#, python-format
+#: ../src/gcdemu:325
+#, c-format
 msgid ""
 "Failed to set library debug mask for device %i to 0x%X:\n"
 "%s"
@@ -274,39 +105,277 @@ msgstr ""
 "Błąd podczas ustawiania maski debug biblioteki urządzenia %i na 0x%X:\n"
 "%s"
 
-#. Indicate there's more than one file
-#: ../src/device.py:623 ../src/device.py:625
+#: ../src/gcdemu:485
+#, fuzzy
+msgid "A GUI for controlling CDEmu devices."
+msgstr ""
+"Aplet gCDEmu zarządza urządzeniami CDEmu\n"
+"poprzez CDEmu daemona."
+
+#: ../src/gcdemu:487
+msgid "The CDEmu project website"
+msgstr "Strona domowa projektu CDEmu"
+
+#: ../src/gcdemu:490
+msgid "translator-credits"
+msgstr "Paweł Różański <Pawel.Rozanski@gmail.com>"
+
+#: ../src/gcdemu:497
+#, fuzzy
+msgid "Use system bus"
+msgstr "Przełącz na szynę _sesji"
+
+#: ../src/gcdemu:504
+#, fuzzy
+msgid "Show notifications"
+msgstr "Powiadomienia"
+
+#: ../src/gcdemu:533
+#, fuzzy
+msgid "Devices"
+msgstr "Urządzenie"
+
+#: ../src/gcdemu:616
+msgid "Daemon started"
+msgstr "Daemon wystartowany"
+
+#: ../src/gcdemu:616
+msgid "CDEmu daemon has been started."
+msgstr "Daemon został wystartowany."
+
+#: ../src/gcdemu:619
+msgid "Daemon stopped"
+msgstr "Daemon zatrzymany"
+
+#: ../src/gcdemu:619
+msgid "CDEmu daemon has been stopped."
+msgstr "Daemon został zatrzymany."
+
+#: ../src/gcdemu:633
+msgid "Error"
+msgstr "Błąd"
+
+#: ../src/gcdemu:677
+#, fuzzy, c-format
+msgid "Device #%02d"
+msgstr "Urządzenie %i"
+
+#: ../src/gcdemu:692 ../src/gcdemu:863
+msgid "Status"
+msgstr "Status"
+
+#: ../src/gcdemu:698
+msgid "Options"
+msgstr "Opcje"
+
+#: ../src/gcdemu:704
+msgid "Daemon debug mask"
+msgstr "Maska debug daemona"
+
+#: ../src/gcdemu:705
+msgid "Daemon"
+msgstr "Daemon"
+
+#: ../src/gcdemu:709
+msgid "Library debug mask"
+msgstr "Maska debug biblioteki"
+
+#: ../src/gcdemu:710
+msgid "Library"
+msgstr "Biblioteka"
+
+#: ../src/gcdemu:756 ../src/gcdemu:758
 msgid "Device"
 msgstr "Urządzenie"
 
-#: ../src/device.py:625
+#: ../src/gcdemu:758
 msgid "Empty"
 msgstr "Puste"
 
-#: ../src/device.py:631
-msgid "Yes"
-msgstr "Tak"
+#: ../src/gcdemu:767 ../src/gcdemu:769
+#, fuzzy
+msgid "Device status change"
+msgstr "Zmień urządzenie"
 
-#: ../src/device.py:634
-msgid "Unload"
-msgstr "Wyciągnij"
+#: ../src/gcdemu:767
+#, fuzzy, c-format
+msgid "Device #%02d has been loaded."
+msgstr "Urządzenie %i załadowane."
 
-#: ../src/device.py:636
-msgid "No"
-msgstr "Nie"
+#: ../src/gcdemu:769
+#, fuzzy, c-format
+msgid "Device #%02d has been emptied."
+msgstr "Obraz z urządzenia %i został wyciągnięty."
 
-#: ../src/device.py:639
+#: ../src/gcdemu:774 ../src/gcdemu:779 ../src/gcdemu:784 ../src/gcdemu:789
+#: ../src/gcdemu:794
+#, fuzzy
+msgid "Device option change"
+msgstr "Zmień urządzenie"
+
+#: ../src/gcdemu:774
+#, c-format
+msgid ""
+"Device #%02d has been changed its device ID:\n"
+"  Vendor ID: '%s'\n"
+"  Product ID: '%s'\n"
+"  Revision: '%s'\n"
+"  Vendor-specific: '%s'"
+msgstr ""
+
+#: ../src/gcdemu:779
+#, fuzzy, c-format
+msgid "Device #%02d has been changed its DPM emulation option. New value: %s"
+msgstr ""
+"Zmieniły się opcje urządzenia %i:\n"
+"%s."
+
+#: ../src/gcdemu:784
+#, fuzzy, c-format
+msgid "Device #%02d has been changed its TR emulation option. New value: %s"
+msgstr ""
+"Zmieniły się opcje urządzenia %i:\n"
+"%s."
+
+#: ../src/gcdemu:789
+#, fuzzy, c-format
+msgid "Device #%02d has been changed its daemon debug mask. New value: 0x%X"
+msgstr ""
+"Zmieniły się opcje urządzenia %i:\n"
+"%s."
+
+#: ../src/gcdemu:794
+#, c-format
+msgid "Device #%02d has been changed its library debug mask. New value: 0x%X"
+msgstr ""
+
+#: ../src/gcdemu:842
+#, fuzzy
+msgid "Device error"
+msgstr "Urządzenie %i"
+
+#: ../src/gcdemu:875
+msgid "Loaded: "
+msgstr "Załadowany: "
+
+#: ../src/gcdemu:884
+#, fuzzy
+msgid "File name(s): "
+msgstr "Nazwa pliku: "
+
+#: ../src/gcdemu:897 ../src/gcdemu:954
 msgid "Load"
 msgstr "Włóż"
 
-#: ../src/gcdemu.schemas.in.h:1
-msgid "Name of icon to use (relative to gCDEmu's pixmap dir)"
-msgstr "Nazwa wyświetlanej ikony (względem katalogu pixmap gCDEmu)"
+#: ../src/gcdemu:904
+msgid "Device mapping"
+msgstr "Przypisy urządzeń"
 
-#: ../src/gcdemu.schemas.in.h:2
-msgid "Show notifications?"
-msgstr "Powiadomienia"
+#: ../src/gcdemu:916
+msgid "SCSI CD-ROM device: "
+msgstr "Urządzenie SCSI CD-ROM: "
 
-#: ../src/gcdemu.schemas.in.h:3
-msgid "Use system bus (instead of session bus)?"
-msgstr "Użyj szyny systemowej (zamiast sesyjnej)"
+#: ../src/gcdemu:925
+msgid "SCSI generic device: "
+msgstr "Ogólne urządzenie SCSI: "
+
+#: ../src/gcdemu:948
+msgid "Yes"
+msgstr "Tak"
+
+#: ../src/gcdemu:950
+msgid "Unload"
+msgstr "Wyciągnij"
+
+#: ../src/gcdemu:952
+msgid "No"
+msgstr "Nie"
+
+#: ../src/gcdemu:975
+msgid "Device ID"
+msgstr "ID urządzenia"
+
+#: ../src/gcdemu:987
+msgid "Vendor ID: "
+msgstr "Producent: "
+
+#: ../src/gcdemu:997
+msgid "Product ID: "
+msgstr "Model: "
+
+#: ../src/gcdemu:1007
+msgid "Revision: "
+msgstr "Rewizja: "
+
+#: ../src/gcdemu:1017
+msgid "Vendor-specific: "
+msgstr "Dane producenta: "
+
+#: ../src/gcdemu:1031
+msgid "Set device ID"
+msgstr "Ustaw ID urządzenia"
+
+#: ../src/gcdemu:1037
+msgid "DPM emulation"
+msgstr "Emulacja DPM"
+
+#: ../src/gcdemu:1044
+msgid "Transfer rate emulation"
+msgstr "Emulacja szybkości transferu"
+
+#: ../src/gcdemu:1117
+msgid "Set debug mask"
+msgstr "Ustaw maskę"
+
+#: ../src/gcdemu:1149
+msgid "Open file"
+msgstr "Otwórz plik"
+
+#: ../src/gcdemu:1154
+msgid "All files"
+msgstr "Wszystkie pliki"
+
+#: ../src/gcdemu:1159
+msgid "All image files"
+msgstr "Wszystkie pliki obrazów"
+
+#: ../src/gcdemu:1178
+msgid "Enter password"
+msgstr ""
+
+#: ../src/gcdemu:1183
+msgid "The image you are trying to load is encrypted."
+msgstr ""
+
+#: ../src/gcdemu:1194
+msgid "Password: "
+msgstr ""
+
+#~ msgid "Show _notifications"
+#~ msgstr "Pokazuj _powiadomienia"
+
+#~ msgid "_About"
+#~ msgstr "_O programie"
+
+#~ msgid "_Help"
+#~ msgstr "Pomoc"
+
+#~ msgid "Incompatible daemon version"
+#~ msgstr "Niekompatybilna wersja daemona"
+
+#~ msgid "Device %i properties"
+#~ msgstr "Właściwości urządzenia %i"
+
+#~ msgid "Image type: "
+#~ msgstr "Typ obrazu: "
+
+#~ msgid ""
+#~ "Failed to set transfer rate emulation for device %i to %i:\n"
+#~ "%s"
+#~ msgstr ""
+#~ "Błąd podczas ustawiania emulowanej szybkości transferu urządzenia %i na "
+#~ "%i:\n"
+#~ "%s"
+
+#~ msgid "Name of icon to use (relative to gCDEmu's pixmap dir)"
+#~ msgstr "Nazwa wyświetlanej ikony (względem katalogu pixmap gCDEmu)"

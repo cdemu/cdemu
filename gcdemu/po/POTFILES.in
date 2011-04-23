@@ -1,7 +1,5 @@
 # List of source files containing translatable strings.
 # Please keep this file sorted alphabetically.
-servers/GNOME_gCDEmuApplet.server.in.in
-src/applet.py
-src/device.py
+data/gcdemu.desktop.in
+data/gcdemu.schemas.in
 src/gcdemu
-src/gcdemu.schemas.in

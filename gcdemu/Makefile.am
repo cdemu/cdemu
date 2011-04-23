@@ -1,9 +1,6 @@
 AUTOMAKE_OPTIONS = gnu
 
-SUBDIRS = pixmaps po servers src docs
-
-DISTCHECK_CONFIGURE_FLAGS = \
-    --disable-scrollkeeper
+SUBDIRS = data po src
 
 DISTCLEANFILES = \
     intltool-extract \
@@ -14,8 +11,6 @@ EXTRA_DIST = \
     intltool-update.in \
     intltool-extract.in \
     intltool-merge.in \
-    omf.make \
-    xmldocs.make \
     autogen.sh
 
 dist-hook:

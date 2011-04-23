@@ -1,0 +1,34 @@
+<gconfschemafile>
+    <schemalist>
+        <schema>
+            <key>/schemas/apps/gcdemu/prefs/show_notifications</key>
+            <applyto>/apps/gcdemu/prefs/show_notifications</applyto>
+            <owner>gcdemu</owner>
+            <type>bool</type>
+            <default>true</default>
+            <locale name="C">
+                <short>Show notifications?</short>
+            </locale>
+        </schema>
+        <schema>
+            <key>/schemas/apps/gcdemu/prefs/prefs/use_system_bus</key>
+            <applyto>/apps/gcdemu/prefs/use_system_bus</applyto>
+            <owner>gcdemu</owner>
+            <type>bool</type>
+            <default>false</default>
+            <locale name="C">
+                <short>Use system bus (instead of session bus)?</short>
+            </locale>
+        </schema>
+        <schema>
+            <key>/schemas/apps/gcdemu/prefs/prefs/icon_name</key>
+            <applyto>/apps/gcdemu/prefs/icon_name</applyto>
+            <owner>gcdemu</owner>
+            <type>string</type>
+            <default>gcdemu</default>
+            <locale name="C">
+                <short>Icon name</short>
+            </locale>
+        </schema>
+    </schemalist>
+</gconfschemafile>

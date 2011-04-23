@@ -1,5 +1,5 @@
-pixmapsdir = $(datadir)/pixmaps/gcdemu
-pixmaps_DATA = gcdemu.svg gcdemu-old.png
+pixmapsdir = $(datadir)/pixmaps
+pixmaps_DATA = gcdemu.svg
 
 EXTRA_DIST = \
     $(pixmaps_DATA)

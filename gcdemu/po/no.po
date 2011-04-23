@@ -8,243 +8,44 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gCDEmu 1.3.0\n"
 "Report-Msgid-Bugs-To: \n"
-"PO-Creation-Date: 2008-06-13 22:00+0100\n"
-"POT-Revision-Date: 2009-07-25 22:48+0200\n"
+"POT-Creation-Date: 2011-04-23 10:44+0200\n"
 "Last-Translator: Henrik Stokseth <henrik AT hw0 DOT org>\n"
 "Language-Team: Norwegian\n"
+"Language: \n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
+"PO-Creation-Date: 2008-06-13 22:00+0100\n"
+"POT-Revision-Date: 2009-07-25 22:48+0200\n"
 
-#: ../src/applet.py:61 ../src/applet.py:96 ../src/device.py:469
-msgid "Error"
-msgstr "Feil"
-
-#: ../src/applet.py:158
-msgid ""
-"gCDEmu is an applet for controlling CDEmu\n"
-"devices via CDEmu daemon."
+#: ../data/gcdemu.desktop.in.h:1
+msgid "CDEmu GUI"
 msgstr ""
-"gCDEmu er en applet for å kontrollere CDEmu\n"
-"enheter via CDEmu demonen."
 
-#: ../src/applet.py:160
-msgid "The CDEmu project website"
-msgstr "CDEmu prosjektet sin nettside"
-
-#: ../src/applet.py:164
-msgid "translator-credits"
-msgstr "Henrik Stokseth <henrik AT hw0 DOT org>"
-
-#: ../src/applet.py:169
-msgid "Use _system bus"
-msgstr "Benytt _system buss"
-
-#: ../src/applet.py:171
-msgid "Show _notifications"
-msgstr "Vis _beskjeder"
-
-#: ../src/applet.py:173
-msgid "_About"
-msgstr "_Om"
-
-#: ../src/applet.py:174
-msgid "_Help"
-msgstr "_Hjelp"
-
-#: ../src/applet.py:223
-msgid "Daemon started"
-msgstr "Demon startet"
-
-#: ../src/applet.py:223
-msgid "CDEmu daemon has been started."
-msgstr "CDEmu demon har blitt startet."
-
-#: ../src/applet.py:231
-msgid "Daemon stopped"
-msgstr "Demon stoppet"
-
-#: ../src/applet.py:231
-msgid "CDEmu daemon has been stopped."
-msgstr "CDEmu demon har blitt stoppet."
-
-#: ../src/applet.py:399
-#, python-format
-msgid "Failed to connect: %s"
-msgstr "Mislyktes i å koble til: %s"
-
-#: ../src/applet.py:409
-#, python-format
-msgid ""
-"Failed to acquire daemon interface version (this most likely means your "
-"daemon is out-of-date): %s"
+#: ../data/gcdemu.desktop.in.h:2
+msgid "gCDEmu"
 msgstr ""
-"Mislyktes i å innhente demon grensesnitt versjon (Dette betyr mest sannsynlig"
-"at demonen har gått ut på dato): %s"
 
-#: ../src/applet.py:415
-#, python-format
+#: ../data/gcdemu.schemas.in.h:1
+msgid "Icon name"
+msgstr ""
+
+#: ../data/gcdemu.schemas.in.h:2
+msgid "Show notifications?"
+msgstr "Vis beskjeder?"
+
+#: ../data/gcdemu.schemas.in.h:3
+msgid "Use system bus (instead of session bus)?"
+msgstr "Benytt system buss (i stedet for sesjons buss)?"
+
+#: ../src/gcdemu:129
+#, c-format
 msgid "CDEmu daemon interface version %i detected, but version %i is required!"
-msgstr "CDEmu demon grensesnitt versjon %i er detektert, men versjon %i er påkrevd!"
-
-#: ../src/applet.py:425
-#, python-format
-msgid "Failed to acquire number of devices: %s"
-msgstr "Mislyktes i å innhente antall enheter: %s"
-
-#: ../src/device.py:48
-msgid "Open file"
-msgstr "Åpne fil"
-
-#: ../src/device.py:57
-msgid "All files"
-msgstr "Alle filer"
-
-#: ../src/device.py:62
-msgid "All image files"
-msgstr "Alle bilde filer"
-
-#: ../src/device.py:81
-#, python-format
-msgid "Device %i properties"
-msgstr "Enhet %i sine egenskaper"
-
-#: ../src/device.py:89
-#, python-format
-msgid "Device %i"
-msgstr "Enhet %i"
-
-#. *** Frame: status ***
-#: ../src/device.py:102 ../src/device.py:135
-msgid "Status"
-msgstr "Status"
-
-#: ../src/device.py:105
-msgid "Options"
-msgstr "Valg"
-
-#: ../src/device.py:112
-msgid "Daemon debug mask"
-msgstr "Demon avlusnings-maske"
-
-#: ../src/device.py:113
-msgid "Daemon"
-msgstr "Demon"
-
-#: ../src/device.py:120
-msgid "Library debug mask"
-msgstr "Bibliotek avlusnings-maske"
-
-#: ../src/device.py:121
-msgid "Library"
-msgstr "Bibliotek"
-
-#: ../src/device.py:147
-msgid "Loaded: "
-msgstr "Lastet: "
-
-#: ../src/device.py:156
-msgid "File name(s): "
-msgstr "Fil navn: "
-
-#: ../src/device.py:178
-msgid "Device mapping"
-msgstr "Enhets tilordning"
-
-#: ../src/device.py:190
-msgid "SCSI CD-ROM device: "
-msgstr "SCSI CD-ROM enhet: "
-
-#: ../src/device.py:199
-msgid "SCSI generic device: "
-msgstr "SCSI generisk enhet: "
-
-#. Device ID
-#: ../src/device.py:215
-msgid "Device ID"
-msgstr "Enhets ID"
-
-#: ../src/device.py:227
-msgid "Vendor ID: "
-msgstr "Fabrikant ID: "
-
-#: ../src/device.py:237
-msgid "Product ID: "
-msgstr "Produkt ID: "
-
-#: ../src/device.py:247
-msgid "Revision: "
-msgstr "Revisjon: "
-
-#: ../src/device.py:257
-msgid "Vendor-specific: "
-msgstr "Fabrikant-spesifikt: "
-
-#: ../src/device.py:271
-msgid "Set device ID"
-msgstr "Sett enhets ID"
-
-#. DPM emulation
-#: ../src/device.py:277
-msgid "DPM emulation"
-msgstr "DPM emulering"
-
-#. Transfer rate emulation
-#: ../src/device.py:284
-msgid "Transfer rate emulation"
-msgstr "Overførings-hastighet emulering"
-
-#: ../src/device.py:316
-msgid "Set debug mask"
-msgstr "Sett avlusnings-maske"
-
-#: ../src/device.py:431 ../src/device.py:433 ../src/device.py:456
-msgid "Device change"
-msgstr "Enhets-bytte"
-
-#: ../src/device.py:431
-#, python-format
-msgid "Device %i has been loaded."
-msgstr "Enhet %i har blitt lastet."
-
-#: ../src/device.py:433
-#, python-format
-msgid "Device %i has been emptied."
-msgstr "Enhet %i har blitt løst ut."
-
-#: ../src/device.py:456
-#, python-format
-msgid ""
-"Device %i has been changed its option:\n"
-"%s."
 msgstr ""
-"Enhet %i har fått byttet sitt valg:\n"
-"%s."
+"CDEmu demon grensesnitt versjon %i er detektert, men versjon %i er påkrevd!"
 
-#: ../src/device.py:517
-msgid "Enter password"
-msgstr "Oppgi passord"
-
-#: ../src/device.py:527
-msgid "The image you are trying to load is encrypted."
-msgstr "Bilde-filen du prøver å laste er kryptert."
-
-#: ../src/device.py:537
-msgid "Password: "
-msgstr "Passord: "
-
-#: ../src/device.py:566 ../src/device.py:572
-#, python-format
-msgid ""
-"Failed to load image %s to device %i:\n"
-"%s"
-msgstr ""
-"Mislyktes i å laste bilde %s til enhet %i:\n"
-"%s"
-
-#. Show error dialog
-#: ../src/device.py:583
-#, python-format
+#: ../src/gcdemu:267
+#, c-format
 msgid ""
 "Failed to unload device %i:\n"
 "%s"
@@ -252,35 +53,44 @@ msgstr ""
 "Mislyktes i å løse ut enhet %i:\n"
 "%s"
 
-#: ../src/device.py:611
-#, python-format
+#: ../src/gcdemu:278
+#, fuzzy, c-format
 msgid ""
-"Failed to set device ID for device %i to %s:\n"
+"Failed to load image %s to device #%02d:\n"
+"%s"
+msgstr ""
+"Mislyktes i å laste bilde %s til enhet %i:\n"
+"%s"
+
+#: ../src/gcdemu:288
+#, fuzzy, c-format
+msgid ""
+"Failed to set device ID for device #%02d to %s:\n"
 "%s"
 msgstr ""
 "Mislyktes i å sette enhets ID for enhet %i til %s:\n"
 "%s"
 
-#: ../src/device.py:629
-#, python-format
+#: ../src/gcdemu:297
+#, fuzzy, c-format
 msgid ""
-"Failed to set DPM emulation for device %i to %i:\n"
+"Failed to set DPM emulation for device #%02d to %i:\n"
 "%s"
 msgstr ""
 "Mislyktes i å sette DPM emulering for enhet %i til %i:\n"
 "%s"
 
-#: ../src/device.py:647
-#, python-format
+#: ../src/gcdemu:307
+#, fuzzy, c-format
 msgid ""
-"Failed to set transfer rate emulation for device %i to %i:\n"
+"Failed to set TR emulation for device #%02d to %i:\n"
 "%s"
 msgstr ""
-"Mislyktes i å sette overførings-hastighet emulering for enhet %i til %i:\n"
+"Mislyktes i å sette DPM emulering for enhet %i til %i:\n"
 "%s"
 
-#: ../src/device.py:657
-#, python-format
+#: ../src/gcdemu:316
+#, c-format
 msgid ""
 "Failed to set daemon debug mask for device %i to 0x%X:\n"
 "%s"
@@ -288,8 +98,8 @@ msgstr ""
 "Mislyktes i å sette demonens avlusnings-maske for enhet %i til 0x%X:\n"
 "%s"
 
-#: ../src/device.py:667
-#, python-format
+#: ../src/gcdemu:325
+#, c-format
 msgid ""
 "Failed to set library debug mask for device %i to 0x%X:\n"
 "%s"
@@ -297,41 +107,283 @@ msgstr ""
 "Mislyktes i å sette bibliotek avlusnings-maske for enhet %i til 0x%X:\n"
 "%s"
 
-#. Indicate there's more than one file
-#: ../src/device.py:686 ../src/device.py:688
+#: ../src/gcdemu:485
+#, fuzzy
+msgid "A GUI for controlling CDEmu devices."
+msgstr ""
+"gCDEmu er en applet for å kontrollere CDEmu\n"
+"enheter via CDEmu demonen."
+
+#: ../src/gcdemu:487
+msgid "The CDEmu project website"
+msgstr "CDEmu prosjektet sin nettside"
+
+#: ../src/gcdemu:490
+msgid "translator-credits"
+msgstr "Henrik Stokseth <henrik AT hw0 DOT org>"
+
+#: ../src/gcdemu:497
+#, fuzzy
+msgid "Use system bus"
+msgstr "Benytt _system buss"
+
+#: ../src/gcdemu:504
+#, fuzzy
+msgid "Show notifications"
+msgstr "Vis beskjeder?"
+
+#: ../src/gcdemu:533
+#, fuzzy
+msgid "Devices"
+msgstr "Enhet"
+
+#: ../src/gcdemu:616
+msgid "Daemon started"
+msgstr "Demon startet"
+
+#: ../src/gcdemu:616
+msgid "CDEmu daemon has been started."
+msgstr "CDEmu demon har blitt startet."
+
+#: ../src/gcdemu:619
+msgid "Daemon stopped"
+msgstr "Demon stoppet"
+
+#: ../src/gcdemu:619
+msgid "CDEmu daemon has been stopped."
+msgstr "CDEmu demon har blitt stoppet."
+
+#: ../src/gcdemu:633
+msgid "Error"
+msgstr "Feil"
+
+#: ../src/gcdemu:677
+#, fuzzy, c-format
+msgid "Device #%02d"
+msgstr "Enhet %i"
+
+#: ../src/gcdemu:692 ../src/gcdemu:863
+msgid "Status"
+msgstr "Status"
+
+#: ../src/gcdemu:698
+msgid "Options"
+msgstr "Valg"
+
+#: ../src/gcdemu:704
+msgid "Daemon debug mask"
+msgstr "Demon avlusnings-maske"
+
+#: ../src/gcdemu:705
+msgid "Daemon"
+msgstr "Demon"
+
+#: ../src/gcdemu:709
+msgid "Library debug mask"
+msgstr "Bibliotek avlusnings-maske"
+
+#: ../src/gcdemu:710
+msgid "Library"
+msgstr "Bibliotek"
+
+#: ../src/gcdemu:756 ../src/gcdemu:758
 msgid "Device"
 msgstr "Enhet"
 
-#: ../src/device.py:688
+#: ../src/gcdemu:758
 msgid "Empty"
 msgstr "Tom"
 
-#: ../src/device.py:694
-msgid "Yes"
-msgstr "Ja"
+#: ../src/gcdemu:767 ../src/gcdemu:769
+#, fuzzy
+msgid "Device status change"
+msgstr "Enhets-bytte"
 
-#: ../src/device.py:696
-msgid "Unload"
-msgstr "Løs ut"
+#: ../src/gcdemu:767
+#, fuzzy, c-format
+msgid "Device #%02d has been loaded."
+msgstr "Enhet %i har blitt lastet."
 
-#: ../src/device.py:698
-msgid "No"
-msgstr "Nei"
+#: ../src/gcdemu:769
+#, fuzzy, c-format
+msgid "Device #%02d has been emptied."
+msgstr "Enhet %i har blitt løst ut."
 
-#: ../src/device.py:700
+#: ../src/gcdemu:774 ../src/gcdemu:779 ../src/gcdemu:784 ../src/gcdemu:789
+#: ../src/gcdemu:794
+#, fuzzy
+msgid "Device option change"
+msgstr "Enhets-bytte"
+
+#: ../src/gcdemu:774
+#, c-format
+msgid ""
+"Device #%02d has been changed its device ID:\n"
+"  Vendor ID: '%s'\n"
+"  Product ID: '%s'\n"
+"  Revision: '%s'\n"
+"  Vendor-specific: '%s'"
+msgstr ""
+
+#: ../src/gcdemu:779
+#, fuzzy, c-format
+msgid "Device #%02d has been changed its DPM emulation option. New value: %s"
+msgstr ""
+"Enhet %i har fått byttet sitt valg:\n"
+"%s."
+
+#: ../src/gcdemu:784
+#, fuzzy, c-format
+msgid "Device #%02d has been changed its TR emulation option. New value: %s"
+msgstr ""
+"Enhet %i har fått byttet sitt valg:\n"
+"%s."
+
+#: ../src/gcdemu:789
+#, fuzzy, c-format
+msgid "Device #%02d has been changed its daemon debug mask. New value: 0x%X"
+msgstr ""
+"Enhet %i har fått byttet sitt valg:\n"
+"%s."
+
+#: ../src/gcdemu:794
+#, c-format
+msgid "Device #%02d has been changed its library debug mask. New value: 0x%X"
+msgstr ""
+
+#: ../src/gcdemu:842
+#, fuzzy
+msgid "Device error"
+msgstr "Enhet %i"
+
+#: ../src/gcdemu:875
+msgid "Loaded: "
+msgstr "Lastet: "
+
+#: ../src/gcdemu:884
+msgid "File name(s): "
+msgstr "Fil navn: "
+
+#: ../src/gcdemu:897 ../src/gcdemu:954
 msgid "Load"
 msgstr "Last inn"
 
-#: ../src/gcdemu.schemas.in.h:1
-msgid "Name of icon to use (relative to gCDEmu's pixmap dir)"
-msgstr "Navn på ikonet som skal brukes (relativt til gCDEmu sin pixmap folder)"
+#: ../src/gcdemu:904
+msgid "Device mapping"
+msgstr "Enhets tilordning"
 
-#: ../src/gcdemu.schemas.in.h:2
-msgid "Show notifications?"
-msgstr "Vis beskjeder?"
+#: ../src/gcdemu:916
+msgid "SCSI CD-ROM device: "
+msgstr "SCSI CD-ROM enhet: "
 
-#: ../src/gcdemu.schemas.in.h:3
-msgid "Use system bus (instead of session bus)?"
-msgstr "Benytt system buss (i stedet for sesjons buss)?"
+#: ../src/gcdemu:925
+msgid "SCSI generic device: "
+msgstr "SCSI generisk enhet: "
 
+#: ../src/gcdemu:948
+msgid "Yes"
+msgstr "Ja"
 
+#: ../src/gcdemu:950
+msgid "Unload"
+msgstr "Løs ut"
+
+#: ../src/gcdemu:952
+msgid "No"
+msgstr "Nei"
+
+#: ../src/gcdemu:975
+msgid "Device ID"
+msgstr "Enhets ID"
+
+#: ../src/gcdemu:987
+msgid "Vendor ID: "
+msgstr "Fabrikant ID: "
+
+#: ../src/gcdemu:997
+msgid "Product ID: "
+msgstr "Produkt ID: "
+
+#: ../src/gcdemu:1007
+msgid "Revision: "
+msgstr "Revisjon: "
+
+#: ../src/gcdemu:1017
+msgid "Vendor-specific: "
+msgstr "Fabrikant-spesifikt: "
+
+#: ../src/gcdemu:1031
+msgid "Set device ID"
+msgstr "Sett enhets ID"
+
+#: ../src/gcdemu:1037
+msgid "DPM emulation"
+msgstr "DPM emulering"
+
+#: ../src/gcdemu:1044
+msgid "Transfer rate emulation"
+msgstr "Overførings-hastighet emulering"
+
+#: ../src/gcdemu:1117
+msgid "Set debug mask"
+msgstr "Sett avlusnings-maske"
+
+#: ../src/gcdemu:1149
+msgid "Open file"
+msgstr "Åpne fil"
+
+#: ../src/gcdemu:1154
+msgid "All files"
+msgstr "Alle filer"
+
+#: ../src/gcdemu:1159
+msgid "All image files"
+msgstr "Alle bilde filer"
+
+#: ../src/gcdemu:1178
+msgid "Enter password"
+msgstr "Oppgi passord"
+
+#: ../src/gcdemu:1183
+msgid "The image you are trying to load is encrypted."
+msgstr "Bilde-filen du prøver å laste er kryptert."
+
+#: ../src/gcdemu:1194
+msgid "Password: "
+msgstr "Passord: "
+
+#~ msgid "Show _notifications"
+#~ msgstr "Vis _beskjeder"
+
+#~ msgid "_About"
+#~ msgstr "_Om"
+
+#~ msgid "_Help"
+#~ msgstr "_Hjelp"
+
+#~ msgid "Failed to connect: %s"
+#~ msgstr "Mislyktes i å koble til: %s"
+
+#~ msgid ""
+#~ "Failed to acquire daemon interface version (this most likely means your "
+#~ "daemon is out-of-date): %s"
+#~ msgstr ""
+#~ "Mislyktes i å innhente demon grensesnitt versjon (Dette betyr mest "
+#~ "sannsynligat demonen har gått ut på dato): %s"
+
+#~ msgid "Failed to acquire number of devices: %s"
+#~ msgstr "Mislyktes i å innhente antall enheter: %s"
+
+#~ msgid "Device %i properties"
+#~ msgstr "Enhet %i sine egenskaper"
+
+#~ msgid ""
+#~ "Failed to set transfer rate emulation for device %i to %i:\n"
+#~ "%s"
+#~ msgstr ""
+#~ "Mislyktes i å sette overførings-hastighet emulering for enhet %i til %i:\n"
+#~ "%s"
+
+#~ msgid "Name of icon to use (relative to gCDEmu's pixmap dir)"
+#~ msgstr ""
+#~ "Navn på ikonet som skal brukes (relativt til gCDEmu sin pixmap folder)"
