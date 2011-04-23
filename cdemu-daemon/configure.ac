@@ -5,8 +5,8 @@ AC_PREREQ(2.59)
 
 # cdemu-daemon versioning:
 m4_define([cdemud_major_version], [1])
-m4_define([cdemud_minor_version], [3])
-m4_define([cdemud_micro_version], [1])
+m4_define([cdemud_minor_version], [4])
+m4_define([cdemud_micro_version], [0])
 m4_define([cdemud_version], [cdemud_major_version.cdemud_minor_version.cdemud_micro_version])
 
 # Project init
