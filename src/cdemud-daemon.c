@@ -126,9 +126,9 @@ static gboolean __cdemud_daemon_build_device_mapping_callback (gpointer data) {
         run_again = FALSE;
     }
 
-    /* If we're done here, it's time to send the "daemon-started" signal */
+    /* If we're done here, it's time to send the "device-mappings-ready" signal */
     if (!run_again) {
-        /*g_signal_emit_by_name(G_OBJECT(self), "daemon-started", NULL);*/
+        g_signal_emit_by_name(G_OBJECT(self), "device-mappings-ready", NULL);
     }
 
     return run_again;
@@ -551,6 +551,7 @@ static void __cdemud_daemon_class_init (gpointer g_class, gpointer g_class_data)
     /* Signal handlers */
     klass->signals[0] = g_signal_new("device-status-changed", G_OBJECT_CLASS_TYPE(klass), (G_SIGNAL_RUN_LAST | G_SIGNAL_DETAILED), 0, NULL, NULL, g_cclosure_user_marshal_VOID__INT, G_TYPE_NONE, 1, G_TYPE_INT, NULL);
     klass->signals[1] = g_signal_new("device-option-changed", G_OBJECT_CLASS_TYPE(klass), (G_SIGNAL_RUN_LAST | G_SIGNAL_DETAILED), 0, NULL, NULL, g_cclosure_user_marshal_VOID__INT_STRING, G_TYPE_NONE, 2, G_TYPE_INT, G_TYPE_STRING, NULL);
+    klass->signals[2] = g_signal_new("device-mappings-ready", G_OBJECT_CLASS_TYPE(klass), (G_SIGNAL_RUN_LAST | G_SIGNAL_DETAILED), 0, NULL, NULL, g_cclosure_user_marshal_VOID__VOID, G_TYPE_NONE, 0, NULL);
 
     return;
 }
