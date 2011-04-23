@@ -20,38 +20,41 @@
 #ifndef __CDEMUD_ERROR_H__
 #define __CDEMUD_ERROR_H__
 
-#define CDEMUD_ERROR cdemud_error_quark()
+#define CDEMUD_ERROR (cdemud_error_quark ())
+#define CDEMUD_TYPE_ERROR (cdemud_error_get_type ())
 
 /* Error codes */
 enum {
     CDEMUD_E_OBJNOTINIT = 0xDEAD000,
-    
+
     CDEMUD_E_INVALIDARG,
-    
+
     CDEMUD_E_NODRIVER,
     CDEMUD_E_NODEVICES,
-    
+
     CDEMUD_E_DEVICEINITFAILED,
-    
+
     CDEMUD_E_DBUSCONNECT,
     CDEMUD_E_DBUSNAMEREQUEST,
-    
+
     CDEMUD_E_INVALIDDEVICE,
-    
+
     CDEMUD_E_AUDIOBACKEND,
     CDEMUD_E_AUDIOINVALIDSTATE,
-    
+
     CDEMUD_E_CTLDEVICE,
     CDEMUD_E_BUFFER,
     CDEMUD_E_ALREADYLOADED,
-    CDEMUD_E_DEVLOCKED,    
-    
+    CDEMUD_E_DEVLOCKED,
+
     CDEMUD_E_GENERIC = 0xDEADFFF,
 };
 
 #include <glib.h>
 
-GQuark  cdemud_error_quark  (void);
-void    cdemud_error        (gint errcode, GError **error);
+GQuark cdemud_error_quark (void);
+GType  cdemud_error_get_type (void);
+
+void cdemud_error (gint errcode, GError **error);
 
 #endif /* __CDEMUD_ERROR_H__ */
