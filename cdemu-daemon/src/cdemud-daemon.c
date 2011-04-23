@@ -128,7 +128,7 @@ static gboolean __cdemud_daemon_build_device_mapping_callback (gpointer data) {
 
     /* If we're done here, it's time to send the "daemon-started" signal */
     if (!run_again) {
-        g_signal_emit_by_name(G_OBJECT(self), "daemon-started", NULL);
+        /*g_signal_emit_by_name(G_OBJECT(self), "daemon-started", NULL);*/
     }
 
     return run_again;
@@ -264,8 +264,7 @@ gboolean cdemud_daemon_start_daemon (CDEMUD_Daemon *self, GError **error) {
         return FALSE;
     }
 
-    /* We don't emit "daemon-started" signal here anymore; we do it after the
-       device maps are complete... */
+    /* Run the main loop */
     g_main_loop_run(_priv->main_loop);
 
     return TRUE;
@@ -274,8 +273,8 @@ gboolean cdemud_daemon_start_daemon (CDEMUD_Daemon *self, GError **error) {
 gboolean cdemud_daemon_stop_daemon (CDEMUD_Daemon *self, GError **error) {
     CDEMUD_DaemonPrivate *_priv = CDEMUD_DAEMON_GET_PRIVATE(self);
 
+    /* Stop the main loop */
     g_main_loop_quit(_priv->main_loop);
-    g_signal_emit_by_name(G_OBJECT(self), "daemon-stopped", NULL);
 
     return TRUE;
 }
@@ -550,10 +549,8 @@ static void __cdemud_daemon_class_init (gpointer g_class, gpointer g_class_data)
     dbus_g_object_type_install_info(CDEMUD_TYPE_DAEMON, &dbus_glib_cdemud_daemon_object_info);
 
     /* Signal handlers */
-    klass->signals[0] = g_signal_new("daemon-started", G_OBJECT_CLASS_TYPE(klass), (G_SIGNAL_RUN_LAST | G_SIGNAL_DETAILED), 0, NULL, NULL, g_cclosure_user_marshal_VOID__VOID, G_TYPE_NONE, 0, NULL);
-    klass->signals[1] = g_signal_new("daemon-stopped", G_OBJECT_CLASS_TYPE(klass), (G_SIGNAL_RUN_LAST | G_SIGNAL_DETAILED), 0, NULL, NULL, g_cclosure_user_marshal_VOID__VOID, G_TYPE_NONE, 0, NULL);
-    klass->signals[2] = g_signal_new("device-status-changed", G_OBJECT_CLASS_TYPE(klass), (G_SIGNAL_RUN_LAST | G_SIGNAL_DETAILED), 0, NULL, NULL, g_cclosure_user_marshal_VOID__INT, G_TYPE_NONE, 1, G_TYPE_INT, NULL);
-    klass->signals[3] = g_signal_new("device-option-changed", G_OBJECT_CLASS_TYPE(klass), (G_SIGNAL_RUN_LAST | G_SIGNAL_DETAILED), 0, NULL, NULL, g_cclosure_user_marshal_VOID__INT_STRING, G_TYPE_NONE, 2, G_TYPE_INT, G_TYPE_STRING, NULL);
+    klass->signals[0] = g_signal_new("device-status-changed", G_OBJECT_CLASS_TYPE(klass), (G_SIGNAL_RUN_LAST | G_SIGNAL_DETAILED), 0, NULL, NULL, g_cclosure_user_marshal_VOID__INT, G_TYPE_NONE, 1, G_TYPE_INT, NULL);
+    klass->signals[1] = g_signal_new("device-option-changed", G_OBJECT_CLASS_TYPE(klass), (G_SIGNAL_RUN_LAST | G_SIGNAL_DETAILED), 0, NULL, NULL, g_cclosure_user_marshal_VOID__INT_STRING, G_TYPE_NONE, 2, G_TYPE_INT, G_TYPE_STRING, NULL);
 
     return;
 }

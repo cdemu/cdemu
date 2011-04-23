@@ -3,53 +3,53 @@
 <node name="/">
     <interface name="net.sf.cdemu.CDEMUD_Daemon">
         <annotation name="org.freedesktop.DBus.GLib.CSymbol" value="cdemud_daemon"/>
-        
+
         <!-- Information-related methods -->
         <method name="GetDaemonVersion">
             <arg name="version"             type="s"        direction="out"/>
         </method>
-        
+
         <method name="GetLibraryVersion">
             <arg name="version"             type="s"        direction="out"/>
         </method>
-        
+
         <method name="GetDaemonInterfaceVersion">
             <arg name="version"             type="i"        direction="out"/>
         </method>
-        
+
         <method name="EnumDaemonDebugMasks">
             <arg name="masks"               type="a(si)"    direction="out"/>
         </method>
-        
+
         <method name="EnumLibraryDebugMasks">
             <arg name="masks"               type="a(si)"    direction="out"/>
         </method>
-        
+
         <method name="EnumSupportedParsers">
-            <arg name="parsers"             type="a(ssss)"  direction="out"/>             
+            <arg name="parsers"             type="a(ssss)"  direction="out"/>
         </method>
-        
+
         <method name="EnumSupportedFragments">
-            <arg name="fragments"           type="a(ss)"  direction="out"/>             
+            <arg name="fragments"           type="a(ss)"  direction="out"/>
         </method>
-        
+
         <!-- Device control methods -->
         <method name="GetNumberOfDevices">
             <arg name="number_of_devices"   type="i"        direction="out"/>
         </method>
-                
+
         <method name="DeviceGetMapping">
             <arg name="device_number"       type="i"        direction="in"/>
             <arg name="sr_device"           type="s"        direction="out"/>
             <arg name="sg_device"           type="s"        direction="out"/>
         </method>
-        
+
         <method name="DeviceGetStatus">
             <arg name="device_number"       type="i"        direction="in"/>
             <arg name="loaded"              type="b"        direction="out"/>
             <arg name="file_names"          type="as"       direction="out"/>
         </method>
-        
+
         <method name="DeviceLoad">
             <arg name="device_number"       type="i"        direction="in"/>
             <arg name="file_names"          type="as"       direction="in"/>
@@ -59,32 +59,28 @@
         <method name="DeviceUnload">
             <arg name="device_number"       type="i"        direction="in"/>
         </method>
-        
+
         <method name="DeviceGetOption">
             <arg name="device_number"       type="i"        direction="in"/>
             <arg name="option_name"         type="s"        direction="in"/>
             <arg name="option_values"       type="av"       direction="out"/>
         </method>
-        
+
         <method name="DeviceSetOption">
             <arg name="device_number"       type="i"        direction="in"/>
             <arg name="option_name"         type="s"        direction="in"/>
             <arg name="option_values"       type="av"       direction="in"/>
         </method>
-        
-        <!-- Notification signals -->
-        <signal name="DaemonStarted" />
 
-        <signal name="DaemonStopped" />
-        
+        <!-- Notification signals -->
         <signal name="DeviceStatusChanged">
             <arg name="device_number"       type="i"        direction="out"/>
         </signal>
-        
+
         <signal name="DeviceOptionChanged">
             <arg name="device_number"       type="i"        direction="out"/>
             <arg name="option"              type="s"        direction="out"/>
         </signal>
-        
+
     </interface>
 </node>
