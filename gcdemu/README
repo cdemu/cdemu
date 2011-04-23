@@ -1,23 +1,23 @@
 gCDEmu
-v.1.3.0
+v.1.4.0
 ~~~~~~~~~~~~
 
-This is gCDEmu, a GNOME applet for controlling CDEmu daemon. It is part of the
+This is gCDEmu, a Gtk+ based GUI for controlling CDEmu daemon. It is part of the
 userspace-cdemu suite, a free, GPL CD/DVD-ROM device emulator for linux.
 
 It provides a graphic interface that allows performing the key tasks related to
 controlling the CDEmu daemon, such as loading and unloading devices, displaying
 devices' status and retrieving/setting devices' debug masks.
 
-In addition, the applet listens to signals emitted by CDEmu daemon and provides
+In addition, it listens to signals emitted by CDEmu daemon and provides
 notifications via libnotify (provided that python bindings are installed).
 
 
 Requirements:
 ~~~~~~~~~~~~~
+
  - python 2.4 or newer
- - PyGTK, PyGObject and PyGNOME 2.6 or newer;
-   (gnomeapplet and gconf modules are required)
+ - PyGTK and PyGObject 2.6 or newer; (gtk, gobject and gconf modules are required)
  - D-BUS python bindings
  - intltool
 
@@ -40,6 +40,43 @@ Note that if during make, you get the following error:
 it means you don't have intltool installed.
 
 
+Configuration:
+~~~~~~~~~~~~~~
+The application can be configured via several GConf keys that can be found under
+/apps/gcdemu/prefs. While some of the settings can be altered directly from gCDEmu,
+for altering the more advanced settings, an editor such as gconf-editor is required.
+
+The configuration keys are:
+
+ * show_notifications: a boolean value indicating whether gCDEmu should display
+    notifications for events such as daemon start/stop and changes made
+    to devices. This options can be altered from the application's context
+    menu. Default value: true
+
+ * use_system_bus: a boolean value indicating whether gCDEmu should use the
+    system bus to connect to the daemon. This option can be altered from
+    the application's context menu. Default value: false
+
+ * icon_name: a string containing the name of the icon to show in the system tray.
+    The corresponding pixmap should be installed in the standard pixmap path
+    (such as /usr/share/pixmaps; the list of used search paths can be obtained
+    by gtk.IconTheme().get_search_path()). Note: the name should be provided
+    without the suffix. If invalid name is specified, the theme-specific icon
+    for missing image will be shown. Default value: gcdemu
+
+ * daemon_autostart: a boolean value indicating whether gCDEmu should, after
+        connecting to the bus, attempt to start the CDEmu daemon (if it's not
+        already running). This is done using D-BUS service facility and requires
+        the daemon's .service files to be installed for the appropriate bus.
+        Default value: True
+
+ * icon_policy: a string value indicating the gCDEmu's icon display policy. Valid
+        values are 'always', 'never' and 'when_connected'. With, 'always', icon
+        is always shown; with 'never', it is never shown (and essentially renders
+        the application useless). With 'when_connected', the icon is shown only
+        when gCDEmu is connected to the CDEmu daemon.
+
+
 Troubleshooting:
 ~~~~~~~~~~~~~~~~
 
@@ -48,8 +85,10 @@ A: Greyed-out icon means that the applet failed to connect to the CDEmu daemon.
    Please make sure the daemon is running and that you're connecting via
    appropriate bus.
 
+
 A note on encrypted images and password supplying:
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 As of version 1.2.0, CDEmu daemon offers support for encrypted images. When password
 is required to load an image, gCDEmu will prompt for it and then send it to daemon.
 
