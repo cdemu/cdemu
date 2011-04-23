@@ -26,15 +26,6 @@ G_BEGIN_DECLS
 #define MIRAGE_ERROR (mirage_error_quark ())
 #define MIRAGE_TYPE_ERROR (mirage_error_get_type ())
 
-/**
- * MIRAGE_ERROR:
- *
- * <para>
- * Used to get the #GError quark for libMirage errors.
- * </para>
- **/
-#define MIRAGE_ERROR mirage_error_quark()
-
 GQuark mirage_error_quark (void);
 GType  mirage_error_get_type (void);
 
