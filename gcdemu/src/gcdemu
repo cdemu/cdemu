@@ -284,7 +284,7 @@ class CDEmuDevice (gobject.GObject):
         try:
             self.iface.DeviceUnload(self.number)
         except dbus.DBusException, e:
-            self.emit("error", _("Failed to unload device %i:\n%s") % (self.number, e))
+            self.emit("error", _("Failed to unload device #%02d:\n%s") % (self.number, e))
 
 
     def load_device (self, filenames, params = {}):
@@ -333,7 +333,7 @@ class CDEmuDevice (gobject.GObject):
         try:
             self.iface.DeviceSetOption(self.number, "daemon-debug-mask", [ value ])
         except dbus.DBusException, e:
-            self.emit("error", _("Failed to set daemon debug mask for device %i to 0x%X:\n%s") % (self.number, value, e))
+            self.emit("error", _("Failed to set daemon debug mask for device #%02d to 0x%X:\n%s") % (self.number, value, e))
 
     def set_library_debug_mask (self, value):
         if self.library_debug_mask == value:
@@ -342,7 +342,7 @@ class CDEmuDevice (gobject.GObject):
         try:
             self.iface.DeviceSetOption(self.number, "library-debug-mask", [ value ])
         except dbus.DBusException, e:
-            self.emit("error", _("Failed to set library debug mask for device %i to 0x%X:\n%s") % (self.number, value, e))
+            self.emit("error", _("Failed to set library debug mask for device #%02d to 0x%X:\n%s") % (self.number, value, e))
 
     def update_device_mapping (self):
         [ self.sr_path, self.sg_path ] = self.iface.DeviceGetMapping(self.number)
@@ -537,14 +537,14 @@ class gCDEmu (gtk.StatusIcon):
         self.menu = gtk.Menu()
 
         # Use system bus
-        item = gtk.CheckMenuItem(_("Use system bus"))
+        item = gtk.CheckMenuItem(_("Use _system bus"))
         item.set_active(self.use_system_bus)
         item.connect("toggled", self.on_use_system_bus_toggled)
         self.menu.append(item)
         self.item_use_system_bus = item
 
         # Show notifications
-        item = gtk.CheckMenuItem(_("Show notifications"))
+        item = gtk.CheckMenuItem(_("Show _notifications"))
         item.set_active(self.show_notifications)
         item.connect("toggled", self.on_show_notifications_toggled)
         self.menu.append(item)
