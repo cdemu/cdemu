@@ -40,5 +40,15 @@
                 <short>Icon name</short>
             </locale>
         </schema>
+        <schema>
+            <key>/schemas/apps/gcdemu/prefs/prefs/icon_policy</key>
+            <applyto>/apps/gcdemu/prefs/icon_policy</applyto>
+            <owner>gcdemu</owner>
+            <type>string</type>
+            <default>always</default>
+            <locale name="C">
+                <short>Icon display policy. Valid options: "always", "never" and "when_connected"</short>
+            </locale>
+        </schema>
     </schemalist>
 </gconfschemafile>
