@@ -165,7 +165,6 @@ gboolean cdemud_daemon_initialize (CDEMUD_Daemon *self, gint num_devices, gchar 
 
     /* Initialize our DBUS interface; unless told to use system bus, we'll use
        session one */
-    dbus_g_object_type_install_info(CDEMUD_TYPE_DAEMON, &dbus_glib_cdemud_daemon_object_info);
     _priv->bus = dbus_g_bus_get(bus_type, &dbus_error);
     if (!_priv->bus) {
         CDEMUD_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: failed to get %s bus: %s!\n", __debug__, system_bus ? "system" : "session", dbus_error->message);
@@ -521,6 +520,9 @@ static void __cdemud_daemon_class_init (gpointer g_class, gpointer g_class_data)
 
     /* Initialize GObject methods */
     gobject_class->finalize = __cdemud_daemon_finalize;
+
+    /* Install D-BUS introspection information */
+    dbus_g_object_type_install_info(CDEMUD_TYPE_DAEMON, &dbus_glib_cdemud_daemon_object_info);
 
     /* Signal handlers */
     klass->signals[0] = g_signal_new("daemon-started", G_OBJECT_CLASS_TYPE(klass), (G_SIGNAL_RUN_LAST | G_SIGNAL_DETAILED), 0, NULL, NULL, g_cclosure_user_marshal_VOID__VOID, G_TYPE_NONE, 0, NULL);
