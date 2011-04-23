@@ -425,12 +425,29 @@ class gCDEmu (gtk.StatusIcon):
         # If icon is invalid, use standard "image-missing" as fallback
         if self.icon_on == None:
             self.set_from_icon_name("image-missing")
-            return
-
-        if self.connected:
-            self.set_from_pixbuf(self.icon_on)
         else:
-            self.set_from_pixbuf(self.icon_off)
+            # Which icon to use
+            if self.connected:
+                self.set_from_pixbuf(self.icon_on)
+            else:
+                self.set_from_pixbuf(self.icon_off)
+
+        # Show/hide icon
+        if self.icon_policy == "always":
+            visible = True
+        elif self.icon_policy == "never":
+            visible = False
+        elif self.icon_policy in [ "when_connected", "when-connected" ]:
+            if self.connected:
+                visible = True
+            else:
+                visible = False
+        else:
+            # Fix invalid setting...
+            print "Unknown icon policy '%s'! Using 'always' by default!" % (self.icon_policy)
+            self.icon_policy = "always"
+            visible = True
+        self.set_visible(visible)
 
     def cleanup (self):
         # Default state: disconnected
@@ -492,6 +509,9 @@ class gCDEmu (gtk.StatusIcon):
 
         # Daemon autostart
         self.daemon_autostart = self.config.get_bool(self.config_path + "/daemon_autostart")
+
+        # Icon policy
+        self.icon_policy = self.config.get_string(self.config_path + "/icon_policy")
 
         # To load the icon, we pretend that icon path g-conf key has changed and
         # let the callback do the rest for us...
@@ -605,6 +625,9 @@ class gCDEmu (gtk.StatusIcon):
         elif entry.key == self.config_path + "/daemon_autostart":
             self.daemon_autostart = entry.value.get_bool()
             print "New setting: daemon autostart: %d" % self.daemon_autostart
+        elif entry.key == self.config_path + "/icon_policy":
+            self.icon_policy = entry.get_value().get_string()
+            self.update_icon()
         else:
             print "Unknown setting key: %s!" % entry.key
 
