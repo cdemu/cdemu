@@ -525,7 +525,11 @@ mirage_helper_sector_edc_ecc_compute_ecc_block
 <TITLE>Error reporting</TITLE>
 <FILE>mirage-error</FILE>
 MIRAGE_ErrorCodes
-MIRAGE_ERROR
 mirage_error_quark
 mirage_error
+<SUBSECTION Standard>
+MIRAGE_ERROR
+MIRAGE_TYPE_ERROR
+<SUBSECTION Private>
+mirage_error_get_type
 </SECTION>
