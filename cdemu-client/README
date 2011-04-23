@@ -1,9 +1,9 @@
 CDEmu client
-v.1.3.0
+v.1.4.0
 ~~~~~~~~~~~~~
 
 This is cdemu-client, a simple command-line client for controlling CDEmu daemon.
-It is part of the userspace-cdemu suite, a free, GPL CD/DVD-ROM device emulator 
+It is part of the userspace-cdemu suite, a free, GPL CD/DVD-ROM device emulator
 for linux.
 
 It provides a way to perform the key tasks related to controlling the CDEmu
@@ -31,8 +31,8 @@ Note that if during make, you get the following error:
     /bin/sh: -o: not found
     make[1]: *** [sl.gmo] Error 127
 it means you don't have intltool installed.
- 
- 
+
+
 Usage examples:
 ~~~~~~~~~~~~~~~
 
@@ -42,7 +42,7 @@ and their syntax.
 
 Loading a single image to first device:
  cdemu load 0 ~/image.mds
- 
+
 Loading multiple-file image to first device:
  cdemu load 0 ~/session1.toc ~/session2.toc ~/session3.toc
 
@@ -54,7 +54,7 @@ Loading an encrypted image with password provided as an argument:
  cdemu load 0 ~/image.daa
 (in the latter case, if image is actually encrypted, the client will prompt for
 the password using standard input without echo)
- 
+
 Unloading first device:
  cdemu unload 0
 
@@ -69,22 +69,22 @@ Enumerating supported daemon debug masks:
 
 Enumerating supported library debug masks:
  cdemu enum-library-debug-masks
- 
+
 Setting daemon debug mask for the first device:
  cdemu daemon-debug-mask 0 0x01
- 
+
 Obtaining library debug mask for the first device:
  cdemu library-debug-mask 0
 
 Disabling DPM emulation on all devices:
  cdemu dpm-emulation all 0
- 
+
 Enabling transfer rate emulation on first device:
  cdemu tr-emulation 0 1
- 
+
 Changing device ID of first device:
  cdemu device-id 0 "MyVendor" "MyProduct" "1.0.0" "Test device ID"
- 
+
 Enumerating supported parsers:
  cdemu enum-supported-parsers
 
@@ -100,7 +100,7 @@ When connecting to daemon, cdemu client can use either session or system bus. By
 hard-coded default, it uses system bus. The default bus to be used can be specified
 via /etc/cdemu-client.conf or ~/.cdemu-client file, in following format:
 
-# This is example cdemu client config file. 
+# This is example cdemu client config file.
 # Save it as /etc/cdemu-client.conf or ~/.cdemu-client
 
 [defaults]
@@ -120,11 +120,11 @@ As of version 1.2.0, CDEmu daemon offers support for encrypted images. When pass
 is required to load an image (and it hasn't been provided via commandline using
 --password), cdemu-client will prompt for it and then send it to daemon.
 
-NOTE, HOWEVER, THAT THE PASSWORD IS SENT OVER D-BUS IN A PLAIN STRING FORM, WITHOUT 
-ANY PROTECTION. DEPENDING ON YOUR PRIVACY CONCERNS YOU MIGHT WISH TO AVOID LOADING 
+NOTE, HOWEVER, THAT THE PASSWORD IS SENT OVER D-BUS IN A PLAIN STRING FORM, WITHOUT
+ANY PROTECTION. DEPENDING ON YOUR PRIVACY CONCERNS YOU MIGHT WISH TO AVOID LOADING
 SUCH IMAGES.
 
- 
+
 Contact information:
 ~~~~~~~~~~~~~~~~~~~~
 
