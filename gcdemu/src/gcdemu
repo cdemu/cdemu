@@ -69,14 +69,33 @@ class CDEmu (gobject.GObject):
         self.initial = True
 
         self.devices = []
+        self.dbus_signals = []
+
+    def cleanup (self):
+        # Cleanup the devices
+        for device in self.devices:
+            device.cleanup()
+        self.devices = []
+
+        # Cleanup the signals
+        for signal in self.dbus_signals:
+            signal.remove()
+
+        # D-Bus proxy and interface
+        self.dbus_iface = None
+        self.dbus_proxy = None
+
+    def connect_dbus_signal (self, iface, sig, callback):
+        signal = iface.connect_to_signal(sig, callback)
+        self.dbus_signals.append(signal)
 
 
     def on_name_owner_changed (self, owner):
         if owner == "":
             if self.initial == False:
                 self.emit("daemon-stopped")
-            self.devices = []
             self.emit("connection-lost")
+            self.cleanup()
         else:
             if self.initial == False:
                 self.emit("daemon-started")
@@ -92,14 +111,7 @@ class CDEmu (gobject.GObject):
         self.emit("connection-lost")
 
         # Cleanup
-        self.dbus = None
-        self.dbus_iface = None
-        self.dbus_proxy = None
-
-        # Cleanup the devices
-        for device in self.devices:
-            device.cleanup()
-        self.devices = []
+        self.cleanup()
 
         # Cancel the name owner watch
         if self.owner_watch:
@@ -162,7 +174,7 @@ class CDEmu (gobject.GObject):
         for i in range(0, num_devices):
             self.devices.append(CDEmuDevice(i, self.dbus_iface))
 
-        self.dbus_iface.connect_to_signal("DeviceMappingsReady", self.on_device_mappings_ready)
+        self.connect_dbus_signal(self.dbus_iface, "DeviceMappingsReady", self.on_device_mappings_ready)
 
         # Emit signal
         self.emit("connection-established", num_devices)
