@@ -87,7 +87,7 @@ class CDEmu (gobject.GObject):
         if self.initial:
             self.initial = False
 
-    def connect_to_bus (self, use_system):
+    def connect_to_bus (self, use_system, start_daemon = True):
         # Disconnect
         self.emit("connection-lost")
 
@@ -116,6 +116,14 @@ class CDEmu (gobject.GObject):
         self.initial = True
         self.owner_watch = self.dbus.watch_name_owner("net.sf.cdemu.CDEMUD_Daemon", self.on_name_owner_changed)
 
+        # Autostart the daemon; but only if the option is turned on and the daemon
+        # isn't already running
+        if start_daemon and not self.dbus.name_has_owner("net.sf.cdemu.CDEMUD_Daemon"):
+            try:
+                self.dbus.start_service_by_name("net.sf.cdemu.CDEMUD_Daemon", 0)
+            except dbus.DBusException, e:
+                self.emit("error", _("Daemon autostart error"), _("Daemon autostart failed. Error: %s\n%s") % (e.get_dbus_name(), e.get_dbus_message()))
+
     def establish_connection (self):
         # Create CDEmu interface
         self.dbus_proxy = self.dbus.get_object('net.sf.cdemu.CDEMUD_Daemon', '/CDEMUD_Daemon')
@@ -126,7 +134,7 @@ class CDEmu (gobject.GObject):
 
         # Validate the daemon interface version
         if self.interface_version != supported_daemon_interface_version:
-            self.emit("error", _("CDEmu daemon interface version %i detected, but version %i is required!") % (self.interface_version, supported_daemon_interface_version))
+            self.emit("error", _("Incompatible daemon interface"), _("CDEmu daemon interface version %i detected, but version %i is required!") % (self.interface_version, supported_daemon_interface_version))
             # Cleanup
             self.dbus_iface = None
             self.dbus_proxy = None
@@ -167,7 +175,7 @@ gobject.type_register(CDEmu)
 gobject.signal_new("error", CDEmu,
     gobject.SIGNAL_RUN_FIRST,
     gobject.TYPE_NONE,
-    (gobject.TYPE_STRING,))
+    (gobject.TYPE_STRING,gobject.TYPE_STRING,))
 gobject.signal_new("daemon-started", CDEmu,
     gobject.SIGNAL_RUN_FIRST,
     gobject.TYPE_NONE,
@@ -470,6 +478,9 @@ class gCDEmu (gtk.StatusIcon):
         # Which bus to use
         self.use_system_bus = self.config.get_bool(self.config_path + "/use_system_bus")
 
+        # Daemon autostart
+        self.daemon_autostart = self.config.get_bool(self.config_path + "/daemon_autostart")
+
         # To load the icon, we pretend that icon path g-conf key has changed and
         # let the callback do the rest for us...
         self.config.notify(self.config_path + "/icon_name")
@@ -550,7 +561,7 @@ class gCDEmu (gtk.StatusIcon):
         self.cdemu.connect("daemon-stopped", self.on_daemon_stopped)
         self.cdemu.connect("connection-established", self.on_connection_established)
         self.cdemu.connect("connection-lost", self.on_connection_lost)
-        self.cdemu.connect("error", lambda c, t: self.show_error(t))
+        self.cdemu.connect("error", lambda c, t, m: self.show_error(t, m))
         # Connect to daemon
         self.cdemu.connect_to_bus(self.use_system_bus)
 
@@ -579,6 +590,9 @@ class gCDEmu (gtk.StatusIcon):
         elif entry.key == self.config_path + "/icon_name":
             self.load_icon()
             self.update_icon()
+        elif entry.key == self.config_path + "/daemon_autostart":
+            self.daemon_autostart = entry.value.get_bool()
+            print "New setting: daemon autostart: %d" % self.daemon_autostart
         else:
             print "Unknown setting key: %s!" % entry.key
 
@@ -627,10 +641,10 @@ class gCDEmu (gtk.StatusIcon):
             n = pynotify.Notification(summary, body, icon)
             n.show()
 
-    def show_error (self, text):
+    def show_error (self, title, message):
          # Show error dialog
-        message = gtk.MessageDialog(None, 0, gtk.MESSAGE_ERROR, gtk.BUTTONS_CLOSE, text)
-        message.set_title(_("Error"))
+        message = gtk.MessageDialog(None, 0, gtk.MESSAGE_ERROR, gtk.BUTTONS_CLOSE, message)
+        message.set_title(title)
         message.run()
         message.destroy()
 
