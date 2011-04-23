@@ -10,8 +10,7 @@ DISTCLEANFILES = \
 EXTRA_DIST = \
     intltool-update.in \
     intltool-extract.in \
-    intltool-merge.in \
-    autogen.sh
+    intltool-merge.in
 
 dist-hook:
 	mkdir $(distdir)/debian
