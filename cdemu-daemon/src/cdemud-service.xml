@@ -82,5 +82,6 @@
             <arg name="option"              type="s"        direction="out"/>
         </signal>
 
+        <signal name="DeviceMappingsReady" />
     </interface>
 </node>
