@@ -8,515 +8,471 @@ msgid ""
 msgstr ""
 "Project-Id-Version: cdemu-client 1.3.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2009-02-02 20:04+0100\n"
+"POT-Creation-Date: 2011-04-22 11:51+0200\n"
 "PO-Revision-Date: 2009-02-02 20:04+0100\n"
 "Last-Translator: Loïc Martin <loic.martin3@gmail.com>\n"
 "Language-Team: French\n"
+"Language: \n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#. No harm, just print a warning
-#: ../src/cdemu.py:55
-#, python-format
+#: ../src/cdemu:77
+#, fuzzy, c-format
 msgid "Failed to load configuration from file '%s': %s"
 msgstr "Échec de chargement de la configuration depuis le fichier: %s"
 
-#: ../src/cdemu.py:67
+#: ../src/cdemu:89
 msgid "Unknown option"
 msgstr "Option inconnue"
 
-#: ../src/cdemu.py:90
-#, python-format
+#: ../src/cdemu:117
+#, c-format
 msgid "Failed to connect to daemon (bus: '%s')!"
 msgstr "Échec de connection au daemon (bus: '%s')!"
 
-#: ../src/cdemu.py:101
-#, python-format
+#: ../src/cdemu:128
+#, c-format
 msgid "Unknown command: %s"
 msgstr "Commande inconnue: %s"
 
-#: ../src/cdemu.py:124 ../src/cdemu.py:171 ../src/cdemu.py:195
-#: ../src/cdemu.py:219 ../src/cdemu.py:243 ../src/cdemu.py:276
-#: ../src/cdemu.py:308 ../src/cdemu.py:341 ../src/cdemu.py:373
-#: ../src/cdemu.py:404 ../src/cdemu.py:436 ../src/cdemu.py:467
-#: ../src/cdemu.py:499 ../src/cdemu.py:537
-#, python-format
-msgid "Failed to get number of devices: %s"
-msgstr "Impossible d'obtenir le nombre de périphériques: %s"
+#: ../src/cdemu:142
+msgid "The image you are trying to load is encrypted."
+msgstr ""
 
-#: ../src/cdemu.py:132 ../src/cdemu.py:204
-#, python-format
-msgid "Failed to get status of device %i: %s"
-msgstr "Impossible d'obtenir le status du périphérique %i: %s"
+#: ../src/cdemu:143
+msgid "Password: "
+msgstr ""
 
-#: ../src/cdemu.py:144 ../src/cdemu.py:156
-#, python-format
+#: ../src/cdemu:146
+#, c-format
 msgid "Failed to load image: %s"
 msgstr "Échec du chargement de l'image: %s"
 
-#. If we're here, it means we didn't get an empty device
-#: ../src/cdemu.py:148
+#: ../src/cdemu:168 ../src/cdemu:205 ../src/cdemu:234 ../src/cdemu:261
+#: ../src/cdemu:285 ../src/cdemu:318 ../src/cdemu:350 ../src/cdemu:383
+#: ../src/cdemu:415 ../src/cdemu:446 ../src/cdemu:478 ../src/cdemu:509
+#: ../src/cdemu:541 ../src/cdemu:579
+#, c-format
+msgid "Failed to get number of devices: %s"
+msgstr "Impossible d'obtenir le nombre de périphériques: %s"
+
+#: ../src/cdemu:176 ../src/cdemu:243
+#, c-format
+msgid "Failed to get status of device %i: %s"
+msgstr "Impossible d'obtenir le status du périphérique %i: %s"
+
+#: ../src/cdemu:187
 msgid "No empty device found"
 msgstr "Aucun périphérique vide trouvé"
 
-#: ../src/cdemu.py:178 ../src/cdemu.py:185
-#, python-format
+#: ../src/cdemu:213 ../src/cdemu:224
+#, c-format
 msgid "Failed to unload device %i: %s"
 msgstr "Échec de vidage du périphérique %i: %s"
 
-#: ../src/cdemu.py:198
+#: ../src/cdemu:237
 msgid "Devices' status:"
 msgstr "Status des périphériques:"
 
-#: ../src/cdemu.py:199 ../src/cdemu.py:223 ../src/cdemu.py:247
-#: ../src/cdemu.py:312 ../src/cdemu.py:377 ../src/cdemu.py:440
-#: ../src/cdemu.py:503
+#: ../src/cdemu:238 ../src/cdemu:265 ../src/cdemu:289 ../src/cdemu:354
+#: ../src/cdemu:419 ../src/cdemu:482 ../src/cdemu:545
 msgid "DEV"
 msgstr "DEV"
 
-#: ../src/cdemu.py:199
+#: ../src/cdemu:238
 msgid "LOADED"
 msgstr "VIDÉ"
 
-#: ../src/cdemu.py:199
-msgid "TYPE"
-msgstr "TYPE"
-
-#: ../src/cdemu.py:199
+#: ../src/cdemu:238
 msgid "FILENAME"
 msgstr "NOM DE FICHIER"
 
-#: ../src/cdemu.py:222
+#: ../src/cdemu:264
 msgid "Device mapping:"
 msgstr "Mapping de périphérique:"
 
-#: ../src/cdemu.py:223
+#: ../src/cdemu:265
 msgid "SCSI CD-ROM"
 msgstr "CD-ROM SCSI"
 
-#: ../src/cdemu.py:223
+#: ../src/cdemu:265
 msgid "SCSI generic"
 msgstr "générique SCSI"
 
-#: ../src/cdemu.py:228
-#, python-format
+#: ../src/cdemu:270
+#, c-format
 msgid "Failed to get device mapping of device %i: %s"
 msgstr "Impossible d'obtenir le mapping du périphérique %i: %s"
 
-#: ../src/cdemu.py:246
+#: ../src/cdemu:288
 msgid "Devices' daemon debug masks:"
 msgstr "Masques de déboguage du daemon des périphériques:"
 
-#: ../src/cdemu.py:247 ../src/cdemu.py:312
+#: ../src/cdemu:289 ../src/cdemu:354
 msgid "DEBUG MASK"
 msgstr "MASQUE DE DÉBOGUAGE"
 
-#: ../src/cdemu.py:254 ../src/cdemu.py:264
-#, python-format
+#: ../src/cdemu:296 ../src/cdemu:306
+#, c-format
 msgid "Failed to get daemon debug mask of device %i: %s"
 msgstr ""
-"Impossible d'obtenir le masque de déboguage du daemon pour le périphérique %i:"
-" %s"
+"Impossible d'obtenir le masque de déboguage du daemon pour le périphérique "
+"%i: %s"
 
-#: ../src/cdemu.py:267
-#, python-format
+#: ../src/cdemu:309
+#, c-format
 msgid "Daemon debug mask of device %i: 0x%X"
 msgstr "Masque de déboguage du daemon pour le périphérique %i: 0x%X"
 
-#: ../src/cdemu.py:279
-#, python-format
+#: ../src/cdemu:321
+#, c-format
 msgid "Setting daemon debug mask of all devices to 0x%X."
 msgstr ""
 "Mettre le masque de déboguage du daemon de tous les périphériques à 0x%X"
 
-#: ../src/cdemu.py:284 ../src/cdemu.py:292
-#, python-format
+#: ../src/cdemu:326 ../src/cdemu:334
+#, c-format
 msgid "Failed to set daemon debug mask of device %i to 0x%X: %s"
 msgstr ""
-"Impossible de mettre le masque de déboguage du daemon pour le périphérique %i "
-"à 0x%X: %s"
+"Impossible de mettre le masque de déboguage du daemon pour le périphérique "
+"%i à 0x%X: %s"
 
-#: ../src/cdemu.py:288
-#, python-format
+#: ../src/cdemu:330
+#, c-format
 msgid "Setting daemon debug mask of device %i to 0x%X."
 msgstr "Mettre le masque de déboguage du daemon du périphérique %i à 0x%X."
 
-#: ../src/cdemu.py:311
+#: ../src/cdemu:353
 msgid "Devices' library debug masks:"
 msgstr ""
 "Masques de déboguage de la bibliothèque de fonctions pour les périphériques:"
 
-#: ../src/cdemu.py:319 ../src/cdemu.py:329
-#, python-format
+#: ../src/cdemu:361 ../src/cdemu:371
+#, c-format
 msgid "Failed to get library debug mask of device %i: %s"
 msgstr ""
 "Impossible d'obtenir le masque de déboguage de la bibliothèque de fonctions "
 "pour le périphérique %i: %s"
 
-#: ../src/cdemu.py:332
-#, python-format
+#: ../src/cdemu:374
+#, c-format
 msgid "Library debug mask of device %i: 0x%X"
 msgstr ""
-"Masque de déboguage de la bibliothèque de fonctions pour le périphérique "
-"%i: 0x%X"
+"Masque de déboguage de la bibliothèque de fonctions pour le périphérique %i: "
+"0x%X"
 
-#: ../src/cdemu.py:344
-#, python-format
+#: ../src/cdemu:386
+#, c-format
 msgid "Setting library debug mask of all devices to 0x%X."
 msgstr ""
 "Mettre le masque de déboguage de la bibliothèque de fonctions pour tous les "
 "périphériques à 0x%X."
 
-#: ../src/cdemu.py:349 ../src/cdemu.py:357
-#, python-format
+#: ../src/cdemu:391 ../src/cdemu:399
+#, c-format
 msgid "Failed to set library debug mask of device %i to 0x%X: %s"
 msgstr ""
 "Impossible de mettre le masque de déboguage de la bibliothèque de fonctions "
 "pour le périphérique  %i à 0c%X: %s"
 
-#: ../src/cdemu.py:353
-#, python-format
+#: ../src/cdemu:395
+#, c-format
 msgid "Setting library debug mask of device %i to 0x%X."
 msgstr ""
 "Application du masque de déboguage de la bibliothèque de fonctions du "
 "périphérique %i à 0x%X"
 
-#: ../src/cdemu.py:376
+#: ../src/cdemu:418
 msgid "Devices' DPM emulation flag:"
 msgstr "Choix de l'émulation DPM de tous les périphériques:"
 
-#: ../src/cdemu.py:377 ../src/cdemu.py:440
+#: ../src/cdemu:419 ../src/cdemu:482
 msgid "ENABLED"
 msgstr "ACTIVÉ"
 
-#: ../src/cdemu.py:383 ../src/cdemu.py:392
-#, python-format
+#: ../src/cdemu:425 ../src/cdemu:434
+#, c-format
 msgid "Failed to get DPM emulation flag of device %i: %s"
 msgstr ""
 "Impossible d'obtenir le paramètre pour l'émulation DPM du périphérique %i: %s"
 
-#: ../src/cdemu.py:395
-#, python-format
+#: ../src/cdemu:437
+#, c-format
 msgid "DPM emulation flag of device %i: %i"
 msgstr "Choix de l'émulation DPM du périphérique %i: %i"
 
-#: ../src/cdemu.py:407
-#, python-format
+#: ../src/cdemu:449
+#, c-format
 msgid "Setting DPM emulation flag of all devices to %i."
 msgstr "Application du choix de l'émulation DPM de tous les périphériques à %i"
 
-#: ../src/cdemu.py:412 ../src/cdemu.py:420
-#, python-format
+#: ../src/cdemu:454 ../src/cdemu:462
+#, c-format
 msgid "Failed to set DPM emulation flag of device %i to %i: %s"
 msgstr ""
 "Impossible de mettre le choix de l'émulation DPM du périphérique %i à %i: %s "
 
-#: ../src/cdemu.py:416
-#, python-format
+#: ../src/cdemu:458
+#, c-format
 msgid "Setting DPM emulation flag of device %i to %i."
 msgstr "Application du choix de l'émulation DPM du périphérique %i à %i"
 
-#: ../src/cdemu.py:439
+#: ../src/cdemu:481
 msgid "Devices' transfer rate emulation flag:"
 msgstr "Choix de l'émulation de taux de transfert de tous les périphériques :"
 
-#: ../src/cdemu.py:446 ../src/cdemu.py:455
-#, python-format
+#: ../src/cdemu:488 ../src/cdemu:497
+#, c-format
 msgid "Failed to get transfer rate emulation flag of device %i: %s"
 msgstr ""
 "Impossible d'obtenir le paramètre pour l'émulation de taux de transfert du "
 "périphérique %i: '%s'"
 
-#: ../src/cdemu.py:458
-#, python-format
+#: ../src/cdemu:500
+#, c-format
 msgid "Transfer rate emulation flag of device %i: %i"
 msgstr "Choix de l'émulation de taux de transfert du périphérique %i: %i"
 
-#: ../src/cdemu.py:470
-#, python-format
+#: ../src/cdemu:512
+#, c-format
 msgid "Setting transfer rate emulation flag of all devices to %i."
 msgstr ""
 "Application du choix de l'émulation de taux de transfert de tous les "
 "périphériques à %i."
 
-#: ../src/cdemu.py:475 ../src/cdemu.py:483
-#, python-format
+#: ../src/cdemu:517 ../src/cdemu:525
+#, c-format
 msgid "Failed to set transfer rate emulation flag of device %i to %i: %s"
 msgstr ""
 "Impossible de mettre le choix de l'émulation de taux de transfert du "
 "périphérique %i à %i: %s"
 
-#: ../src/cdemu.py:479
-#, python-format
+#: ../src/cdemu:521
+#, c-format
 msgid "Setting transfer rate emulation flag of device %i to %i."
 msgstr ""
-"Application du choix de l'émulation de taux de transfert du périphérique %i à "
-"%i"
+"Application du choix de l'émulation de taux de transfert du périphérique %i "
+"à %i"
 
-#: ../src/cdemu.py:502
+#: ../src/cdemu:544
 msgid "Devices' IDs:"
 msgstr "IDs DE PÉRIPHÉRIQUES:"
 
-#: ../src/cdemu.py:503
+#: ../src/cdemu:545
 msgid "DEVICE ID"
 msgstr "ID DE PÉRIPHÉRIQUE"
 
-#: ../src/cdemu.py:512 ../src/cdemu.py:524
-#, python-format
+#: ../src/cdemu:554 ../src/cdemu:566
+#, c-format
 msgid "Failed to get device ID of device %i: %s"
 msgstr "Impossible d'obtenir l'ID de périphérique du périphérique %i: %s"
 
-#: ../src/cdemu.py:527
-#, python-format
+#: ../src/cdemu:569
+#, c-format
 msgid "Device ID of device %i: %s"
 msgstr "ID de périphérique du périphérique %i: %s"
 
-#: ../src/cdemu.py:540
-#, python-format
+#: ../src/cdemu:582
+#, c-format
 msgid "Setting device ID of all devices to %s."
 msgstr "Mettre l'ID de périphérique de tous les périphériques à %s"
 
-#: ../src/cdemu.py:545 ../src/cdemu.py:553
-#, python-format
+#: ../src/cdemu:587 ../src/cdemu:595
+#, fuzzy, c-format
 msgid "Failed to set device ID of device %i to %s: %s"
 msgstr "Impossible de mettre l'ID de périphérique du périphérique &i à %s: %s"
 
-#: ../src/cdemu.py:549
-#, python-format
+#: ../src/cdemu:591
+#, c-format
 msgid "Setting device ID of device %i to %s."
 msgstr "Mettre l'ID de périphérique du périphérique %i à %s."
 
-#: ../src/cdemu.py:566
-#, python-format
+#: ../src/cdemu:608
+#, c-format
 msgid "Failed to enumerate supported parsers: %s"
 msgstr "Impossible d'énumérer les parsers supportés: %s"
 
-#. Print all parsers
-#: ../src/cdemu.py:571
+#: ../src/cdemu:613
 msgid "Supported parsers:"
 msgstr "Parsers supportés:"
 
-#: ../src/cdemu.py:581
-#, python-format
-msgid "Parser information: '%s'"
-msgstr "Information de parser: '%s'"
-
-#: ../src/cdemu.py:582 ../src/cdemu.py:623
-#, python-format
-msgid " - Name: %s"
-msgstr " - Nom: %s"
-
-#: ../src/cdemu.py:583 ../src/cdemu.py:624
-#, python-format
-msgid " - Version: %s"
-msgstr " - Version: %s"
-
-#: ../src/cdemu.py:584 ../src/cdemu.py:625
-#, python-format
-msgid " - Author: %s"
-msgstr " - Auteur: %s"
-
-#: ../src/cdemu.py:585
-#, python-format
-msgid " - Multiple files support: %i"
-msgstr " - Support des fichiers multiples: %i"
-
-#: ../src/cdemu.py:586
-#, python-format
-msgid " - Image files description: %s"
-msgstr " - Description des fichiers image: %s"
-
-#: ../src/cdemu.py:587
-msgid " - Image files suffixes:"
-msgstr " - Suffixes des fichiers image:"
-
-#: ../src/cdemu.py:594
-#, python-format
-msgid "Parser with ID '%s' not found!"
-msgstr "Parser avec l'ID '%s' non trouvé!"
-
-#: ../src/cdemu.py:607
-#, python-format
+#: ../src/cdemu:627
+#, c-format
 msgid "Failed to enumerate supported fragments: %s"
 msgstr "Impossible d'énumérer les fragments supportés: %s"
 
-#. Print all fragments
-#: ../src/cdemu.py:612
+#: ../src/cdemu:632
 msgid "Supported fragments:"
 msgstr "Fragments supportés:"
 
-#: ../src/cdemu.py:622
-#, python-format
-msgid "Fragment information: '%s'"
-msgstr "Informations du fragment: '%s'"
-
-#: ../src/cdemu.py:626
-#, python-format
-msgid " - Interface: %s"
-msgstr " - Interface: %s"
-
-#: ../src/cdemu.py:627
-msgid " - Data files suffixes:"
-msgstr " - suffixes de fichiers de données:"
-
-#: ../src/cdemu.py:634
-#, python-format
-msgid "Fragment with ID '%s' not found!"
-msgstr "Fragment avec l'ID '%s' non trouvés!"
-
-#: ../src/cdemu.py:651
-#, python-format
+#: ../src/cdemu:650
+#, c-format
 msgid "Failed to enumerate supported daemon debug masks: %s"
 msgstr "Impossible d'énumérer les masques de déboguage du daemon supportés: %s"
 
-#: ../src/cdemu.py:654
+#: ../src/cdemu:653
 msgid "Supported daemon debug masks:"
 msgstr "Masques de déboguage du daemon supportés:"
 
-#: ../src/cdemu.py:669
-#, python-format
+#: ../src/cdemu:668
+#, c-format
 msgid "Failed to enumerate supported library debug masks: %s"
 msgstr ""
-"Impossible d'énumérer les masques de déboguage de la bibliothèque de fonctions"
-" supportés: %s"
+"Impossible d'énumérer les masques de déboguage de la bibliothèque de "
+"fonctions supportés: %s"
 
-#: ../src/cdemu.py:672
+#: ../src/cdemu:671
 msgid "Supported library debug masks:"
 msgstr "Masques de déboguage de la bibliothèque de fonctions supportés:"
 
-#: ../src/cdemu.py:685
-#, python-format
+#: ../src/cdemu:684
+#, c-format
 msgid "Failed to get library version: %s"
 msgstr "Impossible d'obtenir la version de la bibliothèque de fonctions: %s"
 
-#: ../src/cdemu.py:690
-#, python-format
+#: ../src/cdemu:689
+#, c-format
 msgid "Failed to get daemon version: %s"
 msgstr "Impossible d'obtenir la version du daemon: %s"
 
-#: ../src/cdemu.py:693
-#, python-format
+#: ../src/cdemu:692
+#, c-format
 msgid "Library version: %s"
 msgstr "Version de la bibliothèque de fonctions: %s"
 
-#: ../src/cdemu.py:694
-#, python-format
+#: ../src/cdemu:693
+#, c-format
 msgid "Daemon version: %s"
 msgstr "Version du daemon: %s"
 
-#: ../src/cdemu.py:705
-#, python-format
+#: ../src/cdemu:704
+#, c-format
 msgid "Invalid bus parameter '%s', using default!"
 msgstr "Paramètre de bus '%s' invalide, choix du paramètre par défaut"
 
-#: ../src/cdemu.py:713
-#, python-format
+#: ../src/cdemu:712
+#, c-format
 msgid "Failed to connect to CDEmu daemon: %s"
 msgstr "Échec de la connection au daemon CDEmu: %s"
 
-#: ../src/cdemu.py:718
-#, python-format
-msgid "CDEmu daemon version %s detected, but at least version %s is required!"
+#: ../src/cdemu:719
+#, c-format
+msgid ""
+"Failed to acquire daemon interface version (this most likely means your "
+"daemon is out-of-date): %s"
+msgstr ""
+
+#: ../src/cdemu:724
+#, fuzzy, c-format
+msgid "CDEmu daemon interface version %i detected, but version %i is required!"
 msgstr ""
 "Version %s du daemon CDEmu détectée, mais la version %s minimum est requise!"
 
-
-#. We need to make sure we're not trying to 'translate' empty
-#. string for the third argument
-#: ../src/cdemu.py:728
-#, python-format
+#: ../src/cdemu:734
+#, c-format
 msgid "Usage: %s %s %s"
 msgstr "Utilisation: %s %s %s"
 
-#: ../src/cdemu.py:733
-#, python-format
+#: ../src/cdemu:739
+#, c-format
 msgid "Usage: %s [options] <command> <command parameters>"
 msgstr "Utilisation: %s [options] <commande> <paramètres de commande>"
 
-#: ../src/cdemu.py:735
+#: ../src/cdemu:741
 msgid "Commands:"
 msgstr "Commandes:"
 
-#: ../src/cdemu.py:739
+#: ../src/cdemu:745
 msgid "Options:"
 msgstr "Options:"
 
-#: ../src/cdemu.py:740
+#: ../src/cdemu:746
 msgid "displays help message"
 msgstr "affiche le message d'aide"
 
-#: ../src/cdemu.py:741
+#: ../src/cdemu:747
 msgid "displays program version"
 msgstr "affiche la version du programme"
 
-#: ../src/cdemu.py:742
+#: ../src/cdemu:748
 msgid "sets D-BUS bus type to use; valid values are 'session' and 'system'"
 msgstr ""
-"définit le type de bus D-BUS à utiliser; les valeurs possibles sont 'session' "
-"et 'system'"
+"définit le type de bus D-BUS à utiliser; les valeurs possibles sont "
+"'session' et 'system'"
 
-#: ../src/cdemu.py:747
-#, python-format
+#: ../src/cdemu:750
+msgid "Optional parser parameters (valid only for 'load' command):"
+msgstr ""
+
+#: ../src/cdemu:751
+msgid "password for encrypted images"
+msgstr ""
+
+#: ../src/cdemu:752
+msgid "encoding for text-based images"
+msgstr ""
+
+#: ../src/cdemu:757
+#, c-format
 msgid "Invalid number of parameters for command '%s'!"
 msgstr "Nombre de paramètres invalide pour la commande '%s'!"
 
-#: ../src/cdemu.py:756
-#, python-format
+#: ../src/cdemu:766
+#, c-format
 msgid "ERROR: %s"
 msgstr "ERREUR: %s"
 
-#: ../src/cdemu.py:760
-#, python-format
+#: ../src/cdemu:770
+#, c-format
 msgid "WARNING: %s"
 msgstr "ATTENTION: %s"
 
-#: ../src/cdemu.py:768
+#: ../src/cdemu:778
 msgid "<device> <image file> [...]"
 msgstr "<périphérique> <fichier image> [...]"
 
-#: ../src/cdemu.py:769
+#: ../src/cdemu:779
 msgid "loads the device"
 msgstr "charge le périphérique"
 
-#: ../src/cdemu.py:775
+#: ../src/cdemu:785
 msgid "<device>"
 msgstr "<périphérique>"
 
-#: ../src/cdemu.py:776
+#: ../src/cdemu:786
 msgid "unloads the device"
 msgstr "vide le périphérique"
 
-#: ../src/cdemu.py:783
+#: ../src/cdemu:793
 msgid "displays the devices' status"
 msgstr "affiche le status des périphériques"
 
-#: ../src/cdemu.py:790
+#: ../src/cdemu:800
 msgid "displays the device mapping information"
 msgstr "affiche les information du mapping des périphériques"
 
-#: ../src/cdemu.py:796 ../src/cdemu.py:803 ../src/cdemu.py:810
-#: ../src/cdemu.py:817
+#: ../src/cdemu:806 ../src/cdemu:813 ../src/cdemu:820 ../src/cdemu:827
 msgid "<device> [new value]"
 msgstr "<périphérique> [nouvelle value]"
 
-#: ../src/cdemu.py:797
+#: ../src/cdemu:807
 msgid "displays/sets daemon debug mask"
 msgstr "affiche/définit le masque de déboguage du daemon"
 
-#: ../src/cdemu.py:804
+#: ../src/cdemu:814
 msgid "displays/sets library debug mask"
 msgstr "affiche/définit le masque de déboguage de la bibliothèque de fonctions"
 
-#: ../src/cdemu.py:811
+#: ../src/cdemu:821
 msgid "displays/sets DPM emulation flag"
 msgstr "affiche/définit le choix de l'émulation DPM"
 
-#: ../src/cdemu.py:818
+#: ../src/cdemu:828
 msgid "displays/sets transfer rate emulation flag"
 msgstr "affiche/définit le choix de l'émulation du taux de transfert "
 
-#: ../src/cdemu.py:824
+#: ../src/cdemu:834
 msgid ""
 "<device> [new vendor_id] [new product_id] [new revision] [new "
 "vendor_specific]"
@@ -524,37 +480,72 @@ msgstr ""
 "<périphérique> [nouveau vendeur_id] [nouveau produit_id] [nouvelle révision] "
 "[nouveau propre_au_vendeur]"
 
-#: ../src/cdemu.py:825
+#: ../src/cdemu:835
 msgid "displays/sets device ID"
 msgstr "affiche/définit l'ID du périphérique"
 
-#: ../src/cdemu.py:831
-msgid "[parser_id]"
-msgstr "[parser_id]"
-
-#: ../src/cdemu.py:832
+#: ../src/cdemu:842
 msgid "enumerates supported parsers"
 msgstr "énumère les parsers supportés"
 
-#: ../src/cdemu.py:838
-msgid "[fragment_id]"
-msgstr "[fragment_id]"
-
-#: ../src/cdemu.py:839
+#: ../src/cdemu:849
 msgid "enumerates supported fragments"
 msgstr "énumère les fragments supportés"
 
-#: ../src/cdemu.py:846
+#: ../src/cdemu:856
 msgid "enumerates valid daemon debug masks"
 msgstr "énumère les masques de déboguage valides pour le daemon"
 
-#: ../src/cdemu.py:853
+#: ../src/cdemu:863
 msgid "enumerates valid library debug masks"
 msgstr ""
 "énumère les masques de déboguage valides pour la bibliothèque de fonctions"
 
-#: ../src/cdemu.py:860
+#: ../src/cdemu:870
 msgid "displays version information"
 msgstr "affiche les informations de version"
 
- 	  	 
+#~ msgid "TYPE"
+#~ msgstr "TYPE"
+
+#~ msgid "Parser information: '%s'"
+#~ msgstr "Information de parser: '%s'"
+
+#~ msgid " - Name: %s"
+#~ msgstr " - Nom: %s"
+
+#~ msgid " - Version: %s"
+#~ msgstr " - Version: %s"
+
+#~ msgid " - Author: %s"
+#~ msgstr " - Auteur: %s"
+
+#~ msgid " - Multiple files support: %i"
+#~ msgstr " - Support des fichiers multiples: %i"
+
+#~ msgid " - Image files description: %s"
+#~ msgstr " - Description des fichiers image: %s"
+
+#~ msgid " - Image files suffixes:"
+#~ msgstr " - Suffixes des fichiers image:"
+
+#~ msgid "Parser with ID '%s' not found!"
+#~ msgstr "Parser avec l'ID '%s' non trouvé!"
+
+#~ msgid "Fragment information: '%s'"
+#~ msgstr "Informations du fragment: '%s'"
+
+#~ msgid " - Interface: %s"
+#~ msgstr " - Interface: %s"
+
+#~ msgid " - Data files suffixes:"
+#~ msgstr " - suffixes de fichiers de données:"
+
+#~ msgid "Fragment with ID '%s' not found!"
+#~ msgstr "Fragment avec l'ID '%s' non trouvés!"
+
+#~ msgid "[parser_id]"
+#~ msgstr "[parser_id]"
+
+#~ msgid "[fragment_id]"
+#~ msgstr "[fragment_id]"
