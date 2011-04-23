@@ -156,7 +156,7 @@ it installed at this point.
 The daemon can register its interface on either system or session D-BUS' bus. By
 default, session bus is used. To use system bus, use --bus=system when running daemon.
 
-As of version 1.3.1, we provide an option to install the daemon as a D-BUS on-demand
+As of version 1.4.0, we provide an option to install the daemon as a D-BUS on-demand
 service on both buses. For more information, see Section 12.
 
 If you wish to run CDEmu daemon on system bus, CDEmu daemon's configuration files
@@ -165,7 +165,7 @@ for D-BUS must be installed in appropriate directory. On most systems, this is
 prefixed and therefore config file ends up installed into ${prefix}/etc/. To
 avoid this, you should pass --sysconfdir=/etc to configure, regardless of the
 prefix you are passing to configure. Alternatively, you can specify appropriate
-directory using --with-dbus-system-dir switch. (NOTE: as of version 1.3.1, this
+directory using --with-dbus-system-dir switch. (NOTE: as of version 1.4.0, this
 switch is effective only if daemon is set to be installed as system bus on-demand
 service).
 
@@ -575,7 +575,7 @@ D-BUS can launch that service.
 In order to do so, a .service describing the service needs to be placed either into /usr/share/dbus-1/services
 (for session bus service autostart) or /usr/share/dbus-1/system-services (for system bus service autostart).
 
-As of version 1.3.1, CDEmu daemon provides the .service files for both system and session bus service autostart.
+As of version 1.4.0, CDEmu daemon provides the .service files for both system and session bus service autostart.
 The daemon is launched via wrapper scripts that allow setting of the following parameters: number of devices,
 audio driver and log file.
 
