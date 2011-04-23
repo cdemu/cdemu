@@ -21,6 +21,16 @@
             </locale>
         </schema>
         <schema>
+            <key>/schemas/apps/gcdemu/prefs/prefs/daemon_autostart</key>
+            <applyto>/apps/gcdemu/prefs/daemon_autostart</applyto>
+            <owner>gcdemu</owner>
+            <type>bool</type>
+            <default>true</default>
+            <locale name="C">
+                <short>After connecting to bus, start the daemon via D-Bus' service activation facility</short>
+            </locale>
+        </schema>
+        <schema>
             <key>/schemas/apps/gcdemu/prefs/prefs/icon_name</key>
             <applyto>/apps/gcdemu/prefs/icon_name</applyto>
             <owner>gcdemu</owner>
