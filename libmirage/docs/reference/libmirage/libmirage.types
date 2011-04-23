@@ -1,6 +1,7 @@
 mirage_cdtext_encdec_get_type
 mirage_debug_context_get_type
 mirage_disc_get_type
+mirage_error_get_type
 mirage_finterface_audio_get_type
 mirage_finterface_binary_get_type
 mirage_finterface_null_get_type

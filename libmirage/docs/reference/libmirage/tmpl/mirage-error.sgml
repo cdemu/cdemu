@@ -71,13 +71,6 @@ Unless coming from underlying GLib's systems, the returned error code is one of
 @MIRAGE_E_PACKNOTSET: 
 @MIRAGE_E_GENERIC: 
 
-<!-- ##### MACRO MIRAGE_ERROR ##### -->
-<para>
-
-</para>
-
-
-
 <!-- ##### FUNCTION mirage_error_quark ##### -->
 <para>
 
