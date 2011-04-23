@@ -3,8 +3,7 @@ AUTOMAKE_OPTIONS = gnu
 SUBDIRS = src docs
 
 EXTRA_DIST = \
-    libmirage.pc.in \
-    autogen.sh
+    libmirage.pc.in
 
 dist-hook:
 	mkdir $(distdir)/debian
