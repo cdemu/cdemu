@@ -1,16 +1,14 @@
 #!/bin/sh
-# Run this to generate all the initial makefiles, etc.
 
-srcdir=`dirname $0`
-test -z "$srcdir" && srcdir=.
+echo "Generating files for gCDEmu:"
 
-PKG_NAME="gCDEmu"
+echo "Running intltoolize..."
+intltoolize --copy --force || exit 1;
+echo "Running aclocal..."
+aclocal $ACLOCAL_FLAGS || exit 1;
+echo "Running automake..."
+automake --copy --add-missing || exit 1;
+echo "Running autoconf..."
+autoconf || exit 1;
 
-which gnome-autogen.sh || {
-    echo "You need to install gnome-common from the GNOME CVS"
-    exit 1
-}
-REQUIRED_AUTOMAKE_VERSION=1.8 \
-USE_GNOME2_MACROS=1 \
-USE_COMMON_DOC_BUILD=yes \
-. gnome-autogen.sh
+echo "Done!"
