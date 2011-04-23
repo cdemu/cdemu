@@ -4,7 +4,7 @@
 AC_PREREQ(2.59)
 
 # Project init
-AC_INIT(mirage-image-analyzer, [1.3.0], http://cdemu.sf.net)
+AC_INIT(image-analyzer, [1.3.0], http://cdemu.sf.net)
 AC_CONFIG_SRCDIR(src/main.c)
 AM_INIT_AUTOMAKE(AC_PACKAGE_NAME, AC_PACKAGE_VERSION)
 AM_CONFIG_HEADER(config.h)
