@@ -25,6 +25,8 @@
 #define __debug__ "Daemon"
 
 
+#define CDEMUD_DBUS_NAME "net.sf.cdemu.CDEMUD_Daemon"
+
 /******************************************************************************\
  *                              Private structure                             *
 \******************************************************************************/
@@ -141,7 +143,8 @@ gboolean cdemud_daemon_initialize (CDEMUD_Daemon *self, gint num_devices, gchar 
     DBusGProxy *bus_proxy;
     GError *dbus_error = NULL;
     gint bus_type = system_bus ? DBUS_BUS_SYSTEM : DBUS_BUS_SESSION;
-    guint result = 0;
+    guint result;
+    gboolean name_taken;
     gint i;
 
     /* Debug context; so that we get daemon's errors/warnings from the very beginning */
@@ -163,8 +166,8 @@ gboolean cdemud_daemon_initialize (CDEMUD_Daemon *self, gint num_devices, gchar 
     /* Initialize libao */
     ao_initialize();
 
-    /* Initialize our DBUS interface; unless told to use system bus, we'll use
-       session one */
+
+    /* Connect to D-BUS */
     _priv->bus = dbus_g_bus_get(bus_type, &dbus_error);
     if (!_priv->bus) {
         CDEMUD_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: failed to get %s bus: %s!\n", __debug__, system_bus ? "system" : "session", dbus_error->message);
@@ -173,26 +176,25 @@ gboolean cdemud_daemon_initialize (CDEMUD_Daemon *self, gint num_devices, gchar 
         return FALSE;
     }
 
+    /* Make sure the D-BUS name we're going to use isn't taken already (by another
+       instance of the server). We're actually going to claim it once we create
+       the devices, but we want to avoid the device creation if name claim is
+       already doomed to fail... */
     bus_proxy = dbus_g_proxy_new_for_name(_priv->bus, "org.freedesktop.DBus", "/org/freedesktop/DBus", "org.freedesktop.DBus");
 
-    if (!dbus_g_proxy_call(bus_proxy, "RequestName", &dbus_error, G_TYPE_STRING, "net.sf.cdemu.CDEMUD_Daemon", G_TYPE_UINT, DBUS_NAME_FLAG_DO_NOT_QUEUE, G_TYPE_INVALID, G_TYPE_UINT, &result, G_TYPE_INVALID)) {
-        CDEMUD_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: failed to request name on %s bus!\n", __debug__, system_bus ? "system" : "session");
+    if (!dbus_g_proxy_call(bus_proxy, "NameHasOwner", &dbus_error, G_TYPE_STRING, CDEMUD_DBUS_NAME, G_TYPE_INVALID, G_TYPE_BOOLEAN, &name_taken, G_TYPE_INVALID)) {
+        CDEMUD_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: failed to check if name '%s' is already taken on %s bus!\n", __debug__, CDEMUD_DBUS_NAME, system_bus ? "system" : "session");
         g_error_free(dbus_error);
         cdemud_error(CDEMUD_E_DBUSNAMEREQUEST, error);
         return FALSE;
     }
 
-    /* Make sure we're primary owner of requested name... otherwise it's likely
-       that an instance is already running on that bus */
-    if (result != DBUS_REQUEST_NAME_REPLY_PRIMARY_OWNER) {
-        CDEMUD_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: failed to become primary owner of name on %s bus; is there another instance already running?\n", __debug__, system_bus ? "system" : "session");
+    if (name_taken) {
+        CDEMUD_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: name '%s' is already taken on %s bus! Is there another instance already running?\n", __debug__, CDEMUD_DBUS_NAME, system_bus ? "system" : "session");
         cdemud_error(CDEMUD_E_DBUSNAMEREQUEST, error);
         return FALSE;
     }
 
-    dbus_g_connection_register_g_object(_priv->bus, "/CDEMUD_Daemon", G_OBJECT(self));
-    dbus_g_error_domain_register(CDEMUD_ERROR, "net.sf.cdemu.CDEMUD_Daemon.CDEmuDaemon", CDEMUD_TYPE_ERROR);
-    dbus_g_error_domain_register(MIRAGE_ERROR, "net.sf.cdemu.CDEMUD_Daemon.libMirage", MIRAGE_TYPE_ERROR);
 
     /* Create desired number of devices */
     for (i = 0; i < _priv->number_of_devices; i++) {
@@ -224,6 +226,29 @@ gboolean cdemud_daemon_initialize (CDEMUD_Daemon *self, gint num_devices, gchar 
        active and the SCSI layer actually does device registration on the kernel
        side)... */
     _priv->mapping_id = g_timeout_add(1000, __cdemud_daemon_build_device_mapping_callback, self);
+
+
+    /* Claim the name on the D-BUS */
+    if (!dbus_g_proxy_call(bus_proxy, "RequestName", &dbus_error, G_TYPE_STRING, CDEMUD_DBUS_NAME, G_TYPE_UINT, DBUS_NAME_FLAG_DO_NOT_QUEUE, G_TYPE_INVALID, G_TYPE_UINT, &result, G_TYPE_INVALID)) {
+        CDEMUD_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: failed to request name '%s' on %s bus!\n", __debug__, CDEMUD_DBUS_NAME, system_bus ? "system" : "session");
+        g_error_free(dbus_error);
+        cdemud_error(CDEMUD_E_DBUSNAMEREQUEST, error);
+        return FALSE;
+    }
+
+    /* Make sure we're primary owner of requested name... otherwise it's likely
+       that an instance is already running on that bus */
+    if (result != DBUS_REQUEST_NAME_REPLY_PRIMARY_OWNER) {
+        CDEMUD_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: failed to become primary owner of name '%s' on %s bus; is there another instance already running?\n", __debug__, CDEMUD_DBUS_NAME, system_bus ? "system" : "session");
+        cdemud_error(CDEMUD_E_DBUSNAMEREQUEST, error);
+        return FALSE;
+    }
+
+    /* Register the daemon object and the error types */
+    dbus_g_connection_register_g_object(_priv->bus, "/CDEMUD_Daemon", G_OBJECT(self));
+    dbus_g_error_domain_register(CDEMUD_ERROR, "net.sf.cdemu.CDEMUD_Daemon.CDEmuDaemon", CDEMUD_TYPE_ERROR);
+    dbus_g_error_domain_register(MIRAGE_ERROR, "net.sf.cdemu.CDEMUD_Daemon.libMirage", MIRAGE_TYPE_ERROR);
+
 
     /* We successfully finished initialization */
     _priv->initialized = TRUE;
