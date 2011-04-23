@@ -4,6 +4,6 @@ _Comment=CDEmu GUI
 Icon=gcdemu
 Terminal=false
 Type=Application
-StartupNotify=true
+StartupNotify=false
 Categories=GTK;System;
 Exec=gcdemu
