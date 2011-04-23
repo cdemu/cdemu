@@ -29,18 +29,81 @@
  * <para>
  * Registers an error quark for libMirage if necessary.
  * </para>
- * 
+ *
  * Return value: The error quark used for libMirage errors.
  **/
 GQuark mirage_error_quark (void) {
     static GQuark q = 0;
-    
+
     if (q == 0) {
-        q = g_quark_from_static_string("mirage-error-quark");
+        q = g_quark_from_static_string("mirage-error");
     }
-    
+
     return q;
 }
+
+
+#define ENUM_ENTRY(NAME, DESC) { NAME, "" #NAME "", DESC }
+GType mirage_error_get_type (void) {
+    static GType type = 0;
+    if (type == 0) {
+        static const GEnumValue values[] = {
+            /* General */
+            ENUM_ENTRY(MIRAGE_E_INVALIDARG, "InvalidArgument"),
+            ENUM_ENTRY(MIRAGE_E_NOTIMPL, "NotImplemented"),
+            ENUM_ENTRY(MIRAGE_E_ITERCANCELLED, "IterationCancelled"),
+            ENUM_ENTRY(MIRAGE_E_INVALIDOBJTYPE, "InvalidObjectType"),
+            ENUM_ENTRY(MIRAGE_E_DATANOTSET, "DataNotSet"),
+            ENUM_ENTRY(MIRAGE_E_DATAFIXED, "DataFixed"),
+            ENUM_ENTRY(MIRAGE_E_NOTINLAYOUT, "NotInLayout"),
+            ENUM_ENTRY(MIRAGE_E_INDEXOUTOFRANGE, "IndexOutOfRange"),
+            ENUM_ENTRY(MIRAGE_E_SECTOROUTOFRANGE, "SectorOutOfRange"),
+            /* Mirage */
+            ENUM_ENTRY(MIRAGE_E_NOTINIT, "NotInitilaized"),
+            ENUM_ENTRY(MIRAGE_E_PLUGINDIR, "PluginDir"),
+            ENUM_ENTRY(MIRAGE_E_NOPARSERFOUND, "NoParserFound"),
+            ENUM_ENTRY(MIRAGE_E_NOFRAGMENTFOUND, "NoFragmentFound"),
+            ENUM_ENTRY(MIRAGE_E_IMAGEFILE, "ImageFile"),
+            /* Plugins */
+            ENUM_ENTRY(MIRAGE_E_PARSER, "Parser"),
+            ENUM_ENTRY(MIRAGE_E_CANTHANDLE, "CantHandle"),
+            ENUM_ENTRY(MIRAGE_E_NEEDPASSWORD, "NeedPassword"),
+            ENUM_ENTRY(MIRAGE_E_WRONGPASSWORD, "WrongPassword"),
+            ENUM_ENTRY(MIRAGE_E_NOPASSWORD, "NoPassword"),
+            /* Object */
+            ENUM_ENTRY(MIRAGE_E_NODEBUGCONTEXT, "NoDebugContext"),
+            ENUM_ENTRY(MIRAGE_E_NOPARENT, "NoParent"),
+            /* Disc */
+            ENUM_ENTRY(MIRAGE_E_SESSIONNOTFOUND, "SessionNotFound"),
+            ENUM_ENTRY(MIRAGE_E_SESSIONEXISTS, "SessionExists"),
+            ENUM_ENTRY(MIRAGE_E_INVALIDMEDIUM, "InvalidMedium"),
+            /* Session */
+            ENUM_ENTRY(MIRAGE_E_TRACKNOTFOUND, "TrackNotFound"),
+            ENUM_ENTRY(MIRAGE_E_LANGNOTFOUND, "LanguageNotFound"),
+            ENUM_ENTRY(MIRAGE_E_TRACKEXISTS, "TrackExists"),
+            ENUM_ENTRY(MIRAGE_E_LANGEXISTS, "LanguageExists"),
+            /* Track */
+            ENUM_ENTRY(MIRAGE_E_INDEXNOTFOUND, "IndexNotFound"),
+            ENUM_ENTRY(MIRAGE_E_FRAGMENTNOTFOUND, "FragmentNotFound"),
+            /* Fragment */
+            ENUM_ENTRY(MIRAGE_E_FILENOTSET, "FileNotSet"),
+            ENUM_ENTRY(MIRAGE_E_READFAILED, "ReadFailed"),
+            ENUM_ENTRY(MIRAGE_E_DATAFILE, "DataFile"),
+            /* Sector */
+            ENUM_ENTRY(MIRAGE_E_SECTORTYPE, "SectorType"),
+            /* Language */
+            ENUM_ENTRY(MIRAGE_E_INVALIDPACKTYPE, "InvalidPackType"),
+            ENUM_ENTRY(MIRAGE_E_PACKNOTSET, "PackNotSet"),
+            ENUM_ENTRY(MIRAGE_E_GENERIC, "Generic"),
+            { 0, 0, 0 }
+        };
+
+        type = g_enum_register_static("MirageError", values);
+    }
+
+    return type;
+}
+
 
 /**
  * mirage_error:
@@ -61,9 +124,9 @@ void mirage_error (gint errcode, GError **error) {
         /* General */
         { MIRAGE_E_INVALIDARG, "Invalid argument." },
         { MIRAGE_E_NOTIMPL, "Not implemented." },
-        
+
         { MIRAGE_E_ITERCANCELLED, "Iteration cancelled." },
-        
+
         { MIRAGE_E_INVALIDOBJTYPE, "Invalid object type." },
 
         { MIRAGE_E_DATANOTSET, "Requested data is not set." },
@@ -73,65 +136,65 @@ void mirage_error (gint errcode, GError **error) {
 
         { MIRAGE_E_INDEXOUTOFRANGE, "Requested index is out of range." },
         { MIRAGE_E_SECTOROUTOFRANGE, "Requested sector is out of range." },
-    
+
         /* Mirage */
         { MIRAGE_E_NOTINIT, "libMirage not initialized." },
         { MIRAGE_E_PLUGINDIR, "Failed to open plugins directory." },
         { MIRAGE_E_NOPARSERFOUND, "No parser can handle given image." },
         { MIRAGE_E_NOFRAGMENTFOUND, "No fragment can handle given data." },
         { MIRAGE_E_IMAGEFILE, "Image file cannot be opened or read." },
-        
+
         /* Plugins */
         { MIRAGE_E_PARSER, "Parser error." },
         { MIRAGE_E_CANTHANDLE, "Parser cannot handle given image file(s)." },
         { MIRAGE_E_NEEDPASSWORD, "Image is encrypted and requires password." },
         { MIRAGE_E_WRONGPASSWORD, "Wrong password." },
         { MIRAGE_E_NOPASSWORD, "No password provided." },
-        
+
         /* Object */
         { MIRAGE_E_NODEBUGCONTEXT, "Debug context is not set." },
         { MIRAGE_E_NOPARENT, "Parent object is not set." },
-    
-        /* Disc */    
+
+        /* Disc */
         { MIRAGE_E_SESSIONNOTFOUND, "Session not found." },
         { MIRAGE_E_SESSIONEXISTS, "Session already exists." },
         { MIRAGE_E_INVALIDMEDIUM, "Invalid medium type." },
-        
+
         /* Session */
         { MIRAGE_E_TRACKNOTFOUND, "Track not found." },
         { MIRAGE_E_LANGNOTFOUND, "Language not found." },
         { MIRAGE_E_TRACKEXISTS, "Track already exists." },
         { MIRAGE_E_LANGEXISTS, "Language already exists." },
-        
+
         /* Track */
         { MIRAGE_E_INDEXNOTFOUND, "Index not found." },
         { MIRAGE_E_FRAGMENTNOTFOUND, "Fragment not found." },
-        
+
         /* Fragment */
         { MIRAGE_E_FILENOTSET, "File is not set." },
         { MIRAGE_E_READFAILED, "Read has failed." },
         { MIRAGE_E_DATAFILE, "Data file cannot be opened or read." },
-        
+
         /* Sector */
         { MIRAGE_E_SECTORTYPE, "Invalid sector type." },
-        
+
         /* Language */
         { MIRAGE_E_INVALIDPACKTYPE, "Invalid pack type." },
         { MIRAGE_E_PACKNOTSET, "Pack of requested type is not set." },
 
-        
+
         { MIRAGE_E_GENERIC, "Generic error." },
     };
-    
+
     if (!error) {
         return;
     }
-    
+
     if (*error) {
         g_error_free(*error);
         *error = NULL;
     }
-    
+
     gint i;
     for (i = 0; i < G_N_ELEMENTS(errors); i++) {
         if (errors[i].errcode == errcode) {
@@ -139,9 +202,9 @@ void mirage_error (gint errcode, GError **error) {
             return;
         }
     }
-    
+
     /* Generic error */
     g_set_error(error, MIRAGE_ERROR, errors[i-1].errcode, errors[i-1].errstring);
-    
+
     return;
 }

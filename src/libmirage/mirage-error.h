@@ -16,12 +16,15 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
- 
+
 #ifndef __MIRAGE_ERROR_H__
 #define __MIRAGE_ERROR_H__
 
 
 G_BEGIN_DECLS
+
+#define MIRAGE_ERROR (mirage_error_quark ())
+#define MIRAGE_TYPE_ERROR (mirage_error_get_type ())
 
 /**
  * MIRAGE_ERROR:
@@ -33,6 +36,7 @@ G_BEGIN_DECLS
 #define MIRAGE_ERROR mirage_error_quark()
 
 GQuark mirage_error_quark (void);
+GType  mirage_error_get_type (void);
 
 
 /**
@@ -81,9 +85,9 @@ typedef enum {
     /* General */
     MIRAGE_E_INVALIDARG  = 0xDEAD000,
     MIRAGE_E_NOTIMPL,
-    
+
     MIRAGE_E_ITERCANCELLED,
-    
+
     MIRAGE_E_INVALIDOBJTYPE,
 
     MIRAGE_E_DATANOTSET,
@@ -93,52 +97,52 @@ typedef enum {
 
     MIRAGE_E_INDEXOUTOFRANGE,
     MIRAGE_E_SECTOROUTOFRANGE,
-    
+
     /* Mirage */
     MIRAGE_E_NOTINIT,
     MIRAGE_E_PLUGINDIR,
     MIRAGE_E_NOPARSERFOUND,
     MIRAGE_E_NOFRAGMENTFOUND,
     MIRAGE_E_IMAGEFILE,
-    
+
     /* Plugins */
     MIRAGE_E_PARSER,
     MIRAGE_E_CANTHANDLE,
     MIRAGE_E_NEEDPASSWORD,
     MIRAGE_E_WRONGPASSWORD,
     MIRAGE_E_NOPASSWORD,
-    
+
     /* Object */
     MIRAGE_E_NODEBUGCONTEXT,
     MIRAGE_E_NOPARENT,
 
-    /* Disc */    
+    /* Disc */
     MIRAGE_E_SESSIONNOTFOUND,
     MIRAGE_E_SESSIONEXISTS,
     MIRAGE_E_INVALIDMEDIUM,
-    
+
     /* Session */
     MIRAGE_E_TRACKNOTFOUND,
     MIRAGE_E_LANGNOTFOUND,
     MIRAGE_E_TRACKEXISTS,
     MIRAGE_E_LANGEXISTS,
-    
+
     /* Track */
     MIRAGE_E_INDEXNOTFOUND,
     MIRAGE_E_FRAGMENTNOTFOUND,
-    
+
     /* Fragment */
     MIRAGE_E_FILENOTSET,
     MIRAGE_E_READFAILED,
     MIRAGE_E_DATAFILE,
-    
+
     /* Sector */
     MIRAGE_E_SECTORTYPE,
-    
+
     /* Language */
     MIRAGE_E_INVALIDPACKTYPE,
     MIRAGE_E_PACKNOTSET,
-    
+
     MIRAGE_E_GENERIC = 0xDEADFFF,
 } MIRAGE_ErrorCodes;
 
