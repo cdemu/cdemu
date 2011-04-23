@@ -37,9 +37,9 @@ typedef struct {
 
 typedef struct {
     MIRAGE_ObjectClass parent;
-    
+
     /* Class members */
-    guint signals[4]; /* Signals */
+    guint signals[2]; /* Signals */
 } CDEMUD_DaemonClass;
 
 
