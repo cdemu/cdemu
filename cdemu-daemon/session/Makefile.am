@@ -1,5 +1,5 @@
 EXTRA_DIST = \
-	cdemu-daemon-session.service \
+	net.sf.cdemu.CDEMUD_Daemon.service \
 	cdemu-daemon-session.sh
 
 # Install only if requested
