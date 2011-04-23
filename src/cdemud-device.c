@@ -3289,8 +3289,7 @@ static gboolean __cdemud_device_get_status (CDEMUD_Device *self, gboolean *loade
         }
 
         if (file_names) {
-            *file_names = g_new0(gchar *, 2); /* NULL-terminated, hence 2 */
-            **file_names = g_strdup("N/A");
+            *file_names = g_new0(gchar *, 1); /* NULL-terminated, hence 1 */
         }
     }
 
@@ -3704,13 +3703,13 @@ gboolean cdemud_device_get_mapping (CDEMUD_Device *self, gchar **sr_device, gcha
     if (_priv->device_sr) {
         *sr_device = g_strdup(_priv->device_sr);
     } else {
-        *sr_device = g_strdup("N/A");
+        *sr_device = NULL;
     }
 
     if (_priv->device_sg) {
         *sg_device = g_strdup(_priv->device_sg);
     } else {
-        *sg_device = g_strdup("N/A");
+        *sg_device = NULL;
     }
 
     return TRUE;
