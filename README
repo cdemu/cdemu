@@ -1,19 +1,19 @@
 libMirage
-ver.1.3.0
+ver.1.4.0
 ~~~~~~~~~~~~
 
-This is libMirage library, a CD-ROM image access library, and part of the 
+This is libMirage library, a CD-ROM image access library, and part of the
 userspace-cdemu suite, a free, GPL CD/DVD-ROM device emulator for linux. It is
 written in C and based on GLib.
 
-The aim of libMirage is to provide uniform access to the data stored in 
-different image formats, by creating a representation of disc stored in image 
-file, which is based on GObjects. There are various objects that represent 
+The aim of libMirage is to provide uniform access to the data stored in
+different image formats, by creating a representation of disc stored in image
+file, which is based on GObjects. There are various objects that represent
 different parts of the disc; disc, session, track, sector, etc. In addition to
-providing access to data provided by the image file, libMirage is also capable 
-of generating some of the data that might not be present in image file. For 
-instance, ISO image provides only user data from sector, without sync pattern, 
-header, ECC/EDC codes or subchannel. When this missing data is requested, 
+providing access to data provided by the image file, libMirage is also capable
+of generating some of the data that might not be present in image file. For
+instance, ISO image provides only user data from sector, without sync pattern,
+header, ECC/EDC codes or subchannel. When this missing data is requested,
 libMirage will transparently generate it.
 
 Currently supported image formats:
@@ -40,7 +40,7 @@ Requirements:
  - GLib 2.6 or newer
  - libsndfile 1.0.0 or newer
  - zlib
- 
+
  - gtk-doc (for documentation building)
 
 
