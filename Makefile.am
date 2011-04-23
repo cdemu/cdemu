@@ -1,8 +1,5 @@
 SUBDIRS = src
 
-EXTRA_DIST = \
-    autogen.sh
-
 dist-hook:
 	mkdir $(distdir)/debian
 	mkdir $(distdir)/debian/patches
