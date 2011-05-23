@@ -12,7 +12,7 @@ CONFIGURE_FLAGS = --build $(DEB_BUILD_GNU_TYPE) --host $(DEB_HOST_GNU_TYPE)
 
 
 build:
-	./autogen.sh
+	test -x autogen.sh && ./autogen.sh
 	dh build --before configure
 
 	test -r config.sub && mv -f config.sub config.sub.save 
