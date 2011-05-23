@@ -25,7 +25,7 @@ Description: CD-ROM image access library
 
 
 Package: libmirage3-dbg
-Section: libs
+Section: debug
 Priority: extra
 Architecture: any
 Depends: libmirage3 (= ${binary:Version}), ${shlibs:Depends}, ${misc:Depends}
