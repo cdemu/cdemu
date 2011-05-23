@@ -2,8 +2,6 @@
 # -*- makefile -*-
 
 
-include /usr/share/quilt/quilt.make
-
 #export DH_VERBOSE=1
 export DH_ALWAYS_EXCLUDE="CVS:.svn"
 
@@ -13,8 +11,7 @@ export DEB_BUILD_GNU_TYPE ?= $(shell dpkg-architecture -qDEB_BUILD_GNU_TYPE)
 CONFIGURE_FLAGS = --build $(DEB_BUILD_GNU_TYPE) --host $(DEB_HOST_GNU_TYPE)
 
 
-build: $(QUILT_STAMPFN) build-stamp
-build-stamp:
+build:
 	./autogen.sh
 	dh build --before configure
 
@@ -25,10 +22,8 @@ build-stamp:
 
 	dh_auto_configure  -- --disable-static --enable-gtk-doc $(CONFIGURE_FLAGS)
 	dh build --after configure
-	touch $@
 
-
-clean: unpatch
+clean:
 	test -r config.sub.save && mv -f config.sub.save config.sub || echo "not found"
 	test -r config.guess.save && mv -f config.guess.save config.guess || echo "not found"
 
@@ -37,12 +32,8 @@ clean: unpatch
 
 	dh clean
 
-
-install: build install-stamp
-install-stamp:
+install: build
 	dh install
-	touch $@
-
 
 binary-indep: install
 	dh binary-indep
