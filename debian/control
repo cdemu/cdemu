@@ -4,9 +4,9 @@ Priority: optional
 Homepage: http://cdemu.sourceforge.net/
 Maintainer: Henrik Stokseth <henrik@hw0.org>
 Build-Depends: pkg-config (>= 0.14), libglib2.0-dev, libsndfile1-dev,
- zlib1g-dev, gtk-doc-tools, autotools-dev, autoconf, automake, grep, libtool,
- quilt, debhelper (>= 7)
-Standards-Version: 3.8.0
+ zlib1g-dev, gtk-doc-tools, autotools-dev, autoconf, automake, libtool,
+ quilt, debhelper (>= 8)
+Standards-Version: 3.9.1
 
 
 Package: libmirage3
@@ -14,7 +14,7 @@ Section: libs
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends}
 Recommends: libmirage3-data
-Description: A CD-ROM image access library
+Description: CD-ROM image access library
  This is libMirage library, a CD-ROM image access library, and part of the
  CDEmu suite, a free, GPL CD/DVD-ROM device emulator for Linux. It is
  written in C and based on GLib.
@@ -29,7 +29,7 @@ Section: libs
 Priority: extra
 Architecture: any
 Depends: libmirage3 (= ${binary:Version}), ${shlibs:Depends}, ${misc:Depends}
-Description: A CD-ROM image access library (debugging symbols)
+Description: CD-ROM image access library (debugging symbols)
  This package provides detached debugging symbols.
 
 
@@ -37,7 +37,7 @@ Package: libmirage3-data
 Section: misc
 Architecture: all
 Depends: ${shlibs:Depends}, ${misc:Depends}
-Description: A CD-ROM image access library (mime data files)
+Description: CD-ROM image access library (mime data files)
  This package contains MIME data files.
 
 
@@ -46,7 +46,7 @@ Section: libdevel
 Architecture: any
 Depends: libmirage3 (= ${binary:Version}), ${shlibs:Depends}, ${misc:Depends}
 Recommends: devhelp
-Description: A CD-ROM image access library (development files)
+Description: CD-ROM image access library (development files)
  This package contains files needed to develop with libMirage.
 
 
@@ -54,6 +54,6 @@ Package: libmirage3-doc
 Section: doc
 Architecture: all
 Depends: ${shlibs:Depends}, ${misc:Depends}
-Description: A CD-ROM image access library (documentation)
+Description: CD-ROM image access library (documentation)
  This package contains documentation for libMirage.
 
