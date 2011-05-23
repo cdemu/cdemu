@@ -16,44 +16,44 @@ mywarning ()
 case "$1" in
     configure)
         # sanity check
-        test -n "${VERSION}" || myerror "Version is not set."
+		test -n "${VERSION}" || myerror "Version is not set."
 
-        cd "/usr/src/vhba-${VERSION}" || myerror "chdir failed."
+		cd "/usr/src/vhba-${VERSION}" || myerror "chdir failed."
 
-        # Add module/module-version to DKMS registry
-        dkms add -m vhba -v ${VERSION} || myerror "Failed to add dkms add module"
+		# Add module/module-version to DKMS registry
+		dkms add -m vhba -v ${VERSION} || myerror "Failed to add dkms add module"
 
-        # Rebuild module/module-version and install it on the currently running kernel
-        dkms build -m vhba -v ${VERSION} || myerror "Failed to dkms build module"
-        dkms install -m vhba -v ${VERSION} --force || myerror "Failed to dkms install module"
+		# Rebuild module/module-version and install it on the currently running kernel
+		dkms build -m vhba -v ${VERSION} || myerror "Failed to dkms build module"
+		dkms install -m vhba -v ${VERSION} --force || myerror "Failed to dkms install module"
 
-        # Add the cdemu group
-        addgroup --system cdemu || mywarning "Failed to add cdemu group."
+		# Add the cdrom group
+		addgroup cdrom || mywarning "Failed to add cdrom group."
 
-	# Workaround: Reload udev rules.
-	udevadm control --reload-rules || mywarning "Failed to reload udev rules."
+		# Workaround: Reload udev rules.
+		udevadm control --reload-rules || mywarning "Failed to reload udev rules."
 
-        # try to load the module
-        if lsmod | grep -q vhba > /dev/null; then
-		mywarning "Module is already loaded."
-        else
-		modprobe "vhba" > /dev/null || mywarning "Unable to load module."
-	fi
+		# try to load the module
+		if lsmod | grep -q vhba > /dev/null; then
+			mywarning "Module is already loaded."
+		else
+			modprobe "vhba" > /dev/null || mywarning "Unable to load module."
+		fi
 
-        # and make sure it's there after next reboot
-	if grep vhba /etc/modules > /dev/null; then
-		mywarning "Module is already added to /etc/modules."
-	else
-		echo "vhba" >> /etc/modules || myerror "Unable to add module to /etc/modules."
-	fi
+		# and make sure it's there after next reboot
+		if grep vhba /etc/modules > /dev/null; then
+			mywarning "Module is already added to /etc/modules."
+		else
+			echo "vhba" >> /etc/modules || myerror "Unable to add module to /etc/modules."
+		fi
     ;;
 
-    abort-upgrade|abort-remove|abort-deconfigure)
-    ;;
+	abort-upgrade|abort-remove|abort-deconfigure)
+	;;
 
-    *)
-        myerror "postinst called with unknown argument \`$1'."
-    ;;
+	*)
+		myerror "postinst called with unknown argument '$1'."
+	;;
 esac
 
 #DEBHELPER#
