@@ -2,8 +2,6 @@
 # -*- makefile -*-
 
 
-include /usr/share/quilt/quilt.make
-
 #export DH_VERBOSE=1
 export DH_ALWAYS_EXCLUDE="CVS:.svn"
 
@@ -11,41 +9,38 @@ export DH_ALWAYS_EXCLUDE="CVS:.svn"
 SOURCE_VERSION := $(shell head -1 debian/changelog | cut -d\( -f2 | cut -d\) -f1)
 UPSTREAM_VERSION := $(shell echo "$(SOURCE_VERSION)" | cut -d- -f1)
 
+# Install stuff
+# Note that CURDIR is set by GNU make.
+PKGDIR := $(CURDIR)/debian/vhba-dkms
+DESTDIR := $(PKGDIR)/usr/src/vhba-$(UPSTREAM_VERSION)
 
-build: $(QUILT_STAMPFN) build-stamp
-build-stamp:
+build:
 	dh build --before auto_configure
+	# skip auto_configure, auto_build and auto_test
 	dh build --after auto_test
-	touch $@ 
 
+clean:
+	dh clean
 
-clean: unpatch
-	dh clean --before auto_clean
-	dh clean --after auto_clean
-
-
-install: build install-stamp
-install-stamp:
+install: build
 	dh install --before auto_install
 
-	install -d                                        $(CURDIR)/debian/vhba-dkms/usr/src/vhba-$(UPSTREAM_VERSION)
-	install -m 644 -D $(CURDIR)/debian/vhba-dkms.dkms $(CURDIR)/debian/vhba-dkms/usr/src/vhba-$(UPSTREAM_VERSION)/dkms.conf
-	install -m 644 -D $(CURDIR)/Makefile              $(CURDIR)/debian/vhba-dkms/usr/src/vhba-$(UPSTREAM_VERSION)/
-	install -m 644 -D $(CURDIR)/*.c                   $(CURDIR)/debian/vhba-dkms/usr/src/vhba-$(UPSTREAM_VERSION)/
-	install -d                                        $(CURDIR)/debian/vhba-dkms/usr/src/vhba-$(UPSTREAM_VERSION)/kat
-	install -m 644 -D $(CURDIR)/kat/*                 $(CURDIR)/debian/vhba-dkms/usr/src/vhba-$(UPSTREAM_VERSION)/kat/
-	install -m 755 -D $(CURDIR)/kat/kat               $(CURDIR)/debian/vhba-dkms/usr/src/vhba-$(UPSTREAM_VERSION)/kat/
+	install -d                                        $(DESTDIR)
+	install -m 644 -D $(CURDIR)/debian/vhba-dkms.dkms $(DESTDIR)/dkms.conf
+	install -m 644 -D $(CURDIR)/Makefile              $(DESTDIR)/
+	install -m 644 -D $(CURDIR)/*.c                   $(DESTDIR)/
+	install -d                                        $(DESTDIR)/kat
+	install -m 644 -D $(CURDIR)/kat/*                 $(DESTDIR)/kat/
+	install -m 755 -D $(CURDIR)/kat/kat               $(DESTDIR)/kat/
 
 	dh install --after auto_install
-	touch $@
-
 
 binary-indep: install
 	dh binary-indep --until installdeb
 
 	# Version magic
 	SED_EXPR="s/\$${VERSION}/$(subst .,\.,$(UPSTREAM_VERSION))/"; \
-	VERFILES="$(addprefix $(CURDIR)/debian/vhba-dkms/, $(addprefix DEBIAN/, preinst postinst prerm) usr/src/vhba-$(UPSTREAM_VERSION)/dkms.conf)"; \
+	VERFILES="$(addprefix $(PKGDIR)/DEBIAN/, preinst postinst prerm) $(DESTDIR)/dkms.conf"; \
 	for file in $${VERFILES}; do echo "$${file}"; sed --in-place $${SED_EXPR} "$${file}"; done
 
 	dh binary-indep --after installdeb

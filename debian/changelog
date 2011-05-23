@@ -1,6 +1,6 @@
-vhba-module (20110416-0ubuntu1) lucid; urgency=low
+vhba-module (20110416-0ubuntu1) natty; urgency=low
 
   * Initial Release. Closes: (LP: #105452, LP: #184637)
 
- -- Henrik Stokseth (Henrik) <henrik@hw0.org>  Fri, 18 Sep 2009 12:00:00 +0100
+ -- Henrik Stokseth (Henrik) <henrik@hw0.org>  Sun, 01 May 2011 12:00:00 +0100
 

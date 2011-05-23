@@ -14,25 +14,25 @@ mywarning ()
 }
 
 case "$1" in
-    remove|upgrade|deconfigure)
-        # sanity check
-        test -n "${VERSION}" || myerror "Version not set."
+	remove|upgrade|deconfigure)
+		# sanity check
+		test -n "${VERSION}" || myerror "Version not set."
 
-        cd "/usr/src/vhba-${VERSION}" || myerror "chdir failed."
+		cd "/usr/src/vhba-${VERSION}" || myerror "chdir failed."
 
-        # Remove all instances of module/module-version from DKMS registry
-        dkms remove -m vhba -v ${VERSION} --all || myerror "dkms remove failed."
+		# Remove all instances of module/module-version from DKMS registry
+		dkms remove -m vhba -v ${VERSION} --all || myerror "dkms remove failed."
 
-        # Remove the cdemu group
-        delgroup --system cdemu || mywarning "failed to remove group 'cdemu'."
-    ;;
+		# Remove the cdrom group
+		# delgroup --only-if-empty cdrom || mywarning "failed to remove group 'cdrom'."
+	;;
 
-    failed-upgrade)
-    ;;
+	failed-upgrade)
+	;;
 
-    *)
-        myerror "prerm called with unknown argument \`$1'."
-    ;;
+	*)
+		myerror "prerm called with unknown argument '$1'."
+	;;
 esac
 
 #DEBHELPER#

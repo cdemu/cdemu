@@ -3,9 +3,9 @@ Section: misc
 Priority: optional
 Homepage: http://cdemu.sourceforge.net/
 Maintainer: Henrik Stokseth <henrik@hw0.org>
-Build-Depends: quilt, debhelper (>= 7)
+Build-Depends: quilt, debhelper (>= 8)
 Build-Depends-Indep: sed (>= 4)
-Standards-Version: 3.8.0
+Standards-Version: 3.9.1
 
 
 Package: vhba-dkms
