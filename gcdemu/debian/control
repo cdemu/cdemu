@@ -3,27 +3,26 @@ Section: utils
 Priority: optional
 Homepage: http://cdemu.sourceforge.net/
 Maintainer: Henrik Stokseth <henrik@hw0.org>
-Build-Depends: quilt, debhelper (>= 7)
-Build-Depends-Indep: python, gettext, intltool, gnome-doc-utils, rarian-compat,
- python-gtk2-dev, python-support (>= 0.5.3), autotools-dev, autoconf,
- automake, libgconf2-dev, gnome-common
-Standards-Version: 3.8.0
+Build-Depends: quilt, debhelper (>= 8)
+Build-Depends-Indep: python (>= 2.2), libgconf2-dev, python-gtk2-dev, gettext, 
+ intltool, python-support (>= 0.5.3), autotools-dev, autoconf, automake
+Standards-Version: 3.9.1
 
 
 Package: gcdemu
 Architecture: all
-Depends: python, gconf2, rarian-compat, python-gnome2, python-gnomeapplet, 
- python-dbus, python-notify, cdemu-daemon (>= 1.3.0), ${python:Depends}, ${misc:Depends}
+Depends: python (>= 2.2), python-gconf, python-gtk2, python-dbus, python-notify, 
+ cdemu-daemon (>= 1.4.0), ${python:Depends}, ${misc:Depends}
 Provides: ${python:Provides}
-Description: A GNOME panel applet to control CDEmu daemon
- This is gCDEmu, a GNOME applet for controlling CDEmu daemon. It is part of the 
- CDEmu suite, a free, GPL CD/DVD-ROM device emulator for Linux.
+Description: GNOME application to control CDEmu daemon
+ This is gCDEmu, a GNOME application for controlling CDEmu daemon. It is part of
+ the CDEmu suite, a free, GPL CD/DVD-ROM device emulator for Linux.
  .
  It provides a graphic interface that allows performing the key tasks related to
  controlling the CDEmu daemon, such as loading and unloading devices, displaying 
  devices' status and retrieving/setting devices' debug masks.
  .
- In addition, applet listens to the signals emitted by CDEmu daemon and provides
- the notification via libnotify's notifications (provided that Python bindings
- are installed).
+ In addition, the application listens to the signals emitted by CDEmu daemon and
+ provides the notification via libnotify's notifications (provided that Python
+ bindings are installed).
 
