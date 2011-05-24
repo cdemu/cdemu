@@ -2,8 +2,6 @@
 # -*- makefile -*-
 
 
-include /usr/share/quilt/quilt.make
-
 #export DH_VERBOSE=1
 export DH_ALWAYS_EXCLUDE="CVS:.svn"
 
@@ -14,9 +12,9 @@ CONFIGURE_FLAGS = --build $(DEB_BUILD_GNU_TYPE) --host $(DEB_HOST_GNU_TYPE)
 PYVERS = $(shell pyversions -vr)
 
 
-build: $(QUILT_STAMPFN) $(PYVERS:%=build-python%)
+build: $(PYVERS:%=build-python%)
 build-python%:
-	./autogen.sh
+	test -x autogen.sh && ./autogen.sh
 	dh build --before auto_configure
 
 	test -r config.sub && mv -f config.sub config.sub.save || echo "not found"
@@ -24,29 +22,24 @@ build-python%:
 	test -r /usr/share/misc/config.sub && cp -f /usr/share/misc/config.sub config.sub
 	test -r /usr/share/misc/config.guess && cp -f /usr/share/misc/config.guess config.guess
 
-	dh_auto_configure -- --disable-scrollkeeper --disable-schemas-install $(CONFIGURE_FLAGS)
+	dh_auto_configure -- --disable-schemas-install $(CONFIGURE_FLAGS)
 	dh build --after auto_configure
 	touch $@
 
-
-clean: unpatch
+clean:
 	test -r config.sub.save && mv -f config.sub.save config.sub || echo "not found"
 	test -r config.guess.save && mv -f config.guess.save config.guess || echo "not found"
 
 	dh clean
 	rm -f build-python* install-python*
 
-
 install: build $(PYVERS:%=install-python%)
 install-python%:
 	dh install
 	touch $@
 
-
 binary-indep: install
-	dh binary-indep --before pysupport
-	dh_pysupport /usr/libexec /usr/lib/python?.?/site-packages
-	dh binary-indep --after pysupport
+	dh binary-indep
 
 binary-arch: install
 # We have nothing to do by default.
