@@ -2,20 +2,17 @@
 # -*- makefile -*-
 
 
-include /usr/share/quilt/quilt.make
-
 #export DH_VERBOSE=1
 export DH_ALWAYS_EXCLUDE="CVS:.svn"
 
 export DEB_HOST_GNU_TYPE  ?= $(shell dpkg-architecture -qDEB_HOST_GNU_TYPE)
 export DEB_BUILD_GNU_TYPE ?= $(shell dpkg-architecture -qDEB_BUILD_GNU_TYPE)
 
-CONFIGURE_FLAGS = --build $(DEB_BUILD_GNU_TYPE) --host $(DEB_HOST_GNU_TYPE) --enable-session-bus-service --disable-system-bus-service
+CONFIGURE_FLAGS = --build $(DEB_BUILD_GNU_TYPE) --host $(DEB_HOST_GNU_TYPE)
 
 
-build: $(QUILT_STAMPFN) build-stamp
-build-stamp:
-	./autogen.sh
+build:
+	test -x autogen.sh && ./autogen.sh
 	dh build --before configure
 
 	test -r config.sub && mv -f config.sub config.sub.save || echo "not found"
@@ -23,23 +20,17 @@ build-stamp:
 	test -r /usr/share/misc/config.sub && cp -f /usr/share/misc/config.sub config.sub
 	test -r /usr/share/misc/config.guess && cp -f /usr/share/misc/config.guess config.guess
 
-	dh_auto_configure -- $(CONFIGURE_FLAGS)
+	dh_auto_configure -- --enable-session-bus-service --disable-system-bus-service $(CONFIGURE_FLAGS)
 	dh build --after configure
-	touch $@
 
-
-clean: unpatch
+clean:
 	test -r config.sub.save && mv -f config.sub.save config.sub || echo "not found"
 	test -r config.guess.save && mv -f config.guess.save config.guess || echo "not found"
 
 	dh clean
 
-
-install: build install-stamp
-install-stamp:
+install: build
 	dh install
-	touch $@
-
 
 binary-indep: install
 # We have nothing to do by default.
@@ -48,7 +39,6 @@ binary-arch: install
 	dh binary-arch --before strip
 	dh_strip --dbg-package=cdemu-daemon-dbg
 	dh binary-arch --after strip
-
 
 binary: binary-indep binary-arch
 

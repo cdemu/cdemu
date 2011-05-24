@@ -1,11 +1,17 @@
---- cdemu-daemon/system/cdemud-dbus.conf.old	2009-09-18 12:33:05.000000000 +0200
-+++ cdemu-daemon/system/cdemud-dbus.conf	2009-09-18 12:33:41.000000000 +0200
+Description: Allow the CDEmu daemon to be controlled by the cdrom group
+Author: Henrik Stokseth <henrik@hw0.org>
+Origin: vendor
+Forwarded: not-needed
+Last-Update: 2011-05-01
+
+--- cdemu-daemon-1.4.0.orig/system/cdemud-dbus.conf
++++ cdemu-daemon-1.4.0/system/cdemud-dbus.conf
 @@ -7,7 +7,7 @@
      <policy user="root">
          <allow own="net.sf.cdemu.CDEMUD_Daemon"/>
      </policy>
 -    <policy group="root">
-+    <policy group="cdemu">
++    <policy group="cdrom">
          <allow own="net.sf.cdemu.CDEMUD_Daemon"/>
      </policy>
      

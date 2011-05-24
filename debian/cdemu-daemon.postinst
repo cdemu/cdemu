@@ -14,18 +14,18 @@ mywarning ()
 }
 
 case "$1" in
-    configure)
-        # Set GID on cdemu daemon
-        dpkg-statoverride --update --add root cdemu 2755 "/usr/bin/cdemud" || mywarning "Adding statoverride failed."
-    ;;
+	configure)
+		# Set GID on cdemu daemon
+		dpkg-statoverride --update --add root cdrom 2755 "/usr/bin/cdemud" || mywarning "Adding statoverride failed."
+	;;
 
-    abort-upgrade|abort-remove|abort-deconfigure)
-    ;;
+	abort-upgrade|abort-remove|abort-deconfigure)
+	;;
 
-    *)
-        echo "postinst called with unknown argument \`$1'" >&2
-        exit 1
-    ;;
+	*)
+		echo "postinst called with unknown argument \`$1'" >&2
+		exit 1
+	;;
 esac
 
 #DEBHELPER#
