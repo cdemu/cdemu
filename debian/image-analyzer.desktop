@@ -8,5 +8,5 @@ Exec=image-analyzer %F
 MimeType=application/libmirage-image;
 Icon=gcdemu
 Terminal=false
-Categories=AudioVideo;
+Categories=GTK;System;
 

@@ -1,0 +1,4 @@
+usr/bin/*
+
+debian/image-analyzer.desktop usr/share/applications/
+
