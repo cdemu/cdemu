@@ -1,16 +1,16 @@
-Source: mirage-image-analyzer
+Source: image-analyzer
 Section: utils
 Priority: optional
 Homepage: http://cdemu.sourceforge.net/
 Maintainer: Henrik Stokseth <henrik@hw0.org>
-Build-Depends: libgtk2.0-dev, libmirage3-dev (>= 1.3.0), libxml2-dev,
- quilt, debhelper (>= 7), autotools-dev, autoconf, automake
-Standards-Version: 3.8.0
+Build-Depends: libgtk2.0-dev, libmirage3-dev (>= 1.4.0), libxml2-dev,
+ quilt, debhelper (>= 8), autotools-dev, autoconf, automake
+Standards-Version: 3.9.1
 
 
-Package: mirage-image-analyzer
+Package: image-analyzer
 Architecture: any
-Depends: libmirage3 (>= 1.3.0), ${shlibs:Depends}, ${misc:Depends}
+Depends: libmirage3 (>= 1.4.0), ${shlibs:Depends}, ${misc:Depends}
 Description: Mirage Image Analyzer
  Image Analyzer is a simple Gtk+ application that displays tree structure 
  of disc image created by libMirage.
@@ -20,10 +20,11 @@ Description: Mirage Image Analyzer
  libMirage. It is a part of the CDEmu suite.
 
 
-Package: mirage-image-analyzer-dbg
+Package: image-analyzer-dbg
 Architecture: any
+Section: debug
 Priority: extra
-Depends: mirage-image-analyzer (= ${binary:Version}), ${shlibs:Depends}, ${misc:Depends}
+Depends: image-analyzer (= ${binary:Version}), ${shlibs:Depends}, ${misc:Depends}
 Description: Mirage Image Analyzer (debugging symbols)
  This package provides detached debugging symbols.
 

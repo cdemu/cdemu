@@ -1,6 +1,6 @@
-mirage-image-analyzer (1.3.0-0ubuntu1) lucid; urgency=low
+image-analyzer (1.4.0-0ubuntu1) natty; urgency=low
 
   * Initial Release. Closes: (LP: #105452)
 
- -- Henrik Stokseth (Henrik) <henrik@hw0.org>  Fri, 18 Sep 2009 12:00:00 +0100
+ -- Henrik Stokseth (Henrik) <henrik@hw0.org>  Sun, 01 May 2011 12:00:00 +0100
 
