@@ -41,7 +41,10 @@ binary-indep: install
 binary-arch: install
 	dh binary-arch --before strip
 	dh_strip --dbg-package=libmirage3-dbg
-	dh binary-arch --after strip
+	dh binary-arch --after strip --before makeshlibs
+	dh_makeshlibs --exclude="libmirage-1.4"
+	dh_shlibdeps --exclude="libmirage-1.4"
+	dh binary-arch --after shlibdeps
 
 binary: binary-indep binary-arch
 
