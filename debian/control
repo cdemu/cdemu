@@ -5,7 +5,7 @@ Homepage: http://cdemu.sourceforge.net/
 Maintainer: Henrik Stokseth <henrik@hw0.org>
 Build-Depends: pkg-config (>= 0.14), libglib2.0-dev, libsndfile1-dev,
  zlib1g-dev, gtk-doc-tools, autotools-dev, autoconf, automake, libtool,
- quilt, debhelper (>= 8)
+ debhelper (>= 8)
 Standards-Version: 3.9.1
 
 

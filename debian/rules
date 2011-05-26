@@ -13,24 +13,15 @@ CONFIGURE_FLAGS = --build $(DEB_BUILD_GNU_TYPE) --host $(DEB_HOST_GNU_TYPE)
 
 build:
 	test -x autogen.sh && ./autogen.sh
-	dh build --before configure
-
-	test -r config.sub && mv -f config.sub config.sub.save 
-	test -r config.guess && mv -f config.guess config.guess.save
-	test -r /usr/share/misc/config.sub && cp -f /usr/share/misc/config.sub config.sub
-	test -r /usr/share/misc/config.guess && cp -f /usr/share/misc/config.guess config.guess
-
+	dh build --with autotools_dev --before auto_configure
 	dh_auto_configure  -- --disable-static --enable-gtk-doc $(CONFIGURE_FLAGS)
-	dh build --after configure
+	dh build --after auto_configure
 
 clean:
-	test -r config.sub.save && mv -f config.sub.save config.sub || echo "not found"
-	test -r config.guess.save && mv -f config.guess.save config.guess || echo "not found"
-
 	# Hack! Because GTK-Doc is bloody retarded!
 	rm -f docs/reference/libmirage/html/*.html
 
-	dh clean
+	dh clean --with autotools_dev
 
 install: build
 	dh install
