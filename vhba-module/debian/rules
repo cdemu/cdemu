@@ -9,8 +9,7 @@ export DH_ALWAYS_EXCLUDE="CVS:.svn"
 SOURCE_VERSION := $(shell head -1 debian/changelog | cut -d\( -f2 | cut -d\) -f1)
 UPSTREAM_VERSION := $(shell echo "$(SOURCE_VERSION)" | cut -d- -f1)
 
-# Install stuff
-# Note that CURDIR is set by GNU make.
+# Installation directories
 PKGDIR := $(CURDIR)/debian/vhba-dkms
 DESTDIR := $(PKGDIR)/usr/src/vhba-$(UPSTREAM_VERSION)
 

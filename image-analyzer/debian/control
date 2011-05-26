@@ -4,7 +4,7 @@ Priority: optional
 Homepage: http://cdemu.sourceforge.net/
 Maintainer: Henrik Stokseth <henrik@hw0.org>
 Build-Depends: libgtk2.0-dev, libmirage3-dev (>= 1.4.0), libxml2-dev,
- quilt, debhelper (>= 8), autotools-dev, autoconf, automake
+ debhelper (>= 8), autotools-dev, autoconf, automake
 Standards-Version: 3.9.1
 
 
