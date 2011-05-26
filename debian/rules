@@ -3,35 +3,18 @@
 
 
 #export DH_VERBOSE=1
-export DH_ALWAYS_EXCLUDE="CVS:.svn"
 
-export DEB_HOST_GNU_TYPE  ?= $(shell dpkg-architecture -qDEB_HOST_GNU_TYPE)
-export DEB_BUILD_GNU_TYPE ?= $(shell dpkg-architecture -qDEB_BUILD_GNU_TYPE)
 
-CONFIGURE_FLAGS = --build $(DEB_BUILD_GNU_TYPE) --host $(DEB_HOST_GNU_TYPE)
+override_dh_auto_configure:
+	dh_auto_configure -- --enable-session-bus-service --disable-system-bus-service
 
+override_dh_strip:
+	dh_strip --dbg-package="cdemu-daemon-dbg"
 
 build:
 	test -x autogen.sh && ./autogen.sh
-	dh build --with autotools_dev --before auto_configure
-	dh_auto_configure -- --enable-session-bus-service --disable-system-bus-service $(CONFIGURE_FLAGS)
-	dh build --after auto_configure
+	dh build --with autotools_dev
 
-clean:
-	dh clean --with autotools_dev
-
-install: build
-	dh install
-
-binary-indep: install
-# We have nothing to do by default.
-
-binary-arch: install
-	dh binary-arch --before strip
-	dh_strip --dbg-package=cdemu-daemon-dbg
-	dh binary-arch --after strip
-
-binary: binary-indep binary-arch
-
-.PHONY: build clean install binary-indep binary-arch binary
+%:
+	dh $@ --with autotools_dev
 
