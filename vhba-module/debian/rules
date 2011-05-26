@@ -3,7 +3,6 @@
 
 
 #export DH_VERBOSE=1
-export DH_ALWAYS_EXCLUDE="CVS:.svn"
 
 # Get package version info.
 SOURCE_VERSION := $(shell head -1 debian/changelog | cut -d\( -f2 | cut -d\) -f1)
@@ -13,17 +12,8 @@ UPSTREAM_VERSION := $(shell echo "$(SOURCE_VERSION)" | cut -d- -f1)
 PKGDIR := $(CURDIR)/debian/vhba-dkms
 DESTDIR := $(PKGDIR)/usr/src/vhba-$(UPSTREAM_VERSION)
 
-build:
-	dh build --before auto_configure
-	# skip auto_configure, auto_build and auto_test
-	dh build --after auto_test
 
-clean:
-	dh clean
-
-install: build
-	dh install --before auto_install
-
+override_dh_auto_install:
 	install -d                                        $(DESTDIR)
 	install -m 644 -D $(CURDIR)/debian/vhba-dkms.dkms $(DESTDIR)/dkms.conf
 	install -m 644 -D $(CURDIR)/Makefile              $(DESTDIR)/
@@ -32,22 +22,22 @@ install: build
 	install -m 644 -D $(CURDIR)/kat/*                 $(DESTDIR)/kat/
 	install -m 755 -D $(CURDIR)/kat/kat               $(DESTDIR)/kat/
 
-	dh install --after auto_install
+override_dh_auto_configure:
 
-binary-indep: install
-	dh binary-indep --until installdeb
+override_dh_auto_build:
 
-	# Version magic
+override_dh_auto_test:
+
+binary:
+	dh binary --until installdeb
+
+	@echo "Applying version magic ..."
 	SED_EXPR="s/\$${VERSION}/$(subst .,\.,$(UPSTREAM_VERSION))/"; \
 	VERFILES="$(addprefix $(PKGDIR)/DEBIAN/, preinst postinst prerm) $(DESTDIR)/dkms.conf"; \
 	for file in $${VERFILES}; do echo "$${file}"; sed --in-place $${SED_EXPR} "$${file}"; done
 
-	dh binary-indep --after installdeb
+	dh binary --after installdeb
 
-binary-arch: install
-# We have nothing to do by default.
-
-binary: binary-indep binary-arch
-
-.PHONY: build clean install binary-indep binary-arch binary
+%:
+	dh $@
 

@@ -3,39 +3,15 @@
 
 
 #export DH_VERBOSE=1
-export DH_ALWAYS_EXCLUDE="CVS:.svn"
-
-export DEB_HOST_GNU_TYPE  ?= $(shell dpkg-architecture -qDEB_HOST_GNU_TYPE)
-export DEB_BUILD_GNU_TYPE ?= $(shell dpkg-architecture -qDEB_BUILD_GNU_TYPE)
-
-CONFIGURE_FLAGS = --build $(DEB_BUILD_GNU_TYPE) --host $(DEB_HOST_GNU_TYPE)
-PYVERS = $(shell pyversions -vr)
 
 
-build: $(PYVERS:%=build-python%)
-build-python%:
+override_dh_auto_configure:
+	dh_auto_configure -- --disable-schemas-install
+
+build:
 	test -x autogen.sh && ./autogen.sh
-	dh build --with autotools_dev --before auto_configure
-	dh_auto_configure -- --disable-schemas-install $(CONFIGURE_FLAGS)
-	dh build --after auto_configure
-	touch $@
+	dh build --with autotools_dev
 
-clean:
-	dh clean --with autotools_dev
-	rm -f build-python* install-python*
-
-install: build $(PYVERS:%=install-python%)
-install-python%:
-	dh install
-	touch $@
-
-binary-indep: install
-	dh binary-indep
-
-binary-arch: install
-# We have nothing to do by default.
-
-binary: binary-indep binary-arch
-
-.PHONY: build clean install binary-indep binary-arch binary
+%:
+	dh $@ --with autotools_dev
 
