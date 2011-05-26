@@ -10,7 +10,7 @@ Standards-Version: 3.9.1
 
 Package: vhba-dkms
 Architecture: all
-Depends: build-essential, dkms, ${misc:Depends}
+Depends: build-essential, ${misc:Depends}
 Replaces: vhba-module
 Description: VHBA virtual host bus adapter module
  VHBA kernel module, a virtual SCSI host bus adapter used by CDEmu daemon from
