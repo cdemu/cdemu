@@ -2,6 +2,8 @@
 # postinst script for vhba-dkms
 #
 
+#DEBHELPER#
+
 myerror ()
 {
 	echo "ERROR: $1" >&2
@@ -15,18 +17,6 @@ mywarning ()
 
 case "$1" in
     configure)
-        # sanity check
-		test -n "${VERSION}" || myerror "Version is not set."
-
-		cd "/usr/src/vhba-${VERSION}" || myerror "chdir failed."
-
-		# Add module/module-version to DKMS registry
-		dkms add -m vhba -v ${VERSION} || myerror "Failed to add dkms add module"
-
-		# Rebuild module/module-version and install it on the currently running kernel
-		dkms build -m vhba -v ${VERSION} || myerror "Failed to dkms build module"
-		dkms install -m vhba -v ${VERSION} --force || myerror "Failed to dkms install module"
-
 		# Add the cdrom group
 		addgroup cdrom || mywarning "Failed to add cdrom group."
 
@@ -55,8 +45,6 @@ case "$1" in
 		myerror "postinst called with unknown argument '$1'."
 	;;
 esac
-
-#DEBHELPER#
 
 exit 0
 

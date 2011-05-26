@@ -13,31 +13,23 @@ PKGDIR := $(CURDIR)/debian/vhba-dkms
 DESTDIR := $(PKGDIR)/usr/src/vhba-$(UPSTREAM_VERSION)
 
 
-override_dh_auto_install:
-	install -d                                        $(DESTDIR)
-	install -m 644 -D $(CURDIR)/debian/vhba-dkms.dkms $(DESTDIR)/dkms.conf
-	install -m 644 -D $(CURDIR)/Makefile              $(DESTDIR)/
-	install -m 644 -D $(CURDIR)/*.c                   $(DESTDIR)/
-	install -d                                        $(DESTDIR)/kat
-	install -m 644 -D $(CURDIR)/kat/*                 $(DESTDIR)/kat/
-	install -m 755 -D $(CURDIR)/kat/kat               $(DESTDIR)/kat/
-
 override_dh_auto_configure:
 
 override_dh_auto_build:
 
 override_dh_auto_test:
 
-binary:
-	dh binary --until installdeb
+override_dh_auto_install:
+	install -d                                        $(DESTDIR)
+	install -m 644 -D $(CURDIR)/Makefile              $(DESTDIR)/
+	install -m 644 -D $(CURDIR)/*.c                   $(DESTDIR)/
+	install -d                                        $(DESTDIR)/kat
+	install -m 644 -D $(CURDIR)/kat/*                 $(DESTDIR)/kat/
+	install -m 755 -D $(CURDIR)/kat/kat               $(DESTDIR)/kat/
 
-	@echo "Applying version magic ..."
-	SED_EXPR="s/\$${VERSION}/$(subst .,\.,$(UPSTREAM_VERSION))/"; \
-	VERFILES="$(addprefix $(PKGDIR)/DEBIAN/, preinst postinst prerm) $(DESTDIR)/dkms.conf"; \
-	for file in $${VERFILES}; do echo "$${file}"; sed --in-place $${SED_EXPR} "$${file}"; done
-
-	dh binary --after installdeb
+override_dh_dkms:
+	dh_dkms -V
 
 %:
-	dh $@
+	dh $@ --with dkms
 
