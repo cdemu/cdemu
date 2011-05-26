@@ -4,7 +4,7 @@ Priority: optional
 Homepage: http://cdemu.sourceforge.net/
 Maintainer: Henrik Stokseth <henrik@hw0.org>
 Build-Depends: debhelper (>= 8)
-Build-Depends-Indep: python (>= 2.2), gettext, libglib2.0-dev, intltool, python-support (>= 0.5.3),
+Build-Depends-Indep: python (>= 2.2), gettext, libglib2.0-dev, intltool, python-support,
  autotools-dev, autoconf, automake
 Standards-Version: 3.9.1
 
@@ -12,7 +12,6 @@ Standards-Version: 3.9.1
 Package: cdemu-client
 Architecture: all
 Depends: python (>= 2.2), python-dbus, cdemu-daemon (>= 1.4.0), ${python:Depends}, ${misc:Depends}
-Provides: ${python:Provides}
 Description: Command-line client to control CDEmu daemon
  This is cdemu-client, a command-line client for controlling the
  CDEmu daemon. It is part of the CDEmu suite, a free, GPL CD/DVD-ROM device 
