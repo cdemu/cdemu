@@ -9,6 +9,7 @@ SUBDIRS = \
    image-iso \
    image-mds \
    image-nrg \
+   image-readcd \
    image-toc \
    image-xcdroast
 
