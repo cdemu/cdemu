@@ -37,6 +37,8 @@ typedef struct {
 
     GObject *cur_session;
     GObject *cur_track;
+
+    gint prev_mode;
 } MIRAGE_Parser_READCDPrivate;
 
 
@@ -161,7 +163,6 @@ static gboolean __mirage_parser_readcd_finish_previous_track (MIRAGE_Parser *sel
         mirage_fragment_set_length(MIRAGE_FRAGMENT(fragment), length, NULL);
 
         g_object_unref(fragment);
-
     }
 
     return TRUE;
@@ -260,6 +261,63 @@ static gboolean __mirage_parser_readcd_parse_toc_entry (MIRAGE_Parser *self, gui
 
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: determining track mode\n", __debug__);
         __mirage_parser_readcd_determine_track_mode(self, _priv->cur_track, NULL);
+
+        /* Store track mode for comparison */
+        gint track_mode;
+        mirage_track_get_mode(MIRAGE_TRACK(_priv->cur_track), &track_mode, NULL);
+
+        if (_priv->prev_mode != -1) {
+            /* Check if track mode has changed from/to audio track */
+            if (track_mode != _priv->prev_mode && (track_mode == MIRAGE_MODE_AUDIO || _priv->prev_mode == MIRAGE_MODE_AUDIO)) {
+                GObject *prev_track, *prev_fragment;
+                gint prev_fragment_len;
+
+                MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: track mode changed from/to audio track; assume 2 second pregap!\n", __debug__);
+
+                /* Previous track: shorten its fragment by 150 frames */
+                mirage_track_get_prev(MIRAGE_TRACK(_priv->cur_track), &prev_track, NULL);
+                mirage_track_get_fragment_by_index(MIRAGE_TRACK(prev_track), -1, &prev_fragment, NULL);
+
+                mirage_fragment_get_length(MIRAGE_FRAGMENT(prev_fragment), &prev_fragment_len, NULL);
+                MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: shortening previous track's fragment: %d -> %d\n", __debug__, prev_fragment_len, prev_fragment_len - 150);
+                prev_fragment_len -= 150;
+                mirage_fragment_set_length(MIRAGE_FRAGMENT(prev_fragment), prev_fragment_len, NULL);
+
+                g_object_unref(prev_fragment);
+                g_object_unref(prev_track);
+
+                /* Current track: add 150-frame pregap with data from data file */
+                GObject *pregap_fragment = libmirage_create_fragment(MIRAGE_TYPE_FINTERFACE_BINARY, _priv->data_filename, error);
+                if (!pregap_fragment) {
+                    MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to create data fragment!\n", __debug__);
+                    succeeded = FALSE;
+                    goto end;
+                }
+
+                FILE *tfile_file = g_fopen(_priv->data_filename, "r");
+                gint tfile_sectsize = 2352; /* Always */
+                guint64 tfile_offset = (track_lba - 150) * 2448; /* Guess this one's always true, too */
+                gint tfile_format = FR_BIN_TFILE_DATA; /* Assume data, but change later if it's audio */
+
+                gint sfile_sectsize = 96; /* Always */
+                gint sfile_format = FR_BIN_SFILE_PW96_INT | FR_BIN_SFILE_INT;
+
+                mirage_finterface_binary_track_file_set_handle(MIRAGE_FINTERFACE_BINARY(pregap_fragment), tfile_file, NULL);
+                mirage_finterface_binary_track_file_set_sectsize(MIRAGE_FINTERFACE_BINARY(pregap_fragment), tfile_sectsize, NULL);
+                mirage_finterface_binary_track_file_set_offset(MIRAGE_FINTERFACE_BINARY(pregap_fragment), tfile_offset, NULL);
+                mirage_finterface_binary_track_file_set_format(MIRAGE_FINTERFACE_BINARY(pregap_fragment), tfile_format, NULL);
+
+                mirage_finterface_binary_subchannel_file_set_sectsize(MIRAGE_FINTERFACE_BINARY(pregap_fragment), sfile_sectsize, NULL);
+                mirage_finterface_binary_subchannel_file_set_format(MIRAGE_FINTERFACE_BINARY(pregap_fragment), sfile_format, NULL);
+
+                mirage_fragment_set_length(MIRAGE_FRAGMENT(pregap_fragment), 150, 0);
+
+                mirage_track_add_fragment(MIRAGE_TRACK(_priv->cur_track), 0, &pregap_fragment, NULL);
+                g_object_unref(pregap_fragment);
+            }
+        }
+
+        _priv->prev_mode = track_mode;
     }
 
 end:
@@ -324,6 +382,7 @@ static gboolean __mirage_parser_readcd_parse_toc (MIRAGE_Parser *self, gchar *fi
     _priv->cur_lba = -1;
     _priv->cur_session = NULL;
     _priv->cur_track = NULL;
+    _priv->prev_mode = -1;
 
     /* Go over all TOC entries */
     for (int i = 0; i < toc_len/11; i++) {
