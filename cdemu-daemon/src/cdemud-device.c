@@ -1218,8 +1218,8 @@ static gboolean __cdemud_device_pc_mode_select (CDEMUD_Device *self, guint8 *raw
         guint8 *raw_data_mask = ((guint8 *)mode_page_mask) + 2;
         gint i;
 
-        for (i = 0; i < mode_page_new->length; i++) {
-            /* Compare every byte against the mask */
+        for (i = 1; i < mode_page_new->length; i++) {
+            /* Compare every byte against the mask (except first byte) */
             if (raw_data_new[i] & ~raw_data_mask[i]) {
                 CDEMUD_DEBUG(self, DAEMON_DEBUG_MMC, "%s: invalid value set on byte %i!\n", __debug__, i);
                 __cdemud_device_write_sense(self, SK_ILLEGAL_REQUEST, INVALID_FIELD_IN_PARAMETER_LIST);
