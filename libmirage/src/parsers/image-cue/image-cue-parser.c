@@ -262,20 +262,20 @@ static gboolean __mirage_parser_cue_add_index (MIRAGE_Parser *self, gint number,
 
                         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: previous fragment length determined to be: %i\n", __debug__, fragment_length);
                         mirage_fragment_set_length(MIRAGE_FRAGMENT(lfragment), fragment_length, NULL);
+
+                        /* Binary fragments/files are pain because sector size can
+                           vary between the tracks; so in case we're dealing with
+                           binary, we need to keep track of the offset within file */
+                        if (MIRAGE_IS_FINTERFACE_BINARY(lfragment)) {
+                            gint tfile_sectsize, sfile_sectsize;
+
+                            mirage_finterface_binary_track_file_get_sectsize(MIRAGE_FINTERFACE_BINARY(lfragment), &tfile_sectsize, NULL);
+                            mirage_finterface_binary_subchannel_file_get_sectsize(MIRAGE_FINTERFACE_BINARY(lfragment), &sfile_sectsize, NULL);
+
+                            _priv->binary_offset += fragment_length * (tfile_sectsize + sfile_sectsize);
+                        }
                     } else {
                         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: previous fragment already has length (%i)\n", __debug__, fragment_length);
-                    }
-
-                    /* Binary fragments/files are pain because sector size can
-                       vary between the tracks; so in case we're dealing with
-                       binary, we need to keep track of the offset within file */
-                    if (MIRAGE_IS_FINTERFACE_BINARY(lfragment)) {
-                        gint tfile_sectsize, sfile_sectsize;
-
-                        mirage_finterface_binary_track_file_get_sectsize(MIRAGE_FINTERFACE_BINARY(lfragment), &tfile_sectsize, NULL);
-                        mirage_finterface_binary_subchannel_file_get_sectsize(MIRAGE_FINTERFACE_BINARY(lfragment), &sfile_sectsize, NULL);
-
-                        _priv->binary_offset += fragment_length * (tfile_sectsize + sfile_sectsize);
                     }
 
                     g_object_unref(lfragment);
