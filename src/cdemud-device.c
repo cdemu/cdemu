@@ -1514,6 +1514,7 @@ static gboolean __cdemud_device_pc_read (CDEMUD_Device *self, guint8 *raw_cdb) {
            a bad sector, then its EDC/ECC won't correspond to actual data. So
            we verify sector's EDC and in case DCR (Disable Corrections) bit in
            Mode Page 1 is not enabled, we report the read error. */
+#if 0
         if (!p_0x01->dcr) {
             if (!mirage_sector_verify_lec(MIRAGE_SECTOR(cur_sector))) {
                 CDEMUD_DEBUG(self, DAEMON_DEBUG_MMC, "%s: bad sector detected, triggering read error!\n", __debug__);
@@ -1522,6 +1523,7 @@ static gboolean __cdemud_device_pc_read (CDEMUD_Device *self, guint8 *raw_cdb) {
                 return FALSE;
             }
         }
+#endif
 
         /* READ 10/12 should support only sectors with 2048-byte user data */
         gint tmp_len = 0;
@@ -1725,6 +1727,7 @@ static gboolean __cdemud_device_pc_read_cd (CDEMUD_Device *self, guint8 *raw_cdb
            a bad sector, then its EDC/ECC won't correspond to actual data. So
            we verify sector's EDC and in case DCR (Disable Corrections) bit in
            Mode Page 1 is not enabled, we report the read error. */
+#if 0
         if (!p_0x01->dcr) {
             if (!mirage_sector_verify_lec(MIRAGE_SECTOR(cur_sector))) {
                 CDEMUD_DEBUG(self, DAEMON_DEBUG_MMC, "%s: bad sector detected, triggering read error!\n", __debug__);
@@ -1733,6 +1736,7 @@ static gboolean __cdemud_device_pc_read_cd (CDEMUD_Device *self, guint8 *raw_cdb
                 return FALSE;
             }
         }
+#endif
 
         /* Map the MCSB: operation performed on raw Byte9 */
         if (__helper_map_mcsb(&raw_cdb[9], cur_sector_type) == -1) {
