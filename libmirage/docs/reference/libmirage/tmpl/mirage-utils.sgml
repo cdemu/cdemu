@@ -87,23 +87,23 @@ following functionality:
 
 </para>
 
-@SUBCHANNEL_W:
-@SUBCHANNEL_V:
-@SUBCHANNEL_U:
-@SUBCHANNEL_T:
-@SUBCHANNEL_S:
-@SUBCHANNEL_R:
-@SUBCHANNEL_Q:
-@SUBCHANNEL_P:
+@SUBCHANNEL_W: 
+@SUBCHANNEL_V: 
+@SUBCHANNEL_U: 
+@SUBCHANNEL_T: 
+@SUBCHANNEL_S: 
+@SUBCHANNEL_R: 
+@SUBCHANNEL_Q: 
+@SUBCHANNEL_P: 
 
 <!-- ##### MACRO MIRAGE_CAST_DATA ##### -->
 <para>
 
 </para>
 
-@buf:
-@off:
-@type:
+@buf: 
+@off: 
+@type: 
 
 
 <!-- ##### MACRO MIRAGE_CAST_PTR ##### -->
@@ -111,9 +111,9 @@ following functionality:
 
 </para>
 
-@buf:
-@off:
-@type:
+@buf: 
+@off: 
+@type: 
 
 
 <!-- ##### MACRO MIRAGE_CHECK_ARG ##### -->
@@ -121,7 +121,7 @@ following functionality:
 
 </para>
 
-@arg:
+@arg: 
 
 
 <!-- ##### MACRO G_LIST_FOR_EACH ##### -->
@@ -129,8 +129,8 @@ following functionality:
 
 </para>
 
-@cursor:
-@list:
+@cursor: 
+@list: 
 
 
 <!-- ##### FUNCTION mirage_helper_find_data_file ##### -->
@@ -138,9 +138,9 @@ following functionality:
 
 </para>
 
-@filename:
-@path:
-@Returns:
+@filename: 
+@path: 
+@Returns: 
 
 
 <!-- ##### FUNCTION mirage_helper_get_suffix ##### -->
@@ -148,8 +148,8 @@ following functionality:
 
 </para>
 
-@filename:
-@Returns:
+@filename: 
+@Returns: 
 
 
 <!-- ##### FUNCTION mirage_helper_has_suffix ##### -->
@@ -157,9 +157,9 @@ following functionality:
 
 </para>
 
-@filename:
-@suffix:
-@Returns:
+@filename: 
+@suffix: 
+@Returns: 
 
 
 <!-- ##### FUNCTION mirage_helper_strcasecmp ##### -->
@@ -167,9 +167,9 @@ following functionality:
 
 </para>
 
-@str1:
-@str2:
-@Returns:
+@str1: 
+@str2: 
+@Returns: 
 
 
 <!-- ##### FUNCTION mirage_helper_strncasecmp ##### -->
@@ -177,10 +177,10 @@ following functionality:
 
 </para>
 
-@str1:
-@str2:
-@len:
-@Returns:
+@str1: 
+@str2: 
+@len: 
+@Returns: 
 
 
 <!-- ##### FUNCTION mirage_helper_lba2msf ##### -->
@@ -188,11 +188,11 @@ following functionality:
 
 </para>
 
-@lba:
-@diff:
-@m:
-@s:
-@f:
+@lba: 
+@diff: 
+@m: 
+@s: 
+@f: 
 
 
 <!-- ##### FUNCTION mirage_helper_lba2msf_str ##### -->
@@ -200,9 +200,9 @@ following functionality:
 
 </para>
 
-@lba:
-@diff:
-@Returns:
+@lba: 
+@diff: 
+@Returns: 
 
 
 <!-- ##### FUNCTION mirage_helper_msf2lba ##### -->
@@ -210,11 +210,11 @@ following functionality:
 
 </para>
 
-@m:
-@s:
-@f:
-@diff:
-@Returns:
+@m: 
+@s: 
+@f: 
+@diff: 
+@Returns: 
 
 
 <!-- ##### FUNCTION mirage_helper_msf2lba_str ##### -->
@@ -222,9 +222,9 @@ following functionality:
 
 </para>
 
-@msf:
-@diff:
-@Returns:
+@msf: 
+@diff: 
+@Returns: 
 
 
 <!-- ##### FUNCTION mirage_helper_hex2bcd ##### -->
@@ -232,8 +232,8 @@ following functionality:
 
 </para>
 
-@hex:
-@Returns:
+@hex: 
+@Returns: 
 
 
 <!-- ##### FUNCTION mirage_helper_bcd2hex ##### -->
@@ -241,8 +241,8 @@ following functionality:
 
 </para>
 
-@bcd:
-@Returns:
+@bcd: 
+@Returns: 
 
 
 <!-- ##### FUNCTION mirage_helper_ascii2isrc ##### -->
@@ -250,8 +250,8 @@ following functionality:
 
 </para>
 
-@c:
-@Returns:
+@c: 
+@Returns: 
 
 
 <!-- ##### FUNCTION mirage_helper_isrc2ascii ##### -->
@@ -259,8 +259,8 @@ following functionality:
 
 </para>
 
-@c:
-@Returns:
+@c: 
+@Returns: 
 
 
 <!-- ##### FUNCTION mirage_helper_subchannel_q_calculate_crc ##### -->
@@ -268,8 +268,8 @@ following functionality:
 
 </para>
 
-@data:
-@Returns:
+@data: 
+@Returns: 
 
 
 <!-- ##### FUNCTION mirage_helper_subchannel_q_encode_mcn ##### -->
@@ -277,8 +277,8 @@ following functionality:
 
 </para>
 
-@buf:
-@mcn:
+@buf: 
+@mcn: 
 
 
 <!-- ##### FUNCTION mirage_helper_subchannel_q_decode_mcn ##### -->
@@ -286,8 +286,8 @@ following functionality:
 
 </para>
 
-@buf:
-@mcn:
+@buf: 
+@mcn: 
 
 
 <!-- ##### FUNCTION mirage_helper_subchannel_q_encode_isrc ##### -->
@@ -295,8 +295,8 @@ following functionality:
 
 </para>
 
-@buf:
-@isrc:
+@buf: 
+@isrc: 
 
 
 <!-- ##### FUNCTION mirage_helper_subchannel_q_decode_isrc ##### -->
@@ -304,8 +304,8 @@ following functionality:
 
 </para>
 
-@buf:
-@isrc:
+@buf: 
+@isrc: 
 
 
 <!-- ##### FUNCTION mirage_helper_subchannel_interleave ##### -->
@@ -313,9 +313,9 @@ following functionality:
 
 </para>
 
-@subchan:
-@channel12:
-@channel96:
+@subchan: 
+@channel12: 
+@channel96: 
 
 
 <!-- ##### FUNCTION mirage_helper_subchannel_deinterleave ##### -->
@@ -323,9 +323,9 @@ following functionality:
 
 </para>
 
-@subchan:
-@channel96:
-@channel12:
+@subchan: 
+@channel96: 
+@channel12: 
 
 
 <!-- ##### FUNCTION mirage_helper_sector_edc_ecc_compute_edc_block ##### -->
@@ -333,9 +333,9 @@ following functionality:
 
 </para>
 
-@src:
-@size:
-@dest:
+@src: 
+@size: 
+@dest: 
 
 
 <!-- ##### FUNCTION mirage_helper_sector_edc_ecc_compute_ecc_block ##### -->
@@ -343,11 +343,11 @@ following functionality:
 
 </para>
 
-@src:
-@major_count:
-@minor_count:
-@major_mult:
-@minor_inc:
-@dest:
+@src: 
+@major_count: 
+@minor_count: 
+@major_mult: 
+@minor_inc: 
+@dest: 
 
 

@@ -44,7 +44,7 @@ typedef enum {
     MIRAGE_MCSB_DATA      = 0x10,
     MIRAGE_MCSB_EDC_ECC   = 0x08,
     MIRAGE_MCSB_C2_2      = 0x04,
-    MIRAGE_MCSB_C2_1      = 0x02,    
+    MIRAGE_MCSB_C2_1      = 0x02,
 } MIRAGE_Sector_MCSB;
 
 /**
@@ -127,6 +127,7 @@ gboolean mirage_sector_get_edc_ecc (MIRAGE_Sector *self, const guint8 **ret_buf,
 gboolean mirage_sector_get_subchannel (MIRAGE_Sector *self, gint format, const guint8 **ret_buf, gint *ret_len, GError **error);
 
 gboolean mirage_sector_verify_lec (MIRAGE_Sector *self);
+gboolean mirage_sector_verify_subchannel_crc (MIRAGE_Sector *self);
 
 
 G_END_DECLS
