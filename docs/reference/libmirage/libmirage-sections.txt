@@ -230,6 +230,7 @@ mirage_sector_get_data
 mirage_sector_get_edc_ecc
 mirage_sector_get_subchannel
 mirage_sector_verify_lec
+mirage_sector_verify_subchannel_crc
 <SUBSECTION Standard>
 MIRAGE_SECTOR
 MIRAGE_IS_SECTOR

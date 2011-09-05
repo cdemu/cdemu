@@ -166,3 +166,12 @@ data, generating it if needed.
 @Returns: 
 
 
+<!-- ##### FUNCTION mirage_sector_verify_subchannel_crc ##### -->
+<para>
+
+</para>
+
+@self: 
+@Returns: 
+
+
