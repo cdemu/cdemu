@@ -1513,17 +1513,21 @@ static gboolean __cdemud_device_pc_read (CDEMUD_Device *self, guint8 *raw_cdb) {
         /* Here we do the emulation of "bad sectors"... if we're dealing with
            a bad sector, then its EDC/ECC won't correspond to actual data. So
            we verify sector's EDC and in case DCR (Disable Corrections) bit in
-           Mode Page 1 is not enabled, we report the read error. */
-#if 0
+           Mode Page 1 is not enabled, we report the read error. However, my
+           tests indicate this should be done only for Mode 1 or Mode 2 Form 1
+           sectors */
         if (!p_0x01->dcr) {
-            if (!mirage_sector_verify_lec(MIRAGE_SECTOR(cur_sector))) {
+            gint sector_type;
+            mirage_sector_get_sector_type(MIRAGE_SECTOR(cur_sector), &sector_type, NULL);
+
+            if ((sector_type == MIRAGE_MODE_MODE1 || sector_type == MIRAGE_MODE_MODE2_FORM1)
+                && !mirage_sector_verify_lec(MIRAGE_SECTOR(cur_sector))) {
                 CDEMUD_DEBUG(self, DAEMON_DEBUG_MMC, "%s: bad sector detected, triggering read error!\n", __debug__);
                 g_object_unref(cur_sector);
                 __cdemud_device_write_sense_full(self, SK_MEDIUM_ERROR, UNRECOVERED_READ_ERROR, 0, sector);
                 return FALSE;
             }
         }
-#endif
 
         /* READ 10/12 should support only sectors with 2048-byte user data */
         gint tmp_len = 0;
@@ -1726,17 +1730,18 @@ static gboolean __cdemud_device_pc_read_cd (CDEMUD_Device *self, guint8 *raw_cdb
         /* Here we do the emulation of "bad sectors"... if we're dealing with
            a bad sector, then its EDC/ECC won't correspond to actual data. So
            we verify sector's EDC and in case DCR (Disable Corrections) bit in
-           Mode Page 1 is not enabled, we report the read error. */
-#if 0
+           Mode Page 1 is not enabled, we report the read error. However, my
+           tests indicate this should be done only for Mode 1 or Mode 2 Form 1
+           sectors */
         if (!p_0x01->dcr) {
-            if (!mirage_sector_verify_lec(MIRAGE_SECTOR(cur_sector))) {
+            if ((cur_sector_type == MIRAGE_MODE_MODE1 || cur_sector_type == MIRAGE_MODE_MODE2_FORM1)
+                && !mirage_sector_verify_lec(MIRAGE_SECTOR(cur_sector))) {
                 CDEMUD_DEBUG(self, DAEMON_DEBUG_MMC, "%s: bad sector detected, triggering read error!\n", __debug__);
                 g_object_unref(cur_sector);
                 __cdemud_device_write_sense_full(self, SK_MEDIUM_ERROR, UNRECOVERED_READ_ERROR, 0, sector);
                 return FALSE;
             }
         }
-#endif
 
         /* Map the MCSB: operation performed on raw Byte9 */
         if (__helper_map_mcsb(&raw_cdb[9], cur_sector_type) == -1) {
