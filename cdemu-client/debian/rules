@@ -6,7 +6,7 @@
 
 
 build:
-	test -x autogen.sh && ./autogen.sh
+	-test -x autogen.sh && ./autogen.sh
 	dh build --with autotools_dev
 
 %:

@@ -172,6 +172,7 @@ libmirage.so.3 libmirage3 #MINVER#
  mirage_sector_get_sync@Base 1.2.0
  mirage_sector_get_type@Base 1.2.0
  mirage_sector_verify_lec@Base 1.3.0
+ mirage_sector_verify_subchannel_crc@Base 1.4.0
  mirage_session_add_language@Base 1.2.0
  mirage_session_add_track_by_index@Base 1.2.0
  mirage_session_add_track_by_number@Base 1.2.0
