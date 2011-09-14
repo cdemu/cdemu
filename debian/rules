@@ -12,7 +12,7 @@ override_dh_strip:
 	dh_strip --dbg-package="cdemu-daemon-dbg"
 
 build:
-	test -x autogen.sh && ./autogen.sh
+	-test -x autogen.sh && ./autogen.sh
 	dh build --with autotools_dev
 
 %:
