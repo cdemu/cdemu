@@ -439,7 +439,7 @@ static gboolean __mirage_parser_mds_parse_track_entries (MIRAGE_Parser *self, MD
 
                 if (j == 0) {
                     /* Apply offset only if it's the first file... */
-                    block->start_offset;
+                    tfile_offset = block->start_offset;
                 }
 
                 if (converted_mode == MIRAGE_MODE_AUDIO) {
