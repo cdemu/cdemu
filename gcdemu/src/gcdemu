@@ -34,7 +34,7 @@ try:
     import pynotify
     has_pynotify = True
 except:
-    print "pynotify not found; notifications disabled."
+    print ("pynotify not found; notifications disabled.")
     has_pynotify = False
 
 # D-BUS
@@ -133,7 +133,7 @@ class CDEmu (gobject.GObject):
         if start_daemon and not self.dbus.name_has_owner("net.sf.cdemu.CDEMUD_Daemon"):
             try:
                 self.dbus.start_service_by_name("net.sf.cdemu.CDEMUD_Daemon", 0)
-            except dbus.DBusException, e:
+            except dbus.DBusException as e:
                 self.emit("error", _("Daemon autostart error"), _("Daemon autostart failed. Error: %s\n%s") % (e.get_dbus_name(), e.get_dbus_message()))
 
     def establish_connection (self):
@@ -278,19 +278,19 @@ class CDEmuDevice (gobject.GObject):
             [ self.library_debug_mask ] = self.iface.DeviceGetOption(self.number, "library-debug-mask")
             self.emit("library-debug-mask-changed")
         else:
-            print "Unknown option: %s!" % option
+            print ("Unknown option: %s!" % option)
 
     def unload_device (self):
         try:
             self.iface.DeviceUnload(self.number)
-        except dbus.DBusException, e:
+        except dbus.DBusException as e:
             self.emit("error", _("Failed to unload device #%02d:\n%s") % (self.number, e))
 
 
     def load_device (self, filenames, params = {}):
         try:
             self.iface.DeviceLoad(self.number, filenames, params)
-        except dbus.DBusException, e:
+        except dbus.DBusException as e:
             if e.get_dbus_name() == "net.sf.cdemu.CDEMUD_Daemon.libMirage.NeedPassword":
                 # Need password, propagate exception...
                 raise CDEmuNeedPassword()
@@ -304,7 +304,7 @@ class CDEmuDevice (gobject.GObject):
 
         try:
             self.iface.DeviceSetOption(self.number, "device-id", value)
-        except dbus.DBusException, e:
+        except dbus.DBusException as e:
             self.emit("error", _("Failed to set device ID for device #%02d to %s:\n%s") % (self.number, value, e))
 
     def set_dpm_emulation (self, value):
@@ -313,7 +313,7 @@ class CDEmuDevice (gobject.GObject):
 
         try:
             self.iface.DeviceSetOption(self.number, "dpm-emulation", [ value ])
-        except dbus.DBusException, e:
+        except dbus.DBusException as e:
             self.emit("error", _("Failed to set DPM emulation for device #%02d to %i:\n%s") % (self.number, value, e))
 
 
@@ -323,7 +323,7 @@ class CDEmuDevice (gobject.GObject):
 
         try:
             self.iface.DeviceSetOption(self.number, "tr-emulation", [ value ])
-        except dbus.DBusException, e:
+        except dbus.DBusException as e:
             self.emit("error", _("Failed to set TR emulation for device #%02d to %i:\n%s") % (self.number, value, e))
 
     def set_daemon_debug_mask (self, value):
@@ -332,7 +332,7 @@ class CDEmuDevice (gobject.GObject):
 
         try:
             self.iface.DeviceSetOption(self.number, "daemon-debug-mask", [ value ])
-        except dbus.DBusException, e:
+        except dbus.DBusException as e:
             self.emit("error", _("Failed to set daemon debug mask for device #%02d to 0x%X:\n%s") % (self.number, value, e))
 
     def set_library_debug_mask (self, value):
@@ -341,7 +341,7 @@ class CDEmuDevice (gobject.GObject):
 
         try:
             self.iface.DeviceSetOption(self.number, "library-debug-mask", [ value ])
-        except dbus.DBusException, e:
+        except dbus.DBusException as e:
             self.emit("error", _("Failed to set library debug mask for device #%02d to 0x%X:\n%s") % (self.number, value, e))
 
     def update_device_mapping (self):
@@ -397,7 +397,7 @@ class gCDEmu (gtk.StatusIcon):
         # Lookup icon in standard paths
         icon_info = gtk.IconTheme().lookup_icon(icon_name, 0, 0)
         if icon_info == None:
-            print "Pixmap '%s' not found in standard pixmap paths!" % (icon_name)
+            print ("Pixmap '%s' not found in standard pixmap paths!" % (icon_name))
             self.icon_on = None
             self.icon_off = None
             return
@@ -413,7 +413,7 @@ class gCDEmu (gtk.StatusIcon):
         # Lookup "icon" in standard paths
         icon_info = gtk.IconTheme().lookup_icon("gcdemu", 0, 0)
         if icon_info == None:
-            print "Pixmap '%s' not found in standard pixmap paths!" % ("gcdemu")
+            print ("Pixmap '%s' not found in standard pixmap paths!" % ("gcdemu"))
             self.logo = None
             return
         logo_filename = icon_info.get_filename()
@@ -444,7 +444,7 @@ class gCDEmu (gtk.StatusIcon):
                 visible = False
         else:
             # Fix invalid setting...
-            print "Unknown icon policy '%s'! Using 'always' by default!" % (self.icon_policy)
+            print ("Unknown icon policy '%s'! Using 'always' by default!" % (self.icon_policy))
             self.icon_policy = "always"
             visible = True
         self.set_visible(visible)
@@ -612,24 +612,24 @@ class gCDEmu (gtk.StatusIcon):
     def on_gconf_client_notify (self, client, id, entry, data):
         if entry.key == self.config_path + "/use_system_bus":
             self.use_system_bus = entry.value.get_bool()
-            print "New setting: use system bus: %d" % self.use_system_bus
+            print ("New setting: use system bus: %d" % self.use_system_bus)
             self.item_use_system_bus.set_active(self.use_system_bus)
             self.cdemu.connect_to_bus(self.use_system_bus)
         elif entry.key == self.config_path + "/show_notifications":
             self.show_notifications = entry.value.get_bool()
             self.item_show_notifications.set_active(self.show_notifications)
-            print "New setting: show notifications: %d" % self.show_notifications
+            print ("New setting: show notifications: %d" % self.show_notifications)
         elif entry.key == self.config_path + "/icon_name":
             self.load_icon()
             self.update_icon()
         elif entry.key == self.config_path + "/daemon_autostart":
             self.daemon_autostart = entry.value.get_bool()
-            print "New setting: daemon autostart: %d" % self.daemon_autostart
+            print ("New setting: daemon autostart: %d" % self.daemon_autostart)
         elif entry.key == self.config_path + "/icon_policy":
             self.icon_policy = entry.get_value().get_string()
             self.update_icon()
         else:
-            print "Unknown setting key: %s!" % entry.key
+            print ("Unknown setting key: %s!" % entry.key)
 
     def on_about_activate (self, menuitem):
         self.about.run()
@@ -867,7 +867,7 @@ class gCDEmuDevice (gobject.GObject):
                 # Try loading
                 try:
                     self.device.load_device(filenames)
-                except CDEmuNeedPassword, c:
+                except CDEmuNeedPassword as c:
                     # Get password
                     result = self.password_dialog.run()
                     self.password_dialog.hide()
