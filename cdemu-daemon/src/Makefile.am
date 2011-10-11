@@ -45,8 +45,7 @@ cdemud_LDADD = \
     $(gthread_LIBS) \
     $(dbus_LIBS) \
     $(libmirage_LIBS) \
-    $(libao_LIBS) \
-    $(sysfs_LIBS)
+    $(libao_LIBS)
 
 # Some ugly hacks for building built sources out of source tree... until I
 # figure how to do this properly (mainly needed to for 'make distcheck' pass)

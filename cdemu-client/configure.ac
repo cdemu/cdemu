@@ -1,7 +1,7 @@
 # Process this file with autoconf to produce a configure script.
 
 # Require autoconf >= 2.59
-AC_PREREQ(2.59)
+AC_PREREQ([2.59])
 
 # cdemu-client versioning:
 m4_define([cdemu_major_version], [1])
@@ -10,7 +10,7 @@ m4_define([cdemu_micro_version], [0])
 m4_define([cdemu_version], [cdemu_major_version.cdemu_minor_version.cdemu_micro_version])
 
 # Project init
-AC_INIT(cdemu-client, [cdemu_version], http://cdemu.sf.net)
+AC_INIT([cdemu-client],[cdemu_version],[http://cdemu.sf.net])
 AC_CONFIG_SRCDIR(src/cdemu)
 AM_INIT_AUTOMAKE(AC_PACKAGE_NAME, AC_PACKAGE_VERSION)
 
@@ -29,9 +29,11 @@ AC_DEFINE_UNQUOTED(GETTEXT_PACKAGE, "$GETTEXT_PACKAGE", [The gettext package])
 AM_GLIB_GNU_GETTEXT
 
 # Output files
-AC_OUTPUT([
+AC_CONFIG_FILES([
     Makefile
     man/Makefile
     po/Makefile.in
     src/Makefile
 ])
+
+AC_OUTPUT

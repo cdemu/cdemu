@@ -1,7 +1,7 @@
 # Process this file with autoconf to produce a configure script.
 
 # Require autoconf >= 2.59
-AC_PREREQ(2.59)
+AC_PREREQ([2.59])
 
 # libMirage release and libtool versioning:
 m4_define([libmirage_major_version], [1])
@@ -18,10 +18,10 @@ m4_define([libmirage_age], [1])
 
 
 # Project init
-AC_INIT(libmirage, [libmirage_version], http://cdemu.sf.net)
+AC_INIT([libmirage],[libmirage_version],[http://cdemu.sf.net])
 AC_CONFIG_SRCDIR(src/libmirage/mirage.c)
 AM_INIT_AUTOMAKE(AC_PACKAGE_NAME, AC_PACKAGE_VERSION)
-AM_CONFIG_HEADER(config.h)
+AC_CONFIG_HEADERS([config.h])
 
 # Versioning
 AC_SUBST(MIRAGE_MAJOR_VERSION, libmirage_major_version)
@@ -47,7 +47,7 @@ AM_MAINTAINER_MODE
 # Programs
 AC_PROG_CC_STDC
 AC_PROG_INSTALL
-AC_PROG_LIBTOOL
+LT_INIT
 AC_PROG_MAKE_SET
 
 # Standard C headers
@@ -57,6 +57,12 @@ AC_HEADER_STDC
 AC_SYS_LARGEFILE
 
 # Gtk-doc check
+PKG_CHECK_EXISTS(gtk-doc >= 1.4, [have_gtkdoc="yes"], [have_gtkdoc="no"])
+AC_MSG_CHECKING([for gtk-doc])
+AC_MSG_RESULT(${have_gtkdoc})
+if test ${have_gtkdoc} = "no"; then 
+    AC_MSG_ERROR("*** gtk-doc not found ***")
+fi
 GTK_DOC_CHECK([1.4])
 
 # Libraries check
@@ -76,23 +82,21 @@ AC_ARG_ENABLE(more-warnings,
 set_more_warnings="$enableval",[
     set_more_warnings=no
 ])
-AC_MSG_CHECKING(for more warnings, including -Werror)
+AC_MSG_CHECKING(for more warnings)
 if test "$GCC" = "yes" -a "$set_more_warnings" != "no"; then
     AC_MSG_RESULT(yes)
     CFLAGS="\
-    -Wall \
-    -Wchar-subscripts -Wmissing-declarations -Wmissing-prototypes \
-    -Wnested-externs -Wpointer-arith \
-    -Wcast-align -Wsign-compare \
+    -Wall -Wextra \
+    -Wmissing-declarations -Wmissing-prototypes \
+    -Wnested-externs -Wpointer-arith -Wcast-align \
+    -Wno-deprecated -Wno-deprecated-declarations -DG_DISABLE_DEPRECATED \
     $CFLAGS"
 
     for option in -Wno-strict-aliasing -Wno-sign-compare; do
         SAVE_CFLAGS="$CFLAGS"
         CFLAGS="$CFLAGS $option"
         AC_MSG_CHECKING([whether gcc understands $option])
-        AC_TRY_COMPILE([], [],
-            has_option=yes,
-            has_option=no,)
+        AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[]], [[]])],[has_option=yes],[has_option=no])
         if test $has_option = no; then
             CFLAGS="$SAVE_CFLAGS"
         fi
