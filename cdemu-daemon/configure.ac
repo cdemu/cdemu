@@ -50,7 +50,7 @@ if test "$GCC" = "yes" -a "$set_more_warnings" != "no"; then
     -Wall -Wextra \
     -Wmissing-declarations -Wmissing-prototypes \
     -Wnested-externs -Wpointer-arith -Wcast-align \
-    -Wno-deprecated -Wno-deprecated-declarations -DG_DISABLE_DEPRECATED \
+    -DG_DISABLE_DEPRECATED \
     $CFLAGS"
 
     for option in -Wno-strict-aliasing -Wno-sign-compare; do

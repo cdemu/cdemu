@@ -8,8 +8,8 @@ Comment[fr]=Client pour gérer les images de médias optiques (CD/DVD)
 NoDisplay=true
 TryExec=cdemu
 Exec=cdemu load any %F
-MimeType=application/libmirage-image;
+MimeType=application/x-cdrdao-toc;application/x-cue;application/x-cd-image;application/x-cif;application/x-nrg;application/x-daa;application/x-cdi;application/x-c2d;application/x-b6t;application/x-xcdroast;application/x-ccd;application/x-mds;
 Icon=gcdemu
 Terminal=false
-Categories=AudioVideo;
+Categories=ConsoleOnly;System;
 

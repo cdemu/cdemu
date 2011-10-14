@@ -17,17 +17,19 @@ header, ECC/EDC codes or subchannel. When this missing data is requested,
 libMirage will transparently generate it.
 
 Currently supported image formats:
- - B6T: BlindWrite 5/6 file format
- - C2D: Roxio / WinOnCD file format (experimental)
- - CCD: CloneCD image format
- - CDI: DiscJuggler image format (experimental)
- - CIF: Easy CD Creator image format (experimental)
- - CUE: CDRwin CUE/BIN image format
- - DAA: PowerISO Direct Access Archive
- - ISO: classic ISO9660 image format
- - MDS: Alcohol 120% image format
- - NRG: Nero image format
- - TOC: cdrdao's TOC/BIN image format
+ - BlindWrite 5/6 (B5T, B6T) file format
+ - Roxio / WinOnCD (C2D) file format
+ - CloneCD (CCD, SUB, IMG) image format
+ - DiscJuggler (CDI) file format
+ - Easy CD Creator (CIF) file format
+ - CDRwin (CUE, BIN) image format
+ - PowerISO (DAA) image format
+ - Track loader (ISO, UDF) for ISO9660 and UDF track images
+ - Alcohol 120% (MDS) image format
+ - Nero Burning ROM (NRG) image format
+ - ReadCD (TOC, BIN) image format
+ - Cdrdao's (TOC, BIN) image format
+ - XCDRoast (TOC, BIN) image format
 
 libMirage has a plug-in based system, which allows a simple addition of new
 image format parsers or data-file access fragments. It also supports runtime
@@ -41,7 +43,7 @@ Requirements:
  - libsndfile 1.0.0 or newer
  - zlib
 
- - gtk-doc (for documentation building)
+ - gtk-doc (optional)
 
 
 Installation:

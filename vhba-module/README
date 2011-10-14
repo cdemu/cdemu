@@ -1,5 +1,5 @@
 VHBA
-ver.20100822
+ver.20110915
 ~~~~~~~~~~~~
 
 This is VHBA (Virtual SCSI Host Bus adapter), a Linux kernel module which
@@ -16,7 +16,7 @@ is just a copy of the information stored on an actual disc.
 
 Requirements:
 ~~~~~~~~~~~~~
- - Kernel development headers.
+ - Kernel development headers 2.6.20 or newer
 
 Installation:
 ~~~~~~~~~~~~~

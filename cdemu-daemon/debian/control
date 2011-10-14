@@ -4,7 +4,7 @@ Priority: optional
 Homepage: http://cdemu.sourceforge.net/
 Maintainer: Henrik Stokseth <henrik@hw0.org>
 Build-Depends: libdbus-1-dev (>= 0.90), libdbus-glib-1-dev (>= 0.70),
- libsysfs-dev, libglib2.0-dev, libao-dev (>= 0.8.0), libmirage3-dev (>= 1.4.0),
+ libglib2.0-dev, libao-dev (>= 0.8.0), libmirage3-dev (>= 1.4.0),
  debhelper (>= 8), autotools-dev, autoconf, automake
 Standards-Version: 3.9.1
 
@@ -12,7 +12,7 @@ Standards-Version: 3.9.1
 Package: cdemu-daemon
 Section: misc
 Architecture: any
-Depends: vhba-dkms (>= 20110416), ${shlibs:Depends}, ${misc:Depends}
+Depends: vhba-dkms (>= 20110915), ${shlibs:Depends}, ${misc:Depends}
 Description: CDEmu daemon
  This is CDEmu daemon, the daemon part of the CDEmu suite,
  a free, GPL CD/DVD-ROM device emulator for Linux.
