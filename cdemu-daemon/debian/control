@@ -5,8 +5,8 @@ Homepage: http://cdemu.sourceforge.net/
 Maintainer: Henrik Stokseth <henrik@hw0.org>
 Build-Depends: libdbus-1-dev (>= 0.90), libdbus-glib-1-dev (>= 0.70),
  libglib2.0-dev, libao-dev (>= 0.8.0), libmirage3-dev (>= 1.4.0),
- debhelper (>= 8), autotools-dev, autoconf, automake
-Standards-Version: 3.9.1
+ debhelper (>= 8)
+Standards-Version: 3.9.2
 
 
 Package: cdemu-daemon

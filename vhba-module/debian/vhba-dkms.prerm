@@ -17,8 +17,6 @@ mywarning ()
 
 case "$1" in
 	remove|upgrade|deconfigure)
-		# Remove the cdrom group
-		# delgroup --only-if-empty cdrom || mywarning "failed to remove group 'cdrom'."
 	;;
 
 	failed-upgrade)

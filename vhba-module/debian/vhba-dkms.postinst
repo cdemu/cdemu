@@ -18,23 +18,27 @@ mywarning ()
 case "$1" in
     configure)
 		# Add the cdrom group
-		addgroup cdrom || mywarning "Failed to add cdrom group."
+		if grep -q -e "^cdrom" "/etc/group"; then
+			mywarning "Group 'cdrom' already exists."
+		else
+			addgroup "cdrom" || myerror "Failed to add cdrom group."
+		fi
 
 		# Workaround: Reload udev rules.
 		udevadm control --reload-rules || mywarning "Failed to reload udev rules."
 
 		# try to load the module
-		if lsmod | grep -q vhba > /dev/null; then
+		if test -d "/sys/module/vhba"; then
 			mywarning "Module is already loaded."
 		else
-			modprobe "vhba" > /dev/null || mywarning "Unable to load module."
+			modprobe "vhba" || myerror "Unable to load module."
 		fi
 
 		# and make sure it's there after next reboot
-		if grep vhba /etc/modules > /dev/null; then
+		if grep -q -e "^vhba$" "/etc/modules"; then
 			mywarning "Module is already added to /etc/modules."
 		else
-			echo "vhba" >> /etc/modules || myerror "Unable to add module to /etc/modules."
+			echo "vhba" >> "/etc/modules" || myerror "Unable to add module to /etc/modules."
 		fi
     ;;
 

@@ -4,8 +4,8 @@ Priority: optional
 Homepage: http://cdemu.sourceforge.net/
 Maintainer: Henrik Stokseth <henrik@hw0.org>
 Build-Depends: libgtk2.0-dev, libmirage3-dev (>= 1.4.0), libxml2-dev,
- debhelper (>= 8), autotools-dev, autoconf, automake
-Standards-Version: 3.9.1
+ debhelper (>= 8)
+Standards-Version: 3.9.2
 
 
 Package: image-analyzer

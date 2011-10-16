@@ -4,9 +4,8 @@ Priority: optional
 Homepage: http://cdemu.sourceforge.net/
 Maintainer: Henrik Stokseth <henrik@hw0.org>
 Build-Depends: debhelper (>= 8)
-Build-Depends-Indep: python (>= 2.2), libgconf2-dev, python-gtk2-dev, gettext, 
- intltool, python-support, autotools-dev, autoconf, automake
-Standards-Version: 3.9.1
+Build-Depends-Indep: python (>= 2.2), libgconf2-dev, intltool, python-support
+Standards-Version: 3.9.2
 
 
 Package: gcdemu
