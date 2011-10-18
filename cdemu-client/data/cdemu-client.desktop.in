@@ -1,10 +1,8 @@
 [Desktop Entry]
 Version=1.0
 Type=Application
-Name=CDEmu client
-Name[fr]=CDEmu client
-Comment=Client for handling optical media (CD/DVD) images
-Comment[fr]=Client pour gérer les images de médias optiques (CD/DVD)
+_Name=CDEmu client
+_Comment=Client for handling optical media (CD/DVD) images
 NoDisplay=true
 TryExec=cdemu
 Exec=cdemu load any %F
@@ -12,4 +10,5 @@ MimeType=application/x-cdrdao-toc;application/x-cue;application/x-cd-image;appli
 Icon=gcdemu
 Terminal=false
 Categories=ConsoleOnly;System;
+StartupNotify=false
 

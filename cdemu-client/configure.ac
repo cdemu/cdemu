@@ -31,6 +31,7 @@ AM_GLIB_GNU_GETTEXT
 # Output files
 AC_CONFIG_FILES([
     Makefile
+    data/Makefile
     man/Makefile
     po/Makefile.in
     src/Makefile

@@ -67,6 +67,7 @@ fi
 # Output files
 AC_CONFIG_FILES([
     Makefile
+    data/Makefile
     src/Makefile
 ])
 

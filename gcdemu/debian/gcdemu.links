@@ -1,2 +1,3 @@
-usr/share/pixmaps/gcdemu/gcdemu.svg usr/share/icons/hicolor/scalable/apps/gcdemu.svg
+usr/share/pixmaps/gcdemu/gcdemu.svg   usr/share/icons/hicolor/scalable/apps/gcdemu.svg
+usr/share/applications/gcdemu.desktop etc/xdg/autostart/gcdemu.desktop
 

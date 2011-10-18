@@ -1,6 +1,6 @@
 AUTOMAKE_OPTIONS = gnu
 
-SUBDIRS = man po src
+SUBDIRS = data man po src
 
 DISTCLEANFILES = \
     intltool-extract \

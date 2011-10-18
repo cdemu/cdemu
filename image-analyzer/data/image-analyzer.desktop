@@ -9,4 +9,5 @@ MimeType=application/x-cdrdao-toc;application/x-cue;application/x-cd-image;appli
 Icon=gcdemu
 Terminal=false
 Categories=GTK;System;
+StartupNotify=false
 
