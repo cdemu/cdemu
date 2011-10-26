@@ -29,10 +29,10 @@ AC_PROG_MAKE_SET
 AC_HEADER_STDC
 
 # Mandatory libraries
-PKG_CHECK_MODULES(glib, glib-2.0 >= 2.6)
-PKG_CHECK_MODULES(gobject, gobject-2.0 >= 2.6)
-PKG_CHECK_MODULES(gmodule, gmodule-2.0 >= 2.6)
-PKG_CHECK_MODULES(gthread, gthread-2.0 >= 2.6)
+PKG_CHECK_MODULES(glib, glib-2.0 >= 2.14)
+PKG_CHECK_MODULES(gobject, gobject-2.0 >= 2.14)
+PKG_CHECK_MODULES(gmodule, gmodule-2.0 >= 2.14)
+PKG_CHECK_MODULES(gthread, gthread-2.0 >= 2.14)
 PKG_CHECK_MODULES(dbus, dbus-1 >= 0.60 dbus-glib-1 >= 0.61)
 PKG_CHECK_MODULES(libao, ao >= 0.8.0,)
 PKG_CHECK_MODULES(libmirage, libmirage >= 1.4.0)

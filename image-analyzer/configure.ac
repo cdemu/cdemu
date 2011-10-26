@@ -20,9 +20,9 @@ AC_PROG_MAKE_SET
 AC_HEADER_STDC
 
 # Mandatory libraries
-PKG_CHECK_MODULES(glib, glib-2.0 >= 2.6)
-PKG_CHECK_MODULES(gobject, gobject-2.0 >= 2.6)
-PKG_CHECK_MODULES(gtk, gtk+-2.0 >= 2.6)
+PKG_CHECK_MODULES(glib, glib-2.0 >= 2.14)
+PKG_CHECK_MODULES(gobject, gobject-2.0 >= 2.14)
+PKG_CHECK_MODULES(gtk, gtk+-2.0 >= 2.14)
 PKG_CHECK_MODULES(libmirage, libmirage >= 1.4.0)
 PKG_CHECK_MODULES(libxml, libxml-2.0 >= 2.0.0)
 

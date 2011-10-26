@@ -12,7 +12,7 @@ Package: libmirage3
 Section: libs
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends}
-Recommends: libmirage3-data (= ${binary:Version})
+Replaces: libmirage3-data
 Description: CD-ROM image access library
  This is libMirage library, a CD-ROM image access library, and part of the
  CDEmu suite, a free, GPL CD/DVD-ROM device emulator for Linux. It is
@@ -30,14 +30,6 @@ Architecture: any
 Depends: libmirage3 (= ${binary:Version}), ${shlibs:Depends}, ${misc:Depends}
 Description: CD-ROM image access library (debugging symbols)
  This package provides detached debugging symbols.
-
-
-Package: libmirage3-data
-Section: misc
-Architecture: all
-Depends: ${shlibs:Depends}, ${misc:Depends}
-Description: CD-ROM image access library (mime data files)
- This package contains MIME data files.
 
 
 Package: libmirage3-dev
