@@ -79,7 +79,7 @@ static NRG_BlockIDs NRGBlockID[] = {
 static gboolean __mirage_parser_nrg_build_block_index (MIRAGE_Parser *self, GError **error) {
     MIRAGE_Parser_NRGPrivate *_priv = MIRAGE_PARSER_NRG_GET_PRIVATE(self);
     NRGBlockIndexEntry *blockentry;
-    GList *blockindex;
+    GList *blockindex = NULL;
     gint num_blocks;
     gint index;
     guint8 *cur_ptr;
