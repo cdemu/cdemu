@@ -135,6 +135,15 @@ if you are using an older version, find the appropriate version in the history.
 Or, if possible, find the packaged version for your distribution (e.g. in Fedora,
 the package is called gnome-shell-extension-icon-manager).
 
+If using GNOME Shell 3.2, you must enable the extension before it can be used.
+Either use gnome-tweak-tool, or use the following command:
+
+gsettings set org.gnome.shell enabled-extensions "['icon-manager@krajniak.info']"
+
+(Please note that the above command overwrites the currently enabled extensions,
+so you should first get the list, add the above mentioned extension to it, and
+then set it. It is generally easier to use gnome-tweak-tool...)
+
 Now, similarly as with Unity, you need to add gcdemu to the list of applications
 that should have their icons displayed in the system tray:
 
