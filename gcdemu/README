@@ -96,6 +96,55 @@ NOTE, HOWEVER, THAT THE PASSWORD IS SENT OVER D-BUS IN A PLAIN STRING FORM, WITH
 ANY PROTECTION. DEPENDING ON YOUR PRIVACY CONCERNS YOU MIGHT WISH TO AVOID LOADING
 SUCH IMAGES.
 
+On gCDEmu and Unity/GNOME Shell:
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Both Unity and GNOME Shell by default put only icons from a selected few
+applications in the system tray on the top panel, while the rest of the icons
+end up in the so called message tray on the bottom panel.
+
+If you wish to put the gCDEmu icon in the top panel's system tray, follow the
+instructions below. Note that the instructions are not applicable only to gCDEmu,
+but to any application with systray icon.
+
+
+Unity:
+------
+In Unity, you need to whitelist the gCDEmu icon. This can be done either by adding
+'gcdemu' to the list of applications that are whitelisted by default:
+
+gsettings set com.canonical.Unity.Panel systray-whitelist "['JavaEmbeddedFrame', 'Mumble', 'Wine', 'Skype', 'hp-systray', 'gcdemu']"
+
+or whitelisting all the applications:
+
+gsettings set com.canonical.Unity.Panel systray-whitelist "['all']"
+
+Restart Unity (either relog or use 'unity --replace').
+
+
+GNOME Shell:
+------------
+Moving the gCDEmu icon to system tray in GNOME Shell requires a bit more work.
+
+First, get and install the IconManager shell extension written by Jakub Krajniak.
+The git source tree can be found at:
+https://github.com/MrTheodor/gnome-shell-ext-icon-manager
+Make sure you get version that's compatible with your GNOME Shell version! At
+the time of writing, the repository's head is compatible with GNOME Shell 3.2;
+if you are using an older version, find the appropriate version in the history.
+Or, if possible, find the packaged version for your distribution (e.g. in Fedora,
+the package is called gnome-shell-extension-icon-manager).
+
+Now, similarly as with Unity, you need to add gcdemu to the list of applications
+that should have their icons displayed in the system tray:
+
+gsettings set org.gnome.shell.extensions.icon-manager top-bar "['gcdemu']"
+
+Alternatively, you can install dconf-editor and use it to edit the key:
+'/org/gnome/shell/extensions/icon-manager/top-bar'
+
+Reload the GNOME Shell (press Alt+F2 and enter "r").
+
 
 Contact information:
 ~~~~~~~~~~~~~~~~~~~~
