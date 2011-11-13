@@ -1,30 +1,19 @@
 _cdemu()
 {
-	local cur prev prev2 cword words opts cmds parms active_cmd
+	local cur prev prev2 cword words opts cmds parms
 	COMPREPLY=()
 	_get_comp_words_by_ref cur prev cword words
 	prev2="${words[cword - 2]}"
+
 	opts="-h --help -v --version -b --bus"
 	cmds="load unload status device-mapping daemon-debug-mask library-debug-mask dpm-emulation tr-emulation device-id enum-supported-parsers enum-supported-fragments enum-daemon-debug-masks enum-library-debug-masks version"
 	parms="--password --encoding"
 
-	_expand || return 0
-
 	case "${prev}" in
-		"load")
+		"load" | "unload" | "daemon-debug-mask" | "library-debug-mask" | "dpm-emulation" | "tr-emulation" | "device-id")
 			local devices=$(cdemu status | tail -n +3 | cut -d ' ' -f 1)
-			devices="${devices} any"
-			COMPREPLY=( $(compgen -W "${devices}" -- ${cur}) )
-			return 0
-			;;
-		"unload")
-			local devices=$(cdemu status | tail -n +3 | cut -d ' ' -f 1)
-			devices="${devices} all"
-			COMPREPLY=( $(compgen -W "${devices}" -- ${cur}) )
-			return 0
-			;;
-		"daemon-debug-mask" | "library-debug-mask" | "dpm-emulation" | "tr-emulation" | "device-id")
-			local devices=$(cdemu status | tail -n +3 | cut -d ' ' -f 1)
+			test "${prev}" = "load" && devices="${devices} any"
+			test "${prev}" = "unload" && devices="${devices} all"
 			COMPREPLY=( $(compgen -W "${devices}" -- ${cur}) )
 			return 0
 			;;
@@ -47,23 +36,14 @@ _cdemu()
 			;;
 	esac
 
-	active_cmd=""
 	for word in ${words[@]}; do
-		for cmd in ${cmds}; do
-			if [ "${word}" = "${cmd}" ]; then
-				active_cmd="${word}"
-				break 2
-			fi
-		done
+		if [ "${word}" = "load" ]; then
+			COMPREPLY=( $(compgen -W "${parms}" -- ${cur}) )
+			return 0
+		fi
 	done
 
-	if [ -n "${active_cmd}" ]; then
-		if [ "${active_cmd}" = "load" ]; then
-			COMPREPLY=( $(compgen -W "${parms}" -- ${cur}) )
-		fi
-	else
-		COMPREPLY=( $(compgen -W "${opts} ${cmds}" -- ${cur}) )
-	fi
+	COMPREPLY=( $(compgen -W "${opts} ${cmds}" -- ${cur}) )
 	return 0
 }
 complete -F _cdemu cdemu
