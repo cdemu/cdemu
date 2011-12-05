@@ -198,13 +198,13 @@ void mirage_error (gint errcode, GError **error) {
     gint i;
     for (i = 0; i < G_N_ELEMENTS(errors); i++) {
         if (errors[i].errcode == errcode) {
-            g_set_error(error, MIRAGE_ERROR, errors[i].errcode, errors[i].errstring);
+            g_set_error(error, MIRAGE_ERROR, errors[i].errcode, "%s", errors[i].errstring);
             return;
         }
     }
 
     /* Generic error */
-    g_set_error(error, MIRAGE_ERROR, errors[i-1].errcode, errors[i-1].errstring);
+    g_set_error(error, MIRAGE_ERROR, errors[i-1].errcode, "%s", errors[i-1].errstring);
 
     return;
 }

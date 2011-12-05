@@ -90,7 +90,7 @@ static gchar *__helper_find_binary_file (gchar *declared_filename, gchar *mds_fi
         /* Use MDS filename and replace its extension with the one of the data file */
         bin_filename = g_strdup(mds_filename);
         len = strlen(bin_filename);
-        sprintf(bin_filename+len-3, ext);
+        sprintf(bin_filename+len-3, "%s", ext);
     } else {
         bin_filename = g_strdup(declared_filename);
     }
