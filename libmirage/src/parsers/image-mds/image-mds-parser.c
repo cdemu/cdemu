@@ -84,16 +84,22 @@ static gchar *__helper_find_binary_file (gchar *declared_filename, gchar *mds_fi
     gchar *bin_filename;
     gchar *bin_fullpath;
 
-    gchar ext[4] = "";
-    if (sscanf(declared_filename, "*.%s", ext) == 1) {
-        gint len;
-        /* Use MDS filename and replace its extension with the one of the data file */
-        bin_filename = g_strdup(mds_filename);
-        len = strlen(bin_filename);
-        sprintf(bin_filename+len-3, "%s", ext);
+    /* Is the filename in form of '*.mdf'? */
+    GRegex *ext_regex = g_regex_new("\\*\\.(?<ext>\\w+)", 0, 0, NULL);
+    GMatchInfo *match_info = NULL;
+    if (g_regex_match(ext_regex, declared_filename, 0, &match_info)) {
+        /* Replace the extension in mds_filename */
+        gchar *ext = g_match_info_fetch_named(match_info, "ext");
+        GRegex *mds_regex = g_regex_new("(?<ext>\\w+)$", 0, 0, NULL);
+        bin_filename = g_regex_replace(mds_regex, mds_filename, -1, 0, ext, 0, NULL);
+
+        g_regex_unref(mds_regex);
+        g_free(ext);
+        g_match_info_free(match_info);
     } else {
         bin_filename = g_strdup(declared_filename);
     }
+    g_regex_unref(ext_regex);
 
     bin_fullpath = mirage_helper_find_data_file(bin_filename, mds_filename);
     g_free(bin_filename);
