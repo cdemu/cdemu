@@ -6,7 +6,7 @@ EXTRA_DIST = \
 if SESSION_BUS_SERVICE
 
 # Wrapper script
-bin_SCRIPTS = cdemu-daemon-session.sh
+libexec_SCRIPTS = cdemu-daemon-session.sh
 
 # D-Bus .service file
 dbussystemservicedir = $(datadir)/dbus-1/services/
@@ -17,6 +17,6 @@ endif
 
 # .service build rule; make sure it's rebuild every time
 net.sf.cdemu.CDEMUD_Daemon.service: net.sf.cdemu.CDEMUD_Daemon.service.in
-	$(AM_V_GEN)sed -e 's,@bindir\@,$(bindir),g' $< > $@
+	$(AM_V_GEN)sed -e 's,@libexecdir\@,$(libexecdir),g' $< > $@
 
 .PHONY: net.sf.cdemu.CDEMUD_Daemon.service
