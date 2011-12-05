@@ -16,4 +16,4 @@ if [ -f ${CONFIG_FILE} ]; then
 fi
 
 # Start the daemon
-cdemud --ctl-device=/dev/vhba_ctl --bus=session --num-devices=${NUM_DEVICES} --audio-driver=${AUDIO_DRIVER} --logfile=${LOG_FILE}
+exec cdemud --ctl-device=/dev/vhba_ctl --bus=session --num-devices=${NUM_DEVICES} --audio-driver=${AUDIO_DRIVER} --logfile=${LOG_FILE}
