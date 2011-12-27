@@ -138,8 +138,20 @@ gboolean mirage_parser_load_image (MIRAGE_Parser *self, gchar **filenames, GObje
         mirage_error(MIRAGE_E_NOTIMPL, error);
         return FALSE;
     }
-    
-    return MIRAGE_PARSER_GET_CLASS(self)->load_image(self, filenames, disc, error);
+
+    /* Load the image */
+    if (!MIRAGE_PARSER_GET_CLASS(self)->load_image(self, filenames, disc, error)) {
+        return FALSE;
+    }
+
+    /* If 'dvd-report-css' flag is passed to the parser, pass it on to
+       the disc object */
+    GValue *dvd_report_css = NULL;
+    if (mirage_parser_get_param(self, "dvd-report-css", G_TYPE_BOOLEAN, &dvd_report_css, NULL)) {
+        g_object_set_property(*disc, "dvd-report-css", dvd_report_css);
+    }
+
+    return TRUE;
 }
 
 
@@ -306,7 +318,7 @@ gboolean mirage_parser_set_params (MIRAGE_Parser *self, GHashTable *params, GErr
  * mirage_parser_get_param_string:
  * @self: a #MIRAGE_Parser
  * @name: parameter name (key)
- * @value: location to store the string value, or %NULL
+ * @ret_value: location to store the string value, or %NULL
  * @error: location to store error, or %NULL
  *
  * <para>
@@ -326,26 +338,63 @@ gboolean mirage_parser_set_params (MIRAGE_Parser *self, GHashTable *params, GErr
 gboolean mirage_parser_get_param_string (MIRAGE_Parser *self, const gchar *name, const gchar **ret_value, GError **error) {
     MIRAGE_ParserPrivate *_priv = MIRAGE_PARSER_GET_PRIVATE(self);
     GValue *value;
+
+    /* Get value */
+    if (!mirage_parser_get_param(self, name, G_TYPE_STRING, &value, NULL)) {
+        return FALSE;
+    }
+
+    /* Return string */
+    if (ret_value) {
+        *ret_value = g_value_get_string(value);
+    }
     
+    return TRUE;
+}
+
+
+/**
+ * mirage_parser_get_param_boolean:
+ * @self: a #MIRAGE_Parser
+ * @name: parameter name (key)
+ * @type: expected value type (set to %G_TYPE_INVALID to disable type checking)
+ * @ret_value: location to store the #GValue value, or %NULL
+ * @error: location to store error, or %NULL
+ *
+ * <para>
+ * An internal function that retrieves a boolean parameter named @name. It is meant
+ * to be used by parser implementation to retrieve the parameter value during the
+ * parsing.
+ * </para>
+ *
+ * Returns: %TRUE on success, %FALSE on failure
+ **/
+gboolean mirage_parser_get_param (MIRAGE_Parser *self, const gchar *name, GType type, GValue **ret_value, GError **error) {
+    MIRAGE_ParserPrivate *_priv = MIRAGE_PARSER_GET_PRIVATE(self);
+    GValue *value;
+
+    /* Make sure parameters are set */
     if (!_priv->parser_params) {
         mirage_error(MIRAGE_E_GENERIC, error);
         return FALSE;
     }
-    
+
+    /* Lookup value */
     value = g_hash_table_lookup(_priv->parser_params, name);
-        
     if (!value) {
         mirage_error(MIRAGE_E_GENERIC, error);
         return FALSE;
     }
-    
-    if (!G_VALUE_HOLDS_STRING(value)) {
+
+    /* If expected type is provided, verify it */
+    if (type != G_TYPE_INVALID && !G_VALUE_HOLDS(value, type)) {
         mirage_error(MIRAGE_E_GENERIC, error);
         return FALSE;
     }
-    
+
+    /* Return */
     if (ret_value) {
-        *ret_value = g_value_get_string(value);
+        *ret_value = value;
     }
     
     return TRUE;
