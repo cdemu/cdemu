@@ -98,7 +98,7 @@ class CDEmu (object):
 
         # Separate options from arguments
         try:
-            options, arguments = getopt.gnu_getopt(argv, "hvb:", ["help", "version", "bus=", "password=", "encoding="])
+            options, arguments = getopt.gnu_getopt(argv, "hvb:", ["help", "version", "bus=", "password=", "encoding=", "dvd-report-css="])
         except getopt.GetoptError:
             self.print_error(_("Unknown option"))
             self.print_full_usage()
@@ -120,6 +120,17 @@ class CDEmu (object):
                 self.parser_params["password"] = arg
             elif opt in ("--encoding"):
                 self.parser_params["encoding"] = arg
+            elif opt in ("--dvd-report-css"):
+                dictionary = { "true": True, "1": True, "yes": True, "enable": True, "false": False,  "0": False, "no": False, "disable": False }
+                word = arg.lower()
+
+                if word not in dictionary:
+                    self.print_error(_("Invalid argument to --dvd-report-css: '%s'") % (arg))
+                    self.print_full_usage()
+                    return False
+                
+                self.parser_params["dvd-report-css"] = dictionary.get(word)
+                
 
         if len(arguments) == 0:
             self.print_full_usage()
@@ -845,8 +856,9 @@ class CDEmu (object):
         self.set_color(1, 34)
         print(_("Optional parser parameters (valid only for 'load' command):"))
         self.set_color(0)
-        print("  %-25s %s" % ("--password", _("password for encrypted images")))
-        print("  %-25s %s" % ("--encoding", _("encoding for text-based images")))
+        print("  %-30s %s" % ("--password=<string>", _("password for encrypted images")))
+        print("  %-30s %s" % ("--encoding=<string>", _("encoding for text-based images")))
+        print("  %-30s %s" % ("--dvd-report-css=<true/false>", _("flag the DVD disc as CSS-encoded")))
 
         return
 

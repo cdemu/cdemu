@@ -1,5 +1,5 @@
 CDEmu client
-v.1.4.0
+v.1.4.1
 ~~~~~~~~~~~~~
 
 This is cdemu-client, a simple command-line client for controlling CDEmu daemon.
@@ -54,6 +54,9 @@ Loading an encrypted image with password provided as an argument:
  cdemu load 0 ~/image.daa
 (in the latter case, if image is actually encrypted, the client will prompt for
 the password using standard input without echo)
+
+Loading a raw image of a CSS-encrypted DVD created by 'dd', so it can be played by mplayer:
+ cdemu load 0 ~/image.iso --dvd-report-css=true
 
 Unloading first device:
  cdemu unload 0

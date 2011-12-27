@@ -1,4 +1,4 @@
-.TH CDEMU 1 "Apr 22, 2011"
+.TH CDEMU 1 "Dec 27, 2011"
 .SH NAME
 cdemu \- a simple command-line CDEmu client
 .SH SYNOPSIS
@@ -48,15 +48,22 @@ by a particular parser or not depends on the parser implementation.
 
 The following parameters are valid:
 .TP
-.B --password
+.B --password <string>
 Allows a password for an encrypted image to be specified via commandline; however,
 if an image requires password and it hasn't been specified via commandline, then
 the client will prompt for it using standard input without echo.
 .TP
-.B --encoding
+.B --encoding <string>
 Allows an encoding for text-based image format (such as CUE) to be specified. This
 might be needed if the image descriptor file contains non-ASCII characters and does
 not use Unicode.
+.B --dvd-report-css <true/false>
+Mark the DVD image as CSS-encrypted. This influences the generation of fake
+Disc Structure 0x01, and as such works only with images of DVD videos that do
+not provide this information (most images, with exception of perhaps mds/mdf, don't).
+Enabling this option allows images of CSS-encrypted DVDs (e.g. created using 'dd' or
+'readcd' without running through a CSS decryption step when creating the image) to
+be played by a deCSS-enabled Linux media player.
 .SH COMMANDS
 .TP
 .B load <device> <filename> [...]
@@ -135,6 +142,9 @@ cdemu load 0 ~/session1.toc ~/session2.toc ~/session3.toc
 .TP
 .B Loading an encrypted image with password provided as an argument:
  cdemu load 0 ~/image.daa --password=seeninplain
+.TP
+.B Loading a raw image of a CSS-encrypted DVD created by 'dd', so it can be played by mplayer:
+ cdemu load 0 ~/image.iso --dvd-report-css=true
 .TP
 .B Unloading first device:
 cdemu unload 0
