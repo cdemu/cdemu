@@ -48,6 +48,11 @@ functions for accessing and reading of sectors within the disc layout.
 </para>
 
 
+<!-- ##### ARG MIRAGE_Disc:dvd-report-css ##### -->
+<para>
+
+</para>
+
 <!-- ##### FUNCTION mirage_disc_set_medium_type ##### -->
 <para>
 

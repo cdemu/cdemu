@@ -57,6 +57,9 @@ typedef struct {
     gint dpm_resolution;
     gint dpm_num_entries;
     guint32 *dpm_data;
+
+    /* User-supplied properties */
+    gboolean dvd_report_css; /* Whether to report that DVD image is CSS-encrypted or not */
 } MIRAGE_DiscPrivate;
 
 
@@ -193,6 +196,8 @@ static gboolean __remove_session_from_disc (MIRAGE_Disc *self, GObject *session,
 }
 
 static gboolean __generate_disc_structure (MIRAGE_Disc *self, gint layer, gint type, guint8 **data, gint *len, GError **error) {
+    MIRAGE_DiscPrivate *_priv = MIRAGE_DISC_GET_PRIVATE(self);
+
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_DISC, "%s: start (layer: %d, type: 0x%X)\n", __debug__, layer, type);
 
     switch (type) {
@@ -224,9 +229,14 @@ static gboolean __generate_disc_structure (MIRAGE_Disc *self, gint layer, gint t
         }
         case 0x0001: {
             MIRAGE_DiscStruct_Copyright *copy_info = g_new0(MIRAGE_DiscStruct_Copyright, 1);
-            
-            copy_info->copy_protection = 0x00; /* None */
-            copy_info->region_info = 0x00; /* None */
+
+            if (_priv->dvd_report_css) {
+                copy_info->copy_protection = 0x01; /* CSS/CPPM */
+                copy_info->region_info = 0x00; /* Playable in all regions */
+            } else {
+                copy_info->copy_protection = 0x00;/* None */
+                copy_info->region_info = 0x00; /* N/A */
+            }
             
             *data = (guint8 *)copy_info;
             *len  = sizeof(MIRAGE_DiscStruct_Copyright);
@@ -2139,6 +2149,9 @@ static void __mirage_disc_instance_init (GTypeInstance *instance, gpointer g_cla
     
     /* Create disc structures hash table */
     _priv->disc_structures = g_hash_table_new_full(g_direct_hash, g_direct_equal, NULL, __free_disc_structure_data);
+
+    /* Default values for user-supplied properties */
+    _priv->dvd_report_css = FALSE;
     
     return;
 }
@@ -2175,9 +2188,47 @@ static void __mirage_disc_finalize (GObject *obj) {
     return G_OBJECT_CLASS(parent_class)->finalize(obj);
 }
 
+static void __mirage_disc_set_property (GObject *obj, guint property_id, const GValue *value, GParamSpec *pspec)
+{
+    MIRAGE_Disc *self = MIRAGE_DISC(obj);
+    MIRAGE_DiscPrivate *_priv = MIRAGE_DISC_GET_PRIVATE(self);
+
+    switch (property_id) {
+        case PROP_MIRAGE_DISC_DVD_REPORT_CSS: {
+            _priv->dvd_report_css = g_value_get_boolean(value);
+            break;
+        }
+        default: {
+            /* We don't have any other property... */
+            G_OBJECT_WARN_INVALID_PROPERTY_ID(obj, property_id, pspec);
+            break;
+        }
+    }
+}
+
+static void __mirage_disc_get_property (GObject *obj, guint property_id, GValue *value, GParamSpec *pspec)
+{
+    MIRAGE_Disc *self = MIRAGE_DISC(obj);
+    MIRAGE_DiscPrivate *_priv = MIRAGE_DISC_GET_PRIVATE(self);
+
+    switch (property_id) {
+        case PROP_MIRAGE_DISC_DVD_REPORT_CSS: {
+            g_value_set_boolean(value, _priv->dvd_report_css);
+            break;
+        }
+        default: {
+            /* We don't have any other property... */
+            G_OBJECT_WARN_INVALID_PROPERTY_ID(obj, property_id, pspec);
+            break;
+        }
+    }
+}
+
 static void __mirage_disc_class_init (gpointer g_class, gpointer g_class_data) {
     GObjectClass *class_gobject = G_OBJECT_CLASS(g_class);
     MIRAGE_DiscClass *klass = MIRAGE_DISC_CLASS(g_class);
+
+    GParamSpec *pspec;
     
     /* Set parent class */
     parent_class = g_type_class_peek_parent(klass);
@@ -2187,6 +2238,12 @@ static void __mirage_disc_class_init (gpointer g_class, gpointer g_class_data) {
     
     /* Initialize GObject methods */
     class_gobject->finalize = __mirage_disc_finalize;
+    class_gobject->set_property = __mirage_disc_set_property;
+    class_gobject->get_property = __mirage_disc_get_property;
+
+    /* Property: PROP_MIRAGE_DISC_DVD_REPORT_CSS */
+    pspec = g_param_spec_boolean("dvd-report-css", "DVD Report CSS flag", "Set/Get DVD Report CSS flag", FALSE, G_PARAM_READWRITE);
+    g_object_class_install_property(class_gobject, PROP_MIRAGE_DISC_DVD_REPORT_CSS, pspec);
         
     return;
 }

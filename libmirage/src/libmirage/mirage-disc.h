@@ -51,6 +51,11 @@ typedef enum {
 } MIRAGE_MediumTypes;
 
 
+enum {
+    PROP_MIRAGE_DISC_DVD_REPORT_CSS = 1,
+};
+
+
 #define MIRAGE_TYPE_DISC            (mirage_disc_get_type())
 #define MIRAGE_DISC(obj)            (G_TYPE_CHECK_INSTANCE_CAST((obj), MIRAGE_TYPE_DISC, MIRAGE_Disc))
 #define MIRAGE_DISC_CLASS(klass)    (G_TYPE_CHECK_CLASS_CAST((klass), MIRAGE_TYPE_DISC, MIRAGE_DiscClass))
