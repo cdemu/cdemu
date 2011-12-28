@@ -19,6 +19,7 @@
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
 import os
+import subprocess
 
 # gettext
 from gettext import gettext as _
@@ -860,21 +861,22 @@ class gCDEmuDevice (gobject.GObject):
             result = self.file_chooser.run()
             self.file_chooser.hide()
             if result == gtk.RESPONSE_ACCEPT:
-                # Hide dialog while we do the loading...
-                self.file_chooser.hide()
-                # Get filename
+                # Get filename and parameters
                 filenames = self.file_chooser.get_filenames()
+                parameters = self.file_chooser.get_parameters()
+                
                 # Try loading
                 try:
-                    self.device.load_device(filenames)
+                    self.device.load_device(filenames, parameters)
                 except CDEmuNeedPassword as c:
                     # Get password
                     result = self.password_dialog.run()
                     self.password_dialog.hide()
                     if result == gtk.RESPONSE_OK:
                         password = self.password_dialog.get_password()
-                        # Try loading with password
-                        self.device.load_device(filenames, {"password" : password})
+                        # Try loading with overriden password
+                        parameters["password"] = password
+                        self.device.load_device(filenames, parameters)
 
     def refresh_pages (self):
         # Some pages have fields that can be altered without applying the
@@ -1217,6 +1219,116 @@ class gCDEMuFileChooserDialog (gtk.FileChooserDialog):
             all_images.add_mime_type(parser[3])
 
             self.add_filter(filter)
+
+        # Extra options
+        widget = self.create_extra_options_widget()
+        self.set_extra_widget(widget)
+
+    def run (self):
+        # Clear parameters
+        self.entry_encoding.set_active(0)
+        self.entry_password.set_text("")
+        self.check_button_css.set_active(False)
+
+        # Run the dialog
+        return gtk.FileChooserDialog.run(self)
+
+    def get_parameters (self):
+        parameters = {}
+        
+        # Encoding
+        i = self.entry_encoding.get_active_iter()
+        encoding = self.entry_encoding.get_model().get_value(i, 1)
+        if encoding:
+            parameters["encoding"] = encoding
+
+        # Password
+        password = self.entry_password.get_text()
+        if password:
+            parameters["password"] = password
+
+        # CSS-encrypted DVD flag
+        if self.check_button_css.get_active():
+            parameters["dvd-report-css"] = True
+
+        return parameters                    
+
+    def create_extra_options_widget (self):
+        # Expander and VBox
+        expander = gtk.Expander(_("Extra Options"))
+
+        vbox = gtk.VBox(False, 5)
+        expander.add(vbox)
+
+
+        # *** Encoding ***
+        hbox = gtk.HBox(False, 5)
+        vbox.pack_start(hbox)
+
+        # Label
+        label = gtk.Label(_("Encoding: "))
+        hbox.pack_start(label, expand=False, fill=False)
+
+        # ComboBoxEntry
+        liststore = self.get_encodings_list()
+        comboboxentry = gtk.ComboBoxEntry(liststore, 0)
+        hbox.pack_start(comboboxentry, expand=False, fill=False)
+        self.entry_encoding = comboboxentry
+        
+        # Autocompletion
+        completion = gtk.EntryCompletion()
+        completion.set_model(liststore)
+        completion.set_text_column(0)
+        comboboxentry.child.set_completion(completion)
+
+        
+        # *** Password ***
+        hbox = gtk.HBox(False, 5)
+        vbox.pack_start(hbox)
+
+        # Label
+        label = gtk.Label(_("Password: "))
+        hbox.pack_start(label, expand=False, fill=False)
+
+        # Entry
+        entry = gtk.Entry()
+        entry.set_visibility(False)
+        hbox.pack_start(entry, expand=False, fill=False)
+        self.entry_password = entry
+
+
+        # *** CSS-encrypted DVD flag ***
+        check = gtk.CheckButton(_("Raw image of CSS-encrypted DVD"))
+        vbox.pack_start(check)
+
+        self.check_button_css = check
+
+
+        expander.show_all()
+
+        return expander
+
+    def get_encodings_list (self):
+        # Get list of encodings supported by iconv (since that's what
+        # GLib and consequently CDEmu/libMirage uses)
+        encodings = []
+        try:
+            cmd = [ 'iconv' , '--list']
+            iconv = subprocess.Popen(cmd, env = {'LANG' : 'C'}, stdout=subprocess.PIPE, stdin=open(os.devnull, 'w+'), stderr=open(os.devnull, 'w+'))
+            encodings = [ line.strip('/').lower() for line in iconv.communicate()[0].splitlines() ]
+        except OSError:
+            # Probably due to iconv missing; not a big deal, we just won't
+            # display encodings list
+            pass
+
+        # Create ListStore
+        liststore = gtk.ListStore(gobject.TYPE_STRING, gobject.TYPE_STRING)
+        liststore.append( ("Autodetect", "") )
+        for encoding in encodings:
+            liststore.append( (encoding, encoding) )
+        
+        return liststore
+        
 
 
 ################################################################################
