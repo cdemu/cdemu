@@ -6,7 +6,7 @@ AC_PREREQ([2.59])
 # gcdemu versioning:
 m4_define([gcdemu_major_version], [1])
 m4_define([gcdemu_minor_version], [4])
-m4_define([gcdemu_micro_version], [0])
+m4_define([gcdemu_micro_version], [1])
 m4_define([gcdemu_version], [gcdemu_major_version.gcdemu_minor_version.gcdemu_micro_version])
 
 # Project init
