@@ -7,7 +7,7 @@ _cdemu()
 
 	opts="-h --help -v --version -b --bus"
 	cmds="load unload status device-mapping daemon-debug-mask library-debug-mask dpm-emulation tr-emulation device-id enum-supported-parsers enum-supported-fragments enum-daemon-debug-masks enum-library-debug-masks version"
-	parms="--password --encoding"
+	parms="--password --encoding --dvd-report-css"
 
 	case "${prev}" in
 		"load" | "unload" | "daemon-debug-mask" | "library-debug-mask" | "dpm-emulation" | "tr-emulation" | "device-id")
@@ -25,6 +25,11 @@ _cdemu()
 		"--encoding")
 			local encodings=$(iconv --list | sed -e 's/\/\/$//')
 			COMPREPLY=( $(compgen -W "${encodings}" -- ${cur}) )
+			return 0
+			;;
+        "--dvd-report-css")
+            local value="true false"
+            COMPREPLY=( $(compgen -W "${value}" -- ${cur}) )
 			return 0
 			;;
 	esac
