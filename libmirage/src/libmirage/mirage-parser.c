@@ -354,7 +354,7 @@ gboolean mirage_parser_get_param_string (MIRAGE_Parser *self, const gchar *name,
 
 
 /**
- * mirage_parser_get_param_boolean:
+ * mirage_parser_get_param:
  * @self: a #MIRAGE_Parser
  * @name: parameter name (key)
  * @type: expected value type (set to %G_TYPE_INVALID to disable type checking)

@@ -2242,6 +2242,14 @@ static void __mirage_disc_class_init (gpointer g_class, gpointer g_class_data) {
     class_gobject->get_property = __mirage_disc_get_property;
 
     /* Property: PROP_MIRAGE_DISC_DVD_REPORT_CSS */
+    /**
+    * MIRAGE_Disc:dvd-report-css:
+    *
+    * Flag controlling whether the generated Disc Structure 0x01 should
+    * report that DVD is CSS-encrypted or not. Relevant only for DVD images;
+    * and as it controls the generation of fake Disc Structures, it affects
+    * only DVD images that do not provide Disc Structure information.
+    **/
     pspec = g_param_spec_boolean("dvd-report-css", "DVD Report CSS flag", "Set/Get DVD Report CSS flag", FALSE, G_PARAM_READWRITE);
     g_object_class_install_property(class_gobject, PROP_MIRAGE_DISC_DVD_REPORT_CSS, pspec);
         

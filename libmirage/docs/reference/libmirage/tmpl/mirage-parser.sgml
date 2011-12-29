@@ -101,6 +101,19 @@ represents the disc stored in the image file(s).
 @Returns: 
 
 
+<!-- ##### FUNCTION mirage_parser_get_param ##### -->
+<para>
+
+</para>
+
+@self: 
+@name: 
+@type: 
+@ret_value: 
+@error: 
+@Returns: 
+
+
 <!-- ##### FUNCTION mirage_parser_get_param_string ##### -->
 <para>
 
@@ -108,7 +121,7 @@ represents the disc stored in the image file(s).
 
 @self: 
 @name: 
-@value: 
+@ret_value: 
 @error: 
 @Returns: 
 

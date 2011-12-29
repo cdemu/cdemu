@@ -185,7 +185,7 @@ void mirage_object_debug_messagev (MIRAGE_Object *self, gint level, gchar *forma
  * @self: a #MIRAGE_Object
  * @level: debug level
  * @format: message format. See the printf() documentation.
- * @Varargs: parameters to insert into the format string.
+ * @...: parameters to insert into the format string.
  *
  * <para>
  * Outputs debug message with verbosity level @level, format string @format and

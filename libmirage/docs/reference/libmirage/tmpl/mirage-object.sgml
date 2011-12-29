@@ -65,7 +65,7 @@ via debug contexts.
 @self: 
 @level: 
 @format: 
-@Varargs: 
+@...: 
 
 
 <!-- ##### FUNCTION mirage_object_debug_messagev ##### -->

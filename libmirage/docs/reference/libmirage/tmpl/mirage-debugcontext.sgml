@@ -58,7 +58,7 @@ implemented by a #MIRAGE_Object.
 
 @obj: 
 @lvl: 
-@msg...: 
+@...: 
 
 
 <!-- ##### STRUCT MIRAGE_DebugContext ##### -->
