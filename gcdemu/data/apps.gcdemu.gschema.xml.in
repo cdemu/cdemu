@@ -1,0 +1,29 @@
+<schemalist gettext-domain="gcdemu">
+  <schema id="apps.gcdemu" path="/apps/gcdemu/">
+    <key name="show-notifications" type="b">
+      <default>true</default>
+      <_summary>Show notifications</_summary>
+      <_description>Whether to show notifications on events such as daemon start/stop and device state changes.</_description>
+    </key>
+    <key name="use-system-bus" type="b">
+      <default>false</default>
+      <_summary>Use system bus</_summary>
+      <_description>Whether system bus should be used instead of session one.</_description>
+    </key>
+    <key name="daemon-autostart" type="b">
+      <default>true</default>
+      <_summary>Use D-Bus service activation facility</_summary>
+      <_description>Whether to use D-Bus service activation facility or not. If enabled, D-Bus will attempt to autostart the daemon when gCDEmu tries to establish connection with it.</_description>
+    </key>
+    <key name="icon-name" type="s">
+      <default>'gcdemu'</default>
+      <summary>Icon name</summary>
+      <_description>Name of icon to display in the tray. It should be a valid name of a pixmap that can be found in a standard pixmaps directory (e.g. /usr/share/pixmaps).</_description>
+    </key>
+    <key name="icon-policy" type="s">
+      <default>'always'</default>
+      <summary>Icon display policy.</summary>
+      <_description>Icon display policy. Valid options are "always", "never" and "when_connected". If set to "always", the icon is always shown. If set to "never", the icon is never shown. If set to "when_connected", the icon is shown only when gCDEmu is connected to a daemon.</_description>
+    </key>
+  </schema>
+</schemalist>

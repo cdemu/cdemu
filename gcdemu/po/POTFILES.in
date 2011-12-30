@@ -1,5 +1,5 @@
 # List of source files containing translatable strings.
 # Please keep this file sorted alphabetically.
 data/gcdemu.desktop.in
-data/gcdemu.schemas.in
+data/app.gcdemu.gschema.xml.in
 src/gcdemu

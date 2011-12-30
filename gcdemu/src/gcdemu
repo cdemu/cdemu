@@ -25,18 +25,12 @@ import subprocess
 from gettext import gettext as _
 from gettext import bindtextdomain, textdomain
 
-# Gtk
-import gobject
-import gtk
-import gconf
-
-# pynotify
-try:
-    import pynotify
-    has_pynotify = True
-except:
-    print ("pynotify not found; notifications disabled.")
-    has_pynotify = False
+# Gtk, GObject, Notify, etc.
+from gi.repository import GObject
+from gi.repository import GdkPixbuf
+from gi.repository import Gtk
+from gi.repository import Gio
+from gi.repository import Notify
 
 # D-BUS
 import dbus
@@ -46,7 +40,7 @@ DBusGMainLoop(set_as_default=True)
 
 # *** Globals ***
 app_name = "gcdemu"
-app_version = "1.4.0"
+app_version = "1.4.1"
 supported_daemon_interface_version = 2
 
 # I18n
@@ -57,7 +51,7 @@ textdomain(app_name)
 ################################################################################
 #                       CDEmu: D-BUS interface object                          #
 ################################################################################
-class CDEmu (gobject.GObject):
+class CDEmu (GObject.GObject):
     def __init__ (self):
         super(CDEmu, self).__init__()
 
@@ -184,26 +178,26 @@ class CDEmu (gobject.GObject):
         for device in self.devices:
             device.update_device_mapping()
 
-gobject.type_register(CDEmu)
-gobject.signal_new("error", CDEmu,
-    gobject.SIGNAL_RUN_FIRST,
-    gobject.TYPE_NONE,
-    (gobject.TYPE_STRING,gobject.TYPE_STRING,))
-gobject.signal_new("daemon-started", CDEmu,
-    gobject.SIGNAL_RUN_FIRST,
-    gobject.TYPE_NONE,
+GObject.type_register(CDEmu)
+GObject.signal_new("error", CDEmu,
+    GObject.SignalFlags.RUN_FIRST,
+    None,
+    (GObject.TYPE_STRING, GObject.TYPE_STRING, ))
+GObject.signal_new("daemon-started", CDEmu,
+    GObject.SignalFlags.RUN_FIRST,
+    None,
     ())
-gobject.signal_new("daemon-stopped", CDEmu,
-    gobject.SIGNAL_RUN_FIRST,
-    gobject.TYPE_NONE,
+GObject.signal_new("daemon-stopped", CDEmu,
+    GObject.SignalFlags.RUN_FIRST,
+    None,
     ())
-gobject.signal_new("connection-established", CDEmu,
-    gobject.SIGNAL_RUN_FIRST,
-    gobject.TYPE_NONE,
-    (gobject.TYPE_INT,))
-gobject.signal_new("connection-lost", CDEmu,
-    gobject.SIGNAL_RUN_FIRST,
-    gobject.TYPE_NONE,
+GObject.signal_new("connection-established", CDEmu,
+    GObject.SignalFlags.RUN_FIRST,
+    None,
+    (GObject.TYPE_INT, ))
+GObject.signal_new("connection-lost", CDEmu,
+    GObject.SignalFlags.RUN_FIRST,
+    None,
     ())
 
 
@@ -214,7 +208,7 @@ class CDEmuNeedPassword (Exception):
     def __init__ (self):
         pass
 
-class CDEmuDevice (gobject.GObject):
+class CDEmuDevice (GObject.GObject):
     def __init__ (self, d, iface):
         super(CDEmuDevice, self).__init__()
 
@@ -350,53 +344,53 @@ class CDEmuDevice (gobject.GObject):
         self.emit("mapping-ready")
 
 
-gobject.type_register(CDEmuDevice)
-gobject.signal_new("mapping-ready", CDEmuDevice,
-    gobject.SIGNAL_RUN_FIRST,
-    gobject.TYPE_NONE,
+GObject.type_register(CDEmuDevice)
+GObject.signal_new("mapping-ready", CDEmuDevice,
+    GObject.SignalFlags.RUN_FIRST,
+    None,
     ())
-gobject.signal_new("status-changed", CDEmuDevice,
-    gobject.SIGNAL_RUN_FIRST,
-    gobject.TYPE_NONE,
+GObject.signal_new("status-changed", CDEmuDevice,
+    GObject.SignalFlags.RUN_FIRST,
+    None,
     ())
-gobject.signal_new("device-id-changed", CDEmuDevice,
-    gobject.SIGNAL_RUN_FIRST,
-    gobject.TYPE_NONE,
+GObject.signal_new("device-id-changed", CDEmuDevice,
+    GObject.SignalFlags.RUN_FIRST,
+    None,
     ())
-gobject.signal_new("dpm-emulation-changed", CDEmuDevice,
-    gobject.SIGNAL_RUN_FIRST,
-    gobject.TYPE_NONE,
+GObject.signal_new("dpm-emulation-changed", CDEmuDevice,
+    GObject.SignalFlags.RUN_FIRST,
+    None,
     ())
-gobject.signal_new("tr-emulation-changed", CDEmuDevice,
-    gobject.SIGNAL_RUN_FIRST,
-    gobject.TYPE_NONE,
+GObject.signal_new("tr-emulation-changed", CDEmuDevice,
+    GObject.SignalFlags.RUN_FIRST,
+    None,
     ())
-gobject.signal_new("daemon-debug-mask-changed", CDEmuDevice,
-    gobject.SIGNAL_RUN_FIRST,
-    gobject.TYPE_NONE,
+GObject.signal_new("daemon-debug-mask-changed", CDEmuDevice,
+    GObject.SignalFlags.RUN_FIRST,
+    None,
     ())
-gobject.signal_new("library-debug-mask-changed", CDEmuDevice,
-    gobject.SIGNAL_RUN_FIRST,
-    gobject.TYPE_NONE,
+GObject.signal_new("library-debug-mask-changed", CDEmuDevice,
+    GObject.SignalFlags.RUN_FIRST,
+    None,
     ())
-gobject.signal_new("error", CDEmuDevice,
-    gobject.SIGNAL_RUN_FIRST,
-    gobject.TYPE_NONE,
-    (gobject.TYPE_STRING,))
+GObject.signal_new("error", CDEmuDevice,
+    GObject.SignalFlags.RUN_FIRST,
+    None,
+    (GObject.TYPE_STRING, ))
 
 
 ################################################################################
 #                                   gCDEmu                                     #
 ################################################################################
-class gCDEmu (gtk.StatusIcon):
+class gCDEmu (Gtk.StatusIcon):
     def load_icon (self):
-        # Get icon name from config
-        icon_name = self.config.get_string(self.config_path + "/icon_name")
+        # Get icon name from settings
+        icon_name = self.settings.get_string("icon-name")
         if icon_name == None:
             icon_name = "gcdemu"
 
         # Lookup icon in standard paths
-        icon_info = gtk.IconTheme().lookup_icon(icon_name, 0, 0)
+        icon_info = Gtk.IconTheme().lookup_icon(icon_name, 0, 0)
         if icon_info == None:
             print ("Pixmap '%s' not found in standard pixmap paths!" % (icon_name))
             self.icon_on = None
@@ -405,14 +399,14 @@ class gCDEmu (gtk.StatusIcon):
         icon_filename = icon_info.get_filename()
 
         # "On" icon
-        self.icon_on = gtk.gdk.pixbuf_new_from_file(icon_filename)
+        self.icon_on = GdkPixbuf.Pixbuf.new_from_file(icon_filename)
         # "Off" icon - desaturated
         self.icon_off = self.icon_on.copy()
         self.icon_off.saturate_and_pixelate(self.icon_off, 0.00, False)
 
     def load_logo (self):
         # Lookup "icon" in standard paths
-        icon_info = gtk.IconTheme().lookup_icon("gcdemu", 0, 0)
+        icon_info = Gtk.IconTheme().lookup_icon("gcdemu", 0, 0)
         if icon_info == None:
             print ("Pixmap '%s' not found in standard pixmap paths!" % ("gcdemu"))
             self.logo = None
@@ -420,7 +414,7 @@ class gCDEmu (gtk.StatusIcon):
         logo_filename = icon_info.get_filename()
 
         # Load
-        self.logo = gtk.gdk.pixbuf_new_from_file_at_size(logo_filename, 156, 156)
+        self.logo = GdkPixbuf.Pixbuf.new_from_file_at_size(logo_filename, 156, 156)
 
     def update_icon (self):
         # If icon is invalid, use standard "image-missing" as fallback
@@ -487,42 +481,36 @@ class gCDEmu (gtk.StatusIcon):
         self.signals = []
 
         # *** Configuration ***
-        self.config = gconf.client_get_default()
-        self.config_path = "/apps/gcdemu/prefs"
-        self.config.add_dir(self.config_path, gconf.CLIENT_PRELOAD_NONE)
-
-        # Watch over our config
-        self.config.notify_add(self.config_path, self.on_gconf_client_notify)
+        self.settings = Gio.Settings("apps.gcdemu")
+        
+        # Watch over our settings
+        self.settings.connect("changed", lambda s, k: self.on_settings_changed(k))
 
         # Notifications
-        if has_pynotify:
-            if pynotify.init(app_name):
-                self.show_notifications = self.config.get_bool(self.config_path + "/show_notifications")
-            else:
-                # Disable because pynotify initialization failed
-                self.show_notifications = False
+        if Notify.init(app_name):
+            self.show_notifications = self.settings.get_boolean("show-notifications")
         else:
-            # Disable because pynotify is not available
+            # Disable because pynotify initialization failed
             self.show_notifications = False
-
+        
         # Which bus to use
-        self.use_system_bus = self.config.get_bool(self.config_path + "/use_system_bus")
+        self.use_system_bus = self.settings.get_boolean("use-system-bus")
 
         # Daemon autostart
-        self.daemon_autostart = self.config.get_bool(self.config_path + "/daemon_autostart")
+        self.daemon_autostart = self.settings.get_boolean("daemon-autostart")
 
         # Icon policy
-        self.icon_policy = self.config.get_string(self.config_path + "/icon_policy")
+        self.icon_policy = self.settings.get_string("icon-policy")
 
         # To load the icon, we pretend that icon path g-conf key has changed and
         # let the callback do the rest for us...
-        self.config.notify(self.config_path + "/icon_name")
+        self.on_settings_changed("icon-name")
 
         # Load logo
         self.load_logo()
 
         # *** The About dialog ***
-        self.about = gtk.AboutDialog()
+        self.about = Gtk.AboutDialog()
         self.about.set_name(app_name)
         self.about.set_version(app_version)
         self.about.set_copyright("Copyright (C) 2006-2011 Rok Mandeljc")
@@ -535,55 +523,53 @@ class gCDEmu (gtk.StatusIcon):
         self.about.set_logo(self.logo)
 
         # *** The right-click popup menu ***
-        self.menu = gtk.Menu()
+        self.menu = Gtk.Menu()
 
         # Use system bus
-        item = gtk.CheckMenuItem(_("Use _system bus"))
+        item = Gtk.CheckMenuItem.new_with_mnemonic(_("Use _system bus"))
         item.set_active(self.use_system_bus)
         item.connect("toggled", self.on_use_system_bus_toggled)
         self.menu.append(item)
         self.item_use_system_bus = item
 
         # Show notifications
-        item = gtk.CheckMenuItem(_("Show _notifications"))
+        item = Gtk.CheckMenuItem.new_with_mnemonic(_("Show _notifications"))
         item.set_active(self.show_notifications)
         item.connect("toggled", self.on_show_notifications_toggled)
         self.menu.append(item)
         self.item_show_notifications = item
-        if has_pynotify == False:
-            item.set_sensitive(False)
 
         # Separator
-        self.menu.append(gtk.SeparatorMenuItem())
+        self.menu.append(Gtk.SeparatorMenuItem())
 
         # About
-        item = gtk.ImageMenuItem(gtk.STOCK_ABOUT)
+        item = Gtk.ImageMenuItem.new_from_stock(Gtk.STOCK_ABOUT, None)
         item.connect("activate", self.on_about_activate)
         self.menu.append(item)
 
         # Separator
-        self.menu.append(gtk.SeparatorMenuItem())
+        self.menu.append(Gtk.SeparatorMenuItem())
 
         # Quit
-        item = gtk.ImageMenuItem(gtk.STOCK_QUIT)
-        item.connect("activate", gtk.main_quit)
+        item = Gtk.ImageMenuItem.new_from_stock(Gtk.STOCK_QUIT, None)
+        item.connect("activate", Gtk.main_quit)
         self.menu.append(item)
 
         self.menu.show_all()
 
         # *** Devices menu ***
-        self.devices_menu = gtk.Menu()
+        self.devices_menu = Gtk.Menu()
 
-        item = gtk.MenuItem(_("Devices"))
+        item = Gtk.MenuItem.new_with_label(_("Devices"))
         item.set_sensitive(False)
         self.devices_menu.append(item);
 
-        self.devices_menu.append(gtk.SeparatorMenuItem())
+        self.devices_menu.append(Gtk.SeparatorMenuItem())
 
         self.devices_menu.show_all()
 
         # *** The status icon ***
-        self.set_tooltip('gCDEmu')
+        self.set_tooltip_text('gCDEmu')
         self.set_visible(True)
         self.connect('activate', self.on_activate)
         self.connect('popup-menu', self.on_popup_menu)
@@ -599,49 +585,49 @@ class gCDEmu (gtk.StatusIcon):
         self.cdemu.connect_to_bus(self.use_system_bus)
 
         # *** Main loop ***
-        gtk.main()
+        Gtk.main()
 
 
     def on_activate (self, status_icon):
         # Popup the devices menu (simulate the 1st button click)
-        self.devices_menu.popup(None, None, gtk.status_icon_position_menu, 1, gtk.get_current_event_time(), self)
+        self.devices_menu.popup(None, None, status_icon.position_menu, self, 1, Gtk.get_current_event_time())
 
     def on_popup_menu (self, status_icon, button, activate_time):
         # Popup the menu
-        self.menu.popup(None, None, gtk.status_icon_position_menu, button, activate_time, self)
+        self.menu.popup(None, None, status_icon.position_menu, self, button, activate_time)
 
-    def on_gconf_client_notify (self, client, id, entry, data):
-        if entry.key == self.config_path + "/use_system_bus":
-            self.use_system_bus = entry.value.get_bool()
+    def on_settings_changed (self, key):
+        if key == "use-system-bus":
+            self.use_system_bus = self.settings.get_boolean(key)
             print ("New setting: use system bus: %d" % self.use_system_bus)
             self.item_use_system_bus.set_active(self.use_system_bus)
             self.cdemu.connect_to_bus(self.use_system_bus)
-        elif entry.key == self.config_path + "/show_notifications":
-            self.show_notifications = entry.value.get_bool()
+        elif key == "show-notifications":
+            self.show_notifications = self.settings.get_boolean(key)
             self.item_show_notifications.set_active(self.show_notifications)
             print ("New setting: show notifications: %d" % self.show_notifications)
-        elif entry.key == self.config_path + "/icon_name":
+        elif key == "icon-name":
             self.load_icon()
             self.update_icon()
-        elif entry.key == self.config_path + "/daemon_autostart":
-            self.daemon_autostart = entry.value.get_bool()
+        elif key == "daemon-autostart":
+            self.daemon_autostart = self.settings.get_boolean(key)
             print ("New setting: daemon autostart: %d" % self.daemon_autostart)
-        elif entry.key == self.config_path + "/icon_policy":
-            self.icon_policy = entry.get_value().get_string()
+        elif key == "icon-policy":
+            self.icon_policy = self.settings.get_string(key)
             self.update_icon()
         else:
-            print ("Unknown setting key: %s!" % entry.key)
+            print ("Unknown setting key: %s!" % key)
 
     def on_about_activate (self, menuitem):
         self.about.run()
         self.about.hide()
 
     def on_use_system_bus_toggled (self, checkmenuitem):
-        self.config.set_bool(self.config_path + "/use_system_bus", checkmenuitem.get_active())
+        self.settings.set_boolean("use-system-bus", checkmenuitem.get_active())
         return
 
     def on_show_notifications_toggled (self, checkmenuitem):
-        self.config.set_bool(self.config_path + "/show_notifications", checkmenuitem.get_active())
+        self.settings.set_boolean("show-notifications", checkmenuitem.get_active())
         return
 
 
@@ -674,25 +660,25 @@ class gCDEmu (gtk.StatusIcon):
 
     def show_notification (self, summary, body, icon = None):
         if self.show_notifications:
-            n = pynotify.Notification(summary, body, icon)
+            n = Notify.Notification.new(summary, body, icon)
             n.show()
 
     def show_error (self, title, message):
          # Show error dialog
-        message = gtk.MessageDialog(None, 0, gtk.MESSAGE_ERROR, gtk.BUTTONS_CLOSE, message)
+        message = Gtk.MessageDialog(None, 0, Gtk.MessageType.ERROR, Gtk.ButtonsType.CLOSE, message)
         message.set_title(title)
         message.run()
         message.destroy()
 
         return
 
-gobject.type_register(gCDEmu)
+GObject.type_register(gCDEmu)
 
 
 ################################################################################
 #                                gCDEmuDevice                                  #
 ################################################################################
-class gCDEmuDevice (gobject.GObject):
+class gCDEmuDevice (GObject.GObject):
     def connect_signal (self, obj, sig, callback):
         signal = obj.connect(sig, callback)
         self.signals.append((obj, signal))
@@ -707,7 +693,7 @@ class gCDEmuDevice (gobject.GObject):
         self.device = cdemu.devices[d]
 
         # Create menu item
-        self.menu_item = gtk.MenuItem()
+        self.menu_item = Gtk.MenuItem()
         self.menu_item.show()
         self.connect_signal(self.menu_item, "button-press-event", self.on_menu_item_button_press_event)
 
@@ -719,45 +705,45 @@ class gCDEmuDevice (gobject.GObject):
 
         # *** GUI ***
         # Create dialog
-        self.dialog = gtk.Dialog("Device #%02d properties" % d, None, 0, (gtk.STOCK_CLOSE, gtk.RESPONSE_CLOSE))
+        self.dialog = Gtk.Dialog("Device #%02d properties" % d, None, 0, (Gtk.STOCK_CLOSE, Gtk.ResponseType.CLOSE))
         self.dialog.set_border_width(5)
         self.dialog.vbox.set_border_width(5)
 
         # Label
-        label = gtk.Label("<b><big>" + (_("Device #%02d") % (self.number)) + "</big></b>")
+        label = Gtk.Label(label="<b><big>" + (_("Device #%02d") % (self.number)) + "</big></b>")
         label.show()
         label.set_use_markup(True)
-        self.dialog.vbox.pack_start(label, False)
+        self.dialog.vbox.pack_start(label, expand=False, fill=False, padding=0)
 
         # Notebook
-        notebook = gtk.Notebook()
+        notebook = Gtk.Notebook()
         notebook.show()
-        notebook.set_tab_pos(gtk.POS_LEFT)
+        notebook.set_tab_pos(Gtk.PositionType.LEFT)
         notebook.set_border_width(5)
-        self.dialog.vbox.pack_start(notebook, True, True)
+        self.dialog.vbox.pack_start(notebook, expand=True, fill=True, padding=0)
 
         # Page: status
         self.page_status = gCDEmuDeviceStatusPage()
         self.page_status.set_device_mapping(self.device.sg_path, self.device.sr_path)
-        notebook.append_page(self.page_status, gtk.Label(_("Status")))
+        notebook.append_page(self.page_status, Gtk.Label(label=_("Status")))
 
         self.connect_signal(self.page_status, "load-unload-device", lambda w: self.load_unload_device())
 
         # Page: options
         self.page_options = gCDEmuDeviceOptionsPage()
-        notebook.append_page(self.page_options, gtk.Label(_("Options")))
+        notebook.append_page(self.page_options, Gtk.Label(label=_("Options")))
         self.connect_signal(self.page_options, "device-id-changed", lambda w, id: self.device.set_device_id(id))
         self.connect_signal(self.page_options, "dpm-emulation-changed", lambda w, v: self.device.set_dpm_emulation(v))
         self.connect_signal(self.page_options, "tr-emulation-changed", lambda w, v: self.device.set_tr_emulation(v))
 
         # Page: daemon debug mask
         self.page_daemon = gCDEmuDeviceDebugMaskPage(_("Daemon debug mask"), cdemu.daemon_debug_masks)
-        notebook.append_page(self.page_daemon, gtk.Label(_("Daemon")))
+        notebook.append_page(self.page_daemon, Gtk.Label(label=_("Daemon")))
         self.connect_signal(self.page_daemon, "debug-mask-changed", lambda w, v: self.device.set_daemon_debug_mask(v))
 
         # Page: library debug mask
         self.page_library = gCDEmuDeviceDebugMaskPage(_("Library debug mask"), cdemu.library_debug_masks)
-        notebook.append_page(self.page_library, gtk.Label(_("Library")))
+        notebook.append_page(self.page_library, Gtk.Label(label=_("Library")))
         self.connect_signal(self.page_library, "debug-mask-changed", lambda w, v: self.device.set_library_debug_mask(v))
 
         # Connect device signals
@@ -860,7 +846,7 @@ class gCDEmuDevice (gobject.GObject):
         else:
             result = self.file_chooser.run()
             self.file_chooser.hide()
-            if result == gtk.RESPONSE_ACCEPT:
+            if result == Gtk.ResponseType.ACCEPT:
                 # Get filename and parameters
                 filenames = self.file_chooser.get_filenames()
                 parameters = self.file_chooser.get_parameters()
@@ -872,7 +858,7 @@ class gCDEmuDevice (gobject.GObject):
                     # Get password
                     result = self.password_dialog.run()
                     self.password_dialog.hide()
-                    if result == gtk.RESPONSE_OK:
+                    if result == Gtk.ResponseType.OK:
                         password = self.password_dialog.get_password()
                         # Try loading with overriden password
                         parameters["password"] = password
@@ -889,97 +875,97 @@ class gCDEmuDevice (gobject.GObject):
 
     def show_error (self, text):
          # Show error dialog
-        message = gtk.MessageDialog(None, 0, gtk.MESSAGE_ERROR, gtk.BUTTONS_CLOSE, text)
+        message = Gtk.MessageDialog(None, 0, Gtk.MessageType.ERROR, Gtk.ButtonsType.CLOSE, text)
         message.set_title(_("Device error"))
         message.run()
         message.destroy()
 
         return
 
-gobject.type_register(gCDEmuDevice)
-gobject.signal_new("device-notification", gCDEmuDevice,
-    gobject.SIGNAL_RUN_FIRST,
-    gobject.TYPE_NONE,
-    (gobject.TYPE_STRING, gobject.TYPE_STRING))
+GObject.type_register(gCDEmuDevice)
+GObject.signal_new("device-notification", gCDEmuDevice,
+    GObject.SignalFlags.RUN_FIRST,
+    None,
+    (GObject.TYPE_STRING, GObject.TYPE_STRING))
 
 
 ################################################################################
 #                 gCDEmuDeviceStatusPage: device status page                   #
 ################################################################################
-class gCDEmuDeviceStatusPage (gtk.VBox):
+class gCDEmuDeviceStatusPage (Gtk.VBox):
     def __init__ (self):
         super(gCDEmuDeviceStatusPage, self).__init__()
 
         # Frame: status
-        frame = gtk.Frame(_("Status"))
+        frame = Gtk.Frame.new(_("Status"))
         frame.set_label_align(0.50, 0.50)
         frame.show()
         frame.set_border_width(2)
-        self.pack_start(frame, False, False)
+        self.pack_start(frame, expand=False, fill=False, padding=0)
 
-        table = gtk.Table()
+        table = Gtk.Table()
         table.show()
         frame.add(table)
         table.set_border_width(5)
-        table.set_row_spacings(2)
+        table.set_row_spacings(5)
 
-        label = gtk.Label(_("Loaded: "))
+        label = Gtk.Label(label=_("Loaded: "))
         label.show()
-        table.attach(label, 0, 1, 0, 1, gtk.FILL|gtk.EXPAND, 0)
+        table.attach(label, 0, 1, 0, 1, Gtk.AttachOptions.FILL|Gtk.AttachOptions.EXPAND, 0)
 
-        label = gtk.Label()
+        label = Gtk.Label()
         label.show()
-        table.attach(label, 1, 2, 0, 1, gtk.FILL|gtk.EXPAND, 0)
+        table.attach(label, 1, 2, 0, 1, Gtk.AttachOptions.FILL|Gtk.AttachOptions.EXPAND, 0)
         self.label_loaded = label
 
-        label = gtk.Label(_("File name(s): "))
+        label = Gtk.Label(label=_("File name(s): "))
         label.show()
-        table.attach(label, 0, 1, 1, 2, gtk.FILL|gtk.EXPAND, 0)
+        table.attach(label, 0, 1, 1, 2, Gtk.AttachOptions.FILL|Gtk.AttachOptions.EXPAND, 0)
 
-        label = gtk.Label()
+        label = Gtk.Label()
         label.show()
-        table.attach(label, 1, 2, 1, 2, gtk.FILL|gtk.EXPAND, 0)
+        table.attach(label, 1, 2, 1, 2, Gtk.AttachOptions.FILL|Gtk.AttachOptions.EXPAND, 0)
         self.label_filename = label
 
-        separator = gtk.HSeparator()
+        separator = Gtk.Separator.new(Gtk.Orientation.HORIZONTAL)
         separator.show()
-        table.attach(separator, 0, 2, 2, 3, gtk.FILL|gtk.EXPAND, 0)
+        table.attach(separator, 0, 2, 2, 3, Gtk.AttachOptions.FILL|Gtk.AttachOptions.EXPAND, 0)
 
-        button = gtk.Button(_("Load"))
+        button = Gtk.Button(_("Load"))
         button.show()
-        table.attach(button, 0, 2, 3, 4, gtk.EXPAND, 0)
+        table.attach(button, 0, 2, 3, 4, Gtk.AttachOptions.EXPAND, 0)
         button.connect("clicked", self.on_load_device_clicked)
         self.button_load = button
 
         # *** Frame: mapping ***
-        frame = gtk.Frame(_("Device mapping"))
+        frame = Gtk.Frame.new(_("Device mapping"))
         frame.set_label_align(0.50, 0.50)
         frame.show()
         frame.set_border_width(2)
-        self.pack_start(frame, False, False)
+        self.pack_start(frame, expand=False, fill=False, padding=5)
 
-        table = gtk.Table()
+        table = Gtk.Table()
         table.show()
         frame.add(table)
         table.set_border_width(5)
         table.set_row_spacings(2)
 
-        label = gtk.Label(_("SCSI CD-ROM device: "))
+        label = Gtk.Label(label=_("SCSI CD-ROM device: "))
         label.show()
-        table.attach(label, 0, 1, 0, 1, gtk.FILL|gtk.EXPAND, 0)
+        table.attach(label, 0, 1, 0, 1, Gtk.AttachOptions.FILL|Gtk.AttachOptions.EXPAND, 0)
 
-        label = gtk.Label()
+        label = Gtk.Label()
         label.show()
-        table.attach(label, 1, 2, 0, 1, gtk.FILL|gtk.EXPAND, 0)
+        table.attach(label, 1, 2, 0, 1, Gtk.AttachOptions.FILL|Gtk.AttachOptions.EXPAND, 0)
         self.label_dev_sr = label
 
-        label = gtk.Label(_("SCSI generic device: "))
+        label = Gtk.Label(label=_("SCSI generic device: "))
         label.show()
-        table.attach(label, 0, 1, 1, 2, gtk.FILL|gtk.EXPAND, 0)
+        table.attach(label, 0, 1, 1, 2, Gtk.AttachOptions.FILL|Gtk.AttachOptions.EXPAND, 0)
 
-        label = gtk.Label()
+        label = Gtk.Label()
         label.show()
-        table.attach(label, 1, 2, 1, 2, gtk.FILL|gtk.EXPAND, 0)
+        table.attach(label, 1, 2, 1, 2, Gtk.AttachOptions.FILL|Gtk.AttachOptions.EXPAND, 0)
         self.label_dev_sg = label
 
         self.show_all()
@@ -1008,94 +994,94 @@ class gCDEmuDeviceStatusPage (gtk.VBox):
     def on_load_device_clicked (self, button):
         self.emit("load-unload-device")
 
-gobject.type_register(gCDEmuDeviceStatusPage)
-gobject.signal_new("load-unload-device", gCDEmuDeviceStatusPage,
-    gobject.SIGNAL_RUN_FIRST,
-    gobject.TYPE_NONE,
+GObject.type_register(gCDEmuDeviceStatusPage)
+GObject.signal_new("load-unload-device", gCDEmuDeviceStatusPage,
+    GObject.SignalFlags.RUN_FIRST,
+    None,
     ())
 
 
 ################################################################################
 #                gCDEmuDeviceOptionsPage: device options page                  #
 ################################################################################
-class gCDEmuDeviceOptionsPage (gtk.VBox):
+class gCDEmuDeviceOptionsPage (Gtk.VBox):
     def __init__ (self):
         super(gCDEmuDeviceOptionsPage, self).__init__()
 
         # Device ID
-        frame = gtk.Frame(_("Device ID"))
+        frame = Gtk.Frame.new(_("Device ID"))
         frame.set_label_align(0.50, 0.50)
         frame.show()
         frame.set_border_width(2)
-        self.pack_start(frame, False, False)
+        self.pack_start(frame, expand=False, fill=False, padding=0)
 
-        table = gtk.Table()
+        table = Gtk.Table()
         table.show()
         frame.add(table)
         table.set_border_width(5)
-        table.set_row_spacings(2)
+        table.set_row_spacings(5)
 
-        label = gtk.Label(_("Vendor ID: "))
+        label = Gtk.Label(label=_("Vendor ID: "))
         label.show()
         table.attach(label, 0, 1, 0, 1, 0, 0)
 
-        entry = gtk.Entry()
+        entry = Gtk.Entry()
         entry.show()
         entry.set_max_length(8)
-        table.attach(entry, 1, 2, 0, 1, gtk.FILL|gtk.EXPAND, 0)
+        table.attach(entry, 1, 2, 0, 1, Gtk.AttachOptions.FILL|Gtk.AttachOptions.EXPAND, 0)
         self.entry_vendor_id = entry
 
-        label = gtk.Label(_("Product ID: "))
+        label = Gtk.Label(label=_("Product ID: "))
         label.show()
-        table.attach(label, 0, 1, 1, 2, gtk.FILL|gtk.EXPAND, 0)
+        table.attach(label, 0, 1, 1, 2, Gtk.AttachOptions.FILL|Gtk.AttachOptions.EXPAND, 0)
 
-        entry = gtk.Entry()
+        entry = Gtk.Entry()
         entry.show()
         entry.set_max_length(16)
-        table.attach(entry, 1, 2, 1, 2, gtk.FILL|gtk.EXPAND, 0)
+        table.attach(entry, 1, 2, 1, 2, Gtk.AttachOptions.FILL|Gtk.AttachOptions.EXPAND, 0)
         self.entry_product_id = entry
 
-        label = gtk.Label(_("Revision: "))
+        label = Gtk.Label(label=_("Revision: "))
         label.show()
-        table.attach(label, 0, 1, 2, 3, gtk.FILL|gtk.EXPAND, 0)
+        table.attach(label, 0, 1, 2, 3, Gtk.AttachOptions.FILL|Gtk.AttachOptions.EXPAND, 0)
 
-        entry = gtk.Entry()
+        entry = Gtk.Entry()
         entry.show()
         entry.set_max_length(4)
-        table.attach(entry, 1, 2, 2, 3, gtk.FILL|gtk.EXPAND, 0)
+        table.attach(entry, 1, 2, 2, 3, Gtk.AttachOptions.FILL|Gtk.AttachOptions.EXPAND, 0)
         self.entry_revision = entry
 
-        label = gtk.Label(_("Vendor-specific: "))
+        label = Gtk.Label(label=_("Vendor-specific: "))
         label.show()
-        table.attach(label, 0, 1, 3, 4, gtk.FILL|gtk.EXPAND, 0)
+        table.attach(label, 0, 1, 3, 4, Gtk.AttachOptions.FILL|Gtk.AttachOptions.EXPAND, 0)
 
-        entry = gtk.Entry()
+        entry = Gtk.Entry()
         entry.show()
         entry.set_max_length(20)
-        table.attach(entry, 1, 2, 3, 4, gtk.FILL|gtk.EXPAND, 0)
+        table.attach(entry, 1, 2, 3, 4, Gtk.AttachOptions.FILL|Gtk.AttachOptions.EXPAND, 0)
         self.entry_vendor_specific = entry
 
-        separator = gtk.HSeparator()
+        separator = Gtk.Separator.new(Gtk.Orientation.HORIZONTAL)
         separator.show()
-        table.attach(separator, 0, 2, 4, 5, gtk.FILL|gtk.EXPAND, 0)
+        table.attach(separator, 0, 2, 4, 5, Gtk.AttachOptions.FILL|Gtk.AttachOptions.EXPAND, 0)
 
-        button = gtk.Button(_("Set device ID"))
+        button = Gtk.Button(_("Set device ID"))
         button.show()
-        table.attach(button, 0, 2, 5, 6, gtk.EXPAND, 0)
+        table.attach(button, 0, 2, 5, 6, Gtk.AttachOptions.EXPAND, 0)
         button.connect("clicked", self.on_set_device_id_clicked)
 
         # DPM emulation
-        checkbutton = gtk.CheckButton(_("DPM emulation"), False)
+        checkbutton = Gtk.CheckButton(_("DPM emulation"), False)
         checkbutton.show()
         checkbutton.connect("toggled", self.on_set_dpm_emulation_toggled)
-        self.pack_start(checkbutton, False, False)
+        self.pack_start(checkbutton, expand=False, fill=False, padding=0)
         self.checkbutton_dpm = checkbutton
 
         # Transfer rate emulation
-        checkbutton = gtk.CheckButton(_("Transfer rate emulation"), False)
+        checkbutton = Gtk.CheckButton(_("Transfer rate emulation"), False)
         checkbutton.show()
         checkbutton.connect("toggled", self.on_set_tr_emulation_toggled)
-        self.pack_start(checkbutton, False, False)
+        self.pack_start(checkbutton, expand=False, fill=False, padding=0)
         self.checkbutton_tr = checkbutton
 
         self.show_all()
@@ -1126,48 +1112,49 @@ class gCDEmuDeviceOptionsPage (gtk.VBox):
     def on_set_tr_emulation_toggled (self, togglebutton):
         self.emit("tr-emulation-changed", togglebutton.get_active())
 
-gobject.type_register(gCDEmuDeviceOptionsPage)
-gobject.signal_new("device-id-changed", gCDEmuDeviceOptionsPage,
-    gobject.SIGNAL_RUN_FIRST,
-    gobject.TYPE_NONE,
-    (gobject.TYPE_PYOBJECT,))
-gobject.signal_new("dpm-emulation-changed", gCDEmuDeviceOptionsPage,
-    gobject.SIGNAL_RUN_FIRST,
-    gobject.TYPE_NONE,
-    (gobject.TYPE_BOOLEAN,))
-gobject.signal_new("tr-emulation-changed", gCDEmuDeviceOptionsPage,
-    gobject.SIGNAL_RUN_FIRST,
-    gobject.TYPE_NONE,
-    (gobject.TYPE_BOOLEAN,))
+GObject.type_register(gCDEmuDeviceOptionsPage)
+GObject.signal_new("device-id-changed", gCDEmuDeviceOptionsPage,
+    GObject.SignalFlags.RUN_FIRST,
+    None,
+    (GObject.TYPE_PYOBJECT,))
+GObject.signal_new("dpm-emulation-changed", gCDEmuDeviceOptionsPage,
+    GObject.SignalFlags.RUN_FIRST,
+    None,
+    (GObject.TYPE_BOOLEAN,))
+GObject.signal_new("tr-emulation-changed", gCDEmuDeviceOptionsPage,
+    GObject.SignalFlags.RUN_FIRST,
+    None,
+    (GObject.TYPE_BOOLEAN,))
 
 
 ################################################################################
 #                 gCDEmuDeviceDebugMaskPage: debug mask page                   #
 ################################################################################
-class gCDEmuDeviceDebugMaskPage (gtk.Frame):
+class gCDEmuDeviceDebugMaskPage (Gtk.Frame):
     def __init__ (self, name, masks_list):
-        super(gCDEmuDeviceDebugMaskPage, self).__init__(name)
+        super(gCDEmuDeviceDebugMaskPage, self).__init__()
+        self.set_label(name)
         self.entries = []
 
-        vbox = gtk.VBox()
+        vbox = Gtk.VBox()
         vbox.set_border_width(5)
         vbox.set_spacing(2)
         self.add(vbox)
 
         # Create checkboxes
         for mask in masks_list:
-            checkbutton = gtk.CheckButton(mask[0], False)
+            checkbutton = Gtk.CheckButton(mask[0], False)
             checkbutton.weight = mask[1]
-            vbox.pack_start(checkbutton, False, False)
+            vbox.pack_start(checkbutton, expand=False, fill=False, padding=0)
             self.entries.append(checkbutton)
 
         # Separator
-        vbox.pack_start(gtk.HSeparator(), False, False)
+        vbox.pack_start(Gtk.Separator.new(Gtk.Orientation.HORIZONTAL), expand=False, fill=False, padding=5)
 
         # Button
-        button = gtk.Button(_("Set debug mask"))
+        button = Gtk.Button(_("Set debug mask"))
         button.show()
-        vbox.pack_start(button, False, False)
+        vbox.pack_start(button, expand=False, fill=False, padding=0)
         button.connect("clicked", self.on_set_debug_mask_clicked)
 
         self.show_all()
@@ -1185,33 +1172,33 @@ class gCDEmuDeviceDebugMaskPage (gtk.Frame):
 
         self.emit("debug-mask-changed", value)
 
-gobject.type_register(gCDEmuDeviceDebugMaskPage)
-gobject.signal_new("debug-mask-changed", gCDEmuDeviceDebugMaskPage,
-    gobject.SIGNAL_RUN_FIRST,
-    gobject.TYPE_NONE,
-    (gobject.TYPE_UINT,))
+GObject.type_register(gCDEmuDeviceDebugMaskPage)
+GObject.signal_new("debug-mask-changed", gCDEmuDeviceDebugMaskPage,
+    GObject.SignalFlags.RUN_FIRST,
+    None,
+    (GObject.TYPE_UINT,))
 
 
 ################################################################################
 #                gCDEMuFileChooserDialog: file chooser dialog                  #
 ################################################################################
-class gCDEMuFileChooserDialog (gtk.FileChooserDialog):
+class gCDEMuFileChooserDialog (Gtk.FileChooserDialog):
     def __init__ (self, parsers):
-        super(gCDEMuFileChooserDialog, self).__init__(_("Open file"), None, gtk.FILE_CHOOSER_ACTION_OPEN, (gtk.STOCK_CANCEL, gtk.RESPONSE_CANCEL, gtk.STOCK_OPEN, gtk.RESPONSE_ACCEPT), None)
+        super(gCDEMuFileChooserDialog, self).__init__(_("Open file"), None, Gtk.FileChooserAction.OPEN, (Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL, Gtk.STOCK_OPEN, Gtk.ResponseType.ACCEPT))
         self.set_select_multiple(True)
 
         # Set filters based on supported parser information
-        filter = gtk.FileFilter()
+        filter = Gtk.FileFilter()
         filter.set_name(_("All files"))
         filter.add_pattern("*")
         self.add_filter(filter)
 
-        all_images = gtk.FileFilter()
+        all_images = Gtk.FileFilter()
         all_images.set_name(_("All image files"))
         self.add_filter(all_images)
 
         for parser in parsers:
-            filter = gtk.FileFilter()
+            filter = Gtk.FileFilter()
 
             filter.set_name(parser[2])
             filter.add_mime_type(parser[3])
@@ -1226,19 +1213,19 @@ class gCDEMuFileChooserDialog (gtk.FileChooserDialog):
 
     def run (self):
         # Clear parameters
-        self.entry_encoding.set_active(0)
+        self.combobox_encoding.set_active(0)
         self.entry_password.set_text("")
         self.check_button_css.set_active(False)
 
         # Run the dialog
-        return gtk.FileChooserDialog.run(self)
+        return Gtk.FileChooserDialog.run(self)
 
     def get_parameters (self):
         parameters = {}
         
         # Encoding
-        i = self.entry_encoding.get_active_iter()
-        encoding = self.entry_encoding.get_model().get_value(i, 1)
+        i = self.combobox_encoding.get_active_iter()
+        encoding = self.combobox_encoding.get_model().get_value(i, 1)
         if encoding:
             parameters["encoding"] = encoding
 
@@ -1255,51 +1242,53 @@ class gCDEMuFileChooserDialog (gtk.FileChooserDialog):
 
     def create_extra_options_widget (self):
         # Expander and VBox
-        expander = gtk.Expander(_("Extra Options"))
+        expander = Gtk.Expander()
+        expander.set_label(_("Extra Options"))
 
-        vbox = gtk.VBox(False, 5)
+        vbox = Gtk.VBox(False, 5)
         expander.add(vbox)
 
 
         # *** Encoding ***
-        hbox = gtk.HBox(False, 5)
-        vbox.pack_start(hbox)
+        hbox = Gtk.HBox(False, 5)
+        vbox.pack_start(hbox, expand=True, fill=True, padding=0)
 
         # Label
-        label = gtk.Label(_("Encoding: "))
-        hbox.pack_start(label, expand=False, fill=False)
+        label = Gtk.Label(label=_("Encoding: "))
+        hbox.pack_start(label, expand=False, fill=False, padding=0)
 
         # ComboBoxEntry
         liststore = self.get_encodings_list()
-        comboboxentry = gtk.ComboBoxEntry(liststore, 0)
-        hbox.pack_start(comboboxentry, expand=False, fill=False)
-        self.entry_encoding = comboboxentry
+        combobox = Gtk.ComboBox.new_with_model_and_entry(liststore)
+        combobox.set_entry_text_column(0)
+        hbox.pack_start(combobox, expand=False, fill=False, padding=0)
+        self.combobox_encoding = combobox
         
         # Autocompletion
-        completion = gtk.EntryCompletion()
+        completion = Gtk.EntryCompletion()
         completion.set_model(liststore)
         completion.set_text_column(0)
-        comboboxentry.child.set_completion(completion)
+        combobox.get_child().set_completion(completion)
 
         
         # *** Password ***
-        hbox = gtk.HBox(False, 5)
-        vbox.pack_start(hbox)
+        hbox = Gtk.HBox(False, 5)
+        vbox.pack_start(hbox, expand=True, fill=True, padding=0)
 
         # Label
-        label = gtk.Label(_("Password: "))
-        hbox.pack_start(label, expand=False, fill=False)
+        label = Gtk.Label(label=_("Password: "))
+        hbox.pack_start(label, expand=False, fill=False, padding=0)
 
         # Entry
-        entry = gtk.Entry()
+        entry = Gtk.Entry()
         entry.set_visibility(False)
-        hbox.pack_start(entry, expand=False, fill=False)
+        hbox.pack_start(entry, expand=False, fill=False, padding=0)
         self.entry_password = entry
 
 
         # *** CSS-encrypted DVD flag ***
-        check = gtk.CheckButton(_("Raw image of CSS-encrypted DVD"))
-        vbox.pack_start(check)
+        check = Gtk.CheckButton(_("Raw image of CSS-encrypted DVD"))
+        vbox.pack_start(check, expand=True, fill=True, padding=0)
 
         self.check_button_css = check
 
@@ -1322,7 +1311,7 @@ class gCDEMuFileChooserDialog (gtk.FileChooserDialog):
             pass
 
         # Create ListStore
-        liststore = gtk.ListStore(gobject.TYPE_STRING, gobject.TYPE_STRING)
+        liststore = Gtk.ListStore(GObject.TYPE_STRING, GObject.TYPE_STRING)
         liststore.append( ("Autodetect", "") )
         for encoding in encodings:
             liststore.append( (encoding, encoding) )
@@ -1334,27 +1323,27 @@ class gCDEMuFileChooserDialog (gtk.FileChooserDialog):
 ################################################################################
 #                 gCDEMuPasswordDialog: file chooser dialog                    #
 ################################################################################
-class gCDEMuPasswordDialog (gtk.Dialog):
+class gCDEMuPasswordDialog (Gtk.Dialog):
     def __init__ (self):
-        super(gCDEMuPasswordDialog, self).__init__(_("Enter password"), None, 0, (gtk.STOCK_OK, gtk.RESPONSE_OK, gtk.STOCK_CANCEL, gtk.RESPONSE_REJECT))
-        self.set_default_response(gtk.RESPONSE_OK)
+        super(gCDEMuPasswordDialog, self).__init__(_("Enter password"), None, 0, (Gtk.STOCK_OK, Gtk.ResponseType.OK, Gtk.STOCK_CANCEL, Gtk.ResponseType.REJECT))
+        self.set_default_response(Gtk.ResponseType.OK)
 
         self.vbox.set_spacing(5)
 
-        label = gtk.Label(_("The image you are trying to load is encrypted."))
-        self.vbox.pack_start(label, True, True, 0)
+        label = Gtk.Label(label=_("The image you are trying to load is encrypted."))
+        self.vbox.pack_start(label, expand=True, fill=True, padding=0)
 
         # Create the text input field
-        entry = gtk.Entry()
-        entry.connect("activate", lambda w: self.response(gtk.RESPONSE_OK)) # Allow the user to press enter to do OK
+        entry = Gtk.Entry()
+        entry.connect("activate", lambda w: self.response(Gtk.ResponseType.OK)) # Allow the user to press enter to do OK
         entry.set_visibility(False)
         self.entry = entry
 
         # Create a horizontal box to pack the entry and a label
-        hbox = gtk.HBox(False, 5)
-        hbox.pack_start(gtk.Label(_("Password: ")), False, False, 0)
-        hbox.pack_start(entry, True, True, 0)
-        self.vbox.pack_start(hbox, False, False, 0)
+        hbox = Gtk.HBox(False, 5)
+        hbox.pack_start(Gtk.Label(_("Password: ")), expand=False, fill=False, padding=0)
+        hbox.pack_start(entry, expand=True, fill=True, padding=0)
+        self.vbox.pack_start(hbox, expand=False, fill=False, padding=0)
 
         self.vbox.show_all()
 
