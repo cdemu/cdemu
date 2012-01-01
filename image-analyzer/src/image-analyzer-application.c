@@ -725,45 +725,45 @@ static void __treestore_dump_fragment (GtkTreeStore *treestore, GtkTreeIter *par
             continue;
         }
 
-        if (!g_strcasecmp((gchar *)cur_node->name, TAG_FRAGMENT_ID)) {
+        if (!g_ascii_strcasecmp((gchar *)cur_node->name, TAG_FRAGMENT_ID)) {
             gchar *fragment_id = __xml_node_get_string(cur_node);
             __treestore_add_node(treestore, &node, NULL, "Fragment ID: %s", fragment_id);
             g_free(fragment_id);
-        } else if (!g_strcasecmp((gchar *)cur_node->name, TAG_ADDRESS)) {
+        } else if (!g_ascii_strcasecmp((gchar *)cur_node->name, TAG_ADDRESS)) {
             gint address = __xml_node_get_double(cur_node);
             __treestore_add_node(treestore, &node, NULL, "Address: %d (0x%X)", address, address);
-        } else if (!g_strcasecmp((gchar *)cur_node->name, TAG_LENGTH)) {
+        } else if (!g_ascii_strcasecmp((gchar *)cur_node->name, TAG_LENGTH)) {
             gint length = __xml_node_get_double(cur_node);
             __treestore_add_node(treestore, &node, NULL, "Length: %d (0x%X)", length, length);
-        } else if (!g_strcasecmp((gchar *)cur_node->name, TAG_TFILE_HANDLE)) {
+        } else if (!g_ascii_strcasecmp((gchar *)cur_node->name, TAG_TFILE_HANDLE)) {
             FILE *tfile_handle = (FILE *)__xml_node_get_uint64(cur_node);
             __treestore_add_node(treestore, &node, NULL, "Track file: Handle: %p", tfile_handle);
-        } else if (!g_strcasecmp((gchar *)cur_node->name, TAG_TFILE_OFFSET)) {
+        } else if (!g_ascii_strcasecmp((gchar *)cur_node->name, TAG_TFILE_OFFSET)) {
             guint64 tfile_offset = __xml_node_get_uint64(cur_node);
             __treestore_add_node(treestore, &node, NULL, "Track file: Offset: %lli (0x%llX)", tfile_offset, tfile_offset);
-        } else if (!g_strcasecmp((gchar *)cur_node->name, TAG_TFILE_SECTSIZE)) {
+        } else if (!g_ascii_strcasecmp((gchar *)cur_node->name, TAG_TFILE_SECTSIZE)) {
             gint tfile_sectsize  = __xml_node_get_double(cur_node);
             __treestore_add_node(treestore, &node, NULL, "Track file: Sector size: %d (0x%X)", tfile_sectsize, tfile_sectsize);
-        } else if (!g_strcasecmp((gchar *)cur_node->name, TAG_TFILE_FORMAT)) {
+        } else if (!g_ascii_strcasecmp((gchar *)cur_node->name, TAG_TFILE_FORMAT)) {
             gint tfile_format = __xml_node_get_double(cur_node);
             __treestore_add_node(treestore, &node, NULL, "Track file: Format: 0x%X (%s)", tfile_format, __dump_binary_fragment_tfile_format(tfile_format));
-        }  else if (!g_strcasecmp((gchar *)cur_node->name, TAG_SFILE_HANDLE)) {
+        }  else if (!g_ascii_strcasecmp((gchar *)cur_node->name, TAG_SFILE_HANDLE)) {
             FILE *sfile_handle = (FILE *)__xml_node_get_uint64(cur_node);
             __treestore_add_node(treestore, &node, NULL, "Subchannel file: Handle: %p", sfile_handle);
-        } else if (!g_strcasecmp((gchar *)cur_node->name, TAG_SFILE_OFFSET)) {
+        } else if (!g_ascii_strcasecmp((gchar *)cur_node->name, TAG_SFILE_OFFSET)) {
             guint64 sfile_offset = __xml_node_get_uint64(cur_node);
             __treestore_add_node(treestore, &node, NULL, "Subchannel file: Offset: %lli (0x%llX)", sfile_offset, sfile_offset);
-        } else if (!g_strcasecmp((gchar *)cur_node->name, TAG_SFILE_SECTSIZE)) {
+        } else if (!g_ascii_strcasecmp((gchar *)cur_node->name, TAG_SFILE_SECTSIZE)) {
             gint sfile_sectsize  = __xml_node_get_double(cur_node);
             __treestore_add_node(treestore, &node, NULL, "Subchannel file: Sector size: %d (0x%X)", sfile_sectsize, sfile_sectsize);
-        } else if (!g_strcasecmp((gchar *)cur_node->name, TAG_SFILE_FORMAT)) {
+        } else if (!g_ascii_strcasecmp((gchar *)cur_node->name, TAG_SFILE_FORMAT)) {
             gint sfile_format = __xml_node_get_double(cur_node);
             __treestore_add_node(treestore, &node, NULL, "Subchannel file: Format: 0x%X (%s)", sfile_format, __dump_binary_fragment_sfile_format(sfile_format));
-        } else if (!g_strcasecmp((gchar *)cur_node->name, TAG_FILENAME)) {
+        } else if (!g_ascii_strcasecmp((gchar *)cur_node->name, TAG_FILENAME)) {
             gchar *filename = __xml_node_get_string(cur_node);
             __treestore_add_node(treestore, &node, NULL, "Filename: %s", filename);
             g_free(filename);
-        } else if (!g_strcasecmp((gchar *)cur_node->name, TAG_OFFSET)) {
+        } else if (!g_ascii_strcasecmp((gchar *)cur_node->name, TAG_OFFSET)) {
             gint offset = __xml_node_get_double(cur_node);
             __treestore_add_node(treestore, &node, NULL, "Offset (sectors): %d (0x%X)", offset, offset);
         }
@@ -783,10 +783,10 @@ static void __treestore_dump_index (GtkTreeStore *treestore, GtkTreeIter *parent
             continue;
         }
 
-        if (!g_strcasecmp((gchar *)cur_node->name, TAG_NUMBER)) {
+        if (!g_ascii_strcasecmp((gchar *)cur_node->name, TAG_NUMBER)) {
             gint number = __xml_node_get_double(cur_node);
             __treestore_add_node(treestore, &node, NULL, "Number: %d", number);
-        } else if (!g_strcasecmp((gchar *)cur_node->name, TAG_ADDRESS)) {
+        } else if (!g_ascii_strcasecmp((gchar *)cur_node->name, TAG_ADDRESS)) {
             gint address = __xml_node_get_double(cur_node);
             __treestore_add_node(treestore, &node, NULL, "Address: %d (0x%X)", address, address);
         }
@@ -828,14 +828,14 @@ static void __treestore_dump_language (GtkTreeStore *treestore, GtkTreeIter *par
             continue;
         }
 
-        if (!g_strcasecmp((gchar *)cur_node->name, TAG_LANGUAGE_CODE)) {
+        if (!g_ascii_strcasecmp((gchar *)cur_node->name, TAG_LANGUAGE_CODE)) {
             gint langcode = __xml_node_get_double(cur_node);
             __treestore_add_node(treestore, &node, NULL, "Language code: %d", langcode);
         } else {
             gint i;
 
             for (i = 0; i < G_N_ELEMENTS(pack_types); i++) {
-                if (!g_strcasecmp((gchar *)cur_node->name, pack_types[i].tag)) {
+                if (!g_ascii_strcasecmp((gchar *)cur_node->name, pack_types[i].tag)) {
                     gchar *data = __xml_node_get_string(cur_node);
                     gint len = __xml_node_get_attr_double(cur_node, ATTR_LENGTH);
                     __treestore_add_node(treestore, &node, NULL, "%s: %s (%i)", pack_types[i].name, data, len);
@@ -859,38 +859,38 @@ static void __treestore_dump_track (GtkTreeStore *treestore, GtkTreeIter *parent
             continue;
         }
 
-        if (!g_strcasecmp((gchar *)cur_node->name, TAG_FLAGS)) {
+        if (!g_ascii_strcasecmp((gchar *)cur_node->name, TAG_FLAGS)) {
             gint flags = __xml_node_get_double(cur_node);
             __treestore_add_node(treestore, &node, NULL, "Flags: 0x%X (%s)", flags, __dump_track_flags(flags));
-        } else if (!g_strcasecmp((gchar *)cur_node->name, TAG_MODE)) {
+        } else if (!g_ascii_strcasecmp((gchar *)cur_node->name, TAG_MODE)) {
             gint mode = __xml_node_get_double(cur_node);
             __treestore_add_node(treestore, &node, NULL, "Mode: 0x%X (%s)", mode, __dump_track_mode(mode));
-        } else if (!g_strcasecmp((gchar *)cur_node->name, TAG_ADR)) {
+        } else if (!g_ascii_strcasecmp((gchar *)cur_node->name, TAG_ADR)) {
             gint adr = __xml_node_get_double(cur_node);
             __treestore_add_node(treestore, &node, NULL, "ADR: %d", adr);
-        } else if (!g_strcasecmp((gchar *)cur_node->name, TAG_CTL)) {
+        } else if (!g_ascii_strcasecmp((gchar *)cur_node->name, TAG_CTL)) {
             gint ctl = __xml_node_get_double(cur_node);
             __treestore_add_node(treestore, &node, NULL, "CTL: %d", ctl);
-        } else if (!g_strcasecmp((gchar *)cur_node->name, TAG_ISRC)) {
+        } else if (!g_ascii_strcasecmp((gchar *)cur_node->name, TAG_ISRC)) {
             gchar *isrc = __xml_node_get_string(cur_node);
             __treestore_add_node(treestore, &node, NULL, "ISRC: %s", isrc);
             g_free(isrc);
-        } else if (!g_strcasecmp((gchar *)cur_node->name, TAG_SESSION_NUMBER)) {
+        } else if (!g_ascii_strcasecmp((gchar *)cur_node->name, TAG_SESSION_NUMBER)) {
             gint session_number = __xml_node_get_double(cur_node);
             __treestore_add_node(treestore, &node, NULL, "Session number: %d", session_number);
-        } else if (!g_strcasecmp((gchar *)cur_node->name, TAG_TRACK_NUMBER)) {
+        } else if (!g_ascii_strcasecmp((gchar *)cur_node->name, TAG_TRACK_NUMBER)) {
             gint track_number = __xml_node_get_double(cur_node);
             __treestore_add_node(treestore, &node, NULL, "Track number: %d", track_number);
-        } else if (!g_strcasecmp((gchar *)cur_node->name, TAG_START_SECTOR)) {
+        } else if (!g_ascii_strcasecmp((gchar *)cur_node->name, TAG_START_SECTOR)) {
             gint start_sector = __xml_node_get_double(cur_node);
             __treestore_add_node(treestore, &node, NULL, "Start sector: %d (0x%X)", start_sector, start_sector);
-        } else if (!g_strcasecmp((gchar *)cur_node->name, TAG_LENGTH)) {
+        } else if (!g_ascii_strcasecmp((gchar *)cur_node->name, TAG_LENGTH)) {
             gint length = __xml_node_get_double(cur_node);
             __treestore_add_node(treestore, &node, NULL, "Length: %d (0x%X)", length, length);
-        } else if (!g_strcasecmp((gchar *)cur_node->name, TAG_NUM_FRAGMENTS)) {
+        } else if (!g_ascii_strcasecmp((gchar *)cur_node->name, TAG_NUM_FRAGMENTS)) {
             gint num_fragments = __xml_node_get_double(cur_node);
             __treestore_add_node(treestore, &node, NULL, "Number of fragments: %d", num_fragments);
-        } else if (!g_strcasecmp((gchar *)cur_node->name, TAG_FRAGMENTS)) {
+        } else if (!g_ascii_strcasecmp((gchar *)cur_node->name, TAG_FRAGMENTS)) {
             xmlNodePtr child_node;
             GtkTreeIter fragments;
 
@@ -900,17 +900,17 @@ static void __treestore_dump_track (GtkTreeStore *treestore, GtkTreeIter *parent
                     continue;
                 }
 
-                if (!g_strcasecmp((gchar *)child_node->name, TAG_FRAGMENT)) {
+                if (!g_ascii_strcasecmp((gchar *)child_node->name, TAG_FRAGMENT)) {
                     __treestore_dump_fragment(treestore, &fragments, child_node);
                 }
             }
-        } else if (!g_strcasecmp((gchar *)cur_node->name, TAG_TRACK_START)) {
+        } else if (!g_ascii_strcasecmp((gchar *)cur_node->name, TAG_TRACK_START)) {
             gint track_start = __xml_node_get_double(cur_node);
             __treestore_add_node(treestore, &node, NULL, "Track start: %d (0x%X)", track_start, track_start);
-        } else if (!g_strcasecmp((gchar *)cur_node->name, TAG_NUM_INDICES)) {
+        } else if (!g_ascii_strcasecmp((gchar *)cur_node->name, TAG_NUM_INDICES)) {
             gint num_indices = __xml_node_get_double(cur_node);
             __treestore_add_node(treestore, &node, NULL, "Number of indices: %d", num_indices);
-        } else if (!g_strcasecmp((gchar *)cur_node->name, TAG_INDICES)) {
+        } else if (!g_ascii_strcasecmp((gchar *)cur_node->name, TAG_INDICES)) {
             xmlNodePtr child_node;
             GtkTreeIter indices;
 
@@ -920,14 +920,14 @@ static void __treestore_dump_track (GtkTreeStore *treestore, GtkTreeIter *parent
                     continue;
                 }
 
-                if (!g_strcasecmp((gchar *)child_node->name, TAG_INDEX)) {
+                if (!g_ascii_strcasecmp((gchar *)child_node->name, TAG_INDEX)) {
                     __treestore_dump_index(treestore, &indices, child_node);
                 }
             }
-        } else if (!g_strcasecmp((gchar *)cur_node->name, TAG_NUM_LANGUAGES)) {
+        } else if (!g_ascii_strcasecmp((gchar *)cur_node->name, TAG_NUM_LANGUAGES)) {
             gint num_languages = __xml_node_get_double(cur_node);
             __treestore_add_node(treestore, &node, NULL, "Number of languages: %d", num_languages);
-        } else if (!g_strcasecmp((gchar *)cur_node->name, TAG_LANGUAGES)) {
+        } else if (!g_ascii_strcasecmp((gchar *)cur_node->name, TAG_LANGUAGES)) {
             xmlNodePtr child_node;
             GtkTreeIter languages;
 
@@ -937,7 +937,7 @@ static void __treestore_dump_track (GtkTreeStore *treestore, GtkTreeIter *parent
                     continue;
                 }
 
-                if (!g_strcasecmp((gchar *)child_node->name, TAG_LANGUAGE)) {
+                if (!g_ascii_strcasecmp((gchar *)child_node->name, TAG_LANGUAGE)) {
                     __treestore_dump_language(treestore, &languages, child_node);
                 }
             }
@@ -958,28 +958,28 @@ static void __treestore_dump_session (GtkTreeStore *treestore, GtkTreeIter *pare
             continue;
         }
 
-        if (!g_strcasecmp((gchar *)cur_node->name, TAG_SESSION_TYPE)) {
+        if (!g_ascii_strcasecmp((gchar *)cur_node->name, TAG_SESSION_TYPE)) {
             gint session_type = __xml_node_get_double(cur_node);
             __treestore_add_node(treestore, &node, NULL, "Session type: 0x%X (%s)", session_type, __dump_session_type(session_type));
-        } else if (!g_strcasecmp((gchar *)cur_node->name, TAG_SESSION_NUMBER)) {
+        } else if (!g_ascii_strcasecmp((gchar *)cur_node->name, TAG_SESSION_NUMBER)) {
             gint session_number = __xml_node_get_double(cur_node);
             __treestore_add_node(treestore, &node, NULL, "Session number: %d", session_number);
-        } else if (!g_strcasecmp((gchar *)cur_node->name, TAG_FIRST_TRACK)) {
+        } else if (!g_ascii_strcasecmp((gchar *)cur_node->name, TAG_FIRST_TRACK)) {
             gint first_track = __xml_node_get_double(cur_node);
             __treestore_add_node(treestore, &node, NULL, "Layout: First track: %d", first_track);
-        } else if (!g_strcasecmp((gchar *)cur_node->name, TAG_START_SECTOR)) {
+        } else if (!g_ascii_strcasecmp((gchar *)cur_node->name, TAG_START_SECTOR)) {
             gint start_sector = __xml_node_get_double(cur_node);
             __treestore_add_node(treestore, &node, NULL, "Layout: Start sector: %d (0x%X)", start_sector);
-        } else if (!g_strcasecmp((gchar *)cur_node->name, TAG_LENGTH)) {
+        } else if (!g_ascii_strcasecmp((gchar *)cur_node->name, TAG_LENGTH)) {
             gint length = __xml_node_get_double(cur_node);
             __treestore_add_node(treestore, &node, NULL, "Layout: Length: %d (0x%X)", length, length);
-        } else if (!g_strcasecmp((gchar *)cur_node->name, TAG_LEADOUT_LENGTH)) {
+        } else if (!g_ascii_strcasecmp((gchar *)cur_node->name, TAG_LEADOUT_LENGTH)) {
             gint leadout_length = __xml_node_get_double(cur_node);
             __treestore_add_node(treestore, &node, NULL, "Leadout length: %d (0x%X)", leadout_length, leadout_length);
-        } else if (!g_strcasecmp((gchar *)cur_node->name, TAG_NUM_TRACKS)) {
+        } else if (!g_ascii_strcasecmp((gchar *)cur_node->name, TAG_NUM_TRACKS)) {
             gint num_tracks = __xml_node_get_double(cur_node);
             __treestore_add_node(treestore, &node, NULL, "Number of tracks: %d", num_tracks);
-        } else if (!g_strcasecmp((gchar *)cur_node->name, TAG_TRACKS)) {
+        } else if (!g_ascii_strcasecmp((gchar *)cur_node->name, TAG_TRACKS)) {
             xmlNodePtr child_node;
             GtkTreeIter tracks;
 
@@ -989,14 +989,14 @@ static void __treestore_dump_session (GtkTreeStore *treestore, GtkTreeIter *pare
                     continue;
                 }
 
-                if (!g_strcasecmp((gchar *)child_node->name, TAG_TRACK)) {
+                if (!g_ascii_strcasecmp((gchar *)child_node->name, TAG_TRACK)) {
                     __treestore_dump_track(treestore, &tracks, child_node);
                 }
             }
-        } else if (!g_strcasecmp((gchar *)cur_node->name, TAG_NUM_LANGUAGES)) {
+        } else if (!g_ascii_strcasecmp((gchar *)cur_node->name, TAG_NUM_LANGUAGES)) {
             gint num_languages = __xml_node_get_double(cur_node);
             __treestore_add_node(treestore, &node, NULL, "Number of languages: %d", num_languages);
-        }  else if (!g_strcasecmp((gchar *)cur_node->name, TAG_LANGUAGES)) {
+        }  else if (!g_ascii_strcasecmp((gchar *)cur_node->name, TAG_LANGUAGES)) {
             xmlNodePtr child_node;
             GtkTreeIter languages;
 
@@ -1021,16 +1021,16 @@ static void __treestore_dump_dpm (GtkTreeStore *treestore, GtkTreeIter *parent, 
             continue;
         }
 
-        if (!g_strcasecmp((gchar *)cur_node->name, TAG_DPM_START)) {
+        if (!g_ascii_strcasecmp((gchar *)cur_node->name, TAG_DPM_START)) {
             gint dpm_start = __xml_node_get_double(cur_node);
             __treestore_add_node(treestore, &node, NULL, "Start sector: %d (0x%X)", dpm_start, dpm_start);
-        } else if (!g_strcasecmp((gchar *)cur_node->name, TAG_DPM_RESOLUTION)) {
+        } else if (!g_ascii_strcasecmp((gchar *)cur_node->name, TAG_DPM_RESOLUTION)) {
             gint dpm_resolution = __xml_node_get_double(cur_node);
             __treestore_add_node(treestore, &node, NULL, "Resolution: %d (0x%X)", dpm_resolution, dpm_resolution);
-        } else if (!g_strcasecmp((gchar *)cur_node->name, TAG_DPM_NUM_ENTRIES)) {
+        } else if (!g_ascii_strcasecmp((gchar *)cur_node->name, TAG_DPM_NUM_ENTRIES)) {
             gint dpm_entries = __xml_node_get_double(cur_node);
             __treestore_add_node(treestore, &node, NULL, "Number of entries: %d (0x%X)", dpm_entries, dpm_entries);
-        } else if (!g_strcasecmp((gchar *)cur_node->name, TAG_DPM_ENTRIES)) {
+        } else if (!g_ascii_strcasecmp((gchar *)cur_node->name, TAG_DPM_ENTRIES)) {
             xmlNodePtr child_node;
             GtkTreeIter dpm_entries;
 
@@ -1040,7 +1040,7 @@ static void __treestore_dump_dpm (GtkTreeStore *treestore, GtkTreeIter *parent, 
                     continue;
                 }
 
-                if (!g_strcasecmp((gchar *)child_node->name, TAG_DPM_ENTRY)) {
+                if (!g_ascii_strcasecmp((gchar *)child_node->name, TAG_DPM_ENTRY)) {
                     guint32 dpm_entry = __xml_node_get_double(child_node);
                     __treestore_add_node(treestore, &dpm_entries, NULL, "0x%08X", dpm_entry);
                 }
@@ -1062,10 +1062,10 @@ static void __treestore_dump_disc (GtkTreeStore *treestore, GtkTreeIter *parent,
             continue;
         }
 
-        if (!g_strcasecmp((gchar *)cur_node->name, TAG_MEDIUM_TYPE)) {
+        if (!g_ascii_strcasecmp((gchar *)cur_node->name, TAG_MEDIUM_TYPE)) {
             gint medium_type = __xml_node_get_double(cur_node);
             __treestore_add_node(treestore, &node, NULL, "Medium type: 0x%X (%s)", medium_type, __dump_medium_type(medium_type));
-        } else if (!g_strcasecmp((gchar *)cur_node->name, TAG_FILENAMES)) {
+        } else if (!g_ascii_strcasecmp((gchar *)cur_node->name, TAG_FILENAMES)) {
             xmlNodePtr child_node;
             GtkTreeIter files;
 
@@ -1076,35 +1076,35 @@ static void __treestore_dump_disc (GtkTreeStore *treestore, GtkTreeIter *parent,
                     continue;
                 }
 
-                if (!g_strcasecmp((gchar *)child_node->name, TAG_FILENAME)) {
+                if (!g_ascii_strcasecmp((gchar *)child_node->name, TAG_FILENAME)) {
                     gchar *filename = __xml_node_get_string(child_node);
                     __treestore_add_node(treestore, &files, NULL, "%s", filename);
                     g_free(filename);
                 }
             }
-        } else if (!g_strcasecmp((gchar *)cur_node->name, TAG_MCN)) {
+        } else if (!g_ascii_strcasecmp((gchar *)cur_node->name, TAG_MCN)) {
             gchar *mcn = __xml_node_get_string(cur_node);
             __treestore_add_node(treestore, &node, NULL, "MCN: %s", mcn);
             g_free(mcn);
-        } else if (!g_strcasecmp((gchar *)cur_node->name, TAG_FIRST_SESSION)) {
+        } else if (!g_ascii_strcasecmp((gchar *)cur_node->name, TAG_FIRST_SESSION)) {
             gint first_session = __xml_node_get_double(cur_node);
             __treestore_add_node(treestore, &node, NULL, "Layout: First session: %d", first_session);
-        } else if (!g_strcasecmp((gchar *)cur_node->name, TAG_FIRST_TRACK)) {
+        } else if (!g_ascii_strcasecmp((gchar *)cur_node->name, TAG_FIRST_TRACK)) {
             gint first_track = __xml_node_get_double(cur_node);
             __treestore_add_node(treestore, &node, NULL, "Layout: First track: %d", first_track);
-        } else if (!g_strcasecmp((gchar *)cur_node->name, TAG_START_SECTOR)) {
+        } else if (!g_ascii_strcasecmp((gchar *)cur_node->name, TAG_START_SECTOR)) {
             gint start_sector = __xml_node_get_double(cur_node);
             __treestore_add_node(treestore, &node, NULL, "Layout: Start sector: %d (0x%X)", start_sector, start_sector);
-        } else if (!g_strcasecmp((gchar *)cur_node->name, TAG_LENGTH)) {
+        } else if (!g_ascii_strcasecmp((gchar *)cur_node->name, TAG_LENGTH)) {
             gint length = __xml_node_get_double(cur_node);
             __treestore_add_node(treestore, &node, NULL, "Layout: Length: %d (0x%X)", length, length);
-        } else if (!g_strcasecmp((gchar *)cur_node->name, TAG_NUM_SESSIONS)) {
+        } else if (!g_ascii_strcasecmp((gchar *)cur_node->name, TAG_NUM_SESSIONS)) {
             gint num_sessions = __xml_node_get_double(cur_node);
             __treestore_add_node(treestore, &node, NULL, "Number of sessions: %d", num_sessions);
-        } else if (!g_strcasecmp((gchar *)cur_node->name, TAG_NUM_TRACKS)) {
+        } else if (!g_ascii_strcasecmp((gchar *)cur_node->name, TAG_NUM_TRACKS)) {
             gint num_tracks = __xml_node_get_double(cur_node);
             __treestore_add_node(treestore, &node, NULL, "Number of tracks: %d", num_tracks);
-        } else if (!g_strcasecmp((gchar *)cur_node->name, TAG_SESSIONS)) {
+        } else if (!g_ascii_strcasecmp((gchar *)cur_node->name, TAG_SESSIONS)) {
             xmlNodePtr child_node;
             GtkTreeIter sessions;
 
@@ -1114,11 +1114,11 @@ static void __treestore_dump_disc (GtkTreeStore *treestore, GtkTreeIter *parent,
                     continue;
                 }
 
-                if (!g_strcasecmp((gchar *)child_node->name, TAG_SESSION)) {
+                if (!g_ascii_strcasecmp((gchar *)child_node->name, TAG_SESSION)) {
                     __treestore_dump_session(treestore, &sessions, child_node);
                 }
             }
-        } else if (!g_strcasecmp((gchar *)cur_node->name, TAG_DPM)) {
+        } else if (!g_ascii_strcasecmp((gchar *)cur_node->name, TAG_DPM)) {
             __treestore_dump_dpm(treestore, &node, cur_node);
         }
     }
@@ -1138,7 +1138,7 @@ static gboolean __image_analyzer_application_load_xml_tree (IMAGE_ANALYZER_Appli
 
     /* Get root element and verify it */
     root_node = xmlDocGetRootElement(_priv->xml_doc);
-    if (!root_node || root_node->type != XML_ELEMENT_NODE || g_strcasecmp((gchar *)root_node->name, TAG_IMAGE_ANALYZER_DUMP)) {
+    if (!root_node || root_node->type != XML_ELEMENT_NODE || g_ascii_strcasecmp((gchar *)root_node->name, TAG_IMAGE_ANALYZER_DUMP)) {
         g_warning("Invalid XML tree!\n");
         return FALSE;
     }
@@ -1150,9 +1150,9 @@ static gboolean __image_analyzer_application_load_xml_tree (IMAGE_ANALYZER_Appli
             continue;
         }
 
-        if (!g_strcasecmp((gchar *)cur_node->name, TAG_DISC)) {
+        if (!g_ascii_strcasecmp((gchar *)cur_node->name, TAG_DISC)) {
             __treestore_dump_disc(_priv->treestore, NULL, cur_node);
-        } else if (!g_strcasecmp((gchar *)cur_node->name, TAG_PARSER_LOG)) {
+        } else if (!g_ascii_strcasecmp((gchar *)cur_node->name, TAG_PARSER_LOG)) {
             gchar *log = __xml_node_get_string(cur_node);
             image_analyzer_parser_log_append_to_log(IMAGE_ANALYZER_PARSER_LOG(_priv->dialog_parser), log, NULL);
             g_free(log);
@@ -1720,9 +1720,9 @@ static GtkWidget *__build_menu (IMAGE_ANALYZER_Application *self) {
     IMAGE_ANALYZER_ApplicationPrivate *_priv = IMAGE_ANALYZER_APPLICATION_GET_PRIVATE(self);
 
     static GtkActionEntry entries[] = {
-        { "FileMenuAction", NULL, "_File" },
-        { "ImageMenuAction", NULL, "_Image" },
-        { "HelpMenuAction", NULL, "_Help" },
+        { "FileMenuAction", NULL, "_File", NULL, NULL, NULL },
+        { "ImageMenuAction", NULL, "_Image", NULL, NULL, NULL },
+        { "HelpMenuAction", NULL, "_Help", NULL, NULL, NULL },
 
         { "OpenImageAction", GTK_STOCK_OPEN, "_Open image", "<control>O", "Open image", G_CALLBACK(__ui_callback_open_image) },
         { "OpenDumpAction", GTK_STOCK_OPEN, "Open _dump", "<control>D", "Open dump", G_CALLBACK(__ui_callback_open_dump) },
@@ -1967,7 +1967,8 @@ GType image_analyzer_application_get_type (void) {
             NULL,   /* class_data */
             sizeof(IMAGE_ANALYZER_Application),
             0,      /* n_preallocs */
-            __image_analyzer_application_instance_init    /* instance_init */
+            __image_analyzer_application_instance_init,   /* instance_init */
+            NULL,   /* value_table */
         };
 
         type = g_type_register_static(G_TYPE_OBJECT, "IMAGE_ANALYZER_Application", &info, 0);

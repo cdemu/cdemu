@@ -122,7 +122,8 @@ GType image_analyzer_parser_log_get_type (void) {
             NULL,   /* class_data */
             sizeof(IMAGE_ANALYZER_ParserLog),
             0,      /* n_preallocs */
-            __image_analyzer_parser_log_instance_init    /* instance_init */
+            __image_analyzer_parser_log_instance_init,   /* instance_init */
+            NULL,   /* value_table */
         };
         
         type = g_type_register_static(GTK_TYPE_WINDOW, "IMAGE_ANALYZER_ParserLog", &info, 0);

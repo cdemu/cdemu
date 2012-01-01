@@ -31,7 +31,7 @@
  *                                Main function                               *
 \******************************************************************************/
 static GOptionEntry option_entries[] = {
-       { NULL }
+       { NULL, 0, 0, G_OPTION_ARG_NONE, NULL, NULL, NULL }
 };
 
 int main (int argc, char **argv) {
