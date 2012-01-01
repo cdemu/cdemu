@@ -20,6 +20,7 @@
 
 import os
 import subprocess
+import weakref
 
 # gettext
 from gettext import gettext as _
@@ -47,18 +48,53 @@ textdomain(app_name)
 #                   CDEmuDaemonProxy: Daemon proxy object                      #
 ################################################################################
 class CDEmuDaemonProxy (GObject.GObject):
-    def __init__ (self, bus):
+    _name = 'net.sf.cdemu.CDEMUD_Daemon'
+    _object_path = '/CDEMUD_Daemon'
+    
+    def __init__ (self):
         super(CDEmuDaemonProxy, self).__init__()
-        self.proxy = Gio.DBusProxy.new_sync(bus, 0, None, 'net.sf.cdemu.CDEMUD_Daemon', '/CDEMUD_Daemon', 'net.sf.cdemu.CDEMUD_Daemon', None)
-        self.proxy_signal_handler = self.proxy.connect("g-signal", self.on_g_signal)
 
-        self.handler_ids = []
+        self.watcher_id = -1
+        self.proxy_handler_ids = []
+        self.proxy = None
 
     def cleanup (self):
-        self.proxy.disconnect(self.proxy_signal_handler)
+        # Cancel watcher
+        if self.watcher_id is not -1:
+            Gio.bus_unwatch_name(self.watcher_id)
+            self.watcher_id = -1
 
-        for handler_id in self.handler_ids:
-            self.disconnect(handler_id)
+        # Clean up the proxy
+        if self.proxy:
+            for handler in self.proxy_handler_ids:
+                self.proxy.disconnect(handler)
+            self.proxy_handler_ids = []
+            self.proxy = None
+
+    def connect_to_bus (self, use_system, autostart_daemon):
+        # Cleanup
+        self.cleanup()
+        
+        # Get the bus
+        if use_system:
+            bus = Gio.bus_get_sync(Gio.BusType.SYSTEM, None)
+        else:
+            bus = Gio.bus_get_sync(Gio.BusType.SESSION, None)
+        
+        # Create proxy on our interface
+        self.proxy = Gio.DBusProxy.new_sync(bus, 0, None, self._name, self._object_path, 'net.sf.cdemu.CDEMUD_Daemon', None)
+
+        # Connect signal: g-signal
+        handler_id = self.proxy.connect("g-signal", self.on_g_signal)
+        self.proxy_handler_ids.append(handler_id)
+
+        # Set up name watch; we do not try to autostart the daemon here
+        self.watcher_id = Gio.bus_watch_name_on_connection(bus, self._name, 0, lambda c, n, no: self.emit("DaemonStarted"), lambda c, n: self.emit("DaemonStopped"))
+
+        # Try to autostart daemon by pinging it
+        if autostart_daemon:
+            bus.call_sync(self._name, self._object_path, "org.freedesktop.DBus.Peer", "Ping", None, None, 0, -1, None)
+
 
     def on_g_signal (self, proxy, sender, signal, params):
         if signal == "DeviceMappingsReady":
@@ -70,9 +106,9 @@ class CDEmuDaemonProxy (GObject.GObject):
         else:
             print "Unknown signal: ", sender, signal, params
 
-    def connect_to_signal (self, signal, handler):
-        handler_id = self.connect(signal, handler)
-        self.handler_ids.append(handler_id)
+    #def connect_to_signal (self, signal, handler):
+    #    handler_id = self.connect(signal, handler)
+    #    self.handler_ids.append(handler_id)
         
     def GetDaemonVersion (self):
         return self.proxy.GetDaemonVersion()
@@ -135,6 +171,16 @@ class CDEmuDaemonProxy (GObject.GObject):
  
 
 GObject.type_register(CDEmuDaemonProxy)
+GObject.signal_new("DaemonStarted", CDEmuDaemonProxy,
+    GObject.SignalFlags.RUN_FIRST,
+    None,
+    ())
+GObject.signal_new("DaemonStopped", CDEmuDaemonProxy,
+    GObject.SignalFlags.RUN_FIRST,
+    None,
+    ())
+
+
 GObject.signal_new("DeviceMappingsReady", CDEmuDaemonProxy,
     GObject.SignalFlags.RUN_FIRST,
     None,
@@ -158,77 +204,55 @@ class CDEmu (GObject.GObject):
     def __init__ (self):
         super(CDEmu, self).__init__()
 
-        self.bus = None
-        self.watcher_id = -1
-        self.daemon_proxy = None
-
+        self.daemon_proxy = CDEmuDaemonProxy()
+        self.daemon_proxy.connect("DaemonStarted", lambda o: self.on_daemon_started())
+        self.daemon_proxy.connect("DaemonStopped", lambda o: self.on_daemon_stopped())
+        
         self.initial = True
-
         self.devices = []
 
     def cleanup (self):
         # Cleanup the devices
         self.devices = []
 
-        # Cleanup the daemon proxy
-        if self.daemon_proxy:
-            self.daemon_proxy.cleanup()
-            self.daemon_proxy = None
 
+    def on_daemon_started (self):
+        if not self.initial:
+            self.emit("daemon-started")
 
-    def on_cdemud_name_owner_change (self, appeared):
-        if appeared:
-            if self.initial == False:
-                self.emit("daemon-started")
+        # Establish connection to daemon
+        self.establish_connection()
 
-            # Establish connection to daemon
-            self.establish_connection()
-        else:
-            if self.initial == False:
-                self.emit("daemon-stopped")
+        # Reset the initial run flag
+        self.initial = False
+            
+    def on_daemon_stopped (self):
+        if not self.initial:
+            self.emit("daemon-stopped")
 
-            # Cleanup
-            self.emit("connection-lost")
-            self.cleanup()
-        
-        # Reset the initial run flag...
-        if self.initial:
-            self.initial = False
-        
+        # Cleanup
+        self.emit("connection-lost")
+        self.cleanup()
 
-    def connect_to_bus (self, use_system, start_daemon = True):
+        # Reset the initial run flag
+        self.initial = False
+
+    def connect_to_bus (self, use_system, autostart_daemon):
         # Disconnect
         self.emit("connection-lost")
 
         # Cleanup
         self.cleanup()
 
-        # Cancel the name owner watch
-        if self.watcher_id is not -1:
-            Gio.bus_unwatch_name(self.watcher_id)
-            self.watcher_id = -1
-
-        # Get the appropriate bus
-        if use_system:
-            self.bus = Gio.bus_get_sync(Gio.BusType.SYSTEM, None)
-        else:
-            self.bus = Gio.bus_get_sync(Gio.BusType.SESSION, None)
-
+        # Connect
         self.initial = True
-
-        # Autostart flags
-        flags = Gio.BusNameWatcherFlags.NONE
-        if start_daemon:
-            flags |= Gio.BusNameWatcherFlags.AUTO_START
-
-        # Name watch
-        self.watcher_id = Gio.bus_watch_name_on_connection(self.bus, "net.sf.cdemu.CDEMUD_Daemon", flags, lambda c, n, no: self.on_cdemud_name_owner_change(True), lambda c, n: self.on_cdemud_name_owner_change(False))
-        
+        try:
+            self.daemon_proxy.connect_to_bus(use_system, autostart_daemon)
+        except GLib.GError as e:
+            self.emit("error", _("Daemon autostart error"), _("Daemon autostart failed. Error:\n%s") % (e))
+            
 
     def establish_connection (self):
-        # Create proxy to CDEmu daemon
-        self.daemon_proxy = CDEmuDaemonProxy(self.bus)
-
         # Get the daemon interface version
         self.interface_version = self.daemon_proxy.GetDaemonInterfaceVersion()
 
@@ -261,7 +285,7 @@ class CDEmu (GObject.GObject):
         for i in range(0, num_devices):
             self.devices.append(CDEmuDevice(i, self.daemon_proxy))
 
-        self.daemon_proxy.connect_to_signal("DeviceMappingsReady", lambda p: self.on_device_mappings_ready())
+        self.daemon_proxy.connect("DeviceMappingsReady", lambda p: self.on_device_mappings_ready())
 
         # Emit signal
         self.emit("connection-established", num_devices)
@@ -325,8 +349,11 @@ class CDEmuDevice (GObject.GObject):
         [ self.daemon_debug_mask ] = self.proxy.DeviceGetOption(self.number, "daemon-debug-mask")
         [ self.library_debug_mask ] = self.proxy.DeviceGetOption(self.number, "library-debug-mask")
 
-        self.proxy.connect_to_signal("DeviceStatusChanged", lambda p, d: self.on_status_changed(d))
-        self.proxy.connect_to_signal("DeviceOptionChanged", lambda p, d, o: self.on_option_changed(d, o))
+        # Note: we connect the following using weakref, otherwise we get circular references
+        # and devices never get destroyed
+        self.proxy.connect("DeviceStatusChanged", lambda p, d, obj=weakref.ref(self): obj().on_status_changed(d) if obj() else None)
+        self.proxy.connect("DeviceOptionChanged", lambda p, d, obj=weakref.ref(self): obj().on_option_changed(d, o) if obj() else None)
+
 
     def on_status_changed (self, d):
         if d != self.number:
@@ -664,7 +691,7 @@ class gCDEmu (Gtk.StatusIcon):
         self.cdemu.connect("connection-lost", self.on_connection_lost)
         self.cdemu.connect("error", lambda c, t, m: self.show_error(t, m))
         # Connect to daemon
-        self.cdemu.connect_to_bus(self.use_system_bus)
+        self.cdemu.connect_to_bus(self.use_system_bus, self.daemon_autostart)
 
         # *** Main loop ***
         Gtk.main()
@@ -683,7 +710,7 @@ class gCDEmu (Gtk.StatusIcon):
             self.use_system_bus = self.settings.get_boolean(key)
             print ("New setting: use system bus: %d" % self.use_system_bus)
             self.item_use_system_bus.set_active(self.use_system_bus)
-            self.cdemu.connect_to_bus(self.use_system_bus)
+            self.cdemu.connect_to_bus(self.use_system_bus, self.daemon_autostart)
         elif key == "show-notifications":
             self.show_notifications = self.settings.get_boolean(key)
             self.item_show_notifications.set_active(self.show_notifications)
