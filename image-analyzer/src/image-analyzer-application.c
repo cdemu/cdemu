@@ -1552,7 +1552,7 @@ static void __ui_callback_about (GtkAction *action, gpointer user_data) {
         "comments", "Image Analyzer displays tree structure of disc image created by libMirage.",
         "version", PACKAGE_VERSION,
         "authors", authors,
-        "copyright", "Copyright (C) 2007-2008 Rok Mandeljc",
+        "copyright", "Copyright (C) 2007-2012 Rok Mandeljc",
         NULL);
 
     return;
@@ -1769,7 +1769,7 @@ static GtkWidget *__build_menu (IMAGE_ANALYZER_Application *self) {
     GError *error = NULL;
 
     /* Action group */
-    actiongroup = gtk_action_group_new("MIRAGE Image Analyzer");
+    actiongroup = gtk_action_group_new("Image Analyzer");
     gtk_action_group_add_actions(actiongroup, entries, n_entries, self);
     gtk_ui_manager_insert_action_group(_priv->ui_manager, actiongroup, 0);
 

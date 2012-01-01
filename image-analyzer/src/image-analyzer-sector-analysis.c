@@ -213,7 +213,6 @@ static void __image_analyzer_sector_analysis_instance_init (GTypeInstance *insta
     IMAGE_ANALYZER_SectorAnalysisPrivate *_priv = IMAGE_ANALYZER_SECTOR_ANALYSIS_GET_PRIVATE(self);
 
     GtkWidget *vbox, *scrolledwindow, *hbox, *button;
-    GtkObject *adjustment;
 
     gtk_window_set_title(GTK_WINDOW(self), "Sector analysis");
     gtk_window_set_default_size(GTK_WINDOW(self), 600, 400);

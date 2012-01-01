@@ -272,7 +272,7 @@ static void __image_analyzer_sector_read_instance_init (GTypeInstance *instance,
     IMAGE_ANALYZER_SectorReadPrivate *_priv = IMAGE_ANALYZER_SECTOR_READ_GET_PRIVATE(self);
 
     GtkWidget *vbox, *scrolledwindow, *hbox, *button;
-    GtkObject *adjustment;
+    GtkAdjustment *adjustment;
 
     gtk_window_set_title(GTK_WINDOW(self), "Read sector");
     gtk_window_set_default_size(GTK_WINDOW(self), 600, 400);
