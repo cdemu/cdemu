@@ -1222,10 +1222,10 @@ static gchar *__image_analyzer_application_get_password (gpointer user_data) {
         NULL));
     gtk_dialog_set_default_response(GTK_DIALOG(dialog), GTK_RESPONSE_ACCEPT);
 
-    gtk_box_set_spacing(GTK_BOX(dialog->vbox), 5);
+    gtk_box_set_spacing(GTK_BOX(gtk_dialog_get_content_area(dialog)), 5);
 
     label = gtk_label_new("The image you are trying to load is encrypted.");
-    gtk_box_pack_start(GTK_BOX(dialog->vbox), label, TRUE, TRUE, 0);
+    gtk_box_pack_start(GTK_BOX(gtk_dialog_get_content_area(dialog)), label, TRUE, TRUE, 0);
 
     entry = gtk_entry_new();
     gtk_entry_set_visibility(GTK_ENTRY(entry), FALSE);
@@ -1234,7 +1234,7 @@ static gchar *__image_analyzer_application_get_password (gpointer user_data) {
     gtk_box_pack_start(GTK_BOX(hbox), gtk_label_new("Password: "), FALSE, FALSE, 0);
     gtk_box_pack_start(GTK_BOX(hbox), entry, TRUE, TRUE, 0);
 
-    gtk_box_pack_start(GTK_BOX(dialog->vbox), hbox, FALSE, FALSE, 0);
+    gtk_box_pack_start(GTK_BOX(gtk_dialog_get_content_area(dialog)), hbox, FALSE, FALSE, 0);
 
     /* Run dialog */
     gtk_widget_show_all(GTK_WIDGET(dialog));
