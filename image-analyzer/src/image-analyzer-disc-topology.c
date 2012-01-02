@@ -152,7 +152,7 @@ static gboolean __dump_dpm_data (GObject *disc, gchar **dump_file)
 /******************************************************************************\
  *                                 Public API                                 *
 \******************************************************************************/
-gboolean image_analyzer_disc_topology_refresh (IMAGE_ANALYZER_DiscTopology *self, GObject *disc, GError **error) {
+gboolean image_analyzer_disc_topology_refresh (IMAGE_ANALYZER_DiscTopology *self, GObject *disc, GError **error G_GNUC_UNUSED) {
     IMAGE_ANALYZER_DiscTopologyPrivate *_priv = IMAGE_ANALYZER_DISC_TOPOLOGY_GET_PRIVATE(self);
     gchar *command;
     
@@ -233,7 +233,7 @@ gboolean image_analyzer_disc_topology_refresh (IMAGE_ANALYZER_DiscTopology *self
 /* Our parent class */
 static GtkWindowClass *parent_class = NULL;
 
-static void __image_analyzer_disc_topology_instance_init (GTypeInstance *instance, gpointer g_class) {
+static void __image_analyzer_disc_topology_instance_init (GTypeInstance *instance, gpointer g_class G_GNUC_UNUSED) {
     IMAGE_ANALYZER_DiscTopology *self = IMAGE_ANALYZER_DISC_TOPOLOGY(instance);
     IMAGE_ANALYZER_DiscTopologyPrivate *_priv = IMAGE_ANALYZER_DISC_TOPOLOGY_GET_PRIVATE(self);
 
@@ -253,8 +253,8 @@ static void __image_analyzer_disc_topology_instance_init (GTypeInstance *instanc
 }
 
 
-static void __image_analyzer_disc_topology_class_init (gpointer g_class, gpointer g_class_data) {
-    GObjectClass *class_gobject = G_OBJECT_CLASS(g_class);
+static void __image_analyzer_disc_topology_class_init (gpointer g_class, gpointer g_class_data G_GNUC_UNUSED) {
+    /*GObjectClass *class_gobject = G_OBJECT_CLASS(g_class);*/
     IMAGE_ANALYZER_DiscTopologyClass *klass = IMAGE_ANALYZER_DISC_TOPOLOGY_CLASS(g_class);
 
     /* Set parent class */

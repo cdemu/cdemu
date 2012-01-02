@@ -40,7 +40,7 @@ typedef struct {
 /******************************************************************************\
  *                                 Public API                                 *
 \******************************************************************************/
-gboolean image_analyzer_parser_log_clear_log (IMAGE_ANALYZER_ParserLog *self, GError **error) {
+gboolean image_analyzer_parser_log_clear_log (IMAGE_ANALYZER_ParserLog *self, GError **error G_GNUC_UNUSED) {
     IMAGE_ANALYZER_ParserLogPrivate *_priv = IMAGE_ANALYZER_PARSER_LOG_GET_PRIVATE(self);
     GtkTextBuffer *buffer;
     
@@ -51,7 +51,7 @@ gboolean image_analyzer_parser_log_clear_log (IMAGE_ANALYZER_ParserLog *self, GE
     return TRUE;
 }
 
-gboolean image_analyzer_parser_log_append_to_log (IMAGE_ANALYZER_ParserLog *self, gchar *message, GError **error) {
+gboolean image_analyzer_parser_log_append_to_log (IMAGE_ANALYZER_ParserLog *self, gchar *message, GError **error G_GNUC_UNUSED) {
     IMAGE_ANALYZER_ParserLogPrivate *_priv = IMAGE_ANALYZER_PARSER_LOG_GET_PRIVATE(self);
     GtkTextBuffer *buffer;
     GtkTextIter iter;
@@ -72,7 +72,7 @@ gboolean image_analyzer_parser_log_append_to_log (IMAGE_ANALYZER_ParserLog *self
 /* Our parent class */
 static GtkWindowClass *parent_class = NULL;
 
-static void __image_analyzer_parser_log_instance_init (GTypeInstance *instance, gpointer g_class) {
+static void __image_analyzer_parser_log_instance_init (GTypeInstance *instance, gpointer g_class G_GNUC_UNUSED) {
     IMAGE_ANALYZER_ParserLog *self = IMAGE_ANALYZER_PARSER_LOG(instance);
     IMAGE_ANALYZER_ParserLogPrivate *_priv = IMAGE_ANALYZER_PARSER_LOG_GET_PRIVATE(self);
     
@@ -98,7 +98,7 @@ static void __image_analyzer_parser_log_instance_init (GTypeInstance *instance, 
     return;
 }
 
-static void __image_analyzer_parser_log_class_init (gpointer g_class, gpointer g_class_data) {
+static void __image_analyzer_parser_log_class_init (gpointer g_class, gpointer g_class_data G_GNUC_UNUSED) {
     IMAGE_ANALYZER_ParserLogClass *klass = IMAGE_ANALYZER_PARSER_LOG_CLASS(g_class);
     
     /* Set parent class */

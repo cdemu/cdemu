@@ -88,14 +88,13 @@ static gboolean __image_analyzer_sector_analysis_append_text (IMAGE_ANALYZER_Sec
 /******************************************************************************\
  *                                 UI callbacks                               *
 \******************************************************************************/
-static void __image_analyzer_sector_analysis_ui_callback_analyze (GtkWidget *button, gpointer user_data) {
+static void __image_analyzer_sector_analysis_ui_callback_analyze (GtkWidget *button G_GNUC_UNUSED, gpointer user_data) {
     IMAGE_ANALYZER_SectorAnalysis *self = IMAGE_ANALYZER_SECTOR_ANALYSIS(user_data);
     IMAGE_ANALYZER_SectorAnalysisPrivate *_priv = IMAGE_ANALYZER_SECTOR_ANALYSIS_GET_PRIVATE(self);
-    GError *error = NULL;
     GObject *disc, *session, *track, *sector;
     gint num_sessions, num_tracks;
     gint session_number, session_start, session_length;
-    gint track_number, track_start, track_length, track_pregap;
+    gint track_number, track_start, track_length;
     gint i, j, address;
 
     /* Clear buffer */
@@ -208,7 +207,7 @@ static void __image_analyzer_sector_analysis_set_property (GObject *obj, guint p
     return;
 }
 
-static void __image_analyzer_sector_analysis_instance_init (GTypeInstance *instance, gpointer g_class) {
+static void __image_analyzer_sector_analysis_instance_init (GTypeInstance *instance, gpointer g_class G_GNUC_UNUSED) {
     IMAGE_ANALYZER_SectorAnalysis *self = IMAGE_ANALYZER_SECTOR_ANALYSIS(instance);
     IMAGE_ANALYZER_SectorAnalysisPrivate *_priv = IMAGE_ANALYZER_SECTOR_ANALYSIS_GET_PRIVATE(self);
 
@@ -249,7 +248,7 @@ static void __image_analyzer_sector_analysis_instance_init (GTypeInstance *insta
     return;
 }
 
-static void __image_analyzer_sector_analysis_class_init (gpointer g_class, gpointer g_class_data) {
+static void __image_analyzer_sector_analysis_class_init (gpointer g_class, gpointer g_class_data G_GNUC_UNUSED) {
     GObjectClass *class_gobject = G_OBJECT_CLASS(g_class);
     IMAGE_ANALYZER_SectorAnalysisClass *klass = IMAGE_ANALYZER_SECTOR_ANALYSIS_CLASS(g_class);
 

@@ -111,7 +111,7 @@ static gboolean __image_analyzer_read_sector_append_sector_data (IMAGE_ANALYZER_
 /******************************************************************************\
  *                                 UI callbacks                               *
 \******************************************************************************/
-static void __image_analyzer_sector_read_ui_callback_read (GtkWidget *button, gpointer user_data) {
+static void __image_analyzer_sector_read_ui_callback_read (GtkWidget *button G_GNUC_UNUSED, gpointer user_data) {
     IMAGE_ANALYZER_SectorRead *self = IMAGE_ANALYZER_SECTOR_READ(user_data);
     IMAGE_ANALYZER_SectorReadPrivate *_priv = IMAGE_ANALYZER_SECTOR_READ_GET_PRIVATE(self);
     GObject *disc, *sector;
@@ -267,7 +267,7 @@ static void __image_analyzer_sector_read_set_property (GObject *obj, guint param
     return;
 }
 
-static void __image_analyzer_sector_read_instance_init (GTypeInstance *instance, gpointer g_class) {
+static void __image_analyzer_sector_read_instance_init (GTypeInstance *instance, gpointer g_class G_GNUC_UNUSED) {
     IMAGE_ANALYZER_SectorRead *self = IMAGE_ANALYZER_SECTOR_READ(instance);
     IMAGE_ANALYZER_SectorReadPrivate *_priv = IMAGE_ANALYZER_SECTOR_READ_GET_PRIVATE(self);
 
@@ -321,7 +321,7 @@ static void __image_analyzer_sector_read_instance_init (GTypeInstance *instance,
     return;
 }
 
-static void __image_analyzer_sector_read_class_init (gpointer g_class, gpointer g_class_data) {
+static void __image_analyzer_sector_read_class_init (gpointer g_class, gpointer g_class_data G_GNUC_UNUSED) {
     GObjectClass *class_gobject = G_OBJECT_CLASS(g_class);
     IMAGE_ANALYZER_SectorReadClass *klass = IMAGE_ANALYZER_SECTOR_READ_CLASS(g_class);
 

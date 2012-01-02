@@ -1166,7 +1166,7 @@ static gboolean __image_analyzer_application_load_xml_tree (IMAGE_ANALYZER_Appli
 /******************************************************************************\
  *                              Logging redirection                           *
 \******************************************************************************/
-static void __capture_parser_log (const gchar *log_domain, GLogLevelFlags log_level, const gchar *message, gpointer user_data) {
+static void __capture_parser_log (const gchar *log_domain G_GNUC_UNUSED, GLogLevelFlags log_level G_GNUC_UNUSED, const gchar *message, gpointer user_data) {
     IMAGE_ANALYZER_Application *self = IMAGE_ANALYZER_APPLICATION(user_data);
     IMAGE_ANALYZER_ApplicationPrivate *_priv = IMAGE_ANALYZER_APPLICATION_GET_PRIVATE(self);
 
@@ -1391,7 +1391,7 @@ static gboolean __image_analyzer_application_save_dump (IMAGE_ANALYZER_Applicati
 /******************************************************************************\
  *                                 UI callbacks                               *
 \******************************************************************************/
-static void __ui_callback_open_image (GtkAction *action, gpointer user_data) {
+static void __ui_callback_open_image (GtkAction *action G_GNUC_UNUSED, gpointer user_data) {
     IMAGE_ANALYZER_Application *self = IMAGE_ANALYZER_APPLICATION(user_data);
     IMAGE_ANALYZER_ApplicationPrivate *_priv = IMAGE_ANALYZER_APPLICATION_GET_PRIVATE(self);
 
@@ -1431,7 +1431,7 @@ static void __ui_callback_open_image (GtkAction *action, gpointer user_data) {
     return;
 }
 
-static void __ui_callback_open_dump (GtkAction *action, gpointer user_data) {
+static void __ui_callback_open_dump (GtkAction *action G_GNUC_UNUSED, gpointer user_data) {
     IMAGE_ANALYZER_Application *self = IMAGE_ANALYZER_APPLICATION(user_data);
     IMAGE_ANALYZER_ApplicationPrivate *_priv = IMAGE_ANALYZER_APPLICATION_GET_PRIVATE(self);
 
@@ -1454,7 +1454,7 @@ static void __ui_callback_open_dump (GtkAction *action, gpointer user_data) {
     return;
 }
 
-static void __ui_callback_save_dump (GtkAction *action, gpointer user_data) {
+static void __ui_callback_save_dump (GtkAction *action G_GNUC_UNUSED, gpointer user_data) {
     IMAGE_ANALYZER_Application *self = IMAGE_ANALYZER_APPLICATION(user_data);
     IMAGE_ANALYZER_ApplicationPrivate *_priv = IMAGE_ANALYZER_APPLICATION_GET_PRIVATE(self);
 
@@ -1482,7 +1482,7 @@ static void __ui_callback_save_dump (GtkAction *action, gpointer user_data) {
     return;
 }
 
-static void __ui_callback_close (GtkAction *action, gpointer user_data) {
+static void __ui_callback_close (GtkAction *action G_GNUC_UNUSED, gpointer user_data) {
     IMAGE_ANALYZER_Application *self = IMAGE_ANALYZER_APPLICATION(user_data);
     /*IMAGE_ANALYZER_ApplicationPrivate *_priv = IMAGE_ANALYZER_APPLICATION_GET_PRIVATE(self);*/
 
@@ -1491,12 +1491,12 @@ static void __ui_callback_close (GtkAction *action, gpointer user_data) {
     return;
 }
 
-static void __ui_callback_quit (GtkAction *action, gpointer user_data) {
+static void __ui_callback_quit (GtkAction *action G_GNUC_UNUSED, gpointer user_data G_GNUC_UNUSED) {
     gtk_main_quit();
     return;
 }
 
-static void __ui_callback_parser_log (GtkAction *action, gpointer user_data) {
+static void __ui_callback_parser_log (GtkAction *action G_GNUC_UNUSED, gpointer user_data) {
     IMAGE_ANALYZER_Application *self = IMAGE_ANALYZER_APPLICATION(user_data);
     IMAGE_ANALYZER_ApplicationPrivate *_priv = IMAGE_ANALYZER_APPLICATION_GET_PRIVATE(self);
 
@@ -1507,7 +1507,7 @@ static void __ui_callback_parser_log (GtkAction *action, gpointer user_data) {
     return;
 }
 
-static void __ui_callback_sector (GtkAction *action, gpointer user_data) {
+static void __ui_callback_sector (GtkAction *action G_GNUC_UNUSED, gpointer user_data) {
     IMAGE_ANALYZER_Application *self = IMAGE_ANALYZER_APPLICATION(user_data);
     IMAGE_ANALYZER_ApplicationPrivate *_priv = IMAGE_ANALYZER_APPLICATION_GET_PRIVATE(self);
 
@@ -1518,7 +1518,7 @@ static void __ui_callback_sector (GtkAction *action, gpointer user_data) {
     return;
 }
 
-static void __ui_callback_analysis (GtkAction *action, gpointer user_data) {
+static void __ui_callback_analysis (GtkAction *action G_GNUC_UNUSED, gpointer user_data) {
     IMAGE_ANALYZER_Application *self = IMAGE_ANALYZER_APPLICATION(user_data);
     IMAGE_ANALYZER_ApplicationPrivate *_priv = IMAGE_ANALYZER_APPLICATION_GET_PRIVATE(self);
 
@@ -1529,7 +1529,7 @@ static void __ui_callback_analysis (GtkAction *action, gpointer user_data) {
     return;
 }
 
-static void __ui_callback_topology (GtkAction *action, gpointer user_data) {
+static void __ui_callback_topology (GtkAction *action G_GNUC_UNUSED, gpointer user_data) {
     IMAGE_ANALYZER_Application *self = IMAGE_ANALYZER_APPLICATION(user_data);
     IMAGE_ANALYZER_ApplicationPrivate *_priv = IMAGE_ANALYZER_APPLICATION_GET_PRIVATE(self);
 
@@ -1540,7 +1540,7 @@ static void __ui_callback_topology (GtkAction *action, gpointer user_data) {
     return;
 }
 
-static void __ui_callback_about (GtkAction *action, gpointer user_data) {
+static void __ui_callback_about (GtkAction *action G_GNUC_UNUSED, gpointer user_data) {
     IMAGE_ANALYZER_Application *self = IMAGE_ANALYZER_APPLICATION(user_data);
     IMAGE_ANALYZER_ApplicationPrivate *_priv = IMAGE_ANALYZER_APPLICATION_GET_PRIVATE(self);
 
@@ -1559,7 +1559,7 @@ static void __ui_callback_about (GtkAction *action, gpointer user_data) {
 }
 
 
-static gboolean __cb_window_delete_event (GtkWidget *widget, GdkEvent *event, gpointer user_data) {
+static gboolean __cb_window_delete_event (GtkWidget *widget G_GNUC_UNUSED, GdkEvent *event G_GNUC_UNUSED, gpointer user_data G_GNUC_UNUSED) {
     /* Quit the app */
     gtk_main_quit();
     /* Don't invoke other handlers, we'll cleanup stuff ourselves */
@@ -1688,7 +1688,7 @@ static GtkWidget *__build_dialog_save_dump (IMAGE_ANALYZER_Application *self) {
     return dialog;
 }
 
-static GtkWidget *__build_dialog_parser (IMAGE_ANALYZER_Application *self) {
+static GtkWidget *__build_dialog_parser () {
     GtkWidget *dialog;
     dialog = g_object_new(IMAGE_ANALYZER_TYPE_PARSER_LOG, NULL);
     g_signal_connect(dialog, "delete_event", G_CALLBACK(gtk_widget_hide_on_delete), NULL);
@@ -1709,9 +1709,9 @@ static GtkWidget *__build_dialog_analysis (IMAGE_ANALYZER_Application *self) {
     return dialog;
 }
 
-static GtkWidget *__build_dialog_topology (IMAGE_ANALYZER_Application *self) {
+static GtkWidget *__build_dialog_topology () {
     GtkWidget *dialog;
-    dialog = g_object_new(IMAGE_ANALYZER_TYPE_DISC_TOPOLOGY, "application", self, NULL);
+    dialog = g_object_new(IMAGE_ANALYZER_TYPE_DISC_TOPOLOGY, NULL);
     g_signal_connect(dialog, "delete_event", G_CALLBACK(gtk_widget_hide_on_delete), NULL);
 
     image_analyzer_disc_topology_refresh(IMAGE_ANALYZER_DISC_TOPOLOGY(dialog), NULL, NULL);
@@ -1858,7 +1858,7 @@ gboolean image_analyzer_application_get_loaded_image (IMAGE_ANALYZER_Application
 /* Our parent class */
 static GObjectClass *parent_class = NULL;
 
-static void __image_analyzer_application_instance_init (GTypeInstance *instance, gpointer g_class) {
+static void __image_analyzer_application_instance_init (GTypeInstance *instance, gpointer g_class G_GNUC_UNUSED) {
     IMAGE_ANALYZER_Application *self = IMAGE_ANALYZER_APPLICATION(instance);
     IMAGE_ANALYZER_ApplicationPrivate *_priv = IMAGE_ANALYZER_APPLICATION_GET_PRIVATE(self);
 
@@ -1900,10 +1900,10 @@ static void __image_analyzer_application_instance_init (GTypeInstance *instance,
     _priv->dialog_open_image = __build_dialog_open_image(self);
     _priv->dialog_open_dump = __build_dialog_open_dump(self);
     _priv->dialog_save_dump = __build_dialog_save_dump(self);
-    _priv->dialog_parser = __build_dialog_parser(self);
+    _priv->dialog_parser = __build_dialog_parser();
     _priv->dialog_sector = __build_dialog_sector(self);
     _priv->dialog_analysis = __build_dialog_analysis(self);
-    _priv->dialog_topology = __build_dialog_topology(self);
+    _priv->dialog_topology = __build_dialog_topology();
 
     /* Accelerator group */
     accel_group = gtk_ui_manager_get_accel_group(_priv->ui_manager);
@@ -1938,7 +1938,7 @@ static void __image_analyzer_application_finalize (GObject *obj) {
     return G_OBJECT_CLASS(parent_class)->finalize(obj);
 }
 
-static void __image_analyzer_application_class_init (gpointer g_class, gpointer g_class_data) {
+static void __image_analyzer_application_class_init (gpointer g_class, gpointer g_class_data G_GNUC_UNUSED) {
     GObjectClass *class_gobject = G_OBJECT_CLASS(g_class);
     IMAGE_ANALYZER_ApplicationClass *klass = IMAGE_ANALYZER_APPLICATION_CLASS(g_class);
 
