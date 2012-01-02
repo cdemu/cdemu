@@ -84,8 +84,8 @@ typedef struct {
 
 
 /* Alloc and free functions for LZMA stream */
-static void *sz_alloc (void *p, size_t size) { return g_malloc0(size); }
-static void sz_free (void *p, void *address) { g_free(address); }
+static void *sz_alloc (void *p G_GNUC_UNUSED, size_t size) { return g_malloc0(size); }
+static void sz_free (void *p G_GNUC_UNUSED, void *address) { g_free(address); }
 static ISzAlloc lzma_alloc = { sz_alloc, sz_free };
 
 
@@ -250,7 +250,7 @@ static void __daa_crypt_block (guint8 *ret, guint8 *data, gint size) {
     return;
 }
 
-static void __daa_crypt (guint8 *key, guint8 *data, gint size) {
+static void __daa_crypt (guint8 *key G_GNUC_UNUSED, guint8 *data, gint size) {
     gint blocks, rem;
     guint8 tmp[128];
     guint8 *p;
@@ -290,7 +290,7 @@ static gboolean __mirage_fragment_daa_read_from_stream (MIRAGE_Fragment *self, g
     /* A rather complex loop, thanks to the possibility that a chunk spans across
        multiple part files... */
     while (length > 0) {
-        DAA_Part *part;
+        DAA_Part *part = NULL;
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_FRAGMENT, "%s: reading 0x%X bytes from stream at offset 0x%llX\n", __debug__, length, offset);
 
         /* Find the part to which the given offset belongs */
@@ -815,13 +815,13 @@ gboolean mirage_fragment_daa_set_file (MIRAGE_Fragment *self, gchar *filename, g
 /******************************************************************************\
  *                   MIRAGE_Fragment methods implementations                  *
 \******************************************************************************/
-static gboolean __mirage_fragment_daa_can_handle_data_format (MIRAGE_Fragment *self, const gchar *filename, GError **error) {
+static gboolean __mirage_fragment_daa_can_handle_data_format (MIRAGE_Fragment *self G_GNUC_UNUSED, const gchar *filename G_GNUC_UNUSED, GError **error G_GNUC_UNUSED) {
     /* Not implemented */
     mirage_error(MIRAGE_E_NOTIMPL, error);
     return FALSE;
 }
 
-static gboolean __mirage_fragment_daa_use_the_rest_of_file (MIRAGE_Fragment *self, GError **error) {
+static gboolean __mirage_fragment_daa_use_the_rest_of_file (MIRAGE_Fragment *self G_GNUC_UNUSED, GError **error G_GNUC_UNUSED) {
     /* Not implemented */
     mirage_error(MIRAGE_E_NOTIMPL, error);
     return FALSE;
@@ -943,7 +943,7 @@ static gboolean __mirage_fragment_daa_read_main_data (MIRAGE_Fragment *self, gin
     return TRUE;
 }
 
-static gboolean __mirage_fragment_daa_read_subchannel_data (MIRAGE_Fragment *self, gint address, guint8 *buf, gint *length, GError **error) {
+static gboolean __mirage_fragment_daa_read_subchannel_data (MIRAGE_Fragment *self, gint address G_GNUC_UNUSED, guint8 *buf G_GNUC_UNUSED, gint *length, GError **error G_GNUC_UNUSED) {
     /* Nothing to read */
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_FRAGMENT, "%s: no subchannel data in DAA fragment\n", __debug__);
     if (length) {
@@ -959,7 +959,7 @@ static gboolean __mirage_fragment_daa_read_subchannel_data (MIRAGE_Fragment *sel
 /* Our parent class */
 static MIRAGE_FragmentClass *parent_class = NULL;
 
-static void __mirage_fragment_daa_instance_init (GTypeInstance *instance, gpointer g_class) {
+static void __mirage_fragment_daa_instance_init (GTypeInstance *instance, gpointer g_class G_GNUC_UNUSED) {
     /* Create fragment info */
     mirage_fragment_generate_fragment_info(MIRAGE_FRAGMENT(instance),
         "FRAGMENT-DAA",
@@ -1002,7 +1002,7 @@ static void __mirage_fragment_daa_finalize (GObject *obj) {
     return G_OBJECT_CLASS(parent_class)->finalize(obj);
 }
 
-static void __mirage_fragment_daa_class_init (gpointer g_class, gpointer g_class_data) {
+static void __mirage_fragment_daa_class_init (gpointer g_class, gpointer g_class_data G_GNUC_UNUSED) {
     GObjectClass *class_gobject = G_OBJECT_CLASS(g_class);
     MIRAGE_FragmentClass *class_fragment = MIRAGE_FRAGMENT_CLASS(g_class);
     MIRAGE_Fragment_DAAClass *klass = MIRAGE_FRAGMENT_DAA_CLASS(g_class);
@@ -1037,7 +1037,8 @@ GType mirage_fragment_daa_get_type (GTypeModule *module) {
             NULL,   /* class_data */
             sizeof(MIRAGE_Fragment_DAA),
             0,      /* n_preallocs */
-            __mirage_fragment_daa_instance_init    /* instance_init */
+            __mirage_fragment_daa_instance_init,   /* instance_init */
+            NULL    /* value_table */
         };
 
         type = g_type_module_register_type(module, MIRAGE_TYPE_FRAGMENT, "MIRAGE_Fragment_DAA", &info, 0);

@@ -97,7 +97,7 @@ end:
     return succeeded;
 }
 
-static gboolean __mirage_parser_readcd_determine_track_mode (MIRAGE_Parser *self, GObject *track, GError **error) {
+static gboolean __mirage_parser_readcd_determine_track_mode (MIRAGE_Parser *self, GObject *track, GError **error G_GNUC_UNUSED) {
     GObject *data_fragment = NULL;
     guint64 offset = 0;
     FILE *file = NULL;
@@ -415,7 +415,7 @@ static gboolean __mirage_parser_readcd_parse_toc (MIRAGE_Parser *self, gchar *fi
 end:
     g_free(_priv->data_filename);
 
-    g_mapped_file_free(toc_mapped);
+    g_mapped_file_unref(toc_mapped);
 
     return succeeded;
 }
@@ -488,7 +488,7 @@ end:
 /* Our parent class */
 static MIRAGE_ParserClass *parent_class = NULL;
 
-static void __mirage_parser_readcd_instance_init (GTypeInstance *instance, gpointer g_class) {
+static void __mirage_parser_readcd_instance_init (GTypeInstance *instance, gpointer g_class G_GNUC_UNUSED) {
     /* Create parser info */
     mirage_parser_generate_parser_info(MIRAGE_PARSER(instance),
         "PARSER-READCD",
@@ -512,7 +512,7 @@ static void __mirage_parser_readcd_finalize (GObject *obj) {
 }
 
 
-static void __mirage_parser_readcd_class_init (gpointer g_class, gpointer g_class_data) {
+static void __mirage_parser_readcd_class_init (gpointer g_class, gpointer g_class_data G_GNUC_UNUSED) {
     GObjectClass *class_gobject = G_OBJECT_CLASS(g_class);
     MIRAGE_ParserClass *class_parser = MIRAGE_PARSER_CLASS(g_class);
     MIRAGE_Parser_READCDClass *klass = MIRAGE_PARSER_READCD_CLASS(g_class);
@@ -544,7 +544,8 @@ GType mirage_parser_readcd_get_type (GTypeModule *module) {
             NULL,   /* class_data */
             sizeof(MIRAGE_Parser_READCD),
             0,      /* n_preallocs */
-            __mirage_parser_readcd_instance_init    /* instance_init */
+            __mirage_parser_readcd_instance_init,   /* instance_init */
+            NULL    /* value_table */
         };
 
         type = g_type_module_register_type(module, MIRAGE_TYPE_PARSER, "MIRAGE_Parser_READCD", &info, 0);

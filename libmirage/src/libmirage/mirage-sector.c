@@ -1316,7 +1316,7 @@ gboolean mirage_sector_verify_subchannel_crc (MIRAGE_Sector *self)
 /* Our parent class */
 static MIRAGE_ObjectClass *parent_class = NULL;
 
-static void __mirage_sector_instance_init (GTypeInstance *instance, gpointer g_class) {
+static void __mirage_sector_instance_init (GTypeInstance *instance, gpointer g_class G_GNUC_UNUSED) {
     MIRAGE_Sector *self = MIRAGE_SECTOR(instance);
     MIRAGE_SectorPrivate *_priv = MIRAGE_SECTOR_GET_PRIVATE(self);
 
@@ -1326,7 +1326,7 @@ static void __mirage_sector_instance_init (GTypeInstance *instance, gpointer g_c
     return;
 }
 
-static void __mirage_sector_class_init (gpointer g_class, gpointer g_class_data) {
+static void __mirage_sector_class_init (gpointer g_class, gpointer g_class_data G_GNUC_UNUSED) {
     MIRAGE_SectorClass *klass = MIRAGE_SECTOR_CLASS(g_class);
 
     /* Set parent class */
@@ -1350,7 +1350,8 @@ GType mirage_sector_get_type (void) {
             NULL,   /* class_data */
             sizeof(MIRAGE_Sector),
             0,      /* n_preallocs */
-            __mirage_sector_instance_init    /* instance_init */
+            __mirage_sector_instance_init,   /* instance_init */
+            NULL    /* value_table */
         };
 
         type = g_type_register_static(MIRAGE_TYPE_OBJECT, "MIRAGE_Sector", &info, 0);
@@ -1570,37 +1571,37 @@ static gint __subchannel_generate_q (MIRAGE_Sector *self, guint8 *buf) {
     return 12;
 }
 
-static gint __subchannel_generate_r (MIRAGE_Sector *self, guint8 *buf) {
+static gint __subchannel_generate_r (MIRAGE_Sector *self G_GNUC_UNUSED, guint8 *buf) {
     memset(buf, 0, 12);
     return 12;
 }
 
-static gint __subchannel_generate_s (MIRAGE_Sector *self, guint8 *buf) {
+static gint __subchannel_generate_s (MIRAGE_Sector *self G_GNUC_UNUSED, guint8 *buf) {
     memset(buf, 0, 12);
     return 12;
 }
 
-static gint __subchannel_generate_t (MIRAGE_Sector *self, guint8 *buf) {
+static gint __subchannel_generate_t (MIRAGE_Sector *self G_GNUC_UNUSED, guint8 *buf) {
     memset(buf, 0, 12);
     return 12;
 }
 
-static gint __subchannel_generate_u (MIRAGE_Sector *self, guint8 *buf) {
+static gint __subchannel_generate_u (MIRAGE_Sector *self G_GNUC_UNUSED, guint8 *buf) {
     memset(buf, 0, 12);
     return 12;
 }
 
-static gint __subchannel_generate_v (MIRAGE_Sector *self, guint8 *buf) {
+static gint __subchannel_generate_v (MIRAGE_Sector *self G_GNUC_UNUSED, guint8 *buf) {
     memset(buf, 0, 12);
     return 12;
 }
 
-static gint __subchannel_generate_w (MIRAGE_Sector *self, guint8 *buf) {
+static gint __subchannel_generate_w (MIRAGE_Sector *self G_GNUC_UNUSED, guint8 *buf) {
     memset(buf, 0, 12);
     return 12;
 }
 
-static void __mirage_sector_generate_subchannel (MIRAGE_Sector *self) {
+static void __mirage_sector_generate_subchannel (MIRAGE_Sector *self ) {
     MIRAGE_SectorPrivate *_priv = MIRAGE_SECTOR_GET_PRIVATE(self);
 
     guint8 tmp_buf[12] = {0};

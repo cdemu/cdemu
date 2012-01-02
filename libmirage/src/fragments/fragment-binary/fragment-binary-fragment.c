@@ -43,7 +43,7 @@ typedef struct {
 /******************************************************************************\
  *                      Interface implementation: BINARY                      *
 \******************************************************************************/
-static gboolean __mirage_fragment_binary_track_file_set_handle (MIRAGE_FInterface_BINARY *self, FILE *file, GError **error) {
+static gboolean __mirage_fragment_binary_track_file_set_handle (MIRAGE_FInterface_BINARY *self, FILE *file, GError **error G_GNUC_UNUSED) {
     MIRAGE_Fragment_BINARYPrivate *_priv = MIRAGE_FRAGMENT_BINARY_GET_PRIVATE(self);
     /* Set file handle, but free old one first (if provided) */
     if (_priv->tfile_handle) {
@@ -53,7 +53,7 @@ static gboolean __mirage_fragment_binary_track_file_set_handle (MIRAGE_FInterfac
     return TRUE;
 }
 
-static gboolean __mirage_fragment_binary_track_file_get_handle (MIRAGE_FInterface_BINARY *self, FILE **file, GError **error) {
+static gboolean __mirage_fragment_binary_track_file_get_handle (MIRAGE_FInterface_BINARY *self, FILE **file, GError **error G_GNUC_UNUSED) {
     MIRAGE_Fragment_BINARYPrivate *_priv = MIRAGE_FRAGMENT_BINARY_GET_PRIVATE(self);
     MIRAGE_CHECK_ARG(file);
     /* Return file handle */
@@ -62,14 +62,14 @@ static gboolean __mirage_fragment_binary_track_file_get_handle (MIRAGE_FInterfac
 }
 
 
-static gboolean __mirage_fragment_binary_track_file_set_offset (MIRAGE_FInterface_BINARY *self, guint64 offset, GError **error) {
+static gboolean __mirage_fragment_binary_track_file_set_offset (MIRAGE_FInterface_BINARY *self, guint64 offset, GError **error G_GNUC_UNUSED) {
     MIRAGE_Fragment_BINARYPrivate *_priv = MIRAGE_FRAGMENT_BINARY_GET_PRIVATE(self);
     /* Set offset */
     _priv->tfile_offset = offset;
     return TRUE;
 }
 
-static gboolean __mirage_fragment_binary_track_file_get_offset (MIRAGE_FInterface_BINARY *self, guint64 *offset, GError **error) {
+static gboolean __mirage_fragment_binary_track_file_get_offset (MIRAGE_FInterface_BINARY *self, guint64 *offset, GError **error G_GNUC_UNUSED) {
     MIRAGE_Fragment_BINARYPrivate *_priv = MIRAGE_FRAGMENT_BINARY_GET_PRIVATE(self);
     MIRAGE_CHECK_ARG(offset);
     /* Return offset */
@@ -78,7 +78,7 @@ static gboolean __mirage_fragment_binary_track_file_get_offset (MIRAGE_FInterfac
 }
 
 
-static gboolean __mirage_fragment_binary_track_file_set_sectsize (MIRAGE_FInterface_BINARY *self, gint sectsize, GError **error) {
+static gboolean __mirage_fragment_binary_track_file_set_sectsize (MIRAGE_FInterface_BINARY *self, gint sectsize, GError **error G_GNUC_UNUSED) {
     MIRAGE_Fragment_BINARYPrivate *_priv = MIRAGE_FRAGMENT_BINARY_GET_PRIVATE(self);
     /* Set sector size */
     _priv->tfile_sectsize = sectsize;
@@ -94,7 +94,7 @@ static gboolean __mirage_fragment_binary_track_file_get_sectsize (MIRAGE_FInterf
 }
 
 
-static gboolean __mirage_fragment_binary_track_file_set_format (MIRAGE_FInterface_BINARY *self, gint format, GError **error) {
+static gboolean __mirage_fragment_binary_track_file_set_format (MIRAGE_FInterface_BINARY *self, gint format, GError **error G_GNUC_UNUSED) {
     MIRAGE_Fragment_BINARYPrivate *_priv = MIRAGE_FRAGMENT_BINARY_GET_PRIVATE(self);
     /* Set format */
     _priv->tfile_format = format;
@@ -138,7 +138,7 @@ static gboolean __mirage_fragment_binary_track_file_get_position (MIRAGE_FInterf
 }
 
 
-static gboolean __mirage_fragment_binary_subchannel_file_set_handle (MIRAGE_FInterface_BINARY *self, FILE *file, GError **error) {
+static gboolean __mirage_fragment_binary_subchannel_file_set_handle (MIRAGE_FInterface_BINARY *self, FILE *file, GError **error G_GNUC_UNUSED) {
     MIRAGE_Fragment_BINARYPrivate *_priv = MIRAGE_FRAGMENT_BINARY_GET_PRIVATE(self);
     /* Set file handle, but free old one first (if provided) */
     if (_priv->sfile_handle) {
@@ -157,7 +157,7 @@ static gboolean __mirage_fragment_binary_subchannel_file_get_handle (MIRAGE_FInt
 }
 
 
-static gboolean __mirage_fragment_binary_subchannel_file_set_offset (MIRAGE_FInterface_BINARY *self, guint64 offset, GError **error) {
+static gboolean __mirage_fragment_binary_subchannel_file_set_offset (MIRAGE_FInterface_BINARY *self, guint64 offset, GError **error G_GNUC_UNUSED) {
     MIRAGE_Fragment_BINARYPrivate *_priv = MIRAGE_FRAGMENT_BINARY_GET_PRIVATE(self);
     /* Set offset */
     _priv->sfile_offset = offset;
@@ -172,7 +172,7 @@ static gboolean __mirage_fragment_binary_subchannel_file_get_offset (MIRAGE_FInt
     return TRUE;
 }
 
-static gboolean __mirage_fragment_binary_subchannel_file_set_sectsize (MIRAGE_FInterface_BINARY *self, gint sectsize, GError **error) {
+static gboolean __mirage_fragment_binary_subchannel_file_set_sectsize (MIRAGE_FInterface_BINARY *self, gint sectsize, GError **error G_GNUC_UNUSED) {
     MIRAGE_Fragment_BINARYPrivate *_priv = MIRAGE_FRAGMENT_BINARY_GET_PRIVATE(self);
     /* Set sector size */
     _priv->sfile_sectsize = sectsize;
@@ -188,7 +188,7 @@ static gboolean __mirage_fragment_binary_subchannel_file_get_sectsize (MIRAGE_FI
 }
 
 
-static gboolean __mirage_fragment_binary_subchannel_file_set_format (MIRAGE_FInterface_BINARY *self, gint format, GError **error) {
+static gboolean __mirage_fragment_binary_subchannel_file_set_format (MIRAGE_FInterface_BINARY *self, gint format, GError **error G_GNUC_UNUSED) {
     MIRAGE_Fragment_BINARYPrivate *_priv = MIRAGE_FRAGMENT_BINARY_GET_PRIVATE(self);
     /* Set format */
     _priv->sfile_format = format;
@@ -236,7 +236,7 @@ static gboolean __mirage_fragment_binary_subchannel_file_get_position (MIRAGE_FI
 /******************************************************************************\
  *                   MIRAGE_Fragment methods implementations                  *
 \******************************************************************************/
-static gboolean __mirage_fragment_binary_can_handle_data_format (MIRAGE_Fragment *self, const gchar *filename, GError **error) {
+static gboolean __mirage_fragment_binary_can_handle_data_format (MIRAGE_Fragment *self G_GNUC_UNUSED, const gchar *filename G_GNUC_UNUSED, GError **error G_GNUC_UNUSED) {
     /* BINARY doesn't need any data file checks; what's important is interface type,
        which is filtered out elsewhere */
     return TRUE;
@@ -415,7 +415,7 @@ static gboolean __mirage_fragment_binary_read_subchannel_data (MIRAGE_Fragment *
 /* Our parent class */
 static MIRAGE_FragmentClass *parent_class = NULL;
 
-static void __mirage_fragment_binary_instance_init (GTypeInstance *instance, gpointer g_class) {
+static void __mirage_fragment_binary_instance_init (GTypeInstance *instance, gpointer g_class G_GNUC_UNUSED) {
     /* Create fragment info */
     mirage_fragment_generate_fragment_info(MIRAGE_FRAGMENT(instance),
         "FRAGMENT-BINARY",
@@ -443,7 +443,7 @@ static void __mirage_fragment_binary_finalize (GObject *obj) {
     return G_OBJECT_CLASS(parent_class)->finalize(obj);
 }
 
-static void __mirage_fragment_binary_class_init (gpointer g_class, gpointer g_class_data) {
+static void __mirage_fragment_binary_class_init (gpointer g_class, gpointer g_class_data G_GNUC_UNUSED) {
     GObjectClass *class_gobject = G_OBJECT_CLASS(g_class);
     MIRAGE_FragmentClass *class_fragment = MIRAGE_FRAGMENT_CLASS(g_class);
     MIRAGE_Fragment_BINARYClass *klass = MIRAGE_FRAGMENT_BINARY_CLASS(g_class);
@@ -466,7 +466,7 @@ static void __mirage_fragment_binary_class_init (gpointer g_class, gpointer g_cl
     return;
 }
 
-static void __mirage_fragment_binary_interface_init (gpointer g_iface, gpointer iface_data) {
+static void __mirage_fragment_binary_interface_init (gpointer g_iface, gpointer iface_data G_GNUC_UNUSED) {
     MIRAGE_FInterface_BINARYClass *klass = (MIRAGE_FInterface_BINARYClass *)g_iface;
     
     /* Initialize MIRAGE_FInterface_BINARY methods */
@@ -507,7 +507,8 @@ GType mirage_fragment_binary_get_type (GTypeModule *module) {
             NULL,   /* class_data */
             sizeof(MIRAGE_Fragment_BINARY),
             0,      /* n_preallocs */
-            __mirage_fragment_binary_instance_init    /* instance_init */
+            __mirage_fragment_binary_instance_init,   /* instance_init */
+            NULL    /* value_table */
         };
         
         static const GInterfaceInfo interface_info = {

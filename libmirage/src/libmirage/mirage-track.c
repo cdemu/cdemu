@@ -76,7 +76,7 @@ static gint __sort_languages_by_code (GObject *language1, GObject *language2);
 static gboolean __mirage_track_check_for_encoded_isrc (MIRAGE_Track *self, GError **error);
 
 
-static gboolean __mirage_track_rearrange_indices (MIRAGE_Track *self, GError **error) {
+static gboolean __mirage_track_rearrange_indices (MIRAGE_Track *self, GError **error G_GNUC_UNUSED) {
     MIRAGE_TrackPrivate *_priv = MIRAGE_TRACK_GET_PRIVATE(self);
     GList *entry = NULL;
 
@@ -105,7 +105,7 @@ static gboolean __mirage_track_rearrange_indices (MIRAGE_Track *self, GError **e
     return TRUE;
 }
 
-static gboolean __mirage_track_commit_topdown_change (MIRAGE_Track *self, GError **error) {
+static gboolean __mirage_track_commit_topdown_change (MIRAGE_Track *self, GError **error G_GNUC_UNUSED) {
     MIRAGE_TrackPrivate *_priv = MIRAGE_TRACK_GET_PRIVATE(self);
     GList *entry = NULL;
 
@@ -127,7 +127,7 @@ static gboolean __mirage_track_commit_topdown_change (MIRAGE_Track *self, GError
     return TRUE;
 }
 
-static gboolean __mirage_track_commit_bottomup_change (MIRAGE_Track *self, GError **error) {
+static gboolean __mirage_track_commit_bottomup_change (MIRAGE_Track *self, GError **error G_GNUC_UNUSED) {
     MIRAGE_TrackPrivate *_priv = MIRAGE_TRACK_GET_PRIVATE(self);
     GList *entry = NULL;
 
@@ -154,13 +154,13 @@ static gboolean __mirage_track_commit_bottomup_change (MIRAGE_Track *self, GErro
     return TRUE;
 }
 
-static void __fragment_modified_handler (GObject *fragment, MIRAGE_Track *self) {
+static void __fragment_modified_handler (GObject *fragment G_GNUC_UNUSED, MIRAGE_Track *self) {
     /* Bottom-up change */
     __mirage_track_commit_bottomup_change(self, NULL);
     return;
 }
 
-static gboolean __remove_fragment_from_track (MIRAGE_Track *self, GObject *fragment, GError **error) {
+static gboolean __remove_fragment_from_track (MIRAGE_Track *self, GObject *fragment, GError **error G_GNUC_UNUSED) {
     MIRAGE_TrackPrivate *_priv = MIRAGE_TRACK_GET_PRIVATE(self);
 
     /* Disconnect signal handler (find it by handler function and user data) */
@@ -176,7 +176,7 @@ static gboolean __remove_fragment_from_track (MIRAGE_Track *self, GObject *fragm
     return TRUE;
 }
 
-static gboolean __remove_index_from_track (MIRAGE_Track *self, GObject *index, GError **error) {
+static gboolean __remove_index_from_track (MIRAGE_Track *self, GObject *index, GError **error G_GNUC_UNUSED) {
     MIRAGE_TrackPrivate *_priv = MIRAGE_TRACK_GET_PRIVATE(self);
 
     /* Remove it from list and unref it */
@@ -189,7 +189,7 @@ static gboolean __remove_index_from_track (MIRAGE_Track *self, GObject *index, G
     return TRUE;
 }
 
-static gboolean __remove_language_from_track (MIRAGE_Track *self, GObject *language, GError **error) {
+static gboolean __remove_language_from_track (MIRAGE_Track *self, GObject *language, GError **error G_GNUC_UNUSED) {
     MIRAGE_TrackPrivate *_priv = MIRAGE_TRACK_GET_PRIVATE(self);
 
     /* Remove it from list and unref it */
@@ -295,7 +295,7 @@ static gboolean __mirage_track_check_for_encoded_isrc (MIRAGE_Track *self, GErro
  *
  * Returns: %TRUE on success, %FALSE on failure
  **/
-gboolean mirage_track_set_flags (MIRAGE_Track *self, gint flags, GError **error) {
+gboolean mirage_track_set_flags (MIRAGE_Track *self, gint flags, GError **error G_GNUC_UNUSED) {
     MIRAGE_TrackPrivate *_priv = MIRAGE_TRACK_GET_PRIVATE(self);
     /* Set flags */
     _priv->flags = flags;
@@ -335,7 +335,7 @@ gboolean mirage_track_get_flags (MIRAGE_Track *self, gint *flags, GError **error
  *
  * Returns: %TRUE on success, %FALSE on failure
  **/
-gboolean mirage_track_set_mode (MIRAGE_Track *self, gint mode, GError **error) {
+gboolean mirage_track_set_mode (MIRAGE_Track *self, gint mode, GError **error G_GNUC_UNUSED) {
     MIRAGE_TrackPrivate *_priv = MIRAGE_TRACK_GET_PRIVATE(self);
     /* Set mode */
     _priv->mode = mode;
@@ -379,7 +379,7 @@ gboolean mirage_track_get_mode (MIRAGE_Track *self, gint *mode, GError **error) 
  *
  * Returns: %TRUE on success, %FALSE on failure
  **/
-gboolean mirage_track_get_adr (MIRAGE_Track *self, gint *adr, GError **error) {
+gboolean mirage_track_get_adr (MIRAGE_Track *self G_GNUC_UNUSED, gint *adr, GError **error G_GNUC_UNUSED) {
     MIRAGE_CHECK_ARG(adr);
     /* Return adr; always 1 */
     *adr = 1;
@@ -400,7 +400,7 @@ gboolean mirage_track_get_adr (MIRAGE_Track *self, gint *adr, GError **error) {
  *
  * Returns: %TRUE on success, %FALSE on failure
  **/
-gboolean mirage_track_set_ctl (MIRAGE_Track *self, gint ctl, GError **error) {
+gboolean mirage_track_set_ctl (MIRAGE_Track *self, gint ctl, GError **error G_GNUC_UNUSED) {
     gint flags = 0;
 
     /* We ignore track mode (data type) here */
@@ -800,7 +800,7 @@ gboolean mirage_track_layout_get_session_number (MIRAGE_Track *self, gint *sessi
  *
  * Returns: %TRUE on success, %FALSE on failure
  **/
-gboolean mirage_track_layout_set_track_number (MIRAGE_Track *self, gint track_number, GError **error) {
+gboolean mirage_track_layout_set_track_number (MIRAGE_Track *self, gint track_number, GError **error G_GNUC_UNUSED) {
     MIRAGE_TrackPrivate *_priv = MIRAGE_TRACK_GET_PRIVATE(self);
     /* Set track number */
     _priv->track_number = track_number;
@@ -847,7 +847,7 @@ gboolean mirage_track_layout_get_track_number (MIRAGE_Track *self, gint *track_n
  *
  * Returns: %TRUE on success, %FALSE on failure
  **/
-gboolean mirage_track_layout_set_start_sector (MIRAGE_Track *self, gint start_sector, GError **error) {
+gboolean mirage_track_layout_set_start_sector (MIRAGE_Track *self, gint start_sector, GError **error G_GNUC_UNUSED) {
     MIRAGE_TrackPrivate *_priv = MIRAGE_TRACK_GET_PRIVATE(self);
     /* Set start sector */
     _priv->start_sector = start_sector;
@@ -1294,7 +1294,7 @@ gboolean mirage_track_find_fragment_with_subchannel (MIRAGE_Track *self, GObject
  *
  * Returns: %TRUE on success, %FALSE on failure
  **/
-gboolean mirage_track_set_track_start (MIRAGE_Track *self, gint track_start, GError **error) {
+gboolean mirage_track_set_track_start (MIRAGE_Track *self, gint track_start, GError **error G_GNUC_UNUSED) {
     MIRAGE_TrackPrivate *_priv = MIRAGE_TRACK_GET_PRIVATE(self);
     /* Set track start */
     _priv->track_start = track_start;
@@ -2006,7 +2006,7 @@ gboolean mirage_track_get_next (MIRAGE_Track *self, GObject **next_track, GError
 /* Our parent class */
 static GObjectClass *parent_class = NULL;
 
-static void __mirage_track_instance_init (GTypeInstance *instance, gpointer g_class) {
+static void __mirage_track_instance_init (GTypeInstance *instance, gpointer g_class G_GNUC_UNUSED) {
     MIRAGE_Track *self = MIRAGE_TRACK(instance);
     MIRAGE_TrackPrivate *_priv = MIRAGE_TRACK_GET_PRIVATE(self);
 
@@ -2059,7 +2059,7 @@ static void __mirage_track_finalize (GObject *obj) {
     return G_OBJECT_CLASS(parent_class)->finalize(obj);
 }
 
-static void __mirage_track_class_init (gpointer g_class, gpointer g_class_data) {
+static void __mirage_track_class_init (gpointer g_class, gpointer g_class_data G_GNUC_UNUSED) {
     GObjectClass *class_gobject = G_OBJECT_CLASS(g_class);
     MIRAGE_TrackClass *klass = MIRAGE_TRACK_CLASS(g_class);
 
@@ -2087,7 +2087,8 @@ GType mirage_track_get_type (void) {
             NULL,   /* class_data */
             sizeof(MIRAGE_Track),
             0,      /* n_preallocs */
-            __mirage_track_instance_init    /* instance_init */
+            __mirage_track_instance_init,   /* instance_init */
+            NULL    /* value_table */
         };
 
         type = g_type_register_static(MIRAGE_TYPE_OBJECT, "MIRAGE_Track", &info, 0);

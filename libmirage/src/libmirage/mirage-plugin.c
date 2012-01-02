@@ -181,7 +181,7 @@ static void __mirage_plugin_finalize (GObject *obj) {
     return G_OBJECT_CLASS(parent_class)->finalize(obj);
 }
 
-static void __mirage_plugin_class_init (gpointer g_class, gpointer g_class_data) {
+static void __mirage_plugin_class_init (gpointer g_class, gpointer g_class_data G_GNUC_UNUSED) {
     GObjectClass *class_gobject = G_OBJECT_CLASS(g_class);
     GTypeModuleClass *class_gmodule = G_TYPE_MODULE_CLASS(g_class);
     MIRAGE_PluginClass *klass = MIRAGE_PLUGIN_CLASS(g_class);
@@ -219,7 +219,8 @@ GType mirage_plugin_get_type (void) {
             NULL,   /* class_data */
             sizeof(MIRAGE_Plugin),
             0,      /* n_preallocs */
-            NULL    /* instance_init */
+            NULL,   /* instance_init */
+            NULL    /* value_table */
         };
         
         type = g_type_register_static(G_TYPE_TYPE_MODULE, "MIRAGE_Plugin", &info, 0);

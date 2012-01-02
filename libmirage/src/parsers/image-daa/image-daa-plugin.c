@@ -34,7 +34,7 @@ G_MODULE_EXPORT void mirage_plugin_load_plugin (MIRAGE_Plugin *plugin) {
     return;
 }
 
-G_MODULE_EXPORT void mirage_plugin_unload_plugin (MIRAGE_Plugin *plugin) {
+G_MODULE_EXPORT void mirage_plugin_unload_plugin (MIRAGE_Plugin *plugin G_GNUC_UNUSED) {
     global_module = NULL;
     return;
 }

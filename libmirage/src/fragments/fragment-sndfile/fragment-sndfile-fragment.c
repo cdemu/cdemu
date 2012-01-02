@@ -75,21 +75,21 @@ static gboolean __mirage_fragment_sndfile_set_file (MIRAGE_FInterface_AUDIO *sel
     return TRUE;    
 }
 
-static gboolean __mirage_fragment_sndfile_get_file (MIRAGE_FInterface_AUDIO *self, const gchar **filename, GError **error) {
+static gboolean __mirage_fragment_sndfile_get_file (MIRAGE_FInterface_AUDIO *self, const gchar **filename, GError **error G_GNUC_UNUSED) {
     MIRAGE_Fragment_SNDFILEPrivate *_priv = MIRAGE_FRAGMENT_SNDFILE_GET_PRIVATE(self);
     /* Return filename */
     *filename = _priv->filename;
     return TRUE;
 }
 
-static gboolean __mirage_fragment_sndfile_set_offset (MIRAGE_FInterface_AUDIO *self, gint offset, GError **error) {
+static gboolean __mirage_fragment_sndfile_set_offset (MIRAGE_FInterface_AUDIO *self, gint offset, GError **error G_GNUC_UNUSED) {
     MIRAGE_Fragment_SNDFILEPrivate *_priv = MIRAGE_FRAGMENT_SNDFILE_GET_PRIVATE(self);
     /* Set offset */
     _priv->offset = offset*SNDFILE_FRAMES_PER_SECTOR;
     return TRUE;    
 }
 
-static gboolean __mirage_fragment_sndfile_get_offset (MIRAGE_FInterface_AUDIO *self, gint *offset, GError **error) {
+static gboolean __mirage_fragment_sndfile_get_offset (MIRAGE_FInterface_AUDIO *self, gint *offset, GError **error G_GNUC_UNUSED) {
     MIRAGE_Fragment_SNDFILEPrivate *_priv = MIRAGE_FRAGMENT_SNDFILE_GET_PRIVATE(self);
     /* Return */
     *offset = _priv->offset/SNDFILE_FRAMES_PER_SECTOR;
@@ -100,7 +100,7 @@ static gboolean __mirage_fragment_sndfile_get_offset (MIRAGE_FInterface_AUDIO *s
 /******************************************************************************\
  *                   MIRAGE_Fragment methods implementations                  *
 \******************************************************************************/
-static gboolean __mirage_fragment_sndfile_can_handle_data_format (MIRAGE_Fragment *self, const gchar *filename, GError **erro) {
+static gboolean __mirage_fragment_sndfile_can_handle_data_format (MIRAGE_Fragment *self G_GNUC_UNUSED, const gchar *filename, GError **error G_GNUC_UNUSED) {
     SNDFILE *sndfile;
     SF_INFO format;
     
@@ -173,7 +173,7 @@ static gboolean __mirage_fragment_sndfile_read_main_data (MIRAGE_Fragment *self,
     return TRUE;
 }
 
-static gboolean __mirage_fragment_sndfile_read_subchannel_data (MIRAGE_Fragment *self, gint address, guint8 *buf, gint *length, GError **error) {
+static gboolean __mirage_fragment_sndfile_read_subchannel_data (MIRAGE_Fragment *self G_GNUC_UNUSED, gint address G_GNUC_UNUSED, guint8 *buf G_GNUC_UNUSED, gint *length, GError **error G_GNUC_UNUSED) {
     /* Nothing to read */
     if (length) {
         *length = 0;
@@ -188,7 +188,7 @@ static gboolean __mirage_fragment_sndfile_read_subchannel_data (MIRAGE_Fragment 
 /* Our parent class */
 static MIRAGE_FragmentClass *parent_class = NULL;
 
-static void __mirage_fragment_sndfile_instance_init (GTypeInstance *instance, gpointer g_class) {   
+static void __mirage_fragment_sndfile_instance_init (GTypeInstance *instance, gpointer g_class G_GNUC_UNUSED) {   
     /* Create fragment info */
     mirage_fragment_generate_fragment_info(MIRAGE_FRAGMENT(instance),
         "FRAGMENT-SNDFILE",
@@ -214,7 +214,7 @@ static void __mirage_fragment_sndfile_finalize (GObject *obj) {
     return G_OBJECT_CLASS(parent_class)->finalize(obj);
 }
 
-static void __mirage_fragment_sndfile_class_init (gpointer g_class, gpointer g_class_data) {
+static void __mirage_fragment_sndfile_class_init (gpointer g_class, gpointer g_class_data G_GNUC_UNUSED) {
     GObjectClass *class_gobject = G_OBJECT_CLASS(g_class);
     MIRAGE_FragmentClass *class_fragment = MIRAGE_FRAGMENT_CLASS(g_class);
     MIRAGE_Fragment_SNDFILEClass *klass = MIRAGE_FRAGMENT_SNDFILE_CLASS(g_class);
@@ -237,7 +237,7 @@ static void __mirage_fragment_sndfile_class_init (gpointer g_class, gpointer g_c
     return;
 }
 
-static void __mirage_fragment_sndfile_interface_init (gpointer g_iface, gpointer iface_data) {
+static void __mirage_fragment_sndfile_interface_init (gpointer g_iface, gpointer iface_data G_GNUC_UNUSED) {
     MIRAGE_FInterface_AUDIOClass *klass = (MIRAGE_FInterface_AUDIOClass *)g_iface;
     
     /* Initialize MIRAGE_FInterface_AUDIO methods */
@@ -261,7 +261,8 @@ GType mirage_fragment_sndfile_get_type (GTypeModule *module) {
             NULL,   /* class_data */
             sizeof(MIRAGE_Fragment_SNDFILE),
             0,      /* n_preallocs */
-            __mirage_fragment_sndfile_instance_init    /* instance_init */
+            __mirage_fragment_sndfile_instance_init,   /* instance_init */
+            NULL,   /* value_table */
         };
         
         static const GInterfaceInfo interface_info = {

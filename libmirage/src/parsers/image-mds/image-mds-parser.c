@@ -150,7 +150,7 @@ static gboolean __mirage_parser_mds_parse_dpm_block (MIRAGE_Parser *self, guint3
     return TRUE;
 }
 
-static gboolean __mirage_parser_mds_parse_dpm_data (MIRAGE_Parser *self, GError **error) {
+static gboolean __mirage_parser_mds_parse_dpm_data (MIRAGE_Parser *self, GError **error G_GNUC_UNUSED) {
     MIRAGE_Parser_MDSPrivate *_priv = MIRAGE_PARSER_MDS_GET_PRIVATE(self);
     guint8 *cur_ptr;
 
@@ -191,7 +191,7 @@ static gboolean __mirage_parser_mds_parse_dpm_data (MIRAGE_Parser *self, GError 
     return TRUE;
 }
 
-static gboolean __mirage_parser_mds_parse_disc_structures (MIRAGE_Parser *self, GError **error) {
+static gboolean __mirage_parser_mds_parse_disc_structures (MIRAGE_Parser *self, GError **error G_GNUC_UNUSED) {
     MIRAGE_Parser_MDSPrivate *_priv = MIRAGE_PARSER_MDS_GET_PRIVATE(self);
     guint8 *cur_ptr;
 
@@ -257,7 +257,7 @@ static gboolean __mirage_parser_mds_parse_disc_structures (MIRAGE_Parser *self, 
     return TRUE;
 }
 
-static gboolean __mirage_parser_mds_parse_bca (MIRAGE_Parser *self, GError **error) {
+static gboolean __mirage_parser_mds_parse_bca (MIRAGE_Parser *self, GError **error G_GNUC_UNUSED) {
     MIRAGE_Parser_MDSPrivate *_priv = MIRAGE_PARSER_MDS_GET_PRIVATE(self);
     guint8 *cur_ptr;
 
@@ -747,7 +747,7 @@ static gboolean __mirage_parser_mds_load_image (MIRAGE_Parser *self, gchar **fil
     }
 
     _priv->mds_data = NULL;
-    g_mapped_file_free(_priv->mds_mapped);
+    g_mapped_file_unref(_priv->mds_mapped);
 
 end:
     /* Return disc */
@@ -769,7 +769,7 @@ end:
 /* Our parent class */
 static MIRAGE_ParserClass *parent_class = NULL;
 
-static void __mirage_parser_mds_instance_init (GTypeInstance *instance, gpointer g_class) {
+static void __mirage_parser_mds_instance_init (GTypeInstance *instance, gpointer g_class G_GNUC_UNUSED) {
     mirage_parser_generate_parser_info(MIRAGE_PARSER(instance),
         "PARSER-MDS",
         "MDS Image Parser",
@@ -793,7 +793,7 @@ static void __mirage_parser_mds_finalize (GObject *obj) {
     return G_OBJECT_CLASS(parent_class)->finalize(obj);
 }
 
-static void __mirage_parser_mds_class_init (gpointer g_class, gpointer g_class_data) {
+static void __mirage_parser_mds_class_init (gpointer g_class, gpointer g_class_data G_GNUC_UNUSED) {
     GObjectClass *class_gobject = G_OBJECT_CLASS(g_class);
     MIRAGE_ParserClass *class_parser = MIRAGE_PARSER_CLASS(g_class);
     MIRAGE_Parser_MDSClass *klass = MIRAGE_PARSER_MDS_CLASS(g_class);
@@ -825,7 +825,8 @@ GType mirage_parser_mds_get_type (GTypeModule *module) {
             NULL,   /* class_data */
             sizeof(MIRAGE_Parser_MDS),
             0,      /* n_preallocs */
-            __mirage_parser_mds_instance_init    /* instance_init */
+            __mirage_parser_mds_instance_init,   /* instance_init */
+            NULL    /* value_table */
         };
 
         type = g_type_module_register_type(module, MIRAGE_TYPE_PARSER, "MIRAGE_Parser_MDS", &info, 0);

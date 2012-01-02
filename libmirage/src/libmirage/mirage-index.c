@@ -51,7 +51,7 @@ typedef struct {
  *
  * Returns: %TRUE on success, %FALSE on failure
  **/
-gboolean mirage_index_set_number (MIRAGE_Index *self, gint number, GError **error) {
+gboolean mirage_index_set_number (MIRAGE_Index *self, gint number, GError **error G_GNUC_UNUSED) {
     MIRAGE_IndexPrivate *_priv = MIRAGE_INDEX_GET_PRIVATE(self);
     /* Set number */
     _priv->number = number;
@@ -91,7 +91,7 @@ gboolean mirage_index_get_number (MIRAGE_Index *self, gint *number, GError **err
  *
  * Returns: %TRUE on success, %FALSE on failure
  **/
-gboolean mirage_index_set_address (MIRAGE_Index *self, gint address, GError **error) {
+gboolean mirage_index_set_address (MIRAGE_Index *self, gint address, GError **error G_GNUC_UNUSED) {
     MIRAGE_IndexPrivate *_priv = MIRAGE_INDEX_GET_PRIVATE(self);
     /* Set address */
     _priv->address = address;
@@ -126,7 +126,7 @@ gboolean mirage_index_get_address (MIRAGE_Index *self, gint *address, GError **e
 static MIRAGE_ObjectClass *parent_class = NULL;
 
 
-static void __mirage_index_class_init (gpointer g_class, gpointer g_class_data) {
+static void __mirage_index_class_init (gpointer g_class, gpointer g_class_data G_GNUC_UNUSED) {
     MIRAGE_IndexClass *klass = MIRAGE_INDEX_CLASS(g_class);
     
     /* Set parent class */
@@ -150,7 +150,8 @@ GType mirage_index_get_type (void) {
             NULL,   /* class_data */
             sizeof(MIRAGE_Index),
             0,      /* n_preallocs */
-            NULL    /* instance_init */
+            NULL,   /* instance_init */
+            NULL    /* value_table */
         };
         
         type = g_type_register_static(MIRAGE_TYPE_OBJECT, "MIRAGE_Index", &info, 0);

@@ -124,7 +124,7 @@ static gboolean __mirage_parser_b6t_load_bwa_file (MIRAGE_Parser *self, GError *
                 succeeded = FALSE;
             }
 
-            g_mapped_file_free(bwa_mapped);
+            g_mapped_file_unref(bwa_mapped);
         } else {
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to map file '%s': %s!\n", __debug__, bwa_fullpath, local_error->message);
             g_error_free(local_error);
@@ -384,7 +384,7 @@ static gboolean __mirage_parser_b6t_parse_header (MIRAGE_Parser *self, GError **
 }
 
 
-static gboolean __mirage_parser_b6t_parse_pma_data (MIRAGE_Parser *self, GError **error) {
+static gboolean __mirage_parser_b6t_parse_pma_data (MIRAGE_Parser *self, GError **error G_GNUC_UNUSED) {
     MIRAGE_Parser_B6TPrivate *_priv = MIRAGE_PARSER_B6T_GET_PRIVATE(self);
 
     if (_priv->disc_block_1->pma_data_length) {
@@ -395,7 +395,7 @@ static gboolean __mirage_parser_b6t_parse_pma_data (MIRAGE_Parser *self, GError 
     return TRUE;
 }
 
-static gboolean __mirage_parser_b6t_parse_atip_data (MIRAGE_Parser *self, GError **error) {
+static gboolean __mirage_parser_b6t_parse_atip_data (MIRAGE_Parser *self, GError **error G_GNUC_UNUSED) {
     MIRAGE_Parser_B6TPrivate *_priv = MIRAGE_PARSER_B6T_GET_PRIVATE(self);
 
     if (_priv->disc_block_1->atip_data_length) {
@@ -406,7 +406,7 @@ static gboolean __mirage_parser_b6t_parse_atip_data (MIRAGE_Parser *self, GError
     return TRUE;
 }
 
-static gboolean __mirage_parser_b6t_parse_cdtext_data (MIRAGE_Parser *self, GError **error) {
+static gboolean __mirage_parser_b6t_parse_cdtext_data (MIRAGE_Parser *self, GError **error G_GNUC_UNUSED) {
     MIRAGE_Parser_B6TPrivate *_priv = MIRAGE_PARSER_B6T_GET_PRIVATE(self);
 
     if (_priv->disc_block_1->cdtext_data_length) {
@@ -724,7 +724,7 @@ static gint __sort_data_blocks (B6T_DataBlock *block1, B6T_DataBlock *block2) {
     }
 }
 
-static gboolean __mirage_parser_b6t_parse_data_blocks (MIRAGE_Parser *self, GError **error) {
+static gboolean __mirage_parser_b6t_parse_data_blocks (MIRAGE_Parser *self, GError **error G_GNUC_UNUSED) {
     MIRAGE_Parser_B6TPrivate *_priv = MIRAGE_PARSER_B6T_GET_PRIVATE(self);
 
     gsize length = 0;
@@ -1138,7 +1138,7 @@ static gboolean __mirage_parser_b6t_load_image (MIRAGE_Parser *self, gchar **fil
     }
 
     _priv->b6t_data = NULL;
-    g_mapped_file_free(_priv->b6t_mapped);
+    g_mapped_file_unref(_priv->b6t_mapped);
 
 end:
     /* Return disc */
@@ -1160,7 +1160,7 @@ end:
 /* Our parent class */
 static MIRAGE_ParserClass *parent_class = NULL;
 
-static void __mirage_parser_b6t_instance_init (GTypeInstance *instance, gpointer g_class) {
+static void __mirage_parser_b6t_instance_init (GTypeInstance *instance, gpointer g_class G_GNUC_UNUSED) {
     mirage_parser_generate_parser_info(MIRAGE_PARSER(instance),
         "PARSER-B6T",
         "B6T Image Parser",
@@ -1199,7 +1199,7 @@ static void __mirage_parser_b6t_finalize (GObject *obj) {
 }
 
 
-static void __mirage_parser_b6t_class_init (gpointer g_class, gpointer g_class_data) {
+static void __mirage_parser_b6t_class_init (gpointer g_class, gpointer g_class_data G_GNUC_UNUSED) {
     GObjectClass *class_gobject = G_OBJECT_CLASS(g_class);
     MIRAGE_ParserClass *class_parser = MIRAGE_PARSER_CLASS(g_class);
     MIRAGE_Parser_B6TClass *klass = MIRAGE_PARSER_B6T_CLASS(g_class);
@@ -1231,7 +1231,8 @@ GType mirage_parser_b6t_get_type (GTypeModule *module) {
             NULL,   /* class_data */
             sizeof(MIRAGE_Parser_B6T),
             0,      /* n_preallocs */
-            __mirage_parser_b6t_instance_init    /* instance_init */
+            __mirage_parser_b6t_instance_init,   /* instance_init */
+            NULL    /* value_table */
         };
 
         type = g_type_module_register_type(module, MIRAGE_TYPE_PARSER, "MIRAGE_Parser_B6T", &info, 0);

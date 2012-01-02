@@ -308,7 +308,7 @@ gboolean mirage_parser_add_redbook_pregap (MIRAGE_Parser *self, GObject *disc, G
  *
  * Returns: %TRUE on success, %FALSE on failure
  **/
-gboolean mirage_parser_set_params (MIRAGE_Parser *self, GHashTable *params, GError **error) {
+gboolean mirage_parser_set_params (MIRAGE_Parser *self, GHashTable *params, GError **error G_GNUC_UNUSED) {
     MIRAGE_ParserPrivate *_priv = MIRAGE_PARSER_GET_PRIVATE(self);
     _priv->parser_params = params; /* Just store pointer */
     return TRUE;
@@ -335,8 +335,8 @@ gboolean mirage_parser_set_params (MIRAGE_Parser *self, GHashTable *params, GErr
  *
  * Returns: %TRUE on success, %FALSE on failure
  **/
-gboolean mirage_parser_get_param_string (MIRAGE_Parser *self, const gchar *name, const gchar **ret_value, GError **error) {
-    MIRAGE_ParserPrivate *_priv = MIRAGE_PARSER_GET_PRIVATE(self);
+gboolean mirage_parser_get_param_string (MIRAGE_Parser *self, const gchar *name, const gchar **ret_value, GError **error G_GNUC_UNUSED) {
+    /*MIRAGE_ParserPrivate *_priv = MIRAGE_PARSER_GET_PRIVATE(self);*/
     GValue *value;
 
     /* Get value */
@@ -421,7 +421,7 @@ static void __mirage_parser_finalize (GObject *obj) {
     return G_OBJECT_CLASS(parent_class)->finalize(obj);
 }
 
-static void __mirage_parser_class_init (gpointer g_class, gpointer g_class_data) {
+static void __mirage_parser_class_init (gpointer g_class, gpointer g_class_data G_GNUC_UNUSED) {
     GObjectClass *class_gobject = G_OBJECT_CLASS(g_class);
     MIRAGE_ParserClass *klass = MIRAGE_PARSER_CLASS(g_class);
     
@@ -452,7 +452,8 @@ GType mirage_parser_get_type (void) {
             NULL,   /* class_data */
             sizeof(MIRAGE_Parser),
             0,      /* n_preallocs */
-            NULL    /* instance_init */
+            NULL,   /* instance_init */
+            NULL    /* value_table */
         };
         
         type = g_type_register_static(MIRAGE_TYPE_OBJECT, "MIRAGE_Parser", &info, 0);

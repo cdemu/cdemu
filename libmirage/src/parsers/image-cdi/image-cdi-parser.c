@@ -78,7 +78,7 @@ static void __mirage_parser_cdi_whine_on_unexpected (MIRAGE_Parser *self, guint8
 #endif
 
 
-static gboolean __mirage_parser_cdi_decode_medium_type (MIRAGE_Parser *self, gint medium_type, GError **error) {
+static gboolean __mirage_parser_cdi_decode_medium_type (MIRAGE_Parser *self, gint medium_type, GError **error G_GNUC_UNUSED) {
     MIRAGE_Parser_CDIPrivate *_priv = MIRAGE_PARSER_CDI_GET_PRIVATE(self);
 
     /* Decode and set medium type only if we haven't done it yet */
@@ -205,7 +205,7 @@ static gboolean __mirage_parser_cdi_decode_session_type (MIRAGE_Parser *self, gi
 
 /* Function for parsing header that appears at the beginning of every track block
    and at the beginning of the disc block */
-static gboolean __mirage_parser_cdi_parse_header (MIRAGE_Parser *self, GError **error) {
+static gboolean __mirage_parser_cdi_parse_header (MIRAGE_Parser *self, GError **error G_GNUC_UNUSED) {
     MIRAGE_Parser_CDIPrivate *_priv = MIRAGE_PARSER_CDI_GET_PRIVATE(self);
     /* Recongised fields */
     gint num_all_tracks = 0;
@@ -311,7 +311,7 @@ static gboolean __mirage_parser_cdi_parse_header (MIRAGE_Parser *self, GError **
     return TRUE;
 }
 
-static gboolean __mirage_parser_cdi_parse_cdtext (MIRAGE_Parser *self, GError **error) {
+static gboolean __mirage_parser_cdi_parse_cdtext (MIRAGE_Parser *self, GError **error G_GNUC_UNUSED) {
     MIRAGE_Parser_CDIPrivate *_priv = MIRAGE_PARSER_CDI_GET_PRIVATE(self);
 
     gint i;
@@ -1042,7 +1042,7 @@ end:
 /* Our parent class */
 static MIRAGE_ParserClass *parent_class = NULL;
 
-static void __mirage_parser_cdi_instance_init (GTypeInstance *instance, gpointer g_class) {
+static void __mirage_parser_cdi_instance_init (GTypeInstance *instance, gpointer g_class G_GNUC_UNUSED) {
     mirage_parser_generate_parser_info(MIRAGE_PARSER(instance),
         "PARSER-CDI",
         "CDI Image Parser",
@@ -1067,7 +1067,7 @@ static void __mirage_parser_cdi_finalize (GObject *obj) {
     return G_OBJECT_CLASS(parent_class)->finalize(obj);
 }
 
-static void __mirage_parser_cdi_class_init (gpointer g_class, gpointer g_class_data) {
+static void __mirage_parser_cdi_class_init (gpointer g_class, gpointer g_class_data G_GNUC_UNUSED) {
     GObjectClass *class_gobject = G_OBJECT_CLASS(g_class);
     MIRAGE_ParserClass *class_parser = MIRAGE_PARSER_CLASS(g_class);
     MIRAGE_Parser_CDIClass *klass = MIRAGE_PARSER_CDI_CLASS(g_class);
@@ -1099,7 +1099,8 @@ GType mirage_parser_cdi_get_type (GTypeModule *module) {
             NULL,   /* class_data */
             sizeof(MIRAGE_Parser_CDI),
             0,      /* n_preallocs */
-            __mirage_parser_cdi_instance_init    /* instance_init */
+            __mirage_parser_cdi_instance_init,   /* instance_init */
+            NULL    /* value_table */
         };
 
         type = g_type_module_register_type(module, MIRAGE_TYPE_PARSER, "MIRAGE_Parser_CDI", &info, 0);

@@ -54,12 +54,12 @@ static void __destroy_fragment_info (MIRAGE_FragmentInfo *info) {
     return;
 }
 
-static gboolean __mirage_fragment_commit_topdown_change (MIRAGE_Fragment *self, GError **error) {
+static gboolean __mirage_fragment_commit_topdown_change (MIRAGE_Fragment *self G_GNUC_UNUSED, GError **error G_GNUC_UNUSED) {
     /* Nothing to do here */
     return TRUE;
 }
 
-static gboolean __mirage_fragment_commit_bottomup_change (MIRAGE_Fragment *self, GError **error) {
+static gboolean __mirage_fragment_commit_bottomup_change (MIRAGE_Fragment *self, GError **error G_GNUC_UNUSED) {
     /* Signal fragment change */
     g_signal_emit_by_name(MIRAGE_OBJECT(self), "object-modified", NULL);
     
@@ -164,7 +164,7 @@ gboolean mirage_fragment_can_handle_data_format (MIRAGE_Fragment *self, const gc
  *
  * Returns: %TRUE on success, %FALSE on failure
  **/
-gboolean mirage_fragment_set_address (MIRAGE_Fragment *self, gint address, GError **error) {
+gboolean mirage_fragment_set_address (MIRAGE_Fragment *self, gint address, GError **error G_GNUC_UNUSED) {
     MIRAGE_FragmentPrivate *_priv = MIRAGE_FRAGMENT_GET_PRIVATE(self);
     /* Set address */
     _priv->address = address;
@@ -217,7 +217,7 @@ gboolean mirage_fragment_get_address (MIRAGE_Fragment *self, gint *address, GErr
  *
  * Returns: %TRUE on success, %FALSE on failure
  **/
-gboolean mirage_fragment_set_length (MIRAGE_Fragment *self, gint length, GError **error) {
+gboolean mirage_fragment_set_length (MIRAGE_Fragment *self, gint length, GError **error G_GNUC_UNUSED) {
     MIRAGE_FragmentPrivate *_priv = MIRAGE_FRAGMENT_GET_PRIVATE(self);
     /* Set length */
     _priv->length = length;
@@ -333,7 +333,7 @@ static void __mirage_fragment_finalize (GObject *obj) {
 }
 
 
-static void __mirage_fragment_class_init (gpointer g_class, gpointer g_class_data) {
+static void __mirage_fragment_class_init (gpointer g_class, gpointer g_class_data G_GNUC_UNUSED) {
     GObjectClass *class_gobject = G_OBJECT_CLASS(g_class);
     MIRAGE_FragmentClass *klass = MIRAGE_FRAGMENT_CLASS(g_class);
     
@@ -367,7 +367,8 @@ GType mirage_fragment_get_type (void) {
             NULL,   /* class_data */
             sizeof(MIRAGE_Fragment),
             0,      /* n_preallocs */
-            NULL    /* instance_init */
+            NULL,   /* instance_init */
+            NULL    /* value_table */
         };
         
         type = g_type_register_static(MIRAGE_TYPE_OBJECT, "MIRAGE_Fragment", &info, 0);
@@ -391,7 +392,8 @@ GType mirage_finterface_null_get_type (void) {
             NULL,   /* class_data */
             0,
             0,      /* n_preallocs */
-            NULL    /* instance_init */
+            NULL,   /* instance_init */
+            NULL    /* value_table */
         };
         
         type = g_type_register_static(G_TYPE_INTERFACE, "MIRAGE_FInterface_NULL", &info, 0);
@@ -717,7 +719,8 @@ GType mirage_finterface_binary_get_type (void) {
             NULL,   /* class_data */
             0,
             0,      /* n_preallocs */
-            NULL    /* instance_init */
+            NULL,   /* instance_init */
+            NULL    /* value_table */
         };
         
         type = g_type_register_static(G_TYPE_INTERFACE, "MIRAGE_FInterface_BINARYClass", &info, 0);
@@ -807,7 +810,8 @@ GType mirage_finterface_audio_get_type (void) {
             NULL,   /* class_data */
             0,
             0,      /* n_preallocs */
-            NULL    /* instance_init */
+            NULL,   /* instance_init */
+            NULL    /* value_table */
         };
         
         type = g_type_register_static(G_TYPE_INTERFACE, "MIRAGE_FInterface_AUDIOClass", &info, 0);

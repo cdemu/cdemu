@@ -78,7 +78,7 @@ static void __free_disc_structure_data (gpointer data);
 static gboolean __mirage_disc_check_for_encoded_mcn (MIRAGE_Disc *self, GError **error);
 
 
-static gboolean __mirage_disc_commit_topdown_change (MIRAGE_Disc *self, GError **error) {
+static gboolean __mirage_disc_commit_topdown_change (MIRAGE_Disc *self, GError **error G_GNUC_UNUSED) {
     MIRAGE_DiscPrivate *_priv = MIRAGE_DISC_GET_PRIVATE(self);
     GList *entry = NULL;
     
@@ -114,7 +114,7 @@ static gboolean __mirage_disc_commit_topdown_change (MIRAGE_Disc *self, GError *
     return TRUE;
 }
 
-static gboolean __mirage_disc_commit_bottomup_change (MIRAGE_Disc *self, GError **error) {
+static gboolean __mirage_disc_commit_bottomup_change (MIRAGE_Disc *self, GError **error G_GNUC_UNUSED) {
     MIRAGE_DiscPrivate *_priv = MIRAGE_DISC_GET_PRIVATE(self);
     GList *entry = NULL;
         
@@ -174,7 +174,7 @@ static void __session_modified_handler (GObject *session, MIRAGE_Disc *self) {
     return;
 }
 
-static gboolean __remove_session_from_disc (MIRAGE_Disc *self, GObject *session, GError **error) {
+static gboolean __remove_session_from_disc (MIRAGE_Disc *self, GObject *session, GError **error G_GNUC_UNUSED) {
     MIRAGE_DiscPrivate *_priv = MIRAGE_DISC_GET_PRIVATE(self);
     
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_DISC, "%s: start\n", __debug__);
@@ -195,7 +195,7 @@ static gboolean __remove_session_from_disc (MIRAGE_Disc *self, GObject *session,
     return TRUE;
 }
 
-static gboolean __generate_disc_structure (MIRAGE_Disc *self, gint layer, gint type, guint8 **data, gint *len, GError **error) {
+static gboolean __generate_disc_structure (MIRAGE_Disc *self, gint layer, gint type, guint8 **data, gint *len, GError **error G_GNUC_UNUSED) {
     MIRAGE_DiscPrivate *_priv = MIRAGE_DISC_GET_PRIVATE(self);
 
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_DISC, "%s: start (layer: %d, type: 0x%X)\n", __debug__, layer, type);
@@ -373,7 +373,7 @@ static gboolean __mirage_disc_check_for_encoded_mcn (MIRAGE_Disc *self, GError *
  *
  * Returns: %TRUE on success, %FALSE on failure
  **/
-gboolean mirage_disc_set_medium_type (MIRAGE_Disc *self, gint medium_type, GError **error) {
+gboolean mirage_disc_set_medium_type (MIRAGE_Disc *self, gint medium_type, GError **error G_GNUC_UNUSED) {
     MIRAGE_DiscPrivate *_priv = MIRAGE_DISC_GET_PRIVATE(self);
     /* Set medium type */
     _priv->medium_type = medium_type;
@@ -587,7 +587,7 @@ gboolean mirage_disc_get_mcn (MIRAGE_Disc *self, const gchar **mcn, GError **err
  *
  * Returns: %TRUE on success, %FALSE on failure
  **/
-gboolean mirage_disc_layout_set_first_session (MIRAGE_Disc *self, gint first_session, GError **error) {
+gboolean mirage_disc_layout_set_first_session (MIRAGE_Disc *self, gint first_session, GError **error G_GNUC_UNUSED) {
     MIRAGE_DiscPrivate *_priv = MIRAGE_DISC_GET_PRIVATE(self);
     /* Set first session */
     _priv->first_session = first_session;
@@ -641,7 +641,7 @@ gboolean mirage_disc_layout_get_first_session (MIRAGE_Disc *self, gint *first_se
  *
  * Returns: %TRUE on success, %FALSE on failure
  **/
-gboolean mirage_disc_layout_set_first_track (MIRAGE_Disc *self, gint first_track, GError **error) {
+gboolean mirage_disc_layout_set_first_track (MIRAGE_Disc *self, gint first_track, GError **error G_GNUC_UNUSED) {
     MIRAGE_DiscPrivate *_priv = MIRAGE_DISC_GET_PRIVATE(self);
     /* Set first track */
     _priv->first_track = first_track;
@@ -695,7 +695,7 @@ gboolean mirage_disc_layout_get_first_track (MIRAGE_Disc *self, gint *first_trac
  *
  * Returns: %TRUE on success, %FALSE on failure
  **/
-gboolean mirage_disc_layout_set_start_sector (MIRAGE_Disc *self, gint start_sector, GError **error) {
+gboolean mirage_disc_layout_set_start_sector (MIRAGE_Disc *self, gint start_sector, GError **error G_GNUC_UNUSED) {
     MIRAGE_DiscPrivate *_priv = MIRAGE_DISC_GET_PRIVATE(self);
     /* Set start sector */
     _priv->start_sector = start_sector;
@@ -1988,7 +1988,7 @@ gboolean mirage_disc_read_sector (MIRAGE_Disc *self, gint address, guint8 main_s
  *
  * Returns: %TRUE on success, %FALSE on failure
  **/
-gboolean mirage_disc_set_dpm_data (MIRAGE_Disc *self, gint start, gint resolution, gint num_entries, const guint32 *data, GError **error) {
+gboolean mirage_disc_set_dpm_data (MIRAGE_Disc *self, gint start, gint resolution, gint num_entries, const guint32 *data, GError **error G_GNUC_UNUSED) {
     MIRAGE_DiscPrivate *_priv = MIRAGE_DISC_GET_PRIVATE(self);
     
     /* Free old DPM data */
@@ -2138,7 +2138,7 @@ gboolean mirage_disc_get_dpm_data_for_sector (MIRAGE_Disc *self, gint address, g
 /* Our parent class */
 static MIRAGE_ObjectClass *parent_class = NULL;
 
-static void __mirage_disc_instance_init (GTypeInstance *instance, gpointer g_class) {
+static void __mirage_disc_instance_init (GTypeInstance *instance, gpointer g_class G_GNUC_UNUSED) {
     MIRAGE_Disc *self = MIRAGE_DISC(instance);
     MIRAGE_DiscPrivate *_priv = MIRAGE_DISC_GET_PRIVATE(self);
     
@@ -2224,7 +2224,7 @@ static void __mirage_disc_get_property (GObject *obj, guint property_id, GValue 
     }
 }
 
-static void __mirage_disc_class_init (gpointer g_class, gpointer g_class_data) {
+static void __mirage_disc_class_init (gpointer g_class, gpointer g_class_data G_GNUC_UNUSED) {
     GObjectClass *class_gobject = G_OBJECT_CLASS(g_class);
     MIRAGE_DiscClass *klass = MIRAGE_DISC_CLASS(g_class);
 
@@ -2268,7 +2268,8 @@ GType mirage_disc_get_type (void) {
             NULL,   /* class_data */
             sizeof(MIRAGE_Disc),
             0,      /* n_preallocs */
-            __mirage_disc_instance_init    /* instance_init */
+            __mirage_disc_instance_init,   /* instance_init */
+            NULL    /* value_table */
         };
         
         type = g_type_register_static(MIRAGE_TYPE_OBJECT, "MIRAGE_Disc", &info, 0);

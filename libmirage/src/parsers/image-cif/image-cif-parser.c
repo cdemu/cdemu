@@ -39,7 +39,7 @@ typedef struct {
     guint8 *cif_data;
 } MIRAGE_Parser_CIFPrivate;
 
-static gboolean __mirage_parser_cif_build_block_index (MIRAGE_Parser *self, GError **error) {
+static gboolean __mirage_parser_cif_build_block_index (MIRAGE_Parser *self, GError **error G_GNUC_UNUSED) {
     MIRAGE_Parser_CIFPrivate *_priv = MIRAGE_PARSER_CIF_GET_PRIVATE(self);
     GList *blockindex = NULL;
     CIFBlockIndexEntry *blockentry;
@@ -140,7 +140,7 @@ static gboolean __mirage_parser_cif_build_block_index (MIRAGE_Parser *self, GErr
     return TRUE;
 }
 
-static gboolean __mirage_parser_cif_destroy_block_index (MIRAGE_Parser *self, GError **error) {
+static gboolean __mirage_parser_cif_destroy_block_index (MIRAGE_Parser *self, GError **error G_GNUC_UNUSED) {
     MIRAGE_Parser_CIFPrivate *_priv = MIRAGE_PARSER_CIF_GET_PRIVATE(self);
 
     if (_priv->block_index) {
@@ -176,7 +176,7 @@ static gint __find_block_by_id (gconstpointer a, gconstpointer b) {
     return memcmp(blockentry->block_header->block_id, block_id, 4);
 }
 
-static CIFBlockIndexEntry *__mirage_parser_cif_find_block_entry (MIRAGE_Parser *self, gchar *block_id, GError **error) {
+static CIFBlockIndexEntry *__mirage_parser_cif_find_block_entry (MIRAGE_Parser *self, gchar *block_id, GError **error G_GNUC_UNUSED) {
     MIRAGE_Parser_CIFPrivate *_priv = MIRAGE_PARSER_CIF_GET_PRIVATE(self);
     GList *entry = NULL;
 
@@ -246,7 +246,7 @@ static gboolean __mirage_parser_cif_parse_track_entries (MIRAGE_Parser *self, GE
     CIFSubBlockIndexEntry *ofs_subblock_entry;
     CIF_OFS_SubBlock *ofs_subblock_data;
     CIF_BlockHeader *track_block;
-    guint8 *track_block_data;
+    /*guint8 *track_block_data;*/
 
     GObject *cur_session = NULL;
 
@@ -283,7 +283,7 @@ static gboolean __mirage_parser_cif_parse_track_entries (MIRAGE_Parser *self, GE
         disc_subblock_entry = g_list_nth_data(disc_block_ptr->subblock_index, track + 2);
         disc_subblock_data = (CIF_DISC_SubBlock *) disc_subblock_entry->start;
         track_block = (CIF_BlockHeader *) (_priv->cif_data + ofs_subblock_data->ofs_offset + OFS_OFFSET_ADJUST);
-        track_block_data = (guint8 *) (_priv->cif_data + ofs_subblock_data->ofs_offset);
+        /*track_block_data = (guint8 *) (_priv->cif_data + ofs_subblock_data->ofs_offset);*/
 
         gchar *track_type = ofs_subblock_data->block_id;
         guint16 track_mode = disc_subblock_data->track.mode;
@@ -526,7 +526,7 @@ static gboolean __mirage_parser_cif_load_image (MIRAGE_Parser *self, gchar **fil
     succeeded = __mirage_parser_cif_load_disc(self, error);
 
     _priv->cif_data = NULL;
-    g_mapped_file_free(_priv->cif_mapped);
+    g_mapped_file_unref(_priv->cif_mapped);
 
 end:
     /* Return disc */
@@ -548,7 +548,7 @@ end:
 /* Our parent class */
 static MIRAGE_ParserClass *parent_class = NULL;
 
-static void __mirage_parser_cif_instance_init (GTypeInstance *instance, gpointer g_class) {
+static void __mirage_parser_cif_instance_init (GTypeInstance *instance, gpointer g_class G_GNUC_UNUSED) {
     mirage_parser_generate_parser_info(MIRAGE_PARSER(instance),
         "PARSER-CIF",
         "CIF Image Parser",
@@ -572,7 +572,7 @@ static void __mirage_parser_cif_finalize (GObject *obj) {
     return G_OBJECT_CLASS(parent_class)->finalize(obj);
 }
 
-static void __mirage_parser_cif_class_init (gpointer g_class, gpointer g_class_data) {
+static void __mirage_parser_cif_class_init (gpointer g_class, gpointer g_class_data G_GNUC_UNUSED) {
     GObjectClass *class_gobject = G_OBJECT_CLASS(g_class);
     MIRAGE_ParserClass *class_parser = MIRAGE_PARSER_CLASS(g_class);
     MIRAGE_Parser_CIFClass *klass = MIRAGE_PARSER_CIF_CLASS(g_class);
@@ -604,7 +604,8 @@ GType mirage_parser_cif_get_type (GTypeModule *module) {
             NULL,   /* class_data */
             sizeof(MIRAGE_Parser_CIF),
             0,      /* n_preallocs */
-            __mirage_parser_cif_instance_init    /* instance_init */
+            __mirage_parser_cif_instance_init,   /* instance_init */
+            NULL    /* value_table */
         };
 
         type = g_type_module_register_type(module, MIRAGE_TYPE_PARSER, "MIRAGE_Parser_CIF", &info, 0);

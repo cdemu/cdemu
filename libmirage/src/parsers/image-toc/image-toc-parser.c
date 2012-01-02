@@ -75,7 +75,7 @@ typedef struct {
 /******************************************************************************\
  *                         Parser private functions                           *
 \******************************************************************************/
-static gboolean __mirage_parser_toc_set_session_type (MIRAGE_Parser *self, gchar *type_string, GError **error) {
+static gboolean __mirage_parser_toc_set_session_type (MIRAGE_Parser *self, gchar *type_string, GError **error G_GNUC_UNUSED) {
     MIRAGE_Parser_TOCPrivate *_priv = MIRAGE_PARSER_TOC_GET_PRIVATE(self);
 
     /* Decipher session type */
@@ -317,7 +317,7 @@ static gboolean __mirage_parser_toc_track_add_fragment (MIRAGE_Parser *self, gin
     return TRUE;
 };
 
-static gboolean __mirage_parser_toc_track_set_start (MIRAGE_Parser *self, gint start, GError **error) {
+static gboolean __mirage_parser_toc_track_set_start (MIRAGE_Parser *self, gint start, GError **error G_GNUC_UNUSED) {
     MIRAGE_Parser_TOCPrivate *_priv = MIRAGE_PARSER_TOC_GET_PRIVATE(self);
 
     /* If start is not given (-1), we use current track length */
@@ -330,7 +330,7 @@ static gboolean __mirage_parser_toc_track_set_start (MIRAGE_Parser *self, gint s
     return TRUE;
 }
 
-static gboolean __mirage_parser_toc_track_add_index (MIRAGE_Parser *self, gint address, GError **error) {
+static gboolean __mirage_parser_toc_track_add_index (MIRAGE_Parser *self, gint address, GError **error G_GNUC_UNUSED) {
     MIRAGE_Parser_TOCPrivate *_priv = MIRAGE_PARSER_TOC_GET_PRIVATE(self);
     gint track_start;
 
@@ -341,7 +341,7 @@ static gboolean __mirage_parser_toc_track_add_index (MIRAGE_Parser *self, gint a
     return TRUE;
 }
 
-static gboolean __mirage_parser_toc_track_set_flag (MIRAGE_Parser *self, gint flag, gboolean set, GError **error) {
+static gboolean __mirage_parser_toc_track_set_flag (MIRAGE_Parser *self, gint flag, gboolean set, GError **error G_GNUC_UNUSED) {
     MIRAGE_Parser_TOCPrivate *_priv = MIRAGE_PARSER_TOC_GET_PRIVATE(self);
     gint flags;
 
@@ -358,7 +358,7 @@ static gboolean __mirage_parser_toc_track_set_flag (MIRAGE_Parser *self, gint fl
     return TRUE;
 }
 
-static gboolean __mirage_parser_toc_track_set_isrc (MIRAGE_Parser *self, gchar *isrc, GError **error) {
+static gboolean __mirage_parser_toc_track_set_isrc (MIRAGE_Parser *self, gchar *isrc, GError **error G_GNUC_UNUSED) {
     MIRAGE_Parser_TOCPrivate *_priv = MIRAGE_PARSER_TOC_GET_PRIVATE(self);
 
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: setting ISRC: <%s>\n", __debug__, isrc);
@@ -370,7 +370,7 @@ static gboolean __mirage_parser_toc_track_set_isrc (MIRAGE_Parser *self, gchar *
 /******************************************************************************\
  *                              CD-TEXT parsing                               *
 \******************************************************************************/
-static gboolean __mirage_parser_toc_cdtext_parse_binary (MIRAGE_Parser *self, gchar *bin_str, gchar **ret_str, gint *ret_len, GError **error) {
+static gboolean __mirage_parser_toc_cdtext_parse_binary (MIRAGE_Parser *self, gchar *bin_str, gchar **ret_str, gint *ret_len, GError **error G_GNUC_UNUSED) {
     MIRAGE_Parser_TOCPrivate *_priv = MIRAGE_PARSER_TOC_GET_PRIVATE(self);
     gchar **elements;
     gchar *data_str;
@@ -394,7 +394,7 @@ static gboolean __mirage_parser_toc_cdtext_parse_binary (MIRAGE_Parser *self, gc
     return TRUE;
 }
 
-static gboolean __mirage_parser_toc_cdtext_parse_langmaps (MIRAGE_Parser *self, gchar *langmaps_str, GError **error) {
+static gboolean __mirage_parser_toc_cdtext_parse_langmaps (MIRAGE_Parser *self, gchar *langmaps_str, GError **error G_GNUC_UNUSED) {
     MIRAGE_Parser_TOCPrivate *_priv = MIRAGE_PARSER_TOC_GET_PRIVATE(self);
     GMatchInfo *match_info;
 
@@ -429,7 +429,7 @@ static gboolean __mirage_parser_toc_cdtext_parse_langmaps (MIRAGE_Parser *self, 
     return TRUE;
 }
 
-static gboolean __mirage_parser_toc_cdtext_parse_language (MIRAGE_Parser *self, gchar *data_str, GObject *language, GError **error) {
+static gboolean __mirage_parser_toc_cdtext_parse_language (MIRAGE_Parser *self, gchar *data_str, GObject *language, GError **error G_GNUC_UNUSED) {
     MIRAGE_Parser_TOCPrivate *_priv = MIRAGE_PARSER_TOC_GET_PRIVATE(self);
     GMatchInfo *match_info;
 
@@ -498,7 +498,7 @@ static gboolean __mirage_parser_toc_cdtext_parse_language (MIRAGE_Parser *self, 
     return TRUE;
 }
 
-static gboolean __mirage_parser_toc_cdtext_parse_disc_languages (MIRAGE_Parser *self, gchar *languages_str, GError **error) {
+static gboolean __mirage_parser_toc_cdtext_parse_disc_languages (MIRAGE_Parser *self, gchar *languages_str, GError **error G_GNUC_UNUSED) {
     MIRAGE_Parser_TOCPrivate *_priv = MIRAGE_PARSER_TOC_GET_PRIVATE(self);
     GMatchInfo *match_info;
 
@@ -530,7 +530,7 @@ static gboolean __mirage_parser_toc_cdtext_parse_disc_languages (MIRAGE_Parser *
     return TRUE;
 }
 
-static gboolean __mirage_parser_toc_cdtext_parse_track_languages (MIRAGE_Parser *self, gchar *languages_str, GError **error) {
+static gboolean __mirage_parser_toc_cdtext_parse_track_languages (MIRAGE_Parser *self, gchar *languages_str, GError **error G_GNUC_UNUSED) {
     MIRAGE_Parser_TOCPrivate *_priv = MIRAGE_PARSER_TOC_GET_PRIVATE(self);
     GMatchInfo *match_info;
 
@@ -562,7 +562,7 @@ static gboolean __mirage_parser_toc_cdtext_parse_track_languages (MIRAGE_Parser 
     return TRUE;
 }
 
-static gboolean __mirage_parser_toc_callback_cdtext (MIRAGE_Parser *self, GMatchInfo *match_info, GError **error) {
+static gboolean __mirage_parser_toc_callback_cdtext (MIRAGE_Parser *self, GMatchInfo *match_info, GError **error G_GNUC_UNUSED) {
     MIRAGE_Parser_TOCPrivate *_priv = MIRAGE_PARSER_TOC_GET_PRIVATE(self);
 
     if (!_priv->cur_track) {
@@ -598,7 +598,7 @@ static gboolean __mirage_parser_toc_callback_cdtext (MIRAGE_Parser *self, GMatch
 /******************************************************************************\
  *                           Regex parsing engine                             *
 \******************************************************************************/
-static gboolean __mirage_parser_toc_callback_comment (MIRAGE_Parser *self, GMatchInfo *match_info, GError **error) {
+static gboolean __mirage_parser_toc_callback_comment (MIRAGE_Parser *self, GMatchInfo *match_info, GError **error G_GNUC_UNUSED) {
     gchar *comment = g_match_info_fetch_named(match_info, "comment");
 
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "\n"); /* To make log more readable */
@@ -622,7 +622,7 @@ static gboolean __mirage_parser_toc_callback_session_type (MIRAGE_Parser *self, 
     return succeeded;
 }
 
-static gboolean __mirage_parser_toc_callback_catalog (MIRAGE_Parser *self, GMatchInfo *match_info, GError **error) {
+static gboolean __mirage_parser_toc_callback_catalog (MIRAGE_Parser *self, GMatchInfo *match_info, GError **error G_GNUC_UNUSED) {
     MIRAGE_Parser_TOCPrivate *_priv = MIRAGE_PARSER_TOC_GET_PRIVATE(self);
     gchar *catalog = g_match_info_fetch_named(match_info, "catalog");
 
@@ -1332,7 +1332,7 @@ end:
 /* Our parent class */
 static MIRAGE_ParserClass *parent_class = NULL;
 
-static void __mirage_parser_toc_instance_init (GTypeInstance *instance, gpointer g_class) {
+static void __mirage_parser_toc_instance_init (GTypeInstance *instance, gpointer g_class G_GNUC_UNUSED) {
     mirage_parser_generate_parser_info(MIRAGE_PARSER(instance),
         "PARSER-TOC",
         "TOC Image Parser",
@@ -1358,7 +1358,7 @@ static void __mirage_parser_toc_finalize (GObject *obj) {
     return G_OBJECT_CLASS(parent_class)->finalize(obj);
 }
 
-static void __mirage_parser_toc_class_init (gpointer g_class, gpointer g_class_data) {
+static void __mirage_parser_toc_class_init (gpointer g_class, gpointer g_class_data G_GNUC_UNUSED) {
     GObjectClass *class_gobject = G_OBJECT_CLASS(g_class);
     MIRAGE_ParserClass *class_parser = MIRAGE_PARSER_CLASS(g_class);
     MIRAGE_Parser_TOCClass *klass = MIRAGE_PARSER_TOC_CLASS(g_class);
@@ -1390,7 +1390,8 @@ GType mirage_parser_toc_get_type (GTypeModule *module) {
             NULL,   /* class_data */
             sizeof(MIRAGE_Parser_TOC),
             0,      /* n_preallocs */
-            __mirage_parser_toc_instance_init    /* instance_init */
+            __mirage_parser_toc_instance_init,   /* instance_init */
+            NULL    /* value_table */
         };
 
         type = g_type_module_register_type(module, MIRAGE_TYPE_PARSER, "MIRAGE_Parser_TOC", &info, 0);

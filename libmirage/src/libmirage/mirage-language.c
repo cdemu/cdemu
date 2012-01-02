@@ -98,7 +98,7 @@ static gboolean __mirage_language_get_pack_by_type (MIRAGE_Language *self, gint 
  *
  * Returns: %TRUE on success, %FALSE on failure
  **/
-gboolean mirage_language_set_langcode (MIRAGE_Language *self, gint langcode, GError **error) {
+gboolean mirage_language_set_langcode (MIRAGE_Language *self, gint langcode, GError **error G_GNUC_UNUSED) {
     MIRAGE_LanguagePrivate *_priv = MIRAGE_LANGUAGE_GET_PRIVATE(self);
     _priv->langcode = langcode;
     return TRUE;
@@ -208,7 +208,7 @@ gboolean mirage_language_get_pack_data (MIRAGE_Language *self, gint pack_type, c
 /* Our parent class */
 static MIRAGE_ObjectClass *parent_class = NULL;
 
-static void __mirage_language_instance_init (GTypeInstance *instance, gpointer g_class) {
+static void __mirage_language_instance_init (GTypeInstance *instance, gpointer g_class G_GNUC_UNUSED) {
     MIRAGE_Language *self = MIRAGE_LANGUAGE(instance);
     MIRAGE_LanguagePrivate *_priv = MIRAGE_LANGUAGE_GET_PRIVATE(self);
     
@@ -237,7 +237,7 @@ static void __mirage_language_finalize (GObject *obj) {
     return G_OBJECT_CLASS(parent_class)->finalize(obj);
 }
 
-static void __mirage_language_class_init (gpointer g_class, gpointer g_class_data) {
+static void __mirage_language_class_init (gpointer g_class, gpointer g_class_data G_GNUC_UNUSED) {
     GObjectClass *class_gobject = G_OBJECT_CLASS(g_class);
     MIRAGE_LanguageClass *klass = MIRAGE_LANGUAGE_CLASS(g_class);
     
@@ -265,7 +265,8 @@ GType mirage_language_get_type (void) {
             NULL,   /* class_data */
             sizeof(MIRAGE_Language),
             0,      /* n_preallocs */
-            __mirage_language_instance_init    /* instance_init */
+            __mirage_language_instance_init,   /* instance_init */
+            NULL    /* value_table */
         };
         
         type = g_type_register_static(MIRAGE_TYPE_OBJECT, "MIRAGE_Language", &info, 0);

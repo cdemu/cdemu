@@ -218,7 +218,7 @@ static gboolean __mirage_parser_xcdroast_add_track (MIRAGE_Parser *self, TOC_Tra
 /******************************************************************************\
  *                           Regex parsing engine                             *
 \******************************************************************************/
-static gboolean __callback_toc_comment (MIRAGE_Parser *self, GMatchInfo *match_info, GError **error) {
+static gboolean __callback_toc_comment (MIRAGE_Parser *self, GMatchInfo *match_info, GError **error G_GNUC_UNUSED) {
     gchar *comment = g_match_info_fetch_named(match_info, "comment");
 
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: parsed COMMENT: %s\n", __debug__, comment);
@@ -229,7 +229,7 @@ static gboolean __callback_toc_comment (MIRAGE_Parser *self, GMatchInfo *match_i
 }
 
 
-static gboolean __callback_toc_cdtitle (MIRAGE_Parser *self, GMatchInfo *match_info, GError **error) {
+static gboolean __callback_toc_cdtitle (MIRAGE_Parser *self, GMatchInfo *match_info, GError **error G_GNUC_UNUSED) {
     MIRAGE_Parser_XCDROASTPrivate *_priv = MIRAGE_PARSER_XCDROAST_GET_PRIVATE(self);
 
     g_free(_priv->disc_info.cdtitle);
@@ -239,7 +239,7 @@ static gboolean __callback_toc_cdtitle (MIRAGE_Parser *self, GMatchInfo *match_i
     return TRUE;
 }
 
-static gboolean __callback_toc_cdsize (MIRAGE_Parser *self, GMatchInfo *match_info, GError **error) {
+static gboolean __callback_toc_cdsize (MIRAGE_Parser *self, GMatchInfo *match_info, GError **error G_GNUC_UNUSED) {
     MIRAGE_Parser_XCDROASTPrivate *_priv = MIRAGE_PARSER_XCDROAST_GET_PRIVATE(self);
     gchar *cdsize = g_match_info_fetch_named(match_info, "cdsize");
 
@@ -251,7 +251,7 @@ static gboolean __callback_toc_cdsize (MIRAGE_Parser *self, GMatchInfo *match_in
     return TRUE;
 }
 
-static gboolean __callback_toc_discid (MIRAGE_Parser *self, GMatchInfo *match_info, GError **error) {
+static gboolean __callback_toc_discid (MIRAGE_Parser *self, GMatchInfo *match_info, GError **error G_GNUC_UNUSED) {
     MIRAGE_Parser_XCDROASTPrivate *_priv = MIRAGE_PARSER_XCDROAST_GET_PRIVATE(self);
 
     g_free(_priv->disc_info.discid);
@@ -262,7 +262,7 @@ static gboolean __callback_toc_discid (MIRAGE_Parser *self, GMatchInfo *match_in
 }
 
 
-static gboolean __callback_toc_track (MIRAGE_Parser *self, GMatchInfo *match_info, GError **error) {
+static gboolean __callback_toc_track (MIRAGE_Parser *self, GMatchInfo *match_info, GError **error G_GNUC_UNUSED) {
     MIRAGE_Parser_XCDROASTPrivate *_priv = MIRAGE_PARSER_XCDROAST_GET_PRIVATE(self);
     gchar *track = g_match_info_fetch_named(match_info, "track");
 
@@ -274,7 +274,7 @@ static gboolean __callback_toc_track (MIRAGE_Parser *self, GMatchInfo *match_inf
     return TRUE;
 }
 
-static gboolean __callback_toc_type (MIRAGE_Parser *self, GMatchInfo *match_info, GError **error) {
+static gboolean __callback_toc_type (MIRAGE_Parser *self, GMatchInfo *match_info, GError **error G_GNUC_UNUSED) {
     MIRAGE_Parser_XCDROASTPrivate *_priv = MIRAGE_PARSER_XCDROAST_GET_PRIVATE(self);
     gchar *type = g_match_info_fetch_named(match_info, "type");
 
@@ -286,7 +286,7 @@ static gboolean __callback_toc_type (MIRAGE_Parser *self, GMatchInfo *match_info
     return TRUE;
 }
 
-static gboolean __callback_toc_size (MIRAGE_Parser *self, GMatchInfo *match_info, GError **error) {
+static gboolean __callback_toc_size (MIRAGE_Parser *self, GMatchInfo *match_info, GError **error G_GNUC_UNUSED) {
     MIRAGE_Parser_XCDROASTPrivate *_priv = MIRAGE_PARSER_XCDROAST_GET_PRIVATE(self);
     gchar *size = g_match_info_fetch_named(match_info, "size");
 
@@ -298,7 +298,7 @@ static gboolean __callback_toc_size (MIRAGE_Parser *self, GMatchInfo *match_info
     return TRUE;
 }
 
-static gboolean __callback_toc_startsec (MIRAGE_Parser *self, GMatchInfo *match_info, GError **error) {
+static gboolean __callback_toc_startsec (MIRAGE_Parser *self, GMatchInfo *match_info, GError **error G_GNUC_UNUSED) {
     MIRAGE_Parser_XCDROASTPrivate *_priv = MIRAGE_PARSER_XCDROAST_GET_PRIVATE(self);
     gchar *startsec = g_match_info_fetch_named(match_info, "startsec");
 
@@ -310,7 +310,7 @@ static gboolean __callback_toc_startsec (MIRAGE_Parser *self, GMatchInfo *match_
     return TRUE;
 }
 
-static gboolean __callback_toc_file (MIRAGE_Parser *self, GMatchInfo *match_info, GError **error) {
+static gboolean __callback_toc_file (MIRAGE_Parser *self, GMatchInfo *match_info, GError **error G_GNUC_UNUSED) {
     MIRAGE_Parser_XCDROASTPrivate *_priv = MIRAGE_PARSER_XCDROAST_GET_PRIVATE(self);
 
     g_free(_priv->toc_track.file);
@@ -323,7 +323,7 @@ static gboolean __callback_toc_file (MIRAGE_Parser *self, GMatchInfo *match_info
 }
 
 
-static gboolean __callback_xinf_comment (MIRAGE_Parser *self, GMatchInfo *match_info, GError **error) {
+static gboolean __callback_xinf_comment (MIRAGE_Parser *self, GMatchInfo *match_info, GError **error G_GNUC_UNUSED) {
     gchar *comment = g_match_info_fetch_named(match_info, "comment");
 
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: parsed COMMENT: %s\n", __debug__, comment);
@@ -333,7 +333,7 @@ static gboolean __callback_xinf_comment (MIRAGE_Parser *self, GMatchInfo *match_
     return TRUE;
 }
 
-static gboolean __callback_xinf_file (MIRAGE_Parser *self, GMatchInfo *match_info, GError **error) {
+static gboolean __callback_xinf_file (MIRAGE_Parser *self, GMatchInfo *match_info, GError **error G_GNUC_UNUSED) {
     MIRAGE_Parser_XCDROASTPrivate *_priv = MIRAGE_PARSER_XCDROAST_GET_PRIVATE(self);
 
     g_free(_priv->xinf_track.file);
@@ -343,7 +343,7 @@ static gboolean __callback_xinf_file (MIRAGE_Parser *self, GMatchInfo *match_inf
     return TRUE;
 }
 
-static gboolean __callback_xinf_track (MIRAGE_Parser *self, GMatchInfo *match_info, GError **error) {
+static gboolean __callback_xinf_track (MIRAGE_Parser *self, GMatchInfo *match_info, GError **error G_GNUC_UNUSED) {
     MIRAGE_Parser_XCDROASTPrivate *_priv = MIRAGE_PARSER_XCDROAST_GET_PRIVATE(self);
     gchar *track = g_match_info_fetch_named(match_info, "track");
     gchar *num_tracks = g_match_info_fetch_named(match_info, "num_tracks");
@@ -358,7 +358,7 @@ static gboolean __callback_xinf_track (MIRAGE_Parser *self, GMatchInfo *match_in
     return TRUE;
 }
 
-static gboolean __callback_xinf_title (MIRAGE_Parser *self, GMatchInfo *match_info, GError **error) {
+static gboolean __callback_xinf_title (MIRAGE_Parser *self, GMatchInfo *match_info, GError **error G_GNUC_UNUSED) {
     MIRAGE_Parser_XCDROASTPrivate *_priv = MIRAGE_PARSER_XCDROAST_GET_PRIVATE(self);
 
     g_free(_priv->xinf_track.title);
@@ -368,7 +368,7 @@ static gboolean __callback_xinf_title (MIRAGE_Parser *self, GMatchInfo *match_in
     return TRUE;
 }
 
-static gboolean __callback_xinf_artist (MIRAGE_Parser *self, GMatchInfo *match_info, GError **error) {
+static gboolean __callback_xinf_artist (MIRAGE_Parser *self, GMatchInfo *match_info, GError **error G_GNUC_UNUSED) {
     MIRAGE_Parser_XCDROASTPrivate *_priv = MIRAGE_PARSER_XCDROAST_GET_PRIVATE(self);
 
     g_free(_priv->xinf_track.artist);
@@ -378,7 +378,7 @@ static gboolean __callback_xinf_artist (MIRAGE_Parser *self, GMatchInfo *match_i
     return TRUE;
 }
 
-static gboolean __callback_xinf_size (MIRAGE_Parser *self, GMatchInfo *match_info, GError **error) {
+static gboolean __callback_xinf_size (MIRAGE_Parser *self, GMatchInfo *match_info, GError **error G_GNUC_UNUSED) {
     MIRAGE_Parser_XCDROASTPrivate *_priv = MIRAGE_PARSER_XCDROAST_GET_PRIVATE(self);
     gchar *size = g_match_info_fetch_named(match_info, "size");
 
@@ -390,7 +390,7 @@ static gboolean __callback_xinf_size (MIRAGE_Parser *self, GMatchInfo *match_inf
     return TRUE;
 }
 
-static gboolean __callback_xinf_type (MIRAGE_Parser *self, GMatchInfo *match_info, GError **error) {
+static gboolean __callback_xinf_type (MIRAGE_Parser *self, GMatchInfo *match_info, GError **error G_GNUC_UNUSED) {
     MIRAGE_Parser_XCDROASTPrivate *_priv = MIRAGE_PARSER_XCDROAST_GET_PRIVATE(self);
     gchar *type = g_match_info_fetch_named(match_info, "type");
 
@@ -402,7 +402,7 @@ static gboolean __callback_xinf_type (MIRAGE_Parser *self, GMatchInfo *match_inf
     return TRUE;
 }
 
-static gboolean __callback_xinf_rec_type (MIRAGE_Parser *self, GMatchInfo *match_info, GError **error) {
+static gboolean __callback_xinf_rec_type (MIRAGE_Parser *self, GMatchInfo *match_info, GError **error G_GNUC_UNUSED) {
     MIRAGE_Parser_XCDROASTPrivate *_priv = MIRAGE_PARSER_XCDROAST_GET_PRIVATE(self);
     gchar *rec_type = g_match_info_fetch_named(match_info, "rec_type");
 
@@ -414,7 +414,7 @@ static gboolean __callback_xinf_rec_type (MIRAGE_Parser *self, GMatchInfo *match
     return TRUE;
 }
 
-static gboolean __callback_xinf_preemp (MIRAGE_Parser *self, GMatchInfo *match_info, GError **error) {
+static gboolean __callback_xinf_preemp (MIRAGE_Parser *self, GMatchInfo *match_info, GError **error G_GNUC_UNUSED) {
     MIRAGE_Parser_XCDROASTPrivate *_priv = MIRAGE_PARSER_XCDROAST_GET_PRIVATE(self);
     gchar *preemp = g_match_info_fetch_named(match_info, "preemp");
 
@@ -426,7 +426,7 @@ static gboolean __callback_xinf_preemp (MIRAGE_Parser *self, GMatchInfo *match_i
     return TRUE;
 }
 
-static gboolean __callback_xinf_copyperm (MIRAGE_Parser *self, GMatchInfo *match_info, GError **error) {
+static gboolean __callback_xinf_copyperm (MIRAGE_Parser *self, GMatchInfo *match_info, GError **error G_GNUC_UNUSED) {
     MIRAGE_Parser_XCDROASTPrivate *_priv = MIRAGE_PARSER_XCDROAST_GET_PRIVATE(self);
     gchar *copyperm = g_match_info_fetch_named(match_info, "copyperm");
 
@@ -438,7 +438,7 @@ static gboolean __callback_xinf_copyperm (MIRAGE_Parser *self, GMatchInfo *match
     return TRUE;
 }
 
-static gboolean __callback_xinf_stereo (MIRAGE_Parser *self, GMatchInfo *match_info, GError **error) {
+static gboolean __callback_xinf_stereo (MIRAGE_Parser *self, GMatchInfo *match_info, GError **error G_GNUC_UNUSED) {
     MIRAGE_Parser_XCDROASTPrivate *_priv = MIRAGE_PARSER_XCDROAST_GET_PRIVATE(self);
     gchar *stereo = g_match_info_fetch_named(match_info, "stereo");
 
@@ -450,7 +450,7 @@ static gboolean __callback_xinf_stereo (MIRAGE_Parser *self, GMatchInfo *match_i
     return TRUE;
 }
 
-static gboolean __callback_xinf_cd_title (MIRAGE_Parser *self, GMatchInfo *match_info, GError **error) {
+static gboolean __callback_xinf_cd_title (MIRAGE_Parser *self, GMatchInfo *match_info, GError **error G_GNUC_UNUSED) {
     MIRAGE_Parser_XCDROASTPrivate *_priv = MIRAGE_PARSER_XCDROAST_GET_PRIVATE(self);
 
     g_free(_priv->xinf_track.cd_title);
@@ -460,7 +460,7 @@ static gboolean __callback_xinf_cd_title (MIRAGE_Parser *self, GMatchInfo *match
     return TRUE;
 }
 
-static gboolean __callback_xinf_cd_artist (MIRAGE_Parser *self, GMatchInfo *match_info, GError **error) {
+static gboolean __callback_xinf_cd_artist (MIRAGE_Parser *self, GMatchInfo *match_info, GError **error G_GNUC_UNUSED) {
     MIRAGE_Parser_XCDROASTPrivate *_priv = MIRAGE_PARSER_XCDROAST_GET_PRIVATE(self);
 
     g_free(_priv->xinf_track.cd_artist);
@@ -470,7 +470,7 @@ static gboolean __callback_xinf_cd_artist (MIRAGE_Parser *self, GMatchInfo *matc
     return TRUE;
 }
 
-static gboolean __callback_xinf_cd_discid (MIRAGE_Parser *self, GMatchInfo *match_info, GError **error) {
+static gboolean __callback_xinf_cd_discid (MIRAGE_Parser *self, GMatchInfo *match_info, GError **error G_GNUC_UNUSED) {
     MIRAGE_Parser_XCDROASTPrivate *_priv = MIRAGE_PARSER_XCDROAST_GET_PRIVATE(self);
 
     g_free(_priv->xinf_track.cd_discid);
@@ -873,7 +873,7 @@ end:
 /* Our parent class */
 static MIRAGE_ParserClass *parent_class = NULL;
 
-static void __mirage_parser_xcdroast_instance_init (GTypeInstance *instance, gpointer g_class) {
+static void __mirage_parser_xcdroast_instance_init (GTypeInstance *instance, gpointer g_class G_GNUC_UNUSED) {
     mirage_parser_generate_parser_info(MIRAGE_PARSER(instance),
         "PARSER-XCDROAST",
         "X-CD-Roast Image Parser",
@@ -912,7 +912,7 @@ static void __mirage_parser_xcdroast_finalize (GObject *obj) {
     return G_OBJECT_CLASS(parent_class)->finalize(obj);
 }
 
-static void __mirage_parser_xcdroast_class_init (gpointer g_class, gpointer g_class_data) {
+static void __mirage_parser_xcdroast_class_init (gpointer g_class, gpointer g_class_data G_GNUC_UNUSED) {
     GObjectClass *class_gobject = G_OBJECT_CLASS(g_class);
     MIRAGE_ParserClass *class_parser = MIRAGE_PARSER_CLASS(g_class);
     MIRAGE_Parser_XCDROASTClass *klass = MIRAGE_PARSER_XCDROAST_CLASS(g_class);
@@ -944,7 +944,8 @@ GType mirage_parser_xcdroast_get_type (GTypeModule *module) {
             NULL,   /* class_data */
             sizeof(MIRAGE_Parser_XCDROAST),
             0,      /* n_preallocs */
-            __mirage_parser_xcdroast_instance_init    /* instance_init */
+            __mirage_parser_xcdroast_instance_init,   /* instance_init */
+            NULL    /* value_table */
         };
 
         type = g_type_module_register_type(module, MIRAGE_TYPE_PARSER, "MIRAGE_Parser_XCDROAST", &info, 0);

@@ -474,7 +474,7 @@ static gboolean __mirage_parser_cue_add_session (MIRAGE_Parser *self, gint numbe
     return TRUE;
 }
 
-static gboolean __mirage_parser_cue_set_pack_data (MIRAGE_Parser *self, gint pack_type, gchar *data, GError **error) {
+static gboolean __mirage_parser_cue_set_pack_data (MIRAGE_Parser *self, gint pack_type, gchar *data, GError **error G_GNUC_UNUSED) {
     MIRAGE_Parser_CUEPrivate *_priv = MIRAGE_PARSER_CUE_GET_PRIVATE(self);
     GObject *language = NULL;
 
@@ -528,10 +528,10 @@ static gboolean __mirage_parser_cue_callback_session (MIRAGE_Parser *self, GMatc
 
     g_free(number_raw);
 
-    return TRUE;
+    return succeeded;
 }
 
-static gboolean __mirage_parser_cue_callback_comment (MIRAGE_Parser *self, GMatchInfo *match_info, GError **error) {
+static gboolean __mirage_parser_cue_callback_comment (MIRAGE_Parser *self, GMatchInfo *match_info, GError **error G_GNUC_UNUSED) {
     gchar *comment = g_match_info_fetch_named(match_info, "comment");
 
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: parsed COMMENT: %s\n", __debug__, comment);
@@ -541,7 +541,7 @@ static gboolean __mirage_parser_cue_callback_comment (MIRAGE_Parser *self, GMatc
     return TRUE;
 }
 
-static gboolean __mirage_parser_cue_callback_cdtext (MIRAGE_Parser *self, GMatchInfo *match_info, GError **error) {
+static gboolean __mirage_parser_cue_callback_cdtext (MIRAGE_Parser *self, GMatchInfo *match_info, GError **error G_GNUC_UNUSED) {
     gchar *filename_raw, *filename;
 
     filename_raw = g_match_info_fetch_named(match_info, "filename");
@@ -555,7 +555,7 @@ static gboolean __mirage_parser_cue_callback_cdtext (MIRAGE_Parser *self, GMatch
     return TRUE;
 }
 
-static gboolean __mirage_parser_cue_callback_catalog (MIRAGE_Parser *self, GMatchInfo *match_info, GError **error) {
+static gboolean __mirage_parser_cue_callback_catalog (MIRAGE_Parser *self, GMatchInfo *match_info, GError **error G_GNUC_UNUSED) {
     MIRAGE_Parser_CUEPrivate *_priv = MIRAGE_PARSER_CUE_GET_PRIVATE(self);
     gchar *catalog = g_match_info_fetch_named(match_info, "catalog");
 
@@ -815,7 +815,7 @@ static void __mirage_parser_cue_cleanup_regex_parser (MIRAGE_Parser *self) {
     g_list_free(_priv->regex_rules);
 }
 
-static gboolean __mirage_parser_cue_detect_and_set_encoding (MIRAGE_Parser *self, GIOChannel *io_channel, GError **error) {
+static gboolean __mirage_parser_cue_detect_and_set_encoding (MIRAGE_Parser *self, GIOChannel *io_channel, GError **error G_GNUC_UNUSED) {
     static gchar bom_utf32_be[] = { 0x00, 0x00, 0xFE, 0xFF };
     static gchar bom_utf32_le[] = { 0xFF, 0xFE, 0x00, 0x00 };
     static gchar bom_utf16_be[] = { 0xFE, 0xFF };
@@ -1025,7 +1025,7 @@ end:
 /* Our parent class */
 static MIRAGE_ParserClass *parent_class = NULL;
 
-static void __mirage_parser_cue_instance_init (GTypeInstance *instance, gpointer g_class) {
+static void __mirage_parser_cue_instance_init (GTypeInstance *instance, gpointer g_class G_GNUC_UNUSED) {
     mirage_parser_generate_parser_info(MIRAGE_PARSER(instance),
         "PARSER-CUE",
         "CUE Image Parser",
@@ -1058,7 +1058,7 @@ static void __mirage_parser_cue_finalize (GObject *obj) {
 }
 
 
-static void __mirage_parser_cue_class_init (gpointer g_class, gpointer g_class_data) {
+static void __mirage_parser_cue_class_init (gpointer g_class, gpointer g_class_data G_GNUC_UNUSED) {
     GObjectClass *class_gobject = G_OBJECT_CLASS(g_class);
     MIRAGE_ParserClass *class_parser = MIRAGE_PARSER_CLASS(g_class);
     MIRAGE_Parser_CUEClass *klass = MIRAGE_PARSER_CUE_CLASS(g_class);
@@ -1090,7 +1090,8 @@ GType mirage_parser_cue_get_type (GTypeModule *module) {
             NULL,   /* class_data */
             sizeof(MIRAGE_Parser_CUE),
             0,      /* n_preallocs */
-            __mirage_parser_cue_instance_init    /* instance_init */
+            __mirage_parser_cue_instance_init,   /* instance_init */
+            NULL    
         };
 
         type = g_type_module_register_type(module, MIRAGE_TYPE_PARSER, "MIRAGE_Parser_CUE", &info, 0);

@@ -531,7 +531,7 @@ end:
 /* Our parent class */
 static MIRAGE_ParserClass *parent_class = NULL;
 
-static void __mirage_parser_c2d_instance_init (GTypeInstance *instance, gpointer g_class) {
+static void __mirage_parser_c2d_instance_init (GTypeInstance *instance, gpointer g_class G_GNUC_UNUSED) {
     mirage_parser_generate_parser_info(MIRAGE_PARSER(instance),
         "PARSER-C2D",
         "C2D Image Parser",
@@ -555,7 +555,7 @@ static void __mirage_parser_c2d_finalize (GObject *obj) {
     return G_OBJECT_CLASS(parent_class)->finalize(obj);
 }
 
-static void __mirage_parser_c2d_class_init (gpointer g_class, gpointer g_class_data) {
+static void __mirage_parser_c2d_class_init (gpointer g_class, gpointer g_class_data G_GNUC_UNUSED) {
     GObjectClass *class_gobject = G_OBJECT_CLASS(g_class);
     MIRAGE_ParserClass *class_parser = MIRAGE_PARSER_CLASS(g_class);
     MIRAGE_Parser_C2DClass *klass = MIRAGE_PARSER_C2D_CLASS(g_class);
@@ -587,7 +587,8 @@ GType mirage_parser_c2d_get_type (GTypeModule *module) {
             NULL,   /* class_data */
             sizeof(MIRAGE_Parser_C2D),
             0,      /* n_preallocs */
-            __mirage_parser_c2d_instance_init    /* instance_init */
+            __mirage_parser_c2d_instance_init,   /* instance_init */
+            NULL    /* value_table */
         };
 
         type = g_type_module_register_type(module, MIRAGE_TYPE_PARSER, "MIRAGE_Parser_C2D", &info, 0);

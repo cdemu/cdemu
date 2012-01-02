@@ -66,7 +66,7 @@ static void __child_destroyed_handler (MIRAGE_Object *self, GObject *where_the_o
  *
  * Returns: %TRUE on success, %FALSE on failure
  **/
-gboolean mirage_object_set_debug_context (MIRAGE_Object *self, GObject *debug_context, GError **error) {
+gboolean mirage_object_set_debug_context (MIRAGE_Object *self, GObject *debug_context, GError **error G_GNUC_UNUSED) {
     MIRAGE_ObjectPrivate *_priv = MIRAGE_OBJECT_GET_PRIVATE(self);
     GList *entry = NULL;
     
@@ -216,7 +216,7 @@ void mirage_object_debug_message (MIRAGE_Object *self, gint level, gchar *format
  *
  * Returns: %TRUE on success, %FALSE on failure
  **/
-gboolean mirage_object_set_parent (MIRAGE_Object *self, GObject *parent, GError **error) {
+gboolean mirage_object_set_parent (MIRAGE_Object *self, GObject *parent, GError **error G_GNUC_UNUSED) {
     MIRAGE_ObjectPrivate *_priv = MIRAGE_OBJECT_GET_PRIVATE(self);
 
     if (_priv->parent) {
@@ -314,7 +314,7 @@ gboolean mirage_object_attach_child (MIRAGE_Object *self, GObject *child, GError
  *
  * Returns: %TRUE on success, %FALSE on failure
  **/
-gboolean mirage_object_detach_child (MIRAGE_Object *self, GObject *child, GError **error) {
+gboolean mirage_object_detach_child (MIRAGE_Object *self, GObject *child, GError **error G_GNUC_UNUSED) {
     MIRAGE_ObjectPrivate *_priv = MIRAGE_OBJECT_GET_PRIVATE(self);
     
     /* Remove child from our children list */
@@ -354,7 +354,7 @@ static void __mirage_object_finalize (GObject *obj) {
     return G_OBJECT_CLASS(parent_class)->finalize(obj);
 }
 
-static void __mirage_object_class_init (gpointer g_class, gpointer g_class_data) {
+static void __mirage_object_class_init (gpointer g_class, gpointer g_class_data G_GNUC_UNUSED) {
     GObjectClass *class_gobject = G_OBJECT_CLASS(g_class);
     MIRAGE_ObjectClass *klass = MIRAGE_OBJECT_CLASS(g_class);
     
@@ -393,7 +393,8 @@ GType mirage_object_get_type (void) {
             NULL,   /* class_data */
             sizeof(MIRAGE_Object),
             0,      /* n_preallocs */
-            NULL    /* instance_init */
+            NULL,   /* instance_init */
+            NULL    /* value_table */
         };
         
         type = g_type_register_static(G_TYPE_OBJECT, "MIRAGE_Object", &info, 0);

@@ -52,7 +52,7 @@ typedef struct {
  *
  * Returns: %TRUE on success, %FALSE on failure
  **/
-gboolean mirage_debug_context_set_domain (MIRAGE_DebugContext *self, const gchar *domain, GError **error) {
+gboolean mirage_debug_context_set_domain (MIRAGE_DebugContext *self, const gchar *domain, GError **error G_GNUC_UNUSED) {
     MIRAGE_DebugContextPrivate *_priv = MIRAGE_DEBUG_CONTEXT_GET_PRIVATE(self);
     /* Set domain */
     g_free(_priv->domain);
@@ -97,7 +97,7 @@ gboolean mirage_debug_context_get_domain (MIRAGE_DebugContext *self, const gchar
  *
  * Returns: %TRUE on success, %FALSE on failure
  **/
-gboolean mirage_debug_context_set_name (MIRAGE_DebugContext *self, const gchar *name, GError **error) {
+gboolean mirage_debug_context_set_name (MIRAGE_DebugContext *self, const gchar *name, GError **error G_GNUC_UNUSED) {
     MIRAGE_DebugContextPrivate *_priv = MIRAGE_DEBUG_CONTEXT_GET_PRIVATE(self);
     /* Set name */
     g_free(_priv->name);
@@ -142,7 +142,7 @@ gboolean mirage_debug_context_get_name (MIRAGE_DebugContext *self, const gchar *
  *
  * Returns: %TRUE on success, %FALSE on failure
  **/
-gboolean mirage_debug_context_set_debug_mask (MIRAGE_DebugContext *self, gint debug_mask, GError **error) {
+gboolean mirage_debug_context_set_debug_mask (MIRAGE_DebugContext *self, gint debug_mask, GError **error G_GNUC_UNUSED) {
     MIRAGE_DebugContextPrivate *_priv = MIRAGE_DEBUG_CONTEXT_GET_PRIVATE(self);
     /* Set debug mask */
     _priv->debug_mask = debug_mask;
@@ -187,7 +187,7 @@ static void __mirage_debug_context_finalize (GObject *obj) {
     return G_OBJECT_CLASS(parent_class)->finalize(obj);
 }
 
-static void __mirage_debug_context_class_init (gpointer g_class, gpointer g_class_data) {
+static void __mirage_debug_context_class_init (gpointer g_class, gpointer g_class_data G_GNUC_UNUSED) {
     GObjectClass *class_gobject = G_OBJECT_CLASS(g_class);
     MIRAGE_DebugContextClass *klass = MIRAGE_DEBUG_CONTEXT_CLASS(g_class);
     
@@ -215,7 +215,8 @@ GType mirage_debug_context_get_type (void) {
             NULL,   /* class_data */
             sizeof(MIRAGE_DebugContext),
             0,      /* n_preallocs */
-            NULL    /* instance_init */
+            NULL,   /* instance_init */
+            NULL    /* value_table */
         };
         
         type = g_type_register_static(G_TYPE_OBJECT, "MIRAGE_DebugContext", &info, 0);

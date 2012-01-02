@@ -208,7 +208,7 @@ static gboolean __mirage_cdtext_encdec_cleanup (MIRAGE_CDTextEncDec *self) {
     return TRUE;
 }
 
-static gboolean __mirage_cdtext_encdec_lang2block (MIRAGE_CDTextEncDec *self, gint langcode, gint *block, GError **error) {
+static gboolean __mirage_cdtext_encdec_lang2block (MIRAGE_CDTextEncDec *self, gint langcode, gint *block, GError **error G_GNUC_UNUSED) {
     MIRAGE_CDTextEncDecPrivate *_priv = MIRAGE_CDTEXT_ENCDEC_GET_PRIVATE(self);
     gint ret = 0;
     gint i;
@@ -224,13 +224,13 @@ static gboolean __mirage_cdtext_encdec_lang2block (MIRAGE_CDTextEncDec *self, gi
     return TRUE;
 }
 
-static gboolean __mirage_cdtext_encdec_block2lang (MIRAGE_CDTextEncDec *self, gint block, gint *langcode, GError **error) {
+static gboolean __mirage_cdtext_encdec_block2lang (MIRAGE_CDTextEncDec *self, gint block, gint *langcode, GError **error G_GNUC_UNUSED) {
     MIRAGE_CDTextEncDecPrivate *_priv = MIRAGE_CDTEXT_ENCDEC_GET_PRIVATE(self);
     *langcode = _priv->blocks[block].langcode;
     return TRUE;
 }
 
-static gboolean __mirage_cdtext_encoder_add_crc_to_pack (MIRAGE_CDTextEncDec *self, CDTextPack *pack, GError **error) {
+static gboolean __add_crc_to_pack (CDTextPack *pack) {
     /* Calculate CRC for given pack */
     guint8 *data = (guint8 *)pack;
     guint16 crc = 0;
@@ -280,7 +280,7 @@ static gboolean __mirage_cdtext_encoder_initialize_pack (MIRAGE_CDTextEncDec *se
     return TRUE;
 }
 
-static gboolean __mirage_cdtext_encoder_pack_data (MIRAGE_CDTextEncDec *self, GValueArray *pack, GError **error) {
+static gboolean __mirage_cdtext_encoder_pack_data (MIRAGE_CDTextEncDec *self, GValueArray *pack, GError **error G_GNUC_UNUSED) {
     MIRAGE_CDTextEncDecPrivate *_priv = MIRAGE_CDTEXT_ENCDEC_GET_PRIVATE(self);
 
     /* Unpack data */
@@ -330,7 +330,7 @@ static gboolean __mirage_cdtext_encoder_pack_data (MIRAGE_CDTextEncDec *self, GV
     return TRUE;
 }
 
-static gboolean __mirage_cdtext_encoder_generate_size_info (MIRAGE_CDTextEncDec *self, gint block, guint8 **data, gint *len, GError **error) {
+static gboolean __mirage_cdtext_encoder_generate_size_info (MIRAGE_CDTextEncDec *self, gint block, guint8 **data, gint *len, GError **error G_GNUC_UNUSED) {
     MIRAGE_CDTextEncDecPrivate *_priv = MIRAGE_CDTEXT_ENCDEC_GET_PRIVATE(self);
 
     CDTextSizeInfo *size_info = g_new0(CDTextSizeInfo, 1);
@@ -361,7 +361,7 @@ static gboolean __mirage_cdtext_encoder_generate_size_info (MIRAGE_CDTextEncDec 
     return TRUE;
 }
 
-static gboolean __mirage_cdtext_decoder_read_size_info (MIRAGE_CDTextEncDec *self, CDTextPack *size_info_pack, CDTextSizeInfo **data, GError **error) {
+static gboolean __mirage_cdtext_decoder_read_size_info (MIRAGE_CDTextEncDec *self G_GNUC_UNUSED, CDTextPack *size_info_pack, CDTextSizeInfo **data, GError **error G_GNUC_UNUSED) {
     guint8 *size_info = g_malloc0(sizeof(CDTextSizeInfo));
     CDTextPack *cur_pack = size_info_pack;
     gint i;
@@ -518,7 +518,7 @@ gboolean mirage_cdtext_encoder_add_data (MIRAGE_CDTextEncDec *self, gint langcod
  *
  * Returns: %TRUE on success, %FALSE on failure
  **/
-gboolean mirage_cdtext_encoder_encode (MIRAGE_CDTextEncDec *self, guint8 **buffer, gint *buflen, GError **error) {
+gboolean mirage_cdtext_encoder_encode (MIRAGE_CDTextEncDec *self, guint8 **buffer, gint *buflen, GError **error G_GNUC_UNUSED) {
     MIRAGE_CDTextEncDecPrivate *_priv = MIRAGE_CDTEXT_ENCDEC_GET_PRIVATE(self);
     gint i;
 
@@ -539,7 +539,9 @@ gboolean mirage_cdtext_encoder_encode (MIRAGE_CDTextEncDec *self, guint8 **buffe
             }
 
             /* We need to 'reserve' some space for size info */
-            CDTextSizeInfo size_info = {0};
+            CDTextSizeInfo size_info;
+            memset(&size_info, 0, sizeof(size_info));
+
             GValueArray *dummy_data = __create_value_array(i, 0x8F, 0, (guint8 *)&size_info, sizeof(size_info));
             __mirage_cdtext_encoder_pack_data(self, dummy_data, NULL);
             g_value_array_free(dummy_data);
@@ -575,7 +577,7 @@ gboolean mirage_cdtext_encoder_encode (MIRAGE_CDTextEncDec *self, guint8 **buffe
     /* Generate CRC for all packs */
     _priv->cur_pack = (CDTextPack *)_priv->buffer;
     for (i = 0; i < _priv->length; i++) {
-        __mirage_cdtext_encoder_add_crc_to_pack(self, _priv->cur_pack, NULL);
+        __add_crc_to_pack(_priv->cur_pack);
         _priv->cur_pack++;
     }
 
@@ -612,7 +614,7 @@ gboolean mirage_cdtext_encoder_encode (MIRAGE_CDTextEncDec *self, guint8 **buffe
  *
  * Returns: %TRUE on success, %FALSE on failure
  **/
-gboolean mirage_cdtext_decoder_init (MIRAGE_CDTextEncDec *self, guint8 *buffer, gint buflen, GError **error) {
+gboolean mirage_cdtext_decoder_init (MIRAGE_CDTextEncDec *self, guint8 *buffer, gint buflen, GError **error G_GNUC_UNUSED) {
     MIRAGE_CDTextEncDecPrivate *_priv = MIRAGE_CDTEXT_ENCDEC_GET_PRIVATE(self);
 
     /* Cleanup old data */
@@ -825,7 +827,7 @@ gboolean mirage_cdtext_decoder_get_data (MIRAGE_CDTextEncDec *self, gint block, 
 /* Our parent class */
 static MIRAGE_ObjectClass *parent_class = NULL;
 
-static void __mirage_cdtext_encdec_instance_init (GTypeInstance *instance, gpointer g_class) {
+static void __mirage_cdtext_encdec_instance_init (GTypeInstance *instance, gpointer g_class G_GNUC_UNUSED) {
     MIRAGE_CDTextEncDec *self = MIRAGE_CDTEXT_ENCDEC(instance);
     MIRAGE_CDTextEncDecPrivate *_priv = MIRAGE_CDTEXT_ENCDEC_GET_PRIVATE(self);
 
@@ -853,7 +855,7 @@ static void __mirage_cdtext_encdec_finalize (GObject *obj) {
     return G_OBJECT_CLASS(parent_class)->finalize(obj);
 }
 
-static void __mirage_cdtext_encdec_class_init (gpointer g_class, gpointer g_class_data) {
+static void __mirage_cdtext_encdec_class_init (gpointer g_class, gpointer g_class_data G_GNUC_UNUSED) {
     GObjectClass *class_gobject = G_OBJECT_CLASS(g_class);
     MIRAGE_CDTextEncDecClass *klass = MIRAGE_CDTEXT_ENCDEC_CLASS(g_class);
 
@@ -881,7 +883,8 @@ GType mirage_cdtext_encdec_get_type (void) {
             NULL,   /* class_data */
             sizeof(MIRAGE_CDTextEncDec),
             0,      /* n_preallocs */
-            __mirage_cdtext_encdec_instance_init    /* instance_init */
+            __mirage_cdtext_encdec_instance_init,   /* instance_init */
+            NULL    /* value_table */
         };
 
         type = g_type_register_static(MIRAGE_TYPE_OBJECT, "MIRAGE_CDTextEncDec", &info, 0);

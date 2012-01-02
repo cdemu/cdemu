@@ -25,18 +25,18 @@
 /******************************************************************************\
  *                   MIRAGE_Fragment methods implementations                  *
 \******************************************************************************/
-static gboolean __mirage_fragment_null_can_handle_data_format (MIRAGE_Fragment *self, const gchar *filename, GError **error) {
+static gboolean __mirage_fragment_null_can_handle_data_format (MIRAGE_Fragment *self G_GNUC_UNUSED, const gchar *filename G_GNUC_UNUSED, GError **error G_GNUC_UNUSED) {
     /* NULL doesn't need any data file checks; what's important is interface type,
        which is filtered out elsewhere */
     return TRUE;
 }
 
-static gboolean __mirage_fragment_null_use_the_rest_of_file (MIRAGE_Fragment *self, GError **error) {
+static gboolean __mirage_fragment_null_use_the_rest_of_file (MIRAGE_Fragment *self G_GNUC_UNUSED, GError **error G_GNUC_UNUSED) {
     /* No file, nothing to use */
     return TRUE;
 }
 
-static gboolean __mirage_fragment_null_read_main_data (MIRAGE_Fragment *self, gint address, guint8 *buf, gint *length, GError **error) {
+static gboolean __mirage_fragment_null_read_main_data (MIRAGE_Fragment *self, gint address G_GNUC_UNUSED, guint8 *buf G_GNUC_UNUSED, gint *length, GError **error G_GNUC_UNUSED) {
     /* Nothing to read */
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_FRAGMENT, "%s: no data in NULL fragment\n", __debug__);
     if (length) {
@@ -45,7 +45,7 @@ static gboolean __mirage_fragment_null_read_main_data (MIRAGE_Fragment *self, gi
     return TRUE;
 }
 
-static gboolean __mirage_fragment_null_read_subchannel_data (MIRAGE_Fragment *self, gint address, guint8 *buf, gint *length, GError **error) {
+static gboolean __mirage_fragment_null_read_subchannel_data (MIRAGE_Fragment *self, gint address G_GNUC_UNUSED, guint8 *buf G_GNUC_UNUSED, gint *length, GError **error G_GNUC_UNUSED) {
     /* Nothing to read */
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_FRAGMENT, "%s: no data in NULL fragment\n", __debug__);
     if (length) {
@@ -61,7 +61,7 @@ static gboolean __mirage_fragment_null_read_subchannel_data (MIRAGE_Fragment *se
 /* Our parent class */
 static MIRAGE_FragmentClass *parent_class = NULL;
 
-static void __mirage_fragment_null_instance_init (GTypeInstance *instance, gpointer g_class) {   
+static void __mirage_fragment_null_instance_init (GTypeInstance *instance, gpointer g_class G_GNUC_UNUSED) {   
     /* Create fragment info */
     mirage_fragment_generate_fragment_info(MIRAGE_FRAGMENT(instance),
         "FRAGMENT-NULL",
@@ -71,7 +71,7 @@ static void __mirage_fragment_null_instance_init (GTypeInstance *instance, gpoin
     return;
 }
 
-static void __mirage_fragment_null_class_init (gpointer g_class, gpointer g_class_data) {
+static void __mirage_fragment_null_class_init (gpointer g_class, gpointer g_class_data G_GNUC_UNUSED) {
     MIRAGE_FragmentClass *class_fragment = MIRAGE_FRAGMENT_CLASS(g_class);
     MIRAGE_Fragment_NULLClass *klass = MIRAGE_FRAGMENT_NULL_CLASS(g_class);
 
@@ -99,7 +99,8 @@ GType mirage_fragment_null_get_type (GTypeModule *module) {
             NULL,   /* class_data */
             sizeof(MIRAGE_Fragment_NULL),
             0,      /* n_preallocs */
-            __mirage_fragment_null_instance_init    /* instance_init */
+            __mirage_fragment_null_instance_init,   /* instance_init */
+            NULL    /* value_table */
         };
         
         static const GInterfaceInfo interface_info = {
