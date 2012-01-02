@@ -46,8 +46,7 @@ GType image_analyzer_disc_topology_get_type (void);
 /******************************************************************************\
  *                                 Public API                                 *
 \******************************************************************************/
-gboolean image_analyzer_disc_topology_create (IMAGE_ANALYZER_DiscTopology *self, GObject *disc, GError **error);
-gboolean image_analyzer_disc_topology_clear (IMAGE_ANALYZER_DiscTopology *self, GError **error);
+gboolean image_analyzer_disc_topology_refresh (IMAGE_ANALYZER_DiscTopology *self, GObject *disc, GError **error);
 
 
 G_END_DECLS

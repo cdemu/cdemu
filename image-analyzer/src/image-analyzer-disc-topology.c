@@ -24,18 +24,13 @@
 #include <math.h>
 #include <glib.h>
 #include <gtk/gtk.h>
+#include <gtk/gtkx.h>
 
 #include <mirage.h>
 #include "image-analyzer-dump.h"
 #include "image-analyzer-application.h"
 #include "image-analyzer-disc-topology.h"
 
-#if HAVE_GTKEXTRA
-#include <gtkextra/gtkplot.h>
-#include <gtkextra/gtkplotdata.h>
-#include <gtkextra/gtkplotcanvas.h>
-#include <gtkextra/gtkplotcanvasplot.h>
-#endif
 
 /******************************************************************************\
  *                              Private structure                             *
@@ -43,283 +38,194 @@
 #define IMAGE_ANALYZER_DISC_TOPOLOGY_GET_PRIVATE(obj) (G_TYPE_INSTANCE_GET_PRIVATE((obj), IMAGE_ANALYZER_TYPE_DISC_TOPOLOGY, IMAGE_ANALYZER_DiscTopologyPrivate))
 
 typedef struct {
-    /* Application */
-    GObject *application;
+    /* GtkSocket */
+    GtkWidget *socket;
 
-#if HAVE_GTKEXTRA
-    GtkWidget *canvas;
-    GtkWidget *plot;
-    GtkPlotData *plotdata;
-
-    gdouble *data_x;
-    gdouble *data_y;
-
-    gint orig_width;
-    gint orig_height;
-
-    GSList *zoom_steps;
-#endif
+    /* gnuplot */
+    gboolean gnuplot_works;
+        
+    GPid pid;
+    gint fd_in;
 } IMAGE_ANALYZER_DiscTopologyPrivate;
-
-typedef enum {
-    PROPERTY_APPLICATION = 1,
-} IMAGE_ANALYZER_DiscTopologyProperties;
 
 
 /******************************************************************************\
- *                                 Public API                                 *
+ *                                   Helpers                                  *
 \******************************************************************************/
-#if HAVE_GTKEXTRA
-static void __resize_canvas (GtkWidget *widget, GtkAllocation *allocation, gpointer user_data) {
-    IMAGE_ANALYZER_DiscTopology *self = user_data;
+static gboolean __image_analyzer_disc_topology_run_gnuplot (IMAGE_ANALYZER_DiscTopology *self, GError **error) {
     IMAGE_ANALYZER_DiscTopologyPrivate *_priv = IMAGE_ANALYZER_DISC_TOPOLOGY_GET_PRIVATE(self);
 
-    /* Scale ('magnify') */
-    gdouble mag_x, mag_y, mag;
+    gchar *argv[] = { "gnuplot", NULL };
+    gboolean ret;
+    gchar *cmd;
 
-    mag_x = 1.0 * allocation->width/_priv->orig_width;
-    mag_y = 1.0 * allocation->height/_priv->orig_height;
-
-    mag = MAX(mag_x, mag_y);
-
-    gtk_plot_canvas_set_magnification(GTK_PLOT_CANVAS(_priv->canvas), mag);
-
-    /* Refresh */
-    gtk_plot_canvas_paint(GTK_PLOT_CANVAS(_priv->canvas));
-    gtk_plot_canvas_refresh(GTK_PLOT_CANVAS(_priv->canvas));
-
-    return;
-}
-
-static void __zoom_push (IMAGE_ANALYZER_DiscTopology *self, gdouble *region) {
-    IMAGE_ANALYZER_DiscTopologyPrivate *_priv = IMAGE_ANALYZER_DISC_TOPOLOGY_GET_PRIVATE(self);
-    /* Add provided region to the top of the stack */
-    _priv->zoom_steps = g_slist_prepend(_priv->zoom_steps, region);
-    return;
-}
-
-static void __zoom_pop (IMAGE_ANALYZER_DiscTopology *self) {
-    IMAGE_ANALYZER_DiscTopologyPrivate *_priv = IMAGE_ANALYZER_DISC_TOPOLOGY_GET_PRIVATE(self);
-    /* Allow removing all but first element */
-    if (g_slist_length(_priv->zoom_steps) > 1) {
-        _priv->zoom_steps = g_slist_delete_link(_priv->zoom_steps, _priv->zoom_steps);
-    }
-    return;
-}
-
-static gboolean __image_analyzer_disc_topology_refresh_display_region (IMAGE_ANALYZER_DiscTopology *self, GError **error) {
-    IMAGE_ANALYZER_DiscTopologyPrivate *_priv = IMAGE_ANALYZER_DISC_TOPOLOGY_GET_PRIVATE(self);
-
-    gdouble xmin, xmax, ymin, ymax;
-    gdouble xscale, yscale;
-
-    /* Get display region; either use top of the zoom steps stack or fallback */
-    if (_priv->zoom_steps) {
-        gdouble *region = _priv->zoom_steps->data;
-        xmin = region[0];
-        xmax = region[1];
-        ymin = region[2];
-        ymax = region[3];
+    /* Spawn gnuplot */
+    ret = g_spawn_async_with_pipes(
+            NULL, /* const gchar *working_directory, (NULL = inhearit parent) */
+            argv, /* gchar **argv */
+            NULL, /* gchar **envp */
+            G_SPAWN_SEARCH_PATH, /* GSpawnFlags flags */
+            NULL, /* GSpawnChildSetupFunc child_setup */
+            NULL, /* gpointer user_data */
+            &_priv->pid, /* GPid *child_pid */
+            &_priv->fd_in, /* gint *standard_input */
+            NULL, /* gint *standard_output */
+            NULL, /* gint *standard_error */
+            error /* GError **error */
+        );
+    if (!ret) {
+        g_debug("Failed to spawn gnuplot process!\n");
+        _priv->gnuplot_works = FALSE;
+        return FALSE;
     } else {
-        xmin = 0;
-        xmax = 74*60*75; /* 74-min CD-ROM */
-        ymin = 0;
-        ymax = 50;
+        _priv->gnuplot_works = TRUE;
     }
 
-    xscale = (xmax-xmin)/4.0;
-    yscale = (ymax-ymin)/4.0;
+    /* Redirect to socket */
+    gtk_widget_show_all(GTK_WIDGET(self));
 
-    xscale = round(xscale/500)*500;
-    yscale = round(yscale/0.25)*0.25;
+    cmd = g_strdup_printf("set term x11 window '%lX' ctrlq enhanced", gtk_socket_get_id(GTK_SOCKET(_priv->socket)));
+    write(_priv->fd_in, cmd, strlen(cmd));
+    write(_priv->fd_in, "\n", 1);
 
-    if (xscale <= 0) {
-        //g_debug("%s: X-scale too small!\n", __func__);
-        return FALSE;
-    }
-
-    if (yscale <= 0) {
-        //g_debug("%s: Y-scale too small!\n", __func__);
-        return FALSE;
-    }
-
-    /* Rearrange ticks */
-    gtk_plot_axis_set_ticks(gtk_plot_get_axis(GTK_PLOT(_priv->plot), GTK_PLOT_AXIS_BOTTOM), xscale, 1);
-    gtk_plot_axis_set_labels_numbers(gtk_plot_get_axis(GTK_PLOT(_priv->plot), GTK_PLOT_AXIS_BOTTOM), GTK_PLOT_LABEL_FLOAT, 0);
-    gtk_plot_axis_set_ticks(gtk_plot_get_axis(GTK_PLOT(_priv->plot), GTK_PLOT_AXIS_TOP), xscale, 1);
-    gtk_plot_axis_set_labels_numbers(gtk_plot_get_axis(GTK_PLOT(_priv->plot), GTK_PLOT_AXIS_TOP), GTK_PLOT_LABEL_FLOAT, 0);
-
-    gtk_plot_axis_set_ticks(gtk_plot_get_axis(GTK_PLOT(_priv->plot), GTK_PLOT_AXIS_LEFT), yscale, 1);
-    gtk_plot_axis_set_labels_numbers(gtk_plot_get_axis(GTK_PLOT(_priv->plot), GTK_PLOT_AXIS_LEFT), GTK_PLOT_LABEL_FLOAT, 2);
-    gtk_plot_axis_set_ticks(gtk_plot_get_axis(GTK_PLOT(_priv->plot), GTK_PLOT_AXIS_RIGHT), yscale, 1);
-    gtk_plot_axis_set_labels_numbers(gtk_plot_get_axis(GTK_PLOT(_priv->plot), GTK_PLOT_AXIS_RIGHT), GTK_PLOT_LABEL_FLOAT, 2);
-
-    /* Set new range */
-    gtk_plot_set_range(GTK_PLOT(_priv->plot), xmin, xmax, ymin, ymax);
-
-    /* Refresh */
-    gtk_plot_canvas_paint(GTK_PLOT_CANVAS(_priv->canvas));
-    gtk_plot_canvas_refresh(GTK_PLOT_CANVAS(_priv->canvas));
-
+    gtk_widget_hide(GTK_WIDGET(self));
+    
     return TRUE;
 }
 
-static gboolean __cb_button_press_event (GtkWidget *widget, GdkEventButton *event, gpointer user_data) {
-    IMAGE_ANALYZER_DiscTopology *self = user_data;
 
-    /* Zoom out on right click; one step */
-    if (event->button == 3) {
-        __zoom_pop(self);
-        __image_analyzer_disc_topology_refresh_display_region(self, NULL);
-    }
-
-    /* Let other handlers do their job, too */
-    return FALSE;
-}
-
-static gboolean __cb_select_region (GtkPlotCanvas *canvas, gdouble x1, gdouble y1, gdouble x2, gdouble y2, gpointer user_data) {
-    IMAGE_ANALYZER_DiscTopology *self = user_data;
-    IMAGE_ANALYZER_DiscTopologyPrivate *_priv = IMAGE_ANALYZER_DISC_TOPOLOGY_GET_PRIVATE(self);
-
-    gdouble xmin, ymin, xmax, ymax;
-    gint px1, px2, py1, py2;
-
-    gdouble *region;
-
-    /* There must be plot... */
-    if (!_priv->plot) {
-        return FALSE;
-    }
-
-    xmin = MIN(x1, x2);
-    ymin = MIN(y1, y2);
-    xmax = MAX(x1, x2);
-    ymax = MAX(y1, y2);
-
-    gtk_plot_canvas_get_pixel(GTK_PLOT_CANVAS(_priv->canvas), xmin, ymin, &px1, &py1);
-    gtk_plot_canvas_get_pixel(GTK_PLOT_CANVAS(_priv->canvas), xmax, ymax, &px2, &py2);
-    gtk_plot_get_point(GTK_PLOT(_priv->plot), px1, py1, &xmin, &ymax);
-    gtk_plot_get_point(GTK_PLOT(_priv->plot), px2, py2, &xmax, &ymin);
-
-    xmax = round(xmax);
-    xmin = round(xmin);
-
-    region = g_new0(gdouble, 4);
-    region[0] = xmin;
-    region[1] = xmax;
-    region[2] = ymin;
-    region[3] = ymax;
-    __zoom_push(self, region);
-
-    if (!__image_analyzer_disc_topology_refresh_display_region(self, NULL)) {
-        /* If zoom failed, pop the previously added region; this prevents failed
-           zoom attempts to keep stacking on zoom stack (i.e. if requested region
-           is too small) */
-        __zoom_pop(self);
-    }
-
-    return TRUE;
-}
-
-gboolean image_analyzer_disc_topology_create (IMAGE_ANALYZER_DiscTopology *self, GObject *disc, GError **error) {
-    IMAGE_ANALYZER_DiscTopologyPrivate *_priv = IMAGE_ANALYZER_DISC_TOPOLOGY_GET_PRIVATE(self);
+static gboolean __dump_dpm_data (GObject *disc, gchar **dump_file)
+{
+    GError *local_error = NULL;
+    gchar *tmp_filename;
+    gint fd;
 
     gint dpm_start, dpm_entries, dpm_resolution;
-
-    /* X and Y data... sector addresses and corresponding sector densities */
-    gdouble *data_x, *data_y;
-    gdouble ymin, ymax;
-
     gint i;
 
-    gdouble *region;
+    gint address;
+    gdouble density;
+    gchar *line;
+    gchar dbl_buffer[G_ASCII_DTOSTR_BUF_SIZE] = "";
+
+    *dump_file = NULL;
 
     /* Prepare data for plot */
     if (!mirage_disc_get_dpm_data(MIRAGE_DISC(disc), &dpm_start, &dpm_resolution, &dpm_entries, NULL, NULL)) {
-        /*g_debug("%s: no DPM data...\n", __func__);*/
         return TRUE;
     }
 
-    data_x = g_new0(gdouble, dpm_entries);
-    data_y = g_new0(gdouble, dpm_entries);
+    /* Open temporary file */
+    fd = g_file_open_tmp("disc_topology_XXXXXX", &tmp_filename, &local_error);
+    if (fd == -1) {
+        g_warning("%s: failed to create temporary file: %s!\n", __func__, local_error->message);
+        g_error_free(local_error);
+        return FALSE;
+    }
 
-    ymin = ymax = 25.0; /* In the middle by default */
-
+    /* Dump DPM data into temporary file */    
     for (i = 0; i < dpm_entries; i++) {
-        gint address = dpm_start + i*dpm_resolution;
-        gdouble density = 0;
+        address = dpm_start + i*dpm_resolution;
+        density = 0;
 
         if (!mirage_disc_get_dpm_data_for_sector(MIRAGE_DISC(disc), address, NULL, &density, NULL)) {
             /*g_debug("%s: failed to get DPM data for address 0x%X\n", __func__, address);*/
             continue;
         }
 
-        data_x[i] = address;
-        data_y[i] = density;
-
-        ymin = MIN(ymin, data_y[i]);
-        ymax = MAX(ymax, data_y[i]);
+        /* NOTE: we convert double to string using g_ascii_dtostr, because
+           %g and %f are locale-dependent */
+        line = g_strdup_printf("%d %s\n", address, g_ascii_dtostr(dbl_buffer, G_ASCII_DTOSTR_BUF_SIZE, density));
+        write(fd, line, strlen(line));
+        g_free(line);
     }
 
-    /* Do the plot */
-    gtk_plot_data_set_points(_priv->plotdata, data_x, data_y, NULL, NULL, dpm_entries);
+    /* Close temporary file */
+    close(fd);
 
-    /* Zoom: create default region */
-    region = g_new0(gdouble, 4);
-    region[0] = data_x[0];
-    region[1] = data_x[dpm_entries-1];
-    region[2] = ymin;
-    region[3] = ymax;
-
-    /* Zoom to default region */
-    __zoom_push(self, region);
-    __image_analyzer_disc_topology_refresh_display_region(self, NULL);
-
-    /* Store data pointers so they can be freed on clear */
-    _priv->data_x = data_x;
-    _priv->data_y = data_y;
-
-    /* Plot can be selected now */
-    GTK_PLOT_CANVAS_SET_FLAGS(GTK_PLOT_CANVAS(_priv->canvas), GTK_PLOT_CANVAS_CAN_SELECT);
-
+    *dump_file = tmp_filename;
     return TRUE;
 }
 
-gboolean image_analyzer_disc_topology_clear (IMAGE_ANALYZER_DiscTopology *self, GError **error) {
+
+
+/******************************************************************************\
+ *                                 Public API                                 *
+\******************************************************************************/
+gboolean image_analyzer_disc_topology_refresh (IMAGE_ANALYZER_DiscTopology *self, GObject *disc, GError **error) {
     IMAGE_ANALYZER_DiscTopologyPrivate *_priv = IMAGE_ANALYZER_DISC_TOPOLOGY_GET_PRIVATE(self);
+    gchar *command;
+    
+    /* No-op if gnuplot couldn't be started */
+    if (!_priv->gnuplot_works) {
+        return TRUE;
+    }
 
-    /* Clear data */
-    gtk_plot_data_set_points(_priv->plotdata, NULL, NULL, NULL, NULL, 0);
+    if (!disc) {
+        /* No disc */
+        command = g_strdup_printf(
+            "clear; reset; "
+            "unset xtics; unset ytics; "
+            "unset border; unset key; "
+            "set title 'No disc loaded'; "
+            "plot [][0:1] 2 notitle; "
+            "reset"
+        );
+    } else {
+        gchar **filenames = NULL;
+        gchar *basename;
 
-    g_free(_priv->data_x);
-    _priv->data_x = NULL;
-    g_free(_priv->data_y);
-    _priv->data_y = NULL;
+        mirage_disc_get_filenames(MIRAGE_DISC(disc), &filenames, NULL);
+        basename = g_path_get_basename(filenames[0]);
+        
+        if (!mirage_disc_get_dpm_data(MIRAGE_DISC(disc), NULL, NULL, NULL, NULL, NULL)) {
+            /* No DPM data */
+            command = g_strdup_printf(
+                "clear; reset; "
+                "unset xtics; unset ytics; "
+                "unset border; unset key; "
+                "set title '%s%s: no topology data'; "
+                "plot [][0:1] 2 notitle; ",
+                basename,
+                filenames[1] ? "..." : ""
+            );
+        } else {
+            gchar *tmp_filename;
 
-    /* Clear the zoom list */
-    g_slist_free(_priv->zoom_steps);
-    _priv->zoom_steps = NULL;
-    __image_analyzer_disc_topology_refresh_display_region(self, NULL);
+            /* Dump DPM data to temporary file */
+            if (!__dump_dpm_data(disc, &tmp_filename)) {
+                g_free(basename);
+                return FALSE;
+            }
 
-    /* Plot can't be selected anymore */
-    GTK_PLOT_CANVAS_UNSET_FLAGS(GTK_PLOT_CANVAS(_priv->canvas), GTK_PLOT_CANVAS_CAN_SELECT);
+            /* Plot */
+            command = g_strdup_printf(
+                "clear; reset; "
+                "set title '%s%s: disc topology'; "
+                "set xlabel 'Sector address'; "
+                "set ylabel 'Sector density [degrees/sector]'; "
+                "set grid; "
+                "plot '%s' notitle with lines; ",
+                basename,
+                filenames[1] ? "..." : "",
+                tmp_filename
+            );
 
+            g_free(tmp_filename);
+        }
+
+        g_free(basename);
+    }
+
+    /* Write plot command */
+    write(_priv->fd_in, command, strlen(command));
+    write(_priv->fd_in, "\n", 1);
+
+    g_free(command);
+    
     return TRUE;
 }
 
-#else
-
-gboolean image_analyzer_disc_topology_create (IMAGE_ANALYZER_DiscTopology *self, GObject *disc, GError **error) {
-    /* Nothing to do here */
-    return TRUE;
-}
-
-gboolean image_analyzer_disc_topology_clear (IMAGE_ANALYZER_DiscTopology *self, GError **error) {
-    /* Nothing to do here */
-    return TRUE;
-}
-
-#endif
 
 /******************************************************************************\
  *                                 Object init                                *
@@ -327,145 +233,24 @@ gboolean image_analyzer_disc_topology_clear (IMAGE_ANALYZER_DiscTopology *self, 
 /* Our parent class */
 static GtkWindowClass *parent_class = NULL;
 
-static void __image_analyzer_disc_topology_get_property (GObject *obj, guint param_id, GValue *value, GParamSpec *pspec) {
-    IMAGE_ANALYZER_DiscTopology *self = IMAGE_ANALYZER_DISC_TOPOLOGY(obj);
-    IMAGE_ANALYZER_DiscTopologyPrivate *_priv = IMAGE_ANALYZER_DISC_TOPOLOGY_GET_PRIVATE(self);
-
-    switch (param_id) {
-        case PROPERTY_APPLICATION: {
-            g_value_set_object(value, _priv->application);
-            break;
-        }
-        default: {
-            G_OBJECT_WARN_INVALID_PROPERTY_ID(obj, param_id, pspec);
-            break;
-        }
-    }
-
-    return;
-}
-
-static void __image_analyzer_disc_topology_set_property (GObject *obj, guint param_id, const GValue *value, GParamSpec *pspec) {
-    IMAGE_ANALYZER_DiscTopology *self = IMAGE_ANALYZER_DISC_TOPOLOGY(obj);
-    IMAGE_ANALYZER_DiscTopologyPrivate *_priv = IMAGE_ANALYZER_DISC_TOPOLOGY_GET_PRIVATE(self);
-
-    switch (param_id) {
-        case PROPERTY_APPLICATION: {
-            _priv->application = g_value_get_object(value);
-            break;
-        }
-        default: {
-            G_OBJECT_WARN_INVALID_PROPERTY_ID(obj, param_id, pspec);
-            break;
-        }
-    }
-
-    return;
-}
-
-#if HAVE_GTKEXTRA
 static void __image_analyzer_disc_topology_instance_init (GTypeInstance *instance, gpointer g_class) {
     IMAGE_ANALYZER_DiscTopology *self = IMAGE_ANALYZER_DISC_TOPOLOGY(instance);
     IMAGE_ANALYZER_DiscTopologyPrivate *_priv = IMAGE_ANALYZER_DISC_TOPOLOGY_GET_PRIVATE(self);
 
-    GtkWidget *vbox;
-
-    GtkPlotCanvasChild *child;
-    GtkPlotData *dataset;
-    GdkColor color;
-
+    /* Window */
     gtk_window_set_title(GTK_WINDOW(self), "Disc topology");
     gtk_window_set_default_size(GTK_WINDOW(self), 800, 600);
     gtk_container_set_border_width(GTK_CONTAINER(self), 5);
 
-    /* VBox */
-    vbox = gtk_vbox_new(FALSE, 5);
-    gtk_container_add(GTK_CONTAINER(self), vbox);
+    /* Create socket for embedding gnuplot window */
+    _priv->socket = gtk_socket_new();
+    gtk_container_add(GTK_CONTAINER(self), _priv->socket);
 
-    /* Canvas */
-    _priv->orig_width = 800;
-    _priv->orig_height = 600;
-    _priv->canvas = gtk_plot_canvas_new(_priv->orig_width, _priv->orig_height, 1.0);
-    gtk_box_pack_start(GTK_BOX(vbox), _priv->canvas, TRUE, TRUE, 0);
-
-    gtk_signal_connect(GTK_OBJECT(_priv->canvas), "select_region", GTK_SIGNAL_FUNC(__cb_select_region), self);
-    gtk_signal_connect(GTK_OBJECT(_priv->canvas), "button-press-event", GTK_SIGNAL_FUNC(__cb_button_press_event), self);
-
-    gdk_color_parse("#FFFF66", &color); /* Bright yellow */
-    gdk_color_alloc(gdk_colormap_get_system(), &color);
-    gtk_plot_canvas_set_background(GTK_PLOT_CANVAS(_priv->canvas), &color);
-
-    /* Ugly hack because canvas doesn't automatically resize itself to its allocated space */
-    gtk_signal_connect(GTK_OBJECT(_priv->canvas), "size-allocate", GTK_SIGNAL_FUNC(__resize_canvas), self);
-
-
-    /* Plot */
-    _priv->plot = gtk_plot_new(NULL);
-    gtk_widget_show(_priv->plot);
-
-    gtk_plot_clip_data(GTK_PLOT(_priv->plot), TRUE);
-
-    gdk_color_parse("#FFFF99", &color); /* Bright yellow */
-    gdk_color_alloc(gdk_colormap_get_system(), &color);
-    gtk_plot_set_background(GTK_PLOT(_priv->plot), &color);
-
-    gtk_plot_grids_set_visible(GTK_PLOT(_priv->plot), TRUE, TRUE, TRUE, TRUE);
-    gdk_color_parse("gray", &color); /* Light grey */
-    gdk_color_alloc(gdk_colormap_get_system(), &color);
-    gtk_plot_major_vgrid_set_attributes(GTK_PLOT(_priv->plot), GTK_PLOT_LINE_DASHED, 1.0, &color);
-    gtk_plot_minor_vgrid_set_attributes(GTK_PLOT(_priv->plot), GTK_PLOT_LINE_DOTTED, 1.0, &color);
-    gtk_plot_major_hgrid_set_attributes(GTK_PLOT(_priv->plot), GTK_PLOT_LINE_DASHED, 1.0, &color);
-    gtk_plot_minor_hgrid_set_attributes(GTK_PLOT(_priv->plot), GTK_PLOT_LINE_DOTTED, 1.0, &color);
-
-    /* Put plot onto canvas */
-    child = gtk_plot_canvas_plot_new(GTK_PLOT(_priv->plot));
-    gtk_plot_canvas_put_child(GTK_PLOT_CANVAS(_priv->canvas), child, .1, .1, .8, .8);
-
-    /* Dataset */
-    dataset = GTK_PLOT_DATA(gtk_plot_data_new());
-    gtk_plot_add_data(GTK_PLOT(_priv->plot), dataset);
-    _priv->plotdata = dataset;
-    gtk_widget_show(GTK_WIDGET(dataset));
-
-    /* Edit line */
-    gdk_color_parse("red", &color);
-    gdk_color_alloc(gdk_colormap_get_system(), &color);
-    gtk_plot_data_set_symbol(dataset, GTK_PLOT_SYMBOL_DOT, GTK_PLOT_SYMBOL_EMPTY, 2, 2, &color, &color);
-    gtk_plot_data_set_line_attributes(dataset, GTK_PLOT_LINE_SOLID, 0, 0, 1.25, &color);
-    gtk_plot_data_set_connector(dataset, GTK_PLOT_CONNECT_STRAIGHT);
-
-    gtk_plot_data_set_legend(dataset, "Sector density");
-
-    /* Some cosmetics */
-    gtk_plot_hide_legends(GTK_PLOT(_priv->plot));
-
-    gtk_plot_axis_set_title(gtk_plot_get_axis(GTK_PLOT(_priv->plot), GTK_PLOT_AXIS_LEFT), "Sector density (degrees per sector)");
-    gtk_plot_axis_hide_title(gtk_plot_get_axis(GTK_PLOT(_priv->plot), GTK_PLOT_AXIS_LEFT));
-    gtk_plot_axis_justify_title(gtk_plot_get_axis(GTK_PLOT(_priv->plot), GTK_PLOT_AXIS_LEFT), GTK_JUSTIFY_CENTER);
-
-    gtk_plot_axis_set_title(gtk_plot_get_axis(GTK_PLOT(_priv->plot), GTK_PLOT_AXIS_RIGHT), "Sector density (degrees per sector)");
-    gtk_plot_axis_show_title(gtk_plot_get_axis(GTK_PLOT(_priv->plot), GTK_PLOT_AXIS_RIGHT));
-    gtk_plot_axis_justify_title(gtk_plot_get_axis(GTK_PLOT(_priv->plot), GTK_PLOT_AXIS_RIGHT), GTK_JUSTIFY_CENTER);
-
-    gtk_plot_axis_set_title(gtk_plot_get_axis(GTK_PLOT(_priv->plot), GTK_PLOT_AXIS_TOP), "Address");
-    gtk_plot_axis_hide_title(gtk_plot_get_axis(GTK_PLOT(_priv->plot), GTK_PLOT_AXIS_TOP));
-    gtk_plot_axis_justify_title(gtk_plot_get_axis(GTK_PLOT(_priv->plot), GTK_PLOT_AXIS_TOP), GTK_JUSTIFY_CENTER);
-    gtk_plot_axis_show_labels(gtk_plot_get_axis(GTK_PLOT(_priv->plot), GTK_PLOT_AXIS_TOP), 0);
-
-    gtk_plot_axis_set_title(gtk_plot_get_axis(GTK_PLOT(_priv->plot), GTK_PLOT_AXIS_BOTTOM), "Address");
-    gtk_plot_axis_show_title(gtk_plot_get_axis(GTK_PLOT(_priv->plot), GTK_PLOT_AXIS_BOTTOM));
-    gtk_plot_axis_justify_title(gtk_plot_get_axis(GTK_PLOT(_priv->plot), GTK_PLOT_AXIS_BOTTOM), GTK_JUSTIFY_CENTER);
-
-    /* Default zoom */
-    __image_analyzer_disc_topology_refresh_display_region(self, NULL);
-
+    /* Run gnuplot */
+    __image_analyzer_disc_topology_run_gnuplot(self, NULL);
+    
     return;
 }
-#else
-static void __image_analyzer_disc_topology_instance_init (GTypeInstance *instance, gpointer g_class) {
-    /* Nothing to do here */
-}
-#endif
 
 
 static void __image_analyzer_disc_topology_class_init (gpointer g_class, gpointer g_class_data) {
@@ -477,13 +262,6 @@ static void __image_analyzer_disc_topology_class_init (gpointer g_class, gpointe
 
     /* Register private structure */
     g_type_class_add_private(klass, sizeof(IMAGE_ANALYZER_DiscTopologyPrivate));
-
-    /* Initialize GObject methods */
-    class_gobject->get_property = __image_analyzer_disc_topology_get_property;
-    class_gobject->set_property = __image_analyzer_disc_topology_set_property;
-
-    /* Install properties */
-    g_object_class_install_property(class_gobject, PROPERTY_APPLICATION, g_param_spec_object("application", "Application", "Parent application", IMAGE_ANALYZER_TYPE_APPLICATION, G_PARAM_READWRITE | G_PARAM_CONSTRUCT_ONLY));
 
     return;
 }

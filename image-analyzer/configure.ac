@@ -26,10 +26,6 @@ PKG_CHECK_MODULES(gtk, gtk+-3.0 >= 3.0)
 PKG_CHECK_MODULES(libmirage, libmirage >= 1.4.0)
 PKG_CHECK_MODULES(libxml, libxml-2.0 >= 2.0.0)
 
-# Optional libraries
-#PKG_CHECK_MODULES(gtkextra, gtkextra-2.0 >= 2.0.0, [AC_DEFINE([HAVE_GTKEXTRA], [1], [Have gtk-extra?])], [AC_DEFINE([HAVE_GTKEXTRA], [0], [Have gtk-extra?])])
-AC_DEFINE([HAVE_GTKEXTRA], [0], [Have gtk-extra?])]
-
 # Compile with more warnings
 AC_ARG_ENABLE(more-warnings,
 [  --enable-more-warnings  Maximum compiler warnings],

@@ -1264,7 +1264,7 @@ static gboolean __image_analyzer_application_close_image_or_dump (IMAGE_ANALYZER
     image_analyzer_parser_log_clear_log(IMAGE_ANALYZER_PARSER_LOG(_priv->dialog_parser), NULL);
 
     /* Clear disc topology */
-    image_analyzer_disc_topology_clear(IMAGE_ANALYZER_DISC_TOPOLOGY(_priv->dialog_topology), NULL);
+    image_analyzer_disc_topology_refresh(IMAGE_ANALYZER_DISC_TOPOLOGY(_priv->dialog_topology), NULL, NULL);
 
     /* Clear TreeStore */
     gtk_tree_store_clear(_priv->treestore);
@@ -1329,7 +1329,7 @@ static gboolean __image_analyzer_application_open_image (IMAGE_ANALYZER_Applicat
     g_log_remove_handler(DEBUG_DOMAIN_PARSER, log_handler);
 
     /* Disc topology */
-    image_analyzer_disc_topology_create(IMAGE_ANALYZER_DISC_TOPOLOGY(_priv->dialog_topology), _priv->disc, NULL);
+    image_analyzer_disc_topology_refresh(IMAGE_ANALYZER_DISC_TOPOLOGY(_priv->dialog_topology), _priv->disc, NULL);
 
     /* Make XML dump */
     _priv->xml_doc = __xml_create_dump(_priv->disc, _priv->parser_log);
@@ -1713,6 +1713,9 @@ static GtkWidget *__build_dialog_topology (IMAGE_ANALYZER_Application *self) {
     GtkWidget *dialog;
     dialog = g_object_new(IMAGE_ANALYZER_TYPE_DISC_TOPOLOGY, "application", self, NULL);
     g_signal_connect(dialog, "delete_event", G_CALLBACK(gtk_widget_hide_on_delete), NULL);
+
+    image_analyzer_disc_topology_refresh(IMAGE_ANALYZER_DISC_TOPOLOGY(dialog), NULL, NULL);
+    
     return dialog;
 }
 
@@ -1778,10 +1781,6 @@ static GtkWidget *__build_menu (IMAGE_ANALYZER_Application *self) {
         g_warning("Building menus failed: %s", error->message);
         g_error_free(error);
     }
-
-#if !HAVE_GTKEXTRA
-    gtk_widget_set_sensitive (gtk_ui_manager_get_widget(_priv->ui_manager, "/MenuBar/Image/Disc topology"), FALSE);
-#endif
 
     return gtk_ui_manager_get_widget(_priv->ui_manager, "/MenuBar");
 }
@@ -1872,7 +1871,7 @@ static void __image_analyzer_application_instance_init (GTypeInstance *instance,
     /* Window */
     _priv->window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
     g_signal_connect(_priv->window, "delete_event", G_CALLBACK(__cb_window_delete_event), self);
-    gtk_window_set_title(GTK_WINDOW(_priv->window), "MIRAGE Image analyzer");
+    gtk_window_set_title(GTK_WINDOW(_priv->window), "Image analyzer");
     gtk_window_set_default_size(GTK_WINDOW(_priv->window), 300, 400);
     gtk_container_set_border_width(GTK_CONTAINER(_priv->window), 5);
 
