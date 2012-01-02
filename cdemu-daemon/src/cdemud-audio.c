@@ -165,7 +165,7 @@ static gpointer __cdemud_audio_playback_thread (gpointer data) {
     return NULL;
 }
 
-static gboolean __cdemud_audio_start_playing (CDEMUD_Audio *self, GError **error) {
+static gboolean __cdemud_audio_start_playing (CDEMUD_Audio *self, GError **error G_GNUC_UNUSED) {
     CDEMUD_AudioPrivate *_priv = CDEMUD_AUDIO_GET_PRIVATE(self);
     
     /* Set the status */
@@ -178,7 +178,7 @@ static gboolean __cdemud_audio_start_playing (CDEMUD_Audio *self, GError **error
     return TRUE;
 }
 
-static gboolean __cdemud_audio_stop_playing (CDEMUD_Audio *self, gint status, GError **error) {
+static gboolean __cdemud_audio_stop_playing (CDEMUD_Audio *self, gint status, GError **error G_GNUC_UNUSED) {
     CDEMUD_AudioPrivate *_priv = CDEMUD_AUDIO_GET_PRIVATE(self);
     
     /* We can't tell whether we're stopped or paused, so the upper layer needs
@@ -200,7 +200,7 @@ static gboolean __cdemud_audio_stop_playing (CDEMUD_Audio *self, gint status, GE
 /******************************************************************************\
  *                                 Public API                                 *
 \******************************************************************************/
-gboolean cdemud_audio_initialize (CDEMUD_Audio *self, gchar *driver, gint *cur_sector_ptr, GMutex *device_mutex_ptr, GError **error) {
+gboolean cdemud_audio_initialize (CDEMUD_Audio *self, gchar *driver, gint *cur_sector_ptr, GMutex *device_mutex_ptr, GError **error G_GNUC_UNUSED) {
     CDEMUD_AudioPrivate *_priv = CDEMUD_AUDIO_GET_PRIVATE(CDEMUD_AUDIO(self));
         
     _priv->cur_sector_ptr = cur_sector_ptr;
@@ -354,7 +354,7 @@ end:
     return succeeded;
 }
 
-gboolean cdemud_audio_get_status (CDEMUD_Audio *self, gint *status, GError **error) {
+gboolean cdemud_audio_get_status (CDEMUD_Audio *self, gint *status, GError **error G_GNUC_UNUSED) {
     CDEMUD_AudioPrivate *_priv = CDEMUD_AUDIO_GET_PRIVATE(self);
     
     /* Return status */
@@ -380,7 +380,7 @@ static void __cdemud_audio_finalize (GObject *obj) {
     return G_OBJECT_CLASS(parent_class)->finalize(obj);
 }
 
-static void __cdemud_audio_class_init (gpointer g_class, gpointer g_class_data) {
+static void __cdemud_audio_class_init (gpointer g_class, gpointer g_class_data G_GNUC_UNUSED) {
     GObjectClass *class_gobject = G_OBJECT_CLASS(g_class);
     CDEMUD_AudioClass *klass = CDEMUD_AUDIO_CLASS(g_class);
     
@@ -408,7 +408,8 @@ GType cdemud_audio_get_type (void) {
             NULL,   /* class_data */
             sizeof(CDEMUD_Audio),
             0,      /* n_preallocs */
-            NULL    /* instance_init */
+            NULL,   /* instance_init */
+            NULL,   /* value_table */
         };
         
         type = g_type_register_static(MIRAGE_TYPE_OBJECT, "CDEMUD_Audio", &info, 0);

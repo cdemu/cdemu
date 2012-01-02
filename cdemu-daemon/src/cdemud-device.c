@@ -1124,19 +1124,19 @@ static gboolean __cdemud_device_pc_mode_select (CDEMUD_Device *self, guint8 *raw
     CDEMUD_DevicePrivate *_priv = CDEMUD_DEVICE_GET_PRIVATE(self);
 
     gint transfer_len = 0;
-    gint sp = 0;
-    gint pf = 0;
+    /*gint sp;
+    gint pf;*/
 
     /* MODE SELECT (6) vs MODE SELECT (10) */
     if (raw_cdb[0] == PC_MODE_SELECT_6) {
         struct MODE_SELECT_6_CDB *cdb = (struct MODE_SELECT_6_CDB *)raw_cdb;
-        sp = cdb->sp;
-        pf = cdb->pf;
+        /*sp = cdb->sp;
+        pf = cdb->pf;*/
         transfer_len = cdb->length;
     } else if (raw_cdb[0] == PC_MODE_SELECT_10) {
         struct MODE_SELECT_10_CDB *cdb = (struct MODE_SELECT_10_CDB *)raw_cdb;
-        sp = cdb->sp;
-        pf = cdb->pf;
+        /*sp = cdb->sp;
+        pf = cdb->pf;*/
         transfer_len = GUINT16_FROM_BE(cdb->length);
     } else {
         /* Because bad things happen to good people... :/ */
@@ -1561,7 +1561,7 @@ static gboolean __cdemud_device_pc_read (CDEMUD_Device *self, guint8 *raw_cdb) {
 
 
 /* READ CAPACITY implementation */
-static gboolean __cdemud_device_pc_read_capacity (CDEMUD_Device *self, guint8 *raw_cdb) {
+static gboolean __cdemud_device_pc_read_capacity (CDEMUD_Device *self, guint8 *raw_cdb G_GNUC_UNUSED) {
     CDEMUD_DevicePrivate *_priv = CDEMUD_DEVICE_GET_PRIVATE(self);
     /*struct READ_CAPACITY_CDB *cdb = (struct READ_CAPACITY_CDB *)raw_cdb;*/
     struct READ_CAPACITY_Data *ret_data = (struct READ_CAPACITY_Data *)_priv->buffer;
@@ -2740,7 +2740,7 @@ static gboolean __cdemud_device_pc_request_sense (CDEMUD_Device *self, guint8 *r
 }
 
 /* SEEK (10) implementation */
-static gboolean __cdemud_device_pc_seek (CDEMUD_Device *self, guint8 *raw_cdb) {
+static gboolean __cdemud_device_pc_seek (CDEMUD_Device *self, guint8 *raw_cdb G_GNUC_UNUSED) {
     /*CDEMUD_DevicePrivate *_priv = CDEMUD_DEVICE_GET_PRIVATE(self);
     struct SET_CD_SPEED_CDB *cdb = (struct SET_CD_SPEED_CDB *)raw_cdb;*/
 
@@ -2799,7 +2799,7 @@ static gboolean __cdemud_device_pc_start_stop_unit (CDEMUD_Device *self, guint8 
 
 
 /* TEST UNIT READY implementation */
-static gboolean __cdemud_device_pc_test_unit_ready (CDEMUD_Device *self, guint8 *raw_cdb) {
+static gboolean __cdemud_device_pc_test_unit_ready (CDEMUD_Device *self, guint8 *raw_cdb G_GNUC_UNUSED) {
     CDEMUD_DevicePrivate *_priv = CDEMUD_DEVICE_GET_PRIVATE(self);
     /*struct TEST_UNIT_READY_CDB *cdb = (struct TEST_UNIT_READY_CDB *)raw_cdb;*/
 
@@ -3012,7 +3012,7 @@ static gint __cdemud_device_execute_command (CDEMUD_Device *self, CDEMUD_Command
 #undef __debug__
 #define __debug__ "Kernel I/O"
 
-static gboolean __cdemud_device_io_handler (GIOChannel *source, GIOCondition condition, gpointer data) {
+static gboolean __cdemud_device_io_handler (GIOChannel *source, GIOCondition condition G_GNUC_UNUSED, gpointer data) {
     CDEMUD_Device *self = CDEMUD_DEVICE(data);
 
     gint fd = g_io_channel_unix_get_fd(source);
@@ -3276,7 +3276,7 @@ gboolean cdemud_device_get_device_number (CDEMUD_Device *self, gint *number, GEr
     return TRUE;
 }
 
-static gboolean __cdemud_device_get_status (CDEMUD_Device *self, gboolean *loaded, gchar ***file_names, GError **error) {
+static gboolean __cdemud_device_get_status (CDEMUD_Device *self, gboolean *loaded, gchar ***file_names, GError **error G_GNUC_UNUSED) {
     CDEMUD_DevicePrivate *_priv = CDEMUD_DEVICE_GET_PRIVATE(self);
 
     if (_priv->loaded) {
@@ -3409,7 +3409,7 @@ static gboolean __cdemud_device_unload_disc (CDEMUD_Device *self, gboolean force
 
 gboolean cdemud_device_unload_disc (CDEMUD_Device *self, GError **error) {
     CDEMUD_DevicePrivate *_priv = CDEMUD_DEVICE_GET_PRIVATE(self);
-    gboolean succeeded = TRUE;
+    gboolean succeeded;
 
     g_mutex_lock(_priv->device_mutex);
     succeeded = __cdemud_device_unload_disc(self, FALSE, error);
@@ -3421,7 +3421,8 @@ gboolean cdemud_device_unload_disc (CDEMUD_Device *self, GError **error) {
        again. So in order not to bother clients with device locked error when
        device will most likely get unloaded anyway, we ignore the command's
        return status here... */
-    return TRUE;
+    succeeded = TRUE;
+    return succeeded;
 }
 
 
@@ -3429,7 +3430,7 @@ gboolean cdemud_device_unload_disc (CDEMUD_Device *self, GError **error) {
  *                                  Options                                   *
 \******************************************************************************/
 /* Option: DPM emulation */
-static gboolean __option_get_dpm_emulation (CDEMUD_Device *self, GPtrArray **option_values, GError **error) {
+static gboolean __option_get_dpm_emulation (CDEMUD_Device *self, GPtrArray **option_values, GError **error G_GNUC_UNUSED) {
     CDEMUD_DevicePrivate *_priv = CDEMUD_DEVICE_GET_PRIVATE(self);
     GValue *enabled = g_new0(GValue, 1);
 
@@ -3442,7 +3443,7 @@ static gboolean __option_get_dpm_emulation (CDEMUD_Device *self, GPtrArray **opt
     return TRUE;
 }
 
-static gboolean __option_set_dpm_emulation (CDEMUD_Device *self, GPtrArray *option_values, GError **error) {
+static gboolean __option_set_dpm_emulation (CDEMUD_Device *self, GPtrArray *option_values, GError **error G_GNUC_UNUSED) {
     CDEMUD_DevicePrivate *_priv = CDEMUD_DEVICE_GET_PRIVATE(self);
     gboolean enabled = g_value_get_boolean(g_ptr_array_index(option_values, 0));
 
@@ -3452,7 +3453,7 @@ static gboolean __option_set_dpm_emulation (CDEMUD_Device *self, GPtrArray *opti
 }
 
 /* Option: Transfer rate emulation */
-static gboolean __option_get_tr_emulation (CDEMUD_Device *self, GPtrArray **option_values, GError **error) {
+static gboolean __option_get_tr_emulation (CDEMUD_Device *self, GPtrArray **option_values, GError **error G_GNUC_UNUSED) {
     CDEMUD_DevicePrivate *_priv = CDEMUD_DEVICE_GET_PRIVATE(self);
     GValue *enabled = g_new0(GValue, 1);
 
@@ -3466,7 +3467,7 @@ static gboolean __option_get_tr_emulation (CDEMUD_Device *self, GPtrArray **opti
     return TRUE;
 }
 
-static gboolean __option_set_tr_emulation (CDEMUD_Device *self, GPtrArray *option_values, GError **error) {
+static gboolean __option_set_tr_emulation (CDEMUD_Device *self, GPtrArray *option_values, GError **error G_GNUC_UNUSED) {
     CDEMUD_DevicePrivate *_priv = CDEMUD_DEVICE_GET_PRIVATE(self);
     gboolean enabled = g_value_get_boolean(g_ptr_array_index(option_values, 0));
 
@@ -3476,7 +3477,7 @@ static gboolean __option_set_tr_emulation (CDEMUD_Device *self, GPtrArray *optio
 }
 
 /* Option: Device ID */
-static gboolean __option_get_device_id (CDEMUD_Device *self, GPtrArray **option_values, GError **error) {
+static gboolean __option_get_device_id (CDEMUD_Device *self, GPtrArray **option_values, GError **error G_GNUC_UNUSED) {
     CDEMUD_DevicePrivate *_priv = CDEMUD_DEVICE_GET_PRIVATE(self);
     GValue *str = NULL;
 
@@ -3505,7 +3506,7 @@ static gboolean __option_get_device_id (CDEMUD_Device *self, GPtrArray **option_
     return TRUE;
 }
 
-static gboolean __option_set_device_id (CDEMUD_Device *self, GPtrArray *option_values, GError **error) {
+static gboolean __option_set_device_id (CDEMUD_Device *self, GPtrArray *option_values, GError **error G_GNUC_UNUSED) {
     const gchar *vendor_id = g_value_get_string(g_ptr_array_index(option_values, 0));
     const gchar *product_id = g_value_get_string(g_ptr_array_index(option_values, 1));
     const gchar *revision = g_value_get_string(g_ptr_array_index(option_values, 2));
@@ -3705,7 +3706,7 @@ gboolean cdemud_device_set_option (CDEMUD_Device *self, gchar *option_name, GPtr
     return FALSE;
 }
 
-gboolean cdemud_device_get_mapping (CDEMUD_Device *self, gchar **sr_device, gchar **sg_device, GError **error) {
+gboolean cdemud_device_get_mapping (CDEMUD_Device *self, gchar **sr_device, gchar **sg_device, GError **error G_GNUC_UNUSED) {
     CDEMUD_DevicePrivate *_priv = CDEMUD_DEVICE_GET_PRIVATE(self);
 
     /* Return values, if applicable */
@@ -3814,7 +3815,7 @@ static void __cdemud_device_finalize (GObject *obj) {
 }
 
 
-static void __cdemud_device_class_init (gpointer g_class, gpointer g_class_data) {
+static void __cdemud_device_class_init (gpointer g_class, gpointer g_class_data G_GNUC_UNUSED) {
     GObjectClass *class_gobject = G_OBJECT_CLASS(g_class);
     CDEMUD_DeviceClass *klass = CDEMUD_DEVICE_CLASS(g_class);
 
@@ -3846,7 +3847,8 @@ GType cdemud_device_get_type (void) {
             NULL,   /* class_data */
             sizeof(CDEMUD_Device),
             0,      /* n_preallocs */
-            NULL    /* instance_init */
+            NULL,   /* instance_init */
+            NULL,   /* value_table */
         };
 
         type = g_type_register_static(MIRAGE_TYPE_OBJECT, "CDEMUD_Device", &info, 0);

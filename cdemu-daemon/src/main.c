@@ -34,23 +34,23 @@ static GOptionEntry option_entries[] = {
     { "audio-driver", 'a', 0, G_OPTION_ARG_STRING, &audio_driver, "Audio driver", "driver" },
     { "bus", 'b', 0, G_OPTION_ARG_STRING, &bus, "Bus type to use", "bus_type" },
     { "logfile", 'l', 0, G_OPTION_ARG_STRING, &log_filename, "Logfile", "logfile" },
-    { NULL }
+    { NULL, 0, 0, G_OPTION_ARG_NONE, NULL, NULL, NULL }
 };
 
 
 /* Log handler: writing to stdout */
-static void __log_handler_stdout (const gchar *log_domain, GLogLevelFlags log_level, const gchar *message, gpointer unused_data) {
+static void __log_handler_stdout (const gchar *log_domain G_GNUC_UNUSED, GLogLevelFlags log_level G_GNUC_UNUSED, const gchar *message, gpointer unused_data G_GNUC_UNUSED) {
     g_print("%s", message);
 }
 
-static void __log_handler_logfile (const gchar *log_domain, GLogLevelFlags log_level, const gchar *message, gpointer unused_data) {
+static void __log_handler_logfile (const gchar *log_domain G_GNUC_UNUSED, GLogLevelFlags log_level G_GNUC_UNUSED, const gchar *message, gpointer unused_data G_GNUC_UNUSED) {
     fprintf(logfile, "%s", message);
     fflush(logfile);
 }
 
 
 /* Signal handler */
-void __unix_signal_handler (int signal)
+static void __unix_signal_handler (int signal)
 {
     g_message("Received signal - %s\n", g_strsignal(signal));
     switch (signal) {

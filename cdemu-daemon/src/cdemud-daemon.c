@@ -76,7 +76,7 @@ static void __cdemud_daemon_device_option_changed_handler (GObject *device, gcha
 }
 
 
-static gboolean __cdemud_daemon_destroy_devices (CDEMUD_Daemon *self, GError **error) {
+static gboolean __cdemud_daemon_destroy_devices (CDEMUD_Daemon *self, GError **error G_GNUC_UNUSED) {
     CDEMUD_DaemonPrivate *_priv = CDEMUD_DAEMON_GET_PRIVATE(self);
 
     GList *entry = NULL;
@@ -270,7 +270,7 @@ gboolean cdemud_daemon_start_daemon (CDEMUD_Daemon *self, GError **error) {
     return TRUE;
 }
 
-gboolean cdemud_daemon_stop_daemon (CDEMUD_Daemon *self, GError **error) {
+gboolean cdemud_daemon_stop_daemon (CDEMUD_Daemon *self, GError **error G_GNUC_UNUSED) {
     CDEMUD_DaemonPrivate *_priv = CDEMUD_DAEMON_GET_PRIVATE(self);
 
     /* Stop the main loop */
@@ -283,19 +283,19 @@ gboolean cdemud_daemon_stop_daemon (CDEMUD_Daemon *self, GError **error) {
 /******************************************************************************\
  *                           DBUS interface functions                         *
 \******************************************************************************/
-gboolean cdemud_daemon_get_daemon_version (CDEMUD_Daemon *self, gchar **version, GError **error) {
+gboolean cdemud_daemon_get_daemon_version (CDEMUD_Daemon *self, gchar **version, GError **error G_GNUC_UNUSED) {
     CDEMUD_DaemonPrivate *_priv = CDEMUD_DAEMON_GET_PRIVATE(self);
     /* Copy version string */
     *version = g_strdup(_priv->version);
     return TRUE;
 }
 
-gboolean cdemud_daemon_get_library_version (CDEMUD_Daemon *self, gchar **version, GError **error) {
+gboolean cdemud_daemon_get_library_version (CDEMUD_Daemon *self G_GNUC_UNUSED, gchar **version, GError **error G_GNUC_UNUSED) {
     *version = g_strdup(mirage_version_long);
     return TRUE;
 }
 
-gboolean cdemud_daemon_get_daemon_interface_version (CDEMUD_Daemon *self, gint *version, GError **error) {
+gboolean cdemud_daemon_get_daemon_interface_version (CDEMUD_Daemon *self G_GNUC_UNUSED, gint *version, GError **error G_GNUC_UNUSED) {
     *version = DAEMON_INTERFACE_VERSION;
     return TRUE;
 }
@@ -322,7 +322,7 @@ static GPtrArray *__encode_masks (const MIRAGE_DebugMask *masks, gint num_masks)
     return ret_masks;
 }
 
-gboolean cdemud_daemon_enum_daemon_debug_masks (CDEMUD_Daemon *self, GPtrArray **masks, GError **error) {
+gboolean cdemud_daemon_enum_daemon_debug_masks (CDEMUD_Daemon *self G_GNUC_UNUSED, GPtrArray **masks, GError **error G_GNUC_UNUSED) {
     /*CDEMUD_DaemonPrivate *_priv = CDEMUD_DAEMON_GET_PRIVATE(self);*/
     static const MIRAGE_DebugMask dbg_masks[] = {
         { "DAEMON_DEBUG_DEVICE", DAEMON_DEBUG_DEVICE },
@@ -336,7 +336,7 @@ gboolean cdemud_daemon_enum_daemon_debug_masks (CDEMUD_Daemon *self, GPtrArray *
     return TRUE;
 }
 
-gboolean cdemud_daemon_enum_library_debug_masks (CDEMUD_Daemon *self, GPtrArray **masks, GError **error) {
+gboolean cdemud_daemon_enum_library_debug_masks (CDEMUD_Daemon *self G_GNUC_UNUSED, GPtrArray **masks, GError **error G_GNUC_UNUSED) {
     /*CDEMUD_DaemonPrivate *_priv = CDEMUD_DAEMON_GET_PRIVATE(self);*/
     const MIRAGE_DebugMask *dbg_masks;
     gint num_dbg_masks;
@@ -385,7 +385,7 @@ static gboolean __cdemud_daemon_add_supported_parser (gpointer data, gpointer us
     return TRUE;
 }
 
-gboolean cdemud_daemon_enum_supported_parsers (CDEMUD_Daemon *self, GPtrArray **parsers, GError **error) {
+gboolean cdemud_daemon_enum_supported_parsers (CDEMUD_Daemon *self G_GNUC_UNUSED, GPtrArray **parsers, GError **error) {
     /*CDEMUD_DaemonPrivate *_priv = CDEMUD_DAEMON_GET_PRIVATE(self);*/
     *parsers = g_ptr_array_new();
     return libmirage_for_each_parser(__cdemud_daemon_add_supported_parser, *parsers, error);
@@ -417,13 +417,13 @@ static gboolean __cdemud_daemon_add_supported_fragment (gpointer data, gpointer 
     return TRUE;
 }
 
-gboolean cdemud_daemon_enum_supported_fragments (CDEMUD_Daemon *self, GPtrArray **fragments, GError **error) {
+gboolean cdemud_daemon_enum_supported_fragments (CDEMUD_Daemon *self G_GNUC_UNUSED, GPtrArray **fragments, GError **error) {
     /*CDEMUD_DaemonPrivate *_priv = CDEMUD_DAEMON_GET_PRIVATE(self);*/
     *fragments = g_ptr_array_new();
     return libmirage_for_each_fragment(__cdemud_daemon_add_supported_fragment, *fragments, error);
 }
 
-gboolean cdemud_daemon_get_number_of_devices (CDEMUD_Daemon *self, gint *number_of_devices, GError **error) {
+gboolean cdemud_daemon_get_number_of_devices (CDEMUD_Daemon *self, gint *number_of_devices, GError **error G_GNUC_UNUSED) {
     CDEMUD_DaemonPrivate *_priv = CDEMUD_DAEMON_GET_PRIVATE(self);
     *number_of_devices = _priv->number_of_devices;
     return TRUE;
@@ -501,7 +501,7 @@ gboolean cdemud_daemon_device_set_option (CDEMUD_Daemon *self, gint device_numbe
 /* Our parent class */
 static MIRAGE_ObjectClass *parent_class = NULL;
 
-static void __cdemud_daemon_instance_init (GTypeInstance *instance, gpointer g_class) {
+static void __cdemud_daemon_instance_init (GTypeInstance *instance, gpointer g_class G_GNUC_UNUSED) {
     CDEMUD_Daemon *self = CDEMUD_DAEMON(instance);
     CDEMUD_DaemonPrivate *_priv = CDEMUD_DAEMON_GET_PRIVATE(self);
 
@@ -532,7 +532,7 @@ static void __cdemud_daemon_finalize (GObject *obj) {
     return G_OBJECT_CLASS(parent_class)->finalize(obj);
 }
 
-static void __cdemud_daemon_class_init (gpointer g_class, gpointer g_class_data) {
+static void __cdemud_daemon_class_init (gpointer g_class, gpointer g_class_data G_GNUC_UNUSED) {
     GObjectClass *gobject_class = G_OBJECT_CLASS(g_class);
     CDEMUD_DaemonClass *klass = CDEMUD_DAEMON_CLASS(g_class);
 
@@ -568,7 +568,8 @@ GType cdemud_daemon_get_type (void) {
             NULL,   /* class_data */
             sizeof(CDEMUD_Daemon),
             0,      /* n_preallocs */
-            __cdemud_daemon_instance_init    /* instance_init */
+            __cdemud_daemon_instance_init,   /* instance_init */
+            NULL    /* value_table */
         };
 
         type = g_type_register_static(MIRAGE_TYPE_OBJECT, "CDEMUD_Daemon", &info, 0);
