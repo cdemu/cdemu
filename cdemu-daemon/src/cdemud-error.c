@@ -36,8 +36,6 @@ GType cdemud_error_get_type (void) {
     static GType type = 0;
     if (type == 0) {
         static const GEnumValue values[] = {
-            ENUM_ENTRY(CDEMUD_E_OBJNOTINIT, "ObjectNotInitialized"),
-
             ENUM_ENTRY(CDEMUD_E_INVALIDARG, "InvalidArgument"),
 
             ENUM_ENTRY(CDEMUD_E_NODRIVER, "NoDriver"),
@@ -74,8 +72,6 @@ void cdemud_error (gint errcode, GError **error) {
         gint errcode;
         gchar *errstring;
     } errors[] = {
-        { CDEMUD_E_OBJNOTINIT, "Object is not initialized." },
-
         { CDEMUD_E_INVALIDARG, "Invalid argument." },
 
         { CDEMUD_E_NODRIVER, "No driver found." },

@@ -146,9 +146,13 @@ gboolean mirage_parser_load_image (MIRAGE_Parser *self, gchar **filenames, GObje
 
     /* If 'dvd-report-css' flag is passed to the parser, pass it on to
        the disc object */
-    GValue *dvd_report_css = NULL;
-    if (mirage_parser_get_param(self, "dvd-report-css", G_TYPE_BOOLEAN, &dvd_report_css, NULL)) {
-        g_object_set_property(*disc, "dvd-report-css", dvd_report_css);
+    GVariant *dvd_report_css;
+    if (mirage_parser_get_param(self, "dvd-report-css", G_VARIANT_TYPE_BOOLEAN, &dvd_report_css, NULL)) {
+        /* Convert GVariant to GValue... */
+        GValue dvd_report_css2 = G_VALUE_INIT;
+        g_value_init(&dvd_report_css2, G_TYPE_BOOLEAN);
+        g_value_set_boolean(&dvd_report_css2, TRUE);
+        g_object_set_property(*disc, "dvd-report-css", &dvd_report_css2);
     }
 
     return TRUE;
@@ -337,16 +341,16 @@ gboolean mirage_parser_set_params (MIRAGE_Parser *self, GHashTable *params, GErr
  **/
 gboolean mirage_parser_get_param_string (MIRAGE_Parser *self, const gchar *name, const gchar **ret_value, GError **error G_GNUC_UNUSED) {
     /*MIRAGE_ParserPrivate *_priv = MIRAGE_PARSER_GET_PRIVATE(self);*/
-    GValue *value;
+    GVariant *value;
 
     /* Get value */
-    if (!mirage_parser_get_param(self, name, G_TYPE_STRING, &value, NULL)) {
+    if (!mirage_parser_get_param(self, name, G_VARIANT_TYPE_STRING, &value, NULL)) {
         return FALSE;
     }
 
     /* Return string */
     if (ret_value) {
-        *ret_value = g_value_get_string(value);
+        *ret_value = g_variant_get_string(value, NULL);
     }
     
     return TRUE;
@@ -357,8 +361,8 @@ gboolean mirage_parser_get_param_string (MIRAGE_Parser *self, const gchar *name,
  * mirage_parser_get_param:
  * @self: a #MIRAGE_Parser
  * @name: parameter name (key)
- * @type: expected value type (set to %G_TYPE_INVALID to disable type checking)
- * @ret_value: location to store the #GValue value, or %NULL
+ * @type: expected value type (set to %G_VARIANT_TYPE_ANY to disable type checking)
+ * @ret_value: location to store the #GVariant value, or %NULL
  * @error: location to store error, or %NULL
  *
  * <para>
@@ -369,9 +373,9 @@ gboolean mirage_parser_get_param_string (MIRAGE_Parser *self, const gchar *name,
  *
  * Returns: %TRUE on success, %FALSE on failure
  **/
-gboolean mirage_parser_get_param (MIRAGE_Parser *self, const gchar *name, GType type, GValue **ret_value, GError **error) {
+gboolean mirage_parser_get_param (MIRAGE_Parser *self, const gchar *name, const GVariantType *type, GVariant **ret_value, GError **error) {
     MIRAGE_ParserPrivate *_priv = MIRAGE_PARSER_GET_PRIVATE(self);
-    GValue *value;
+    GVariant *value;
 
     /* Make sure parameters are set */
     if (!_priv->parser_params) {
@@ -386,8 +390,8 @@ gboolean mirage_parser_get_param (MIRAGE_Parser *self, const gchar *name, GType 
         return FALSE;
     }
 
-    /* If expected type is provided, verify it */
-    if (type != G_TYPE_INVALID && !G_VALUE_HOLDS(value, type)) {
+    /* Verify type */
+    if (!g_variant_is_of_type(value, type)) {
         mirage_error(MIRAGE_E_GENERIC, error);
         return FALSE;
     }

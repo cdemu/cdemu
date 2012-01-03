@@ -4,7 +4,7 @@
 AC_PREREQ([2.59])
 
 # Project init
-AC_INIT([image-analyzer],[1.4.0],[http://cdemu.sf.net])
+AC_INIT([image-analyzer],[1.5.0],[http://cdemu.sf.net])
 AC_CONFIG_SRCDIR(src/main.c)
 AM_INIT_AUTOMAKE(AC_PACKAGE_NAME, AC_PACKAGE_VERSION)
 AC_CONFIG_HEADERS([config.h])
@@ -20,10 +20,10 @@ AC_PROG_MAKE_SET
 AC_HEADER_STDC
 
 # Mandatory libraries
-PKG_CHECK_MODULES(glib, glib-2.0 >= 2.30)
-PKG_CHECK_MODULES(gobject, gobject-2.0 >= 2.30)
+PKG_CHECK_MODULES(glib, glib-2.0 >= 2.28)
+PKG_CHECK_MODULES(gobject, gobject-2.0 >= 2.28)
 PKG_CHECK_MODULES(gtk, gtk+-3.0 >= 3.0)
-PKG_CHECK_MODULES(libmirage, libmirage >= 1.4.0)
+PKG_CHECK_MODULES(libmirage, libmirage >= 1.5.0)
 PKG_CHECK_MODULES(libxml, libxml-2.0 >= 2.0.0)
 
 # Compile with more warnings

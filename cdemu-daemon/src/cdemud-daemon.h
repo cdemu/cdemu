@@ -37,9 +37,6 @@ typedef struct {
 
 typedef struct {
     MIRAGE_ObjectClass parent;
-
-    /* Class members */
-    guint signals[3]; /* Signals */
 } CDEMUD_DaemonClass;
 
 
@@ -47,31 +44,9 @@ typedef struct {
 GType cdemud_daemon_get_type (void);
 
 /* Public API */
-gboolean cdemud_daemon_initialize (CDEMUD_Daemon *self, gint num_devices, gchar *ctl_device, gchar *audio_driver, gboolean system_bus, GError **error);
-gboolean cdemud_daemon_start_daemon (CDEMUD_Daemon *self, GError **error);
+gboolean cdemud_daemon_initialize_and_start (CDEMUD_Daemon *self, gint num_devices, gchar *ctl_device, gchar *audio_driver, gboolean system_bus, GError **error);
 gboolean cdemud_daemon_stop_daemon (CDEMUD_Daemon *self, GError **error);
 
-/* DBUS interface functions */
-gboolean cdemud_daemon_hail (CDEMUD_Daemon *self, GError **error);
-
-gboolean cdemud_daemon_get_daemon_version (CDEMUD_Daemon *self, gchar **version, GError **error);
-gboolean cdemud_daemon_get_library_version (CDEMUD_Daemon *self, gchar **version, GError **error);
-gboolean cdemud_daemon_get_daemon_interface_version (CDEMUD_Daemon *self, gint *version, GError **error);
-
-gboolean cdemud_daemon_enum_daemon_debug_masks (CDEMUD_Daemon *self, GPtrArray **masks, GError **error);
-gboolean cdemud_daemon_enum_library_debug_masks (CDEMUD_Daemon *self, GPtrArray **masks, GError **error);
-
-gboolean cdemud_daemon_enum_supported_parsers (CDEMUD_Daemon *self, GPtrArray **parsers, GError **error);
-gboolean cdemud_daemon_enum_supported_fragments (CDEMUD_Daemon *self, GPtrArray **fragments, GError **error);
-
-gboolean cdemud_daemon_get_number_of_devices (CDEMUD_Daemon *self, gint *number_of_devices, GError **error);
-gboolean cdemud_daemon_device_get_status (CDEMUD_Daemon *self, gint device_number, gboolean *loaded, gchar ***file_names, GError **error);
-gboolean cdemud_daemon_device_get_mapping (CDEMUD_Daemon *self, gint device_number, gchar **sr_device, gchar **sg_device, GError **error);
-gboolean cdemud_daemon_device_load (CDEMUD_Daemon *self, gint device_number, gchar **file_names, GHashTable *parameters, GError **error);
-gboolean cdemud_daemon_device_unload (CDEMUD_Daemon *self, gint device_number, GError **error);
-
-gboolean cdemud_daemon_device_get_option (CDEMUD_Daemon *self, gint device_number, gchar *option_name, GPtrArray **option_values, GError **error);
-gboolean cdemud_daemon_device_set_option (CDEMUD_Daemon *self, gint device_number, gchar *option_name, GPtrArray *option_values, GError **error);
 
 G_END_DECLS
 

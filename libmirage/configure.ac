@@ -5,16 +5,16 @@ AC_PREREQ([2.59])
 
 # libMirage release and libtool versioning:
 m4_define([libmirage_major_version], [1])
-m4_define([libmirage_minor_version], [4])
-m4_define([libmirage_micro_version], [1])
+m4_define([libmirage_minor_version], [5])
+m4_define([libmirage_micro_version], [0])
 m4_define([libmirage_version], [libmirage_major_version.libmirage_minor_version.libmirage_micro_version])
 # Increment if the interface has additions, changes, removals.
-m4_define([libmirage_current], [5])
+m4_define([libmirage_current], [6])
 # Increment any time the source changes; set to 0 if you increment CURRENT
 m4_define([libmirage_revision], [0])
 # Increment if any interfaces have been added; set to 0 if any interfaces have
 # been removed. Removal has precedence over adding, so set to 0 if both happened.
-m4_define([libmirage_age], [2])
+m4_define([libmirage_age], [0])
 
 
 # Project init
@@ -66,9 +66,9 @@ fi
 GTK_DOC_CHECK([1.4])
 
 # Libraries check
-PKG_CHECK_MODULES(glib, glib-2.0 >= 2.14)
-PKG_CHECK_MODULES(gobject, gobject-2.0 >= 2.14)
-PKG_CHECK_MODULES(gmodule, gmodule-2.0 >= 2.14)
+PKG_CHECK_MODULES(glib, glib-2.0 >= 2.28)
+PKG_CHECK_MODULES(gobject, gobject-2.0 >= 2.28)
+PKG_CHECK_MODULES(gmodule, gmodule-2.0 >= 2.28)
 PKG_CHECK_MODULES(sndfile, sndfile >= 1.0.0)
 
 # Zlib check

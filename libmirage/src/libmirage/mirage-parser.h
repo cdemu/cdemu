@@ -91,7 +91,7 @@ gint mirage_parser_guess_medium_type (MIRAGE_Parser *self, GObject *disc);
 gboolean mirage_parser_add_redbook_pregap (MIRAGE_Parser *self, GObject *disc, GError **error);
 
 gboolean mirage_parser_set_params (MIRAGE_Parser *self, GHashTable *params, GError **error);
-gboolean mirage_parser_get_param (MIRAGE_Parser *self, const gchar *name, GType type, GValue **ret_value, GError **error);
+gboolean mirage_parser_get_param (MIRAGE_Parser *self, const gchar *name, const GVariantType *type, GVariant **ret_value, GError **error);
 gboolean mirage_parser_get_param_string (MIRAGE_Parser *self, const gchar *name, const gchar **ret_value, GError **error);
 
 

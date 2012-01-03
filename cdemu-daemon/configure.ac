@@ -5,8 +5,8 @@ AC_PREREQ([2.59])
 
 # cdemu-daemon versioning:
 m4_define([cdemud_major_version], [1])
-m4_define([cdemud_minor_version], [4])
-m4_define([cdemud_micro_version], [1])
+m4_define([cdemud_minor_version], [5])
+m4_define([cdemud_micro_version], [0])
 m4_define([cdemud_version], [cdemud_major_version.cdemud_minor_version.cdemud_micro_version])
 
 # Project init
@@ -16,7 +16,7 @@ AM_INIT_AUTOMAKE(AC_PACKAGE_NAME, AC_PACKAGE_VERSION)
 AC_CONFIG_HEADERS([config.h])
 
 # D-BUS interface version (change whenever interface changes)
-AC_DEFINE(DAEMON_INTERFACE_VERSION, 2, [D-BUS interface version])
+AC_DEFINE(DAEMON_INTERFACE_VERSION, 3, [D-BUS interface version])
 
 AM_MAINTAINER_MODE
 
@@ -29,13 +29,13 @@ AC_PROG_MAKE_SET
 AC_HEADER_STDC
 
 # Mandatory libraries
-PKG_CHECK_MODULES(glib, glib-2.0 >= 2.14)
-PKG_CHECK_MODULES(gobject, gobject-2.0 >= 2.14)
-PKG_CHECK_MODULES(gmodule, gmodule-2.0 >= 2.14)
-PKG_CHECK_MODULES(gthread, gthread-2.0 >= 2.14)
-PKG_CHECK_MODULES(dbus, dbus-1 >= 0.60 dbus-glib-1 >= 0.61)
+PKG_CHECK_MODULES(glib, glib-2.0 >= 2.28)
+PKG_CHECK_MODULES(gobject, gobject-2.0 >= 2.28)
+PKG_CHECK_MODULES(gmodule, gmodule-2.0 >= 2.28)
+PKG_CHECK_MODULES(gthread, gthread-2.0 >= 2.28)
+PKG_CHECK_MODULES(gio, gio-2.0 >= 2.28)
 PKG_CHECK_MODULES(libao, ao >= 0.8.0,)
-PKG_CHECK_MODULES(libmirage, libmirage >= 1.4.0)
+PKG_CHECK_MODULES(libmirage, libmirage >= 1.5.0)
 
 # Compile with more warnings
 AC_ARG_ENABLE(more-warnings,

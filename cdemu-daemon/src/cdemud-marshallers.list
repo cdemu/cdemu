@@ -1,5 +1,0 @@
-# Marshallers for signals
-VOID:VOID
-VOID:INT
-VOID:STRING
-VOID:INT,STRING

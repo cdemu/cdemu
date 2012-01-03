@@ -357,9 +357,8 @@ control the daemon:
         Device for which the specified option's value is to be retrieved (int).
     + option_name: in; "s"
         Name of the option (string).
-    + option_values: out; "av"
-        Option value(s) (array of variants). The actual content depends on the
-        option.
+    + option_values: out; "v"
+        Option value (variant). The actual content depends on the option.
 
     - This method retrieves the value(s) of specified option for specified device.
       For more information on supported options, see Section 7.
@@ -370,8 +369,7 @@ control the daemon:
     + option_name: in; "s"
         Name of the option (string).
     + option_values: in; "av"
-        Option value(s) (array of variants). The actual content depends on the
-        option.
+        Option value (variant). The actual content depends on the option.
 
     - This method sets the value(s) of specified option for specified device.
       For more information on supported options, see Section 7.
@@ -424,19 +422,18 @@ method call will fail, for example, if argument for the 'dpm-emulation option'
 is of type G_TYPE_INT.
 
 * dpm-emulation
-   + arguments: enabled (G_TYPE_BOOLEAN)
+   + arguments: enabled (boolean - "b")
 
    - DPM emulation flag. Determines whether DPM emulation is performed.
 
 * tr-emulation
-   + arguments: enabled (G_TYPE_BOOLEAN)
+   + arguments: enabled (boolean - "b")
 
    - Transfer rate emulation flag. Determines whether transfer rate emulation is
      performed
 
 * device-id
-   + arguments: vendor_id (G_TYPE_STRING), product_id (G_TYPE_STRING), revision
-     (G_TYPE_STRING), vendor_specific (G_TYPE_STRING)
+   + arguments: vendor_id, product_id, revision, vendor_specific  (tuple of strings:  - "(ssss)"
 
    - Device ID. Determines the device identifier (vendor identifier, product
      identifier, product revision and vendor-specific string) as returned by
@@ -450,12 +447,12 @@ is of type G_TYPE_INT.
      the device.
 
 * daemon-debug-mask
-   + arguments: mask (G_TYPE_INT)
+   + arguments: mask (integer - "i")
 
    - Daemon debug mask. Determines the amount of verbosity of daemon's code.
 
 * library-debug-mask
-   + arguments: mask (G_TYPE_INT)
+   + arguments: mask (integer - "i")
 
    - Library debug mask. Determines the amount of verbosity of libMirage library
      used by the daemon.

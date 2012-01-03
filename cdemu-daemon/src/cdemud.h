@@ -38,7 +38,8 @@
 #include <ao/ao.h>
 
 #include <glib-object.h>
-#include <dbus/dbus-glib.h>
+#include <gio/gio.h>
+
 #include <mirage.h>
 
 

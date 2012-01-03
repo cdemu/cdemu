@@ -67,6 +67,30 @@ static void __unix_signal_handler (int signal)
     }
 }
 
+static void setup_signal_trap ()
+{
+    struct sigaction action;
+
+    action.sa_handler = __unix_signal_handler;
+    sigemptyset(&action.sa_mask);
+    action.sa_flags = 0;
+    action.sa_flags |= SA_RESTART;
+
+    if (sigaction(SIGTERM, &action, 0) > 0) {
+        g_warning("Failed to setup unix signal sigaction for SIGTERM!");
+    }
+    if (sigaction(SIGINT, &action, 0) > 0) {
+        g_warning("Failed to setup unix signal sigaction for SIGINT!");
+    }
+    if (sigaction(SIGQUIT, &action, 0) > 0) {
+        g_warning("Failed to setup unix signal sigaction for SIGQUIT!");
+    }
+    if (sigaction(SIGHUP, &action, 0) > 0) {
+        g_warning("Failed to setup unix signal sigaction for SIGHUP!");
+    }
+}
+
+
 /******************************************************************************\
  *                                Main function                               *
 \******************************************************************************/
@@ -136,40 +160,15 @@ int main (int argc, char **argv) {
     /* Create daemon */
     daemon_obj = g_object_new(CDEMUD_TYPE_DAEMON, NULL);
 
-    /* Initialize daemon */
-    if (cdemud_daemon_initialize(CDEMUD_DAEMON(daemon_obj), num_devices, ctl_device, audio_driver, use_system_bus, &error)) {
-        /* Signal trapping */
-        struct sigaction action;
+    /* Signal trapping */
+    setup_signal_trap();
 
-        action.sa_handler = __unix_signal_handler;
-        sigemptyset(&action.sa_mask);
-        action.sa_flags = 0;
-        action.sa_flags |= SA_RESTART;
-
-        if (sigaction(SIGTERM, &action, 0) > 0) {
-            g_warning("Failed to setup unix signal sigaction for SIGTERM!");
-        }
-        if (sigaction(SIGINT, &action, 0) > 0) {
-            g_warning("Failed to setup unix signal sigaction for SIGINT!");
-        }
-        if (sigaction(SIGQUIT, &action, 0) > 0) {
-            g_warning("Failed to setup unix signal sigaction for SIGQUIT!");
-        }
-        if (sigaction(SIGHUP, &action, 0) > 0) {
-            g_warning("Failed to setup unix signal sigaction for SIGHUP!");
-        }
-
-        /* Start the daemon */
-        if (!cdemud_daemon_start_daemon(CDEMUD_DAEMON(daemon_obj), &error)) {
-            g_warning("Failed to start daemon: %s\n", error->message);
-            g_error_free(error);
-            succeeded = FALSE;
-        } else {
-            /* Printed when daemon stops */
-            g_message("Stopping daemon.\n");
-        }
+    /* Initialize and start daemon */
+    if (cdemud_daemon_initialize_and_start(CDEMUD_DAEMON(daemon_obj), num_devices, ctl_device, audio_driver, use_system_bus, &error)) {        
+        /* Printed when daemon stops */
+        g_message("Stopping daemon.\n");
     } else {
-        g_warning("Daemon initialization failed: %s\n", error->message);
+        g_warning("Daemon initialization and start failed: %s\n", error->message);
         g_error_free(error);
         succeeded = FALSE;
     }
