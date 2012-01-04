@@ -1,6 +1,6 @@
 /*
- *  MIRAGE Image Analyzer: Generic dump functions
- *  Copyright (C) 2007-2010 Rok Mandeljc
+ *  Image Analyzer: Generic dump functions
+ *  Copyright (C) 2007-2012 Rok Mandeljc
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -23,15 +23,27 @@
 
 G_BEGIN_DECLS
 
-typedef struct {
+typedef struct _DUMP_Value DUMP_Value;
+
+struct _DUMP_Value
+{
     gint value;
     gchar *name;
-} DUMP_Value;
+};
+
 
 #define VAL(x) { x, #x }
 
-gchar *__dump_value (gint val, DUMP_Value *values, gint num_values);
-gchar *__dump_flags (gint val, DUMP_Value *values, gint num_values);
+gchar *dump_value (gint val, const DUMP_Value *values, gint num_values);
+gchar *dump_flags (gint val, const DUMP_Value *values, gint num_values);
+
+gchar *dump_track_flags (gint track_flags);
+gchar *dump_track_mode (gint track_mode);
+gchar *dump_session_type (gint session_type);
+gchar *dump_medium_type (gint medium_type);
+gchar *dump_binary_fragment_tfile_format (gint format);
+gchar *dump_binary_fragment_sfile_format (gint format);
+
 
 G_END_DECLS
 

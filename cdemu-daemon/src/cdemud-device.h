@@ -1,6 +1,6 @@
 /*
  *  CDEmuD: Device object
- *  Copyright (C) 2006-2010 Rok Mandeljc
+ *  Copyright (C) 2006-2012 Rok Mandeljc
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -30,39 +30,44 @@ G_BEGIN_DECLS
 #define CDEMUD_IS_DEVICE_CLASS(klass) (G_TYPE_CHECK_CLASS_TYPE((klass), CDEMUD_TYPE_DEVICE))
 #define CDEMUD_DEVICE_GET_CLASS(obj)  (G_TYPE_INSTANCE_GET_CLASS((obj), CDEMUD_TYPE_DEVICE, CDEMUD_DeviceClass))
 
-typedef struct {
-    MIRAGE_Object parent;
-} CDEMUD_Device;
+typedef struct _CDEMUD_Device           CDEMUD_Device;
+typedef struct _CDEMUD_DeviceClass      CDEMUD_DeviceClass;
+typedef struct _CDEMUD_DevicePrivate    CDEMUD_DevicePrivate;
 
-typedef struct {
-    MIRAGE_ObjectClass parent;
+struct _CDEMUD_Device
+{
+    MIRAGE_Object parent_instance;
+    
+    /*< private >*/
+    CDEMUD_DevicePrivate *priv;
+};
+
+struct _CDEMUD_DeviceClass
+{
+    MIRAGE_ObjectClass parent_class;
 
     /* Class members */
     guint signals[2]; /* Signals */
-} CDEMUD_DeviceClass;
+};
 
-
-typedef struct {
-    guint8 cdb[12];
-    guint8 *in;
-    guint in_len;
-    guint8 *out;
-    guint out_len;
-} CDEMUD_Command;
 
 /* Used by CDEMUD_TYPE_DEVICE */
 GType cdemud_device_get_type (void);
 
-gboolean cdemud_device_setup_mapping (CDEMUD_Device *self);
-
 /* Public API */
 gboolean cdemud_device_initialize (CDEMUD_Device *self, gint number, gchar *ctl_device, gchar *audio_driver, GError **error);
+
 gboolean cdemud_device_get_device_number (CDEMUD_Device *self, gint *number, GError **error);
+
 gboolean cdemud_device_get_status (CDEMUD_Device *self, gboolean *loaded, gchar ***file_names, GError **error);
+
 gboolean cdemud_device_load_disc (CDEMUD_Device *self, gchar **file_names, GVariant *options, GError **error);
 gboolean cdemud_device_unload_disc (CDEMUD_Device *self, GError **error);
+
 gboolean cdemud_device_get_option (CDEMUD_Device *self, gchar *option_name, GVariant **option_value, GError **error);
 gboolean cdemud_device_set_option (CDEMUD_Device *self, gchar *option_name, GVariant *option_value, GError **error);
+
+gboolean cdemud_device_setup_mapping (CDEMUD_Device *self);
 gboolean cdemud_device_get_mapping (CDEMUD_Device *self, gchar **sr_device, gchar **sg_device, GError **error);
 
 G_END_DECLS

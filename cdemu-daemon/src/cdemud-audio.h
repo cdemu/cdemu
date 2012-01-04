@@ -1,6 +1,6 @@
 /*
  *  CDEmuD: Audio play object
- *  Copyright (C) 2006-2010 Rok Mandeljc
+ *  Copyright (C) 2006-2012 Rok Mandeljc
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -29,14 +29,22 @@ G_BEGIN_DECLS
 #define CDEMUD_IS_AUDIO_CLASS(klass) (G_TYPE_CHECK_CLASS_TYPE((klass), CDEMUD_TYPE_AUDIO))
 #define CDEMUD_AUDIO_GET_CLASS(obj)  (G_TYPE_INSTANCE_GET_CLASS((obj), CDEMUD_TYPE_AUDIO, CDEMUD_AudioClass))
 
+typedef struct _CDEMUD_Audio        CDEMUD_Audio;
+typedef struct _CDEMUD_AudioClass   CDEMUD_AudioClass;
+typedef struct _CDEMUD_AudioPrivate CDEMUD_AudioPrivate;
 
-typedef struct {
-    MIRAGE_Object parent;
-} CDEMUD_Audio;
+struct _CDEMUD_Audio
+{
+    MIRAGE_Object parent_instance;
+    
+    /*< private >*/
+    CDEMUD_AudioPrivate *priv;
+};
 
-typedef struct {
-    MIRAGE_ObjectClass parent;
-} CDEMUD_AudioClass;
+struct _CDEMUD_AudioClass
+{
+    MIRAGE_ObjectClass parent_class;
+};
 
 
 /* Used by CDEMUD_TYPE_AUDIO */

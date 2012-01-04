@@ -1,6 +1,6 @@
 /*
  *  CDEmuD: Packet command definitions
- *  Copyright (C) 2006-2010 Rok Mandeljc
+ *  Copyright (C) 2006-2012 Rok Mandeljc
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -32,12 +32,13 @@
     - SCSI-3 Block Command Set (SBC)
 */
 
-/* ************************************************************************** *\
- *                                   BLANK                                    *
-\* ************************************************************************** */
+/**********************************************************************\
+ *                               BLANK                                *
+\**********************************************************************/
 #define PC_BLANK 0xA1
 
-struct BLANK_CDB {
+struct BLANK_CDB
+{
     guint8  code;
     
     #if BIG_ENDIAN_BITFIELD
@@ -59,12 +60,13 @@ struct BLANK_CDB {
     guint8  control;
 };
 
-/* ************************************************************************** *\
- *                                CLOSE TRACK                                 *
-\* ************************************************************************** */
+/**********************************************************************\
+ *                            CLOSE TRACK                             *
+\**********************************************************************/
 #define PC_CLOSE_TRACK_SESSION 0x5B
 
-struct CLOSE_TRACK_SESSION_CDB {
+struct CLOSE_TRACK_SESSION_CDB
+{
     guint8  code;
     
     #if BIG_ENDIAN_BITFIELD
@@ -94,12 +96,13 @@ struct CLOSE_TRACK_SESSION_CDB {
     guint8  control;
 };
 
-/* ************************************************************************** *\
- *                                 ERASE (10)                                 *
-\* ************************************************************************** */
+/**********************************************************************\
+ *                             ERASE (10)                             *
+\**********************************************************************/
 #define PC_ERASE_10 0x2C
 
-struct ERASE_10_CDB {
+struct ERASE_10_CDB
+{
     guint8  code;
     
     #if BIG_ENDIAN_BITFIELD
@@ -121,12 +124,13 @@ struct ERASE_10_CDB {
     guint8  control;
 };
 
-/* ************************************************************************** *\
- *                                FORMAT UNIT                                 *
-\* ************************************************************************** */
+/**********************************************************************\
+ *                            FORMAT UNIT                             *
+\**********************************************************************/
 #define PC_FORMAT_UNIT 0x04
 
-struct FORMAT_UNIT_CDB {
+struct FORMAT_UNIT_CDB
+{
     guint8  code;
     
     #if BIG_ENDIAN_BITFIELD
@@ -148,12 +152,13 @@ struct FORMAT_UNIT_CDB {
     guint8  control;
 };
 
-/* ************************************************************************** *\
- *                             GET CONFIGURATION                              *
-\* ************************************************************************** */
+/**********************************************************************\
+ *                         GET CONFIGURATION                          *
+\**********************************************************************/
 #define PC_GET_CONFIGURATION 0x46
 
-struct GET_CONFIGURATION_CDB {
+struct GET_CONFIGURATION_CDB
+{
     guint8  code;
     
     #if BIG_ENDIAN_BITFIELD
@@ -183,12 +188,13 @@ struct GET_CONFIGURATION_Header {
     guint16 cur_profile;
 };
 
-/* ************************************************************************** *\
- *                        GET EVENT/STATUS NOTIFICATION                       *
-\* ************************************************************************** */
+/**********************************************************************\
+ *                    GET EVENT/STATUS NOTIFICATION                   *
+\**********************************************************************/
 #define PC_GET_EVENT_STATUS_NOTIFICATION 0x4A
 
-struct GET_EVENT_STATUS_NOTIFICATION_CDB {
+struct GET_EVENT_STATUS_NOTIFICATION_CDB
+{
     guint8  code;
     
     #if BIG_ENDIAN_BITFIELD
@@ -230,7 +236,8 @@ struct GET_EVENT_STATUS_NOTIFICATION_CDB {
     guint8  control;
 };
 
-struct GET_EVENT_STATUS_NOTIFICATION_Header {
+struct GET_EVENT_STATUS_NOTIFICATION_Header
+{
     guint16 length;
     
     #if BIG_ENDIAN_BITFIELD
@@ -264,7 +271,8 @@ struct GET_EVENT_STATUS_NOTIFICATION_Header {
     #endif
 };
 
-struct GET_EVENT_STATUS_NOTIFICATION_MediaEventDescriptor {
+struct GET_EVENT_STATUS_NOTIFICATION_MediaEventDescriptor
+{
     #if BIG_ENDIAN_BITFIELD
         guint8  __dummy1__  : 4;
         guint8  event       : 4;
@@ -287,7 +295,8 @@ struct GET_EVENT_STATUS_NOTIFICATION_MediaEventDescriptor {
     guint8  end;
 };
 
-enum MEDIA_EVENTS {
+enum MEDIA_EVENTS
+{
     MEDIA_EVENT_NOCHANGE = 0,
     MEDIA_EVENT_EJECTREQUEST = 1,
     MEDIA_EVENT_NEW_MEDIA = 2,
@@ -295,12 +304,13 @@ enum MEDIA_EVENTS {
     MEDIA_EVENT_MEDIA_CHANGE = 4,
 };
 
-/* ************************************************************************** *\
- *                              GET PERFORMANCE                               *
-\* ************************************************************************** */
+/**********************************************************************\
+ *                          GET PERFORMANCE                           *
+\**********************************************************************/
 #define PC_GET_PERFORMANCE 0xAC
 
-struct GET_PERFORMANCE_CDB {
+struct GET_PERFORMANCE_CDB
+{
     guint8  code;
     
     #if BIG_ENDIAN_BITFIELD
@@ -322,12 +332,13 @@ struct GET_PERFORMANCE_CDB {
     guint8  control;
 };
 
-/* ************************************************************************** *\
- *                                  INQUIRY                                   *
-\* ************************************************************************** */
+/**********************************************************************\
+ *                              INQUIRY                               *
+\**********************************************************************/
 #define PC_INQUIRY 0x12
 
-struct INQUIRY_CDB {
+struct INQUIRY_CDB
+{
     guint8  code;
     
     #if BIG_ENDIAN_BITFIELD
@@ -347,7 +358,8 @@ struct INQUIRY_CDB {
     guint8  control;
 };
 
-struct INQUIRY_Data {
+struct INQUIRY_Data
+{
     #if BIG_ENDIAN_BITFIELD
         guint8  per_qual    : 3;
         guint8  per_dev     : 5;
@@ -455,12 +467,13 @@ struct INQUIRY_Data {
     guint8  __dummy12__[22];
 };
 
-/* ************************************************************************** *\
- *                             LOAD/UNLOAD MEDIUM                             *
-\* ************************************************************************** */
+/**********************************************************************\
+ *                         LOAD/UNLOAD MEDIUM                         *
+\**********************************************************************/
 #define PC_LOAD_UNLOAD_MEDUIM 0xA6
 
-struct LOAD_UNLOAD_MEDIUM_CDB {
+struct LOAD_UNLOAD_MEDIUM_CDB
+{
     guint8  code;
     
     #if BIG_ENDIAN_BITFIELD
@@ -494,12 +507,13 @@ struct LOAD_UNLOAD_MEDIUM_CDB {
     guint8  control;
 };
 
-/* ************************************************************************** *\
- *                              MECHANISM STATUS                              *
-\* ************************************************************************** */
+/**********************************************************************\
+ *                          MECHANISM STATUS                          *
+\**********************************************************************/
 #define PC_MECHANISM_STATUS 0xBD
 
-struct MECHANISM_STATUS_CDB {
+struct MECHANISM_STATUS_CDB
+{
     guint8  code;
     
     #if BIG_ENDIAN_BITFIELD
@@ -519,12 +533,13 @@ struct MECHANISM_STATUS_CDB {
     guint8  control;
 };
 
-/* ************************************************************************** *\
- *                               MODE SELECT (6)                             *
-\* ************************************************************************** */
+/**********************************************************************\
+ *                           MODE SELECT (6)                          *
+\**********************************************************************/
 #define PC_MODE_SELECT_6 0x15
 
-struct MODE_SELECT_6_CDB {
+struct MODE_SELECT_6_CDB
+{
     guint8  code;
     
     #if BIG_ENDIAN_BITFIELD
@@ -546,12 +561,13 @@ struct MODE_SELECT_6_CDB {
     guint8  control;
 };
 
-/* ************************************************************************** *\
- *                               MODE SELECT (10)                             *
-\* ************************************************************************** */
+/**********************************************************************\
+ *                           MODE SELECT (10)                         *
+\**********************************************************************/
 #define PC_MODE_SELECT_10 0x55
 
-struct MODE_SELECT_10_CDB {
+struct MODE_SELECT_10_CDB
+{
     guint8  code;
     
     #if BIG_ENDIAN_BITFIELD
@@ -573,12 +589,13 @@ struct MODE_SELECT_10_CDB {
     guint8  control;
 };
 
-/* ************************************************************************** *\
- *                               MODE SENSE (6)                              *
-\* ************************************************************************** */
+/**********************************************************************\
+ *                           MODE SENSE (6)                           *
+\**********************************************************************/
 #define PC_MODE_SENSE_6 0x1A
 
-struct MODE_SENSE_6_CDB {
+struct MODE_SENSE_6_CDB
+{
     guint8  code;
     
     #if BIG_ENDIAN_BITFIELD
@@ -606,19 +623,21 @@ struct MODE_SENSE_6_CDB {
     guint8  control;
 };
 
-struct MODE_SENSE_6_Header {
+struct MODE_SENSE_6_Header
+{
     guint8 length;
 
     guint8  __dummy1__[2];
     guint8 blkdesc_len;
 };
 
-/* ************************************************************************** *\
- *                               MODE SENSE (10)                              *
-\* ************************************************************************** */
+/**********************************************************************\
+ *                           MODE SENSE (10)                          *
+\**********************************************************************/
 #define PC_MODE_SENSE_10 0x5A
 
-struct MODE_SENSE_10_CDB {
+struct MODE_SENSE_10_CDB
+{
     guint8  code;
     
     #if BIG_ENDIAN_BITFIELD
@@ -651,19 +670,21 @@ struct MODE_SENSE_10_CDB {
 };
 
 
-struct MODE_SENSE_10_Header {
+struct MODE_SENSE_10_Header
+{
     guint16 length;
 
     guint8  __dummy1__[4];
     guint16 blkdesc_len;
 };
 
-/* ************************************************************************** *\
- *                                PAUSE/RESUME                                *
-\* ************************************************************************** */
+/**********************************************************************\
+ *                            PAUSE/RESUME                            *
+\**********************************************************************/
 #define PC_PAUSE_RESUME 0x4B
 
-struct PAUSE_RESUME_CDB {
+struct PAUSE_RESUME_CDB
+{
     guint8  code;
     
     #if BIG_ENDIAN_BITFIELD
@@ -687,12 +708,13 @@ struct PAUSE_RESUME_CDB {
     guint8  control;
 };
 
-/* ************************************************************************** *\
- *                               PLAY AUDIO (10)                              *
-\* ************************************************************************** */
+/**********************************************************************\
+ *                           PLAY AUDIO (10)                          *
+\**********************************************************************/
 #define PC_PLAY_AUDIO_10 0x45
 
-struct PLAY_AUDIO_10_CDB {
+struct PLAY_AUDIO_10_CDB
+{
     guint8  code;
     
     #if BIG_ENDIAN_BITFIELD
@@ -714,12 +736,13 @@ struct PLAY_AUDIO_10_CDB {
     guint8  control;
 };
 
-/* ************************************************************************** *\
- *                               PLAY AUDIO (12)                              *
-\* ************************************************************************** */
+/**********************************************************************\
+ *                           PLAY AUDIO (12)                          *
+\**********************************************************************/
 #define PC_PLAY_AUDIO_12 0xA5
 
-struct PLAY_AUDIO_12_CDB {
+struct PLAY_AUDIO_12_CDB
+{
     guint8  code;
     
     #if BIG_ENDIAN_BITFIELD
@@ -741,12 +764,13 @@ struct PLAY_AUDIO_12_CDB {
     guint8  control;
 };
 
-/* ************************************************************************** *\
- *                               PLAY AUDIO MSF                               *
-\* ************************************************************************** */
+/**********************************************************************\
+ *                           PLAY AUDIO MSF                           *
+\**********************************************************************/
 #define PC_PLAY_AUDIO_MSF 0x47
 
-struct PLAY_AUDIO_MSF_CDB {
+struct PLAY_AUDIO_MSF_CDB
+{
     guint8  code;
     
     #if BIG_ENDIAN_BITFIELD
@@ -770,12 +794,13 @@ struct PLAY_AUDIO_MSF_CDB {
     guint8  control;
 };
 
-/* ************************************************************************** *\
- *                         PREVENT/ALLOW MEDIUM REMOVAL                       *
-\* ************************************************************************** */
+/**********************************************************************\
+ *                     PREVENT/ALLOW MEDIUM REMOVAL                   *
+\**********************************************************************/
 #define PC_PREVENT_ALLOW_MEDIUM_REMOVAL 0x1E
 
-struct PREVENT_ALLOW_MEDIUM_REMOVAL_CDB {
+struct PREVENT_ALLOW_MEDIUM_REMOVAL_CDB
+{
     guint8  code;
 
     guint8  __dummy1__[3];
@@ -791,12 +816,13 @@ struct PREVENT_ALLOW_MEDIUM_REMOVAL_CDB {
     guint8  control;
 };
 
-/* ************************************************************************** *\
- *                                  READ (10)                                 *
-\* ************************************************************************** */
+/**********************************************************************\
+ *                              READ (10)                             *
+\**********************************************************************/
 #define PC_READ_10 0x28
 
-struct READ_10_CDB {
+struct READ_10_CDB
+{
     guint8  code;
     
     #if BIG_ENDIAN_BITFIELD
@@ -822,12 +848,13 @@ struct READ_10_CDB {
     guint8  control;
 };
 
-/* ************************************************************************** *\
- *                                  READ (12)                                 *
-\* ************************************************************************** */
+/**********************************************************************\
+ *                              READ (12)                             *
+\**********************************************************************/
 #define PC_READ_12 0xA8
 
-struct READ_12_CDB {
+struct READ_12_CDB
+{
     guint8  code;
     
     #if BIG_ENDIAN_BITFIELD
@@ -859,12 +886,13 @@ struct READ_12_CDB {
     guint8  control;
 };
 
-/* ************************************************************************** *\
- *                                 READ BUFFER                                *
-\* ************************************************************************** */
+/**********************************************************************\
+ *                             READ BUFFER                            *
+\**********************************************************************/
 #define PC_READ_BUFFER 0x3C
 
-struct READ_BUFFER_CDB {
+struct READ_BUFFER_CDB
+{
     guint8  code;
     
     #if BIG_ENDIAN_BITFIELD
@@ -891,12 +919,13 @@ struct READ_BUFFER_CDB {
     #endif
 };
 
-/* ************************************************************************** *\
- *                             READ BUFFER CAPACITY                           *
-\* ************************************************************************** */
+/**********************************************************************\
+ *                         READ BUFFER CAPACITY                       *
+\**********************************************************************/
 #define PC_READ_BUFFER_CAPACITY 0x5C
 
-struct READ_BUFFER_CAPACITY_CDB {
+struct READ_BUFFER_CAPACITY_CDB
+{
     guint8  code;
     
     #if BIG_ENDIAN_BITFIELD
@@ -916,12 +945,13 @@ struct READ_BUFFER_CAPACITY_CDB {
     guint8  control;
 };
 
-/* ************************************************************************** *\
- *                                READ CAPACITY                               *
-\* ************************************************************************** */
+/**********************************************************************\
+ *                            READ CAPACITY                           *
+\**********************************************************************/
 #define PC_READ_CAPACITY 0x25
 
-struct READ_CAPACITY_CDB {
+struct READ_CAPACITY_CDB
+{
     guint8  code;
     
     #if BIG_ENDIAN_BITFIELD
@@ -949,17 +979,19 @@ struct READ_CAPACITY_CDB {
     guint8  control;
 };
 
-struct READ_CAPACITY_Data {
+struct READ_CAPACITY_Data
+{
     guint32 lba;
     guint32 block_size;
 };
 
-/* ************************************************************************** *\
- *                                   READ CD                                  *
-\* ************************************************************************** */
+/**********************************************************************\
+ *                               READ CD                              *
+\**********************************************************************/
 #define PC_READ_CD 0xBE
 
-struct READ_CD_CDB {
+struct READ_CD_CDB
+{
     guint8  code;
     
     #if BIG_ENDIAN_BITFIELD
@@ -992,12 +1024,13 @@ struct READ_CD_CDB {
 };
 
 
-/* ************************************************************************** *\
- *                                 READ CD MSF                                *
-\* ************************************************************************** */
+/**********************************************************************\
+ *                             READ CD MSF                            *
+\**********************************************************************/
 #define PC_READ_CD_MSF 0xB9
 
-struct READ_CD_MSF_CDB {
+struct READ_CD_MSF_CDB
+{
     guint8  code;
     
     #if BIG_ENDIAN_BITFIELD
@@ -1033,12 +1066,13 @@ struct READ_CD_MSF_CDB {
     guint8  control;
 };
 
-/* ************************************************************************** *\
- *                             READ DISC INFORMATION                          *
-\* ************************************************************************** */
+/**********************************************************************\
+ *                         READ DISC INFORMATION                      *
+\**********************************************************************/
 #define PC_READ_DISC_INFORMATION 0x51
 
-struct READ_DISC_INFORMATION_CDB {
+struct READ_DISC_INFORMATION_CDB
+{
     guint8  code;
     
     #if BIG_ENDIAN_BITFIELD
@@ -1056,7 +1090,8 @@ struct READ_DISC_INFORMATION_CDB {
     guint8  control;
 };
 
-struct READ_DISC_INFORMATION_Data {
+struct READ_DISC_INFORMATION_Data
+{
     guint16    length;
     
     #if BIG_ENDIAN_BITFIELD
@@ -1106,12 +1141,13 @@ struct READ_DISC_INFORMATION_Data {
     guint8  opc_entries;
 };
 
-/* ************************************************************************** *\
- *                              READ DVD STRUCTURE                            *
-\* ************************************************************************** */
+/**********************************************************************\
+ *                          READ DVD STRUCTURE                        *
+\**********************************************************************/
 #define PC_READ_DVD_STRUCTURE 0xAD
 
-struct READ_DVD_STRUCTURE_CDB {
+struct READ_DVD_STRUCTURE_CDB
+{
     guint8  code;
         
     #if BIG_ENDIAN_BITFIELD
@@ -1141,13 +1177,15 @@ struct READ_DVD_STRUCTURE_CDB {
     guint8  control;
 };
 
-struct READ_DVD_STRUCTURE_Header {
+struct READ_DVD_STRUCTURE_Header
+{
     guint16 length;
     guint8  __dummy1__;
     guint8  __dummy2__;
 };
 
-struct READ_DVD_STRUCTURE_Format_0x0000_Descriptor {
+struct READ_DVD_STRUCTURE_Format_0x0000_Descriptor
+{
     #if BIG_ENDIAN_BITFIELD
         guint8  book_type   : 4;
         guint8  part_ver    : 4;
@@ -1219,23 +1257,26 @@ struct READ_DVD_STRUCTURE_Format_0x0000_Descriptor {
     guint8 media_specific[2031];
 };
 
-struct READ_DVD_STRUCTURE_Format_0x0001_Descriptor {
+struct READ_DVD_STRUCTURE_Format_0x0001_Descriptor
+{
    guint8   copy_protection;
    guint8   region_info;
    guint8   __dummy1__;
    guint8   __dummy2__;    
 };
 
-struct READ_DVD_STRUCTURE_Format_0x0004_Descriptor {
+struct READ_DVD_STRUCTURE_Format_0x0004_Descriptor
+{
     guint8  disc_manufacturing_data[2048];
 };
 
-/* ************************************************************************** *\
- *                             READ FORMAT CAPACITIES                         *
-\* ************************************************************************** */
+/**********************************************************************\
+ *                         READ FORMAT CAPACITIES                     *
+\**********************************************************************/
 #define PC_READ_FORMAT_CAPACITIES 0x23 
 
-struct READ_FORMAT_CAPACITIES_CDB {
+struct READ_FORMAT_CAPACITIES_CDB
+{
     guint8  code;
     
     #if BIG_ENDIAN_BITFIELD
@@ -1253,12 +1294,13 @@ struct READ_FORMAT_CAPACITIES_CDB {
     guint8  control;
 };
 
-/* ************************************************************************** *\
- *                               READ SUB-CHANNEL                             *
-\* ************************************************************************** */
+/**********************************************************************\
+ *                           READ SUB-CHANNEL                         *
+\**********************************************************************/
 #define PC_READ_SUBCHANNEL 0x42
 
-struct READ_SUBCHANNEL_CDB {
+struct READ_SUBCHANNEL_CDB
+{
     guint8  code;
     
     #if BIG_ENDIAN_BITFIELD
@@ -1294,13 +1336,15 @@ struct READ_SUBCHANNEL_CDB {
     guint8  control;
 };
 
-struct READ_SUBCHANNEL_Header {
+struct READ_SUBCHANNEL_Header
+{
     guint8  __dummy1__;
     guint8  audio_status;
     guint16 length;
 };
 
-enum AUDIO_STATUS {
+enum AUDIO_STATUS
+{
     AUDIO_STATUS_UNSUPPORTED    = 0x00,
     AUDIO_STATUS_PLAYING        = 0x11,
     AUDIO_STATUS_PAUSED         = 0x12,
@@ -1309,7 +1353,8 @@ enum AUDIO_STATUS {
     AUDIO_STATUS_NOSTATUS       = 0x15
 };
 
-struct READ_SUBCHANNEL_Data1 {
+struct READ_SUBCHANNEL_Data1
+{
     guint8  fmt_code;
     
     #if BIG_ENDIAN_BITFIELD
@@ -1327,7 +1372,8 @@ struct READ_SUBCHANNEL_Data1 {
     guint32 rel_addr;
 };
 
-struct READ_SUBCHANNEL_Data2 {
+struct READ_SUBCHANNEL_Data2
+{
     guint8  fmt_code;
     guint8  __dummy1__[3];
     
@@ -1344,7 +1390,8 @@ struct READ_SUBCHANNEL_Data2 {
     guint8  aframe;
 };
 
-struct READ_SUBCHANNEL_Data3 {
+struct READ_SUBCHANNEL_Data3
+{
     guint8  fmt_code;
     
     #if BIG_ENDIAN_BITFIELD
@@ -1373,12 +1420,13 @@ struct READ_SUBCHANNEL_Data3 {
     guint8  __dummy3__;
 };
 
-/* ************************************************************************** *\
- *                               READ TOC/PMA/ATIP                            *
-\* ************************************************************************** */
+/**********************************************************************\
+ *                           READ TOC/PMA/ATIP                        *
+\**********************************************************************/
 #define PC_READ_TOC_PMA_ATIP 0x43
 
-struct READ_TOC_PMA_ATIP_CDB {
+struct READ_TOC_PMA_ATIP_CDB
+{
     guint8  code;
     
     #if BIG_ENDIAN_BITFIELD
@@ -1410,13 +1458,15 @@ struct READ_TOC_PMA_ATIP_CDB {
     guint8  control;
 };
 
-struct READ_TOC_PMA_ATIP_0000_Header {
+struct READ_TOC_PMA_ATIP_0000_Header
+{
     guint16 length;
     guint8  ftrack;
     guint8  ltrack;
 };
 
-struct READ_TOC_PMA_ATIP_0000_Descriptor {
+struct READ_TOC_PMA_ATIP_0000_Descriptor
+{
     guint8  __dummy1__;
 
     #if BIG_ENDIAN_BITFIELD
@@ -1434,7 +1484,8 @@ struct READ_TOC_PMA_ATIP_0000_Descriptor {
     guint32 lba;
 };
 
-struct READ_TOC_PMA_ATIP_0001_Data {
+struct READ_TOC_PMA_ATIP_0001_Data
+{
     guint16 length;
     guint8  fsession;
     guint8  lsession;
@@ -1456,13 +1507,15 @@ struct READ_TOC_PMA_ATIP_0001_Data {
     guint32 lba;
 };
 
-struct READ_TOC_PMA_ATIP_0010_Header {
+struct READ_TOC_PMA_ATIP_0010_Header
+{
     guint16 length;
     guint8  fsession;
     guint8  lsession;
 } ;
 
-struct READ_TOC_PMA_ATIP_0010_Descriptor {
+struct READ_TOC_PMA_ATIP_0010_Descriptor
+{
     guint8  session;
     
     #if BIG_ENDIAN_BITFIELD
@@ -1484,22 +1537,25 @@ struct READ_TOC_PMA_ATIP_0010_Descriptor {
     guint8  pframe;
 } ;
 
-struct READ_TOC_PMA_ATIP_0100_Header {
+struct READ_TOC_PMA_ATIP_0100_Header
+{
     guint16 length;
     guint8  __dummy1__[2];
 };
 
-struct READ_TOC_PMA_ATIP_0101_Header {
+struct READ_TOC_PMA_ATIP_0101_Header
+{
     guint16 length;
     guint8  __dummy1__[2];
 };
 
-/* ************************************************************************** *\
- *                             READ TRACK INFORMATION                         *
-\* ************************************************************************** */
+/**********************************************************************\
+ *                         READ TRACK INFORMATION                     *
+\**********************************************************************/
 #define PC_READ_TRACK_INFORMATION 0x52
 
-struct READ_TRACK_INFORMATION_CDB {
+struct READ_TRACK_INFORMATION_CDB
+{
     guint8  code;
     
     #if BIG_ENDIAN_BITFIELD
@@ -1521,7 +1577,8 @@ struct READ_TRACK_INFORMATION_CDB {
     guint8  control;
 };
 
-struct READ_TRACK_INFORMATION_Data {
+struct READ_TRACK_INFORMATION_Data
+{
     guint16 length;
     
     guint8  track_number1;
@@ -1583,12 +1640,13 @@ struct READ_TRACK_INFORMATION_Data {
     guint32 last_layer_jump_address;
 };
 
-/* ************************************************************************** *\
- *                                 REPAIR TRACK                               *
-\* ************************************************************************** */
+/**********************************************************************\
+ *                             REPAIR TRACK                           *
+\**********************************************************************/
 #define PC_REPAIR_TRACK 0x58
 
-struct REPAIR_TRACK_CDB {
+struct REPAIR_TRACK_CDB
+{
     guint8  code;
     
     #if BIG_ENDIAN_BITFIELD
@@ -1608,12 +1666,13 @@ struct REPAIR_TRACK_CDB {
     guint8  control;
 };
 
-/* ************************************************************************** *\
- *                                 REPORT KEY                                 *
-\* ************************************************************************** */
+/**********************************************************************\
+ *                             REPORT KEY                             *
+\**********************************************************************/
 #define PC_REPORT_KEY 0xA4
 
-struct REPORT_KEY_CDB {
+struct REPORT_KEY_CDB
+{
     guint8  code;
     
     #if BIG_ENDIAN_BITFIELD
@@ -1643,7 +1702,8 @@ struct REPORT_KEY_CDB {
     guint8  control;
 };
 
-struct REPORT_KEY_001000_Data {
+struct REPORT_KEY_001000_Data
+{
     guint16 length;
     guint8  __dummy1__;
     guint8  __dummy2__;
@@ -1662,12 +1722,14 @@ struct REPORT_KEY_001000_Data {
     guint8  rpc_scheme;
     guint8  __dummy3__;
 };
-/* ************************************************************************** *\
- *                                REQUEST SENSE                               *
-\* ************************************************************************** */
+
+/**********************************************************************\
+ *                            REQUEST SENSE                           *
+\**********************************************************************/
 #define PC_REQUEST_SENSE 0x03 
 
-struct REQUEST_SENSE_CDB {
+struct REQUEST_SENSE_CDB
+{
     guint8  code;
     
     #if BIG_ENDIAN_BITFIELD
@@ -1685,7 +1747,8 @@ struct REQUEST_SENSE_CDB {
     guint8  control;
 };
 
-struct REQUEST_SENSE_SenseFixed {
+struct REQUEST_SENSE_SenseFixed
+{
     #if BIG_ENDIAN_BITFIELD
         guint8  valid       : 1;
         guint8  res_code    : 7;
@@ -1731,12 +1794,13 @@ struct REQUEST_SENSE_SenseFixed {
     guint8  sk_spec2;
 };
 
-/* ************************************************************************** *\
- *                                RESERVE TRACK                               *
-\* ************************************************************************** */
+/**********************************************************************\
+ *                            RESERVE TRACK                           *
+\**********************************************************************/
 #define PC_RESERVE_TRACK 0x53
 
-struct RESERVE_TRACK_CDB {
+struct RESERVE_TRACK_CDB
+{
     guint8  code;
 
     guint8  __dummy1__[4];
@@ -1746,12 +1810,13 @@ struct RESERVE_TRACK_CDB {
     guint8  control;
 };
 
-/* ************************************************************************** *\
- *                                    SCAN                                    *
-\* ************************************************************************** */
+/**********************************************************************\
+ *                                SCAN                                *
+\**********************************************************************/
 #define PC_SCAN 0xBA
 
-struct SCAN_CDB {
+struct SCAN_CDB
+{
     guint8  code;
     
     #if BIG_ENDIAN_BITFIELD
@@ -1783,12 +1848,13 @@ struct SCAN_CDB {
     guint8  control;
 };
 
-/* ************************************************************************** *\
- *                                  SEEK (10)                                 *
-\* ************************************************************************** */
+/**********************************************************************\
+ *                              SEEK (10)                             *
+\**********************************************************************/
 #define PC_SEEK_10 0x2B
 
-struct SEEK_10_CDB {
+struct SEEK_10_CDB
+{
     guint8  code;
 
     guint8  __dummy1__;
@@ -1800,12 +1866,13 @@ struct SEEK_10_CDB {
     guint8  control;
 };
 
-/* ************************************************************************** *\
- *                               SEND CUE SHEET                               *
-\* ************************************************************************** */
+/**********************************************************************\
+ *                           SEND CUE SHEET                           *
+\**********************************************************************/
 #define PC_SEND_CUE_SHEET 0x5D 
 
-struct SEND_CUE_SHEET_CDB {
+struct SEND_CUE_SHEET_CDB
+{
     guint8  code;
 
     guint8  __dummy1__[5];
@@ -1815,12 +1882,13 @@ struct SEND_CUE_SHEET_CDB {
     guint8  control;
 };
 
-/* ************************************************************************** *\
- *                             SEND DVD STRUCTURE                             *
-\* ************************************************************************** */
+/**********************************************************************\
+ *                         SEND DVD STRUCTURE                         *
+\**********************************************************************/
 #define PC_SEND_DVD_STRUCTURE 0xBF
 
-struct SEND_DVD_STRUCTURE_CDB {
+struct SEND_DVD_STRUCTURE_CDB
+{
     guint8  code;
     
     #if BIG_ENDIAN_BITFIELD
@@ -1842,12 +1910,13 @@ struct SEND_DVD_STRUCTURE_CDB {
     guint8  control;
 };
 
-/* ************************************************************************** *\
- *                                 SEND EVENT                                 *
-\* ************************************************************************** */
+/**********************************************************************\
+ *                             SEND EVENT                             *
+\**********************************************************************/
 #define PC_SEND_EVENT 0xA2
 
-struct SEND_EVENT_CDB {
+struct SEND_EVENT_CDB
+{
     guint8  code;
     
     #if BIG_ENDIAN_BITFIELD
@@ -1869,12 +1938,13 @@ struct SEND_EVENT_CDB {
     guint8  control;
 };
 
-/* ************************************************************************** *\
- *                                  SEND KEY                                  *
-\* ************************************************************************** */
+/**********************************************************************\
+ *                              SEND KEY                              *
+\**********************************************************************/
 #define PC_SEND_KEY 0xA3
 
-struct SEND_KEY_CDB {
+struct SEND_KEY_CDB
+{
     guint8  code;
     
     #if BIG_ENDIAN_BITFIELD
@@ -1900,12 +1970,13 @@ struct SEND_KEY_CDB {
     guint8  control;
 };
 
-/* ************************************************************************** *\
- *                            SEND OPC INFORMATION                            *
-\* ************************************************************************** */
+/**********************************************************************\
+ *                        SEND OPC INFORMATION                        *
+\**********************************************************************/
 #define PC_SEND_OPC_INFORMATION 0x54
 
-struct SEND_OPC_INFORMATION_CDB {
+struct SEND_OPC_INFORMATION_CDB
+{
     guint8  code;
     
     #if BIG_ENDIAN_BITFIELD
@@ -1925,12 +1996,13 @@ struct SEND_OPC_INFORMATION_CDB {
     guint8  control;
 };
 
-/* ************************************************************************** *\
- *                                SET CD SPEED                                *
-\* ************************************************************************** */
+/**********************************************************************\
+ *                            SET CD SPEED                            *
+\**********************************************************************/
 #define PC_SET_CD_SPEED 0xBB
 
-struct SET_CD_SPEED_CDB {
+struct SET_CD_SPEED_CDB
+{
     guint8  code;
     
     #if BIG_ENDIAN_BITFIELD
@@ -1950,12 +2022,13 @@ struct SET_CD_SPEED_CDB {
     guint8  control;
 };
 
-/* ************************************************************************** *\
- *                               SET READ AHEAD                               *
-\* ************************************************************************** */
+/**********************************************************************\
+ *                           SET READ AHEAD                           *
+\**********************************************************************/
 #define PC_SET_READ_AHEAD 0xA7
 
-struct SET_READ_AHEAD_CDB {
+struct SET_READ_AHEAD_CDB
+{
     guint8  code;
     
     #if BIG_ENDIAN_BITFIELD
@@ -1975,12 +2048,13 @@ struct SET_READ_AHEAD_CDB {
     guint8  control;
 };
 
-/* ************************************************************************** *\
- *                               SET STREAMING                                *
-\* ************************************************************************** */
+/**********************************************************************\
+ *                           SET STREAMING                            *
+\**********************************************************************/
 #define PC_SET_STREAMING 0xB6
 
-struct SET_STREAMING_CDB {
+struct SET_STREAMING_CDB
+{
     guint8  code;
     
     #if BIG_ENDIAN_BITFIELD
@@ -1998,12 +2072,13 @@ struct SET_STREAMING_CDB {
     guint8  control;
 };
 
-/* ************************************************************************** *\
- *                              START/STOP UNIT                               *
-\* ************************************************************************** */
+/**********************************************************************\
+ *                          START/STOP UNIT                           *
+\**********************************************************************/
 #define PC_START_STOP_UNIT 0x1B
 
-struct START_STOP_UNIT_CDB {
+struct START_STOP_UNIT_CDB
+{
     guint8  code;
     
     #if BIG_ENDIAN_BITFIELD
@@ -2031,12 +2106,13 @@ struct START_STOP_UNIT_CDB {
     guint8  control;
 };
 
-/* ************************************************************************** *\
- *                              STOP/PLAY SCAN                                *
-\* ************************************************************************** */
+/**********************************************************************\
+ *                          STOP/PLAY SCAN                            *
+\**********************************************************************/
 #define PC_STOP_PLAY_SCAN 0x4E
 
-struct STOP_PLAY_SCAN_CDB {
+struct STOP_PLAY_SCAN_CDB
+{
     guint8  code;
     
     #if BIG_ENDIAN_BITFIELD
@@ -2052,12 +2128,13 @@ struct STOP_PLAY_SCAN_CDB {
     guint8  control;
 };
 
-/* ************************************************************************** *\
- *                             SYNCHRONIZE CACHE                              *
-\* ************************************************************************** */
+/**********************************************************************\
+ *                         SYNCHRONIZE CACHE                          *
+\**********************************************************************/
 #define PC_SYNCHRONIZE_CACHE 0x35
 
-struct SYNCHRONIZE_CACHE_CDB {
+struct SYNCHRONIZE_CACHE_CDB
+{
     guint8  code;
     
     #if BIG_ENDIAN_BITFIELD
@@ -2081,12 +2158,13 @@ struct SYNCHRONIZE_CACHE_CDB {
     guint8  control;
 };
 
-/* ************************************************************************** *\
- *                              TEST UNIT READY                               *
-\* ************************************************************************** */
+/**********************************************************************\
+ *                          TEST UNIT READY                           *
+\**********************************************************************/
 #define PC_TEST_UNIT_READY 0x00
 
-struct TEST_UNIT_READY_CDB {
+struct TEST_UNIT_READY_CDB
+{
     guint8  code;
     
     guint8  __dummy1__[4];
@@ -2094,12 +2172,13 @@ struct TEST_UNIT_READY_CDB {
     guint8  control;
 };
 
-/* ************************************************************************** *\
- *                                VERIFY (10)                                 *
-\* ************************************************************************** */
+/**********************************************************************\
+ *                            VERIFY (10)                             *
+\**********************************************************************/
 #define PC_VERIFY_10 0x2F
 
-struct VERIFY_10_CDB {
+struct VERIFY_10_CDB
+{
     guint8  code;
     
     #if BIG_ENDIAN_BITFIELD
@@ -2127,12 +2206,13 @@ struct VERIFY_10_CDB {
     guint8  control;
 };
 
-/* ************************************************************************** *\
- *                                 WRITE (10)                                 *
-\* ************************************************************************** */
+/**********************************************************************\
+ *                             WRITE (10)                             *
+\**********************************************************************/
 #define PC_WRITE_10 0x2A
 
-struct WRITE_10_CDB {
+struct WRITE_10_CDB
+{
     guint8  code;
     
     #if BIG_ENDIAN_BITFIELD
@@ -2158,12 +2238,13 @@ struct WRITE_10_CDB {
     guint8  control;
 };
 
-/* ************************************************************************** *\
- *                                 WRITE (12)                                 *
-\* ************************************************************************** */
+/**********************************************************************\
+ *                             WRITE (12)                             *
+\**********************************************************************/
 #define PC_WRITE_12 0xAA
 
-struct WRITE_12_CDB {
+struct WRITE_12_CDB
+{
     guint8  code;
     
     #if BIG_ENDIAN_BITFIELD
@@ -2197,12 +2278,13 @@ struct WRITE_12_CDB {
     guint8  control;
 };
 
-/* ************************************************************************** *\
- *                            WRITE AND VERIFY (10)                           *
-\* ************************************************************************** */
+/**********************************************************************\
+ *                        WRITE AND VERIFY (10)                       *
+\**********************************************************************/
 #define PC_WRITE_AND_VERIFY_10 0x2E
 
-struct WRITE_AND_VERIFY_10_CDB {
+struct WRITE_AND_VERIFY_10_CDB
+{
     guint8  code;
     
     #if BIG_ENDIAN_BITFIELD
@@ -2228,12 +2310,13 @@ struct WRITE_AND_VERIFY_10_CDB {
     guint8  control;
 };
 
-/* ************************************************************************** *\
- *                                WRITE BUFFER                                *
-\* ************************************************************************** */
+/**********************************************************************\
+ *                            WRITE BUFFER                            *
+\**********************************************************************/
 #define PC_WRITE_BUFFER 0x3B
 
-struct WRITE_BUFFER_CDB {
+struct WRITE_BUFFER_CDB
+{
     guint8  code;
     
     #if BIG_ENDIAN_BITFIELD

@@ -1,6 +1,6 @@
 /*
  *  CDEmuD: MMC-3 device mode pages definitions
- *  Copyright (C) 2006-2010 Rok Mandeljc
+ *  Copyright (C) 2006-2012 Rok Mandeljc
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -25,7 +25,15 @@
 
 #pragma pack(1)
 
-struct ModePage_GENERAL {
+enum {
+    MODE_PAGE_CURRENT = 0,
+    MODE_PAGE_DEFAULT = 1,
+    MODE_PAGE_MASK = 2
+};
+
+
+struct ModePage_GENERAL
+{
     #if BIG_ENDIAN_BITFIELD
         guint8  ps          : 1;
         guint8  __dummy1__  : 1;
@@ -39,11 +47,10 @@ struct ModePage_GENERAL {
     guint8  length;
 };
 
-/******************************************************************************\
- * Read/Write Error Recovery Parameters Mode Page  *
-\******************************************************************************/
-/* Page definition */
-struct ModePage_0x01 {
+
+/* Read/Write Error Recovery Parameters Mode Page */
+struct ModePage_0x01
+{
     #if BIG_ENDIAN_BITFIELD
         guint8  ps          : 1;
         guint8  __dummy1__  : 1;
@@ -88,7 +95,8 @@ struct ModePage_0x01 {
 };
 
 /* CD Device Parameters Mode Page */
-struct ModePage_0x0D {
+struct ModePage_0x0D
+{
     #if BIG_ENDIAN_BITFIELD
         guint8  ps          : 1;
         guint8  __dummy1__  : 1;
@@ -117,7 +125,8 @@ struct ModePage_0x0D {
 };
 
 /* CD Audio Control Mode Page */
-struct ModePage_0x0E {
+struct ModePage_0x0E
+{
     #if BIG_ENDIAN_BITFIELD
         guint8  ps          : 1;
         guint8  __dummy1__  : 1;
@@ -182,7 +191,8 @@ struct ModePage_0x0E {
 };
 
 /* Power Condition Mode Page */
-struct ModePage_0x1A {
+struct ModePage_0x1A
+{
     #if BIG_ENDIAN_BITFIELD
         guint8  ps          : 1;
         guint8  __dummy1__  : 1;
@@ -214,7 +224,8 @@ struct ModePage_0x1A {
 
 
 /* CD/DVD Capabilities and Mechanical Status Mode Page */
-struct ModePage_0x2A {
+struct ModePage_0x2A
+{
     #if BIG_ENDIAN_BITFIELD
         guint8  ps          : 1;
         guint8  __dummy1__  : 1;

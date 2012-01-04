@@ -1,6 +1,6 @@
 /*
  *  CDEmuD: Daemon object
- *  Copyright (C) 2006-2010 Rok Mandeljc
+ *  Copyright (C) 2006-2012 Rok Mandeljc
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -20,7 +20,6 @@
 #ifndef __CDEMUD_DAEMON_H__
 #define __CDEMUD_DAEMON_H__
 
-
 G_BEGIN_DECLS
 
 #define CDEMUD_TYPE_DAEMON            (cdemud_daemon_get_type())
@@ -30,14 +29,22 @@ G_BEGIN_DECLS
 #define CDEMUD_IS_DAEMON_CLASS(klass) (G_TYPE_CHECK_CLASS_TYPE((klass), CDEMUD_TYPE_DAEMON))
 #define CDEMUD_DAEMON_GET_CLASS(obj)  (G_TYPE_INSTANCE_GET_CLASS((obj), CDEMUD_TYPE_DAEMON, CDEMUD_DaemonClass))
 
+typedef struct _CDEMUD_Daemon           CDEMUD_Daemon;
+typedef struct _CDEMUD_DaemonClass      CDEMUD_DaemonClass;
+typedef struct _CDEMUD_DaemonPrivate    CDEMUD_DaemonPrivate;
 
-typedef struct {
-    MIRAGE_Object parent;
-} CDEMUD_Daemon;
+struct _CDEMUD_Daemon
+{
+    MIRAGE_Object parent_instance;
+    
+    /*< private >*/
+    CDEMUD_DaemonPrivate *priv;
+};
 
-typedef struct {
-    MIRAGE_ObjectClass parent;
-} CDEMUD_DaemonClass;
+struct _CDEMUD_DaemonClass
+{
+    MIRAGE_ObjectClass parent_class;
+};
 
 
 /* Used by CDEMUD_TYPE_DAEMON */
@@ -46,6 +53,7 @@ GType cdemud_daemon_get_type (void);
 /* Public API */
 gboolean cdemud_daemon_initialize_and_start (CDEMUD_Daemon *self, gint num_devices, gchar *ctl_device, gchar *audio_driver, gboolean system_bus, GError **error);
 gboolean cdemud_daemon_stop_daemon (CDEMUD_Daemon *self, GError **error);
+GObject *cdemud_daemon_get_device (CDEMUD_Daemon *self, gint device_number, GError **error);
 
 
 G_END_DECLS

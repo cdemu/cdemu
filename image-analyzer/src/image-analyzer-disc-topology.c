@@ -1,6 +1,6 @@
 /*
- *  MIRAGE Image Analyzer: Disc topology window
- *  Copyright (C) 2008-2010 Rok Mandeljc
+ *  Image Analyzer: Disc topology window
+ *  Copyright (C) 2008-2012 Rok Mandeljc
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -25,36 +25,17 @@
 #include <glib.h>
 #include <gtk/gtk.h>
 #include <gtk/gtkx.h>
-
 #include <mirage.h>
-#include "image-analyzer-dump.h"
-#include "image-analyzer-application.h"
+
 #include "image-analyzer-disc-topology.h"
+#include "image-analyzer-disc-topology-private.h"
 
 
-/******************************************************************************\
- *                              Private structure                             *
-\******************************************************************************/
-#define IMAGE_ANALYZER_DISC_TOPOLOGY_GET_PRIVATE(obj) (G_TYPE_INSTANCE_GET_PRIVATE((obj), IMAGE_ANALYZER_TYPE_DISC_TOPOLOGY, IMAGE_ANALYZER_DiscTopologyPrivate))
-
-typedef struct {
-    /* GtkSocket */
-    GtkWidget *socket;
-
-    /* gnuplot */
-    gboolean gnuplot_works;
-        
-    GPid pid;
-    gint fd_in;
-} IMAGE_ANALYZER_DiscTopologyPrivate;
-
-
-/******************************************************************************\
- *                                   Helpers                                  *
-\******************************************************************************/
-static gboolean __image_analyzer_disc_topology_run_gnuplot (IMAGE_ANALYZER_DiscTopology *self, GError **error) {
-    IMAGE_ANALYZER_DiscTopologyPrivate *_priv = IMAGE_ANALYZER_DISC_TOPOLOGY_GET_PRIVATE(self);
-
+/**********************************************************************\
+ *                               Helpers                              *
+\**********************************************************************/
+static gboolean image_analyzer_disc_topology_run_gnuplot (IMAGE_ANALYZER_DiscTopology *self, GError **error)
+{
     gchar *argv[] = { "gnuplot", NULL };
     gboolean ret;
     gchar *cmd;
@@ -67,26 +48,26 @@ static gboolean __image_analyzer_disc_topology_run_gnuplot (IMAGE_ANALYZER_DiscT
             G_SPAWN_SEARCH_PATH, /* GSpawnFlags flags */
             NULL, /* GSpawnChildSetupFunc child_setup */
             NULL, /* gpointer user_data */
-            &_priv->pid, /* GPid *child_pid */
-            &_priv->fd_in, /* gint *standard_input */
+            &self->priv->pid, /* GPid *child_pid */
+            &self->priv->fd_in, /* gint *standard_input */
             NULL, /* gint *standard_output */
             NULL, /* gint *standard_error */
             error /* GError **error */
         );
     if (!ret) {
         g_debug("Failed to spawn gnuplot process!\n");
-        _priv->gnuplot_works = FALSE;
+        self->priv->gnuplot_works = FALSE;
         return FALSE;
     } else {
-        _priv->gnuplot_works = TRUE;
+        self->priv->gnuplot_works = TRUE;
     }
 
     /* Redirect to socket */
     gtk_widget_show_all(GTK_WIDGET(self));
 
-    cmd = g_strdup_printf("set term x11 window '%lX' ctrlq enhanced", gtk_socket_get_id(GTK_SOCKET(_priv->socket)));
-    write(_priv->fd_in, cmd, strlen(cmd));
-    write(_priv->fd_in, "\n", 1);
+    cmd = g_strdup_printf("set term x11 window '%lX' ctrlq enhanced", gtk_socket_get_id(GTK_SOCKET(self->priv->socket)));
+    write(self->priv->fd_in, cmd, strlen(cmd));
+    write(self->priv->fd_in, "\n", 1);
 
     gtk_widget_hide(GTK_WIDGET(self));
     
@@ -94,7 +75,7 @@ static gboolean __image_analyzer_disc_topology_run_gnuplot (IMAGE_ANALYZER_DiscT
 }
 
 
-static gboolean __dump_dpm_data (GObject *disc, gchar **dump_file)
+static gboolean dump_dpm_data_to_file (GObject *disc, gchar **dump_file)
 {
     GError *local_error = NULL;
     gchar *tmp_filename;
@@ -148,16 +129,12 @@ static gboolean __dump_dpm_data (GObject *disc, gchar **dump_file)
 }
 
 
-
-/******************************************************************************\
- *                                 Public API                                 *
-\******************************************************************************/
-gboolean image_analyzer_disc_topology_refresh (IMAGE_ANALYZER_DiscTopology *self, GObject *disc, GError **error G_GNUC_UNUSED) {
-    IMAGE_ANALYZER_DiscTopologyPrivate *_priv = IMAGE_ANALYZER_DISC_TOPOLOGY_GET_PRIVATE(self);
+static gboolean image_analyzer_disc_topology_refresh (IMAGE_ANALYZER_DiscTopology *self, GObject *disc)
+{
     gchar *command;
     
     /* No-op if gnuplot couldn't be started */
-    if (!_priv->gnuplot_works) {
+    if (!self->priv->gnuplot_works) {
         return TRUE;
     }
 
@@ -193,7 +170,7 @@ gboolean image_analyzer_disc_topology_refresh (IMAGE_ANALYZER_DiscTopology *self
             gchar *tmp_filename;
 
             /* Dump DPM data to temporary file */
-            if (!__dump_dpm_data(disc, &tmp_filename)) {
+            if (!dump_dpm_data_to_file(disc, &tmp_filename)) {
                 g_free(basename);
                 return FALSE;
             }
@@ -218,8 +195,8 @@ gboolean image_analyzer_disc_topology_refresh (IMAGE_ANALYZER_DiscTopology *self
     }
 
     /* Write plot command */
-    write(_priv->fd_in, command, strlen(command));
-    write(_priv->fd_in, "\n", 1);
+    write(self->priv->fd_in, command, strlen(command));
+    write(self->priv->fd_in, "\n", 1);
 
     g_free(command);
     
@@ -227,63 +204,49 @@ gboolean image_analyzer_disc_topology_refresh (IMAGE_ANALYZER_DiscTopology *self
 }
 
 
-/******************************************************************************\
- *                                 Object init                                *
-\******************************************************************************/
-/* Our parent class */
-static GtkWindowClass *parent_class = NULL;
+/**********************************************************************\
+ *                             Public API                             *
+\**********************************************************************/
+void image_analyzer_disc_topology_set_disc (IMAGE_ANALYZER_DiscTopology *self, GObject *disc)
+{
+    /* Just refresh; we don't need disc reference */
+    image_analyzer_disc_topology_refresh(self, disc);
+}
 
-static void __image_analyzer_disc_topology_instance_init (GTypeInstance *instance, gpointer g_class G_GNUC_UNUSED) {
-    IMAGE_ANALYZER_DiscTopology *self = IMAGE_ANALYZER_DISC_TOPOLOGY(instance);
-    IMAGE_ANALYZER_DiscTopologyPrivate *_priv = IMAGE_ANALYZER_DISC_TOPOLOGY_GET_PRIVATE(self);
 
+/**********************************************************************\
+ *                              GUI setup                             * 
+\**********************************************************************/
+static void setup_gui (IMAGE_ANALYZER_DiscTopology *self)
+{
     /* Window */
     gtk_window_set_title(GTK_WINDOW(self), "Disc topology");
     gtk_window_set_default_size(GTK_WINDOW(self), 800, 600);
     gtk_container_set_border_width(GTK_CONTAINER(self), 5);
 
     /* Create socket for embedding gnuplot window */
-    _priv->socket = gtk_socket_new();
-    gtk_container_add(GTK_CONTAINER(self), _priv->socket);
+    self->priv->socket = gtk_socket_new();
+    gtk_container_add(GTK_CONTAINER(self), self->priv->socket);
 
     /* Run gnuplot */
-    __image_analyzer_disc_topology_run_gnuplot(self, NULL);
-    
-    return;
+    image_analyzer_disc_topology_run_gnuplot(self, NULL);
 }
 
 
-static void __image_analyzer_disc_topology_class_init (gpointer g_class, gpointer g_class_data G_GNUC_UNUSED) {
-    /*GObjectClass *class_gobject = G_OBJECT_CLASS(g_class);*/
-    IMAGE_ANALYZER_DiscTopologyClass *klass = IMAGE_ANALYZER_DISC_TOPOLOGY_CLASS(g_class);
+/**********************************************************************\
+ *                             Object init                            * 
+\**********************************************************************/
+G_DEFINE_TYPE(IMAGE_ANALYZER_DiscTopology, image_analyzer_disc_topology, GTK_TYPE_WINDOW);
 
-    /* Set parent class */
-    parent_class = g_type_class_peek_parent(klass);
-
+static void image_analyzer_disc_topology_class_init (IMAGE_ANALYZER_DiscTopologyClass *klass)
+{
     /* Register private structure */
     g_type_class_add_private(klass, sizeof(IMAGE_ANALYZER_DiscTopologyPrivate));
-
-    return;
 }
 
-GType image_analyzer_disc_topology_get_type (void) {
-    static GType type = 0;
-    if (type == 0) {
-        static const GTypeInfo info = {
-            sizeof(IMAGE_ANALYZER_DiscTopologyClass),
-            NULL,   /* base_init */
-            NULL,   /* base_finalize */
-            __image_analyzer_disc_topology_class_init,   /* class_init */
-            NULL,   /* class_finalize */
-            NULL,   /* class_data */
-            sizeof(IMAGE_ANALYZER_DiscTopology),
-            0,      /* n_preallocs */
-            __image_analyzer_disc_topology_instance_init,   /* instance_init */
-            NULL,   /* value_table */
-        };
+static void image_analyzer_disc_topology_init (IMAGE_ANALYZER_DiscTopology *self)
+{
+    self->priv = IMAGE_ANALYZER_DISC_TOPOLOGY_GET_PRIVATE(self);
 
-        type = g_type_register_static(GTK_TYPE_WINDOW, "IMAGE_ANALYZER_DiscTopology", &info, 0);
-    }
-
-    return type;
+    setup_gui(self);
 }

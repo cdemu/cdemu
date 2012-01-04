@@ -1,6 +1,6 @@
 /*
- *  MIRAGE Image Analyzer: Sector read window
- *  Copyright (C) 2007-2010 Rok Mandeljc
+ *  Image Analyzer: Sector read window
+ *  Copyright (C) 2007-2012 Rok Mandeljc
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -31,16 +31,27 @@ G_BEGIN_DECLS
 #define IMAGE_ANALYZER_IS_SECTOR_READ_CLASS(klass) (G_TYPE_CHECK_CLASS_TYPE((klass), IMAGE_ANALYZER_TYPE_SECTOR_READ))
 #define IMAGE_ANALYZER_SECTOR_READ_GET_CLASS(obj)  (G_TYPE_INSTANCE_GET_CLASS((obj), IMAGE_ANALYZER_TYPE_SECTOR_READ, IMAGE_ANALYZER_SectorReadClass))
 
-typedef struct {
-    GtkWindow parent;
-} IMAGE_ANALYZER_SectorRead;
+typedef struct _IMAGE_ANALYZER_SectorRead           IMAGE_ANALYZER_SectorRead;
+typedef struct _IMAGE_ANALYZER_SectorReadClass      IMAGE_ANALYZER_SectorReadClass;
+typedef struct _IMAGE_ANALYZER_SectorReadPrivate    IMAGE_ANALYZER_SectorReadPrivate;
 
-typedef struct {
-    GtkWindowClass parent;
-} IMAGE_ANALYZER_SectorReadClass;
+struct _IMAGE_ANALYZER_SectorRead {
+    GtkWindow parent_instance;
+
+    /*< private >*/
+    IMAGE_ANALYZER_SectorReadPrivate *priv;
+};
+
+struct _IMAGE_ANALYZER_SectorReadClass {
+    GtkWindowClass parent_class;
+};
+
 
 /* Used by IMAGE_ANALYZER_TYPE_SECTOR_READ */
 GType image_analyzer_sector_read_get_type (void);
+
+/* Public API */
+void image_analyzer_sector_read_set_disc (IMAGE_ANALYZER_SectorRead *self, GObject *disc);
 
 
 G_END_DECLS

@@ -1,6 +1,6 @@
 /*
- *  MIRAGE Image Analyzer: Application object
- *  Copyright (C) 2007-2010 Rok Mandeljc
+ *  Image Analyzer: Application object
+ *  Copyright (C) 2007-2012 Rok Mandeljc
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -23,7 +23,6 @@
 
 G_BEGIN_DECLS
 
-
 #define IMAGE_ANALYZER_TYPE_APPLICATION            (image_analyzer_application_get_type())
 #define IMAGE_ANALYZER_APPLICATION(obj)            (G_TYPE_CHECK_INSTANCE_CAST((obj), IMAGE_ANALYZER_TYPE_APPLICATION, IMAGE_ANALYZER_Application))
 #define IMAGE_ANALYZER_APPLICATION_CLASS(klass)    (G_TYPE_CHECK_CLASS_CAST((klass), IMAGE_ANALYZER_TYPE_APPLICATION, IMAGE_ANALYZER_ApplicationClass))
@@ -31,21 +30,28 @@ G_BEGIN_DECLS
 #define IMAGE_ANALYZER_IS_APPLICATION_CLASS(klass) (G_TYPE_CHECK_CLASS_TYPE((klass), IMAGE_ANALYZER_TYPE_APPLICATION))
 #define IMAGE_ANALYZER_APPLICATION_GET_CLASS(obj)  (G_TYPE_INSTANCE_GET_CLASS((obj), IMAGE_ANALYZER_TYPE_APPLICATION, IMAGE_ANALYZER_ApplicationClass))
 
-typedef struct {
-    GObject parent;
-} IMAGE_ANALYZER_Application;
+typedef struct _IMAGE_ANALYZER_Application IMAGE_ANALYZER_Application;
+typedef struct _IMAGE_ANALYZER_ApplicationClass IMAGE_ANALYZER_ApplicationClass;
+typedef struct _IMAGE_ANALYZER_ApplicationPrivate IMAGE_ANALYZER_ApplicationPrivate;
 
-typedef struct {
-    GObjectClass parent;
-} IMAGE_ANALYZER_ApplicationClass;
+struct _IMAGE_ANALYZER_Application
+{
+    GObject parent_instance;
+
+    /*< private >*/
+    IMAGE_ANALYZER_ApplicationPrivate *priv;
+};
+
+struct _IMAGE_ANALYZER_ApplicationClass {
+    GObjectClass parent_class;
+};
+
 
 /* Used by IMAGE_ANALYZER_TYPE_APPLICATION */
 GType image_analyzer_application_get_type (void);
 
 
-/******************************************************************************\
- *                                 Public API                                 *
-\******************************************************************************/
+/* Public API */
 gboolean image_analyzer_application_run (IMAGE_ANALYZER_Application *self, gchar **open_image);
 gboolean image_analyzer_application_get_loaded_image (IMAGE_ANALYZER_Application *self, GObject **disc);
 

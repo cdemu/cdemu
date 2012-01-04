@@ -1,6 +1,6 @@
 /*
  *  CDEmuD: main
- *  Copyright (C) 2006-2010 Rok Mandeljc
+ *  Copyright (C) 2006-2012 Rok Mandeljc
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -39,11 +39,13 @@ static GOptionEntry option_entries[] = {
 
 
 /* Log handler: writing to stdout */
-static void __log_handler_stdout (const gchar *log_domain G_GNUC_UNUSED, GLogLevelFlags log_level G_GNUC_UNUSED, const gchar *message, gpointer unused_data G_GNUC_UNUSED) {
+static void log_handler_stdout (const gchar *log_domain G_GNUC_UNUSED, GLogLevelFlags log_level G_GNUC_UNUSED, const gchar *message, gpointer unused_data G_GNUC_UNUSED)
+{
     g_print("%s", message);
 }
 
-static void __log_handler_logfile (const gchar *log_domain G_GNUC_UNUSED, GLogLevelFlags log_level G_GNUC_UNUSED, const gchar *message, gpointer unused_data G_GNUC_UNUSED) {
+static void log_handler_logfile (const gchar *log_domain G_GNUC_UNUSED, GLogLevelFlags log_level G_GNUC_UNUSED, const gchar *message, gpointer unused_data G_GNUC_UNUSED)
+{
     fprintf(logfile, "%s", message);
     fflush(logfile);
 }
@@ -94,13 +96,14 @@ static void setup_signal_trap ()
 /******************************************************************************\
  *                                Main function                               *
 \******************************************************************************/
-int main (int argc, char **argv) {
+int main (int argc, char **argv)
+{
     /* Glib and threading initialization */
     g_type_init();
     g_thread_init(NULL);
 
     /* Default log handler is local */
-    g_log_set_default_handler(__log_handler_stdout, NULL);
+    g_log_set_default_handler(log_handler_stdout, NULL);
 
     /* Glib's commandline parser */
     GError *error = NULL;
@@ -125,7 +128,7 @@ int main (int argc, char **argv) {
             g_warning("Failed to open log file %s for writing!\n", log_filename);
             return -1;
         }
-        g_log_set_default_handler(__log_handler_logfile, NULL);
+        g_log_set_default_handler(log_handler_logfile, NULL);
     }
 
     /* Initialize libMirage */

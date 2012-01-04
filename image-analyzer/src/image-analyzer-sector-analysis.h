@@ -1,6 +1,6 @@
 /*
- *  MIRAGE Image Analyzer: Sector analysis window
- *  Copyright (C) 2011 Rok Mandeljc
+ *  Image Analyzer: Sector analysis window
+ *  Copyright (C) 2011-2012 Rok Mandeljc
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -31,16 +31,29 @@ G_BEGIN_DECLS
 #define IMAGE_ANALYZER_IS_SECTOR_ANALYSIS_CLASS(klass) (G_TYPE_CHECK_CLASS_TYPE((klass), IMAGE_ANALYZER_TYPE_SECTOR_ANALYSIS))
 #define IMAGE_ANALYZER_SECTOR_ANALYSIS_GET_CLASS(obj)  (G_TYPE_INSTANCE_GET_CLASS((obj), IMAGE_ANALYZER_TYPE_SECTOR_ANALYSIS, IMAGE_ANALYZER_SectorAnalysisClass))
 
-typedef struct {
-    GtkWindow parent;
-} IMAGE_ANALYZER_SectorAnalysis;
+typedef struct _IMAGE_ANALYZER_SectorAnalysis           IMAGE_ANALYZER_SectorAnalysis;
+typedef struct _IMAGE_ANALYZER_SectorAnalysisClass      IMAGE_ANALYZER_SectorAnalysisClass;
+typedef struct _IMAGE_ANALYZER_SectorAnalysisPrivate    IMAGE_ANALYZER_SectorAnalysisPrivate;
 
-typedef struct {
-    GtkWindowClass parent;
-} IMAGE_ANALYZER_SectorAnalysisClass;
+struct _IMAGE_ANALYZER_SectorAnalysis
+{
+    GtkWindow parent_instance;
+
+    /*< private >*/
+    IMAGE_ANALYZER_SectorAnalysisPrivate *priv;
+};
+
+struct _IMAGE_ANALYZER_SectorAnalysisClass
+{
+    GtkWindowClass parent_class;
+};
+
 
 /* Used by IMAGE_ANALYZER_TYPE_SECTOR_ANALYSIS */
 GType image_analyzer_sector_analysis_get_type (void);
+
+/* Public API */
+void image_analyzer_sector_analysis_set_disc (IMAGE_ANALYZER_SectorAnalysis *self, GObject *disc);
 
 
 G_END_DECLS

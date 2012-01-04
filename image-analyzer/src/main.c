@@ -1,6 +1,6 @@
 /*
- *  MIRAGE Image Analyzer: Main
- *  Copyright (C) 2007-2010 Rok Mandeljc
+ *  Image Analyzer: Main
+ *  Copyright (C) 2007-2012 Rok Mandeljc
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -34,7 +34,8 @@ static GOptionEntry option_entries[] = {
        { NULL, 0, 0, G_OPTION_ARG_NONE, NULL, NULL, NULL }
 };
 
-int main (int argc, char **argv) {
+int main (int argc, char **argv)
+{
     GObject *application = NULL;
     GError *error = NULL;
     GOptionContext *option_context = NULL;
@@ -54,7 +55,7 @@ int main (int argc, char **argv) {
     }
     
     /* Parse command line */
-    option_context = g_option_context_new("- Mirage Image Analyzer");
+    option_context = g_option_context_new("- Image Analyzer");
     g_option_context_add_main_entries(option_context, option_entries, NULL);
     g_option_context_add_group(option_context, gtk_get_option_group(TRUE));
     succeeded = g_option_context_parse(option_context, &argc, &argv, &error);

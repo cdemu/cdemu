@@ -1,6 +1,6 @@
 /*
- *  MIRAGE Image Analyzer: Parser log window
- *  Copyright (C) 2007-2010 Rok Mandeljc
+ *  Image Analyzer: Parser log window
+ *  Copyright (C) 2007-2012 Rok Mandeljc
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -31,23 +31,31 @@ G_BEGIN_DECLS
 #define IMAGE_ANALYZER_IS_PARSER_LOG_CLASS(klass) (G_TYPE_CHECK_CLASS_TYPE((klass), IMAGE_ANALYZER_TYPE_PARSER_LOG))
 #define IMAGE_ANALYZER_PARSER_LOG_GET_CLASS(obj)  (G_TYPE_INSTANCE_GET_CLASS((obj), IMAGE_ANALYZER_TYPE_PARSER_LOG, IMAGE_ANALYZER_ParserLogClass))
 
-typedef struct {
-    GtkWindow parent;
-} IMAGE_ANALYZER_ParserLog;
+typedef struct _IMAGE_ANALYZER_ParserLog        IMAGE_ANALYZER_ParserLog;
+typedef struct _IMAGE_ANALYZER_ParserLogClass   IMAGE_ANALYZER_ParserLogClass;
+typedef struct _IMAGE_ANALYZER_ParserLogPrivate IMAGE_ANALYZER_ParserLogPrivate;
 
-typedef struct {
-    GtkWindowClass parent;
-} IMAGE_ANALYZER_ParserLogClass;
+struct _IMAGE_ANALYZER_ParserLog
+{
+    GtkWindow parent_instance;
+
+    /*< private >*/
+    IMAGE_ANALYZER_ParserLogPrivate *priv;
+};
+
+struct _IMAGE_ANALYZER_ParserLogClass
+{
+    GtkWindowClass parent_class;
+};
+
 
 /* Used by IMAGE_ANALYZER_TYPE_PARSER_LOG */
 GType image_analyzer_parser_log_get_type (void);
 
+/* Public API */
+void image_analyzer_parser_log_clear_log (IMAGE_ANALYZER_ParserLog *self);
+void image_analyzer_parser_log_append_to_log (IMAGE_ANALYZER_ParserLog *self, gchar *message);
 
-/******************************************************************************\
- *                                 Public API                                 *
-\******************************************************************************/
-gboolean image_analyzer_parser_log_clear_log (IMAGE_ANALYZER_ParserLog *self, GError **error);
-gboolean image_analyzer_parser_log_append_to_log (IMAGE_ANALYZER_ParserLog *self, gchar *message, GError **error);
 
 G_END_DECLS
 

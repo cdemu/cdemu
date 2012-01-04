@@ -1,6 +1,6 @@
 /*
  *  CDEmuD: MMC-3 device features definitions
- *  Copyright (C) 2006-2010 Rok Mandeljc
+ *  Copyright (C) 2006-2012 Rok Mandeljc
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -26,7 +26,8 @@
 #pragma pack(1)
 
 /* FEATURES */
-struct Feature_GENERAL {
+struct Feature_GENERAL
+{
     guint16 code;
     
     #if BIG_ENDIAN_BITFIELD
@@ -44,7 +45,8 @@ struct Feature_GENERAL {
     guint8  length;
 };
 
-struct Profile {
+struct Profile
+{
     guint16 profile;
     
     #if BIG_ENDIAN_BITFIELD
@@ -59,7 +61,8 @@ struct Profile {
 };
 
 /* Profile List */
-struct Feature_0x0000 {
+struct Feature_0x0000
+{
     guint16 code;
     
     #if BIG_ENDIAN_BITFIELD
@@ -82,7 +85,8 @@ struct Feature_0x0000 {
 
 
 /* Core Feature */
-struct Feature_0x0001 {
+struct Feature_0x0001
+{
     guint16 code;
     
     #if BIG_ENDIAN_BITFIELD
@@ -115,7 +119,8 @@ struct Feature_0x0001 {
 };
 
 /* Morphing Feature */
-struct Feature_0x0002 {
+struct Feature_0x0002
+{
     guint16 code;
     
     #if BIG_ENDIAN_BITFIELD
@@ -146,7 +151,8 @@ struct Feature_0x0002 {
 };
 
 /* Removable Medium Feature */
-struct Feature_0x0003 {
+struct Feature_0x0003
+{
     guint16 code;
     
     #if BIG_ENDIAN_BITFIELD
@@ -183,7 +189,8 @@ struct Feature_0x0003 {
 };
 
 /* Random Readable Feature */
-struct Feature_0x0010 {
+struct Feature_0x0010
+{
     guint16 code;
     
     #if BIG_ENDIAN_BITFIELD
@@ -215,7 +222,8 @@ struct Feature_0x0010 {
 };
 
 /* Multi-read Feature */
-struct Feature_0x001D {
+struct Feature_0x001D
+{
     guint16 code;
     
     #if BIG_ENDIAN_BITFIELD
@@ -234,7 +242,8 @@ struct Feature_0x001D {
 };
 
 /* CD Read Feature */
-struct Feature_0x001E {
+struct Feature_0x001E
+{
     guint16 code;
     
     #if BIG_ENDIAN_BITFIELD
@@ -267,7 +276,8 @@ struct Feature_0x001E {
 };
 
 /* DVD Read Feature */
-struct Feature_0x001F {
+struct Feature_0x001F
+{
     guint16 code;
     
     #if BIG_ENDIAN_BITFIELD
@@ -306,7 +316,8 @@ struct Feature_0x001F {
 };
 
 /* Power Management Feature */
-struct Feature_0x0100 {
+struct Feature_0x0100
+{
     guint16 code;
     
     #if BIG_ENDIAN_BITFIELD
@@ -325,7 +336,8 @@ struct Feature_0x0100 {
 };
 
 /* CD External Audio Play Feature */
-struct Feature_0x0103 {
+struct Feature_0x0103
+{
     guint16 code;
     
     #if BIG_ENDIAN_BITFIELD
@@ -360,7 +372,8 @@ struct Feature_0x0103 {
 };
 
 /* DVD CSS Feature */
-struct Feature_0x0106 {
+struct Feature_0x0106
+{
     guint16 code;
     
     #if BIG_ENDIAN_BITFIELD
@@ -383,7 +396,8 @@ struct Feature_0x0106 {
 };
 
 /* Real Time Streaming Feature */
-struct Feature_0x0107 {
+struct Feature_0x0107
+{
     guint16 code;
     
     #if BIG_ENDIAN_BITFIELD

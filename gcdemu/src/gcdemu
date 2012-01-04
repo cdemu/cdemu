@@ -604,7 +604,7 @@ class gCDEmu (Gtk.StatusIcon):
         self.about = Gtk.AboutDialog()
         self.about.set_name(app_name)
         self.about.set_version(app_version)
-        self.about.set_copyright("Copyright (C) 2006-2011 Rok Mandeljc")
+        self.about.set_copyright("Copyright (C) 2006-2012 Rok Mandeljc")
         self.about.set_comments(_("A GUI for controlling CDEmu devices."))
         self.about.set_website("http://cdemu.sf.net")
         self.about.set_website_label(_("The CDEmu project website"))

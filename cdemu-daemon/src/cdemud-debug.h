@@ -1,6 +1,6 @@
 /*
  *  CDEmuD: Debugging
- *  Copyright (C) 2006-2010 Rok Mandeljc
+ *  Copyright (C) 2006-2012 Rok Mandeljc
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -21,7 +21,8 @@
 #define __CDEMUD_DEBUG_H__
 
 /* Debug masks */
-typedef enum {
+typedef enum
+{
     /* Debug types; need to be same as in libMirage because we use its debug context */
     DAEMON_DEBUG_ERROR = MIRAGE_DEBUG_ERROR,
     DAEMON_DEBUG_WARNING = MIRAGE_DEBUG_WARNING,
@@ -34,7 +35,7 @@ typedef enum {
 } CDEMUD_DeviceDebugMasks;
 
 /* Debug macro */
-#define CDEMUD_DEBUG(obj, lvl, msg...) {                        \
+#define CDEMUD_DEBUG(obj, lvl, msg...) { \
     mirage_object_debug_message(MIRAGE_OBJECT(obj), lvl, msg);  \
 }
 
