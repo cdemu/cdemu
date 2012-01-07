@@ -1,6 +1,6 @@
 /*
  *  libMirage: Error handling
- *  Copyright (C) 2006-2010 Rok Mandeljc
+ *  Copyright (C) 2006-2012 Rok Mandeljc
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -72,7 +72,8 @@ GType  mirage_error_get_type (void);
  *
  * Error codes for libMirage library.
  **/
-typedef enum {
+typedef enum
+{
     /* General */
     MIRAGE_E_INVALIDARG  = 0xDEAD000,
     MIRAGE_E_NOTIMPL,

@@ -1,6 +1,6 @@
 /*
  *  libMirage: Error handling
- *  Copyright (C) 2006-2010 Rok Mandeljc
+ *  Copyright (C) 2006-2012 Rok Mandeljc
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -32,7 +32,8 @@
  *
  * Return value: The error quark used for libMirage errors.
  **/
-GQuark mirage_error_quark (void) {
+GQuark mirage_error_quark (void)
+{
     static GQuark q = 0;
 
     if (q == 0) {
@@ -44,7 +45,8 @@ GQuark mirage_error_quark (void) {
 
 
 #define ENUM_ENTRY(NAME, DESC) { NAME, "" #NAME "", DESC }
-GType mirage_error_get_type (void) {
+GType mirage_error_get_type (void)
+{
     static GType type = 0;
     if (type == 0) {
         static const GEnumValue values[] = {
@@ -116,7 +118,8 @@ GType mirage_error_get_type (void) {
  * is %NULL, this function does nothing.
  * </para>
  **/
-void mirage_error (gint errcode, GError **error) {
+void mirage_error (gint errcode, GError **error)
+{
     static struct {
         gint errcode;
         const gchar *errstring;
@@ -205,6 +208,4 @@ void mirage_error (gint errcode, GError **error) {
 
     /* Generic error */
     g_set_error(error, MIRAGE_ERROR, errors[i-1].errcode, "%s", errors[i-1].errstring);
-
-    return;
 }

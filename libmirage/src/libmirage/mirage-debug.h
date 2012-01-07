@@ -1,6 +1,6 @@
 /*
  *  libMirage: Debug context object
- *  Copyright (C) 2006-2010 Rok Mandeljc
+ *  Copyright (C) 2006-2012 Rok Mandeljc
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -17,8 +17,8 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
  
-#ifndef __MIRAGE_DEBUG_CONTEXT_H__
-#define __MIRAGE_DEBUG_CONTEXT_H__
+#ifndef __MIRAGE_DEBUG_H__
+#define __MIRAGE_DEBUG_H__
 
 
 /* Debug masks */
@@ -26,8 +26,6 @@
  * MIRAGE_DebugMasks:
  * @MIRAGE_DEBUG_ERROR: error message
  * @MIRAGE_DEBUG_WARNING: warning message
- * @MIRAGE_DEBUG_GOBJECT: message belonging to GObject functions
- * @MIRAGE_DEBUG_CHAIN: message belonging to change propagation chain
  * @MIRAGE_DEBUG_PARSER: message belonging to parser
  * @MIRAGE_DEBUG_DISC: message belonging to disc
  * @MIRAGE_DEBUG_SESSION: message belonging to session
@@ -46,20 +44,19 @@
  * together to control verbosity of libMirage.
  * </para>
  **/
-typedef enum {
+typedef enum
+{
     /* Debug types */
     MIRAGE_DEBUG_ERROR    = 0x00F1,
     MIRAGE_DEBUG_WARNING  = 0x00F2,
     /* Debug masks */
-    MIRAGE_DEBUG_GOBJECT  = 0x0001,
-    MIRAGE_DEBUG_CHAIN    = 0x0002,
-    MIRAGE_DEBUG_PARSER   = 0x0004,
-    MIRAGE_DEBUG_DISC     = 0x0008,
-    MIRAGE_DEBUG_SESSION  = 0x0010,
-    MIRAGE_DEBUG_TRACK    = 0x0020,
-    MIRAGE_DEBUG_SECTOR   = 0x0040,
-    MIRAGE_DEBUG_FRAGMENT = 0x0080,
-    MIRAGE_DEBUG_CDTEXT   = 0x0100,
+    MIRAGE_DEBUG_PARSER   = 0x0001,
+    MIRAGE_DEBUG_DISC     = 0x0002,
+    MIRAGE_DEBUG_SESSION  = 0x0004,
+    MIRAGE_DEBUG_TRACK    = 0x0008,
+    MIRAGE_DEBUG_SECTOR   = 0x0010,
+    MIRAGE_DEBUG_FRAGMENT = 0x0020,
+    MIRAGE_DEBUG_CDTEXT   = 0x0040,
 } MIRAGE_DebugMasks;
 
 /* Debug macro */
@@ -75,8 +72,8 @@ typedef enum {
  * debug message @msg....
  * </para>
  **/
-#define MIRAGE_DEBUG(obj, lvl, msg...) {                        \
-    mirage_object_debug_message(MIRAGE_OBJECT(obj), lvl, msg);  \
+#define MIRAGE_DEBUG(obj, lvl, msg...) { \
+    mirage_object_debug_message(MIRAGE_OBJECT(obj), lvl, msg); \
 }
 
 
@@ -89,6 +86,10 @@ G_BEGIN_DECLS
 #define MIRAGE_IS_DEBUG_CONTEXT_CLASS(klass) (G_TYPE_CHECK_CLASS_TYPE((klass), MIRAGE_TYPE_DEBUG_CONTEXT))
 #define MIRAGE_DEBUG_CONTEXT_GET_CLASS(obj)  (G_TYPE_INSTANCE_GET_CLASS((obj), MIRAGE_TYPE_DEBUG_CONTEXT, MIRAGE_DebugContextClass))
 
+typedef struct _MIRAGE_DebugContext         MIRAGE_DebugContext;
+typedef struct _MIRAGE_DebugContextClass    MIRAGE_DebugContextClass;
+typedef struct _MIRAGE_DebugContextPrivate  MIRAGE_DebugContextPrivate;
+
 /**
  * MIRAGE_DebugContext:
  *
@@ -96,21 +97,26 @@ G_BEGIN_DECLS
  * Contains private data only, and should be accessed using the functions below.
  * </para>
  **/
-typedef struct {
-    GObject parent;
-} MIRAGE_DebugContext;
+struct _MIRAGE_DebugContext
+{
+    GObject parent_instance;
 
-typedef struct {
-    GObjectClass parent;
-} MIRAGE_DebugContextClass;
+    /*< private >*/
+    MIRAGE_DebugContextPrivate *priv;
+};
+
+struct _MIRAGE_DebugContextClass
+{
+    GObjectClass parent_class;
+};
 
 /* Used by MIRAGE_TYPE_DEBUG_CONTEXT */
 GType mirage_debug_context_get_type (void);
 
 
-/******************************************************************************\
- *                                 Public API                                 *
-\******************************************************************************/
+/**********************************************************************\
+ *                             Public API                             *
+\**********************************************************************/
 gboolean mirage_debug_context_set_debug_mask (MIRAGE_DebugContext *self, gint debug_mask, GError **error);
 gboolean mirage_debug_context_get_debug_mask (MIRAGE_DebugContext *self, gint *debug_mask, GError **error);
 
@@ -120,7 +126,6 @@ gboolean mirage_debug_context_get_domain (MIRAGE_DebugContext *self, const gchar
 gboolean mirage_debug_context_set_name (MIRAGE_DebugContext *self, const gchar *name, GError **error);
 gboolean mirage_debug_context_get_name (MIRAGE_DebugContext *self, const gchar **name, GError **error);
 
-
 G_END_DECLS
 
-#endif /* __MIRAGE_DEBUG_CONTEXT_H__ */
+#endif /* __MIRAGE_DEBUG_H__ */

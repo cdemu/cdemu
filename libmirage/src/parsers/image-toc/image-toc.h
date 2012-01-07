@@ -1,6 +1,6 @@
 /*
  *  libMirage: TOC image parser
- *  Copyright (C) 2006-2010 Rok Mandeljc
+ *  Copyright (C) 2006-2012 Rok Mandeljc
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -31,8 +31,6 @@
 
 
 G_BEGIN_DECLS
-
-GTypeModule *global_module;
 
 G_END_DECLS
 

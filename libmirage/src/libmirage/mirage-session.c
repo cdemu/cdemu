@@ -1,6 +1,6 @@
 /*
  *  libMirage: Session object
- *  Copyright (C) 2006-2010 Rok Mandeljc
+ *  Copyright (C) 2006-2012 Rok Mandeljc
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -26,12 +26,13 @@
 #define __debug__ "Session"
 
 
-/******************************************************************************\
- *                              Private structure                             *
-\******************************************************************************/
+/**********************************************************************\
+ *                          Private structure                         *
+\**********************************************************************/
 #define MIRAGE_SESSION_GET_PRIVATE(obj) (G_TYPE_INSTANCE_GET_PRIVATE((obj), MIRAGE_TYPE_SESSION, MIRAGE_SessionPrivate))
 
-typedef struct {    
+struct _MIRAGE_SessionPrivate
+{    
     /* Layout settings */
     gint session_number; /* Session number */
     gint start_sector; /* Start sector */
@@ -46,38 +47,25 @@ typedef struct {
     
     /* CD-Text list */
     GList *languages_list;
-} MIRAGE_SessionPrivate;
+} ;
 
 
-/******************************************************************************\
- *                              Private functions                             *
-\******************************************************************************/
-/* Forward declarations */
-static gboolean __mirage_session_commit_topdown_change (MIRAGE_Session *self, GError **error);
-static gboolean __mirage_session_commit_bottomup_change (MIRAGE_Session *self, GError **error);
-
-static void __track_modified_handler (GObject *track, MIRAGE_Session *self);
-
-static gboolean __remove_track_from_session (MIRAGE_Session *self, GObject *track, GError **error);
-static gboolean __remove_language_from_session (MIRAGE_Session *self, GObject *language, GError **error);
-
-static gint __sort_languages_by_code (GObject *language1, GObject *language2);
-static gint __sort_tracks_by_number (GObject *track1, GObject *track2);
-
-
-static gboolean __mirage_session_commit_topdown_change (MIRAGE_Session *self, GError **error G_GNUC_UNUSED) {
-    MIRAGE_SessionPrivate *_priv = MIRAGE_SESSION_GET_PRIVATE(self);
-    GList *entry = NULL;
+/**********************************************************************\
+ *                          Private functions                         *
+\**********************************************************************/
+static void mirage_session_commit_topdown_change (MIRAGE_Session *self)
+{
+    GList *entry;
         
     /* Rearrange tracks: set numbers, set start sectors */
-    gint cur_track_address = _priv->start_sector;
-    gint cur_track_number  = _priv->first_track;
+    gint cur_track_address = self->priv->start_sector;
+    gint cur_track_number  = self->priv->first_track;
     
-    G_LIST_FOR_EACH(entry, _priv->tracks_list) {
+    G_LIST_FOR_EACH(entry, self->priv->tracks_list) {
         GObject *track = entry->data;
         
         /* Set track's number */
-        gint old_number = 0;
+        gint old_number;
         mirage_track_layout_get_track_number(MIRAGE_TRACK(track), &old_number, NULL);
         if ((old_number != MIRAGE_TRACK_LEADIN) && (old_number != MIRAGE_TRACK_LEADOUT)) {
             mirage_track_layout_set_track_number(MIRAGE_TRACK(track), cur_track_number, NULL);
@@ -90,69 +78,61 @@ static gboolean __mirage_session_commit_topdown_change (MIRAGE_Session *self, GE
         mirage_track_layout_get_length(MIRAGE_TRACK(track), &track_length, NULL);
         cur_track_address += track_length;
     }
-        
-    return TRUE;
 }
 
-static gboolean __mirage_session_commit_bottomup_change (MIRAGE_Session *self, GError **error G_GNUC_UNUSED) {
-    MIRAGE_SessionPrivate *_priv = MIRAGE_SESSION_GET_PRIVATE(self);
-    GList *entry = NULL;
+static void mirage_session_commit_bottomup_change (MIRAGE_Session *self)
+{
+    GList *entry;
         
     /* Calculate session length */
-    _priv->length = 0; /* Reset; it'll be recalculated */
+    self->priv->length = 0; /* Reset; it'll be recalculated */
 
-    G_LIST_FOR_EACH(entry, _priv->tracks_list) {
+    G_LIST_FOR_EACH(entry, self->priv->tracks_list) {
         GObject *track = entry->data;
         gint track_length = 0;
         mirage_track_layout_get_length(MIRAGE_TRACK(track), &track_length, NULL);
-        _priv->length += track_length;
+        self->priv->length += track_length;
     }
     
     /* Signal session change */
     g_signal_emit_by_name(MIRAGE_OBJECT(self), "object-modified", NULL);
     /* If we don't have parent, we should complete the arc by committing top-down change */
     if (!mirage_object_get_parent(MIRAGE_OBJECT(self), NULL, NULL)) {
-        __mirage_session_commit_topdown_change(self, NULL);
+        mirage_session_commit_topdown_change(self);
     }
-    
-    return TRUE;
 }
 
-static void __track_modified_handler (GObject *track G_GNUC_UNUSED, MIRAGE_Session *self) {    
+static void mirage_session_track_modified_handler (GObject *track G_GNUC_UNUSED, MIRAGE_Session *self)
+{    
     /* Bottom-up change */
-    __mirage_session_commit_bottomup_change(self, NULL);
-    return;
+    mirage_session_commit_bottomup_change(self);
 }
 
-static gboolean __remove_track_from_session (MIRAGE_Session *self, GObject *track, GError **error G_GNUC_UNUSED) {
-    MIRAGE_SessionPrivate *_priv = MIRAGE_SESSION_GET_PRIVATE(self);
-                
+static void mirage_session_remove_track (MIRAGE_Session *self, GObject *track)
+{               
     /* Disconnect signal handler (find it by handler function and user data) */
-    g_signal_handlers_disconnect_by_func(MIRAGE_OBJECT(track), __track_modified_handler, self);
+    g_signal_handlers_disconnect_by_func(MIRAGE_OBJECT(track), mirage_session_track_modified_handler, self);
     
     /* Remove track from list and unref it */
-    _priv->tracks_list = g_list_remove(_priv->tracks_list, track);
+    self->priv->tracks_list = g_list_remove(self->priv->tracks_list, track);
     g_object_unref(track);
     
     /* Bottom-up change */
-    __mirage_session_commit_bottomup_change(self, NULL);
-    
-    return TRUE;
+    mirage_session_commit_bottomup_change(self);
 }
 
-static gboolean __remove_language_from_session (MIRAGE_Session *self, GObject *language, GError **error G_GNUC_UNUSED) {
-    MIRAGE_SessionPrivate *_priv = MIRAGE_SESSION_GET_PRIVATE(self);
-            
+static void mirage_session_remove_language (MIRAGE_Session *self, GObject *language)
+{           
     /* Remove it from list and unref it */
-    _priv->languages_list = g_list_remove(_priv->languages_list, language);
+    self->priv->languages_list = g_list_remove(self->priv->languages_list, language);
     g_object_unref(language);
-    
-    return TRUE;
 }
 
-static gint __sort_languages_by_code (GObject *language1, GObject *language2) {   
-    gint code1 = 0;
-    gint code2 = 0;
+
+static gint sort_languages_by_code (GObject *language1, GObject *language2)
+{   
+    gint code1;
+    gint code2 ;
     
     mirage_language_get_langcode(MIRAGE_LANGUAGE(language1), &code1, NULL);
     mirage_language_get_langcode(MIRAGE_LANGUAGE(language2), &code2, NULL);
@@ -166,9 +146,10 @@ static gint __sort_languages_by_code (GObject *language1, GObject *language2) {
     }
 }
 
-static gint __sort_tracks_by_number (GObject *track1, GObject *track2) {          
-    gint number1 = 0;
-    gint number2 = 0;
+static gint sort_tracks_by_number (GObject *track1, GObject *track2)
+{          
+    gint number1;
+    gint number2;
         
     mirage_track_layout_get_track_number(MIRAGE_TRACK(track1), &number1, NULL);
     mirage_track_layout_get_track_number(MIRAGE_TRACK(track2), &number2, NULL);
@@ -197,9 +178,9 @@ static gint __sort_tracks_by_number (GObject *track1, GObject *track2) {
 }
 
 
-/******************************************************************************\
- *                                 Public API                                 *
-\******************************************************************************/
+/**********************************************************************\
+ *                             Public API                             *
+\**********************************************************************/
 /**
  * mirage_session_set_session_type:
  * @self: a #MIRAGE_Session
@@ -212,10 +193,10 @@ static gint __sort_tracks_by_number (GObject *track1, GObject *track2) {
  *
  * Returns: %TRUE on success, %FALSE on failure
  **/
-gboolean mirage_session_set_session_type (MIRAGE_Session *self, gint type, GError **error G_GNUC_UNUSED) {
-    MIRAGE_SessionPrivate *_priv = MIRAGE_SESSION_GET_PRIVATE(self);
+gboolean mirage_session_set_session_type (MIRAGE_Session *self, gint type, GError **error G_GNUC_UNUSED)
+{
     /* Set session type */
-    _priv->session_type =type;
+    self->priv->session_type =type;
     return TRUE;
 }
 
@@ -231,11 +212,11 @@ gboolean mirage_session_set_session_type (MIRAGE_Session *self, gint type, GErro
  *
  * Returns: %TRUE on success, %FALSE on failure
  **/
-gboolean mirage_session_get_session_type (MIRAGE_Session *self, gint *type, GError **error) {
-    MIRAGE_SessionPrivate *_priv = MIRAGE_SESSION_GET_PRIVATE(self);
+gboolean mirage_session_get_session_type (MIRAGE_Session *self, gint *type, GError **error)
+{
     MIRAGE_CHECK_ARG(type);
     /* Return session number */
-    *type = _priv->session_type;
+    *type = self->priv->session_type;
     return TRUE;
 }
 
@@ -256,10 +237,10 @@ gboolean mirage_session_get_session_type (MIRAGE_Session *self, gint *type, GErr
  *
  * Returns: %TRUE on success, %FALSE on failure
  **/
-gboolean mirage_session_layout_set_session_number (MIRAGE_Session *self, gint number, GError **error G_GNUC_UNUSED) {
-    MIRAGE_SessionPrivate *_priv = MIRAGE_SESSION_GET_PRIVATE(self);
+gboolean mirage_session_layout_set_session_number (MIRAGE_Session *self, gint number, GError **error G_GNUC_UNUSED)
+{
     /* Set session number */
-    _priv->session_number = number;
+    self->priv->session_number = number;
     return TRUE;
 }
 
@@ -275,11 +256,11 @@ gboolean mirage_session_layout_set_session_number (MIRAGE_Session *self, gint nu
  *
  * Returns: %TRUE on success, %FALSE on failure
  **/
-gboolean mirage_session_layout_get_session_number (MIRAGE_Session *self, gint *number, GError **error) {
-    MIRAGE_SessionPrivate *_priv = MIRAGE_SESSION_GET_PRIVATE(self);
+gboolean mirage_session_layout_get_session_number (MIRAGE_Session *self, gint *number, GError **error)
+{
     MIRAGE_CHECK_ARG(number);
     /* Return session number */
-    *number = _priv->session_number;
+    *number = self->priv->session_number;
     return TRUE;
 }
 
@@ -304,12 +285,12 @@ gboolean mirage_session_layout_get_session_number (MIRAGE_Session *self, gint *n
  *
  * Returns: %TRUE on success, %FALSE on failure
  **/
-gboolean mirage_session_layout_set_first_track (MIRAGE_Session *self, gint first_track, GError **error G_GNUC_UNUSED) {
-    MIRAGE_SessionPrivate *_priv = MIRAGE_SESSION_GET_PRIVATE(self);
+gboolean mirage_session_layout_set_first_track (MIRAGE_Session *self, gint first_track, GError **error G_GNUC_UNUSED)
+{
     /* Set first track */
-    _priv->first_track = first_track;
+    self->priv->first_track = first_track;
     /* Top-down change */
-    __mirage_session_commit_topdown_change(self, NULL);
+    mirage_session_commit_topdown_change(self);
     return TRUE;
 }
 
@@ -329,11 +310,11 @@ gboolean mirage_session_layout_set_first_track (MIRAGE_Session *self, gint first
  *
  * Returns: %TRUE on success, %FALSE on failure
  **/
-gboolean mirage_session_layout_get_first_track (MIRAGE_Session *self, gint *first_track, GError **error) {
-    MIRAGE_SessionPrivate *_priv = MIRAGE_SESSION_GET_PRIVATE(self);
+gboolean mirage_session_layout_get_first_track (MIRAGE_Session *self, gint *first_track, GError **error)
+{
     MIRAGE_CHECK_ARG(first_track);
     /* Return first track */
-    *first_track = _priv->first_track;
+    *first_track = self->priv->first_track;
     return TRUE;
 }
 
@@ -358,12 +339,12 @@ gboolean mirage_session_layout_get_first_track (MIRAGE_Session *self, gint *firs
  *
  * Returns: %TRUE on success, %FALSE on failure
  **/
-gboolean mirage_session_layout_set_start_sector (MIRAGE_Session *self, gint start_sector, GError **error G_GNUC_UNUSED) {
-    MIRAGE_SessionPrivate *_priv = MIRAGE_SESSION_GET_PRIVATE(self);
+gboolean mirage_session_layout_set_start_sector (MIRAGE_Session *self, gint start_sector, GError **error G_GNUC_UNUSED)
+{
     /* Set start sector */
-    _priv->start_sector = start_sector;
+    self->priv->start_sector = start_sector;
     /* Top-down change */
-    __mirage_session_commit_topdown_change(self, NULL);
+    mirage_session_commit_topdown_change(self);
     return TRUE;
 }
 
@@ -383,11 +364,11 @@ gboolean mirage_session_layout_set_start_sector (MIRAGE_Session *self, gint star
  *
  * Returns: %TRUE on success, %FALSE on failure
  **/
-gboolean mirage_session_layout_get_start_sector (MIRAGE_Session *self, gint *start_sector, GError **error) {
-    MIRAGE_SessionPrivate *_priv = MIRAGE_SESSION_GET_PRIVATE(self);
+gboolean mirage_session_layout_get_start_sector (MIRAGE_Session *self, gint *start_sector, GError **error)
+{
     MIRAGE_CHECK_ARG(start_sector);
     /* Return start sector */
-    *start_sector = _priv->start_sector;
+    *start_sector = self->priv->start_sector;
     return TRUE;
 }
 
@@ -405,11 +386,11 @@ gboolean mirage_session_layout_get_start_sector (MIRAGE_Session *self, gint *sta
  *
  * Returns: %TRUE on success, %FALSE on failure
  **/
-gboolean mirage_session_layout_get_length (MIRAGE_Session *self, gint *length, GError **error) {
-    MIRAGE_SessionPrivate *_priv = MIRAGE_SESSION_GET_PRIVATE(self);
+gboolean mirage_session_layout_get_length (MIRAGE_Session *self, gint *length, GError **error)
+{
     MIRAGE_CHECK_ARG(length);
     /* Return length */
-    *length = _priv->length;
+    *length = self->priv->length;
     return TRUE;
 }
 
@@ -432,9 +413,10 @@ gboolean mirage_session_layout_get_length (MIRAGE_Session *self, gint *length, G
  
  * Returns: %TRUE on success, %FALSE on failure
  **/
-gboolean mirage_session_set_leadout_length (MIRAGE_Session *self, gint length, GError **error) {
-    GObject *leadout = NULL;
-    gboolean succeeded = TRUE;
+gboolean mirage_session_set_leadout_length (MIRAGE_Session *self, gint length, GError **error)
+{
+    GObject *leadout;
+    gboolean succeeded;
     
     /* Get leadout */
     if (!mirage_session_get_track_by_number(self, MIRAGE_TRACK_LEADOUT, &leadout, error)) {
@@ -445,11 +427,11 @@ gboolean mirage_session_set_leadout_length (MIRAGE_Session *self, gint length, G
        have only one, unless I screwed up somewhere), then we'll simply readjust
        its length. If not, we need to create it... The simplest way is to try to 
        get the last fragment in track */
-    GObject *null_fragment = NULL;
+    GObject *null_fragment;
     
     if (!mirage_track_get_fragment_by_index(MIRAGE_TRACK(leadout), -1, &null_fragment, NULL)) {
         /* Create NULL fragment */
-        null_fragment = libmirage_create_fragment(MIRAGE_TYPE_FINTERFACE_NULL, "NULL", error);
+        null_fragment = libmirage_create_fragment(MIRAGE_TYPE_FRAG_IFACE_NULL, "NULL", error);
         
         if (!null_fragment) {
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: failed to create NULL fragment\n", __debug__);
@@ -487,9 +469,10 @@ gboolean mirage_session_set_leadout_length (MIRAGE_Session *self, gint length, G
  *
  * Returns: %TRUE on success, %FALSE on failure
  **/
-gboolean mirage_session_get_leadout_length (MIRAGE_Session *self, gint *length, GError **error) {
-    GObject *leadout = NULL;
-    gboolean succeeded = TRUE;
+gboolean mirage_session_get_leadout_length (MIRAGE_Session *self, gint *length, GError **error)
+{
+    GObject *leadout;
+    gboolean succeeded;
     
     MIRAGE_CHECK_ARG(length);
     
@@ -518,11 +501,11 @@ gboolean mirage_session_get_leadout_length (MIRAGE_Session *self, gint *length, 
  *
  * Returns: %TRUE on success, %FALSE on failure
  **/
-gboolean mirage_session_get_number_of_tracks (MIRAGE_Session *self, gint *number_of_tracks, GError **error) {
-    MIRAGE_SessionPrivate *_priv = MIRAGE_SESSION_GET_PRIVATE(self);
+gboolean mirage_session_get_number_of_tracks (MIRAGE_Session *self, gint *number_of_tracks, GError **error)
+{
     MIRAGE_CHECK_ARG(number_of_tracks);
     /* Return number of tracks */
-    *number_of_tracks = g_list_length(_priv->tracks_list) - 2; /* Length of list, without lead-in and lead-out */
+    *number_of_tracks = g_list_length(self->priv->tracks_list) - 2; /* Length of list, without lead-in and lead-out */
     return TRUE;
 }
 
@@ -562,10 +545,10 @@ gboolean mirage_session_get_number_of_tracks (MIRAGE_Session *self, gint *number
  *
  * Returns: %TRUE on success, %FALSE on failure
  **/
-gboolean mirage_session_add_track_by_index (MIRAGE_Session *self, gint index, GObject **track, GError **error) {
-    MIRAGE_SessionPrivate *_priv = MIRAGE_SESSION_GET_PRIVATE(self);
-    GObject *new_track = NULL;
-    gint num_tracks = 0;
+gboolean mirage_session_add_track_by_index (MIRAGE_Session *self, gint index, GObject **track, GError **error)
+{
+    GObject *new_track;
+    gint num_tracks;
     
     /* First track, last track... allow negative indexes to go from behind */
     mirage_session_get_number_of_tracks(self, &num_tracks, NULL);
@@ -602,13 +585,13 @@ gboolean mirage_session_add_track_by_index (MIRAGE_Session *self, gint index, GO
     
     /* Insert track into track list... take into account that lead-in has index 0,
        thus all indexes should be increased by 1 */
-    _priv->tracks_list = g_list_insert(_priv->tracks_list, new_track, index + 1);
+    self->priv->tracks_list = g_list_insert(self->priv->tracks_list, new_track, index + 1);
     
     /* Connect track modified signal */
-    g_signal_connect(MIRAGE_OBJECT(new_track), "object-modified", (GCallback)__track_modified_handler, self);
+    g_signal_connect(MIRAGE_OBJECT(new_track), "object-modified", (GCallback)mirage_session_track_modified_handler, self);
     
     /* Bottom-up change */
-    __mirage_session_commit_bottomup_change(self, NULL);
+    mirage_session_commit_bottomup_change(self);
     
     /* Return track to user if she wants it */
     if (track && (*track == NULL)) {
@@ -650,9 +633,9 @@ gboolean mirage_session_add_track_by_index (MIRAGE_Session *self, gint index, GO
  *
  * Returns: %TRUE on success, %FALSE on failure
  **/
-gboolean mirage_session_add_track_by_number (MIRAGE_Session *self, gint number, GObject **track, GError **error) {
-    MIRAGE_SessionPrivate *_priv = MIRAGE_SESSION_GET_PRIVATE(self);
-    GObject *new_track = NULL;
+gboolean mirage_session_add_track_by_number (MIRAGE_Session *self, gint number, GObject **track, GError **error)
+{
+    GObject *new_track;
     
     /* Check if track with that number already exists */
     if (mirage_session_get_track_by_number(self, number, NULL, NULL)) {
@@ -681,13 +664,13 @@ gboolean mirage_session_add_track_by_number (MIRAGE_Session *self, gint number, 
     mirage_object_attach_child(MIRAGE_OBJECT(self), new_track, NULL);
     
     /* Insert track into track list */
-    _priv->tracks_list = g_list_insert_sorted(_priv->tracks_list, new_track, (GCompareFunc)__sort_tracks_by_number);
+    self->priv->tracks_list = g_list_insert_sorted(self->priv->tracks_list, new_track, (GCompareFunc)sort_tracks_by_number);
     
     /* Connect track modified signal */
-    g_signal_connect(MIRAGE_OBJECT(new_track), "object-modified", (GCallback)__track_modified_handler, self);
+    g_signal_connect(MIRAGE_OBJECT(new_track), "object-modified", (GCallback)mirage_session_track_modified_handler, self);
     
     /* Bottom-up change */
-    __mirage_session_commit_bottomup_change(self, NULL);
+    mirage_session_commit_bottomup_change(self);
     
     /* Return track to user if she wants it */
     if (track && (*track == NULL)) {
@@ -720,10 +703,9 @@ gboolean mirage_session_add_track_by_number (MIRAGE_Session *self, gint number, 
  *
  * Returns: %TRUE on success, %FALSE on failure
  **/
-gboolean mirage_session_remove_track_by_index (MIRAGE_Session *self, gint index, GError **error) {
-    /*MIRAGE_SessionPrivate *_priv = MIRAGE_SESSION_GET_PRIVATE(self);*/
-    GObject *track = NULL;
-    gboolean succeeded = FALSE;
+gboolean mirage_session_remove_track_by_index (MIRAGE_Session *self, gint index, GError **error)
+{
+    GObject *track;
     
     /* Find track by index */
     if (!mirage_session_get_track_by_index(self, index, &track, error)) {
@@ -731,10 +713,10 @@ gboolean mirage_session_remove_track_by_index (MIRAGE_Session *self, gint index,
     }
     
     /* Remove track from list */
-    succeeded = __remove_track_from_session(self, track, error);
+    mirage_session_remove_track(self, track);
     g_object_unref(track); /* This one's from get */
     
-    return succeeded;
+    return TRUE;
 }
 
 /**
@@ -757,10 +739,9 @@ gboolean mirage_session_remove_track_by_index (MIRAGE_Session *self, gint index,
  *
  * Returns: %TRUE on success, %FALSE on failure
  **/
-gboolean mirage_session_remove_track_by_number (MIRAGE_Session *self, gint number, GError **error) {
-    /*MIRAGE_SessionPrivate *_priv = MIRAGE_SESSION_GET_PRIVATE(self);*/
-    GObject *track = NULL;
-    gboolean succeeded = FALSE;
+gboolean mirage_session_remove_track_by_number (MIRAGE_Session *self, gint number, GError **error)
+{
+    GObject *track;
     
     /* You can't delete lead-in/lead-out */
     if (number == MIRAGE_TRACK_LEADIN || number == MIRAGE_TRACK_LEADOUT) {
@@ -774,10 +755,10 @@ gboolean mirage_session_remove_track_by_number (MIRAGE_Session *self, gint numbe
     }
     
     /* Remove track from list */
-    succeeded = __remove_track_from_session(self, track, error);
+    mirage_session_remove_track(self, track);
     g_object_unref(track); /* This one's from get */
     
-    return succeeded;
+    return TRUE;
 }
 
 /**
@@ -800,9 +781,11 @@ gboolean mirage_session_remove_track_by_number (MIRAGE_Session *self, gint numbe
  *
  * Returns: %TRUE on success, %FALSE on failure
  **/
-gboolean mirage_session_remove_track_by_object (MIRAGE_Session *self, GObject *track, GError **error) {
+gboolean mirage_session_remove_track_by_object (MIRAGE_Session *self, GObject *track, GError **error)
+{
     MIRAGE_CHECK_ARG(track);
-    return __remove_track_from_session(self, track, error);
+    mirage_session_remove_track(self, track);
+    return TRUE;
 }
 
 /**
@@ -826,10 +809,10 @@ gboolean mirage_session_remove_track_by_object (MIRAGE_Session *self, GObject *t
  *
  * Returns: %TRUE on success, %FALSE on failure
  **/
-gboolean mirage_session_get_track_by_index (MIRAGE_Session *self, gint index, GObject **track, GError **error) {
-    MIRAGE_SessionPrivate *_priv = MIRAGE_SESSION_GET_PRIVATE(self);
-    GObject *ret_track = NULL;
-    gint num_tracks = 0;
+gboolean mirage_session_get_track_by_index (MIRAGE_Session *self, gint index, GObject **track, GError **error)
+{
+    GObject *ret_track;
+    gint num_tracks;
     
     /* First track, last track... allow negative indexes to go from behind */
     mirage_session_get_number_of_tracks(self, &num_tracks, NULL);
@@ -843,7 +826,7 @@ gboolean mirage_session_get_track_by_index (MIRAGE_Session *self, gint index, GO
     /* Get index-th item from list... take into account the fact that index needs
        to be increased by one, because first track we'll get with following function
        will be the lead-in... */
-    ret_track = g_list_nth_data(_priv->tracks_list, index + 1);
+    ret_track = g_list_nth_data(self->priv->tracks_list, index + 1);
     
     if (ret_track) {
         /* Return track to user if she wants it */
@@ -876,14 +859,15 @@ gboolean mirage_session_get_track_by_index (MIRAGE_Session *self, gint index, GO
  *
  * Returns: %TRUE on success, %FALSE on failure
  **/
-gboolean mirage_session_get_track_by_number (MIRAGE_Session *self, gint track_number, GObject **track, GError **error) {
-    MIRAGE_SessionPrivate *_priv = MIRAGE_SESSION_GET_PRIVATE(self);
-    GObject *ret_track = NULL;
-    GList *entry = NULL;
+gboolean mirage_session_get_track_by_number (MIRAGE_Session *self, gint track_number, GObject **track, GError **error)
+{
+    GObject *ret_track;
+    GList *entry;
     
     /* Go over all tracks */
-    G_LIST_FOR_EACH(entry, _priv->tracks_list) {        
-        gint cur_number = 0;
+    ret_track = NULL;
+    G_LIST_FOR_EACH(entry, self->priv->tracks_list) {        
+        gint cur_number;
         
         ret_track = entry->data;
         
@@ -933,20 +917,21 @@ gboolean mirage_session_get_track_by_number (MIRAGE_Session *self, gint track_nu
  *
  * Returns: %TRUE on success, %FALSE on failure
  **/
-gboolean mirage_session_get_track_by_address (MIRAGE_Session *self, gint address, GObject **track, GError **error) {
-    MIRAGE_SessionPrivate *_priv = MIRAGE_SESSION_GET_PRIVATE(self);
-    GObject *ret_track = NULL;
-    GList *entry = NULL;
+gboolean mirage_session_get_track_by_address (MIRAGE_Session *self, gint address, GObject **track, GError **error)
+{
+    GObject *ret_track;
+    GList *entry;
     
-    if ((address < _priv->start_sector) || (address >= (_priv->start_sector + _priv->length))) {
+    if ((address < self->priv->start_sector) || (address >= (self->priv->start_sector + self->priv->length))) {
         mirage_error(MIRAGE_E_SECTOROUTOFRANGE, error);
         return FALSE;
     }
     
     /* Go over all tracks */
-    G_LIST_FOR_EACH(entry, _priv->tracks_list) {        
-        gint start_sector = 0;
-        gint length = 0;
+    ret_track = NULL;
+    G_LIST_FOR_EACH(entry, self->priv->tracks_list) {        
+        gint start_sector;
+        gint length;
         
         ret_track = entry->data;
         
@@ -994,13 +979,13 @@ gboolean mirage_session_get_track_by_address (MIRAGE_Session *self, gint address
  *
  * Returns: %TRUE on success, %FALSE on failure
  **/
-gboolean mirage_session_for_each_track (MIRAGE_Session *self, MIRAGE_CallbackFunction func, gpointer user_data, GError **error) {
-    MIRAGE_SessionPrivate *_priv = MIRAGE_SESSION_GET_PRIVATE(self);
-    GList *entry = NULL;
+gboolean mirage_session_for_each_track (MIRAGE_Session *self, MIRAGE_CallbackFunction func, gpointer user_data, GError **error)
+{
+    GList *entry;
     
     MIRAGE_CHECK_ARG(func);
     
-    G_LIST_FOR_EACH(entry, _priv->tracks_list) {
+    G_LIST_FOR_EACH(entry, self->priv->tracks_list) {
         gboolean succeeded = (*func) (MIRAGE_TRACK(entry->data), user_data);
         if (!succeeded) {
             mirage_error(MIRAGE_E_ITERCANCELLED, error);
@@ -1029,14 +1014,14 @@ gboolean mirage_session_for_each_track (MIRAGE_Session *self, MIRAGE_CallbackFun
  *
  * Returns: %TRUE on success, %FALSE on failure
  **/
-gboolean mirage_session_get_track_before (MIRAGE_Session *self, GObject *cur_track, GObject **prev_track, GError **error) {
-    MIRAGE_SessionPrivate *_priv = MIRAGE_SESSION_GET_PRIVATE(self);
-    gint index = 0;
+gboolean mirage_session_get_track_before (MIRAGE_Session *self, GObject *cur_track, GObject **prev_track, GError **error)
+{
+    gint index;
     
     MIRAGE_CHECK_ARG(cur_track);
     
     /* Get index of given track in the list */
-    index = g_list_index(_priv->tracks_list, cur_track);
+    index = g_list_index(self->priv->tracks_list, cur_track);
     if (index == -1) {
         mirage_error(MIRAGE_E_NOTINLAYOUT, error);
         return FALSE;
@@ -1070,15 +1055,15 @@ gboolean mirage_session_get_track_before (MIRAGE_Session *self, GObject *cur_tra
  *
  * Returns: %TRUE on success, %FALSE on failure
  **/
-gboolean mirage_session_get_track_after (MIRAGE_Session *self, GObject *cur_track, GObject **next_track, GError **error) {
-    MIRAGE_SessionPrivate *_priv = MIRAGE_SESSION_GET_PRIVATE(self);
-    gint num_tracks = 0;
-    gint index = 0;
+gboolean mirage_session_get_track_after (MIRAGE_Session *self, GObject *cur_track, GObject **next_track, GError **error)
+{
+    gint num_tracks;
+    gint index;
     
     MIRAGE_CHECK_ARG(cur_track);
 
     /* Get index of given track in the list */
-    index = g_list_index(_priv->tracks_list, cur_track);
+    index = g_list_index(self->priv->tracks_list, cur_track);
     if (index == -1) {
         mirage_error(MIRAGE_E_NOTINLAYOUT, error);
         return FALSE;
@@ -1108,11 +1093,11 @@ gboolean mirage_session_get_track_after (MIRAGE_Session *self, GObject *cur_trac
  *
  * Returns: %TRUE on success, %FALSE on failure
  **/
-gboolean mirage_session_get_number_of_languages (MIRAGE_Session *self, gint *number_of_languages, GError **error) {
-    MIRAGE_SessionPrivate *_priv = MIRAGE_SESSION_GET_PRIVATE(self);
+gboolean mirage_session_get_number_of_languages (MIRAGE_Session *self, gint *number_of_languages, GError **error)
+{
     MIRAGE_CHECK_ARG(number_of_languages);
     /* Return number of languages */
-    *number_of_languages = g_list_length(_priv->languages_list); /* Length of list */
+    *number_of_languages = g_list_length(self->priv->languages_list); /* Length of list */
     return TRUE;
 }
 
@@ -1142,9 +1127,9 @@ gboolean mirage_session_get_number_of_languages (MIRAGE_Session *self, gint *num
  *
  * Returns: %TRUE on success, %FALSE on failure
  **/
-gboolean mirage_session_add_language (MIRAGE_Session *self, gint langcode, GObject **language, GError **error) {
-    MIRAGE_SessionPrivate *_priv = MIRAGE_SESSION_GET_PRIVATE(self);
-    GObject *new_language = NULL;
+gboolean mirage_session_add_language (MIRAGE_Session *self, gint langcode, GObject **language, GError **error)
+{
+    GObject *new_language;
     
     /* Check if language already exists */
     if (mirage_session_get_language_by_code(self, langcode, NULL, NULL)) {
@@ -1173,7 +1158,7 @@ gboolean mirage_session_add_language (MIRAGE_Session *self, gint langcode, GObje
     mirage_object_attach_child(MIRAGE_OBJECT(self), new_language, NULL);
     
     /* Insert language into language list */
-    _priv->languages_list = g_list_insert_sorted(_priv->languages_list, new_language, (GCompareFunc)__sort_languages_by_code);
+    self->priv->languages_list = g_list_insert_sorted(self->priv->languages_list, new_language, (GCompareFunc)sort_languages_by_code);
     
     /* Return language to user if she wants it */
     if (language && (*language == NULL)) {
@@ -1203,21 +1188,20 @@ gboolean mirage_session_add_language (MIRAGE_Session *self, gint langcode, GObje
  * Returns: %TRUE on success, %FALSE on failure
 
  **/
-gboolean mirage_session_remove_language_by_index (MIRAGE_Session *self, gint index, GError **error) {
-    /*MIRAGE_SessionPrivate *_priv = MIRAGE_SESSION_GET_PRIVATE(self);*/
-    GObject *language = NULL;
-    gboolean succeeded = FALSE;
+gboolean mirage_session_remove_language_by_index (MIRAGE_Session *self, gint index, GError **error)
+{
+    GObject *language;
     
-    /* Find track by index */
+    /* Find language by index */
     if (!mirage_session_get_language_by_index(self, index, &language, error)) {
         return FALSE;
     }
     
-    /* Remove track from list */
-    succeeded = __remove_language_from_session(self, language, error);
+    /* Remove language */
+    mirage_session_remove_language(self, language);
     g_object_unref(language); /* This one's from get */
     
-    return succeeded;
+    return TRUE;
 }
 
 /**
@@ -1236,21 +1220,20 @@ gboolean mirage_session_remove_language_by_index (MIRAGE_Session *self, gint ind
  *
  * Returns: %TRUE on success, %FALSE on failure
  **/
-gboolean mirage_session_remove_language_by_code (MIRAGE_Session *self, gint langcode, GError **error) {
-    /*MIRAGE_SessionPrivate *_priv = MIRAGE_SESSION_GET_PRIVATE(self);*/
-    GObject *language = NULL;
-    gboolean succeeded = FALSE;
+gboolean mirage_session_remove_language_by_code (MIRAGE_Session *self, gint langcode, GError **error)
+{
+    GObject *language;
     
-    /* Find session in layout */
+    /* Find language by code */
     if (!mirage_session_get_language_by_code(self, langcode, &language, error)) {
         return FALSE;
     }
         
-    /* Remove track from list */
-    succeeded = __remove_language_from_session(self, language, error);
+    /* Remove language */
+    mirage_session_remove_language(self, language);
     g_object_unref(language); /* This one's from get */
     
-    return succeeded;
+    return TRUE;
 }
 
 /**
@@ -1269,9 +1252,11 @@ gboolean mirage_session_remove_language_by_code (MIRAGE_Session *self, gint lang
  *
  * Returns: %TRUE on success, %FALSE on failure
  **/
-gboolean mirage_session_remove_language_by_object (MIRAGE_Session *self, GObject *language, GError **error) {
+gboolean mirage_session_remove_language_by_object (MIRAGE_Session *self, GObject *language, GError **error)
+{
     MIRAGE_CHECK_ARG(language);
-    return __remove_language_from_session(self, language, error);
+    mirage_session_remove_language(self, language);
+    return TRUE;
 }
 
 /**
@@ -1296,9 +1281,9 @@ gboolean mirage_session_remove_language_by_object (MIRAGE_Session *self, GObject
  *
  * Returns: %TRUE on success, %FALSE on failure
  **/
-gboolean mirage_session_get_language_by_index (MIRAGE_Session *self, gint index, GObject **language, GError **error) {
-    MIRAGE_SessionPrivate *_priv = MIRAGE_SESSION_GET_PRIVATE(self);
-    GObject *ret_language = NULL;
+gboolean mirage_session_get_language_by_index (MIRAGE_Session *self, gint index, GObject **language, GError **error)
+{
+    GObject *ret_language;
     gint num_languages = 0;
     
     /* First language, last language... allow negative indexes to go from behind */
@@ -1311,7 +1296,7 @@ gboolean mirage_session_get_language_by_index (MIRAGE_Session *self, gint index,
     }
     
     /* Get index-th item from list... */
-    ret_language = g_list_nth_data(_priv->languages_list, index);
+    ret_language = g_list_nth_data(self->priv->languages_list, index);
     
     if (ret_language) {
         /* Return language to user if she wants it */
@@ -1344,13 +1329,14 @@ gboolean mirage_session_get_language_by_index (MIRAGE_Session *self, gint index,
  *
  * Returns: %TRUE on success, %FALSE on failure
  **/
-gboolean mirage_session_get_language_by_code (MIRAGE_Session *self, gint langcode, GObject **language, GError **error) {
-    MIRAGE_SessionPrivate *_priv = MIRAGE_SESSION_GET_PRIVATE(self);
-    GObject *ret_language = NULL;
-    GList *entry = NULL;
+gboolean mirage_session_get_language_by_code (MIRAGE_Session *self, gint langcode, GObject **language, GError **error)
+{
+    GObject *ret_language;
+    GList *entry;
     
     /* Go over all languages */
-    G_LIST_FOR_EACH(entry, _priv->languages_list) {        
+    ret_language = NULL;
+    G_LIST_FOR_EACH(entry, self->priv->languages_list) {        
         gint cur_code = 0;
         
         ret_language = entry->data;
@@ -1398,13 +1384,13 @@ gboolean mirage_session_get_language_by_code (MIRAGE_Session *self, gint langcod
  *
  * Returns: %TRUE on success, %FALSE on failure
  **/
-gboolean mirage_session_for_each_language (MIRAGE_Session *self, MIRAGE_CallbackFunction func, gpointer user_data, GError **error) {
-    MIRAGE_SessionPrivate *_priv = MIRAGE_SESSION_GET_PRIVATE(self);
-    GList *entry = NULL;
+gboolean mirage_session_for_each_language (MIRAGE_Session *self, MIRAGE_CallbackFunction func, gpointer user_data, GError **error)
+{
+    GList *entry;
     
     MIRAGE_CHECK_ARG(func);
     
-    G_LIST_FOR_EACH(entry, _priv->languages_list) {
+    G_LIST_FOR_EACH(entry, self->priv->languages_list) {
         gboolean succeeded = (*func) (MIRAGE_LANGUAGE(entry->data), user_data);
         if (!succeeded) {
             mirage_error(MIRAGE_E_ITERCANCELLED, error);
@@ -1415,9 +1401,10 @@ gboolean mirage_session_for_each_language (MIRAGE_Session *self, MIRAGE_Callback
     return TRUE;
 }
 
-static gboolean __set_cdtext_data (gint langcode, gint type, gint track, guint8 *data, gint len, MIRAGE_Session *self) {
-    gboolean succeeded = FALSE;
-    GObject *language = NULL;
+static gboolean set_cdtext_data (gint langcode, gint type, gint track, guint8 *data, gint len, MIRAGE_Session *self)
+{
+    gboolean succeeded;
+    GObject *language;
     
     if (track == 0) {
         /* Session */
@@ -1429,7 +1416,7 @@ static gboolean __set_cdtext_data (gint langcode, gint type, gint track, guint8 
         }
     } else {
         /* Track */
-        GObject *cur_track = NULL;
+        GObject *cur_track;
         if (!mirage_session_get_track_by_number(self, track, &cur_track, NULL)) {
             return FALSE;
         }
@@ -1468,8 +1455,9 @@ static gboolean __set_cdtext_data (gint langcode, gint type, gint track, guint8 
  *
  * Returns: %TRUE on success, %FALSE on failure
  **/
-gboolean mirage_session_set_cdtext_data (MIRAGE_Session *self, guint8 *data, gint len, GError **error) {
-    GObject *decoder = NULL;
+gboolean mirage_session_set_cdtext_data (MIRAGE_Session *self, guint8 *data, gint len, GError **error)
+{
+    GObject *decoder;
     gboolean succeeded = FALSE;
     
     MIRAGE_CHECK_ARG(data);
@@ -1483,7 +1471,7 @@ gboolean mirage_session_set_cdtext_data (MIRAGE_Session *self, guint8 *data, gin
         gint i = 0;
         /* Try all possible blocks... */
         while (mirage_cdtext_decoder_get_block_info(MIRAGE_CDTEXT_ENCDEC(decoder), i, NULL, NULL, NULL, NULL)) {
-            mirage_cdtext_decoder_get_data(MIRAGE_CDTEXT_ENCDEC(decoder), i, (MIRAGE_CDTextDataCallback)__set_cdtext_data, self, error);
+            mirage_cdtext_decoder_get_data(MIRAGE_CDTEXT_ENCDEC(decoder), i, (MIRAGE_CDTextDataCallback)set_cdtext_data, self, error);
             i++;
         }
     }
@@ -1510,13 +1498,14 @@ gboolean mirage_session_set_cdtext_data (MIRAGE_Session *self, guint8 *data, gin
  *
  * Returns: %TRUE on success, %FALSE on failure
  **/
-gboolean mirage_session_get_cdtext_data (MIRAGE_Session *self, guint8 **data, gint *len, GError **error) {
-    gint num_languages = 0;
-    gint num_tracks = 0;
-    gint buflen = 0;
-    guint8 *buffer = NULL;
-    GObject *encoder = NULL;
-    gboolean succeeded = TRUE;
+gboolean mirage_session_get_cdtext_data (MIRAGE_Session *self, guint8 **data, gint *len, GError **error)
+{
+    gint num_languages;
+    gint num_tracks;
+    gint buflen;
+    guint8 *buffer;
+    GObject *encoder;
+    gboolean succeeded;
     
     /* Allocate space... technically, there could be 255 packs (each 18-byte long) 
        per every language... and spec says we support 8 of those. So we play safe 
@@ -1635,9 +1624,10 @@ gboolean mirage_session_get_cdtext_data (MIRAGE_Session *self, guint8 **data, gi
  *
  * Returns: %TRUE on success, %FALSE on failure
  **/
-gboolean mirage_session_get_prev (MIRAGE_Session *self, GObject **prev_session, GError **error) {
-    GObject *disc = NULL;
-    gboolean succeeded = TRUE;
+gboolean mirage_session_get_prev (MIRAGE_Session *self, GObject **prev_session, GError **error)
+{
+    GObject *disc;
+    gboolean succeeded;
     
     /* Get parent disc */
     if (!mirage_object_get_parent(MIRAGE_OBJECT(self), &disc, error)) {
@@ -1664,9 +1654,10 @@ gboolean mirage_session_get_prev (MIRAGE_Session *self, GObject **prev_session, 
  *
  * Returns: %TRUE on success, %FALSE on failure
  **/
-gboolean mirage_session_get_next (MIRAGE_Session *self, GObject **next_session, GError **error) {
-    GObject *disc = NULL;
-    gboolean succeeded = TRUE;
+gboolean mirage_session_get_next (MIRAGE_Session *self, GObject **next_session, GError **error)
+{
+    GObject *disc;
+    gboolean succeeded;
    
     /* Get parent disc */
     if (!mirage_object_get_parent(MIRAGE_OBJECT(self), &disc, error)) {
@@ -1680,94 +1671,78 @@ gboolean mirage_session_get_next (MIRAGE_Session *self, GObject **next_session, 
 }
 
 
-/******************************************************************************\
- *                                 Object init                                *
-\******************************************************************************/
-/* Our parent class */
-static MIRAGE_ObjectClass *parent_class = NULL;
+/**********************************************************************\
+ *                             Object init                            * 
+\**********************************************************************/
+G_DEFINE_TYPE(MIRAGE_Session, mirage_session, MIRAGE_TYPE_OBJECT);
 
-static void __mirage_session_instance_init (GTypeInstance *instance, gpointer g_class G_GNUC_UNUSED) {
-    MIRAGE_Session *self = MIRAGE_SESSION(instance);
-    MIRAGE_SessionPrivate *_priv = MIRAGE_SESSION_GET_PRIVATE(self);
-    
-    _priv->session_number = 1;
-    _priv->first_track = 1;
+
+static void mirage_session_init (MIRAGE_Session *self)
+{
+    self->priv = MIRAGE_SESSION_GET_PRIVATE(self);
+
+    self->priv->tracks_list = NULL;
+    self->priv->languages_list = NULL;
+
+    self->priv->session_number = 1;
+    self->priv->first_track = 1;
     
     /* Create lead-in */
     mirage_session_add_track_by_number(self, MIRAGE_TRACK_LEADIN, NULL, NULL);
     
     /* Create lead-out */
     mirage_session_add_track_by_number(self, MIRAGE_TRACK_LEADOUT, NULL, NULL);
-    
-    return;
 }
 
-static void __mirage_session_finalize (GObject *obj) {
-    MIRAGE_Session *self = MIRAGE_SESSION(obj);
-    MIRAGE_SessionPrivate *_priv = MIRAGE_SESSION_GET_PRIVATE(self);
-    GList *entry = NULL;
-    
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_GOBJECT, "%s: finalizing object\n", __debug__);
+static void mirage_session_dispose (GObject *gobject)
+{
+    MIRAGE_Session *self = MIRAGE_SESSION(gobject);
+    GList *entry;
 
-    /* Free list of tracks */
-    G_LIST_FOR_EACH(entry, _priv->tracks_list) {
+    /* Unref tracks */
+    G_LIST_FOR_EACH(entry, self->priv->tracks_list) {
         if (entry->data) {
             GObject *track = entry->data;
             /* Disconnect signal handler and unref */
-            g_signal_handlers_disconnect_by_func(MIRAGE_OBJECT(track), __track_modified_handler, self);
+            g_signal_handlers_disconnect_by_func(MIRAGE_OBJECT(track), mirage_session_track_modified_handler, self);
             g_object_unref(track);
+
+            entry->data = NULL;
         }
     }
-    g_list_free(_priv->tracks_list);
-    
-    /* Free list of languages */
-    G_LIST_FOR_EACH(entry, _priv->languages_list) {
+
+    /* Unref languages */
+    G_LIST_FOR_EACH(entry, self->priv->languages_list) {
         if (entry->data) {
             GObject *language = entry->data;
             g_object_unref(language);
+
+            entry->data = NULL;
         }
     }
-    g_list_free(_priv->languages_list);
     
     /* Chain up to the parent class */
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_GOBJECT, "%s: chaining up to parent\n", __debug__);
-    return G_OBJECT_CLASS(parent_class)->finalize(obj);
+    return G_OBJECT_CLASS(mirage_session_parent_class)->dispose(gobject);
 }
 
-static void __mirage_session_class_init (gpointer g_class, gpointer g_class_data G_GNUC_UNUSED) {
-    GObjectClass *class_gobject = G_OBJECT_CLASS(g_class);
-    MIRAGE_SessionClass *klass = MIRAGE_SESSION_CLASS(g_class);
+static void mirage_session_finalize (GObject *gobject)
+{
+    MIRAGE_Session *self = MIRAGE_SESSION(gobject);
     
-    /* Set parent class */
-    parent_class = g_type_class_peek_parent(klass);
+    g_list_free(self->priv->tracks_list);
+    g_list_free(self->priv->languages_list);
     
+    /* Chain up to the parent class */
+    return G_OBJECT_CLASS(mirage_session_parent_class)->finalize(gobject);
+}
+
+static void mirage_session_class_init (MIRAGE_SessionClass *klass)
+{
+    GObjectClass *gobject_class = G_OBJECT_CLASS(klass);
+
+    gobject_class->dispose = mirage_session_dispose;
+    gobject_class->finalize = mirage_session_finalize;
+
     /* Register private structure */
     g_type_class_add_private(klass, sizeof(MIRAGE_SessionPrivate));
-    
-    /* Initialize GObject members */
-    class_gobject->finalize = __mirage_session_finalize;
-    
-    return;
-}
-
-GType mirage_session_get_type (void) {
-    static GType type = 0;
-    if (type == 0) {
-        static const GTypeInfo info = {
-            sizeof(MIRAGE_SessionClass),
-            NULL,   /* base_init */
-            NULL,   /* base_finalize */
-            __mirage_session_class_init,   /* class_init */
-            NULL,   /* class_finalize */
-            NULL,   /* class_data */
-            sizeof(MIRAGE_Session),
-            0,      /* n_preallocs */
-            __mirage_session_instance_init,   /* instance_init */
-            NULL    /* value_table */
-        };
-        
-        type = g_type_register_static(MIRAGE_TYPE_OBJECT, "MIRAGE_Session", &info, 0);
-    }
-    
-    return type;
 }

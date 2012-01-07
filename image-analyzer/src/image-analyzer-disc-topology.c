@@ -238,15 +238,15 @@ static void setup_gui (IMAGE_ANALYZER_DiscTopology *self)
 \**********************************************************************/
 G_DEFINE_TYPE(IMAGE_ANALYZER_DiscTopology, image_analyzer_disc_topology, GTK_TYPE_WINDOW);
 
-static void image_analyzer_disc_topology_class_init (IMAGE_ANALYZER_DiscTopologyClass *klass)
-{
-    /* Register private structure */
-    g_type_class_add_private(klass, sizeof(IMAGE_ANALYZER_DiscTopologyPrivate));
-}
-
 static void image_analyzer_disc_topology_init (IMAGE_ANALYZER_DiscTopology *self)
 {
     self->priv = IMAGE_ANALYZER_DISC_TOPOLOGY_GET_PRIVATE(self);
 
     setup_gui(self);
+}
+
+static void image_analyzer_disc_topology_class_init (IMAGE_ANALYZER_DiscTopologyClass *klass)
+{
+    /* Register private structure */
+    g_type_class_add_private(klass, sizeof(IMAGE_ANALYZER_DiscTopologyPrivate));
 }

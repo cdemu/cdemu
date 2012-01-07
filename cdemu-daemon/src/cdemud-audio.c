@@ -334,6 +334,16 @@ gboolean cdemud_audio_get_status (CDEMUD_Audio *self, gint *status, GError **err
 \**********************************************************************/
 G_DEFINE_TYPE(CDEMUD_Audio, cdemud_audio, MIRAGE_TYPE_OBJECT);
 
+static void cdemud_audio_init (CDEMUD_Audio *self)
+{
+    self->priv = CDEMUD_AUDIO_GET_PRIVATE(self);
+
+    self->priv->playback_thread = NULL;
+    self->priv->device = NULL;
+    self->priv->disc = NULL;
+    self->priv->device_mutex = NULL;
+}
+
 static void cdemud_audio_finalize (GObject *gobject)
 {
     CDEMUD_Audio *self = CDEMUD_AUDIO(gobject);                                                
@@ -355,7 +365,3 @@ static void cdemud_audio_class_init (CDEMUD_AudioClass *klass)
     g_type_class_add_private(klass, sizeof(CDEMUD_AudioPrivate));
 }
 
-static void cdemud_audio_init (CDEMUD_Audio *self)
-{
-    self->priv = CDEMUD_AUDIO_GET_PRIVATE(self);
-}

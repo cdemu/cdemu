@@ -1,6 +1,6 @@
 /*
  *  libMirage: Base object
- *  Copyright (C) 2006-2010 Rok Mandeljc
+ *  Copyright (C) 2006-2012 Rok Mandeljc
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -30,6 +30,11 @@ G_BEGIN_DECLS
 #define MIRAGE_IS_OBJECT_CLASS(klass) (G_TYPE_CHECK_CLASS_TYPE((klass), MIRAGE_TYPE_OBJECT))
 #define MIRAGE_OBJECT_GET_CLASS(obj)  (G_TYPE_INSTANCE_GET_CLASS((obj), MIRAGE_TYPE_OBJECT, MIRAGE_ObjectClass))
 
+typedef struct _MIRAGE_Object           MIRAGE_Object;
+typedef struct _MIRAGE_ObjectClass      MIRAGE_ObjectClass;
+typedef struct _MIRAGE_ObjectPrivate    MIRAGE_ObjectPrivate;
+
+
 /**
  * MIRAGE_Object:
  *
@@ -37,24 +42,29 @@ G_BEGIN_DECLS
  * Contains private data only, and should be accessed using the functions below.
  * </para>
  **/
-typedef struct {
-    GObject parent;
-} MIRAGE_Object;
+struct _MIRAGE_Object
+{
+    GObject parent_instance;
 
-typedef struct {
-    GObjectClass parent;
+    /*< private >*/
+    MIRAGE_ObjectPrivate *priv;
+};
+
+struct _MIRAGE_ObjectClass
+{
+    GObjectClass parent_class;
     
     /* Class members */
     gint signal_object_modified;
-} MIRAGE_ObjectClass;
+};
 
 /* Used by MIRAGE_TYPE_OBJECT */
 GType mirage_object_get_type (void);
 
 
-/******************************************************************************\
- *                                 Public API                                 *
-\******************************************************************************/
+/**********************************************************************\
+ *                             Public API                             *
+\**********************************************************************/
 gboolean mirage_object_set_debug_context (MIRAGE_Object *self, GObject *debug_context, GError **error);
 gboolean mirage_object_get_debug_context (MIRAGE_Object *self, GObject **debug_context, GError **error);
 

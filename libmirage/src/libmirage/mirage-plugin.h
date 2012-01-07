@@ -1,6 +1,6 @@
 /*
  *  libMirage: Plugin object
- *  Copyright (C) 2007-2010 Rok Mandeljc
+ *  Copyright (C) 2007-2012 Rok Mandeljc
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -30,6 +30,10 @@ G_BEGIN_DECLS
 #define MIRAGE_IS_PLUGIN_CLASS(klass) (G_TYPE_CHECK_CLASS_TYPE((klass), MIRAGE_TYPE_PLUGIN))
 #define MIRAGE_PLUGIN_GET_CLASS(obj)  (G_TYPE_INSTANCE_GET_CLASS((obj), MIRAGE_TYPE_PLUGIN, MIRAGE_PluginClass))
 
+typedef struct _MIRAGE_Plugin           MIRAGE_Plugin;
+typedef struct _MIRAGE_PluginClass      MIRAGE_PluginClass;
+typedef struct _MIRAGE_PluginPrivate    MIRAGE_PluginPrivate;
+
 /**
  * MIRAGE_Plugin:
  *
@@ -37,20 +41,27 @@ G_BEGIN_DECLS
  * Contains private data only, and should be accessed using the functions below.
  * </para>
  **/
-typedef struct {
-    GTypeModule parent;
-} MIRAGE_Plugin;
+struct _MIRAGE_Plugin
+{
+    GTypeModule parent_instance;
 
-typedef struct {
-    GTypeModuleClass parent;
-} MIRAGE_PluginClass;
+    /*< private >*/
+    MIRAGE_PluginPrivate *priv;
+};
+
+struct _MIRAGE_PluginClass
+{
+    GTypeModuleClass parent_class;
+};
 
 /* Used by MIRAGE_TYPE_PLUGIN */
 GType mirage_plugin_get_type (void);
 
-/* Public API */
-MIRAGE_Plugin *mirage_plugin_new (const gchar *filename);
 
+/**********************************************************************\
+ *                             Public API                             *
+\**********************************************************************/
+MIRAGE_Plugin *mirage_plugin_new (const gchar *filename);
 
 G_END_DECLS
 

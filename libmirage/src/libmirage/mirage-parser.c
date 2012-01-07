@@ -1,6 +1,6 @@
 /*
  *  libMirage: Parser object
- *  Copyright (C) 2008-2010 Rok Mandeljc
+ *  Copyright (C) 2008-2012 Rok Mandeljc
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -26,22 +26,24 @@
 #define __debug__ "Parser"
 
 
-/******************************************************************************\
- *                              Private structure                             *
-\******************************************************************************/
+/**********************************************************************\
+ *                          Private structure                         *
+\**********************************************************************/
 #define MIRAGE_PARSER_GET_PRIVATE(obj) (G_TYPE_INSTANCE_GET_PRIVATE((obj), MIRAGE_TYPE_PARSER, MIRAGE_ParserPrivate))
 
-typedef struct {
+struct _MIRAGE_ParserPrivate
+{
     GHashTable *parser_params;
     
     MIRAGE_ParserInfo *parser_info;
-} MIRAGE_ParserPrivate;
+};
 
 
-/******************************************************************************\
- *                              Private functions                             *
-\******************************************************************************/
-static void __destroy_parser_info (MIRAGE_ParserInfo *info) {
+/**********************************************************************\
+ *                          Private functions                         *
+\**********************************************************************/
+static void destroy_parser_info (MIRAGE_ParserInfo *info)
+{
     /* Free info and its content */
     if (info) {
         g_free(info->id);
@@ -51,13 +53,12 @@ static void __destroy_parser_info (MIRAGE_ParserInfo *info) {
         
         g_free(info);
     }
-    
-    return;
 }
 
-/******************************************************************************\
- *                                 Public API                                 *
-\******************************************************************************/
+
+/**********************************************************************\
+ *                             Public API                             *
+\**********************************************************************/
 /**
  * mirage_parser_generate_parser_info:
  * @self: a #MIRAGE_Parser
@@ -71,23 +72,21 @@ static void __destroy_parser_info (MIRAGE_ParserInfo *info) {
  * for creating parser information in parser implementations.
  * </para>
  **/
-void mirage_parser_generate_parser_info (MIRAGE_Parser *self, const gchar *id, const gchar *name, const gchar *description, const gchar *mime_type) {
-    MIRAGE_ParserPrivate *_priv = MIRAGE_PARSER_GET_PRIVATE(self);
-    
+void mirage_parser_generate_parser_info (MIRAGE_Parser *self, const gchar *id, const gchar *name, const gchar *description, const gchar *mime_type)
+{
     /* Free old info */
-    __destroy_parser_info(_priv->parser_info);
+    destroy_parser_info(self->priv->parser_info);
     
     /* Create new info */
-    _priv->parser_info = g_new0(MIRAGE_ParserInfo, 1);
+    self->priv->parser_info = g_new0(MIRAGE_ParserInfo, 1);
     
-    _priv->parser_info->id = g_strdup(id);
-    _priv->parser_info->name = g_strdup(name);
+    self->priv->parser_info->id = g_strdup(id);
+    self->priv->parser_info->name = g_strdup(name);
         
-    _priv->parser_info->description = g_strdup(description);
-    _priv->parser_info->mime_type = g_strdup(mime_type);
-    
-    return;
+    self->priv->parser_info->description = g_strdup(description);
+    self->priv->parser_info->mime_type = g_strdup(mime_type);
 }
+
 
 /**
  * mirage_parser_get_parser_info:
@@ -106,15 +105,14 @@ void mirage_parser_generate_parser_info (MIRAGE_Parser *self, const gchar *id, c
  *
  * Returns: %TRUE on success, %FALSE on failure
  **/
-gboolean mirage_parser_get_parser_info (MIRAGE_Parser *self, const MIRAGE_ParserInfo **parser_info, GError **error) {
-    MIRAGE_ParserPrivate *_priv = MIRAGE_PARSER_GET_PRIVATE(self);
-
-    if (!_priv->parser_info) {
+gboolean mirage_parser_get_parser_info (MIRAGE_Parser *self, const MIRAGE_ParserInfo **parser_info, GError **error)
+{
+    if (!self->priv->parser_info) {
         mirage_error(MIRAGE_E_DATANOTSET, error);
         return FALSE;
     }
     
-    *parser_info = _priv->parser_info;
+    *parser_info = self->priv->parser_info;
     return TRUE;
 }
 
@@ -132,7 +130,8 @@ gboolean mirage_parser_get_parser_info (MIRAGE_Parser *self, const MIRAGE_Parser
  *
  * Returns: %TRUE on success, %FALSE on failure
  **/
-gboolean mirage_parser_load_image (MIRAGE_Parser *self, gchar **filenames, GObject **disc, GError **error) {
+gboolean mirage_parser_load_image (MIRAGE_Parser *self, gchar **filenames, GObject **disc, GError **error)
+{
     /* Provided by implementation */
     if (!MIRAGE_PARSER_GET_CLASS(self)->load_image) {
         mirage_error(MIRAGE_E_NOTIMPL, error);
@@ -178,8 +177,9 @@ gboolean mirage_parser_load_image (MIRAGE_Parser *self, gchar **filenames, GObje
  *
  * Returns: a value from #MIRAGE_MediumTypes, according to the guessed medium type.
  **/
-gint mirage_parser_guess_medium_type (MIRAGE_Parser *self, GObject *disc) {
-    gint length = 0;
+gint mirage_parser_guess_medium_type (MIRAGE_Parser *self, GObject *disc)
+{
+    gint length;
     
     mirage_disc_layout_get_length(MIRAGE_DISC(disc), &length, NULL);
     
@@ -217,9 +217,10 @@ gint mirage_parser_guess_medium_type (MIRAGE_Parser *self, GObject *disc) {
  *
  * Returns: %TRUE on success, %FALSE on failure
  **/
-gboolean mirage_parser_add_redbook_pregap (MIRAGE_Parser *self, GObject *disc, GError **error) {
-    gint medium_type = 0;
-    gint num_sessions = 0;
+gboolean mirage_parser_add_redbook_pregap (MIRAGE_Parser *self, GObject *disc, GError **error)
+{
+    gint medium_type;
+    gint num_sessions;
     gint i;
     
     mirage_disc_get_medium_type(MIRAGE_DISC(disc), &medium_type, NULL);
@@ -257,7 +258,7 @@ gboolean mirage_parser_add_redbook_pregap (MIRAGE_Parser *self, GObject *disc, G
         }
 
         /* Add pregap fragment (empty) */
-        GObject *pregap_fragment = libmirage_create_fragment(MIRAGE_TYPE_FINTERFACE_NULL, "NULL", NULL);
+        GObject *pregap_fragment = libmirage_create_fragment(MIRAGE_TYPE_FRAG_IFACE_NULL, "NULL", NULL);
         if (!pregap_fragment) {
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to create pregap fragment!\n", __debug__);
             g_object_unref(session);
@@ -312,9 +313,9 @@ gboolean mirage_parser_add_redbook_pregap (MIRAGE_Parser *self, GObject *disc, G
  *
  * Returns: %TRUE on success, %FALSE on failure
  **/
-gboolean mirage_parser_set_params (MIRAGE_Parser *self, GHashTable *params, GError **error G_GNUC_UNUSED) {
-    MIRAGE_ParserPrivate *_priv = MIRAGE_PARSER_GET_PRIVATE(self);
-    _priv->parser_params = params; /* Just store pointer */
+gboolean mirage_parser_set_params (MIRAGE_Parser *self, GHashTable *params, GError **error G_GNUC_UNUSED)
+{
+    self->priv->parser_params = params; /* Just store pointer */
     return TRUE;
 }
 
@@ -339,8 +340,8 @@ gboolean mirage_parser_set_params (MIRAGE_Parser *self, GHashTable *params, GErr
  *
  * Returns: %TRUE on success, %FALSE on failure
  **/
-gboolean mirage_parser_get_param_string (MIRAGE_Parser *self, const gchar *name, const gchar **ret_value, GError **error G_GNUC_UNUSED) {
-    /*MIRAGE_ParserPrivate *_priv = MIRAGE_PARSER_GET_PRIVATE(self);*/
+gboolean mirage_parser_get_param_string (MIRAGE_Parser *self, const gchar *name, const gchar **ret_value, GError **error G_GNUC_UNUSED)
+{
     GVariant *value;
 
     /* Get value */
@@ -373,18 +374,18 @@ gboolean mirage_parser_get_param_string (MIRAGE_Parser *self, const gchar *name,
  *
  * Returns: %TRUE on success, %FALSE on failure
  **/
-gboolean mirage_parser_get_param (MIRAGE_Parser *self, const gchar *name, const GVariantType *type, GVariant **ret_value, GError **error) {
-    MIRAGE_ParserPrivate *_priv = MIRAGE_PARSER_GET_PRIVATE(self);
+gboolean mirage_parser_get_param (MIRAGE_Parser *self, const gchar *name, const GVariantType *type, GVariant **ret_value, GError **error)
+{
     GVariant *value;
 
     /* Make sure parameters are set */
-    if (!_priv->parser_params) {
+    if (!self->priv->parser_params) {
         mirage_error(MIRAGE_E_GENERIC, error);
         return FALSE;
     }
 
     /* Lookup value */
-    value = g_hash_table_lookup(_priv->parser_params, name);
+    value = g_hash_table_lookup(self->priv->parser_params, name);
     if (!value) {
         mirage_error(MIRAGE_E_GENERIC, error);
         return FALSE;
@@ -405,63 +406,38 @@ gboolean mirage_parser_get_param (MIRAGE_Parser *self, const gchar *name, const 
 }
 
 
-/******************************************************************************\
- *                                 Object init                                *
-\******************************************************************************/
-/* Our parent class */
-static MIRAGE_ObjectClass *parent_class = NULL;
+/**********************************************************************\
+ *                             Object init                            * 
+\**********************************************************************/
+G_DEFINE_TYPE(MIRAGE_Parser, mirage_parser, MIRAGE_TYPE_OBJECT);
 
-static void __mirage_parser_finalize (GObject *obj) {
-    MIRAGE_Parser *self = MIRAGE_PARSER(obj);
-    MIRAGE_ParserPrivate *_priv = MIRAGE_PARSER_GET_PRIVATE(self);
-    
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_GOBJECT, "%s: finalizing object\n", __debug__);
-    
-    /* Free parser info */
-    __destroy_parser_info(_priv->parser_info);
+
+static void mirage_parser_init (MIRAGE_Parser *self)
+{
+    self->priv = MIRAGE_PARSER_GET_PRIVATE(self);
+
+    self->priv->parser_params = NULL;
+    self->priv->parser_info = NULL;
+}
+
+static void mirage_parser_finalize (GObject *gobject)
+{
+    MIRAGE_Parser *self = MIRAGE_PARSER(gobject);
+   
+    destroy_parser_info(self->priv->parser_info);
     
     /* Chain up to the parent class */
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_GOBJECT, "%s: chaining up to parent\n", __debug__);
-    return G_OBJECT_CLASS(parent_class)->finalize(obj);
+    return G_OBJECT_CLASS(mirage_parser_parent_class)->finalize(gobject);
 }
 
-static void __mirage_parser_class_init (gpointer g_class, gpointer g_class_data G_GNUC_UNUSED) {
-    GObjectClass *class_gobject = G_OBJECT_CLASS(g_class);
-    MIRAGE_ParserClass *klass = MIRAGE_PARSER_CLASS(g_class);
-    
-    /* Set parent class */
-    parent_class = g_type_class_peek_parent(klass);
-    
+static void mirage_parser_class_init (MIRAGE_ParserClass *klass)
+{
+    GObjectClass *gobject_class = G_OBJECT_CLASS(klass);
+
+    gobject_class->finalize = mirage_parser_finalize;
+
+    klass->load_image = NULL;
+
     /* Register private structure */
     g_type_class_add_private(klass, sizeof(MIRAGE_ParserPrivate));
-    
-    /* Initialize GObject methods */
-    class_gobject->finalize = __mirage_parser_finalize;
-    
-    /* Initialize MIRAGE_Parser methods */
-    klass->load_image = NULL;
-    
-    return;
-}
-
-GType mirage_parser_get_type (void) {
-    static GType type = 0;
-    if (type == 0) {
-        static const GTypeInfo info = {
-            sizeof(MIRAGE_ParserClass),
-            NULL,   /* base_init */
-            NULL,   /* base_finalize */
-            __mirage_parser_class_init,   /* class_init */
-            NULL,   /* class_finalize */
-            NULL,   /* class_data */
-            sizeof(MIRAGE_Parser),
-            0,      /* n_preallocs */
-            NULL,   /* instance_init */
-            NULL    /* value_table */
-        };
-        
-        type = g_type_register_static(MIRAGE_TYPE_OBJECT, "MIRAGE_Parser", &info, 0);
-    }
-    
-    return type;
 }

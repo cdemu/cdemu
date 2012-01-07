@@ -1,6 +1,6 @@
 /*
  *  libMirage: Session object
- *  Copyright (C) 2006-2010 Rok Mandeljc
+ *  Copyright (C) 2006-2012 Rok Mandeljc
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -34,7 +34,8 @@ G_BEGIN_DECLS
  * Session types
  * </para>
  **/
-typedef enum {
+typedef enum
+{
     MIRAGE_SESSION_CD_DA     = 0x00,
     MIRAGE_SESSION_CD_ROM    = 0x00,
     MIRAGE_SESSION_CD_I      = 0x10,
@@ -49,6 +50,10 @@ typedef enum {
 #define MIRAGE_IS_SESSION_CLASS(klass) (G_TYPE_CHECK_CLASS_TYPE((klass), MIRAGE_TYPE_SESSION))
 #define MIRAGE_SESSION_GET_CLASS(obj)  (G_TYPE_INSTANCE_GET_CLASS((obj), MIRAGE_TYPE_SESSION, MIRAGE_SessionClass))
 
+typedef struct _MIRAGE_Session          MIRAGE_Session;
+typedef struct _MIRAGE_SessionClass     MIRAGE_SessionClass;
+typedef struct _MIRAGE_SessionPrivate   MIRAGE_SessionPrivate;
+
 /**
  * MIRAGE_Session:
  *
@@ -56,21 +61,26 @@ typedef enum {
  * Contains private data only, and should be accessed using the functions below.
  * </para>
  **/
-typedef struct {
-    MIRAGE_Object parent;
-} MIRAGE_Session;
+struct _MIRAGE_Session
+{
+    MIRAGE_Object parent_instance;
 
-typedef struct {
-    MIRAGE_ObjectClass parent;
-} MIRAGE_SessionClass;
+    /*< private >*/
+    MIRAGE_SessionPrivate *priv;
+};
+
+struct _MIRAGE_SessionClass
+{
+    MIRAGE_ObjectClass parent_class;
+};
 
 /* Used by MIRAGE_TYPE_SESSION */
 GType mirage_session_get_type (void);
 
 
-/******************************************************************************\
- *                                 Public API                                 *
-\******************************************************************************/
+/**********************************************************************\
+ *                             Public API                             *
+\**********************************************************************/
 /* Session type */
 gboolean mirage_session_set_session_type (MIRAGE_Session *self, gint type, GError **error);
 gboolean mirage_session_get_session_type (MIRAGE_Session *self, gint *type, GError **error);

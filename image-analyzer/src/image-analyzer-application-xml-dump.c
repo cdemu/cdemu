@@ -93,55 +93,55 @@ static gboolean xml_dump_fragment (GObject *fragment, xmlNodePtr parent)
         xml_add_node_with_content(parent, TAG_LENGTH, "%d", length);
     }
 
-    if (MIRAGE_IS_FINTERFACE_NULL(fragment)) {
+    if (MIRAGE_IS_FRAG_IFACE_NULL(fragment)) {
         /* Nothing to do here*/
-    } else if (MIRAGE_IS_FINTERFACE_BINARY(fragment)) {
+    } else if (MIRAGE_IS_FRAG_IFACE_BINARY(fragment)) {
         FILE *tfile_handle, *sfile_handle;
         guint64 tfile_offset, sfile_offset;
         gint tfile_sectsize, sfile_sectsize;
         gint tfile_format, sfile_format;
 
-        if (mirage_finterface_binary_track_file_get_handle(MIRAGE_FINTERFACE_BINARY(fragment), &tfile_handle, NULL)) {
+        if (mirage_frag_iface_binary_track_file_get_handle(MIRAGE_FRAG_IFACE_BINARY(fragment), &tfile_handle, NULL)) {
             xml_add_node_with_content(parent, TAG_TFILE_HANDLE, "%p", tfile_handle);
         }
 
-        if (mirage_finterface_binary_track_file_get_offset(MIRAGE_FINTERFACE_BINARY(fragment), &tfile_offset, NULL)) {
+        if (mirage_frag_iface_binary_track_file_get_offset(MIRAGE_FRAG_IFACE_BINARY(fragment), &tfile_offset, NULL)) {
             xml_add_node_with_content(parent, TAG_TFILE_OFFSET, "%lld", tfile_offset);
         }
 
-        if (mirage_finterface_binary_track_file_get_sectsize(MIRAGE_FINTERFACE_BINARY(fragment), &tfile_sectsize, NULL)) {
+        if (mirage_frag_iface_binary_track_file_get_sectsize(MIRAGE_FRAG_IFACE_BINARY(fragment), &tfile_sectsize, NULL)) {
             xml_add_node_with_content(parent, TAG_TFILE_SECTSIZE, "%d", tfile_sectsize);
         }
 
-        if (mirage_finterface_binary_track_file_get_format(MIRAGE_FINTERFACE_BINARY(fragment), &tfile_format, NULL)) {
+        if (mirage_frag_iface_binary_track_file_get_format(MIRAGE_FRAG_IFACE_BINARY(fragment), &tfile_format, NULL)) {
             xml_add_node_with_content(parent, TAG_TFILE_FORMAT, "0x%X", tfile_format);
         }
 
-        if (mirage_finterface_binary_subchannel_file_get_handle(MIRAGE_FINTERFACE_BINARY(fragment), &sfile_handle, NULL)) {
+        if (mirage_frag_iface_binary_subchannel_file_get_handle(MIRAGE_FRAG_IFACE_BINARY(fragment), &sfile_handle, NULL)) {
             xml_add_node_with_content(parent, TAG_SFILE_HANDLE, "%p", sfile_handle);
         }
 
-        if (mirage_finterface_binary_subchannel_file_get_offset(MIRAGE_FINTERFACE_BINARY(fragment), &sfile_offset, NULL)) {
+        if (mirage_frag_iface_binary_subchannel_file_get_offset(MIRAGE_FRAG_IFACE_BINARY(fragment), &sfile_offset, NULL)) {
             xml_add_node_with_content(parent, TAG_SFILE_OFFSET, "%lld", sfile_offset);
         }
 
-        if (mirage_finterface_binary_subchannel_file_get_sectsize(MIRAGE_FINTERFACE_BINARY(fragment), &sfile_sectsize, NULL)) {
+        if (mirage_frag_iface_binary_subchannel_file_get_sectsize(MIRAGE_FRAG_IFACE_BINARY(fragment), &sfile_sectsize, NULL)) {
             xml_add_node_with_content(parent, TAG_SFILE_SECTSIZE, "%d", sfile_sectsize);
         }
 
-        if (mirage_finterface_binary_subchannel_file_get_format(MIRAGE_FINTERFACE_BINARY(fragment), &sfile_format, NULL)) {
+        if (mirage_frag_iface_binary_subchannel_file_get_format(MIRAGE_FRAG_IFACE_BINARY(fragment), &sfile_format, NULL)) {
             xml_add_node_with_content(parent, TAG_SFILE_FORMAT, "0x%X", sfile_format);
         }
 
-    } else if (MIRAGE_IS_FINTERFACE_AUDIO(fragment)) {
+    } else if (MIRAGE_IS_FRAG_IFACE_AUDIO(fragment)) {
         const gchar *filename;
         gint offset;
 
-        if (mirage_finterface_audio_get_file(MIRAGE_FINTERFACE_AUDIO(fragment), &filename, NULL)) {
+        if (mirage_frag_iface_audio_get_file(MIRAGE_FRAG_IFACE_AUDIO(fragment), &filename, NULL)) {
             xml_add_node_with_content(parent, TAG_FILENAME, "%s", filename);
         }
 
-        if (mirage_finterface_audio_get_offset(MIRAGE_FINTERFACE_AUDIO(fragment), &offset, NULL)) {
+        if (mirage_frag_iface_audio_get_offset(MIRAGE_FRAG_IFACE_AUDIO(fragment), &offset, NULL)) {
             xml_add_node_with_content(parent, TAG_OFFSET, "%d", offset);
         }
     }

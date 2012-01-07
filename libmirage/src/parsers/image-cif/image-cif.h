@@ -1,6 +1,6 @@
 /*
  *  libMirage: CIF image parser
- *  Copyright (C) 2008-2010 Henrik Stokseth
+ *  Copyright (C) 2008-2012 Henrik Stokseth
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -52,7 +52,8 @@ http://en.wikipedia.org/wiki/Resource_Interchange_File_Format
 
 #pragma pack(1)
 
-typedef struct {
+typedef struct
+{
     /* Main part */
     gchar signature[4]; /* "RIFF" */
     guint32 length; /* Length of block from this point onwards */
@@ -60,7 +61,8 @@ typedef struct {
     gchar block_id[4];   
 } CIF_BlockHeader; /* length: 8 bytes (+4) */
 
-typedef struct {
+typedef struct
+{
     gchar block_id[4]; /* "imag" */
     guint32 dummy[2]; /* (unknown) */
     guint16 length_rest; /* length of rest of block from this point onwards */
@@ -68,22 +70,26 @@ typedef struct {
     gchar signature[]; /* zero-terminated string */
 } CIF_IMAG_HeaderBlock; /* length: 16 bytes + variable */
 
-typedef struct {
+typedef struct
+{
     gchar block_id[4]; /* "disc" */
     guint32 dummy[2]; /* (unknown) */
 } CIF_DISC_HeaderBlock; /* length: 12 bytes */
 
-typedef struct {
+typedef struct
+{
     gchar block_id[4]; /* "adio", "info" */
 } CIF_TRACK_HeaderBlock; /* length: 4 bytes */
 
-typedef struct {
+typedef struct
+{
     gchar block_id[4]; /* "ofs " */
     guint32 dummy[2]; /* (unknown) */
     guint16 num_subblocks; /* number of subblocks */
 } CIF_OFS_HeaderBlock; /* length: 14 bytes */
 
-typedef struct {
+typedef struct
+{
     gchar signature[4]; /* "RIFF" */
     guint32 length; /* Length of block from this point onwards */
     gchar block_id[4]; /* "adio", "info" */
@@ -91,7 +97,8 @@ typedef struct {
     guint32 dummy; /* (unknown) */
 } CIF_OFS_SubBlock; /* length: 20 bytes */
 
-typedef struct {
+typedef struct
+{
     guint16 length; /* Length of subblock including this variable */
     guint16 dummy1;
     guint16 tracks; /* Tracks in image */
@@ -103,7 +110,8 @@ typedef struct {
     gchar title_and_artist[]; /* zero-terminated, use title_length */
 } CIF_DISC_FirstSubBlock; /* length: 16 bytes + variable */
 
-typedef struct {
+typedef struct
+{
     guint16 length; /* Length of subblock including this variable */
     guint16 tracks; /* Tracks in image */
     guint8 dummy1[6]; /* (unknown) */
@@ -111,7 +119,8 @@ typedef struct {
     guint8 dummy2[6]; /* (unknown) */
 } CIF_DISC_SecondSubBlock; /* length: 18 */
 
-typedef struct {
+typedef struct
+{
     guint16 length; /* Length of subblock including this variable */
     guint16 dummy1;
     guint32 sectors; /* Number of sectors in track */
@@ -123,7 +132,8 @@ typedef struct {
     guint8 dummy4[272];
 } CIF_DISC_BinarySubBlock; /* length: 24 bytes + variable */
 
-typedef struct {
+typedef struct
+{
     guint16 length; /* Length of subblock including this variable */
     guint16 dummy1;
     guint32 sectors; /* Number of sectors in track */
@@ -138,7 +148,8 @@ typedef struct {
     gchar title[]; /* zero-terminated string. */
 } CIF_DISC_AudioSubBlock; /* length: 24 bytes + variable */
 
-typedef union {
+typedef union
+{
     CIF_DISC_FirstSubBlock first;
     CIF_DISC_SecondSubBlock second;
     CIF_DISC_AudioSubBlock track; /* NOTE: temporary */
@@ -148,7 +159,8 @@ typedef union {
 
 #pragma pack()
 
-typedef struct {
+typedef struct
+{
     guint32 offset;
     CIF_BlockHeader *block_header;
 
@@ -156,14 +168,13 @@ typedef struct {
     gint num_subblocks;    
 } CIFBlockIndexEntry;
 
-typedef struct {
+typedef struct
+{
     guint32 offset;
     guint8 *start;
     guint32 length;
 } CIFSubBlockIndexEntry;
 
-
-GTypeModule *global_module;
 
 G_END_DECLS
 

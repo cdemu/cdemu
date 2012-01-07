@@ -1,6 +1,6 @@
 /*
  *  libMirage: Utility functions and helpers
- *  Copyright (C) 2006-2010 Rok Mandeljc
+ *  Copyright (C) 2006-2012 Rok Mandeljc
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -22,7 +22,6 @@
 
 G_BEGIN_DECLS
 
-/* Commonly used macros */
 /**
  * MIRAGE_CHECK_ARG:
  * @arg: argument to be checked
@@ -127,7 +126,8 @@ void mirage_helper_subchannel_q_decode_isrc (const guint8 *buf, gchar *isrc);
  *
  * Subchannel type for interleaving/deinterleaving.
  **/
-typedef enum {
+typedef enum
+{
     SUBCHANNEL_W = 0,
     SUBCHANNEL_V = 1,
     SUBCHANNEL_U = 2,

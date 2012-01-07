@@ -1,6 +1,6 @@
 /*
  *  libMirage: NRG image plugin
- *  Copyright (C) 2006-2010 Rok Mandeljc
+ *  Copyright (C) 2006-2012 Rok Mandeljc
  * 
  *  Reverse-engineering work in March, 2005 by Henrik Stokseth.
  *
@@ -34,7 +34,8 @@ G_BEGIN_DECLS
 
 #pragma pack(1)
 
-typedef struct {
+typedef struct
+{
     guint32 __dummy1__;
     gchar mcn[13];
     guint8 __dummy2__;
@@ -44,7 +45,8 @@ typedef struct {
     guint8 last_track;
 } NRG_DAO_Header; /* length: 22 bytes */
 
-typedef struct {
+typedef struct
+{
     gchar isrc[12];
     guint16 sector_size;
     guint8 mode_code;
@@ -56,7 +58,8 @@ typedef struct {
     guint64 end_offset; /* Track end offset */
 } NRG_DAO_Block;
 
-typedef struct {
+typedef struct
+{
     guint8 adr_ctl;
     guint8 track;
     guint8 index;
@@ -64,7 +67,8 @@ typedef struct {
     guint32 start_sector;
 } NRG_CUE_Block;
 
-typedef struct {
+typedef struct
+{
     guint64 offset;
     guint64 size;
     guint8 __dummy1__[3];
@@ -75,7 +79,8 @@ typedef struct {
 
 #pragma pack()
 
-typedef struct {
+typedef struct
+{
     gchar block_id[4];
     guint64 offset;
     guint32 length;
@@ -85,7 +90,8 @@ typedef struct {
     guint32 num_subblocks;
 } NRGBlockIndexEntry;
 
-typedef enum {
+typedef enum
+{
     MEDIA_NONE      = 0x00000, /* No media present (NeroAPI >= 5.5.9.4) */
     MEDIA_CD        = 0x00001, /* CD-R/RW */
     MEDIA_DDCD      = 0x00002, /* DDCD-R/RW */
@@ -141,8 +147,6 @@ typedef enum {
     MEDIA_HD_DVD        = MEDIA_HD_DVD_R|MEDIA_HD_DVD_RW, /* Any recordable HD DVD media */
     MEDIA_HD_DVD_ANY    = MEDIA_HD_DVD|MEDIA_HD_DVD_ROM, /* Any HD DVD media */
 } NERO_MEDIA_TYPE;
-
-GTypeModule *global_module;
 
 G_END_DECLS
 

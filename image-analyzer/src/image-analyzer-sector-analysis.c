@@ -202,12 +202,6 @@ void image_analyzer_sector_analysis_set_disc (IMAGE_ANALYZER_SectorAnalysis *sel
 \******************************************************************************/
 G_DEFINE_TYPE(IMAGE_ANALYZER_SectorAnalysis, image_analyzer_sector_analysis, GTK_TYPE_WINDOW);
 
-static void image_analyzer_sector_analysis_class_init (IMAGE_ANALYZER_SectorAnalysisClass *klass)
-{
-    /* Register private structure */
-    g_type_class_add_private(klass, sizeof(IMAGE_ANALYZER_SectorAnalysisPrivate));
-}
-
 static void image_analyzer_sector_analysis_init (IMAGE_ANALYZER_SectorAnalysis *self)
 {
     self->priv = IMAGE_ANALYZER_SECTOR_ANALYSIS_GET_PRIVATE(self);
@@ -215,4 +209,10 @@ static void image_analyzer_sector_analysis_init (IMAGE_ANALYZER_SectorAnalysis *
     self->priv->disc = NULL;
 
     setup_gui(self);
+}
+
+static void image_analyzer_sector_analysis_class_init (IMAGE_ANALYZER_SectorAnalysisClass *klass)
+{
+    /* Register private structure */
+    g_type_class_add_private(klass, sizeof(IMAGE_ANALYZER_SectorAnalysisPrivate));
 }

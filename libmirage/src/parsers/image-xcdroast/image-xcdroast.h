@@ -1,6 +1,6 @@
 /*
  *  libMirage: X-CD-Roast image parser
- *  Copyright (C) 2009-2010 Rok Mandeljc
+ *  Copyright (C) 2009-2012 Rok Mandeljc
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -32,13 +32,15 @@
 
 G_BEGIN_DECLS
 
-typedef struct {
+typedef struct
+{
     gchar *cdtitle;
     gint cdsize;
     gchar *discid;
 } DISC_Info;
 
-typedef struct {
+typedef struct
+{
     gint number;
     gint type;
     gint size;
@@ -49,7 +51,8 @@ typedef struct {
 #define TRACK_TYPE_DATA  0
 #define TRACK_TYPE_AUDIO 1
 
-typedef struct {
+typedef struct
+{
     gchar *file;
     gint track;
     gint num_tracks;
@@ -71,8 +74,6 @@ typedef struct {
     gchar *cd_artist;
     gchar *cd_discid;
 } XINF_Track;
-
-GTypeModule *global_module;
 
 G_END_DECLS
 

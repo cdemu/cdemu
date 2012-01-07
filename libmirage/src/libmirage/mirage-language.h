@@ -1,6 +1,6 @@
 /*
  *  libMirage: Language object
- *  Copyright (C) 2006-2010 Rok Mandeljc
+ *  Copyright (C) 2006-2012 Rok Mandeljc
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -46,7 +46,8 @@ G_BEGIN_DECLS
  * CD-TEXT pack types
  * </para>
  **/
-typedef enum {
+typedef enum
+{
     MIRAGE_LANGUAGE_PACK_TITLE       = 0x80,
     MIRAGE_LANGUAGE_PACK_PERFORMER   = 0x81,
     MIRAGE_LANGUAGE_PACK_SONGWRITER  = 0x82,
@@ -73,6 +74,10 @@ typedef enum {
 #define MIRAGE_IS_LANGUAGE_CLASS(klass) (G_TYPE_CHECK_CLASS_TYPE((klass), MIRAGE_TYPE_LANGUAGE))
 #define MIRAGE_LANGUAGE_GET_CLASS(obj)  (G_TYPE_INSTANCE_GET_CLASS((obj), MIRAGE_TYPE_LANGUAGE, MIRAGE_LanguageClass))
 
+typedef struct _MIRAGE_Language         MIRAGE_Language;
+typedef struct _MIRAGE_LanguageClass    MIRAGE_LanguageClass;
+typedef struct _MIRAGE_LanguagePrivate  MIRAGE_LanguagePrivate;
+
 /**
  * MIRAGE_Language:
  *
@@ -80,21 +85,26 @@ typedef enum {
  * Contains private data only, and should be accessed using the functions below.
  * </para>
  **/
-typedef struct {
-    MIRAGE_Object parent;
-} MIRAGE_Language;
+struct _MIRAGE_Language
+{
+    MIRAGE_Object parent_instance;
 
-typedef struct {
-    MIRAGE_ObjectClass parent;
-} MIRAGE_LanguageClass;
+    /*< private >*/
+    MIRAGE_LanguagePrivate *priv;
+};
+
+struct _MIRAGE_LanguageClass
+{
+    MIRAGE_ObjectClass parent_class;
+};
 
 /* Used by MIRAGE_TYPE_LANGUAGE */
 GType mirage_language_get_type (void);
 
 
-/******************************************************************************\
- *                                 Public API                                 *
-\******************************************************************************/
+/**********************************************************************\
+ *                             Public API                             *
+\**********************************************************************/
 /* Langcode: set/get */
 gboolean mirage_language_set_langcode (MIRAGE_Language *self, gint langcode, GError **error);
 gboolean mirage_language_get_langcode (MIRAGE_Language *self, gint *langcode, GError **error);

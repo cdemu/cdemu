@@ -1,6 +1,6 @@
 /*
  *  libMirage: Sector object
- *  Copyright (C) 2006-2010 Rok Mandeljc
+ *  Copyright (C) 2006-2012 Rok Mandeljc
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -37,7 +37,8 @@ G_BEGIN_DECLS
  * Main channel selection flags.
  * </para>
  **/
-typedef enum {
+typedef enum
+{
     MIRAGE_MCSB_SYNC      = 0x80,
     MIRAGE_MCSB_SUBHEADER = 0x40,
     MIRAGE_MCSB_HEADER    = 0x20,
@@ -57,7 +58,8 @@ typedef enum {
  * Subchannel selection flags.
  * </para>
  **/
-typedef enum {
+typedef enum
+{
     MIRAGE_SUBCHANNEL_PW = 0x01,
     MIRAGE_SUBCHANNEL_PQ = 0x02,
     MIRAGE_SUBCHANNEL_RW = 0x03
@@ -76,7 +78,8 @@ typedef enum {
  * Sector data validity flags.
  * </para>
  **/
-typedef enum {
+typedef enum
+{
     MIRAGE_VALID_SYNC      = 0x01,
     MIRAGE_VALID_HEADER    = 0x02,
     MIRAGE_VALID_SUBHEADER = 0x04,
@@ -96,6 +99,10 @@ typedef enum {
 #define MIRAGE_IS_SECTOR_CLASS(klass) (G_TYPE_CHECK_CLASS_TYPE((klass), MIRAGE_TYPE_SECTOR))
 #define MIRAGE_SECTOR_GET_CLASS(obj)  (G_TYPE_INSTANCE_GET_CLASS((obj), MIRAGE_TYPE_SECTOR, MIRAGE_SectorClass))
 
+typedef struct _MIRAGE_Sector           MIRAGE_Sector;
+typedef struct _MIRAGE_SectorClass      MIRAGE_SectorClass;
+typedef struct _MIRAGE_SectorPrivate    MIRAGE_SectorPrivate;
+
 /**
  * MIRAGE_Sector:
  *
@@ -103,18 +110,26 @@ typedef enum {
  * Contains private data only, and should be accessed using the functions below.
  * </para>
  **/
-typedef struct {
-    MIRAGE_Object parent;
-} MIRAGE_Sector;
+struct _MIRAGE_Sector
+{
+    MIRAGE_Object parent_instance;
 
-typedef struct {
-    MIRAGE_ObjectClass parent;
-} MIRAGE_SectorClass;
+    /*< private >*/
+    MIRAGE_SectorPrivate *priv;
+};
+
+struct _MIRAGE_SectorClass
+{
+    MIRAGE_ObjectClass parent_class;
+} ;
 
 /* Used by MIRAGE_TYPE_SECTOR */
 GType mirage_sector_get_type (void);
 
-/* Public API */
+
+/**********************************************************************\
+ *                             Public API                             *
+\**********************************************************************/
 gboolean mirage_sector_feed_data (MIRAGE_Sector *self, gint address, GObject *track, GError **error);
 
 gboolean mirage_sector_get_sector_type (MIRAGE_Sector *self, gint *type, GError **error);
@@ -128,7 +143,6 @@ gboolean mirage_sector_get_subchannel (MIRAGE_Sector *self, gint format, const g
 
 gboolean mirage_sector_verify_lec (MIRAGE_Sector *self);
 gboolean mirage_sector_verify_subchannel_crc (MIRAGE_Sector *self);
-
 
 G_END_DECLS
 

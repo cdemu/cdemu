@@ -1,6 +1,6 @@
 /*
  *  libMirage: ISO image parser: Parser object
- *  Copyright (C) 2006-2010 Rok Mandeljc
+ *  Copyright (C) 2006-2012 Rok Mandeljc
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -22,28 +22,28 @@
 #define __debug__ "ISO-Parser"
 
 
-/******************************************************************************\
- *                              Private structure                             *
-\******************************************************************************/
+/**********************************************************************\
+ *                          Private structure                         *
+\**********************************************************************/
 #define MIRAGE_PARSER_ISO_GET_PRIVATE(obj) (G_TYPE_INSTANCE_GET_PRIVATE((obj), MIRAGE_TYPE_PARSER_ISO, MIRAGE_Parser_ISOPrivate))
 
-typedef struct {
+struct _MIRAGE_Parser_ISOPrivate
+{
     GObject *disc;
 
     gint track_mode;
     gint track_sectsize;
-} MIRAGE_Parser_ISOPrivate;
+};
 
 
-static guint8 cd001_pattern[] = {0x01, 0x43, 0x44, 0x30, 0x30, 0x31, 0x01, 0x00};
-static guint8 bea01_pattern[] = {0x00, 0x42, 0x45, 0x41, 0x30, 0x31, 0x01, 0x00};
-static guint8 sync_pattern[] = {0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0x00};
+static const guint8 cd001_pattern[] = {0x01, 0x43, 0x44, 0x30, 0x30, 0x31, 0x01, 0x00};
+static const guint8 bea01_pattern[] = {0x00, 0x42, 0x45, 0x41, 0x30, 0x31, 0x01, 0x00};
+static const guint8 sync_pattern[] = {0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0x00};
 
-/******************************************************************************\
- *                     MIRAGE_Parser methods implementation                     *
-\******************************************************************************/
-static gboolean __mirage_parser_iso_is_file_valid (MIRAGE_Parser *self, gchar *filename, GError **error) {
-    MIRAGE_Parser_ISOPrivate *_priv = MIRAGE_PARSER_ISO_GET_PRIVATE(self);
+
+
+static gboolean mirage_parser_iso_is_file_valid (MIRAGE_Parser_ISO *self, gchar *filename, GError **error)
+{
     gboolean succeeded;
     struct stat st;
     FILE *file;
@@ -76,8 +76,8 @@ static gboolean __mirage_parser_iso_is_file_valid (MIRAGE_Parser *self, gchar *f
 
         if (!memcmp(buf, cd001_pattern, sizeof(cd001_pattern))
             || !memcmp(buf, bea01_pattern, sizeof(bea01_pattern))) {
-            _priv->track_sectsize = 2048;
-            _priv->track_mode = MIRAGE_MODE_MODE1;
+            self->priv->track_sectsize = 2048;
+            self->priv->track_mode = MIRAGE_MODE_MODE1;
 
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: standard 2048-byte ISO9660/UDF track, Mode 1 assumed\n", __debug__);
 
@@ -115,8 +115,8 @@ static gboolean __mirage_parser_iso_is_file_valid (MIRAGE_Parser *self, gchar *f
 
             switch (mode_byte) {
                 case 0: {
-                    _priv->track_sectsize = 2352;
-                    _priv->track_mode = MIRAGE_MODE_MODE0;
+                    self->priv->track_sectsize = 2352;
+                    self->priv->track_mode = MIRAGE_MODE_MODE0;
 
                     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: 2352-byte track, Mode 0\n", __debug__);
 
@@ -124,8 +124,8 @@ static gboolean __mirage_parser_iso_is_file_valid (MIRAGE_Parser *self, gchar *f
                     goto end;
                 }
                 case 1: {
-                    _priv->track_sectsize = 2352;
-                    _priv->track_mode = MIRAGE_MODE_MODE1;
+                    self->priv->track_sectsize = 2352;
+                    self->priv->track_mode = MIRAGE_MODE_MODE1;
 
                     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: 2352-byte track, Mode 1\n", __debug__);
 
@@ -133,8 +133,8 @@ static gboolean __mirage_parser_iso_is_file_valid (MIRAGE_Parser *self, gchar *f
                     goto end;
                 }
                 case 2: {
-                    _priv->track_sectsize = 2352;
-                    _priv->track_mode = MIRAGE_MODE_MODE2_MIXED;
+                    self->priv->track_sectsize = 2352;
+                    self->priv->track_mode = MIRAGE_MODE_MODE2_MIXED;
 
                     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: 2352-byte track, Mode 2 Mixed\n", __debug__);
 
@@ -143,8 +143,8 @@ static gboolean __mirage_parser_iso_is_file_valid (MIRAGE_Parser *self, gchar *f
                 }
             }
         } else {
-            _priv->track_sectsize = 2352;
-            _priv->track_mode = MIRAGE_MODE_AUDIO;
+            self->priv->track_sectsize = 2352;
+            self->priv->track_mode = MIRAGE_MODE_AUDIO;
 
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: 2352-byte track w/o sync pattern, Audio assumed\n", __debug__);
 
@@ -155,8 +155,8 @@ static gboolean __mirage_parser_iso_is_file_valid (MIRAGE_Parser *self, gchar *f
 
     /* 2332/2336-byte image check */
     if (st.st_size % 2332 == 0) {
-        _priv->track_sectsize = 2332;
-        _priv->track_mode = MIRAGE_MODE_MODE2_MIXED;
+        self->priv->track_sectsize = 2332;
+        self->priv->track_mode = MIRAGE_MODE_MODE2_MIXED;
 
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: 2332-byte track, Mode 2 Mixed assumed (unreliable!)\n", __debug__);
 
@@ -164,8 +164,8 @@ static gboolean __mirage_parser_iso_is_file_valid (MIRAGE_Parser *self, gchar *f
         goto end;
     }
     if (st.st_size % 2336 == 0) {
-        _priv->track_sectsize = 2336;
-        _priv->track_mode = MIRAGE_MODE_MODE2_MIXED;
+        self->priv->track_sectsize = 2336;
+        self->priv->track_mode = MIRAGE_MODE_MODE2_MIXED;
 
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: 2336-byte track, Mode 2 Mixed assumed (unreliable!)\n", __debug__);
 
@@ -182,9 +182,8 @@ end:
     return succeeded;
 }
 
-static gboolean __mirage_parser_iso_load_track (MIRAGE_Parser *self, gchar *filename, GError **error) {
-    MIRAGE_Parser_ISOPrivate *_priv = MIRAGE_PARSER_ISO_GET_PRIVATE(self);
-
+static gboolean mirage_parser_iso_load_track (MIRAGE_Parser_ISO *self, gchar *filename, GError **error)
+{
     gboolean succeeded = TRUE;
     GObject *session = NULL;
     GObject *track = NULL;
@@ -194,16 +193,16 @@ static gboolean __mirage_parser_iso_load_track (MIRAGE_Parser *self, gchar *file
 
     /* Create data fragment */
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: creating data fragment\n", __debug__);
-    data_fragment = libmirage_create_fragment(MIRAGE_TYPE_FINTERFACE_BINARY, filename, error);
+    data_fragment = libmirage_create_fragment(MIRAGE_TYPE_FRAG_IFACE_BINARY, filename, error);
     if (!data_fragment) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to create BINARY fragment!\n", __debug__);
         return FALSE;
     }
 
     /* Set track file */
-    mirage_finterface_binary_track_file_set_handle(MIRAGE_FINTERFACE_BINARY(data_fragment), g_fopen(filename, "r"), NULL);
-    mirage_finterface_binary_track_file_set_sectsize(MIRAGE_FINTERFACE_BINARY(data_fragment), _priv->track_sectsize, NULL);
-    mirage_finterface_binary_track_file_set_format(MIRAGE_FINTERFACE_BINARY(data_fragment), FR_BIN_TFILE_DATA, NULL);
+    mirage_frag_iface_binary_track_file_set_handle(MIRAGE_FRAG_IFACE_BINARY(data_fragment), g_fopen(filename, "r"), NULL);
+    mirage_frag_iface_binary_track_file_set_sectsize(MIRAGE_FRAG_IFACE_BINARY(data_fragment), self->priv->track_sectsize, NULL);
+    mirage_frag_iface_binary_track_file_set_format(MIRAGE_FRAG_IFACE_BINARY(data_fragment), FR_BIN_TFILE_DATA, NULL);
 
     /* Use whole file */
     if (!mirage_fragment_use_the_rest_of_file(MIRAGE_FRAGMENT(data_fragment), error)) {
@@ -215,7 +214,7 @@ static gboolean __mirage_parser_iso_load_track (MIRAGE_Parser *self, gchar *file
     /* Add track */
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: adding track\n", __debug__);
 
-    mirage_disc_get_session_by_index(MIRAGE_DISC(_priv->disc), -1, &session, NULL);
+    mirage_disc_get_session_by_index(MIRAGE_DISC(self->priv->disc), -1, &session, NULL);
     succeeded = mirage_session_add_track_by_index(MIRAGE_SESSION(session), -1, &track, error);
     g_object_unref(session);
     if (!succeeded) {
@@ -225,7 +224,7 @@ static gboolean __mirage_parser_iso_load_track (MIRAGE_Parser *self, gchar *file
     }
 
     /* Set track mode */
-    mirage_track_set_mode(MIRAGE_TRACK(track), _priv->track_mode, NULL);
+    mirage_track_set_mode(MIRAGE_TRACK(track), self->priv->track_mode, NULL);
 
     /* Add fragment to track */
     if (!mirage_track_add_fragment(MIRAGE_TRACK(track), -1, &data_fragment, error)) {
@@ -243,25 +242,30 @@ static gboolean __mirage_parser_iso_load_track (MIRAGE_Parser *self, gchar *file
     return TRUE;
 }
 
-static gboolean __mirage_parser_iso_load_image (MIRAGE_Parser *self, gchar **filenames, GObject **disc, GError **error) {
-    MIRAGE_Parser_ISOPrivate *_priv = MIRAGE_PARSER_ISO_GET_PRIVATE(self);
+/**********************************************************************\
+ *                MIRAGE_Parser methods implementation                *
+\**********************************************************************/
+static gboolean mirage_parser_iso_load_image (MIRAGE_Parser *_self, gchar **filenames, GObject **disc, GError **error)
+{
+    MIRAGE_Parser_ISO *self = MIRAGE_PARSER_ISO(_self);
+    
     gboolean succeeded = TRUE;
 
     /* Check if file can be loaded */
-    if (!__mirage_parser_iso_is_file_valid(self, filenames[0], error)) {
+    if (!mirage_parser_iso_is_file_valid(self, filenames[0], error)) {
         return FALSE;
     }
 
     /* Create disc */
-    _priv->disc = g_object_new(MIRAGE_TYPE_DISC, NULL);
-    mirage_object_attach_child(MIRAGE_OBJECT(self), _priv->disc, NULL);
+    self->priv->disc = g_object_new(MIRAGE_TYPE_DISC, NULL);
+    mirage_object_attach_child(MIRAGE_OBJECT(self), self->priv->disc, NULL);
 
     /* Set filenames */
-    mirage_disc_set_filename(MIRAGE_DISC(_priv->disc), filenames[0], NULL);
+    mirage_disc_set_filename(MIRAGE_DISC(self->priv->disc), filenames[0], NULL);
 
     /* Session: one session (with possibly multiple tracks) */
     GObject *session = NULL;
-    if (!mirage_disc_add_session_by_number(MIRAGE_DISC(_priv->disc), 1, &session, error)) {
+    if (!mirage_disc_add_session_by_number(MIRAGE_DISC(self->priv->disc), 1, &session, error)) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to add session!\n", __debug__);
         succeeded = FALSE;
         goto end;
@@ -271,7 +275,7 @@ static gboolean __mirage_parser_iso_load_image (MIRAGE_Parser *self, gchar **fil
     g_object_unref(session);
 
     /* Load track */
-    if (!__mirage_parser_iso_load_track(self, filenames[0], error)) {
+    if (!mirage_parser_iso_load_track(self, filenames[0], error)) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to load track!\n", __debug__);
         succeeded = FALSE;
         goto end;
@@ -281,93 +285,59 @@ static gboolean __mirage_parser_iso_load_image (MIRAGE_Parser *self, gchar **fil
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: finishing the layout\n", __debug__);
 
     /* Now guess medium type and if it's a CD-ROM, add Red Book pregap */
-    gint medium_type = mirage_parser_guess_medium_type(self, _priv->disc);
-    mirage_disc_set_medium_type(MIRAGE_DISC(_priv->disc), medium_type, NULL);
+    gint medium_type = mirage_parser_guess_medium_type(MIRAGE_PARSER(self), self->priv->disc);
+    mirage_disc_set_medium_type(MIRAGE_DISC(self->priv->disc), medium_type, NULL);
     if (medium_type == MIRAGE_MEDIUM_CD) {
-        mirage_parser_add_redbook_pregap(self, _priv->disc, NULL);
+        mirage_parser_add_redbook_pregap(MIRAGE_PARSER(self), self->priv->disc, NULL);
     }
 
 end:
     /* Return disc */
-    mirage_object_detach_child(MIRAGE_OBJECT(self), _priv->disc, NULL);
+    mirage_object_detach_child(MIRAGE_OBJECT(self), self->priv->disc, NULL);
     if (succeeded) {
-        *disc = _priv->disc;
+        *disc = self->priv->disc;
     } else {
-        g_object_unref(_priv->disc);
+        g_object_unref(self->priv->disc);
         *disc = NULL;
     }
 
     return succeeded;
 }
 
-/******************************************************************************\
- *                                Object init                                 *
-\******************************************************************************/
-/* Our parent class */
-static MIRAGE_ParserClass *parent_class = NULL;
 
-static void __mirage_parser_iso_instance_init (GTypeInstance *instance, gpointer g_class G_GNUC_UNUSED) {
-    /* Create parser info */
-    mirage_parser_generate_parser_info(MIRAGE_PARSER(instance),
+/**********************************************************************\
+ *                             Object init                            * 
+\**********************************************************************/
+G_DEFINE_DYNAMIC_TYPE(MIRAGE_Parser_ISO, mirage_parser_iso, MIRAGE_TYPE_PARSER);
+
+void mirage_parser_iso_type_register (GTypeModule *type_module)
+{
+    return mirage_parser_iso_register_type(type_module);
+}
+
+
+static void mirage_parser_iso_init (MIRAGE_Parser_ISO *self)
+{
+    self->priv = MIRAGE_PARSER_ISO_GET_PRIVATE(self);
+
+    mirage_parser_generate_parser_info(MIRAGE_PARSER(self),
         "PARSER-ISO",
         "ISO Image Parser",
         "ISO images",
         "application/x-cd-image"
     );
-
-    return;
 }
 
-static void __mirage_parser_iso_finalize (GObject *obj) {
-    MIRAGE_Parser_ISO *self = MIRAGE_PARSER_ISO(obj);
-    /*MIRAGE_Parser_ISOPrivate *_priv = MIRAGE_PARSER_ISO_GET_PRIVATE(self);*/
+static void mirage_parser_iso_class_init (MIRAGE_Parser_ISOClass *klass)
+{
+    MIRAGE_ParserClass *parser_class = MIRAGE_PARSER_CLASS(klass);
 
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_GOBJECT, "%s: finalizing object\n", __debug__);
-
-    /* Chain up to the parent class */
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_GOBJECT, "%s: chaining up to parent\n", __debug__);
-    return G_OBJECT_CLASS(parent_class)->finalize(obj);
-}
-
-
-static void __mirage_parser_iso_class_init (gpointer g_class, gpointer g_class_data G_GNUC_UNUSED) {
-    GObjectClass *class_gobject = G_OBJECT_CLASS(g_class);
-    MIRAGE_ParserClass *class_parser = MIRAGE_PARSER_CLASS(g_class);
-    MIRAGE_Parser_ISOClass *klass = MIRAGE_PARSER_ISO_CLASS(g_class);
-
-    /* Set parent class */
-    parent_class = g_type_class_peek_parent(klass);
+    parser_class->load_image = mirage_parser_iso_load_image;
 
     /* Register private structure */
     g_type_class_add_private(klass, sizeof(MIRAGE_Parser_ISOPrivate));
-
-    /* Initialize GObject methods */
-    class_gobject->finalize = __mirage_parser_iso_finalize;
-
-    /* Initialize MIRAGE_Parser methods */
-    class_parser->load_image = __mirage_parser_iso_load_image;
-
-    return;
 }
 
-GType mirage_parser_iso_get_type (GTypeModule *module) {
-    static GType type = 0;
-    if (type == 0) {
-        static const GTypeInfo info = {
-            sizeof(MIRAGE_Parser_ISOClass),
-            NULL,   /* base_init */
-            NULL,   /* base_finalize */
-            __mirage_parser_iso_class_init,   /* class_init */
-            NULL,   /* class_finalize */
-            NULL,   /* class_data */
-            sizeof(MIRAGE_Parser_ISO),
-            0,      /* n_preallocs */
-            __mirage_parser_iso_instance_init,   /* instance_init */
-            NULL    /* value_table */
-        };
-
-        type = g_type_module_register_type(module, MIRAGE_TYPE_PARSER, "MIRAGE_Parser_ISO", &info, 0);
-    }
-
-    return type;
+static void mirage_parser_iso_class_finalize (MIRAGE_Parser_ISOClass *klass G_GNUC_UNUSED)
+{
 }

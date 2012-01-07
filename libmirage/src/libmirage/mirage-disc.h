@@ -1,6 +1,6 @@
 /*
  *  libMirage: Disc object
- *  Copyright (C) 2006-2010 Rok Mandeljc
+ *  Copyright (C) 2006-2012 Rok Mandeljc
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -43,7 +43,8 @@ G_BEGIN_DECLS
  * Medium types.
  * </para>
  **/
-typedef enum {
+typedef enum
+{
     MIRAGE_MEDIUM_CD  = 0x01,
     MIRAGE_MEDIUM_DVD = 0x02,
     MIRAGE_MEDIUM_BD  = 0x03,
@@ -51,7 +52,8 @@ typedef enum {
 } MIRAGE_MediumTypes;
 
 
-enum {
+enum
+{
     PROP_MIRAGE_DISC_DVD_REPORT_CSS = 1,
 };
 
@@ -63,6 +65,10 @@ enum {
 #define MIRAGE_IS_DISC_CLASS(klass) (G_TYPE_CHECK_CLASS_TYPE((klass), MIRAGE_TYPE_DISC))
 #define MIRAGE_DISC_GET_CLASS(obj)  (G_TYPE_INSTANCE_GET_CLASS((obj), MIRAGE_TYPE_DISC, MIRAGE_DiscClass))
 
+typedef struct _MIRAGE_Disc         MIRAGE_Disc;
+typedef struct _MIRAGE_DiscClass    MIRAGE_DiscClass;
+typedef struct _MIRAGE_DiscPrivate  MIRAGE_DiscPrivate;
+
 /**
  * MIRAGE_Disc:
  *
@@ -70,21 +76,26 @@ enum {
  * Contains private data only, and should be accessed using the functions below.
  * </para>
  **/
-typedef struct {
-    MIRAGE_Object parent;
-} MIRAGE_Disc;
+struct _MIRAGE_Disc
+{
+    MIRAGE_Object parent_instance;
 
-typedef struct {
-    MIRAGE_ObjectClass parent;
-} MIRAGE_DiscClass;
+    /*< private >*/
+    MIRAGE_DiscPrivate *priv;
+};
+
+struct _MIRAGE_DiscClass
+{
+    MIRAGE_ObjectClass parent_class;
+};
 
 /* Used by MIRAGE_TYPE_DISC */
 GType mirage_disc_get_type (void);
 
 
-/******************************************************************************\
- *                                 Public API                                 *
-\******************************************************************************/
+/**********************************************************************\
+ *                             Public API                             *
+\**********************************************************************/
 /* Medium type */
 gboolean mirage_disc_set_medium_type (MIRAGE_Disc *self, gint medium_type, GError **error);
 gboolean mirage_disc_get_medium_type (MIRAGE_Disc *self, gint *medium_type, GError **error);

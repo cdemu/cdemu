@@ -1,6 +1,6 @@
 /*
  *  libMirage: MDS image parser: Parser object
- *  Copyright (C) 2006-2010 Rok Mandeljc
+ *  Copyright (C) 2006-2012 Rok Mandeljc
  * 
  *  Reverse-engineering work in March, 2005 by Henrik Stokseth.
  *
@@ -25,23 +25,33 @@
 
 G_BEGIN_DECLS
 
-#define MIRAGE_TYPE_PARSER_MDS            (mirage_parser_mds_get_type(global_module))
+#define MIRAGE_TYPE_PARSER_MDS            (mirage_parser_mds_get_type())
 #define MIRAGE_PARSER_MDS(obj)            (G_TYPE_CHECK_INSTANCE_CAST((obj), MIRAGE_TYPE_PARSER_MDS, MIRAGE_Parser_MDS))
 #define MIRAGE_PARSER_MDS_CLASS(klass)    (G_TYPE_CHECK_CLASS_CAST((klass), MIRAGE_TYPE_PARSER_MDS, MIRAGE_Parser_MDSClass))
 #define MIRAGE_IS_PARSER_MDS(obj)         (G_TYPE_CHECK_INSTANCE_TYPE((obj), MIRAGE_TYPE_PARSER_MDS))
 #define MIRAGE_IS_PARSER_MDS_CLASS(klass) (G_TYPE_CHECK_CLASS_TYPE((klass), MIRAGE_TYPE_PARSER_MDS))
 #define MIRAGE_PARSER_MDS_GET_CLASS(obj)  (G_TYPE_INSTANCE_GET_CLASS((obj), MIRAGE_TYPE_PARSER_MDS, MIRAGE_Parser_MDSClass))
 
-typedef struct {
-    MIRAGE_Parser parent;
-} MIRAGE_Parser_MDS;
+typedef struct _MIRAGE_Parser_MDS MIRAGE_Parser_MDS;
+typedef struct _MIRAGE_Parser_MDSClass MIRAGE_Parser_MDSClass;
+typedef struct _MIRAGE_Parser_MDSPrivate MIRAGE_Parser_MDSPrivate;
 
-typedef struct {
-    MIRAGE_ParserClass parent;
-} MIRAGE_Parser_MDSClass;
+struct _MIRAGE_Parser_MDS
+{
+    MIRAGE_Parser parent_instance;
+
+    /*< private >*/
+    MIRAGE_Parser_MDSPrivate *priv;
+};
+
+struct _MIRAGE_Parser_MDSClass
+{
+    MIRAGE_ParserClass parent_class;
+};
 
 /* Used by MIRAGE_TYPE_PARSER_MDS */
-GType mirage_parser_mds_get_type (GTypeModule *module);
+GType mirage_parser_mds_get_type (void);
+void mirage_parser_mds_type_register (GTypeModule *type_module);
 
 G_END_DECLS
 

@@ -1,6 +1,6 @@
 /*
  *  libMirage: Parser object
- *  Copyright (C) 2008-2010 Rok Mandeljc
+ *  Copyright (C) 2008-2012 Rok Mandeljc
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -42,7 +42,8 @@ G_BEGIN_DECLS
  * to be used for building file type filters in GUI applications.
  * </para>
  **/
-typedef struct {
+typedef struct
+{
     gchar *id;
     gchar *name;
     gchar *description;
@@ -57,6 +58,10 @@ typedef struct {
 #define MIRAGE_IS_PARSER_CLASS(klass) (G_TYPE_CHECK_CLASS_TYPE((klass), MIRAGE_TYPE_PARSER))
 #define MIRAGE_PARSER_GET_CLASS(obj)  (G_TYPE_INSTANCE_GET_CLASS((obj), MIRAGE_TYPE_PARSER, MIRAGE_ParserClass))
 
+typedef struct _MIRAGE_Parser           MIRAGE_Parser;
+typedef struct _MIRAGE_ParserClass      MIRAGE_ParserClass;
+typedef struct _MIRAGE_ParserPrivate    MIRAGE_ParserPrivate;
+
 /**
  * MIRAGE_Parser:
  *
@@ -64,24 +69,29 @@ typedef struct {
  * Contains private data only, and should be accessed using the functions below.
  * </para>
  **/
-typedef struct {
-    MIRAGE_Object parent;
-} MIRAGE_Parser;
+struct _MIRAGE_Parser
+{
+    MIRAGE_Object parent_instance;
 
-typedef struct {
-    MIRAGE_ObjectClass parent;
+    /*< private >*/
+    MIRAGE_ParserPrivate *priv;
+} ;
+
+struct _MIRAGE_ParserClass
+{
+    MIRAGE_ObjectClass parent_class;
     
     /* Class members */
     gboolean (*load_image) (MIRAGE_Parser *self, gchar **filenames, GObject **disc, GError **error);
-} MIRAGE_ParserClass;
+};
 
 /* Used by MIRAGE_TYPE_PARSER */
 GType mirage_parser_get_type (void);
 
 
-/******************************************************************************\
- *                                 Public API                                 *
-\******************************************************************************/
+/**********************************************************************\
+ *                             Public API                             *
+\**********************************************************************/
 void mirage_parser_generate_parser_info (MIRAGE_Parser *self, const gchar *id, const gchar *name, const gchar *description, const gchar *mime_type);
 gboolean mirage_parser_get_parser_info (MIRAGE_Parser *self, const MIRAGE_ParserInfo **parser_info, GError **error);
 
@@ -93,7 +103,6 @@ gboolean mirage_parser_add_redbook_pregap (MIRAGE_Parser *self, GObject *disc, G
 gboolean mirage_parser_set_params (MIRAGE_Parser *self, GHashTable *params, GError **error);
 gboolean mirage_parser_get_param (MIRAGE_Parser *self, const gchar *name, const GVariantType *type, GVariant **ret_value, GError **error);
 gboolean mirage_parser_get_param_string (MIRAGE_Parser *self, const gchar *name, const gchar **ret_value, GError **error);
-
 
 G_END_DECLS
 

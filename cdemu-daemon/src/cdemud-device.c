@@ -316,6 +316,38 @@ gboolean cdemud_device_set_option (CDEMUD_Device *self, gchar *option_name, GVar
 \**********************************************************************/
 G_DEFINE_TYPE(CDEMUD_Device, cdemud_device, MIRAGE_TYPE_OBJECT);
 
+static void cdemud_device_init (CDEMUD_Device *self)
+{
+    self->priv = CDEMUD_DEVICE_GET_PRIVATE(self);
+
+    self->priv->io_channel = NULL;
+    self->priv->io_thread = NULL;
+    self->priv->main_context = NULL;
+    self->priv->main_loop = NULL;
+
+    self->priv->device_name = NULL;
+    self->priv->device_mutex = NULL;
+
+    self->priv->buffer = NULL;
+
+    self->priv->audio_play = NULL;
+
+    self->priv->disc = NULL;
+    self->priv->disc_debug = NULL;
+
+    self->priv->mode_pages_list = NULL;
+
+    self->priv->features_list = NULL;
+
+    self->priv->id_vendor_id = NULL;
+    self->priv->id_product_id = NULL;
+    self->priv->id_revision = NULL;
+    self->priv->id_vendor_specific = NULL;
+
+    self->priv->device_sg = NULL;
+    self->priv->device_sr = NULL;
+}
+
 static void cdemud_device_dispose (GObject *gobject)
 {
     CDEMUD_Device *self = CDEMUD_DEVICE(gobject);
@@ -394,9 +426,4 @@ static void cdemud_device_class_init (CDEMUD_DeviceClass *klass)
 
     /* Register private structure */
     g_type_class_add_private(klass, sizeof(CDEMUD_DevicePrivate));
-}
-
-static void cdemud_device_init (CDEMUD_Device *self)
-{
-    self->priv = CDEMUD_DEVICE_GET_PRIVATE(self);
 }

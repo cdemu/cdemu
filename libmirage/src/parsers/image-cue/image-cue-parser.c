@@ -1,6 +1,6 @@
 /*
  *  libMirage: CUE image parser: Parser object
- *  Copyright (C) 2006-2010 Rok Mandeljc
+ *  Copyright (C) 2006-2012 Rok Mandeljc
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -22,21 +22,13 @@
 #define __debug__ "CUE-Parser"
 
 
-/* Regex engine */
-typedef gboolean (*MIRAGE_RegexCallback) (MIRAGE_Parser *self, GMatchInfo *match_info, GError **error);
-
-typedef struct {
-    GRegex *regex;
-    MIRAGE_RegexCallback callback_func;
-} MIRAGE_RegexRule;
-
-
-/******************************************************************************\
- *                              Private structure                             *
-\******************************************************************************/
+/**********************************************************************\
+ *                          Private structure                         *
+\**********************************************************************/
 #define MIRAGE_PARSER_CUE_GET_PRIVATE(obj) (G_TYPE_INSTANCE_GET_PRIVATE((obj), MIRAGE_TYPE_PARSER_CUE, MIRAGE_Parser_CUEPrivate))
 
-typedef struct {
+struct _MIRAGE_Parser_CUEPrivate
+{
     GObject *disc;
 
     gchar *cue_filename;
@@ -62,21 +54,21 @@ typedef struct {
 
     /* Regex engine */
     GList *regex_rules;
-} MIRAGE_Parser_CUEPrivate;
+};
 
 
-/******************************************************************************\
- *                         Parser private functions                           *
-\******************************************************************************/
-static gboolean __mirage_parser_cue_finish_last_track (MIRAGE_Parser *self, GError **error) {
-    MIRAGE_Parser_CUEPrivate *_priv = MIRAGE_PARSER_CUE_GET_PRIVATE(self);
+/**********************************************************************\
+ *                     Parser private functions                       *
+\**********************************************************************/
+static gboolean mirage_parser_cue_finish_last_track (MIRAGE_Parser_CUE *self, GError **error)
+{
     GObject *data_fragment;
     gboolean succeeded = TRUE;
 
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: finishing last track\n", __debug__);
 
     /* Current track needs to be set at this point */
-    if (!_priv->cur_track) {
+    if (!self->priv->cur_track) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: current track is not set!\n", __debug__);
         mirage_error(MIRAGE_E_PARSER, error);
         return FALSE;
@@ -86,7 +78,7 @@ static gboolean __mirage_parser_cue_finish_last_track (MIRAGE_Parser *self, GErr
        postgap fragment stuck at the end, we look for first data fragment that's
        not NULL... and of course, we go from behind) */
     /* FIXME: implement the latter part */
-    if (mirage_track_get_fragment_by_index(MIRAGE_TRACK(_priv->cur_track), -1, &data_fragment, NULL)) {
+    if (mirage_track_get_fragment_by_index(MIRAGE_TRACK(self->priv->cur_track), -1, &data_fragment, NULL)) {
         gint fragment_length;
 
         mirage_fragment_use_the_rest_of_file(MIRAGE_FRAGMENT(data_fragment), NULL);
@@ -105,53 +97,51 @@ static gboolean __mirage_parser_cue_finish_last_track (MIRAGE_Parser *self, GErr
     return succeeded;
 }
 
-static gboolean __mirage_parser_cue_set_new_file (MIRAGE_Parser *self, gchar *filename_string, gchar *file_type, GError **error) {
-    MIRAGE_Parser_CUEPrivate *_priv = MIRAGE_PARSER_CUE_GET_PRIVATE(self);
-
+static gboolean mirage_parser_cue_set_new_file (MIRAGE_Parser_CUE *self, gchar *filename_string, gchar *file_type, GError **error)
+{
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: new file...\n", __debug__);
 
     /* We got new file; either we got it for the first time, which means we don't
        have any tracks yet and don't have to do anything. If we got new file, it
        means means we already have some tracks and the last one needs to be
        finished */
-    if (_priv->cur_track && !__mirage_parser_cue_finish_last_track(self, error)) {
+    if (self->priv->cur_track && !mirage_parser_cue_finish_last_track(self, error)) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to finish last track!\n", __debug__);
         return FALSE;
     }
 
     /* Set current file name */
-    g_free(_priv->cur_data_filename);
-    _priv->cur_data_filename = mirage_helper_find_data_file(filename_string, _priv->cue_filename);
-    if (!_priv->cur_data_filename) {
+    g_free(self->priv->cur_data_filename);
+    self->priv->cur_data_filename = mirage_helper_find_data_file(filename_string, self->priv->cue_filename);
+    if (!self->priv->cur_data_filename) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to find data file!\n", __debug__);
         mirage_error(MIRAGE_E_DATAFILE, error);
         return FALSE;
     }
 
     /* Set current data type */
-    g_free(_priv->cur_data_type);
-    _priv->cur_data_type = g_strdup(file_type);
-    _priv->cur_track_start = 0;
-    _priv->binary_offset = 0;
+    g_free(self->priv->cur_data_type);
+    self->priv->cur_data_type = g_strdup(file_type);
+    self->priv->cur_track_start = 0;
+    self->priv->binary_offset = 0;
 
     return TRUE;
 }
 
-static gboolean __mirage_parser_cue_add_track (MIRAGE_Parser *self, gint number, gchar *mode_string, GError **error) {
-    MIRAGE_Parser_CUEPrivate *_priv = MIRAGE_PARSER_CUE_GET_PRIVATE(self);
-
+static gboolean mirage_parser_cue_add_track (MIRAGE_Parser_CUE *self, gint number, gchar *mode_string, GError **error)
+{
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: adding track %d\n", __debug__, number);
 
     /* Current track becomes previous one */
-    _priv->prev_track = _priv->cur_track;
+    self->priv->prev_track = self->priv->cur_track;
 
     /* Add new track, store the pointer and release reference */
-    _priv->cur_track = NULL; /* Need to reset it, otherwise it gets added */
-    if (!mirage_session_add_track_by_number(MIRAGE_SESSION(_priv->cur_session), number, &_priv->cur_track, error)) {
+    self->priv->cur_track = NULL; /* Need to reset it, otherwise it gets added */
+    if (!mirage_session_add_track_by_number(MIRAGE_SESSION(self->priv->cur_session), number, &self->priv->cur_track, error)) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to add track!\n", __debug__);
         return FALSE;
     }
-    g_object_unref(_priv->cur_track);
+    g_object_unref(self->priv->cur_track);
 
     /* Decipher mode */
     static const struct {
@@ -175,10 +165,10 @@ static gboolean __mirage_parser_cue_add_track (MIRAGE_Parser *self, gint number,
         if (!strcmp(track_modes[i].str, mode_string)) {
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: track mode: %s\n", __debug__, track_modes[i].str);
             /* Set track mode */
-            mirage_track_set_mode(MIRAGE_TRACK(_priv->cur_track), track_modes[i].mode, NULL);
+            mirage_track_set_mode(MIRAGE_TRACK(self->priv->cur_track), track_modes[i].mode, NULL);
             /* Set current sector size and format */
-            _priv->cur_data_sectsize = track_modes[i].sectsize;
-            _priv->cur_data_format = track_modes[i].format;
+            self->priv->cur_data_sectsize = track_modes[i].sectsize;
+            self->priv->cur_data_format = track_modes[i].format;
             break;
         }
     }
@@ -190,16 +180,15 @@ static gboolean __mirage_parser_cue_add_track (MIRAGE_Parser *self, gint number,
     }
 
     /* Reset parser info on current track */
-    _priv->cur_pregap_set = FALSE;
+    self->priv->cur_pregap_set = FALSE;
 
     return TRUE;
 };
 
-static gboolean __mirage_parser_cue_add_index (MIRAGE_Parser *self, gint number, gint address, GError **error) {
-    MIRAGE_Parser_CUEPrivate *_priv = MIRAGE_PARSER_CUE_GET_PRIVATE(self);
-
+static gboolean mirage_parser_cue_add_index (MIRAGE_Parser_CUE *self, gint number, gint address, GError **error)
+{
     /* Current track needs to be set at this point */
-    if (!_priv->cur_track) {
+    if (!self->priv->cur_track) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: current track is not set!\n", __debug__);
         mirage_error(MIRAGE_E_PARSER, error);
         return FALSE;
@@ -210,27 +199,27 @@ static gboolean __mirage_parser_cue_add_index (MIRAGE_Parser *self, gint number,
     if (number == 0 || number == 1) {
         /* If index is 0, mark that we have a pregap */
         if (number == 0) {
-            _priv->cur_pregap_set = TRUE;
+            self->priv->cur_pregap_set = TRUE;
         }
 
-        if (number == 1 && _priv->cur_pregap_set) {
+        if (number == 1 && self->priv->cur_pregap_set) {
             /* If we have a pregap and this is index 1, we just need to
                set the address where the track really starts */
             gint track_start = 0;
-            mirage_track_get_track_start(MIRAGE_TRACK(_priv->cur_track), &track_start, NULL);
-            track_start += address - _priv->cur_track_start;
-            mirage_track_set_track_start(MIRAGE_TRACK(_priv->cur_track), track_start, NULL);
+            mirage_track_get_track_start(MIRAGE_TRACK(self->priv->cur_track), &track_start, NULL);
+            track_start += address - self->priv->cur_track_start;
+            mirage_track_set_track_start(MIRAGE_TRACK(self->priv->cur_track), track_start, NULL);
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: track with pregap; setting track start to 0x%X\n", __debug__, track_start);
         } else {
             /* Otherwise, we need to set up fragment... beginning with the
                last fragment of the previous track (which we might need to
                set length to) */
-            if (!_priv->prev_track) {
+            if (!self->priv->prev_track) {
                 /* This is first track on the disc; first track doesn't seem to
                    have index 0, so if its index 1 is non-zero, it indicates pregap */
                 if (number == 1 && address != 0) {
                     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: first track has pregap; setting track start to 0x%X\n", __debug__, address);
-                    mirage_track_set_track_start(MIRAGE_TRACK(_priv->cur_track), address, NULL);
+                    mirage_track_set_track_start(MIRAGE_TRACK(self->priv->cur_track), address, NULL);
                     /* address is used later to determine the offset within track file;
                        in this case, we need to reset it to 0, as pregap seems to be
                        included in the track file */
@@ -240,24 +229,24 @@ static gboolean __mirage_parser_cue_add_index (MIRAGE_Parser *self, gint number,
                 GObject *lfragment = NULL;
 
                 /* Get previous track's fragment to set its length */
-                if (mirage_track_get_fragment_by_index(MIRAGE_TRACK(_priv->prev_track), -1, &lfragment, NULL)) {
+                if (mirage_track_get_fragment_by_index(MIRAGE_TRACK(self->priv->prev_track), -1, &lfragment, NULL)) {
                     gint fragment_length = 0;
 
                     /* If length is not set, we need to calculate it now; the
                        length will be already set if file has changed in between
                        or anything else happened that might've resulted in call
-                       of __mirage_session_cue_finish_last_track() */
+                       of mirage_session_cue_finish_last_track() */
                     mirage_fragment_get_length(MIRAGE_FRAGMENT(lfragment), &fragment_length, NULL);
                     if (!fragment_length) {
-                        fragment_length = address - _priv->cur_track_start;
+                        fragment_length = address - self->priv->cur_track_start;
 
                         /* In case we're dealing with UltraISO/IsoBuster's
                            multisession, we need this because index addresses
                            differences includes the leadout length */
-                        if (_priv->leadout_correction) {
-                            MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: using leadout correction %d\n", __debug__, _priv->leadout_correction);
-                            fragment_length -= _priv->leadout_correction;
-                            _priv->leadout_correction = 0;
+                        if (self->priv->leadout_correction) {
+                            MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: using leadout correction %d\n", __debug__, self->priv->leadout_correction);
+                            fragment_length -= self->priv->leadout_correction;
+                            self->priv->leadout_correction = 0;
                         }
 
                         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: previous fragment length determined to be: %i\n", __debug__, fragment_length);
@@ -266,13 +255,13 @@ static gboolean __mirage_parser_cue_add_index (MIRAGE_Parser *self, gint number,
                         /* Binary fragments/files are pain because sector size can
                            vary between the tracks; so in case we're dealing with
                            binary, we need to keep track of the offset within file */
-                        if (MIRAGE_IS_FINTERFACE_BINARY(lfragment)) {
+                        if (MIRAGE_IS_FRAG_IFACE_BINARY(lfragment)) {
                             gint tfile_sectsize, sfile_sectsize;
 
-                            mirage_finterface_binary_track_file_get_sectsize(MIRAGE_FINTERFACE_BINARY(lfragment), &tfile_sectsize, NULL);
-                            mirage_finterface_binary_subchannel_file_get_sectsize(MIRAGE_FINTERFACE_BINARY(lfragment), &sfile_sectsize, NULL);
+                            mirage_frag_iface_binary_track_file_get_sectsize(MIRAGE_FRAG_IFACE_BINARY(lfragment), &tfile_sectsize, NULL);
+                            mirage_frag_iface_binary_subchannel_file_get_sectsize(MIRAGE_FRAG_IFACE_BINARY(lfragment), &sfile_sectsize, NULL);
 
-                            _priv->binary_offset += fragment_length * (tfile_sectsize + sfile_sectsize);
+                            self->priv->binary_offset += fragment_length * (tfile_sectsize + sfile_sectsize);
                         }
                     } else {
                         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: previous fragment already has length (%i)\n", __debug__, fragment_length);
@@ -284,114 +273,111 @@ static gboolean __mirage_parser_cue_add_index (MIRAGE_Parser *self, gint number,
 
             /* Now current track; we only create fragment here and set its offset */
             GObject *data_fragment = NULL;
-            if (!strcmp(_priv->cur_data_type, "BINARY")) {
+            if (!strcmp(self->priv->cur_data_type, "BINARY")) {
                 /* Binary data; we'll request fragment with BINARY interface... */
                 gint tfile_sectsize = 0;
                 gint sfile_sectsize = 0;
 
                 /* Take into account possibility of having subchannel
                    (only for CD+G tracks, though) */
-                if (_priv->cur_data_sectsize == 2448) {
+                if (self->priv->cur_data_sectsize == 2448) {
                     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: subchannel data present...\n", __debug__);
                     tfile_sectsize = 2352;
                     sfile_sectsize = 96;
                 } else {
-                    tfile_sectsize = _priv->cur_data_sectsize;
+                    tfile_sectsize = self->priv->cur_data_sectsize;
                 }
 
-                data_fragment = libmirage_create_fragment(MIRAGE_TYPE_FINTERFACE_BINARY, _priv->cur_data_filename, error);
+                data_fragment = libmirage_create_fragment(MIRAGE_TYPE_FRAG_IFACE_BINARY, self->priv->cur_data_filename, error);
                 if (!data_fragment) {
                     MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to create data fragment!\n", __debug__);
                     return FALSE;
                 }
 
-                mirage_finterface_binary_track_file_set_handle(MIRAGE_FINTERFACE_BINARY(data_fragment), g_fopen(_priv->cur_data_filename, "r"), NULL);
-                mirage_finterface_binary_track_file_set_sectsize(MIRAGE_FINTERFACE_BINARY(data_fragment), tfile_sectsize, NULL);
-                mirage_finterface_binary_track_file_set_offset(MIRAGE_FINTERFACE_BINARY(data_fragment), _priv->binary_offset, NULL);
-                mirage_finterface_binary_track_file_set_format(MIRAGE_FINTERFACE_BINARY(data_fragment), _priv->cur_data_format, NULL);
+                mirage_frag_iface_binary_track_file_set_handle(MIRAGE_FRAG_IFACE_BINARY(data_fragment), g_fopen(self->priv->cur_data_filename, "r"), NULL);
+                mirage_frag_iface_binary_track_file_set_sectsize(MIRAGE_FRAG_IFACE_BINARY(data_fragment), tfile_sectsize, NULL);
+                mirage_frag_iface_binary_track_file_set_offset(MIRAGE_FRAG_IFACE_BINARY(data_fragment), self->priv->binary_offset, NULL);
+                mirage_frag_iface_binary_track_file_set_format(MIRAGE_FRAG_IFACE_BINARY(data_fragment), self->priv->cur_data_format, NULL);
 
                 if (sfile_sectsize) {
-                    mirage_finterface_binary_subchannel_file_set_sectsize(MIRAGE_FINTERFACE_BINARY(data_fragment), sfile_sectsize, NULL);
+                    mirage_frag_iface_binary_subchannel_file_set_sectsize(MIRAGE_FRAG_IFACE_BINARY(data_fragment), sfile_sectsize, NULL);
                     /* FIXME: what format of subchannel is there anyway? */
-                    mirage_finterface_binary_subchannel_file_set_format(MIRAGE_FINTERFACE_BINARY(data_fragment), FR_BIN_SFILE_PW96_INT | FR_BIN_SFILE_INT, NULL);
+                    mirage_frag_iface_binary_subchannel_file_set_format(MIRAGE_FRAG_IFACE_BINARY(data_fragment), FR_BIN_SFILE_PW96_INT | FR_BIN_SFILE_INT, NULL);
                 }
             } else {
                 /* One of the audio files; we'll request fragment with AUDIO
                    interface and hope Mirage finds one that can handle the file
                    for us */
-                data_fragment = libmirage_create_fragment(MIRAGE_TYPE_FINTERFACE_AUDIO, _priv->cur_data_filename, error);
+                data_fragment = libmirage_create_fragment(MIRAGE_TYPE_FRAG_IFACE_AUDIO, self->priv->cur_data_filename, error);
                 if (!data_fragment) {
-                    MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: unknown/unsupported file type: %s\n", __debug__, _priv->cur_data_type);
+                    MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: unknown/unsupported file type: %s\n", __debug__, self->priv->cur_data_type);
                     return FALSE;
                 }
 
-                mirage_finterface_audio_set_file(MIRAGE_FINTERFACE_AUDIO(data_fragment), _priv->cur_data_filename, NULL);
+                mirage_frag_iface_audio_set_file(MIRAGE_FRAG_IFACE_AUDIO(data_fragment), self->priv->cur_data_filename, NULL);
                 /* Offset in audio file is equivalent to current address in CUE */
-                mirage_finterface_audio_set_offset(MIRAGE_FINTERFACE_AUDIO(data_fragment), address, NULL);
+                mirage_frag_iface_audio_set_offset(MIRAGE_FRAG_IFACE_AUDIO(data_fragment), address, NULL);
             }
 
-            mirage_track_add_fragment(MIRAGE_TRACK(_priv->cur_track), -1, &data_fragment, NULL);
+            mirage_track_add_fragment(MIRAGE_TRACK(self->priv->cur_track), -1, &data_fragment, NULL);
 
             /* Store the current address... it is location at which the current
                track starts, and it will be used to calculate fragment's length
                (if file won't change) */
-            _priv->cur_track_start = address;
+            self->priv->cur_track_start = address;
 
             g_object_unref(data_fragment);
         }
     } else {
         /* If index >= 2 is given, add it */
-        mirage_track_add_index(MIRAGE_TRACK(_priv->cur_track), address, NULL, NULL);
+        mirage_track_add_index(MIRAGE_TRACK(self->priv->cur_track), address, NULL, NULL);
     }
 
     return TRUE;
 }
 
-static gboolean __mirage_parser_cue_set_flags (MIRAGE_Parser *self, gint flags, GError **error) {
-    MIRAGE_Parser_CUEPrivate *_priv = MIRAGE_PARSER_CUE_GET_PRIVATE(self);
-
+static gboolean mirage_parser_cue_set_flags (MIRAGE_Parser_CUE *self, gint flags, GError **error)
+{
     /* Current track needs to be set at this point */
-    if (!_priv->cur_track) {
+    if (!self->priv->cur_track) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: current track is not set!\n", __debug__);
         mirage_error(MIRAGE_E_PARSER, error);
         return FALSE;
     }
 
-    mirage_track_set_flags(MIRAGE_TRACK(_priv->cur_track), flags, NULL);
+    mirage_track_set_flags(MIRAGE_TRACK(self->priv->cur_track), flags, NULL);
 
     return TRUE;
 }
 
-static gboolean __mirage_parser_cue_set_isrc (MIRAGE_Parser *self, gchar *isrc, GError **error) {
-    MIRAGE_Parser_CUEPrivate *_priv = MIRAGE_PARSER_CUE_GET_PRIVATE(self);
-
+static gboolean mirage_parser_cue_set_isrc (MIRAGE_Parser_CUE *self, gchar *isrc, GError **error)
+{
     /* Current track needs to be set at this point */
-    if (!_priv->cur_track) {
+    if (!self->priv->cur_track) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to get current track!\n", __debug__);
         mirage_error(MIRAGE_E_PARSER, error);
         return FALSE;
     }
 
-    mirage_track_set_isrc(MIRAGE_TRACK(_priv->cur_track), isrc, NULL);
+    mirage_track_set_isrc(MIRAGE_TRACK(self->priv->cur_track), isrc, NULL);
 
     return TRUE;
 }
 
 
-static gboolean __mirage_parser_cue_add_empty_part (MIRAGE_Parser *self, gint length, GError **error) {
-    MIRAGE_Parser_CUEPrivate *_priv = MIRAGE_PARSER_CUE_GET_PRIVATE(self);
-
+static gboolean mirage_parser_cue_add_empty_part (MIRAGE_Parser_CUE *self, gint length, GError **error)
+{
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: adding empty part (0x%X)\n", __debug__, length);
 
     /* Current track needs to be set at this point */
-    if (!_priv->cur_track) {
+    if (!self->priv->cur_track) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: current track is not set!\n", __debug__);
         mirage_error(MIRAGE_E_PARSER, error);
         return FALSE;
     }
 
     /* Prepare NULL fragment */
-    GObject *data_fragment = libmirage_create_fragment(MIRAGE_TYPE_FINTERFACE_NULL, "NULL", error);
+    GObject *data_fragment = libmirage_create_fragment(MIRAGE_TYPE_FRAG_IFACE_NULL, "NULL", error);
     if (!data_fragment) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to create NULL fragment!\n", __debug__);
         return FALSE;
@@ -400,42 +386,42 @@ static gboolean __mirage_parser_cue_add_empty_part (MIRAGE_Parser *self, gint le
     mirage_fragment_set_length(MIRAGE_FRAGMENT(data_fragment), length, NULL);
 
     /* Add fragment */
-    mirage_track_add_fragment(MIRAGE_TRACK(_priv->cur_track), -1, &data_fragment, NULL);
+    mirage_track_add_fragment(MIRAGE_TRACK(self->priv->cur_track), -1, &data_fragment, NULL);
     g_object_unref(data_fragment);
 
     return TRUE;
 }
 
-static gboolean __mirage_parser_cue_add_pregap (MIRAGE_Parser *self, gint length, GError **error) {
-    MIRAGE_Parser_CUEPrivate *_priv = MIRAGE_PARSER_CUE_GET_PRIVATE(self);
+static gboolean mirage_parser_cue_add_pregap (MIRAGE_Parser_CUE *self, gint length, GError **error)
+{
     gint track_start = 0;
 
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: adding pregap (0x%X)\n", __debug__, length);
 
     /* Current track needs to be set at this point */
-    if (!_priv->cur_track) {
+    if (!self->priv->cur_track) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: current track is not set!\n", __debug__);
         mirage_error(MIRAGE_E_PARSER, error);
         return FALSE;
     }
 
     /* Add empty part */
-    if (!__mirage_parser_cue_add_empty_part(self, length, error)) {
+    if (!mirage_parser_cue_add_empty_part(self, length, error)) {
         return FALSE;
     }
 
     /* Adjust track start */
-    mirage_track_get_track_start(MIRAGE_TRACK(_priv->cur_track), &track_start, NULL);
+    mirage_track_get_track_start(MIRAGE_TRACK(self->priv->cur_track), &track_start, NULL);
     track_start += length;
-    mirage_track_set_track_start(MIRAGE_TRACK(_priv->cur_track), track_start, NULL);
+    mirage_track_set_track_start(MIRAGE_TRACK(self->priv->cur_track), track_start, NULL);
 
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: readjusted track start to 0x%X (%i)\n", __debug__, track_start, track_start);
 
     return TRUE;
 }
 
-static gboolean __mirage_parser_cue_add_session (MIRAGE_Parser *self, gint number, GError **error) {
-    MIRAGE_Parser_CUEPrivate *_priv = MIRAGE_PARSER_CUE_GET_PRIVATE(self);
+static gboolean mirage_parser_cue_add_session (MIRAGE_Parser_CUE *self, gint number, GError **error)
+{
     gint leadout_length = 0;
 
     /* We've already added first session, so don't bother */
@@ -452,44 +438,44 @@ static gboolean __mirage_parser_cue_add_session (MIRAGE_Parser *self, gint numbe
     } else {
         leadout_length = 6750; /* Actually, it should be 2250 previous leadout, 4500 current leadin */
     }
-    mirage_session_set_leadout_length(MIRAGE_SESSION(_priv->cur_session), leadout_length, NULL);
+    mirage_session_set_leadout_length(MIRAGE_SESSION(self->priv->cur_session), leadout_length, NULL);
 
     /* UltraISO/IsoBuster store leadout data in the binary file. We'll need to
        account for this when we're setting fragment length, which we calculate
        from index addresses... (150 sectors are added to account for pregap,
        which isn't indicated because only index 01 is used) */
-    _priv->leadout_correction = leadout_length + 150;
+    self->priv->leadout_correction = leadout_length + 150;
 
     /* Add new session, store the pointer but release the reference */
-    _priv->cur_session = NULL; /* Need to reset it, otherwise it gets added */
-    if (!mirage_disc_add_session_by_index(MIRAGE_DISC(_priv->disc), -1, &_priv->cur_session, error)) {
+    self->priv->cur_session = NULL; /* Need to reset it, otherwise it gets added */
+    if (!mirage_disc_add_session_by_index(MIRAGE_DISC(self->priv->disc), -1, &self->priv->cur_session, error)) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to add session!\n", __debug__);
         return FALSE;
     }
-    g_object_unref(_priv->cur_session);
+    g_object_unref(self->priv->cur_session);
 
     /* Reset current track */
-    _priv->cur_track = NULL;
+    self->priv->cur_track = NULL;
 
     return TRUE;
 }
 
-static gboolean __mirage_parser_cue_set_pack_data (MIRAGE_Parser *self, gint pack_type, gchar *data, GError **error G_GNUC_UNUSED) {
-    MIRAGE_Parser_CUEPrivate *_priv = MIRAGE_PARSER_CUE_GET_PRIVATE(self);
+static gboolean mirage_parser_cue_set_pack_data (MIRAGE_Parser_CUE *self, gint pack_type, gchar *data, GError **error G_GNUC_UNUSED)
+{
     GObject *language = NULL;
 
     /* FIXME: only one language code supported for now */
     gint langcode = 9;
 
-    if (!_priv->cur_track) {
+    if (!self->priv->cur_track) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: setting pack data for disc; type: 0x%X, data: %s\n", __debug__, pack_type, data);
-        if (!mirage_session_get_language_by_code(MIRAGE_SESSION(_priv->cur_session), langcode, &language, NULL)) {
-            mirage_session_add_language(MIRAGE_SESSION(_priv->cur_session), langcode, &language, NULL);
+        if (!mirage_session_get_language_by_code(MIRAGE_SESSION(self->priv->cur_session), langcode, &language, NULL)) {
+            mirage_session_add_language(MIRAGE_SESSION(self->priv->cur_session), langcode, &language, NULL);
         }
     } else {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: setting pack data for track; type: 0x%X, data: %s\n", __debug__, pack_type, data);
-        if (!mirage_track_get_language_by_code(MIRAGE_TRACK(_priv->cur_track), langcode, &language, NULL)) {
-            mirage_track_add_language(MIRAGE_TRACK(_priv->cur_track), langcode, &language, NULL);
+        if (!mirage_track_get_language_by_code(MIRAGE_TRACK(self->priv->cur_track), langcode, &language, NULL)) {
+            mirage_track_add_language(MIRAGE_TRACK(self->priv->cur_track), langcode, &language, NULL);
         }
     }
 
@@ -500,10 +486,20 @@ static gboolean __mirage_parser_cue_set_pack_data (MIRAGE_Parser *self, gint pac
 }
 
 
-/******************************************************************************\
- *                           Regex parsing engine                             *
-\******************************************************************************/
-static gchar *__strip_quotes (gchar *str) {
+/**********************************************************************\
+ *                       Regex parsing engine                         *
+\**********************************************************************/
+typedef gboolean (*CUE_RegexCallback) (MIRAGE_Parser_CUE *self, GMatchInfo *match_info, GError **error);
+
+typedef struct
+{
+    GRegex *regex;
+    CUE_RegexCallback callback_func;
+} CUE_RegexRule;
+
+
+static gchar *strip_quotes (gchar *str)
+{
     gint len = strlen(str);
 
     /* Due to UTF-8 being multi-byte, we need to deal with string on byte level,
@@ -518,20 +514,22 @@ static gchar *__strip_quotes (gchar *str) {
     return g_strdup(str);
 }
 
-static gboolean __mirage_parser_cue_callback_session (MIRAGE_Parser *self, GMatchInfo *match_info, GError **error) {
+static gboolean mirage_parser_cue_callback_session (MIRAGE_Parser_CUE *self, GMatchInfo *match_info, GError **error)
+{
     gboolean succeeded = TRUE;
     gchar *number_raw = g_match_info_fetch_named(match_info, "number");
     gint number = g_strtod(number_raw, NULL);
 
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: parsed SESSION: %d\n", __debug__, number);
-    succeeded = __mirage_parser_cue_add_session(self, number, error);
+    succeeded = mirage_parser_cue_add_session(self, number, error);
 
     g_free(number_raw);
 
     return succeeded;
 }
 
-static gboolean __mirage_parser_cue_callback_comment (MIRAGE_Parser *self, GMatchInfo *match_info, GError **error G_GNUC_UNUSED) {
+static gboolean mirage_parser_cue_callback_comment (MIRAGE_Parser_CUE *self, GMatchInfo *match_info, GError **error G_GNUC_UNUSED)
+{
     gchar *comment = g_match_info_fetch_named(match_info, "comment");
 
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: parsed COMMENT: %s\n", __debug__, comment);
@@ -541,11 +539,12 @@ static gboolean __mirage_parser_cue_callback_comment (MIRAGE_Parser *self, GMatc
     return TRUE;
 }
 
-static gboolean __mirage_parser_cue_callback_cdtext (MIRAGE_Parser *self, GMatchInfo *match_info, GError **error G_GNUC_UNUSED) {
+static gboolean mirage_parser_cue_callback_cdtext (MIRAGE_Parser_CUE *self, GMatchInfo *match_info, GError **error G_GNUC_UNUSED)
+{
     gchar *filename_raw, *filename;
 
     filename_raw = g_match_info_fetch_named(match_info, "filename");
-    filename = __strip_quotes(filename_raw);
+    filename = strip_quotes(filename_raw);
 
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: parsed CDTEXT: %s; FIXME: not handled yet!\n", __debug__, filename);
 
@@ -555,29 +554,30 @@ static gboolean __mirage_parser_cue_callback_cdtext (MIRAGE_Parser *self, GMatch
     return TRUE;
 }
 
-static gboolean __mirage_parser_cue_callback_catalog (MIRAGE_Parser *self, GMatchInfo *match_info, GError **error G_GNUC_UNUSED) {
-    MIRAGE_Parser_CUEPrivate *_priv = MIRAGE_PARSER_CUE_GET_PRIVATE(self);
+static gboolean mirage_parser_cue_callback_catalog (MIRAGE_Parser_CUE *self, GMatchInfo *match_info, GError **error G_GNUC_UNUSED)
+{
     gchar *catalog = g_match_info_fetch_named(match_info, "catalog");
 
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: parsed CATALOG: %.13s\n", __debug__, catalog);
 
-    mirage_disc_set_mcn(MIRAGE_DISC(_priv->disc), catalog, NULL);
+    mirage_disc_set_mcn(MIRAGE_DISC(self->priv->disc), catalog, NULL);
 
     g_free(catalog);
 
     return TRUE;
 }
 
-static gboolean __mirage_parser_cue_callback_title (MIRAGE_Parser *self, GMatchInfo *match_info, GError **error) {
+static gboolean mirage_parser_cue_callback_title (MIRAGE_Parser_CUE *self, GMatchInfo *match_info, GError **error)
+{
     gboolean succeeded = TRUE;
     gchar *title_raw, *title;
 
     title_raw = g_match_info_fetch_named(match_info, "title");
-    title = __strip_quotes(title_raw);
+    title = strip_quotes(title_raw);
 
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: parsed TITLE: %s\n", __debug__, title);
 
-    succeeded = __mirage_parser_cue_set_pack_data(self, MIRAGE_LANGUAGE_PACK_TITLE, title, error);
+    succeeded = mirage_parser_cue_set_pack_data(self, MIRAGE_LANGUAGE_PACK_TITLE, title, error);
 
     g_free(title);
     g_free(title_raw);
@@ -585,16 +585,17 @@ static gboolean __mirage_parser_cue_callback_title (MIRAGE_Parser *self, GMatchI
     return succeeded;
 }
 
-static gboolean __mirage_parser_cue_callback_performer (MIRAGE_Parser *self, GMatchInfo *match_info, GError **error) {
+static gboolean mirage_parser_cue_callback_performer (MIRAGE_Parser_CUE *self, GMatchInfo *match_info, GError **error)
+{
     gboolean succeeded = TRUE;
     gchar *performer_raw, *performer;
 
     performer_raw = g_match_info_fetch_named(match_info, "performer");
-    performer = __strip_quotes(performer_raw);
+    performer = strip_quotes(performer_raw);
 
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: parsed PERFORMER: %s\n", __debug__, performer);
 
-    succeeded = __mirage_parser_cue_set_pack_data(self, MIRAGE_LANGUAGE_PACK_PERFORMER, performer, error);
+    succeeded = mirage_parser_cue_set_pack_data(self, MIRAGE_LANGUAGE_PACK_PERFORMER, performer, error);
 
     g_free(performer);
     g_free(performer_raw);
@@ -602,16 +603,17 @@ static gboolean __mirage_parser_cue_callback_performer (MIRAGE_Parser *self, GMa
     return succeeded;
 }
 
-static gboolean __mirage_parser_cue_callback_songwriter (MIRAGE_Parser *self, GMatchInfo *match_info, GError **error) {
+static gboolean mirage_parser_cue_callback_songwriter (MIRAGE_Parser_CUE *self, GMatchInfo *match_info, GError **error)
+{
     gboolean succeeded = TRUE;
     gchar *songwriter_raw, *songwriter;
 
     songwriter_raw = g_match_info_fetch_named(match_info, "songwriter");
-    songwriter = __strip_quotes(songwriter_raw);
+    songwriter = strip_quotes(songwriter_raw);
 
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: parsed SONGWRITER: %s\n", __debug__, songwriter);
 
-    succeeded = __mirage_parser_cue_set_pack_data(self, MIRAGE_LANGUAGE_PACK_SONGWRITER, songwriter, error);
+    succeeded = mirage_parser_cue_set_pack_data(self, MIRAGE_LANGUAGE_PACK_SONGWRITER, songwriter, error);
 
     g_free(songwriter);
     g_free(songwriter_raw);
@@ -619,18 +621,19 @@ static gboolean __mirage_parser_cue_callback_songwriter (MIRAGE_Parser *self, GM
     return succeeded;
 }
 
-static gboolean __mirage_parser_cue_callback_file (MIRAGE_Parser *self, GMatchInfo *match_info, GError **error) {
+static gboolean mirage_parser_cue_callback_file (MIRAGE_Parser_CUE *self, GMatchInfo *match_info, GError **error)
+{
     gboolean succeeded = TRUE;
     gchar *filename_raw, *filename, *type;
 
     type = g_match_info_fetch_named(match_info, "type");
     filename_raw = g_match_info_fetch_named(match_info, "filename");
-    filename = __strip_quotes(filename_raw);
+    filename = strip_quotes(filename_raw);
 
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "\n"); /* To make log more readable */
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: parsed FILE; filename: %s, type: %s\n", __debug__, filename, type);
 
-    succeeded = __mirage_parser_cue_set_new_file(self, filename, type, error);
+    succeeded = mirage_parser_cue_set_new_file(self, filename, type, error);
 
     g_free(filename);
     g_free(filename_raw);
@@ -639,7 +642,8 @@ static gboolean __mirage_parser_cue_callback_file (MIRAGE_Parser *self, GMatchIn
     return succeeded;
 }
 
-static gboolean __mirage_parser_cue_callback_track (MIRAGE_Parser *self, GMatchInfo *match_info, GError **error) {
+static gboolean mirage_parser_cue_callback_track (MIRAGE_Parser_CUE *self, GMatchInfo *match_info, GError **error)
+{
     gboolean succeeded = TRUE;
     gchar *number_raw, *mode_string;
     gint number;
@@ -651,7 +655,7 @@ static gboolean __mirage_parser_cue_callback_track (MIRAGE_Parser *self, GMatchI
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "\n"); /* To make log more readable */
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: parsed TRACK; number: %d, mode_string: %s\n", __debug__, number, mode_string);
 
-    succeeded = __mirage_parser_cue_add_track(self, number, mode_string, error);
+    succeeded = mirage_parser_cue_add_track(self, number, mode_string, error);
 
     g_free(mode_string);
     g_free(number_raw);
@@ -659,20 +663,22 @@ static gboolean __mirage_parser_cue_callback_track (MIRAGE_Parser *self, GMatchI
     return succeeded;
 }
 
-static gboolean __mirage_parser_cue_callback_isrc (MIRAGE_Parser *self, GMatchInfo *match_info, GError **error) {
+static gboolean mirage_parser_cue_callback_isrc (MIRAGE_Parser_CUE *self, GMatchInfo *match_info, GError **error)
+{
     gboolean succeeded = TRUE;
     gchar *isrc = g_match_info_fetch_named(match_info, "isrc");
 
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: parsed ISRC: %s\n", __debug__, isrc);
 
-    succeeded = __mirage_parser_cue_set_isrc(self, isrc, error);
+    succeeded = mirage_parser_cue_set_isrc(self, isrc, error);
 
     g_free(isrc);
 
     return succeeded;
 }
 
-static gboolean __mirage_parser_cue_callback_index (MIRAGE_Parser *self, GMatchInfo *match_info, GError **error) {
+static gboolean mirage_parser_cue_callback_index (MIRAGE_Parser_CUE *self, GMatchInfo *match_info, GError **error)
+ {
     gboolean succeeded = TRUE;
     gchar *number_raw, *address_raw;
     gint number, address;
@@ -684,7 +690,7 @@ static gboolean __mirage_parser_cue_callback_index (MIRAGE_Parser *self, GMatchI
 
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: parsed INDEX; number: %d, address: %s (%d)\n", __debug__, number, address_raw, address);
 
-    succeeded = __mirage_parser_cue_add_index(self, number, address, error);
+    succeeded = mirage_parser_cue_add_index(self, number, address, error);
 
     g_free(address_raw);
     g_free(number_raw);
@@ -692,7 +698,8 @@ static gboolean __mirage_parser_cue_callback_index (MIRAGE_Parser *self, GMatchI
     return succeeded;
 }
 
-static gboolean __mirage_parser_cue_callback_pregap (MIRAGE_Parser *self, GMatchInfo *match_info, GError **error) {
+static gboolean mirage_parser_cue_callback_pregap (MIRAGE_Parser_CUE *self, GMatchInfo *match_info, GError **error)
+{
     gboolean succeeded = TRUE;
     gchar *length_raw;
     gint length;
@@ -702,14 +709,15 @@ static gboolean __mirage_parser_cue_callback_pregap (MIRAGE_Parser *self, GMatch
 
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: parsed PREGAP; length: %s (%d)\n", __debug__, length_raw, length);
 
-    succeeded = __mirage_parser_cue_add_pregap(self, length, error);
+    succeeded = mirage_parser_cue_add_pregap(self, length, error);
 
     g_free(length_raw);
 
     return succeeded;
 }
 
-static gboolean __mirage_parser_cue_callback_postgap (MIRAGE_Parser *self, GMatchInfo *match_info, GError **error) {
+static gboolean mirage_parser_cue_callback_postgap (MIRAGE_Parser_CUE *self, GMatchInfo *match_info, GError **error)
+{
     gboolean succeeded = TRUE;
     gchar *length_raw;
     gint length;
@@ -719,14 +727,15 @@ static gboolean __mirage_parser_cue_callback_postgap (MIRAGE_Parser *self, GMatc
 
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: parsed POSTGAP; length: %s (%d)\n", __debug__, g_match_info_fetch_named(match_info, "msf"), length);
 
-    succeeded = __mirage_parser_cue_add_empty_part(self, length, error);
+    succeeded = mirage_parser_cue_add_empty_part(self, length, error);
 
     g_free(length_raw);
 
     return succeeded;
 }
 
-static gboolean __mirage_parser_cue_callback_flags (MIRAGE_Parser *self, GMatchInfo *match_info, GError **error) {
+static gboolean mirage_parser_cue_callback_flags (MIRAGE_Parser_CUE *self, GMatchInfo *match_info, GError **error)
+{
     gchar *flags_dcp, *flags_4ch, *flags_pre, *flags_scms;
     gint flags = 0;
 
@@ -758,64 +767,64 @@ static gboolean __mirage_parser_cue_callback_flags (MIRAGE_Parser *self, GMatchI
     g_free(flags_pre);
     g_free(flags_scms);
 
-    return __mirage_parser_cue_set_flags(self, flags, error);
+    return mirage_parser_cue_set_flags(self, flags, error);
 }
 
-#define APPEND_REGEX_RULE(list,rule,callback) {                         \
-    MIRAGE_RegexRule *new_rule = g_new(MIRAGE_RegexRule, 1);            \
-    new_rule->regex = g_regex_new(rule, G_REGEX_OPTIMIZE, 0, NULL);     \
-    new_rule->callback_func = callback;                                 \
-                                                                        \
-    list = g_list_append(list, new_rule);                               \
+#define APPEND_REGEX_RULE(list,rule,callback) { \
+    CUE_RegexRule *new_rule = g_new(CUE_RegexRule, 1); \
+    new_rule->regex = g_regex_new(rule, G_REGEX_OPTIMIZE, 0, NULL); \
+    new_rule->callback_func = callback; \
+    /* Append to the list */ \
+    list = g_list_append(list, new_rule); \
 }
 
-static void __mirage_parser_cue_init_regex_parser (MIRAGE_Parser *self) {
-    MIRAGE_Parser_CUEPrivate *_priv = MIRAGE_PARSER_CUE_GET_PRIVATE(self);
-
+static void mirage_parser_cue_init_regex_parser (MIRAGE_Parser_CUE *self)
+{
     /* Ignore empty lines */
-    APPEND_REGEX_RULE(_priv->regex_rules, "^\\s*$", NULL);
+    APPEND_REGEX_RULE(self->priv->regex_rules, "^\\s*$", NULL);
 
     /* "Extensions" that are embedded in the comments must appear before general
        comment rule */
-    APPEND_REGEX_RULE(_priv->regex_rules, "REM\\s+SESSION\\s+(?<number>\\d+)$", __mirage_parser_cue_callback_session);
+    APPEND_REGEX_RULE(self->priv->regex_rules, "REM\\s+SESSION\\s+(?<number>\\d+)$", mirage_parser_cue_callback_session);
 
-    APPEND_REGEX_RULE(_priv->regex_rules, "REM\\s+(?<comment>.+)$", __mirage_parser_cue_callback_comment);
+    APPEND_REGEX_RULE(self->priv->regex_rules, "REM\\s+(?<comment>.+)$", mirage_parser_cue_callback_comment);
 
-    APPEND_REGEX_RULE(_priv->regex_rules, "CDTEXTFILE\\s+(?<filename>.+)$", __mirage_parser_cue_callback_cdtext);
+    APPEND_REGEX_RULE(self->priv->regex_rules, "CDTEXTFILE\\s+(?<filename>.+)$", mirage_parser_cue_callback_cdtext);
 
-    APPEND_REGEX_RULE(_priv->regex_rules, "CATALOG\\s+(?<catalog>\\d{13})$", __mirage_parser_cue_callback_catalog);
+    APPEND_REGEX_RULE(self->priv->regex_rules, "CATALOG\\s+(?<catalog>\\d{13})$", mirage_parser_cue_callback_catalog);
 
-    APPEND_REGEX_RULE(_priv->regex_rules, "TITLE\\s+(?<title>.+)$", __mirage_parser_cue_callback_title);
-    APPEND_REGEX_RULE(_priv->regex_rules, "PERFORMER\\s+(?<performer>.+)$", __mirage_parser_cue_callback_performer);
-    APPEND_REGEX_RULE(_priv->regex_rules, "SONGWRITER\\s+(?<songwriter>.+)$", __mirage_parser_cue_callback_songwriter);
+    APPEND_REGEX_RULE(self->priv->regex_rules, "TITLE\\s+(?<title>.+)$", mirage_parser_cue_callback_title);
+    APPEND_REGEX_RULE(self->priv->regex_rules, "PERFORMER\\s+(?<performer>.+)$", mirage_parser_cue_callback_performer);
+    APPEND_REGEX_RULE(self->priv->regex_rules, "SONGWRITER\\s+(?<songwriter>.+)$", mirage_parser_cue_callback_songwriter);
 
-    APPEND_REGEX_RULE(_priv->regex_rules, "FILE\\s+(?<filename>.+)\\s+(?<type>\\S+)$", __mirage_parser_cue_callback_file);
-    APPEND_REGEX_RULE(_priv->regex_rules, "TRACK\\s+(?<number>\\d+)\\s+(?<type>\\S+)$", __mirage_parser_cue_callback_track);
-    APPEND_REGEX_RULE(_priv->regex_rules, "ISRC\\s+(?<isrc>\\w{12})$", __mirage_parser_cue_callback_isrc);
-    APPEND_REGEX_RULE(_priv->regex_rules, "INDEX\\s+(?<index>\\d+)\\s+(?<msf>[\\d]+:[\\d]+:[\\d]+)$", __mirage_parser_cue_callback_index);
+    APPEND_REGEX_RULE(self->priv->regex_rules, "FILE\\s+(?<filename>.+)\\s+(?<type>\\S+)$", mirage_parser_cue_callback_file);
+    APPEND_REGEX_RULE(self->priv->regex_rules, "TRACK\\s+(?<number>\\d+)\\s+(?<type>\\S+)$", mirage_parser_cue_callback_track);
+    APPEND_REGEX_RULE(self->priv->regex_rules, "ISRC\\s+(?<isrc>\\w{12})$", mirage_parser_cue_callback_isrc);
+    APPEND_REGEX_RULE(self->priv->regex_rules, "INDEX\\s+(?<index>\\d+)\\s+(?<msf>[\\d]+:[\\d]+:[\\d]+)$", mirage_parser_cue_callback_index);
 
-    APPEND_REGEX_RULE(_priv->regex_rules, "PREGAP\\s+(?<msf>[\\d]+:[\\d]+:[\\d]+)$", __mirage_parser_cue_callback_pregap);
-    APPEND_REGEX_RULE(_priv->regex_rules, "POSTGAP\\s+(?<msf>[\\d]+:[\\d]+:[\\d]+)$", __mirage_parser_cue_callback_postgap);
+    APPEND_REGEX_RULE(self->priv->regex_rules, "PREGAP\\s+(?<msf>[\\d]+:[\\d]+:[\\d]+)$", mirage_parser_cue_callback_pregap);
+    APPEND_REGEX_RULE(self->priv->regex_rules, "POSTGAP\\s+(?<msf>[\\d]+:[\\d]+:[\\d]+)$", mirage_parser_cue_callback_postgap);
 
-    APPEND_REGEX_RULE(_priv->regex_rules, "FLAGS\\+(((?<dcp>DCP)|(?<4ch>4CH)|(?<pre>PRE)|(?<scms>SCMS))\\s*)+$", __mirage_parser_cue_callback_flags);
+    APPEND_REGEX_RULE(self->priv->regex_rules, "FLAGS\\+(((?<dcp>DCP)|(?<4ch>4CH)|(?<pre>PRE)|(?<scms>SCMS))\\s*)+$", mirage_parser_cue_callback_flags);
 
     return;
 }
 
-static void __mirage_parser_cue_cleanup_regex_parser (MIRAGE_Parser *self) {
-    MIRAGE_Parser_CUEPrivate *_priv = MIRAGE_PARSER_CUE_GET_PRIVATE(self);
+static void mirage_parser_cue_cleanup_regex_parser (MIRAGE_Parser_CUE *self)
+{
     GList *entry;
 
-    G_LIST_FOR_EACH(entry, _priv->regex_rules) {
-        MIRAGE_RegexRule *rule = entry->data;
+    G_LIST_FOR_EACH(entry, self->priv->regex_rules) {
+        CUE_RegexRule *rule = entry->data;
         g_regex_unref(rule->regex);
         g_free(rule);
     }
 
-    g_list_free(_priv->regex_rules);
+    g_list_free(self->priv->regex_rules);
 }
 
-static gboolean __mirage_parser_cue_detect_and_set_encoding (MIRAGE_Parser *self, GIOChannel *io_channel, GError **error G_GNUC_UNUSED) {
+static gboolean mirage_parser_cue_detect_and_set_encoding (MIRAGE_Parser_CUE *self, GIOChannel *io_channel, GError **error G_GNUC_UNUSED)
+{
     static gchar bom_utf32_be[] = { 0x00, 0x00, 0xFE, 0xFF };
     static gchar bom_utf32_le[] = { 0xFF, 0xFE, 0x00, 0x00 };
     static gchar bom_utf16_be[] = { 0xFE, 0xFF };
@@ -854,8 +863,8 @@ static gboolean __mirage_parser_cue_detect_and_set_encoding (MIRAGE_Parser *self
     return TRUE;
 }
 
-static gboolean __mirage_parser_cue_parse_cue_file (MIRAGE_Parser *self, gchar *filename, GError **error) {
-    MIRAGE_Parser_CUEPrivate *_priv = MIRAGE_PARSER_CUE_GET_PRIVATE(self);
+static gboolean mirage_parser_cue_parse_cue_file (MIRAGE_Parser_CUE *self, gchar *filename, GError **error)
+{
     GError *io_error = NULL;
     GIOChannel *io_channel;
     gboolean succeeded = TRUE;
@@ -873,11 +882,11 @@ static gboolean __mirage_parser_cue_parse_cue_file (MIRAGE_Parser *self, gchar *
 
     /* If provided, use the specified encoding; otherwise, try to detect it */
     const gchar *encoding = NULL;
-    if (mirage_parser_get_param_string(self, "encoding", &encoding, NULL)) {
+    if (mirage_parser_get_param_string(MIRAGE_PARSER(self), "encoding", &encoding, NULL)) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: using specified encoding: %s\n", __debug__, encoding);
         g_io_channel_set_encoding(io_channel, encoding, NULL);
     } else {
-        __mirage_parser_cue_detect_and_set_encoding(self, io_channel, NULL);
+        mirage_parser_cue_detect_and_set_encoding(self, io_channel, NULL);
     }
 
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "\n");
@@ -913,8 +922,8 @@ static gboolean __mirage_parser_cue_parse_cue_file (MIRAGE_Parser *self, gchar *
         GList *entry;
 
         /* Go over all matching rules */
-        G_LIST_FOR_EACH(entry, _priv->regex_rules) {
-            MIRAGE_RegexRule *regex_rule = entry->data;
+        G_LIST_FOR_EACH(entry, self->priv->regex_rules) {
+            CUE_RegexRule *regex_rule = entry->data;
 
             /* Try to match the given rule */
             if (g_regex_match(regex_rule->regex, line_str, 0, &match_info)) {
@@ -952,11 +961,13 @@ static gboolean __mirage_parser_cue_parse_cue_file (MIRAGE_Parser *self, gchar *
     return succeeded;
 }
 
-/******************************************************************************\
- *                     MIRAGE_Parser methods implementation                   *
-\******************************************************************************/
-static gboolean __mirage_parser_cue_load_image (MIRAGE_Parser *self, gchar **filenames, GObject **disc, GError **error) {
-    MIRAGE_Parser_CUEPrivate *_priv = MIRAGE_PARSER_CUE_GET_PRIVATE(self);
+/**********************************************************************\
+ *                 MIRAGE_Parser methods implementation               *
+\**********************************************************************/
+static gboolean mirage_parser_cue_load_image (MIRAGE_Parser *_self, gchar **filenames, GObject **disc, GError **error)
+{
+    MIRAGE_Parser_CUE *self = MIRAGE_PARSER_CUE(_self);
+
     gboolean succeeded = TRUE;
 
     /* Check if we can load the file; we check the suffix */
@@ -966,24 +977,24 @@ static gboolean __mirage_parser_cue_load_image (MIRAGE_Parser *self, gchar **fil
     }
 
     /* Create disc */
-    _priv->disc = g_object_new(MIRAGE_TYPE_DISC, NULL);
-    mirage_object_attach_child(MIRAGE_OBJECT(self), _priv->disc, NULL);
+    self->priv->disc = g_object_new(MIRAGE_TYPE_DISC, NULL);
+    mirage_object_attach_child(MIRAGE_OBJECT(self), self->priv->disc, NULL);
 
-    mirage_disc_set_filename(MIRAGE_DISC(_priv->disc), filenames[0], NULL);
-    _priv->cue_filename = g_strdup(filenames[0]);
+    mirage_disc_set_filename(MIRAGE_DISC(self->priv->disc), filenames[0], NULL);
+    self->priv->cue_filename = g_strdup(filenames[0]);
 
     /* First session is created manually (in case we're dealing with normal
        CUE file, which doesn't have session definitions anyway); note that we
        store only pointer, but release reference */
-    if (!mirage_disc_add_session_by_index(MIRAGE_DISC(_priv->disc), -1, &_priv->cur_session, error)) {
+    if (!mirage_disc_add_session_by_index(MIRAGE_DISC(self->priv->disc), -1, &self->priv->cur_session, error)) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to add session!\n", __debug__);
         succeeded = FALSE;
         goto end;
     }
-    g_object_unref(_priv->cur_session);
+    g_object_unref(self->priv->cur_session);
 
     /* Parse the CUE */
-    if (!__mirage_parser_cue_parse_cue_file(self, _priv->cue_filename, error)) {
+    if (!mirage_parser_cue_parse_cue_file(self, self->priv->cue_filename, error)) {
         succeeded = FALSE;
         goto end;
     }
@@ -991,7 +1002,7 @@ static gboolean __mirage_parser_cue_load_image (MIRAGE_Parser *self, gchar **fil
     /* Finish last track */
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "\n");
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: finishing last track in the layout\n", __debug__);
-    if (!__mirage_parser_cue_finish_last_track(self, error)) {
+    if (!mirage_parser_cue_finish_last_track(self, error)) {
         succeeded = FALSE;
         goto end;
     }
@@ -999,19 +1010,19 @@ static gboolean __mirage_parser_cue_load_image (MIRAGE_Parser *self, gchar **fil
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "\n");
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: finishing the layout\n", __debug__);
     /* Now guess medium type and if it's a CD-ROM, add Red Book pregap */
-    gint medium_type = mirage_parser_guess_medium_type(self, _priv->disc);
-    mirage_disc_set_medium_type(MIRAGE_DISC(_priv->disc), medium_type, NULL);
+    gint medium_type = mirage_parser_guess_medium_type(MIRAGE_PARSER(self), self->priv->disc);
+    mirage_disc_set_medium_type(MIRAGE_DISC(self->priv->disc), medium_type, NULL);
     if (medium_type == MIRAGE_MEDIUM_CD) {
-        mirage_parser_add_redbook_pregap(self, _priv->disc, NULL);
+        mirage_parser_add_redbook_pregap(MIRAGE_PARSER(self), self->priv->disc, NULL);
     }
 
 end:
     /* Return disc */
-    mirage_object_detach_child(MIRAGE_OBJECT(self), _priv->disc, NULL);
+    mirage_object_detach_child(MIRAGE_OBJECT(self), self->priv->disc, NULL);
     if (succeeded) {
-        *disc = _priv->disc;
+        *disc = self->priv->disc;
     } else {
-        g_object_unref(_priv->disc);
+        g_object_unref(self->priv->disc);
         *disc = NULL;
     }
 
@@ -1019,83 +1030,64 @@ end:
 }
 
 
-/******************************************************************************\
- *                                Object init                                 *
-\******************************************************************************/
-/* Our parent class */
-static MIRAGE_ParserClass *parent_class = NULL;
+/**********************************************************************\
+ *                             Object init                            * 
+\**********************************************************************/
+G_DEFINE_DYNAMIC_TYPE(MIRAGE_Parser_CUE, mirage_parser_cue, MIRAGE_TYPE_PARSER);
 
-static void __mirage_parser_cue_instance_init (GTypeInstance *instance, gpointer g_class G_GNUC_UNUSED) {
-    mirage_parser_generate_parser_info(MIRAGE_PARSER(instance),
+void mirage_parser_cue_type_register (GTypeModule *type_module)
+{
+    return mirage_parser_cue_register_type(type_module);
+}
+
+
+static void mirage_parser_cue_init (MIRAGE_Parser_CUE *self)
+{
+    self->priv = MIRAGE_PARSER_CUE_GET_PRIVATE(self);
+
+    mirage_parser_generate_parser_info(MIRAGE_PARSER(self),
         "PARSER-CUE",
         "CUE Image Parser",
         "CUE images",
         "application/x-cue"
     );
 
-    __mirage_parser_cue_init_regex_parser(MIRAGE_PARSER(instance));
+    mirage_parser_cue_init_regex_parser(self);
 
-    return;
+    self->priv->cue_filename = NULL;
+    self->priv->cur_data_filename = NULL;
+    self->priv->cur_data_type = NULL;
 }
 
-static void __mirage_parser_cue_finalize (GObject *obj) {
-    MIRAGE_Parser_CUE *self = MIRAGE_PARSER_CUE(obj);
-    MIRAGE_Parser_CUEPrivate *_priv = MIRAGE_PARSER_CUE_GET_PRIVATE(self);
-
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_GOBJECT, "%s: finalizing object\n", __debug__);
+static void mirage_parser_cue_finalize (GObject *gobject)
+{
+    MIRAGE_Parser_CUE *self = MIRAGE_PARSER_CUE(gobject);
 
     /* Free elements of private structure */
-    g_free(_priv->cue_filename);
-    g_free(_priv->cur_data_filename);
-    g_free(_priv->cur_data_type);
+    g_free(self->priv->cue_filename);
+    g_free(self->priv->cur_data_filename);
+    g_free(self->priv->cur_data_type);
 
     /* Cleanup regex parser engine */
-    __mirage_parser_cue_cleanup_regex_parser(MIRAGE_PARSER(self));
-
+    mirage_parser_cue_cleanup_regex_parser(self);
+    
     /* Chain up to the parent class */
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_GOBJECT, "%s: chaining up to parent\n", __debug__);
-    return G_OBJECT_CLASS(parent_class)->finalize(obj);
+    return G_OBJECT_CLASS(mirage_parser_cue_parent_class)->finalize(gobject);
 }
 
+static void mirage_parser_cue_class_init (MIRAGE_Parser_CUEClass *klass)
+{
+    GObjectClass *gobject_class = G_OBJECT_CLASS(klass);
+    MIRAGE_ParserClass *parser_class = MIRAGE_PARSER_CLASS(klass);
 
-static void __mirage_parser_cue_class_init (gpointer g_class, gpointer g_class_data G_GNUC_UNUSED) {
-    GObjectClass *class_gobject = G_OBJECT_CLASS(g_class);
-    MIRAGE_ParserClass *class_parser = MIRAGE_PARSER_CLASS(g_class);
-    MIRAGE_Parser_CUEClass *klass = MIRAGE_PARSER_CUE_CLASS(g_class);
+    gobject_class->finalize = mirage_parser_cue_finalize;
 
-    /* Set parent class */
-    parent_class = g_type_class_peek_parent(klass);
+    parser_class->load_image = mirage_parser_cue_load_image;
 
     /* Register private structure */
     g_type_class_add_private(klass, sizeof(MIRAGE_Parser_CUEPrivate));
-
-    /* Initialize GObject methods */
-    class_gobject->finalize = __mirage_parser_cue_finalize;
-
-    /* Initialize MIRAGE_Parser methods */
-    class_parser->load_image = __mirage_parser_cue_load_image;
-
-    return;
 }
 
-GType mirage_parser_cue_get_type (GTypeModule *module) {
-    static GType type = 0;
-    if (type == 0) {
-        static const GTypeInfo info = {
-            sizeof(MIRAGE_Parser_CUEClass),
-            NULL,   /* base_init */
-            NULL,   /* base_finalize */
-            __mirage_parser_cue_class_init,   /* class_init */
-            NULL,   /* class_finalize */
-            NULL,   /* class_data */
-            sizeof(MIRAGE_Parser_CUE),
-            0,      /* n_preallocs */
-            __mirage_parser_cue_instance_init,   /* instance_init */
-            NULL    
-        };
-
-        type = g_type_module_register_type(module, MIRAGE_TYPE_PARSER, "MIRAGE_Parser_CUE", &info, 0);
-    }
-
-    return type;
+static void mirage_parser_cue_class_finalize (MIRAGE_Parser_CUEClass *klass G_GNUC_UNUSED)
+{
 }

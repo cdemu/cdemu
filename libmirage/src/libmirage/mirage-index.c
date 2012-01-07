@@ -1,6 +1,6 @@
 /*
  *  libMirage: Index object
- *  Copyright (C) 2006-2010 Rok Mandeljc
+ *  Copyright (C) 2006-2012 Rok Mandeljc
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -24,21 +24,21 @@
 #include "mirage.h"
 
 
-/******************************************************************************\
- *                              Private structure                             *
-\******************************************************************************/
+/**********************************************************************\
+ *                          Private structure                         *
+\**********************************************************************/
 #define MIRAGE_INDEX_GET_PRIVATE(obj) (G_TYPE_INSTANCE_GET_PRIVATE((obj), MIRAGE_TYPE_INDEX, MIRAGE_IndexPrivate))
 
-typedef struct {   
+struct _MIRAGE_IndexPrivate
+{   
     gint number;  /* Index' number */
-    
     gint address; /* Index' start address (relative to track start) */
-} MIRAGE_IndexPrivate;
+};
 
 
-/******************************************************************************\
- *                                 Public API                                 *
-\******************************************************************************/
+/**********************************************************************\
+ *                             Public API                             *
+\**********************************************************************/
 /**
  * mirage_index_set_number:
  * @self: a #MIRAGE_Index
@@ -51,10 +51,10 @@ typedef struct {
  *
  * Returns: %TRUE on success, %FALSE on failure
  **/
-gboolean mirage_index_set_number (MIRAGE_Index *self, gint number, GError **error G_GNUC_UNUSED) {
-    MIRAGE_IndexPrivate *_priv = MIRAGE_INDEX_GET_PRIVATE(self);
+gboolean mirage_index_set_number (MIRAGE_Index *self, gint number, GError **error G_GNUC_UNUSED)
+{
     /* Set number */
-    _priv->number = number;
+    self->priv->number = number;
     return TRUE;
 }
 
@@ -70,11 +70,11 @@ gboolean mirage_index_set_number (MIRAGE_Index *self, gint number, GError **erro
  *
  * Returns: %TRUE on success, %FALSE on failure
  **/
-gboolean mirage_index_get_number (MIRAGE_Index *self, gint *number, GError **error) {
-    MIRAGE_IndexPrivate *_priv = MIRAGE_INDEX_GET_PRIVATE(self);
+gboolean mirage_index_get_number (MIRAGE_Index *self, gint *number, GError **error)
+{
     MIRAGE_CHECK_ARG(number);
     /* Return number */
-    *number = _priv->number;
+    *number = self->priv->number;
     return TRUE;
 }
 
@@ -91,10 +91,10 @@ gboolean mirage_index_get_number (MIRAGE_Index *self, gint *number, GError **err
  *
  * Returns: %TRUE on success, %FALSE on failure
  **/
-gboolean mirage_index_set_address (MIRAGE_Index *self, gint address, GError **error G_GNUC_UNUSED) {
-    MIRAGE_IndexPrivate *_priv = MIRAGE_INDEX_GET_PRIVATE(self);
+gboolean mirage_index_set_address (MIRAGE_Index *self, gint address, GError **error G_GNUC_UNUSED)
+{
     /* Set address */
-    _priv->address = address;
+    self->priv->address = address;
     return TRUE;
 }
 
@@ -110,52 +110,31 @@ gboolean mirage_index_set_address (MIRAGE_Index *self, gint address, GError **er
  *
  * Returns: %TRUE on success, %FALSE on failure
  **/
-gboolean mirage_index_get_address (MIRAGE_Index *self, gint *address, GError **error) {
-    MIRAGE_IndexPrivate *_priv = MIRAGE_INDEX_GET_PRIVATE(self);
+gboolean mirage_index_get_address (MIRAGE_Index *self, gint *address, GError **error)
+{
     MIRAGE_CHECK_ARG(address);
     /* Return address */
-    *address = _priv->address;
+    *address = self->priv->address;
     return TRUE;
 }
 
 
-/******************************************************************************\
- *                                 Object init                                *
-\******************************************************************************/
-/* Our parent class */
-static MIRAGE_ObjectClass *parent_class = NULL;
+/**********************************************************************\
+ *                             Object init                            * 
+\**********************************************************************/
+G_DEFINE_TYPE(MIRAGE_Index, mirage_index, MIRAGE_TYPE_OBJECT);
 
 
-static void __mirage_index_class_init (gpointer g_class, gpointer g_class_data G_GNUC_UNUSED) {
-    MIRAGE_IndexClass *klass = MIRAGE_INDEX_CLASS(g_class);
-    
-    /* Set parent class */
-    parent_class = g_type_class_peek_parent(klass);
-    
-    /* Register private structure */
-    g_type_class_add_private(klass, sizeof(MIRAGE_IndexPrivate));
+static void mirage_index_init (MIRAGE_Index *self)
+{
+    self->priv = MIRAGE_INDEX_GET_PRIVATE(self);
 
-    return;
+    self->priv->number = 0;
+    self->priv->address = 0;
 }
 
-GType mirage_index_get_type (void) {
-    static GType type = 0;
-    if (type == 0) {
-        static const GTypeInfo info = {
-            sizeof(MIRAGE_IndexClass),
-            NULL,   /* base_init */
-            NULL,   /* base_finalize */
-            __mirage_index_class_init,   /* class_init */
-            NULL,   /* class_finalize */
-            NULL,   /* class_data */
-            sizeof(MIRAGE_Index),
-            0,      /* n_preallocs */
-            NULL,   /* instance_init */
-            NULL    /* value_table */
-        };
-        
-        type = g_type_register_static(MIRAGE_TYPE_OBJECT, "MIRAGE_Index", &info, 0);
-    }
-    
-    return type;
+static void mirage_index_class_init (MIRAGE_IndexClass *klass)
+{
+    /* Register private structure */
+    g_type_class_add_private(klass, sizeof(MIRAGE_IndexPrivate));
 }

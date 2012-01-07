@@ -1,6 +1,6 @@
 /*
  *  libMirage: Debug context object
- *  Copyright (C) 2006-2010 Rok Mandeljc
+ *  Copyright (C) 2006-2012 Rok Mandeljc
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -24,22 +24,23 @@
 #include "mirage.h"
 
 
-/******************************************************************************\
- *                              Private structure                             *
-\******************************************************************************/
+/**********************************************************************\
+ *                          Private structure                         *
+\**********************************************************************/
 #define MIRAGE_DEBUG_CONTEXT_GET_PRIVATE(obj) (G_TYPE_INSTANCE_GET_PRIVATE((obj), MIRAGE_TYPE_DEBUG_CONTEXT, MIRAGE_DebugContextPrivate))
 
-typedef struct {    
+struct _MIRAGE_DebugContextPrivate
+{    
     gchar *name; /* Debug context name... e.g. 'Device 1' */
     gchar *domain; /* Debug context domain... e.g. 'libMirage' */
     
     gint debug_mask; /* Debug mask */
-} MIRAGE_DebugContextPrivate;
+};
 
 
-/******************************************************************************\
- *                                 Public API                                 *
-\******************************************************************************/
+/**********************************************************************\
+ *                             Public API                             *
+\**********************************************************************/
 /**
  * mirage_debug_context_set_domain:
  * @self: a #MIRAGE_DebugContext
@@ -52,11 +53,11 @@ typedef struct {
  *
  * Returns: %TRUE on success, %FALSE on failure
  **/
-gboolean mirage_debug_context_set_domain (MIRAGE_DebugContext *self, const gchar *domain, GError **error G_GNUC_UNUSED) {
-    MIRAGE_DebugContextPrivate *_priv = MIRAGE_DEBUG_CONTEXT_GET_PRIVATE(self);
+gboolean mirage_debug_context_set_domain (MIRAGE_DebugContext *self, const gchar *domain, GError **error G_GNUC_UNUSED)
+{
     /* Set domain */
-    g_free(_priv->domain);
-    _priv->domain = g_strdup(domain);
+    g_free(self->priv->domain);
+    self->priv->domain = g_strdup(domain);
     return TRUE;
 }
 
@@ -77,10 +78,10 @@ gboolean mirage_debug_context_set_domain (MIRAGE_DebugContext *self, const gchar
  *
  * Returns: %TRUE on success, %FALSE on failure
  **/
-gboolean mirage_debug_context_get_domain (MIRAGE_DebugContext *self, const gchar **domain, GError **error) {
-    MIRAGE_DebugContextPrivate *_priv = MIRAGE_DEBUG_CONTEXT_GET_PRIVATE(self);
+gboolean mirage_debug_context_get_domain (MIRAGE_DebugContext *self, const gchar **domain, GError **error)
+{
     MIRAGE_CHECK_ARG(domain);
-    *domain = _priv->domain;
+    *domain = self->priv->domain;
     return TRUE;
 }
 
@@ -97,11 +98,11 @@ gboolean mirage_debug_context_get_domain (MIRAGE_DebugContext *self, const gchar
  *
  * Returns: %TRUE on success, %FALSE on failure
  **/
-gboolean mirage_debug_context_set_name (MIRAGE_DebugContext *self, const gchar *name, GError **error G_GNUC_UNUSED) {
-    MIRAGE_DebugContextPrivate *_priv = MIRAGE_DEBUG_CONTEXT_GET_PRIVATE(self);
+gboolean mirage_debug_context_set_name (MIRAGE_DebugContext *self, const gchar *name, GError **error G_GNUC_UNUSED)
+{
     /* Set name */
-    g_free(_priv->name);
-    _priv->name = g_strdup(name);
+    g_free(self->priv->name);
+    self->priv->name = g_strdup(name);
     return TRUE;
 }
 
@@ -122,10 +123,10 @@ gboolean mirage_debug_context_set_name (MIRAGE_DebugContext *self, const gchar *
  *
  * Returns: %TRUE on success, %FALSE on failure
  **/
-gboolean mirage_debug_context_get_name (MIRAGE_DebugContext *self, const gchar **name, GError **error) {
-    MIRAGE_DebugContextPrivate *_priv = MIRAGE_DEBUG_CONTEXT_GET_PRIVATE(self);
+gboolean mirage_debug_context_get_name (MIRAGE_DebugContext *self, const gchar **name, GError **error)
+{
     MIRAGE_CHECK_ARG(name);
-    *name = _priv->name;
+    *name = self->priv->name;
     return TRUE;
 }
 
@@ -142,10 +143,10 @@ gboolean mirage_debug_context_get_name (MIRAGE_DebugContext *self, const gchar *
  *
  * Returns: %TRUE on success, %FALSE on failure
  **/
-gboolean mirage_debug_context_set_debug_mask (MIRAGE_DebugContext *self, gint debug_mask, GError **error G_GNUC_UNUSED) {
-    MIRAGE_DebugContextPrivate *_priv = MIRAGE_DEBUG_CONTEXT_GET_PRIVATE(self);
+gboolean mirage_debug_context_set_debug_mask (MIRAGE_DebugContext *self, gint debug_mask, GError **error G_GNUC_UNUSED)
+{
     /* Set debug mask */
-    _priv->debug_mask = debug_mask;
+    self->priv->debug_mask = debug_mask;
     return TRUE;
 }
 
@@ -161,66 +162,46 @@ gboolean mirage_debug_context_set_debug_mask (MIRAGE_DebugContext *self, gint de
  *
  * Returns: %TRUE on success, %FALSE on failure
  **/
-gboolean mirage_debug_context_get_debug_mask (MIRAGE_DebugContext *self, gint *debug_mask, GError **error) {
-    MIRAGE_DebugContextPrivate *_priv = MIRAGE_DEBUG_CONTEXT_GET_PRIVATE(self);
+gboolean mirage_debug_context_get_debug_mask (MIRAGE_DebugContext *self, gint *debug_mask, GError **error)
+{
     MIRAGE_CHECK_ARG(debug_mask);
     /* Return debug mask */
-    *debug_mask = _priv->debug_mask;
+    *debug_mask = self->priv->debug_mask;
     return TRUE;
 }
 
 
-/******************************************************************************\
- *                                 Object init                                *
-\******************************************************************************/
-/* Our parent class */
-static GObjectClass *parent_class = NULL;
+/**********************************************************************\
+ *                             Object init                            * 
+\**********************************************************************/
+G_DEFINE_TYPE(MIRAGE_DebugContext, mirage_debug_context, G_TYPE_OBJECT);
 
-static void __mirage_debug_context_finalize (GObject *obj) {
-    MIRAGE_DebugContext *self = MIRAGE_DEBUG_CONTEXT(obj);
-    MIRAGE_DebugContextPrivate *_priv = MIRAGE_DEBUG_CONTEXT_GET_PRIVATE(self);
-    
-    g_free(_priv->domain);
-    g_free(_priv->name);
+
+static void mirage_debug_context_init (MIRAGE_DebugContext *self)
+{
+    self->priv = MIRAGE_DEBUG_CONTEXT_GET_PRIVATE(self);
+
+    self->priv->domain = NULL;
+    self->priv->name = NULL;
+}
+
+static void mirage_debug_context_finalize (GObject *gobject)
+{
+    MIRAGE_DebugContext *self = MIRAGE_DEBUG_CONTEXT(gobject);
+
+    g_free(self->priv->domain);
+    g_free(self->priv->name);
     
     /* Chain up to the parent class */
-    return G_OBJECT_CLASS(parent_class)->finalize(obj);
+    return G_OBJECT_CLASS(mirage_debug_context_parent_class)->finalize(gobject);
 }
 
-static void __mirage_debug_context_class_init (gpointer g_class, gpointer g_class_data G_GNUC_UNUSED) {
-    GObjectClass *class_gobject = G_OBJECT_CLASS(g_class);
-    MIRAGE_DebugContextClass *klass = MIRAGE_DEBUG_CONTEXT_CLASS(g_class);
-    
-    /* Set parent class */
-    parent_class = g_type_class_peek_parent(klass);
-    
+static void mirage_debug_context_class_init (MIRAGE_DebugContextClass *klass)
+{
+    GObjectClass *gobject_class = G_OBJECT_CLASS(klass);
+
+    gobject_class->finalize = mirage_debug_context_finalize;
+
     /* Register private structure */
     g_type_class_add_private(klass, sizeof(MIRAGE_DebugContextPrivate));
-    
-    /* Initialize GObject methods */
-    class_gobject->finalize = __mirage_debug_context_finalize;
-        
-    return;
-}
-
-GType mirage_debug_context_get_type (void) {
-    static GType type = 0;
-    if (type == 0) {
-        static const GTypeInfo info = {
-            sizeof(MIRAGE_DebugContextClass),
-            NULL,   /* base_init */
-            NULL,   /* base_finalize */
-            __mirage_debug_context_class_init,   /* class_init */
-            NULL,   /* class_finalize */
-            NULL,   /* class_data */
-            sizeof(MIRAGE_DebugContext),
-            0,      /* n_preallocs */
-            NULL,   /* instance_init */
-            NULL    /* value_table */
-        };
-        
-        type = g_type_register_static(G_TYPE_OBJECT, "MIRAGE_DebugContext", &info, 0);
-    }
-    
-    return type;
 }

@@ -1,6 +1,6 @@
 /*
  *  libMirage: CCD image parser
- *  Copyright (C) 2006-2010 Rok Mandeljc
+ *  Copyright (C) 2006-2012 Rok Mandeljc
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -27,15 +27,18 @@
 #include <stdlib.h>
 
 #include "mirage.h"
+#include "image-ccd-parser.h"
 
 G_BEGIN_DECLS
 
-typedef struct {
+typedef struct
+{
     /* [CloneCD] */
     gint Version;
 } CCD_CloneCD;
 
-typedef struct {
+typedef struct
+{
     /* [Disc] */
     gint TocEntries;
     gint Sessions;
@@ -46,7 +49,8 @@ typedef struct {
     gchar *Catalog;
 } CCD_Disc;
 
-typedef struct {
+typedef struct
+{
     gint number;
     
     /* [Session] */
@@ -54,7 +58,8 @@ typedef struct {
     gint PreGapSubC;
 } CCD_Session;
 
-typedef struct {
+typedef struct
+{
     gint number;
         
     /* [Entry] */
@@ -80,11 +85,6 @@ typedef struct {
     gchar *ISRC;
 } CCD_Entry;
 
-
-GTypeModule *global_module;
-
 G_END_DECLS
-
-#include "image-ccd-parser.h"
 
 #endif /* __IMAGE_CCD_H__ */

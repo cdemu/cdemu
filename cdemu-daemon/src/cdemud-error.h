@@ -24,7 +24,8 @@
 #define CDEMUD_TYPE_ERROR (cdemud_error_get_type ())
 
 /* Error codes */
-enum {
+enum
+{
     CDEMUD_E_INVALIDARG = 0xDEAD000,
 
     CDEMUD_E_NODRIVER,

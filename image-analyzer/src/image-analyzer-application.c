@@ -741,6 +741,15 @@ gboolean image_analyzer_application_get_loaded_image (IMAGE_ANALYZER_Application
 \**********************************************************************/
 G_DEFINE_TYPE(IMAGE_ANALYZER_Application, image_analyzer_application, G_TYPE_OBJECT);
 
+static void image_analyzer_application_init (IMAGE_ANALYZER_Application *self)
+{
+    self->priv = IMAGE_ANALYZER_APPLICATION_GET_PRIVATE(self);
+
+    self->priv->disc = NULL;
+
+    setup_gui(self);
+}
+
 static void image_analyzer_application_finalize (GObject *gobject)
 {
     IMAGE_ANALYZER_Application *self = IMAGE_ANALYZER_APPLICATION(gobject);
@@ -770,13 +779,4 @@ static void image_analyzer_application_class_init (IMAGE_ANALYZER_ApplicationCla
 
     /* Register private structure */
     g_type_class_add_private(klass, sizeof(IMAGE_ANALYZER_ApplicationPrivate));
-}
-
-static void image_analyzer_application_init (IMAGE_ANALYZER_Application *self)
-{
-    self->priv = IMAGE_ANALYZER_APPLICATION_GET_PRIVATE(self);
-
-    self->priv->disc = NULL;
-
-    setup_gui(self);
 }

@@ -1,6 +1,6 @@
 /*
  *  libMirage: MDS image parser
- *  Copyright (C) 2006-2010 Rok Mandeljc
+ *  Copyright (C) 2006-2012 Rok Mandeljc
  *
  *  Reverse-engineering work in March, 2005 by Henrik Stokseth.
  *
@@ -55,7 +55,8 @@ G_BEGIN_DECLS
 
 #pragma pack(1)
 
-typedef struct {
+typedef struct
+{
     guint8 signature[16]; /* "MEDIA DESCRIPTOR" */
     guint8 version[2]; /* Version ? */
     guint16 medium_type; /* Medium type */
@@ -71,7 +72,8 @@ typedef struct {
     guint32 dpm_blocks_offset; /* offset to DPM data blocks */
 } MDS_Header; /* length: 88 bytes */
 
-typedef struct {
+typedef struct
+{
     gint32 session_start; /* Session's start address */
     gint32 session_end; /* Session's end address */
     guint16 session_number; /* (Unknown) */
@@ -83,7 +85,8 @@ typedef struct {
     guint32 tracks_blocks_offset; /* Offset of lead-in+regular track data blocks. */
 } MDS_SessionBlock; /* length: 24 bytes */
 
-typedef struct {
+typedef struct
+{
     guint8 mode; /* Track mode */
     guint8 subchannel; /* Subchannel mode */
     guint8 adr_ctl; /* Adr/Ctl */
@@ -105,12 +108,14 @@ typedef struct {
     guint8 __dummy6__[24];
 } MDS_TrackBlock; /* length: 80 bytes */
 
-typedef struct {
+typedef struct
+{
     guint32 pregap; /* Number of sectors in pregap. */
     guint32 length; /* Number of sectors in track. */
 } MDS_TrackExtraBlock; /* length: 8 bytes */
 
-typedef struct {
+typedef struct
+{
     guint32 filename_offset; /* Start offset of image filename. */
     guint32 widechar_filename; /* Seems to be set to 1 if widechar filename is used */
     guint32 __dummy1__;
@@ -118,9 +123,6 @@ typedef struct {
 } MDS_Footer; /* length: 16 bytes */
 
 #pragma pack()
-
-
-GTypeModule *global_module;
 
 G_END_DECLS
 

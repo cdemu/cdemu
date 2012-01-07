@@ -1,6 +1,6 @@
 /*
  *  libMirage: Sector object
- *  Copyright (C) 2006-2010 Rok Mandeljc
+ *  Copyright (C) 2006-2012 Rok Mandeljc
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -26,12 +26,13 @@
 #define __debug__ "Sector"
 
 
-/******************************************************************************\
- *                              Private structure                             *
-\******************************************************************************/
+/**********************************************************************\
+ *                          Private structure                         *
+\**********************************************************************/
 #define MIRAGE_SECTOR_GET_PRIVATE(obj) (G_TYPE_INSTANCE_GET_PRIVATE((obj), MIRAGE_TYPE_SECTOR, MIRAGE_SectorPrivate))
 
-typedef struct {
+struct _MIRAGE_SectorPrivate
+{
     gint type;
     gint address;
 
@@ -39,27 +40,26 @@ typedef struct {
     guint8 sector_data[2352]; /* Buffer for sector data */
     guint8 subchan_pw[96];    /* Buffer for interleaved PW subchannel */
     guint8 subchan_pq[16];    /* Buffer for deinterleaved PQ subchannel */
-} MIRAGE_SectorPrivate;
+};
 
 
-/******************************************************************************\
- *                              Private functions                             *
-\******************************************************************************/
-static void __mirage_sector_generate_subchannel (MIRAGE_Sector *self);
+/**********************************************************************\
+ *                          Private functions                         *
+\**********************************************************************/
+static void mirage_sector_generate_subchannel (MIRAGE_Sector *self);
 
-static void __mirage_sector_generate_sync (MIRAGE_Sector *self) {
-    MIRAGE_SectorPrivate *_priv = MIRAGE_SECTOR_GET_PRIVATE(self);
-
+static void mirage_sector_generate_sync (MIRAGE_Sector *self)
+{
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_SECTOR, "%s: generating sync\n", __debug__);
 
-    switch (_priv->type) {
+    switch (self->priv->type) {
         case MIRAGE_MODE_MODE0:
         case MIRAGE_MODE_MODE1:
         case MIRAGE_MODE_MODE2:
         case MIRAGE_MODE_MODE2_FORM1:
         case MIRAGE_MODE_MODE2_FORM2: {
             guint8 sync[12] = { 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0x00 };
-            memcpy(_priv->sector_data, sync, 12);
+            memcpy(self->priv->sector_data, sync, 12);
             break;
         }
         default: {
@@ -67,20 +67,17 @@ static void __mirage_sector_generate_sync (MIRAGE_Sector *self) {
         }
     }
 
-    _priv->valid_data |= MIRAGE_VALID_SYNC;
-    return;
+    self->priv->valid_data |= MIRAGE_VALID_SYNC;
 }
 
-static void __mirage_sector_generate_header (MIRAGE_Sector *self) {
-    MIRAGE_SectorPrivate *_priv = MIRAGE_SECTOR_GET_PRIVATE(self);
-
-    guint8 *head = _priv->sector_data+12;
-    gint start_sector = 0;
+static void mirage_sector_generate_header (MIRAGE_Sector *self)
+{
+    guint8 *head = self->priv->sector_data+12;
 
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_SECTOR, "%s: generating header\n", __debug__);
 
     /* Set mode */
-    switch (_priv->type) {
+    switch (self->priv->type) {
         case MIRAGE_MODE_MODE0: {
             head[3] = 0; /* Mode = 0 */
             break;
@@ -101,7 +98,8 @@ static void __mirage_sector_generate_header (MIRAGE_Sector *self) {
     }
 
     /* We need to convert track-relative address into disc-relative one */
-    GObject *track = NULL;
+    GObject *track;
+    gint start_sector;
 
     if (!mirage_object_get_parent(MIRAGE_OBJECT(self), &track, NULL)) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to get sector's parent!\n", __debug__);
@@ -111,30 +109,27 @@ static void __mirage_sector_generate_header (MIRAGE_Sector *self) {
     g_object_unref(track);
 
     /* Address */
-    mirage_helper_lba2msf(_priv->address + start_sector, TRUE, &head[0], &head[1], &head[2]);
+    mirage_helper_lba2msf(self->priv->address + start_sector, TRUE, &head[0], &head[1], &head[2]);
     head[0] = mirage_helper_hex2bcd(head[0]);
     head[1] = mirage_helper_hex2bcd(head[1]);
     head[2] = mirage_helper_hex2bcd(head[2]);
 
-    _priv->valid_data |= MIRAGE_VALID_HEADER;
-
-    return;
+    self->priv->valid_data |= MIRAGE_VALID_HEADER;
 }
 
-static void __mirage_sector_generate_subheader (MIRAGE_Sector *self) {
-    MIRAGE_SectorPrivate *_priv = MIRAGE_SECTOR_GET_PRIVATE(self);
-
+static void mirage_sector_generate_subheader (MIRAGE_Sector *self)
+{
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_SECTOR, "%s: generating subheader\n", __debug__);
 
-    switch (_priv->type) {
+    switch (self->priv->type) {
         case MIRAGE_MODE_MODE2_FORM1: {
-            guint8 *subhead = _priv->sector_data+16;
+            guint8 *subhead = self->priv->sector_data+16;
             subhead[2] |= (0 << 5); /* Form 1 */
             subhead[5] = subhead[2];
             break;
         }
         case MIRAGE_MODE_MODE2_FORM2: {
-            guint8 *subhead = _priv->sector_data+16;
+            guint8 *subhead = self->priv->sector_data+16;
             subhead[2] |= (1 << 5); /* Form 2 */
             subhead[5] = subhead[2];
             break;
@@ -144,32 +139,29 @@ static void __mirage_sector_generate_subheader (MIRAGE_Sector *self) {
         }
     }
 
-    _priv->valid_data |= MIRAGE_VALID_SUBHEADER;
-
-    return;
+    self->priv->valid_data |= MIRAGE_VALID_SUBHEADER;
 }
 
-static void __mirage_sector_generate_edc_ecc (MIRAGE_Sector *self) {
-    MIRAGE_SectorPrivate *_priv = MIRAGE_SECTOR_GET_PRIVATE(self);
-
+static void mirage_sector_generate_edc_ecc (MIRAGE_Sector *self)
+{
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_SECTOR, "%s: generating EDC/ECC\n", __debug__);
 
-    switch (_priv->type) {
+    switch (self->priv->type) {
         case MIRAGE_MODE_MODE1: {
             /* EDC/ECC are generated over sync, header and data in Mode 1 sectors...
                so make sure we have those */
-            if (!(_priv->valid_data & MIRAGE_VALID_SYNC)) {
-                __mirage_sector_generate_sync(self);
+            if (!(self->priv->valid_data & MIRAGE_VALID_SYNC)) {
+                mirage_sector_generate_sync(self);
             }
-            if (!(_priv->valid_data & MIRAGE_VALID_HEADER)) {
-                __mirage_sector_generate_header(self);
+            if (!(self->priv->valid_data & MIRAGE_VALID_HEADER)) {
+                mirage_sector_generate_header(self);
             }
 
             /* Generate EDC */
-            mirage_helper_sector_edc_ecc_compute_edc_block(_priv->sector_data+0x00, 0x810, _priv->sector_data+0x810);
+            mirage_helper_sector_edc_ecc_compute_edc_block(self->priv->sector_data+0x00, 0x810, self->priv->sector_data+0x810);
             /* Generate ECC P/Q codes */
-            mirage_helper_sector_edc_ecc_compute_ecc_block(_priv->sector_data+0xC, 86, 24, 2, 86, _priv->sector_data+0x81C); /* P */
-            mirage_helper_sector_edc_ecc_compute_ecc_block(_priv->sector_data+0xC, 52, 43, 86, 88, _priv->sector_data+0x8C8); /* Q */
+            mirage_helper_sector_edc_ecc_compute_ecc_block(self->priv->sector_data+0xC, 86, 24, 2, 86, self->priv->sector_data+0x81C); /* P */
+            mirage_helper_sector_edc_ecc_compute_ecc_block(self->priv->sector_data+0xC, 52, 43, 86, 88, self->priv->sector_data+0x8C8); /* Q */
 
             break;
         }
@@ -177,21 +169,21 @@ static void __mirage_sector_generate_edc_ecc (MIRAGE_Sector *self) {
             guint8 tmp_header[4];
             /* Zero the header, because it is not supposed to be included in the
                calculation; copy, calculate, then copy back */
-            memcpy(tmp_header, _priv->sector_data+12, 4);
-            memset(_priv->sector_data+12, 0, 4);
+            memcpy(tmp_header, self->priv->sector_data+12, 4);
+            memset(self->priv->sector_data+12, 0, 4);
             /* Generate EDC */
-            mirage_helper_sector_edc_ecc_compute_edc_block(_priv->sector_data+0x10, 0x808, _priv->sector_data+0x818);
+            mirage_helper_sector_edc_ecc_compute_edc_block(self->priv->sector_data+0x10, 0x808, self->priv->sector_data+0x818);
             /* Generate ECC P/Q codes */
-            mirage_helper_sector_edc_ecc_compute_ecc_block(_priv->sector_data+0xC, 86, 24, 2, 86, _priv->sector_data+0x81C); /* P */
-            mirage_helper_sector_edc_ecc_compute_ecc_block(_priv->sector_data+0xC, 52, 43, 86, 88, _priv->sector_data+0x8C8); /* Q */
+            mirage_helper_sector_edc_ecc_compute_ecc_block(self->priv->sector_data+0xC, 86, 24, 2, 86, self->priv->sector_data+0x81C); /* P */
+            mirage_helper_sector_edc_ecc_compute_ecc_block(self->priv->sector_data+0xC, 52, 43, 86, 88, self->priv->sector_data+0x8C8); /* Q */
             /* Unzero */
-            memcpy(_priv->sector_data+12, tmp_header, 4);
+            memcpy(self->priv->sector_data+12, tmp_header, 4);
 
             break;
         }
         case MIRAGE_MODE_MODE2_FORM2: {
             /* Compute EDC */
-            mirage_helper_sector_edc_ecc_compute_edc_block(_priv->sector_data+0x10, 0x91C, _priv->sector_data+0x92C);
+            mirage_helper_sector_edc_ecc_compute_edc_block(self->priv->sector_data+0x10, 0x91C, self->priv->sector_data+0x92C);
 
             break;
         }
@@ -200,16 +192,13 @@ static void __mirage_sector_generate_edc_ecc (MIRAGE_Sector *self) {
         }
     }
 
-    _priv->valid_data |= MIRAGE_VALID_EDC_ECC;
-
-    return;
+    self->priv->valid_data |= MIRAGE_VALID_EDC_ECC;
 }
 
 
-
-/******************************************************************************\
- *                                 Public API                                 *
-\******************************************************************************/
+/**********************************************************************\
+ *                             Public API                             *
+\**********************************************************************/
 /**
  * mirage_sector_feed_data:
  * @self: a #MIRAGE_Sector
@@ -228,24 +217,19 @@ static void __mirage_sector_generate_edc_ecc (MIRAGE_Sector *self) {
  *
  * Returns: %TRUE on success, %FALSE on failure
  **/
-gboolean mirage_sector_feed_data (MIRAGE_Sector *self, gint address, GObject *track, GError **error) {
-    MIRAGE_SectorPrivate *_priv = MIRAGE_SECTOR_GET_PRIVATE(self);
-
-    GObject *data_fragment = NULL;
-
-    gint mode = 0;
-    gint sectsize = 0;
-    gint data_offset = 0;
-    gint fragment_start = 0;
+gboolean mirage_sector_feed_data (MIRAGE_Sector *self, gint address, GObject *track, GError **error)
+{
+    GObject *data_fragment;
+    gint mode, sectsize, data_offset, fragment_start;
 
     /* Get track mode */
     mirage_track_get_mode(MIRAGE_TRACK(track), &mode, NULL);
     /* Set track as sector's parent */
     mirage_object_set_parent(MIRAGE_OBJECT(self), track, NULL);
     /* Store sector's address */
-    _priv->address = address;
+    self->priv->address = address;
 
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_SECTOR, "%s: feeding data for sector 0x%X\n", __debug__, _priv->address);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_SECTOR, "%s: feeding data for sector 0x%X\n", __debug__, self->priv->address);
 
     /* Get data fragment to feed from */
     if (!mirage_track_get_fragment_by_address(MIRAGE_TRACK(track), address, &data_fragment, error)) {
@@ -283,13 +267,13 @@ gboolean mirage_sector_feed_data (MIRAGE_Sector *self, gint address, GObject *tr
                     data_offset = 0; /* Offset: 0 */
 
                     /* Valid */
-                    _priv->valid_data |= MIRAGE_VALID_DATA;
+                    self->priv->valid_data |= MIRAGE_VALID_DATA;
 
                     /* We mark the rest as valid as well, so that we don't need
                        additional checks in fake data generation code */
-                    _priv->valid_data |= MIRAGE_VALID_SYNC;
-                    _priv->valid_data |= MIRAGE_VALID_HEADER;
-                    _priv->valid_data |= MIRAGE_VALID_EDC_ECC;
+                    self->priv->valid_data |= MIRAGE_VALID_SYNC;
+                    self->priv->valid_data |= MIRAGE_VALID_HEADER;
+                    self->priv->valid_data |= MIRAGE_VALID_EDC_ECC;
                     break;
                 }
                 default: {
@@ -313,7 +297,7 @@ gboolean mirage_sector_feed_data (MIRAGE_Sector *self, gint address, GObject *tr
                     data_offset = 12 + 4; /* Offset: sync + header */
 
                     /* Valid */
-                    _priv->valid_data |= MIRAGE_VALID_DATA;
+                    self->priv->valid_data |= MIRAGE_VALID_DATA;
 
                     break;
                 }
@@ -322,8 +306,8 @@ gboolean mirage_sector_feed_data (MIRAGE_Sector *self, gint address, GObject *tr
                     data_offset = 12; /* Offset: sync */
 
                     /* Valid */
-                    _priv->valid_data |= MIRAGE_VALID_HEADER;
-                    _priv->valid_data |= MIRAGE_VALID_DATA;
+                    self->priv->valid_data |= MIRAGE_VALID_HEADER;
+                    self->priv->valid_data |= MIRAGE_VALID_DATA;
 
                     break;
                 }
@@ -332,9 +316,9 @@ gboolean mirage_sector_feed_data (MIRAGE_Sector *self, gint address, GObject *tr
                     data_offset = 0; /* Offset: 0 */
 
                     /* Valid */
-                    _priv->valid_data |= MIRAGE_VALID_SYNC;
-                    _priv->valid_data |= MIRAGE_VALID_HEADER;
-                    _priv->valid_data |= MIRAGE_VALID_DATA;
+                    self->priv->valid_data |= MIRAGE_VALID_SYNC;
+                    self->priv->valid_data |= MIRAGE_VALID_HEADER;
+                    self->priv->valid_data |= MIRAGE_VALID_DATA;
 
                     break;
                 }
@@ -360,7 +344,7 @@ gboolean mirage_sector_feed_data (MIRAGE_Sector *self, gint address, GObject *tr
                     data_offset = 12 + 4; /* Offset: sync + header */
 
                     /* Valid */
-                    _priv->valid_data |= MIRAGE_VALID_DATA;
+                    self->priv->valid_data |= MIRAGE_VALID_DATA;
 
                     break;
                 }
@@ -369,8 +353,8 @@ gboolean mirage_sector_feed_data (MIRAGE_Sector *self, gint address, GObject *tr
                     data_offset = 12; /* Offset: sync */
 
                     /* Valid */
-                    _priv->valid_data |= MIRAGE_VALID_HEADER;
-                    _priv->valid_data |= MIRAGE_VALID_DATA;
+                    self->priv->valid_data |= MIRAGE_VALID_HEADER;
+                    self->priv->valid_data |= MIRAGE_VALID_DATA;
 
                     break;
                 }
@@ -379,9 +363,9 @@ gboolean mirage_sector_feed_data (MIRAGE_Sector *self, gint address, GObject *tr
                     data_offset = 0; /* Offset: 0 */
 
                     /* Valid */
-                    _priv->valid_data |= MIRAGE_VALID_SYNC;
-                    _priv->valid_data |= MIRAGE_VALID_HEADER;
-                    _priv->valid_data |= MIRAGE_VALID_DATA;
+                    self->priv->valid_data |= MIRAGE_VALID_SYNC;
+                    self->priv->valid_data |= MIRAGE_VALID_HEADER;
+                    self->priv->valid_data |= MIRAGE_VALID_DATA;
 
                     break;
                 }
@@ -390,8 +374,8 @@ gboolean mirage_sector_feed_data (MIRAGE_Sector *self, gint address, GObject *tr
                     data_offset = 12 + 4; /* Offset: sync + header */
 
                     /* Valid */
-                    _priv->valid_data |= MIRAGE_VALID_DATA;
-                    _priv->valid_data |= MIRAGE_VALID_EDC_ECC;
+                    self->priv->valid_data |= MIRAGE_VALID_DATA;
+                    self->priv->valid_data |= MIRAGE_VALID_EDC_ECC;
 
                     break;
                 }
@@ -400,9 +384,9 @@ gboolean mirage_sector_feed_data (MIRAGE_Sector *self, gint address, GObject *tr
                     data_offset = 12; /* Offset: sync */
 
                     /* Valid */
-                    _priv->valid_data |= MIRAGE_VALID_HEADER;
-                    _priv->valid_data |= MIRAGE_VALID_DATA;
-                    _priv->valid_data |= MIRAGE_VALID_EDC_ECC;
+                    self->priv->valid_data |= MIRAGE_VALID_HEADER;
+                    self->priv->valid_data |= MIRAGE_VALID_DATA;
+                    self->priv->valid_data |= MIRAGE_VALID_EDC_ECC;
 
                     break;
                 }
@@ -411,10 +395,10 @@ gboolean mirage_sector_feed_data (MIRAGE_Sector *self, gint address, GObject *tr
                     data_offset = 0; /* Offset: 0 */
 
                     /* Valid */
-                    _priv->valid_data |= MIRAGE_VALID_SYNC;
-                    _priv->valid_data |= MIRAGE_VALID_HEADER;
-                    _priv->valid_data |= MIRAGE_VALID_DATA;
-                    _priv->valid_data |= MIRAGE_VALID_EDC_ECC;
+                    self->priv->valid_data |= MIRAGE_VALID_SYNC;
+                    self->priv->valid_data |= MIRAGE_VALID_HEADER;
+                    self->priv->valid_data |= MIRAGE_VALID_DATA;
+                    self->priv->valid_data |= MIRAGE_VALID_EDC_ECC;
 
                     break;
                 }
@@ -440,7 +424,7 @@ gboolean mirage_sector_feed_data (MIRAGE_Sector *self, gint address, GObject *tr
                     data_offset = 12 + 4; /* Offset: sync + header */
 
                     /* Valid */
-                    _priv->valid_data |= MIRAGE_VALID_DATA;
+                    self->priv->valid_data |= MIRAGE_VALID_DATA;
 
                     break;
                 }
@@ -449,8 +433,8 @@ gboolean mirage_sector_feed_data (MIRAGE_Sector *self, gint address, GObject *tr
                     data_offset = 12; /* Offset: sync */
 
                     /* Valid */
-                    _priv->valid_data |= MIRAGE_VALID_HEADER;
-                    _priv->valid_data |= MIRAGE_VALID_DATA;
+                    self->priv->valid_data |= MIRAGE_VALID_HEADER;
+                    self->priv->valid_data |= MIRAGE_VALID_DATA;
 
                     break;
                 }
@@ -459,9 +443,9 @@ gboolean mirage_sector_feed_data (MIRAGE_Sector *self, gint address, GObject *tr
                     data_offset = 0; /* Offset: 0 */
 
                     /* Valid */
-                    _priv->valid_data |= MIRAGE_VALID_SYNC;
-                    _priv->valid_data |= MIRAGE_VALID_HEADER;
-                    _priv->valid_data |= MIRAGE_VALID_DATA;
+                    self->priv->valid_data |= MIRAGE_VALID_SYNC;
+                    self->priv->valid_data |= MIRAGE_VALID_HEADER;
+                    self->priv->valid_data |= MIRAGE_VALID_DATA;
 
                     break;
                 }
@@ -487,7 +471,7 @@ gboolean mirage_sector_feed_data (MIRAGE_Sector *self, gint address, GObject *tr
                     data_offset = 12 + 4 + 8; /* Offset: sync + header + subheader */
 
                     /* Valid */
-                    _priv->valid_data |= MIRAGE_VALID_DATA;
+                    self->priv->valid_data |= MIRAGE_VALID_DATA;
 
                     break;
                 }
@@ -496,8 +480,8 @@ gboolean mirage_sector_feed_data (MIRAGE_Sector *self, gint address, GObject *tr
                     data_offset = 12 + 4; /* Offset: sync + header */
 
                     /* Valid */
-                    _priv->valid_data |= MIRAGE_VALID_SUBHEADER;
-                    _priv->valid_data |= MIRAGE_VALID_DATA;
+                    self->priv->valid_data |= MIRAGE_VALID_SUBHEADER;
+                    self->priv->valid_data |= MIRAGE_VALID_DATA;
 
                     break;
                 }
@@ -506,9 +490,9 @@ gboolean mirage_sector_feed_data (MIRAGE_Sector *self, gint address, GObject *tr
                     data_offset = 12; /* Offset: sync */
 
                     /* Valid */
-                    _priv->valid_data |= MIRAGE_VALID_HEADER;
-                    _priv->valid_data |= MIRAGE_VALID_SUBHEADER;
-                    _priv->valid_data |= MIRAGE_VALID_DATA;
+                    self->priv->valid_data |= MIRAGE_VALID_HEADER;
+                    self->priv->valid_data |= MIRAGE_VALID_SUBHEADER;
+                    self->priv->valid_data |= MIRAGE_VALID_DATA;
 
                     break;
                 }
@@ -517,10 +501,10 @@ gboolean mirage_sector_feed_data (MIRAGE_Sector *self, gint address, GObject *tr
                     data_offset = 0; /* Offset: 0 */
 
                     /* Valid */
-                    _priv->valid_data |= MIRAGE_VALID_SYNC;
-                    _priv->valid_data |= MIRAGE_VALID_HEADER;
-                    _priv->valid_data |= MIRAGE_VALID_SUBHEADER;
-                    _priv->valid_data |= MIRAGE_VALID_DATA;
+                    self->priv->valid_data |= MIRAGE_VALID_SYNC;
+                    self->priv->valid_data |= MIRAGE_VALID_HEADER;
+                    self->priv->valid_data |= MIRAGE_VALID_SUBHEADER;
+                    self->priv->valid_data |= MIRAGE_VALID_DATA;
 
                     break;
                 }
@@ -529,8 +513,8 @@ gboolean mirage_sector_feed_data (MIRAGE_Sector *self, gint address, GObject *tr
                     data_offset = 12 + 4 + 8; /* Offset: sync + header + subheader */
 
                     /* Valid */
-                    _priv->valid_data |= MIRAGE_VALID_DATA;
-                    _priv->valid_data |= MIRAGE_VALID_EDC_ECC;
+                    self->priv->valid_data |= MIRAGE_VALID_DATA;
+                    self->priv->valid_data |= MIRAGE_VALID_EDC_ECC;
 
                     break;
                 }
@@ -539,9 +523,9 @@ gboolean mirage_sector_feed_data (MIRAGE_Sector *self, gint address, GObject *tr
                     data_offset = 12 + 4; /* Offset: sync + header */
 
                     /* Valid */
-                    _priv->valid_data |= MIRAGE_VALID_SUBHEADER;
-                    _priv->valid_data |= MIRAGE_VALID_DATA;
-                    _priv->valid_data |= MIRAGE_VALID_EDC_ECC;
+                    self->priv->valid_data |= MIRAGE_VALID_SUBHEADER;
+                    self->priv->valid_data |= MIRAGE_VALID_DATA;
+                    self->priv->valid_data |= MIRAGE_VALID_EDC_ECC;
 
                     break;
                 }
@@ -550,10 +534,10 @@ gboolean mirage_sector_feed_data (MIRAGE_Sector *self, gint address, GObject *tr
                     data_offset = 12; /* Offset: sync */
 
                     /* Valid */
-                    _priv->valid_data |= MIRAGE_VALID_HEADER;
-                    _priv->valid_data |= MIRAGE_VALID_SUBHEADER;
-                    _priv->valid_data |= MIRAGE_VALID_DATA;
-                    _priv->valid_data |= MIRAGE_VALID_EDC_ECC;
+                    self->priv->valid_data |= MIRAGE_VALID_HEADER;
+                    self->priv->valid_data |= MIRAGE_VALID_SUBHEADER;
+                    self->priv->valid_data |= MIRAGE_VALID_DATA;
+                    self->priv->valid_data |= MIRAGE_VALID_EDC_ECC;
 
                     break;
                 }
@@ -562,11 +546,11 @@ gboolean mirage_sector_feed_data (MIRAGE_Sector *self, gint address, GObject *tr
                     data_offset = 0; /* Offset: 0 */
 
                     /* Valid */
-                    _priv->valid_data |= MIRAGE_VALID_SYNC;
-                    _priv->valid_data |= MIRAGE_VALID_HEADER;
-                    _priv->valid_data |= MIRAGE_VALID_SUBHEADER;
-                    _priv->valid_data |= MIRAGE_VALID_DATA;
-                    _priv->valid_data |= MIRAGE_VALID_EDC_ECC;
+                    self->priv->valid_data |= MIRAGE_VALID_SYNC;
+                    self->priv->valid_data |= MIRAGE_VALID_HEADER;
+                    self->priv->valid_data |= MIRAGE_VALID_SUBHEADER;
+                    self->priv->valid_data |= MIRAGE_VALID_DATA;
+                    self->priv->valid_data |= MIRAGE_VALID_EDC_ECC;
 
                     break;
                 }
@@ -592,7 +576,7 @@ gboolean mirage_sector_feed_data (MIRAGE_Sector *self, gint address, GObject *tr
                     data_offset = 12 + 4 + 8; /* Offset: sync + header + subheader */
 
                     /* Valid */
-                    _priv->valid_data |= MIRAGE_VALID_DATA;
+                    self->priv->valid_data |= MIRAGE_VALID_DATA;
 
                     break;
                 }
@@ -601,8 +585,8 @@ gboolean mirage_sector_feed_data (MIRAGE_Sector *self, gint address, GObject *tr
                     data_offset = 12 + 4; /* Offset: sync + header */
 
                     /* Valid */
-                    _priv->valid_data |= MIRAGE_VALID_SUBHEADER;
-                    _priv->valid_data |= MIRAGE_VALID_DATA;
+                    self->priv->valid_data |= MIRAGE_VALID_SUBHEADER;
+                    self->priv->valid_data |= MIRAGE_VALID_DATA;
 
                     break;
                 }
@@ -614,9 +598,9 @@ gboolean mirage_sector_feed_data (MIRAGE_Sector *self, gint address, GObject *tr
                     data_offset = 12; /* Offset: sync */
 
                     /* Valid */
-                    _priv->valid_data |= MIRAGE_VALID_HEADER;
-                    _priv->valid_data |= MIRAGE_VALID_SUBHEADER;
-                    _priv->valid_data |= MIRAGE_VALID_DATA;
+                    self->priv->valid_data |= MIRAGE_VALID_HEADER;
+                    self->priv->valid_data |= MIRAGE_VALID_SUBHEADER;
+                    self->priv->valid_data |= MIRAGE_VALID_DATA;
 
                     break;
                 }
@@ -626,10 +610,10 @@ gboolean mirage_sector_feed_data (MIRAGE_Sector *self, gint address, GObject *tr
                     data_offset = 0; /* Offset: 0 */
 
                     /* Valid */
-                    _priv->valid_data |= MIRAGE_VALID_SYNC;
-                    _priv->valid_data |= MIRAGE_VALID_HEADER;
-                    _priv->valid_data |= MIRAGE_VALID_SUBHEADER;
-                    _priv->valid_data |= MIRAGE_VALID_DATA;
+                    self->priv->valid_data |= MIRAGE_VALID_SYNC;
+                    self->priv->valid_data |= MIRAGE_VALID_HEADER;
+                    self->priv->valid_data |= MIRAGE_VALID_SUBHEADER;
+                    self->priv->valid_data |= MIRAGE_VALID_DATA;
 
                     break;
                 }
@@ -638,8 +622,8 @@ gboolean mirage_sector_feed_data (MIRAGE_Sector *self, gint address, GObject *tr
                     data_offset = 12 + 4 + 8; /* Offset: sync + header + subheader */
 
                     /* Valid */
-                    _priv->valid_data |= MIRAGE_VALID_DATA;
-                    _priv->valid_data |= MIRAGE_VALID_EDC_ECC;
+                    self->priv->valid_data |= MIRAGE_VALID_DATA;
+                    self->priv->valid_data |= MIRAGE_VALID_EDC_ECC;
 
                     break;
                 }
@@ -648,9 +632,9 @@ gboolean mirage_sector_feed_data (MIRAGE_Sector *self, gint address, GObject *tr
                     data_offset = 12 + 4; /* Offset: sync + header */
 
                     /* Valid */
-                    _priv->valid_data |= MIRAGE_VALID_SUBHEADER;
-                    _priv->valid_data |= MIRAGE_VALID_DATA;
-                    _priv->valid_data |= MIRAGE_VALID_EDC_ECC;
+                    self->priv->valid_data |= MIRAGE_VALID_SUBHEADER;
+                    self->priv->valid_data |= MIRAGE_VALID_DATA;
+                    self->priv->valid_data |= MIRAGE_VALID_EDC_ECC;
 
                     break;
                 }
@@ -659,10 +643,10 @@ gboolean mirage_sector_feed_data (MIRAGE_Sector *self, gint address, GObject *tr
                     data_offset = 12; /* Offset: sync */
 
                     /* Valid */
-                    _priv->valid_data |= MIRAGE_VALID_HEADER;
-                    _priv->valid_data |= MIRAGE_VALID_SUBHEADER;
-                    _priv->valid_data |= MIRAGE_VALID_DATA;
-                    _priv->valid_data |= MIRAGE_VALID_EDC_ECC;
+                    self->priv->valid_data |= MIRAGE_VALID_HEADER;
+                    self->priv->valid_data |= MIRAGE_VALID_SUBHEADER;
+                    self->priv->valid_data |= MIRAGE_VALID_DATA;
+                    self->priv->valid_data |= MIRAGE_VALID_EDC_ECC;
 
                     break;
                 }
@@ -671,11 +655,11 @@ gboolean mirage_sector_feed_data (MIRAGE_Sector *self, gint address, GObject *tr
                     data_offset = 0; /* Offset: 0 */
 
                     /* Valid */
-                    _priv->valid_data |= MIRAGE_VALID_SYNC;
-                    _priv->valid_data |= MIRAGE_VALID_HEADER;
-                    _priv->valid_data |= MIRAGE_VALID_SUBHEADER;
-                    _priv->valid_data |= MIRAGE_VALID_DATA;
-                    _priv->valid_data |= MIRAGE_VALID_EDC_ECC;
+                    self->priv->valid_data |= MIRAGE_VALID_SYNC;
+                    self->priv->valid_data |= MIRAGE_VALID_HEADER;
+                    self->priv->valid_data |= MIRAGE_VALID_SUBHEADER;
+                    self->priv->valid_data |= MIRAGE_VALID_DATA;
+                    self->priv->valid_data |= MIRAGE_VALID_EDC_ECC;
 
                     break;
                 }
@@ -709,9 +693,9 @@ gboolean mirage_sector_feed_data (MIRAGE_Sector *self, gint address, GObject *tr
                     data_offset = 12 + 4; /* Offset: sync + header */
 
                     /* Valid */
-                    _priv->valid_data |= MIRAGE_VALID_SUBHEADER;
-                    _priv->valid_data |= MIRAGE_VALID_DATA;
-                    _priv->valid_data |= MIRAGE_VALID_EDC_ECC;
+                    self->priv->valid_data |= MIRAGE_VALID_SUBHEADER;
+                    self->priv->valid_data |= MIRAGE_VALID_DATA;
+                    self->priv->valid_data |= MIRAGE_VALID_EDC_ECC;
 
                     break;
                 }
@@ -720,10 +704,10 @@ gboolean mirage_sector_feed_data (MIRAGE_Sector *self, gint address, GObject *tr
                     data_offset = 12 + 4; /* Offset: sync */
 
                     /* Valid */
-                    _priv->valid_data |= MIRAGE_VALID_HEADER;
-                    _priv->valid_data |= MIRAGE_VALID_SUBHEADER;
-                    _priv->valid_data |= MIRAGE_VALID_DATA;
-                    _priv->valid_data |= MIRAGE_VALID_EDC_ECC;
+                    self->priv->valid_data |= MIRAGE_VALID_HEADER;
+                    self->priv->valid_data |= MIRAGE_VALID_SUBHEADER;
+                    self->priv->valid_data |= MIRAGE_VALID_DATA;
+                    self->priv->valid_data |= MIRAGE_VALID_EDC_ECC;
 
                     break;
                 }
@@ -732,11 +716,11 @@ gboolean mirage_sector_feed_data (MIRAGE_Sector *self, gint address, GObject *tr
                     data_offset = 0; /* Offset: 0 */
 
                     /* Valid */
-                    _priv->valid_data |= MIRAGE_VALID_SYNC;
-                    _priv->valid_data |= MIRAGE_VALID_HEADER;
-                    _priv->valid_data |= MIRAGE_VALID_SUBHEADER;
-                    _priv->valid_data |= MIRAGE_VALID_DATA;
-                    _priv->valid_data |= MIRAGE_VALID_EDC_ECC;
+                    self->priv->valid_data |= MIRAGE_VALID_SYNC;
+                    self->priv->valid_data |= MIRAGE_VALID_HEADER;
+                    self->priv->valid_data |= MIRAGE_VALID_SUBHEADER;
+                    self->priv->valid_data |= MIRAGE_VALID_DATA;
+                    self->priv->valid_data |= MIRAGE_VALID_EDC_ECC;
 
                     break;
                 }
@@ -752,7 +736,7 @@ gboolean mirage_sector_feed_data (MIRAGE_Sector *self, gint address, GObject *tr
     }
 
     /* Read */
-    if (!mirage_fragment_read_main_data(MIRAGE_FRAGMENT(data_fragment), address, _priv->sector_data+data_offset, &sectsize, error)) {
+    if (!mirage_fragment_read_main_data(MIRAGE_FRAGMENT(data_fragment), address, self->priv->sector_data+data_offset, &sectsize, error)) {
         g_object_unref(data_fragment);
         return FALSE;
     }
@@ -761,19 +745,19 @@ gboolean mirage_sector_feed_data (MIRAGE_Sector *self, gint address, GObject *tr
        Mode 2 Form 1 or Mode 2 Form 2 */
     if (mode == MIRAGE_MODE_MODE2_MIXED) {
         /* Check the subheader... */
-        if (_priv->sector_data[18] & 0x20) {
+        if (self->priv->sector_data[18] & 0x20) {
             mode = MIRAGE_MODE_MODE2_FORM2;
         } else {
             mode = MIRAGE_MODE_MODE2_FORM1;
         }
     }
     /* Set sector type */
-    _priv->type = mode;
+    self->priv->type = mode;
 
     /* *** Subchannel *** */
     /* Read subchannel... fragment should *always* return us 96-byte interleaved
        PW subchannel (or nothing) */
-    if (!mirage_fragment_read_subchannel_data(MIRAGE_FRAGMENT(data_fragment), address, _priv->subchan_pw, &sectsize, error)) {
+    if (!mirage_fragment_read_subchannel_data(MIRAGE_FRAGMENT(data_fragment), address, self->priv->subchan_pw, &sectsize, error)) {
         g_object_unref(data_fragment);
         return FALSE;
     }
@@ -781,7 +765,7 @@ gboolean mirage_sector_feed_data (MIRAGE_Sector *self, gint address, GObject *tr
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_SECTOR, "%s: subchannel sector size: %d\n", __debug__, sectsize);
 
     if (sectsize) {
-        _priv->valid_data |= MIRAGE_VALID_SUBCHAN;
+        self->priv->valid_data |= MIRAGE_VALID_SUBCHAN;
     }
 
     g_object_unref(data_fragment);
@@ -802,11 +786,11 @@ gboolean mirage_sector_feed_data (MIRAGE_Sector *self, gint address, GObject *tr
  *
  * Returns: %TRUE on success, %FALSE on failure
  **/
-gboolean mirage_sector_get_sector_type (MIRAGE_Sector *self, gint *type, GError **error) {
-    MIRAGE_SectorPrivate *_priv = MIRAGE_SECTOR_GET_PRIVATE(self);
+gboolean mirage_sector_get_sector_type (MIRAGE_Sector *self, gint *type, GError **error)
+{
     MIRAGE_CHECK_ARG(type);
     /* Return sector type */
-    *type = _priv->type;
+    *type = self->priv->type;
     return TRUE;
 }
 
@@ -829,26 +813,26 @@ gboolean mirage_sector_get_sector_type (MIRAGE_Sector *self, gint *type, GError 
  *
  * Returns: %TRUE on success, %FALSE on failure
  **/
-gboolean mirage_sector_get_sync (MIRAGE_Sector *self, const guint8 **ret_buf, gint *ret_len, GError **error) {
-    MIRAGE_SectorPrivate *_priv = MIRAGE_SECTOR_GET_PRIVATE(self);
+gboolean mirage_sector_get_sync (MIRAGE_Sector *self, const guint8 **ret_buf, gint *ret_len, GError **error)
+{
     gboolean succeeded = TRUE;
     guint8 *buf = NULL;
     gint len = 0;
 
     /* Generate sync if it's not provided; generation routine takes care of
        incompatible sector types */
-    if (!(_priv->valid_data & MIRAGE_VALID_SYNC)) {
-        __mirage_sector_generate_sync(self);
+    if (!(self->priv->valid_data & MIRAGE_VALID_SYNC)) {
+        mirage_sector_generate_sync(self);
     }
 
     /* Sync is supported by all non-audio sectors */
-    switch (_priv->type) {
+    switch (self->priv->type) {
         case MIRAGE_MODE_MODE0:
         case MIRAGE_MODE_MODE1:
         case MIRAGE_MODE_MODE2:
         case MIRAGE_MODE_MODE2_FORM1:
         case MIRAGE_MODE_MODE2_FORM2: {
-            buf = _priv->sector_data;
+            buf = self->priv->sector_data;
             len = 12;
             break;
         }
@@ -889,26 +873,26 @@ gboolean mirage_sector_get_sync (MIRAGE_Sector *self, const guint8 **ret_buf, gi
  *
  * Returns: %TRUE on success, %FALSE on failure
  **/
-gboolean mirage_sector_get_header (MIRAGE_Sector *self, const guint8 **ret_buf, gint *ret_len, GError **error) {
-    MIRAGE_SectorPrivate *_priv = MIRAGE_SECTOR_GET_PRIVATE(self);
+gboolean mirage_sector_get_header (MIRAGE_Sector *self, const guint8 **ret_buf, gint *ret_len, GError **error)
+{
     gboolean succeeded = TRUE;
     guint8 *buf = NULL;
     gint len = 0;
 
     /* Generate header if it's not provided; generation routine takes care of
        incompatible sector types */
-    if (!(_priv->valid_data & MIRAGE_VALID_HEADER)) {
-        __mirage_sector_generate_header(self);
+    if (!(self->priv->valid_data & MIRAGE_VALID_HEADER)) {
+        mirage_sector_generate_header(self);
     }
 
     /* Header is supported by all non-audio sectors */
-    switch (_priv->type) {
+    switch (self->priv->type) {
         case MIRAGE_MODE_MODE0:
         case MIRAGE_MODE_MODE1:
         case MIRAGE_MODE_MODE2:
         case MIRAGE_MODE_MODE2_FORM1:
         case MIRAGE_MODE_MODE2_FORM2: {
-            buf = _priv->sector_data+12;
+            buf = self->priv->sector_data+12;
             len = 4;
             break;
         }
@@ -949,23 +933,23 @@ gboolean mirage_sector_get_header (MIRAGE_Sector *self, const guint8 **ret_buf, 
  *
  * Returns: %TRUE on success, %FALSE on failure
  **/
-gboolean mirage_sector_get_subheader (MIRAGE_Sector *self, const guint8 **ret_buf, gint *ret_len, GError **error) {
-    MIRAGE_SectorPrivate *_priv = MIRAGE_SECTOR_GET_PRIVATE(self);
+gboolean mirage_sector_get_subheader (MIRAGE_Sector *self, const guint8 **ret_buf, gint *ret_len, GError **error)
+{
     gboolean succeeded = TRUE;
     guint8 *buf = NULL;
     gint len = 0;
 
     /* Generate subheader if it's not provided; generation routine takes care of
        incompatible sector types */
-    if (!(_priv->valid_data & MIRAGE_VALID_SUBHEADER)) {
-        __mirage_sector_generate_subheader(self);
+    if (!(self->priv->valid_data & MIRAGE_VALID_SUBHEADER)) {
+        mirage_sector_generate_subheader(self);
     }
 
     /* Subheader is supported by formed Mode 2 sectors */
-    switch (_priv->type) {
+    switch (self->priv->type) {
         case MIRAGE_MODE_MODE2_FORM1:
         case MIRAGE_MODE_MODE2_FORM2: {
-            buf = _priv->sector_data+16;
+            buf = self->priv->sector_data+16;
             len = 8;
             break;
         }
@@ -1002,43 +986,43 @@ gboolean mirage_sector_get_subheader (MIRAGE_Sector *self, const guint8 **ret_bu
  *
  * Returns: %TRUE on success, %FALSE on failure
  **/
-gboolean mirage_sector_get_data (MIRAGE_Sector *self, const guint8 **ret_buf, gint *ret_len, GError **error) {
-    MIRAGE_SectorPrivate *_priv = MIRAGE_SECTOR_GET_PRIVATE(self);
+gboolean mirage_sector_get_data (MIRAGE_Sector *self, const guint8 **ret_buf, gint *ret_len, GError **error)
+{
     gboolean succeeded = TRUE;
     guint8 *buf = NULL;
     gint len = 0;
 
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_SECTOR, "%s: sector type: %d\n", __debug__, _priv->type);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_SECTOR, "%s: sector type: %d\n", __debug__, self->priv->type);
 
     /* Data is supported by all sectors */
-    switch (_priv->type) {
+    switch (self->priv->type) {
         case MIRAGE_MODE_AUDIO: {
-            buf = _priv->sector_data;
+            buf = self->priv->sector_data;
             len = 2352;
             break;
         }
         case MIRAGE_MODE_MODE0: {
-            buf = _priv->sector_data+16;
+            buf = self->priv->sector_data+16;
             len = 2336;
             break;
         }
         case MIRAGE_MODE_MODE1: {
-            buf = _priv->sector_data+16;
+            buf = self->priv->sector_data+16;
             len = 2048;
             break;
         }
         case MIRAGE_MODE_MODE2: {
-            buf = _priv->sector_data+16;
+            buf = self->priv->sector_data+16;
             len = 2336;
             break;
         }
         case MIRAGE_MODE_MODE2_FORM1: {
-            buf = _priv->sector_data+24;
+            buf = self->priv->sector_data+24;
             len = 2048;
             break;
         }
         case MIRAGE_MODE_MODE2_FORM2: {
-            buf = _priv->sector_data+24;
+            buf = self->priv->sector_data+24;
             len = 2324;
             break;
         }
@@ -1049,7 +1033,7 @@ gboolean mirage_sector_get_data (MIRAGE_Sector *self, const guint8 **ret_buf, gi
         }
     }
 
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_SECTOR, "%s: offset: %d length: %d\n", __debug__, buf - _priv->sector_data, len);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_SECTOR, "%s: offset: %d length: %d\n", __debug__, buf - self->priv->sector_data, len);
 
     /* Return the requested data */
     if (ret_buf) {
@@ -1081,32 +1065,32 @@ gboolean mirage_sector_get_data (MIRAGE_Sector *self, const guint8 **ret_buf, gi
  *
  * Returns: %TRUE on success, %FALSE on failure
  **/
-gboolean mirage_sector_get_edc_ecc (MIRAGE_Sector *self, const guint8 **ret_buf, gint *ret_len, GError **error) {
-    MIRAGE_SectorPrivate *_priv = MIRAGE_SECTOR_GET_PRIVATE(self);
+gboolean mirage_sector_get_edc_ecc (MIRAGE_Sector *self, const guint8 **ret_buf, gint *ret_len, GError **error)
+{
     gboolean succeeded = TRUE;
     guint8 *buf = NULL;
     gint len = 0;
 
     /* Generate EDC/ECC if it's not provided; generation routine takes care of
        incompatible sector types */
-    if (!(_priv->valid_data & MIRAGE_VALID_EDC_ECC)) {
-        __mirage_sector_generate_edc_ecc(self);
+    if (!(self->priv->valid_data & MIRAGE_VALID_EDC_ECC)) {
+        mirage_sector_generate_edc_ecc(self);
     }
 
     /* EDC/ECC is supported by Mode 1 and formed Mode 2 sectors */
-    switch (_priv->type) {
+    switch (self->priv->type) {
         case MIRAGE_MODE_MODE1: {
-            buf = _priv->sector_data+2064;
+            buf = self->priv->sector_data+2064;
             len = 288;
             break;
         }
         case MIRAGE_MODE_MODE2_FORM1: {
-            buf = _priv->sector_data+2072;
+            buf = self->priv->sector_data+2072;
             len = 280;
             break;
         }
         case MIRAGE_MODE_MODE2_FORM2: {
-            buf = _priv->sector_data+2348;
+            buf = self->priv->sector_data+2348;
             len = 4;
             break;
         }
@@ -1148,19 +1132,18 @@ gboolean mirage_sector_get_edc_ecc (MIRAGE_Sector *self, const guint8 **ret_buf,
  *
  * Returns: %TRUE on success, %FALSE on failure
  **/
-gboolean mirage_sector_get_subchannel (MIRAGE_Sector *self, gint format, const guint8 **ret_buf, gint *ret_len, GError **error) {
-    MIRAGE_SectorPrivate *_priv = MIRAGE_SECTOR_GET_PRIVATE(self);
-
+gboolean mirage_sector_get_subchannel (MIRAGE_Sector *self, gint format, const guint8 **ret_buf, gint *ret_len, GError **error)
+{
     /* Generate subchannel if it's not provided */
-    if (!(_priv->valid_data & MIRAGE_VALID_SUBCHAN)) {
-        __mirage_sector_generate_subchannel(self);
+    if (!(self->priv->valid_data & MIRAGE_VALID_SUBCHAN)) {
+        mirage_sector_generate_subchannel(self);
     }
 
     switch (format) {
         case MIRAGE_SUBCHANNEL_PW: {
             /* Interleaved PW subchannel */
             if (ret_buf) {
-                *ret_buf = _priv->subchan_pw;
+                *ret_buf = self->priv->subchan_pw;
             }
             if (ret_len) {
                 *ret_len = 96;
@@ -1169,9 +1152,9 @@ gboolean mirage_sector_get_subchannel (MIRAGE_Sector *self, gint format, const g
         }
         case MIRAGE_SUBCHANNEL_PQ: {
             /* De-interleaved PQ subchannel */
-            mirage_helper_subchannel_deinterleave(SUBCHANNEL_Q, _priv->subchan_pw, _priv->subchan_pq);
+            mirage_helper_subchannel_deinterleave(SUBCHANNEL_Q, self->priv->subchan_pw, self->priv->subchan_pq);
             if (ret_buf) {
-                *ret_buf = _priv->subchan_pq;
+                *ret_buf = self->priv->subchan_pq;
             }
             if (ret_len) {
                 *ret_len = 16;
@@ -1217,37 +1200,37 @@ gboolean mirage_sector_get_subchannel (MIRAGE_Sector *self, gint format, const g
  *
  * Returns: %TRUE if sector passes verification (i.e. no L-EC errors are detected) otherwise %FALSE
  **/
-gboolean mirage_sector_verify_lec (MIRAGE_Sector *self) {
-    MIRAGE_SectorPrivate *_priv = MIRAGE_SECTOR_GET_PRIVATE(self);
+gboolean mirage_sector_verify_lec (MIRAGE_Sector *self)
+{
     gboolean valid = TRUE;
 
     /* Validation is possible only if EDC/ECC data is present... if it's
        missing, it would be generated by same algorithm the verification
        uses. Therefore, if ECD/ECC is missing (and hasn't been generated
        by our sector code yet), verification automatically succeeds. */
-    if (_priv->valid_data & MIRAGE_VALID_EDC_ECC) {
+    if (self->priv->valid_data & MIRAGE_VALID_EDC_ECC) {
         /* I believe calculating EDC suffices for this test; ECC should
            not really be needed, since we won't be doing any corrections */
         guint8 computed_edc[4];
 
-        switch (_priv->type) {
+        switch (self->priv->type) {
             case MIRAGE_MODE_MODE1: {
                 /* We assume sync and header data are available, which is probably
                    a reasonable assumption at this point... */
-                mirage_helper_sector_edc_ecc_compute_edc_block(_priv->sector_data+0x00, 0x810, computed_edc);
-                valid = !memcmp(computed_edc, _priv->sector_data+0x810, 4);
+                mirage_helper_sector_edc_ecc_compute_edc_block(self->priv->sector_data+0x00, 0x810, computed_edc);
+                valid = !memcmp(computed_edc, self->priv->sector_data+0x810, 4);
                 break;
             }
             case MIRAGE_MODE_MODE2_FORM1: {
                 /* We assume subheader data is available... */
-                mirage_helper_sector_edc_ecc_compute_edc_block(_priv->sector_data+0x10, 0x808, computed_edc);
-                valid = !memcmp(computed_edc, _priv->sector_data+0x818, 4);
+                mirage_helper_sector_edc_ecc_compute_edc_block(self->priv->sector_data+0x10, 0x808, computed_edc);
+                valid = !memcmp(computed_edc, self->priv->sector_data+0x818, 4);
                 break;
             }
             case MIRAGE_MODE_MODE2_FORM2: {
                 /* We assume subheader data is available... */
-                mirage_helper_sector_edc_ecc_compute_edc_block(_priv->sector_data+0x10, 0x91C, computed_edc);
-                valid = !memcmp(computed_edc, _priv->sector_data+0x92C, 4);
+                mirage_helper_sector_edc_ecc_compute_edc_block(self->priv->sector_data+0x10, 0x91C, computed_edc);
+                valid = !memcmp(computed_edc, self->priv->sector_data+0x92C, 4);
                 break;
             }
             default: {
@@ -1285,14 +1268,13 @@ gboolean mirage_sector_verify_lec (MIRAGE_Sector *self) {
  **/
 gboolean mirage_sector_verify_subchannel_crc (MIRAGE_Sector *self)
 {
-    MIRAGE_SectorPrivate *_priv = MIRAGE_SECTOR_GET_PRIVATE(self);
     gboolean valid = TRUE;
 
     /* Validation is possible only if subchannel... if it's missing, it
        would be generated by same algorithm the verification uses. Therefore,
        if subchannel data is missing (and hasn't been generated by our sector
        code yet), verification automatically succeeds. */
-    if (_priv->valid_data & MIRAGE_VALID_SUBCHAN) {
+    if (self->priv->valid_data & MIRAGE_VALID_SUBCHAN) {
         guint16 computed_crc;
         const guint8 *buf;
         gint buflen;
@@ -1310,65 +1292,37 @@ gboolean mirage_sector_verify_subchannel_crc (MIRAGE_Sector *self)
     return valid;
 }
 
-/******************************************************************************\
- *                                 Object init                                *
-\******************************************************************************/
-/* Our parent class */
-static MIRAGE_ObjectClass *parent_class = NULL;
 
-static void __mirage_sector_instance_init (GTypeInstance *instance, gpointer g_class G_GNUC_UNUSED) {
-    MIRAGE_Sector *self = MIRAGE_SECTOR(instance);
-    MIRAGE_SectorPrivate *_priv = MIRAGE_SECTOR_GET_PRIVATE(self);
+/**********************************************************************\
+ *                             Object init                            * 
+\**********************************************************************/
+G_DEFINE_TYPE(MIRAGE_Sector, mirage_sector, MIRAGE_TYPE_OBJECT);
+
+
+static void mirage_sector_init (MIRAGE_Sector *self)
+{
+    self->priv = MIRAGE_SECTOR_GET_PRIVATE(self);
 
     /* Un-initialize sector type */
-    _priv->type = 0xDEADBEEF;
-
-    return;
+    self->priv->type = 0xDEADBEEF;
 }
 
-static void __mirage_sector_class_init (gpointer g_class, gpointer g_class_data G_GNUC_UNUSED) {
-    MIRAGE_SectorClass *klass = MIRAGE_SECTOR_CLASS(g_class);
-
-    /* Set parent class */
-    parent_class = g_type_class_peek_parent(klass);
-
+static void mirage_sector_class_init (MIRAGE_SectorClass *klass)
+{
     /* Register private structure */
     g_type_class_add_private(klass, sizeof(MIRAGE_SectorPrivate));
-
-    return;
 }
 
-GType mirage_sector_get_type (void) {
-    static GType type = 0;
-    if (type == 0) {
-        static const GTypeInfo info = {
-            sizeof(MIRAGE_SectorClass),
-            NULL,   /* base_init */
-            NULL,   /* base_finalize */
-            __mirage_sector_class_init,   /* class_init */
-            NULL,   /* class_finalize */
-            NULL,   /* class_data */
-            sizeof(MIRAGE_Sector),
-            0,      /* n_preallocs */
-            __mirage_sector_instance_init,   /* instance_init */
-            NULL    /* value_table */
-        };
 
-        type = g_type_register_static(MIRAGE_TYPE_OBJECT, "MIRAGE_Sector", &info, 0);
-    }
+/**********************************************************************\
+ *                        Subchannel generation                       *
+\**********************************************************************/
+static gint subchannel_generate_p (MIRAGE_Sector *self, guint8 *buf)
+{
+    gint address = self->priv->address;
 
-    return type;
-}
-
-/******************************************************************************\
- *                            Subchannel generation                           *
-\******************************************************************************/
-static gint __subchannel_generate_p (MIRAGE_Sector *self, guint8 *buf) {
-    MIRAGE_SectorPrivate *_priv = MIRAGE_SECTOR_GET_PRIVATE(self);
-    gint address = _priv->address;
-
-    GObject *track = NULL;
-    gint track_start = 0;
+    GObject *track;
+    gint track_start;
 
     /* Get sector's parent track */
     if (!mirage_object_get_parent(MIRAGE_OBJECT(self), &track, NULL)) {
@@ -1391,15 +1345,15 @@ static gint __subchannel_generate_p (MIRAGE_Sector *self, guint8 *buf) {
     return 12;
 }
 
-static gint __subchannel_generate_q (MIRAGE_Sector *self, guint8 *buf) {
-    MIRAGE_SectorPrivate *_priv = MIRAGE_SECTOR_GET_PRIVATE(self);
-    gint address = _priv->address;
+static gint subchannel_generate_q (MIRAGE_Sector *self, guint8 *buf)
+{
+    gint address = self->priv->address;
 
-    GObject *track = NULL;
+    GObject *track;
 
-    gint mode_switch = 0;
-    gint start_sector = 0;
-    guint16 crc = 0;
+    gint mode_switch;
+    gint start_sector;
+    guint16 crc;
 
     /* Get sector's parent track */
     if (!mirage_object_get_parent(MIRAGE_OBJECT(self), &track, NULL)) {
@@ -1417,8 +1371,8 @@ static gint __subchannel_generate_q (MIRAGE_Sector *self, guint8 *buf) {
     switch (address % 100) {
         case 25: {
             /* MCN is to be returned; check if we actually have it */
-            GObject *session = NULL;
-            GObject *disc = NULL;
+            GObject *session;
+            GObject *disc;
 
             mirage_object_get_parent(MIRAGE_OBJECT(track), &session, NULL);
             mirage_object_get_parent(MIRAGE_OBJECT(session), &disc, NULL);
@@ -1437,7 +1391,7 @@ static gint __subchannel_generate_q (MIRAGE_Sector *self, guint8 *buf) {
         case 50: {
             /* ISRC is to be returned; verify that this is an audio track and
                that it actually has ISRC set */
-            gint mode = 0;
+            gint mode;
 
             mirage_sector_get_sector_type(self, &mode, NULL);
             if (mode != MIRAGE_MODE_AUDIO) {
@@ -1462,9 +1416,9 @@ static gint __subchannel_generate_q (MIRAGE_Sector *self, guint8 *buf) {
     switch (mode_switch) {
         case 0x01: {
             /* Mode-1: Current position */
-            gint ctl = 0, track_number = 0;
-            gint track_start = 0;
-            GObject *index = NULL;
+            gint ctl, track_number;
+            gint track_start;
+            GObject *index;
 
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_SECTOR, "%s: generating Mode-1 Q: Position\n", __debug__);
 
@@ -1479,7 +1433,7 @@ static gint __subchannel_generate_q (MIRAGE_Sector *self, guint8 *buf) {
             /* Index: try getting index object by address; if it's not found, we
                check if sector lies before track start... */
             if (mirage_track_get_index_by_address(MIRAGE_TRACK(track), address, &index, NULL)) {
-                gint index_number = 0;
+                gint index_number;
                 mirage_index_get_number(MIRAGE_INDEX(index), &index_number, NULL);
                 MIRAGE_DEBUG(self, MIRAGE_DEBUG_SECTOR, "%s: address 0x%X belongs to index with number: %d\n", __debug__, address, index_number);
                 buf[2] = index_number;
@@ -1511,7 +1465,7 @@ static gint __subchannel_generate_q (MIRAGE_Sector *self, guint8 *buf) {
         }
         case 0x02: {
             /* Mode-2: MCN */
-            gint ctl = 0;
+            gint ctl;
 
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_SECTOR, "%s: generating Mode-2 Q: MCN\n", __debug__);
 
@@ -1519,10 +1473,10 @@ static gint __subchannel_generate_q (MIRAGE_Sector *self, guint8 *buf) {
             buf[0] = (ctl << 0x04) | 0x02; /* Mode-2 Q */
 
             /* MCN */
-            GObject *session = NULL;
-            GObject *disc = NULL;
+            GObject *session;
+            GObject *disc;
 
-            const gchar *mcn = NULL;
+            const gchar *mcn;
 
             mirage_object_get_parent(MIRAGE_OBJECT(track), &session, NULL);
             mirage_object_get_parent(MIRAGE_OBJECT(session), &disc, NULL);
@@ -1541,7 +1495,7 @@ static gint __subchannel_generate_q (MIRAGE_Sector *self, guint8 *buf) {
         }
         case 0x03: {
             /* Mode-3: ISRC */
-            gint ctl = 0;
+            gint ctl;
 
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_SECTOR, "%s: generating Mode-3 Q: ISRC\n", __debug__);
 
@@ -1549,7 +1503,7 @@ static gint __subchannel_generate_q (MIRAGE_Sector *self, guint8 *buf) {
             buf[0] = (ctl << 0x04) | 0x03; /* Mode-3 Q */
 
             /* ISRC*/
-            const gchar *isrc = NULL;
+            const gchar *isrc;
             mirage_track_get_isrc(MIRAGE_TRACK(track), &isrc, NULL);
             mirage_helper_subchannel_q_encode_isrc(&buf[1], isrc);
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_SECTOR, "%s: ISRC string: %s bytes: %02X %02X %02X %02X %02X %02X %02X %02X\n", __debug__, isrc, buf[1], buf[2], buf[3], buf[4], buf[5], buf[6], buf[7], buf[8]);
@@ -1571,67 +1525,70 @@ static gint __subchannel_generate_q (MIRAGE_Sector *self, guint8 *buf) {
     return 12;
 }
 
-static gint __subchannel_generate_r (MIRAGE_Sector *self G_GNUC_UNUSED, guint8 *buf) {
+static gint subchannel_generate_r (MIRAGE_Sector *self G_GNUC_UNUSED, guint8 *buf)
+{
     memset(buf, 0, 12);
     return 12;
 }
 
-static gint __subchannel_generate_s (MIRAGE_Sector *self G_GNUC_UNUSED, guint8 *buf) {
+static gint subchannel_generate_s (MIRAGE_Sector *self G_GNUC_UNUSED, guint8 *buf)
+{
     memset(buf, 0, 12);
     return 12;
 }
 
-static gint __subchannel_generate_t (MIRAGE_Sector *self G_GNUC_UNUSED, guint8 *buf) {
+static gint subchannel_generate_t (MIRAGE_Sector *self G_GNUC_UNUSED, guint8 *buf)
+{
     memset(buf, 0, 12);
     return 12;
 }
 
-static gint __subchannel_generate_u (MIRAGE_Sector *self G_GNUC_UNUSED, guint8 *buf) {
+static gint subchannel_generate_u (MIRAGE_Sector *self G_GNUC_UNUSED, guint8 *buf)
+{
     memset(buf, 0, 12);
     return 12;
 }
 
-static gint __subchannel_generate_v (MIRAGE_Sector *self G_GNUC_UNUSED, guint8 *buf) {
+static gint subchannel_generate_v (MIRAGE_Sector *self G_GNUC_UNUSED, guint8 *buf)
+{
     memset(buf, 0, 12);
     return 12;
 }
 
-static gint __subchannel_generate_w (MIRAGE_Sector *self G_GNUC_UNUSED, guint8 *buf) {
+static gint subchannel_generate_w (MIRAGE_Sector *self G_GNUC_UNUSED, guint8 *buf)
+{
     memset(buf, 0, 12);
     return 12;
 }
 
-static void __mirage_sector_generate_subchannel (MIRAGE_Sector *self ) {
-    MIRAGE_SectorPrivate *_priv = MIRAGE_SECTOR_GET_PRIVATE(self);
-
-    guint8 tmp_buf[12] = {0};
+static void mirage_sector_generate_subchannel (MIRAGE_Sector *self)
+{
+    guint8 tmp_buf[12];
     /* Generate subchannel: only P/Q can be generated at the moment
        (other subchannels are set to 0) */
 
     /* Read P subchannel into temporary buffer, then interleave it */
-    __subchannel_generate_p(self, tmp_buf);
-    mirage_helper_subchannel_interleave(SUBCHANNEL_P, tmp_buf, _priv->subchan_pw);
+    subchannel_generate_p(self, tmp_buf);
+    mirage_helper_subchannel_interleave(SUBCHANNEL_P, tmp_buf, self->priv->subchan_pw);
     /* Read Q subchannel into temporary buffer, then interleave it */
-    __subchannel_generate_q(self, tmp_buf);
-    mirage_helper_subchannel_interleave(SUBCHANNEL_Q, tmp_buf, _priv->subchan_pw);
+    subchannel_generate_q(self, tmp_buf);
+    mirage_helper_subchannel_interleave(SUBCHANNEL_Q, tmp_buf, self->priv->subchan_pw);
     /* Read R subchannel into temporary buffer, then interleave it */
-    __subchannel_generate_r(self, tmp_buf);
-    mirage_helper_subchannel_interleave(SUBCHANNEL_R, tmp_buf, _priv->subchan_pw);
+    subchannel_generate_r(self, tmp_buf);
+    mirage_helper_subchannel_interleave(SUBCHANNEL_R, tmp_buf, self->priv->subchan_pw);
     /* Read S subchannel into temporary buffer, then interleave it */
-    __subchannel_generate_s(self, tmp_buf);
-    mirage_helper_subchannel_interleave(SUBCHANNEL_S, tmp_buf, _priv->subchan_pw);
+    subchannel_generate_s(self, tmp_buf);
+    mirage_helper_subchannel_interleave(SUBCHANNEL_S, tmp_buf, self->priv->subchan_pw);
     /* Read T subchannel into temporary buffer, then interleave it */
-    __subchannel_generate_t(self, tmp_buf);
-    mirage_helper_subchannel_interleave(SUBCHANNEL_T, tmp_buf, _priv->subchan_pw);
+    subchannel_generate_t(self, tmp_buf);
+    mirage_helper_subchannel_interleave(SUBCHANNEL_T, tmp_buf, self->priv->subchan_pw);
     /* Read U subchannel into temporary buffer, then interleave it */
-    __subchannel_generate_v(self, tmp_buf);
-    mirage_helper_subchannel_interleave(SUBCHANNEL_U, tmp_buf, _priv->subchan_pw);
+    subchannel_generate_v(self, tmp_buf);
+    mirage_helper_subchannel_interleave(SUBCHANNEL_U, tmp_buf, self->priv->subchan_pw);
     /* Read V subchannel into temporary buffer, then interleave it */
-    __subchannel_generate_u(self, tmp_buf);
-    mirage_helper_subchannel_interleave(SUBCHANNEL_V, tmp_buf, _priv->subchan_pw);
+    subchannel_generate_u(self, tmp_buf);
+    mirage_helper_subchannel_interleave(SUBCHANNEL_V, tmp_buf, self->priv->subchan_pw);
     /* Read W subchannel into temporary buffer, then interleave it */
-    __subchannel_generate_w(self, tmp_buf);
-    mirage_helper_subchannel_interleave(SUBCHANNEL_W, tmp_buf, _priv->subchan_pw);
-
-    return;
+    subchannel_generate_w(self, tmp_buf);
+    mirage_helper_subchannel_interleave(SUBCHANNEL_W, tmp_buf, self->priv->subchan_pw);
 }

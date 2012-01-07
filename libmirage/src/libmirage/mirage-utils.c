@@ -1,6 +1,6 @@
 /*
  *  libMirage: Utility functions and helpers
- *  Copyright (C) 2006-2010 Rok Mandeljc
+ *  Copyright (C) 2006-2012 Rok Mandeljc
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -49,7 +49,8 @@
  *
  * Returns: a newly allocated string containing the fullpath of file, or %NULL.
  **/
-gchar *mirage_helper_find_data_file (const gchar *filename, const gchar *path) {
+gchar *mirage_helper_find_data_file (const gchar *filename, const gchar *path)
+{
     gchar *ret_filename = NULL;
     gchar *dirname = NULL;
     gchar *basename = NULL;
@@ -114,7 +115,8 @@ end:
  *
  * Returns: pointer to character in @filename at which the suffix starts.
  **/
-gchar *mirage_helper_get_suffix (const gchar *filename) {
+gchar *mirage_helper_get_suffix (const gchar *filename)
+{
     return g_strrstr(filename, ".");
 }
 
@@ -129,7 +131,8 @@ gchar *mirage_helper_get_suffix (const gchar *filename) {
  *
  * Returns: %TRUE if @filename contains suffix @suffix, %FALSE if not
  **/
-gboolean mirage_helper_has_suffix (const gchar *filename, const gchar *suffix) {
+gboolean mirage_helper_has_suffix (const gchar *filename, const gchar *suffix)
+{
     gchar *file_suffix = NULL;
     
     g_return_val_if_fail(filename != NULL, FALSE);
@@ -165,7 +168,8 @@ gboolean mirage_helper_has_suffix (const gchar *filename, const gchar *suffix) {
  * Returns: an integer less than, equal to, or greater than zero  if  @str1  
  * is  found, respectively, to  be less than, to match, or be greater than @str2.
  **/
-gint mirage_helper_strcasecmp (const gchar *str1, const gchar *str2) {
+gint mirage_helper_strcasecmp (const gchar *str1, const gchar *str2)
+{
     gchar *s1 = g_utf8_casefold(str1, -1);
 	gchar *s2 = g_utf8_casefold(str2, -1);
 	gint rv;
@@ -197,7 +201,8 @@ gint mirage_helper_strcasecmp (const gchar *str1, const gchar *str2) {
  * characters of @str1 is found, respectively, to  be less than, to match, or 
  * be greater than first @len characters of @str2.
  **/
-gint mirage_helper_strncasecmp (const gchar *str1, const gchar *str2, gint len) {
+gint mirage_helper_strncasecmp (const gchar *str1, const gchar *str2, gint len)
+{
     gchar *s1 = g_utf8_casefold(str1, len);
 	gchar *s2 = g_utf8_casefold(str2, len);
 	gint rv;
@@ -208,9 +213,9 @@ gint mirage_helper_strncasecmp (const gchar *str1, const gchar *str2, gint len) 
 }
 
 
-/******************************************************************************\
- *                          MSF/LBA utility functions                         *
-\******************************************************************************/
+/**********************************************************************\
+ *                      MSF/LBA utility functions                     *
+\**********************************************************************/
 /**
  * mirage_helper_lba2msf:
  * @lba: LBA address
@@ -231,7 +236,8 @@ gint mirage_helper_strncasecmp (const gchar *str1, const gchar *str2, gint len) 
  * </para>
  *
  **/
-void mirage_helper_lba2msf (gint lba, gboolean diff, guint8 *m, guint8 *s, guint8 *f) {
+void mirage_helper_lba2msf (gint lba, gboolean diff, guint8 *m, guint8 *s, guint8 *f)
+{
     if (diff) {
         lba += 150;
     }
@@ -260,7 +266,8 @@ void mirage_helper_lba2msf (gint lba, gboolean diff, guint8 *m, guint8 *s, guint
  * Returns: a newly-allocated string containing MSF address; it should be freed 
  * with g_free() when no longer needed.
  **/
-gchar *mirage_helper_lba2msf_str (gint lba, gboolean diff) {
+gchar *mirage_helper_lba2msf_str (gint lba, gboolean diff)
+{
     gchar *ret = (gchar *)g_malloc0(10);
     
     if (diff) {
@@ -290,7 +297,8 @@ gchar *mirage_helper_lba2msf_str (gint lba, gboolean diff) {
  *
  * Returns: integer representing LBA address
  **/
-gint mirage_helper_msf2lba (guint8 m, guint8 s, guint8 f, gboolean diff) {
+gint mirage_helper_msf2lba (guint8 m, guint8 s, guint8 f, gboolean diff)
+{
     gint lba = (m*60+s)*75 + f;
     
     if (diff) {
@@ -318,7 +326,8 @@ gint mirage_helper_msf2lba (guint8 m, guint8 s, guint8 f, gboolean diff) {
  *
  * Returns: integer representing LBA address
  **/
-gint mirage_helper_msf2lba_str (const gchar *msf, gboolean diff) {
+gint mirage_helper_msf2lba_str (const gchar *msf, gboolean diff)
+{
     gint m, s, f;
     
     sscanf(msf, "%d:%d:%d", &m, &s, &f);
@@ -326,9 +335,9 @@ gint mirage_helper_msf2lba_str (const gchar *msf, gboolean diff) {
 }
 
 
-/******************************************************************************\
- *                          Hex/BCD utility functions                         *
-\******************************************************************************/
+/**********************************************************************\
+ *                      Hex/BCD utility functions                     *
+\**********************************************************************/
 /**
  * mirage_helper_hex2bcd:
  * @hex: hex-encoded integer
@@ -339,7 +348,8 @@ gint mirage_helper_msf2lba_str (const gchar *msf, gboolean diff) {
  *
  * Returns: bcd-encoded integer
  **/
-gint mirage_helper_hex2bcd (gint hex) {
+gint mirage_helper_hex2bcd (gint hex)
+{
     if (hex >= 0 && hex <= 99) {
         return ((hex / 10) << 4) | (hex % 10);
     } else {
@@ -357,7 +367,8 @@ gint mirage_helper_hex2bcd (gint hex) {
  *
  * Returns: hex-encoded integer
  **/
-gint mirage_helper_bcd2hex (gint bcd) {
+gint mirage_helper_bcd2hex (gint bcd)
+{
     guint8 d1 = bcd & 0x0f;
     guint8 d2 = bcd >> 4;
     
@@ -369,9 +380,9 @@ gint mirage_helper_bcd2hex (gint bcd) {
 }
 
 
-/******************************************************************************\
- *                         ASCII/ISRC utility functions                       *
-\******************************************************************************/
+/**********************************************************************\
+ *                     ASCII/ISRC utility functions                   *
+\**********************************************************************/
 /**
  * mirage_helper_ascii2isrc:
  * @c: ASCII character
@@ -382,7 +393,8 @@ gint mirage_helper_bcd2hex (gint bcd) {
  *
  * Returns: ISRC character
  **/
-guint8 mirage_helper_ascii2isrc (gchar c) {
+guint8 mirage_helper_ascii2isrc (gchar c)
+{
     if (g_ascii_isdigit(c)) {
         return (c - '0') & 0x3F;
     }
@@ -405,7 +417,8 @@ guint8 mirage_helper_ascii2isrc (gchar c) {
  *
  * Returns: ACSII character
  **/
-gchar mirage_helper_isrc2ascii (guint8 c) {
+gchar mirage_helper_isrc2ascii (guint8 c)
+{
     if (c <= 9) {
         return '0' + c;
     }
@@ -417,10 +430,10 @@ gchar mirage_helper_isrc2ascii (guint8 c) {
     return 0;
 }
 
-/******************************************************************************\
- *                        Subchannel utility functions                        *
-\******************************************************************************/
-static guint16 q_crc_lut[256] = {
+/**********************************************************************\
+ *                    Subchannel utility functions                    *
+\**********************************************************************/
+static const guint16 q_crc_lut[256] = {
     0x0000, 0x1021, 0x2042, 0x3063, 0x4084, 0x50A5, 0x60C6, 0x70E7, 0x8108,
     0x9129, 0xA14A, 0xB16B, 0xC18C, 0xD1AD, 0xE1CE, 0xF1EF, 0x1231, 0x0210,
     0x3273, 0x2252, 0x52B5, 0x4294, 0x72F7, 0x62D6, 0x9339, 0x8318, 0xB37B,
@@ -462,7 +475,8 @@ static guint16 q_crc_lut[256] = {
  *
  * Returns: CRC-16 checksum of Q subchannel data
  **/
-guint16 mirage_helper_subchannel_q_calculate_crc (const guint8 *data) {
+guint16 mirage_helper_subchannel_q_calculate_crc (const guint8 *data)
+{
     guint16 crc = 0;
     int i;
     
@@ -482,7 +496,8 @@ guint16 mirage_helper_subchannel_q_calculate_crc (const guint8 *data) {
  * Encodes MCN string @mcn into buffer @buf.
  * </para>
  **/
-void mirage_helper_subchannel_q_encode_mcn (guint8 *buf, const gchar *mcn) {
+void mirage_helper_subchannel_q_encode_mcn (guint8 *buf, const gchar *mcn)
+{
     buf[0] = ((mcn[0] - '0') << 4)  | ((mcn[1] - '0') & 0x0F);
     buf[1] = ((mcn[2] - '0') << 4)  | ((mcn[3] - '0') & 0x0F);
     buf[2] = ((mcn[4] - '0') << 4)  | ((mcn[5] - '0') & 0x0F);
@@ -490,8 +505,6 @@ void mirage_helper_subchannel_q_encode_mcn (guint8 *buf, const gchar *mcn) {
     buf[4] = ((mcn[8] - '0') << 4)  | ((mcn[9] - '0') & 0x0F);
     buf[5] = ((mcn[10] - '0') << 4) | ((mcn[11] - '0') & 0x0F);
     buf[6] = ((mcn[12] - '0') << 4);
-    
-    return;
 }
 
 /**
@@ -503,7 +516,8 @@ void mirage_helper_subchannel_q_encode_mcn (guint8 *buf, const gchar *mcn) {
  * Decodes MCN stored in @buf into string @mcn.
  * </para>
  **/
-void mirage_helper_subchannel_q_decode_mcn (const guint8 *buf, gchar *mcn) {
+void mirage_helper_subchannel_q_decode_mcn (const guint8 *buf, gchar *mcn)
+{
     mcn[0]  = ((buf[0] >> 4) & 0x0F) + '0';
     mcn[1]  = (buf[0] & 0x0F) + '0';
     mcn[2]  = ((buf[1] >> 4) & 0x0F) + '0';
@@ -517,8 +531,6 @@ void mirage_helper_subchannel_q_decode_mcn (const guint8 *buf, gchar *mcn) {
     mcn[10] = ((buf[5] >> 4) & 0x0F) + '0';
     mcn[11] = (buf[5] & 0x0F) + '0';
     mcn[12] = ((buf[6] >> 4) & 0x0F) + '0';
-    
-    return;
 }
 
 
@@ -531,7 +543,8 @@ void mirage_helper_subchannel_q_decode_mcn (const guint8 *buf, gchar *mcn) {
  * Encodes ISRC string @isrc into buffer @buf.
  * </para>
  **/
-void mirage_helper_subchannel_q_encode_isrc (guint8 *buf, const gchar *isrc) {
+void mirage_helper_subchannel_q_encode_isrc (guint8 *buf, const gchar *isrc)
+{
     guint8 d;
     
     buf[0] = mirage_helper_ascii2isrc(isrc[0]) << 2;
@@ -552,8 +565,6 @@ void mirage_helper_subchannel_q_encode_isrc (guint8 *buf, const gchar *isrc) {
     buf[5] = ((isrc[7] - '0') << 4)  | ((isrc[8] - '0') & 0x0F);
     buf[6] = ((isrc[9] - '0') << 4)  | ((isrc[10] - '0') & 0x0F);
     buf[7] = ((isrc[11] - '0') << 4);
-    
-    return;
 }
 
 /**
@@ -565,7 +576,8 @@ void mirage_helper_subchannel_q_encode_isrc (guint8 *buf, const gchar *isrc) {
  * Decodes ISRC stored in @buf into string @isrc.
  * </para>
  **/
-void mirage_helper_subchannel_q_decode_isrc (const guint8 *buf, gchar *isrc) {
+void mirage_helper_subchannel_q_decode_isrc (const guint8 *buf, gchar *isrc)
+{
     guint8 d;
     
     d = (buf[0] >> 2) & 0x3F;
@@ -590,8 +602,6 @@ void mirage_helper_subchannel_q_decode_isrc (const guint8 *buf, gchar *isrc) {
     isrc[9] = ((buf[6] >> 4) & 0x0F) + '0';
     isrc[10] = (buf[6] & 0x0F) + '0';
     isrc[11] = ((buf[7] >> 4) & 0x0F) + '0';
-    
-    return;
 }
 
 /**
@@ -605,7 +615,8 @@ void mirage_helper_subchannel_q_decode_isrc (const guint8 *buf, gchar *isrc) {
  * subchannel data stored in @subchannel96.
  * </para>
  **/
-void mirage_helper_subchannel_interleave (gint subchan, const guint8 *channel12, guint8 *channel96) {
+void mirage_helper_subchannel_interleave (gint subchan, const guint8 *channel12, guint8 *channel96)
+{
     gint i, j;
     guint8 *ptr = channel96;
     
@@ -616,8 +627,6 @@ void mirage_helper_subchannel_interleave (gint subchan, const guint8 *channel12,
         }
         ptr += 8;
     }
-
-    return;
 }
 
 /**
@@ -631,7 +640,8 @@ void mirage_helper_subchannel_interleave (gint subchan, const guint8 *channel12,
  * @channel96 and writes the resulting subhcannel data into @subchannel12.
  * </para>
  **/
-void mirage_helper_subchannel_deinterleave (gint subchan, const guint8 *channel96, guint8 *channel12) {
+void mirage_helper_subchannel_deinterleave (gint subchan, const guint8 *channel96, guint8 *channel12)
+{
     gint i, j;
     
     for (i = 0; i < 12; i++) {
@@ -640,16 +650,14 @@ void mirage_helper_subchannel_deinterleave (gint subchan, const guint8 *channel9
             channel12[i] |= (val << (7-j));
         }
     }
-    
-    return;
 }
 
 
-/******************************************************************************\
- *                         EDC/ECC utility functions *
-\******************************************************************************/
+/**********************************************************************\
+ *                     EDC/ECC utility functions                      *
+\**********************************************************************/
 /* Following code is based on Neull Corlett's ECM code */
-static guint8 ecc_f_lut[256] = {
+static const guint8 ecc_f_lut[256] = {
     0x00, 0x02, 0x04, 0x06, 0x08, 0x0A, 0x0C, 0x0E, 0x10, 0x12, 0x14, 0x16, 
     0x18, 0x1A, 0x1C, 0x1E, 0x20, 0x22, 0x24, 0x26, 0x28, 0x2A, 0x2C, 0x2E, 
     0x30, 0x32, 0x34, 0x36, 0x38, 0x3A, 0x3C, 0x3E, 0x40, 0x42, 0x44, 0x46, 
@@ -674,7 +682,7 @@ static guint8 ecc_f_lut[256] = {
     0xE5, 0xE7, 0xE1, 0xE3
 };
 
-static guint8 ecc_b_lut[256] = {
+static const guint8 ecc_b_lut[256] = {
     0x00, 0xF4, 0xF5, 0x01, 0xF7, 0x03, 0x02, 0xF6, 0xF3, 0x07, 0x06, 0xF2, 
     0x04, 0xF0, 0xF1, 0x05, 0xFB, 0x0F, 0x0E, 0xFA, 0x0C, 0xF8, 0xF9, 0x0D, 
     0x08, 0xFC, 0xFD, 0x09, 0xFF, 0x0B, 0x0A, 0xFE, 0xEB, 0x1F, 0x1E, 0xEA, 
@@ -699,7 +707,7 @@ static guint8 ecc_b_lut[256] = {
     0x54, 0xA0, 0xA1, 0x55
 };
 
-static guint32 edc_lut[256] = {
+static const guint32 edc_lut[256] = {
     0x00000000, 0x90910101, 0x91210201, 0x01B00300, 0x92410401, 0x02D00500, 
     0x03600600, 0x93F10701, 0x94810801, 0x04100900, 0x05A00A00, 0x95310B01, 
     0x06C00C00, 0x96510D01, 0x97E10E01, 0x07700F00, 0x99011001, 0x09901100, 
@@ -745,7 +753,6 @@ static guint32 edc_lut[256] = {
     0x71C0FC00, 0xE151FD01, 0xE0E1FE01, 0x7070FF00
 };
 
-/* Compute EDC for a block */
 /**
  * mirage_helper_sector_edc_ecc_compute_edc_block:
  * @src: data to calculate EDC data for
@@ -782,7 +789,8 @@ static guint32 edc_lut[256] = {
  * (This is assuming all other sector data is already stored in sector_buffer and that sector_buffer is 2532 bytes long)
  * </para>
  **/
-void mirage_helper_sector_edc_ecc_compute_edc_block (const guint8 *src, guint16 size, guint8 *dest) {
+void mirage_helper_sector_edc_ecc_compute_edc_block (const guint8 *src, guint16 size, guint8 *dest)
+{
     guint32 edc = 0;
     
     while (size--) {
@@ -795,7 +803,6 @@ void mirage_helper_sector_edc_ecc_compute_edc_block (const guint8 *src, guint16 
     dest[3] = (edc >> 24) & 0xFF;
 }
 
-/* Compute ECC for a block (can do either P or Q) */
 /**
  * mirage_helper_sector_edc_ecc_compute_ecc_block:
  * @src: data to calculate ECC data for
@@ -833,7 +840,8 @@ void mirage_helper_sector_edc_ecc_compute_edc_block (const guint8 *src, guint16 
  * (This is assuming all other sector data, including EDC, is already stored in sector_buffer and that sector_buffer is 2532 bytes long)
  * </para>
  **/
-void mirage_helper_sector_edc_ecc_compute_ecc_block (const guint8 *src, guint32 major_count, guint32 minor_count, guint32 major_mult, guint32 minor_inc, guint8 *dest) {
+void mirage_helper_sector_edc_ecc_compute_ecc_block (const guint8 *src, guint32 major_count, guint32 minor_count, guint32 major_mult, guint32 minor_inc, guint8 *dest)
+{
     guint32 size = major_count * minor_count;
     guint32 major = 0, minor = 0;
     

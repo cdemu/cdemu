@@ -25,7 +25,8 @@
 
 #pragma pack(1)
 
-enum {
+enum
+{
     MODE_PAGE_CURRENT = 0,
     MODE_PAGE_DEFAULT = 1,
     MODE_PAGE_MASK = 2

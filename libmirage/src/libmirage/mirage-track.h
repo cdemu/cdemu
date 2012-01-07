@@ -1,6 +1,6 @@
 /*
  *  libMirage: Track object
- *  Copyright (C) 2006-2010 Rok Mandeljc
+ *  Copyright (C) 2006-2012 Rok Mandeljc
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -42,7 +42,8 @@ G_BEGIN_DECLS
  * Track flags.
  * </para>
  **/
-typedef enum {
+typedef enum
+{
     MIRAGE_TRACKF_FOURCHANNEL   = 0x01,
     MIRAGE_TRACKF_COPYPERMITTED = 0x02,
     MIRAGE_TRACKF_PREEMPHASIS   = 0x04,
@@ -62,7 +63,8 @@ typedef enum {
  * Track modes.
  * </para>
  **/
-typedef enum {
+typedef enum
+{
     MIRAGE_MODE_MODE0       = 0x00,
     MIRAGE_MODE_AUDIO       = 0x01,
     MIRAGE_MODE_MODE1       = 0x02,
@@ -81,7 +83,8 @@ typedef enum {
  * Track constants.
  * </para>
  **/
-typedef enum {
+typedef enum
+{
     MIRAGE_TRACK_LEADIN  = 0x00,
     MIRAGE_TRACK_LEADOUT = 0xAA,
 } MIRAGE_TrackConstants;
@@ -94,6 +97,10 @@ typedef enum {
 #define MIRAGE_IS_TRACK_CLASS(klass) (G_TYPE_CHECK_CLASS_TYPE((klass), MIRAGE_TYPE_TRACK))
 #define MIRAGE_TRACK_GET_CLASS(obj)  (G_TYPE_INSTANCE_GET_CLASS((obj), MIRAGE_TYPE_TRACK, MIRAGE_TrackClass))
 
+typedef struct _MIRAGE_Track        MIRAGE_Track;
+typedef struct _MIRAGE_TrackClass   MIRAGE_TrackClass;
+typedef struct _MIRAGE_TrackPrivate MIRAGE_TrackPrivate;
+
 /**
  * MIRAGE_Track:
  *
@@ -101,21 +108,26 @@ typedef enum {
  * Contains private data only, and should be accessed using the functions below.
  * </para>
  **/
-typedef struct {
-    MIRAGE_Object parent;
-} MIRAGE_Track;
+struct _MIRAGE_Track
+{
+    MIRAGE_Object parent_instance;
 
-typedef struct {
-    MIRAGE_ObjectClass parent;
-} MIRAGE_TrackClass;
+    /*< private >*/
+    MIRAGE_TrackPrivate *priv;
+};
+
+struct _MIRAGE_TrackClass
+{
+    MIRAGE_ObjectClass parent_class;
+};
 
 /* Used by MIRAGE_TYPE_TRACK */
 GType mirage_track_get_type (void);
 
 
-/******************************************************************************\
- *                                 Public API                                 *
-\******************************************************************************/
+/**********************************************************************\
+ *                             Public API                             *
+\**********************************************************************/
 /* Track flags */
 gboolean mirage_track_set_flags (MIRAGE_Track *self, gint flags, GError **error);
 gboolean mirage_track_get_flags (MIRAGE_Track *self, gint *flags, GError **error);

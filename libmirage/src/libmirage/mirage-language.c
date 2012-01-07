@@ -1,6 +1,6 @@
 /*
  *  libMirage: Language object
- *  Copyright (C) 2006-2010 Rok Mandeljc
+ *  Copyright (C) 2006-2012 Rok Mandeljc
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -26,32 +26,34 @@
 #define __debug__ "Language"
 
 
-/******************************************************************************\
- *                              Private structure                             *
-\******************************************************************************/
+/**********************************************************************\
+ *                          Private structure                         *
+\**********************************************************************/
 #define MIRAGE_LANGUAGE_GET_PRIVATE(obj) (G_TYPE_INSTANCE_GET_PRIVATE((obj), MIRAGE_TYPE_LANGUAGE, MIRAGE_LanguagePrivate))
 
-typedef struct {
+typedef struct
+{
     gboolean set;
     gchar *data;
     gint length;
 } MIRAGE_Language_Pack;
 
-typedef struct {    
+
+struct _MIRAGE_LanguagePrivate
+{    
     gint langcode;
     
     gint packs_number;
     MIRAGE_Language_Pack *packs;
-} MIRAGE_LanguagePrivate;
+};
 
 
-/******************************************************************************\
- *                              Private functions                             *
-\******************************************************************************/
-static gboolean __mirage_language_get_pack_by_type (MIRAGE_Language *self, gint pack_type, MIRAGE_Language_Pack **pack, GError **error) {
-    MIRAGE_LanguagePrivate *_priv = MIRAGE_LANGUAGE_GET_PRIVATE(self);
+/**********************************************************************\
+ *                          Private functions                         *
+\**********************************************************************/
+static gboolean mirage_language_get_pack_by_type (MIRAGE_Language *self, gint pack_type, MIRAGE_Language_Pack **pack, GError **error)
+{
     gint i;
-    
     static const gint pack_types[] = {
         MIRAGE_LANGUAGE_PACK_TITLE,
         MIRAGE_LANGUAGE_PACK_PERFORMER,
@@ -73,7 +75,7 @@ static gboolean __mirage_language_get_pack_by_type (MIRAGE_Language *self, gint 
     
     for (i = 0; i < G_N_ELEMENTS(pack_types); i++) {
         if (pack_types[i] == pack_type) {
-            *pack = &_priv->packs[i];
+            *pack = &self->priv->packs[i];
             return TRUE;
         }
     }
@@ -83,9 +85,9 @@ static gboolean __mirage_language_get_pack_by_type (MIRAGE_Language *self, gint 
 }
 
 
-/******************************************************************************\
- *                                 Public API                                 *
-\******************************************************************************/
+/**********************************************************************\
+ *                             Public API                             *
+\**********************************************************************/
 /**
  * mirage_language_set_langcode:
  * @self: a #MIRAGE_Language
@@ -98,9 +100,9 @@ static gboolean __mirage_language_get_pack_by_type (MIRAGE_Language *self, gint 
  *
  * Returns: %TRUE on success, %FALSE on failure
  **/
-gboolean mirage_language_set_langcode (MIRAGE_Language *self, gint langcode, GError **error G_GNUC_UNUSED) {
-    MIRAGE_LanguagePrivate *_priv = MIRAGE_LANGUAGE_GET_PRIVATE(self);
-    _priv->langcode = langcode;
+gboolean mirage_language_set_langcode (MIRAGE_Language *self, gint langcode, GError **error G_GNUC_UNUSED)
+{
+    self->priv->langcode = langcode;
     return TRUE;
 }
 
@@ -116,10 +118,10 @@ gboolean mirage_language_set_langcode (MIRAGE_Language *self, gint langcode, GEr
  *
  * Returns: %TRUE on success, %FALSE on failure
  **/
-gboolean mirage_language_get_langcode (MIRAGE_Language *self, gint *langcode, GError **error) {
-    MIRAGE_LanguagePrivate *_priv = MIRAGE_LANGUAGE_GET_PRIVATE(self);
+gboolean mirage_language_get_langcode (MIRAGE_Language *self, gint *langcode, GError **error)
+{
     MIRAGE_CHECK_ARG(langcode);
-    *langcode = _priv->langcode;
+    *langcode = self->priv->langcode;
     return TRUE;
 }
 
@@ -139,11 +141,11 @@ gboolean mirage_language_get_langcode (MIRAGE_Language *self, gint *langcode, GE
  *
  * Returns: %TRUE on success, %FALSE on failure
  **/
-gboolean mirage_language_set_pack_data (MIRAGE_Language *self, gint pack_type, const gchar *pack_data, gint length, GError **error) {
-    /*MIRAGE_LanguagePrivate *_priv = MIRAGE_LANGUAGE_GET_PRIVATE(self);*/
-    MIRAGE_Language_Pack *pack = NULL;
+gboolean mirage_language_set_pack_data (MIRAGE_Language *self, gint pack_type, const gchar *pack_data, gint length, GError **error)
+{
+    MIRAGE_Language_Pack *pack;
     
-    if (!__mirage_language_get_pack_by_type(self, pack_type, &pack, error)) {
+    if (!mirage_language_get_pack_by_type(self, pack_type, &pack, error)) {
         return FALSE;
     }
 
@@ -177,11 +179,11 @@ gboolean mirage_language_set_pack_data (MIRAGE_Language *self, gint pack_type, c
  *
  * Returns: %TRUE on success, %FALSE on failure
  **/
-gboolean mirage_language_get_pack_data (MIRAGE_Language *self, gint pack_type, const gchar **pack_data, gint *length, GError **error) {
-    /*MIRAGE_LanguagePrivate *_priv = MIRAGE_LANGUAGE_GET_PRIVATE(self);*/
-    MIRAGE_Language_Pack *pack = NULL;
+gboolean mirage_language_get_pack_data (MIRAGE_Language *self, gint pack_type, const gchar **pack_data, gint *length, GError **error)
+{
+    MIRAGE_Language_Pack *pack;
     
-    if (!__mirage_language_get_pack_by_type(self, pack_type, &pack, error)) {
+    if (!mirage_language_get_pack_by_type(self, pack_type, &pack, error)) {
         return FALSE;
     }
     
@@ -202,75 +204,43 @@ gboolean mirage_language_get_pack_data (MIRAGE_Language *self, gint pack_type, c
 }
 
 
-/******************************************************************************\
- *                                 Object init                                *
-\******************************************************************************/
-/* Our parent class */
-static MIRAGE_ObjectClass *parent_class = NULL;
+/**********************************************************************\
+ *                             Object init                            * 
+\**********************************************************************/
+G_DEFINE_TYPE(MIRAGE_Language, mirage_language, MIRAGE_TYPE_OBJECT);
 
-static void __mirage_language_instance_init (GTypeInstance *instance, gpointer g_class G_GNUC_UNUSED) {
-    MIRAGE_Language *self = MIRAGE_LANGUAGE(instance);
-    MIRAGE_LanguagePrivate *_priv = MIRAGE_LANGUAGE_GET_PRIVATE(self);
-    
+
+static void mirage_language_init (MIRAGE_Language *self)
+{
+    self->priv = MIRAGE_LANGUAGE_GET_PRIVATE(self);
+
     /* Allocate fields */
-    _priv->packs_number = 16; /* Currently, we have 16 pack types */
-    _priv->packs = g_new0(MIRAGE_Language_Pack, _priv->packs_number);
-    
-    return;
+    self->priv->packs_number = 16; /* Currently, we have 16 pack types */
+    self->priv->packs = g_new0(MIRAGE_Language_Pack, self->priv->packs_number);
 }
 
-static void __mirage_language_finalize (GObject *obj) {
-    MIRAGE_Language *self = MIRAGE_LANGUAGE(obj);
-    MIRAGE_LanguagePrivate *_priv = MIRAGE_LANGUAGE_GET_PRIVATE(self);
+
+static void mirage_language_finalize (GObject *gobject)
+{
+    MIRAGE_Language *self = MIRAGE_LANGUAGE(gobject);
     gint i;
     
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_GOBJECT, "%s: finalizing object\n", __debug__);
-
     /* Free private structure elements */
-    for (i = 0; i < _priv->packs_number; i++) {
-        g_free(_priv->packs[i].data);
+    for (i = 0; i < self->priv->packs_number; i++) {
+        g_free(self->priv->packs[i].data);
     }
-    g_free(_priv->packs);
+    g_free(self->priv->packs);
     
     /* Chain up to the parent class */
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_GOBJECT, "%s: chaining up to parent\n", __debug__);
-    return G_OBJECT_CLASS(parent_class)->finalize(obj);
+    return G_OBJECT_CLASS(mirage_language_parent_class)->finalize(gobject);
 }
 
-static void __mirage_language_class_init (gpointer g_class, gpointer g_class_data G_GNUC_UNUSED) {
-    GObjectClass *class_gobject = G_OBJECT_CLASS(g_class);
-    MIRAGE_LanguageClass *klass = MIRAGE_LANGUAGE_CLASS(g_class);
-    
-    /* Set parent class */
-    parent_class = g_type_class_peek_parent(klass);
-    
+static void mirage_language_class_init (MIRAGE_LanguageClass *klass)
+{
+    GObjectClass *gobject_class = G_OBJECT_CLASS(klass);
+
+    gobject_class->finalize = mirage_language_finalize;
+
     /* Register private structure */
     g_type_class_add_private(klass, sizeof(MIRAGE_LanguagePrivate));
-    
-    /* Initialize GObject members */
-    class_gobject->finalize = __mirage_language_finalize;
-
-    return;
-}
-
-GType mirage_language_get_type (void) {
-    static GType type = 0;
-    if (type == 0) {
-        static const GTypeInfo info = {
-            sizeof(MIRAGE_LanguageClass),
-            NULL,   /* base_init */
-            NULL,   /* base_finalize */
-            __mirage_language_class_init,   /* class_init */
-            NULL,   /* class_finalize */
-            NULL,   /* class_data */
-            sizeof(MIRAGE_Language),
-            0,      /* n_preallocs */
-            __mirage_language_instance_init,   /* instance_init */
-            NULL    /* value_table */
-        };
-        
-        type = g_type_register_static(MIRAGE_TYPE_OBJECT, "MIRAGE_Language", &info, 0);
-    }
-    
-    return type;
 }

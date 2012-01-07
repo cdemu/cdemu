@@ -1,6 +1,6 @@
 /*
  *  libMirage: DAA image plugin
- *  Copyright (C) 2008-2010 Rok Mandeljc
+ *  Copyright (C) 2008-2012 Rok Mandeljc
  *
  *  Derived from code of GPLed utility daa2iso, written by Luigi Auriemma:
  *  http://aluigi.altervista.org/mytoolz.htm
@@ -44,12 +44,14 @@ G_BEGIN_DECLS
 static const gchar daa_main_signature[16] = "DAA";
 static const gchar daa_part_signature[16] = "DAA VOL";
 
-enum {
+enum
+{
     DAA_FORMAT_100 = 0x100,
     DAA_FORMAT_110 = 0x110,
 };
 
-typedef struct {
+typedef struct
+{
     guint32 size_offset; /* Offset of sizes of zipped chunk */
     guint32 format; /* Format */
     guint32 data_offset; /* Offset of zipped chunks */
@@ -62,7 +64,8 @@ typedef struct {
     guint32 crc; /* Checksum calculated over the first 72 bytes of main file */ 
 } DAA_Main_Header;
 
-typedef struct {
+typedef struct
+{
     guint32 data_offset; /* Offset of zipped chunks */
     guint8 hdata[16]; /* Data used in 0x110 format */
     guint32 crc; /* Checksum calculated over the first 36 bytes of part file? */ 
@@ -71,7 +74,8 @@ typedef struct {
 #pragma pack()
 
 /* Luigi Auriemma's bit packing function */
-static inline guint read_bits (guint bits, guint8 *in, guint in_bits) {
+static inline guint read_bits (guint bits, guint8 *in, guint in_bits)
+{
     gint seek_bits;
     gint rem;
     gint seek = 0;
@@ -94,8 +98,6 @@ static inline guint read_bits (guint bits, guint8 *in, guint in_bits) {
     
     return ret;
 }
-
-GTypeModule *global_module;
 
 G_END_DECLS
 

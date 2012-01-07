@@ -1,6 +1,6 @@
 /*
  *  libMirage: DAA image parser: Fragment object
- *  Copyright (C) 2008-2010 Rok Mandeljc
+ *  Copyright (C) 2008-2012 Rok Mandeljc
  *
  *  Derived from code of GPLed utility daa2iso, written by Luigi Auriemma:
  *  http://aluigi.altervista.org/mytoolz.htm
@@ -25,37 +25,41 @@
 #define __debug__ "DAA-Fragment"
 
 
-/******************************************************************************\
- *                              Private structure                             *
-\******************************************************************************/
+/**********************************************************************\
+ *                          Private structure                         *
+\**********************************************************************/
 #define MIRAGE_FRAGMENT_DAA_GET_PRIVATE(obj) (G_TYPE_INSTANCE_GET_PRIVATE((obj), MIRAGE_TYPE_FRAGMENT_DAA, MIRAGE_Fragment_DAAPrivate))
 
-enum {
+enum
+{
     DAA_COMPRESSION_NONE = 0x00,
     DAA_COMPRESSION_ZLIB = 0x10,
     DAA_COMPRESSION_LZMA = 0x20,
 };
 
-typedef struct {
+typedef struct
+{
     guint64 offset;
     guint32 length;
     gint compression;
 } DAA_Chunk;
 
-typedef struct {
+typedef struct
+{
     FILE *file;
     guint64 offset;
     guint64 start;
     guint64 end;
 } DAA_Part;
 
-typedef gchar * (*func_create_filename) (gchar *main_filename, gint index);
+typedef gchar * (*DAA_create_filename_func) (gchar *main_filename, gint index);
 
 
-typedef struct {
+struct _MIRAGE_Fragment_DAAPrivate
+{
     /* Filename components */
     gchar *main_filename;
-    func_create_filename create_filename_func;
+    DAA_create_filename_func create_filename_func;
 
     /* Sectors per chunk */
     gint sectors_per_chunk;
@@ -80,7 +84,7 @@ typedef struct {
     /* Encryption */
     gboolean encrypted;
     guint8 pwd_key[128];
-} MIRAGE_Fragment_DAAPrivate;
+};
 
 
 /* Alloc and free functions for LZMA stream */
@@ -89,11 +93,12 @@ static void sz_free (void *p G_GNUC_UNUSED, void *address) { g_free(address); }
 static ISzAlloc lzma_alloc = { sz_alloc, sz_free };
 
 
-/******************************************************************************\
- *                         Part filename generation                           *
-\******************************************************************************/
+/**********************************************************************\
+ *                     Part filename generation                       *
+\**********************************************************************/
 /* Format: volname.part01.daa, volname.part02.daa, ... */
-static gchar *__create_filename_func_1 (gchar *main_filename, gint index) {
+static gchar *create_filename_func_1 (gchar *main_filename, gint index)
+{
     gchar *ret_filename = g_strdup(main_filename);
 
     if (index) {
@@ -107,7 +112,8 @@ static gchar *__create_filename_func_1 (gchar *main_filename, gint index) {
 }
 
 /* Format: volname.part001.daa, volname.part002.daa, ... */
-static gchar *__create_filename_func_2 (gchar *main_filename, gint index) {
+static gchar *create_filename_func_2 (gchar *main_filename, gint index)
+{
     gchar *ret_filename = g_strdup(main_filename);
 
     if (index) {
@@ -121,7 +127,8 @@ static gchar *__create_filename_func_2 (gchar *main_filename, gint index) {
 }
 
 /* Format: volname.daa, volname.d00, ... */
-static gchar *__create_filename_func_3 (gchar *main_filename, gint index) {
+static gchar *create_filename_func_3 (gchar *main_filename, gint index)
+{
     gchar *ret_filename = g_strdup(main_filename);
 
     if (index) {
@@ -134,12 +141,13 @@ static gchar *__create_filename_func_3 (gchar *main_filename, gint index) {
 }
 
 
-/******************************************************************************\
- *                      DAA decryption (Luigi Auriemma)                       *
-\******************************************************************************/
+/**********************************************************************\
+ *                  DAA decryption (Luigi Auriemma)                   *
+\**********************************************************************/
 static guint8 daa_crypt_table[128][256];
 
-static void __daa_crypt_key (gchar *pass, gint num) {
+static void daa_crypt_key (gchar *pass, gint num)
+{
     gint a, b, c, d, s, i, p;
     gint passlen;
     gshort tmp[256];
@@ -227,7 +235,8 @@ static void __daa_crypt_key (gchar *pass, gint num) {
     return;
 }
 
-static void __daa_crypt_block (guint8 *ret, guint8 *data, gint size) {
+static void daa_crypt_block (guint8 *ret, guint8 *data, gint size)
+{
     gint i;
     guint8 c, t, *tab;
 
@@ -250,40 +259,42 @@ static void __daa_crypt_block (guint8 *ret, guint8 *data, gint size) {
     return;
 }
 
-static void __daa_crypt (guint8 *key G_GNUC_UNUSED, guint8 *data, gint size) {
+static void daa_crypt (guint8 *key G_GNUC_UNUSED, guint8 *data, gint size)
+{
     gint blocks, rem;
     guint8 tmp[128];
     guint8 *p;
 
     blocks = size >> 7;
     for (p = data; blocks--; p += 128) {
-        __daa_crypt_block(tmp, p, 128);
+        daa_crypt_block(tmp, p, 128);
         memcpy(p, tmp, 128);
     }
 
     rem = size & 127;
     if (rem) {
-        __daa_crypt_block(tmp, p, rem);
+        daa_crypt_block(tmp, p, rem);
         memcpy(p, tmp, rem);
     }
 }
 
-static void __daa_crypt_init (guint8 *pwdkey, gchar *pass, guint8 *daakey) {
+static void daa_crypt_init (guint8 *pwdkey, gchar *pass, guint8 *daakey)
+{
     int i;
 
     for(i = 1; i <= 128; i++) {
-        __daa_crypt_key(pass, i);
+        daa_crypt_key(pass, i);
     }
 
-    __daa_crypt_block(pwdkey, daakey, 128);
+    daa_crypt_block(pwdkey, daakey, 128);
 }
 
 
-/******************************************************************************\
- *                              Data access                                   *
-\******************************************************************************/
-static gboolean __mirage_fragment_daa_read_from_stream (MIRAGE_Fragment *self, guint64 offset, guint32 length, guint8 *buffer, GError **error) {
-    MIRAGE_Fragment_DAAPrivate *_priv = MIRAGE_FRAGMENT_DAA_GET_PRIVATE(self);
+/**********************************************************************\
+ *                          Data access                               *
+\**********************************************************************/
+static gboolean mirage_fragment_daa_read_from_stream (MIRAGE_Fragment_DAA *self, guint64 offset, guint32 length, guint8 *buffer, GError **error)
+{
     guint8 *buf_ptr = buffer;
     gint i;
 
@@ -294,9 +305,9 @@ static gboolean __mirage_fragment_daa_read_from_stream (MIRAGE_Fragment *self, g
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_FRAGMENT, "%s: reading 0x%X bytes from stream at offset 0x%llX\n", __debug__, length, offset);
 
         /* Find the part to which the given offset belongs */
-        for (i = 0; i < _priv->num_parts; i++) {
-            if (offset >= _priv->part_table[i].start && offset < _priv->part_table[i].end) {
-                part = &_priv->part_table[i];
+        for (i = 0; i < self->priv->num_parts; i++) {
+            if (offset >= self->priv->part_table[i].start && offset < self->priv->part_table[i].end) {
+                part = &self->priv->part_table[i];
                 break;
             }
         }
@@ -341,11 +352,11 @@ static gboolean __mirage_fragment_daa_read_from_stream (MIRAGE_Fragment *self, g
     return TRUE;
 }
 
-/******************************************************************************\
- *                     Interface implementation: <private>                    *
-\******************************************************************************/
-gboolean mirage_fragment_daa_set_file (MIRAGE_Fragment *self, gchar *filename, gchar *password, GError **error) {
-    MIRAGE_Fragment_DAAPrivate *_priv = MIRAGE_FRAGMENT_DAA_GET_PRIVATE(self);
+/**********************************************************************\
+ *                  Interface implementation: <private>               *
+\**********************************************************************/
+gboolean mirage_fragment_daa_set_file (MIRAGE_Fragment_DAA *self, gchar *filename, gchar *password, GError **error)
+{
     gchar signature[16];
     guint64 tmp_offset = 0;
     FILE *file;
@@ -364,8 +375,8 @@ gboolean mirage_fragment_daa_set_file (MIRAGE_Fragment *self, gchar *filename, g
     }
 
     /* Store filename for later processing */
-    _priv->main_filename = g_strdup(filename);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: main filename: %s\n", __debug__, _priv->main_filename);
+    self->priv->main_filename = g_strdup(filename);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: main filename: %s\n", __debug__, self->priv->main_filename);
 
     /* Read signature */
     if (fread(signature, sizeof(signature), 1, file) < 1) {
@@ -412,10 +423,10 @@ gboolean mirage_fragment_daa_set_file (MIRAGE_Fragment *self, gchar *filename, g
     }
 
     /* Initialize Z stream */
-    _priv->z.zalloc = NULL;
-    _priv->z.zfree = NULL;
-    _priv->z.opaque = NULL;
-    if (inflateInit2(&_priv->z, -15)) {
+    self->priv->z.zalloc = NULL;
+    self->priv->z.zfree = NULL;
+    self->priv->z.opaque = NULL;
+    if (inflateInit2(&self->priv->z, -15)) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to initialize zlib decoder!\n", __debug__);
     }
 
@@ -434,16 +445,16 @@ gboolean mirage_fragment_daa_set_file (MIRAGE_Fragment *self, gchar *filename, g
         }
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: LZMA compression; length field bitsize=%d, compression type field bitsize=%d\n", __debug__, bsize_len, bsize_type);
 
-        LzmaDec_Construct(&_priv->lzma);
-        LzmaDec_Allocate(&_priv->lzma, header.hdata + 7, LZMA_PROPS_SIZE, &lzma_alloc);
+        LzmaDec_Construct(&self->priv->lzma);
+        LzmaDec_Allocate(&self->priv->lzma, header.hdata + 7, LZMA_PROPS_SIZE, &lzma_alloc);
     }
 
 
     /* Allocate inflate buffer */
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: allocating inflate buffer: 0x%X\n", __debug__, header.chunksize);
-    _priv->buffer = g_malloc0(header.chunksize);
-    _priv->buflen = header.chunksize;
-    _priv->cur_chunk_index = -1; /* Because 0 won't do... */
+    self->priv->buffer = g_malloc0(header.chunksize);
+    self->priv->buflen = header.chunksize;
+    self->priv->cur_chunk_index = -1; /* Because 0 won't do... */
 
     /* Calculate amount of sectors within one chunk - must be an integer... */
     if (header.chunksize % 2048) {
@@ -452,14 +463,14 @@ gboolean mirage_fragment_daa_set_file (MIRAGE_Fragment *self, gchar *filename, g
         mirage_error(MIRAGE_E_PARSER, error);
         return FALSE;
     } else {
-        _priv->sectors_per_chunk = header.chunksize / 2048;
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: sectors per chunk: %d\n", __debug__, _priv->sectors_per_chunk);
+        self->priv->sectors_per_chunk = header.chunksize / 2048;
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: sectors per chunk: %d\n", __debug__, self->priv->sectors_per_chunk);
     }
 
     /* Set fragment length */
     gint fragment_length = header.isosize / 2048;
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: fragment length: 0x%X (%d)\n", __debug__, fragment_length, fragment_length);
-    mirage_fragment_set_length(self, fragment_length, NULL);
+    mirage_fragment_set_length(MIRAGE_FRAGMENT(self), fragment_length, NULL);
 
     /* Set number of parts to 1 (true for non-split images); if image consists
        of multiple parts, this will be set accordingly by the code below */
@@ -524,17 +535,17 @@ gboolean mirage_fragment_daa_set_file (MIRAGE_Fragment *self, gchar *filename, g
                 switch (len / 5) {
                     case 99: {
                         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   filename format: volname.part01.daa, volname.part02.daa, ...\n", __debug__);
-                        _priv->create_filename_func = __create_filename_func_1;
+                        self->priv->create_filename_func = create_filename_func_1;
                         break;
                     }
                     case 512: {
                         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   filename format: volname.part001.daa, volname.part002.daa, ...\n", __debug__);
-                        _priv->create_filename_func = __create_filename_func_2;
+                        self->priv->create_filename_func = create_filename_func_2;
                         break;
                     }
                     case 101: {
                         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   filename format: volname.daa, volname.d00, ...\n", __debug__);
-                        _priv->create_filename_func = __create_filename_func_3;
+                        self->priv->create_filename_func = create_filename_func_3;
                         break;
                     }
                     default: {
@@ -588,7 +599,7 @@ gboolean mirage_fragment_daa_set_file (MIRAGE_Fragment *self, gchar *filename, g
                    (separate code paths because if acquired via password function, the string
                    must be freed) */
                 if (password) {
-                    __daa_crypt_init(_priv->pwd_key, password, daa_key);
+                    daa_crypt_init(self->priv->pwd_key, password, daa_key);
                 } else {
                     /* Get password from user via password function */
                     password = libmirage_obtain_password(NULL);
@@ -600,19 +611,19 @@ gboolean mirage_fragment_daa_set_file (MIRAGE_Fragment *self, gchar *filename, g
                         return FALSE;
                     }
 
-                    __daa_crypt_init(_priv->pwd_key, password, daa_key);
+                    daa_crypt_init(self->priv->pwd_key, password, daa_key);
                     g_free(password);
                 }
 
                 /* Check if password is correct */
-                if (pwd_crc != crc32(0, _priv->pwd_key, 128)) {
+                if (pwd_crc != crc32(0, self->priv->pwd_key, 128)) {
                     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  incorrect password!\n", __debug__);
                     mirage_error(MIRAGE_E_WRONGPASSWORD, error);
                     return FALSE;
                 }
 
                 /* Set encrypted flag - used later, when reading data */
-                _priv->encrypted = TRUE;
+                self->priv->encrypted = TRUE;
                 break;
             }
             default: {
@@ -649,8 +660,8 @@ gboolean mirage_fragment_daa_set_file (MIRAGE_Fragment *self, gchar *filename, g
 
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: building chunk table (%d entries)...\n", __debug__, num_chunks);
 
-    _priv->num_chunks = num_chunks;
-    _priv->chunk_table = g_new0(DAA_Chunk, _priv->num_chunks);
+    self->priv->num_chunks = num_chunks;
+    self->priv->chunk_table = g_new0(DAA_Chunk, self->priv->num_chunks);
 
     fseek(file, header.size_offset, SEEK_SET);
     if (fread(tmp_chunks_data, tmp_chunks_len, 1, file) < 1) {
@@ -661,8 +672,8 @@ gboolean mirage_fragment_daa_set_file (MIRAGE_Fragment *self, gchar *filename, g
     }
 
     tmp_offset = 0;
-    for (i = 0; i < _priv->num_chunks; i++) {
-        DAA_Chunk *chunk = &_priv->chunk_table[i];
+    for (i = 0; i < self->priv->num_chunks; i++) {
+        DAA_Chunk *chunk = &self->priv->chunk_table[i];
 
         guint32 tmp_length = 0;
         gint tmp_comp = -1;
@@ -724,24 +735,24 @@ gboolean mirage_fragment_daa_set_file (MIRAGE_Fragment *self, gchar *filename, g
     fclose(file);
 
     /* Build parts table */
-    _priv->num_parts = num_parts;
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: building parts table (%d entries)...\n", __debug__, _priv->num_parts);
+    self->priv->num_parts = num_parts;
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: building parts table (%d entries)...\n", __debug__, self->priv->num_parts);
 
-    _priv->part_table = g_new0(DAA_Part, _priv->num_parts);
+    self->priv->part_table = g_new0(DAA_Part, self->priv->num_parts);
 
     tmp_offset = 0;
-    for (i = 0; i < _priv->num_parts; i++) {
-        DAA_Part *part = &_priv->part_table[i];
+    for (i = 0; i < self->priv->num_parts; i++) {
+        DAA_Part *part = &self->priv->part_table[i];
         gchar *filename = NULL;
         gchar signature[16] = "";
         guint64 part_length = 0;
 
         /* If we have create_filename_func set, use it... otherwise we're a
-           non-split image and should be using _priv->main_filename anyway */
-        if (_priv->create_filename_func) {
-            filename = _priv->create_filename_func(_priv->main_filename, i);
+           non-split image and should be using self->priv->main_filename anyway */
+        if (self->priv->create_filename_func) {
+            filename = self->priv->create_filename_func(self->priv->main_filename, i);
         } else {
-            filename = g_strdup(_priv->main_filename);
+            filename = g_strdup(self->priv->main_filename);
         }
 
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  part #%i: %s\n", __debug__, i, filename);
@@ -812,72 +823,75 @@ gboolean mirage_fragment_daa_set_file (MIRAGE_Fragment *self, gchar *filename, g
 }
 
 
-/******************************************************************************\
- *                   MIRAGE_Fragment methods implementations                  *
-\******************************************************************************/
-static gboolean __mirage_fragment_daa_can_handle_data_format (MIRAGE_Fragment *self G_GNUC_UNUSED, const gchar *filename G_GNUC_UNUSED, GError **error G_GNUC_UNUSED) {
+/**********************************************************************\
+ *                MIRAGE_Fragment methods implementations             *
+\**********************************************************************/
+static gboolean mirage_fragment_daa_can_handle_data_format (MIRAGE_Fragment *_self G_GNUC_UNUSED, const gchar *filename G_GNUC_UNUSED, GError **error G_GNUC_UNUSED)
+{
     /* Not implemented */
     mirage_error(MIRAGE_E_NOTIMPL, error);
     return FALSE;
 }
 
-static gboolean __mirage_fragment_daa_use_the_rest_of_file (MIRAGE_Fragment *self G_GNUC_UNUSED, GError **error G_GNUC_UNUSED) {
+static gboolean mirage_fragment_daa_use_the_rest_of_file (MIRAGE_Fragment *_self G_GNUC_UNUSED, GError **error G_GNUC_UNUSED)
+{
     /* Not implemented */
     mirage_error(MIRAGE_E_NOTIMPL, error);
     return FALSE;
 }
 
 
-static gint __inflate_zlib (MIRAGE_Fragment *self, guint8 *in_buf, gint in_len) {
-    MIRAGE_Fragment_DAAPrivate *_priv = MIRAGE_FRAGMENT_DAA_GET_PRIVATE(self);
 
-    inflateReset(&_priv->z);
+static gint mirage_fragment_daa_inflate_zlib (MIRAGE_Fragment_DAA *self, guint8 *in_buf, gint in_len)
+{
+    inflateReset(&self->priv->z);
 
-    _priv->z.next_in = in_buf;
-    _priv->z.avail_in = in_len;
-    _priv->z.next_out = _priv->buffer;
-    _priv->z.avail_out = _priv->buflen;
+    self->priv->z.next_in = in_buf;
+    self->priv->z.avail_in = in_len;
+    self->priv->z.next_out = self->priv->buffer;
+    self->priv->z.avail_out = self->priv->buflen;
 
-    if (inflate(&_priv->z, Z_SYNC_FLUSH) != Z_STREAM_END) {
+    if (inflate(&self->priv->z, Z_SYNC_FLUSH) != Z_STREAM_END) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to inflate!\n", __debug__);
         return 0;
     }
 
-    return _priv->z.total_out;
+    return self->priv->z.total_out;
 }
 
-static gint __inflate_lzma (MIRAGE_Fragment *self, guint8 *in_buf, gint in_len) {
-    MIRAGE_Fragment_DAAPrivate *_priv = MIRAGE_FRAGMENT_DAA_GET_PRIVATE(self);
+static gint mirage_fragment_daa_inflate_lzma (MIRAGE_Fragment_DAA *self, guint8 *in_buf, gint in_len)
+{
     ELzmaStatus status;
     SizeT inlen, outlen;
 
-    LzmaDec_Init(&_priv->lzma);
+    LzmaDec_Init(&self->priv->lzma);
 
     inlen = in_len;
-    outlen = _priv->buflen;
-    if (LzmaDec_DecodeToBuf(&_priv->lzma, _priv->buffer, &outlen, in_buf, &inlen, LZMA_FINISH_END, &status) != SZ_OK) {
+    outlen = self->priv->buflen;
+    if (LzmaDec_DecodeToBuf(&self->priv->lzma, self->priv->buffer, &outlen, in_buf, &inlen, LZMA_FINISH_END, &status) != SZ_OK) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to inflate!\n", __debug__);
         return 0;
     }
 
     guint32 state;
     x86_Convert_Init(state);
-    x86_Convert(_priv->buffer, _priv->buflen, 0, &state, 0);
+    x86_Convert(self->priv->buffer, self->priv->buflen, 0, &state, 0);
 
     return outlen;
 }
 
-static gboolean __mirage_fragment_daa_read_main_data (MIRAGE_Fragment *self, gint address, guint8 *buf, gint *length, GError **error) {
-    MIRAGE_Fragment_DAAPrivate *_priv = MIRAGE_FRAGMENT_DAA_GET_PRIVATE(self);
-
-    gint chunk_index = address / _priv->sectors_per_chunk;
-    gint chunk_offset = address % _priv->sectors_per_chunk;
+static gboolean mirage_fragment_daa_read_main_data (MIRAGE_Fragment *_self, gint address, guint8 *buf, gint *length, GError **error)
+{
+    MIRAGE_Fragment_DAA *self = MIRAGE_FRAGMENT_DAA(_self);
+    
+    gint chunk_index = address / self->priv->sectors_per_chunk;
+    gint chunk_offset = address % self->priv->sectors_per_chunk;
 
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_FRAGMENT, "%s: address 0x%X; chunk index: %d; offset within chunk: %d\n", __debug__, address, chunk_index, chunk_offset);
 
     /* Inflate, if necessary */
-    if (_priv->cur_chunk_index != chunk_index) {
-        DAA_Chunk *chunk = &_priv->chunk_table[chunk_index];
+    if (self->priv->cur_chunk_index != chunk_index) {
+        DAA_Chunk *chunk = &self->priv->chunk_table[chunk_index];
 
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_FRAGMENT, "%s: inflating chunk #%i...\n", __debug__, chunk_index);
 
@@ -885,32 +899,32 @@ static gboolean __mirage_fragment_daa_read_main_data (MIRAGE_Fragment *self, gin
         gint tmp_buflen = chunk->length;
         guint8 *tmp_buffer = g_malloc0(tmp_buflen);
 
-        if (!__mirage_fragment_daa_read_from_stream(self, chunk->offset, chunk->length, tmp_buffer, error)) {
+        if (!mirage_fragment_daa_read_from_stream(self, chunk->offset, chunk->length, tmp_buffer, error)) {
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read data for chunk #%i\n", __debug__, chunk_index);
             g_free(tmp_buffer);
             return FALSE;
         }
 
         /* Decrypt if encrypted */
-        if (_priv->encrypted) {
+        if (self->priv->encrypted) {
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_FRAGMENT, "%s: decrypting...\n", __debug__);
-            __daa_crypt(_priv->pwd_key, tmp_buffer, tmp_buflen);
+            daa_crypt(self->priv->pwd_key, tmp_buffer, tmp_buflen);
         }
 
         /* Inflate */
         gint inflated = 0;
         switch (chunk->compression) {
             case DAA_COMPRESSION_NONE: {
-                memcpy(_priv->buffer, tmp_buffer, _priv->buflen); /* We use _priv->buflen, because tmp_buflen tends to be too large for 4 bytes... */
-                inflated = _priv->buflen;
+                memcpy(self->priv->buffer, tmp_buffer, self->priv->buflen); /* We use self->priv->buflen, because tmp_buflen tends to be too large for 4 bytes... */
+                inflated = self->priv->buflen;
                 break;
             }
             case DAA_COMPRESSION_ZLIB: {
-                inflated = __inflate_zlib(self, tmp_buffer, tmp_buflen);
+                inflated = mirage_fragment_daa_inflate_zlib(self, tmp_buffer, tmp_buflen);
                 break;
             }
             case DAA_COMPRESSION_LZMA: {
-                inflated = __inflate_lzma(self, tmp_buffer, tmp_buflen);
+                inflated = mirage_fragment_daa_inflate_lzma(self, tmp_buffer, tmp_buflen);
                 break;
             }
         }
@@ -919,12 +933,12 @@ static gboolean __mirage_fragment_daa_read_main_data (MIRAGE_Fragment *self, gin
 
         /* It's OK for the last chunk not to be fully inflated, because it doesn't
            necessarily hold full number of sectors */
-        if (inflated != _priv->buflen && chunk_index != _priv->num_chunks-1) {
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to inflate whole chunk #%i (0x%X bytes instead of 0x%X)\n", __debug__, chunk_index, _priv->z.total_out, _priv->buflen);
+        if (inflated != self->priv->buflen && chunk_index != self->priv->num_chunks-1) {
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to inflate whole chunk #%i (0x%X bytes instead of 0x%X)\n", __debug__, chunk_index, self->priv->z.total_out, self->priv->buflen);
         } else {
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_FRAGMENT, "%s: successfully inflated chunk #%i (0x%X bytes)\n", __debug__, chunk_index, _priv->z.total_out);
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_FRAGMENT, "%s: successfully inflated chunk #%i (0x%X bytes)\n", __debug__, chunk_index, self->priv->z.total_out);
             /* Set the index of currently inflated chunk */
-            _priv->cur_chunk_index = chunk_index;
+            self->priv->cur_chunk_index = chunk_index;
         }
     } else {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_FRAGMENT, "%s: chunk #%i already inflated\n", __debug__, chunk_index);
@@ -933,7 +947,7 @@ static gboolean __mirage_fragment_daa_read_main_data (MIRAGE_Fragment *self, gin
 
     /* Copy data */
     if (buf) {
-        memcpy(buf, _priv->buffer + (chunk_offset*2048), 2048);
+        memcpy(buf, self->priv->buffer + (chunk_offset*2048), 2048);
     }
 
     if (length) {
@@ -943,106 +957,91 @@ static gboolean __mirage_fragment_daa_read_main_data (MIRAGE_Fragment *self, gin
     return TRUE;
 }
 
-static gboolean __mirage_fragment_daa_read_subchannel_data (MIRAGE_Fragment *self, gint address G_GNUC_UNUSED, guint8 *buf G_GNUC_UNUSED, gint *length, GError **error G_GNUC_UNUSED) {
+static gboolean mirage_fragment_daa_read_subchannel_data (MIRAGE_Fragment *_self, gint address G_GNUC_UNUSED, guint8 *buf G_GNUC_UNUSED, gint *length, GError **error G_GNUC_UNUSED)
+{
+    MIRAGE_Fragment_DAA *self = MIRAGE_FRAGMENT_DAA(_self);
+
     /* Nothing to read */
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_FRAGMENT, "%s: no subchannel data in DAA fragment\n", __debug__);
     if (length) {
         *length = 0;
     }
+
     return TRUE;
 }
 
 
-/******************************************************************************\
- *                                 Object init                                *
-\******************************************************************************/
-/* Our parent class */
-static MIRAGE_FragmentClass *parent_class = NULL;
+/**********************************************************************\
+ *                             Object init                            *
+\**********************************************************************/
+G_DEFINE_DYNAMIC_TYPE(MIRAGE_Fragment_DAA, mirage_fragment_daa, MIRAGE_TYPE_FRAGMENT);
 
-static void __mirage_fragment_daa_instance_init (GTypeInstance *instance, gpointer g_class G_GNUC_UNUSED) {
-    /* Create fragment info */
-    mirage_fragment_generate_fragment_info(MIRAGE_FRAGMENT(instance),
+void mirage_fragment_daa_type_register (GTypeModule *type_module)
+{
+    return mirage_fragment_daa_register_type(type_module);
+}
+
+
+static void mirage_fragment_daa_init (MIRAGE_Fragment_DAA *self)
+{
+    self->priv = MIRAGE_FRAGMENT_DAA_GET_PRIVATE(self);
+
+    mirage_fragment_generate_fragment_info(MIRAGE_FRAGMENT(self),
         "FRAGMENT-DAA",
         "DAA Fragment"
     );
 
-    return;
+    self->priv->main_filename = NULL;
+    self->priv->chunk_table = NULL;
+    self->priv->part_table = NULL;
+    self->priv->buffer = NULL;
 }
 
-
-static void __mirage_fragment_daa_finalize (GObject *obj) {
-    MIRAGE_Fragment_DAA *self = MIRAGE_FRAGMENT_DAA(obj);
-    MIRAGE_Fragment_DAAPrivate *_priv = MIRAGE_FRAGMENT_DAA_GET_PRIVATE(self);
+static void mirage_fragment_daa_finalize (GObject *gobject)
+{
+    MIRAGE_Fragment_DAA *self = MIRAGE_FRAGMENT_DAA(gobject);
     gint i;
 
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_GOBJECT, "%s: finalizing object\n", __debug__);
-
     /* Free stream */
-    inflateEnd(&_priv->z);
-    LzmaDec_Free(&_priv->lzma, &lzma_alloc);
+    inflateEnd(&self->priv->z);
+    LzmaDec_Free(&self->priv->lzma, &lzma_alloc);
 
     /* Free main filename */
-    g_free(_priv->main_filename);
+    g_free(self->priv->main_filename);
 
     /* Free chunk table */
-    g_free(_priv->chunk_table);
+    g_free(self->priv->chunk_table);
 
     /* Free part table */
-    for (i = 0; i < _priv->num_parts; i++) {
-        DAA_Part *part = &_priv->part_table[i];
+    for (i = 0; i < self->priv->num_parts; i++) {
+        DAA_Part *part = &self->priv->part_table[i];
         if (part->file) fclose(part->file);
     }
-    g_free(_priv->part_table);
+    g_free(self->priv->part_table);
 
     /* Free buffer */
-    g_free(_priv->buffer);
-
+    g_free(self->priv->buffer);
+    
     /* Chain up to the parent class */
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_GOBJECT, "%s: chaining up to parent\n", __debug__);
-    return G_OBJECT_CLASS(parent_class)->finalize(obj);
+    return G_OBJECT_CLASS(mirage_fragment_daa_parent_class)->finalize(gobject);
 }
 
-static void __mirage_fragment_daa_class_init (gpointer g_class, gpointer g_class_data G_GNUC_UNUSED) {
-    GObjectClass *class_gobject = G_OBJECT_CLASS(g_class);
-    MIRAGE_FragmentClass *class_fragment = MIRAGE_FRAGMENT_CLASS(g_class);
-    MIRAGE_Fragment_DAAClass *klass = MIRAGE_FRAGMENT_DAA_CLASS(g_class);
+static void mirage_fragment_daa_class_init (MIRAGE_Fragment_DAAClass *klass)
+{
+    GObjectClass *gobject_class = G_OBJECT_CLASS(klass);
+    MIRAGE_FragmentClass *fragment_class = MIRAGE_FRAGMENT_CLASS(klass);
 
-    /* Set parent class */
-    parent_class = g_type_class_peek_parent(klass);
+    gobject_class->finalize = mirage_fragment_daa_finalize;
+
+    fragment_class->can_handle_data_format = mirage_fragment_daa_can_handle_data_format;
+    fragment_class->use_the_rest_of_file = mirage_fragment_daa_use_the_rest_of_file;
+    fragment_class->read_main_data = mirage_fragment_daa_read_main_data;
+    fragment_class->read_subchannel_data = mirage_fragment_daa_read_subchannel_data;
 
     /* Register private structure */
     g_type_class_add_private(klass, sizeof(MIRAGE_Fragment_DAAPrivate));
-
-    /* Initialize GObject methods */
-    class_gobject->finalize = __mirage_fragment_daa_finalize;
-
-    /* Initialize MIRAGE_Fragment methods */
-    class_fragment->can_handle_data_format = __mirage_fragment_daa_can_handle_data_format;
-    class_fragment->use_the_rest_of_file = __mirage_fragment_daa_use_the_rest_of_file;
-    class_fragment->read_main_data = __mirage_fragment_daa_read_main_data;
-    class_fragment->read_subchannel_data = __mirage_fragment_daa_read_subchannel_data;
-
-    return;
 }
 
-GType mirage_fragment_daa_get_type (GTypeModule *module) {
-    static GType type = 0;
-    if (type == 0) {
-        static const GTypeInfo info = {
-            sizeof(MIRAGE_Fragment_DAAClass),
-            NULL,   /* base_init */
-            NULL,   /* base_finalize */
-            __mirage_fragment_daa_class_init,   /* class_init */
-            NULL,   /* class_finalize */
-            NULL,   /* class_data */
-            sizeof(MIRAGE_Fragment_DAA),
-            0,      /* n_preallocs */
-            __mirage_fragment_daa_instance_init,   /* instance_init */
-            NULL    /* value_table */
-        };
-
-        type = g_type_module_register_type(module, MIRAGE_TYPE_FRAGMENT, "MIRAGE_Fragment_DAA", &info, 0);
-    }
-
-    return type;
+static void mirage_fragment_daa_class_finalize (MIRAGE_Fragment_DAAClass *klass G_GNUC_UNUSED)
+{
 }

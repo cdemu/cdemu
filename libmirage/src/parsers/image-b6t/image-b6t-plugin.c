@@ -1,6 +1,6 @@
 /*
  *  libMirage: B6T image parser: Plugin exports
- *  Copyright (C) 2007-2010 Rok Mandeljc
+ *  Copyright (C) 2007-2012 Rok Mandeljc
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -19,23 +19,18 @@
 
 #include "image-b6t.h"
 
-
-GTypeModule *global_module = NULL;
-
 G_MODULE_EXPORT void mirage_plugin_load_plugin (MIRAGE_Plugin *plugin);
 G_MODULE_EXPORT void mirage_plugin_unload_plugin (MIRAGE_Plugin *plugin);
 
 G_MODULE_EXPORT guint mirage_plugin_lt_current = MIRAGE_LT_CURRENT;
 
-G_MODULE_EXPORT void mirage_plugin_load_plugin (MIRAGE_Plugin *plugin) {
-    global_module = G_TYPE_MODULE(plugin);
-    mirage_parser_b6t_get_type(G_TYPE_MODULE(plugin));
-    return;
+G_MODULE_EXPORT void mirage_plugin_load_plugin (MIRAGE_Plugin *plugin)
+{
+    mirage_parser_b6t_type_register(G_TYPE_MODULE(plugin));
 }
 
-G_MODULE_EXPORT void mirage_plugin_unload_plugin (MIRAGE_Plugin *plugin G_GNUC_UNUSED) {
-    global_module = NULL;
-    return;
+G_MODULE_EXPORT void mirage_plugin_unload_plugin (MIRAGE_Plugin *plugin G_GNUC_UNUSED)
+{
 }
 
 

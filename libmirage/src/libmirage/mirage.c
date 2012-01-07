@@ -1,6 +1,6 @@
 /*
  *  libMirage: Main library functions
- *  Copyright (C) 2008-2010 Rok Mandeljc
+ *  Copyright (C) 2008-2012 Rok Mandeljc
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -23,7 +23,8 @@
 
 #include "mirage.h"
 
-static struct {
+static struct
+{
     gboolean initialized;
     
     guint num_parsers;
@@ -38,8 +39,6 @@ static struct {
 } libmirage;
 
 static const MIRAGE_DebugMask dbg_masks[] = {
-    { "MIRAGE_DEBUG_GOBJECT", MIRAGE_DEBUG_GOBJECT },
-    { "MIRAGE_DEBUG_CHAIN", MIRAGE_DEBUG_CHAIN },
     { "MIRAGE_DEBUG_PARSER", MIRAGE_DEBUG_PARSER },
     { "MIRAGE_DEBUG_DISC", MIRAGE_DEBUG_DISC },
     { "MIRAGE_DEBUG_SESSION", MIRAGE_DEBUG_SESSION },
@@ -60,7 +59,8 @@ static const MIRAGE_DebugMask dbg_masks[] = {
  *
  * Returns: %TRUE on success, %FALSE on failure
  **/
-gboolean libmirage_init (GError **error) {
+gboolean libmirage_init (GError **error)
+{
     const gchar *plugin_file;
     GDir *plugins_dir;
     
@@ -96,7 +96,7 @@ gboolean libmirage_init (GError **error) {
                 g_free(fullpath);
                 continue;
             }
-                        
+
             g_type_module_unuse(G_TYPE_MODULE(plugin));
             g_free(fullpath);
         }
@@ -130,7 +130,8 @@ gboolean libmirage_init (GError **error) {
  *
  * Returns: %TRUE on success, %FALSE on failure
  **/
-gboolean libmirage_shutdown (GError **error) {
+gboolean libmirage_shutdown (GError **error)
+{
     /* Make sure libMirage is initialized */
     if (!libmirage.initialized) {
         mirage_error(MIRAGE_E_NOTINIT, error);
@@ -165,7 +166,8 @@ gboolean libmirage_shutdown (GError **error) {
  *
  * Returns: %TRUE on success, %FALSE on failure
  **/
-gboolean libmirage_set_password_function (MIRAGE_PasswordFunction func, gpointer user_data, GError **error) {
+gboolean libmirage_set_password_function (MIRAGE_PasswordFunction func, gpointer user_data, GError **error)
+{
     /* Make sure libMirage is initialized */
     if (!libmirage.initialized) {
         mirage_error(MIRAGE_E_NOTINIT, error);
@@ -191,7 +193,8 @@ gboolean libmirage_set_password_function (MIRAGE_PasswordFunction func, gpointer
  * Returns: password string on success, %NULL on failure. The string should be
  * freed with g_free() when no longer needed.
  **/
-gchar *libmirage_obtain_password (GError **error) {
+gchar *libmirage_obtain_password (GError **error)
+{
     gchar *password;
     
     /* Make sure libMirage is initialized */
@@ -247,7 +250,8 @@ gchar *libmirage_obtain_password (GError **error) {
  * Returns: a #MIRAGE_Disc object on success, %NULL on failure. The reference to
  * the object should be released using g_object_unref() when no longer needed.
  **/
-GObject *libmirage_create_disc (gchar **filenames, GObject *debug_context, GHashTable *params, GError **error) {
+GObject *libmirage_create_disc (gchar **filenames, GObject *debug_context, GHashTable *params, GError **error)
+{
     GObject *disc;
     gint i;
     
@@ -326,7 +330,8 @@ GObject *libmirage_create_disc (gchar **filenames, GObject *debug_context, GHash
  * Returns: a #MIRAGE_Fragment object on success, %NULL on failure. The reference 
  * to the object should be released using g_object_unref() when no longer needed.
  **/
-GObject *libmirage_create_fragment (GType fragment_interface, const gchar *filename, GError **error) {
+GObject *libmirage_create_fragment (GType fragment_interface, const gchar *filename, GError **error)
+{
     gboolean succeeded = TRUE;
     GObject *fragment;
     gint i;
@@ -338,7 +343,7 @@ GObject *libmirage_create_fragment (GType fragment_interface, const gchar *filen
     }
 
     /* Check if filename is valid, but only if we're not dealing with NULL fragment */
-    if (fragment_interface != MIRAGE_TYPE_FINTERFACE_NULL && !g_file_test(filename, G_FILE_TEST_IS_REGULAR)) {
+    if (fragment_interface != MIRAGE_TYPE_FRAG_IFACE_NULL && !g_file_test(filename, G_FILE_TEST_IS_REGULAR)) {
         mirage_error(MIRAGE_E_DATAFILE, error);
         return NULL;
     }
@@ -385,7 +390,8 @@ GObject *libmirage_create_fragment (GType fragment_interface, const gchar *filen
  *
  * Returns: %TRUE on success, %FALSE on failure
  **/
-gboolean libmirage_for_each_parser (MIRAGE_CallbackFunction func, gpointer user_data, GError **error) {
+gboolean libmirage_for_each_parser (MIRAGE_CallbackFunction func, gpointer user_data, GError **error)
+{
     gint i;
     
     /* Make sure libMirage is initialized */
@@ -436,7 +442,8 @@ gboolean libmirage_for_each_parser (MIRAGE_CallbackFunction func, gpointer user_
  *
  * Returns: %TRUE on success, %FALSE on failure
  **/
-gboolean libmirage_for_each_fragment (MIRAGE_CallbackFunction func, gpointer user_data, GError **error) {
+gboolean libmirage_for_each_fragment (MIRAGE_CallbackFunction func, gpointer user_data, GError **error)
+{
     gint i;
     
     /* Make sure libMirage is initialized */
@@ -486,7 +493,8 @@ gboolean libmirage_for_each_fragment (MIRAGE_CallbackFunction func, gpointer use
  *
  * Returns: %TRUE on success, %FALSE on failure
  **/
-gboolean libmirage_get_supported_debug_masks (const MIRAGE_DebugMask **masks, gint *num_masks, GError **error) {
+gboolean libmirage_get_supported_debug_masks (const MIRAGE_DebugMask **masks, gint *num_masks, GError **error)
+{
     /* Make sure libMirage is initialized */
     if (!libmirage.initialized) {
         mirage_error(MIRAGE_E_NOTINIT, error);

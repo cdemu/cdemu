@@ -1,6 +1,6 @@
 /*
  *  libMirage: CD-TEXT Encoder/Decoder object
- *  Copyright (C) 2006-2010 Rok Mandeljc
+ *  Copyright (C) 2006-2012 Rok Mandeljc
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -26,10 +26,11 @@
 #define __debug__ "CDTEXT-EncDec"
 
 
-/******************************************************************************\
- *                             Common definitions                             *
-\******************************************************************************/
-typedef struct {
+/**********************************************************************\
+ *                         Common definitions                         *
+\**********************************************************************/
+typedef struct
+{
     /* Header */
     guint8 pack_type;
     guint8 track_number;
@@ -41,7 +42,8 @@ typedef struct {
     guint8 crc[2];
 } CDTextPack;
 
-typedef struct {
+typedef struct
+{
     guint8 charset;
 	guint8 first_track;
 	guint8 last_track;
@@ -51,7 +53,7 @@ typedef struct {
 	guint8 language_codes[8];
 } CDTextSizeInfo;
 
-static guint16 cdtext_crc_lut[256] = {
+static const guint16 cdtext_crc_lut[256] = {
     0x0000, 0x1021, 0x2042, 0x3063, 0x4084, 0x50A5, 0x60C6, 0x70E7, 0x8108,
     0x9129, 0xA14A, 0xB16B, 0xC18C, 0xD1AD, 0xE1CE, 0xF1EF, 0x1231, 0x0210,
     0x3273, 0x2252, 0x52B5, 0x4294, 0x72F7, 0x62D6, 0x9339, 0x8318, 0xB37B,
@@ -84,12 +86,13 @@ static guint16 cdtext_crc_lut[256] = {
 };
 
 
-/******************************************************************************\
- *                              Private structure                             *
-\******************************************************************************/
+/**********************************************************************\
+ *                          Private structure                         *
+\***********************************************************************/
 #define MIRAGE_CDTEXT_ENCDEC_GET_PRIVATE(obj) (G_TYPE_INSTANCE_GET_PRIVATE((obj), MIRAGE_TYPE_CDTEXT_ENCDEC, MIRAGE_CDTextEncDecPrivate))
 
-typedef struct {
+typedef struct
+{
     gint langcode; /* Language codes */
     gint charset; /* Character set */
     gint first_track; /* First track */
@@ -103,7 +106,9 @@ typedef struct {
     gint pack_count[16]; /* Pack types count */
 } MIRAGE_CDTextEncDecBlock;
 
-typedef struct {
+
+struct _MIRAGE_CDTextEncDecPrivate
+{
     /* Buffer */
     guint8 *buffer;
     gint buflen;
@@ -117,13 +122,14 @@ typedef struct {
     MIRAGE_CDTextEncDecBlock *blocks;
 
     gint length; /* Overall length, in packs */
-} MIRAGE_CDTextEncDecPrivate;
+};
 
 
-/******************************************************************************\
- *                              Private functions                             *
-\******************************************************************************/
-static GValueArray *__create_value_array (gint block, gint type, gint track, const guint8 *data, gint data_len) {
+/***********************************************************************\
+ *                          Private functions                          *
+\***********************************************************************/
+static GValueArray *create_value_array (gint block, gint type, gint track, const guint8 *data, gint data_len)
+{
     GValueArray *pack_data = g_value_array_new(5);
 
     /* Internal representation of pack: block, type, track, data, length */
@@ -150,7 +156,8 @@ static GValueArray *__create_value_array (gint block, gint type, gint track, con
     return pack_data;
 }
 
-static gint __sort_pack_data (GValueArray *pack1, GValueArray *pack2) {
+static gint sort_pack_data (GValueArray *pack1, GValueArray *pack2)
+{
     gint block1 = g_value_get_int(g_value_array_get_nth(pack1, 0));
     gint block2 = g_value_get_int(g_value_array_get_nth(pack2, 0));
 
@@ -181,13 +188,14 @@ static gint __sort_pack_data (GValueArray *pack1, GValueArray *pack2) {
     }
 }
 
-static gboolean __mirage_cdtext_encdec_cleanup (MIRAGE_CDTextEncDec *self) {
-    MIRAGE_CDTextEncDecPrivate *_priv = MIRAGE_CDTEXT_ENCDEC_GET_PRIVATE(self);
+
+static void mirage_cdtext_encdec_cleanup (MIRAGE_CDTextEncDec *self)
+{
     gint i;
 
     /* Cleanup the lists */
-    for (i = 0; i < _priv->num_blocks; i++) {
-        GList *list = _priv->blocks[i].packs_list;
+    for (i = 0; i < self->priv->num_blocks; i++) {
+        GList *list = self->priv->blocks[i].packs_list;
         if (list) {
             GList *entry = NULL;
             G_LIST_FOR_EACH(entry, list) {
@@ -200,37 +208,36 @@ static gboolean __mirage_cdtext_encdec_cleanup (MIRAGE_CDTextEncDec *self) {
         }
     }
 
-    _priv->buffer = NULL;
-    _priv->buflen = 0;
+    self->priv->buffer = NULL;
+    self->priv->buflen = 0;
 
-    memset(_priv->blocks, 0, _priv->num_blocks*sizeof(MIRAGE_CDTextEncDecBlock));
-
-    return TRUE;
+    memset(self->priv->blocks, 0, self->priv->num_blocks*sizeof(MIRAGE_CDTextEncDecBlock));
 }
 
-static gboolean __mirage_cdtext_encdec_lang2block (MIRAGE_CDTextEncDec *self, gint langcode, gint *block, GError **error G_GNUC_UNUSED) {
-    MIRAGE_CDTextEncDecPrivate *_priv = MIRAGE_CDTEXT_ENCDEC_GET_PRIVATE(self);
+
+static gint mirage_cdtext_encdec_lang2block (MIRAGE_CDTextEncDec *self, gint langcode)
+{
     gint ret = 0;
     gint i;
 
     for (i = 0; i < 8; i++) {
-        if (_priv->blocks[i].langcode == langcode) {
+        if (self->priv->blocks[i].langcode == langcode) {
             ret = i;
             break;
         }
     }
 
-    *block = ret;
-    return TRUE;
+    return ret;
 }
 
-static gboolean __mirage_cdtext_encdec_block2lang (MIRAGE_CDTextEncDec *self, gint block, gint *langcode, GError **error G_GNUC_UNUSED) {
-    MIRAGE_CDTextEncDecPrivate *_priv = MIRAGE_CDTEXT_ENCDEC_GET_PRIVATE(self);
-    *langcode = _priv->blocks[block].langcode;
-    return TRUE;
+static gint mirage_cdtext_encdec_block2lang (MIRAGE_CDTextEncDec *self, gint block)
+{
+    return self->priv->blocks[block].langcode;
 }
 
-static gboolean __add_crc_to_pack (CDTextPack *pack) {
+
+static void add_crc_to_pack (CDTextPack *pack)
+{
     /* Calculate CRC for given pack */
     guint8 *data = (guint8 *)pack;
     guint16 crc = 0;
@@ -244,45 +251,39 @@ static gboolean __add_crc_to_pack (CDTextPack *pack) {
 
     pack->crc[0] = (crc & 0xFF00) >> 8;
     pack->crc[1] = crc & 0x00FF;
-
-    return TRUE;
 }
 
-static gboolean __mirage_cdtext_encoder_initialize_pack (MIRAGE_CDTextEncDec *self, gint block, gint type, gint track, gint carry_len) {
-    MIRAGE_CDTextEncDecPrivate *_priv = MIRAGE_CDTEXT_ENCDEC_GET_PRIVATE(self);
 
-    if (!_priv->cur_pack->pack_type) {
+static void mirage_cdtext_encoder_initialize_pack (MIRAGE_CDTextEncDec *self, gint block, gint type, gint track, gint carry_len)
+{
+    if (!self->priv->cur_pack->pack_type) {
         /*g_debug("%s: Empty pack, initializing\n", __debug__);*/
-        _priv->cur_pack->pack_type = type;
+        self->priv->cur_pack->pack_type = type;
         if (type != MIRAGE_LANGUAGE_PACK_SIZE) {
-            _priv->cur_pack->track_number = track;
-            _priv->cur_pack->seq_number = _priv->blocks[block].seq_count;
-            _priv->cur_pack->block_number |= (block) << 4;
-            _priv->cur_pack->block_number |= (carry_len < 15) ? carry_len : 15;
+            self->priv->cur_pack->track_number = track;
+            self->priv->cur_pack->seq_number = self->priv->blocks[block].seq_count;
+            self->priv->cur_pack->block_number |= (block) << 4;
+            self->priv->cur_pack->block_number |= (carry_len < 15) ? carry_len : 15;
         } else {
             /* Special handling for 0x8F packs */
-            _priv->cur_pack->track_number = _priv->blocks[block].pack_count[type-0x80];
-            _priv->cur_pack->seq_number = _priv->blocks[block].seq_count;
-            _priv->cur_pack->block_number |= (block) << 4;
+            self->priv->cur_pack->track_number = self->priv->blocks[block].pack_count[type-0x80];
+            self->priv->cur_pack->seq_number = self->priv->blocks[block].seq_count;
+            self->priv->cur_pack->block_number |= (block) << 4;
             /* Set up pointer to first pack of size info */
-            if (!_priv->blocks[block].size_info) {
-                _priv->blocks[block].size_info = _priv->cur_pack;
+            if (!self->priv->blocks[block].size_info) {
+                self->priv->blocks[block].size_info = self->priv->cur_pack;
             }
         }
 
-        _priv->blocks[block].seq_count++;
-        _priv->blocks[block].pack_count[type-0x80]++;
-        _priv->length++;
+        self->priv->blocks[block].seq_count++;
+        self->priv->blocks[block].pack_count[type-0x80]++;
+        self->priv->length++;
     } else {
         /*g_debug("%s: Pack already initialized (0x%X)\n", __debug__, encoder->cur_pack->pack_type);*/
     }
-
-    return TRUE;
 }
 
-static gboolean __mirage_cdtext_encoder_pack_data (MIRAGE_CDTextEncDec *self, GValueArray *pack, GError **error G_GNUC_UNUSED) {
-    MIRAGE_CDTextEncDecPrivate *_priv = MIRAGE_CDTEXT_ENCDEC_GET_PRIVATE(self);
-
+static void mirage_cdtext_encoder_pack_data (MIRAGE_CDTextEncDec *self, GValueArray *pack) {
     /* Unpack data */
     gint block_number = g_value_get_int(g_value_array_get_nth(pack, 0));
     gint pack_type = g_value_get_int(g_value_array_get_nth(pack, 1));
@@ -294,10 +295,10 @@ static gboolean __mirage_cdtext_encoder_pack_data (MIRAGE_CDTextEncDec *self, GV
        is if different type, open new pack; this way, we don't have to check if
        the language has changed (if it has, so has the pack type... from 0x8F
        to 0x8X */
-    if (_priv->cur_pack->pack_type && (pack_type != _priv->cur_pack->pack_type)) {
+    if (self->priv->cur_pack->pack_type && (pack_type != self->priv->cur_pack->pack_type)) {
         /*g_debug("%s: Different pack type, open new pack!\n", __debug__);*/
-        _priv->cur_pack++;
-        _priv->cur_pack_fill = 0;
+        self->priv->cur_pack++;
+        self->priv->cur_pack_fill = 0;
     }
 
     gint cur_len = len;
@@ -305,63 +306,59 @@ static gboolean __mirage_cdtext_encoder_pack_data (MIRAGE_CDTextEncDec *self, GV
     gint carry_len = 0; /* How many of characters are contained in previous pack(s) */
     while (cur_len > 0) {
         /* If the current pack is full, open a new one */
-        if (_priv->cur_pack_fill == 12) {
+        if (self->priv->cur_pack_fill == 12) {
             /*g_debug("%s: Current pack full, moving to next!\n", __debug__);*/
             /* Open new pack */
-            _priv->cur_pack++;
-            _priv->cur_pack_fill = 0;
+            self->priv->cur_pack++;
+            self->priv->cur_pack_fill = 0;
         }
 
-        __mirage_cdtext_encoder_initialize_pack(self, block_number, pack_type, track_number, carry_len);
+        mirage_cdtext_encoder_initialize_pack(self, block_number, pack_type, track_number, carry_len);
 
-        gint copy_len = MIN(12 - _priv->cur_pack_fill, cur_len);
+        gint copy_len = MIN(12 - self->priv->cur_pack_fill, cur_len);
         /*g_debug("%s: Copying %i bytes (cur_len = %i, cur_fill = %i)\n", __debug__, copy_len, cur_len, encoder->cur_pack_fill);*/
 
-        memcpy(_priv->cur_pack->data+_priv->cur_pack_fill, ptr, copy_len);
+        memcpy(self->priv->cur_pack->data+self->priv->cur_pack_fill, ptr, copy_len);
 
         /* Set the current fill */
-        _priv->cur_pack_fill += copy_len;
+        self->priv->cur_pack_fill += copy_len;
 
         cur_len -= copy_len;
         ptr += copy_len;
         carry_len += copy_len;
     }
-
-    return TRUE;
 }
 
-static gboolean __mirage_cdtext_encoder_generate_size_info (MIRAGE_CDTextEncDec *self, gint block, guint8 **data, gint *len, GError **error G_GNUC_UNUSED) {
-    MIRAGE_CDTextEncDecPrivate *_priv = MIRAGE_CDTEXT_ENCDEC_GET_PRIVATE(self);
-
+static void mirage_cdtext_encoder_generate_size_info (MIRAGE_CDTextEncDec *self, gint block, guint8 **data, gint *len)
+{
     CDTextSizeInfo *size_info = g_new0(CDTextSizeInfo, 1);
     gint i;
 
-    size_info->charset = _priv->blocks[block].charset; /* Character set */
-    size_info->first_track = _priv->blocks[block].first_track; /* First track */
-    size_info->last_track = _priv->blocks[block].last_track; /* Last track */
-    size_info->copyright = _priv->blocks[block].copyright; /* Copyright */
+    size_info->charset = self->priv->blocks[block].charset; /* Character set */
+    size_info->first_track = self->priv->blocks[block].first_track; /* First track */
+    size_info->last_track = self->priv->blocks[block].last_track; /* Last track */
+    size_info->copyright = self->priv->blocks[block].copyright; /* Copyright */
 
     /* Pack count */
     for (i = 0; i < 16; i++) {
-        size_info->pack_count[i] = _priv->blocks[block].pack_count[i];
+        size_info->pack_count[i] = self->priv->blocks[block].pack_count[i];
     }
 
     /* Last sequence numbers and language codes */
     for (i = 0; i < 8; i++) {
         /* Set only if we have at least one pack for that language */
-        if (_priv->blocks[i].seq_count > 0) {
-            size_info->last_seqnum[i] = _priv->blocks[i].seq_count-1; /* It overshoots by one */
-            size_info->language_codes[i] = _priv->blocks[i].langcode;
+        if (self->priv->blocks[i].seq_count > 0) {
+            size_info->last_seqnum[i] = self->priv->blocks[i].seq_count-1; /* It overshoots by one */
+            size_info->language_codes[i] = self->priv->blocks[i].langcode;
         }
     }
 
     *data = (guint8 *)size_info;
     *len = sizeof(CDTextSizeInfo);
-
-    return TRUE;
 }
 
-static gboolean __mirage_cdtext_decoder_read_size_info (MIRAGE_CDTextEncDec *self G_GNUC_UNUSED, CDTextPack *size_info_pack, CDTextSizeInfo **data, GError **error G_GNUC_UNUSED) {
+static void mirage_cdtext_decoder_read_size_info (MIRAGE_CDTextEncDec *self G_GNUC_UNUSED, CDTextPack *size_info_pack, CDTextSizeInfo **data)
+{
     guint8 *size_info = g_malloc0(sizeof(CDTextSizeInfo));
     CDTextPack *cur_pack = size_info_pack;
     gint i;
@@ -372,12 +369,12 @@ static gboolean __mirage_cdtext_decoder_read_size_info (MIRAGE_CDTextEncDec *sel
     }
 
     *data = (CDTextSizeInfo *)size_info;
-    return TRUE;
 }
 
-/******************************************************************************\
- *                             Public API: Encoder                            *
-\******************************************************************************/
+
+/**********************************************************************\
+ *                         Public API: Encoder                        *
+\**********************************************************************/
 /**
  * mirage_cdtext_encoder_init:
  * @self: a #MIRAGE_CDTextEncDec
@@ -391,19 +388,18 @@ static gboolean __mirage_cdtext_decoder_read_size_info (MIRAGE_CDTextEncDec *sel
  *
  * Returns: %TRUE on success, %FALSE on failure
  **/
-gboolean mirage_cdtext_encoder_init (MIRAGE_CDTextEncDec *self, guint8 *buffer, gint buflen, GError **error) {
-    MIRAGE_CDTextEncDecPrivate *_priv = MIRAGE_CDTEXT_ENCDEC_GET_PRIVATE(self);
-
+gboolean mirage_cdtext_encoder_init (MIRAGE_CDTextEncDec *self, guint8 *buffer, gint buflen, GError **error)
+{
     MIRAGE_CHECK_ARG(buffer);
 
     /* Cleanup old data */
-    __mirage_cdtext_encdec_cleanup(self);
+    mirage_cdtext_encdec_cleanup(self);
 
     /* Set new buffer */
-    _priv->buffer = buffer;
-    _priv->buflen = buflen;
+    self->priv->buffer = buffer;
+    self->priv->buflen = buflen;
 
-    _priv->cur_pack = (CDTextPack *)_priv->buffer;
+    self->priv->cur_pack = (CDTextPack *)self->priv->buffer;
 
     return TRUE;
 }
@@ -426,20 +422,19 @@ gboolean mirage_cdtext_encoder_init (MIRAGE_CDTextEncDec *self, guint8 *buffer, 
  *
  * Returns: %TRUE on success, %FALSE on failure
  **/
-gboolean mirage_cdtext_encoder_set_block_info (MIRAGE_CDTextEncDec *self, gint block, gint langcode, gint charset, gint copyright, GError **error) {
-    MIRAGE_CDTextEncDecPrivate *_priv = MIRAGE_CDTEXT_ENCDEC_GET_PRIVATE(self);
-
+gboolean mirage_cdtext_encoder_set_block_info (MIRAGE_CDTextEncDec *self, gint block, gint langcode, gint charset, gint copyright, GError **error)
+{
     /* Verify that block is valid */
-    if (block > _priv->num_blocks) {
+    if (block > self->priv->num_blocks) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_CDTEXT, "%s: invalid block (%i)!\n", __debug__, block);
         mirage_error(MIRAGE_E_INVALIDARG, error);
         return FALSE;
     }
 
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_CDTEXT, "%s: initialized block %i; langcode: %i; charset: %i; copyright: %i\n", __debug__, block, langcode, charset, copyright);
-    _priv->blocks[block].langcode = langcode;
-    _priv->blocks[block].charset = charset;
-    _priv->blocks[block].copyright = copyright;
+    self->priv->blocks[block].langcode = langcode;
+    self->priv->blocks[block].charset = charset;
+    self->priv->blocks[block].copyright = copyright;
 
     return TRUE;
 }
@@ -473,29 +468,23 @@ gboolean mirage_cdtext_encoder_set_block_info (MIRAGE_CDTextEncDec *self, gint b
  *
  * Returns: %TRUE on success, %FALSE on failure
  **/
-gboolean mirage_cdtext_encoder_add_data (MIRAGE_CDTextEncDec *self, gint langcode, gint type, gint track, const guint8 *data, gint data_len, GError **error) {
-    MIRAGE_CDTextEncDecPrivate *_priv = MIRAGE_CDTEXT_ENCDEC_GET_PRIVATE(self);
-    GValueArray *pack_data = NULL;
-
+gboolean mirage_cdtext_encoder_add_data (MIRAGE_CDTextEncDec *self, gint langcode, gint type, gint track, const guint8 *data, gint data_len, GError **error G_GNUC_UNUSED)
+{
     /* Langcode -> block conversion */
-    gint block = 0;
-    if (!__mirage_cdtext_encdec_lang2block(self, langcode, &block, error)) {
-        return FALSE;
-    }
-
-    pack_data = __create_value_array(block, type, track, data, data_len);
+    gint block = mirage_cdtext_encdec_lang2block(self, langcode);
+    GValueArray *pack_data = create_value_array(block, type, track, data, data_len);
 
     /* Add internal representation to ordered list... */
-    _priv->blocks[block].packs_list = g_list_insert_sorted(_priv->blocks[block].packs_list, pack_data, (GCompareFunc)__sort_pack_data);
+    self->priv->blocks[block].packs_list = g_list_insert_sorted(self->priv->blocks[block].packs_list, pack_data, (GCompareFunc)sort_pack_data);
 
     /* Set the number of first track that has language... this is not
        very reliable, but I do believe all tracks from now on are
        required by specs to have language block? */
-    if (!_priv->blocks[block].first_track) {
-        _priv->blocks[block].first_track = track;
+    if (!self->priv->blocks[block].first_track) {
+        self->priv->blocks[block].first_track = track;
     }
     /* Keep setting the last track... */
-    _priv->blocks[block].last_track = track;
+    self->priv->blocks[block].last_track = track;
 
     return TRUE;
 }
@@ -518,32 +507,32 @@ gboolean mirage_cdtext_encoder_add_data (MIRAGE_CDTextEncDec *self, gint langcod
  *
  * Returns: %TRUE on success, %FALSE on failure
  **/
-gboolean mirage_cdtext_encoder_encode (MIRAGE_CDTextEncDec *self, guint8 **buffer, gint *buflen, GError **error G_GNUC_UNUSED) {
-    MIRAGE_CDTextEncDecPrivate *_priv = MIRAGE_CDTEXT_ENCDEC_GET_PRIVATE(self);
+gboolean mirage_cdtext_encoder_encode (MIRAGE_CDTextEncDec *self, guint8 **buffer, gint *buflen, GError **error G_GNUC_UNUSED)
+{
     gint i;
 
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_CDTEXT, "%s: encoding CD-TEXT...\n", __debug__);
 
     /* Encode all blocks */
-    for (i = 0; i < _priv->num_blocks; i++) {
+    for (i = 0; i < self->priv->num_blocks; i++) {
         /* Block is valid only if it has langcode set */
-        if (_priv->blocks[i].langcode) {
+        if (self->priv->blocks[i].langcode) {
             GList *entry = NULL;
 
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_CDTEXT, "%s: encoding block %i; langcode %i\n", __debug__, i, _priv->blocks[i].langcode);
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_CDTEXT, "%s: encoding block %i; langcode %i\n", __debug__, i, self->priv->blocks[i].langcode);
 
             /* Encode all on list */
-            G_LIST_FOR_EACH(entry, _priv->blocks[i].packs_list) {
+            G_LIST_FOR_EACH(entry, self->priv->blocks[i].packs_list) {
                 GValueArray *pack_data = entry->data;
-                __mirage_cdtext_encoder_pack_data(self, pack_data, NULL);
+                mirage_cdtext_encoder_pack_data(self, pack_data);
             }
 
             /* We need to 'reserve' some space for size info */
             CDTextSizeInfo size_info;
             memset(&size_info, 0, sizeof(size_info));
 
-            GValueArray *dummy_data = __create_value_array(i, 0x8F, 0, (guint8 *)&size_info, sizeof(size_info));
-            __mirage_cdtext_encoder_pack_data(self, dummy_data, NULL);
+            GValueArray *dummy_data = create_value_array(i, 0x8F, 0, (guint8 *)&size_info, sizeof(size_info));
+            mirage_cdtext_encoder_pack_data(self, dummy_data);
             g_value_array_free(dummy_data);
         } else {
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_CDTEXT, "%s: block %i not valid\n", __debug__, i);
@@ -553,21 +542,21 @@ gboolean mirage_cdtext_encoder_encode (MIRAGE_CDTextEncDec *self, guint8 **buffe
     /* Now that all the packs have been encoded, we can generate size info */
     for (i = 0; i < 8; i++) {
         /* Having pointer set means we're using this language... */
-        if (_priv->blocks[i].size_info) {
+        if (self->priv->blocks[i].size_info) {
             guint8 *size_info = NULL;
             gint size_info_len = 0;
 
-            __mirage_cdtext_encoder_generate_size_info(self, i, &size_info, &size_info_len, NULL);
+            mirage_cdtext_encoder_generate_size_info(self, i, &size_info, &size_info_len);
 
             /* Write into previously reserved size info packs */
             /*g_debug("%s: Writing info into packs at %p\n", __debug__, encoder.size_info[i]);*/
-            _priv->cur_pack = _priv->blocks[i].size_info;
-            _priv->cur_pack_fill = 0;
-            gint old_len = _priv->length;
+            self->priv->cur_pack = self->priv->blocks[i].size_info;
+            self->priv->cur_pack_fill = 0;
+            gint old_len = self->priv->length;
 
-            GValueArray *pack_data = __create_value_array(i, 0x8F, 0, (guint8 *)size_info, size_info_len);
-            __mirage_cdtext_encoder_pack_data(self, pack_data, NULL);
-            _priv->length = old_len;
+            GValueArray *pack_data = create_value_array(i, 0x8F, 0, (guint8 *)size_info, size_info_len);
+            mirage_cdtext_encoder_pack_data(self, pack_data);
+            self->priv->length = old_len;
 
             g_value_array_free(pack_data);
             g_free(size_info);
@@ -575,14 +564,14 @@ gboolean mirage_cdtext_encoder_encode (MIRAGE_CDTextEncDec *self, guint8 **buffe
     }
 
     /* Generate CRC for all packs */
-    _priv->cur_pack = (CDTextPack *)_priv->buffer;
-    for (i = 0; i < _priv->length; i++) {
-        __add_crc_to_pack(_priv->cur_pack);
-        _priv->cur_pack++;
+    self->priv->cur_pack = (CDTextPack *)self->priv->buffer;
+    for (i = 0; i < self->priv->length; i++) {
+        add_crc_to_pack(self->priv->cur_pack);
+        self->priv->cur_pack++;
     }
 
-    *buflen = _priv->length*sizeof(CDTextPack);
-    *buffer = _priv->buffer;
+    *buflen = self->priv->length*sizeof(CDTextPack);
+    *buffer = self->priv->buffer;
 
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_CDTEXT, "%s: done encoding CD-TEXT; length: 0x%X\n", __debug__, *buflen);
 
@@ -590,9 +579,9 @@ gboolean mirage_cdtext_encoder_encode (MIRAGE_CDTextEncDec *self, guint8 **buffe
 }
 
 
-/******************************************************************************\
- *                             Public API: Decoder                            *
-\******************************************************************************/
+/**********************************************************************\
+ *                         Public API: Decoder                        *
+\**********************************************************************/
 /**
  * mirage_cdtext_decoder_init:
  * @self: a #MIRAGE_CDTextEncDec
@@ -614,42 +603,40 @@ gboolean mirage_cdtext_encoder_encode (MIRAGE_CDTextEncDec *self, guint8 **buffe
  *
  * Returns: %TRUE on success, %FALSE on failure
  **/
-gboolean mirage_cdtext_decoder_init (MIRAGE_CDTextEncDec *self, guint8 *buffer, gint buflen, GError **error G_GNUC_UNUSED) {
-    MIRAGE_CDTextEncDecPrivate *_priv = MIRAGE_CDTEXT_ENCDEC_GET_PRIVATE(self);
-
+gboolean mirage_cdtext_decoder_init (MIRAGE_CDTextEncDec *self, guint8 *buffer, gint buflen, GError **error G_GNUC_UNUSED)
+{
     /* Cleanup old data */
-    __mirage_cdtext_encdec_cleanup(self);
+    mirage_cdtext_encdec_cleanup(self);
 
     /* Set new buffer */
-    _priv->buffer = buffer;
-    _priv->buflen = buflen;
-    _priv->cur_pack = (CDTextPack *)_priv->buffer;
-    _priv->length = buflen/sizeof(CDTextPack);
+    self->priv->buffer = buffer;
+    self->priv->buflen = buflen;
+    self->priv->cur_pack = (CDTextPack *)self->priv->buffer;
+    self->priv->length = buflen/sizeof(CDTextPack);
 
     /* Read size info packs */
     gint i = 0;
-    while (i < _priv->length) {
-        CDTextPack *cur_pack = _priv->cur_pack+i;
+    while (i < self->priv->length) {
+        CDTextPack *cur_pack = self->priv->cur_pack+i;
 
         if (cur_pack->pack_type == 0x8F) {
             gint block = (cur_pack->block_number & 0xF0) >> 4;
-            _priv->blocks[block].size_info = cur_pack;
+            self->priv->blocks[block].size_info = cur_pack;
 
             CDTextSizeInfo *size_info = NULL;
-            if (__mirage_cdtext_decoder_read_size_info(self, cur_pack, &size_info, NULL)) {
-                _priv->blocks[block].langcode = size_info->language_codes[block];
-                _priv->blocks[block].charset = size_info->charset;
-                _priv->blocks[block].copyright = size_info->copyright;
-                _priv->blocks[block].first_track = size_info->first_track;
-                _priv->blocks[block].last_track = size_info->last_track;
+            mirage_cdtext_decoder_read_size_info(self, cur_pack, &size_info);
+            self->priv->blocks[block].langcode = size_info->language_codes[block];
+            self->priv->blocks[block].charset = size_info->charset;
+            self->priv->blocks[block].copyright = size_info->copyright;
+            self->priv->blocks[block].first_track = size_info->first_track;
+            self->priv->blocks[block].last_track = size_info->last_track;
 
-                _priv->blocks[block].seq_count = size_info->last_seqnum[block] + 1;
-                gint j;
-                for (j = 0; j < 16; j++) {
-                    _priv->blocks[block].pack_count[j] = size_info->pack_count[j];
-                }
-                g_free(size_info);
+            self->priv->blocks[block].seq_count = size_info->last_seqnum[block] + 1;
+            gint j;
+            for (j = 0; j < 16; j++) {
+                self->priv->blocks[block].pack_count[j] = size_info->pack_count[j];
             }
+            g_free(size_info);
 
             i += 3;
         } else {
@@ -667,14 +654,14 @@ gboolean mirage_cdtext_decoder_init (MIRAGE_CDTextEncDec *self, guint8 *buffer, 
         gint cur_track = 0;
 
         /* Skip empty blocks */
-        if (!_priv->blocks[block].seq_count) {
+        if (!self->priv->blocks[block].seq_count) {
             continue;
         }
 
-        _priv->cur_pack = _priv->blocks[block].size_info - (_priv->blocks[block].seq_count - 3);
+        self->priv->cur_pack = self->priv->blocks[block].size_info - (self->priv->blocks[block].seq_count - 3);
 
-        while (_priv->cur_pack < _priv->blocks[block].size_info) {
-            if (_priv->cur_pack->pack_type != (_priv->cur_pack - 1)->pack_type) {
+        while (self->priv->cur_pack < self->priv->blocks[block].size_info) {
+            if (self->priv->cur_pack->pack_type != (self->priv->cur_pack - 1)->pack_type) {
                 /*g_debug("%s: new pack type, resetting strings...\n", __debug__);*/
                 memset(tmp_buffer, 0xFF, sizeof(tmp_buffer));
                 tmp_len = 0;
@@ -682,14 +669,14 @@ gboolean mirage_cdtext_decoder_init (MIRAGE_CDTextEncDec *self, guint8 *buffer, 
             }
 
             /* Current data offset */
-            gchar *cur_data = (gchar *)_priv->cur_pack->data + _priv->cur_pack_fill;
+            gchar *cur_data = (gchar *)self->priv->cur_pack->data + self->priv->cur_pack_fill;
             /* Length of transfer */
-            gint copy_len = MIN(strlen(cur_data) + 1, 12 - _priv->cur_pack_fill);
+            gint copy_len = MIN(strlen(cur_data) + 1, 12 - self->priv->cur_pack_fill);
 
             /* Copy */
-            memcpy(ptr, _priv->cur_pack->data + _priv->cur_pack_fill, copy_len);
+            memcpy(ptr, self->priv->cur_pack->data + self->priv->cur_pack_fill, copy_len);
             /* Do some necesssary calcs */
-            _priv->cur_pack_fill += copy_len;
+            self->priv->cur_pack_fill += copy_len;
             ptr += copy_len;
             tmp_len += copy_len;
 
@@ -698,11 +685,11 @@ gboolean mirage_cdtext_decoder_init (MIRAGE_CDTextEncDec *self, guint8 *buffer, 
                to check whether string doesn't contain just "\0", which keeps getting
                returned once we hit the padding at the end of a pack types...) */
             if (!tmp_buffer[tmp_len-1] && strlen(tmp_buffer)) {
-                /*g_debug("%s: block: %i; pack type: 0x%X; track: %i; len: %i; data: %s\n", __debug__, block, _priv->cur_pack->pack_type, cur_track, tmp_len, tmp_buffer);*/
+                /*g_debug("%s: block: %i; pack type: 0x%X; track: %i; len: %i; data: %s\n", __debug__, block, self->priv->cur_pack->pack_type, cur_track, tmp_len, tmp_buffer);*/
 
                 /* Pack the data and add it to the list; as simple as that... */
-                GValueArray *pack_data = __create_value_array(block, _priv->cur_pack->pack_type, cur_track, (guint8 *)tmp_buffer, tmp_len);
-                _priv->blocks[block].packs_list = g_list_insert_sorted(_priv->blocks[block].packs_list, pack_data, (GCompareFunc)__sort_pack_data);
+                GValueArray *pack_data = create_value_array(block, self->priv->cur_pack->pack_type, cur_track, (guint8 *)tmp_buffer, tmp_len);
+                self->priv->blocks[block].packs_list = g_list_insert_sorted(self->priv->blocks[block].packs_list, pack_data, (GCompareFunc)sort_pack_data);
 
                 /* Clear the temporary buffer */
                 memset(tmp_buffer, 0xFF, sizeof(tmp_buffer));
@@ -715,12 +702,12 @@ gboolean mirage_cdtext_decoder_init (MIRAGE_CDTextEncDec *self, guint8 *buffer, 
                 cur_track++;
             }
 
-            if (_priv->cur_pack_fill == 12) {
+            if (self->priv->cur_pack_fill == 12) {
                 /*g_debug("%s: reached the end of packet, going to the next one\n");*/
-                _priv->cur_pack_fill = 0;
-                _priv->cur_pack++;
+                self->priv->cur_pack_fill = 0;
+                self->priv->cur_pack++;
                 /* Set current track number */
-                cur_track = _priv->cur_pack->track_number;
+                cur_track = self->priv->cur_pack->track_number;
             }
         }
     }
@@ -746,28 +733,27 @@ gboolean mirage_cdtext_decoder_init (MIRAGE_CDTextEncDec *self, guint8 *buffer, 
  *
  * Returns: %TRUE on success, %FALSE on failure
  **/
-gboolean mirage_cdtext_decoder_get_block_info (MIRAGE_CDTextEncDec *self, gint block, gint *langcode, gint *charset, gint *copyright, GError **error) {
-    MIRAGE_CDTextEncDecPrivate *_priv = MIRAGE_CDTEXT_ENCDEC_GET_PRIVATE(self);
-
+gboolean mirage_cdtext_decoder_get_block_info (MIRAGE_CDTextEncDec *self, gint block, gint *langcode, gint *charset, gint *copyright, GError **error)
+{
     /* Verify that block is valid */
-    if (block > _priv->num_blocks) {
+    if (block > self->priv->num_blocks) {
         mirage_error(MIRAGE_E_INVALIDARG, error);
         return FALSE;
     }
-    if (!_priv->blocks[block].langcode) {
+    if (!self->priv->blocks[block].langcode) {
         /* FIXME: error */
         mirage_error(MIRAGE_E_GENERIC, error);
         return FALSE;
     }
 
     if (langcode) {
-        *langcode = _priv->blocks[block].langcode;
+        *langcode = self->priv->blocks[block].langcode;
     }
     if (charset) {
-        *charset = _priv->blocks[block].charset;
+        *charset = self->priv->blocks[block].charset;
     }
     if (copyright) {
-        *copyright = _priv->blocks[block].copyright;
+        *copyright = self->priv->blocks[block].copyright;
     }
 
     return TRUE;
@@ -794,12 +780,12 @@ gboolean mirage_cdtext_decoder_get_block_info (MIRAGE_CDTextEncDec *self, gint b
  *
  * Returns: %TRUE on success, %FALSE on failure
  **/
-gboolean mirage_cdtext_decoder_get_data (MIRAGE_CDTextEncDec *self, gint block, MIRAGE_CDTextDataCallback callback_func, gpointer user_data, GError **error) {
-    MIRAGE_CDTextEncDecPrivate *_priv = MIRAGE_CDTEXT_ENCDEC_GET_PRIVATE(self);
-    GList *entry = NULL;
+gboolean mirage_cdtext_decoder_get_data (MIRAGE_CDTextEncDec *self, gint block, MIRAGE_CDTextDataCallback callback_func, gpointer user_data, GError **error)
+{
+    GList *entry;
 
     /* Go over the list and call the callback for each entry */
-    G_LIST_FOR_EACH(entry, _priv->blocks[block].packs_list) {
+    G_LIST_FOR_EACH(entry, self->priv->blocks[block].packs_list) {
         GValueArray *pack_data = entry->data;
 
         gint block_number = g_value_get_int(g_value_array_get_nth(pack_data, 0));
@@ -808,8 +794,7 @@ gboolean mirage_cdtext_decoder_get_data (MIRAGE_CDTextEncDec *self, gint block, 
         guint8 *data = g_value_get_pointer(g_value_array_get_nth(pack_data, 3));
         gint len = g_value_get_int(g_value_array_get_nth(pack_data, 4));
 
-        gint langcode = 0;
-        __mirage_cdtext_encdec_block2lang(self, block_number, &langcode, NULL);
+        gint langcode = mirage_cdtext_encdec_block2lang(self, block_number);
 
         if (!callback_func(langcode, pack_type, track_number, data, len, user_data)) {
             mirage_error(MIRAGE_E_ITERCANCELLED, error);
@@ -821,74 +806,41 @@ gboolean mirage_cdtext_decoder_get_data (MIRAGE_CDTextEncDec *self, gint block, 
 }
 
 
-/******************************************************************************\
- *                                 Object init                                *
-\******************************************************************************/
-/* Our parent class */
-static MIRAGE_ObjectClass *parent_class = NULL;
+/**********************************************************************\
+ *                             Object init                            * 
+\**********************************************************************/
+G_DEFINE_TYPE(MIRAGE_CDTextEncDec, mirage_cdtext_encdec, MIRAGE_TYPE_OBJECT);
 
-static void __mirage_cdtext_encdec_instance_init (GTypeInstance *instance, gpointer g_class G_GNUC_UNUSED) {
-    MIRAGE_CDTextEncDec *self = MIRAGE_CDTEXT_ENCDEC(instance);
-    MIRAGE_CDTextEncDecPrivate *_priv = MIRAGE_CDTEXT_ENCDEC_GET_PRIVATE(self);
+
+static void mirage_cdtext_encdec_init (MIRAGE_CDTextEncDec *self)
+{
+    self->priv = MIRAGE_CDTEXT_ENCDEC_GET_PRIVATE(self);
 
     /* Specs say there can be 8 blocks max... */
-    _priv->num_blocks = 8;
-    _priv->blocks = g_new0(MIRAGE_CDTextEncDecBlock, _priv->num_blocks);
-
-    return;
+    self->priv->num_blocks = 8;
+    self->priv->blocks = g_new0(MIRAGE_CDTextEncDecBlock, self->priv->num_blocks);
 }
 
-static void __mirage_cdtext_encdec_finalize (GObject *obj) {
-    MIRAGE_CDTextEncDec *self = MIRAGE_CDTEXT_ENCDEC(obj);
-    MIRAGE_CDTextEncDecPrivate *_priv = MIRAGE_CDTEXT_ENCDEC_GET_PRIVATE(self);
-
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_GOBJECT, "%s: finalizing object\n", __debug__);
+static void mirage_cdtext_encdec_finalize (GObject *gobject)
+{
+    MIRAGE_CDTextEncDec *self = MIRAGE_CDTEXT_ENCDEC(gobject);
 
     /* Cleanup the data */
-    __mirage_cdtext_encdec_cleanup(self);
+    mirage_cdtext_encdec_cleanup(self);
 
     /* Free blocks data */
-    g_free(_priv->blocks);
-
+    g_free(self->priv->blocks);
+    
     /* Chain up to the parent class */
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_GOBJECT, "%s: chaining up to parent\n", __debug__);
-    return G_OBJECT_CLASS(parent_class)->finalize(obj);
+    return G_OBJECT_CLASS(mirage_cdtext_encdec_parent_class)->finalize(gobject);
 }
 
-static void __mirage_cdtext_encdec_class_init (gpointer g_class, gpointer g_class_data G_GNUC_UNUSED) {
-    GObjectClass *class_gobject = G_OBJECT_CLASS(g_class);
-    MIRAGE_CDTextEncDecClass *klass = MIRAGE_CDTEXT_ENCDEC_CLASS(g_class);
+static void mirage_cdtext_encdec_class_init (MIRAGE_CDTextEncDecClass *klass)
+{
+    GObjectClass *gobject_class = G_OBJECT_CLASS(klass);
 
-    /* Set parent class */
-    parent_class = g_type_class_peek_parent(klass);
+    gobject_class->finalize = mirage_cdtext_encdec_finalize;
 
     /* Register private structure */
     g_type_class_add_private(klass, sizeof(MIRAGE_CDTextEncDecPrivate));
-
-    /* Initialize GObject methods */
-    class_gobject->finalize = __mirage_cdtext_encdec_finalize;
-
-    return;
-}
-
-GType mirage_cdtext_encdec_get_type (void) {
-    static GType type = 0;
-    if (type == 0) {
-        static const GTypeInfo info = {
-            sizeof(MIRAGE_CDTextEncDecClass),
-            NULL,   /* base_init */
-            NULL,   /* base_finalize */
-            __mirage_cdtext_encdec_class_init,   /* class_init */
-            NULL,   /* class_finalize */
-            NULL,   /* class_data */
-            sizeof(MIRAGE_CDTextEncDec),
-            0,      /* n_preallocs */
-            __mirage_cdtext_encdec_instance_init,   /* instance_init */
-            NULL    /* value_table */
-        };
-
-        type = g_type_register_static(MIRAGE_TYPE_OBJECT, "MIRAGE_CDTextEncDec", &info, 0);
-    }
-
-    return type;
 }

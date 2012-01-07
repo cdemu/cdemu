@@ -1,6 +1,6 @@
 /*
  *  libMirage: Index object
- *  Copyright (C) 2006-2010 Rok Mandeljc
+ *  Copyright (C) 2006-2012 Rok Mandeljc
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -30,6 +30,10 @@ G_BEGIN_DECLS
 #define MIRAGE_IS_INDEX_CLASS(klass) (G_TYPE_CHECK_CLASS_TYPE((klass), MIRAGE_TYPE_INDEX))
 #define MIRAGE_INDEX_GET_CLASS(obj)  (G_TYPE_INSTANCE_GET_CLASS((obj), MIRAGE_TYPE_INDEX, MIRAGE_IndexClass))
 
+typedef struct _MIRAGE_Index        MIRAGE_Index;
+typedef struct _MIRAGE_IndexClass   MIRAGE_IndexClass;
+typedef struct _MIRAGE_IndexPrivate MIRAGE_IndexPrivate;
+
 /**
  * MIRAGE_Index:
  *
@@ -37,21 +41,26 @@ G_BEGIN_DECLS
  * Contains private data only, and should be accessed using the functions below.
  * </para>
  **/
-typedef struct {
-    MIRAGE_Object parent;
-} MIRAGE_Index;
+struct _MIRAGE_Index
+{
+    MIRAGE_Object parent_instance;
 
-typedef struct {
-    MIRAGE_ObjectClass parent;
-} MIRAGE_IndexClass;
+    /*< private >*/
+    MIRAGE_IndexPrivate *priv;
+};
+
+struct _MIRAGE_IndexClass
+{
+    MIRAGE_ObjectClass parent_class;
+};
 
 /* Used by MIRAGE_TYPE_INDEX */
 GType mirage_index_get_type (void);
 
 
-/******************************************************************************\
- *                                 Public API                                 *
-\******************************************************************************/
+/**********************************************************************\
+ *                             Public API                             *
+\**********************************************************************/
 gboolean mirage_index_set_number (MIRAGE_Index *self, gint number, GError **error);
 gboolean mirage_index_get_number (MIRAGE_Index *self, gint *number, GError **error);
     

@@ -1,6 +1,6 @@
 /*
  *  libMirage: ISO image parser: Parser object
- *  Copyright (C) 2006-2010 Rok Mandeljc
+ *  Copyright (C) 2006-2012 Rok Mandeljc
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -23,23 +23,33 @@
 
 G_BEGIN_DECLS
 
-#define MIRAGE_TYPE_PARSER_ISO            (mirage_parser_iso_get_type(global_module))
+#define MIRAGE_TYPE_PARSER_ISO            (mirage_parser_iso_get_type())
 #define MIRAGE_PARSER_ISO(obj)            (G_TYPE_CHECK_INSTANCE_CAST((obj), MIRAGE_TYPE_PARSER_ISO, MIRAGE_Parser_ISO))
 #define MIRAGE_PARSER_ISO_CLASS(klass)    (G_TYPE_CHECK_CLASS_CAST((klass), MIRAGE_TYPE_PARSER_ISO, MIRAGE_Parser_ISOClass))
 #define MIRAGE_IS_PARSER_ISO(obj)         (G_TYPE_CHECK_INSTANCE_TYPE((obj), MIRAGE_TYPE_PARSER_ISO))
 #define MIRAGE_IS_PARSER_ISO_CLASS(klass) (G_TYPE_CHECK_CLASS_TYPE((klass), MIRAGE_TYPE_PARSER_ISO))
 #define MIRAGE_PARSER_ISO_GET_CLASS(obj)  (G_TYPE_INSTANCE_GET_CLASS((obj), MIRAGE_TYPE_PARSER_ISO, MIRAGE_Parser_ISOClass))
 
-typedef struct {
-    MIRAGE_Parser parent;
-} MIRAGE_Parser_ISO;
+typedef struct _MIRAGE_Parser_ISO           MIRAGE_Parser_ISO;
+typedef struct _MIRAGE_Parser_ISOClass      MIRAGE_Parser_ISOClass;
+typedef struct _MIRAGE_Parser_ISOPrivate    MIRAGE_Parser_ISOPrivate;
 
-typedef struct {
-    MIRAGE_ParserClass parent;
-} MIRAGE_Parser_ISOClass;
+struct _MIRAGE_Parser_ISO
+{
+    MIRAGE_Parser parent_instance;
+
+    /*< private >*/
+    MIRAGE_Parser_ISOPrivate *priv;
+};
+
+struct _MIRAGE_Parser_ISOClass
+{
+    MIRAGE_ParserClass parent_class;
+};
 
 /* Used by MIRAGE_TYPE_PARSER_ISO */
-GType mirage_parser_iso_get_type (GTypeModule *module);
+GType mirage_parser_iso_get_type (void);
+void mirage_parser_iso_type_register (GTypeModule *type_module);
 
 G_END_DECLS
 

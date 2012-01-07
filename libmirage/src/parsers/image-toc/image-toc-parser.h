@@ -1,6 +1,6 @@
 /*
  *  libMirage: TOC image parser: Parser object
- *  Copyright (C) 2006-2010 Rok Mandeljc
+ *  Copyright (C) 2006-2012 Rok Mandeljc
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -23,30 +23,33 @@
 
 G_BEGIN_DECLS
 
-#define MIRAGE_TYPE_PARSER_TOC            (mirage_parser_toc_get_type(global_module))
+#define MIRAGE_TYPE_PARSER_TOC            (mirage_parser_toc_get_type())
 #define MIRAGE_PARSER_TOC(obj)            (G_TYPE_CHECK_INSTANCE_CAST((obj), MIRAGE_TYPE_PARSER_TOC, MIRAGE_Parser_TOC))
 #define MIRAGE_PARSER_TOC_CLASS(klass)    (G_TYPE_CHECK_CLASS_CAST((klass), MIRAGE_TYPE_PARSER_TOC, MIRAGE_Parser_TOCClass))
 #define MIRAGE_IS_PARSER_TOC(obj)         (G_TYPE_CHECK_INSTANCE_TYPE((obj), MIRAGE_TYPE_PARSER_TOC))
 #define MIRAGE_IS_PARSER_TOC_CLASS(klass) (G_TYPE_CHECK_CLASS_TYPE((klass), MIRAGE_TYPE_PARSER_TOC))
 #define MIRAGE_PARSER_TOC_GET_CLASS(obj)  (G_TYPE_INSTANCE_GET_CLASS((obj), MIRAGE_TYPE_PARSER_TOC, MIRAGE_Parser_TOCClass))
 
-typedef struct {
-    MIRAGE_Parser parent;
-} MIRAGE_Parser_TOC;
+typedef struct _MIRAGE_Parser_TOC           MIRAGE_Parser_TOC;
+typedef struct _MIRAGE_Parser_TOCClass      MIRAGE_Parser_TOCClass;
+typedef struct _MIRAGE_Parser_TOCPrivate    MIRAGE_Parser_TOCPrivate;
 
-typedef struct {
-    MIRAGE_ParserClass parent;
-} MIRAGE_Parser_TOCClass;
+struct _MIRAGE_Parser_TOC
+{
+    MIRAGE_Parser parent_instance;
+
+    /*< private >*/
+    MIRAGE_Parser_TOCPrivate *priv;
+};
+
+struct _MIRAGE_Parser_TOCClass
+{
+    MIRAGE_ParserClass parent_class;
+};
 
 /* Used by MIRAGE_TYPE_PARSER_TOC */
-GType mirage_parser_toc_get_type (GTypeModule *module);
-
-/* Helpers */
-enum {
-    TOC_DATA_TYPE_NONE,
-    TOC_DATA_TYPE_AUDIO,
-    TOC_DATA_TYPE_DATA,
-};
+GType mirage_parser_toc_get_type (void);
+void mirage_parser_toc_type_register (GTypeModule *type_module);
 
 G_END_DECLS
 

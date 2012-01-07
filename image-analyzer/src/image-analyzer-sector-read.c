@@ -282,6 +282,15 @@ void image_analyzer_sector_read_set_disc (IMAGE_ANALYZER_SectorRead *self, GObje
 \**********************************************************************/
 G_DEFINE_TYPE(IMAGE_ANALYZER_SectorRead, image_analyzer_sector_read, GTK_TYPE_WINDOW);
 
+static void image_analyzer_sector_read_init (IMAGE_ANALYZER_SectorRead *self)
+{
+    self->priv = IMAGE_ANALYZER_SECTOR_READ_GET_PRIVATE(self);
+
+    self->priv->disc = NULL;
+
+    setup_gui(self);
+}
+
 static void image_analyzer_sector_read_dispose (GObject *gobject)
 {
     IMAGE_ANALYZER_SectorRead *self = IMAGE_ANALYZER_SECTOR_READ(gobject);
@@ -305,14 +314,3 @@ static void image_analyzer_sector_read_class_init (IMAGE_ANALYZER_SectorReadClas
     /* Register private structure */
     g_type_class_add_private(klass, sizeof(IMAGE_ANALYZER_SectorReadPrivate));
 }
-
-static void image_analyzer_sector_read_init (IMAGE_ANALYZER_SectorRead *self)
-{
-    self->priv = IMAGE_ANALYZER_SECTOR_READ_GET_PRIVATE(self);
-
-    self->priv->disc = NULL;
-
-    setup_gui(self);
-}
-
-

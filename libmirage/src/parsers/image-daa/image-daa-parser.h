@@ -1,6 +1,6 @@
 /*
  *  libMirage: DAA image parser: Parser object
- *  Copyright (C) 2008-2010 Rok Mandeljc
+ *  Copyright (C) 2008-2012 Rok Mandeljc
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -23,23 +23,33 @@
 
 G_BEGIN_DECLS
 
-#define MIRAGE_TYPE_PARSER_DAA            (mirage_parser_daa_get_type(global_module))
+#define MIRAGE_TYPE_PARSER_DAA            (mirage_parser_daa_get_type())
 #define MIRAGE_PARSER_DAA(obj)            (G_TYPE_CHECK_INSTANCE_CAST((obj), MIRAGE_TYPE_PARSER_DAA, MIRAGE_Parser_DAA))
 #define MIRAGE_PARSER_DAA_CLASS(klass)    (G_TYPE_CHECK_CLASS_CAST((klass), MIRAGE_TYPE_PARSER_DAA, MIRAGE_Parser_DAAClass))
 #define MIRAGE_IS_PARSER_DAA(obj)         (G_TYPE_CHECK_INSTANCE_TYPE((obj), MIRAGE_TYPE_PARSER_DAA))
 #define MIRAGE_IS_PARSER_DAA_CLASS(klass) (G_TYPE_CHECK_CLASS_TYPE((klass), MIRAGE_TYPE_PARSER_DAA))
 #define MIRAGE_PARSER_DAA_GET_CLASS(obj)  (G_TYPE_INSTANCE_GET_CLASS((obj), MIRAGE_TYPE_PARSER_DAA, MIRAGE_Parser_DAAClass))
 
-typedef struct {
-    MIRAGE_Parser parent;
-} MIRAGE_Parser_DAA;
+typedef struct _MIRAGE_Parser_DAA MIRAGE_Parser_DAA;
+typedef struct _MIRAGE_Parser_DAAClass MIRAGE_Parser_DAAClass;
+typedef struct _MIRAGE_Parser_DAAPrivate MIRAGE_Parser_DAAPrivate;
 
-typedef struct {
-    MIRAGE_ParserClass parent;
-} MIRAGE_Parser_DAAClass;
+struct _MIRAGE_Parser_DAA
+{
+    MIRAGE_Parser parent_instance;
+
+    /*< private >*/
+    MIRAGE_Parser_DAAPrivate *priv;
+};
+
+struct _MIRAGE_Parser_DAAClass
+{
+    MIRAGE_ParserClass parent_class;
+};
 
 /* Used by MIRAGE_TYPE_PARSER_DAA */
-GType mirage_parser_daa_get_type (GTypeModule *module);
+GType mirage_parser_daa_get_type (void);
+void mirage_parser_daa_type_register (GTypeModule *type_module);
 
 G_END_DECLS
 

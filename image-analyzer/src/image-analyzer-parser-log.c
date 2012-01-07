@@ -86,15 +86,15 @@ static void setup_gui (IMAGE_ANALYZER_ParserLog *self)
 \**********************************************************************/
 G_DEFINE_TYPE(IMAGE_ANALYZER_ParserLog, image_analyzer_parser_log, GTK_TYPE_WINDOW);
 
-static void image_analyzer_parser_log_class_init (IMAGE_ANALYZER_ParserLogClass *klass)
-{
-    /* Register private structure */
-    g_type_class_add_private(klass, sizeof(IMAGE_ANALYZER_ParserLogPrivate));
-}
-
 static void image_analyzer_parser_log_init (IMAGE_ANALYZER_ParserLog *self)
 {
     self->priv = IMAGE_ANALYZER_PARSER_LOG_GET_PRIVATE(self);
 
     setup_gui(self);
+}
+
+static void image_analyzer_parser_log_class_init (IMAGE_ANALYZER_ParserLogClass *klass)
+{
+    /* Register private structure */
+    g_type_class_add_private(klass, sizeof(IMAGE_ANALYZER_ParserLogPrivate));
 }

@@ -1,6 +1,6 @@
 /*
  *  libMirage: B6T image plugin
- *  Copyright (C) 2007-2010 Rok Mandeljc
+ *  Copyright (C) 2007-2012 Rok Mandeljc
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -35,7 +35,8 @@ G_BEGIN_DECLS
 /* This is the first chunk of data that follows the signature; it consists of
    112 bytes that are more or less undeciphered, but it seems to contain lengths 
    of other blocks at the end */
-typedef struct {
+typedef struct
+{
     guint32 __dummy1__; /* Default value: 0x00000002 */
     guint32 __dummy2__; /* Default value: 0x00000002 */
     guint32 __dummy3__; /* Default value: 0x00000006 */
@@ -77,7 +78,8 @@ typedef struct {
 } B6T_DiscBlock_1;
 
 /* This is chunk of bytes that represents lengths of blocks that follow... */
-typedef struct {
+typedef struct
+{
     guint32 mode_page_2a_length; /* Length of Mode Page 0x2A */
     guint32 unknown1_length; /* Unknown; seems to be always 4 bytes? */
     guint32 datablocks_length; /* Length of data-blocks data */
@@ -87,7 +89,8 @@ typedef struct {
 
 
 /* Drive identifiers, taken from INQUIRY data */
-typedef struct {
+typedef struct
+{
     gchar vendor[8];
     gchar product[16];
     gchar revision[4];
@@ -96,7 +99,8 @@ typedef struct {
 
 /* Structure that represents data block... I think the idea behind them is similar
    to the idea behind fragments in libMirage... */
-typedef struct {
+typedef struct
+{
     guint32 type; /* In one way or another; different values here mean different type of data... */
     guint32 length_bytes; /* Length of data block, in bytes */
     guint32 __dummy1__;
@@ -117,7 +121,8 @@ typedef struct {
 } B6T_DataBlock;
 
 /* Session descriptor; 16 bytes, more or less figured out */
-typedef struct {
+typedef struct
+{
     guint16 number; /* Session number */
     guint8 num_entries; /* Number of entries */
     guint8 __dummy1__; /* Not sure... seems to be fixed at 3... */
@@ -132,7 +137,8 @@ typedef struct {
 
 /* Generic track descriptor; this is 64-byte version, so in case this is 'real'
    track descriptor, additional 8 bytes will have to be read manually */
-typedef struct {
+typedef struct
+{
     guint8 type; /* Track descriptor type */
     guint8 __dummy1__; /* Unknown; seems to be set to 1 for data and 0 to audio tracks */
     guint8 __dummy2__; /* Unknown; seems to be set to 1 for data and 0 to audio tracks */
@@ -176,9 +182,6 @@ typedef struct {
 } B6T_Track;
 
 #pragma pack()
-
-
-GTypeModule *global_module;
 
 G_END_DECLS
 

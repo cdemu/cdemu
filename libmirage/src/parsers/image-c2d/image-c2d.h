@@ -1,6 +1,6 @@
 /*
  *  libMirage: C2D image parser
- *  Copyright (C) 2008-2010 Henrik Stokseth
+ *  Copyright (C) 2008-2012 Henrik Stokseth
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -47,7 +47,8 @@ G_BEGIN_DECLS
 
 #pragma pack(1)
 
-typedef struct {
+typedef struct
+{
     gchar signature[32]; /* Signature string: "Roxio Image File Format 3.0" || "Adaptec CeQuadrat VirtualCD File" */
     guint16 header_size; /* Length of header block */
     guint16 has_upc_ean; /* Boolean flag */
@@ -61,7 +62,8 @@ typedef struct {
     guint32 offset_c2ck; /* Offset to "c2ck" block || 0x00000000 */
 } C2D_HeaderBlock; /* length: as given in header block */
 
-typedef struct {
+typedef struct
+{
     guint8 pack_type;
     guint8 track_number;
     guint8 seq_number;
@@ -70,7 +72,8 @@ typedef struct {
     guint8 crc[2];
 } C2D_CDTextBlock; /* length: 18 bytes */
 
-typedef struct {
+typedef struct
+{
     guint32 block_size; /* Length of this c2ck block (32) */
     gchar   signature[4]; /* Signature string: "C2CK" */
     guint32 dummy1[2]; /* (unknown) */
@@ -78,7 +81,8 @@ typedef struct {
     guint32 dummy2[2]; /* (unknown) */
 } C2D_C2CKBlock; /* length: 32 bytes */
 
-typedef struct {
+typedef struct
+{
     guint32 block_size; /* Length of this track block (44) */
     guint32 first_sector; /* First sector in track */   
     guint32 last_sector; /* Last sector in track */
@@ -94,16 +98,19 @@ typedef struct {
     guint16 dummy; /* (unknown) */
 } C2D_TrackBlock; /* length: 44 bytes */
 
-typedef struct {
+typedef struct
+{
     guint32 dummy; /* (unknown) */
 } C2D_Z_Info_Header; /* length: 4 bytes */
 
-typedef struct {
+typedef struct
+{
     guint32 compressed_size; /* Size of compressed data */
     guint64 image_offset; /* Offset of compressed data */
 } C2D_Z_Info; /* length: 12  bytes */
 
-typedef struct {
+typedef struct
+{
     guint32 block_size; /* Length of this c2aw block (32) */
     gchar signature[4]; /* Signature string: "C2AW" */
     guint64 info_size; /* size of artwork info; follows this block */
@@ -111,15 +118,14 @@ typedef struct {
     guint32 dummy[2]; /* (unknown) */
 } C2D_C2AWBlock; /* length: 32 bytes */
 
-typedef struct {
+typedef struct
+{
     guint32 block_size; /* Length of this wocd block (32) */
     gchar signature[4]; /* Signature string: "WOCD" */
     guint32 dummy[6]; /* (unknown) */
 } C2D_WOCDBlock; /* length: 32 bytes */
 
 #pragma pack()
-
-GTypeModule *global_module;
 
 G_END_DECLS
 

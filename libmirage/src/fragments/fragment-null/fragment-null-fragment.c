@@ -1,6 +1,6 @@
 /*
  *  libMirage: NULL fragment: Fragment object
- *  Copyright (C) 2007-2010 Rok Mandeljc
+ *  Copyright (C) 2007-2012 Rok Mandeljc
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -22,21 +22,25 @@
 #define __debug__ "NULL-Fragment"
 
 
-/******************************************************************************\
- *                   MIRAGE_Fragment methods implementations                  *
-\******************************************************************************/
-static gboolean __mirage_fragment_null_can_handle_data_format (MIRAGE_Fragment *self G_GNUC_UNUSED, const gchar *filename G_GNUC_UNUSED, GError **error G_GNUC_UNUSED) {
+/**********************************************************************\
+ *               MIRAGE_Fragment methods implementations              *
+\**********************************************************************/
+static gboolean mirage_fragment_null_can_handle_data_format (MIRAGE_Fragment *_self G_GNUC_UNUSED, const gchar *filename G_GNUC_UNUSED, GError **error G_GNUC_UNUSED)
+{
     /* NULL doesn't need any data file checks; what's important is interface type,
        which is filtered out elsewhere */
     return TRUE;
 }
 
-static gboolean __mirage_fragment_null_use_the_rest_of_file (MIRAGE_Fragment *self G_GNUC_UNUSED, GError **error G_GNUC_UNUSED) {
+static gboolean mirage_fragment_null_use_the_rest_of_file (MIRAGE_Fragment *_self G_GNUC_UNUSED, GError **error G_GNUC_UNUSED)
+{
     /* No file, nothing to use */
     return TRUE;
 }
 
-static gboolean __mirage_fragment_null_read_main_data (MIRAGE_Fragment *self, gint address G_GNUC_UNUSED, guint8 *buf G_GNUC_UNUSED, gint *length, GError **error G_GNUC_UNUSED) {
+static gboolean mirage_fragment_null_read_main_data (MIRAGE_Fragment *_self, gint address G_GNUC_UNUSED, guint8 *buf G_GNUC_UNUSED, gint *length, GError **error G_GNUC_UNUSED)
+{
+    MIRAGE_Fragment_NULL *self = MIRAGE_FRAGMENT_NULL(_self);
     /* Nothing to read */
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_FRAGMENT, "%s: no data in NULL fragment\n", __debug__);
     if (length) {
@@ -45,7 +49,9 @@ static gboolean __mirage_fragment_null_read_main_data (MIRAGE_Fragment *self, gi
     return TRUE;
 }
 
-static gboolean __mirage_fragment_null_read_subchannel_data (MIRAGE_Fragment *self, gint address G_GNUC_UNUSED, guint8 *buf G_GNUC_UNUSED, gint *length, GError **error G_GNUC_UNUSED) {
+static gboolean mirage_fragment_null_read_subchannel_data (MIRAGE_Fragment *_self, gint address G_GNUC_UNUSED, guint8 *buf G_GNUC_UNUSED, gint *length, GError **error G_GNUC_UNUSED)
+{
+    MIRAGE_Fragment_NULL *self = MIRAGE_FRAGMENT_NULL(_self);
     /* Nothing to read */
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_FRAGMENT, "%s: no data in NULL fragment\n", __debug__);
     if (length) {
@@ -55,64 +61,41 @@ static gboolean __mirage_fragment_null_read_subchannel_data (MIRAGE_Fragment *se
 }
 
 
-/******************************************************************************\
- *                                 Object init                                *
-\******************************************************************************/
-/* Our parent class */
-static MIRAGE_FragmentClass *parent_class = NULL;
+/**********************************************************************\
+ *                             Object init                            *
+\**********************************************************************/
+G_DEFINE_DYNAMIC_TYPE_EXTENDED(MIRAGE_Fragment_NULL,
+                               mirage_fragment_null,
+                               MIRAGE_TYPE_FRAGMENT,
+                               0,
+                               G_IMPLEMENT_INTERFACE_DYNAMIC(MIRAGE_TYPE_FRAG_IFACE_NULL, NULL));
 
-static void __mirage_fragment_null_instance_init (GTypeInstance *instance, gpointer g_class G_GNUC_UNUSED) {   
-    /* Create fragment info */
-    mirage_fragment_generate_fragment_info(MIRAGE_FRAGMENT(instance),
+void mirage_fragment_null_type_register (GTypeModule *type_module)
+{
+    return mirage_fragment_null_register_type(type_module);
+}
+
+
+static void mirage_fragment_null_init (MIRAGE_Fragment_NULL *self)
+{
+    /*self->priv = MIRAGE_FRAGMENT_NULL_GET_PRIVATE(self);*/
+
+    mirage_fragment_generate_fragment_info(MIRAGE_FRAGMENT(self),
         "FRAGMENT-NULL",
         "NULL Fragment"
     );
-    
-    return;
 }
 
-static void __mirage_fragment_null_class_init (gpointer g_class, gpointer g_class_data G_GNUC_UNUSED) {
-    MIRAGE_FragmentClass *class_fragment = MIRAGE_FRAGMENT_CLASS(g_class);
-    MIRAGE_Fragment_NULLClass *klass = MIRAGE_FRAGMENT_NULL_CLASS(g_class);
+static void mirage_fragment_null_class_init (MIRAGE_Fragment_NULLClass *klass)
+{
+    MIRAGE_FragmentClass *fragment_class = MIRAGE_FRAGMENT_CLASS(klass);
 
-    /* Set parent class */
-    parent_class = g_type_class_peek_parent(klass);
-    
-    /* Initialize MIRAGE_Fragment methods */
-    class_fragment->can_handle_data_format = __mirage_fragment_null_can_handle_data_format;
-    class_fragment->use_the_rest_of_file = __mirage_fragment_null_use_the_rest_of_file;
-    class_fragment->read_main_data = __mirage_fragment_null_read_main_data;
-    class_fragment->read_subchannel_data = __mirage_fragment_null_read_subchannel_data;
-        
-    return;
+    fragment_class->can_handle_data_format = mirage_fragment_null_can_handle_data_format;
+    fragment_class->use_the_rest_of_file = mirage_fragment_null_use_the_rest_of_file;
+    fragment_class->read_main_data = mirage_fragment_null_read_main_data;
+    fragment_class->read_subchannel_data = mirage_fragment_null_read_subchannel_data;
 }
 
-GType mirage_fragment_null_get_type (GTypeModule *module) {
-    static GType type = 0;
-    if (type == 0) {
-        static const GTypeInfo info = {
-            sizeof(MIRAGE_Fragment_NULLClass),
-            NULL,   /* base_init */
-            NULL,   /* base_finalize */
-            __mirage_fragment_null_class_init,   /* class_init */
-            NULL,   /* class_finalize */
-            NULL,   /* class_data */
-            sizeof(MIRAGE_Fragment_NULL),
-            0,      /* n_preallocs */
-            __mirage_fragment_null_instance_init,   /* instance_init */
-            NULL    /* value_table */
-        };
-        
-        static const GInterfaceInfo interface_info = {
-            NULL,   /* interface_init */
-            NULL,   /* interface_finalize */
-            NULL    /* interface_data */
-        };
-                
-        type = g_type_module_register_type(module, MIRAGE_TYPE_FRAGMENT, "MIRAGE_Fragment_NULL", &info, 0);
-
-        g_type_module_add_interface(module, type, MIRAGE_TYPE_FINTERFACE_NULL, &interface_info);
-    }
-    
-    return type;
+static void mirage_fragment_null_class_finalize (MIRAGE_Fragment_NULLClass *klass G_GNUC_UNUSED)
+{
 }

@@ -25,7 +25,6 @@
 struct _CDEMUD_DaemonPrivate
 {
     gchar *version;
-    gchar *audio_backend;
 
     GMainLoop *main_loop;
 

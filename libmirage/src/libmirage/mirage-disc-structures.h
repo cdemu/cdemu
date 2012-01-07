@@ -1,6 +1,6 @@
 /*
  *  libMirage: Disc structures definitions
- *  Copyright (C) 2006-2010 Rok Mandeljc
+ *  Copyright (C) 2006-2012 Rok Mandeljc
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -30,7 +30,8 @@ G_BEGIN_DECLS
    in MMC-3, they are libMirage's internal representation of disc structures and
    could thus change any time */
 
-typedef struct {
+typedef struct
+{
     #if BIG_ENDIAN_BITFIELD
         guint8  book_type   : 4;
         guint8  part_ver    : 4;
@@ -102,14 +103,16 @@ typedef struct {
     guint8 media_specific[2031];
 } MIRAGE_DiscStruct_PhysInfo;
 
-typedef struct {
+typedef struct
+{
    guint8   copy_protection;
    guint8   region_info;
    guint8   __dummy1__;
    guint8   __dummy2__;    
 } MIRAGE_DiscStruct_Copyright;
 
-typedef struct {
+typedef struct
+{
     guint8  disc_manufacturing_data[2048];
 } MIRAGE_DiscStruct_Manufacture;
 

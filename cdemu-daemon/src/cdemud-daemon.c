@@ -189,6 +189,22 @@ GObject *cdemud_daemon_get_device (CDEMUD_Daemon *self, gint device_number, GErr
 \**********************************************************************/
 G_DEFINE_TYPE(CDEMUD_Daemon, cdemud_daemon, MIRAGE_TYPE_OBJECT);
 
+static void cdemud_daemon_init (CDEMUD_Daemon *self)
+{
+    self->priv = CDEMUD_DAEMON_GET_PRIVATE(self);
+
+    self->priv->main_loop = NULL;
+    self->priv->list_of_devices = NULL;
+    self->priv->ctl_device = NULL;
+    
+    /* Set version string */
+    self->priv->version = g_strdup(PACKAGE_VERSION);
+
+    /* D-Bus data */
+    self->priv->connection = NULL;
+    self->priv->owner_id = 0;
+}
+
 static void cdemud_daemon_dispose (GObject *gobject)
 {
     CDEMUD_Daemon *self = CDEMUD_DAEMON(gobject);
@@ -239,16 +255,4 @@ static void cdemud_daemon_class_init (CDEMUD_DaemonClass *klass)
 
     /* Register private structure */
     g_type_class_add_private(klass, sizeof(CDEMUD_DaemonPrivate));
-}
-
-static void cdemud_daemon_init (CDEMUD_Daemon *self)
-{
-    self->priv = CDEMUD_DAEMON_GET_PRIVATE(self);
-
-    /* Set version string */
-    self->priv->version = g_strdup(PACKAGE_VERSION);
-
-    /* D-Bus data */
-    self->priv->connection = NULL;
-    self->priv->owner_id = 0;
 }
