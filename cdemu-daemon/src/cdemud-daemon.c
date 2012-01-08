@@ -28,7 +28,6 @@
 \**********************************************************************/
 static void device_status_changed_handler (GObject *device, CDEMUD_Daemon *self)
 {
-    CDEMUD_DaemonPrivate *_priv = CDEMUD_DAEMON_GET_PRIVATE(self);
     gint number;
     cdemud_device_get_device_number(CDEMUD_DEVICE(device), &number, NULL);
     cdemud_daemon_dbus_emit_device_status_changed (self, number);
@@ -36,7 +35,6 @@ static void device_status_changed_handler (GObject *device, CDEMUD_Daemon *self)
 
 static void device_option_changed_handler (GObject *device, gchar *option, CDEMUD_Daemon *self)
 {
-    CDEMUD_DaemonPrivate *_priv = CDEMUD_DAEMON_GET_PRIVATE(self);
     gint number;
     cdemud_device_get_device_number(CDEMUD_DEVICE(device), &number, NULL);
     cdemud_daemon_dbus_emit_device_option_changed(self, number, option);
@@ -161,8 +159,6 @@ gboolean cdemud_daemon_initialize_and_start (CDEMUD_Daemon *self, gint num_devic
 
 gboolean cdemud_daemon_stop_daemon (CDEMUD_Daemon *self, GError **error G_GNUC_UNUSED)
 {
-    CDEMUD_DaemonPrivate *_priv = CDEMUD_DAEMON_GET_PRIVATE(self);
-
     /* Stop the main loop */
     g_main_loop_quit(self->priv->main_loop);
 

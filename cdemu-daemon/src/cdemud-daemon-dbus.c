@@ -381,7 +381,7 @@ gboolean cdemud_daemon_dbus_check_if_name_is_available (CDEMUD_Daemon *self, GBu
     return TRUE;    
 }
 
-gboolean cdemud_daemon_dbus_register_on_bus (CDEMUD_Daemon *self, GBusType bus_type)
+void cdemud_daemon_dbus_register_on_bus (CDEMUD_Daemon *self, GBusType bus_type)
 {    
     /* Claim name on D-BUS */
     self->priv->owner_id = g_bus_own_name(
@@ -394,7 +394,6 @@ gboolean cdemud_daemon_dbus_register_on_bus (CDEMUD_Daemon *self, GBusType bus_t
         self,
         NULL
     );
-
 }
 
 void cdemud_daemon_dbus_cleanup (CDEMUD_Daemon *self)

@@ -46,7 +46,7 @@ struct _CDEMUD_DaemonPrivate
 
 /* Daemon's D-BUS API */
 gboolean cdemud_daemon_dbus_check_if_name_is_available (CDEMUD_Daemon *self, GBusType bus_type, GError **error);
-gboolean cdemud_daemon_dbus_register_on_bus (CDEMUD_Daemon *self, GBusType bus_type);
+void cdemud_daemon_dbus_register_on_bus (CDEMUD_Daemon *self, GBusType bus_type);
 void cdemud_daemon_dbus_cleanup (CDEMUD_Daemon *self);
 
 void cdemud_daemon_dbus_emit_device_status_changed (CDEMUD_Daemon *self, gint number);
