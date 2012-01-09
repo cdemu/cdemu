@@ -1,5 +1,5 @@
 libMirage
-ver.1.4.0
+ver.1.5.0
 ~~~~~~~~~~~~
 
 This is libMirage library, a CD-ROM image access library, and part of the
@@ -39,7 +39,7 @@ be attached to other objects and used to control the amount of verbosity.
 
 Requirements:
 ~~~~~~~~~~~~~
- - GLib 2.6 or newer
+ - GLib 2.28 or newer
  - libsndfile 1.0.0 or newer
  - zlib
 

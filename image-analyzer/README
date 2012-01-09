@@ -1,5 +1,5 @@
 MIRAGE Image Analyzer
-ver.1.4.0
+ver.1.5.0
 ~~~~~~~~~~~~
 
 This is MIRAGE Image Analyzer, a simple Gtk+ application that displays tree 
@@ -10,10 +10,10 @@ handled by libMirage.
 
 Requirements:
 ~~~~~~~~~~~~~
-  - Gtk+ 2.6 or newer
+  - Gtk+ 3.0 or newer
   - libxml
-  - libMirage 1.4.0 or newer
-  - GtkExtra 2.0.0 or newer (optional)
+  - libMirage 1.5.0 or newer
+  - gnuplot (optional)
 
  
 Installation:

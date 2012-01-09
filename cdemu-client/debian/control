@@ -10,8 +10,8 @@ Standards-Version: 3.9.2
 
 Package: cdemu-client
 Architecture: all
-Depends: python (>= 2.2), python-dbus, cdemu-daemon (>= 1.4.0), ${python:Depends}, ${misc:Depends}
-Recommends: bash-completion, gcdemu (>= 1.4.0)
+Depends: python (>= 2.2), python-dbus, cdemu-daemon (>= 1.5.0), ${python:Depends}, ${misc:Depends}
+Recommends: bash-completion, gcdemu (>= 1.5.0)
 Description: Command-line client to control CDEmu daemon
  This is cdemu-client, a command-line client for controlling the
  CDEmu daemon. It is part of the CDEmu suite, a free, GPL CD/DVD-ROM device 

@@ -1,5 +1,5 @@
 gCDEmu
-v.1.4.0
+v.1.5.0
 ~~~~~~~~~~~~
 
 This is gCDEmu, a Gtk+ based GUI for controlling CDEmu daemon. It is part of the
@@ -17,11 +17,10 @@ Requirements:
 ~~~~~~~~~~~~~
 
  - python 2.4 or newer
- - PyGTK and PyGObject 2.6 or newer; (gtk, gobject and gconf modules are required)
- - D-BUS python bindings
+ - PyGObject 3.0.0 or newer; (gtk-3, gobject and glib modules are required)
  - intltool
 
- - notify-python (optional)
+ - libnotify (optional)
 
 
 Installation:

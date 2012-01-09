@@ -1,6 +1,6 @@
-libmirage (1.4.0-0ubuntu1) natty; urgency=low
+libmirage (1.5.0-0ubuntu1) oneiric; urgency=low
 
   * Initial Release. Closes: (LP: #105452, LP: #184644)
 
- -- Henrik Stokseth (Henrik) <henrik@hw0.org>  Sun, 01 May 2011 12:00:00 +0100
+ -- Henrik Stokseth (Henrik) <henrik@hw0.org>  Mon, 09 Jan 2012 12:00:00 +0100
 

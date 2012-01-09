@@ -6,16 +6,16 @@
 
 
 override_dh_auto_configure:
-	dh_auto_configure -- --disable-static --enable-gtk-doc
+	dh_auto_configure -- --disable-static --disable-gtk-doc
 
 override_dh_strip:
-	dh_strip --dbg-package="libmirage3-dbg"
+	dh_strip --dbg-package="libmirage6-dbg"
 
 override_dh_makeshlibs:
-	dh_makeshlibs --exclude="libmirage-1.4"
+	dh_makeshlibs --exclude="libmirage-1.5"
 
 override_dh_shlibdeps:
-	dh_shlibdeps --exclude="libmirage-1.4"
+	dh_shlibdeps --exclude="libmirage-1.5"
 
 build:
 	-test -x autogen.sh && ./autogen.sh
