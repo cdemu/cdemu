@@ -95,6 +95,7 @@ MIRAGE_IS_DISC_CLASS
 MIRAGE_DISC_GET_CLASS
 <SUBSECTION Private>
 MIRAGE_DiscClass
+MIRAGE_DiscPrivate
 mirage_disc_get_type
 </SECTION>
 
@@ -147,6 +148,7 @@ MIRAGE_IS_SESSION_CLASS
 MIRAGE_SESSION_GET_CLASS
 <SUBSECTION Private>
 MIRAGE_SessionClass
+MIRAGE_SessionPrivate
 mirage_session_get_type
 </SECTION>
 
@@ -211,6 +213,7 @@ MIRAGE_IS_TRACK_CLASS
 MIRAGE_TRACK_GET_CLASS
 <SUBSECTION Private>
 MIRAGE_TrackClass
+MIRAGE_TrackPrivate
 mirage_track_get_type
 </SECTION>
 
@@ -240,6 +243,7 @@ MIRAGE_IS_SECTOR_CLASS
 MIRAGE_SECTOR_GET_CLASS
 <SUBSECTION Private>
 MIRAGE_SectorClass
+MIRAGE_SectorPrivate
 mirage_sector_get_type
 </SECTION>
 
@@ -264,6 +268,7 @@ MIRAGE_IS_OBJECT_CLASS
 MIRAGE_OBJECT_GET_CLASS
 <SUBSECTION Private>
 MIRAGE_ObjectClass
+MIRAGE_ObjectPrivate
 mirage_object_get_type
 </SECTION>
 
@@ -288,6 +293,7 @@ MIRAGE_IS_DEBUG_CONTEXT_CLASS
 MIRAGE_DEBUG_CONTEXT_GET_CLASS
 <SUBSECTION Private>
 MIRAGE_DebugContextClass
+MIRAGE_DebugContextPrivate
 mirage_debug_context_get_type
 </SECTION>
 
@@ -308,6 +314,7 @@ MIRAGE_IS_INDEX_CLASS
 MIRAGE_INDEX_GET_CLASS
 <SUBSECTION Private>
 MIRAGE_IndexClass
+MIRAGE_IndexPrivate
 mirage_index_get_type
 </SECTION>
 
@@ -335,73 +342,74 @@ MIRAGE_IS_FRAGMENT_CLASS
 MIRAGE_FRAGMENT_GET_CLASS
 <SUBSECTION Private>
 MIRAGE_FragmentClass
+MIRAGE_FragmentPrivate
 mirage_fragment_get_type
 </SECTION>
 
 <SECTION>
-<FILE>mirage-finterface-null</FILE>
-<TITLE>MIRAGE_FInterface_NULL interface</TITLE>
-MIRAGE_FInterface_NULL
+<FILE>mirage-frag_iface-null</FILE>
+<TITLE>MIRAGE_FragIface_Null interface</TITLE>
+MIRAGE_FragIface_Null
 <SUBSECTION Standard>
-MIRAGE_TYPE_FINTERFACE_NULL
-MIRAGE_FINTERFACE_NULL
-MIRAGE_IS_FINTERFACE_NULL
-MIRAGE_FINTERFACE_NULL_GET_CLASS
+MIRAGE_TYPE_FRAG_IFACE_NULL
+MIRAGE_FRAG_IFACE_NULL
+MIRAGE_IS_FRAG_IFACE_NULL
+MIRAGE_FRAG_IFACE_NULL_GET_INTERFACE
 <SUBSECTION Private>
-MIRAGE_FInterface_NULLClass
-mirage_finterface_null_get_type
+MIRAGE_FragIface_NullInterface
+mirage_frag_iface_null_get_type
 </SECTION>
 
 <SECTION>
-<FILE>mirage-finterface-binary</FILE>
-<TITLE>MIRAGE_FInterface_BINARY interface</TITLE>
+<FILE>mirage-frag_iface-binary</FILE>
+<TITLE>MIRAGE_FragIface_Binary interface</TITLE>
 MIRAGE_BINARY_TrackFile_Format
 MIRAGE_BINARY_SubchannelFile_Format
-MIRAGE_FInterface_BINARY
-mirage_finterface_binary_track_file_set_handle
-mirage_finterface_binary_track_file_get_handle
-mirage_finterface_binary_track_file_set_offset
-mirage_finterface_binary_track_file_get_offset
-mirage_finterface_binary_track_file_set_sectsize
-mirage_finterface_binary_track_file_get_sectsize
-mirage_finterface_binary_track_file_set_format
-mirage_finterface_binary_track_file_get_format
-mirage_finterface_binary_track_file_get_position
-mirage_finterface_binary_subchannel_file_set_handle
-mirage_finterface_binary_subchannel_file_get_handle
-mirage_finterface_binary_subchannel_file_set_offset
-mirage_finterface_binary_subchannel_file_get_offset
-mirage_finterface_binary_subchannel_file_set_sectsize
-mirage_finterface_binary_subchannel_file_get_sectsize
-mirage_finterface_binary_subchannel_file_set_format
-mirage_finterface_binary_subchannel_file_get_format
-mirage_finterface_binary_subchannel_file_get_position
+MIRAGE_FragIface_Binary
+mirage_frag_iface_binary_track_file_set_handle
+mirage_frag_iface_binary_track_file_get_handle
+mirage_frag_iface_binary_track_file_set_offset
+mirage_frag_iface_binary_track_file_get_offset
+mirage_frag_iface_binary_track_file_set_sectsize
+mirage_frag_iface_binary_track_file_get_sectsize
+mirage_frag_iface_binary_track_file_set_format
+mirage_frag_iface_binary_track_file_get_format
+mirage_frag_iface_binary_track_file_get_position
+mirage_frag_iface_binary_subchannel_file_set_handle
+mirage_frag_iface_binary_subchannel_file_get_handle
+mirage_frag_iface_binary_subchannel_file_set_offset
+mirage_frag_iface_binary_subchannel_file_get_offset
+mirage_frag_iface_binary_subchannel_file_set_sectsize
+mirage_frag_iface_binary_subchannel_file_get_sectsize
+mirage_frag_iface_binary_subchannel_file_set_format
+mirage_frag_iface_binary_subchannel_file_get_format
+mirage_frag_iface_binary_subchannel_file_get_position
 <SUBSECTION Standard>
-MIRAGE_TYPE_FINTERFACE_BINARY
-MIRAGE_FINTERFACE_BINARY
-MIRAGE_IS_FINTERFACE_BINARY
-MIRAGE_FINTERFACE_BINARY_GET_CLASS
+MIRAGE_TYPE_FRAG_IFACE_BINARY
+MIRAGE_FRAG_IFACE_BINARY
+MIRAGE_IS_FRAG_IFACE_BINARY
+MIRAGE_FRAG_IFACE_BINARY_GET_INTERFACE
 <SUBSECTION Private>
-MIRAGE_FInterface_BINARYClass
-mirage_finterface_binary_get_type
+MIRAGE_FragIface_BinaryInterface
+mirage_frag_iface_binary_get_type
 </SECTION>
 
 <SECTION>
-<FILE>mirage-finterface-audio</FILE>
-<TITLE>MIRAGE_FInterface_AUDIO interface</TITLE>
-MIRAGE_FInterface_AUDIO
-mirage_finterface_audio_set_file
-mirage_finterface_audio_get_file
-mirage_finterface_audio_set_offset
-mirage_finterface_audio_get_offset
+<FILE>mirage-frag_iface-audio</FILE>
+<TITLE>MIRAGE_FragIface_Audio interface</TITLE>
+MIRAGE_FragIface_Audio
+mirage_frag_iface_audio_set_file
+mirage_frag_iface_audio_get_file
+mirage_frag_iface_audio_set_offset
+mirage_frag_iface_audio_get_offset
 <SUBSECTION Standard>
-MIRAGE_TYPE_FINTERFACE_AUDIO
-MIRAGE_FINTERFACE_AUDIO
-MIRAGE_IS_FINTERFACE_AUDIO
-MIRAGE_FINTERFACE_AUDIO_GET_CLASS
+MIRAGE_TYPE_FRAG_IFACE_AUDIO
+MIRAGE_FRAG_IFACE_AUDIO
+MIRAGE_IS_FRAG_IFACE_AUDIO
+MIRAGE_FRAG_IFACE_AUDIO_GET_INTERFACE
 <SUBSECTION Private>
-MIRAGE_FInterface_AUDIOClass
-mirage_finterface_audio_get_type
+MIRAGE_FragIface_AudioInterface
+mirage_frag_iface_audio_get_type
 </SECTION>
 
 <SECTION>
@@ -422,6 +430,7 @@ MIRAGE_IS_LANGUAGE_CLASS
 MIRAGE_LANGUAGE_GET_CLASS
 <SUBSECTION Private>
 MIRAGE_LanguageClass
+MIRAGE_LanguagePrivate
 mirage_language_get_type
 </SECTION>
 
@@ -446,6 +455,7 @@ MIRAGE_IS_CDTEXT_ENCDEC_CLASS
 MIRAGE_CDTEXT_ENCDEC_GET_CLASS
 <SUBSECTION Private>
 MIRAGE_CDTextEncDecClass
+MIRAGE_CDTextEncDecPrivate
 mirage_cdtext_encdec_get_type
 </SECTION>
 
@@ -471,6 +481,7 @@ MIRAGE_IS_PARSER_CLASS
 MIRAGE_PARSER_GET_CLASS
 <SUBSECTION Private>
 MIRAGE_ParserClass
+MIRAGE_ParserPrivate
 mirage_parser_get_type
 </SECTION>
 
@@ -488,6 +499,7 @@ MIRAGE_IS_PLUGIN_CLASS
 MIRAGE_PLUGIN_GET_CLASS
 <SUBSECTION Private>
 MIRAGE_PluginClass
+MIRAGE_PluginPrivate
 mirage_plugin_get_type
 </SECTION>
 

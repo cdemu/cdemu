@@ -1,12 +1,12 @@
 <!-- ##### SECTION Title ##### -->
-MIRAGE_FInterface_BINARY interface
+MIRAGE_FragIface_Binary interface
 
 <!-- ##### SECTION Short_Description ##### -->
-BINARY Fragment interface
+Binary Fragment interface
 
 <!-- ##### SECTION Long_Description ##### -->
 <para>
-#MIRAGE_FInterface_BINARY is BINARY Fragment interface that can be implemented
+#MIRAGE_FragIface_Binary is Binary Fragment interface that can be implemented
 by a #MIRAGE_Fragment implementation.
 </para>
 
@@ -42,24 +42,13 @@ by a #MIRAGE_Fragment implementation.
 @FR_BIN_SFILE_RW96: 
 @FR_BIN_SFILE_PQ16: 
 
-<!-- ##### STRUCT MIRAGE_FInterface_BINARY ##### -->
+<!-- ##### STRUCT MIRAGE_FragIface_Binary ##### -->
 <para>
 
 </para>
 
 
-<!-- ##### FUNCTION mirage_finterface_binary_track_file_set_handle ##### -->
-<para>
-
-</para>
-
-@self: 
-@file: 
-@error: 
-@Returns: 
-
-
-<!-- ##### FUNCTION mirage_finterface_binary_track_file_get_handle ##### -->
+<!-- ##### FUNCTION mirage_frag_iface_binary_track_file_set_handle ##### -->
 <para>
 
 </para>
@@ -70,7 +59,18 @@ by a #MIRAGE_Fragment implementation.
 @Returns: 
 
 
-<!-- ##### FUNCTION mirage_finterface_binary_track_file_set_offset ##### -->
+<!-- ##### FUNCTION mirage_frag_iface_binary_track_file_get_handle ##### -->
+<para>
+
+</para>
+
+@self: 
+@file: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION mirage_frag_iface_binary_track_file_set_offset ##### -->
 <para>
 
 </para>
@@ -81,7 +81,7 @@ by a #MIRAGE_Fragment implementation.
 @Returns: 
 
 
-<!-- ##### FUNCTION mirage_finterface_binary_track_file_get_offset ##### -->
+<!-- ##### FUNCTION mirage_frag_iface_binary_track_file_get_offset ##### -->
 <para>
 
 </para>
@@ -92,7 +92,7 @@ by a #MIRAGE_Fragment implementation.
 @Returns: 
 
 
-<!-- ##### FUNCTION mirage_finterface_binary_track_file_set_sectsize ##### -->
+<!-- ##### FUNCTION mirage_frag_iface_binary_track_file_set_sectsize ##### -->
 <para>
 
 </para>
@@ -103,7 +103,7 @@ by a #MIRAGE_Fragment implementation.
 @Returns: 
 
 
-<!-- ##### FUNCTION mirage_finterface_binary_track_file_get_sectsize ##### -->
+<!-- ##### FUNCTION mirage_frag_iface_binary_track_file_get_sectsize ##### -->
 <para>
 
 </para>
@@ -114,7 +114,7 @@ by a #MIRAGE_Fragment implementation.
 @Returns: 
 
 
-<!-- ##### FUNCTION mirage_finterface_binary_track_file_set_format ##### -->
+<!-- ##### FUNCTION mirage_frag_iface_binary_track_file_set_format ##### -->
 <para>
 
 </para>
@@ -125,7 +125,7 @@ by a #MIRAGE_Fragment implementation.
 @Returns: 
 
 
-<!-- ##### FUNCTION mirage_finterface_binary_track_file_get_format ##### -->
+<!-- ##### FUNCTION mirage_frag_iface_binary_track_file_get_format ##### -->
 <para>
 
 </para>
@@ -136,7 +136,7 @@ by a #MIRAGE_Fragment implementation.
 @Returns: 
 
 
-<!-- ##### FUNCTION mirage_finterface_binary_track_file_get_position ##### -->
+<!-- ##### FUNCTION mirage_frag_iface_binary_track_file_get_position ##### -->
 <para>
 
 </para>
@@ -148,7 +148,7 @@ by a #MIRAGE_Fragment implementation.
 @Returns: 
 
 
-<!-- ##### FUNCTION mirage_finterface_binary_subchannel_file_set_handle ##### -->
+<!-- ##### FUNCTION mirage_frag_iface_binary_subchannel_file_set_handle ##### -->
 <para>
 
 </para>
@@ -159,7 +159,7 @@ by a #MIRAGE_Fragment implementation.
 @Returns: 
 
 
-<!-- ##### FUNCTION mirage_finterface_binary_subchannel_file_get_handle ##### -->
+<!-- ##### FUNCTION mirage_frag_iface_binary_subchannel_file_get_handle ##### -->
 <para>
 
 </para>
@@ -170,7 +170,7 @@ by a #MIRAGE_Fragment implementation.
 @Returns: 
 
 
-<!-- ##### FUNCTION mirage_finterface_binary_subchannel_file_set_offset ##### -->
+<!-- ##### FUNCTION mirage_frag_iface_binary_subchannel_file_set_offset ##### -->
 <para>
 
 </para>
@@ -181,7 +181,7 @@ by a #MIRAGE_Fragment implementation.
 @Returns: 
 
 
-<!-- ##### FUNCTION mirage_finterface_binary_subchannel_file_get_offset ##### -->
+<!-- ##### FUNCTION mirage_frag_iface_binary_subchannel_file_get_offset ##### -->
 <para>
 
 </para>
@@ -192,7 +192,7 @@ by a #MIRAGE_Fragment implementation.
 @Returns: 
 
 
-<!-- ##### FUNCTION mirage_finterface_binary_subchannel_file_set_sectsize ##### -->
+<!-- ##### FUNCTION mirage_frag_iface_binary_subchannel_file_set_sectsize ##### -->
 <para>
 
 </para>
@@ -203,7 +203,7 @@ by a #MIRAGE_Fragment implementation.
 @Returns: 
 
 
-<!-- ##### FUNCTION mirage_finterface_binary_subchannel_file_get_sectsize ##### -->
+<!-- ##### FUNCTION mirage_frag_iface_binary_subchannel_file_get_sectsize ##### -->
 <para>
 
 </para>
@@ -214,7 +214,7 @@ by a #MIRAGE_Fragment implementation.
 @Returns: 
 
 
-<!-- ##### FUNCTION mirage_finterface_binary_subchannel_file_set_format ##### -->
+<!-- ##### FUNCTION mirage_frag_iface_binary_subchannel_file_set_format ##### -->
 <para>
 
 </para>
@@ -225,7 +225,7 @@ by a #MIRAGE_Fragment implementation.
 @Returns: 
 
 
-<!-- ##### FUNCTION mirage_finterface_binary_subchannel_file_get_format ##### -->
+<!-- ##### FUNCTION mirage_frag_iface_binary_subchannel_file_get_format ##### -->
 <para>
 
 </para>
@@ -236,7 +236,7 @@ by a #MIRAGE_Fragment implementation.
 @Returns: 
 
 
-<!-- ##### FUNCTION mirage_finterface_binary_subchannel_file_get_position ##### -->
+<!-- ##### FUNCTION mirage_frag_iface_binary_subchannel_file_get_position ##### -->
 <para>
 
 </para>

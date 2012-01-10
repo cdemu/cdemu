@@ -42,13 +42,14 @@ G_BEGIN_DECLS
  * to be used for building file type filters in GUI applications.
  * </para>
  **/
-typedef struct
+typedef struct _MIRAGE_ParserInfo MIRAGE_ParserInfo;
+struct _MIRAGE_ParserInfo
 {
     gchar *id;
     gchar *name;
     gchar *description;
     gchar *mime_type;
-} MIRAGE_ParserInfo;
+};
 
 
 #define MIRAGE_TYPE_PARSER            (mirage_parser_get_type())

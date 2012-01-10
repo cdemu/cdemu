@@ -1,12 +1,12 @@
 <!-- ##### SECTION Title ##### -->
-MIRAGE_FInterface_NULL interface
+MIRAGE_FragIface_Null interface
 
 <!-- ##### SECTION Short_Description ##### -->
-NULL Fragment interface
+Null Fragment interface
 
 <!-- ##### SECTION Long_Description ##### -->
 <para>
-#MIRAGE_FInterface_NULL is NULL Fragment interface that can be implemented
+#MIRAGE_FragIface_Null is Null Fragment interface that can be implemented
 by a #MIRAGE_Fragment implementation.
 </para>
 
@@ -21,7 +21,7 @@ by a #MIRAGE_Fragment implementation.
 <!-- ##### SECTION Image ##### -->
 
 
-<!-- ##### STRUCT MIRAGE_FInterface_NULL ##### -->
+<!-- ##### STRUCT MIRAGE_FragIface_Null ##### -->
 <para>
 
 </para>

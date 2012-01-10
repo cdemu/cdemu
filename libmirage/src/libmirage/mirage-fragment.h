@@ -33,11 +33,12 @@ G_BEGIN_DECLS
  * mirage_fragment_get_fragment_info().
  * </para>
  **/
-typedef struct
+typedef struct _MIRAGE_FragmentInfo MIRAGE_FragmentInfo;
+struct _MIRAGE_FragmentInfo
 {
     gchar *id;
     gchar *name;
-} MIRAGE_FragmentInfo;
+};
 
 
 /**********************************************************************\

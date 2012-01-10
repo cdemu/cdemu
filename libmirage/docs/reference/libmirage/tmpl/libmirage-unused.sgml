@@ -1,0 +1,19 @@
+<!-- ##### ARG MIRAGE-Disc:dvd-report-css ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### SIGNAL MIRAGE-Object::object-modified ##### -->
+<para>
+
+</para>
+
+@mirage_object: the object which received the signal.
+
+<!-- ##### ARG MIRAGE-Plugin:filename ##### -->
+<para>
+
+</para>
+
+

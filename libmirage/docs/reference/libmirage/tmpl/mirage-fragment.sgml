@@ -18,7 +18,7 @@ by fragment implementations which derive from #MIRAGE_Fragment object.
 
 <para>
 Every fragment implementation needs to implement one of fragment interfaces: 
-#MIRAGE_FInterface_NULL, #MIRAGE_FInterface_BINARY or #MIRAGE_FInterface_AUDIO.
+#MIRAGE_FragIface_Null, #MIRAGE_FragIface_Binary or #MIRAGE_FragIface_Audio.
 Which interface a fragment implementation implements depends on the way the
 implementation handles data.
 </para>
