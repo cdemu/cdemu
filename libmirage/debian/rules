@@ -6,7 +6,7 @@
 
 
 override_dh_auto_configure:
-	dh_auto_configure -- --disable-static --disable-gtk-doc
+	dh_auto_configure -- --disable-static --enable-gtk-doc
 
 override_dh_strip:
 	dh_strip --dbg-package="libmirage6-dbg"
