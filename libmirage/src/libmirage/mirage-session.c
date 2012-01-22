@@ -1404,7 +1404,7 @@ gboolean mirage_session_for_each_language (MIRAGE_Session *self, MIRAGE_Callback
 static gboolean set_cdtext_data (gint langcode, gint type, gint track, guint8 *data, gint len, MIRAGE_Session *self)
 {
     gboolean succeeded;
-    GObject *language;
+    GObject *language = NULL;
     
     if (track == 0) {
         /* Session */
