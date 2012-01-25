@@ -57,12 +57,6 @@ AC_HEADER_STDC
 AC_SYS_LARGEFILE
 
 # Gtk-doc check
-PKG_CHECK_EXISTS(gtk-doc >= 1.4, [have_gtkdoc="yes"], [have_gtkdoc="no"])
-AC_MSG_CHECKING([for gtk-doc])
-AC_MSG_RESULT(${have_gtkdoc})
-if test ${have_gtkdoc} = "no"; then 
-    AC_MSG_ERROR("*** gtk-doc not found ***")
-fi
 GTK_DOC_CHECK([1.4])
 
 # Libraries check
