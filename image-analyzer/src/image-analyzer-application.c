@@ -442,6 +442,7 @@ static GtkWidget *build_dialog_open_image (IMAGE_ANALYZER_Application *self)
         NULL);
 
     gtk_file_chooser_set_select_multiple(GTK_FILE_CHOOSER(dialog), TRUE);
+    gtk_file_chooser_set_local_only(GTK_FILE_CHOOSER(dialog), FALSE);
 
     /* "All files" filter */
     filter = gtk_file_filter_new();

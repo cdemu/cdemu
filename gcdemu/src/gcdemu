@@ -1277,6 +1277,7 @@ class gCDEMuFileChooserDialog (Gtk.FileChooserDialog):
     def __init__ (self, parsers):
         super(gCDEMuFileChooserDialog, self).__init__(_("Open file"), None, Gtk.FileChooserAction.OPEN, (Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL, Gtk.STOCK_OPEN, Gtk.ResponseType.ACCEPT))
         self.set_select_multiple(True)
+        self.set_local_only(False)
 
         # Set filters based on supported parser information
         filter = Gtk.FileFilter()
