@@ -65,7 +65,7 @@ static gboolean image_analyzer_disc_topology_run_gnuplot (IMAGE_ANALYZER_DiscTop
     /* Redirect to socket */
     gtk_widget_show_all(GTK_WIDGET(self));
 
-    cmd = g_strdup_printf("set term x11 window '%lX' ctrlq enhanced", gtk_socket_get_id(GTK_SOCKET(self->priv->socket)));
+    cmd = g_strdup_printf("set term x11 window '%lX' ctrlq", gtk_socket_get_id(GTK_SOCKET(self->priv->socket)));
     write(self->priv->fd_in, cmd, strlen(cmd));
     write(self->priv->fd_in, "\n", 1);
 
@@ -74,63 +74,11 @@ static gboolean image_analyzer_disc_topology_run_gnuplot (IMAGE_ANALYZER_DiscTop
     return TRUE;
 }
 
-
-static gboolean dump_dpm_data_to_file (GObject *disc, gchar **dump_file)
-{
-    GError *local_error = NULL;
-    gchar *tmp_filename;
-    gint fd;
-
-    gint dpm_start, dpm_entries, dpm_resolution;
-    gint i;
-
-    gint address;
-    gdouble density;
-    gchar *line;
-    gchar dbl_buffer[G_ASCII_DTOSTR_BUF_SIZE] = "";
-
-    *dump_file = NULL;
-
-    /* Prepare data for plot */
-    if (!mirage_disc_get_dpm_data(MIRAGE_DISC(disc), &dpm_start, &dpm_resolution, &dpm_entries, NULL, NULL)) {
-        return TRUE;
-    }
-
-    /* Open temporary file */
-    fd = g_file_open_tmp("disc_topology_XXXXXX", &tmp_filename, &local_error);
-    if (fd == -1) {
-        g_warning("%s: failed to create temporary file: %s!\n", __func__, local_error->message);
-        g_error_free(local_error);
-        return FALSE;
-    }
-
-    /* Dump DPM data into temporary file */    
-    for (i = 0; i < dpm_entries; i++) {
-        address = dpm_start + i*dpm_resolution;
-        density = 0;
-
-        if (!mirage_disc_get_dpm_data_for_sector(MIRAGE_DISC(disc), address, NULL, &density, NULL)) {
-            /*g_debug("%s: failed to get DPM data for address 0x%X\n", __func__, address);*/
-            continue;
-        }
-
-        /* NOTE: we convert double to string using g_ascii_dtostr, because
-           %g and %f are locale-dependent */
-        line = g_strdup_printf("%d %s\n", address, g_ascii_dtostr(dbl_buffer, G_ASCII_DTOSTR_BUF_SIZE, density));
-        write(fd, line, strlen(line));
-        g_free(line);
-    }
-
-    /* Close temporary file */
-    close(fd);
-
-    *dump_file = tmp_filename;
-    return TRUE;
-}
-
-
 static gboolean image_analyzer_disc_topology_refresh (IMAGE_ANALYZER_DiscTopology *self, GObject *disc)
 {
+    gboolean dpm_valid = FALSE;
+    gint dpm_start, dpm_entries, dpm_resolution;
+
     gchar *command;
     
     /* No-op if gnuplot couldn't be started */
@@ -155,7 +103,7 @@ static gboolean image_analyzer_disc_topology_refresh (IMAGE_ANALYZER_DiscTopolog
         mirage_disc_get_filenames(MIRAGE_DISC(disc), &filenames, NULL);
         basename = g_path_get_basename(filenames[0]);
         
-        if (!mirage_disc_get_dpm_data(MIRAGE_DISC(disc), NULL, NULL, NULL, NULL, NULL)) {
+        if (!mirage_disc_get_dpm_data(MIRAGE_DISC(disc), &dpm_start, &dpm_entries, &dpm_resolution, NULL, NULL)) {
             /* No DPM data */
             command = g_strdup_printf(
                 "clear; reset; "
@@ -167,28 +115,18 @@ static gboolean image_analyzer_disc_topology_refresh (IMAGE_ANALYZER_DiscTopolog
                 filenames[1] ? "..." : ""
             );
         } else {
-            gchar *tmp_filename;
-
-            /* Dump DPM data to temporary file */
-            if (!dump_dpm_data_to_file(disc, &tmp_filename)) {
-                g_free(basename);
-                return FALSE;
-            }
-
-            /* Plot */
+            /* Plot with DPM data fed via stdin */
             command = g_strdup_printf(
                 "clear; reset; "
                 "set title '%s%s: disc topology'; "
                 "set xlabel 'Sector address'; "
                 "set ylabel 'Sector density [degrees/sector]'; "
                 "set grid; "
-                "plot '%s' notitle with lines; ",
+                "plot '-' notitle with lines; ",
                 basename,
-                filenames[1] ? "..." : "",
-                tmp_filename
+                filenames[1] ? "..." : ""
             );
-
-            g_free(tmp_filename);
+            dpm_valid = TRUE;
         }
 
         g_free(basename);
@@ -199,6 +137,34 @@ static gboolean image_analyzer_disc_topology_refresh (IMAGE_ANALYZER_DiscTopolog
     write(self->priv->fd_in, "\n", 1);
 
     g_free(command);
+    
+    
+    /* Feed DPM data */
+    if (dpm_valid) {
+        gint address, i;
+        gdouble density;
+
+        gchar dbl_buffer[G_ASCII_DTOSTR_BUF_SIZE] = "";
+    
+        for (i = 0; i < dpm_entries; i++) {
+            address = dpm_start + i*dpm_resolution;
+            density = 0;
+
+            if (!mirage_disc_get_dpm_data_for_sector(MIRAGE_DISC(disc), address, NULL, &density, NULL)) {
+                /*g_debug("%s: failed to get DPM data for address 0x%X\n", __func__, address);*/
+                continue;
+            }
+
+            /* NOTE: we convert double to string using g_ascii_dtostr, because
+               %g and %f are locale-dependent */
+            command = g_strdup_printf("%d %s\n", address, g_ascii_dtostr(dbl_buffer, G_ASCII_DTOSTR_BUF_SIZE, density));
+            write(self->priv->fd_in, command, strlen(command));
+            g_free(command);
+        }
+
+        /* Write EOF */
+        write(self->priv->fd_in, "e\n", 2);
+    }
     
     return TRUE;
 }
