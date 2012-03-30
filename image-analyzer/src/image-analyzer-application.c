@@ -476,6 +476,8 @@ static GtkWidget *build_dialog_open_dump (IMAGE_ANALYZER_Application *self)
         GTK_STOCK_OPEN, GTK_RESPONSE_ACCEPT,
         NULL);
 
+    gtk_file_chooser_set_local_only(GTK_FILE_CHOOSER(dialog), FALSE);
+
     /* "XML files" filter */
     filter= gtk_file_filter_new();
     gtk_file_filter_set_name(filter, "XML files");
@@ -504,6 +506,7 @@ static GtkWidget *build_dialog_save_dump (IMAGE_ANALYZER_Application *self)
         GTK_STOCK_SAVE, GTK_RESPONSE_ACCEPT,
         NULL);
 
+    gtk_file_chooser_set_local_only(GTK_FILE_CHOOSER(dialog), FALSE);
     gtk_file_chooser_set_do_overwrite_confirmation(GTK_FILE_CHOOSER(dialog), TRUE);
 
     /* "XML files" filter */
