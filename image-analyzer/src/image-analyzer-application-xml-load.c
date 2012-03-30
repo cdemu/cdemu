@@ -114,9 +114,10 @@ static void treestore_add_fragment (GtkTreeStore *treestore, GtkTreeIter *parent
         } else if (!g_ascii_strcasecmp((gchar *)cur_node->name, TAG_LENGTH)) {
             gint length = xml_node_get_double(cur_node);
             treestore_add_node(treestore, &node, NULL, "Length: %d (0x%X)", length, length);
-        } else if (!g_ascii_strcasecmp((gchar *)cur_node->name, TAG_TFILE_HANDLE)) {
-            FILE *tfile_handle = (FILE *)xml_node_get_uint64(cur_node);
-            treestore_add_node(treestore, &node, NULL, "Track file: Handle: %p", tfile_handle);
+        } else if (!g_ascii_strcasecmp((gchar *)cur_node->name, TAG_TFILE_NAME)) {
+            gchar *filename = xml_node_get_string(cur_node);
+            treestore_add_node(treestore, &node, NULL, "Track file: Name: %s", filename);
+            g_free(filename);
         } else if (!g_ascii_strcasecmp((gchar *)cur_node->name, TAG_TFILE_OFFSET)) {
             guint64 tfile_offset = xml_node_get_uint64(cur_node);
             treestore_add_node(treestore, &node, NULL, "Track file: Offset: %lli (0x%llX)", tfile_offset, tfile_offset);
@@ -126,9 +127,10 @@ static void treestore_add_fragment (GtkTreeStore *treestore, GtkTreeIter *parent
         } else if (!g_ascii_strcasecmp((gchar *)cur_node->name, TAG_TFILE_FORMAT)) {
             gint tfile_format = xml_node_get_double(cur_node);
             treestore_add_node(treestore, &node, NULL, "Track file: Format: 0x%X (%s)", tfile_format, dump_binary_fragment_tfile_format(tfile_format));
-        }  else if (!g_ascii_strcasecmp((gchar *)cur_node->name, TAG_SFILE_HANDLE)) {
-            FILE *sfile_handle = (FILE *)xml_node_get_uint64(cur_node);
-            treestore_add_node(treestore, &node, NULL, "Subchannel file: Handle: %p", sfile_handle);
+        }  else if (!g_ascii_strcasecmp((gchar *)cur_node->name, TAG_SFILE_NAME)) {
+            gchar *filename = xml_node_get_string(cur_node);
+            treestore_add_node(treestore, &node, NULL, "Subchannel file: Name: %s", filename);
+            g_free(filename);
         } else if (!g_ascii_strcasecmp((gchar *)cur_node->name, TAG_SFILE_OFFSET)) {
             guint64 sfile_offset = xml_node_get_uint64(cur_node);
             treestore_add_node(treestore, &node, NULL, "Subchannel file: Offset: %lli (0x%llX)", sfile_offset, sfile_offset);

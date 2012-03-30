@@ -96,13 +96,13 @@ static gboolean xml_dump_fragment (GObject *fragment, xmlNodePtr parent)
     if (MIRAGE_IS_FRAG_IFACE_NULL(fragment)) {
         /* Nothing to do here*/
     } else if (MIRAGE_IS_FRAG_IFACE_BINARY(fragment)) {
-        FILE *tfile_handle, *sfile_handle;
+        const gchar *tfile_name, *sfile_name;
         guint64 tfile_offset, sfile_offset;
         gint tfile_sectsize, sfile_sectsize;
         gint tfile_format, sfile_format;
 
-        if (mirage_frag_iface_binary_track_file_get_handle(MIRAGE_FRAG_IFACE_BINARY(fragment), &tfile_handle, NULL)) {
-            xml_add_node_with_content(parent, TAG_TFILE_HANDLE, "%p", tfile_handle);
+        if (mirage_frag_iface_binary_track_file_get_file(MIRAGE_FRAG_IFACE_BINARY(fragment), &tfile_name, NULL)) {
+            xml_add_node_with_content(parent, TAG_TFILE_NAME, "%s", tfile_name);
         }
 
         if (mirage_frag_iface_binary_track_file_get_offset(MIRAGE_FRAG_IFACE_BINARY(fragment), &tfile_offset, NULL)) {
@@ -117,8 +117,8 @@ static gboolean xml_dump_fragment (GObject *fragment, xmlNodePtr parent)
             xml_add_node_with_content(parent, TAG_TFILE_FORMAT, "0x%X", tfile_format);
         }
 
-        if (mirage_frag_iface_binary_subchannel_file_get_handle(MIRAGE_FRAG_IFACE_BINARY(fragment), &sfile_handle, NULL)) {
-            xml_add_node_with_content(parent, TAG_SFILE_HANDLE, "%p", sfile_handle);
+        if (mirage_frag_iface_binary_subchannel_file_get_file(MIRAGE_FRAG_IFACE_BINARY(fragment), &sfile_name, NULL)) {
+            xml_add_node_with_content(parent, TAG_SFILE_NAME, "%s", sfile_name);
         }
 
         if (mirage_frag_iface_binary_subchannel_file_get_offset(MIRAGE_FRAG_IFACE_BINARY(fragment), &sfile_offset, NULL)) {
