@@ -642,7 +642,6 @@ static gboolean mirage_parser_cdi_load_track (MIRAGE_Parser_CDI *self, GError **
     /**********************************************************************\
      *                         Track data setting                         *
     \**********************************************************************/
-    FILE *tfile_handle = NULL;
     gint tfile_sectsize = 0;
     guint64 tfile_offset = self->priv->cur_offset;
     gint tfile_format = 0;
@@ -657,9 +656,6 @@ static gboolean mirage_parser_cdi_load_track (MIRAGE_Parser_CDI *self, GError **
     GObject *cur_session = NULL;
     GObject *cur_track = NULL;
 
-
-    /* Prepare stuff for BINARY fragment */
-    tfile_handle = g_fopen(self->priv->cdi_filename, "r");
 
     /* Track mode; also determines BINARY format */
     gint decoded_mode = 0;
@@ -697,12 +693,18 @@ static gboolean mirage_parser_cdi_load_track (MIRAGE_Parser_CDI *self, GError **
     data_fragment = libmirage_create_fragment(MIRAGE_TYPE_FRAG_IFACE_BINARY, self->priv->cdi_filename, error);
     if (!data_fragment) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: failed to create BINARY fragment!\n", __debug__);
+        succeeded = FALSE;
         goto free_track;
     }
 
     mirage_fragment_set_length(MIRAGE_FRAGMENT(data_fragment), fragment_len, NULL);
 
-    mirage_frag_iface_binary_track_file_set_handle(MIRAGE_FRAG_IFACE_BINARY(data_fragment), tfile_handle, NULL);
+    if (!mirage_frag_iface_binary_track_file_set_file(MIRAGE_FRAG_IFACE_BINARY(data_fragment), self->priv->cdi_filename, error)) {
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to set track data file!\n", __debug__);
+        g_object_unref(data_fragment);
+        succeeded = FALSE;
+        goto free_track;
+    }
     mirage_frag_iface_binary_track_file_set_offset(MIRAGE_FRAG_IFACE_BINARY(data_fragment), tfile_offset, NULL);
     mirage_frag_iface_binary_track_file_set_sectsize(MIRAGE_FRAG_IFACE_BINARY(data_fragment), tfile_sectsize, NULL);
     mirage_frag_iface_binary_track_file_set_format(MIRAGE_FRAG_IFACE_BINARY(data_fragment), tfile_format, NULL);

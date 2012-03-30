@@ -372,7 +372,6 @@ static gboolean mirage_parser_cif_parse_track_entries (MIRAGE_Parser_CIF *self, 
         }
 
         /* Prepare data fragment */
-        FILE *tfile_handle = g_fopen(self->priv->cif_filename, "r");
         guint64 tfile_offset = (guint64)track_start;
         gint tfile_sectsize = real_sector_size;
         gint tfile_format = 0;
@@ -387,7 +386,13 @@ static gboolean mirage_parser_cif_parse_track_entries (MIRAGE_Parser_CIF *self, 
 
         mirage_fragment_set_length(MIRAGE_FRAGMENT(data_fragment), fragment_len, NULL);
 
-        mirage_frag_iface_binary_track_file_set_handle(MIRAGE_FRAG_IFACE_BINARY(data_fragment), tfile_handle, NULL);
+        if (!mirage_frag_iface_binary_track_file_set_file(MIRAGE_FRAG_IFACE_BINARY(data_fragment), self->priv->cif_filename, error)) {
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to set track data file!\n", __debug__);
+            g_object_unref(data_fragment);
+            g_object_unref(cur_track);
+            g_object_unref(cur_session);
+            return FALSE;
+        }
         mirage_frag_iface_binary_track_file_set_offset(MIRAGE_FRAG_IFACE_BINARY(data_fragment), tfile_offset, NULL);
         mirage_frag_iface_binary_track_file_set_sectsize(MIRAGE_FRAG_IFACE_BINARY(data_fragment), tfile_sectsize, NULL);
         mirage_frag_iface_binary_track_file_set_format(MIRAGE_FRAG_IFACE_BINARY(data_fragment), tfile_format, NULL);

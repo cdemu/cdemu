@@ -276,16 +276,17 @@ static gboolean mirage_parser_b6t_setup_track_fragments (MIRAGE_Parser_B6T *self
                 mirage_error(MIRAGE_E_DATAFILE, error);
                 return FALSE;
             }
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: using data file: %s\n", __debug__, filename);
 
             /* We'd like a BINARY fragment */
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: creating BINARY fragment\n", __debug__);
             data_fragment = libmirage_create_fragment(MIRAGE_TYPE_FRAG_IFACE_BINARY, filename, error);
             if (!data_fragment) {
+                g_free(filename);
                 MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to create BINARY fragment!\n", __debug__);
                 return FALSE;
             }
 
-            FILE *tfile_handle = NULL;
             gint tfile_sectsize = 0;
             gint tfile_format = 0;
             guint64 tfile_offset = 0;
@@ -293,9 +294,6 @@ static gboolean mirage_parser_b6t_setup_track_fragments (MIRAGE_Parser_B6T *self
             gint sfile_format = 0;
             gint sfile_sectsize = 0;
 
-            /* Track file */
-            tfile_handle = g_fopen(filename, "r");
-            g_free(filename);
             /* We calculate sector size... */
             tfile_sectsize = data_block->length_bytes/data_block->length_sectors;
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: track file sector size: %i (0x%X)\n", __debug__, tfile_sectsize, tfile_sectsize);
@@ -327,7 +325,7 @@ static gboolean mirage_parser_b6t_setup_track_fragments (MIRAGE_Parser_B6T *self
                 }
             }
 
-            /* Data format: */
+            /* Data format */
             if ((data_block->type & 0x00008000) == 0x00008000) {
                 MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: data block is for audio data\n", __debug__);
                 tfile_format = FR_BIN_TFILE_AUDIO;
@@ -336,7 +334,14 @@ static gboolean mirage_parser_b6t_setup_track_fragments (MIRAGE_Parser_B6T *self
                 tfile_format = FR_BIN_TFILE_DATA;
             }
 
-            mirage_frag_iface_binary_track_file_set_handle(MIRAGE_FRAG_IFACE_BINARY(data_fragment), tfile_handle, NULL);
+            /* Set file */
+            if (!mirage_frag_iface_binary_track_file_set_file(MIRAGE_FRAG_IFACE_BINARY(data_fragment), filename, error)) {
+                MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to set track data file!\n", __debug__);
+                g_free(filename);
+                return FALSE;
+            }
+            g_free(filename);
+
             mirage_frag_iface_binary_track_file_set_sectsize(MIRAGE_FRAG_IFACE_BINARY(data_fragment), tfile_sectsize, NULL);
             mirage_frag_iface_binary_track_file_set_offset(MIRAGE_FRAG_IFACE_BINARY(data_fragment), tfile_offset, NULL);
             mirage_frag_iface_binary_track_file_set_format(MIRAGE_FRAG_IFACE_BINARY(data_fragment), tfile_format, NULL);
@@ -349,7 +354,6 @@ static gboolean mirage_parser_b6t_setup_track_fragments (MIRAGE_Parser_B6T *self
             /* Add fragment */
             mirage_track_add_fragment(MIRAGE_TRACK(cur_track), -1, &data_fragment, NULL);
             g_object_unref(data_fragment);
-
 
             /* Calculate remaining track length */
             length -= tmp_length;

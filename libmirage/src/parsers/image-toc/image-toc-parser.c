@@ -180,7 +180,7 @@ static gboolean mirage_parser_toc_track_add_fragment (MIRAGE_Parser_TOC *self, g
     if (type == TOC_DATA_TYPE_NONE) {
         /* Empty fragment; we'd like a NULL fragment */
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: creating NULL fragment\n", __debug__);
-        data_fragment = libmirage_create_fragment(MIRAGE_TYPE_FRAG_IFACE_NULL, "NULL", error);
+        data_fragment = libmirage_create_fragment(MIRAGE_TYPE_FRAG_IFACE_NULL, NULL, error);
         if (!data_fragment) {
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to create NULL fragment!\n", __debug__);
             return FALSE;
@@ -193,6 +193,7 @@ static gboolean mirage_parser_toc_track_add_fragment (MIRAGE_Parser_TOC *self, g
             mirage_error(MIRAGE_E_DATAFILE, error);
             return FALSE;
         }
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: using data file: %s\n", __debug__, filename);
 
         /* BINARY can be either explicitly requested; or it can be assumed from
            *.bin suffix (with TOC_DATA_TYPE_AUDIO), which is a bit hacky, but
@@ -203,10 +204,10 @@ static gboolean mirage_parser_toc_track_add_fragment (MIRAGE_Parser_TOC *self, g
             data_fragment = libmirage_create_fragment(MIRAGE_TYPE_FRAG_IFACE_BINARY, filename, error);
             if (!data_fragment) {
                 MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to create BINARY fragment!\n", __debug__);
+                g_free(filename);
                 return FALSE;
             }
 
-            FILE *tfile_handle = NULL;
             gint tfile_sectsize = 0;
             gint tfile_format = 0;
             guint64 tfile_offset = 0;
@@ -215,7 +216,6 @@ static gboolean mirage_parser_toc_track_add_fragment (MIRAGE_Parser_TOC *self, g
             gint sfile_sectsize = 0;
 
             /* Track file */
-            tfile_handle = g_fopen(filename, "r");
             tfile_sectsize = self->priv->cur_tfile_sectsize;
 
             /* If we're dealing with BINARY AUDIO data, we need to swap it...
@@ -263,7 +263,13 @@ static gboolean mirage_parser_toc_track_add_fragment (MIRAGE_Parser_TOC *self, g
             sfile_sectsize = self->priv->cur_sfile_sectsize;
             sfile_format = self->priv->cur_sfile_format;
 
-            mirage_frag_iface_binary_track_file_set_handle(MIRAGE_FRAG_IFACE_BINARY(data_fragment), tfile_handle, NULL);
+            /* Set file */
+            if (!mirage_frag_iface_binary_track_file_set_file(MIRAGE_FRAG_IFACE_BINARY(data_fragment), filename, error)) {
+                MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to set track data file!\n", __debug__);
+                g_free(filename);
+                g_object_unref(data_fragment);
+                return FALSE;
+            }
             mirage_frag_iface_binary_track_file_set_sectsize(MIRAGE_FRAG_IFACE_BINARY(data_fragment), tfile_sectsize, NULL);
             mirage_frag_iface_binary_track_file_set_offset(MIRAGE_FRAG_IFACE_BINARY(data_fragment), tfile_offset, NULL);
             mirage_frag_iface_binary_track_file_set_format(MIRAGE_FRAG_IFACE_BINARY(data_fragment), tfile_format, NULL);
@@ -277,12 +283,14 @@ static gboolean mirage_parser_toc_track_add_fragment (MIRAGE_Parser_TOC *self, g
             data_fragment = libmirage_create_fragment(MIRAGE_TYPE_FRAG_IFACE_AUDIO, filename, error);
             if (!data_fragment) {
                 MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to create appropriate AUDIO fragment!\n", __debug__);
+                g_free(filename);
                 return FALSE;
             }
 
             /* Set file */
             if (!mirage_frag_iface_audio_set_file(MIRAGE_FRAG_IFACE_AUDIO(data_fragment), filename, error)) {
-                MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to set file to AUDIO fragment!\n", __debug__);
+                MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to set track data file!\n", __debug__);
+                g_free(filename);
                 g_object_unref(data_fragment);
                 return FALSE;
             }

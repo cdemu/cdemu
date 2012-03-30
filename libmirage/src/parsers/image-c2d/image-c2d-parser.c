@@ -288,7 +288,6 @@ static gboolean mirage_parser_c2d_parse_track_entries (MIRAGE_Parser_C2D *self, 
         }
 
         /* Prepare data fragment */
-        FILE *tfile_handle = g_fopen(self->priv->c2d_filename, "r");
         guint64 tfile_offset = cur_tb->image_offset;
         gint tfile_sectsize = cur_tb->sector_size;
         gint tfile_format = 0;
@@ -304,7 +303,14 @@ static gboolean mirage_parser_c2d_parse_track_entries (MIRAGE_Parser_C2D *self, 
 
         mirage_fragment_set_length(MIRAGE_FRAGMENT(data_fragment), fragment_len, NULL);
 
-        mirage_frag_iface_binary_track_file_set_handle(MIRAGE_FRAG_IFACE_BINARY(data_fragment), tfile_handle, NULL);
+        /* Set file */
+        if(!mirage_frag_iface_binary_track_file_set_file(MIRAGE_FRAG_IFACE_BINARY(data_fragment), self->priv->c2d_filename, error)) {
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to set track data file!\n", __debug__);
+            g_object_unref(data_fragment);
+            g_object_unref(cur_point);
+            g_object_unref(cur_session);
+            return FALSE;
+        }
         mirage_frag_iface_binary_track_file_set_offset(MIRAGE_FRAG_IFACE_BINARY(data_fragment), tfile_offset, NULL);
         mirage_frag_iface_binary_track_file_set_sectsize(MIRAGE_FRAG_IFACE_BINARY(data_fragment), tfile_sectsize, NULL);
         mirage_frag_iface_binary_track_file_set_format(MIRAGE_FRAG_IFACE_BINARY(data_fragment), tfile_format, NULL);

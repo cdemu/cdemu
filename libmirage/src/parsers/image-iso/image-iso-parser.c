@@ -199,8 +199,12 @@ static gboolean mirage_parser_iso_load_track (MIRAGE_Parser_ISO *self, gchar *fi
         return FALSE;
     }
 
-    /* Set track file */
-    mirage_frag_iface_binary_track_file_set_handle(MIRAGE_FRAG_IFACE_BINARY(data_fragment), g_fopen(filename, "r"), NULL);
+    /* Set file */
+    if (!mirage_frag_iface_binary_track_file_set_file(MIRAGE_FRAG_IFACE_BINARY(data_fragment), filename, error)) {
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to set track data file!\n", __debug__);
+        g_object_unref(data_fragment);
+        return FALSE;
+    }
     mirage_frag_iface_binary_track_file_set_sectsize(MIRAGE_FRAG_IFACE_BINARY(data_fragment), self->priv->track_sectsize, NULL);
     mirage_frag_iface_binary_track_file_set_format(MIRAGE_FRAG_IFACE_BINARY(data_fragment), FR_BIN_TFILE_DATA, NULL);
 

@@ -294,7 +294,11 @@ static gboolean mirage_parser_cue_add_index (MIRAGE_Parser_CUE *self, gint numbe
                     return FALSE;
                 }
 
-                mirage_frag_iface_binary_track_file_set_handle(MIRAGE_FRAG_IFACE_BINARY(data_fragment), g_fopen(self->priv->cur_data_filename, "r"), NULL);
+                if (!mirage_frag_iface_binary_track_file_set_file(MIRAGE_FRAG_IFACE_BINARY(data_fragment), self->priv->cur_data_filename, error)) {
+                    MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to set track data file!\n", __debug__);
+                    g_object_unref(data_fragment);
+                    return FALSE;
+                }
                 mirage_frag_iface_binary_track_file_set_sectsize(MIRAGE_FRAG_IFACE_BINARY(data_fragment), tfile_sectsize, NULL);
                 mirage_frag_iface_binary_track_file_set_offset(MIRAGE_FRAG_IFACE_BINARY(data_fragment), self->priv->binary_offset, NULL);
                 mirage_frag_iface_binary_track_file_set_format(MIRAGE_FRAG_IFACE_BINARY(data_fragment), self->priv->cur_data_format, NULL);
@@ -314,7 +318,11 @@ static gboolean mirage_parser_cue_add_index (MIRAGE_Parser_CUE *self, gint numbe
                     return FALSE;
                 }
 
-                mirage_frag_iface_audio_set_file(MIRAGE_FRAG_IFACE_AUDIO(data_fragment), self->priv->cur_data_filename, NULL);
+                if (!mirage_frag_iface_audio_set_file(MIRAGE_FRAG_IFACE_AUDIO(data_fragment), self->priv->cur_data_filename, error)) {
+                    MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to set track data file!\n", __debug__);
+                    g_object_unref(data_fragment);
+                    return FALSE;
+                }
                 /* Offset in audio file is equivalent to current address in CUE */
                 mirage_frag_iface_audio_set_offset(MIRAGE_FRAG_IFACE_AUDIO(data_fragment), address, NULL);
             }

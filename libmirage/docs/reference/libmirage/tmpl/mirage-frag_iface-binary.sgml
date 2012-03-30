@@ -48,24 +48,24 @@ by a #MIRAGE_Fragment implementation.
 </para>
 
 
-<!-- ##### FUNCTION mirage_frag_iface_binary_track_file_set_handle ##### -->
+<!-- ##### FUNCTION mirage_frag_iface_binary_track_file_set_file ##### -->
 <para>
 
 </para>
 
 @self: 
-@file: 
+@filename: 
 @error: 
 @Returns: 
 
 
-<!-- ##### FUNCTION mirage_frag_iface_binary_track_file_get_handle ##### -->
+<!-- ##### FUNCTION mirage_frag_iface_binary_track_file_get_file ##### -->
 <para>
 
 </para>
 
 @self: 
-@file: 
+@filename: 
 @error: 
 @Returns: 
 
@@ -148,24 +148,24 @@ by a #MIRAGE_Fragment implementation.
 @Returns: 
 
 
-<!-- ##### FUNCTION mirage_frag_iface_binary_subchannel_file_set_handle ##### -->
+<!-- ##### FUNCTION mirage_frag_iface_binary_subchannel_file_set_file ##### -->
 <para>
 
 </para>
 
 @self: 
-@file: 
+@filename: 
 @error: 
 @Returns: 
 
 
-<!-- ##### FUNCTION mirage_frag_iface_binary_subchannel_file_get_handle ##### -->
+<!-- ##### FUNCTION mirage_frag_iface_binary_subchannel_file_get_file ##### -->
 <para>
 
 </para>
 
 @self: 
-@file: 
+@filename: 
 @error: 
 @Returns: 
 

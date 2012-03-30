@@ -29,38 +29,54 @@
 
 struct _MIRAGE_Fragment_BINARYPrivate
 {
-    FILE *tfile_handle;   /* Handle of track file */
-    gint tfile_sectsize;  /* Track file sector size */
-    gint tfile_format;    /* Track file format */
+    gchar *tfile_name; /* Track file name */
+    gint tfile_sectsize; /* Track file sector size */
+    gint tfile_format; /* Track file format */
     guint64 tfile_offset; /* Track offset in track file */
         
-    FILE *sfile_handle;   /* Handle of subchannel file */
-    gint sfile_sectsize;  /* Subchannel file sector size*/
-    gint sfile_format;    /* Subchannel file format */
+    gchar *sfile_name; /* Subchannel file name */
+    gint sfile_sectsize; /* Subchannel file sector size*/
+    gint sfile_format; /* Subchannel file format */
     guint64 sfile_offset; /* Subchannel offset in subchannel file */
+    
+    FILE *tfile_handle, *sfile_handle;
 };
 
 
 /**********************************************************************\
  *                     Binary Interface implementation                *
 \**********************************************************************/
-static gboolean mirage_fragment_binary_track_file_set_handle (MIRAGE_FragIface_Binary *_self, FILE *file, GError **error G_GNUC_UNUSED)
+static gboolean mirage_fragment_binary_track_file_set_file (MIRAGE_FragIface_Binary *_self, const gchar *filename, GError **error)
 {
     MIRAGE_Fragment_BINARY *self = MIRAGE_FRAGMENT_BINARY(_self);
-    /* Set file handle, but free old one first (if provided) */
+    
+    /* Release old data */
     if (self->priv->tfile_handle) {
         fclose(self->priv->tfile_handle);
+        self->priv->tfile_handle = NULL;
     }
-    self->priv->tfile_handle = file;
+    if (self->priv->tfile_name) {
+        g_free(self->priv->tfile_name);
+        self->priv->tfile_name = NULL;
+    }
+    
+    /* Set new data */
+    self->priv->tfile_handle = g_fopen(filename, "r");
+    if (!self->priv->tfile_handle) {
+        mirage_error(MIRAGE_E_DATAFILE, error);
+        return FALSE;
+    }
+    self->priv->tfile_name = g_strdup(filename);
+    
     return TRUE;
 }
 
-static gboolean mirage_fragment_binary_track_file_get_handle (MIRAGE_FragIface_Binary *_self, FILE **file, GError **error G_GNUC_UNUSED)
+static gboolean mirage_fragment_binary_track_file_get_file (MIRAGE_FragIface_Binary *_self, const gchar **filename, GError **error G_GNUC_UNUSED)
 {
     MIRAGE_Fragment_BINARY *self = MIRAGE_FRAGMENT_BINARY(_self);
-    MIRAGE_CHECK_ARG(file);
-    /* Return file handle */
-    *file = self->priv->tfile_handle;
+    MIRAGE_CHECK_ARG(filename);
+    /* Return file name */
+    *filename = self->priv->tfile_name;
     return TRUE;
 }
 
@@ -148,23 +164,37 @@ static gboolean mirage_fragment_binary_track_file_get_position (MIRAGE_FragIface
 }
 
 
-static gboolean mirage_fragment_binary_subchannel_file_set_handle (MIRAGE_FragIface_Binary *_self, FILE *file, GError **error G_GNUC_UNUSED)
+static gboolean mirage_fragment_binary_subchannel_file_set_file (MIRAGE_FragIface_Binary *_self, const gchar *filename, GError **error G_GNUC_UNUSED)
 {
     MIRAGE_Fragment_BINARY *self = MIRAGE_FRAGMENT_BINARY(_self);
-    /* Set file handle, but free old one first (if provided) */
+    
+    /* Release old data */
     if (self->priv->sfile_handle) {
         fclose(self->priv->sfile_handle);
+        self->priv->sfile_handle = NULL;
     }
-    self->priv->sfile_handle = file;
+    if (self->priv->sfile_name) {
+        g_free(self->priv->sfile_name);
+        self->priv->sfile_name = NULL;
+    }
+    
+    /* Set new data */
+    self->priv->sfile_handle = g_fopen(filename, "r");
+    if (!self->priv->sfile_handle) {
+        mirage_error(MIRAGE_E_DATAFILE, error);
+        return FALSE;
+    }
+    self->priv->sfile_name = g_strdup(filename);
+    
     return TRUE;
 }
 
-static gboolean mirage_fragment_binary_subchannel_file_get_handle (MIRAGE_FragIface_Binary *_self, FILE **file, GError **error)
+static gboolean mirage_fragment_binary_subchannel_file_get_file (MIRAGE_FragIface_Binary *_self, const gchar **filename, GError **error)
 {
     MIRAGE_Fragment_BINARY *self = MIRAGE_FRAGMENT_BINARY(_self);
-    MIRAGE_CHECK_ARG(file);
-    /* Return file handle */
-    *file = self->priv->sfile_handle;
+    MIRAGE_CHECK_ARG(filename);
+    /* Return file name */
+    *filename = self->priv->sfile_name;
     return TRUE;
 }
 
@@ -462,7 +492,9 @@ static void mirage_fragment_binary_init (MIRAGE_Fragment_BINARY *self)
         "Binary Fragment"
     );
 
+    self->priv->tfile_name = NULL;
     self->priv->tfile_handle = NULL;
+    self->priv->sfile_name = NULL;
     self->priv->sfile_handle = NULL;
 }
 
@@ -473,9 +505,11 @@ static void mirage_fragment_binary_finalize (GObject *gobject)
     if (self->priv->tfile_handle) {
         fclose(self->priv->tfile_handle);
     }
+    g_free(self->priv->tfile_name);
     if (self->priv->sfile_handle) {
         fclose(self->priv->sfile_handle);
     }
+    g_free(self->priv->sfile_name);
     
     /* Chain up to the parent class */
     return G_OBJECT_CLASS(mirage_fragment_binary_parent_class)->finalize(gobject);
@@ -504,8 +538,8 @@ static void mirage_fragment_binary_class_finalize (MIRAGE_Fragment_BINARYClass *
 
 static void mirage_fragment_binary_frag_iface_binary_init (MIRAGE_FragIface_BinaryInterface *iface)
 {   
-    iface->track_file_set_handle = mirage_fragment_binary_track_file_set_handle;
-    iface->track_file_get_handle = mirage_fragment_binary_track_file_get_handle;
+    iface->track_file_set_file = mirage_fragment_binary_track_file_set_file;
+    iface->track_file_get_file = mirage_fragment_binary_track_file_get_file;
     iface->track_file_set_offset = mirage_fragment_binary_track_file_set_offset;
     iface->track_file_get_offset = mirage_fragment_binary_track_file_get_offset;
     iface->track_file_set_sectsize = mirage_fragment_binary_track_file_set_sectsize;
@@ -515,8 +549,8 @@ static void mirage_fragment_binary_frag_iface_binary_init (MIRAGE_FragIface_Bina
 
     iface->track_file_get_position = mirage_fragment_binary_track_file_get_position;
 
-    iface->subchannel_file_set_handle = mirage_fragment_binary_subchannel_file_set_handle;
-    iface->subchannel_file_get_handle = mirage_fragment_binary_subchannel_file_get_handle;
+    iface->subchannel_file_set_file = mirage_fragment_binary_subchannel_file_set_file;
+    iface->subchannel_file_get_file = mirage_fragment_binary_subchannel_file_get_file;
     iface->subchannel_file_set_offset = mirage_fragment_binary_subchannel_file_set_offset;
     iface->subchannel_file_get_offset = mirage_fragment_binary_subchannel_file_get_offset;
     iface->subchannel_file_set_sectsize = mirage_fragment_binary_subchannel_file_set_sectsize;

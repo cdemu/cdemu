@@ -121,7 +121,14 @@ static gboolean mirage_parser_xcdroast_add_track (MIRAGE_Parser_XCDROAST *self, 
                 g_object_unref(track);
                 return FALSE;
             }
-            mirage_frag_iface_binary_track_file_set_handle(MIRAGE_FRAG_IFACE_BINARY(data_fragment), g_fopen(data_file, "r"), NULL);
+            
+            if (!mirage_frag_iface_binary_track_file_set_file(MIRAGE_FRAG_IFACE_BINARY(data_fragment), data_file, error)) {
+                MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to set track data file!\n", __debug__);
+                g_free(data_file);
+                g_object_unref(track);
+                g_object_unref(data_fragment);
+                return FALSE;
+            }
             mirage_frag_iface_binary_track_file_set_sectsize(MIRAGE_FRAG_IFACE_BINARY(data_fragment), 2048, NULL);
             mirage_frag_iface_binary_track_file_set_offset(MIRAGE_FRAG_IFACE_BINARY(data_fragment), 0, NULL);
             mirage_frag_iface_binary_track_file_set_format(MIRAGE_FRAG_IFACE_BINARY(data_fragment), FR_BIN_TFILE_DATA, NULL);
@@ -161,7 +168,13 @@ static gboolean mirage_parser_xcdroast_add_track (MIRAGE_Parser_XCDROAST *self, 
                 g_object_unref(track);
                 return FALSE;
             }
-            mirage_frag_iface_audio_set_file(MIRAGE_FRAG_IFACE_AUDIO(data_fragment), data_file, NULL);
+            if (!mirage_frag_iface_audio_set_file(MIRAGE_FRAG_IFACE_AUDIO(data_fragment), data_file, error)) {
+                MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to set track data file!\n", __debug__);
+                g_free(data_file);
+                g_object_unref(track);
+                g_object_unref(data_fragment);
+                return FALSE;
+            }
 
             mirage_fragment_use_the_rest_of_file(MIRAGE_FRAGMENT(data_fragment), NULL);
 

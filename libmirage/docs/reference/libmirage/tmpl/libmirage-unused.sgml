@@ -17,3 +17,43 @@
 </para>
 
 
+<!-- ##### FUNCTION mirage_frag_iface_binary_subchannel_file_get_handle ##### -->
+<para>
+
+</para>
+
+@self: 
+@file: 
+@error: 
+@Returns: 
+
+<!-- ##### FUNCTION mirage_frag_iface_binary_subchannel_file_set_handle ##### -->
+<para>
+
+</para>
+
+@self: 
+@file: 
+@error: 
+@Returns: 
+
+<!-- ##### FUNCTION mirage_frag_iface_binary_track_file_get_handle ##### -->
+<para>
+
+</para>
+
+@self: 
+@file: 
+@error: 
+@Returns: 
+
+<!-- ##### FUNCTION mirage_frag_iface_binary_track_file_set_handle ##### -->
+<para>
+
+</para>
+
+@self: 
+@file: 
+@error: 
+@Returns: 
+

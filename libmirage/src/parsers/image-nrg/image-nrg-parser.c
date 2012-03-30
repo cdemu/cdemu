@@ -589,7 +589,6 @@ static gboolean mirage_parser_nrg_load_session (MIRAGE_Parser_NRG *self, gint se
            I'm not sure why image file has the offsets separated - maybe they
            don't have to be adjacent?
         */
-        FILE *tfile_handle = NULL;
         gint tfile_sectsize = 0;
         guint64 tfile_offset = 0;
         guint64 tfile_format = 0;
@@ -617,7 +616,6 @@ static gboolean mirage_parser_nrg_load_session (MIRAGE_Parser_NRG *self, gint se
             }
 
             /* Main channel data */
-            tfile_handle = g_fopen(self->priv->nrg_filename, "r");
             tfile_sectsize = main_sectsize; /* We use the one from decoded mode code */
             tfile_offset = dao_block->pregap_offset;
             if (mode == MIRAGE_MODE_AUDIO) {
@@ -634,7 +632,14 @@ static gboolean mirage_parser_nrg_load_session (MIRAGE_Parser_NRG *self, gint se
 
             mirage_fragment_set_length(MIRAGE_FRAGMENT(data_fragment), fragment_len, NULL);
 
-            mirage_frag_iface_binary_track_file_set_handle(MIRAGE_FRAG_IFACE_BINARY(data_fragment), tfile_handle, NULL);
+            if (!mirage_frag_iface_binary_track_file_set_file(MIRAGE_FRAG_IFACE_BINARY(data_fragment), self->priv->nrg_filename, error)) {
+                MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to set track data file!\n", __debug__);
+                g_object_unref(data_fragment);
+                g_object_unref(cur_track);
+                g_object_unref(cur_session);
+                succeeded = FALSE;
+                goto end;
+            }
             mirage_frag_iface_binary_track_file_set_offset(MIRAGE_FRAG_IFACE_BINARY(data_fragment), tfile_offset, NULL);
             mirage_frag_iface_binary_track_file_set_sectsize(MIRAGE_FRAG_IFACE_BINARY(data_fragment), tfile_sectsize, NULL);
             mirage_frag_iface_binary_track_file_set_format(MIRAGE_FRAG_IFACE_BINARY(data_fragment), tfile_format, NULL);
@@ -663,7 +668,6 @@ static gboolean mirage_parser_nrg_load_session (MIRAGE_Parser_NRG *self, gint se
             }
 
             /* Main channel data */
-            tfile_handle = g_fopen(self->priv->nrg_filename, "r");
             tfile_sectsize = main_sectsize; /* We use the one from decoded mode code */
             tfile_offset = dao_block->start_offset;
             if (mode == MIRAGE_MODE_AUDIO) {
@@ -680,7 +684,14 @@ static gboolean mirage_parser_nrg_load_session (MIRAGE_Parser_NRG *self, gint se
 
             mirage_fragment_set_length(MIRAGE_FRAGMENT(data_fragment), fragment_len, NULL);
 
-            mirage_frag_iface_binary_track_file_set_handle(MIRAGE_FRAG_IFACE_BINARY(data_fragment), tfile_handle, NULL);
+            if (!mirage_frag_iface_binary_track_file_set_file(MIRAGE_FRAG_IFACE_BINARY(data_fragment), self->priv->nrg_filename, error)) {
+                MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to set track data file!\n", __debug__);
+                g_object_unref(data_fragment);
+                g_object_unref(cur_track);
+                g_object_unref(cur_session);
+                succeeded = FALSE;
+                goto end;
+            }
             mirage_frag_iface_binary_track_file_set_offset(MIRAGE_FRAG_IFACE_BINARY(data_fragment), tfile_offset, NULL);
             mirage_frag_iface_binary_track_file_set_sectsize(MIRAGE_FRAG_IFACE_BINARY(data_fragment), tfile_sectsize, NULL);
             mirage_frag_iface_binary_track_file_set_format(MIRAGE_FRAG_IFACE_BINARY(data_fragment), tfile_format, NULL);
@@ -822,7 +833,6 @@ static gboolean mirage_parser_nrg_load_session_tao (MIRAGE_Parser_NRG *self, gin
            I'm not sure why image file has the offsets separated - maybe they
            don't have to be adjacent?
         */
-        FILE *tfile_handle = NULL;
         gint tfile_sectsize = 0;
         guint64 tfile_offset = 0;
         guint64 tfile_format = 0;
@@ -866,7 +876,6 @@ static gboolean mirage_parser_nrg_load_session_tao (MIRAGE_Parser_NRG *self, gin
             }
 
             /* Main channel data */
-            tfile_handle = g_fopen(self->priv->nrg_filename, "r");
             tfile_sectsize = main_sectsize; /* We use the one from decoded mode code */
             tfile_offset = etn_block->offset;
             if (mode == MIRAGE_MODE_AUDIO) {
@@ -883,7 +892,14 @@ static gboolean mirage_parser_nrg_load_session_tao (MIRAGE_Parser_NRG *self, gin
 
             mirage_fragment_set_length(MIRAGE_FRAGMENT(data_fragment), fragment_len, NULL);
 
-            mirage_frag_iface_binary_track_file_set_handle(MIRAGE_FRAG_IFACE_BINARY(data_fragment), tfile_handle, NULL);
+            if (!mirage_frag_iface_binary_track_file_set_file(MIRAGE_FRAG_IFACE_BINARY(data_fragment), self->priv->nrg_filename, error)) {
+                MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to set track data file!\n", __debug__);
+                g_object_unref(data_fragment);
+                g_object_unref(cur_track);
+                g_object_unref(cur_session);
+                succeeded = FALSE;
+                goto end;
+            }
             mirage_frag_iface_binary_track_file_set_offset(MIRAGE_FRAG_IFACE_BINARY(data_fragment), tfile_offset, NULL);
             mirage_frag_iface_binary_track_file_set_sectsize(MIRAGE_FRAG_IFACE_BINARY(data_fragment), tfile_sectsize, NULL);
             mirage_frag_iface_binary_track_file_set_format(MIRAGE_FRAG_IFACE_BINARY(data_fragment), tfile_format, NULL);

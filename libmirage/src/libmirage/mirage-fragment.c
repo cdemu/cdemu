@@ -383,37 +383,37 @@ GType mirage_frag_iface_null_get_type (void) {
  *                           Binary interface                         *
 \**********************************************************************/
 /**
- * mirage_frag_iface_binary_track_file_set_handle:
+ * mirage_frag_iface_binary_track_file_set_file:
  * @self: a #MIRAGE_FragIface_Binary
- * @file: track file handle
+ * @filename: track file filename
  * @error: location to store error, or %NULL
  *
  * <para>
- * Sets track file handle.
+ * Sets track file.
  * </para>
  *
  * Returns: %TRUE on success, %FALSE on failure
  **/
-gboolean mirage_frag_iface_binary_track_file_set_handle (MIRAGE_FragIface_Binary *self, FILE *file, GError **error)
+gboolean mirage_frag_iface_binary_track_file_set_file (MIRAGE_FragIface_Binary *self, const gchar *filename, GError **error)
 {
-    return MIRAGE_FRAG_IFACE_BINARY_GET_INTERFACE(self)->track_file_set_handle(self, file, error);
+    return MIRAGE_FRAG_IFACE_BINARY_GET_INTERFACE(self)->track_file_set_file(self, filename, error);
 }
 
 /**
- * mirage_frag_iface_binary_track_file_get_handle:
+ * mirage_frag_iface_binary_track_file_get_file:
  * @self: a #MIRAGE_FragIface_Binary
- * @file: location to store track file handle
+ * @filename: location to store track file filename
  * @error: location to store error, or %NULL
  *
  * <para>
- * Retrieves track file handle.
+ * Retrieves track file filename.
  * </para>
  *
  * Returns: %TRUE on success, %FALSE on failure
  **/
-gboolean mirage_frag_iface_binary_track_file_get_handle (MIRAGE_FragIface_Binary *self, FILE **file, GError **error)
+gboolean mirage_frag_iface_binary_track_file_get_file (MIRAGE_FragIface_Binary *self, const gchar **filename, GError **error)
 {
-    return MIRAGE_FRAG_IFACE_BINARY_GET_INTERFACE(self)->track_file_get_handle(self, file, error);
+    return MIRAGE_FRAG_IFACE_BINARY_GET_INTERFACE(self)->track_file_get_file(self, filename, error);
 }
 
 /**
@@ -542,37 +542,37 @@ gboolean mirage_frag_iface_binary_track_file_get_position (MIRAGE_FragIface_Bina
 
 
 /**
- * mirage_frag_iface_binary_subchannel_file_set_handle:
+ * mirage_frag_iface_binary_subchannel_file_set_file:
  * @self: a #MIRAGE_FragIface_Binary
- * @file: subchannel file handle
+ * @filename: subchannel file filename
  * @error: location to store error, or %NULL
  *
  * <para>
- * Sets subchannel file handle.
+ * Sets subchannel file filename.
  * </para>
  *
  * Returns: %TRUE on success, %FALSE on failure
  **/
-gboolean mirage_frag_iface_binary_subchannel_file_set_handle (MIRAGE_FragIface_Binary *self, FILE *file, GError **error)
+gboolean mirage_frag_iface_binary_subchannel_file_set_file (MIRAGE_FragIface_Binary *self, const gchar *filename, GError **error)
 {
-    return MIRAGE_FRAG_IFACE_BINARY_GET_INTERFACE(self)->subchannel_file_set_handle(self, file, error);
+    return MIRAGE_FRAG_IFACE_BINARY_GET_INTERFACE(self)->subchannel_file_set_file(self, filename, error);
 }
 
 /**
- * mirage_frag_iface_binary_subchannel_file_get_handle:
+ * mirage_frag_iface_binary_subchannel_file_get_file:
  * @self: a #MIRAGE_FragIface_Binary
- * @file: location to store subchannel file handle
+ * @filename: location to store subchannel file filename
  * @error: location to store error, or %NULL
  *
  * <para>
- * Retrieves subchannel file handle.
+ * Retrieves subchannel file filename.
  * </para>
  *
  * Returns: %TRUE on success, %FALSE on failure
  **/
-gboolean mirage_frag_iface_binary_subchannel_file_get_handle (MIRAGE_FragIface_Binary *self, FILE **file, GError **error)
+gboolean mirage_frag_iface_binary_subchannel_file_get_file (MIRAGE_FragIface_Binary *self, const gchar **filename, GError **error)
 {
-    return MIRAGE_FRAG_IFACE_BINARY_GET_INTERFACE(self)->subchannel_file_get_handle(self, file, error);
+    return MIRAGE_FRAG_IFACE_BINARY_GET_INTERFACE(self)->subchannel_file_get_file(self, filename, error);
 }
 
 

@@ -493,8 +493,6 @@ static gboolean mirage_parser_mds_parse_track_entries (MIRAGE_Parser_MDS *self, 
                     return FALSE;
                 }
 
-                FILE *tfile_handle = g_fopen(mdf_filename, "r");
-
                 gint fragment_len = 0;
 
                 /* Determine fragment's length */
@@ -507,16 +505,26 @@ static gboolean mirage_parser_mds_parse_track_entries (MIRAGE_Parser_MDS *self, 
                     /* For DVDs, -track- length seems to be stored in extra_offset;
                        however, since DVD images can have split MDF files, we need
                        to calculate the individual framgents' lengths ourselves... */
-                    fseek(tfile_handle, 0, SEEK_END);
-                    fragment_len = (ftell(tfile_handle) - tfile_offset)/(tfile_sectsize + sfile_sectsize); /* We could've just divided by 2048, too :) */
+                    struct stat st;
+                    
+                    if (g_stat(mdf_filename, &st) < 0) {
+                        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to stat data file!\n", __debug__);
+                        mirage_error(MIRAGE_E_IMAGEFILE, error);
+                        g_free(mdf_filename);
+                        g_object_unref(cur_track);
+                        g_object_unref(cur_session);
+                        return FALSE;
+                    }
+                    
+                    fragment_len = (st.st_size - tfile_offset)/(tfile_sectsize + sfile_sectsize); /* We could've just divided by 2048, too :) */
                     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: DVD-ROM; track's fragment length: 0x%X\n", __debug__, fragment_len);
                 }
 
                 /* Create data fragment */
                 GObject *data_fragment = libmirage_create_fragment(MIRAGE_TYPE_FRAG_IFACE_BINARY, mdf_filename, error);
-                g_free(mdf_filename);
                 if (!data_fragment) {
                     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: failed to create fragment!\n", __debug__);
+                    g_free(mdf_filename);
                     g_object_unref(cur_track);
                     g_object_unref(cur_session);
                     return FALSE;
@@ -524,7 +532,17 @@ static gboolean mirage_parser_mds_parse_track_entries (MIRAGE_Parser_MDS *self, 
 
                 mirage_fragment_set_length(MIRAGE_FRAGMENT(data_fragment), fragment_len, NULL);
 
-                mirage_frag_iface_binary_track_file_set_handle(MIRAGE_FRAG_IFACE_BINARY(data_fragment), tfile_handle, NULL);
+                /* Set file */
+                if (!mirage_frag_iface_binary_track_file_set_file(MIRAGE_FRAG_IFACE_BINARY(data_fragment), mdf_filename, error)) {
+                    MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to set track data file!\n", __debug__);
+                    g_free(mdf_filename);
+                    g_object_unref(data_fragment);
+                    g_object_unref(cur_track);
+                    g_object_unref(cur_session);
+                    return FALSE;
+                }
+                g_free(mdf_filename);
+                
                 mirage_frag_iface_binary_track_file_set_offset(MIRAGE_FRAG_IFACE_BINARY(data_fragment), tfile_offset, NULL);
                 mirage_frag_iface_binary_track_file_set_sectsize(MIRAGE_FRAG_IFACE_BINARY(data_fragment), tfile_sectsize, NULL);
                 mirage_frag_iface_binary_track_file_set_format(MIRAGE_FRAG_IFACE_BINARY(data_fragment), tfile_format, NULL);

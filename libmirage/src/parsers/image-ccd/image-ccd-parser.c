@@ -111,11 +111,12 @@ static gboolean mirage_parser_ccd_sort_entries (MIRAGE_Parser_CCD *self, GError 
     return TRUE;
 }
 
-static gboolean mirage_parser_ccd_determine_track_mode (MIRAGE_Parser_CCD *self, GObject *track, GError **error G_GNUC_UNUSED)
+static gboolean mirage_parser_ccd_determine_track_mode (MIRAGE_Parser_CCD *self, GObject *track, GError **error)
 {
     GObject *data_fragment = NULL;
     guint64 offset = 0;
-    FILE *file = NULL;
+    const gchar *filename;
+    FILE *file;
     size_t blocks_read;
     guint8 sync[12] = { 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0x00 };
     guint8 buf[24] = {0};
@@ -127,13 +128,19 @@ static gboolean mirage_parser_ccd_determine_track_mode (MIRAGE_Parser_CCD *self,
     }
 
     /* 2352-byte sectors are assumed */
-    mirage_frag_iface_binary_track_file_get_handle(MIRAGE_FRAG_IFACE_BINARY(data_fragment), &file, NULL);
+    mirage_frag_iface_binary_track_file_get_file(MIRAGE_FRAG_IFACE_BINARY(data_fragment), &filename, NULL);
     mirage_frag_iface_binary_track_file_get_position(MIRAGE_FRAG_IFACE_BINARY(data_fragment), 0, &offset, NULL);
+
+    file = g_fopen(filename, "r");
 
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: checking for track type in data file at location 0x%llX\n", __debug__, offset);
     fseeko(file, offset, SEEK_SET);
     blocks_read = fread(buf, 24, 1, file);
-    if (blocks_read < 1) return FALSE;
+    fclose(file);
+    if (blocks_read < 1) {
+        mirage_error(MIRAGE_E_DATAFILE, error);
+        return FALSE;
+    }
     if (!memcmp(buf, sync, 12)) {
         switch (buf[15]) {
             case 0x01: {
@@ -288,22 +295,32 @@ static gboolean mirage_parser_ccd_build_disc_layout (MIRAGE_Parser_CCD *self, GE
                 return FALSE;
             }
 
-            FILE *tfile_file = g_fopen(self->priv->img_filename, "r");
             gint tfile_sectsize = 2352; /* Always */
             guint64 tfile_offset = self->priv->offset * 2352; /* Guess this one's always true, too */
             gint tfile_format = FR_BIN_TFILE_DATA; /* Assume data, but change later if it's audio */
 
-            FILE *sfile_file = g_fopen(self->priv->sub_filename, "r");
             gint sfile_sectsize = 96; /* Always */
             guint64 sfile_offset = self->priv->offset * 96; /* Guess this one's always true, too */
             gint sfile_format = FR_BIN_SFILE_PW96_LIN | FR_BIN_SFILE_EXT;
 
-            mirage_frag_iface_binary_track_file_set_handle(MIRAGE_FRAG_IFACE_BINARY(data_fragment), tfile_file, NULL);
+            if (!mirage_frag_iface_binary_track_file_set_file(MIRAGE_FRAG_IFACE_BINARY(data_fragment), self->priv->img_filename, error)) {
+                MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to set track data file!\n", __debug__);
+                g_object_unref(data_fragment);
+                g_object_unref(cur_track);
+                g_object_unref(cur_session);
+                return FALSE;
+            }
             mirage_frag_iface_binary_track_file_set_sectsize(MIRAGE_FRAG_IFACE_BINARY(data_fragment), tfile_sectsize, NULL);
             mirage_frag_iface_binary_track_file_set_offset(MIRAGE_FRAG_IFACE_BINARY(data_fragment), tfile_offset, NULL);
             mirage_frag_iface_binary_track_file_set_format(MIRAGE_FRAG_IFACE_BINARY(data_fragment), tfile_format, NULL);
 
-            mirage_frag_iface_binary_subchannel_file_set_handle(MIRAGE_FRAG_IFACE_BINARY(data_fragment), sfile_file, NULL);
+            if (!mirage_frag_iface_binary_subchannel_file_set_file(MIRAGE_FRAG_IFACE_BINARY(data_fragment), self->priv->sub_filename, error)) {
+                MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to set subchannel data file!\n", __debug__);
+                g_object_unref(data_fragment);
+                g_object_unref(cur_track);
+                g_object_unref(cur_session);
+                return FALSE;
+            }
             mirage_frag_iface_binary_subchannel_file_set_sectsize(MIRAGE_FRAG_IFACE_BINARY(data_fragment), sfile_sectsize, NULL);
             mirage_frag_iface_binary_subchannel_file_set_offset(MIRAGE_FRAG_IFACE_BINARY(data_fragment), sfile_offset, NULL);
             mirage_frag_iface_binary_subchannel_file_set_format(MIRAGE_FRAG_IFACE_BINARY(data_fragment), sfile_format, NULL);
