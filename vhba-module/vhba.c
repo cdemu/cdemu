@@ -37,7 +37,11 @@
 #include <scsi/scsi_cmnd.h>
 #include <scsi/scsi_device.h>
 
-#include "kernel.api.h"
+/* scatterlist.page_link and sg_page() were introduced in 2.6.24 */
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(2, 6, 24)
+#define USE_SG_PAGE
+#include <linux/scatterlist.h>
+#endif
 
 MODULE_AUTHOR("Chia-I Wu");
 MODULE_VERSION(VHBA_VERSION);
@@ -65,6 +69,15 @@ MODULE_LICENSE("GPL");
 #define DATA_TO_DEVICE(dir) ((dir) == DMA_TO_DEVICE || (dir) == DMA_BIDIRECTIONAL)
 #define DATA_FROM_DEVICE(dir) ((dir) == DMA_FROM_DEVICE || (dir) == DMA_BIDIRECTIONAL)
 
+
+/* SCSI macros were introduced in 2.6.23 */
+#if LINUX_VERSION_CODE < KERNEL_VERSION(2, 6, 23)
+#define scsi_sg_count(cmd) ((cmd)->use_sg)
+#define scsi_sglist(cmd) ((cmd)->request_buffer)
+#define scsi_bufflen(cmd) ((cmd)->request_bufflen)
+#define scsi_set_resid(cmd, to_read) {(cmd)->resid = (to_read);}
+#endif
+
 /* 1-argument form of k[un]map_atomic was introduced in 2.6.37-rc1;
    2-argument form was deprecated in 3.4-rc1 */
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(2, 6, 37)
@@ -74,6 +87,7 @@ MODULE_LICENSE("GPL");
 #define vhba_kmap_atomic(page) kmap_atomic(page, KM_USER0)
 #define vhba_kunmap_atomic(page) kunmap_atomic(page, KM_USER0)
 #endif
+
 
 enum vhba_req_state {
         VHBA_REQ_FREE,
@@ -483,7 +497,7 @@ static ssize_t do_request(struct scsi_cmnd *cmd, char __user *buf, size_t buf_le
                         for (i = 0; i < scsi_sg_count(cmd); i++) {
                                 size_t len = sg[i].length;
 
-#ifdef KAT_SCATTERLIST_HAS_PAGE_LINK
+#ifdef USE_SG_PAGE
                                 kaddr = vhba_kmap_atomic(sg_page(&sg[i]));
 #else
                                 kaddr = vhba_kmap_atomic(sg[i].page);
@@ -566,7 +580,7 @@ static ssize_t do_response(struct scsi_cmnd *cmd, const char __user *buf, size_t
                                 }
                                 uaddr += len;
 
-#ifdef KAT_SCATTERLIST_HAS_PAGE_LINK
+#ifdef USE_SG_PAGE
                                 kaddr = vhba_kmap_atomic(sg_page(&sg[i]));
 #else
                                 kaddr = vhba_kmap_atomic(sg[i].page);
