@@ -27,6 +27,7 @@
 #include <linux/miscdevice.h>
 #include <linux/poll.h>
 #include <linux/slab.h>
+#include <linux/version.h>
 #ifdef CONFIG_COMPAT
 #include <linux/compat.h>
 #endif
@@ -63,6 +64,16 @@ MODULE_LICENSE("GPL");
 
 #define DATA_TO_DEVICE(dir) ((dir) == DMA_TO_DEVICE || (dir) == DMA_BIDIRECTIONAL)
 #define DATA_FROM_DEVICE(dir) ((dir) == DMA_FROM_DEVICE || (dir) == DMA_BIDIRECTIONAL)
+
+/* 1-argument form of k[un]map_atomic was introduced in 2.6.37-rc1;
+   2-argument form was deprecated in 3.4-rc1 */
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(2, 6, 37)
+#define vhba_kmap_atomic kmap_atomic
+#define vhba_kunmap_atomic kunmap_atomic
+#else
+#define vhba_kmap_atomic(page) kmap_atomic(page, KM_USER0)
+#define vhba_kunmap_atomic(page) kunmap_atomic(page, KM_USER0)
+#endif
 
 enum vhba_req_state {
         VHBA_REQ_FREE,
@@ -473,12 +484,12 @@ static ssize_t do_request(struct scsi_cmnd *cmd, char __user *buf, size_t buf_le
                                 size_t len = sg[i].length;
 
 #ifdef KAT_SCATTERLIST_HAS_PAGE_LINK
-                                kaddr = kmap_atomic(sg_page(&sg[i]), KM_USER0);
+                                kaddr = vhba_kmap_atomic(sg_page(&sg[i]));
 #else
-                                kaddr = kmap_atomic(sg[i].page, KM_USER0);
+                                kaddr = vhba_kmap_atomic(sg[i].page);
 #endif
                                 memcpy(kbuf, kaddr + sg[i].offset, len);
-                                kunmap_atomic(kaddr, KM_USER0);
+                                vhba_kunmap_atomic(kaddr);
 
                                 if (copy_to_user(uaddr, kbuf, len)) {
                                         if (kbuf != buf_stack)
@@ -556,12 +567,12 @@ static ssize_t do_response(struct scsi_cmnd *cmd, const char __user *buf, size_t
                                 uaddr += len;
 
 #ifdef KAT_SCATTERLIST_HAS_PAGE_LINK
-                                kaddr = kmap_atomic(sg_page(&sg[i]), KM_USER0);
+                                kaddr = vhba_kmap_atomic(sg_page(&sg[i]));
 #else
-                                kaddr = kmap_atomic(sg[i].page, KM_USER0);
+                                kaddr = vhba_kmap_atomic(sg[i].page);
 #endif
                                 memcpy(kaddr + sg[i].offset, kbuf, len);
-                                kunmap_atomic(kaddr, KM_USER0);
+                                vhba_kunmap_atomic(kaddr);
 
                                 to_read -= len;
                                 if (to_read == 0)
