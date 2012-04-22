@@ -1,4 +1,4 @@
-VHBA_VERSION = $(shell date +%Y%m%d)
+VHBA_VERSION = $(shell date -r vhba.c +%Y%m%d)
 PACKAGE = vhba-module-$(VHBA_VERSION)
 
 EXTRA_CFLAGS += -DVHBA_VERSION=\"$(VHBA_VERSION)\" -I$(PWD) -Werror
@@ -32,11 +32,9 @@ dist-dir:
 	rm -fr $(PACKAGE)
 	mkdir $(PACKAGE)
 	cp vhba.c Makefile $(DOCS) $(PACKAGE)
-	mkdir $(PACKAGE)/debian
+	mkdir $(PACKAGE)/debian $(PACKAGE)/debian/patches $(PACKAGE)/debian/source
 	cp -f $(subst debian/source,,$(subst debian/patches,,$(wildcard debian/*))) $(PACKAGE)/debian
-	mkdir $(PACKAGE)/debian/patches
 	cp -f $(wildcard debian/patches/*) $(PACKAGE)/debian/patches
-	mkdir $(PACKAGE)/debian/source
 	cp -f $(wildcard debian/source/*) $(PACKAGE)/debian/source
 
 dist-gzip: dist-dir

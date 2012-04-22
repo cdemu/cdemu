@@ -5,7 +5,7 @@ Homepage: http://cdemu.sourceforge.net/
 Maintainer: Henrik Stokseth <henrik@hw0.org>
 Build-Depends: debhelper (>= 8), dkms
 Build-Depends-Indep: sed (>= 4)
-Standards-Version: 3.9.2
+Standards-Version: 3.9.3
 
 
 Package: vhba-dkms

@@ -25,9 +25,6 @@ override_dh_auto_install:
 	install -d                                        $(DESTDIR)
 	install -m 644 -D $(CURDIR)/Makefile              $(DESTDIR)/
 	install -m 644 -D $(CURDIR)/*.c                   $(DESTDIR)/
-	install -d                                        $(DESTDIR)/kat
-	install -m 644 -D $(CURDIR)/kat/*                 $(DESTDIR)/kat/
-	install -m 755 -D $(CURDIR)/kat/kat               $(DESTDIR)/kat/
 
 override_dh_dkms:
 	dh_dkms -V
