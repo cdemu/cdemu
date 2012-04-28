@@ -40,7 +40,7 @@ AS_IF([test "x$ENABLE_GTK3" = xcheck], [PKG_CHECK_EXISTS(gtk+-3.0, [ENABLE_GTK3=
 AS_IF([test "x$ENABLE_GTK3" = "xyes"],
     [PKG_CHECK_MODULES(gtk, gtk+-3.0 >= 3.0)
      AC_DEFINE([GTK3_ENABLED], [1], [Define to 1 if you have Gtk 3])],
-    [PKG_CHECK_MODULES(gtk, gtk+-2.0 >= 2.24)])
+    [PKG_CHECK_MODULES(gtk, gtk+-2.0 >= 2.20)])
 
 
 # Compile with more warnings
