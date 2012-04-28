@@ -148,7 +148,7 @@ gboolean mirage_parser_load_image (MIRAGE_Parser *self, gchar **filenames, GObje
     GVariant *dvd_report_css;
     if (mirage_parser_get_param(self, "dvd-report-css", G_VARIANT_TYPE_BOOLEAN, &dvd_report_css, NULL)) {
         /* Convert GVariant to GValue... */
-        GValue dvd_report_css2 = G_VALUE_INIT;
+        GValue dvd_report_css2;
         g_value_init(&dvd_report_css2, G_TYPE_BOOLEAN);
         g_value_set_boolean(&dvd_report_css2, TRUE);
         g_object_set_property(*disc, "dvd-report-css", &dvd_report_css2);
