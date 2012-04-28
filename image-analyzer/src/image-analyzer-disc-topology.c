@@ -24,7 +24,9 @@
 #include <math.h>
 #include <glib.h>
 #include <gtk/gtk.h>
+#ifdef GTK3_ENABLED
 #include <gtk/gtkx.h>
+#endif
 #include <mirage.h>
 
 #include "image-analyzer-disc-topology.h"

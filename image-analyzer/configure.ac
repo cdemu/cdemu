@@ -20,11 +20,28 @@ AC_PROG_MAKE_SET
 AC_HEADER_STDC
 
 # Mandatory libraries
-PKG_CHECK_MODULES(glib, glib-2.0 >= 2.28)
-PKG_CHECK_MODULES(gobject, gobject-2.0 >= 2.28)
-PKG_CHECK_MODULES(gtk, gtk+-3.0 >= 3.0)
 PKG_CHECK_MODULES(libmirage, libmirage >= 1.5.0)
 PKG_CHECK_MODULES(libxml, libxml-2.0 >= 2.0.0)
+PKG_CHECK_MODULES(glib, glib-2.0 >= 2.24)
+PKG_CHECK_MODULES(gobject, gobject-2.0 >= 2.24)
+
+# Gtk2 vs. Gtk3 switch
+AC_ARG_ENABLE(gtk3,
+    AC_HELP_STRING([--enable-gtk3], [compile using Gtk3]),
+    [case "${enableval}" in
+         yes) ENABLE_GTK3=yes ;;
+         no) ENABLE_GTK3=no ;;
+         *) AC_MSG_ERROR(bad value ${enableval} for --enable-gtk3) ;;
+     esac], 
+    [ENABLE_GTK3=check])
+
+AS_IF([test "x$ENABLE_GTK3" = xcheck], [PKG_CHECK_EXISTS(gtk+-3.0, [ENABLE_GTK3=yes], [ENABLE_GTK3=no])])
+
+AS_IF([test "x$ENABLE_GTK3" = "xyes"],
+    [PKG_CHECK_MODULES(gtk, gtk+-3.0 >= 3.0)
+     AC_DEFINE([GTK3_ENABLED], [1], [Define to 1 if you have Gtk 3])],
+    [PKG_CHECK_MODULES(gtk, gtk+-2.0 >= 2.24)])
+
 
 # Compile with more warnings
 AC_ARG_ENABLE(more-warnings,
