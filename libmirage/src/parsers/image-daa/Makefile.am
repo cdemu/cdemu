@@ -2,6 +2,7 @@ SUBDIRS = lzma-sdk
 
 INCLUDES = \
     -I$(top_srcdir)/src/libmirage \
+    -I$(top_builddir)/src/libmirage \
     -I$(srcdir)/lzma-sdk \
     $(glib_CFLAGS) \
     $(gobject_CFLAGS)

@@ -1,5 +1,6 @@
 INCLUDES = \
     -I$(top_srcdir)/src/libmirage \
+    -I$(top_builddir)/src/libmirage \
     $(glib_CFLAGS) \
     $(gobject_CFLAGS) \
     $(libsndfile_CFLAGS)
