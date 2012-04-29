@@ -421,8 +421,8 @@ static void cdemud_device_class_init (CDEMUD_DeviceClass *klass)
     gobject_class->finalize = cdemud_device_finalize;
 
     /* Signals */
-    klass->signals[0] = g_signal_new("status-changed", G_OBJECT_CLASS_TYPE(klass), (G_SIGNAL_RUN_LAST | G_SIGNAL_DETAILED), 0, NULL, NULL, NULL, G_TYPE_NONE, 0, NULL);
-    klass->signals[1] = g_signal_new("option-changed", G_OBJECT_CLASS_TYPE(klass), (G_SIGNAL_RUN_LAST | G_SIGNAL_DETAILED), 0, NULL, NULL, NULL, G_TYPE_NONE, 1, G_TYPE_STRING, NULL);
+    klass->signals[0] = g_signal_new("status-changed", G_OBJECT_CLASS_TYPE(klass), (G_SIGNAL_RUN_LAST | G_SIGNAL_DETAILED), 0, NULL, NULL, g_cclosure_marshal_VOID__VOID, G_TYPE_NONE, 0, NULL);
+    klass->signals[1] = g_signal_new("option-changed", G_OBJECT_CLASS_TYPE(klass), (G_SIGNAL_RUN_LAST | G_SIGNAL_DETAILED), 0, NULL, NULL, g_cclosure_marshal_VOID__STRING, G_TYPE_NONE, 1, G_TYPE_STRING, NULL);
 
     /* Register private structure */
     g_type_class_add_private(klass, sizeof(CDEMUD_DevicePrivate));
