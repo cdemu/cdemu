@@ -47,8 +47,9 @@ AM_MAINTAINER_MODE
 # Programs
 AC_PROG_CC_STDC
 AC_PROG_INSTALL
-LT_INIT
 AC_PROG_MAKE_SET
+
+LT_INIT([disable-static])
 
 # Standard C headers
 AC_HEADER_STDC
