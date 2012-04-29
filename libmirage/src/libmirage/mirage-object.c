@@ -379,5 +379,5 @@ static void mirage_object_class_init (MIRAGE_ObjectClass *klass)
      * Emitted each @mirage_object is changed in a way that causes bottom-up change.
      * </para>
      */
-    klass->signal_object_modified = g_signal_new("object-modified", G_OBJECT_CLASS_TYPE(klass), (G_SIGNAL_RUN_LAST | G_SIGNAL_DETAILED), 0, NULL, NULL, NULL, G_TYPE_NONE, 0, NULL);
+    klass->signal_object_modified = g_signal_new("object-modified", G_OBJECT_CLASS_TYPE(klass), (G_SIGNAL_RUN_LAST | G_SIGNAL_DETAILED), 0, NULL, NULL, g_cclosure_marshal_VOID__VOID, G_TYPE_NONE, 0, NULL);
 }
