@@ -205,8 +205,7 @@ static gboolean mirage_parser_nrg_load_medium_type (MIRAGE_Parser_NRG *self, GEr
     }
     cur_ptr = self->priv->nrg_data + blockentry->offset + 8;
 
-    mtyp_data = MIRAGE_CAST_DATA(cur_ptr, 0, guint32);
-    mtyp_data = GINT32_FROM_BE(mtyp_data);
+    mtyp_data = GINT32_FROM_BE(MIRAGE_CAST_DATA(cur_ptr, 0, guint32));
     cur_ptr += sizeof(guint32);
 
     /* Decode medium type */
@@ -379,7 +378,7 @@ static gboolean mirage_parser_nrg_load_etn_data (MIRAGE_Parser_NRG *self, gint s
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  offset: %u\n", __debug__, block->offset);
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  size: %u\n", __debug__, block->size);
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  mode: 0x%X\n", __debug__, block->mode);
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  sector: %u\n", __debug__, block->sector);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  sector: %u\n\n", __debug__, block->sector);
     }
 
     return TRUE;
@@ -441,7 +440,7 @@ static gboolean mirage_parser_nrg_load_cue_data (MIRAGE_Parser_NRG *self, gint s
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  adr/ctl: 0x%X\n", __debug__, block->adr_ctl);
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  track: 0x%X\n", __debug__, block->track);
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  index: 0x%X\n", __debug__, block->index);
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  start_sector: 0x%X\n", __debug__, block->start_sector);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  start_sector: 0x%X\n\n", __debug__, block->start_sector);
     }
 
     return TRUE;
@@ -515,7 +514,7 @@ static gboolean mirage_parser_nrg_load_dao_data (MIRAGE_Parser_NRG *self, gint s
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  sector size: 0x%X\n", __debug__, block->sector_size);
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  pregap offset: 0x%llX\n", __debug__, block->pregap_offset);
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  start offset: 0x%llX\n", __debug__, block->start_offset);
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  end offset: 0x%llX\n", __debug__, block->end_offset);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  end offset: 0x%llX\n\n", __debug__, block->end_offset);
     }
 
     return TRUE;
@@ -710,6 +709,7 @@ static gboolean mirage_parser_nrg_load_session (MIRAGE_Parser_NRG *self, gint se
         }
 
         g_object_unref(cur_track);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "\n");
     }
 
     /* Use CUE blocks to set pregaps and indices */
@@ -768,6 +768,7 @@ static gboolean mirage_parser_nrg_load_session (MIRAGE_Parser_NRG *self, gint se
                 g_object_unref(track);
             }
         }
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "\n");
     }
 
     g_object_unref(cur_session);
@@ -1039,6 +1040,7 @@ static gboolean mirage_parser_nrg_load_image (MIRAGE_Parser *_self, gchar **file
             return FALSE;
         }
     }
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "\n");
 
     /* Create disc */
     self->priv->disc = g_object_new(MIRAGE_TYPE_DISC, NULL);
@@ -1062,11 +1064,13 @@ static gboolean mirage_parser_nrg_load_image (MIRAGE_Parser *_self, gchar **file
     }
 
     /* Build an index over blocks contained in the parser image */
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: building block index...\n", __debug__);
     if(!mirage_parser_nrg_build_block_index(self, error)) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to build block index!\n", __debug__);
         succeeded = FALSE;
         goto end;
     }
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: finished building block index\n\n", __debug__);
 
     /* We'll have to set disc layout start to -150 at some point, so we might
        as well do it here (loading CUEX/CUES session will change this, if ever
@@ -1076,6 +1080,7 @@ static gboolean mirage_parser_nrg_load_image (MIRAGE_Parser *_self, gchar **file
     /* Load sessions */
     gint session_num = 0;
 
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: loading sessions...\n", __debug__);
     for (session_num = 0; ; session_num++) {
         if (mirage_parser_nrg_find_block_entry(self, "CUEX", session_num) || mirage_parser_nrg_find_block_entry(self, "CUES", session_num)) {
             /* CUEX/CUES block: means we need to make new session */
@@ -1098,21 +1103,26 @@ static gboolean mirage_parser_nrg_load_image (MIRAGE_Parser *_self, gchar **file
             break;
         }
     }
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: done loading sessions\n\n", __debug__);
 
     /* Load CD text, medium type etc. */
     if (mirage_parser_nrg_find_block_entry(self, "CDTX", 0)) {
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: loading CD-TEXT...\n", __debug__);
         if (!mirage_parser_nrg_load_cdtext(self, error)) {
             succeeded = FALSE;
             goto end;
         }
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: finished loading CD-TEXT\n\n", __debug__);
     }
 
     if (mirage_parser_nrg_find_block_entry(self, "MTYP", 0)) {
         /* MTYP: medium type */
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: determining medium type...\n", __debug__);
         if (!mirage_parser_nrg_load_medium_type(self, error)) {
             succeeded = FALSE;
             goto end;
         }
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: finished determining medium type\n\n", __debug__);
     }
 
 end:
