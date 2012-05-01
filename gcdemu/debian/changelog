@@ -1,4 +1,4 @@
-gcdemu (1.5.0-0ubuntu1) oneiric; urgency=low
+gcdemu (1.6.0-1ubuntu0~precise1~ppa1) precise; urgency=low
 
   * Initial Release. Closes: (LP: #105452, LP: #184662)
 

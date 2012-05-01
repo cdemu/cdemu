@@ -1,5 +1,5 @@
 CDEmu Daemon
-v.1.5.0
+v.1.6.0
 ~~~~~~~~~~~~~
 
 
@@ -124,7 +124,7 @@ CDEmu daemon has the following software requirements:
  - GLib 2.28 or newer
  - libao 0.8.0 or newer
 
- - libMirage 1.5.0 or newer (part of the suite)
+ - libMirage 1.6.0 or newer (part of the suite)
  - VHBA module (part of the suite)
 
 

@@ -1,6 +1,6 @@
-cdemu-daemon (1.5.0-0ubuntu1) oneiric; urgency=low
+cdemu-daemon (1.6.0-1ubuntu0~precise1~ppa1) precise; urgency=low
 
-  * Added patch to fix DBUS configuration.
+  * 01-dbus-config.diff: Patch D-BUS configuration.
   * Initial Release. Closes: (LP: #105452, LP: #184649)
 
  -- Henrik Stokseth (Henrik) <henrik@hw0.org>  Mon, 09 Jan 2012 12:00:00 +0100

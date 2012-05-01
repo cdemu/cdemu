@@ -10,8 +10,8 @@ override_dh_auto_configure:
 
 build:
 	-test -x autogen.sh && ./autogen.sh
-	dh build --with autotools_dev
+	dh build --with autotools_dev,python2
 
 %:
-	dh $@ --with autotools_dev
+	dh $@ --with autotools_dev,python2
 

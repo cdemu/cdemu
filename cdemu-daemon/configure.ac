@@ -5,7 +5,7 @@ AC_PREREQ([2.59])
 
 # cdemu-daemon versioning:
 m4_define([cdemud_major_version], [1])
-m4_define([cdemud_minor_version], [5])
+m4_define([cdemud_minor_version], [6])
 m4_define([cdemud_micro_version], [0])
 m4_define([cdemud_version], [cdemud_major_version.cdemud_minor_version.cdemud_micro_version])
 
@@ -35,7 +35,7 @@ PKG_CHECK_MODULES(gmodule, gmodule-2.0 >= 2.24)
 PKG_CHECK_MODULES(gthread, gthread-2.0 >= 2.24)
 PKG_CHECK_MODULES(gio, gio-2.0 >= 2.26)
 PKG_CHECK_MODULES(libao, ao >= 0.8.0,)
-PKG_CHECK_MODULES(libmirage, libmirage >= 1.5.0)
+PKG_CHECK_MODULES(libmirage, libmirage >= 1.6.0)
 
 # Compile with more warnings
 AC_ARG_ENABLE(more-warnings,

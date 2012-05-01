@@ -4,7 +4,7 @@ SUBDIRS = src docs
 
 EXTRA_DIST = \
     libmirage.pc.in \
-    $(shell find debian -type f | grep -v .svn | grep -v CVS)
+    debian
 
 # Build documentation when doing distcheck
 DISTCHECK_CONFIGURE_FLAGS = --enable-gtk-doc

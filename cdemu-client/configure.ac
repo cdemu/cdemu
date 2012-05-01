@@ -5,7 +5,7 @@ AC_PREREQ([2.59])
 
 # cdemu-client versioning:
 m4_define([cdemu_major_version], [1])
-m4_define([cdemu_minor_version], [5])
+m4_define([cdemu_minor_version], [6])
 m4_define([cdemu_micro_version], [0])
 m4_define([cdemu_version], [cdemu_major_version.cdemu_minor_version.cdemu_micro_version])
 

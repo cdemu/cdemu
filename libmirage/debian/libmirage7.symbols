@@ -1,4 +1,4 @@
-libmirage.so.6 libmirage6 #MINVER#
+libmirage.so.7 libmirage7 #MINVER#
  MIRAGE_FragIface_BinaryClass@Base 1.5.0
  libmirage_create_disc@Base 1.2.0
  libmirage_create_fragment@Base 1.2.0
@@ -76,22 +76,22 @@ libmirage.so.6 libmirage6 #MINVER#
  mirage_frag_iface_audio_set_file@Base 1.5.0
  mirage_frag_iface_audio_set_offset@Base 1.5.0
  mirage_frag_iface_binary_get_type@Base 1.5.0
+ mirage_frag_iface_binary_subchannel_file_get_file@Base 1.6.0
  mirage_frag_iface_binary_subchannel_file_get_format@Base 1.5.0
- mirage_frag_iface_binary_subchannel_file_get_handle@Base 1.5.0
  mirage_frag_iface_binary_subchannel_file_get_offset@Base 1.5.0
  mirage_frag_iface_binary_subchannel_file_get_position@Base 1.5.0
  mirage_frag_iface_binary_subchannel_file_get_sectsize@Base 1.5.0
+ mirage_frag_iface_binary_subchannel_file_set_file@Base 1.6.0
  mirage_frag_iface_binary_subchannel_file_set_format@Base 1.5.0
- mirage_frag_iface_binary_subchannel_file_set_handle@Base 1.5.0
  mirage_frag_iface_binary_subchannel_file_set_offset@Base 1.5.0
  mirage_frag_iface_binary_subchannel_file_set_sectsize@Base 1.5.0
+ mirage_frag_iface_binary_track_file_get_file@Base 1.6.0
  mirage_frag_iface_binary_track_file_get_format@Base 1.5.0
- mirage_frag_iface_binary_track_file_get_handle@Base 1.5.0
  mirage_frag_iface_binary_track_file_get_offset@Base 1.5.0
  mirage_frag_iface_binary_track_file_get_position@Base 1.5.0
  mirage_frag_iface_binary_track_file_get_sectsize@Base 1.5.0
+ mirage_frag_iface_binary_track_file_set_file@Base 1.6.0
  mirage_frag_iface_binary_track_file_set_format@Base 1.5.0
- mirage_frag_iface_binary_track_file_set_handle@Base 1.5.0
  mirage_frag_iface_binary_track_file_set_offset@Base 1.5.0
  mirage_frag_iface_binary_track_file_set_sectsize@Base 1.5.0
  mirage_frag_iface_null_get_type@Base 1.5.0
