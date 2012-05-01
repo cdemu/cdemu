@@ -43,6 +43,102 @@ struct _MIRAGE_Parser_MDSPrivate
 };
 
 
+/**********************************************************************\
+ *                    Endian-conversion functions                     *
+\**********************************************************************/
+static inline void mds_header_fix_endian (MDS_Header *header)
+{
+    gint i;
+    
+    header->medium_type = GUINT16_FROM_LE(header->medium_type);
+    header->num_sessions = GUINT16_FROM_LE(header->num_sessions);
+
+    for (i = 0; i < G_N_ELEMENTS(header->__dummy1__); i++) {
+        header->__dummy1__[i] = GUINT16_FROM_LE(header->__dummy1__[i]);
+    }
+
+    header->bca_len = GUINT16_FROM_LE(header->bca_len);
+
+    for (i = 0; i < G_N_ELEMENTS(header->__dummy2__); i++) {
+        header->__dummy2__[i] = GUINT32_FROM_LE(header->__dummy2__[i]);
+    }
+
+    header->bca_data_offset = GUINT32_FROM_LE(header->bca_data_offset);
+
+    for (i = 0; i < G_N_ELEMENTS(header->__dummy3__); i++) {
+        header->__dummy3__[i] = GUINT32_FROM_LE(header->__dummy3__[i]);
+    }
+
+    header->disc_structures_offset = GUINT32_FROM_LE(header->disc_structures_offset);
+
+    for (i = 0; i < G_N_ELEMENTS(header->__dummy4__); i++) {
+        header->__dummy4__[i] = GUINT32_FROM_LE(header->__dummy4__[i]);
+    }
+
+    header->sessions_blocks_offset = GUINT32_FROM_LE(header->sessions_blocks_offset);
+    header->dpm_blocks_offset = GUINT32_FROM_LE(header->dpm_blocks_offset);
+}
+
+static inline void mds_session_block_fix_endian (MDS_SessionBlock *block)
+{
+    block->session_start = GINT32_FROM_LE(block->session_start);
+    block->session_end = GINT32_FROM_LE(block->session_end);
+    block->session_number = GUINT16_FROM_LE(block->session_number);
+    block->first_track = GUINT16_FROM_LE(block->first_track);
+    block->last_track = GUINT16_FROM_LE(block->last_track);
+    block->__dummy1__ = GUINT32_FROM_LE(block->__dummy1__);
+    block->tracks_blocks_offset = GUINT32_FROM_LE(block->tracks_blocks_offset);
+}
+
+static inline void mds_track_block_fix_endian (MDS_TrackBlock *block)
+{
+    block->__dummy3__ = GUINT32_FROM_LE(block->__dummy3__);
+    block->extra_offset = GUINT32_FROM_LE(block->extra_offset);
+    block->sector_size = GUINT16_FROM_LE(block->sector_size);
+
+    block->start_sector = GUINT32_FROM_LE(block->start_sector);
+    block->start_offset = GUINT64_FROM_LE(block->start_offset);
+    block->number_of_files = GUINT32_FROM_LE(block->number_of_files);
+    block->footer_offset = GUINT32_FROM_LE(block->footer_offset);
+}
+
+static inline void mds_track_extra_block_fix_endian (MDS_TrackExtraBlock *block)
+{
+    block->pregap = GUINT32_FROM_LE(block->pregap);
+    block->length = GUINT32_FROM_LE(block->length);
+}
+
+static inline void mds_footer_fix_endian (MDS_Footer *block)
+{
+    block->filename_offset = GUINT32_FROM_LE(block->filename_offset);
+    block->widechar_filename = GUINT32_FROM_LE(block->widechar_filename);
+    block->__dummy1__ = GUINT32_FROM_LE(block->__dummy1__);
+    block->__dummy2__ = GUINT32_FROM_LE(block->__dummy2__);
+}
+
+static inline void dpm_data_fix_endian (guint32 *dpm_data, guint32 num_entries)
+{
+    guint i;
+    for (i = 0; i < num_entries; i++) {
+        dpm_data[i] = GUINT32_FROM_LE(dpm_data[i]);
+    }
+}
+
+static inline void widechar_filename_fix_endian (gunichar2 *filename)
+{
+    gint i;
+    for (i = 0; ; i++) {
+        filename[i] = GUINT16_FROM_LE(filename[i]);
+        if (!filename[i]) {
+            break;
+        }
+    }
+}
+
+
+/**********************************************************************\
+ *                         Parsing functions                          *
+\**********************************************************************/
 /*
     I hexedited the track mode field with various values and fed it to Alchohol;
     it seemed that high part of byte had no effect at all; only the lower one
@@ -123,16 +219,16 @@ static gboolean mirage_parser_mds_parse_dpm_block (MIRAGE_Parser_MDS *self, guin
     cur_ptr = self->priv->mds_data + dpm_block_offset;
 
     /* DPM information */
-    dpm_block_number = MIRAGE_CAST_DATA(cur_ptr, 0, guint32);
+    dpm_block_number = GUINT32_FROM_LE(MIRAGE_CAST_DATA(cur_ptr, 0, guint32));
     cur_ptr += sizeof(guint32);
 
-    dpm_start_sector = MIRAGE_CAST_DATA(cur_ptr, 0, guint32);
+    dpm_start_sector = GUINT32_FROM_LE(MIRAGE_CAST_DATA(cur_ptr, 0, guint32));
     cur_ptr += sizeof(guint32);
 
-    dpm_resolution = MIRAGE_CAST_DATA(cur_ptr, 0, guint32);
+    dpm_resolution = GUINT32_FROM_LE(MIRAGE_CAST_DATA(cur_ptr, 0, guint32));
     cur_ptr += sizeof(guint32);
 
-    dpm_num_entries = MIRAGE_CAST_DATA(cur_ptr, 0, guint32);
+    dpm_num_entries = GUINT32_FROM_LE(MIRAGE_CAST_DATA(cur_ptr, 0, guint32));
     cur_ptr += sizeof(guint32);
 
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: block number: %d\n", __debug__, dpm_block_number);
@@ -142,6 +238,8 @@ static gboolean mirage_parser_mds_parse_dpm_block (MIRAGE_Parser_MDS *self, guin
 
     /* Read all entries */
     dpm_data = MIRAGE_CAST_PTR(cur_ptr, 0, guint32 *);
+    
+    dpm_data_fix_endian(dpm_data, dpm_num_entries);
 
     /* Set DPM data */
     if (!mirage_disc_set_dpm_data(MIRAGE_DISC(self->priv->disc), dpm_start_sector, dpm_resolution, dpm_num_entries, dpm_data, error)) {
@@ -171,7 +269,7 @@ static gboolean mirage_parser_mds_parse_dpm_data (MIRAGE_Parser_MDS *self, GErro
 
     /* It would seem the first field is number of DPM data sets, followed by
        appropriate number of offsets for those data sets */
-    num_dpm_blocks = MIRAGE_CAST_DATA(cur_ptr, 0, guint32);
+    num_dpm_blocks = GUINT32_FROM_LE(MIRAGE_CAST_DATA(cur_ptr, 0, guint32));
     cur_ptr += sizeof(guint32);
 
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: number of DPM data blocks: %d\n", __debug__, num_dpm_blocks);
@@ -184,6 +282,7 @@ static gboolean mirage_parser_mds_parse_dpm_data (MIRAGE_Parser_MDS *self, GErro
 
     /* Read each block */
     for (i = 0; i < num_dpm_blocks; i++) {
+        dpm_block_offset[i] = GUINT32_FROM_LE(dpm_block_offset[i]);
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: block[%i]: offset: 0x%X\n", __debug__, i, dpm_block_offset[i]);
         mirage_parser_mds_parse_dpm_block(self, dpm_block_offset[i], NULL);
         /* FIXME: currently, only first DPM block is loaded */
@@ -293,6 +392,7 @@ static gchar *mirage_parser_mds_get_track_filename (MIRAGE_Parser_MDS *self, MDS
        (wide) characters, otherwise 8-bit characters are used. */
     if (footer_block->widechar_filename) {
         gunichar2 *tmp_ptr = MIRAGE_CAST_PTR(self->priv->mds_data, footer_block->filename_offset, gunichar2 *);
+        widechar_filename_fix_endian(tmp_ptr);
         tmp_mdf_filename = g_utf16_to_utf8(tmp_ptr, -1, NULL, NULL, NULL);
     } else {
         gchar *tmp_ptr = MIRAGE_CAST_PTR(self->priv->mds_data, footer_block->filename_offset, gchar *);
@@ -341,8 +441,10 @@ static gboolean mirage_parser_mds_parse_track_entries (MIRAGE_Parser_MDS *self, 
 
         /* Read main track block */
         block = MIRAGE_CAST_PTR(cur_ptr, 0, MDS_TrackBlock *);
+        mds_track_block_fix_endian(block);
         cur_ptr += sizeof(MDS_TrackBlock);
 
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "\n");
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: track block #%i:\n", __debug__, i);
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  mode: 0x%X\n", __debug__, block->mode);
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  subchannel: 0x%X\n", __debug__, block->subchannel);
@@ -358,17 +460,18 @@ static gboolean mirage_parser_mds_parse_track_entries (MIRAGE_Parser_MDS *self, 
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  start sector: 0x%X\n", __debug__, block->start_sector);
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  start offset: 0x%llX\n", __debug__, block->start_offset);
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  number of files: 0x%X\n", __debug__, block->number_of_files);
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  footer offset: 0x%X\n", __debug__, block->footer_offset);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  footer offset: 0x%X\n\n", __debug__, block->footer_offset);
 
         /* Read extra track block, if applicable; it seems that only CD images
            have extra blocks, though. For DVD images, extra_offset seems to
            contain track length */
         if (medium_type == MIRAGE_MEDIUM_CD && block->extra_offset) {
             extra_block = (MDS_TrackExtraBlock *)(self->priv->mds_data + block->extra_offset);
+            mds_track_extra_block_fix_endian(extra_block);
 
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: extra block #%i:\n", __debug__, i);
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  pregap: 0x%X\n", __debug__, extra_block->pregap);
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  length: 0x%X\n", __debug__, extra_block->length);
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  length: 0x%X\n\n", __debug__, extra_block->length);
         }
 
         /* Read footer, if applicable */
@@ -377,12 +480,13 @@ static gboolean mirage_parser_mds_parse_track_entries (MIRAGE_Parser_MDS *self, 
 
             for (j = 0; j < block->number_of_files; j++) {
                 footer_block = (MDS_Footer *)(self->priv->mds_data + block->footer_offset + j*sizeof(MDS_Footer));
+                mds_footer_fix_endian(footer_block);
 
                 MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: footer block #%i - %i:\n", __debug__, i, j);
                 MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  filename offset: 0x%X\n", __debug__, footer_block->filename_offset);
                 MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  widechar filename: 0x%X\n", __debug__, footer_block->widechar_filename);
                 MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  dummy1: 0x%X\n", __debug__, footer_block->__dummy1__);
-                MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  dummy2: 0x%X\n", __debug__, footer_block->__dummy2__);
+                MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  dummy2: 0x%X\n\n", __debug__, footer_block->__dummy2__);
             }
         }
 
@@ -436,6 +540,7 @@ static gboolean mirage_parser_mds_parse_track_entries (MIRAGE_Parser_MDS *self, 
                 MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: creating data fragment for file #%i\n", __debug__, j);
 
                 footer_block = (MDS_Footer *)(self->priv->mds_data + block->footer_offset + j*sizeof(MDS_Footer));
+                /* NOTE: endian already fixed at this point! */
 
                 /* Fragment properties */
                 guint64 tfile_offset = 0; /* Corrected below, if needed */
@@ -558,6 +663,8 @@ static gboolean mirage_parser_mds_parse_track_entries (MIRAGE_Parser_MDS *self, 
             /* Non-track block; skip */
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: skipping non-track entry 0x%X\n", __debug__, block->point);
         }
+
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "\n");
     }
 
     g_object_unref(cur_session);
@@ -577,8 +684,10 @@ static gboolean mirage_parser_mds_parse_sessions (MIRAGE_Parser_MDS *self, GErro
     /* Read sessions */
     for (i = 0; i < self->priv->header->num_sessions; i++) {
         MDS_SessionBlock *session = MIRAGE_CAST_PTR(cur_ptr, 0, MDS_SessionBlock *);
+        mds_session_block_fix_endian(session);
         cur_ptr += sizeof(MDS_SessionBlock);
 
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "\n");
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: session block #%i:\n", __debug__, i);
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  start address: 0x%X\n", __debug__, session->session_start);
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  length: 0x%X\n", __debug__, session->session_end);
@@ -587,8 +696,8 @@ static gboolean mirage_parser_mds_parse_sessions (MIRAGE_Parser_MDS *self, GErro
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  number of non-track block: %i\n", __debug__, session->num_nontrack_blocks);
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  first track: %i\n", __debug__, session->first_track);
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  last track: %i\n", __debug__, session->last_track);
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  dummy2: 0x%X\n", __debug__, session->__dummy2__);
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  track blocks offset: 0x%X\n", __debug__, session->tracks_blocks_offset);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  dummy1: 0x%X\n", __debug__, session->__dummy1__);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  track blocks offset: 0x%X\n\n", __debug__, session->tracks_blocks_offset);
 
         /* If this is first session, we'll use its start address as disc start address;
            if not, we need to calculate previous session's leadout length, based on
@@ -630,6 +739,8 @@ static gboolean mirage_parser_mds_parse_sessions (MIRAGE_Parser_MDS *self, GErro
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to parse track entries!\n", __debug__);
             return FALSE;
         }
+
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "\n");
     }
 
     return TRUE;
@@ -637,29 +748,39 @@ static gboolean mirage_parser_mds_parse_sessions (MIRAGE_Parser_MDS *self, GErro
 
 static gboolean mirage_parser_mds_load_disc (MIRAGE_Parser_MDS *self, GError **error)
 {
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "\n");
+
     /* Read parser structures */
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: parsing disc structures...\n", __debug__);
     if (!mirage_parser_mds_parse_disc_structures(self, error)) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to parse disc structures!\n", __debug__);
         return FALSE;
     }
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: finished parsing disc structures\n\n", __debug__);
 
     /* Read BCA */
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: parsing BCA data...\n", __debug__);
     if (!mirage_parser_mds_parse_bca(self, error)) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to parse BCA!\n", __debug__);
         return FALSE;
     }
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: finished parsing BCA data\n\n", __debug__);
 
     /* Sessions */
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: parsing sessions...\n", __debug__);
     if (!mirage_parser_mds_parse_sessions(self, error)) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to parse sessions!\n", __debug__);
         return FALSE;
     }
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: finished parsing sessions\n\n", __debug__);
 
     /* DPM data */
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: parsing DPM data...\n", __debug__);
     if (!mirage_parser_mds_parse_dpm_data(self, error)) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to parse DPM data!\n", __debug__);
         return FALSE;
     }
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: finished parsing DPM data\n\n", __debug__);
 
     return TRUE;
 }
@@ -739,8 +860,10 @@ static gboolean mirage_parser_mds_load_image (MIRAGE_Parser *_self, gchar **file
     cur_ptr = self->priv->mds_data;
 
     self->priv->header = MIRAGE_CAST_PTR(cur_ptr, 0, MDS_Header *);
+    mds_header_fix_endian(self->priv->header);
     cur_ptr += sizeof(MDS_Header);
 
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "\n");
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: MDS header:\n", __debug__);
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  signature: %.16s\n", __debug__, self->priv->header->signature);
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  version (?): %u.%u\n", __debug__, self->priv->header->version[0], self->priv->header->version[1]);
@@ -754,7 +877,7 @@ static gboolean mirage_parser_mds_load_image (MIRAGE_Parser *_self, gchar **file
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  disc structures offset: 0x%X\n", __debug__, self->priv->header->disc_structures_offset);
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  dummy4: 0x%X, 0x%X, 0x%X\n", __debug__, self->priv->header->__dummy4__[0], self->priv->header->__dummy4__[1], self->priv->header->__dummy4__[2]);
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  session blocks offset: 0x%X\n", __debug__, self->priv->header->sessions_blocks_offset);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  DPM blocks offset: 0x%X\n", __debug__, self->priv->header->dpm_blocks_offset);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  DPM blocks offset: 0x%X\n\n", __debug__, self->priv->header->dpm_blocks_offset);
 
     switch (self->priv->header->medium_type) {
         case MDS_MEDIUM_CD:

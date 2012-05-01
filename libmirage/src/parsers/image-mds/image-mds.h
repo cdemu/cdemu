@@ -72,6 +72,7 @@ typedef struct
     guint32 dpm_blocks_offset; /* offset to DPM data blocks */
 } MDS_Header; /* length: 88 bytes */
 
+
 typedef struct
 {
     gint32 session_start; /* Session's start address */
@@ -81,9 +82,10 @@ typedef struct
     guint8 num_nontrack_blocks; /* Number of lead-in data blocks */
     guint16 first_track; /* Total number of sessions in image? */
     guint16 last_track; /* Number of regular track data blocks. */
-    guint32 __dummy2__; /* (unknown) */
+    guint32 __dummy1__; /* (unknown) */
     guint32 tracks_blocks_offset; /* Offset of lead-in+regular track data blocks. */
 } MDS_SessionBlock; /* length: 24 bytes */
+
 
 typedef struct
 {
@@ -108,11 +110,13 @@ typedef struct
     guint8 __dummy6__[24];
 } MDS_TrackBlock; /* length: 80 bytes */
 
+
 typedef struct
 {
     guint32 pregap; /* Number of sectors in pregap. */
     guint32 length; /* Number of sectors in track. */
 } MDS_TrackExtraBlock; /* length: 8 bytes */
+
 
 typedef struct
 {
@@ -121,6 +125,7 @@ typedef struct
     guint32 __dummy1__;
     guint32 __dummy2__;
 } MDS_Footer; /* length: 16 bytes */
+
 
 #pragma pack()
 
