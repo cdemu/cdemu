@@ -36,9 +36,9 @@ struct _MIRAGE_Parser_B6TPrivate
     GObject *disc;
 
     gchar *b6t_filename;
-
-    GMappedFile *b6t_mapped;
+    guint64 b6t_length;
     guint8 *b6t_data;
+    
     guint8 *cur_ptr;
 
     B6T_DiscBlock_1 *disc_block_1;
@@ -67,18 +67,42 @@ static gboolean mirage_parser_b6t_load_bwa_file (MIRAGE_Parser_B6T *self, GError
     sprintf(bwa_filename+len-3, "bwa");
 
     bwa_fullpath = mirage_helper_find_data_file(bwa_filename, self->priv->b6t_filename);
+    g_free(bwa_filename);
 
     if (bwa_fullpath) {
-        GMappedFile *bwa_mapped;
-        GError *local_error = NULL;
+        FILE *file;
+        guint64 bwa_length, read_length;
+        guint8 *bwa_data;
 
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: found BWA file: '%s'\n", __debug__, bwa_fullpath);
 
-        /* Map BWA file */
-        bwa_mapped = g_mapped_file_new(bwa_fullpath, FALSE, &local_error);
+        /* Open BWA file */
+        file = g_fopen(bwa_fullpath, "r");
+        g_free(bwa_fullpath);
 
-        if (bwa_mapped) {
-            guint8 *cur_ptr = (guint8 *)g_mapped_file_get_contents(bwa_mapped);
+        if (!file) {
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to open BWA file!\n", __debug__);
+            mirage_error(MIRAGE_E_IMAGEFILE, error);
+            return FALSE;
+        }
+
+        /* Read whole BWA file */
+        fseek(file, 0, SEEK_END);
+        bwa_length = ftell(file);
+
+        bwa_data = g_malloc(bwa_length);
+
+        fseek(file, 0, SEEK_SET);
+        read_length = fread(bwa_data, 1, bwa_length, file);
+
+        fclose(file);
+
+        if (read_length != bwa_length) {
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read whole BWA file!\n", __debug__);
+            mirage_error(MIRAGE_E_IMAGEFILE, error);
+            succeeded = FALSE;
+        } else {
+            guint8 *cur_ptr = bwa_data;
 
             guint32 __dummy1__;
             guint32 __dummy2__;
@@ -92,13 +116,13 @@ static gboolean mirage_parser_b6t_load_bwa_file (MIRAGE_Parser_B6T *self, GError
 
             /* First three fields seem to have fixed values; probably some sort of
                header? */
-            __dummy1__ = MIRAGE_CAST_DATA(cur_ptr, 0, guint32);
+            __dummy1__ = GUINT32_FROM_LE(MIRAGE_CAST_DATA(cur_ptr, 0, guint32));
             cur_ptr += sizeof(guint32);
 
-            __dummy2__ = MIRAGE_CAST_DATA(cur_ptr, 0, guint32);
+            __dummy2__ = GUINT32_FROM_LE(MIRAGE_CAST_DATA(cur_ptr, 0, guint32));
             cur_ptr += sizeof(guint32);
 
-            __dummy3__ = MIRAGE_CAST_DATA(cur_ptr, 0, guint32);
+            __dummy3__ = GUINT32_FROM_LE(MIRAGE_CAST_DATA(cur_ptr, 0, guint32));
             cur_ptr += sizeof(guint32);
 
             WHINE_ON_UNEXPECTED(__dummy1__, 0x00000001);
@@ -107,13 +131,13 @@ static gboolean mirage_parser_b6t_load_bwa_file (MIRAGE_Parser_B6T *self, GError
 
             /* The next three fields are start sector, resolution and number
                of entries */
-            dpm_start_sector = MIRAGE_CAST_DATA(cur_ptr, 0, guint32);
+            dpm_start_sector = GUINT32_FROM_LE(MIRAGE_CAST_DATA(cur_ptr, 0, guint32));
             cur_ptr += sizeof(guint32);
 
-            dpm_resolution = MIRAGE_CAST_DATA(cur_ptr, 0, guint32);
+            dpm_resolution = GUINT32_FROM_LE(MIRAGE_CAST_DATA(cur_ptr, 0, guint32));
             cur_ptr += sizeof(guint32);
 
-            dpm_num_entries = MIRAGE_CAST_DATA(cur_ptr, 0, guint32);
+            dpm_num_entries = GUINT32_FROM_LE(MIRAGE_CAST_DATA(cur_ptr, 0, guint32));
             cur_ptr += sizeof(guint32);
 
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: Start sector: 0x%X\n", __debug__, dpm_start_sector);
@@ -122,26 +146,19 @@ static gboolean mirage_parser_b6t_load_bwa_file (MIRAGE_Parser_B6T *self, GError
 
             /* The rest is DPM data */
             dpm_data = MIRAGE_CAST_PTR(cur_ptr, 0, guint32 *);
+            //dpm_data_fix_endian(dpm_data, dpm_num_entries);
 
             /* Set DPM data */
             if (!mirage_disc_set_dpm_data(MIRAGE_DISC(self->priv->disc), dpm_start_sector, dpm_resolution, dpm_num_entries, dpm_data, error)) {
                 MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to set DPM data!\n", __debug__);
                 succeeded = FALSE;
             }
-
-            g_mapped_file_unref(bwa_mapped);
-        } else {
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to map file '%s': %s!\n", __debug__, bwa_fullpath, local_error->message);
-            g_error_free(local_error);
-            mirage_error(MIRAGE_E_IMAGEFILE, error);
-            succeeded = FALSE;
         }
+
+        g_free(bwa_data);
     } else {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: no accompanying BWA file found\n", __debug__);
     }
-
-    g_free(bwa_fullpath);
-    g_free(bwa_filename);
 
     return succeeded;
 }
@@ -247,7 +264,7 @@ static gboolean mirage_parser_b6t_setup_track_fragments (MIRAGE_Parser_B6T *self
 
     /* Data blocks are nice concept that's similar to libMirage's fragments; they
        are chunks of continuous data, stored in the same file and read in the same
-       mode. To illustrate how it goes, consider a parser with single Mode 1 data track
+       mode. To illustrate how it goes, consider a disc with single Mode 1 data track
        and three Audio tracks - data track will be stored in one data block, and the
        three audio tracks in another, but both data blocks will be stored in the same
        file, just at different offsets. Note that since they are separated, one data
@@ -1026,59 +1043,74 @@ static gboolean mirage_parser_b6t_load_disc (MIRAGE_Parser_B6T *self, GError **e
     self->priv->cur_ptr = self->priv->b6t_data;
 
     /* Read header */
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: parsing header...\n", __debug__);
     if (!mirage_parser_b6t_parse_header(self, error)) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to parse header!\n");
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to parse header!\n", __debug__);
         return FALSE;
     }
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: finished parsing header\n\n", __debug__);
 
-    /* Read parser blocks */
+    /* Read disc blocks */
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: parsing disc blocks...\n", __debug__);
     if (!mirage_parser_b6t_parse_disc_blocks(self, error)) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to parse parser blocks!\n");
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to parse disc blocks!\n", __debug__);
         return FALSE;
     }
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: finisged parsing disc blocks\n\n", __debug__);
 
     /* Read data blocks */
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: parsing data blocks...\n", __debug__);
     if (!mirage_parser_b6t_parse_data_blocks(self, error)) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to parse data blocks!\n");
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to parse data blocks!\n", __debug__);
         return FALSE;
     }
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: finisged parsing data blocks\n\n", __debug__);
 
     /* Read sessions */
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: parsing sessions...\n", __debug__);
     if (!mirage_parser_b6t_parse_sessions(self, error)) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to parse sessions!\n");
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to parse sessions!\n", __debug__);
         return FALSE;
     }
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: finisged parsing sessions\n\n", __debug__);
 
     /* Read internal DPM data */
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: parsing internal DPM data...\n", __debug__);
     if (!mirage_parser_b6t_parse_internal_dpm_data(self, error)) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to parse internal DPM data!\n");
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to parse internal DPM data!\n", __debug__);
         return FALSE;
     }
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: finished parsing internal DPM data\n\n", __debug__);
 
     /* Read B6T file length */
-    guint32 b6t_length = MIRAGE_CAST_DATA(self->priv->cur_ptr, 0, guint32);
+    guint32 b6t_length = GUINT32_FROM_LE(MIRAGE_CAST_DATA(self->priv->cur_ptr, 0, guint32));
     self->priv->cur_ptr += sizeof(guint32);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: declared B6T file length: %i (0x%X) bytes\n", __debug__, b6t_length, b6t_length);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: declared B6T file length: %i (0x%X) bytes\n\n", __debug__, b6t_length, b6t_length);
 
 
     /* Read footer */
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: parsing footer...\n", __debug__);
     if (!mirage_parser_b6t_parse_footer(self, error)) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to parse footer!\n");
         return FALSE;
     }
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: finished parsing footer\n\n", __debug__);
 
     /* Try to load external BWA file; the internal DPM data does not necessarily
-       contain entries for whole parser, but rather just for beginning of the parser
+       contain entries for whole disc, but rather just for beginning of the disc
        (which is usually checked by copy protection). BWA file, on the other hand,
-       usually contains DPM data for the whole parser. So, if we have both internal
+       usually contains DPM data for the whole disc. So, if we have both internal
        DPM data and a BWA available, we'll use the latter... */
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: parsing external DPM data...\n", __debug__);
     if (!mirage_parser_b6t_load_bwa_file(self, error)) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to load BWA file!\n");
         return FALSE;
     }
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: finished parsing external DPM data\n\n", __debug__);
 
     return TRUE;
 }
+
 
 /**********************************************************************\
  *                 MIRAGE_Parser methods implementation               *
@@ -1087,9 +1119,9 @@ static gboolean mirage_parser_b6t_load_image (MIRAGE_Parser *_self, gchar **file
 {
     MIRAGE_Parser_B6T *self = MIRAGE_PARSER_B6T(_self);
     
-    GError *local_error = NULL;
     gboolean succeeded = TRUE;
     FILE *file;
+    guint64 read_length;
     guint8 header[16];
 
     /* Check if we can load the image */
@@ -1107,12 +1139,13 @@ static gboolean mirage_parser_b6t_load_image (MIRAGE_Parser *_self, gchar **file
         mirage_error(MIRAGE_E_READFAILED, error);
         return FALSE;
     }
-    fclose(file);
 
     if (memcmp(header, "BWT5 STREAM SIGN", 16)) {
+        fclose(file);
         mirage_error(MIRAGE_E_CANTHANDLE, error);
         return FALSE;
     }
+
 
     /* Create disc */
     self->priv->disc = g_object_new(MIRAGE_TYPE_DISC, NULL);
@@ -1121,28 +1154,38 @@ static gboolean mirage_parser_b6t_load_image (MIRAGE_Parser *_self, gchar **file
     mirage_disc_set_filename(MIRAGE_DISC(self->priv->disc), filenames[0], NULL);
     self->priv->b6t_filename = g_strdup(filenames[0]);
 
-    /* Map the file using GLib's GMappedFile */
-    self->priv->b6t_mapped = g_mapped_file_new(filenames[0], FALSE, &local_error);
-    if (!self->priv->b6t_mapped) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to map file '%s': %s!\n", __debug__, filenames[0], local_error->message);
-        g_error_free(local_error);
+
+    /* Get file size */
+    fseek(file, 0, SEEK_END);
+    self->priv->b6t_length = ftell(file);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: B6T length: %lld bytes\n", __debug__, self->priv->b6t_length);
+
+    /* Allocate buffer */
+    self->priv->b6t_data = g_malloc(self->priv->b6t_length);
+
+    /* Read whole file */
+    fseek(file, 0, SEEK_SET);
+    read_length = fread(self->priv->b6t_data, 1, self->priv->b6t_length, file);
+
+    fclose(file);
+
+    if (read_length != self->priv->b6t_length) {
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read whole B6T file '%s' (%lld out of %lld bytes read)!\n", __debug__, filenames[0], read_length, self->priv->b6t_length);
         mirage_error(MIRAGE_E_IMAGEFILE, error);
         succeeded = FALSE;
         goto end;
     }
 
-    self->priv->b6t_data = (guint8 *)g_mapped_file_get_contents(self->priv->b6t_mapped);
-
     /* Load disc */
     succeeded = mirage_parser_b6t_load_disc(self, error);
     if (!succeeded) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to load parser!\n", __debug__);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to load disc!\n", __debug__);
     }
 
-    self->priv->b6t_data = NULL;
-    g_mapped_file_unref(self->priv->b6t_mapped);
-
 end:
+    g_free(self->priv->b6t_data);
+    self->priv->b6t_data = NULL;
+    
     /* Return disc */
     mirage_object_detach_child(MIRAGE_OBJECT(self), self->priv->disc, NULL);
     if (succeeded) {
@@ -1179,6 +1222,7 @@ static void mirage_parser_b6t_init (MIRAGE_Parser_B6T *self)
     );
 
     self->priv->b6t_filename = NULL;
+    self->priv->b6t_data = NULL;
     self->priv->data_blocks_list = NULL;
 }
 
@@ -1200,6 +1244,7 @@ static void mirage_parser_b6t_finalize (GObject *gobject)
     g_list_free(self->priv->data_blocks_list);
 
     g_free(self->priv->b6t_filename);
+    g_free(self->priv->b6t_data);
     
     /* Chain up to the parent class */
     return G_OBJECT_CLASS(mirage_parser_b6t_parent_class)->finalize(gobject);
