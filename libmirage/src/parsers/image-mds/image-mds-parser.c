@@ -38,8 +38,7 @@ struct _MIRAGE_Parser_MDSPrivate
     gint32 prev_session_end;
 
     gchar *mds_filename;
-
-    GMappedFile *mds_mapped;
+    guint64 mds_length;
     guint8 *mds_data;
 };
 
@@ -673,9 +672,9 @@ static gboolean mirage_parser_mds_load_image (MIRAGE_Parser *_self, gchar **file
     MIRAGE_Parser_MDS *self = MIRAGE_PARSER_MDS(_self);
     
     gboolean succeeded = TRUE;
-    GError *local_error = NULL;
     guint8 *cur_ptr;
     FILE *file;
+    guint64 read_length;
     gchar sig[16] = "";
     guint8 ver[2];
 
@@ -693,18 +692,19 @@ static gboolean mirage_parser_mds_load_image (MIRAGE_Parser *_self, gchar **file
         return FALSE;
     }
 
-    fclose(file);
-
     if (memcmp(sig, "MEDIA DESCRIPTOR", 16)) {
+        fclose(file);
         mirage_error(MIRAGE_E_CANTHANDLE, error);
         return FALSE;
     }
 
     /* We can handle only v.1.X images (Alcohol 120% format) */
     if (ver[0] != 1 ) {
+        fclose(file);
         mirage_error(MIRAGE_E_CANTHANDLE, error);
         return FALSE;
     }
+
 
     /* Create disc */
     self->priv->disc = g_object_new(MIRAGE_TYPE_DISC, NULL);
@@ -713,17 +713,29 @@ static gboolean mirage_parser_mds_load_image (MIRAGE_Parser *_self, gchar **file
     mirage_disc_set_filename(MIRAGE_DISC(self->priv->disc), filenames[0], NULL);
     self->priv->mds_filename = g_strdup(filenames[0]);
 
-    /* Map the file using GLib's GMappedFile */
-    self->priv->mds_mapped = g_mapped_file_new(filenames[0], FALSE, &local_error);
-    if (!self->priv->mds_mapped) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to map file '%s': %s!\n", __debug__, filenames[0], local_error->message);
-        g_error_free(local_error);
+
+    /* Get file size */
+    fseek(file, 0, SEEK_END);
+    self->priv->mds_length = ftell(file);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: MDS length: %lld bytes\n", __debug__, self->priv->mds_length);
+
+    /* Allocate buffer */
+    self->priv->mds_data = g_malloc(self->priv->mds_length);
+
+    /* Read whole file */
+    fseek(file, 0, SEEK_SET);
+    read_length = fread(self->priv->mds_data, 1, self->priv->mds_length, file);
+
+    fclose(file);
+
+    if (read_length != self->priv->mds_length) {
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read whole MDS file '%s' (%lld out of %lld bytes read)!\n", __debug__, filenames[0], read_length, self->priv->mds_length);
         mirage_error(MIRAGE_E_IMAGEFILE, error);
         succeeded = FALSE;
         goto end;
     }
 
-    self->priv->mds_data = (guint8 *)g_mapped_file_get_contents(self->priv->mds_mapped);
+    /* Parse MDS file */
     cur_ptr = self->priv->mds_data;
 
     self->priv->header = MIRAGE_CAST_PTR(cur_ptr, 0, MDS_Header *);
@@ -768,10 +780,10 @@ static gboolean mirage_parser_mds_load_image (MIRAGE_Parser *_self, gchar **file
         }
     }
 
-    self->priv->mds_data = NULL;
-    g_mapped_file_unref(self->priv->mds_mapped);
-
 end:
+    g_free(self->priv->mds_data);
+    self->priv->mds_data = NULL;
+    
     /* Return disc */
     mirage_object_detach_child(MIRAGE_OBJECT(self), self->priv->disc, NULL);
     if (succeeded) {
@@ -808,6 +820,7 @@ static void mirage_parser_mds_init (MIRAGE_Parser_MDS *self)
     );
 
     self->priv->mds_filename = NULL;
+    self->priv->mds_data = NULL;
 }
 
 static void mirage_parser_mds_finalize (GObject *gobject)
@@ -815,6 +828,7 @@ static void mirage_parser_mds_finalize (GObject *gobject)
     MIRAGE_Parser_MDS *self = MIRAGE_PARSER_MDS(gobject);
 
     g_free(self->priv->mds_filename);
+    g_free(self->priv->mds_data);
     
     /* Chain up to the parent class */
     return G_OBJECT_CLASS(mirage_parser_mds_parent_class)->finalize(gobject);
