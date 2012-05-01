@@ -1492,7 +1492,8 @@ gboolean mirage_disc_add_track_by_number (MIRAGE_Disc *self, gint number, GObjec
     GObject *session;
     GObject *last_track;
     gboolean succeeded;
-    gint num_sessions, last_number;
+    gint last_number = 0;
+    gint num_sessions;
     
     mirage_disc_get_number_of_sessions(self, &num_sessions, NULL);
     if (mirage_disc_get_track_by_index(self, -1, &last_track, NULL)) {
