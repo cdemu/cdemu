@@ -94,6 +94,29 @@ static ISzAlloc lzma_alloc = { sz_alloc, sz_free };
 
 
 /**********************************************************************\
+ *                    Endian-conversion functions                     *
+\**********************************************************************/
+static inline void daa_main_header_fix_endian (DAA_Main_Header *header)
+{
+    header->size_offset = GUINT32_FROM_LE(header->size_offset);
+    header->format = GUINT32_FROM_LE(header->format);
+    header->data_offset = GUINT32_FROM_LE(header->data_offset);
+    header->b1 = GUINT32_FROM_LE(header->b1);
+    header->b0 = GUINT32_FROM_LE(header->b0);
+    header->chunksize = GUINT32_FROM_LE(header->chunksize);
+    header->isosize = GUINT64_FROM_LE(header->isosize);
+    header->filesize = GUINT64_FROM_LE(header->filesize);
+    header->crc = GUINT32_FROM_LE(header->crc);
+}
+
+static inline void daa_part_header_fix_endian (DAA_Part_Header *header)
+{
+    header->data_offset = GUINT32_FROM_LE(header->data_offset);
+    header->crc = GUINT32_FROM_LE(header->crc);
+}
+
+
+/**********************************************************************\
  *                     Part filename generation                       *
 \**********************************************************************/
 /* Format: volname.part01.daa, volname.part02.daa, ... */
@@ -404,6 +427,8 @@ gboolean mirage_fragment_daa_set_file (MIRAGE_Fragment_DAA *self, gchar *filenam
         return FALSE;
     }
 
+    daa_main_header_fix_endian(&header);
+
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: DAA main file header:\n", __debug__);
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  size_offset: 0x%X (%d)\n", __debug__, header.size_offset, header.size_offset);
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  format: 0x%X\n", __debug__, header.format);
@@ -487,6 +512,7 @@ gboolean mirage_fragment_daa_set_file (MIRAGE_Fragment_DAA *self, gchar *filenam
             mirage_error(MIRAGE_E_READFAILED, error);
             return FALSE;
         }
+        type = GUINT32_FROM_LE(type);
 
         if (fread(&len, sizeof(guint32), 1, file) < 1) {
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read block length!\n", __debug__);
@@ -494,6 +520,7 @@ gboolean mirage_fragment_daa_set_file (MIRAGE_Fragment_DAA *self, gchar *filenam
             mirage_error(MIRAGE_E_READFAILED, error);
             return FALSE;
         }
+        len = GUINT32_FROM_LE(len);
 
         len -= 2*sizeof(guint32); /* Block length includes type and length fields; I like to operate with pure data length */
 
@@ -520,6 +547,7 @@ gboolean mirage_fragment_daa_set_file (MIRAGE_Fragment_DAA *self, gchar *filenam
                     mirage_error(MIRAGE_E_READFAILED, error);
                     return FALSE;
                 }
+                num_parts = GUINT32_FROM_LE(num_parts);
                 len -= sizeof(guint32);
 
                 /* Next field is always 0x01? */
@@ -529,6 +557,7 @@ gboolean mirage_fragment_daa_set_file (MIRAGE_Fragment_DAA *self, gchar *filenam
                     mirage_error(MIRAGE_E_READFAILED, error);
                     return FALSE;
                 }
+                b1 = GUINT32_FROM_LE(b1);
                 len -= sizeof(guint32);
 
                 /* Determine filename format and set appropriate function */
@@ -576,6 +605,7 @@ gboolean mirage_fragment_daa_set_file (MIRAGE_Fragment_DAA *self, gchar *filenam
                     mirage_error(MIRAGE_E_READFAILED, error);
                     return FALSE;
                 }
+                pwd_type = GUINT32_FROM_LE(pwd_type);
 
                 if (fread(&pwd_crc, sizeof(guint32), 1, file) < 1) {
                     MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s:  failed to read password CRC!\n", __debug__);
@@ -583,6 +613,7 @@ gboolean mirage_fragment_daa_set_file (MIRAGE_Fragment_DAA *self, gchar *filenam
                     mirage_error(MIRAGE_E_READFAILED, error);
                     return FALSE;
                 }
+                pwd_crc = GUINT32_FROM_LE(pwd_crc);
 
                 if (fread(daa_key, 128, 1, file) < 1) {
                     MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s:  failed to read DAA ley!\n", __debug__);
@@ -782,6 +813,7 @@ gboolean mirage_fragment_daa_set_file (MIRAGE_Fragment_DAA *self, gchar *filenam
                 mirage_error(MIRAGE_E_READFAILED, error);
                 return FALSE;
             }
+            daa_main_header_fix_endian(&header);
             part->offset = header.data_offset & 0xFFFFFF;
         } else if (!memcmp(signature, daa_part_signature, sizeof(daa_part_signature))) {
             DAA_Part_Header header;
@@ -790,6 +822,7 @@ gboolean mirage_fragment_daa_set_file (MIRAGE_Fragment_DAA *self, gchar *filenam
                 mirage_error(MIRAGE_E_READFAILED, error);
                 return FALSE;
             }
+            daa_part_header_fix_endian(&header);
             part->offset = header.data_offset & 0xFFFFFF;
         } else {
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: invalid part's signature!\n", __debug__);
