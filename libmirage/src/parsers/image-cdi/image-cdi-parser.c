@@ -251,17 +251,19 @@ static gboolean mirage_parser_cdi_parse_header (MIRAGE_Parser_CDI *self, GError 
     }
 #endif
     num_all_tracks = MIRAGE_CAST_DATA(self->priv->cur_ptr, 15, guint8);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: number of all tracks: %d\n", __debug__, num_all_tracks);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: number of all tracks: %d\n\n", __debug__, num_all_tracks);
     self->priv->cur_ptr += 16;
 
     /* 17th byte is filename length */
     filename_length = MIRAGE_CAST_DATA(self->priv->cur_ptr, 0, guint8);
     self->priv->cur_ptr += sizeof(guint8);
 
-    /* At 18th byte, filename starts */
+    /* At 18th byte, filename starts (NOTE: it seems that the filename
+       can be in any encoding (e.g. Japanese), so priting here could
+       cause a crash... */
     filename = MIRAGE_CAST_PTR(self->priv->cur_ptr, 0, gchar *);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: filename length: %d\n", __debug__, filename_length);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: filename: %.*s\n", __debug__, filename_length, filename);
+    //MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: filename length: %d\n", __debug__, filename_length);
+    //MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: filename: %s\n\n", __debug__, tmp_filename);
     self->priv->cur_ptr += filename_length;
 
     /* 31 bytes after filename aren't deciphered yet */
@@ -302,14 +304,14 @@ static gboolean mirage_parser_cdi_parse_header (MIRAGE_Parser_CDI *self, GError 
     mirage_parser_cdi_whine_on_unexpected(self, self->priv->cur_ptr, fields, G_N_ELEMENTS(fields), (gchar *)__debug__, "Post-filename fields");
     }
 #endif
-    disc_capacity = MIRAGE_CAST_DATA(self->priv->cur_ptr, 23, guint32);
+    disc_capacity = GUINT32_FROM_LE(MIRAGE_CAST_DATA(self->priv->cur_ptr, 23, guint32));
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: disc capacity: 0x%X\n", __debug__, disc_capacity);
     self->priv->cur_ptr += 29;
 
     /* Medium type */
-    medium_type = MIRAGE_CAST_DATA(self->priv->cur_ptr, 0, guint16);
+    medium_type = GUINT16_FROM_LE(MIRAGE_CAST_DATA(self->priv->cur_ptr, 0, guint16));
     self->priv->cur_ptr += sizeof(guint16);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: medium type: 0x%X\n", __debug__, medium_type);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: medium type: 0x%X\n\n", __debug__, medium_type);
 
     mirage_parser_cdi_decode_medium_type(self, medium_type, NULL);
 
@@ -320,7 +322,7 @@ static gboolean mirage_parser_cdi_parse_cdtext (MIRAGE_Parser_CDI *self, GError 
 {
     gint i;
 
-    /* It would seem that each CD-TEXT block for track consists of 18 bytes, each (?)
+    /* It seems that each CD-TEXT block for track consists of 18 bytes, each (?)
        denoting length of field it represents; if it's non-zero, it's followed by declared
        size of bytes... */
     for (i = 0; i < 18; i++) {
@@ -372,19 +374,19 @@ static gboolean mirage_parser_cdi_load_track (MIRAGE_Parser_CDI *self, GError **
     }
 
     /* Index fields follow */
-    num_indices = MIRAGE_CAST_DATA(self->priv->cur_ptr, 0, guint16);
+    num_indices = GUINT16_FROM_LE(MIRAGE_CAST_DATA(self->priv->cur_ptr, 0, guint16));
     self->priv->cur_ptr += sizeof(guint16);
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: number of indices: %d\n", __debug__, num_indices);
 
     indices = g_new0(gint, num_indices);
     for (i = 0; i < num_indices; i++) {
-        indices[i] = MIRAGE_CAST_DATA(self->priv->cur_ptr, 0, guint32);
+        indices[i] = GUINT32_FROM_LE(MIRAGE_CAST_DATA(self->priv->cur_ptr, 0, guint32));
         self->priv->cur_ptr += sizeof(guint32);
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: index %i: 0x%X\n", __debug__, i, indices[i]);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: index %i: 0x%X\n\n", __debug__, i, indices[i]);
     }
 
     /* Next is (4-byte?) field that, if set to 1, indicates presence of CD-Text data */
-    num_cdtext_blocks = MIRAGE_CAST_DATA(self->priv->cur_ptr, 0, guint32);
+    num_cdtext_blocks = GUINT32_FROM_LE(MIRAGE_CAST_DATA(self->priv->cur_ptr, 0, guint32));
     self->priv->cur_ptr += sizeof(guint32);
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: number of CD-TEXT blocks: %i\n", __debug__, num_cdtext_blocks);
 
@@ -392,6 +394,7 @@ static gboolean mirage_parser_cdi_load_track (MIRAGE_Parser_CDI *self, GError **
         /* Parse CD-Text */
         mirage_parser_cdi_parse_cdtext(self, error);
     }
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "\n");
 
     /* 2 bytes after indices are undeciphered yet */
 #ifdef WHINE_ON_UNEXPECTED
@@ -407,7 +410,7 @@ static gboolean mirage_parser_cdi_load_track (MIRAGE_Parser_CDI *self, GError **
 
 
     /* Track mode follows (FIXME: is it really 4-byte?) */
-    track_mode = MIRAGE_CAST_DATA(self->priv->cur_ptr, 0, guint32);
+    track_mode = GUINT32_FROM_LE(MIRAGE_CAST_DATA(self->priv->cur_ptr, 0, guint32));
     self->priv->cur_ptr += sizeof(guint32);
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: track mode: %i\n", __debug__, track_mode);
 
@@ -427,22 +430,22 @@ static gboolean mirage_parser_cdi_load_track (MIRAGE_Parser_CDI *self, GError **
 
 
     /* Session index (i.e. which session block this track block belongs to)... */
-    session_idx = MIRAGE_CAST_DATA(self->priv->cur_ptr, 0, guint32);
+    session_idx = GUINT32_FROM_LE(MIRAGE_CAST_DATA(self->priv->cur_ptr, 0, guint32));
     self->priv->cur_ptr += sizeof(guint32);
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: session index: %i\n", __debug__, session_idx);
 
     /* Track index (i.e. which track block is this)... */
-    track_idx = MIRAGE_CAST_DATA(self->priv->cur_ptr, 0, guint32);
+    track_idx = GUINT32_FROM_LE(MIRAGE_CAST_DATA(self->priv->cur_ptr, 0, guint32));
     self->priv->cur_ptr += sizeof(guint32);
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: track index: %i\n", __debug__, track_idx);
 
     /* Next is track start address... */
-    start_address = MIRAGE_CAST_DATA(self->priv->cur_ptr, 0, guint32);
+    start_address = GUINT32_FROM_LE(MIRAGE_CAST_DATA(self->priv->cur_ptr, 0, guint32));
     self->priv->cur_ptr += sizeof(guint32);
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: track start: 0x%X\n", __debug__, start_address);
 
     /* ... followed by track length */
-    track_length = MIRAGE_CAST_DATA(self->priv->cur_ptr, 0, guint32);
+    track_length = GUINT32_FROM_LE(MIRAGE_CAST_DATA(self->priv->cur_ptr, 0, guint32));
     self->priv->cur_ptr += sizeof(guint32);
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: track length: 0x%X\n", __debug__, track_length);
 
@@ -475,15 +478,15 @@ static gboolean mirage_parser_cdi_load_track (MIRAGE_Parser_CDI *self, GError **
 
 
     /* Field that indicates read mode */
-    read_mode = MIRAGE_CAST_DATA(self->priv->cur_ptr, 0, guint32);
+    read_mode = GUINT32_FROM_LE(MIRAGE_CAST_DATA(self->priv->cur_ptr, 0, guint32));
     self->priv->cur_ptr += sizeof(guint32);
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: read mode: %d\n", __debug__, read_mode);
 
 
     /* Field that has track's CTL stored */
-    track_ctl = MIRAGE_CAST_DATA(self->priv->cur_ptr, 0, guint32);
+    track_ctl = GUINT32_FROM_LE(MIRAGE_CAST_DATA(self->priv->cur_ptr, 0, guint32));
     self->priv->cur_ptr += sizeof(guint32);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: track's CTL: %X\n", __debug__, track_ctl);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: track's CTL: %X\n\n", __debug__, track_ctl);
 
 
     /* 9 undeciphered bytes */
@@ -511,12 +514,12 @@ static gboolean mirage_parser_cdi_load_track (MIRAGE_Parser_CDI *self, GError **
     /* ISRC and ISRC valid */
     isrc = MIRAGE_CAST_PTR(self->priv->cur_ptr, 0, gchar *);
     self->priv->cur_ptr += 12;
-    isrc_valid = MIRAGE_CAST_DATA(self->priv->cur_ptr, 0, guint32);
+    isrc_valid = GUINT32_FROM_LE(MIRAGE_CAST_DATA(self->priv->cur_ptr, 0, guint32));
     self->priv->cur_ptr += sizeof(guint32);
 
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: ISRC valid: %i\n", __debug__, isrc_valid);
     if (isrc_valid) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: ISRC: %.12s\n", __debug__, isrc);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: ISRC: %.12s\n\n", __debug__, isrc);
     }
 
 
@@ -633,7 +636,7 @@ static gboolean mirage_parser_cdi_load_track (MIRAGE_Parser_CDI *self, GError **
 #endif
     session_type = MIRAGE_CAST_DATA(self->priv->cur_ptr, 87, guint8);
     not_last_track = MIRAGE_CAST_DATA(self->priv->cur_ptr, 93, guint8);
-    address_at_the_end = MIRAGE_CAST_DATA(self->priv->cur_ptr, 95, guint32);
+    address_at_the_end = GUINT32_FROM_LE(MIRAGE_CAST_DATA(self->priv->cur_ptr, 95, guint32));
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: session type: %i\n", __debug__, session_type);
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: not the last track: %i\n", __debug__, not_last_track);
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: address at the end: 0x%X\n", __debug__, address_at_the_end);
@@ -799,12 +802,13 @@ static gboolean mirage_parser_cdi_load_session (MIRAGE_Parser_CDI *self, GError 
     if (num_tracks) {
         /* Add session */
         if (!mirage_disc_add_session_by_index(MIRAGE_DISC(self->priv->disc), -1, NULL, error)) {
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: failed to add session to parser!\n", __debug__);
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: failed to add session to disc!\n", __debug__);
             return FALSE;
         }
 
         /* Load tracks */
         for (i = 0; i < num_tracks; i++) {
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "\n");
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: *** Loading track %i ***\n", __debug__, i);
             if (!mirage_parser_cdi_load_track(self, error)) {
                 MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: failed to load track!\n", __debug__);
@@ -835,6 +839,7 @@ static gboolean mirage_parser_cdi_load_disc (MIRAGE_Parser_CDI *self, GError **e
     self->priv->cur_ptr += 1; /* Set pointer at start of first session descriptor */
     for (i = 0; i <= num_sessions; i++) {
         /* Load session */
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "\n");
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: *** Loading session %i ***\n", __debug__, i);
         if (!mirage_parser_cdi_load_session(self, error)) {
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: failed to load session!\n", __debug__);
@@ -844,7 +849,8 @@ static gboolean mirage_parser_cdi_load_disc (MIRAGE_Parser_CDI *self, GError **e
     }
 
     /* Disc descriptor */
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: parsing disc block\n", __debug__);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "\n");
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: *** Parsing disc block ***\n", __debug__);
 
     gint disc_length = 0;
     gint volume_id_length = 0;
@@ -862,7 +868,7 @@ static gboolean mirage_parser_cdi_load_disc (MIRAGE_Parser_CDI *self, GError **e
     }
 
     /* First 4 bytes seem to be overall size of the disc */
-    disc_length = MIRAGE_CAST_DATA(self->priv->cur_ptr, 0, guint32);
+    disc_length = GUINT32_FROM_LE(MIRAGE_CAST_DATA(self->priv->cur_ptr, 0, guint32));
     self->priv->cur_ptr += sizeof(guint32);
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: disc length: 0x%X\n", __debug__, disc_length);
 
@@ -898,19 +904,22 @@ static gboolean mirage_parser_cdi_load_disc (MIRAGE_Parser_CDI *self, GError **e
 #endif
     self->priv->cur_ptr += 9;
 
-    /* MCN */
+    /* MCN and MCN valid */
     mcn = MIRAGE_CAST_PTR(self->priv->cur_ptr, 0, gchar *);
     self->priv->cur_ptr += 13;
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: MCN: %.13s\n", __debug__, mcn);
 
-    mcn_valid = MIRAGE_CAST_DATA(self->priv->cur_ptr, 0, guint32);
+    mcn_valid = GUINT32_FROM_LE(MIRAGE_CAST_DATA(self->priv->cur_ptr, 0, guint32));
     self->priv->cur_ptr += sizeof(guint32);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: MCN valid: %i\n", __debug__, mcn_valid);
 
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: MCN valid: %i\n\n", __debug__, mcn_valid);
+    if (mcn_valid) {
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: MCN: %.13s\n", __debug__, mcn);
+    }
+    
     /* CD-TEXT */
-    cdtext_length = MIRAGE_CAST_DATA(self->priv->cur_ptr, 0, guint32);
+    cdtext_length = GUINT32_FROM_LE(MIRAGE_CAST_DATA(self->priv->cur_ptr, 0, guint32));
     self->priv->cur_ptr += sizeof(guint32);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: raw CD-TEXT data length: %i\n", __debug__, cdtext_length);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: raw CD-TEXT data length: %i\n\n", __debug__, cdtext_length);
     cdtext_data = MIRAGE_CAST_PTR(self->priv->cur_ptr, 0, guint8 *);
 
     if (cdtext_length) {
@@ -947,6 +956,8 @@ static gboolean mirage_parser_cdi_load_disc (MIRAGE_Parser_CDI *self, GError **e
     }
 #endif
     self->priv->cur_ptr += 12;
+
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: done parsing disc block\n\n", __debug__);
 
 end:
     return succeeded;
@@ -995,10 +1006,11 @@ static gboolean mirage_parser_cdi_load_image (MIRAGE_Parser *_self, gchar **file
         succeeded = FALSE;
         goto end;
     }
+    descriptor_length = GUINT32_FROM_LE(descriptor_length);
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: CDI descriptor length: 0x%X\n", __debug__, descriptor_length);
 
     /* Allocate descriptor data and read it */
-    self->priv->cur_ptr = self->priv->cdi_data = g_malloc0(descriptor_length);
+    self->priv->cur_ptr = self->priv->cdi_data = g_malloc(descriptor_length);
     offset = -(guint64)(descriptor_length);
     fseeko(file, offset, SEEK_END);
     if (fread(self->priv->cdi_data, descriptor_length, 1, file) < 1) {
@@ -1016,7 +1028,7 @@ static gboolean mirage_parser_cdi_load_image (MIRAGE_Parser *_self, gchar **file
     if (self->priv->cur_ptr - self->priv->cdi_data != descriptor_length - 4) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: size of parsed descriptor mismatch, Dave. Expect trouble... (%d != %d)\n", __debug__, self->priv->cur_ptr - self->priv->cdi_data, descriptor_length);
     } else {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: parser seems to have been loaded successfully\n", __debug__);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: disc seems to have been loaded successfully\n", __debug__);
     }
 
     /* Make parser start at -150... it seems both CD and DVD images start at -150
