@@ -1,6 +1,6 @@
 SUBDIRS = lzma-sdk
 
-INCLUDES = \
+AM_CPPFLAGS = \
     -I$(top_srcdir)/src/libmirage \
     -I$(top_builddir)/src/libmirage \
     -I$(srcdir)/lzma-sdk \

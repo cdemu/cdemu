@@ -1,4 +1,3 @@
-INCLUDES = 
 
 noinst_LTLIBRARIES = liblzma-sdk.la
 

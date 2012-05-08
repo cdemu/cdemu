@@ -18,7 +18,7 @@ libmirage_la_SOURCES = \
     mirage-utils.c \
     mirage-version.c
                         
-INCLUDES = \
+AM_CPPFLAGS = \
     $(glib_CFLAGS) \
     $(gobject_CFLAGS) \
     $(gmodule_CFLAGS) \

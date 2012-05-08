@@ -20,7 +20,7 @@ m4_define([libmirage_age], [0])
 # Project init
 AC_INIT([libmirage],[libmirage_version],[http://cdemu.sf.net])
 AC_CONFIG_SRCDIR(src/libmirage/mirage.c)
-AM_INIT_AUTOMAKE(AC_PACKAGE_NAME, AC_PACKAGE_VERSION)
+AM_INIT_AUTOMAKE([-Wall 1.6 gnu])
 AC_CONFIG_HEADERS([config.h])
 
 # Versioning
