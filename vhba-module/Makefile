@@ -1,41 +1,33 @@
-VHBA_VERSION = $(shell date -r $(PWD)/vhba.c +%Y%m%d)
-PACKAGE = vhba-module-$(VHBA_VERSION)
+VHBA_VERSION := $(shell date -r $(PWD)/vhba.c +%Y%m%d)
+PACKAGE := vhba-module-$(VHBA_VERSION)
+DOCS := AUTHORS ChangeLog COPYING INSTALL NEWS README
+DIST := vhba.c Makefile
 
-EXTRA_CFLAGS += -DVHBA_VERSION=\"$(VHBA_VERSION)\" -I$(PWD) -Werror
-
-obj-m += vhba.o
-
-PWD	?= `pwd`
-KERNELRELEASE ?= `uname -r`
+KERNELRELEASE ?= $(shell uname -r)
 KDIR ?= /lib/modules/$(KERNELRELEASE)/build
-KMAKE := $(MAKE) -C $(KDIR) M=$(PWD)
 
-DOCS = AUTHORS ChangeLog COPYING INSTALL NEWS README
+obj-m := vhba.o
+ccflags-y := -DVHBA_VERSION=\"$(VHBA_VERSION)\" -Werror
+clean-dirs := $(PACKAGE)
+clean-files := $(PACKAGE).tar.gz $(PACKAGE).tar.bz2
 
-all: modules
+.PHONY: default install dist modules modules_install clean dist-dir dist-gzip dist-bzip2
 
-modules:
-	$(KMAKE) modules
+default: modules
+install: modules_install
+dist: dist-bzip2
 
-module_install:
-	$(KMAKE) modules_install
-
-install: module_install
-
-clean:
-	$(KMAKE) clean
-	rm -fr $(PACKAGE)
-
-dist: dist-gzip
+modules modules_install clean:
+	$(MAKE) -C $(KDIR) M=$(PWD) $@
 
 dist-dir:
-	rm -fr $(PACKAGE)
-	mkdir $(PACKAGE)
-	cp vhba.c Makefile $(DOCS) $(PACKAGE)
-	mkdir $(PACKAGE)/debian $(PACKAGE)/debian/patches $(PACKAGE)/debian/source
-	cp -f $(subst debian/source,,$(subst debian/patches,,$(wildcard debian/*))) $(PACKAGE)/debian
-	cp -f $(wildcard debian/patches/*) $(PACKAGE)/debian/patches
-	cp -f $(wildcard debian/source/*) $(PACKAGE)/debian/source
+	rm -rf $(PACKAGE)
+	install -m 755 -d $(PACKAGE)
+	install -m 644 -t $(PACKAGE) $(DIST) $(DOCS)
+	install -m 755 -d $(PACKAGE)/debian $(PACKAGE)/debian/patches $(PACKAGE)/debian/source
+	install -m 644 -t $(PACKAGE)/debian         $(shell find debian -type f)
+	install -m 644 -t $(PACKAGE)/debian/patches $(shell find debian/patches -type f)
+	install -m 644 -t $(PACKAGE)/debian/source  $(shell find debian/source -type f)
 
 dist-gzip: dist-dir
 	tar -czf $(PACKAGE).tar.gz $(PACKAGE)
@@ -45,4 +37,3 @@ dist-bzip2: dist-dir
 	tar -cjf $(PACKAGE).tar.bz2 $(PACKAGE)
 	rm -rf $(PACKAGE)
 
-.PHONY: clean
