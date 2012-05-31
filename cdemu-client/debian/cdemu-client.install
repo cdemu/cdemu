@@ -1,2 +1,3 @@
 debian/cdemu-client.conf    etc/
+debian/source_cdemu-client.py /usr/share/apport/package-hooks/
 

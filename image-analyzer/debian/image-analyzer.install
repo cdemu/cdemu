@@ -1,3 +1,4 @@
 usr/bin/*
 usr/share/*
+debian/source_image-analyzer.py /usr/share/apport/package-hooks/
 

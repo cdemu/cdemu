@@ -1,4 +1,5 @@
 usr/lib/*/lib*.so.*
 usr/lib/*/libmirage-1.6/*.so
 usr/share/mime/packages/*.xml
+debian/source_libmirage.py /usr/share/apport/package-hooks/
 

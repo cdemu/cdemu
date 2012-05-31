@@ -1,0 +1,2 @@
+debian/source_gcdemu.py /usr/share/apport/package-hooks/
+
