@@ -19,14 +19,14 @@ override_dh_shlibdeps:
 
 build:
 	-test -x autogen.sh && ./autogen.sh
-	dh build --with autotools_dev
+	dh build --with autotools_dev,apport
 
 clean:
 	# Hack! Because GTK-Doc is retarded.
 	rm -f docs/reference/libmirage/html/*.html
 
-	dh clean --with autotools_dev
+	dh clean --with autotools_dev,apport
 
 %:
-	dh $@ --with autotools_dev
+	dh $@ --with autotools_dev,apport
 

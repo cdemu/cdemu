@@ -1,6 +1,5 @@
 usr/bin/*
 usr/share/*
 usr/lib/*
-debian/source_cdemu-daemon.py /usr/share/apport/package-hooks/
 debian/cdemu-daemon-crashdb.conf /etc/apport/crashdb.conf.d/
 

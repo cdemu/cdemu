@@ -13,8 +13,8 @@ override_dh_strip:
 
 build:
 	-test -x autogen.sh && ./autogen.sh
-	dh build --with autotools_dev
+	dh build --with autotools_dev,apport
 
 %:
-	dh $@ --with autotools_dev
+	dh $@ --with autotools_dev,apport
 
