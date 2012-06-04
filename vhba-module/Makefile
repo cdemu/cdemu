@@ -11,6 +11,8 @@ ccflags-y := -DVHBA_VERSION=\"$(VHBA_VERSION)\" -Werror
 clean-dirs := $(PACKAGE)
 clean-files := $(PACKAGE).tar.gz $(PACKAGE).tar.bz2
 
+export VHBA_VERSION
+
 .PHONY: default install dist modules modules_install clean dist-dir dist-gzip dist-bzip2
 
 default: modules
