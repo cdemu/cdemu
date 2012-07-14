@@ -26,6 +26,7 @@ Currently supported image formats:
  - PowerISO (DAA) image format
  - Track loader (ISO, UDF) for ISO9660 and UDF track images
  - Alcohol 120% (MDS) image format
+ - Daemon Tools (MDX) image format
  - Nero Burning ROM (NRG) image format
  - ReadCD (TOC, BIN) image format
  - Cdrdao's (TOC, BIN) image format

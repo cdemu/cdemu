@@ -135,6 +135,7 @@ AC_CONFIG_FILES([
     src/parsers/image-daa/lzma-sdk/Makefile
     src/parsers/image-iso/Makefile
     src/parsers/image-mds/Makefile
+    src/parsers/image-mdx/Makefile
     src/parsers/image-nrg/Makefile
     src/parsers/image-readcd/Makefile
     src/parsers/image-toc/Makefile

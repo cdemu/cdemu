@@ -8,6 +8,7 @@ SUBDIRS = \
    image-daa \
    image-iso \
    image-mds \
+   image-mdx \
    image-nrg \
    image-readcd \
    image-toc \
