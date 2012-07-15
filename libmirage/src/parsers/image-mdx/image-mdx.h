@@ -38,9 +38,10 @@ typedef struct {
 	gchar    signature[16]; /* "MEDIA DESCRIPTOR" */
 	guchar  version[2]; /* 2, 0 */
 	gchar    copyright[26]; /* "(C) 2000-2010 DT Soft Ltd." */
-	gint32   __dummy1__; /* 0xFFFFFFFF (-1) */
+	gint32   __dummy__; /* 0xFFFFFFFF (-1) */
 	gint64   footer_offset; /* Offset to footer */
-	guint64 __dummy2__;
+	gint64   blockinfo_size; /* Footer size minus this value always equals 0x1c0 (448) */
+	/* This means the footer has two blocks, one fixed-size and one variable-sized */
 } MDX_Header; /* length: 64 bytes */
 
 #pragma pack()
