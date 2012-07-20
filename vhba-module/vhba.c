@@ -922,6 +922,7 @@ static int vhba_probe (struct platform_device *pdev)
     shost->max_id = VHBA_MAX_ID;
     /* we don't support lun > 0 */
     shost->max_lun = 1;
+    shost->max_cmd_len = MAX_COMMAND_SIZE;
 
     vhost = (struct vhba_host *)shost->hostdata;
     memset(vhost, 0, sizeof(*vhost));
