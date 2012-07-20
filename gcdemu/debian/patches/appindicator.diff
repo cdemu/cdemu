@@ -1,0 +1,98 @@
+--- a/src/gcdemu	2012-07-20 14:25:52 +0200
++++ b/src/gcdemu	2012-07-20 14:54:01 +0200
+@@ -34,6 +34,11 @@
+ from gi.repository import Gio
+ from gi.repository import Notify
+ 
++try:
++    from gi.repository import AppIndicator3 as AppIndicator  
++except:  
++    from gi.repository import AppIndicator  
++
+ # *** Globals ***
+ app_name = "gcdemu"
+ app_version = "1.6.0"
+@@ -473,7 +478,7 @@
+ ################################################################################
+ #                                   gCDEmu                                     #
+ ################################################################################
+-class gCDEmu (Gtk.StatusIcon):
++class gCDEmu (Gtk.Invisible):
+     def load_icon (self):
+         # Get icon name from settings
+         icon_name = self.settings.get_string("icon-name")
+@@ -538,7 +543,6 @@
+     def cleanup (self):
+         # Default state: disconnected
+         self.connected = False
+-        self.update_icon()
+ 
+         # Clean signals handlers
+         for signal in self.signals:
+@@ -597,10 +601,6 @@
+         # Icon policy
+         self.icon_policy = self.settings.get_string("icon-policy")
+ 
+-        # To load the icon, we pretend that icon path g-conf key has changed and
+-        # let the callback do the rest for us...
+-        self.on_settings_changed("icon-name")
+-
+         # Load logo
+         self.load_logo()
+ 
+@@ -666,11 +666,11 @@
+ 
+         self.menu.show_all()
+ 
+-        # *** The status icon ***
+-        self.set_tooltip_text('gCDEmu')
+-        self.set_visible(True)
+-        self.connect('activate', self.on_activate)
+-        self.connect('popup-menu', self.on_popup_menu)
++        # AppIndicator
++        self.indicator = AppIndicator.Indicator.new ("gcdemu", "gcdemu", AppIndicator.IndicatorCategory.APPLICATION_STATUS)
++        self.indicator.set_status (AppIndicator.IndicatorStatus.ACTIVE)
++        self.indicator.set_attention_icon ("gcdemu")
++        self.indicator.set_menu(self.menu)
+ 
+         # *** Create the CDEmu object ***
+         self.cdemu = CDEmu()
+@@ -686,14 +686,6 @@
+         Gtk.main()
+ 
+ 
+-    def on_activate (self, status_icon):
+-        # Popup the menu (simulate the 1st button click)
+-        self.menu.popup(None, None, status_icon.position_menu, self, 1, Gtk.get_current_event_time())
+-
+-    def on_popup_menu (self, status_icon, button, activate_time):
+-        # Popup the menu
+-        self.menu.popup(None, None, status_icon.position_menu, self, button, activate_time)
+-
+     def on_settings_changed (self, key):
+         if key == "use-system-bus":
+             self.use_system_bus = self.settings.get_boolean(key)
+@@ -705,14 +697,12 @@
+             self.item_show_notifications.set_active(self.show_notifications)
+             print ("New setting: show notifications: %d" % self.show_notifications)
+         elif key == "icon-name":
+-            self.load_icon()
+-            self.update_icon()
++			pass
+         elif key == "daemon-autostart":
+             self.daemon_autostart = self.settings.get_boolean(key)
+             print ("New setting: daemon autostart: %d" % self.daemon_autostart)
+         elif key == "icon-policy":
+             self.icon_policy = self.settings.get_string(key)
+-            self.update_icon()
+         else:
+             print ("Unknown setting key: %s!" % key)
+ 
+@@ -731,7 +721,6 @@
+ 
+     def on_connection_established (self, cdemu, num_devices):
+         self.connected = True
+-        self.update_icon()
+ 
+         # Create devices GUI
+         for i in range(0, num_devices):

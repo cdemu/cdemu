@@ -106,6 +106,10 @@ If you wish to put the gCDEmu icon in the top panel's system tray, follow the
 instructions below. Note that the instructions are not applicable only to gCDEmu,
 but to any application with systray icon.
 
+It should be noted that you can apply a patch that will turn gCDEmu into
+an AppIndicator, that will 'just work(tm)' on Unity or GNOME 3. The patch
+can be found in the 'debian/patches' directory.
+
 
 Unity:
 ------
@@ -123,6 +127,13 @@ Restart Unity (either relog or use 'unity --replace').
 
 GNOME Shell:
 ------------
+Note: There is a quick way to get the gCDEmu icon to show up in the system tray
+and that is to run GNOME 3 in so-called "fallback mode". This will change the GUI
+to look and behave more like GNOME 2. It is started by running 'gnome-session'
+with the parameter '--session gnome-fallback'. You'll need to configure your
+display manager (the graphical log-in screen) and add an entry for this if none
+already exists.
+
 Moving the gCDEmu icon to system tray in GNOME Shell requires a bit more work.
 
 First, get and install the IconManager shell extension written by Jakub Krajniak.
@@ -151,7 +162,7 @@ gsettings set org.gnome.shell.extensions.icon-manager top-bar "['gcdemu']"
 Alternatively, you can install dconf-editor and use it to edit the key:
 '/org/gnome/shell/extensions/icon-manager/top-bar'
 
-Reload the GNOME Shell (press Alt+F2 and enter "r").
+Reload the GNOME Shell (either press Alt+F2 and enter "r" or use 'gnome-shell --replace').
 
 
 Contact information:
