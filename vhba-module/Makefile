@@ -5,6 +5,7 @@ DIST := vhba.c Makefile
 
 KERNELRELEASE ?= $(shell uname -r)
 KDIR ?= /lib/modules/$(KERNELRELEASE)/build
+PWD ?= $(shell pwd)
 
 obj-m := vhba.o
 ccflags-y := -DVHBA_VERSION=\"$(VHBA_VERSION)\" -Werror
