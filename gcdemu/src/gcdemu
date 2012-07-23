@@ -914,13 +914,14 @@ class gCDEmuDevice (GObject.GObject):
 
     def on_menu_item_button_press_event (self, widget, event):
         if event.button == 1:
-            # Left click: quick load/unload
-            self.load_unload_device()
-        else:
-            # Right click: device dialog
+            # Left click: device dialog
             self.dialog.present() # Make sure the window is always on top
             self.dialog.run()
             self.dialog.hide()
+        else:
+            # Right click: quick load/unload
+            self.load_unload_device()
+
 
     def load_unload_device (self):
         if self.device.loaded:
