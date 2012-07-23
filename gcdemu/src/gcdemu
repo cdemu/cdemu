@@ -544,12 +544,6 @@ class gCDEmu (Gtk.StatusIcon):
         for signal in self.signals:
             signal.remove()
 
-        # Clean devices menu
-        items = self.devices_menu.get_children()
-        # Note: first two entries are "Devices" and the separator...
-        for i in range(2, len(items)):
-            self.devices_menu.remove(items[i])
-
         # Free devices
         for device in self.devices:
             device.cleanup()
@@ -616,6 +610,14 @@ class gCDEmu (Gtk.StatusIcon):
         # *** The right-click popup menu ***
         self.menu = Gtk.Menu()
 
+        # Devices
+        item = Gtk.MenuItem.new_with_label(_("Devices"))
+        item.set_sensitive(False)
+        self.menu.append(item);
+
+        # Separator
+        self.menu.append(Gtk.SeparatorMenuItem())
+
         # Use system bus
         item = Gtk.CheckMenuItem.new_with_mnemonic(_("Use _system bus"))
         item.set_active(self.use_system_bus)
@@ -646,18 +648,7 @@ class gCDEmu (Gtk.StatusIcon):
         item.connect("activate", Gtk.main_quit)
         self.menu.append(item)
 
-        self.menu.show_all()
-
-        # *** Devices menu ***
-        self.devices_menu = Gtk.Menu()
-
-        item = Gtk.MenuItem.new_with_label(_("Devices"))
-        item.set_sensitive(False)
-        self.devices_menu.append(item);
-
-        self.devices_menu.append(Gtk.SeparatorMenuItem())
-
-        self.devices_menu.show_all()
+        self.menu.show_all()      
 
         # *** The status icon ***
         self.set_tooltip_text('gCDEmu')
@@ -681,7 +672,7 @@ class gCDEmu (Gtk.StatusIcon):
 
     def on_activate (self, status_icon):
         # Popup the devices menu (simulate the 1st button click)
-        self.devices_menu.popup(None, None, status_icon.position_menu, self, 1, Gtk.get_current_event_time())
+        self.menu.popup(None, None, status_icon.position_menu, self, 1, Gtk.get_current_event_time())
 
     def on_popup_menu (self, status_icon, button, activate_time):
         # Popup the menu
@@ -732,7 +723,7 @@ class gCDEmu (Gtk.StatusIcon):
             device = gCDEmuDevice(self.cdemu, i)
             self.devices.append(device)
             # Add device's menu item to the devices menu
-            self.devices_menu.add(device.menu_item)
+            self.menu.insert(device.menu_item, 1+i)
             # Connect signal
             device.connect("device-notification", self.on_device_notification)
 
