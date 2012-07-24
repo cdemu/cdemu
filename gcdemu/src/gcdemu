@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 #
-# gcdemu: Gtk+ CDEmu GUI
+# gcdemu: Gtk+/AppIndicator CDEmu GUI
 # Copyright (C) 2006-2012 Rok Mandeljc
 #
 # This program is free software; you can redistribute it and/or modify
@@ -18,8 +18,10 @@
 # along with this program; if not, write to the Free Software
 # Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 
+import argparse
 import os
 import subprocess
+import sys
 import weakref
 
 # gettext
@@ -34,9 +36,11 @@ from gi.repository import Gtk
 from gi.repository import Gio
 from gi.repository import Notify
 
+# Note: AppIndicator is loaded on-demand in main function
+
 # *** Globals ***
 app_name = "gcdemu"
-app_version = "1.6.0"
+app_version = "1.7.0"
 supported_daemon_interface_version = 3
 
 # I18n
@@ -474,27 +478,6 @@ GObject.signal_new("error", CDEmuDevice,
 #                               gCDEmu                                 #
 ########################################################################
 class gCDEmu:
-    def load_icon (self):
-        # Get icon name from settings
-        icon_name = self.settings.get_string("icon-name")
-        if icon_name == None:
-            icon_name = "gcdemu"
-
-        # Lookup icon in standard paths
-        icon_info = Gtk.IconTheme().lookup_icon(icon_name, 0, 0)
-        if icon_info == None:
-            print ("Pixmap '%s' not found in standard pixmap paths!" % (icon_name))
-            self.icon_on = None
-            self.icon_off = None
-            return
-        icon_filename = icon_info.get_filename()
-
-        # "On" icon
-        self.icon_on = GdkPixbuf.Pixbuf.new_from_file(icon_filename)
-        # "Off" icon - desaturated
-        self.icon_off = self.icon_on.copy()
-        self.icon_off.saturate_and_pixelate(self.icon_off, 0.00, False)
-
     def load_logo (self):
         # Lookup "icon" in standard paths
         icon_info = Gtk.IconTheme().lookup_icon("gcdemu", 0, 0)
@@ -507,33 +490,6 @@ class gCDEmu:
         # Load
         self.logo = GdkPixbuf.Pixbuf.new_from_file_at_size(logo_filename, 156, 156)
 
-    def update_icon (self):
-        # If icon is invalid, use standard "image-missing" as fallback
-        if self.icon_on == None:
-            self.set_from_icon_name("image-missing")
-        else:
-            # Which icon to use
-            if self.connected:
-                self.tray_icon.set_from_pixbuf(self.icon_on)
-            else:
-                self.tray_icon.set_from_pixbuf(self.icon_off)
-
-        # Show/hide icon
-        if self.icon_policy == "always":
-            visible = True
-        elif self.icon_policy == "never":
-            visible = False
-        elif self.icon_policy in [ "when_connected", "when-connected" ]:
-            if self.connected:
-                visible = True
-            else:
-                visible = False
-        else:
-            # Fix invalid setting...
-            print ("Unknown icon policy '%s'! Using 'always' by default!" % (self.icon_policy))
-            self.icon_policy = "always"
-            visible = True
-        self.tray_icon.set_visible(visible)
 
     def cleanup (self):
         # Default state: disconnected
@@ -563,14 +519,6 @@ class gCDEmu:
 
         self.signals = []
 
-         # *** The status icon ***
-        self.tray_icon = Gtk.StatusIcon()
-
-        self.tray_icon.set_tooltip_text('gCDEmu')
-        self.tray_icon.set_visible(True)
-        self.tray_icon.connect('activate', self.on_activate)
-        self.tray_icon.connect('popup-menu', self.on_popup_menu)
-
         # *** Configuration ***
         self.settings = Gio.Settings("apps.gcdemu")
         
@@ -593,9 +541,6 @@ class gCDEmu:
         # Icon policy
         self.icon_policy = self.settings.get_string("icon-policy")
 
-        # To load the icon, we pretend that icon path g-conf key has changed and
-        # let the callback do the rest for us...
-        self.on_settings_changed("icon-name")
 
         # Load logo
         self.load_logo()
@@ -613,7 +558,7 @@ class gCDEmu:
         self.about.set_translator_credits(_("translator-credits"))
         self.about.set_logo(self.logo)
 
-        # *** The right-click popup menu ***
+        # *** Menu ***
         self.menu = Gtk.Menu()
 
         # Devices
@@ -663,20 +608,13 @@ class gCDEmu:
         self.cdemu.connect("connection-established", self.on_connection_established)
         self.cdemu.connect("connection-lost", self.on_connection_lost)
         self.cdemu.connect("error", lambda c, t, m: self.show_error(t, m))
+
+    def run (self):
         # Connect to daemon
         self.cdemu.connect_to_bus(self.use_system_bus, self.daemon_autostart)
 
         # *** Main loop ***
         Gtk.main()
-
-
-    def on_activate (self, status_icon):
-        # Popup the devices menu (simulate the 1st button click)
-        self.menu.popup(None, None, status_icon.position_menu, self.tray_icon, 1, Gtk.get_current_event_time())
-
-    def on_popup_menu (self, status_icon, button, activate_time):
-        # Popup the menu
-        self.menu.popup(None, None, status_icon.position_menu, self.tray_icon, button, activate_time)
 
     def on_settings_changed (self, key):
         if key == "use-system-bus":
@@ -720,7 +658,7 @@ class gCDEmu:
         # Create devices GUI
         for i in range(0, num_devices):
             # Create device dialog
-            device = gCDEmuDevice(self.cdemu, i)
+            device = self.create_device(self.cdemu, i)
             self.devices.append(device)
             # Add device's menu item to the devices menu
             self.menu.insert(device.menu_item, 1+i)
@@ -752,8 +690,106 @@ class gCDEmu:
         message.run()
         message.destroy()
 
-        return
 
+class gCDEmu_Gtk (gCDEmu):
+    def __init__ (self):
+        gCDEmu.__init__(self)
+
+        # *** The status icon ***
+        self.tray_icon = Gtk.StatusIcon()
+
+        self.tray_icon.set_tooltip_text('gCDEmu')
+        self.tray_icon.set_visible(True)
+        self.tray_icon.connect('activate', self.on_activate)
+        self.tray_icon.connect('popup-menu', self.on_popup_menu)
+
+        # To load the icon, we pretend that icon path g-conf key has changed and
+        # let the callback do the rest for us...
+        self.on_settings_changed("icon-name")
+
+    def create_device (self, cdemu, d):
+        return gCDEmuDevice_Gtk(cdemu, d)
+
+
+    def on_activate (self, status_icon):
+        # Popup the devices menu (simulate the 1st button click)
+        self.menu.popup(None, None, status_icon.position_menu, self.tray_icon, 1, Gtk.get_current_event_time())
+
+    def on_popup_menu (self, status_icon, button, activate_time):
+        # Popup the menu
+        self.menu.popup(None, None, status_icon.position_menu, self.tray_icon, button, activate_time)
+
+
+    def load_icon (self):
+        # Get icon name from settings
+        icon_name = self.settings.get_string("icon-name")
+        if icon_name == None:
+            icon_name = "gcdemu"
+
+        # Lookup icon in standard paths
+        icon_info = Gtk.IconTheme().lookup_icon(icon_name, 0, 0)
+        if icon_info == None:
+            print ("Pixmap '%s' not found in standard pixmap paths!" % (icon_name))
+            self.icon_on = None
+            self.icon_off = None
+            return
+        icon_filename = icon_info.get_filename()
+
+        # "On" icon
+        self.icon_on = GdkPixbuf.Pixbuf.new_from_file(icon_filename)
+        # "Off" icon - desaturated
+        self.icon_off = self.icon_on.copy()
+        self.icon_off.saturate_and_pixelate(self.icon_off, 0.00, False)
+
+
+    def update_icon (self):
+        # If icon is invalid, use standard "image-missing" as fallback
+        if self.icon_on == None:
+            self.set_from_icon_name("image-missing")
+        else:
+            # Which icon to use
+            if self.connected:
+                self.tray_icon.set_from_pixbuf(self.icon_on)
+            else:
+                self.tray_icon.set_from_pixbuf(self.icon_off)
+
+        # Show/hide icon
+        if self.icon_policy == "always":
+            visible = True
+        elif self.icon_policy == "never":
+            visible = False
+        elif self.icon_policy in [ "when_connected", "when-connected" ]:
+            if self.connected:
+                visible = True
+            else:
+                visible = False
+        else:
+            # Fix invalid setting...
+            print ("Unknown icon policy '%s'! Using 'always' by default!" % (self.icon_policy))
+            self.icon_policy = "always"
+            visible = True
+        self.tray_icon.set_visible(visible)
+
+
+class gCDEmu_Indicator (gCDEmu):
+    def __init__ (self):
+        gCDEmu.__init__(self)
+
+        # AppIndicator
+        self.indicator = AppIndicator.Indicator.new(app_name, "gcdemu", AppIndicator.IndicatorCategory.APPLICATION_STATUS)
+        self.indicator.set_status (AppIndicator.IndicatorStatus.ACTIVE)
+        self.indicator.set_attention_icon ("gcdemu")
+        self.indicator.set_menu(self.menu)
+
+    def create_device (self, cdemu, d):
+        return gCDEmuDevice_Indicator(cdemu, d)
+        
+
+    def load_icon (self):
+        pass
+
+    def update_icon (self):
+        pass
 
 ########################################################################
 #                            gCDEmuDevice                              #
@@ -775,7 +811,8 @@ class gCDEmuDevice (GObject.GObject):
         # Create menu item
         self.menu_item = Gtk.ImageMenuItem()
         self.menu_item.show()
-        self.connect_signal(self.menu_item, "button-press-event", self.on_menu_item_button_press_event)
+        # Note: signal for menu item is connected in the child class,
+        # because Gtk and AppIndicator versions handle different signals
 
         # Create file chooser dialog
         self.file_chooser = gCDEMuFileChooserDialog(cdemu.supported_parsers)
@@ -870,12 +907,8 @@ class gCDEmuDevice (GObject.GObject):
             if len(self.device.filenames) > 1:
                 images += ", ..." # Indicate there's more than one file
             self.menu_item.set_label("%s #%02d: %s" % (_("Device"), self.device.number, images))
-            self.menu_item.set_image(Gtk.Image.new_from_stock(Gtk.STOCK_YES, Gtk.IconSize.MENU))
-            self.menu_item.set_tooltip_text(_("Left click for Property Dialog, right click to unload."))
         else:
             self.menu_item.set_label("%s #%02d: %s" % (_("Device"), self.device.number, _("Empty")))
-            self.menu_item.set_image(Gtk.Image.new_from_stock(Gtk.STOCK_NO, Gtk.IconSize.MENU))
-            self.menu_item.set_tooltip_text(_("Left click for Property Dialog, right click to load."))
 
         # Status page in the device dialog
         self.page_status.set_status(self.device.loaded, self.device.filenames)
@@ -911,18 +944,6 @@ class gCDEmuDevice (GObject.GObject):
         self.page_library.set_debug_mask(self.device.library_debug_mask)
         if notify:
             self.emit("device-notification", _("Device option change"), _("Device #%02d has been changed its library debug mask. New value: 0x%X") % (self.device.number, self.device.library_debug_mask))
-
-
-    def on_menu_item_button_press_event (self, widget, event):
-        if event.button == 1:
-            # Left click: device dialog
-            self.dialog.present() # Make sure the window is always on top
-            self.dialog.run()
-            self.dialog.hide()
-        else:
-            # Right click: quick load/unload
-            self.load_unload_device()
-
 
     def load_unload_device (self):
         if self.device.loaded:
@@ -971,6 +992,48 @@ GObject.signal_new("device-notification", gCDEmuDevice,
     GObject.SignalFlags.RUN_FIRST,
     None,
     (GObject.TYPE_STRING, GObject.TYPE_STRING))
+
+
+class gCDEmuDevice_Gtk (gCDEmuDevice):    
+    def __init__ (self, cdemu, d):
+        gCDEmuDevice.__init__(self, cdemu, d)
+
+        self.connect_signal(self.menu_item, "button-press-event", self.on_menu_item_button_press_event)
+
+    def on_menu_item_button_press_event (self, widget, event):
+        if event.button == 1:
+            # Left click: device dialog
+            self.dialog.present() # Make sure the window is always on top
+            self.dialog.run()
+            self.dialog.hide()
+        else:
+            # Right click: quick load/unload
+            self.load_unload_device()
+
+    def update_status (self, notify = False):
+        gCDEmuDevice.update_status(self, notify)
+
+        if self.device.loaded:
+            self.menu_item.set_image(Gtk.Image.new_from_stock(Gtk.STOCK_YES, Gtk.IconSize.MENU))
+            self.menu_item.set_tooltip_text(_("Left click for Property Dialog, right click to unload."))
+        else:
+            self.menu_item.set_image(Gtk.Image.new_from_stock(Gtk.STOCK_NO, Gtk.IconSize.MENU))
+            self.menu_item.set_tooltip_text(_("Left click for Property Dialog, right click to load."))
+
+
+class gCDEmuDevice_Indicator (gCDEmuDevice):
+    def __init__ (self, cdemu, d):
+        gCDEmuDevice.__init__(self, cdemu, d)
+
+        self.menu_item.set_tooltip_text(_("Click for Property Dialog"))
+
+        self.connect_signal(self.menu_item, "activate", self.on_menu_item_activate)
+
+    def on_menu_item_activate (self, widget):
+        # Left click: device dialog
+        self.dialog.present() # Make sure the window is always on top
+        self.dialog.run()
+        self.dialog.hide()
 
 
 ########################################################################
@@ -1448,6 +1511,30 @@ class gCDEMuPasswordDialog (Gtk.Dialog):
 
 ########################################################################
 #                                Main                                  #
-########################################################################
+######################################################################## 
 if __name__ == "__main__":
-    app = gCDEmu()
+    # Command-line argument parsing
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--indicator', action="store_true", default=False, help='run gCDEmu in AppIndicator mode')
+    args = parser.parse_args()
+
+    if args.indicator:
+        # AppIndicator version
+        try:
+            from gi.repository import AppIndicator3 as AppIndicator
+        except:
+            try:
+                from gi.repository import AppIndicator 
+            except:
+                message = Gtk.MessageDialog(None, 0, Gtk.MessageType.ERROR, Gtk.ButtonsType.CLOSE, _("Failed to load AppIndicator library!"))
+                message.set_title(_("AppIndicator not available"))
+                message.run()
+                message.destroy()
+                sys.exit(-1)
+        
+        app = gCDEmu_Indicator()
+    else:
+        # Gtk version
+        app = gCDEmu_Gtk()
+    
+    app.run()
