@@ -473,7 +473,7 @@ GObject.signal_new("error", CDEmuDevice,
 ################################################################################
 #                                   gCDEmu                                     #
 ################################################################################
-class gCDEmu (Gtk.StatusIcon):
+class gCDEmu:
     def load_icon (self):
         # Get icon name from settings
         icon_name = self.settings.get_string("icon-name")
@@ -514,9 +514,9 @@ class gCDEmu (Gtk.StatusIcon):
         else:
             # Which icon to use
             if self.connected:
-                self.set_from_pixbuf(self.icon_on)
+                self.tray_icon.set_from_pixbuf(self.icon_on)
             else:
-                self.set_from_pixbuf(self.icon_off)
+                self.tray_icon.set_from_pixbuf(self.icon_off)
 
         # Show/hide icon
         if self.icon_policy == "always":
@@ -533,7 +533,7 @@ class gCDEmu (Gtk.StatusIcon):
             print ("Unknown icon policy '%s'! Using 'always' by default!" % (self.icon_policy))
             self.icon_policy = "always"
             visible = True
-        self.set_visible(visible)
+        self.tray_icon.set_visible(visible)
 
     def cleanup (self):
         # Default state: disconnected
@@ -558,12 +558,18 @@ class gCDEmu (Gtk.StatusIcon):
 
 
     def __init__ (self):
-        super(gCDEmu, self).__init__()
-
         self.connected = False
         self.devices = []
 
         self.signals = []
+
+         # *** The status icon ***
+        self.tray_icon = Gtk.StatusIcon()
+
+        self.tray_icon.set_tooltip_text('gCDEmu')
+        self.tray_icon.set_visible(True)
+        self.tray_icon.connect('activate', self.on_activate)
+        self.tray_icon.connect('popup-menu', self.on_popup_menu)
 
         # *** Configuration ***
         self.settings = Gio.Settings("apps.gcdemu")
@@ -648,13 +654,7 @@ class gCDEmu (Gtk.StatusIcon):
         item.connect("activate", Gtk.main_quit)
         self.menu.append(item)
 
-        self.menu.show_all()      
-
-        # *** The status icon ***
-        self.set_tooltip_text('gCDEmu')
-        self.set_visible(True)
-        self.connect('activate', self.on_activate)
-        self.connect('popup-menu', self.on_popup_menu)
+        self.menu.show_all()
 
         # *** Create the CDEmu object ***
         self.cdemu = CDEmu()
@@ -672,11 +672,11 @@ class gCDEmu (Gtk.StatusIcon):
 
     def on_activate (self, status_icon):
         # Popup the devices menu (simulate the 1st button click)
-        self.menu.popup(None, None, status_icon.position_menu, self, 1, Gtk.get_current_event_time())
+        self.menu.popup(None, None, status_icon.position_menu, self.tray_icon, 1, Gtk.get_current_event_time())
 
     def on_popup_menu (self, status_icon, button, activate_time):
         # Popup the menu
-        self.menu.popup(None, None, status_icon.position_menu, self, button, activate_time)
+        self.menu.popup(None, None, status_icon.position_menu, self.tray_icon, button, activate_time)
 
     def on_settings_changed (self, key):
         if key == "use-system-bus":
@@ -754,8 +754,6 @@ class gCDEmu (Gtk.StatusIcon):
 
         return
 
-GObject.type_register(gCDEmu)
-
 
 ################################################################################
 #                                gCDEmuDevice                                  #
@@ -775,7 +773,7 @@ class gCDEmuDevice (GObject.GObject):
         self.device = cdemu.devices[d]
 
         # Create menu item
-        self.menu_item = Gtk.MenuItem()
+        self.menu_item = Gtk.ImageMenuItem()
         self.menu_item.show()
         self.connect_signal(self.menu_item, "button-press-event", self.on_menu_item_button_press_event)
 
@@ -871,10 +869,13 @@ class gCDEmuDevice (GObject.GObject):
             images = os.path.basename(self.device.filenames[0]) # Make it short
             if len(self.device.filenames) > 1:
                 images += ", ..." # Indicate there's more than one file
-            str = "%s #%02d: %s" % (_("Device"), self.device.number, images)
+            self.menu_item.set_label("%s #%02d: %s" % (_("Device"), self.device.number, images))
+            self.menu_item.set_image(Gtk.Image.new_from_stock(Gtk.STOCK_YES, Gtk.IconSize.MENU))
+            self.menu_item.set_tooltip_text(_("Left click for Property Dialog, right click to unload."))
         else:
-            str = "%s #%02d: %s" % (_("Device"), self.device.number, _("Empty"))
-        self.menu_item.set_label(str)
+            self.menu_item.set_label("%s #%02d: %s" % (_("Device"), self.device.number, _("Empty")))
+            self.menu_item.set_image(Gtk.Image.new_from_stock(Gtk.STOCK_NO, Gtk.IconSize.MENU))
+            self.menu_item.set_tooltip_text(_("Left click for Property Dialog, right click to load."))
 
         # Status page in the device dialog
         self.page_status.set_status(self.device.loaded, self.device.filenames)
