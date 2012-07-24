@@ -44,15 +44,15 @@ bindtextdomain(app_name)
 textdomain(app_name)
 
 
-################################################################################
-#                   CDEmuDaemonProxy: Daemon proxy object                      #
-################################################################################
+########################################################################
+#               CDEmuDaemonProxy: Daemon proxy object                  #
+########################################################################
 class CDEmuDaemonProxy (GObject.GObject):
     _name = 'net.sf.cdemu.CDEMUD_Daemon'
     _object_path = '/CDEMUD_Daemon'
     
     def __init__ (self):
-        super(CDEmuDaemonProxy, self).__init__()
+        GObject.GObject.__init__(self)
 
         self.watcher_id = -1
         self.proxy_handler_ids = []
@@ -179,12 +179,12 @@ GObject.signal_new("DeviceOptionChanged", CDEmuDaemonProxy,
     (GObject.TYPE_INT, GObject.TYPE_STRING ))
     
 
-################################################################################
-#                       CDEmu: D-BUS interface object                          #
-################################################################################
+########################################################################
+#                   CDEmu: D-BUS interface object                      #
+########################################################################
 class CDEmu (GObject.GObject):
     def __init__ (self):
-        super(CDEmu, self).__init__()
+        GObject.GObject.__init__(self)
 
         self.daemon_proxy = CDEmuDaemonProxy()
         self.daemon_proxy.connect("DaemonStarted", lambda o: self.on_daemon_started())
@@ -299,16 +299,16 @@ GObject.signal_new("connection-lost", CDEmu,
     ())
 
 
-################################################################################
-#                     CDEmuDevice: device representation                       #
-################################################################################
+########################################################################
+#                 CDEmuDevice: device representation                   #
+########################################################################
 class CDEmuNeedPassword (Exception):
     def __init__ (self):
         pass
 
 class CDEmuDevice (GObject.GObject):
     def __init__ (self, d, proxy):
-        super(CDEmuDevice, self).__init__()
+        GObject.GObject.__init__(self)
 
         self.dbus_signals = []
 
@@ -470,9 +470,9 @@ GObject.signal_new("error", CDEmuDevice,
     (GObject.TYPE_STRING, ))
 
 
-################################################################################
-#                                   gCDEmu                                     #
-################################################################################
+########################################################################
+#                               gCDEmu                                 #
+########################################################################
 class gCDEmu:
     def load_icon (self):
         # Get icon name from settings
@@ -755,9 +755,9 @@ class gCDEmu:
         return
 
 
-################################################################################
-#                                gCDEmuDevice                                  #
-################################################################################
+########################################################################
+#                            gCDEmuDevice                              #
+########################################################################
 class gCDEmuDevice (GObject.GObject):
     def connect_signal (self, obj, sig, callback):
         signal = obj.connect(sig, callback)
@@ -765,7 +765,7 @@ class gCDEmuDevice (GObject.GObject):
 
 
     def __init__ (self, cdemu, d):
-        super(gCDEmuDevice, self).__init__()
+        GObject.GObject.__init__(self)
 
         self.signals = []
 
@@ -973,12 +973,12 @@ GObject.signal_new("device-notification", gCDEmuDevice,
     (GObject.TYPE_STRING, GObject.TYPE_STRING))
 
 
-################################################################################
-#                 gCDEmuDeviceStatusPage: device status page                   #
-################################################################################
+########################################################################
+#             gCDEmuDeviceStatusPage: device status page               #
+########################################################################
 class gCDEmuDeviceStatusPage (Gtk.VBox):
     def __init__ (self):
-        super(gCDEmuDeviceStatusPage, self).__init__()
+        Gtk.VBox.__init__(self)
 
         # Frame: status
         frame = Gtk.Frame.new(_("Status"))
@@ -1085,12 +1085,12 @@ GObject.signal_new("load-unload-device", gCDEmuDeviceStatusPage,
     ())
 
 
-################################################################################
-#                gCDEmuDeviceOptionsPage: device options page                  #
-################################################################################
+########################################################################
+#            gCDEmuDeviceOptionsPage: device options page              #
+########################################################################
 class gCDEmuDeviceOptionsPage (Gtk.VBox):
     def __init__ (self):
-        super(gCDEmuDeviceOptionsPage, self).__init__()
+        Gtk.VBox.__init__(self)
 
         # Device ID
         frame = Gtk.Frame.new(_("Device ID"))
@@ -1211,12 +1211,13 @@ GObject.signal_new("tr-emulation-changed", gCDEmuDeviceOptionsPage,
     (GObject.TYPE_BOOLEAN,))
 
 
-################################################################################
-#                 gCDEmuDeviceDebugMaskPage: debug mask page                   #
-################################################################################
+########################################################################
+#             gCDEmuDeviceDebugMaskPage: debug mask page               #
+########################################################################
 class gCDEmuDeviceDebugMaskPage (Gtk.Frame):
     def __init__ (self, name, masks_list):
-        super(gCDEmuDeviceDebugMaskPage, self).__init__()
+        Gtk.Frame.__init__(self)
+        
         self.set_label(name)
         self.entries = []
 
@@ -1263,12 +1264,13 @@ GObject.signal_new("debug-mask-changed", gCDEmuDeviceDebugMaskPage,
     (GObject.TYPE_UINT,))
 
 
-################################################################################
-#                gCDEMuFileChooserDialog: file chooser dialog                  #
-################################################################################
+########################################################################
+#           gCDEMuFileChooserDialog: file chooser dialog               #
+########################################################################
 class gCDEMuFileChooserDialog (Gtk.FileChooserDialog):
     def __init__ (self, parsers):
-        super(gCDEMuFileChooserDialog, self).__init__(_("Open file"), None, Gtk.FileChooserAction.OPEN, (Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL, Gtk.STOCK_OPEN, Gtk.ResponseType.ACCEPT))
+        Gtk.FileChooserDialog.__init__(self, _("Open file"), None, Gtk.FileChooserAction.OPEN, (Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL, Gtk.STOCK_OPEN, Gtk.ResponseType.ACCEPT))
+
         self.set_select_multiple(True)
         self.set_local_only(False)
 
@@ -1405,12 +1407,13 @@ class gCDEMuFileChooserDialog (Gtk.FileChooserDialog):
         
 
 
-################################################################################
-#                 gCDEMuPasswordDialog: file chooser dialog                    #
-################################################################################
+########################################################################
+#               gCDEMuPasswordDialog: password dialog                  #
+########################################################################
 class gCDEMuPasswordDialog (Gtk.Dialog):
     def __init__ (self):
-        super(gCDEMuPasswordDialog, self).__init__(_("Enter password"), None, 0, (Gtk.STOCK_OK, Gtk.ResponseType.OK, Gtk.STOCK_CANCEL, Gtk.ResponseType.REJECT))
+        Gtk.Dialog.__init__(self, _("Enter password"), None, 0, (Gtk.STOCK_OK, Gtk.ResponseType.OK, Gtk.STOCK_CANCEL, Gtk.ResponseType.REJECT))
+
         self.set_default_response(Gtk.ResponseType.OK)
 
         self.vbox.set_spacing(5)
@@ -1443,8 +1446,8 @@ class gCDEMuPasswordDialog (Gtk.Dialog):
         return super(gCDEMuPasswordDialog, self).run()
 
 
-################################################################################
-#                                    Main                                      #
-################################################################################
+########################################################################
+#                                Main                                  #
+########################################################################
 if __name__ == "__main__":
     app = gCDEmu()
