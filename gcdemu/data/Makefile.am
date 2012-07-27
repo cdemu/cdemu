@@ -1,6 +1,6 @@
 # Icon
 pixmapsdir = $(datadir)/pixmaps
-pixmaps_DATA = gcdemu.svg
+pixmaps_DATA = gcdemu.svg gcdemu-icon.svg gcdemu-icon-gray.svg
 
 # GSettings Schema
 gschemas_in_files = apps.gcdemu.gschema.xml.in

@@ -54,7 +54,7 @@ textdomain(app_name)
 class CDEmuDaemonProxy (GObject.GObject):
     _name = 'net.sf.cdemu.CDEMUD_Daemon'
     _object_path = '/CDEMUD_Daemon'
-    
+
     def __init__ (self):
         GObject.GObject.__init__(self)
 
@@ -78,13 +78,13 @@ class CDEmuDaemonProxy (GObject.GObject):
     def connect_to_bus (self, use_system, autostart_daemon):
         # Cleanup
         self.cleanup()
-        
+
         # Get the bus
         if use_system:
             bus = Gio.bus_get_sync(Gio.BusType.SYSTEM, None)
         else:
             bus = Gio.bus_get_sync(Gio.BusType.SESSION, None)
-        
+
         # Create proxy on our interface
         self.proxy = Gio.DBusProxy.new_sync(bus, 0, None, self._name, self._object_path, 'net.sf.cdemu.CDEMUD_Daemon', None)
 
@@ -113,22 +113,22 @@ class CDEmuDaemonProxy (GObject.GObject):
 
     def GetDaemonVersion (self):
         return self.proxy.GetDaemonVersion()
-        
+
     def GetLibraryVersion (self):
         return self.proxy.GetLibraryVersion()
-        
+
     def GetDaemonInterfaceVersion (self):
         return self.proxy.GetDaemonInterfaceVersion()
-        
+
     def EnumDaemonDebugMasks (self):
         return self.proxy.EnumDaemonDebugMasks()
-        
+
     def EnumLibraryDebugMasks (self):
         return self.proxy.EnumLibraryDebugMasks()
-        
+
     def EnumSupportedParsers (self):
         return self.proxy.EnumSupportedParsers()
-        
+
     def EnumSupportedFragments (self):
         return self.proxy.EnumSupportedFragments()
 
@@ -154,7 +154,7 @@ class CDEmuDaemonProxy (GObject.GObject):
 
     def DeviceSetOption (self, device_number, option_name, option_value):
         return self.proxy.DeviceSetOption('(isv)', device_number, option_name, option_value)
- 
+
 
 GObject.type_register(CDEmuDaemonProxy)
 GObject.signal_new("DaemonStarted", CDEmuDaemonProxy,
@@ -181,7 +181,7 @@ GObject.signal_new("DeviceOptionChanged", CDEmuDaemonProxy,
     GObject.SignalFlags.RUN_FIRST,
     None,
     (GObject.TYPE_INT, GObject.TYPE_STRING ))
-    
+
 
 ########################################################################
 #                   CDEmu: D-BUS interface object                      #
@@ -193,7 +193,7 @@ class CDEmu (GObject.GObject):
         self.daemon_proxy = CDEmuDaemonProxy()
         self.daemon_proxy.connect("DaemonStarted", lambda o: self.on_daemon_started())
         self.daemon_proxy.connect("DaemonStopped", lambda o: self.on_daemon_stopped())
-        
+
         self.initial = True
         self.devices = []
 
@@ -211,7 +211,7 @@ class CDEmu (GObject.GObject):
 
         # Reset the initial run flag
         self.initial = False
-            
+
     def on_daemon_stopped (self):
         if not self.initial:
             self.emit("daemon-stopped")
@@ -236,7 +236,7 @@ class CDEmu (GObject.GObject):
             self.daemon_proxy.connect_to_bus(use_system, autostart_daemon)
         except GLib.GError as e:
             self.emit("error", _("Daemon autostart error"), _("Daemon autostart failed. Error:\n%s") % (e))
-            
+
 
     def establish_connection (self):
         # Get the daemon interface version
@@ -521,7 +521,7 @@ class gCDEmu:
 
         # *** Configuration ***
         self.settings = Gio.Settings("apps.gcdemu")
-        
+
         # Watch over our settings
         self.settings.connect("changed", lambda s, k: self.on_settings_changed(k))
 
@@ -531,7 +531,7 @@ class gCDEmu:
         else:
             # Disable because pynotify initialization failed
             self.show_notifications = False
-        
+
         # Which bus to use
         self.use_system_bus = self.settings.get_boolean("use-system-bus")
 
@@ -541,6 +541,9 @@ class gCDEmu:
         # Icon policy
         self.icon_policy = self.settings.get_string("icon-policy")
 
+        # Icon names
+        self.icon_connected = self.settings.get_string("icon-connected")
+        self.icon_disconnected = self.settings.get_string("icon-disconnected")
 
         # Load logo
         self.load_logo()
@@ -626,8 +629,11 @@ class gCDEmu:
             self.show_notifications = self.settings.get_boolean(key)
             self.item_show_notifications.set_active(self.show_notifications)
             print ("New setting: show notifications: %d" % self.show_notifications)
-        elif key == "icon-name":
-            self.load_icon()
+        elif key == "icon-connected":
+            self.icon_connected = self.settings.get_string(key)
+            self.update_icon()
+        elif key == "icon-disconnected":
+            self.icon_disconnected = self.settings.get_string(key)
             self.update_icon()
         elif key == "daemon-autostart":
             self.daemon_autostart = self.settings.get_boolean(key)
@@ -698,14 +704,12 @@ class gCDEmu_Gtk (gCDEmu):
         # *** The status icon ***
         self.tray_icon = Gtk.StatusIcon()
 
-        self.tray_icon.set_tooltip_text('gCDEmu')
         self.tray_icon.set_visible(True)
         self.tray_icon.connect('activate', self.on_activate)
         self.tray_icon.connect('popup-menu', self.on_popup_menu)
 
-        # To load the icon, we pretend that icon path g-conf key has changed and
-        # let the callback do the rest for us...
-        self.on_settings_changed("icon-name")
+        # Update icon
+        self.update_icon()
 
     def create_device (self, cdemu, d):
         return gCDEmuDevice_Gtk(cdemu, d)
@@ -719,40 +723,7 @@ class gCDEmu_Gtk (gCDEmu):
         # Popup the menu
         self.menu.popup(None, None, status_icon.position_menu, self.tray_icon, button, activate_time)
 
-
-    def load_icon (self):
-        # Get icon name from settings
-        icon_name = self.settings.get_string("icon-name")
-        if icon_name == None:
-            icon_name = "gcdemu"
-
-        # Lookup icon in standard paths
-        icon_info = Gtk.IconTheme().lookup_icon(icon_name, 0, 0)
-        if icon_info == None:
-            print ("Pixmap '%s' not found in standard pixmap paths!" % (icon_name))
-            self.icon_on = None
-            self.icon_off = None
-            return
-        icon_filename = icon_info.get_filename()
-
-        # "On" icon
-        self.icon_on = GdkPixbuf.Pixbuf.new_from_file(icon_filename)
-        # "Off" icon - desaturated
-        self.icon_off = self.icon_on.copy()
-        self.icon_off.saturate_and_pixelate(self.icon_off, 0.00, False)
-
-
     def update_icon (self):
-        # If icon is invalid, use standard "image-missing" as fallback
-        if self.icon_on == None:
-            self.set_from_icon_name("image-missing")
-        else:
-            # Which icon to use
-            if self.connected:
-                self.tray_icon.set_from_pixbuf(self.icon_on)
-            else:
-                self.tray_icon.set_from_pixbuf(self.icon_off)
-
         # Show/hide icon
         if self.icon_policy == "always":
             visible = True
@@ -770,6 +741,20 @@ class gCDEmu_Gtk (gCDEmu):
             visible = True
         self.tray_icon.set_visible(visible)
 
+        # Set icon
+        if self.connected:
+            icon_name = self.icon_connected
+            tooltip_text = _('gCDEmu - connected')
+        else:
+            icon_name = self.icon_disconnected
+            tooltip_text = _('gCDEmu - disconnected')
+
+        if icon_name == None:
+            icon_name = "image-missing" # Fallback icon
+
+        self.tray_icon.set_from_icon_name(icon_name)
+        self.tray_icon.set_tooltip_text(tooltip_text)
+
 
 class gCDEmu_Indicator (gCDEmu):
     def __init__ (self):
@@ -777,18 +762,20 @@ class gCDEmu_Indicator (gCDEmu):
 
         # AppIndicator
         self.indicator = AppIndicator.Indicator.new(app_name, "gcdemu", AppIndicator.IndicatorCategory.HARDWARE)
-        self.indicator.set_status (AppIndicator.IndicatorStatus.ACTIVE)
-        self.indicator.set_icon_full ("gcdemu", "Connected")
-        self.indicator.set_attention_icon_full ("apport", "Disconnected")
+        self.indicator.set_status(AppIndicator.IndicatorStatus.ACTIVE)
         self.indicator.set_menu(self.menu)
+
+        # Update icon
+        self.update_icon()
 
     def create_device (self, cdemu, d):
         return gCDEmuDevice_Indicator(cdemu, d)
 
-    def load_icon (self):
-        pass
-
     def update_icon (self):
+        # Set icons
+        self.indicator.set_icon_full(self.icon_connected, "Connected")
+        self.indicator.set_attention_icon_full(self.icon_disconnected, "Disconnected")
+
         # Show/hide icon
         if self.icon_policy == "always":
             visible = True
@@ -808,11 +795,11 @@ class gCDEmu_Indicator (gCDEmu):
 		# Set the status (change icon)
         if visible:
             if self.connected:
-                self.indicator.set_status (AppIndicator.IndicatorStatus.ACTIVE)
+                self.indicator.set_status(AppIndicator.IndicatorStatus.ACTIVE)
             else:
-                self.indicator.set_status (AppIndicator.IndicatorStatus.ATTENTION)
+                self.indicator.set_status(AppIndicator.IndicatorStatus.ATTENTION)
         else:
-                self.indicator.set_status (AppIndicator.IndicatorStatus.PASSIVE)
+            self.indicator.set_status(AppIndicator.IndicatorStatus.PASSIVE)
 
 
 ########################################################################
@@ -979,7 +966,7 @@ class gCDEmuDevice (GObject.GObject):
                 # Get filename and parameters
                 filenames = self.file_chooser.get_filenames()
                 parameters = self.file_chooser.get_parameters()
-                
+
                 # Try loading
                 try:
                     self.device.load_device(filenames, parameters)
@@ -1018,7 +1005,7 @@ GObject.signal_new("device-notification", gCDEmuDevice,
     (GObject.TYPE_STRING, GObject.TYPE_STRING))
 
 
-class gCDEmuDevice_Gtk (gCDEmuDevice):    
+class gCDEmuDevice_Gtk (gCDEmuDevice):
     def __init__ (self, cdemu, d):
         gCDEmuDevice.__init__(self, cdemu, d)
 
@@ -1304,7 +1291,7 @@ GObject.signal_new("tr-emulation-changed", gCDEmuDeviceOptionsPage,
 class gCDEmuDeviceDebugMaskPage (Gtk.Frame):
     def __init__ (self, name, masks_list):
         Gtk.Frame.__init__(self)
-        
+
         self.set_label(name)
         self.entries = []
 
@@ -1396,7 +1383,7 @@ class gCDEMuFileChooserDialog (Gtk.FileChooserDialog):
 
     def get_parameters (self):
         parameters = {}
-        
+
         # Encoding
         i = self.combobox_encoding.get_active_iter()
         encoding = self.combobox_encoding.get_model().get_value(i, 1)
@@ -1412,7 +1399,7 @@ class gCDEMuFileChooserDialog (Gtk.FileChooserDialog):
         if self.check_button_css.get_active():
             parameters["dvd-report-css"] = GLib.Variant("b", True)
 
-        return parameters                    
+        return parameters
 
     def create_extra_options_widget (self):
         # Expander and VBox
@@ -1437,14 +1424,14 @@ class gCDEMuFileChooserDialog (Gtk.FileChooserDialog):
         combobox.set_entry_text_column(0)
         hbox.pack_start(combobox, expand=False, fill=False, padding=0)
         self.combobox_encoding = combobox
-        
+
         # Autocompletion
         completion = Gtk.EntryCompletion()
         completion.set_model(liststore)
         completion.set_text_column(0)
         combobox.get_child().set_completion(completion)
 
-        
+
         # *** Password ***
         hbox = Gtk.HBox(False, 5)
         vbox.pack_start(hbox, expand=True, fill=True, padding=0)
@@ -1489,9 +1476,9 @@ class gCDEMuFileChooserDialog (Gtk.FileChooserDialog):
         liststore.append( ("Autodetect", "") )
         for encoding in encodings:
             liststore.append( (encoding, encoding) )
-        
+
         return liststore
-        
+
 
 
 ########################################################################
@@ -1535,7 +1522,7 @@ class gCDEMuPasswordDialog (Gtk.Dialog):
 
 ########################################################################
 #                                Main                                  #
-######################################################################## 
+########################################################################
 if __name__ == "__main__":
     # Command-line argument parsing
     parser = argparse.ArgumentParser()
@@ -1548,17 +1535,17 @@ if __name__ == "__main__":
             from gi.repository import AppIndicator3 as AppIndicator
         except:
             try:
-                from gi.repository import AppIndicator 
+                from gi.repository import AppIndicator
             except:
                 message = Gtk.MessageDialog(None, 0, Gtk.MessageType.ERROR, Gtk.ButtonsType.CLOSE, _("Failed to load AppIndicator library!"))
                 message.set_title(_("AppIndicator not available"))
                 message.run()
                 message.destroy()
                 sys.exit(-1)
-        
+
         app = gCDEmu_Indicator()
     else:
         # Gtk version
         app = gCDEmu_Gtk()
-    
+
     app.run()

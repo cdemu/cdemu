@@ -15,10 +15,15 @@
       <_summary>Use D-Bus service activation facility</_summary>
       <_description>Whether to use D-Bus service activation facility or not. If enabled, D-Bus will attempt to autostart the daemon when gCDEmu tries to establish connection with it.</_description>
     </key>
-    <key name="icon-name" type="s">
-      <default>'gcdemu'</default>
-      <summary>Icon name</summary>
-      <_description>Name of icon to display in the tray. It should be a valid name of a pixmap that can be found in a standard pixmaps directory (e.g. /usr/share/pixmaps).</_description>
+    <key name="icon-connected" type="s">
+      <default>'gcdemu-icon'</default>
+      <summary>Icon name (connected)</summary>
+      <_description>Name of icon to display in the tray when connected to daemon. It should be either a valid stock name or filename of a pixmap that can be found in a standard pixmaps directory (e.g. /usr/share/pixmaps).</_description>
+    </key>
+    <key name="icon-disconnected" type="s">
+      <default>'gcdemu-icon-gray'</default>
+      <summary>Icon name (disconnected)</summary>
+      <_description>Name of icon to display in the tray when disconnected from daemon. It should be either a valid stock name or filename of a pixmap that can be found in a standard pixmaps directory (e.g. /usr/share/pixmaps).</_description>
     </key>
     <key name="icon-policy" type="s">
       <default>'always'</default>
