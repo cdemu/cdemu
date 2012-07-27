@@ -776,20 +776,44 @@ class gCDEmu_Indicator (gCDEmu):
         gCDEmu.__init__(self)
 
         # AppIndicator
-        self.indicator = AppIndicator.Indicator.new(app_name, "gcdemu", AppIndicator.IndicatorCategory.APPLICATION_STATUS)
+        self.indicator = AppIndicator.Indicator.new(app_name, "gcdemu", AppIndicator.IndicatorCategory.HARDWARE)
         self.indicator.set_status (AppIndicator.IndicatorStatus.ACTIVE)
-        self.indicator.set_attention_icon ("gcdemu")
+        self.indicator.set_icon_full ("gcdemu", "Connected")
+        self.indicator.set_attention_icon_full ("apport", "Disconnected")
         self.indicator.set_menu(self.menu)
 
     def create_device (self, cdemu, d):
         return gCDEmuDevice_Indicator(cdemu, d)
-        
 
     def load_icon (self):
         pass
 
     def update_icon (self):
-        pass
+        # Show/hide icon
+        if self.icon_policy == "always":
+            visible = True
+        elif self.icon_policy == "never":
+            visible = False
+        elif self.icon_policy in [ "when_connected", "when-connected" ]:
+            if self.connected:
+                visible = True
+            else:
+                visible = False
+        else:
+            # Fix invalid setting...
+            print ("Unknown icon policy '%s'! Using 'always' by default!" % (self.icon_policy))
+            self.icon_policy = "always"
+            visible = True
+
+		# Set the status (change icon)
+        if visible:
+            if self.connected:
+                self.indicator.set_status (AppIndicator.IndicatorStatus.ACTIVE)
+            else:
+                self.indicator.set_status (AppIndicator.IndicatorStatus.ATTENTION)
+        else:
+                self.indicator.set_status (AppIndicator.IndicatorStatus.PASSIVE)
+
 
 ########################################################################
 #                            gCDEmuDevice                              #
