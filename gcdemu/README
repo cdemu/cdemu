@@ -1,6 +1,25 @@
 gCDEmu
-v.1.7.0
-~~~~~~~
+1.7.0
+~~~~~
+
+Table of Contents:
+~~~~~~~~~~~~~~~~~~
+
+1. Introduction
+2. Requirements
+3. Installation
+4. Configuration
+5. Troubleshooting
+6. A note on encrypted images and password supplying
+7. On gCDEmu and Unity/GNOME Shell
+ 7.1 Unity
+ 7.2 GNOME SHhll
+8. Gtk Application and Ubuntu AppIndicator mode
+9. Contact information
+
+
+1. Introduction
+~~~~~~~~~~~~~~~
 
 This is gCDEmu, a Gtk+ based GUI for controlling CDEmu daemon. It is part of the
 userspace-cdemu suite, a free, GPL CD/DVD-ROM device emulator for linux.
@@ -12,21 +31,10 @@ devices' status and retrieving/setting devices' debug masks.
 In addition, it listens to signals emitted by CDEmu daemon and provides
 notifications via libnotify (provided that python bindings are installed).
 
-Table of Contents:
-~~~~~~~~~~~~~~~~~~
-1. Requirements
-2. Installation
-3. Configuration
-4. Troubleshooting
-5. A note on encrypted images and password supplying
-6. On gCDEmu and Unity/GNOME Shell
- 6.1 Unity
- 6.2 GNOME SHhll
-7. Gtk Application and Ubuntu AppIndicator mode
-8. Contact information
 
 
-1. Requirements:
+
+2. Requirements:
 ~~~~~~~~~~~~~~~~
 
  - python 2.4 or newer
@@ -37,7 +45,7 @@ Table of Contents:
  - AppIndicator PyGObject introspection data (optional; for AppIndicator mode)
 
 
-2. Installation:
+3. Installation:
 ~~~~~~~~~~~~~~~~
 
 Installation process is generic ./configure, make, make install as described in
@@ -53,7 +61,7 @@ Note that if during make, you get the following error:
 it means you don't have intltool installed.
 
 
-3. Configuration:
+4. Configuration:
 ~~~~~~~~~~~~~~~~~
 The application can be configured via several GSettings keys that can be found under
 /apps/gcdemu. While some of the settings can be altered directly from gCDEmu,
@@ -106,7 +114,7 @@ The configuration keys are:
     when gCDEmu is connected to the CDEmu daemon.
 
 
-4. Troubleshooting
+5. Troubleshooting
 ~~~~~~~~~~~~~~~~~~
 
 Q: gCDEmu's tray icon is greyed and the applet does nothing!
@@ -115,7 +123,7 @@ A: Greyed-out icon means that the applet failed to connect to the CDEmu daemon.
    appropriate bus.
 
 
-5. A note on encrypted images and password supplying:
+6. A note on encrypted images and password supplying:
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 As of version 1.2.0, CDEmu daemon offers support for encrypted images. When password
@@ -126,7 +134,7 @@ ANY PROTECTION. DEPENDING ON YOUR PRIVACY CONCERNS YOU MIGHT WISH TO AVOID LOADI
 SUCH IMAGES.
 
 
-6. On gCDEmu and Unity/GNOME Shell:
+7. On gCDEmu and Unity/GNOME Shell:
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 NOTE: This applies only when running gCDEmu in Gtk application mode (see
@@ -141,7 +149,7 @@ instructions below. Note that the instructions are not applicable only to gCDEmu
 but to any application with systray icon.
 
 
-6.1 Unity:
+7.1 Unity:
 ----------
 In Unity, you need to whitelist the gCDEmu icon. This can be done either by adding
 'gcdemu' to the list of applications that are whitelisted by default:
@@ -155,7 +163,7 @@ gsettings set com.canonical.Unity.Panel systray-whitelist "['all']"
 Restart Unity (either relog or use 'unity --replace').
 
 
-6.2 GNOME Shell:
+7.2 GNOME Shell:
 ----------------
 Moving the gCDEmu icon to system tray in GNOME Shell requires a bit more work.
 
@@ -188,7 +196,7 @@ Alternatively, you can install dconf-editor and use it to edit the key:
 Reload the GNOME Shell (press Alt+F2 and enter "r").
 
 
-7. Gtk Application and Ubuntu AppIndicator mode:
+8. Gtk Application and Ubuntu AppIndicator mode:
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 As of version 1.6.0, gCDEmu can run as Ubuntu AppIndicator, as opposed to
 classic Gtk Application mode. In Gtk Application mode, which is used by
@@ -202,7 +210,7 @@ Note that some GUI features, in particular right-click device load/unload
 shortcut, are not supported in AppIndicator mode.
 
 
-8. Contact information:
+9. Contact information:
 ~~~~~~~~~~~~~~~~~~~~~~~
 
 CDEmu project's web page: http://cdemu.sourceforge.net

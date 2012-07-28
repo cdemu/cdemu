@@ -1,6 +1,21 @@
 CDEmu client
-v.1.6.0
-~~~~~~~~~~~~~
+1.6.0
+~~~~~
+
+Table of Contents:
+~~~~~~~~~~~~~~~~~~
+
+1. Introduction
+2. Requirements
+3. Installation
+4. Usage examples
+5. System vs. session bus
+6. A note on encrypted images and password supplying
+7. Contact information
+
+
+1. Introduction
+~~~~~~~~~~~~~~~
 
 This is cdemu-client, a simple command-line client for controlling CDEmu daemon.
 It is part of the userspace-cdemu suite, a free, GPL CD/DVD-ROM device emulator
@@ -10,15 +25,16 @@ It provides a way to perform the key tasks related to controlling the CDEmu
 daemon, such as loading and unloading devices, displaying devices' status and
 retrieving/setting devices' debug masks.
 
-Requirements:
-~~~~~~~~~~~~~
+
+2. Requirements:
+~~~~~~~~~~~~~~~~
  - python 2.4 or newer
  - D-BUS python bindings
  - intltool
 
 
-Installation:
-~~~~~~~~~~~~~
+3. Installation:
+~~~~~~~~~~~~~~~~
 
 Installation process is generic ./configure, make, make install as described in
 INSTALL file.
@@ -33,12 +49,11 @@ Note that if during make, you get the following error:
 it means you don't have intltool installed.
 
 
-Usage examples:
-~~~~~~~~~~~~~~~
+4. Usage examples:
+~~~~~~~~~~~~~~~~~~
 
 Read cdemu-client's man page or run 'cdemu -h' for more information on commands
 and their syntax.
-
 
 Loading a single image to first device:
  cdemu load 0 ~/image.mds
@@ -97,8 +112,10 @@ Enumerating supported fragments:
 Displaying daemon and library version:
  cdemu version
 
-System vs. session bus:
-~~~~~~~~~~~~~~~~~~~~~~~
+
+5. System vs. session bus:
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 When connecting to daemon, cdemu client can use either session or system bus. By
 hard-coded default, it uses system bus. The default bus to be used can be specified
 via /etc/cdemu-client.conf or ~/.cdemu-client file, in following format:
@@ -117,8 +134,10 @@ The default can be overriden by using --bus option. E.g.:
 or
  cdemu --bus=system status
 
-A note on encrypted images and password supplying:
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+6. A note on encrypted images and password supplying:
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 As of version 1.2.0, CDEmu daemon offers support for encrypted images. When password
 is required to load an image (and it hasn't been provided via commandline using
 --password), cdemu-client will prompt for it and then send it to daemon.
@@ -128,8 +147,8 @@ ANY PROTECTION. DEPENDING ON YOUR PRIVACY CONCERNS YOU MIGHT WISH TO AVOID LOADI
 SUCH IMAGES.
 
 
-Contact information:
-~~~~~~~~~~~~~~~~~~~~
+7. Contact information:
+~~~~~~~~~~~~~~~~~~~~~~~
 
 CDEmu project's web page: http://cdemu.sourceforge.net
 CDEmu project's mailing list: cdemu-devel@lists.sourceforge.net
