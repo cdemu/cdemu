@@ -284,7 +284,7 @@ static gboolean mirage_parser_mdx_load_track (MIRAGE_Parser_MDX *self, gchar *fi
 static gboolean mirage_parser_mdx_load_image (MIRAGE_Parser *_self, gchar **filenames, GObject **disc, GError **error)
 {
     MIRAGE_Parser_MDX *self = MIRAGE_PARSER_MDX(_self);
-    
+
     gboolean succeeded = TRUE;
 
     /* Check if file can be loaded */
@@ -342,7 +342,7 @@ end:
 
 
 /**********************************************************************\
- *                             Object init                            * 
+ *                             Object init                            *
 \**********************************************************************/
 G_DEFINE_DYNAMIC_TYPE(MIRAGE_Parser_MDX, mirage_parser_mdx, MIRAGE_TYPE_PARSER);
 
@@ -360,7 +360,7 @@ static void mirage_parser_mdx_init (MIRAGE_Parser_MDX *self)
         "PARSER-MDX",
         "MDX Image Parser",
         "MDX images",
-        "application/x-cd-image"
+        "application/x-mdx"
     );
 }
 
