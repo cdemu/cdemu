@@ -50,7 +50,7 @@ static void register_error_domain (const gchar *prefix, GType code_enum)
         entries[i].error_code = klass->values[i].value;
         entries[i].dbus_error_name = g_strdup_printf("%s.%s", prefix, klass->values[i].value_nick);
     }
-    
+
     /* Register the domain */
     g_dbus_error_register_error_domain(prefix, &quark, entries, num_entries);
 
@@ -88,7 +88,7 @@ static gboolean append_parser_to_builder (MIRAGE_ParserInfo *parser, GVariantBui
 
 static GVariantBuilder *encode_parsers ()
 {
-    GVariantBuilder *builder = g_variant_builder_new(G_VARIANT_TYPE("a(ssss)"));    
+    GVariantBuilder *builder = g_variant_builder_new(G_VARIANT_TYPE("a(ssss)"));
     libmirage_for_each_parser((MIRAGE_CallbackFunction)append_parser_to_builder, builder, NULL);
     return builder;
 }
@@ -103,7 +103,7 @@ static gboolean append_fragment_to_builder (MIRAGE_FragmentInfo *fragment, GVari
 static GVariantBuilder *encode_fragments ()
 {
     GVariantBuilder *builder = g_variant_builder_new(G_VARIANT_TYPE("a(ss)"));
-    libmirage_for_each_fragment((MIRAGE_CallbackFunction)append_fragment_to_builder, builder, NULL);    
+    libmirage_for_each_fragment((MIRAGE_CallbackFunction)append_fragment_to_builder, builder, NULL);
     return builder;
 }
 
@@ -119,7 +119,7 @@ static void cdemud_daemon_dbus_handle_method_call (GDBusConnection *connection G
         gint device_number;
         gchar **filenames;
         GVariant *options;
-        
+
         GObject *device;
 
         g_variant_get(parameters, "(i^as@a{sv})", &device_number, &filenames, &options);
@@ -127,10 +127,9 @@ static void cdemud_daemon_dbus_handle_method_call (GDBusConnection *connection G
         if (device) {
             succeeded = cdemud_device_load_disc(CDEMUD_DEVICE(device), filenames, options, &error);
         }
-        
+
         g_object_unref(device);
         g_strfreev(filenames);
-        g_variant_unref(parameters);
     } else if (!g_strcmp0(method_name, "DeviceUnload")) {
         /* *** DeviceUnload *** */
         gint device_number;
@@ -141,7 +140,7 @@ static void cdemud_daemon_dbus_handle_method_call (GDBusConnection *connection G
         if (device) {
             succeeded = cdemud_device_unload_disc(CDEMUD_DEVICE(device), &error);
         }
-        
+
         g_object_unref(device);
     } else if (!g_strcmp0(method_name, "DeviceGetStatus")) {
         /* *** DeviceGetStatus *** */
@@ -160,7 +159,7 @@ static void cdemud_daemon_dbus_handle_method_call (GDBusConnection *connection G
                 g_strfreev(file_names);
             }
         }
-        
+
         g_object_unref(device);
     } else if (!g_strcmp0(method_name, "DeviceSetOption")) {
         /* *** DeviceSetOption *** */
@@ -174,10 +173,10 @@ static void cdemud_daemon_dbus_handle_method_call (GDBusConnection *connection G
         if (device) {
             succeeded = cdemud_device_set_option(CDEMUD_DEVICE(device), option_name, option_value, &error);
         }
-        
-        g_object_unref(device);       
+
+        g_object_unref(device);
         g_free(option_name);
-        g_variant_unref(option_value);        
+        g_variant_unref(option_value);
     } else if (!g_strcmp0(method_name, "DeviceGetOption")) {
         /* *** DeviceGetOption *** */
         gint device_number;
@@ -193,7 +192,7 @@ static void cdemud_daemon_dbus_handle_method_call (GDBusConnection *connection G
                 ret = g_variant_new("(v)", option_value);
             }
         }
-        
+
         g_object_unref(device);
         g_free(option_name);
     } else if (!g_strcmp0(method_name, "GetNumberOfDevices")) {
@@ -209,7 +208,7 @@ static void cdemud_daemon_dbus_handle_method_call (GDBusConnection *connection G
         device = cdemud_daemon_get_device(self, device_number, &error);
         if (device) {
             gchar *sr_device, *sg_device;
-            
+
             succeeded = cdemud_device_get_mapping(CDEMUD_DEVICE(device), &sr_device, &sg_device, &error);
             if (succeeded) {
                 ret = g_variant_new("(ss)", sr_device ? sr_device : "", sg_device ? sg_device : "");
@@ -222,7 +221,7 @@ static void cdemud_daemon_dbus_handle_method_call (GDBusConnection *connection G
     } else if (!g_strcmp0(method_name, "GetDaemonInterfaceVersion")) {
         /* *** GetDaemonInterfaceVersion *** */
         ret = g_variant_new("(i)", DAEMON_INTERFACE_VERSION);
-        succeeded = TRUE;        
+        succeeded = TRUE;
     } else if (!g_strcmp0(method_name, "GetDaemonVersion")) {
         /* *** GetDaemonVersion *** */
         ret = g_variant_new("(s)", self->priv->version);
@@ -290,7 +289,7 @@ static void on_bus_acquired (GDBusConnection *connection, const gchar *name G_GN
 {
     /* Create introspection data from our embedded xml */
     GDBusNodeInfo *introspection_data;
-    
+
     /* Store connection */
     self->priv->connection = connection;
 
@@ -310,14 +309,14 @@ static void on_bus_acquired (GDBusConnection *connection, const gchar *name G_GN
         NULL,
         NULL
     );
-    
+
     g_dbus_node_info_unref(introspection_data);
 }
 
 
 static void on_name_lost (GDBusConnection *connection G_GNUC_UNUSED, const gchar *name G_GNUC_UNUSED, CDEMUD_Daemon *self)
 {
-    cdemud_daemon_stop_daemon(self, NULL);    
+    cdemud_daemon_stop_daemon(self, NULL);
 }
 
 
@@ -330,7 +329,7 @@ gboolean cdemud_daemon_dbus_check_if_name_is_available (CDEMUD_Daemon *self, GBu
     GError *dbus_error = NULL;
     GVariant *dbus_reply;
     gboolean name_taken;
-    
+
     dbus_proxy = g_dbus_proxy_new_for_bus_sync(
         bus_type,
         G_DBUS_PROXY_FLAGS_DO_NOT_LOAD_PROPERTIES | G_DBUS_PROXY_FLAGS_DO_NOT_CONNECT_SIGNALS | G_DBUS_PROXY_FLAGS_DO_NOT_AUTO_START,
@@ -377,12 +376,12 @@ gboolean cdemud_daemon_dbus_check_if_name_is_available (CDEMUD_Daemon *self, GBu
         cdemud_error(CDEMUD_E_DBUSNAMEREQUEST, error);
         return FALSE;
     }
-    
-    return TRUE;    
+
+    return TRUE;
 }
 
 void cdemud_daemon_dbus_register_on_bus (CDEMUD_Daemon *self, GBusType bus_type)
-{    
+{
     /* Claim name on D-BUS */
     self->priv->owner_id = g_bus_own_name(
         bus_type,
@@ -397,7 +396,7 @@ void cdemud_daemon_dbus_register_on_bus (CDEMUD_Daemon *self, GBusType bus_type)
 }
 
 void cdemud_daemon_dbus_cleanup (CDEMUD_Daemon *self)
-{   
+{
     /* Release D-Bus name */
     g_bus_unown_name(self->priv->owner_id);
 }
@@ -431,7 +430,7 @@ void cdemud_daemon_dbus_emit_device_mappings_ready (CDEMUD_Daemon *self)
     if (self->priv->connection) {
         g_dbus_connection_emit_signal(self->priv->connection, NULL,
             "/CDEMUD_Daemon", "net.sf.cdemu.CDEMUD_Daemon",
-            "DeviceMappingsReady", g_variant_new("()"), 
+            "DeviceMappingsReady", g_variant_new("()"),
             NULL);
     }
 }
@@ -440,7 +439,7 @@ void cdemud_daemon_dbus_emit_device_mappings_ready (CDEMUD_Daemon *self)
 /**********************************************************************\
  *                   Embedded introspection data                      *
 \**********************************************************************/
-static const gchar introspection_xml[] = 
+static const gchar introspection_xml[] =
     "<node>"
     "    <interface name='net.sf.cdemu.CDEMUD_Daemon'>"
     "        <!-- Information-related methods -->"
