@@ -66,10 +66,10 @@ static gboolean mirage_parser_mdx_is_file_valid (MIRAGE_Parser_MDX *self, gchar 
     }
 
 	if (fread(&self->priv->header, sizeof(MDX_Header), 1, file) < 1) {
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read header!\n", __debug__);
-            mirage_error(MIRAGE_E_READFAILED, error);
-            succeeded = FALSE;
-            goto end;
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read header!\n", __debug__);
+        mirage_error(MIRAGE_E_READFAILED, error);
+        succeeded = FALSE;
+        goto end;
 	}
 
 	self->priv->file_size = st.st_size;
@@ -78,15 +78,17 @@ static gboolean mirage_parser_mdx_is_file_valid (MIRAGE_Parser_MDX *self, gchar 
 	self->priv->image_size = st.st_size - sizeof(MDX_Header) - self->priv->footer_size;
 
 	if (!memcmp(self->priv->header.signature, MDX_SIGNATURE, sizeof(MDX_SIGNATURE))) {
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: signature not found!\n", __debug__);
-            succeeded = FALSE;
-            goto end;
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: signature not found!\n", __debug__);
+        mirage_error(MIRAGE_E_CANTHANDLE, error);
+        succeeded = FALSE;
+        goto end;
 	}
 
 	if (self->priv->header.footer_offset >= st.st_size) {
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: failed sanity check!\n", __debug__);
-            succeeded = FALSE;
-            goto end;
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: failed sanity check!\n", __debug__);
+        mirage_error(MIRAGE_E_CANTHANDLE, error);
+        succeeded = FALSE;
+        goto end;
 	}
 
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: image size: %ld!\n", __debug__, self->priv->image_size);
