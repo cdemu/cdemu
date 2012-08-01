@@ -351,3 +351,12 @@ following functionality:
 @dest: 
 
 
+<!-- ##### FUNCTION mirage_helper_determine_sector_type ##### -->
+<para>
+
+</para>
+
+@buf: 
+@Returns: 
+
+

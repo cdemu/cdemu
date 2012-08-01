@@ -533,6 +533,7 @@ mirage_helper_subchannel_interleave
 mirage_helper_subchannel_deinterleave
 mirage_helper_sector_edc_ecc_compute_edc_block
 mirage_helper_sector_edc_ecc_compute_ecc_block
+mirage_helper_determine_sector_type
 </SECTION>
 
 <SECTION>

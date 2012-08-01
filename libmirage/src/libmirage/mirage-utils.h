@@ -16,7 +16,7 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
- 
+
 #ifndef __MIRAGE_UTILS_H__
 #define __MIRAGE_UTILS_H__
 
@@ -60,8 +60,8 @@ G_BEGIN_DECLS
  * @type: pointer type (i.e. 'gchar *')
  *
  * <para>
- * A macro for easy placing of pointers within (unsigned integer) buffer. Mostly 
- * to be used in binary image parsers, for example, to retrieve a string or a 
+ * A macro for easy placing of pointers within (unsigned integer) buffer. Mostly
+ * to be used in binary image parsers, for example, to retrieve a string or a
  * structure from buffer.
  * </para>
 **/
@@ -74,7 +74,7 @@ G_BEGIN_DECLS
  *
  * <para>
  * A macro providing for loop on GList. @cursor is a cursor of type #GList*, and
- * is used to store current element in the list. @list is a GLib's double linked 
+ * is used to store current element in the list. @list is a GLib's double linked
  * list that for loop should be performed on.
  * </para>
  **/
@@ -144,6 +144,8 @@ void mirage_helper_subchannel_deinterleave (gint subchan, const guint8 *channel9
 /* EDC/ECC utility functions */
 void mirage_helper_sector_edc_ecc_compute_edc_block (const guint8 *src, guint16 size, guint8 *dest);
 void mirage_helper_sector_edc_ecc_compute_ecc_block (const guint8 *src, guint32 major_count, guint32 minor_count, guint32 major_mult, guint32 minor_inc, guint8 *dest);
+
+gint mirage_helper_determine_sector_type (const guint8 *buf);
 
 G_END_DECLS
 
