@@ -93,16 +93,17 @@ end:
 
 static gboolean mirage_parser_readcd_determine_track_mode (MIRAGE_Parser_READCD *self, GObject *track, GError **error)
 {
-    GObject *data_fragment = NULL;
-    guint64 offset = 0;
+    GObject *data_fragment;
+    guint64 offset;
     const gchar *filename;
+
     FILE *file;
     size_t blocks_read;
-    guint8 sync[12] = { 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0x00 };
-    guint8 buf[24] = {0};
+    guint8 buf[16];
+    gint track_mode;
 
     /* Get last fragment */
-    if (!mirage_track_get_fragment_by_index(MIRAGE_TRACK(track), -1, &data_fragment, NULL)) {
+    if (!mirage_track_get_fragment_by_index(MIRAGE_TRACK(track), -1, &data_fragment, error)) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to get fragment\n", __debug__);
         return FALSE;
     }
@@ -111,37 +112,24 @@ static gboolean mirage_parser_readcd_determine_track_mode (MIRAGE_Parser_READCD 
     mirage_frag_iface_binary_track_file_get_file(MIRAGE_FRAG_IFACE_BINARY(data_fragment), &filename, NULL);
     mirage_frag_iface_binary_track_file_get_position(MIRAGE_FRAG_IFACE_BINARY(data_fragment), 0, &offset, NULL);
 
+    g_object_unref(data_fragment);
+
+
+    /* Read first 16 bytes of first sector */
     file = g_fopen(filename, "r");
 
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: checking for track type in data file at location 0x%llX\n", __debug__, offset);
     fseeko(file, offset, SEEK_SET);
-    blocks_read = fread(buf, 24, 1, file);
+    blocks_read = fread(buf, 16, 1, file);
     fclose(file);
     if (blocks_read < 1) {
         mirage_error(MIRAGE_E_DATAFILE, error);
         return FALSE;
     }
-    if (!memcmp(buf, sync, 12)) {
-        switch (buf[15]) {
-            case 0x01: {
-                MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: Mode 1 track\n", __debug__);
-                mirage_track_set_mode(MIRAGE_TRACK(track), MIRAGE_MODE_MODE1, NULL);
-                break;
-            }
-            case 0x02: {
-                /* Mode 2; let's say we're Mode 2 Mixed and let the sector
-                   code do the rest for us */
-                MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: Mode 2 track; setting to mixed...\n", __debug__);
-                mirage_track_set_mode(MIRAGE_TRACK(track), MIRAGE_MODE_MODE2_MIXED, NULL);
-                break;
-            }
-        }
-    } else {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: Audio track\n", __debug__);
-        mirage_track_set_mode(MIRAGE_TRACK(track), MIRAGE_MODE_AUDIO, NULL);
-    }
 
-    g_object_unref(data_fragment);
+    /* Determine track mode*/
+    track_mode = mirage_helper_determine_sector_type(buf);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: track mode determined to be: %d\n", __debug__, track_mode);
 
     return TRUE;
 }
@@ -346,7 +334,7 @@ static gboolean mirage_parser_readcd_parse_toc (MIRAGE_Parser_READCD *self, gcha
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: TOC filename: %s\n", __debug__, filename);
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: data filename: %s\n", __debug__, self->priv->data_filename);
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:\n", __debug__);
-    
+
     /* Make sure data file exists */
      if (!g_file_test(self->priv->data_filename, G_FILE_TEST_IS_REGULAR)) {
          mirage_error(MIRAGE_E_DATAFILE, error);
@@ -354,7 +342,7 @@ static gboolean mirage_parser_readcd_parse_toc (MIRAGE_Parser_READCD *self, gcha
      }
 
     /* Read whole TOC file */
-    file = g_fopen(filename, "r");   
+    file = g_fopen(filename, "r");
     if (!file) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to open TOC file '%s'!\n", __debug__, filename);
         mirage_error(MIRAGE_E_IMAGEFILE, error);
@@ -365,7 +353,7 @@ static gboolean mirage_parser_readcd_parse_toc (MIRAGE_Parser_READCD *self, gcha
     file_size = ftell(file);
 
     data = g_malloc(file_size);
-    
+
     fseek(file, 0, SEEK_SET);
     read_size = fread(data, 1, file_size, file);
 
@@ -512,7 +500,7 @@ end:
 
 
 /**********************************************************************\
- *                             Object init                            * 
+ *                             Object init                            *
 \**********************************************************************/
 G_DEFINE_DYNAMIC_TYPE(MIRAGE_Parser_READCD, mirage_parser_readcd, MIRAGE_TYPE_PARSER);
 
@@ -541,7 +529,7 @@ static void mirage_parser_readcd_finalize (GObject *gobject)
     MIRAGE_Parser_READCD *self = MIRAGE_PARSER_READCD(gobject);
 
     g_free(self->priv->data_filename);
-    
+
     /* Chain up to the parent class */
     return G_OBJECT_CLASS(mirage_parser_readcd_parent_class)->finalize(gobject);
 }

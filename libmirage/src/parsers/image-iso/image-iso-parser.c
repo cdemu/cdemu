@@ -38,8 +38,6 @@ struct _MIRAGE_Parser_ISOPrivate
 
 static const guint8 cd001_pattern[] = {0x01, 0x43, 0x44, 0x30, 0x30, 0x31, 0x01, 0x00};
 static const guint8 bea01_pattern[] = {0x00, 0x42, 0x45, 0x41, 0x30, 0x31, 0x01, 0x00};
-static const guint8 sync_pattern[] = {0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0x00};
-
 
 
 static gboolean mirage_parser_iso_is_file_valid (MIRAGE_Parser_ISO *self, gchar *filename, GError **error)
@@ -63,7 +61,7 @@ static gboolean mirage_parser_iso_is_file_valid (MIRAGE_Parser_ISO *self, gchar 
 
     /* 2048-byte standard ISO9660/UDF image check */
     if (st.st_size % 2048 == 0) {
-        guint8 buf[8] = {};
+        guint8 buf[8];
 
         fseeko(file, 16*2048, SEEK_SET);
 
@@ -88,69 +86,25 @@ static gboolean mirage_parser_iso_is_file_valid (MIRAGE_Parser_ISO *self, gchar 
 
     /* 2352-byte image check */
     if (st.st_size % 2352 == 0) {
-        guint8 buf[12] = {};
+        guint8 buf[16];
 
         fseeko(file, 16*2352, SEEK_SET);
 
-        if (fread(buf, 12, 1, file) < 1) {
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read sync pattern!\n", __debug__);
+        if (fread(buf, 16, 1, file) < 1) {
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read 16-byte pattern!\n", __debug__);
             mirage_error(MIRAGE_E_READFAILED, error);
             succeeded = FALSE;
             goto end;
         }
 
-        if (!memcmp(buf, sync_pattern, sizeof(sync_pattern))) {
-            guint8 mode_byte = 0;
+        /* Determine mode */
+        self->priv->track_sectsize = 2352;
+        self->priv->track_mode = mirage_helper_determine_sector_type(buf);
 
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: 2352-byte track, track mode: %d\n", __debug__, self->priv->track_mode);
 
-            /* Read mode byte from header */
-            fseeko(file, 3, SEEK_CUR); /* We're at the end of sync, we just need to skip MSF */
-
-            if (fread(&mode_byte, 1, 1, file) < 1) {
-                MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read mode byte!\n", __debug__);
-                mirage_error(MIRAGE_E_READFAILED, error);
-                succeeded = FALSE;
-                goto end;
-            }
-
-            switch (mode_byte) {
-                case 0: {
-                    self->priv->track_sectsize = 2352;
-                    self->priv->track_mode = MIRAGE_MODE_MODE0;
-
-                    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: 2352-byte track, Mode 0\n", __debug__);
-
-                    succeeded = TRUE;
-                    goto end;
-                }
-                case 1: {
-                    self->priv->track_sectsize = 2352;
-                    self->priv->track_mode = MIRAGE_MODE_MODE1;
-
-                    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: 2352-byte track, Mode 1\n", __debug__);
-
-                    succeeded = TRUE;
-                    goto end;
-                }
-                case 2: {
-                    self->priv->track_sectsize = 2352;
-                    self->priv->track_mode = MIRAGE_MODE_MODE2_MIXED;
-
-                    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: 2352-byte track, Mode 2 Mixed\n", __debug__);
-
-                    succeeded = TRUE;
-                    goto end;
-                }
-            }
-        } else {
-            self->priv->track_sectsize = 2352;
-            self->priv->track_mode = MIRAGE_MODE_AUDIO;
-
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: 2352-byte track w/o sync pattern, Audio assumed\n", __debug__);
-
-            succeeded = TRUE;
-            goto end;
-        }
+        succeeded = TRUE;
+        goto end;
     }
 
     /* 2332/2336-byte image check */
@@ -252,7 +206,7 @@ static gboolean mirage_parser_iso_load_track (MIRAGE_Parser_ISO *self, gchar *fi
 static gboolean mirage_parser_iso_load_image (MIRAGE_Parser *_self, gchar **filenames, GObject **disc, GError **error)
 {
     MIRAGE_Parser_ISO *self = MIRAGE_PARSER_ISO(_self);
-    
+
     gboolean succeeded = TRUE;
 
     /* Check if file can be loaded */
@@ -310,7 +264,7 @@ end:
 
 
 /**********************************************************************\
- *                             Object init                            * 
+ *                             Object init                            *
 \**********************************************************************/
 G_DEFINE_DYNAMIC_TYPE(MIRAGE_Parser_ISO, mirage_parser_iso, MIRAGE_TYPE_PARSER);
 
