@@ -47,6 +47,11 @@
 \**********************************************************************/
 static void capture_parser_log (const gchar *log_domain G_GNUC_UNUSED, GLogLevelFlags log_level G_GNUC_UNUSED, const gchar *message, IMAGE_ANALYZER_Application *self)
 {
+    /* Print to stdout? */
+    if (self->priv->debug_stdout) {
+        g_print("%s", message);
+    }
+
     /* Append to our log string */
     self->priv->parser_log = g_string_append(self->priv->parser_log, message);
 }
@@ -138,7 +143,7 @@ static gboolean image_analyzer_application_close_image_or_dump (IMAGE_ANALYZER_A
     image_analyzer_disc_topology_set_disc(IMAGE_ANALYZER_DISC_TOPOLOGY(self->priv->dialog_topology), NULL);
     image_analyzer_sector_read_set_disc(IMAGE_ANALYZER_SECTOR_READ(self->priv->dialog_sector), NULL);
     image_analyzer_sector_analysis_set_disc(IMAGE_ANALYZER_SECTOR_ANALYSIS(self->priv->dialog_analysis), NULL);
-    
+
     /* Clear TreeStore */
     gtk_tree_store_clear(self->priv->treestore);
 
@@ -205,10 +210,10 @@ static gboolean image_analyzer_application_open_image (IMAGE_ANALYZER_Applicatio
     image_analyzer_disc_topology_set_disc(IMAGE_ANALYZER_DISC_TOPOLOGY(self->priv->dialog_topology), self->priv->disc);
     image_analyzer_sector_read_set_disc(IMAGE_ANALYZER_SECTOR_READ(self->priv->dialog_sector), self->priv->disc);
     image_analyzer_sector_analysis_set_disc(IMAGE_ANALYZER_SECTOR_ANALYSIS(self->priv->dialog_analysis), self->priv->disc);
-    
+
     /* Make XML dump */
     image_analyzer_application_create_xml_dump(self);
-    
+
     /* Free parser log string */
     g_string_free(self->priv->parser_log, TRUE);
 
@@ -645,13 +650,13 @@ static GtkWidget *build_treeview (IMAGE_ANALYZER_Application *self)
 
 
 /**********************************************************************\
- *                              GUI setup                             * 
+ *                              GUI setup                             *
 \**********************************************************************/
 static void setup_gui (IMAGE_ANALYZER_Application *self)
 {
     GtkWidget *vbox, *menubar, *scrolledwindow, *treeview;
     GtkAccelGroup *accel_group;
-    
+
     /* UI manager */
     self->priv->ui_manager = gtk_ui_manager_new();
 
@@ -704,8 +709,11 @@ static void setup_gui (IMAGE_ANALYZER_Application *self)
 /**********************************************************************\
  *                             Public API                             *
 \**********************************************************************/
-gboolean image_analyzer_application_run (IMAGE_ANALYZER_Application *self, gchar **open_image)
+gboolean image_analyzer_application_run (IMAGE_ANALYZER_Application *self, gchar **open_image, gboolean debug_stdout)
 {
+    /* Debug flag */
+    self->priv->debug_stdout = debug_stdout;
+
     /* Open image, if provided */
     if (g_strv_length(open_image)) {
         /* If it ends with .xml, we treat it as a dump file */
@@ -741,7 +749,7 @@ gboolean image_analyzer_application_get_loaded_image (IMAGE_ANALYZER_Application
 
 
 /**********************************************************************\
- *                             Object init                            * 
+ *                             Object init                            *
 \**********************************************************************/
 G_DEFINE_TYPE(IMAGE_ANALYZER_Application, image_analyzer_application, G_TYPE_OBJECT);
 

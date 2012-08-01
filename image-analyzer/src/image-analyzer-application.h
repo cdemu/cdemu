@@ -52,7 +52,7 @@ GType image_analyzer_application_get_type (void);
 
 
 /* Public API */
-gboolean image_analyzer_application_run (IMAGE_ANALYZER_Application *self, gchar **open_image);
+gboolean image_analyzer_application_run (IMAGE_ANALYZER_Application *self, gchar **open_image, gboolean debug_stdout);
 gboolean image_analyzer_application_get_loaded_image (IMAGE_ANALYZER_Application *self, GObject **disc);
 
 G_END_DECLS

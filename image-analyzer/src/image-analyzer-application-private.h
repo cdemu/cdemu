@@ -51,6 +51,9 @@ struct _IMAGE_ANALYZER_ApplicationPrivate
     GString *parser_log;
     GtkTreeStore *treestore;
     xmlDocPtr xml_doc;
+
+    /* Debug */
+    gboolean debug_stdout;
 };
 
 void image_analyzer_application_create_xml_dump (IMAGE_ANALYZER_Application *self);

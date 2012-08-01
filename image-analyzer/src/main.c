@@ -30,8 +30,11 @@
 /******************************************************************************\
  *                                Main function                               *
 \******************************************************************************/
+static gboolean debug_stdout = FALSE;
+
 static GOptionEntry option_entries[] = {
-       { NULL, 0, 0, G_OPTION_ARG_NONE, NULL, NULL, NULL }
+    { "debug-to-stdout", 'd', 0, G_OPTION_ARG_NONE, &debug_stdout, "Print image loading debug messages to stdout.", NULL },
+    { NULL, 0, 0, G_OPTION_ARG_NONE, NULL, NULL, NULL }
 };
 
 int main (int argc, char **argv)
@@ -40,52 +43,52 @@ int main (int argc, char **argv)
     GError *error = NULL;
     GOptionContext *option_context = NULL;
     gboolean succeeded = FALSE;
-    
+
     gchar **open_image = NULL;
     gint i;
-    
+
     /* Initialize GType */
     g_type_init();
-    
+
     /* libMirage core object */
     if (!libmirage_init(&error)) {
         g_warning("Failed to initialize libMirage: %s!\n", error->message);
         g_error_free(error);
         return -1;
     }
-    
+
     /* Parse command line */
     option_context = g_option_context_new("- Image Analyzer");
     g_option_context_add_main_entries(option_context, option_entries, NULL);
     g_option_context_add_group(option_context, gtk_get_option_group(TRUE));
     succeeded = g_option_context_parse(option_context, &argc, &argv, &error);
     g_option_context_free(option_context);
-    
+
     if (!succeeded) {
         g_warning("Failed to parse options: %s\n", error->message);
         g_error_free(error);
         return -1;
     }
-    
+
     /* Command-line parser has removed all options from argv; so it's just app
        name and image files now */
     open_image = g_new0(gchar *, argc); /* App name + filenames = filenames + NULL */
     for (i = 0; i < argc; i++) {
         open_image[i] = g_strdup(argv[i+1]);
     }
-    
+
     /* Create application object */
     application = g_object_new(IMAGE_ANALYZER_TYPE_APPLICATION, NULL);
-    
+
     /* Run application */
-    if (!image_analyzer_application_run(IMAGE_ANALYZER_APPLICATION(application), open_image)) {
+    if (!image_analyzer_application_run(IMAGE_ANALYZER_APPLICATION(application), open_image, debug_stdout)) {
         g_warning("Failed to run application!\n");
     }
-        
+
     g_object_unref(application);
     g_strfreev(open_image);
-    
+
     libmirage_shutdown(NULL);
-    
+
     return 0;
 }
