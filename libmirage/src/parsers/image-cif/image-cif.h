@@ -36,7 +36,7 @@ G_BEGIN_DECLS
 #define CIF_IMAGE_MUSIC     0x03
 #define CIF_IMAGE_ENCHANCED 0x04
 #define CIF_IMAGE_VIDEO     0x05
-#define CIF_IMAGE_BOOTALBE  0x06
+#define CIF_IMAGE_BOOTABLE  0x06
 #define CIF_IMAGE_MP3       0x07
 
 /* Session type */

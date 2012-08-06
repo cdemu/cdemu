@@ -63,7 +63,7 @@ static inline const gchar *debug_image_type (gint type)
         case CIF_IMAGE_MUSIC: return "Music CD";
         case CIF_IMAGE_ENCHANCED: return "Enchanced CD";
         case CIF_IMAGE_VIDEO: return "Video CD";
-        case CIF_IMAGE_BOOTALBE: return "Bootable CD";
+        case CIF_IMAGE_BOOTABLE: return "Bootable CD";
         case CIF_IMAGE_MP3: return "MP3 CD";
         default: return "UNKNOWN";
     }
