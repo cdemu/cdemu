@@ -687,7 +687,17 @@ gboolean mirage_sector_feed_data (MIRAGE_Sector *self, gint address, GObject *tr
                     /* This one's a special case; it is same as 2336, except
                        that last four bytes (for Form 2 sectors, that's optional
                        EDC, and for Form 1 sectors, it's last four bytes of ECC)
-                       are omitted */
+                       are omitted. Therefore, we need to re-generate
+                       the EDC/ECC code */
+
+                    /* Subheader + data (+ EDC/ECC) */
+                    data_offset = 12 + 4; /* Offset: sync + header */
+
+                    /* Valid */
+                    self->priv->valid_data |= MIRAGE_VALID_SUBHEADER;
+                    self->priv->valid_data |= MIRAGE_VALID_DATA;
+
+                    break;
                 case 2336: {
                     /* Subheader + data + EDC/ECC */
                     data_offset = 12 + 4; /* Offset: sync + header */
@@ -1294,7 +1304,7 @@ gboolean mirage_sector_verify_subchannel_crc (MIRAGE_Sector *self)
 
 
 /**********************************************************************\
- *                             Object init                            * 
+ *                             Object init                            *
 \**********************************************************************/
 G_DEFINE_TYPE(MIRAGE_Sector, mirage_sector, MIRAGE_TYPE_OBJECT);
 
