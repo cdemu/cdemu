@@ -16,7 +16,7 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
- 
+
 #ifndef __MIRAGE_FRAGMENT_H__
 #define __MIRAGE_FRAGMENT_H__
 
@@ -73,12 +73,12 @@ struct _MIRAGE_Fragment
 struct _MIRAGE_FragmentClass
 {
     MIRAGE_ObjectClass parent_class;
-        
-    /* Class members */    
+
+    /* Class members */
     gboolean (*can_handle_data_format) (MIRAGE_Fragment *self, const gchar *filename, GError **error);
-    
+
     gboolean (*use_the_rest_of_file) (MIRAGE_Fragment *self, GError **error);
-    
+
     gboolean (*read_main_data) (MIRAGE_Fragment *self, gint address, guint8 *buf, gint *length, GError **error);
     gboolean (*read_subchannel_data) (MIRAGE_Fragment *self, gint address, guint8 *buf, gint *length, GError **error);
 };
@@ -171,7 +171,7 @@ typedef enum
 {
     FR_BIN_SFILE_INT = 0x01,
     FR_BIN_SFILE_EXT = 0x02,
-    
+
     FR_BIN_SFILE_PW96_INT = 0x10,
     FR_BIN_SFILE_PW96_LIN = 0x20,
     FR_BIN_SFILE_RW96     = 0x40,
@@ -196,7 +196,7 @@ typedef struct _MIRAGE_FragIface_BinaryInterface    MIRAGE_FragIface_BinaryInter
 struct _MIRAGE_FragIface_BinaryInterface
 {
     GTypeInterface parent_iface;
-    
+
     /* Interface methods */
     gboolean (*track_file_set_file) (MIRAGE_FragIface_Binary *self, const gchar *filename, GError **error);
     gboolean (*track_file_get_file) (MIRAGE_FragIface_Binary *self, const gchar **filename, GError **error);
@@ -220,7 +220,7 @@ struct _MIRAGE_FragIface_BinaryInterface
 
     gboolean (*subchannel_file_get_position) (MIRAGE_FragIface_Binary *self, gint address, guint64 *position, GError **error);
 
-} MIRAGE_FragIface_BinaryClass;
+};
 
 /* Used by MIRAGE_TYPE_FRAG_IFACE_BINARY */
 GType mirage_frag_iface_binary_get_type (void);
@@ -271,7 +271,7 @@ typedef struct _MIRAGE_FragIface_AudioInterface MIRAGE_FragIface_AudioInterface;
 struct _MIRAGE_FragIface_AudioInterface
 {
     GTypeInterface parent_iface;
-    
+
     /* Interface methods */
     gboolean (*set_file) (MIRAGE_FragIface_Audio *self, const gchar *filename, GError **error);
     gboolean (*get_file) (MIRAGE_FragIface_Audio *self, const gchar **filename, GError **error);
