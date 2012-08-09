@@ -890,9 +890,9 @@ gint mirage_helper_determine_sector_type (const guint8 *buf)
             case 1: return MIRAGE_MODE_MODE1;
             case 2: return MIRAGE_MODE_MODE2_MIXED;
         }
-    } else {
-        /* No sync pattern; assume audio sector */
-        return MIRAGE_MODE_AUDIO;
     }
+
+    /* No sync pattern; assume audio sector */
+    return MIRAGE_MODE_AUDIO;
 }
 
