@@ -215,7 +215,7 @@ static gboolean mirage_parser_cdi_parse_header (MIRAGE_Parser_CDI *self, GError 
     /* Recongised fields */
     gint num_all_tracks = 0;
     gint filename_length = 0;
-    gchar *filename = NULL;
+    //gchar *filename = NULL;
     gint disc_capacity = 0;
     gint medium_type = 0;
 
@@ -261,7 +261,7 @@ static gboolean mirage_parser_cdi_parse_header (MIRAGE_Parser_CDI *self, GError 
     /* At 18th byte, filename starts (NOTE: it seems that the filename
        can be in any encoding (e.g. Japanese), so priting here could
        cause a crash... */
-    filename = MIRAGE_CAST_PTR(self->priv->cur_ptr, 0, gchar *);
+    //filename = MIRAGE_CAST_PTR(self->priv->cur_ptr, 0, gchar *);
     //MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: filename length: %d\n", __debug__, filename_length);
     //MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: filename: %s\n\n", __debug__, tmp_filename);
     self->priv->cur_ptr += filename_length;
@@ -915,7 +915,7 @@ static gboolean mirage_parser_cdi_load_disc (MIRAGE_Parser_CDI *self, GError **e
     if (mcn_valid) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: MCN: %.13s\n", __debug__, mcn);
     }
-    
+
     /* CD-TEXT */
     cdtext_length = GUINT32_FROM_LE(MIRAGE_CAST_DATA(self->priv->cur_ptr, 0, guint32));
     self->priv->cur_ptr += sizeof(guint32);
@@ -1056,7 +1056,7 @@ end:
 
 
 /**********************************************************************\
- *                             Object init                            * 
+ *                             Object init                            *
 \**********************************************************************/
 G_DEFINE_DYNAMIC_TYPE(MIRAGE_Parser_CDI, mirage_parser_cdi, MIRAGE_TYPE_PARSER);
 
@@ -1085,7 +1085,7 @@ static void mirage_parser_cdi_finalize (GObject *gobject)
     MIRAGE_Parser_CDI *self = MIRAGE_PARSER_CDI(gobject);
 
     g_free(self->priv->cdi_filename);
-    
+
     /* Chain up to the parent class */
     return G_OBJECT_CLASS(mirage_parser_cdi_parent_class)->finalize(gobject);
 }
