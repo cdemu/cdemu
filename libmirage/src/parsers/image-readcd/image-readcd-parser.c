@@ -130,6 +130,7 @@ static gboolean mirage_parser_readcd_determine_track_mode (MIRAGE_Parser_READCD 
     /* Determine track mode*/
     track_mode = mirage_helper_determine_sector_type(buf);
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: track mode determined to be: %d\n", __debug__, track_mode);
+    mirage_track_set_mode(MIRAGE_TRACK(track), track_mode, NULL);
 
     return TRUE;
 }
