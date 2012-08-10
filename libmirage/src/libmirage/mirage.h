@@ -26,6 +26,8 @@
 #include <glib-object.h>
 #include <gmodule.h>
 
+#include <gio/gio.h>
+
 #include <math.h>
 #include <string.h>
 
@@ -59,8 +61,8 @@ typedef gboolean (*MIRAGE_CallbackFunction) (const gpointer data, gpointer user_
  *
  * <para>
  * Password function type used in libMirage's to obtain password for encrypted
- * images. A password function needs to be set to libMirage via 
- * libmirage_set_password_function(), along with @user_data that the password 
+ * images. A password function needs to be set to libMirage via
+ * libmirage_set_password_function(), along with @user_data that the password
  * function should be called with.
  * </para>
  *
@@ -94,6 +96,7 @@ gchar *libmirage_obtain_password (GError **error);
 
 GObject *libmirage_create_disc (gchar **filenames, GObject *debug_context, GHashTable *params, GError **error);
 GObject *libmirage_create_fragment (GType fragment_interface, const gchar *filename, GError **error);
+GObject *libmirage_create_file_stream (const gchar *filename, GError **error);
 
 gboolean libmirage_for_each_parser (MIRAGE_CallbackFunction func, gpointer user_data, GError **error);
 gboolean libmirage_for_each_fragment (MIRAGE_CallbackFunction func, gpointer user_data, GError **error);
