@@ -30,9 +30,82 @@
 struct _MIRAGE_Fragment_SNDFILEPrivate
 {
     gchar *filename;
+    GObject *stream;
+
     SNDFILE *sndfile;
     SF_INFO format;
     sf_count_t offset;
+};
+
+
+/**********************************************************************\
+ *                        libsndfile I/O bridge                        *
+\**********************************************************************/
+static sf_count_t sndfile_io_get_filelen (GObject *stream)
+{
+    goffset position, size;
+
+    /* Store current position */
+    position = g_seekable_tell(G_SEEKABLE(stream));
+
+    /* Seek to the end of file and get position */
+    g_seekable_seek(G_SEEKABLE(stream), 0, G_SEEK_END, NULL, NULL);
+    size = g_seekable_tell(G_SEEKABLE(stream));
+
+    /* Restore position */
+    g_seekable_seek(G_SEEKABLE(stream), position, G_SEEK_SET, NULL, NULL);
+
+    return size;
+}
+
+static sf_count_t sndfile_io_seek (sf_count_t offset, int whence, GObject *stream)
+{
+    goffset position;
+    GSeekType seek_type;
+
+    /* Map whence parameter */
+    switch (whence) {
+        case SEEK_CUR: {
+            seek_type = G_SEEK_CUR;
+            break;
+        }
+        case SEEK_SET: {
+            seek_type = G_SEEK_SET;
+            break;
+        }
+        case SEEK_END: {
+            seek_type = G_SEEK_END;
+            break;
+        }
+        default: {
+            /* Should not happen... */
+            seek_type = G_SEEK_SET;
+            break;
+        }
+    }
+
+    /* Seek */
+    g_seekable_seek(G_SEEKABLE(stream), offset, seek_type, NULL, NULL);
+
+    return g_seekable_tell(G_SEEKABLE(stream));
+}
+
+static sf_count_t sndfile_io_read (void *ptr, sf_count_t count, GObject *stream)
+{
+    return g_input_stream_read(G_INPUT_STREAM(stream), ptr, count, NULL, NULL);
+}
+
+static  sf_count_t sndfile_io_tell (GObject *stream)
+{
+    return g_seekable_tell(G_SEEKABLE(stream));
+}
+
+static SF_VIRTUAL_IO sndfile_io_bridge = {
+    .get_filelen = (sf_vio_get_filelen)sndfile_io_get_filelen,
+    .seek = (sf_vio_seek)sndfile_io_seek,
+    .read = (sf_vio_read)sndfile_io_read,
+    .write = NULL,
+    .tell = (sf_vio_tell)sndfile_io_tell,
 };
 
 
@@ -42,23 +115,35 @@ struct _MIRAGE_Fragment_SNDFILEPrivate
 static gboolean mirage_fragment_sndfile_set_file (MIRAGE_FragIface_Audio *_self, const gchar *filename, GError **error)
 {
     MIRAGE_Fragment_SNDFILE *self = MIRAGE_FRAGMENT_SNDFILE(_self);
-    
-    /* If file's already set, close it and reset format */
+
+    /* If stream is already set, release it and reset format */
+    if (self->priv->stream) {
+        g_object_unref(self->priv->stream);
+        self->priv->stream = NULL;
+    }
     if (self->priv->sndfile) {
         sf_close(self->priv->sndfile);
         memset(&self->priv->format, 0, sizeof(self->priv->format));
     }
-    
-    /* Open file */
-    self->priv->sndfile = sf_open(filename, SFM_READ, &self->priv->format);
+    if (self->priv->filename) {
+        g_free(self->priv->filename);
+        self->priv->filename = NULL;
+    }
+
+    /* Open stream */
+    self->priv->stream = libmirage_create_file_stream(filename, error);
+    if (!self->priv->stream) {
+        return FALSE;
+    }
+
+    self->priv->sndfile = sf_open_virtual(&sndfile_io_bridge, SFM_READ, &self->priv->format, self->priv->stream);
     if (!self->priv->sndfile) {
         mirage_error(MIRAGE_E_DATAFILE, error);
         return FALSE;
     }
-    
-    g_free(self->priv->filename);
+
     self->priv->filename = g_strdup(filename);
-    
+
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_FRAGMENT, "%s: SNDFILE file format:\n"
             " -> frames = %lli\n"
             " -> samplerate = %i\n"
@@ -67,14 +152,14 @@ static gboolean mirage_fragment_sndfile_set_file (MIRAGE_FragIface_Audio *_self,
             " -> sections = %i\n"
             " -> seekable = %i\n",
             __debug__,
-            self->priv->format.frames, 
-            self->priv->format.samplerate, 
-            self->priv->format.channels, 
-            self->priv->format.format, 
-            self->priv->format.sections, 
+            self->priv->format.frames,
+            self->priv->format.samplerate,
+            self->priv->format.channels,
+            self->priv->format.format,
+            self->priv->format.sections,
             self->priv->format.seekable);
-    
-    return TRUE;    
+
+    return TRUE;
 }
 
 static gboolean mirage_fragment_sndfile_get_file (MIRAGE_FragIface_Audio *_self, const gchar **filename, GError **error G_GNUC_UNUSED)
@@ -90,7 +175,7 @@ static gboolean mirage_fragment_sndfile_set_offset (MIRAGE_FragIface_Audio *_sel
     MIRAGE_Fragment_SNDFILE *self = MIRAGE_FRAGMENT_SNDFILE(_self);
     /* Set offset */
     self->priv->offset = offset*SNDFILE_FRAMES_PER_SECTOR;
-    return TRUE;    
+    return TRUE;
 }
 
 static gboolean mirage_fragment_sndfile_get_offset (MIRAGE_FragIface_Audio *_self, gint *offset, GError **error G_GNUC_UNUSED)
@@ -98,7 +183,7 @@ static gboolean mirage_fragment_sndfile_get_offset (MIRAGE_FragIface_Audio *_sel
     MIRAGE_Fragment_SNDFILE *self = MIRAGE_FRAGMENT_SNDFILE(_self);
     /* Return */
     *offset = self->priv->offset/SNDFILE_FRAMES_PER_SECTOR;
-    return TRUE;    
+    return TRUE;
 }
 
 
@@ -109,21 +194,21 @@ static gboolean mirage_fragment_sndfile_can_handle_data_format (MIRAGE_Fragment 
 {
     SNDFILE *sndfile;
     SF_INFO format;
-    
+
     format.format = 0;
-    
+
     /* Try opening the file */
     sndfile = sf_open(filename, SFM_READ, &format);
     if (!sndfile) {
         return FALSE;
     }
     sf_close(sndfile);
-    
+
     /* Check some additional requirements (e.g. two channels) */
     if (format.channels != 2 || format.seekable == 0) {
         return FALSE;
     }
-    
+
     return TRUE;
 }
 
@@ -131,14 +216,14 @@ static gboolean mirage_fragment_sndfile_use_the_rest_of_file (MIRAGE_Fragment *_
 {
     MIRAGE_Fragment_SNDFILE *self = MIRAGE_FRAGMENT_SNDFILE(_self);
     gint fragment_len;
-    
+
     /* Make sure file's loaded */
     if (!self->priv->sndfile) {
         mirage_error(MIRAGE_E_FILENOTSET, error);
         return FALSE;
     }
-    
-    fragment_len = (self->priv->format.frames - self->priv->offset)/SNDFILE_FRAMES_PER_SECTOR; 
+
+    fragment_len = (self->priv->format.frames - self->priv->offset)/SNDFILE_FRAMES_PER_SECTOR;
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_FRAGMENT, "%s: using the rest of file (%d sectors)\n", __debug__, fragment_len);
 
     /* Set the length */
@@ -150,7 +235,7 @@ static gboolean mirage_fragment_sndfile_read_main_data (MIRAGE_Fragment *_self, 
     MIRAGE_Fragment_SNDFILE *self = MIRAGE_FRAGMENT_SNDFILE(_self);
     sf_count_t position;
     sf_count_t read_len;
-    
+
     /* We need file to read data from... but if it's missing, we don't read
        anything and this is not considered an error */
     if (!self->priv->sndfile) {
@@ -159,25 +244,25 @@ static gboolean mirage_fragment_sndfile_read_main_data (MIRAGE_Fragment *_self, 
         }
         return TRUE;
     }
-    
+
     /* Determine position within file */
     position = self->priv->offset + address*SNDFILE_FRAMES_PER_SECTOR;
-       
+
     if (buf) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_FRAGMENT, "%s: reading from position 0x%llX (frames)\n", __debug__, position);
         sf_seek(self->priv->sndfile, position, SEEK_SET);
         read_len = sf_readf_short(self->priv->sndfile, (short *)buf, SNDFILE_FRAMES_PER_SECTOR);
-        
+
         if (read_len != SNDFILE_FRAMES_PER_SECTOR) {
             mirage_error(MIRAGE_E_READFAILED, error);
             return FALSE;
         }
     }
-    
+
     if (length) {
         *length = 2352; /* Always */
     }
-    
+
     return TRUE;
 }
 
@@ -222,6 +307,19 @@ static void mirage_fragment_sndfile_init (MIRAGE_Fragment_SNDFILE *self)
     self->priv->sndfile = NULL;
 }
 
+static void mirage_fragment_sndfile_dispose (GObject *gobject)
+{
+    MIRAGE_Fragment_SNDFILE *self = MIRAGE_FRAGMENT_SNDFILE(gobject);
+
+    if (self->priv->stream) {
+        g_object_unref(self->priv->stream);
+        self->priv->stream = 0;
+    }
+
+    /* Chain up to the parent class */
+    return G_OBJECT_CLASS(mirage_fragment_sndfile_parent_class)->dispose(gobject);
+}
+
 static void mirage_fragment_sndfile_finalize (GObject *gobject)
 {
     MIRAGE_Fragment_SNDFILE *self = MIRAGE_FRAGMENT_SNDFILE(gobject);
@@ -230,7 +328,7 @@ static void mirage_fragment_sndfile_finalize (GObject *gobject)
     if (self->priv->sndfile) {
         sf_close(self->priv->sndfile);
     }
-    
+
     /* Chain up to the parent class */
     return G_OBJECT_CLASS(mirage_fragment_sndfile_parent_class)->finalize(gobject);
 }
@@ -240,6 +338,7 @@ static void mirage_fragment_sndfile_class_init (MIRAGE_Fragment_SNDFILEClass *kl
     GObjectClass *gobject_class = G_OBJECT_CLASS(klass);
     MIRAGE_FragmentClass *fragment_class = MIRAGE_FRAGMENT_CLASS(klass);
 
+    gobject_class->dispose = mirage_fragment_sndfile_dispose;
     gobject_class->finalize = mirage_fragment_sndfile_finalize;
 
     fragment_class->can_handle_data_format = mirage_fragment_sndfile_can_handle_data_format;
@@ -257,7 +356,7 @@ static void mirage_fragment_sndfile_class_finalize (MIRAGE_Fragment_SNDFILEClass
 
 
 static void mirage_fragment_sndfile_frag_iface_audio_init (MIRAGE_FragIface_AudioInterface *iface)
-{   
+{
     iface->set_file = mirage_fragment_sndfile_set_file;
     iface->get_file = mirage_fragment_sndfile_get_file;
     iface->set_offset = mirage_fragment_sndfile_set_offset;
