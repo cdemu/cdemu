@@ -33,13 +33,13 @@ struct _MIRAGE_Fragment_BINARYPrivate
     gint tfile_sectsize; /* Track file sector size */
     gint tfile_format; /* Track file format */
     guint64 tfile_offset; /* Track offset in track file */
-        
+
     gchar *sfile_name; /* Subchannel file name */
     gint sfile_sectsize; /* Subchannel file sector size*/
     gint sfile_format; /* Subchannel file format */
     guint64 sfile_offset; /* Subchannel offset in subchannel file */
-    
-    FILE *tfile_handle, *sfile_handle;
+
+    GObject *tfile_stream, *sfile_stream;
 };
 
 
@@ -49,25 +49,24 @@ struct _MIRAGE_Fragment_BINARYPrivate
 static gboolean mirage_fragment_binary_track_file_set_file (MIRAGE_FragIface_Binary *_self, const gchar *filename, GError **error)
 {
     MIRAGE_Fragment_BINARY *self = MIRAGE_FRAGMENT_BINARY(_self);
-    
-    /* Release old data */
-    if (self->priv->tfile_handle) {
-        fclose(self->priv->tfile_handle);
-        self->priv->tfile_handle = NULL;
+
+    /* Release old stream */
+    if (self->priv->tfile_stream) {
+        g_object_unref(self->priv->tfile_stream);
+        self->priv->tfile_stream = NULL;
     }
     if (self->priv->tfile_name) {
         g_free(self->priv->tfile_name);
         self->priv->tfile_name = NULL;
     }
-    
-    /* Set new data */
-    self->priv->tfile_handle = g_fopen(filename, "r");
-    if (!self->priv->tfile_handle) {
-        mirage_error(MIRAGE_E_DATAFILE, error);
+
+    /* Set new stream */
+    self->priv->tfile_stream = libmirage_create_file_stream(filename, error);
+    if (!self->priv->tfile_stream) {
         return FALSE;
     }
     self->priv->tfile_name = g_strdup(filename);
-    
+
     return TRUE;
 }
 
@@ -142,18 +141,18 @@ static gboolean mirage_fragment_binary_track_file_get_position (MIRAGE_FragIface
     gint sectsize_full;
 
     MIRAGE_CHECK_ARG(position);
-            
+
     /* Calculate 'full' sector size:
         -> track data + subchannel data, if there's internal subchannel
         -> track data, if there's external or no subchannel
     */
-    
+
     sectsize_full = self->priv->tfile_sectsize;
     if (self->priv->sfile_format & FR_BIN_SFILE_INT) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_FRAGMENT, "%s: internal subchannel, adding %d to sector size %d\n", __debug__, self->priv->sfile_sectsize, sectsize_full);
         sectsize_full += self->priv->sfile_sectsize;
     }
-    
+
     /* We assume address is relative address */
     /* guint64 casts are required so that the product us 64-bit; product of two
        32-bit integers would be 32-bit, which would be truncated at overflow... */
@@ -167,25 +166,24 @@ static gboolean mirage_fragment_binary_track_file_get_position (MIRAGE_FragIface
 static gboolean mirage_fragment_binary_subchannel_file_set_file (MIRAGE_FragIface_Binary *_self, const gchar *filename, GError **error G_GNUC_UNUSED)
 {
     MIRAGE_Fragment_BINARY *self = MIRAGE_FRAGMENT_BINARY(_self);
-    
-    /* Release old data */
-    if (self->priv->sfile_handle) {
-        fclose(self->priv->sfile_handle);
-        self->priv->sfile_handle = NULL;
+
+    /* Release old stream */
+    if (self->priv->sfile_stream) {
+        g_object_unref(self->priv->sfile_stream);
+        self->priv->sfile_stream = NULL;
     }
     if (self->priv->sfile_name) {
         g_free(self->priv->sfile_name);
         self->priv->sfile_name = NULL;
     }
-    
-    /* Set new data */
-    self->priv->sfile_handle = g_fopen(filename, "r");
-    if (!self->priv->sfile_handle) {
-        mirage_error(MIRAGE_E_DATAFILE, error);
+
+    /* Set new stream */
+    self->priv->sfile_stream = libmirage_create_file_stream(filename, error);
+    if (!self->priv->sfile_stream) {
         return FALSE;
     }
     self->priv->sfile_name = g_strdup(filename);
-    
+
     return TRUE;
 }
 
@@ -258,7 +256,7 @@ static gboolean mirage_fragment_binary_subchannel_file_get_position (MIRAGE_Frag
     guint64 tmp_offset;
 
     MIRAGE_CHECK_ARG(position);
-    
+
     /* Either we have internal or external subchannel */
     if (self->priv->sfile_format & FR_BIN_SFILE_INT) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_FRAGMENT, "%s: internal subchannel, position is at end of main channel data\n", __debug__);
@@ -267,7 +265,7 @@ static gboolean mirage_fragment_binary_subchannel_file_get_position (MIRAGE_Frag
         if (!mirage_frag_iface_binary_track_file_get_position(MIRAGE_FRAG_IFACE_BINARY(self), address, &tmp_offset, error)) {
             return FALSE;
         }
-        
+
         tmp_offset += self->priv->tfile_sectsize;
     } else if (self->priv->sfile_format & FR_BIN_SFILE_EXT) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_FRAGMENT, "%s: external subchannel, calculating position\n", __debug__);
@@ -276,7 +274,7 @@ static gboolean mirage_fragment_binary_subchannel_file_get_position (MIRAGE_Frag
            32-bit integers would be 32-bit, which would be truncated at overflow... */
         tmp_offset = self->priv->sfile_offset + (guint64)address * (guint64)self->priv->sfile_sectsize;
     }
-    
+
     *position = tmp_offset;
     return TRUE;
 }
@@ -296,32 +294,32 @@ static gboolean mirage_fragment_binary_use_the_rest_of_file (MIRAGE_Fragment *_s
 {
     MIRAGE_Fragment_BINARY *self = MIRAGE_FRAGMENT_BINARY(_self);
 
-    struct stat st;
+    goffset file_size;
     gint full_sectsize;
     gint fragment_len;
-    
-    if (!self->priv->tfile_handle) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: file not set!\n", __debug__);
+
+    if (!self->priv->tfile_stream) {
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: data file stream not set!\n", __debug__);
         mirage_error(MIRAGE_E_FILENOTSET, error);
         return FALSE;
     }
-    
+
     /* Get file length */
-    if (fstat(fileno(self->priv->tfile_handle), &st) < 0) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to stat data file!\n", __debug__);
-        mirage_error(MIRAGE_E_DATAFILE, error);
+    if (!g_seekable_seek(G_SEEKABLE(self->priv->tfile_stream), 0, G_SEEK_END, NULL, error)) {
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to seek data file stream to the end!\n", __debug__);
         return FALSE;
     }
-    
+    file_size = g_seekable_tell(G_SEEKABLE(self->priv->tfile_stream));
+
     /* Use all data from offset on... */
     full_sectsize = self->priv->tfile_sectsize;
     if (self->priv->sfile_format & FR_BIN_SFILE_INT) {
         full_sectsize += self->priv->sfile_sectsize;
     }
-    
-    fragment_len = (st.st_size - self->priv->tfile_offset) / full_sectsize;
+
+    fragment_len = (file_size - self->priv->tfile_offset) / full_sectsize;
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_FRAGMENT, "%s: using the rest of file (%d sectors)\n", __debug__, fragment_len);
-    
+
     /* Set the length */
     return mirage_fragment_set_length(MIRAGE_FRAGMENT(self), fragment_len, error);
 }
@@ -332,37 +330,34 @@ static gboolean mirage_fragment_binary_read_main_data (MIRAGE_Fragment *_self, g
 
     guint64 position;
     gint read_len;
-    
+
     /* We need file to read data from... but if it's missing, we don't read
        anything and this is not considered an error */
-    if (!self->priv->tfile_handle) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_FRAGMENT, "%s: no file handle!\n", __debug__);
+    if (!self->priv->tfile_stream) {
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_FRAGMENT, "%s: no data file stream!\n", __debug__);
         if (length) {
             *length = 0;
         }
         return TRUE;
     }
-    
+
     /* Determine position within file */
     if (!mirage_frag_iface_binary_track_file_get_position(MIRAGE_FRAG_IFACE_BINARY(self), address, &position, error)) {
         return FALSE;
     }
-    
+
     if (buf) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_FRAGMENT, "%s: reading from position 0x%llX\n", __debug__, position);
-        fseeko(self->priv->tfile_handle, position, SEEK_SET);
-        read_len = fread(buf, 1, self->priv->tfile_sectsize, self->priv->tfile_handle);
-        
-        if (read_len != self->priv->tfile_sectsize) {
-            /* If we were really strict, we'd bail with error here. However, since
-               we live in a world with mini images, we should turn our backs here
-               and hope that things work out for the best... If we're indeed reading
-               from mini image, then at this point, data we should've read won't 
-               matter at anyway. */
-            /*mirage_error(MIRAGE_E_READFAILED, error);
-            return FALSE;*/
-        }
-        
+
+        /* Note: we ignore all errors here in order to be able to cope with truncated mini images */
+        g_seekable_seek(G_SEEKABLE(self->priv->tfile_stream), position, G_SEEK_SET, NULL, NULL);
+        read_len = g_input_stream_read(G_INPUT_STREAM(self->priv->tfile_stream), buf, self->priv->tfile_sectsize, NULL, NULL);
+
+        /*if (read_len != self->priv->tfile_sectsize) {
+            mirage_error(MIRAGE_E_READFAILED, error);
+            return FALSE;
+        }*/
+
         /* Binary audio files may need to be swapped from BE to LE */
         if (self->priv->tfile_format == FR_BIN_TFILE_AUDIO_SWAP) {
             gint i;
@@ -372,11 +367,11 @@ static gboolean mirage_fragment_binary_read_main_data (MIRAGE_Fragment *_self, g
             }
         }
     }
-    
+
     if (length) {
         *length = self->priv->tfile_sectsize;
     }
-    
+
     return TRUE;
 }
 
@@ -384,11 +379,11 @@ static gboolean mirage_fragment_binary_read_subchannel_data (MIRAGE_Fragment *_s
 {
     MIRAGE_Fragment_BINARY *self = MIRAGE_FRAGMENT_BINARY(_self);
 
-    FILE *file_handle;
+    GObject *stream;
     guint64 position;
     gint read_len;
-    
-    
+
+
     /* If there's no subchannel, return 0 for the length */
     if (!self->priv->sfile_sectsize) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_FRAGMENT, "%s: no subchannel (sectsize = 0)!\n", __debug__);
@@ -397,70 +392,70 @@ static gboolean mirage_fragment_binary_read_subchannel_data (MIRAGE_Fragment *_s
         }
         return TRUE;
     }
-    
+
     /* We need file to read data from... but if it's missing, we don't read
        anything and this is not considered an error */
     if (self->priv->sfile_format & FR_BIN_SFILE_INT) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_FRAGMENT, "%s: internal subchannel, using track file handle\n", __debug__);
-        file_handle = self->priv->tfile_handle;
+        stream = self->priv->tfile_stream;
     } else {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_FRAGMENT, "%s: external subchannel, using track file handle\n", __debug__);
-        file_handle = self->priv->sfile_handle;        
+        stream = self->priv->sfile_stream;
     }
-    
-    if (!file_handle) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_FRAGMENT, "%s: no file handle!\n", __debug__);
+
+    if (!stream) {
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_FRAGMENT, "%s: no stream!\n", __debug__);
         if (length) {
             *length = 0;
         }
         return TRUE;
     }
-    
-    
+
+
     /* Determine position within file */
     if (!mirage_frag_iface_binary_subchannel_file_get_position(MIRAGE_FRAG_IFACE_BINARY(self), address, &position, error)) {
         return FALSE;
     }
-    
+
     /* Read only if there's buffer to read into */
     if (buf) {
         guint8 tmp_buf[96];
-                
+
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_FRAGMENT, "%s: reading from position 0x%llX\n", __debug__, position);
         /* We read into temporary buffer, because we might need to perform some
            magic on the data */
-        fseeko(file_handle, position, SEEK_SET);
-        read_len = fread(tmp_buf, 1, self->priv->sfile_sectsize, file_handle);
+        g_seekable_seek(G_SEEKABLE(stream), position, G_SEEK_SET, NULL, NULL);
+        read_len = g_input_stream_read(G_INPUT_STREAM(stream), tmp_buf, self->priv->sfile_sectsize, NULL, NULL);
 
-        if (read_len != self->priv->sfile_sectsize) {
+        /*if (read_len != self->priv->sfile_sectsize) {
             mirage_error(MIRAGE_E_READFAILED, error);
             return FALSE;
-        }
-        
+        }*/
+
         /* If we happen to deal with anything that's not RAW 96-byte interleaved PW,
            we transform it into that here... less fuss for upper level stuff this way */
         if (self->priv->sfile_format & FR_BIN_SFILE_PW96_LIN) {
-            /* 96-byte deinterleaved PW; grab each subchannel and interleave it 
+            /* 96-byte deinterleaved PW; grab each subchannel and interleave it
                into destination buffer */
             gint i;
-            
+
             for (i = 0; i < 8; i++) {
                 guint8 *ptr = tmp_buf + i*12;
                 mirage_helper_subchannel_interleave(7 - i, ptr, buf);
-            }            
+            }
         } else if (self->priv->sfile_format & FR_BIN_SFILE_PW96_INT) {
             /* 96-byte interleaved PW; just copy it */
-            memcpy(buf, tmp_buf, 96);        
+            memcpy(buf, tmp_buf, 96);
         } else if (self->priv->sfile_format & FR_BIN_SFILE_PQ16) {
             /* 16-byte PQ; interleave it and pretend everything else's 0 */
             mirage_helper_subchannel_interleave(SUBCHANNEL_Q, tmp_buf, buf);
         }
     }
-    
+
     if (length) {
         *length = 96; /* Always 96, because we do the processing here */
     }
-    
+
     return TRUE;
 }
 
@@ -493,24 +488,35 @@ static void mirage_fragment_binary_init (MIRAGE_Fragment_BINARY *self)
     );
 
     self->priv->tfile_name = NULL;
-    self->priv->tfile_handle = NULL;
+    self->priv->tfile_stream = NULL;
     self->priv->sfile_name = NULL;
-    self->priv->sfile_handle = NULL;
+    self->priv->sfile_stream = NULL;
+}
+
+static void mirage_fragment_binary_dispose (GObject *gobject)
+{
+    MIRAGE_Fragment_BINARY *self = MIRAGE_FRAGMENT_BINARY(gobject);
+
+    if (self->priv->tfile_stream) {
+        g_object_unref(self->priv->tfile_stream);
+        self->priv->tfile_stream = NULL;
+    }
+    if (self->priv->sfile_stream) {
+        g_object_unref(self->priv->sfile_stream);
+        self->priv->sfile_stream = NULL;
+    }
+
+    /* Chain up to the parent class */
+    return G_OBJECT_CLASS(mirage_fragment_binary_parent_class)->dispose(gobject);
 }
 
 static void mirage_fragment_binary_finalize (GObject *gobject)
 {
     MIRAGE_Fragment_BINARY *self = MIRAGE_FRAGMENT_BINARY(gobject);
 
-    if (self->priv->tfile_handle) {
-        fclose(self->priv->tfile_handle);
-    }
     g_free(self->priv->tfile_name);
-    if (self->priv->sfile_handle) {
-        fclose(self->priv->sfile_handle);
-    }
     g_free(self->priv->sfile_name);
-    
+
     /* Chain up to the parent class */
     return G_OBJECT_CLASS(mirage_fragment_binary_parent_class)->finalize(gobject);
 }
@@ -520,6 +526,7 @@ static void mirage_fragment_binary_class_init (MIRAGE_Fragment_BINARYClass *klas
     GObjectClass *gobject_class = G_OBJECT_CLASS(klass);
     MIRAGE_FragmentClass *fragment_class = MIRAGE_FRAGMENT_CLASS(klass);
 
+    gobject_class->dispose = mirage_fragment_binary_dispose;
     gobject_class->finalize = mirage_fragment_binary_finalize;
 
     fragment_class->can_handle_data_format = mirage_fragment_binary_can_handle_data_format;
@@ -537,7 +544,7 @@ static void mirage_fragment_binary_class_finalize (MIRAGE_Fragment_BINARYClass *
 
 
 static void mirage_fragment_binary_frag_iface_binary_init (MIRAGE_FragIface_BinaryInterface *iface)
-{   
+{
     iface->track_file_set_file = mirage_fragment_binary_track_file_set_file;
     iface->track_file_get_file = mirage_fragment_binary_track_file_get_file;
     iface->track_file_set_offset = mirage_fragment_binary_track_file_set_offset;
