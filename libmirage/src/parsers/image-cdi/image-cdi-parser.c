@@ -971,7 +971,7 @@ static gboolean mirage_parser_cdi_load_image (MIRAGE_Parser *_self, gchar **file
     MIRAGE_Parser_CDI *self = MIRAGE_PARSER_CDI(_self);
 
     gboolean succeeded = TRUE;
-    FILE *file;
+    GObject *stream;
     guint64 offset;
     gint32 descriptor_length;
 
@@ -982,9 +982,8 @@ static gboolean mirage_parser_cdi_load_image (MIRAGE_Parser *_self, gchar **file
     }
 
     /* Open file */
-    file = g_fopen(filenames[0], "r");
-    if (!file) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to open file '%s'!\n", __debug__, filenames[0]);
+    stream = libmirage_create_file_stream(filenames[0], NULL);
+    if (!stream) {
         mirage_error(MIRAGE_E_IMAGEFILE, error);
         return FALSE;
     }
@@ -999,8 +998,8 @@ static gboolean mirage_parser_cdi_load_image (MIRAGE_Parser *_self, gchar **file
     /* The descriptor is stored at the end of CDI image; I'm quite positive that
        last four bytes represent length of descriptor data */
     offset = -(guint64)(sizeof(descriptor_length));
-    fseeko(file, offset, SEEK_END);
-    if (fread(&descriptor_length, sizeof(descriptor_length), 1, file) < 1) {
+    g_seekable_seek(G_SEEKABLE(stream), offset, G_SEEK_END, NULL, NULL);
+    if (g_input_stream_read(G_INPUT_STREAM(stream), &descriptor_length, sizeof(descriptor_length), NULL, NULL) != sizeof(descriptor_length)) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read descriptor lenght!\n", __debug__);
         mirage_error(MIRAGE_E_READFAILED, error);
         succeeded = FALSE;
@@ -1012,8 +1011,8 @@ static gboolean mirage_parser_cdi_load_image (MIRAGE_Parser *_self, gchar **file
     /* Allocate descriptor data and read it */
     self->priv->cur_ptr = self->priv->cdi_data = g_malloc(descriptor_length);
     offset = -(guint64)(descriptor_length);
-    fseeko(file, offset, SEEK_END);
-    if (fread(self->priv->cdi_data, descriptor_length, 1, file) < 1) {
+    g_seekable_seek(G_SEEKABLE(stream), offset, G_SEEK_END, NULL, NULL);
+    if (g_input_stream_read(G_INPUT_STREAM(stream), self->priv->cdi_data, descriptor_length, NULL, NULL) != descriptor_length) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read descriptor!\n", __debug__);
         mirage_error(MIRAGE_E_READFAILED, error);
         succeeded = FALSE;
@@ -1039,8 +1038,8 @@ end:
     /* Free descriptor data */
     g_free(self->priv->cdi_data);
 
-    /* Close file */
-    fclose(file);
+    /* Close file stream */
+    g_object_unref(stream);
 
     /* Return disc */
     mirage_object_detach_child(MIRAGE_OBJECT(self), self->priv->disc, NULL);
