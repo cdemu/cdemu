@@ -43,29 +43,35 @@ static const guint8 bea01_pattern[] = {0x00, 0x42, 0x45, 0x41, 0x30, 0x31, 0x01,
 static gboolean mirage_parser_iso_is_file_valid (MIRAGE_Parser_ISO *self, gchar *filename, GError **error)
 {
     gboolean succeeded;
-    struct stat st;
-    FILE *file;
+    gsize file_length;
+    GObject *stream;
 
-    if (g_stat(filename, &st) < 0) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to stat file!\n", __debug__);
-        mirage_error(MIRAGE_E_IMAGEFILE, error);
+    /* Create stream */
+    stream = libmirage_create_file_stream(filename, error);
+    if (!stream) {
         return FALSE;
     }
 
-    file = g_fopen(filename, "r");
-    if (!file) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to open file!\n", __debug__);
-        mirage_error(MIRAGE_E_IMAGEFILE, error);
-        return FALSE;
+    /* Get stream length */
+    if (!g_seekable_seek(G_SEEKABLE(stream), 0, G_SEEK_END, NULL, error)) {
+        succeeded = FALSE;
+        goto end;
     }
+    file_length = g_seekable_tell(G_SEEKABLE(stream));
+
 
     /* 2048-byte standard ISO9660/UDF image check */
-    if (st.st_size % 2048 == 0) {
+    if (file_length % 2048 == 0) {
         guint8 buf[8];
 
-        fseeko(file, 16*2048, SEEK_SET);
+        if (!g_seekable_seek(G_SEEKABLE(stream), 16*2048, G_SEEK_SET, NULL, NULL)) {
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to seek to 8-byte pattern!\n", __debug__);
+            mirage_error(MIRAGE_E_READFAILED, error);
+            succeeded = FALSE;
+            goto end;
+        }
 
-        if (fread(buf, 8, 1, file) < 1) {
+        if (g_input_stream_read(G_INPUT_STREAM(stream), buf, 8, NULL, NULL) != 8) {
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read 8-byte pattern!\n", __debug__);
             mirage_error(MIRAGE_E_READFAILED, error);
             succeeded = FALSE;
@@ -85,12 +91,16 @@ static gboolean mirage_parser_iso_is_file_valid (MIRAGE_Parser_ISO *self, gchar 
     }
 
     /* 2352-byte image check */
-    if (st.st_size % 2352 == 0) {
+    if (file_length % 2352 == 0) {
         guint8 buf[16];
 
-        fseeko(file, 16*2352, SEEK_SET);
+        if (!g_seekable_seek(G_SEEKABLE(stream), 16*2352, G_SEEK_SET, NULL, NULL)) {
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to seek to 16-byte pattern!\n", __debug__);
+            succeeded = FALSE;
+            goto end;
+        }
 
-        if (fread(buf, 16, 1, file) < 1) {
+        if (g_input_stream_read(G_INPUT_STREAM(stream), buf, 16, NULL, NULL) != 16) {
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read 16-byte pattern!\n", __debug__);
             mirage_error(MIRAGE_E_READFAILED, error);
             succeeded = FALSE;
@@ -108,7 +118,7 @@ static gboolean mirage_parser_iso_is_file_valid (MIRAGE_Parser_ISO *self, gchar 
     }
 
     /* 2332/2336-byte image check */
-    if (st.st_size % 2332 == 0) {
+    if (file_length % 2332 == 0) {
         self->priv->track_sectsize = 2332;
         self->priv->track_mode = MIRAGE_MODE_MODE2_MIXED;
 
@@ -117,7 +127,7 @@ static gboolean mirage_parser_iso_is_file_valid (MIRAGE_Parser_ISO *self, gchar 
         succeeded = TRUE;
         goto end;
     }
-    if (st.st_size % 2336 == 0) {
+    if (file_length % 2336 == 0) {
         self->priv->track_sectsize = 2336;
         self->priv->track_mode = MIRAGE_MODE_MODE2_MIXED;
 
@@ -132,7 +142,7 @@ static gboolean mirage_parser_iso_is_file_valid (MIRAGE_Parser_ISO *self, gchar 
     succeeded = FALSE;
 
 end:
-    fclose(file);
+    g_object_unref(stream);
     return succeeded;
 }
 
