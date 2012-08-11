@@ -38,7 +38,7 @@ struct _MIRAGE_Parser_B6TPrivate
     gchar *b6t_filename;
     guint64 b6t_length;
     guint8 *b6t_data;
-    
+
     guint8 *cur_ptr;
 
     B6T_DiscBlock_1 *disc_block_1;
@@ -60,24 +60,24 @@ static inline void b6t_disc_block_1_fix_endian (B6T_DiscBlock_1 *block)
     block->__dummy2__ = GUINT32_FROM_LE(block->__dummy2__);
     block->__dummy3__ = GUINT32_FROM_LE(block->__dummy3__);
     block->__dummy4__ = GUINT32_FROM_LE(block->__dummy4__);
-    
+
     block->__dummy5__ = GUINT32_FROM_LE(block->__dummy5__);
     block->__dummy6__ = GUINT32_FROM_LE(block->__dummy6__);
     block->__dummy7__ = GUINT32_FROM_LE(block->__dummy7__);
     block->__dummy8__ = GUINT32_FROM_LE(block->__dummy8__);
-    
+
     block->disc_type = GUINT16_FROM_LE(block->disc_type);
 
     block->num_sessions = GUINT16_FROM_LE(block->num_sessions);
     block->__dummy9__ = GUINT32_FROM_LE(block->__dummy9__);
     block->__dummy10__ = GUINT32_FROM_LE(block->__dummy10__);
     block->__dummy11__ = GUINT32_FROM_LE(block->__dummy11__);
-    
+
     block->__dummy14__ = GUINT32_FROM_LE(block->__dummy14__);
     block->__dummy15__ = GUINT32_FROM_LE(block->__dummy15__);
     block->__dummy16__ = GUINT32_FROM_LE(block->__dummy16__);
     block->__dummy17__ = GUINT32_FROM_LE(block->__dummy17__);
-    
+
     block->pma_data_length = GUINT16_FROM_LE(block->pma_data_length);
     block->atip_data_length = GUINT16_FROM_LE(block->atip_data_length);
     block->cdtext_data_length = GUINT16_FROM_LE(block->cdtext_data_length);
@@ -121,33 +121,33 @@ static inline void b6t_data_block_fix_endian (B6T_DataBlock *block)
 static inline void b6t_session_fix_endian (B6T_Session *session)
 {
     session->number = GUINT16_FROM_LE(session->number);
-    
+
     session->session_start = GUINT32_FROM_LE(session->session_start);
-    
+
     session->session_end = GUINT32_FROM_LE(session->session_end);
-    
+
     session->first_track = GUINT16_FROM_LE(session->first_track);
     session->last_track = GUINT16_FROM_LE(session->last_track);
 }
 
 static inline void b6t_track_fix_endian (B6T_Track *track)
-{   
+{
     track->__dummy4__ = GUINT32_FROM_LE(track->__dummy4__);
-    
+
     track->pregap = GUINT32_FROM_LE(track->pregap);
-    
+
     track->__dummy8__ = GUINT32_FROM_LE(track->__dummy8__);
     track->__dummy9__ = GUINT32_FROM_LE(track->__dummy9__);
     track->__dummy10__ = GUINT32_FROM_LE(track->__dummy10__);
     track->__dummy11__ = GUINT32_FROM_LE(track->__dummy11__);
-    
+
     track->start_sector = GINT32_FROM_LE(track->start_sector);
     track->length = GINT32_FROM_LE(track->length);
 
     track->__dummy12__ = GUINT32_FROM_LE(track->__dummy12__);
     track->__dummy13__ = GUINT32_FROM_LE(track->__dummy13__);
     track->session_number = GUINT32_FROM_LE(track->session_number);
-    
+
     track->__dummy14__ = GUINT32_FROM_LE(track->__dummy14__);
 }
 
@@ -187,32 +187,32 @@ static gboolean mirage_parser_b6t_load_bwa_file (MIRAGE_Parser_B6T *self, GError
     g_free(bwa_filename);
 
     if (bwa_fullpath) {
-        FILE *file;
+        GObject *stream;
         guint64 bwa_length, read_length;
         guint8 *bwa_data;
 
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: found BWA file: '%s'\n", __debug__, bwa_fullpath);
 
         /* Open BWA file */
-        file = g_fopen(bwa_fullpath, "r");
+        stream = libmirage_create_file_stream(bwa_fullpath, NULL);
         g_free(bwa_fullpath);
 
-        if (!file) {
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to open BWA file!\n", __debug__);
+        if (!stream) {
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to open stream on BWA file!\n", __debug__);
             mirage_error(MIRAGE_E_IMAGEFILE, error);
             return FALSE;
         }
 
         /* Read whole BWA file */
-        fseek(file, 0, SEEK_END);
-        bwa_length = ftell(file);
+        g_seekable_seek(G_SEEKABLE(stream), 0, G_SEEK_END, NULL, NULL);
+        bwa_length = g_seekable_tell(G_SEEKABLE(stream));
 
         bwa_data = g_malloc(bwa_length);
 
-        fseek(file, 0, SEEK_SET);
-        read_length = fread(bwa_data, 1, bwa_length, file);
+        g_seekable_seek(G_SEEKABLE(stream), 0, G_SEEK_SET, NULL, NULL);
+        read_length = g_input_stream_read(G_INPUT_STREAM(stream), bwa_data, bwa_length, NULL, NULL);
 
-        fclose(file);
+        g_object_unref(stream);
 
         if (read_length != bwa_length) {
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read whole BWA file!\n", __debug__);
@@ -919,11 +919,11 @@ static gboolean mirage_parser_b6t_parse_data_blocks (MIRAGE_Parser_B6T *self, GE
         gunichar2 *tmp_filename = MIRAGE_CAST_PTR(self->priv->cur_ptr, 0, gunichar2 *);
         widechar_filename_fix_endian(tmp_filename, data_block->filename_length/2);
         self->priv->cur_ptr += data_block->filename_length;
-        
+
         /* Convert filename */
         data_block->filename = g_utf16_to_utf8(tmp_filename, data_block->filename_length/2, NULL, NULL, NULL);
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  filename: %s\n", __debug__, data_block->filename);
-        
+
         /* Read the trailing four bytes */
         data_block->__dummy8__ = GUINT32_FROM_LE(MIRAGE_CAST_DATA(self->priv->cur_ptr, 0, guint32));
         self->priv->cur_ptr += sizeof(guint32);
@@ -1264,30 +1264,30 @@ static gboolean mirage_parser_b6t_load_disc (MIRAGE_Parser_B6T *self, GError **e
 static gboolean mirage_parser_b6t_load_image (MIRAGE_Parser *_self, gchar **filenames, GObject **disc, GError **error)
 {
     MIRAGE_Parser_B6T *self = MIRAGE_PARSER_B6T(_self);
-    
+
     gboolean succeeded = TRUE;
-    FILE *file;
+    GObject *stream;
     guint64 read_length;
     guint8 header[16];
 
     /* Check if we can load the image */
-    file = g_fopen(filenames[0], "r");
-    if (!file) {
+    stream = libmirage_create_file_stream(filenames[0], NULL);
+    if (!stream) {
         mirage_error(MIRAGE_E_IMAGEFILE, error);
         return FALSE;
     }
 
     /* Read and verify header; we could also check the footer, but I think
        header check only is sufficient */
-    fseeko(file, 0, SEEK_SET);
-    if (fread(header, 16, 1, file) < 1) {
-        fclose(file);
+    g_seekable_seek(G_SEEKABLE(stream), 0, G_SEEK_SET, NULL, NULL);
+    if (g_input_stream_read(G_INPUT_STREAM(stream), header, 16, NULL, NULL) != 16) {
+        g_object_unref(stream);
         mirage_error(MIRAGE_E_READFAILED, error);
         return FALSE;
     }
 
     if (memcmp(header, "BWT5 STREAM SIGN", 16)) {
-        fclose(file);
+        g_object_unref(stream);
         mirage_error(MIRAGE_E_CANTHANDLE, error);
         return FALSE;
     }
@@ -1302,18 +1302,18 @@ static gboolean mirage_parser_b6t_load_image (MIRAGE_Parser *_self, gchar **file
 
 
     /* Get file size */
-    fseek(file, 0, SEEK_END);
-    self->priv->b6t_length = ftell(file);
+    g_seekable_seek(G_SEEKABLE(stream), 0, G_SEEK_END, NULL, NULL);
+    self->priv->b6t_length = g_seekable_tell(G_SEEKABLE(stream));
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: B6T length: %lld bytes\n", __debug__, self->priv->b6t_length);
 
     /* Allocate buffer */
     self->priv->b6t_data = g_malloc(self->priv->b6t_length);
 
     /* Read whole file */
-    fseek(file, 0, SEEK_SET);
-    read_length = fread(self->priv->b6t_data, 1, self->priv->b6t_length, file);
+    g_seekable_seek(G_SEEKABLE(stream), 0, G_SEEK_SET, NULL, NULL);
+    read_length = g_input_stream_read(G_INPUT_STREAM(stream), self->priv->b6t_data, self->priv->b6t_length, NULL, NULL);
 
-    fclose(file);
+    g_object_unref(stream);
 
     if (read_length != self->priv->b6t_length) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read whole B6T file '%s' (%lld out of %lld bytes read)!\n", __debug__, filenames[0], read_length, self->priv->b6t_length);
@@ -1331,7 +1331,7 @@ static gboolean mirage_parser_b6t_load_image (MIRAGE_Parser *_self, gchar **file
 end:
     g_free(self->priv->b6t_data);
     self->priv->b6t_data = NULL;
-    
+
     /* Return disc */
     mirage_object_detach_child(MIRAGE_OBJECT(self), self->priv->disc, NULL);
     if (succeeded) {
@@ -1346,7 +1346,7 @@ end:
 
 
 /**********************************************************************\
- *                             Object init                            * 
+ *                             Object init                            *
 \**********************************************************************/
 G_DEFINE_DYNAMIC_TYPE(MIRAGE_Parser_B6T, mirage_parser_b6t, MIRAGE_TYPE_PARSER);
 
@@ -1391,7 +1391,7 @@ static void mirage_parser_b6t_finalize (GObject *gobject)
 
     g_free(self->priv->b6t_filename);
     g_free(self->priv->b6t_data);
-    
+
     /* Chain up to the parent class */
     return G_OBJECT_CLASS(mirage_parser_b6t_parent_class)->finalize(gobject);
 }
