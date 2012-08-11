@@ -49,7 +49,7 @@ struct _MIRAGE_Parser_MDSPrivate
 static inline void mds_header_fix_endian (MDS_Header *header)
 {
     gint i;
-    
+
     header->medium_type = GUINT16_FROM_LE(header->medium_type);
     header->num_sessions = GUINT16_FROM_LE(header->num_sessions);
 
@@ -238,7 +238,7 @@ static gboolean mirage_parser_mds_parse_dpm_block (MIRAGE_Parser_MDS *self, guin
 
     /* Read all entries */
     dpm_data = MIRAGE_CAST_PTR(cur_ptr, 0, guint32 *);
-    
+
     dpm_data_fix_endian(dpm_data, dpm_num_entries);
 
     /* Set DPM data */
@@ -610,7 +610,7 @@ static gboolean mirage_parser_mds_parse_track_entries (MIRAGE_Parser_MDS *self, 
                        however, since DVD images can have split MDF files, we need
                        to calculate the individual framgents' lengths ourselves... */
                     struct stat st;
-                    
+
                     if (g_stat(mdf_filename, &st) < 0) {
                         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to stat data file!\n", __debug__);
                         mirage_error(MIRAGE_E_IMAGEFILE, error);
@@ -619,7 +619,7 @@ static gboolean mirage_parser_mds_parse_track_entries (MIRAGE_Parser_MDS *self, 
                         g_object_unref(cur_session);
                         return FALSE;
                     }
-                    
+
                     fragment_len = (st.st_size - tfile_offset)/(tfile_sectsize + sfile_sectsize); /* We could've just divided by 2048, too :) */
                     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: DVD-ROM; track's fragment length: 0x%X\n", __debug__, fragment_len);
                 }
@@ -646,7 +646,7 @@ static gboolean mirage_parser_mds_parse_track_entries (MIRAGE_Parser_MDS *self, 
                     return FALSE;
                 }
                 g_free(mdf_filename);
-                
+
                 mirage_frag_iface_binary_track_file_set_offset(MIRAGE_FRAG_IFACE_BINARY(data_fragment), tfile_offset, NULL);
                 mirage_frag_iface_binary_track_file_set_sectsize(MIRAGE_FRAG_IFACE_BINARY(data_fragment), tfile_sectsize, NULL);
                 mirage_frag_iface_binary_track_file_set_format(MIRAGE_FRAG_IFACE_BINARY(data_fragment), tfile_format, NULL);
@@ -791,37 +791,38 @@ static gboolean mirage_parser_mds_load_disc (MIRAGE_Parser_MDS *self, GError **e
 static gboolean mirage_parser_mds_load_image (MIRAGE_Parser *_self, gchar **filenames, GObject **disc, GError **error)
 {
     MIRAGE_Parser_MDS *self = MIRAGE_PARSER_MDS(_self);
-    
+
     gboolean succeeded = TRUE;
     guint8 *cur_ptr;
-    FILE *file;
+    GObject *stream;
     guint64 read_length;
     gchar sig[16] = "";
     guint8 ver[2];
 
     /* Check if we can load the image */
-    file = g_fopen(filenames[0], "r");
-    if (!file) {
+    stream = libmirage_create_file_stream(filenames[0], NULL);
+    if (!stream) {
         mirage_error(MIRAGE_E_IMAGEFILE, error);
         return FALSE;
     }
 
     /* Read signature and version */
-    if ((fread(sig, 16, 1, file) < 1) || (fread(ver, 2, 1, file) < 1)) {
-        fclose(file);
+    if ((g_input_stream_read(G_INPUT_STREAM(stream), sig, sizeof(sig), NULL, NULL) != sizeof(sig))
+        || (g_input_stream_read(G_INPUT_STREAM(stream), ver, sizeof(ver), NULL, NULL) != sizeof(ver))) {
+        g_object_unref(stream);
         mirage_error(MIRAGE_E_READFAILED, error);
         return FALSE;
     }
 
     if (memcmp(sig, "MEDIA DESCRIPTOR", 16)) {
-        fclose(file);
+        g_object_unref(stream);
         mirage_error(MIRAGE_E_CANTHANDLE, error);
         return FALSE;
     }
 
     /* We can handle only v.1.X images (Alcohol 120% format) */
     if (ver[0] != 1 ) {
-        fclose(file);
+        g_object_unref(stream);
         mirage_error(MIRAGE_E_CANTHANDLE, error);
         return FALSE;
     }
@@ -836,18 +837,18 @@ static gboolean mirage_parser_mds_load_image (MIRAGE_Parser *_self, gchar **file
 
 
     /* Get file size */
-    fseek(file, 0, SEEK_END);
-    self->priv->mds_length = ftell(file);
+    g_seekable_seek(G_SEEKABLE(stream), 0, G_SEEK_END, NULL, NULL);
+    self->priv->mds_length = g_seekable_tell(G_SEEKABLE(stream));
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: MDS length: %lld bytes\n", __debug__, self->priv->mds_length);
 
     /* Allocate buffer */
     self->priv->mds_data = g_malloc(self->priv->mds_length);
 
     /* Read whole file */
-    fseek(file, 0, SEEK_SET);
-    read_length = fread(self->priv->mds_data, 1, self->priv->mds_length, file);
+    g_seekable_seek(G_SEEKABLE(stream), 0, G_SEEK_SET, NULL, NULL);
+    read_length = g_input_stream_read(G_INPUT_STREAM(stream), self->priv->mds_data, self->priv->mds_length, NULL, NULL);
 
-    fclose(file);
+    g_object_unref(stream);
 
     if (read_length != self->priv->mds_length) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read whole MDS file '%s' (%lld out of %lld bytes read)!\n", __debug__, filenames[0], read_length, self->priv->mds_length);
@@ -906,7 +907,7 @@ static gboolean mirage_parser_mds_load_image (MIRAGE_Parser *_self, gchar **file
 end:
     g_free(self->priv->mds_data);
     self->priv->mds_data = NULL;
-    
+
     /* Return disc */
     mirage_object_detach_child(MIRAGE_OBJECT(self), self->priv->disc, NULL);
     if (succeeded) {
@@ -921,7 +922,7 @@ end:
 
 
 /**********************************************************************\
- *                             Object init                            * 
+ *                             Object init                            *
 \**********************************************************************/
 G_DEFINE_DYNAMIC_TYPE(MIRAGE_Parser_MDS, mirage_parser_mds, MIRAGE_TYPE_PARSER);
 
@@ -952,7 +953,7 @@ static void mirage_parser_mds_finalize (GObject *gobject)
 
     g_free(self->priv->mds_filename);
     g_free(self->priv->mds_data);
-    
+
     /* Chain up to the parent class */
     return G_OBJECT_CLASS(mirage_parser_mds_parent_class)->finalize(gobject);
 }
