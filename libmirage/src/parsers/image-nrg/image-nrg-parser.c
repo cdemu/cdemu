@@ -967,75 +967,75 @@ static gboolean mirage_parser_nrg_load_cdtext (MIRAGE_Parser_NRG *self, GError *
 static gboolean mirage_parser_nrg_load_image (MIRAGE_Parser *_self, gchar **filenames, GObject **disc, GError **error)
 {
     MIRAGE_Parser_NRG *self = MIRAGE_PARSER_NRG(_self);
-    
+
     gboolean succeeded = TRUE;
-    FILE *file;
-    guint64 filesize;
+    GObject *stream;
+    guint64 file_size;
     guint64 trailer_offset;
     gchar sig[4];
 
     /* Open file */
-    file = g_fopen(filenames[0], "r");
-    if (!file) {
+    stream = libmirage_create_file_stream(filenames[0], NULL);
+    if (!stream) {
         mirage_error(MIRAGE_E_IMAGEFILE, error);
         return FALSE;
     }
 
-    /* Get filesize */
-    fseeko(file, 0, SEEK_END);
-    filesize = ftello(file);
+    /* Get file size */
+    g_seekable_seek(G_SEEKABLE(stream), 0, G_SEEK_END, NULL, NULL);
+    file_size = g_seekable_tell(G_SEEKABLE(stream));
 
     /* Read signature */
-    fseeko(file, -12, SEEK_END);
+    g_seekable_seek(G_SEEKABLE(stream), -12, G_SEEK_END, NULL, NULL);
 
-    if (fread(sig, 4, 1, file) < 1) {
+    if (g_input_stream_read(G_INPUT_STREAM(stream), sig, sizeof(sig), NULL, NULL) != sizeof(sig)) {
         mirage_error(MIRAGE_E_READFAILED, error);
-        fclose(file);
+        g_object_unref(stream);
         return FALSE;
     }
 
-    if (!memcmp(sig, "NER5", 4)) {
+    if (!memcmp(sig, "NER5", sizeof(sig))) {
         /* New format, 64-bit offset */
         guint64 tmp_offset = 0;
         self->priv->old_format = FALSE;
 
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: new format\n", __debug__);
 
-        if (fread(&tmp_offset, 8, 1, file) < 1) {
+        if (g_input_stream_read(G_INPUT_STREAM(stream), &tmp_offset, sizeof(tmp_offset), NULL, NULL) != sizeof(tmp_offset)) {
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read trailer offset!\n", __debug__);
-            fclose(file);
+            g_object_unref(stream);
             mirage_error(MIRAGE_E_READFAILED, error);
             return FALSE;
         }
         trailer_offset = GUINT64_FROM_BE(tmp_offset);
-        self->priv->nrg_data_length = (filesize - 12) - trailer_offset;
+        self->priv->nrg_data_length = (file_size - 12) - trailer_offset;
     } else {
         /* Try old format, with 32-bit offset */
-        fseeko(file, -8, SEEK_END);
-        if (fread(sig, 4, 1, file) < 1) {
+        g_seekable_seek(G_SEEKABLE(stream), -8, G_SEEK_END, NULL, NULL);
+        if (g_input_stream_read(G_INPUT_STREAM(stream), sig, sizeof(sig), NULL, NULL) != sizeof(sig)) {
             mirage_error(MIRAGE_E_READFAILED, error);
-            fclose(file);
+            g_object_unref(stream);
             return FALSE;
         }
 
-        if (!memcmp(sig, "NERO", 4)) {
+        if (!memcmp(sig, "NERO", sizeof(sig))) {
             guint32 tmp_offset = 0;
             self->priv->old_format = TRUE;
 
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: old format\n", __debug__);
 
-            if (fread(&tmp_offset, 4, 1, file) < 1) {
+            if (g_input_stream_read(G_INPUT_STREAM(stream), &tmp_offset, sizeof(tmp_offset), NULL, NULL) != sizeof(tmp_offset)) {
                 MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read trailer offset!\n", __debug__);
-                fclose(file);
+                g_object_unref(stream);
                 mirage_error(MIRAGE_E_READFAILED, error);
                 return FALSE;
             }
 
             trailer_offset = GUINT32_FROM_BE(tmp_offset);
-            self->priv->nrg_data_length = (filesize - 8) - trailer_offset;
+            self->priv->nrg_data_length = (file_size - 8) - trailer_offset;
         } else {
             /* Unknown signature, can't handle the file */
-            fclose(file);
+            g_object_unref(stream);
             mirage_error(MIRAGE_E_CANTHANDLE, error);
             return FALSE;
         }
@@ -1055,8 +1055,8 @@ static gboolean mirage_parser_nrg_load_image (MIRAGE_Parser *_self, gchar **file
 
     /* Read descriptor data */
     self->priv->nrg_data = g_malloc(self->priv->nrg_data_length);
-    fseeko(file, trailer_offset, SEEK_SET);
-    if (fread(self->priv->nrg_data, self->priv->nrg_data_length, 1, file) < 1) {
+    g_seekable_seek(G_SEEKABLE(stream), trailer_offset, G_SEEK_SET, NULL, NULL);
+    if (g_input_stream_read(G_INPUT_STREAM(stream), self->priv->nrg_data, self->priv->nrg_data_length, NULL, NULL) != self->priv->nrg_data_length) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read descriptor!\n", __debug__);
         mirage_error(MIRAGE_E_READFAILED, error);
         succeeded = FALSE;
@@ -1130,7 +1130,7 @@ end:
     mirage_parser_nrg_destroy_block_index(self);
 
     g_free(self->priv->nrg_data);
-    fclose(file);
+    g_object_unref(stream);
 
     /* Return disc */
     mirage_object_detach_child(MIRAGE_OBJECT(self), self->priv->disc, NULL);
@@ -1146,7 +1146,7 @@ end:
 
 
 /**********************************************************************\
- *                             Object init                            * 
+ *                             Object init                            *
 \**********************************************************************/
 G_DEFINE_DYNAMIC_TYPE(MIRAGE_Parser_NRG, mirage_parser_nrg, MIRAGE_TYPE_PARSER);
 
@@ -1175,7 +1175,7 @@ static void mirage_parser_nrg_finalize (GObject *gobject)
     MIRAGE_Parser_NRG *self = MIRAGE_PARSER_NRG(gobject);
 
     g_free(self->priv->nrg_filename);
-    
+
     /* Chain up to the parent class */
     return G_OBJECT_CLASS(mirage_parser_nrg_parent_class)->finalize(gobject);
 }
