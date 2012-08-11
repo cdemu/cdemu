@@ -6,6 +6,7 @@ libmirage_la_SOURCES = \
     mirage-debug.c \
     mirage-disc.c \
     mirage-error.c \
+    mirage-file-filter.c \
     mirage-fragment.c \
     mirage-index.c \
     mirage-language.c \
@@ -17,7 +18,7 @@ libmirage_la_SOURCES = \
     mirage-track.c \
     mirage-utils.c \
     mirage-version.c
-                        
+
 AM_CPPFLAGS = \
     $(glib_CFLAGS) \
     $(gobject_CFLAGS) \
@@ -31,7 +32,7 @@ libmirage_la_LIBADD = \
 
 libmirage_la_LDFLAGS = \
 	$(LT_VERSION_INFO)
-    
+
 libmirageincludedir=$(includedir)/libmirage
 libmirageinclude_HEADERS = \
     mirage.h \
@@ -40,6 +41,7 @@ libmirageinclude_HEADERS = \
     mirage-disc.h \
     mirage-disc-structures.h \
     mirage-error.h \
+    mirage-file-filter.h \
     mirage-fragment.h \
     mirage-index.h \
     mirage-language.h \

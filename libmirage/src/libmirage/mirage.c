@@ -33,6 +33,9 @@ static struct
     guint num_fragments;
     GType *fragments;
 
+    guint num_file_filters;
+    GType *file_filters;
+
     /* Password function */
     MIRAGE_PasswordFunction password_func;
     gpointer password_data;
@@ -104,9 +107,10 @@ gboolean libmirage_init (GError **error)
 
     g_dir_close(plugins_dir);
 
-    /* *** Get parsers and fragments *** */
+    /* *** Get parsers, fragments and file filters *** */
     libmirage.parsers = g_type_children(MIRAGE_TYPE_PARSER, &libmirage.num_parsers);
     libmirage.fragments = g_type_children(MIRAGE_TYPE_FRAGMENT, &libmirage.num_fragments);
+    libmirage.file_filters = g_type_children(MIRAGE_TYPE_FILE_FILTER, &libmirage.num_file_filters);
 
     /* Reset password function pointers */
     libmirage.password_func = NULL;
@@ -138,9 +142,10 @@ gboolean libmirage_shutdown (GError **error)
         return FALSE;
     }
 
-    /* Free parsers and fragments */
+    /* Free parsers, fragments and file filters */
     g_free(libmirage.parsers);
     g_free(libmirage.fragments);
+    g_free(libmirage.file_filters);
 
     /* We're not initialized anymore */
     libmirage.initialized = FALSE;
@@ -521,6 +526,58 @@ gboolean libmirage_for_each_fragment (MIRAGE_CallbackFunction func, gpointer use
         mirage_fragment_get_fragment_info(MIRAGE_FRAGMENT(fragment), &fragment_info, NULL);
         succeeded = (*func)((const gpointer)fragment_info, user_data);
         g_object_unref(fragment);
+        if (!succeeded) {
+            mirage_error(MIRAGE_E_ITERCANCELLED, error);
+            return FALSE;
+        }
+    }
+
+    return TRUE;
+}
+
+/**
+ * libmirage_for_each_file_filter:
+ * @func: callback function
+ * @user_data: data to be passed to callback function
+ * @error: location to store error, or %NULL
+ *
+ * <para>
+ * Iterates over list of supported file filters, calling @func for each fragment.
+ * </para>
+ *
+ * <para>
+ * If @func returns %FALSE, the function immediately returns %FALSE and @error
+ * is set to %MIRAGE_E_ITERCANCELLED.
+ * </para>
+ *
+ * Returns: %TRUE on success, %FALSE on failure
+ **/
+gboolean libmirage_for_each_file_filter (MIRAGE_CallbackFunction func, gpointer user_data, GError **error)
+{
+    gint i;
+
+    /* Make sure libMirage is initialized */
+    if (!libmirage.initialized) {
+        mirage_error(MIRAGE_E_NOTINIT, error);
+        return FALSE;
+    }
+
+    /* Make sure we've been given callback function */
+    if (!func) {
+        mirage_error(MIRAGE_E_INVALIDARG, error);
+        return FALSE;
+    }
+
+    /* Go over all file filters */
+    for (i = 0; i < libmirage.num_file_filters; i++) {
+        const MIRAGE_FileFilterInfo *file_filter_info;
+        gboolean succeeded;
+        GObject *filter;
+
+        filter = g_object_new(libmirage.file_filters[i], NULL);
+        mirage_file_filter_get_file_filter_info(MIRAGE_FILE_FILTER(filter), &file_filter_info, NULL);
+        succeeded = (*func)((const gpointer)file_filter_info, user_data);
+        g_object_unref(filter);
         if (!succeeded) {
             mirage_error(MIRAGE_E_ITERCANCELLED, error);
             return FALSE;

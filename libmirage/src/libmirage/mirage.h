@@ -100,6 +100,7 @@ GObject *libmirage_create_file_stream (const gchar *filename, GError **error);
 
 gboolean libmirage_for_each_parser (MIRAGE_CallbackFunction func, gpointer user_data, GError **error);
 gboolean libmirage_for_each_fragment (MIRAGE_CallbackFunction func, gpointer user_data, GError **error);
+gboolean libmirage_for_each_file_filter (MIRAGE_CallbackFunction func, gpointer user_data, GError **error);
 
 gboolean libmirage_get_supported_debug_masks (const MIRAGE_DebugMask **masks, gint *num_masks, GError **error);
 
@@ -107,6 +108,7 @@ G_END_DECLS
 
 #include "mirage-object.h"
 
+#include "mirage-file-filter.h"
 #include "mirage-parser.h"
 #include "mirage-disc.h"
 #include "mirage-fragment.h"
