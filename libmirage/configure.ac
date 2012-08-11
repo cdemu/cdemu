@@ -65,7 +65,7 @@ PKG_CHECK_MODULES(glib, glib-2.0 >= 2.24)
 PKG_CHECK_MODULES(gobject, gobject-2.0 >= 2.24)
 PKG_CHECK_MODULES(gmodule, gmodule-2.0 >= 2.24)
 PKG_CHECK_MODULES(sndfile, sndfile >= 1.0.0)
-PKG_CHECK_MODULES(zlib, zlib) 
+PKG_CHECK_MODULES(zlib, zlib)
 
 # Compile with more warnings
 AC_ARG_ENABLE(more-warnings,
@@ -118,6 +118,7 @@ AC_CONFIG_FILES([
     docs/reference/libmirage/Makefile
     docs/reference/libmirage/version.xml
     src/Makefile
+    src/filters/Makefile
     src/fragments/Makefile
     src/fragments/fragment-binary/Makefile
     src/fragments/fragment-sndfile/Makefile

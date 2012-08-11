@@ -1,1 +1,1 @@
-SUBDIRS = libmirage parsers fragments
+SUBDIRS = libmirage filters fragments parsers
