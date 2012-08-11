@@ -425,7 +425,30 @@ GObject *libmirage_create_file_stream (const gchar *filename, GError **error)
         return FALSE;
     }
 
-    /* FIXME: add filter chaining */
+    /* Construct a chain of filters */
+    GObject *filter;
+    gboolean found_new;
+    gint i;
+
+    do {
+        found_new = FALSE;
+
+        for (i = 0; i < libmirage.num_file_filters; i++) {
+            /* Create filter object and check if it can handle data */
+            filter = g_object_new(libmirage.file_filters[i], "base-stream", stream, NULL);
+
+            if (!mirage_file_filter_can_handle_data_format(MIRAGE_FILE_FILTER(filter), NULL)) {
+                /* Cannot handle data format... */
+                g_object_unref(filter);
+            } else {
+                /* Add to chain */
+                g_object_unref(stream); /* Release reference to stream */
+                stream = filter; /* Filter becomes new underlying stream */
+                found_new = TRUE; /* Repeat the procedure */
+                break;
+            }
+        }
+    } while (found_new);
 
     return stream;
 }
