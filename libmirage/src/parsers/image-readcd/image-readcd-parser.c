@@ -42,10 +42,10 @@ struct _MIRAGE_Parser_READCDPrivate {
 };
 
 
-static gboolean mirage_parser_readcd_is_file_valid (MIRAGE_Parser_READCD *self, gchar *filename, GError **error)
+static gboolean mirage_parser_readcd_is_file_valid (MIRAGE_Parser_READCD *self, const gchar *filename, GError **error)
 {
     gboolean succeeded;
-    FILE *file;
+    GObject *stream;
     guint64 file_size;
 
     guint16 toc_len;
@@ -56,16 +56,15 @@ static gboolean mirage_parser_readcd_is_file_valid (MIRAGE_Parser_READCD *self, 
         succeeded = FALSE;
     }
 
-    file = g_fopen(filename, "r");
-    if (!file) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to open file!\n", __debug__);
+    stream = libmirage_create_file_stream(filename, NULL);
+    if (!stream) {
         mirage_error(MIRAGE_E_IMAGEFILE, error);
         return FALSE;
     }
 
     /* First 4 bytes of TOC are its header; and first 2 bytes of that indicate
        the length */
-    if (fread(&toc_len, 1, 2, file) != 2) {
+    if (g_input_stream_read(G_INPUT_STREAM(stream), &toc_len, sizeof(toc_len), NULL, NULL) != sizeof(toc_len)) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read 2-byte TOC length!\n", __debug__);
         mirage_error(MIRAGE_E_READFAILED, error);
         succeeded = FALSE;
@@ -75,8 +74,8 @@ static gboolean mirage_parser_readcd_is_file_valid (MIRAGE_Parser_READCD *self, 
 
     /* Does TOC length match? (the TOC file actually contains TOC plus two bytes
        that indicate sector types) */
-    fseek(file, 0, SEEK_END);
-    file_size = ftell(file);
+    g_seekable_seek(G_SEEKABLE(stream), 0, G_SEEK_END, NULL, NULL);
+    file_size = g_seekable_tell(G_SEEKABLE(stream));
 
     if (file_size - 2 == toc_len + 2) {
         succeeded = TRUE;
@@ -87,7 +86,7 @@ static gboolean mirage_parser_readcd_is_file_valid (MIRAGE_Parser_READCD *self, 
     }
 
 end:
-    fclose(file);
+    g_object_unref(stream);
     return succeeded;
 }
 
@@ -305,10 +304,10 @@ end:
     return succeeded;
 }
 
-static gboolean mirage_parser_readcd_parse_toc (MIRAGE_Parser_READCD *self, gchar *filename, GError **error)
+static gboolean mirage_parser_readcd_parse_toc (MIRAGE_Parser_READCD *self, const gchar *filename, GError **error)
 {
     gboolean succeeded = TRUE;
-    FILE *file;
+    GObject *stream;
     guint64 file_size, read_size;
     guint8 *data = NULL;
 
@@ -320,29 +319,23 @@ static gboolean mirage_parser_readcd_parse_toc (MIRAGE_Parser_READCD *self, gcha
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: data filename: %s\n", __debug__, self->priv->data_filename);
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:\n", __debug__);
 
-    /* Make sure data file exists */
-     if (!g_file_test(self->priv->data_filename, G_FILE_TEST_IS_REGULAR)) {
-         mirage_error(MIRAGE_E_DATAFILE, error);
-         return FALSE;
-     }
-
     /* Read whole TOC file */
-    file = g_fopen(filename, "r");
-    if (!file) {
+    stream = libmirage_create_file_stream(filename, NULL);
+    if (!stream) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to open TOC file '%s'!\n", __debug__, filename);
         mirage_error(MIRAGE_E_IMAGEFILE, error);
         return FALSE;
     }
 
-    fseek(file, 0, SEEK_END);
-    file_size = ftell(file);
+    g_seekable_seek(G_SEEKABLE(stream), 0, G_SEEK_END, NULL, NULL);
+    file_size = g_seekable_tell(G_SEEKABLE(stream));
 
     data = g_malloc(file_size);
 
-    fseek(file, 0, SEEK_SET);
-    read_size = fread(data, 1, file_size, file);
+    g_seekable_seek(G_SEEKABLE(stream), 0, G_SEEK_SET, NULL, NULL);
+    read_size = g_input_stream_read(G_INPUT_STREAM(stream), data, file_size, NULL, NULL);
 
-    fclose(file);
+    g_object_unref(stream);
 
     if (read_size != file_size) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read whole TOC file!\n", __debug__);
