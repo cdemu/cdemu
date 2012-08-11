@@ -60,7 +60,6 @@ static sf_count_t sndfile_io_get_filelen (GObject *stream)
 
 static sf_count_t sndfile_io_seek (sf_count_t offset, int whence, GObject *stream)
 {
-    goffset position;
     GSeekType seek_type;
 
     /* Map whence parameter */

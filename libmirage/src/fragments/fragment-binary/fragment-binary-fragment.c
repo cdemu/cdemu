@@ -427,10 +427,10 @@ static gboolean mirage_fragment_binary_read_subchannel_data (MIRAGE_Fragment *_s
         g_seekable_seek(G_SEEKABLE(stream), position, G_SEEK_SET, NULL, NULL);
         read_len = g_input_stream_read(G_INPUT_STREAM(stream), tmp_buf, self->priv->sfile_sectsize, NULL, NULL);
 
-        /*if (read_len != self->priv->sfile_sectsize) {
-            mirage_error(MIRAGE_E_READFAILED, error);
-            return FALSE;
-        }*/
+        if (read_len != self->priv->sfile_sectsize) {
+            /*mirage_error(MIRAGE_E_READFAILED, error);
+            return FALSE;*/
+        }
 
         /* If we happen to deal with anything that's not RAW 96-byte interleaved PW,
            we transform it into that here... less fuss for upper level stuff this way */

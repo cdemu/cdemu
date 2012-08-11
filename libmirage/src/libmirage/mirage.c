@@ -412,7 +412,7 @@ GObject *libmirage_create_file_stream (const gchar *filename, GError **error)
     }
 
     /* Create stream */
-    stream = g_file_read(file, NULL, error);
+    stream = G_OBJECT(g_file_read(file, NULL, error));
 
     g_object_unref(file);
 
