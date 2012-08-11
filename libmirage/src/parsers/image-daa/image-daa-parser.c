@@ -41,24 +41,24 @@ static gboolean mirage_parser_daa_load_image (MIRAGE_Parser *_self, gchar **file
     MIRAGE_Parser_DAA *self = MIRAGE_PARSER_DAA(_self);
 
     gboolean succeeded = TRUE;
-    FILE *file;
+    GObject *stream;
     gchar signature[16] = "";
 
     /* Open file */
-    file = g_fopen(filenames[0], "r");
-    if (!file) {
+    stream = libmirage_create_file_stream(filenames[0], NULL);
+    if (!stream) {
         mirage_error(MIRAGE_E_IMAGEFILE, error);
         return FALSE;
     }
 
     /* Read signature */
-    fseeko(file, 0, SEEK_SET);
-    if (fread(signature, 16, 1, file) < 1) {
-        fclose(file);
+    g_seekable_seek(G_SEEKABLE(stream), 0, G_SEEK_SET, NULL, NULL);
+    if (g_input_stream_read(G_INPUT_STREAM(stream), signature, sizeof(signature), NULL, NULL) != sizeof(signature)) {
+        g_object_unref(stream);
         mirage_error(MIRAGE_E_READFAILED, error);
         return FALSE;
     }
-    fclose(file);
+    g_object_unref(stream);
 
     /* Check signature (we're comparing -all- 16 bytes!) */
     if (memcmp(signature, daa_main_signature, sizeof(daa_main_signature))) {
@@ -149,7 +149,7 @@ end:
 
 
 /**********************************************************************\
- *                             Object init                            * 
+ *                             Object init                            *
 \**********************************************************************/
 G_DEFINE_DYNAMIC_TYPE(MIRAGE_Parser_DAA, mirage_parser_daa, MIRAGE_TYPE_PARSER);
 
