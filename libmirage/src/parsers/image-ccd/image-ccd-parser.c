@@ -114,12 +114,7 @@ static gboolean mirage_parser_ccd_sort_entries (MIRAGE_Parser_CCD *self, GError 
 static gboolean mirage_parser_ccd_determine_track_mode (MIRAGE_Parser_CCD *self, GObject *track, GError **error)
 {
     GObject *data_fragment;
-    guint64 offset;
-    const gchar *filename;
-
-    FILE *file;
-    size_t blocks_read;
-    guint8 buf[16];
+    guint8 buf[2352];
     gint track_mode;
 
     /* Get last fragment */
@@ -128,24 +123,13 @@ static gboolean mirage_parser_ccd_determine_track_mode (MIRAGE_Parser_CCD *self,
         return FALSE;
     }
 
-    /* 2352-byte sectors are assumed */
-    mirage_frag_iface_binary_track_file_get_file(MIRAGE_FRAG_IFACE_BINARY(data_fragment), &filename, NULL);
-    mirage_frag_iface_binary_track_file_get_position(MIRAGE_FRAG_IFACE_BINARY(data_fragment), 0, &offset, NULL);
-
-    g_object_unref(data_fragment);
-
-
-    /* Read first 16 bytes of first sector */
-    file = g_fopen(filename, "r");
-
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: checking for track type in data file at location 0x%llX\n", __debug__, offset);
-    fseeko(file, offset, SEEK_SET);
-    blocks_read = fread(buf, 16, 1, file);
-    fclose(file);
-    if (blocks_read < 1) {
-        mirage_error(MIRAGE_E_DATAFILE, error);
+    /* Read main sector data from fragment; 2352-byte sectors are assumed */
+    if (!mirage_fragment_read_main_data(MIRAGE_FRAGMENT(data_fragment), 0, buf, NULL, error)) {
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: failed to read data from fragment to determine track mode!\n", __debug__);
+        g_object_unref(data_fragment);
         return FALSE;
     }
+    g_object_unref(data_fragment);
 
     /* Determine track mode*/
     track_mode = mirage_helper_determine_sector_type(buf);
