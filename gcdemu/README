@@ -1,5 +1,5 @@
 gCDEmu
-1.7.0
+1.6.0
 ~~~~~
 
 Table of Contents:
@@ -13,7 +13,7 @@ Table of Contents:
 6. A note on encrypted images and password supplying
 7. On gCDEmu and Unity/GNOME Shell
  7.1 Unity
- 7.2 GNOME SHhll
+ 7.2 GNOME Shell
 8. Gtk Application and Ubuntu AppIndicator mode
 9. Contact information
 
@@ -160,8 +160,9 @@ or whitelisting all the applications:
 
 gsettings set com.canonical.Unity.Panel systray-whitelist "['all']"
 
-Restart Unity (either relog or use 'unity --replace').
+Restart Unity (Press ALT+F2 and enter 'unity').
 
+Alternatively see chapter 8 for AppIndicator information.
 
 7.2 GNOME Shell:
 ----------------
@@ -193,7 +194,7 @@ gsettings set org.gnome.shell.extensions.icon-manager top-bar "['gcdemu']"
 Alternatively, you can install dconf-editor and use it to edit the key:
 '/org/gnome/shell/extensions/icon-manager/top-bar'
 
-Reload the GNOME Shell (press Alt+F2 and enter "r").
+Reload the GNOME Shell (press Alt+F2 and enter 'r' or 'gnome-shell --replace').
 
 
 8. Gtk Application and Ubuntu AppIndicator mode:
@@ -204,7 +205,7 @@ default, gCDEmu displays a system tray icon, whose appearance depends on
 the settings of your system (see Section 6).
 
 On systems with AppIndicator support, it is possible to run gCDEmu in
-AppIndicator mode, by specifying --indicator command-line switch.
+AppIndicator mode, by specifying '--indicator' command-line switch.
 
 Note that some GUI features, in particular right-click device load/unload
 shortcut, are not supported in AppIndicator mode.
