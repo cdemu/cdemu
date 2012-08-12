@@ -33,6 +33,7 @@
  * @MIRAGE_DEBUG_SECTOR: message belonging to sector
  * @MIRAGE_DEBUG_FRAGMENT: message belonging to fragment
  * @MIRAGE_DEBUG_CDTEXT: message belonging to CD-TEXT encoder/decoder
+ * @MIRAGE_DEBUG_FILE: messages belonging to file filter
  *
  * <para>
  * Debug message types and debug masks used to control verbosity of various
@@ -57,6 +58,7 @@ typedef enum
     MIRAGE_DEBUG_SECTOR   = 0x0010,
     MIRAGE_DEBUG_FRAGMENT = 0x0020,
     MIRAGE_DEBUG_CDTEXT   = 0x0040,
+    MIRAGE_DEBUG_FILE   = 0x0080,
 } MIRAGE_DebugMasks;
 
 
