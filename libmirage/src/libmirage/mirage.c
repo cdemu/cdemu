@@ -435,20 +435,30 @@ GObject *libmirage_create_file_stream (const gchar *filename, GError **error)
 
         for (i = 0; i < libmirage.num_file_filters; i++) {
             /* Create filter object and check if it can handle data */
-            filter = g_object_new(libmirage.file_filters[i], "base-stream", stream, NULL);
+            filter = g_object_new(libmirage.file_filters[i], "base-stream", stream, "close-base-stream", FALSE, NULL);
 
             if (!mirage_file_filter_can_handle_data_format(MIRAGE_FILE_FILTER(filter), NULL)) {
                 /* Cannot handle data format... */
                 g_object_unref(filter);
             } else {
-                /* Add to chain */
-                g_object_unref(stream); /* Release reference to stream */
-                stream = filter; /* Filter becomes new underlying stream */
-                found_new = TRUE; /* Repeat the procedure */
+                /* Release reference to (now) underlying stream */
+                g_object_unref(stream);
+
+                /* Now the underlying stream should be closed when we close filter's stream */
+                g_filter_input_stream_set_close_base_stream (G_FILTER_INPUT_STREAM(filter), TRUE);
+
+                /* Filter becomes new underlying stream */
+                stream = filter;
+
+                /* Repeat the whole cycle */
+                found_new = TRUE;
                 break;
             }
         }
     } while (found_new);
+
+    /* Make sure that the stream we're returning is rewound to the beginning */
+    g_seekable_seek(G_SEEKABLE(stream), 0, G_SEEK_SET, NULL, NULL);
 
     return stream;
 }

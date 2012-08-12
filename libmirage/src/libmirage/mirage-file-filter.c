@@ -184,7 +184,7 @@ static void mirage_file_filter_gseekable_init (GSeekableIface *iface);
 
 G_DEFINE_TYPE_EXTENDED(MIRAGE_FileFilter,
                        mirage_file_filter,
-                       G_TYPE_INPUT_STREAM,
+                       G_TYPE_FILTER_INPUT_STREAM,
                        0,
                        G_IMPLEMENT_INTERFACE(G_TYPE_SEEKABLE,
                                              mirage_file_filter_gseekable_init));

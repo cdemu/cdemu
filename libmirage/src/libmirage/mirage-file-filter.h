@@ -72,7 +72,7 @@ struct _MIRAGE_FileFilter
 
 struct _MIRAGE_FileFilterClass
 {
-    MIRAGE_ObjectClass parent_class;
+    GFilterInputStreamClass parent_class;
 
     /* Class members */
     gboolean (*can_handle_data_format) (MIRAGE_FileFilter *self, GError **error);
