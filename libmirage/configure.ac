@@ -119,6 +119,7 @@ AC_CONFIG_FILES([
     docs/reference/libmirage/version.xml
     src/Makefile
     src/filters/Makefile
+    src/filters/filter-ecm/Makefile
     src/fragments/Makefile
     src/fragments/fragment-binary/Makefile
     src/fragments/fragment-sndfile/Makefile

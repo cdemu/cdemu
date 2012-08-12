@@ -1,1 +1,2 @@
-SUBDIRS =
+SUBDIRS = \
+    filter-ecm
