@@ -285,7 +285,7 @@ GObject *libmirage_create_disc (gchar **filenames, GObject *debug_context, GHash
 
         /* If provided, attach the debug context to parser */
         if (debug_context) {
-            mirage_object_set_debug_context(MIRAGE_OBJECT(parser), debug_context, NULL);
+            mirage_debuggable_set_debug_context(MIRAGE_DEBUGGABLE(parser), debug_context, NULL);
         }
 
         /* Pass the parameters to parser */

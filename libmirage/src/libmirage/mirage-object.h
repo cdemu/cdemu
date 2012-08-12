@@ -16,7 +16,7 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
- 
+
 #ifndef __MIRAGE_OBJECT_H__
 #define __MIRAGE_OBJECT_H__
 
@@ -53,7 +53,7 @@ struct _MIRAGE_Object
 struct _MIRAGE_ObjectClass
 {
     GObjectClass parent_class;
-    
+
     /* Class members */
     gint signal_object_modified;
 };
@@ -65,12 +65,6 @@ GType mirage_object_get_type (void);
 /**********************************************************************\
  *                             Public API                             *
 \**********************************************************************/
-gboolean mirage_object_set_debug_context (MIRAGE_Object *self, GObject *debug_context, GError **error);
-gboolean mirage_object_get_debug_context (MIRAGE_Object *self, GObject **debug_context, GError **error);
-
-void mirage_object_debug_message (MIRAGE_Object *self, gint level, gchar *format, ...);
-void mirage_object_debug_messagev (MIRAGE_Object *self, gint level, gchar *format, va_list args);
-
 gboolean mirage_object_set_parent (MIRAGE_Object *self, GObject *parent, GError **error);
 gboolean mirage_object_get_parent (MIRAGE_Object *self, GObject **parent, GError **error);
 

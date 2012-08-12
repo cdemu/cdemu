@@ -1,5 +1,5 @@
 /*
- *  libMirage: Debug context object
+ *  libMirage: Debugging facilities
  *  Copyright (C) 2006-2012 Rok Mandeljc
  *
  *  This program is free software; you can redistribute it and/or modify
@@ -16,13 +16,13 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
- 
+
 #ifndef __MIRAGE_DEBUG_H__
 #define __MIRAGE_DEBUG_H__
 
 
 /* Debug masks */
-/** 
+/**
  * MIRAGE_DebugMasks:
  * @MIRAGE_DEBUG_ERROR: error message
  * @MIRAGE_DEBUG_WARNING: warning message
@@ -36,7 +36,7 @@
  *
  * <para>
  * Debug message types and debug masks used to control verbosity of various
- * parts of libMirage. 
+ * parts of libMirage.
  * </para>
  *
  * <para>
@@ -59,7 +59,7 @@ typedef enum
     MIRAGE_DEBUG_CDTEXT   = 0x0040,
 } MIRAGE_DebugMasks;
 
-/* Debug macro */
+
 /**
  * MIRAGE_DEBUG:
  * @obj: object
@@ -67,18 +67,63 @@ typedef enum
  * @msg...: debug message
  *
  * <para>
- * Debugging macro, provided for convenience. It performs cast to #MIRAGE_Object
- * on @obj, then calls mirage_object_debug_message() with debug level @lvl and
+ * Debugging macro, provided for convenience. It performs cast to #MIRAGE_Debuggable
+ * interface on @obj, then calls mirage_debuggable_message() with debug level @lvl and
  * debug message @msg....
  * </para>
  **/
 #define MIRAGE_DEBUG(obj, lvl, msg...) { \
-    mirage_object_debug_message(MIRAGE_OBJECT(obj), lvl, msg); \
+    mirage_debuggable_debug_message(MIRAGE_DEBUGGABLE(obj), lvl, msg); \
 }
 
 
 G_BEGIN_DECLS
 
+
+/**********************************************************************\
+ *                        Debuggable interface                        *
+\**********************************************************************/
+#define MIRAGE_TYPE_DEBUGGABLE                 (mirage_debuggable_get_type())
+#define MIRAGE_DEBUGGABLE(obj)                 (G_TYPE_CHECK_INSTANCE_CAST((obj), MIRAGE_TYPE_DEBUGGABLE, MIRAGE_Debuggable))
+#define MIRAGE_IS_DEBUGGABLE(obj)              (G_TYPE_CHECK_INSTANCE_TYPE((obj), MIRAGE_TYPE_DEBUGGABLE))
+#define MIRAGE_DEBUGGABLE_GET_INTERFACE(inst)  (G_TYPE_INSTANCE_GET_INTERFACE((inst), MIRAGE_TYPE_DEBUGGABLE, MIRAGE_DebuggableInterface))
+
+/**
+ * MIRAGE_Debuggable:
+ *
+ * <para>
+ * Dummy interface structure.
+ * </para>
+ **/
+typedef struct _MIRAGE_Debuggable             MIRAGE_Debuggable;
+typedef struct _MIRAGE_DebuggableInterface    MIRAGE_DebuggableInterface;
+
+struct _MIRAGE_DebuggableInterface
+{
+    GTypeInterface parent_iface;
+
+    /* Interface methods */
+    gboolean (*set_debug_context) (MIRAGE_Debuggable *self, GObject *debug_context, GError **error);
+    gboolean (*get_debug_context) (MIRAGE_Debuggable *self, GObject **debug_context, GError **error);
+
+    void (*debug_message) (MIRAGE_Debuggable *self, gint level, gchar *format, ...);
+    void (*debug_messagev) (MIRAGE_Debuggable *self, gint level, gchar *format, va_list args);
+};
+
+/* Used by MIRAGE_TYPE_DEBUGGABLE */
+GType mirage_debuggable_get_type (void);
+
+/* Public API */
+gboolean mirage_debuggable_set_debug_context (MIRAGE_Debuggable *self, GObject *debug_context, GError **error);
+gboolean mirage_debuggable_get_debug_context (MIRAGE_Debuggable *self, GObject **debug_context, GError **error);
+
+void mirage_debuggable_debug_message (MIRAGE_Debuggable *self, gint level, gchar *format, ...);
+void mirage_debuggable_debug_messagev (MIRAGE_Debuggable *self, gint level, gchar *format, va_list args);
+
+
+/**********************************************************************\
+ *                        Debug context object                        *
+\**********************************************************************/
 #define MIRAGE_TYPE_DEBUG_CONTEXT            (mirage_debug_context_get_type())
 #define MIRAGE_DEBUG_CONTEXT(obj)            (G_TYPE_CHECK_INSTANCE_CAST((obj), MIRAGE_TYPE_DEBUG_CONTEXT, MIRAGE_DebugContext))
 #define MIRAGE_DEBUG_CONTEXT_CLASS(klass)    (G_TYPE_CHECK_CLASS_CAST((klass), MIRAGE_TYPE_DEBUG_CONTEXT, MIRAGE_DebugContextClass))
@@ -113,10 +158,7 @@ struct _MIRAGE_DebugContextClass
 /* Used by MIRAGE_TYPE_DEBUG_CONTEXT */
 GType mirage_debug_context_get_type (void);
 
-
-/**********************************************************************\
- *                             Public API                             *
-\**********************************************************************/
+/* Public API */
 gboolean mirage_debug_context_set_debug_mask (MIRAGE_DebugContext *self, gint debug_mask, GError **error);
 gboolean mirage_debug_context_get_debug_mask (MIRAGE_DebugContext *self, gint *debug_mask, GError **error);
 
@@ -125,6 +167,7 @@ gboolean mirage_debug_context_get_domain (MIRAGE_DebugContext *self, const gchar
 
 gboolean mirage_debug_context_set_name (MIRAGE_DebugContext *self, const gchar *name, GError **error);
 gboolean mirage_debug_context_get_name (MIRAGE_DebugContext *self, const gchar **name, GError **error);
+
 
 G_END_DECLS
 

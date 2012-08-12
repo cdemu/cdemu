@@ -1,5 +1,5 @@
 /*
- *  libMirage: Debug context object
+ *  libMirage: Debugging facilities
  *  Copyright (C) 2006-2012 Rok Mandeljc
  *
  *  This program is free software; you can redistribute it and/or modify
@@ -24,16 +24,119 @@
 #include "mirage.h"
 
 
+
+/**********************************************************************\
+ *                          Debuggable interface                      *
+\**********************************************************************/
+/**
+ * mirage_debuggable_set_debug_context:
+ * @self: a #MIRAGE_Debuggable
+ * @debug_context: debug context
+ * @error: location to store error, or %NULL
+ *
+ * <para>
+ * Sets object's debug context.
+ * </para>
+ *
+ * Returns: %TRUE on success, %FALSE on failure
+ **/
+gboolean mirage_debuggable_set_debug_context (MIRAGE_Debuggable *self, GObject *debug_context, GError **error)
+{
+    return MIRAGE_DEBUGGABLE_GET_INTERFACE(self)->set_debug_context(self, debug_context, error);
+}
+
+/**
+ * mirage_debuggable_get_debug_context:
+ * @self: a #MIRAGE_Debuggable
+ * @debug_context: location to store debug context, or %NULL
+ * @error: location to store error, or %NULL
+ *
+ * <para>
+ * Retrieves object's debug context. A reference to debug context is stored in
+ * @debug_context; it should be released with g_object_unref() when no longer needed.
+ * </para>
+ *
+ * Returns: %TRUE on success, %FALSE on failure
+ **/
+gboolean mirage_debuggable_get_debug_context (MIRAGE_Debuggable *self, GObject **debug_context, GError **error)
+{
+    return MIRAGE_DEBUGGABLE_GET_INTERFACE(self)->get_debug_context(self, debug_context, error);
+}
+
+/**
+ * mirage_debuggable_debug_messagev:
+ * @self: a #MIRAGE_Debuggable
+ * @level: debug level
+ * @format: message format. See the printf() documentation.
+ * @args: parameters to insert into the format string.
+ *
+ * <para>
+ * Outputs debug message with verbosity level @level, format string @format and
+ * format arguments @args. The message is displayed if object's debug context
+ * has mask that covers @level, or if @level is either %MIRAGE_DEBUG_WARNING or
+ * %MIRAGE_DEBUG_ERROR.
+ * </para>
+ **/
+void mirage_debuggable_debug_messagev (MIRAGE_Debuggable *self, gint level, gchar *format, va_list args)
+{
+    return MIRAGE_DEBUGGABLE_GET_INTERFACE(self)->debug_messagev(self, level, format, args);
+}
+
+/**
+ * mirage_debuggable_debug_message:
+ * @self: a #MIRAGE_Debuggable
+ * @level: debug level
+ * @format: message format. See the printf() documentation.
+ * @...: parameters to insert into the format string.
+ *
+ * <para>
+ * Outputs debug message with verbosity level @level, format string @format and
+ * format arguments @Varargs. The message is displayed if object's debug context
+ * has mask that covers @level, or if @level is either %MIRAGE_DEBUG_WARNING or
+ * %MIRAGE_DEBUG_ERROR.
+ * </para>
+ **/
+void mirage_debuggable_debug_message (MIRAGE_Debuggable *self, gint level, gchar *format, ...)
+{
+    va_list args;
+    va_start(args, format);
+    MIRAGE_DEBUGGABLE_GET_INTERFACE(self)->debug_messagev(self, level, format, args);
+    va_end(args);
+}
+
+GType mirage_debuggable_get_type (void) {
+    static GType iface_type = 0;
+    if (iface_type == 0) {
+        static const GTypeInfo info = {
+            sizeof(MIRAGE_DebuggableInterface),
+            NULL,   /* base_init */
+            NULL,   /* base_finalize */
+            NULL,   /* class_init */
+            NULL,   /* class_finalize */
+            NULL,   /* class_data */
+            0,
+            0,      /* n_preallocs */
+            NULL,   /* instance_init */
+            NULL    /* value_table */
+        };
+
+        iface_type = g_type_register_static(G_TYPE_INTERFACE, "MIRAGE_Debuggable", &info, 0);
+    }
+
+    return iface_type;
+}
+
+
 /**********************************************************************\
  *                          Private structure                         *
 \**********************************************************************/
 #define MIRAGE_DEBUG_CONTEXT_GET_PRIVATE(obj) (G_TYPE_INSTANCE_GET_PRIVATE((obj), MIRAGE_TYPE_DEBUG_CONTEXT, MIRAGE_DebugContextPrivate))
 
 struct _MIRAGE_DebugContextPrivate
-{    
+{
     gchar *name; /* Debug context name... e.g. 'Device 1' */
     gchar *domain; /* Debug context domain... e.g. 'libMirage' */
-    
+
     gint debug_mask; /* Debug mask */
 };
 
@@ -172,7 +275,7 @@ gboolean mirage_debug_context_get_debug_mask (MIRAGE_DebugContext *self, gint *d
 
 
 /**********************************************************************\
- *                             Object init                            * 
+ *                             Object init                            *
 \**********************************************************************/
 G_DEFINE_TYPE(MIRAGE_DebugContext, mirage_debug_context, G_TYPE_OBJECT);
 
@@ -191,7 +294,7 @@ static void mirage_debug_context_finalize (GObject *gobject)
 
     g_free(self->priv->domain);
     g_free(self->priv->name);
-    
+
     /* Chain up to the parent class */
     return G_OBJECT_CLASS(mirage_debug_context_parent_class)->finalize(gobject);
 }

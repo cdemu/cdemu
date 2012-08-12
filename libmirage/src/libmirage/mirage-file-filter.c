@@ -34,6 +34,8 @@
 struct _MIRAGE_FileFilterPrivate
 {
     MIRAGE_FileFilterInfo *file_filter_info;
+
+    GObject *debug_context;
 };
 
 
@@ -165,8 +167,6 @@ static gboolean mirage_file_filter_truncate_fn (GSeekable *_self G_GNUC_UNUSED, 
 }
 
 
-
-
 /**********************************************************************\
  *                GInputStream methods implementations                *
 \**********************************************************************/
@@ -178,16 +178,103 @@ static gssize mirage_file_filter_read (GInputStream *_self, void *buffer, gsize 
 
 
 /**********************************************************************\
+ *              MIRAGE_Debuggable methods implementation              *
+\**********************************************************************/
+static gboolean mirage_file_filter_set_debug_context (MIRAGE_Debuggable *_self, GObject *debug_context, GError **error G_GNUC_UNUSED)
+{
+    MIRAGE_FileFilter *self = MIRAGE_FILE_FILTER(_self);
+
+    if (debug_context == self->priv->debug_context) {
+        /* Don't do anything if we're trying to set the same context */
+        return TRUE;
+    }
+
+    /* If debug context is already set, free it */
+    if (self->priv->debug_context) {
+        g_object_unref(self->priv->debug_context);
+    }
+
+    /* Set debug context and ref it */
+    self->priv->debug_context = debug_context;
+    g_object_ref(self->priv->debug_context);
+
+    return TRUE;
+}
+
+static gboolean mirage_file_filter_get_debug_context (MIRAGE_Debuggable *_self, GObject **debug_context, GError **error)
+{
+    MIRAGE_FileFilter *self = MIRAGE_FILE_FILTER(_self);
+    MIRAGE_CHECK_ARG(debug_context);
+
+    /* Make sure we have debug context set */
+    if (!self->priv->debug_context) {
+        mirage_error(MIRAGE_E_NODEBUGCONTEXT, error);
+        return FALSE;
+    }
+
+    if (debug_context) {
+        /* Return debug context and ref it */
+        *debug_context = self->priv->debug_context;
+        g_object_ref(*debug_context);
+    }
+
+    return TRUE;
+}
+
+static void mirage_file_filter_debug_messagev (MIRAGE_Debuggable *_self, gint level, gchar *format, va_list args)
+{
+    MIRAGE_FileFilter *self = MIRAGE_FILE_FILTER(_self);
+
+    gint debug_mask;
+    const gchar *name;
+    const gchar *domain;
+    gchar *new_format;
+
+    /* Make sure we have debug context set */
+    if (!self->priv->debug_context || !MIRAGE_IS_DEBUG_CONTEXT(self->priv->debug_context)) {
+        return;
+    }
+
+    /* Get debug mask, domain and name */
+    mirage_debug_context_get_debug_mask(MIRAGE_DEBUG_CONTEXT(self->priv->debug_context), &debug_mask, NULL);
+    mirage_debug_context_get_domain(MIRAGE_DEBUG_CONTEXT(self->priv->debug_context), &domain, NULL);
+    mirage_debug_context_get_name(MIRAGE_DEBUG_CONTEXT(self->priv->debug_context), &name, NULL);
+
+    /* Insert name in case we have it */
+    if (name) {
+        new_format = g_strdup_printf("%s: %s", name, format);
+    } else {
+        new_format = g_strdup(format);
+    }
+
+    if (level == MIRAGE_DEBUG_ERROR) {
+        g_logv(domain, G_LOG_LEVEL_ERROR, new_format, args);
+    } else if (level == MIRAGE_DEBUG_WARNING) {
+        g_logv(domain, G_LOG_LEVEL_WARNING, new_format, args);
+    } else {
+        if (debug_mask & level) {
+            g_logv(domain, G_LOG_LEVEL_DEBUG, new_format, args);
+        }
+    }
+
+    g_free(new_format);
+}
+
+
+/**********************************************************************\
  *                             Object init                            *
 \**********************************************************************/
 static void mirage_file_filter_gseekable_init (GSeekableIface *iface);
+static void mirage_file_filter_debuggable_init (MIRAGE_DebuggableInterface *iface);
 
 G_DEFINE_TYPE_EXTENDED(MIRAGE_FileFilter,
                        mirage_file_filter,
                        G_TYPE_FILTER_INPUT_STREAM,
                        0,
                        G_IMPLEMENT_INTERFACE(G_TYPE_SEEKABLE,
-                                             mirage_file_filter_gseekable_init));
+                                             mirage_file_filter_gseekable_init);
+                       G_IMPLEMENT_INTERFACE(MIRAGE_TYPE_DEBUGGABLE,
+                                             mirage_file_filter_debuggable_init));
 
 
 static void mirage_file_filter_init (MIRAGE_FileFilter *self)
@@ -195,6 +282,21 @@ static void mirage_file_filter_init (MIRAGE_FileFilter *self)
     self->priv = MIRAGE_FILE_FILTER_GET_PRIVATE(self);
 
     self->priv->file_filter_info = NULL;
+    self->priv->debug_context = NULL;
+}
+
+static void mirage_file_filter_dispose (GObject *gobject)
+{
+    MIRAGE_FileFilter *self = MIRAGE_FILE_FILTER(gobject);
+
+    /* Unref debug context (if we have it) */
+    if (self->priv->debug_context) {
+        g_object_unref(self->priv->debug_context);
+        self->priv->debug_context = NULL;
+    }
+
+    /* Chain up to the parent class */
+    return G_OBJECT_CLASS(mirage_file_filter_parent_class)->dispose(gobject);
 }
 
 static void mirage_file_filter_finalize (GObject *gobject)
@@ -213,6 +315,7 @@ static void mirage_file_filter_class_init (MIRAGE_FileFilterClass *klass)
     GObjectClass *gobject_class = G_OBJECT_CLASS(klass);
     GInputStreamClass *ginputstream_class = G_INPUT_STREAM_CLASS(klass);
 
+    gobject_class->dispose = mirage_file_filter_dispose;
     gobject_class->finalize = mirage_file_filter_finalize;
 
     ginputstream_class->read_fn = mirage_file_filter_read;
@@ -228,4 +331,11 @@ static void mirage_file_filter_gseekable_init (GSeekableIface *iface)
     iface->seek = mirage_file_filter_seek;
     iface->can_truncate = mirage_file_filter_can_truncate;
     iface->truncate_fn = mirage_file_filter_truncate_fn;
+}
+
+static void mirage_file_filter_debuggable_init (MIRAGE_DebuggableInterface *iface)
+{
+    iface->set_debug_context = mirage_file_filter_set_debug_context;
+    iface->get_debug_context = mirage_file_filter_get_debug_context;
+    iface->debug_messagev = mirage_file_filter_debug_messagev;
 }
