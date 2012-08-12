@@ -63,7 +63,7 @@ gboolean cdemud_device_initialize (CDEMUD_Device *self, gint number, gchar *ctl_
     debug_context = g_object_new(MIRAGE_TYPE_DEBUG_CONTEXT, NULL);
     mirage_debug_context_set_name(MIRAGE_DEBUG_CONTEXT(debug_context), self->priv->device_name, NULL);
     mirage_debug_context_set_domain(MIRAGE_DEBUG_CONTEXT(debug_context), "CDEMUD", NULL);
-    mirage_object_set_debug_context(MIRAGE_OBJECT(self), debug_context, NULL);
+    mirage_debuggable_set_debug_context(MIRAGE_DEBUGGABLE(self), debug_context, NULL);
     g_object_unref(debug_context);
 
     /* Open control device and set up I/O channel */
@@ -179,12 +179,12 @@ gboolean cdemud_device_get_status (CDEMUD_Device *self, gboolean *loaded, gchar 
 gboolean cdemud_device_get_option (CDEMUD_Device *self, gchar *option_name, GVariant **option_value, GError **error)
 {
     gboolean succeeded = TRUE;
-    
+
     *option_value = NULL;
 
     /* Lock */
     g_mutex_lock(self->priv->device_mutex);
-    
+
     /* Get option */
     if (!g_strcmp0(option_name, "dpm-emulation")) {
         /* *** dpm-emulation *** */
@@ -198,12 +198,12 @@ gboolean cdemud_device_get_option (CDEMUD_Device *self, gchar *option_name, GVar
     } else if (!g_strcmp0(option_name, "daemon-debug-mask")) {
         /* *** daemon-debug-mask *** */
         GObject *context;
-        succeeded = mirage_object_get_debug_context(MIRAGE_OBJECT(self), &context, error);
+        succeeded = mirage_debuggable_get_debug_context(MIRAGE_DEBUGGABLE(self), &context, error);
         if (succeeded) {
             gint mask;
             succeeded = mirage_debug_context_get_debug_mask(MIRAGE_DEBUG_CONTEXT(context), &mask, error);
             g_object_unref(context);
-            
+
             *option_value = g_variant_new("i", mask);
         }
     } else if (!g_strcmp0(option_name, "library-debug-mask")) {
@@ -219,7 +219,7 @@ gboolean cdemud_device_get_option (CDEMUD_Device *self, gchar *option_name, GVar
         cdemud_error(CDEMUD_E_INVALIDARG, error);
         succeeded = FALSE;
     }
-    
+
     /* Unlock */
     g_mutex_unlock(self->priv->device_mutex);
 
@@ -232,7 +232,7 @@ gboolean cdemud_device_set_option (CDEMUD_Device *self, gchar *option_name, GVar
 
     /* Lock */
     g_mutex_lock(self->priv->device_mutex);
-    
+
     /* Get option */
     if (!g_strcmp0(option_name, "dpm-emulation")) {
         /* *** dpm-emulation *** */
@@ -258,9 +258,9 @@ gboolean cdemud_device_set_option (CDEMUD_Device *self, gchar *option_name, GVar
         } else {
             gchar *vendor_id, *product_id, *revision, *vendor_specific;
             g_variant_get(option_value, "(ssss)", &vendor_id, &product_id, &revision, &vendor_specific);
-            
+
             cdemud_device_set_device_id(self, vendor_id, product_id, revision, vendor_specific);
-            
+
             g_free(vendor_id);
             g_free(product_id);
             g_free(revision);
@@ -273,7 +273,7 @@ gboolean cdemud_device_set_option (CDEMUD_Device *self, gchar *option_name, GVar
             succeeded = FALSE;
         } else {
             GObject *context;
-            succeeded = mirage_object_get_debug_context(MIRAGE_OBJECT(self), &context, error);
+            succeeded = mirage_debuggable_get_debug_context(MIRAGE_DEBUGGABLE(self), &context, error);
             if (succeeded) {
                 gint mask;
                 g_variant_get(option_value, "i", &mask);
@@ -294,14 +294,14 @@ gboolean cdemud_device_set_option (CDEMUD_Device *self, gchar *option_name, GVar
     } else {
         /* Option not found */
         CDEMUD_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: option '%s' not found; client bug?\n", __debug__, option_name);
-        
+
         cdemud_error(CDEMUD_E_INVALIDARG, error);
         succeeded = FALSE;
     }
-    
+
     /* Unlock */
     g_mutex_unlock(self->priv->device_mutex);
-    
+
     /* Signal that option has been changed */
     if (succeeded) {
         g_signal_emit_by_name(self, "option-changed", option_name, NULL);
@@ -312,7 +312,7 @@ gboolean cdemud_device_set_option (CDEMUD_Device *self, gchar *option_name, GVar
 
 
 /**********************************************************************\
- *                             Object init                            * 
+ *                             Object init                            *
 \**********************************************************************/
 G_DEFINE_TYPE(CDEMUD_Device, cdemud_device, MIRAGE_TYPE_OBJECT);
 
@@ -383,10 +383,10 @@ static void cdemud_device_dispose (GObject *gobject)
 static void cdemud_device_finalize (GObject *gobject)
 {
     CDEMUD_Device *self = CDEMUD_DEVICE(gobject);
-    
+
     /* Free mode pages */
     cdemud_device_mode_pages_cleanup(self);
-    
+
     /* Free features */
     cdemud_device_features_cleanup(self);
 
@@ -408,7 +408,7 @@ static void cdemud_device_finalize (GObject *gobject)
 
     /* Free mutex */
     g_mutex_free(self->priv->device_mutex);
-    
+
     /* Chain up to the parent class */
     return G_OBJECT_CLASS(cdemud_device_parent_class)->finalize(gobject);
 }

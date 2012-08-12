@@ -1,5 +1,5 @@
 /*
- *  CDEmuD: Debugging
+ *  CDEmuD: Debugging facilities
  *  Copyright (C) 2006-2012 Rok Mandeljc
  *
  *  This program is free software; you can redistribute it and/or modify
@@ -36,9 +36,7 @@ typedef enum
 
 /* Debug macro */
 #define CDEMUD_DEBUG(obj, lvl, msg...) { \
-    mirage_object_debug_message(MIRAGE_OBJECT(obj), lvl, msg);  \
+    mirage_debuggable_debug_message(MIRAGE_DEBUGGABLE(obj), lvl, msg);  \
 }
-
-//#define CDEMUD_DEBUG_ON(dev, lvl) (CDEMUD_DEVICE_GET_PRIVATE(dev)->debug_mask & lvl)
 
 #endif /* __CDEMUD_DEBUG_H__ */

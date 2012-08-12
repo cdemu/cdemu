@@ -89,7 +89,7 @@ gboolean cdemud_daemon_initialize_and_start (CDEMUD_Daemon *self, gint num_devic
     debug_context = g_object_new(MIRAGE_TYPE_DEBUG_CONTEXT, NULL);
     mirage_debug_context_set_name(MIRAGE_DEBUG_CONTEXT(debug_context), "cdemud", NULL);
     mirage_debug_context_set_domain(MIRAGE_DEBUG_CONTEXT(debug_context), "CDEMUD", NULL);
-    mirage_object_set_debug_context(MIRAGE_OBJECT(self), debug_context, NULL);
+    mirage_debuggable_set_debug_context(MIRAGE_DEBUGGABLE(self), debug_context, NULL);
     g_object_unref(debug_context);
 
     /* Control device */
@@ -145,7 +145,7 @@ gboolean cdemud_daemon_initialize_and_start (CDEMUD_Daemon *self, gint num_devic
 
 
     /* Register on D-Bus bus */
-    cdemud_daemon_dbus_register_on_bus(self, bus_type);    
+    cdemud_daemon_dbus_register_on_bus(self, bus_type);
 
     /* Run the main loop */
     g_main_loop_run(self->priv->main_loop);
@@ -181,7 +181,7 @@ GObject *cdemud_daemon_get_device (CDEMUD_Daemon *self, gint device_number, GErr
 
 
 /**********************************************************************\
- *                             Object init                            * 
+ *                             Object init                            *
 \**********************************************************************/
 G_DEFINE_TYPE(CDEMUD_Daemon, cdemud_daemon, MIRAGE_TYPE_OBJECT);
 
@@ -192,7 +192,7 @@ static void cdemud_daemon_init (CDEMUD_Daemon *self)
     self->priv->main_loop = NULL;
     self->priv->list_of_devices = NULL;
     self->priv->ctl_device = NULL;
-    
+
     /* Set version string */
     self->priv->version = g_strdup(PACKAGE_VERSION);
 
@@ -205,10 +205,10 @@ static void cdemud_daemon_dispose (GObject *gobject)
 {
     CDEMUD_Daemon *self = CDEMUD_DAEMON(gobject);
     GList *entry = NULL;
- 
+
     /* Unref main loop */
     g_main_loop_unref(self->priv->main_loop);
-    
+
     /* Unref all devices */
     G_LIST_FOR_EACH(entry, self->priv->list_of_devices) {
         GObject *dev = entry->data;
