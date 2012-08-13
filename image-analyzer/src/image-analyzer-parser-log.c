@@ -34,7 +34,7 @@
 void image_analyzer_parser_log_clear_log (IMAGE_ANALYZER_ParserLog *self)
 {
     GtkTextBuffer *buffer;
-    
+
     buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(self->priv->text_view));
     gtk_text_buffer_set_text(buffer, "", -1);
 }
@@ -43,10 +43,10 @@ void image_analyzer_parser_log_append_to_log (IMAGE_ANALYZER_ParserLog *self, gc
 {
     GtkTextBuffer *buffer;
     GtkTextIter iter;
-    
+
     buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(self->priv->text_view));
     gtk_text_buffer_get_end_iter(buffer, &iter);
-    
+
     if (message) {
         gtk_text_buffer_insert(buffer, &iter, message, -1);
     }
@@ -54,24 +54,28 @@ void image_analyzer_parser_log_append_to_log (IMAGE_ANALYZER_ParserLog *self, gc
 
 
 /**********************************************************************\
- *                              GUI setup                             * 
+ *                              GUI setup                             *
 \**********************************************************************/
 static void setup_gui (IMAGE_ANALYZER_ParserLog *self)
 {
     GtkWidget *vbox, *scrolledwindow;
-    
+
     gtk_window_set_title(GTK_WINDOW(self), "Parser log");
     gtk_window_set_default_size(GTK_WINDOW(self), 600, 400);
     gtk_container_set_border_width(GTK_CONTAINER(self), 5);
 
     /* VBox */
+#ifdef GTK3_ENABLED
+    vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
+#else
     vbox = gtk_vbox_new(FALSE, 5);
+#endif
     gtk_container_add(GTK_CONTAINER(self), vbox);
-    
+
     /* Scrolled window */
     scrolledwindow = gtk_scrolled_window_new(NULL, NULL);
     gtk_box_pack_start(GTK_BOX(vbox), scrolledwindow, TRUE, TRUE, 0);
-    
+
     /* Text */
     self->priv->text_view = gtk_text_view_new();
     gtk_text_view_set_editable(GTK_TEXT_VIEW(self->priv->text_view), FALSE);
@@ -82,7 +86,7 @@ static void setup_gui (IMAGE_ANALYZER_ParserLog *self)
 
 
 /**********************************************************************\
- *                             Object init                            * 
+ *                             Object init                            *
 \**********************************************************************/
 G_DEFINE_TYPE(IMAGE_ANALYZER_ParserLog, image_analyzer_parser_log, GTK_TYPE_WINDOW);
 
