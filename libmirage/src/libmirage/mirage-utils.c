@@ -24,10 +24,68 @@
 #include "mirage.h"
 
 
+/* Helper for mirage_find_data_file() */
+static gchar *find_data_file (const gchar *path, const gchar *filename)
+{
+    const gchar *test_filename;
+    gchar *ret_filename;
+    GDir *dir;
+    gint filename_len, test_filename_len, ret_filename_len;
+
+    /* Try combining path and basename first */
+    ret_filename = g_build_filename(path, filename, NULL);
+    if (g_file_test(ret_filename, G_FILE_TEST_IS_REGULAR)) {
+        return ret_filename;
+    }
+    g_free(ret_filename);
+
+    /* Do case-insensitive search among the files found in path. Match
+       only against beginning of the hypothesized filename, so that we
+       also get results with additional suffices. E.g., if we search
+       for file.dat, accept file.dat.gz as well. But always return the
+       shortest match. */
+    dir = g_dir_open(path, 0, NULL);
+    if (!dir) {
+        return NULL;
+    }
+
+    /* Store length of input filename */
+    filename_len = strlen(filename);
+
+    ret_filename = NULL;
+    ret_filename_len = G_MAXINT;
+    while ((test_filename = g_dir_read_name(dir))) {
+        /* Make sure beginning matches */
+        if (mirage_helper_strncasecmp(test_filename, filename, filename_len)) {
+            continue;
+        }
+
+        /* Now check if the name is shorter than what we already have */
+        test_filename_len = strlen(test_filename);
+
+        if (test_filename_len < ret_filename_len) {
+            /* Make sure file is valid */
+            gchar *full_filename = g_build_filename(path, test_filename, NULL);
+
+            if (g_file_test(full_filename, G_FILE_TEST_IS_REGULAR)) {
+                g_free(ret_filename);
+                ret_filename = full_filename;
+                ret_filename_len = test_filename_len;
+            } else {
+                g_free(full_filename);
+            }
+        }
+    }
+
+    g_dir_close(dir);
+
+    return ret_filename;
+}
+
 /**
  * mirage_helper_find_data_file:
  * @filename: declared filename
- * @path: path where to look for file (can be a filename)
+ * @path: path where to look for file (can be a filename), or %NULL
  *
  * <para>
  * Attempts to find a file with filename @filename and path @path. @filename can
@@ -35,13 +93,24 @@
  * this case, it must end with '/') or a filename (i.e. of file descriptor).
  * </para>
  * <para>If @filename is an absolute path, its existence is first checked. If it
- * doesn't exist, @path's dirname is combined with @filename's basename, and the
- * combination's existence is checked. If that fails as well, then directory,
- * specified by @path's dirname is opened and its content is case-insensitively
- * compared to @filename's basename. This way, all possible case variations are
- * taken into account (i.e. file.iso, FILE.ISO, FiLe.IsO, etc.). If at any of
- * above steps the result is positive, the resulting filename is returned as a
- * newly allocated string.
+ * does not exist, search (see below) is performed in @filename's dirname. If
+ * still no match is found and @path is not %NULL, @path's dirname is combined
+ * with @filename's basename, and the combination's existence is checked. If
+ * that fails as well, search (see below) is performed in @path's dirname.
+ * </para>
+ * <para>
+ * Searching in the directory is performed as follows. Directory is opened
+ * and its content is case-insensitively compared to @filename's basename.
+ * All filenames whose beginning match @filename are considered, and the
+ * shortest one is returned. This way, all possible case variations
+ * (i.e. file.iso, FILE.ISO, FiLe.IsO, etc.) are taken into account.
+ * </para>
+ * <para>
+ * This function can return a filename with additional suffices, but only if
+ * a file without those extra suffices does not exist. E.g., if search is
+ * done for 'data.img', and only 'data.img.gz' exists, it will be returned.
+ * However, if both 'data.img' and 'data.img.gz' exist, the former will be
+ * returned.
  * </para>
  * <para>
  * The returned string should be freed when no longer needed.
@@ -52,55 +121,43 @@
 gchar *mirage_helper_find_data_file (const gchar *filename, const gchar *path)
 {
     gchar *ret_filename = NULL;
-    gchar *dirname = NULL;
-    gchar *basename = NULL;
-    GDir *dir = NULL;
+    gchar *dirname;
+    gchar *basename;
+
+    /* We'll need basename either way */
+    basename = g_path_get_basename(filename);
 
     /* If filename is an absolute path, try using it first */
     if (g_path_is_absolute(filename)) {
-        if (g_file_test(filename, G_FILE_TEST_IS_REGULAR)) {
-            ret_filename = g_strdup(filename);
-            goto end;
+        /* Directory name from filename */
+        dirname = g_path_get_dirname(filename);
+
+        /* Find the filename using our helper */
+        ret_filename = find_data_file(dirname, basename);
+
+        g_free(dirname);
+
+        /* If found, return */
+        if (ret_filename) {
+            g_free(basename);
+            return ret_filename;
         }
     }
 
-    /* Get basename from filename and dirname from path */
-    basename = g_path_get_basename(filename);
-    dirname = g_path_get_dirname(path);
+    /* If path is provided, try using it */
+    if (path) {
+        /* Directory name from provided path */
+        dirname = g_path_get_dirname(path);
 
-    /* Try combination of dirname and basename */
-    ret_filename = g_build_filename(dirname, basename, NULL);
-    if (g_file_test(ret_filename, G_FILE_TEST_IS_REGULAR)) {
-        goto end;
+        /* Find the filename using our helper */
+        ret_filename = find_data_file(dirname, basename);
+
+        g_free(dirname);
     }
-    g_free(ret_filename);
 
-    /* Do case-insensitive search */
-    dir = g_dir_open(dirname, 0, NULL);
-    if (dir) {
-        const gchar *cur_filename = NULL;
-
-        /* Read name of every file in dir, and compare the names ignoring case */
-        while ((cur_filename = g_dir_read_name(dir))) {
-            if (!mirage_helper_strcasecmp(cur_filename, basename)) {
-                ret_filename = g_build_filename(dirname, cur_filename, NULL);
-                if (g_file_test(ret_filename, G_FILE_TEST_IS_REGULAR)) {
-                    g_dir_close(dir);
-                    goto end;
-                }
-                g_free(ret_filename);
-            }
-        }
-    }
-    g_dir_close(dir);
-
-    /* Search failed */
-    ret_filename = NULL;
-
-end:
-    g_free(dirname);
     g_free(basename);
 
+    /* Either we found it, or we return NULL */
     return ret_filename;
 }
 
