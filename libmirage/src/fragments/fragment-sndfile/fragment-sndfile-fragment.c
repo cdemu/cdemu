@@ -130,7 +130,7 @@ static gboolean mirage_fragment_sndfile_set_file (MIRAGE_FragIface_Audio *_self,
     }
 
     /* Open stream */
-    self->priv->stream = libmirage_create_file_stream(filename, error);
+    self->priv->stream = libmirage_create_file_stream(filename, G_OBJECT(self), error);
     if (!self->priv->stream) {
         return FALSE;
     }
@@ -161,28 +161,25 @@ static gboolean mirage_fragment_sndfile_set_file (MIRAGE_FragIface_Audio *_self,
     return TRUE;
 }
 
-static gboolean mirage_fragment_sndfile_get_file (MIRAGE_FragIface_Audio *_self, const gchar **filename, GError **error G_GNUC_UNUSED)
+static const gchar *mirage_fragment_sndfile_get_file (MIRAGE_FragIface_Audio *_self)
 {
     MIRAGE_Fragment_SNDFILE *self = MIRAGE_FRAGMENT_SNDFILE(_self);
     /* Return filename */
-    *filename = self->priv->filename;
-    return TRUE;
+    return self->priv->filename;
 }
 
-static gboolean mirage_fragment_sndfile_set_offset (MIRAGE_FragIface_Audio *_self, gint offset, GError **error G_GNUC_UNUSED)
+static void mirage_fragment_sndfile_set_offset (MIRAGE_FragIface_Audio *_self, gint offset)
 {
     MIRAGE_Fragment_SNDFILE *self = MIRAGE_FRAGMENT_SNDFILE(_self);
     /* Set offset */
     self->priv->offset = offset*SNDFILE_FRAMES_PER_SECTOR;
-    return TRUE;
 }
 
-static gboolean mirage_fragment_sndfile_get_offset (MIRAGE_FragIface_Audio *_self, gint *offset, GError **error G_GNUC_UNUSED)
+static gint mirage_fragment_sndfile_get_offset (MIRAGE_FragIface_Audio *_self)
 {
     MIRAGE_Fragment_SNDFILE *self = MIRAGE_FRAGMENT_SNDFILE(_self);
     /* Return */
-    *offset = self->priv->offset/SNDFILE_FRAMES_PER_SECTOR;
-    return TRUE;
+    return self->priv->offset/SNDFILE_FRAMES_PER_SECTOR;
 }
 
 
@@ -226,7 +223,8 @@ static gboolean mirage_fragment_sndfile_use_the_rest_of_file (MIRAGE_Fragment *_
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_FRAGMENT, "%s: using the rest of file (%d sectors)\n", __debug__, fragment_len);
 
     /* Set the length */
-    return mirage_fragment_set_length(MIRAGE_FRAGMENT(self), fragment_len, error);
+    mirage_fragment_set_length(MIRAGE_FRAGMENT(self), fragment_len);
+    return TRUE;
 }
 
 static gboolean mirage_fragment_sndfile_read_main_data (MIRAGE_Fragment *_self, gint address, guint8 *buf, gint *length, GError **error)

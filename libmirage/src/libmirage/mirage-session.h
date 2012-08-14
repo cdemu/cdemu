@@ -16,7 +16,7 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
- 
+
 #ifndef __MIRAGE_SESSION_H__
 #define __MIRAGE_SESSION_H__
 
@@ -82,29 +82,29 @@ GType mirage_session_get_type (void);
  *                             Public API                             *
 \**********************************************************************/
 /* Session type */
-gboolean mirage_session_set_session_type (MIRAGE_Session *self, gint type, GError **error);
-gboolean mirage_session_get_session_type (MIRAGE_Session *self, gint *type, GError **error);
+void mirage_session_set_session_type (MIRAGE_Session *self, gint type);
+gint mirage_session_get_session_type (MIRAGE_Session *self);
 
 /* Layout */
-gboolean mirage_session_layout_set_session_number (MIRAGE_Session *self, gint number, GError **error);
-gboolean mirage_session_layout_get_session_number (MIRAGE_Session *self, gint *number, GError **error);
-gboolean mirage_session_layout_set_first_track (MIRAGE_Session *self, gint first_track, GError **error);
-gboolean mirage_session_layout_get_first_track (MIRAGE_Session *self, gint *first_track, GError **error);
-gboolean mirage_session_layout_set_start_sector (MIRAGE_Session *self, gint start_sector, GError **error);
-gboolean mirage_session_layout_get_start_sector (MIRAGE_Session *self, gint *start_sector, GError **error);
-gboolean mirage_session_layout_get_length (MIRAGE_Session *self, gint *length, GError **error);
+void mirage_session_layout_set_session_number (MIRAGE_Session *self, gint number);
+gint mirage_session_layout_get_session_number (MIRAGE_Session *self);
+void mirage_session_layout_set_first_track (MIRAGE_Session *self, gint first_track);
+gint mirage_session_layout_get_first_track (MIRAGE_Session *self);
+void mirage_session_layout_set_start_sector (MIRAGE_Session *self, gint start_sector);
+gint mirage_session_layout_get_start_sector (MIRAGE_Session *self);
+gint mirage_session_layout_get_length (MIRAGE_Session *self);
 
 /* Convenience functions for setting/getting length of session's lead-out */
-gboolean mirage_session_set_leadout_length (MIRAGE_Session *self, gint length, GError **error);
-gboolean mirage_session_get_leadout_length (MIRAGE_Session *self, gint *length, GError **error);
+void mirage_session_set_leadout_length (MIRAGE_Session *self, gint length);
+gint mirage_session_get_leadout_length (MIRAGE_Session *self);
 
 /* Tracks handling */
-gboolean mirage_session_get_number_of_tracks (MIRAGE_Session *self, gint *number_of_tracks, GError **error);
+gint mirage_session_get_number_of_tracks (MIRAGE_Session *self);
 gboolean mirage_session_add_track_by_index (MIRAGE_Session *self, gint index, GObject **track, GError **error);
 gboolean mirage_session_add_track_by_number (MIRAGE_Session *self, gint number, GObject **track, GError **error);
 gboolean mirage_session_remove_track_by_index (MIRAGE_Session *self, gint index, GError **error);
 gboolean mirage_session_remove_track_by_number (MIRAGE_Session *self, gint number, GError **error);
-gboolean mirage_session_remove_track_by_object (MIRAGE_Session *self, GObject *track, GError **error);
+void mirage_session_remove_track_by_object (MIRAGE_Session *self, GObject *track);
 gboolean mirage_session_get_track_by_index (MIRAGE_Session *self, gint index, GObject **track, GError **error);
 gboolean mirage_session_get_track_by_number (MIRAGE_Session *self, gint number, GObject **track, GError **error);
 gboolean mirage_session_get_track_by_address (MIRAGE_Session *self, gint address, GObject **track, GError **error);
@@ -113,11 +113,11 @@ gboolean mirage_session_get_track_before (MIRAGE_Session *self, GObject *cur_tra
 gboolean mirage_session_get_track_after (MIRAGE_Session *self, GObject *cur_track, GObject **next_track, GError **error);
 
 /* Languages (CD-Text) handling */
-gboolean mirage_session_get_number_of_languages (MIRAGE_Session *self, gint *number_of_languages, GError **error);
+gint mirage_session_get_number_of_languages (MIRAGE_Session *self);
 gboolean mirage_session_add_language (MIRAGE_Session *self, gint langcode, GObject **language, GError **error);
 gboolean mirage_session_remove_language_by_index (MIRAGE_Session *self, gint index, GError **error);
 gboolean mirage_session_remove_language_by_code (MIRAGE_Session *self, gint langcode, GError **error);
-gboolean mirage_session_remove_language_by_object (MIRAGE_Session *self, GObject *language, GError **error);
+void mirage_session_remove_language_by_object (MIRAGE_Session *self, GObject *language);
 gboolean mirage_session_get_language_by_index (MIRAGE_Session *self, gint index, GObject **language, GError **error);
 gboolean mirage_session_get_language_by_code (MIRAGE_Session *self, gint langcode, GObject **language, GError **error);
 gboolean mirage_session_for_each_language (MIRAGE_Session *self, MIRAGE_CallbackFunction func, gpointer user_data, GError **error);

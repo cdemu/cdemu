@@ -54,7 +54,7 @@ static const MIRAGE_DebugMask dbg_masks[] = {
 
 /**
  * libmirage_init:
- * @error: location to store error, or %NULL
+ * @error: (out) (allow-none): location to store error, or %NULL
  *
  * <para>
  * Initializes libMirage library. It should be called before any other of
@@ -126,7 +126,7 @@ gboolean libmirage_init (GError **error)
 
 /**
  * libmirage_shutdown:
- * @error: location to store error, or %NULL
+ * @error: (out) (allow-none): location to store error, or %NULL
  *
  * <para>
  * Shuts down libMirage library. It should be called when libMirage is no longer
@@ -156,9 +156,9 @@ gboolean libmirage_shutdown (GError **error)
 
 /**
  * libmirage_set_password_function:
- * @func: a password function pointer
- * @user_data: pointer to user data to be passed to the password function
- * @error: location to store error, or %NULL
+ * @func: (in) (closure closure): a password function pointer
+ * @user_data: (in) (closure): pointer to user data to be passed to the password function
+ * @error: (in) (allow-none): location to store error, or %NULL
  *
  * <para>
  * Sets the password function to libMirage. The function is used by parsers
@@ -189,14 +189,14 @@ gboolean libmirage_set_password_function (MIRAGE_PasswordFunction func, gpointer
 
 /**
  * libmirage_obtain_password:
- * @error: location to store error, or %NULL
+ * @error: (out) (allow-none): location to store error, or %NULL
  *
  * <para>
  * Obtains password string, using the #MIRAGE_PasswordFunction callback that was
  * provided via libmirage_set_password_function().
  * </para>
  *
- * Returns: password string on success, %NULL on failure. The string should be
+ * Returns: (transfer full): password string on success, %NULL on failure. The string should be
  * freed with g_free() when no longer needed.
  **/
 gchar *libmirage_obtain_password (GError **error)
@@ -227,10 +227,10 @@ gchar *libmirage_obtain_password (GError **error)
 
 /**
  * libmirage_create_disc:
- * @filenames: filename(s)
- * @debug_context: debug context to be attached to disc object, or %NULL
- * @params: parser parameters, or %NULL
- * @error: location to store error, or %NULL
+ * @filenames: (in) (array zero-terminated=1): filename(s)
+ * @debug_context: (in) (allow-none): debug context to be attached to disc object, or %NULL
+ * @params: (in) (allow-none): parser parameters, or %NULL
+ * @error: (out) (allow-none): location to store error, or %NULL
  *
  * <para>
  * Creates a #MIRAGE_Disc object representing image stored in @filenames. @filenames
@@ -278,30 +278,25 @@ GObject *libmirage_create_disc (gchar **filenames, GObject *debug_context, GHash
     /* Go over all parsers */
     for (i = 0; i < libmirage.num_parsers; i++) {
         GError *local_error = NULL;
-        gboolean succeeded;
         GObject *parser;
 
         /* Create parser object */
         parser = g_object_new(libmirage.parsers[i], NULL);
 
-        /* If provided, attach the debug context to parser */
-        if (debug_context) {
-            mirage_debuggable_set_debug_context(MIRAGE_DEBUGGABLE(parser), debug_context, NULL);
-        }
+        /* Attach the debug context to parser */
+        mirage_debuggable_set_debug_context(MIRAGE_DEBUGGABLE(parser), debug_context);
 
         /* Pass the parameters to parser */
-        if (params) {
-            mirage_parser_set_params(MIRAGE_PARSER(parser), params, NULL);
-        }
+        mirage_parser_set_params(MIRAGE_PARSER(parser), params);
 
         /* Try loading image */
-        succeeded = mirage_parser_load_image(MIRAGE_PARSER(parser), filenames, &disc, &local_error);
+        disc = mirage_parser_load_image(MIRAGE_PARSER(parser), filenames, &local_error);
 
         /* Free parser */
         g_object_unref(parser);
 
         /* If loading succeeded, break the loop */
-        if (succeeded) {
+        if (disc) {
             return disc;
         } else {
             /* MIRAGE_E_CANTHANDLE is the only acceptable error here; anything
@@ -324,9 +319,9 @@ GObject *libmirage_create_disc (gchar **filenames, GObject *debug_context, GHash
 
 /**
  * libmirage_create_fragment:
- * @fragment_interface: interface that fragment should implement
- * @filename: filename of data file that fragment should be able to handle
- * @error: location to store error, or %NULL
+ * @fragment_interface: (in): interface that fragment should implement
+ * @filename: (in): filename of data file that fragment should be able to handle
+ * @error: (out) (allow-none): location to store error, or %NULL
  *
  * <para>
  * Creates a #MIRAGE_Fragment implementation that implements interface specified
@@ -380,12 +375,19 @@ GObject *libmirage_create_fragment (GType fragment_interface, const gchar *filen
 
 /**
  * libmirage_create_file_stream:
- * @filename: filename to create stream on
- * @error: location to store error, or %NULL
+ * @filename: (in): filename to create stream on
+ * @debug_context: (in) (allow-none): debug context or debuggable object to set to file stream, or %NULL
+ * @error: (out) (allow-none): location to store error, or %NULL
  *
  * <para>
  * Opens a file pointed to by @filename and creates a chain of file filters
- * on top of it.
+ * on top of it. If provided, @debug_context is set to the file stream.
+ * </para>
+ *
+ * <para>
+ * If @debug_context is a #MIRAGE_DebugObject, it is set to the file stream's
+ * #MIRAGE_Debuggable interface. If @debug is an object implementing #MIRAGE_Debuggable
+ * interface, then its debug context is retrieved and set to the file stream.
  * </para>
  *
  * Returns: on success, an object inheriting #GFilterStream (and therefore
@@ -394,7 +396,7 @@ GObject *libmirage_create_fragment (GType fragment_interface, const gchar *filen
  * The reference to the object should be released using g_object_unref()
  * when no longer needed.
  **/
-GObject *libmirage_create_file_stream (const gchar *filename, GError **error)
+GObject *libmirage_create_file_stream (const gchar *filename, GObject *debug_context, GError **error)
 {
     GObject *stream;
     GFile *file;
@@ -404,6 +406,18 @@ GObject *libmirage_create_file_stream (const gchar *filename, GError **error)
     if (!libmirage.initialized) {
         mirage_error(MIRAGE_E_NOTINIT, error);
         return NULL;
+    }
+
+    /* debug_context can be either a MIRAGE_DebugContext or an object implementing
+       #MIRAGE_Debuggable interface... in the latter case, fetch its actual
+       debug context */
+    if (debug_context) {
+        if (MIRAGE_IS_DEBUGGABLE(debug_context)) {
+            debug_context = mirage_debuggable_get_debug_context(MIRAGE_DEBUGGABLE(debug_context));
+        } else if (!MIRAGE_IS_DEBUG_CONTEXT(debug_context)) {
+            mirage_error(MIRAGE_E_INVALIDARG, error);
+            return NULL;
+        }
     }
 
     /* Open file; at the bottom of the chain, there's always a GFileStream */
@@ -438,6 +452,8 @@ GObject *libmirage_create_file_stream (const gchar *filename, GError **error)
             /* Create filter object and check if it can handle data */
             filter = g_object_new(libmirage.file_filters[i], "base-stream", stream, "close-base-stream", FALSE, NULL);
 
+            mirage_debuggable_set_debug_context(MIRAGE_DEBUGGABLE(filter), debug_context);
+
             if (!mirage_file_filter_can_handle_data_format(MIRAGE_FILE_FILTER(filter), NULL)) {
                 /* Cannot handle data format... */
                 g_object_unref(filter);
@@ -467,9 +483,9 @@ GObject *libmirage_create_file_stream (const gchar *filename, GError **error)
 
 /**
  * libmirage_for_each_parser:
- * @func: callback function
- * @user_data: data to be passed to callback function
- * @error: location to store error, or %NULL
+ * @func: (in) (closure closure): callback function
+ * @user_data: (in) (closure): data to be passed to callback function
+ * @error: (out) (allow-none): location to store error, or %NULL
  *
  * <para>
  * Iterates over list of supported parsers, calling @func for each parser.
@@ -505,7 +521,7 @@ gboolean libmirage_for_each_parser (MIRAGE_CallbackFunction func, gpointer user_
         GObject *parser;
 
         parser = g_object_new(libmirage.parsers[i], NULL);
-        mirage_parser_get_parser_info(MIRAGE_PARSER(parser), &parser_info, NULL);
+        parser_info = mirage_parser_get_parser_info(MIRAGE_PARSER(parser));
         succeeded = (*func)((const gpointer)parser_info, user_data);
         g_object_unref(parser);
         if (!succeeded) {
@@ -519,9 +535,9 @@ gboolean libmirage_for_each_parser (MIRAGE_CallbackFunction func, gpointer user_
 
 /**
  * libmirage_for_each_fragment:
- * @func: callback function
- * @user_data: data to be passed to callback function
- * @error: location to store error, or %NULL
+ * @func: (in) (closure closure): callback function
+ * @user_data: (in) (closure): data to be passed to callback function
+ * @error: (out) (allow-none): location to store error, or %NULL
  *
  * <para>
  * Iterates over list of supported fragments, calling @func for each fragment.
@@ -557,7 +573,7 @@ gboolean libmirage_for_each_fragment (MIRAGE_CallbackFunction func, gpointer use
         GObject *fragment;
 
         fragment = g_object_new(libmirage.fragments[i], NULL);
-        mirage_fragment_get_fragment_info(MIRAGE_FRAGMENT(fragment), &fragment_info, NULL);
+        fragment_info = mirage_fragment_get_fragment_info(MIRAGE_FRAGMENT(fragment));
         succeeded = (*func)((const gpointer)fragment_info, user_data);
         g_object_unref(fragment);
         if (!succeeded) {
@@ -571,9 +587,9 @@ gboolean libmirage_for_each_fragment (MIRAGE_CallbackFunction func, gpointer use
 
 /**
  * libmirage_for_each_file_filter:
- * @func: callback function
- * @user_data: data to be passed to callback function
- * @error: location to store error, or %NULL
+ * @func: (in) (closure closure): callback function
+ * @user_data: (in) (closure): data to be passed to callback function
+ * @error: (out) (allow-none): location to store error, or %NULL
  *
  * <para>
  * Iterates over list of supported file filters, calling @func for each fragment.
@@ -609,7 +625,7 @@ gboolean libmirage_for_each_file_filter (MIRAGE_CallbackFunction func, gpointer 
         GObject *filter;
 
         filter = g_object_new(libmirage.file_filters[i], NULL);
-        mirage_file_filter_get_file_filter_info(MIRAGE_FILE_FILTER(filter), &file_filter_info, NULL);
+        file_filter_info = mirage_file_filter_get_file_filter_info(MIRAGE_FILE_FILTER(filter));
         succeeded = (*func)((const gpointer)file_filter_info, user_data);
         g_object_unref(filter);
         if (!succeeded) {
@@ -624,9 +640,9 @@ gboolean libmirage_for_each_file_filter (MIRAGE_CallbackFunction func, gpointer 
 
 /**
  * libmirage_get_supported_debug_masks:
- * @masks: location to store pointer to masks array
- * @num_masks: location to store number of elements in masks array
- * @error: location to store error, or %NULL
+ * @masks: (out) (transfer-none): location to store pointer to masks array
+ * @num_masks: (out): location to store number of elements in masks array
+ * @error: (out) (allow-none): location to store error, or %NULL
  *
  * <para>
  * Retrieves the pointer to array of supported debug masks and stores it in @masks.

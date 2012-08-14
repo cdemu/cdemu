@@ -47,7 +47,7 @@ static gboolean mirage_parser_iso_is_file_valid (MIRAGE_Parser_ISO *self, gchar 
     GObject *stream;
 
     /* Create stream */
-    stream = libmirage_create_file_stream(filename, error);
+    stream = libmirage_create_file_stream(filename, G_OBJECT(self), error);
     if (!stream) {
         return FALSE;
     }
@@ -169,8 +169,8 @@ static gboolean mirage_parser_iso_load_track (MIRAGE_Parser_ISO *self, gchar *fi
         g_object_unref(data_fragment);
         return FALSE;
     }
-    mirage_frag_iface_binary_track_file_set_sectsize(MIRAGE_FRAG_IFACE_BINARY(data_fragment), self->priv->track_sectsize, NULL);
-    mirage_frag_iface_binary_track_file_set_format(MIRAGE_FRAG_IFACE_BINARY(data_fragment), FR_BIN_TFILE_DATA, NULL);
+    mirage_frag_iface_binary_track_file_set_sectsize(MIRAGE_FRAG_IFACE_BINARY(data_fragment), self->priv->track_sectsize);
+    mirage_frag_iface_binary_track_file_set_format(MIRAGE_FRAG_IFACE_BINARY(data_fragment), FR_BIN_TFILE_DATA);
 
     /* Use whole file */
     if (!mirage_fragment_use_the_rest_of_file(MIRAGE_FRAGMENT(data_fragment), error)) {
@@ -192,15 +192,10 @@ static gboolean mirage_parser_iso_load_track (MIRAGE_Parser_ISO *self, gchar *fi
     }
 
     /* Set track mode */
-    mirage_track_set_mode(MIRAGE_TRACK(track), self->priv->track_mode, NULL);
+    mirage_track_set_mode(MIRAGE_TRACK(track), self->priv->track_mode);
 
     /* Add fragment to track */
-    if (!mirage_track_add_fragment(MIRAGE_TRACK(track), -1, &data_fragment, error)) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to add fragment!\n", __debug__);
-        g_object_unref(data_fragment);
-        g_object_unref(track);
-        return FALSE;
-    }
+    mirage_track_add_fragment(MIRAGE_TRACK(track), -1, &data_fragment, NULL);
 
     g_object_unref(data_fragment);
     g_object_unref(track);
@@ -213,7 +208,7 @@ static gboolean mirage_parser_iso_load_track (MIRAGE_Parser_ISO *self, gchar *fi
 /**********************************************************************\
  *                MIRAGE_Parser methods implementation                *
 \**********************************************************************/
-static gboolean mirage_parser_iso_load_image (MIRAGE_Parser *_self, gchar **filenames, GObject **disc, GError **error)
+static GObject *mirage_parser_iso_load_image (MIRAGE_Parser *_self, gchar **filenames, GError **error)
 {
     MIRAGE_Parser_ISO *self = MIRAGE_PARSER_ISO(_self);
 
@@ -226,10 +221,10 @@ static gboolean mirage_parser_iso_load_image (MIRAGE_Parser *_self, gchar **file
 
     /* Create disc */
     self->priv->disc = g_object_new(MIRAGE_TYPE_DISC, NULL);
-    mirage_object_attach_child(MIRAGE_OBJECT(self), self->priv->disc, NULL);
+    mirage_object_attach_child(MIRAGE_OBJECT(self), self->priv->disc);
 
     /* Set filenames */
-    mirage_disc_set_filename(MIRAGE_DISC(self->priv->disc), filenames[0], NULL);
+    mirage_disc_set_filename(MIRAGE_DISC(self->priv->disc), filenames[0]);
 
     /* Session: one session (with possibly multiple tracks) */
     GObject *session = NULL;
@@ -239,7 +234,7 @@ static gboolean mirage_parser_iso_load_image (MIRAGE_Parser *_self, gchar **file
         goto end;
     }
     /* ISO image parser assumes single-track image, so we're dealing with regular CD-ROM session */
-    mirage_session_set_session_type(MIRAGE_SESSION(session), MIRAGE_SESSION_CD_ROM, NULL);
+    mirage_session_set_session_type(MIRAGE_SESSION(session), MIRAGE_SESSION_CD_ROM);
     g_object_unref(session);
 
     /* Load track */
@@ -254,22 +249,20 @@ static gboolean mirage_parser_iso_load_image (MIRAGE_Parser *_self, gchar **file
 
     /* Now guess medium type and if it's a CD-ROM, add Red Book pregap */
     gint medium_type = mirage_parser_guess_medium_type(MIRAGE_PARSER(self), self->priv->disc);
-    mirage_disc_set_medium_type(MIRAGE_DISC(self->priv->disc), medium_type, NULL);
+    mirage_disc_set_medium_type(MIRAGE_DISC(self->priv->disc), medium_type);
     if (medium_type == MIRAGE_MEDIUM_CD) {
         mirage_parser_add_redbook_pregap(MIRAGE_PARSER(self), self->priv->disc, NULL);
     }
 
 end:
     /* Return disc */
-    mirage_object_detach_child(MIRAGE_OBJECT(self), self->priv->disc, NULL);
+    mirage_object_detach_child(MIRAGE_OBJECT(self), self->priv->disc);
     if (succeeded) {
-        *disc = self->priv->disc;
+        return self->priv->disc;
     } else {
         g_object_unref(self->priv->disc);
-        *disc = NULL;
+        return NULL;
     }
-
-    return succeeded;
 }
 
 

@@ -76,7 +76,7 @@ enum
 /**********************************************************************\
  *                     Parser private functions                       *
 \**********************************************************************/
-static gboolean mirage_parser_toc_set_session_type (MIRAGE_Parser_TOC *self, gchar *type_string, GError **error G_GNUC_UNUSED)
+static void mirage_parser_toc_set_session_type (MIRAGE_Parser_TOC *self, gchar *type_string)
 {
     /* Decipher session type */
     static const struct {
@@ -93,12 +93,10 @@ static gboolean mirage_parser_toc_set_session_type (MIRAGE_Parser_TOC *self, gch
     for (i = 0; i < G_N_ELEMENTS(session_types); i++) {
         if (!mirage_helper_strcasecmp(session_types[i].str, type_string)) {
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: session type: %s\n", __debug__, session_types[i].str);
-            mirage_session_set_session_type(MIRAGE_SESSION(self->priv->cur_session), session_types[i].type, NULL);
+            mirage_session_set_session_type(MIRAGE_SESSION(self->priv->cur_session), session_types[i].type);
             break;
         }
     }
-
-    return TRUE;
 }
 
 static gboolean mirage_parser_toc_add_track (MIRAGE_Parser_TOC *self, gchar *mode_string, gchar *subchan_string, GError **error)
@@ -138,7 +136,7 @@ static gboolean mirage_parser_toc_add_track (MIRAGE_Parser_TOC *self, gchar *mod
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: track mode: %s\n", __debug__, track_modes[i].str);
 
             /* Set track mode */
-            mirage_track_set_mode(MIRAGE_TRACK(self->priv->cur_track), track_modes[i].mode, NULL);
+            mirage_track_set_mode(MIRAGE_TRACK(self->priv->cur_track), track_modes[i].mode);
             /* Store sector size */
             self->priv->cur_tfile_sectsize = track_modes[i].sectsize;
 
@@ -178,13 +176,9 @@ static gboolean mirage_parser_toc_track_add_fragment (MIRAGE_Parser_TOC *self, g
 
     /* Create appropriate fragment */
     if (type == TOC_DATA_TYPE_NONE) {
-        /* Empty fragment; we'd like a NULL fragment */
+        /* Empty fragment; we'd like a NULL fragment - creation should never fail */
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: creating NULL fragment\n", __debug__);
-        data_fragment = libmirage_create_fragment(MIRAGE_TYPE_FRAG_IFACE_NULL, NULL, error);
-        if (!data_fragment) {
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to create NULL fragment!\n", __debug__);
-            return FALSE;
-        }
+        data_fragment = libmirage_create_fragment(MIRAGE_TYPE_FRAG_IFACE_NULL, NULL, NULL);
     } else {
         /* Find filename */
         gchar *filename = mirage_helper_find_data_file(filename_string, self->priv->toc_filename);
@@ -208,12 +202,12 @@ static gboolean mirage_parser_toc_track_add_fragment (MIRAGE_Parser_TOC *self, g
                 return FALSE;
             }
 
-            gint tfile_sectsize = 0;
-            gint tfile_format = 0;
-            guint64 tfile_offset = 0;
+            gint tfile_sectsize;
+            gint tfile_format;
+            guint64 tfile_offset;
 
-            gint sfile_format = 0;
-            gint sfile_sectsize = 0;
+            gint sfile_format;
+            gint sfile_sectsize;
 
             /* Track file */
             tfile_sectsize = self->priv->cur_tfile_sectsize;
@@ -223,8 +217,7 @@ static gboolean mirage_parser_toc_track_add_fragment (MIRAGE_Parser_TOC *self, g
                apparently when .bin file contains subchannel data, it automatically
                gets listed as DATAFILE (hence type = TOC_DATA_TYPE_DATA); thus,
                we simply check whether we have an audio track or not... */
-            gint mode;
-            mirage_track_get_mode(MIRAGE_TRACK(self->priv->cur_track), &mode, NULL);
+            gint mode = mirage_track_get_mode(MIRAGE_TRACK(self->priv->cur_track));
             if (mode == MIRAGE_MODE_AUDIO) {
                 tfile_format = FR_BIN_TFILE_AUDIO_SWAP;
             } else {
@@ -270,12 +263,12 @@ static gboolean mirage_parser_toc_track_add_fragment (MIRAGE_Parser_TOC *self, g
                 g_object_unref(data_fragment);
                 return FALSE;
             }
-            mirage_frag_iface_binary_track_file_set_sectsize(MIRAGE_FRAG_IFACE_BINARY(data_fragment), tfile_sectsize, NULL);
-            mirage_frag_iface_binary_track_file_set_offset(MIRAGE_FRAG_IFACE_BINARY(data_fragment), tfile_offset, NULL);
-            mirage_frag_iface_binary_track_file_set_format(MIRAGE_FRAG_IFACE_BINARY(data_fragment), tfile_format, NULL);
+            mirage_frag_iface_binary_track_file_set_sectsize(MIRAGE_FRAG_IFACE_BINARY(data_fragment), tfile_sectsize);
+            mirage_frag_iface_binary_track_file_set_offset(MIRAGE_FRAG_IFACE_BINARY(data_fragment), tfile_offset);
+            mirage_frag_iface_binary_track_file_set_format(MIRAGE_FRAG_IFACE_BINARY(data_fragment), tfile_format);
 
-            mirage_frag_iface_binary_subchannel_file_set_sectsize(MIRAGE_FRAG_IFACE_BINARY(data_fragment), sfile_sectsize, NULL);
-            mirage_frag_iface_binary_subchannel_file_set_format(MIRAGE_FRAG_IFACE_BINARY(data_fragment), sfile_format, NULL);
+            mirage_frag_iface_binary_subchannel_file_set_sectsize(MIRAGE_FRAG_IFACE_BINARY(data_fragment), sfile_sectsize);
+            mirage_frag_iface_binary_subchannel_file_set_format(MIRAGE_FRAG_IFACE_BINARY(data_fragment), sfile_format);
         } else {
             /* Audio data; we'd like an AUDIO fragment, and hopefully Mirage can
                find one that can handle given file format */
@@ -296,7 +289,7 @@ static gboolean mirage_parser_toc_track_add_fragment (MIRAGE_Parser_TOC *self, g
             }
 
             /* Set offset */
-            mirage_frag_iface_audio_set_offset(MIRAGE_FRAG_IFACE_AUDIO(data_fragment), start, NULL);
+            mirage_frag_iface_audio_set_offset(MIRAGE_FRAG_IFACE_AUDIO(data_fragment), start);
         }
 
         g_free(filename);
@@ -306,7 +299,7 @@ static gboolean mirage_parser_toc_track_add_fragment (MIRAGE_Parser_TOC *self, g
     if (length) {
         /* Use supplied length */
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: setting fragment's length: 0x%X\n", __debug__, length);
-        mirage_fragment_set_length(MIRAGE_FRAGMENT(data_fragment), length, NULL);
+        mirage_fragment_set_length(MIRAGE_FRAGMENT(data_fragment), length);
     } else {
         /* Use whole file */
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: using whole file\n", __debug__);
@@ -324,34 +317,27 @@ static gboolean mirage_parser_toc_track_add_fragment (MIRAGE_Parser_TOC *self, g
     return TRUE;
 };
 
-static gboolean mirage_parser_toc_track_set_start (MIRAGE_Parser_TOC *self, gint start, GError **error G_GNUC_UNUSED)
+static void mirage_parser_toc_track_set_start (MIRAGE_Parser_TOC *self, gint start)
 {
     /* If start is not given (-1), we use current track length */
     if (start == -1) {
-        mirage_track_layout_get_length(MIRAGE_TRACK(self->priv->cur_track), &start, NULL);
+        start = mirage_track_layout_get_length(MIRAGE_TRACK(self->priv->cur_track));
     }
 
-    mirage_track_set_track_start(MIRAGE_TRACK(self->priv->cur_track), start, NULL);
-
-    return TRUE;
+    mirage_track_set_track_start(MIRAGE_TRACK(self->priv->cur_track), start);
 }
 
-static gboolean mirage_parser_toc_track_add_index (MIRAGE_Parser_TOC *self, gint address, GError **error G_GNUC_UNUSED)
+static void mirage_parser_toc_track_add_index (MIRAGE_Parser_TOC *self, gint address)
 {
-    gint track_start;
+    gint track_start = mirage_track_get_track_start(MIRAGE_TRACK(self->priv->cur_track));
 
     /* Indices in TOC file are track-start relative... */
-    mirage_track_get_track_start(MIRAGE_TRACK(self->priv->cur_track), &track_start, NULL);
     mirage_track_add_index(MIRAGE_TRACK(self->priv->cur_track), track_start + address, NULL, NULL);
-
-    return TRUE;
 }
 
-static gboolean mirage_parser_toc_track_set_flag (MIRAGE_Parser_TOC *self, gint flag, gboolean set, GError **error G_GNUC_UNUSED)
+static void mirage_parser_toc_track_set_flag (MIRAGE_Parser_TOC *self, gint flag, gboolean set)
 {
-    gint flags;
-
-    mirage_track_get_flags(MIRAGE_TRACK(self->priv->cur_track), &flags, NULL);
+    gint flags = mirage_track_get_flags(MIRAGE_TRACK(self->priv->cur_track));
     if (set) {
         /* Set flag */
         flags |= flag;
@@ -359,17 +345,13 @@ static gboolean mirage_parser_toc_track_set_flag (MIRAGE_Parser_TOC *self, gint 
         /* Clear flag */
         flags &= ~flag;
     }
-    mirage_track_set_flags(MIRAGE_TRACK(self->priv->cur_track), flags, NULL);
-
-    return TRUE;
+    mirage_track_set_flags(MIRAGE_TRACK(self->priv->cur_track), flags);
 }
 
-static gboolean mirage_parser_toc_track_set_isrc (MIRAGE_Parser_TOC *self, gchar *isrc, GError **error G_GNUC_UNUSED)
+static void mirage_parser_toc_track_set_isrc (MIRAGE_Parser_TOC *self, gchar *isrc)
 {
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: setting ISRC: <%s>\n", __debug__, isrc);
-    mirage_track_set_isrc(MIRAGE_TRACK(self->priv->cur_track), isrc, NULL);
-
-    return TRUE;
+    mirage_track_set_isrc(MIRAGE_TRACK(self->priv->cur_track), isrc);
 }
 
 
@@ -624,18 +606,17 @@ static gboolean mirage_parser_toc_callback_comment (MIRAGE_Parser_TOC *self, GMa
     return TRUE;
 }
 
-static gboolean mirage_parser_toc_callback_session_type (MIRAGE_Parser_TOC *self, GMatchInfo *match_info, GError **error)
+static gboolean mirage_parser_toc_callback_session_type (MIRAGE_Parser_TOC *self, GMatchInfo *match_info, GError **error G_GNUC_UNUSED)
 {
-    gboolean succeeded = TRUE;
     gchar *type = g_match_info_fetch_named(match_info, "type");
 
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: parsed SESSION TYPE: %s\n", __debug__, type);
 
-    succeeded = mirage_parser_toc_set_session_type(self, type, error);
+    mirage_parser_toc_set_session_type(self, type);
 
     g_free(type);
 
-    return succeeded;
+    return TRUE;
 }
 
 static gboolean mirage_parser_toc_callback_catalog (MIRAGE_Parser_TOC *self, GMatchInfo *match_info, GError **error G_GNUC_UNUSED)
@@ -644,7 +625,7 @@ static gboolean mirage_parser_toc_callback_catalog (MIRAGE_Parser_TOC *self, GMa
 
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: parsed CATALOG: %.13s\n", __debug__, catalog);
 
-    mirage_disc_set_mcn(MIRAGE_DISC(self->priv->disc), catalog, NULL);
+    mirage_disc_set_mcn(MIRAGE_DISC(self->priv->disc), catalog);
 
     g_free(catalog);
 
@@ -670,75 +651,71 @@ static gboolean mirage_parser_toc_callback_track (MIRAGE_Parser_TOC *self, GMatc
     return succeeded;
 }
 
-static gboolean mirage_parser_toc_callback_track_flag_copy (MIRAGE_Parser_TOC *self, GMatchInfo *match_info, GError **error)
+static gboolean mirage_parser_toc_callback_track_flag_copy (MIRAGE_Parser_TOC *self, GMatchInfo *match_info, GError **error G_GNUC_UNUSED)
 {
-    gboolean succeeded = TRUE;
     gchar *no = g_match_info_fetch_named(match_info, "no");
 
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: parsed %s COPY track flag\n", __debug__, no ? no : "");
 
     if (!g_strcmp0(no, "NO")) {
-        succeeded = mirage_parser_toc_track_set_flag(self, MIRAGE_TRACKF_COPYPERMITTED, TRUE, error);
+        mirage_parser_toc_track_set_flag(self, MIRAGE_TRACKF_COPYPERMITTED, TRUE);
     } else {
-        succeeded = mirage_parser_toc_track_set_flag(self, MIRAGE_TRACKF_COPYPERMITTED, FALSE, error);
+        mirage_parser_toc_track_set_flag(self, MIRAGE_TRACKF_COPYPERMITTED, FALSE);
     }
 
     g_free(no);
 
-    return succeeded;
+    return TRUE;
 }
 
-static gboolean mirage_parser_toc_callback_track_flag_preemphasis (MIRAGE_Parser_TOC *self, GMatchInfo *match_info, GError **error)
+static gboolean mirage_parser_toc_callback_track_flag_preemphasis (MIRAGE_Parser_TOC *self, GMatchInfo *match_info, GError **error G_GNUC_UNUSED)
 {
-    gboolean succeeded = TRUE;
     gchar *no = g_match_info_fetch_named(match_info, "no");
 
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: parsed %s PRE_EMPHASIS track flag\n", __debug__, no ? no : "");
 
     if (!g_strcmp0(no, "NO")) {
-        succeeded = mirage_parser_toc_track_set_flag(self, MIRAGE_TRACKF_PREEMPHASIS, TRUE, error);
+        mirage_parser_toc_track_set_flag(self, MIRAGE_TRACKF_PREEMPHASIS, TRUE);
     } else {
-        succeeded = mirage_parser_toc_track_set_flag(self, MIRAGE_TRACKF_PREEMPHASIS, FALSE, error);
+        mirage_parser_toc_track_set_flag(self, MIRAGE_TRACKF_PREEMPHASIS, FALSE);
     }
 
     g_free(no);
 
-    return succeeded;
+    return TRUE;
 }
 
-static gboolean mirage_parser_toc_callback_track_flag_channels (MIRAGE_Parser_TOC *self, GMatchInfo *match_info, GError **error)
+static gboolean mirage_parser_toc_callback_track_flag_channels (MIRAGE_Parser_TOC *self, GMatchInfo *match_info, GError **error G_GNUC_UNUSED)
 {
-    gboolean succeeded = TRUE;
     gchar *num = g_match_info_fetch_named(match_info, "num");
 
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: parsed %s_CHANNEL_AUDIO track flag\n", __debug__, num);
 
     if (!g_strcmp0(num, "FOUR")) {
-        succeeded = mirage_parser_toc_track_set_flag(self, MIRAGE_TRACKF_FOURCHANNEL, TRUE, error);
+        mirage_parser_toc_track_set_flag(self, MIRAGE_TRACKF_FOURCHANNEL, TRUE);
     } else {
-        succeeded = mirage_parser_toc_track_set_flag(self, MIRAGE_TRACKF_FOURCHANNEL, FALSE, error);
+        mirage_parser_toc_track_set_flag(self, MIRAGE_TRACKF_FOURCHANNEL, FALSE);
     }
 
     g_free(num);
 
-    return succeeded;
+    return TRUE;
 }
 
-static gboolean mirage_parser_toc_callback_track_isrc (MIRAGE_Parser_TOC *self, GMatchInfo *match_info, GError **error)
+static gboolean mirage_parser_toc_callback_track_isrc (MIRAGE_Parser_TOC *self, GMatchInfo *match_info, GError **error G_GNUC_UNUSED)
 {
-    gboolean succeeded = TRUE;
     gchar *isrc = g_match_info_fetch_named(match_info, "isrc");
 
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: parsed ISRC: %s\n", __debug__, isrc);
 
-    succeeded = mirage_parser_toc_track_set_isrc(self, isrc, error);
+    mirage_parser_toc_track_set_isrc(self, isrc);
 
     g_free(isrc);
 
-    return succeeded;
+    return TRUE;
 }
 
-static gboolean mirage_parser_toc_callback_track_index (MIRAGE_Parser_TOC *self, GMatchInfo *match_info, GError **error)
+static gboolean mirage_parser_toc_callback_track_index (MIRAGE_Parser_TOC *self, GMatchInfo *match_info, GError **error G_GNUC_UNUSED)
 {
     gchar *address_str = g_match_info_fetch_named(match_info, "address");
     gint address = mirage_helper_msf2lba_str(address_str, FALSE);
@@ -747,10 +724,12 @@ static gboolean mirage_parser_toc_callback_track_index (MIRAGE_Parser_TOC *self,
 
     g_free(address_str);
 
-    return mirage_parser_toc_track_add_index(self, address, error);
+    mirage_parser_toc_track_add_index(self, address);
+
+    return TRUE;
 }
 
-static gboolean mirage_parser_toc_callback_track_start (MIRAGE_Parser_TOC *self, GMatchInfo *match_info, GError **error)
+static gboolean mirage_parser_toc_callback_track_start (MIRAGE_Parser_TOC *self, GMatchInfo *match_info, GError **error G_GNUC_UNUSED)
 {
     gchar *address_str = g_match_info_fetch_named(match_info, "address");
     gint address;
@@ -764,10 +743,12 @@ static gboolean mirage_parser_toc_callback_track_start (MIRAGE_Parser_TOC *self,
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: parsed START: w/o address\n", __debug__);
     }
 
-    return mirage_parser_toc_track_set_start(self, address, error);
+    mirage_parser_toc_track_set_start(self, address);
+
+    return TRUE;
 }
 
-static gboolean mirage_parser_toc_callback_track_pregap (MIRAGE_Parser_TOC *self, GMatchInfo *match_info, GError **error)
+static gboolean mirage_parser_toc_callback_track_pregap (MIRAGE_Parser_TOC *self, GMatchInfo *match_info, GError **error G_GNUC_UNUSED)
 {
     gchar *length_str = g_match_info_fetch_named(match_info, "length");
     gint length = mirage_helper_msf2lba_str(length_str, FALSE);
@@ -776,11 +757,11 @@ static gboolean mirage_parser_toc_callback_track_pregap (MIRAGE_Parser_TOC *self
 
     g_free(length_str);
 
-    if (!mirage_parser_toc_track_add_fragment(self, TOC_DATA_TYPE_NONE, NULL, 0, 0, length, error)) {
-        return FALSE;
-    }
+    mirage_parser_toc_track_add_fragment(self, TOC_DATA_TYPE_NONE, NULL, 0, 0, length, NULL);
 
-    return mirage_parser_toc_track_set_start(self, -1, error);
+    mirage_parser_toc_track_set_start(self, -1);
+
+    return TRUE;
 }
 
 static gboolean mirage_parser_toc_callback_track_zero (MIRAGE_Parser_TOC *self, GMatchInfo *match_info, GError **error)
@@ -1023,8 +1004,8 @@ static gboolean mirage_parser_toc_parse_toc_file (MIRAGE_Parser_TOC *self, gchar
 
     /* If provided, use the specified encoding; otherwise, use default (since
        .toc file is linux-specific and should be fine with UTF-8 anyway) */
-    gchar *encoding = NULL;
-    if (mirage_parser_get_param_string(MIRAGE_PARSER(self), "encoding", (const gchar **)&encoding, NULL)) {
+    const gchar *encoding = mirage_parser_get_param_string(MIRAGE_PARSER(self), "encoding");
+    if (encoding) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: using specified encoding: %s\n", __debug__, encoding);
         g_io_channel_set_encoding(io_channel, encoding, NULL);
     }
@@ -1202,8 +1183,8 @@ static gboolean mirage_parser_toc_check_toc_file (MIRAGE_Parser_TOC *self, const
 
     /* If provided, use the specified encoding; otherwise, use default (since
        .toc file is linux-specific and should be fine with UTF-8 anyway) */
-    const gchar *encoding = NULL;
-    if (mirage_parser_get_param_string(MIRAGE_PARSER(self), "encoding", &encoding, NULL)) {
+    const gchar *encoding = mirage_parser_get_param_string(MIRAGE_PARSER(self), "encoding");
+    if (encoding) {
         g_io_channel_set_encoding(io_channel, encoding, NULL);
     }
 
@@ -1252,10 +1233,10 @@ static gboolean mirage_parser_toc_check_toc_file (MIRAGE_Parser_TOC *self, const
 /**********************************************************************\
  *                 MIRAGE_Parser methods implementation               *
 \**********************************************************************/
-static gboolean mirage_parser_toc_load_image (MIRAGE_Parser *_self, gchar **filenames, GObject **disc, GError **error)
+static GObject *mirage_parser_toc_load_image (MIRAGE_Parser *_self, gchar **filenames, GError **error)
 {
     MIRAGE_Parser_TOC *self = MIRAGE_PARSER_TOC(_self);
-    
+
     gboolean succeeded = TRUE;
     gint i;
 
@@ -1269,9 +1250,9 @@ static gboolean mirage_parser_toc_load_image (MIRAGE_Parser *_self, gchar **file
 
     /* Create disc */
     self->priv->disc = g_object_new(MIRAGE_TYPE_DISC, NULL);
-    mirage_object_attach_child(MIRAGE_OBJECT(self), self->priv->disc, NULL);
+    mirage_object_attach_child(MIRAGE_OBJECT(self), self->priv->disc);
 
-    mirage_disc_set_filenames(MIRAGE_DISC(self->priv->disc), filenames, NULL);
+    mirage_disc_set_filenames(MIRAGE_DISC(self->priv->disc), filenames);
 
     /* Each TOC/BIN is one session, so we load all given filenames */
     for (i = 0; i < g_strv_length(filenames); i++) {
@@ -1303,7 +1284,7 @@ static gboolean mirage_parser_toc_load_image (MIRAGE_Parser *_self, gchar **file
                 leadout_length = 6750; /* Actually, it should be 2250 previous leadout, 4500 current leadin */
             }
 
-            mirage_session_set_leadout_length(MIRAGE_SESSION(prev_session), leadout_length, NULL);
+            mirage_session_set_leadout_length(MIRAGE_SESSION(prev_session), leadout_length);
 
             g_object_unref(prev_session);
         }
@@ -1333,27 +1314,25 @@ static gboolean mirage_parser_toc_load_image (MIRAGE_Parser *_self, gchar **file
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: finishing the layout\n", __debug__);
     /* Now guess medium type and if it's a CD-ROM, add Red Book pregap */
     gint medium_type = mirage_parser_guess_medium_type(MIRAGE_PARSER(self), self->priv->disc);
-    mirage_disc_set_medium_type(MIRAGE_DISC(self->priv->disc), medium_type, NULL);
+    mirage_disc_set_medium_type(MIRAGE_DISC(self->priv->disc), medium_type);
     if (medium_type == MIRAGE_MEDIUM_CD) {
         mirage_parser_add_redbook_pregap(MIRAGE_PARSER(self), self->priv->disc, NULL);
     }
 
 end:
     /* Return disc */
-    mirage_object_detach_child(MIRAGE_OBJECT(self), self->priv->disc, NULL);
+    mirage_object_detach_child(MIRAGE_OBJECT(self), self->priv->disc);
     if (succeeded) {
-        *disc = self->priv->disc;
+        return self->priv->disc;
     } else {
         g_object_unref(self->priv->disc);
-        *disc = NULL;
+        return NULL;
     }
-
-    return succeeded;
 }
 
 
 /**********************************************************************\
- *                             Object init                            * 
+ *                             Object init                            *
 \**********************************************************************/
 G_DEFINE_DYNAMIC_TYPE(MIRAGE_Parser_TOC, mirage_parser_toc, MIRAGE_TYPE_PARSER);
 
@@ -1383,7 +1362,7 @@ static void mirage_parser_toc_finalize (GObject *gobject)
 
     /* Cleanup regex parser engine */
     mirage_parser_toc_cleanup_regex_parser(self);
-    
+
     /* Chain up to the parent class */
     return G_OBJECT_CLASS(mirage_parser_toc_parent_class)->finalize(gobject);
 }

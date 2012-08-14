@@ -97,34 +97,34 @@ GType mirage_disc_get_type (void);
  *                             Public API                             *
 \**********************************************************************/
 /* Medium type */
-gboolean mirage_disc_set_medium_type (MIRAGE_Disc *self, gint medium_type, GError **error);
-gboolean mirage_disc_get_medium_type (MIRAGE_Disc *self, gint *medium_type, GError **error);
+void mirage_disc_set_medium_type (MIRAGE_Disc *self, gint medium_type);
+gint mirage_disc_get_medium_type (MIRAGE_Disc *self);
 
 /* Filename */
-gboolean mirage_disc_set_filenames (MIRAGE_Disc *self, gchar **filenames, GError **error);
-gboolean mirage_disc_set_filename (MIRAGE_Disc *self, const gchar *filename, GError **error);
-gboolean mirage_disc_get_filenames (MIRAGE_Disc *self, gchar ***filenames, GError **error);
+void mirage_disc_set_filenames (MIRAGE_Disc *self, gchar **filenames);
+void mirage_disc_set_filename (MIRAGE_Disc *self, const gchar *filename);
+gchar **mirage_disc_get_filenames (MIRAGE_Disc *self);
 
 /* MCN */
-gboolean mirage_disc_set_mcn (MIRAGE_Disc *self, const gchar *mcn, GError **error);
-gboolean mirage_disc_get_mcn (MIRAGE_Disc *self, const gchar **mcn, GError **error);
+void mirage_disc_set_mcn (MIRAGE_Disc *self, const gchar *mcn);
+const gchar *mirage_disc_get_mcn (MIRAGE_Disc *self);
 
 /* Layout */
-gboolean mirage_disc_layout_set_first_session (MIRAGE_Disc *self, gint first_session, GError **error);
-gboolean mirage_disc_layout_get_first_session (MIRAGE_Disc *self, gint *first_session, GError **error);
-gboolean mirage_disc_layout_set_first_track (MIRAGE_Disc *self, gint first_track, GError **error);
-gboolean mirage_disc_layout_get_first_track (MIRAGE_Disc *self, gint *first_track, GError **error);
-gboolean mirage_disc_layout_set_start_sector (MIRAGE_Disc *self, gint start_sector, GError **error);
-gboolean mirage_disc_layout_get_start_sector (MIRAGE_Disc *self, gint *start_sector, GError **error);
-gboolean mirage_disc_layout_get_length (MIRAGE_Disc *self, gint *length, GError **error);
+void mirage_disc_layout_set_first_session (MIRAGE_Disc *self, gint first_session);
+gint mirage_disc_layout_get_first_session (MIRAGE_Disc *self);
+void mirage_disc_layout_set_first_track (MIRAGE_Disc *self, gint first_track);
+gint mirage_disc_layout_get_first_track (MIRAGE_Disc *self);
+void mirage_disc_layout_set_start_sector (MIRAGE_Disc *self, gint start_sector);
+gint mirage_disc_layout_get_start_sector (MIRAGE_Disc *self);
+gint mirage_disc_layout_get_length (MIRAGE_Disc *self);
 
 /* Session handling */
-gboolean mirage_disc_get_number_of_sessions (MIRAGE_Disc *self, gint *number_of_sessions, GError **error);
+gint mirage_disc_get_number_of_sessions (MIRAGE_Disc *self);
 gboolean mirage_disc_add_session_by_index (MIRAGE_Disc *self, gint index, GObject **session, GError **error);
 gboolean mirage_disc_add_session_by_number (MIRAGE_Disc *self, gint number, GObject **session, GError **error);
 gboolean mirage_disc_remove_session_by_index (MIRAGE_Disc *self, gint index, GError **error);
 gboolean mirage_disc_remove_session_by_number (MIRAGE_Disc *self, gint number, GError **error);
-gboolean mirage_disc_remove_session_by_object (MIRAGE_Disc *self, GObject *session, GError **error);
+void mirage_disc_remove_session_by_object (MIRAGE_Disc *self, GObject *session);
 gboolean mirage_disc_get_session_by_index (MIRAGE_Disc *self, gint index, GObject **session, GError **error);
 gboolean mirage_disc_get_session_by_number (MIRAGE_Disc *self, gint number, GObject **session, GError **error);
 gboolean mirage_disc_get_session_by_address (MIRAGE_Disc *self, gint address, GObject **session, GError **error);
@@ -134,7 +134,7 @@ gboolean mirage_disc_get_session_before (MIRAGE_Disc *self, GObject *cur_session
 gboolean mirage_disc_get_session_after (MIRAGE_Disc *self, GObject *cur_session, GObject **next_session, GError **error);
 
 /* Track handling */
-gboolean mirage_disc_get_number_of_tracks (MIRAGE_Disc *self, gint *number_of_tracks, GError **error);
+gint mirage_disc_get_number_of_tracks (MIRAGE_Disc *self);
 gboolean mirage_disc_add_track_by_index (MIRAGE_Disc *self, gint index, GObject **track, GError **error);
 gboolean mirage_disc_add_track_by_number (MIRAGE_Disc *self, gint number, GObject **track, GError **error);
 gboolean mirage_disc_remove_track_by_index (MIRAGE_Disc *self, gint index, GError **error);
@@ -144,16 +144,16 @@ gboolean mirage_disc_get_track_by_number (MIRAGE_Disc *self, gint number, GObjec
 gboolean mirage_disc_get_track_by_address (MIRAGE_Disc *self, gint address, GObject **track, GError **error);
 
 /* Disc structures */
-gboolean mirage_disc_set_disc_structure (MIRAGE_Disc *self, gint layer, gint type, const guint8 *data, gint len, GError **error);
+void mirage_disc_set_disc_structure (MIRAGE_Disc *self, gint layer, gint type, const guint8 *data, gint len);
 gboolean mirage_disc_get_disc_structure (MIRAGE_Disc *self, gint layer, gint type, const guint8 **data, gint *len, GError **error);
 
 /* Direct sector access */
-gboolean mirage_disc_get_sector (MIRAGE_Disc *self, gint address, GObject **sector, GError **error);
+GObject *mirage_disc_get_sector (MIRAGE_Disc *self, gint address, GError **error);
 gboolean mirage_disc_read_sector (MIRAGE_Disc *self, gint address, guint8 main_sel, guint8 subc_sel, guint8 *ret_buf, gint *ret_len, GError **error);
 
 /* DPM */
-gboolean mirage_disc_set_dpm_data (MIRAGE_Disc *self, gint start, gint resolution, gint num_entries, const guint32 *data, GError **error);
-gboolean mirage_disc_get_dpm_data (MIRAGE_Disc *self, gint *start, gint *resolution, gint *num_entries, const guint32 **data, GError **error);
+void mirage_disc_set_dpm_data (MIRAGE_Disc *self, gint start, gint resolution, gint num_entries, const guint32 *data);
+void mirage_disc_get_dpm_data (MIRAGE_Disc *self, gint *start, gint *resolution, gint *num_entries, const guint32 **data);
 gboolean mirage_disc_get_dpm_data_for_sector (MIRAGE_Disc *self, gint address, gdouble *angle, gdouble *density, GError **error);
 
 G_END_DECLS

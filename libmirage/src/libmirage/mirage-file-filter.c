@@ -60,8 +60,8 @@ static void destroy_file_filter_info (MIRAGE_FileFilterInfo *info)
 /**
  * mirage_file_filter_generate_file_filter_info:
  * @self: a #MIRAGE_FileFilter
- * @id: file filter ID
- * @name: file filter name
+ * @id: (in): file filter ID
+ * @name: (in): file filter name
  *
  * <para>
  * Generates file filter information from the input fields. It is intended as a function
@@ -85,36 +85,24 @@ void mirage_file_filter_generate_file_filter_info (MIRAGE_FileFilter *self, cons
 /**
  * mirage_file_filter_get_file_filter_info:
  * @self: a #MIRAGE_FileFilter
- * @file_filter_info: location to store file filter info
- * @error: location to store error, or %NULL
  *
  * <para>
  * Retrieves file filter information.
  * </para>
  *
- * <para>
- * A pointer to file filter information structure is stored in @file_filter_info; the
+ * Returns: (transfer-none): a pointer to file filter information structure. The
  * structure belongs to object and therefore should not be modified.
- * </para>
- *
- * Returns: %TRUE on success, %FALSE on failure
  **/
-gboolean mirage_file_filter_get_file_filter_info (MIRAGE_FileFilter *self, const MIRAGE_FileFilterInfo **file_filter_info, GError **error)
+const MIRAGE_FileFilterInfo *mirage_file_filter_get_file_filter_info (MIRAGE_FileFilter *self)
 {
-    if (!self->priv->file_filter_info) {
-        mirage_error(MIRAGE_E_DATANOTSET, error);
-        return FALSE;
-    }
-
-    *file_filter_info = self->priv->file_filter_info;
-    return TRUE;
+    return self->priv->file_filter_info;
 }
 
 
 /**
  * mirage_file_filter_can_handle_data_format:
  * @self: a #MIRAGE_FileFilter
- * @error: location to store error, or %NULL
+ * @error: (out) (allow-none): location to store error, or %NULL
  *
  * <para>
  * Checks whether file info can handle data stored in underyling stream.
@@ -180,13 +168,13 @@ static gssize mirage_file_filter_read (GInputStream *_self, void *buffer, gsize 
 /**********************************************************************\
  *              MIRAGE_Debuggable methods implementation              *
 \**********************************************************************/
-static gboolean mirage_file_filter_set_debug_context (MIRAGE_Debuggable *_self, GObject *debug_context, GError **error G_GNUC_UNUSED)
+static void mirage_file_filter_set_debug_context (MIRAGE_Debuggable *_self, GObject *debug_context)
 {
     MIRAGE_FileFilter *self = MIRAGE_FILE_FILTER(_self);
 
     if (debug_context == self->priv->debug_context) {
         /* Don't do anything if we're trying to set the same context */
-        return TRUE;
+        return;
     }
 
     /* If debug context is already set, free it */
@@ -196,29 +184,15 @@ static gboolean mirage_file_filter_set_debug_context (MIRAGE_Debuggable *_self, 
 
     /* Set debug context and ref it */
     self->priv->debug_context = debug_context;
-    g_object_ref(self->priv->debug_context);
-
-    return TRUE;
+    if (self->priv->debug_context) {
+        g_object_ref(self->priv->debug_context);
+    }
 }
 
-static gboolean mirage_file_filter_get_debug_context (MIRAGE_Debuggable *_self, GObject **debug_context, GError **error)
+static GObject *mirage_file_filter_get_debug_context (MIRAGE_Debuggable *_self)
 {
     MIRAGE_FileFilter *self = MIRAGE_FILE_FILTER(_self);
-    MIRAGE_CHECK_ARG(debug_context);
-
-    /* Make sure we have debug context set */
-    if (!self->priv->debug_context) {
-        mirage_error(MIRAGE_E_NODEBUGCONTEXT, error);
-        return FALSE;
-    }
-
-    if (debug_context) {
-        /* Return debug context and ref it */
-        *debug_context = self->priv->debug_context;
-        g_object_ref(*debug_context);
-    }
-
-    return TRUE;
+    return self->priv->debug_context;
 }
 
 static void mirage_file_filter_debug_messagev (MIRAGE_Debuggable *_self, gint level, gchar *format, va_list args)
@@ -236,9 +210,9 @@ static void mirage_file_filter_debug_messagev (MIRAGE_Debuggable *_self, gint le
     }
 
     /* Get debug mask, domain and name */
-    mirage_debug_context_get_debug_mask(MIRAGE_DEBUG_CONTEXT(self->priv->debug_context), &debug_mask, NULL);
-    mirage_debug_context_get_domain(MIRAGE_DEBUG_CONTEXT(self->priv->debug_context), &domain, NULL);
-    mirage_debug_context_get_name(MIRAGE_DEBUG_CONTEXT(self->priv->debug_context), &name, NULL);
+    debug_mask = mirage_debug_context_get_debug_mask(MIRAGE_DEBUG_CONTEXT(self->priv->debug_context));
+    domain = mirage_debug_context_get_domain(MIRAGE_DEBUG_CONTEXT(self->priv->debug_context));
+    name = mirage_debug_context_get_name(MIRAGE_DEBUG_CONTEXT(self->priv->debug_context));
 
     /* Insert name in case we have it */
     if (name) {

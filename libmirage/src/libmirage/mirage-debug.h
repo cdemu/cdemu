@@ -105,8 +105,8 @@ struct _MIRAGE_DebuggableInterface
     GTypeInterface parent_iface;
 
     /* Interface methods */
-    gboolean (*set_debug_context) (MIRAGE_Debuggable *self, GObject *debug_context, GError **error);
-    gboolean (*get_debug_context) (MIRAGE_Debuggable *self, GObject **debug_context, GError **error);
+    void (*set_debug_context) (MIRAGE_Debuggable *self, GObject *debug_context);
+    GObject *(*get_debug_context) (MIRAGE_Debuggable *self);
 
     void (*debug_message) (MIRAGE_Debuggable *self, gint level, gchar *format, ...);
     void (*debug_messagev) (MIRAGE_Debuggable *self, gint level, gchar *format, va_list args);
@@ -116,8 +116,8 @@ struct _MIRAGE_DebuggableInterface
 GType mirage_debuggable_get_type (void);
 
 /* Public API */
-gboolean mirage_debuggable_set_debug_context (MIRAGE_Debuggable *self, GObject *debug_context, GError **error);
-gboolean mirage_debuggable_get_debug_context (MIRAGE_Debuggable *self, GObject **debug_context, GError **error);
+void mirage_debuggable_set_debug_context (MIRAGE_Debuggable *self, GObject *debug_context);
+GObject *mirage_debuggable_get_debug_context (MIRAGE_Debuggable *self);
 
 void mirage_debuggable_debug_message (MIRAGE_Debuggable *self, gint level, gchar *format, ...);
 void mirage_debuggable_debug_messagev (MIRAGE_Debuggable *self, gint level, gchar *format, va_list args);
@@ -161,14 +161,14 @@ struct _MIRAGE_DebugContextClass
 GType mirage_debug_context_get_type (void);
 
 /* Public API */
-gboolean mirage_debug_context_set_debug_mask (MIRAGE_DebugContext *self, gint debug_mask, GError **error);
-gboolean mirage_debug_context_get_debug_mask (MIRAGE_DebugContext *self, gint *debug_mask, GError **error);
+void mirage_debug_context_set_debug_mask (MIRAGE_DebugContext *self, gint debug_mask);
+gint mirage_debug_context_get_debug_mask (MIRAGE_DebugContext *self);
 
-gboolean mirage_debug_context_set_domain (MIRAGE_DebugContext *self, const gchar *domain, GError **error);
-gboolean mirage_debug_context_get_domain (MIRAGE_DebugContext *self, const gchar **domain, GError **error);
+void mirage_debug_context_set_domain (MIRAGE_DebugContext *self, const gchar *domain);
+const gchar *mirage_debug_context_get_domain (MIRAGE_DebugContext *self);
 
-gboolean mirage_debug_context_set_name (MIRAGE_DebugContext *self, const gchar *name, GError **error);
-gboolean mirage_debug_context_get_name (MIRAGE_DebugContext *self, const gchar **name, GError **error);
+void mirage_debug_context_set_name (MIRAGE_DebugContext *self, const gchar *name);
+const gchar *mirage_debug_context_get_name (MIRAGE_DebugContext *self);
 
 
 G_END_DECLS

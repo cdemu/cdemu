@@ -93,7 +93,7 @@ GType mirage_file_filter_get_type (void);
  *                             Public API                             *
 \**********************************************************************/
 void mirage_file_filter_generate_file_filter_info (MIRAGE_FileFilter *self, const gchar *id, const gchar *name);
-gboolean mirage_file_filter_get_file_filter_info (MIRAGE_FileFilter *self, const MIRAGE_FileFilterInfo **file_filter_info, GError **error);
+const MIRAGE_FileFilterInfo *mirage_file_filter_get_file_filter_info (MIRAGE_FileFilter *self);
 
 gboolean mirage_file_filter_can_handle_data_format (MIRAGE_FileFilter *self, GError **error);
 

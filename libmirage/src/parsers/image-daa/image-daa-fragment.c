@@ -169,7 +169,7 @@ static gchar *create_filename_func_3 (gchar *main_filename, gint index)
 \**********************************************************************/
 static guint8 daa_crypt_table[128][256];
 
-static void daa_crypt_key (gchar *pass, gint num)
+static void daa_crypt_key (const gchar *pass, gint num)
 {
     gint a, b, c, d, s, i, p;
     gint passlen;
@@ -301,7 +301,7 @@ static void daa_crypt (guint8 *key G_GNUC_UNUSED, guint8 *data, gint size)
     }
 }
 
-static void daa_crypt_init (guint8 *pwdkey, gchar *pass, guint8 *daakey)
+static void daa_crypt_init (guint8 *pwdkey, const gchar *pass, guint8 *daakey)
 {
     int i;
 
@@ -376,7 +376,7 @@ static gboolean mirage_fragment_daa_read_from_stream (MIRAGE_Fragment_DAA *self,
 /**********************************************************************\
  *                  Interface implementation: <private>               *
 \**********************************************************************/
-gboolean mirage_fragment_daa_set_file (MIRAGE_Fragment_DAA *self, gchar *filename, gchar *password, GError **error)
+gboolean mirage_fragment_daa_set_file (MIRAGE_Fragment_DAA *self, const gchar *filename, const gchar *password, GError **error)
 {
     gchar signature[16];
     guint64 tmp_offset = 0;
@@ -388,7 +388,7 @@ gboolean mirage_fragment_daa_set_file (MIRAGE_Fragment_DAA *self, gchar *filenam
     gint bpos = 0;
 
     /* Open main file */
-    stream = libmirage_create_file_stream(filename, NULL);
+    stream = libmirage_create_file_stream(filename, G_OBJECT(self), NULL);
     if (!stream) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to open file '%s'!\n", __debug__, filename);
         mirage_error(MIRAGE_E_DATAFILE, error);
@@ -493,7 +493,7 @@ gboolean mirage_fragment_daa_set_file (MIRAGE_Fragment_DAA *self, gchar *filenam
     /* Set fragment length */
     gint fragment_length = header.isosize / 2048;
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: fragment length: 0x%X (%d)\n", __debug__, fragment_length, fragment_length);
-    mirage_fragment_set_length(MIRAGE_FRAGMENT(self), fragment_length, NULL);
+    mirage_fragment_set_length(MIRAGE_FRAGMENT(self), fragment_length);
 
     /* Set number of parts to 1 (true for non-split images); if image consists
        of multiple parts, this will be set accordingly by the code below */
@@ -631,8 +631,8 @@ gboolean mirage_fragment_daa_set_file (MIRAGE_Fragment_DAA *self, gchar *filenam
                     daa_crypt_init(self->priv->pwd_key, password, daa_key);
                 } else {
                     /* Get password from user via password function */
-                    password = libmirage_obtain_password(NULL);
-                    if (!password) {
+                    gchar *prompt_password = libmirage_obtain_password(NULL);
+                    if (!prompt_password) {
                         /* Password not provided (or password function is not set) */
                         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  failed to obtain password for encrypted image!\n", __debug__);
                         g_object_unref(stream);
@@ -640,8 +640,8 @@ gboolean mirage_fragment_daa_set_file (MIRAGE_Fragment_DAA *self, gchar *filenam
                         return FALSE;
                     }
 
-                    daa_crypt_init(self->priv->pwd_key, password, daa_key);
-                    g_free(password);
+                    daa_crypt_init(self->priv->pwd_key, prompt_password, daa_key);
+                    g_free(prompt_password);
                 }
 
                 /* Check if password is correct */
@@ -786,7 +786,7 @@ gboolean mirage_fragment_daa_set_file (MIRAGE_Fragment_DAA *self, gchar *filenam
 
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  part #%i: %s\n", __debug__, i, filename);
 
-        part->stream = libmirage_create_file_stream(filename, NULL);
+        part->stream = libmirage_create_file_stream(filename, G_OBJECT(self), NULL);
         if (!part->stream) {
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to open stream on file '%s'!\n", __debug__, filename);
             mirage_error(MIRAGE_E_DATAFILE, error);

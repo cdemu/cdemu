@@ -16,7 +16,7 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
- 
+
 #ifndef __MIRAGE_INDEX_H__
 #define __MIRAGE_INDEX_H__
 
@@ -61,11 +61,11 @@ GType mirage_index_get_type (void);
 /**********************************************************************\
  *                             Public API                             *
 \**********************************************************************/
-gboolean mirage_index_set_number (MIRAGE_Index *self, gint number, GError **error);
-gboolean mirage_index_get_number (MIRAGE_Index *self, gint *number, GError **error);
-    
-gboolean mirage_index_set_address (MIRAGE_Index *self, gint address, GError **error);
-gboolean mirage_index_get_address (MIRAGE_Index *self, gint *address, GError **error);
+void mirage_index_set_number (MIRAGE_Index *self, gint number);
+gint mirage_index_get_number (MIRAGE_Index *self);
+
+void mirage_index_set_address (MIRAGE_Index *self, gint address);
+gint mirage_index_get_address (MIRAGE_Index *self);
 
 G_END_DECLS
 

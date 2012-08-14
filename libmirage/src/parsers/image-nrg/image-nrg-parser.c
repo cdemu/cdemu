@@ -216,16 +216,16 @@ static gboolean mirage_parser_nrg_load_medium_type (MIRAGE_Parser_NRG *self, GEr
 
     if (mtyp_data & CD_EQUIV) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: medium type: CD-ROM\n", __debug__);
-        mirage_disc_set_medium_type(MIRAGE_DISC(self->priv->disc), MIRAGE_MEDIUM_CD, NULL);
+        mirage_disc_set_medium_type(MIRAGE_DISC(self->priv->disc), MIRAGE_MEDIUM_CD);
     } else if (mtyp_data & DVD_EQUIV) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: medium type: DVD-ROM\n", __debug__);
-        mirage_disc_set_medium_type(MIRAGE_DISC(self->priv->disc), MIRAGE_MEDIUM_DVD, NULL);
+        mirage_disc_set_medium_type(MIRAGE_DISC(self->priv->disc), MIRAGE_MEDIUM_DVD);
     } else if (mtyp_data & BD_EQUIV) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: medium type: Blue-ray\n", __debug__);
-        mirage_disc_set_medium_type(MIRAGE_DISC(self->priv->disc), MIRAGE_MEDIUM_BD, NULL);
+        mirage_disc_set_medium_type(MIRAGE_DISC(self->priv->disc), MIRAGE_MEDIUM_BD);
     } else if (mtyp_data & HD_EQUIV) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: medium type: HD-DVD\n", __debug__);
-        mirage_disc_set_medium_type(MIRAGE_DISC(self->priv->disc), MIRAGE_MEDIUM_HD, NULL);
+        mirage_disc_set_medium_type(MIRAGE_DISC(self->priv->disc), MIRAGE_MEDIUM_HD);
     } else {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: unhandled medium type: %d!\n", __debug__, mtyp_data);
         mirage_error(MIRAGE_E_PARSER, error);
@@ -235,7 +235,7 @@ static gboolean mirage_parser_nrg_load_medium_type (MIRAGE_Parser_NRG *self, GEr
     return TRUE;
 }
 
-static gboolean mirage_parser_nrg_decode_mode (MIRAGE_Parser_NRG *self, gint code, gint *mode, gint *main_sectsize, gint *sub_sectsize, GError **error)
+static void mirage_parser_nrg_decode_mode (MIRAGE_Parser_NRG *self, gint code, gint *mode, gint *main_sectsize, gint *sub_sectsize)
 {
     /* The meaning of the following codes was determined experimentally; we're
        missing mappings for Mode 2 Formless, but that doesn't seem a very common
@@ -315,13 +315,13 @@ static gboolean mirage_parser_nrg_decode_mode (MIRAGE_Parser_NRG *self, gint cod
             break;
         }
         default: {
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: unknown mode code: %d!\n", __debug__, code);
-            mirage_error(MIRAGE_E_PARSER, error);
-            return FALSE;
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: unknown mode code: %d! Assuming sector size 2352 and no subchannel!\n", __debug__, code);
+            *mode = MIRAGE_MODE_AUDIO;
+            *main_sectsize = 2352;
+            *sub_sectsize = 0;
+            break;
         }
     }
-
-    return TRUE;
 }
 
 static gboolean mirage_parser_nrg_load_etn_data (MIRAGE_Parser_NRG *self, gint session_num, GError **error)
@@ -543,7 +543,7 @@ static gboolean mirage_parser_nrg_load_session (MIRAGE_Parser_NRG *self, gint se
     /* Set parser's MCN */
     if (self->priv->dao_header->mcn) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: MCN: %.13s\n", __debug__, self->priv->dao_header->mcn);
-        mirage_disc_set_mcn(MIRAGE_DISC(self->priv->disc), self->priv->dao_header->mcn, NULL);
+        mirage_disc_set_mcn(MIRAGE_DISC(self->priv->disc), self->priv->dao_header->mcn);
     }
 
     /* Build session */
@@ -575,8 +575,8 @@ static gboolean mirage_parser_nrg_load_session (MIRAGE_Parser_NRG *self, gint se
         }
 
         /* Decode mode */
-        mirage_parser_nrg_decode_mode(self, dao_block->mode_code, &mode, &main_sectsize, &sub_sectsize, NULL);
-        mirage_track_set_mode(MIRAGE_TRACK(cur_track), mode, NULL);
+        mirage_parser_nrg_decode_mode(self, dao_block->mode_code, &mode, &main_sectsize, &sub_sectsize);
+        mirage_track_set_mode(MIRAGE_TRACK(cur_track), mode);
 
         /* Shouldn't happen, but just in case I misinterpreted something */
         if (main_sectsize + sub_sectsize != dao_block->sector_size) {
@@ -588,16 +588,16 @@ static gboolean mirage_parser_nrg_load_session (MIRAGE_Parser_NRG *self, gint se
            I'm not sure why image file has the offsets separated - maybe they
            don't have to be adjacent?
         */
-        gint tfile_sectsize = 0;
-        guint64 tfile_offset = 0;
-        guint64 tfile_format = 0;
+        gint tfile_sectsize;
+        guint64 tfile_offset;
+        guint64 tfile_format;
 
-        gint sfile_sectsize = 0;
-        guint64 sfile_format = 0;
+        gint sfile_sectsize;
+        guint64 sfile_format;
 
-        gint fragment_len = 0;
+        gint fragment_len;
 
-        GObject *data_fragment = NULL;
+        GObject *data_fragment;
 
         /* Pregap fragment */
         fragment_len = (dao_block->start_offset - dao_block->pregap_offset) / dao_block->sector_size;
@@ -627,9 +627,12 @@ static gboolean mirage_parser_nrg_load_session (MIRAGE_Parser_NRG *self, gint se
             if (sub_sectsize) {
                 sfile_sectsize = sub_sectsize; /* We use the one from decoded mode code */
                 sfile_format = FR_BIN_SFILE_PW96_INT | FR_BIN_SFILE_INT; /* PW96 interleaved, internal */
+            } else {
+                sfile_sectsize = 0;
+                sfile_format = 0;
             }
 
-            mirage_fragment_set_length(MIRAGE_FRAGMENT(data_fragment), fragment_len, NULL);
+            mirage_fragment_set_length(MIRAGE_FRAGMENT(data_fragment), fragment_len);
 
             if (!mirage_frag_iface_binary_track_file_set_file(MIRAGE_FRAG_IFACE_BINARY(data_fragment), self->priv->nrg_filename, error)) {
                 MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to set track data file!\n", __debug__);
@@ -639,12 +642,12 @@ static gboolean mirage_parser_nrg_load_session (MIRAGE_Parser_NRG *self, gint se
                 succeeded = FALSE;
                 goto end;
             }
-            mirage_frag_iface_binary_track_file_set_offset(MIRAGE_FRAG_IFACE_BINARY(data_fragment), tfile_offset, NULL);
-            mirage_frag_iface_binary_track_file_set_sectsize(MIRAGE_FRAG_IFACE_BINARY(data_fragment), tfile_sectsize, NULL);
-            mirage_frag_iface_binary_track_file_set_format(MIRAGE_FRAG_IFACE_BINARY(data_fragment), tfile_format, NULL);
+            mirage_frag_iface_binary_track_file_set_offset(MIRAGE_FRAG_IFACE_BINARY(data_fragment), tfile_offset);
+            mirage_frag_iface_binary_track_file_set_sectsize(MIRAGE_FRAG_IFACE_BINARY(data_fragment), tfile_sectsize);
+            mirage_frag_iface_binary_track_file_set_format(MIRAGE_FRAG_IFACE_BINARY(data_fragment), tfile_format);
 
-            mirage_frag_iface_binary_subchannel_file_set_sectsize(MIRAGE_FRAG_IFACE_BINARY(data_fragment), sfile_sectsize, NULL);
-            mirage_frag_iface_binary_subchannel_file_set_format(MIRAGE_FRAG_IFACE_BINARY(data_fragment), sfile_format, NULL);
+            mirage_frag_iface_binary_subchannel_file_set_sectsize(MIRAGE_FRAG_IFACE_BINARY(data_fragment), sfile_sectsize);
+            mirage_frag_iface_binary_subchannel_file_set_format(MIRAGE_FRAG_IFACE_BINARY(data_fragment), sfile_format);
 
             mirage_track_add_fragment(MIRAGE_TRACK(cur_track), -1, &data_fragment, NULL);
 
@@ -679,9 +682,12 @@ static gboolean mirage_parser_nrg_load_session (MIRAGE_Parser_NRG *self, gint se
             if (sub_sectsize) {
                 sfile_sectsize = sub_sectsize; /* We use the one from decoded mode code */
                 sfile_format = FR_BIN_SFILE_PW96_INT | FR_BIN_SFILE_INT; /* PW96 interleaved, internal */
+            } else {
+                sfile_sectsize = 0;
+                sfile_format = 0;
             }
 
-            mirage_fragment_set_length(MIRAGE_FRAGMENT(data_fragment), fragment_len, NULL);
+            mirage_fragment_set_length(MIRAGE_FRAGMENT(data_fragment), fragment_len);
 
             if (!mirage_frag_iface_binary_track_file_set_file(MIRAGE_FRAG_IFACE_BINARY(data_fragment), self->priv->nrg_filename, error)) {
                 MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to set track data file!\n", __debug__);
@@ -691,12 +697,12 @@ static gboolean mirage_parser_nrg_load_session (MIRAGE_Parser_NRG *self, gint se
                 succeeded = FALSE;
                 goto end;
             }
-            mirage_frag_iface_binary_track_file_set_offset(MIRAGE_FRAG_IFACE_BINARY(data_fragment), tfile_offset, NULL);
-            mirage_frag_iface_binary_track_file_set_sectsize(MIRAGE_FRAG_IFACE_BINARY(data_fragment), tfile_sectsize, NULL);
-            mirage_frag_iface_binary_track_file_set_format(MIRAGE_FRAG_IFACE_BINARY(data_fragment), tfile_format, NULL);
+            mirage_frag_iface_binary_track_file_set_offset(MIRAGE_FRAG_IFACE_BINARY(data_fragment), tfile_offset);
+            mirage_frag_iface_binary_track_file_set_sectsize(MIRAGE_FRAG_IFACE_BINARY(data_fragment), tfile_sectsize);
+            mirage_frag_iface_binary_track_file_set_format(MIRAGE_FRAG_IFACE_BINARY(data_fragment), tfile_format);
 
-            mirage_frag_iface_binary_subchannel_file_set_sectsize(MIRAGE_FRAG_IFACE_BINARY(data_fragment), sfile_sectsize, NULL);
-            mirage_frag_iface_binary_subchannel_file_set_format(MIRAGE_FRAG_IFACE_BINARY(data_fragment), sfile_format, NULL);
+            mirage_frag_iface_binary_subchannel_file_set_sectsize(MIRAGE_FRAG_IFACE_BINARY(data_fragment), sfile_sectsize);
+            mirage_frag_iface_binary_subchannel_file_set_format(MIRAGE_FRAG_IFACE_BINARY(data_fragment), sfile_format);
 
             mirage_track_add_fragment(MIRAGE_TRACK(cur_track), -1, &data_fragment, NULL);
 
@@ -705,7 +711,7 @@ static gboolean mirage_parser_nrg_load_session (MIRAGE_Parser_NRG *self, gint se
 
         /* Set ISRC */
         if (dao_block->isrc) {
-            mirage_track_set_isrc(MIRAGE_TRACK(cur_track), dao_block->isrc, NULL);
+            mirage_track_set_isrc(MIRAGE_TRACK(cur_track), dao_block->isrc);
         }
 
         g_object_unref(cur_track);
@@ -730,7 +736,7 @@ static gboolean mirage_parser_nrg_load_session (MIRAGE_Parser_NRG *self, gint se
             /* Index is -1, because current session has already been added */
             if (!mirage_disc_get_session_by_index(MIRAGE_DISC(self->priv->disc), -2, &prev_session, NULL)) {
                 MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: lead-in block of first session; setting parser start to 0x%X\n", __debug__, cue_block->start_sector);
-                mirage_disc_layout_set_start_sector(MIRAGE_DISC(self->priv->disc), cue_block->start_sector, NULL);
+                mirage_disc_layout_set_start_sector(MIRAGE_DISC(self->priv->disc), cue_block->start_sector);
             } else {
                 gint leadout_length = 0;
 
@@ -738,7 +744,7 @@ static gboolean mirage_parser_nrg_load_session (MIRAGE_Parser_NRG *self, gint se
 
                 MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: lead-in block; setting previous session's leadout length to 0x%X\n", __debug__, leadout_length);
 
-                mirage_session_set_leadout_length(MIRAGE_SESSION(prev_session), leadout_length, NULL);
+                mirage_session_set_leadout_length(MIRAGE_SESSION(prev_session), leadout_length);
 
                 g_object_unref(prev_session);
             }
@@ -758,7 +764,7 @@ static gboolean mirage_parser_nrg_load_session (MIRAGE_Parser_NRG *self, gint se
                 if (cue_block->index == 1) {
                     /* Track start */
                     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: setting index 1 to address 0x%X\n", __debug__, cur_address);
-                    mirage_track_set_track_start(MIRAGE_TRACK(track), cur_address, NULL);
+                    mirage_track_set_track_start(MIRAGE_TRACK(track), cur_address);
                 } else {
                     /* Additional index */
                     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: adding index at address 0x%X\n", __debug__, cur_address);
@@ -826,41 +832,35 @@ static gboolean mirage_parser_nrg_load_session_tao (MIRAGE_Parser_NRG *self, gin
         }
 
         /* Decode mode */
-        mirage_parser_nrg_decode_mode(self, etn_block->mode, &mode, &main_sectsize, &sub_sectsize, NULL);
-        mirage_track_set_mode(MIRAGE_TRACK(cur_track), mode, NULL);
+        mirage_parser_nrg_decode_mode(self, etn_block->mode, &mode, &main_sectsize, &sub_sectsize);
+        mirage_track_set_mode(MIRAGE_TRACK(cur_track), mode);
 
         /* Prepare data fragment: we use two fragments, one for pregap and one
            for track itself; we could use only one that spans across both, but
            I'm not sure why image file has the offsets separated - maybe they
            don't have to be adjacent?
         */
-        gint tfile_sectsize = 0;
-        guint64 tfile_offset = 0;
-        guint64 tfile_format = 0;
+        gint tfile_sectsize;
+        guint64 tfile_offset;
+        guint64 tfile_format;
 
-        gint sfile_sectsize = 0;
-        guint64 sfile_format = 0;
+        gint sfile_sectsize;
+        guint64 sfile_format;
 
-        gint fragment_len = 0;
+        gint fragment_len;
 
-        GObject *data_fragment = NULL;
-        GObject *pregap_fragment = NULL;
+        GObject *data_fragment;
+        GObject *pregap_fragment;
 
-        /* Pregap fragment */
+        /* Pregap fragment - creation of NULL fragment should never fail */
         pregap_fragment = libmirage_create_fragment(MIRAGE_TYPE_FRAG_IFACE_NULL, "NULL", error);
-        if (!pregap_fragment) {
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: failed to create pregap fragment!\n", __debug__);
-            g_object_unref(cur_session);
-            g_object_unref(cur_track);
-            succeeded = FALSE;
-            goto end;
-        }
+
         mirage_track_add_fragment(MIRAGE_TRACK(cur_track), 0, &pregap_fragment, NULL);
-        mirage_fragment_set_length(MIRAGE_FRAGMENT(pregap_fragment), 150, NULL);
+        mirage_fragment_set_length(MIRAGE_FRAGMENT(pregap_fragment), 150);
 
         g_object_unref(pregap_fragment);
 
-        mirage_track_set_track_start(MIRAGE_TRACK(cur_track), 150, NULL);
+        mirage_track_set_track_start(MIRAGE_TRACK(cur_track), 150);
 
         /* Data fragment */
         fragment_len = etn_block->size / main_sectsize;
@@ -889,9 +889,12 @@ static gboolean mirage_parser_nrg_load_session_tao (MIRAGE_Parser_NRG *self, gin
             if (sub_sectsize) {
                 sfile_sectsize = sub_sectsize; /* We use the one from decoded mode code */
                 sfile_format = FR_BIN_SFILE_PW96_INT | FR_BIN_SFILE_INT; /* PW96 interleaved, internal */
+            } else {
+                sfile_sectsize = 0;
+                sfile_sectsize = 0;
             }
 
-            mirage_fragment_set_length(MIRAGE_FRAGMENT(data_fragment), fragment_len, NULL);
+            mirage_fragment_set_length(MIRAGE_FRAGMENT(data_fragment), fragment_len);
 
             if (!mirage_frag_iface_binary_track_file_set_file(MIRAGE_FRAG_IFACE_BINARY(data_fragment), self->priv->nrg_filename, error)) {
                 MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to set track data file!\n", __debug__);
@@ -901,12 +904,12 @@ static gboolean mirage_parser_nrg_load_session_tao (MIRAGE_Parser_NRG *self, gin
                 succeeded = FALSE;
                 goto end;
             }
-            mirage_frag_iface_binary_track_file_set_offset(MIRAGE_FRAG_IFACE_BINARY(data_fragment), tfile_offset, NULL);
-            mirage_frag_iface_binary_track_file_set_sectsize(MIRAGE_FRAG_IFACE_BINARY(data_fragment), tfile_sectsize, NULL);
-            mirage_frag_iface_binary_track_file_set_format(MIRAGE_FRAG_IFACE_BINARY(data_fragment), tfile_format, NULL);
+            mirage_frag_iface_binary_track_file_set_offset(MIRAGE_FRAG_IFACE_BINARY(data_fragment), tfile_offset);
+            mirage_frag_iface_binary_track_file_set_sectsize(MIRAGE_FRAG_IFACE_BINARY(data_fragment), tfile_sectsize);
+            mirage_frag_iface_binary_track_file_set_format(MIRAGE_FRAG_IFACE_BINARY(data_fragment), tfile_format);
 
-            mirage_frag_iface_binary_subchannel_file_set_sectsize(MIRAGE_FRAG_IFACE_BINARY(data_fragment), sfile_sectsize, NULL);
-            mirage_frag_iface_binary_subchannel_file_set_format(MIRAGE_FRAG_IFACE_BINARY(data_fragment), sfile_format, NULL);
+            mirage_frag_iface_binary_subchannel_file_set_sectsize(MIRAGE_FRAG_IFACE_BINARY(data_fragment), sfile_sectsize);
+            mirage_frag_iface_binary_subchannel_file_set_format(MIRAGE_FRAG_IFACE_BINARY(data_fragment), sfile_format);
 
             mirage_track_add_fragment(MIRAGE_TRACK(cur_track), -1, &data_fragment, NULL);
 
@@ -964,7 +967,7 @@ static gboolean mirage_parser_nrg_load_cdtext (MIRAGE_Parser_NRG *self, GError *
 /**********************************************************************\
  *                MIRAGE_Parser methods implementation                *
 \**********************************************************************/
-static gboolean mirage_parser_nrg_load_image (MIRAGE_Parser *_self, gchar **filenames, GObject **disc, GError **error)
+static GObject *mirage_parser_nrg_load_image (MIRAGE_Parser *_self, gchar **filenames, GError **error)
 {
     MIRAGE_Parser_NRG *self = MIRAGE_PARSER_NRG(_self);
 
@@ -975,7 +978,7 @@ static gboolean mirage_parser_nrg_load_image (MIRAGE_Parser *_self, gchar **file
     gchar sig[4];
 
     /* Open file */
-    stream = libmirage_create_file_stream(filenames[0], NULL);
+    stream = libmirage_create_file_stream(filenames[0], G_OBJECT(self), NULL);
     if (!stream) {
         mirage_error(MIRAGE_E_IMAGEFILE, error);
         return FALSE;
@@ -1044,14 +1047,14 @@ static gboolean mirage_parser_nrg_load_image (MIRAGE_Parser *_self, gchar **file
 
     /* Create disc */
     self->priv->disc = g_object_new(MIRAGE_TYPE_DISC, NULL);
-    mirage_object_attach_child(MIRAGE_OBJECT(self), self->priv->disc, NULL);
+    mirage_object_attach_child(MIRAGE_OBJECT(self), self->priv->disc);
 
-    mirage_disc_set_filename(MIRAGE_DISC(self->priv->disc), filenames[0], NULL);
+    mirage_disc_set_filename(MIRAGE_DISC(self->priv->disc), filenames[0]);
     self->priv->nrg_filename = g_strdup(filenames[0]);
 
     /* Set CD-ROM as default medium type, will be changed accordingly if there
        is a MTYP block provided */
-    mirage_disc_set_medium_type(MIRAGE_DISC(self->priv->disc), MIRAGE_MEDIUM_CD, NULL);
+    mirage_disc_set_medium_type(MIRAGE_DISC(self->priv->disc), MIRAGE_MEDIUM_CD);
 
     /* Read descriptor data */
     self->priv->nrg_data = g_malloc(self->priv->nrg_data_length);
@@ -1075,7 +1078,7 @@ static gboolean mirage_parser_nrg_load_image (MIRAGE_Parser *_self, gchar **file
     /* We'll have to set disc layout start to -150 at some point, so we might
        as well do it here (loading CUEX/CUES session will change this, if ever
        needed) */
-    mirage_disc_layout_set_start_sector(MIRAGE_DISC(self->priv->disc), -150, NULL);
+    mirage_disc_layout_set_start_sector(MIRAGE_DISC(self->priv->disc), -150);
 
     /* Load sessions */
     gint session_num = 0;
@@ -1084,17 +1087,15 @@ static gboolean mirage_parser_nrg_load_image (MIRAGE_Parser *_self, gchar **file
     for (session_num = 0; ; session_num++) {
         if (mirage_parser_nrg_find_block_entry(self, "CUEX", session_num) || mirage_parser_nrg_find_block_entry(self, "CUES", session_num)) {
             /* CUEX/CUES block: means we need to make new session */
-            if (!mirage_parser_nrg_load_session(self, session_num, NULL)) {
+            if (!mirage_parser_nrg_load_session(self, session_num, error)) {
                 MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to load session!\n", __debug__);
-                mirage_error(MIRAGE_E_PARSER, error);
                 succeeded = FALSE;
                 goto end;
             }
         } else if (mirage_parser_nrg_find_block_entry(self, "ETN2", session_num) || mirage_parser_nrg_find_block_entry(self, "ETNF", session_num)) {
             /* ETNF/ETN2 block: means we need to make new session */
-            if (!mirage_parser_nrg_load_session_tao(self, session_num, NULL)) {
+            if (!mirage_parser_nrg_load_session_tao(self, session_num, error)) {
                 MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to load session!\n", __debug__);
-                mirage_error(MIRAGE_E_PARSER, error);
                 succeeded = FALSE;
                 goto end;
             }
@@ -1133,15 +1134,13 @@ end:
     g_object_unref(stream);
 
     /* Return disc */
-    mirage_object_detach_child(MIRAGE_OBJECT(self), self->priv->disc, NULL);
+    mirage_object_detach_child(MIRAGE_OBJECT(self), self->priv->disc);
     if (succeeded) {
-        *disc = self->priv->disc;
+        return self->priv->disc;
     } else {
         g_object_unref(self->priv->disc);
-        *disc = NULL;
+        return NULL;
     }
-
-    return succeeded;
 }
 
 

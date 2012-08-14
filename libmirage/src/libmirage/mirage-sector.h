@@ -132,7 +132,7 @@ GType mirage_sector_get_type (void);
 \**********************************************************************/
 gboolean mirage_sector_feed_data (MIRAGE_Sector *self, gint address, GObject *track, GError **error);
 
-gboolean mirage_sector_get_sector_type (MIRAGE_Sector *self, gint *type, GError **error);
+gint mirage_sector_get_sector_type (MIRAGE_Sector *self);
 
 gboolean mirage_sector_get_sync (MIRAGE_Sector *self, const guint8 **ret_buf, gint *ret_len, GError **error);
 gboolean mirage_sector_get_header (MIRAGE_Sector *self, const guint8 **ret_buf, gint *ret_len, GError **error);

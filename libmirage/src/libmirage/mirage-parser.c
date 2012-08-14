@@ -34,7 +34,7 @@
 struct _MIRAGE_ParserPrivate
 {
     GHashTable *parser_params;
-    
+
     MIRAGE_ParserInfo *parser_info;
 };
 
@@ -50,7 +50,7 @@ static void destroy_parser_info (MIRAGE_ParserInfo *info)
         g_free(info->name);
         g_free(info->description);
         g_free(info->mime_type);
-        
+
         g_free(info);
     }
 }
@@ -62,10 +62,10 @@ static void destroy_parser_info (MIRAGE_ParserInfo *info)
 /**
  * mirage_parser_generate_parser_info:
  * @self: a #MIRAGE_Parser
- * @id: parser ID
- * @name: parser name
- * @description: image file description
- * @mime_type: image file MIME type
+ * @id: (in): parser ID
+ * @name: (in): parser name
+ * @description: (in): image file description
+ * @mime_type: (in): image file MIME type
  *
  * <para>
  * Generates parser information from the input fields. It is intended as a function
@@ -76,13 +76,13 @@ void mirage_parser_generate_parser_info (MIRAGE_Parser *self, const gchar *id, c
 {
     /* Free old info */
     destroy_parser_info(self->priv->parser_info);
-    
+
     /* Create new info */
     self->priv->parser_info = g_new0(MIRAGE_ParserInfo, 1);
-    
+
     self->priv->parser_info->id = g_strdup(id);
     self->priv->parser_info->name = g_strdup(name);
-        
+
     self->priv->parser_info->description = g_strdup(description);
     self->priv->parser_info->mime_type = g_strdup(mime_type);
 }
@@ -91,77 +91,69 @@ void mirage_parser_generate_parser_info (MIRAGE_Parser *self, const gchar *id, c
 /**
  * mirage_parser_get_parser_info:
  * @self: a #MIRAGE_Parser
- * @parser_info: location to store parser info
- * @error: location to store error, or %NULL
  *
  * <para>
  * Retrieves parser information.
  * </para>
  *
- * <para>
- * A pointer to parser information structure is stored in @parser_info; the structure
- * belongs to the object and therefore should not be modified.
- * </para>
- *
- * Returns: %TRUE on success, %FALSE on failure
+ * Returns: a pointer to parser information structure.  The
+ * structure belongs to object and should not be modified.
  **/
-gboolean mirage_parser_get_parser_info (MIRAGE_Parser *self, const MIRAGE_ParserInfo **parser_info, GError **error)
+const MIRAGE_ParserInfo *mirage_parser_get_parser_info (MIRAGE_Parser *self)
 {
-    if (!self->priv->parser_info) {
-        mirage_error(MIRAGE_E_DATANOTSET, error);
-        return FALSE;
-    }
-    
-    *parser_info = self->priv->parser_info;
-    return TRUE;
+    return self->priv->parser_info;
 }
 
 
 /**
  * mirage_parser_load_image:
  * @self: a #MIRAGE_Parser
- * @filenames: image filename(s)
- * @disc: location to store the resulting #MIRAGE_Disc object
- * @error: location to store error, or %NULL
+ * @filenames: (in): image filename(s)
+ * @disc: (out) (transfer full): location to store the resulting #MIRAGE_Disc object
+ * @error: (out) (allow-none): location to store error, or %NULL
  *
  * <para>
  * Loads the image stored in @filenames.
  * </para>
  *
- * Returns: %TRUE on success, %FALSE on failure
+ * Returns: disc object representing image on success, %NULL on failure
  **/
-gboolean mirage_parser_load_image (MIRAGE_Parser *self, gchar **filenames, GObject **disc, GError **error)
+GObject *mirage_parser_load_image (MIRAGE_Parser *self, gchar **filenames, GError **error)
 {
+    GObject *disc;
+
     /* Provided by implementation */
     if (!MIRAGE_PARSER_GET_CLASS(self)->load_image) {
         mirage_error(MIRAGE_E_NOTIMPL, error);
-        return FALSE;
+        return NULL;
     }
 
     /* Load the image */
-    if (!MIRAGE_PARSER_GET_CLASS(self)->load_image(self, filenames, disc, error)) {
-        return FALSE;
+    disc = MIRAGE_PARSER_GET_CLASS(self)->load_image(self, filenames, error);
+    if (!disc) {
+        return NULL;
     }
 
     /* If 'dvd-report-css' flag is passed to the parser, pass it on to
        the disc object */
-    GVariant *dvd_report_css;
-    if (mirage_parser_get_param(self, "dvd-report-css", G_VARIANT_TYPE_BOOLEAN, &dvd_report_css, NULL)) {
+    GVariant *dvd_report_css = mirage_parser_get_param(self, "dvd-report-css", G_VARIANT_TYPE_BOOLEAN);
+    if (dvd_report_css) {
         /* Convert GVariant to GValue... */
         GValue dvd_report_css2;
         g_value_init(&dvd_report_css2, G_TYPE_BOOLEAN);
-        g_value_set_boolean(&dvd_report_css2, TRUE);
-        g_object_set_property(*disc, "dvd-report-css", &dvd_report_css2);
+        g_value_set_boolean(&dvd_report_css2, g_variant_get_boolean(dvd_report_css));
+
+        g_object_set_property(disc, "dvd-report-css", &dvd_report_css2);
     }
 
-    return TRUE;
+    return disc;
 }
 
 
 /**
  * mirage_parser_guess_medium_type:
  * @self: a #MIRAGE_Parser
- * @disc: disc object
+ * @disc: (in): disc object
  *
  * <para>
  * Attempts to guess medium type by looking at the length of the disc layout.
@@ -171,7 +163,7 @@ gboolean mirage_parser_load_image (MIRAGE_Parser *self, gchar **filenames, GObje
  *
  * <para>
  * Note that this function does not set the medium type to disc object; you still
- * need to do it via mirage_disc_set_medium_type(). It is meant to be used in 
+ * need to do it via mirage_disc_set_medium_type(). It is meant to be used in
  * simple parsers whose image files don't provide medium type information.
  * </para>
  *
@@ -179,10 +171,8 @@ gboolean mirage_parser_load_image (MIRAGE_Parser *self, gchar **filenames, GObje
  **/
 gint mirage_parser_guess_medium_type (MIRAGE_Parser *self, GObject *disc)
 {
-    gint length;
-    
-    mirage_disc_layout_get_length(MIRAGE_DISC(disc), &length, NULL);
-    
+    gint length = mirage_disc_layout_get_length(MIRAGE_DISC(disc));
+
     /* FIXME: add other media types? */
     if (length <= 90*60*75) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: disc layout size implies CD-ROM image\n", __debug__);
@@ -196,12 +186,12 @@ gint mirage_parser_guess_medium_type (MIRAGE_Parser *self, GObject *disc)
 /**
  * mirage_parser_add_redbook_pregap:
  * @self: a #MIRAGE_Parser
- * @disc: disc object
- * @error: location to store error, or %NULL
+ * @disc: (in): disc object
+ * @error: (out) (allow-none): location to store error, or %NULL
  *
  * <para>
  * A helper function, intended to be used in simpler parsers that don't get proper
- * pregap information from the image file. 
+ * pregap information from the image file.
  * </para>
  *
  * <para>
@@ -211,7 +201,7 @@ gint mirage_parser_guess_medium_type (MIRAGE_Parser *self, GObject *disc)
  * </para>
  *
  * <para>
- * Note that the function works only on discs which have medium type set to 
+ * Note that the function works only on discs which have medium type set to
  * CD-ROM.
  * </para>
  *
@@ -222,9 +212,9 @@ gboolean mirage_parser_add_redbook_pregap (MIRAGE_Parser *self, GObject *disc, G
     gint medium_type;
     gint num_sessions;
     gint i;
-    
-    mirage_disc_get_medium_type(MIRAGE_DISC(disc), &medium_type, NULL);
-    
+
+    medium_type = mirage_disc_get_medium_type(MIRAGE_DISC(disc));
+
     /* Red Book pregap is found only on CD-ROMs */
     if (medium_type != MIRAGE_MEDIUM_CD) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: Red Book pregap exists only on CD-ROMs!\n", __debug__);
@@ -233,56 +223,49 @@ gboolean mirage_parser_add_redbook_pregap (MIRAGE_Parser *self, GObject *disc, G
     }
 
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: adding Red Book pregaps to the disc...\n", __debug__);
-    
+
     /* CD-ROMs start at -150 as per Red Book... */
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: setting disc layout start at -150\n", __debug__);
-    mirage_disc_layout_set_start_sector(MIRAGE_DISC(disc), -150, NULL);
-        
-    mirage_disc_get_number_of_sessions(MIRAGE_DISC(disc), &num_sessions, NULL);
+    mirage_disc_layout_set_start_sector(MIRAGE_DISC(disc), -150);
+
+    num_sessions = mirage_disc_get_number_of_sessions(MIRAGE_DISC(disc));
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: %d session(s)\n", __debug__, num_sessions);
 
     /* Put 150 sector pregap into every first track of each session */
     for (i = 0; i < num_sessions; i++) {
         GObject *session = NULL;
         GObject *ftrack = NULL;
-                
+
         if (!mirage_disc_get_session_by_index(MIRAGE_DISC(disc), i, &session, error)) {
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to get session with index %i!\n", __debug__, i);
             return FALSE;
         }
-            
+
         if (!mirage_session_get_track_by_index(MIRAGE_SESSION(session), 0, &ftrack, error)) {
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to first track of session with index %i!\n", __debug__, i);
             g_object_unref(session);
             return FALSE;
         }
 
-        /* Add pregap fragment (empty) */
+        /* Add pregap fragment - NULL fragment creation should never fail */
         GObject *pregap_fragment = libmirage_create_fragment(MIRAGE_TYPE_FRAG_IFACE_NULL, "NULL", NULL);
-        if (!pregap_fragment) {
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to create pregap fragment!\n", __debug__);
-            g_object_unref(session);
-            g_object_unref(ftrack);
-            mirage_error(MIRAGE_E_PARSER, error);
-            return FALSE;
-        }
+
         mirage_track_add_fragment(MIRAGE_TRACK(ftrack), 0, &pregap_fragment, NULL);
-        mirage_fragment_set_length(MIRAGE_FRAGMENT(pregap_fragment), 150, NULL);
+        mirage_fragment_set_length(MIRAGE_FRAGMENT(pregap_fragment), 150);
         g_object_unref(pregap_fragment);
-            
+
         /* Track starts at 150... well, unless it already has a pregap, in
            which case they should stack */
-        gint old_start = 0;
-        mirage_track_get_track_start(MIRAGE_TRACK(ftrack), &old_start, NULL);
-        old_start += 150;
-        mirage_track_set_track_start(MIRAGE_TRACK(ftrack), old_start, NULL);
-        
+        gint track_start = mirage_track_get_track_start(MIRAGE_TRACK(ftrack));
+        track_start += 150;
+        mirage_track_set_track_start(MIRAGE_TRACK(ftrack), track_start);
+
         g_object_unref(ftrack);
         g_object_unref(session);
-        
+
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: added 150 pregap to first track in session %i\n", __debug__, i);
     }
-    
+
     return TRUE;
 }
 
@@ -290,17 +273,16 @@ gboolean mirage_parser_add_redbook_pregap (MIRAGE_Parser *self, GObject *disc, G
 /**
  * mirage_parser_set_params:
  * @self: a #MIRAGE_Parser
- * @params: a #GHashTable containing parameters
- * @error: location to store error, or %NULL
+ * @params: (in): a #GHashTable containing parameters
  *
  * <para>
- * An internal function that sets the parsing parameters to parser 
+ * An internal function that sets the parsing parameters to parser
  * (such as password, encoding, etc.). It is meant to be used by libmirage_create_disc()
  * to pass the parsing parameters to parser before performing the parsing.
  * </para>
  *
  * <para>
- * @params is a #GHashTable that must have strings for its keys and values of 
+ * @params is a #GHashTable that must have strings for its keys and values of
  * #GValue type.
  * </para>
  *
@@ -310,21 +292,16 @@ gboolean mirage_parser_add_redbook_pregap (MIRAGE_Parser *self, GObject *disc, G
  * note is that whether parameter is used or not is up to the parser implementation.
  * In case of unsupported parameter, the parser implementation should simply ignore it.
  * </para>
- *
- * Returns: %TRUE on success, %FALSE on failure
  **/
-gboolean mirage_parser_set_params (MIRAGE_Parser *self, GHashTable *params, GError **error G_GNUC_UNUSED)
+void mirage_parser_set_params (MIRAGE_Parser *self, GHashTable *params)
 {
     self->priv->parser_params = params; /* Just store pointer */
-    return TRUE;
 }
 
 /**
  * mirage_parser_get_param_string:
  * @self: a #MIRAGE_Parser
- * @name: parameter name (key)
- * @ret_value: location to store the string value, or %NULL
- * @error: location to store error, or %NULL
+ * @name: (in): parameter name (key)
  *
  * <para>
  * An internal function that retrieves a string parameter named @name. It is meant
@@ -332,39 +309,28 @@ gboolean mirage_parser_set_params (MIRAGE_Parser *self, GHashTable *params, GErr
  * parsing.
  * </para>
  *
- * <para>
- * Note that pointer to string is returned; the string belongs to whoever owns
+ * Returns: (transfer none): string value, or %NULL. The string belongs to whoever owns
  * the parameters hash table that was passed to the parser, and as such should
- * not be freed after no longer needed.
- * </para>
- *
- * Returns: %TRUE on success, %FALSE on failure
+ * not be modified.
  **/
-gboolean mirage_parser_get_param_string (MIRAGE_Parser *self, const gchar *name, const gchar **ret_value, GError **error G_GNUC_UNUSED)
+const gchar *mirage_parser_get_param_string (MIRAGE_Parser *self, const gchar *name)
 {
-    GVariant *value;
-
     /* Get value */
-    if (!mirage_parser_get_param(self, name, G_VARIANT_TYPE_STRING, &value, NULL)) {
-        return FALSE;
+    GVariant *value = mirage_parser_get_param(self, name, G_VARIANT_TYPE_STRING);
+
+    if (!value) {
+        return NULL;
     }
 
-    /* Return string */
-    if (ret_value) {
-        *ret_value = g_variant_get_string(value, NULL);
-    }
-    
-    return TRUE;
+    return g_variant_get_string(value, NULL);
 }
 
 
 /**
  * mirage_parser_get_param:
  * @self: a #MIRAGE_Parser
- * @name: parameter name (key)
- * @type: expected value type (set to %G_VARIANT_TYPE_ANY to disable type checking)
- * @ret_value: location to store the #GVariant value, or %NULL
- * @error: location to store error, or %NULL
+ * @name: (in): parameter name (key)
+ * @type: (in): expected value type (set to %G_VARIANT_TYPE_ANY to disable type checking)
  *
  * <para>
  * An internal function that retrieves a boolean parameter named @name. It is meant
@@ -372,42 +338,36 @@ gboolean mirage_parser_get_param_string (MIRAGE_Parser *self, const gchar *name,
  * parsing.
  * </para>
  *
- * Returns: %TRUE on success, %FALSE on failure
+ * Returns: (transfer none): parameter variant. Note that variant belongs to whoever owns
+ * the parameters hash table that was passed to the parser, and as such should
+ * not be modified.
  **/
-gboolean mirage_parser_get_param (MIRAGE_Parser *self, const gchar *name, const GVariantType *type, GVariant **ret_value, GError **error)
+GVariant *mirage_parser_get_param (MIRAGE_Parser *self, const gchar *name, const GVariantType *type)
 {
     GVariant *value;
 
     /* Make sure parameters are set */
     if (!self->priv->parser_params) {
-        mirage_error(MIRAGE_E_GENERIC, error);
-        return FALSE;
+        return NULL;
     }
 
     /* Lookup value */
     value = g_hash_table_lookup(self->priv->parser_params, name);
     if (!value) {
-        mirage_error(MIRAGE_E_GENERIC, error);
-        return FALSE;
+        return NULL;
     }
 
     /* Verify type */
     if (!g_variant_is_of_type(value, type)) {
-        mirage_error(MIRAGE_E_GENERIC, error);
-        return FALSE;
+        return NULL;
     }
 
-    /* Return */
-    if (ret_value) {
-        *ret_value = value;
-    }
-    
-    return TRUE;
+    return value;
 }
 
 
 /**********************************************************************\
- *                             Object init                            * 
+ *                             Object init                            *
 \**********************************************************************/
 G_DEFINE_TYPE(MIRAGE_Parser, mirage_parser, MIRAGE_TYPE_OBJECT);
 
@@ -423,9 +383,9 @@ static void mirage_parser_init (MIRAGE_Parser *self)
 static void mirage_parser_finalize (GObject *gobject)
 {
     MIRAGE_Parser *self = MIRAGE_PARSER(gobject);
-   
+
     destroy_parser_info(self->priv->parser_info);
-    
+
     /* Chain up to the parent class */
     return G_OBJECT_CLASS(mirage_parser_parent_class)->finalize(gobject);
 }

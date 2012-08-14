@@ -225,7 +225,7 @@ static GObject *mirage_parser_cif_parse_track_descriptor (MIRAGE_Parser_CIF *sel
         default: {
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: unknown track type (%d)!\n", __debug__, descriptor->type);
             mirage_error(MIRAGE_E_PARSER, error);
-            return FALSE;
+            return NULL;
         }
     }
 
@@ -233,7 +233,7 @@ static GObject *mirage_parser_cif_parse_track_descriptor (MIRAGE_Parser_CIF *sel
     if (offset_entry->length % sector_size) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: declared data chunk length (%d) not divisible by sector size (%d)!\n", __debug__, offset_entry->length, sector_size);
         mirage_error(MIRAGE_E_PARSER, error);
-        return FALSE;
+        return NULL;
     }
     track_length = offset_entry->length / sector_size;
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: computed track length: %d (0x%X)\n", __debug__, track_length, track_length);
@@ -243,14 +243,14 @@ static GObject *mirage_parser_cif_parse_track_descriptor (MIRAGE_Parser_CIF *sel
     /* Create new track */
     track = g_object_new(MIRAGE_TYPE_TRACK, NULL);
 
-    mirage_track_set_mode(MIRAGE_TRACK(track), track_mode, NULL);
+    mirage_track_set_mode(MIRAGE_TRACK(track), track_mode);
 
     /* Create data fragment */
     fragment = libmirage_create_fragment(MIRAGE_TYPE_FRAG_IFACE_BINARY, self->priv->cif_filename, error);
     if (!fragment) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to create fragment!\n", __debug__);
         g_object_unref(track);
-        return FALSE;
+        return NULL;
     }
 
     /* Set file */
@@ -258,21 +258,21 @@ static GObject *mirage_parser_cif_parse_track_descriptor (MIRAGE_Parser_CIF *sel
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to set track data file!\n", __debug__);
         g_object_unref(fragment);
         g_object_unref(track);
-        return FALSE;
+        return NULL;
     }
 
     /* Set offset, length, sector size and data type */
-    mirage_frag_iface_binary_track_file_set_offset(MIRAGE_FRAG_IFACE_BINARY(fragment), offset_entry->offset, NULL);
-    mirage_frag_iface_binary_track_file_set_sectsize(MIRAGE_FRAG_IFACE_BINARY(fragment), sector_size, NULL);
+    mirage_frag_iface_binary_track_file_set_offset(MIRAGE_FRAG_IFACE_BINARY(fragment), offset_entry->offset);
+    mirage_frag_iface_binary_track_file_set_sectsize(MIRAGE_FRAG_IFACE_BINARY(fragment), sector_size);
     if (descriptor->type == CIF_TRACK_AUDIO) {
-        mirage_frag_iface_binary_track_file_set_format(MIRAGE_FRAG_IFACE_BINARY(fragment), FR_BIN_TFILE_AUDIO, NULL);
+        mirage_frag_iface_binary_track_file_set_format(MIRAGE_FRAG_IFACE_BINARY(fragment), FR_BIN_TFILE_AUDIO);
     } else {
-        mirage_frag_iface_binary_track_file_set_format(MIRAGE_FRAG_IFACE_BINARY(fragment), FR_BIN_TFILE_DATA, NULL);
+        mirage_frag_iface_binary_track_file_set_format(MIRAGE_FRAG_IFACE_BINARY(fragment), FR_BIN_TFILE_DATA);
     }
 
-    mirage_fragment_set_length(MIRAGE_FRAGMENT(fragment), track_length, NULL);
+    mirage_fragment_set_length(MIRAGE_FRAGMENT(fragment), track_length);
 
-    mirage_track_add_fragment(MIRAGE_TRACK(track), -1, &fragment, error);
+    mirage_track_add_fragment(MIRAGE_TRACK(track), -1, &fragment, NULL);
 
     g_object_unref(fragment);
 
@@ -316,21 +316,21 @@ static GObject *mirage_parser_cif_parse_session_descriptor (MIRAGE_Parser_CIF *s
     /* Set session type */
     switch (descriptor->session_type) {
         case CIF_SESSION_CDDA: {
-            mirage_session_set_session_type(MIRAGE_SESSION(session), MIRAGE_SESSION_CD_DA, NULL);
+            mirage_session_set_session_type(MIRAGE_SESSION(session), MIRAGE_SESSION_CD_DA);
             break;
         }
         case CIF_SESSION_CDROM: {
-            mirage_session_set_session_type(MIRAGE_SESSION(session), MIRAGE_SESSION_CD_ROM, NULL);
+            mirage_session_set_session_type(MIRAGE_SESSION(session), MIRAGE_SESSION_CD_ROM);
             break;
         }
         case CIF_SESSION_CDROMXA: {
-            mirage_session_set_session_type(MIRAGE_SESSION(session), MIRAGE_SESSION_CD_ROM_XA, NULL);
+            mirage_session_set_session_type(MIRAGE_SESSION(session), MIRAGE_SESSION_CD_ROM_XA);
             break;
         }
         default: {
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: unknown session type (%d)!\n", __debug__, descriptor->session_type);
             g_object_unref(session);
-            return FALSE;
+            return NULL;
         }
     }
 
@@ -345,7 +345,7 @@ static GObject *mirage_parser_cif_parse_session_descriptor (MIRAGE_Parser_CIF *s
         if (!mirage_parser_cif_read_descriptor(self, &descriptor_data, &descriptor_length, error)) {
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read track descriptor!\n", __debug__);
             g_object_unref(session);
-            return FALSE;
+            return NULL;
         }
 
         /* Parse track descriptor */
@@ -353,10 +353,10 @@ static GObject *mirage_parser_cif_parse_session_descriptor (MIRAGE_Parser_CIF *s
         if (!track) {
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to parse track descriptor!\n", __debug__);
             g_object_unref(session);
-            return FALSE;
+            return NULL;
         }
 
-        mirage_track_get_mode(MIRAGE_TRACK(track), &track_mode, NULL);
+        track_mode = mirage_track_get_mode(MIRAGE_TRACK(track));
 
         /* If it is a first track in session, or if track mode has changed,
            add 150-sector pregap. */
@@ -372,16 +372,16 @@ static GObject *mirage_parser_cif_parse_session_descriptor (MIRAGE_Parser_CIF *s
                 MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to create NULL fragment!\n", __debug__);
                 g_object_unref(session);
                 g_object_unref(track);
-                return FALSE;
+                return NULL;
             }
 
-            mirage_fragment_set_length(MIRAGE_FRAGMENT(fragment), pregap_length, NULL);
+            mirage_fragment_set_length(MIRAGE_FRAGMENT(fragment), pregap_length);
 
-            mirage_track_add_fragment(MIRAGE_TRACK(track), 0, &fragment, error);
+            mirage_track_add_fragment(MIRAGE_TRACK(track), 0, &fragment, NULL);
             g_object_unref(fragment);
 
             /* Set new track start */
-            mirage_track_set_track_start(MIRAGE_TRACK(track), pregap_length, NULL);
+            mirage_track_set_track_start(MIRAGE_TRACK(track), pregap_length);
         }
 
         /* Add track */
@@ -389,7 +389,7 @@ static GObject *mirage_parser_cif_parse_session_descriptor (MIRAGE_Parser_CIF *s
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to add track!\n", __debug__);
             g_object_unref(session);
             g_object_unref(track);
-            return FALSE;
+            return NULL;
         }
 
         g_object_unref(track);
@@ -474,7 +474,7 @@ static gboolean mirage_parser_cif_parse_disc_descriptor (MIRAGE_Parser_CIF *self
                 leadout_length = 6750; /* Actually, it should be 2250 previous leadout, 4500 current leadin */
             }
 
-            mirage_session_set_leadout_length(MIRAGE_SESSION(prev_session), leadout_length, NULL);
+            mirage_session_set_leadout_length(MIRAGE_SESSION(prev_session), leadout_length);
 
             g_object_unref(prev_session);
         }
@@ -654,10 +654,10 @@ static gboolean mirage_parser_cif_load_disc (MIRAGE_Parser_CIF *self, GError **e
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "\n");
 
     /* CIF format is CD-only */
-    mirage_disc_set_medium_type(MIRAGE_DISC(self->priv->disc), MIRAGE_MEDIUM_CD, NULL);
+    mirage_disc_set_medium_type(MIRAGE_DISC(self->priv->disc), MIRAGE_MEDIUM_CD);
 
     /* CD-ROMs start at -150 as per Red Book... */
-    mirage_disc_layout_set_start_sector(MIRAGE_DISC(self->priv->disc), -150, NULL);
+    mirage_disc_layout_set_start_sector(MIRAGE_DISC(self->priv->disc), -150);
 
     /* Parse "ofs " block */
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: parsing 'ofs ' block\n", __debug__);
@@ -680,7 +680,7 @@ static gboolean mirage_parser_cif_load_disc (MIRAGE_Parser_CIF *self, GError **e
 /**********************************************************************\
  *                MIRAGE_Parser methods implementation                *
 \**********************************************************************/
-static gboolean mirage_parser_cif_load_image (MIRAGE_Parser *_self, gchar **filenames, GObject **disc, GError **error)
+static GObject *mirage_parser_cif_load_image (MIRAGE_Parser *_self, gchar **filenames, GError **error)
 {
     MIRAGE_Parser_CIF *self = MIRAGE_PARSER_CIF(_self);
 
@@ -689,7 +689,7 @@ static gboolean mirage_parser_cif_load_image (MIRAGE_Parser *_self, gchar **file
     CIF_Header header;
 
     /* Check file signature */
-    stream = libmirage_create_file_stream(filenames[0], NULL);
+    stream = libmirage_create_file_stream(filenames[0], G_OBJECT(self), NULL);
     if (!stream) {
         mirage_error(MIRAGE_E_IMAGEFILE, error);
         return FALSE;
@@ -713,9 +713,9 @@ static gboolean mirage_parser_cif_load_image (MIRAGE_Parser *_self, gchar **file
 
     /* Create disc */
     self->priv->disc = g_object_new(MIRAGE_TYPE_DISC, NULL);
-    mirage_object_attach_child(MIRAGE_OBJECT(self), self->priv->disc, NULL);
+    mirage_object_attach_child(MIRAGE_OBJECT(self), self->priv->disc);
 
-    mirage_disc_set_filename(MIRAGE_DISC(self->priv->disc), filenames[0], NULL);
+    mirage_disc_set_filename(MIRAGE_DISC(self->priv->disc), filenames[0]);
     self->priv->cif_filename = g_strdup(filenames[0]);
 
 
@@ -729,15 +729,13 @@ static gboolean mirage_parser_cif_load_image (MIRAGE_Parser *_self, gchar **file
 
 
     /* Return disc */
-    mirage_object_detach_child(MIRAGE_OBJECT(self), self->priv->disc, NULL);
+    mirage_object_detach_child(MIRAGE_OBJECT(self), self->priv->disc);
     if (succeeded) {
-        *disc = self->priv->disc;
+        return self->priv->disc;
     } else {
         g_object_unref(self->priv->disc);
-        *disc = NULL;
+        return NULL;
     }
-
-    return succeeded;
 }
 
 

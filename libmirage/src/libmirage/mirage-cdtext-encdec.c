@@ -378,20 +378,15 @@ static void mirage_cdtext_decoder_read_size_info (MIRAGE_CDTextEncDec *self G_GN
 /**
  * mirage_cdtext_encoder_init:
  * @self: a #MIRAGE_CDTextEncDec
- * @buffer: buffer into which data will be encoded
- * @buflen: buffer length
- * @error: location to store error, or %NULL
+ * @buffer: (in): buffer into which data will be encoded
+ * @buflen: (in): buffer length
  *
  * <para>
  * Initializes CD-TEXT encoder.
  * </para>
- *
- * Returns: %TRUE on success, %FALSE on failure
  **/
-gboolean mirage_cdtext_encoder_init (MIRAGE_CDTextEncDec *self, guint8 *buffer, gint buflen, GError **error)
+void mirage_cdtext_encoder_init (MIRAGE_CDTextEncDec *self, guint8 *buffer, gint buflen)
 {
-    MIRAGE_CHECK_ARG(buffer);
-
     /* Cleanup old data */
     mirage_cdtext_encdec_cleanup(self);
 
@@ -400,18 +395,16 @@ gboolean mirage_cdtext_encoder_init (MIRAGE_CDTextEncDec *self, guint8 *buffer, 
     self->priv->buflen = buflen;
 
     self->priv->cur_pack = (CDTextPack *)self->priv->buffer;
-
-    return TRUE;
 }
 
 /**
  * mirage_cdtext_encoder_set_block_info:
  * @self: a #MIRAGE_CDTextEncDec
- * @block: block number
- * @langcode: language code
- * @charset: character set
- * @copyright: copyright flag
- * @error: location to store error, or %NULL
+ * @block: (in): block number
+ * @langcode: (in): language code
+ * @charset: (in): character set
+ * @copyright: (in): copyright flag
+ * @error: (out) (allow-none): location to store error, or %NULL
  *
  * <para>
  * Sets block information for CD-TEXT block specified by @block. @block must be
@@ -447,7 +440,6 @@ gboolean mirage_cdtext_encoder_set_block_info (MIRAGE_CDTextEncDec *self, gint b
  * @track: track number
  * @data: data
  * @data_len: data length
- * @error: location to store error, or %NULL
  *
  * <para>
  * Adds data to the encoder. @langcode is language code of the block the data
@@ -465,10 +457,8 @@ gboolean mirage_cdtext_encoder_set_block_info (MIRAGE_CDTextEncDec *self, gint b
  * Block needs to have its information set with mirage_cdtext_encoder_set_block_info()
  * before data can be added to it.
  * </note>
- *
- * Returns: %TRUE on success, %FALSE on failure
  **/
-gboolean mirage_cdtext_encoder_add_data (MIRAGE_CDTextEncDec *self, gint langcode, gint type, gint track, const guint8 *data, gint data_len, GError **error G_GNUC_UNUSED)
+void mirage_cdtext_encoder_add_data (MIRAGE_CDTextEncDec *self, gint langcode, gint type, gint track, const guint8 *data, gint data_len)
 {
     /* Langcode -> block conversion */
     gint block = mirage_cdtext_encdec_lang2block(self, langcode);
@@ -485,16 +475,13 @@ gboolean mirage_cdtext_encoder_add_data (MIRAGE_CDTextEncDec *self, gint langcod
     }
     /* Keep setting the last track... */
     self->priv->blocks[block].last_track = track;
-
-    return TRUE;
 }
 
 /**
  * mirage_cdtext_encoder_encode:
  * @self: a #MIRAGE_CDTextEncDec
- * @buffer: location to store buffer
- * @buflen: location to store buffer length
- * @error: location to store error, or %NULL
+ * @buffer: (out): location to store buffer
+ * @buflen: (out): location to store buffer length
  *
  * <para>
  * Encodes the CD-TEXT data. Pointer to buffer containing the encoded data is
@@ -504,10 +491,8 @@ gboolean mirage_cdtext_encoder_add_data (MIRAGE_CDTextEncDec *self, gint langcod
  * <para>
  * Note that @buffer is the same as the argument passed to mirage_cdtext_encoder_init().
  * </para>
- *
- * Returns: %TRUE on success, %FALSE on failure
  **/
-gboolean mirage_cdtext_encoder_encode (MIRAGE_CDTextEncDec *self, guint8 **buffer, gint *buflen, GError **error G_GNUC_UNUSED)
+void mirage_cdtext_encoder_encode (MIRAGE_CDTextEncDec *self, guint8 **buffer, gint *buflen)
 {
     gint i;
 
@@ -574,8 +559,6 @@ gboolean mirage_cdtext_encoder_encode (MIRAGE_CDTextEncDec *self, guint8 **buffe
     *buffer = self->priv->buffer;
 
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_CDTEXT, "%s: done encoding CD-TEXT; length: 0x%X\n", __debug__, *buflen);
-
-    return TRUE;
 }
 
 
@@ -585,9 +568,8 @@ gboolean mirage_cdtext_encoder_encode (MIRAGE_CDTextEncDec *self, guint8 **buffe
 /**
  * mirage_cdtext_decoder_init:
  * @self: a #MIRAGE_CDTextEncDec
- * @buffer: buffer containing encoded data
- * @buflen: length of data in buffer
- * @error: location to store error, or %NULL
+ * @buffer: (in): buffer containing encoded data
+ * @buflen: (in): length of data in buffer
  *
  * <para>
  * Initializes CD-TEXT decoder. @buffer is the buffer containing encoded CD-TEXT
@@ -601,9 +583,8 @@ gboolean mirage_cdtext_encoder_encode (MIRAGE_CDTextEncDec *self, guint8 **buffe
  * mirage_cdtext_decoder_get_data().
  * </para>
  *
- * Returns: %TRUE on success, %FALSE on failure
  **/
-gboolean mirage_cdtext_decoder_init (MIRAGE_CDTextEncDec *self, guint8 *buffer, gint buflen, GError **error G_GNUC_UNUSED)
+void mirage_cdtext_decoder_init (MIRAGE_CDTextEncDec *self, guint8 *buffer, gint buflen)
 {
     /* Cleanup old data */
     mirage_cdtext_encdec_cleanup(self);
@@ -711,18 +692,16 @@ gboolean mirage_cdtext_decoder_init (MIRAGE_CDTextEncDec *self, guint8 *buffer, 
             }
         }
     }
-
-    return TRUE;
 }
 
 /**
  * mirage_cdtext_decoder_get_block_info:
  * @self: a #MIRAGE_CDTextEncDec
- * @block: block number
- * @langcode: location to store language code
- * @charset: location to store character set
- * @copyright: location to store copyright flag
- * @error: location to store error, or %NULL
+ * @block: (in): block number
+ * @langcode: (out) (allow-none): location to store language code, or %NULL
+ * @charset: (out) (allow-none): location to store character set, or %NULL
+ * @copyright: (out) (allow-none): location to store copyright flag, or %NULL
+ * @error: (out) (allow-none): location to store error, or %NULL
  *
  * <para>
  * Retrieves block information for CD-TEXT block specified by @block. @block
@@ -762,10 +741,10 @@ gboolean mirage_cdtext_decoder_get_block_info (MIRAGE_CDTextEncDec *self, gint b
 /**
  * mirage_cdtext_decoder_get_data:
  * @self: a #MIRAGE_CDTextEncDec
- * @block: block number
- * @callback_func: callback function
- * @user_data: data to be passed to callback function
- * @error: location to store error, or %NULL
+ * @block: (in): block number
+ * @callback_func: (in) (closure closure): callback function
+ * @user_data: (in) (closure): data to be passed to callback function
+ * @error: (out) (allow-none); location to store error, or %NULL
  *
  * <para>
  * Retrieves data for CD-TEXT block specified by @block. @block must be a valid
@@ -807,7 +786,7 @@ gboolean mirage_cdtext_decoder_get_data (MIRAGE_CDTextEncDec *self, gint block, 
 
 
 /**********************************************************************\
- *                             Object init                            * 
+ *                             Object init                            *
 \**********************************************************************/
 G_DEFINE_TYPE(MIRAGE_CDTextEncDec, mirage_cdtext_encdec, MIRAGE_TYPE_OBJECT);
 
@@ -830,7 +809,7 @@ static void mirage_cdtext_encdec_finalize (GObject *gobject)
 
     /* Free blocks data */
     g_free(self->priv->blocks);
-    
+
     /* Chain up to the parent class */
     return G_OBJECT_CLASS(mirage_cdtext_encdec_parent_class)->finalize(gobject);
 }

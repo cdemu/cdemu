@@ -109,8 +109,8 @@ GType mirage_error_get_type (void)
 
 /**
  * mirage_error:
- * @errcode: error code
- * @error: location to store error, or %NULL
+ * @errcode: (in): error code
+ * @error: (out) (allow-none): location to store error, or %NULL
  *
  * <para>
  * Sets error code and error string for error @error code to #GError stored

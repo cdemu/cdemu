@@ -56,7 +56,7 @@ static gboolean mirage_parser_readcd_is_file_valid (MIRAGE_Parser_READCD *self, 
         succeeded = FALSE;
     }
 
-    stream = libmirage_create_file_stream(filename, NULL);
+    stream = libmirage_create_file_stream(filename, G_OBJECT(self), NULL);
     if (!stream) {
         mirage_error(MIRAGE_E_IMAGEFILE, error);
         return FALSE;
@@ -113,7 +113,7 @@ static gboolean mirage_parser_readcd_determine_track_mode (MIRAGE_Parser_READCD 
     /* Determine track mode*/
     track_mode = mirage_helper_determine_sector_type(buf);
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: track mode determined to be: %d\n", __debug__, track_mode);
-    mirage_track_set_mode(MIRAGE_TRACK(track), track_mode, NULL);
+    mirage_track_set_mode(MIRAGE_TRACK(track), track_mode);
 
     return TRUE;
 }
@@ -133,7 +133,7 @@ static gboolean mirage_parser_readcd_finish_previous_track (MIRAGE_Parser_READCD
         }
 
         /* Set length */
-        mirage_fragment_set_length(MIRAGE_FRAGMENT(fragment), length, NULL);
+        mirage_fragment_set_length(MIRAGE_FRAGMENT(fragment), length);
 
         g_object_unref(fragment);
     }
@@ -200,7 +200,7 @@ static gboolean mirage_parser_readcd_parse_toc_entry (MIRAGE_Parser_READCD *self
             goto end;
         }
 
-        mirage_track_set_ctl(MIRAGE_TRACK(self->priv->cur_track), entry[1], NULL);
+        mirage_track_set_ctl(MIRAGE_TRACK(self->priv->cur_track), entry[1]);
 
         g_object_unref(self->priv->cur_track); /* Keep only pointer, without reference */
 
@@ -225,12 +225,12 @@ static gboolean mirage_parser_readcd_parse_toc_entry (MIRAGE_Parser_READCD *self
             succeeded = FALSE;
             goto end;
         }
-        mirage_frag_iface_binary_track_file_set_sectsize(MIRAGE_FRAG_IFACE_BINARY(data_fragment), tfile_sectsize, NULL);
-        mirage_frag_iface_binary_track_file_set_offset(MIRAGE_FRAG_IFACE_BINARY(data_fragment), tfile_offset, NULL);
-        mirage_frag_iface_binary_track_file_set_format(MIRAGE_FRAG_IFACE_BINARY(data_fragment), tfile_format, NULL);
+        mirage_frag_iface_binary_track_file_set_sectsize(MIRAGE_FRAG_IFACE_BINARY(data_fragment), tfile_sectsize);
+        mirage_frag_iface_binary_track_file_set_offset(MIRAGE_FRAG_IFACE_BINARY(data_fragment), tfile_offset);
+        mirage_frag_iface_binary_track_file_set_format(MIRAGE_FRAG_IFACE_BINARY(data_fragment), tfile_format);
 
-        mirage_frag_iface_binary_subchannel_file_set_sectsize(MIRAGE_FRAG_IFACE_BINARY(data_fragment), sfile_sectsize, NULL);
-        mirage_frag_iface_binary_subchannel_file_set_format(MIRAGE_FRAG_IFACE_BINARY(data_fragment), sfile_format, NULL);
+        mirage_frag_iface_binary_subchannel_file_set_sectsize(MIRAGE_FRAG_IFACE_BINARY(data_fragment), sfile_sectsize);
+        mirage_frag_iface_binary_subchannel_file_set_format(MIRAGE_FRAG_IFACE_BINARY(data_fragment), sfile_format);
 
         mirage_track_add_fragment(MIRAGE_TRACK(self->priv->cur_track), -1, &data_fragment, NULL);
         g_object_unref(data_fragment);
@@ -239,8 +239,7 @@ static gboolean mirage_parser_readcd_parse_toc_entry (MIRAGE_Parser_READCD *self
         mirage_parser_readcd_determine_track_mode(self, self->priv->cur_track, NULL);
 
         /* Store track mode for comparison */
-        gint track_mode;
-        mirage_track_get_mode(MIRAGE_TRACK(self->priv->cur_track), &track_mode, NULL);
+        gint track_mode = mirage_track_get_mode(MIRAGE_TRACK(self->priv->cur_track));
 
         if (self->priv->prev_mode != -1) {
             /* Check if track mode has changed from/to audio track */
@@ -254,10 +253,10 @@ static gboolean mirage_parser_readcd_parse_toc_entry (MIRAGE_Parser_READCD *self
                 mirage_track_get_prev(MIRAGE_TRACK(self->priv->cur_track), &prev_track, NULL);
                 mirage_track_get_fragment_by_index(MIRAGE_TRACK(prev_track), -1, &prev_fragment, NULL);
 
-                mirage_fragment_get_length(MIRAGE_FRAGMENT(prev_fragment), &prev_fragment_len, NULL);
+                prev_fragment_len = mirage_fragment_get_length(MIRAGE_FRAGMENT(prev_fragment));
                 MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: shortening previous track's fragment: %d -> %d\n", __debug__, prev_fragment_len, prev_fragment_len - 150);
                 prev_fragment_len -= 150;
-                mirage_fragment_set_length(MIRAGE_FRAGMENT(prev_fragment), prev_fragment_len, NULL);
+                mirage_fragment_set_length(MIRAGE_FRAGMENT(prev_fragment), prev_fragment_len);
 
                 g_object_unref(prev_fragment);
                 g_object_unref(prev_track);
@@ -283,14 +282,14 @@ static gboolean mirage_parser_readcd_parse_toc_entry (MIRAGE_Parser_READCD *self
                     succeeded = FALSE;
                     goto end;
                 }
-                mirage_frag_iface_binary_track_file_set_sectsize(MIRAGE_FRAG_IFACE_BINARY(pregap_fragment), tfile_sectsize, NULL);
-                mirage_frag_iface_binary_track_file_set_offset(MIRAGE_FRAG_IFACE_BINARY(pregap_fragment), tfile_offset, NULL);
-                mirage_frag_iface_binary_track_file_set_format(MIRAGE_FRAG_IFACE_BINARY(pregap_fragment), tfile_format, NULL);
+                mirage_frag_iface_binary_track_file_set_sectsize(MIRAGE_FRAG_IFACE_BINARY(pregap_fragment), tfile_sectsize);
+                mirage_frag_iface_binary_track_file_set_offset(MIRAGE_FRAG_IFACE_BINARY(pregap_fragment), tfile_offset);
+                mirage_frag_iface_binary_track_file_set_format(MIRAGE_FRAG_IFACE_BINARY(pregap_fragment), tfile_format);
 
-                mirage_frag_iface_binary_subchannel_file_set_sectsize(MIRAGE_FRAG_IFACE_BINARY(pregap_fragment), sfile_sectsize, NULL);
-                mirage_frag_iface_binary_subchannel_file_set_format(MIRAGE_FRAG_IFACE_BINARY(pregap_fragment), sfile_format, NULL);
+                mirage_frag_iface_binary_subchannel_file_set_sectsize(MIRAGE_FRAG_IFACE_BINARY(pregap_fragment), sfile_sectsize);
+                mirage_frag_iface_binary_subchannel_file_set_format(MIRAGE_FRAG_IFACE_BINARY(pregap_fragment), sfile_format);
 
-                mirage_fragment_set_length(MIRAGE_FRAGMENT(pregap_fragment), 150, 0);
+                mirage_fragment_set_length(MIRAGE_FRAGMENT(pregap_fragment), 150);
 
                 mirage_track_add_fragment(MIRAGE_TRACK(self->priv->cur_track), 0, &pregap_fragment, NULL);
                 g_object_unref(pregap_fragment);
@@ -320,7 +319,7 @@ static gboolean mirage_parser_readcd_parse_toc (MIRAGE_Parser_READCD *self, cons
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:\n", __debug__);
 
     /* Read whole TOC file */
-    stream = libmirage_create_file_stream(filename, NULL);
+    stream = libmirage_create_file_stream(filename, G_OBJECT(self), NULL);
     if (!stream) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to open TOC file '%s'!\n", __debug__, filename);
         mirage_error(MIRAGE_E_IMAGEFILE, error);
@@ -412,7 +411,7 @@ end:
 /**********************************************************************\
  *                MIRAGE_Parser methods implementation               *
 \**********************************************************************/
-static gboolean mirage_parser_readcd_load_image (MIRAGE_Parser *_self, gchar **filenames, GObject **disc, GError **error)
+static GObject *mirage_parser_readcd_load_image (MIRAGE_Parser *_self, gchar **filenames, GError **error)
 {
     MIRAGE_Parser_READCD *self = MIRAGE_PARSER_READCD(_self);
     gboolean succeeded = TRUE;
@@ -424,10 +423,10 @@ static gboolean mirage_parser_readcd_load_image (MIRAGE_Parser *_self, gchar **f
 
     /* Create disc */
     self->priv->disc = g_object_new(MIRAGE_TYPE_DISC, NULL);
-    mirage_object_attach_child(MIRAGE_OBJECT(self), self->priv->disc, NULL);
+    mirage_object_attach_child(MIRAGE_OBJECT(self), self->priv->disc);
 
     /* Set filenames */
-    mirage_disc_set_filename(MIRAGE_DISC(self->priv->disc), filenames[0], NULL);
+    mirage_disc_set_filename(MIRAGE_DISC(self->priv->disc), filenames[0]);
 
     /* Read and parse TOC */
     if (!mirage_parser_readcd_parse_toc(self, filenames[0], error)) {
@@ -437,18 +436,18 @@ static gboolean mirage_parser_readcd_load_image (MIRAGE_Parser *_self, gchar **f
 
     /* If it's a multisession disc, fix up the lead-in/lead-out lengths
        (NOTE: last session is left out for readibility; but it's irrelevant) */
-    gint i, num_sessions;
-    mirage_disc_get_number_of_sessions(MIRAGE_DISC(self->priv->disc), &num_sessions, NULL);
+    gint num_sessions = mirage_disc_get_number_of_sessions(MIRAGE_DISC(self->priv->disc));
+    gint i;
     for (i = 0; i < num_sessions - 1; i++) {
         GObject *session;
         mirage_disc_get_session_by_index(MIRAGE_DISC(self->priv->disc), i, &session, NULL);
 
         if (i == 0) {
             /* Actually, it should be 6750 previous leadout, 4500 current leadin */
-            mirage_session_set_leadout_length(MIRAGE_SESSION(session), 11250, NULL);
+            mirage_session_set_leadout_length(MIRAGE_SESSION(session), 11250);
         } else {
             /* Actually, it should be 2250 previous leadout, 4500 current leadin */
-            mirage_session_set_leadout_length(MIRAGE_SESSION(session), 6750, NULL);
+            mirage_session_set_leadout_length(MIRAGE_SESSION(session), 6750);
         }
 
         g_object_unref(session);
@@ -458,22 +457,20 @@ static gboolean mirage_parser_readcd_load_image (MIRAGE_Parser *_self, gchar **f
 
     /* Now guess medium type and if it's a CD-ROM, add Red Book pregap */
     gint medium_type = mirage_parser_guess_medium_type(MIRAGE_PARSER(self), self->priv->disc);
-    mirage_disc_set_medium_type(MIRAGE_DISC(self->priv->disc), medium_type, NULL);
+    mirage_disc_set_medium_type(MIRAGE_DISC(self->priv->disc), medium_type);
     if (medium_type == MIRAGE_MEDIUM_CD) {
         mirage_parser_add_redbook_pregap(MIRAGE_PARSER(self), self->priv->disc, NULL);
     }
 
 end:
     /* Return disc */
-    mirage_object_detach_child(MIRAGE_OBJECT(self), self->priv->disc, NULL);
+    mirage_object_detach_child(MIRAGE_OBJECT(self), self->priv->disc);
     if (succeeded) {
-        *disc = self->priv->disc;
+        return self->priv->disc;
     } else {
         g_object_unref(self->priv->disc);
-        *disc = NULL;
+        return NULL;
     }
-
-    return succeeded;
 }
 
 

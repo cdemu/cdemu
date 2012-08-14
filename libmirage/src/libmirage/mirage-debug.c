@@ -31,44 +31,38 @@
 /**
  * mirage_debuggable_set_debug_context:
  * @self: a #MIRAGE_Debuggable
- * @debug_context: debug context
- * @error: location to store error, or %NULL
+ * @debug_context: (in): debug context (a #MIRAGE_DebugContext)
  *
  * <para>
  * Sets object's debug context.
  * </para>
- *
- * Returns: %TRUE on success, %FALSE on failure
  **/
-gboolean mirage_debuggable_set_debug_context (MIRAGE_Debuggable *self, GObject *debug_context, GError **error)
+void mirage_debuggable_set_debug_context (MIRAGE_Debuggable *self, GObject *debug_context)
 {
-    return MIRAGE_DEBUGGABLE_GET_INTERFACE(self)->set_debug_context(self, debug_context, error);
+    return MIRAGE_DEBUGGABLE_GET_INTERFACE(self)->set_debug_context(self, debug_context);
 }
 
 /**
  * mirage_debuggable_get_debug_context:
  * @self: a #MIRAGE_Debuggable
- * @debug_context: location to store debug context, or %NULL
- * @error: location to store error, or %NULL
  *
  * <para>
- * Retrieves object's debug context. A reference to debug context is stored in
- * @debug_context; it should be released with g_object_unref() when no longer needed.
+ * Retrieves object's debug context.
  * </para>
  *
- * Returns: %TRUE on success, %FALSE on failure
+ * Returns: (transfer none): object's debug context (a #MIRAGE_DebugContext), or %NULL
  **/
-gboolean mirage_debuggable_get_debug_context (MIRAGE_Debuggable *self, GObject **debug_context, GError **error)
+GObject *mirage_debuggable_get_debug_context (MIRAGE_Debuggable *self)
 {
-    return MIRAGE_DEBUGGABLE_GET_INTERFACE(self)->get_debug_context(self, debug_context, error);
+    return MIRAGE_DEBUGGABLE_GET_INTERFACE(self)->get_debug_context(self);
 }
 
 /**
  * mirage_debuggable_debug_messagev:
  * @self: a #MIRAGE_Debuggable
- * @level: debug level
- * @format: message format. See the printf() documentation.
- * @args: parameters to insert into the format string.
+ * @level: (in): debug level
+ * @format: (in): message format. See the printf() documentation.
+ * @args: (in): parameters to insert into the format string.
  *
  * <para>
  * Outputs debug message with verbosity level @level, format string @format and
@@ -85,9 +79,9 @@ void mirage_debuggable_debug_messagev (MIRAGE_Debuggable *self, gint level, gcha
 /**
  * mirage_debuggable_debug_message:
  * @self: a #MIRAGE_Debuggable
- * @level: debug level
- * @format: message format. See the printf() documentation.
- * @...: parameters to insert into the format string.
+ * @level: (in): debug level
+ * @format: (in): message format. See the printf() documentation.
+ * @...: (in): parameters to insert into the format string.
  *
  * <para>
  * Outputs debug message with verbosity level @level, format string @format and
@@ -147,130 +141,96 @@ struct _MIRAGE_DebugContextPrivate
 /**
  * mirage_debug_context_set_domain:
  * @self: a #MIRAGE_DebugContext
- * @domain: domain name
- * @error: location to store error, or %NULL
+ * @domain (in): domain name
  *
  * <para>
  * Sets debug context's domain name to @domain.
  * </para>
- *
- * Returns: %TRUE on success, %FALSE on failure
  **/
-gboolean mirage_debug_context_set_domain (MIRAGE_DebugContext *self, const gchar *domain, GError **error G_GNUC_UNUSED)
+void mirage_debug_context_set_domain (MIRAGE_DebugContext *self, const gchar *domain)
 {
     /* Set domain */
     g_free(self->priv->domain);
     self->priv->domain = g_strdup(domain);
-    return TRUE;
 }
 
 /**
  * mirage_debug_context_get_domain:
  * @self: a #MIRAGE_DebugContext
- * @domain: location to store pointer to domain name buffer
- * @error: location to store error, or %NULL
  *
  * <para>
  * Retrieves debug context's domain name.
  * </para>
  *
- * <para>
- * Pointer to buffer containing the domain name is stored into @domain; buffer
- * belongs to the object and therefore should not be modified.
- * </para>
- *
- * Returns: %TRUE on success, %FALSE on failure
+ * Returns: (transfer none): pointer to buffer containing the domain name, or %NULL. The buffer belongs to the object and should not be modified.
  **/
-gboolean mirage_debug_context_get_domain (MIRAGE_DebugContext *self, const gchar **domain, GError **error)
+const gchar *mirage_debug_context_get_domain (MIRAGE_DebugContext *self)
 {
-    MIRAGE_CHECK_ARG(domain);
-    *domain = self->priv->domain;
-    return TRUE;
+    return self->priv->domain;
 }
 
 
 /**
  * mirage_debug_context_set_name:
  * @self: a #MIRAGE_DebugContext
- * @name: name
- * @error: location to store error, or %NULL
+ * @name: (in): name
  *
  * <para>
  * Sets debug context's name to @name.
  * </para>
- *
- * Returns: %TRUE on success, %FALSE on failure
  **/
-gboolean mirage_debug_context_set_name (MIRAGE_DebugContext *self, const gchar *name, GError **error G_GNUC_UNUSED)
+void mirage_debug_context_set_name (MIRAGE_DebugContext *self, const gchar *name)
 {
     /* Set name */
     g_free(self->priv->name);
     self->priv->name = g_strdup(name);
-    return TRUE;
 }
 
 /**
  * mirage_debug_context_get_name:
  * @self: a #MIRAGE_DebugContext
- * @name: location to store pointer to name buffer
- * @error: location to store error, or %NULL
  *
  * <para>
  * Retrieves debug context's name.
  * </para>
  *
- * <para>
- * Pointer to buffer containing the name is stored into @name; buffer
- * belongs to the object and therefore should not be modified.
- * </para>
- *
- * Returns: %TRUE on success, %FALSE on failure
+ * Returns: pointer to buffer containing the name, or %NULL. The buffer belongs to the object and should not be modified.
  **/
-gboolean mirage_debug_context_get_name (MIRAGE_DebugContext *self, const gchar **name, GError **error)
+const gchar *mirage_debug_context_get_name (MIRAGE_DebugContext *self)
 {
-    MIRAGE_CHECK_ARG(name);
-    *name = self->priv->name;
-    return TRUE;
+    return self->priv->name;
 }
 
 
 /**
  * mirage_debug_context_set_debug_mask:
  * @self: a #MIRAGE_DebugContext
- * @debug_mask: debug mask
- * @error: location to store error, or %NULL
+ * @debug_mask: (in): debug mask
  *
  * <para>
  * Sets debug context's debug mask.
  * </para>
- *
- * Returns: %TRUE on success, %FALSE on failure
  **/
-gboolean mirage_debug_context_set_debug_mask (MIRAGE_DebugContext *self, gint debug_mask, GError **error G_GNUC_UNUSED)
+void mirage_debug_context_set_debug_mask (MIRAGE_DebugContext *self, gint debug_mask)
 {
     /* Set debug mask */
     self->priv->debug_mask = debug_mask;
-    return TRUE;
 }
 
 /**
  * mirage_debug_context_get_debug_mask:
  * @self: a #MIRAGE_DebugContext
- * @debug_mask: location to store debug mask
- * @error: location to store error, or %NULL
  *
  * <para>
  * Retrieves debug context's debug mask.
  * </para>
  *
- * Returns: %TRUE on success, %FALSE on failure
+ * Returns: debug context's debug mask
  **/
-gboolean mirage_debug_context_get_debug_mask (MIRAGE_DebugContext *self, gint *debug_mask, GError **error)
+gint mirage_debug_context_get_debug_mask (MIRAGE_DebugContext *self)
 {
-    MIRAGE_CHECK_ARG(debug_mask);
     /* Return debug mask */
-    *debug_mask = self->priv->debug_mask;
-    return TRUE;
+    return self->priv->debug_mask;
 }
 
 

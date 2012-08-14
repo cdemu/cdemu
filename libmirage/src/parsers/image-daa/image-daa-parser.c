@@ -36,7 +36,7 @@ struct _MIRAGE_Parser_DAAPrivate
 /**********************************************************************\
  *                 MIRAGE_Parser methods implementation                *
 \**********************************************************************/
-static gboolean mirage_parser_daa_load_image (MIRAGE_Parser *_self, gchar **filenames, GObject **disc, GError **error)
+static GObject *mirage_parser_daa_load_image (MIRAGE_Parser *_self, gchar **filenames, GError **error)
 {
     MIRAGE_Parser_DAA *self = MIRAGE_PARSER_DAA(_self);
 
@@ -45,7 +45,7 @@ static gboolean mirage_parser_daa_load_image (MIRAGE_Parser *_self, gchar **file
     gchar signature[16] = "";
 
     /* Open file */
-    stream = libmirage_create_file_stream(filenames[0], NULL);
+    stream = libmirage_create_file_stream(filenames[0], G_OBJECT(self), NULL);
     if (!stream) {
         mirage_error(MIRAGE_E_IMAGEFILE, error);
         return FALSE;
@@ -68,9 +68,9 @@ static gboolean mirage_parser_daa_load_image (MIRAGE_Parser *_self, gchar **file
 
     /* Create disc */
     self->priv->disc = g_object_new(MIRAGE_TYPE_DISC, NULL);
-    mirage_object_attach_child(MIRAGE_OBJECT(self), self->priv->disc, NULL);
+    mirage_object_attach_child(MIRAGE_OBJECT(self), self->priv->disc);
 
-    mirage_disc_set_filename(MIRAGE_DISC(self->priv->disc), filenames[0], NULL);
+    mirage_disc_set_filename(MIRAGE_DISC(self->priv->disc), filenames[0]);
 
     /* Add session */
     GObject *session = NULL;
@@ -81,7 +81,7 @@ static gboolean mirage_parser_daa_load_image (MIRAGE_Parser *_self, gchar **file
         goto end;
     }
 
-    mirage_session_set_session_type(MIRAGE_SESSION(session), MIRAGE_SESSION_CD_ROM, NULL);
+    mirage_session_set_session_type(MIRAGE_SESSION(session), MIRAGE_SESSION_CD_ROM);
 
     /* Add track */
     GObject *track = NULL;
@@ -93,23 +93,16 @@ static gboolean mirage_parser_daa_load_image (MIRAGE_Parser *_self, gchar **file
         goto end;
     }
 
-    mirage_track_set_mode(MIRAGE_TRACK(track), MIRAGE_MODE_MODE1, NULL);
+    mirage_track_set_mode(MIRAGE_TRACK(track), MIRAGE_MODE_MODE1);
 
     /* Try to get password from parser parameters */
-    gchar *password = NULL;
-    mirage_parser_get_param_string(MIRAGE_PARSER(self), "password", (const gchar **)&password, NULL);
+    const gchar *password = mirage_parser_get_param_string(MIRAGE_PARSER(self), "password");
 
     /* Fragment(s); we use private, DAA fragments for this */
     GObject *data_fragment = g_object_new(MIRAGE_TYPE_FRAGMENT_DAA, NULL);
     GError *local_error = NULL;
 
-    if (!mirage_track_add_fragment(MIRAGE_TRACK(track), -1, &data_fragment, error)) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to add fragment!\n", __debug__);
-        g_object_unref(data_fragment);
-        g_object_unref(track);
-        succeeded = FALSE;
-        goto end;
-    }
+    mirage_track_add_fragment(MIRAGE_TRACK(track), -1, &data_fragment, NULL);
 
     if (!mirage_fragment_daa_set_file(MIRAGE_FRAGMENT_DAA(data_fragment), filenames[0], password, &local_error)) {
         /* Don't make buzz for password failures */
@@ -129,22 +122,20 @@ static gboolean mirage_parser_daa_load_image (MIRAGE_Parser *_self, gchar **file
 
     /* Now guess medium type and if it's a CD-ROM, add Red Book pregap */
     gint medium_type = mirage_parser_guess_medium_type(MIRAGE_PARSER(self), self->priv->disc);
-    mirage_disc_set_medium_type(MIRAGE_DISC(self->priv->disc), medium_type, NULL);
+    mirage_disc_set_medium_type(MIRAGE_DISC(self->priv->disc), medium_type);
     if (medium_type == MIRAGE_MEDIUM_CD) {
         mirage_parser_add_redbook_pregap(MIRAGE_PARSER(self), self->priv->disc, NULL);
     }
 
 end:
     /* Return disc */
-    mirage_object_detach_child(MIRAGE_OBJECT(self), self->priv->disc, NULL);
+    mirage_object_detach_child(MIRAGE_OBJECT(self), self->priv->disc);
     if (succeeded) {
-        *disc = self->priv->disc;
+        return self->priv->disc;
     } else {
         g_object_unref(self->priv->disc);
-        *disc = NULL;
+        return NULL;
     }
-
-    return succeeded;
 }
 
 

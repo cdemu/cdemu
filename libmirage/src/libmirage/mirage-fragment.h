@@ -91,15 +91,15 @@ GType mirage_fragment_get_type (void);
  *                             Public API                             *
 \**********************************************************************/
 void mirage_fragment_generate_fragment_info (MIRAGE_Fragment *self, const gchar *id, const gchar *name);
-gboolean mirage_fragment_get_fragment_info (MIRAGE_Fragment *self, const MIRAGE_FragmentInfo **fragment_info, GError **error);
+const MIRAGE_FragmentInfo *mirage_fragment_get_fragment_info (MIRAGE_Fragment *self);
 
 gboolean mirage_fragment_can_handle_data_format (MIRAGE_Fragment *self, const gchar *filename, GError **error);
 
-gboolean mirage_fragment_set_address (MIRAGE_Fragment *self, gint address, GError **error);
-gboolean mirage_fragment_get_address (MIRAGE_Fragment *self, gint *address, GError **error);
+void mirage_fragment_set_address (MIRAGE_Fragment *self, gint address);
+gint mirage_fragment_get_address (MIRAGE_Fragment *self);
 
-gboolean mirage_fragment_set_length (MIRAGE_Fragment *self, gint length, GError **error);
-gboolean mirage_fragment_get_length (MIRAGE_Fragment *self, gint *length, GError **error);
+void mirage_fragment_set_length (MIRAGE_Fragment *self, gint length);
+gint mirage_fragment_get_length (MIRAGE_Fragment *self);
 
 gboolean mirage_fragment_use_the_rest_of_file (MIRAGE_Fragment *self, GError **error);
 
@@ -199,26 +199,26 @@ struct _MIRAGE_FragIface_BinaryInterface
 
     /* Interface methods */
     gboolean (*track_file_set_file) (MIRAGE_FragIface_Binary *self, const gchar *filename, GError **error);
-    gboolean (*track_file_get_file) (MIRAGE_FragIface_Binary *self, const gchar **filename, GError **error);
-    gboolean (*track_file_set_offset) (MIRAGE_FragIface_Binary *self, guint64 offset, GError **error);
-    gboolean (*track_file_get_offset) (MIRAGE_FragIface_Binary *self, guint64 *offset, GError **error);
-    gboolean (*track_file_set_sectsize) (MIRAGE_FragIface_Binary *self, gint sectsize, GError **error);
-    gboolean (*track_file_get_sectsize) (MIRAGE_FragIface_Binary *self, gint *sectsize, GError **error);
-    gboolean (*track_file_set_format) (MIRAGE_FragIface_Binary *self, gint format, GError **error);
-    gboolean (*track_file_get_format) (MIRAGE_FragIface_Binary *self, gint *format, GError **error);
+    const gchar *(*track_file_get_file) (MIRAGE_FragIface_Binary *self);
+    void (*track_file_set_offset) (MIRAGE_FragIface_Binary *self, guint64 offset);
+    guint64 (*track_file_get_offset) (MIRAGE_FragIface_Binary *self);
+    void (*track_file_set_sectsize) (MIRAGE_FragIface_Binary *self, gint sectsize);
+    gint (*track_file_get_sectsize) (MIRAGE_FragIface_Binary *self);
+    void (*track_file_set_format) (MIRAGE_FragIface_Binary *self, gint format);
+    gint (*track_file_get_format) (MIRAGE_FragIface_Binary *self);
 
-    gboolean (*track_file_get_position) (MIRAGE_FragIface_Binary *self, gint address, guint64 *position, GError **error);
+    guint64 (*track_file_get_position) (MIRAGE_FragIface_Binary *self, gint address);
 
     gboolean (*subchannel_file_set_file) (MIRAGE_FragIface_Binary *self, const gchar *filename, GError **error);
-    gboolean (*subchannel_file_get_file) (MIRAGE_FragIface_Binary *self, const gchar **filename, GError **error);
-    gboolean (*subchannel_file_set_offset) (MIRAGE_FragIface_Binary *self, guint64 offset, GError **error);
-    gboolean (*subchannel_file_get_offset) (MIRAGE_FragIface_Binary *self, guint64 *offset, GError **error);
-    gboolean (*subchannel_file_set_sectsize) (MIRAGE_FragIface_Binary *self, gint sectsize, GError **error);
-    gboolean (*subchannel_file_get_sectsize) (MIRAGE_FragIface_Binary *self, gint *sectsize, GError **error);
-    gboolean (*subchannel_file_set_format) (MIRAGE_FragIface_Binary *self, gint format, GError **error);
-    gboolean (*subchannel_file_get_format) (MIRAGE_FragIface_Binary *self, gint *format, GError **error);
+    const gchar *(*subchannel_file_get_file) (MIRAGE_FragIface_Binary *self);
+    void (*subchannel_file_set_offset) (MIRAGE_FragIface_Binary *self, guint64 offset);
+    guint64 (*subchannel_file_get_offset) (MIRAGE_FragIface_Binary *self);
+    void (*subchannel_file_set_sectsize) (MIRAGE_FragIface_Binary *self, gint sectsize);
+    gint (*subchannel_file_get_sectsize) (MIRAGE_FragIface_Binary *self);
+    void (*subchannel_file_set_format) (MIRAGE_FragIface_Binary *self, gint format);
+    gint (*subchannel_file_get_format) (MIRAGE_FragIface_Binary *self);
 
-    gboolean (*subchannel_file_get_position) (MIRAGE_FragIface_Binary *self, gint address, guint64 *position, GError **error);
+    guint64 (*subchannel_file_get_position) (MIRAGE_FragIface_Binary *self, gint address);
 
 };
 
@@ -227,27 +227,27 @@ GType mirage_frag_iface_binary_get_type (void);
 
 /* Track file */
 gboolean mirage_frag_iface_binary_track_file_set_file (MIRAGE_FragIface_Binary *self, const gchar *filename, GError **error);
-gboolean mirage_frag_iface_binary_track_file_get_file (MIRAGE_FragIface_Binary *self, const gchar **filename, GError **error);
-gboolean mirage_frag_iface_binary_track_file_set_offset (MIRAGE_FragIface_Binary *self, guint64 offset, GError **error);
-gboolean mirage_frag_iface_binary_track_file_get_offset (MIRAGE_FragIface_Binary *self, guint64 *offset, GError **error);
-gboolean mirage_frag_iface_binary_track_file_set_sectsize (MIRAGE_FragIface_Binary *self, gint sectsize, GError **error);
-gboolean mirage_frag_iface_binary_track_file_get_sectsize (MIRAGE_FragIface_Binary *self, gint *sectsize, GError **error);
-gboolean mirage_frag_iface_binary_track_file_set_format (MIRAGE_FragIface_Binary *self, gint format, GError **error);
-gboolean mirage_frag_iface_binary_track_file_get_format (MIRAGE_FragIface_Binary *self, gint *format, GError **error);
+const gchar *mirage_frag_iface_binary_track_file_get_file (MIRAGE_FragIface_Binary *self);
+void mirage_frag_iface_binary_track_file_set_offset (MIRAGE_FragIface_Binary *self, guint64 offset);
+guint64 mirage_frag_iface_binary_track_file_get_offset (MIRAGE_FragIface_Binary *self);
+void mirage_frag_iface_binary_track_file_set_sectsize (MIRAGE_FragIface_Binary *self, gint sectsize);
+gint mirage_frag_iface_binary_track_file_get_sectsize (MIRAGE_FragIface_Binary *self);
+void mirage_frag_iface_binary_track_file_set_format (MIRAGE_FragIface_Binary *self, gint format);
+gint mirage_frag_iface_binary_track_file_get_format (MIRAGE_FragIface_Binary *self);
 
-gboolean mirage_frag_iface_binary_track_file_get_position (MIRAGE_FragIface_Binary *self, gint address, guint64 *position, GError **error);
+guint64 mirage_frag_iface_binary_track_file_get_position (MIRAGE_FragIface_Binary *self, gint address);
 
 /* Subchannel file */
 gboolean mirage_frag_iface_binary_subchannel_file_set_file (MIRAGE_FragIface_Binary *self, const gchar *filename, GError **error);
-gboolean mirage_frag_iface_binary_subchannel_file_get_file (MIRAGE_FragIface_Binary *self, const gchar **filename, GError **error);
-gboolean mirage_frag_iface_binary_subchannel_file_set_offset (MIRAGE_FragIface_Binary *self, guint64 offset, GError **error);
-gboolean mirage_frag_iface_binary_subchannel_file_get_offset (MIRAGE_FragIface_Binary *self, guint64 *offset, GError **error);
-gboolean mirage_frag_iface_binary_subchannel_file_set_sectsize (MIRAGE_FragIface_Binary *self, gint sectsize, GError **error);
-gboolean mirage_frag_iface_binary_subchannel_file_get_sectsize (MIRAGE_FragIface_Binary *self, gint *sectsize, GError **error);
-gboolean mirage_frag_iface_binary_subchannel_file_set_format (MIRAGE_FragIface_Binary *self, gint format, GError **error);
-gboolean mirage_frag_iface_binary_subchannel_file_get_format (MIRAGE_FragIface_Binary *self, gint *format, GError **error);
+const gchar *mirage_frag_iface_binary_subchannel_file_get_file (MIRAGE_FragIface_Binary *self);
+void mirage_frag_iface_binary_subchannel_file_set_offset (MIRAGE_FragIface_Binary *self, guint64 offset);
+guint64 mirage_frag_iface_binary_subchannel_file_get_offset (MIRAGE_FragIface_Binary *self);
+void mirage_frag_iface_binary_subchannel_file_set_sectsize (MIRAGE_FragIface_Binary *self, gint sectsize);
+gint mirage_frag_iface_binary_subchannel_file_get_sectsize (MIRAGE_FragIface_Binary *self);
+void mirage_frag_iface_binary_subchannel_file_set_format (MIRAGE_FragIface_Binary *self, gint format);
+gint mirage_frag_iface_binary_subchannel_file_get_format (MIRAGE_FragIface_Binary *self);
 
-gboolean mirage_frag_iface_binary_subchannel_file_get_position (MIRAGE_FragIface_Binary *self, gint address, guint64 *position, GError **error);
+guint64 mirage_frag_iface_binary_subchannel_file_get_position (MIRAGE_FragIface_Binary *self, gint address);
 
 
 /**********************************************************************\
@@ -274,18 +274,18 @@ struct _MIRAGE_FragIface_AudioInterface
 
     /* Interface methods */
     gboolean (*set_file) (MIRAGE_FragIface_Audio *self, const gchar *filename, GError **error);
-    gboolean (*get_file) (MIRAGE_FragIface_Audio *self, const gchar **filename, GError **error);
-    gboolean (*set_offset) (MIRAGE_FragIface_Audio *self, gint offset, GError **error);
-    gboolean (*get_offset) (MIRAGE_FragIface_Audio *self, gint *offset, GError **error);
+    const gchar *(*get_file) (MIRAGE_FragIface_Audio *self);
+    void (*set_offset) (MIRAGE_FragIface_Audio *self, gint offset);
+    gint (*get_offset) (MIRAGE_FragIface_Audio *self);
 };
 
 /* Used by MIRAGE_TYPE_FRAG_IFACE_AUDIO */
 GType mirage_frag_iface_audio_get_type (void);
 
 gboolean mirage_frag_iface_audio_set_file (MIRAGE_FragIface_Audio *self, const gchar *filename, GError **error);
-gboolean mirage_frag_iface_audio_get_file (MIRAGE_FragIface_Audio *self, const gchar **filename, GError **error);
-gboolean mirage_frag_iface_audio_set_offset (MIRAGE_FragIface_Audio *self, gint offset, GError **error);
-gboolean mirage_frag_iface_audio_get_offset (MIRAGE_FragIface_Audio *self, gint *offset, GError **error);
+const gchar *mirage_frag_iface_audio_get_file (MIRAGE_FragIface_Audio *self);
+void mirage_frag_iface_audio_set_offset (MIRAGE_FragIface_Audio *self, gint offset);
+gint mirage_frag_iface_audio_get_offset (MIRAGE_FragIface_Audio *self);
 
 G_END_DECLS
 

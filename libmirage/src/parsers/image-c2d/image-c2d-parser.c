@@ -175,7 +175,7 @@ static gboolean mirage_parser_c2d_parse_compressed_track (MIRAGE_Parser_C2D *sel
     C2D_Z_Info_Header header;
     C2D_Z_Info zinfo;
 
-    stream = libmirage_create_file_stream(self->priv->c2d_filename, NULL);
+    stream = libmirage_create_file_stream(self->priv->c2d_filename, G_OBJECT(self), NULL);
     if (!stream) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to open stream on file!\n", __debug__);
         mirage_error(MIRAGE_E_IMAGEFILE, error);
@@ -299,9 +299,9 @@ static gboolean mirage_parser_c2d_parse_track_entries (MIRAGE_Parser_C2D *self, 
             gint t;
 
             if (cur_tb->point == 1) {
-                mirage_track_set_track_start(MIRAGE_TRACK(cur_point), 150, NULL);
+                mirage_track_set_track_start(MIRAGE_TRACK(cur_point), 150);
             }
-            mirage_track_get_track_start(MIRAGE_TRACK(cur_point), &track_start, NULL);
+            track_start = mirage_track_get_track_start(MIRAGE_TRACK(cur_point));
 
             for (t = 0; t < tracks-track; t++) {
                 if (cur_tb->point != cur_tb[t].point) break;
@@ -330,24 +330,19 @@ static gboolean mirage_parser_c2d_parse_track_entries (MIRAGE_Parser_C2D *self, 
         gint converted_mode = 0;
         converted_mode = mirage_parser_c2d_convert_track_mode(self, cur_tb->mode, cur_tb->sector_size);
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   converted mode: 0x%X\n", __debug__, converted_mode);
-        mirage_track_set_mode(MIRAGE_TRACK(cur_point), converted_mode, NULL);
+        mirage_track_set_mode(MIRAGE_TRACK(cur_point), converted_mode);
 
         /* Set ISRC */
         if (cur_tb->isrc[0]) {
-            mirage_track_set_isrc(MIRAGE_TRACK(cur_point), cur_tb->isrc, NULL);
+            mirage_track_set_isrc(MIRAGE_TRACK(cur_point), cur_tb->isrc);
         }
 
         /* Pregap fragment at the beginning of track */
         if ((cur_tb->point == 1) && (cur_tb->index == 1)) {
+            /* Creating NULL fragment should never fail */
             GObject *pregap_fragment = libmirage_create_fragment(MIRAGE_TYPE_FRAG_IFACE_NULL, "NULL", error);
-            if (!pregap_fragment) {
-                MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: failed to create NULL fragment!\n", __debug__);
-                g_object_unref(cur_point);
-                g_object_unref(cur_session);
-                return FALSE;
-            }
 
-            mirage_fragment_set_length(MIRAGE_FRAGMENT(pregap_fragment), 150, NULL);
+            mirage_fragment_set_length(MIRAGE_FRAGMENT(pregap_fragment), 150);
 
             mirage_track_add_fragment(MIRAGE_TRACK(cur_point), -1, &pregap_fragment, error);
             g_object_unref(pregap_fragment);
@@ -376,7 +371,7 @@ static gboolean mirage_parser_c2d_parse_track_entries (MIRAGE_Parser_C2D *self, 
         gint fragment_len = track_last_sector - track_first_sector + 1;
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   fragment length: %i\n", __debug__, fragment_len);
 
-        mirage_fragment_set_length(MIRAGE_FRAGMENT(data_fragment), fragment_len, NULL);
+        mirage_fragment_set_length(MIRAGE_FRAGMENT(data_fragment), fragment_len);
 
         /* Set file */
         if(!mirage_frag_iface_binary_track_file_set_file(MIRAGE_FRAG_IFACE_BINARY(data_fragment), self->priv->c2d_filename, error)) {
@@ -386,9 +381,9 @@ static gboolean mirage_parser_c2d_parse_track_entries (MIRAGE_Parser_C2D *self, 
             g_object_unref(cur_session);
             return FALSE;
         }
-        mirage_frag_iface_binary_track_file_set_offset(MIRAGE_FRAG_IFACE_BINARY(data_fragment), tfile_offset, NULL);
-        mirage_frag_iface_binary_track_file_set_sectsize(MIRAGE_FRAG_IFACE_BINARY(data_fragment), tfile_sectsize, NULL);
-        mirage_frag_iface_binary_track_file_set_format(MIRAGE_FRAG_IFACE_BINARY(data_fragment), tfile_format, NULL);
+        mirage_frag_iface_binary_track_file_set_offset(MIRAGE_FRAG_IFACE_BINARY(data_fragment), tfile_offset);
+        mirage_frag_iface_binary_track_file_set_sectsize(MIRAGE_FRAG_IFACE_BINARY(data_fragment), tfile_sectsize);
+        mirage_frag_iface_binary_track_file_set_format(MIRAGE_FRAG_IFACE_BINARY(data_fragment), tfile_format);
 
         /* Subchannel */
         switch (cur_tb->sector_size) {
@@ -398,14 +393,14 @@ static gboolean mirage_parser_c2d_parse_track_entries (MIRAGE_Parser_C2D *self, 
 
                 MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   subchannel found; interleaved PW96\n", __debug__);
 
-                mirage_frag_iface_binary_subchannel_file_set_sectsize(MIRAGE_FRAG_IFACE_BINARY(data_fragment), sfile_sectsize, NULL);
-                mirage_frag_iface_binary_subchannel_file_set_format(MIRAGE_FRAG_IFACE_BINARY(data_fragment), sfile_format, NULL);
+                mirage_frag_iface_binary_subchannel_file_set_sectsize(MIRAGE_FRAG_IFACE_BINARY(data_fragment), sfile_sectsize);
+                mirage_frag_iface_binary_subchannel_file_set_format(MIRAGE_FRAG_IFACE_BINARY(data_fragment), sfile_format);
 
                 /* We need to correct the data for track sector size...
                    C2D format has already added 96 bytes to sector size,
                    so we need to subtract it */
                 tfile_sectsize = cur_tb->sector_size - sfile_sectsize;
-                mirage_frag_iface_binary_track_file_set_sectsize(MIRAGE_FRAG_IFACE_BINARY(data_fragment), tfile_sectsize, NULL);
+                mirage_frag_iface_binary_track_file_set_sectsize(MIRAGE_FRAG_IFACE_BINARY(data_fragment), tfile_sectsize);
 
                 break;
             }
@@ -488,17 +483,17 @@ static gboolean mirage_parser_c2d_load_disc (MIRAGE_Parser_C2D *self, GError **e
     /* Set disc's MCN */
     if (hb->has_upc_ean) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   UPC / EAN: %.13s\n", __debug__, &hb->upc_ean);
-        mirage_disc_set_mcn(MIRAGE_DISC(self->priv->disc), hb->upc_ean, NULL);
+        mirage_disc_set_mcn(MIRAGE_DISC(self->priv->disc), hb->upc_ean);
     }
 
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, ":\n");
 
     /* For now we only support (and assume) CD media */
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: CD-ROM image\n\n", __debug__);
-    mirage_disc_set_medium_type(MIRAGE_DISC(self->priv->disc), MIRAGE_MEDIUM_CD, NULL);
+    mirage_disc_set_medium_type(MIRAGE_DISC(self->priv->disc), MIRAGE_MEDIUM_CD);
 
     /* CD-ROMs start at -150 as per Red Book... */
-    mirage_disc_layout_set_start_sector(MIRAGE_DISC(self->priv->disc), -150, NULL);
+    mirage_disc_layout_set_start_sector(MIRAGE_DISC(self->priv->disc), -150);
 
     /* Load tracks */
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: parsing track entries...\n", __debug__);
@@ -524,7 +519,7 @@ static gboolean mirage_parser_c2d_load_disc (MIRAGE_Parser_C2D *self, GError **e
 /**********************************************************************\
  *                 MIRAGE_Parser methods implementation               *
 \**********************************************************************/
-static gboolean mirage_parser_c2d_load_image (MIRAGE_Parser *_self, gchar **filenames, GObject **disc, GError **error)
+static GObject *mirage_parser_c2d_load_image (MIRAGE_Parser *_self, gchar **filenames, GError **error)
 {
     MIRAGE_Parser_C2D *self = MIRAGE_PARSER_C2D(_self);
 
@@ -533,7 +528,7 @@ static gboolean mirage_parser_c2d_load_image (MIRAGE_Parser *_self, gchar **file
     gchar sig[32] = "";
 
     /* Open file */
-    stream = libmirage_create_file_stream(filenames[0], NULL);
+    stream = libmirage_create_file_stream(filenames[0], G_OBJECT(self), NULL);
     if (!stream) {
         mirage_error(MIRAGE_E_IMAGEFILE, error);
         return FALSE;
@@ -559,9 +554,9 @@ static gboolean mirage_parser_c2d_load_image (MIRAGE_Parser *_self, gchar **file
 
     /* Create disc */
     self->priv->disc = g_object_new(MIRAGE_TYPE_DISC, NULL);
-    mirage_object_attach_child(MIRAGE_OBJECT(self), self->priv->disc, NULL);
+    mirage_object_attach_child(MIRAGE_OBJECT(self), self->priv->disc);
 
-    mirage_disc_set_filename(MIRAGE_DISC(self->priv->disc), filenames[0], NULL);
+    mirage_disc_set_filename(MIRAGE_DISC(self->priv->disc), filenames[0]);
     self->priv->c2d_filename = g_strdup(filenames[0]);
 
     /* Load image header */
@@ -612,15 +607,13 @@ end:
     self->priv->c2d_data = NULL;
 
     /* Return disc */
-    mirage_object_detach_child(MIRAGE_OBJECT(self), self->priv->disc, NULL);
+    mirage_object_detach_child(MIRAGE_OBJECT(self), self->priv->disc);
     if (succeeded) {
-        *disc = self->priv->disc;
+        return self->priv->disc;
     } else {
         g_object_unref(self->priv->disc);
-        *disc = NULL;
+        return NULL;
     }
-
-    return succeeded;
 }
 
 

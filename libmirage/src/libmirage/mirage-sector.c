@@ -101,11 +101,12 @@ static void mirage_sector_generate_header (MIRAGE_Sector *self)
     GObject *track;
     gint start_sector;
 
-    if (!mirage_object_get_parent(MIRAGE_OBJECT(self), &track, NULL)) {
+    track = mirage_object_get_parent(MIRAGE_OBJECT(self));
+    if (!track) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to get sector's parent!\n", __debug__);
         return;
     }
-    mirage_track_layout_get_start_sector(MIRAGE_TRACK(track), &start_sector, NULL);
+    start_sector = mirage_track_layout_get_start_sector(MIRAGE_TRACK(track));
     g_object_unref(track);
 
     /* Address */
@@ -202,9 +203,9 @@ static void mirage_sector_generate_edc_ecc (MIRAGE_Sector *self)
 /**
  * mirage_sector_feed_data:
  * @self: a #MIRAGE_Sector
- * @address: address the sector represents. Given in sectors.
- * @track: track the sector belongs to
- * @error: location to store error, or %NULL
+ * @address: (in): address the sector represents. Given in sectors.
+ * @track: (in); track the sector belongs to
+ * @error: (out) (allow-none): location to store error, or %NULL
  *
  * <para>
  * Feeds data to sector. It finds appropriate fragment to feed from, reads data
@@ -223,9 +224,9 @@ gboolean mirage_sector_feed_data (MIRAGE_Sector *self, gint address, GObject *tr
     gint mode, sectsize, data_offset, fragment_start;
 
     /* Get track mode */
-    mirage_track_get_mode(MIRAGE_TRACK(track), &mode, NULL);
+    mode = mirage_track_get_mode(MIRAGE_TRACK(track));
     /* Set track as sector's parent */
-    mirage_object_set_parent(MIRAGE_OBJECT(self), track, NULL);
+    mirage_object_set_parent(MIRAGE_OBJECT(self), track);
     /* Store sector's address */
     self->priv->address = address;
 
@@ -237,7 +238,7 @@ gboolean mirage_sector_feed_data (MIRAGE_Sector *self, gint address, GObject *tr
     }
 
     /* Fragments work with fragment-relative addresses */
-    mirage_fragment_get_address(MIRAGE_FRAGMENT(data_fragment), &fragment_start, NULL);
+    fragment_start = mirage_fragment_get_address(MIRAGE_FRAGMENT(data_fragment));
     address -= fragment_start;
 
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_SECTOR, "%s: got fragment for track-relative address 0x%X... %p\n", __debug__, address, data_fragment);
@@ -253,6 +254,7 @@ gboolean mirage_sector_feed_data (MIRAGE_Sector *self, gint address, GObject *tr
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_SECTOR, "%s: main channel sector size: %d\n", __debug__, sectsize);
 
     /* Now, calculate offset and valid data based on mode and sector size */
+    data_offset = 0;
     switch (mode) {
         case MIRAGE_MODE_AUDIO: {
             /* Audio sector structure:
@@ -787,29 +789,26 @@ gboolean mirage_sector_feed_data (MIRAGE_Sector *self, gint address, GObject *tr
 /**
  * mirage_sector_get_sector_type:
  * @self: a #MIRAGE_Sector
- * @type: location to store sector type
- * @error: location to store error, or %NULL
  *
  * <para>
  * Retrieves sector type (track mode); one of #MIRAGE_TrackModes.
  * </para>
  *
- * Returns: %TRUE on success, %FALSE on failure
+ * Returns: sector type (track mode)
  **/
-gboolean mirage_sector_get_sector_type (MIRAGE_Sector *self, gint *type, GError **error)
+gint mirage_sector_get_sector_type (MIRAGE_Sector *self)
 {
-    MIRAGE_CHECK_ARG(type);
     /* Return sector type */
-    *type = self->priv->type;
-    return TRUE;
+    return self->priv->type;
 }
+
 
 /**
  * mirage_sector_get_sync:
  * @self: a #MIRAGE_Sector
- * @ret_buf: location to store pointer to buffer containing sync pattern, or %NULL
- * @ret_len: location to store length of sync pattern, or %NULL. Length is given in bytes.
- * @error: location to store error, or %NULL
+ * @ret_buf: (out) (transfer none) (allow-none): location to store pointer to buffer containing sync pattern, or %NULL
+ * @ret_len: (out) (allow-none): location to store length of sync pattern, or %NULL. Length is given in bytes.
+ * @error: (out) (allow-none): location to store error, or %NULL
  *
  * <para>
  * Retrieves sector's sync pattern. The pointer to appropriate location in
@@ -867,9 +866,9 @@ gboolean mirage_sector_get_sync (MIRAGE_Sector *self, const guint8 **ret_buf, gi
 /**
  * mirage_sector_get_header:
  * @self: a #MIRAGE_Sector
- * @ret_buf: location to store pointer to buffer containing header, or %NULL
- * @ret_len: location to store length of header, or %NULL. Length is given in bytes.
- * @error: location to store error, or %NULL
+ * @ret_buf: (out) (transfer none) (allow-none): location to store pointer to buffer containing header, or %NULL
+ * @ret_len: (out) (allow-none): location to store length of header, or %NULL. Length is given in bytes.
+ * @error: (out) (allow-none): location to store error, or %NULL
  *
  * <para>
  * Retrieves sector's header. The pointer to appropriate location in
@@ -927,9 +926,9 @@ gboolean mirage_sector_get_header (MIRAGE_Sector *self, const guint8 **ret_buf, 
 /**
  * mirage_sector_get_subheader:
  * @self: a #MIRAGE_Sector
- * @ret_buf: location to store pointer to buffer containing subheader, or %NULL
- * @ret_len: location to store length of subheader, or %NULL. Length is given in bytes.
- * @error: location to store error, or %NULL
+ * @ret_buf: (out) (transfer none) (allow-none): location to store pointer to buffer containing subheader, or %NULL
+ * @ret_len: (out) (allow-none): location to store length of subheader, or %NULL. Length is given in bytes.
+ * @error: (out) (allow-none): location to store error, or %NULL
  *
  * <para>
  * Retrieves sector's subheader. The pointer to appropriate location in
@@ -984,9 +983,9 @@ gboolean mirage_sector_get_subheader (MIRAGE_Sector *self, const guint8 **ret_bu
 /**
  * mirage_sector_get_data:
  * @self: a #MIRAGE_Sector
- * @ret_buf: location to store pointer to buffer containing user data, or %NULL
- * @ret_len: location to store length of user data, or %NULL. Length is given in bytes.
- * @error: location to store error, or %NULL
+ * @ret_buf: (out) (transfer none) (allow-none): location to store pointer to buffer containing user data, or %NULL
+ * @ret_len: (out) (allow-none): location to store length of user data, or %NULL. Length is given in bytes.
+ * @error: (out) (allow-none): location to store error, or %NULL
  *
  * <para>
  * Retrieves sector's user data. The pointer to appropriate location in
@@ -1059,9 +1058,9 @@ gboolean mirage_sector_get_data (MIRAGE_Sector *self, const guint8 **ret_buf, gi
 /**
  * mirage_sector_get_edc_ecc:
  * @self: a #MIRAGE_Sector
- * @ret_buf: location to store pointer to buffer containing EDC/ECC data, or %NULL
- * @ret_len: location to store length of EDC/ECC data, or %NULL. Length is given in bytes.
- * @error: location to store error, or %NULL
+ * @ret_buf: (out) (transfer none) (allow-none): location to store pointer to buffer containing EDC/ECC data, or %NULL
+ * @ret_len: (out) (allow-none): location to store length of EDC/ECC data, or %NULL. Length is given in bytes.
+ * @error: (out) (allow-none): location to store error, or %NULL
  *
  * <para>
  * Retrieves sector's EDC/ECC data. The pointer to appropriate location in
@@ -1125,10 +1124,10 @@ gboolean mirage_sector_get_edc_ecc (MIRAGE_Sector *self, const guint8 **ret_buf,
 /**
  * mirage_sector_get_subchannel:
  * @self: a #MIRAGE_Sector
- * @format: subchannel format
- * @ret_buf: location to store pointer to buffer containing subchannel, or %NULL
- * @ret_len: location to store length of subchannel data, or %NULL. Length is given in bytes.
- * @error: location to store error, or %NULL
+ * @format: (in): subchannel format
+ * @ret_buf: (out) (transfer none) (allow-none): location to store pointer to buffer containing subchannel, or %NULL
+ * @ret_len: (out) (allow-none): location to store length of subchannel data, or %NULL. Length is given in bytes.
+ * @error: (out) (allow-none): location to store error, or %NULL
  *
  * <para>
  * Retrieves sector's subchannel. @type must be one of #MIRAGE_Sector_SubchannelFormat.
@@ -1335,12 +1334,13 @@ static gint subchannel_generate_p (MIRAGE_Sector *self, guint8 *buf)
     gint track_start;
 
     /* Get sector's parent track */
-    if (!mirage_object_get_parent(MIRAGE_OBJECT(self), &track, NULL)) {
+    track = mirage_object_get_parent(MIRAGE_OBJECT(self));
+    if (!track) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to get sector's parent!\n", __debug__);
         return 12;
     }
 
-    mirage_track_get_track_start(MIRAGE_TRACK(track), &track_start, NULL);
+    track_start = mirage_track_get_track_start(MIRAGE_TRACK(track));
 
     /* P subchannel being 0xFF indicates we're in the pregap */
     if (address < track_start) {
@@ -1366,7 +1366,8 @@ static gint subchannel_generate_q (MIRAGE_Sector *self, guint8 *buf)
     guint16 crc;
 
     /* Get sector's parent track */
-    if (!mirage_object_get_parent(MIRAGE_OBJECT(self), &track, NULL)) {
+    track = mirage_object_get_parent(MIRAGE_OBJECT(self));
+    if (!track) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to get sector's parent!\n", __debug__);
         return 12;
     }
@@ -1384,10 +1385,10 @@ static gint subchannel_generate_q (MIRAGE_Sector *self, guint8 *buf)
             GObject *session;
             GObject *disc;
 
-            mirage_object_get_parent(MIRAGE_OBJECT(track), &session, NULL);
-            mirage_object_get_parent(MIRAGE_OBJECT(session), &disc, NULL);
+            session = mirage_object_get_parent(MIRAGE_OBJECT(track));
+            disc = mirage_object_get_parent(MIRAGE_OBJECT(session));
 
-            if (!mirage_disc_get_mcn(MIRAGE_DISC(disc), NULL, NULL)) {
+            if (!mirage_disc_get_mcn(MIRAGE_DISC(disc))) {
                 mode_switch = 0x01;
             } else {
                 mode_switch = 0x02;
@@ -1401,12 +1402,11 @@ static gint subchannel_generate_q (MIRAGE_Sector *self, guint8 *buf)
         case 50: {
             /* ISRC is to be returned; verify that this is an audio track and
                that it actually has ISRC set */
-            gint mode;
+            gint mode = mirage_sector_get_sector_type(self);
 
-            mirage_sector_get_sector_type(self, &mode, NULL);
             if (mode != MIRAGE_MODE_AUDIO) {
                 mode_switch = 0x01;
-            } else if (!mirage_track_get_isrc(MIRAGE_TRACK(track), NULL, NULL)) {
+            } else if (!mirage_track_get_isrc(MIRAGE_TRACK(track))) {
                 mode_switch = 0x01;
             } else {
                 mode_switch = 0x03;
@@ -1421,7 +1421,7 @@ static gint subchannel_generate_q (MIRAGE_Sector *self, guint8 *buf)
         }
     }
 
-    mirage_track_layout_get_start_sector(MIRAGE_TRACK(track), &start_sector, NULL);
+    start_sector = mirage_track_layout_get_start_sector(MIRAGE_TRACK(track));
 
     switch (mode_switch) {
         case 0x01: {
@@ -1432,10 +1432,10 @@ static gint subchannel_generate_q (MIRAGE_Sector *self, guint8 *buf)
 
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_SECTOR, "%s: generating Mode-1 Q: Position\n", __debug__);
 
-            mirage_track_get_ctl(MIRAGE_TRACK(track), &ctl, NULL);
-            mirage_track_layout_get_track_number(MIRAGE_TRACK(track), &track_number, NULL);
+            ctl = mirage_track_get_ctl(MIRAGE_TRACK(track));
+            track_number = mirage_track_layout_get_track_number(MIRAGE_TRACK(track));
 
-            mirage_track_get_track_start(MIRAGE_TRACK(track), &track_start, NULL);
+            track_start = mirage_track_get_track_start(MIRAGE_TRACK(track));
 
             buf[0] = (ctl << 0x04) | 0x01; /* Mode-1 Q */
             buf[1] = mirage_helper_hex2bcd(track_number); /* Track number */
@@ -1443,8 +1443,7 @@ static gint subchannel_generate_q (MIRAGE_Sector *self, guint8 *buf)
             /* Index: try getting index object by address; if it's not found, we
                check if sector lies before track start... */
             if (mirage_track_get_index_by_address(MIRAGE_TRACK(track), address, &index, NULL)) {
-                gint index_number;
-                mirage_index_get_number(MIRAGE_INDEX(index), &index_number, NULL);
+                gint index_number = mirage_index_get_number(MIRAGE_INDEX(index));
                 MIRAGE_DEBUG(self, MIRAGE_DEBUG_SECTOR, "%s: address 0x%X belongs to index with number: %d\n", __debug__, address, index_number);
                 buf[2] = index_number;
                 g_object_unref(index);
@@ -1479,7 +1478,7 @@ static gint subchannel_generate_q (MIRAGE_Sector *self, guint8 *buf)
 
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_SECTOR, "%s: generating Mode-2 Q: MCN\n", __debug__);
 
-            mirage_track_get_ctl(MIRAGE_TRACK(track), &ctl, NULL);
+            ctl = mirage_track_get_ctl(MIRAGE_TRACK(track));
             buf[0] = (ctl << 0x04) | 0x02; /* Mode-2 Q */
 
             /* MCN */
@@ -1488,10 +1487,10 @@ static gint subchannel_generate_q (MIRAGE_Sector *self, guint8 *buf)
 
             const gchar *mcn;
 
-            mirage_object_get_parent(MIRAGE_OBJECT(track), &session, NULL);
-            mirage_object_get_parent(MIRAGE_OBJECT(session), &disc, NULL);
+            session = mirage_object_get_parent(MIRAGE_OBJECT(track));
+            disc = mirage_object_get_parent(MIRAGE_OBJECT(session));
 
-            mirage_disc_get_mcn(MIRAGE_DISC(disc), &mcn, NULL);
+            mcn = mirage_disc_get_mcn(MIRAGE_DISC(disc));
 
             g_object_unref(disc);
             g_object_unref(session);
@@ -1509,12 +1508,11 @@ static gint subchannel_generate_q (MIRAGE_Sector *self, guint8 *buf)
 
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_SECTOR, "%s: generating Mode-3 Q: ISRC\n", __debug__);
 
-            mirage_track_get_ctl(MIRAGE_TRACK(track), &ctl, NULL);
+            ctl = mirage_track_get_ctl(MIRAGE_TRACK(track));
             buf[0] = (ctl << 0x04) | 0x03; /* Mode-3 Q */
 
             /* ISRC*/
-            const gchar *isrc;
-            mirage_track_get_isrc(MIRAGE_TRACK(track), &isrc, NULL);
+            const gchar *isrc = mirage_track_get_isrc(MIRAGE_TRACK(track));
             mirage_helper_subchannel_q_encode_isrc(&buf[1], isrc);
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_SECTOR, "%s: ISRC string: %s bytes: %02X %02X %02X %02X %02X %02X %02X %02X\n", __debug__, isrc, buf[1], buf[2], buf[3], buf[4], buf[5], buf[6], buf[7], buf[8]);
             /* AFRAME */

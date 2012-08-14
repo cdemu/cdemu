@@ -84,8 +84,8 @@ static gchar *find_data_file (const gchar *path, const gchar *filename)
 
 /**
  * mirage_helper_find_data_file:
- * @filename: declared filename
- * @path: path where to look for file (can be a filename), or %NULL
+ * @filename: (in): declared filename
+ * @path: (in) (allow-none): path where to look for file (can be a filename), or %NULL
  *
  * <para>
  * Attempts to find a file with filename @filename and path @path. @filename can
@@ -116,7 +116,7 @@ static gchar *find_data_file (const gchar *path, const gchar *filename)
  * The returned string should be freed when no longer needed.
  * </para>
  *
- * Returns: a newly allocated string containing the fullpath of file, or %NULL.
+ * Returns: (transfer-full): a newly allocated string containing the fullpath of file, or %NULL.
  **/
 gchar *mirage_helper_find_data_file (const gchar *filename, const gchar *path)
 {
@@ -164,13 +164,13 @@ gchar *mirage_helper_find_data_file (const gchar *filename, const gchar *path)
 
 /**
  * mirage_helper_get_suffix:
- * @filename: filename
+ * @filename: (in): filename
  *
  * <para>
  * Retrieves suffix from @filename.
  * </para>
  *
- * Returns: pointer to character in @filename at which the suffix starts.
+ * Returns: (transfer-none): pointer to character in @filename at which the suffix starts.
  **/
 gchar *mirage_helper_get_suffix (const gchar *filename)
 {
@@ -179,8 +179,8 @@ gchar *mirage_helper_get_suffix (const gchar *filename)
 
 /**
  * mirage_helper_has_suffix:
- * @filename: filename
- * @suffix: suffix
+ * @filename: (in): filename
+ * @suffix: (in): suffix
  *
  * <para>
  * Checks whether file name @filename ends with suffix @suffix.
@@ -208,8 +208,8 @@ gboolean mirage_helper_has_suffix (const gchar *filename, const gchar *suffix)
 
 /**
  * mirage_helper_strcasecmp:
- * @str1: first string
- * @str2: second string
+ * @str1: (in): first string
+ * @str2: (in): second string
  *
  * <para>
  * Replacement function for g_strcasecmp/strcasecmp, which can properly handle UTF-8.
@@ -238,9 +238,9 @@ gint mirage_helper_strcasecmp (const gchar *str1, const gchar *str2)
 
 /**
  * mirage_helper_strncasecmp:
- * @str1: first string
- * @str2: second string
- * @len: length of string to compare
+ * @str1: (in): first string
+ * @str2: (in): second string
+ * @len: (in): length of string to compare
  *
  * <para>
  * Replacement function for g_strncasecmp/strncasecmp, which can properly handle UTF-8.
@@ -275,11 +275,11 @@ gint mirage_helper_strncasecmp (const gchar *str1, const gchar *str2, gint len)
 \**********************************************************************/
 /**
  * mirage_helper_lba2msf:
- * @lba: LBA address
- * @diff: account for the difference
- * @m: location to store minutes, or %NULL
- * @s: location to store seconds, or %NULL
- * @f: location to store frames, or %NULL
+ * @lba: (in): LBA address
+ * @diff: (in): account for the difference
+ * @m: (out) (allow-none): location to store minutes, or %NULL
+ * @s: (out) (allow-none): location to store seconds, or %NULL
+ * @f: (out) (allow-none): location to store frames, or %NULL
  *
  * <para>
  * Converts LBA sector address stored in @lba into MSF address, storing each field
@@ -307,8 +307,8 @@ void mirage_helper_lba2msf (gint lba, gboolean diff, guint8 *m, guint8 *s, guint
 
 /**
  * mirage_helper_lba2msf_str:
- * @lba: LBA address
- * @diff: account for the difference
+ * @lba: (in): LBA address
+ * @diff: (in): account for the difference
  *
  * <para>
  * Converts LBA sector address stored in @lba into MSF address.
@@ -320,7 +320,7 @@ void mirage_helper_lba2msf (gint lba, gboolean diff, guint8 *m, guint8 *s, guint
  * (or lengths), @diff should be set to %FALSE.
  * </para>
  *
- * Returns: a newly-allocated string containing MSF address; it should be freed
+ * Returns: (transfer-full): a newly-allocated string containing MSF address; it should be freed
  * with g_free() when no longer needed.
  **/
 gchar *mirage_helper_lba2msf_str (gint lba, gboolean diff)
@@ -337,10 +337,10 @@ gchar *mirage_helper_lba2msf_str (gint lba, gboolean diff)
 
 /**
  * mirage_helper_msf2lba:
- * @m: minutes
- * @s: seconds
- * @f: frames
- * @diff: difference
+ * @m: (in): minutes
+ * @s: (in): seconds
+ * @f: (in): frames
+ * @diff: (in): difference
  *
  * <para>
  * Converts MSF sector address stored in @m, @s and @f into LBA address.
@@ -368,8 +368,8 @@ gint mirage_helper_msf2lba (guint8 m, guint8 s, guint8 f, gboolean diff)
 
 /**
  * mirage_helper_msf2lba_str:
- * @msf: MSF string
- * @diff: difference
+ * @msf: (in): MSF string
+ * @diff: (in): difference
  *
  * <para>
  * Converts MSF sector address stored in @msf string into LBA address.
@@ -397,7 +397,7 @@ gint mirage_helper_msf2lba_str (const gchar *msf, gboolean diff)
 \**********************************************************************/
 /**
  * mirage_helper_hex2bcd:
- * @hex: hex-encoded integer
+ * @hex: (in): hex-encoded integer
  *
  * <para>
  * Converts hex-encoded integer into bcd-encoded integer.
@@ -416,7 +416,7 @@ gint mirage_helper_hex2bcd (gint hex)
 
 /**
  * mirage_helper_bcd2hex:
- * @bcd: bcd-encoded integer
+ * @bcd: (in): bcd-encoded integer
  *
  * <para>
  * Converts bcd-encoded integer into hex-encoded integer.
@@ -442,7 +442,7 @@ gint mirage_helper_bcd2hex (gint bcd)
 \**********************************************************************/
 /**
  * mirage_helper_ascii2isrc:
- * @c: ASCII character
+ * @c: (in): ASCII character
  *
  * <para>
  * Converts ASCII character @c into ISRC character.
@@ -466,7 +466,7 @@ guint8 mirage_helper_ascii2isrc (gchar c)
 
 /**
  * mirage_helper_isrc2ascii:
- * @c: ISRC character
+ * @c: (in): ISRC character
  *
  * <para>
  * Converts ISRC character @c into ASCII character.
@@ -524,7 +524,7 @@ static const guint16 q_crc_lut[256] = {
 
 /**
  * mirage_helper_subchannel_q_calculate_crc:
- * @data: buffer containing Q subchannel data
+ * @data: (in): buffer containing Q subchannel data
  *
  * <para>
  * Calculates the CRC-16 checksum of the Q subchannel data stored in @data.
@@ -546,8 +546,8 @@ guint16 mirage_helper_subchannel_q_calculate_crc (const guint8 *data)
 
 /**
  * mirage_helper_subchannel_q_encode_mcn:
- * @buf: buffer to encode MCN into
- * @mcn: MCN string
+ * @buf: (out caller-allocates): buffer to encode MCN into
+ * @mcn: (in): MCN string
  *
  * <para>
  * Encodes MCN string @mcn into buffer @buf.
@@ -566,8 +566,8 @@ void mirage_helper_subchannel_q_encode_mcn (guint8 *buf, const gchar *mcn)
 
 /**
  * mirage_helper_subchannel_q_decode_mcn:
- * @buf: buffer containing encoded MCN
- * @mcn: string to decode MCN into
+ * @buf: (in): buffer containing encoded MCN
+ * @mcn: (out caller-allocates): string to decode MCN into
  *
  * <para>
  * Decodes MCN stored in @buf into string @mcn.
@@ -593,8 +593,8 @@ void mirage_helper_subchannel_q_decode_mcn (const guint8 *buf, gchar *mcn)
 
 /**
  * mirage_helper_subchannel_q_encode_isrc:
- * @buf: buffer to encode ISRC into
- * @isrc: ISRC string
+ * @buf: (out caller-allocates): buffer to encode ISRC into
+ * @isrc: (in): ISRC string
  *
  * <para>
  * Encodes ISRC string @isrc into buffer @buf.
@@ -626,8 +626,8 @@ void mirage_helper_subchannel_q_encode_isrc (guint8 *buf, const gchar *isrc)
 
 /**
  * mirage_helper_subchannel_q_decode_isrc:
- * @buf: buffer containing encoded ISRC
- * @isrc: string to decode ISRC into
+ * @buf: (in): buffer containing encoded ISRC
+ * @isrc: (out caller-allocates): string to decode ISRC into
  *
  * <para>
  * Decodes ISRC stored in @buf into string @isrc.
@@ -663,9 +663,9 @@ void mirage_helper_subchannel_q_decode_isrc (const guint8 *buf, gchar *isrc)
 
 /**
  * mirage_helper_subchannel_interleave:
- * @subchan: subchannel type
- * @channel12: buffer containing subchannel data to interleave
- * @channel96: buffer to interleave subchannel data into
+ * @subchan: (in): subchannel type
+ * @channel12: (in): buffer containing subchannel data to interleave
+ * @channel96: (out caller-allocates): buffer to interleave subchannel data into
  *
  * <para>
  * Interleaves subchannel data of type @subchan stored in @channel12 into
@@ -688,9 +688,9 @@ void mirage_helper_subchannel_interleave (gint subchan, const guint8 *channel12,
 
 /**
  * mirage_helper_subchannel_deinterleave:
- * @subchan: subchannel type
- * @channel96: buffer containing subchannel data to deinterleave
- * @channel12: buffer to deinterleave subchannel data into
+ * @subchan: (in): subchannel type
+ * @channel96: (in): buffer containing subchannel data to deinterleave
+ * @channel12: (out caller-allocates): buffer to deinterleave subchannel data into
  *
  * <para>
  * Deinterleaves subchannel data of type @subchan from subchannel data stored in
@@ -812,9 +812,9 @@ static const guint32 edc_lut[256] = {
 
 /**
  * mirage_helper_sector_edc_ecc_compute_edc_block:
- * @src: data to calculate EDC data for
- * @size: size of data in @src
- * @dest: buffer to write calculated EDC data into
+ * @src: (in): data to calculate EDC data for
+ * @size: (in): size of data in @src
+ * @dest: (out caller-allocates): buffer to write calculated EDC data into
  *
  * <para>
  * Calculates EDC (error detection code) for data in @src of length @size and
@@ -862,12 +862,12 @@ void mirage_helper_sector_edc_ecc_compute_edc_block (const guint8 *src, guint16 
 
 /**
  * mirage_helper_sector_edc_ecc_compute_ecc_block:
- * @src: data to calculate ECC data for
- * @major_count: major count
- * @minor_count: minor count
- * @major_mult: major multiplicator
- * @minor_inc: minor increment
- * @dest: buffer to write calculated ECC data into
+ * @src: (in): data to calculate ECC data for
+ * @major_count: (in): major count
+ * @minor_count: (in): minor count
+ * @major_mult: (in): major multiplicator
+ * @minor_inc: (in): minor increment
+ * @dest: (out caller-allocates): buffer to write calculated ECC data into
  *
  * <para>
  * Calculates ECC (error correction code) for data in @src and writes the result
@@ -923,7 +923,7 @@ void mirage_helper_sector_edc_ecc_compute_ecc_block (const guint8 *src, guint32 
 
 /**
  * mirage_helper_determine_sector_type:
- * @buf: buffer containing at least first 16 bytes of sector's data
+ * @buf: (in): buffer containing at least first 16 bytes of sector's data
  *
  * <para>
  * Determines sector type from its data, based on first 16 bytes, which

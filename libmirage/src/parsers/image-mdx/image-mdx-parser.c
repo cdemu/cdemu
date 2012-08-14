@@ -158,7 +158,7 @@ static gboolean mirage_parser_mdx_get_track (MIRAGE_Parser_MDX *self, const gcha
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: MDX file; reading header...\n", __debug__);
 
         /* Open MDX file */
-        stream = libmirage_create_file_stream(filename, NULL);
+        stream = libmirage_create_file_stream(filename, G_OBJECT(self), NULL);
         if (!stream) {
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: could not open MDX file '%s'!\n", __debug__, filename);
             mirage_error(MIRAGE_E_IMAGEFILE, error);
@@ -198,7 +198,7 @@ static gboolean mirage_parser_mdx_get_track (MIRAGE_Parser_MDX *self, const gcha
 
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: MDS file; corresponding MDF: %s\n", __debug__, data_file);
 
-        stream = libmirage_create_file_stream(data_file, NULL);
+        stream = libmirage_create_file_stream(data_file, G_OBJECT(self), NULL);
         if (!stream) {
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: could not open MDF file!\n", __debug__);
             g_free(data_file);
@@ -245,7 +245,7 @@ static gboolean mirage_parser_mdx_get_track (MIRAGE_Parser_MDX *self, const gcha
 
     /* Create and prepare track */
     track = g_object_new(MIRAGE_TYPE_TRACK, NULL);
-    mirage_track_set_mode(MIRAGE_TRACK(track), track_mode, NULL);
+    mirage_track_set_mode(MIRAGE_TRACK(track), track_mode);
 
     /* Create data fragment */
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: creating data fragment\n", __debug__);
@@ -265,19 +265,14 @@ static gboolean mirage_parser_mdx_get_track (MIRAGE_Parser_MDX *self, const gcha
     }
     g_free(data_file);
 
-    mirage_frag_iface_binary_track_file_set_format(MIRAGE_FRAG_IFACE_BINARY(data_fragment), FR_BIN_TFILE_DATA, NULL);
-	mirage_frag_iface_binary_track_file_set_offset(MIRAGE_FRAG_IFACE_BINARY(data_fragment), offset, NULL);
-    mirage_frag_iface_binary_track_file_set_sectsize(MIRAGE_FRAG_IFACE_BINARY(data_fragment), sector_size, NULL);
+    mirage_frag_iface_binary_track_file_set_format(MIRAGE_FRAG_IFACE_BINARY(data_fragment), FR_BIN_TFILE_DATA);
+	mirage_frag_iface_binary_track_file_set_offset(MIRAGE_FRAG_IFACE_BINARY(data_fragment), offset);
+    mirage_frag_iface_binary_track_file_set_sectsize(MIRAGE_FRAG_IFACE_BINARY(data_fragment), sector_size);
 
-    mirage_fragment_set_length(MIRAGE_FRAGMENT(data_fragment), num_sectors, NULL);
+    mirage_fragment_set_length(MIRAGE_FRAGMENT(data_fragment), num_sectors);
 
     /* Add fragment to track */
-    if (!mirage_track_add_fragment(MIRAGE_TRACK(track), -1, &data_fragment, error)) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to add fragment!\n", __debug__);
-        g_object_unref(data_fragment);
-        g_object_unref(track);
-        return FALSE;
-    }
+    mirage_track_add_fragment(MIRAGE_TRACK(track), -1, &data_fragment, NULL);
 
     *ret_track = track;
     return TRUE;
@@ -311,7 +306,7 @@ static gboolean mirage_parser_mdx_load_disc (MIRAGE_Parser_MDX *self, gchar *fil
     }
 
     /* MDX image parser assumes single-track image, so we're dealing with regular CD-ROM session */
-    mirage_session_set_session_type(MIRAGE_SESSION(session), MIRAGE_SESSION_CD_ROM, NULL);
+    mirage_session_set_session_type(MIRAGE_SESSION(session), MIRAGE_SESSION_CD_ROM);
 
     /* Add track */
     if (!mirage_session_add_track_by_index(MIRAGE_SESSION(session), -1, &track, error)) {
@@ -326,7 +321,7 @@ static gboolean mirage_parser_mdx_load_disc (MIRAGE_Parser_MDX *self, gchar *fil
 
     /* Now guess medium type and if it's a CD-ROM, add Red Book pregap */
     gint medium_type = mirage_parser_guess_medium_type(MIRAGE_PARSER(self), self->priv->disc);
-    mirage_disc_set_medium_type(MIRAGE_DISC(self->priv->disc), medium_type, NULL);
+    mirage_disc_set_medium_type(MIRAGE_DISC(self->priv->disc), medium_type);
     if (medium_type == MIRAGE_MEDIUM_CD) {
         mirage_parser_add_redbook_pregap(MIRAGE_PARSER(self), self->priv->disc, NULL);
     }
@@ -338,7 +333,7 @@ static gboolean mirage_parser_mdx_load_disc (MIRAGE_Parser_MDX *self, gchar *fil
 /**********************************************************************\
  *                MIRAGE_Parser methods implementation                *
 \**********************************************************************/
-static gboolean mirage_parser_mdx_load_image (MIRAGE_Parser *_self, gchar **filenames, GObject **disc, GError **error)
+static GObject *mirage_parser_mdx_load_image (MIRAGE_Parser *_self, gchar **filenames, GError **error)
 {
     MIRAGE_Parser_MDX *self = MIRAGE_PARSER_MDX(_self);
 
@@ -348,7 +343,7 @@ static gboolean mirage_parser_mdx_load_image (MIRAGE_Parser *_self, gchar **file
     guint8 ver[2];
 
     /* Check if we can load the image */
-    stream = libmirage_create_file_stream(filenames[0], NULL);
+    stream = libmirage_create_file_stream(filenames[0], G_OBJECT(self), NULL);
     if (!stream) {
         mirage_error(MIRAGE_E_IMAGEFILE, error);
         return FALSE;
@@ -380,10 +375,10 @@ static gboolean mirage_parser_mdx_load_image (MIRAGE_Parser *_self, gchar **file
 
     /* Create disc */
     self->priv->disc = g_object_new(MIRAGE_TYPE_DISC, NULL);
-    mirage_object_attach_child(MIRAGE_OBJECT(self), self->priv->disc, NULL);
+    mirage_object_attach_child(MIRAGE_OBJECT(self), self->priv->disc);
 
     /* Set filenames */
-    mirage_disc_set_filename(MIRAGE_DISC(self->priv->disc), filenames[0], NULL);
+    mirage_disc_set_filename(MIRAGE_DISC(self->priv->disc), filenames[0]);
 
 
     /* Load disc */
@@ -391,15 +386,13 @@ static gboolean mirage_parser_mdx_load_image (MIRAGE_Parser *_self, gchar **file
 
 
     /* Return disc */
-    mirage_object_detach_child(MIRAGE_OBJECT(self), self->priv->disc, NULL);
+    mirage_object_detach_child(MIRAGE_OBJECT(self), self->priv->disc);
     if (succeeded) {
-        *disc = self->priv->disc;
+        return self->priv->disc;
     } else {
         g_object_unref(self->priv->disc);
-        *disc = NULL;
+        return NULL;
     }
-
-    return succeeded;
 }
 
 

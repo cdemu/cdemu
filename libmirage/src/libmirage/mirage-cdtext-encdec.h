@@ -33,7 +33,7 @@ G_BEGIN_DECLS
  * @user_data: user data
  *
  * <para>
- * Specifies the type of callback functions that can be passed to 
+ * Specifies the type of callback functions that can be passed to
  * mirage_cdtext_decoder_get_data().
  * </para>
  *
@@ -93,18 +93,19 @@ GType mirage_cdtext_encdec_get_type (void);
 /**********************************************************************\
  *                         Public API: Encoder                        *
 \**********************************************************************/
-gboolean mirage_cdtext_encoder_init (MIRAGE_CDTextEncDec *self, guint8 *buffer, gint buflen, GError **error);
+void mirage_cdtext_encoder_init (MIRAGE_CDTextEncDec *self, guint8 *buffer, gint buflen);
 gboolean mirage_cdtext_encoder_set_block_info (MIRAGE_CDTextEncDec *self, gint block, gint langcode, gint charset, gint copyright, GError **error);
-gboolean mirage_cdtext_encoder_add_data (MIRAGE_CDTextEncDec *self, gint langcode, gint type, gint track, const guint8 *data, gint data_len, GError **error);
-gboolean mirage_cdtext_encoder_encode (MIRAGE_CDTextEncDec *self, guint8 **buffer, gint *buflen, GError **error);
+void mirage_cdtext_encoder_add_data (MIRAGE_CDTextEncDec *self, gint langcode, gint type, gint track, const guint8 *data, gint data_len);
+void mirage_cdtext_encoder_encode (MIRAGE_CDTextEncDec *self, guint8 **buffer, gint *buflen);
 
 
 /**********************************************************************\
  *                         Public API: Decoder                        *
 \**********************************************************************/
-gboolean mirage_cdtext_decoder_init (MIRAGE_CDTextEncDec *self, guint8 *buffer, gint buflen, GError **error);
+void mirage_cdtext_decoder_init (MIRAGE_CDTextEncDec *self, guint8 *buffer, gint buflen);
 gboolean mirage_cdtext_decoder_get_block_info (MIRAGE_CDTextEncDec *self, gint block, gint *langcode, gint *charset, gint *copyright, GError **error);
 gboolean mirage_cdtext_decoder_get_data (MIRAGE_CDTextEncDec *self, gint block, MIRAGE_CDTextDataCallback callback_func, gpointer user_data, GError **error);
+
 
 G_END_DECLS
 

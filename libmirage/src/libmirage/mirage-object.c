@@ -55,16 +55,13 @@ static void mirage_object_child_destroyed_handler (MIRAGE_Object *self, GObject 
 /**
  * mirage_object_set_parent:
  * @self: a #MIRAGE_Object
- * @parent: parent
- * @error: location to store error, or %NULL
+ * @parent: (in): parent
  *
  * <para>
  * Sets object's parent.
  * </para>
- *
- * Returns: %TRUE on success, %FALSE on failure
  **/
-gboolean mirage_object_set_parent (MIRAGE_Object *self, GObject *parent, GError **error G_GNUC_UNUSED)
+void mirage_object_set_parent (MIRAGE_Object *self, GObject *parent)
 {
     if (self->priv->parent) {
         /* Remove previous weak reference pointer */
@@ -81,53 +78,38 @@ gboolean mirage_object_set_parent (MIRAGE_Object *self, GObject *parent, GError 
         /* Passing NULL in parent means reseting current parent */
         self->priv->parent = NULL;
     }
-
-    return TRUE;
 }
 
 /**
  * mirage_object_get_parent:
  * @self: a #MIRAGE_Object
- * @parent: location to store parent, or %NULL
- * @error: location to store error, or %NULL
  *
  * <para>
  * Retrieves object's parent.
  * </para>
  *
- * Returns: %TRUE on success, %FALSE on failure
+ * Returns: (transfer-full): parent object, or %NULL.
  **/
-gboolean mirage_object_get_parent (MIRAGE_Object *self, GObject **parent, GError **error)
+GObject *mirage_object_get_parent (MIRAGE_Object *self)
 {
-    /* Make sure we have parent set */
-    if (!self->priv->parent) {
-        mirage_error(MIRAGE_E_NOPARENT, error);
-        return FALSE;
-    }
-
-    if (parent) {
-        /* Return parent and ref it */
+    if (self->priv->parent) {
         g_object_ref(self->priv->parent);
-        *parent = self->priv->parent;
     }
-
-    return TRUE;
+    return self->priv->parent;
 }
 
 
 /**
  * mirage_object_attach_child:
  * @self: a #MIRAGE_Object
- * @child: child
+ * @child: (in): child
  * @error: location to store error, or %NULL
  *
  * <para>
  * Attaches child to the object.
  * </para>
- *
- * Returns: %TRUE on success, %FALSE on failure
  **/
-gboolean mirage_object_attach_child (MIRAGE_Object *self, GObject *child, GError **error)
+void mirage_object_attach_child (MIRAGE_Object *self, GObject *child)
 {
     /* Add child to our children list */
     self->priv->children_list = g_list_append(self->priv->children_list, child);
@@ -136,51 +118,41 @@ gboolean mirage_object_attach_child (MIRAGE_Object *self, GObject *child, GError
        will remove it from list) */
     g_object_weak_ref(child, (GWeakNotify)mirage_object_child_destroyed_handler, self);
 
-    /* If we have debug context set, set it to child as well */
-    if (self->priv->debug_context) {
-        if (!mirage_debuggable_set_debug_context(MIRAGE_DEBUGGABLE(child), self->priv->debug_context, error)) {
-            return FALSE;
-        }
-    }
-
-    return TRUE;
+    /* Set debug context to child */
+    mirage_debuggable_set_debug_context(MIRAGE_DEBUGGABLE(child), self->priv->debug_context);
 }
 
 /**
  * mirage_object_detach_child:
  * @self: a #MIRAGE_Object
- * @child: child
- * @error: location to store error, or %NULL
+ * @child: (in): child
  *
  * <para>
  * Detaches child from the object. Note that the child will keep the debug context
  * it may have been passed to while being attached to the parent.
  * </para>
- *
- * Returns: %TRUE on success, %FALSE on failure
  **/
-gboolean mirage_object_detach_child (MIRAGE_Object *self, GObject *child, GError **error G_GNUC_UNUSED)
+void mirage_object_detach_child (MIRAGE_Object *self, GObject *child)
 {
     /* Remove child from our children list */
     self->priv->children_list = g_list_remove(self->priv->children_list, child);
 
     /* Remove weak reference to child */
     g_object_weak_unref(child, (GWeakNotify)mirage_object_child_destroyed_handler, self);
-
-    return TRUE;
 }
+
 
 /**********************************************************************\
  *              MIRAGE_Debuggable methods implementation              *
 \**********************************************************************/
-static gboolean mirage_object_set_debug_context (MIRAGE_Debuggable *_self, GObject *debug_context, GError **error G_GNUC_UNUSED)
+static void mirage_object_set_debug_context (MIRAGE_Debuggable *_self, GObject *debug_context)
 {
     MIRAGE_Object *self = MIRAGE_OBJECT(_self);
     GList *entry = NULL;
 
     if (debug_context == self->priv->debug_context) {
         /* Don't do anything if we're trying to set the same context */
-        return TRUE;
+        return;
     }
 
     /* If debug context is already set, free it */
@@ -190,35 +162,21 @@ static gboolean mirage_object_set_debug_context (MIRAGE_Debuggable *_self, GObje
 
     /* Set debug context and ref it */
     self->priv->debug_context = debug_context;
-    g_object_ref(self->priv->debug_context);
+    if (self->priv->debug_context) {
+        g_object_ref(self->priv->debug_context);
+    }
 
     /* Propagate the change to all children */
     G_LIST_FOR_EACH(entry, self->priv->children_list) {
         GObject *object = entry->data;
-        mirage_debuggable_set_debug_context(MIRAGE_DEBUGGABLE(object), debug_context, NULL);
+        mirage_debuggable_set_debug_context(MIRAGE_DEBUGGABLE(object), debug_context);
     }
-
-    return TRUE;
 }
 
-static gboolean mirage_object_get_debug_context (MIRAGE_Debuggable *_self, GObject **debug_context, GError **error)
+static GObject *mirage_object_get_debug_context (MIRAGE_Debuggable *_self)
 {
     MIRAGE_Object *self = MIRAGE_OBJECT(_self);
-    MIRAGE_CHECK_ARG(debug_context);
-
-    /* Make sure we have debug context set */
-    if (!self->priv->debug_context) {
-        mirage_error(MIRAGE_E_NODEBUGCONTEXT, error);
-        return FALSE;
-    }
-
-    if (debug_context) {
-        /* Return debug context and ref it */
-        *debug_context = self->priv->debug_context;
-        g_object_ref(*debug_context);
-    }
-
-    return TRUE;
+    return self->priv->debug_context;
 }
 
 static void mirage_object_debug_messagev (MIRAGE_Debuggable *_self, gint level, gchar *format, va_list args)
@@ -236,9 +194,9 @@ static void mirage_object_debug_messagev (MIRAGE_Debuggable *_self, gint level, 
     }
 
     /* Get debug mask, domain and name */
-    mirage_debug_context_get_debug_mask(MIRAGE_DEBUG_CONTEXT(self->priv->debug_context), &debug_mask, NULL);
-    mirage_debug_context_get_domain(MIRAGE_DEBUG_CONTEXT(self->priv->debug_context), &domain, NULL);
-    mirage_debug_context_get_name(MIRAGE_DEBUG_CONTEXT(self->priv->debug_context), &name, NULL);
+    debug_mask = mirage_debug_context_get_debug_mask(MIRAGE_DEBUG_CONTEXT(self->priv->debug_context));
+    domain = mirage_debug_context_get_domain(MIRAGE_DEBUG_CONTEXT(self->priv->debug_context));
+    name = mirage_debug_context_get_name(MIRAGE_DEBUG_CONTEXT(self->priv->debug_context));
 
     /* Insert name in case we have it */
     if (name) {

@@ -34,11 +34,11 @@ G_BEGIN_DECLS
  * A structure containing parser information. It can be obtained with call to
  * mirage_parser_get_parser_info().
  * </para>
- * 
+ *
  * <para>
- * @description is a string contraining image file description (e.g. "CloneCD 
+ * @description is a string contraining image file description (e.g. "CloneCD
  * images") and @mime_type is a string representing the image file MIME type
- * (e.g. "application/libmirage-mds"). Together, this information is intended 
+ * (e.g. "application/libmirage-mds"). Together, this information is intended
  * to be used for building file type filters in GUI applications.
  * </para>
  **/
@@ -81,9 +81,9 @@ struct _MIRAGE_Parser
 struct _MIRAGE_ParserClass
 {
     MIRAGE_ObjectClass parent_class;
-    
+
     /* Class members */
-    gboolean (*load_image) (MIRAGE_Parser *self, gchar **filenames, GObject **disc, GError **error);
+    GObject *(*load_image) (MIRAGE_Parser *self, gchar **filenames, GError **error);
 };
 
 /* Used by MIRAGE_TYPE_PARSER */
@@ -94,16 +94,16 @@ GType mirage_parser_get_type (void);
  *                             Public API                             *
 \**********************************************************************/
 void mirage_parser_generate_parser_info (MIRAGE_Parser *self, const gchar *id, const gchar *name, const gchar *description, const gchar *mime_type);
-gboolean mirage_parser_get_parser_info (MIRAGE_Parser *self, const MIRAGE_ParserInfo **parser_info, GError **error);
+const MIRAGE_ParserInfo *mirage_parser_get_parser_info (MIRAGE_Parser *self);
 
-gboolean mirage_parser_load_image (MIRAGE_Parser *self, gchar **filenames, GObject **disc, GError **error);
+GObject *mirage_parser_load_image (MIRAGE_Parser *self, gchar **filenames, GError **error);
 
 gint mirage_parser_guess_medium_type (MIRAGE_Parser *self, GObject *disc);
 gboolean mirage_parser_add_redbook_pregap (MIRAGE_Parser *self, GObject *disc, GError **error);
 
-gboolean mirage_parser_set_params (MIRAGE_Parser *self, GHashTable *params, GError **error);
-gboolean mirage_parser_get_param (MIRAGE_Parser *self, const gchar *name, const GVariantType *type, GVariant **ret_value, GError **error);
-gboolean mirage_parser_get_param_string (MIRAGE_Parser *self, const gchar *name, const gchar **ret_value, GError **error);
+void mirage_parser_set_params (MIRAGE_Parser *self, GHashTable *params);
+GVariant *mirage_parser_get_param (MIRAGE_Parser *self, const gchar *name, const GVariantType *type);
+const gchar *mirage_parser_get_param_string (MIRAGE_Parser *self, const gchar *name);
 
 G_END_DECLS
 

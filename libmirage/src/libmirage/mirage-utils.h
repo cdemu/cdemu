@@ -22,22 +22,6 @@
 
 G_BEGIN_DECLS
 
-/**
- * MIRAGE_CHECK_ARG:
- * @arg: argument to be checked
- *
- * <para>
- * A macro to be used within libMirage objects. It checks whether @arg is valid
- * pointer argument (non-NULL). If it is not, it returns false and error is set
- * to %MIRAGE_E_INVALIDARG. The existance of local variable @error of type
- * #GError** is assumed.
- * </para>
- **/
-#define MIRAGE_CHECK_ARG(arg) \
-    if (!arg) { \
-        mirage_error(MIRAGE_E_INVALIDARG, error); \
-        return FALSE; \
-    }
 
 /**
  * MIRAGE_CAST_DATA:

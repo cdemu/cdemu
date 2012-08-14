@@ -16,7 +16,7 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
- 
+
 #ifndef __MIRAGE_LANGUAGE_H__
 #define __MIRAGE_LANGUAGE_H__
 
@@ -63,7 +63,7 @@ typedef enum
     MIRAGE_LANGUAGE_PACK_RES_8C      = 0x8C,
     MIRAGE_LANGUAGE_PACK_CLOSED_INFO = 0x8D,
     MIRAGE_LANGUAGE_PACK_UPC_ISRC    = 0x8E,
-    MIRAGE_LANGUAGE_PACK_SIZE        = 0x8F, 
+    MIRAGE_LANGUAGE_PACK_SIZE        = 0x8F,
 } MIRAGE_Language_PackTypes;
 
 
@@ -106,8 +106,8 @@ GType mirage_language_get_type (void);
  *                             Public API                             *
 \**********************************************************************/
 /* Langcode: set/get */
-gboolean mirage_language_set_langcode (MIRAGE_Language *self, gint langcode, GError **error);
-gboolean mirage_language_get_langcode (MIRAGE_Language *self, gint *langcode, GError **error);
+void mirage_language_set_langcode (MIRAGE_Language *self, gint langcode);
+gint mirage_language_get_langcode (MIRAGE_Language *self);
 
 /* Field: set/get */
 gboolean mirage_language_set_pack_data (MIRAGE_Language *self, gint pack_type, const gchar *pack_data, gint length, GError **error);

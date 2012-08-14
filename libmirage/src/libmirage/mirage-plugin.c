@@ -30,10 +30,10 @@
 #define MIRAGE_PLUGIN_GET_PRIVATE(obj) (G_TYPE_INSTANCE_GET_PRIVATE((obj), MIRAGE_TYPE_PLUGIN, MIRAGE_PluginPrivate))
 
 struct _MIRAGE_PluginPrivate
-{    
+{
     gchar *filename;
     GModule *library;
-    
+
     void (*mirage_plugin_load_plugin) (MIRAGE_Plugin *module);
     void (*mirage_plugin_unload_plugin) (MIRAGE_Plugin *module);
 } ;
@@ -49,22 +49,22 @@ typedef enum
 \**********************************************************************/
 /**
  * mirage_plugin_new:
- * @filename: plugin's filename
+ * @filename: (in): plugin's filename
  *
  * <para>
  * Creates new plugin.
  * </para>
  *
- * Returns: a new #MIRAGE_Plugin object that represents plugin. It should be 
+ * Returns: (transfer full): a new #MIRAGE_Plugin object that represents plugin. It should be
  * released with g_object_unref() when no longer needed.
  **/
 MIRAGE_Plugin *mirage_plugin_new (const gchar *filename)
 {
     MIRAGE_Plugin *plugin = NULL;
-    
+
     g_return_val_if_fail(filename != NULL, NULL);
     plugin = g_object_new(MIRAGE_TYPE_PLUGIN, "filename", filename, NULL);
-    
+
     return plugin;
 }
 
@@ -76,16 +76,16 @@ static gboolean mirage_plugin_load_module (GTypeModule *_self)
 {
     MIRAGE_Plugin *self = MIRAGE_PLUGIN(_self);
     gint *plugin_lt_current;
-    
+
     if (!self->priv->filename) {
         return FALSE;
     }
-    
+
     self->priv->library = g_module_open(self->priv->filename, G_MODULE_BIND_LAZY | G_MODULE_BIND_LOCAL);
     if (!self->priv->library) {
         return FALSE;
     }
-    
+
     /* Make sure that the loaded library contains the 'mirage_plugin_lt_current'
        symbol which represents the ABI version that plugin was built against; make
        sure it matches ABI used by the lib */
@@ -94,33 +94,33 @@ static gboolean mirage_plugin_load_module (GTypeModule *_self)
         g_module_close(self->priv->library);
         return FALSE;
     }
-    
+
     if (*plugin_lt_current != mirage_lt_current) {
         g_warning("%s: plugin %s: is not built against current ABI (%d vs. %d)!\n", __func__, self->priv->filename, *plugin_lt_current, MIRAGE_LT_CURRENT);
         g_module_close(self->priv->library);
         return FALSE;
     }
-    
+
     /* Make sure that the loaded library contains the required methods */
     if (!g_module_symbol(self->priv->library, "mirage_plugin_load_plugin", (gpointer *)&self->priv->mirage_plugin_load_plugin) ||
         !g_module_symbol(self->priv->library, "mirage_plugin_unload_plugin", (gpointer *)&self->priv->mirage_plugin_unload_plugin)) {
-        
+
         g_module_close(self->priv->library);
         return FALSE;
     }
-    
+
     /* Initialize the loaded module */
     self->priv->mirage_plugin_load_plugin(self);
-    
+
     return TRUE;
 }
 
 static void mirage_plugin_unload_module (GTypeModule *_self)
 {
     MIRAGE_Plugin *self = MIRAGE_PLUGIN(_self);
-    
+
     self->priv->mirage_plugin_unload_plugin(self);
-    
+
     g_module_close(self->priv->library);
     self->priv->library = NULL;
 
@@ -130,7 +130,7 @@ static void mirage_plugin_unload_module (GTypeModule *_self)
 
 
 /**********************************************************************\
- *                             Object init                            * 
+ *                             Object init                            *
 \**********************************************************************/
 G_DEFINE_TYPE(MIRAGE_Plugin, mirage_plugin, G_TYPE_TYPE_MODULE);
 
@@ -150,7 +150,7 @@ static void mirage_plugin_finalize (GObject *gobject)
     MIRAGE_Plugin *self = MIRAGE_PLUGIN(gobject);
 
     g_free(self->priv->filename);
-    
+
     /* Chain up to the parent class */
     return G_OBJECT_CLASS(mirage_plugin_parent_class)->finalize(gobject);
 }

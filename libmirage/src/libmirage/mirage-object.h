@@ -65,11 +65,11 @@ GType mirage_object_get_type (void);
 /**********************************************************************\
  *                             Public API                             *
 \**********************************************************************/
-gboolean mirage_object_set_parent (MIRAGE_Object *self, GObject *parent, GError **error);
-gboolean mirage_object_get_parent (MIRAGE_Object *self, GObject **parent, GError **error);
+void mirage_object_set_parent (MIRAGE_Object *self, GObject *parent);
+GObject *mirage_object_get_parent (MIRAGE_Object *self);
 
-gboolean mirage_object_attach_child (MIRAGE_Object *self, GObject *child, GError **error);
-gboolean mirage_object_detach_child (MIRAGE_Object *self, GObject *child, GError **error);
+void mirage_object_attach_child (MIRAGE_Object *self, GObject *child);
+void mirage_object_detach_child (MIRAGE_Object *self, GObject *child);
 
 G_END_DECLS
 

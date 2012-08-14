@@ -40,9 +40,9 @@ typedef struct
 
 
 struct _MIRAGE_LanguagePrivate
-{    
+{
     gint langcode;
-    
+
     gint packs_number;
     MIRAGE_Language_Pack *packs;
 };
@@ -51,7 +51,7 @@ struct _MIRAGE_LanguagePrivate
 /**********************************************************************\
  *                          Private functions                         *
 \**********************************************************************/
-static gboolean mirage_language_get_pack_by_type (MIRAGE_Language *self, gint pack_type, MIRAGE_Language_Pack **pack, GError **error)
+static MIRAGE_Language_Pack *mirage_language_get_pack_by_type (MIRAGE_Language *self, gint pack_type)
 {
     gint i;
     static const gint pack_types[] = {
@@ -72,16 +72,14 @@ static gboolean mirage_language_get_pack_by_type (MIRAGE_Language *self, gint pa
         MIRAGE_LANGUAGE_PACK_UPC_ISRC,
         MIRAGE_LANGUAGE_PACK_SIZE,
     };
-    
+
     for (i = 0; i < G_N_ELEMENTS(pack_types); i++) {
         if (pack_types[i] == pack_type) {
-            *pack = &self->priv->packs[i];
-            return TRUE;
+            return &self->priv->packs[i];
         }
     }
-    
-    mirage_error(MIRAGE_E_INVALIDPACKTYPE, error);
-    return FALSE;
+
+    return NULL;
 }
 
 
@@ -91,48 +89,40 @@ static gboolean mirage_language_get_pack_by_type (MIRAGE_Language *self, gint pa
 /**
  * mirage_language_set_langcode:
  * @self: a #MIRAGE_Language
- * @langcode: language code
- * @error: location to store error, or %NULL
+ * @langcode: (in): language code
  *
  * <para>
  * Sets language's language code.
  * </para>
- *
- * Returns: %TRUE on success, %FALSE on failure
  **/
-gboolean mirage_language_set_langcode (MIRAGE_Language *self, gint langcode, GError **error G_GNUC_UNUSED)
+void mirage_language_set_langcode (MIRAGE_Language *self, gint langcode)
 {
     self->priv->langcode = langcode;
-    return TRUE;
 }
 
 /**
  * mirage_language_get_langcode:
  * @self: a #MIRAGE_Language
- * @langcode: location to store language code
- * @error: location to store error, or %NULL
  *
  * <para>
  * Retrieves language's language code.
  * </para>
  *
- * Returns: %TRUE on success, %FALSE on failure
+ * Returns: language code
  **/
-gboolean mirage_language_get_langcode (MIRAGE_Language *self, gint *langcode, GError **error)
+gint mirage_language_get_langcode (MIRAGE_Language *self)
 {
-    MIRAGE_CHECK_ARG(langcode);
-    *langcode = self->priv->langcode;
-    return TRUE;
+    return self->priv->langcode;
 }
 
 
 /**
  * mirage_language_set_pack_data:
  * @self: a #MIRAGE_Language
- * @pack_type: pack type
- * @pack_data: pack data
- * @length: length of pack data
- * @error: location to store error, or %NULL
+ * @pack_type: (in): pack type
+ * @pack_data: (in): pack data
+ * @length: (in): length of pack data
+ * @error: (out) (allow-none): location to store error, or %NULL
  *
  * <para>
  * Sets pack data of type @pack_type to data in @pack_data. @length is length of
@@ -143,9 +133,10 @@ gboolean mirage_language_get_langcode (MIRAGE_Language *self, gint *langcode, GE
  **/
 gboolean mirage_language_set_pack_data (MIRAGE_Language *self, gint pack_type, const gchar *pack_data, gint length, GError **error)
 {
-    MIRAGE_Language_Pack *pack;
-    
-    if (!mirage_language_get_pack_by_type(self, pack_type, &pack, error)) {
+    MIRAGE_Language_Pack *pack = mirage_language_get_pack_by_type(self, pack_type);
+
+    if (!pack) {
+        mirage_error(MIRAGE_E_INVALIDPACKTYPE, error);
         return FALSE;
     }
 
@@ -153,26 +144,27 @@ gboolean mirage_language_set_pack_data (MIRAGE_Language *self, gint pack_type, c
     g_free(pack->data);
     pack->length = 0;
     pack->set = FALSE;
+
     /* Set pack data only if length is not 0; if it is, assume caller wants to clear pack data... */
     if (length) {
         pack->data = g_memdup(pack_data, length);
         pack->length = length;
         pack->set = TRUE;
     }
-    
+
     return TRUE;
 }
 
 /**
  * mirage_language_get_pack_data:
  * @self: a #MIRAGE_Language
- * @pack_type: pack type
- * @pack_data: location to store buffer containing pack data, or %NULL
- * @length: location to store length of pack data, or %NULL
- * @error: location to store error, or %NULL
+ * @pack_type: (in): pack type
+ * @pack_data: (out) (transfer none) (allow-none): location to store buffer containing pack data, or %NULL
+ * @length: (out) (allow-none): location to store length of pack data, or %NULL
+ * @error: (out) (allow-none): location to store error, or %NULL
  *
  * <para>
- * Retrieves pack data of type @pack_type. A pointer to buffer containing pack 
+ * Retrieves pack data of type @pack_type. A pointer to buffer containing pack
  * data is stored in @pack data; the buffer belongs to the object and therefore
  * should not be modified.
  * </para>
@@ -181,17 +173,18 @@ gboolean mirage_language_set_pack_data (MIRAGE_Language *self, gint pack_type, c
  **/
 gboolean mirage_language_get_pack_data (MIRAGE_Language *self, gint pack_type, const gchar **pack_data, gint *length, GError **error)
 {
-    MIRAGE_Language_Pack *pack;
-    
-    if (!mirage_language_get_pack_by_type(self, pack_type, &pack, error)) {
+    MIRAGE_Language_Pack *pack = mirage_language_get_pack_by_type(self, pack_type);
+
+    if (!pack) {
+        mirage_error(MIRAGE_E_INVALIDPACKTYPE, error);
         return FALSE;
     }
-    
+
     if (!pack->set) {
         mirage_error(MIRAGE_E_PACKNOTSET, error);
         return FALSE;
     }
-    
+
     /* Return what was asked for */
     if (pack_data) {
         *pack_data = pack->data;
@@ -199,13 +192,13 @@ gboolean mirage_language_get_pack_data (MIRAGE_Language *self, gint pack_type, c
     if (length) {
         *length = pack->length;
     }
-        
+
     return TRUE;
 }
 
 
 /**********************************************************************\
- *                             Object init                            * 
+ *                             Object init                            *
 \**********************************************************************/
 G_DEFINE_TYPE(MIRAGE_Language, mirage_language, MIRAGE_TYPE_OBJECT);
 
@@ -224,13 +217,13 @@ static void mirage_language_finalize (GObject *gobject)
 {
     MIRAGE_Language *self = MIRAGE_LANGUAGE(gobject);
     gint i;
-    
+
     /* Free private structure elements */
     for (i = 0; i < self->priv->packs_number; i++) {
         g_free(self->priv->packs[i].data);
     }
     g_free(self->priv->packs);
-    
+
     /* Chain up to the parent class */
     return G_OBJECT_CLASS(mirage_language_parent_class)->finalize(gobject);
 }

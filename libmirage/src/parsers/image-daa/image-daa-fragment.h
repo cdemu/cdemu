@@ -16,7 +16,7 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
- 
+
 #ifndef __IMAGE_DAA_FRAGMENT_H__
 #define __IMAGE_DAA_FRAGMENT_H__
 
@@ -51,7 +51,7 @@ struct _MIRAGE_Fragment_DAAClass
 GType mirage_fragment_daa_get_type (void);
 void mirage_fragment_daa_type_register (GTypeModule *type_module);
 
-gboolean mirage_fragment_daa_set_file (MIRAGE_Fragment_DAA *self, gchar *file, gchar *password, GError **error);
+gboolean mirage_fragment_daa_set_file (MIRAGE_Fragment_DAA *self, const gchar *file, const gchar *password, GError **error);
 
 G_END_DECLS
 

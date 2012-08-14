@@ -83,16 +83,13 @@ static gboolean mirage_parser_xcdroast_add_track (MIRAGE_Parser_XCDROAST *self, 
     if (self->priv->set_pregap) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: adding %d sector pregap\n", __debug__, self->priv->set_pregap);
 
+        /* Creation of NULL fragment should never fail */
         GObject *null_fragment = libmirage_create_fragment(MIRAGE_TYPE_FRAG_IFACE_NULL, "NULL", error);
-        if (!null_fragment) {
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to create NULL fragment for pregap!\n", __debug__);
-            g_object_unref(track);
-            return FALSE;
-        }
-        mirage_fragment_set_length(MIRAGE_FRAGMENT(null_fragment), self->priv->set_pregap, NULL);
+
+        mirage_fragment_set_length(MIRAGE_FRAGMENT(null_fragment), self->priv->set_pregap);
 
         mirage_track_add_fragment(MIRAGE_TRACK(track), -1, &null_fragment, NULL);
-        mirage_track_set_track_start(MIRAGE_TRACK(track), self->priv->set_pregap, NULL);
+        mirage_track_set_track_start(MIRAGE_TRACK(track), self->priv->set_pregap);
 
         g_object_unref(null_fragment);
 
@@ -111,7 +108,7 @@ static gboolean mirage_parser_xcdroast_add_track (MIRAGE_Parser_XCDROAST *self, 
     switch (track_info->type) {
         case TRACK_TYPE_DATA: {
             /* Data (Mode 1) track */
-            mirage_track_set_mode(MIRAGE_TRACK(track), MIRAGE_MODE_MODE1, NULL);
+            mirage_track_set_mode(MIRAGE_TRACK(track), MIRAGE_MODE_MODE1);
 
             /* Create and add binary fragment, using whole file */
             GObject *data_fragment = libmirage_create_fragment(MIRAGE_TYPE_FRAG_IFACE_BINARY, data_file, error);
@@ -121,7 +118,7 @@ static gboolean mirage_parser_xcdroast_add_track (MIRAGE_Parser_XCDROAST *self, 
                 g_object_unref(track);
                 return FALSE;
             }
-            
+
             if (!mirage_frag_iface_binary_track_file_set_file(MIRAGE_FRAG_IFACE_BINARY(data_fragment), data_file, error)) {
                 MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to set track data file!\n", __debug__);
                 g_free(data_file);
@@ -129,17 +126,16 @@ static gboolean mirage_parser_xcdroast_add_track (MIRAGE_Parser_XCDROAST *self, 
                 g_object_unref(data_fragment);
                 return FALSE;
             }
-            mirage_frag_iface_binary_track_file_set_sectsize(MIRAGE_FRAG_IFACE_BINARY(data_fragment), 2048, NULL);
-            mirage_frag_iface_binary_track_file_set_offset(MIRAGE_FRAG_IFACE_BINARY(data_fragment), 0, NULL);
-            mirage_frag_iface_binary_track_file_set_format(MIRAGE_FRAG_IFACE_BINARY(data_fragment), FR_BIN_TFILE_DATA, NULL);
+            mirage_frag_iface_binary_track_file_set_sectsize(MIRAGE_FRAG_IFACE_BINARY(data_fragment), 2048);
+            mirage_frag_iface_binary_track_file_set_offset(MIRAGE_FRAG_IFACE_BINARY(data_fragment), 0);
+            mirage_frag_iface_binary_track_file_set_format(MIRAGE_FRAG_IFACE_BINARY(data_fragment), FR_BIN_TFILE_DATA);
 
             mirage_fragment_use_the_rest_of_file(MIRAGE_FRAGMENT(data_fragment), NULL);
 
             mirage_track_add_fragment(MIRAGE_TRACK(track), -1, &data_fragment, NULL);
 
             /* Verify fragment's length vs. declared track length */
-            gint fragment_length = 0;
-            mirage_fragment_get_length(MIRAGE_FRAGMENT(data_fragment), &fragment_length, NULL);
+            gint fragment_length = mirage_fragment_get_length(MIRAGE_FRAGMENT(data_fragment));
             if (fragment_length != track_info->size) {
                 MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: data track size mismatch! Declared %d sectors, actual fragment size: %d\n", __debug__, track_info->size, fragment_length);
 
@@ -158,7 +154,7 @@ static gboolean mirage_parser_xcdroast_add_track (MIRAGE_Parser_XCDROAST *self, 
         }
         case TRACK_TYPE_AUDIO: {
             /* Audio track */
-            mirage_track_set_mode(MIRAGE_TRACK(track), MIRAGE_MODE_AUDIO, NULL);
+            mirage_track_set_mode(MIRAGE_TRACK(track), MIRAGE_MODE_AUDIO);
 
             /* Create and add audio fragment, using whole file */
             GObject *data_fragment = libmirage_create_fragment(MIRAGE_TYPE_FRAG_IFACE_AUDIO, data_file, error);
@@ -181,8 +177,7 @@ static gboolean mirage_parser_xcdroast_add_track (MIRAGE_Parser_XCDROAST *self, 
             mirage_track_add_fragment(MIRAGE_TRACK(track), -1, &data_fragment, NULL);
 
             /* Verify fragment's length vs. declared track length */
-            gint fragment_length = 0;
-            mirage_fragment_get_length(MIRAGE_FRAGMENT(data_fragment), &fragment_length, NULL);
+            gint fragment_length = mirage_fragment_get_length(MIRAGE_FRAGMENT(data_fragment));
             if (fragment_length != track_info->size) {
                 MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: audio track size mismatch! Declared %d sectors, actual fragment size: %d\n", __debug__, track_info->size, fragment_length);
             }
@@ -212,7 +207,7 @@ static gboolean mirage_parser_xcdroast_add_track (MIRAGE_Parser_XCDROAST *self, 
            by default */
         if (track_info->type == TRACK_TYPE_AUDIO && !self->priv->xinf_track.stereo) flags |= MIRAGE_TRACKF_FOURCHANNEL;
 
-        mirage_track_set_flags(MIRAGE_TRACK(track), flags, NULL);
+        mirage_track_set_flags(MIRAGE_TRACK(track), flags);
     }
     g_free(real_xinf_filename);
     g_free(xinf_filename);
@@ -816,10 +811,10 @@ static gboolean mirage_parser_xcdroast_check_toc_file (MIRAGE_Parser_XCDROAST *s
 /**********************************************************************\
  *                MIRAGE_Parser methods implementation                *
 \**********************************************************************/
-static gboolean mirage_parser_xcdroast_load_image (MIRAGE_Parser *_self, gchar **filenames, GObject **disc, GError **error)
+static GObject *mirage_parser_xcdroast_load_image (MIRAGE_Parser *_self, gchar **filenames, GError **error)
 {
     MIRAGE_Parser_XCDROAST *self = MIRAGE_PARSER_XCDROAST(_self);
-    
+
     gboolean succeeded = TRUE;
 
     /* Check if we can load file */
@@ -830,9 +825,9 @@ static gboolean mirage_parser_xcdroast_load_image (MIRAGE_Parser *_self, gchar *
 
     /* Create disc */
     self->priv->disc = g_object_new(MIRAGE_TYPE_DISC, NULL);
-    mirage_object_attach_child(MIRAGE_OBJECT(self), self->priv->disc, NULL);
+    mirage_object_attach_child(MIRAGE_OBJECT(self), self->priv->disc);
 
-    mirage_disc_set_filename(MIRAGE_DISC(self->priv->disc), filenames[0], NULL);
+    mirage_disc_set_filename(MIRAGE_DISC(self->priv->disc), filenames[0]);
     self->priv->toc_filename = g_strdup(filenames[0]);
 
     /* Create session; note that we store only pointer, but release reference */
@@ -851,8 +846,7 @@ static gboolean mirage_parser_xcdroast_load_image (MIRAGE_Parser *_self, gchar *
 
     /* Verify layout length (this has to be done before Red Book pregap
        is added... */
-    gint layout_length = 0;
-    mirage_disc_layout_get_length(MIRAGE_DISC(self->priv->disc), &layout_length, NULL);
+    gint layout_length = mirage_disc_layout_get_length(MIRAGE_DISC(self->priv->disc));
     if (layout_length != self->priv->disc_info.cdsize) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: layout size mismatch! Declared %d sectors, actual layout size: %d\n", __debug__, self->priv->disc_info.cdsize, layout_length);
     }
@@ -861,27 +855,25 @@ static gboolean mirage_parser_xcdroast_load_image (MIRAGE_Parser *_self, gchar *
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: finishing the layout\n", __debug__);
     /* Now guess medium type and if it's a CD-ROM, add Red Book pregap */
     gint medium_type = mirage_parser_guess_medium_type(MIRAGE_PARSER(self), self->priv->disc);
-    mirage_disc_set_medium_type(MIRAGE_DISC(self->priv->disc), medium_type, NULL);
+    mirage_disc_set_medium_type(MIRAGE_DISC(self->priv->disc), medium_type);
     if (medium_type == MIRAGE_MEDIUM_CD) {
         mirage_parser_add_redbook_pregap(MIRAGE_PARSER(self), self->priv->disc, NULL);
     }
 
 end:
     /* Return disc */
-    mirage_object_detach_child(MIRAGE_OBJECT(self), self->priv->disc, NULL);
+    mirage_object_detach_child(MIRAGE_OBJECT(self), self->priv->disc);
     if (succeeded) {
-        *disc = self->priv->disc;
+        return self->priv->disc;
     } else {
         g_object_unref(self->priv->disc);
-        *disc = NULL;
+        return NULL;
     }
-
-    return succeeded;
 }
 
 
 /**********************************************************************\
- *                             Object init                            * 
+ *                             Object init                            *
 \**********************************************************************/
 G_DEFINE_DYNAMIC_TYPE(MIRAGE_Parser_XCDROAST, mirage_parser_xcdroast, MIRAGE_TYPE_PARSER);
 
@@ -932,7 +924,7 @@ static void mirage_parser_xcdroast_finalize (GObject *gobject)
     g_free(self->priv->xinf_track.cd_title);
     g_free(self->priv->xinf_track.cd_artist);
     g_free(self->priv->xinf_track.cd_discid);
-    
+
     /* Chain up to the parent class */
     return G_OBJECT_CLASS(mirage_parser_xcdroast_parent_class)->finalize(gobject);
 }

@@ -41,8 +41,8 @@ G_BEGIN_DECLS
 
 /**
  * MIRAGE_CallbackFunction:
- * @data: data
- * @user_data: user data passed to iteration function
+ * @data: (out): data
+ * @user_data: (closure): user data passed to iteration function
  *
  * <para>
  * Callback function type used in libMirage's iteration functions. A pointer to
@@ -57,7 +57,7 @@ typedef gboolean (*MIRAGE_CallbackFunction) (const gpointer data, gpointer user_
 
 /**
  * MIRAGE_PasswordFunction:
- * @user_data: user data passed to password function
+ * @user_data: (closure): user data passed to password function
  *
  * <para>
  * Password function type used in libMirage's to obtain password for encrypted
@@ -96,7 +96,7 @@ gchar *libmirage_obtain_password (GError **error);
 
 GObject *libmirage_create_disc (gchar **filenames, GObject *debug_context, GHashTable *params, GError **error);
 GObject *libmirage_create_fragment (GType fragment_interface, const gchar *filename, GError **error);
-GObject *libmirage_create_file_stream (const gchar *filename, GError **error);
+GObject *libmirage_create_file_stream (const gchar *filename, GObject *debug_context, GError **error);
 
 gboolean libmirage_for_each_parser (MIRAGE_CallbackFunction func, gpointer user_data, GError **error);
 gboolean libmirage_for_each_fragment (MIRAGE_CallbackFunction func, gpointer user_data, GError **error);

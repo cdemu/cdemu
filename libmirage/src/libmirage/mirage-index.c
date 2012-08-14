@@ -30,7 +30,7 @@
 #define MIRAGE_INDEX_GET_PRIVATE(obj) (G_TYPE_INSTANCE_GET_PRIVATE((obj), MIRAGE_TYPE_INDEX, MIRAGE_IndexPrivate))
 
 struct _MIRAGE_IndexPrivate
-{   
+{
     gint number;  /* Index' number */
     gint address; /* Index' start address (relative to track start) */
 };
@@ -42,8 +42,7 @@ struct _MIRAGE_IndexPrivate
 /**
  * mirage_index_set_number:
  * @self: a #MIRAGE_Index
- * @number: index number
- * @error: location to store error, or %NULL
+ * @number: (in): index number
  *
  * <para>
  * Sets index' index number.
@@ -51,76 +50,63 @@ struct _MIRAGE_IndexPrivate
  *
  * Returns: %TRUE on success, %FALSE on failure
  **/
-gboolean mirage_index_set_number (MIRAGE_Index *self, gint number, GError **error G_GNUC_UNUSED)
+void mirage_index_set_number (MIRAGE_Index *self, gint number)
 {
     /* Set number */
     self->priv->number = number;
-    return TRUE;
 }
 
 /**
  * mirage_index_get_number:
  * @self: a #MIRAGE_Index
- * @number: location to store index number
- * @error: location to store error, or %NULL
  *
  * <para>
  * Retrieves index' index number.
  * </para>
  *
- * Returns: %TRUE on success, %FALSE on failure
+ * Returns: index number
  **/
-gboolean mirage_index_get_number (MIRAGE_Index *self, gint *number, GError **error)
+gint mirage_index_get_number (MIRAGE_Index *self)
 {
-    MIRAGE_CHECK_ARG(number);
     /* Return number */
-    *number = self->priv->number;
-    return TRUE;
+    return self->priv->number;
 }
 
-    
+
 /**
  * mirage_index_set_address:
  * @self: a #MIRAGE_Index
- * @address: address
- * @error: location to store error, or %NULL
+ * @address: (in): address
  *
  * <para>
  * Sets index' start address. The @address is given in sectors.
  * </para>
- *
- * Returns: %TRUE on success, %FALSE on failure
  **/
-gboolean mirage_index_set_address (MIRAGE_Index *self, gint address, GError **error G_GNUC_UNUSED)
+void mirage_index_set_address (MIRAGE_Index *self, gint address)
 {
     /* Set address */
     self->priv->address = address;
-    return TRUE;
 }
 
 /**
  * mirage_index_get_address:
  * @self: a #MIRAGE_Index
- * @address: location to store address
- * @error: location to store error, or %NULL
  *
  * <para>
  * Retrieves index' start adddress. The @address is given in sectors.
  * </para>
  *
- * Returns: %TRUE on success, %FALSE on failure
+ * Returns: address
  **/
-gboolean mirage_index_get_address (MIRAGE_Index *self, gint *address, GError **error)
+gint mirage_index_get_address (MIRAGE_Index *self)
 {
-    MIRAGE_CHECK_ARG(address);
     /* Return address */
-    *address = self->priv->address;
-    return TRUE;
+    return self->priv->address;
 }
 
 
 /**********************************************************************\
- *                             Object init                            * 
+ *                             Object init                            *
 \**********************************************************************/
 G_DEFINE_TYPE(MIRAGE_Index, mirage_index, MIRAGE_TYPE_OBJECT);
 
