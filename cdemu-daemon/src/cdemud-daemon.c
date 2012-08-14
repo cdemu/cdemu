@@ -87,9 +87,9 @@ gboolean cdemud_daemon_initialize_and_start (CDEMUD_Daemon *self, gint num_devic
 
     /* Debug context; so that we get daemon's errors/warnings from the very beginning */
     debug_context = g_object_new(MIRAGE_TYPE_DEBUG_CONTEXT, NULL);
-    mirage_debug_context_set_name(MIRAGE_DEBUG_CONTEXT(debug_context), "cdemud", NULL);
-    mirage_debug_context_set_domain(MIRAGE_DEBUG_CONTEXT(debug_context), "CDEMUD", NULL);
-    mirage_debuggable_set_debug_context(MIRAGE_DEBUGGABLE(self), debug_context, NULL);
+    mirage_debug_context_set_name(MIRAGE_DEBUG_CONTEXT(debug_context), "cdemud");
+    mirage_debug_context_set_domain(MIRAGE_DEBUG_CONTEXT(debug_context), "CDEMUD");
+    mirage_debuggable_set_debug_context(MIRAGE_DEBUGGABLE(self), debug_context);
     g_object_unref(debug_context);
 
     /* Control device */
@@ -119,7 +119,7 @@ gboolean cdemud_daemon_initialize_and_start (CDEMUD_Daemon *self, gint num_devic
 
         if (cdemud_device_initialize(CDEMUD_DEVICE(dev), i, self->priv->ctl_device, audio_driver, NULL)) {
             /* Set parent */
-            mirage_object_set_parent(MIRAGE_OBJECT(dev), G_OBJECT(self), NULL);
+            mirage_object_set_parent(MIRAGE_OBJECT(dev), G_OBJECT(self));
             /* Don't attach child... MIRAGE_Objects pass debug context to children,
                and CDEMUD_Devices have each its own context... */
             /* Add handling for signals from the device... this allows us to

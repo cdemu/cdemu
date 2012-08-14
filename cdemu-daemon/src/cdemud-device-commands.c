@@ -631,10 +631,11 @@ static gboolean command_read (CDEMUD_Device *self, guint8 *raw_cdb)
 
     /* Process each sector */
     for (sector = start_sector; sector < start_sector + num_sectors; sector++) {
-        GObject *cur_sector = NULL;
-        mirage_disc_get_sector(disc, sector, &cur_sector, NULL);
+        GError *error = NULL;
+        GObject *cur_sector = mirage_disc_get_sector(disc, sector, &error);
         if (!cur_sector) {
-            CDEMUD_DEBUG(self, DAEMON_DEBUG_MMC, "%s: invalid sector!\n", __debug__);
+            CDEMUD_DEBUG(self, DAEMON_DEBUG_MMC, "%s: failed to read sector: %s\n", __debug__, error->message);
+            g_error_free(error);
             cdemud_device_write_sense_full(self, SK_ILLEGAL_REQUEST, ILLEGAL_MODE_FOR_THIS_TRACK, 0, sector);
             return FALSE;
         }
@@ -648,8 +649,7 @@ static gboolean command_read (CDEMUD_Device *self, guint8 *raw_cdb)
            tests indicate this should be done only for Mode 1 or Mode 2 Form 1
            sectors */
         if (!p_0x01->dcr) {
-            gint sector_type;
-            mirage_sector_get_sector_type(MIRAGE_SECTOR(cur_sector), &sector_type, NULL);
+            gint sector_type = mirage_sector_get_sector_type(MIRAGE_SECTOR(cur_sector));
 
             if ((sector_type == MIRAGE_MODE_MODE1 || sector_type == MIRAGE_MODE_MODE2_FORM1)
                 && !mirage_sector_verify_lec(MIRAGE_SECTOR(cur_sector))) {
@@ -711,7 +711,7 @@ static gboolean command_read_capacity (CDEMUD_Device *self, guint8 *raw_cdb G_GN
 
     mirage_disc_get_session_by_index(MIRAGE_DISC(self->priv->disc), -1, &lsession, NULL);
     mirage_session_get_track_by_number(MIRAGE_SESSION(lsession), MIRAGE_TRACK_LEADOUT, &leadout, NULL);
-    mirage_track_layout_get_start_sector(MIRAGE_TRACK(leadout), &last_sector, NULL);
+    last_sector = mirage_track_layout_get_start_sector(MIRAGE_TRACK(leadout));
 
     g_object_unref(leadout);
     g_object_unref(lsession);
@@ -794,19 +794,21 @@ static gboolean command_read_cd (CDEMUD_Device *self, guint8 *raw_cdb)
 
 
     MIRAGE_Disc* disc = MIRAGE_DISC(self->priv->disc);
-    GObject* first_sector = NULL;
-    gint prev_sector_type = 0;
+    GObject *first_sector;
+    GError *error = NULL;
+    gint prev_sector_type;
 
     gint sector = start_sector;
 
     /* Read first sector to determine its type */
-    mirage_disc_get_sector(disc, start_sector, &first_sector, NULL);
+    first_sector = mirage_disc_get_sector(disc, start_sector, &error);
     if (!first_sector) {
-        CDEMUD_DEBUG(self, DAEMON_DEBUG_MMC, "%s: invalid starting sector!\n", __debug__);
+        CDEMUD_DEBUG(self, DAEMON_DEBUG_MMC, "%s: failed to get start sector: %s\n", __debug__, error->message);
+        g_error_free(error);
         cdemud_device_write_sense_full(self, SK_ILLEGAL_REQUEST, ILLEGAL_MODE_FOR_THIS_TRACK, 0, sector);
         return FALSE;
     }
-    mirage_sector_get_sector_type(MIRAGE_SECTOR(first_sector), &prev_sector_type, NULL);
+    prev_sector_type = mirage_sector_get_sector_type(MIRAGE_SECTOR(first_sector));
     g_object_unref(first_sector);
 
     /* Set up delay emulation */
@@ -815,13 +817,14 @@ static gboolean command_read_cd (CDEMUD_Device *self, guint8 *raw_cdb)
     /* Process each sector */
     CDEMUD_DEBUG(self, DAEMON_DEBUG_MMC, "%s: start sector: 0x%X (%i); start + num: 0x%X (%i)\n", __debug__, start_sector, start_sector, start_sector+num_sectors, start_sector+num_sectors);
     for (sector = start_sector; sector < start_sector + num_sectors; sector++) {
-        GObject *cur_sector = NULL;
+        GObject *cur_sector;
 
         CDEMUD_DEBUG(self, DAEMON_DEBUG_MMC, "%s: reading sector 0x%X (%i)\n", __debug__, sector, sector);
 
-        mirage_disc_get_sector(disc, sector, &cur_sector, NULL);
+        cur_sector = mirage_disc_get_sector(disc, sector, &error);
         if (!cur_sector) {
-            CDEMUD_DEBUG(self, DAEMON_DEBUG_MMC, "%s: invalid sector!\n", __debug__);
+            CDEMUD_DEBUG(self, DAEMON_DEBUG_MMC, "%s: failed to get sector: %s!\n", __debug__, error->message);
+            g_error_free(error);
             cdemud_device_write_sense_full(self, SK_ILLEGAL_REQUEST, ILLEGAL_MODE_FOR_THIS_TRACK, 0, sector);
             return FALSE;
         }
@@ -832,8 +835,7 @@ static gboolean command_read_cd (CDEMUD_Device *self, guint8 *raw_cdb)
            set, we compare its translated value with our sector type, period. However, if
            it's 0, then "The Logical Unit shall always terminate a command at the sector
            where a transition between CD-ROM and CD-DA data occurs." */
-        gint cur_sector_type = 0;
-        mirage_sector_get_sector_type(MIRAGE_SECTOR(cur_sector), &cur_sector_type, NULL);
+        gint cur_sector_type = mirage_sector_get_sector_type(MIRAGE_SECTOR(cur_sector));
 
         /* Break if current sector type doesn't match expected one*/
         if (exp_sect_type && (cur_sector_type != exp_sect_type)) {
@@ -886,9 +888,9 @@ static gboolean command_read_cd (CDEMUD_Device *self, guint8 *raw_cdb)
         guint8 *ptr = self->priv->buffer+self->priv->buffer_size;
         gint read_length = 0;
 
-        GError *read_err = NULL;
-        if (!mirage_disc_read_sector(disc, sector, raw_cdb[9], subchan_mode, ptr, &read_length, &read_err)) {
-            CDEMUD_DEBUG(self, DAEMON_DEBUG_MMC, "%s: failed to read sector 0x%X: %s\n", __debug__, sector, read_err->message);
+        if (!mirage_disc_read_sector(disc, sector, raw_cdb[9], subchan_mode, ptr, &read_length, &error)) {
+            CDEMUD_DEBUG(self, DAEMON_DEBUG_MMC, "%s: failed to read sector 0x%X: %s\n", __debug__, sector, error->message);
+            g_error_free(error);
             g_object_unref(cur_sector);
             cdemud_device_write_sense_full(self, SK_ILLEGAL_REQUEST, ILLEGAL_MODE_FOR_THIS_TRACK, 0, sector);
             return FALSE;
@@ -938,19 +940,18 @@ static gboolean command_read_disc_information (CDEMUD_Device *self, guint8 *raw_
             ret_data->ftrack_disc = 0x01;
 
             MIRAGE_Disc *disc = MIRAGE_DISC(self->priv->disc);
-            gint num_sessions = 0;
-            mirage_disc_get_number_of_sessions(disc, &num_sessions, NULL);
+            gint num_sessions = mirage_disc_get_number_of_sessions(disc);
             ret_data->sessions0 = (num_sessions & 0xFF00) >> 8;
             ret_data->sessions1 = num_sessions & 0xFF;
 
             /* First track in last session */
             GObject *lsession = NULL;
             GObject *ftrack = NULL;
-            gint ftrack_lsession = 0;
+            gint ftrack_lsession;
 
             mirage_disc_get_session_by_index(disc, -1, &lsession, NULL);
             mirage_session_get_track_by_index(MIRAGE_SESSION(lsession), 0, &ftrack, NULL);
-            mirage_track_layout_get_track_number(MIRAGE_TRACK(ftrack), &ftrack_lsession, NULL);
+            ftrack_lsession = mirage_track_layout_get_track_number(MIRAGE_TRACK(ftrack));
             g_object_unref(ftrack);
 
             ret_data->ftrack_lsession0 = (ftrack_lsession & 0xFF00) >> 8;
@@ -959,15 +960,15 @@ static gboolean command_read_disc_information (CDEMUD_Device *self, guint8 *raw_
             /* Last track in last session */
             GObject *ltrack = NULL;
             GObject *leadin = NULL;
-            gint ltrack_lsession = 0;
-            gint lsession_leadin = 0;
+            gint ltrack_lsession;
+            gint lsession_leadin;
 
             mirage_session_get_track_by_index(MIRAGE_SESSION(lsession), -1, &ltrack, NULL);
-            mirage_track_layout_get_track_number(MIRAGE_TRACK(ltrack), &ltrack_lsession, NULL);
+            ltrack_lsession = mirage_track_layout_get_track_number(MIRAGE_TRACK(ltrack));
             g_object_unref(ltrack);
 
             mirage_session_get_track_by_number(MIRAGE_SESSION(lsession), MIRAGE_TRACK_LEADIN, &leadin, NULL);
-            mirage_track_layout_get_start_sector(MIRAGE_TRACK(leadin), &lsession_leadin, NULL);
+            lsession_leadin = mirage_track_layout_get_start_sector(MIRAGE_TRACK(leadin));
             g_object_unref(leadin);
 
             g_object_unref(lsession);
@@ -980,7 +981,7 @@ static gboolean command_read_disc_information (CDEMUD_Device *self, guint8 *raw_
             gint disc_type = 0;
             GObject *fsession = NULL;
             mirage_disc_get_session_by_index(disc, 0, &fsession, NULL);
-            mirage_session_get_session_type(MIRAGE_SESSION(fsession), &disc_type, NULL);
+            disc_type = mirage_session_get_session_type(MIRAGE_SESSION(fsession));
             g_object_unref(fsession);
 
             ret_data->disc_type = disc_type;
@@ -1281,47 +1282,39 @@ static gboolean command_read_toc_pma_atip (CDEMUD_Device *self, guint8 *raw_cdb)
 
             /* All tracks but lead-out */
             if (cdb->number != 0xAA) {
-                gint nr_tracks = 0;
-                gint i;
+                gint num_tracks, i;
 
                 /* If track number exceeds last track number, return error */
                 mirage_disc_get_track_by_index(disc, -1, &cur_track, NULL);
-                mirage_track_layout_get_track_number(MIRAGE_TRACK(cur_track), &nr_tracks, NULL);
+                num_tracks = mirage_track_layout_get_track_number(MIRAGE_TRACK(cur_track));
                 g_object_unref(cur_track);
-                if (cdb->number > nr_tracks) {
-                    CDEMUD_DEBUG(self, DAEMON_DEBUG_MMC, "%s: starting track number (%i) exceeds last track number (%i)!\n", __debug__, cdb->number, nr_tracks);
+                if (cdb->number > num_tracks) {
+                    CDEMUD_DEBUG(self, DAEMON_DEBUG_MMC, "%s: starting track number (%i) exceeds last track number (%i)!\n", __debug__, cdb->number, num_tracks);
                     cdemud_device_write_sense(self, SK_ILLEGAL_REQUEST, INVALID_FIELD_IN_CDB);
                     return FALSE;
                 }
 
 
-                mirage_disc_get_number_of_tracks(disc, &nr_tracks, NULL);
+                num_tracks = mirage_disc_get_number_of_tracks(disc);
 
-                for (i = 0; i < nr_tracks; i++) {
+                for (i = 0; i < num_tracks; i++) {
                     if (!mirage_disc_get_track_by_index(disc, i, &cur_track, NULL)) {
                         CDEMUD_DEBUG(self, DAEMON_DEBUG_MMC, "%s: failed to get track with index %i (whole disc)!\n", __debug__, i);
                         break;
                     }
 
-                    gint track_nr = 0;
-                    mirage_track_layout_get_track_number(MIRAGE_TRACK(cur_track), &track_nr, NULL);
+                    gint track_number = mirage_track_layout_get_track_number(MIRAGE_TRACK(cur_track));
 
-                    if (track_nr >= cdb->number) {
+                    if (track_number >= cdb->number) {
                         /* Track data */
-                        gint adr, ctl;
-                        gint start_sector = 0;
-                        gint track_start = 0;
+                        gint start_sector = mirage_track_layout_get_start_sector(MIRAGE_TRACK(cur_track));
+                        gint track_start = mirage_track_get_track_start(MIRAGE_TRACK(cur_track));
 
-                        mirage_track_get_adr(MIRAGE_TRACK(cur_track), &adr, NULL);
-                        mirage_track_get_ctl(MIRAGE_TRACK(cur_track), &ctl, NULL);
-
-                        ret_desc->adr = adr;
-                        ret_desc->ctl = ctl;
-                        ret_desc->number = track_nr;
+                        ret_desc->adr = mirage_track_get_adr(MIRAGE_TRACK(cur_track));
+                        ret_desc->ctl = mirage_track_get_ctl(MIRAGE_TRACK(cur_track));
+                        ret_desc->number = track_number;
 
                         /* (H)MSF vs. LBA */
-                        mirage_track_layout_get_start_sector(MIRAGE_TRACK(cur_track), &start_sector, NULL);
-                        mirage_track_get_track_start(MIRAGE_TRACK(cur_track), &track_start, NULL);
                         start_sector += track_start;
 
                         if (cdb->time) {
@@ -1349,10 +1342,8 @@ static gboolean command_read_toc_pma_atip (CDEMUD_Device *self, guint8 *raw_cdb)
             ret_desc->number = 0xAA;
 
             /* MSF vs. LBA */
-            gint start_sector = 0;
-            gint track_start = 0;
-            mirage_track_layout_get_start_sector(MIRAGE_TRACK(cur_track), &start_sector, NULL);
-            mirage_track_get_track_start(MIRAGE_TRACK(cur_track), &track_start, NULL);
+            gint start_sector = mirage_track_layout_get_start_sector(MIRAGE_TRACK(cur_track));
+            gint track_start = mirage_track_get_track_start(MIRAGE_TRACK(cur_track));
 
             start_sector += track_start;
 
@@ -1367,9 +1358,9 @@ static gboolean command_read_toc_pma_atip (CDEMUD_Device *self, guint8 *raw_cdb)
             g_object_unref(cur_track);
 
             /* Header */
-            gint ltrack = 0;
+            gint ltrack;
             mirage_session_get_track_by_index(MIRAGE_SESSION(lsession), -1, &cur_track, NULL);
-            mirage_track_layout_get_track_number(MIRAGE_TRACK(cur_track), &ltrack, NULL);
+            ltrack = mirage_track_layout_get_track_number(MIRAGE_TRACK(cur_track));
 
             g_object_unref(cur_track);
             g_object_unref(lsession);
@@ -1394,27 +1385,18 @@ static gboolean command_read_toc_pma_atip (CDEMUD_Device *self, guint8 *raw_cdb)
             /* Header */
             ret_data->length = GUINT16_TO_BE(self->priv->buffer_size - 2);
             ret_data->fsession = 0x01;
-            gint lsession_nr = 0;
-            mirage_session_layout_get_session_number(MIRAGE_SESSION(lsession), &lsession_nr, NULL);
-            ret_data->lsession = lsession_nr;
+            ret_data->lsession = mirage_session_layout_get_session_number(MIRAGE_SESSION(lsession));
 
             /* Track data: first track in last session */
             mirage_session_get_track_by_index(MIRAGE_SESSION(lsession), 0, &ftrack, NULL);
 
-            gint adr, ctl, number;
-            mirage_track_get_adr(MIRAGE_TRACK(ftrack), &adr, NULL);
-            mirage_track_get_ctl(MIRAGE_TRACK(ftrack), &ctl, NULL);
-            mirage_track_layout_get_track_number(MIRAGE_TRACK(ftrack), &number, NULL);
-
-            ret_data->adr = adr;
-            ret_data->ctl = ctl;
-            ret_data->ftrack = number;
+            ret_data->adr = mirage_track_get_adr(MIRAGE_TRACK(ftrack));
+            ret_data->ctl = mirage_track_get_ctl(MIRAGE_TRACK(ftrack));
+            ret_data->ftrack = mirage_track_layout_get_track_number(MIRAGE_TRACK(ftrack));
 
             /* (H)MSF vs. LBA */
-            gint start_sector = 0;
-            gint track_start = 0;
-            mirage_track_layout_get_start_sector(MIRAGE_TRACK(ftrack), &start_sector, NULL);
-            mirage_track_get_track_start(MIRAGE_TRACK(ftrack), &track_start, NULL);
+            gint start_sector = mirage_track_layout_get_start_sector(MIRAGE_TRACK(ftrack));
+            gint track_start = mirage_track_get_track_start(MIRAGE_TRACK(ftrack));
 
             start_sector += track_start;
 
@@ -1440,67 +1422,58 @@ static gboolean command_read_toc_pma_atip (CDEMUD_Device *self, guint8 *raw_cdb)
             gint i,j;
 
             /* For each session with number above the requested one... */
-            gint nr_sessions = 0;
-            mirage_disc_get_number_of_sessions(disc, &nr_sessions, NULL);
-            for (i = 0; i < nr_sessions; i++) {
+            gint num_sessions = mirage_disc_get_number_of_sessions(disc);
+            for (i = 0; i < num_sessions; i++) {
                 GObject *cur_session = NULL;
-                gint session_nr = 0;
+                gint session_number;
 
                 if (!mirage_disc_get_session_by_index(disc, i, &cur_session, NULL)) {
                     CDEMUD_DEBUG(self, DAEMON_DEBUG_MMC, "%s: failed to get session by index %i!\n", __debug__, i);
                     break;
                 }
 
-                mirage_session_layout_get_session_number(MIRAGE_SESSION(cur_session), &session_nr, NULL);
+                session_number = mirage_session_layout_get_session_number(MIRAGE_SESSION(cur_session));
                 /* Return session's data only if its number is greater than or equal to requested one */
-                if (session_nr >= cdb->number) {
-                    gint adr, ctl, track_nr, session_type;
+                if (session_number >= cdb->number) {
                     GObject *cur_track = NULL;
 
                     /* 1. TOC descriptor: about first track in the session */
                     mirage_session_get_track_by_index(MIRAGE_SESSION(cur_session), 0, &cur_track, NULL);
-                    mirage_session_get_session_type(MIRAGE_SESSION(cur_session), &session_type, NULL);
-                    mirage_track_get_adr(MIRAGE_TRACK(cur_track), &adr, NULL);
-                    mirage_track_get_ctl(MIRAGE_TRACK(cur_track), &ctl, NULL);
-                    mirage_track_layout_get_track_number(MIRAGE_TRACK(cur_track), &track_nr, NULL);
 
-                    g_object_unref(cur_track);
-
-                    ret_desc->session = session_nr;
-                    ret_desc->adr = adr;
-                    ret_desc->ctl = ctl;
+                    ret_desc->session = session_number;
+                    ret_desc->adr = mirage_track_get_adr(MIRAGE_TRACK(cur_track));
+                    ret_desc->ctl = mirage_track_get_ctl(MIRAGE_TRACK(cur_track));
                     ret_desc->point = 0xA0;
-                    ret_desc->pmin = track_nr;
-                    ret_desc->psec = session_type;
+                    ret_desc->pmin = mirage_track_layout_get_track_number(MIRAGE_TRACK(cur_track));
+                    ret_desc->psec = mirage_session_get_session_type(MIRAGE_SESSION(cur_session));
 
                     self->priv->buffer_size += sizeof(struct READ_TOC_PMA_ATIP_0010_Descriptor);
                     ret_desc++;
+
+                    g_object_unref(cur_track);
 
                     /* 2. TOC descriptor: about last track in last session */
                     mirage_session_get_track_by_index(MIRAGE_SESSION(cur_session), -1, &cur_track, NULL);
-                    mirage_track_get_adr(MIRAGE_TRACK(cur_track), &adr, NULL);
-                    mirage_track_get_ctl(MIRAGE_TRACK(cur_track), &ctl, NULL);
-                    mirage_track_layout_get_track_number(MIRAGE_TRACK(cur_track), &track_nr, NULL);
 
-                    g_object_unref(cur_track);
-
-                    ret_desc->session = session_nr;
-                    ret_desc->adr = adr;
-                    ret_desc->ctl = ctl;
+                    ret_desc->session = session_number;
+                    ret_desc->adr = mirage_track_get_adr(MIRAGE_TRACK(cur_track));
+                    ret_desc->ctl = mirage_track_get_ctl(MIRAGE_TRACK(cur_track));
                     ret_desc->point = 0xA1;
-                    ret_desc->pmin = track_nr;
+                    ret_desc->pmin = mirage_track_layout_get_track_number(MIRAGE_TRACK(cur_track));
 
                     self->priv->buffer_size += sizeof(struct READ_TOC_PMA_ATIP_0010_Descriptor);
                     ret_desc++;
 
-                    /* 3. TOC descriptor: about lead-out */
-                    gint leadout_start = 0;
-                    mirage_session_get_track_by_number(MIRAGE_SESSION(cur_session), MIRAGE_TRACK_LEADOUT, &cur_track, NULL);
-                    mirage_track_layout_get_start_sector(MIRAGE_TRACK(cur_track), &leadout_start, NULL);
-
                     g_object_unref(cur_track);
 
-                    ret_desc->session = session_nr;
+                    /* 3. TOC descriptor: about lead-out */
+                    gint leadout_start;
+
+                    mirage_session_get_track_by_number(MIRAGE_SESSION(cur_session), MIRAGE_TRACK_LEADOUT, &cur_track, NULL);
+
+                    leadout_start = mirage_track_layout_get_start_sector(MIRAGE_TRACK(cur_track));
+
+                    ret_desc->session = session_number;
                     ret_desc->adr = 0x01;
                     ret_desc->ctl = 0x00;
                     ret_desc->point = 0xA2;
@@ -1510,53 +1483,51 @@ static gboolean command_read_toc_pma_atip (CDEMUD_Device *self, guint8 *raw_cdb)
                     self->priv->buffer_size += sizeof(struct READ_TOC_PMA_ATIP_0010_Descriptor);
                     ret_desc++;
 
-                    /* And now one TOC descriptor per track */
-                    gint nr_tracks = 0;
-                    mirage_session_get_number_of_tracks(MIRAGE_SESSION(cur_session), &nr_tracks, NULL);
+                    g_object_unref(cur_track);
 
-                    for (j = 0; j < nr_tracks; j++) {
+                    /* And now one TOC descriptor per track */
+                    gint num_tracks = mirage_session_get_number_of_tracks(MIRAGE_SESSION(cur_session));
+
+                    for (j = 0; j < num_tracks; j++) {
                         if (!mirage_session_get_track_by_index(MIRAGE_SESSION(cur_session), j, &cur_track, NULL)) {
-                            CDEMUD_DEBUG(self, DAEMON_DEBUG_MMC, "%s: failed to get track with index %i in session %i!\n", __debug__, j, session_nr);
+                            CDEMUD_DEBUG(self, DAEMON_DEBUG_MMC, "%s: failed to get track with index %i in session %i!\n", __debug__, j, session_number);
                             break;
                         }
 
-                        mirage_track_get_adr(MIRAGE_TRACK(cur_track), &adr, NULL);
-                        mirage_track_get_ctl(MIRAGE_TRACK(cur_track), &ctl, NULL);
-                        mirage_track_layout_get_track_number(MIRAGE_TRACK(cur_track), &track_nr, NULL);
+                        ret_desc->session = session_number;
+                        ret_desc->adr = mirage_track_get_adr(MIRAGE_TRACK(cur_track));
+                        ret_desc->ctl = mirage_track_get_ctl(MIRAGE_TRACK(cur_track));
+                        ret_desc->point = mirage_track_layout_get_track_number(MIRAGE_TRACK(cur_track));
 
-                        ret_desc->session = session_nr;
-                        ret_desc->adr = adr;
-                        ret_desc->ctl = ctl;
-                        ret_desc->point = track_nr;
+                        gint cur_start = mirage_track_layout_get_start_sector(MIRAGE_TRACK(cur_track));
+                        gint cur_track_start = mirage_track_get_track_start(MIRAGE_TRACK(cur_track));
 
-                        gint cur_start, cur_track_start;
-                        mirage_track_layout_get_start_sector(MIRAGE_TRACK(cur_track), &cur_start, NULL);
-                        mirage_track_get_track_start(MIRAGE_TRACK(cur_track), &cur_track_start, NULL);
                         cur_start += cur_track_start;
 
                         mirage_helper_lba2msf(cur_start, TRUE, &ret_desc->pmin, &ret_desc->psec, &ret_desc->pframe);
 
                         self->priv->buffer_size += sizeof(struct READ_TOC_PMA_ATIP_0010_Descriptor);
                         ret_desc++;
+
                         g_object_unref(cur_track);
                     }
 
                     /* If we're dealing with multisession disc, it'd probably be
                        a good idea to come up with B0 descriptors... */
-                    if (nr_sessions > 1) {
-                        gint leadout_length = 0;
-                        CDEMUD_DEBUG(self, DAEMON_DEBUG_MMC, "%s: multisession disc; cooking up a B0 descriptor for session %i!\n", __debug__, session_nr);
+                    if (num_sessions > 1) {
+                        gint leadout_length;
+                        CDEMUD_DEBUG(self, DAEMON_DEBUG_MMC, "%s: multisession disc; cooking up a B0 descriptor for session %i!\n", __debug__, session_number);
 
-                        mirage_session_get_leadout_length(MIRAGE_SESSION(cur_session), &leadout_length, NULL);
+                        leadout_length = mirage_session_get_leadout_length(MIRAGE_SESSION(cur_session));
 
-                        ret_desc->session = session_nr;
+                        ret_desc->session = session_number;
                         ret_desc->adr = 0x05;
                         ret_desc->ctl = 0x00;
                         ret_desc->point = 0xB0;
 
                         /* If this is last session, we set MSF to 0xFF, indicating
                            disc is closed */
-                        if (session_nr < nr_sessions) {
+                        if (session_number < num_sessions) {
                             mirage_helper_lba2msf(leadout_start + leadout_length, TRUE, &ret_desc->min, &ret_desc->sec, &ret_desc->frame);
                         } else {
                             ret_desc->min = 0xFF;
@@ -1565,7 +1536,7 @@ static gboolean command_read_toc_pma_atip (CDEMUD_Device *self, guint8 *raw_cdb)
                         }
 
                         /* If this is first session, we'll need to provide C0 as well */
-                        if (session_nr == 1) {
+                        if (session_number == 1) {
                             ret_desc->zero = 2; /* Number of Mode-5 entries; we provide B0 and C0 */
                         } else {
                             ret_desc->zero = 1; /* Number of Mode-5 entries; we provide B0 only */
@@ -1581,10 +1552,10 @@ static gboolean command_read_toc_pma_atip (CDEMUD_Device *self, guint8 *raw_cdb)
                         ret_desc++;
 
                         /* Add up C0 for session 1 */
-                        if (session_nr == 1) {
-                            CDEMUD_DEBUG(self, DAEMON_DEBUG_MMC, "%s: multisession disc; cooking up a C0 descriptor for session %i!\n", __debug__, session_nr);
+                        if (session_number == 1) {
+                            CDEMUD_DEBUG(self, DAEMON_DEBUG_MMC, "%s: multisession disc; cooking up a C0 descriptor for session %i!\n", __debug__, session_number);
 
-                            ret_desc->session = session_nr;
+                            ret_desc->session = session_number;
                             ret_desc->adr = 0x05;
                             ret_desc->ctl = 0x00;
                             ret_desc->point = 0xC0;
@@ -1613,14 +1584,13 @@ static gboolean command_read_toc_pma_atip (CDEMUD_Device *self, guint8 *raw_cdb)
 
             /* Header */
             GObject *lsession = NULL;
-            gint lsession_nr = 0;
             mirage_disc_get_session_by_index(disc, -1, &lsession, NULL);
-            mirage_session_layout_get_session_number(MIRAGE_SESSION(lsession), &lsession_nr, NULL);
-            g_object_unref(lsession);
 
             ret_header->length = GUINT16_TO_BE(self->priv->buffer_size - 2);
             ret_header->fsession = 0x01;
-            ret_header->lsession = lsession_nr;
+            ret_header->lsession = mirage_session_layout_get_session_number(MIRAGE_SESSION(lsession));
+
+            g_object_unref(lsession);
 
             break;
         }
@@ -1743,19 +1713,13 @@ static gboolean command_read_track_information (CDEMUD_Device *self, guint8 *raw
         return FALSE;
     }
 
-    gint track_number = 0;
-    gint session_number = 0;
-    gint ctl = 0;
-    gint mode = 0;
-    gint start_sector = 0;
-    gint length = 0;
+    gint track_number = mirage_track_layout_get_track_number(MIRAGE_TRACK(track));
+    gint session_number = mirage_track_layout_get_session_number(MIRAGE_TRACK(track));
+    gint ctl = mirage_track_get_ctl(MIRAGE_TRACK(track));
+    gint mode = mirage_track_get_mode(MIRAGE_TRACK(track));
+    gint start_sector = mirage_track_layout_get_start_sector(MIRAGE_TRACK(track));
+    gint length = mirage_track_layout_get_length(MIRAGE_TRACK(track));
 
-    mirage_track_layout_get_track_number(MIRAGE_TRACK(track), &track_number, NULL);
-    mirage_track_layout_get_session_number(MIRAGE_TRACK(track), &session_number, NULL);
-    mirage_track_get_ctl(MIRAGE_TRACK(track), &ctl, NULL);
-    mirage_track_get_mode(MIRAGE_TRACK(track), &mode, NULL);
-    mirage_track_layout_get_start_sector(MIRAGE_TRACK(track), &start_sector, NULL);
-    mirage_track_layout_get_length(MIRAGE_TRACK(track), &length, NULL);
     g_object_unref(track);
 
     ret_data->length = GUINT16_TO_BE(self->priv->buffer_size - 2);

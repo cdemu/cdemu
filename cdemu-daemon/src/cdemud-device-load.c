@@ -30,30 +30,30 @@ static GHashTable *convert_g_variant_to_g_hash_table (GVariant *variant)
 {
     GHashTable *table;
     gint i;
-    
+
     /* Hash table: key = string, value = variant */
     table = g_hash_table_new_full(g_str_hash, g_str_equal, (GDestroyNotify)g_free, (GDestroyNotify)g_variant_unref);
-       
+
     /* Iterate over variant */
     for (i = 0; i < g_variant_n_children(variant); i++) {
         gchar *key;
         GVariant *value;
-        
+
         g_variant_get_child(variant, i, "{sv}", &key, &value);
 
         g_hash_table_insert(table, key, value);
     }
-    
+
     return table;
 }
 
 
 /**********************************************************************\
- *                              Load disc                             *  
+ *                              Load disc                             *
 \**********************************************************************/
 static gboolean cdemud_device_load_disc_private (CDEMUD_Device *self, gchar **filenames, GHashTable *options, GError **error)
 {
-    gint media_type = 0;
+    gint media_type;
 
      /* Well, we won't do anything if we're already loaded */
     if (self->priv->loaded) {
@@ -75,7 +75,7 @@ static gboolean cdemud_device_load_disc_private (CDEMUD_Device *self, gchar **fi
     self->priv->media_event = MEDIA_EVENT_NEW_MEDIA;
 
     /* Set current profile (and modify feature flags accordingly */
-    mirage_disc_get_medium_type(MIRAGE_DISC(self->priv->disc), &media_type, NULL);
+    media_type = mirage_disc_get_medium_type(MIRAGE_DISC(self->priv->disc));
     switch (media_type) {
         case MIRAGE_MEDIUM_CD: {
             cdemud_device_set_profile(self, PROFILE_CDROM);
@@ -103,11 +103,11 @@ gboolean cdemud_device_load_disc (CDEMUD_Device *self, gchar **filenames, GVaria
 
     /* Convert the GVariant-encoded dictionary into a GHashTable */
     GHashTable *options_dict = convert_g_variant_to_g_hash_table(options);
-    
+
     /* Load */
     g_mutex_lock(self->priv->device_mutex);
     succeeded = cdemud_device_load_disc_private(self, filenames, options_dict, error);
-    g_mutex_unlock(self->priv->device_mutex);    
+    g_mutex_unlock(self->priv->device_mutex);
 
     /* Free the options dictionary */
     g_hash_table_unref(options_dict);
