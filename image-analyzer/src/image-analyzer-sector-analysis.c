@@ -84,14 +84,14 @@ static void image_analyzer_sector_analysis_ui_callback_analyze (GtkWidget *butto
     image_analyzer_sector_analysis_append_text(self, NULL, "Performing sector analysis...\n\n");
 
     /* Go over sessions */
-    mirage_disc_get_number_of_sessions(MIRAGE_DISC(self->priv->disc), &num_sessions, NULL);
+    num_sessions = mirage_disc_get_number_of_sessions(MIRAGE_DISC(self->priv->disc));
     for (i = 0; i < num_sessions; i++) {
         /* Get session and its properties */
         mirage_disc_get_session_by_index(MIRAGE_DISC(self->priv->disc), i, &session, NULL);
-        mirage_session_layout_get_session_number(MIRAGE_SESSION(session), &session_number, NULL);
-        mirage_session_layout_get_start_sector(MIRAGE_SESSION(session), &session_start, NULL);
-        mirage_session_layout_get_length(MIRAGE_SESSION(session), &session_length, NULL);
-        mirage_session_get_number_of_tracks(MIRAGE_SESSION(session), &num_tracks, NULL);
+        session_number = mirage_session_layout_get_session_number(MIRAGE_SESSION(session));
+        session_start = mirage_session_layout_get_start_sector(MIRAGE_SESSION(session));
+        session_length = mirage_session_layout_get_length(MIRAGE_SESSION(session));
+        num_tracks = mirage_session_get_number_of_tracks(MIRAGE_SESSION(session));
 
         image_analyzer_sector_analysis_append_text(self, "tag_section", "Session #%d: ", session_number);
         image_analyzer_sector_analysis_append_text(self, NULL, "start: %d, length %d, %d tracks\n\n", session_start, session_length, num_tracks);
@@ -99,16 +99,21 @@ static void image_analyzer_sector_analysis_ui_callback_analyze (GtkWidget *butto
         for (j = 0; j < num_tracks; j++) {
             /* Get track and its properties */
             mirage_session_get_track_by_index(MIRAGE_SESSION(session), j, &track, NULL);
-            mirage_track_layout_get_track_number(MIRAGE_TRACK(track), &track_number, NULL);
-            mirage_track_layout_get_start_sector(MIRAGE_TRACK(track), &track_start, NULL);
-            mirage_track_layout_get_length(MIRAGE_TRACK(track), &track_length, NULL);
+            track_number = mirage_track_layout_get_track_number(MIRAGE_TRACK(track));
+            track_start = mirage_track_layout_get_start_sector(MIRAGE_TRACK(track));
+            track_length = mirage_track_layout_get_length(MIRAGE_TRACK(track));
 
             image_analyzer_sector_analysis_append_text(self, "tag_section", "Track #%d: ", track_number);
             image_analyzer_sector_analysis_append_text(self, NULL, "start: %d, length %d\n\n", track_start, track_length);
 
             for (address = track_start; address < track_start + track_length; address++) {
                 /* Get sector */
-                mirage_track_get_sector(MIRAGE_TRACK(track), address, TRUE, &sector, NULL);
+                sector = mirage_track_get_sector(MIRAGE_TRACK(track), address, TRUE, NULL);
+                if (!sector) {
+                    image_analyzer_sector_analysis_append_text(self, "tag_section", "Sector %d (%X): ", address, address);
+                    image_analyzer_sector_analysis_append_text(self, NULL, "FAILED TO GET SECTOR!\n");
+                    continue;
+                }
 
                 if (!mirage_sector_verify_lec(MIRAGE_SECTOR(sector))) {
                     image_analyzer_sector_analysis_append_text(self, "tag_section", "Sector %d (%X): ", address, address);

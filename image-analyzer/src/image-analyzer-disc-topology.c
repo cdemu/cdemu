@@ -72,7 +72,7 @@ static gboolean image_analyzer_disc_topology_run_gnuplot (IMAGE_ANALYZER_DiscTop
     write(self->priv->fd_in, "\n", 1);
 
     gtk_widget_hide(GTK_WIDGET(self));
-    
+
     return TRUE;
 }
 
@@ -82,7 +82,7 @@ static gboolean image_analyzer_disc_topology_refresh (IMAGE_ANALYZER_DiscTopolog
     gint dpm_start, dpm_entries, dpm_resolution;
 
     gchar *command;
-    
+
     /* No-op if gnuplot couldn't be started */
     if (!self->priv->gnuplot_works) {
         return TRUE;
@@ -99,13 +99,12 @@ static gboolean image_analyzer_disc_topology_refresh (IMAGE_ANALYZER_DiscTopolog
             "reset"
         );
     } else {
-        gchar **filenames = NULL;
-        gchar *basename;
+        gchar **filenames = mirage_disc_get_filenames(MIRAGE_DISC(disc));
+        gchar *basename = g_path_get_basename(filenames[0]);
 
-        mirage_disc_get_filenames(MIRAGE_DISC(disc), &filenames, NULL);
-        basename = g_path_get_basename(filenames[0]);
-        
-        if (!mirage_disc_get_dpm_data(MIRAGE_DISC(disc), &dpm_start, &dpm_entries, &dpm_resolution, NULL, NULL)) {
+        mirage_disc_get_dpm_data(MIRAGE_DISC(disc), &dpm_start, &dpm_entries, &dpm_resolution, NULL);
+
+        if (!dpm_entries) {
             /* No DPM data */
             command = g_strdup_printf(
                 "clear; reset; "
@@ -139,15 +138,15 @@ static gboolean image_analyzer_disc_topology_refresh (IMAGE_ANALYZER_DiscTopolog
     write(self->priv->fd_in, "\n", 1);
 
     g_free(command);
-    
-    
+
+
     /* Feed DPM data */
     if (dpm_valid) {
         gint address, i;
         gdouble density;
 
         gchar dbl_buffer[G_ASCII_DTOSTR_BUF_SIZE] = "";
-    
+
         for (i = 0; i < dpm_entries; i++) {
             address = dpm_start + i*dpm_resolution;
             density = 0;
@@ -167,7 +166,7 @@ static gboolean image_analyzer_disc_topology_refresh (IMAGE_ANALYZER_DiscTopolog
         /* Write EOF */
         write(self->priv->fd_in, "e\n", 2);
     }
-    
+
     return TRUE;
 }
 
@@ -183,7 +182,7 @@ void image_analyzer_disc_topology_set_disc (IMAGE_ANALYZER_DiscTopology *self, G
 
 
 /**********************************************************************\
- *                              GUI setup                             * 
+ *                              GUI setup                             *
 \**********************************************************************/
 static void setup_gui (IMAGE_ANALYZER_DiscTopology *self)
 {
@@ -202,7 +201,7 @@ static void setup_gui (IMAGE_ANALYZER_DiscTopology *self)
 
 
 /**********************************************************************\
- *                             Object init                            * 
+ *                             Object init                            *
 \**********************************************************************/
 G_DEFINE_TYPE(IMAGE_ANALYZER_DiscTopology, image_analyzer_disc_topology, GTK_TYPE_WINDOW);
 

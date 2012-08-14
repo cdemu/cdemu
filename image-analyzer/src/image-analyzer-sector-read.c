@@ -117,7 +117,8 @@ static void image_analyzer_sector_read_ui_callback_read (GtkWidget *button G_GNU
     }
 
     /* Get sector from disc */
-    if (!mirage_disc_get_sector(MIRAGE_DISC(self->priv->disc), address, &sector, &error)) {
+    sector = mirage_disc_get_sector(MIRAGE_DISC(self->priv->disc), address, &error);
+    if (!sector) {
         image_analyzer_read_sector_append_text(self, NULL, "Failed to get sector: %s\n", error->message);
         g_error_free(error);
         return;
@@ -134,7 +135,7 @@ static void image_analyzer_sector_read_ui_callback_read (GtkWidget *button G_GNU
     g_free(address_msf);
 
     /* Sector type */
-    mirage_sector_get_sector_type(MIRAGE_SECTOR(sector), &sector_type, NULL);
+    sector_type = mirage_sector_get_sector_type(MIRAGE_SECTOR(sector));
     image_analyzer_read_sector_append_text(self, "tag_section", "Sector type: ");
     image_analyzer_read_sector_append_text(self, NULL, "0x%X (%s)\n", sector_type, dump_sector_type(sector_type));
 

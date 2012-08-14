@@ -184,8 +184,8 @@ static gboolean image_analyzer_application_open_image (IMAGE_ANALYZER_Applicatio
 
     /* Create debug context for disc */
     debug_context = g_object_new(MIRAGE_TYPE_DEBUG_CONTEXT, NULL);
-    mirage_debug_context_set_domain(MIRAGE_DEBUG_CONTEXT(debug_context), DEBUG_DOMAIN_PARSER, NULL);
-    mirage_debug_context_set_debug_mask(MIRAGE_DEBUG_CONTEXT(debug_context), MIRAGE_DEBUG_PARSER, NULL);
+    mirage_debug_context_set_domain(MIRAGE_DEBUG_CONTEXT(debug_context), DEBUG_DOMAIN_PARSER);
+    mirage_debug_context_set_debug_mask(MIRAGE_DEBUG_CONTEXT(debug_context), MIRAGE_DEBUG_PARSER);
 
     /* Set log handler */
     self->priv->parser_log = g_string_new("");
