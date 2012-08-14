@@ -649,7 +649,7 @@ static gboolean mirage_parser_nrg_load_session (MIRAGE_Parser_NRG *self, gint se
             mirage_frag_iface_binary_subchannel_file_set_sectsize(MIRAGE_FRAG_IFACE_BINARY(data_fragment), sfile_sectsize);
             mirage_frag_iface_binary_subchannel_file_set_format(MIRAGE_FRAG_IFACE_BINARY(data_fragment), sfile_format);
 
-            mirage_track_add_fragment(MIRAGE_TRACK(cur_track), -1, &data_fragment, NULL);
+            mirage_track_add_fragment(MIRAGE_TRACK(cur_track), -1, data_fragment);
 
             g_object_unref(data_fragment);
         }
@@ -704,7 +704,7 @@ static gboolean mirage_parser_nrg_load_session (MIRAGE_Parser_NRG *self, gint se
             mirage_frag_iface_binary_subchannel_file_set_sectsize(MIRAGE_FRAG_IFACE_BINARY(data_fragment), sfile_sectsize);
             mirage_frag_iface_binary_subchannel_file_set_format(MIRAGE_FRAG_IFACE_BINARY(data_fragment), sfile_format);
 
-            mirage_track_add_fragment(MIRAGE_TRACK(cur_track), -1, &data_fragment, NULL);
+            mirage_track_add_fragment(MIRAGE_TRACK(cur_track), -1, data_fragment);
 
             g_object_unref(data_fragment);
         }
@@ -855,7 +855,7 @@ static gboolean mirage_parser_nrg_load_session_tao (MIRAGE_Parser_NRG *self, gin
         /* Pregap fragment - creation of NULL fragment should never fail */
         pregap_fragment = libmirage_create_fragment(MIRAGE_TYPE_FRAG_IFACE_NULL, "NULL", error);
 
-        mirage_track_add_fragment(MIRAGE_TRACK(cur_track), 0, &pregap_fragment, NULL);
+        mirage_track_add_fragment(MIRAGE_TRACK(cur_track), 0, pregap_fragment);
         mirage_fragment_set_length(MIRAGE_FRAGMENT(pregap_fragment), 150);
 
         g_object_unref(pregap_fragment);
@@ -911,7 +911,7 @@ static gboolean mirage_parser_nrg_load_session_tao (MIRAGE_Parser_NRG *self, gin
             mirage_frag_iface_binary_subchannel_file_set_sectsize(MIRAGE_FRAG_IFACE_BINARY(data_fragment), sfile_sectsize);
             mirage_frag_iface_binary_subchannel_file_set_format(MIRAGE_FRAG_IFACE_BINARY(data_fragment), sfile_format);
 
-            mirage_track_add_fragment(MIRAGE_TRACK(cur_track), -1, &data_fragment, NULL);
+            mirage_track_add_fragment(MIRAGE_TRACK(cur_track), -1, data_fragment);
 
             g_object_unref(data_fragment);
         }

@@ -102,7 +102,7 @@ static GObject *mirage_parser_daa_load_image (MIRAGE_Parser *_self, gchar **file
     GObject *data_fragment = g_object_new(MIRAGE_TYPE_FRAGMENT_DAA, NULL);
     GError *local_error = NULL;
 
-    mirage_track_add_fragment(MIRAGE_TRACK(track), -1, &data_fragment, NULL);
+    mirage_track_add_fragment(MIRAGE_TRACK(track), -1, data_fragment);
 
     if (!mirage_fragment_daa_set_file(MIRAGE_FRAGMENT_DAA(data_fragment), filenames[0], password, &local_error)) {
         /* Don't make buzz for password failures */

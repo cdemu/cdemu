@@ -320,7 +320,7 @@ static gboolean mirage_parser_cue_add_index (MIRAGE_Parser_CUE *self, gint numbe
                 mirage_frag_iface_audio_set_offset(MIRAGE_FRAG_IFACE_AUDIO(data_fragment), address);
             }
 
-            mirage_track_add_fragment(MIRAGE_TRACK(self->priv->cur_track), -1, &data_fragment, NULL);
+            mirage_track_add_fragment(MIRAGE_TRACK(self->priv->cur_track), -1, data_fragment);
 
             /* Store the current address... it is location at which the current
                track starts, and it will be used to calculate fragment's length
@@ -382,7 +382,7 @@ static gboolean mirage_parser_cue_add_empty_part (MIRAGE_Parser_CUE *self, gint 
     mirage_fragment_set_length(MIRAGE_FRAGMENT(fragment), length);
 
     /* Add fragment */
-    mirage_track_add_fragment(MIRAGE_TRACK(self->priv->cur_track), -1, &fragment, NULL);
+    mirage_track_add_fragment(MIRAGE_TRACK(self->priv->cur_track), -1, fragment);
     g_object_unref(fragment);
 
     return TRUE;

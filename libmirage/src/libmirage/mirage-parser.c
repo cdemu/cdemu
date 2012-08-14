@@ -250,7 +250,7 @@ gboolean mirage_parser_add_redbook_pregap (MIRAGE_Parser *self, GObject *disc, G
         /* Add pregap fragment - NULL fragment creation should never fail */
         GObject *pregap_fragment = libmirage_create_fragment(MIRAGE_TYPE_FRAG_IFACE_NULL, "NULL", NULL);
 
-        mirage_track_add_fragment(MIRAGE_TRACK(ftrack), 0, &pregap_fragment, NULL);
+        mirage_track_add_fragment(MIRAGE_TRACK(ftrack), 0, pregap_fragment);
         mirage_fragment_set_length(MIRAGE_FRAGMENT(pregap_fragment), 150);
         g_object_unref(pregap_fragment);
 

@@ -311,7 +311,7 @@ static gboolean mirage_parser_toc_track_add_fragment (MIRAGE_Parser_TOC *self, g
     }
 
     /* Add fragment */
-    mirage_track_add_fragment(MIRAGE_TRACK(self->priv->cur_track), -1, &data_fragment, NULL);
+    mirage_track_add_fragment(MIRAGE_TRACK(self->priv->cur_track), -1, data_fragment);
     g_object_unref(data_fragment);
 
     return TRUE;

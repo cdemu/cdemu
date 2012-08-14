@@ -272,7 +272,7 @@ static gboolean mirage_parser_mdx_get_track (MIRAGE_Parser_MDX *self, const gcha
     mirage_fragment_set_length(MIRAGE_FRAGMENT(data_fragment), num_sectors);
 
     /* Add fragment to track */
-    mirage_track_add_fragment(MIRAGE_TRACK(track), -1, &data_fragment, NULL);
+    mirage_track_add_fragment(MIRAGE_TRACK(track), -1, data_fragment);
 
     *ret_track = track;
     return TRUE;

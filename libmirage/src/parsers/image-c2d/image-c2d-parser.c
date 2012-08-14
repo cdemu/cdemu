@@ -344,7 +344,7 @@ static gboolean mirage_parser_c2d_parse_track_entries (MIRAGE_Parser_C2D *self, 
 
             mirage_fragment_set_length(MIRAGE_FRAGMENT(pregap_fragment), 150);
 
-            mirage_track_add_fragment(MIRAGE_TRACK(cur_point), -1, &pregap_fragment, error);
+            mirage_track_add_fragment(MIRAGE_TRACK(cur_point), -1, pregap_fragment);
             g_object_unref(pregap_fragment);
         }
 
@@ -410,7 +410,7 @@ static gboolean mirage_parser_c2d_parse_track_entries (MIRAGE_Parser_C2D *self, 
             }
         }
 
-        mirage_track_add_fragment(MIRAGE_TRACK(cur_point), -1, &data_fragment, error);
+        mirage_track_add_fragment(MIRAGE_TRACK(cur_point), -1, data_fragment);
         g_object_unref(data_fragment);
 
 skip_making_fragments:

@@ -477,7 +477,7 @@ static gboolean mirage_parser_b6t_setup_track_fragments (MIRAGE_Parser_B6T *self
             mirage_fragment_set_length(MIRAGE_FRAGMENT(data_fragment), tmp_length);
 
             /* Add fragment */
-            mirage_track_add_fragment(MIRAGE_TRACK(cur_track), -1, &data_fragment, NULL);
+            mirage_track_add_fragment(MIRAGE_TRACK(cur_track), -1, data_fragment);
             g_object_unref(data_fragment);
 
             /* Calculate remaining track length */

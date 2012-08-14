@@ -160,7 +160,7 @@ gint mirage_track_layout_get_length (MIRAGE_Track *self);
 
 /* Data fragments handling */
 gint mirage_track_get_number_of_fragments (MIRAGE_Track *self);
-gboolean mirage_track_add_fragment (MIRAGE_Track *self, gint index, GObject **fragment, GError **error);
+void mirage_track_add_fragment (MIRAGE_Track *self, gint index, GObject *fragment);
 gboolean mirage_track_remove_fragment_by_index (MIRAGE_Track *self, gint index, GError **error);
 void mirage_track_remove_fragment_by_object (MIRAGE_Track *self, GObject *fragment);
 gboolean mirage_track_get_fragment_by_index (MIRAGE_Track *self, gint index, GObject **fragment, GError **error);

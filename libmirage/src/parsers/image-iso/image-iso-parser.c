@@ -195,7 +195,7 @@ static gboolean mirage_parser_iso_load_track (MIRAGE_Parser_ISO *self, gchar *fi
     mirage_track_set_mode(MIRAGE_TRACK(track), self->priv->track_mode);
 
     /* Add fragment to track */
-    mirage_track_add_fragment(MIRAGE_TRACK(track), -1, &data_fragment, NULL);
+    mirage_track_add_fragment(MIRAGE_TRACK(track), -1, data_fragment);
 
     g_object_unref(data_fragment);
     g_object_unref(track);

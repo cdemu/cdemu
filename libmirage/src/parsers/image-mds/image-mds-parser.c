@@ -508,7 +508,7 @@ static gboolean mirage_parser_mds_parse_track_entries (MIRAGE_Parser_MDS *self, 
 
                 mirage_fragment_set_length(MIRAGE_FRAGMENT(pregap_fragment), extra_block->pregap);
 
-                mirage_track_add_fragment(MIRAGE_TRACK(cur_track), -1, &pregap_fragment, NULL);
+                mirage_track_add_fragment(MIRAGE_TRACK(cur_track), -1, pregap_fragment);
                 g_object_unref(pregap_fragment);
 
                 mirage_track_set_track_start(MIRAGE_TRACK(cur_track), extra_block->pregap);
@@ -636,7 +636,7 @@ static gboolean mirage_parser_mds_parse_track_entries (MIRAGE_Parser_MDS *self, 
                 mirage_frag_iface_binary_subchannel_file_set_sectsize(MIRAGE_FRAG_IFACE_BINARY(data_fragment), sfile_sectsize);
                 mirage_frag_iface_binary_subchannel_file_set_format(MIRAGE_FRAG_IFACE_BINARY(data_fragment), sfile_format);
 
-                mirage_track_add_fragment(MIRAGE_TRACK(cur_track), -1, &data_fragment, error);
+                mirage_track_add_fragment(MIRAGE_TRACK(cur_track), -1, data_fragment);
                 g_object_unref(data_fragment);
             }
 

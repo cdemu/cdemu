@@ -780,8 +780,7 @@ gint mirage_track_get_number_of_fragments (MIRAGE_Track *self)
  * mirage_track_add_fragment:
  * @self: a #MIRAGE_Track
  * @index: (in): index at which fragment should be added
- * @fragment: (inout) (transfer full) (allow-none): pointer to #MIRAGE_Fragment implementation
- * @error: (out) (allow-none): location to store error, or %NULL
+ * @fragment: (in): fragment (must be #MIRAGE_Fragment implementation)
  *
  * <para>
  * Adds a fragment implementation to track. @index is index at which fragment
@@ -800,15 +799,12 @@ gint mirage_track_get_number_of_fragments (MIRAGE_Track *self)
  * <note>
  * Causes bottom-up change.
  * </note>
- *
- * Returns: %TRUE on success, %FALSE on failure
  **/
-gboolean mirage_track_add_fragment (MIRAGE_Track *self, gint index, GObject **fragment, GError **error)
+void mirage_track_add_fragment (MIRAGE_Track *self, gint index, GObject *fragment)
 {
-    GObject *new_fragment;
     gint num_fragments;
 
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_TRACK, "%s: (index: %i, fragment: %p->%p)\n", __debug__, index, fragment, fragment ? *fragment : NULL);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_TRACK, "%s: (index: %i, fragment: %p)\n", __debug__, index, fragment);
 
     /* First fragment, last fragment... allow negative indexes to go from behind */
     num_fragments = mirage_track_get_number_of_fragments(self);
@@ -824,40 +820,25 @@ gboolean mirage_track_add_fragment (MIRAGE_Track *self, gint index, GObject **fr
         index += num_fragments + 1;
     }
 
-    /* Fragment *MUST* be provided in the current implementation (because
-       subtype needs to be manually determined... hopefully that will change
-       one day */
-    new_fragment = *fragment;
-    if (!MIRAGE_IS_FRAGMENT(new_fragment)) {
-        mirage_error(MIRAGE_E_INVALIDOBJTYPE, error);
-        return FALSE;
-    }
-    g_object_ref(new_fragment);
+    /* Add reference */
+    g_object_ref(fragment);
 
     /* We don't set fragment's start address here, because layout recalculation will do it for us */
     /* Set parent */
-    mirage_object_set_parent(MIRAGE_OBJECT(new_fragment), G_OBJECT(self));
+    mirage_object_set_parent(MIRAGE_OBJECT(fragment), G_OBJECT(self));
     /* Attach child */
-    mirage_object_attach_child(MIRAGE_OBJECT(self), new_fragment);
+    mirage_object_attach_child(MIRAGE_OBJECT(self), fragment);
 
     /* Insert fragment into fragment list */
-    self->priv->fragments_list = g_list_insert(self->priv->fragments_list, new_fragment, index);
+    self->priv->fragments_list = g_list_insert(self->priv->fragments_list, fragment, index);
 
     /* Connect fragment modified signal */
-    g_signal_connect(MIRAGE_OBJECT(new_fragment), "object-modified", (GCallback)mirage_track_fragment_modified_handler, self);
+    g_signal_connect(MIRAGE_OBJECT(fragment), "object-modified", (GCallback)mirage_track_fragment_modified_handler, self);
 
     /* Bottom-up change */
     mirage_track_commit_bottomup_change(self);
 
-    /* Return fragment to user if she wants it */
-    if (fragment && (*fragment == NULL)) {
-        g_object_ref(new_fragment);
-        *fragment = new_fragment;
-    }
-
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_TRACK, "%s: end\n", __debug__);
-
-    return TRUE;
 }
 
 /**

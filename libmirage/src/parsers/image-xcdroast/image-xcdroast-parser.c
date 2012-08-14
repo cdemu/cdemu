@@ -88,7 +88,7 @@ static gboolean mirage_parser_xcdroast_add_track (MIRAGE_Parser_XCDROAST *self, 
 
         mirage_fragment_set_length(MIRAGE_FRAGMENT(null_fragment), self->priv->set_pregap);
 
-        mirage_track_add_fragment(MIRAGE_TRACK(track), -1, &null_fragment, NULL);
+        mirage_track_add_fragment(MIRAGE_TRACK(track), -1, null_fragment);
         mirage_track_set_track_start(MIRAGE_TRACK(track), self->priv->set_pregap);
 
         g_object_unref(null_fragment);
@@ -132,7 +132,7 @@ static gboolean mirage_parser_xcdroast_add_track (MIRAGE_Parser_XCDROAST *self, 
 
             mirage_fragment_use_the_rest_of_file(MIRAGE_FRAGMENT(data_fragment), NULL);
 
-            mirage_track_add_fragment(MIRAGE_TRACK(track), -1, &data_fragment, NULL);
+            mirage_track_add_fragment(MIRAGE_TRACK(track), -1, data_fragment);
 
             /* Verify fragment's length vs. declared track length */
             gint fragment_length = mirage_fragment_get_length(MIRAGE_FRAGMENT(data_fragment));
@@ -174,7 +174,7 @@ static gboolean mirage_parser_xcdroast_add_track (MIRAGE_Parser_XCDROAST *self, 
 
             mirage_fragment_use_the_rest_of_file(MIRAGE_FRAGMENT(data_fragment), NULL);
 
-            mirage_track_add_fragment(MIRAGE_TRACK(track), -1, &data_fragment, NULL);
+            mirage_track_add_fragment(MIRAGE_TRACK(track), -1, data_fragment);
 
             /* Verify fragment's length vs. declared track length */
             gint fragment_length = mirage_fragment_get_length(MIRAGE_FRAGMENT(data_fragment));

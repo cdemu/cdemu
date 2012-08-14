@@ -272,7 +272,7 @@ static GObject *mirage_parser_cif_parse_track_descriptor (MIRAGE_Parser_CIF *sel
 
     mirage_fragment_set_length(MIRAGE_FRAGMENT(fragment), track_length);
 
-    mirage_track_add_fragment(MIRAGE_TRACK(track), -1, &fragment, NULL);
+    mirage_track_add_fragment(MIRAGE_TRACK(track), -1, fragment);
 
     g_object_unref(fragment);
 
@@ -377,7 +377,7 @@ static GObject *mirage_parser_cif_parse_session_descriptor (MIRAGE_Parser_CIF *s
 
             mirage_fragment_set_length(MIRAGE_FRAGMENT(fragment), pregap_length);
 
-            mirage_track_add_fragment(MIRAGE_TRACK(track), 0, &fragment, NULL);
+            mirage_track_add_fragment(MIRAGE_TRACK(track), 0, fragment);
             g_object_unref(fragment);
 
             /* Set new track start */
