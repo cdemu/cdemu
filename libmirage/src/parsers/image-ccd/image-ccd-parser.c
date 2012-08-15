@@ -1084,13 +1084,34 @@ static GObject *mirage_parser_ccd_load_image (MIRAGE_Parser *_self, gchar **file
 
     /* Compose image and subchannel filename */
     gint len = strlen(filenames[0]);
-    self->priv->img_filename = g_strdup(filenames[0]);
-    self->priv->sub_filename = g_strdup(filenames[0]);
-    sprintf(self->priv->img_filename+len-3, "img");
-    sprintf(self->priv->sub_filename+len-3, "sub");
+    gchar *tmp_img_filename = g_strdup(filenames[0]);
+    gchar *tmp_sub_filename = g_strdup(filenames[0]);
 
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: assumed data file: %s\n", __debug__, self->priv->img_filename);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: assumed subchannel file: %s\n", __debug__, self->priv->sub_filename);
+    sprintf(tmp_img_filename+len-3, "img");
+    sprintf(tmp_sub_filename+len-3, "sub");
+
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: assumed data file: %s\n", __debug__, tmp_img_filename);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: assumed subchannel file: %s\n", __debug__, tmp_sub_filename);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "\n");
+
+    self->priv->img_filename = mirage_helper_find_data_file(tmp_img_filename, filenames[0]);
+    self->priv->sub_filename = mirage_helper_find_data_file(tmp_sub_filename, filenames[0]);
+
+    g_free(tmp_img_filename);
+    g_free(tmp_sub_filename);
+
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: actual data file: %s\n", __debug__, self->priv->img_filename);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: actual subchannel file: %s\n", __debug__, self->priv->sub_filename);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "\n");
+
+    if (!self->priv->img_filename) {
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_DATA_FILE_ERROR, "Could not find track data file!");
+        return FALSE;
+    }
+    if (!self->priv->sub_filename) {
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_DATA_FILE_ERROR, "Could not find subchannel data file!");
+        return FALSE;
+    }
 
     /* Parse the CCD */
     if (!mirage_parser_ccd_parse_ccd_file(self, filenames[0], error)) {

@@ -96,7 +96,7 @@ static gboolean mirage_parser_cue_finish_last_track (MIRAGE_Parser_CUE *self, GE
 
 static gboolean mirage_parser_cue_set_new_file (MIRAGE_Parser_CUE *self, gchar *filename_string, gchar *file_type, GError **error)
 {
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: new file...\n", __debug__);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: new file: %s\n", __debug__, filename_string);
 
     /* We got new file; either we got it for the first time, which means we don't
        have any tracks yet and don't have to do anything. If we got new file, it
@@ -115,6 +115,7 @@ static gboolean mirage_parser_cue_set_new_file (MIRAGE_Parser_CUE *self, gchar *
         g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_DATA_FILE_ERROR, "Failed to find data file!");
         return FALSE;
     }
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: actual data file: %s\n", __debug__, self->priv->cur_data_filename);
 
     /* Set current data type */
     g_free(self->priv->cur_data_type);

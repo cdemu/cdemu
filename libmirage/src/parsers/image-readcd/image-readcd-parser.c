@@ -311,11 +311,22 @@ static gboolean mirage_parser_readcd_parse_toc (MIRAGE_Parser_READCD *self, cons
 
     /* NOTE: the mirage_parser_readcd_is_file_valid() check guarantees that the
        image filename has a valid suffix... */
-    self->priv->data_filename = g_strdup(filename);
-    *mirage_helper_get_suffix(self->priv->data_filename) = 0; /* Skip the suffix */
+    gchar *tmp_data_filename = g_strdup(filename);
+    *mirage_helper_get_suffix(tmp_data_filename) = 0; /* Skip the suffix */
+
+    self->priv->data_filename = mirage_helper_find_data_file(tmp_data_filename, filename);
+
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: TOC filename: %s\n", __debug__, filename);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: data filename: %s\n", __debug__, self->priv->data_filename);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:\n", __debug__);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: data filename: %s\n", __debug__, tmp_data_filename);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: actual data filename: %s\n", __debug__, self->priv->data_filename);
+
+    g_free(tmp_data_filename);
+
+    if (!self->priv->data_filename) {
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_DATA_FILE_ERROR, "Data file not found!");
+        return FALSE;
+    }
+
 
     /* Read whole TOC file */
     stream = libmirage_create_file_stream(filename, G_OBJECT(self), error);
