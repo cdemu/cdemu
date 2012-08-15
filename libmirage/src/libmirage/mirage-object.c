@@ -88,7 +88,7 @@ void mirage_object_set_parent (MIRAGE_Object *self, GObject *parent)
  * Retrieves object's parent.
  * </para>
  *
- * Returns: (transfer-full): parent object, or %NULL.
+ * Returns: (transfer full): parent object, or %NULL.
  **/
 GObject *mirage_object_get_parent (MIRAGE_Object *self)
 {
@@ -103,7 +103,6 @@ GObject *mirage_object_get_parent (MIRAGE_Object *self)
  * mirage_object_attach_child:
  * @self: a #MIRAGE_Object
  * @child: (in): child
- * @error: location to store error, or %NULL
  *
  * <para>
  * Attaches child to the object.

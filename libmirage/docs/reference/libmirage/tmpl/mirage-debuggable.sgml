@@ -1,0 +1,79 @@
+<!-- ##### SECTION Title ##### -->
+MIRAGE_Debuggable interface
+
+<!-- ##### SECTION Short_Description ##### -->
+Debuggable interface
+
+<!-- ##### SECTION Long_Description ##### -->
+<para>
+#MIRAGE_Debuggable is an interface for debuggable objects. It allows a #MIRAGE_DebugContext
+to be attached to the object and control the level of its debug verbosity.
+</para>
+
+<!-- ##### SECTION See_Also ##### -->
+<para>
+#MIRAGE_DebugContext
+</para>
+
+<!-- ##### SECTION Stability_Level ##### -->
+
+
+<!-- ##### SECTION Image ##### -->
+
+
+<!-- ##### MACRO MIRAGE_DEBUG ##### -->
+<para>
+
+</para>
+
+@obj: 
+@lvl: 
+@...: 
+
+
+<!-- ##### STRUCT MIRAGE_Debuggable ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### FUNCTION mirage_debuggable_debug_message ##### -->
+<para>
+
+</para>
+
+@self: 
+@level: 
+@format: 
+@...: 
+
+
+<!-- ##### FUNCTION mirage_debuggable_debug_messagev ##### -->
+<para>
+
+</para>
+
+@self: 
+@level: 
+@format: 
+@args: 
+
+
+<!-- ##### FUNCTION mirage_debuggable_get_debug_context ##### -->
+<para>
+
+</para>
+
+@self: 
+@Returns: 
+
+
+<!-- ##### FUNCTION mirage_debuggable_set_debug_context ##### -->
+<para>
+
+</para>
+
+@self: 
+@debug_context: 
+
+

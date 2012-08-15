@@ -717,6 +717,8 @@ void mirage_frag_iface_audio_set_offset (MIRAGE_FragIface_Audio *self, gint offs
  * <para>
  * Retrieves offset within audio file, in sectors.
  * </para>
+ *
+ * Returns: offset
  **/
 gint mirage_frag_iface_audio_get_offset (MIRAGE_FragIface_Audio *self)
 {

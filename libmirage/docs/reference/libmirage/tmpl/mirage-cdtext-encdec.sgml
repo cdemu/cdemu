@@ -69,8 +69,6 @@ appropriate callback function.
 @self: 
 @buffer: 
 @buflen: 
-@error: 
-@Returns: 
 
 
 <!-- ##### FUNCTION mirage_cdtext_encoder_set_block_info ##### -->
@@ -98,8 +96,6 @@ appropriate callback function.
 @track: 
 @data: 
 @data_len: 
-@error: 
-@Returns: 
 
 
 <!-- ##### FUNCTION mirage_cdtext_encoder_encode ##### -->
@@ -110,8 +106,6 @@ appropriate callback function.
 @self: 
 @buffer: 
 @buflen: 
-@error: 
-@Returns: 
 
 
 <!-- ##### FUNCTION mirage_cdtext_decoder_init ##### -->
@@ -122,8 +116,6 @@ appropriate callback function.
 @self: 
 @buffer: 
 @buflen: 
-@error: 
-@Returns: 
 
 
 <!-- ##### FUNCTION mirage_cdtext_decoder_get_block_info ##### -->
@@ -149,7 +141,6 @@ appropriate callback function.
 @block: 
 @callback_func: 
 @user_data: 
-@error: 
 @Returns: 
 
 

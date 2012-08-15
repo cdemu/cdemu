@@ -8,12 +8,12 @@ libMirage's error reporting facilities
 <para>
 libMirage uses GLib's #GError system for reporting errors. Most functions provided
 by libMirage's objects take an optional @error parameter. If @error is not %NULL,
-in case that such function should fail, a #GError error is set into it using 
-mirage_error().
+in case that such function should fail, a #GError error is set into it using
+g_set_error().
 </para>
 
 <para>
-Unless coming from underlying GLib's systems, the returned error code is one of 
+Unless coming from underlying GLib's systems, the returned error code is one of
 #MIRAGE_ErrorCodes.
 </para>
 
@@ -33,43 +33,19 @@ Unless coming from underlying GLib's systems, the returned error code is one of
 
 </para>
 
-@MIRAGE_E_INVALIDARG: 
-@MIRAGE_E_NOTIMPL: 
-@MIRAGE_E_ITERCANCELLED: 
-@MIRAGE_E_INVALIDOBJTYPE: 
-@MIRAGE_E_DATANOTSET: 
-@MIRAGE_E_DATAFIXED: 
-@MIRAGE_E_NOTINLAYOUT: 
-@MIRAGE_E_INDEXOUTOFRANGE: 
-@MIRAGE_E_SECTOROUTOFRANGE: 
-@MIRAGE_E_NOTINIT: 
-@MIRAGE_E_PLUGINDIR: 
-@MIRAGE_E_NOPARSERFOUND: 
-@MIRAGE_E_NOFRAGMENTFOUND: 
-@MIRAGE_E_IMAGEFILE: 
-@MIRAGE_E_PARSER: 
-@MIRAGE_E_CANTHANDLE: 
-@MIRAGE_E_NEEDPASSWORD: 
-@MIRAGE_E_WRONGPASSWORD: 
-@MIRAGE_E_NOPASSWORD: 
-@MIRAGE_E_NODEBUGCONTEXT: 
-@MIRAGE_E_NOPARENT: 
-@MIRAGE_E_SESSIONNOTFOUND: 
-@MIRAGE_E_SESSIONEXISTS: 
-@MIRAGE_E_INVALIDMEDIUM: 
-@MIRAGE_E_TRACKNOTFOUND: 
-@MIRAGE_E_LANGNOTFOUND: 
-@MIRAGE_E_TRACKEXISTS: 
-@MIRAGE_E_LANGEXISTS: 
-@MIRAGE_E_INDEXNOTFOUND: 
-@MIRAGE_E_FRAGMENTNOTFOUND: 
-@MIRAGE_E_FILENOTSET: 
-@MIRAGE_E_READFAILED: 
-@MIRAGE_E_DATAFILE: 
-@MIRAGE_E_SECTORTYPE: 
-@MIRAGE_E_INVALIDPACKTYPE: 
-@MIRAGE_E_PACKNOTSET: 
-@MIRAGE_E_GENERIC: 
+@MIRAGE_ERROR_LIBRARY_ERROR: 
+@MIRAGE_ERROR_PARSER_ERROR: 
+@MIRAGE_ERROR_FRAGMENT_ERROR: 
+@MIRAGE_ERROR_DISC_ERROR: 
+@MIRAGE_ERROR_LANGUAGE_ERROR: 
+@MIRAGE_ERROR_SECTOR_ERROR: 
+@MIRAGE_ERROR_SESSION_ERROR: 
+@MIRAGE_ERROR_TRACK_ERROR: 
+@MIRAGE_ERROR_STREAM_ERROR: 
+@MIRAGE_ERROR_IMAGE_FILE_ERROR: 
+@MIRAGE_ERROR_DATA_FILE_ERROR: 
+@MIRAGE_ERROR_CANNOT_HANDLE: 
+@MIRAGE_ERROR_ENCRYPTED_IMAGE: 
 
 <!-- ##### FUNCTION mirage_error_quark ##### -->
 <para>
@@ -78,14 +54,5 @@ Unless coming from underlying GLib's systems, the returned error code is one of
 
 @void: 
 @Returns: 
-
-
-<!-- ##### FUNCTION mirage_error ##### -->
-<para>
-
-</para>
-
-@errcode: 
-@error: 
 
 

@@ -875,7 +875,6 @@ gboolean mirage_session_get_track_by_address (MIRAGE_Session *self, gint address
  * @self: a #MIRAGE_Session
  * @func: (in) (closure closure): callback function
  * @user_data: (in) (closure): data to be passed to callback function
- * @error: (out) (allow-none): location to store error, or %NULL
  *
  * <para>
  * Iterates over tracks list, calling @func for each track in the layout.
@@ -1140,8 +1139,6 @@ gboolean mirage_session_remove_language_by_code (MIRAGE_Session *self, gint lang
  * <para>
  * @language is a #MIRAGE_Language object to be removed.
  * </para>
- *
- * Returns: %TRUE on success, %FALSE on failure
  **/
 void mirage_session_remove_language_by_object (MIRAGE_Session *self, GObject *language)
 {
@@ -1256,7 +1253,6 @@ gboolean mirage_session_get_language_by_code (MIRAGE_Session *self, gint langcod
  * @self: a #MIRAGE_Session
  * @func: (in) (closure closure): callback function
  * @user_data: (in) (closure): data to be passed to callback function
- * @error: (out) (allow-none): location to store error, or %NULL
  *
  * <para>
  * Iterates over languages list, calling @func for each language.

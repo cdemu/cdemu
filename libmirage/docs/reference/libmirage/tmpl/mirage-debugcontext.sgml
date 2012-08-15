@@ -48,16 +48,7 @@ implemented by a #MIRAGE_Object.
 @MIRAGE_DEBUG_SECTOR: 
 @MIRAGE_DEBUG_FRAGMENT: 
 @MIRAGE_DEBUG_CDTEXT: 
-
-<!-- ##### MACRO MIRAGE_DEBUG ##### -->
-<para>
-
-</para>
-
-@obj: 
-@lvl: 
-@...: 
-
+@MIRAGE_DEBUG_FILE: 
 
 <!-- ##### STRUCT MIRAGE_DebugContext ##### -->
 <para>
@@ -72,8 +63,6 @@ implemented by a #MIRAGE_Object.
 
 @self: 
 @debug_mask: 
-@error: 
-@Returns: 
 
 
 <!-- ##### FUNCTION mirage_debug_context_get_debug_mask ##### -->
@@ -82,8 +71,6 @@ implemented by a #MIRAGE_Object.
 </para>
 
 @self: 
-@debug_mask: 
-@error: 
 @Returns: 
 
 
@@ -94,8 +81,6 @@ implemented by a #MIRAGE_Object.
 
 @self: 
 @domain: 
-@error: 
-@Returns: 
 
 
 <!-- ##### FUNCTION mirage_debug_context_get_domain ##### -->
@@ -104,8 +89,6 @@ implemented by a #MIRAGE_Object.
 </para>
 
 @self: 
-@domain: 
-@error: 
 @Returns: 
 
 
@@ -116,8 +99,6 @@ implemented by a #MIRAGE_Object.
 
 @self: 
 @name: 
-@error: 
-@Returns: 
 
 
 <!-- ##### FUNCTION mirage_debug_context_get_name ##### -->
@@ -126,8 +107,6 @@ implemented by a #MIRAGE_Object.
 </para>
 
 @self: 
-@name: 
-@error: 
 @Returns: 
 
 

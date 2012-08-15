@@ -109,14 +109,13 @@ const MIRAGE_ParserInfo *mirage_parser_get_parser_info (MIRAGE_Parser *self)
  * mirage_parser_load_image:
  * @self: a #MIRAGE_Parser
  * @filenames: (in): image filename(s)
- * @disc: (out) (transfer full): location to store the resulting #MIRAGE_Disc object
  * @error: (out) (allow-none): location to store error, or %NULL
  *
  * <para>
  * Loads the image stored in @filenames.
  * </para>
  *
- * Returns: disc object representing image on success, %NULL on failure
+ * Returns: (transfer full): disc object representing image on success, %NULL on failure
  **/
 GObject *mirage_parser_load_image (MIRAGE_Parser *self, gchar **filenames, GError **error)
 {

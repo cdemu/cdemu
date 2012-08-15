@@ -79,8 +79,6 @@ data, generating it if needed.
 </para>
 
 @self: 
-@type: 
-@error: 
 @Returns: 
 
 

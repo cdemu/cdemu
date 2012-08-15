@@ -45,8 +45,6 @@ tracks and languages, setting CD-TEXT data, etc.
 
 @self: 
 @type: 
-@error: 
-@Returns: 
 
 
 <!-- ##### FUNCTION mirage_session_get_session_type ##### -->
@@ -55,8 +53,6 @@ tracks and languages, setting CD-TEXT data, etc.
 </para>
 
 @self: 
-@type: 
-@error: 
 @Returns: 
 
 
@@ -67,8 +63,6 @@ tracks and languages, setting CD-TEXT data, etc.
 
 @self: 
 @number: 
-@error: 
-@Returns: 
 
 
 <!-- ##### FUNCTION mirage_session_layout_get_session_number ##### -->
@@ -77,8 +71,6 @@ tracks and languages, setting CD-TEXT data, etc.
 </para>
 
 @self: 
-@number: 
-@error: 
 @Returns: 
 
 
@@ -89,8 +81,6 @@ tracks and languages, setting CD-TEXT data, etc.
 
 @self: 
 @first_track: 
-@error: 
-@Returns: 
 
 
 <!-- ##### FUNCTION mirage_session_layout_get_first_track ##### -->
@@ -99,8 +89,6 @@ tracks and languages, setting CD-TEXT data, etc.
 </para>
 
 @self: 
-@first_track: 
-@error: 
 @Returns: 
 
 
@@ -111,8 +99,6 @@ tracks and languages, setting CD-TEXT data, etc.
 
 @self: 
 @start_sector: 
-@error: 
-@Returns: 
 
 
 <!-- ##### FUNCTION mirage_session_layout_get_start_sector ##### -->
@@ -121,8 +107,6 @@ tracks and languages, setting CD-TEXT data, etc.
 </para>
 
 @self: 
-@start_sector: 
-@error: 
 @Returns: 
 
 
@@ -132,8 +116,6 @@ tracks and languages, setting CD-TEXT data, etc.
 </para>
 
 @self: 
-@length: 
-@error: 
 @Returns: 
 
 
@@ -144,8 +126,6 @@ tracks and languages, setting CD-TEXT data, etc.
 
 @self: 
 @length: 
-@error: 
-@Returns: 
 
 
 <!-- ##### FUNCTION mirage_session_get_leadout_length ##### -->
@@ -154,8 +134,6 @@ tracks and languages, setting CD-TEXT data, etc.
 </para>
 
 @self: 
-@length: 
-@error: 
 @Returns: 
 
 
@@ -165,8 +143,6 @@ tracks and languages, setting CD-TEXT data, etc.
 </para>
 
 @self: 
-@number_of_tracks: 
-@error: 
 @Returns: 
 
 
@@ -178,8 +154,6 @@ tracks and languages, setting CD-TEXT data, etc.
 @self: 
 @index: 
 @track: 
-@error: 
-@Returns: 
 
 
 <!-- ##### FUNCTION mirage_session_add_track_by_number ##### -->
@@ -223,8 +197,6 @@ tracks and languages, setting CD-TEXT data, etc.
 
 @self: 
 @track: 
-@error: 
-@Returns: 
 
 
 <!-- ##### FUNCTION mirage_session_get_track_by_index ##### -->
@@ -271,7 +243,6 @@ tracks and languages, setting CD-TEXT data, etc.
 @self: 
 @func: 
 @user_data: 
-@error: 
 @Returns: 
 
 
@@ -305,8 +276,6 @@ tracks and languages, setting CD-TEXT data, etc.
 </para>
 
 @self: 
-@number_of_languages: 
-@error: 
 @Returns: 
 
 
@@ -351,8 +320,6 @@ tracks and languages, setting CD-TEXT data, etc.
 
 @self: 
 @language: 
-@error: 
-@Returns: 
 
 
 <!-- ##### FUNCTION mirage_session_get_language_by_index ##### -->
@@ -387,7 +354,6 @@ tracks and languages, setting CD-TEXT data, etc.
 @self: 
 @func: 
 @user_data: 
-@error: 
 @Returns: 
 
 

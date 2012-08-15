@@ -63,8 +63,6 @@ represents the disc stored in the image file(s).
 </para>
 
 @self: 
-@parser_info: 
-@error: 
 @Returns: 
 
 
@@ -75,7 +73,6 @@ represents the disc stored in the image file(s).
 
 @self: 
 @filenames: 
-@disc: 
 @error: 
 @Returns: 
 
@@ -87,8 +84,6 @@ represents the disc stored in the image file(s).
 
 @self: 
 @disc: 
-@error: 
-@Returns: 
 
 
 <!-- ##### FUNCTION mirage_parser_guess_medium_type ##### -->
@@ -109,8 +104,6 @@ represents the disc stored in the image file(s).
 @self: 
 @name: 
 @type: 
-@ret_value: 
-@error: 
 @Returns: 
 
 
@@ -121,8 +114,6 @@ represents the disc stored in the image file(s).
 
 @self: 
 @name: 
-@ret_value: 
-@error: 
 @Returns: 
 
 
@@ -133,7 +124,5 @@ represents the disc stored in the image file(s).
 
 @self: 
 @params: 
-@error: 
-@Returns: 
 
 

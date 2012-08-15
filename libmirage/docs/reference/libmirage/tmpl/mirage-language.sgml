@@ -57,8 +57,6 @@ pack types.
 
 @self: 
 @langcode: 
-@error: 
-@Returns: 
 
 
 <!-- ##### FUNCTION mirage_language_get_langcode ##### -->
@@ -67,8 +65,6 @@ pack types.
 </para>
 
 @self: 
-@langcode: 
-@error: 
 @Returns: 
 
 

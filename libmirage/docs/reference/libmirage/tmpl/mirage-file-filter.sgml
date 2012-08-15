@@ -1,0 +1,76 @@
+<!-- ##### SECTION Title ##### -->
+MIRAGE_FileFilter object
+
+<!-- ##### SECTION Short_Description ##### -->
+File filter object
+
+<!-- ##### SECTION Long_Description ##### -->
+<para>
+#MIRAGE_FileFilter is a basic unit of file access abstraction used in
+libMirage. It inherits from #GFilterInputStream and implements #GSeekable
+interface. The relevant functions for seeking and reading from underlying
+stream can be implemented by implementing virtual functions of #MIRAGE_FileFilter
+object.
+</para>
+
+<para>
+When opening a file with libMirage, libmirage_create_file_stream() function
+should be used. This creates a chain of #MIRAGE_FileFilter objects on top
+of a #GFileInputStream, and returns the top object on the chain. This allows
+transparent access to, for example, compressed data stored in the file.
+</para>
+
+<!-- ##### SECTION See_Also ##### -->
+<para>
+libmirage_create_file_stream()
+</para>
+
+<!-- ##### SECTION Stability_Level ##### -->
+
+
+<!-- ##### SECTION Image ##### -->
+
+
+<!-- ##### STRUCT MIRAGE_FileFilterInfo ##### -->
+<para>
+
+</para>
+
+@id: 
+@name: 
+
+<!-- ##### STRUCT MIRAGE_FileFilter ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### FUNCTION mirage_file_filter_can_handle_data_format ##### -->
+<para>
+
+</para>
+
+@self: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION mirage_file_filter_generate_file_filter_info ##### -->
+<para>
+
+</para>
+
+@self: 
+@id: 
+@name: 
+
+
+<!-- ##### FUNCTION mirage_file_filter_get_file_filter_info ##### -->
+<para>
+
+</para>
+
+@self: 
+@Returns: 
+
+

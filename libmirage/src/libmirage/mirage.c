@@ -385,12 +385,12 @@ GObject *libmirage_create_fragment (GType fragment_interface, const gchar *filen
  * </para>
  *
  * <para>
- * If @debug_context is a #MIRAGE_DebugObject, it is set to the file stream's
+ * If @debug_context is a #MIRAGE_DebugContext object, it is set to the file stream's
  * #MIRAGE_Debuggable interface. If @debug is an object implementing #MIRAGE_Debuggable
  * interface, then its debug context is retrieved and set to the file stream.
  * </para>
  *
- * Returns: on success, an object inheriting #GFilterStream (and therefore
+ * Returns: on success, an object inheriting #GFilterInputStream (and therefore
  * #GInputStream) and implementing #GSeekable interface is returned, which
  * can be used to access data stored in file. On failure, %NULL is returned.
  * The reference to the object should be released using g_object_unref()
@@ -622,7 +622,7 @@ gboolean libmirage_for_each_file_filter (MIRAGE_CallbackFunction func, gpointer 
 
 /**
  * libmirage_get_supported_debug_masks:
- * @masks: (out) (transfer-none): location to store pointer to masks array
+ * @masks: (out) (transfer none): location to store pointer to masks array
  * @num_masks: (out): location to store number of elements in masks array
  * @error: (out) (allow-none): location to store error, or %NULL
  *

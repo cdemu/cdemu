@@ -141,7 +141,7 @@ struct _MIRAGE_DebugContextPrivate
 /**
  * mirage_debug_context_set_domain:
  * @self: a #MIRAGE_DebugContext
- * @domain (in): domain name
+ * @domain: (in): domain name
  *
  * <para>
  * Sets debug context's domain name to @domain.

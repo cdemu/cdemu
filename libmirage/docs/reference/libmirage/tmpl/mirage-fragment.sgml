@@ -64,8 +64,6 @@ implementation handles data.
 </para>
 
 @self: 
-@fragment_info: 
-@error: 
 @Returns: 
 
 
@@ -87,8 +85,6 @@ implementation handles data.
 
 @self: 
 @address: 
-@error: 
-@Returns: 
 
 
 <!-- ##### FUNCTION mirage_fragment_get_address ##### -->
@@ -97,8 +93,6 @@ implementation handles data.
 </para>
 
 @self: 
-@address: 
-@error: 
 @Returns: 
 
 
@@ -109,8 +103,6 @@ implementation handles data.
 
 @self: 
 @length: 
-@error: 
-@Returns: 
 
 
 <!-- ##### FUNCTION mirage_fragment_get_length ##### -->
@@ -119,8 +111,6 @@ implementation handles data.
 </para>
 
 @self: 
-@length: 
-@error: 
 @Returns: 
 
 

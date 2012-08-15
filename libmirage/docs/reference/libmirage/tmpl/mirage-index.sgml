@@ -34,8 +34,6 @@ that stores the index number and corresponding address.
 
 @self: 
 @number: 
-@error: 
-@Returns: 
 
 
 <!-- ##### FUNCTION mirage_index_get_number ##### -->
@@ -44,8 +42,6 @@ that stores the index number and corresponding address.
 </para>
 
 @self: 
-@number: 
-@error: 
 @Returns: 
 
 
@@ -56,8 +52,6 @@ that stores the index number and corresponding address.
 
 @self: 
 @address: 
-@error: 
-@Returns: 
 
 
 <!-- ##### FUNCTION mirage_index_get_address ##### -->
@@ -66,8 +60,6 @@ that stores the index number and corresponding address.
 </para>
 
 @self: 
-@address: 
-@error: 
 @Returns: 
 
 

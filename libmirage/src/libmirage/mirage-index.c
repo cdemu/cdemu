@@ -47,8 +47,6 @@ struct _MIRAGE_IndexPrivate
  * <para>
  * Sets index' index number.
  * </para>
- *
- * Returns: %TRUE on success, %FALSE on failure
  **/
 void mirage_index_set_number (MIRAGE_Index *self, gint number)
 {

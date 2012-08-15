@@ -70,7 +70,7 @@ typedef enum
  *
  * <para>
  * Debugging macro, provided for convenience. It performs cast to #MIRAGE_Debuggable
- * interface on @obj, then calls mirage_debuggable_message() with debug level @lvl and
+ * interface on @obj, then calls mirage_debuggable_debug_message() with debug level @lvl and
  * debug message @msg....
  * </para>
  **/

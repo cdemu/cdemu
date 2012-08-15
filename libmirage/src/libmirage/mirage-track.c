@@ -431,7 +431,7 @@ void mirage_track_set_isrc (MIRAGE_Track *self, const gchar *isrc)
  * Retrieves ISRC.
  * </para>
  *
- * Returns: (transfer-none): pointer to ISRC string, or %NULL. The string
+ * Returns: (transfer none): pointer to ISRC string, or %NULL. The string
  * belongs to the object and should not be modified.
  **/
 const gchar *mirage_track_get_isrc (MIRAGE_Track *self)
@@ -1016,7 +1016,6 @@ gboolean mirage_track_get_fragment_by_address (MIRAGE_Track *self, gint address,
  * @self: a #MIRAGE_Track
  * @func: (in) (closure closure): callback function
  * @user_data: (in) (closure): data to be passed to callback function
- * @error: (out) (allow-none): location to store error, or %NULL
  *
  * <para>
  * Iterates over fragments list, calling @func for each fragment in the layout.
@@ -1383,7 +1382,6 @@ gboolean mirage_track_get_index_by_address (MIRAGE_Track *self, gint address, GO
  * @self: a #MIRAGE_Track
  * @func: (in) (closure closure): callback function
  * @user_data: (in) (closure): user data to be passed to callback function
- * @error: (out) (allow-none): location to store error, or %NULL
  *
  * <para>
  * Iterates over indices list, calling @func for each index.
@@ -1681,7 +1679,6 @@ gboolean mirage_track_get_language_by_code (MIRAGE_Track *self, gint langcode, G
  * @self: a #MIRAGE_Track
  * @func: (in) (closure closure): callback function
  * @user_data: (in) (closure): data to be passed to callback function
- * @error: (out) (allow-none): location to store error, or %NULL
  *
  * <para>
  * Iterates over languages list, calling @func for each language.

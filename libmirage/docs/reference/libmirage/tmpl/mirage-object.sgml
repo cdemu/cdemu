@@ -35,50 +35,6 @@ via debug contexts.
 
 @mirage_object: the object which received the signal.
 
-<!-- ##### FUNCTION mirage_object_set_debug_context ##### -->
-<para>
-
-</para>
-
-@self: 
-@debug_context: 
-@error: 
-@Returns: 
-
-
-<!-- ##### FUNCTION mirage_object_get_debug_context ##### -->
-<para>
-
-</para>
-
-@self: 
-@debug_context: 
-@error: 
-@Returns: 
-
-
-<!-- ##### FUNCTION mirage_object_debug_message ##### -->
-<para>
-
-</para>
-
-@self: 
-@level: 
-@format: 
-@...: 
-
-
-<!-- ##### FUNCTION mirage_object_debug_messagev ##### -->
-<para>
-
-</para>
-
-@self: 
-@level: 
-@format: 
-@args: 
-
-
 <!-- ##### FUNCTION mirage_object_set_parent ##### -->
 <para>
 
@@ -86,8 +42,6 @@ via debug contexts.
 
 @self: 
 @parent: 
-@error: 
-@Returns: 
 
 
 <!-- ##### FUNCTION mirage_object_get_parent ##### -->
@@ -96,8 +50,6 @@ via debug contexts.
 </para>
 
 @self: 
-@parent: 
-@error: 
 @Returns: 
 
 
@@ -108,8 +60,6 @@ via debug contexts.
 
 @self: 
 @child: 
-@error: 
-@Returns: 
 
 
 <!-- ##### FUNCTION mirage_object_detach_child ##### -->
@@ -119,7 +69,5 @@ via debug contexts.
 
 @self: 
 @child: 
-@error: 
-@Returns: 
 
 

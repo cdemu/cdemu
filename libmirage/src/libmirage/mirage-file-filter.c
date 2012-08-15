@@ -90,7 +90,7 @@ void mirage_file_filter_generate_file_filter_info (MIRAGE_FileFilter *self, cons
  * Retrieves file filter information.
  * </para>
  *
- * Returns: (transfer-none): a pointer to file filter information structure. The
+ * Returns: (transfer none): a pointer to file filter information structure. The
  * structure belongs to object and therefore should not be modified.
  **/
 const MIRAGE_FileFilterInfo *mirage_file_filter_get_file_filter_info (MIRAGE_FileFilter *self)

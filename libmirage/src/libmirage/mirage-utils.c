@@ -116,7 +116,7 @@ static gchar *find_data_file (const gchar *path, const gchar *filename)
  * The returned string should be freed when no longer needed.
  * </para>
  *
- * Returns: (transfer-full): a newly allocated string containing the fullpath of file, or %NULL.
+ * Returns: (transfer full): a newly allocated string containing the fullpath of file, or %NULL.
  **/
 gchar *mirage_helper_find_data_file (const gchar *filename, const gchar *path)
 {
@@ -170,7 +170,7 @@ gchar *mirage_helper_find_data_file (const gchar *filename, const gchar *path)
  * Retrieves suffix from @filename.
  * </para>
  *
- * Returns: (transfer-none): pointer to character in @filename at which the suffix starts.
+ * Returns: (transfer none): pointer to character in @filename at which the suffix starts.
  **/
 gchar *mirage_helper_get_suffix (const gchar *filename)
 {
@@ -320,7 +320,7 @@ void mirage_helper_lba2msf (gint lba, gboolean diff, guint8 *m, guint8 *s, guint
  * (or lengths), @diff should be set to %FALSE.
  * </para>
  *
- * Returns: (transfer-full): a newly-allocated string containing MSF address; it should be freed
+ * Returns: (transfer full): a newly-allocated string containing MSF address; it should be freed
  * with g_free() when no longer needed.
  **/
 gchar *mirage_helper_lba2msf_str (gint lba, gboolean diff)

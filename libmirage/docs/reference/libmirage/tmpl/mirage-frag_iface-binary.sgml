@@ -65,8 +65,6 @@ by a #MIRAGE_Fragment implementation.
 </para>
 
 @self: 
-@filename: 
-@error: 
 @Returns: 
 
 
@@ -77,8 +75,6 @@ by a #MIRAGE_Fragment implementation.
 
 @self: 
 @offset: 
-@error: 
-@Returns: 
 
 
 <!-- ##### FUNCTION mirage_frag_iface_binary_track_file_get_offset ##### -->
@@ -87,8 +83,6 @@ by a #MIRAGE_Fragment implementation.
 </para>
 
 @self: 
-@offset: 
-@error: 
 @Returns: 
 
 
@@ -99,8 +93,6 @@ by a #MIRAGE_Fragment implementation.
 
 @self: 
 @sectsize: 
-@error: 
-@Returns: 
 
 
 <!-- ##### FUNCTION mirage_frag_iface_binary_track_file_get_sectsize ##### -->
@@ -109,8 +101,6 @@ by a #MIRAGE_Fragment implementation.
 </para>
 
 @self: 
-@sectsize: 
-@error: 
 @Returns: 
 
 
@@ -121,8 +111,6 @@ by a #MIRAGE_Fragment implementation.
 
 @self: 
 @format: 
-@error: 
-@Returns: 
 
 
 <!-- ##### FUNCTION mirage_frag_iface_binary_track_file_get_format ##### -->
@@ -131,8 +119,6 @@ by a #MIRAGE_Fragment implementation.
 </para>
 
 @self: 
-@format: 
-@error: 
 @Returns: 
 
 
@@ -143,8 +129,6 @@ by a #MIRAGE_Fragment implementation.
 
 @self: 
 @address: 
-@position: 
-@error: 
 @Returns: 
 
 
@@ -165,8 +149,6 @@ by a #MIRAGE_Fragment implementation.
 </para>
 
 @self: 
-@filename: 
-@error: 
 @Returns: 
 
 
@@ -177,8 +159,6 @@ by a #MIRAGE_Fragment implementation.
 
 @self: 
 @offset: 
-@error: 
-@Returns: 
 
 
 <!-- ##### FUNCTION mirage_frag_iface_binary_subchannel_file_get_offset ##### -->
@@ -187,8 +167,6 @@ by a #MIRAGE_Fragment implementation.
 </para>
 
 @self: 
-@offset: 
-@error: 
 @Returns: 
 
 
@@ -199,8 +177,6 @@ by a #MIRAGE_Fragment implementation.
 
 @self: 
 @sectsize: 
-@error: 
-@Returns: 
 
 
 <!-- ##### FUNCTION mirage_frag_iface_binary_subchannel_file_get_sectsize ##### -->
@@ -209,8 +185,6 @@ by a #MIRAGE_Fragment implementation.
 </para>
 
 @self: 
-@sectsize: 
-@error: 
 @Returns: 
 
 
@@ -221,8 +195,6 @@ by a #MIRAGE_Fragment implementation.
 
 @self: 
 @format: 
-@error: 
-@Returns: 
 
 
 <!-- ##### FUNCTION mirage_frag_iface_binary_subchannel_file_get_format ##### -->
@@ -231,8 +203,6 @@ by a #MIRAGE_Fragment implementation.
 </para>
 
 @self: 
-@format: 
-@error: 
 @Returns: 
 
 
@@ -243,8 +213,6 @@ by a #MIRAGE_Fragment implementation.
 
 @self: 
 @address: 
-@position: 
-@error: 
 @Returns: 
 
 

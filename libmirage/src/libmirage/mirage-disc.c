@@ -450,7 +450,7 @@ void mirage_disc_set_mcn (MIRAGE_Disc *self, const gchar *mcn)
  * Retrieves MCN.
  * </para>
  *
- * Returns: (transfer-none): pointer to MCN string, or %NULL. The string
+ * Returns: (transfer none): pointer to MCN string, or %NULL. The string
  * belongs to the object and should not be modified.
  **/
 const gchar *mirage_disc_get_mcn (MIRAGE_Disc *self)
@@ -1109,7 +1109,6 @@ gboolean mirage_disc_get_session_by_track (MIRAGE_Disc *self, gint track_number,
  * @self: a #MIRAGE_Disc
  * @func: (in) (closure closure): callback function
  * @user_data: (in) (closure): data to be passed to callback function
- * @error: (out) (allow-none): location to store error, or %NULL
  *
  * <para>
  * Iterates over sessions list, calling @func for each session in the layout.

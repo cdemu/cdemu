@@ -44,8 +44,6 @@ by a #MIRAGE_Fragment implementation.
 </para>
 
 @self: 
-@filename: 
-@error: 
 @Returns: 
 
 
@@ -56,8 +54,6 @@ by a #MIRAGE_Fragment implementation.
 
 @self: 
 @offset: 
-@error: 
-@Returns: 
 
 
 <!-- ##### FUNCTION mirage_frag_iface_audio_get_offset ##### -->
@@ -66,8 +62,6 @@ by a #MIRAGE_Fragment implementation.
 </para>
 
 @self: 
-@offset: 
-@error: 
 @Returns: 
 
 

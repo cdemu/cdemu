@@ -138,6 +138,17 @@ respectively. The list of supported debug masks can be obtained using libmirage_
 @Returns: 
 
 
+<!-- ##### FUNCTION libmirage_create_file_stream ##### -->
+<para>
+
+</para>
+
+@filename: 
+@debug_context: 
+@error: 
+@Returns: 
+
+
 <!-- ##### FUNCTION libmirage_for_each_parser ##### -->
 <para>
 
@@ -150,6 +161,17 @@ respectively. The list of supported debug masks can be obtained using libmirage_
 
 
 <!-- ##### FUNCTION libmirage_for_each_fragment ##### -->
+<para>
+
+</para>
+
+@func: 
+@user_data: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION libmirage_for_each_file_filter ##### -->
 <para>
 
 </para>

@@ -12,8 +12,10 @@ libmirage_set_password_function
 libmirage_obtain_password
 libmirage_create_disc
 libmirage_create_fragment
+libmirage_create_file_stream
 libmirage_for_each_parser
 libmirage_for_each_fragment
+libmirage_for_each_file_filter
 libmirage_get_supported_debug_masks
 </SECTION>
 
@@ -36,6 +38,27 @@ MIRAGE_VERSION_SHORT
 MIRAGE_LT_CURRENT
 MIRAGE_LT_REVISION
 MIRAGE_LT_AGE
+</SECTION>
+
+<SECTION>
+<FILE>mirage-file-filter</FILE>
+<TITLE>MIRAGE_FileFilter object</TITLE>
+MIRAGE_FileFilterInfo
+MIRAGE_FileFilter
+mirage_file_filter_can_handle_data_format
+mirage_file_filter_generate_file_filter_info
+mirage_file_filter_get_file_filter_info
+<SUBSECTION Standard>
+MIRAGE_FILE_FILTER
+MIRAGE_IS_FILE_FILTER
+MIRAGE_TYPE_FILE_FILTER
+MIRAGE_FILE_FILTER_CLASS
+MIRAGE_IS_FILE_FILTER_CLASS
+MIRAGE_FILE_FILTER_GET_CLASS
+<SUBSECTION Private>
+MIRAGE_FileFilterClass
+MIRAGE_FileFilterPrivate
+mirage_file_filter_get_type
 </SECTION>
 
 <SECTION>
@@ -251,10 +274,6 @@ mirage_sector_get_type
 <FILE>mirage-object</FILE>
 <TITLE>MIRAGE_Object object</TITLE>
 MIRAGE_Object
-mirage_object_set_debug_context
-mirage_object_get_debug_context
-mirage_object_debug_message
-mirage_object_debug_messagev
 mirage_object_set_parent
 mirage_object_get_parent
 mirage_object_attach_child
@@ -273,10 +292,28 @@ mirage_object_get_type
 </SECTION>
 
 <SECTION>
+<FILE>mirage-debuggable</FILE>
+<TITLE>MIRAGE_Debuggable interface</TITLE>
+MIRAGE_DEBUG
+MIRAGE_Debuggable
+mirage_debuggable_debug_message
+mirage_debuggable_debug_messagev
+mirage_debuggable_get_debug_context
+mirage_debuggable_set_debug_context
+<SUBSECTION Standard>
+MIRAGE_DEBUGGABLE
+MIRAGE_IS_DEBUGGABLE
+MIRAGE_TYPE_DEBUGGABLE
+MIRAGE_DEBUGGABLE_GET_INTERFACE
+<SUBSECTION Private>
+MIRAGE_DebuggableInterface
+mirage_debuggable_get_type
+</SECTION>
+
+<SECTION>
 <FILE>mirage-debugcontext</FILE>
 <TITLE>MIRAGE_DebugContext object</TITLE>
 MIRAGE_DebugMasks
-MIRAGE_DEBUG
 MIRAGE_DebugContext
 mirage_debug_context_set_debug_mask
 mirage_debug_context_get_debug_mask
@@ -509,7 +546,6 @@ mirage_plugin_get_type
 MIRAGE_SubChannel
 MIRAGE_CAST_DATA
 MIRAGE_CAST_PTR
-MIRAGE_CHECK_ARG
 G_LIST_FOR_EACH
 mirage_helper_find_data_file
 mirage_helper_get_suffix
@@ -541,7 +577,6 @@ mirage_helper_determine_sector_type
 <FILE>mirage-error</FILE>
 MIRAGE_ErrorCodes
 mirage_error_quark
-mirage_error
 <SUBSECTION Standard>
 MIRAGE_ERROR
 MIRAGE_TYPE_ERROR

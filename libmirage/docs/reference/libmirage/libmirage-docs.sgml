@@ -1,7 +1,9 @@
 <?xml version="1.0"?>
-<!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.1.2//EN" 
-               "http://www.oasis-open.org/docbook/xml/4.1.2/docbookx.dtd" [
-    <!ENTITY version SYSTEM "version.xml">
+<!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.3//EN"
+               "http://www.oasis-open.org/docbook/xml/4.3/docbookx.dtd"
+[
+  <!ENTITY % local.common.attrib "xmlns:xi  CDATA  #FIXED 'http://www.w3.org/2003/XInclude'">
+  <!ENTITY version SYSTEM "version.xml">
 ]>
 
 <book id="index" xmlns:xi="http://www.w3.org/2003/XInclude">
@@ -12,25 +14,30 @@
 
     <chapter id="api-reference">
         <title>libMirage API Reference</title>
-        
+
         <xi:include href="xml/mirage-libmirage.xml"/>
-        <xi:include href="xml/mirage-version.xml"/>
-        <xi:include href="xml/mirage-disc.xml"/>
-        <xi:include href="xml/mirage-session.xml"/>
-        <xi:include href="xml/mirage-track.xml"/>
-        <xi:include href="xml/mirage-sector.xml"/>
-        <xi:include href="xml/mirage-object.xml"/>
+        <xi:include href="xml/mirage-cdtext-encdec.xml"/>
         <xi:include href="xml/mirage-debugcontext.xml"/>
-        <xi:include href="xml/mirage-index.xml"/>
-        <xi:include href="xml/mirage-fragment.xml"/>
+        <xi:include href="xml/mirage-debuggable.xml"/>
+        <xi:include href="xml/mirage-disc.xml"/>
+        <xi:include href="xml/mirage-file-filter.xml"/>
         <xi:include href="xml/mirage-frag_iface-null.xml"/>
         <xi:include href="xml/mirage-frag_iface-binary.xml"/>
         <xi:include href="xml/mirage-frag_iface-audio.xml"/>
+        <xi:include href="xml/mirage-fragment.xml"/>
+        <xi:include href="xml/mirage-index.xml"/>
         <xi:include href="xml/mirage-language.xml"/>
-        <xi:include href="xml/mirage-cdtext-encdec.xml"/>
+        <xi:include href="xml/mirage-object.xml"/>
         <xi:include href="xml/mirage-parser.xml"/>
-	<xi:include href="xml/mirage-plugin.xml"/>
+        <xi:include href="xml/mirage-plugin.xml"/>
+        <xi:include href="xml/mirage-sector.xml"/>
+        <xi:include href="xml/mirage-session.xml"/>
+        <xi:include href="xml/mirage-track.xml"/>
+        <xi:include href="xml/mirage-version.xml"/>
         <xi:include href="xml/mirage-utils.xml"/>
         <xi:include href="xml/mirage-error.xml"/>
+
+        <xi:include href="xml/annotation-glossary.xml"><xi:fallback /></xi:include>
+        <xi:include href="xml/api-index-full.xml"><xi:fallback /></xi:include>
     </chapter>
 </book>
