@@ -2,7 +2,9 @@ AM_CPPFLAGS = \
     -I$(top_srcdir)/src/libmirage \
     -I$(top_builddir)/src/libmirage \
     $(glib_CFLAGS) \
-    $(gobject_CFLAGS)
+    $(gobject_CFLAGS) \
+    $(gmodule_CFLAGS) \
+    $(gio_CFLAGS)
 
 plugindir = $(MIRAGE_PLUGIN_DIR)
 
@@ -15,10 +17,12 @@ noinst_HEADERS = \
 fragment_null_la_SOURCES = \
    fragment-null-fragment.c \
    fragment-null-plugin.c
-    
+
 fragment_null_la_LIBADD = \
     $(glib_LIBS) \
-    $(gobject_LIBS)
+    $(gobject_LIBS) \
+    $(gmodule_LIBS) \
+    $(gio_LIBS)
 
 fragment_null_la_LDFLAGS = \
     -module \

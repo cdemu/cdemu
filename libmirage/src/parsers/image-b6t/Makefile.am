@@ -2,8 +2,10 @@ AM_CPPFLAGS = \
     -I$(top_srcdir)/src/libmirage \
     -I$(top_builddir)/src/libmirage \
     $(glib_CFLAGS) \
-    $(gobject_CFLAGS)
-    
+    $(gobject_CFLAGS) \
+    $(gmodule_CFLAGS) \
+    $(gio_CFLAGS)
+
 plugindir = $(MIRAGE_PLUGIN_DIR)
 
 plugin_LTLIBRARIES = image-b6t.la
@@ -18,8 +20,10 @@ image_b6t_la_SOURCES = \
 
 image_b6t_la_LIBADD = \
     $(glib_LIBS) \
-    $(gobject_LIBS)
-    
+    $(gobject_LIBS) \
+    $(gmodule_LIBS) \
+    $(gio_LIBS)
+
 image_b6t_la_LDFLAGS = \
     -module \
     -avoid-version

@@ -3,6 +3,8 @@ AM_CPPFLAGS = \
     -I$(top_builddir)/src/libmirage \
     $(glib_CFLAGS) \
     $(gobject_CFLAGS) \
+    $(gmodule_CFLAGS) \
+    $(gio_CFLAGS) \
     $(libsndfile_CFLAGS)
 
 plugindir = $(MIRAGE_PLUGIN_DIR)
@@ -16,10 +18,12 @@ noinst_HEADERS = \
 fragment_sndfile_la_SOURCES = \
    fragment-sndfile-fragment.c \
    fragment-sndfile-plugin.c
-    
+
 fragment_sndfile_la_LIBADD = \
     $(glib_LIBS) \
     $(gobject_LIBS) \
+    $(gmodule_LIBS) \
+    $(gio_LIBS) \
     $(sndfile_LIBS)
 
 fragment_sndfile_la_LDFLAGS = \

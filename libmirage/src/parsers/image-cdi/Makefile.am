@@ -2,8 +2,10 @@ AM_CPPFLAGS = \
     -I$(top_srcdir)/src/libmirage \
     -I$(top_builddir)/src/libmirage \
     $(glib_CFLAGS) \
-    $(gobject_CFLAGS)
-    
+    $(gobject_CFLAGS) \
+    $(gmodule_CFLAGS) \
+    $(gio_CFLAGS)
+
 plugindir = $(MIRAGE_PLUGIN_DIR)
 
 plugin_LTLIBRARIES = image-cdi.la
@@ -18,7 +20,9 @@ image_cdi_la_SOURCES = \
 
 image_cdi_la_LIBADD = \
     $(glib_LIBS) \
-    $(gobject_LIBS)
+    $(gobject_LIBS) \
+    $(gmodule_LIBS) \
+    $(gio_LIBS)
 
 image_cdi_la_LDFLAGS = \
     -module \

@@ -2,7 +2,9 @@ AM_CPPFLAGS = \
     -I$(top_srcdir)/src/libmirage \
     -I$(top_builddir)/src/libmirage \
     $(glib_CFLAGS) \
-    $(gobject_CFLAGS)
+    $(gobject_CFLAGS) \
+    $(gmodule_CFLAGS) \
+    $(gio_CFLAGS)
 
 plugindir = $(MIRAGE_PLUGIN_DIR)
 
@@ -16,9 +18,11 @@ filter_ecm_la_SOURCES = \
    filter-ecm-file-filter.c \
    filter-ecm-plugin.c
 
-ffilter_ecm_la_LIBADD = \
+filter_ecm_la_LIBADD = \
     $(glib_LIBS) \
-    $(gobject_LIBS)
+    $(gobject_LIBS) \
+    $(gmodule_LIBS) \
+    $(gio_LIBS)
 
 filter_ecm_la_LDFLAGS = \
     -module \

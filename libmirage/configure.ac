@@ -64,6 +64,7 @@ GTK_DOC_CHECK([1.4])
 PKG_CHECK_MODULES(glib, glib-2.0 >= 2.24)
 PKG_CHECK_MODULES(gobject, gobject-2.0 >= 2.24)
 PKG_CHECK_MODULES(gmodule, gmodule-2.0 >= 2.24)
+PKG_CHECK_MODULES(gio, gio-2.0 >= 2.24)
 PKG_CHECK_MODULES(sndfile, sndfile >= 1.0.0)
 PKG_CHECK_MODULES(zlib, zlib)
 

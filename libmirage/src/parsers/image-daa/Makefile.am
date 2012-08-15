@@ -5,8 +5,10 @@ AM_CPPFLAGS = \
     -I$(top_builddir)/src/libmirage \
     -I$(srcdir)/lzma-sdk \
     $(glib_CFLAGS) \
-    $(gobject_CFLAGS)
-    
+    $(gobject_CFLAGS) \
+    $(gmodule_CFLAGS) \
+    $(gio_CFLAGS)
+
 plugindir = $(MIRAGE_PLUGIN_DIR)
 
 plugin_LTLIBRARIES = image-daa.la
@@ -24,6 +26,8 @@ image_daa_la_SOURCES = \
 image_daa_la_LIBADD = \
     $(glib_LIBS) \
     $(gobject_LIBS) \
+    $(gmodule_LIBS) \
+    $(gio_LIBS) \
     $(zlib_LIBS) \
     $(builddir)/lzma-sdk/liblzma-sdk.la
 

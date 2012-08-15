@@ -2,8 +2,10 @@ AM_CPPFLAGS = \
     -I$(top_srcdir)/src/libmirage \
     -I$(top_builddir)/src/libmirage \
     $(glib_CFLAGS) \
-    $(gobject_CFLAGS)
-    
+    $(gobject_CFLAGS) \
+    $(gmodule_CFLAGS) \
+    $(gio_CFLAGS)
+
 plugindir = $(MIRAGE_PLUGIN_DIR)
 
 plugin_LTLIBRARIES = image-c2d.la
@@ -17,8 +19,10 @@ image_c2d_la_SOURCES = \
     image-c2d-plugin.c
 
 image_c2d_la_LIBADD = \
-     $(glib_LIBS) \
-     $(gobject_LIBS)
+    $(glib_LIBS) \
+    $(gobject_LIBS) \
+    $(gmodule_LIBS) \
+    $(gio_LIBS)
 
 image_c2d_la_LDFLAGS = \
     -module \
