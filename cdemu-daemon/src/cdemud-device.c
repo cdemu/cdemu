@@ -46,7 +46,7 @@ static void cdemud_device_set_device_id (CDEMUD_Device *self, const gchar *vendo
 /**********************************************************************\
  *                            Device init                             *
 \**********************************************************************/
-gboolean cdemud_device_initialize (CDEMUD_Device *self, gint number, gchar *ctl_device, gchar *audio_driver, GError **error)
+gboolean cdemud_device_initialize (CDEMUD_Device *self, gint number, gchar *ctl_device, gchar *audio_driver)
 {
     GObject *debug_context;
 
@@ -70,7 +70,6 @@ gboolean cdemud_device_initialize (CDEMUD_Device *self, gint number, gchar *ctl_
     self->priv->io_channel = g_io_channel_new_file(ctl_device, "r+", NULL);
     if (!self->priv->io_channel) {
         CDEMUD_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: failed to open control device %s!\n", __debug__, ctl_device);
-        cdemud_error(CDEMUD_E_CTLDEVICE, error);
         return FALSE;
     }
 
@@ -78,7 +77,6 @@ gboolean cdemud_device_initialize (CDEMUD_Device *self, gint number, gchar *ctl_
     self->priv->buffer = g_malloc0(4096);
     if (!self->priv->buffer) {
         CDEMUD_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: failed to allocate buffer!\n", __debug__);
-        cdemud_error(CDEMUD_E_BUFFER, error);
         return FALSE;
     }
 
@@ -89,10 +87,7 @@ gboolean cdemud_device_initialize (CDEMUD_Device *self, gint number, gchar *ctl_
     /* Attach child... so that it'll get device's debug context */
     mirage_object_attach_child(MIRAGE_OBJECT(self), self->priv->audio_play);
     /* Initialize */
-    if (!cdemud_audio_initialize(CDEMUD_AUDIO(self->priv->audio_play), audio_driver, &self->priv->current_sector, self->priv->device_mutex, error)) {
-        CDEMUD_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: failed to initialize audio backend!\n", __debug__);
-        return FALSE;
-    }
+    cdemud_audio_initialize(CDEMUD_AUDIO(self->priv->audio_play), audio_driver, &self->priv->current_sector, self->priv->device_mutex);
 
     /* Create debug context for disc */
     self->priv->disc_debug = g_object_new(MIRAGE_TYPE_DEBUG_CONTEXT, NULL);
@@ -112,10 +107,9 @@ gboolean cdemud_device_initialize (CDEMUD_Device *self, gint number, gchar *ctl_
     self->priv->tr_emulation = FALSE;
 
     /* Start the I/O thread */
-    self->priv->io_thread = cdemud_device_create_io_thread(self, error);
+    self->priv->io_thread = cdemud_device_create_io_thread(self);
     if (!self->priv->io_thread) {
         CDEMUD_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: failed to start I/O thread!\n", __debug__);
-        cdemud_error(CDEMUD_E_GENERIC, error);
         return FALSE;
     }
 
@@ -126,60 +120,46 @@ gboolean cdemud_device_initialize (CDEMUD_Device *self, gint number, gchar *ctl_
 /**********************************************************************\
  *                            Device number                           *
 \**********************************************************************/
-gboolean cdemud_device_get_device_number (CDEMUD_Device *self, gint *number, GError **error)
+gint cdemud_device_get_device_number (CDEMUD_Device *self)
 {
-    CDEMUD_CHECK_ARG(number);
-    *number = self->priv->number;
-    return TRUE;
+    return self->priv->number;
 }
 
 
 /**********************************************************************\
  *                            Device status                           *
 \**********************************************************************/
-static gboolean cdemud_device_get_status_private (CDEMUD_Device *self, gboolean *loaded, gchar ***file_names, GError **error G_GNUC_UNUSED)
+gboolean cdemud_device_get_status (CDEMUD_Device *self, gchar ***file_names)
 {
-    if (self->priv->loaded) {
+    gboolean loaded;
+
+    g_mutex_lock(self->priv->device_mutex);
+
+    loaded = self->priv->loaded;
+    if (loaded) {
         MIRAGE_Disc *disc = MIRAGE_DISC(self->priv->disc);
-        if (loaded) {
-            *loaded = TRUE;
-        }
         if (file_names) {
             gchar **tmp_filenames = mirage_disc_get_filenames(disc);
             *file_names = g_strdupv(tmp_filenames);
         }
     } else {
-        if (loaded) {
-            *loaded = FALSE;
-        }
         if (file_names) {
             *file_names = g_new0(gchar *, 1); /* NULL-terminated, hence 1 */
         }
     }
 
-    return TRUE;
-}
-
-gboolean cdemud_device_get_status (CDEMUD_Device *self, gboolean *loaded, gchar ***file_names, GError **error)
-{
-    gboolean succeeded = TRUE;
-
-    g_mutex_lock(self->priv->device_mutex);
-    succeeded = cdemud_device_get_status_private(self, loaded, file_names, error);
     g_mutex_unlock(self->priv->device_mutex);
 
-    return succeeded;
+    return loaded;
 }
 
 
 /**********************************************************************\
  *                            Device options                          *
 \**********************************************************************/
-gboolean cdemud_device_get_option (CDEMUD_Device *self, gchar *option_name, GVariant **option_value, GError **error)
+GVariant *cdemud_device_get_option (CDEMUD_Device *self, gchar *option_name, GError **error)
 {
-    gboolean succeeded = TRUE;
-
-    *option_value = NULL;
+    GVariant *option_value = NULL;
 
     /* Lock */
     g_mutex_lock(self->priv->device_mutex);
@@ -187,13 +167,13 @@ gboolean cdemud_device_get_option (CDEMUD_Device *self, gchar *option_name, GVar
     /* Get option */
     if (!g_strcmp0(option_name, "dpm-emulation")) {
         /* *** dpm-emulation *** */
-        *option_value = g_variant_new("b", self->priv->dpm_emulation);
+        option_value = g_variant_new("b", self->priv->dpm_emulation);
     } else if (!g_strcmp0(option_name, "tr-emulation")) {
         /* *** tr-emulation *** */
-        *option_value = g_variant_new("b", self->priv->tr_emulation);
+        option_value = g_variant_new("b", self->priv->tr_emulation);
     } else if (!g_strcmp0(option_name, "device-id")) {
         /* *** device-id *** */
-        *option_value = g_variant_new("(ssss)", self->priv->id_vendor_id, self->priv->id_product_id, self->priv->id_revision, self->priv->id_vendor_specific);
+        option_value = g_variant_new("(ssss)", self->priv->id_vendor_id, self->priv->id_product_id, self->priv->id_revision, self->priv->id_vendor_specific);
     } else if (!g_strcmp0(option_name, "daemon-debug-mask")) {
         /* *** daemon-debug-mask *** */
         GObject *context = mirage_debuggable_get_debug_context(MIRAGE_DEBUGGABLE(self));
@@ -201,23 +181,22 @@ gboolean cdemud_device_get_option (CDEMUD_Device *self, gchar *option_name, GVar
             gint mask = mirage_debug_context_get_debug_mask(MIRAGE_DEBUG_CONTEXT(context));
             g_object_unref(context);
 
-            *option_value = g_variant_new("i", mask);
+            option_value = g_variant_new("i", mask);
         }
     } else if (!g_strcmp0(option_name, "library-debug-mask")) {
         /* *** library-debug-mask *** */
         gint mask = mirage_debug_context_get_debug_mask(MIRAGE_DEBUG_CONTEXT(self->priv->disc_debug));
-        *option_value = g_variant_new("i", mask);
+        option_value = g_variant_new("i", mask);
     } else {
         /* Option not found */
         CDEMUD_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: option '%s' not found; client bug?\n", __debug__, option_name);
-        cdemud_error(CDEMUD_E_INVALIDARG, error);
-        succeeded = FALSE;
+        g_set_error(error, CDEMUD_ERROR, CDEMUD_ERROR_INVALID_ARGUMENT, "Invalid option name '%s'!", option_name);
     }
 
     /* Unlock */
     g_mutex_unlock(self->priv->device_mutex);
 
-    return succeeded;
+    return option_value;
 }
 
 gboolean cdemud_device_set_option (CDEMUD_Device *self, gchar *option_name, GVariant *option_value, GError **error)
@@ -231,7 +210,7 @@ gboolean cdemud_device_set_option (CDEMUD_Device *self, gchar *option_name, GVar
     if (!g_strcmp0(option_name, "dpm-emulation")) {
         /* *** dpm-emulation *** */
         if (!g_variant_is_of_type(option_value, G_VARIANT_TYPE("b"))) {
-            cdemud_error(CDEMUD_E_INVALIDARG, error);
+            g_set_error(error, CDEMUD_ERROR, CDEMUD_ERROR_INVALID_ARGUMENT, "Invalid argument type for option '%s'!", option_name);
             succeeded = FALSE;
         } else {
             g_variant_get(option_value, "b", &self->priv->dpm_emulation);
@@ -239,7 +218,7 @@ gboolean cdemud_device_set_option (CDEMUD_Device *self, gchar *option_name, GVar
     } else if (!g_strcmp0(option_name, "tr-emulation")) {
         /* *** tr-emulation *** */
         if (!g_variant_is_of_type(option_value, G_VARIANT_TYPE("b"))) {
-            cdemud_error(CDEMUD_E_INVALIDARG, error);
+            g_set_error(error, CDEMUD_ERROR, CDEMUD_ERROR_INVALID_ARGUMENT, "Invalid argument type for option '%s'!", option_name);
             succeeded = FALSE;
         } else {
             g_variant_get(option_value, "b", &self->priv->tr_emulation);
@@ -247,7 +226,7 @@ gboolean cdemud_device_set_option (CDEMUD_Device *self, gchar *option_name, GVar
     } else if (!g_strcmp0(option_name, "device-id")) {
         /* *** device-id *** */
         if (!g_variant_is_of_type(option_value, G_VARIANT_TYPE("(ssss)"))) {
-            cdemud_error(CDEMUD_E_INVALIDARG, error);
+            g_set_error(error, CDEMUD_ERROR, CDEMUD_ERROR_INVALID_ARGUMENT, "Invalid argument type for option '%s'!", option_name);
             succeeded = FALSE;
         } else {
             gchar *vendor_id, *product_id, *revision, *vendor_specific;
@@ -263,7 +242,7 @@ gboolean cdemud_device_set_option (CDEMUD_Device *self, gchar *option_name, GVar
     } else if (!g_strcmp0(option_name, "daemon-debug-mask")) {
         /* *** daemon-debug-mask *** */
         if (!g_variant_is_of_type(option_value, G_VARIANT_TYPE("i"))) {
-            cdemud_error(CDEMUD_E_INVALIDARG, error);
+            g_set_error(error, CDEMUD_ERROR, CDEMUD_ERROR_INVALID_ARGUMENT, "Invalid argument type for option '%s'!", option_name);
             succeeded = FALSE;
         } else {
             GObject *context = mirage_debuggable_get_debug_context(MIRAGE_DEBUGGABLE(self));
@@ -277,7 +256,7 @@ gboolean cdemud_device_set_option (CDEMUD_Device *self, gchar *option_name, GVar
     } else if (!g_strcmp0(option_name, "library-debug-mask")) {
         /* *** library-debug-mask *** */
         if (!g_variant_is_of_type(option_value, G_VARIANT_TYPE("i"))) {
-            cdemud_error(CDEMUD_E_INVALIDARG, error);
+            g_set_error(error, CDEMUD_ERROR, CDEMUD_ERROR_INVALID_ARGUMENT, "Invalid argument type for option '%s'!", option_name);
             succeeded = FALSE;
         } else {
             gint mask;
@@ -287,8 +266,7 @@ gboolean cdemud_device_set_option (CDEMUD_Device *self, gchar *option_name, GVar
     } else {
         /* Option not found */
         CDEMUD_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: option '%s' not found; client bug?\n", __debug__, option_name);
-
-        cdemud_error(CDEMUD_E_INVALIDARG, error);
+        g_set_error(error, CDEMUD_ERROR, CDEMUD_ERROR_INVALID_ARGUMENT, "Invalid option name '%s'!", option_name);
         succeeded = FALSE;
     }
 

@@ -36,7 +36,7 @@ typedef struct _CDEMUD_AudioPrivate CDEMUD_AudioPrivate;
 struct _CDEMUD_Audio
 {
     MIRAGE_Object parent_instance;
-    
+
     /*< private >*/
     CDEMUD_AudioPrivate *priv;
 };
@@ -51,12 +51,12 @@ struct _CDEMUD_AudioClass
 GType cdemud_audio_get_type (void);
 
 /* Public API */
-gboolean cdemud_audio_initialize (CDEMUD_Audio *self, gchar *driver, gint *cur_sector_ptr, GMutex *device_mutex_ptr, GError **error);
-gboolean cdemud_audio_start (CDEMUD_Audio *self, gint start, gint end, GObject *disc, GError **error);
-gboolean cdemud_audio_resume (CDEMUD_Audio *self, GError **error);
-gboolean cdemud_audio_pause (CDEMUD_Audio *self, GError **error);
-gboolean cdemud_audio_stop (CDEMUD_Audio *self, GError **error);
-gboolean cdemud_audio_get_status (CDEMUD_Audio *self, gint *status, GError **error);
+void cdemud_audio_initialize (CDEMUD_Audio *self, gchar *driver, gint *cur_sector_ptr, GMutex *device_mutex_ptr);
+gboolean cdemud_audio_start (CDEMUD_Audio *self, gint start, gint end, GObject *disc);
+gboolean cdemud_audio_resume (CDEMUD_Audio *self);
+gboolean cdemud_audio_pause (CDEMUD_Audio *self);
+gboolean cdemud_audio_stop (CDEMUD_Audio *self);
+gint cdemud_audio_get_status (CDEMUD_Audio *self);
 
 G_END_DECLS
 

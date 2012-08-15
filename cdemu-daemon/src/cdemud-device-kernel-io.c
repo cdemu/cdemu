@@ -133,7 +133,7 @@ void cdemud_device_write_sense (CDEMUD_Device *self, guint8 sense_key, guint16 a
 static gboolean cdemud_device_io_handler (GIOChannel *source, GIOCondition condition G_GNUC_UNUSED, CDEMUD_Device *self)
 {
     gint fd = g_io_channel_unix_get_fd(source);
-    
+
     CDEMUD_Command cmd;
     guchar buf[BUF_SIZE] = {0};
     struct vhba_request *vreq = (void *) buf;
@@ -196,9 +196,9 @@ static gpointer cdemud_device_io_thread (CDEMUD_Device *self)
 }
 
 
-GThread *cdemud_device_create_io_thread (CDEMUD_Device *self, GError **error)
+GThread *cdemud_device_create_io_thread (CDEMUD_Device *self)
 {
-    return g_thread_create((GThreadFunc)cdemud_device_io_thread, self, TRUE, error);
+    return g_thread_create((GThreadFunc)cdemud_device_io_thread, self, TRUE, NULL);
 }
 
 void cdemud_device_stop_io_thread (CDEMUD_Device *self)

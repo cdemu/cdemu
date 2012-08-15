@@ -124,7 +124,7 @@ gboolean cdemud_device_setup_mapping (CDEMUD_Device *self)
     return complete;
 }
 
-gboolean cdemud_device_get_mapping (CDEMUD_Device *self, gchar **sr_device, gchar **sg_device, GError **error G_GNUC_UNUSED)
+void cdemud_device_get_mapping (CDEMUD_Device *self, gchar **sr_device, gchar **sg_device)
 {
     /* Return values, if applicable */
     if (self->priv->device_sr) {
@@ -138,6 +138,4 @@ gboolean cdemud_device_get_mapping (CDEMUD_Device *self, gchar **sr_device, gcha
     } else {
         *sg_device = NULL;
     }
-
-    return TRUE;
 }

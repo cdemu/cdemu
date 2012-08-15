@@ -478,9 +478,7 @@ static gboolean command_mode_sense (CDEMUD_Device *self, guint8 *raw_cdb)
 static gboolean command_pause_resume (CDEMUD_Device *self, guint8 *raw_cdb)
 {
     struct PAUSE_RESUME_CDB *cdb = (struct PAUSE_RESUME_CDB *)raw_cdb;
-    gint audio_status = 0;
-
-    cdemud_audio_get_status(CDEMUD_AUDIO(self->priv->audio_play), &audio_status, NULL);
+    gint audio_status = cdemud_audio_get_status(CDEMUD_AUDIO(self->priv->audio_play));
 
     /* Resume */
     if (cdb->resume == 1) {
@@ -496,7 +494,7 @@ static gboolean command_pause_resume (CDEMUD_Device *self, guint8 *raw_cdb)
 
         /* Resume; we set status to playing, and fire the callback */
         if (audio_status != AUDIO_STATUS_PLAYING) {
-            cdemud_audio_resume(CDEMUD_AUDIO(self->priv->audio_play), NULL);
+            cdemud_audio_resume(CDEMUD_AUDIO(self->priv->audio_play));
         }
     }
 
@@ -513,7 +511,7 @@ static gboolean command_pause_resume (CDEMUD_Device *self, guint8 *raw_cdb)
 
        /* Pause; stop the playback and force status to AUDIO_STATUS_PAUSED */
         if (audio_status != AUDIO_STATUS_PAUSED) {
-            cdemud_audio_pause(CDEMUD_AUDIO(self->priv->audio_play), NULL);
+            cdemud_audio_pause(CDEMUD_AUDIO(self->priv->audio_play));
         }
     }
 
@@ -559,7 +557,7 @@ static gboolean command_play_audio (CDEMUD_Device *self, guint8 *raw_cdb)
     CDEMUD_DEBUG(self, DAEMON_DEBUG_MMC, "%s: playing from sector 0x%X to sector 0x%X\n", __debug__, start_sector, end_sector);
 
     /* Play */
-    if (!cdemud_audio_start(CDEMUD_AUDIO(self->priv->audio_play), start_sector, end_sector, self->priv->disc, NULL)) {
+    if (!cdemud_audio_start(CDEMUD_AUDIO(self->priv->audio_play), start_sector, end_sector, self->priv->disc)) {
         /* FIXME: write sense */
         CDEMUD_DEBUG(self, DAEMON_DEBUG_MMC, "%s: failed to start audio play!\n", __debug__);
         return FALSE;
@@ -1221,9 +1219,7 @@ static gboolean command_read_subchannel (CDEMUD_Device *self, guint8 *raw_cdb)
     }
 
     /* Header */
-    gint audio_status = 0;
-    cdemud_audio_get_status(CDEMUD_AUDIO(self->priv->audio_play), &audio_status, NULL);
-    ret_header->audio_status = audio_status; /* Audio status */
+    ret_header->audio_status = cdemud_audio_get_status(CDEMUD_AUDIO(self->priv->audio_play)); /* Audio status */
     ret_header->length = GUINT32_TO_BE(self->priv->buffer_size - 4);
 
     /* Write data */
@@ -1811,12 +1807,9 @@ static gboolean command_request_sense (CDEMUD_Device *self, guint8 *raw_cdb)
        REQUEST SENSE command. The sense key is set to NO SENSE, the ASC is set
        to NO ADDITIONAL SENSE DATA and the audio status is reported in
        the additional sense code qualifier field. */
-    gint audio_status = 0;
-    cdemud_audio_get_status(CDEMUD_AUDIO(self->priv->audio_play), &audio_status, NULL);
-
     sense->sense_key = SK_NO_SENSE;
     sense->asc = NO_ADDITIONAL_SENSE_INFORMATION;
-    sense->ascq = audio_status;
+    sense->ascq = cdemud_audio_get_status(CDEMUD_AUDIO(self->priv->audio_play));
 
     /* Write data */
     cdemud_device_write_buffer(self, cdb->length);
@@ -2060,10 +2053,9 @@ gint cdemud_device_execute_command (CDEMUD_Device *self, CDEMUD_Command *cmd)
 
             /* Stop audio play if command disturbs it */
             if (packet_commands[i].disturbs_audio_play) {
-                gint status = 0;
-                cdemud_audio_get_status(CDEMUD_AUDIO(self->priv->audio_play), &status, NULL);
+                gint status = cdemud_audio_get_status(CDEMUD_AUDIO(self->priv->audio_play));
                 if (status == AUDIO_STATUS_PLAYING || status == AUDIO_STATUS_PAUSED) {
-                    cdemud_audio_stop(CDEMUD_AUDIO(self->priv->audio_play), NULL);
+                    cdemud_audio_stop(CDEMUD_AUDIO(self->priv->audio_play));
                 }
             }
             /* Execute the command */

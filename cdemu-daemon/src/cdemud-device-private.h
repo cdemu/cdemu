@@ -128,7 +128,7 @@ void cdemud_device_flush_buffer (CDEMUD_Device *self);
 void cdemud_device_write_sense_full (CDEMUD_Device *self, guint8 sense_key, guint16 asc_ascq, gint ili, guint32 command_info);
 void cdemud_device_write_sense (CDEMUD_Device *self, guint8 sense_key, guint16 asc_ascq);
 
-GThread *cdemud_device_create_io_thread (CDEMUD_Device *self, GError **error);
+GThread *cdemud_device_create_io_thread (CDEMUD_Device *self);
 void cdemud_device_stop_io_thread (CDEMUD_Device *self);
 
 /* Load/unload */

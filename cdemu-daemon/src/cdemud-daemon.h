@@ -36,7 +36,7 @@ typedef struct _CDEMUD_DaemonPrivate    CDEMUD_DaemonPrivate;
 struct _CDEMUD_Daemon
 {
     MIRAGE_Object parent_instance;
-    
+
     /*< private >*/
     CDEMUD_DaemonPrivate *priv;
 };
@@ -51,8 +51,8 @@ struct _CDEMUD_DaemonClass
 GType cdemud_daemon_get_type (void);
 
 /* Public API */
-gboolean cdemud_daemon_initialize_and_start (CDEMUD_Daemon *self, gint num_devices, gchar *ctl_device, gchar *audio_driver, gboolean system_bus, GError **error);
-gboolean cdemud_daemon_stop_daemon (CDEMUD_Daemon *self, GError **error);
+gboolean cdemud_daemon_initialize_and_start (CDEMUD_Daemon *self, gint num_devices, gchar *ctl_device, gchar *audio_driver, gboolean system_bus);
+void cdemud_daemon_stop_daemon (CDEMUD_Daemon *self);
 GObject *cdemud_daemon_get_device (CDEMUD_Daemon *self, gint device_number, GError **error);
 
 

@@ -135,7 +135,7 @@ static gpointer cdemud_audio_playback_thread (CDEMUD_Audio *self)
     return NULL;
 }
 
-static gboolean cdemud_audio_start_playing (CDEMUD_Audio *self, GError **error G_GNUC_UNUSED)
+static void cdemud_audio_start_playing (CDEMUD_Audio *self)
 {
     /* Set the status */
     self->priv->status = AUDIO_STATUS_PLAYING;
@@ -143,11 +143,9 @@ static gboolean cdemud_audio_start_playing (CDEMUD_Audio *self, GError **error G
     /* Start the playback thread; thread must be joinable, so we can wait for it
        to end */
     self->priv->playback_thread = g_thread_create((GThreadFunc)cdemud_audio_playback_thread, self, TRUE, NULL);
-
-    return TRUE;
 }
 
-static gboolean cdemud_audio_stop_playing (CDEMUD_Audio *self, gint status, GError **error G_GNUC_UNUSED)
+static void cdemud_audio_stop_playing (CDEMUD_Audio *self, gint status)
 {
     /* We can't tell whether we're stopped or paused, so the upper layer needs
        to provide us appropriate status */
@@ -160,15 +158,13 @@ static gboolean cdemud_audio_stop_playing (CDEMUD_Audio *self, gint status, GErr
         self->priv->playback_thread = NULL;
         CDEMUD_DEBUG(self, DAEMON_DEBUG_AUDIOPLAY, "%s: thread finished\n", __debug__);
     }
-
-    return TRUE;
 }
 
 
 /**********************************************************************\
  *                                 Public API                         *
 \**********************************************************************/
-gboolean cdemud_audio_initialize (CDEMUD_Audio *self, gchar *driver, gint *cur_sector_ptr, GMutex *device_mutex_ptr, GError **error G_GNUC_UNUSED)
+void cdemud_audio_initialize (CDEMUD_Audio *self, gchar *driver, gint *cur_sector_ptr, GMutex *device_mutex_ptr)
 {
     self->priv->cur_sector_ptr = cur_sector_ptr;
     self->priv->device_mutex = device_mutex_ptr;
@@ -194,11 +190,9 @@ gboolean cdemud_audio_initialize (CDEMUD_Audio *self, gchar *driver, gint *cur_s
     self->priv->format.byte_format = AO_FMT_LITTLE;
 
     /* *Don't* open the device here; we'll do it when we actually start playing */
-
-    return TRUE;
 }
 
-gboolean cdemud_audio_start (CDEMUD_Audio *self, gint start, gint end, GObject *disc, GError **error)
+gboolean cdemud_audio_start (CDEMUD_Audio *self, gint start, gint end, GObject *disc)
 {
     gboolean succeeded = TRUE;
 
@@ -217,30 +211,19 @@ gboolean cdemud_audio_start (CDEMUD_Audio *self, gint start, gint end, GObject *
         g_object_ref(self->priv->disc);
 
         CDEMUD_DEBUG(self, DAEMON_DEBUG_AUDIOPLAY, "%s: starting playback (0x%X->0x%X)...\n", __debug__, self->priv->cur_sector, self->priv->end_sector);
-        if (!cdemud_audio_start_playing(self, error)) {
-            /* Free disc reference */
-            g_object_unref(self->priv->disc);
-            self->priv->disc = NULL;
-
-            CDEMUD_DEBUG(self, DAEMON_DEBUG_AUDIOPLAY, "%s: failed to start playback!\n", __debug__);
-            succeeded = FALSE;
-            goto end;
-        }
+        cdemud_audio_start_playing(self);
     } else {
         CDEMUD_DEBUG(self, DAEMON_DEBUG_AUDIOPLAY, "%s: play called when paused or already playing!\n", __debug__);
-        cdemud_error(CDEMUD_E_AUDIOINVALIDSTATE, error);
         succeeded = FALSE;
-        goto end;
     }
 
-end:
     /* Unlock */
   //  g_static_mutex_unlock(&self->priv->mutex);
 
     return succeeded;
 }
 
-gboolean cdemud_audio_resume (CDEMUD_Audio *self, GError **error)
+gboolean cdemud_audio_resume (CDEMUD_Audio *self)
 {
     gboolean succeeded = TRUE;
 
@@ -250,83 +233,57 @@ gboolean cdemud_audio_resume (CDEMUD_Audio *self, GError **error)
     /* Resume is valid only if we're paused */
     if (self->priv->status == AUDIO_STATUS_PAUSED) {
         CDEMUD_DEBUG(self, DAEMON_DEBUG_AUDIOPLAY, "%s: resuming playback (0x%X->0x%X)...\n", __debug__);
-        if (!cdemud_audio_start_playing(self, error)) {
-            CDEMUD_DEBUG(self, DAEMON_DEBUG_AUDIOPLAY, "%s: failed to start playback!\n", __debug__);
-            succeeded = FALSE;
-            goto end;
-        }
+        cdemud_audio_start_playing(self);
     } else {
         CDEMUD_DEBUG(self, DAEMON_DEBUG_AUDIOPLAY, "%s: resume called when not paused!\n", __debug__);
-        cdemud_error(CDEMUD_E_AUDIOINVALIDSTATE, error);
         succeeded = FALSE;
-        goto end;
     }
 
-end:
     /* Unlock */
    // g_static_mutex_unlock(&self->priv->mutex);
 
     return succeeded;
 }
 
-gboolean cdemud_audio_pause (CDEMUD_Audio *self, GError **error)
+gboolean cdemud_audio_pause (CDEMUD_Audio *self)
 {
     gboolean succeeded = TRUE;
 
     /* Pause is valid only if we are playing */
     if (self->priv->status == AUDIO_STATUS_PLAYING) {
         CDEMUD_DEBUG(self, DAEMON_DEBUG_AUDIOPLAY, "%s: pausing playback...\n", __debug__);
-
-        if (!cdemud_audio_stop_playing(self, AUDIO_STATUS_PAUSED, error)) {
-            CDEMUD_DEBUG(self, DAEMON_DEBUG_AUDIOPLAY, "%s: failed to pause playback!\n", __debug__);
-            succeeded = FALSE;
-            goto end;
-        }
+        cdemud_audio_stop_playing(self, AUDIO_STATUS_PAUSED);
     } else {
         CDEMUD_DEBUG(self, DAEMON_DEBUG_AUDIOPLAY, "%s: pause called when not playing!\n", __debug__);
-        cdemud_error(CDEMUD_E_AUDIOINVALIDSTATE, error);
         succeeded = FALSE;
-        goto end;
     }
 
-end:
     return succeeded;
 }
 
-gboolean cdemud_audio_stop (CDEMUD_Audio *self, GError **error)
+gboolean cdemud_audio_stop (CDEMUD_Audio *self)
 {
     gboolean succeeded = TRUE;
 
     /* Stop is valid only if we are playing or paused */
     if (self->priv->status == AUDIO_STATUS_PLAYING || self->priv->status == AUDIO_STATUS_PAUSED) {
         CDEMUD_DEBUG(self, DAEMON_DEBUG_AUDIOPLAY, "%s: stopping playback...\n", __debug__);
-
-        if (cdemud_audio_stop_playing(self, AUDIO_STATUS_NOSTATUS, error)) {
-            /* Release disc reference */
-            g_object_unref(self->priv->disc);
-            self->priv->disc = NULL;
-        } else {
-            CDEMUD_DEBUG(self, DAEMON_DEBUG_AUDIOPLAY, "%s: failed to stop playback!\n", __debug__);
-            succeeded = FALSE;
-            goto end;
-        }
+        cdemud_audio_stop_playing(self, AUDIO_STATUS_NOSTATUS);
+        /* Release disc reference */
+        g_object_unref(self->priv->disc);
+        self->priv->disc = NULL;
     } else {
         CDEMUD_DEBUG(self, DAEMON_DEBUG_AUDIOPLAY, "%s: stop called when not playing nor paused!\n", __debug__);
-        cdemud_error(CDEMUD_E_AUDIOINVALIDSTATE, error);
         succeeded = FALSE;
-        goto end;
     }
 
-end:
     return succeeded;
 }
 
-gboolean cdemud_audio_get_status (CDEMUD_Audio *self, gint *status, GError **error G_GNUC_UNUSED)
+gint cdemud_audio_get_status (CDEMUD_Audio *self)
 {
     /* Return status */
-    *status = self->priv->status;
-
-    return TRUE;
+    return self->priv->status;
 }
 
 
@@ -350,7 +307,7 @@ static void cdemud_audio_finalize (GObject *gobject)
     CDEMUD_Audio *self = CDEMUD_AUDIO(gobject);
 
     /* Force the playback to stop */
-    cdemud_audio_stop(self, NULL);
+    cdemud_audio_stop(self);
 
     /* Chain up to the parent class */
     return G_OBJECT_CLASS(cdemud_audio_parent_class)->finalize(gobject);

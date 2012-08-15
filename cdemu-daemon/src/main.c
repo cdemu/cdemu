@@ -60,7 +60,7 @@ static void __unix_signal_handler (int signal)
         case SIGQUIT:
         case SIGTERM:
         case SIGHUP: {
-            cdemud_daemon_stop_daemon(CDEMUD_DAEMON(daemon_obj), NULL);
+            cdemud_daemon_stop_daemon(CDEMUD_DAEMON(daemon_obj));
             break;
         }
         default: {
@@ -167,11 +167,11 @@ int main (int argc, char **argv)
     setup_signal_trap();
 
     /* Initialize and start daemon */
-    if (cdemud_daemon_initialize_and_start(CDEMUD_DAEMON(daemon_obj), num_devices, ctl_device, audio_driver, use_system_bus, &error)) {        
+    if (cdemud_daemon_initialize_and_start(CDEMUD_DAEMON(daemon_obj), num_devices, ctl_device, audio_driver, use_system_bus)) {
         /* Printed when daemon stops */
         g_message("Stopping daemon.\n");
     } else {
-        g_warning("Daemon initialization and start failed: %s\n", error->message);
+        g_warning("Daemon initialization and start failed!\n");
         g_error_free(error);
         succeeded = FALSE;
     }

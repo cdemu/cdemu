@@ -37,7 +37,7 @@ typedef struct _CDEMUD_DevicePrivate    CDEMUD_DevicePrivate;
 struct _CDEMUD_Device
 {
     MIRAGE_Object parent_instance;
-    
+
     /*< private >*/
     CDEMUD_DevicePrivate *priv;
 };
@@ -55,20 +55,20 @@ struct _CDEMUD_DeviceClass
 GType cdemud_device_get_type (void);
 
 /* Public API */
-gboolean cdemud_device_initialize (CDEMUD_Device *self, gint number, gchar *ctl_device, gchar *audio_driver, GError **error);
+gboolean cdemud_device_initialize (CDEMUD_Device *self, gint number, gchar *ctl_device, gchar *audio_driver);
 
-gboolean cdemud_device_get_device_number (CDEMUD_Device *self, gint *number, GError **error);
+gint cdemud_device_get_device_number (CDEMUD_Device *self);
 
-gboolean cdemud_device_get_status (CDEMUD_Device *self, gboolean *loaded, gchar ***file_names, GError **error);
+gboolean cdemud_device_get_status (CDEMUD_Device *self,gchar ***file_names);
 
 gboolean cdemud_device_load_disc (CDEMUD_Device *self, gchar **file_names, GVariant *options, GError **error);
 gboolean cdemud_device_unload_disc (CDEMUD_Device *self, GError **error);
 
-gboolean cdemud_device_get_option (CDEMUD_Device *self, gchar *option_name, GVariant **option_value, GError **error);
+GVariant *cdemud_device_get_option (CDEMUD_Device *self, gchar *option_name, GError **error);
 gboolean cdemud_device_set_option (CDEMUD_Device *self, gchar *option_name, GVariant *option_value, GError **error);
 
 gboolean cdemud_device_setup_mapping (CDEMUD_Device *self);
-gboolean cdemud_device_get_mapping (CDEMUD_Device *self, gchar **sr_device, gchar **sg_device, GError **error);
+void cdemud_device_get_mapping (CDEMUD_Device *self, gchar **sr_device, gchar **sg_device);
 
 G_END_DECLS
 

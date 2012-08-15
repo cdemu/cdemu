@@ -28,15 +28,13 @@
 \**********************************************************************/
 static void device_status_changed_handler (GObject *device, CDEMUD_Daemon *self)
 {
-    gint number;
-    cdemud_device_get_device_number(CDEMUD_DEVICE(device), &number, NULL);
+    gint number = cdemud_device_get_device_number(CDEMUD_DEVICE(device));
     cdemud_daemon_dbus_emit_device_status_changed (self, number);
 }
 
 static void device_option_changed_handler (GObject *device, gchar *option, CDEMUD_Daemon *self)
 {
-    gint number;
-    cdemud_device_get_device_number(CDEMUD_DEVICE(device), &number, NULL);
+    gint number = cdemud_device_get_device_number(CDEMUD_DEVICE(device));
     cdemud_daemon_dbus_emit_device_option_changed(self, number, option);
 }
 
@@ -79,7 +77,7 @@ static gboolean device_mapping_callback (CDEMUD_Daemon *self)
 /******************************************************************************\
  *                                 Public API                                 *
 \******************************************************************************/
-gboolean cdemud_daemon_initialize_and_start (CDEMUD_Daemon *self, gint num_devices, gchar *ctl_device, gchar *audio_driver, gboolean system_bus, GError **error)
+gboolean cdemud_daemon_initialize_and_start (CDEMUD_Daemon *self, gint num_devices, gchar *ctl_device, gchar *audio_driver, gboolean system_bus)
 {
     GObject *debug_context;
     GBusType bus_type = system_bus ? G_BUS_TYPE_SYSTEM : G_BUS_TYPE_SESSION;
@@ -108,7 +106,7 @@ gboolean cdemud_daemon_initialize_and_start (CDEMUD_Daemon *self, gint num_devic
        instance of the server). We're actually going to claim it once we create
        the devices, but we want to avoid the device creation if name claim is
        already doomed to fail... */
-    if (!cdemud_daemon_dbus_check_if_name_is_available(self, bus_type, error)) {
+    if (!cdemud_daemon_dbus_check_if_name_is_available(self, bus_type)) {
         return FALSE;
     }
 
@@ -117,7 +115,7 @@ gboolean cdemud_daemon_initialize_and_start (CDEMUD_Daemon *self, gint num_devic
         /* Create CDEmu device object */
         GObject *dev =  g_object_new(CDEMUD_TYPE_DEVICE, NULL);
 
-        if (cdemud_device_initialize(CDEMUD_DEVICE(dev), i, self->priv->ctl_device, audio_driver, NULL)) {
+        if (cdemud_device_initialize(CDEMUD_DEVICE(dev), i, self->priv->ctl_device, audio_driver)) {
             /* Set parent */
             mirage_object_set_parent(MIRAGE_OBJECT(dev), G_OBJECT(self));
             /* Don't attach child... MIRAGE_Objects pass debug context to children,
@@ -132,7 +130,6 @@ gboolean cdemud_daemon_initialize_and_start (CDEMUD_Daemon *self, gint num_devic
         } else {
             CDEMUD_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: failed to initialize device %i!\n", __debug__, i);
             g_object_unref(dev);
-            cdemud_error(CDEMUD_E_DEVICEINITFAILED, error);
             return FALSE;
         }
     }
@@ -157,12 +154,10 @@ gboolean cdemud_daemon_initialize_and_start (CDEMUD_Daemon *self, gint num_devic
     return TRUE;
 }
 
-gboolean cdemud_daemon_stop_daemon (CDEMUD_Daemon *self, GError **error G_GNUC_UNUSED)
+void cdemud_daemon_stop_daemon (CDEMUD_Daemon *self)
 {
     /* Stop the main loop */
     g_main_loop_quit(self->priv->main_loop);
-
-    return TRUE;
 }
 
 
@@ -175,7 +170,7 @@ GObject *cdemud_daemon_get_device (CDEMUD_Daemon *self, gint device_number, GErr
         return device;
     }
 
-    cdemud_error(CDEMUD_E_INVALIDDEVICE, error);
+    g_set_error(error, CDEMUD_ERROR, CDEMUD_ERROR_INVALID_ARGUMENT, "Invalid device number!");
     return NULL;
 }
 

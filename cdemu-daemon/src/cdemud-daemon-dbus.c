@@ -153,11 +153,11 @@ static void cdemud_daemon_dbus_handle_method_call (GDBusConnection *connection G
             gboolean loaded;
             gchar **file_names;
 
-            succeeded = cdemud_device_get_status(CDEMUD_DEVICE(device), &loaded, &file_names, &error);
-            if (succeeded) {
-                ret = g_variant_new("(b^as)", loaded, file_names);
-                g_strfreev(file_names);
-            }
+            loaded = cdemud_device_get_status(CDEMUD_DEVICE(device), &file_names);
+            ret = g_variant_new("(b^as)", loaded, file_names);
+            g_strfreev(file_names);
+
+            succeeded = TRUE;
         }
 
         g_object_unref(device);
@@ -186,10 +186,10 @@ static void cdemud_daemon_dbus_handle_method_call (GDBusConnection *connection G
         g_variant_get(parameters, "(is)", &device_number, &option_name);
         device = cdemud_daemon_get_device(self, device_number, &error);
         if (device) {
-            GVariant *option_value;
-            succeeded = cdemud_device_get_option(CDEMUD_DEVICE(device), option_name, &option_value, &error);
-            if (succeeded) {
+            GVariant *option_value = cdemud_device_get_option(CDEMUD_DEVICE(device), option_name, &error);
+            if (option_value) {
                 ret = g_variant_new("(v)", option_value);
+                succeeded = TRUE;
             }
         }
 
@@ -209,12 +209,11 @@ static void cdemud_daemon_dbus_handle_method_call (GDBusConnection *connection G
         if (device) {
             gchar *sr_device, *sg_device;
 
-            succeeded = cdemud_device_get_mapping(CDEMUD_DEVICE(device), &sr_device, &sg_device, &error);
-            if (succeeded) {
-                ret = g_variant_new("(ss)", sr_device ? sr_device : "", sg_device ? sg_device : "");
-                g_free(sr_device);
-                g_free(sg_device);
-            }
+            cdemud_device_get_mapping(CDEMUD_DEVICE(device), &sr_device, &sg_device);
+            ret = g_variant_new("(ss)", sr_device ? sr_device : "", sg_device ? sg_device : "");
+
+            g_free(sr_device);
+            g_free(sg_device);
         }
 
         g_object_unref(device);
@@ -260,7 +259,7 @@ static void cdemud_daemon_dbus_handle_method_call (GDBusConnection *connection G
         ret = g_variant_new("(a(ss))", encode_fragments());
         succeeded = TRUE;
     } else {
-        cdemud_error(CDEMUD_E_GENERIC, &error);
+        g_set_error(&error, CDEMUD_ERROR, CDEMUD_ERROR_INVALID_ARGUMENT, "Invalid method name '%s'!", method_name);
     }
 
     if (succeeded) {
@@ -316,14 +315,14 @@ static void on_bus_acquired (GDBusConnection *connection, const gchar *name G_GN
 
 static void on_name_lost (GDBusConnection *connection G_GNUC_UNUSED, const gchar *name G_GNUC_UNUSED, CDEMUD_Daemon *self)
 {
-    cdemud_daemon_stop_daemon(self, NULL);
+    cdemud_daemon_stop_daemon(self);
 }
 
 
 /**********************************************************************\
  *                    Daemon's D-Bus functions                        *
 \**********************************************************************/
-gboolean cdemud_daemon_dbus_check_if_name_is_available (CDEMUD_Daemon *self, GBusType bus_type, GError **error)
+gboolean cdemud_daemon_dbus_check_if_name_is_available (CDEMUD_Daemon *self, GBusType bus_type)
 {
     GDBusProxy *dbus_proxy;
     GError *dbus_error = NULL;
@@ -344,7 +343,6 @@ gboolean cdemud_daemon_dbus_check_if_name_is_available (CDEMUD_Daemon *self, GBu
     if (!dbus_proxy) {
         CDEMUD_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: failed to get proxy for 'org.freedesktop.DBus' on %s bus: %s!\n", __debug__, bus_type == G_BUS_TYPE_SYSTEM ? "system" : "session", dbus_error->message);
         g_error_free(dbus_error);
-        cdemud_error(CDEMUD_E_DBUSCONNECT, error);
         return FALSE;
     }
 
@@ -361,7 +359,6 @@ gboolean cdemud_daemon_dbus_check_if_name_is_available (CDEMUD_Daemon *self, GBu
     if (!dbus_reply) {
         CDEMUD_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: failed to check if name '%s' is already taken on %s bus!\n", __debug__, CDEMUD_DBUS_NAME, bus_type == G_BUS_TYPE_SYSTEM ? "system" : "session");
         g_error_free(dbus_error);
-        cdemud_error(CDEMUD_E_DBUSCONNECT, error);
         g_object_unref(dbus_proxy);
         return FALSE;
     }
@@ -373,7 +370,6 @@ gboolean cdemud_daemon_dbus_check_if_name_is_available (CDEMUD_Daemon *self, GBu
 
     if (name_taken) {
         CDEMUD_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: name '%s' is already taken on %s bus! Is there another instance already running?\n", __debug__, CDEMUD_DBUS_NAME, bus_type == G_BUS_TYPE_SYSTEM ? "system" : "session");
-        cdemud_error(CDEMUD_E_DBUSNAMEREQUEST, error);
         return FALSE;
     }
 

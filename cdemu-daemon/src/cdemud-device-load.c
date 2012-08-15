@@ -58,7 +58,7 @@ static gboolean cdemud_device_load_disc_private (CDEMUD_Device *self, gchar **fi
      /* Well, we won't do anything if we're already loaded */
     if (self->priv->loaded) {
         CDEMUD_DEBUG(self, DAEMON_DEBUG_MMC, "%s: device already loaded\n", __debug__);
-        cdemud_error(CDEMUD_E_ALREADYLOADED, error);
+        g_set_error(error, CDEMUD_ERROR, CDEMUD_ERROR_ALREADY_LOADED, "Device is already loaded!");
         return FALSE;
     }
 
@@ -129,7 +129,7 @@ gboolean cdemud_device_unload_disc_private (CDEMUD_Device *self, gboolean force,
     /* Check if the door is locked */
     if (!force && self->priv->locked) {
         CDEMUD_DEBUG(self, DAEMON_DEBUG_MMC, "%s: device is locked\n", __debug__);
-        cdemud_error(CDEMUD_E_DEVLOCKED, error);
+        g_set_error(error, CDEMUD_ERROR, CDEMUD_ERROR_DEVICE_LOCKED, "Device is locked!");
         return FALSE;
     }
 
