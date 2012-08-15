@@ -53,7 +53,7 @@ static gboolean mirage_parser_readcd_is_file_valid (MIRAGE_Parser_READCD *self, 
     /* File must have .toc suffix */
     if (!mirage_helper_has_suffix(filename, ".toc")) {
         g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_CANNOT_HANDLE, "Parser cannot handle given image!");
-        succeeded = FALSE;
+        return FALSE;
     }
 
     stream = libmirage_create_file_stream(filename, G_OBJECT(self), error);
