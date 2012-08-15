@@ -165,7 +165,7 @@ gboolean mirage_track_remove_fragment_by_index (MIRAGE_Track *self, gint index, 
 void mirage_track_remove_fragment_by_object (MIRAGE_Track *self, GObject *fragment);
 gboolean mirage_track_get_fragment_by_index (MIRAGE_Track *self, gint index, GObject **fragment, GError **error);
 gboolean mirage_track_get_fragment_by_address (MIRAGE_Track *self, gint address, GObject **fragment, GError **error);
-gboolean mirage_track_for_each_fragment (MIRAGE_Track *self, MIRAGE_CallbackFunction func, gpointer user_data, GError **error);
+gboolean mirage_track_for_each_fragment (MIRAGE_Track *self, MIRAGE_CallbackFunction func, gpointer user_data);
 
 gboolean mirage_track_find_fragment_with_subchannel (MIRAGE_Track *self, GObject **fragment, GError **error);
 
@@ -180,7 +180,7 @@ gboolean mirage_track_remove_index_by_number (MIRAGE_Track *self, gint number, G
 void mirage_track_remove_index_by_object (MIRAGE_Track *self, GObject *index);
 gboolean mirage_track_get_index_by_number (MIRAGE_Track *self, gint number, GObject **index, GError **error);
 gboolean mirage_track_get_index_by_address (MIRAGE_Track *self, gint address, GObject **index, GError **error);
-gboolean mirage_track_for_each_index (MIRAGE_Track *self, MIRAGE_CallbackFunction func, gpointer user_data, GError **error);
+gboolean mirage_track_for_each_index (MIRAGE_Track *self, MIRAGE_CallbackFunction func, gpointer user_data);
 
 /* Languages (CD-Text) handling */
 gint mirage_track_get_number_of_languages (MIRAGE_Track *self);
@@ -190,7 +190,7 @@ gboolean mirage_track_remove_language_by_code (MIRAGE_Track *self, gint langcode
 void mirage_track_remove_language_by_object (MIRAGE_Track *self, GObject *language);
 gboolean mirage_track_get_language_by_index (MIRAGE_Track *self, gint index, GObject **language, GError **error);
 gboolean mirage_track_get_language_by_code (MIRAGE_Track *self, gint langcode, GObject **language, GError **error);
-gboolean mirage_track_for_each_language (MIRAGE_Track *self, MIRAGE_CallbackFunction func, gpointer user_data, GError **error);
+gboolean mirage_track_for_each_language (MIRAGE_Track *self, MIRAGE_CallbackFunction func, gpointer user_data);
 
 /* Two nice convenience functions */
 gboolean mirage_track_get_prev (MIRAGE_Track *self, GObject **prev_track, GError **error);

@@ -66,14 +66,14 @@ static gboolean mirage_parser_iso_is_file_valid (MIRAGE_Parser_ISO *self, gchar 
 
         if (!g_seekable_seek(G_SEEKABLE(stream), 16*2048, G_SEEK_SET, NULL, NULL)) {
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to seek to 8-byte pattern!\n", __debug__);
-            mirage_error(MIRAGE_E_READFAILED, error);
+            g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, "Failed to seek to 8-byte pattern!");
             succeeded = FALSE;
             goto end;
         }
 
         if (g_input_stream_read(G_INPUT_STREAM(stream), buf, 8, NULL, NULL) != 8) {
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read 8-byte pattern!\n", __debug__);
-            mirage_error(MIRAGE_E_READFAILED, error);
+            g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, "Failed to read 8-byte pattern!");
             succeeded = FALSE;
             goto end;
         }
@@ -96,13 +96,14 @@ static gboolean mirage_parser_iso_is_file_valid (MIRAGE_Parser_ISO *self, gchar 
 
         if (!g_seekable_seek(G_SEEKABLE(stream), 16*2352, G_SEEK_SET, NULL, NULL)) {
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to seek to 16-byte pattern!\n", __debug__);
+            g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, "Failed to seek to 16-byte pattern!");
             succeeded = FALSE;
             goto end;
         }
 
         if (g_input_stream_read(G_INPUT_STREAM(stream), buf, 16, NULL, NULL) != 16) {
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read 16-byte pattern!\n", __debug__);
-            mirage_error(MIRAGE_E_READFAILED, error);
+            g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, "Failed to read 16-byte pattern!");
             succeeded = FALSE;
             goto end;
         }
@@ -138,7 +139,7 @@ static gboolean mirage_parser_iso_is_file_valid (MIRAGE_Parser_ISO *self, gchar 
     }
 
     /* Nope, can't load the file */
-    mirage_error(MIRAGE_E_CANTHANDLE, error);
+    g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_CANNOT_HANDLE, "Parser cannot handle given image!");
     succeeded = FALSE;
 
 end:
@@ -148,7 +149,6 @@ end:
 
 static gboolean mirage_parser_iso_load_track (MIRAGE_Parser_ISO *self, gchar *filename, GError **error)
 {
-    gboolean succeeded = TRUE;
     GObject *session = NULL;
     GObject *track = NULL;
     GObject *data_fragment = NULL;
@@ -183,13 +183,8 @@ static gboolean mirage_parser_iso_load_track (MIRAGE_Parser_ISO *self, gchar *fi
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: adding track\n", __debug__);
 
     mirage_disc_get_session_by_index(MIRAGE_DISC(self->priv->disc), -1, &session, NULL);
-    succeeded = mirage_session_add_track_by_index(MIRAGE_SESSION(session), -1, &track, error);
+    mirage_session_add_track_by_index(MIRAGE_SESSION(session), -1, &track);
     g_object_unref(session);
-    if (!succeeded) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to add track!\n", __debug__);
-        g_object_unref(data_fragment);
-        return succeeded;
-    }
 
     /* Set track mode */
     mirage_track_set_mode(MIRAGE_TRACK(track), self->priv->track_mode);
@@ -204,6 +199,7 @@ static gboolean mirage_parser_iso_load_track (MIRAGE_Parser_ISO *self, gchar *fi
 
     return TRUE;
 }
+
 
 /**********************************************************************\
  *                MIRAGE_Parser methods implementation                *
@@ -228,11 +224,8 @@ static GObject *mirage_parser_iso_load_image (MIRAGE_Parser *_self, gchar **file
 
     /* Session: one session (with possibly multiple tracks) */
     GObject *session = NULL;
-    if (!mirage_disc_add_session_by_number(MIRAGE_DISC(self->priv->disc), 1, &session, error)) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to add session!\n", __debug__);
-        succeeded = FALSE;
-        goto end;
-    }
+    mirage_disc_add_session_by_index(MIRAGE_DISC(self->priv->disc), 0, &session);
+
     /* ISO image parser assumes single-track image, so we're dealing with regular CD-ROM session */
     mirage_session_set_session_type(MIRAGE_SESSION(session), MIRAGE_SESSION_CD_ROM);
     g_object_unref(session);
@@ -251,7 +244,7 @@ static GObject *mirage_parser_iso_load_image (MIRAGE_Parser *_self, gchar **file
     gint medium_type = mirage_parser_guess_medium_type(MIRAGE_PARSER(self), self->priv->disc);
     mirage_disc_set_medium_type(MIRAGE_DISC(self->priv->disc), medium_type);
     if (medium_type == MIRAGE_MEDIUM_CD) {
-        mirage_parser_add_redbook_pregap(MIRAGE_PARSER(self), self->priv->disc, NULL);
+        mirage_parser_add_redbook_pregap(MIRAGE_PARSER(self), self->priv->disc);
     }
 
 end:

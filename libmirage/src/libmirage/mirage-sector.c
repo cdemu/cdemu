@@ -220,6 +220,7 @@ static void mirage_sector_generate_edc_ecc (MIRAGE_Sector *self)
  **/
 gboolean mirage_sector_feed_data (MIRAGE_Sector *self, gint address, GObject *track, GError **error)
 {
+    GError *local_error = NULL;
     GObject *data_fragment;
     gint mode, sectsize, data_offset, fragment_start;
 
@@ -233,7 +234,9 @@ gboolean mirage_sector_feed_data (MIRAGE_Sector *self, gint address, GObject *tr
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_SECTOR, "%s: feeding data for sector 0x%X\n", __debug__, self->priv->address);
 
     /* Get data fragment to feed from */
-    if (!mirage_track_get_fragment_by_address(MIRAGE_TRACK(track), address, &data_fragment, error)) {
+    if (!mirage_track_get_fragment_by_address(MIRAGE_TRACK(track), address, &data_fragment, &local_error)) {
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_SECTOR_ERROR, "Failed to get fragment: %s", local_error->message);
+        g_error_free(local_error);
         return FALSE;
     }
 
@@ -246,8 +249,10 @@ gboolean mirage_sector_feed_data (MIRAGE_Sector *self, gint address, GObject *tr
     /* *** Main channel data ***/
 
     /* Get sector size by performing 'empty' read */
-    if (!mirage_fragment_read_main_data(MIRAGE_FRAGMENT(data_fragment), address, NULL, &sectsize, error)) {
+    if (!mirage_fragment_read_main_data(MIRAGE_FRAGMENT(data_fragment), address, NULL, &sectsize, &local_error)) {
         g_object_unref(data_fragment);
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_SECTOR_ERROR, "Failed get main sector data length: %s", local_error->message);
+        g_error_free(local_error);
         return FALSE;
     }
 
@@ -280,7 +285,7 @@ gboolean mirage_sector_feed_data (MIRAGE_Sector *self, gint address, GObject *tr
                 }
                 default: {
                     MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: unhandled sector size %d for Audio sector!\n", __debug__, sectsize);
-                    mirage_error(MIRAGE_E_GENERIC, error);
+                    g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_SECTOR_ERROR, "Unhandled sector size %d for Audio sector!", sectsize);
                     return FALSE;
                 }
             }
@@ -326,7 +331,7 @@ gboolean mirage_sector_feed_data (MIRAGE_Sector *self, gint address, GObject *tr
                 }
                 default: {
                     MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: unhandled sector size %d for Mode 0 sector!\n", __debug__, sectsize);
-                    mirage_error(MIRAGE_E_GENERIC, error);
+                    g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_SECTOR_ERROR, "Unhandled sector size %d for Mode 0 sector!", sectsize);
                     return FALSE;
                 }
             }
@@ -406,7 +411,7 @@ gboolean mirage_sector_feed_data (MIRAGE_Sector *self, gint address, GObject *tr
                 }
                 default: {
                     MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: unhandled sector size %d for Mode 1 sector!\n", __debug__, sectsize);
-                    mirage_error(MIRAGE_E_GENERIC, error);
+                    g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_SECTOR_ERROR, "Unhandled sector size %d for Mode 1 sector!", sectsize);
                     return FALSE;
                 }
             }
@@ -452,8 +457,8 @@ gboolean mirage_sector_feed_data (MIRAGE_Sector *self, gint address, GObject *tr
                     break;
                 }
                 default: {
-                    MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: unhandled sector size %d for Mode 1 sector!\n", __debug__, sectsize);
-                    mirage_error(MIRAGE_E_GENERIC, error);
+                    MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: unhandled sector size %d for Mode 2 Formless sector!\n", __debug__, sectsize);
+                    g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_SECTOR_ERROR, "Unhandled sector size %d for Mode 2 Formless sector!", sectsize);
                     return FALSE;
                 }
             }
@@ -558,7 +563,7 @@ gboolean mirage_sector_feed_data (MIRAGE_Sector *self, gint address, GObject *tr
                 }
                 default: {
                     MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: unhandled sector size %d for Mode 2 Form 1 sector!\n", __debug__, sectsize);
-                    mirage_error(MIRAGE_E_GENERIC, error);
+                    g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_SECTOR_ERROR, "Unhandled sector size %d for Mode 2 Form 1 sector!", sectsize);
                     return FALSE;
                 }
             }
@@ -667,7 +672,7 @@ gboolean mirage_sector_feed_data (MIRAGE_Sector *self, gint address, GObject *tr
                 }
                 default: {
                     MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: unhandled sector size %d for Mode 2 Form 2 sector!\n", __debug__, sectsize);
-                    mirage_error(MIRAGE_E_GENERIC, error);
+                    g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_SECTOR_ERROR, "Unhandled sector size %d for Mode 2 Form 2 sector!", sectsize);
                     return FALSE;
                 }
             }
@@ -738,7 +743,7 @@ gboolean mirage_sector_feed_data (MIRAGE_Sector *self, gint address, GObject *tr
                 }
                 default: {
                     MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: unhandled sector size %d for Mode 2 Mixed sector!\n", __debug__, sectsize);
-                    mirage_error(MIRAGE_E_GENERIC, error);
+                    g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_SECTOR_ERROR, "Unhandled sector size %d for Mode 2 Mixed sector!", sectsize);
                     return FALSE;
                 }
             }
@@ -750,6 +755,8 @@ gboolean mirage_sector_feed_data (MIRAGE_Sector *self, gint address, GObject *tr
     /* Read */
     if (!mirage_fragment_read_main_data(MIRAGE_FRAGMENT(data_fragment), address, self->priv->sector_data+data_offset, &sectsize, error)) {
         g_object_unref(data_fragment);
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_SECTOR_ERROR, "Failed to read main sector data: %s", local_error->message);
+        g_error_free(local_error);
         return FALSE;
     }
 
@@ -769,8 +776,10 @@ gboolean mirage_sector_feed_data (MIRAGE_Sector *self, gint address, GObject *tr
     /* *** Subchannel *** */
     /* Read subchannel... fragment should *always* return us 96-byte interleaved
        PW subchannel (or nothing) */
-    if (!mirage_fragment_read_subchannel_data(MIRAGE_FRAGMENT(data_fragment), address, self->priv->subchan_pw, &sectsize, error)) {
+    if (!mirage_fragment_read_subchannel_data(MIRAGE_FRAGMENT(data_fragment), address, self->priv->subchan_pw, &sectsize, &local_error)) {
         g_object_unref(data_fragment);
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_SECTOR_ERROR, "Failed to read subchannel data: %s", local_error->message);
+        g_error_free(local_error);
         return FALSE;
     }
 
@@ -846,7 +855,7 @@ gboolean mirage_sector_get_sync (MIRAGE_Sector *self, const guint8 **ret_buf, gi
             break;
         }
         default: {
-            mirage_error(MIRAGE_E_SECTORTYPE, error);
+            g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_SECTOR_ERROR, "Sync pattern not available for sector type %d!", self->priv->type);
             succeeded = FALSE;
             break;
         }
@@ -906,7 +915,7 @@ gboolean mirage_sector_get_header (MIRAGE_Sector *self, const guint8 **ret_buf, 
             break;
         }
         default: {
-            mirage_error(MIRAGE_E_SECTORTYPE, error);
+            g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_SECTOR_ERROR, "Header not available for sector type %d!", self->priv->type);
             succeeded = FALSE;
             break;
         }
@@ -963,7 +972,7 @@ gboolean mirage_sector_get_subheader (MIRAGE_Sector *self, const guint8 **ret_bu
             break;
         }
         default: {
-            mirage_error(MIRAGE_E_SECTORTYPE, error);
+            g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_SECTOR_ERROR, "Subheader not available for sector type %d!", self->priv->type);
             succeeded = FALSE;
             break;
         }
@@ -1036,7 +1045,7 @@ gboolean mirage_sector_get_data (MIRAGE_Sector *self, const guint8 **ret_buf, gi
             break;
         }
         default: {
-            mirage_error(MIRAGE_E_SECTORTYPE, error);
+            g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_SECTOR_ERROR, "Data not available for sector type %d!", self->priv->type);
             succeeded = FALSE;
             break;
         }
@@ -1104,7 +1113,7 @@ gboolean mirage_sector_get_edc_ecc (MIRAGE_Sector *self, const guint8 **ret_buf,
             break;
         }
         default: {
-            mirage_error(MIRAGE_E_SECTORTYPE, error);
+            g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_SECTOR_ERROR, "EDC/ECC not available for sector type %d!", self->priv->type);
             succeeded = FALSE;
             break;
         }
@@ -1173,7 +1182,7 @@ gboolean mirage_sector_get_subchannel (MIRAGE_Sector *self, gint format, const g
         case MIRAGE_SUBCHANNEL_RW: {
             /* FIXME: Cooked RW subchannel; can't do yet */
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_SECTOR, "%s: cooked RW subchannel not supported yet!\n", __debug__);
-            mirage_error(MIRAGE_E_NOTIMPL, error);
+            g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_SECTOR_ERROR, "Cooked RW subchannel not supported yet!");
             return FALSE;
         }
     }

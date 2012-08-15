@@ -79,15 +79,15 @@ gboolean libmirage_init (GError **error)
 
     if (!plugins_dir) {
         g_error("Failed to open plugin directory '%s'!\n", MIRAGE_PLUGIN_DIR);
-        mirage_error(MIRAGE_E_PLUGINDIR, error);
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_LIBRARY_ERROR, "Failed to open plugin directory '%s'!\n", MIRAGE_PLUGIN_DIR);
         return FALSE;
     }
 
     /* Check every file in the plugin dir */
     while ((plugin_file = g_dir_read_name(plugins_dir))) {
         if (g_str_has_suffix(plugin_file, ".so")) {
-            MIRAGE_Plugin *plugin = NULL;
-            gchar *fullpath = NULL;
+            MIRAGE_Plugin *plugin;
+            gchar *fullpath;
 
             /* Build full path */
             fullpath = g_build_filename(MIRAGE_PLUGIN_DIR, plugin_file, NULL);
@@ -139,7 +139,7 @@ gboolean libmirage_shutdown (GError **error)
 {
     /* Make sure libMirage is initialized */
     if (!libmirage.initialized) {
-        mirage_error(MIRAGE_E_NOTINIT, error);
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_LIBRARY_ERROR, "Library not initialized!");
         return FALSE;
     }
 
@@ -176,7 +176,7 @@ gboolean libmirage_set_password_function (MIRAGE_PasswordFunction func, gpointer
 {
     /* Make sure libMirage is initialized */
     if (!libmirage.initialized) {
-        mirage_error(MIRAGE_E_NOTINIT, error);
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_LIBRARY_ERROR, "Library not initialized!");
         return FALSE;
     }
 
@@ -205,12 +205,12 @@ gchar *libmirage_obtain_password (GError **error)
 
     /* Make sure libMirage is initialized */
     if (!libmirage.initialized) {
-        mirage_error(MIRAGE_E_NOTINIT, error);
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_LIBRARY_ERROR, "Library not initialized!");
         return NULL;
     }
 
     if (!libmirage.password_func) {
-        mirage_error(MIRAGE_E_DATANOTSET, error);
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_LIBRARY_ERROR, "Password function has not been set!");
         return NULL;
     }
 
@@ -218,7 +218,7 @@ gchar *libmirage_obtain_password (GError **error)
     password = (*libmirage.password_func)(libmirage.password_data);
 
     if (!password) {
-        mirage_error(MIRAGE_E_NOPASSWORD, error);
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_LIBRARY_ERROR, "Password has not been provided!");
     }
 
     return password;
@@ -263,14 +263,14 @@ GObject *libmirage_create_disc (gchar **filenames, GObject *debug_context, GHash
 
     /* Make sure libMirage is initialized */
     if (!libmirage.initialized) {
-        mirage_error(MIRAGE_E_NOTINIT, error);
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_LIBRARY_ERROR, "Library not initialized!");
         return NULL;
     }
 
     /* Check if filename(s) is/are valid */
     for (i = 0; i < g_strv_length(filenames); i++) {
         if (!g_file_test(filenames[i], G_FILE_TEST_IS_REGULAR)) {
-            mirage_error(MIRAGE_E_IMAGEFILE, error);
+            g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, "Invalid image file '%s'!", filenames[i]);
             return NULL;
         }
     }
@@ -301,17 +301,17 @@ GObject *libmirage_create_disc (gchar **filenames, GObject *debug_context, GHash
         } else {
             /* MIRAGE_E_CANTHANDLE is the only acceptable error here; anything
                other indicates that parser attempted to handle image and failed */
-            if (local_error->code == MIRAGE_E_CANTHANDLE) {
+            if (local_error->code == MIRAGE_ERROR_CANNOT_HANDLE) {
                 g_error_free(local_error);
             } else {
-                *error = local_error;
+                g_propagate_error(error, local_error);
                 return NULL;
             }
         }
     }
 
     /* No parser found */
-    mirage_error(MIRAGE_E_NOPARSERFOUND, error);
+    g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_PARSER_ERROR, "No parser can handle the image file!");
     return NULL;
 }
 
@@ -339,13 +339,13 @@ GObject *libmirage_create_fragment (GType fragment_interface, const gchar *filen
 
     /* Make sure libMirage is initialized */
     if (!libmirage.initialized) {
-        mirage_error(MIRAGE_E_NOTINIT, error);
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_LIBRARY_ERROR, "Library not initialized!");
         return NULL;
     }
 
     /* Check if filename is valid, but only if we're not dealing with NULL fragment */
     if (fragment_interface != MIRAGE_TYPE_FRAG_IFACE_NULL && !g_file_test(filename, G_FILE_TEST_IS_REGULAR)) {
-        mirage_error(MIRAGE_E_DATAFILE, error);
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_DATA_FILE_ERROR, "Invalid data file '%s'!", filename);
         return NULL;
     }
 
@@ -369,7 +369,7 @@ GObject *libmirage_create_fragment (GType fragment_interface, const gchar *filen
     }
 
     /* No fragment found */
-    mirage_error(MIRAGE_E_NOFRAGMENTFOUND, error);
+    g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_FRAGMENT_ERROR, "No fragment can handle the given data file!");
     return NULL;
 }
 
@@ -401,10 +401,11 @@ GObject *libmirage_create_file_stream (const gchar *filename, GObject *debug_con
     GObject *stream;
     GFile *file;
     GFileType file_type;
+    GError *local_error = NULL;
 
     /* Make sure libMirage is initialized */
     if (!libmirage.initialized) {
-        mirage_error(MIRAGE_E_NOTINIT, error);
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_LIBRARY_ERROR, "Library not initialized!");
         return NULL;
     }
 
@@ -415,7 +416,7 @@ GObject *libmirage_create_file_stream (const gchar *filename, GObject *debug_con
         if (MIRAGE_IS_DEBUGGABLE(debug_context)) {
             debug_context = mirage_debuggable_get_debug_context(MIRAGE_DEBUGGABLE(debug_context));
         } else if (!MIRAGE_IS_DEBUG_CONTEXT(debug_context)) {
-            mirage_error(MIRAGE_E_INVALIDARG, error);
+            g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_LIBRARY_ERROR, "Invalid debug context or debuggable object!");
             return NULL;
         }
     }
@@ -427,16 +428,18 @@ GObject *libmirage_create_file_stream (const gchar *filename, GObject *debug_con
     file_type = g_file_query_file_type(file, G_FILE_QUERY_INFO_NONE, NULL);
     if (!(file_type == G_FILE_TYPE_REGULAR || file_type == G_FILE_TYPE_SYMBOLIC_LINK || file_type == G_FILE_TYPE_SHORTCUT)) {
         g_object_unref(file);
-        mirage_error(MIRAGE_E_DATAFILE, error);
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_DATA_FILE_ERROR, "Invalid data file provided for stream!");
         return FALSE;
     }
 
     /* Create stream */
-    stream = G_OBJECT(g_file_read(file, NULL, error));
+    stream = G_OBJECT(g_file_read(file, NULL, &local_error));
 
     g_object_unref(file);
 
     if (!stream) {
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_DATA_FILE_ERROR, "Failed to open file stream on data file: %s!", local_error->message);
+        g_error_free(local_error);
         return FALSE;
     }
 
@@ -492,8 +495,7 @@ GObject *libmirage_create_file_stream (const gchar *filename, GObject *debug_con
  * </para>
  *
  * <para>
- * If @func returns %FALSE, the function immediately returns %FALSE and @error
- * is set to %MIRAGE_E_ITERCANCELLED.
+ * If @func returns %FALSE, the function immediately returns %FALSE.
  * </para>
  *
  * Returns: %TRUE on success, %FALSE on failure
@@ -504,13 +506,7 @@ gboolean libmirage_for_each_parser (MIRAGE_CallbackFunction func, gpointer user_
 
     /* Make sure libMirage is initialized */
     if (!libmirage.initialized) {
-        mirage_error(MIRAGE_E_NOTINIT, error);
-        return FALSE;
-    }
-
-    /* Make sure we've been given callback function */
-    if (!func) {
-        mirage_error(MIRAGE_E_INVALIDARG, error);
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_LIBRARY_ERROR, "Library not initialized!");
         return FALSE;
     }
 
@@ -525,7 +521,7 @@ gboolean libmirage_for_each_parser (MIRAGE_CallbackFunction func, gpointer user_
         succeeded = (*func)((const gpointer)parser_info, user_data);
         g_object_unref(parser);
         if (!succeeded) {
-            mirage_error(MIRAGE_E_ITERCANCELLED, error);
+            g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_LIBRARY_ERROR, "Iteration has been cancelled!");
             return FALSE;
         }
     }
@@ -544,8 +540,7 @@ gboolean libmirage_for_each_parser (MIRAGE_CallbackFunction func, gpointer user_
  * </para>
  *
  * <para>
- * If @func returns %FALSE, the function immediately returns %FALSE and @error
- * is set to %MIRAGE_E_ITERCANCELLED.
+ * If @func returns %FALSE, the function immediately returns %FALSE.
  * </para>
  *
  * Returns: %TRUE on success, %FALSE on failure
@@ -556,13 +551,7 @@ gboolean libmirage_for_each_fragment (MIRAGE_CallbackFunction func, gpointer use
 
     /* Make sure libMirage is initialized */
     if (!libmirage.initialized) {
-        mirage_error(MIRAGE_E_NOTINIT, error);
-        return FALSE;
-    }
-
-    /* Make sure we've been given callback function */
-    if (!func) {
-        mirage_error(MIRAGE_E_INVALIDARG, error);
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_LIBRARY_ERROR, "Library not initialized!");
         return FALSE;
     }
 
@@ -577,7 +566,7 @@ gboolean libmirage_for_each_fragment (MIRAGE_CallbackFunction func, gpointer use
         succeeded = (*func)((const gpointer)fragment_info, user_data);
         g_object_unref(fragment);
         if (!succeeded) {
-            mirage_error(MIRAGE_E_ITERCANCELLED, error);
+            g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_LIBRARY_ERROR, "Iteration has been cancelled!");
             return FALSE;
         }
     }
@@ -596,8 +585,7 @@ gboolean libmirage_for_each_fragment (MIRAGE_CallbackFunction func, gpointer use
  * </para>
  *
  * <para>
- * If @func returns %FALSE, the function immediately returns %FALSE and @error
- * is set to %MIRAGE_E_ITERCANCELLED.
+ * If @func returns %FALSE, the function immediately returns %FALSE.
  * </para>
  *
  * Returns: %TRUE on success, %FALSE on failure
@@ -608,13 +596,7 @@ gboolean libmirage_for_each_file_filter (MIRAGE_CallbackFunction func, gpointer 
 
     /* Make sure libMirage is initialized */
     if (!libmirage.initialized) {
-        mirage_error(MIRAGE_E_NOTINIT, error);
-        return FALSE;
-    }
-
-    /* Make sure we've been given callback function */
-    if (!func) {
-        mirage_error(MIRAGE_E_INVALIDARG, error);
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_LIBRARY_ERROR, "Library not initialized!");
         return FALSE;
     }
 
@@ -629,7 +611,7 @@ gboolean libmirage_for_each_file_filter (MIRAGE_CallbackFunction func, gpointer 
         succeeded = (*func)((const gpointer)file_filter_info, user_data);
         g_object_unref(filter);
         if (!succeeded) {
-            mirage_error(MIRAGE_E_ITERCANCELLED, error);
+            g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_LIBRARY_ERROR, "Iteration has been cancelled!");
             return FALSE;
         }
     }
@@ -657,13 +639,7 @@ gboolean libmirage_get_supported_debug_masks (const MIRAGE_DebugMask **masks, gi
 {
     /* Make sure libMirage is initialized */
     if (!libmirage.initialized) {
-        mirage_error(MIRAGE_E_NOTINIT, error);
-        return FALSE;
-    }
-
-    /* Check arguments */
-    if (!masks || !num_masks) {
-        mirage_error(MIRAGE_E_INVALIDARG, error);
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_LIBRARY_ERROR, "Library not initialized!");
         return FALSE;
     }
 

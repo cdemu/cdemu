@@ -122,12 +122,6 @@ GObject *mirage_parser_load_image (MIRAGE_Parser *self, gchar **filenames, GErro
 {
     GObject *disc;
 
-    /* Provided by implementation */
-    if (!MIRAGE_PARSER_GET_CLASS(self)->load_image) {
-        mirage_error(MIRAGE_E_NOTIMPL, error);
-        return NULL;
-    }
-
     /* Load the image */
     disc = MIRAGE_PARSER_GET_CLASS(self)->load_image(self, filenames, error);
     if (!disc) {
@@ -187,7 +181,6 @@ gint mirage_parser_guess_medium_type (MIRAGE_Parser *self, GObject *disc)
  * mirage_parser_add_redbook_pregap:
  * @self: a #MIRAGE_Parser
  * @disc: (in): disc object
- * @error: (out) (allow-none): location to store error, or %NULL
  *
  * <para>
  * A helper function, intended to be used in simpler parsers that don't get proper
@@ -202,24 +195,18 @@ gint mirage_parser_guess_medium_type (MIRAGE_Parser *self, GObject *disc)
  *
  * <para>
  * Note that the function works only on discs which have medium type set to
- * CD-ROM.
+ * CD-ROM. On other discs, it does nothing.
  * </para>
- *
- * Returns: %TRUE on success, %FALSE on failure
  **/
-gboolean mirage_parser_add_redbook_pregap (MIRAGE_Parser *self, GObject *disc, GError **error)
+void mirage_parser_add_redbook_pregap (MIRAGE_Parser *self, GObject *disc)
 {
-    gint medium_type;
     gint num_sessions;
     gint i;
 
-    medium_type = mirage_disc_get_medium_type(MIRAGE_DISC(disc));
-
     /* Red Book pregap is found only on CD-ROMs */
-    if (medium_type != MIRAGE_MEDIUM_CD) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: Red Book pregap exists only on CD-ROMs!\n", __debug__);
-        mirage_error(MIRAGE_E_INVALIDMEDIUM, error);
-        return FALSE;
+    if (mirage_disc_get_medium_type(MIRAGE_DISC(disc)) != MIRAGE_MEDIUM_CD) {
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: Red Book pregap exists only on CD-ROMs!\n", __debug__);
+        return;
     }
 
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: adding Red Book pregaps to the disc...\n", __debug__);
@@ -233,18 +220,18 @@ gboolean mirage_parser_add_redbook_pregap (MIRAGE_Parser *self, GObject *disc, G
 
     /* Put 150 sector pregap into every first track of each session */
     for (i = 0; i < num_sessions; i++) {
-        GObject *session = NULL;
-        GObject *ftrack = NULL;
+        GObject *session;
+        GObject *ftrack;
 
-        if (!mirage_disc_get_session_by_index(MIRAGE_DISC(disc), i, &session, error)) {
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to get session with index %i!\n", __debug__, i);
-            return FALSE;
+        if (!mirage_disc_get_session_by_index(MIRAGE_DISC(disc), i, &session, NULL)) {
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: failed to get session with index %i!\n", __debug__, i);
+            return;
         }
 
-        if (!mirage_session_get_track_by_index(MIRAGE_SESSION(session), 0, &ftrack, error)) {
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to first track of session with index %i!\n", __debug__, i);
+        if (!mirage_session_get_track_by_index(MIRAGE_SESSION(session), 0, &ftrack, NULL)) {
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: failed to first track of session with index %i!\n", __debug__, i);
             g_object_unref(session);
-            return FALSE;
+            return;
         }
 
         /* Add pregap fragment - NULL fragment creation should never fail */
@@ -265,8 +252,6 @@ gboolean mirage_parser_add_redbook_pregap (MIRAGE_Parser *self, GObject *disc, G
 
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: added 150 pregap to first track in session %i\n", __debug__, i);
     }
-
-    return TRUE;
 }
 
 

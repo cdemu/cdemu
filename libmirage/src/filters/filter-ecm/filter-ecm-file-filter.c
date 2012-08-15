@@ -81,7 +81,7 @@ static gboolean mirage_file_filter_ecm_build_index (MIRAGE_FileFilter_ECM *self,
 
     /* Position behind the signature */
     if (!g_seekable_seek(G_SEEKABLE(stream), 4, G_SEEK_SET, NULL, NULL)) {
-        mirage_error(MIRAGE_E_READFAILED, error);
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, "Failed to seek behind signature!");
         return FALSE;
     }
 
@@ -91,7 +91,7 @@ static gboolean mirage_file_filter_ecm_build_index (MIRAGE_FileFilter_ECM *self,
 
         /* Read type and number of sectors */
         if (g_input_stream_read(G_INPUT_STREAM(stream), &c, sizeof(c), NULL, NULL) != sizeof(c)) {
-            mirage_error(MIRAGE_E_READFAILED, error);
+            g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, "Failed to read a byte!");
             return FALSE;
         }
 
@@ -100,13 +100,13 @@ static gboolean mirage_file_filter_ecm_build_index (MIRAGE_FileFilter_ECM *self,
 
         while (c & 0x80) {
             if (g_input_stream_read(G_INPUT_STREAM(stream), &c, sizeof(c), NULL, NULL) != sizeof(c)) {
-                mirage_error(MIRAGE_E_READFAILED, error);
+                g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, "Failed to read a byte!");
                 return FALSE;
             }
 
             if ( (bits > 31) || ((guint32)(c & 0x7F)) >= (((guint32)0x80000000LU) >> (bits-1)) ) {
-                MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: corrupt ECM file; invalid sector count!\n", __debug__);
-                mirage_error(MIRAGE_E_GENERIC, error);
+                MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: corrupted ECM file; invalid sector count!\n", __debug__);
+                g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, "Corrupted ECM file; invalid sector count!");
                 return FALSE;
             }
             num |= ((guint32)(c & 0x7F)) << bits;
@@ -143,15 +143,18 @@ static gboolean mirage_file_filter_ecm_build_index (MIRAGE_FileFilter_ECM *self,
                 break;
             }
             default: {
-                MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: unhandled type %d!\n", __debug__, type);
-                mirage_error(MIRAGE_E_GENERIC, error);
+                MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: unhandled ECM part type %d!\n", __debug__, type);
+                g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, "Unhandled ECM part type %d!", type);
                 return FALSE;
             }
         }
 
         /* Get raw offset, then skip raw data */
         raw_offset = g_seekable_tell(G_SEEKABLE(stream));
-        g_seekable_seek(G_SEEKABLE(stream), raw_size, G_SEEK_CUR, NULL, NULL);
+        if (!g_seekable_seek(G_SEEKABLE(stream), raw_size, G_SEEK_CUR, NULL, NULL)) {
+            g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, "Failed to seek over ECM part data!");
+            return FALSE;
+        }
 
         /* Append to list of parts */
         self->priv->num_parts++;
@@ -176,7 +179,7 @@ static gboolean mirage_file_filter_ecm_build_index (MIRAGE_FileFilter_ECM *self,
     /* At least one part must be present */
     if (!self->priv->num_parts) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: no parts in ECM file!\n", __debug__);
-        mirage_error(MIRAGE_E_GENERIC, error);
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, "No parts in ECM file!");
         return FALSE;
     }
 
@@ -450,13 +453,13 @@ static gboolean mirage_file_filter_ecm_can_handle_data_format (MIRAGE_FileFilter
     /* Look for "ECM " signature at the beginning */
     g_seekable_seek(G_SEEKABLE(stream), 0, G_SEEK_SET, NULL, NULL);
     if (g_input_stream_read(G_INPUT_STREAM(stream), sig, sizeof(sig), NULL, NULL) != sizeof(sig)) {
-        mirage_error(MIRAGE_E_READFAILED, error);
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, "Failed to read 4 signature bytes!");
         return FALSE;
     }
 
     /* Check signature */
     if (memcmp(sig, "ECM\x00", sizeof(sig))) {
-        mirage_error(MIRAGE_E_CANTHANDLE, error);
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_CANNOT_HANDLE, "Filter cannot handle given data!");
         return FALSE;
     }
 

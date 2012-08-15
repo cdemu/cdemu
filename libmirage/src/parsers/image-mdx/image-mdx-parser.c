@@ -50,7 +50,7 @@ static gboolean mirage_parser_mdx_determine_track_mode (MIRAGE_Parser_MDX *self,
 
         if (g_input_stream_read(G_INPUT_STREAM(stream), buf, sizeof(buf), NULL, NULL) != sizeof(buf)) {
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read 8-byte pattern!\n", __debug__);
-            mirage_error(MIRAGE_E_READFAILED, error);
+            g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, "Failed to read 8-byte pattern!");
             return FALSE;
         }
 
@@ -73,7 +73,7 @@ static gboolean mirage_parser_mdx_determine_track_mode (MIRAGE_Parser_MDX *self,
 
         if (g_input_stream_read(G_INPUT_STREAM(stream), buf, sizeof(buf), NULL, NULL) != sizeof(buf)) {
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read sync pattern!\n", __debug__);
-            mirage_error(MIRAGE_E_READFAILED, error);
+            g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, "Failed to read sync pattern!");
             return FALSE;
         }
 
@@ -104,7 +104,7 @@ static gboolean mirage_parser_mdx_determine_track_mode (MIRAGE_Parser_MDX *self,
     }
 
     /* Nope, can't load the file */
-    mirage_error(MIRAGE_E_CANTHANDLE, error);
+    g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_CANNOT_HANDLE, "Parser cannot handle given image!");
     return FALSE;
 }
 
@@ -158,10 +158,9 @@ static gboolean mirage_parser_mdx_get_track (MIRAGE_Parser_MDX *self, const gcha
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: MDX file; reading header...\n", __debug__);
 
         /* Open MDX file */
-        stream = libmirage_create_file_stream(filename, G_OBJECT(self), NULL);
+        stream = libmirage_create_file_stream(filename, G_OBJECT(self), error);
         if (!stream) {
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: could not open MDX file '%s'!\n", __debug__, filename);
-            mirage_error(MIRAGE_E_IMAGEFILE, error);
             return FALSE;
         }
 
@@ -169,7 +168,7 @@ static gboolean mirage_parser_mdx_get_track (MIRAGE_Parser_MDX *self, const gcha
         if (g_input_stream_read(G_INPUT_STREAM(stream), &header, sizeof(header), NULL, NULL) != sizeof(header)) {
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read MDX header!\n", __debug__, filename);
             g_object_unref(stream);
-            mirage_error(MIRAGE_E_READFAILED, error);
+            g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, "Failed to read header!");
             return FALSE;
         }
 
@@ -198,11 +197,10 @@ static gboolean mirage_parser_mdx_get_track (MIRAGE_Parser_MDX *self, const gcha
 
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: MDS file; corresponding MDF: %s\n", __debug__, data_file);
 
-        stream = libmirage_create_file_stream(data_file, G_OBJECT(self), NULL);
+        stream = libmirage_create_file_stream(data_file, G_OBJECT(self), error);
         if (!stream) {
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: could not open MDF file!\n", __debug__);
             g_free(data_file);
-            mirage_error(MIRAGE_E_IMAGEFILE, error);
             return FALSE;
         }
 
@@ -214,7 +212,7 @@ static gboolean mirage_parser_mdx_get_track (MIRAGE_Parser_MDX *self, const gcha
         length = g_seekable_tell(G_SEEKABLE(stream));
     } else {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: invalid filename suffix; only 'mdx' and 'mds' are supported!\n", __debug__);
-        mirage_error(MIRAGE_E_CANTHANDLE, error);
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_CANNOT_HANDLE, "Parser cannot handle given image!");
         return FALSE;
     }
 
@@ -300,18 +298,13 @@ static gboolean mirage_parser_mdx_load_disc (MIRAGE_Parser_MDX *self, gchar *fil
 
 
     /* Session: one session */
-    if (!mirage_disc_add_session_by_number(MIRAGE_DISC(self->priv->disc), 1, &session, error)) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to add session!\n", __debug__);
-        return FALSE;
-    }
+    mirage_disc_add_session_by_index(MIRAGE_DISC(self->priv->disc), 0, &session);
 
     /* MDX image parser assumes single-track image, so we're dealing with regular CD-ROM session */
     mirage_session_set_session_type(MIRAGE_SESSION(session), MIRAGE_SESSION_CD_ROM);
 
     /* Add track */
-    if (!mirage_session_add_track_by_index(MIRAGE_SESSION(session), -1, &track, error)) {
-        return FALSE;
-    }
+    mirage_session_add_track_by_index(MIRAGE_SESSION(session), -1, &track);
 
     g_object_unref(session);
     g_object_unref(track);
@@ -323,7 +316,7 @@ static gboolean mirage_parser_mdx_load_disc (MIRAGE_Parser_MDX *self, gchar *fil
     gint medium_type = mirage_parser_guess_medium_type(MIRAGE_PARSER(self), self->priv->disc);
     mirage_disc_set_medium_type(MIRAGE_DISC(self->priv->disc), medium_type);
     if (medium_type == MIRAGE_MEDIUM_CD) {
-        mirage_parser_add_redbook_pregap(MIRAGE_PARSER(self), self->priv->disc, NULL);
+        mirage_parser_add_redbook_pregap(MIRAGE_PARSER(self), self->priv->disc);
     }
 
     return TRUE;
@@ -339,34 +332,25 @@ static GObject *mirage_parser_mdx_load_image (MIRAGE_Parser *_self, gchar **file
 
     gboolean succeeded = TRUE;
     GObject *stream;
-    gchar sig[16] = "";
-    guint8 ver[2];
+    gchar signature[17];
 
     /* Check if we can load the image */
-    stream = libmirage_create_file_stream(filenames[0], G_OBJECT(self), NULL);
+    stream = libmirage_create_file_stream(filenames[0], G_OBJECT(self), error);
     if (!stream) {
-        mirage_error(MIRAGE_E_IMAGEFILE, error);
         return FALSE;
     }
 
     /* Read signature and version */
-    if ((g_input_stream_read(G_INPUT_STREAM(stream), sig, sizeof(sig), NULL, NULL) != sizeof(sig))
-        || (g_input_stream_read(G_INPUT_STREAM(stream), ver, sizeof(ver), NULL, NULL) != sizeof(ver))) {
+    if (g_input_stream_read(G_INPUT_STREAM(stream), signature, sizeof(signature), NULL, NULL) != sizeof(signature)) {
         g_object_unref(stream);
-        mirage_error(MIRAGE_E_READFAILED, error);
-        return FALSE;
-    }
-
-    if (memcmp(sig, "MEDIA DESCRIPTOR", 16)) {
-        g_object_unref(stream);
-        mirage_error(MIRAGE_E_CANTHANDLE, error);
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, "Failed to read signature and version!");
         return FALSE;
     }
 
     /* This parsers handles v.2.X images (new DT format) */
-    if (ver[0] != 2) {
+    if (memcmp(signature, "MEDIA DESCRIPTOR\x02", 17)) {
         g_object_unref(stream);
-        mirage_error(MIRAGE_E_CANTHANDLE, error);
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_CANNOT_HANDLE, "Parser cannot handle given image!");
         return FALSE;
     }
 

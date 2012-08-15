@@ -373,7 +373,7 @@ static gchar *mirage_parser_mds_get_track_filename (MIRAGE_Parser_MDS *self, MDS
        from filename_offset to end of the file */
     if (!footer_block) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: track block does not have a footer, but we're supposed to get filename from it!\n", __debug__);
-        mirage_error(MIRAGE_E_PARSER, error);
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_PARSER_ERROR, "Track block does not have a footer!");
         return NULL;
     }
 
@@ -395,7 +395,7 @@ static gchar *mirage_parser_mds_get_track_filename (MIRAGE_Parser_MDS *self, MDS
 
     if (!mdf_filename) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: failed to find data file!\n", __debug__);
-        mirage_error(MIRAGE_E_DATAFILE, error);
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_DATA_FILE_ERROR, "Failed to find data file!");
         return NULL;
     }
 
@@ -595,7 +595,7 @@ static gboolean mirage_parser_mds_parse_track_entries (MIRAGE_Parser_MDS *self, 
 
                     if (g_stat(mdf_filename, &st) < 0) {
                         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to stat data file!\n", __debug__);
-                        mirage_error(MIRAGE_E_IMAGEFILE, error);
+                        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_DATA_FILE_ERROR, "Failed to stat data file!");
                         g_free(mdf_filename);
                         g_object_unref(cur_track);
                         g_object_unref(cur_session);
@@ -765,37 +765,27 @@ static GObject *mirage_parser_mds_load_image (MIRAGE_Parser *_self, gchar **file
     guint8 *cur_ptr;
     GObject *stream;
     guint64 read_length;
-    gchar sig[16] = "";
-    guint8 ver[2];
+    gchar signature[17];
 
     /* Check if we can load the image */
-    stream = libmirage_create_file_stream(filenames[0], G_OBJECT(self), NULL);
+    stream = libmirage_create_file_stream(filenames[0], G_OBJECT(self), error);
     if (!stream) {
-        mirage_error(MIRAGE_E_IMAGEFILE, error);
         return FALSE;
     }
 
-    /* Read signature and version */
-    if ((g_input_stream_read(G_INPUT_STREAM(stream), sig, sizeof(sig), NULL, NULL) != sizeof(sig))
-        || (g_input_stream_read(G_INPUT_STREAM(stream), ver, sizeof(ver), NULL, NULL) != sizeof(ver))) {
+    /* Read signature and first byte of version */
+    if (g_input_stream_read(G_INPUT_STREAM(stream), signature, sizeof(signature), NULL, NULL) != sizeof(signature)) {
         g_object_unref(stream);
-        mirage_error(MIRAGE_E_READFAILED, error);
-        return FALSE;
-    }
-
-    if (memcmp(sig, "MEDIA DESCRIPTOR", 16)) {
-        g_object_unref(stream);
-        mirage_error(MIRAGE_E_CANTHANDLE, error);
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, "Failed to read signature and version!");
         return FALSE;
     }
 
     /* We can handle only v.1.X images (Alcohol 120% format) */
-    if (ver[0] != 1 ) {
+    if (memcmp(signature, "MEDIA DESCRIPTOR\x01", 17)) {
         g_object_unref(stream);
-        mirage_error(MIRAGE_E_CANTHANDLE, error);
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_CANNOT_HANDLE, "Parser cannot handle given image!");
         return FALSE;
     }
-
 
     /* Create disc */
     self->priv->disc = g_object_new(MIRAGE_TYPE_DISC, NULL);
@@ -821,7 +811,7 @@ static GObject *mirage_parser_mds_load_image (MIRAGE_Parser *_self, gchar **file
 
     if (read_length != self->priv->mds_length) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read whole MDS file '%s' (%lld out of %lld bytes read)!\n", __debug__, filenames[0], read_length, self->priv->mds_length);
-        mirage_error(MIRAGE_E_IMAGEFILE, error);
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, "Failed to read whole MDS file!");
         succeeded = FALSE;
         goto end;
     }
@@ -867,7 +857,7 @@ static GObject *mirage_parser_mds_load_image (MIRAGE_Parser *_self, gchar **file
         }
         default: {
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: medium of type 0x%X not supported yet!\n", __debug__, self->priv->header->medium_type);
-            mirage_error(MIRAGE_E_NOTIMPL, error);
+            g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_PARSER_ERROR, "Medium of type 0x%X not supported yet!", self->priv->header->medium_type);
             succeeded = FALSE;
             break;
         }

@@ -175,10 +175,9 @@ static gboolean mirage_parser_c2d_parse_compressed_track (MIRAGE_Parser_C2D *sel
     C2D_Z_Info_Header header;
     C2D_Z_Info zinfo;
 
-    stream = libmirage_create_file_stream(self->priv->c2d_filename, G_OBJECT(self), NULL);
+    stream = libmirage_create_file_stream(self->priv->c2d_filename, G_OBJECT(self), error);
     if (!stream) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to open stream on file!\n", __debug__);
-        mirage_error(MIRAGE_E_IMAGEFILE, error);
         return FALSE;
     }
     g_seekable_seek(G_SEEKABLE(stream), offset, G_SEEK_SET, NULL, NULL);
@@ -187,7 +186,7 @@ static gboolean mirage_parser_c2d_parse_compressed_track (MIRAGE_Parser_C2D *sel
     if (g_input_stream_read(G_INPUT_STREAM(stream), &header, sizeof(C2D_Z_Info_Header), NULL, NULL) != sizeof(C2D_Z_Info_Header)) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read Z info header!\n", __debug__);
         g_object_unref(stream);
-        mirage_error(MIRAGE_E_READFAILED, error);
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, "Failed to read Z info header!");
         return FALSE;
     }
     c2d_z_info_header_fix_endian(&header);
@@ -197,7 +196,7 @@ static gboolean mirage_parser_c2d_parse_compressed_track (MIRAGE_Parser_C2D *sel
         if (g_input_stream_read(G_INPUT_STREAM(stream), &zinfo, sizeof(C2D_Z_Info), NULL, NULL) != sizeof(C2D_Z_Info)) {
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read Z info!\n", __debug__);
             g_object_unref(stream);
-            mirage_error(MIRAGE_E_READFAILED, error);
+            g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, "Failed to read Z info!");
             return FALSE;
         }
         c2d_z_info_fix_endian(&zinfo);
@@ -209,7 +208,7 @@ static gboolean mirage_parser_c2d_parse_compressed_track (MIRAGE_Parser_C2D *sel
 
     /* Not supported yet */
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: compressed images not supported yet!\n", __debug__);
-    mirage_error(MIRAGE_E_NOTIMPL, error);
+    g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_PARSER_ERROR, "Compressed images are not supported yet!");
 
     return FALSE;
 }
@@ -314,7 +313,7 @@ static gboolean mirage_parser_c2d_parse_track_entries (MIRAGE_Parser_C2D *self, 
 
         /* Add new index? */
         if (cur_tb->index > last_index) {
-            if (!mirage_track_add_index(MIRAGE_TRACK(cur_point), cur_tb->first_sector - track_first_sector + track_start, NULL, NULL)) {
+            if (!mirage_track_add_index(MIRAGE_TRACK(cur_point), cur_tb->first_sector - track_first_sector + track_start, NULL, error)) {
                 MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to add index!\n", __debug__);
                 g_object_unref(cur_point);
                 g_object_unref(cur_session);
@@ -528,23 +527,22 @@ static GObject *mirage_parser_c2d_load_image (MIRAGE_Parser *_self, gchar **file
     gchar sig[32] = "";
 
     /* Open file */
-    stream = libmirage_create_file_stream(filenames[0], G_OBJECT(self), NULL);
+    stream = libmirage_create_file_stream(filenames[0], G_OBJECT(self), error);
     if (!stream) {
-        mirage_error(MIRAGE_E_IMAGEFILE, error);
         return FALSE;
     }
 
     /* Read signature */
     if (g_input_stream_read(G_INPUT_STREAM(stream), sig, sizeof(sig), NULL, NULL) != sizeof(sig)) {
         g_object_unref(stream);
-        mirage_error(MIRAGE_E_READFAILED, error);
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, "Failed to read signature!");
         return FALSE;
     }
 
     if (memcmp(sig, C2D_SIGNATURE_1, sizeof(C2D_SIGNATURE_1) - 1)
         && memcmp(sig, C2D_SIGNATURE_2, sizeof(C2D_SIGNATURE_2) - 1)) {
         g_object_unref(stream);
-        mirage_error(MIRAGE_E_CANTHANDLE, error);
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_CANNOT_HANDLE, "Parser cannot handle given image!");
         return FALSE;
     }
 
@@ -563,14 +561,14 @@ static GObject *mirage_parser_c2d_load_image (MIRAGE_Parser *_self, gchar **file
     self->priv->c2d_data = g_malloc(sizeof(C2D_HeaderBlock));
     if (!self->priv->c2d_data) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to allocate memory for header (%d)!\n", __debug__, sizeof(C2D_HeaderBlock));
-        mirage_error(MIRAGE_E_IMAGEFILE, error);
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_PARSER_ERROR, "Failed to allocate memory for header (%ld bytes)!", sizeof(C2D_HeaderBlock));
         succeeded = FALSE;
         goto end;
     }
 
     if (g_input_stream_read(G_INPUT_STREAM(stream), self->priv->c2d_data, sizeof(C2D_HeaderBlock), NULL, NULL) != sizeof(C2D_HeaderBlock)) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read header!\n", __debug__);
-        mirage_error(MIRAGE_E_READFAILED, error);
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, "Failed to read header!");
         succeeded = FALSE;
         goto end;
     }
@@ -585,7 +583,7 @@ static GObject *mirage_parser_c2d_load_image (MIRAGE_Parser *_self, gchar **file
     self->priv->c2d_data = g_malloc(self->priv->c2d_data_length);
     if (!self->priv->c2d_data) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to allocate memory for descriptor (%d)!\n", __debug__, self->priv->c2d_data_length);
-        mirage_error(MIRAGE_E_IMAGEFILE, error);
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_PARSER_ERROR, "Failed to allocate memory for descriptor (%d)!", self->priv->c2d_data_length);
         succeeded = FALSE;
         goto end;
     }
@@ -593,7 +591,7 @@ static GObject *mirage_parser_c2d_load_image (MIRAGE_Parser *_self, gchar **file
     g_seekable_seek(G_SEEKABLE(stream), 0, G_SEEK_SET, NULL, NULL);
     if (g_input_stream_read(G_INPUT_STREAM(stream), self->priv->c2d_data, self->priv->c2d_data_length, NULL, NULL) != self->priv->c2d_data_length) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read descriptor!\n", __debug__);
-        mirage_error(MIRAGE_E_READFAILED, error);
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, "Failed to read descriptor!");
         succeeded = FALSE;
         goto end;
     }

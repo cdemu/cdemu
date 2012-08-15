@@ -486,7 +486,7 @@ GObject *mirage_track_get_sector (MIRAGE_Track *self, gint address, gboolean abs
             return NULL;
         }
     } else {
-        mirage_error(MIRAGE_E_SECTOROUTOFRANGE, error);
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_TRACK_ERROR, "Sector address out of range!");
         return NULL;
     }
 
@@ -930,7 +930,7 @@ gboolean mirage_track_get_fragment_by_index (MIRAGE_Track *self, gint index, GOb
     /* First fragment, last fragment... allow negative indexes to go from behind */
     num_fragments = mirage_track_get_number_of_fragments(self);
     if (index < -num_fragments || index >= num_fragments) {
-        mirage_error(MIRAGE_E_INDEXOUTOFRANGE, error);
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_TRACK_ERROR, "Fragment index %d out of range!", index);
         return FALSE;
     } else if (index < 0) {
         index += num_fragments;
@@ -948,7 +948,7 @@ gboolean mirage_track_get_fragment_by_index (MIRAGE_Track *self, gint index, GOb
         return TRUE;
     }
 
-    mirage_error(MIRAGE_E_FRAGMENTNOTFOUND, error);
+    g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_TRACK_ERROR, "Fragment with index %d not found!", index);
     return FALSE;
 }
 
@@ -998,7 +998,7 @@ gboolean mirage_track_get_fragment_by_address (MIRAGE_Track *self, gint address,
 
     /* If we didn't find anything... */
     if (!ret_fragment) {
-        mirage_error(MIRAGE_E_FRAGMENTNOTFOUND, error);
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_TRACK_ERROR, "Fragment with address %d not found!", address);
         return FALSE;
     }
 
@@ -1023,20 +1023,18 @@ gboolean mirage_track_get_fragment_by_address (MIRAGE_Track *self, gint address,
  * </para>
  *
  * <para>
- * If @func returns %FALSE, the function immediately returns %FALSE and @error
- * is set to %MIRAGE_E_ITERCANCELLED.
+ * If @func returns %FALSE, the function immediately returns %FALSE.
  * </para>
  *
  * Returns: %TRUE on success, %FALSE on failure
  **/
-gboolean mirage_track_for_each_fragment (MIRAGE_Track *self, MIRAGE_CallbackFunction func, gpointer user_data, GError **error)
+gboolean mirage_track_for_each_fragment (MIRAGE_Track *self, MIRAGE_CallbackFunction func, gpointer user_data)
 {
     GList *entry;
 
     G_LIST_FOR_EACH(entry, self->priv->fragments_list) {
         gboolean succeeded = (*func) ((entry->data), user_data);
         if (!succeeded) {
-            mirage_error(MIRAGE_E_ITERCANCELLED, error);
             return FALSE;
         }
     }
@@ -1084,7 +1082,7 @@ gboolean mirage_track_find_fragment_with_subchannel (MIRAGE_Track *self, GObject
 
     /* If we didn't find anything... */
     if (!ret_fragment) {
-        mirage_error(MIRAGE_E_FRAGMENTNOTFOUND, error);
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_TRACK_ERROR, "No fragment with subchannel found!");
         return FALSE;
     }
 
@@ -1190,18 +1188,13 @@ gboolean mirage_track_add_index (MIRAGE_Track *self, gint address, GObject **ind
 
     /* Make sure we're not trying to put index before track start (which has index 1) */
     if (address < self->priv->track_start) {
-        mirage_error(MIRAGE_E_INVALIDARG, error);
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_TRACK_ERROR, "Invalid index start address (%d); before track start!", address);
         return FALSE;
     }
 
     /* If there's index provided, use it; else create new one */
     if (index && *index) {
         new_index = *index;
-        /* If index is not MIRAGE_Index... */
-        if (!MIRAGE_IS_INDEX(new_index)) {
-            mirage_error(MIRAGE_E_INVALIDOBJTYPE, error);
-            return FALSE;
-        }
         g_object_ref(new_index);
     } else {
         new_index = g_object_new(MIRAGE_TYPE_INDEX, NULL);
@@ -1310,7 +1303,7 @@ gboolean mirage_track_get_index_by_number (MIRAGE_Track *self, gint number, GObj
     /* First index, last index... allow negative numbers to go from behind */
     num_indices = mirage_track_get_number_of_indices(self);
     if (number < -num_indices || number >= num_indices) {
-        mirage_error(MIRAGE_E_INDEXOUTOFRANGE, error);
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_TRACK_ERROR, "Index number %d out of range!", number);
         return FALSE;
     } else if (number < 0) {
         number += num_indices;
@@ -1328,7 +1321,7 @@ gboolean mirage_track_get_index_by_number (MIRAGE_Track *self, gint number, GObj
         return TRUE;
     }
 
-    mirage_error(MIRAGE_E_INDEXNOTFOUND, error);
+    g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_TRACK_ERROR, "Index with number %d not found!", number);
     return FALSE;
 }
 
@@ -1372,7 +1365,7 @@ gboolean mirage_track_get_index_by_address (MIRAGE_Track *self, gint address, GO
 
     /* If we didn't find anything... */
     if (!ret_index) {
-        mirage_error(MIRAGE_E_INDEXNOTFOUND, error);
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_TRACK_ERROR, "Index with address %d not found!", address);
         return FALSE;
     }
 
@@ -1397,20 +1390,18 @@ gboolean mirage_track_get_index_by_address (MIRAGE_Track *self, gint address, GO
  * </para>
  *
  * <para>
- * If @func returns %FALSE, the function immediately returns %FALSE and @error
- * is set to %MIRAGE_E_ITERCANCELLED.
+ * If @func returns %FALSE, the function immediately returns %FALSE.
  * </para>
  *
  * Returns: %TRUE on success, %FALSE on failure
  **/
-gboolean mirage_track_for_each_index (MIRAGE_Track *self, MIRAGE_CallbackFunction func, gpointer user_data, GError **error)
+gboolean mirage_track_for_each_index (MIRAGE_Track *self, MIRAGE_CallbackFunction func, gpointer user_data)
 {
     GList *entry;
 
     G_LIST_FOR_EACH(entry, self->priv->indices_list) {
         gboolean succeeded = (*func) (MIRAGE_INDEX(entry->data), user_data);
         if (!succeeded) {
-            mirage_error(MIRAGE_E_ITERCANCELLED, error);
             return FALSE;
         }
     }
@@ -1468,18 +1459,13 @@ gboolean mirage_track_add_language (MIRAGE_Track *self, gint langcode, GObject *
 
     /* Check if language already exists */
     if (mirage_track_get_language_by_code(self, langcode, NULL, NULL)) {
-        mirage_error(MIRAGE_E_LANGEXISTS, error);
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_TRACK_ERROR, "Language with language code %d already exists!", langcode);
         return FALSE;
     }
 
     /* If there's language provided, use it; else create new one */
     if (language && *language) {
         new_language = *language;
-        /* If language is not MIRAGE_Language... */
-        if (!MIRAGE_IS_LANGUAGE(new_language)) {
-            mirage_error(MIRAGE_E_INVALIDARG, error);
-            return FALSE;
-        }
         g_object_ref(new_language);
     } else {
         new_language = g_object_new(MIRAGE_TYPE_LANGUAGE, NULL);
@@ -1617,7 +1603,7 @@ gboolean mirage_track_get_language_by_index (MIRAGE_Track *self, gint index, GOb
     /* First language, last language... allow negative indexes to go from behind */
     num_languages = mirage_track_get_number_of_languages(self);
     if (index < -num_languages || index >= num_languages) {
-        mirage_error(MIRAGE_E_INDEXOUTOFRANGE, error);
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_TRACK_ERROR, "Language index %d out of range!", index);
         return FALSE;
     } else if (index < 0) {
         index += num_languages;
@@ -1635,7 +1621,7 @@ gboolean mirage_track_get_language_by_index (MIRAGE_Track *self, gint index, GOb
         return TRUE;
     }
 
-    mirage_error(MIRAGE_E_LANGNOTFOUND, error);
+    g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_TRACK_ERROR, "Language with index %d not found!", index);
     return FALSE;
 }
 
@@ -1677,7 +1663,7 @@ gboolean mirage_track_get_language_by_code (MIRAGE_Track *self, gint langcode, G
 
     /* If we didn't find anything... */
     if (!ret_language) {
-        mirage_error(MIRAGE_E_LANGNOTFOUND, error);
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_TRACK_ERROR, "Language with language code %d not found!", langcode);
         return FALSE;
     }
 
@@ -1702,20 +1688,18 @@ gboolean mirage_track_get_language_by_code (MIRAGE_Track *self, gint langcode, G
  * </para>
  *
  * <para>
- * If @func returns %FALSE, the function immediately returns %FALSE and @error
- * is set to %MIRAGE_E_ITERCANCELLED.
+ * If @func returns %FALSE, the function immediately returns %FALSE.
  * </para>
  *
  * Returns: %TRUE on success, %FALSE on failure
  **/
-gboolean mirage_track_for_each_language (MIRAGE_Track *self, MIRAGE_CallbackFunction func, gpointer user_data, GError **error)
+gboolean mirage_track_for_each_language (MIRAGE_Track *self, MIRAGE_CallbackFunction func, gpointer user_data)
 {
     GList *entry;
 
     G_LIST_FOR_EACH(entry, self->priv->languages_list) {
         gboolean succeeded = (*func) (MIRAGE_LANGUAGE(entry->data), user_data);
         if (!succeeded) {
-            mirage_error(MIRAGE_E_ITERCANCELLED, error);
             return FALSE;
         }
     }
@@ -1746,7 +1730,7 @@ gboolean mirage_track_get_prev (MIRAGE_Track *self, GObject **prev_track, GError
     /* Get parent session */
     session = mirage_object_get_parent(MIRAGE_OBJECT(self));
     if (!session) {
-        mirage_error(MIRAGE_E_NOPARENT, error);
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_TRACK_ERROR, "Track is not in session layout!");
         return FALSE;
     }
 
@@ -1778,7 +1762,7 @@ gboolean mirage_track_get_next (MIRAGE_Track *self, GObject **next_track, GError
     /* Get parent session */
     session = mirage_object_get_parent(MIRAGE_OBJECT(self));
     if (!session) {
-        mirage_error(MIRAGE_E_NOPARENT, error);
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_TRACK_ERROR, "Track is not in session layout!");
         return FALSE;
     }
 

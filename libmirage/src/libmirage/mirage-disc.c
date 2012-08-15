@@ -636,7 +636,6 @@ gboolean mirage_disc_get_number_of_sessions (MIRAGE_Disc *self)
  * @self: a #MIRAGE_Disc
  * @index: (in): index at which session should be added
  * @session: (inout) (transfer full) (allow-none): pointer to #MIRAGE_Session, %NULL pointer or %NULL
- * @error: (out) (allow-none): location to store error, or %NULL
  *
  * <para>
  * Adds session to disc layout.
@@ -660,10 +659,8 @@ gboolean mirage_disc_get_number_of_sessions (MIRAGE_Disc *self)
  * <note>
  * Causes bottom-up change.
  * </note>
- *
- * Returns: %TRUE on success, %FALSE on failure
  **/
-gboolean mirage_disc_add_session_by_index (MIRAGE_Disc *self, gint index, GObject **session, GError **error)
+void mirage_disc_add_session_by_index (MIRAGE_Disc *self, gint index, GObject **session)
 {
     GObject *new_session;
     gint num_sessions;
@@ -685,11 +682,6 @@ gboolean mirage_disc_add_session_by_index (MIRAGE_Disc *self, gint index, GObjec
     /* If there's session provided, use it; else create new session */
     if (session && *session) {
         new_session = *session;
-        /* If session is not MIRAGE_Session... */
-        if (!MIRAGE_IS_SESSION(new_session)) {
-            mirage_error(MIRAGE_E_INVALIDOBJTYPE, error);
-            return FALSE;
-        }
         g_object_ref(new_session);
     } else {
         new_session = g_object_new(MIRAGE_TYPE_SESSION, NULL);
@@ -715,8 +707,6 @@ gboolean mirage_disc_add_session_by_index (MIRAGE_Disc *self, gint index, GObjec
         g_object_ref(new_session);
         *session = new_session;
     }
-
-    return TRUE;
 }
 
 /**
@@ -756,18 +746,13 @@ gboolean mirage_disc_add_session_by_number (MIRAGE_Disc *self, gint number, GObj
 
     /* Check if session with that number already exists */
     if (mirage_disc_get_session_by_number(self, number, NULL, NULL)) {
-        mirage_error(MIRAGE_E_SESSIONEXISTS, error);
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_DISC_ERROR, "Session with number %d already exists!", number);
         return FALSE;
     }
 
     /* If there's session provided, use it; else create new one */
     if (session && *session) {
         new_session = *session;
-        /* If session is not MIRAGE_Session... */
-        if (!MIRAGE_IS_SESSION(new_session)) {
-            mirage_error(MIRAGE_E_INVALIDOBJTYPE, error);
-            return FALSE;
-        }
         g_object_ref(new_session);
     } else {
         new_session = g_object_new(MIRAGE_TYPE_SESSION, NULL);
@@ -924,7 +909,7 @@ gboolean mirage_disc_get_session_by_index (MIRAGE_Disc *self, gint index, GObjec
     /* First session, last session... allow negative indexes to go from behind */
     num_sessions = mirage_disc_get_number_of_sessions(self);
     if (index < -num_sessions || index >= num_sessions) {
-        mirage_error(MIRAGE_E_INDEXOUTOFRANGE, error);
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_DISC_ERROR, "Session index %d out of range!", index);
         return FALSE;
     } else if (index < 0) {
         index += num_sessions;
@@ -942,7 +927,7 @@ gboolean mirage_disc_get_session_by_index (MIRAGE_Disc *self, gint index, GObjec
         return TRUE;
     }
 
-    mirage_error(MIRAGE_E_SESSIONNOTFOUND, error);
+    g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_DISC_ERROR, "Session with index %d not found!", index);
     return FALSE;
 }
 
@@ -984,7 +969,7 @@ gboolean mirage_disc_get_session_by_number (MIRAGE_Disc *self, gint session_numb
 
     /* If we didn't find anything... */
     if (!ret_session) {
-        mirage_error(MIRAGE_E_SESSIONNOTFOUND, error);
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_DISC_ERROR, "Session with number %d not found!", session_number);
         return FALSE;
     }
 
@@ -1023,7 +1008,7 @@ gboolean mirage_disc_get_session_by_address (MIRAGE_Disc *self, gint address, GO
     GList *entry;
 
     if ((address < self->priv->start_sector) || (address >= self->priv->start_sector + self->priv->length)) {
-        mirage_error(MIRAGE_E_SECTOROUTOFRANGE, error);
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_DISC_ERROR, "Session address %d (0x%X) out of range!", address, address);
         return FALSE;
     }
 
@@ -1048,7 +1033,7 @@ gboolean mirage_disc_get_session_by_address (MIRAGE_Disc *self, gint address, GO
 
     /* If we didn't find anything... */
     if (!ret_session) {
-        mirage_error(MIRAGE_E_SESSIONNOTFOUND, error);
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_DISC_ERROR, "Session containing address %d not found!", address);
         return FALSE;
     }
 
@@ -1106,7 +1091,7 @@ gboolean mirage_disc_get_session_by_track (MIRAGE_Disc *self, gint track_number,
 
     /* If we didn't find anything... */
     if (!ret_session) {
-        mirage_error(MIRAGE_E_SESSIONNOTFOUND, error);
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_DISC_ERROR, "Session with track %d not found!", track_number);
         return FALSE;
     }
 
@@ -1131,20 +1116,18 @@ gboolean mirage_disc_get_session_by_track (MIRAGE_Disc *self, gint track_number,
  * </para>
  *
  * <para>
- * If @func returns %FALSE, the function immediately returns %FALSE and @error
- * is set to %MIRAGE_E_ITERCANCELLED.
+ * If @func returns %FALSE, the function immediately returns %FALSE.
  * </para>
  *
  * Returns: %TRUE on success, %FALSE on failure
  **/
-gboolean mirage_disc_for_each_session (MIRAGE_Disc *self, MIRAGE_CallbackFunction func, gpointer user_data, GError **error)
+gboolean mirage_disc_for_each_session (MIRAGE_Disc *self, MIRAGE_CallbackFunction func, gpointer user_data)
 {
     GList *entry;
 
     G_LIST_FOR_EACH(entry, self->priv->sessions_list) {
         gboolean succeeded = (*func) (MIRAGE_SESSION(entry->data), user_data);
         if (!succeeded) {
-            mirage_error(MIRAGE_E_ITERCANCELLED, error);
             return FALSE;
         }
     }
@@ -1177,7 +1160,7 @@ gboolean mirage_disc_get_session_before (MIRAGE_Disc *self, GObject *cur_session
     /* Get index of given session in the list */
     index = g_list_index(self->priv->sessions_list, cur_session);
     if (index == -1) {
-        mirage_error(MIRAGE_E_NOTINLAYOUT, error);
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_DISC_ERROR, "Session %p is not in disc layout!", cur_session);
         return FALSE;
     }
 
@@ -1186,7 +1169,7 @@ gboolean mirage_disc_get_session_before (MIRAGE_Disc *self, GObject *cur_session
         return mirage_disc_get_session_by_index(self, index - 1, prev_session, error);
     }
 
-    mirage_error(MIRAGE_E_SESSIONNOTFOUND, error);
+    g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_DISC_ERROR, "Session before session %p not found!", cur_session);
     return FALSE;
 }
 
@@ -1215,7 +1198,7 @@ gboolean mirage_disc_get_session_after (MIRAGE_Disc *self, GObject *cur_session,
     /* Get index of given session in the list */
     index = g_list_index(self->priv->sessions_list, cur_session);
     if (index == -1) {
-        mirage_error(MIRAGE_E_NOTINLAYOUT, error);
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_DISC_ERROR, "Session %p is not in disc layout!", cur_session);
         return FALSE;
     }
 
@@ -1225,7 +1208,7 @@ gboolean mirage_disc_get_session_after (MIRAGE_Disc *self, GObject *cur_session,
         return mirage_disc_get_session_by_index(self, index + 1, next_session, error);
     }
 
-    mirage_error(MIRAGE_E_SESSIONNOTFOUND, error);
+    g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_DISC_ERROR, "Session after session %p not found!", cur_session);
     return FALSE;
 }
 
@@ -1290,7 +1273,7 @@ gboolean mirage_disc_add_track_by_index (MIRAGE_Disc *self, gint index, GObject 
     /* If disc layout is empty (if there are no sessions), we should create
        a session... and then track will be added to this one */
     if (!mirage_disc_get_number_of_sessions(self)) {
-        mirage_disc_add_session_by_index(self, 0, NULL, NULL);
+        mirage_disc_add_session_by_index(self, 0, NULL);
     }
 
     /* First track, last track... allow negative indexes to go from behind */
@@ -1317,13 +1300,14 @@ gboolean mirage_disc_add_track_by_index (MIRAGE_Disc *self, gint index, GObject 
 
         if (index >= count && index <= count + num_tracks) {
             /* We got the session */
-            return mirage_session_add_track_by_index(MIRAGE_SESSION(cur_session), index - count, track, error);
+            mirage_session_add_track_by_index(MIRAGE_SESSION(cur_session), index - count, track);
+            return TRUE;
         }
 
         count += num_tracks;
     }
 
-    mirage_error(MIRAGE_E_SESSIONNOTFOUND, error);
+    g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_DISC_ERROR, "Session not found!");
     return FALSE;
 }
 
@@ -1379,7 +1363,8 @@ gboolean mirage_disc_add_track_by_number (MIRAGE_Disc *self, gint number, GObjec
     if (!mirage_disc_get_number_of_sessions(self)) {
         /* If disc layout is empty (if there are no sessions), we should create
            a session... and then track will be added to this one */
-        succeeded = mirage_disc_add_session_by_index(self, 0, &session, error);
+        mirage_disc_add_session_by_index(self, 0, &session);
+        succeeded = TRUE;
     } else if (number > last_number) {
         /* If track number surpasses the number of last track on disc, then it
            means we need to add the track into last session */
@@ -1394,6 +1379,7 @@ gboolean mirage_disc_add_track_by_number (MIRAGE_Disc *self, gint number, GObjec
 
     /* If session was found, try to add track */
     succeeded = mirage_session_add_track_by_number(MIRAGE_SESSION(session), number, track, error);
+
     g_object_unref(session);
 
     return succeeded;
@@ -1434,7 +1420,7 @@ gboolean mirage_disc_remove_track_by_index (MIRAGE_Disc *self, gint index, GErro
     session = mirage_object_get_parent(MIRAGE_OBJECT(track));
     if (!session) {
         g_object_unref(track);
-        mirage_error(MIRAGE_E_NOPARENT, error);
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_DISC_ERROR, "Track has no parent!");
         return FALSE;
     }
     /* Remove track from parent */
@@ -1475,7 +1461,7 @@ gboolean mirage_disc_remove_track_by_number (MIRAGE_Disc *self, gint number, GEr
 
     /* Protect against removing lead-in and lead-out */
     if (number == MIRAGE_TRACK_LEADIN || number == MIRAGE_TRACK_LEADOUT) {
-        mirage_error(MIRAGE_E_INVALIDARG, error);
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_DISC_ERROR, "Invalid track number %d!", number);
         return FALSE;
     }
 
@@ -1487,7 +1473,7 @@ gboolean mirage_disc_remove_track_by_number (MIRAGE_Disc *self, gint number, GEr
     session = mirage_object_get_parent(MIRAGE_OBJECT(track));
     if (!session) {
         g_object_unref(track);
-        mirage_error(MIRAGE_E_NOPARENT, error);
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_DISC_ERROR, "Track has no parent!");
         return FALSE;
     }
     /* Remove track from parent */
@@ -1530,7 +1516,7 @@ gboolean mirage_disc_get_track_by_index (MIRAGE_Disc *self, gint index, GObject 
     /* First track, last track... allow negative indexes to go from behind */
     num_tracks = mirage_disc_get_number_of_tracks(self);
     if (index < -num_tracks || index >= num_tracks) {
-        mirage_error(MIRAGE_E_INDEXOUTOFRANGE, error);
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_DISC_ERROR, "Track index %d out of range!", index);
         return FALSE;
     } else if (index < 0) {
         index += num_tracks;
@@ -1551,7 +1537,7 @@ gboolean mirage_disc_get_track_by_index (MIRAGE_Disc *self, gint index, GObject 
         count += num_tracks;
     }
 
-    mirage_error(MIRAGE_E_TRACKNOTFOUND, error);
+    g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_DISC_ERROR, "Track with index %d not found!", index);
     return FALSE;
 }
 
@@ -1694,7 +1680,7 @@ void mirage_disc_set_disc_structure (MIRAGE_Disc *self, gint layer, gint type, c
  * <note>
  * Disc structures are valid only for DVD and BD discs; therefore, if disc type
  * is not set to %MIRAGE_MEDIUM_DVD or %MIRAGE_MEDIUM_BD prior to calling this
- * function, the function will fail and error will be set to %MIRAGE_E_INVALIDMEDIUM.
+ * function, the function will fail.
  * </note>
  *
  * Returns: %TRUE on success, %FALSE on failure
@@ -1707,7 +1693,7 @@ gboolean mirage_disc_get_disc_structure (MIRAGE_Disc *self, gint layer, gint typ
     gint tmp_len;
 
     if (self->priv->medium_type != MIRAGE_MEDIUM_DVD && self->priv->medium_type != MIRAGE_MEDIUM_BD) {
-        mirage_error(MIRAGE_E_INVALIDMEDIUM, error);
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_DISC_ERROR, "Invalid medium type!");
         return FALSE;
     }
 
@@ -1716,7 +1702,7 @@ gboolean mirage_disc_get_disc_structure (MIRAGE_Disc *self, gint layer, gint typ
     if (!array) {
         /* Structure needs to be fabricated (if appropriate) */
         if (!mirage_disc_generate_disc_structure(self, layer, type, &tmp_data, &tmp_len)) {
-            mirage_error(MIRAGE_E_DATANOTSET, error);
+            g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_DISC_ERROR, "Failed to generate fake disc structure data!");
             return FALSE;
         }
     } else {
@@ -1900,7 +1886,7 @@ gboolean mirage_disc_get_dpm_data_for_sector (MIRAGE_Disc *self, gint address, g
     gdouble tmp_angle, tmp_density;
 
     if (!self->priv->dpm_num_entries) {
-        mirage_error(MIRAGE_E_DATANOTSET, error);
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_DISC_ERROR, "DPM data not available!");
         return FALSE;
     }
 
@@ -1910,7 +1896,7 @@ gboolean mirage_disc_get_dpm_data_for_sector (MIRAGE_Disc *self, gint address, g
     /* Check if relative address is out of range (account for possibility of
        sectors lying behind last DPM entry) */
     if (rel_address < 0 || rel_address >= (self->priv->dpm_num_entries+1)*self->priv->dpm_resolution) {
-        mirage_error(MIRAGE_E_INVALIDARG, error);
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_DISC_ERROR, "Sector addreess %d out of range!", address);
         return FALSE;
     }
 

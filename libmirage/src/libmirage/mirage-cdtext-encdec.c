@@ -420,7 +420,7 @@ gboolean mirage_cdtext_encoder_set_block_info (MIRAGE_CDTextEncDec *self, gint b
     /* Verify that block is valid */
     if (block > self->priv->num_blocks) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_CDTEXT, "%s: invalid block (%i)!\n", __debug__, block);
-        mirage_error(MIRAGE_E_INVALIDARG, error);
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_LANGUAGE_ERROR, "Invalid block number #%i!", block);
         return FALSE;
     }
 
@@ -716,12 +716,12 @@ gboolean mirage_cdtext_decoder_get_block_info (MIRAGE_CDTextEncDec *self, gint b
 {
     /* Verify that block is valid */
     if (block > self->priv->num_blocks) {
-        mirage_error(MIRAGE_E_INVALIDARG, error);
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_LANGUAGE_ERROR, "Block number %d exceeds number of blocks %d!", block, self->priv->num_blocks);
         return FALSE;
     }
     if (!self->priv->blocks[block].langcode) {
         /* FIXME: error */
-        mirage_error(MIRAGE_E_GENERIC, error);
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_LANGUAGE_ERROR, "Requested block %d has no language code set!", block);
         return FALSE;
     }
 
@@ -744,7 +744,6 @@ gboolean mirage_cdtext_decoder_get_block_info (MIRAGE_CDTextEncDec *self, gint b
  * @block: (in): block number
  * @callback_func: (in) (closure closure): callback function
  * @user_data: (in) (closure): data to be passed to callback function
- * @error: (out) (allow-none); location to store error, or %NULL
  *
  * <para>
  * Retrieves data for CD-TEXT block specified by @block. @block must be a valid
@@ -753,13 +752,12 @@ gboolean mirage_cdtext_decoder_get_block_info (MIRAGE_CDTextEncDec *self, gint b
  * </para>
  *
  * <para>
- * If @callback_func returns %FALSE, the function immediately returns %FALSE and
- * @error is set to %MIRAGE_E_ITERCANCELLED.
+ * If @callback_func returns %FALSE, the function immediately returns %FALSE.
  * </para>
  *
  * Returns: %TRUE on success, %FALSE on failure
  **/
-gboolean mirage_cdtext_decoder_get_data (MIRAGE_CDTextEncDec *self, gint block, MIRAGE_CDTextDataCallback callback_func, gpointer user_data, GError **error)
+gboolean mirage_cdtext_decoder_get_data (MIRAGE_CDTextEncDec *self, gint block, MIRAGE_CDTextDataCallback callback_func, gpointer user_data)
 {
     GList *entry;
 
@@ -776,7 +774,6 @@ gboolean mirage_cdtext_decoder_get_data (MIRAGE_CDTextEncDec *self, gint block, 
         gint langcode = mirage_cdtext_encdec_block2lang(self, block_number);
 
         if (!callback_func(langcode, pack_type, track_number, data, len, user_data)) {
-            mirage_error(MIRAGE_E_ITERCANCELLED, error);
             return FALSE;
         }
     }

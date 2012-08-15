@@ -451,7 +451,6 @@ gint mirage_session_get_number_of_tracks (MIRAGE_Session *self)
  * @self: a #MIRAGE_Session
  * @index: (in): index at which track should be added
  * @track: (inout) (transfer full) (allow-none): pointer to #MIRAGE_Track, %NULL pointer or %NULL
- * @error: (out) (allow-none): location to store error, or %NULL
  *
  * <para>
  * Adds track to session layout.
@@ -475,10 +474,8 @@ gint mirage_session_get_number_of_tracks (MIRAGE_Session *self)
  * <note>
  * Causes bottom-up change.
  * </note>
- *
- * Returns: %TRUE on success, %FALSE on failure
  **/
-gboolean mirage_session_add_track_by_index (MIRAGE_Session *self, gint index, GObject **track, GError **error)
+void mirage_session_add_track_by_index (MIRAGE_Session *self, gint index, GObject **track)
 {
     GObject *new_track;
     gint num_tracks;
@@ -500,11 +497,6 @@ gboolean mirage_session_add_track_by_index (MIRAGE_Session *self, gint index, GO
     /* If there's track provided, use it; else create new track */
     if (track && *track) {
         new_track = *track;
-        /* If track is not MIRAGE_Track... */
-        if (!MIRAGE_IS_TRACK(new_track)) {
-            mirage_error(MIRAGE_E_INVALIDOBJTYPE, error);
-            return FALSE;
-        }
         g_object_ref(new_track);
     } else {
         new_track = g_object_new(MIRAGE_TYPE_TRACK, NULL);
@@ -531,8 +523,6 @@ gboolean mirage_session_add_track_by_index (MIRAGE_Session *self, gint index, GO
         g_object_ref(new_track);
         *track = new_track;
     }
-
-    return TRUE;
 }
 
 /**
@@ -572,18 +562,13 @@ gboolean mirage_session_add_track_by_number (MIRAGE_Session *self, gint number, 
 
     /* Check if track with that number already exists */
     if (mirage_session_get_track_by_number(self, number, NULL, NULL)) {
-        mirage_error(MIRAGE_E_TRACKEXISTS, error);
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_SESSION_ERROR, "Track with number %d already exists!", number);
         return FALSE;
     }
 
     /* If there's track provided, use it; else create new one */
     if (track && *track) {
         new_track = *track;
-        /* If track is not MIRAGE_Track... */
-        if (!MIRAGE_IS_TRACK(new_track)) {
-            mirage_error(MIRAGE_E_INVALIDOBJTYPE, error);
-            return FALSE;
-        }
         g_object_ref(new_track);
     } else {
         new_track = g_object_new(MIRAGE_TYPE_TRACK, NULL);
@@ -678,7 +663,7 @@ gboolean mirage_session_remove_track_by_number (MIRAGE_Session *self, gint numbe
 
     /* You can't delete lead-in/lead-out */
     if (number == MIRAGE_TRACK_LEADIN || number == MIRAGE_TRACK_LEADOUT) {
-        mirage_error(MIRAGE_E_INVALIDARG, error);
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_SESSION_ERROR, "Invalid track number %d!", number);
         return FALSE;
     }
 
@@ -745,7 +730,7 @@ gboolean mirage_session_get_track_by_index (MIRAGE_Session *self, gint index, GO
     /* First track, last track... allow negative indexes to go from behind */
     num_tracks = mirage_session_get_number_of_tracks(self);
     if (index < -num_tracks || index >= num_tracks) {
-        mirage_error(MIRAGE_E_INDEXOUTOFRANGE, error);
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_SESSION_ERROR, "Track index %d out of range!", index);
         return FALSE;
     } else if (index < 0) {
         index += num_tracks;
@@ -765,7 +750,7 @@ gboolean mirage_session_get_track_by_index (MIRAGE_Session *self, gint index, GO
         return TRUE;
     }
 
-    mirage_error(MIRAGE_E_TRACKNOTFOUND, error);
+    g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_SESSION_ERROR, "Track with index %d not found!", index);
     return FALSE;
 }
 
@@ -807,7 +792,7 @@ gboolean mirage_session_get_track_by_number (MIRAGE_Session *self, gint track_nu
 
     /* If we didn't find anything... */
     if (!ret_track) {
-        mirage_error(MIRAGE_E_TRACKNOTFOUND, error);
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_SESSION_ERROR, "Track with number %d not found!", track_number);
         return FALSE;
     }
 
@@ -847,7 +832,7 @@ gboolean mirage_session_get_track_by_address (MIRAGE_Session *self, gint address
     GList *entry;
 
     if ((address < self->priv->start_sector) || (address >= (self->priv->start_sector + self->priv->length))) {
-        mirage_error(MIRAGE_E_SECTOROUTOFRANGE, error);
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_SESSION_ERROR, "Track address %d out of range!", address);
         return FALSE;
     }
 
@@ -872,7 +857,7 @@ gboolean mirage_session_get_track_by_address (MIRAGE_Session *self, gint address
 
     /* If we didn't find anything... */
     if (!ret_track) {
-        mirage_error(MIRAGE_E_TRACKNOTFOUND, error);
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_SESSION_ERROR, "Track containing address %d not found!", address);
         return FALSE;
     }
 
@@ -897,20 +882,18 @@ gboolean mirage_session_get_track_by_address (MIRAGE_Session *self, gint address
  * </para>
  *
  * <para>
- * If @func returns %FALSE, the function immediately returns %FALSE and @error
- * is set to %MIRAGE_E_ITERCANCELLED.
+ * If @func returns %FALSE, the function immediately returns %FALSE.
  * </para>
  *
  * Returns: %TRUE on success, %FALSE on failure
  **/
-gboolean mirage_session_for_each_track (MIRAGE_Session *self, MIRAGE_CallbackFunction func, gpointer user_data, GError **error)
+gboolean mirage_session_for_each_track (MIRAGE_Session *self, MIRAGE_CallbackFunction func, gpointer user_data)
 {
     GList *entry;
 
     G_LIST_FOR_EACH(entry, self->priv->tracks_list) {
         gboolean succeeded = (*func) (MIRAGE_TRACK(entry->data), user_data);
         if (!succeeded) {
-            mirage_error(MIRAGE_E_ITERCANCELLED, error);
             return FALSE;
         }
     }
@@ -943,7 +926,7 @@ gboolean mirage_session_get_track_before (MIRAGE_Session *self, GObject *cur_tra
     /* Get index of given track in the list */
     index = g_list_index(self->priv->tracks_list, cur_track);
     if (index == -1) {
-        mirage_error(MIRAGE_E_NOTINLAYOUT, error);
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_SESSION_ERROR, "Track %p is not in session layout!", cur_track);
         return FALSE;
     }
     index -= 1; /* Because lead-in has index 0... */
@@ -953,7 +936,7 @@ gboolean mirage_session_get_track_before (MIRAGE_Session *self, GObject *cur_tra
         return mirage_session_get_track_by_index(self, index - 1, prev_track, error);
     }
 
-    mirage_error(MIRAGE_E_TRACKNOTFOUND, error);
+    g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_DISC_ERROR, "Track before track %p not found!", cur_track);
     return FALSE;
 }
 
@@ -983,7 +966,7 @@ gboolean mirage_session_get_track_after (MIRAGE_Session *self, GObject *cur_trac
     /* Get index of given track in the list */
     index = g_list_index(self->priv->tracks_list, cur_track);
     if (index == -1) {
-        mirage_error(MIRAGE_E_NOTINLAYOUT, error);
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_SESSION_ERROR, "Track %p is not in session layout!", cur_track);
         return FALSE;
     }
     index -= 1; /* Because lead-in has index 0... */
@@ -994,7 +977,7 @@ gboolean mirage_session_get_track_after (MIRAGE_Session *self, GObject *cur_trac
         return mirage_session_get_track_by_index(self, index + 1, next_track, error);
     }
 
-    mirage_error(MIRAGE_E_TRACKNOTFOUND, error);
+    g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_DISC_ERROR, "Track after track %p not found!", cur_track);
     return FALSE;
 }
 
@@ -1047,18 +1030,13 @@ gboolean mirage_session_add_language (MIRAGE_Session *self, gint langcode, GObje
 
     /* Check if language already exists */
     if (mirage_session_get_language_by_code(self, langcode, NULL, NULL)) {
-        mirage_error(MIRAGE_E_LANGEXISTS, error);
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_SESSION_ERROR, "Language with language code %d already exists!", langcode);
         return FALSE;
     }
 
     /* If there's language provided, use it; else create new one */
     if (language && *language) {
         new_language = *language;
-        /* If language is not MIRAGE_CDText... */
-        if (!MIRAGE_IS_LANGUAGE(new_language)) {
-            mirage_error(MIRAGE_E_INVALIDARG, error);
-            return FALSE;
-        }
         g_object_ref(new_language);
     } else {
         new_language = g_object_new(MIRAGE_TYPE_LANGUAGE, NULL);
@@ -1200,7 +1178,7 @@ gboolean mirage_session_get_language_by_index (MIRAGE_Session *self, gint index,
     /* First language, last language... allow negative indexes to go from behind */
     num_languages = mirage_session_get_number_of_languages(self);
     if (index < -num_languages || index >= num_languages) {
-        mirage_error(MIRAGE_E_INDEXOUTOFRANGE, error);
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_SESSION_ERROR, "Invalid language index %d!", index);
         return FALSE;
     } else if (index < 0) {
         index += num_languages;
@@ -1218,7 +1196,7 @@ gboolean mirage_session_get_language_by_index (MIRAGE_Session *self, gint index,
         return TRUE;
     }
 
-    mirage_error(MIRAGE_E_LANGNOTFOUND, error);
+    g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_SESSION_ERROR, "Language with index %d not found!", index);
     return FALSE;
 }
 
@@ -1260,7 +1238,7 @@ gboolean mirage_session_get_language_by_code (MIRAGE_Session *self, gint langcod
 
     /* If we didn't find anything... */
     if (!ret_language) {
-        mirage_error(MIRAGE_E_LANGNOTFOUND, error);
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_SESSION_ERROR, "Language with language code %d not found!", langcode);
         return FALSE;
     }
 
@@ -1285,20 +1263,18 @@ gboolean mirage_session_get_language_by_code (MIRAGE_Session *self, gint langcod
  * </para>
  *
  * <para>
- * If @func returns %FALSE, the function immediately returns %FALSE and @error
- * is set to %MIRAGE_E_ITERCANCELLED.
+ * If @func returns %FALSE, the function immediately returns %FALSE.
  * </para>
  *
  * Returns: %TRUE on success, %FALSE on failure
  **/
-gboolean mirage_session_for_each_language (MIRAGE_Session *self, MIRAGE_CallbackFunction func, gpointer user_data, GError **error)
+gboolean mirage_session_for_each_language (MIRAGE_Session *self, MIRAGE_CallbackFunction func, gpointer user_data)
 {
     GList *entry;
 
     G_LIST_FOR_EACH(entry, self->priv->languages_list) {
         gboolean succeeded = (*func) (MIRAGE_LANGUAGE(entry->data), user_data);
         if (!succeeded) {
-            mirage_error(MIRAGE_E_ITERCANCELLED, error);
             return FALSE;
         }
     }
@@ -1373,8 +1349,9 @@ gboolean mirage_session_set_cdtext_data (MIRAGE_Session *self, guint8 *data, gin
     mirage_cdtext_decoder_init(MIRAGE_CDTEXT_ENCDEC(decoder), data, len);
 
     for (i = 0; mirage_cdtext_decoder_get_block_info(MIRAGE_CDTEXT_ENCDEC(decoder), i, NULL, NULL, NULL, NULL); i++) {
-        succeeded = mirage_cdtext_decoder_get_data(MIRAGE_CDTEXT_ENCDEC(decoder), i, (MIRAGE_CDTextDataCallback)set_cdtext_data, self, error);
-        if (succeeded) {
+        succeeded = mirage_cdtext_decoder_get_data(MIRAGE_CDTEXT_ENCDEC(decoder), i, (MIRAGE_CDTextDataCallback)set_cdtext_data, self);
+        if (!succeeded) {
+            g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_SESSION_ERROR, "Failed to decode CD-TEXT data!");
             break;
         }
     }
@@ -1535,7 +1512,7 @@ gboolean mirage_session_get_prev (MIRAGE_Session *self, GObject **prev_session, 
     /* Get parent disc */
     disc = mirage_object_get_parent(MIRAGE_OBJECT(self));
     if (!disc) {
-        mirage_error(MIRAGE_E_NOPARENT, error);
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_SESSION_ERROR, "Session is not in disc layout!");
         return FALSE;
     }
 
@@ -1567,7 +1544,7 @@ gboolean mirage_session_get_next (MIRAGE_Session *self, GObject **next_session, 
     /* Get parent disc */
     disc = mirage_object_get_parent(MIRAGE_OBJECT(self));
     if (!disc) {
-        mirage_error(MIRAGE_E_NOPARENT, error);
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_SESSION_ERROR, "Session is not in disc layout!");
         return FALSE;
     }
 

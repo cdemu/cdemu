@@ -114,6 +114,7 @@ static SF_VIRTUAL_IO sndfile_io_bridge = {
 static gboolean mirage_fragment_sndfile_set_file (MIRAGE_FragIface_Audio *_self, const gchar *filename, GError **error)
 {
     MIRAGE_Fragment_SNDFILE *self = MIRAGE_FRAGMENT_SNDFILE(_self);
+    GError *local_error = NULL;
 
     /* If stream is already set, release it and reset format */
     if (self->priv->stream) {
@@ -130,14 +131,16 @@ static gboolean mirage_fragment_sndfile_set_file (MIRAGE_FragIface_Audio *_self,
     }
 
     /* Open stream */
-    self->priv->stream = libmirage_create_file_stream(filename, G_OBJECT(self), error);
+    self->priv->stream = libmirage_create_file_stream(filename, G_OBJECT(self), &local_error);
     if (!self->priv->stream) {
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_FRAGMENT_ERROR, "Failed to create file stream on audio file '%s': %s", filename, local_error->message);
+        g_error_free(local_error);
         return FALSE;
     }
 
     self->priv->sndfile = sf_open_virtual(&sndfile_io_bridge, SFM_READ, &self->priv->format, self->priv->stream);
     if (!self->priv->sndfile) {
-        mirage_error(MIRAGE_E_DATAFILE, error);
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_FRAGMENT_ERROR, "Failed to open audio file!");
         return FALSE;
     }
 
@@ -186,7 +189,7 @@ static gint mirage_fragment_sndfile_get_offset (MIRAGE_FragIface_Audio *_self)
 /**********************************************************************\
  *               MIRAGE_Fragment methods implementations              *
 \**********************************************************************/
-static gboolean mirage_fragment_sndfile_can_handle_data_format (MIRAGE_Fragment *_self G_GNUC_UNUSED, const gchar *filename, GError **error G_GNUC_UNUSED)
+static gboolean mirage_fragment_sndfile_can_handle_data_format (MIRAGE_Fragment *_self G_GNUC_UNUSED, const gchar *filename, GError **error)
 {
     SNDFILE *sndfile;
     SF_INFO format;
@@ -196,12 +199,14 @@ static gboolean mirage_fragment_sndfile_can_handle_data_format (MIRAGE_Fragment 
     /* Try opening the file */
     sndfile = sf_open(filename, SFM_READ, &format);
     if (!sndfile) {
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_CANNOT_HANDLE, "Fragment cannot handle given data!");
         return FALSE;
     }
     sf_close(sndfile);
 
     /* Check some additional requirements (e.g. two channels) */
     if (format.channels != 2 || format.seekable == 0) {
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_CANNOT_HANDLE, "Fragment cannot handle given data!");
         return FALSE;
     }
 
@@ -215,7 +220,7 @@ static gboolean mirage_fragment_sndfile_use_the_rest_of_file (MIRAGE_Fragment *_
 
     /* Make sure file's loaded */
     if (!self->priv->sndfile) {
-        mirage_error(MIRAGE_E_FILENOTSET, error);
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_FRAGMENT_ERROR, "Audio file stream not set!");
         return FALSE;
     }
 
@@ -251,7 +256,7 @@ static gboolean mirage_fragment_sndfile_read_main_data (MIRAGE_Fragment *_self, 
         read_len = sf_readf_short(self->priv->sndfile, (short *)buf, SNDFILE_FRAMES_PER_SECTOR);
 
         if (read_len != SNDFILE_FRAMES_PER_SECTOR) {
-            mirage_error(MIRAGE_E_READFAILED, error);
+            g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_FRAGMENT_ERROR, "Failed to read %ld bytes of audio data!", read_len);
             return FALSE;
         }
     }

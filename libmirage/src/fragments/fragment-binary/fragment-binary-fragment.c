@@ -49,6 +49,7 @@ struct _MIRAGE_Fragment_BINARYPrivate
 static gboolean mirage_fragment_binary_track_file_set_file (MIRAGE_FragIface_Binary *_self, const gchar *filename, GError **error)
 {
     MIRAGE_Fragment_BINARY *self = MIRAGE_FRAGMENT_BINARY(_self);
+    GError *local_error = NULL;
 
     /* Release old stream */
     if (self->priv->tfile_stream) {
@@ -61,8 +62,10 @@ static gboolean mirage_fragment_binary_track_file_set_file (MIRAGE_FragIface_Bin
     }
 
     /* Set new stream */
-    self->priv->tfile_stream = libmirage_create_file_stream(filename, G_OBJECT(self), error);
+    self->priv->tfile_stream = libmirage_create_file_stream(filename, G_OBJECT(self), &local_error);
     if (!self->priv->tfile_stream) {
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_FRAGMENT_ERROR, "Failed to create file stream on track data file '%s': %s", filename, local_error->message);
+        g_error_free(local_error);
         return FALSE;
     }
     self->priv->tfile_name = g_strdup(filename);
@@ -149,6 +152,7 @@ static guint64 mirage_fragment_binary_track_file_get_position (MIRAGE_FragIface_
 static gboolean mirage_fragment_binary_subchannel_file_set_file (MIRAGE_FragIface_Binary *_self, const gchar *filename, GError **error G_GNUC_UNUSED)
 {
     MIRAGE_Fragment_BINARY *self = MIRAGE_FRAGMENT_BINARY(_self);
+    GError *local_error = NULL;
 
     /* Release old stream */
     if (self->priv->sfile_stream) {
@@ -161,8 +165,10 @@ static gboolean mirage_fragment_binary_subchannel_file_set_file (MIRAGE_FragIfac
     }
 
     /* Set new stream */
-    self->priv->sfile_stream = libmirage_create_file_stream(filename, G_OBJECT(self), error);
+    self->priv->sfile_stream = libmirage_create_file_stream(filename, G_OBJECT(self), &local_error);
     if (!self->priv->sfile_stream) {
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_FRAGMENT_ERROR, "Failed to create file stream on subchannel data file '%s': %s", filename, local_error->message);
+        g_error_free(local_error);
         return FALSE;
     }
     self->priv->sfile_name = g_strdup(filename);
@@ -259,6 +265,7 @@ static gboolean mirage_fragment_binary_can_handle_data_format (MIRAGE_Fragment *
 static gboolean mirage_fragment_binary_use_the_rest_of_file (MIRAGE_Fragment *_self, GError **error)
 {
     MIRAGE_Fragment_BINARY *self = MIRAGE_FRAGMENT_BINARY(_self);
+    GError *local_error = NULL;
 
     goffset file_size;
     gint full_sectsize;
@@ -266,13 +273,15 @@ static gboolean mirage_fragment_binary_use_the_rest_of_file (MIRAGE_Fragment *_s
 
     if (!self->priv->tfile_stream) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: data file stream not set!\n", __debug__);
-        mirage_error(MIRAGE_E_FILENOTSET, error);
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_FRAGMENT_ERROR, "Track data file stream not set!");
         return FALSE;
     }
 
     /* Get file length */
-    if (!g_seekable_seek(G_SEEKABLE(self->priv->tfile_stream), 0, G_SEEK_END, NULL, error)) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to seek data file stream to the end!\n", __debug__);
+    if (!g_seekable_seek(G_SEEKABLE(self->priv->tfile_stream), 0, G_SEEK_END, NULL, &local_error)) {
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to seek to the end of track data file stream: %s\n", __debug__, local_error->message);
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_FRAGMENT_ERROR, "Failed to seek to the end of track data file stream: %s", local_error->message);
+        g_error_free(local_error);
         return FALSE;
     }
     file_size = g_seekable_tell(G_SEEKABLE(self->priv->tfile_stream));

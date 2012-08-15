@@ -99,14 +99,11 @@ static void mirage_parser_toc_set_session_type (MIRAGE_Parser_TOC *self, gchar *
     }
 }
 
-static gboolean mirage_parser_toc_add_track (MIRAGE_Parser_TOC *self, gchar *mode_string, gchar *subchan_string, GError **error)
+static void mirage_parser_toc_add_track (MIRAGE_Parser_TOC *self, gchar *mode_string, gchar *subchan_string)
 {
     /* Add track */
     self->priv->cur_track = NULL;
-    if (!mirage_session_add_track_by_index(MIRAGE_SESSION(self->priv->cur_session), -1, &self->priv->cur_track, error)) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to add track!\n", __debug__);
-        return FALSE;
-    }
+    mirage_session_add_track_by_index(MIRAGE_SESSION(self->priv->cur_session), -1, &self->priv->cur_track);
     g_object_unref(self->priv->cur_track); /* Don't keep reference */
 
     /* Clear internal data */
@@ -165,8 +162,6 @@ static gboolean mirage_parser_toc_add_track (MIRAGE_Parser_TOC *self, gchar *mod
             }
         }
     }
-
-    return TRUE;
 };
 
 
@@ -184,7 +179,7 @@ static gboolean mirage_parser_toc_track_add_fragment (MIRAGE_Parser_TOC *self, g
         gchar *filename = mirage_helper_find_data_file(filename_string, self->priv->toc_filename);
         if (!filename) {
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to find data file!\n", __debug__);
-            mirage_error(MIRAGE_E_DATAFILE, error);
+            g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_DATA_FILE_ERROR, "Failed to find data file!");
             return FALSE;
         }
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: using data file: %s\n", __debug__, filename);
@@ -632,9 +627,8 @@ static gboolean mirage_parser_toc_callback_catalog (MIRAGE_Parser_TOC *self, GMa
     return TRUE;
 }
 
-static gboolean mirage_parser_toc_callback_track (MIRAGE_Parser_TOC *self, GMatchInfo *match_info, GError **error)
+static gboolean mirage_parser_toc_callback_track (MIRAGE_Parser_TOC *self, GMatchInfo *match_info, GError **error G_GNUC_UNUSED)
 {
-    gboolean succeeded = TRUE;
     gchar *type, *subchan;
 
     type = g_match_info_fetch_named(match_info, "type");
@@ -643,12 +637,12 @@ static gboolean mirage_parser_toc_callback_track (MIRAGE_Parser_TOC *self, GMatc
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "\n"); /* To make log more readable */
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: parsed TRACK: type: %s, sub: %s\n", __debug__, type, subchan);
 
-    succeeded = mirage_parser_toc_add_track(self, type, subchan, error);
+    mirage_parser_toc_add_track(self, type, subchan);
 
     g_free(subchan);
     g_free(type);
 
-    return succeeded;
+    return TRUE;
 }
 
 static gboolean mirage_parser_toc_callback_track_flag_copy (MIRAGE_Parser_TOC *self, GMatchInfo *match_info, GError **error G_GNUC_UNUSED)
@@ -997,8 +991,8 @@ static gboolean mirage_parser_toc_parse_toc_file (MIRAGE_Parser_TOC *self, gchar
     io_channel = g_io_channel_new_file(filename, "r", &io_error);
     if (!io_channel) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to create IO channel: %s\n", __debug__, io_error->message);
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, "Failed to create I/O channel on file '%s': %s", filename, io_error->message);
         g_error_free(io_error);
-        mirage_error(MIRAGE_E_IMAGEFILE, error);
         return FALSE;
     }
 
@@ -1037,9 +1031,8 @@ static gboolean mirage_parser_toc_parse_toc_file (MIRAGE_Parser_TOC *self, gchar
         /* Handle abnormal status */
         if (status != G_IO_STATUS_NORMAL) {
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: status %d while reading line #%d from IO channel: %s\n", __debug__, status, line_nr, io_error ? io_error->message : "no error message");
+            g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, "Status %d while reading line #%d from IO channel: %s", status, line_nr, io_error ? io_error->message : "no error message");
             g_error_free(io_error);
-
-            mirage_error(MIRAGE_E_IMAGEFILE, error);
             succeeded = FALSE;
             break;
         }
@@ -1243,7 +1236,7 @@ static GObject *mirage_parser_toc_load_image (MIRAGE_Parser *_self, gchar **file
     /* Check if we can load file(s) */
     for (i = 0; i < g_strv_length(filenames); i++) {
         if (!mirage_parser_toc_check_toc_file(self, filenames[i])) {
-            mirage_error(MIRAGE_E_CANTHANDLE, error);
+            g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_CANNOT_HANDLE, "Parser cannot handle given image!");
             return FALSE;
         }
     }
@@ -1291,11 +1284,7 @@ static GObject *mirage_parser_toc_load_image (MIRAGE_Parser *_self, gchar **file
 
         /* Create session */
         self->priv->cur_session = NULL;
-        if (!mirage_disc_add_session_by_index(MIRAGE_DISC(self->priv->disc), -1, &self->priv->cur_session, error)) {
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: failed to add session!\n", __debug__);
-            succeeded = FALSE;
-            goto end;
-        }
+        mirage_disc_add_session_by_index(MIRAGE_DISC(self->priv->disc), -1, &self->priv->cur_session);
         g_object_unref(self->priv->cur_session); /* Don't keep reference */
 
         /* Parse TOC */
@@ -1316,7 +1305,7 @@ static GObject *mirage_parser_toc_load_image (MIRAGE_Parser *_self, gchar **file
     gint medium_type = mirage_parser_guess_medium_type(MIRAGE_PARSER(self), self->priv->disc);
     mirage_disc_set_medium_type(MIRAGE_DISC(self->priv->disc), medium_type);
     if (medium_type == MIRAGE_MEDIUM_CD) {
-        mirage_parser_add_redbook_pregap(MIRAGE_PARSER(self), self->priv->disc, NULL);
+        mirage_parser_add_redbook_pregap(MIRAGE_PARSER(self), self->priv->disc);
     }
 
 end:

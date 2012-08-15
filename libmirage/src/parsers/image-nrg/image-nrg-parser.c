@@ -94,7 +94,7 @@ static gboolean mirage_parser_nrg_build_block_index (MIRAGE_Parser_NRG *self, GE
         blockentry = g_new0(NRGBlockIndexEntry, 1);
         if (!blockentry) {
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to allocate memory for block index!\n", __debug__);
-            mirage_error(MIRAGE_E_PARSER, error);
+            g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_PARSER_ERROR, "Failed to allocate memory for block index!");
             return FALSE;
         }
         blockentry->offset = (guint64) (cur_ptr - self->priv->nrg_data);
@@ -200,7 +200,7 @@ static gboolean mirage_parser_nrg_load_medium_type (MIRAGE_Parser_NRG *self, GEr
     blockentry = mirage_parser_nrg_find_block_entry(self, "MTYP", 0);
     if (!blockentry) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to look up 'MTYP' block!\n", __debug__);
-        mirage_error(MIRAGE_E_PARSER, error);
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_PARSER_ERROR, "Failed to look up 'MTYP' block!");
         return FALSE;
     }
     cur_ptr = self->priv->nrg_data + blockentry->offset + 8;
@@ -228,7 +228,7 @@ static gboolean mirage_parser_nrg_load_medium_type (MIRAGE_Parser_NRG *self, GEr
         mirage_disc_set_medium_type(MIRAGE_DISC(self->priv->disc), MIRAGE_MEDIUM_HD);
     } else {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: unhandled medium type: %d!\n", __debug__, mtyp_data);
-        mirage_error(MIRAGE_E_PARSER, error);
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_PARSER_ERROR, "Unhandled medium type: %d!", mtyp_data);
         return FALSE;
     }
 
@@ -337,7 +337,7 @@ static gboolean mirage_parser_nrg_load_etn_data (MIRAGE_Parser_NRG *self, gint s
     }
     if (!blockentry) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to look up 'ETN2' or 'ETNF' block!\n", __debug__);
-        mirage_error(MIRAGE_E_PARSER, error);
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_PARSER_ERROR, "Failed to look up 'ETN2' or 'ETNF' block!");
         return FALSE;
     }
     cur_ptr = self->priv->nrg_data + blockentry->offset + 8;
@@ -350,7 +350,7 @@ static gboolean mirage_parser_nrg_load_etn_data (MIRAGE_Parser_NRG *self, gint s
     self->priv->etn_blocks = g_new0(NRG_ETN_Block, blockentry->num_subblocks);
     if (!self->priv->etn_blocks) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to allocate space for ETN blocks!\n", __debug__);
-        mirage_error(MIRAGE_E_PARSER, error);
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_PARSER_ERROR, "Failed to allocate space for ETN blocks!");
         return FALSE;
     }
 
@@ -397,7 +397,7 @@ static gboolean mirage_parser_nrg_load_cue_data (MIRAGE_Parser_NRG *self, gint s
     }
     if (!blockentry) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to look up 'CUEX' or 'CUES' block!\n", __debug__);
-        mirage_error(MIRAGE_E_PARSER, error);
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_PARSER_ERROR, "Failed to look up 'CUEX' or 'CUES' block!");
         return FALSE;
     }
     cur_ptr = self->priv->nrg_data + blockentry->offset + 8;
@@ -410,7 +410,7 @@ static gboolean mirage_parser_nrg_load_cue_data (MIRAGE_Parser_NRG *self, gint s
     self->priv->cue_blocks = g_new0(NRG_CUE_Block, blockentry->num_subblocks);
     if (!self->priv->cue_blocks) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to allocate space for CUE blocks!\n", __debug__);
-        mirage_error(MIRAGE_E_PARSER, error);
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_PARSER_ERROR, "Failed to allocate memory for CUE blocks!");
         return FALSE;
     }
 
@@ -459,7 +459,7 @@ static gboolean mirage_parser_nrg_load_dao_data (MIRAGE_Parser_NRG *self, gint s
     }
     if (!blockentry) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to look up 'DAOX' or 'DAOI' block!\n", __debug__);
-        mirage_error(MIRAGE_E_PARSER, error);
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_PARSER_ERROR, "Failed to look up 'DAOX' or 'DAOI' block!");
         return FALSE;
     }
     cur_ptr = self->priv->nrg_data + blockentry->offset + 8;
@@ -471,7 +471,7 @@ static gboolean mirage_parser_nrg_load_dao_data (MIRAGE_Parser_NRG *self, gint s
     self->priv->dao_header = g_new0(NRG_DAO_Header, 1);
     if (!self->priv->dao_header) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to allocate space for DAO header!\n", __debug__);
-        mirage_error(MIRAGE_E_PARSER, error);
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_PARSER_ERROR, "Failed to allocate space for DAO header!");
         return FALSE;
     }
     memcpy(self->priv->dao_header, MIRAGE_CAST_PTR(cur_ptr, 0, NRG_DAO_Header *), sizeof(NRG_DAO_Header));
@@ -550,11 +550,7 @@ static gboolean mirage_parser_nrg_load_session (MIRAGE_Parser_NRG *self, gint se
     GObject *cur_session = NULL;
     gint i;
 
-    if (!mirage_disc_add_session_by_index(MIRAGE_DISC(self->priv->disc), -1, &cur_session, error)) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to add session!\n", __debug__);
-        succeeded = FALSE;
-        goto end;
-    }
+    mirage_disc_add_session_by_index(MIRAGE_DISC(self->priv->disc), -1, &cur_session);
 
     /* Use DAO blocks to build tracks */
     for (i = 0; i < self->priv->num_dao_blocks; i++) {
@@ -567,12 +563,7 @@ static gboolean mirage_parser_nrg_load_session (MIRAGE_Parser_NRG *self, gint se
 
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: creating track for DAO block #%i\n", __debug__, i);
         /* Add track */
-        if (!mirage_session_add_track_by_index(MIRAGE_SESSION(cur_session), i, &cur_track, error)) {
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to add track!\n", __debug__);
-            g_object_unref(cur_session);
-            succeeded = FALSE;
-            goto end;
-        }
+        mirage_session_add_track_by_index(MIRAGE_SESSION(cur_session), i, &cur_track);
 
         /* Decode mode */
         mirage_parser_nrg_decode_mode(self, dao_block->mode_code, &mode, &main_sectsize, &sub_sectsize);
@@ -807,11 +798,7 @@ static gboolean mirage_parser_nrg_load_session_tao (MIRAGE_Parser_NRG *self, gin
     GObject *cur_session = NULL;
     gint i;
 
-    if (!mirage_disc_add_session_by_index(MIRAGE_DISC(self->priv->disc), -1, &cur_session, error)) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to add session!\n", __debug__);
-        succeeded = FALSE;
-        goto end;
-    }
+    mirage_disc_add_session_by_index(MIRAGE_DISC(self->priv->disc), -1, &cur_session);
 
     /* Use ETN blocks to build tracks */
     for (i = 0; i < self->priv->num_etn_blocks; i++) {
@@ -824,12 +811,7 @@ static gboolean mirage_parser_nrg_load_session_tao (MIRAGE_Parser_NRG *self, gin
 
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: creating track for ETN block #%i\n", __debug__, i);
         /* Add track */
-        if (!mirage_session_add_track_by_index(MIRAGE_SESSION(cur_session), i, &cur_track, error)) {
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to add track!\n", __debug__);
-            g_object_unref(cur_session);
-            succeeded = FALSE;
-            goto end;
-        }
+        mirage_session_add_track_by_index(MIRAGE_SESSION(cur_session), i, &cur_track);
 
         /* Decode mode */
         mirage_parser_nrg_decode_mode(self, etn_block->mode, &mode, &main_sectsize, &sub_sectsize);
@@ -941,7 +923,7 @@ static gboolean mirage_parser_nrg_load_cdtext (MIRAGE_Parser_NRG *self, GError *
     blockentry = mirage_parser_nrg_find_block_entry(self, "CDTX", 0);
     if (!blockentry) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to look up 'CDTX' block!\n", __debug__);
-        mirage_error(MIRAGE_E_PARSER, error);
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_PARSER_ERROR, "Failed to look up 'CDTX' block!");
         return FALSE;
     }
     cur_ptr = self->priv->nrg_data + blockentry->offset + 8;
@@ -978,9 +960,8 @@ static GObject *mirage_parser_nrg_load_image (MIRAGE_Parser *_self, gchar **file
     gchar sig[4];
 
     /* Open file */
-    stream = libmirage_create_file_stream(filenames[0], G_OBJECT(self), NULL);
+    stream = libmirage_create_file_stream(filenames[0], G_OBJECT(self), error);
     if (!stream) {
-        mirage_error(MIRAGE_E_IMAGEFILE, error);
         return FALSE;
     }
 
@@ -992,8 +973,8 @@ static GObject *mirage_parser_nrg_load_image (MIRAGE_Parser *_self, gchar **file
     g_seekable_seek(G_SEEKABLE(stream), -12, G_SEEK_END, NULL, NULL);
 
     if (g_input_stream_read(G_INPUT_STREAM(stream), sig, sizeof(sig), NULL, NULL) != sizeof(sig)) {
-        mirage_error(MIRAGE_E_READFAILED, error);
         g_object_unref(stream);
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, "Failed to read signature!");
         return FALSE;
     }
 
@@ -1005,9 +986,9 @@ static GObject *mirage_parser_nrg_load_image (MIRAGE_Parser *_self, gchar **file
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: new format\n", __debug__);
 
         if (g_input_stream_read(G_INPUT_STREAM(stream), &tmp_offset, sizeof(tmp_offset), NULL, NULL) != sizeof(tmp_offset)) {
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read trailer offset!\n", __debug__);
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read trailer offset (64-bit)!\n", __debug__);
             g_object_unref(stream);
-            mirage_error(MIRAGE_E_READFAILED, error);
+            g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, "Failed to read trailer offset!");
             return FALSE;
         }
         trailer_offset = GUINT64_FROM_BE(tmp_offset);
@@ -1016,8 +997,8 @@ static GObject *mirage_parser_nrg_load_image (MIRAGE_Parser *_self, gchar **file
         /* Try old format, with 32-bit offset */
         g_seekable_seek(G_SEEKABLE(stream), -8, G_SEEK_END, NULL, NULL);
         if (g_input_stream_read(G_INPUT_STREAM(stream), sig, sizeof(sig), NULL, NULL) != sizeof(sig)) {
-            mirage_error(MIRAGE_E_READFAILED, error);
             g_object_unref(stream);
+            g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, "Failed to read signature!");
             return FALSE;
         }
 
@@ -1030,7 +1011,7 @@ static GObject *mirage_parser_nrg_load_image (MIRAGE_Parser *_self, gchar **file
             if (g_input_stream_read(G_INPUT_STREAM(stream), &tmp_offset, sizeof(tmp_offset), NULL, NULL) != sizeof(tmp_offset)) {
                 MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read trailer offset!\n", __debug__);
                 g_object_unref(stream);
-                mirage_error(MIRAGE_E_READFAILED, error);
+                g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, "Failed to seek to trailer offset (32-bit)!");
                 return FALSE;
             }
 
@@ -1039,7 +1020,7 @@ static GObject *mirage_parser_nrg_load_image (MIRAGE_Parser *_self, gchar **file
         } else {
             /* Unknown signature, can't handle the file */
             g_object_unref(stream);
-            mirage_error(MIRAGE_E_CANTHANDLE, error);
+            g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_CANNOT_HANDLE, "Parser cannot handle given image!");
             return FALSE;
         }
     }
@@ -1061,7 +1042,7 @@ static GObject *mirage_parser_nrg_load_image (MIRAGE_Parser *_self, gchar **file
     g_seekable_seek(G_SEEKABLE(stream), trailer_offset, G_SEEK_SET, NULL, NULL);
     if (g_input_stream_read(G_INPUT_STREAM(stream), self->priv->nrg_data, self->priv->nrg_data_length, NULL, NULL) != self->priv->nrg_data_length) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read descriptor!\n", __debug__);
-        mirage_error(MIRAGE_E_READFAILED, error);
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, "Failed to read descriptor!");
         succeeded = FALSE;
         goto end;
     }

@@ -569,8 +569,8 @@ static gboolean mirage_parser_xcdroast_parse_xinf_file (MIRAGE_Parser_XCDROAST *
     io_channel = g_io_channel_new_file(filename, "r", &io_error);
     if (!io_channel) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to create IO channel: %s\n", __debug__, io_error->message);
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, "Failed to create I/O channel on file '%s': %s", filename, io_error->message);
         g_error_free(io_error);
-        mirage_error(MIRAGE_E_IMAGEFILE, error);
         return FALSE;
     }
 
@@ -594,9 +594,8 @@ static gboolean mirage_parser_xcdroast_parse_xinf_file (MIRAGE_Parser_XCDROAST *
         /* Handle abnormal status */
         if (status != G_IO_STATUS_NORMAL) {
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: status %d while reading line #%d from IO channel: %s\n", __debug__, status, line_nr, io_error ? io_error->message : "no error message");
+            g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, "Status %d while reading line #%d from IO channel: %s", status, line_nr, io_error ? io_error->message : "no error message");
             g_error_free(io_error);
-
-            mirage_error(MIRAGE_E_IMAGEFILE, error);
             succeeded = FALSE;
             break;
         }
@@ -659,8 +658,8 @@ static gboolean mirage_parser_xcdroast_parse_toc_file (MIRAGE_Parser_XCDROAST *s
     io_channel = g_io_channel_new_file(filename, "r", &io_error);
     if (!io_channel) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to create IO channel: %s\n", __debug__, io_error->message);
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, "Failed to create I/O channel on file '%s': %s", filename, io_error->message);
         g_error_free(io_error);
-        mirage_error(MIRAGE_E_IMAGEFILE, error);
         return FALSE;
     }
 
@@ -684,9 +683,8 @@ static gboolean mirage_parser_xcdroast_parse_toc_file (MIRAGE_Parser_XCDROAST *s
         /* Handle abnormal status */
         if (status != G_IO_STATUS_NORMAL) {
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: status %d while reading line #%d from IO channel: %s\n", __debug__, status, line_nr, io_error ? io_error->message : "no error message");
+            g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, "Status %d while reading line #%d from IO channel: %s", status, line_nr, io_error ? io_error->message : "no error message");
             g_error_free(io_error);
-
-            mirage_error(MIRAGE_E_IMAGEFILE, error);
             succeeded = FALSE;
             break;
         }
@@ -819,7 +817,7 @@ static GObject *mirage_parser_xcdroast_load_image (MIRAGE_Parser *_self, gchar *
 
     /* Check if we can load file */
     if (!mirage_parser_xcdroast_check_toc_file(self, filenames[0])) {
-        mirage_error(MIRAGE_E_CANTHANDLE, error);
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_CANNOT_HANDLE, "Parser cannot handle given image!");
         return FALSE;
     }
 
@@ -831,11 +829,7 @@ static GObject *mirage_parser_xcdroast_load_image (MIRAGE_Parser *_self, gchar *
     self->priv->toc_filename = g_strdup(filenames[0]);
 
     /* Create session; note that we store only pointer, but release reference */
-    if (!mirage_disc_add_session_by_index(MIRAGE_DISC(self->priv->disc), -1, &self->priv->cur_session, error)) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to add session!\n", __debug__);
-        succeeded = FALSE;
-        goto end;
-    }
+    mirage_disc_add_session_by_index(MIRAGE_DISC(self->priv->disc), -1, &self->priv->cur_session);
     g_object_unref(self->priv->cur_session);
 
     /* Parse the TOC */
@@ -857,7 +851,7 @@ static GObject *mirage_parser_xcdroast_load_image (MIRAGE_Parser *_self, gchar *
     gint medium_type = mirage_parser_guess_medium_type(MIRAGE_PARSER(self), self->priv->disc);
     mirage_disc_set_medium_type(MIRAGE_DISC(self->priv->disc), medium_type);
     if (medium_type == MIRAGE_MEDIUM_CD) {
-        mirage_parser_add_redbook_pregap(MIRAGE_PARSER(self), self->priv->disc, NULL);
+        mirage_parser_add_redbook_pregap(MIRAGE_PARSER(self), self->priv->disc);
     }
 
 end:

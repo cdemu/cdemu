@@ -240,8 +240,8 @@ static gboolean mirage_parser_ccd_build_disc_layout (MIRAGE_Parser_CCD *self, GE
 
             /* Shouldn't really happen... */
             if (!ccd_next_entry) {
-                MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: ccd_next_entry == NULL; shouldn't happen!\n", __debug__);
-                mirage_error(MIRAGE_E_PARSER, error);
+                MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: ccd_next_entry == NULL; should not happen!\n", __debug__);
+                g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_PARSER_ERROR, "ccd_next_entry == NULL; should not happen!");
                 return FALSE;
             }
 
@@ -398,7 +398,7 @@ static gboolean mirage_parser_ccd_build_disc_layout (MIRAGE_Parser_CCD *self, GE
     gint medium_type = mirage_parser_guess_medium_type(MIRAGE_PARSER(self), self->priv->disc);
     mirage_disc_set_medium_type(MIRAGE_DISC(self->priv->disc), medium_type);
     if (medium_type == MIRAGE_MEDIUM_CD) {
-        mirage_parser_add_redbook_pregap(MIRAGE_PARSER(self), self->priv->disc, NULL);
+        mirage_parser_add_redbook_pregap(MIRAGE_PARSER(self), self->priv->disc);
     }
 
     return TRUE;
@@ -798,7 +798,7 @@ static gboolean mirage_parser_ccd_callback_track (MIRAGE_Parser_CCD *self, GMatc
     entry = g_list_find_custom(self->priv->entries_list, GINT_TO_POINTER(number), (GCompareFunc)find_entry_by_point);
     if (!entry) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to get entry with point #%d!\n", __debug__, number);
-        mirage_error(MIRAGE_E_PARSER, error);
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_PARSER_ERROR, "Failed to get entry with point #%d!", number);
         return FALSE;
     }
     self->priv->cur_data = entry->data;
@@ -953,8 +953,8 @@ static gboolean mirage_parser_ccd_parse_ccd_file (MIRAGE_Parser_CCD *self, gchar
     io_channel = g_io_channel_new_file(filename, "r", &io_error);
     if (!io_channel) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to create IO channel: %s\n", __debug__, io_error->message);
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, "Failed to create I/O channel on file '%s': %s", filename, io_error->message);
         g_error_free(io_error);
-        mirage_error(MIRAGE_E_IMAGEFILE, error);
         return FALSE;
     }
 
@@ -985,9 +985,8 @@ static gboolean mirage_parser_ccd_parse_ccd_file (MIRAGE_Parser_CCD *self, gchar
         /* Handle abnormal status */
         if (status != G_IO_STATUS_NORMAL) {
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: status %d while reading line #%d from IO channel: %s\n", __debug__, status, line_nr, io_error ? io_error->message : "no error message");
+            g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, "Status %d while reading line #%d from IO channel: %s", status, line_nr, io_error ? io_error->message : "no error message");
             g_error_free(io_error);
-
-            mirage_error(MIRAGE_E_IMAGEFILE, error);
             succeeded = FALSE;
             break;
         }
@@ -1073,7 +1072,7 @@ static GObject *mirage_parser_ccd_load_image (MIRAGE_Parser *_self, gchar **file
 
     /* Check if we can load the file; we check the suffix */
     if (!mirage_helper_has_suffix(filenames[0], ".ccd")) {
-        mirage_error(MIRAGE_E_CANTHANDLE, error);
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_CANNOT_HANDLE, "Parser cannot handle given image!");
         return FALSE;
     }
 

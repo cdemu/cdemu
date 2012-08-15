@@ -45,9 +45,8 @@ static GObject *mirage_parser_daa_load_image (MIRAGE_Parser *_self, gchar **file
     gchar signature[16] = "";
 
     /* Open file */
-    stream = libmirage_create_file_stream(filenames[0], G_OBJECT(self), NULL);
+    stream = libmirage_create_file_stream(filenames[0], G_OBJECT(self), error);
     if (!stream) {
-        mirage_error(MIRAGE_E_IMAGEFILE, error);
         return FALSE;
     }
 
@@ -55,14 +54,14 @@ static GObject *mirage_parser_daa_load_image (MIRAGE_Parser *_self, gchar **file
     g_seekable_seek(G_SEEKABLE(stream), 0, G_SEEK_SET, NULL, NULL);
     if (g_input_stream_read(G_INPUT_STREAM(stream), signature, sizeof(signature), NULL, NULL) != sizeof(signature)) {
         g_object_unref(stream);
-        mirage_error(MIRAGE_E_READFAILED, error);
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, "Failed to read signature!");
         return FALSE;
     }
     g_object_unref(stream);
 
     /* Check signature (we're comparing -all- 16 bytes!) */
     if (memcmp(signature, daa_main_signature, sizeof(daa_main_signature))) {
-        mirage_error(MIRAGE_E_CANTHANDLE, error);
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_CANNOT_HANDLE, "Parser cannot handle given image!");
         return FALSE;
     }
 
@@ -75,23 +74,15 @@ static GObject *mirage_parser_daa_load_image (MIRAGE_Parser *_self, gchar **file
     /* Add session */
     GObject *session = NULL;
 
-    if (!mirage_disc_add_session_by_number(MIRAGE_DISC(self->priv->disc), 1, &session, error)) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to add session!\n", __debug__);
-        succeeded = FALSE;
-        goto end;
-    }
+    mirage_disc_add_session_by_index(MIRAGE_DISC(self->priv->disc), 0, &session);
 
     mirage_session_set_session_type(MIRAGE_SESSION(session), MIRAGE_SESSION_CD_ROM);
 
     /* Add track */
     GObject *track = NULL;
-    succeeded = mirage_session_add_track_by_index(MIRAGE_SESSION(session), -1, &track, error);
+    mirage_session_add_track_by_index(MIRAGE_SESSION(session), -1, &track);
+
     g_object_unref(session);
-    if (!succeeded) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to add track!\n", __debug__);
-        succeeded = FALSE;
-        goto end;
-    }
 
     mirage_track_set_mode(MIRAGE_TRACK(track), MIRAGE_MODE_MODE1);
 
@@ -106,9 +97,8 @@ static GObject *mirage_parser_daa_load_image (MIRAGE_Parser *_self, gchar **file
 
     if (!mirage_fragment_daa_set_file(MIRAGE_FRAGMENT_DAA(data_fragment), filenames[0], password, &local_error)) {
         /* Don't make buzz for password failures */
-        if (local_error->code != MIRAGE_E_NEEDPASSWORD
-            && local_error->code != MIRAGE_E_WRONGPASSWORD) {
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to set file to fragment!\n", __debug__);
+        if (local_error->code != MIRAGE_ERROR_ENCRYPTED_IMAGE) {
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to set file to fragment: %s!\n", __debug__, local_error->message);
         }
         g_propagate_error(error, local_error);
         g_object_unref(data_fragment);
@@ -124,7 +114,7 @@ static GObject *mirage_parser_daa_load_image (MIRAGE_Parser *_self, gchar **file
     gint medium_type = mirage_parser_guess_medium_type(MIRAGE_PARSER(self), self->priv->disc);
     mirage_disc_set_medium_type(MIRAGE_DISC(self->priv->disc), medium_type);
     if (medium_type == MIRAGE_MEDIUM_CD) {
-        mirage_parser_add_redbook_pregap(MIRAGE_PARSER(self), self->priv->disc, NULL);
+        mirage_parser_add_redbook_pregap(MIRAGE_PARSER(self), self->priv->disc);
     }
 
 end:

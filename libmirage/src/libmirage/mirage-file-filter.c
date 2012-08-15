@@ -150,7 +150,7 @@ static gboolean mirage_file_filter_can_truncate (GSeekable *_self G_GNUC_UNUSED)
 static gboolean mirage_file_filter_truncate_fn (GSeekable *_self G_GNUC_UNUSED, goffset offset G_GNUC_UNUSED, GCancellable *cancellable G_GNUC_UNUSED, GError **error)
 {
     /* Truncation is not implemented */
-    g_set_error(error, G_IO_ERROR, G_IO_ERROR_NOT_SUPPORTED, "Function not implemented");
+    g_set_error(error, G_IO_ERROR, G_IO_ERROR_NOT_SUPPORTED, "Function not implemented!");
     return FALSE;
 }
 

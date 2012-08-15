@@ -127,7 +127,7 @@ static gboolean mirage_parser_cdi_decode_track_mode (MIRAGE_Parser_CDI *self, gi
         }
         default: {
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: invalid track mode: %d!\n", __debug__, raw_mode);
-            mirage_error(MIRAGE_E_PARSER, error);
+            g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_PARSER_ERROR, "Invalid track mode: %d!", raw_mode);
             return FALSE;
         }
     }
@@ -170,7 +170,7 @@ static gboolean mirage_parser_cdi_decode_read_mode (MIRAGE_Parser_CDI *self, gin
         }
         default: {
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: invalid read mode: %d!\n", __debug__, read_mode);
-            mirage_error(MIRAGE_E_PARSER, error);
+            g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_PARSER_ERROR, "Invalid read mode: %d!", read_mode);
             return FALSE;
         }
     }
@@ -665,11 +665,7 @@ static gboolean mirage_parser_cdi_load_track (MIRAGE_Parser_CDI *self, GError **
     }
 
     /* Add track */
-    if (!mirage_session_add_track_by_index(MIRAGE_SESSION(cur_session), -1, &cur_track, error)) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: failed to add track!\n", __debug__);
-        succeeded = FALSE;
-        goto free_session;
-    }
+    mirage_session_add_track_by_index(MIRAGE_SESSION(cur_session), -1, &cur_track);
 
     /* Set track mode */
     mirage_track_set_mode(MIRAGE_TRACK(cur_track), decoded_mode);
@@ -739,11 +735,9 @@ static gboolean mirage_parser_cdi_load_track (MIRAGE_Parser_CDI *self, GError **
 
 free_track:
     g_object_unref(cur_track);
-free_session:
     g_object_unref(cur_session);
 
 end:
-
     return succeeded;
 }
 
@@ -783,10 +777,7 @@ static gboolean mirage_parser_cdi_load_session (MIRAGE_Parser_CDI *self, GError 
 
     if (num_tracks) {
         /* Add session */
-        if (!mirage_disc_add_session_by_index(MIRAGE_DISC(self->priv->disc), -1, NULL, error)) {
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: failed to add session to disc!\n", __debug__);
-            return FALSE;
-        }
+        mirage_disc_add_session_by_index(MIRAGE_DISC(self->priv->disc), -1, NULL);
 
         /* Load tracks */
         for (i = 0; i < num_tracks; i++) {
@@ -959,14 +950,13 @@ static GObject *mirage_parser_cdi_load_image (MIRAGE_Parser *_self, gchar **file
 
     /* Check if we can load the file; we check the suffix */
     if (!mirage_helper_has_suffix(filenames[0], ".cdi")) {
-        mirage_error(MIRAGE_E_CANTHANDLE, error);
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_CANNOT_HANDLE, "Parser cannot handle given image!");
         return FALSE;
     }
 
     /* Open file */
-    stream = libmirage_create_file_stream(filenames[0], G_OBJECT(self), NULL);
+    stream = libmirage_create_file_stream(filenames[0], G_OBJECT(self), error);
     if (!stream) {
-        mirage_error(MIRAGE_E_IMAGEFILE, error);
         return FALSE;
     }
 
@@ -982,8 +972,8 @@ static GObject *mirage_parser_cdi_load_image (MIRAGE_Parser *_self, gchar **file
     offset = -(guint64)(sizeof(descriptor_length));
     g_seekable_seek(G_SEEKABLE(stream), offset, G_SEEK_END, NULL, NULL);
     if (g_input_stream_read(G_INPUT_STREAM(stream), &descriptor_length, sizeof(descriptor_length), NULL, NULL) != sizeof(descriptor_length)) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read descriptor lenght!\n", __debug__);
-        mirage_error(MIRAGE_E_READFAILED, error);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read descriptor length!\n", __debug__);
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, "Failed to read descriptor length!");
         succeeded = FALSE;
         goto end;
     }
@@ -996,7 +986,7 @@ static GObject *mirage_parser_cdi_load_image (MIRAGE_Parser *_self, gchar **file
     g_seekable_seek(G_SEEKABLE(stream), offset, G_SEEK_END, NULL, NULL);
     if (g_input_stream_read(G_INPUT_STREAM(stream), self->priv->cdi_data, descriptor_length, NULL, NULL) != descriptor_length) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read descriptor!\n", __debug__);
-        mirage_error(MIRAGE_E_READFAILED, error);
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, "Failed to read descriptor!");
         succeeded = FALSE;
         goto end;
     }

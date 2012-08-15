@@ -52,13 +52,12 @@ static gboolean mirage_parser_readcd_is_file_valid (MIRAGE_Parser_READCD *self, 
 
     /* File must have .toc suffix */
     if (!mirage_helper_has_suffix(filename, ".toc")) {
-        mirage_error(MIRAGE_E_CANTHANDLE, error);
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_CANNOT_HANDLE, "Parser cannot handle given image!");
         succeeded = FALSE;
     }
 
-    stream = libmirage_create_file_stream(filename, G_OBJECT(self), NULL);
+    stream = libmirage_create_file_stream(filename, G_OBJECT(self), error);
     if (!stream) {
-        mirage_error(MIRAGE_E_IMAGEFILE, error);
         return FALSE;
     }
 
@@ -66,7 +65,7 @@ static gboolean mirage_parser_readcd_is_file_valid (MIRAGE_Parser_READCD *self, 
        the length */
     if (g_input_stream_read(G_INPUT_STREAM(stream), &toc_len, sizeof(toc_len), NULL, NULL) != sizeof(toc_len)) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read 2-byte TOC length!\n", __debug__);
-        mirage_error(MIRAGE_E_READFAILED, error);
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, "Failed to read 2-byte TOC length!");
         succeeded = FALSE;
         goto end;
     }
@@ -81,7 +80,7 @@ static gboolean mirage_parser_readcd_is_file_valid (MIRAGE_Parser_READCD *self, 
         succeeded = TRUE;
     } else {
         /* Nope, can't load the file */
-        mirage_error(MIRAGE_E_CANTHANDLE, error);
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_CANNOT_HANDLE, "Parser cannot handle given image!");
         succeeded = FALSE;
     }
 
@@ -319,10 +318,9 @@ static gboolean mirage_parser_readcd_parse_toc (MIRAGE_Parser_READCD *self, cons
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:\n", __debug__);
 
     /* Read whole TOC file */
-    stream = libmirage_create_file_stream(filename, G_OBJECT(self), NULL);
+    stream = libmirage_create_file_stream(filename, G_OBJECT(self), error);
     if (!stream) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to open TOC file '%s'!\n", __debug__, filename);
-        mirage_error(MIRAGE_E_IMAGEFILE, error);
         return FALSE;
     }
 
@@ -338,7 +336,7 @@ static gboolean mirage_parser_readcd_parse_toc (MIRAGE_Parser_READCD *self, cons
 
     if (read_size != file_size) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read whole TOC file!\n", __debug__);
-        mirage_error(MIRAGE_E_IMAGEFILE, error);
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, "Failed to read whole TOC file!");
         succeeded = FALSE;
         goto end;
     }
@@ -459,7 +457,7 @@ static GObject *mirage_parser_readcd_load_image (MIRAGE_Parser *_self, gchar **f
     gint medium_type = mirage_parser_guess_medium_type(MIRAGE_PARSER(self), self->priv->disc);
     mirage_disc_set_medium_type(MIRAGE_DISC(self->priv->disc), medium_type);
     if (medium_type == MIRAGE_MEDIUM_CD) {
-        mirage_parser_add_redbook_pregap(MIRAGE_PARSER(self), self->priv->disc, NULL);
+        mirage_parser_add_redbook_pregap(MIRAGE_PARSER(self), self->priv->disc);
     }
 
 end:

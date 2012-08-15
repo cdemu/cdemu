@@ -70,7 +70,7 @@ static gboolean mirage_parser_cue_finish_last_track (MIRAGE_Parser_CUE *self, GE
     /* Current track needs to be set at this point */
     if (!self->priv->cur_track) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: current track is not set!\n", __debug__);
-        mirage_error(MIRAGE_E_PARSER, error);
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_PARSER_ERROR, "Current track is not set!");
         return FALSE;
     }
 
@@ -83,7 +83,7 @@ static gboolean mirage_parser_cue_finish_last_track (MIRAGE_Parser_CUE *self, GE
 
         if (mirage_fragment_get_length(MIRAGE_FRAGMENT(data_fragment)) < 0) {
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: finishing last track resulted in negative fragment length!\n", __debug__);
-            mirage_error(MIRAGE_E_PARSER, error);
+            g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_PARSER_ERROR, "Finishing last track resulted in negative fragment length!");
             succeeded = FALSE;
         }
 
@@ -112,7 +112,7 @@ static gboolean mirage_parser_cue_set_new_file (MIRAGE_Parser_CUE *self, gchar *
     self->priv->cur_data_filename = mirage_helper_find_data_file(filename_string, self->priv->cue_filename);
     if (!self->priv->cur_data_filename) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to find data file!\n", __debug__);
-        mirage_error(MIRAGE_E_DATAFILE, error);
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_DATA_FILE_ERROR, "Failed to find data file!");
         return FALSE;
     }
 
@@ -172,7 +172,7 @@ static gboolean mirage_parser_cue_add_track (MIRAGE_Parser_CUE *self, gint numbe
 
     if (i == G_N_ELEMENTS(track_modes)) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: invalid track mode string: %s!\n", __debug__, mode_string);
-        mirage_error(MIRAGE_E_PARSER, error);
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_PARSER_ERROR, "Invalid track mode string '%s'!", mode_string);
         return FALSE;
     }
 
@@ -187,7 +187,7 @@ static gboolean mirage_parser_cue_add_index (MIRAGE_Parser_CUE *self, gint numbe
     /* Current track needs to be set at this point */
     if (!self->priv->cur_track) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: current track is not set!\n", __debug__);
-        mirage_error(MIRAGE_E_PARSER, error);
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_PARSER_ERROR, "Current track is not set!");
         return FALSE;
     }
 
@@ -342,7 +342,7 @@ static gboolean mirage_parser_cue_set_flags (MIRAGE_Parser_CUE *self, gint flags
     /* Current track needs to be set at this point */
     if (!self->priv->cur_track) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: current track is not set!\n", __debug__);
-        mirage_error(MIRAGE_E_PARSER, error);
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_PARSER_ERROR, "Current track is not set!");
         return FALSE;
     }
 
@@ -355,8 +355,8 @@ static gboolean mirage_parser_cue_set_isrc (MIRAGE_Parser_CUE *self, gchar *isrc
 {
     /* Current track needs to be set at this point */
     if (!self->priv->cur_track) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to get current track!\n", __debug__);
-        mirage_error(MIRAGE_E_PARSER, error);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: current track is not set!\n", __debug__);
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_PARSER_ERROR, "Current track is not set!");
         return FALSE;
     }
 
@@ -373,7 +373,7 @@ static gboolean mirage_parser_cue_add_empty_part (MIRAGE_Parser_CUE *self, gint 
     /* Current track needs to be set at this point */
     if (!self->priv->cur_track) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: current track is not set!\n", __debug__);
-        mirage_error(MIRAGE_E_PARSER, error);
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_PARSER_ERROR, "Current track is not set!");
         return FALSE;
     }
 
@@ -397,7 +397,7 @@ static gboolean mirage_parser_cue_add_pregap (MIRAGE_Parser_CUE *self, gint leng
     /* Current track needs to be set at this point */
     if (!self->priv->cur_track) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: current track is not set!\n", __debug__);
-        mirage_error(MIRAGE_E_PARSER, error);
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_PARSER_ERROR, "Current track is not set!");
         return FALSE;
     }
 
@@ -416,13 +416,13 @@ static gboolean mirage_parser_cue_add_pregap (MIRAGE_Parser_CUE *self, gint leng
     return TRUE;
 }
 
-static gboolean mirage_parser_cue_add_session (MIRAGE_Parser_CUE *self, gint number, GError **error)
+static void mirage_parser_cue_add_session (MIRAGE_Parser_CUE *self, gint number)
 {
     gint leadout_length = 0;
 
     /* We've already added first session, so don't bother */
     if (number == 1) {
-        return TRUE;
+        return;
     }
 
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "\n");
@@ -444,16 +444,11 @@ static gboolean mirage_parser_cue_add_session (MIRAGE_Parser_CUE *self, gint num
 
     /* Add new session, store the pointer but release the reference */
     self->priv->cur_session = NULL; /* Need to reset it, otherwise it gets added */
-    if (!mirage_disc_add_session_by_index(MIRAGE_DISC(self->priv->disc), -1, &self->priv->cur_session, error)) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to add session!\n", __debug__);
-        return FALSE;
-    }
+    mirage_disc_add_session_by_index(MIRAGE_DISC(self->priv->disc), -1, &self->priv->cur_session);
     g_object_unref(self->priv->cur_session);
 
     /* Reset current track */
     self->priv->cur_track = NULL;
-
-    return TRUE;
 }
 
 static gboolean mirage_parser_cue_set_pack_data (MIRAGE_Parser_CUE *self, gint pack_type, gchar *data, GError **error G_GNUC_UNUSED)
@@ -510,18 +505,17 @@ static gchar *strip_quotes (gchar *str)
     return g_strdup(str);
 }
 
-static gboolean mirage_parser_cue_callback_session (MIRAGE_Parser_CUE *self, GMatchInfo *match_info, GError **error)
+static gboolean mirage_parser_cue_callback_session (MIRAGE_Parser_CUE *self, GMatchInfo *match_info, GError **error G_GNUC_UNUSED)
 {
-    gboolean succeeded = TRUE;
     gchar *number_raw = g_match_info_fetch_named(match_info, "number");
     gint number = g_strtod(number_raw, NULL);
 
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: parsed SESSION: %d\n", __debug__, number);
-    succeeded = mirage_parser_cue_add_session(self, number, error);
+    mirage_parser_cue_add_session(self, number);
 
     g_free(number_raw);
 
-    return succeeded;
+    return TRUE;
 }
 
 static gboolean mirage_parser_cue_callback_comment (MIRAGE_Parser_CUE *self, GMatchInfo *match_info, GError **error G_GNUC_UNUSED)
@@ -871,8 +865,8 @@ static gboolean mirage_parser_cue_parse_cue_file (MIRAGE_Parser_CUE *self, gchar
     io_channel = g_io_channel_new_file(filename, "r", &io_error);
     if (!io_channel) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to create IO channel: %s\n", __debug__, io_error->message);
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, "Failed to create I/O channel on file '%s': %s", filename, io_error->message);
         g_error_free(io_error);
-        mirage_error(MIRAGE_E_IMAGEFILE, error);
         return FALSE;
     }
 
@@ -905,9 +899,9 @@ static gboolean mirage_parser_cue_parse_cue_file (MIRAGE_Parser_CUE *self, gchar
         /* Handle abnormal status */
         if (status != G_IO_STATUS_NORMAL) {
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: status %d while reading line #%d from IO channel: %s\n", __debug__, status, line_nr, io_error ? io_error->message : "no error message");
+            g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, "Status %d while reading line #%d from IO channel: %s", status, line_nr, io_error ? io_error->message : "no error message");
             g_error_free(io_error);
 
-            mirage_error(MIRAGE_E_IMAGEFILE, error);
             succeeded = FALSE;
             break;
         }
@@ -968,7 +962,7 @@ static GObject *mirage_parser_cue_load_image (MIRAGE_Parser *_self, gchar **file
 
     /* Check if we can load the file; we check the suffix */
     if (!mirage_helper_has_suffix(filenames[0], ".cue")) {
-        mirage_error(MIRAGE_E_CANTHANDLE, error);
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_CANNOT_HANDLE, "Parser cannot handle given image!");
         return FALSE;
     }
 
@@ -982,11 +976,7 @@ static GObject *mirage_parser_cue_load_image (MIRAGE_Parser *_self, gchar **file
     /* First session is created manually (in case we're dealing with normal
        CUE file, which doesn't have session definitions anyway); note that we
        store only pointer, but release reference */
-    if (!mirage_disc_add_session_by_index(MIRAGE_DISC(self->priv->disc), -1, &self->priv->cur_session, error)) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to add session!\n", __debug__);
-        succeeded = FALSE;
-        goto end;
-    }
+    mirage_disc_add_session_by_index(MIRAGE_DISC(self->priv->disc), -1, &self->priv->cur_session);
     g_object_unref(self->priv->cur_session);
 
     /* Parse the CUE */
@@ -1009,7 +999,7 @@ static GObject *mirage_parser_cue_load_image (MIRAGE_Parser *_self, gchar **file
     gint medium_type = mirage_parser_guess_medium_type(MIRAGE_PARSER(self), self->priv->disc);
     mirage_disc_set_medium_type(MIRAGE_DISC(self->priv->disc), medium_type);
     if (medium_type == MIRAGE_MEDIUM_CD) {
-        mirage_parser_add_redbook_pregap(MIRAGE_PARSER(self), self->priv->disc, NULL);
+        mirage_parser_add_redbook_pregap(MIRAGE_PARSER(self), self->priv->disc);
     }
 
 end:
