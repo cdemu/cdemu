@@ -128,9 +128,9 @@ class CDEmu (object):
                     self.print_error(_("Invalid argument to --dvd-report-css: '%s'") % (arg))
                     self.print_full_usage()
                     return False
-                
+
                 self.parser_params["dvd-report-css"] = dictionary.get(word)
-                
+
 
         if len(arguments) == 0:
             self.print_full_usage()
@@ -162,7 +162,7 @@ class CDEmu (object):
             self.dbus_iface.DeviceLoad(device, filenames, params)
             return True
         except dbus.DBusException as e:
-            if e.get_dbus_name() == "net.sf.cdemu.CDEMUD_Daemon.libMirage.NeedPassword":
+            if e.get_dbus_name() == "net.sf.cdemu.CDEMUD_Daemon.libMirage.EncryptedImage":
                 # We need password
                 print(_("The image you are trying to load is encrypted."))
                 params["password"] = getpass.getpass(_("Password: ")) # Append password to params

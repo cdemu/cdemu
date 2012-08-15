@@ -381,7 +381,7 @@ class CDEmuDevice (GObject.GObject):
         try:
             self.proxy.DeviceLoad(self.number, filenames, params)
         except GLib.GError as e:
-            if "net.sf.cdemu.CDEMUD_Daemon.libMirage.NeedPassword" in str(e):
+            if "net.sf.cdemu.CDEMUD_Daemon.libMirage.EncryptedImage" in str(e):
                 # Need password, raise proper exception...
                 raise CDEmuNeedPassword()
             else:
