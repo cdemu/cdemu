@@ -218,10 +218,11 @@ static gboolean mirage_file_filter_ecm_set_current_position (MIRAGE_FileFilter_E
         return FALSE;
     }
 
-    if (new_position > self->priv->file_size) {
+    /* Seeking beyond end of file appears to be supported by GFileInputStream, so we allow it as well */
+    /*if (new_position > self->priv->file_size) {
         g_set_error(error, G_IO_ERROR, G_IO_ERROR_INVALID_ARGUMENT, "Seek beyond end of file not allowed!");
         return FALSE;
-    }
+    }*/
 
     /* Find the corresponding part */
     if (is_within_part(new_position, self->priv->cur_part, FALSE)) {
@@ -281,7 +282,7 @@ static gssize mirage_filter_ecm_read_single_block_from_part (MIRAGE_FileFilter_E
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_FILE, "%s: current position: %ld (part #%d, type %d, offset: %ld, size: %ld, raw offset: %ld, raw size: %ld) -> read %d bytes\n", __debug__, self->priv->cur_position, self->priv->cur_part_idx, self->priv->cur_part->type, self->priv->cur_part->offset, self->priv->cur_part->size, self->priv->cur_part->raw_offset, self->priv->cur_part->raw_size, count);
 
     /* Make sure we're not at end of stream */
-    if (self->priv->cur_position == self->priv->file_size) {
+    if (self->priv->cur_position >= self->priv->file_size) {
         return 0;
     }
 
@@ -512,7 +513,7 @@ static gssize mirage_file_filter_ecm_read (MIRAGE_FileFilter *_self, void *buffe
         }
 
         /* Check if we're at end of stream */
-        if (self->priv->cur_position == self->priv->file_size) {
+        if (self->priv->cur_position >= self->priv->file_size) {
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_FILE, "%s: end of stream reached!\n", __debug__);
             break;
         }
