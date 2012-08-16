@@ -280,6 +280,11 @@ static gssize mirage_filter_ecm_read_single_block_from_part (MIRAGE_FileFilter_E
 
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_FILE, "%s: current position: %ld (part #%d, type %d, offset: %ld, size: %ld, raw offset: %ld, raw size: %ld) -> read %d bytes\n", __debug__, self->priv->cur_position, self->priv->cur_part_idx, self->priv->cur_part->type, self->priv->cur_part->offset, self->priv->cur_part->size, self->priv->cur_part->raw_offset, self->priv->cur_part->raw_size, count);
 
+    /* Make sure we're not at end of stream */
+    if (self->priv->cur_position == self->priv->file_size) {
+        return 0;
+    }
+
     /* Compute part offset within filter stream */
     part_offset = self->priv->cur_position - self->priv->cur_part->offset;
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_FILE, "%s: offset within part: %ld\n", __debug__, part_offset);
@@ -504,6 +509,12 @@ static gssize mirage_file_filter_ecm_read (MIRAGE_FileFilter *_self, void *buffe
         if (!mirage_file_filter_ecm_set_current_position(self, self->priv->cur_position+read_len, error)) {
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to update position!\n", __debug__);
             return -1;
+        }
+
+        /* Check if we're at end of stream */
+        if (self->priv->cur_position == self->priv->file_size) {
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_FILE, "%s: end of stream reached!\n", __debug__);
+            break;
         }
     }
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_FILE, "%s: read complete\n", __debug__);
