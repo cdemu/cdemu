@@ -196,6 +196,12 @@ static gboolean mirage_fragment_sndfile_can_handle_data_format (MIRAGE_Fragment 
 
     format.format = 0;
 
+    /* Make sure filename is given */
+    if (!filename) {
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_CANNOT_HANDLE, "Fragment cannot handle given data!");
+        return FALSE;
+    }
+
     /* Try opening the file */
     sndfile = sf_open(filename, SFM_READ, &format);
     if (!sndfile) {

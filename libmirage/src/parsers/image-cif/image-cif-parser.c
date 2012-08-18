@@ -368,7 +368,7 @@ static GObject *mirage_parser_cif_parse_session_descriptor (MIRAGE_Parser_CIF *s
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: adding pregap: %d (0x%X)\n", __debug__, pregap_length, pregap_length);
 
             /* Create NULL fragment - creation should never fail */
-            fragment = libmirage_create_fragment(MIRAGE_TYPE_FRAG_IFACE_NULL, "NULL", G_OBJECT(self), error);
+            fragment = libmirage_create_fragment(MIRAGE_TYPE_FRAG_IFACE_NULL, NULL, G_OBJECT(self), error);
 
             mirage_fragment_set_length(MIRAGE_FRAGMENT(fragment), pregap_length);
 

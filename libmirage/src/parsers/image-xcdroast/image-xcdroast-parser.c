@@ -84,7 +84,7 @@ static gboolean mirage_parser_xcdroast_add_track (MIRAGE_Parser_XCDROAST *self, 
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: adding %d sector pregap\n", __debug__, self->priv->set_pregap);
 
         /* Creation of NULL fragment should never fail */
-        GObject *null_fragment = libmirage_create_fragment(MIRAGE_TYPE_FRAG_IFACE_NULL, "NULL", G_OBJECT(self), error);
+        GObject *null_fragment = libmirage_create_fragment(MIRAGE_TYPE_FRAG_IFACE_NULL, NULL, G_OBJECT(self), error);
 
         mirage_fragment_set_length(MIRAGE_FRAGMENT(null_fragment), self->priv->set_pregap);
 

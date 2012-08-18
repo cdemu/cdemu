@@ -835,7 +835,7 @@ static gboolean mirage_parser_nrg_load_session_tao (MIRAGE_Parser_NRG *self, gin
         GObject *pregap_fragment;
 
         /* Pregap fragment - creation of NULL fragment should never fail */
-        pregap_fragment = libmirage_create_fragment(MIRAGE_TYPE_FRAG_IFACE_NULL, "NULL", G_OBJECT(self), error);
+        pregap_fragment = libmirage_create_fragment(MIRAGE_TYPE_FRAG_IFACE_NULL, NULL, G_OBJECT(self), error);
 
         mirage_track_add_fragment(MIRAGE_TRACK(cur_track), 0, pregap_fragment);
         mirage_fragment_set_length(MIRAGE_FRAGMENT(pregap_fragment), 150);

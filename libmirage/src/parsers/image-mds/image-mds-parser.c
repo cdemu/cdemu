@@ -502,7 +502,7 @@ static gboolean mirage_parser_mds_parse_track_entries (MIRAGE_Parser_MDS *self, 
                therefore, we need to provide NULL fragment for pregap */
             if (extra_block && extra_block->pregap) {
                 /* Creating NULL fragment should never fail */
-                GObject *pregap_fragment = libmirage_create_fragment(MIRAGE_TYPE_FRAG_IFACE_NULL, "NULL", G_OBJECT(self), NULL);;
+                GObject *pregap_fragment = libmirage_create_fragment(MIRAGE_TYPE_FRAG_IFACE_NULL, NULL, G_OBJECT(self), NULL);;
 
                 MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: track has pregap (0x%X); creating NULL fragment\n", __debug__, extra_block->pregap);
 

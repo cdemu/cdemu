@@ -379,7 +379,7 @@ static gboolean mirage_parser_cue_add_empty_part (MIRAGE_Parser_CUE *self, gint 
     }
 
     /* Prepare NULL fragment - creation should never fail */
-    GObject *fragment = libmirage_create_fragment(MIRAGE_TYPE_FRAG_IFACE_NULL, "NULL", G_OBJECT(self), NULL);
+    GObject *fragment = libmirage_create_fragment(MIRAGE_TYPE_FRAG_IFACE_NULL, NULL, G_OBJECT(self), NULL);
     mirage_fragment_set_length(MIRAGE_FRAGMENT(fragment), length);
 
     /* Add fragment */
