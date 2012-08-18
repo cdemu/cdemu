@@ -179,8 +179,6 @@ GVariant *cdemud_device_get_option (CDEMUD_Device *self, gchar *option_name, GEr
         GObject *context = mirage_debuggable_get_debug_context(MIRAGE_DEBUGGABLE(self));
         if (context) {
             gint mask = mirage_debug_context_get_debug_mask(MIRAGE_DEBUG_CONTEXT(context));
-            g_object_unref(context);
-
             option_value = g_variant_new("i", mask);
         }
     } else if (!g_strcmp0(option_name, "library-debug-mask")) {
@@ -250,7 +248,6 @@ gboolean cdemud_device_set_option (CDEMUD_Device *self, gchar *option_name, GVar
                 gint mask;
                 g_variant_get(option_value, "i", &mask);
                 mirage_debug_context_set_debug_mask(MIRAGE_DEBUG_CONTEXT(context), mask);
-                g_object_unref(context);
             }
         }
     } else if (!g_strcmp0(option_name, "library-debug-mask")) {
