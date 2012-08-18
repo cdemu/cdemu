@@ -134,6 +134,7 @@ respectively. The list of supported debug masks can be obtained using libmirage_
 
 @fragment_interface: 
 @filename: 
+@debug_context: 
 @error: 
 @Returns: 
 
