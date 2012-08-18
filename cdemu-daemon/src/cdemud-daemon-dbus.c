@@ -211,6 +211,7 @@ static void cdemud_daemon_dbus_handle_method_call (GDBusConnection *connection G
 
             cdemud_device_get_mapping(CDEMUD_DEVICE(device), &sr_device, &sg_device);
             ret = g_variant_new("(ss)", sr_device ? sr_device : "", sg_device ? sg_device : "");
+            succeeded = TRUE;
 
             g_free(sr_device);
             g_free(sg_device);
