@@ -55,6 +55,7 @@ struct _MIRAGE_FileFilter_ECMPrivate
     /* Part list */
     ECM_Part *parts;
     gint num_parts;
+    gint allocated_parts;
 
     /* Cache */
     gint cache_part_idx;
@@ -66,6 +67,46 @@ struct _MIRAGE_FileFilter_ECMPrivate
 /**********************************************************************\
  *                           Part indexing                            *
 \**********************************************************************/
+static gboolean mirage_file_filter_ecm_append_part (MIRAGE_FileFilter_ECM *self, gint num, guint8 type, goffset raw_offset, gsize raw_size, goffset offset, gsize size, GError **error)
+{
+    /* If no parts have been allocated yet, do so now; start with eight */
+    if (!self->priv->allocated_parts) {
+        self->priv->allocated_parts = 8;
+        self->priv->parts = g_try_renew(ECM_Part, self->priv->parts, self->priv->allocated_parts);
+
+        if (!self->priv->parts) {
+            g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, "Failed to allocate %d ECM parts!", self->priv->allocated_parts);
+            return FALSE;
+        }
+    }
+
+    /* Increase parts counter */
+    self->priv->num_parts++;
+
+    /* Check if we need to allocate more parts; if we do, double the
+       number of allocated parts to avoid reallocating often */
+    if (self->priv->num_parts > self->priv->allocated_parts) {
+        self->priv->allocated_parts *= 2;
+        self->priv->parts = g_try_renew(ECM_Part, self->priv->parts, self->priv->allocated_parts);
+
+        if (!self->priv->parts) {
+            g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, "Failed to allocate %d ECM parts!", self->priv->allocated_parts);
+            return FALSE;
+        }
+    }
+
+    /* Fill in the new part */
+    ECM_Part *new_part = &self->priv->parts[self->priv->num_parts-1];
+    new_part->num = num;
+    new_part->type = type;
+    new_part->raw_offset = raw_offset;
+    new_part->raw_size = raw_size;
+    new_part->offset = offset;
+    new_part->size = size;
+
+    return TRUE;
+}
+
 static gboolean mirage_file_filter_ecm_build_index (MIRAGE_FileFilter_ECM *self, GError **error)
 {
     GInputStream *stream = g_filter_input_stream_get_base_stream(G_FILTER_INPUT_STREAM(self));
@@ -157,17 +198,9 @@ static gboolean mirage_file_filter_ecm_build_index (MIRAGE_FileFilter_ECM *self,
         }
 
         /* Append to list of parts */
-        self->priv->num_parts++;
-        self->priv->parts = g_renew(ECM_Part, self->priv->parts, self->priv->num_parts);
-
-        self->priv->parts[self->priv->num_parts-1].num = num;
-        self->priv->parts[self->priv->num_parts-1].type = type;
-
-        self->priv->parts[self->priv->num_parts-1].raw_offset = raw_offset;
-        self->priv->parts[self->priv->num_parts-1].raw_size = raw_size;
-
-        self->priv->parts[self->priv->num_parts-1].offset = self->priv->file_size;
-        self->priv->parts[self->priv->num_parts-1].size = size;
+        if (!mirage_file_filter_ecm_append_part(self, num, type, raw_offset, raw_size, self->priv->file_size, size, error)) {
+            return FALSE;
+        }
 
         /* Original file size */
         self->priv->file_size += size;
@@ -183,6 +216,10 @@ static gboolean mirage_file_filter_ecm_build_index (MIRAGE_FileFilter_ECM *self,
         return FALSE;
     }
 
+    /* Release unused allocated parts */
+    self->priv->parts = g_renew(ECM_Part, self->priv->parts, self->priv->num_parts);
+
+    /* Set stream position to beginning */
     self->priv->cur_position = 0;
     self->priv->cur_part_idx = 0;
     self->priv->cur_part = &self->priv->parts[self->priv->cur_part_idx];
@@ -592,6 +629,7 @@ static void mirage_file_filter_ecm_init (MIRAGE_FileFilter_ECM *self)
     self->priv->cur_part_idx = 0;
     self->priv->cur_part = NULL;
 
+    self->priv->allocated_parts = 0;
     self->priv->num_parts = 0;
     self->priv->parts = NULL;
 
