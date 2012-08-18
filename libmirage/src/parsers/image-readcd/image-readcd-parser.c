@@ -204,7 +204,7 @@ static gboolean mirage_parser_readcd_parse_toc_entry (MIRAGE_Parser_READCD *self
         g_object_unref(self->priv->cur_track); /* Keep only pointer, without reference */
 
         /* Data fragment */
-        GObject *data_fragment = libmirage_create_fragment(MIRAGE_TYPE_FRAG_IFACE_BINARY, self->priv->data_filename, error);
+        GObject *data_fragment = libmirage_create_fragment(MIRAGE_TYPE_FRAG_IFACE_BINARY, self->priv->data_filename, G_OBJECT(self), error);
         if (!data_fragment) {
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to create data fragment!\n", __debug__);
             succeeded = FALSE;
@@ -261,7 +261,7 @@ static gboolean mirage_parser_readcd_parse_toc_entry (MIRAGE_Parser_READCD *self
                 g_object_unref(prev_track);
 
                 /* Current track: add 150-frame pregap with data from data file */
-                GObject *pregap_fragment = libmirage_create_fragment(MIRAGE_TYPE_FRAG_IFACE_BINARY, self->priv->data_filename, error);
+                GObject *pregap_fragment = libmirage_create_fragment(MIRAGE_TYPE_FRAG_IFACE_BINARY, self->priv->data_filename, G_OBJECT(self), error);
                 if (!pregap_fragment) {
                     MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to create data fragment!\n", __debug__);
                     succeeded = FALSE;

@@ -671,7 +671,7 @@ static gboolean mirage_parser_cdi_load_track (MIRAGE_Parser_CDI *self, GError **
     mirage_track_set_mode(MIRAGE_TRACK(cur_track), decoded_mode);
 
     /* Create BINARY fragment */
-    data_fragment = libmirage_create_fragment(MIRAGE_TYPE_FRAG_IFACE_BINARY, self->priv->cdi_filename, error);
+    data_fragment = libmirage_create_fragment(MIRAGE_TYPE_FRAG_IFACE_BINARY, self->priv->cdi_filename, G_OBJECT(self), error);
     if (!data_fragment) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: failed to create BINARY fragment!\n", __debug__);
         succeeded = FALSE;

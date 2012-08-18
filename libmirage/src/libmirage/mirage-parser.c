@@ -234,7 +234,7 @@ void mirage_parser_add_redbook_pregap (MIRAGE_Parser *self, GObject *disc)
         }
 
         /* Add pregap fragment - NULL fragment creation should never fail */
-        GObject *pregap_fragment = libmirage_create_fragment(MIRAGE_TYPE_FRAG_IFACE_NULL, "NULL", NULL);
+        GObject *pregap_fragment = libmirage_create_fragment(MIRAGE_TYPE_FRAG_IFACE_NULL, "NULL", G_OBJECT(self), NULL);
 
         mirage_track_add_fragment(MIRAGE_TRACK(ftrack), 0, pregap_fragment);
         mirage_fragment_set_length(MIRAGE_FRAGMENT(pregap_fragment), 150);

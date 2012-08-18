@@ -321,17 +321,25 @@ GObject *libmirage_create_disc (gchar **filenames, GObject *debug_context, GHash
  * libmirage_create_fragment:
  * @fragment_interface: (in): interface that fragment should implement
  * @filename: (in): filename of data file that fragment should be able to handle
+ * @debug_context: (in) (allow-none): debug context or debuggable object to set to fragment, or %NULL
  * @error: (out) (allow-none): location to store error, or %NULL
  *
  * <para>
  * Creates a #MIRAGE_Fragment implementation that implements interface specified
- * by @fragment_interface and can handle data file with file name @filename.
+ * by @fragment_interface and can handle data file with file name @filename. If provided,
+ * @debug_context is set to the fragment.
+ * </para>
+ *
+ * <para>
+ * If @debug_context is a #MIRAGE_DebugContext object, it is set to the file stream's
+ * #MIRAGE_Debuggable interface. If @debug is an object implementing #MIRAGE_Debuggable
+ * interface, then its debug context is retrieved and set to the file stream.
  * </para>
  *
  * Returns: a #MIRAGE_Fragment object on success, %NULL on failure. The reference
  * to the object should be released using g_object_unref() when no longer needed.
  **/
-GObject *libmirage_create_fragment (GType fragment_interface, const gchar *filename, GError **error)
+GObject *libmirage_create_fragment (GType fragment_interface, const gchar *filename, GObject *debug_context, GError **error)
 {
     gboolean succeeded = TRUE;
     GObject *fragment;
@@ -341,6 +349,18 @@ GObject *libmirage_create_fragment (GType fragment_interface, const gchar *filen
     if (!libmirage.initialized) {
         g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_LIBRARY_ERROR, "Library not initialized!");
         return NULL;
+    }
+
+    /* debug_context can be either a MIRAGE_DebugContext or an object implementing
+       #MIRAGE_Debuggable interface... in the latter case, fetch its actual
+       debug context */
+    if (debug_context) {
+        if (MIRAGE_IS_DEBUGGABLE(debug_context)) {
+            debug_context = mirage_debuggable_get_debug_context(MIRAGE_DEBUGGABLE(debug_context));
+        } else if (!MIRAGE_IS_DEBUG_CONTEXT(debug_context)) {
+            g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_LIBRARY_ERROR, "Invalid debug context or debuggable object!");
+            return NULL;
+        }
     }
 
     /* Check if filename is valid, but only if we're not dealing with NULL fragment */
@@ -357,6 +377,9 @@ GObject *libmirage_create_fragment (GType fragment_interface, const gchar *filen
         /* Check if requested interface is supported */
         succeeded = G_TYPE_CHECK_INSTANCE_TYPE((fragment), fragment_interface);
         if (succeeded) {
+            /* Set debug context */
+            mirage_debuggable_set_debug_context(MIRAGE_DEBUGGABLE(fragment), debug_context);
+
             /* Check if fragment can handle file format */
             succeeded = mirage_fragment_can_handle_data_format(MIRAGE_FRAGMENT(fragment), filename, NULL);
             if (succeeded) {

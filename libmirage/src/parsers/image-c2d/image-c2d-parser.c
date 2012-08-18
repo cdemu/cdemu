@@ -339,7 +339,7 @@ static gboolean mirage_parser_c2d_parse_track_entries (MIRAGE_Parser_C2D *self, 
         /* Pregap fragment at the beginning of track */
         if ((cur_tb->point == 1) && (cur_tb->index == 1)) {
             /* Creating NULL fragment should never fail */
-            GObject *pregap_fragment = libmirage_create_fragment(MIRAGE_TYPE_FRAG_IFACE_NULL, "NULL", error);
+            GObject *pregap_fragment = libmirage_create_fragment(MIRAGE_TYPE_FRAG_IFACE_NULL, "NULL", G_OBJECT(self), error);
 
             mirage_fragment_set_length(MIRAGE_FRAGMENT(pregap_fragment), 150);
 
@@ -348,7 +348,7 @@ static gboolean mirage_parser_c2d_parse_track_entries (MIRAGE_Parser_C2D *self, 
         }
 
         /* Data fragment */
-        GObject *data_fragment = libmirage_create_fragment(MIRAGE_TYPE_FRAG_IFACE_BINARY, self->priv->c2d_filename, error);
+        GObject *data_fragment = libmirage_create_fragment(MIRAGE_TYPE_FRAG_IFACE_BINARY, self->priv->c2d_filename, G_OBJECT(self), error);
         if (!data_fragment) {
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: failed to create fragment!\n", __debug__);
             g_object_unref(cur_point);

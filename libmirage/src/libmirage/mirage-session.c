@@ -384,7 +384,7 @@ void mirage_session_set_leadout_length (MIRAGE_Session *self, gint length)
 
     if (!mirage_track_get_fragment_by_index(MIRAGE_TRACK(leadout), -1, &null_fragment, NULL)) {
         /* Create NULL fragment - should never fail */
-        null_fragment = libmirage_create_fragment(MIRAGE_TYPE_FRAG_IFACE_NULL, "NULL", NULL);
+        null_fragment = libmirage_create_fragment(MIRAGE_TYPE_FRAG_IFACE_NULL, "NULL", G_OBJECT(self), NULL);
         mirage_track_add_fragment(MIRAGE_TRACK(leadout), 0, null_fragment);
     }
 
