@@ -1,7 +1,8 @@
 libmirage.so.7 libmirage7 #MINVER#
- MIRAGE_FragIface_BinaryClass@Base 1.5.0
  libmirage_create_disc@Base 1.2.0
+ libmirage_create_file_stream@Base 1.6.0
  libmirage_create_fragment@Base 1.2.0
+ libmirage_for_each_file_filter@Base 1.6.0
  libmirage_for_each_fragment@Base 1.2.0
  libmirage_for_each_parser@Base 1.2.0
  libmirage_get_supported_debug_masks@Base 1.2.0
@@ -24,6 +25,11 @@ libmirage.so.7 libmirage7 #MINVER#
  mirage_debug_context_set_debug_mask@Base 1.2.0
  mirage_debug_context_set_domain@Base 1.2.0
  mirage_debug_context_set_name@Base 1.2.0
+ mirage_debuggable_debug_message@Base 1.6.0
+ mirage_debuggable_debug_messagev@Base 1.6.0
+ mirage_debuggable_get_debug_context@Base 1.6.0
+ mirage_debuggable_get_type@Base 1.6.0
+ mirage_debuggable_set_debug_context@Base 1.6.0
  mirage_disc_add_session_by_index@Base 1.2.0
  mirage_disc_add_session_by_number@Base 1.2.0
  mirage_disc_add_track_by_index@Base 1.2.0
@@ -67,9 +73,12 @@ libmirage.so.7 libmirage7 #MINVER#
  mirage_disc_set_filenames@Base 1.2.0
  mirage_disc_set_mcn@Base 1.2.0
  mirage_disc_set_medium_type@Base 1.2.0
- mirage_error@Base 1.2.0
  mirage_error_get_type@Base 1.4.0
  mirage_error_quark@Base 1.2.0
+ mirage_file_filter_can_handle_data_format@Base 1.6.0
+ mirage_file_filter_generate_file_filter_info@Base 1.6.0
+ mirage_file_filter_get_file_filter_info@Base 1.6.0
+ mirage_file_filter_get_type@Base 1.6.0
  mirage_frag_iface_audio_get_file@Base 1.5.0
  mirage_frag_iface_audio_get_offset@Base 1.5.0
  mirage_frag_iface_audio_get_type@Base 1.5.0
@@ -108,6 +117,7 @@ libmirage.so.7 libmirage7 #MINVER#
  mirage_fragment_use_the_rest_of_file@Base 1.2.0
  mirage_helper_ascii2isrc@Base 1.2.0
  mirage_helper_bcd2hex@Base 1.2.0
+ mirage_helper_determine_sector_type@Base 1.6.0
  mirage_helper_find_data_file@Base 1.2.0
  mirage_helper_get_suffix@Base 1.2.0
  mirage_helper_has_suffix@Base 1.2.0
@@ -145,13 +155,9 @@ libmirage.so.7 libmirage7 #MINVER#
  mirage_micro_version@Base 1.2.0
  mirage_minor_version@Base 1.2.0
  mirage_object_attach_child@Base 1.2.0
- mirage_object_debug_message@Base 1.2.0
- mirage_object_debug_messagev@Base 1.2.0
  mirage_object_detach_child@Base 1.2.0
- mirage_object_get_debug_context@Base 1.2.0
  mirage_object_get_parent@Base 1.2.0
  mirage_object_get_type@Base 1.2.0
- mirage_object_set_debug_context@Base 1.2.0
  mirage_object_set_parent@Base 1.2.0
  mirage_parser_add_redbook_pregap@Base 1.2.0
  mirage_parser_generate_parser_info@Base 1.2.0
