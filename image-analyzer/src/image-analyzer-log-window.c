@@ -24,14 +24,14 @@
 #include <glib.h>
 #include <gtk/gtk.h>
 
-#include "image-analyzer-parser-log.h"
-#include "image-analyzer-parser-log-private.h"
+#include "image-analyzer-log-window.h"
+#include "image-analyzer-log-window-private.h"
 
 
 /**********************************************************************\
  *                             Public API                             *
 \**********************************************************************/
-void image_analyzer_parser_log_clear_log (IMAGE_ANALYZER_ParserLog *self)
+void image_analyzer_log_window_clear_log (IMAGE_ANALYZER_LogWindow *self)
 {
     GtkTextBuffer *buffer;
 
@@ -39,7 +39,7 @@ void image_analyzer_parser_log_clear_log (IMAGE_ANALYZER_ParserLog *self)
     gtk_text_buffer_set_text(buffer, "", -1);
 }
 
-void image_analyzer_parser_log_append_to_log (IMAGE_ANALYZER_ParserLog *self, gchar *message)
+void image_analyzer_log_window_append_to_log (IMAGE_ANALYZER_LogWindow *self, gchar *message)
 {
     GtkTextBuffer *buffer;
     GtkTextIter iter;
@@ -56,11 +56,11 @@ void image_analyzer_parser_log_append_to_log (IMAGE_ANALYZER_ParserLog *self, gc
 /**********************************************************************\
  *                              GUI setup                             *
 \**********************************************************************/
-static void setup_gui (IMAGE_ANALYZER_ParserLog *self)
+static void setup_gui (IMAGE_ANALYZER_LogWindow *self)
 {
     GtkWidget *vbox, *scrolledwindow;
 
-    gtk_window_set_title(GTK_WINDOW(self), "Parser log");
+    gtk_window_set_title(GTK_WINDOW(self), "libMirage log");
     gtk_window_set_default_size(GTK_WINDOW(self), 600, 400);
     gtk_container_set_border_width(GTK_CONTAINER(self), 5);
 
@@ -88,17 +88,17 @@ static void setup_gui (IMAGE_ANALYZER_ParserLog *self)
 /**********************************************************************\
  *                             Object init                            *
 \**********************************************************************/
-G_DEFINE_TYPE(IMAGE_ANALYZER_ParserLog, image_analyzer_parser_log, GTK_TYPE_WINDOW);
+G_DEFINE_TYPE(IMAGE_ANALYZER_LogWindow, image_analyzer_log_window, GTK_TYPE_WINDOW);
 
-static void image_analyzer_parser_log_init (IMAGE_ANALYZER_ParserLog *self)
+static void image_analyzer_log_window_init (IMAGE_ANALYZER_LogWindow *self)
 {
-    self->priv = IMAGE_ANALYZER_PARSER_LOG_GET_PRIVATE(self);
+    self->priv = IMAGE_ANALYZER_LOG_WINDOW_GET_PRIVATE(self);
 
     setup_gui(self);
 }
 
-static void image_analyzer_parser_log_class_init (IMAGE_ANALYZER_ParserLogClass *klass)
+static void image_analyzer_log_window_class_init (IMAGE_ANALYZER_LogWindowClass *klass)
 {
     /* Register private structure */
-    g_type_class_add_private(klass, sizeof(IMAGE_ANALYZER_ParserLogPrivate));
+    g_type_class_add_private(klass, sizeof(IMAGE_ANALYZER_LogWindowPrivate));
 }

@@ -30,7 +30,7 @@
 #include "image-analyzer-application.h"
 #include "image-analyzer-application-private.h"
 
-#include "image-analyzer-parser-log.h"
+#include "image-analyzer-log-window.h"
 #include "image-analyzer-sector-analysis.h"
 #include "image-analyzer-sector-read.h"
 #include "image-analyzer-disc-topology.h"
@@ -45,7 +45,7 @@
 /**********************************************************************\
  *                           Logging redirection                      *
 \**********************************************************************/
-static void capture_parser_log (const gchar *log_domain G_GNUC_UNUSED, GLogLevelFlags log_level G_GNUC_UNUSED, const gchar *message, IMAGE_ANALYZER_Application *self)
+static void capture_log_window (const gchar *log_domain G_GNUC_UNUSED, GLogLevelFlags log_level G_GNUC_UNUSED, const gchar *message, IMAGE_ANALYZER_Application *self)
 {
     /* Print to stdout? */
     if (self->priv->debug_stdout) {
@@ -53,7 +53,7 @@ static void capture_parser_log (const gchar *log_domain G_GNUC_UNUSED, GLogLevel
     }
 
     /* Append to our log string */
-    self->priv->parser_log = g_string_append(self->priv->parser_log, message);
+    self->priv->libmirage_log = g_string_append(self->priv->libmirage_log, message);
 }
 
 
@@ -141,7 +141,7 @@ static gboolean image_analyzer_application_close_image_or_dump (IMAGE_ANALYZER_A
        before the check, and it ensures the log is always cleared (i.e. if load
        call failed, we'd have error log but it wouldn't be cleared on subsequent
        load call... */
-    image_analyzer_parser_log_clear_log(IMAGE_ANALYZER_PARSER_LOG(self->priv->dialog_parser));
+    image_analyzer_log_window_clear_log(IMAGE_ANALYZER_LOG_WINDOW(self->priv->dialog_parser));
 
     /* Clear disc reference in child windows */
     image_analyzer_disc_topology_set_disc(IMAGE_ANALYZER_DISC_TOPOLOGY(self->priv->dialog_topology), NULL);
@@ -188,8 +188,8 @@ static gboolean image_analyzer_application_open_image (IMAGE_ANALYZER_Applicatio
     mirage_debug_context_set_debug_mask(MIRAGE_DEBUG_CONTEXT(debug_context), MIRAGE_DEBUG_PARSER);
 
     /* Set log handler */
-    self->priv->parser_log = g_string_new("");
-    log_handler = g_log_set_handler(DEBUG_DOMAIN_PARSER, G_LOG_LEVEL_MASK, (GLogFunc)capture_parser_log, self);
+    self->priv->libmirage_log = g_string_new("");
+    log_handler = g_log_set_handler(DEBUG_DOMAIN_PARSER, G_LOG_LEVEL_MASK, (GLogFunc)capture_log_window, self);
 
     /* Create disc */
     self->priv->disc = libmirage_create_disc(filenames, debug_context, NULL, &error);
@@ -199,7 +199,7 @@ static gboolean image_analyzer_application_open_image (IMAGE_ANALYZER_Applicatio
         g_error_free(error);
 
         /* Manually fill in the log */
-        image_analyzer_parser_log_append_to_log(IMAGE_ANALYZER_PARSER_LOG(self->priv->dialog_parser), self->priv->parser_log->str);
+        image_analyzer_log_window_append_to_log(IMAGE_ANALYZER_LOG_WINDOW(self->priv->dialog_parser), self->priv->libmirage_log->str);
 
         return FALSE;
     }
@@ -219,7 +219,7 @@ static gboolean image_analyzer_application_open_image (IMAGE_ANALYZER_Applicatio
     image_analyzer_application_create_xml_dump(self);
 
     /* Free parser log string */
-    g_string_free(self->priv->parser_log, TRUE);
+    g_string_free(self->priv->libmirage_log, TRUE);
 
     /* Display XML */
     image_analyzer_application_display_xml_data(self);
@@ -357,7 +357,7 @@ static void ui_callback_quit (GtkAction *action G_GNUC_UNUSED, gpointer user_dat
 }
 
 
-static void ui_callback_parser_log (GtkAction *action G_GNUC_UNUSED, IMAGE_ANALYZER_Application *self)
+static void ui_callback_log_window (GtkAction *action G_GNUC_UNUSED, IMAGE_ANALYZER_Application *self)
 {
     /* Make window (re)appear by first hiding, then showing it */
     gtk_widget_hide(self->priv->dialog_parser);
@@ -535,7 +535,7 @@ static GtkWidget *build_dialog_save_dump (IMAGE_ANALYZER_Application *self)
 
 static GtkWidget *build_dialog_parser ()
 {
-    GtkWidget *dialog = g_object_new(IMAGE_ANALYZER_TYPE_PARSER_LOG, NULL);
+    GtkWidget *dialog = g_object_new(IMAGE_ANALYZER_TYPE_LOG_WINDOW, NULL);
     g_signal_connect(dialog, "delete_event", G_CALLBACK(gtk_widget_hide_on_delete), NULL);
     return dialog;
 }
@@ -575,7 +575,7 @@ static GtkWidget *build_menu (IMAGE_ANALYZER_Application *self)
         { "CloseAction", GTK_STOCK_CLOSE, "_Close", "<control>W", "Close", G_CALLBACK(ui_callback_close) },
         { "QuitAction", GTK_STOCK_QUIT, "_Quit", "<control>Q", "Quit", G_CALLBACK(ui_callback_quit) },
 
-        { "ParserLogAction", GTK_STOCK_DIALOG_INFO, "_Parser log", "<control>P", "Parser log", G_CALLBACK(ui_callback_parser_log) },
+        { "LogAction", GTK_STOCK_DIALOG_INFO, "libMirage _log", "<control>L", "libMirage log", G_CALLBACK(ui_callback_log_window) },
         { "SectorAction", GTK_STOCK_EXECUTE, "_Read sector", "<control>R", "Read sector", G_CALLBACK(ui_callback_sector) },
         { "AnalysisAction", GTK_STOCK_EXECUTE, "Sector _Analysis", "<control>A", "Sector analysis", G_CALLBACK(ui_callback_analysis) },
         { "TopologyAction", GTK_STOCK_EXECUTE, "Disc _topology", "<control>T", "Disc topology", G_CALLBACK(ui_callback_topology) },
@@ -598,7 +598,7 @@ static GtkWidget *build_menu (IMAGE_ANALYZER_Application *self)
                     <menuitem name='Quit' action='QuitAction' /> \
                 </menu> \
                 <menu name='Image' action='ImageMenuAction'> \
-                    <menuitem name='Parser log' action='ParserLogAction' /> \
+                    <menuitem name='libMirage log' action='LogAction' /> \
                     <menuitem name='Read sector' action='SectorAction' /> \
                     <menuitem name='Sector analysis' action='AnalysisAction' /> \
                     <menuitem name='Disc topology' action='TopologyAction' /> \

@@ -31,7 +31,7 @@
 #include "image-analyzer-application-private.h"
 
 #include "image-analyzer-dump.h"
-#include "image-analyzer-parser-log.h"
+#include "image-analyzer-log-window.h"
 #include "image-analyzer-xml-tags.h"
 
 
@@ -541,9 +541,9 @@ gboolean image_analyzer_application_display_xml_data (IMAGE_ANALYZER_Application
 
         if (!g_ascii_strcasecmp((gchar *)cur_node->name, TAG_DISC)) {
             treestore_add_disc(self->priv->treestore, NULL, cur_node);
-        } else if (!g_ascii_strcasecmp((gchar *)cur_node->name, TAG_PARSER_LOG)) {
+        } else if (!g_ascii_strcasecmp((gchar *)cur_node->name, TAG_LIBMIRAGE_LOG)) {
             gchar *log = xml_node_get_string(cur_node);
-            image_analyzer_parser_log_append_to_log(IMAGE_ANALYZER_PARSER_LOG(self->priv->dialog_parser), log);
+            image_analyzer_log_window_append_to_log(IMAGE_ANALYZER_LOG_WINDOW(self->priv->dialog_parser), log);
             g_free(log);
         }
     }

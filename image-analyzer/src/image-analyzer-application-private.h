@@ -48,7 +48,7 @@ struct _IMAGE_ANALYZER_ApplicationPrivate
     guint context_id;
 
     /* Model */
-    GString *parser_log;
+    GString *libmirage_log;
     GtkTreeStore *treestore;
     xmlDocPtr xml_doc;
 

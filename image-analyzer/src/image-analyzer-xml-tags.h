@@ -22,7 +22,7 @@
 
 
 #define TAG_IMAGE_ANALYZER_DUMP "image-analyzer-dump"
-#define TAG_PARSER_LOG "parser-log"
+#define TAG_LIBMIRAGE_LOG "libmirage-log"
 
 #define TAG_DISC "disc"
 #define TAG_MEDIUM_TYPE "medium-type"

@@ -408,8 +408,8 @@ void image_analyzer_application_create_xml_dump (IMAGE_ANALYZER_Application *sel
     /* Dump disc to XML tree */
     xml_dump_disc(self->priv->disc, root_node);
 
-    /* Add parser log */
-    xmlNewTextChild(root_node, NULL, BAD_CAST TAG_PARSER_LOG, BAD_CAST self->priv->parser_log->str);
+    /* Add log */
+    xmlNewTextChild(root_node, NULL, BAD_CAST TAG_LIBMIRAGE_LOG, BAD_CAST self->priv->libmirage_log->str);
 
     /* Store XML */
     self->priv->xml_doc = doc;
