@@ -121,6 +121,7 @@ AC_CONFIG_FILES([
     src/Makefile
     src/filters/Makefile
     src/filters/filter-ecm/Makefile
+    src/filters/filter-gzip/Makefile
     src/fragments/Makefile
     src/fragments/fragment-binary/Makefile
     src/fragments/fragment-sndfile/Makefile
