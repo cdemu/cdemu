@@ -50,6 +50,7 @@ void image_analyzer_log_window_append_to_log (IMAGE_ANALYZER_LogWindow *self, co
     }
 }
 
+
 gchar *image_analyzer_log_window_get_log_text (IMAGE_ANALYZER_LogWindow *self)
 {
     GtkTextBuffer *buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(self->priv->text_view));
@@ -61,12 +62,39 @@ gchar *image_analyzer_log_window_get_log_text (IMAGE_ANALYZER_LogWindow *self)
 }
 
 
+void image_analyzer_log_window_set_debug_to_stdout (IMAGE_ANALYZER_LogWindow *self, gboolean enabled)
+{
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(self->priv->checkbutton_stdout), enabled);
+}
+
+
+/**********************************************************************\
+ *                             GUI callbacks                          *
+\**********************************************************************/
+static void ui_callback_clear_button_clicked (GtkButton *button G_GNUC_UNUSED, IMAGE_ANALYZER_LogWindow *self)
+{
+    image_analyzer_log_window_clear_log(self);
+}
+
+static void ui_callback_debug_to_stdout_button_toggled (GtkToggleButton *togglebutton, IMAGE_ANALYZER_LogWindow *self)
+{
+    g_signal_emit_by_name(self, "debug-to-stdout-change-requested", gtk_toggle_button_get_active(togglebutton));
+
+}
+
+static void ui_callback_debug_mask_button_clicked (GtkButton *button G_GNUC_UNUSED, IMAGE_ANALYZER_LogWindow *self)
+{
+    g_signal_emit_by_name(self, "debug-mask-change-requested");
+}
+
+
 /**********************************************************************\
  *                              GUI setup                             *
 \**********************************************************************/
 static void setup_gui (IMAGE_ANALYZER_LogWindow *self)
 {
-    GtkWidget *vbox, *scrolledwindow;
+    GtkWidget *vbox, *hbox, *scrolledwindow;
+    GtkWidget *widget;
 
     gtk_window_set_title(GTK_WINDOW(self), "libMirage log");
     gtk_window_set_default_size(GTK_WINDOW(self), 600, 400);
@@ -89,7 +117,30 @@ static void setup_gui (IMAGE_ANALYZER_LogWindow *self)
     gtk_text_view_set_editable(GTK_TEXT_VIEW(self->priv->text_view), FALSE);
     gtk_container_add(GTK_CONTAINER(scrolledwindow), self->priv->text_view);
 
-    return;
+    /* HBox for buttons */
+#ifdef GTK3_ENABLED
+    hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5);
+#else
+    hbox = gtk_hbox_new(FALSE, 5);
+#endif
+
+    gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, FALSE, 0);
+
+    /* Mirror to stdout checkbox */
+    widget = gtk_check_button_new_with_label("Mirror to stdout");
+    gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, FALSE, 0);
+    self->priv->checkbutton_stdout = widget;
+    g_signal_connect(widget, "toggled", G_CALLBACK(ui_callback_debug_to_stdout_button_toggled), self);
+
+    /* Clear button */
+    widget = gtk_button_new_with_label("Clear");
+    gtk_box_pack_start(GTK_BOX(hbox), widget, TRUE, FALSE, 0);
+    g_signal_connect(widget, "clicked", G_CALLBACK(ui_callback_clear_button_clicked), self);
+
+    /* Debug mask button */
+    widget = gtk_button_new_with_label("Debug mask");
+    gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, FALSE, 0);
+    g_signal_connect(widget, "clicked", G_CALLBACK(ui_callback_debug_mask_button_clicked), self);
 }
 
 
@@ -107,6 +158,28 @@ static void image_analyzer_log_window_init (IMAGE_ANALYZER_LogWindow *self)
 
 static void image_analyzer_log_window_class_init (IMAGE_ANALYZER_LogWindowClass *klass)
 {
+    /* Signals */
+    g_signal_new("debug-mask-change-requested",
+                 G_OBJECT_CLASS_TYPE(klass),
+                 G_SIGNAL_RUN_LAST,
+                 0,
+                 NULL,
+                 NULL,
+                 g_cclosure_marshal_VOID__VOID,
+                 G_TYPE_NONE,
+                 0);
+
+    g_signal_new("debug-to-stdout-change-requested",
+                 G_OBJECT_CLASS_TYPE(klass),
+                 G_SIGNAL_RUN_LAST,
+                 0,
+                 NULL,
+                 NULL,
+                 g_cclosure_marshal_VOID__BOOLEAN,
+                 G_TYPE_NONE,
+                 1,
+                 G_TYPE_BOOLEAN);
+
     /* Register private structure */
     g_type_class_add_private(klass, sizeof(IMAGE_ANALYZER_LogWindowPrivate));
 }

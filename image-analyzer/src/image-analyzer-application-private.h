@@ -28,9 +28,6 @@ struct _IMAGE_ANALYZER_ApplicationPrivate
     gboolean loaded;
     GObject *disc; /* Disc */
 
-    /* Debug context */
-    GObject *debug_context;
-
     /* Dialogs */
     GtkWidget *dialog_open_image;
     GtkWidget *dialog_open_dump;
@@ -55,7 +52,8 @@ struct _IMAGE_ANALYZER_ApplicationPrivate
     xmlDocPtr xml_doc;
 
     /* Debug */
-    gboolean debug_stdout;
+    GObject *debug_context;
+    gboolean debug_to_stdout;
 };
 
 void image_analyzer_application_create_xml_dump (IMAGE_ANALYZER_Application *self);

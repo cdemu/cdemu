@@ -43,17 +43,90 @@
 
 
 /**********************************************************************\
- *                           Logging redirection                      *
+ *                      Debug and logging redirection                 *
 \**********************************************************************/
 static void capture_log (const gchar *log_domain G_GNUC_UNUSED, GLogLevelFlags log_level G_GNUC_UNUSED, const gchar *message, IMAGE_ANALYZER_Application *self)
 {
     /* Print to stdout? */
-    if (self->priv->debug_stdout) {
+    if (self->priv->debug_to_stdout) {
         g_print("%s", message);
     }
 
     /* Append to log */
     image_analyzer_log_window_append_to_log(IMAGE_ANALYZER_LOG_WINDOW(self->priv->dialog_log), message);
+}
+
+static void image_analyzer_application_set_debug_to_stdout (IMAGE_ANALYZER_Application *self, gboolean enabled)
+{
+    /* Debug flag */
+    self->priv->debug_to_stdout = enabled;
+
+    /* Set to GUI (libMirage log window) */
+    image_analyzer_log_window_set_debug_to_stdout(IMAGE_ANALYZER_LOG_WINDOW(self->priv->dialog_log), enabled);
+}
+
+static void image_analyzer_application_change_debug_mask (IMAGE_ANALYZER_Application *self)
+{
+    GtkWidget *dialog, *content_area;
+    GtkWidget *vbox;
+    GtkWidget **entries = NULL;
+    gint mask;
+
+    const MIRAGE_DebugMask *valid_masks;
+    gint num_valid_masks;
+
+    gint i;
+
+    /* Get list of supported debug masks */
+    libmirage_get_supported_debug_masks(&valid_masks, &num_valid_masks, NULL);
+
+    /* Get mask from debug context */
+    mask = mirage_debug_context_get_debug_mask(MIRAGE_DEBUG_CONTEXT(self->priv->debug_context));
+
+    /* Construct dialog */
+    dialog = gtk_dialog_new_with_buttons("Debug mask",
+                                         GTK_WINDOW(self->priv->dialog_log),
+                                         GTK_DIALOG_MODAL,
+                                         GTK_STOCK_OK, GTK_RESPONSE_ACCEPT,
+                                         GTK_STOCK_CANCEL, GTK_RESPONSE_REJECT,
+                                         NULL);
+
+    /* Create the mask widgets */
+#ifdef GTK3_ENABLED
+    vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 2);
+#else
+    vbox = gtk_vbox_new(FALSE, 2);
+#endif
+
+    content_area = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
+    gtk_container_add(GTK_CONTAINER(content_area), vbox);
+
+    entries = g_new(GtkWidget *, num_valid_masks);
+    for (i = 0; i < num_valid_masks; i++) {
+        entries[i] = gtk_check_button_new_with_label(valid_masks[i].name);
+        gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(entries[i]), mask & valid_masks[i].value);
+        gtk_box_pack_start(GTK_BOX(vbox), entries[i], FALSE, FALSE, 0);
+    }
+
+    gtk_widget_show_all(vbox);
+
+    /* Run the dialog */
+    if (gtk_dialog_run(GTK_DIALOG(dialog)) == GTK_RESPONSE_ACCEPT) {
+        mask = 0;
+
+        for (i = 0; i < num_valid_masks; i++) {
+            if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(entries[i]))) {
+                mask |= valid_masks[i].value;
+            }
+        }
+
+        /* Set the mask */
+        mirage_debug_context_set_debug_mask(MIRAGE_DEBUG_CONTEXT(self->priv->debug_context), mask);
+    }
+
+    /* Destroy dialog */
+    gtk_widget_destroy(dialog);
+    g_free(entries);
 }
 
 
@@ -401,6 +474,20 @@ static gboolean cb_window_delete_event (GtkWidget *widget G_GNUC_UNUSED, GdkEven
 }
 
 
+
+static void callback_debug_to_stdout_change_requested (IMAGE_ANALYZER_LogWindow *log_window G_GNUC_UNUSED, gboolean value, IMAGE_ANALYZER_Application *self)
+{
+    /* Set the new value */
+    image_analyzer_application_set_debug_to_stdout(self, value);
+}
+
+static void callback_debug_mask_change_requested (IMAGE_ANALYZER_LogWindow *log_window G_GNUC_UNUSED, IMAGE_ANALYZER_Application *self)
+{
+    /* Propagate to helper function */
+    image_analyzer_application_change_debug_mask(self);
+}
+
+
 /**********************************************************************\
  *                           GUI build helpers                        *
 \**********************************************************************/
@@ -523,10 +610,12 @@ static GtkWidget *build_dialog_save_dump (IMAGE_ANALYZER_Application *self)
     return dialog;
 }
 
-static GtkWidget *build_dialog_log ()
+static GtkWidget *build_dialog_log (IMAGE_ANALYZER_Application *self)
 {
     GtkWidget *dialog = g_object_new(IMAGE_ANALYZER_TYPE_LOG_WINDOW, NULL);
     g_signal_connect(dialog, "delete_event", G_CALLBACK(gtk_widget_hide_on_delete), NULL);
+    g_signal_connect(dialog, "debug_to_stdout_change_requested", G_CALLBACK(callback_debug_to_stdout_change_requested), self);
+    g_signal_connect(dialog, "debug_mask_change_requested", G_CALLBACK(callback_debug_mask_change_requested), self);
     return dialog;
 }
 
@@ -690,7 +779,7 @@ static void setup_gui (IMAGE_ANALYZER_Application *self)
     self->priv->dialog_open_image = build_dialog_open_image(self);
     self->priv->dialog_open_dump = build_dialog_open_dump(self);
     self->priv->dialog_save_dump = build_dialog_save_dump(self);
-    self->priv->dialog_log = build_dialog_log();
+    self->priv->dialog_log = build_dialog_log(self);
     self->priv->dialog_sector = build_dialog_sector();
     self->priv->dialog_analysis = build_dialog_analysis();
     self->priv->dialog_topology = build_dialog_topology();
@@ -707,10 +796,10 @@ static void setup_gui (IMAGE_ANALYZER_Application *self)
 /**********************************************************************\
  *                             Public API                             *
 \**********************************************************************/
-gboolean image_analyzer_application_run (IMAGE_ANALYZER_Application *self, gchar **open_image, gboolean debug_stdout)
+gboolean image_analyzer_application_run (IMAGE_ANALYZER_Application *self, gchar **open_image, gboolean debug_to_stdout)
 {
-    /* Debug flag */
-    self->priv->debug_stdout = debug_stdout;
+    /* Set the 'Mirror debug to stdout' flag */
+    image_analyzer_application_set_debug_to_stdout(self, debug_to_stdout);
 
     /* Open image, if provided */
     if (g_strv_length(open_image)) {

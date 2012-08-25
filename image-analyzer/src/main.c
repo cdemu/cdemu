@@ -30,10 +30,10 @@
 /******************************************************************************\
  *                                Main function                               *
 \******************************************************************************/
-static gboolean debug_stdout = FALSE;
+static gboolean debug_to_stdout = FALSE;
 
 static GOptionEntry option_entries[] = {
-    { "debug-to-stdout", 'd', 0, G_OPTION_ARG_NONE, &debug_stdout, "Print image loading debug messages to stdout.", NULL },
+    { "debug-to-stdout", 'd', 0, G_OPTION_ARG_NONE, &debug_to_stdout, "Print libMirage debug to stdout as well as capturing them to internal log.", NULL },
     { NULL, 0, 0, G_OPTION_ARG_NONE, NULL, NULL, NULL }
 };
 
@@ -81,7 +81,7 @@ int main (int argc, char **argv)
     application = g_object_new(IMAGE_ANALYZER_TYPE_APPLICATION, NULL);
 
     /* Run application */
-    if (!image_analyzer_application_run(IMAGE_ANALYZER_APPLICATION(application), open_image, debug_stdout)) {
+    if (!image_analyzer_application_run(IMAGE_ANALYZER_APPLICATION(application), open_image, debug_to_stdout)) {
         g_warning("Failed to run application!\n");
     }
 

@@ -26,6 +26,9 @@ struct _IMAGE_ANALYZER_LogWindowPrivate
 {
     /* Text entry */
     GtkWidget *text_view;
+
+    /* Mirror to stdout check button */
+    GtkWidget *checkbutton_stdout;
 };
 
 #endif /* __IMAGE_ANALYZER_LOG_WINDOW_PRIVATE_H__ */
