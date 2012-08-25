@@ -39,17 +39,25 @@ void image_analyzer_log_window_clear_log (IMAGE_ANALYZER_LogWindow *self)
     gtk_text_buffer_set_text(buffer, "", -1);
 }
 
-void image_analyzer_log_window_append_to_log (IMAGE_ANALYZER_LogWindow *self, gchar *message)
+void image_analyzer_log_window_append_to_log (IMAGE_ANALYZER_LogWindow *self, const gchar *message)
 {
-    GtkTextBuffer *buffer;
-    GtkTextIter iter;
-
-    buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(self->priv->text_view));
-    gtk_text_buffer_get_end_iter(buffer, &iter);
-
     if (message) {
+        GtkTextBuffer *buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(self->priv->text_view));
+        GtkTextIter iter;
+
+        gtk_text_buffer_get_end_iter(buffer, &iter);
         gtk_text_buffer_insert(buffer, &iter, message, -1);
     }
+}
+
+gchar *image_analyzer_log_window_get_log_text (IMAGE_ANALYZER_LogWindow *self)
+{
+    GtkTextBuffer *buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(self->priv->text_view));
+    GtkTextIter start, end;
+
+    gtk_text_buffer_get_bounds(buffer, &start, &end);
+
+    return gtk_text_buffer_get_text(buffer, &start, &end, FALSE);
 }
 
 

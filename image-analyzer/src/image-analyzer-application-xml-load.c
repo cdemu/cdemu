@@ -543,7 +543,7 @@ gboolean image_analyzer_application_display_xml_data (IMAGE_ANALYZER_Application
             treestore_add_disc(self->priv->treestore, NULL, cur_node);
         } else if (!g_ascii_strcasecmp((gchar *)cur_node->name, TAG_LIBMIRAGE_LOG)) {
             gchar *log = xml_node_get_string(cur_node);
-            image_analyzer_log_window_append_to_log(IMAGE_ANALYZER_LOG_WINDOW(self->priv->dialog_parser), log);
+            image_analyzer_log_window_append_to_log(IMAGE_ANALYZER_LOG_WINDOW(self->priv->dialog_log), log);
             g_free(log);
         }
     }

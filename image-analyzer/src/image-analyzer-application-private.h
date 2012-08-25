@@ -28,11 +28,14 @@ struct _IMAGE_ANALYZER_ApplicationPrivate
     gboolean loaded;
     GObject *disc; /* Disc */
 
+    /* Debug context */
+    GObject *debug_context;
+
     /* Dialogs */
     GtkWidget *dialog_open_image;
     GtkWidget *dialog_open_dump;
     GtkWidget *dialog_save_dump;
-    GtkWidget *dialog_parser;
+    GtkWidget *dialog_log;
     GtkWidget *dialog_sector;
     GtkWidget *dialog_analysis;
     GtkWidget *dialog_topology;
@@ -48,7 +51,6 @@ struct _IMAGE_ANALYZER_ApplicationPrivate
     guint context_id;
 
     /* Model */
-    GString *libmirage_log;
     GtkTreeStore *treestore;
     xmlDocPtr xml_doc;
 

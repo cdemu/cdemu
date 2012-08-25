@@ -54,8 +54,8 @@ GType image_analyzer_log_window_get_type (void);
 
 /* Public API */
 void image_analyzer_log_window_clear_log (IMAGE_ANALYZER_LogWindow *self);
-void image_analyzer_log_window_append_to_log (IMAGE_ANALYZER_LogWindow *self, gchar *message);
-
+void image_analyzer_log_window_append_to_log (IMAGE_ANALYZER_LogWindow *self, const gchar *message);
+gchar *image_analyzer_log_window_get_log_text (IMAGE_ANALYZER_LogWindow *self);
 
 G_END_DECLS
 
