@@ -75,7 +75,7 @@ struct _MIRAGE_FragmentClass
     MIRAGE_ObjectClass parent_class;
 
     /* Class members */
-    gboolean (*can_handle_data_format) (MIRAGE_Fragment *self, const gchar *filename, GError **error);
+    gboolean (*can_handle_data_format) (MIRAGE_Fragment *self, GObject *stream, GError **error);
 
     gboolean (*use_the_rest_of_file) (MIRAGE_Fragment *self, GError **error);
 
@@ -93,7 +93,7 @@ GType mirage_fragment_get_type (void);
 void mirage_fragment_generate_fragment_info (MIRAGE_Fragment *self, const gchar *id, const gchar *name);
 const MIRAGE_FragmentInfo *mirage_fragment_get_fragment_info (MIRAGE_Fragment *self);
 
-gboolean mirage_fragment_can_handle_data_format (MIRAGE_Fragment *self, const gchar *filename, GError **error);
+gboolean mirage_fragment_can_handle_data_format (MIRAGE_Fragment *self, GObject *stream, GError **error);
 
 void mirage_fragment_set_address (MIRAGE_Fragment *self, gint address);
 gint mirage_fragment_get_address (MIRAGE_Fragment *self);

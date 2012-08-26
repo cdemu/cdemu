@@ -197,21 +197,21 @@ static gint mirage_fragment_sndfile_get_offset (MIRAGE_FragIface_Audio *_self)
 /**********************************************************************\
  *               MIRAGE_Fragment methods implementations              *
 \**********************************************************************/
-static gboolean mirage_fragment_sndfile_can_handle_data_format (MIRAGE_Fragment *_self G_GNUC_UNUSED, const gchar *filename, GError **error)
+static gboolean mirage_fragment_sndfile_can_handle_data_format (MIRAGE_Fragment *_self G_GNUC_UNUSED, GObject *stream, GError **error)
 {
     SNDFILE *sndfile;
     SF_INFO format;
 
     format.format = 0;
 
-    /* Make sure filename is given */
-    if (!filename) {
+    /* Make sure stream is given */
+    if (!stream) {
         g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_CANNOT_HANDLE, "Fragment cannot handle given data!");
         return FALSE;
     }
 
-    /* Try opening the file */
-    sndfile = sf_open(filename, SFM_READ, &format);
+    /* Try opening sndfile on top of stream */
+    sndfile = sf_open_virtual(&sndfile_io_bridge, SFM_READ, &format, stream);
     if (!sndfile) {
         g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_CANNOT_HANDLE, "Fragment cannot handle given data!");
         return FALSE;

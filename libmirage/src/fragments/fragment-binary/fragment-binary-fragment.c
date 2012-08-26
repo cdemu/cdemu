@@ -269,15 +269,15 @@ static guint64 mirage_fragment_binary_subchannel_file_get_position (MIRAGE_FragI
 /**********************************************************************\
  *               MIRAGE_Fragment methods implementations              *
 \**********************************************************************/
-static gboolean mirage_fragment_binary_can_handle_data_format (MIRAGE_Fragment *_self G_GNUC_UNUSED, const gchar *filename G_GNUC_UNUSED, GError **error)
+static gboolean mirage_fragment_binary_can_handle_data_format (MIRAGE_Fragment *_self G_GNUC_UNUSED, GObject *stream, GError **error)
 {
-    /* Make sure filename is given */
-    if (!filename) {
+    /* Make sure stream is provided */
+    if (!stream) {
         g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_CANNOT_HANDLE, "Fragment cannot handle given data!");
         return FALSE;
     }
 
-    /* BINARY doesn't need any other data file checks; what's important is interface type,
+    /* BINARY doesn't need any other data checks; what's important is interface type,
        which is filtered out elsewhere */
     return TRUE;
 }

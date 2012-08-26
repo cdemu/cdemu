@@ -320,13 +320,13 @@ GObject *libmirage_create_disc (gchar **filenames, GObject *debug_context, GHash
 /**
  * libmirage_create_fragment:
  * @fragment_interface: (in): interface that fragment should implement
- * @filename: (in): filename of data file that fragment should be able to handle
+ * @stream: (in): the data stream that fragment should be able to handle
  * @debug_context: (in) (allow-none): debug context or debuggable object to set to fragment, or %NULL
  * @error: (out) (allow-none): location to store error, or %NULL
  *
  * <para>
  * Creates a #MIRAGE_Fragment implementation that implements interface specified
- * by @fragment_interface and can handle data file with file name @filename. If provided,
+ * by @fragment_interface and can handle data stored in @stream. If provided,
  * @debug_context is set to the fragment.
  * </para>
  *
@@ -339,7 +339,7 @@ GObject *libmirage_create_disc (gchar **filenames, GObject *debug_context, GHash
  * Returns: a #MIRAGE_Fragment object on success, %NULL on failure. The reference
  * to the object should be released using g_object_unref() when no longer needed.
  **/
-GObject *libmirage_create_fragment (GType fragment_interface, const gchar *filename, GObject *debug_context, GError **error)
+GObject *libmirage_create_fragment (GType fragment_interface, GObject *stream, GObject *debug_context, GError **error)
 {
     gboolean succeeded = TRUE;
     GObject *fragment;
@@ -363,12 +363,6 @@ GObject *libmirage_create_fragment (GType fragment_interface, const gchar *filen
         }
     }
 
-    /* Check if filename is valid, but only if we're not dealing with NULL fragment */
-    if (fragment_interface != MIRAGE_TYPE_FRAG_IFACE_NULL && !g_file_test(filename, G_FILE_TEST_IS_REGULAR)) {
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_DATA_FILE_ERROR, "Invalid data file '%s'!", filename);
-        return NULL;
-    }
-
     /* Go over all fragments */
     for (i = 0; i < libmirage.num_fragments; i++) {
         /* Create fragment; check if it implements requested interface, then
@@ -381,7 +375,7 @@ GObject *libmirage_create_fragment (GType fragment_interface, const gchar *filen
             mirage_debuggable_set_debug_context(MIRAGE_DEBUGGABLE(fragment), debug_context);
 
             /* Check if fragment can handle file format */
-            succeeded = mirage_fragment_can_handle_data_format(MIRAGE_FRAGMENT(fragment), filename, NULL);
+            succeeded = mirage_fragment_can_handle_data_format(MIRAGE_FRAGMENT(fragment), stream, NULL);
             if (succeeded) {
                 return fragment;
             }

@@ -25,9 +25,9 @@
 /**********************************************************************\
  *               MIRAGE_Fragment methods implementations              *
 \**********************************************************************/
-static gboolean mirage_fragment_null_can_handle_data_format (MIRAGE_Fragment *_self G_GNUC_UNUSED, const gchar *filename G_GNUC_UNUSED, GError **error G_GNUC_UNUSED)
+static gboolean mirage_fragment_null_can_handle_data_format (MIRAGE_Fragment *_self G_GNUC_UNUSED, GObject *stream G_GNUC_UNUSED, GError **error G_GNUC_UNUSED)
 {
-    /* NULL doesn't need any data file checks; what's important is interface type,
+    /* NULL doesn't need any data checks; what's important is interface type,
        which is filtered out elsewhere */
     return TRUE;
 }
@@ -45,7 +45,7 @@ static gboolean mirage_fragment_null_read_main_data (MIRAGE_Fragment *_self, gin
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_FRAGMENT, "%s: no data in NULL fragment\n", __debug__);
     if (length) {
         *length = 0;
-    }    
+    }
     return TRUE;
 }
 

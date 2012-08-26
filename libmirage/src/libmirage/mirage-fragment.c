@@ -114,19 +114,19 @@ const MIRAGE_FragmentInfo *mirage_fragment_get_fragment_info (MIRAGE_Fragment *s
 /**
  * mirage_fragment_can_handle_data_format:
  * @self: a #MIRAGE_Fragment
- * @filename: (in): filename
+ * @stream: (in): data stream
  * @error: (out) (allow-none): location to store error, or %NULL
  *
  * <para>
- * Checks whether parser can handle data stored in @filename.
+ * Checks whether parser can handle data stored in @stream.
  * </para>
  *
  * Returns: %TRUE if fragment can handle data file, %FALSE if not
  **/
-gboolean mirage_fragment_can_handle_data_format (MIRAGE_Fragment *self, const gchar *filename, GError **error)
+gboolean mirage_fragment_can_handle_data_format (MIRAGE_Fragment *self, GObject *stream, GError **error)
 {
     /* Provided by implementation */
-    return MIRAGE_FRAGMENT_GET_CLASS(self)->can_handle_data_format(self, filename, error);
+    return MIRAGE_FRAGMENT_GET_CLASS(self)->can_handle_data_format(self, stream, error);
 }
 
 
