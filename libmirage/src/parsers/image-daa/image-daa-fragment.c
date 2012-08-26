@@ -854,7 +854,7 @@ gboolean mirage_fragment_daa_set_file (MIRAGE_Fragment_DAA *self, const gchar *f
 /**********************************************************************\
  *                MIRAGE_Fragment methods implementations             *
 \**********************************************************************/
-static gboolean mirage_fragment_daa_can_handle_data_format (MIRAGE_Fragment *_self G_GNUC_UNUSED, const gchar *filename G_GNUC_UNUSED, GError **error G_GNUC_UNUSED)
+static gboolean mirage_fragment_daa_can_handle_data_format (MIRAGE_Fragment *_self G_GNUC_UNUSED, GObject *stream G_GNUC_UNUSED, GError **error G_GNUC_UNUSED)
 {
     /* Not implemented */
     g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_PARSER_ERROR, "Function not implemented!");
