@@ -32,6 +32,7 @@ struct _MIRAGE_Parser_CDIPrivate
     GObject *disc;
 
     gchar *cdi_filename;
+    GObject *cdi_stream;
 
     gboolean medium_type_set;
 
@@ -671,7 +672,7 @@ static gboolean mirage_parser_cdi_load_track (MIRAGE_Parser_CDI *self, GError **
     mirage_track_set_mode(MIRAGE_TRACK(cur_track), decoded_mode);
 
     /* Create BINARY fragment */
-    data_fragment = libmirage_create_fragment(MIRAGE_TYPE_FRAG_IFACE_BINARY, self->priv->cdi_filename, G_OBJECT(self), error);
+    data_fragment = libmirage_create_fragment(MIRAGE_TYPE_FRAG_IFACE_BINARY, self->priv->cdi_stream, G_OBJECT(self), error);
     if (!data_fragment) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: failed to create BINARY fragment!\n", __debug__);
         succeeded = FALSE;
@@ -680,7 +681,7 @@ static gboolean mirage_parser_cdi_load_track (MIRAGE_Parser_CDI *self, GError **
 
     mirage_fragment_set_length(MIRAGE_FRAGMENT(data_fragment), fragment_len);
 
-    if (!mirage_frag_iface_binary_track_file_set_file(MIRAGE_FRAG_IFACE_BINARY(data_fragment), self->priv->cdi_filename, error)) {
+    if (!mirage_frag_iface_binary_track_file_set_file(MIRAGE_FRAG_IFACE_BINARY(data_fragment), self->priv->cdi_filename, self->priv->cdi_stream, error)) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to set track data file!\n", __debug__);
         g_object_unref(data_fragment);
         succeeded = FALSE;
@@ -944,7 +945,6 @@ static GObject *mirage_parser_cdi_load_image (MIRAGE_Parser *_self, gchar **file
     MIRAGE_Parser_CDI *self = MIRAGE_PARSER_CDI(_self);
 
     gboolean succeeded = TRUE;
-    GObject *stream;
     guint64 offset;
     gint32 descriptor_length;
 
@@ -955,8 +955,8 @@ static GObject *mirage_parser_cdi_load_image (MIRAGE_Parser *_self, gchar **file
     }
 
     /* Open file */
-    stream = libmirage_create_file_stream(filenames[0], G_OBJECT(self), error);
-    if (!stream) {
+    self->priv->cdi_stream = libmirage_create_file_stream(filenames[0], G_OBJECT(self), error);
+    if (!self->priv->cdi_stream) {
         return FALSE;
     }
 
@@ -970,8 +970,8 @@ static GObject *mirage_parser_cdi_load_image (MIRAGE_Parser *_self, gchar **file
     /* The descriptor is stored at the end of CDI image; I'm quite positive that
        last four bytes represent length of descriptor data */
     offset = -(guint64)(sizeof(descriptor_length));
-    g_seekable_seek(G_SEEKABLE(stream), offset, G_SEEK_END, NULL, NULL);
-    if (g_input_stream_read(G_INPUT_STREAM(stream), &descriptor_length, sizeof(descriptor_length), NULL, NULL) != sizeof(descriptor_length)) {
+    g_seekable_seek(G_SEEKABLE(self->priv->cdi_stream), offset, G_SEEK_END, NULL, NULL);
+    if (g_input_stream_read(G_INPUT_STREAM(self->priv->cdi_stream), &descriptor_length, sizeof(descriptor_length), NULL, NULL) != sizeof(descriptor_length)) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read descriptor length!\n", __debug__);
         g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, "Failed to read descriptor length!");
         succeeded = FALSE;
@@ -983,8 +983,8 @@ static GObject *mirage_parser_cdi_load_image (MIRAGE_Parser *_self, gchar **file
     /* Allocate descriptor data and read it */
     self->priv->cur_ptr = self->priv->cdi_data = g_malloc(descriptor_length);
     offset = -(guint64)(descriptor_length);
-    g_seekable_seek(G_SEEKABLE(stream), offset, G_SEEK_END, NULL, NULL);
-    if (g_input_stream_read(G_INPUT_STREAM(stream), self->priv->cdi_data, descriptor_length, NULL, NULL) != descriptor_length) {
+    g_seekable_seek(G_SEEKABLE(self->priv->cdi_stream), offset, G_SEEK_END, NULL, NULL);
+    if (g_input_stream_read(G_INPUT_STREAM(self->priv->cdi_stream), self->priv->cdi_data, descriptor_length, NULL, NULL) != descriptor_length) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read descriptor!\n", __debug__);
         g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, "Failed to read descriptor!");
         succeeded = FALSE;
@@ -1007,12 +1007,6 @@ static GObject *mirage_parser_cdi_load_image (MIRAGE_Parser *_self, gchar **file
     mirage_disc_layout_set_start_sector(MIRAGE_DISC(self->priv->disc), -150);
 
 end:
-    /* Free descriptor data */
-    g_free(self->priv->cdi_data);
-
-    /* Close file stream */
-    g_object_unref(stream);
-
     /* Return disc */
     mirage_object_detach_child(MIRAGE_OBJECT(self), self->priv->disc);
     if (succeeded) {
@@ -1049,6 +1043,19 @@ static void mirage_parser_cdi_init (MIRAGE_Parser_CDI *self)
     self->priv->cdi_filename = NULL;
 }
 
+static void mirage_parser_cdi_dispose (GObject *gobject)
+{
+    MIRAGE_Parser_CDI *self = MIRAGE_PARSER_CDI(gobject);
+
+    if (self->priv->cdi_stream) {
+        g_object_unref(self->priv->cdi_stream);
+        self->priv->cdi_stream = NULL;
+    }
+
+    /* Chain up to the parent class */
+    return G_OBJECT_CLASS(mirage_parser_cdi_parent_class)->dispose(gobject);
+}
+
 static void mirage_parser_cdi_finalize (GObject *gobject)
 {
     MIRAGE_Parser_CDI *self = MIRAGE_PARSER_CDI(gobject);
@@ -1064,6 +1071,7 @@ static void mirage_parser_cdi_class_init (MIRAGE_Parser_CDIClass *klass)
     GObjectClass *gobject_class = G_OBJECT_CLASS(klass);
     MIRAGE_ParserClass *parser_class = MIRAGE_PARSER_CLASS(klass);
 
+    gobject_class->dispose = mirage_parser_cdi_dispose;
     gobject_class->finalize = mirage_parser_cdi_finalize;
 
     parser_class->load_image = mirage_parser_cdi_load_image;
