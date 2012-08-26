@@ -266,7 +266,14 @@ static gboolean mirage_parser_cue_add_index (MIRAGE_Parser_CUE *self, gint numbe
             }
 
             /* Now current track; we only create fragment here and set its offset */
-            GObject *data_fragment = NULL;
+            GObject *data_fragment;
+
+            GObject *data_stream = mirage_parser_get_cached_data_stream(MIRAGE_PARSER(self), self->priv->cur_data_filename, error);
+            if (!data_stream) {
+                MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to create data strean on data file: %s!\n", __debug__, self->priv->cur_data_filename);
+                return FALSE;
+            }
+
             if (!strcmp(self->priv->cur_data_type, "BINARY")) {
                 /* Binary data; we'll request fragment with BINARY interface... */
                 gint tfile_sectsize = 0;
@@ -282,14 +289,16 @@ static gboolean mirage_parser_cue_add_index (MIRAGE_Parser_CUE *self, gint numbe
                     tfile_sectsize = self->priv->cur_data_sectsize;
                 }
 
-                data_fragment = libmirage_create_fragment(MIRAGE_TYPE_FRAG_IFACE_BINARY, self->priv->cur_data_filename, G_OBJECT(self), error);
+                data_fragment = libmirage_create_fragment(MIRAGE_TYPE_FRAG_IFACE_BINARY, data_stream, G_OBJECT(self), error);
                 if (!data_fragment) {
                     MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to create data fragment!\n", __debug__);
+                    g_object_unref(data_stream);
                     return FALSE;
                 }
 
-                if (!mirage_frag_iface_binary_track_file_set_file(MIRAGE_FRAG_IFACE_BINARY(data_fragment), self->priv->cur_data_filename, error)) {
+                if (!mirage_frag_iface_binary_track_file_set_file(MIRAGE_FRAG_IFACE_BINARY(data_fragment), self->priv->cur_data_filename, data_stream, error)) {
                     MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to set track data file!\n", __debug__);
+                    g_object_unref(data_stream);
                     g_object_unref(data_fragment);
                     return FALSE;
                 }
@@ -306,14 +315,16 @@ static gboolean mirage_parser_cue_add_index (MIRAGE_Parser_CUE *self, gint numbe
                 /* One of the audio files; we'll request fragment with AUDIO
                    interface and hope Mirage finds one that can handle the file
                    for us */
-                data_fragment = libmirage_create_fragment(MIRAGE_TYPE_FRAG_IFACE_AUDIO, self->priv->cur_data_filename, G_OBJECT(self), error);
+                data_fragment = libmirage_create_fragment(MIRAGE_TYPE_FRAG_IFACE_AUDIO, data_stream, G_OBJECT(self), error);
                 if (!data_fragment) {
                     MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: unknown/unsupported file type: %s\n", __debug__, self->priv->cur_data_type);
+                    g_object_unref(data_stream);
                     return FALSE;
                 }
 
-                if (!mirage_frag_iface_audio_set_file(MIRAGE_FRAG_IFACE_AUDIO(data_fragment), self->priv->cur_data_filename, error)) {
+                if (!mirage_frag_iface_audio_set_file(MIRAGE_FRAG_IFACE_AUDIO(data_fragment), self->priv->cur_data_filename, data_stream, error)) {
                     MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to set track data file!\n", __debug__);
+                    g_object_unref(data_stream);
                     g_object_unref(data_fragment);
                     return FALSE;
                 }
@@ -328,6 +339,7 @@ static gboolean mirage_parser_cue_add_index (MIRAGE_Parser_CUE *self, gint numbe
                (if file won't change) */
             self->priv->cur_track_start = address;
 
+            g_object_unref(data_stream);
             g_object_unref(data_fragment);
         }
     } else {
