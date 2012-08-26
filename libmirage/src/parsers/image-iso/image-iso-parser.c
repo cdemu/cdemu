@@ -47,7 +47,7 @@ static gboolean mirage_parser_iso_is_file_valid (MIRAGE_Parser_ISO *self, gchar 
     GObject *stream;
 
     /* Create stream */
-    stream = libmirage_create_file_stream(filename, G_OBJECT(self), error);
+    stream = mirage_parser_get_cached_data_stream(MIRAGE_PARSER(self), filename, error);
     if (!stream) {
         return FALSE;
     }
@@ -151,21 +151,31 @@ static gboolean mirage_parser_iso_load_track (MIRAGE_Parser_ISO *self, gchar *fi
 {
     GObject *session = NULL;
     GObject *track = NULL;
-    GObject *data_fragment = NULL;
+    GObject *data_fragment;
+    GObject *data_stream;
 
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: loading track from ISO file: %s\n", __debug__, filename);
 
+    /* Get data stream */
+    data_stream = mirage_parser_get_cached_data_stream(MIRAGE_PARSER(self), filename, error);
+    if (!data_stream) {
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to open data stream on file: %s!\n", __debug__, filename);
+        return FALSE;
+    }
+
     /* Create data fragment */
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: creating data fragment\n", __debug__);
-    data_fragment = libmirage_create_fragment(MIRAGE_TYPE_FRAG_IFACE_BINARY, filename, G_OBJECT(self), error);
+    data_fragment = libmirage_create_fragment(MIRAGE_TYPE_FRAG_IFACE_BINARY, data_stream, G_OBJECT(self), error);
     if (!data_fragment) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to create BINARY fragment!\n", __debug__);
+        g_object_unref(data_stream);
         return FALSE;
     }
 
     /* Set file */
-    if (!mirage_frag_iface_binary_track_file_set_file(MIRAGE_FRAG_IFACE_BINARY(data_fragment), filename, error)) {
+    if (!mirage_frag_iface_binary_track_file_set_file(MIRAGE_FRAG_IFACE_BINARY(data_fragment), filename, data_stream, error)) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to set track data file!\n", __debug__);
+        g_object_unref(data_stream);
         g_object_unref(data_fragment);
         return FALSE;
     }
@@ -175,6 +185,7 @@ static gboolean mirage_parser_iso_load_track (MIRAGE_Parser_ISO *self, gchar *fi
     /* Use whole file */
     if (!mirage_fragment_use_the_rest_of_file(MIRAGE_FRAGMENT(data_fragment), error)) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to use the rest of file!\n", __debug__);
+        g_object_unref(data_stream);
         g_object_unref(data_fragment);
         return FALSE;
     }
@@ -192,6 +203,7 @@ static gboolean mirage_parser_iso_load_track (MIRAGE_Parser_ISO *self, gchar *fi
     /* Add fragment to track */
     mirage_track_add_fragment(MIRAGE_TRACK(track), -1, data_fragment);
 
+    g_object_unref(data_stream);
     g_object_unref(data_fragment);
     g_object_unref(track);
 
