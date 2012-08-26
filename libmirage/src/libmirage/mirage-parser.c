@@ -36,6 +36,9 @@ struct _MIRAGE_ParserPrivate
     GHashTable *parser_params;
 
     MIRAGE_ParserInfo *parser_info;
+
+    /* Data stream cache */
+    GHashTable *stream_cache;
 };
 
 
@@ -350,6 +353,46 @@ GVariant *mirage_parser_get_param (MIRAGE_Parser *self, const gchar *name, const
 }
 
 
+/**
+ * mirage_parser_get_cached_data_stream:
+ * @self: a #MIRAGE_Parser
+ * @filename: (in): filename
+ * @error: (out) (allow-none): location to store error, or %NULL
+ *
+ * <para>
+ * An internal function that implements data stream cache for a parser
+ * object. It is intended for parsers that deal with multi-track images
+ * where data stream reuse might prove beneficial. This function checks
+ * if a stream with requested @filename already exists in the cache and
+ * if it does, returns it. If it does not, it opens a new stream and
+ * adds it to the cache.
+ * </para>
+ *
+ * Returns: (transfer none): data stream object on success, %NULL on
+ * failure. Note that the reference to the object belongs to the data
+ * cache of parser object, and is not increased when object is returned.
+ **/
+GObject *mirage_parser_get_cached_data_stream (MIRAGE_Parser *self, const gchar *filename, GError **error)
+{
+    GObject *stream = g_hash_table_lookup(self->priv->stream_cache, filename);
+
+    if (!stream) {
+        /* Stream not in cache, open a stream on filename... */
+        stream = libmirage_create_file_stream(filename, G_OBJECT(self), error);
+        if (!stream) {
+            return stream;
+        }
+
+        /* ... and add it to cache */
+        g_hash_table_insert(self->priv->stream_cache, g_strdup(filename), stream);
+    }
+
+    /* Note: cache holds the reference to the stream, so we do not increase
+       the reference counter here... */
+    return stream;
+}
+
+
 /**********************************************************************\
  *                             Object init                            *
 \**********************************************************************/
@@ -362,6 +405,25 @@ static void mirage_parser_init (MIRAGE_Parser *self)
 
     self->priv->parser_params = NULL;
     self->priv->parser_info = NULL;
+
+    /* Stream cache hash table */
+    self->priv->stream_cache = g_hash_table_new_full(g_str_hash,
+                                                     g_str_equal,
+                                                     g_free,
+                                                     g_object_unref);
+}
+
+static void mirage_parser_dispose (GObject *gobject)
+{
+    MIRAGE_Parser *self = MIRAGE_PARSER(gobject);
+
+    if (self->priv->stream_cache) {
+        g_hash_table_unref(self->priv->stream_cache);
+        self->priv->stream_cache = NULL;
+    }
+
+    /* Chain up to the parent class */
+    return G_OBJECT_CLASS(mirage_parser_parent_class)->finalize(gobject);
 }
 
 static void mirage_parser_finalize (GObject *gobject)

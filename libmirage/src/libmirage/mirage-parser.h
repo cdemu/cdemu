@@ -105,6 +105,8 @@ void mirage_parser_set_params (MIRAGE_Parser *self, GHashTable *params);
 GVariant *mirage_parser_get_param (MIRAGE_Parser *self, const gchar *name, const GVariantType *type);
 const gchar *mirage_parser_get_param_string (MIRAGE_Parser *self, const gchar *name);
 
+GObject *mirage_parser_get_cached_data_stream (MIRAGE_Parser *self, const gchar *filename, GError **error);
+
 G_END_DECLS
 
 #endif /* __MIRAGE_PARSER_H__ */
