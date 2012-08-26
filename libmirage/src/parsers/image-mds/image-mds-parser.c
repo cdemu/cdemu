@@ -571,7 +571,6 @@ static gboolean mirage_parser_mds_parse_track_entries (MIRAGE_Parser_MDS *self, 
 
                 /* Track file */
                 gchar *mdf_filename = mirage_parser_mds_get_track_filename(self, footer_block, error);
-
                 if (!mdf_filename) {
                     MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to get track filename!\n", __debug__);
                     g_object_unref(cur_track);
@@ -579,9 +578,18 @@ static gboolean mirage_parser_mds_parse_track_entries (MIRAGE_Parser_MDS *self, 
                     return FALSE;
                 }
 
-                gint fragment_len = 0;
+                /* Data stream */
+                GObject *data_stream = mirage_parser_get_cached_data_stream(MIRAGE_PARSER(self), mdf_filename, error);
+                if (!data_stream) {
+                    MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to open stream on data file: %s!\n", __debug__, mdf_filename);
+                    g_free(mdf_filename);
+                    g_object_unref(cur_track);
+                    g_object_unref(cur_session);
+                    return FALSE;
+                }
 
                 /* Determine fragment's length */
+                gint fragment_len = 0;
                 if (medium_type == MIRAGE_MEDIUM_CD) {
                     /* For CDs, track lengths are stored in extra block... and we assume
                        this is the same as fragment's length */
@@ -591,25 +599,18 @@ static gboolean mirage_parser_mds_parse_track_entries (MIRAGE_Parser_MDS *self, 
                     /* For DVDs, -track- length seems to be stored in extra_offset;
                        however, since DVD images can have split MDF files, we need
                        to calculate the individual framgents' lengths ourselves... */
-                    struct stat st;
+                    g_seekable_seek(G_SEEKABLE(data_stream), 0, G_SEEK_END, NULL, NULL);
+                    fragment_len = g_seekable_tell(G_SEEKABLE(data_stream));
 
-                    if (g_stat(mdf_filename, &st) < 0) {
-                        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to stat data file!\n", __debug__);
-                        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_DATA_FILE_ERROR, "Failed to stat data file!");
-                        g_free(mdf_filename);
-                        g_object_unref(cur_track);
-                        g_object_unref(cur_session);
-                        return FALSE;
-                    }
-
-                    fragment_len = (st.st_size - tfile_offset)/(tfile_sectsize + sfile_sectsize); /* We could've just divided by 2048, too :) */
+                    fragment_len = (fragment_len - tfile_offset)/(tfile_sectsize + sfile_sectsize); /* We could've just divided by 2048, too :) */
                     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: DVD-ROM; track's fragment length: 0x%X\n", __debug__, fragment_len);
                 }
 
                 /* Create data fragment */
-                GObject *data_fragment = libmirage_create_fragment(MIRAGE_TYPE_FRAG_IFACE_BINARY, mdf_filename, G_OBJECT(self), error);
+                GObject *data_fragment = libmirage_create_fragment(MIRAGE_TYPE_FRAG_IFACE_BINARY, data_stream, G_OBJECT(self), error);
                 if (!data_fragment) {
                     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: failed to create fragment!\n", __debug__);
+                    g_object_unref(data_stream);
                     g_free(mdf_filename);
                     g_object_unref(cur_track);
                     g_object_unref(cur_session);
@@ -619,14 +620,16 @@ static gboolean mirage_parser_mds_parse_track_entries (MIRAGE_Parser_MDS *self, 
                 mirage_fragment_set_length(MIRAGE_FRAGMENT(data_fragment), fragment_len);
 
                 /* Set file */
-                if (!mirage_frag_iface_binary_track_file_set_file(MIRAGE_FRAG_IFACE_BINARY(data_fragment), mdf_filename, error)) {
+                if (!mirage_frag_iface_binary_track_file_set_file(MIRAGE_FRAG_IFACE_BINARY(data_fragment), mdf_filename, data_stream, error)) {
                     MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to set track data file!\n", __debug__);
+                    g_object_unref(data_stream);
                     g_free(mdf_filename);
                     g_object_unref(data_fragment);
                     g_object_unref(cur_track);
                     g_object_unref(cur_session);
                     return FALSE;
                 }
+                g_object_unref(data_stream);
                 g_free(mdf_filename);
 
                 mirage_frag_iface_binary_track_file_set_offset(MIRAGE_FRAG_IFACE_BINARY(data_fragment), tfile_offset);
