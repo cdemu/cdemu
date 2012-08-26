@@ -387,7 +387,7 @@ static gboolean mirage_parser_b6t_setup_track_fragments (MIRAGE_Parser_B6T *self
         if (start_sector >= data_block->start_sector && start_sector < data_block->start_sector + data_block->length_sectors) {
             gint tmp_length;
             gchar *filename;
-            GObject *data_fragment;
+            GObject *data_fragment, *data_stream;
 
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: found a block %i\n", __debug__, g_list_position(self->priv->data_blocks_list, entry));
 
@@ -403,10 +403,19 @@ static gboolean mirage_parser_b6t_setup_track_fragments (MIRAGE_Parser_B6T *self
             }
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: using data file: %s\n", __debug__, filename);
 
+            /* Create stream */
+            data_stream = mirage_parser_get_cached_data_stream(MIRAGE_PARSER(self), filename, error);
+            if (!data_stream) {
+                MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to create stream on data file '%s'\n", __debug__, filename);
+                g_free(filename);
+                return FALSE;
+            }
+
             /* We'd like a BINARY fragment */
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: creating BINARY fragment\n", __debug__);
-            data_fragment = libmirage_create_fragment(MIRAGE_TYPE_FRAG_IFACE_BINARY, filename, G_OBJECT(self), error);
+            data_fragment = libmirage_create_fragment(MIRAGE_TYPE_FRAG_IFACE_BINARY, data_stream, G_OBJECT(self), error);
             if (!data_fragment) {
+                g_object_unref(data_stream);
                 g_free(filename);
                 MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to create BINARY fragment!\n", __debug__);
                 return FALSE;
@@ -460,11 +469,13 @@ static gboolean mirage_parser_b6t_setup_track_fragments (MIRAGE_Parser_B6T *self
             }
 
             /* Set file */
-            if (!mirage_frag_iface_binary_track_file_set_file(MIRAGE_FRAG_IFACE_BINARY(data_fragment), filename, error)) {
+            if (!mirage_frag_iface_binary_track_file_set_file(MIRAGE_FRAG_IFACE_BINARY(data_fragment), filename, data_stream, error)) {
                 MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to set track data file!\n", __debug__);
+                g_object_unref(data_stream);
                 g_free(filename);
                 return FALSE;
             }
+            g_object_unref(data_stream);
             g_free(filename);
 
             mirage_frag_iface_binary_track_file_set_sectsize(MIRAGE_FRAG_IFACE_BINARY(data_fragment), tfile_sectsize);
@@ -1241,7 +1252,7 @@ static GObject *mirage_parser_b6t_load_image (MIRAGE_Parser *_self, gchar **file
     guint8 header[16];
 
     /* Check if we can load the image */
-    stream = libmirage_create_file_stream(filenames[0], mirage_debuggable_get_debug_context(MIRAGE_DEBUGGABLE(self)), error);
+    stream = libmirage_create_file_stream(filenames[0], G_OBJECT(self), error);
     if (!stream) {
         return FALSE;
     }
