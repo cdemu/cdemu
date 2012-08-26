@@ -440,6 +440,7 @@ static void mirage_parser_class_init (MIRAGE_ParserClass *klass)
 {
     GObjectClass *gobject_class = G_OBJECT_CLASS(klass);
 
+    gobject_class->dispose = mirage_parser_dispose;
     gobject_class->finalize = mirage_parser_finalize;
 
     klass->load_image = NULL;
