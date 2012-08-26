@@ -33,7 +33,10 @@ struct _MIRAGE_Parser_CCDPrivate
 
     /* Data and subchannel filenames */
     gchar *img_filename;
+    GObject *img_stream;
+
     gchar *sub_filename;
+    GObject *sub_stream;
 
     /* Offset within data/subchannel file */
     gint offset;
@@ -260,7 +263,7 @@ static gboolean mirage_parser_ccd_build_disc_layout (MIRAGE_Parser_CCD *self, GE
 
 
             /* Data fragment */
-            GObject *data_fragment = libmirage_create_fragment(MIRAGE_TYPE_FRAG_IFACE_BINARY, self->priv->img_filename, G_OBJECT(self), error);
+            GObject *data_fragment = libmirage_create_fragment(MIRAGE_TYPE_FRAG_IFACE_BINARY, self->priv->img_stream, G_OBJECT(self), error);
             if (!data_fragment) {
                 MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to create data fragment!\n", __debug__);
                 g_object_unref(cur_track);
@@ -276,7 +279,7 @@ static gboolean mirage_parser_ccd_build_disc_layout (MIRAGE_Parser_CCD *self, GE
             guint64 sfile_offset = self->priv->offset * 96; /* Guess this one's always true, too */
             gint sfile_format = FR_BIN_SFILE_PW96_LIN | FR_BIN_SFILE_EXT;
 
-            if (!mirage_frag_iface_binary_track_file_set_file(MIRAGE_FRAG_IFACE_BINARY(data_fragment), self->priv->img_filename, error)) {
+            if (!mirage_frag_iface_binary_track_file_set_file(MIRAGE_FRAG_IFACE_BINARY(data_fragment), self->priv->img_filename, self->priv->img_stream, error)) {
                 MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to set track data file!\n", __debug__);
                 g_object_unref(data_fragment);
                 g_object_unref(cur_track);
@@ -287,7 +290,7 @@ static gboolean mirage_parser_ccd_build_disc_layout (MIRAGE_Parser_CCD *self, GE
             mirage_frag_iface_binary_track_file_set_offset(MIRAGE_FRAG_IFACE_BINARY(data_fragment), tfile_offset);
             mirage_frag_iface_binary_track_file_set_format(MIRAGE_FRAG_IFACE_BINARY(data_fragment), tfile_format);
 
-            if (!mirage_frag_iface_binary_subchannel_file_set_file(MIRAGE_FRAG_IFACE_BINARY(data_fragment), self->priv->sub_filename, error)) {
+            if (!mirage_frag_iface_binary_subchannel_file_set_file(MIRAGE_FRAG_IFACE_BINARY(data_fragment), self->priv->sub_filename, self->priv->sub_stream, error)) {
                 MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to set subchannel data file!\n", __debug__);
                 g_object_unref(data_fragment);
                 g_object_unref(cur_track);
@@ -1113,6 +1116,19 @@ static GObject *mirage_parser_ccd_load_image (MIRAGE_Parser *_self, gchar **file
         return FALSE;
     }
 
+    /* Open streams */
+    self->priv->img_stream = libmirage_create_file_stream(self->priv->img_filename, G_OBJECT(self), error);
+    if (!self->priv->img_stream) {
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: failed to create stream on data file '%s'!\n", __debug__, self->priv->img_filename);
+        return FALSE;
+    }
+
+    self->priv->sub_stream = libmirage_create_file_stream(self->priv->sub_filename, G_OBJECT(self), error);
+    if (!self->priv->sub_stream) {
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: failed to create stream on subchannel file '%s'!\n", __debug__, self->priv->sub_filename);
+        return FALSE;
+    }
+
     /* Parse the CCD */
     if (!mirage_parser_ccd_parse_ccd_file(self, filenames[0], error)) {
         succeeded = FALSE;
@@ -1163,8 +1179,30 @@ static void mirage_parser_ccd_init (MIRAGE_Parser_CCD *self)
     mirage_parser_ccd_init_regex_parser(self);
 
     self->priv->img_filename = NULL;
+    self->priv->img_stream = NULL;
+
     self->priv->sub_filename = NULL;
+    self->priv->sub_stream = NULL;
 }
+
+static void mirage_parser_ccd_dispose (GObject *gobject)
+{
+    MIRAGE_Parser_CCD *self = MIRAGE_PARSER_CCD(gobject);
+
+    if (self->priv->img_stream) {
+        g_object_unref(self->priv->img_stream);
+        self->priv->img_stream = NULL;
+    }
+
+    if (self->priv->sub_stream) {
+        g_object_unref(self->priv->sub_stream);
+        self->priv->sub_stream = NULL;
+    }
+
+    /* Chain up to the parent class */
+    return G_OBJECT_CLASS(mirage_parser_ccd_parent_class)->dispose(gobject);
+}
+
 
 static void mirage_parser_ccd_finalize (GObject *gobject)
 {
@@ -1185,6 +1223,7 @@ static void mirage_parser_ccd_class_init (MIRAGE_Parser_CCDClass *klass)
     GObjectClass *gobject_class = G_OBJECT_CLASS(klass);
     MIRAGE_ParserClass *parser_class = MIRAGE_PARSER_CLASS(klass);
 
+    gobject_class->dispose = mirage_parser_ccd_dispose;
     gobject_class->finalize = mirage_parser_ccd_finalize;
 
     parser_class->load_image = mirage_parser_ccd_load_image;
