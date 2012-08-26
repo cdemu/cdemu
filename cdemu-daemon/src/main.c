@@ -172,7 +172,6 @@ int main (int argc, char **argv)
         g_message("Stopping daemon.\n");
     } else {
         g_warning("Daemon initialization and start failed!\n");
-        g_error_free(error);
         succeeded = FALSE;
     }
 
