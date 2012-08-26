@@ -30,23 +30,23 @@
 struct _MIRAGE_Fragment_BINARYPrivate
 {
     gchar *tfile_name; /* Track file name */
+    GObject *tfile_stream; /* Track file stream */
     gint tfile_sectsize; /* Track file sector size */
     gint tfile_format; /* Track file format */
     guint64 tfile_offset; /* Track offset in track file */
 
     gchar *sfile_name; /* Subchannel file name */
+    GObject *sfile_stream; /* Subchannel file stream */
     gint sfile_sectsize; /* Subchannel file sector size*/
     gint sfile_format; /* Subchannel file format */
     guint64 sfile_offset; /* Subchannel offset in subchannel file */
-
-    GObject *tfile_stream, *sfile_stream;
 };
 
 
 /**********************************************************************\
  *                     Binary Interface implementation                *
 \**********************************************************************/
-static gboolean mirage_fragment_binary_track_file_set_file (MIRAGE_FragIface_Binary *_self, const gchar *filename, GError **error)
+static gboolean mirage_fragment_binary_track_file_set_file (MIRAGE_FragIface_Binary *_self, const gchar *filename, GObject *stream, GError **error)
 {
     MIRAGE_Fragment_BINARY *self = MIRAGE_FRAGMENT_BINARY(_self);
     GError *local_error = NULL;
@@ -62,11 +62,18 @@ static gboolean mirage_fragment_binary_track_file_set_file (MIRAGE_FragIface_Bin
     }
 
     /* Set new stream */
-    self->priv->tfile_stream = libmirage_create_file_stream(filename, G_OBJECT(self), &local_error);
-    if (!self->priv->tfile_stream) {
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_FRAGMENT_ERROR, "Failed to create file stream on track data file '%s': %s", filename, local_error->message);
-        g_error_free(local_error);
-        return FALSE;
+    if (stream) {
+        /* Set the provided stream */
+        self->priv->tfile_stream = stream;
+        g_object_ref(stream);
+    } else {
+        /* Open new stream */
+        self->priv->tfile_stream = libmirage_create_file_stream(filename, G_OBJECT(self), &local_error);
+        if (!self->priv->tfile_stream) {
+            g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_FRAGMENT_ERROR, "Failed to create file stream on track data file '%s': %s", filename, local_error->message);
+            g_error_free(local_error);
+            return FALSE;
+        }
     }
     self->priv->tfile_name = g_strdup(filename);
 
@@ -149,7 +156,7 @@ static guint64 mirage_fragment_binary_track_file_get_position (MIRAGE_FragIface_
 }
 
 
-static gboolean mirage_fragment_binary_subchannel_file_set_file (MIRAGE_FragIface_Binary *_self, const gchar *filename, GError **error G_GNUC_UNUSED)
+static gboolean mirage_fragment_binary_subchannel_file_set_file (MIRAGE_FragIface_Binary *_self, const gchar *filename, GObject *stream, GError **error)
 {
     MIRAGE_Fragment_BINARY *self = MIRAGE_FRAGMENT_BINARY(_self);
     GError *local_error = NULL;
@@ -165,11 +172,18 @@ static gboolean mirage_fragment_binary_subchannel_file_set_file (MIRAGE_FragIfac
     }
 
     /* Set new stream */
-    self->priv->sfile_stream = libmirage_create_file_stream(filename, G_OBJECT(self), &local_error);
-    if (!self->priv->sfile_stream) {
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_FRAGMENT_ERROR, "Failed to create file stream on subchannel data file '%s': %s", filename, local_error->message);
-        g_error_free(local_error);
-        return FALSE;
+    if (stream) {
+        /* Set the provided stream */
+        self->priv->sfile_stream = stream;
+        g_object_ref(stream);
+    } else {
+        /* Try opening a stream */
+        self->priv->sfile_stream = libmirage_create_file_stream(filename, G_OBJECT(self), &local_error);
+        if (!self->priv->sfile_stream) {
+            g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_FRAGMENT_ERROR, "Failed to create file stream on subchannel data file '%s': %s", filename, local_error->message);
+            g_error_free(local_error);
+            return FALSE;
+        }
     }
     self->priv->sfile_name = g_strdup(filename);
 

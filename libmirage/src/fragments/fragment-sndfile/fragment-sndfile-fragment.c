@@ -111,7 +111,7 @@ static SF_VIRTUAL_IO sndfile_io_bridge = {
 /**********************************************************************\
  *                   Audio interface implementation                   *
 \**********************************************************************/
-static gboolean mirage_fragment_sndfile_set_file (MIRAGE_FragIface_Audio *_self, const gchar *filename, GError **error)
+static gboolean mirage_fragment_sndfile_set_file (MIRAGE_FragIface_Audio *_self, const gchar *filename, GObject *stream, GError **error)
 {
     MIRAGE_Fragment_SNDFILE *self = MIRAGE_FRAGMENT_SNDFILE(_self);
     GError *local_error = NULL;
@@ -130,14 +130,22 @@ static gboolean mirage_fragment_sndfile_set_file (MIRAGE_FragIface_Audio *_self,
         self->priv->filename = NULL;
     }
 
-    /* Open stream */
-    self->priv->stream = libmirage_create_file_stream(filename, G_OBJECT(self), &local_error);
-    if (!self->priv->stream) {
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_FRAGMENT_ERROR, "Failed to create file stream on audio file '%s': %s", filename, local_error->message);
-        g_error_free(local_error);
-        return FALSE;
+    /* Set new stream */
+    if (stream) {
+        /* Set the provided stream */
+        self->priv->stream = stream;
+        g_object_ref(stream);
+    } else {
+        /* Open new stream */
+        self->priv->stream = libmirage_create_file_stream(filename, G_OBJECT(self), &local_error);
+        if (!self->priv->stream) {
+            g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_FRAGMENT_ERROR, "Failed to create file stream on audio file '%s': %s", filename, local_error->message);
+            g_error_free(local_error);
+            return FALSE;
+        }
     }
 
+    /* Open sndfile */
     self->priv->sndfile = sf_open_virtual(&sndfile_io_bridge, SFM_READ, &self->priv->format, self->priv->stream);
     if (!self->priv->sndfile) {
         g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_FRAGMENT_ERROR, "Failed to open audio file!");
