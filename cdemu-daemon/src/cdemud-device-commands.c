@@ -794,7 +794,7 @@ static gboolean command_read_cd (CDEMUD_Device *self, guint8 *raw_cdb)
     MIRAGE_Disc* disc = MIRAGE_DISC(self->priv->disc);
     GObject *first_sector;
     GError *error = NULL;
-    gint prev_sector_type;
+    gint prev_sector_type G_GNUC_UNUSED;
 
     gint sector = start_sector;
 
