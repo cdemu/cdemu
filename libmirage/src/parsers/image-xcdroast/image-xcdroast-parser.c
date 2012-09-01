@@ -104,6 +104,14 @@ static gboolean mirage_parser_xcdroast_add_track (MIRAGE_Parser_XCDROAST *self, 
         return FALSE;
     }
 
+    /* Open stream */
+    GObject *data_stream = libmirage_create_file_stream(data_file, G_OBJECT(self), error);
+    if (!data_stream) {
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to create stream on data file '%s'!\n", __debug__, data_file);
+        return FALSE;
+    }
+
+
     /* Setup basic track info, add fragment */
     switch (track_info->type) {
         case TRACK_TYPE_DATA: {
@@ -111,17 +119,19 @@ static gboolean mirage_parser_xcdroast_add_track (MIRAGE_Parser_XCDROAST *self, 
             mirage_track_set_mode(MIRAGE_TRACK(track), MIRAGE_MODE_MODE1);
 
             /* Create and add binary fragment, using whole file */
-            GObject *data_fragment = libmirage_create_fragment(MIRAGE_TYPE_FRAG_IFACE_BINARY, data_file, G_OBJECT(self), error);
+            GObject *data_fragment = libmirage_create_fragment(MIRAGE_TYPE_FRAG_IFACE_BINARY, data_stream, G_OBJECT(self), error);
             if (!data_fragment) {
                 MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to create BINARY fragment for file: %s\n", __debug__, data_file);
                 g_free(data_file);
+                g_object_unref(data_stream);
                 g_object_unref(track);
                 return FALSE;
             }
 
-            if (!mirage_frag_iface_binary_track_file_set_file(MIRAGE_FRAG_IFACE_BINARY(data_fragment), data_file, error)) {
+            if (!mirage_frag_iface_binary_track_file_set_file(MIRAGE_FRAG_IFACE_BINARY(data_fragment), data_file, data_stream, error)) {
                 MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to set track data file!\n", __debug__);
                 g_free(data_file);
+                g_object_unref(data_stream);
                 g_object_unref(track);
                 g_object_unref(data_fragment);
                 return FALSE;
@@ -157,16 +167,18 @@ static gboolean mirage_parser_xcdroast_add_track (MIRAGE_Parser_XCDROAST *self, 
             mirage_track_set_mode(MIRAGE_TRACK(track), MIRAGE_MODE_AUDIO);
 
             /* Create and add audio fragment, using whole file */
-            GObject *data_fragment = libmirage_create_fragment(MIRAGE_TYPE_FRAG_IFACE_AUDIO, data_file, G_OBJECT(self), error);
+            GObject *data_fragment = libmirage_create_fragment(MIRAGE_TYPE_FRAG_IFACE_AUDIO, data_stream, G_OBJECT(self), error);
             if (!data_fragment) {
                 MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to create AUDIO fragment for file: %s\n", __debug__, data_file);
                 g_free(data_file);
+                g_object_unref(data_stream);
                 g_object_unref(track);
                 return FALSE;
             }
-            if (!mirage_frag_iface_audio_set_file(MIRAGE_FRAG_IFACE_AUDIO(data_fragment), data_file, error)) {
+            if (!mirage_frag_iface_audio_set_file(MIRAGE_FRAG_IFACE_AUDIO(data_fragment), data_file, data_stream, error)) {
                 MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to set track data file!\n", __debug__);
                 g_free(data_file);
+                g_object_unref(data_stream);
                 g_object_unref(track);
                 g_object_unref(data_fragment);
                 return FALSE;
@@ -191,6 +203,7 @@ static gboolean mirage_parser_xcdroast_add_track (MIRAGE_Parser_XCDROAST *self, 
             break;
         }
     }
+    g_object_unref(data_stream);
     g_free(data_file);
 
     /* Try to get a XINF file and read additional info from it */
