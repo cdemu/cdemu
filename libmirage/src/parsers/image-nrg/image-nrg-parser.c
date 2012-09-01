@@ -1175,6 +1175,7 @@ static void mirage_parser_nrg_class_init (MIRAGE_Parser_NRGClass *klass)
     GObjectClass *gobject_class = G_OBJECT_CLASS(klass);
     MIRAGE_ParserClass *parser_class = MIRAGE_PARSER_CLASS(klass);
 
+    gobject_class->dispose = mirage_parser_nrg_dispose;
     gobject_class->finalize = mirage_parser_nrg_finalize;
 
     parser_class->load_image = mirage_parser_nrg_load_image;
