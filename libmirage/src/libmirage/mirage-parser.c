@@ -368,9 +368,9 @@ GVariant *mirage_parser_get_param (MIRAGE_Parser *self, const gchar *name, const
  * adds it to the cache.
  * </para>
  *
- * Returns: (transfer none): data stream object on success, %NULL on
- * failure. Note that the reference to the object belongs to the data
- * cache of parser object, and is not increased when object is returned.
+ * Returns: (transfer full): data stream object on success, %NULL on
+ * failure. The reference to stream should be released using g_object_unref()
+ * when no longer needed.
  **/
 GObject *mirage_parser_get_cached_data_stream (MIRAGE_Parser *self, const gchar *filename, GError **error)
 {
@@ -387,8 +387,7 @@ GObject *mirage_parser_get_cached_data_stream (MIRAGE_Parser *self, const gchar 
         g_hash_table_insert(self->priv->stream_cache, g_strdup(filename), stream);
     }
 
-    /* Note: cache holds the reference to the stream, so we do not increase
-       the reference counter here... */
+    g_object_ref(stream);
     return stream;
 }
 
