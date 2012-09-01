@@ -34,6 +34,7 @@ struct _MIRAGE_Parser_READCDPrivate {
     gint leadout_lba;
 
     gchar *data_filename;
+    GObject *data_stream;
 
     GObject *cur_session;
     GObject *cur_track;
@@ -204,7 +205,7 @@ static gboolean mirage_parser_readcd_parse_toc_entry (MIRAGE_Parser_READCD *self
         g_object_unref(self->priv->cur_track); /* Keep only pointer, without reference */
 
         /* Data fragment */
-        GObject *data_fragment = libmirage_create_fragment(MIRAGE_TYPE_FRAG_IFACE_BINARY, self->priv->data_filename, G_OBJECT(self), error);
+        GObject *data_fragment = libmirage_create_fragment(MIRAGE_TYPE_FRAG_IFACE_BINARY, self->priv->data_stream, G_OBJECT(self), error);
         if (!data_fragment) {
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to create data fragment!\n", __debug__);
             succeeded = FALSE;
@@ -218,7 +219,7 @@ static gboolean mirage_parser_readcd_parse_toc_entry (MIRAGE_Parser_READCD *self
         gint sfile_sectsize = 96; /* Always */
         gint sfile_format = FR_BIN_SFILE_PW96_INT | FR_BIN_SFILE_INT;
 
-        if (!mirage_frag_iface_binary_track_file_set_file(MIRAGE_FRAG_IFACE_BINARY(data_fragment), self->priv->data_filename, error)) {
+        if (!mirage_frag_iface_binary_track_file_set_file(MIRAGE_FRAG_IFACE_BINARY(data_fragment), self->priv->data_filename, self->priv->data_stream, error)) {
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to set track data file!\n", __debug__);
             g_object_unref(data_fragment);
             succeeded = FALSE;
@@ -261,7 +262,7 @@ static gboolean mirage_parser_readcd_parse_toc_entry (MIRAGE_Parser_READCD *self
                 g_object_unref(prev_track);
 
                 /* Current track: add 150-frame pregap with data from data file */
-                GObject *pregap_fragment = libmirage_create_fragment(MIRAGE_TYPE_FRAG_IFACE_BINARY, self->priv->data_filename, G_OBJECT(self), error);
+                GObject *pregap_fragment = libmirage_create_fragment(MIRAGE_TYPE_FRAG_IFACE_BINARY, self->priv->data_stream, G_OBJECT(self), error);
                 if (!pregap_fragment) {
                     MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to create data fragment!\n", __debug__);
                     succeeded = FALSE;
@@ -275,7 +276,7 @@ static gboolean mirage_parser_readcd_parse_toc_entry (MIRAGE_Parser_READCD *self
                 gint sfile_sectsize = 96; /* Always */
                 gint sfile_format = FR_BIN_SFILE_PW96_INT | FR_BIN_SFILE_INT;
 
-                if (!mirage_frag_iface_binary_track_file_set_file(MIRAGE_FRAG_IFACE_BINARY(pregap_fragment), self->priv->data_filename, error)) {
+                if (!mirage_frag_iface_binary_track_file_set_file(MIRAGE_FRAG_IFACE_BINARY(pregap_fragment), self->priv->data_filename, self->priv->data_stream, error)) {
                     MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to set track data file!\n", __debug__);
                     g_object_unref(pregap_fragment);
                     succeeded = FALSE;
@@ -322,8 +323,17 @@ static gboolean mirage_parser_readcd_parse_toc (MIRAGE_Parser_READCD *self, cons
 
     g_free(tmp_data_filename);
 
+    /* Open data stream */
     if (!self->priv->data_filename) {
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: data file not found!\n", __debug__);
         g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_DATA_FILE_ERROR, "Data file not found!");
+        return FALSE;
+    }
+
+    self->priv->data_stream = libmirage_create_file_stream(self->priv->data_filename, G_OBJECT(self), error);
+    if (!self->priv->data_stream) {
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to open data file '%s'!\n", __debug__, self->priv->data_filename);
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_DATA_FILE_ERROR, "Failed to create stream on data file!");
         return FALSE;
     }
 
@@ -506,6 +516,20 @@ static void mirage_parser_readcd_init (MIRAGE_Parser_READCD *self)
     );
 
     self->priv->data_filename = NULL;
+    self->priv->data_stream = NULL;
+}
+
+static void mirage_parser_readcd_dispose (GObject *gobject)
+{
+    MIRAGE_Parser_READCD *self = MIRAGE_PARSER_READCD(gobject);
+
+    if (self->priv->data_stream) {
+        g_object_unref(self->priv->data_stream);
+        self->priv->data_stream = NULL;
+    }
+
+    /* Chain up to the parent class */
+    return G_OBJECT_CLASS(mirage_parser_readcd_parent_class)->dispose(gobject);
 }
 
 static void mirage_parser_readcd_finalize (GObject *gobject)
@@ -523,6 +547,7 @@ static void mirage_parser_readcd_class_init (MIRAGE_Parser_READCDClass *klass)
     GObjectClass *gobject_class = G_OBJECT_CLASS(klass);
     MIRAGE_ParserClass *parser_class = MIRAGE_PARSER_CLASS(klass);
 
+    gobject_class->dispose = mirage_parser_readcd_dispose;
     gobject_class->finalize = mirage_parser_readcd_finalize;
 
     parser_class->load_image = mirage_parser_readcd_load_image;
