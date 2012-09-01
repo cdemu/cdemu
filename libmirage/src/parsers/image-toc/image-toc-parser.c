@@ -184,16 +184,24 @@ static gboolean mirage_parser_toc_track_add_fragment (MIRAGE_Parser_TOC *self, g
         }
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: using data file: %s\n", __debug__, filename);
 
+        /* Create strean */
+        GObject *stream = mirage_parser_get_cached_data_stream(MIRAGE_PARSER(self), filename_string, error);
+        if (!stream) {
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to create stream on data file!\n", __debug__);
+            return FALSE;
+        }
+
         /* BINARY can be either explicitly requested; or it can be assumed from
            *.bin suffix (with TOC_DATA_TYPE_AUDIO), which is a bit hacky, but
            should work for now... */
         if (type == TOC_DATA_TYPE_DATA || mirage_helper_has_suffix(filename_string, ".bin")) {
             /* Binary data; we'd like a BINARY fragment */
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: creating BINARY fragment\n", __debug__);
-            data_fragment = libmirage_create_fragment(MIRAGE_TYPE_FRAG_IFACE_BINARY, filename, G_OBJECT(self), error);
+            data_fragment = libmirage_create_fragment(MIRAGE_TYPE_FRAG_IFACE_BINARY, stream, G_OBJECT(self), error);
             if (!data_fragment) {
                 MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to create BINARY fragment!\n", __debug__);
                 g_free(filename);
+                g_object_unref(stream);
                 return FALSE;
             }
 
@@ -252,9 +260,10 @@ static gboolean mirage_parser_toc_track_add_fragment (MIRAGE_Parser_TOC *self, g
             sfile_format = self->priv->cur_sfile_format;
 
             /* Set file */
-            if (!mirage_frag_iface_binary_track_file_set_file(MIRAGE_FRAG_IFACE_BINARY(data_fragment), filename, error)) {
+            if (!mirage_frag_iface_binary_track_file_set_file(MIRAGE_FRAG_IFACE_BINARY(data_fragment), filename, stream, error)) {
                 MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to set track data file!\n", __debug__);
                 g_free(filename);
+                g_object_unref(stream);
                 g_object_unref(data_fragment);
                 return FALSE;
             }
@@ -268,17 +277,19 @@ static gboolean mirage_parser_toc_track_add_fragment (MIRAGE_Parser_TOC *self, g
             /* Audio data; we'd like an AUDIO fragment, and hopefully Mirage can
                find one that can handle given file format */
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: creating AUDIO fragment\n", __debug__);
-            data_fragment = libmirage_create_fragment(MIRAGE_TYPE_FRAG_IFACE_AUDIO, filename, G_OBJECT(self), error);
+            data_fragment = libmirage_create_fragment(MIRAGE_TYPE_FRAG_IFACE_AUDIO, stream, G_OBJECT(self), error);
             if (!data_fragment) {
                 MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to create appropriate AUDIO fragment!\n", __debug__);
                 g_free(filename);
+                g_object_unref(stream);
                 return FALSE;
             }
 
             /* Set file */
-            if (!mirage_frag_iface_audio_set_file(MIRAGE_FRAG_IFACE_AUDIO(data_fragment), filename, error)) {
+            if (!mirage_frag_iface_audio_set_file(MIRAGE_FRAG_IFACE_AUDIO(data_fragment), filename, stream, error)) {
                 MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to set track data file!\n", __debug__);
                 g_free(filename);
+                g_object_unref(stream);
                 g_object_unref(data_fragment);
                 return FALSE;
             }
@@ -288,6 +299,7 @@ static gboolean mirage_parser_toc_track_add_fragment (MIRAGE_Parser_TOC *self, g
         }
 
         g_free(filename);
+        g_object_unref(stream);
     }
 
     /* Set length */
