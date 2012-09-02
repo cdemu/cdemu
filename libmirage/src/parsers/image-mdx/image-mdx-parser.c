@@ -37,9 +37,6 @@ struct _MIRAGE_Parser_MDXPrivate
 
 static gboolean mirage_parser_mdx_determine_track_mode (MIRAGE_Parser_MDX *self, GObject *stream, guint64 offset, guint64 length, gint *track_mode,  gint *sector_size, gint *subchannel_type, gint *subchannel_size, GError **error)
 {
-    static const guint8 cd001_pattern[] = {0x01, 0x43, 0x44, 0x30, 0x30, 0x31, 0x01, 0x00};
-    static const guint8 bea01_pattern[] = {0x00, 0x42, 0x45, 0x41, 0x30, 0x31, 0x01, 0x00};
-
     /* FIXME: add subchannel support */
     *subchannel_type = 0;
     *subchannel_size = 0;
@@ -56,8 +53,8 @@ static gboolean mirage_parser_mdx_determine_track_mode (MIRAGE_Parser_MDX *self,
             return FALSE;
         }
 
-        if (!memcmp(buf, cd001_pattern, sizeof(cd001_pattern))
-            || !memcmp(buf, bea01_pattern, sizeof(bea01_pattern))) {
+        if (!memcmp(buf, mirage_pattern_cd001, sizeof(mirage_pattern_cd001))
+            || !memcmp(buf, mirage_pattern_bea01, sizeof(mirage_pattern_bea01))) {
             *track_mode = MIRAGE_MODE_MODE1;
             *sector_size = 2048;
 

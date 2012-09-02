@@ -36,10 +36,6 @@ struct _MIRAGE_Parser_ISOPrivate
 };
 
 
-static const guint8 cd001_pattern[] = {0x01, 0x43, 0x44, 0x30, 0x30, 0x31, 0x01, 0x00};
-static const guint8 bea01_pattern[] = {0x00, 0x42, 0x45, 0x41, 0x30, 0x31, 0x01, 0x00};
-
-
 static gboolean mirage_parser_iso_is_file_valid (MIRAGE_Parser_ISO *self, gchar *filename, GError **error)
 {
     gboolean succeeded;
@@ -78,8 +74,8 @@ static gboolean mirage_parser_iso_is_file_valid (MIRAGE_Parser_ISO *self, gchar 
             goto end;
         }
 
-        if (!memcmp(buf, cd001_pattern, sizeof(cd001_pattern))
-            || !memcmp(buf, bea01_pattern, sizeof(bea01_pattern))) {
+        if (!memcmp(buf, mirage_pattern_cd001, sizeof(mirage_pattern_cd001))
+            || !memcmp(buf, mirage_pattern_bea01, sizeof(mirage_pattern_bea01))) {
             self->priv->track_sectsize = 2048;
             self->priv->track_mode = MIRAGE_MODE_MODE1;
 

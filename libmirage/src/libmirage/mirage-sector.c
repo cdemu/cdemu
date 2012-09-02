@@ -26,9 +26,6 @@
 #define __debug__ "Sector"
 
 
-const guint8 mirage_sync_pattern[12] = { 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0x00 };
-
-
 /**********************************************************************\
  *                          Private structure                         *
 \**********************************************************************/
@@ -61,7 +58,7 @@ static void mirage_sector_generate_sync (MIRAGE_Sector *self)
         case MIRAGE_MODE_MODE2:
         case MIRAGE_MODE_MODE2_FORM1:
         case MIRAGE_MODE_MODE2_FORM2: {
-            memcpy(self->priv->sector_data, mirage_sync_pattern, 12);
+            memcpy(self->priv->sector_data, mirage_pattern_sync, 12);
             break;
         }
         default: {

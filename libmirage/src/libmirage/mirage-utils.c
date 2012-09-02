@@ -24,6 +24,41 @@
 #include "mirage.h"
 
 
+/**********************************************************************\
+ *                           Data patterns                            *
+\**********************************************************************/
+/**
+ * mirage_pattern_sync:
+ *
+ * <para>
+ * A 12-byte sync pattern, found at the beginning of non-audio sectors.
+ * </para>
+ **/
+const guint8 mirage_pattern_sync[12] = { 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0x00 };
+
+/**
+ * mirage_pattern_cd001:
+ *
+ * <para>
+ * A 8-byte CD001 pattern, found at 16th sector of ISO data tracks.
+ * </para>
+ **/
+const guint8 mirage_pattern_cd001[8] = { 0x01, 0x43, 0x44, 0x30, 0x30, 0x31, 0x01, 0x00 };
+
+
+/**
+ * mirage_pattern_bea01:
+ *
+ * <para>
+ * A 8-byte BEA01 pattern, found at 16th sector of UDF data tracks.
+ * </para>
+ **/
+const guint8 mirage_pattern_bea01[8] = { 0x00, 0x42, 0x45, 0x41, 0x30, 0x31, 0x01, 0x00 };
+
+
+/**********************************************************************\
+ *                       File helper functions                        *
+\**********************************************************************/
 /* Helper for mirage_find_data_file() */
 static gchar *find_data_file (const gchar *path, const gchar *filename)
 {
@@ -939,9 +974,7 @@ void mirage_helper_sector_edc_ecc_compute_ecc_block (const guint8 *src, guint32 
  **/
 gint mirage_helper_determine_sector_type (const guint8 *buf)
 {
-    static const guint8 sync_pattern[] = {0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0x00};
-
-    if (!memcmp(buf, sync_pattern, sizeof(sync_pattern))) {
+    if (!memcmp(buf, mirage_pattern_sync, sizeof(mirage_pattern_sync))) {
         switch (buf[15]) {
             case 0: return MIRAGE_MODE_MODE0;
             case 1: return MIRAGE_MODE_MODE1;
