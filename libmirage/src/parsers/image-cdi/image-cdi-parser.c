@@ -324,7 +324,6 @@ static gboolean mirage_parser_cdi_parse_cdtext (MIRAGE_Parser_CDI *self, GError 
 
 static gboolean mirage_parser_cdi_load_track (MIRAGE_Parser_CDI *self, GError **error)
 {
-    gboolean succeeded = TRUE;
     gint i;
 
     /* Recongised fields */
@@ -352,8 +351,7 @@ static gboolean mirage_parser_cdi_load_track (MIRAGE_Parser_CDI *self, GError **
     /* Header */
     if (!mirage_parser_cdi_parse_header(self, error)) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to parse header!\n", __debug__);
-        succeeded = FALSE;
-        goto end;
+        return FALSE;
     }
 
     /* Index fields follow */
@@ -637,76 +635,77 @@ static gboolean mirage_parser_cdi_load_track (MIRAGE_Parser_CDI *self, GError **
 
     gint fragment_len = track_length;
 
-    GObject *data_fragment = NULL;
+    GObject *fragment;
 
-    GObject *cur_session = NULL;
-    GObject *cur_track = NULL;
+    GObject *session;
+    GObject *track;
 
 
     /* Track mode; also determines BINARY format */
     gint decoded_mode = 0;
     if (!mirage_parser_cdi_decode_track_mode(self, track_mode, &decoded_mode, &tfile_format, error)) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: failed to decode track mode!\n", __debug__);
-        succeeded = FALSE;
-        goto end;
+        return FALSE;
     }
 
     /* Read mode; determines sector size for both main channel and subchannel */
     if (!mirage_parser_cdi_decode_read_mode(self, read_mode, &tfile_sectsize, &sfile_sectsize, &sfile_format, error)) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: failed to decode read mode!\n", __debug__);
-        succeeded = FALSE;
-        goto end;
+        return FALSE;
     }
 
     /* Fetch current session */
-    if (!mirage_disc_get_session_by_index(MIRAGE_DISC(self->priv->disc), -1, &cur_session, error)) {
+    session = mirage_disc_get_session_by_index(MIRAGE_DISC(self->priv->disc), -1, error);
+    if (!session) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: failed to get last session!\n", __debug__);
-        succeeded = FALSE;
-        goto end;
+        return FALSE;
     }
 
     /* Add track */
-    mirage_session_add_track_by_index(MIRAGE_SESSION(cur_session), -1, &cur_track);
+    track = g_object_new(MIRAGE_TYPE_TRACK, NULL);
+    mirage_session_add_track_by_index(MIRAGE_SESSION(session), -1, track);
 
     /* Set track mode */
-    mirage_track_set_mode(MIRAGE_TRACK(cur_track), decoded_mode);
+    mirage_track_set_mode(MIRAGE_TRACK(track), decoded_mode);
 
     /* Create BINARY fragment */
-    data_fragment = libmirage_create_fragment(MIRAGE_TYPE_FRAG_IFACE_BINARY, self->priv->cdi_stream, G_OBJECT(self), error);
-    if (!data_fragment) {
+    fragment = libmirage_create_fragment(MIRAGE_TYPE_FRAG_IFACE_BINARY, self->priv->cdi_stream, G_OBJECT(self), error);
+    if (!fragment) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: failed to create BINARY fragment!\n", __debug__);
-        succeeded = FALSE;
-        goto free_track;
+        g_object_unref(track);
+        g_object_unref(session);
+        return FALSE;
     }
 
-    mirage_fragment_set_length(MIRAGE_FRAGMENT(data_fragment), fragment_len);
+    mirage_fragment_set_length(MIRAGE_FRAGMENT(fragment), fragment_len);
 
-    if (!mirage_frag_iface_binary_track_file_set_file(MIRAGE_FRAG_IFACE_BINARY(data_fragment), self->priv->cdi_filename, self->priv->cdi_stream, error)) {
+    if (!mirage_frag_iface_binary_track_file_set_file(MIRAGE_FRAG_IFACE_BINARY(fragment), self->priv->cdi_filename, self->priv->cdi_stream, error)) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to set track data file!\n", __debug__);
-        g_object_unref(data_fragment);
-        succeeded = FALSE;
-        goto free_track;
+        g_object_unref(fragment);
+        g_object_unref(track);
+        g_object_unref(session);
+        return FALSE;
     }
-    mirage_frag_iface_binary_track_file_set_offset(MIRAGE_FRAG_IFACE_BINARY(data_fragment), tfile_offset);
-    mirage_frag_iface_binary_track_file_set_sectsize(MIRAGE_FRAG_IFACE_BINARY(data_fragment), tfile_sectsize);
-    mirage_frag_iface_binary_track_file_set_format(MIRAGE_FRAG_IFACE_BINARY(data_fragment), tfile_format);
+    mirage_frag_iface_binary_track_file_set_offset(MIRAGE_FRAG_IFACE_BINARY(fragment), tfile_offset);
+    mirage_frag_iface_binary_track_file_set_sectsize(MIRAGE_FRAG_IFACE_BINARY(fragment), tfile_sectsize);
+    mirage_frag_iface_binary_track_file_set_format(MIRAGE_FRAG_IFACE_BINARY(fragment), tfile_format);
 
-    mirage_frag_iface_binary_subchannel_file_set_sectsize(MIRAGE_FRAG_IFACE_BINARY(data_fragment), sfile_sectsize);
-    mirage_frag_iface_binary_subchannel_file_set_format(MIRAGE_FRAG_IFACE_BINARY(data_fragment), sfile_format);
+    mirage_frag_iface_binary_subchannel_file_set_sectsize(MIRAGE_FRAG_IFACE_BINARY(fragment), sfile_sectsize);
+    mirage_frag_iface_binary_subchannel_file_set_format(MIRAGE_FRAG_IFACE_BINARY(fragment), sfile_format);
 
-    mirage_track_add_fragment(MIRAGE_TRACK(cur_track), -1, data_fragment);
+    mirage_track_add_fragment(MIRAGE_TRACK(track), -1, fragment);
 
-    g_object_unref(data_fragment);
+    g_object_unref(fragment);
 
 
     /* Set track flags, based on CTL */
-    mirage_track_set_ctl(MIRAGE_TRACK(cur_track), track_ctl);
+    mirage_track_set_ctl(MIRAGE_TRACK(track), track_ctl);
 
     /* Set ISRC */
     if (isrc_valid) {
         /* Don't check for error here; if fragment was created with subchannel
            data, then this call will fail, but it doesn't matter anyway... */
-        mirage_track_set_isrc(MIRAGE_TRACK(cur_track), isrc);
+        mirage_track_set_isrc(MIRAGE_TRACK(track), isrc);
     }
 
     /* Indices; each entry represents length of corresponding index, whereas
@@ -717,29 +716,27 @@ static gboolean mirage_parser_cdi_load_track (MIRAGE_Parser_CDI *self, GError **
        entry is used to set track start outside the loop, whereas the last entry
        isn't needed, because it spans to the end of the track, anyway */
     gint index_address = indices[0];
-    mirage_track_set_track_start(MIRAGE_TRACK(cur_track), indices[0]);
+    mirage_track_set_track_start(MIRAGE_TRACK(track), indices[0]);
     for (i = 1; i < num_indices - 1; i++) {
         index_address += indices[i];
-        mirage_track_add_index(MIRAGE_TRACK(cur_track), index_address, NULL, NULL);
+        mirage_track_add_index(MIRAGE_TRACK(track), index_address, NULL);
     }
 
 
     /* Set session type, if this is the last track in session */
     if (!not_last_track) {
         session_type = mirage_parser_cdi_decode_session_type(self, session_type);
-        mirage_session_set_session_type(MIRAGE_SESSION(cur_session), session_type);
+        mirage_session_set_session_type(MIRAGE_SESSION(session), session_type);
     }
 
 
     /* Update current offset within image */
     self->priv->cur_offset += (tfile_sectsize + sfile_sectsize) * fragment_len;
 
-free_track:
-    g_object_unref(cur_track);
-    g_object_unref(cur_session);
+    g_object_unref(session);
+    g_object_unref(track);
 
-end:
-    return succeeded;
+    return TRUE;
 }
 
 static gboolean mirage_parser_cdi_load_session (MIRAGE_Parser_CDI *self, GError **error)
@@ -778,7 +775,9 @@ static gboolean mirage_parser_cdi_load_session (MIRAGE_Parser_CDI *self, GError 
 
     if (num_tracks) {
         /* Add session */
-        mirage_disc_add_session_by_index(MIRAGE_DISC(self->priv->disc), -1, NULL);
+        GObject *session = g_object_new(MIRAGE_TYPE_SESSION, NULL);
+        mirage_disc_add_session_by_index(MIRAGE_DISC(self->priv->disc), -1, session);
+        g_object_unref(session);
 
         /* Load tracks */
         for (i = 0; i < num_tracks; i++) {
@@ -898,8 +897,7 @@ static gboolean mirage_parser_cdi_load_disc (MIRAGE_Parser_CDI *self, GError **e
 
     if (cdtext_length) {
         /* FIXME: CD-TEXT data is for the first session only, I think... */
-        GObject *first_session = NULL;
-        mirage_disc_get_session_by_index(MIRAGE_DISC(self->priv->disc), 0, &first_session, NULL);
+        GObject *first_session = mirage_disc_get_session_by_index(MIRAGE_DISC(self->priv->disc), 0, NULL);
         if (!mirage_session_set_cdtext_data(MIRAGE_SESSION(first_session), cdtext_data, cdtext_length, NULL)) {
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to load CD-TEXT!\n");
         }

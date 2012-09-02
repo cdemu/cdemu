@@ -380,7 +380,7 @@ static GObject *mirage_parser_cif_parse_session_descriptor (MIRAGE_Parser_CIF *s
         }
 
         /* Add track */
-        mirage_session_add_track_by_index(MIRAGE_SESSION(session), i, &track);
+        mirage_session_add_track_by_index(MIRAGE_SESSION(session), i, track);
 
         g_object_unref(track);
         g_free(descriptor_data);
@@ -439,7 +439,7 @@ static gboolean mirage_parser_cif_parse_disc_descriptor (MIRAGE_Parser_CIF *self
             return FALSE;
         }
 
-        mirage_disc_add_session_by_index(MIRAGE_DISC(self->priv->disc), i, &session);
+        mirage_disc_add_session_by_index(MIRAGE_DISC(self->priv->disc), i, session);
 
         g_object_unref(session);
         g_free(descriptor_data);
@@ -449,7 +449,8 @@ static gboolean mirage_parser_cif_parse_disc_descriptor (MIRAGE_Parser_CIF *self
             GObject *prev_session;
             gint leadout_length;
 
-            if (!mirage_disc_get_session_by_index(MIRAGE_DISC(self->priv->disc), i-1, &prev_session, error)) {
+            prev_session = mirage_disc_get_session_by_index(MIRAGE_DISC(self->priv->disc), i-1, error);
+            if (!prev_session) {
                 MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: failed to get previous session!\n", __debug__);
                 return FALSE;
             }

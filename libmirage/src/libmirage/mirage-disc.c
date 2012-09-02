@@ -1098,6 +1098,7 @@ GObject *mirage_disc_get_session_before (MIRAGE_Disc *self, GObject *session, GE
  * mirage_disc_get_session_after:
  * @self: a #MIRAGE_Disc
  * @session: (in): a session
+ * @error: (out) (allow-none): location to store error, or %NULL
  *
  * <para>
  * Retrieves session that comes after @session.

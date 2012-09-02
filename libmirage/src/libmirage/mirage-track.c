@@ -1027,7 +1027,6 @@ gboolean mirage_track_for_each_fragment (MIRAGE_Track *self, MIRAGE_CallbackFunc
 /**
  * mirage_track_find_fragment_with_subchannel:
  * @self: a #MIRAGE_Track
- * @fragment: (out) (transfer full) (allow-none): location to store fragment, or %NULL
  * @error: (out) (allow-none): location to store error, or %NULL
  *
  * <para>

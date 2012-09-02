@@ -206,7 +206,6 @@ tracks and languages, setting CD-TEXT data, etc.
 
 @self: 
 @index: 
-@track: 
 @error: 
 @Returns: 
 
@@ -218,7 +217,6 @@ tracks and languages, setting CD-TEXT data, etc.
 
 @self: 
 @number: 
-@track: 
 @error: 
 @Returns: 
 
@@ -230,7 +228,6 @@ tracks and languages, setting CD-TEXT data, etc.
 
 @self: 
 @address: 
-@track: 
 @error: 
 @Returns: 
 
@@ -252,8 +249,7 @@ tracks and languages, setting CD-TEXT data, etc.
 </para>
 
 @self: 
-@cur_track: 
-@prev_track: 
+@track: 
 @error: 
 @Returns: 
 
@@ -264,8 +260,7 @@ tracks and languages, setting CD-TEXT data, etc.
 </para>
 
 @self: 
-@cur_track: 
-@next_track: 
+@track: 
 @error: 
 @Returns: 
 
@@ -329,7 +324,6 @@ tracks and languages, setting CD-TEXT data, etc.
 
 @self: 
 @index: 
-@language: 
 @error: 
 @Returns: 
 
@@ -341,7 +335,6 @@ tracks and languages, setting CD-TEXT data, etc.
 
 @self: 
 @langcode: 
-@language: 
 @error: 
 @Returns: 
 
@@ -387,7 +380,6 @@ tracks and languages, setting CD-TEXT data, etc.
 </para>
 
 @self: 
-@prev_session: 
 @error: 
 @Returns: 
 
@@ -398,7 +390,6 @@ tracks and languages, setting CD-TEXT data, etc.
 </para>
 
 @self: 
-@next_session: 
 @error: 
 @Returns: 
 

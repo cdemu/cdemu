@@ -71,11 +71,14 @@ static gchar *create_xinf_filename (gchar *track_filename)
 
 static gboolean mirage_parser_xcdroast_add_track (MIRAGE_Parser_XCDROAST *self, TOC_Track *track_info, GError **error)
 {
-    GObject *track = NULL;
+    GObject *track;
+    GObject *fragment;
 
     /* Add track */
-    if (!mirage_session_add_track_by_number(MIRAGE_SESSION(self->priv->cur_session), track_info->number, &track, error)) {
+    track = g_object_new(MIRAGE_TYPE_TRACK, NULL);
+    if (!mirage_session_add_track_by_number(MIRAGE_SESSION(self->priv->cur_session), track_info->number, track, error)) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to add track!\n", __debug__);
+        g_object_unref(track);
         return FALSE;
     }
 
@@ -84,14 +87,14 @@ static gboolean mirage_parser_xcdroast_add_track (MIRAGE_Parser_XCDROAST *self, 
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: adding %d sector pregap\n", __debug__, self->priv->set_pregap);
 
         /* Creation of NULL fragment should never fail */
-        GObject *null_fragment = libmirage_create_fragment(MIRAGE_TYPE_FRAG_IFACE_NULL, NULL, G_OBJECT(self), error);
+        fragment = libmirage_create_fragment(MIRAGE_TYPE_FRAG_IFACE_NULL, NULL, G_OBJECT(self), error);
 
-        mirage_fragment_set_length(MIRAGE_FRAGMENT(null_fragment), self->priv->set_pregap);
+        mirage_fragment_set_length(MIRAGE_FRAGMENT(fragment), self->priv->set_pregap);
 
-        mirage_track_add_fragment(MIRAGE_TRACK(track), -1, null_fragment);
+        mirage_track_add_fragment(MIRAGE_TRACK(track), -1, fragment);
         mirage_track_set_track_start(MIRAGE_TRACK(track), self->priv->set_pregap);
 
-        g_object_unref(null_fragment);
+        g_object_unref(fragment);
 
         self->priv->set_pregap = 0;
     }
@@ -119,8 +122,8 @@ static gboolean mirage_parser_xcdroast_add_track (MIRAGE_Parser_XCDROAST *self, 
             mirage_track_set_mode(MIRAGE_TRACK(track), MIRAGE_MODE_MODE1);
 
             /* Create and add binary fragment, using whole file */
-            GObject *data_fragment = libmirage_create_fragment(MIRAGE_TYPE_FRAG_IFACE_BINARY, data_stream, G_OBJECT(self), error);
-            if (!data_fragment) {
+            fragment = libmirage_create_fragment(MIRAGE_TYPE_FRAG_IFACE_BINARY, data_stream, G_OBJECT(self), error);
+            if (!fragment) {
                 MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to create BINARY fragment for file: %s\n", __debug__, data_file);
                 g_free(data_file);
                 g_object_unref(data_stream);
@@ -128,24 +131,24 @@ static gboolean mirage_parser_xcdroast_add_track (MIRAGE_Parser_XCDROAST *self, 
                 return FALSE;
             }
 
-            if (!mirage_frag_iface_binary_track_file_set_file(MIRAGE_FRAG_IFACE_BINARY(data_fragment), data_file, data_stream, error)) {
+            if (!mirage_frag_iface_binary_track_file_set_file(MIRAGE_FRAG_IFACE_BINARY(fragment), data_file, data_stream, error)) {
                 MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to set track data file!\n", __debug__);
                 g_free(data_file);
                 g_object_unref(data_stream);
                 g_object_unref(track);
-                g_object_unref(data_fragment);
+                g_object_unref(fragment);
                 return FALSE;
             }
-            mirage_frag_iface_binary_track_file_set_sectsize(MIRAGE_FRAG_IFACE_BINARY(data_fragment), 2048);
-            mirage_frag_iface_binary_track_file_set_offset(MIRAGE_FRAG_IFACE_BINARY(data_fragment), 0);
-            mirage_frag_iface_binary_track_file_set_format(MIRAGE_FRAG_IFACE_BINARY(data_fragment), FR_BIN_TFILE_DATA);
+            mirage_frag_iface_binary_track_file_set_sectsize(MIRAGE_FRAG_IFACE_BINARY(fragment), 2048);
+            mirage_frag_iface_binary_track_file_set_offset(MIRAGE_FRAG_IFACE_BINARY(fragment), 0);
+            mirage_frag_iface_binary_track_file_set_format(MIRAGE_FRAG_IFACE_BINARY(fragment), FR_BIN_TFILE_DATA);
 
-            mirage_fragment_use_the_rest_of_file(MIRAGE_FRAGMENT(data_fragment), NULL);
+            mirage_fragment_use_the_rest_of_file(MIRAGE_FRAGMENT(fragment), NULL);
 
-            mirage_track_add_fragment(MIRAGE_TRACK(track), -1, data_fragment);
+            mirage_track_add_fragment(MIRAGE_TRACK(track), -1, fragment);
 
             /* Verify fragment's length vs. declared track length */
-            gint fragment_length = mirage_fragment_get_length(MIRAGE_FRAGMENT(data_fragment));
+            gint fragment_length = mirage_fragment_get_length(MIRAGE_FRAGMENT(fragment));
             if (fragment_length != track_info->size) {
                 MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: data track size mismatch! Declared %d sectors, actual fragment size: %d\n", __debug__, track_info->size, fragment_length);
 
@@ -158,7 +161,7 @@ static gboolean mirage_parser_xcdroast_add_track (MIRAGE_Parser_XCDROAST *self, 
                 MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: compensating data track size difference with %d sector pregap to next track\n", __debug__, self->priv->set_pregap);
             }
 
-            g_object_unref(data_fragment);
+            g_object_unref(fragment);
 
             break;
         }
@@ -167,34 +170,34 @@ static gboolean mirage_parser_xcdroast_add_track (MIRAGE_Parser_XCDROAST *self, 
             mirage_track_set_mode(MIRAGE_TRACK(track), MIRAGE_MODE_AUDIO);
 
             /* Create and add audio fragment, using whole file */
-            GObject *data_fragment = libmirage_create_fragment(MIRAGE_TYPE_FRAG_IFACE_AUDIO, data_stream, G_OBJECT(self), error);
-            if (!data_fragment) {
+            fragment = libmirage_create_fragment(MIRAGE_TYPE_FRAG_IFACE_AUDIO, data_stream, G_OBJECT(self), error);
+            if (!fragment) {
                 MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to create AUDIO fragment for file: %s\n", __debug__, data_file);
                 g_free(data_file);
                 g_object_unref(data_stream);
                 g_object_unref(track);
                 return FALSE;
             }
-            if (!mirage_frag_iface_audio_set_file(MIRAGE_FRAG_IFACE_AUDIO(data_fragment), data_file, data_stream, error)) {
+            if (!mirage_frag_iface_audio_set_file(MIRAGE_FRAG_IFACE_AUDIO(fragment), data_file, data_stream, error)) {
                 MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to set track data file!\n", __debug__);
                 g_free(data_file);
                 g_object_unref(data_stream);
                 g_object_unref(track);
-                g_object_unref(data_fragment);
+                g_object_unref(fragment);
                 return FALSE;
             }
 
-            mirage_fragment_use_the_rest_of_file(MIRAGE_FRAGMENT(data_fragment), NULL);
+            mirage_fragment_use_the_rest_of_file(MIRAGE_FRAGMENT(fragment), NULL);
 
-            mirage_track_add_fragment(MIRAGE_TRACK(track), -1, data_fragment);
+            mirage_track_add_fragment(MIRAGE_TRACK(track), -1, fragment);
 
             /* Verify fragment's length vs. declared track length */
-            gint fragment_length = mirage_fragment_get_length(MIRAGE_FRAGMENT(data_fragment));
+            gint fragment_length = mirage_fragment_get_length(MIRAGE_FRAGMENT(fragment));
             if (fragment_length != track_info->size) {
                 MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: audio track size mismatch! Declared %d sectors, actual fragment size: %d\n", __debug__, track_info->size, fragment_length);
             }
 
-            g_object_unref(data_fragment);
+            g_object_unref(fragment);
 
             break;
         }
@@ -842,7 +845,8 @@ static GObject *mirage_parser_xcdroast_load_image (MIRAGE_Parser *_self, gchar *
     self->priv->toc_filename = g_strdup(filenames[0]);
 
     /* Create session; note that we store only pointer, but release reference */
-    mirage_disc_add_session_by_index(MIRAGE_DISC(self->priv->disc), -1, &self->priv->cur_session);
+    self->priv->cur_session = g_object_new(MIRAGE_TYPE_SESSION, NULL);
+    mirage_disc_add_session_by_index(MIRAGE_DISC(self->priv->disc), -1, self->priv->cur_session);
     g_object_unref(self->priv->cur_session);
 
     /* Parse the TOC */

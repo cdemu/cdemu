@@ -149,9 +149,9 @@ end:
 
 static gboolean mirage_parser_iso_load_track (MIRAGE_Parser_ISO *self, gchar *filename, GError **error)
 {
-    GObject *session = NULL;
-    GObject *track = NULL;
-    GObject *data_fragment;
+    GObject *session;
+    GObject *track;
+    GObject *fragment;
     GObject *data_stream;
 
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: loading track from ISO file: %s\n", __debug__, filename);
@@ -165,46 +165,48 @@ static gboolean mirage_parser_iso_load_track (MIRAGE_Parser_ISO *self, gchar *fi
 
     /* Create data fragment */
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: creating data fragment\n", __debug__);
-    data_fragment = libmirage_create_fragment(MIRAGE_TYPE_FRAG_IFACE_BINARY, data_stream, G_OBJECT(self), error);
-    if (!data_fragment) {
+    fragment = libmirage_create_fragment(MIRAGE_TYPE_FRAG_IFACE_BINARY, data_stream, G_OBJECT(self), error);
+    if (!fragment) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to create BINARY fragment!\n", __debug__);
         g_object_unref(data_stream);
         return FALSE;
     }
 
     /* Set file */
-    if (!mirage_frag_iface_binary_track_file_set_file(MIRAGE_FRAG_IFACE_BINARY(data_fragment), filename, data_stream, error)) {
+    if (!mirage_frag_iface_binary_track_file_set_file(MIRAGE_FRAG_IFACE_BINARY(fragment), filename, data_stream, error)) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to set track data file!\n", __debug__);
         g_object_unref(data_stream);
-        g_object_unref(data_fragment);
+        g_object_unref(fragment);
         return FALSE;
     }
-    mirage_frag_iface_binary_track_file_set_sectsize(MIRAGE_FRAG_IFACE_BINARY(data_fragment), self->priv->track_sectsize);
-    mirage_frag_iface_binary_track_file_set_format(MIRAGE_FRAG_IFACE_BINARY(data_fragment), FR_BIN_TFILE_DATA);
+    mirage_frag_iface_binary_track_file_set_sectsize(MIRAGE_FRAG_IFACE_BINARY(fragment), self->priv->track_sectsize);
+    mirage_frag_iface_binary_track_file_set_format(MIRAGE_FRAG_IFACE_BINARY(fragment), FR_BIN_TFILE_DATA);
 
     /* Use whole file */
-    if (!mirage_fragment_use_the_rest_of_file(MIRAGE_FRAGMENT(data_fragment), error)) {
+    if (!mirage_fragment_use_the_rest_of_file(MIRAGE_FRAGMENT(fragment), error)) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to use the rest of file!\n", __debug__);
         g_object_unref(data_stream);
-        g_object_unref(data_fragment);
+        g_object_unref(fragment);
         return FALSE;
     }
 
     /* Add track */
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: adding track\n", __debug__);
 
-    mirage_disc_get_session_by_index(MIRAGE_DISC(self->priv->disc), -1, &session, NULL);
-    mirage_session_add_track_by_index(MIRAGE_SESSION(session), -1, &track);
+    session = mirage_disc_get_session_by_index(MIRAGE_DISC(self->priv->disc), -1, NULL);
+
+    track = g_object_new(MIRAGE_TYPE_TRACK, NULL);
+    mirage_session_add_track_by_index(MIRAGE_SESSION(session), -1, track);
     g_object_unref(session);
 
     /* Set track mode */
     mirage_track_set_mode(MIRAGE_TRACK(track), self->priv->track_mode);
 
     /* Add fragment to track */
-    mirage_track_add_fragment(MIRAGE_TRACK(track), -1, data_fragment);
+    mirage_track_add_fragment(MIRAGE_TRACK(track), -1, fragment);
 
     g_object_unref(data_stream);
-    g_object_unref(data_fragment);
+    g_object_unref(fragment);
     g_object_unref(track);
 
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: finished loading track\n", __debug__);
@@ -235,8 +237,8 @@ static GObject *mirage_parser_iso_load_image (MIRAGE_Parser *_self, gchar **file
     mirage_disc_set_filename(MIRAGE_DISC(self->priv->disc), filenames[0]);
 
     /* Session: one session (with possibly multiple tracks) */
-    GObject *session = NULL;
-    mirage_disc_add_session_by_index(MIRAGE_DISC(self->priv->disc), 0, &session);
+    GObject *session = g_object_new(MIRAGE_TYPE_SESSION, NULL);
+    mirage_disc_add_session_by_index(MIRAGE_DISC(self->priv->disc), 0, session);
 
     /* ISO image parser assumes single-track image, so we're dealing with regular CD-ROM session */
     mirage_session_set_session_type(MIRAGE_SESSION(session), MIRAGE_SESSION_CD_ROM);

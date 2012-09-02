@@ -62,7 +62,7 @@ struct _MIRAGE_Parser_CUEPrivate
 \**********************************************************************/
 static gboolean mirage_parser_cue_finish_last_track (MIRAGE_Parser_CUE *self, GError **error)
 {
-    GObject *data_fragment;
+    GObject *fragment;
     gboolean succeeded = TRUE;
 
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: finishing last track\n", __debug__);
@@ -78,17 +78,18 @@ static gboolean mirage_parser_cue_finish_last_track (MIRAGE_Parser_CUE *self, GE
        postgap fragment stuck at the end, we look for first data fragment that's
        not NULL... and of course, we go from behind) */
     /* FIXME: implement the latter part */
-    if (mirage_track_get_fragment_by_index(MIRAGE_TRACK(self->priv->cur_track), -1, &data_fragment, NULL)) {
-        mirage_fragment_use_the_rest_of_file(MIRAGE_FRAGMENT(data_fragment), NULL);
+    fragment = mirage_track_get_fragment_by_index(MIRAGE_TRACK(self->priv->cur_track), -1, NULL);
+    if (fragment) {
+        mirage_fragment_use_the_rest_of_file(MIRAGE_FRAGMENT(fragment), NULL);
 
-        if (mirage_fragment_get_length(MIRAGE_FRAGMENT(data_fragment)) < 0) {
+        if (mirage_fragment_get_length(MIRAGE_FRAGMENT(fragment)) < 0) {
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: finishing last track resulted in negative fragment length!\n", __debug__);
             g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_PARSER_ERROR, "Finishing last track resulted in negative fragment length!");
             succeeded = FALSE;
         }
 
 
-        g_object_unref(data_fragment);
+        g_object_unref(fragment);
     }
 
     return succeeded;
@@ -134,9 +135,10 @@ static gboolean mirage_parser_cue_add_track (MIRAGE_Parser_CUE *self, gint numbe
     self->priv->prev_track = self->priv->cur_track;
 
     /* Add new track, store the pointer and release reference */
-    self->priv->cur_track = NULL; /* Need to reset it, otherwise it gets added */
-    if (!mirage_session_add_track_by_number(MIRAGE_SESSION(self->priv->cur_session), number, &self->priv->cur_track, error)) {
+    self->priv->cur_track = g_object_new(MIRAGE_TYPE_TRACK, NULL);
+    if (!mirage_session_add_track_by_number(MIRAGE_SESSION(self->priv->cur_session), number, self->priv->cur_track, error)) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to add track!\n", __debug__);
+        g_object_unref(self->priv->cur_track);
         return FALSE;
     }
     g_object_unref(self->priv->cur_track);
@@ -223,11 +225,11 @@ static gboolean mirage_parser_cue_add_index (MIRAGE_Parser_CUE *self, gint numbe
                     address = 0;
                 }
             } else {
-                GObject *lfragment = NULL;
-
                 /* Get previous track's fragment to set its length */
-                if (mirage_track_get_fragment_by_index(MIRAGE_TRACK(self->priv->prev_track), -1, &lfragment, NULL)) {
-                    gint fragment_length = mirage_fragment_get_length(MIRAGE_FRAGMENT(lfragment));
+                GObject *fragment = mirage_track_get_fragment_by_index(MIRAGE_TRACK(self->priv->prev_track), -1, NULL);
+
+                if (fragment) {
+                    gint fragment_length = mirage_fragment_get_length(MIRAGE_FRAGMENT(fragment));
 
                     /* If length is not set, we need to calculate it now; the
                        length will be already set if file has changed in between
@@ -246,14 +248,14 @@ static gboolean mirage_parser_cue_add_index (MIRAGE_Parser_CUE *self, gint numbe
                         }
 
                         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: previous fragment length determined to be: %i\n", __debug__, fragment_length);
-                        mirage_fragment_set_length(MIRAGE_FRAGMENT(lfragment), fragment_length);
+                        mirage_fragment_set_length(MIRAGE_FRAGMENT(fragment), fragment_length);
 
                         /* Binary fragments/files are pain because sector size can
                            vary between the tracks; so in case we're dealing with
                            binary, we need to keep track of the offset within file */
-                        if (MIRAGE_IS_FRAG_IFACE_BINARY(lfragment)) {
-                            gint tfile_sectsize = mirage_frag_iface_binary_track_file_get_sectsize(MIRAGE_FRAG_IFACE_BINARY(lfragment));
-                            gint sfile_sectsize = mirage_frag_iface_binary_subchannel_file_get_sectsize(MIRAGE_FRAG_IFACE_BINARY(lfragment));
+                        if (MIRAGE_IS_FRAG_IFACE_BINARY(fragment)) {
+                            gint tfile_sectsize = mirage_frag_iface_binary_track_file_get_sectsize(MIRAGE_FRAG_IFACE_BINARY(fragment));
+                            gint sfile_sectsize = mirage_frag_iface_binary_subchannel_file_get_sectsize(MIRAGE_FRAG_IFACE_BINARY(fragment));
 
                             self->priv->binary_offset += fragment_length * (tfile_sectsize + sfile_sectsize);
                         }
@@ -261,13 +263,12 @@ static gboolean mirage_parser_cue_add_index (MIRAGE_Parser_CUE *self, gint numbe
                         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: previous fragment already has length (%i)\n", __debug__, fragment_length);
                     }
 
-                    g_object_unref(lfragment);
+                    g_object_unref(fragment);
                 }
             }
 
             /* Now current track; we only create fragment here and set its offset */
-            GObject *data_fragment;
-
+            GObject *fragment;
             GObject *data_stream = mirage_parser_get_cached_data_stream(MIRAGE_PARSER(self), self->priv->cur_data_filename, error);
             if (!data_stream) {
                 MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to create data strean on data file: %s!\n", __debug__, self->priv->cur_data_filename);
@@ -289,50 +290,50 @@ static gboolean mirage_parser_cue_add_index (MIRAGE_Parser_CUE *self, gint numbe
                     tfile_sectsize = self->priv->cur_data_sectsize;
                 }
 
-                data_fragment = libmirage_create_fragment(MIRAGE_TYPE_FRAG_IFACE_BINARY, data_stream, G_OBJECT(self), error);
-                if (!data_fragment) {
+                fragment = libmirage_create_fragment(MIRAGE_TYPE_FRAG_IFACE_BINARY, data_stream, G_OBJECT(self), error);
+                if (!fragment) {
                     MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to create data fragment!\n", __debug__);
                     g_object_unref(data_stream);
                     return FALSE;
                 }
 
-                if (!mirage_frag_iface_binary_track_file_set_file(MIRAGE_FRAG_IFACE_BINARY(data_fragment), self->priv->cur_data_filename, data_stream, error)) {
+                if (!mirage_frag_iface_binary_track_file_set_file(MIRAGE_FRAG_IFACE_BINARY(fragment), self->priv->cur_data_filename, data_stream, error)) {
                     MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to set track data file!\n", __debug__);
                     g_object_unref(data_stream);
-                    g_object_unref(data_fragment);
+                    g_object_unref(fragment);
                     return FALSE;
                 }
-                mirage_frag_iface_binary_track_file_set_sectsize(MIRAGE_FRAG_IFACE_BINARY(data_fragment), tfile_sectsize);
-                mirage_frag_iface_binary_track_file_set_offset(MIRAGE_FRAG_IFACE_BINARY(data_fragment), self->priv->binary_offset);
-                mirage_frag_iface_binary_track_file_set_format(MIRAGE_FRAG_IFACE_BINARY(data_fragment), self->priv->cur_data_format);
+                mirage_frag_iface_binary_track_file_set_sectsize(MIRAGE_FRAG_IFACE_BINARY(fragment), tfile_sectsize);
+                mirage_frag_iface_binary_track_file_set_offset(MIRAGE_FRAG_IFACE_BINARY(fragment), self->priv->binary_offset);
+                mirage_frag_iface_binary_track_file_set_format(MIRAGE_FRAG_IFACE_BINARY(fragment), self->priv->cur_data_format);
 
                 if (sfile_sectsize) {
-                    mirage_frag_iface_binary_subchannel_file_set_sectsize(MIRAGE_FRAG_IFACE_BINARY(data_fragment), sfile_sectsize);
+                    mirage_frag_iface_binary_subchannel_file_set_sectsize(MIRAGE_FRAG_IFACE_BINARY(fragment), sfile_sectsize);
                     /* FIXME: what format of subchannel is there anyway? */
-                    mirage_frag_iface_binary_subchannel_file_set_format(MIRAGE_FRAG_IFACE_BINARY(data_fragment), FR_BIN_SFILE_PW96_INT | FR_BIN_SFILE_INT);
+                    mirage_frag_iface_binary_subchannel_file_set_format(MIRAGE_FRAG_IFACE_BINARY(fragment), FR_BIN_SFILE_PW96_INT | FR_BIN_SFILE_INT);
                 }
             } else {
                 /* One of the audio files; we'll request fragment with AUDIO
                    interface and hope Mirage finds one that can handle the file
                    for us */
-                data_fragment = libmirage_create_fragment(MIRAGE_TYPE_FRAG_IFACE_AUDIO, data_stream, G_OBJECT(self), error);
-                if (!data_fragment) {
+                fragment = libmirage_create_fragment(MIRAGE_TYPE_FRAG_IFACE_AUDIO, data_stream, G_OBJECT(self), error);
+                if (!fragment) {
                     MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: unknown/unsupported file type: %s\n", __debug__, self->priv->cur_data_type);
                     g_object_unref(data_stream);
                     return FALSE;
                 }
 
-                if (!mirage_frag_iface_audio_set_file(MIRAGE_FRAG_IFACE_AUDIO(data_fragment), self->priv->cur_data_filename, data_stream, error)) {
+                if (!mirage_frag_iface_audio_set_file(MIRAGE_FRAG_IFACE_AUDIO(fragment), self->priv->cur_data_filename, data_stream, error)) {
                     MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to set track data file!\n", __debug__);
                     g_object_unref(data_stream);
-                    g_object_unref(data_fragment);
+                    g_object_unref(fragment);
                     return FALSE;
                 }
                 /* Offset in audio file is equivalent to current address in CUE */
-                mirage_frag_iface_audio_set_offset(MIRAGE_FRAG_IFACE_AUDIO(data_fragment), address);
+                mirage_frag_iface_audio_set_offset(MIRAGE_FRAG_IFACE_AUDIO(fragment), address);
             }
 
-            mirage_track_add_fragment(MIRAGE_TRACK(self->priv->cur_track), -1, data_fragment);
+            mirage_track_add_fragment(MIRAGE_TRACK(self->priv->cur_track), -1, fragment);
 
             /* Store the current address... it is location at which the current
                track starts, and it will be used to calculate fragment's length
@@ -340,11 +341,11 @@ static gboolean mirage_parser_cue_add_index (MIRAGE_Parser_CUE *self, gint numbe
             self->priv->cur_track_start = address;
 
             g_object_unref(data_stream);
-            g_object_unref(data_fragment);
+            g_object_unref(fragment);
         }
     } else {
         /* If index >= 2 is given, add it */
-        mirage_track_add_index(MIRAGE_TRACK(self->priv->cur_track), address, NULL, NULL);
+        mirage_track_add_index(MIRAGE_TRACK(self->priv->cur_track), address, NULL);
     }
 
     return TRUE;
@@ -456,8 +457,8 @@ static void mirage_parser_cue_add_session (MIRAGE_Parser_CUE *self, gint number)
     self->priv->leadout_correction = leadout_length + 150;
 
     /* Add new session, store the pointer but release the reference */
-    self->priv->cur_session = NULL; /* Need to reset it, otherwise it gets added */
-    mirage_disc_add_session_by_index(MIRAGE_DISC(self->priv->disc), -1, &self->priv->cur_session);
+    self->priv->cur_session = g_object_new(MIRAGE_TYPE_SESSION, NULL);
+    mirage_disc_add_session_by_index(MIRAGE_DISC(self->priv->disc), -1, self->priv->cur_session);
     g_object_unref(self->priv->cur_session);
 
     /* Reset current track */
@@ -466,20 +467,24 @@ static void mirage_parser_cue_add_session (MIRAGE_Parser_CUE *self, gint number)
 
 static gboolean mirage_parser_cue_set_pack_data (MIRAGE_Parser_CUE *self, gint pack_type, gchar *data, GError **error G_GNUC_UNUSED)
 {
-    GObject *language = NULL;
+    GObject *language;
 
     /* FIXME: only one language code supported for now */
     gint langcode = 9;
 
     if (!self->priv->cur_track) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: setting pack data for disc; type: 0x%X, data: %s\n", __debug__, pack_type, data);
-        if (!mirage_session_get_language_by_code(MIRAGE_SESSION(self->priv->cur_session), langcode, &language, NULL)) {
-            mirage_session_add_language(MIRAGE_SESSION(self->priv->cur_session), langcode, &language, NULL);
+        language = mirage_session_get_language_by_code(MIRAGE_SESSION(self->priv->cur_session), langcode, NULL);
+        if (!language) {
+            language = g_object_new(MIRAGE_TYPE_LANGUAGE, NULL);
+            mirage_session_add_language(MIRAGE_SESSION(self->priv->cur_session), langcode, language, NULL);
         }
     } else {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: setting pack data for track; type: 0x%X, data: %s\n", __debug__, pack_type, data);
-        if (!mirage_track_get_language_by_code(MIRAGE_TRACK(self->priv->cur_track), langcode, &language, NULL)) {
-            mirage_track_add_language(MIRAGE_TRACK(self->priv->cur_track), langcode, &language, NULL);
+        language = mirage_track_get_language_by_code(MIRAGE_TRACK(self->priv->cur_track), langcode, NULL);
+        if (!language) {
+            language = g_object_new(MIRAGE_TYPE_LANGUAGE, NULL);
+            mirage_track_add_language(MIRAGE_TRACK(self->priv->cur_track), langcode, language, NULL);
         }
     }
 
@@ -989,7 +994,8 @@ static GObject *mirage_parser_cue_load_image (MIRAGE_Parser *_self, gchar **file
     /* First session is created manually (in case we're dealing with normal
        CUE file, which doesn't have session definitions anyway); note that we
        store only pointer, but release reference */
-    mirage_disc_add_session_by_index(MIRAGE_DISC(self->priv->disc), -1, &self->priv->cur_session);
+    self->priv->cur_session = g_object_new(MIRAGE_TYPE_SESSION, NULL);
+    mirage_disc_add_session_by_index(MIRAGE_DISC(self->priv->disc), -1, self->priv->cur_session);
     g_object_unref(self->priv->cur_session);
 
     /* Parse the CUE */

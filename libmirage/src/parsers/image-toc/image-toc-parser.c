@@ -102,8 +102,8 @@ static void mirage_parser_toc_set_session_type (MIRAGE_Parser_TOC *self, gchar *
 static void mirage_parser_toc_add_track (MIRAGE_Parser_TOC *self, gchar *mode_string, gchar *subchan_string)
 {
     /* Add track */
-    self->priv->cur_track = NULL;
-    mirage_session_add_track_by_index(MIRAGE_SESSION(self->priv->cur_session), -1, &self->priv->cur_track);
+    self->priv->cur_track = g_object_new(MIRAGE_TYPE_TRACK, NULL);
+    mirage_session_add_track_by_index(MIRAGE_SESSION(self->priv->cur_session), -1, self->priv->cur_track);
     g_object_unref(self->priv->cur_track); /* Don't keep reference */
 
     /* Clear internal data */
@@ -167,13 +167,13 @@ static void mirage_parser_toc_add_track (MIRAGE_Parser_TOC *self, gchar *mode_st
 
 static gboolean mirage_parser_toc_track_add_fragment (MIRAGE_Parser_TOC *self, gint type, gchar *filename_string, gint base_offset, gint start, gint length, GError **error)
 {
-    GObject *data_fragment;
+    GObject *fragment;
 
     /* Create appropriate fragment */
     if (type == TOC_DATA_TYPE_NONE) {
         /* Empty fragment; we'd like a NULL fragment - creation should never fail */
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: creating NULL fragment\n", __debug__);
-        data_fragment = libmirage_create_fragment(MIRAGE_TYPE_FRAG_IFACE_NULL, NULL, G_OBJECT(self), NULL);
+        fragment = libmirage_create_fragment(MIRAGE_TYPE_FRAG_IFACE_NULL, NULL, G_OBJECT(self), NULL);
     } else {
         /* Find filename */
         gchar *filename = mirage_helper_find_data_file(filename_string, self->priv->toc_filename);
@@ -197,8 +197,8 @@ static gboolean mirage_parser_toc_track_add_fragment (MIRAGE_Parser_TOC *self, g
         if (type == TOC_DATA_TYPE_DATA || mirage_helper_has_suffix(filename_string, ".bin")) {
             /* Binary data; we'd like a BINARY fragment */
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: creating BINARY fragment\n", __debug__);
-            data_fragment = libmirage_create_fragment(MIRAGE_TYPE_FRAG_IFACE_BINARY, stream, G_OBJECT(self), error);
-            if (!data_fragment) {
+            fragment = libmirage_create_fragment(MIRAGE_TYPE_FRAG_IFACE_BINARY, stream, G_OBJECT(self), error);
+            if (!fragment) {
                 MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to create BINARY fragment!\n", __debug__);
                 g_free(filename);
                 g_object_unref(stream);
@@ -260,25 +260,25 @@ static gboolean mirage_parser_toc_track_add_fragment (MIRAGE_Parser_TOC *self, g
             sfile_format = self->priv->cur_sfile_format;
 
             /* Set file */
-            if (!mirage_frag_iface_binary_track_file_set_file(MIRAGE_FRAG_IFACE_BINARY(data_fragment), filename, stream, error)) {
+            if (!mirage_frag_iface_binary_track_file_set_file(MIRAGE_FRAG_IFACE_BINARY(fragment), filename, stream, error)) {
                 MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to set track data file!\n", __debug__);
                 g_free(filename);
                 g_object_unref(stream);
-                g_object_unref(data_fragment);
+                g_object_unref(fragment);
                 return FALSE;
             }
-            mirage_frag_iface_binary_track_file_set_sectsize(MIRAGE_FRAG_IFACE_BINARY(data_fragment), tfile_sectsize);
-            mirage_frag_iface_binary_track_file_set_offset(MIRAGE_FRAG_IFACE_BINARY(data_fragment), tfile_offset);
-            mirage_frag_iface_binary_track_file_set_format(MIRAGE_FRAG_IFACE_BINARY(data_fragment), tfile_format);
+            mirage_frag_iface_binary_track_file_set_sectsize(MIRAGE_FRAG_IFACE_BINARY(fragment), tfile_sectsize);
+            mirage_frag_iface_binary_track_file_set_offset(MIRAGE_FRAG_IFACE_BINARY(fragment), tfile_offset);
+            mirage_frag_iface_binary_track_file_set_format(MIRAGE_FRAG_IFACE_BINARY(fragment), tfile_format);
 
-            mirage_frag_iface_binary_subchannel_file_set_sectsize(MIRAGE_FRAG_IFACE_BINARY(data_fragment), sfile_sectsize);
-            mirage_frag_iface_binary_subchannel_file_set_format(MIRAGE_FRAG_IFACE_BINARY(data_fragment), sfile_format);
+            mirage_frag_iface_binary_subchannel_file_set_sectsize(MIRAGE_FRAG_IFACE_BINARY(fragment), sfile_sectsize);
+            mirage_frag_iface_binary_subchannel_file_set_format(MIRAGE_FRAG_IFACE_BINARY(fragment), sfile_format);
         } else {
             /* Audio data; we'd like an AUDIO fragment, and hopefully Mirage can
                find one that can handle given file format */
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: creating AUDIO fragment\n", __debug__);
-            data_fragment = libmirage_create_fragment(MIRAGE_TYPE_FRAG_IFACE_AUDIO, stream, G_OBJECT(self), error);
-            if (!data_fragment) {
+            fragment = libmirage_create_fragment(MIRAGE_TYPE_FRAG_IFACE_AUDIO, stream, G_OBJECT(self), error);
+            if (!fragment) {
                 MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to create appropriate AUDIO fragment!\n", __debug__);
                 g_free(filename);
                 g_object_unref(stream);
@@ -286,16 +286,16 @@ static gboolean mirage_parser_toc_track_add_fragment (MIRAGE_Parser_TOC *self, g
             }
 
             /* Set file */
-            if (!mirage_frag_iface_audio_set_file(MIRAGE_FRAG_IFACE_AUDIO(data_fragment), filename, stream, error)) {
+            if (!mirage_frag_iface_audio_set_file(MIRAGE_FRAG_IFACE_AUDIO(fragment), filename, stream, error)) {
                 MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to set track data file!\n", __debug__);
                 g_free(filename);
                 g_object_unref(stream);
-                g_object_unref(data_fragment);
+                g_object_unref(fragment);
                 return FALSE;
             }
 
             /* Set offset */
-            mirage_frag_iface_audio_set_offset(MIRAGE_FRAG_IFACE_AUDIO(data_fragment), start);
+            mirage_frag_iface_audio_set_offset(MIRAGE_FRAG_IFACE_AUDIO(fragment), start);
         }
 
         g_free(filename);
@@ -306,20 +306,20 @@ static gboolean mirage_parser_toc_track_add_fragment (MIRAGE_Parser_TOC *self, g
     if (length) {
         /* Use supplied length */
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: setting fragment's length: 0x%X\n", __debug__, length);
-        mirage_fragment_set_length(MIRAGE_FRAGMENT(data_fragment), length);
+        mirage_fragment_set_length(MIRAGE_FRAGMENT(fragment), length);
     } else {
         /* Use whole file */
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: using whole file\n", __debug__);
-        if (!mirage_fragment_use_the_rest_of_file(MIRAGE_FRAGMENT(data_fragment), error)) {
+        if (!mirage_fragment_use_the_rest_of_file(MIRAGE_FRAGMENT(fragment), error)) {
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to use whole file!\n", __debug__);
-            g_object_unref(data_fragment);
+            g_object_unref(fragment);
             return FALSE;
         }
     }
 
     /* Add fragment */
-    mirage_track_add_fragment(MIRAGE_TRACK(self->priv->cur_track), -1, data_fragment);
-    g_object_unref(data_fragment);
+    mirage_track_add_fragment(MIRAGE_TRACK(self->priv->cur_track), -1, fragment);
+    g_object_unref(fragment);
 
     return TRUE;
 };
@@ -339,7 +339,7 @@ static void mirage_parser_toc_track_add_index (MIRAGE_Parser_TOC *self, gint add
     gint track_start = mirage_track_get_track_start(MIRAGE_TRACK(self->priv->cur_track));
 
     /* Indices in TOC file are track-start relative... */
-    mirage_track_add_index(MIRAGE_TRACK(self->priv->cur_track), track_start + address, NULL, NULL);
+    mirage_track_add_index(MIRAGE_TRACK(self->priv->cur_track), track_start + address, NULL);
 }
 
 static void mirage_parser_toc_track_set_flag (MIRAGE_Parser_TOC *self, gint flag, gboolean set)
@@ -504,15 +504,17 @@ static gboolean mirage_parser_toc_cdtext_parse_disc_languages (MIRAGE_Parser_TOC
         gint index = atoi(index_str);
         gint code = GPOINTER_TO_INT(g_hash_table_lookup(self->priv->lang_map, GINT_TO_POINTER(index)));
 
-        GObject *language = NULL;
+        GObject *language;
 
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: adding disc language: index %i -> code %i\n", __debug__, index, code);
-        if (mirage_session_add_language(MIRAGE_SESSION(self->priv->cur_session), code, &language, NULL)) {
+
+        language = g_object_new(MIRAGE_TYPE_LANGUAGE, NULL);
+        if (mirage_session_add_language(MIRAGE_SESSION(self->priv->cur_session), code, language, NULL)) {
             mirage_parser_toc_cdtext_parse_language(self, data_str, language, NULL);
-            g_object_unref(language);
         } else {
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to add disc language (index %i, code %i)!\n", __debug__, index, code);
         }
+        g_object_unref(language);
 
         g_free(data_str);
         g_free(index_str);
@@ -536,15 +538,17 @@ static gboolean mirage_parser_toc_cdtext_parse_track_languages (MIRAGE_Parser_TO
         gint index = atoi(index_str);
         gint code = GPOINTER_TO_INT(g_hash_table_lookup(self->priv->lang_map, GINT_TO_POINTER(index)));
 
-        GObject *language = NULL;
+        GObject *language;
 
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: adding track language: index %i -> code %i\n", __debug__, index, code);
-        if (mirage_track_add_language(MIRAGE_TRACK(self->priv->cur_track), code, &language, NULL)) {
+
+        language = g_object_new(MIRAGE_TYPE_LANGUAGE, NULL);
+        if (mirage_track_add_language(MIRAGE_TRACK(self->priv->cur_track), code, language, NULL)) {
             mirage_parser_toc_cdtext_parse_language(self, data_str, language, NULL);
-            g_object_unref(language);
         } else {
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to add track language (index %i, code %i)!\n", __debug__, index, code);
         }
+        g_object_unref(language);
 
         g_free(data_str);
         g_free(index_str);
@@ -1273,10 +1277,11 @@ static GObject *mirage_parser_toc_load_image (MIRAGE_Parser *_self, gchar **file
            the length of leadouts for sessions (since all sessions start at sector 0).
            So we use what multisession FAQ from cdrecord docs tells us... */
         if (i > 0) {
-            GObject *prev_session = NULL;
+            GObject *prev_session;
             gint leadout_length = 0;
 
-            if (!mirage_disc_get_session_by_index(MIRAGE_DISC(self->priv->disc), -1, &prev_session, error)) {
+            prev_session = mirage_disc_get_session_by_index(MIRAGE_DISC(self->priv->disc), -1, error);
+            if (!prev_session) {
                 MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: failed to get previous session!\n", __debug__);
                 succeeded = FALSE;
                 goto end;
@@ -1295,8 +1300,8 @@ static GObject *mirage_parser_toc_load_image (MIRAGE_Parser *_self, gchar **file
         }
 
         /* Create session */
-        self->priv->cur_session = NULL;
-        mirage_disc_add_session_by_index(MIRAGE_DISC(self->priv->disc), -1, &self->priv->cur_session);
+        self->priv->cur_session = g_object_new(MIRAGE_TYPE_SESSION, NULL);
+        mirage_disc_add_session_by_index(MIRAGE_DISC(self->priv->disc), -1, self->priv->cur_session);
         g_object_unref(self->priv->cur_session); /* Don't keep reference */
 
         /* Parse TOC */

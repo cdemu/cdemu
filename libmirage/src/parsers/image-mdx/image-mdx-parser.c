@@ -281,8 +281,8 @@ static gboolean mirage_parser_mdx_get_track (MIRAGE_Parser_MDX *self, const gcha
 
 static gboolean mirage_parser_mdx_load_disc (MIRAGE_Parser_MDX *self, gchar *filename, GError **error)
 {
-    GObject *session = NULL;
-    GObject *track = NULL;
+    GObject *session;
+    GObject *track;
 
     /* Make sure users know what they're up against */
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "\n");
@@ -301,13 +301,15 @@ static gboolean mirage_parser_mdx_load_disc (MIRAGE_Parser_MDX *self, gchar *fil
 
 
     /* Session: one session */
-    mirage_disc_add_session_by_index(MIRAGE_DISC(self->priv->disc), 0, &session);
+    session = g_object_new(MIRAGE_TYPE_SESSION, NULL);
+    mirage_disc_add_session_by_index(MIRAGE_DISC(self->priv->disc), 0, session);
 
     /* MDX image parser assumes single-track image, so we're dealing with regular CD-ROM session */
     mirage_session_set_session_type(MIRAGE_SESSION(session), MIRAGE_SESSION_CD_ROM);
 
     /* Add track */
-    mirage_session_add_track_by_index(MIRAGE_SESSION(session), -1, &track);
+    track = g_object_new(MIRAGE_TYPE_TRACK, NULL);
+    mirage_session_add_track_by_index(MIRAGE_SESSION(session), -1, track);
 
     g_object_unref(session);
     g_object_unref(track);

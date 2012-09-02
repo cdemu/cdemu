@@ -250,16 +250,21 @@ static gboolean mirage_parser_c2d_parse_track_entries (MIRAGE_Parser_C2D *self, 
 
         /* Create a new session? */
         if (cur_tb->session > last_session) {
-            if (!mirage_disc_add_session_by_number(MIRAGE_DISC(self->priv->disc), cur_tb->session, NULL, error)) {
+            GObject *session = g_object_new(MIRAGE_TYPE_SESSION, NULL);
+            if (!mirage_disc_add_session_by_number(MIRAGE_DISC(self->priv->disc), cur_tb->session, session, error)) {
                 MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to add session!\n", __debug__);
+                g_object_unref(session);
                 return FALSE;
             }
+            g_object_unref(session);
+
             last_session = cur_tb->session;
             last_point = 0;
         }
 
         /* Get current session */
-        if (!mirage_disc_get_session_by_index(MIRAGE_DISC(self->priv->disc), -1, &cur_session, error)) {
+        cur_session = mirage_disc_get_session_by_index(MIRAGE_DISC(self->priv->disc), -1, error);
+        if (!cur_session) {
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to get current session!\n", __debug__);
             return FALSE;
         }
@@ -267,18 +272,23 @@ static gboolean mirage_parser_c2d_parse_track_entries (MIRAGE_Parser_C2D *self, 
         /* Add a new track? */
         new_track = FALSE; /* reset */
         if (cur_tb->point > last_point) {
-            if (!mirage_session_add_track_by_number(MIRAGE_SESSION(cur_session), cur_tb->point, NULL, error)) {
+            GObject *track = g_object_new(MIRAGE_TYPE_TRACK, NULL);
+            if (!mirage_session_add_track_by_number(MIRAGE_SESSION(cur_session), cur_tb->point, track, error)) {
                 MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to add track!\n", __debug__);
+                g_object_unref(track);
                 g_object_unref(cur_session);
                 return FALSE;
             }
+            g_object_unref(track);
+
             last_point = cur_tb->point;
             last_index = 1;
             new_track = TRUE;
         }
 
         /* Get current track */
-        if (!mirage_session_get_track_by_index(MIRAGE_SESSION(cur_session), -1, &cur_point, error)) {
+        cur_point = mirage_session_get_track_by_index(MIRAGE_SESSION(cur_session), -1, error);
+        if (!cur_point) {
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to get current track!\n", __debug__);
             g_object_unref(cur_session);
             return FALSE;
@@ -304,7 +314,7 @@ static gboolean mirage_parser_c2d_parse_track_entries (MIRAGE_Parser_C2D *self, 
 
         /* Add new index? */
         if (cur_tb->index > last_index) {
-            if (!mirage_track_add_index(MIRAGE_TRACK(cur_point), cur_tb->first_sector - track_first_sector + track_start, NULL, error)) {
+            if (!mirage_track_add_index(MIRAGE_TRACK(cur_point), cur_tb->first_sector - track_first_sector + track_start, error)) {
                 MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to add index!\n", __debug__);
                 g_object_unref(cur_point);
                 g_object_unref(cur_session);
@@ -415,12 +425,13 @@ skip_making_fragments:
 
 static gboolean mirage_parser_c2d_load_cdtext (MIRAGE_Parser_C2D *self, GError **error)
 {
-    GObject *session = NULL;
+    GObject *session;
     guint8 *cdtext_data = (guint8 *)self->priv->cdtext_block;
     gint cdtext_length = self->priv->header_block->size_cdtext;
 
     /* Get session */
-    if (!mirage_disc_get_session_by_index(MIRAGE_DISC(self->priv->disc), 0, &session, error)) {
+    session = mirage_disc_get_session_by_index(MIRAGE_DISC(self->priv->disc), 0, error);
+    if (!session) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to get session!\n", __debug__);
         return FALSE;
     }

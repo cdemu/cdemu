@@ -92,23 +92,24 @@ end:
 
 static gboolean mirage_parser_readcd_determine_track_mode (MIRAGE_Parser_READCD *self, GObject *track, GError **error)
 {
-    GObject *data_fragment;
+    GObject *fragment;
     guint8 buf[2532];
     gint track_mode;
 
     /* Get last fragment */
-    if (!mirage_track_get_fragment_by_index(MIRAGE_TRACK(track), -1, &data_fragment, error)) {
+    fragment = mirage_track_get_fragment_by_index(MIRAGE_TRACK(track), -1, error);
+    if (!fragment) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to get fragment\n", __debug__);
         return FALSE;
     }
 
     //* Read main sector data from fragment; 2352-byte sectors are assumed */
-    if (!mirage_fragment_read_main_data(MIRAGE_FRAGMENT(data_fragment), 0, buf, NULL, error)) {
+    if (!mirage_fragment_read_main_data(MIRAGE_FRAGMENT(fragment), 0, buf, NULL, error)) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: failed to read data from fragment to determine track mode!\n", __debug__);
-        g_object_unref(data_fragment);
+        g_object_unref(fragment);
         return FALSE;
     }
-    g_object_unref(data_fragment);
+    g_object_unref(fragment);
 
     /* Determine track mode*/
     track_mode = mirage_helper_determine_sector_type(buf);
@@ -124,10 +125,9 @@ static gboolean mirage_parser_readcd_finish_previous_track (MIRAGE_Parser_READCD
         gint length = next_address - self->priv->cur_lba;
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: previous track's length: %d (0x%X)\n", __debug__, length, length);
 
-        GObject *fragment;
-
         /* Get last fragment */
-        if (!mirage_track_get_fragment_by_index(MIRAGE_TRACK(self->priv->cur_track), -1, &fragment, NULL)) {
+        GObject *fragment = mirage_track_get_fragment_by_index(MIRAGE_TRACK(self->priv->cur_track), -1, NULL);
+        if (!fragment) {
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to get fragment\n", __debug__);
             return FALSE;
         }
@@ -149,19 +149,18 @@ static gboolean mirage_parser_readcd_parse_toc_entry (MIRAGE_Parser_READCD *self
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: %02X %02X %02X %02X %02X %02X %02X %02X %02X %02X %02X\n", __debug__, entry[0], entry[1], entry[2], entry[3], entry[4], entry[5], entry[6], entry[7], entry[8], entry[9], entry[10]);
 
     if (entry[3] == 0xA0) {
-        /* First track number */
-        guint8 session = entry[0];
+        /* First track numer; add session */
+        guint8 session_number = entry[0];
 
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: creating session #%d\n", __debug__, session);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: creating session #%d\n", __debug__, session_number);
 
-        self->priv->cur_session = NULL;
-        succeeded = mirage_disc_add_session_by_number(MIRAGE_DISC(self->priv->disc), session, &self->priv->cur_session, error);
+        self->priv->cur_session = g_object_new(MIRAGE_TYPE_SESSION, NULL);
+        succeeded = mirage_disc_add_session_by_number(MIRAGE_DISC(self->priv->disc), session_number, self->priv->cur_session, error);
+        g_object_unref(self->priv->cur_session); /* Keep only pointer, without reference */
         if (!succeeded) {
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to add session!\n", __debug__);
             goto end;
         }
-
-        g_object_unref(self->priv->cur_session); /* Keep only pointer, without reference */
 
         /* Finish previous track (i.e. last track in previous session) */
         if (self->priv->cur_track && self->priv->leadout_lba != -1) {
@@ -181,9 +180,9 @@ static gboolean mirage_parser_readcd_parse_toc_entry (MIRAGE_Parser_READCD *self
         self->priv->leadout_lba = leadout_lba;
     } else if (entry[3] > 0 && entry[3] < 99) {
         /* Track */
-        guint8 track = entry[3];
+        guint8 track_number = entry[3];
 
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: creating track #%d\n", __debug__, track);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: creating track #%d\n", __debug__, track_number);
 
         gint track_lba = mirage_helper_msf2lba(entry[8], entry[9], entry[10], TRUE);
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: track LBA: %d (0x%X)\n", __debug__, track_lba, track_lba);
@@ -193,47 +192,41 @@ static gboolean mirage_parser_readcd_parse_toc_entry (MIRAGE_Parser_READCD *self
         self->priv->cur_lba = track_lba;
 
         /* Add track */
-        self->priv->cur_track = NULL;
-        succeeded = mirage_session_add_track_by_number(MIRAGE_SESSION(self->priv->cur_session), track, &self->priv->cur_track, error);
+        self->priv->cur_track = g_object_new(MIRAGE_TYPE_TRACK, NULL);
+        succeeded = mirage_session_add_track_by_number(MIRAGE_SESSION(self->priv->cur_session), track_number, self->priv->cur_track, error);
+        g_object_unref(self->priv->cur_track); /* Keep only pointer, without reference */
+
         if (!succeeded) {
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to add track!\n", __debug__);
+            g_object_unref(self->priv->cur_track);
             goto end;
         }
 
         mirage_track_set_ctl(MIRAGE_TRACK(self->priv->cur_track), entry[1]);
 
-        g_object_unref(self->priv->cur_track); /* Keep only pointer, without reference */
-
         /* Data fragment */
-        GObject *data_fragment = libmirage_create_fragment(MIRAGE_TYPE_FRAG_IFACE_BINARY, self->priv->data_stream, G_OBJECT(self), error);
-        if (!data_fragment) {
+        GObject *fragment = libmirage_create_fragment(MIRAGE_TYPE_FRAG_IFACE_BINARY, self->priv->data_stream, G_OBJECT(self), error);
+        if (!fragment) {
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to create data fragment!\n", __debug__);
             succeeded = FALSE;
             goto end;
         }
 
-        gint tfile_sectsize = 2352; /* Always */
-        guint64 tfile_offset = track_lba * 2448; /* Guess this one's always true, too */
-        gint tfile_format = FR_BIN_TFILE_DATA; /* Assume data, but change later if it's audio */
-
-        gint sfile_sectsize = 96; /* Always */
-        gint sfile_format = FR_BIN_SFILE_PW96_INT | FR_BIN_SFILE_INT;
-
-        if (!mirage_frag_iface_binary_track_file_set_file(MIRAGE_FRAG_IFACE_BINARY(data_fragment), self->priv->data_filename, self->priv->data_stream, error)) {
+        if (!mirage_frag_iface_binary_track_file_set_file(MIRAGE_FRAG_IFACE_BINARY(fragment), self->priv->data_filename, self->priv->data_stream, error)) {
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to set track data file!\n", __debug__);
-            g_object_unref(data_fragment);
+            g_object_unref(fragment);
             succeeded = FALSE;
             goto end;
         }
-        mirage_frag_iface_binary_track_file_set_sectsize(MIRAGE_FRAG_IFACE_BINARY(data_fragment), tfile_sectsize);
-        mirage_frag_iface_binary_track_file_set_offset(MIRAGE_FRAG_IFACE_BINARY(data_fragment), tfile_offset);
-        mirage_frag_iface_binary_track_file_set_format(MIRAGE_FRAG_IFACE_BINARY(data_fragment), tfile_format);
+        mirage_frag_iface_binary_track_file_set_sectsize(MIRAGE_FRAG_IFACE_BINARY(fragment), 2352);
+        mirage_frag_iface_binary_track_file_set_offset(MIRAGE_FRAG_IFACE_BINARY(fragment), track_lba*2448);
+        mirage_frag_iface_binary_track_file_set_format(MIRAGE_FRAG_IFACE_BINARY(fragment), FR_BIN_TFILE_DATA);
 
-        mirage_frag_iface_binary_subchannel_file_set_sectsize(MIRAGE_FRAG_IFACE_BINARY(data_fragment), sfile_sectsize);
-        mirage_frag_iface_binary_subchannel_file_set_format(MIRAGE_FRAG_IFACE_BINARY(data_fragment), sfile_format);
+        mirage_frag_iface_binary_subchannel_file_set_sectsize(MIRAGE_FRAG_IFACE_BINARY(fragment), 96);
+        mirage_frag_iface_binary_subchannel_file_set_format(MIRAGE_FRAG_IFACE_BINARY(fragment), FR_BIN_SFILE_PW96_INT | FR_BIN_SFILE_INT);
 
-        mirage_track_add_fragment(MIRAGE_TRACK(self->priv->cur_track), -1, data_fragment);
-        g_object_unref(data_fragment);
+        mirage_track_add_fragment(MIRAGE_TRACK(self->priv->cur_track), -1, fragment);
+        g_object_unref(fragment);
 
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: determining track mode\n", __debug__);
         mirage_parser_readcd_determine_track_mode(self, self->priv->cur_track, NULL);
@@ -250,8 +243,8 @@ static gboolean mirage_parser_readcd_parse_toc_entry (MIRAGE_Parser_READCD *self
                 MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: track mode changed from/to audio track; assume 2 second pregap!\n", __debug__);
 
                 /* Previous track: shorten its fragment by 150 frames */
-                mirage_track_get_prev(MIRAGE_TRACK(self->priv->cur_track), &prev_track, NULL);
-                mirage_track_get_fragment_by_index(MIRAGE_TRACK(prev_track), -1, &prev_fragment, NULL);
+                prev_track = mirage_track_get_prev(MIRAGE_TRACK(self->priv->cur_track), NULL);
+                prev_fragment = mirage_track_get_fragment_by_index(MIRAGE_TRACK(prev_track), -1, NULL);
 
                 prev_fragment_len = mirage_fragment_get_length(MIRAGE_FRAGMENT(prev_fragment));
                 MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: shortening previous track's fragment: %d -> %d\n", __debug__, prev_fragment_len, prev_fragment_len - 150);
@@ -262,37 +255,30 @@ static gboolean mirage_parser_readcd_parse_toc_entry (MIRAGE_Parser_READCD *self
                 g_object_unref(prev_track);
 
                 /* Current track: add 150-frame pregap with data from data file */
-                GObject *pregap_fragment = libmirage_create_fragment(MIRAGE_TYPE_FRAG_IFACE_BINARY, self->priv->data_stream, G_OBJECT(self), error);
-                if (!pregap_fragment) {
+                fragment = libmirage_create_fragment(MIRAGE_TYPE_FRAG_IFACE_BINARY, self->priv->data_stream, G_OBJECT(self), error);
+                if (!fragment) {
                     MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to create data fragment!\n", __debug__);
                     succeeded = FALSE;
                     goto end;
                 }
 
-                gint tfile_sectsize = 2352; /* Always */
-                guint64 tfile_offset = (track_lba - 150) * 2448; /* Guess this one's always true, too */
-                gint tfile_format = FR_BIN_TFILE_DATA; /* Assume data, but change later if it's audio */
-
-                gint sfile_sectsize = 96; /* Always */
-                gint sfile_format = FR_BIN_SFILE_PW96_INT | FR_BIN_SFILE_INT;
-
-                if (!mirage_frag_iface_binary_track_file_set_file(MIRAGE_FRAG_IFACE_BINARY(pregap_fragment), self->priv->data_filename, self->priv->data_stream, error)) {
+                if (!mirage_frag_iface_binary_track_file_set_file(MIRAGE_FRAG_IFACE_BINARY(fragment), self->priv->data_filename, self->priv->data_stream, error)) {
                     MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to set track data file!\n", __debug__);
-                    g_object_unref(pregap_fragment);
+                    g_object_unref(fragment);
                     succeeded = FALSE;
                     goto end;
                 }
-                mirage_frag_iface_binary_track_file_set_sectsize(MIRAGE_FRAG_IFACE_BINARY(pregap_fragment), tfile_sectsize);
-                mirage_frag_iface_binary_track_file_set_offset(MIRAGE_FRAG_IFACE_BINARY(pregap_fragment), tfile_offset);
-                mirage_frag_iface_binary_track_file_set_format(MIRAGE_FRAG_IFACE_BINARY(pregap_fragment), tfile_format);
+                mirage_frag_iface_binary_track_file_set_sectsize(MIRAGE_FRAG_IFACE_BINARY(fragment), 2352);
+                mirage_frag_iface_binary_track_file_set_offset(MIRAGE_FRAG_IFACE_BINARY(fragment), (track_lba - 150)*2448);
+                mirage_frag_iface_binary_track_file_set_format(MIRAGE_FRAG_IFACE_BINARY(fragment), FR_BIN_TFILE_DATA);
 
-                mirage_frag_iface_binary_subchannel_file_set_sectsize(MIRAGE_FRAG_IFACE_BINARY(pregap_fragment), sfile_sectsize);
-                mirage_frag_iface_binary_subchannel_file_set_format(MIRAGE_FRAG_IFACE_BINARY(pregap_fragment), sfile_format);
+                mirage_frag_iface_binary_subchannel_file_set_sectsize(MIRAGE_FRAG_IFACE_BINARY(fragment), 96);
+                mirage_frag_iface_binary_subchannel_file_set_format(MIRAGE_FRAG_IFACE_BINARY(fragment), FR_BIN_SFILE_PW96_INT | FR_BIN_SFILE_INT);
 
-                mirage_fragment_set_length(MIRAGE_FRAGMENT(pregap_fragment), 150);
+                mirage_fragment_set_length(MIRAGE_FRAGMENT(fragment), 150);
 
-                mirage_track_add_fragment(MIRAGE_TRACK(self->priv->cur_track), 0, pregap_fragment);
-                g_object_unref(pregap_fragment);
+                mirage_track_add_fragment(MIRAGE_TRACK(self->priv->cur_track), 0, fragment);
+                g_object_unref(fragment);
             }
         }
 
@@ -458,8 +444,7 @@ static GObject *mirage_parser_readcd_load_image (MIRAGE_Parser *_self, gchar **f
     gint num_sessions = mirage_disc_get_number_of_sessions(MIRAGE_DISC(self->priv->disc));
     gint i;
     for (i = 0; i < num_sessions - 1; i++) {
-        GObject *session;
-        mirage_disc_get_session_by_index(MIRAGE_DISC(self->priv->disc), i, &session, NULL);
+        GObject *session = mirage_disc_get_session_by_index(MIRAGE_DISC(self->priv->disc), i, NULL);
 
         if (i == 0) {
             /* Actually, it should be 6750 previous leadout, 4500 current leadin */
