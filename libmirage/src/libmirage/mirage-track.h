@@ -175,7 +175,7 @@ gint mirage_track_get_track_start (MIRAGE_Track *self);
 
 /* Indices handling */
 gint mirage_track_get_number_of_indices (MIRAGE_Track *self);
-gboolean mirage_track_add_index (MIRAGE_Track *self, gint address, GObject *index, GError **error);
+gboolean mirage_track_add_index (MIRAGE_Track *self, gint address, GError **error);
 gboolean mirage_track_remove_index_by_number (MIRAGE_Track *self, gint number, GError **error);
 void mirage_track_remove_index_by_object (MIRAGE_Track *self, GObject *index);
 GObject *mirage_track_get_index_by_number (MIRAGE_Track *self, gint number, GError **error);

@@ -1131,7 +1131,6 @@ gint mirage_track_get_number_of_indices (MIRAGE_Track *self)
  * mirage_track_add_index:
  * @self: a #MIRAGE_Track
  * @address: (in): address at which the index is to be added
- * @index: (in) (transfer full): a #MIRAGE_Index to be added
  * @error: (out) (allow-none): location to store error, or %NULL
  *
  * <para>
@@ -1150,8 +1149,9 @@ gint mirage_track_get_number_of_indices (MIRAGE_Track *self)
  *
  * Returns: %TRUE on success, %FALSE on failure
  **/
-gboolean mirage_track_add_index (MIRAGE_Track *self, gint address, GObject *index, GError **error)
+gboolean mirage_track_add_index (MIRAGE_Track *self, gint address, GError **error)
 {
+    GObject *index;
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_TRACK, "%s: address: 0x%X\n", __debug__, address);
 
     /* Make sure we're not trying to put index before track start (which has index 1) */
@@ -1161,7 +1161,7 @@ gboolean mirage_track_add_index (MIRAGE_Track *self, gint address, GObject *inde
     }
 
     /* Increment reference counter */
-    g_object_ref(index);
+    index = g_object_new(MIRAGE_TYPE_INDEX, NULL);
     /* Set index address */
     mirage_index_set_address(MIRAGE_INDEX(index), address);
     /* Set parent */
