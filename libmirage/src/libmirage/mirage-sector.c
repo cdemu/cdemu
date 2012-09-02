@@ -74,24 +74,26 @@ static void mirage_sector_generate_sync (MIRAGE_Sector *self)
 
 static void mirage_sector_generate_header (MIRAGE_Sector *self)
 {
-    guint8 *head = self->priv->sector_data+12;
+    GObject *track;
+    gint start_sector;
+    guint8 *header = self->priv->sector_data+12;
 
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_SECTOR, "%s: generating header\n", __debug__);
 
     /* Set mode */
     switch (self->priv->type) {
         case MIRAGE_MODE_MODE0: {
-            head[3] = 0; /* Mode = 0 */
+            header[3] = 0; /* Mode = 0 */
             break;
         }
         case MIRAGE_MODE_MODE1: {
-            head[3] = 1; /* Mode = 1 */
+            header[3] = 1; /* Mode = 1 */
             break;
         }
         case MIRAGE_MODE_MODE2:
         case MIRAGE_MODE_MODE2_FORM1:
         case MIRAGE_MODE_MODE2_FORM2: {
-            head[3] = 2; /* Mode = 2 */
+            header[3] = 2; /* Mode = 2 */
             break;
         }
         default: {
@@ -100,9 +102,6 @@ static void mirage_sector_generate_header (MIRAGE_Sector *self)
     }
 
     /* We need to convert track-relative address into disc-relative one */
-    GObject *track;
-    gint start_sector;
-
     track = mirage_object_get_parent(MIRAGE_OBJECT(self));
     if (!track) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to get sector's parent!\n", __debug__);
@@ -112,10 +111,10 @@ static void mirage_sector_generate_header (MIRAGE_Sector *self)
     g_object_unref(track);
 
     /* Address */
-    mirage_helper_lba2msf(self->priv->address + start_sector, TRUE, &head[0], &head[1], &head[2]);
-    head[0] = mirage_helper_hex2bcd(head[0]);
-    head[1] = mirage_helper_hex2bcd(head[1]);
-    head[2] = mirage_helper_hex2bcd(head[2]);
+    mirage_helper_lba2msf(self->priv->address + start_sector, TRUE, &header[0], &header[1], &header[2]);
+    header[0] = mirage_helper_hex2bcd(header[0]);
+    header[1] = mirage_helper_hex2bcd(header[1]);
+    header[2] = mirage_helper_hex2bcd(header[2]);
 
     self->priv->valid_data |= MIRAGE_VALID_HEADER;
 }
@@ -126,15 +125,15 @@ static void mirage_sector_generate_subheader (MIRAGE_Sector *self)
 
     switch (self->priv->type) {
         case MIRAGE_MODE_MODE2_FORM1: {
-            guint8 *subhead = self->priv->sector_data+16;
-            subhead[2] |= (0 << 5); /* Form 1 */
-            subhead[5] = subhead[2];
+            guint8 *subheader = self->priv->sector_data+16;
+            subheader[2] |= (0 << 5); /* Form 1 */
+            subheader[5] = subheader[2];
             break;
         }
         case MIRAGE_MODE_MODE2_FORM2: {
-            guint8 *subhead = self->priv->sector_data+16;
-            subhead[2] |= (1 << 5); /* Form 2 */
-            subhead[5] = subhead[2];
+            guint8 *subheader = self->priv->sector_data+16;
+            subheader[2] |= (1 << 5); /* Form 2 */
+            subheader[5] = subheader[2];
             break;
         }
         default: {
@@ -223,7 +222,7 @@ static void mirage_sector_generate_edc_ecc (MIRAGE_Sector *self)
 gboolean mirage_sector_feed_data (MIRAGE_Sector *self, gint address, GObject *track, GError **error)
 {
     GError *local_error = NULL;
-    GObject *data_fragment;
+    GObject *fragment;
     gint mode, sectsize, data_offset, fragment_start;
 
     /* Get track mode */
@@ -236,25 +235,26 @@ gboolean mirage_sector_feed_data (MIRAGE_Sector *self, gint address, GObject *tr
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_SECTOR, "%s: feeding data for sector 0x%X\n", __debug__, self->priv->address);
 
     /* Get data fragment to feed from */
-    if (!mirage_track_get_fragment_by_address(MIRAGE_TRACK(track), address, &data_fragment, &local_error)) {
+    fragment = mirage_track_get_fragment_by_address(MIRAGE_TRACK(track), address, &local_error);
+    if (!fragment) {
         g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_SECTOR_ERROR, "Failed to get fragment: %s", local_error->message);
         g_error_free(local_error);
         return FALSE;
     }
 
     /* Fragments work with fragment-relative addresses */
-    fragment_start = mirage_fragment_get_address(MIRAGE_FRAGMENT(data_fragment));
+    fragment_start = mirage_fragment_get_address(MIRAGE_FRAGMENT(fragment));
     address -= fragment_start;
 
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_SECTOR, "%s: got fragment for track-relative address 0x%X... %p\n", __debug__, address, data_fragment);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_SECTOR, "%s: got fragment for track-relative address 0x%X... %p\n", __debug__, address, fragment);
 
     /* *** Main channel data ***/
 
     /* Get sector size by performing 'empty' read */
-    if (!mirage_fragment_read_main_data(MIRAGE_FRAGMENT(data_fragment), address, NULL, &sectsize, &local_error)) {
-        g_object_unref(data_fragment);
+    if (!mirage_fragment_read_main_data(MIRAGE_FRAGMENT(fragment), address, NULL, &sectsize, &local_error)) {
         g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_SECTOR_ERROR, "Failed get main sector data length: %s", local_error->message);
         g_error_free(local_error);
+        g_object_unref(fragment);
         return FALSE;
     }
 
@@ -755,10 +755,10 @@ gboolean mirage_sector_feed_data (MIRAGE_Sector *self, gint address, GObject *tr
     }
 
     /* Read */
-    if (!mirage_fragment_read_main_data(MIRAGE_FRAGMENT(data_fragment), address, self->priv->sector_data+data_offset, &sectsize, error)) {
-        g_object_unref(data_fragment);
+    if (!mirage_fragment_read_main_data(MIRAGE_FRAGMENT(fragment), address, self->priv->sector_data+data_offset, &sectsize, &local_error)) {
         g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_SECTOR_ERROR, "Failed to read main sector data: %s", local_error->message);
         g_error_free(local_error);
+        g_object_unref(fragment);
         return FALSE;
     }
 
@@ -778,10 +778,10 @@ gboolean mirage_sector_feed_data (MIRAGE_Sector *self, gint address, GObject *tr
     /* *** Subchannel *** */
     /* Read subchannel... fragment should *always* return us 96-byte interleaved
        PW subchannel (or nothing) */
-    if (!mirage_fragment_read_subchannel_data(MIRAGE_FRAGMENT(data_fragment), address, self->priv->subchan_pw, &sectsize, &local_error)) {
-        g_object_unref(data_fragment);
+    if (!mirage_fragment_read_subchannel_data(MIRAGE_FRAGMENT(fragment), address, self->priv->subchan_pw, &sectsize, &local_error)) {
         g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_SECTOR_ERROR, "Failed to read subchannel data: %s", local_error->message);
         g_error_free(local_error);
+        g_object_unref(fragment);
         return FALSE;
     }
 
@@ -791,7 +791,7 @@ gboolean mirage_sector_feed_data (MIRAGE_Sector *self, gint address, GObject *tr
         self->priv->valid_data |= MIRAGE_VALID_SUBCHAN;
     }
 
-    g_object_unref(data_fragment);
+    g_object_unref(fragment);
 
     return TRUE;
 }
@@ -1453,7 +1453,8 @@ static gint subchannel_generate_q (MIRAGE_Sector *self, guint8 *buf)
 
             /* Index: try getting index object by address; if it's not found, we
                check if sector lies before track start... */
-            if (mirage_track_get_index_by_address(MIRAGE_TRACK(track), address, &index, NULL)) {
+            index = mirage_track_get_index_by_address(MIRAGE_TRACK(track), address, NULL);
+            if (index) {
                 gint index_number = mirage_index_get_number(MIRAGE_INDEX(index));
                 MIRAGE_DEBUG(self, MIRAGE_DEBUG_SECTOR, "%s: address 0x%X belongs to index with number: %d\n", __debug__, address, index_number);
                 buf[2] = index_number;

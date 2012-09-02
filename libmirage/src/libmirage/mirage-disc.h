@@ -120,28 +120,28 @@ gint mirage_disc_layout_get_length (MIRAGE_Disc *self);
 
 /* Session handling */
 gint mirage_disc_get_number_of_sessions (MIRAGE_Disc *self);
-void mirage_disc_add_session_by_index (MIRAGE_Disc *self, gint index, GObject **session);
-gboolean mirage_disc_add_session_by_number (MIRAGE_Disc *self, gint number, GObject **session, GError **error);
+void mirage_disc_add_session_by_index (MIRAGE_Disc *self, gint index, GObject *session);
+gboolean mirage_disc_add_session_by_number (MIRAGE_Disc *self, gint number, GObject *session, GError **error);
 gboolean mirage_disc_remove_session_by_index (MIRAGE_Disc *self, gint index, GError **error);
 gboolean mirage_disc_remove_session_by_number (MIRAGE_Disc *self, gint number, GError **error);
 void mirage_disc_remove_session_by_object (MIRAGE_Disc *self, GObject *session);
-gboolean mirage_disc_get_session_by_index (MIRAGE_Disc *self, gint index, GObject **session, GError **error);
-gboolean mirage_disc_get_session_by_number (MIRAGE_Disc *self, gint number, GObject **session, GError **error);
-gboolean mirage_disc_get_session_by_address (MIRAGE_Disc *self, gint address, GObject **session, GError **error);
-gboolean mirage_disc_get_session_by_track (MIRAGE_Disc *self, gint track, GObject **session, GError **error);
+GObject *mirage_disc_get_session_by_index (MIRAGE_Disc *self, gint index, GError **error);
+GObject *mirage_disc_get_session_by_number (MIRAGE_Disc *self, gint number, GError **error);
+GObject *mirage_disc_get_session_by_address (MIRAGE_Disc *self, gint address, GError **error);
+GObject *mirage_disc_get_session_by_track (MIRAGE_Disc *self, gint track, GError **error);
 gboolean mirage_disc_for_each_session (MIRAGE_Disc *self, MIRAGE_CallbackFunction func, gpointer user_data);
-gboolean mirage_disc_get_session_before (MIRAGE_Disc *self, GObject *cur_session, GObject **prev_session, GError **error);
-gboolean mirage_disc_get_session_after (MIRAGE_Disc *self, GObject *cur_session, GObject **next_session, GError **error);
+GObject *mirage_disc_get_session_before (MIRAGE_Disc *self, GObject *session, GError **error);
+GObject *mirage_disc_get_session_after (MIRAGE_Disc *self, GObject *session, GError **error);
 
 /* Track handling */
 gint mirage_disc_get_number_of_tracks (MIRAGE_Disc *self);
-gboolean mirage_disc_add_track_by_index (MIRAGE_Disc *self, gint index, GObject **track, GError **error);
-gboolean mirage_disc_add_track_by_number (MIRAGE_Disc *self, gint number, GObject **track, GError **error);
+gboolean mirage_disc_add_track_by_index (MIRAGE_Disc *self, gint index, GObject *track, GError **error);
+gboolean mirage_disc_add_track_by_number (MIRAGE_Disc *self, gint number, GObject *track, GError **error);
 gboolean mirage_disc_remove_track_by_index (MIRAGE_Disc *self, gint index, GError **error);
 gboolean mirage_disc_remove_track_by_number (MIRAGE_Disc *self, gint number, GError **error);
-gboolean mirage_disc_get_track_by_index (MIRAGE_Disc *self, gint index, GObject **track, GError **error);
-gboolean mirage_disc_get_track_by_number (MIRAGE_Disc *self, gint number, GObject **track, GError **error);
-gboolean mirage_disc_get_track_by_address (MIRAGE_Disc *self, gint address, GObject **track, GError **error);
+GObject *mirage_disc_get_track_by_index (MIRAGE_Disc *self, gint index, GError **error);
+GObject *mirage_disc_get_track_by_number (MIRAGE_Disc *self, gint number, GError **error);
+GObject *mirage_disc_get_track_by_address (MIRAGE_Disc *self, gint address, GError **error);
 
 /* Disc structures */
 void mirage_disc_set_disc_structure (MIRAGE_Disc *self, gint layer, gint type, const guint8 *data, gint len);

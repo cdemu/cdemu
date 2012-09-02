@@ -202,8 +202,7 @@ gint mirage_parser_guess_medium_type (MIRAGE_Parser *self, GObject *disc)
  **/
 void mirage_parser_add_redbook_pregap (MIRAGE_Parser *self, GObject *disc)
 {
-    gint num_sessions;
-    gint i;
+    gint num_sessions, i;
 
     /* Red Book pregap is found only on CD-ROMs */
     if (mirage_disc_get_medium_type(MIRAGE_DISC(disc)) != MIRAGE_MEDIUM_CD) {
@@ -223,33 +222,37 @@ void mirage_parser_add_redbook_pregap (MIRAGE_Parser *self, GObject *disc)
     /* Put 150 sector pregap into every first track of each session */
     for (i = 0; i < num_sessions; i++) {
         GObject *session;
-        GObject *ftrack;
+        GObject *track;
+        GObject *fragment;
 
-        if (!mirage_disc_get_session_by_index(MIRAGE_DISC(disc), i, &session, NULL)) {
+        gint track_start;
+
+        session = mirage_disc_get_session_by_index(MIRAGE_DISC(disc), i, NULL);
+        if (!session) {
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: failed to get session with index %i!\n", __debug__, i);
             return;
         }
 
-        if (!mirage_session_get_track_by_index(MIRAGE_SESSION(session), 0, &ftrack, NULL)) {
+        track = mirage_session_get_track_by_index(MIRAGE_SESSION(session), 0, NULL);
+        if (!track) {
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: failed to first track of session with index %i!\n", __debug__, i);
             g_object_unref(session);
             return;
         }
 
         /* Add pregap fragment - NULL fragment creation should never fail */
-        GObject *pregap_fragment = libmirage_create_fragment(MIRAGE_TYPE_FRAG_IFACE_NULL, NULL, G_OBJECT(self), NULL);
-
-        mirage_track_add_fragment(MIRAGE_TRACK(ftrack), 0, pregap_fragment);
-        mirage_fragment_set_length(MIRAGE_FRAGMENT(pregap_fragment), 150);
-        g_object_unref(pregap_fragment);
+        fragment = libmirage_create_fragment(MIRAGE_TYPE_FRAG_IFACE_NULL, NULL, G_OBJECT(self), NULL);
+        mirage_fragment_set_length(MIRAGE_FRAGMENT(fragment), 150);
+        mirage_track_add_fragment(MIRAGE_TRACK(track), 0, fragment);
+        g_object_unref(fragment);
 
         /* Track starts at 150... well, unless it already has a pregap, in
            which case they should stack */
-        gint track_start = mirage_track_get_track_start(MIRAGE_TRACK(ftrack));
+        track_start = mirage_track_get_track_start(MIRAGE_TRACK(track));
         track_start += 150;
-        mirage_track_set_track_start(MIRAGE_TRACK(ftrack), track_start);
+        mirage_track_set_track_start(MIRAGE_TRACK(track), track_start);
 
-        g_object_unref(ftrack);
+        g_object_unref(track);
         g_object_unref(session);
 
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: added 150 pregap to first track in session %i\n", __debug__, i);

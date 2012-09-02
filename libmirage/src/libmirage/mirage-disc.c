@@ -80,9 +80,10 @@ static gboolean mirage_disc_check_for_encoded_mcn (MIRAGE_Disc *self)
     /* Go over all tracks, and find the first one with fragment that contains
        subchannel... */
     for (i = 0; i < num_tracks; i++) {
-        if (mirage_disc_get_track_by_index(self, i, &track, NULL)) {
-            GObject *fragment = NULL;
-            if (mirage_track_find_fragment_with_subchannel(MIRAGE_TRACK(track), &fragment, NULL)) {
+        track = mirage_disc_get_track_by_index(self, i, NULL);
+        if (track) {
+            GObject *fragment = mirage_track_find_fragment_with_subchannel(MIRAGE_TRACK(track), NULL);
+            if (fragment) {
                 MIRAGE_DEBUG(self, MIRAGE_DEBUG_DISC, "%s: track %i contains subchannel\n", __debug__, i);
                 start_address = mirage_fragment_get_address(MIRAGE_FRAGMENT(fragment));
                 g_object_unref(fragment);
@@ -635,7 +636,7 @@ gboolean mirage_disc_get_number_of_sessions (MIRAGE_Disc *self)
  * mirage_disc_add_session_by_index:
  * @self: a #MIRAGE_Disc
  * @index: (in): index at which session should be added
- * @session: (inout) (transfer full) (allow-none): pointer to #MIRAGE_Session, %NULL pointer or %NULL
+ * @session: (in) (transfer full): a #MIRAGE_Session to be added
  *
  * <para>
  * Adds session to disc layout.
@@ -645,24 +646,15 @@ gboolean mirage_disc_get_number_of_sessions (MIRAGE_Disc *self)
  * @index is the index at which session is added. Negative index denotes
  * index going backwards (i.e. -1 adds session at the end, -2 adds session
  * second-to-last, etc.). If index, either negative or positive, is too big,
- * session is respectively added at the beginning or at the end of the layout.
- * </para>
- *
- * <para>
- * If @session contains pointer to existing #MIRAGE_Session object, the object
- * is added to disc layout. Otherwise, a new #MIRAGE_Session object is created.
- * If @session contains a %NULL pointer, a reference to newly created object is stored
- * in it; it should be released with g_object_unref() when no longer needed. If @session
- * is %NULL, no reference is returned.
+ * session is added at the beginning or at the end of the layout, respectively.
  * </para>
  *
  * <note>
  * Causes bottom-up change.
  * </note>
  **/
-void mirage_disc_add_session_by_index (MIRAGE_Disc *self, gint index, GObject **session)
+void mirage_disc_add_session_by_index (MIRAGE_Disc *self, gint index, GObject *session)
 {
-    GObject *new_session;
     gint num_sessions;
 
     /* First session, last session... allow negative indexes to go from behind */
@@ -679,41 +671,30 @@ void mirage_disc_add_session_by_index (MIRAGE_Disc *self, gint index, GObject **
         index += num_sessions + 1;
     }
 
-    /* If there's session provided, use it; else create new session */
-    if (session && *session) {
-        new_session = *session;
-        g_object_ref(new_session);
-    } else {
-        new_session = g_object_new(MIRAGE_TYPE_SESSION, NULL);
-    }
-
     /* We don't set session number here, because layout recalculation will do it for us */
+
+    /* Increment reference counter */
+    g_object_ref(session);
     /* Set parent */
-    mirage_object_set_parent(MIRAGE_OBJECT(new_session), G_OBJECT(self));
+    mirage_object_set_parent(MIRAGE_OBJECT(session), G_OBJECT(self));
     /* Attach child */
-    mirage_object_attach_child(MIRAGE_OBJECT(self), new_session);
+    mirage_object_attach_child(MIRAGE_OBJECT(self), session);
 
     /* Insert session into sessions list */
-    self->priv->sessions_list = g_list_insert(self->priv->sessions_list, new_session, index);
+    self->priv->sessions_list = g_list_insert(self->priv->sessions_list, session, index);
 
     /* Connect session modified signal */
-    g_signal_connect(MIRAGE_OBJECT(new_session), "object-modified", (GCallback)mirage_disc_session_modified_handler, self);
+    g_signal_connect(MIRAGE_OBJECT(session), "object-modified", (GCallback)mirage_disc_session_modified_handler, self);
 
     /* Bottom-up change */
     mirage_disc_commit_bottomup_change(self);
-
-    /* Return session to user if she wants it */
-    if (session && (*session == NULL)) {
-        g_object_ref(new_session);
-        *session = new_session;
-    }
 }
 
 /**
  * mirage_disc_add_session_by_number:
  * @self: a #MIRAGE_Disc
  * @number: (in): session number for the added session
- * @session: (inout) (transfer full) (allow-none): pointer to #MIRAGE_Session, %NULL pointer or %NULL
+ * @session: (in) (transfer full): a #MIRAGE_Session to be added
  * @error: (out) (allow-none): location to store error, or %NULL
  *
  * <para>
@@ -726,59 +707,41 @@ void mirage_disc_add_session_by_index (MIRAGE_Disc *self, gint index, GObject **
  * the layout, the function fails.
  * </para>
  *
- * <para>
- * If @session contains pointer to existing #MIRAGE_Session object, the object
- * is added to disc layout. Otherwise, a new #MIRAGE_Session object is created.
- * If @session contains a %NULL pointer, a reference to newly created object is stored
- * in it; it should be released with g_object_unref() when no longer needed. If @session
- * is %NULL, no reference is returned.
- * </para>
- *
  * <note>
  * Causes bottom-up change.
  * </note>
  *
  * Returns: %TRUE on success, %FALSE on failure
  **/
-gboolean mirage_disc_add_session_by_number (MIRAGE_Disc *self, gint number, GObject **session, GError **error)
+gboolean mirage_disc_add_session_by_number (MIRAGE_Disc *self, gint number, GObject *session, GError **error)
 {
-    GObject *new_session;
+    GObject *tmp_session;
 
     /* Check if session with that number already exists */
-    if (mirage_disc_get_session_by_number(self, number, NULL, NULL)) {
+    tmp_session = mirage_disc_get_session_by_number(self, number, NULL);
+    if (tmp_session) {
+        g_object_unref(tmp_session);
         g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_DISC_ERROR, "Session with number %d already exists!", number);
         return FALSE;
     }
 
-    /* If there's session provided, use it; else create new one */
-    if (session && *session) {
-        new_session = *session;
-        g_object_ref(new_session);
-    } else {
-        new_session = g_object_new(MIRAGE_TYPE_SESSION, NULL);
-    }
-
+    /* Increment reference counter */
+    g_object_ref(session);
     /* Set session number */
-    mirage_session_layout_set_session_number(MIRAGE_SESSION(new_session), number);
+    mirage_session_layout_set_session_number(MIRAGE_SESSION(session), number);
     /* Set parent */
-    mirage_object_set_parent(MIRAGE_OBJECT(new_session), G_OBJECT(self));
+    mirage_object_set_parent(MIRAGE_OBJECT(session), G_OBJECT(self));
     /* Attach child */
-    mirage_object_attach_child(MIRAGE_OBJECT(self), new_session);
+    mirage_object_attach_child(MIRAGE_OBJECT(self), session);
 
     /* Insert session into sessions list */
-    self->priv->sessions_list = g_list_insert_sorted(self->priv->sessions_list, new_session, (GCompareFunc)sort_sessions_by_number);
+    self->priv->sessions_list = g_list_insert_sorted(self->priv->sessions_list, session, (GCompareFunc)sort_sessions_by_number);
 
     /* Connect session modified signal */
-    g_signal_connect(MIRAGE_OBJECT(new_session), "object-modified", (GCallback)mirage_disc_session_modified_handler, self);
+    g_signal_connect(MIRAGE_OBJECT(session), "object-modified", (GCallback)mirage_disc_session_modified_handler, self);
 
     /* Bottom-up change */
     mirage_disc_commit_bottomup_change(self);
-
-    /* Return session to user if she wants it */
-    if (session && (*session == NULL)) {
-        g_object_ref(new_session);
-        *session = new_session;
-    }
 
     return TRUE;
 }
@@ -807,10 +770,9 @@ gboolean mirage_disc_add_session_by_number (MIRAGE_Disc *self, gint number, GObj
  **/
 gboolean mirage_disc_remove_session_by_index (MIRAGE_Disc *self, gint index, GError **error)
 {
-    GObject *session;
-
     /* Find session by index */
-    if (!mirage_disc_get_session_by_index(self, index, &session, error)) {
+    GObject *session = mirage_disc_get_session_by_index(self, index, error);
+    if (!session) {
         return FALSE;
     }
 
@@ -843,10 +805,9 @@ gboolean mirage_disc_remove_session_by_index (MIRAGE_Disc *self, gint index, GEr
  **/
 gboolean mirage_disc_remove_session_by_number (MIRAGE_Disc *self, gint number, GError **error)
 {
-    GObject *session;
-
     /* Find session by number */
-    if (!mirage_disc_get_session_by_number(self, number, &session, error)) {
+    GObject *session = mirage_disc_get_session_by_number(self, number, error);
+    if (!session) {
         return FALSE;
     }
 
@@ -884,7 +845,6 @@ void mirage_disc_remove_session_by_object (MIRAGE_Disc *self, GObject *session)
  * mirage_disc_get_session_by_index:
  * @self: a #MIRAGE_Disc
  * @index: (in): index of session to be retrieved
- * @session: (out) (transfer full) (allow-none): location to store session, or %NULL
  * @error: (out) (allow-none):location to store error, or %NULL
  *
  * <para>
@@ -894,99 +854,82 @@ void mirage_disc_remove_session_by_object (MIRAGE_Disc *self, GObject *session)
  * function fails.
  * </para>
  *
- * <para>
- * A reference to session is stored in @session; it should be released with
- * g_object_unref() when no longer needed.
- * </para>
- *
- * Returns: %TRUE on success, %FALSE on failure
+ * Returns: (transfer full): a #MIRAGE_Session on success, %NULL on failure.
+ * The reference to the object should be released using g_object_unref()
+ * when no longer needed.
  **/
-gboolean mirage_disc_get_session_by_index (MIRAGE_Disc *self, gint index, GObject **session, GError **error)
+GObject *mirage_disc_get_session_by_index (MIRAGE_Disc *self, gint index, GError **error)
 {
-    GObject *ret_session;
+    GObject *session;
     gint num_sessions;
 
     /* First session, last session... allow negative indexes to go from behind */
     num_sessions = mirage_disc_get_number_of_sessions(self);
     if (index < -num_sessions || index >= num_sessions) {
         g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_DISC_ERROR, "Session index %d out of range!", index);
-        return FALSE;
+        return NULL;
     } else if (index < 0) {
         index += num_sessions;
     }
 
     /* Get index-th item from list... */
-    ret_session = g_list_nth_data(self->priv->sessions_list, index);
+    session = g_list_nth_data(self->priv->sessions_list, index);
 
-    if (ret_session) {
-        /* Return session to user if she wants it */
-        if (session) {
-            g_object_ref(ret_session);
-            *session = ret_session;
-        }
-        return TRUE;
+    if (!session) {
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_DISC_ERROR, "Session with index %d not found!", index);
+        return NULL;
     }
 
-    g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_DISC_ERROR, "Session with index %d not found!", index);
-    return FALSE;
+    g_object_ref(session);
+    return session;
 }
 
 /**
  * mirage_disc_get_session_by_number:
  * @self: a #MIRAGE_Disc
  * @number: (in): number of session to be retrieved
- * @session: (out) (transfer full) (allow-none): location to store session, or %NULL
  * @error: (out) (allow-none): location to store error, or %NULL
  *
  * <para>
  * Retrieves session by session number.
  * </para>
  *
- * <para>
- * A reference to session is stored in @session; it should be released with
- * g_object_unref() when no longer needed.
- * </para>
- *
- * Returns: %TRUE on success, %FALSE on failure
+ * Returns: (transfer full): a #MIRAGE_Session on success, %NULL on failure.
+ * The reference to the object should be released using g_object_unref()
+ * when no longer needed.
  **/
-gboolean mirage_disc_get_session_by_number (MIRAGE_Disc *self, gint session_number, GObject **session, GError **error)
+GObject *mirage_disc_get_session_by_number (MIRAGE_Disc *self, gint session_number, GError **error)
 {
-    GObject *ret_session;
+    GObject *session;
     GList *entry ;
 
     /* Go over all sessions */
-    ret_session = NULL;
+    session = NULL;
     G_LIST_FOR_EACH(entry, self->priv->sessions_list) {
-        ret_session = entry->data;
+        session = entry->data;
 
         /* Break the loop if number matches */
-        if (session_number == mirage_session_layout_get_session_number(MIRAGE_SESSION(ret_session))) {
+        if (session_number == mirage_session_layout_get_session_number(MIRAGE_SESSION(session))) {
             break;
         } else {
-            ret_session = NULL;
+            session = NULL;
         }
     }
 
     /* If we didn't find anything... */
-    if (!ret_session) {
+    if (!session) {
         g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_DISC_ERROR, "Session with number %d not found!", session_number);
         return FALSE;
     }
 
-    /* Return session to user if she wants it */
-    if (session) {
-        g_object_ref(ret_session);
-        *session = ret_session;
-    }
-
-    return TRUE;
+    g_object_ref(session);
+    return session;
 }
 
 /**
  * mirage_disc_get_session_by_address:
  * @self: a #MIRAGE_Disc
  * @address: (in) address belonging to session to be retrieved
- * @session: (out) (transfer full) (allow-none): location to store session, or %NULL
  * @error: (out) (allow-none): location to store error, or %NULL
  *
  * <para>
@@ -995,16 +938,13 @@ gboolean mirage_disc_get_session_by_number (MIRAGE_Disc *self, gint session_numb
  * start and end sector).
  * </para>
  *
- * <para>
- * A reference to session is stored in @session; it should be released with
- * g_object_unref() when no longer needed.
- * </para>
- *
- * Returns: %TRUE on success, %FALSE on failure
+ * Returns: (transfer full): a #MIRAGE_Session on success, %NULL on failure.
+ * The reference to the object should be released using g_object_unref()
+ * when no longer needed.
  **/
-gboolean mirage_disc_get_session_by_address (MIRAGE_Disc *self, gint address, GObject **session, GError **error)
+GObject *mirage_disc_get_session_by_address (MIRAGE_Disc *self, gint address, GError **error)
 {
-    GObject *ret_session;
+    GObject *session;
     GList *entry;
 
     if ((address < self->priv->start_sector) || (address >= self->priv->start_sector + self->priv->length)) {
@@ -1013,44 +953,38 @@ gboolean mirage_disc_get_session_by_address (MIRAGE_Disc *self, gint address, GO
     }
 
     /* Go over all sessions */
-    ret_session = NULL;
+    session = NULL;
     G_LIST_FOR_EACH(entry, self->priv->sessions_list) {
         gint start_sector;
         gint length;
 
-        ret_session = entry->data;
+        session = entry->data;
 
-        start_sector = mirage_session_layout_get_start_sector(MIRAGE_SESSION(ret_session));
-        length = mirage_session_layout_get_length(MIRAGE_SESSION(ret_session));
+        start_sector = mirage_session_layout_get_start_sector(MIRAGE_SESSION(session));
+        length = mirage_session_layout_get_length(MIRAGE_SESSION(session));
 
         /* Break the loop if address lies within session boundaries */
         if (address >= start_sector && address < start_sector + length) {
             break;
         } else {
-            ret_session = NULL;
+            session = NULL;
         }
     }
 
     /* If we didn't find anything... */
-    if (!ret_session) {
+    if (!session) {
         g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_DISC_ERROR, "Session containing address %d not found!", address);
         return FALSE;
     }
 
-    /* Return session to user if she wants it */
-    if (session) {
-        g_object_ref(ret_session);
-        *session = ret_session;
-    }
-
-    return TRUE;
+    g_object_ref(session);
+    return session;
 }
 
 /**
  * mirage_disc_get_session_by_track:
  * @self: a #MIRAGE_Disc
  * @track: (in): number of track belonging to session to be retrieved
- * @session: (out) (transfer full) (allow-none): location to store session, or %NULL
  * @error: (out) (allow-none): location to store error, or %NULL
  *
  * <para>
@@ -1058,50 +992,42 @@ gboolean mirage_disc_get_session_by_address (MIRAGE_Disc *self, gint address, GO
  * that is part of the session.
  * </para>
  *
- * <para>
- * A reference to session is stored in @session; it should be released with
- * g_object_unref() when no longer needed.
- * </para>
- *
- * Returns: %TRUE on success, %FALSE on failure
+ * Returns: (transfer full): a #MIRAGE_Session on success, %NULL on failure.
+ * The reference to the object should be released using g_object_unref()
+ * when no longer needed.
  **/
-gboolean mirage_disc_get_session_by_track (MIRAGE_Disc *self, gint track_number, GObject **session, GError **error)
+GObject *mirage_disc_get_session_by_track (MIRAGE_Disc *self, gint track_number, GError **error)
 {
-    GObject *ret_session;
+    GObject *session;
     GList *entry;
 
     /* Go over all sessions */
-    ret_session = NULL;
+    session = NULL;
     G_LIST_FOR_EACH(entry, self->priv->sessions_list) {
         gint first_track;
         gint num_tracks;
 
-        ret_session = entry->data;
+        session = entry->data;
 
-        first_track = mirage_session_layout_get_first_track(MIRAGE_SESSION(ret_session));
-        num_tracks = mirage_session_get_number_of_tracks(MIRAGE_SESSION(ret_session));
+        first_track = mirage_session_layout_get_first_track(MIRAGE_SESSION(session));
+        num_tracks = mirage_session_get_number_of_tracks(MIRAGE_SESSION(session));
 
         /* Break the loop if track with that number is part of the session */
         if (track_number >= first_track && track_number < first_track + num_tracks) {
             break;
         } else {
-            ret_session = NULL;
+            session = NULL;
         }
     }
 
     /* If we didn't find anything... */
-    if (!ret_session) {
+    if (!session) {
         g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_DISC_ERROR, "Session with track %d not found!", track_number);
         return FALSE;
     }
 
-    /* Return session to user if she wants it */
-    if (session) {
-        g_object_ref(ret_session);
-        *session = ret_session;
-    }
-
-    return TRUE;
+    g_object_ref(session);
+    return session;
 }
 
 /**
@@ -1137,77 +1063,68 @@ gboolean mirage_disc_for_each_session (MIRAGE_Disc *self, MIRAGE_CallbackFunctio
 /**
  * mirage_disc_get_session_before:
  * @self: a #MIRAGE_Disc
- * @cur_session: (in): a session
- * @prev_session: (out) (transfer full) (allow-none): location to store session, or %NULL
+ * @session: (in): a session
  * @error: (out) (allow-none): location to store error, or %NULL
  *
  * <para>
- * Retrieves session that comes before @cur_session.
+ * Retrieves session that comes before @session.
  * </para>
  *
- * <para>
- * A reference to session is stored in @prev_session; it should be released with
- * g_object_unref() when no longer needed.
- * </para>
- *
- * Returns: %TRUE on success, %FALSE on failure
+ * Returns: (transfer full): a #MIRAGE_Session on success, %NULL on failure.
+ * The reference to the object should be released using g_object_unref()
+ * when no longer needed.
  **/
-gboolean mirage_disc_get_session_before (MIRAGE_Disc *self, GObject *cur_session, GObject **prev_session, GError **error)
+GObject *mirage_disc_get_session_before (MIRAGE_Disc *self, GObject *session, GError **error)
 {
     gint index;
 
     /* Get index of given session in the list */
-    index = g_list_index(self->priv->sessions_list, cur_session);
+    index = g_list_index(self->priv->sessions_list, session);
     if (index == -1) {
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_DISC_ERROR, "Session %p is not in disc layout!", cur_session);
-        return FALSE;
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_DISC_ERROR, "Session %p is not in disc layout!", session);
+        return NULL;
     }
 
     /* Now check if we didn't pass the first session (index = 0) and return previous one */
     if (index > 0) {
-        return mirage_disc_get_session_by_index(self, index - 1, prev_session, error);
+        return mirage_disc_get_session_by_index(self, index - 1, error);
     }
 
-    g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_DISC_ERROR, "Session before session %p not found!", cur_session);
-    return FALSE;
+    g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_DISC_ERROR, "Session before session %p not found!", session);
+    return NULL;
 }
 
 /**
  * mirage_disc_get_session_after:
  * @self: a #MIRAGE_Disc
- * @cur_session: (in): a session
- * @next_session: (out) (transfer full) (allow-none): location to store session, or %NULL
- * @error: (out) (allow-none): location to store error, or %NULL
+ * @session: (in): a session
  *
  * <para>
- * Retrieves session that comes after @cur_session.
+ * Retrieves session that comes after @session.
  * </para>
  *
- * <para>
- * A reference to session is stored in @next_session; it should be released with
- * g_object_unref() when no longer needed.
- * </para>
- *
- * Returns: %TRUE on success, %FALSE on failure
+ * Returns: (transfer full): a #MIRAGE_Session on success, %NULL on failure.
+ * The reference to the object should be released using g_object_unref()
+ * when no longer needed.
  **/
-gboolean mirage_disc_get_session_after (MIRAGE_Disc *self, GObject *cur_session, GObject **next_session, GError **error)
+GObject *mirage_disc_get_session_after (MIRAGE_Disc *self, GObject *session, GError **error)
 {
     gint num_sessions, index;
 
     /* Get index of given session in the list */
-    index = g_list_index(self->priv->sessions_list, cur_session);
+    index = g_list_index(self->priv->sessions_list, session);
     if (index == -1) {
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_DISC_ERROR, "Session %p is not in disc layout!", cur_session);
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_DISC_ERROR, "Session %p is not in disc layout!", session);
         return FALSE;
     }
 
     /* Now check if we didn't pass the last session (index = num_sessions - 1) and return previous one */
     num_sessions = mirage_disc_get_number_of_sessions(self);
     if (index < num_sessions - 1) {
-        return mirage_disc_get_session_by_index(self, index + 1, next_session, error);
+        return mirage_disc_get_session_by_index(self, index + 1, error);
     }
 
-    g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_DISC_ERROR, "Session after session %p not found!", cur_session);
+    g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_DISC_ERROR, "Session after session %p not found!", session);
     return FALSE;
 }
 
@@ -1232,7 +1149,7 @@ gint mirage_disc_get_number_of_tracks (MIRAGE_Disc *self)
  * mirage_disc_add_track_by_index:
  * @self: a #MIRAGE_Disc
  * @index: (in): index at which track should be added
- * @track: (inout) (transfer full) (allow-none): pointer to #MIRAGE_Track, %NULL pointer or %NULL
+ * @track: (in) (transfer full): a #MIRAGE_Track to be added
  * @error: (out) (allow-none): location to store error, or %NULL
  *
  * <para>
@@ -1263,7 +1180,7 @@ gint mirage_disc_get_number_of_tracks (MIRAGE_Disc *self)
  *
  * Returns: %TRUE on success, %FALSE on failure
  **/
-gboolean mirage_disc_add_track_by_index (MIRAGE_Disc *self, gint index, GObject **track, GError **error)
+gboolean mirage_disc_add_track_by_index (MIRAGE_Disc *self, gint index, GObject *track, GError **error)
 {
     GList *entry;
     gint num_tracks;
@@ -1293,13 +1210,13 @@ gboolean mirage_disc_add_track_by_index (MIRAGE_Disc *self, gint index, GObject 
        desired index should be in */
     count = 0;
     G_LIST_FOR_EACH(entry, self->priv->sessions_list) {
-        GObject *cur_session = entry->data;
+        GObject *session = entry->data;
 
-        num_tracks = mirage_session_get_number_of_tracks(MIRAGE_SESSION(cur_session));
+        num_tracks = mirage_session_get_number_of_tracks(MIRAGE_SESSION(session));
 
         if (index >= count && index <= count + num_tracks) {
             /* We got the session */
-            mirage_session_add_track_by_index(MIRAGE_SESSION(cur_session), index - count, track);
+            mirage_session_add_track_by_index(MIRAGE_SESSION(session), index - count, track);
             return TRUE;
         }
 
@@ -1314,7 +1231,7 @@ gboolean mirage_disc_add_track_by_index (MIRAGE_Disc *self, gint index, GObject 
  * mirage_disc_add_track_by_number:
  * @self: a #MIRAGE_Disc
  * @number: (in): track number for the added track
- * @track: (inout) (transfer full) (allow-none): pointer to #MIRAGE_Track, %NULL pointer or %NULL
+ * @track: (in) (transfer full): a #MIRAGE_Track to be added
  * @error: (out) (allow-none): location to store error, or %NULL
  *
  * <para>
@@ -1344,7 +1261,7 @@ gboolean mirage_disc_add_track_by_index (MIRAGE_Disc *self, gint index, GObject 
  *
  * Returns: %TRUE on success, %FALSE on failure
  **/
-gboolean mirage_disc_add_track_by_number (MIRAGE_Disc *self, gint number, GObject **track, GError **error)
+gboolean mirage_disc_add_track_by_number (MIRAGE_Disc *self, gint number, GObject *track, GError **error)
 {
     GObject *session;
     GObject *last_track;
@@ -1352,7 +1269,8 @@ gboolean mirage_disc_add_track_by_number (MIRAGE_Disc *self, gint number, GObjec
     gint last_number;
 
     /* Get number of last track */
-    if (mirage_disc_get_track_by_index(self, -1, &last_track, NULL)) {
+    last_track = mirage_disc_get_track_by_index(self, -1, NULL);
+    if (last_track) {
         last_number = mirage_track_layout_get_track_number(MIRAGE_TRACK(last_track));
         g_object_unref(last_track);
     } else {
@@ -1362,18 +1280,18 @@ gboolean mirage_disc_add_track_by_number (MIRAGE_Disc *self, gint number, GObjec
     if (!mirage_disc_get_number_of_sessions(self)) {
         /* If disc layout is empty (if there are no sessions), we should create
            a session... and then track will be added to this one */
-        mirage_disc_add_session_by_index(self, 0, &session);
-        succeeded = TRUE;
+        session = g_object_new(MIRAGE_TYPE_SESSION, NULL);
+        mirage_disc_add_session_by_index(self, 0, session);
     } else if (number > last_number) {
         /* If track number surpasses the number of last track on disc, then it
            means we need to add the track into last session */
-        succeeded = mirage_disc_get_session_by_index(self, -1, &session, error);
+        session = mirage_disc_get_session_by_index(self, -1, error);
     } else {
         /* Try to get the session by track number */
-        succeeded = mirage_disc_get_session_by_track(self, number, &session, error);
+        session = mirage_disc_get_session_by_track(self, number, error);
     }
-    if (!succeeded) {
-        return succeeded;
+    if (!session) {
+        return FALSE;
     }
 
     /* If session was found, try to add track */
@@ -1412,7 +1330,8 @@ gboolean mirage_disc_remove_track_by_index (MIRAGE_Disc *self, gint index, GErro
     GObject *track;
 
     /* Get track directly */
-    if (!mirage_disc_get_track_by_index(self, index, &track, error)) {
+    track = mirage_disc_get_track_by_index(self, index, error);
+    if (!track) {
         return FALSE;
     }
     /* Get track's parent */
@@ -1465,7 +1384,8 @@ gboolean mirage_disc_remove_track_by_number (MIRAGE_Disc *self, gint number, GEr
     }
 
     /* Get track directly */
-    if (!mirage_disc_get_track_by_number(self, number, &track, error)) {
+    track = mirage_disc_get_track_by_number(self, number, error);
+    if (!track) {
         return FALSE;
     }
     /* Get track's parent */
@@ -1488,7 +1408,6 @@ gboolean mirage_disc_remove_track_by_number (MIRAGE_Disc *self, gint number, GEr
  * mirage_disc_get_track_by_index:
  * @self: a #MIRAGE_Disc
  * @index: (in): index of track to be retrieved
- * @track: (out) (transfer full) (allow-none): location to store track, or %NULL
  * @error: (out) (allow-none): location to store error, or %NULL
  *
  * <para>
@@ -1504,11 +1423,13 @@ gboolean mirage_disc_remove_track_by_number (MIRAGE_Disc *self, gint number, GEr
  * The rest of behavior is same as of mirage_session_get_track_by_index().
  * </para>
  *
- * Returns: %TRUE on success, %FALSE on failure
+ * Returns: (transfer full): a #MIRAGE_Track on success, %NULL on failure.
+ * The reference to the object should be released using g_object_unref()
+ * when no longer needed.
  **/
-gboolean mirage_disc_get_track_by_index (MIRAGE_Disc *self, gint index, GObject **track, GError **error)
+GObject *mirage_disc_get_track_by_index (MIRAGE_Disc *self, gint index, GError **error)
 {
-    GList *entry ;
+    GList *entry;
     gint num_tracks;
     gint count;
 
@@ -1516,7 +1437,7 @@ gboolean mirage_disc_get_track_by_index (MIRAGE_Disc *self, gint index, GObject 
     num_tracks = mirage_disc_get_number_of_tracks(self);
     if (index < -num_tracks || index >= num_tracks) {
         g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_DISC_ERROR, "Track index %d out of range!", index);
-        return FALSE;
+        return NULL;
     } else if (index < 0) {
         index += num_tracks;
     }
@@ -1524,27 +1445,26 @@ gboolean mirage_disc_get_track_by_index (MIRAGE_Disc *self, gint index, GObject 
     /* Loop over the sessions */
     count = 0;
     G_LIST_FOR_EACH(entry, self->priv->sessions_list) {
-        GObject *cur_session = entry->data;
+        GObject *session = entry->data;
 
-        num_tracks = mirage_session_get_number_of_tracks(MIRAGE_SESSION(cur_session));
+        num_tracks = mirage_session_get_number_of_tracks(MIRAGE_SESSION(session));
 
         if (index >= count && index < count + num_tracks) {
             /* We got the session */
-            return mirage_session_get_track_by_index(MIRAGE_SESSION(cur_session), index - count, track, error);
+            return mirage_session_get_track_by_index(MIRAGE_SESSION(session), index - count, error);
         }
 
         count += num_tracks;
     }
 
     g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_DISC_ERROR, "Track with index %d not found!", index);
-    return FALSE;
+    return NULL;
 }
 
 /**
  * mirage_disc_get_track_by_number:
  * @self: a #MIRAGE_Disc
  * @number: (in): track number of track to be retrieved
- * @track: (out) (transfer full) (allow-none): location to store track, or %NULL
  * @error: (out) (allow-none): location to store error, or %NULL
  *
  * <para>
@@ -1557,30 +1477,32 @@ gboolean mirage_disc_get_track_by_index (MIRAGE_Disc *self, gint index, GObject 
  * The rest of behavior is same as of mirage_session_get_track_by_number().
  * </para>
  *
- * Returns: %TRUE on success, %FALSE on failure
+ * Returns: (transfer full): a #MIRAGE_Track on success, %NULL on failure.
+ * The reference to the object should be released using g_object_unref()
+ * when no longer needed.
  **/
-gboolean mirage_disc_get_track_by_number (MIRAGE_Disc *self, gint number, GObject **track, GError **error)
+GObject *mirage_disc_get_track_by_number (MIRAGE_Disc *self, gint number, GError **error)
 {
     GObject *session;
-    gboolean succeeded;
+    GObject *track;
 
     /* We get session by track */
-    if (!mirage_disc_get_session_by_track(self, number, &session, error)) {
-        return FALSE;
+    session = mirage_disc_get_session_by_track(self, number, error);
+    if (!session) {
+        return NULL;
     }
 
     /* And now we get the track */
-    succeeded = mirage_session_get_track_by_number(MIRAGE_SESSION(session), number, track, error);
+    track = mirage_session_get_track_by_number(MIRAGE_SESSION(session), number, error);
     g_object_unref(session);
 
-    return succeeded;
+    return track;
 }
 
 /**
  * mirage_disc_get_track_by_address:
  * @self: a #MIRAGE_Disc
  * @address: (in): address belonging to track to be retrieved
- * @track: (out) (transfer full) (allow-none): location to store track, or %NULL
  * @error: (out) (allow-none): location to store error, or %NULL
  *
  * <para>
@@ -1599,23 +1521,26 @@ gboolean mirage_disc_get_track_by_number (MIRAGE_Disc *self, gint number, GObjec
  * The rest of behavior is same as of mirage_session_get_track_by_address().
  * </para>
  *
- * Returns: %TRUE on success, %FALSE on failure
+ * Returns: (transfer full): a #MIRAGE_Track on success, %NULL on failure.
+ * The reference to the object should be released using g_object_unref()
+ * when no longer needed.
  **/
-gboolean mirage_disc_get_track_by_address (MIRAGE_Disc *self, gint address, GObject **track, GError **error)
+GObject *mirage_disc_get_track_by_address (MIRAGE_Disc *self, gint address, GError **error)
 {
-    gboolean succeeded;
     GObject *session;
+    GObject *track;
 
     /* We get session by sector */
-    if (!mirage_disc_get_session_by_address(self, address, &session, error)) {
+    session = mirage_disc_get_session_by_address(self, address, error);
+    if (!session) {
         return FALSE;
     }
 
     /* And now we get the track */
-    succeeded = mirage_session_get_track_by_address(MIRAGE_SESSION(session), address, track, error);
+    track = mirage_session_get_track_by_address(MIRAGE_SESSION(session), address, error);
     g_object_unref(session);
 
-    return succeeded;
+    return track;
 }
 
 
@@ -1745,7 +1670,8 @@ GObject *mirage_disc_get_sector (MIRAGE_Disc *self, gint address, GError **error
     GObject *track, *sector;
 
     /* Fetch the right track */
-    if (!mirage_disc_get_track_by_address(self, address, &track, error)) {
+    track = mirage_disc_get_track_by_address(self, address, error);
+    if (!track) {
         return FALSE;
     }
 
@@ -1785,7 +1711,8 @@ gboolean mirage_disc_read_sector (MIRAGE_Disc *self, gint address, guint8 main_s
     GObject *track;
 
     /* Fetch the right track */
-    if (!mirage_disc_get_track_by_address(self, address, &track, error)) {
+    track = mirage_disc_get_track_by_address(self, address, error);
+    if (!track) {
         return FALSE;
     }
     /* Read sector */
