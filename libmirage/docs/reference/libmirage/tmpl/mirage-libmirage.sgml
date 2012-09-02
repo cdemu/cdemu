@@ -133,7 +133,7 @@ respectively. The list of supported debug masks can be obtained using libmirage_
 </para>
 
 @fragment_interface: 
-@filename: 
+@stream: 
 @debug_context: 
 @error: 
 @Returns: 

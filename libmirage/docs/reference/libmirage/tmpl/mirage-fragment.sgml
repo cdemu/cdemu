@@ -73,7 +73,7 @@ implementation handles data.
 </para>
 
 @self: 
-@filename: 
+@stream: 
 @error: 
 @Returns: 
 
