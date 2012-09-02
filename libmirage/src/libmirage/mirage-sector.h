@@ -89,6 +89,16 @@ typedef enum
 } MIRAGE_Sector_ValidData;
 
 
+/**
+ * mirage_sync_pattern:
+ *
+ * <para>
+ * A 12-byte sync pattern, found at the beginning of non-audio sectors.
+ * </para>
+ **/
+extern const guint8 mirage_sync_pattern[12];
+
+
 /******************************************************************************\
  *                              Base sector class                             *
 \******************************************************************************/
