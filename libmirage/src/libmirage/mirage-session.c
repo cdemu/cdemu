@@ -1454,6 +1454,8 @@ G_DEFINE_TYPE(MIRAGE_Session, mirage_session, MIRAGE_TYPE_OBJECT);
 
 static void mirage_session_init (MIRAGE_Session *self)
 {
+    GObject *track;
+
     self->priv = MIRAGE_SESSION_GET_PRIVATE(self);
 
     self->priv->tracks_list = NULL;
@@ -1463,10 +1465,14 @@ static void mirage_session_init (MIRAGE_Session *self)
     self->priv->first_track = 1;
 
     /* Create lead-in */
-    mirage_session_add_track_by_number(self, MIRAGE_TRACK_LEADIN, NULL, NULL);
+    track = g_object_new(MIRAGE_TYPE_TRACK, NULL);
+    mirage_session_add_track_by_number(self, MIRAGE_TRACK_LEADIN, track, NULL);
+    g_object_unref(track);
 
     /* Create lead-out */
-    mirage_session_add_track_by_number(self, MIRAGE_TRACK_LEADOUT, NULL, NULL);
+    track = g_object_new(MIRAGE_TYPE_TRACK, NULL);
+    mirage_session_add_track_by_number(self, MIRAGE_TRACK_LEADOUT, track, NULL);
+    g_object_unref(track);
 }
 
 static void mirage_session_dispose (GObject *gobject)
