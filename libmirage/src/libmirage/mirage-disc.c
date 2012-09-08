@@ -298,14 +298,14 @@ static gint sort_sessions_by_number (GObject *session1, GObject *session2)
     }
 }
 
-static void free_disc_structure_data (GValueArray *array)
+static void free_disc_structure_data (GArray *array)
 {
     /* Free data */
-    gpointer data = g_value_get_pointer(g_value_array_get_nth(array, 1));
+    gpointer data = g_array_index(array, gpointer, 1);
     g_free(data);
 
     /* Free array */
-    g_value_array_free(array);
+    g_array_free(array, TRUE);
 }
 
 
@@ -1565,7 +1565,8 @@ GObject *mirage_disc_get_track_by_address (MIRAGE_Disc *self, gint address, GErr
  **/
 void mirage_disc_set_disc_structure (MIRAGE_Disc *self, gint layer, gint type, const guint8 *data, gint len)
 {
-    GValueArray *array;
+    GArray *array;
+    guint8 *data_copy;
     gint key = ((layer & 0x0000FFFF) << 16) | (type & 0x0000FFFF);
 
     if (self->priv->medium_type != MIRAGE_MEDIUM_DVD && self->priv->medium_type != MIRAGE_MEDIUM_BD) {
@@ -1574,15 +1575,12 @@ void mirage_disc_set_disc_structure (MIRAGE_Disc *self, gint layer, gint type, c
 
     /* We need to copy the data, and pack it together with its length... guess
        a value array is one of the ways to go... */
-    array = g_value_array_new(2);
+    array = g_array_sized_new(FALSE, TRUE, sizeof(gpointer), 2);
+    g_assert(sizeof(gpointer) >= sizeof(gint));
+    data_copy = g_memdup(data, len);
 
-    array = g_value_array_append(array, NULL);
-    g_value_init(g_value_array_get_nth(array, 0), G_TYPE_INT);
-    g_value_set_int(g_value_array_get_nth(array, 0), len);
-
-    array = g_value_array_append(array, NULL);
-    g_value_init(g_value_array_get_nth(array, 1), G_TYPE_POINTER);
-    g_value_set_pointer(g_value_array_get_nth(array, 1), g_memdup(data, len));
+    array = g_array_append_val(array, len);
+    array = g_array_append_val(array, data_copy);
 
     g_hash_table_insert(self->priv->disc_structures, GINT_TO_POINTER(key), array);
 }
@@ -1613,7 +1611,7 @@ void mirage_disc_set_disc_structure (MIRAGE_Disc *self, gint layer, gint type, c
 gboolean mirage_disc_get_disc_structure (MIRAGE_Disc *self, gint layer, gint type, const guint8 **data, gint *len, GError **error)
 {
     gint key = ((layer & 0x0000FFFF) << 16) | (type & 0x0000FFFF);
-    GValueArray *array;
+    GArray *array;
     guint8 *tmp_data;
     gint tmp_len;
 
@@ -1632,8 +1630,8 @@ gboolean mirage_disc_get_disc_structure (MIRAGE_Disc *self, gint layer, gint typ
         }
     } else {
         /* Structure was provided by image */
-        tmp_len = g_value_get_int(g_value_array_get_nth(array, 0));
-        tmp_data = g_value_get_pointer(g_value_array_get_nth(array, 1));
+        tmp_len = g_array_index(array, gint, 0);
+        tmp_data = g_array_index(array, guint8 *, 1);
     }
 
     if (data) {

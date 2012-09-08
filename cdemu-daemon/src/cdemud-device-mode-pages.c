@@ -35,34 +35,28 @@
 \**********************************************************************/
 #define MODE_PAGE_DEFINITION_START(CODE) \
     if (1) { \
-        GValueArray *array = g_value_array_new(3); \
+        GArray *array = g_array_sized_new(FALSE, TRUE, sizeof(gpointer), 3); \
         struct ModePage_##CODE *page = g_new0(struct ModePage_##CODE, 1); \
         struct ModePage_##CODE *mask = g_new0(struct ModePage_##CODE, 1); \
-        /* Prepare the array */ \
-        array = g_value_array_append(array, NULL); \
-        array = g_value_array_append(array, NULL); \
-        array = g_value_array_append(array, NULL); \
-        g_value_init(g_value_array_get_nth(array, 0), G_TYPE_POINTER); \
-        g_value_init(g_value_array_get_nth(array, 1), G_TYPE_POINTER); \
-        g_value_init(g_value_array_get_nth(array, 2), G_TYPE_POINTER); \
+        gpointer page_copy = g_memdup(page, sizeof(*page)); \
         /* Initialize page and mask */ \
         page->code = mask->code = CODE; \
         page->length = mask->length = sizeof(struct ModePage_##CODE) - 2;
 
 #define MODE_PAGE_DEFINITION_END() \
         /* Pack pointers into value array */ \
-        g_value_set_pointer(g_value_array_get_nth(array, MODE_PAGE_CURRENT), page); \
-        g_value_set_pointer(g_value_array_get_nth(array, MODE_PAGE_DEFAULT), g_memdup(page, sizeof(*page))); \
-        g_value_set_pointer(g_value_array_get_nth(array, MODE_PAGE_MASK), mask); \
+        g_array_append_val(array, page); /* MODE_PAGE_CURRENT */ \
+        g_array_append_val(array, page_copy); /* MODE_PAGE_DEFAULT */ \
+        g_array_append_val(array, mask); /* MODE_PAGE_MASK */ \
         /* Insert into list */ \
         self->priv->mode_pages_list = g_list_insert_sorted(self->priv->mode_pages_list, array, (GCompareFunc)compare_mode_pages); \
     }
 
 
-static gint compare_mode_pages (GValueArray *mode_page1_ptr, GValueArray *mode_page2_ptr)
+static gint compare_mode_pages (GArray *mode_page1_ptr, GArray *mode_page2_ptr)
 {
-    struct ModePage_GENERAL *mode_page1 = g_value_get_pointer(g_value_array_get_nth(mode_page1_ptr, 0));
-    struct ModePage_GENERAL *mode_page2 = g_value_get_pointer(g_value_array_get_nth(mode_page2_ptr, 0));
+    struct ModePage_GENERAL *mode_page1 = g_array_index(mode_page1_ptr, struct ModePage_GENERAL *, 0);
+    struct ModePage_GENERAL *mode_page2 = g_array_index(mode_page2_ptr, struct ModePage_GENERAL *, 0);
 
     if (mode_page1->code < mode_page2->code) {
         return -1;
@@ -73,9 +67,9 @@ static gint compare_mode_pages (GValueArray *mode_page1_ptr, GValueArray *mode_p
     }
 }
 
-static gint find_mode_page (GValueArray *mode_page_ptr, gconstpointer code_ptr)
+static gint find_mode_page (GArray *mode_page_ptr, gconstpointer code_ptr)
 {
-    struct ModePage_GENERAL *mode_page = g_value_get_pointer(g_value_array_get_nth(mode_page_ptr, 0));
+    struct ModePage_GENERAL *mode_page = g_array_index(mode_page_ptr, struct ModePage_GENERAL *, 0);
     gint code = GPOINTER_TO_INT(code_ptr);
 
     if (mode_page->code < code) {
@@ -97,8 +91,8 @@ gpointer cdemud_device_get_mode_page (CDEMUD_Device *self, gint page, gint type)
     entry = g_list_find_custom(self->priv->mode_pages_list, GINT_TO_POINTER(page), (GCompareFunc)find_mode_page);
 
     if (entry) {
-        GValueArray *array = entry->data;
-        return g_value_get_pointer(g_value_array_get_nth(array, type));
+        GArray *array = entry->data;
+        return g_array_index(array, gpointer, type);
     }
 
     return NULL;
@@ -210,13 +204,13 @@ void cdemud_device_mode_pages_cleanup (CDEMUD_Device *self)
     GList *entry;
     G_LIST_FOR_EACH(entry, self->priv->mode_pages_list) {
         if (entry->data) {
-            GValueArray *array = entry->data;
+            GArray *array = entry->data;
 
-            g_free(g_value_get_pointer(g_value_array_get_nth(array, 0)));
-            g_free(g_value_get_pointer(g_value_array_get_nth(array, 1)));
-            g_free(g_value_get_pointer(g_value_array_get_nth(array, 2)));
+            g_free(g_array_index(array, gpointer, 0));
+            g_free(g_array_index(array, gpointer, 1));
+            g_free(g_array_index(array, gpointer, 2));
 
-            g_value_array_free(array);
+            g_array_free(array, TRUE);
         }
     }
     g_list_free(self->priv->mode_pages_list);

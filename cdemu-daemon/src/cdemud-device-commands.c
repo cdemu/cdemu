@@ -414,24 +414,24 @@ static gboolean command_mode_sense (CDEMUD_Device *self, guint8 *raw_cdb)
     GList *entry = NULL;
     gboolean page_found = FALSE;
     G_LIST_FOR_EACH(entry, self->priv->mode_pages_list) {
-        struct ModePage_GENERAL *mode_page = g_value_get_pointer(g_value_array_get_nth((GValueArray *)entry->data, 0));
+        struct ModePage_GENERAL *mode_page = g_array_index((GArray *)entry->data, struct ModePage_GENERAL *, 0);
 
         /* Check if we want this page copied */
         if (page_code == 0x3F || (page_code == mode_page->code)) {
             switch (pc) {
                 case 0x00: {
                     /* Current values */
-                    mode_page = g_value_get_pointer(g_value_array_get_nth((GValueArray *)entry->data, MODE_PAGE_CURRENT));
+                    mode_page = g_array_index((GArray *)entry->data, struct ModePage_GENERAL *, MODE_PAGE_CURRENT);
                     break;
                 }
                 case 0x01: {
                     /* Changeable values */
-                    mode_page = g_value_get_pointer(g_value_array_get_nth((GValueArray *)entry->data, MODE_PAGE_MASK));
+                    mode_page = g_array_index((GArray *)entry->data, struct ModePage_GENERAL *, MODE_PAGE_MASK);
                     break;
                 }
                 case 0x02: {
                     /* Default value */
-                    mode_page = g_value_get_pointer(g_value_array_get_nth((GValueArray *)entry->data, MODE_PAGE_DEFAULT));
+                    mode_page = g_array_index((GArray *)entry->data, struct ModePage_GENERAL *, MODE_PAGE_DEFAULT);
                     break;
                 }
                 default: {

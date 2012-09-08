@@ -1276,7 +1276,6 @@ gboolean mirage_session_get_cdtext_data (MIRAGE_Session *self, guint8 **data, gi
     gint buflen;
     guint8 *buffer;
     GObject *encoder;
-    gboolean succeeded;
 
     /* Allocate space... technically, there could be 255 packs (each 18-byte long)
        per every language... and spec says we support 8 of those. So we play safe
@@ -1379,7 +1378,7 @@ gboolean mirage_session_get_cdtext_data (MIRAGE_Session *self, guint8 **data, gi
     /* Free encoder */
     g_object_unref(encoder);
 
-    return succeeded;
+    return TRUE; /* TODO: Function needs error checking. */
 }
 
 

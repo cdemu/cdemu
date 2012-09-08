@@ -128,54 +128,42 @@ struct _MIRAGE_CDTextEncDecPrivate
 /***********************************************************************\
  *                          Private functions                          *
 \***********************************************************************/
-static GValueArray *create_value_array (gint block, gint type, gint track, const guint8 *data, gint data_len)
+static GArray *create_value_array (gint block, gint type, gint track, const guint8 *data, gint data_len)
 {
-    GValueArray *pack_data = g_value_array_new(5);
+    GArray *pack_data = g_array_sized_new(FALSE, TRUE, sizeof(gpointer), 5);
+    g_assert(sizeof(gpointer) >= sizeof(gint));
+    guint8 *data_copy = g_memdup(data, data_len);
 
     /* Internal representation of pack: block, type, track, data, length */
-    g_value_array_append(pack_data, NULL);
-    g_value_init(g_value_array_get_nth(pack_data, 0), G_TYPE_INT);
-    g_value_set_int(g_value_array_get_nth(pack_data, 0), block);
-
-    g_value_array_append(pack_data, NULL);
-    g_value_init(g_value_array_get_nth(pack_data, 1), G_TYPE_INT);
-    g_value_set_int(g_value_array_get_nth(pack_data, 1), type);
-
-    g_value_array_append(pack_data, NULL);
-    g_value_init(g_value_array_get_nth(pack_data, 2), G_TYPE_INT);
-    g_value_set_int(g_value_array_get_nth(pack_data, 2), track);
-
-    g_value_array_append(pack_data, NULL);
-    g_value_init(g_value_array_get_nth(pack_data, 3), G_TYPE_POINTER);
-    g_value_set_pointer(g_value_array_get_nth(pack_data, 3), g_memdup(data, data_len));
-
-    g_value_array_append(pack_data, NULL);
-    g_value_init(g_value_array_get_nth(pack_data, 4), G_TYPE_INT);
-    g_value_set_int(g_value_array_get_nth(pack_data, 4), data_len);
+    g_array_append_val(pack_data, block);
+    g_array_append_val(pack_data, type);
+    g_array_append_val(pack_data, track);
+    g_array_append_val(pack_data, data_copy);
+    g_array_append_val(pack_data, data_len);
 
     return pack_data;
 }
 
-static gint sort_pack_data (GValueArray *pack1, GValueArray *pack2)
+static gint sort_pack_data (GArray *pack1, GArray *pack2)
 {
-    gint block1 = g_value_get_int(g_value_array_get_nth(pack1, 0));
-    gint block2 = g_value_get_int(g_value_array_get_nth(pack2, 0));
+    gint block1 = g_array_index(pack1, gint, 0);
+    gint block2 = g_array_index(pack2, gint, 0);
 
     if (block1 < block2) {
         return -1;
     } else if (block1 > block2) {
         return 1;
     } else {
-        gint type1 = g_value_get_int(g_value_array_get_nth(pack1, 1));
-        gint type2 = g_value_get_int(g_value_array_get_nth(pack2, 1));
+        gint type1 = g_array_index(pack1, gint, 1);
+        gint type2 = g_array_index(pack2, gint, 1);
 
         if (type1 < type2) {
             return -1;
         } else if (type1 > type2) {
             return 1;
         } else {
-            gint track1 = g_value_get_int(g_value_array_get_nth(pack1, 2));
-            gint track2 = g_value_get_int(g_value_array_get_nth(pack2, 2));
+            gint track1 = g_array_index(pack1, gint, 2);
+            gint track2 = g_array_index(pack2, gint, 2);
 
             if (track1 < track2) {
                 return -1;
@@ -200,9 +188,10 @@ static void mirage_cdtext_encdec_cleanup (MIRAGE_CDTextEncDec *self)
             GList *entry = NULL;
             G_LIST_FOR_EACH(entry, list) {
                 /* Free pack data */
-                g_free(g_value_get_pointer(g_value_array_get_nth(entry->data, 3)));
+                gpointer pack_data = g_array_index((GArray *) entry->data, gpointer, 3);
+                g_free(pack_data);
                 /* Free pack */
-                g_value_array_free(entry->data);
+                g_array_free((GArray *) entry->data, TRUE);
             }
             g_list_free(list);
         }
@@ -283,13 +272,13 @@ static void mirage_cdtext_encoder_initialize_pack (MIRAGE_CDTextEncDec *self, gi
     }
 }
 
-static void mirage_cdtext_encoder_pack_data (MIRAGE_CDTextEncDec *self, GValueArray *pack) {
+static void mirage_cdtext_encoder_pack_data (MIRAGE_CDTextEncDec *self, GArray *pack) {
     /* Unpack data */
-    gint block_number = g_value_get_int(g_value_array_get_nth(pack, 0));
-    gint pack_type = g_value_get_int(g_value_array_get_nth(pack, 1));
-    gint track_number = g_value_get_int(g_value_array_get_nth(pack, 2));
-    guint8 *data = g_value_get_pointer(g_value_array_get_nth(pack, 3));
-    gint len = g_value_get_int(g_value_array_get_nth(pack, 4));
+    gint block_number = g_array_index(pack, gint, 0);
+    gint pack_type = g_array_index(pack, gint, 1);
+    gint track_number = g_array_index(pack, gint, 2);
+    guint8 *data = g_array_index(pack, guint8 *, 3);
+    gint len = g_array_index(pack, gint, 4);
 
     /* If current pack is already initialized and the data we're trying to pack
        is if different type, open new pack; this way, we don't have to check if
@@ -462,7 +451,7 @@ void mirage_cdtext_encoder_add_data (MIRAGE_CDTextEncDec *self, gint langcode, g
 {
     /* Langcode -> block conversion */
     gint block = mirage_cdtext_encdec_lang2block(self, langcode);
-    GValueArray *pack_data = create_value_array(block, type, track, data, data_len);
+    GArray *pack_data = create_value_array(block, type, track, data, data_len);
 
     /* Add internal representation to ordered list... */
     self->priv->blocks[block].packs_list = g_list_insert_sorted(self->priv->blocks[block].packs_list, pack_data, (GCompareFunc)sort_pack_data);
@@ -508,7 +497,7 @@ void mirage_cdtext_encoder_encode (MIRAGE_CDTextEncDec *self, guint8 **buffer, g
 
             /* Encode all on list */
             G_LIST_FOR_EACH(entry, self->priv->blocks[i].packs_list) {
-                GValueArray *pack_data = entry->data;
+                GArray *pack_data = entry->data;
                 mirage_cdtext_encoder_pack_data(self, pack_data);
             }
 
@@ -516,9 +505,9 @@ void mirage_cdtext_encoder_encode (MIRAGE_CDTextEncDec *self, guint8 **buffer, g
             CDTextSizeInfo size_info;
             memset(&size_info, 0, sizeof(size_info));
 
-            GValueArray *dummy_data = create_value_array(i, 0x8F, 0, (guint8 *)&size_info, sizeof(size_info));
+            GArray *dummy_data = create_value_array(i, 0x8F, 0, (guint8 *)&size_info, sizeof(size_info));
             mirage_cdtext_encoder_pack_data(self, dummy_data);
-            g_value_array_free(dummy_data);
+            g_array_free(dummy_data, TRUE);
         } else {
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_CDTEXT, "%s: block %i not valid\n", __debug__, i);
         }
@@ -539,11 +528,11 @@ void mirage_cdtext_encoder_encode (MIRAGE_CDTextEncDec *self, guint8 **buffer, g
             self->priv->cur_pack_fill = 0;
             gint old_len = self->priv->length;
 
-            GValueArray *pack_data = create_value_array(i, 0x8F, 0, (guint8 *)size_info, size_info_len);
+            GArray *pack_data = create_value_array(i, 0x8F, 0, (guint8 *)size_info, size_info_len);
             mirage_cdtext_encoder_pack_data(self, pack_data);
             self->priv->length = old_len;
 
-            g_value_array_free(pack_data);
+            g_array_free(pack_data, TRUE);
             g_free(size_info);
         }
     }
@@ -669,7 +658,7 @@ void mirage_cdtext_decoder_init (MIRAGE_CDTextEncDec *self, guint8 *buffer, gint
                 /*g_debug("%s: block: %i; pack type: 0x%X; track: %i; len: %i; data: %s\n", __debug__, block, self->priv->cur_pack->pack_type, cur_track, tmp_len, tmp_buffer);*/
 
                 /* Pack the data and add it to the list; as simple as that... */
-                GValueArray *pack_data = create_value_array(block, self->priv->cur_pack->pack_type, cur_track, (guint8 *)tmp_buffer, tmp_len);
+                GArray *pack_data = create_value_array(block, self->priv->cur_pack->pack_type, cur_track, (guint8 *)tmp_buffer, tmp_len);
                 self->priv->blocks[block].packs_list = g_list_insert_sorted(self->priv->blocks[block].packs_list, pack_data, (GCompareFunc)sort_pack_data);
 
                 /* Clear the temporary buffer */
@@ -763,13 +752,13 @@ gboolean mirage_cdtext_decoder_get_data (MIRAGE_CDTextEncDec *self, gint block, 
 
     /* Go over the list and call the callback for each entry */
     G_LIST_FOR_EACH(entry, self->priv->blocks[block].packs_list) {
-        GValueArray *pack_data = entry->data;
+        GArray *pack_data = entry->data;
 
-        gint block_number = g_value_get_int(g_value_array_get_nth(pack_data, 0));
-        gint pack_type = g_value_get_int(g_value_array_get_nth(pack_data, 1));
-        gint track_number = g_value_get_int(g_value_array_get_nth(pack_data, 2));
-        guint8 *data = g_value_get_pointer(g_value_array_get_nth(pack_data, 3));
-        gint len = g_value_get_int(g_value_array_get_nth(pack_data, 4));
+        gint block_number = g_array_index(pack_data, gint, 0);
+        gint pack_type = g_array_index(pack_data, gint, 1);
+        gint track_number = g_array_index(pack_data, gint, 2);
+        guint8 *data = g_array_index(pack_data, guint8 *, 3);
+        gint len = g_array_index(pack_data, gint, 4);
 
         gint langcode = mirage_cdtext_encdec_block2lang(self, block_number);
 
