@@ -509,6 +509,7 @@ mirage_parser_guess_medium_type
 mirage_parser_get_param
 mirage_parser_get_param_string
 mirage_parser_set_params
+mirage_parser_get_cached_data_stream
 <SUBSECTION Standard>
 MIRAGE_PARSER
 MIRAGE_IS_PARSER

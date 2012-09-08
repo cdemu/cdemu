@@ -206,7 +206,7 @@ static gboolean mirage_file_filter_ecm_build_index (MIRAGE_FileFilter_ECM *self,
         self->priv->file_size += size;
     }
 
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_FILE, "%s: number of parts: %d!\n", __debug__, self->priv->parts);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_FILE, "%s: number of parts: %d!\n", __debug__, self->priv->num_parts);
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_FILE, "%s: original stream size: %ld!\n", __debug__, self->priv->file_size);
 
     /* At least one part must be present */
@@ -223,6 +223,8 @@ static gboolean mirage_file_filter_ecm_build_index (MIRAGE_FileFilter_ECM *self,
     self->priv->cur_position = 0;
     self->priv->cur_part_idx = 0;
     self->priv->cur_part = &self->priv->parts[self->priv->cur_part_idx];
+
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_FILE, "%s: successfully built index\n\n", __debug__);
 
     return TRUE;
 }
@@ -323,7 +325,7 @@ static gssize mirage_filter_ecm_read_single_block_from_part (MIRAGE_FileFilter_E
         return 0;
     }
 
-    /* Compute part offset within filter stream */
+    /* Compute offset within part */
     part_offset = self->priv->cur_position - self->priv->cur_part->offset;
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_FILE, "%s: offset within part: %ld\n", __debug__, part_offset);
 
@@ -335,9 +337,9 @@ static gssize mirage_filter_ecm_read_single_block_from_part (MIRAGE_FileFilter_E
             /* This one is different from others, because we read data directly */
             stream_offset = self->priv->cur_part->raw_offset + part_offset;
 
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_FILE, "%s: seeking to %ld (0x%lX) in underlying stream\n", __debug__, part_offset, part_offset);
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_FILE, "%s: seeking to %ld (0x%lX) in underlying stream\n", __debug__, part_offset, stream_offset);
             if (!g_seekable_seek(G_SEEKABLE(stream), stream_offset, G_SEEK_SET, NULL, NULL)) {
-                MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to seek to %ld in underlying stream!\n", __debug__, part_offset);
+                MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to seek to %ld in underlying stream!\n", __debug__, stream_offset);
                 return -1;
             }
 

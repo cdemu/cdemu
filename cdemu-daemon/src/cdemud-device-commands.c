@@ -704,11 +704,11 @@ static gboolean command_read_capacity (CDEMUD_Device *self, guint8 *raw_cdb G_GN
     }
 
     /* Capacity: starting sector of last leadout - 1 */
-    GObject *lsession = NULL;
-    GObject *leadout  = NULL;
+    GObject *lsession;
+    GObject *leadout;
 
-    mirage_disc_get_session_by_index(MIRAGE_DISC(self->priv->disc), -1, &lsession, NULL);
-    mirage_session_get_track_by_number(MIRAGE_SESSION(lsession), MIRAGE_TRACK_LEADOUT, &leadout, NULL);
+    lsession = mirage_disc_get_session_by_index(MIRAGE_DISC(self->priv->disc), -1, NULL);
+    leadout = mirage_session_get_track_by_number(MIRAGE_SESSION(lsession), MIRAGE_TRACK_LEADOUT, NULL);
     last_sector = mirage_track_layout_get_start_sector(MIRAGE_TRACK(leadout));
 
     g_object_unref(leadout);
@@ -794,7 +794,7 @@ static gboolean command_read_cd (CDEMUD_Device *self, guint8 *raw_cdb)
     MIRAGE_Disc* disc = MIRAGE_DISC(self->priv->disc);
     GObject *first_sector;
     GError *error = NULL;
-    gint prev_sector_type;
+    gint prev_sector_type G_GNUC_UNUSED;
 
     gint sector = start_sector;
 
@@ -943,12 +943,12 @@ static gboolean command_read_disc_information (CDEMUD_Device *self, guint8 *raw_
             ret_data->sessions1 = num_sessions & 0xFF;
 
             /* First track in last session */
-            GObject *lsession = NULL;
-            GObject *ftrack = NULL;
+            GObject *lsession;
+            GObject *ftrack;
             gint ftrack_lsession;
 
-            mirage_disc_get_session_by_index(disc, -1, &lsession, NULL);
-            mirage_session_get_track_by_index(MIRAGE_SESSION(lsession), 0, &ftrack, NULL);
+            lsession = mirage_disc_get_session_by_index(disc, -1, NULL);
+            ftrack = mirage_session_get_track_by_index(MIRAGE_SESSION(lsession), 0, NULL);
             ftrack_lsession = mirage_track_layout_get_track_number(MIRAGE_TRACK(ftrack));
             g_object_unref(ftrack);
 
@@ -956,16 +956,16 @@ static gboolean command_read_disc_information (CDEMUD_Device *self, guint8 *raw_
             ret_data->ftrack_lsession1 = ftrack_lsession & 0xFF;
 
             /* Last track in last session */
-            GObject *ltrack = NULL;
-            GObject *leadin = NULL;
+            GObject *ltrack;
+            GObject *leadin;
             gint ltrack_lsession;
             gint lsession_leadin;
 
-            mirage_session_get_track_by_index(MIRAGE_SESSION(lsession), -1, &ltrack, NULL);
+            ltrack = mirage_session_get_track_by_index(MIRAGE_SESSION(lsession), -1, NULL);
             ltrack_lsession = mirage_track_layout_get_track_number(MIRAGE_TRACK(ltrack));
             g_object_unref(ltrack);
 
-            mirage_session_get_track_by_number(MIRAGE_SESSION(lsession), MIRAGE_TRACK_LEADIN, &leadin, NULL);
+            leadin = mirage_session_get_track_by_number(MIRAGE_SESSION(lsession), MIRAGE_TRACK_LEADIN, NULL);
             lsession_leadin = mirage_track_layout_get_start_sector(MIRAGE_TRACK(leadin));
             g_object_unref(leadin);
 
@@ -977,8 +977,9 @@ static gboolean command_read_disc_information (CDEMUD_Device *self, guint8 *raw_
 
             /* Disc type; determined from first session, as per INF8090 */
             gint disc_type = 0;
-            GObject *fsession = NULL;
-            mirage_disc_get_session_by_index(disc, 0, &fsession, NULL);
+            GObject *fsession;
+
+            fsession = mirage_disc_get_session_by_index(disc, 0, NULL);
             disc_type = mirage_session_get_session_type(MIRAGE_SESSION(fsession));
             g_object_unref(fsession);
 
@@ -1176,8 +1177,8 @@ static gboolean command_read_subchannel (CDEMUD_Device *self, guint8 *raw_cdb)
                 CDEMUD_DEBUG(self, DAEMON_DEBUG_MMC, "%s: ISRC\n", __debug__);
                 ret_data->fmt_code = 0x03;
 
-                GObject *track = NULL;
-                if (!mirage_disc_get_track_by_number(disc, cdb->track, &track, NULL)) {
+                GObject *track = mirage_disc_get_track_by_number(disc, cdb->track, NULL);
+                if (!track) {
                     CDEMUD_DEBUG(self, DAEMON_DEBUG_MMC, "%s: failed to get track %i!\n", __debug__, cdb->track);
                     cdemud_device_write_sense(self, SK_ILLEGAL_REQUEST, INVALID_FIELD_IN_CDB);
                     return FALSE;
@@ -1270,7 +1271,7 @@ static gboolean command_read_toc_pma_atip (CDEMUD_Device *self, guint8 *raw_cdb)
             self->priv->buffer_size = sizeof(struct READ_TOC_PMA_ATIP_0000_Header);
             struct READ_TOC_PMA_ATIP_0000_Descriptor *ret_desc = (struct READ_TOC_PMA_ATIP_0000_Descriptor *)(self->priv->buffer+self->priv->buffer_size);
 
-            GObject *cur_track = NULL;
+            GObject *cur_track;
 
             /* "For multi-session discs, this command returns the TOC data for
                all sessions and for Track number AAh only the Lead-out area of
@@ -1281,7 +1282,7 @@ static gboolean command_read_toc_pma_atip (CDEMUD_Device *self, guint8 *raw_cdb)
                 gint num_tracks, i;
 
                 /* If track number exceeds last track number, return error */
-                mirage_disc_get_track_by_index(disc, -1, &cur_track, NULL);
+                cur_track = mirage_disc_get_track_by_index(disc, -1, NULL);
                 num_tracks = mirage_track_layout_get_track_number(MIRAGE_TRACK(cur_track));
                 g_object_unref(cur_track);
                 if (cdb->number > num_tracks) {
@@ -1294,7 +1295,8 @@ static gboolean command_read_toc_pma_atip (CDEMUD_Device *self, guint8 *raw_cdb)
                 num_tracks = mirage_disc_get_number_of_tracks(disc);
 
                 for (i = 0; i < num_tracks; i++) {
-                    if (!mirage_disc_get_track_by_index(disc, i, &cur_track, NULL)) {
+                    cur_track = mirage_disc_get_track_by_index(disc, i, NULL);
+                    if (!cur_track) {
                         CDEMUD_DEBUG(self, DAEMON_DEBUG_MMC, "%s: failed to get track with index %i (whole disc)!\n", __debug__, i);
                         break;
                     }
@@ -1329,9 +1331,8 @@ static gboolean command_read_toc_pma_atip (CDEMUD_Device *self, guint8 *raw_cdb)
             }
 
             /* Lead-Out (of the last session): */
-            GObject *lsession = NULL;
-            mirage_disc_get_session_by_index(disc, -1, &lsession, NULL);
-            mirage_session_get_track_by_number(MIRAGE_SESSION(lsession), MIRAGE_TRACK_LEADOUT, &cur_track, NULL);
+            GObject *lsession = mirage_disc_get_session_by_index(disc, -1, NULL);
+            cur_track = mirage_session_get_track_by_number(MIRAGE_SESSION(lsession), MIRAGE_TRACK_LEADOUT, NULL);
 
             ret_desc->adr = 0x01;
             ret_desc->ctl = 0x00;
@@ -1355,7 +1356,7 @@ static gboolean command_read_toc_pma_atip (CDEMUD_Device *self, guint8 *raw_cdb)
 
             /* Header */
             gint ltrack;
-            mirage_session_get_track_by_index(MIRAGE_SESSION(lsession), -1, &cur_track, NULL);
+            cur_track = mirage_session_get_track_by_index(MIRAGE_SESSION(lsession), -1, NULL);
             ltrack = mirage_track_layout_get_track_number(MIRAGE_TRACK(cur_track));
 
             g_object_unref(cur_track);
@@ -1373,10 +1374,10 @@ static gboolean command_read_toc_pma_atip (CDEMUD_Device *self, guint8 *raw_cdb)
             struct READ_TOC_PMA_ATIP_0001_Data *ret_data = (struct READ_TOC_PMA_ATIP_0001_Data *)self->priv->buffer;
             self->priv->buffer_size += sizeof(struct READ_TOC_PMA_ATIP_0001_Data);
 
-            GObject *lsession = NULL;
-            GObject *ftrack = NULL;
+            GObject *lsession;
+            GObject *ftrack;
 
-            mirage_disc_get_session_by_index(disc, -1, &lsession, NULL);
+            lsession = mirage_disc_get_session_by_index(disc, -1, NULL);
 
             /* Header */
             ret_data->length = GUINT16_TO_BE(self->priv->buffer_size - 2);
@@ -1384,7 +1385,7 @@ static gboolean command_read_toc_pma_atip (CDEMUD_Device *self, guint8 *raw_cdb)
             ret_data->lsession = mirage_session_layout_get_session_number(MIRAGE_SESSION(lsession));
 
             /* Track data: first track in last session */
-            mirage_session_get_track_by_index(MIRAGE_SESSION(lsession), 0, &ftrack, NULL);
+            ftrack = mirage_session_get_track_by_index(MIRAGE_SESSION(lsession), 0, NULL);
 
             ret_data->adr = mirage_track_get_adr(MIRAGE_TRACK(ftrack));
             ret_data->ctl = mirage_track_get_ctl(MIRAGE_TRACK(ftrack));
@@ -1420,10 +1421,11 @@ static gboolean command_read_toc_pma_atip (CDEMUD_Device *self, guint8 *raw_cdb)
             /* For each session with number above the requested one... */
             gint num_sessions = mirage_disc_get_number_of_sessions(disc);
             for (i = 0; i < num_sessions; i++) {
-                GObject *cur_session = NULL;
+                GObject *cur_session;
                 gint session_number;
 
-                if (!mirage_disc_get_session_by_index(disc, i, &cur_session, NULL)) {
+                cur_session = mirage_disc_get_session_by_index(disc, i, NULL);
+                if (!cur_session) {
                     CDEMUD_DEBUG(self, DAEMON_DEBUG_MMC, "%s: failed to get session by index %i!\n", __debug__, i);
                     break;
                 }
@@ -1431,10 +1433,10 @@ static gboolean command_read_toc_pma_atip (CDEMUD_Device *self, guint8 *raw_cdb)
                 session_number = mirage_session_layout_get_session_number(MIRAGE_SESSION(cur_session));
                 /* Return session's data only if its number is greater than or equal to requested one */
                 if (session_number >= cdb->number) {
-                    GObject *cur_track = NULL;
+                    GObject *cur_track;
 
                     /* 1. TOC descriptor: about first track in the session */
-                    mirage_session_get_track_by_index(MIRAGE_SESSION(cur_session), 0, &cur_track, NULL);
+                    cur_track = mirage_session_get_track_by_index(MIRAGE_SESSION(cur_session), 0, NULL);
 
                     ret_desc->session = session_number;
                     ret_desc->adr = mirage_track_get_adr(MIRAGE_TRACK(cur_track));
@@ -1449,7 +1451,7 @@ static gboolean command_read_toc_pma_atip (CDEMUD_Device *self, guint8 *raw_cdb)
                     g_object_unref(cur_track);
 
                     /* 2. TOC descriptor: about last track in last session */
-                    mirage_session_get_track_by_index(MIRAGE_SESSION(cur_session), -1, &cur_track, NULL);
+                    cur_track = mirage_session_get_track_by_index(MIRAGE_SESSION(cur_session), -1, NULL);
 
                     ret_desc->session = session_number;
                     ret_desc->adr = mirage_track_get_adr(MIRAGE_TRACK(cur_track));
@@ -1465,7 +1467,7 @@ static gboolean command_read_toc_pma_atip (CDEMUD_Device *self, guint8 *raw_cdb)
                     /* 3. TOC descriptor: about lead-out */
                     gint leadout_start;
 
-                    mirage_session_get_track_by_number(MIRAGE_SESSION(cur_session), MIRAGE_TRACK_LEADOUT, &cur_track, NULL);
+                    cur_track = mirage_session_get_track_by_number(MIRAGE_SESSION(cur_session), MIRAGE_TRACK_LEADOUT, NULL);
 
                     leadout_start = mirage_track_layout_get_start_sector(MIRAGE_TRACK(cur_track));
 
@@ -1485,7 +1487,8 @@ static gboolean command_read_toc_pma_atip (CDEMUD_Device *self, guint8 *raw_cdb)
                     gint num_tracks = mirage_session_get_number_of_tracks(MIRAGE_SESSION(cur_session));
 
                     for (j = 0; j < num_tracks; j++) {
-                        if (!mirage_session_get_track_by_index(MIRAGE_SESSION(cur_session), j, &cur_track, NULL)) {
+                        cur_track = mirage_session_get_track_by_index(MIRAGE_SESSION(cur_session), j, NULL);
+                        if (!cur_track) {
                             CDEMUD_DEBUG(self, DAEMON_DEBUG_MMC, "%s: failed to get track with index %i in session %i!\n", __debug__, j, session_number);
                             break;
                         }
@@ -1579,8 +1582,7 @@ static gboolean command_read_toc_pma_atip (CDEMUD_Device *self, guint8 *raw_cdb)
             }
 
             /* Header */
-            GObject *lsession = NULL;
-            mirage_disc_get_session_by_index(disc, -1, &lsession, NULL);
+            GObject *lsession = mirage_disc_get_session_by_index(disc, -1, NULL);
 
             ret_header->length = GUINT16_TO_BE(self->priv->buffer_size - 2);
             ret_header->fsession = 0x01;
@@ -1609,10 +1611,10 @@ static gboolean command_read_toc_pma_atip (CDEMUD_Device *self, guint8 *raw_cdb)
 
             guint8 *tmp_data = NULL;
             gint tmp_len  = 0;
-            GObject *session = NULL;
+            GObject *session;
 
             /* FIXME: for the time being, return data for first session */
-            mirage_disc_get_session_by_index(MIRAGE_DISC(self->priv->disc), 0, &session, NULL);
+            session = mirage_disc_get_session_by_index(MIRAGE_DISC(self->priv->disc), 0, NULL);
             if (!mirage_session_get_cdtext_data(MIRAGE_SESSION(session), &tmp_data, &tmp_len, NULL)) {
                 CDEMUD_DEBUG(self, DAEMON_DEBUG_MMC, "%s: failed to get CD-TEXT data!\n", __debug__);
             }
@@ -1664,7 +1666,7 @@ static gboolean command_read_track_information (CDEMUD_Device *self, guint8 *raw
         case 0x00: {
             /* LBA */
             CDEMUD_DEBUG(self, DAEMON_DEBUG_MMC, "%s: requested track containing sector 0x%X\n", __debug__, number);
-            mirage_disc_get_track_by_address(disc, number, &track, NULL);
+            track = mirage_disc_get_track_by_address(disc, number, NULL);
             break;
         }
         case 0x01: {
@@ -1685,7 +1687,7 @@ static gboolean command_read_track_information (CDEMUD_Device *self, guint8 *raw
                 default: {
                     /* Track number */
                     CDEMUD_DEBUG(self, DAEMON_DEBUG_MMC, "%s: requested track %i\n", __debug__, number);
-                    mirage_disc_get_track_by_number(disc, number, &track, NULL);
+                    track = mirage_disc_get_track_by_number(disc, number, NULL);
                     break;
                 }
             }
@@ -1693,10 +1695,11 @@ static gboolean command_read_track_information (CDEMUD_Device *self, guint8 *raw
         }
         case 0x02: {
             /* Session number */
-            GObject *session = NULL;
+            GObject *session;
             CDEMUD_DEBUG(self, DAEMON_DEBUG_MMC, "%s: requested first track in session %i\n", __debug__, number);
-            mirage_disc_get_session_by_number(disc, number, &session, NULL);
-            mirage_session_get_track_by_index(MIRAGE_SESSION(session), 0, &track, NULL);
+
+            session = mirage_disc_get_session_by_number(disc, number, NULL);
+            track = mirage_session_get_track_by_index(MIRAGE_SESSION(session), 0, NULL);
             g_object_unref(session);
             break;
         }

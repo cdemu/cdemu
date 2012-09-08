@@ -87,7 +87,7 @@ static void image_analyzer_sector_analysis_ui_callback_analyze (GtkWidget *butto
     num_sessions = mirage_disc_get_number_of_sessions(MIRAGE_DISC(self->priv->disc));
     for (i = 0; i < num_sessions; i++) {
         /* Get session and its properties */
-        mirage_disc_get_session_by_index(MIRAGE_DISC(self->priv->disc), i, &session, NULL);
+        session = mirage_disc_get_session_by_index(MIRAGE_DISC(self->priv->disc), i, NULL);
         session_number = mirage_session_layout_get_session_number(MIRAGE_SESSION(session));
         session_start = mirage_session_layout_get_start_sector(MIRAGE_SESSION(session));
         session_length = mirage_session_layout_get_length(MIRAGE_SESSION(session));
@@ -98,7 +98,7 @@ static void image_analyzer_sector_analysis_ui_callback_analyze (GtkWidget *butto
 
         for (j = 0; j < num_tracks; j++) {
             /* Get track and its properties */
-            mirage_session_get_track_by_index(MIRAGE_SESSION(session), j, &track, NULL);
+            track = mirage_session_get_track_by_index(MIRAGE_SESSION(session), j, NULL);
             track_number = mirage_track_layout_get_track_number(MIRAGE_TRACK(track));
             track_start = mirage_track_layout_get_start_sector(MIRAGE_TRACK(track));
             track_length = mirage_track_layout_get_length(MIRAGE_TRACK(track));

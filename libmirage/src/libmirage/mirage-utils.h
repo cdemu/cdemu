@@ -23,6 +23,12 @@
 G_BEGIN_DECLS
 
 
+/* Patterns */
+extern const guint8 mirage_pattern_sync[12];
+extern const guint8 mirage_pattern_cd001[8];
+extern const guint8 mirage_pattern_bea01[8];
+
+
 /**
  * MIRAGE_CAST_DATA:
  * @buf: buffer to get data from

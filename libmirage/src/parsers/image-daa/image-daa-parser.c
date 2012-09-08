@@ -72,15 +72,15 @@ static GObject *mirage_parser_daa_load_image (MIRAGE_Parser *_self, gchar **file
     mirage_disc_set_filename(MIRAGE_DISC(self->priv->disc), filenames[0]);
 
     /* Add session */
-    GObject *session = NULL;
+    GObject *session = g_object_new(MIRAGE_TYPE_SESSION, NULL);
 
-    mirage_disc_add_session_by_index(MIRAGE_DISC(self->priv->disc), 0, &session);
+    mirage_disc_add_session_by_index(MIRAGE_DISC(self->priv->disc), 0, session);
 
     mirage_session_set_session_type(MIRAGE_SESSION(session), MIRAGE_SESSION_CD_ROM);
 
     /* Add track */
-    GObject *track = NULL;
-    mirage_session_add_track_by_index(MIRAGE_SESSION(session), -1, &track);
+    GObject *track = g_object_new(MIRAGE_TYPE_TRACK, NULL);
+    mirage_session_add_track_by_index(MIRAGE_SESSION(session), -1, track);
 
     g_object_unref(session);
 
@@ -90,24 +90,24 @@ static GObject *mirage_parser_daa_load_image (MIRAGE_Parser *_self, gchar **file
     const gchar *password = mirage_parser_get_param_string(MIRAGE_PARSER(self), "password");
 
     /* Fragment(s); we use private, DAA fragments for this */
-    GObject *data_fragment = g_object_new(MIRAGE_TYPE_FRAGMENT_DAA, NULL);
+    GObject *fragment = g_object_new(MIRAGE_TYPE_FRAGMENT_DAA, NULL);
     GError *local_error = NULL;
 
-    mirage_track_add_fragment(MIRAGE_TRACK(track), -1, data_fragment);
+    mirage_track_add_fragment(MIRAGE_TRACK(track), -1, fragment);
 
-    if (!mirage_fragment_daa_set_file(MIRAGE_FRAGMENT_DAA(data_fragment), filenames[0], password, &local_error)) {
+    if (!mirage_fragment_daa_set_file(MIRAGE_FRAGMENT_DAA(fragment), filenames[0], password, &local_error)) {
         /* Don't make buzz for password failures */
         if (local_error->code != MIRAGE_ERROR_ENCRYPTED_IMAGE) {
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to set file to fragment: %s!\n", __debug__, local_error->message);
         }
         g_propagate_error(error, local_error);
-        g_object_unref(data_fragment);
+        g_object_unref(fragment);
         g_object_unref(track);
         succeeded = FALSE;
         goto end;
     }
 
-    g_object_unref(data_fragment);
+    g_object_unref(fragment);
     g_object_unref(track);
 
     /* Now guess medium type and if it's a CD-ROM, add Red Book pregap */

@@ -387,7 +387,7 @@ static gboolean mirage_parser_b6t_setup_track_fragments (MIRAGE_Parser_B6T *self
         if (start_sector >= data_block->start_sector && start_sector < data_block->start_sector + data_block->length_sectors) {
             gint tmp_length;
             gchar *filename;
-            GObject *data_fragment;
+            GObject *data_fragment, *data_stream;
 
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: found a block %i\n", __debug__, g_list_position(self->priv->data_blocks_list, entry));
 
@@ -403,10 +403,19 @@ static gboolean mirage_parser_b6t_setup_track_fragments (MIRAGE_Parser_B6T *self
             }
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: using data file: %s\n", __debug__, filename);
 
+            /* Create stream */
+            data_stream = mirage_parser_get_cached_data_stream(MIRAGE_PARSER(self), filename, error);
+            if (!data_stream) {
+                MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to create stream on data file '%s'\n", __debug__, filename);
+                g_free(filename);
+                return FALSE;
+            }
+
             /* We'd like a BINARY fragment */
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: creating BINARY fragment\n", __debug__);
-            data_fragment = libmirage_create_fragment(MIRAGE_TYPE_FRAG_IFACE_BINARY, filename, G_OBJECT(self), error);
+            data_fragment = libmirage_create_fragment(MIRAGE_TYPE_FRAG_IFACE_BINARY, data_stream, G_OBJECT(self), error);
             if (!data_fragment) {
+                g_object_unref(data_stream);
                 g_free(filename);
                 MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to create BINARY fragment!\n", __debug__);
                 return FALSE;
@@ -460,11 +469,13 @@ static gboolean mirage_parser_b6t_setup_track_fragments (MIRAGE_Parser_B6T *self
             }
 
             /* Set file */
-            if (!mirage_frag_iface_binary_track_file_set_file(MIRAGE_FRAG_IFACE_BINARY(data_fragment), filename, error)) {
+            if (!mirage_frag_iface_binary_track_file_set_file(MIRAGE_FRAG_IFACE_BINARY(data_fragment), filename, data_stream, error)) {
                 MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to set track data file!\n", __debug__);
+                g_object_unref(data_stream);
                 g_free(filename);
                 return FALSE;
             }
+            g_object_unref(data_stream);
             g_free(filename);
 
             mirage_frag_iface_binary_track_file_set_sectsize(MIRAGE_FRAG_IFACE_BINARY(data_fragment), tfile_sectsize);
@@ -923,70 +934,72 @@ static gboolean mirage_parser_b6t_parse_data_blocks (MIRAGE_Parser_B6T *self, GE
 
 static gboolean mirage_parser_b6t_parse_track_entry (MIRAGE_Parser_B6T *self, GError **error)
 {
-    GObject *cur_track = NULL;
-    B6T_Track *track = NULL;
+    GObject *track;
+    B6T_Track *track_entry;
 
-    track = MIRAGE_CAST_PTR(self->priv->cur_ptr, 0, B6T_Track *);
-    b6t_track_fix_endian(track);
+    track_entry = MIRAGE_CAST_PTR(self->priv->cur_ptr, 0, B6T_Track *);
+    b6t_track_fix_endian(track_entry);
     self->priv->cur_ptr += sizeof(B6T_Track);
 
     /* We have no use for non-track descriptors at the moment */
-    if (track->type == 0) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: skipping non-track descriptor, point 0x%X\n", __debug__, track->point);
+    if (track_entry->type == 0) {
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: skipping non-track descriptor, point 0x%X\n", __debug__, track_entry->point);
         return TRUE;
     }
 
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: loading track descriptor:\n", __debug__);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   type: 0x%X\n", __debug__, track->type);
-    if (track->type == 1 || track->type == 6) {
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   type: 0x%X\n", __debug__, track_entry->type);
+    if (track_entry->type == 1 || track_entry->type == 6) {
         /* 0 for Audio and DVD tracks */
-        WHINE_ON_UNEXPECTED(track->__dummy1__, 0x00);
-        WHINE_ON_UNEXPECTED(track->__dummy2__, 0x00);
-        WHINE_ON_UNEXPECTED(track->__dummy3__, 0x00);
-        WHINE_ON_UNEXPECTED(track->__dummy4__, 0x00000000);
+        WHINE_ON_UNEXPECTED(track_entry->__dummy1__, 0x00);
+        WHINE_ON_UNEXPECTED(track_entry->__dummy2__, 0x00);
+        WHINE_ON_UNEXPECTED(track_entry->__dummy3__, 0x00);
+        WHINE_ON_UNEXPECTED(track_entry->__dummy4__, 0x00000000);
     } else {
-        WHINE_ON_UNEXPECTED(track->__dummy1__, 0x01);
-        WHINE_ON_UNEXPECTED(track->__dummy2__, 0x01);
-        WHINE_ON_UNEXPECTED(track->__dummy3__, 0x01);
-        WHINE_ON_UNEXPECTED(track->__dummy4__, 0x00000001);
+        WHINE_ON_UNEXPECTED(track_entry->__dummy1__, 0x01);
+        WHINE_ON_UNEXPECTED(track_entry->__dummy2__, 0x01);
+        WHINE_ON_UNEXPECTED(track_entry->__dummy3__, 0x01);
+        WHINE_ON_UNEXPECTED(track_entry->__dummy4__, 0x00000001);
     }
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   subchannel: 0x%X\n", __debug__, track->subchannel);
-    WHINE_ON_UNEXPECTED(track->__dummy5__, 0x00);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   CTL: 0x%X\n", __debug__, track->ctl);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   ADR: 0x%X\n", __debug__, track->adr);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   point: 0x%X\n", __debug__, track->point);
-    WHINE_ON_UNEXPECTED(track->__dummy6__, 0x00);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   MSF: %02i:%02i:%02i\n", __debug__, track->min, track->sec, track->frame);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   zero: %i\n", __debug__, track->zero);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   PMSF: %02i:%02i:%02i\n", __debug__, track->pmin, track->psec, track->pframe);
-    if (track->type == 6) {
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   subchannel: 0x%X\n", __debug__, track_entry->subchannel);
+    WHINE_ON_UNEXPECTED(track_entry->__dummy5__, 0x00);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   CTL: 0x%X\n", __debug__, track_entry->ctl);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   ADR: 0x%X\n", __debug__, track_entry->adr);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   point: 0x%X\n", __debug__, track_entry->point);
+    WHINE_ON_UNEXPECTED(track_entry->__dummy6__, 0x00);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   MSF: %02i:%02i:%02i\n", __debug__, track_entry->min, track_entry->sec, track_entry->frame);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   zero: %i\n", __debug__, track_entry->zero);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   PMSF: %02i:%02i:%02i\n", __debug__, track_entry->pmin, track_entry->psec, track_entry->pframe);
+    if (track_entry->type == 6) {
         /* 0 for DVD tracks */
-        WHINE_ON_UNEXPECTED(track->__dummy7__, 0x00);
+        WHINE_ON_UNEXPECTED(track_entry->__dummy7__, 0x00);
     } else {
-        WHINE_ON_UNEXPECTED(track->__dummy7__, 0x01);
+        WHINE_ON_UNEXPECTED(track_entry->__dummy7__, 0x01);
     }
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   pregap length: 0x%X\n", __debug__, track->pregap);
-    WHINE_ON_UNEXPECTED(track->__dummy8__, 0x00000000);
-    WHINE_ON_UNEXPECTED(track->__dummy9__, 0x00000000);
-    WHINE_ON_UNEXPECTED(track->__dummy10__, 0x00000000);
-    WHINE_ON_UNEXPECTED(track->__dummy11__, 0x00000000);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   start sector: 0x%X\n", __debug__, track->start_sector);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   track length: 0x%X\n", __debug__, track->length);
-    WHINE_ON_UNEXPECTED(track->__dummy12__, 0x00000000);
-    WHINE_ON_UNEXPECTED(track->__dummy13__, 0x00000000);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   session number: 0x%X\n", __debug__, track->session_number);
-    WHINE_ON_UNEXPECTED(track->__dummy14__, 0x0000);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   pregap length: 0x%X\n", __debug__, track_entry->pregap);
+    WHINE_ON_UNEXPECTED(track_entry->__dummy8__, 0x00000000);
+    WHINE_ON_UNEXPECTED(track_entry->__dummy9__, 0x00000000);
+    WHINE_ON_UNEXPECTED(track_entry->__dummy10__, 0x00000000);
+    WHINE_ON_UNEXPECTED(track_entry->__dummy11__, 0x00000000);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   start sector: 0x%X\n", __debug__, track_entry->start_sector);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   track length: 0x%X\n", __debug__, track_entry->length);
+    WHINE_ON_UNEXPECTED(track_entry->__dummy12__, 0x00000000);
+    WHINE_ON_UNEXPECTED(track_entry->__dummy13__, 0x00000000);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   session number: 0x%X\n", __debug__, track_entry->session_number);
+    WHINE_ON_UNEXPECTED(track_entry->__dummy14__, 0x0000);
 
     /* It seems only non-DVD track entries have additional 8 bytes */
-    if (track->type != 6 && track->type != 0) {
+    if (track_entry->type != 6 && track_entry->type != 0) {
         self->priv->cur_ptr += 8;
     }
 
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "\n");
 
     /* Create track now; we'll add it directly to disc, with disc and track number we have */
-    if (!mirage_disc_add_track_by_number(MIRAGE_DISC(self->priv->disc), track->point, &cur_track, error)) {
+    track = g_object_new(MIRAGE_TYPE_TRACK, NULL);
+    if (!mirage_disc_add_track_by_number(MIRAGE_DISC(self->priv->disc), track_entry->point, track, error)) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to add track!\n", __debug__);
+        g_object_unref(track);
         return FALSE;
     }
 
@@ -999,89 +1012,91 @@ static gboolean mirage_parser_b6t_parse_track_entry (MIRAGE_Parser_B6T *self, GE
         - 5: Mode 2 Form 2 track
         - 6: DVD track
     */
-    switch (track->type) {
+    switch (track_entry->type) {
         case 1: {
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: Audio track\n", __debug__);
-            mirage_track_set_mode(MIRAGE_TRACK(cur_track), MIRAGE_MODE_AUDIO);
+            mirage_track_set_mode(MIRAGE_TRACK(track), MIRAGE_MODE_AUDIO);
             break;
         }
         case 2: {
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: Mode 1 track\n", __debug__);
-            mirage_track_set_mode(MIRAGE_TRACK(cur_track), MIRAGE_MODE_MODE1);
+            mirage_track_set_mode(MIRAGE_TRACK(track), MIRAGE_MODE_MODE1);
             break;
         }
         case 3: {
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: Mode 2 track\n", __debug__);
-            mirage_track_set_mode(MIRAGE_TRACK(cur_track), MIRAGE_MODE_MODE2_MIXED);
+            mirage_track_set_mode(MIRAGE_TRACK(track), MIRAGE_MODE_MODE2_MIXED);
             break;
         }
         case 4: {
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: Mode 2 Form 1 track\n", __debug__);
-            mirage_track_set_mode(MIRAGE_TRACK(cur_track), MIRAGE_MODE_MODE2_FORM1);
+            mirage_track_set_mode(MIRAGE_TRACK(track), MIRAGE_MODE_MODE2_FORM1);
             break;
         }
         case 5: {
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: Mode 2 Form 2 track\n", __debug__);
-            mirage_track_set_mode(MIRAGE_TRACK(cur_track), MIRAGE_MODE_MODE2_FORM2);
+            mirage_track_set_mode(MIRAGE_TRACK(track), MIRAGE_MODE_MODE2_FORM2);
             break;
         }
         case 6: {
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: DVD track\n", __debug__);
-            mirage_track_set_mode(MIRAGE_TRACK(cur_track), MIRAGE_MODE_MODE1);
+            mirage_track_set_mode(MIRAGE_TRACK(track), MIRAGE_MODE_MODE1);
             break;
         }
         default: {
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: unknown track type: 0x%X!\n", __debug__, track->type);
-            g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_PARSER_ERROR, "Unknown track type 0x%X!", track->type);
-            g_object_unref(cur_track);
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: unknown track type: 0x%X!\n", __debug__, track_entry->type);
+            g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_PARSER_ERROR, "Unknown track type 0x%X!", track_entry->type);
+            g_object_unref(track);
             return FALSE;
         }
     }
 
     /* Set up track fragments */
-    if (!mirage_parser_b6t_setup_track_fragments(self, cur_track, track->start_sector, track->length, error)) {
+    if (!mirage_parser_b6t_setup_track_fragments(self, track, track_entry->start_sector, track_entry->length, error)) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to set up track's fragments!\n", __debug__);
-        g_object_unref(cur_track);
+        g_object_unref(track);
         return FALSE;
     }
 
     /* Set track start */
-    mirage_track_set_track_start(MIRAGE_TRACK(cur_track), track->pregap);
+    mirage_track_set_track_start(MIRAGE_TRACK(track), track_entry->pregap);
 
-    g_object_unref(cur_track);
+    g_object_unref(track);
     return TRUE;
 }
 
 static gboolean mirage_parser_b6t_parse_session (MIRAGE_Parser_B6T *self, GError **error)
 {
     gint i;
-    B6T_Session *session;
+    B6T_Session *session_entry;
 
-    session = MIRAGE_CAST_PTR(self->priv->cur_ptr, 0, B6T_Session *);
-    b6t_session_fix_endian(session);
+    session_entry = MIRAGE_CAST_PTR(self->priv->cur_ptr, 0, B6T_Session *);
+    b6t_session_fix_endian(session_entry);
     self->priv->cur_ptr += sizeof(B6T_Session);
 
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: loading session:\n", __debug__);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   number: %i\n", __debug__, session->number);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   number of entries: %i\n", __debug__, session->num_entries);
-    WHINE_ON_UNEXPECTED(session->__dummy1__, 3);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   start address: 0x%X\n", __debug__, session->session_start);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   end address: 0x%X\n", __debug__, session->session_end);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   first track: 0x%X\n", __debug__, session->first_track);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   end track: 0x%X\n\n", __debug__, session->last_track);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   number: %i\n", __debug__, session_entry->number);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   number of entries: %i\n", __debug__, session_entry->num_entries);
+    WHINE_ON_UNEXPECTED(session_entry->__dummy1__, 3);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   start address: 0x%X\n", __debug__, session_entry->session_start);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   end address: 0x%X\n", __debug__, session_entry->session_end);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   first track: 0x%X\n", __debug__, session_entry->first_track);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   end track: 0x%X\n\n", __debug__, session_entry->last_track);
 
     /* If this is the first session, its starting address is also the starting address
        of the parser... if not, we need to set the length of lead-out of previous session
        (which would equal difference between previous end and current start address) */
-    if (session->number == 1) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: first session; setting parser's start to 0x%X (%i)\n", __debug__, session->session_start, session->session_start);
-        mirage_disc_layout_set_start_sector(MIRAGE_DISC(self->priv->disc), session->session_start);
+    if (session_entry->number == 1) {
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: first session; setting parser's start to 0x%X (%i)\n", __debug__, session_entry->session_start, session_entry->session_start);
+        mirage_disc_layout_set_start_sector(MIRAGE_DISC(self->priv->disc), session_entry->session_start);
     } else {
-        guint32 leadout_length = session->session_start - self->priv->prev_session_end;
-        GObject *prev_session = NULL;
+        guint32 leadout_length = session_entry->session_start - self->priv->prev_session_end;
+        GObject *prev_session;
+
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: previous session's leadout length: 0x%X (%i)\n", __debug__, leadout_length, leadout_length);
 
-        if (!mirage_disc_get_session_by_number(MIRAGE_DISC(self->priv->disc), session->number - 1, &prev_session, error)) {
+        prev_session = mirage_disc_get_session_by_number(MIRAGE_DISC(self->priv->disc), session_entry->number - 1, error);
+        if (!prev_session) {
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to get previous session!\n", __debug__);
             return FALSE;
         }
@@ -1090,16 +1105,19 @@ static gboolean mirage_parser_b6t_parse_session (MIRAGE_Parser_B6T *self, GError
 
         g_object_unref(prev_session);
     }
-    self->priv->prev_session_end = session->session_end;
+    self->priv->prev_session_end = session_entry->session_end;
 
     /* Add session */
-    if (!mirage_disc_add_session_by_number(MIRAGE_DISC(self->priv->disc), session->number, NULL, error)) {
+    GObject *session = g_object_new(MIRAGE_TYPE_SESSION, NULL);
+    if (!mirage_disc_add_session_by_number(MIRAGE_DISC(self->priv->disc), session_entry->number, session, error)) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to add session!\n", __debug__);
+        g_object_unref(session);
         return FALSE;
     }
+    g_object_unref(session);
 
     /* Load track entries */
-    for (i = 0; i < session->num_entries; i++) {
+    for (i = 0; i < session_entry->num_entries; i++) {
         if (!mirage_parser_b6t_parse_track_entry(self, error)) {
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to parse track entry #%i!\n", __debug__, i);
             return FALSE;
@@ -1241,7 +1259,7 @@ static GObject *mirage_parser_b6t_load_image (MIRAGE_Parser *_self, gchar **file
     guint8 header[16];
 
     /* Check if we can load the image */
-    stream = libmirage_create_file_stream(filenames[0], mirage_debuggable_get_debug_context(MIRAGE_DEBUGGABLE(self)), error);
+    stream = libmirage_create_file_stream(filenames[0], G_OBJECT(self), error);
     if (!stream) {
         return FALSE;
     }

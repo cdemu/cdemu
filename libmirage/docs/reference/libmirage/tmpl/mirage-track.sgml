@@ -275,7 +275,6 @@ sectors, etc.
 
 @self: 
 @index: 
-@fragment: 
 @error: 
 @Returns: 
 
@@ -287,7 +286,6 @@ sectors, etc.
 
 @self: 
 @address: 
-@fragment: 
 @error: 
 @Returns: 
 
@@ -309,7 +307,6 @@ sectors, etc.
 </para>
 
 @self: 
-@fragment: 
 @error: 
 @Returns: 
 
@@ -348,7 +345,6 @@ sectors, etc.
 
 @self: 
 @address: 
-@index: 
 @error: 
 @Returns: 
 
@@ -380,7 +376,6 @@ sectors, etc.
 
 @self: 
 @number: 
-@index: 
 @error: 
 @Returns: 
 
@@ -392,7 +387,6 @@ sectors, etc.
 
 @self: 
 @address: 
-@index: 
 @error: 
 @Returns: 
 
@@ -467,7 +461,6 @@ sectors, etc.
 
 @self: 
 @index: 
-@language: 
 @error: 
 @Returns: 
 
@@ -479,7 +472,6 @@ sectors, etc.
 
 @self: 
 @langcode: 
-@language: 
 @error: 
 @Returns: 
 
@@ -501,7 +493,6 @@ sectors, etc.
 </para>
 
 @self: 
-@prev_track: 
 @error: 
 @Returns: 
 
@@ -512,7 +503,6 @@ sectors, etc.
 </para>
 
 @self: 
-@next_track: 
 @error: 
 @Returns: 
 

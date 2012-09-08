@@ -75,7 +75,7 @@ struct _MIRAGE_FragmentClass
     MIRAGE_ObjectClass parent_class;
 
     /* Class members */
-    gboolean (*can_handle_data_format) (MIRAGE_Fragment *self, const gchar *filename, GError **error);
+    gboolean (*can_handle_data_format) (MIRAGE_Fragment *self, GObject *stream, GError **error);
 
     gboolean (*use_the_rest_of_file) (MIRAGE_Fragment *self, GError **error);
 
@@ -93,7 +93,7 @@ GType mirage_fragment_get_type (void);
 void mirage_fragment_generate_fragment_info (MIRAGE_Fragment *self, const gchar *id, const gchar *name);
 const MIRAGE_FragmentInfo *mirage_fragment_get_fragment_info (MIRAGE_Fragment *self);
 
-gboolean mirage_fragment_can_handle_data_format (MIRAGE_Fragment *self, const gchar *filename, GError **error);
+gboolean mirage_fragment_can_handle_data_format (MIRAGE_Fragment *self, GObject *stream, GError **error);
 
 void mirage_fragment_set_address (MIRAGE_Fragment *self, gint address);
 gint mirage_fragment_get_address (MIRAGE_Fragment *self);
@@ -198,7 +198,7 @@ struct _MIRAGE_FragIface_BinaryInterface
     GTypeInterface parent_iface;
 
     /* Interface methods */
-    gboolean (*track_file_set_file) (MIRAGE_FragIface_Binary *self, const gchar *filename, GError **error);
+    gboolean (*track_file_set_file) (MIRAGE_FragIface_Binary *self, const gchar *filename, GObject *stream, GError **error);
     const gchar *(*track_file_get_file) (MIRAGE_FragIface_Binary *self);
     void (*track_file_set_offset) (MIRAGE_FragIface_Binary *self, guint64 offset);
     guint64 (*track_file_get_offset) (MIRAGE_FragIface_Binary *self);
@@ -209,7 +209,7 @@ struct _MIRAGE_FragIface_BinaryInterface
 
     guint64 (*track_file_get_position) (MIRAGE_FragIface_Binary *self, gint address);
 
-    gboolean (*subchannel_file_set_file) (MIRAGE_FragIface_Binary *self, const gchar *filename, GError **error);
+    gboolean (*subchannel_file_set_file) (MIRAGE_FragIface_Binary *self, const gchar *filename, GObject *stream, GError **error);
     const gchar *(*subchannel_file_get_file) (MIRAGE_FragIface_Binary *self);
     void (*subchannel_file_set_offset) (MIRAGE_FragIface_Binary *self, guint64 offset);
     guint64 (*subchannel_file_get_offset) (MIRAGE_FragIface_Binary *self);
@@ -226,7 +226,7 @@ struct _MIRAGE_FragIface_BinaryInterface
 GType mirage_frag_iface_binary_get_type (void);
 
 /* Track file */
-gboolean mirage_frag_iface_binary_track_file_set_file (MIRAGE_FragIface_Binary *self, const gchar *filename, GError **error);
+gboolean mirage_frag_iface_binary_track_file_set_file (MIRAGE_FragIface_Binary *self, const gchar *filename, GObject *stream, GError **error);
 const gchar *mirage_frag_iface_binary_track_file_get_file (MIRAGE_FragIface_Binary *self);
 void mirage_frag_iface_binary_track_file_set_offset (MIRAGE_FragIface_Binary *self, guint64 offset);
 guint64 mirage_frag_iface_binary_track_file_get_offset (MIRAGE_FragIface_Binary *self);
@@ -238,7 +238,7 @@ gint mirage_frag_iface_binary_track_file_get_format (MIRAGE_FragIface_Binary *se
 guint64 mirage_frag_iface_binary_track_file_get_position (MIRAGE_FragIface_Binary *self, gint address);
 
 /* Subchannel file */
-gboolean mirage_frag_iface_binary_subchannel_file_set_file (MIRAGE_FragIface_Binary *self, const gchar *filename, GError **error);
+gboolean mirage_frag_iface_binary_subchannel_file_set_file (MIRAGE_FragIface_Binary *self, const gchar *filename, GObject *stream, GError **error);
 const gchar *mirage_frag_iface_binary_subchannel_file_get_file (MIRAGE_FragIface_Binary *self);
 void mirage_frag_iface_binary_subchannel_file_set_offset (MIRAGE_FragIface_Binary *self, guint64 offset);
 guint64 mirage_frag_iface_binary_subchannel_file_get_offset (MIRAGE_FragIface_Binary *self);
@@ -273,7 +273,7 @@ struct _MIRAGE_FragIface_AudioInterface
     GTypeInterface parent_iface;
 
     /* Interface methods */
-    gboolean (*set_file) (MIRAGE_FragIface_Audio *self, const gchar *filename, GError **error);
+    gboolean (*set_file) (MIRAGE_FragIface_Audio *self, const gchar *filename, GObject *stream, GError **error);
     const gchar *(*get_file) (MIRAGE_FragIface_Audio *self);
     void (*set_offset) (MIRAGE_FragIface_Audio *self, gint offset);
     gint (*get_offset) (MIRAGE_FragIface_Audio *self);
@@ -282,7 +282,7 @@ struct _MIRAGE_FragIface_AudioInterface
 /* Used by MIRAGE_TYPE_FRAG_IFACE_AUDIO */
 GType mirage_frag_iface_audio_get_type (void);
 
-gboolean mirage_frag_iface_audio_set_file (MIRAGE_FragIface_Audio *self, const gchar *filename, GError **error);
+gboolean mirage_frag_iface_audio_set_file (MIRAGE_FragIface_Audio *self, const gchar *filename, GObject *stream, GError **error);
 const gchar *mirage_frag_iface_audio_get_file (MIRAGE_FragIface_Audio *self);
 void mirage_frag_iface_audio_set_offset (MIRAGE_FragIface_Audio *self, gint offset);
 gint mirage_frag_iface_audio_get_offset (MIRAGE_FragIface_Audio *self);

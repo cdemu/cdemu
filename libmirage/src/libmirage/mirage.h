@@ -95,7 +95,7 @@ gboolean libmirage_set_password_function (MIRAGE_PasswordFunction func, gpointer
 gchar *libmirage_obtain_password (GError **error);
 
 GObject *libmirage_create_disc (gchar **filenames, GObject *debug_context, GHashTable *params, GError **error);
-GObject *libmirage_create_fragment (GType fragment_interface, const gchar *filename, GObject *debug_context, GError **error);
+GObject *libmirage_create_fragment (GType fragment_interface, GObject *stream, GObject *debug_context, GError **error);
 GObject *libmirage_create_file_stream (const gchar *filename, GObject *debug_context, GError **error);
 
 gboolean libmirage_for_each_parser (MIRAGE_CallbackFunction func, gpointer user_data, GError **error);

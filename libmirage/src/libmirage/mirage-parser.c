@@ -36,6 +36,9 @@ struct _MIRAGE_ParserPrivate
     GHashTable *parser_params;
 
     MIRAGE_ParserInfo *parser_info;
+
+    /* Data stream cache */
+    GHashTable *stream_cache;
 };
 
 
@@ -199,8 +202,7 @@ gint mirage_parser_guess_medium_type (MIRAGE_Parser *self, GObject *disc)
  **/
 void mirage_parser_add_redbook_pregap (MIRAGE_Parser *self, GObject *disc)
 {
-    gint num_sessions;
-    gint i;
+    gint num_sessions, i;
 
     /* Red Book pregap is found only on CD-ROMs */
     if (mirage_disc_get_medium_type(MIRAGE_DISC(disc)) != MIRAGE_MEDIUM_CD) {
@@ -220,33 +222,37 @@ void mirage_parser_add_redbook_pregap (MIRAGE_Parser *self, GObject *disc)
     /* Put 150 sector pregap into every first track of each session */
     for (i = 0; i < num_sessions; i++) {
         GObject *session;
-        GObject *ftrack;
+        GObject *track;
+        GObject *fragment;
 
-        if (!mirage_disc_get_session_by_index(MIRAGE_DISC(disc), i, &session, NULL)) {
+        gint track_start;
+
+        session = mirage_disc_get_session_by_index(MIRAGE_DISC(disc), i, NULL);
+        if (!session) {
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: failed to get session with index %i!\n", __debug__, i);
             return;
         }
 
-        if (!mirage_session_get_track_by_index(MIRAGE_SESSION(session), 0, &ftrack, NULL)) {
+        track = mirage_session_get_track_by_index(MIRAGE_SESSION(session), 0, NULL);
+        if (!track) {
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: failed to first track of session with index %i!\n", __debug__, i);
             g_object_unref(session);
             return;
         }
 
         /* Add pregap fragment - NULL fragment creation should never fail */
-        GObject *pregap_fragment = libmirage_create_fragment(MIRAGE_TYPE_FRAG_IFACE_NULL, "NULL", G_OBJECT(self), NULL);
-
-        mirage_track_add_fragment(MIRAGE_TRACK(ftrack), 0, pregap_fragment);
-        mirage_fragment_set_length(MIRAGE_FRAGMENT(pregap_fragment), 150);
-        g_object_unref(pregap_fragment);
+        fragment = libmirage_create_fragment(MIRAGE_TYPE_FRAG_IFACE_NULL, NULL, G_OBJECT(self), NULL);
+        mirage_fragment_set_length(MIRAGE_FRAGMENT(fragment), 150);
+        mirage_track_add_fragment(MIRAGE_TRACK(track), 0, fragment);
+        g_object_unref(fragment);
 
         /* Track starts at 150... well, unless it already has a pregap, in
            which case they should stack */
-        gint track_start = mirage_track_get_track_start(MIRAGE_TRACK(ftrack));
+        track_start = mirage_track_get_track_start(MIRAGE_TRACK(track));
         track_start += 150;
-        mirage_track_set_track_start(MIRAGE_TRACK(ftrack), track_start);
+        mirage_track_set_track_start(MIRAGE_TRACK(track), track_start);
 
-        g_object_unref(ftrack);
+        g_object_unref(track);
         g_object_unref(session);
 
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: added 150 pregap to first track in session %i\n", __debug__, i);
@@ -350,6 +356,45 @@ GVariant *mirage_parser_get_param (MIRAGE_Parser *self, const gchar *name, const
 }
 
 
+/**
+ * mirage_parser_get_cached_data_stream:
+ * @self: a #MIRAGE_Parser
+ * @filename: (in): filename
+ * @error: (out) (allow-none): location to store error, or %NULL
+ *
+ * <para>
+ * An internal function that implements data stream cache for a parser
+ * object. It is intended for parsers that deal with multi-track images
+ * where data stream reuse might prove beneficial. This function checks
+ * if a stream with requested @filename already exists in the cache and
+ * if it does, returns it. If it does not, it opens a new stream and
+ * adds it to the cache.
+ * </para>
+ *
+ * Returns: (transfer full): data stream object on success, %NULL on
+ * failure. The reference to stream should be released using g_object_unref()
+ * when no longer needed.
+ **/
+GObject *mirage_parser_get_cached_data_stream (MIRAGE_Parser *self, const gchar *filename, GError **error)
+{
+    GObject *stream = g_hash_table_lookup(self->priv->stream_cache, filename);
+
+    if (!stream) {
+        /* Stream not in cache, open a stream on filename... */
+        stream = libmirage_create_file_stream(filename, G_OBJECT(self), error);
+        if (!stream) {
+            return stream;
+        }
+
+        /* ... and add it to cache */
+        g_hash_table_insert(self->priv->stream_cache, g_strdup(filename), stream);
+    }
+
+    g_object_ref(stream);
+    return stream;
+}
+
+
 /**********************************************************************\
  *                             Object init                            *
 \**********************************************************************/
@@ -362,6 +407,25 @@ static void mirage_parser_init (MIRAGE_Parser *self)
 
     self->priv->parser_params = NULL;
     self->priv->parser_info = NULL;
+
+    /* Stream cache hash table */
+    self->priv->stream_cache = g_hash_table_new_full(g_str_hash,
+                                                     g_str_equal,
+                                                     g_free,
+                                                     g_object_unref);
+}
+
+static void mirage_parser_dispose (GObject *gobject)
+{
+    MIRAGE_Parser *self = MIRAGE_PARSER(gobject);
+
+    if (self->priv->stream_cache) {
+        g_hash_table_unref(self->priv->stream_cache);
+        self->priv->stream_cache = NULL;
+    }
+
+    /* Chain up to the parent class */
+    return G_OBJECT_CLASS(mirage_parser_parent_class)->finalize(gobject);
 }
 
 static void mirage_parser_finalize (GObject *gobject)
@@ -378,6 +442,7 @@ static void mirage_parser_class_init (MIRAGE_ParserClass *klass)
 {
     GObjectClass *gobject_class = G_OBJECT_CLASS(klass);
 
+    gobject_class->dispose = mirage_parser_dispose;
     gobject_class->finalize = mirage_parser_finalize;
 
     klass->load_image = NULL;

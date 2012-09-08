@@ -1,2 +1,3 @@
 SUBDIRS = \
-    filter-ecm
+    filter-ecm \
+    filter-gzip

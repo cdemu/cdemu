@@ -55,6 +55,7 @@ by a #MIRAGE_Fragment implementation.
 
 @self: 
 @filename: 
+@stream: 
 @error: 
 @Returns: 
 
@@ -139,6 +140,7 @@ by a #MIRAGE_Fragment implementation.
 
 @self: 
 @filename: 
+@stream: 
 @error: 
 @Returns: 
 

@@ -114,19 +114,19 @@ const MIRAGE_FragmentInfo *mirage_fragment_get_fragment_info (MIRAGE_Fragment *s
 /**
  * mirage_fragment_can_handle_data_format:
  * @self: a #MIRAGE_Fragment
- * @filename: (in): filename
+ * @stream: (in): data stream
  * @error: (out) (allow-none): location to store error, or %NULL
  *
  * <para>
- * Checks whether parser can handle data stored in @filename.
+ * Checks whether parser can handle data stored in @stream.
  * </para>
  *
  * Returns: %TRUE if fragment can handle data file, %FALSE if not
  **/
-gboolean mirage_fragment_can_handle_data_format (MIRAGE_Fragment *self, const gchar *filename, GError **error)
+gboolean mirage_fragment_can_handle_data_format (MIRAGE_Fragment *self, GObject *stream, GError **error)
 {
     /* Provided by implementation */
-    return MIRAGE_FRAGMENT_GET_CLASS(self)->can_handle_data_format(self, filename, error);
+    return MIRAGE_FRAGMENT_GET_CLASS(self)->can_handle_data_format(self, stream, error);
 }
 
 
@@ -358,17 +358,20 @@ GType mirage_frag_iface_null_get_type (void) {
  * mirage_frag_iface_binary_track_file_set_file:
  * @self: a #MIRAGE_FragIface_Binary
  * @filename: (in): track file filename
+ * @stream: (in) (allow-none) (transfer full): a #GInputStream on file
  * @error: (out) (allow-none): location to store error, or %NULL
  *
  * <para>
- * Sets track file.
+ * Sets track file. If @stream is provided, the existing stream is used.
+ * If @stream is %NULL, a new stream is opened on @filename. @filename
+ * needs to be provided in either case.
  * </para>
  *
  * Returns: %TRUE on success, %FALSE on failure
  **/
-gboolean mirage_frag_iface_binary_track_file_set_file (MIRAGE_FragIface_Binary *self, const gchar *filename, GError **error)
+gboolean mirage_frag_iface_binary_track_file_set_file (MIRAGE_FragIface_Binary *self, const gchar *filename, GObject *stream, GError **error)
 {
-    return MIRAGE_FRAG_IFACE_BINARY_GET_INTERFACE(self)->track_file_set_file(self, filename, error);
+    return MIRAGE_FRAG_IFACE_BINARY_GET_INTERFACE(self)->track_file_set_file(self, filename, stream, error);
 }
 
 /**
@@ -494,22 +497,24 @@ guint64 mirage_frag_iface_binary_track_file_get_position (MIRAGE_FragIface_Binar
     return MIRAGE_FRAG_IFACE_BINARY_GET_INTERFACE(self)->track_file_get_position(self, address);
 }
 
-
 /**
  * mirage_frag_iface_binary_subchannel_file_set_file:
  * @self: a #MIRAGE_FragIface_Binary
  * @filename: (in): subchannel file filename
+ * @stream: (in) (allow-none) (transfer full): a #GInputStream on file
  * @error: (out) (allow-none): location to store error, or %NULL
  *
  * <para>
- * Sets subchannel file filename.
+ * Sets subchannel file. If @stream is provided, the existing stream
+ * is used. If @stream is %NULL, a new stream is opened on @filename.
+ * @filename needs to be provided in either case.
  * </para>
  *
  * Returns: %TRUE on success, %FALSE on failure
  **/
-gboolean mirage_frag_iface_binary_subchannel_file_set_file (MIRAGE_FragIface_Binary *self, const gchar *filename, GError **error)
+gboolean mirage_frag_iface_binary_subchannel_file_set_file (MIRAGE_FragIface_Binary *self, const gchar *filename, GObject *stream, GError **error)
 {
-    return MIRAGE_FRAG_IFACE_BINARY_GET_INTERFACE(self)->subchannel_file_set_file(self, filename, error);
+    return MIRAGE_FRAG_IFACE_BINARY_GET_INTERFACE(self)->subchannel_file_set_file(self, filename, stream, error);
 }
 
 /**
@@ -667,17 +672,20 @@ GType mirage_frag_iface_binary_get_type (void) {
  * mirage_frag_iface_audio_set_file:
  * @self: a #MIRAGE_FragIface_Audio
  * @filename: (in): filename
+ * @stream: (in) (allow-none) (transfer full): a #GInputStream on file
  * @error: (out) (allow-none): location to store error, or %NULL
  *
  * <para>
- * Sets audio file to @filename.
+ * Sets audio file. If @stream is provided, the existing stream is used.
+ * If @stream in %NULL, a new stream is opened on @filename. @filename
+ * needs to be provided in either case.
  * </para>
  *
  * Returns: %TRUE on success, %FALSE on failure
  **/
-gboolean mirage_frag_iface_audio_set_file (MIRAGE_FragIface_Audio *self, const gchar *filename, GError **error)
+gboolean mirage_frag_iface_audio_set_file (MIRAGE_FragIface_Audio *self, const gchar *filename, GObject *stream, GError **error)
 {
-    return MIRAGE_FRAG_IFACE_AUDIO_GET_INTERFACE(self)->set_file(self, filename, error);
+    return MIRAGE_FRAG_IFACE_AUDIO_GET_INTERFACE(self)->set_file(self, filename, stream, error);
 }
 
 /**

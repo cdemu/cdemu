@@ -63,10 +63,10 @@ struct _MIRAGE_TrackPrivate
 \**********************************************************************/
 static gboolean mirage_track_check_for_encoded_isrc (MIRAGE_Track *self, GError **error)
 {
-    GObject *fragment = NULL;
-
     /* Check if we have fragment with subchannel */
-    if (mirage_track_find_fragment_with_subchannel(self, &fragment, NULL)) {
+    GObject *fragment = mirage_track_find_fragment_with_subchannel(self, NULL);
+
+    if (fragment) {
         gint sector;
         gint start, end;
 
@@ -780,7 +780,7 @@ gint mirage_track_get_number_of_fragments (MIRAGE_Track *self)
  * mirage_track_add_fragment:
  * @self: a #MIRAGE_Track
  * @index: (in): index at which fragment should be added
- * @fragment: (in): fragment (must be #MIRAGE_Fragment implementation)
+ * @fragment: (in): a #MIRAGE_Fragment to be added
  *
  * <para>
  * Adds a fragment implementation to track. @index is index at which fragment
@@ -865,10 +865,9 @@ void mirage_track_add_fragment (MIRAGE_Track *self, gint index, GObject *fragmen
  **/
 gboolean mirage_track_remove_fragment_by_index (MIRAGE_Track *self, gint index, GError **error)
 {
-    GObject *fragment;
-
     /* Find fragment by index */
-    if (!mirage_track_get_fragment_by_index(self, index, &fragment, error)) {
+    GObject *fragment = mirage_track_get_fragment_by_index(self, index, error);
+    if (!fragment) {
         return FALSE;
     }
 
@@ -905,7 +904,6 @@ void mirage_track_remove_fragment_by_object (MIRAGE_Track *self, GObject *fragme
  * mirage_track_get_fragment_by_index:
  * @self: a #MIRAGE_Track
  * @index: (in): index of fragment to be retrieved
- * @fragment: (out) (transfer full) (allow-none): location to store fragment, or %NULL
  * @error: (out) (allow-none): location to store error, or %NULL
  *
  * <para>
@@ -915,16 +913,13 @@ void mirage_track_remove_fragment_by_object (MIRAGE_Track *self, GObject *fragme
  * function fails.
  * </para>
  *
- * <para>
- * A reference to fragment is stored in @fragment; it should be released with
- * g_object_unref() when no longer needed.
- * </para>
- *
- * Returns: %TRUE on success, %FALSE on failure
+ * Returns: (transfer full): a #MIRAGE_Fragment on success, %NULL on failure.
+ * The reference to the object should be released using g_object_unref()
+ * when no longer needed.
  **/
-gboolean mirage_track_get_fragment_by_index (MIRAGE_Track *self, gint index, GObject **fragment, GError **error)
+GObject *mirage_track_get_fragment_by_index (MIRAGE_Track *self, gint index, GError **error)
 {
-    GObject *ret_fragment;
+    GObject *fragment;
     gint num_fragments;
 
     /* First fragment, last fragment... allow negative indexes to go from behind */
@@ -937,26 +932,21 @@ gboolean mirage_track_get_fragment_by_index (MIRAGE_Track *self, gint index, GOb
     }
 
     /* Get index-th item from list... */
-    ret_fragment = g_list_nth_data(self->priv->fragments_list, index);
+    fragment = g_list_nth_data(self->priv->fragments_list, index);
 
-    if (ret_fragment) {
-        /* Return fragment to user if she wants it */
-        if (fragment) {
-            g_object_ref(ret_fragment);
-            *fragment = ret_fragment;
-        }
-        return TRUE;
+    if (!fragment) {
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_TRACK_ERROR, "Fragment with index %d not found!", index);
+        return FALSE;
     }
 
-    g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_TRACK_ERROR, "Fragment with index %d not found!", index);
-    return FALSE;
+    g_object_ref(fragment);
+    return fragment;
 }
 
 /**
  * mirage_track_get_fragment_by_address:
  * @self: a #MIRAGE_Track
  * @address: (in): address belonging to fragment to be retrieved
- * @fragment: (out) (transfer full) (allow-none): location to store fragment, or %NULL
  * @error: (out) (allow-none): location to store error, or %NULL
  *
  * <para>
@@ -965,50 +955,42 @@ gboolean mirage_track_get_fragment_by_index (MIRAGE_Track *self, gint index, GOb
  * start and end address).
  * </para>
  *
- * <para>
- * A reference to fragment is stored in @fragment; it should be released with
- * g_object_unref() when no longer needed.
- * </para>
- *
- * Returns: %TRUE on success, %FALSE on failure
+ * Returns: (transfer full): a #MIRAGE_Fragment on success, %NULL on failure.
+ * The reference to the object should be released using g_object_unref()
+ * when no longer needed.
  **/
-gboolean mirage_track_get_fragment_by_address (MIRAGE_Track *self, gint address, GObject **fragment, GError **error)
+GObject *mirage_track_get_fragment_by_address (MIRAGE_Track *self, gint address, GError **error)
 {
-    GObject *ret_fragment;
+    GObject *fragment;
     GList *entry;
 
     /* Go over all fragments */
-    ret_fragment = NULL;
+    fragment = NULL;
     G_LIST_FOR_EACH(entry, self->priv->fragments_list) {
         gint cur_address;
         gint cur_length;
 
-        ret_fragment = entry->data;
+        fragment = entry->data;
 
-        cur_address = mirage_fragment_get_address(MIRAGE_FRAGMENT(ret_fragment));
-        cur_length = mirage_fragment_get_length(MIRAGE_FRAGMENT(ret_fragment));
+        cur_address = mirage_fragment_get_address(MIRAGE_FRAGMENT(fragment));
+        cur_length = mirage_fragment_get_length(MIRAGE_FRAGMENT(fragment));
 
         /* Break the loop if address lies within fragment boundaries */
         if (address >= cur_address && address < cur_address + cur_length) {
             break;
         } else {
-            ret_fragment = NULL;
+            fragment = NULL;
         }
     }
 
     /* If we didn't find anything... */
-    if (!ret_fragment) {
+    if (!fragment) {
         g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_TRACK_ERROR, "Fragment with address %d not found!", address);
         return FALSE;
     }
 
-    /* Return fragment to user if she wants it */
-    if (fragment) {
-        g_object_ref(ret_fragment);
-        *fragment = ret_fragment;
-    }
-
-    return TRUE;
+    g_object_ref(fragment);
+    return fragment;
 }
 
 /**
@@ -1045,7 +1027,6 @@ gboolean mirage_track_for_each_fragment (MIRAGE_Track *self, MIRAGE_CallbackFunc
 /**
  * mirage_track_find_fragment_with_subchannel:
  * @self: a #MIRAGE_Track
- * @fragment: (out) (transfer full) (allow-none): location to store fragment, or %NULL
  * @error: (out) (allow-none): location to store error, or %NULL
  *
  * <para>
@@ -1058,40 +1039,37 @@ gboolean mirage_track_for_each_fragment (MIRAGE_Track *self, MIRAGE_CallbackFunc
  * Intended for internal use only.
  * </note>
  *
- * Returns: %TRUE on success, %FALSE on failure
+ * Returns: (transfer full): a #MIRAGE_Fragment on success, %NULL on failure.
+ * The reference to the object should be released using g_object_unref()
+ * when no longer needed.
  **/
-gboolean mirage_track_find_fragment_with_subchannel (MIRAGE_Track *self, GObject **fragment, GError **error)
+GObject *mirage_track_find_fragment_with_subchannel (MIRAGE_Track *self, GError **error)
 {
-    GObject *ret_fragment;
+    GObject *fragment;
     GList *entry;
 
     /* Go over all fragments */
-    ret_fragment = NULL;
+    fragment = NULL;
     G_LIST_FOR_EACH(entry, self->priv->fragments_list) {
         gint subchan_sectsize = 0;
-        ret_fragment = entry->data;
+        fragment = entry->data;
 
-        mirage_fragment_read_subchannel_data(MIRAGE_FRAGMENT(ret_fragment), 0, NULL, &subchan_sectsize, NULL);
+        mirage_fragment_read_subchannel_data(MIRAGE_FRAGMENT(fragment), 0, NULL, &subchan_sectsize, NULL);
         if (subchan_sectsize) {
             break;
         } else {
-            ret_fragment = NULL;
+            fragment = NULL;
         }
     }
 
     /* If we didn't find anything... */
-    if (!ret_fragment) {
+    if (!fragment) {
         g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_TRACK_ERROR, "No fragment with subchannel found!");
         return FALSE;
     }
 
-    /* Return fragment to user if she wants it */
-    if (fragment) {
-        g_object_ref(ret_fragment);
-        *fragment = ret_fragment;
-    }
-
-    return TRUE;
+    g_object_ref(fragment);
+    return fragment;
 }
 
 
@@ -1152,7 +1130,6 @@ gint mirage_track_get_number_of_indices (MIRAGE_Track *self)
  * mirage_track_add_index:
  * @self: a #MIRAGE_Track
  * @address: (in): address at which the index is to be added
- * @index: (inout) (transfer full) (allow-none): pointer to #MIRAGE_Index, %NULL pointer or %NULL
  * @error: (out) (allow-none): location to store error, or %NULL
  *
  * <para>
@@ -1165,24 +1142,15 @@ gint mirage_track_get_number_of_indices (MIRAGE_Track *self)
  * </para>
  *
  * <para>
- * If @index contains pointer to existing #MIRAGE_Index object, the object
- * is added to track. Otherwise, a new #MIRAGE_Index object is created.
- * If @index contains a %NULL pointer, a reference to newly created object is stored
- * in it; it should be released with g_object_unref() when no longer needed. If @index
- * is %NULL, no reference is returned.
- * </para>
- *
- * <para>
  * If address falls before index 01 (i.e. if it's less than address that was set
  * using mirage_track_set_track_start()), the function fails.
  * </para>
  *
  * Returns: %TRUE on success, %FALSE on failure
  **/
-gboolean mirage_track_add_index (MIRAGE_Track *self, gint address, GObject **index, GError **error)
+gboolean mirage_track_add_index (MIRAGE_Track *self, gint address, GError **error)
 {
-    GObject *new_index;
-
+    GObject *index;
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_TRACK, "%s: address: 0x%X\n", __debug__, address);
 
     /* Make sure we're not trying to put index before track start (which has index 1) */
@@ -1191,34 +1159,20 @@ gboolean mirage_track_add_index (MIRAGE_Track *self, gint address, GObject **ind
         return FALSE;
     }
 
-    /* If there's index provided, use it; else create new one */
-    if (index && *index) {
-        new_index = *index;
-        g_object_ref(new_index);
-    } else {
-        new_index = g_object_new(MIRAGE_TYPE_INDEX, NULL);
-    }
-    g_assert(new_index != NULL);
-
+    /* Increment reference counter */
+    index = g_object_new(MIRAGE_TYPE_INDEX, NULL);
     /* Set index address */
-    mirage_index_set_address(MIRAGE_INDEX(new_index), address);
+    mirage_index_set_address(MIRAGE_INDEX(index), address);
     /* Set parent */
-    mirage_object_set_parent(MIRAGE_OBJECT(new_index), G_OBJECT(self));
+    mirage_object_set_parent(MIRAGE_OBJECT(index), G_OBJECT(self));
     /* Attach child */
-    mirage_object_attach_child(MIRAGE_OBJECT(self), new_index);
+    mirage_object_attach_child(MIRAGE_OBJECT(self), index);
 
     /* Insert index into indices list */
-    self->priv->indices_list = g_list_insert_sorted(self->priv->indices_list, new_index, (GCompareFunc)sort_indices_by_address);
-    g_assert(self->priv->indices_list != NULL);
+    self->priv->indices_list = g_list_insert_sorted(self->priv->indices_list, index, (GCompareFunc)sort_indices_by_address);
 
     /* Rearrange indices; note that indices do *not* trigger a bottom-up change */
     mirage_track_rearrange_indices(self);
-
-    /* Return index to user if she wants it */
-    if (index && (*index == NULL)) {
-        g_object_ref(new_index);
-        *index = new_index;
-    }
 
     return TRUE;
 }
@@ -1241,10 +1195,9 @@ gboolean mirage_track_add_index (MIRAGE_Track *self, gint address, GObject **ind
  **/
 gboolean mirage_track_remove_index_by_number (MIRAGE_Track *self, gint number, GError **error)
 {
-    GObject *index;
-
     /* Find index by number */
-    if (!mirage_track_get_index_by_number(self, number, &index, error)) {
+    GObject *index = mirage_track_get_index_by_number(self, number, error);
+    if (!index) {
         return FALSE;
     }
 
@@ -1278,7 +1231,6 @@ void mirage_track_remove_index_by_object (MIRAGE_Track *self, GObject *index)
  * mirage_track_get_index_by_number:
  * @self: a #MIRAGE_Track
  * @number: (in): index number of index to be retrieved
- * @index: (out) (transfer full) (allow-none): location to store index, or %NULL
  * @error: (out) (allow-none): location to store error, or %NULL
  *
  * <para>
@@ -1287,48 +1239,40 @@ void mirage_track_remove_index_by_object (MIRAGE_Track *self, GObject *index)
  * If @number is out of range, regardless of the sign, the function fails.
  * </para>
  *
- * <para>
- * A reference to index is stored in @index; it should be released with
- * g_object_unref() when no longer needed.
- * </para>
- *
- * Returns: %TRUE on success, %FALSE on failure
+ * Returns: (transfer full): a #MIRAGE_Index on success, %NULL on failure.
+ * The reference to the object should be released using g_object_unref()
+ * when no longer needed.
  **/
-gboolean mirage_track_get_index_by_number (MIRAGE_Track *self, gint number, GObject **index, GError **error)
+GObject *mirage_track_get_index_by_number (MIRAGE_Track *self, gint number, GError **error)
 {
-    GObject *ret_index;
+    GObject *index;
     gint num_indices;
 
     /* First index, last index... allow negative numbers to go from behind */
     num_indices = mirage_track_get_number_of_indices(self);
     if (number < -num_indices || number >= num_indices) {
         g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_TRACK_ERROR, "Index number %d out of range!", number);
-        return FALSE;
+        return NULL;
     } else if (number < 0) {
         number += num_indices;
     }
 
     /* Get index-th item from list... */
-    ret_index = g_list_nth_data(self->priv->indices_list, number);
+    index = g_list_nth_data(self->priv->indices_list, number);
 
-    if (ret_index) {
-        /* Return index to user if she wants it */
-        if (index) {
-            g_object_ref(ret_index);
-            *index = ret_index;
-        }
-        return TRUE;
+    if (!index) {
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_TRACK_ERROR, "Index with number %d not found!", number);
+        return NULL;
     }
 
-    g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_TRACK_ERROR, "Index with number %d not found!", number);
-    return FALSE;
+    g_object_ref(index);
+    return index;
 }
 
 /**
  * mirage_track_get_index_by_address:
  * @self: a #MIRAGE_Track
  * @address: (in): address belonging to index to be retrieved
- * @index: (out) (transfer full) (allow-none): location to store index, or %NULL
  * @error: (out) (allow-none): location to store error, or %NULL
  *
  * <para>
@@ -1337,44 +1281,36 @@ gboolean mirage_track_get_index_by_number (MIRAGE_Track *self, gint number, GObj
  * start and end sector).
  * </para>
  *
- * <para>
- * A reference to index is stored in @index; it should be released with
- * g_object_unref() when no longer needed.
- * </para>
- *
- * Returns: %TRUE on success, %FALSE on failure
+ * Returns: (transfer full): a #MIRAGE_Index on success, %NULL on failure.
+ * The reference to the object should be released using g_object_unref()
+ * when no longer needed.
  **/
-gboolean mirage_track_get_index_by_address (MIRAGE_Track *self, gint address, GObject **index, GError **error)
+GObject *mirage_track_get_index_by_address (MIRAGE_Track *self, gint address, GError **error)
 {
-    GObject *ret_index;
+    GObject *index;
     GList *entry;
 
     /* Go over all indices */
-    ret_index = NULL;
+    index = NULL;
     G_LIST_FOR_EACH(entry, self->priv->indices_list) {
         GObject *cur_index = entry->data;
 
         /* We return the last index whose address doesn't surpass requested address */
         if (mirage_index_get_address(MIRAGE_INDEX(cur_index)) <= address) {
-            ret_index = cur_index;
+            index = cur_index;
         } else {
             break;
         }
     }
 
     /* If we didn't find anything... */
-    if (!ret_index) {
+    if (!index) {
         g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_TRACK_ERROR, "Index with address %d not found!", address);
         return FALSE;
     }
 
-    /* Return index to user if she wants it */
-    if (index) {
-        g_object_ref(ret_index);
-        *index = ret_index;
-    }
-
-    return TRUE;
+    g_object_ref(index);
+    return index;
 }
 
 /**
@@ -1429,7 +1365,7 @@ gint mirage_track_get_number_of_languages (MIRAGE_Track *self)
  * mirage_track_add_language:
  * @self: a #MIRAGE_Track
  * @langcode: (in): language code for the added language
- * @language: (inout) (transfer full) (allow-none): pointer to #MIRAGE_Language, %NULL pointer or %NULL
+ * @language: (in) (transfer full) (allow-none): a #MIRAGE_Language to be added
  * @error: (out) (allow-none): location to store error, or %NULL
  *
  * <para>
@@ -1441,49 +1377,31 @@ gint mirage_track_get_number_of_languages (MIRAGE_Track *self)
  * language with that code is already present in the track, the function fails.
  * </para>
  *
- * <para>
- * If @language contains pointer to existing #MIRAGE_Language object, the object
- * is added to track. Otherwise, a new #MIRAGE_Language object is created.
- * If @language contains a %NULL pointer, a reference to newly created object is stored
- * in it; it should be released with g_object_unref() when no longer needed. If @language
- * is %NULL, no reference is returned.
- * </para>
- *
  * Returns: %TRUE on success, %FALSE on failure
  **/
-gboolean mirage_track_add_language (MIRAGE_Track *self, gint langcode, GObject **language, GError **error)
+gboolean mirage_track_add_language (MIRAGE_Track *self, gint langcode, GObject *language, GError **error)
 {
-    GObject *new_language;
+    GObject *tmp_language;
 
     /* Check if language already exists */
-    if (mirage_track_get_language_by_code(self, langcode, NULL, NULL)) {
+    tmp_language = mirage_track_get_language_by_code(self, langcode, NULL);
+    if (tmp_language) {
+        g_object_unref(tmp_language);
         g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_TRACK_ERROR, "Language with language code %d already exists!", langcode);
         return FALSE;
     }
 
-    /* If there's language provided, use it; else create new one */
-    if (language && *language) {
-        new_language = *language;
-        g_object_ref(new_language);
-    } else {
-        new_language = g_object_new(MIRAGE_TYPE_LANGUAGE, NULL);
-    }
-
+    /* Increment reference counter */
+    g_object_ref(language);
     /* Set language code */
-    mirage_language_set_langcode(MIRAGE_LANGUAGE(new_language), langcode);
+    mirage_language_set_langcode(MIRAGE_LANGUAGE(language), langcode);
     /* Set parent */
-    mirage_object_set_parent(MIRAGE_OBJECT(new_language), G_OBJECT(self));
+    mirage_object_set_parent(MIRAGE_OBJECT(language), G_OBJECT(self));
     /* Attach child */
-    mirage_object_attach_child(MIRAGE_OBJECT(self), new_language);
+    mirage_object_attach_child(MIRAGE_OBJECT(self), language);
 
     /* Insert language to language list */
-    self->priv->languages_list = g_list_insert_sorted(self->priv->languages_list, new_language, (GCompareFunc)sort_languages_by_code);
-
-    /* Return language to user if she wants it */
-    if (language && (*language == NULL)) {
-        g_object_ref(new_language);
-        *language = new_language;
-    }
+    self->priv->languages_list = g_list_insert_sorted(self->priv->languages_list, language, (GCompareFunc)sort_languages_by_code);
 
     return TRUE;
 }
@@ -1508,10 +1426,9 @@ gboolean mirage_track_add_language (MIRAGE_Track *self, gint langcode, GObject *
  **/
 gboolean mirage_track_remove_language_by_index (MIRAGE_Track *self, gint index, GError **error)
 {
-    GObject *language;
-
     /* Find track by index */
-    if (!mirage_track_get_language_by_index(self, index, &language, error)) {
+    GObject *language = mirage_track_get_language_by_index(self, index, error);
+    if (!language) {
         return FALSE;
     }
 
@@ -1540,10 +1457,9 @@ gboolean mirage_track_remove_language_by_index (MIRAGE_Track *self, gint index, 
  **/
 gboolean mirage_track_remove_language_by_code (MIRAGE_Track *self, gint langcode, GError **error)
 {
-    GObject *language;
-
-    /* Find session in layout */
-    if (!mirage_track_get_language_by_code(self, langcode, &language, error)) {
+    /* Find language by code */
+    GObject *language = mirage_track_get_language_by_code(self, langcode, error);
+    if (!language) {
         return FALSE;
     }
 
@@ -1576,7 +1492,6 @@ void mirage_track_remove_language_by_object (MIRAGE_Track *self, GObject *langua
  * mirage_track_get_language_by_index:
  * @self: a #MIRAGE_Track
  * @index: (in): index of language to be retrieved
- * @language: (out) (transfer full) (allow-none): location to store language, or %NULL
  * @error: (out) (allow-none): location to store error, or %NULL
  *
  * <para>
@@ -1586,92 +1501,76 @@ void mirage_track_remove_language_by_object (MIRAGE_Track *self, GObject *langua
  * function fails.
  * </para>
  *
- * <para>
- * A reference to language is stored in @language; it should be released with
- * g_object_unref() when no longer needed.
- * </para>
- *
- * Returns: %TRUE on success, %FALSE on failure
+ * Returns: (transfer full): a #MIRAGE_Language on success, %NULL on failure.
+ * The reference to the object should be released using g_object_unref()
+ * when no longer needed.
  **/
-gboolean mirage_track_get_language_by_index (MIRAGE_Track *self, gint index, GObject **language, GError **error)
+GObject *mirage_track_get_language_by_index (MIRAGE_Track *self, gint index, GError **error)
 {
-    GObject *ret_language;
+    GObject *language;
     gint num_languages;
 
     /* First language, last language... allow negative indexes to go from behind */
     num_languages = mirage_track_get_number_of_languages(self);
     if (index < -num_languages || index >= num_languages) {
         g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_TRACK_ERROR, "Language index %d out of range!", index);
-        return FALSE;
+        return NULL;
     } else if (index < 0) {
         index += num_languages;
     }
 
     /* Get index-th item from list... */
-    ret_language = g_list_nth_data(self->priv->languages_list, index);
+    language = g_list_nth_data(self->priv->languages_list, index);
 
-    if (ret_language) {
-        /* Return language to user if she wants it */
-        if (language) {
-            g_object_ref(ret_language);
-            *language = ret_language;
-        }
-        return TRUE;
+    if (!language) {
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_TRACK_ERROR, "Language with index %d not found!", index);
+        return NULL;
     }
 
-    g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_TRACK_ERROR, "Language with index %d not found!", index);
-    return FALSE;
+    g_object_ref(language);
+    return language;
 }
 
 /**
  * mirage_track_get_language_by_code:
  * @self: a #MIRAGE_Track
  * @langcode: (in): language code of language to be retrieved
- * @language: (out) (transfer full) (allow-none): location to store language, or %NULL
  * @error: (out) (allow-none): location to store error, or %NULL
  *
  * <para>
  * Retrieves language by language code.
  * </para>
  *
- * <para>
- * A reference to language is stored in @language; it should be released with
- * g_object_unref() when no longer needed.
- * </para>
- *
- * Returns: %TRUE on success, %FALSE on failure
+ * Returns: (transfer full): a #MIRAGE_Language on success, %NULL on failure.
+ * The reference to the object should be released using g_object_unref()
+ * when no longer needed.
  **/
-gboolean mirage_track_get_language_by_code (MIRAGE_Track *self, gint langcode, GObject **language, GError **error)
+GObject *mirage_track_get_language_by_code (MIRAGE_Track *self, gint langcode, GError **error)
 {
-    GObject *ret_language;
+    GObject *language;
     GList *entry;
 
     /* Go over all languages */
-    ret_language = NULL;
+    language = NULL;
     G_LIST_FOR_EACH(entry, self->priv->languages_list) {
-        ret_language = entry->data;
+        language = entry->data;
 
         /* Break the loop if code matches */
-        if (langcode == mirage_language_get_langcode(MIRAGE_LANGUAGE(ret_language))) {
+        if (langcode == mirage_language_get_langcode(MIRAGE_LANGUAGE(language))) {
             break;
         } else {
-            ret_language = NULL;
+            language = NULL;
         }
     }
 
     /* If we didn't find anything... */
-    if (!ret_language) {
+    if (!language) {
         g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_TRACK_ERROR, "Language with language code %d not found!", langcode);
-        return FALSE;
+        return NULL;
     }
 
-    /* Return language to user if she wants it */
-    if (language) {
-        g_object_ref(ret_language);
-        *language = ret_language;
-    }
-
-    return TRUE;
+    g_object_ref(language);
+    return language;
 }
 
 /**
@@ -1708,65 +1607,63 @@ gboolean mirage_track_for_each_language (MIRAGE_Track *self, MIRAGE_CallbackFunc
 /**
  * mirage_track_get_prev:
  * @self: a #MIRAGE_Track
- * @prev_track: (out) (transfer full) (allow-none): location to store previous track, or %NULL
  * @error: (out) (allow-none): location to store error, or %NULL
  *
  * <para>
- * Retrieves track that is placed before @self in session layout. A reference
- * to track is stored in @prev_track; it should be released with g_object_unref()
- * when no longer needed.
+ * Retrieves track that is placed before @self in session layout.
  * </para>
  *
- * Returns: %TRUE on success, %FALSE on failure
+ * Returns: (transfer full): a #MIRAGE_Track on success, %NULL on failure.
+ * The reference to the object should be released using g_object_unref()
+ * when no longer needed.
  **/
-gboolean mirage_track_get_prev (MIRAGE_Track *self, GObject **prev_track, GError **error)
+GObject *mirage_track_get_prev (MIRAGE_Track *self, GError **error)
 {
     GObject *session;
-    gboolean succeeded;
+    GObject *track;
 
     /* Get parent session */
     session = mirage_object_get_parent(MIRAGE_OBJECT(self));
     if (!session) {
         g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_TRACK_ERROR, "Track is not in session layout!");
-        return FALSE;
+        return NULL;
     }
 
-    succeeded = mirage_session_get_track_before(MIRAGE_SESSION(session), G_OBJECT(self), prev_track, error);
+    track = mirage_session_get_track_before(MIRAGE_SESSION(session), G_OBJECT(self), error);
     g_object_unref(session);
 
-    return succeeded;
+    return track;
 }
 
 /**
  * mirage_track_get_next:
  * @self: a #MIRAGE_Track
- * @next_track: (out) (transfer full) (allow-none): location to store next track, or %NULL
  * @error: (out) (allow-none): location to store error, or %NULL
  *
  * <para>
- * Retrieves track that is placed after @self in session layout. A reference
- * to track is stored in @next_track; it should be released with g_object_unref()
- * when no longer needed.
+ * Retrieves track that is placed after @self in session layout
  * </para>
  *
- * Returns: %TRUE on success, %FALSE on failure
+ * Returns: (transfer full): a #MIRAGE_Track on success, %NULL on failure.
+ * The reference to the object should be released using g_object_unref()
+ * when no longer needed.
  **/
-gboolean mirage_track_get_next (MIRAGE_Track *self, GObject **next_track, GError **error)
+GObject *mirage_track_get_next (MIRAGE_Track *self, GError **error)
 {
     GObject *session;
-    gboolean succeeded;
+    GObject *track;
 
     /* Get parent session */
     session = mirage_object_get_parent(MIRAGE_OBJECT(self));
     if (!session) {
         g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_TRACK_ERROR, "Track is not in session layout!");
-        return FALSE;
+        return NULL;
     }
 
-    succeeded = mirage_session_get_track_after(MIRAGE_SESSION(session), G_OBJECT(self), next_track, error);
+    track = mirage_session_get_track_after(MIRAGE_SESSION(session), G_OBJECT(self), error);
     g_object_unref(session);
 
-    return succeeded;
+    return track;
 }
 
 
