@@ -127,8 +127,8 @@ static void mirage_parser_toc_add_track (MIRAGE_Parser_TOC *self, gchar *mode_st
         {"MODE2_RAW", MIRAGE_MODE_MODE2_MIXED, 2352},
 
     };
-    gint i;
-    for (i = 0; i < G_N_ELEMENTS(track_modes); i++) {
+
+    for (gint i = 0; i < G_N_ELEMENTS(track_modes); i++) {
         if (!mirage_helper_strcasecmp(track_modes[i].str, mode_string)) {
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: track mode: %s\n", __debug__, track_modes[i].str);
 
@@ -152,8 +152,7 @@ static void mirage_parser_toc_add_track (MIRAGE_Parser_TOC *self, gchar *mode_st
             {"RW", FR_BIN_SFILE_RW96 | FR_BIN_SFILE_INT, 96 },
         };
 
-        gint i;
-        for (i = 0; i < G_N_ELEMENTS(subchan_modes); i++) {
+        for (gint i = 0; i < G_N_ELEMENTS(subchan_modes); i++) {
             if (!mirage_helper_strcasecmp(subchan_modes[i].str, subchan_string)) {
                 MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: subchannel mode: %s\n", __debug__, subchan_modes[i].str);
                 self->priv->cur_sfile_sectsize = subchan_modes[i].sectsize;

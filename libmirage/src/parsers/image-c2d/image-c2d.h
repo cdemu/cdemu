@@ -54,7 +54,7 @@ typedef struct
     guint16 has_upc_ean; /* Boolean flag */
     gchar upc_ean[13]; /* UPC / EAN string */
     guint8 dummy1; /* (unknown) */
-    guint16 track_blocks; /* Number of track blocks  */
+    guint16 num_track_blocks; /* Number of track blocks  */
     guint32 size_cdtext; /* Size of CD-Text blocks. CD-Text blocks follows header. */
     guint32 offset_tracks; /* Offset to track blocks  */
     guint32 dummy2; /* Offset to something? || 0x00000000 */
@@ -84,7 +84,7 @@ typedef struct
 typedef struct
 {
     guint32 block_size; /* Length of this track block (44) */
-    guint32 first_sector; /* First sector in track */   
+    guint32 first_sector; /* First sector in track */
     guint32 last_sector; /* Last sector in track */
     guint64 image_offset; /* Image offset of track || 0xFFFFFFFF if index > 1 */
     guint32 sector_size; /* Bytes per sector */

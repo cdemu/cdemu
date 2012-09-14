@@ -50,7 +50,7 @@ static inline void c2d_header_block_fix_endian (C2D_HeaderBlock *block)
 {
     block->header_size = GUINT16_FROM_LE(block->header_size);
     block->has_upc_ean = GUINT16_FROM_LE(block->has_upc_ean);
-    block->track_blocks = GUINT16_FROM_LE(block->track_blocks);
+    block->num_track_blocks = GUINT16_FROM_LE(block->num_track_blocks);
     block->size_cdtext = GUINT32_FROM_LE(block->size_cdtext);
     block->offset_tracks = GUINT32_FROM_LE(block->offset_tracks);
     block->dummy2 = GUINT32_FROM_LE(block->dummy2);
@@ -210,23 +210,22 @@ static gboolean mirage_parser_c2d_parse_track_entries (MIRAGE_Parser_C2D *self, 
     gint last_point = 0;
     gint last_index = 1;
 
-    gint track;
-    gint tracks = self->priv->header_block->track_blocks;
+    gint num_tracks = self->priv->header_block->num_track_blocks;
     gint track_start = 0;
     gint track_first_sector = 0;
     gint track_last_sector = 0;
     gboolean new_track = FALSE;
 
     /* Read track entries */
-    for (track = 0; track < tracks; track++) {
-        C2D_TrackBlock *cur_tb = &self->priv->track_block[track];
+    for (gint t = 0; t < num_tracks; t++) {
+        C2D_TrackBlock *cur_tb = &self->priv->track_block[t];
         c2d_track_block_fix_endian(cur_tb);
 
         GObject *cur_session = NULL;
         GObject *cur_point = NULL;
 
         /* Read main blocks related to track */
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: TRACK BLOCK %2i:\n", __debug__, track);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: TRACK BLOCK %2i:\n", __debug__, t);
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   block size: %i\n", __debug__, cur_tb->block_size);
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   first sector: %i\n", __debug__, cur_tb->first_sector);
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   last sector: %i\n", __debug__, cur_tb->last_sector);
@@ -296,19 +295,19 @@ static gboolean mirage_parser_c2d_parse_track_entries (MIRAGE_Parser_C2D *self, 
 
         /* Set track start and calculate track's first and last sector */
         if (new_track) {
-            gint t;
+            gint n;
 
             if (cur_tb->point == 1) {
                 mirage_track_set_track_start(MIRAGE_TRACK(cur_point), 150);
             }
             track_start = mirage_track_get_track_start(MIRAGE_TRACK(cur_point));
 
-            for (t = 0; t < tracks-track; t++) {
-                if (cur_tb->point != cur_tb[t].point) break;
+            for (n = 0; n < num_tracks-t; n++) {
+                if (cur_tb->point != cur_tb[n].point) break;
             }
-            t--;
+            n--;
             track_first_sector = cur_tb->first_sector;
-            track_last_sector = cur_tb[t].last_sector;
+            track_last_sector = cur_tb[n].last_sector;
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   track's first sector: %i, last sector: %i.\n", __debug__, track_first_sector, track_last_sector);
         }
 
@@ -471,7 +470,7 @@ static gboolean mirage_parser_c2d_load_disc (MIRAGE_Parser_C2D *self, GError **e
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   Signature: %.32s\n", __debug__, hb->signature);
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   Length of header: %i\n", __debug__, hb->header_size);
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   Has UPC / EAN: %i\n", __debug__, hb->has_upc_ean);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   Track blocks: %i\n", __debug__, hb->track_blocks);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   Track blocks: %i\n", __debug__, hb->num_track_blocks);
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   Size of CD-Text block: %i\n", __debug__, hb->size_cdtext);
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   Offset to track blocks: 0x%X\n", __debug__, hb->offset_tracks);
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   Offset to C2CK block: 0x%X\n", __debug__, hb->offset_c2ck);
@@ -575,7 +574,7 @@ static GObject *mirage_parser_c2d_load_image (MIRAGE_Parser *_self, gchar **file
     c2d_header_block_fix_endian(self->priv->header_block);
 
     /* Calculate length of image descriptor data */
-    self->priv->c2d_data_length = self->priv->header_block->offset_tracks + self->priv->header_block->track_blocks * sizeof(C2D_TrackBlock);
+    self->priv->c2d_data_length = self->priv->header_block->offset_tracks + self->priv->header_block->num_track_blocks * sizeof(C2D_TrackBlock);
 
     /* Load image descriptor data */
     self->priv->c2d_data = g_try_realloc(self->priv->c2d_data, self->priv->c2d_data_length);

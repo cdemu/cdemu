@@ -771,54 +771,54 @@ gboolean mirage_fragment_daa_set_file (MIRAGE_Fragment_DAA *self, const gchar *f
     tmp_offset = 0;
     for (i = 0; i < self->priv->num_parts; i++) {
         DAA_Part *part = &self->priv->part_table[i];
-        gchar *filename = NULL;
-        gchar signature[16] = "";
+        gchar *part_filename = NULL;
+        gchar part_signature[16] = "";
         guint64 part_length = 0;
 
         /* If we have create_filename_func set, use it... otherwise we're a
            non-split image and should be using self->priv->main_filename anyway */
         if (self->priv->create_filename_func) {
-            filename = self->priv->create_filename_func(self->priv->main_filename, i);
+            part_filename = self->priv->create_filename_func(self->priv->main_filename, i);
         } else {
-            filename = g_strdup(self->priv->main_filename);
+            part_filename = g_strdup(self->priv->main_filename);
         }
 
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  part #%i: %s\n", __debug__, i, filename);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  part #%i: %s\n", __debug__, i, part_filename);
 
-        part->stream = libmirage_create_file_stream(filename, G_OBJECT(self), error);
+        part->stream = libmirage_create_file_stream(part_filename, G_OBJECT(self), error);
         if (!part->stream) {
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to open stream on file '%s'!\n", __debug__, filename);
-            g_free(filename);
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to open stream on file '%s'!\n", __debug__, part_filename);
+            g_free(part_filename);
             return FALSE;
         }
-        g_free(filename);
+        g_free(part_filename);
 
         /* Read signature */
-        if (g_input_stream_read(G_INPUT_STREAM(part->stream), signature, sizeof(signature), NULL, NULL) != sizeof(signature)) {
+        if (g_input_stream_read(G_INPUT_STREAM(part->stream), part_signature, sizeof(part_signature), NULL, NULL) != sizeof(part_signature)) {
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read part's signature!\n", __debug__);
             g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_DATA_FILE_ERROR, "Failed to read part's signature!");
             return FALSE;
         }
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   signature: %.16s\n", __debug__, signature);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   signature: %.16s\n", __debug__, part_signature);
 
-        if (!memcmp(signature, daa_main_signature, sizeof(daa_main_signature))) {
-            DAA_Main_Header header;
-            if (g_input_stream_read(G_INPUT_STREAM(part->stream), &header, sizeof(DAA_Main_Header), NULL, NULL) != sizeof(DAA_Main_Header)) {
+        if (!memcmp(part_signature, daa_main_signature, sizeof(daa_main_signature))) {
+            DAA_Main_Header part_header;
+            if (g_input_stream_read(G_INPUT_STREAM(part->stream), &part_header, sizeof(DAA_Main_Header), NULL, NULL) != sizeof(DAA_Main_Header)) {
                 MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read part's header!\n", __debug__);
                 g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_DATA_FILE_ERROR, "Failed to read part's header!");
                 return FALSE;
             }
-            daa_main_header_fix_endian(&header);
-            part->offset = header.data_offset & 0xFFFFFF;
-        } else if (!memcmp(signature, daa_part_signature, sizeof(daa_part_signature))) {
-            DAA_Part_Header header;
-            if (g_input_stream_read(G_INPUT_STREAM(part->stream), &header, sizeof(DAA_Part_Header), NULL, NULL) != sizeof(DAA_Part_Header))  {
+            daa_main_header_fix_endian(&part_header);
+            part->offset = part_header.data_offset & 0xFFFFFF;
+        } else if (!memcmp(part_signature, daa_part_signature, sizeof(daa_part_signature))) {
+            DAA_Part_Header part_header;
+            if (g_input_stream_read(G_INPUT_STREAM(part->stream), &part_header, sizeof(DAA_Part_Header), NULL, NULL) != sizeof(DAA_Part_Header))  {
                 MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read part's header!\n", __debug__);
                 g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_DATA_FILE_ERROR, "Failed to read part's header!");
                 return FALSE;
             }
-            daa_part_header_fix_endian(&header);
-            part->offset = header.data_offset & 0xFFFFFF;
+            daa_part_header_fix_endian(&part_header);
+            part->offset = part_header.data_offset & 0xFFFFFF;
         } else {
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: invalid part's signature!\n", __debug__);
             g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_PARSER_ERROR, "Part's signature is invalid!");
