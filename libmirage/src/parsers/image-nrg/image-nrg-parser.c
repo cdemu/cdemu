@@ -618,15 +618,6 @@ static gboolean mirage_parser_nrg_load_session (MIRAGE_Parser_NRG *self, gint se
                 tfile_format = FR_BIN_TFILE_DATA;
             }
 
-            /* Subchannel */
-            if (sub_sectsize) {
-                sfile_sectsize = sub_sectsize; /* We use the one from decoded mode code */
-                sfile_format = FR_BIN_SFILE_PW96_INT | FR_BIN_SFILE_INT; /* PW96 interleaved, internal */
-            } else {
-                sfile_sectsize = 0;
-                sfile_format = 0;
-            }
-
             mirage_fragment_set_length(MIRAGE_FRAGMENT(fragment), fragment_len);
 
             if (!mirage_frag_iface_binary_track_file_set_file(MIRAGE_FRAG_IFACE_BINARY(fragment), self->priv->nrg_filename, self->priv->nrg_stream, error)) {
@@ -641,8 +632,14 @@ static gboolean mirage_parser_nrg_load_session (MIRAGE_Parser_NRG *self, gint se
             mirage_frag_iface_binary_track_file_set_sectsize(MIRAGE_FRAG_IFACE_BINARY(fragment), tfile_sectsize);
             mirage_frag_iface_binary_track_file_set_format(MIRAGE_FRAG_IFACE_BINARY(fragment), tfile_format);
 
-            mirage_frag_iface_binary_subchannel_file_set_sectsize(MIRAGE_FRAG_IFACE_BINARY(fragment), sfile_sectsize);
-            mirage_frag_iface_binary_subchannel_file_set_format(MIRAGE_FRAG_IFACE_BINARY(fragment), sfile_format);
+            /* Subchannel */
+            if (sub_sectsize) {
+                sfile_sectsize = sub_sectsize; /* We use the one from decoded mode code */
+                sfile_format = FR_BIN_SFILE_PW96_INT | FR_BIN_SFILE_INT; /* PW96 interleaved, internal */
+
+                mirage_frag_iface_binary_subchannel_file_set_sectsize(MIRAGE_FRAG_IFACE_BINARY(fragment), sfile_sectsize);
+                mirage_frag_iface_binary_subchannel_file_set_format(MIRAGE_FRAG_IFACE_BINARY(fragment), sfile_format);
+            }
 
             mirage_track_add_fragment(MIRAGE_TRACK(track), -1, fragment);
 
@@ -673,15 +670,6 @@ static gboolean mirage_parser_nrg_load_session (MIRAGE_Parser_NRG *self, gint se
                 tfile_format = FR_BIN_TFILE_DATA;
             }
 
-            /* Subchannel */
-            if (sub_sectsize) {
-                sfile_sectsize = sub_sectsize; /* We use the one from decoded mode code */
-                sfile_format = FR_BIN_SFILE_PW96_INT | FR_BIN_SFILE_INT; /* PW96 interleaved, internal */
-            } else {
-                sfile_sectsize = 0;
-                sfile_format = 0;
-            }
-
             mirage_fragment_set_length(MIRAGE_FRAGMENT(fragment), fragment_len);
 
             if (!mirage_frag_iface_binary_track_file_set_file(MIRAGE_FRAG_IFACE_BINARY(fragment), self->priv->nrg_filename, self->priv->nrg_stream, error)) {
@@ -696,8 +684,14 @@ static gboolean mirage_parser_nrg_load_session (MIRAGE_Parser_NRG *self, gint se
             mirage_frag_iface_binary_track_file_set_sectsize(MIRAGE_FRAG_IFACE_BINARY(fragment), tfile_sectsize);
             mirage_frag_iface_binary_track_file_set_format(MIRAGE_FRAG_IFACE_BINARY(fragment), tfile_format);
 
-            mirage_frag_iface_binary_subchannel_file_set_sectsize(MIRAGE_FRAG_IFACE_BINARY(fragment), sfile_sectsize);
-            mirage_frag_iface_binary_subchannel_file_set_format(MIRAGE_FRAG_IFACE_BINARY(fragment), sfile_format);
+            /* Subchannel */
+            if (sub_sectsize) {
+                sfile_sectsize = sub_sectsize; /* We use the one from decoded mode code */
+                sfile_format = FR_BIN_SFILE_PW96_INT | FR_BIN_SFILE_INT; /* PW96 interleaved, internal */
+
+                mirage_frag_iface_binary_subchannel_file_set_sectsize(MIRAGE_FRAG_IFACE_BINARY(fragment), sfile_sectsize);
+                mirage_frag_iface_binary_subchannel_file_set_format(MIRAGE_FRAG_IFACE_BINARY(fragment), sfile_format);
+            }
 
             mirage_track_add_fragment(MIRAGE_TRACK(track), -1, fragment);
 
@@ -874,15 +868,6 @@ static gboolean mirage_parser_nrg_load_session_tao (MIRAGE_Parser_NRG *self, gin
                 tfile_format = FR_BIN_TFILE_DATA;
             }
 
-            /* Subchannel */
-            if (sub_sectsize) {
-                sfile_sectsize = sub_sectsize; /* We use the one from decoded mode code */
-                sfile_format = FR_BIN_SFILE_PW96_INT | FR_BIN_SFILE_INT; /* PW96 interleaved, internal */
-            } else {
-                sfile_sectsize = 0;
-                sfile_sectsize = 0;
-            }
-
             mirage_fragment_set_length(MIRAGE_FRAGMENT(fragment), fragment_len);
 
             if (!mirage_frag_iface_binary_track_file_set_file(MIRAGE_FRAG_IFACE_BINARY(fragment), self->priv->nrg_filename, self->priv->nrg_stream, error)) {
@@ -897,8 +882,14 @@ static gboolean mirage_parser_nrg_load_session_tao (MIRAGE_Parser_NRG *self, gin
             mirage_frag_iface_binary_track_file_set_sectsize(MIRAGE_FRAG_IFACE_BINARY(fragment), tfile_sectsize);
             mirage_frag_iface_binary_track_file_set_format(MIRAGE_FRAG_IFACE_BINARY(fragment), tfile_format);
 
-            mirage_frag_iface_binary_subchannel_file_set_sectsize(MIRAGE_FRAG_IFACE_BINARY(fragment), sfile_sectsize);
-            mirage_frag_iface_binary_subchannel_file_set_format(MIRAGE_FRAG_IFACE_BINARY(fragment), sfile_format);
+            /* Subchannel */
+            if (sub_sectsize) {
+                sfile_sectsize = sub_sectsize; /* We use the one from decoded mode code */
+                sfile_format = FR_BIN_SFILE_PW96_INT | FR_BIN_SFILE_INT; /* PW96 interleaved, internal */
+
+                mirage_frag_iface_binary_subchannel_file_set_sectsize(MIRAGE_FRAG_IFACE_BINARY(fragment), sfile_sectsize);
+                mirage_frag_iface_binary_subchannel_file_set_format(MIRAGE_FRAG_IFACE_BINARY(fragment), sfile_format);
+            }
 
             mirage_track_add_fragment(MIRAGE_TRACK(track), -1, fragment);
 
