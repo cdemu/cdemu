@@ -119,11 +119,7 @@ void cdemud_device_delay_begin (CDEMUD_Device *self, gint address, gint num_sect
 {
     /* Simply get current time here; we'll need it to compensate for processing
        time when performing actual delay */
-    if (gettimeofday(&self->priv->delay_begin, NULL) < 0) {
-        gchar errbuf[256] = "";
-        strerror_r(errno, errbuf, sizeof(errbuf));
-        CDEMUD_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: gettimeofday() failed: %s\n", __debug__, errbuf);
-    }
+    g_get_current_time(&self->priv->delay_begin);
 
     /* Reset delay */
     self->priv->delay_amount = 0;
@@ -134,8 +130,8 @@ void cdemud_device_delay_begin (CDEMUD_Device *self, gint address, gint num_sect
 
 void cdemud_device_delay_finalize (CDEMUD_Device *self)
 {
-    struct timeval delay_now;
-    struct timeval delay_diff;
+    GTimeVal delay_now;
+    GTimeVal delay_diff;
 
     gint delay;
 
@@ -146,20 +142,17 @@ void cdemud_device_delay_finalize (CDEMUD_Device *self)
     }
 
     /* Get current time */
-    if (gettimeofday(&delay_now, NULL) < 0) {
-        gchar errbuf[256] = "";
-        strerror_r(errno, errbuf, sizeof(errbuf));
-        CDEMUD_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: gettimeofday() failed: %s\n", __debug__, errbuf);
-        return;
-    }
+    g_get_current_time(&delay_now);
 
-    timersub(&delay_now, &self->priv->delay_begin, &delay_diff);
+    /* Calculate time difference */
+    delay_diff.tv_sec = delay_now.tv_sec - self->priv->delay_begin.tv_sec;
+    delay_diff.tv_usec = delay_now.tv_usec - self->priv->delay_begin.tv_usec;
 
     CDEMUD_DEBUG(self, DAEMON_DEBUG_DELAY, "%s: calculated delay: %i microseconds\n", __debug__, self->priv->delay_amount);
     CDEMUD_DEBUG(self, DAEMON_DEBUG_DELAY, "%s: processing time: %i seconds, %i microseconds\n", __debug__, delay_diff.tv_sec, delay_diff.tv_usec);
 
     /* Compensate for the processing time */
-    delay = self->priv->delay_amount - (delay_diff.tv_sec*1000000 + delay_diff.tv_usec);
+    delay = self->priv->delay_amount - (delay_diff.tv_sec * G_USEC_PER_SEC + delay_diff.tv_usec);
     CDEMUD_DEBUG(self, DAEMON_DEBUG_DELAY, "%s: actual delay: %i microseconds\n", __debug__, delay);
 
     if (delay < 0) {
@@ -167,10 +160,6 @@ void cdemud_device_delay_finalize (CDEMUD_Device *self)
         return;
     }
 
-    if (usleep(delay) < 0) {
-        gchar errbuf[256] = "";
-        strerror_r(errno, errbuf, sizeof(errbuf));
-        CDEMUD_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: usleep() failed: %s\n", __debug__, errbuf);
-    }
+    g_usleep(delay);
 }
 

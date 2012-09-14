@@ -82,7 +82,7 @@ struct _CDEMUD_DevicePrivate
     GList *features_list;
 
     /* Delay emulation */
-    struct timeval delay_begin;
+    GTimeVal delay_begin;
     gint delay_amount;
     gdouble current_angle;
 
