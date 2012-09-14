@@ -786,7 +786,7 @@ static inline void append_regex_rule (GList **list_ptr, const gchar *rule, CUE_R
     CUE_RegexRule *new_rule = g_new(CUE_RegexRule, 1);
     new_rule->regex = g_regex_new(rule, G_REGEX_OPTIMIZE, 0, NULL);
     new_rule->callback_func = callback;
-    /* Append to the list */ \
+    /* Append to the list */
     list = g_list_append(list, new_rule);
 
     *list_ptr = list;
