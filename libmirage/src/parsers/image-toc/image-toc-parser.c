@@ -154,7 +154,7 @@ static void mirage_parser_toc_add_track (MIRAGE_Parser_TOC *self, gchar *mode_st
 
         gint i;
         for (i = 0; i < G_N_ELEMENTS(subchan_modes); i++) {
-            if (!strcasecmp(subchan_modes[i].str, subchan_string)) {
+            if (!mirage_helper_strcasecmp(subchan_modes[i].str, subchan_string)) {
                 MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: subchannel mode: %s\n", __debug__, subchan_modes[i].str);
                 self->priv->cur_sfile_sectsize = subchan_modes[i].sectsize;
                 self->priv->cur_sfile_format = subchan_modes[i].format;

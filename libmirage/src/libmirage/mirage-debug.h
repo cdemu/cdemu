@@ -74,8 +74,8 @@ typedef enum
  * debug message @msg....
  * </para>
  **/
-#define MIRAGE_DEBUG(obj, lvl, msg...) { \
-    mirage_debuggable_debug_message(MIRAGE_DEBUGGABLE(obj), lvl, msg); \
+#define MIRAGE_DEBUG(obj, lvl, ...) { \
+    mirage_debuggable_debug_message(MIRAGE_DEBUGGABLE(obj), lvl, __VA_ARGS__); \
 }
 
 
