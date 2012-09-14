@@ -835,61 +835,67 @@ static gboolean mirage_parser_ccd_callback_track_isrc (MIRAGE_Parser_CCD *self, 
     return TRUE;
 }
 
-#define APPEND_REGEX_RULE(list,rule,callback) { \
-    CCD_RegexRule *new_rule = g_new(CCD_RegexRule, 1); \
-    new_rule->regex = g_regex_new(rule, G_REGEX_OPTIMIZE, 0, NULL); \
-    new_rule->callback_func = callback; \
-    /* Append to list */ \
-    list = g_list_append(list, new_rule); \
+
+static inline void append_regex_rule (GList **list_ptr, const gchar *rule, CCD_RegexCallback callback)
+{
+    GList *list = *list_ptr;
+
+    CCD_RegexRule *new_rule = g_new(CCD_RegexRule, 1);
+    new_rule->regex = g_regex_new(rule, G_REGEX_OPTIMIZE, 0, NULL);
+    new_rule->callback_func = callback;
+    /* Append to the list */ \
+    list = g_list_append(list, new_rule);
+
+    *list_ptr = list;
 }
 
 static void mirage_parser_ccd_init_regex_parser (MIRAGE_Parser_CCD *self)
 {
     /* Ignore empty lines */
-    APPEND_REGEX_RULE(self->priv->regex_rules, "^[\\s]*$", NULL);
+    append_regex_rule(&self->priv->regex_rules, "^[\\s]*$", NULL);
 
     /* Section rules */
-    APPEND_REGEX_RULE(self->priv->regex_rules, "^\\s*\\[CloneCD\\]", mirage_parser_ccd_callback_clonecd);
-    APPEND_REGEX_RULE(self->priv->regex_rules, "^\\s*\\[Disc\\]", mirage_parser_ccd_callback_disc);
-    APPEND_REGEX_RULE(self->priv->regex_rules, "^\\s*\\[Session\\s*(?<number>\\d+)\\]", mirage_parser_ccd_callback_session);
-    APPEND_REGEX_RULE(self->priv->regex_rules, "^\\s*\\[Entry\\s*(?<number>\\d+)\\]", mirage_parser_ccd_callback_entry);
-    APPEND_REGEX_RULE(self->priv->regex_rules, "^\\s*\\[TRACK\\s*(?<number>\\d+)\\]", mirage_parser_ccd_callback_track);
+    append_regex_rule(&self->priv->regex_rules, "^\\s*\\[CloneCD\\]", mirage_parser_ccd_callback_clonecd);
+    append_regex_rule(&self->priv->regex_rules, "^\\s*\\[Disc\\]", mirage_parser_ccd_callback_disc);
+    append_regex_rule(&self->priv->regex_rules, "^\\s*\\[Session\\s*(?<number>\\d+)\\]", mirage_parser_ccd_callback_session);
+    append_regex_rule(&self->priv->regex_rules, "^\\s*\\[Entry\\s*(?<number>\\d+)\\]", mirage_parser_ccd_callback_entry);
+    append_regex_rule(&self->priv->regex_rules, "^\\s*\\[TRACK\\s*(?<number>\\d+)\\]", mirage_parser_ccd_callback_track);
 
     /* [CloneCD] rules */
-    APPEND_REGEX_RULE(self->priv->regex_rules_clonecd, "^\\s*Version\\s*=\\s*(?<value>\\d+)", mirage_parser_ccd_callback_clonecd_version);
+    append_regex_rule(&self->priv->regex_rules_clonecd, "^\\s*Version\\s*=\\s*(?<value>\\d+)", mirage_parser_ccd_callback_clonecd_version);
 
     /* [Disc] rules */
-    APPEND_REGEX_RULE(self->priv->regex_rules_disc, "^\\s*TocEntries\\s*=\\s*(?<value>\\d+)", mirage_parser_ccd_callback_disc_toc_entries);
-    APPEND_REGEX_RULE(self->priv->regex_rules_disc, "^\\s*Sessions\\s*=\\s*(?<value>\\d+)", mirage_parser_ccd_callback_disc_sessions);
-    APPEND_REGEX_RULE(self->priv->regex_rules_disc, "^\\s*DataTracksScrambled\\s*=\\s*(?<value>\\d+)", mirage_parser_ccd_callback_disc_data_tracks_scrambled);
-    APPEND_REGEX_RULE(self->priv->regex_rules_disc, "^\\s*CDTextLength\\s*=\\s*(?<value>\\d+)", mirage_parser_ccd_callback_disc_cdtext_length);
-    APPEND_REGEX_RULE(self->priv->regex_rules_disc, "^\\s*CATALOG\\s*=\\s*(?<value>\\w+)", mirage_parser_ccd_callback_disc_catalog);
+    append_regex_rule(&self->priv->regex_rules_disc, "^\\s*TocEntries\\s*=\\s*(?<value>\\d+)", mirage_parser_ccd_callback_disc_toc_entries);
+    append_regex_rule(&self->priv->regex_rules_disc, "^\\s*Sessions\\s*=\\s*(?<value>\\d+)", mirage_parser_ccd_callback_disc_sessions);
+    append_regex_rule(&self->priv->regex_rules_disc, "^\\s*DataTracksScrambled\\s*=\\s*(?<value>\\d+)", mirage_parser_ccd_callback_disc_data_tracks_scrambled);
+    append_regex_rule(&self->priv->regex_rules_disc, "^\\s*CDTextLength\\s*=\\s*(?<value>\\d+)", mirage_parser_ccd_callback_disc_cdtext_length);
+    append_regex_rule(&self->priv->regex_rules_disc, "^\\s*CATALOG\\s*=\\s*(?<value>\\w+)", mirage_parser_ccd_callback_disc_catalog);
 
     /* [Session X] rules */
-    APPEND_REGEX_RULE(self->priv->regex_rules_session, "^\\s*PreGapMode\\s*=\\s*(?<value>\\d+)", mirage_parser_ccd_callback_session_pregap_mode);
-    APPEND_REGEX_RULE(self->priv->regex_rules_session, "^\\s*PreGapSubC\\s*=\\s*(?<value>\\d+)", mirage_parser_ccd_callback_session_pregap_subc);
+    append_regex_rule(&self->priv->regex_rules_session, "^\\s*PreGapMode\\s*=\\s*(?<value>\\d+)", mirage_parser_ccd_callback_session_pregap_mode);
+    append_regex_rule(&self->priv->regex_rules_session, "^\\s*PreGapSubC\\s*=\\s*(?<value>\\d+)", mirage_parser_ccd_callback_session_pregap_subc);
 
     /* [Entry X] rules */
-    APPEND_REGEX_RULE(self->priv->regex_rules_entry, "^\\s*Session\\s*=\\s*(?<value>\\d+)", mirage_parser_ccd_callback_entry_session);
-    APPEND_REGEX_RULE(self->priv->regex_rules_entry, "^\\s*Point\\s*=\\s*(?<value>[\\w+]+)", mirage_parser_ccd_callback_entry_point);
-    APPEND_REGEX_RULE(self->priv->regex_rules_entry, "^\\s*ADR\\s*=\\s*(?<value>\\w+)", mirage_parser_ccd_callback_entry_adr);
-    APPEND_REGEX_RULE(self->priv->regex_rules_entry, "^\\s*Control\\s*=\\s*(?<value>\\w+)", mirage_parser_ccd_callback_entry_control);
-    APPEND_REGEX_RULE(self->priv->regex_rules_entry, "^\\s*TrackNo\\s*=\\s*(?<value>\\d+)", mirage_parser_ccd_callback_entry_trackno);
-    APPEND_REGEX_RULE(self->priv->regex_rules_entry, "^\\s*AMin\\s*=\\s*(?<value>\\d+)", mirage_parser_ccd_callback_entry_amin);
-    APPEND_REGEX_RULE(self->priv->regex_rules_entry, "^\\s*ASec\\s*=\\s*(?<value>\\d+)", mirage_parser_ccd_callback_entry_asec);
-    APPEND_REGEX_RULE(self->priv->regex_rules_entry, "^\\s*AFrame\\s*=\\s*(?<value>\\d+)", mirage_parser_ccd_callback_entry_aframe);
-    APPEND_REGEX_RULE(self->priv->regex_rules_entry, "^\\s*ALBA\\s*=\\s*(?<value>-?\\d+)", mirage_parser_ccd_callback_entry_alba);
-    APPEND_REGEX_RULE(self->priv->regex_rules_entry, "^\\s*Zero\\s*=\\s*(?<value>\\d+)", mirage_parser_ccd_callback_entry_zero);
-    APPEND_REGEX_RULE(self->priv->regex_rules_entry, "^\\s*PMin\\s*=\\s*(?<value>\\d+)", mirage_parser_ccd_callback_entry_pmin);
-    APPEND_REGEX_RULE(self->priv->regex_rules_entry, "^\\s*PSec\\s*=\\s*(?<value>\\d+)", mirage_parser_ccd_callback_entry_psec);
-    APPEND_REGEX_RULE(self->priv->regex_rules_entry, "^\\s*PFrame\\s*=\\s*(?<value>\\d+)", mirage_parser_ccd_callback_entry_pframe);
-    APPEND_REGEX_RULE(self->priv->regex_rules_entry, "^\\s*PLBA\\s*=\\s*(?<value>\\d+)", mirage_parser_ccd_callback_entry_plba);
+    append_regex_rule(&self->priv->regex_rules_entry, "^\\s*Session\\s*=\\s*(?<value>\\d+)", mirage_parser_ccd_callback_entry_session);
+    append_regex_rule(&self->priv->regex_rules_entry, "^\\s*Point\\s*=\\s*(?<value>[\\w+]+)", mirage_parser_ccd_callback_entry_point);
+    append_regex_rule(&self->priv->regex_rules_entry, "^\\s*ADR\\s*=\\s*(?<value>\\w+)", mirage_parser_ccd_callback_entry_adr);
+    append_regex_rule(&self->priv->regex_rules_entry, "^\\s*Control\\s*=\\s*(?<value>\\w+)", mirage_parser_ccd_callback_entry_control);
+    append_regex_rule(&self->priv->regex_rules_entry, "^\\s*TrackNo\\s*=\\s*(?<value>\\d+)", mirage_parser_ccd_callback_entry_trackno);
+    append_regex_rule(&self->priv->regex_rules_entry, "^\\s*AMin\\s*=\\s*(?<value>\\d+)", mirage_parser_ccd_callback_entry_amin);
+    append_regex_rule(&self->priv->regex_rules_entry, "^\\s*ASec\\s*=\\s*(?<value>\\d+)", mirage_parser_ccd_callback_entry_asec);
+    append_regex_rule(&self->priv->regex_rules_entry, "^\\s*AFrame\\s*=\\s*(?<value>\\d+)", mirage_parser_ccd_callback_entry_aframe);
+    append_regex_rule(&self->priv->regex_rules_entry, "^\\s*ALBA\\s*=\\s*(?<value>-?\\d+)", mirage_parser_ccd_callback_entry_alba);
+    append_regex_rule(&self->priv->regex_rules_entry, "^\\s*Zero\\s*=\\s*(?<value>\\d+)", mirage_parser_ccd_callback_entry_zero);
+    append_regex_rule(&self->priv->regex_rules_entry, "^\\s*PMin\\s*=\\s*(?<value>\\d+)", mirage_parser_ccd_callback_entry_pmin);
+    append_regex_rule(&self->priv->regex_rules_entry, "^\\s*PSec\\s*=\\s*(?<value>\\d+)", mirage_parser_ccd_callback_entry_psec);
+    append_regex_rule(&self->priv->regex_rules_entry, "^\\s*PFrame\\s*=\\s*(?<value>\\d+)", mirage_parser_ccd_callback_entry_pframe);
+    append_regex_rule(&self->priv->regex_rules_entry, "^\\s*PLBA\\s*=\\s*(?<value>\\d+)", mirage_parser_ccd_callback_entry_plba);
 
     /* [TRACK X] rules */
-    APPEND_REGEX_RULE(self->priv->regex_rules_track, "^\\s*MODE\\s*=\\s*(?<value>\\d+)", mirage_parser_ccd_callback_track_mode);
-    APPEND_REGEX_RULE(self->priv->regex_rules_track, "^\\s*INDEX\\s*0\\s*=\\s*(?<value>\\d+)", mirage_parser_ccd_callback_track_index0);
-    APPEND_REGEX_RULE(self->priv->regex_rules_track, "^\\s*INDEX\\s*1\\s*=\\s*(?<value>\\d+)", mirage_parser_ccd_callback_track_index1);
-    APPEND_REGEX_RULE(self->priv->regex_rules_track, "^\\s*ISRC\\s*=\\s*(?<value>\\w+)", mirage_parser_ccd_callback_track_isrc);
+    append_regex_rule(&self->priv->regex_rules_track, "^\\s*MODE\\s*=\\s*(?<value>\\d+)", mirage_parser_ccd_callback_track_mode);
+    append_regex_rule(&self->priv->regex_rules_track, "^\\s*INDEX\\s*0\\s*=\\s*(?<value>\\d+)", mirage_parser_ccd_callback_track_index0);
+    append_regex_rule(&self->priv->regex_rules_track, "^\\s*INDEX\\s*1\\s*=\\s*(?<value>\\d+)", mirage_parser_ccd_callback_track_index1);
+    append_regex_rule(&self->priv->regex_rules_track, "^\\s*ISRC\\s*=\\s*(?<value>\\w+)", mirage_parser_ccd_callback_track_isrc);
 }
 
 static void free_regex_rules (GList *rules)

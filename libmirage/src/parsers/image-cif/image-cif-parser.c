@@ -55,37 +55,37 @@ struct _MIRAGE_Parser_CIFPrivate
 /**********************************************************************\
  *                           Debug helpers                            *
 \**********************************************************************/
-static inline const gchar *debug_image_type (gint type)
+static inline const gchar *debug_image_type (CIF_Image type)
 {
     switch (type) {
-        case CIF_IMAGE_DATA: return "Data CD";
-        case CIF_IMAGE_MIXED: return "MixedMode CD";
-        case CIF_IMAGE_MUSIC: return "Music CD";
-        case CIF_IMAGE_ENCHANCED: return "Enchanced CD";
-        case CIF_IMAGE_VIDEO: return "Video CD";
-        case CIF_IMAGE_BOOTABLE: return "Bootable CD";
-        case CIF_IMAGE_MP3: return "MP3 CD";
+        case DATA: return "Data CD";
+        case MIXED: return "MixedMode CD";
+        case MUSIC: return "Music CD";
+        case ENCHANCED: return "Enchanced CD";
+        case VIDEO: return "Video CD";
+        case BOOTABLE: return "Bootable CD";
+        case MP3: return "MP3 CD";
         default: return "UNKNOWN";
     }
 }
 
-static inline const gchar *debug_session_type (gint type)
+static inline const gchar *debug_session_type (CIF_Session type)
 {
     switch (type) {
-        case CIF_SESSION_CDDA: return "CD-DA";
-        case CIF_SESSION_CDROM: return "CD-ROM";
-        case CIF_SESSION_CDROMXA: return "CD-ROM XA";
+        case CDDA: return "CD-DA";
+        case CDROM: return "CD-ROM";
+        case CDROMXA: return "CD-ROM XA";
         default: return "UNKNOWN";
     }
 }
 
-static inline const gchar *debug_track_type (gint type)
+static inline const gchar *debug_track_type (CIF_Track type)
 {
     switch (type) {
-        case CIF_TRACK_AUDIO: return "Audio";
-        case CIF_TRACK_MODE1: return "Mode 1";
-        case CIF_TRACK_MODE2_FORM1: return "Mode 2 Form 1";
-        case CIF_TRACK_MODE2_MIXED: return "Mode 2 Mixed";
+        case AUDIO: return "Audio";
+        case MODE1: return "Mode 1";
+        case MODE2_FORM1: return "Mode 2 Form 1";
+        case MODE2_MIXED: return "Mode 2 Mixed";
         default: return "UNKNOWN";
     }
 }
@@ -182,7 +182,7 @@ static GObject *mirage_parser_cif_parse_track_descriptor (MIRAGE_Parser_CIF *sel
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  - dummy7: %d\n", __debug__, descriptor->dummy7);
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  - sector data size: %d (0x%X)\n", __debug__, descriptor->sector_data_size, descriptor->sector_data_size);
 
-    if (descriptor->type == CIF_TRACK_AUDIO) {
+    if ((CIF_Track) descriptor->type == AUDIO) {
         audio_descriptor->fadein_length = GUINT16_FROM_LE(audio_descriptor->fadein_length);
         audio_descriptor->fadeout_length = GUINT16_FROM_LE(audio_descriptor->fadeout_length);
 
@@ -201,23 +201,23 @@ static GObject *mirage_parser_cif_parse_track_descriptor (MIRAGE_Parser_CIF *sel
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "\n");
 
     /* Set track mode */
-    switch (descriptor->type) {
-        case CIF_TRACK_AUDIO: {
+    switch ((CIF_Track) descriptor->type) {
+        case AUDIO: {
             track_mode = MIRAGE_MODE_AUDIO;
             sector_size = 2352;
             break;
         }
-        case CIF_TRACK_MODE1: {
+        case MODE1: {
             track_mode = MIRAGE_MODE_MODE1;
             sector_size = 2048;
             break;
         }
-        case CIF_TRACK_MODE2_FORM1: {
+        case MODE2_FORM1: {
             track_mode = MIRAGE_MODE_MODE2_FORM1;
             sector_size = 2056;
             break;
         }
-        case CIF_TRACK_MODE2_MIXED: {
+        case MODE2_MIXED: {
             track_mode = MIRAGE_MODE_MODE2_MIXED;
             sector_size = 2332;
             break;
@@ -264,7 +264,7 @@ static GObject *mirage_parser_cif_parse_track_descriptor (MIRAGE_Parser_CIF *sel
     /* Set offset, length, sector size and data type */
     mirage_frag_iface_binary_track_file_set_offset(MIRAGE_FRAG_IFACE_BINARY(fragment), offset_entry->offset);
     mirage_frag_iface_binary_track_file_set_sectsize(MIRAGE_FRAG_IFACE_BINARY(fragment), sector_size);
-    if (descriptor->type == CIF_TRACK_AUDIO) {
+    if ((CIF_Track) descriptor->type == AUDIO) {
         mirage_frag_iface_binary_track_file_set_format(MIRAGE_FRAG_IFACE_BINARY(fragment), FR_BIN_TFILE_AUDIO);
     } else {
         mirage_frag_iface_binary_track_file_set_format(MIRAGE_FRAG_IFACE_BINARY(fragment), FR_BIN_TFILE_DATA);
@@ -314,16 +314,16 @@ static GObject *mirage_parser_cif_parse_session_descriptor (MIRAGE_Parser_CIF *s
     session = g_object_new(MIRAGE_TYPE_SESSION, NULL);
 
     /* Set session type */
-    switch (descriptor->session_type) {
-        case CIF_SESSION_CDDA: {
+    switch ((CIF_Session) descriptor->session_type) {
+        case CDDA: {
             mirage_session_set_session_type(MIRAGE_SESSION(session), MIRAGE_SESSION_CD_DA);
             break;
         }
-        case CIF_SESSION_CDROM: {
+        case CDROM: {
             mirage_session_set_session_type(MIRAGE_SESSION(session), MIRAGE_SESSION_CD_ROM);
             break;
         }
-        case CIF_SESSION_CDROMXA: {
+        case CDROMXA: {
             mirage_session_set_session_type(MIRAGE_SESSION(session), MIRAGE_SESSION_CD_ROM_XA);
             break;
         }

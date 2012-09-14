@@ -33,16 +33,20 @@ G_BEGIN_DECLS
 #define C2D_SIGNATURE_1 "Adaptec CeQuadrat VirtualCD File"
 #define C2D_SIGNATURE_2 "Roxio Image File Format 3.0"
 
-#define C2D_FLAG_COPYRIGHT   0x01 /* Copyright */
-#define C2D_FLAG_PREEMPHASIS 0x02 /* Pre-emphasis */
-#define C2D_FLAG_DATA        0x04 /* Set on data tracks. */
-#define C2D_FLAG_UNKNOWN     0x08 /* ? */
-#define C2D_FLAG_O           0x10 /* WinOnCD says it is the "O" flag. */
+typedef enum {
+    COPYRIGHT   = 0x01, /* Copyright */
+    PREEMPHASIS = 0x02, /* Pre-emphasis */
+    DATA        = 0x04, /* Set on data tracks. */
+    UNKNOWN     = 0x08, /* ? */
+    O           = 0x10 /* WinOnCD says it is the "O" flag. */
+} C2D_Flag;
 
-#define C2D_MODE_AUDIO  0x00 /* CD-DA */
-#define C2D_MODE_MODE1  0x01 /* CD-ROM */
-#define C2D_MODE_MODE2  0x02 /* CD-ROM XA */
-#define C2D_MODE_AUDIO2 0xFF /* CD-DA */
+typedef enum {
+    AUDIO  = 0x00, /* CD-DA */
+    MODE1  = 0x01, /* CD-ROM */
+    MODE2  = 0x02, /* CD-ROM XA */
+    AUDIO2 = 0xFF /* CD-DA */
+} C2D_Mode;
 
 
 #pragma pack(1)

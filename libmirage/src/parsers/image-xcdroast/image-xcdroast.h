@@ -16,7 +16,7 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
- 
+
 #ifndef __IMAGE_XCDROAST_H__
 #define __IMAGE_XDCROAST_H__
 
@@ -48,8 +48,10 @@ typedef struct
     gchar *file;
 } TOC_Track;
 
-#define TRACK_TYPE_DATA  0
-#define TRACK_TYPE_AUDIO 1
+typedef enum {
+    DATA  = 0,
+    AUDIO = 1
+} TrackType;
 
 typedef struct
 {
@@ -65,7 +67,7 @@ typedef struct
     gint type; /* 0: data,  1: audio */
 
     gint rec_type; /* 0: incremental, 1: uninterrupted */
-    
+
     gint preemp; /* 0: linear, 1: preemp */
     gint copyperm; /* 0: denied, 1: allowed */
     gint stereo; /* 0: quadro, 1: stereo */

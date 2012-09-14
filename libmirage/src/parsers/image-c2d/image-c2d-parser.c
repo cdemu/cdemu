@@ -112,9 +112,9 @@ static inline void c2d_wocd_block_fix_endian (C2D_WOCDBlock *block)
 /**********************************************************************\
  *                          Parsing functions                         *
 \**********************************************************************/
-static gint mirage_parser_c2d_convert_track_mode (MIRAGE_Parser_C2D *self, guint32 mode, guint16 sector_size)
+static gint mirage_parser_c2d_convert_track_mode (MIRAGE_Parser_C2D *self, C2D_Mode mode, guint16 sector_size)
 {
-    if ((mode == C2D_MODE_AUDIO) || (mode == C2D_MODE_AUDIO2)) {
+    if ((mode == AUDIO) || (mode == AUDIO2)) {
         switch (sector_size) {
             case 2352: {
                 return MIRAGE_MODE_AUDIO;
@@ -127,7 +127,7 @@ static gint mirage_parser_c2d_convert_track_mode (MIRAGE_Parser_C2D *self, guint
                 return -1;
             }
         }
-    } else if (mode == C2D_MODE_MODE1) {
+    } else if (mode == MODE1) {
         switch (sector_size) {
             case 2048: {
                 return MIRAGE_MODE_MODE1;
@@ -140,7 +140,7 @@ static gint mirage_parser_c2d_convert_track_mode (MIRAGE_Parser_C2D *self, guint
                 return -1;
             }
         }
-    } else if (mode == C2D_MODE_MODE2) {
+    } else if (mode == MODE2) {
         switch (sector_size) {
             case 2048: {
                 return MIRAGE_MODE_MODE2_FORM1;

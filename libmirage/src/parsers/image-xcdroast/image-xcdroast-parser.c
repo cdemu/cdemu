@@ -116,8 +116,8 @@ static gboolean mirage_parser_xcdroast_add_track (MIRAGE_Parser_XCDROAST *self, 
 
 
     /* Setup basic track info, add fragment */
-    switch (track_info->type) {
-        case TRACK_TYPE_DATA: {
+    switch ((TrackType) track_info->type) {
+        case DATA: {
             /* Data (Mode 1) track */
             mirage_track_set_mode(MIRAGE_TRACK(track), MIRAGE_MODE_MODE1);
 
@@ -165,7 +165,7 @@ static gboolean mirage_parser_xcdroast_add_track (MIRAGE_Parser_XCDROAST *self, 
 
             break;
         }
-        case TRACK_TYPE_AUDIO: {
+        case AUDIO: {
             /* Audio track */
             mirage_track_set_mode(MIRAGE_TRACK(track), MIRAGE_MODE_AUDIO);
 
@@ -221,7 +221,7 @@ static gboolean mirage_parser_xcdroast_add_track (MIRAGE_Parser_XCDROAST *self, 
 
         /* This is valid only for audio track (because data track in non-stereo
            by default */
-        if (track_info->type == TRACK_TYPE_AUDIO && !self->priv->xinf_track.stereo) flags |= MIRAGE_TRACKF_FOURCHANNEL;
+        if ((TrackType) track_info->type == AUDIO && !self->priv->xinf_track.stereo) flags |= MIRAGE_TRACKF_FOURCHANNEL;
 
         mirage_track_set_flags(MIRAGE_TRACK(track), flags);
     }
@@ -239,8 +239,7 @@ static gboolean mirage_parser_xcdroast_add_track (MIRAGE_Parser_XCDROAST *self, 
 \**********************************************************************/
 typedef gboolean (*XCDROAST_RegexCallback) (MIRAGE_Parser_XCDROAST *self, GMatchInfo *match_info, GError **error);
 
-typedef struct
-{
+typedef struct {
     GRegex *regex;
     XCDROAST_RegexCallback callback_func;
 } XCDROAST_RegexRule;
@@ -501,52 +500,58 @@ static gboolean mirage_parser_xcdroast_callback_xinf_cd_discid (MIRAGE_Parser_XC
     return TRUE;
 }
 
-#define APPEND_REGEX_RULE(list,rule,callback) { \
-    XCDROAST_RegexRule *new_rule = g_new(XCDROAST_RegexRule, 1); \
-    new_rule->regex = g_regex_new(rule, G_REGEX_OPTIMIZE, 0, NULL); \
-    new_rule->callback_func = callback; \
+
+static inline void append_regex_rule (GList **list_ptr, const gchar *rule, XCDROAST_RegexCallback callback)
+{
+    GList *list = *list_ptr;
+
+    XCDROAST_RegexRule *new_rule = g_new(XCDROAST_RegexRule, 1);
+    new_rule->regex = g_regex_new(rule, G_REGEX_OPTIMIZE, 0, NULL);
+    new_rule->callback_func = callback;
     /* Append to the list */ \
-    list = g_list_append(list, new_rule); \
+    list = g_list_append(list, new_rule);
+
+    *list_ptr = list;
 }
 
 static void mirage_parser_xcdroast_init_regex_parser (MIRAGE_Parser_XCDROAST *self)
 {
     /* *** TOC parser *** */
     /* Ignore empty lines */
-    APPEND_REGEX_RULE(self->priv->regex_rules_toc, "^[\\s]*$", NULL);
+    append_regex_rule(&self->priv->regex_rules_toc, "^[\\s]*$", NULL);
 
     /* Comment */
-    APPEND_REGEX_RULE(self->priv->regex_rules_toc, "^#(?<comment>.*)$", mirage_parser_xcdroast_callback_toc_comment);
+    append_regex_rule(&self->priv->regex_rules_toc, "^#(?<comment>.*)$", mirage_parser_xcdroast_callback_toc_comment);
     /* Store pointer to comment's regex rule */
     GList *elem_comment = g_list_last(self->priv->regex_rules_toc);
     XCDROAST_RegexRule *rule_comment = elem_comment->data;
     self->priv->regex_comment_ptr = rule_comment->regex;
 
-    APPEND_REGEX_RULE(self->priv->regex_rules_toc, "^\\s*cdtitle\\s*=\\s*\"(?<cdtitle>.*)\"\\s*$", mirage_parser_xcdroast_callback_toc_cdtitle);
-    APPEND_REGEX_RULE(self->priv->regex_rules_toc, "^\\s*cdsize\\s*=\\s*(?<cdsize>[\\d]+)\\s*$", mirage_parser_xcdroast_callback_toc_cdsize);
-    APPEND_REGEX_RULE(self->priv->regex_rules_toc, "^\\s*discid\\s*=\\s*\"(?<discid>[\\w]+)\"\\s*$", mirage_parser_xcdroast_callback_toc_discid);
+    append_regex_rule(&self->priv->regex_rules_toc, "^\\s*cdtitle\\s*=\\s*\"(?<cdtitle>.*)\"\\s*$", mirage_parser_xcdroast_callback_toc_cdtitle);
+    append_regex_rule(&self->priv->regex_rules_toc, "^\\s*cdsize\\s*=\\s*(?<cdsize>[\\d]+)\\s*$", mirage_parser_xcdroast_callback_toc_cdsize);
+    append_regex_rule(&self->priv->regex_rules_toc, "^\\s*discid\\s*=\\s*\"(?<discid>[\\w]+)\"\\s*$", mirage_parser_xcdroast_callback_toc_discid);
 
-    APPEND_REGEX_RULE(self->priv->regex_rules_toc, "^\\s*track\\s*=\\s*(?<track>[\\d]+)\\s*$", mirage_parser_xcdroast_callback_toc_track);
-    APPEND_REGEX_RULE(self->priv->regex_rules_toc, "^\\s*type\\s*=\\s*(?<type>[\\d]+)\\s*$", mirage_parser_xcdroast_callback_toc_type);
-    APPEND_REGEX_RULE(self->priv->regex_rules_toc, "^\\s*size\\s*=\\s*(?<size>[\\d]+)\\s*$", mirage_parser_xcdroast_callback_toc_size);
-    APPEND_REGEX_RULE(self->priv->regex_rules_toc, "^\\s*startsec\\s*=\\s*(?<startsec>[\\d]+)\\s*$", mirage_parser_xcdroast_callback_toc_startsec);
-    APPEND_REGEX_RULE(self->priv->regex_rules_toc, "^\\s*file\\s*=\\s*\"(?<file>.+)\"\\s*$", mirage_parser_xcdroast_callback_toc_file);
+    append_regex_rule(&self->priv->regex_rules_toc, "^\\s*track\\s*=\\s*(?<track>[\\d]+)\\s*$", mirage_parser_xcdroast_callback_toc_track);
+    append_regex_rule(&self->priv->regex_rules_toc, "^\\s*type\\s*=\\s*(?<type>[\\d]+)\\s*$", mirage_parser_xcdroast_callback_toc_type);
+    append_regex_rule(&self->priv->regex_rules_toc, "^\\s*size\\s*=\\s*(?<size>[\\d]+)\\s*$", mirage_parser_xcdroast_callback_toc_size);
+    append_regex_rule(&self->priv->regex_rules_toc, "^\\s*startsec\\s*=\\s*(?<startsec>[\\d]+)\\s*$", mirage_parser_xcdroast_callback_toc_startsec);
+    append_regex_rule(&self->priv->regex_rules_toc, "^\\s*file\\s*=\\s*\"(?<file>.+)\"\\s*$", mirage_parser_xcdroast_callback_toc_file);
 
     /* *** XINF parser ***/
-    APPEND_REGEX_RULE(self->priv->regex_rules_xinf, "^#(?<comment>.*)$", mirage_parser_xcdroast_callback_xinf_comment);
-    APPEND_REGEX_RULE(self->priv->regex_rules_xinf, "^\\s*file\\s*=\\s*\"(?<file>.+)\"\\s*$", mirage_parser_xcdroast_callback_xinf_file);
-    APPEND_REGEX_RULE(self->priv->regex_rules_xinf, "^\\s*track\\s*=\\s*(?<track>[\\d]+)\\s+of\\s*(?<num_tracks>[\\d]+)\\s*$", mirage_parser_xcdroast_callback_xinf_track);
-    APPEND_REGEX_RULE(self->priv->regex_rules_xinf, "^\\s*title\\s*=\\s*\"(?<title>.*)\"\\s*$", mirage_parser_xcdroast_callback_xinf_title);
-    APPEND_REGEX_RULE(self->priv->regex_rules_xinf, "^\\s*artist\\s*=\\s*\"(?<artist>.*)\"\\s*$", mirage_parser_xcdroast_callback_xinf_artist);
-    APPEND_REGEX_RULE(self->priv->regex_rules_xinf, "^\\s*size\\s*=\\s*(?<size>[\\d]+)\\s*$", mirage_parser_xcdroast_callback_xinf_size);
-    APPEND_REGEX_RULE(self->priv->regex_rules_xinf, "^\\s*type\\s*=\\s*(?<type>[\\d]+)\\s*$", mirage_parser_xcdroast_callback_xinf_type);
-    APPEND_REGEX_RULE(self->priv->regex_rules_xinf, "^\\s*rec_type\\s*=\\s*(?<rec_type>[\\d]+)\\s*$", mirage_parser_xcdroast_callback_xinf_rec_type);
-    APPEND_REGEX_RULE(self->priv->regex_rules_xinf, "^\\s*preemp\\s*=\\s*(?<preemp>[\\d]+)\\s*$", mirage_parser_xcdroast_callback_xinf_preemp);
-    APPEND_REGEX_RULE(self->priv->regex_rules_xinf, "^\\s*copyperm\\s*=\\s*(?<copyperm>[\\d]+)\\s*$", mirage_parser_xcdroast_callback_xinf_copyperm);
-    APPEND_REGEX_RULE(self->priv->regex_rules_xinf, "^\\s*stereo\\s*=\\s*(?<stereo>[\\d]+)\\s*$", mirage_parser_xcdroast_callback_xinf_stereo);
-    APPEND_REGEX_RULE(self->priv->regex_rules_xinf, "^\\s*cd_title\\s*=\\s*\"(?<cd_title>.*)\"\\s*$", mirage_parser_xcdroast_callback_xinf_cd_title);
-    APPEND_REGEX_RULE(self->priv->regex_rules_xinf, "^\\s*cd_artist\\s*=\\s*\"(?<cd_artist>.*)\"\\s*$", mirage_parser_xcdroast_callback_xinf_cd_artist);
-    APPEND_REGEX_RULE(self->priv->regex_rules_xinf, "^\\s*cd_discid\\s*=\\s*\"(?<cd_discid>.*)\"\\s*$", mirage_parser_xcdroast_callback_xinf_cd_discid);
+    append_regex_rule(&self->priv->regex_rules_xinf, "^#(?<comment>.*)$", mirage_parser_xcdroast_callback_xinf_comment);
+    append_regex_rule(&self->priv->regex_rules_xinf, "^\\s*file\\s*=\\s*\"(?<file>.+)\"\\s*$", mirage_parser_xcdroast_callback_xinf_file);
+    append_regex_rule(&self->priv->regex_rules_xinf, "^\\s*track\\s*=\\s*(?<track>[\\d]+)\\s+of\\s*(?<num_tracks>[\\d]+)\\s*$", mirage_parser_xcdroast_callback_xinf_track);
+    append_regex_rule(&self->priv->regex_rules_xinf, "^\\s*title\\s*=\\s*\"(?<title>.*)\"\\s*$", mirage_parser_xcdroast_callback_xinf_title);
+    append_regex_rule(&self->priv->regex_rules_xinf, "^\\s*artist\\s*=\\s*\"(?<artist>.*)\"\\s*$", mirage_parser_xcdroast_callback_xinf_artist);
+    append_regex_rule(&self->priv->regex_rules_xinf, "^\\s*size\\s*=\\s*(?<size>[\\d]+)\\s*$", mirage_parser_xcdroast_callback_xinf_size);
+    append_regex_rule(&self->priv->regex_rules_xinf, "^\\s*type\\s*=\\s*(?<type>[\\d]+)\\s*$", mirage_parser_xcdroast_callback_xinf_type);
+    append_regex_rule(&self->priv->regex_rules_xinf, "^\\s*rec_type\\s*=\\s*(?<rec_type>[\\d]+)\\s*$", mirage_parser_xcdroast_callback_xinf_rec_type);
+    append_regex_rule(&self->priv->regex_rules_xinf, "^\\s*preemp\\s*=\\s*(?<preemp>[\\d]+)\\s*$", mirage_parser_xcdroast_callback_xinf_preemp);
+    append_regex_rule(&self->priv->regex_rules_xinf, "^\\s*copyperm\\s*=\\s*(?<copyperm>[\\d]+)\\s*$", mirage_parser_xcdroast_callback_xinf_copyperm);
+    append_regex_rule(&self->priv->regex_rules_xinf, "^\\s*stereo\\s*=\\s*(?<stereo>[\\d]+)\\s*$", mirage_parser_xcdroast_callback_xinf_stereo);
+    append_regex_rule(&self->priv->regex_rules_xinf, "^\\s*cd_title\\s*=\\s*\"(?<cd_title>.*)\"\\s*$", mirage_parser_xcdroast_callback_xinf_cd_title);
+    append_regex_rule(&self->priv->regex_rules_xinf, "^\\s*cd_artist\\s*=\\s*\"(?<cd_artist>.*)\"\\s*$", mirage_parser_xcdroast_callback_xinf_cd_artist);
+    append_regex_rule(&self->priv->regex_rules_xinf, "^\\s*cd_discid\\s*=\\s*\"(?<cd_discid>.*)\"\\s*$", mirage_parser_xcdroast_callback_xinf_cd_discid);
 
     return;
 }

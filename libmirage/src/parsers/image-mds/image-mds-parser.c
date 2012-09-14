@@ -546,8 +546,8 @@ static gboolean mirage_parser_mds_parse_track_entries (MIRAGE_Parser_MDS *self, 
                 }
 
                 /* Subchannel */
-                switch (block->subchannel) {
-                    case MDS_SUBCHAN_PW_INTERLEAVED: {
+                switch ((MDS_SubChan) block->subchannel) {
+                    case PW_INTERLEAVED: {
                         sfile_sectsize = 96;
                         sfile_format = FR_BIN_SFILE_PW96_INT | FR_BIN_SFILE_INT;
 
@@ -560,7 +560,7 @@ static gboolean mirage_parser_mds_parse_track_entries (MIRAGE_Parser_MDS *self, 
 
                         break;
                     }
-                    case MDS_SUBCHAN_NONE: {
+                    case NONE: {
                         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: no subchannel\n", __debug__);
                         break;
                     }
@@ -848,17 +848,17 @@ static GObject *mirage_parser_mds_load_image (MIRAGE_Parser *_self, gchar **file
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  session blocks offset: 0x%X\n", __debug__, self->priv->header->sessions_blocks_offset);
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  DPM blocks offset: 0x%X\n\n", __debug__, self->priv->header->dpm_blocks_offset);
 
-    switch (self->priv->header->medium_type) {
-        case MDS_MEDIUM_CD:
-        case MDS_MEDIUM_CD_R:
-        case MDS_MEDIUM_CD_RW: {
+    switch ((MDS_Medium) self->priv->header->medium_type) {
+        case CD:
+        case CD_R:
+        case CD_RW: {
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: CD-ROM image\n", __debug__);
             mirage_disc_set_medium_type(MIRAGE_DISC(self->priv->disc), MIRAGE_MEDIUM_CD);
             succeeded = mirage_parser_mds_load_disc(self, error);
             break;
         }
-        case MDS_MEDIUM_DVD:
-        case MDS_MEDIUM_DVD_MINUS_R: {
+        case DVD:
+        case DVD_MINUS_R: {
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: DVD-ROM image\n", __debug__);
             mirage_disc_set_medium_type(MIRAGE_DISC(self->priv->disc), MIRAGE_MEDIUM_DVD);
             succeeded = mirage_parser_mds_load_disc(self, error);

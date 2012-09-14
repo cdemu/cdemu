@@ -876,48 +876,53 @@ static gboolean mirage_parser_toc_callback_track_datafile (MIRAGE_Parser_TOC *se
 }
 
 
-#define APPEND_REGEX_RULE(list,rule,callback) { \
-    TOC_RegexRule *new_rule = g_new(TOC_RegexRule, 1); \
-    new_rule->regex = g_regex_new(rule, G_REGEX_OPTIMIZE, 0, NULL); \
-    new_rule->callback_func = callback; \
+static inline void append_regex_rule (GList **list_ptr, const gchar *rule, TOC_RegexCallback callback)
+{
+    GList *list = *list_ptr;
+
+    TOC_RegexRule *new_rule = g_new(TOC_RegexRule, 1);
+    new_rule->regex = g_regex_new(rule, G_REGEX_OPTIMIZE, 0, NULL);
+    new_rule->callback_func = callback;
     /* Append to the list */ \
-    list = g_list_append(list, new_rule); \
+    list = g_list_append(list, new_rule);
+
+    *list_ptr = list;
 }
 
 static void mirage_parser_toc_init_regex_parser (MIRAGE_Parser_TOC *self)
 {
     /* Ignore empty lines */
-    APPEND_REGEX_RULE(self->priv->regex_rules, "^[\\s]*$", NULL);
+    append_regex_rule(&self->priv->regex_rules, "^[\\s]*$", NULL);
 
     /* Comment */
-    APPEND_REGEX_RULE(self->priv->regex_rules, "^\\s*\\/{2}(?<comment>.+)$", mirage_parser_toc_callback_comment);
+    append_regex_rule(&self->priv->regex_rules, "^\\s*\\/{2}(?<comment>.+)$", mirage_parser_toc_callback_comment);
 
-    APPEND_REGEX_RULE(self->priv->regex_rules, "^\\s*(?<type>(CD_DA|CD_ROM_XA|CD_ROM|CD_I))", mirage_parser_toc_callback_session_type);
+    append_regex_rule(&self->priv->regex_rules, "^\\s*(?<type>(CD_DA|CD_ROM_XA|CD_ROM|CD_I))", mirage_parser_toc_callback_session_type);
     /* Store pointer to header's regex rule */
     GList *elem_header = g_list_last(self->priv->regex_rules);
     TOC_RegexRule *rule_header = elem_header->data;
     self->priv->regex_header_ptr = rule_header->regex;
 
-    APPEND_REGEX_RULE(self->priv->regex_rules, "^\\s*CATALOG\\s*\"(?<catalog>\\d{13,13})\"", mirage_parser_toc_callback_catalog);
+    append_regex_rule(&self->priv->regex_rules, "^\\s*CATALOG\\s*\"(?<catalog>\\d{13,13})\"", mirage_parser_toc_callback_catalog);
 
-    APPEND_REGEX_RULE(self->priv->regex_rules, "^\\s*TRACK\\s*(?<type>(AUDIO|MODE1_RAW|MODE1|MODE2_FORM1|MODE2_FORM2|MODE2_FORM_MIX|MODE2_RAW|MODE2))\\s*(?<subchan>(RW_RAW|RW))?", mirage_parser_toc_callback_track);
+    append_regex_rule(&self->priv->regex_rules, "^\\s*TRACK\\s*(?<type>(AUDIO|MODE1_RAW|MODE1|MODE2_FORM1|MODE2_FORM2|MODE2_FORM_MIX|MODE2_RAW|MODE2))\\s*(?<subchan>(RW_RAW|RW))?", mirage_parser_toc_callback_track);
 
-    APPEND_REGEX_RULE(self->priv->regex_rules, "^\\s*(?<no>NO)?\\s*COPY", mirage_parser_toc_callback_track_flag_copy);
-    APPEND_REGEX_RULE(self->priv->regex_rules, "^\\s*(?<no>NO)?\\s*PRE_EMPHASIS", mirage_parser_toc_callback_track_flag_preemphasis);
-    APPEND_REGEX_RULE(self->priv->regex_rules, "^\\s*(?<num>(TWO|FOUR))_CHANNEL_AUDIO", mirage_parser_toc_callback_track_flag_channels);
+    append_regex_rule(&self->priv->regex_rules, "^\\s*(?<no>NO)?\\s*COPY", mirage_parser_toc_callback_track_flag_copy);
+    append_regex_rule(&self->priv->regex_rules, "^\\s*(?<no>NO)?\\s*PRE_EMPHASIS", mirage_parser_toc_callback_track_flag_preemphasis);
+    append_regex_rule(&self->priv->regex_rules, "^\\s*(?<num>(TWO|FOUR))_CHANNEL_AUDIO", mirage_parser_toc_callback_track_flag_channels);
 
-    APPEND_REGEX_RULE(self->priv->regex_rules, "^\\s*ISRC\\s*\"(?<isrc>[A-Z0-9]{5,5}[0-9]{7,7})\"", mirage_parser_toc_callback_track_isrc);
+    append_regex_rule(&self->priv->regex_rules, "^\\s*ISRC\\s*\"(?<isrc>[A-Z0-9]{5,5}[0-9]{7,7})\"", mirage_parser_toc_callback_track_isrc);
 
-    APPEND_REGEX_RULE(self->priv->regex_rules, "^\\s*INDEX\\s*(?<address>\\d+:\\d+:\\d+)", mirage_parser_toc_callback_track_index);
+    append_regex_rule(&self->priv->regex_rules, "^\\s*INDEX\\s*(?<address>\\d+:\\d+:\\d+)", mirage_parser_toc_callback_track_index);
 
-    APPEND_REGEX_RULE(self->priv->regex_rules, "^\\s*START\\s*(?<address>\\d+:\\d+:\\d+)?", mirage_parser_toc_callback_track_start);
-    APPEND_REGEX_RULE(self->priv->regex_rules, "^\\s*PREGAP\\s*(?<length>\\d+:\\d+:\\d+)", mirage_parser_toc_callback_track_pregap);
+    append_regex_rule(&self->priv->regex_rules, "^\\s*START\\s*(?<address>\\d+:\\d+:\\d+)?", mirage_parser_toc_callback_track_start);
+    append_regex_rule(&self->priv->regex_rules, "^\\s*PREGAP\\s*(?<length>\\d+:\\d+:\\d+)", mirage_parser_toc_callback_track_pregap);
 
-    APPEND_REGEX_RULE(self->priv->regex_rules, "^\\s*ZERO\\s*(?<length>\\d+:\\d+:\\d+)", mirage_parser_toc_callback_track_zero);
-    APPEND_REGEX_RULE(self->priv->regex_rules, "^\\s*SILENCE\\s*(?<length>\\d+:\\d+:\\d+)", mirage_parser_toc_callback_track_silence);
+    append_regex_rule(&self->priv->regex_rules, "^\\s*ZERO\\s*(?<length>\\d+:\\d+:\\d+)", mirage_parser_toc_callback_track_zero);
+    append_regex_rule(&self->priv->regex_rules, "^\\s*SILENCE\\s*(?<length>\\d+:\\d+:\\d+)", mirage_parser_toc_callback_track_silence);
 
-    APPEND_REGEX_RULE(self->priv->regex_rules, "^\\s*(AUDIO)?FILE\\s*\"(?<filename>.+)\"\\s*(#(?<base_offset>\\d+))?\\s*((?<start>[\\d]+:[\\d]+:[\\d]+)|(?<start_num>\\d+))\\s*(?<length>[\\d]+:[\\d]+:[\\d]+)?", mirage_parser_toc_callback_track_audiofile);
-    APPEND_REGEX_RULE(self->priv->regex_rules, "^\\s*DATAFILE\\s*\"(?<filename>.+)\"\\s*(#(?<base_offset>\\d+))?\\s*(?<length>[\\d]+:[\\d]+:[\\d]+)?", mirage_parser_toc_callback_track_datafile);
+    append_regex_rule(&self->priv->regex_rules, "^\\s*(AUDIO)?FILE\\s*\"(?<filename>.+)\"\\s*(#(?<base_offset>\\d+))?\\s*((?<start>[\\d]+:[\\d]+:[\\d]+)|(?<start_num>\\d+))\\s*(?<length>[\\d]+:[\\d]+:[\\d]+)?", mirage_parser_toc_callback_track_audiofile);
+    append_regex_rule(&self->priv->regex_rules, "^\\s*DATAFILE\\s*\"(?<filename>.+)\"\\s*(#(?<base_offset>\\d+))?\\s*(?<length>[\\d]+:[\\d]+:[\\d]+)?", mirage_parser_toc_callback_track_datafile);
 
     /* *** Special CD-TEXT block handling rules... *** */
 

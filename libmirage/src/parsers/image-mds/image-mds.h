@@ -32,26 +32,33 @@
 
 G_BEGIN_DECLS
 
-#define MDS_MEDIUM_CD           0x00 /* CD-ROM */
-#define MDS_MEDIUM_CD_R         0x01 /* CD-R */
-#define MDS_MEDIUM_CD_RW        0x02 /* CD-RW */
-#define MDS_MEDIUM_DVD          0x10 /* DVD-ROM */
-#define MDS_MEDIUM_DVD_MINUS_R  0x12 /* DVD-R */
+typedef enum {
+    CD          = 0x00, /* CD-ROM */
+    CD_R        = 0x01, /* CD-R */
+    CD_RW       = 0x02, /* CD-RW */
+    DVD         = 0x10, /* DVD-ROM */
+    DVD_MINUS_R = 0x12  /* DVD-R */
+} MDS_Medium;
 
-#define MDS_TRACKMODE_UNKNOWN       0x00
-#define MDS_TRACKMODE_AUDIO         0xA9 /* sector size = 2352 */
-#define MDS_TRACKMODE_MODE1         0xAA /* sector size = 2048 */
-#define MDS_TRACKMODE_MODE2         0xAB /* sector size = 2336 */
-#define MDS_TRACKMODE_MODE2_FORM1   0xAC /* sector size = 2048 */
-#define MDS_TRACKMODE_MODE2_FORM2   0xAD /* sector size = 2324 (+4) */
+typedef enum {
+    UNKNOWN     = 0x00,
+    AUDIO       = 0xA9, /* sector size = 2352 */
+    MODE1       = 0xAA, /* sector size = 2048 */
+    MODE2       = 0xAB, /* sector size = 2336 */
+    MODE2_FORM1 = 0xAC, /* sector size = 2048 */
+    MODE2_FORM2 = 0xAD  /* sector size = 2324 (+4) */
+} MDS_TrackMode;
 
-#define MDS_SUBCHAN_NONE            0x00 /* no subchannel */
-#define MDS_SUBCHAN_PW_INTERLEAVED  0x08 /* 96-byte PW subchannel, interleaved */
+typedef enum {
+    NONE           = 0x00, /* no subchannel */
+    PW_INTERLEAVED = 0x08  /* 96-byte PW subchannel, interleaved */
+} MDS_SubChan;
 
-#define MDS_POINT_TRACK_FIRST   0xA0 /* info about first track */
-#define MDS_POINT_TRACK_LAST    0xA1 /* info about last track  */
-#define MDS_POINT_TRACK_LEADOUT 0xA2 /* info about lead-out    */
-
+typedef enum {
+    TRACK_FIRST   = 0xA0, /* info about first track */
+    TRACK_LAST    = 0xA1, /* info about last track  */
+    TRACK_LEADOUT = 0xA2  /* info about lead-out    */
+} MDS_Point;
 
 #pragma pack(1)
 
