@@ -105,14 +105,14 @@ static gboolean mirage_parser_readcd_determine_track_mode (MIRAGE_Parser_READCD 
     fragment = mirage_track_get_fragment_by_index(MIRAGE_TRACK(track), -1, error);
     if (!fragment) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to get fragment\n", __debug__);
-        return FALSE;
+        goto error;
     }
 
     //* Read main sector data from fragment; 2352-byte sectors are assumed */
     if (!mirage_fragment_read_main_data(MIRAGE_FRAGMENT(fragment), 0, buf, NULL, error)) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: failed to read data from fragment to determine track mode!\n", __debug__);
         g_object_unref(fragment);
-        return FALSE;
+        goto error;
     }
     g_object_unref(fragment);
 
@@ -124,6 +124,11 @@ static gboolean mirage_parser_readcd_determine_track_mode (MIRAGE_Parser_READCD 
 	g_free(buf);
 
     return TRUE;
+
+error:
+	g_free(buf);
+	
+	return FALSE;
 }
 
 static gboolean mirage_parser_readcd_finish_previous_track (MIRAGE_Parser_READCD *self, gint next_address)

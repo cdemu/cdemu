@@ -645,12 +645,14 @@ static gboolean mirage_parser_cdi_load_track (MIRAGE_Parser_CDI *self, GError **
     gint decoded_mode = 0;
     if (!mirage_parser_cdi_decode_track_mode(self, track_mode, &decoded_mode, &tfile_format, error)) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: failed to decode track mode!\n", __debug__);
+        g_free(indices);
         return FALSE;
     }
 
     /* Read mode; determines sector size for both main channel and subchannel */
     if (!mirage_parser_cdi_decode_read_mode(self, read_mode, &tfile_sectsize, &sfile_sectsize, &sfile_format, error)) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: failed to decode read mode!\n", __debug__);
+        g_free(indices);
         return FALSE;
     }
 
@@ -658,6 +660,7 @@ static gboolean mirage_parser_cdi_load_track (MIRAGE_Parser_CDI *self, GError **
     session = mirage_disc_get_session_by_index(MIRAGE_DISC(self->priv->disc), -1, error);
     if (!session) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: failed to get last session!\n", __debug__);
+        g_free(indices);
         return FALSE;
     }
 
@@ -674,6 +677,7 @@ static gboolean mirage_parser_cdi_load_track (MIRAGE_Parser_CDI *self, GError **
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: failed to create BINARY fragment!\n", __debug__);
         g_object_unref(track);
         g_object_unref(session);
+        g_free(indices);
         return FALSE;
     }
 
@@ -684,6 +688,7 @@ static gboolean mirage_parser_cdi_load_track (MIRAGE_Parser_CDI *self, GError **
         g_object_unref(fragment);
         g_object_unref(track);
         g_object_unref(session);
+        g_free(indices);
         return FALSE;
     }
     mirage_frag_iface_binary_track_file_set_offset(MIRAGE_FRAG_IFACE_BINARY(fragment), tfile_offset);
@@ -722,7 +727,6 @@ static gboolean mirage_parser_cdi_load_track (MIRAGE_Parser_CDI *self, GError **
         mirage_track_add_index(MIRAGE_TRACK(track), index_address, NULL);
     }
 
-
     /* Set session type, if this is the last track in session */
     if (!not_last_track) {
         session_type = mirage_parser_cdi_decode_session_type(self, session_type);
@@ -735,6 +739,8 @@ static gboolean mirage_parser_cdi_load_track (MIRAGE_Parser_CDI *self, GError **
 
     g_object_unref(session);
     g_object_unref(track);
+
+	g_free(indices);
 
     return TRUE;
 }

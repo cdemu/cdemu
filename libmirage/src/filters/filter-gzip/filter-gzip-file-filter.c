@@ -176,13 +176,13 @@ static gboolean mirage_file_filter_gzip_build_index (MIRAGE_FileFilter_GZIP *sel
 
     if (ret != Z_OK) {
         g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, "Failed to initialize zlib's inflate (error: %d)!", ret);
-        return FALSE;
+        goto error;
     }
 
     /* Position at the beginning of the stream */
     if (!g_seekable_seek(G_SEEKABLE(stream), 0, G_SEEK_SET, NULL, NULL)) {
         g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, "Failed to seek to the beginning of stream!");
-        return FALSE;
+        goto error;
     }
 
     /* Inflate the input and build an index */
@@ -193,10 +193,10 @@ static gboolean mirage_file_filter_gzip_build_index (MIRAGE_FileFilter_GZIP *sel
         ret = g_input_stream_read(G_INPUT_STREAM(stream), chunk_buffer, CHUNKSIZE, NULL, NULL);
         if (ret == -1) {
             g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, "Failed to read %d bytes from underlying stream!", CHUNKSIZE);
-            return FALSE;
+            goto error;
         } else if (ret == 0) {
             g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, "Unexpectedly reached EOF!");
-            return FALSE;
+            goto error;
         }
 
         zlib_stream->avail_in = ret;
@@ -221,7 +221,7 @@ static gboolean mirage_file_filter_gzip_build_index (MIRAGE_FileFilter_GZIP *sel
 
             if (ret == Z_NEED_DICT || ret == Z_MEM_ERROR || ret == Z_DATA_ERROR) {
                 g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, "Failed to inflate!");
-                return FALSE;
+                goto error;
             }
             if (ret == Z_STREAM_END) {
                 break;
@@ -232,7 +232,7 @@ static gboolean mirage_file_filter_gzip_build_index (MIRAGE_FileFilter_GZIP *sel
                 (totalOut == 0 || totalOut - last > SPAN)) {
 
                 if (!mirage_file_filter_gzip_append_part(self, zlib_stream->data_type & 7, totalIn, totalOut, zlib_stream->avail_out, window_buffer, error)) {
-                    return FALSE;
+                    goto error;
                 }
 
                 last = totalOut;
@@ -250,7 +250,7 @@ static gboolean mirage_file_filter_gzip_build_index (MIRAGE_FileFilter_GZIP *sel
     if (!self->priv->num_parts) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: no parts in GZIP file!\n", __debug__);
         g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, "No parts in GZIP file!");
-        return FALSE;
+        goto error;
     }
 
     /* Release unused allocated parts */
@@ -258,7 +258,7 @@ static gboolean mirage_file_filter_gzip_build_index (MIRAGE_FileFilter_GZIP *sel
 
     /* Compute sizes of parts and allocate part buffer */
     if (!mirage_file_filter_gzip_compute_part_sizes(self, error)) {
-        return FALSE;
+        goto error;
     }
 
     /* Set stream position to beginning */
@@ -272,6 +272,12 @@ static gboolean mirage_file_filter_gzip_build_index (MIRAGE_FileFilter_GZIP *sel
     g_free(window_buffer);
 
     return TRUE;
+
+error:
+    g_free(chunk_buffer);
+    g_free(window_buffer);
+
+    return FALSE;
 }
 
 
@@ -392,6 +398,7 @@ static gssize mirage_filter_gzip_read_from_part (MIRAGE_FileFilter_GZIP *self, g
         /* Seek to the position */
         if (!g_seekable_seek(G_SEEKABLE(stream), stream_offset, G_SEEK_SET, NULL, NULL)) {
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to seek to %ld in underlying stream!\n", __debug__, stream_offset);
+            g_free(chunk_buffer);
             return -1;
         }
 
@@ -399,6 +406,7 @@ static gssize mirage_filter_gzip_read_from_part (MIRAGE_FileFilter_GZIP *self, g
         ret = inflateReset2(zlib_stream, -15); /* -15 = raw inflate */
         if (ret != Z_OK) {
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to reset inflate engine!\n", __debug__);
+            g_free(chunk_buffer);
             return -1;
         }
 
@@ -408,6 +416,7 @@ static gssize mirage_filter_gzip_read_from_part (MIRAGE_FileFilter_GZIP *self, g
             ret = g_input_stream_read(G_INPUT_STREAM(stream), &value, sizeof(value), NULL, NULL);
             if (ret != 1) {
                 MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read bits!\n", __debug__);
+                g_free(chunk_buffer);
                 return -1;
             }
             inflatePrime(zlib_stream, part->bits, value >> (8 - part->bits));
@@ -426,9 +435,11 @@ static gssize mirage_filter_gzip_read_from_part (MIRAGE_FileFilter_GZIP *self, g
                 ret = g_input_stream_read(G_INPUT_STREAM(stream), chunk_buffer, CHUNKSIZE, NULL, NULL);
                 if (ret == -1) {
                     MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read %d bytes from underlying stream!", __debug__, CHUNKSIZE);
+                    g_free(chunk_buffer);
                     return -1;
                 } else if (ret == 0) {
                     MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: inexpectedly reached EOF!", __debug__);
+                    g_free(chunk_buffer);
                     return -1;
                 }
                 zlib_stream->avail_in = ret;
@@ -439,6 +450,7 @@ static gssize mirage_filter_gzip_read_from_part (MIRAGE_FileFilter_GZIP *self, g
             ret = inflate(zlib_stream, Z_NO_FLUSH);
             if (ret == Z_NEED_DICT || ret == Z_MEM_ERROR || ret == Z_DATA_ERROR) {
                 MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to inflate part: %s!", __debug__, zlib_stream->msg);
+                g_free(chunk_buffer);
                 return -1;
             }
         } while(zlib_stream->avail_out);

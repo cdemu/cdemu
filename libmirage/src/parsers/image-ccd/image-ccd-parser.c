@@ -129,6 +129,7 @@ static gboolean mirage_parser_ccd_determine_track_mode (MIRAGE_Parser_CCD *self,
     fragment = mirage_track_get_fragment_by_index(MIRAGE_TRACK(track), -1, error);
     if (!fragment) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to get fragment\n", __debug__);
+        g_free(buf);
         return FALSE;
     }
 
@@ -136,6 +137,7 @@ static gboolean mirage_parser_ccd_determine_track_mode (MIRAGE_Parser_CCD *self,
     if (!mirage_fragment_read_main_data(MIRAGE_FRAGMENT(fragment), 0, buf, NULL, error)) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: failed to read data from fragment to determine track mode!\n", __debug__);
         g_object_unref(fragment);
+        g_free(buf);
         return FALSE;
     }
     g_object_unref(fragment);

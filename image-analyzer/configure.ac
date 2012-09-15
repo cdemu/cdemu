@@ -53,7 +53,7 @@ AC_MSG_CHECKING(for more warnings)
 if test "$GCC" = "yes" -a "$set_more_warnings" != "no"; then
     AC_MSG_RESULT(yes)
     CFLAGS="\
-    -Wall -Wextra \
+    -Wall -Wextra -Wshadow \
     -Wmissing-declarations -Wmissing-prototypes \
     -Wnested-externs -Wpointer-arith -Wcast-align \
     -DG_DISABLE_DEPRECATED \
