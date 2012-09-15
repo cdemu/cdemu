@@ -135,9 +135,14 @@ static gboolean cdemud_device_io_handler (GIOChannel *source, GIOCondition condi
     gint fd = g_io_channel_unix_get_fd(source);
 
     CDEMUD_Command cmd;
-    guchar buf[BUF_SIZE] = {0};
+    guchar *buf = (guchar *) g_malloc0(BUF_SIZE);
     struct vhba_request *vreq = (void *) buf;
     struct vhba_response *vres = (void *) buf;
+
+	if (!buf) {
+        CDEMUD_DEBUG(self, DAEMON_DEBUG_ERROR, "%s: failed to allocate memory.\n", __debug__);
+        return FALSE;
+	}
 
     if (read(fd, vreq, BUF_SIZE) < sizeof(*vreq)) {
         CDEMUD_DEBUG(self, DAEMON_DEBUG_ERROR, "%s: failed to read request from control device!\n", __debug__);
@@ -168,6 +173,8 @@ static gboolean cdemud_device_io_handler (GIOChannel *source, GIOCondition condi
         CDEMUD_DEBUG(self, DAEMON_DEBUG_ERROR, "%s: failed to write response to control device!\n", __debug__);
         return FALSE;
     }
+
+	g_free(buf);
 
     return TRUE;
 }
