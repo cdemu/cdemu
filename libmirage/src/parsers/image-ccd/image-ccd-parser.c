@@ -117,8 +117,13 @@ static gboolean mirage_parser_ccd_sort_entries (MIRAGE_Parser_CCD *self, GError 
 static gboolean mirage_parser_ccd_determine_track_mode (MIRAGE_Parser_CCD *self, GObject *track, GError **error)
 {
     GObject *fragment;
-    guint8 buf[2352];
+    guint8 *buf = (guint8 *) g_malloc(2352);
     gint track_mode;
+
+	if(!buf) {
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_CANNOT_HANDLE, "Failed to allocate memory.");
+		return FALSE;
+	}
 
     /* Get last fragment */
     fragment = mirage_track_get_fragment_by_index(MIRAGE_TRACK(track), -1, error);
@@ -140,6 +145,8 @@ static gboolean mirage_parser_ccd_determine_track_mode (MIRAGE_Parser_CCD *self,
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: track mode determined to be: %d\n", __debug__, track_mode);
     mirage_track_set_mode(MIRAGE_TRACK(track), track_mode);
 
+	g_free(buf);
+	
     return TRUE;
 }
 

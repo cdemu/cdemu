@@ -152,8 +152,13 @@ static gboolean mirage_file_filter_gzip_build_index (MIRAGE_FileFilter_GZIP *sel
     GInputStream *stream = g_filter_input_stream_get_base_stream(G_FILTER_INPUT_STREAM(self));
     z_stream *zlib_stream = &self->priv->zlib_stream;
 
-    guint8 chunk_buffer[CHUNKSIZE];
-    guint8 window_buffer[WINSIZE];
+    guint8 *chunk_buffer = (guint8 *) g_malloc(CHUNKSIZE);
+    guint8 *window_buffer = (guint8 *) g_malloc(WINSIZE);
+
+    if (!chunk_buffer || !window_buffer) {
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, "Failed to allocate memory.");
+        return FALSE;
+    }
 
     goffset totalIn, totalOut, last;
     gint ret;
@@ -263,6 +268,9 @@ static gboolean mirage_file_filter_gzip_build_index (MIRAGE_FileFilter_GZIP *sel
 
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_FILE, "%s: successfully built index\n\n", __debug__);
 
+    g_free(chunk_buffer);
+    g_free(window_buffer);
+
     return TRUE;
 }
 
@@ -366,7 +374,12 @@ static gssize mirage_filter_gzip_read_from_part (MIRAGE_FileFilter_GZIP *self, g
 
         goffset stream_offset;
 
-        guint8 chunk_buffer[CHUNKSIZE];
+        guint8 *chunk_buffer = (guint8 *) g_malloc(CHUNKSIZE);
+
+		if (!chunk_buffer) {
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: Failed to allocate memory.\n", __debug__);
+	        return -1;
+		}
 
         gint ret;
 
@@ -433,6 +446,8 @@ static gssize mirage_filter_gzip_read_from_part (MIRAGE_FileFilter_GZIP *self, g
 
         /* Set currently cached part */
         self->priv->cache_part_idx = self->priv->cur_part_idx;
+
+        g_free(chunk_buffer);
     }
 
     part_offset = self->priv->cur_position - self->priv->cur_part->offset;
