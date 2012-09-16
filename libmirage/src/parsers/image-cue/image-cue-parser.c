@@ -162,7 +162,7 @@ static gboolean mirage_parser_cue_add_track (MIRAGE_Parser_CUE *self, gint numbe
     };
     gint i;
     for (i = 0; i < G_N_ELEMENTS(track_modes); i++) {
-        if (!strcmp(track_modes[i].str, mode_string)) {
+        if (!g_strcmp0(track_modes[i].str, mode_string)) {
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: track mode: %s\n", __debug__, track_modes[i].str);
             /* Set track mode */
             mirage_track_set_mode(MIRAGE_TRACK(self->priv->cur_track), track_modes[i].mode);
@@ -275,7 +275,7 @@ static gboolean mirage_parser_cue_add_index (MIRAGE_Parser_CUE *self, gint numbe
                 return FALSE;
             }
 
-            if (!strcmp(self->priv->cur_data_type, "BINARY")) {
+            if (!g_strcmp0(self->priv->cur_data_type, "BINARY")) {
                 /* Binary data; we'll request fragment with BINARY interface... */
                 gint tfile_sectsize = 0;
                 gint sfile_sectsize = 0;

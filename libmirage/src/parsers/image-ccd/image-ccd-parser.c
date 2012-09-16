@@ -1075,8 +1075,8 @@ static GObject *mirage_parser_ccd_load_image (MIRAGE_Parser *_self, gchar **file
     gchar *tmp_img_filename = g_strdup(filenames[0]);
     gchar *tmp_sub_filename = g_strdup(filenames[0]);
 
-    sprintf(tmp_img_filename+len-3, "img");
-    sprintf(tmp_sub_filename+len-3, "sub");
+    g_snprintf(tmp_img_filename+len-3, 4, "img");
+    g_snprintf(tmp_sub_filename+len-3, 4, "sub");
 
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: assumed data file: %s\n", __debug__, tmp_img_filename);
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: assumed subchannel file: %s\n", __debug__, tmp_sub_filename);

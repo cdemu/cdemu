@@ -179,7 +179,7 @@ static gboolean mirage_parser_b6t_load_bwa_file (MIRAGE_Parser_B6T *self, GError
     /* Use B6T filename and replace its extension with BWA */
     bwa_filename = g_strdup(self->priv->b6t_filename);
     gint len = strlen(bwa_filename);
-    sprintf(bwa_filename+len-3, "bwa");
+    g_snprintf(bwa_filename+len-3, 4, "bwa");
 
     bwa_fullpath = mirage_helper_find_data_file(bwa_filename, self->priv->b6t_filename);
     g_free(bwa_filename);

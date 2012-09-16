@@ -473,7 +473,7 @@ static gboolean mirage_parser_toc_cdtext_parse_language (MIRAGE_Parser_TOC *self
 
         /* Set appropriate pack */
         for (i = 0; i < G_N_ELEMENTS(packs); i++) {
-            if (!strcmp(type_str, packs[i].pack_id)) {
+            if (!g_strcmp0(type_str, packs[i].pack_id)) {
                 mirage_language_set_pack_data(MIRAGE_LANGUAGE(language), packs[i].pack_type, content, content_len, NULL);
                 break;
             }

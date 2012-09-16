@@ -360,13 +360,13 @@ void mirage_helper_lba2msf (gint lba, gboolean diff, guint8 *m, guint8 *s, guint
  **/
 gchar *mirage_helper_lba2msf_str (gint lba, gboolean diff)
 {
-    gchar *ret = (gchar *)g_malloc0(10);
+    gchar *ret;
 
     if (diff) {
-        lba += + 150;
+        lba += 150;
     }
 
-    sprintf(ret, "%02d:%02d:%02d", lba/(75*60), (lba/75) % 60, lba % 75);
+    ret = g_strdup_printf("%02d:%02d:%02d", lba/(75*60), (lba/75) % 60, lba % 75);
     return ret;
 }
 
@@ -416,13 +416,15 @@ gint mirage_helper_msf2lba (guint8 m, guint8 s, guint8 f, gboolean diff)
  * (or lengths), @diff should be set to %FALSE.
  * </para>
  *
- * Returns: integer representing LBA address
+ * Returns: integer representing LBA address or -1 on failure.
  **/
 gint mirage_helper_msf2lba_str (const gchar *msf, gboolean diff)
 {
-    gint m, s, f;
+    gint ret, m, s, f;
 
-    sscanf(msf, "%d:%d:%d", &m, &s, &f);
+    if (!msf) return -1;
+    ret = sscanf(msf, "%d:%d:%d", &m, &s, &f);
+    if (ret != 3) return -1;
     return mirage_helper_msf2lba(m, s, f, diff);
 }
 

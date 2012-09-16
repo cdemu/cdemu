@@ -127,8 +127,7 @@ static gchar *create_filename_func_1 (gchar *main_filename, gint index)
     if (index) {
         /* Find last occurence of 01. and print index into it */
         gchar *position = g_strrstr(ret_filename, "01.");
-        position += g_sprintf(position, "%02i", index+1);
-        *position = '.'; /* Since it got overwritten with terminating 0 */
+        g_snprintf(position, 4, "%02i.", index+1);
     }
 
     return ret_filename;
@@ -142,8 +141,7 @@ static gchar *create_filename_func_2 (gchar *main_filename, gint index)
     if (index) {
         /* Find last occurence of 01. and print index+1 into it */
         gchar *position = g_strrstr(ret_filename, "001.");
-        position += g_sprintf(position, "%03i", index+1);
-        *position = '.'; /* Since it got overwritten with terminating 0 */
+        g_snprintf(position, 5, "%03i.", index+1);
     }
 
     return ret_filename;
@@ -157,7 +155,7 @@ static gchar *create_filename_func_3 (gchar *main_filename, gint index)
     if (index) {
         /* Replace last two characters with index-1 */
         gchar *position = ret_filename + strlen(ret_filename) - 2;
-        g_sprintf(position, "%02i", index-1);
+        g_snprintf(position, 3, "%02i", index-1);
     }
 
     return ret_filename;
