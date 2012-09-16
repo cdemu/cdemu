@@ -271,8 +271,7 @@ static void cdemud_device_set_current_features (CDEMUD_Device *self, guint32 *fe
     };
 
     /* Now go over list of input features and set their 'current' bits */
-    gint i;
-    for (i = 0; i < feats_len; i++) {
+    for (gint i = 0; i < feats_len; i++) {
         struct Feature_GENERAL *feature = cdemud_device_get_feature(self, feats[i]);
         if (feature) {
             feature->cur = 1;

@@ -45,10 +45,9 @@ static void device_option_changed_handler (GObject *device, gchar *option, CDEMU
 static gboolean device_mapping_callback (CDEMUD_Daemon *self)
 {
     gboolean run_again = FALSE;
-    gint i;
 
     /* Try to setup mapping on each device */
-    for (i = 0; i < self->priv->number_of_devices; i++) {
+    for (gint i = 0; i < self->priv->number_of_devices; i++) {
         GObject *device = cdemud_daemon_get_device(self, i, NULL);
 
         run_again = !cdemud_device_setup_mapping(CDEMUD_DEVICE(device));
@@ -81,7 +80,6 @@ gboolean cdemud_daemon_initialize_and_start (CDEMUD_Daemon *self, gint num_devic
 {
     GObject *debug_context;
     GBusType bus_type = system_bus ? G_BUS_TYPE_SYSTEM : G_BUS_TYPE_SESSION;
-    gint i;
 
     /* Debug context; so that we get daemon's errors/warnings from the very beginning */
     debug_context = g_object_new(MIRAGE_TYPE_DEBUG_CONTEXT, NULL);
@@ -111,7 +109,7 @@ gboolean cdemud_daemon_initialize_and_start (CDEMUD_Daemon *self, gint num_devic
     }
 
     /* Create desired number of devices */
-    for (i = 0; i < self->priv->number_of_devices; i++) {
+    for (gint i = 0; i < self->priv->number_of_devices; i++) {
         /* Create CDEmu device object */
         GObject *dev =  g_object_new(CDEMUD_TYPE_DEVICE, NULL);
 

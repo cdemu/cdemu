@@ -38,7 +38,6 @@ static const gchar introspection_xml[];
 static void register_error_domain (const gchar *prefix, GType code_enum)
 {
     GEnumClass *klass = g_type_class_ref(code_enum);
-    gint i;
 
     volatile gsize quark = 0;
 
@@ -46,7 +45,7 @@ static void register_error_domain (const gchar *prefix, GType code_enum)
     GDBusErrorEntry *entries = g_new0(GDBusErrorEntry, num_entries);
 
     /* Map from the GEnum to GDBusErrorEntry */
-    for (i = 0; i < num_entries; i++) {
+    for (gint i = 0; i < num_entries; i++) {
         entries[i].error_code = klass->values[i].value;
         entries[i].dbus_error_name = g_strdup_printf("%s.%s", prefix, klass->values[i].value_nick);
     }
@@ -55,7 +54,7 @@ static void register_error_domain (const gchar *prefix, GType code_enum)
     g_dbus_error_register_error_domain(prefix, &quark, entries, num_entries);
 
     /* Cleanup */
-    for (i = 0; i < num_entries; i++) {
+    for (gint i = 0; i < num_entries; i++) {
         g_free((gchar *)entries[i].dbus_error_name);
     }
     g_free(entries);
@@ -71,8 +70,8 @@ static void register_error_domain (const gchar *prefix, GType code_enum)
 static GVariantBuilder *encode_masks (const MIRAGE_DebugMask *masks, gint num_masks)
 {
     GVariantBuilder *builder = g_variant_builder_new(G_VARIANT_TYPE("a(si)"));
-    gint i;
-    for (i = 0; i < num_masks; i++) {
+
+    for (gint i = 0; i < num_masks; i++) {
         g_variant_builder_add(builder, "(si)", masks[i].name, masks[i].value);
     }
     return builder;

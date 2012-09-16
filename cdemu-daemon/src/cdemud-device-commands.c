@@ -43,7 +43,6 @@ static gint map_mcsb (guint8 *byte9, gint mode_code)
 {
     guint8 mode = 0;
     guint8 cur_mode = (*byte9) & 0xF8;
-    gint i;
 
     /* The matrix (TM) */
     static gint matrix[32][6] = {
@@ -97,7 +96,7 @@ static gint map_mcsb (guint8 *byte9, gint mode_code)
         return -1;
     }
 
-    for (i = 0; i < 32; i++) {
+    for (gint i = 0; i < 32; i++) {
         if (cur_mode == matrix[i][0]) {
             /* Clear current MCSB */
             cur_mode &= 0x07;
@@ -285,9 +284,8 @@ static gboolean command_mode_select (CDEMUD_Device *self, guint8 *raw_cdb)
     cdemud_device_read_buffer(self, transfer_len);
 
     /*if (CDEMUD_DEBUG_ON(self, DAEMON_DEBUG_DEV_PC_DUMP)) {
-        gint i;
         g_print(">>> MODE SELECT DATA <<<\n");
-        for (i = 0; i < transfer_len; i++) {
+        for (gint i = 0; i < transfer_len; i++) {
             g_print("0x%02X ", self->priv->buffer[i]);
             if (i % 8 == 7) {
                 g_print("\n");
@@ -352,9 +350,8 @@ static gboolean command_mode_select (CDEMUD_Device *self, guint8 *raw_cdb)
         mode_page_mask = cdemud_device_get_mode_page(self, mode_page_new->code, MODE_PAGE_MASK);
         guint8 *raw_data_new  = ((guint8 *)mode_page_new) + 2;
         guint8 *raw_data_mask = ((guint8 *)mode_page_mask) + 2;
-        gint i;
 
-        for (i = 1; i < mode_page_new->length; i++) {
+        for (gint i = 1; i < mode_page_new->length; i++) {
             /* Compare every byte against the mask (except first byte) */
             if (raw_data_new[i] & ~raw_data_mask[i]) {
                 CDEMUD_DEBUG(self, DAEMON_DEBUG_MMC, "%s: invalid value set on byte %i!\n", __debug__, i);
@@ -622,13 +619,11 @@ static gboolean command_read (CDEMUD_Device *self, guint8 *raw_cdb)
     }
     MIRAGE_Disc *disc = MIRAGE_DISC(self->priv->disc);
 
-    gint sector;
-
     /* Set up delay emulation */
     cdemud_device_delay_begin(self, start_sector, num_sectors);
 
     /* Process each sector */
-    for (sector = start_sector; sector < start_sector + num_sectors; sector++) {
+    for (gint sector = start_sector; sector < start_sector + num_sectors; sector++) {
         GError *error = NULL;
         GObject *cur_sector = mirage_disc_get_sector(disc, sector, &error);
         if (!cur_sector) {
@@ -796,14 +791,12 @@ static gboolean command_read_cd (CDEMUD_Device *self, guint8 *raw_cdb)
     GError *error = NULL;
     gint prev_sector_type G_GNUC_UNUSED;
 
-    gint sector = start_sector;
-
     /* Read first sector to determine its type */
     first_sector = mirage_disc_get_sector(disc, start_sector, &error);
     if (!first_sector) {
         CDEMUD_DEBUG(self, DAEMON_DEBUG_MMC, "%s: failed to get start sector: %s\n", __debug__, error->message);
         g_error_free(error);
-        cdemud_device_write_sense_full(self, SK_ILLEGAL_REQUEST, ILLEGAL_MODE_FOR_THIS_TRACK, 0, sector);
+        cdemud_device_write_sense_full(self, SK_ILLEGAL_REQUEST, ILLEGAL_MODE_FOR_THIS_TRACK, 0, start_sector);
         return FALSE;
     }
     prev_sector_type = mirage_sector_get_sector_type(MIRAGE_SECTOR(first_sector));
@@ -814,7 +807,7 @@ static gboolean command_read_cd (CDEMUD_Device *self, guint8 *raw_cdb)
 
     /* Process each sector */
     CDEMUD_DEBUG(self, DAEMON_DEBUG_MMC, "%s: start sector: 0x%X (%i); start + num: 0x%X (%i)\n", __debug__, start_sector, start_sector, start_sector+num_sectors, start_sector+num_sectors);
-    for (sector = start_sector; sector < start_sector + num_sectors; sector++) {
+    for (gint sector = start_sector; sector < start_sector + num_sectors; sector++) {
         GObject *cur_sector;
 
         CDEMUD_DEBUG(self, DAEMON_DEBUG_MMC, "%s: reading sector 0x%X (%i)\n", __debug__, sector, sector);
@@ -1149,8 +1142,7 @@ static gboolean command_read_subchannel (CDEMUD_Device *self, guint8 *raw_cdb)
                 ret_data->fmt_code = 0x02;
 
                 /* Go over first 100 sectors; if MCN is present, it should be there */
-                gint sector = 0;
-                for (sector = 0; sector < 100; sector++) {
+                for (gint sector = 0; sector < 100; sector++) {
                     guint8 tmp_buf[16];
 
                     if (!mirage_disc_read_sector(MIRAGE_DISC(self->priv->disc), sector, 0, MIRAGE_SUBCHANNEL_PQ, tmp_buf, NULL, NULL)) {
@@ -1185,8 +1177,7 @@ static gboolean command_read_subchannel (CDEMUD_Device *self, guint8 *raw_cdb)
                 }
 
                 /* Go over first 100 sectors; if ISRC is present, it should be there */
-                gint sector = 0;
-                for (sector = 0; sector < 100; sector++) {
+                for (gint sector = 0; sector < 100; sector++) {
                     guint8 tmp_buf[16];
 
                     if (!mirage_track_read_sector(MIRAGE_TRACK(track), sector, FALSE, 0, MIRAGE_SUBCHANNEL_PQ, tmp_buf, NULL, NULL)) {
@@ -1279,7 +1270,7 @@ static gboolean command_read_toc_pma_atip (CDEMUD_Device *self, guint8 *raw_cdb)
 
             /* All tracks but lead-out */
             if (cdb->number != 0xAA) {
-                gint num_tracks, i;
+                gint num_tracks;
 
                 /* If track number exceeds last track number, return error */
                 cur_track = mirage_disc_get_track_by_index(disc, -1, NULL);
@@ -1294,7 +1285,7 @@ static gboolean command_read_toc_pma_atip (CDEMUD_Device *self, guint8 *raw_cdb)
 
                 num_tracks = mirage_disc_get_number_of_tracks(disc);
 
-                for (i = 0; i < num_tracks; i++) {
+                for (gint i = 0; i < num_tracks; i++) {
                     cur_track = mirage_disc_get_track_by_index(disc, i, NULL);
                     if (!cur_track) {
                         CDEMUD_DEBUG(self, DAEMON_DEBUG_MMC, "%s: failed to get track with index %i (whole disc)!\n", __debug__, i);
@@ -1416,11 +1407,9 @@ static gboolean command_read_toc_pma_atip (CDEMUD_Device *self, guint8 *raw_cdb)
             self->priv->buffer_size = sizeof(struct READ_TOC_PMA_ATIP_0010_Header);
             struct READ_TOC_PMA_ATIP_0010_Descriptor *ret_desc = (struct READ_TOC_PMA_ATIP_0010_Descriptor *)(self->priv->buffer+self->priv->buffer_size);
 
-            gint i,j;
-
             /* For each session with number above the requested one... */
             gint num_sessions = mirage_disc_get_number_of_sessions(disc);
-            for (i = 0; i < num_sessions; i++) {
+            for (gint i = 0; i < num_sessions; i++) {
                 GObject *cur_session;
                 gint session_number;
 
@@ -1486,7 +1475,7 @@ static gboolean command_read_toc_pma_atip (CDEMUD_Device *self, guint8 *raw_cdb)
                     /* And now one TOC descriptor per track */
                     gint num_tracks = mirage_session_get_number_of_tracks(MIRAGE_SESSION(cur_session));
 
-                    for (j = 0; j < num_tracks; j++) {
+                    for (gint j = 0; j < num_tracks; j++) {
                         cur_track = mirage_session_get_track_by_index(MIRAGE_SESSION(cur_session), j, NULL);
                         if (!cur_track) {
                             CDEMUD_DEBUG(self, DAEMON_DEBUG_MMC, "%s: failed to get track with index %i in session %i!\n", __debug__, j, session_number);
@@ -1920,7 +1909,6 @@ gint cdemud_device_execute_command (CDEMUD_Device *self, CDEMUD_Command *cmd)
         cmd->cdb[6], cmd->cdb[7], cmd->cdb[8], cmd->cdb[9], cmd->cdb[10], cmd->cdb[11]);
 
     /* Packet command table */
-    gint i;
     static struct {
         guint8 cmd;
         gchar *debug_name;
@@ -2042,7 +2030,7 @@ gint cdemud_device_execute_command (CDEMUD_Device *self, CDEMUD_Command *cmd)
     };
 
     /* Find the command and execute its implementation handler */
-    for (i = 0; i < G_N_ELEMENTS(packet_commands); i++) {
+    for (gint i = 0; i < G_N_ELEMENTS(packet_commands); i++) {
         if (packet_commands[i].cmd == cmd->cdb[0]) {
             gboolean succeeded = FALSE;
 

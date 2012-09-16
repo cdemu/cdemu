@@ -29,13 +29,12 @@
 static GHashTable *convert_g_variant_to_g_hash_table (GVariant *variant)
 {
     GHashTable *table;
-    gint i;
 
     /* Hash table: key = string, value = variant */
     table = g_hash_table_new_full(g_str_hash, g_str_equal, (GDestroyNotify)g_free, (GDestroyNotify)g_variant_unref);
 
     /* Iterate over variant */
-    for (i = 0; i < g_variant_n_children(variant); i++) {
+    for (gint i = 0; i < g_variant_n_children(variant); i++) {
         gchar *key;
         GVariant *value;
 
