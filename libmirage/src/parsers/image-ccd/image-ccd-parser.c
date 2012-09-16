@@ -957,8 +957,7 @@ static gboolean mirage_parser_ccd_parse_ccd_file (MIRAGE_Parser_CCD *self, gchar
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: parsing\n", __debug__);
 
     /* Read file line-by-line */
-    gint line_nr;
-    for (line_nr = 1; ; line_nr++) {
+    for (gint line_nr = 1; ; line_nr++) {
         GIOStatus status;
         gchar *line_str;
         gsize line_len;

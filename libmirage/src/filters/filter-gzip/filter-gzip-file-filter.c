@@ -73,10 +73,9 @@ static gboolean mirage_file_filter_gzip_compute_part_sizes (MIRAGE_FileFilter_GZ
 {
     GZIP_Part *part;
     gint max_size = 0;
-    gint i;
 
     /* Compute sizes for all parts but last one, based on their offsets */
-    for (i = 0; i < self->priv->num_parts - 1; i++) {
+    for (gint i = 0; i < self->priv->num_parts - 1; i++) {
         part = &self->priv->parts[i];
 
         part->size = (part+1)->offset - part->offset;
@@ -324,12 +323,10 @@ static gboolean mirage_file_filter_gzip_set_current_position (MIRAGE_FileFilter_
         /* Position within last part */
         self->priv->cur_part_idx = self->priv->num_parts - 1;
     } else {
-        gint i;
-
         /* Seek part-by-part in appropriate direction (do not check first and last part, though) */
         if (new_position < self->priv->cur_position) {
             /* Seek backward */
-            for (i = self->priv->cur_part_idx; i > 0; i--) {
+            for (gint i = self->priv->cur_part_idx; i > 0; i--) {
                 if (is_within_part(new_position, &self->priv->parts[i], FALSE)) {
                     self->priv->cur_part_idx = i;
                     break;
@@ -337,7 +334,7 @@ static gboolean mirage_file_filter_gzip_set_current_position (MIRAGE_FileFilter_
             }
         } else {
             /* Seek foward */
-            for (i = self->priv->cur_part_idx; i < self->priv->num_parts-1; i++) {
+            for (gint i = self->priv->cur_part_idx; i < self->priv->num_parts-1; i++) {
                 if (is_within_part(new_position, &self->priv->parts[i], FALSE)) {
                     self->priv->cur_part_idx = i;
                     break;
@@ -453,7 +450,7 @@ static gssize mirage_filter_gzip_read_from_part (MIRAGE_FileFilter_GZIP *self, g
                 g_free(chunk_buffer);
                 return -1;
             }
-        } while(zlib_stream->avail_out);
+        } while (zlib_stream->avail_out);
 
 
         /* Set currently cached part */

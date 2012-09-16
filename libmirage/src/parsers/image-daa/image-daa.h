@@ -84,7 +84,7 @@ static inline guint read_bits (guint bits, guint8 *in, guint in_bits)
 
     if (bits > 32) return 0;
     if (bits < 32) mask = (1 << bits) - 1;
-    for(;;) {
+    for (;;) {
         seek_bits = in_bits & 7;
         ret |= ((in[in_bits >> 3] >> seek_bits) & mask) << seek;
         rem = 8 - seek_bits;

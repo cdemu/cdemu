@@ -285,7 +285,6 @@ static GObject *mirage_parser_cif_parse_session_descriptor (MIRAGE_Parser_CIF *s
 {
     GObject *session;
     CIF_SessionDescriptor *descriptor = (CIF_SessionDescriptor *)data;
-    gint i;
 
     descriptor->descriptor_length = GUINT16_FROM_LE(descriptor->descriptor_length);
     descriptor->num_tracks = GUINT16_FROM_LE(descriptor->num_tracks);
@@ -336,7 +335,7 @@ static GObject *mirage_parser_cif_parse_session_descriptor (MIRAGE_Parser_CIF *s
     }
 
     /* Process all tracks */
-    for (i = 0; i < descriptor->num_tracks; i++) {
+    for (gint i = 0; i < descriptor->num_tracks; i++) {
         guint8 *descriptor_data;
         guint16 descriptor_length;
         GObject *track;
@@ -395,7 +394,6 @@ static GObject *mirage_parser_cif_parse_session_descriptor (MIRAGE_Parser_CIF *s
 static gboolean mirage_parser_cif_parse_disc_descriptor (MIRAGE_Parser_CIF *self, guint8 *data, guint16 length G_GNUC_UNUSED, GError **error)
 {
     CIF_DiscDescriptor *descriptor = (CIF_DiscDescriptor *)data;
-    gint i;
 
     descriptor->descriptor_length = GUINT16_FROM_LE(descriptor->descriptor_length);
     descriptor->num_sessions = GUINT16_FROM_LE(descriptor->num_sessions);
@@ -421,7 +419,7 @@ static gboolean mirage_parser_cif_parse_disc_descriptor (MIRAGE_Parser_CIF *self
 
 
     /* Process all sessions */
-    for (i = 0; i < descriptor->num_sessions; i++) {
+    for (gint i = 0; i < descriptor->num_sessions; i++) {
         guint8 *descriptor_data;
         guint16 descriptor_length;
         GObject *session;
@@ -509,7 +507,6 @@ static gboolean mirage_parser_cif_parse_disc_block (MIRAGE_Parser_CIF *self, GEr
 static gboolean mirage_parser_cif_parse_ofs_block (MIRAGE_Parser_CIF *self, GError **error)
 {
     guint16 num_entries;
-    gint i;
 
     /* Seek to the content of "ofs " block */
     g_seekable_seek(G_SEEKABLE(self->priv->cif_stream), self->priv->ofs_offset, G_SEEK_SET, NULL, NULL);
@@ -530,7 +527,7 @@ static gboolean mirage_parser_cif_parse_ofs_block (MIRAGE_Parser_CIF *self, GErr
     self->priv->offset_entries = g_new0(CIF_OffsetEntry, num_entries);
     self->priv->num_offset_entries = num_entries;
 
-    for (i = 0; i < num_entries && g_seekable_tell(G_SEEKABLE(self->priv->cif_stream)) < (self->priv->ofs_offset + self->priv->ofs_length); i++) {
+    for (gint i = 0; i < num_entries && g_seekable_tell(G_SEEKABLE(self->priv->cif_stream)) < (self->priv->ofs_offset + self->priv->ofs_length); i++) {
         CIF_OffsetEntry entry;
 
         /* Read whole entry */

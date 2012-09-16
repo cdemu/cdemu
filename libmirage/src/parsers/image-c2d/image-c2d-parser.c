@@ -99,11 +99,9 @@ static inline void c2d_c2aw_block_fix_endian (C2D_C2AWBlock *block)
 
 static inline void c2d_wocd_block_fix_endian (C2D_WOCDBlock *block)
 {
-    gint i;
-
     block->block_size = GUINT32_FROM_LE(block->block_size);
 
-    for (i = 0; i < G_N_ELEMENTS(block->dummy); i++) {
+    for (gint i = 0; i < G_N_ELEMENTS(block->dummy); i++) {
         block->dummy[i] = GUINT32_FROM_LE(block->dummy[i]);
     }
 }
@@ -305,9 +303,8 @@ static gboolean mirage_parser_c2d_parse_track_entries (MIRAGE_Parser_C2D *self, 
             for (n = 0; n < num_tracks-t; n++) {
                 if (cur_tb->point != cur_tb[n].point) break;
             }
-            n--;
             track_first_sector = cur_tb->first_sector;
-            track_last_sector = cur_tb[n].last_sector;
+            track_last_sector = cur_tb[n-1].last_sector;
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   track's first sector: %i, last sector: %i.\n", __debug__, track_first_sector, track_last_sector);
         }
 

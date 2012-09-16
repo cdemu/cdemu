@@ -88,9 +88,8 @@ static void mirage_parser_toc_set_session_type (MIRAGE_Parser_TOC *self, gchar *
         {"CD_ROM_XA", MIRAGE_SESSION_CD_ROM_XA},
         {"CD_I", MIRAGE_SESSION_CD_I},
     };
-    gint i;
 
-    for (i = 0; i < G_N_ELEMENTS(session_types); i++) {
+    for (gint i = 0; i < G_N_ELEMENTS(session_types); i++) {
         if (!mirage_helper_strcasecmp(session_types[i].str, type_string)) {
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: session type: %s\n", __debug__, session_types[i].str);
             mirage_session_set_session_type(MIRAGE_SESSION(self->priv->cur_session), session_types[i].type);
@@ -369,14 +368,13 @@ static gboolean mirage_parser_toc_cdtext_parse_binary (MIRAGE_Parser_TOC *self, 
     gchar **elements;
     gchar *data_str;
     gint data_len;
-    gint i;
 
     elements = g_regex_split(self->priv->regex_binary, bin_str, 0);
 
     data_len = g_strv_length(elements);
     data_str = g_new(gchar, data_len);
 
-    for (i = 0; i < data_len; i++) {
+    for (gint i = 0; i < data_len; i++) {
         data_str[i] = atoi(elements[i]);
     }
 
@@ -427,7 +425,6 @@ static gboolean mirage_parser_toc_cdtext_parse_language (MIRAGE_Parser_TOC *self
 {
     GMatchInfo *match_info;
 
-    gint i;
     static struct {
         gchar *pack_id;
         gint pack_type;
@@ -472,7 +469,7 @@ static gboolean mirage_parser_toc_cdtext_parse_language (MIRAGE_Parser_TOC *self
         }
 
         /* Set appropriate pack */
-        for (i = 0; i < G_N_ELEMENTS(packs); i++) {
+        for (gint i = 0; i < G_N_ELEMENTS(packs); i++) {
             if (!g_strcmp0(type_str, packs[i].pack_id)) {
                 mirage_language_set_pack_data(MIRAGE_LANGUAGE(language), packs[i].pack_type, content, content_len, NULL);
                 break;
@@ -1032,8 +1029,7 @@ static gboolean mirage_parser_toc_parse_toc_file (MIRAGE_Parser_TOC *self, gchar
     GString *cdtext_string = NULL;
 
     /* Read file line-by-line */
-    gint line_nr;
-    for (line_nr = 1; ; line_nr++) {
+    for (gint line_nr = 1; ; line_nr++) {
         GIOStatus status;
         gchar *line_str;
         gsize line_len;
@@ -1202,8 +1198,7 @@ static gboolean mirage_parser_toc_check_toc_file (MIRAGE_Parser_TOC *self, const
     }
 
     /* Read file line-by-line */
-    gint line_nr;
-    for (line_nr = 1; ; line_nr++) {
+    for (gint line_nr = 1; ; line_nr++) {
         GIOStatus status;
         gchar *line_str;
         gsize line_len;
@@ -1251,10 +1246,9 @@ static GObject *mirage_parser_toc_load_image (MIRAGE_Parser *_self, gchar **file
     MIRAGE_Parser_TOC *self = MIRAGE_PARSER_TOC(_self);
 
     gboolean succeeded = TRUE;
-    gint i;
 
     /* Check if we can load file(s) */
-    for (i = 0; i < g_strv_length(filenames); i++) {
+    for (gint i = 0; i < g_strv_length(filenames); i++) {
         if (!mirage_parser_toc_check_toc_file(self, filenames[i])) {
             g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_CANNOT_HANDLE, "Parser cannot handle given image!");
             return FALSE;
@@ -1268,7 +1262,7 @@ static GObject *mirage_parser_toc_load_image (MIRAGE_Parser *_self, gchar **file
     mirage_disc_set_filenames(MIRAGE_DISC(self->priv->disc), filenames);
 
     /* Each TOC/BIN is one session, so we load all given filenames */
-    for (i = 0; i < g_strv_length(filenames); i++) {
+    for (gint i = 0; i < g_strv_length(filenames); i++) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: loading session #%i: '%s'!\n", __debug__, i, filenames[i]);
         mirage_parser_toc_init_session_data(self);
 

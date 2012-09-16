@@ -75,11 +75,10 @@ static gboolean mirage_disc_check_for_encoded_mcn (MIRAGE_Disc *self)
     GObject *track = NULL;
     gint start_address = 0;
     gint num_tracks = mirage_disc_get_number_of_tracks(self);
-    gint i;
 
     /* Go over all tracks, and find the first one with fragment that contains
        subchannel... */
-    for (i = 0; i < num_tracks; i++) {
+    for (gint i = 0; i < num_tracks; i++) {
         track = mirage_disc_get_track_by_index(self, i, NULL);
         if (track) {
             GObject *fragment = mirage_track_find_fragment_with_subchannel(MIRAGE_TRACK(track), NULL);
@@ -97,7 +96,6 @@ static gboolean mirage_disc_check_for_encoded_mcn (MIRAGE_Disc *self)
     }
 
     if (track) {
-        gint cur_address;
         gint end_address = start_address + 100;
 
         self->priv->mcn_encoded = TRUE; /* It is, even if it may not be present... */
@@ -108,7 +106,7 @@ static gboolean mirage_disc_check_for_encoded_mcn (MIRAGE_Disc *self)
         /* According to INF8090, MCN, if present, must be encoded in at least
            one sector in 100 consequtive sectors. So we read first hundred
            sectors' subchannel, and extract MCN if we find it. */
-        for (cur_address = start_address; cur_address < end_address; cur_address++) {
+        for (gint cur_address = start_address; cur_address < end_address; cur_address++) {
             guint8 tmp_buf[16];
 
             if (!mirage_track_read_sector(MIRAGE_TRACK(track), cur_address, FALSE, 0, MIRAGE_SUBCHANNEL_PQ, tmp_buf, NULL, NULL)) {

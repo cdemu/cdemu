@@ -153,16 +153,14 @@ static inline void b6t_track_fix_endian (B6T_Track *track)
 
 static inline void widechar_filename_fix_endian (gunichar2 *filename, gint len)
 {
-    gint i;
-    for (i = 0; i < len; i++) {
+    for (gint i = 0; i < len; i++) {
         filename[i] = GUINT16_FROM_LE(filename[i]);
     }
 }
 
 static inline void dpm_data_fix_endian (guint32 *dpm_data, guint32 num_entries)
 {
-    guint i;
-    for (i = 0; i < num_entries; i++) {
+    for (guint i = 0; i < num_entries; i++) {
         dpm_data[i] = GUINT32_FROM_LE(dpm_data[i]);
     }
 }
@@ -866,7 +864,6 @@ static gint sort_data_blocks (B6T_DataBlock *block1, B6T_DataBlock *block2)
 static gboolean mirage_parser_b6t_parse_data_blocks (MIRAGE_Parser_B6T *self, GError **error G_GNUC_UNUSED)
 {
     gsize length = 0;
-    gint i;
 
     /* Store the current pointer (for length calculation) */
     length = (gsize)self->priv->cur_ptr;
@@ -885,7 +882,7 @@ static gboolean mirage_parser_b6t_parse_data_blocks (MIRAGE_Parser_B6T *self, GE
 
     /* Now, the actual blocks; we need to copy these, because filename field
        needs to be changed */
-    for (i = 0; i < num_data_blocks; i++) {
+    for (gint i = 0; i < num_data_blocks; i++) {
         B6T_DataBlock *data_block = g_new0(B6T_DataBlock, 1);
 
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: data block #%i\n", __debug__, i);
@@ -1067,7 +1064,6 @@ static gboolean mirage_parser_b6t_parse_track_entry (MIRAGE_Parser_B6T *self, GE
 
 static gboolean mirage_parser_b6t_parse_session (MIRAGE_Parser_B6T *self, GError **error)
 {
-    gint i;
     B6T_Session *session_entry;
 
     session_entry = MIRAGE_CAST_PTR(self->priv->cur_ptr, 0, B6T_Session *);
@@ -1117,13 +1113,12 @@ static gboolean mirage_parser_b6t_parse_session (MIRAGE_Parser_B6T *self, GError
     g_object_unref(session);
 
     /* Load track entries */
-    for (i = 0; i < session_entry->num_entries; i++) {
+    for (gint i = 0; i < session_entry->num_entries; i++) {
         if (!mirage_parser_b6t_parse_track_entry(self, error)) {
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to parse track entry #%i!\n", __debug__, i);
             return FALSE;
         }
     }
-
 
     return TRUE;
 }
@@ -1131,13 +1126,12 @@ static gboolean mirage_parser_b6t_parse_session (MIRAGE_Parser_B6T *self, GError
 static gboolean mirage_parser_b6t_parse_sessions (MIRAGE_Parser_B6T *self, GError **error)
 {
     gsize length = 0;
-    gint i;
 
     /* Store the offset */
     length = (gsize)self->priv->cur_ptr;
 
     /* Load each session */
-    for (i = 0; i < self->priv->disc_block_1->num_sessions; i++) {
+    for (gint i = 0; i < self->priv->disc_block_1->num_sessions; i++) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: parsing session #%i...\n", __debug__, i);
         if (!mirage_parser_b6t_parse_session(self, error)) {
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to parse session #%i!\n", __debug__, i);

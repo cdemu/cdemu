@@ -71,9 +71,7 @@ typedef struct
 
 static void mirage_parser_cdi_whine_on_unexpected (MIRAGE_Parser_CDI *self, guint8 *data, ExpectedField *fields, gint fields_len, gchar *func_name, gchar *extra_comment)
 {
-    gint z;
-
-    for (z = 0; z < fields_len; z++) {
+    for (gint z = 0; z < fields_len; z++) {
         if (data[fields[z].offset] != fields[z].expected) {
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: data[%i] = 0x%X (expected 0x%X); extra comment: %s; seems we have a problem there, Dave...\n", func_name, fields[z].offset, data[fields[z].offset], fields[z].expected, extra_comment);
         }
@@ -303,12 +301,10 @@ static gboolean mirage_parser_cdi_parse_header (MIRAGE_Parser_CDI *self, GError 
 
 static gboolean mirage_parser_cdi_parse_cdtext (MIRAGE_Parser_CDI *self, GError **error G_GNUC_UNUSED)
 {
-    gint i;
-
     /* It seems that each CD-TEXT block for track consists of 18 bytes, each (?)
        denoting length of field it represents; if it's non-zero, it's followed by declared
        size of bytes... */
-    for (i = 0; i < 18; i++) {
+    for (gint i = 0; i < 18; i++) {
         gint length = MIRAGE_CAST_DATA(self->priv->cur_ptr, 0, guint8);
         self->priv->cur_ptr += sizeof(guint8);
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: field [%i] length: %i\n", __debug__, i, length);
@@ -324,8 +320,6 @@ static gboolean mirage_parser_cdi_parse_cdtext (MIRAGE_Parser_CDI *self, GError 
 
 static gboolean mirage_parser_cdi_load_track (MIRAGE_Parser_CDI *self, GError **error)
 {
-    gint i;
-
     /* Recongised fields */
     gint num_indices = 0;
     gint *indices = NULL;
@@ -360,7 +354,7 @@ static gboolean mirage_parser_cdi_load_track (MIRAGE_Parser_CDI *self, GError **
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: number of indices: %d\n", __debug__, num_indices);
 
     indices = g_new0(gint, num_indices);
-    for (i = 0; i < num_indices; i++) {
+    for (gint i = 0; i < num_indices; i++) {
         indices[i] = GUINT32_FROM_LE(MIRAGE_CAST_DATA(self->priv->cur_ptr, 0, guint32));
         self->priv->cur_ptr += sizeof(guint32);
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: index %i: 0x%X\n\n", __debug__, i, indices[i]);
@@ -371,7 +365,7 @@ static gboolean mirage_parser_cdi_load_track (MIRAGE_Parser_CDI *self, GError **
     self->priv->cur_ptr += sizeof(guint32);
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: number of CD-TEXT blocks: %i\n", __debug__, num_cdtext_blocks);
 
-    for (i = 0; i < num_cdtext_blocks; i++) {
+    for (gint i = 0; i < num_cdtext_blocks; i++) {
         /* Parse CD-Text */
         mirage_parser_cdi_parse_cdtext(self, error);
     }
@@ -722,7 +716,7 @@ static gboolean mirage_parser_cdi_load_track (MIRAGE_Parser_CDI *self, GError **
        isn't needed, because it spans to the end of the track, anyway */
     gint index_address = indices[0];
     mirage_track_set_track_start(MIRAGE_TRACK(track), indices[0]);
-    for (i = 1; i < num_indices - 1; i++) {
+    for (gint i = 1; i < num_indices - 1; i++) {
         index_address += indices[i];
         mirage_track_add_index(MIRAGE_TRACK(track), index_address, NULL);
     }
@@ -748,7 +742,6 @@ static gboolean mirage_parser_cdi_load_track (MIRAGE_Parser_CDI *self, GError **
 static gboolean mirage_parser_cdi_load_session (MIRAGE_Parser_CDI *self, GError **error)
 {
     gint num_tracks = 0;
-    gint i;
 
     /* As far as session descriptor goes, second byte is number of tracks... */
     num_tracks = MIRAGE_CAST_DATA(self->priv->cur_ptr, 1, guint8);
@@ -786,7 +779,7 @@ static gboolean mirage_parser_cdi_load_session (MIRAGE_Parser_CDI *self, GError 
         g_object_unref(session);
 
         /* Load tracks */
-        for (i = 0; i < num_tracks; i++) {
+        for (gint i = 0; i < num_tracks; i++) {
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "\n");
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: *** Loading track %i ***\n", __debug__, i);
             if (!mirage_parser_cdi_load_track(self, error)) {
@@ -807,7 +800,6 @@ static gboolean mirage_parser_cdi_load_disc (MIRAGE_Parser_CDI *self, GError **e
 {
     gboolean succeeded = TRUE;
     gint num_sessions = 0;
-    gint i;
 
     /* First byte seems to be number of sessions */
     num_sessions = MIRAGE_CAST_DATA(self->priv->cur_ptr, 0, guint8);
@@ -816,7 +808,7 @@ static gboolean mirage_parser_cdi_load_disc (MIRAGE_Parser_CDI *self, GError **e
     /* Load sessions (note that the equal sign in for loop is there to account
        for the last, empty session) */
     self->priv->cur_ptr += 1; /* Set pointer at start of first session descriptor */
-    for (i = 0; i <= num_sessions; i++) {
+    for (gint i = 0; i <= num_sessions; i++) {
         /* Load session */
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "\n");
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: *** Loading session %i ***\n", __debug__, i);

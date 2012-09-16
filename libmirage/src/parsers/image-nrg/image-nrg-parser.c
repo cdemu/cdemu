@@ -107,8 +107,7 @@ static gboolean mirage_parser_nrg_build_block_index (MIRAGE_Parser_NRG *self, GE
         __debug__, index, blockentry->block_id, blockentry->offset, blockentry->offset, blockentry->length, blockentry->length);
 
         /* Got sub-blocks? */
-        gint id_index;
-        for (id_index = 0; NRGBlockID[id_index].block_id; id_index++) {
+        for (gint id_index = 0; NRGBlockID[id_index].block_id; id_index++) {
             if (!memcmp(blockentry->block_id, NRGBlockID[id_index].block_id, 4)) {
                 if (NRGBlockID[id_index].subblock_length) {
                     blockentry->subblocks_offset = blockentry->offset + 8 + NRGBlockID[id_index].subblock_offset;
@@ -356,8 +355,7 @@ static gboolean mirage_parser_nrg_load_etn_data (MIRAGE_Parser_NRG *self, gint s
     }
 
     /* Read ETN blocks */
-    gint i;
-    for (i = 0; i < blockentry->num_subblocks; i++) {
+    for (gint i = 0; i < blockentry->num_subblocks; i++) {
         NRG_ETN_Block *block = &self->priv->etn_blocks[i];
 
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: ETN block #%i\n", __debug__, i);
@@ -420,8 +418,7 @@ static gboolean mirage_parser_nrg_load_cue_data (MIRAGE_Parser_NRG *self, gint s
     cur_ptr += blockentry->length;
 
     /* Conversion */
-    gint i;
-    for (i = 0; i < blockentry->num_subblocks; i++) {
+    for (gint i = 0; i < blockentry->num_subblocks; i++) {
         NRG_CUE_Block *block = &self->priv->cue_blocks[i];
 
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: CUE block #%i\n", __debug__, i);
@@ -480,8 +477,7 @@ static gboolean mirage_parser_nrg_load_dao_data (MIRAGE_Parser_NRG *self, gint s
 
     /* Allocate space and read DAO blocks */
     self->priv->dao_blocks = g_new0(NRG_DAO_Block, blockentry->num_subblocks);
-    gint i;
-    for (i = 0; i < blockentry->num_subblocks; i++) {
+    for (gint i = 0; i < blockentry->num_subblocks; i++) {
         NRG_DAO_Block *block = &self->priv->dao_blocks[i];
 
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: DAO block #%i\n", __debug__, i);
@@ -549,13 +545,12 @@ static gboolean mirage_parser_nrg_load_session (MIRAGE_Parser_NRG *self, gint se
 
     /* Build session */
     GObject *session;
-    gint i;
 
     session = g_object_new(MIRAGE_TYPE_SESSION, NULL);
     mirage_disc_add_session_by_index(MIRAGE_DISC(self->priv->disc), -1, session);
 
     /* Use DAO blocks to build tracks */
-    for (i = 0; i < self->priv->num_dao_blocks; i++) {
+    for (gint i = 0; i < self->priv->num_dao_blocks; i++) {
         NRG_DAO_Block *dao_block = self->priv->dao_blocks + i;
 
         GObject *track;
@@ -709,7 +704,7 @@ static gboolean mirage_parser_nrg_load_session (MIRAGE_Parser_NRG *self, gint se
 
     /* Use CUE blocks to set pregaps and indices */
     gint track_start = 0;
-    for (i = 0; i < self->priv->num_cue_blocks; i++) {
+    for (gint i = 0; i < self->priv->num_cue_blocks; i++) {
         NRG_CUE_Block *cue_block = self->priv->cue_blocks + i;
 
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: track %i, index %i, sector 0x%X\n", __debug__, cue_block->track, cue_block->index, cue_block->start_sector);
@@ -795,13 +790,12 @@ static gboolean mirage_parser_nrg_load_session_tao (MIRAGE_Parser_NRG *self, gin
 
     /* Build session */
     GObject *session;
-    gint i;
 
     session = g_object_new(MIRAGE_TYPE_SESSION, NULL);
     mirage_disc_add_session_by_index(MIRAGE_DISC(self->priv->disc), -1, session);
 
     /* Use ETN blocks to build tracks */
-    for (i = 0; i < self->priv->num_etn_blocks; i++) {
+    for (gint i = 0; i < self->priv->num_etn_blocks; i++) {
         NRG_ETN_Block *etn_block = self->priv->etn_blocks + i;
 
         GObject *track;
@@ -1056,10 +1050,8 @@ static GObject *mirage_parser_nrg_load_image (MIRAGE_Parser *_self, gchar **file
     mirage_disc_layout_set_start_sector(MIRAGE_DISC(self->priv->disc), -150);
 
     /* Load sessions */
-    gint session_num = 0;
-
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: loading sessions...\n", __debug__);
-    for (session_num = 0; ; session_num++) {
+    for (gint session_num = 0; ; session_num++) {
         if (mirage_parser_nrg_find_block_entry(self, "CUEX", session_num) || mirage_parser_nrg_find_block_entry(self, "CUES", session_num)) {
             /* CUEX/CUES block: means we need to make new session */
             if (!mirage_parser_nrg_load_session(self, session_num, error)) {

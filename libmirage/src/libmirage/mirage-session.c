@@ -1231,7 +1231,6 @@ gboolean mirage_session_set_cdtext_data (MIRAGE_Session *self, guint8 *data, gin
 {
     GObject *decoder;
     gboolean succeeded = TRUE;
-    gint i;
 
     /* Create decoder object and hope it'll do all the dirty work correctly... */
     decoder = g_object_new(MIRAGE_TYPE_CDTEXT_ENCDEC, NULL);
@@ -1239,7 +1238,7 @@ gboolean mirage_session_set_cdtext_data (MIRAGE_Session *self, guint8 *data, gin
 
     mirage_cdtext_decoder_init(MIRAGE_CDTEXT_ENCDEC(decoder), data, len);
 
-    for (i = 0; mirage_cdtext_decoder_get_block_info(MIRAGE_CDTEXT_ENCDEC(decoder), i, NULL, NULL, NULL, NULL); i++) {
+    for (gint i = 0; mirage_cdtext_decoder_get_block_info(MIRAGE_CDTEXT_ENCDEC(decoder), i, NULL, NULL, NULL, NULL); i++) {
         succeeded = mirage_cdtext_decoder_get_data(MIRAGE_CDTEXT_ENCDEC(decoder), i, (MIRAGE_CDTextDataCallback)set_cdtext_data, self);
         if (!succeeded) {
             g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_SESSION_ERROR, "Failed to decode CD-TEXT data!");
@@ -1310,10 +1309,9 @@ gboolean mirage_session_get_cdtext_data (MIRAGE_Session *self, guint8 **data, gi
         MIRAGE_LANGUAGE_PACK_UPC_ISRC,
         /*MIRAGE_LANGUAGE_PACK_SIZE*/
     };
-    gint i, j, k;
 
     /* Add all languages' data to encoder */
-    for (i = 0; i < num_languages; i++) {
+    for (gint i = 0; i < num_languages; i++) {
         GObject* session_language;
         gint langcode;
 
@@ -1328,7 +1326,7 @@ gboolean mirage_session_get_cdtext_data (MIRAGE_Session *self, guint8 **data, gi
         mirage_cdtext_encoder_set_block_info(MIRAGE_CDTEXT_ENCDEC(encoder), i, langcode, 0, 0, NULL);
 
         /* Pack all supported pack types */
-        for (j = 0; j < G_N_ELEMENTS(pack_types); j++) {
+        for (gint j = 0; j < G_N_ELEMENTS(pack_types); j++) {
             gint pack_type = pack_types[j];
 
             const guint8 *session_language_data = NULL;
@@ -1340,7 +1338,7 @@ gboolean mirage_session_get_cdtext_data (MIRAGE_Session *self, guint8 **data, gi
             }
 
             /* Now get and pack the same data for the all tracks */
-            for (k = 0; k < num_tracks; k++) {
+            for (gint k = 0; k < num_tracks; k++) {
                 GObject *track;
                 gint number;
 

@@ -273,12 +273,10 @@ static gboolean mirage_file_filter_ecm_set_current_position (MIRAGE_FileFilter_E
         /* Position within last part */
         self->priv->cur_part_idx = self->priv->num_parts - 1;
     } else {
-        gint i;
-
         /* Seek part-by-part in appropriate direction (do not check first and last part, though) */
         if (new_position < self->priv->cur_position) {
             /* Seek backward */
-            for (i = self->priv->cur_part_idx; i > 0; i--) {
+            for (gint i = self->priv->cur_part_idx; i > 0; i--) {
                 if (is_within_part(new_position, &self->priv->parts[i], FALSE)) {
                     self->priv->cur_part_idx = i;
                     break;
@@ -286,7 +284,7 @@ static gboolean mirage_file_filter_ecm_set_current_position (MIRAGE_FileFilter_E
             }
         } else {
             /* Seek foward */
-            for (i = self->priv->cur_part_idx; i < self->priv->num_parts-1; i++) {
+            for (gint i = self->priv->cur_part_idx; i < self->priv->num_parts-1; i++) {
                 if (is_within_part(new_position, &self->priv->parts[i], FALSE)) {
                     self->priv->cur_part_idx = i;
                     break;

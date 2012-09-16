@@ -67,7 +67,6 @@ static gboolean mirage_track_check_for_encoded_isrc (MIRAGE_Track *self, GError 
     GObject *fragment = mirage_track_find_fragment_with_subchannel(self, NULL);
 
     if (fragment) {
-        gint sector;
         gint start, end;
 
         /* According to INF8090, ISRC, if present, must be encoded in at least
@@ -83,7 +82,7 @@ static gboolean mirage_track_check_for_encoded_isrc (MIRAGE_Track *self, GError 
         g_free(self->priv->isrc);
         self->priv->isrc = NULL;
 
-        for (sector = start; sector < end; sector++) {
+        for (gint sector = start; sector < end; sector++) {
             guint8 tmp_buf[16];
 
             if (!mirage_track_read_sector(self, sector, FALSE, 0, MIRAGE_SUBCHANNEL_PQ, tmp_buf, NULL, error)) {

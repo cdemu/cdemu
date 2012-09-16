@@ -202,7 +202,7 @@ gint mirage_parser_guess_medium_type (MIRAGE_Parser *self, GObject *disc)
  **/
 void mirage_parser_add_redbook_pregap (MIRAGE_Parser *self, GObject *disc)
 {
-    gint num_sessions, i;
+    gint num_sessions;
 
     /* Red Book pregap is found only on CD-ROMs */
     if (mirage_disc_get_medium_type(MIRAGE_DISC(disc)) != MIRAGE_MEDIUM_CD) {
@@ -220,7 +220,7 @@ void mirage_parser_add_redbook_pregap (MIRAGE_Parser *self, GObject *disc)
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: %d session(s)\n", __debug__, num_sessions);
 
     /* Put 150 sector pregap into every first track of each session */
-    for (i = 0; i < num_sessions; i++) {
+    for (gint i = 0; i < num_sessions; i++) {
         GObject *session;
         GObject *track;
         GObject *fragment;

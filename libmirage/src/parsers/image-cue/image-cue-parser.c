@@ -129,6 +129,8 @@ static gboolean mirage_parser_cue_set_new_file (MIRAGE_Parser_CUE *self, gchar *
 
 static gboolean mirage_parser_cue_add_track (MIRAGE_Parser_CUE *self, gint number, gchar *mode_string, GError **error)
 {
+    gint i;
+
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: adding track %d\n", __debug__, number);
 
     /* Current track becomes previous one */
@@ -160,7 +162,7 @@ static gboolean mirage_parser_cue_add_track (MIRAGE_Parser_CUE *self, gint numbe
         {"CDI/2336",   MIRAGE_MODE_MODE2_MIXED, 2336, FR_BIN_TFILE_DATA},
         {"CDI/2352",   MIRAGE_MODE_MODE2_MIXED, 2352, FR_BIN_TFILE_DATA},
     };
-    gint i;
+
     for (i = 0; i < G_N_ELEMENTS(track_modes); i++) {
         if (!g_strcmp0(track_modes[i].str, mode_string)) {
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: track mode: %s\n", __debug__, track_modes[i].str);
@@ -907,8 +909,7 @@ static gboolean mirage_parser_cue_parse_cue_file (MIRAGE_Parser_CUE *self, gchar
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: parsing\n", __debug__);
 
     /* Read file line-by-line */
-    gint line_nr;
-    for (line_nr = 1; ; line_nr++) {
+    for (gint line_nr = 1; ; line_nr++) {
         GIOStatus status;
         gchar *line_str;
         gsize line_len;

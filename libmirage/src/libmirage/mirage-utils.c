@@ -572,9 +572,8 @@ static const guint16 q_crc_lut[256] = {
 guint16 mirage_helper_subchannel_q_calculate_crc (const guint8 *data)
 {
     guint16 crc = 0;
-    int i;
 
-    for (i = 0; i < 10; i++) {
+    for (gint i = 0; i < 10; i++) {
         crc = q_crc_lut[(crc >> 8) ^ data[i]] ^ (crc << 8);
     }
 
@@ -711,11 +710,10 @@ void mirage_helper_subchannel_q_decode_isrc (const guint8 *buf, gchar *isrc)
  **/
 void mirage_helper_subchannel_interleave (gint subchan, const guint8 *channel12, guint8 *channel96)
 {
-    gint i, j;
     guint8 *ptr = channel96;
 
-    for (i = 0; i < 12; i++) {
-        for (j = 0; j < 8; j++) {
+    for (gint i = 0; i < 12; i++) {
+        for (gint j = 0; j < 8; j++) {
             guint8 val = (channel12[i] & (0x01 << j)) >> j; /* Make it 1 or 0 */
             ptr[7-j] |= (val << subchan);
         }
@@ -736,10 +734,8 @@ void mirage_helper_subchannel_interleave (gint subchan, const guint8 *channel12,
  **/
 void mirage_helper_subchannel_deinterleave (gint subchan, const guint8 *channel96, guint8 *channel12)
 {
-    gint i, j;
-
-    for (i = 0; i < 12; i++) {
-        for (j = 0; j < 8; j++) {
+    for (gint i = 0; i < 12; i++) {
+        for (gint j = 0; j < 8; j++) {
             guint8 val = (channel96[i*8+j] & (0x01 << subchan)) >> subchan;
             channel12[i] |= (val << (7-j));
         }
@@ -937,13 +933,12 @@ void mirage_helper_sector_edc_ecc_compute_edc_block (const guint8 *src, guint16 
 void mirage_helper_sector_edc_ecc_compute_ecc_block (const guint8 *src, guint32 major_count, guint32 minor_count, guint32 major_mult, guint32 minor_inc, guint8 *dest)
 {
     guint32 size = major_count * minor_count;
-    guint32 major = 0, minor = 0;
 
-    for (major = 0; major < major_count; major++) {
+    for (guint32 major = 0; major < major_count; major++) {
         guint32 index = (major >> 1) * major_mult + (major & 1);
         guint8 ecc_a = 0;
         guint8 ecc_b = 0;
-        for (minor = 0; minor < minor_count; minor++) {
+        for (guint32 minor = 0; minor < minor_count; minor++) {
             guint8 temp = src[index];
             index += minor_inc;
             if (index >= size) index -= size;

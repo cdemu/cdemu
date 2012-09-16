@@ -391,7 +391,7 @@ static gboolean mirage_parser_readcd_parse_toc (MIRAGE_Parser_READCD *self, cons
     self->priv->prev_mode = -1;
 
     /* Go over all TOC entries */
-    for (int i = 0; i < toc_len/11; i++) {
+    for (gint i = 0; i < toc_len/11; i++) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: TOC entry #%d\n", __debug__, i);
 
         /* Parse TOC entry */
@@ -454,8 +454,7 @@ static GObject *mirage_parser_readcd_load_image (MIRAGE_Parser *_self, gchar **f
     /* If it's a multisession disc, fix up the lead-in/lead-out lengths
        (NOTE: last session is left out for readibility; but it's irrelevant) */
     gint num_sessions = mirage_disc_get_number_of_sessions(MIRAGE_DISC(self->priv->disc));
-    gint i;
-    for (i = 0; i < num_sessions - 1; i++) {
+    for (gint i = 0; i < num_sessions - 1; i++) {
         GObject *session = mirage_disc_get_session_by_index(MIRAGE_DISC(self->priv->disc), i, NULL);
 
         if (i == 0) {

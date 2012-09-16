@@ -354,8 +354,7 @@ static gboolean mirage_fragment_binary_read_main_data (MIRAGE_Fragment *_self, g
 
         /* Binary audio files may need to be swapped from BE to LE */
         if (self->priv->tfile_format == FR_BIN_TFILE_AUDIO_SWAP) {
-            gint i;
-            for (i = 0; i < read_len; i+=2) {
+            for (gint i = 0; i < read_len; i+=2) {
                 guint16 *ptr = (guint16 *)&buf[i];
                 *ptr = GUINT16_SWAP_LE_BE(*ptr);
             }
@@ -429,9 +428,7 @@ static gboolean mirage_fragment_binary_read_subchannel_data (MIRAGE_Fragment *_s
         if (self->priv->sfile_format & FR_BIN_SFILE_PW96_LIN) {
             /* 96-byte deinterleaved PW; grab each subchannel and interleave it
                into destination buffer */
-            gint i;
-
-            for (i = 0; i < 8; i++) {
+            for (gint i = 0; i < 8; i++) {
                 guint8 *ptr = tmp_buf + i*12;
                 mirage_helper_subchannel_interleave(7 - i, ptr, buf);
             }

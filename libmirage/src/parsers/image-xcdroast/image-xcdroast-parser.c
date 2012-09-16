@@ -57,8 +57,8 @@ static gboolean mirage_parser_xcdroast_parse_xinf_file (MIRAGE_Parser_XCDROAST *
 static gchar *create_xinf_filename (gchar *track_filename)
 {
     gchar *xinf_filename;
-    int baselen = strlen(track_filename);
-    int suffixlen = strlen(mirage_helper_get_suffix(track_filename));
+    gint baselen = strlen(track_filename);
+    gint suffixlen = strlen(mirage_helper_get_suffix(track_filename));
 
     baselen -= suffixlen;
 
@@ -599,8 +599,7 @@ static gboolean mirage_parser_xcdroast_parse_xinf_file (MIRAGE_Parser_XCDROAST *
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: parsing XINF\n", __debug__);
 
     /* Read file line-by-line */
-    gint line_nr;
-    for (line_nr = 1; ; line_nr++) {
+    for (gint line_nr = 1; ; line_nr++) {
         GIOStatus status;
         gchar *line_str;
         gsize line_len;
@@ -688,8 +687,7 @@ static gboolean mirage_parser_xcdroast_parse_toc_file (MIRAGE_Parser_XCDROAST *s
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: parsing TOC\n", __debug__);
 
     /* Read file line-by-line */
-    gint line_nr;
-    for (line_nr = 1; ; line_nr++) {
+    for (gint line_nr = 1; ; line_nr++) {
         GIOStatus status;
         gchar *line_str;
         gsize line_len;
@@ -779,8 +777,7 @@ static gboolean mirage_parser_xcdroast_check_toc_file (MIRAGE_Parser_XCDROAST *s
     }
 
     /* Read file line-by-line */
-    gint line_nr;
-    for (line_nr = 1; ; line_nr++) {
+    for (gint line_nr = 1; ; line_nr++) {
         GIOStatus status;
         gchar *line_str;
         gsize line_len;

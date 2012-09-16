@@ -259,7 +259,6 @@ gchar *libmirage_obtain_password (GError **error)
 GObject *libmirage_create_disc (gchar **filenames, GObject *debug_context, GHashTable *params, GError **error)
 {
     GObject *disc;
-    gint i;
 
     /* Make sure libMirage is initialized */
     if (!libmirage.initialized) {
@@ -268,7 +267,7 @@ GObject *libmirage_create_disc (gchar **filenames, GObject *debug_context, GHash
     }
 
     /* Check if filename(s) is/are valid */
-    for (i = 0; i < g_strv_length(filenames); i++) {
+    for (gint i = 0; i < g_strv_length(filenames); i++) {
         if (!g_file_test(filenames[i], G_FILE_TEST_IS_REGULAR)) {
             g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, "Invalid image file '%s'!", filenames[i]);
             return NULL;
@@ -276,7 +275,7 @@ GObject *libmirage_create_disc (gchar **filenames, GObject *debug_context, GHash
     }
 
     /* Go over all parsers */
-    for (i = 0; i < libmirage.num_parsers; i++) {
+    for (gint i = 0; i < libmirage.num_parsers; i++) {
         GError *local_error = NULL;
         GObject *parser;
 
@@ -343,7 +342,6 @@ GObject *libmirage_create_fragment (GType fragment_interface, GObject *stream, G
 {
     gboolean succeeded = TRUE;
     GObject *fragment;
-    gint i;
 
     /* Make sure libMirage is initialized */
     if (!libmirage.initialized) {
@@ -364,7 +362,7 @@ GObject *libmirage_create_fragment (GType fragment_interface, GObject *stream, G
     }
 
     /* Go over all fragments */
-    for (i = 0; i < libmirage.num_fragments; i++) {
+    for (gint i = 0; i < libmirage.num_fragments; i++) {
         /* Create fragment; check if it implements requested interface, then
            try to load data... if we fail, we try next one */
         fragment = g_object_new(libmirage.fragments[i], NULL);
@@ -463,12 +461,11 @@ GObject *libmirage_create_file_stream (const gchar *filename, GObject *debug_con
     /* Construct a chain of filters */
     GObject *filter;
     gboolean found_new;
-    gint i;
 
     do {
         found_new = FALSE;
 
-        for (i = 0; i < libmirage.num_file_filters; i++) {
+        for (gint i = 0; i < libmirage.num_file_filters; i++) {
             /* Create filter object and check if it can handle data */
             filter = g_object_new(libmirage.file_filters[i], "base-stream", stream, "close-base-stream", FALSE, NULL);
 
@@ -519,8 +516,6 @@ GObject *libmirage_create_file_stream (const gchar *filename, GObject *debug_con
  **/
 gboolean libmirage_for_each_parser (MIRAGE_CallbackFunction func, gpointer user_data, GError **error)
 {
-    gint i;
-
     /* Make sure libMirage is initialized */
     if (!libmirage.initialized) {
         g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_LIBRARY_ERROR, "Library not initialized!");
@@ -528,7 +523,7 @@ gboolean libmirage_for_each_parser (MIRAGE_CallbackFunction func, gpointer user_
     }
 
     /* Go over all parsers */
-    for (i = 0; i < libmirage.num_parsers; i++) {
+    for (gint i = 0; i < libmirage.num_parsers; i++) {
         const MIRAGE_ParserInfo *parser_info;
         gboolean succeeded;
         GObject *parser;
@@ -564,8 +559,6 @@ gboolean libmirage_for_each_parser (MIRAGE_CallbackFunction func, gpointer user_
  **/
 gboolean libmirage_for_each_fragment (MIRAGE_CallbackFunction func, gpointer user_data, GError **error)
 {
-    gint i;
-
     /* Make sure libMirage is initialized */
     if (!libmirage.initialized) {
         g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_LIBRARY_ERROR, "Library not initialized!");
@@ -573,7 +566,7 @@ gboolean libmirage_for_each_fragment (MIRAGE_CallbackFunction func, gpointer use
     }
 
     /* Go over all fragments */
-    for (i = 0; i < libmirage.num_fragments; i++) {
+    for (gint i = 0; i < libmirage.num_fragments; i++) {
         const MIRAGE_FragmentInfo *fragment_info;
         gboolean succeeded;
         GObject *fragment;
@@ -609,8 +602,6 @@ gboolean libmirage_for_each_fragment (MIRAGE_CallbackFunction func, gpointer use
  **/
 gboolean libmirage_for_each_file_filter (MIRAGE_CallbackFunction func, gpointer user_data, GError **error)
 {
-    gint i;
-
     /* Make sure libMirage is initialized */
     if (!libmirage.initialized) {
         g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_LIBRARY_ERROR, "Library not initialized!");
@@ -618,7 +609,7 @@ gboolean libmirage_for_each_file_filter (MIRAGE_CallbackFunction func, gpointer 
     }
 
     /* Go over all file filters */
-    for (i = 0; i < libmirage.num_file_filters; i++) {
+    for (gint i = 0; i < libmirage.num_file_filters; i++) {
         const MIRAGE_FileFilterInfo *file_filter_info;
         gboolean succeeded;
         GObject *filter;

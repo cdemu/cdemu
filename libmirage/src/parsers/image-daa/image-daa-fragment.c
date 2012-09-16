@@ -242,7 +242,7 @@ static void daa_crypt_key (const gchar *pass, gint num)
     if (i) {
         a = 0;
         for (s = 0; s < d; s++) {
-            for(c = 0; c != i;) {
+            for (c = 0; c != i;) {
                 a++;
                 if(a == d) a = 0;
                 if(tmp[a] != -1) c++;
@@ -258,14 +258,13 @@ static void daa_crypt_key (const gchar *pass, gint num)
 
 static void daa_crypt_block (guint8 *ret, guint8 *data, gint size)
 {
-    gint i;
     guint8 c, t, *tab;
 
     if (!size) return;
     tab = daa_crypt_table[size - 1];
 
     memset(ret, 0, size);
-    for (i = 0; i < size; i++) {
+    for (gint i = 0; i < size; i++) {
         c = data[i] & 15;
         t = tab[i << 1];
         if (t & 1) c <<= 4;
@@ -301,9 +300,7 @@ static void daa_crypt (guint8 *key G_GNUC_UNUSED, guint8 *data, gint size)
 
 static void daa_crypt_init (guint8 *pwdkey, const gchar *pass, guint8 *daakey)
 {
-    int i;
-
-    for(i = 1; i <= 128; i++) {
+    for (gint i = 1; i <= 128; i++) {
         daa_crypt_key(pass, i);
     }
 
@@ -317,11 +314,11 @@ static void daa_crypt_init (guint8 *pwdkey, const gchar *pass, guint8 *daakey)
 static gboolean mirage_fragment_daa_read_from_stream (MIRAGE_Fragment_DAA *self, guint64 offset, guint32 length, guint8 *buffer, GError **error)
 {
     guint8 *buf_ptr = buffer;
-    gint i;
 
     /* A rather complex loop, thanks to the possibility that a chunk spans across
        multiple part files... */
     while (length > 0) {
+        gint i;
         DAA_Part *part = NULL;
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_FRAGMENT, "%s: reading 0x%X bytes from stream at offset 0x%llX\n", __debug__, length, offset);
 
@@ -379,7 +376,6 @@ gboolean mirage_fragment_daa_set_file (MIRAGE_Fragment_DAA *self, const gchar *f
     gchar signature[16];
     guint64 tmp_offset = 0;
     GObject *stream;
-    gint i;
 
     gint bsize_type = 0;
     gint bsize_len = 0;
@@ -698,7 +694,7 @@ gboolean mirage_fragment_daa_set_file (MIRAGE_Fragment_DAA *self, const gchar *f
     }
 
     tmp_offset = 0;
-    for (i = 0; i < self->priv->num_chunks; i++) {
+    for (gint i = 0; i < self->priv->num_chunks; i++) {
         DAA_Chunk *chunk = &self->priv->chunk_table[i];
 
         guint32 tmp_length = 0;
@@ -767,7 +763,7 @@ gboolean mirage_fragment_daa_set_file (MIRAGE_Fragment_DAA *self, const gchar *f
     self->priv->part_table = g_new0(DAA_Part, self->priv->num_parts);
 
     tmp_offset = 0;
-    for (i = 0; i < self->priv->num_parts; i++) {
+    for (gint i = 0; i < self->priv->num_parts; i++) {
         DAA_Part *part = &self->priv->part_table[i];
         gchar *part_filename = NULL;
         gchar part_signature[16] = "";
@@ -1026,7 +1022,6 @@ static void mirage_fragment_daa_init (MIRAGE_Fragment_DAA *self)
 static void mirage_fragment_daa_finalize (GObject *gobject)
 {
     MIRAGE_Fragment_DAA *self = MIRAGE_FRAGMENT_DAA(gobject);
-    gint i;
 
     /* Free stream */
     inflateEnd(&self->priv->z);
@@ -1039,7 +1034,7 @@ static void mirage_fragment_daa_finalize (GObject *gobject)
     g_free(self->priv->chunk_table);
 
     /* Free part table */
-    for (i = 0; i < self->priv->num_parts; i++) {
+    for (gint i = 0; i < self->priv->num_parts; i++) {
         DAA_Part *part = &self->priv->part_table[i];
         if (part->stream) {
             g_object_unref(part->stream);

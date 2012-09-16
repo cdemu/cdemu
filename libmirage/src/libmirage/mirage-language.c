@@ -53,7 +53,6 @@ struct _MIRAGE_LanguagePrivate
 \**********************************************************************/
 static MIRAGE_Language_Pack *mirage_language_get_pack_by_type (MIRAGE_Language *self, gint pack_type)
 {
-    gint i;
     static const gint pack_types[] = {
         MIRAGE_LANGUAGE_PACK_TITLE,
         MIRAGE_LANGUAGE_PACK_PERFORMER,
@@ -73,7 +72,7 @@ static MIRAGE_Language_Pack *mirage_language_get_pack_by_type (MIRAGE_Language *
         MIRAGE_LANGUAGE_PACK_SIZE,
     };
 
-    for (i = 0; i < G_N_ELEMENTS(pack_types); i++) {
+    for (gint i = 0; i < G_N_ELEMENTS(pack_types); i++) {
         if (pack_types[i] == pack_type) {
             return &self->priv->packs[i];
         }
@@ -216,10 +215,9 @@ static void mirage_language_init (MIRAGE_Language *self)
 static void mirage_language_finalize (GObject *gobject)
 {
     MIRAGE_Language *self = MIRAGE_LANGUAGE(gobject);
-    gint i;
 
     /* Free private structure elements */
-    for (i = 0; i < self->priv->packs_number; i++) {
+    for (gint i = 0; i < self->priv->packs_number; i++) {
         g_free(self->priv->packs[i].data);
     }
     g_free(self->priv->packs);
