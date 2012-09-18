@@ -7,8 +7,8 @@
 
 build:
 	-test -x autogen.sh && ./autogen.sh
-	dh build --with autotools_dev,python2,apport
+	dh build --with autotools_dev,python2
 
 %:
-	dh $@ --with autotools_dev,python2,apport
+	dh $@ --with autotools_dev,python2
 
