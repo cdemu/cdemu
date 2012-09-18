@@ -45,7 +45,6 @@ int main (int argc, char **argv)
     gboolean succeeded = FALSE;
 
     gchar **open_image = NULL;
-    gint i;
 
     /* Initialize GType */
     g_type_init();
@@ -73,7 +72,7 @@ int main (int argc, char **argv)
     /* Command-line parser has removed all options from argv; so it's just app
        name and image files now */
     open_image = g_new0(gchar *, argc); /* App name + filenames = filenames + NULL */
-    for (i = 0; i < argc; i++) {
+    for (gint i = 0; i < argc; i++) {
         open_image[i] = g_strdup(argv[i+1]);
     }
 

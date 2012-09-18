@@ -40,6 +40,7 @@ static gboolean image_analyzer_disc_topology_run_gnuplot (IMAGE_ANALYZER_DiscTop
 {
     gchar *argv[] = { "gnuplot", NULL };
     gboolean ret;
+	ssize_t written;
     gchar *cmd;
 
     /* Spawn gnuplot */
@@ -67,9 +68,10 @@ static gboolean image_analyzer_disc_topology_run_gnuplot (IMAGE_ANALYZER_DiscTop
     /* Redirect to socket */
     gtk_widget_show_all(GTK_WIDGET(self));
 
-    cmd = g_strdup_printf("set term x11 window '%lX' ctrlq", gtk_socket_get_id(GTK_SOCKET(self->priv->socket)));
-    write(self->priv->fd_in, cmd, strlen(cmd));
-    write(self->priv->fd_in, "\n", 1);
+    cmd = g_strdup_printf("set term x11 window '%lX' ctrlq\n", gtk_socket_get_id(GTK_SOCKET(self->priv->socket)));
+    written = write(self->priv->fd_in, cmd, strlen(cmd));
+	g_free(cmd);
+    if (written != strlen(cmd)) return FALSE;
 
     gtk_widget_hide(GTK_WIDGET(self));
 
@@ -80,7 +82,7 @@ static gboolean image_analyzer_disc_topology_refresh (IMAGE_ANALYZER_DiscTopolog
 {
     gboolean dpm_valid = FALSE;
     gint dpm_start, dpm_entries, dpm_resolution;
-
+    ssize_t written;
     gchar *command;
 
     /* No-op if gnuplot couldn't be started */
@@ -123,7 +125,7 @@ static gboolean image_analyzer_disc_topology_refresh (IMAGE_ANALYZER_DiscTopolog
                 "set xlabel 'Sector address'; "
                 "set ylabel 'Sector density [degrees/sector]'; "
                 "set grid; "
-                "plot '-' notitle with lines; ",
+                "plot '-' notitle with lines; \n",
                 basename,
                 filenames[1] ? "..." : ""
             );
@@ -134,20 +136,18 @@ static gboolean image_analyzer_disc_topology_refresh (IMAGE_ANALYZER_DiscTopolog
     }
 
     /* Write plot command */
-    write(self->priv->fd_in, command, strlen(command));
-    write(self->priv->fd_in, "\n", 1);
-
+    written = write(self->priv->fd_in, command, strlen(command));
     g_free(command);
-
+	if (written != strlen(command)) return FALSE;
 
     /* Feed DPM data */
     if (dpm_valid) {
-        gint address, i;
+        gint address;
         gdouble density;
 
         gchar dbl_buffer[G_ASCII_DTOSTR_BUF_SIZE] = "";
 
-        for (i = 0; i < dpm_entries; i++) {
+        for (gint i = 0; i < dpm_entries; i++) {
             address = dpm_start + i*dpm_resolution;
             density = 0;
 
@@ -159,12 +159,14 @@ static gboolean image_analyzer_disc_topology_refresh (IMAGE_ANALYZER_DiscTopolog
             /* NOTE: we convert double to string using g_ascii_dtostr, because
                %g and %f are locale-dependent */
             command = g_strdup_printf("%d %s\n", address, g_ascii_dtostr(dbl_buffer, G_ASCII_DTOSTR_BUF_SIZE, density));
-            write(self->priv->fd_in, command, strlen(command));
+            written = write(self->priv->fd_in, command, strlen(command));
             g_free(command);
+            if (written != strlen(command)) return FALSE;
         }
 
         /* Write EOF */
-        write(self->priv->fd_in, "e\n", 2);
+        written = write(self->priv->fd_in, "e\n", 2);
+        if (written != 2) return FALSE;
     }
 
     return TRUE;

@@ -93,12 +93,11 @@ static void treestore_add_node (GtkTreeStore *treestore, GtkTreeIter *parent, Gt
 static void treestore_add_fragment (GtkTreeStore *treestore, GtkTreeIter *parent, xmlNodePtr xml_node)
 {
     GtkTreeIter node;
-    xmlNodePtr cur_node;
 
     treestore_add_node(treestore, parent, &node, "Fragment");
 
     /* Go over nodes */
-    for (cur_node = xml_node->children; cur_node; cur_node = cur_node->next) {
+    for (xmlNodePtr cur_node = xml_node->children; cur_node; cur_node = cur_node->next) {
         /* Skip non-element nodes */
         if (cur_node->type != XML_ELEMENT_NODE) {
             continue;
@@ -154,12 +153,11 @@ static void treestore_add_fragment (GtkTreeStore *treestore, GtkTreeIter *parent
 static void treestore_add_index (GtkTreeStore *treestore, GtkTreeIter *parent, xmlNodePtr xml_node)
 {
     GtkTreeIter node;
-    xmlNodePtr cur_node;
 
     treestore_add_node(treestore, parent, &node, "Index");
 
     /* Go over nodes */
-    for (cur_node = xml_node->children; cur_node; cur_node = cur_node->next) {
+    for (xmlNodePtr cur_node = xml_node->children; cur_node; cur_node = cur_node->next) {
         /* Skip non-element nodes */
         if (cur_node->type != XML_ELEMENT_NODE) {
             continue;
@@ -178,7 +176,6 @@ static void treestore_add_index (GtkTreeStore *treestore, GtkTreeIter *parent, x
 static void treestore_add_language (GtkTreeStore *treestore, GtkTreeIter *parent, xmlNodePtr xml_node)
 {
     GtkTreeIter node;
-    xmlNodePtr cur_node;
 
     static const struct {
         gchar *name;
@@ -205,7 +202,7 @@ static void treestore_add_language (GtkTreeStore *treestore, GtkTreeIter *parent
     treestore_add_node(treestore, parent, &node, "Language");
 
     /* Go over nodes */
-    for (cur_node = xml_node->children; cur_node; cur_node = cur_node->next) {
+    for (xmlNodePtr cur_node = xml_node->children; cur_node; cur_node = cur_node->next) {
         /* Skip non-element nodes */
         if (cur_node->type != XML_ELEMENT_NODE) {
             continue;
@@ -215,9 +212,7 @@ static void treestore_add_language (GtkTreeStore *treestore, GtkTreeIter *parent
             gint langcode = xml_node_get_double(cur_node);
             treestore_add_node(treestore, &node, NULL, "Language code: %d", langcode);
         } else {
-            gint i;
-
-            for (i = 0; i < G_N_ELEMENTS(pack_types); i++) {
+            for (gint i = 0; i < G_N_ELEMENTS(pack_types); i++) {
                 if (!g_ascii_strcasecmp((gchar *)cur_node->name, pack_types[i].tag)) {
                     gchar *data = xml_node_get_string(cur_node);
                     gint len = xml_node_get_attr_double(cur_node, ATTR_LENGTH);
@@ -232,12 +227,11 @@ static void treestore_add_language (GtkTreeStore *treestore, GtkTreeIter *parent
 static void treestore_add_track (GtkTreeStore *treestore, GtkTreeIter *parent, xmlNodePtr xml_node)
 {
     GtkTreeIter node;
-    xmlNodePtr cur_node;
 
     treestore_add_node(treestore, parent, &node, "Track");
 
     /* Go over nodes */
-    for (cur_node = xml_node->children; cur_node; cur_node = cur_node->next) {
+    for (xmlNodePtr cur_node = xml_node->children; cur_node; cur_node = cur_node->next) {
         /* Skip non-element nodes */
         if (cur_node->type != XML_ELEMENT_NODE) {
             continue;
@@ -275,11 +269,10 @@ static void treestore_add_track (GtkTreeStore *treestore, GtkTreeIter *parent, x
             gint num_fragments = xml_node_get_double(cur_node);
             treestore_add_node(treestore, &node, NULL, "Number of fragments: %d", num_fragments);
         } else if (!g_ascii_strcasecmp((gchar *)cur_node->name, TAG_FRAGMENTS)) {
-            xmlNodePtr child_node;
             GtkTreeIter fragments;
 
             treestore_add_node(treestore, &node, &fragments, "Fragments");
-            for (child_node = cur_node->children; child_node; child_node = child_node->next) {
+            for (xmlNodePtr child_node = cur_node->children; child_node; child_node = child_node->next) {
                 if (child_node->type != XML_ELEMENT_NODE) {
                     continue;
                 }
@@ -295,11 +288,10 @@ static void treestore_add_track (GtkTreeStore *treestore, GtkTreeIter *parent, x
             gint num_indices = xml_node_get_double(cur_node);
             treestore_add_node(treestore, &node, NULL, "Number of indices: %d", num_indices);
         } else if (!g_ascii_strcasecmp((gchar *)cur_node->name, TAG_INDICES)) {
-            xmlNodePtr child_node;
             GtkTreeIter indices;
 
             treestore_add_node(treestore, &node, &indices, "Indices");
-            for (child_node = cur_node->children; child_node; child_node = child_node->next) {
+            for (xmlNodePtr child_node = cur_node->children; child_node; child_node = child_node->next) {
                 if (child_node->type != XML_ELEMENT_NODE) {
                     continue;
                 }
@@ -312,11 +304,10 @@ static void treestore_add_track (GtkTreeStore *treestore, GtkTreeIter *parent, x
             gint num_languages = xml_node_get_double(cur_node);
             treestore_add_node(treestore, &node, NULL, "Number of languages: %d", num_languages);
         } else if (!g_ascii_strcasecmp((gchar *)cur_node->name, TAG_LANGUAGES)) {
-            xmlNodePtr child_node;
             GtkTreeIter languages;
 
             treestore_add_node(treestore, &node, &languages, "Languages");
-            for (child_node = cur_node->children; child_node; child_node = child_node->next) {
+            for (xmlNodePtr child_node = cur_node->children; child_node; child_node = child_node->next) {
                 if (child_node->type != XML_ELEMENT_NODE) {
                     continue;
                 }
@@ -332,12 +323,11 @@ static void treestore_add_track (GtkTreeStore *treestore, GtkTreeIter *parent, x
 static void treestore_add_session (GtkTreeStore *treestore, GtkTreeIter *parent, xmlNodePtr xml_node)
 {
     GtkTreeIter node;
-    xmlNodePtr cur_node;
 
     treestore_add_node(treestore, parent, &node, "Session");
 
     /* Go over nodes */
-    for (cur_node = xml_node->children; cur_node; cur_node = cur_node->next) {
+    for (xmlNodePtr cur_node = xml_node->children; cur_node; cur_node = cur_node->next) {
         /* Skip non-element nodes */
         if (cur_node->type != XML_ELEMENT_NODE) {
             continue;
@@ -365,11 +355,10 @@ static void treestore_add_session (GtkTreeStore *treestore, GtkTreeIter *parent,
             gint num_tracks = xml_node_get_double(cur_node);
             treestore_add_node(treestore, &node, NULL, "Number of tracks: %d", num_tracks);
         } else if (!g_ascii_strcasecmp((gchar *)cur_node->name, TAG_TRACKS)) {
-            xmlNodePtr child_node;
             GtkTreeIter tracks;
 
             treestore_add_node(treestore, &node, &tracks, "Tracks");
-            for (child_node = cur_node->children; child_node; child_node = child_node->next) {
+            for (xmlNodePtr child_node = cur_node->children; child_node; child_node = child_node->next) {
                 if (child_node->type != XML_ELEMENT_NODE) {
                     continue;
                 }
@@ -382,11 +371,10 @@ static void treestore_add_session (GtkTreeStore *treestore, GtkTreeIter *parent,
             gint num_languages = xml_node_get_double(cur_node);
             treestore_add_node(treestore, &node, NULL, "Number of languages: %d", num_languages);
         }  else if (!g_ascii_strcasecmp((gchar *)cur_node->name, TAG_LANGUAGES)) {
-            xmlNodePtr child_node;
             GtkTreeIter languages;
 
             treestore_add_node(treestore, &node, &languages, "Languages");
-            for (child_node = cur_node->children; child_node; child_node = child_node->next) {
+            for (xmlNodePtr child_node = cur_node->children; child_node; child_node = child_node->next) {
                 treestore_add_language(treestore, &languages, child_node);
             }
         }
@@ -396,12 +384,11 @@ static void treestore_add_session (GtkTreeStore *treestore, GtkTreeIter *parent,
 static void treestore_add_dpm (GtkTreeStore *treestore, GtkTreeIter *parent, xmlNodePtr xml_node)
 {
     GtkTreeIter node;
-    xmlNodePtr cur_node;
 
     treestore_add_node(treestore, parent, &node, "DPM");
 
     /* Go over nodes */
-    for (cur_node = xml_node->children; cur_node; cur_node = cur_node->next) {
+    for (xmlNodePtr cur_node = xml_node->children; cur_node; cur_node = cur_node->next) {
         /* Skip non-element nodes */
         if (cur_node->type != XML_ELEMENT_NODE) {
             continue;
@@ -417,11 +404,10 @@ static void treestore_add_dpm (GtkTreeStore *treestore, GtkTreeIter *parent, xml
             gint dpm_entries = xml_node_get_double(cur_node);
             treestore_add_node(treestore, &node, NULL, "Number of entries: %d (0x%X)", dpm_entries, dpm_entries);
         } else if (!g_ascii_strcasecmp((gchar *)cur_node->name, TAG_DPM_ENTRIES)) {
-            xmlNodePtr child_node;
             GtkTreeIter dpm_entries;
 
             treestore_add_node(treestore, &node, &dpm_entries, "Data entries");
-            for (child_node = cur_node->children; child_node; child_node = child_node->next) {
+            for (xmlNodePtr child_node = cur_node->children; child_node; child_node = child_node->next) {
                 if (child_node->type != XML_ELEMENT_NODE) {
                     continue;
                 }
@@ -438,12 +424,11 @@ static void treestore_add_dpm (GtkTreeStore *treestore, GtkTreeIter *parent, xml
 static void treestore_add_disc (GtkTreeStore *treestore, GtkTreeIter *parent, xmlNodePtr xml_node)
 {
     GtkTreeIter node;
-    xmlNodePtr cur_node;
 
     treestore_add_node(treestore, parent, &node, "Disc");
 
     /* Go over nodes */
-    for (cur_node = xml_node->children; cur_node; cur_node = cur_node->next) {
+    for (xmlNodePtr cur_node = xml_node->children; cur_node; cur_node = cur_node->next) {
         /* Skip non-element nodes */
         if (cur_node->type != XML_ELEMENT_NODE) {
             continue;
@@ -453,12 +438,11 @@ static void treestore_add_disc (GtkTreeStore *treestore, GtkTreeIter *parent, xm
             gint medium_type = xml_node_get_double(cur_node);
             treestore_add_node(treestore, &node, NULL, "Medium type: 0x%X (%s)", medium_type, dump_medium_type(medium_type));
         } else if (!g_ascii_strcasecmp((gchar *)cur_node->name, TAG_FILENAMES)) {
-            xmlNodePtr child_node;
             GtkTreeIter files;
 
             treestore_add_node(treestore, &node, &files, "Filename(s)");
 
-            for (child_node = cur_node->children; child_node; child_node = child_node->next) {
+            for (xmlNodePtr child_node = cur_node->children; child_node; child_node = child_node->next) {
                 if (child_node->type != XML_ELEMENT_NODE) {
                     continue;
                 }
@@ -492,11 +476,10 @@ static void treestore_add_disc (GtkTreeStore *treestore, GtkTreeIter *parent, xm
             gint num_tracks = xml_node_get_double(cur_node);
             treestore_add_node(treestore, &node, NULL, "Number of tracks: %d", num_tracks);
         } else if (!g_ascii_strcasecmp((gchar *)cur_node->name, TAG_SESSIONS)) {
-            xmlNodePtr child_node;
             GtkTreeIter sessions;
 
             treestore_add_node(treestore, &node, &sessions, "Sessions");
-            for (child_node = cur_node->children; child_node; child_node = child_node->next) {
+            for (xmlNodePtr child_node = cur_node->children; child_node; child_node = child_node->next) {
                 if (child_node->type != XML_ELEMENT_NODE) {
                     continue;
                 }
@@ -518,7 +501,6 @@ static void treestore_add_disc (GtkTreeStore *treestore, GtkTreeIter *parent, xm
 gboolean image_analyzer_application_display_xml_data (IMAGE_ANALYZER_Application *self)
 {
     xmlNodePtr root_node;
-    xmlNodePtr cur_node;
 
     /* Make sure XML tree is valid */
     if (!self->priv->xml_doc) {
@@ -533,7 +515,7 @@ gboolean image_analyzer_application_display_xml_data (IMAGE_ANALYZER_Application
     }
 
     /* Go over nodes */
-    for (cur_node = root_node->children; cur_node; cur_node = cur_node->next) {
+    for (xmlNodePtr cur_node = root_node->children; cur_node; cur_node = cur_node->next) {
         /* Skip non-element nodes */
         if (cur_node->type != XML_ELEMENT_NODE) {
             continue;

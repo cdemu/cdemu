@@ -81,8 +81,7 @@ static gboolean image_analyzer_read_sector_append_text (IMAGE_ANALYZER_SectorRea
 
 static gboolean image_analyzer_read_sector_append_sector_data (IMAGE_ANALYZER_SectorRead *self, const guint8 *data, gint data_len, const gchar *tag_name)
 {
-    gint i;
-    for (i = 0; i < data_len; i++) {
+    for (gint i = 0; i < data_len; i++) {
         image_analyzer_read_sector_append_text(self, tag_name, "%02hhX ", data[i]);
     }
     return TRUE;

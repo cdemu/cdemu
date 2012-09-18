@@ -178,7 +178,6 @@ static gboolean xml_dump_language (GObject *language, xmlNodePtr parent)
         { TAG_SIZE, MIRAGE_LANGUAGE_PACK_SIZE },
     };
 
-    gint i;
     gint langcode;
 
     /* Make language node parent */
@@ -187,7 +186,7 @@ static gboolean xml_dump_language (GObject *language, xmlNodePtr parent)
     langcode = mirage_language_get_langcode(MIRAGE_LANGUAGE(language));
     xml_add_node_with_content(parent, TAG_LANGUAGE_CODE, "%d", langcode);
 
-    for (i = 0; i < G_N_ELEMENTS(pack_types); i++) {
+    for (gint i = 0; i < G_N_ELEMENTS(pack_types); i++) {
         const gchar *data;
         gint len;
         if (mirage_language_get_pack_data(MIRAGE_LANGUAGE(language), pack_types[i].code, &data, &len, NULL)) {
@@ -332,7 +331,6 @@ static gboolean xml_dump_disc (GObject *disc, xmlNodePtr parent)
     gint dpm_start, dpm_resolution, dpm_entries;
     const guint32 *dpm_data;
 
-    gint i;
     xmlNodePtr node;
 
     /* Make disc node parent */
@@ -343,7 +341,7 @@ static gboolean xml_dump_disc (GObject *disc, xmlNodePtr parent)
 
     filenames = mirage_disc_get_filenames(MIRAGE_DISC(disc));
     node = xml_add_node(parent, TAG_FILENAMES);
-    for (i = 0; filenames[i]; i++) {
+    for (gint i = 0; filenames[i]; i++) {
         xml_add_node_with_content(node, TAG_FILENAME, "%s", filenames[i]);
     }
 
@@ -369,8 +367,8 @@ static gboolean xml_dump_disc (GObject *disc, xmlNodePtr parent)
     xml_add_node_with_content(parent, TAG_NUM_TRACKS, "%d", num_tracks);
 
     if (num_sessions) {
-        xmlNodePtr node = xml_add_node(parent, TAG_SESSIONS);
-        mirage_disc_for_each_session(MIRAGE_DISC(disc), (MIRAGE_CallbackFunction)xml_dump_session, node);
+        xmlNodePtr session_node = xml_add_node(parent, TAG_SESSIONS);
+        mirage_disc_for_each_session(MIRAGE_DISC(disc), (MIRAGE_CallbackFunction)xml_dump_session, session_node);
     }
 
     mirage_disc_get_dpm_data(MIRAGE_DISC(disc), &dpm_start, &dpm_resolution, &dpm_entries, &dpm_data);
@@ -383,7 +381,7 @@ static gboolean xml_dump_disc (GObject *disc, xmlNodePtr parent)
         xml_add_node_with_content(node, TAG_DPM_NUM_ENTRIES, "%d", dpm_entries);
 
         node = xml_add_node(node, TAG_DPM_ENTRIES);
-        for (i = 0; i < dpm_entries; i++) {
+        for (gint i = 0; i < dpm_entries; i++) {
             xml_add_node_with_content(node, TAG_DPM_ENTRY, "%d", dpm_data[i]);
         }
     }

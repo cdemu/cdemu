@@ -31,9 +31,7 @@
 \**********************************************************************/
 gchar *dump_value (gint val, const DUMP_Value *values, gint num_values)
 {
-    gint i;
-    
-    for (i = 0; i < num_values; i++) {
+    for (gint i = 0; i < num_values; i++) {
         if (values[i].value == val) {
             return values[i].name;
         }
@@ -44,18 +42,19 @@ gchar *dump_value (gint val, const DUMP_Value *values, gint num_values)
 
 gchar *dump_flags (gint val, const DUMP_Value *values, gint num_values)
 {
-    static gchar tmp_string[255] = "";
+    static gchar tmp_string[256] = "";
     gchar *ptr = tmp_string;
-    gint i;
 
-    memset(tmp_string, 0, sizeof(tmp_string));
-        
-    for (i = 0; i < num_values; i++) {
+	memset(tmp_string, 0, sizeof(tmp_string));
+
+    for (gint i = 0; i < num_values; i++) {
         if ((val & values[i].value) == values[i].value) {
-            if (strlen(tmp_string)) {
-                ptr += sprintf(ptr, "; ");
+            if (strlen(tmp_string) > 0) {
+                g_assert(strlen(tmp_string)+3 <= sizeof(tmp_string));
+                ptr += g_snprintf(ptr, 3, "; ");
             }
-            ptr += sprintf(ptr, "%s", values[i].name);
+            g_assert(strlen(values[i].name)+1 <= sizeof(tmp_string));
+            ptr += g_snprintf(ptr, strlen(values[i].name)+1, "%s", values[i].name);
         }
     }
     

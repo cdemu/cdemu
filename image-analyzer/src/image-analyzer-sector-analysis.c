@@ -70,7 +70,6 @@ static void image_analyzer_sector_analysis_ui_callback_analyze (GtkWidget *butto
     gint num_sessions, num_tracks;
     gint session_number, session_start, session_length;
     gint track_number, track_start, track_length;
-    gint i, j, address;
 
     /* Clear buffer */
     image_analyzer_sector_analysis_clear_text(self);
@@ -85,7 +84,7 @@ static void image_analyzer_sector_analysis_ui_callback_analyze (GtkWidget *butto
 
     /* Go over sessions */
     num_sessions = mirage_disc_get_number_of_sessions(MIRAGE_DISC(self->priv->disc));
-    for (i = 0; i < num_sessions; i++) {
+    for (gint i = 0; i < num_sessions; i++) {
         /* Get session and its properties */
         session = mirage_disc_get_session_by_index(MIRAGE_DISC(self->priv->disc), i, NULL);
         session_number = mirage_session_layout_get_session_number(MIRAGE_SESSION(session));
@@ -96,7 +95,7 @@ static void image_analyzer_sector_analysis_ui_callback_analyze (GtkWidget *butto
         image_analyzer_sector_analysis_append_text(self, "tag_section", "Session #%d: ", session_number);
         image_analyzer_sector_analysis_append_text(self, NULL, "start: %d, length %d, %d tracks\n\n", session_start, session_length, num_tracks);
 
-        for (j = 0; j < num_tracks; j++) {
+        for (gint j = 0; j < num_tracks; j++) {
             /* Get track and its properties */
             track = mirage_session_get_track_by_index(MIRAGE_SESSION(session), j, NULL);
             track_number = mirage_track_layout_get_track_number(MIRAGE_TRACK(track));
@@ -106,7 +105,7 @@ static void image_analyzer_sector_analysis_ui_callback_analyze (GtkWidget *butto
             image_analyzer_sector_analysis_append_text(self, "tag_section", "Track #%d: ", track_number);
             image_analyzer_sector_analysis_append_text(self, NULL, "start: %d, length %d\n\n", track_start, track_length);
 
-            for (address = track_start; address < track_start + track_length; address++) {
+            for (gint address = track_start; address < track_start + track_length; address++) {
                 /* Get sector */
                 sector = mirage_track_get_sector(MIRAGE_TRACK(track), address, TRUE, NULL);
                 if (!sector) {

@@ -75,8 +75,6 @@ static void image_analyzer_application_change_debug_mask (IMAGE_ANALYZER_Applica
     const MIRAGE_DebugMask *valid_masks;
     gint num_valid_masks;
 
-    gint i;
-
     /* Get list of supported debug masks */
     libmirage_get_supported_debug_masks(&valid_masks, &num_valid_masks, NULL);
 
@@ -102,7 +100,7 @@ static void image_analyzer_application_change_debug_mask (IMAGE_ANALYZER_Applica
     gtk_container_add(GTK_CONTAINER(content_area), vbox);
 
     entries = g_new(GtkWidget *, num_valid_masks);
-    for (i = 0; i < num_valid_masks; i++) {
+    for (gint i = 0; i < num_valid_masks; i++) {
         entries[i] = gtk_check_button_new_with_label(valid_masks[i].name);
         gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(entries[i]), mask & valid_masks[i].value);
         gtk_box_pack_start(GTK_BOX(vbox), entries[i], FALSE, FALSE, 0);
@@ -114,7 +112,7 @@ static void image_analyzer_application_change_debug_mask (IMAGE_ANALYZER_Applica
     if (gtk_dialog_run(GTK_DIALOG(dialog)) == GTK_RESPONSE_ACCEPT) {
         mask = 0;
 
-        for (i = 0; i < num_valid_masks; i++) {
+        for (gint i = 0; i < num_valid_masks; i++) {
             if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(entries[i]))) {
                 mask |= valid_masks[i].value;
             }
