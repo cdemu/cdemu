@@ -22,7 +22,11 @@ import getopt
 import sys
 import os.path
 import getpass
-import ConfigParser
+
+try:
+    import configparser
+except ImportError:
+	import ConfigParser as configparser
 
 import dbus
 
@@ -66,17 +70,16 @@ class CDEmu (object):
                 break
 
         try:
-            config = ConfigParser.ConfigParser()
+            config = configparser.ConfigParser()
             config.read([path])
 
             if config.has_section("defaults"):
                 # Read default bus type
                 if config.has_option("defaults","bus"):
                     self.bus_type = config.get("defaults","bus")
-        except:
+        except configparser.Error as e:
             # No harm, just print a warning
-            self.print_error(_("Failed to load configuration from file '%s': %s") % (path, sys.exc_info()[1]))
-            pass
+            self.print_error(_("Failed to load configuration from file '%s': %s") % (path, e))
 
         self.use_tty = sys.stdout.isatty()
 
