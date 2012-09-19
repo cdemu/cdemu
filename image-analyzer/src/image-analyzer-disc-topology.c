@@ -40,7 +40,7 @@ static gboolean image_analyzer_disc_topology_run_gnuplot (IMAGE_ANALYZER_DiscTop
 {
     gchar *argv[] = { "gnuplot", NULL };
     gboolean ret;
-    ssize_t written;
+    ssize_t cmdlen, written;
     gchar *cmd;
 
     /* Spawn gnuplot */
@@ -69,9 +69,11 @@ static gboolean image_analyzer_disc_topology_run_gnuplot (IMAGE_ANALYZER_DiscTop
     gtk_widget_show_all(GTK_WIDGET(self));
 
     cmd = g_strdup_printf("set term x11 window '%lX' ctrlq\n", gtk_socket_get_id(GTK_SOCKET(self->priv->socket)));
-    written = write(self->priv->fd_in, cmd, strlen(cmd));
+    cmdlen = strlen(cmd);
+
+    written = write(self->priv->fd_in, cmd, cmdlen);
     g_free(cmd);
-    if (written != strlen(cmd)) {
+    if (written != cmdlen) {
         return FALSE;
     }
 
@@ -84,8 +86,8 @@ static gboolean image_analyzer_disc_topology_refresh (IMAGE_ANALYZER_DiscTopolog
 {
     gboolean dpm_valid = FALSE;
     gint dpm_start, dpm_entries, dpm_resolution;
-    ssize_t written;
-    gchar *command;
+    ssize_t cmdlen, written;
+    gchar *cmd;
 
     /* No-op if gnuplot couldn't be started */
     if (!self->priv->gnuplot_works) {
@@ -94,7 +96,7 @@ static gboolean image_analyzer_disc_topology_refresh (IMAGE_ANALYZER_DiscTopolog
 
     if (!disc) {
         /* No disc */
-        command = g_strdup_printf(
+        cmd = g_strdup_printf(
             "clear; reset; "
             "unset xtics; unset ytics; "
             "unset border; unset key; "
@@ -110,7 +112,7 @@ static gboolean image_analyzer_disc_topology_refresh (IMAGE_ANALYZER_DiscTopolog
 
         if (!dpm_entries) {
             /* No DPM data */
-            command = g_strdup_printf(
+            cmd = g_strdup_printf(
                 "clear; reset; "
                 "unset xtics; unset ytics; "
                 "unset border; unset key; "
@@ -121,7 +123,7 @@ static gboolean image_analyzer_disc_topology_refresh (IMAGE_ANALYZER_DiscTopolog
             );
         } else {
             /* Plot with DPM data fed via stdin */
-            command = g_strdup_printf(
+            cmd = g_strdup_printf(
                 "clear; reset; "
                 "set title '%s%s: disc topology'; "
                 "set xlabel 'Sector address'; "
@@ -136,11 +138,12 @@ static gboolean image_analyzer_disc_topology_refresh (IMAGE_ANALYZER_DiscTopolog
 
         g_free(basename);
     }
+    cmdlen = strlen(cmd);
 
     /* Write plot command */
-    written = write(self->priv->fd_in, command, strlen(command));
-    g_free(command);
-    if (written != strlen(command)) {
+    written = write(self->priv->fd_in, cmd, cmdlen);
+    g_free(cmd);
+    if (written != cmdlen) {
         return FALSE;
     }
 
@@ -162,10 +165,12 @@ static gboolean image_analyzer_disc_topology_refresh (IMAGE_ANALYZER_DiscTopolog
 
             /* NOTE: we convert double to string using g_ascii_dtostr, because
                %g and %f are locale-dependent */
-            command = g_strdup_printf("%d %s\n", address, g_ascii_dtostr(dbl_buffer, G_ASCII_DTOSTR_BUF_SIZE, density));
-            written = write(self->priv->fd_in, command, strlen(command));
-            g_free(command);
-            if (written != strlen(command)) {
+            cmd = g_strdup_printf("%d %s\n", address, g_ascii_dtostr(dbl_buffer, G_ASCII_DTOSTR_BUF_SIZE, density));
+            cmdlen = strlen(cmd);
+
+            written = write(self->priv->fd_in, cmd, cmdlen);
+            g_free(cmd);
+            if (written != cmdlen) {
                 return FALSE;
             }
         }
