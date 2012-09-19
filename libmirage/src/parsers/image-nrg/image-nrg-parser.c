@@ -347,7 +347,7 @@ static gboolean mirage_parser_nrg_load_etn_data (MIRAGE_Parser_NRG *self, gint s
 
     /* Allocate space and read ETN data (we need to copy data because we'll have
        to modify it) */
-    self->priv->etn_blocks = g_new0(NRG_ETN_Block, blockentry->num_subblocks);
+    self->priv->etn_blocks = g_try_new0(NRG_ETN_Block, blockentry->num_subblocks);
     if (!self->priv->etn_blocks) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to allocate space for ETN blocks!\n", __debug__);
         g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_PARSER_ERROR, "Failed to allocate space for ETN blocks!");
@@ -406,7 +406,7 @@ static gboolean mirage_parser_nrg_load_cue_data (MIRAGE_Parser_NRG *self, gint s
 
     /* Allocate space and read CUE data (we need to copy data because we'll have
        to modify it) */
-    self->priv->cue_blocks = g_new0(NRG_CUE_Block, blockentry->num_subblocks);
+    self->priv->cue_blocks = g_try_new0(NRG_CUE_Block, blockentry->num_subblocks);
     if (!self->priv->cue_blocks) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to allocate space for CUE blocks!\n", __debug__);
         g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_PARSER_ERROR, "Failed to allocate memory for CUE blocks!");
@@ -466,7 +466,7 @@ static gboolean mirage_parser_nrg_load_dao_data (MIRAGE_Parser_NRG *self, gint s
     self->priv->num_dao_blocks = blockentry->num_subblocks;
 
     /* Allocate space and read DAO header */
-    self->priv->dao_header = g_new0(NRG_DAO_Header, 1);
+    self->priv->dao_header = g_try_new0(NRG_DAO_Header, 1);
     if (!self->priv->dao_header) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to allocate space for DAO header!\n", __debug__);
         g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_PARSER_ERROR, "Failed to allocate space for DAO header!");

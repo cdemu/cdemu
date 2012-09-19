@@ -135,7 +135,7 @@ static gboolean cdemud_device_io_handler (GIOChannel *source, GIOCondition condi
     gint fd = g_io_channel_unix_get_fd(source);
 
     CDEMUD_Command cmd;
-    guchar *buf = (guchar *) g_malloc0(BUF_SIZE);
+    guchar *buf = g_try_malloc0(BUF_SIZE);
     struct vhba_request *vreq = (void *) buf;
     struct vhba_response *vres = (void *) buf;
 

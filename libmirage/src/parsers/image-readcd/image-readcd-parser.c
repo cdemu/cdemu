@@ -93,13 +93,13 @@ end:
 static gboolean mirage_parser_readcd_determine_track_mode (MIRAGE_Parser_READCD *self, GObject *track, GError **error)
 {
     GObject *fragment;
-    guint8 *buf = (guint8 *) g_malloc(2532);
+    guint8 *buf = g_try_malloc(2532);
     gint track_mode;
 
-	if(!buf) {
+    if(!buf) {
         g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_CANNOT_HANDLE, "Failed to allocate memory.");
-		return FALSE;
-	}
+        return FALSE;
+    }
 
     /* Get last fragment */
     fragment = mirage_track_get_fragment_by_index(MIRAGE_TRACK(track), -1, error);

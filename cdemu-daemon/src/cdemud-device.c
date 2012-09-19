@@ -74,7 +74,7 @@ gboolean cdemud_device_initialize (CDEMUD_Device *self, gint number, gchar *ctl_
     }
 
     /* Allocate buffer/"cache"; 4kB should be enough for everything, I think */
-    self->priv->buffer = g_malloc0(4096);
+    self->priv->buffer = g_try_malloc0(4096);
     if (!self->priv->buffer) {
         CDEMUD_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: failed to allocate buffer!\n", __debug__);
         return FALSE;

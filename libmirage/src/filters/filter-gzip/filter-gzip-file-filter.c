@@ -151,8 +151,8 @@ static gboolean mirage_file_filter_gzip_build_index (MIRAGE_FileFilter_GZIP *sel
     GInputStream *stream = g_filter_input_stream_get_base_stream(G_FILTER_INPUT_STREAM(self));
     z_stream *zlib_stream = &self->priv->zlib_stream;
 
-    guint8 *chunk_buffer = (guint8 *) g_malloc(CHUNKSIZE);
-    guint8 *window_buffer = (guint8 *) g_malloc(WINSIZE);
+    guint8 *chunk_buffer = g_try_malloc(CHUNKSIZE);
+    guint8 *window_buffer = g_try_malloc(WINSIZE);
 
     if (!chunk_buffer || !window_buffer) {
         g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, "Failed to allocate memory.");
@@ -377,12 +377,12 @@ static gssize mirage_filter_gzip_read_from_part (MIRAGE_FileFilter_GZIP *self, g
 
         goffset stream_offset;
 
-        guint8 *chunk_buffer = (guint8 *) g_malloc(CHUNKSIZE);
+        guint8 *chunk_buffer = g_try_malloc(CHUNKSIZE);
 
-		if (!chunk_buffer) {
+        if (!chunk_buffer) {
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: Failed to allocate memory.\n", __debug__);
-	        return -1;
-		}
+            return -1;
+        }
 
         gint ret;
 
