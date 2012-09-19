@@ -792,7 +792,7 @@ class gCDEmu_Indicator (gCDEmu):
             self.icon_policy = "always"
             visible = True
 
-		# Set the status (change icon)
+        # Set the status (change icon)
         if visible:
             if self.connected:
                 self.indicator.set_status(AppIndicator.IndicatorStatus.ACTIVE)
@@ -1135,10 +1135,7 @@ class gCDEmuDeviceStatusPage (Gtk.VBox):
 
     def set_status (self, loaded, filenames):
         if loaded:
-            tmp_list = []
-            for filename in filenames:
-                tmp_list.append(os.path.basename(filename))
-            text = "\n".join(tmp_list)
+            text = "\n".join(map(os.path.basename, filenames))
 
             self.label_loaded.set_label(_("Yes"))
             self.label_filename.set_label(text)

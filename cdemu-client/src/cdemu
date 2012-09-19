@@ -22,13 +22,12 @@ import getopt
 import sys
 import os.path
 import getpass
+import dbus
 
 try:
     import configparser
 except ImportError:
-	import ConfigParser as configparser
-
-import dbus
+    import ConfigParser as configparser
 
 from gettext import gettext as _
 from gettext import bindtextdomain, textdomain
@@ -53,8 +52,6 @@ class CDEmu (object):
     dbus_bus = None
     dbus_proxy = None
     dbus_iface = None
-
-    use_tty = False
 
     bus_type = "session" # Use session bus as hard-coded default
 
@@ -81,20 +78,16 @@ class CDEmu (object):
             # No harm, just print a warning
             self.print_error(_("Failed to load configuration from file '%s': %s") % (path, e))
 
-        self.use_tty = sys.stdout.isatty()
-
         return
 
     # attrs is a comma separated list of integers, where valid values include
     # foreground: 30-37, background: 40-47, reset: 0, bold: 1. (ECMA-48 / VT102)
     def set_color(self, *attrs):
-        if self.use_tty == True:
-            sys.stdout.write ("\x1b[")
-            for a in range(len(attrs)):
-                sys.stdout.write (str(attrs[a]))
-                if a+1 < len(attrs):
-                    sys.stdout.write (";")
-            sys.stdout.write ("m")
+        if not sys.stdout.isatty():
+            return
+
+        attrs_str = ";".join(map(str, attrs))
+        sys.stdout.write("\x1b[%sm" % (attrs_str))
 
     def process_command (self, argv):
         print_usage = False
@@ -181,12 +174,8 @@ class CDEmu (object):
             self.print_invalid_number_of_parameters("load")
             return False
 
-        filenames = arguments[1:]
-
-        # We need to pass absolute filenames to daemon, because its working
-        # directory is (99.9% of the time, anyway) different from ours...
-        for i in range(0, len(filenames)):
-            filenames[i] = os.path.abspath(filenames[i])
+        # We need to pass absolute filenames to daemon
+        filenames = map(os.path.abspath, arguments[1:])
 
         # Particular device vs. any device
         if arguments[0] == "any":
@@ -285,8 +274,8 @@ class CDEmu (object):
 
             # First line is for all device's data, the rest are for additional filenames
             print("%-5s %-10s %s" % (device, loaded, filenames[0]))
-            for i in range(1, len(filenames)):
-                print("%-5s %-10s %s" % ("", "", filenames[i]))
+            for filename in filenames[1:]:
+                print("%-5s %-10s %s" % ("", "", filename))
 
         return True
 
@@ -771,8 +760,6 @@ class CDEmu (object):
 
     def cmd_version (self, arguments):
         # Print version information
-        library_version = ""
-        daemon_version  = ""
         try:
             library_version = self.dbus_iface.GetLibraryVersion()
         except dbus.DBusException as e:
