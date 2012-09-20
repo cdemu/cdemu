@@ -100,7 +100,7 @@ gboolean cdemud_device_initialize (CDEMUD_Device *self, gint number, gchar *ctl_
     /* Initialise mode pages and features and set profile */
     cdemud_device_mode_pages_init(self);
     cdemud_device_features_init(self);
-    cdemud_device_set_profile(self, PROFILE_NONE);
+    cdemud_device_set_profile(self, NONE);
 
     /* Enable DPM and disable transfer rate emulation by default */
     self->priv->dpm_emulation = TRUE;

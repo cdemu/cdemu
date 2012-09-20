@@ -94,8 +94,8 @@ void cdemud_device_features_init (CDEMUD_Device *self)
     FEATURE_DEFINITION_START(0x0000)
     feature->per = 1;
 
-    feature->profiles[0].profile = GUINT16_TO_BE(PROFILE_CDROM);
-    feature->profiles[1].profile = GUINT16_TO_BE(PROFILE_DVDROM);
+    feature->profiles[0].profile = GUINT16_TO_BE((Profile) CDROM);
+    feature->profiles[1].profile = GUINT16_TO_BE((Profile) DVDROM);
 
     FEATURE_DEFINITION_END()
 
@@ -281,14 +281,14 @@ static void cdemud_device_set_current_features (CDEMUD_Device *self, guint32 *fe
     }
 }
 
-void cdemud_device_set_profile (CDEMUD_Device *self, gint profile)
+void cdemud_device_set_profile (CDEMUD_Device *self, Profile profile)
 {
     /* Set current profile */
     self->priv->current_profile = profile;
 
     /* Features */
     switch (profile) {
-        case PROFILE_NONE: {
+        case NONE: {
             /* Current features */
             cdemud_device_set_current_features(self, NULL, 0);
             /* Profiles */
@@ -297,7 +297,7 @@ void cdemud_device_set_profile (CDEMUD_Device *self, gint profile)
             f_0x0000->profiles[1].cur = 0;
             break;
         }
-        case PROFILE_CDROM: {
+        case CDROM: {
             /* Current features */
             cdemud_device_set_current_features(self, Features_PROFILE_CDROM, G_N_ELEMENTS(Features_PROFILE_CDROM));
             /* Profiles */
@@ -306,7 +306,7 @@ void cdemud_device_set_profile (CDEMUD_Device *self, gint profile)
             f_0x0000->profiles[1].cur = 0;
             break;
         }
-        case PROFILE_DVDROM: {
+        case DVDROM: {
             /* Current features */
             cdemud_device_set_current_features(self, Features_PROFILE_DVDROM, G_N_ELEMENTS(Features_PROFILE_DVDROM));
            /* Profiles */

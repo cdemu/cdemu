@@ -93,7 +93,7 @@ void cdemud_device_flush_buffer (CDEMUD_Device *self)
 /**********************************************************************\
  *                       Sense buffer I/O                             *
 \**********************************************************************/
-void cdemud_device_write_sense_full (CDEMUD_Device *self, guint8 sense_key, guint16 asc_ascq, gint ili, guint32 command_info)
+void cdemud_device_write_sense_full (CDEMUD_Device *self, SenseKey sense_key, guint16 asc_ascq, gint ili, guint32 command_info)
 {
     /* Initialize sense */
     struct REQUEST_SENSE_SenseFixed sense;
@@ -104,7 +104,7 @@ void cdemud_device_write_sense_full (CDEMUD_Device *self, guint8 sense_key, guin
     sense.length = 0x0A; /* Additional sense length */
 
     /* Sense key and ASC/ASCQ */
-    sense.sense_key = sense_key;
+    sense.sense_key = (SenseKey) sense_key;
     sense.asc = (asc_ascq & 0xFF00) >> 8; /* ASC */
     sense.ascq = (asc_ascq & 0x00FF) >> 0; /* ASCQ */
     /* ILI bit */
@@ -121,7 +121,7 @@ void cdemud_device_write_sense_full (CDEMUD_Device *self, guint8 sense_key, guin
     self->priv->cur_len = sizeof(struct REQUEST_SENSE_SenseFixed);
 }
 
-void cdemud_device_write_sense (CDEMUD_Device *self, guint8 sense_key, guint16 asc_ascq)
+void cdemud_device_write_sense (CDEMUD_Device *self, SenseKey sense_key, guint16 asc_ascq)
 {
     return cdemud_device_write_sense_full(self, sense_key, asc_ascq, 0, 0x0000);
 }

@@ -77,7 +77,7 @@ struct _CDEMUD_DevicePrivate
     GList *mode_pages_list;
 
     /* Current device profile */
-    gint current_profile;
+    Profile current_profile;
     /* Features */
     GList *features_list;
 
@@ -118,15 +118,15 @@ void cdemud_device_delay_finalize (CDEMUD_Device *self);
 gpointer cdemud_device_get_feature (CDEMUD_Device *self, gint feature);
 void cdemud_device_features_init (CDEMUD_Device *self);
 void cdemud_device_features_cleanup (CDEMUD_Device *self);
-void cdemud_device_set_profile (CDEMUD_Device *self, gint profile);
+void cdemud_device_set_profile (CDEMUD_Device *self, Profile profile);
 
 /* Kernel <-> userspace I/O */
 void cdemud_device_write_buffer (CDEMUD_Device *self, guint32 length);
 void cdemud_device_read_buffer (CDEMUD_Device *self, guint32 length);
 void cdemud_device_flush_buffer (CDEMUD_Device *self);
 
-void cdemud_device_write_sense_full (CDEMUD_Device *self, guint8 sense_key, guint16 asc_ascq, gint ili, guint32 command_info);
-void cdemud_device_write_sense (CDEMUD_Device *self, guint8 sense_key, guint16 asc_ascq);
+void cdemud_device_write_sense_full (CDEMUD_Device *self, SenseKey sense_key, guint16 asc_ascq, gint ili, guint32 command_info);
+void cdemud_device_write_sense (CDEMUD_Device *self, SenseKey sense_key, guint16 asc_ascq);
 
 GThread *cdemud_device_create_io_thread (CDEMUD_Device *self);
 void cdemud_device_stop_io_thread (CDEMUD_Device *self);

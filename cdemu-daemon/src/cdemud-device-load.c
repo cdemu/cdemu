@@ -77,11 +77,11 @@ static gboolean cdemud_device_load_disc_private (CDEMUD_Device *self, gchar **fi
     media_type = mirage_disc_get_medium_type(MIRAGE_DISC(self->priv->disc));
     switch (media_type) {
         case MIRAGE_MEDIUM_CD: {
-            cdemud_device_set_profile(self, PROFILE_CDROM);
+            cdemud_device_set_profile(self, CDROM);
             break;
         }
         case MIRAGE_MEDIUM_DVD: {
-            cdemud_device_set_profile(self, PROFILE_DVDROM);
+            cdemud_device_set_profile(self, DVDROM);
             break;
         }
         default: {
@@ -140,7 +140,7 @@ gboolean cdemud_device_unload_disc_private (CDEMUD_Device *self, gboolean force,
         self->priv->loaded = FALSE;
         self->priv->media_event = MEDIA_EVENT_MEDIA_REMOVAL;
         /* Current profile: None */
-        cdemud_device_set_profile(self, PROFILE_NONE);
+        cdemud_device_set_profile(self, NONE);
 
         /* Send notification */
         g_signal_emit_by_name(self, "status-changed", NULL);

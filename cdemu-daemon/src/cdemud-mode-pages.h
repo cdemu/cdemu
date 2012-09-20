@@ -20,9 +20,6 @@
 #ifndef __CDEMUD_MODE_PAGES_H__
 #define __CDEMUD_MODE_PAGES_H__
 
-#define BIG_ENDIAN_BITFIELD (G_BYTE_ORDER == G_BIG_ENDIAN)
-#define LITTLE_ENDIAN_BITFIELD (G_BYTE_ORDER == G_LITTLE_ENDIAN)
-
 #pragma pack(1)
 
 enum
@@ -35,11 +32,11 @@ enum
 
 struct ModePage_GENERAL
 {
-    #if BIG_ENDIAN_BITFIELD
+    #if (G_BYTE_ORDER == G_BIG_ENDIAN)
         guint8  ps          : 1;
         guint8  __dummy1__  : 1;
         guint8  code        : 6;
-    #elif LITTLE_ENDIAN_BITFIELD
+    #elif (G_BYTE_ORDER == G_LITTLE_ENDIAN)
         guint8  code        : 6;
         guint8  __dummy1__  : 1;
         guint8  ps          : 1;
@@ -52,19 +49,19 @@ struct ModePage_GENERAL
 /* Read/Write Error Recovery Parameters Mode Page */
 struct ModePage_0x01
 {
-    #if BIG_ENDIAN_BITFIELD
+    #if (G_BYTE_ORDER == G_BIG_ENDIAN)
         guint8  ps          : 1;
         guint8  __dummy1__  : 1;
         guint8  code        : 6;
-    #elif LITTLE_ENDIAN_BITFIELD
+    #elif (G_BYTE_ORDER == G_LITTLE_ENDIAN)
         guint8  code        : 6;
         guint8  __dummy1__  : 1;
         guint8  ps          : 1;
     #endif
 
     guint8  length;
-    
-    #if BIG_ENDIAN_BITFIELD
+
+    #if (G_BYTE_ORDER == G_BIG_ENDIAN)
         guint8  awre        : 1;
         guint8  arre        : 1;
         guint8  tb          : 1;
@@ -73,7 +70,7 @@ struct ModePage_0x01
         guint8  per         : 1;
         guint8  dte         : 1;
         guint8  dcr         : 1;
-    #elif LITTLE_ENDIAN_BITFIELD
+    #elif (G_BYTE_ORDER == G_LITTLE_ENDIAN)
         guint8  dcr         : 1;
         guint8  dte         : 1;
         guint8  per         : 1;
@@ -85,24 +82,24 @@ struct ModePage_0x01
     #endif
 
     guint8  read_retry;
-    
+
     guint8  __dummy3__[4];
 
     guint8  write_retry;
-    
+
     guint8  __dummy4__;
-    
+
     guint16 recovery;
 };
 
 /* CD Device Parameters Mode Page */
 struct ModePage_0x0D
 {
-    #if BIG_ENDIAN_BITFIELD
+    #if (G_BYTE_ORDER == G_BIG_ENDIAN)
         guint8  ps          : 1;
         guint8  __dummy1__  : 1;
         guint8  code        : 6;
-    #elif LITTLE_ENDIAN_BITFIELD
+    #elif (G_BYTE_ORDER == G_LITTLE_ENDIAN)
         guint8  code        : 6;
         guint8  __dummy1__  : 1;
         guint8  ps          : 1;
@@ -111,28 +108,28 @@ struct ModePage_0x0D
     guint8  length;
 
     guint8  __dummy2__;
-    
-    #if BIG_ENDIAN_BITFIELD
+
+    #if (G_BYTE_ORDER == G_BIG_ENDIAN)
         guint8  __dummy3__  : 4;
         guint8  inact_mult  : 4;
-    #elif LITTLE_ENDIAN_BITFIELD
+    #elif (G_BYTE_ORDER == G_LITTLE_ENDIAN)
         guint8  inact_mult  : 4;
         guint8  __dummy3__  : 4;
     #endif
-    
+
     guint16 spm;
-    
+
     guint16 fps;
 };
 
 /* CD Audio Control Mode Page */
 struct ModePage_0x0E
 {
-    #if BIG_ENDIAN_BITFIELD
+    #if (G_BYTE_ORDER == G_BIG_ENDIAN)
         guint8  ps          : 1;
         guint8  __dummy1__  : 1;
         guint8  code        : 6;
-    #elif LITTLE_ENDIAN_BITFIELD
+    #elif (G_BYTE_ORDER == G_LITTLE_ENDIAN)
         guint8  code        : 6;
         guint8  __dummy1__  : 1;
         guint8  ps          : 1;
@@ -140,12 +137,12 @@ struct ModePage_0x0E
 
     guint8  length;
 
-    #if BIG_ENDIAN_BITFIELD
+    #if (G_BYTE_ORDER == G_BIG_ENDIAN)
         guint8  __dummy2__  : 5;
         guint8  immed       : 1;
         guint8  sotc        : 1;
         guint8  __dummy3__  : 1;
-    #elif LITTLE_ENDIAN_BITFIELD
+    #elif (G_BYTE_ORDER == G_LITTLE_ENDIAN)
         guint8  __dummy3__  : 1;
         guint8  sotc        : 1;
         guint8  immed       : 1;
@@ -154,37 +151,37 @@ struct ModePage_0x0E
 
     guint8  __dummy4__[5];
 
-    #if BIG_ENDIAN_BITFIELD
+    #if (G_BYTE_ORDER == G_BIG_ENDIAN)
         guint8  __dummy5__  : 4;
         guint8  port0csel   : 4;
-    #elif LITTLE_ENDIAN_BITFIELD
+    #elif (G_BYTE_ORDER == G_LITTLE_ENDIAN)
         guint8  port0csel   : 4;
         guint8  __dummy5__  : 4;
     #endif
     guint8  port0vol;
-    
-    #if BIG_ENDIAN_BITFIELD
+
+    #if (G_BYTE_ORDER == G_BIG_ENDIAN)
         guint8  __dummy6__  : 4;
         guint8  port1csel   : 4;
-    #elif LITTLE_ENDIAN_BITFIELD
+    #elif (G_BYTE_ORDER == G_LITTLE_ENDIAN)
         guint8  port1csel   : 4;
         guint8  __dummy6__  : 4;
     #endif
     guint8  port1vol;
 
-    #if BIG_ENDIAN_BITFIELD
+    #if (G_BYTE_ORDER == G_BIG_ENDIAN)
         guint8  __dummy7__  : 4;
         guint8  port2csel   : 4;
-    #elif LITTLE_ENDIAN_BITFIELD
+    #elif (G_BYTE_ORDER == G_LITTLE_ENDIAN)
         guint8  port2csel   : 4;
         guint8  __dummy7__  : 4;
     #endif
     guint8  port2vol;
-    
-    #if BIG_ENDIAN_BITFIELD
+
+    #if (G_BYTE_ORDER == G_BIG_ENDIAN)
         guint8  __dummy8__  : 4;
         guint8  port3csel   : 4;
-    #elif LITTLE_ENDIAN_BITFIELD
+    #elif (G_BYTE_ORDER == G_LITTLE_ENDIAN)
         guint8  port3csel   : 4;
         guint8  __dummy8__  : 4;
     #endif
@@ -194,11 +191,11 @@ struct ModePage_0x0E
 /* Power Condition Mode Page */
 struct ModePage_0x1A
 {
-    #if BIG_ENDIAN_BITFIELD
+    #if (G_BYTE_ORDER == G_BIG_ENDIAN)
         guint8  ps          : 1;
         guint8  __dummy1__  : 1;
         guint8  code        : 6;
-    #elif LITTLE_ENDIAN_BITFIELD
+    #elif (G_BYTE_ORDER == G_LITTLE_ENDIAN)
         guint8  code        : 6;
         guint8  __dummy1__  : 1;
         guint8  ps          : 1;
@@ -208,18 +205,18 @@ struct ModePage_0x1A
 
     guint8  __dummy2__;
 
-    #if BIG_ENDIAN_BITFIELD
+    #if (G_BYTE_ORDER == G_BIG_ENDIAN)
         guint8  __dummy3__  : 6;
         guint8  idle        : 1;
         guint8  stdby       : 1;
-    #elif LITTLE_ENDIAN_BITFIELD
+    #elif (G_BYTE_ORDER == G_LITTLE_ENDIAN)
         guint8  stdby       : 1;
         guint8  idle        : 1;
         guint8  __dummy3__  : 6;
     #endif
 
     guint32 idle_timer;
-    
+
     guint32 stdby_timer;
 };
 
@@ -227,11 +224,11 @@ struct ModePage_0x1A
 /* CD/DVD Capabilities and Mechanical Status Mode Page */
 struct ModePage_0x2A
 {
-    #if BIG_ENDIAN_BITFIELD
+    #if (G_BYTE_ORDER == G_BIG_ENDIAN)
         guint8  ps          : 1;
         guint8  __dummy1__  : 1;
         guint8  code        : 6;
-    #elif LITTLE_ENDIAN_BITFIELD
+    #elif (G_BYTE_ORDER == G_LITTLE_ENDIAN)
         guint8  code        : 6;
         guint8  __dummy1__  : 1;
         guint8  ps          : 1;
@@ -239,7 +236,7 @@ struct ModePage_0x2A
 
     guint8  length;
 
-    #if BIG_ENDIAN_BITFIELD
+    #if (G_BYTE_ORDER == G_BIG_ENDIAN)
         guint8  __dummy2__  : 2;
         guint8  dvdram_read : 1;
         guint8  dvdr_read   : 1;
@@ -247,7 +244,7 @@ struct ModePage_0x2A
         guint8  method2     : 1;
         guint8  cdrw_read   : 1;
         guint8  cdr_read    : 1;
-    #elif LITTLE_ENDIAN_BITFIELD
+    #elif (G_BYTE_ORDER == G_LITTLE_ENDIAN)
         guint8  cdr_read    : 1;
         guint8  cdrw_read   : 1;
         guint8  method2     : 1;
@@ -257,7 +254,7 @@ struct ModePage_0x2A
         guint8  __dummy2__  : 2;
     #endif
 
-    #if BIG_ENDIAN_BITFIELD
+    #if (G_BYTE_ORDER == G_BIG_ENDIAN)
         guint8  __dummy3__  : 2;
         guint8  dvdram_write    : 1;
         guint8  dvdr_write  : 1;
@@ -265,7 +262,7 @@ struct ModePage_0x2A
         guint8  test_write  : 1;
         guint8  cdrw_write  : 1;
         guint8  cdr_write   : 1;
-    #elif LITTLE_ENDIAN_BITFIELD
+    #elif (G_BYTE_ORDER == G_LITTLE_ENDIAN)
         guint8  cdr_write   : 1;
         guint8  cdrw_write  : 1;
         guint8  test_write  : 1;
@@ -275,7 +272,7 @@ struct ModePage_0x2A
         guint8  __dummy3__  : 2;
     #endif
 
-    #if BIG_ENDIAN_BITFIELD
+    #if (G_BYTE_ORDER == G_BIG_ENDIAN)
         guint8  buf         : 1;
         guint8  multisession    : 1;
         guint8  mode2_form2 : 1;
@@ -284,7 +281,7 @@ struct ModePage_0x2A
         guint8  dport2      : 1;
         guint8  composite   : 1;
         guint8  audio_play  : 1;
-    #elif LITTLE_ENDIAN_BITFIELD
+    #elif (G_BYTE_ORDER == G_LITTLE_ENDIAN)
         guint8  audio_play  : 1;
         guint8  composite   : 1;
         guint8  dport2      : 1;
@@ -294,8 +291,8 @@ struct ModePage_0x2A
         guint8  multisession    : 1;
         guint8  buf         : 1;
     #endif
-    
-    #if BIG_ENDIAN_BITFIELD
+
+    #if (G_BYTE_ORDER == G_BIG_ENDIAN)
         guint8  read_barcode    : 1;
         guint8  upc         : 1;
         guint8  isrc        : 1;
@@ -304,7 +301,7 @@ struct ModePage_0x2A
         guint8  rw_supported    : 1;
         guint8  cdda_acc_stream : 1;
         guint8  cdda_cmds   : 1;
-    #elif LITTLE_ENDIAN_BITFIELD
+    #elif (G_BYTE_ORDER == G_LITTLE_ENDIAN)
         guint8  cdda_cmds   : 1;
         guint8  cdda_acc_stream : 1;
         guint8  rw_supported    : 1;
@@ -314,15 +311,15 @@ struct ModePage_0x2A
         guint8  upc         : 1;
         guint8  read_barcode    : 1;
     #endif
-    
-    #if BIG_ENDIAN_BITFIELD
+
+    #if (G_BYTE_ORDER == G_BIG_ENDIAN)
         guint8  load_mech   : 3;
         guint8  __dummy5__  : 1;
         guint8  eject       : 1;
         guint8  prvnt_jmp   : 1;
         guint8  lock_state  : 1;
         guint8  lock        : 1;
-    #elif LITTLE_ENDIAN_BITFIELD
+    #elif (G_BYTE_ORDER == G_LITTLE_ENDIAN)
         guint8  lock        : 1;
         guint8  lock_state  : 1;
         guint8  prvnt_jmp   : 1;
@@ -330,8 +327,8 @@ struct ModePage_0x2A
         guint8  __dummy5__  : 1;
         guint8  load_mech   : 3;
     #endif
-    
-    #if BIG_ENDIAN_BITFIELD
+
+    #if (G_BYTE_ORDER == G_BIG_ENDIAN)
         guint8  __dummy6__  : 2;
         guint8  rw_in_leadin    : 1;
         guint8  side_change : 1;
@@ -339,7 +336,7 @@ struct ModePage_0x2A
         guint8  discpresent : 1;
         guint8  sep_mute    : 1;
         guint8  sep_vol_lvls    : 1;
-    #elif LITTLE_ENDIAN_BITFIELD
+    #elif (G_BYTE_ORDER == G_LITTLE_ENDIAN)
         guint8  sep_vol_lvls    : 1;
         guint8  sep_mute    : 1;
         guint8  discpresent : 1;
@@ -348,51 +345,51 @@ struct ModePage_0x2A
         guint8  rw_in_leadin    : 1;
         guint8  __dummy6__  : 2;
     #endif
-    
+
     guint16 max_read_speed; /* According to older standard */
-    
+
     guint16 vol_lvls;
-    
+
     guint16 buf_size;
-    
+
     guint16 cur_read_speed; /* According to older standard */
-    
+
     guint8  __dummy9__;
-    
-    #if BIG_ENDIAN_BITFIELD
+
+    #if (G_BYTE_ORDER == G_BIG_ENDIAN)
         guint8  __dummy10__ : 2;
         guint8  word_length : 2;
         guint8  lsbf        : 1;
         guint8  rck         : 1;
         guint8  bckf        : 1;
-        guint8  __dummy11__ : 1;    
-    #elif LITTLE_ENDIAN_BITFIELD
-        guint8  __dummy11__ : 1;    
+        guint8  __dummy11__ : 1;
+    #elif (G_BYTE_ORDER == G_LITTLE_ENDIAN)
+        guint8  __dummy11__ : 1;
         guint8  bckf        : 1;
         guint8  rck         : 1;
         guint8  lsbf        : 1;
         guint8  word_length : 2;
         guint8  __dummy10__ : 2;
     #endif
-        
+
     guint16 max_write_speed; /* According to older standard */
-    
+
     guint16 cur_write_speed; /* According to older standard */
-    
+
     guint16 copy_man_rev;
-    
+
     guint8  __dummy13__[3];
-    
-    #if BIG_ENDIAN_BITFIELD
+
+    #if (G_BYTE_ORDER == G_BIG_ENDIAN)
         guint8  __dummy14__ : 6;
         guint8  rot_ctl_sel : 2;
-    #elif LITTLE_ENDIAN_BITFIELD
+    #elif (G_BYTE_ORDER == G_LITTLE_ENDIAN)
         guint8  rot_ctl_sel : 2;
         guint8  __dummy14__ : 6;
     #endif
 
     guint16 cur_wspeed;
-    
+
     guint16 wsp_descriptors;
 };
 
