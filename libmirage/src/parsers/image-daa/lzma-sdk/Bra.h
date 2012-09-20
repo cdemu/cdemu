@@ -1,12 +1,14 @@
 /* Bra.h -- Branch converters for executables
-2008-08-17
-Copyright (c) 1999-2008 Igor Pavlov
-Read LzmaDec.h for license options */
+2009-02-07 : Igor Pavlov : Public domain */
 
 #ifndef __BRA_H
 #define __BRA_H
 
 #include "Types.h"
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 /*
 These functions convert relative addresses to absolute addresses
@@ -43,7 +45,7 @@ in CALL instructions to increase the compression ratio.
     UInt32 ip = 0;
     for ()
     {
-      // size must be >= Alignment + LookAhead, if it's not last block
+      ; size must be >= Alignment + LookAhead, if it's not last block
       SizeT processed = Convert(data, size, ip, 1);
       data += processed;
       size -= processed;
@@ -58,5 +60,9 @@ SizeT ARMT_Convert(Byte *data, SizeT size, UInt32 ip, int encoding);
 SizeT PPC_Convert(Byte *data, SizeT size, UInt32 ip, int encoding);
 SizeT SPARC_Convert(Byte *data, SizeT size, UInt32 ip, int encoding);
 SizeT IA64_Convert(Byte *data, SizeT size, UInt32 ip, int encoding);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

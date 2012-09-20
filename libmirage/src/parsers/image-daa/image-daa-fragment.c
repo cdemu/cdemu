@@ -896,6 +896,7 @@ static gint mirage_fragment_daa_inflate_lzma (MIRAGE_Fragment_DAA *self, guint8 
     }
 
     guint32 state;
+    /* FIXME: The following two lines of code is not portable */
     x86_Convert_Init(state);
     x86_Convert(self->priv->buffer, self->priv->buflen, 0, &state, 0);
 

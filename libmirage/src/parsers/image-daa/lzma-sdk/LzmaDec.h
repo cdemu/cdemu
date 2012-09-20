@@ -1,19 +1,14 @@
 /* LzmaDec.h -- LZMA Decoder
-2008-08-05
-Copyright (c) 1999-2008 Igor Pavlov
-You can use any of the following license options:
-  1) GNU Lesser General Public License (GNU LGPL)
-  2) Common Public License (CPL)
-  3) Common Development and Distribution License (CDDL) Version 1.0
-  4) Igor Pavlov, as the author of this code, expressly permits you to
-     statically or dynamically link your code (or bind by name) to this file,
-     while you keep this file unmodified.
-*/
+2009-02-07 : Igor Pavlov : Public domain */
 
-#ifndef __LZMADEC_H
-#define __LZMADEC_H
+#ifndef __LZMA_DEC_H
+#define __LZMA_DEC_H
 
 #include "Types.h"
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 /* #define _LZMA_PROB32 */
 /* _LZMA_PROB32 can increase the speed on some CPUs,
@@ -228,5 +223,9 @@ Returns:
 SRes LzmaDecode(Byte *dest, SizeT *destLen, const Byte *src, SizeT *srcLen,
     const Byte *propData, unsigned propSize, ELzmaFinishMode finishMode,
     ELzmaStatus *status, ISzAlloc *alloc);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

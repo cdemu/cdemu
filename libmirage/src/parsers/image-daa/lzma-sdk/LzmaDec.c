@@ -1,7 +1,5 @@
 /* LzmaDec.c -- LZMA Decoder
-2008-08-17
-Copyright (c) 1999-2008 Igor Pavlov
-Read LzmaDec.h for license options */
+2009-09-20 : Igor Pavlov : Public domain */
 
 #include "LzmaDec.h"
 
@@ -115,25 +113,14 @@ Read LzmaDec.h for license options */
 StopCompilingDueBUG
 #endif
 
-/*
-#define LZMA_STREAM_WAS_FINISHED_ID (-1)
-#define LZMA_SPEC_LEN_OFFSET (-3)
-*/
-
-const Byte kLiteralNextStates[kNumStates * 2] =
-{
-  0, 0, 0, 0, 1, 2, 3,  4,  5,  6,  4,  5,
-  7, 7, 7, 7, 7, 7, 7, 10, 10, 10, 10, 10
-};
-
 #define LZMA_DIC_MIN (1 << 12)
 
 /* First LZMA-symbol is always decoded.
 And it decodes new LZMA-symbols while (buf < bufLimit), but "buf" is without last normalization
 Out:
   Result:
-    0 - OK
-    1 - Error
+    SZ_OK - OK
+    SZ_ERROR_DATA - Error
   p->remainLen:
     < kMatchSpecLenStart : normal remain
     = kMatchSpecLenStart : finished
@@ -182,6 +169,7 @@ static int MY_FAST_CALL LzmaDec_DecodeReal(CLzmaDec *p, SizeT limit, const Byte 
 
       if (state < kNumLitStates)
       {
+        state -= (state < 4) ? state : 3;
         symbol = 1;
         do { GET_BIT(prob + symbol, symbol) } while (symbol < 0x100);
       }
@@ -189,6 +177,7 @@ static int MY_FAST_CALL LzmaDec_DecodeReal(CLzmaDec *p, SizeT limit, const Byte 
       {
         unsigned matchByte = p->dic[(dicPos - rep0) + ((dicPos < rep0) ? dicBufSize : 0)];
         unsigned offs = 0x100;
+        state -= (state < 10) ? 3 : 6;
         symbol = 1;
         do
         {
@@ -203,9 +192,6 @@ static int MY_FAST_CALL LzmaDec_DecodeReal(CLzmaDec *p, SizeT limit, const Byte 
       }
       dic[dicPos++] = (Byte)symbol;
       processedPos++;
-
-      state = kLiteralNextStates[state];
-      /* if (state < 4) state = 0; else if (state < 10) state -= 3; else state -= 6; */
       continue;
     }
     else
@@ -385,11 +371,12 @@ static int MY_FAST_CALL LzmaDec_DecodeReal(CLzmaDec *p, SizeT limit, const Byte 
         else if (distance >= checkDicSize)
           return SZ_ERROR_DATA;
         state = (state < kNumStates + kNumLitStates) ? kNumLitStates : kNumLitStates + 3;
-        /* state = kLiteralNextStates[state]; */
       }
 
       len += kMatchMinLen;
 
+      if (limit == dicPos)
+        return SZ_ERROR_DATA;
       {
         SizeT rem = limit - dicPos;
         unsigned curLen = ((rem < len) ? (unsigned)rem : len);
@@ -463,8 +450,6 @@ static void MY_FAST_CALL LzmaDec_WriteRem(CLzmaDec *p, SizeT limit)
     p->dicPos = dicPos;
   }
 }
-
-/* LzmaDec_DecodeReal2 decodes LZMA-symbols and sets p->needFlush and p->needInit, if required. */
 
 static int MY_FAST_CALL LzmaDec_DecodeReal2(CLzmaDec *p, SizeT limit, const Byte *bufLimit)
 {
@@ -697,7 +682,7 @@ static void LzmaDec_InitRc(CLzmaDec *p, const Byte *data)
   p->needFlush = 0;
 }
 
-static void LzmaDec_InitDicAndState(CLzmaDec *p, Bool initDic, Bool initState)
+void LzmaDec_InitDicAndState(CLzmaDec *p, Bool initDic, Bool initState)
 {
   p->needFlush = 1;
   p->remainLen = 0;
@@ -811,7 +796,7 @@ SRes LzmaDec_DecodeToDic(CLzmaDec *p, SizeT dicLimit, const Byte *src, SizeT *sr
         p->buf = src;
         if (LzmaDec_DecodeReal2(p, dicLimit, bufLimit) != 0)
           return SZ_ERROR_DATA;
-        processed = p->buf - src;
+        processed = (SizeT)(p->buf - src);
         (*srcLen) += processed;
         src += processed;
         inSize -= processed;
