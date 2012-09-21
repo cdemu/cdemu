@@ -78,7 +78,7 @@ struct _MIRAGE_Fragment_DAAPrivate
     gint cur_chunk_index; /* Index of currently inflated chunk */
 
     /* Streams */
-    z_stream z;
+    z_stream zlib_stream;
     CLzmaDec lzma;
 
     /* Encryption */
@@ -98,20 +98,20 @@ static ISzAlloc lzma_alloc = { sz_alloc, sz_free };
 \**********************************************************************/
 static inline void daa_main_header_fix_endian (DAA_Main_Header *header)
 {
-    header->size_offset = GUINT32_FROM_LE(header->size_offset);
-    header->format = GUINT32_FROM_LE(header->format);
-    header->data_offset = GUINT32_FROM_LE(header->data_offset);
-    header->b1 = GUINT32_FROM_LE(header->b1);
-    header->b0 = GUINT32_FROM_LE(header->b0);
-    header->chunksize = GUINT32_FROM_LE(header->chunksize);
-    header->isosize = GUINT64_FROM_LE(header->isosize);
-    header->filesize = GUINT64_FROM_LE(header->filesize);
+    header->chunk_table_offset = GUINT32_FROM_LE(header->chunk_table_offset);
+    header->format_version = GUINT32_FROM_LE(header->format_version);
+    header->chunk_data_offset = GUINT32_FROM_LE(header->chunk_data_offset);
+    header->__dummy__1 = GUINT32_FROM_LE(header->__dummy__1);
+    header->__dummy__2 = GUINT32_FROM_LE(header->__dummy__2);
+    header->chunk_size = GUINT32_FROM_LE(header->chunk_size);
+    header->iso_size = GUINT64_FROM_LE(header->iso_size);
+    header->daa_size = GUINT64_FROM_LE(header->daa_size);
     header->crc = GUINT32_FROM_LE(header->crc);
 }
 
 static inline void daa_part_header_fix_endian (DAA_Part_Header *header)
 {
-    header->data_offset = GUINT32_FROM_LE(header->data_offset);
+    header->chunk_data_offset = GUINT32_FROM_LE(header->chunk_data_offset);
     header->crc = GUINT32_FROM_LE(header->crc);
 }
 
@@ -421,43 +421,43 @@ gboolean mirage_fragment_daa_set_file (MIRAGE_Fragment_DAA *self, const gchar *f
     daa_main_header_fix_endian(&header);
 
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: DAA main file header:\n", __debug__);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  size_offset: 0x%X (%d)\n", __debug__, header.size_offset, header.size_offset);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  format: 0x%X\n", __debug__, header.format);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  data_offset: 0x%X (%d)\n", __debug__, header.data_offset, header.data_offset);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  b1: 0x%X\n", __debug__, header.b1);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  b0: 0x%X\n", __debug__, header.b0);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  chunksize: 0x%X (%d)\n", __debug__, header.chunksize, header.chunksize);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  isosize: 0x%llX (%lld)\n", __debug__, header.isosize, header.isosize);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  filesize: 0x%llX (%lld)\n", __debug__, header.filesize, header.filesize);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  chunk_table_offset: 0x%X (%d)\n", __debug__, header.chunk_table_offset, header.chunk_table_offset);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  format_version: 0x%X\n", __debug__, header.format_version);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  chunk_data_offset: 0x%X (%d)\n", __debug__, header.chunk_data_offset, header.chunk_data_offset);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  __dummy__1: 0x%X\n", __debug__, header.__dummy__1);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  __dummy__2: 0x%X\n", __debug__, header.__dummy__2);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  chunk_size: 0x%X (%d)\n", __debug__, header.chunk_size, header.chunk_size);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  iso_size: 0x%llX (%lld)\n", __debug__, header.iso_size, header.iso_size);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  daa_size: 0x%llX (%lld)\n", __debug__, header.daa_size, header.daa_size);
 
     /* Check format */
-    if (header.format != DAA_FORMAT_100 && header.format != DAA_FORMAT_110) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: unsupported format: 0x%X!\n", __debug__, header.format);
+    if (header.format_version != FORMAT_VERSION1 && header.format_version != FORMAT_VERSION2) {
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: unsupported format: 0x%X!\n", __debug__, header.format_version);
         g_object_unref(stream);
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_PARSER_ERROR, "Unsupported format: 0x%X!", header.format);
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_PARSER_ERROR, "Unsupported format: 0x%X!", header.format_version);
         return FALSE;
     }
 
     /* Initialize Z stream */
-    self->priv->z.zalloc = NULL;
-    self->priv->z.zfree = NULL;
-    self->priv->z.opaque = NULL;
-    if (inflateInit2(&self->priv->z, -15)) {
+    self->priv->zlib_stream.zalloc = NULL;
+    self->priv->zlib_stream.zfree = NULL;
+    self->priv->zlib_stream.opaque = NULL;
+    if (inflateInit2(&self->priv->zlib_stream, -15)) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to initialize zlib decoder!\n", __debug__);
     }
 
-    /* 0x110 format provides us with some additional obfuscation */
-    if (header.format == DAA_FORMAT_110) {
+    /* Format V2 (0x110) provides us with some additional obfuscation */
+    if (header.format_version == FORMAT_VERSION2) {
         guint32 len;
 
-        header.data_offset &= 0xFFFFFF;
-        header.chunksize = (header.chunksize & 0xFFF) << 14;
+        header.chunk_data_offset &= 0xFFFFFF;
+        header.chunk_size = (header.chunk_size & 0xFFF) << 14;
 
         bsize_type = header.hdata[5] & 7;
         bsize_len = header.hdata[5] >> 3;
         if (bsize_len) bsize_len += 10;
         if (!bsize_len) {
-            for (bsize_len = 0, len = header.chunksize; len > bsize_type; bsize_len++, len >>= 1);
+            for (bsize_len = 0, len = header.chunk_size; len > bsize_type; bsize_len++, len >>= 1);
         }
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: LZMA compression; length field bitsize=%d, compression type field bitsize=%d\n", __debug__, bsize_len, bsize_type);
 
@@ -467,24 +467,24 @@ gboolean mirage_fragment_daa_set_file (MIRAGE_Fragment_DAA *self, const gchar *f
 
 
     /* Allocate inflate buffer */
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: allocating inflate buffer: 0x%X\n", __debug__, header.chunksize);
-    self->priv->buffer = g_malloc0(header.chunksize);
-    self->priv->buflen = header.chunksize;
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: allocating inflate buffer: 0x%X\n", __debug__, header.chunk_size);
+    self->priv->buffer = g_malloc0(header.chunk_size);
+    self->priv->buflen = header.chunk_size;
     self->priv->cur_chunk_index = -1; /* Because 0 won't do... */
 
     /* Calculate amount of sectors within one chunk - must be an integer... */
-    if (header.chunksize % 2048) {
+    if (header.chunk_size % 2048) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: chunk size is not a multiple of 2048!\n", __debug__);
         g_object_unref(stream);
         g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_PARSER_ERROR, "Chunk size is not a multiple of 2048!");
         return FALSE;
     } else {
-        self->priv->sectors_per_chunk = header.chunksize / 2048;
+        self->priv->sectors_per_chunk = header.chunk_size / 2048;
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: sectors per chunk: %d\n", __debug__, self->priv->sectors_per_chunk);
     }
 
     /* Set fragment length */
-    gint fragment_length = header.isosize / 2048;
+    gint fragment_length = header.iso_size / 2048;
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: fragment length: 0x%X (%d)\n", __debug__, fragment_length, fragment_length);
     mirage_fragment_set_length(MIRAGE_FRAGMENT(self), fragment_length);
 
@@ -493,7 +493,7 @@ gboolean mirage_fragment_daa_set_file (MIRAGE_Fragment_DAA *self, const gchar *f
     gint num_parts = 1;
 
     /* Parse blocks */
-    while (g_seekable_tell(G_SEEKABLE(stream)) < header.size_offset) {
+    while (g_seekable_tell(G_SEEKABLE(stream)) < header.chunk_table_offset) {
         guint32 type = 0;
         guint32 len = 0;
 
@@ -662,18 +662,18 @@ gboolean mirage_fragment_daa_set_file (MIRAGE_Fragment_DAA *self, const gchar *f
     gint tmp_chunks_len;
     gint num_chunks = 0;
 
-    tmp_chunks_len = header.data_offset - header.size_offset;
+    tmp_chunks_len = header.chunk_data_offset - header.chunk_table_offset;
     tmp_chunks_data = g_new0(guint8, tmp_chunks_len);
 
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: building chunk table (%d entries), %X vs %X...\n", __debug__, tmp_chunks_len, header.data_offset, header.size_offset);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: building chunk table (%d entries), %X vs %X...\n", __debug__, tmp_chunks_len, header.chunk_data_offset, header.chunk_table_offset);
 
-    switch (header.format) {
-        case DAA_FORMAT_100: {
+    switch (header.format_version) {
+        case FORMAT_VERSION1: {
             /* 3-byte fields */
             num_chunks = tmp_chunks_len / 3;
             break;
         }
-        case DAA_FORMAT_110: {
+        case FORMAT_VERSION2: {
             /* tmp_chunks_len bytes, each having 8 bits, over bitsize of type and len fields */
             num_chunks = (tmp_chunks_len << 3) / (bsize_type + bsize_len);
             break;
@@ -685,7 +685,7 @@ gboolean mirage_fragment_daa_set_file (MIRAGE_Fragment_DAA *self, const gchar *f
     self->priv->num_chunks = num_chunks;
     self->priv->chunk_table = g_new0(DAA_Chunk, self->priv->num_chunks);
 
-    g_seekable_seek(G_SEEKABLE(stream), header.size_offset, G_SEEK_SET, NULL, NULL);
+    g_seekable_seek(G_SEEKABLE(stream), header.chunk_table_offset, G_SEEK_SET, NULL, NULL);
     if (g_input_stream_read(G_INPUT_STREAM(stream), tmp_chunks_data, tmp_chunks_len, NULL, NULL) != tmp_chunks_len) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read chunks data!\n", __debug__);
         g_object_unref(stream);
@@ -701,18 +701,18 @@ gboolean mirage_fragment_daa_set_file (MIRAGE_Fragment_DAA *self, const gchar *f
         gint tmp_comp = -1;
         gchar *comp_string = "unknown";
 
-        switch (header.format) {
-            case DAA_FORMAT_100: {
+        switch (header.format_version) {
+            case FORMAT_VERSION1: {
                 gint off = i*3;
                 tmp_length = (tmp_chunks_data[off+0] << 16) | (tmp_chunks_data[off+2] << 8) | tmp_chunks_data[off+1];
                 tmp_comp = 1;
                 break;
             }
-            case DAA_FORMAT_110: {
+            case FORMAT_VERSION2: {
                 tmp_length = read_bits(bsize_len, tmp_chunks_data, bpos); bpos += bsize_len;
                 tmp_length += 5;
                 tmp_comp = read_bits(bsize_type, tmp_chunks_data, bpos); bpos += bsize_type;
-                if (tmp_length >= header.chunksize) {
+                if (tmp_length >= header.chunk_size) {
                     tmp_comp = -1;
                 }
                 break;
@@ -803,7 +803,7 @@ gboolean mirage_fragment_daa_set_file (MIRAGE_Fragment_DAA *self, const gchar *f
                 return FALSE;
             }
             daa_main_header_fix_endian(&part_header);
-            part->offset = part_header.data_offset & 0xFFFFFF;
+            part->offset = part_header.chunk_data_offset & 0xFFFFFF;
         } else if (!memcmp(part_signature, daa_part_signature, sizeof(daa_part_signature))) {
             DAA_Part_Header part_header;
             if (g_input_stream_read(G_INPUT_STREAM(part->stream), &part_header, sizeof(DAA_Part_Header), NULL, NULL) != sizeof(DAA_Part_Header))  {
@@ -812,7 +812,7 @@ gboolean mirage_fragment_daa_set_file (MIRAGE_Fragment_DAA *self, const gchar *f
                 return FALSE;
             }
             daa_part_header_fix_endian(&part_header);
-            part->offset = part_header.data_offset & 0xFFFFFF;
+            part->offset = part_header.chunk_data_offset & 0xFFFFFF;
         } else {
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: invalid part's signature!\n", __debug__);
             g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_PARSER_ERROR, "Part's signature is invalid!");
@@ -866,19 +866,19 @@ static gboolean mirage_fragment_daa_use_the_rest_of_file (MIRAGE_Fragment *_self
 
 static gint mirage_fragment_daa_inflate_zlib (MIRAGE_Fragment_DAA *self, guint8 *in_buf, gint in_len)
 {
-    inflateReset(&self->priv->z);
+    inflateReset(&self->priv->zlib_stream);
 
-    self->priv->z.next_in = in_buf;
-    self->priv->z.avail_in = in_len;
-    self->priv->z.next_out = self->priv->buffer;
-    self->priv->z.avail_out = self->priv->buflen;
+    self->priv->zlib_stream.next_in = in_buf;
+    self->priv->zlib_stream.avail_in = in_len;
+    self->priv->zlib_stream.next_out = self->priv->buffer;
+    self->priv->zlib_stream.avail_out = self->priv->buflen;
 
-    if (inflate(&self->priv->z, Z_SYNC_FLUSH) != Z_STREAM_END) {
+    if (inflate(&self->priv->zlib_stream, Z_SYNC_FLUSH) != Z_STREAM_END) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to inflate!\n", __debug__);
         return 0;
     }
 
-    return self->priv->z.total_out;
+    return self->priv->zlib_stream.total_out;
 }
 
 static gint mirage_fragment_daa_inflate_lzma (MIRAGE_Fragment_DAA *self, guint8 *in_buf, gint in_len)
@@ -915,13 +915,22 @@ static gboolean mirage_fragment_daa_read_main_data (MIRAGE_Fragment *_self, gint
     /* Inflate, if necessary */
     if (self->priv->cur_chunk_index != chunk_index) {
         DAA_Chunk *chunk = &self->priv->chunk_table[chunk_index];
+        gint tmp_buflen;
+        guint8 *tmp_buffer;
+        gint inflated_size = 0;
 
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_FRAGMENT, "%s: inflating chunk #%i...\n", __debug__, chunk_index);
 
-        /* Read chunk */
-        gint tmp_buflen = chunk->length;
-        guint8 *tmp_buffer = g_malloc0(tmp_buflen);
+        /* Allocate read buffer for chunk */
+        tmp_buflen = chunk->length;
+        tmp_buffer = g_try_malloc0(tmp_buflen);
+        if (!tmp_buffer) {
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to allocate read buffer (%d bytes)\n", __debug__, tmp_buflen);
+            g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_FRAGMENT_ERROR, "Failed to allocate read buffer (0x%X bytes)!", tmp_buflen);
+            return FALSE;
+        }
 
+        /* Read chunk */
         if (!mirage_fragment_daa_read_from_stream(self, chunk->offset, chunk->length, tmp_buffer, error)) {
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read data for chunk #%i\n", __debug__, chunk_index);
             g_free(tmp_buffer);
@@ -935,19 +944,18 @@ static gboolean mirage_fragment_daa_read_main_data (MIRAGE_Fragment *_self, gint
         }
 
         /* Inflate */
-        gint inflated = 0;
         switch (chunk->compression) {
             case DAA_COMPRESSION_NONE: {
                 memcpy(self->priv->buffer, tmp_buffer, self->priv->buflen); /* We use self->priv->buflen, because tmp_buflen tends to be too large for 4 bytes... */
-                inflated = self->priv->buflen;
+                inflated_size = self->priv->buflen;
                 break;
             }
             case DAA_COMPRESSION_ZLIB: {
-                inflated = mirage_fragment_daa_inflate_zlib(self, tmp_buffer, tmp_buflen);
+                inflated_size = mirage_fragment_daa_inflate_zlib(self, tmp_buffer, tmp_buflen);
                 break;
             }
             case DAA_COMPRESSION_LZMA: {
-                inflated = mirage_fragment_daa_inflate_lzma(self, tmp_buffer, tmp_buflen);
+                inflated_size = mirage_fragment_daa_inflate_lzma(self, tmp_buffer, tmp_buflen);
                 break;
             }
         }
@@ -956,10 +964,10 @@ static gboolean mirage_fragment_daa_read_main_data (MIRAGE_Fragment *_self, gint
 
         /* It's OK for the last chunk not to be fully inflated, because it doesn't
            necessarily hold full number of sectors */
-        if (inflated != self->priv->buflen && chunk_index != self->priv->num_chunks-1) {
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to inflate whole chunk #%i (0x%X bytes instead of 0x%X)\n", __debug__, chunk_index, self->priv->z.total_out, self->priv->buflen);
+        if (inflated_size != self->priv->buflen && chunk_index != self->priv->num_chunks-1) {
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to inflate whole chunk #%i (0x%X bytes instead of 0x%X)\n", __debug__, chunk_index, inflated_size, self->priv->buflen);
         } else {
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_FRAGMENT, "%s: successfully inflated chunk #%i (0x%X bytes)\n", __debug__, chunk_index, self->priv->z.total_out);
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_FRAGMENT, "%s: successfully inflated chunk #%i (0x%X bytes)\n", __debug__, chunk_index, inflated_size);
             /* Set the index of currently inflated chunk */
             self->priv->cur_chunk_index = chunk_index;
         }
@@ -1025,7 +1033,7 @@ static void mirage_fragment_daa_finalize (GObject *gobject)
     MIRAGE_Fragment_DAA *self = MIRAGE_FRAGMENT_DAA(gobject);
 
     /* Free stream */
-    inflateEnd(&self->priv->z);
+    inflateEnd(&self->priv->zlib_stream);
     LzmaDec_Free(&self->priv->lzma, &lzma_alloc);
 
     /* Free main filename */

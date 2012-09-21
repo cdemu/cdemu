@@ -44,31 +44,31 @@ G_BEGIN_DECLS
 static const gchar daa_main_signature[16] = "DAA";
 static const gchar daa_part_signature[16] = "DAA VOL";
 
-enum
+typedef enum
 {
-    DAA_FORMAT_100 = 0x100,
-    DAA_FORMAT_110 = 0x110,
-};
+    FORMAT_VERSION1 = 0x100,
+    FORMAT_VERSION2 = 0x110,
+} DAA_FormatVersion;
 
 typedef struct
 {
-    guint32 size_offset; /* Offset of sizes of zipped chunk */
-    guint32 format; /* Format */
-    guint32 data_offset; /* Offset of zipped chunks */
-    guint32 b1; /* 1 */
-    guint32 b0; /* 0 */
-    guint32 chunksize; /* Size of each output chunk */
-    guint64 isosize; /* Total size of the ISO file */
-    guint64 filesize; /* Total size of the DAA file */
+    guint32 chunk_table_offset; /* Offset of chunk table */
+    guint32 format_version; /* Format version */
+    guint32 chunk_data_offset; /* Offset of chunk data */
+    guint32 __dummy__1; /* Always 0x00000001? */
+    guint32 __dummy__2; /* Always 0x00000000? */
+    guint32 chunk_size; /* Uncompressed size of each chunk */
+    guint64 iso_size; /* Size of the ISO file */
+    guint64 daa_size; /* Size of the DAA file */
     guint8 hdata[16]; /* Data used in 0x110 format */
-    guint32 crc; /* Checksum calculated over the first 72 bytes of main file */ 
+    guint32 crc; /* Checksum calculated over the first 72 bytes of main file */
 } DAA_Main_Header;
 
 typedef struct
 {
-    guint32 data_offset; /* Offset of zipped chunks */
+    guint32 chunk_data_offset; /* Offset of zipped chunks */
     guint8 hdata[16]; /* Data used in 0x110 format */
-    guint32 crc; /* Checksum calculated over the first 36 bytes of part file? */ 
+    guint32 crc; /* Checksum calculated over the first 36 bytes of part file? */
 } DAA_Part_Header;
 
 #pragma pack()
@@ -95,7 +95,7 @@ static inline guint read_bits (guint bits, guint8 *in, guint in_bits)
         seek += rem;
         mask = (1 << bits) - 1;
     }
-    
+
     return ret;
 }
 
