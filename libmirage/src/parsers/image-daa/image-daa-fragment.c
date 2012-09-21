@@ -313,19 +313,20 @@ static void daa_crypt_init (guint8 *pwdkey, const gchar *pass, guint8 *daakey)
 \**********************************************************************/
 static gboolean mirage_fragment_daa_read_from_stream (MIRAGE_Fragment_DAA *self, guint64 offset, guint32 length, guint8 *buffer, GError **error)
 {
-    guint8 *buf_ptr = buffer;
-
     /* A rather complex loop, thanks to the possibility that a chunk spans across
        multiple part files... */
     while (length > 0) {
-        gint i;
+        guint64 local_offset, file_offset;
+        guint32 read_length;
         DAA_Part *part = NULL;
+
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_FRAGMENT, "%s: reading 0x%X bytes from stream at offset 0x%llX\n", __debug__, length, offset);
 
         /* Find the part to which the given offset belongs */
-        for (i = 0; i < self->priv->num_parts; i++) {
+        for (gint i = 0; i < self->priv->num_parts; i++) {
             if (offset >= self->priv->part_table[i].start && offset < self->priv->part_table[i].end) {
                 part = &self->priv->part_table[i];
+                MIRAGE_DEBUG(self, MIRAGE_DEBUG_FRAGMENT, "%s: using part #%i\n", __debug__, file_offset);
                 break;
             }
         }
@@ -335,17 +336,17 @@ static gboolean mirage_fragment_daa_read_from_stream (MIRAGE_Fragment_DAA *self,
             return FALSE;
         }
 
-        guint32 read_length = length;
+        read_length = length;
         if (offset + length > part->end) {
             read_length = part->end - offset;
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_FRAGMENT, "%s: requested data range spanning across the range of this part; clipping read length to 0x%X bytes\n", __debug__, read_length);
         }
 
-        guint64 local_offset = offset - part->start; /* Offset within part */
-        guint64 file_offset = part->offset + local_offset; /* Actual offset within part file */
+        local_offset = offset - part->start; /* Offset within part */
+        file_offset = part->offset + local_offset; /* Actual offset within part file */
 
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_FRAGMENT, "%s: local offset: 0x%llX\n", __debug__, local_offset);
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_FRAGMENT, "%s: file offset: 0x%llX (part #%i)\n", __debug__, file_offset, i);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_FRAGMENT, "%s: file offset: 0x%llX\n", __debug__, file_offset);
 
         if (!g_seekable_seek(G_SEEKABLE(part->stream), file_offset, G_SEEK_SET, NULL, NULL)) {
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to seek to 0x%X\n", __debug__, file_offset);
@@ -353,7 +354,7 @@ static gboolean mirage_fragment_daa_read_from_stream (MIRAGE_Fragment_DAA *self,
             return FALSE;
         }
 
-        if (g_input_stream_read(G_INPUT_STREAM(part->stream), buf_ptr, read_length, NULL, NULL) != read_length) {
+        if (g_input_stream_read(G_INPUT_STREAM(part->stream), buffer, read_length, NULL, NULL) != read_length) {
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read 0x%X bytes!\n", __debug__, read_length);
             g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_FRAGMENT_ERROR, "Failed to read 0x%X bytes!", read_length);
             return FALSE;
@@ -362,7 +363,7 @@ static gboolean mirage_fragment_daa_read_from_stream (MIRAGE_Fragment_DAA *self,
         /* Update length and offset */
         length -= read_length;
         offset += read_length;
-        buf_ptr += read_length;
+        buffer += read_length;
     }
 
     return TRUE;
