@@ -28,9 +28,6 @@
 #endif
 
 #include <errno.h>
-#include <zlib.h>
-#include "LzmaDec.h"
-#include "Bra.h"
 
 #include "mirage.h"
 #include "image-daa-parser.h"
@@ -41,8 +38,10 @@ G_BEGIN_DECLS
 
 #pragma pack(1)
 
-static const gchar daa_main_signature[16] = "DAA";
-static const gchar daa_part_signature[16] = "DAA VOL";
+/* Defined in image-fragment-daa.c */
+extern const gchar daa_main_signature[16];
+extern const gchar daa_part_signature[16];
+
 
 typedef enum
 {
@@ -52,6 +51,7 @@ typedef enum
 
 typedef struct
 {
+    gchar signature[16]; /* Signature */
     guint32 chunk_table_offset; /* Offset of chunk table */
     guint32 format_version; /* Format version */
     guint32 chunk_data_offset; /* Offset of chunk data */
@@ -61,15 +61,48 @@ typedef struct
     guint64 iso_size; /* Size of the ISO file */
     guint64 daa_size; /* Size of the DAA file */
     guint8 hdata[16]; /* Data used in 0x110 format */
-    guint32 crc; /* Checksum calculated over the first 72 bytes of main file */
-} DAA_Main_Header;
+    guint32 crc; /* CRC32 over the first 72 bytes of main file */
+} DAA_MainHeader; /* size: 76 bytes */
 
 typedef struct
 {
+    gchar signature[16]; /* Signature */
     guint32 chunk_data_offset; /* Offset of zipped chunks */
     guint8 hdata[16]; /* Data used in 0x110 format */
-    guint32 crc; /* Checksum calculated over the first 36 bytes of part file? */
-} DAA_Part_Header;
+    guint32 crc; /* CRC32 over the first 36 bytes of part file */
+} DAA_PartHeader; /* size: 40 bytes */
+
+
+/* Descriptor blocks */
+typedef enum
+{
+    DESCRIPTOR_PART = 1, /* Part information */
+    DESCRIPTOR_SPLIT = 2, /* Split archive information */
+    DESCRIPTOR_ENCRYPTION = 3, /* Encryption information */
+    DESCRIPTOR_COMMENT = 4, /* Comment */
+} DAA_DescriptorType;
+
+
+typedef struct
+{
+    guint32 type; /* Descriptor type */
+    guint32 length; /* Descriptor length */
+} DAA_DescriptorHeader;
+
+typedef struct
+{
+    guint32 num_parts; /* Number of parts */
+    guint32 __dummy__; /* Always 1? */
+    /* + variable amount of 5-byte blocks */
+} DAA_DescriptorSplit;
+
+typedef struct
+{
+    guint32 encryption_type; /* Encryption type */
+    guint32 password_crc; /* Password CRC */
+    guint8 daa_key[128]; /* Stored DAA key */
+} DAA_DescriptorEncryption;
+
 
 #pragma pack()
 

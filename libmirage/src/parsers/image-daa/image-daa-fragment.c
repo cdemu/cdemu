@@ -22,6 +22,10 @@
 
 #include "image-daa.h"
 
+#include <zlib.h>
+#include "LzmaDec.h"
+#include "Bra.h"
+
 #define __debug__ "DAA-Fragment"
 
 
@@ -61,6 +65,17 @@ struct _MIRAGE_Fragment_DAAPrivate
     gchar *main_filename;
     DAA_create_filename_func create_filename_func;
 
+    /* Header */
+    DAA_MainHeader header;
+
+    gint chunk_table_offset;
+    gint chunk_data_offset;
+    gint chunk_size;
+
+    /* Bitsizes of bit-packed chunk table (format version 2) */
+    gint bitsize_type;
+    gint bitsize_length;
+
     /* Sectors per chunk */
     gint sectors_per_chunk;
 
@@ -83,20 +98,26 @@ struct _MIRAGE_Fragment_DAAPrivate
 
     /* Encryption */
     gboolean encrypted;
-    guint8 pwd_key[128];
+    const gchar *password;
 };
 
 
+/* Signatures */
+const gchar daa_main_signature[16] = "DAA";
+const gchar daa_part_signature[16] = "DAA VOL";
+
+
+/******/
 /* Alloc and free functions for LZMA stream */
 static void *sz_alloc (void *p G_GNUC_UNUSED, size_t size) { return g_malloc0(size); }
 static void sz_free (void *p G_GNUC_UNUSED, void *address) { g_free(address); }
 static ISzAlloc lzma_alloc = { sz_alloc, sz_free };
-
+/******/
 
 /**********************************************************************\
  *                    Endian-conversion functions                     *
 \**********************************************************************/
-static inline void daa_main_header_fix_endian (DAA_Main_Header *header)
+static inline void daa_main_header_fix_endian (DAA_MainHeader *header)
 {
     header->chunk_table_offset = GUINT32_FROM_LE(header->chunk_table_offset);
     header->format_version = GUINT32_FROM_LE(header->format_version);
@@ -109,10 +130,28 @@ static inline void daa_main_header_fix_endian (DAA_Main_Header *header)
     header->crc = GUINT32_FROM_LE(header->crc);
 }
 
-static inline void daa_part_header_fix_endian (DAA_Part_Header *header)
+static inline void daa_part_header_fix_endian (DAA_PartHeader *header)
 {
     header->chunk_data_offset = GUINT32_FROM_LE(header->chunk_data_offset);
     header->crc = GUINT32_FROM_LE(header->crc);
+}
+
+static inline void daa_descriptor_header_fix_endian (DAA_DescriptorHeader *header)
+{
+    header->type = GUINT32_FROM_LE(header->type);
+    header->length = GUINT32_FROM_LE(header->length);
+}
+
+static inline void daa_descriptor_split_fix_endian (DAA_DescriptorSplit *data)
+{
+    data->num_parts = GUINT32_FROM_LE(data->num_parts);
+    data->__dummy__ = GUINT32_FROM_LE(data->__dummy__);
+}
+
+static inline void daa_descriptor_encryption_fix_endian (DAA_DescriptorEncryption *data)
+{
+    data->encryption_type = GUINT32_FROM_LE(data->encryption_type);
+    data->password_crc = GUINT32_FROM_LE(data->password_crc);
 }
 
 
@@ -127,7 +166,8 @@ static gchar *create_filename_func_1 (gchar *main_filename, gint index)
     if (index) {
         /* Find last occurence of 01. and print index into it */
         gchar *position = g_strrstr(ret_filename, "01.");
-        g_snprintf(position, 4, "%02i.", index+1);
+        position += g_snprintf(position, 3, "%02i", index+1);
+        *position = '.'; /* Since it got overwritten with terminating 0 */
     }
 
     return ret_filename;
@@ -141,7 +181,8 @@ static gchar *create_filename_func_2 (gchar *main_filename, gint index)
     if (index) {
         /* Find last occurence of 01. and print index+1 into it */
         gchar *position = g_strrstr(ret_filename, "001.");
-        g_snprintf(position, 5, "%03i.", index+1);
+        position += g_snprintf(position, 4, "%03i", index+1);
+        *position = '.'; /* Since it got overwritten with terminating 0 */
     }
 
     return ret_filename;
@@ -279,7 +320,7 @@ static void daa_crypt_block (guint8 *ret, guint8 *data, gint size)
     return;
 }
 
-static void daa_crypt (guint8 *key G_GNUC_UNUSED, guint8 *data, gint size)
+static void daa_crypt (guint8 *data, gint size)
 {
     gint blocks, rem;
     guint8 tmp[128];
@@ -309,8 +350,158 @@ static void daa_crypt_init (guint8 *pwdkey, const gchar *pass, guint8 *daakey)
 
 
 /**********************************************************************\
- *                          Data access                               *
+ *                            Compression                             *
 \**********************************************************************/
+static gint mirage_fragment_daa_inflate_zlib (MIRAGE_Fragment_DAA *self, guint8 *in_buf, gint in_len)
+{
+    inflateReset(&self->priv->zlib_stream);
+
+    self->priv->zlib_stream.next_in = in_buf;
+    self->priv->zlib_stream.avail_in = in_len;
+    self->priv->zlib_stream.next_out = self->priv->buffer;
+    self->priv->zlib_stream.avail_out = self->priv->buflen;
+
+    if (inflate(&self->priv->zlib_stream, Z_SYNC_FLUSH) != Z_STREAM_END) {
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to inflate!\n", __debug__);
+        return 0;
+    }
+
+    return self->priv->zlib_stream.total_out;
+}
+
+static gint mirage_fragment_daa_inflate_lzma (MIRAGE_Fragment_DAA *self, guint8 *in_buf, gint in_len)
+{
+    ELzmaStatus status;
+    SizeT inlen, outlen;
+
+    LzmaDec_Init(&self->priv->lzma);
+
+    inlen = in_len;
+    outlen = self->priv->buflen;
+    if (LzmaDec_DecodeToBuf(&self->priv->lzma, self->priv->buffer, &outlen, in_buf, &inlen, LZMA_FINISH_END, &status) != SZ_OK) {
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to inflate!\n", __debug__);
+        return 0;
+    }
+
+    guint32 state;
+    x86_Convert_Init(state);
+    x86_Convert(self->priv->buffer, self->priv->buflen, 0, &state, 0);
+
+    return outlen;
+}
+
+static gboolean mirage_fragment_daa_initialize_zlib (MIRAGE_Fragment_DAA *self, GError **error)
+{
+    z_stream *zlib_stream = &self->priv->zlib_stream;
+    gint ret;
+
+    zlib_stream->zalloc = Z_NULL;
+    zlib_stream->zfree = Z_NULL;
+    zlib_stream->opaque = Z_NULL;
+    zlib_stream->avail_in = 0;
+    zlib_stream->next_in = Z_NULL;
+
+    ret = inflateInit2(zlib_stream, -15);
+    if (ret != Z_OK) {
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to initialize zlib decoder!\n", __debug__);
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_PARSER_ERROR, "Failed to initialize zlib's inflate (error: %d)!", ret);
+        return FALSE;
+    }
+
+    return TRUE;
+}
+
+static gboolean mirage_fragment_daa_initialize_lzma (MIRAGE_Fragment_DAA *self, GError **error G_GNUC_UNUSED)
+{
+    LzmaDec_Construct(&self->priv->lzma);
+    LzmaDec_Allocate(&self->priv->lzma, self->priv->header.hdata + 7, LZMA_PROPS_SIZE, &lzma_alloc);
+
+    return TRUE;
+}
+
+
+/**********************************************************************\
+ *                            Data accesss                            *
+\**********************************************************************/
+static gboolean mirage_fragment_daa_read_main_header (MIRAGE_Fragment_DAA *self, GObject *stream, DAA_MainHeader *header, GError **error)
+{
+    guint32 crc;
+
+    /* Seek to the beginning */
+    g_seekable_seek(G_SEEKABLE(stream), 0, G_SEEK_SET, NULL, NULL);
+
+    /* Read main header */
+    if (g_input_stream_read(G_INPUT_STREAM(stream), header, sizeof(DAA_MainHeader), NULL, NULL) != sizeof(DAA_MainHeader)) {
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read main file's header!\n", __debug__);
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, "Failed to read main file's header!");
+        return FALSE;
+    }
+
+    /* Compute CRC */
+    crc = crc32(0, (guint8 *)header, sizeof(DAA_MainHeader) - 4);
+
+    /* Fix endianess */
+    daa_main_header_fix_endian(header);
+
+    /* Debug */
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: DAA main file header:\n", __debug__);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   - signature: %.16s\n", __debug__, header->signature);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   - chunk_table_offset: 0x%X (%d)\n", __debug__, header->chunk_table_offset, header->chunk_table_offset);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   - format_version: 0x%X\n", __debug__, header->format_version);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   - chunk_data_offset: 0x%X (%d)\n", __debug__, header->chunk_data_offset, header->chunk_data_offset);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   - __dummy__1: 0x%X\n", __debug__, header->__dummy__1);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   - __dummy__2: 0x%X\n", __debug__, header->__dummy__2);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   - chunk_size: 0x%X (%d)\n", __debug__, header->chunk_size, header->chunk_size);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   - iso_size: 0x%llX (%lld)\n", __debug__, header->iso_size, header->iso_size);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   - daa_size: 0x%llX (%lld)\n", __debug__, header->daa_size, header->daa_size);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   - hdata: %02X %02X %02X %02X %02X %02X %02X %02X %02X %02X %02X %02X %02X %02X %02X %02X\n", __debug__, header->hdata[0], header->hdata[1], header->hdata[2], header->hdata[3], header->hdata[4], header->hdata[5], header->hdata[6], header->hdata[7], header->hdata[8], header->hdata[9], header->hdata[10], header->hdata[11], header->hdata[12], header->hdata[13], header->hdata[14], header->hdata[15]);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   - crc: 0x%X (computed: 0x%X)\n", __debug__, header->crc, crc);
+
+    if (crc != header->crc) {
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: CRC32 checksum mismatch!\n", __debug__);
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_PARSER_ERROR, "CRC32 checksum mismatch!");
+        return FALSE;
+    }
+
+    return TRUE;
+}
+
+static gboolean mirage_fragment_daa_read_part_header (MIRAGE_Fragment_DAA *self, GObject *stream, DAA_PartHeader *header, GError **error)
+{
+    guint32 crc;
+
+    /* Seek to the beginning */
+    g_seekable_seek(G_SEEKABLE(stream), 0, G_SEEK_SET, NULL, NULL);
+
+    /* Read main header */
+    if (g_input_stream_read(G_INPUT_STREAM(stream), header, sizeof(DAA_PartHeader), NULL, NULL) != sizeof(DAA_PartHeader)) {
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read part file's header!\n", __debug__);
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, "Failed to read part file's header!");
+        return FALSE;
+    }
+
+    /* Compute CRC */
+    crc = crc32(0, (guint8 *)header, sizeof(DAA_PartHeader) - 4);
+
+    /* Fix endianess */
+    daa_part_header_fix_endian(header);
+
+    /* Debug */
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: DAA part file header:\n", __debug__);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   - signature: %.16s\n", __debug__, header->signature);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   - chunk_data_offset: 0x%X (%d)\n", __debug__, header->chunk_data_offset, header->chunk_data_offset);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   - hdata: %02X %02X %02X %02X %02X %02X %02X %02X %02X %02X %02X %02X %02X %02X %02X %02X\n", __debug__, header->hdata[0], header->hdata[1], header->hdata[2], header->hdata[3], header->hdata[4], header->hdata[5], header->hdata[6], header->hdata[7], header->hdata[8], header->hdata[9], header->hdata[10], header->hdata[11], header->hdata[12], header->hdata[13], header->hdata[14], header->hdata[15]);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   - crc: 0x%X (computed: 0x%X)\n", __debug__, header->crc, crc);
+
+    if (crc != header->crc) {
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: CRC32 checksum mismatch!\n", __debug__);
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_PARSER_ERROR, "CRC32 checksum mismatch!");
+        return FALSE;
+    }
+
+    return TRUE;
+}
+
 static gboolean mirage_fragment_daa_read_from_stream (MIRAGE_Fragment_DAA *self, guint64 offset, guint32 length, guint8 *buffer, GError **error)
 {
     /* A rather complex loop, thanks to the possibility that a chunk spans across
@@ -326,7 +517,7 @@ static gboolean mirage_fragment_daa_read_from_stream (MIRAGE_Fragment_DAA *self,
         for (gint i = 0; i < self->priv->num_parts; i++) {
             if (offset >= self->priv->part_table[i].start && offset < self->priv->part_table[i].end) {
                 part = &self->priv->part_table[i];
-                MIRAGE_DEBUG(self, MIRAGE_DEBUG_FRAGMENT, "%s: using part #%i\n", __debug__, file_offset);
+                MIRAGE_DEBUG(self, MIRAGE_DEBUG_FRAGMENT, "%s: using part #%i\n", __debug__, i);
                 break;
             }
         }
@@ -370,351 +561,266 @@ static gboolean mirage_fragment_daa_read_from_stream (MIRAGE_Fragment_DAA *self,
 }
 
 /**********************************************************************\
- *                  Interface implementation: <private>               *
+ *                         Descriptor parsing                         *
 \**********************************************************************/
-gboolean mirage_fragment_daa_set_file (MIRAGE_Fragment_DAA *self, const gchar *filename, const gchar *password, GError **error)
+static gboolean mirage_fragment_daa_parse_descriptor_split (MIRAGE_Fragment_DAA *self, GObject *stream, gint descriptor_size, GError **error)
 {
-    gchar signature[16];
-    guint64 tmp_offset = 0;
-    GObject *stream;
+    DAA_DescriptorSplit descriptor;
 
-    gint bsize_type = 0;
-    gint bsize_len = 0;
-    gint bpos = 0;
-
-    /* Open main file */
-    stream = libmirage_create_file_stream(filename, G_OBJECT(self), error);
-    if (!stream) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to open file '%s'!\n", __debug__, filename);
+    /* First field is number of parts (files) */
+    if (g_input_stream_read(G_INPUT_STREAM(stream), &descriptor, sizeof(descriptor), NULL, NULL) != sizeof(descriptor)) {
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read descriptor data!\n", __debug__);
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, "Failed to read descriptor data!");
         return FALSE;
     }
+    daa_descriptor_split_fix_endian(&descriptor);
+    descriptor_size -= sizeof(descriptor);
 
-    /* Store filename for later processing */
-    self->priv->main_filename = g_strdup(filename);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: main filename: %s\n", __debug__, self->priv->main_filename);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: number of parts: %d\n", __debug__, descriptor.num_parts);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: unknown field: %d (should always be 1)\n", __debug__, descriptor.__dummy__);
 
-    /* Read signature */
-    if (g_input_stream_read(G_INPUT_STREAM(stream), signature, sizeof(signature), NULL, NULL) != sizeof(signature)) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read signature!\n", __debug__);
-        g_object_unref(stream);
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, "Failed to read signature!");
-        return FALSE;
-    }
+    self->priv->num_parts = descriptor.num_parts; /* Set number of parts */
 
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  signature: %.16s\n", __debug__, signature);
-    if (memcmp(signature, daa_main_signature, sizeof(daa_main_signature))) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: invalid signature!\n", __debug__);
-        g_object_unref(stream);
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_PARSER_ERROR, "Invalid signature!");
-        return FALSE;
-    }
-
-    /* Parse header */
-    DAA_Main_Header header;
-
-    if (g_input_stream_read(G_INPUT_STREAM(stream), &header, sizeof(DAA_Main_Header), NULL, NULL) != sizeof(DAA_Main_Header)) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read header!\n", __debug__);
-        g_object_unref(stream);
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, "Failed to read header!");
-        return FALSE;
-    }
-
-    daa_main_header_fix_endian(&header);
-
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: DAA main file header:\n", __debug__);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  chunk_table_offset: 0x%X (%d)\n", __debug__, header.chunk_table_offset, header.chunk_table_offset);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  format_version: 0x%X\n", __debug__, header.format_version);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  chunk_data_offset: 0x%X (%d)\n", __debug__, header.chunk_data_offset, header.chunk_data_offset);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  __dummy__1: 0x%X\n", __debug__, header.__dummy__1);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  __dummy__2: 0x%X\n", __debug__, header.__dummy__2);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  chunk_size: 0x%X (%d)\n", __debug__, header.chunk_size, header.chunk_size);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  iso_size: 0x%llX (%lld)\n", __debug__, header.iso_size, header.iso_size);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  daa_size: 0x%llX (%lld)\n", __debug__, header.daa_size, header.daa_size);
-
-    /* Check format */
-    if (header.format_version != FORMAT_VERSION1 && header.format_version != FORMAT_VERSION2) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: unsupported format: 0x%X!\n", __debug__, header.format_version);
-        g_object_unref(stream);
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_PARSER_ERROR, "Unsupported format: 0x%X!", header.format_version);
-        return FALSE;
-    }
-
-    /* Initialize Z stream */
-    self->priv->zlib_stream.zalloc = NULL;
-    self->priv->zlib_stream.zfree = NULL;
-    self->priv->zlib_stream.opaque = NULL;
-    if (inflateInit2(&self->priv->zlib_stream, -15)) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to initialize zlib decoder!\n", __debug__);
-    }
-
-    /* Format V2 (0x110) provides us with some additional obfuscation */
-    if (header.format_version == FORMAT_VERSION2) {
-        guint32 len;
-
-        header.chunk_data_offset &= 0xFFFFFF;
-        header.chunk_size = (header.chunk_size & 0xFFF) << 14;
-
-        bsize_type = header.hdata[5] & 7;
-        bsize_len = header.hdata[5] >> 3;
-        if (bsize_len) bsize_len += 10;
-        if (!bsize_len) {
-            for (bsize_len = 0, len = header.chunk_size; len > bsize_type; bsize_len++, len >>= 1);
+    /* Depending on the filename format, we have a fixed number of 5-byte
+       fields, in which part sizes are stored. We don't really need these,
+       as we can get same info from part descriptor of each part file.
+       However, it can help us determine the filename format. */
+    switch (descriptor_size / 5) {
+        case 99: {
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: filename format: volname.part01.daa, volname.part02.daa, ...\n", __debug__);
+            self->priv->create_filename_func = create_filename_func_1;
+            break;
         }
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: LZMA compression; length field bitsize=%d, compression type field bitsize=%d\n", __debug__, bsize_len, bsize_type);
-
-        LzmaDec_Construct(&self->priv->lzma);
-        LzmaDec_Allocate(&self->priv->lzma, header.hdata + 7, LZMA_PROPS_SIZE, &lzma_alloc);
+        case 512: {
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: filename format: volname.part001.daa, volname.part002.daa, ...\n", __debug__);
+            self->priv->create_filename_func = create_filename_func_2;
+            break;
+        }
+        case 101: {
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: filename format: volname.daa, volname.d00, ...\n", __debug__);
+            self->priv->create_filename_func = create_filename_func_3;
+            break;
+        }
+        default: {
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: invalid filename format type!\n", __debug__);
+            g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_PARSER_ERROR, "Invalid filename format type!");
+            return FALSE;
+        }
     }
+    g_seekable_seek(G_SEEKABLE(stream), descriptor_size, G_SEEK_CUR, NULL, NULL);
 
+    return TRUE;
+}
 
-    /* Allocate inflate buffer */
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: allocating inflate buffer: 0x%X\n", __debug__, header.chunk_size);
-    self->priv->buffer = g_malloc0(header.chunk_size);
-    self->priv->buflen = header.chunk_size;
-    self->priv->cur_chunk_index = -1; /* Because 0 won't do... */
+static gboolean mirage_fragment_daa_parse_descriptor_encryption (MIRAGE_Fragment_DAA *self, GObject *stream, gint descriptor_size, GError **error)
+{
+    DAA_DescriptorEncryption descriptor;
+    guint8 computed_key[128];
 
-    /* Calculate amount of sectors within one chunk - must be an integer... */
-    if (header.chunk_size % 2048) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: chunk size is not a multiple of 2048!\n", __debug__);
-        g_object_unref(stream);
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_PARSER_ERROR, "Chunk size is not a multiple of 2048!");
+    /* Validate descriptor size */
+    if (descriptor_size != sizeof(descriptor)) {
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: invalid size for encryption descriptor (%d vs %d)!\n", __debug__, descriptor_size, sizeof(descriptor));
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_PARSER_ERROR, "Invalid size for encryption descriptor!");
         return FALSE;
-    } else {
-        self->priv->sectors_per_chunk = header.chunk_size / 2048;
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: sectors per chunk: %d\n", __debug__, self->priv->sectors_per_chunk);
     }
 
-    /* Set fragment length */
-    gint fragment_length = header.iso_size / 2048;
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: fragment length: 0x%X (%d)\n", __debug__, fragment_length, fragment_length);
-    mirage_fragment_set_length(MIRAGE_FRAGMENT(self), fragment_length);
+    /* Read descriptor data */
+    if (g_input_stream_read(G_INPUT_STREAM(stream), &descriptor, sizeof(descriptor), NULL, NULL) != sizeof(descriptor)) {
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read descriptor data!\n", __debug__);
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, "Failed to read descriptor data!");
+        return FALSE;
+    }
+    daa_descriptor_encryption_fix_endian(&descriptor);
+
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: encryption type: 0x%X\n", __debug__, descriptor.encryption_type);
+    if (descriptor.encryption_type != 0) {
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: type of encryption 0x%d might not be supported!\n", __debug__, descriptor.encryption_type);
+    }
+
+
+    /* First, check if password has already been provided via parser parameters
+       (separate code paths because if acquired via password function, the string
+       must be freed) */
+    if (self->priv->password) {
+        daa_crypt_init(computed_key, self->priv->password, descriptor.daa_key);
+    } else {
+        /* Get password from user via password function */
+        gchar *prompt_password = libmirage_obtain_password(NULL);
+        if (!prompt_password) {
+            /* Password not provided (or password function is not set) */
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  failed to obtain password for encrypted image!\n", __debug__);
+            g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_ENCRYPTED_IMAGE, "Image is encrypted!");
+            return FALSE;
+        }
+
+        daa_crypt_init(computed_key, prompt_password, descriptor.daa_key);
+        g_free(prompt_password);
+    }
+
+
+    /* Check if password is correct */
+    if (descriptor.password_crc != crc32(0, computed_key, 128)) {
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  incorrect password!\n", __debug__);
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_PARSER_ERROR, "Incorrect password!");
+        return FALSE;
+    }
+
+
+    /* Set encrypted flag - used later, when reading data */
+    self->priv->encrypted = TRUE;
+
+    return TRUE;
+}
+
+static gboolean mirage_fragment_daa_parse_descriptors (MIRAGE_Fragment_DAA *self, GObject *stream, GError **error)
+{
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "\n");
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: parsing descriptors (stream position: 0x%lX)\n", __debug__, g_seekable_tell(G_SEEKABLE(stream)));
 
     /* Set number of parts to 1 (true for non-split images); if image consists
        of multiple parts, this will be set accordingly by the code below */
-    gint num_parts = 1;
+    self->priv->num_parts = 1;
 
-    /* Parse blocks */
-    while (g_seekable_tell(G_SEEKABLE(stream)) < header.chunk_table_offset) {
-        guint32 type = 0;
-        guint32 len = 0;
+    /* Parse descriptors... they are located between header and chunk table */
+    while (g_seekable_tell(G_SEEKABLE(stream)) < self->priv->chunk_table_offset) {
+        DAA_DescriptorHeader descriptor_header;
 
-        if (g_input_stream_read(G_INPUT_STREAM(stream), &type, sizeof(type), NULL, NULL) != sizeof(type)) {
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read block type!\n", __debug__);
-            g_object_unref(stream);
-            g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, "Failed to read block type!");
+        /* Read descriptor header */
+        if (g_input_stream_read(G_INPUT_STREAM(stream), &descriptor_header, sizeof(descriptor_header), NULL, NULL) != sizeof(descriptor_header)) {
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read descriptor header!\n", __debug__);
+            g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, "Failed to read descriptor type!");
             return FALSE;
         }
-        type = GUINT32_FROM_LE(type);
 
-        if (g_input_stream_read(G_INPUT_STREAM(stream), &len, sizeof(len), NULL, NULL) != sizeof(len)) {
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read block length!\n", __debug__);
-            g_object_unref(stream);
-            g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, "Failed to read block length!");
-            return FALSE;
-        }
-        len = GUINT32_FROM_LE(len);
+        /* Fix endianess */
+        daa_descriptor_header_fix_endian(&descriptor_header);
 
-        len -= 2*sizeof(guint32); /* Block length includes type and length fields; I like to operate with pure data length */
+        /* Length includes type and length fields... */
+        descriptor_header.length -= 2*sizeof(guint32);
 
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: block %i (len: %d):\n", __debug__, type, len);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: descriptor #%i (data length: %d):\n", __debug__, descriptor_header.type, descriptor_header.length);
 
-        switch (type) {
-            case 0x01: {
-                /* Block 0x01: Part information */
-                MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  part information; skipping\n", __debug__);
-                /* We skip Part information here; it'll be parsed by another function */
-                g_seekable_seek(G_SEEKABLE(stream), len, G_SEEK_CUR, NULL, NULL);
+        switch (descriptor_header.type) {
+            case DESCRIPTOR_PART: {
+                /* Part information; we skip it here, as it will be parsed by another function */
+                MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: -> part information; skipping\n", __debug__);
+                g_seekable_seek(G_SEEKABLE(stream), descriptor_header.length, G_SEEK_CUR, NULL, NULL);
                 break;
             }
-            case 0x02: {
-                /* Block 0x02: Split archive information */
-                guint32 b1 = 0;
-
-                MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  split archive information\n", __debug__);
-
-                /* First field is number of parts (files) */
-                if (g_input_stream_read(G_INPUT_STREAM(stream), &num_parts, sizeof(num_parts), NULL, NULL) != sizeof(num_parts)) {
-                    MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read number of parts!\n", __debug__);
-                    g_object_unref(stream);
-                    g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, "Failed to read number of parts!");
+            case DESCRIPTOR_SPLIT: {
+                /* Split archive information */
+                MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: -> split archive information\n", __debug__);
+                if (!mirage_fragment_daa_parse_descriptor_split(self, stream, descriptor_header.length, error)) {
                     return FALSE;
                 }
-                num_parts = GUINT32_FROM_LE(num_parts);
-                len -= sizeof(guint32);
-
-                /* Next field is always 0x01? */
-                if (g_input_stream_read(G_INPUT_STREAM(stream), &b1, sizeof(b1), NULL, NULL) != sizeof(b1)) {
-                    MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read field 0x01!\n", __debug__);
-                    g_object_unref(stream);
-                    g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, "Failed to read field 0x01!");
-                    return FALSE;
-                }
-                b1 = GUINT32_FROM_LE(b1);
-                len -= sizeof(guint32);
-
-                /* Determine filename format and set appropriate function */
-                switch (len / 5) {
-                    case 99: {
-                        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   filename format: volname.part01.daa, volname.part02.daa, ...\n", __debug__);
-                        self->priv->create_filename_func = create_filename_func_1;
-                        break;
-                    }
-                    case 512: {
-                        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   filename format: volname.part001.daa, volname.part002.daa, ...\n", __debug__);
-                        self->priv->create_filename_func = create_filename_func_2;
-                        break;
-                    }
-                    case 101: {
-                        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   filename format: volname.daa, volname.d00, ...\n", __debug__);
-                        self->priv->create_filename_func = create_filename_func_3;
-                        break;
-                    }
-                    default: {
-                        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s:   invalid filename format type!\n", __debug__);
-                        break;
-                    }
-                }
-
-                /* Then there's 99/512/101 5-byte fields in which part sizes are
-                   stored (Why 5-byte? Probably to save some space, and you can
-                   store part lengths up to TB in those... )
-
-                   We don't really need these, since we could get the same info
-                   from Block 1 of the the part files themselves... */
-                g_seekable_seek(G_SEEKABLE(stream), len, G_SEEK_CUR, NULL, NULL);
                 break;
             }
-            case 0x03: {
-                /* Block 0x03: Password block */
-                guint32 pwd_type;
-                guint32 pwd_crc;
-
-                guint8 daa_key[128];
-
-                if (g_input_stream_read(G_INPUT_STREAM(stream), &pwd_type, sizeof(pwd_type), NULL, NULL) != sizeof(pwd_type)) {
-                    MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s:  failed to read password type!\n", __debug__);
-                    g_object_unref(stream);
-                    g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, "Failed to read password type!");
+            case DESCRIPTOR_ENCRYPTION: {
+                MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: -> encryption information\n", __debug__);
+                if (!mirage_fragment_daa_parse_descriptor_encryption(self, stream, descriptor_header.length, error)) {
                     return FALSE;
                 }
-                pwd_type = GUINT32_FROM_LE(pwd_type);
-
-                if (g_input_stream_read(G_INPUT_STREAM(stream), &pwd_crc, sizeof(pwd_crc), NULL, NULL) != sizeof(pwd_crc)) {
-                    MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s:  failed to read password CRC!\n", __debug__);
-                    g_object_unref(stream);
-                    g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, "Failed to read password CRC!");
-                    return FALSE;
-                }
-                pwd_crc = GUINT32_FROM_LE(pwd_crc);
-
-                if (g_input_stream_read(G_INPUT_STREAM(stream), daa_key, sizeof(daa_key), NULL, NULL) != sizeof(daa_key)) {
-                    MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s:  failed to read DAA key!\n", __debug__);
-                    g_object_unref(stream);
-                    g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, "Failed to read DAA key!");
-                    return FALSE;
-                }
-
-                if (pwd_type != 0) {
-                    MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s:  type of encryption '%d' might not be supported!\n", __debug__, pwd_type);
-                }
-
-                /* First, check if password has already been provided via parser parameters
-                   (separate code paths because if acquired via password function, the string
-                   must be freed) */
-                if (password) {
-                    daa_crypt_init(self->priv->pwd_key, password, daa_key);
-                } else {
-                    /* Get password from user via password function */
-                    gchar *prompt_password = libmirage_obtain_password(NULL);
-                    if (!prompt_password) {
-                        /* Password not provided (or password function is not set) */
-                        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  failed to obtain password for encrypted image!\n", __debug__);
-                        g_object_unref(stream);
-                        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_ENCRYPTED_IMAGE, "Image is encrypted!");
-                        return FALSE;
-                    }
-
-                    daa_crypt_init(self->priv->pwd_key, prompt_password, daa_key);
-                    g_free(prompt_password);
-                }
-
-                /* Check if password is correct */
-                if (pwd_crc != crc32(0, self->priv->pwd_key, 128)) {
-                    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  incorrect password!\n", __debug__);
-                    g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_PARSER_ERROR, "Incorrect password!");
-                    return FALSE;
-                }
-
-                /* Set encrypted flag - used later, when reading data */
-                self->priv->encrypted = TRUE;
                 break;
             }
+            case DESCRIPTOR_COMMENT: /* FIXME */
             default: {
-                MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s:  unhandled block type 0x%X; skipping\n", __debug__, type);
-                g_seekable_seek(G_SEEKABLE(stream), len, G_SEEK_CUR, NULL, NULL);
+                MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: -> unhandled block type 0x%X; skipping\n", __debug__, descriptor_header.type);
+                g_seekable_seek(G_SEEKABLE(stream), descriptor_header.length, G_SEEK_CUR, NULL, NULL);
                 break;
             }
         }
 
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "\n");
     }
 
-    /* Build the chunk table */
+    return TRUE;
+}
+
+
+/**********************************************************************\
+ *                         Chunk table parsing                        *
+\**********************************************************************/
+static gboolean mirage_fragment_daa_parse_chunk_table (MIRAGE_Fragment_DAA *self, GObject *stream, GError **error)
+{
     guint8 *tmp_chunks_data;
     gint tmp_chunks_len;
     gint num_chunks = 0;
+    gint tmp_offset = 0;
 
-    tmp_chunks_len = header.chunk_data_offset - header.chunk_table_offset;
-    tmp_chunks_data = g_new0(guint8, tmp_chunks_len);
+    gint bit_pos = 0; /* Bit position */
 
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: building chunk table (%d entries), %X vs %X...\n", __debug__, tmp_chunks_len, header.chunk_data_offset, header.chunk_table_offset);
+    /* Compute chunk table size */
+    tmp_chunks_len = self->priv->chunk_data_offset - self->priv->chunk_table_offset;
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: parsing chunk table (length: %d bytes, from 0x%lX to 0x%lX)...\n", __debug__, tmp_chunks_len, self->priv->chunk_table_offset, self->priv->chunk_data_offset);
 
-    switch (header.format_version) {
+    /* Allocate temporary buffer */
+    tmp_chunks_data = g_try_new(guint8, tmp_chunks_len);
+    if (!tmp_chunks_data) {
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to allocate chunk table buffer (%d bytes)!\n", __debug__, tmp_chunks_len);
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_PARSER_ERROR, "Failed to allocate chunk table buffer (%d bytes)!", tmp_chunks_len);
+        return FALSE;
+    }
+
+    /* Read chunk data */
+    g_seekable_seek(G_SEEKABLE(stream), self->priv->chunk_table_offset, G_SEEK_SET, NULL, NULL);
+    if (g_input_stream_read(G_INPUT_STREAM(stream), tmp_chunks_data, tmp_chunks_len, NULL, NULL) != tmp_chunks_len) {
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read chunk table data!\n", __debug__);
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, "Failed to read chunk table data!");
+        return FALSE;
+    }
+
+    /* Compute number of chunks */
+    switch (self->priv->header.format_version) {
         case FORMAT_VERSION1: {
             /* 3-byte fields */
             num_chunks = tmp_chunks_len / 3;
             break;
         }
         case FORMAT_VERSION2: {
-            /* tmp_chunks_len bytes, each having 8 bits, over bitsize of type and len fields */
-            num_chunks = (tmp_chunks_len << 3) / (bsize_type + bsize_len);
+            /* tmp_chunks_len bytes * 8 bits, over bit size of type and length fields */
+            num_chunks = (tmp_chunks_len * 8) / (self->priv->bitsize_type + self->priv->bitsize_length);
             break;
         }
     }
 
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: building chunk table (%d entries)...\n", __debug__, num_chunks);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: chunk table: %d entries\n", __debug__, num_chunks);
 
+    /* Allocate chunk table */
     self->priv->num_chunks = num_chunks;
-    self->priv->chunk_table = g_new0(DAA_Chunk, self->priv->num_chunks);
-
-    g_seekable_seek(G_SEEKABLE(stream), header.chunk_table_offset, G_SEEK_SET, NULL, NULL);
-    if (g_input_stream_read(G_INPUT_STREAM(stream), tmp_chunks_data, tmp_chunks_len, NULL, NULL) != tmp_chunks_len) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read chunks data!\n", __debug__);
-        g_object_unref(stream);
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, "Failed to read chunks data!");
+    self->priv->chunk_table = g_try_new(DAA_Chunk, self->priv->num_chunks);
+    if (!self->priv->chunk_table) {
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to allocate chunk table (%ld bytes)!\n", __debug__, self->priv->num_chunks*sizeof(DAA_Chunk));
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_PARSER_ERROR, "Failed to allocate chunk table (%ld bytes)!", self->priv->num_chunks*sizeof(DAA_Chunk));
         return FALSE;
     }
 
-    tmp_offset = 0;
     for (gint i = 0; i < self->priv->num_chunks; i++) {
         DAA_Chunk *chunk = &self->priv->chunk_table[i];
 
-        guint32 tmp_length = 0;
-        gint tmp_comp = -1;
-        gchar *comp_string = "unknown";
+        guint32 tmp_chunk_length = 0;
+        gint tmp_compression_type = -1;
+        gchar *compression_type_string = "unknown";
 
-        switch (header.format_version) {
+        switch (self->priv->header.format_version) {
             case FORMAT_VERSION1: {
                 gint off = i*3;
-                tmp_length = (tmp_chunks_data[off+0] << 16) | (tmp_chunks_data[off+2] << 8) | tmp_chunks_data[off+1];
-                tmp_comp = 1;
+                tmp_chunk_length = (tmp_chunks_data[off+0] << 16) | (tmp_chunks_data[off+2] << 8) | tmp_chunks_data[off+1];
+                tmp_compression_type = 1;
                 break;
             }
             case FORMAT_VERSION2: {
-                tmp_length = read_bits(bsize_len, tmp_chunks_data, bpos); bpos += bsize_len;
-                tmp_length += 5;
-                tmp_comp = read_bits(bsize_type, tmp_chunks_data, bpos); bpos += bsize_type;
-                if (tmp_length >= header.chunk_size) {
-                    tmp_comp = -1;
+                /* In version 2, chunk table is bit-packed */
+                tmp_chunk_length = read_bits(self->priv->bitsize_length, tmp_chunks_data, bit_pos);
+                bit_pos += self->priv->bitsize_length;
+
+                tmp_chunk_length += 5; /* LZMA props size */
+
+                tmp_compression_type = read_bits(self->priv->bitsize_type, tmp_chunks_data, bit_pos);
+                bit_pos += self->priv->bitsize_type;
+
+                /* Detect uncompressed chunk */
+                if (tmp_chunk_length >= self->priv->chunk_size) {
+                    tmp_compression_type = -1;
                 }
                 break;
             }
@@ -722,53 +828,90 @@ gboolean mirage_fragment_daa_set_file (MIRAGE_Fragment_DAA *self, const gchar *f
 
         /* Chunk compression type; format 0x100 uses zlib, while format 0x110
            can use either only LZMA or combination of zlib and LZMA */
-        switch (tmp_comp) {
+        switch (tmp_compression_type) {
             case -1: {
-                tmp_comp = DAA_COMPRESSION_NONE;
-                comp_string = "NONE";
+                tmp_compression_type = DAA_COMPRESSION_NONE;
+                compression_type_string = "NONE";
                 break;
             }
             case 0: {
-                tmp_comp = DAA_COMPRESSION_LZMA;
-                comp_string = "LZMA";
+                tmp_compression_type = DAA_COMPRESSION_LZMA;
+                compression_type_string = "LZMA";
                 break;
             }
             case 1: {
-                tmp_comp = DAA_COMPRESSION_ZLIB;
-                comp_string = "ZLIB";
+                tmp_compression_type = DAA_COMPRESSION_ZLIB;
+                compression_type_string = "ZLIB";
                 break;
             }
             default: {
-                MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: unknown compression type %d!\n", __debug__, tmp_comp);
+                MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: unknown compression type %d!\n", __debug__, tmp_compression_type);
             }
         }
 
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  entry #%i: offset 0x%llX, length: 0x%X, compression: %s\n", __debug__, i, tmp_offset, tmp_length, comp_string);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  entry #%i: offset 0x%llX, length: 0x%X, compression: %s\n", __debug__, i, tmp_offset, tmp_chunk_length, compression_type_string);
 
         chunk->offset = tmp_offset;
-        chunk->length = tmp_length;
-        chunk->compression = tmp_comp;
+        chunk->length = tmp_chunk_length;
+        chunk->compression = tmp_compression_type;
 
-        tmp_offset += tmp_length;
+        tmp_offset += tmp_chunk_length;
     }
 
     g_free(tmp_chunks_data);
 
-    /* Close the main filename as it's not needed from this point on */
-    g_object_unref(stream);
+    return TRUE;
+}
 
-    /* Build parts table */
-    self->priv->num_parts = num_parts;
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: building parts table (%d entries)...\n", __debug__, self->priv->num_parts);
 
-    self->priv->part_table = g_new0(DAA_Part, self->priv->num_parts);
+/**********************************************************************\
+ *                       Part table construction                       *
+\**********************************************************************/
+static gboolean mirage_fragment_daa_build_part_table (MIRAGE_Fragment_DAA *self, GObject *stream, GError **error)
+{
+    gint tmp_offset = 0;
+    guint64 part_length, tmp_position;
+    DAA_Part *part;
+    gchar *part_filename;
+    gchar part_signature[16];
 
-    tmp_offset = 0;
-    for (gint i = 0; i < self->priv->num_parts; i++) {
-        DAA_Part *part = &self->priv->part_table[i];
-        gchar *part_filename = NULL;
-        gchar part_signature[16] = "";
-        guint64 part_length = 0;
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "\n");
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: building parts table (%d entries)...\n\n", __debug__, self->priv->num_parts);
+
+    /* Allocate part table */
+    self->priv->part_table = g_try_new0(DAA_Part, self->priv->num_parts);
+    if (!self->priv->part_table) {
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: faled to allocate part table (%d bytes)!\n", __debug__, self->priv->num_parts*sizeof(DAA_Part));
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_PARSER_ERROR, "Failed to allocate part table!");
+        return FALSE;
+    }
+
+    /* First part is the DAA file we are parsing */
+    part = &self->priv->part_table[0];
+
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: creating part for main file\n\n", __debug__);
+
+    g_object_ref(stream);
+    part->stream = stream;
+
+    part->offset = self->priv->chunk_data_offset;
+    part->start = tmp_offset;
+
+    tmp_position = g_seekable_tell(G_SEEKABLE(part->stream)); /* Store current position */
+    g_seekable_seek(G_SEEKABLE(part->stream), 0, G_SEEK_END, NULL, NULL);
+    part_length = g_seekable_tell(G_SEEKABLE(part->stream));
+    g_seekable_seek(G_SEEKABLE(part->stream), tmp_position, G_SEEK_SET, NULL, NULL); /* Restore position */
+
+    part_length -= part->offset;
+
+    part->start = tmp_offset;
+    tmp_offset += part_length;
+    part->end = tmp_offset;
+
+
+    /* Add the rest of the parts */
+    for (gint i = 1; i < self->priv->num_parts; i++) {
+        part = &self->priv->part_table[i];
 
         /* If we have create_filename_func set, use it... otherwise we're a
            non-split image and should be using self->priv->main_filename anyway */
@@ -778,8 +921,9 @@ gboolean mirage_fragment_daa_set_file (MIRAGE_Fragment_DAA *self, const gchar *f
             part_filename = g_strdup(self->priv->main_filename);
         }
 
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  part #%i: %s\n", __debug__, i, part_filename);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: part #%i: %s\n", __debug__, i, part_filename);
 
+        /* Create stream */
         part->stream = libmirage_create_file_stream(part_filename, G_OBJECT(self), error);
         if (!part->stream) {
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to open stream on file '%s'!\n", __debug__, part_filename);
@@ -794,38 +938,26 @@ gboolean mirage_fragment_daa_set_file (MIRAGE_Fragment_DAA *self, const gchar *f
             g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_DATA_FILE_ERROR, "Failed to read part's signature!");
             return FALSE;
         }
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   signature: %.16s\n", __debug__, part_signature);
 
-        if (!memcmp(part_signature, daa_main_signature, sizeof(daa_main_signature))) {
-            DAA_Main_Header part_header;
-            if (g_input_stream_read(G_INPUT_STREAM(part->stream), &part_header, sizeof(DAA_Main_Header), NULL, NULL) != sizeof(DAA_Main_Header)) {
-                MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read part's header!\n", __debug__);
-                g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_DATA_FILE_ERROR, "Failed to read part's header!");
+        /* Read header */
+        if (!memcmp(part_signature, daa_part_signature, sizeof(daa_part_signature))) {
+            DAA_PartHeader part_header;
+            if (!mirage_fragment_daa_read_part_header(self, part->stream, &part_header, error)) {
                 return FALSE;
             }
-            daa_main_header_fix_endian(&part_header);
-            part->offset = part_header.chunk_data_offset & 0xFFFFFF;
-        } else if (!memcmp(part_signature, daa_part_signature, sizeof(daa_part_signature))) {
-            DAA_Part_Header part_header;
-            if (g_input_stream_read(G_INPUT_STREAM(part->stream), &part_header, sizeof(DAA_Part_Header), NULL, NULL) != sizeof(DAA_Part_Header))  {
-                MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read part's header!\n", __debug__);
-                g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_DATA_FILE_ERROR, "Failed to read part's header!");
-                return FALSE;
-            }
-            daa_part_header_fix_endian(&part_header);
-            part->offset = part_header.chunk_data_offset & 0xFFFFFF;
+            part->offset = part_header.chunk_data_offset & 0x00FFFFFF;
         } else {
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: invalid part's signature!\n", __debug__);
             g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_PARSER_ERROR, "Part's signature is invalid!");
             return FALSE;
         }
 
-        /* We could parse Block 0x01 here; it's present in both main and part
-           files, and it has same format. The block appears to contain previous
+        /* We could parse part descriptor here; it's present in both main and part
+           files, and it has same format. It appears to contain previous
            and current part's index, and the length of current part (with some
            other fields in between). However, those part lengths are literal part
            files' lengths, and we actually need the lengths of zipped streams
-           they contain. So we'll calculate that ourselves and leave Block 0x01
+           they contain. So we'll calculate that ourselves and leave part descriptor
            alone... Part indices aren't of any use to us either, because I
            haven't seen any DAA image having them mixed up... */
         g_seekable_seek(G_SEEKABLE(part->stream), 0, G_SEEK_END, NULL, NULL);
@@ -833,16 +965,197 @@ gboolean mirage_fragment_daa_set_file (MIRAGE_Fragment_DAA *self, const gchar *f
 
         part_length -= part->offset;
 
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  part length: 0x%llX\n", __debug__, part_length);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: part length: 0x%llX\n", __debug__, part_length);
 
         part->start = tmp_offset;
         tmp_offset += part_length;
         part->end = tmp_offset;
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  part start: 0x%llX\n", __debug__, part->start);
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  part end: 0x%llX\n", __debug__, part->end);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: part start: 0x%llX\n", __debug__, part->start);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: part end: 0x%llX\n\n", __debug__, part->end);
     }
 
     return TRUE;
+}
+
+
+/**********************************************************************\
+ *                         Buffer allocation                          *
+\**********************************************************************/
+static gboolean mirage_fragment_daa_setup_buffer (MIRAGE_Fragment_DAA *self, GError **error)
+{
+    gint fragment_length;
+
+    /* Calculate amount of sectors within one chunk - must be an integer... */
+    self->priv->buflen = self->priv->chunk_size;
+    if (self->priv->buflen % 2048) {
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: chunk size is not a multiple of 2048!\n", __debug__);
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_PARSER_ERROR, "Chunk size is not a multiple of 2048!");
+        return FALSE;
+    }
+    self->priv->sectors_per_chunk = self->priv->buflen / 2048;
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: sectors per chunk: %d\n", __debug__, self->priv->sectors_per_chunk);
+
+    /* Allocate inflate buffer */
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: allocating inflate buffer: 0x%X\n", __debug__, self->priv->buflen);
+    self->priv->buffer = g_try_malloc(self->priv->buflen);
+    if (!self->priv->buffer) {
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to allocate inflate buffer (%d bytes)!\n", __debug__, self->priv->buflen);
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_PARSER_ERROR, "Failed to allocate inflate buffer (%d bytes)!", self->priv->buflen);
+        return FALSE;
+    }
+
+
+    self->priv->cur_chunk_index = -1; /* Because 0 won't do... */
+
+    /* Set fragment length */
+    fragment_length = self->priv->header.iso_size / 2048;
+    mirage_fragment_set_length(MIRAGE_FRAGMENT(self), fragment_length);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: fragment length: 0x%X (%d)\n", __debug__, fragment_length, fragment_length);
+
+    return TRUE;
+}
+
+
+/**********************************************************************\
+ *                        DAA file parsing                            *
+\**********************************************************************/
+static gboolean mirage_fragment_daa_parse_daa_file (MIRAGE_Fragment_DAA *self, GObject *stream, GError **error)
+{
+    /* Read main header */
+    if (!mirage_fragment_daa_read_main_header(self, stream, &self->priv->header, error)) {
+        return FALSE;
+    }
+
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "\n");
+
+    /* Format-dependent header parsing */
+    switch (self->priv->header.format_version) {
+        case FORMAT_VERSION1: {
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: format version 1\n\n", __debug__);
+
+            self->priv->chunk_table_offset = self->priv->header.chunk_table_offset;
+            self->priv->chunk_data_offset = self->priv->header.chunk_data_offset;
+            self->priv->chunk_size = self->priv->header.chunk_size;
+
+            break;
+        }
+        case FORMAT_VERSION2: {
+            guint32 len;
+            gint bsize_type = 0;
+            gint bsize_len = 0;
+
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: format version 2\n\n", __debug__);
+
+            self->priv->chunk_table_offset = self->priv->header.chunk_table_offset;
+            self->priv->chunk_data_offset = self->priv->header.chunk_data_offset & 0x00FFFFFF;
+            self->priv->chunk_size = (self->priv->header.chunk_size & 0x00000FFF) << 14;
+
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: actual chunk_data_offset: 0x%X (%d)\n", __debug__, self->priv->chunk_data_offset, self->priv->chunk_data_offset);
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: actual chunk_size: 0x%X (%d)\n", __debug__, self->priv->chunk_size, self->priv->chunk_size);
+
+            /* Decipher bit size for type and length fields of chunk table */
+            bsize_type = self->priv->header.hdata[5] & 7;
+            bsize_len  = self->priv->header.hdata[5] >> 3;
+            if (bsize_len) {
+                bsize_len += 10;
+            }
+            if (!bsize_len) {
+                for (bsize_len = 0, len = self->priv->chunk_size; len > bsize_type; bsize_len++, len >>= 1);
+            }
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: chunk table bit-size: length field: %d, compression type field: %d\n", __debug__, bsize_len, bsize_type);
+            self->priv->bitsize_length = bsize_len;
+            self->priv->bitsize_type = bsize_type;
+
+            /* Initialize LZMA */
+            if (!mirage_fragment_daa_initialize_lzma(self, error)) {
+                return FALSE;
+            }
+
+            break;
+        }
+        default: {
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: unsupported format: 0x%X!\n", __debug__, self->priv->header.format_version);
+            g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_PARSER_ERROR, "Unsupported format: 0x%X!", self->priv->header.format_version);
+            return FALSE;
+        }
+    }
+
+    /* Initialize zlib stream */
+    if (!mirage_fragment_daa_initialize_zlib(self, error)) {
+        return FALSE;
+    }
+
+    /* Setup inflate buffer, set fragment length */
+    if (!mirage_fragment_daa_setup_buffer(self, error)) {
+        return FALSE;
+    }
+
+
+    /* Parse descriptors */
+    if (!mirage_fragment_daa_parse_descriptors(self, stream, error)) {
+        return FALSE;
+    }
+
+
+    /* Parse chunk table */
+    if (!mirage_fragment_daa_parse_chunk_table(self, stream, error)) {
+        return FALSE;
+    }
+
+    /* Build parts table */
+    if (!mirage_fragment_daa_build_part_table(self, stream, error)) {
+        return FALSE;
+    }
+
+    return TRUE;
+}
+
+
+/**********************************************************************\
+ *                  Interface implementation: <private>               *
+\**********************************************************************/
+gboolean mirage_fragment_daa_set_file (MIRAGE_Fragment_DAA *self, const gchar *filename, const gchar *password, GError **error)
+{
+    gchar signature[16];
+    GObject *stream;
+    gboolean succeeded;
+
+    /* Open main file */
+    stream = libmirage_create_file_stream(filename, G_OBJECT(self), error);
+    if (!stream) {
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to open file '%s'!\n", __debug__, filename);
+        return FALSE;
+    }
+
+    /* Store filename for later processing */
+    self->priv->main_filename = g_strdup(filename);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: main filename: %s\n", __debug__, self->priv->main_filename);
+
+    /* Store password (NOTE: we don't have to copy it */
+    self->priv->password = password;
+
+    /* Read signature */
+    if (g_input_stream_read(G_INPUT_STREAM(stream), signature, sizeof(signature), NULL, NULL) != sizeof(signature)) {
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read signature!\n", __debug__);
+        g_object_unref(stream);
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, "Failed to read signature!");
+        return FALSE;
+    }
+
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: signature: %.16s\n", __debug__, signature);
+    if (memcmp(signature, daa_main_signature, sizeof(daa_main_signature))) {
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: invalid signature!\n", __debug__);
+        g_object_unref(stream);
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_PARSER_ERROR, "Invalid signature!");
+        return FALSE;
+    }
+
+    /* Parse DAA file */
+    succeeded = mirage_fragment_daa_parse_daa_file(self, stream, error);
+
+    g_object_unref(stream);
+
+    return succeeded;
 }
 
 
@@ -861,47 +1174,6 @@ static gboolean mirage_fragment_daa_use_the_rest_of_file (MIRAGE_Fragment *_self
     /* Not implemented */
     g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_PARSER_ERROR, "Function not implemented!");
     return FALSE;
-}
-
-
-
-static gint mirage_fragment_daa_inflate_zlib (MIRAGE_Fragment_DAA *self, guint8 *in_buf, gint in_len)
-{
-    inflateReset(&self->priv->zlib_stream);
-
-    self->priv->zlib_stream.next_in = in_buf;
-    self->priv->zlib_stream.avail_in = in_len;
-    self->priv->zlib_stream.next_out = self->priv->buffer;
-    self->priv->zlib_stream.avail_out = self->priv->buflen;
-
-    if (inflate(&self->priv->zlib_stream, Z_SYNC_FLUSH) != Z_STREAM_END) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to inflate!\n", __debug__);
-        return 0;
-    }
-
-    return self->priv->zlib_stream.total_out;
-}
-
-static gint mirage_fragment_daa_inflate_lzma (MIRAGE_Fragment_DAA *self, guint8 *in_buf, gint in_len)
-{
-    ELzmaStatus status;
-    SizeT inlen, outlen;
-
-    LzmaDec_Init(&self->priv->lzma);
-
-    inlen = in_len;
-    outlen = self->priv->buflen;
-    if (LzmaDec_DecodeToBuf(&self->priv->lzma, self->priv->buffer, &outlen, in_buf, &inlen, LZMA_FINISH_END, &status) != SZ_OK) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to inflate!\n", __debug__);
-        return 0;
-    }
-
-    guint32 state;
-    /* FIXME: The following two lines of code is not portable */
-    x86_Convert_Init(state);
-    x86_Convert(self->priv->buffer, self->priv->buflen, 0, &state, 0);
-
-    return outlen;
 }
 
 static gboolean mirage_fragment_daa_read_main_data (MIRAGE_Fragment *_self, gint address, guint8 *buf, gint *length, GError **error)
@@ -941,7 +1213,7 @@ static gboolean mirage_fragment_daa_read_main_data (MIRAGE_Fragment *_self, gint
         /* Decrypt if encrypted */
         if (self->priv->encrypted) {
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_FRAGMENT, "%s: decrypting...\n", __debug__);
-            daa_crypt(self->priv->pwd_key, tmp_buffer, tmp_buflen);
+            daa_crypt(tmp_buffer, tmp_buflen);
         }
 
         /* Inflate */
@@ -1027,6 +1299,8 @@ static void mirage_fragment_daa_init (MIRAGE_Fragment_DAA *self)
     self->priv->chunk_table = NULL;
     self->priv->part_table = NULL;
     self->priv->buffer = NULL;
+
+    self->priv->password = NULL;
 }
 
 static void mirage_fragment_daa_finalize (GObject *gobject)
@@ -1044,10 +1318,12 @@ static void mirage_fragment_daa_finalize (GObject *gobject)
     g_free(self->priv->chunk_table);
 
     /* Free part table */
-    for (gint i = 0; i < self->priv->num_parts; i++) {
-        DAA_Part *part = &self->priv->part_table[i];
-        if (part->stream) {
-            g_object_unref(part->stream);
+    if (self->priv->part_table) {
+        for (gint i = 0; i < self->priv->num_parts; i++) {
+            DAA_Part *part = &self->priv->part_table[i];
+            if (part->stream) {
+                g_object_unref(part->stream);
+            }
         }
     }
     g_free(self->priv->part_table);
