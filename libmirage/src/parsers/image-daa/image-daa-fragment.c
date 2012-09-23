@@ -407,10 +407,10 @@ static gboolean mirage_fragment_daa_initialize_lzma (MIRAGE_Fragment_DAA *self, 
 
 static gint mirage_fragment_daa_inflate_lzma (MIRAGE_Fragment_DAA *self, guint8 *in_buf, gsize in_len, gsize uncompressed_size)
 {
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_FRAGMENT, "%s: decompressing using LZMA; in_len: %ld bytes, uncompressed_size: %ld bytes\n", __debug__, in_len, uncompressed_size);
-
     ELzmaStatus status;
     SizeT inlen, outlen;
+
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_FRAGMENT, "%s: decompressing using LZMA; in_len: %ld bytes, uncompressed_size: %ld bytes\n", __debug__, in_len, uncompressed_size);
 
     /* Initialize decoder */
     LzmaDec_Init(&self->priv->lzma_decoder);
