@@ -23,6 +23,7 @@
 #include "image-daa.h"
 
 #include <zlib.h>
+
 #include "LzmaDec.h"
 #include "Bra.h"
 
@@ -92,9 +93,10 @@ struct _MIRAGE_Fragment_DAAPrivate
     gint buflen; /* Inflation buffer size */
     gint cur_chunk_index; /* Index of currently inflated chunk */
 
-    /* Streams */
+    /* Compression */
     z_stream zlib_stream;
-    CLzmaDec lzma;
+
+    CLzmaDec lzma_decoder;
 
     /* Encryption */
     gboolean encrypted;
@@ -107,12 +109,11 @@ const gchar daa_main_signature[16] = "DAA";
 const gchar daa_part_signature[16] = "DAA VOL";
 
 
-/******/
-/* Alloc and free functions for LZMA stream */
-static void *sz_alloc (void *p G_GNUC_UNUSED, size_t size) { return g_malloc0(size); }
-static void sz_free (void *p G_GNUC_UNUSED, void *address) { g_free(address); }
-static ISzAlloc lzma_alloc = { sz_alloc, sz_free };
-/******/
+/* Alloc and free functions for LZMA decoder */
+static void *lzma_alloc (void *p G_GNUC_UNUSED, size_t size) { return g_malloc0(size); }
+static void lzma_free (void *p G_GNUC_UNUSED, void *address) { g_free(address); }
+static ISzAlloc lzma_allocator = { lzma_alloc, lzma_free };
+
 
 /**********************************************************************\
  *                    Endian-conversion functions                     *
@@ -352,44 +353,6 @@ static void daa_crypt_init (guint8 *pwdkey, const gchar *pass, guint8 *daakey)
 /**********************************************************************\
  *                            Compression                             *
 \**********************************************************************/
-static gint mirage_fragment_daa_inflate_zlib (MIRAGE_Fragment_DAA *self, guint8 *in_buf, gint in_len)
-{
-    inflateReset(&self->priv->zlib_stream);
-
-    self->priv->zlib_stream.next_in = in_buf;
-    self->priv->zlib_stream.avail_in = in_len;
-    self->priv->zlib_stream.next_out = self->priv->buffer;
-    self->priv->zlib_stream.avail_out = self->priv->buflen;
-
-    if (inflate(&self->priv->zlib_stream, Z_SYNC_FLUSH) != Z_STREAM_END) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to inflate!\n", __debug__);
-        return 0;
-    }
-
-    return self->priv->zlib_stream.total_out;
-}
-
-static gint mirage_fragment_daa_inflate_lzma (MIRAGE_Fragment_DAA *self, guint8 *in_buf, gint in_len)
-{
-    ELzmaStatus status;
-    SizeT inlen, outlen;
-
-    LzmaDec_Init(&self->priv->lzma);
-
-    inlen = in_len;
-    outlen = self->priv->buflen;
-    if (LzmaDec_DecodeToBuf(&self->priv->lzma, self->priv->buffer, &outlen, in_buf, &inlen, LZMA_FINISH_END, &status) != SZ_OK) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to inflate!\n", __debug__);
-        return 0;
-    }
-
-    guint32 state;
-    x86_Convert_Init(state);
-    x86_Convert(self->priv->buffer, self->priv->buflen, 0, &state, 0);
-
-    return outlen;
-}
-
 static gboolean mirage_fragment_daa_initialize_zlib (MIRAGE_Fragment_DAA *self, GError **error)
 {
     z_stream *zlib_stream = &self->priv->zlib_stream;
@@ -411,13 +374,66 @@ static gboolean mirage_fragment_daa_initialize_zlib (MIRAGE_Fragment_DAA *self, 
     return TRUE;
 }
 
+static gint mirage_fragment_daa_inflate_zlib (MIRAGE_Fragment_DAA *self, guint8 *in_buf, gsize in_len, gsize uncompressed_size)
+{
+    z_stream *zlib_stream = &self->priv->zlib_stream;
+    gint ret;
+
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_FRAGMENT, "%s: decompressing using zlib; in_len: %ld bytes, uncompressed_size: %ld bytes\n", __debug__, in_len, uncompressed_size);
+    inflateReset(zlib_stream);
+
+    zlib_stream->next_in = in_buf;
+    zlib_stream->avail_in = in_len;
+    zlib_stream->next_out = self->priv->buffer;
+    zlib_stream->avail_out = uncompressed_size;
+
+    ret = inflate(zlib_stream, Z_SYNC_FLUSH);
+    if (ret != Z_STREAM_END) {
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to inflate (error code = %d)!\n", __debug__, ret);
+        return 0;
+    }
+
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_FRAGMENT, "%s: inflated: %ld bytes, consumed: %ld bytes\n", __debug__, zlib_stream->total_out, zlib_stream->total_in);
+    return zlib_stream->total_out;
+}
+
+
 static gboolean mirage_fragment_daa_initialize_lzma (MIRAGE_Fragment_DAA *self, GError **error G_GNUC_UNUSED)
 {
-    LzmaDec_Construct(&self->priv->lzma);
-    LzmaDec_Allocate(&self->priv->lzma, self->priv->header.hdata + 7, LZMA_PROPS_SIZE, &lzma_alloc);
-
+    LzmaDec_Construct(&self->priv->lzma_decoder);
+    LzmaDec_Allocate(&self->priv->lzma_decoder, self->priv->header.hdata + 7, LZMA_PROPS_SIZE, &lzma_allocator);
     return TRUE;
 }
+
+static gint mirage_fragment_daa_inflate_lzma (MIRAGE_Fragment_DAA *self, guint8 *in_buf, gsize in_len, gsize uncompressed_size)
+{
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_FRAGMENT, "%s: decompressing using LZMA; in_len: %ld bytes, uncompressed_size: %ld bytes\n", __debug__, in_len, uncompressed_size);
+
+    ELzmaStatus status;
+    SizeT inlen, outlen;
+
+    /* Initialize decoder */
+    LzmaDec_Init(&self->priv->lzma_decoder);
+
+    /* LZMA */
+    inlen = in_len;
+    outlen = uncompressed_size;
+    if (LzmaDec_DecodeToBuf(&self->priv->lzma_decoder, self->priv->buffer, &outlen, in_buf, &inlen, LZMA_FINISH_END, &status) != SZ_OK) {
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to inflate (status: %d)!\n", __debug__, status);
+        return 0;
+    }
+
+    /* BCJ */
+    if (1) {
+        guint32 state;
+        x86_Convert_Init(state);
+        x86_Convert(self->priv->buffer, outlen, 0, &state, 0);
+    }
+
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_FRAGMENT, "%s: inflated: %ld bytes, consumed: %ld bytes\n", __debug__, outlen, inlen);
+    return outlen;
+}
+
 
 
 /**********************************************************************\
@@ -1190,9 +1206,17 @@ static gboolean mirage_fragment_daa_read_main_data (MIRAGE_Fragment *_self, gint
         DAA_Chunk *chunk = &self->priv->chunk_table[chunk_index];
         gint tmp_buflen;
         guint8 *tmp_buffer;
-        gint inflated_size = 0;
+        gsize expected_inflated_size, inflated_size;
 
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_FRAGMENT, "%s: inflating chunk #%i...\n", __debug__, chunk_index);
+        /* Determine expected inflated size */
+        if (chunk_index == self->priv->num_chunks-1) {
+            /* Last chunk: remainder */
+            expected_inflated_size = self->priv->header.iso_size % self->priv->chunk_size;
+        } else {
+            expected_inflated_size = self->priv->chunk_size;
+        }
+
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_FRAGMENT, "%s: inflating chunk #%i (expected size: %d bytes)...\n", __debug__, chunk_index, expected_inflated_size);
 
         /* Allocate read buffer for chunk */
         tmp_buflen = chunk->length;
@@ -1217,6 +1241,7 @@ static gboolean mirage_fragment_daa_read_main_data (MIRAGE_Fragment *_self, gint
         }
 
         /* Inflate */
+        memset(self->priv->buffer, 0, self->priv->buflen); /* Clear the buffer in case we get a failure */
         switch (chunk->compression) {
             case DAA_COMPRESSION_NONE: {
                 memcpy(self->priv->buffer, tmp_buffer, self->priv->buflen); /* We use self->priv->buflen, because tmp_buflen tends to be too large for 4 bytes... */
@@ -1224,26 +1249,34 @@ static gboolean mirage_fragment_daa_read_main_data (MIRAGE_Fragment *_self, gint
                 break;
             }
             case DAA_COMPRESSION_ZLIB: {
-                inflated_size = mirage_fragment_daa_inflate_zlib(self, tmp_buffer, tmp_buflen);
+                inflated_size = mirage_fragment_daa_inflate_zlib(self, tmp_buffer, tmp_buflen, expected_inflated_size);
                 break;
             }
             case DAA_COMPRESSION_LZMA: {
-                inflated_size = mirage_fragment_daa_inflate_lzma(self, tmp_buffer, tmp_buflen);
+                inflated_size = mirage_fragment_daa_inflate_lzma(self, tmp_buffer, tmp_buflen, expected_inflated_size);
                 break;
+            }
+            default: {
+                MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: invalid chunk compression type %d!\n", __debug__, chunk->compression);
+                g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_FRAGMENT_ERROR, "Invalid chunk compression type %d!", chunk->compression);
+                g_free(tmp_buffer);
+                return FALSE;
             }
         }
 
         g_free(tmp_buffer);
 
-        /* It's OK for the last chunk not to be fully inflated, because it doesn't
-           necessarily hold full number of sectors */
-        if (inflated_size != self->priv->buflen && chunk_index != self->priv->num_chunks-1) {
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to inflate whole chunk #%i (0x%X bytes instead of 0x%X)\n", __debug__, chunk_index, inflated_size, self->priv->buflen);
+        /* Inflated size should match the expected one */
+        if (inflated_size != expected_inflated_size) {
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to inflate whole chunk #%i (0x%lX bytes instead of 0x%lX)\n", __debug__, chunk_index, inflated_size, expected_inflated_size);
+            g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_FRAGMENT_ERROR, "Failed to inflate whole chunk #%i (0x%lX bytes instead of 0x%lX)\n", chunk_index, inflated_size, expected_inflated_size);
+            return FALSE;
         } else {
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_FRAGMENT, "%s: successfully inflated chunk #%i (0x%X bytes)\n", __debug__, chunk_index, inflated_size);
-            /* Set the index of currently inflated chunk */
-            self->priv->cur_chunk_index = chunk_index;
         }
+
+        /* Set the index of currently inflated chunk */
+        self->priv->cur_chunk_index = chunk_index;
     } else {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_FRAGMENT, "%s: chunk #%i already inflated\n", __debug__, chunk_index);
     }
@@ -1309,7 +1342,7 @@ static void mirage_fragment_daa_finalize (GObject *gobject)
 
     /* Free stream */
     inflateEnd(&self->priv->zlib_stream);
-    LzmaDec_Free(&self->priv->lzma, &lzma_alloc);
+    LzmaDec_Free(&self->priv->lzma_decoder, &lzma_allocator);
 
     /* Free main filename */
     g_free(self->priv->main_filename);
