@@ -7,7 +7,5 @@ noinst_HEADERS = \
     Types.h
 
 liblzma_sdk_la_SOURCES = \
-    Bra.c \
     Bra86.c \
-    BraIA64.c \
     LzmaDec.c
