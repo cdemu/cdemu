@@ -196,7 +196,7 @@ static gboolean mirage_parser_mdx_get_track (MIRAGE_Parser_MDX *self, const gcha
 
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: MDS file; corresponding MDF: %s\n", __debug__, data_file);
 
-        data_stream = libmirage_create_file_stream(data_file, G_OBJECT(self), error);
+        data_stream = mirage_create_file_stream(data_file, G_OBJECT(self), error);
         if (!data_stream) {
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: could not open MDF file!\n", __debug__);
             g_free(data_file);
@@ -245,7 +245,7 @@ static gboolean mirage_parser_mdx_get_track (MIRAGE_Parser_MDX *self, const gcha
 
     /* Create data fragment */
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: creating data fragment\n", __debug__);
-    data_fragment = libmirage_create_fragment(MIRAGE_TYPE_FRAG_IFACE_BINARY, data_stream, G_OBJECT(self), error);
+    data_fragment = mirage_create_fragment(MIRAGE_TYPE_FRAG_IFACE_BINARY, data_stream, G_OBJECT(self), error);
     if (!data_fragment) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to create BINARY fragment!\n", __debug__);
         g_free(data_file);
@@ -336,7 +336,7 @@ static GObject *mirage_parser_mdx_load_image (MIRAGE_Parser *_self, gchar **file
     gchar signature[17];
 
     /* Check if we can load the image */
-    self->priv->stream = libmirage_create_file_stream(filenames[0], G_OBJECT(self), error);
+    self->priv->stream = mirage_create_file_stream(filenames[0], G_OBJECT(self), error);
     if (!self->priv->stream) {
         return FALSE;
     }

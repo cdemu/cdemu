@@ -666,7 +666,7 @@ static gboolean mirage_parser_cdi_load_track (MIRAGE_Parser_CDI *self, GError **
     mirage_track_set_mode(MIRAGE_TRACK(track), decoded_mode);
 
     /* Create BINARY fragment */
-    fragment = libmirage_create_fragment(MIRAGE_TYPE_FRAG_IFACE_BINARY, self->priv->cdi_stream, G_OBJECT(self), error);
+    fragment = mirage_create_fragment(MIRAGE_TYPE_FRAG_IFACE_BINARY, self->priv->cdi_stream, G_OBJECT(self), error);
     if (!fragment) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: failed to create BINARY fragment!\n", __debug__);
         g_object_unref(track);
@@ -951,7 +951,7 @@ static GObject *mirage_parser_cdi_load_image (MIRAGE_Parser *_self, gchar **file
     }
 
     /* Open file */
-    self->priv->cdi_stream = libmirage_create_file_stream(filenames[0], G_OBJECT(self), error);
+    self->priv->cdi_stream = mirage_create_file_stream(filenames[0], G_OBJECT(self), error);
     if (!self->priv->cdi_stream) {
         return FALSE;
     }

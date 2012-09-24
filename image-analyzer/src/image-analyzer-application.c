@@ -82,7 +82,7 @@ static void image_analyzer_application_change_debug_mask (IMAGE_ANALYZER_Applica
     gint num_valid_masks;
 
     /* Get list of supported debug masks */
-    libmirage_get_supported_debug_masks(&valid_masks, &num_valid_masks, NULL);
+    mirage_get_supported_debug_masks(&valid_masks, &num_valid_masks, NULL);
 
     /* Get mask from debug context */
     mask = mirage_debug_context_get_debug_mask(MIRAGE_DEBUG_CONTEXT(self->priv->debug_context));
@@ -255,7 +255,7 @@ static gboolean image_analyzer_application_open_image (IMAGE_ANALYZER_Applicatio
     image_analyzer_application_close_image_or_dump(self);
 
     /* Create disc */
-    self->priv->disc = libmirage_create_disc(filenames, self->priv->debug_context, NULL, &error);
+    self->priv->disc = mirage_create_disc(filenames, self->priv->debug_context, NULL, &error);
     if (!self->priv->disc) {
         g_warning("Failed to create disc: %s\n", error->message);
         image_analyzer_application_message(self, "Failed to open image: %s", error->message);
@@ -548,7 +548,7 @@ static GtkWidget *build_dialog_open_image (IMAGE_ANALYZER_Application *self)
     /* Per-parser filters */
     context.dialog = dialog;
     context.all_images = filter;
-    libmirage_for_each_parser((MIRAGE_CallbackFunction)append_file_filter, &context, NULL);
+    mirage_for_each_parser((MIRAGE_CallbackFunction)append_file_filter, &context, NULL);
 
     return dialog;
 }
@@ -793,7 +793,7 @@ static void setup_gui (IMAGE_ANALYZER_Application *self)
     gtk_window_add_accel_group(GTK_WINDOW(self->priv->window), accel_group);
 
     /* Set libMirage password function */
-    libmirage_set_password_function((MIRAGE_PasswordFunction)image_analyzer_application_get_password, self, NULL);
+    mirage_set_password_function((MIRAGE_PasswordFunction)image_analyzer_application_get_password, self, NULL);
 }
 
 

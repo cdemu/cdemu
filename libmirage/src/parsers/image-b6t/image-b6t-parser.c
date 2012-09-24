@@ -190,7 +190,7 @@ static gboolean mirage_parser_b6t_load_bwa_file (MIRAGE_Parser_B6T *self, GError
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: found BWA file: '%s'\n", __debug__, bwa_fullpath);
 
         /* Open BWA file */
-        stream = libmirage_create_file_stream(bwa_fullpath, G_OBJECT(self), error);
+        stream = mirage_create_file_stream(bwa_fullpath, G_OBJECT(self), error);
         g_free(bwa_fullpath);
 
         if (!stream) {
@@ -411,7 +411,7 @@ static gboolean mirage_parser_b6t_setup_track_fragments (MIRAGE_Parser_B6T *self
 
             /* We'd like a BINARY fragment */
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: creating BINARY fragment\n", __debug__);
-            data_fragment = libmirage_create_fragment(MIRAGE_TYPE_FRAG_IFACE_BINARY, data_stream, G_OBJECT(self), error);
+            data_fragment = mirage_create_fragment(MIRAGE_TYPE_FRAG_IFACE_BINARY, data_stream, G_OBJECT(self), error);
             if (!data_fragment) {
                 g_object_unref(data_stream);
                 g_free(filename);
@@ -1253,7 +1253,7 @@ static GObject *mirage_parser_b6t_load_image (MIRAGE_Parser *_self, gchar **file
     guint8 header[16];
 
     /* Check if we can load the image */
-    stream = libmirage_create_file_stream(filenames[0], G_OBJECT(self), error);
+    stream = mirage_create_file_stream(filenames[0], G_OBJECT(self), error);
     if (!stream) {
         return FALSE;
     }

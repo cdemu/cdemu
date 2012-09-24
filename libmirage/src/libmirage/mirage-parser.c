@@ -241,7 +241,7 @@ void mirage_parser_add_redbook_pregap (MIRAGE_Parser *self, GObject *disc)
         }
 
         /* Add pregap fragment - NULL fragment creation should never fail */
-        fragment = libmirage_create_fragment(MIRAGE_TYPE_FRAG_IFACE_NULL, NULL, G_OBJECT(self), NULL);
+        fragment = mirage_create_fragment(MIRAGE_TYPE_FRAG_IFACE_NULL, NULL, G_OBJECT(self), NULL);
         mirage_fragment_set_length(MIRAGE_FRAGMENT(fragment), 150);
         mirage_track_add_fragment(MIRAGE_TRACK(track), 0, fragment);
         g_object_unref(fragment);
@@ -267,7 +267,7 @@ void mirage_parser_add_redbook_pregap (MIRAGE_Parser *self, GObject *disc)
  *
  * <para>
  * An internal function that sets the parsing parameters to parser
- * (such as password, encoding, etc.). It is meant to be used by libmirage_create_disc()
+ * (such as password, encoding, etc.). It is meant to be used by mirage_create_disc()
  * to pass the parsing parameters to parser before performing the parsing.
  * </para>
  *
@@ -381,7 +381,7 @@ GObject *mirage_parser_get_cached_data_stream (MIRAGE_Parser *self, const gchar 
 
     if (!stream) {
         /* Stream not in cache, open a stream on filename... */
-        stream = libmirage_create_file_stream(filename, G_OBJECT(self), error);
+        stream = mirage_create_file_stream(filename, G_OBJECT(self), error);
         if (!stream) {
             return stream;
         }

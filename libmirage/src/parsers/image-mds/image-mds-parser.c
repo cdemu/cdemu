@@ -494,7 +494,7 @@ static gboolean mirage_parser_mds_parse_track_entries (MIRAGE_Parser_MDS *self, 
                therefore, we need to provide NULL fragment for pregap */
             if (extra_block && extra_block->pregap) {
                 /* Creating NULL fragment should never fail */
-                GObject *fragment = libmirage_create_fragment(MIRAGE_TYPE_FRAG_IFACE_NULL, NULL, G_OBJECT(self), NULL);;
+                GObject *fragment = mirage_create_fragment(MIRAGE_TYPE_FRAG_IFACE_NULL, NULL, G_OBJECT(self), NULL);;
 
                 MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: track has pregap (0x%X); creating NULL fragment\n", __debug__, extra_block->pregap);
 
@@ -598,7 +598,7 @@ static gboolean mirage_parser_mds_parse_track_entries (MIRAGE_Parser_MDS *self, 
                 }
 
                 /* Create data fragment */
-                GObject *fragment = libmirage_create_fragment(MIRAGE_TYPE_FRAG_IFACE_BINARY, data_stream, G_OBJECT(self), error);
+                GObject *fragment = mirage_create_fragment(MIRAGE_TYPE_FRAG_IFACE_BINARY, data_stream, G_OBJECT(self), error);
                 if (!fragment) {
                     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: failed to create fragment!\n", __debug__);
                     g_object_unref(data_stream);
@@ -765,7 +765,7 @@ static GObject *mirage_parser_mds_load_image (MIRAGE_Parser *_self, gchar **file
     gchar signature[17];
 
     /* Check if we can load the image */
-    stream = libmirage_create_file_stream(filenames[0], G_OBJECT(self), error);
+    stream = mirage_create_file_stream(filenames[0], G_OBJECT(self), error);
     if (!stream) {
         return FALSE;
     }

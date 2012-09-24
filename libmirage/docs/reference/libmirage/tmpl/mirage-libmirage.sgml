@@ -77,7 +77,7 @@ respectively. The list of supported debug masks can be obtained using libmirage_
 @name: 
 @value: 
 
-<!-- ##### FUNCTION libmirage_init ##### -->
+<!-- ##### FUNCTION mirage_init ##### -->
 <para>
 
 </para>
@@ -86,7 +86,7 @@ respectively. The list of supported debug masks can be obtained using libmirage_
 @Returns: 
 
 
-<!-- ##### FUNCTION libmirage_shutdown ##### -->
+<!-- ##### FUNCTION mirage_shutdown ##### -->
 <para>
 
 </para>
@@ -95,7 +95,7 @@ respectively. The list of supported debug masks can be obtained using libmirage_
 @Returns: 
 
 
-<!-- ##### FUNCTION libmirage_set_password_function ##### -->
+<!-- ##### FUNCTION mirage_set_password_function ##### -->
 <para>
 
 </para>
@@ -106,7 +106,7 @@ respectively. The list of supported debug masks can be obtained using libmirage_
 @Returns: 
 
 
-<!-- ##### FUNCTION libmirage_obtain_password ##### -->
+<!-- ##### FUNCTION mirage_obtain_password ##### -->
 <para>
 
 </para>
@@ -115,7 +115,7 @@ respectively. The list of supported debug masks can be obtained using libmirage_
 @Returns: 
 
 
-<!-- ##### FUNCTION libmirage_create_disc ##### -->
+<!-- ##### FUNCTION mirage_create_disc ##### -->
 <para>
 
 </para>
@@ -127,7 +127,7 @@ respectively. The list of supported debug masks can be obtained using libmirage_
 @Returns: 
 
 
-<!-- ##### FUNCTION libmirage_create_fragment ##### -->
+<!-- ##### FUNCTION mirage_create_fragment ##### -->
 <para>
 
 </para>
@@ -139,7 +139,7 @@ respectively. The list of supported debug masks can be obtained using libmirage_
 @Returns: 
 
 
-<!-- ##### FUNCTION libmirage_create_file_stream ##### -->
+<!-- ##### FUNCTION mirage_create_file_stream ##### -->
 <para>
 
 </para>
@@ -150,7 +150,7 @@ respectively. The list of supported debug masks can be obtained using libmirage_
 @Returns: 
 
 
-<!-- ##### FUNCTION libmirage_for_each_parser ##### -->
+<!-- ##### FUNCTION mirage_for_each_parser ##### -->
 <para>
 
 </para>
@@ -161,7 +161,7 @@ respectively. The list of supported debug masks can be obtained using libmirage_
 @Returns: 
 
 
-<!-- ##### FUNCTION libmirage_for_each_fragment ##### -->
+<!-- ##### FUNCTION mirage_for_each_fragment ##### -->
 <para>
 
 </para>
@@ -172,7 +172,7 @@ respectively. The list of supported debug masks can be obtained using libmirage_
 @Returns: 
 
 
-<!-- ##### FUNCTION libmirage_for_each_file_filter ##### -->
+<!-- ##### FUNCTION mirage_for_each_file_filter ##### -->
 <para>
 
 </para>
@@ -183,7 +183,7 @@ respectively. The list of supported debug masks can be obtained using libmirage_
 @Returns: 
 
 
-<!-- ##### FUNCTION libmirage_get_supported_debug_masks ##### -->
+<!-- ##### FUNCTION mirage_get_supported_debug_masks ##### -->
 <para>
 
 </para>

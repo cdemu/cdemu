@@ -52,7 +52,7 @@ int main (int argc, char **argv)
     g_type_init();
 
     /* libMirage core object */
-    if (!libmirage_init(&error)) {
+    if (!mirage_init(&error)) {
         g_warning("Failed to initialize libMirage: %s!\n", error->message);
         g_error_free(error);
         return -1;
@@ -89,7 +89,7 @@ int main (int argc, char **argv)
     g_object_unref(application);
     g_strfreev(open_image);
 
-    libmirage_shutdown(NULL);
+    mirage_shutdown(NULL);
 
     return 0;
 }

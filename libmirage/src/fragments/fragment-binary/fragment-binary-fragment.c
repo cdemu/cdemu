@@ -68,7 +68,7 @@ static gboolean mirage_fragment_binary_track_file_set_file (MIRAGE_FragIface_Bin
         g_object_ref(stream);
     } else {
         /* Open new stream */
-        self->priv->tfile_stream = libmirage_create_file_stream(filename, G_OBJECT(self), &local_error);
+        self->priv->tfile_stream = mirage_create_file_stream(filename, G_OBJECT(self), &local_error);
         if (!self->priv->tfile_stream) {
             g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_FRAGMENT_ERROR, "Failed to create file stream on track data file '%s': %s", filename, local_error->message);
             g_error_free(local_error);
@@ -178,7 +178,7 @@ static gboolean mirage_fragment_binary_subchannel_file_set_file (MIRAGE_FragIfac
         g_object_ref(stream);
     } else {
         /* Try opening a stream */
-        self->priv->sfile_stream = libmirage_create_file_stream(filename, G_OBJECT(self), &local_error);
+        self->priv->sfile_stream = mirage_create_file_stream(filename, G_OBJECT(self), &local_error);
         if (!self->priv->sfile_stream) {
             g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_FRAGMENT_ERROR, "Failed to create file stream on subchannel data file '%s': %s", filename, local_error->message);
             g_error_free(local_error);

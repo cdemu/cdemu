@@ -45,7 +45,7 @@ static GObject *mirage_parser_daa_load_image (MIRAGE_Parser *_self, gchar **file
     gchar signature[16] = "";
 
     /* Open file */
-    stream = libmirage_create_file_stream(filenames[0], G_OBJECT(self), error);
+    stream = mirage_create_file_stream(filenames[0], G_OBJECT(self), error);
     if (!stream) {
         return FALSE;
     }

@@ -292,7 +292,7 @@ static gboolean mirage_parser_cue_add_index (MIRAGE_Parser_CUE *self, gint numbe
                     tfile_sectsize = self->priv->cur_data_sectsize;
                 }
 
-                fragment = libmirage_create_fragment(MIRAGE_TYPE_FRAG_IFACE_BINARY, data_stream, G_OBJECT(self), error);
+                fragment = mirage_create_fragment(MIRAGE_TYPE_FRAG_IFACE_BINARY, data_stream, G_OBJECT(self), error);
                 if (!fragment) {
                     MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to create data fragment!\n", __debug__);
                     g_object_unref(data_stream);
@@ -318,7 +318,7 @@ static gboolean mirage_parser_cue_add_index (MIRAGE_Parser_CUE *self, gint numbe
                 /* One of the audio files; we'll request fragment with AUDIO
                    interface and hope Mirage finds one that can handle the file
                    for us */
-                fragment = libmirage_create_fragment(MIRAGE_TYPE_FRAG_IFACE_AUDIO, data_stream, G_OBJECT(self), error);
+                fragment = mirage_create_fragment(MIRAGE_TYPE_FRAG_IFACE_AUDIO, data_stream, G_OBJECT(self), error);
                 if (!fragment) {
                     MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: unknown/unsupported file type: %s\n", __debug__, self->priv->cur_data_type);
                     g_object_unref(data_stream);
@@ -394,7 +394,7 @@ static gboolean mirage_parser_cue_add_empty_part (MIRAGE_Parser_CUE *self, gint 
     }
 
     /* Prepare NULL fragment - creation should never fail */
-    GObject *fragment = libmirage_create_fragment(MIRAGE_TYPE_FRAG_IFACE_NULL, NULL, G_OBJECT(self), NULL);
+    GObject *fragment = mirage_create_fragment(MIRAGE_TYPE_FRAG_IFACE_NULL, NULL, G_OBJECT(self), NULL);
     mirage_fragment_set_length(MIRAGE_FRAGMENT(fragment), length);
 
     /* Add fragment */

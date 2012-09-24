@@ -692,7 +692,7 @@ static gboolean mirage_fragment_daa_parse_descriptor_encryption (MIRAGE_Fragment
         daa_crypt_init(computed_key, self->priv->password, descriptor.daa_key);
     } else {
         /* Get password from user via password function */
-        gchar *prompt_password = libmirage_obtain_password(NULL);
+        gchar *prompt_password = mirage_obtain_password(NULL);
         if (!prompt_password) {
             /* Password not provided (or password function is not set) */
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  failed to obtain password for encrypted image!\n", __debug__);
@@ -971,7 +971,7 @@ static gboolean mirage_fragment_daa_build_part_table (MIRAGE_Fragment_DAA *self,
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: part #%i: %s\n", __debug__, i, part_filename);
 
         /* Create stream */
-        part->stream = libmirage_create_file_stream(part_filename, G_OBJECT(self), error);
+        part->stream = mirage_create_file_stream(part_filename, G_OBJECT(self), error);
         if (!part->stream) {
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to open stream on file '%s'!\n", __debug__, part_filename);
             g_free(part_filename);
@@ -1168,7 +1168,7 @@ gboolean mirage_fragment_daa_set_file (MIRAGE_Fragment_DAA *self, const gchar *f
     gboolean succeeded;
 
     /* Open main file */
-    stream = libmirage_create_file_stream(filename, G_OBJECT(self), error);
+    stream = mirage_create_file_stream(filename, G_OBJECT(self), error);
     if (!stream) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to open file '%s'!\n", __debug__, filename);
         return FALSE;

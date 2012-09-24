@@ -137,7 +137,7 @@ static gboolean mirage_fragment_sndfile_set_file (MIRAGE_FragIface_Audio *_self,
         g_object_ref(stream);
     } else {
         /* Open new stream */
-        self->priv->stream = libmirage_create_file_stream(filename, G_OBJECT(self), &local_error);
+        self->priv->stream = mirage_create_file_stream(filename, G_OBJECT(self), &local_error);
         if (!self->priv->stream) {
             g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_FRAGMENT_ERROR, "Failed to create file stream on audio file '%s': %s", filename, local_error->message);
             g_error_free(local_error);

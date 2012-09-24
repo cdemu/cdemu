@@ -246,7 +246,7 @@ static GObject *mirage_parser_cif_parse_track_descriptor (MIRAGE_Parser_CIF *sel
     mirage_track_set_mode(MIRAGE_TRACK(track), track_mode);
 
     /* Create data fragment */
-    fragment = libmirage_create_fragment(MIRAGE_TYPE_FRAG_IFACE_BINARY, self->priv->cif_stream, G_OBJECT(self), error);
+    fragment = mirage_create_fragment(MIRAGE_TYPE_FRAG_IFACE_BINARY, self->priv->cif_stream, G_OBJECT(self), error);
     if (!fragment) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to create fragment!\n", __debug__);
         g_object_unref(track);
@@ -367,7 +367,7 @@ static GObject *mirage_parser_cif_parse_session_descriptor (MIRAGE_Parser_CIF *s
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: adding pregap: %d (0x%X)\n", __debug__, pregap_length, pregap_length);
 
             /* Create NULL fragment - creation should never fail */
-            fragment = libmirage_create_fragment(MIRAGE_TYPE_FRAG_IFACE_NULL, NULL, G_OBJECT(self), error);
+            fragment = mirage_create_fragment(MIRAGE_TYPE_FRAG_IFACE_NULL, NULL, G_OBJECT(self), error);
 
             mirage_fragment_set_length(MIRAGE_FRAGMENT(fragment), pregap_length);
 
@@ -673,7 +673,7 @@ static GObject *mirage_parser_cif_load_image (MIRAGE_Parser *_self, gchar **file
     CIF_Header header;
 
     /* Check file signature */
-    self->priv->cif_stream = libmirage_create_file_stream(filenames[0], G_OBJECT(self), error);
+    self->priv->cif_stream = mirage_create_file_stream(filenames[0], G_OBJECT(self), error);
     if (!self->priv->cif_stream) {
         return FALSE;
     }

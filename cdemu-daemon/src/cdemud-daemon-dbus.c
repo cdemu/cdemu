@@ -88,7 +88,7 @@ static gboolean append_parser_to_builder (MIRAGE_ParserInfo *parser, GVariantBui
 static GVariantBuilder *encode_parsers ()
 {
     GVariantBuilder *builder = g_variant_builder_new(G_VARIANT_TYPE("a(ssss)"));
-    libmirage_for_each_parser((MIRAGE_CallbackFunction)append_parser_to_builder, builder, NULL);
+    mirage_for_each_parser((MIRAGE_CallbackFunction)append_parser_to_builder, builder, NULL);
     return builder;
 }
 
@@ -102,7 +102,7 @@ static gboolean append_fragment_to_builder (MIRAGE_FragmentInfo *fragment, GVari
 static GVariantBuilder *encode_fragments ()
 {
     GVariantBuilder *builder = g_variant_builder_new(G_VARIANT_TYPE("a(ss)"));
-    libmirage_for_each_fragment((MIRAGE_CallbackFunction)append_fragment_to_builder, builder, NULL);
+    mirage_for_each_fragment((MIRAGE_CallbackFunction)append_fragment_to_builder, builder, NULL);
     return builder;
 }
 
@@ -246,7 +246,7 @@ static void cdemud_daemon_dbus_handle_method_call (GDBusConnection *connection G
         const MIRAGE_DebugMask *dbg_masks;
         gint num_dbg_masks;
 
-        succeeded = libmirage_get_supported_debug_masks(&dbg_masks, &num_dbg_masks, &error);
+        succeeded = mirage_get_supported_debug_masks(&dbg_masks, &num_dbg_masks, &error);
         if (succeeded) {
             ret = g_variant_new("(a(si))", encode_masks(dbg_masks, num_dbg_masks));
         }

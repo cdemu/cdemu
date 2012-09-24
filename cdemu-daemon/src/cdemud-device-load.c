@@ -62,7 +62,7 @@ static gboolean cdemud_device_load_disc_private (CDEMUD_Device *self, gchar **fi
     }
 
     /* Load... */
-    self->priv->disc = libmirage_create_disc(filenames, self->priv->disc_debug, options, error);
+    self->priv->disc = mirage_create_disc(filenames, self->priv->disc_debug, options, error);
 
     /* Check if loading succeeded */
     if (!self->priv->disc) {
