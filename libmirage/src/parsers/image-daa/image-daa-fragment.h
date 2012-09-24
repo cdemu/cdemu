@@ -24,25 +24,25 @@
 G_BEGIN_DECLS
 
 #define MIRAGE_TYPE_FRAGMENT_DAA            (mirage_fragment_daa_get_type())
-#define MIRAGE_FRAGMENT_DAA(obj)            (G_TYPE_CHECK_INSTANCE_CAST((obj), MIRAGE_TYPE_FRAGMENT_DAA, MirageFragment_DAA))
-#define MIRAGE_FRAGMENT_DAA_CLASS(klass)    (G_TYPE_CHECK_CLASS_CAST((klass), MIRAGE_TYPE_FRAGMENT_DAA, MirageFragment_DAAClass))
+#define MIRAGE_FRAGMENT_DAA(obj)            (G_TYPE_CHECK_INSTANCE_CAST((obj), MIRAGE_TYPE_FRAGMENT_DAA, MirageFragmentDaa))
+#define MIRAGE_FRAGMENT_DAA_CLASS(klass)    (G_TYPE_CHECK_CLASS_CAST((klass), MIRAGE_TYPE_FRAGMENT_DAA, MirageFragmentDaaClass))
 #define MIRAGE_IS_FRAGMENT_DAA(obj)         (G_TYPE_CHECK_INSTANCE_TYPE((obj), MIRAGE_TYPE_FRAGMENT_DAA))
 #define MIRAGE_IS_FRAGMENT_DAA_CLASS(klass) (G_TYPE_CHECK_CLASS_TYPE((klass), MIRAGE_TYPE_FRAGMENT_DAA))
-#define MIRAGE_FRAGMENT_DAA_GET_CLASS(obj)  (G_TYPE_INSTANCE_GET_CLASS((obj), MIRAGE_TYPE_FRAGMENT_DAA, MirageFragment_DAAClass))
+#define MIRAGE_FRAGMENT_DAA_GET_CLASS(obj)  (G_TYPE_INSTANCE_GET_CLASS((obj), MIRAGE_TYPE_FRAGMENT_DAA, MirageFragmentDaaClass))
 
-typedef struct _MirageFragment_DAA         MirageFragment_DAA;
-typedef struct _MirageFragment_DAAClass    MirageFragment_DAAClass;
-typedef struct _MirageFragment_DAAPrivate  MirageFragment_DAAPrivate;
+typedef struct _MirageFragmentDaa         MirageFragmentDaa;
+typedef struct _MirageFragmentDaaClass    MirageFragmentDaaClass;
+typedef struct _MirageFragmentDaaPrivate  MirageFragmentDaaPrivate;
 
-struct _MirageFragment_DAA
+struct _MirageFragmentDaa
 {
     MirageFragment parent_instance;
 
     /*< private >*/
-    MirageFragment_DAAPrivate *priv;
+    MirageFragmentDaaPrivate *priv;
 };
 
-struct _MirageFragment_DAAClass
+struct _MirageFragmentDaaClass
 {
     MirageFragmentClass parent_class;
 };
@@ -51,7 +51,7 @@ struct _MirageFragment_DAAClass
 GType mirage_fragment_daa_get_type (void);
 void mirage_fragment_daa_type_register (GTypeModule *type_module);
 
-gboolean mirage_fragment_daa_set_file (MirageFragment_DAA *self, const gchar *file, const gchar *password, GError **error);
+gboolean mirage_fragment_daa_set_file (MirageFragmentDaa *self, const gchar *file, const gchar *password, GError **error);
 
 G_END_DECLS
 

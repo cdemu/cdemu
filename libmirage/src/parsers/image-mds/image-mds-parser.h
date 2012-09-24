@@ -26,25 +26,25 @@
 G_BEGIN_DECLS
 
 #define MIRAGE_TYPE_PARSER_MDS            (mirage_parser_mds_get_type())
-#define MIRAGE_PARSER_MDS(obj)            (G_TYPE_CHECK_INSTANCE_CAST((obj), MIRAGE_TYPE_PARSER_MDS, MirageParser_MDS))
-#define MIRAGE_PARSER_MDS_CLASS(klass)    (G_TYPE_CHECK_CLASS_CAST((klass), MIRAGE_TYPE_PARSER_MDS, MirageParser_MDSClass))
+#define MIRAGE_PARSER_MDS(obj)            (G_TYPE_CHECK_INSTANCE_CAST((obj), MIRAGE_TYPE_PARSER_MDS, MirageParserMds))
+#define MIRAGE_PARSER_MDS_CLASS(klass)    (G_TYPE_CHECK_CLASS_CAST((klass), MIRAGE_TYPE_PARSER_MDS, MirageParserMdsClass))
 #define MIRAGE_IS_PARSER_MDS(obj)         (G_TYPE_CHECK_INSTANCE_TYPE((obj), MIRAGE_TYPE_PARSER_MDS))
 #define MIRAGE_IS_PARSER_MDS_CLASS(klass) (G_TYPE_CHECK_CLASS_TYPE((klass), MIRAGE_TYPE_PARSER_MDS))
-#define MIRAGE_PARSER_MDS_GET_CLASS(obj)  (G_TYPE_INSTANCE_GET_CLASS((obj), MIRAGE_TYPE_PARSER_MDS, MirageParser_MDSClass))
+#define MIRAGE_PARSER_MDS_GET_CLASS(obj)  (G_TYPE_INSTANCE_GET_CLASS((obj), MIRAGE_TYPE_PARSER_MDS, MirageParserMdsClass))
 
-typedef struct _MirageParser_MDS MirageParser_MDS;
-typedef struct _MirageParser_MDSClass MirageParser_MDSClass;
-typedef struct _MirageParser_MDSPrivate MirageParser_MDSPrivate;
+typedef struct _MirageParserMds        MirageParserMds;
+typedef struct _MirageParserMdsClass   MirageParserMdsClass;
+typedef struct _MirageParserMdsPrivate MirageParserMdsPrivate;
 
-struct _MirageParser_MDS
+struct _MirageParserMds
 {
     MirageParser parent_instance;
 
     /*< private >*/
-    MirageParser_MDSPrivate *priv;
+    MirageParserMdsPrivate *priv;
 };
 
-struct _MirageParser_MDSClass
+struct _MirageParserMdsClass
 {
     MirageParserClass parent_class;
 };

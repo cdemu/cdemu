@@ -24,25 +24,25 @@
 G_BEGIN_DECLS
 
 #define MIRAGE_TYPE_PARSER_READCD            (mirage_parser_readcd_get_type())
-#define MIRAGE_PARSER_READCD(obj)            (G_TYPE_CHECK_INSTANCE_CAST((obj), MIRAGE_TYPE_PARSER_READCD, MirageParser_READCD))
-#define MIRAGE_PARSER_READCD_CLASS(klass)    (G_TYPE_CHECK_CLASS_CAST((klass), MIRAGE_TYPE_PARSER_READCD, MirageParser_READCDClass))
+#define MIRAGE_PARSER_READCD(obj)            (G_TYPE_CHECK_INSTANCE_CAST((obj), MIRAGE_TYPE_PARSER_READCD, MirageParserReadcd))
+#define MIRAGE_PARSER_READCD_CLASS(klass)    (G_TYPE_CHECK_CLASS_CAST((klass), MIRAGE_TYPE_PARSER_READCD, MirageParserReadcdClass))
 #define MIRAGE_IS_PARSER_READCD(obj)         (G_TYPE_CHECK_INSTANCE_TYPE((obj), MIRAGE_TYPE_PARSER_READCD))
 #define MIRAGE_IS_PARSER_READCD_CLASS(klass) (G_TYPE_CHECK_CLASS_TYPE((klass), MIRAGE_TYPE_PARSER_READCD))
-#define MIRAGE_PARSER_READCD_GET_CLASS(obj)  (G_TYPE_INSTANCE_GET_CLASS((obj), MIRAGE_TYPE_PARSER_READCD, MirageParser_READCDClass))
+#define MIRAGE_PARSER_READCD_GET_CLASS(obj)  (G_TYPE_INSTANCE_GET_CLASS((obj), MIRAGE_TYPE_PARSER_READCD, MirageParserReadcdClass))
 
-typedef struct _MirageParser_READCD        MirageParser_READCD;
-typedef struct _MirageParser_READCDClass   MirageParser_READCDClass;
-typedef struct _MirageParser_READCDPrivate MirageParser_READCDPrivate;
+typedef struct _MirageParserReadcd        MirageParserReadcd;
+typedef struct _MirageParserReadcdClass   MirageParserReadcdClass;
+typedef struct _MirageParserReadcdPrivate MirageParserReadcdPrivate;
 
-struct _MirageParser_READCD
+struct _MirageParserReadcd
 {
     MirageParser parent_instance;
 
     /*< private >*/
-    MirageParser_READCDPrivate *priv;
+    MirageParserReadcdPrivate *priv;
 };
 
-struct _MirageParser_READCDClass
+struct _MirageParserReadcdClass
 {
     MirageParserClass parent_class;
 };

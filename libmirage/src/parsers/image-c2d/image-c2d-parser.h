@@ -23,25 +23,25 @@
 G_BEGIN_DECLS
 
 #define MIRAGE_TYPE_PARSER_C2D            (mirage_parser_c2d_get_type())
-#define MIRAGE_PARSER_C2D(obj)            (G_TYPE_CHECK_INSTANCE_CAST((obj), MIRAGE_TYPE_PARSER_C2D, MirageParser_C2D))
-#define MIRAGE_PARSER_C2D_CLASS(klass)    (G_TYPE_CHECK_CLASS_CAST((klass), MIRAGE_TYPE_PARSER_C2D, MirageParser_C2DClass))
+#define MIRAGE_PARSER_C2D(obj)            (G_TYPE_CHECK_INSTANCE_CAST((obj), MIRAGE_TYPE_PARSER_C2D, MirageParserC2d))
+#define MIRAGE_PARSER_C2D_CLASS(klass)    (G_TYPE_CHECK_CLASS_CAST((klass), MIRAGE_TYPE_PARSER_C2D, MirageParserC2dClass))
 #define MIRAGE_IS_PARSER_C2D(obj)         (G_TYPE_CHECK_INSTANCE_TYPE((obj), MIRAGE_TYPE_PARSER_C2D))
 #define MIRAGE_IS_PARSER_C2D_CLASS(klass) (G_TYPE_CHECK_CLASS_TYPE((klass), MIRAGE_TYPE_PARSER_C2D))
-#define MIRAGE_PARSER_C2D_GET_CLASS(obj)  (G_TYPE_INSTANCE_GET_CLASS((obj), MIRAGE_TYPE_PARSER_C2D, MirageParser_C2DClass))
+#define MIRAGE_PARSER_C2D_GET_CLASS(obj)  (G_TYPE_INSTANCE_GET_CLASS((obj), MIRAGE_TYPE_PARSER_C2D, MirageParserC2dClass))
 
-typedef struct _MirageParser_C2D MirageParser_C2D;
-typedef struct _MirageParser_C2DClass MirageParser_C2DClass;
-typedef struct _MirageParser_C2DPrivate MirageParser_C2DPrivate;
+typedef struct _MirageParserC2d        MirageParserC2d;
+typedef struct _MirageParserC2dClass   MirageParserC2dClass;
+typedef struct _MirageParserC2dPrivate MirageParserC2dPrivate;
 
-struct _MirageParser_C2D
+struct _MirageParserC2d
 {
     MirageParser parent_instance;
 
     /*< private >*/
-    MirageParser_C2DPrivate *priv;
+    MirageParserC2dPrivate *priv;
 };
 
-struct _MirageParser_C2DClass
+struct _MirageParserC2dClass
 {
     MirageParserClass parent_class;
 };

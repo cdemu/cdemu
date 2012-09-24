@@ -25,9 +25,9 @@
 /**********************************************************************\
  *                          Private structure                         *
 \**********************************************************************/
-#define MIRAGE_PARSER_ISO_GET_PRIVATE(obj) (G_TYPE_INSTANCE_GET_PRIVATE((obj), MIRAGE_TYPE_PARSER_ISO, MirageParser_ISOPrivate))
+#define MIRAGE_PARSER_ISO_GET_PRIVATE(obj) (G_TYPE_INSTANCE_GET_PRIVATE((obj), MIRAGE_TYPE_PARSER_ISO, MirageParserIsoPrivate))
 
-struct _MirageParser_ISOPrivate
+struct _MirageParserIsoPrivate
 {
     GObject *disc;
 
@@ -36,7 +36,7 @@ struct _MirageParser_ISOPrivate
 };
 
 
-static gboolean mirage_parser_iso_is_file_valid (MirageParser_ISO *self, gchar *filename, GError **error)
+static gboolean mirage_parser_iso_is_file_valid (MirageParserIso *self, gchar *filename, GError **error)
 {
     gboolean succeeded;
     gsize file_length;
@@ -143,7 +143,7 @@ end:
     return succeeded;
 }
 
-static gboolean mirage_parser_iso_load_track (MirageParser_ISO *self, gchar *filename, GError **error)
+static gboolean mirage_parser_iso_load_track (MirageParserIso *self, gchar *filename, GError **error)
 {
     GObject *session;
     GObject *track;
@@ -216,7 +216,7 @@ static gboolean mirage_parser_iso_load_track (MirageParser_ISO *self, gchar *fil
 \**********************************************************************/
 static GObject *mirage_parser_iso_load_image (MirageParser *_self, gchar **filenames, GError **error)
 {
-    MirageParser_ISO *self = MIRAGE_PARSER_ISO(_self);
+    MirageParserIso *self = MIRAGE_PARSER_ISO(_self);
 
     gboolean succeeded = TRUE;
 
@@ -272,7 +272,7 @@ end:
 /**********************************************************************\
  *                             Object init                            *
 \**********************************************************************/
-G_DEFINE_DYNAMIC_TYPE(MirageParser_ISO, mirage_parser_iso, MIRAGE_TYPE_PARSER);
+G_DEFINE_DYNAMIC_TYPE(MirageParserIso, mirage_parser_iso, MIRAGE_TYPE_PARSER);
 
 void mirage_parser_iso_type_register (GTypeModule *type_module)
 {
@@ -280,7 +280,7 @@ void mirage_parser_iso_type_register (GTypeModule *type_module)
 }
 
 
-static void mirage_parser_iso_init (MirageParser_ISO *self)
+static void mirage_parser_iso_init (MirageParserIso *self)
 {
     self->priv = MIRAGE_PARSER_ISO_GET_PRIVATE(self);
 
@@ -292,16 +292,16 @@ static void mirage_parser_iso_init (MirageParser_ISO *self)
     );
 }
 
-static void mirage_parser_iso_class_init (MirageParser_ISOClass *klass)
+static void mirage_parser_iso_class_init (MirageParserIsoClass *klass)
 {
     MirageParserClass *parser_class = MIRAGE_PARSER_CLASS(klass);
 
     parser_class->load_image = mirage_parser_iso_load_image;
 
     /* Register private structure */
-    g_type_class_add_private(klass, sizeof(MirageParser_ISOPrivate));
+    g_type_class_add_private(klass, sizeof(MirageParserIsoPrivate));
 }
 
-static void mirage_parser_iso_class_finalize (MirageParser_ISOClass *klass G_GNUC_UNUSED)
+static void mirage_parser_iso_class_finalize (MirageParserIsoClass *klass G_GNUC_UNUSED)
 {
 }

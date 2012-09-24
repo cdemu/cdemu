@@ -24,25 +24,25 @@
 G_BEGIN_DECLS
 
 #define MIRAGE_TYPE_PARSER_CUE            (mirage_parser_cue_get_type())
-#define MIRAGE_PARSER_CUE(obj)            (G_TYPE_CHECK_INSTANCE_CAST((obj), MIRAGE_TYPE_PARSER_CUE, MirageParser_CUE))
-#define MIRAGE_PARSER_CUE_CLASS(klass)    (G_TYPE_CHECK_CLASS_CAST((klass), MIRAGE_TYPE_PARSER_CUE, MirageParser_CUEClass))
+#define MIRAGE_PARSER_CUE(obj)            (G_TYPE_CHECK_INSTANCE_CAST((obj), MIRAGE_TYPE_PARSER_CUE, MirageParserCue))
+#define MIRAGE_PARSER_CUE_CLASS(klass)    (G_TYPE_CHECK_CLASS_CAST((klass), MIRAGE_TYPE_PARSER_CUE, MirageParserCueClass))
 #define MIRAGE_IS_PARSER_CUE(obj)         (G_TYPE_CHECK_INSTANCE_TYPE((obj), MIRAGE_TYPE_PARSER_CUE))
 #define MIRAGE_IS_PARSER_CUE_CLASS(klass) (G_TYPE_CHECK_CLASS_TYPE((klass), MIRAGE_TYPE_PARSER_CUE))
-#define MIRAGE_PARSER_CUE_GET_CLASS(obj)  (G_TYPE_INSTANCE_GET_CLASS((obj), MIRAGE_TYPE_PARSER_CUE, MirageParser_CUEClass))
+#define MIRAGE_PARSER_CUE_GET_CLASS(obj)  (G_TYPE_INSTANCE_GET_CLASS((obj), MIRAGE_TYPE_PARSER_CUE, MirageParserCueClass))
 
-typedef struct _MirageParser_CUE           MirageParser_CUE;
-typedef struct _MirageParser_CUEClass      MirageParser_CUEClass;
-typedef struct _MirageParser_CUEPrivate    MirageParser_CUEPrivate;
+typedef struct _MirageParserCue           MirageParserCue;
+typedef struct _MirageParserCueClass      MirageParserCueClass;
+typedef struct _MirageParserCuePrivate    MirageParserCuePrivate;
 
-struct _MirageParser_CUE
+struct _MirageParserCue
 {
     MirageParser parent_instance;
 
     /*< private >*/
-    MirageParser_CUEPrivate *priv;
+    MirageParserCuePrivate *priv;
 };
 
-struct _MirageParser_CUEClass
+struct _MirageParserCueClass
 {
     MirageParserClass parent_class;
 };

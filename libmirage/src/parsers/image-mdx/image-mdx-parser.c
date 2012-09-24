@@ -25,9 +25,9 @@
 /**********************************************************************\
  *                          Private structure                         *
 \**********************************************************************/
-#define MIRAGE_PARSER_MDX_GET_PRIVATE(obj) (G_TYPE_INSTANCE_GET_PRIVATE((obj), MIRAGE_TYPE_PARSER_MDX, MirageParser_MDXPrivate))
+#define MIRAGE_PARSER_MDX_GET_PRIVATE(obj) (G_TYPE_INSTANCE_GET_PRIVATE((obj), MIRAGE_TYPE_PARSER_MDX, MirageParserMdxPrivate))
 
-struct _MirageParser_MDXPrivate
+struct _MirageParserMdxPrivate
 {
     GObject *disc;
 
@@ -35,7 +35,7 @@ struct _MirageParser_MDXPrivate
 };
 
 
-static gboolean mirage_parser_mdx_determine_track_mode (MirageParser_MDX *self, GObject *stream, guint64 offset, guint64 length, gint *track_mode,  gint *sector_size, gint *subchannel_type, gint *subchannel_size, GError **error)
+static gboolean mirage_parser_mdx_determine_track_mode (MirageParserMdx *self, GObject *stream, guint64 offset, guint64 length, gint *track_mode,  gint *sector_size, gint *subchannel_type, gint *subchannel_size, GError **error)
 {
     /* FIXME: add subchannel support */
     *subchannel_type = 0;
@@ -137,7 +137,7 @@ static gchar *__helper_find_binary_file (const gchar *declared_filename, const g
 }
 
 
-static gboolean mirage_parser_mdx_get_track (MirageParser_MDX *self, const gchar *filename, GObject **ret_track, GError **error)
+static gboolean mirage_parser_mdx_get_track (MirageParserMdx *self, const gchar *filename, GObject **ret_track, GError **error)
 {
     gboolean succeeded = TRUE;
 
@@ -276,7 +276,7 @@ static gboolean mirage_parser_mdx_get_track (MirageParser_MDX *self, const gchar
     return TRUE;
 }
 
-static gboolean mirage_parser_mdx_load_disc (MirageParser_MDX *self, gchar *filename, GError **error)
+static gboolean mirage_parser_mdx_load_disc (MirageParserMdx *self, gchar *filename, GError **error)
 {
     GObject *session;
     GObject *track;
@@ -330,7 +330,7 @@ static gboolean mirage_parser_mdx_load_disc (MirageParser_MDX *self, gchar *file
 \**********************************************************************/
 static GObject *mirage_parser_mdx_load_image (MirageParser *_self, gchar **filenames, GError **error)
 {
-    MirageParser_MDX *self = MIRAGE_PARSER_MDX(_self);
+    MirageParserMdx *self = MIRAGE_PARSER_MDX(_self);
 
     gboolean succeeded = TRUE;
     gchar signature[17];
@@ -380,7 +380,7 @@ static GObject *mirage_parser_mdx_load_image (MirageParser *_self, gchar **filen
 /**********************************************************************\
  *                             Object init                            *
 \**********************************************************************/
-G_DEFINE_DYNAMIC_TYPE(MirageParser_MDX, mirage_parser_mdx, MIRAGE_TYPE_PARSER);
+G_DEFINE_DYNAMIC_TYPE(MirageParserMdx, mirage_parser_mdx, MIRAGE_TYPE_PARSER);
 
 void mirage_parser_mdx_type_register (GTypeModule *type_module)
 {
@@ -388,7 +388,7 @@ void mirage_parser_mdx_type_register (GTypeModule *type_module)
 }
 
 
-static void mirage_parser_mdx_init (MirageParser_MDX *self)
+static void mirage_parser_mdx_init (MirageParserMdx *self)
 {
     self->priv = MIRAGE_PARSER_MDX_GET_PRIVATE(self);
 
@@ -404,7 +404,7 @@ static void mirage_parser_mdx_init (MirageParser_MDX *self)
 
 static void mirage_parser_mdx_dispose (GObject *gobject)
 {
-    MirageParser_MDX *self = MIRAGE_PARSER_MDX(gobject);
+    MirageParserMdx *self = MIRAGE_PARSER_MDX(gobject);
 
     if (self->priv->stream) {
         g_object_unref(self->priv->stream);
@@ -415,7 +415,7 @@ static void mirage_parser_mdx_dispose (GObject *gobject)
     return G_OBJECT_CLASS(mirage_parser_mdx_parent_class)->dispose(gobject);
 }
 
-static void mirage_parser_mdx_class_init (MirageParser_MDXClass *klass)
+static void mirage_parser_mdx_class_init (MirageParserMdxClass *klass)
 {
     GObjectClass *gobject_class = G_OBJECT_CLASS(klass);
     MirageParserClass *parser_class = MIRAGE_PARSER_CLASS(klass);
@@ -425,9 +425,9 @@ static void mirage_parser_mdx_class_init (MirageParser_MDXClass *klass)
     parser_class->load_image = mirage_parser_mdx_load_image;
 
     /* Register private structure */
-    g_type_class_add_private(klass, sizeof(MirageParser_MDXPrivate));
+    g_type_class_add_private(klass, sizeof(MirageParserMdxPrivate));
 }
 
-static void mirage_parser_mdx_class_finalize (MirageParser_MDXClass *klass G_GNUC_UNUSED)
+static void mirage_parser_mdx_class_finalize (MirageParserMdxClass *klass G_GNUC_UNUSED)
 {
 }

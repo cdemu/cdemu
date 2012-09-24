@@ -27,9 +27,9 @@
 /**********************************************************************\
  *                          Private structure                         *
 \**********************************************************************/
-#define MIRAGE_PARSER_NRG_GET_PRIVATE(obj) (G_TYPE_INSTANCE_GET_PRIVATE((obj), MIRAGE_TYPE_PARSER_NRG, MirageParser_NRGPrivate))
+#define MIRAGE_PARSER_NRG_GET_PRIVATE(obj) (G_TYPE_INSTANCE_GET_PRIVATE((obj), MIRAGE_TYPE_PARSER_NRG, MirageParserNrgPrivate))
 
-struct _MirageParser_NRGPrivate
+struct _MirageParserNrgPrivate
 {
     GObject *disc;
 
@@ -80,7 +80,7 @@ static NRG_BlockIDs NRGBlockID[] = {
     { NULL,   0,  0  }
 };
 
-static gboolean mirage_parser_nrg_build_block_index (MirageParser_NRG *self, GError **error)
+static gboolean mirage_parser_nrg_build_block_index (MirageParserNrg *self, GError **error)
 {
     NRGBlockIndexEntry *blockentry;
     GList *blockindex = NULL;
@@ -143,7 +143,7 @@ static gboolean mirage_parser_nrg_build_block_index (MirageParser_NRG *self, GEr
     return TRUE;
 }
 
-static gboolean mirage_parser_nrg_destroy_block_index (MirageParser_NRG *self)
+static gboolean mirage_parser_nrg_destroy_block_index (MirageParserNrg *self)
 {
     if (self->priv->block_index) {
         GList *entry;
@@ -164,7 +164,7 @@ static gint find_by_block_id (const NRGBlockIndexEntry *blockentry, const gchar 
     return memcmp(blockentry->block_id, block_id, 4);
 }
 
-static NRGBlockIndexEntry *mirage_parser_nrg_find_block_entry (MirageParser_NRG *self, gchar *block_id, gint index)
+static NRGBlockIndexEntry *mirage_parser_nrg_find_block_entry (MirageParserNrg *self, gchar *block_id, gint index)
 {
     GList *list_start = self->priv->block_index;
     gint cur_index = 0;
@@ -190,7 +190,7 @@ static NRGBlockIndexEntry *mirage_parser_nrg_find_block_entry (MirageParser_NRG 
     return NULL;
 }
 
-static gboolean mirage_parser_nrg_load_medium_type (MirageParser_NRG *self, GError **error)
+static gboolean mirage_parser_nrg_load_medium_type (MirageParserNrg *self, GError **error)
 {
     NRGBlockIndexEntry *blockentry;
     guint8 *cur_ptr;
@@ -235,7 +235,7 @@ static gboolean mirage_parser_nrg_load_medium_type (MirageParser_NRG *self, GErr
     return TRUE;
 }
 
-static void mirage_parser_nrg_decode_mode (MirageParser_NRG *self, gint code, gint *mode, gint *main_sectsize, gint *sub_sectsize)
+static void mirage_parser_nrg_decode_mode (MirageParserNrg *self, gint code, gint *mode, gint *main_sectsize, gint *sub_sectsize)
 {
     /* The meaning of the following codes was determined experimentally; we're
        missing mappings for Mode 2 Formless, but that doesn't seem a very common
@@ -324,7 +324,7 @@ static void mirage_parser_nrg_decode_mode (MirageParser_NRG *self, gint code, gi
     }
 }
 
-static gboolean mirage_parser_nrg_load_etn_data (MirageParser_NRG *self, gint session_num, GError **error)
+static gboolean mirage_parser_nrg_load_etn_data (MirageParserNrg *self, gint session_num, GError **error)
 {
     NRGBlockIndexEntry *blockentry;
     guint8 *cur_ptr;
@@ -383,7 +383,7 @@ static gboolean mirage_parser_nrg_load_etn_data (MirageParser_NRG *self, gint se
     return TRUE;
 }
 
-static gboolean mirage_parser_nrg_load_cue_data (MirageParser_NRG *self, gint session_num, GError **error)
+static gboolean mirage_parser_nrg_load_cue_data (MirageParserNrg *self, gint session_num, GError **error)
 {
     NRGBlockIndexEntry *blockentry;
     guint8 *cur_ptr;
@@ -444,7 +444,7 @@ static gboolean mirage_parser_nrg_load_cue_data (MirageParser_NRG *self, gint se
     return TRUE;
 }
 
-static gboolean mirage_parser_nrg_load_dao_data (MirageParser_NRG *self, gint session_num, GError **error)
+static gboolean mirage_parser_nrg_load_dao_data (MirageParserNrg *self, gint session_num, GError **error)
 {
     NRGBlockIndexEntry *blockentry;
     guint8 *cur_ptr;
@@ -517,7 +517,7 @@ static gboolean mirage_parser_nrg_load_dao_data (MirageParser_NRG *self, gint se
     return TRUE;
 }
 
-static gboolean mirage_parser_nrg_load_session (MirageParser_NRG *self, gint session_num, GError **error)
+static gboolean mirage_parser_nrg_load_session (MirageParserNrg *self, gint session_num, GError **error)
 {
     gboolean succeeded = TRUE;
 
@@ -775,7 +775,7 @@ end:
     return succeeded;
 }
 
-static gboolean mirage_parser_nrg_load_session_tao (MirageParser_NRG *self, gint session_num, GError **error)
+static gboolean mirage_parser_nrg_load_session_tao (MirageParserNrg *self, gint session_num, GError **error)
 {
     gboolean succeeded = TRUE;
 
@@ -903,7 +903,7 @@ end:
     return succeeded;
 }
 
-static gboolean mirage_parser_nrg_load_cdtext (MirageParser_NRG *self, GError **error)
+static gboolean mirage_parser_nrg_load_cdtext (MirageParserNrg *self, GError **error)
 {
     NRGBlockIndexEntry *blockentry;
     guint8 *cur_ptr;
@@ -944,7 +944,7 @@ static gboolean mirage_parser_nrg_load_cdtext (MirageParser_NRG *self, GError **
 \**********************************************************************/
 static GObject *mirage_parser_nrg_load_image (MirageParser *_self, gchar **filenames, GError **error)
 {
-    MirageParser_NRG *self = MIRAGE_PARSER_NRG(_self);
+    MirageParserNrg *self = MIRAGE_PARSER_NRG(_self);
 
     gboolean succeeded = TRUE;
     guint64 file_size;
@@ -1111,7 +1111,7 @@ end:
 /**********************************************************************\
  *                             Object init                            *
 \**********************************************************************/
-G_DEFINE_DYNAMIC_TYPE(MirageParser_NRG, mirage_parser_nrg, MIRAGE_TYPE_PARSER);
+G_DEFINE_DYNAMIC_TYPE(MirageParserNrg, mirage_parser_nrg, MIRAGE_TYPE_PARSER);
 
 void mirage_parser_nrg_type_register (GTypeModule *type_module)
 {
@@ -1119,7 +1119,7 @@ void mirage_parser_nrg_type_register (GTypeModule *type_module)
 }
 
 
-static void mirage_parser_nrg_init (MirageParser_NRG *self)
+static void mirage_parser_nrg_init (MirageParserNrg *self)
 {
     self->priv = MIRAGE_PARSER_NRG_GET_PRIVATE(self);
 
@@ -1137,7 +1137,7 @@ static void mirage_parser_nrg_init (MirageParser_NRG *self)
 
 static void mirage_parser_nrg_dispose (GObject *gobject)
 {
-    MirageParser_NRG *self = MIRAGE_PARSER_NRG(gobject);
+    MirageParserNrg *self = MIRAGE_PARSER_NRG(gobject);
 
     if (self->priv->nrg_stream) {
         g_object_unref(self->priv->nrg_stream);
@@ -1151,7 +1151,7 @@ static void mirage_parser_nrg_dispose (GObject *gobject)
 
 static void mirage_parser_nrg_finalize (GObject *gobject)
 {
-    MirageParser_NRG *self = MIRAGE_PARSER_NRG(gobject);
+    MirageParserNrg *self = MIRAGE_PARSER_NRG(gobject);
 
     g_free(self->priv->nrg_filename);
     g_free(self->priv->nrg_data);
@@ -1160,7 +1160,7 @@ static void mirage_parser_nrg_finalize (GObject *gobject)
     return G_OBJECT_CLASS(mirage_parser_nrg_parent_class)->finalize(gobject);
 }
 
-static void mirage_parser_nrg_class_init (MirageParser_NRGClass *klass)
+static void mirage_parser_nrg_class_init (MirageParserNrgClass *klass)
 {
     GObjectClass *gobject_class = G_OBJECT_CLASS(klass);
     MirageParserClass *parser_class = MIRAGE_PARSER_CLASS(klass);
@@ -1171,9 +1171,9 @@ static void mirage_parser_nrg_class_init (MirageParser_NRGClass *klass)
     parser_class->load_image = mirage_parser_nrg_load_image;
 
     /* Register private structure */
-    g_type_class_add_private(klass, sizeof(MirageParser_NRGPrivate));
+    g_type_class_add_private(klass, sizeof(MirageParserNrgPrivate));
 }
 
-static void mirage_parser_nrg_class_finalize (MirageParser_NRGClass *klass G_GNUC_UNUSED)
+static void mirage_parser_nrg_class_finalize (MirageParserNrgClass *klass G_GNUC_UNUSED)
 {
 }

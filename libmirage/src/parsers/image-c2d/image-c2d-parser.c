@@ -25,9 +25,9 @@
 /**********************************************************************\
  *                          Private structure                         *
 \**********************************************************************/
-#define MIRAGE_PARSER_C2D_GET_PRIVATE(obj) (G_TYPE_INSTANCE_GET_PRIVATE((obj), MIRAGE_TYPE_PARSER_C2D, MirageParser_C2DPrivate))
+#define MIRAGE_PARSER_C2D_GET_PRIVATE(obj) (G_TYPE_INSTANCE_GET_PRIVATE((obj), MIRAGE_TYPE_PARSER_C2D, MirageParserC2dPrivate))
 
-struct _MirageParser_C2DPrivate
+struct _MirageParserC2dPrivate
 {
     GObject *disc;
 
@@ -110,7 +110,7 @@ static inline void c2d_wocd_block_fix_endian (C2D_WOCDBlock *block)
 /**********************************************************************\
  *                          Parsing functions                         *
 \**********************************************************************/
-static gint mirage_parser_c2d_convert_track_mode (MirageParser_C2D *self, C2D_Mode mode, guint16 sector_size)
+static gint mirage_parser_c2d_convert_track_mode (MirageParserC2d *self, C2D_Mode mode, guint16 sector_size)
 {
     if ((mode == AUDIO) || (mode == AUDIO2)) {
         switch (sector_size) {
@@ -166,7 +166,7 @@ static gint mirage_parser_c2d_convert_track_mode (MirageParser_C2D *self, C2D_Mo
     }
 }
 
-static gboolean mirage_parser_c2d_parse_compressed_track (MirageParser_C2D *self, guint64 offset, GError **error)
+static gboolean mirage_parser_c2d_parse_compressed_track (MirageParserC2d *self, guint64 offset, GError **error)
 {
     gint num = 0;
 
@@ -202,7 +202,7 @@ static gboolean mirage_parser_c2d_parse_compressed_track (MirageParser_C2D *self
     return FALSE;
 }
 
-static gboolean mirage_parser_c2d_parse_track_entries (MirageParser_C2D *self, GError **error)
+static gboolean mirage_parser_c2d_parse_track_entries (MirageParserC2d *self, GError **error)
 {
     gint last_session = 0;
     gint last_point = 0;
@@ -419,7 +419,7 @@ skip_making_fragments:
     return TRUE;
 }
 
-static gboolean mirage_parser_c2d_load_cdtext (MirageParser_C2D *self, GError **error)
+static gboolean mirage_parser_c2d_load_cdtext (MirageParserC2d *self, GError **error)
 {
     GObject *session;
     guint8 *cdtext_data = (guint8 *)self->priv->cdtext_block;
@@ -447,7 +447,7 @@ static gboolean mirage_parser_c2d_load_cdtext (MirageParser_C2D *self, GError **
     return TRUE;
 }
 
-static gboolean mirage_parser_c2d_load_disc (MirageParser_C2D *self, GError **error)
+static gboolean mirage_parser_c2d_load_disc (MirageParserC2d *self, GError **error)
 {
     C2D_HeaderBlock *hb;
 
@@ -518,7 +518,7 @@ static gboolean mirage_parser_c2d_load_disc (MirageParser_C2D *self, GError **er
 \**********************************************************************/
 static GObject *mirage_parser_c2d_load_image (MirageParser *_self, gchar **filenames, GError **error)
 {
-    MirageParser_C2D *self = MIRAGE_PARSER_C2D(_self);
+    MirageParserC2d *self = MIRAGE_PARSER_C2D(_self);
 
     gboolean succeeded = TRUE;
     gchar sig[32] = "";
@@ -608,14 +608,14 @@ end:
 /******************************************************************************\
  *                                Object init                                 *
 \******************************************************************************/
-G_DEFINE_DYNAMIC_TYPE(MirageParser_C2D, mirage_parser_c2d, MIRAGE_TYPE_PARSER);
+G_DEFINE_DYNAMIC_TYPE(MirageParserC2d, mirage_parser_c2d, MIRAGE_TYPE_PARSER);
 
 void mirage_parser_c2d_type_register (GTypeModule *type_module)
 {
     return mirage_parser_c2d_register_type(type_module);
 }
 
-static void mirage_parser_c2d_init (MirageParser_C2D *self)
+static void mirage_parser_c2d_init (MirageParserC2d *self)
 {
     self->priv = MIRAGE_PARSER_C2D_GET_PRIVATE(self);
 
@@ -633,7 +633,7 @@ static void mirage_parser_c2d_init (MirageParser_C2D *self)
 
 static void mirage_parser_c2d_dispose (GObject *gobject)
 {
-    MirageParser_C2D *self = MIRAGE_PARSER_C2D(gobject);
+    MirageParserC2d *self = MIRAGE_PARSER_C2D(gobject);
 
     if (self->priv->c2d_stream) {
         g_object_unref(self->priv->c2d_stream);
@@ -646,7 +646,7 @@ static void mirage_parser_c2d_dispose (GObject *gobject)
 
 static void mirage_parser_c2d_finalize (GObject *gobject)
 {
-    MirageParser_C2D *self = MIRAGE_PARSER_C2D(gobject);
+    MirageParserC2d *self = MIRAGE_PARSER_C2D(gobject);
 
     g_free(self->priv->c2d_filename);
     g_free(self->priv->c2d_data);
@@ -655,7 +655,7 @@ static void mirage_parser_c2d_finalize (GObject *gobject)
     return G_OBJECT_CLASS(mirage_parser_c2d_parent_class)->finalize(gobject);
 }
 
-static void mirage_parser_c2d_class_init (MirageParser_C2DClass *klass)
+static void mirage_parser_c2d_class_init (MirageParserC2dClass *klass)
 {
     GObjectClass *gobject_class = G_OBJECT_CLASS(klass);
     MirageParserClass *parser_class = MIRAGE_PARSER_CLASS(klass);
@@ -666,9 +666,9 @@ static void mirage_parser_c2d_class_init (MirageParser_C2DClass *klass)
     parser_class->load_image = mirage_parser_c2d_load_image;
 
     /* Register private structure */
-    g_type_class_add_private(klass, sizeof(MirageParser_C2DPrivate));
+    g_type_class_add_private(klass, sizeof(MirageParserC2dPrivate));
 }
 
-static void mirage_parser_c2d_class_finalize (MirageParser_C2DClass *klass G_GNUC_UNUSED)
+static void mirage_parser_c2d_class_finalize (MirageParserC2dClass *klass G_GNUC_UNUSED)
 {
 }

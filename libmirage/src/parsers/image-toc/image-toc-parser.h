@@ -24,25 +24,25 @@
 G_BEGIN_DECLS
 
 #define MIRAGE_TYPE_PARSER_TOC            (mirage_parser_toc_get_type())
-#define MIRAGE_PARSER_TOC(obj)            (G_TYPE_CHECK_INSTANCE_CAST((obj), MIRAGE_TYPE_PARSER_TOC, MirageParser_TOC))
-#define MIRAGE_PARSER_TOC_CLASS(klass)    (G_TYPE_CHECK_CLASS_CAST((klass), MIRAGE_TYPE_PARSER_TOC, MirageParser_TOCClass))
+#define MIRAGE_PARSER_TOC(obj)            (G_TYPE_CHECK_INSTANCE_CAST((obj), MIRAGE_TYPE_PARSER_TOC, MirageParserToc))
+#define MIRAGE_PARSER_TOC_CLASS(klass)    (G_TYPE_CHECK_CLASS_CAST((klass), MIRAGE_TYPE_PARSER_TOC, MirageParserTocClass))
 #define MIRAGE_IS_PARSER_TOC(obj)         (G_TYPE_CHECK_INSTANCE_TYPE((obj), MIRAGE_TYPE_PARSER_TOC))
 #define MIRAGE_IS_PARSER_TOC_CLASS(klass) (G_TYPE_CHECK_CLASS_TYPE((klass), MIRAGE_TYPE_PARSER_TOC))
-#define MIRAGE_PARSER_TOC_GET_CLASS(obj)  (G_TYPE_INSTANCE_GET_CLASS((obj), MIRAGE_TYPE_PARSER_TOC, MirageParser_TOCClass))
+#define MIRAGE_PARSER_TOC_GET_CLASS(obj)  (G_TYPE_INSTANCE_GET_CLASS((obj), MIRAGE_TYPE_PARSER_TOC, MirageParserTocClass))
 
-typedef struct _MirageParser_TOC           MirageParser_TOC;
-typedef struct _MirageParser_TOCClass      MirageParser_TOCClass;
-typedef struct _MirageParser_TOCPrivate    MirageParser_TOCPrivate;
+typedef struct _MirageParserToc           MirageParserToc;
+typedef struct _MirageParserTocClass      MirageParserTocClass;
+typedef struct _MirageParserTocPrivate    MirageParserTocPrivate;
 
-struct _MirageParser_TOC
+struct _MirageParserToc
 {
     MirageParser parent_instance;
 
     /*< private >*/
-    MirageParser_TOCPrivate *priv;
+    MirageParserTocPrivate *priv;
 };
 
-struct _MirageParser_TOCClass
+struct _MirageParserTocClass
 {
     MirageParserClass parent_class;
 };

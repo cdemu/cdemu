@@ -25,9 +25,9 @@
 /**********************************************************************\
  *                          Private structure                         *
 \**********************************************************************/
-#define MIRAGE_PARSER_CUE_GET_PRIVATE(obj) (G_TYPE_INSTANCE_GET_PRIVATE((obj), MIRAGE_TYPE_PARSER_CUE, MirageParser_CUEPrivate))
+#define MIRAGE_PARSER_CUE_GET_PRIVATE(obj) (G_TYPE_INSTANCE_GET_PRIVATE((obj), MIRAGE_TYPE_PARSER_CUE, MirageParserCuePrivate))
 
-struct _MirageParser_CUEPrivate
+struct _MirageParserCuePrivate
 {
     GObject *disc;
 
@@ -60,7 +60,7 @@ struct _MirageParser_CUEPrivate
 /**********************************************************************\
  *                     Parser private functions                       *
 \**********************************************************************/
-static gboolean mirage_parser_cue_finish_last_track (MirageParser_CUE *self, GError **error)
+static gboolean mirage_parser_cue_finish_last_track (MirageParserCue *self, GError **error)
 {
     GObject *fragment;
     gboolean succeeded = TRUE;
@@ -95,7 +95,7 @@ static gboolean mirage_parser_cue_finish_last_track (MirageParser_CUE *self, GEr
     return succeeded;
 }
 
-static gboolean mirage_parser_cue_set_new_file (MirageParser_CUE *self, gchar *filename_string, gchar *file_type, GError **error)
+static gboolean mirage_parser_cue_set_new_file (MirageParserCue *self, gchar *filename_string, gchar *file_type, GError **error)
 {
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: new file: %s\n", __debug__, filename_string);
 
@@ -127,7 +127,7 @@ static gboolean mirage_parser_cue_set_new_file (MirageParser_CUE *self, gchar *f
     return TRUE;
 }
 
-static gboolean mirage_parser_cue_add_track (MirageParser_CUE *self, gint number, gchar *mode_string, GError **error)
+static gboolean mirage_parser_cue_add_track (MirageParserCue *self, gint number, gchar *mode_string, GError **error)
 {
     gint i;
 
@@ -187,7 +187,7 @@ static gboolean mirage_parser_cue_add_track (MirageParser_CUE *self, gint number
     return TRUE;
 };
 
-static gboolean mirage_parser_cue_add_index (MirageParser_CUE *self, gint number, gint address, GError **error)
+static gboolean mirage_parser_cue_add_index (MirageParserCue *self, gint number, gint address, GError **error)
 {
     /* Current track needs to be set at this point */
     if (!self->priv->cur_track) {
@@ -353,7 +353,7 @@ static gboolean mirage_parser_cue_add_index (MirageParser_CUE *self, gint number
     return TRUE;
 }
 
-static gboolean mirage_parser_cue_set_flags (MirageParser_CUE *self, gint flags, GError **error)
+static gboolean mirage_parser_cue_set_flags (MirageParserCue *self, gint flags, GError **error)
 {
     /* Current track needs to be set at this point */
     if (!self->priv->cur_track) {
@@ -367,7 +367,7 @@ static gboolean mirage_parser_cue_set_flags (MirageParser_CUE *self, gint flags,
     return TRUE;
 }
 
-static gboolean mirage_parser_cue_set_isrc (MirageParser_CUE *self, gchar *isrc, GError **error)
+static gboolean mirage_parser_cue_set_isrc (MirageParserCue *self, gchar *isrc, GError **error)
 {
     /* Current track needs to be set at this point */
     if (!self->priv->cur_track) {
@@ -382,7 +382,7 @@ static gboolean mirage_parser_cue_set_isrc (MirageParser_CUE *self, gchar *isrc,
 }
 
 
-static gboolean mirage_parser_cue_add_empty_part (MirageParser_CUE *self, gint length, GError **error)
+static gboolean mirage_parser_cue_add_empty_part (MirageParserCue *self, gint length, GError **error)
 {
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: adding empty part (0x%X)\n", __debug__, length);
 
@@ -404,7 +404,7 @@ static gboolean mirage_parser_cue_add_empty_part (MirageParser_CUE *self, gint l
     return TRUE;
 }
 
-static gboolean mirage_parser_cue_add_pregap (MirageParser_CUE *self, gint length, GError **error)
+static gboolean mirage_parser_cue_add_pregap (MirageParserCue *self, gint length, GError **error)
 {
     gint track_start = 0;
 
@@ -432,7 +432,7 @@ static gboolean mirage_parser_cue_add_pregap (MirageParser_CUE *self, gint lengt
     return TRUE;
 }
 
-static void mirage_parser_cue_add_session (MirageParser_CUE *self, gint number)
+static void mirage_parser_cue_add_session (MirageParserCue *self, gint number)
 {
     gint leadout_length = 0;
 
@@ -467,7 +467,7 @@ static void mirage_parser_cue_add_session (MirageParser_CUE *self, gint number)
     self->priv->cur_track = NULL;
 }
 
-static gboolean mirage_parser_cue_set_pack_data (MirageParser_CUE *self, gint pack_type, gchar *data, GError **error G_GNUC_UNUSED)
+static gboolean mirage_parser_cue_set_pack_data (MirageParserCue *self, gint pack_type, gchar *data, GError **error G_GNUC_UNUSED)
 {
     GObject *language;
 
@@ -500,7 +500,7 @@ static gboolean mirage_parser_cue_set_pack_data (MirageParser_CUE *self, gint pa
 /**********************************************************************\
  *                       Regex parsing engine                         *
 \**********************************************************************/
-typedef gboolean (*CUE_RegexCallback) (MirageParser_CUE *self, GMatchInfo *match_info, GError **error);
+typedef gboolean (*CUE_RegexCallback) (MirageParserCue *self, GMatchInfo *match_info, GError **error);
 
 typedef struct
 {
@@ -525,7 +525,7 @@ static gchar *strip_quotes (gchar *str)
     return g_strdup(str);
 }
 
-static gboolean mirage_parser_cue_callback_session (MirageParser_CUE *self, GMatchInfo *match_info, GError **error G_GNUC_UNUSED)
+static gboolean mirage_parser_cue_callback_session (MirageParserCue *self, GMatchInfo *match_info, GError **error G_GNUC_UNUSED)
 {
     gchar *number_raw = g_match_info_fetch_named(match_info, "number");
     gint number = g_strtod(number_raw, NULL);
@@ -538,7 +538,7 @@ static gboolean mirage_parser_cue_callback_session (MirageParser_CUE *self, GMat
     return TRUE;
 }
 
-static gboolean mirage_parser_cue_callback_comment (MirageParser_CUE *self, GMatchInfo *match_info, GError **error G_GNUC_UNUSED)
+static gboolean mirage_parser_cue_callback_comment (MirageParserCue *self, GMatchInfo *match_info, GError **error G_GNUC_UNUSED)
 {
     gchar *comment = g_match_info_fetch_named(match_info, "comment");
 
@@ -549,7 +549,7 @@ static gboolean mirage_parser_cue_callback_comment (MirageParser_CUE *self, GMat
     return TRUE;
 }
 
-static gboolean mirage_parser_cue_callback_cdtext (MirageParser_CUE *self, GMatchInfo *match_info, GError **error G_GNUC_UNUSED)
+static gboolean mirage_parser_cue_callback_cdtext (MirageParserCue *self, GMatchInfo *match_info, GError **error G_GNUC_UNUSED)
 {
     gchar *filename_raw, *filename;
 
@@ -564,7 +564,7 @@ static gboolean mirage_parser_cue_callback_cdtext (MirageParser_CUE *self, GMatc
     return TRUE;
 }
 
-static gboolean mirage_parser_cue_callback_catalog (MirageParser_CUE *self, GMatchInfo *match_info, GError **error G_GNUC_UNUSED)
+static gboolean mirage_parser_cue_callback_catalog (MirageParserCue *self, GMatchInfo *match_info, GError **error G_GNUC_UNUSED)
 {
     gchar *catalog = g_match_info_fetch_named(match_info, "catalog");
 
@@ -577,7 +577,7 @@ static gboolean mirage_parser_cue_callback_catalog (MirageParser_CUE *self, GMat
     return TRUE;
 }
 
-static gboolean mirage_parser_cue_callback_title (MirageParser_CUE *self, GMatchInfo *match_info, GError **error)
+static gboolean mirage_parser_cue_callback_title (MirageParserCue *self, GMatchInfo *match_info, GError **error)
 {
     gboolean succeeded = TRUE;
     gchar *title_raw, *title;
@@ -595,7 +595,7 @@ static gboolean mirage_parser_cue_callback_title (MirageParser_CUE *self, GMatch
     return succeeded;
 }
 
-static gboolean mirage_parser_cue_callback_performer (MirageParser_CUE *self, GMatchInfo *match_info, GError **error)
+static gboolean mirage_parser_cue_callback_performer (MirageParserCue *self, GMatchInfo *match_info, GError **error)
 {
     gboolean succeeded = TRUE;
     gchar *performer_raw, *performer;
@@ -613,7 +613,7 @@ static gboolean mirage_parser_cue_callback_performer (MirageParser_CUE *self, GM
     return succeeded;
 }
 
-static gboolean mirage_parser_cue_callback_songwriter (MirageParser_CUE *self, GMatchInfo *match_info, GError **error)
+static gboolean mirage_parser_cue_callback_songwriter (MirageParserCue *self, GMatchInfo *match_info, GError **error)
 {
     gboolean succeeded = TRUE;
     gchar *songwriter_raw, *songwriter;
@@ -631,7 +631,7 @@ static gboolean mirage_parser_cue_callback_songwriter (MirageParser_CUE *self, G
     return succeeded;
 }
 
-static gboolean mirage_parser_cue_callback_file (MirageParser_CUE *self, GMatchInfo *match_info, GError **error)
+static gboolean mirage_parser_cue_callback_file (MirageParserCue *self, GMatchInfo *match_info, GError **error)
 {
     gboolean succeeded = TRUE;
     gchar *filename_raw, *filename, *type;
@@ -652,7 +652,7 @@ static gboolean mirage_parser_cue_callback_file (MirageParser_CUE *self, GMatchI
     return succeeded;
 }
 
-static gboolean mirage_parser_cue_callback_track (MirageParser_CUE *self, GMatchInfo *match_info, GError **error)
+static gboolean mirage_parser_cue_callback_track (MirageParserCue *self, GMatchInfo *match_info, GError **error)
 {
     gboolean succeeded = TRUE;
     gchar *number_raw, *mode_string;
@@ -673,7 +673,7 @@ static gboolean mirage_parser_cue_callback_track (MirageParser_CUE *self, GMatch
     return succeeded;
 }
 
-static gboolean mirage_parser_cue_callback_isrc (MirageParser_CUE *self, GMatchInfo *match_info, GError **error)
+static gboolean mirage_parser_cue_callback_isrc (MirageParserCue *self, GMatchInfo *match_info, GError **error)
 {
     gboolean succeeded = TRUE;
     gchar *isrc = g_match_info_fetch_named(match_info, "isrc");
@@ -687,7 +687,7 @@ static gboolean mirage_parser_cue_callback_isrc (MirageParser_CUE *self, GMatchI
     return succeeded;
 }
 
-static gboolean mirage_parser_cue_callback_index (MirageParser_CUE *self, GMatchInfo *match_info, GError **error)
+static gboolean mirage_parser_cue_callback_index (MirageParserCue *self, GMatchInfo *match_info, GError **error)
  {
     gboolean succeeded = TRUE;
     gchar *number_raw, *address_raw;
@@ -708,7 +708,7 @@ static gboolean mirage_parser_cue_callback_index (MirageParser_CUE *self, GMatch
     return succeeded;
 }
 
-static gboolean mirage_parser_cue_callback_pregap (MirageParser_CUE *self, GMatchInfo *match_info, GError **error)
+static gboolean mirage_parser_cue_callback_pregap (MirageParserCue *self, GMatchInfo *match_info, GError **error)
 {
     gboolean succeeded = TRUE;
     gchar *length_raw;
@@ -726,7 +726,7 @@ static gboolean mirage_parser_cue_callback_pregap (MirageParser_CUE *self, GMatc
     return succeeded;
 }
 
-static gboolean mirage_parser_cue_callback_postgap (MirageParser_CUE *self, GMatchInfo *match_info, GError **error)
+static gboolean mirage_parser_cue_callback_postgap (MirageParserCue *self, GMatchInfo *match_info, GError **error)
 {
     gboolean succeeded = TRUE;
     gchar *length_raw;
@@ -744,7 +744,7 @@ static gboolean mirage_parser_cue_callback_postgap (MirageParser_CUE *self, GMat
     return succeeded;
 }
 
-static gboolean mirage_parser_cue_callback_flags (MirageParser_CUE *self, GMatchInfo *match_info, GError **error)
+static gboolean mirage_parser_cue_callback_flags (MirageParserCue *self, GMatchInfo *match_info, GError **error)
 {
     gchar *flags_dcp, *flags_4ch, *flags_pre, *flags_scms;
     gint flags = 0;
@@ -794,7 +794,7 @@ static inline void append_regex_rule (GList **list_ptr, const gchar *rule, CUE_R
     *list_ptr = list;
 }
 
-static void mirage_parser_cue_init_regex_parser (MirageParser_CUE *self)
+static void mirage_parser_cue_init_regex_parser (MirageParserCue *self)
 {
     /* Ignore empty lines */
     append_regex_rule(&self->priv->regex_rules, "^\\s*$", NULL);
@@ -826,7 +826,7 @@ static void mirage_parser_cue_init_regex_parser (MirageParser_CUE *self)
     return;
 }
 
-static void mirage_parser_cue_cleanup_regex_parser (MirageParser_CUE *self)
+static void mirage_parser_cue_cleanup_regex_parser (MirageParserCue *self)
 {
     GList *entry;
 
@@ -839,7 +839,7 @@ static void mirage_parser_cue_cleanup_regex_parser (MirageParser_CUE *self)
     g_list_free(self->priv->regex_rules);
 }
 
-static gboolean mirage_parser_cue_detect_and_set_encoding (MirageParser_CUE *self, GIOChannel *io_channel, GError **error G_GNUC_UNUSED)
+static gboolean mirage_parser_cue_detect_and_set_encoding (MirageParserCue *self, GIOChannel *io_channel, GError **error G_GNUC_UNUSED)
 {
     static gchar bom_utf32_be[] = { 0x00, 0x00, 0xFE, 0xFF };
     static gchar bom_utf32_le[] = { 0xFF, 0xFE, 0x00, 0x00 };
@@ -879,7 +879,7 @@ static gboolean mirage_parser_cue_detect_and_set_encoding (MirageParser_CUE *sel
     return TRUE;
 }
 
-static gboolean mirage_parser_cue_parse_cue_file (MirageParser_CUE *self, gchar *filename, GError **error)
+static gboolean mirage_parser_cue_parse_cue_file (MirageParserCue *self, gchar *filename, GError **error)
 {
     GError *io_error = NULL;
     GIOChannel *io_channel;
@@ -981,7 +981,7 @@ static gboolean mirage_parser_cue_parse_cue_file (MirageParser_CUE *self, gchar 
 \**********************************************************************/
 static GObject *mirage_parser_cue_load_image (MirageParser *_self, gchar **filenames, GError **error)
 {
-    MirageParser_CUE *self = MIRAGE_PARSER_CUE(_self);
+    MirageParserCue *self = MIRAGE_PARSER_CUE(_self);
 
     gboolean succeeded = TRUE;
 
@@ -1043,7 +1043,7 @@ end:
 /**********************************************************************\
  *                             Object init                            *
 \**********************************************************************/
-G_DEFINE_DYNAMIC_TYPE(MirageParser_CUE, mirage_parser_cue, MIRAGE_TYPE_PARSER);
+G_DEFINE_DYNAMIC_TYPE(MirageParserCue, mirage_parser_cue, MIRAGE_TYPE_PARSER);
 
 void mirage_parser_cue_type_register (GTypeModule *type_module)
 {
@@ -1051,7 +1051,7 @@ void mirage_parser_cue_type_register (GTypeModule *type_module)
 }
 
 
-static void mirage_parser_cue_init (MirageParser_CUE *self)
+static void mirage_parser_cue_init (MirageParserCue *self)
 {
     self->priv = MIRAGE_PARSER_CUE_GET_PRIVATE(self);
 
@@ -1071,7 +1071,7 @@ static void mirage_parser_cue_init (MirageParser_CUE *self)
 
 static void mirage_parser_cue_finalize (GObject *gobject)
 {
-    MirageParser_CUE *self = MIRAGE_PARSER_CUE(gobject);
+    MirageParserCue *self = MIRAGE_PARSER_CUE(gobject);
 
     /* Free elements of private structure */
     g_free(self->priv->cue_filename);
@@ -1085,7 +1085,7 @@ static void mirage_parser_cue_finalize (GObject *gobject)
     return G_OBJECT_CLASS(mirage_parser_cue_parent_class)->finalize(gobject);
 }
 
-static void mirage_parser_cue_class_init (MirageParser_CUEClass *klass)
+static void mirage_parser_cue_class_init (MirageParserCueClass *klass)
 {
     GObjectClass *gobject_class = G_OBJECT_CLASS(klass);
     MirageParserClass *parser_class = MIRAGE_PARSER_CLASS(klass);
@@ -1095,9 +1095,9 @@ static void mirage_parser_cue_class_init (MirageParser_CUEClass *klass)
     parser_class->load_image = mirage_parser_cue_load_image;
 
     /* Register private structure */
-    g_type_class_add_private(klass, sizeof(MirageParser_CUEPrivate));
+    g_type_class_add_private(klass, sizeof(MirageParserCuePrivate));
 }
 
-static void mirage_parser_cue_class_finalize (MirageParser_CUEClass *klass G_GNUC_UNUSED)
+static void mirage_parser_cue_class_finalize (MirageParserCueClass *klass G_GNUC_UNUSED)
 {
 }

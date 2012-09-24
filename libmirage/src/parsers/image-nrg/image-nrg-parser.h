@@ -26,25 +26,25 @@
 G_BEGIN_DECLS
 
 #define MIRAGE_TYPE_PARSER_NRG            (mirage_parser_nrg_get_type())
-#define MIRAGE_PARSER_NRG(obj)            (G_TYPE_CHECK_INSTANCE_CAST((obj), MIRAGE_TYPE_PARSER_NRG, MirageParser_NRG))
-#define MIRAGE_PARSER_NRG_CLASS(klass)    (G_TYPE_CHECK_CLASS_CAST((klass), MIRAGE_TYPE_PARSER_NRG, MirageParser_NRGClass))
+#define MIRAGE_PARSER_NRG(obj)            (G_TYPE_CHECK_INSTANCE_CAST((obj), MIRAGE_TYPE_PARSER_NRG, MirageParserNrg))
+#define MIRAGE_PARSER_NRG_CLASS(klass)    (G_TYPE_CHECK_CLASS_CAST((klass), MIRAGE_TYPE_PARSER_NRG, MirageParserNrgClass))
 #define MIRAGE_IS_PARSER_NRG(obj)         (G_TYPE_CHECK_INSTANCE_TYPE((obj), MIRAGE_TYPE_PARSER_NRG))
 #define MIRAGE_IS_PARSER_NRG_CLASS(klass) (G_TYPE_CHECK_CLASS_TYPE((klass), MIRAGE_TYPE_PARSER_NRG))
-#define MIRAGE_PARSER_NRG_GET_CLASS(obj)  (G_TYPE_INSTANCE_GET_CLASS((obj), MIRAGE_TYPE_PARSER_NRG, MirageParser_NRGClass))
+#define MIRAGE_PARSER_NRG_GET_CLASS(obj)  (G_TYPE_INSTANCE_GET_CLASS((obj), MIRAGE_TYPE_PARSER_NRG, MirageParserNrgClass))
 
-typedef struct _MirageParser_NRG           MirageParser_NRG;
-typedef struct _MirageParser_NRGClass      MirageParser_NRGClass;
-typedef struct _MirageParser_NRGPrivate    MirageParser_NRGPrivate;
+typedef struct _MirageParserNrg           MirageParserNrg;
+typedef struct _MirageParserNrgClass      MirageParserNrgClass;
+typedef struct _MirageParserNrgPrivate    MirageParserNrgPrivate;
 
-struct _MirageParser_NRG
+struct _MirageParserNrg
 {
     MirageParser parent_instance;
 
     /*< private >*/
-    MirageParser_NRGPrivate *priv;
+    MirageParserNrgPrivate *priv;
 };
 
-struct _MirageParser_NRGClass
+struct _MirageParserNrgClass
 {
     MirageParserClass parent_class;
 };

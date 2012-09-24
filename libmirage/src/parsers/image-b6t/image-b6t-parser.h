@@ -24,25 +24,25 @@
 G_BEGIN_DECLS
 
 #define MIRAGE_TYPE_PARSER_B6T            (mirage_parser_b6t_get_type())
-#define MIRAGE_PARSER_B6T(obj)            (G_TYPE_CHECK_INSTANCE_CAST((obj), MIRAGE_TYPE_PARSER_B6T, MirageParser_B6T))
-#define MIRAGE_PARSER_B6T_CLASS(klass)    (G_TYPE_CHECK_CLASS_CAST((klass), MIRAGE_TYPE_PARSER_B6T, MirageParser_B6TClass))
+#define MIRAGE_PARSER_B6T(obj)            (G_TYPE_CHECK_INSTANCE_CAST((obj), MIRAGE_TYPE_PARSER_B6T, MirageParserB6t))
+#define MIRAGE_PARSER_B6T_CLASS(klass)    (G_TYPE_CHECK_CLASS_CAST((klass), MIRAGE_TYPE_PARSER_B6T, MirageParserB6tClass))
 #define MIRAGE_IS_PARSER_B6T(obj)         (G_TYPE_CHECK_INSTANCE_TYPE((obj), MIRAGE_TYPE_PARSER_B6T))
 #define MIRAGE_IS_PARSER_B6T_CLASS(klass) (G_TYPE_CHECK_CLASS_TYPE((klass), MIRAGE_TYPE_PARSER_B6T))
-#define MIRAGE_PARSER_B6T_GET_CLASS(obj)  (G_TYPE_INSTANCE_GET_CLASS((obj), MIRAGE_TYPE_PARSER_B6T, MirageParser_B6TClass))
+#define MIRAGE_PARSER_B6T_GET_CLASS(obj)  (G_TYPE_INSTANCE_GET_CLASS((obj), MIRAGE_TYPE_PARSER_B6T, MirageParserB6tClass))
 
-typedef struct _MirageParser_B6T           MirageParser_B6T;
-typedef struct _MirageParser_B6TClass      MirageParser_B6TClass;
-typedef struct _MirageParser_B6TPrivate    MirageParser_B6TPrivate;
+typedef struct _MirageParserB6t           MirageParserB6t;
+typedef struct _MirageParserB6tClass      MirageParserB6tClass;
+typedef struct _MirageParserB6tPrivate    MirageParserB6tPrivate;
 
-struct _MirageParser_B6T
+struct _MirageParserB6t
 {
     MirageParser parent_instance;
 
     /*< private >*/
-    MirageParser_B6TPrivate *priv;
+    MirageParserB6tPrivate *priv;
 };
 
-struct _MirageParser_B6TClass
+struct _MirageParserB6tClass
 {
     MirageParserClass parent_class;
 };

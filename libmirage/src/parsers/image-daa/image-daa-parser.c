@@ -25,9 +25,9 @@
 /**********************************************************************\
  *                          Private structure                          *
 \**********************************************************************/
-#define MIRAGE_PARSER_DAA_GET_PRIVATE(obj) (G_TYPE_INSTANCE_GET_PRIVATE((obj), MIRAGE_TYPE_PARSER_DAA, MirageParser_DAAPrivate))
+#define MIRAGE_PARSER_DAA_GET_PRIVATE(obj) (G_TYPE_INSTANCE_GET_PRIVATE((obj), MIRAGE_TYPE_PARSER_DAA, MirageParserDaaPrivate))
 
-struct _MirageParser_DAAPrivate
+struct _MirageParserDaaPrivate
 {
     GObject *disc;
 };
@@ -38,7 +38,7 @@ struct _MirageParser_DAAPrivate
 \**********************************************************************/
 static GObject *mirage_parser_daa_load_image (MirageParser *_self, gchar **filenames, GError **error)
 {
-    MirageParser_DAA *self = MIRAGE_PARSER_DAA(_self);
+    MirageParserDaa *self = MIRAGE_PARSER_DAA(_self);
 
     gboolean succeeded = TRUE;
     GObject *stream;
@@ -132,7 +132,7 @@ end:
 /**********************************************************************\
  *                             Object init                            *
 \**********************************************************************/
-G_DEFINE_DYNAMIC_TYPE(MirageParser_DAA, mirage_parser_daa, MIRAGE_TYPE_PARSER);
+G_DEFINE_DYNAMIC_TYPE(MirageParserDaa, mirage_parser_daa, MIRAGE_TYPE_PARSER);
 
 void mirage_parser_daa_type_register (GTypeModule *type_module)
 {
@@ -140,7 +140,7 @@ void mirage_parser_daa_type_register (GTypeModule *type_module)
 }
 
 
-static void mirage_parser_daa_init (MirageParser_DAA *self)
+static void mirage_parser_daa_init (MirageParserDaa *self)
 {
     self->priv = MIRAGE_PARSER_DAA_GET_PRIVATE(self);
 
@@ -152,16 +152,16 @@ static void mirage_parser_daa_init (MirageParser_DAA *self)
     );
 }
 
-static void mirage_parser_daa_class_init (MirageParser_DAAClass *klass)
+static void mirage_parser_daa_class_init (MirageParserDaaClass *klass)
 {
     MirageParserClass *parser_class = MIRAGE_PARSER_CLASS(klass);
 
     parser_class->load_image = mirage_parser_daa_load_image;
 
     /* Register private structure */
-    g_type_class_add_private(klass, sizeof(MirageParser_DAAPrivate));
+    g_type_class_add_private(klass, sizeof(MirageParserDaaPrivate));
 }
 
-static void mirage_parser_daa_class_finalize (MirageParser_DAAClass *klass G_GNUC_UNUSED)
+static void mirage_parser_daa_class_finalize (MirageParserDaaClass *klass G_GNUC_UNUSED)
 {
 }

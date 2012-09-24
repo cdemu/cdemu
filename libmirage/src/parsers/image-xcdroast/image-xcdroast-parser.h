@@ -24,25 +24,25 @@
 G_BEGIN_DECLS
 
 #define MIRAGE_TYPE_PARSER_XCDROAST            (mirage_parser_xcdroast_get_type())
-#define MIRAGE_PARSER_XCDROAST(obj)            (G_TYPE_CHECK_INSTANCE_CAST((obj), MIRAGE_TYPE_PARSER_XCDROAST, MirageParser_XCDROAST))
-#define MIRAGE_PARSER_XCDROAST_CLASS(klass)    (G_TYPE_CHECK_CLASS_CAST((klass), MIRAGE_TYPE_PARSER_XCDROAST, MirageParser_XCDROASTClass))
+#define MIRAGE_PARSER_XCDROAST(obj)            (G_TYPE_CHECK_INSTANCE_CAST((obj), MIRAGE_TYPE_PARSER_XCDROAST, MirageParserXcdroast))
+#define MIRAGE_PARSER_XCDROAST_CLASS(klass)    (G_TYPE_CHECK_CLASS_CAST((klass), MIRAGE_TYPE_PARSER_XCDROAST, MirageParserXcdroastClass))
 #define MIRAGE_IS_PARSER_XCDROAST(obj)         (G_TYPE_CHECK_INSTANCE_TYPE((obj), MIRAGE_TYPE_PARSER_XCDROAST))
 #define MIRAGE_IS_PARSER_XCDROAST_CLASS(klass) (G_TYPE_CHECK_CLASS_TYPE((klass), MIRAGE_TYPE_PARSER_XCDROAST))
-#define MIRAGE_PARSER_XCDROAST_GET_CLASS(obj)  (G_TYPE_INSTANCE_GET_CLASS((obj), MIRAGE_TYPE_PARSER_XCDROAST, MirageParser_XCDROASTClass))
+#define MIRAGE_PARSER_XCDROAST_GET_CLASS(obj)  (G_TYPE_INSTANCE_GET_CLASS((obj), MIRAGE_TYPE_PARSER_XCDROAST, MirageParserXcdroastClass))
 
-typedef struct _MirageParser_XCDROAST          MirageParser_XCDROAST;
-typedef struct _MirageParser_XCDROASTClass     MirageParser_XCDROASTClass;
-typedef struct _MirageParser_XCDROASTPrivate   MirageParser_XCDROASTPrivate;
+typedef struct _MirageParserXcdroast          MirageParserXcdroast;
+typedef struct _MirageParserXcdroastClass     MirageParserXcdroastClass;
+typedef struct _MirageParserXcdroastPrivate   MirageParserXcdroastPrivate;
 
-struct _MirageParser_XCDROAST
+struct _MirageParserXcdroast
 {
     MirageParser parent_instance;
 
     /*< private >*/
-    MirageParser_XCDROASTPrivate *priv;
+    MirageParserXcdroastPrivate *priv;
 };
 
-struct _MirageParser_XCDROASTClass
+struct _MirageParserXcdroastClass
 {
     MirageParserClass parent_class;
 };

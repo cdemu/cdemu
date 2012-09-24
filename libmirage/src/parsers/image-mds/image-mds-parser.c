@@ -27,9 +27,9 @@
 /**********************************************************************\
  *                          Private structure                         *
 \**********************************************************************/
-#define MIRAGE_PARSER_MDS_GET_PRIVATE(obj) (G_TYPE_INSTANCE_GET_PRIVATE((obj), MIRAGE_TYPE_PARSER_MDS, MirageParser_MDSPrivate))
+#define MIRAGE_PARSER_MDS_GET_PRIVATE(obj) (G_TYPE_INSTANCE_GET_PRIVATE((obj), MIRAGE_TYPE_PARSER_MDS, MirageParserMdsPrivate))
 
-struct _MirageParser_MDSPrivate
+struct _MirageParserMdsPrivate
 {
     GObject *disc;
 
@@ -142,7 +142,7 @@ static inline void widechar_filename_fix_endian (gunichar2 *filename)
     00: Mode 2, 01: Audio, 02: Mode 1, 03: Mode 2, 04: Mode 2 Form 1, 05: Mode 2 Form 2, 06: UKNONOWN, 07: Mode 2
     08: Mode 2, 09: Audio, 0A: Mode 1, 0B: Mode 2, 0C: Mode 2 Form 1, 0D: Mode 2 Form 2, 0E: UKNONOWN, 0F: Mode 2
 */
-static gint mirage_parser_mds_convert_track_mode (MirageParser_MDS *self, gint mode)
+static gint mirage_parser_mds_convert_track_mode (MirageParserMds *self, gint mode)
 {
     /* convert between two values */
     static const struct {
@@ -200,7 +200,7 @@ static gchar *__helper_find_binary_file (gchar *declared_filename, gchar *mds_fi
     return bin_fullpath;
 }
 
-static void mirage_parser_mds_parse_dpm_block (MirageParser_MDS *self, guint32 dpm_block_offset)
+static void mirage_parser_mds_parse_dpm_block (MirageParserMds *self, guint32 dpm_block_offset)
 {
     guint8 *cur_ptr;
 
@@ -240,7 +240,7 @@ static void mirage_parser_mds_parse_dpm_block (MirageParser_MDS *self, guint32 d
     mirage_disc_set_dpm_data(MIRAGE_DISC(self->priv->disc), dpm_start_sector, dpm_resolution, dpm_num_entries, dpm_data);
 }
 
-static void mirage_parser_mds_parse_dpm_data (MirageParser_MDS *self)
+static void mirage_parser_mds_parse_dpm_data (MirageParserMds *self)
 {
     guint8 *cur_ptr;
 
@@ -278,7 +278,7 @@ static void mirage_parser_mds_parse_dpm_data (MirageParser_MDS *self)
     }
 }
 
-static void mirage_parser_mds_parse_disc_structures (MirageParser_MDS *self)
+static void mirage_parser_mds_parse_disc_structures (MirageParserMds *self)
 {
     guint8 *cur_ptr;
 
@@ -342,7 +342,7 @@ static void mirage_parser_mds_parse_disc_structures (MirageParser_MDS *self)
     }
 }
 
-static void mirage_parser_mds_parse_bca (MirageParser_MDS *self)
+static void mirage_parser_mds_parse_bca (MirageParserMds *self)
 {
     guint8 *cur_ptr;
 
@@ -356,7 +356,7 @@ static void mirage_parser_mds_parse_bca (MirageParser_MDS *self)
     }
 }
 
-static gchar *mirage_parser_mds_get_track_filename (MirageParser_MDS *self, MDS_Footer *footer_block, GError **error)
+static gchar *mirage_parser_mds_get_track_filename (MirageParserMds *self, MDS_Footer *footer_block, GError **error)
 {
     gchar *tmp_mdf_filename;
     gchar *mdf_filename;
@@ -395,7 +395,7 @@ static gchar *mirage_parser_mds_get_track_filename (MirageParser_MDS *self, MDS_
     return mdf_filename;
 }
 
-static gboolean mirage_parser_mds_parse_track_entries (MirageParser_MDS *self, MDS_SessionBlock *session_block, GError **error)
+static gboolean mirage_parser_mds_parse_track_entries (MirageParserMds *self, MDS_SessionBlock *session_block, GError **error)
 {
     GObject *session;
     guint8 *cur_ptr;
@@ -648,7 +648,7 @@ static gboolean mirage_parser_mds_parse_track_entries (MirageParser_MDS *self, M
     return TRUE;
 }
 
-static gboolean mirage_parser_mds_parse_sessions (MirageParser_MDS *self, GError **error)
+static gboolean mirage_parser_mds_parse_sessions (MirageParserMds *self, GError **error)
 {
     guint8 *cur_ptr;
 
@@ -721,7 +721,7 @@ static gboolean mirage_parser_mds_parse_sessions (MirageParser_MDS *self, GError
     return TRUE;
 }
 
-static gboolean mirage_parser_mds_load_disc (MirageParser_MDS *self, GError **error)
+static gboolean mirage_parser_mds_load_disc (MirageParserMds *self, GError **error)
 {
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "\n");
 
@@ -756,7 +756,7 @@ static gboolean mirage_parser_mds_load_disc (MirageParser_MDS *self, GError **er
 \**********************************************************************/
 static GObject *mirage_parser_mds_load_image (MirageParser *_self, gchar **filenames, GError **error)
 {
-    MirageParser_MDS *self = MIRAGE_PARSER_MDS(_self);
+    MirageParserMds *self = MIRAGE_PARSER_MDS(_self);
 
     gboolean succeeded = TRUE;
     guint8 *cur_ptr;
@@ -878,7 +878,7 @@ end:
 /**********************************************************************\
  *                             Object init                            *
 \**********************************************************************/
-G_DEFINE_DYNAMIC_TYPE(MirageParser_MDS, mirage_parser_mds, MIRAGE_TYPE_PARSER);
+G_DEFINE_DYNAMIC_TYPE(MirageParserMds, mirage_parser_mds, MIRAGE_TYPE_PARSER);
 
 void mirage_parser_mds_type_register (GTypeModule *type_module)
 {
@@ -886,7 +886,7 @@ void mirage_parser_mds_type_register (GTypeModule *type_module)
 }
 
 
-static void mirage_parser_mds_init (MirageParser_MDS *self)
+static void mirage_parser_mds_init (MirageParserMds *self)
 {
     self->priv = MIRAGE_PARSER_MDS_GET_PRIVATE(self);
 
@@ -903,7 +903,7 @@ static void mirage_parser_mds_init (MirageParser_MDS *self)
 
 static void mirage_parser_mds_finalize (GObject *gobject)
 {
-    MirageParser_MDS *self = MIRAGE_PARSER_MDS(gobject);
+    MirageParserMds *self = MIRAGE_PARSER_MDS(gobject);
 
     g_free(self->priv->mds_filename);
     g_free(self->priv->mds_data);
@@ -912,7 +912,7 @@ static void mirage_parser_mds_finalize (GObject *gobject)
     return G_OBJECT_CLASS(mirage_parser_mds_parent_class)->finalize(gobject);
 }
 
-static void mirage_parser_mds_class_init (MirageParser_MDSClass *klass)
+static void mirage_parser_mds_class_init (MirageParserMdsClass *klass)
 {
     GObjectClass *gobject_class = G_OBJECT_CLASS(klass);
     MirageParserClass *parser_class = MIRAGE_PARSER_CLASS(klass);
@@ -922,9 +922,9 @@ static void mirage_parser_mds_class_init (MirageParser_MDSClass *klass)
     parser_class->load_image = mirage_parser_mds_load_image;
 
     /* Register private structure */
-    g_type_class_add_private(klass, sizeof(MirageParser_MDSPrivate));
+    g_type_class_add_private(klass, sizeof(MirageParserMdsPrivate));
 }
 
-static void mirage_parser_mds_class_finalize (MirageParser_MDSClass *klass G_GNUC_UNUSED)
+static void mirage_parser_mds_class_finalize (MirageParserMdsClass *klass G_GNUC_UNUSED)
 {
 }

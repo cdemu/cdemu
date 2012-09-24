@@ -24,25 +24,25 @@
 G_BEGIN_DECLS
 
 #define MIRAGE_TYPE_PARSER_CCD            (mirage_parser_ccd_get_type())
-#define MIRAGE_PARSER_CCD(obj)            (G_TYPE_CHECK_INSTANCE_CAST((obj), MIRAGE_TYPE_PARSER_CCD, MirageParser_CCD))
-#define MIRAGE_PARSER_CCD_CLASS(klass)    (G_TYPE_CHECK_CLASS_CAST((klass), MIRAGE_TYPE_PARSER_CCD, MirageParser_CCDClass))
+#define MIRAGE_PARSER_CCD(obj)            (G_TYPE_CHECK_INSTANCE_CAST((obj), MIRAGE_TYPE_PARSER_CCD, MirageParserCcd))
+#define MIRAGE_PARSER_CCD_CLASS(klass)    (G_TYPE_CHECK_CLASS_CAST((klass), MIRAGE_TYPE_PARSER_CCD, MirageParserCcdClass))
 #define MIRAGE_IS_PARSER_CCD(obj)         (G_TYPE_CHECK_INSTANCE_TYPE((obj), MIRAGE_TYPE_PARSER_CCD))
 #define MIRAGE_IS_PARSER_CCD_CLASS(klass) (G_TYPE_CHECK_CLASS_TYPE((klass), MIRAGE_TYPE_PARSER_CCD))
-#define MIRAGE_PARSER_CCD_GET_CLASS(obj)  (G_TYPE_INSTANCE_GET_CLASS((obj), MIRAGE_TYPE_PARSER_CCD, MirageParser_CCDClass))
+#define MIRAGE_PARSER_CCD_GET_CLASS(obj)  (G_TYPE_INSTANCE_GET_CLASS((obj), MIRAGE_TYPE_PARSER_CCD, MirageParserCcdClass))
 
-typedef struct _MirageParser_CCD           MirageParser_CCD;
-typedef struct _MirageParser_CCDClass      MirageParser_CCDClass;
-typedef struct _MirageParser_CCDPrivate    MirageParser_CCDPrivate;
+typedef struct _MirageParserCcd           MirageParserCcd;
+typedef struct _MirageParserCcdClass      MirageParserCcdClass;
+typedef struct _MirageParserCcdPrivate    MirageParserCcdPrivate;
 
-struct _MirageParser_CCD
+struct _MirageParserCcd
 {
     MirageParser parent_instace;
 
     /*< private >*/
-    MirageParser_CCDPrivate *priv;
+    MirageParserCcdPrivate *priv;
 };
 
-struct _MirageParser_CCDClass
+struct _MirageParserCcdClass
 {
     MirageParserClass parent_class;
 };

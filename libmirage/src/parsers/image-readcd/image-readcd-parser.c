@@ -25,9 +25,9 @@
 /**********************************************************************\
  *                          Private structure                         *
 \**********************************************************************/
-#define MIRAGE_PARSER_READCD_GET_PRIVATE(obj) (G_TYPE_INSTANCE_GET_PRIVATE((obj), MIRAGE_TYPE_PARSER_READCD, MirageParser_READCDPrivate))
+#define MIRAGE_PARSER_READCD_GET_PRIVATE(obj) (G_TYPE_INSTANCE_GET_PRIVATE((obj), MIRAGE_TYPE_PARSER_READCD, MirageParserReadcdPrivate))
 
-struct _MirageParser_READCDPrivate {
+struct _MirageParserReadcdPrivate {
     GObject *disc;
 
     gint cur_lba;
@@ -43,7 +43,7 @@ struct _MirageParser_READCDPrivate {
 };
 
 
-static gboolean mirage_parser_readcd_is_file_valid (MirageParser_READCD *self, const gchar *filename, GError **error)
+static gboolean mirage_parser_readcd_is_file_valid (MirageParserReadcd *self, const gchar *filename, GError **error)
 {
     gboolean succeeded;
     GObject *stream;
@@ -90,7 +90,7 @@ end:
     return succeeded;
 }
 
-static gboolean mirage_parser_readcd_determine_track_mode (MirageParser_READCD *self, GObject *track, GError **error)
+static gboolean mirage_parser_readcd_determine_track_mode (MirageParserReadcd *self, GObject *track, GError **error)
 {
     GObject *fragment;
     guint8 *buf = g_try_malloc(2532);
@@ -131,7 +131,7 @@ error:
     return FALSE;
 }
 
-static gboolean mirage_parser_readcd_finish_previous_track (MirageParser_READCD *self, gint next_address)
+static gboolean mirage_parser_readcd_finish_previous_track (MirageParserReadcd *self, gint next_address)
 {
     if (self->priv->cur_lba != -1) {
         gint length = next_address - self->priv->cur_lba;
@@ -154,7 +154,7 @@ static gboolean mirage_parser_readcd_finish_previous_track (MirageParser_READCD 
 }
 
 
-static gboolean mirage_parser_readcd_parse_toc_entry (MirageParser_READCD *self, guint8 *entry, GError **error)
+static gboolean mirage_parser_readcd_parse_toc_entry (MirageParserReadcd *self, guint8 *entry, GError **error)
 {
     gboolean succeeded = TRUE;
 
@@ -301,7 +301,7 @@ end:
     return succeeded;
 }
 
-static gboolean mirage_parser_readcd_parse_toc (MirageParser_READCD *self, const gchar *filename, GError **error)
+static gboolean mirage_parser_readcd_parse_toc (MirageParserReadcd *self, const gchar *filename, GError **error)
 {
     gboolean succeeded = TRUE;
     GObject *stream;
@@ -430,7 +430,7 @@ end:
 \**********************************************************************/
 static GObject *mirage_parser_readcd_load_image (MirageParser *_self, gchar **filenames, GError **error)
 {
-    MirageParser_READCD *self = MIRAGE_PARSER_READCD(_self);
+    MirageParserReadcd *self = MIRAGE_PARSER_READCD(_self);
     gboolean succeeded = TRUE;
 
     /* Check if file can be loaded */
@@ -492,7 +492,7 @@ end:
 /**********************************************************************\
  *                             Object init                            *
 \**********************************************************************/
-G_DEFINE_DYNAMIC_TYPE(MirageParser_READCD, mirage_parser_readcd, MIRAGE_TYPE_PARSER);
+G_DEFINE_DYNAMIC_TYPE(MirageParserReadcd, mirage_parser_readcd, MIRAGE_TYPE_PARSER);
 
 void mirage_parser_readcd_type_register (GTypeModule *type_module)
 {
@@ -500,7 +500,7 @@ void mirage_parser_readcd_type_register (GTypeModule *type_module)
 }
 
 
-static void mirage_parser_readcd_init (MirageParser_READCD *self)
+static void mirage_parser_readcd_init (MirageParserReadcd *self)
 {
     self->priv = MIRAGE_PARSER_READCD_GET_PRIVATE(self);
 
@@ -517,7 +517,7 @@ static void mirage_parser_readcd_init (MirageParser_READCD *self)
 
 static void mirage_parser_readcd_dispose (GObject *gobject)
 {
-    MirageParser_READCD *self = MIRAGE_PARSER_READCD(gobject);
+    MirageParserReadcd *self = MIRAGE_PARSER_READCD(gobject);
 
     if (self->priv->data_stream) {
         g_object_unref(self->priv->data_stream);
@@ -530,7 +530,7 @@ static void mirage_parser_readcd_dispose (GObject *gobject)
 
 static void mirage_parser_readcd_finalize (GObject *gobject)
 {
-    MirageParser_READCD *self = MIRAGE_PARSER_READCD(gobject);
+    MirageParserReadcd *self = MIRAGE_PARSER_READCD(gobject);
 
     g_free(self->priv->data_filename);
 
@@ -538,7 +538,7 @@ static void mirage_parser_readcd_finalize (GObject *gobject)
     return G_OBJECT_CLASS(mirage_parser_readcd_parent_class)->finalize(gobject);
 }
 
-static void mirage_parser_readcd_class_init (MirageParser_READCDClass *klass)
+static void mirage_parser_readcd_class_init (MirageParserReadcdClass *klass)
 {
     GObjectClass *gobject_class = G_OBJECT_CLASS(klass);
     MirageParserClass *parser_class = MIRAGE_PARSER_CLASS(klass);
@@ -549,9 +549,9 @@ static void mirage_parser_readcd_class_init (MirageParser_READCDClass *klass)
     parser_class->load_image = mirage_parser_readcd_load_image;
 
     /* Register private structure */
-    g_type_class_add_private(klass, sizeof(MirageParser_READCDPrivate));
+    g_type_class_add_private(klass, sizeof(MirageParserReadcdPrivate));
 }
 
-static void mirage_parser_readcd_class_finalize (MirageParser_READCDClass *klass G_GNUC_UNUSED)
+static void mirage_parser_readcd_class_finalize (MirageParserReadcdClass *klass G_GNUC_UNUSED)
 {
 }

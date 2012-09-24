@@ -24,25 +24,25 @@
 G_BEGIN_DECLS
 
 #define MIRAGE_TYPE_PARSER_CIF            (mirage_parser_cif_get_type())
-#define MIRAGE_PARSER_CIF(obj)            (G_TYPE_CHECK_INSTANCE_CAST((obj), MIRAGE_TYPE_PARSER_CIF, MirageParser_CIF))
-#define MIRAGE_PARSER_CIF_CLASS(klass)    (G_TYPE_CHECK_CLASS_CAST((klass), MIRAGE_TYPE_PARSER_CIF, MirageParser_CIFClass))
+#define MIRAGE_PARSER_CIF(obj)            (G_TYPE_CHECK_INSTANCE_CAST((obj), MIRAGE_TYPE_PARSER_CIF, MirageParserCif))
+#define MIRAGE_PARSER_CIF_CLASS(klass)    (G_TYPE_CHECK_CLASS_CAST((klass), MIRAGE_TYPE_PARSER_CIF, MirageParserCifClass))
 #define MIRAGE_IS_PARSER_CIF(obj)         (G_TYPE_CHECK_INSTANCE_TYPE((obj), MIRAGE_TYPE_PARSER_CIF))
 #define MIRAGE_IS_PARSER_CIF_CLASS(klass) (G_TYPE_CHECK_CLASS_TYPE((klass), MIRAGE_TYPE_PARSER_CIF))
-#define MIRAGE_PARSER_CIF_GET_CLASS(obj)  (G_TYPE_INSTANCE_GET_CLASS((obj), MIRAGE_TYPE_PARSER_CIF, MirageParser_CIFClass))
+#define MIRAGE_PARSER_CIF_GET_CLASS(obj)  (G_TYPE_INSTANCE_GET_CLASS((obj), MIRAGE_TYPE_PARSER_CIF, MirageParserCifClass))
 
-typedef struct _MirageParser_CIF           MirageParser_CIF;
-typedef struct _MirageParser_CIFClass      MirageParser_CIFClass;
-typedef struct _MirageParser_CIFPrivate    MirageParser_CIFPrivate;
+typedef struct _MirageParserCif           MirageParserCif;
+typedef struct _MirageParserCifClass      MirageParserCifClass;
+typedef struct _MirageParserCifPrivate    MirageParserCifPrivate;
 
-struct _MirageParser_CIF
+struct _MirageParserCif
 {
     MirageParser parent_instance;
 
     /*< private >*/
-    MirageParser_CIFPrivate *priv;
+    MirageParserCifPrivate *priv;
 };
 
-struct _MirageParser_CIFClass
+struct _MirageParserCifClass
 {
     MirageParserClass parent_class;
 };
