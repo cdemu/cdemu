@@ -20,86 +20,83 @@
 #ifndef __MIRAGE_DISC_STRUCTURES_H__
 #define __MIRAGE_DISC_STRUCTURES_H__
 
-#define BIG_ENDIAN_BITFIELD (G_BYTE_ORDER == G_BIG_ENDIAN)
-#define LITTLE_ENDIAN_BITFIELD (G_BYTE_ORDER == G_LITTLE_ENDIAN)
-
 
 G_BEGIN_DECLS
 
-/* Note: although at the moment these have the same layout as structures defined 
+/* Note: although at the moment these have the same layout as structures defined
    in MMC-3, they are libMirage's internal representation of disc structures and
    could thus change any time */
 
 typedef struct
 {
-    #if BIG_ENDIAN_BITFIELD
+    #if G_BYTE_ORDER == G_BIG_ENDIAN
         guint8  book_type   : 4;
         guint8  part_ver    : 4;
-    #elif LITTLE_ENDIAN_BITFIELD
+    #else
         guint8  part_ver    : 4;
         guint8  book_type   : 4;
     #endif
-    
-    #if BIG_ENDIAN_BITFIELD
+
+    #if G_BYTE_ORDER == G_BIG_ENDIAN
         guint8  disc_size   : 4;
         guint8  max_rate    : 4;
-    #elif LITTLE_ENDIAN_BITFIELD
+    #else
         guint8  max_rate    : 4;
         guint8  disc_size   : 4;
     #endif
-    
-    #if BIG_ENDIAN_BITFIELD
+
+    #if G_BYTE_ORDER == G_BIG_ENDIAN
         guint8  __dummy1__  : 1;
         guint8  num_layers  : 2;
         guint8  track_path  : 1;
         guint8  layer_type  : 4;
-    #elif LITTLE_ENDIAN_BITFIELD
+    #else
         guint8  layer_type  : 4;
         guint8  track_path  : 1;
         guint8  num_layers  : 2;
         guint8  __dummy1__  : 1;
     #endif
-    
-    #if BIG_ENDIAN_BITFIELD
+
+    #if G_BYTE_ORDER == G_BIG_ENDIAN
         guint8  linear_density  : 4;
         guint8  track_density   : 4;
-    #elif LITTLE_ENDIAN_BITFIELD
+    #else
         guint8  track_density   : 4;
         guint8  linear_density  : 4;
     #endif
-    
-    #if BIG_ENDIAN_BITFIELD
+
+    #if G_BYTE_ORDER == G_BIG_ENDIAN
         guint32 __dummy2__      : 8;
         guint32 data_start      : 24;
-    #elif LITTLE_ENDIAN_BITFIELD
+    #else
         guint32 data_start      : 24;
         guint32 __dummy2__      : 8;
     #endif
-    
-    #if BIG_ENDIAN_BITFIELD
+
+    #if G_BYTE_ORDER == G_BIG_ENDIAN
         guint32 __dummy3__      : 8;
         guint32 data_end        : 24;
-    #elif LITTLE_ENDIAN_BITFIELD
+    #else
         guint32 data_end        : 24;
         guint32 __dummy3__      : 8;
     #endif
-    
-    #if BIG_ENDIAN_BITFIELD
+
+    #if G_BYTE_ORDER == G_BIG_ENDIAN
         guint32 __dummy4__      : 8;
         guint32 layer0_end      : 24;
-    #elif LITTLE_ENDIAN_BITFIELD
+    #else
         guint32 layer0_end      : 24;
         guint32 __dummy4__      : 8;
     #endif
-    
-    #if BIG_ENDIAN_BITFIELD
+
+    #if G_BYTE_ORDER == G_BIG_ENDIAN
         guint8  bca             : 1;
         guint8  __dummy5__      : 7;
-    #elif LITTLE_ENDIAN_BITFIELD
+    #else
         guint8  __dummy5__      : 7;
         guint8  bca             : 1;
     #endif
-    
+
     guint8 media_specific[2031];
 } MIRAGE_DiscStruct_PhysInfo;
 
@@ -108,7 +105,7 @@ typedef struct
    guint8   copy_protection;
    guint8   region_info;
    guint8   __dummy1__;
-   guint8   __dummy2__;    
+   guint8   __dummy2__;
 } MIRAGE_DiscStruct_Copyright;
 
 typedef struct
