@@ -439,7 +439,7 @@ static gint mirage_fragment_daa_inflate_lzma (MirageFragmentDaa *self, guint8 *i
         case 1: {
             /* x86 BCJ filter */
             guint32 state;
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: applying x86 BCJ filter to decompressed data\n", __debug__);
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_FRAGMENT, "%s: applying x86 BCJ filter to decompressed data\n", __debug__);
             x86_Convert_Init(state);
             x86_Convert(self->priv->buffer, outlen, 0, &state, 0);
         }
@@ -679,7 +679,7 @@ static gboolean mirage_fragment_daa_parse_descriptor_encryption (MirageFragmentD
     }
     daa_descriptor_encryption_fix_endian(&descriptor);
 
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: encryption type: 0x%X\n", __debug__, descriptor.encryption_type);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: encryption type: 0x%X\n", __debug__, descriptor.encryption_type);
     if (descriptor.encryption_type != 0) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: type of encryption 0x%d might not be supported!\n", __debug__, descriptor.encryption_type);
     }
@@ -771,13 +771,13 @@ static gboolean mirage_fragment_daa_parse_descriptors (MirageFragmentDaa *self, 
             }
             case DESCRIPTOR_COMMENT: /* FIXME */
             default: {
-                MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: -> unhandled block type 0x%X; skipping\n", __debug__, descriptor_header.type);
+                MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: -> unhandled block type 0x%X; skipping\n", __debug__, descriptor_header.type);
                 g_seekable_seek(G_SEEKABLE(stream), descriptor_header.length, G_SEEK_CUR, NULL, NULL);
                 break;
             }
         }
 
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "\n");
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "\n");
     }
 
     return TRUE;
