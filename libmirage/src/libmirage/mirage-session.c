@@ -1219,7 +1219,7 @@ static gboolean set_cdtext_data (gint langcode, gint type, gint track_number, gu
  * @error: (out) (allow-none): location to store error, or %NULL
  *
  * <para>
- * Sets CD-TEXT data for session. It internally creates and uses #MIRAGE_CDTextEncDec
+ * Sets CD-TEXT data for session. It internally creates and uses #MirageCdTextCoder
  * object as a decoder to decode data in @data. Decoded data is stored in #MirageLanguage
  * objects in both session and its tracks. Therefore session must have same number of tracks
  * as the encoded CD-TEXT data.
@@ -1260,7 +1260,7 @@ gboolean mirage_session_set_cdtext_data (MirageSession *self, guint8 *data, gint
  * @error: (out) (allow-none): location to store error, or %NULL
  *
  * <para>
- * Returns CD-TEXT data for session. It internally creates and uses #MIRAGE_CDTextEncDec
+ * Returns CD-TEXT data for session. It internally creates and uses #MirageCdTextCoder
  * object as an encoder to encode data from #MirageLanguage objects from both session and
  * its tracks. Buffer with encoded data is stored in @data; it should be freed with
  * g_free() when no longer needed.

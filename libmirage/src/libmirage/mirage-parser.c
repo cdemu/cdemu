@@ -163,7 +163,7 @@ GObject *mirage_parser_load_image (MirageParser *self, gchar **filenames, GError
  * simple parsers whose image files don't provide medium type information.
  * </para>
  *
- * Returns: a value from #MIRAGE_MediumTypes, according to the guessed medium type.
+ * Returns: a value from #MirageMediumTypes, according to the guessed medium type.
  **/
 gint mirage_parser_guess_medium_type (MirageParser *self, GObject *disc)
 {

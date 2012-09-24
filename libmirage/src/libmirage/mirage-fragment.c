@@ -456,7 +456,7 @@ gint mirage_fragment_iface_binary_track_file_get_sectsize (MirageFragmentIfaceBi
  * @format: (in): track file data format
  *
  * <para>
- * Sets track file data format. @format must be one of #MIRAGE_BINARY_TrackFile_Format.
+ * Sets track file data format. @format must be one of #MirageTrackFileFormat.
  * </para>
  **/
 void mirage_fragment_iface_binary_track_file_set_format (MirageFragmentIfaceBinary *self, gint format)
@@ -599,8 +599,8 @@ gint mirage_fragment_iface_binary_subchannel_file_get_sectsize (MirageFragmentIf
  * @format: (in): subchannel file data format
  *
  * <para>
- * Sets subchannel file data format. @format must be a combination of ž
- * #MIRAGE_BINARY_SubchannelFile_Format.
+ * Sets subchannel file data format. @format must be a combination of
+ * #MirageSubchannelFileFormat.
  * </para>
  **/
 void mirage_fragment_iface_binary_subchannel_file_set_format (MirageFragmentIfaceBinary *self, gint format)
