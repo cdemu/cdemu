@@ -125,7 +125,7 @@ static void image_analyzer_sector_read_ui_callback_read (GtkWidget *button G_GNU
 
     /* Sector address */
     image_analyzer_read_sector_append_text(self, "tag_section", "Sector address: ");
-    image_analyzer_read_sector_append_text(self, NULL, "%X (%d)\n", address, address);
+    image_analyzer_read_sector_append_text(self, NULL, "0x%X (%d)\n", address, address);
 
     /* Sector address MSF */
     address_msf = mirage_helper_lba2msf_str(address, TRUE);

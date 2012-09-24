@@ -109,18 +109,18 @@ static void image_analyzer_sector_analysis_ui_callback_analyze (GtkWidget *butto
                 /* Get sector */
                 sector = mirage_track_get_sector(MIRAGE_TRACK(track), address, TRUE, NULL);
                 if (!sector) {
-                    image_analyzer_sector_analysis_append_text(self, "tag_section", "Sector %d (%X): ", address, address);
+                    image_analyzer_sector_analysis_append_text(self, "tag_section", "Sector %d (0x%X): ", address, address);
                     image_analyzer_sector_analysis_append_text(self, NULL, "FAILED TO GET SECTOR!\n");
                     continue;
                 }
 
                 if (!mirage_sector_verify_lec(MIRAGE_SECTOR(sector))) {
-                    image_analyzer_sector_analysis_append_text(self, "tag_section", "Sector %d (%X): ", address, address);
+                    image_analyzer_sector_analysis_append_text(self, "tag_section", "Sector %d (0x%X): ", address, address);
                     image_analyzer_sector_analysis_append_text(self, NULL, "L-EC error\n");
                 }
 
                  if (!mirage_sector_verify_subchannel_crc(MIRAGE_SECTOR(sector))) {
-                    image_analyzer_sector_analysis_append_text(self, "tag_section", "Sector %d (%X): ", address, address);
+                    image_analyzer_sector_analysis_append_text(self, "tag_section", "Sector %d (0x%X): ", address, address);
                     image_analyzer_sector_analysis_append_text(self, NULL, "Subchannel CRC error\n");
                 }
 

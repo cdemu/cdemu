@@ -65,6 +65,12 @@ static void image_analyzer_application_set_debug_to_stdout (IMAGE_ANALYZER_Appli
     image_analyzer_log_window_set_debug_to_stdout(IMAGE_ANALYZER_LOG_WINDOW(self->priv->dialog_log), enabled);
 }
 
+static void image_analyzer_application_set_debug_mask (IMAGE_ANALYZER_Application *self, gint debug_mask)
+{
+    /* Debug mask */
+    mirage_debug_context_set_debug_mask (MIRAGE_DEBUG_CONTEXT(self->priv->debug_context), debug_mask);
+}
+
 static void image_analyzer_application_change_debug_mask (IMAGE_ANALYZER_Application *self)
 {
     GtkWidget *dialog, *content_area;
@@ -794,10 +800,11 @@ static void setup_gui (IMAGE_ANALYZER_Application *self)
 /**********************************************************************\
  *                             Public API                             *
 \**********************************************************************/
-gboolean image_analyzer_application_run (IMAGE_ANALYZER_Application *self, gchar **open_image, gboolean debug_to_stdout)
+gboolean image_analyzer_application_run (IMAGE_ANALYZER_Application *self, gchar **open_image, gboolean debug_to_stdout, gint debug_mask_initial)
 {
-    /* Set the 'Mirror debug to stdout' flag */
+    /* Set the debug flags and masks */
     image_analyzer_application_set_debug_to_stdout(self, debug_to_stdout);
+    image_analyzer_application_set_debug_mask(self, debug_mask_initial);
 
     /* Open image, if provided */
     if (g_strv_length(open_image)) {
