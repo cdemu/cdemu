@@ -49,6 +49,15 @@ typedef enum
     FORMAT_VERSION2 = 0x110,
 } DAA_FormatVersion;
 
+typedef struct {
+    guint8 profile; /* PowerISO compression setting: 1 = "better", 2 = "best" */
+    guint32 chunk_table_compressed; /*  */
+    guint8 chunk_table_bit_settings; /* Bit sizes for chunk table entries */
+    guint8 lzma_filter; /* LZMA filter type: 0 = no filter, 1 = BCJ x86 */
+    guint8 lzma_props[5]; /* LZMA props: 4-byte dictionary size, 1-byte lc/lp/pb */
+    guint8 reserved[4];
+} DAA_Format2Header; /* size: 16 bytes */
+
 typedef struct
 {
     gchar signature[16]; /* Signature */
@@ -60,7 +69,7 @@ typedef struct
     guint32 chunk_size; /* Uncompressed size of each chunk */
     guint64 iso_size; /* Size of the ISO file */
     guint64 daa_size; /* Size of the DAA file */
-    guint8 hdata[16]; /* Data used in 0x110 format */
+    DAA_Format2Header format2; /* Additional data, used in format 2 */
     guint32 crc; /* CRC32 over the first 72 bytes of main file */
 } DAA_MainHeader; /* size: 76 bytes */
 
@@ -68,7 +77,7 @@ typedef struct
 {
     gchar signature[16]; /* Signature */
     guint32 chunk_data_offset; /* Offset of zipped chunks */
-    guint8 hdata[16]; /* Data used in 0x110 format */
+    DAA_Format2Header format2; /* Additional data, used in format 2 */
     guint32 crc; /* CRC32 over the first 36 bytes of part file */
 } DAA_PartHeader; /* size: 40 bytes */
 

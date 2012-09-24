@@ -118,6 +118,11 @@ static ISzAlloc lzma_allocator = { lzma_alloc, lzma_free };
 /**********************************************************************\
  *                    Endian-conversion functions                     *
 \**********************************************************************/
+static inline void daa_format2_header_fix_endian (DAA_Format2Header *header)
+{
+    header->chunk_table_compressed = GUINT32_FROM_LE(header->chunk_table_compressed);
+}
+
 static inline void daa_main_header_fix_endian (DAA_MainHeader *header)
 {
     header->chunk_table_offset = GUINT32_FROM_LE(header->chunk_table_offset);
@@ -128,12 +133,14 @@ static inline void daa_main_header_fix_endian (DAA_MainHeader *header)
     header->chunk_size = GUINT32_FROM_LE(header->chunk_size);
     header->iso_size = GUINT64_FROM_LE(header->iso_size);
     header->daa_size = GUINT64_FROM_LE(header->daa_size);
+    daa_format2_header_fix_endian(&header->format2);
     header->crc = GUINT32_FROM_LE(header->crc);
 }
 
 static inline void daa_part_header_fix_endian (DAA_PartHeader *header)
 {
     header->chunk_data_offset = GUINT32_FROM_LE(header->chunk_data_offset);
+    daa_format2_header_fix_endian(&header->format2);
     header->crc = GUINT32_FROM_LE(header->crc);
 }
 
@@ -401,7 +408,7 @@ static gint mirage_fragment_daa_inflate_zlib (MIRAGE_Fragment_DAA *self, guint8 
 static gboolean mirage_fragment_daa_initialize_lzma (MIRAGE_Fragment_DAA *self, GError **error G_GNUC_UNUSED)
 {
     LzmaDec_Construct(&self->priv->lzma_decoder);
-    LzmaDec_Allocate(&self->priv->lzma_decoder, self->priv->header.hdata + 7, LZMA_PROPS_SIZE, &lzma_allocator);
+    LzmaDec_Allocate(&self->priv->lzma_decoder, self->priv->header.format2.lzma_props, LZMA_PROPS_SIZE, &lzma_allocator);
     return TRUE;
 }
 
@@ -423,11 +430,23 @@ static gint mirage_fragment_daa_inflate_lzma (MIRAGE_Fragment_DAA *self, guint8 
         return 0;
     }
 
-    /* BCJ */
-    if (1) {
-        guint32 state;
-        x86_Convert_Init(state);
-        x86_Convert(self->priv->buffer, outlen, 0, &state, 0);
+    /* Filter */
+    switch (self->priv->header.format2.lzma_filter) {
+        case 0: {
+            /* No filter */
+            break;
+        }
+        case 1: {
+            /* x86 BCJ filter */
+            guint32 state;
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: applying x86 BCJ filter to decompressed data\n", __debug__);
+            x86_Convert_Init(state);
+            x86_Convert(self->priv->buffer, outlen, 0, &state, 0);
+        }
+        default: {
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: unhandled LZMA filter type %d!\n", __debug__, self->priv->header.format2.lzma_filter);
+
+        }
     }
 
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_FRAGMENT, "%s: inflated: %ld bytes, consumed: %ld bytes\n", __debug__, outlen, inlen);
@@ -470,7 +489,13 @@ static gboolean mirage_fragment_daa_read_main_header (MIRAGE_Fragment_DAA *self,
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   - chunk_size: 0x%X (%d)\n", __debug__, header->chunk_size, header->chunk_size);
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   - iso_size: 0x%llX (%lld)\n", __debug__, header->iso_size, header->iso_size);
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   - daa_size: 0x%llX (%lld)\n", __debug__, header->daa_size, header->daa_size);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   - hdata: %02X %02X %02X %02X %02X %02X %02X %02X %02X %02X %02X %02X %02X %02X %02X %02X\n", __debug__, header->hdata[0], header->hdata[1], header->hdata[2], header->hdata[3], header->hdata[4], header->hdata[5], header->hdata[6], header->hdata[7], header->hdata[8], header->hdata[9], header->hdata[10], header->hdata[11], header->hdata[12], header->hdata[13], header->hdata[14], header->hdata[15]);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   - format2 header:\n", __debug__);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:       - profile: %d\n", __debug__, header->format2.profile);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:       - chunk_table_compressed: 0x%lX (%ld)\n", __debug__, header->format2.chunk_table_compressed, header->format2.chunk_table_compressed);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:       - chunk_table_bit_settings: 0x%X (%d)\n", __debug__, header->format2.chunk_table_bit_settings, header->format2.chunk_table_bit_settings);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:       - lzma_filter: %d\n", __debug__, header->format2.lzma_filter);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:       - lzma_props: %02X %02X %02X %02X %02X\n", __debug__, header->format2.lzma_props[0], header->format2.lzma_props[1], header->format2.lzma_props[2], header->format2.lzma_props[3], header->format2.lzma_props[4]);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:       - reserved: %02X %02X %02X %02X\n", __debug__, header->format2.reserved[0], header->format2.reserved[1], header->format2.reserved[2], header->format2.reserved[3]);
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   - crc: 0x%X (computed: 0x%X)\n", __debug__, header->crc, crc);
 
     if (crc != header->crc) {
@@ -506,7 +531,13 @@ static gboolean mirage_fragment_daa_read_part_header (MIRAGE_Fragment_DAA *self,
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: DAA part file header:\n", __debug__);
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   - signature: %.16s\n", __debug__, header->signature);
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   - chunk_data_offset: 0x%X (%d)\n", __debug__, header->chunk_data_offset, header->chunk_data_offset);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   - hdata: %02X %02X %02X %02X %02X %02X %02X %02X %02X %02X %02X %02X %02X %02X %02X %02X\n", __debug__, header->hdata[0], header->hdata[1], header->hdata[2], header->hdata[3], header->hdata[4], header->hdata[5], header->hdata[6], header->hdata[7], header->hdata[8], header->hdata[9], header->hdata[10], header->hdata[11], header->hdata[12], header->hdata[13], header->hdata[14], header->hdata[15]);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   - format2 header:\n", __debug__);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:       - profile: %d\n", __debug__, header->format2.profile);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:       - chunk_table_compressed: 0x%lX (%ld)\n", __debug__, header->format2.chunk_table_compressed, header->format2.chunk_table_compressed);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:       - chunk_table_bit_settings: 0x%X (%d)\n", __debug__, header->format2.chunk_table_bit_settings, header->format2.chunk_table_bit_settings);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:       - lzma_filter: %d\n", __debug__, header->format2.lzma_filter);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:       - lzma_props: %02X %02X %02X %02X %02X\n", __debug__, header->format2.lzma_props[0], header->format2.lzma_props[1], header->format2.lzma_props[2], header->format2.lzma_props[3], header->format2.lzma_props[4]);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:       - reserved: %02X %02X %02X %02X\n", __debug__, header->format2.reserved[0], header->format2.reserved[1], header->format2.reserved[2], header->format2.reserved[3]);
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   - crc: 0x%X (computed: 0x%X)\n", __debug__, header->crc, crc);
 
     if (crc != header->crc) {
@@ -1070,8 +1101,8 @@ static gboolean mirage_fragment_daa_parse_daa_file (MIRAGE_Fragment_DAA *self, G
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: actual chunk_size: 0x%X (%d)\n", __debug__, self->priv->chunk_size, self->priv->chunk_size);
 
             /* Decipher bit size for type and length fields of chunk table */
-            bsize_type = self->priv->header.hdata[5] & 7;
-            bsize_len  = self->priv->header.hdata[5] >> 3;
+            bsize_type = self->priv->header.format2.chunk_table_bit_settings & 7;
+            bsize_len  = self->priv->header.format2.chunk_table_bit_settings >> 3;
             if (bsize_len) {
                 bsize_len += 10;
             }
