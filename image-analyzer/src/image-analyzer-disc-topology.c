@@ -36,7 +36,7 @@
 /**********************************************************************\
  *                               Helpers                              *
 \**********************************************************************/
-static gboolean image_analyzer_disc_topology_run_gnuplot (IMAGE_ANALYZER_DiscTopology *self, GError **error)
+static gboolean image_analyzer_disc_topology_run_gnuplot (ImageAnalyzerDiscTopology *self, GError **error)
 {
     gchar *argv[] = { "gnuplot", NULL };
     gboolean ret;
@@ -82,7 +82,7 @@ static gboolean image_analyzer_disc_topology_run_gnuplot (IMAGE_ANALYZER_DiscTop
     return TRUE;
 }
 
-static gboolean image_analyzer_disc_topology_refresh (IMAGE_ANALYZER_DiscTopology *self, GObject *disc)
+static gboolean image_analyzer_disc_topology_refresh (ImageAnalyzerDiscTopology *self, GObject *disc)
 {
     gboolean dpm_valid = FALSE;
     gint dpm_start, dpm_entries, dpm_resolution;
@@ -189,7 +189,7 @@ static gboolean image_analyzer_disc_topology_refresh (IMAGE_ANALYZER_DiscTopolog
 /**********************************************************************\
  *                             Public API                             *
 \**********************************************************************/
-void image_analyzer_disc_topology_set_disc (IMAGE_ANALYZER_DiscTopology *self, GObject *disc)
+void image_analyzer_disc_topology_set_disc (ImageAnalyzerDiscTopology *self, GObject *disc)
 {
     /* Just refresh; we don't need disc reference */
     image_analyzer_disc_topology_refresh(self, disc);
@@ -199,7 +199,7 @@ void image_analyzer_disc_topology_set_disc (IMAGE_ANALYZER_DiscTopology *self, G
 /**********************************************************************\
  *                              GUI setup                             *
 \**********************************************************************/
-static void setup_gui (IMAGE_ANALYZER_DiscTopology *self)
+static void setup_gui (ImageAnalyzerDiscTopology *self)
 {
     /* Window */
     gtk_window_set_title(GTK_WINDOW(self), "Disc topology");
@@ -218,17 +218,17 @@ static void setup_gui (IMAGE_ANALYZER_DiscTopology *self)
 /**********************************************************************\
  *                             Object init                            *
 \**********************************************************************/
-G_DEFINE_TYPE(IMAGE_ANALYZER_DiscTopology, image_analyzer_disc_topology, GTK_TYPE_WINDOW);
+G_DEFINE_TYPE(ImageAnalyzerDiscTopology, image_analyzer_disc_topology, GTK_TYPE_WINDOW);
 
-static void image_analyzer_disc_topology_init (IMAGE_ANALYZER_DiscTopology *self)
+static void image_analyzer_disc_topology_init (ImageAnalyzerDiscTopology *self)
 {
     self->priv = IMAGE_ANALYZER_DISC_TOPOLOGY_GET_PRIVATE(self);
 
     setup_gui(self);
 }
 
-static void image_analyzer_disc_topology_class_init (IMAGE_ANALYZER_DiscTopologyClass *klass)
+static void image_analyzer_disc_topology_class_init (ImageAnalyzerDiscTopologyClass *klass)
 {
     /* Register private structure */
-    g_type_class_add_private(klass, sizeof(IMAGE_ANALYZER_DiscTopologyPrivate));
+    g_type_class_add_private(klass, sizeof(ImageAnalyzerDiscTopologyPrivate));
 }

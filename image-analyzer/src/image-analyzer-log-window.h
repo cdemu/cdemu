@@ -25,25 +25,25 @@ G_BEGIN_DECLS
 
 
 #define IMAGE_ANALYZER_TYPE_LOG_WINDOW            (image_analyzer_log_window_get_type())
-#define IMAGE_ANALYZER_LOG_WINDOW(obj)            (G_TYPE_CHECK_INSTANCE_CAST((obj), IMAGE_ANALYZER_TYPE_LOG_WINDOW, IMAGE_ANALYZER_LogWindow))
-#define IMAGE_ANALYZER_LOG_WINDOW_CLASS(klass)    (G_TYPE_CHECK_CLASS_CAST((klass), IMAGE_ANALYZER_TYPE_LOG_WINDOW, IMAGE_ANALYZER_LogWindowClass))
+#define IMAGE_ANALYZER_LOG_WINDOW(obj)            (G_TYPE_CHECK_INSTANCE_CAST((obj), IMAGE_ANALYZER_TYPE_LOG_WINDOW, ImageAnalyzerLogWindow))
+#define IMAGE_ANALYZER_LOG_WINDOW_CLASS(klass)    (G_TYPE_CHECK_CLASS_CAST((klass), IMAGE_ANALYZER_TYPE_LOG_WINDOW, ImageAnalyzerLogWindowClass))
 #define IMAGE_ANALYZER_IS_LOG_WINDOW(obj)         (G_TYPE_CHECK_INSTANCE_TYPE((obj), IMAGE_ANALYZER_TYPE_LOG_WINDOW))
 #define IMAGE_ANALYZER_IS_LOG_WINDOW_CLASS(klass) (G_TYPE_CHECK_CLASS_TYPE((klass), IMAGE_ANALYZER_TYPE_LOG_WINDOW))
-#define IMAGE_ANALYZER_LOG_WINDOW_GET_CLASS(obj)  (G_TYPE_INSTANCE_GET_CLASS((obj), IMAGE_ANALYZER_TYPE_LOG_WINDOW, IMAGE_ANALYZER_LogWindowClass))
+#define IMAGE_ANALYZER_LOG_WINDOW_GET_CLASS(obj)  (G_TYPE_INSTANCE_GET_CLASS((obj), IMAGE_ANALYZER_TYPE_LOG_WINDOW, ImageAnalyzerLogWindowClass))
 
-typedef struct _IMAGE_ANALYZER_LogWindow        IMAGE_ANALYZER_LogWindow;
-typedef struct _IMAGE_ANALYZER_LogWindowClass   IMAGE_ANALYZER_LogWindowClass;
-typedef struct _IMAGE_ANALYZER_LogWindowPrivate IMAGE_ANALYZER_LogWindowPrivate;
+typedef struct _ImageAnalyzerLogWindow        ImageAnalyzerLogWindow;
+typedef struct _ImageAnalyzerLogWindowClass   ImageAnalyzerLogWindowClass;
+typedef struct _ImageAnalyzerLogWindowPrivate ImageAnalyzerLogWindowPrivate;
 
-struct _IMAGE_ANALYZER_LogWindow
+struct _ImageAnalyzerLogWindow
 {
     GtkWindow parent_instance;
 
     /*< private >*/
-    IMAGE_ANALYZER_LogWindowPrivate *priv;
+    ImageAnalyzerLogWindowPrivate *priv;
 };
 
-struct _IMAGE_ANALYZER_LogWindowClass
+struct _ImageAnalyzerLogWindowClass
 {
     GtkWindowClass parent_class;
 };
@@ -53,12 +53,12 @@ struct _IMAGE_ANALYZER_LogWindowClass
 GType image_analyzer_log_window_get_type (void);
 
 /* Public API */
-void image_analyzer_log_window_clear_log (IMAGE_ANALYZER_LogWindow *self);
-void image_analyzer_log_window_append_to_log (IMAGE_ANALYZER_LogWindow *self, const gchar *message);
+void image_analyzer_log_window_clear_log (ImageAnalyzerLogWindow *self);
+void image_analyzer_log_window_append_to_log (ImageAnalyzerLogWindow *self, const gchar *message);
 
-gchar *image_analyzer_log_window_get_log_text (IMAGE_ANALYZER_LogWindow *self);
+gchar *image_analyzer_log_window_get_log_text (ImageAnalyzerLogWindow *self);
 
-void image_analyzer_log_window_set_debug_to_stdout (IMAGE_ANALYZER_LogWindow *self, gboolean enabled);
+void image_analyzer_log_window_set_debug_to_stdout (ImageAnalyzerLogWindow *self, gboolean enabled);
 
 G_END_DECLS
 

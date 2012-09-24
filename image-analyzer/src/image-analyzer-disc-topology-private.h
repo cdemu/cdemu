@@ -20,16 +20,16 @@
 #ifndef __IMAGE_ANALYZER_DISC_TOPOLOGY_PRIVATE_H__
 #define __IMAGE_ANALYZER_DISC_TOPOLOGY_PRIVATE_H__
 
-#define IMAGE_ANALYZER_DISC_TOPOLOGY_GET_PRIVATE(obj) (G_TYPE_INSTANCE_GET_PRIVATE((obj), IMAGE_ANALYZER_TYPE_DISC_TOPOLOGY, IMAGE_ANALYZER_DiscTopologyPrivate))
+#define IMAGE_ANALYZER_DISC_TOPOLOGY_GET_PRIVATE(obj) (G_TYPE_INSTANCE_GET_PRIVATE((obj), IMAGE_ANALYZER_TYPE_DISC_TOPOLOGY, ImageAnalyzerDiscTopologyPrivate))
 
-struct _IMAGE_ANALYZER_DiscTopologyPrivate
+struct _ImageAnalyzerDiscTopologyPrivate
 {
     /* GtkSocket */
     GtkWidget *socket;
 
     /* gnuplot */
     gboolean gnuplot_works;
-        
+
     GPid pid;
     gint fd_in;
 };

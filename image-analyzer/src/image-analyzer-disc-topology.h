@@ -25,25 +25,25 @@ G_BEGIN_DECLS
 
 
 #define IMAGE_ANALYZER_TYPE_DISC_TOPOLOGY            (image_analyzer_disc_topology_get_type())
-#define IMAGE_ANALYZER_DISC_TOPOLOGY(obj)            (G_TYPE_CHECK_INSTANCE_CAST((obj), IMAGE_ANALYZER_TYPE_DISC_TOPOLOGY, IMAGE_ANALYZER_DiscTopology))
-#define IMAGE_ANALYZER_DISC_TOPOLOGY_CLASS(klass)    (G_TYPE_CHECK_CLASS_CAST((klass), IMAGE_ANALYZER_TYPE_DISC_TOPOLOGY, IMAGE_ANALYZER_DiscTopologyClass))
+#define IMAGE_ANALYZER_DISC_TOPOLOGY(obj)            (G_TYPE_CHECK_INSTANCE_CAST((obj), IMAGE_ANALYZER_TYPE_DISC_TOPOLOGY, ImageAnalyzerDiscTopology))
+#define IMAGE_ANALYZER_DISC_TOPOLOGY_CLASS(klass)    (G_TYPE_CHECK_CLASS_CAST((klass), IMAGE_ANALYZER_TYPE_DISC_TOPOLOGY, ImageAnalyzerDiscTopologyClass))
 #define IMAGE_ANALYZER_IS_DISC_TOPOLOGY(obj)         (G_TYPE_CHECK_INSTANCE_TYPE((obj), IMAGE_ANALYZER_TYPE_DISC_TOPOLOGY))
 #define IMAGE_ANALYZER_IS_DISC_TOPOLOGY_CLASS(klass) (G_TYPE_CHECK_CLASS_TYPE((klass), IMAGE_ANALYZER_TYPE_DISC_TOPOLOGY))
-#define IMAGE_ANALYZER_DISC_TOPOLOGY_GET_CLASS(obj)  (G_TYPE_INSTANCE_GET_CLASS((obj), IMAGE_ANALYZER_TYPE_DISC_TOPOLOGY, IMAGE_ANALYZER_DiscTopologyClass))
+#define IMAGE_ANALYZER_DISC_TOPOLOGY_GET_CLASS(obj)  (G_TYPE_INSTANCE_GET_CLASS((obj), IMAGE_ANALYZER_TYPE_DISC_TOPOLOGY, ImageAnalyzerDiscTopologyClass))
 
-typedef struct _IMAGE_ANALYZER_DiscTopology         IMAGE_ANALYZER_DiscTopology;
-typedef struct _IMAGE_ANALYZER_DiscTopologyClass    IMAGE_ANALYZER_DiscTopologyClass;
-typedef struct _IMAGE_ANALYZER_DiscTopologyPrivate  IMAGE_ANALYZER_DiscTopologyPrivate;
+typedef struct _ImageAnalyzerDiscTopology         ImageAnalyzerDiscTopology;
+typedef struct _ImageAnalyzerDiscTopologyClass    ImageAnalyzerDiscTopologyClass;
+typedef struct _ImageAnalyzerDiscTopologyPrivate  ImageAnalyzerDiscTopologyPrivate;
 
-struct _IMAGE_ANALYZER_DiscTopology
+struct _ImageAnalyzerDiscTopology
 {
     GtkWindow parent_instance;
 
     /*< private >*/
-    IMAGE_ANALYZER_DiscTopologyPrivate *priv;
+    ImageAnalyzerDiscTopologyPrivate *priv;
 };
 
-struct _IMAGE_ANALYZER_DiscTopologyClass
+struct _ImageAnalyzerDiscTopologyClass
 {
     GtkWindowClass parent_class;
 };
@@ -53,7 +53,7 @@ GType image_analyzer_disc_topology_get_type (void);
 
 
 /* Public API */
-void image_analyzer_disc_topology_set_disc (IMAGE_ANALYZER_DiscTopology *self, GObject *disc);
+void image_analyzer_disc_topology_set_disc (ImageAnalyzerDiscTopology *self, GObject *disc);
 
 
 G_END_DECLS

@@ -24,25 +24,25 @@
 G_BEGIN_DECLS
 
 #define IMAGE_ANALYZER_TYPE_APPLICATION            (image_analyzer_application_get_type())
-#define IMAGE_ANALYZER_APPLICATION(obj)            (G_TYPE_CHECK_INSTANCE_CAST((obj), IMAGE_ANALYZER_TYPE_APPLICATION, IMAGE_ANALYZER_Application))
-#define IMAGE_ANALYZER_APPLICATION_CLASS(klass)    (G_TYPE_CHECK_CLASS_CAST((klass), IMAGE_ANALYZER_TYPE_APPLICATION, IMAGE_ANALYZER_ApplicationClass))
+#define IMAGE_ANALYZER_APPLICATION(obj)            (G_TYPE_CHECK_INSTANCE_CAST((obj), IMAGE_ANALYZER_TYPE_APPLICATION, ImageAnalyzerApplication))
+#define IMAGE_ANALYZER_APPLICATION_CLASS(klass)    (G_TYPE_CHECK_CLASS_CAST((klass), IMAGE_ANALYZER_TYPE_APPLICATION, ImageAnalyzerApplicationClass))
 #define IMAGE_ANALYZER_IS_APPLICATION(obj)         (G_TYPE_CHECK_INSTANCE_TYPE((obj), IMAGE_ANALYZER_TYPE_APPLICATION))
 #define IMAGE_ANALYZER_IS_APPLICATION_CLASS(klass) (G_TYPE_CHECK_CLASS_TYPE((klass), IMAGE_ANALYZER_TYPE_APPLICATION))
-#define IMAGE_ANALYZER_APPLICATION_GET_CLASS(obj)  (G_TYPE_INSTANCE_GET_CLASS((obj), IMAGE_ANALYZER_TYPE_APPLICATION, IMAGE_ANALYZER_ApplicationClass))
+#define IMAGE_ANALYZER_APPLICATION_GET_CLASS(obj)  (G_TYPE_INSTANCE_GET_CLASS((obj), IMAGE_ANALYZER_TYPE_APPLICATION, ImageAnalyzerApplicationClass))
 
-typedef struct _IMAGE_ANALYZER_Application IMAGE_ANALYZER_Application;
-typedef struct _IMAGE_ANALYZER_ApplicationClass IMAGE_ANALYZER_ApplicationClass;
-typedef struct _IMAGE_ANALYZER_ApplicationPrivate IMAGE_ANALYZER_ApplicationPrivate;
+typedef struct _ImageAnalyzerApplication ImageAnalyzerApplication;
+typedef struct _ImageAnalyzerApplicationClass ImageAnalyzerApplicationClass;
+typedef struct _ImageAnalyzerApplicationPrivate ImageAnalyzerApplicationPrivate;
 
-struct _IMAGE_ANALYZER_Application
+struct _ImageAnalyzerApplication
 {
     GObject parent_instance;
 
     /*< private >*/
-    IMAGE_ANALYZER_ApplicationPrivate *priv;
+    ImageAnalyzerApplicationPrivate *priv;
 };
 
-struct _IMAGE_ANALYZER_ApplicationClass {
+struct _ImageAnalyzerApplicationClass {
     GObjectClass parent_class;
 };
 
@@ -52,7 +52,7 @@ GType image_analyzer_application_get_type (void);
 
 
 /* Public API */
-gboolean image_analyzer_application_run (IMAGE_ANALYZER_Application *self, gchar **open_image, gboolean debug_to_stdout, gint debug_mask_initial);
+gboolean image_analyzer_application_run (ImageAnalyzerApplication *self, gchar **open_image, gboolean debug_to_stdout, gint debug_mask_initial);
 
 G_END_DECLS
 

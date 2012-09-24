@@ -35,7 +35,7 @@
 \**********************************************************************/
 static gchar *dump_sector_type (gint sector_type)
 {
-    static DUMP_Value values[] = {
+    static DumpValue values[] = {
         VAL(MIRAGE_MODE_MODE0),
         VAL(MIRAGE_MODE_AUDIO),
         VAL(MIRAGE_MODE_MODE1),
@@ -50,13 +50,13 @@ static gchar *dump_sector_type (gint sector_type)
 /**********************************************************************\
  *                      Text buffer manipulation                      *
 \**********************************************************************/
-static gboolean image_analyzer_read_sector_clear_text (IMAGE_ANALYZER_SectorRead *self)
+static gboolean image_analyzer_read_sector_clear_text (ImageAnalyzerSectorRead *self)
 {
     gtk_text_buffer_set_text(self->priv->buffer, "", -1);
     return TRUE;
 }
 
-static gboolean image_analyzer_read_sector_append_text (IMAGE_ANALYZER_SectorRead *self, const gchar *tag_name, const gchar *format, ...)
+static gboolean image_analyzer_read_sector_append_text (ImageAnalyzerSectorRead *self, const gchar *tag_name, const gchar *format, ...)
 {
     GtkTextIter iter;
     gchar *string;
@@ -79,7 +79,7 @@ static gboolean image_analyzer_read_sector_append_text (IMAGE_ANALYZER_SectorRea
     return TRUE;
 }
 
-static gboolean image_analyzer_read_sector_append_sector_data (IMAGE_ANALYZER_SectorRead *self, const guint8 *data, gint data_len, const gchar *tag_name)
+static gboolean image_analyzer_read_sector_append_sector_data (ImageAnalyzerSectorRead *self, const guint8 *data, gint data_len, const gchar *tag_name)
 {
     for (gint i = 0; i < data_len; i++) {
         image_analyzer_read_sector_append_text(self, tag_name, "%02hhX ", data[i]);
@@ -91,7 +91,7 @@ static gboolean image_analyzer_read_sector_append_sector_data (IMAGE_ANALYZER_Se
 /**********************************************************************\
  *                             UI callbacks                           *
 \**********************************************************************/
-static void image_analyzer_sector_read_ui_callback_read (GtkWidget *button G_GNUC_UNUSED, IMAGE_ANALYZER_SectorRead *self)
+static void image_analyzer_sector_read_ui_callback_read (GtkWidget *button G_GNUC_UNUSED, ImageAnalyzerSectorRead *self)
 {
     GObject *sector;
     GError *error = NULL;
@@ -208,7 +208,7 @@ static void image_analyzer_sector_read_ui_callback_read (GtkWidget *button G_GNU
 /**********************************************************************\
  *                              GUI setup                             *
 \**********************************************************************/
-static void setup_gui (IMAGE_ANALYZER_SectorRead *self)
+static void setup_gui (ImageAnalyzerSectorRead *self)
 {
     GtkWidget *vbox, *scrolledwindow, *hbox, *button;
     GtkAdjustment *adjustment;
@@ -270,7 +270,7 @@ static void setup_gui (IMAGE_ANALYZER_SectorRead *self)
 /**********************************************************************\
  *                              Disc set                              *
 \**********************************************************************/
-void image_analyzer_sector_read_set_disc (IMAGE_ANALYZER_SectorRead *self, GObject *disc)
+void image_analyzer_sector_read_set_disc (ImageAnalyzerSectorRead *self, GObject *disc)
 {
     /* Release old disc */
     if (self->priv->disc) {
@@ -288,9 +288,9 @@ void image_analyzer_sector_read_set_disc (IMAGE_ANALYZER_SectorRead *self, GObje
 /**********************************************************************\
  *                             Object init                            *
 \**********************************************************************/
-G_DEFINE_TYPE(IMAGE_ANALYZER_SectorRead, image_analyzer_sector_read, GTK_TYPE_WINDOW);
+G_DEFINE_TYPE(ImageAnalyzerSectorRead, image_analyzer_sector_read, GTK_TYPE_WINDOW);
 
-static void image_analyzer_sector_read_init (IMAGE_ANALYZER_SectorRead *self)
+static void image_analyzer_sector_read_init (ImageAnalyzerSectorRead *self)
 {
     self->priv = IMAGE_ANALYZER_SECTOR_READ_GET_PRIVATE(self);
 
@@ -301,7 +301,7 @@ static void image_analyzer_sector_read_init (IMAGE_ANALYZER_SectorRead *self)
 
 static void image_analyzer_sector_read_dispose (GObject *gobject)
 {
-    IMAGE_ANALYZER_SectorRead *self = IMAGE_ANALYZER_SECTOR_READ(gobject);
+    ImageAnalyzerSectorRead *self = IMAGE_ANALYZER_SECTOR_READ(gobject);
 
     /* Unref disc */
     if (self->priv->disc) {
@@ -313,12 +313,12 @@ static void image_analyzer_sector_read_dispose (GObject *gobject)
     return G_OBJECT_CLASS(image_analyzer_sector_read_parent_class)->dispose(gobject);
 }
 
-static void image_analyzer_sector_read_class_init (IMAGE_ANALYZER_SectorReadClass *klass)
+static void image_analyzer_sector_read_class_init (ImageAnalyzerSectorReadClass *klass)
 {
     GObjectClass *gobject_class = G_OBJECT_CLASS(klass);
 
     gobject_class->dispose = image_analyzer_sector_read_dispose;
 
     /* Register private structure */
-    g_type_class_add_private(klass, sizeof(IMAGE_ANALYZER_SectorReadPrivate));
+    g_type_class_add_private(klass, sizeof(ImageAnalyzerSectorReadPrivate));
 }

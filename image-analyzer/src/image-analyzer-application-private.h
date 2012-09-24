@@ -20,9 +20,9 @@
 #ifndef __IMAGE_ANALYZER_APPLICATION_PRIVATE_H__
 #define __IMAGE_ANALYZER_APPLICATION_PRIVATE_H__
 
-#define IMAGE_ANALYZER_APPLICATION_GET_PRIVATE(obj) (G_TYPE_INSTANCE_GET_PRIVATE((obj), IMAGE_ANALYZER_TYPE_APPLICATION, IMAGE_ANALYZER_ApplicationPrivate))
+#define IMAGE_ANALYZER_APPLICATION_GET_PRIVATE(obj) (G_TYPE_INSTANCE_GET_PRIVATE((obj), IMAGE_ANALYZER_TYPE_APPLICATION, ImageAnalyzerApplicationPrivate))
 
-struct _IMAGE_ANALYZER_ApplicationPrivate
+struct _ImageAnalyzerApplicationPrivate
 {
     /* Disc */
     gboolean loaded;
@@ -56,8 +56,8 @@ struct _IMAGE_ANALYZER_ApplicationPrivate
     gboolean debug_to_stdout;
 };
 
-void image_analyzer_application_create_xml_dump (IMAGE_ANALYZER_Application *self);
-gboolean image_analyzer_application_display_xml_data (IMAGE_ANALYZER_Application *self);
+void image_analyzer_application_create_xml_dump (ImageAnalyzerApplication *self);
+gboolean image_analyzer_application_display_xml_data (ImageAnalyzerApplication *self);
 
 
 #endif /* __IMAGE_ANALYZER_APPLICATION_PRIVATE_H__ */

@@ -23,9 +23,9 @@
 
 G_BEGIN_DECLS
 
-typedef struct _DUMP_Value DUMP_Value;
+typedef struct _DumpValue DumpValue;
 
-struct _DUMP_Value
+struct _DumpValue
 {
     gint value;
     gchar *name;
@@ -34,8 +34,8 @@ struct _DUMP_Value
 
 #define VAL(x) { x, #x }
 
-gchar *dump_value (gint val, const DUMP_Value *values, gint num_values);
-gchar *dump_flags (gint val, const DUMP_Value *values, gint num_values);
+gchar *dump_value (gint val, const DumpValue *values, gint num_values);
+gchar *dump_flags (gint val, const DumpValue *values, gint num_values);
 
 gchar *dump_track_flags (gint track_flags);
 gchar *dump_track_mode (gint track_mode);

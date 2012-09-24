@@ -33,12 +33,12 @@
 /**********************************************************************\
  *                      Text buffer manipulation                      *
 \**********************************************************************/
-static void image_analyzer_sector_analysis_clear_text (IMAGE_ANALYZER_SectorAnalysis *self)
+static void image_analyzer_sector_analysis_clear_text (ImageAnalyzerSectorAnalysis *self)
 {
     gtk_text_buffer_set_text(self->priv->buffer, "", -1);
 }
 
-static void image_analyzer_sector_analysis_append_text (IMAGE_ANALYZER_SectorAnalysis *self, const gchar *tag_name, const gchar *format, ...)
+static void image_analyzer_sector_analysis_append_text (ImageAnalyzerSectorAnalysis *self, const gchar *tag_name, const gchar *format, ...)
 {
     GtkTextIter iter;
     gchar *string;
@@ -64,7 +64,7 @@ static void image_analyzer_sector_analysis_append_text (IMAGE_ANALYZER_SectorAna
 /**********************************************************************\
  *                             UI callbacks                           *
 \**********************************************************************/
-static void image_analyzer_sector_analysis_ui_callback_analyze (GtkWidget *button G_GNUC_UNUSED, IMAGE_ANALYZER_SectorAnalysis *self)
+static void image_analyzer_sector_analysis_ui_callback_analyze (GtkWidget *button G_GNUC_UNUSED, ImageAnalyzerSectorAnalysis *self)
 {
     GObject *session, *track, *sector;
     gint num_sessions, num_tracks;
@@ -144,7 +144,7 @@ static void image_analyzer_sector_analysis_ui_callback_analyze (GtkWidget *butto
 /**********************************************************************\
  *                              GUI setup                             *
 \**********************************************************************/
-static void setup_gui (IMAGE_ANALYZER_SectorAnalysis *self)
+static void setup_gui (ImageAnalyzerSectorAnalysis *self)
 {
     GtkWidget *vbox, *scrolledwindow, *hbox, *button;
 
@@ -194,7 +194,7 @@ static void setup_gui (IMAGE_ANALYZER_SectorAnalysis *self)
 /**********************************************************************\
  *                              Disc set                              *
 \**********************************************************************/
-void image_analyzer_sector_analysis_set_disc (IMAGE_ANALYZER_SectorAnalysis *self, GObject *disc)
+void image_analyzer_sector_analysis_set_disc (ImageAnalyzerSectorAnalysis *self, GObject *disc)
 {
     /* Release old disc */
     if (self->priv->disc) {
@@ -212,9 +212,9 @@ void image_analyzer_sector_analysis_set_disc (IMAGE_ANALYZER_SectorAnalysis *sel
 /******************************************************************************\
  *                                 Object init                                *
 \******************************************************************************/
-G_DEFINE_TYPE(IMAGE_ANALYZER_SectorAnalysis, image_analyzer_sector_analysis, GTK_TYPE_WINDOW);
+G_DEFINE_TYPE(ImageAnalyzerSectorAnalysis, image_analyzer_sector_analysis, GTK_TYPE_WINDOW);
 
-static void image_analyzer_sector_analysis_init (IMAGE_ANALYZER_SectorAnalysis *self)
+static void image_analyzer_sector_analysis_init (ImageAnalyzerSectorAnalysis *self)
 {
     self->priv = IMAGE_ANALYZER_SECTOR_ANALYSIS_GET_PRIVATE(self);
 
@@ -223,8 +223,8 @@ static void image_analyzer_sector_analysis_init (IMAGE_ANALYZER_SectorAnalysis *
     setup_gui(self);
 }
 
-static void image_analyzer_sector_analysis_class_init (IMAGE_ANALYZER_SectorAnalysisClass *klass)
+static void image_analyzer_sector_analysis_class_init (ImageAnalyzerSectorAnalysisClass *klass)
 {
     /* Register private structure */
-    g_type_class_add_private(klass, sizeof(IMAGE_ANALYZER_SectorAnalysisPrivate));
+    g_type_class_add_private(klass, sizeof(ImageAnalyzerSectorAnalysisPrivate));
 }

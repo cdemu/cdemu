@@ -45,7 +45,7 @@
 /**********************************************************************\
  *                      Debug and logging redirection                 *
 \**********************************************************************/
-static void capture_log (const gchar *log_domain G_GNUC_UNUSED, GLogLevelFlags log_level G_GNUC_UNUSED, const gchar *message, IMAGE_ANALYZER_Application *self)
+static void capture_log (const gchar *log_domain G_GNUC_UNUSED, GLogLevelFlags log_level G_GNUC_UNUSED, const gchar *message, ImageAnalyzerApplication *self)
 {
     /* Print to stdout? */
     if (self->priv->debug_to_stdout) {
@@ -56,7 +56,7 @@ static void capture_log (const gchar *log_domain G_GNUC_UNUSED, GLogLevelFlags l
     image_analyzer_log_window_append_to_log(IMAGE_ANALYZER_LOG_WINDOW(self->priv->dialog_log), message);
 }
 
-static void image_analyzer_application_set_debug_to_stdout (IMAGE_ANALYZER_Application *self, gboolean enabled)
+static void image_analyzer_application_set_debug_to_stdout (ImageAnalyzerApplication *self, gboolean enabled)
 {
     /* Debug flag */
     self->priv->debug_to_stdout = enabled;
@@ -65,20 +65,20 @@ static void image_analyzer_application_set_debug_to_stdout (IMAGE_ANALYZER_Appli
     image_analyzer_log_window_set_debug_to_stdout(IMAGE_ANALYZER_LOG_WINDOW(self->priv->dialog_log), enabled);
 }
 
-static void image_analyzer_application_set_debug_mask (IMAGE_ANALYZER_Application *self, gint debug_mask)
+static void image_analyzer_application_set_debug_mask (ImageAnalyzerApplication *self, gint debug_mask)
 {
     /* Debug mask */
     mirage_debug_context_set_debug_mask (MIRAGE_DEBUG_CONTEXT(self->priv->debug_context), debug_mask);
 }
 
-static void image_analyzer_application_change_debug_mask (IMAGE_ANALYZER_Application *self)
+static void image_analyzer_application_change_debug_mask (ImageAnalyzerApplication *self)
 {
     GtkWidget *dialog, *content_area;
     GtkWidget *vbox;
     GtkWidget **entries = NULL;
     gint mask;
 
-    const MIRAGE_DebugMask *valid_masks;
+    const MirageDebugMask *valid_masks;
     gint num_valid_masks;
 
     /* Get list of supported debug masks */
@@ -137,7 +137,7 @@ static void image_analyzer_application_change_debug_mask (IMAGE_ANALYZER_Applica
 /**********************************************************************\
  *                              Status message                        *
 \**********************************************************************/
-static void image_analyzer_application_message (IMAGE_ANALYZER_Application *self, gchar *format, ...)
+static void image_analyzer_application_message (ImageAnalyzerApplication *self, gchar *format, ...)
 {
     gchar *message;
     va_list args;
@@ -160,7 +160,7 @@ static void image_analyzer_application_message (IMAGE_ANALYZER_Application *self
 /**********************************************************************\
  *                           Open/close image                         *
 \**********************************************************************/
-static gchar *image_analyzer_application_get_password (IMAGE_ANALYZER_Application *self)
+static gchar *image_analyzer_application_get_password (ImageAnalyzerApplication *self)
 {
     gchar *password;
     GtkDialog *dialog;
@@ -212,7 +212,7 @@ static gchar *image_analyzer_application_get_password (IMAGE_ANALYZER_Applicatio
     return password;
 }
 
-static gboolean image_analyzer_application_close_image_or_dump (IMAGE_ANALYZER_Application *self)
+static gboolean image_analyzer_application_close_image_or_dump (ImageAnalyzerApplication *self)
 {
     /* Clear disc reference in child windows */
     image_analyzer_disc_topology_set_disc(IMAGE_ANALYZER_DISC_TOPOLOGY(self->priv->dialog_topology), NULL);
@@ -247,7 +247,7 @@ static gboolean image_analyzer_application_close_image_or_dump (IMAGE_ANALYZER_A
     return TRUE;
 }
 
-static gboolean image_analyzer_application_open_image (IMAGE_ANALYZER_Application *self, gchar **filenames)
+static gboolean image_analyzer_application_open_image (ImageAnalyzerApplication *self, gchar **filenames)
 {
     GError *error = NULL;
 
@@ -281,7 +281,7 @@ static gboolean image_analyzer_application_open_image (IMAGE_ANALYZER_Applicatio
     return TRUE;
 }
 
-static gboolean image_analyzer_application_open_dump (IMAGE_ANALYZER_Application *self, gchar *filename)
+static gboolean image_analyzer_application_open_dump (ImageAnalyzerApplication *self, gchar *filename)
 {
     /* Close any opened image or dump */
     image_analyzer_application_close_image_or_dump(self);
@@ -304,7 +304,7 @@ static gboolean image_analyzer_application_open_dump (IMAGE_ANALYZER_Application
     return TRUE;
 }
 
-static void image_analyzer_application_save_dump (IMAGE_ANALYZER_Application *self, gchar *filename)
+static void image_analyzer_application_save_dump (ImageAnalyzerApplication *self, gchar *filename)
 {
     /* Create a copy of XML dump */
     xmlDocPtr output_xml = xmlCopyDoc(self->priv->xml_doc, 1);
@@ -334,7 +334,7 @@ static void image_analyzer_application_save_dump (IMAGE_ANALYZER_Application *se
 /**********************************************************************\
  *                             UI callbacks                           *
 \**********************************************************************/
-static void ui_callback_open_image (GtkAction *action G_GNUC_UNUSED, IMAGE_ANALYZER_Application *self)
+static void ui_callback_open_image (GtkAction *action G_GNUC_UNUSED, ImageAnalyzerApplication *self)
 {
     /* Run the dialog */
     if (gtk_dialog_run(GTK_DIALOG(self->priv->dialog_open_image)) == GTK_RESPONSE_ACCEPT) {
@@ -370,7 +370,7 @@ static void ui_callback_open_image (GtkAction *action G_GNUC_UNUSED, IMAGE_ANALY
     gtk_widget_hide(GTK_WIDGET(self->priv->dialog_open_image));
 }
 
-static void ui_callback_open_dump (GtkAction *action G_GNUC_UNUSED, IMAGE_ANALYZER_Application *self)
+static void ui_callback_open_dump (GtkAction *action G_GNUC_UNUSED, ImageAnalyzerApplication *self)
 {
     /* Run the dialog */
     if (gtk_dialog_run(GTK_DIALOG(self->priv->dialog_open_dump)) == GTK_RESPONSE_ACCEPT) {
@@ -389,7 +389,7 @@ static void ui_callback_open_dump (GtkAction *action G_GNUC_UNUSED, IMAGE_ANALYZ
     gtk_widget_hide(GTK_WIDGET(self->priv->dialog_open_dump));
 }
 
-static void ui_callback_save_dump (GtkAction *action G_GNUC_UNUSED, IMAGE_ANALYZER_Application *self)
+static void ui_callback_save_dump (GtkAction *action G_GNUC_UNUSED, ImageAnalyzerApplication *self)
 {
     /* We need an opened image or dump for this */
     if (!self->priv->loaded) {
@@ -413,7 +413,7 @@ static void ui_callback_save_dump (GtkAction *action G_GNUC_UNUSED, IMAGE_ANALYZ
     gtk_widget_hide(GTK_WIDGET(self->priv->dialog_save_dump));
 }
 
-static void ui_callback_close (GtkAction *action G_GNUC_UNUSED, IMAGE_ANALYZER_Application *self)
+static void ui_callback_close (GtkAction *action G_GNUC_UNUSED, ImageAnalyzerApplication *self)
 {
     image_analyzer_application_close_image_or_dump(self);
 }
@@ -424,35 +424,35 @@ static void ui_callback_quit (GtkAction *action G_GNUC_UNUSED, gpointer user_dat
 }
 
 
-static void ui_callback_log_window (GtkAction *action G_GNUC_UNUSED, IMAGE_ANALYZER_Application *self)
+static void ui_callback_log_window (GtkAction *action G_GNUC_UNUSED, ImageAnalyzerApplication *self)
 {
     /* Make window (re)appear by first hiding, then showing it */
     gtk_widget_hide(self->priv->dialog_log);
     gtk_widget_show_all(self->priv->dialog_log);
 }
 
-static void ui_callback_sector (GtkAction *action G_GNUC_UNUSED, IMAGE_ANALYZER_Application *self)
+static void ui_callback_sector (GtkAction *action G_GNUC_UNUSED, ImageAnalyzerApplication *self)
 {
     /* Make window (re)appear by first hiding, then showing it */
     gtk_widget_hide(self->priv->dialog_sector);
     gtk_widget_show_all(self->priv->dialog_sector);
 }
 
-static void ui_callback_analysis (GtkAction *action G_GNUC_UNUSED, IMAGE_ANALYZER_Application *self)
+static void ui_callback_analysis (GtkAction *action G_GNUC_UNUSED, ImageAnalyzerApplication *self)
 {
     /* Make window (re)appear by first hiding, then showing it */
     gtk_widget_hide(self->priv->dialog_analysis);
     gtk_widget_show_all(self->priv->dialog_analysis);
 }
 
-static void ui_callback_topology (GtkAction *action G_GNUC_UNUSED, IMAGE_ANALYZER_Application *self)
+static void ui_callback_topology (GtkAction *action G_GNUC_UNUSED, ImageAnalyzerApplication *self)
 {
     /* Make window (re)appear by first hiding, then showing it */
     gtk_widget_hide(self->priv->dialog_topology);
     gtk_widget_show_all(self->priv->dialog_topology);
 }
 
-static void ui_callback_about (GtkAction *action G_GNUC_UNUSED, IMAGE_ANALYZER_Application *self)
+static void ui_callback_about (GtkAction *action G_GNUC_UNUSED, ImageAnalyzerApplication *self)
 {
     gchar *authors[] = { "Rok Mandeljc <rok.mandeljc@gmail.com>", NULL };
 
@@ -479,13 +479,13 @@ static gboolean cb_window_delete_event (GtkWidget *widget G_GNUC_UNUSED, GdkEven
 
 
 
-static void callback_debug_to_stdout_change_requested (IMAGE_ANALYZER_LogWindow *log_window G_GNUC_UNUSED, gboolean value, IMAGE_ANALYZER_Application *self)
+static void callback_debug_to_stdout_change_requested (ImageAnalyzerLogWindow *log_window G_GNUC_UNUSED, gboolean value, ImageAnalyzerApplication *self)
 {
     /* Set the new value */
     image_analyzer_application_set_debug_to_stdout(self, value);
 }
 
-static void callback_debug_mask_change_requested (IMAGE_ANALYZER_LogWindow *log_window G_GNUC_UNUSED, IMAGE_ANALYZER_Application *self)
+static void callback_debug_mask_change_requested (ImageAnalyzerLogWindow *log_window G_GNUC_UNUSED, ImageAnalyzerApplication *self)
 {
     /* Propagate to helper function */
     image_analyzer_application_change_debug_mask(self);
@@ -499,9 +499,9 @@ typedef struct
 {
     GtkWidget *dialog;
     GtkFileFilter *all_images;
-} IMAGE_ANALYZER_FilterContext;
+} ImageAnalyzerFilterContext;
 
-static gboolean append_file_filter (MIRAGE_ParserInfo *parser_info, IMAGE_ANALYZER_FilterContext *context)
+static gboolean append_file_filter (MirageParserInfo *parser_info, ImageAnalyzerFilterContext *context)
 {
     GtkFileFilter *filter = gtk_file_filter_new();
     gtk_file_filter_set_name(filter, parser_info->description);
@@ -516,9 +516,9 @@ static gboolean append_file_filter (MIRAGE_ParserInfo *parser_info, IMAGE_ANALYZ
     return TRUE;
 }
 
-static GtkWidget *build_dialog_open_image (IMAGE_ANALYZER_Application *self)
+static GtkWidget *build_dialog_open_image (ImageAnalyzerApplication *self)
 {
-    IMAGE_ANALYZER_FilterContext context;
+    ImageAnalyzerFilterContext context;
 
     GtkWidget *dialog;
     GtkFileFilter *filter;
@@ -548,12 +548,12 @@ static GtkWidget *build_dialog_open_image (IMAGE_ANALYZER_Application *self)
     /* Per-parser filters */
     context.dialog = dialog;
     context.all_images = filter;
-    mirage_for_each_parser((MIRAGE_CallbackFunction)append_file_filter, &context, NULL);
+    mirage_for_each_parser((MirageCallbackFunction)append_file_filter, &context, NULL);
 
     return dialog;
 }
 
-static GtkWidget *build_dialog_open_dump (IMAGE_ANALYZER_Application *self)
+static GtkWidget *build_dialog_open_dump (ImageAnalyzerApplication *self)
 {
     GtkWidget *dialog;
     GtkFileFilter *filter;
@@ -583,7 +583,7 @@ static GtkWidget *build_dialog_open_dump (IMAGE_ANALYZER_Application *self)
     return dialog;
 }
 
-static GtkWidget *build_dialog_save_dump (IMAGE_ANALYZER_Application *self)
+static GtkWidget *build_dialog_save_dump (ImageAnalyzerApplication *self)
 {
     GtkWidget *dialog;
     GtkFileFilter *filter;
@@ -614,7 +614,7 @@ static GtkWidget *build_dialog_save_dump (IMAGE_ANALYZER_Application *self)
     return dialog;
 }
 
-static GtkWidget *build_dialog_log (IMAGE_ANALYZER_Application *self)
+static GtkWidget *build_dialog_log (ImageAnalyzerApplication *self)
 {
     GtkWidget *dialog = g_object_new(IMAGE_ANALYZER_TYPE_LOG_WINDOW, NULL);
     g_signal_connect(dialog, "delete_event", G_CALLBACK(gtk_widget_hide_on_delete), NULL);
@@ -645,7 +645,7 @@ static GtkWidget *build_dialog_topology ()
     return dialog;
 }
 
-static GtkWidget *build_menu (IMAGE_ANALYZER_Application *self)
+static GtkWidget *build_menu (ImageAnalyzerApplication *self)
 {
     static GtkActionEntry entries[] = {
         { "FileMenuAction", NULL, "_File", NULL, NULL, NULL },
@@ -710,7 +710,7 @@ static GtkWidget *build_menu (IMAGE_ANALYZER_Application *self)
     return gtk_ui_manager_get_widget(self->priv->ui_manager, "/MenuBar");
 }
 
-static GtkWidget *build_treeview (IMAGE_ANALYZER_Application *self)
+static GtkWidget *build_treeview (ImageAnalyzerApplication *self)
 {
     GtkWidget *treeview;
 
@@ -739,7 +739,7 @@ static GtkWidget *build_treeview (IMAGE_ANALYZER_Application *self)
 /**********************************************************************\
  *                              GUI setup                             *
 \**********************************************************************/
-static void setup_gui (IMAGE_ANALYZER_Application *self)
+static void setup_gui (ImageAnalyzerApplication *self)
 {
     GtkWidget *vbox, *menubar, *scrolledwindow, *treeview;
     GtkAccelGroup *accel_group;
@@ -793,14 +793,14 @@ static void setup_gui (IMAGE_ANALYZER_Application *self)
     gtk_window_add_accel_group(GTK_WINDOW(self->priv->window), accel_group);
 
     /* Set libMirage password function */
-    mirage_set_password_function((MIRAGE_PasswordFunction)image_analyzer_application_get_password, self, NULL);
+    mirage_set_password_function((MiragePasswordFunction)image_analyzer_application_get_password, self, NULL);
 }
 
 
 /**********************************************************************\
  *                             Public API                             *
 \**********************************************************************/
-gboolean image_analyzer_application_run (IMAGE_ANALYZER_Application *self, gchar **open_image, gboolean debug_to_stdout, gint debug_mask_initial)
+gboolean image_analyzer_application_run (ImageAnalyzerApplication *self, gchar **open_image, gboolean debug_to_stdout, gint debug_mask_initial)
 {
     /* Set the debug flags and masks */
     image_analyzer_application_set_debug_to_stdout(self, debug_to_stdout);
@@ -829,9 +829,9 @@ gboolean image_analyzer_application_run (IMAGE_ANALYZER_Application *self, gchar
 /**********************************************************************\
  *                             Object init                            *
 \**********************************************************************/
-G_DEFINE_TYPE(IMAGE_ANALYZER_Application, image_analyzer_application, G_TYPE_OBJECT);
+G_DEFINE_TYPE(ImageAnalyzerApplication, image_analyzer_application, G_TYPE_OBJECT);
 
-static void image_analyzer_application_init (IMAGE_ANALYZER_Application *self)
+static void image_analyzer_application_init (ImageAnalyzerApplication *self)
 {
     self->priv = IMAGE_ANALYZER_APPLICATION_GET_PRIVATE(self);
 
@@ -851,7 +851,7 @@ static void image_analyzer_application_init (IMAGE_ANALYZER_Application *self)
 
 static void image_analyzer_application_finalize (GObject *gobject)
 {
-    IMAGE_ANALYZER_Application *self = IMAGE_ANALYZER_APPLICATION(gobject);
+    ImageAnalyzerApplication *self = IMAGE_ANALYZER_APPLICATION(gobject);
 
     /* Close image */
     image_analyzer_application_close_image_or_dump(self);
@@ -874,12 +874,12 @@ static void image_analyzer_application_finalize (GObject *gobject)
     return G_OBJECT_CLASS(image_analyzer_application_parent_class)->finalize(gobject);
 }
 
-static void image_analyzer_application_class_init (IMAGE_ANALYZER_ApplicationClass *klass)
+static void image_analyzer_application_class_init (ImageAnalyzerApplicationClass *klass)
 {
     GObjectClass *gobject_class = G_OBJECT_CLASS(klass);
 
     gobject_class->finalize = image_analyzer_application_finalize;
 
     /* Register private structure */
-    g_type_class_add_private(klass, sizeof(IMAGE_ANALYZER_ApplicationPrivate));
+    g_type_class_add_private(klass, sizeof(ImageAnalyzerApplicationPrivate));
 }

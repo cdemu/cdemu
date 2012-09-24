@@ -25,24 +25,24 @@ G_BEGIN_DECLS
 
 
 #define IMAGE_ANALYZER_TYPE_SECTOR_READ            (image_analyzer_sector_read_get_type())
-#define IMAGE_ANALYZER_SECTOR_READ(obj)            (G_TYPE_CHECK_INSTANCE_CAST((obj), IMAGE_ANALYZER_TYPE_SECTOR_READ, IMAGE_ANALYZER_SectorRead))
-#define IMAGE_ANALYZER_SECTOR_READ_CLASS(klass)    (G_TYPE_CHECK_CLASS_CAST((klass), IMAGE_ANALYZER_TYPE_SECTOR_READ, IMAGE_ANALYZER_SectorReadClass))
+#define IMAGE_ANALYZER_SECTOR_READ(obj)            (G_TYPE_CHECK_INSTANCE_CAST((obj), IMAGE_ANALYZER_TYPE_SECTOR_READ, ImageAnalyzerSectorRead))
+#define IMAGE_ANALYZER_SECTOR_READ_CLASS(klass)    (G_TYPE_CHECK_CLASS_CAST((klass), IMAGE_ANALYZER_TYPE_SECTOR_READ, ImageAnalyzerSectorReadClass))
 #define IMAGE_ANALYZER_IS_SECTOR_READ(obj)         (G_TYPE_CHECK_INSTANCE_TYPE((obj), IMAGE_ANALYZER_TYPE_SECTOR_READ))
 #define IMAGE_ANALYZER_IS_SECTOR_READ_CLASS(klass) (G_TYPE_CHECK_CLASS_TYPE((klass), IMAGE_ANALYZER_TYPE_SECTOR_READ))
-#define IMAGE_ANALYZER_SECTOR_READ_GET_CLASS(obj)  (G_TYPE_INSTANCE_GET_CLASS((obj), IMAGE_ANALYZER_TYPE_SECTOR_READ, IMAGE_ANALYZER_SectorReadClass))
+#define IMAGE_ANALYZER_SECTOR_READ_GET_CLASS(obj)  (G_TYPE_INSTANCE_GET_CLASS((obj), IMAGE_ANALYZER_TYPE_SECTOR_READ, ImageAnalyzerSectorReadClass))
 
-typedef struct _IMAGE_ANALYZER_SectorRead           IMAGE_ANALYZER_SectorRead;
-typedef struct _IMAGE_ANALYZER_SectorReadClass      IMAGE_ANALYZER_SectorReadClass;
-typedef struct _IMAGE_ANALYZER_SectorReadPrivate    IMAGE_ANALYZER_SectorReadPrivate;
+typedef struct _ImageAnalyzerSectorRead           ImageAnalyzerSectorRead;
+typedef struct _ImageAnalyzerSectorReadClass      ImageAnalyzerSectorReadClass;
+typedef struct _ImageAnalyzerSectorReadPrivate    ImageAnalyzerSectorReadPrivate;
 
-struct _IMAGE_ANALYZER_SectorRead {
+struct _ImageAnalyzerSectorRead {
     GtkWindow parent_instance;
 
     /*< private >*/
-    IMAGE_ANALYZER_SectorReadPrivate *priv;
+    ImageAnalyzerSectorReadPrivate *priv;
 };
 
-struct _IMAGE_ANALYZER_SectorReadClass {
+struct _ImageAnalyzerSectorReadClass {
     GtkWindowClass parent_class;
 };
 
@@ -51,7 +51,7 @@ struct _IMAGE_ANALYZER_SectorReadClass {
 GType image_analyzer_sector_read_get_type (void);
 
 /* Public API */
-void image_analyzer_sector_read_set_disc (IMAGE_ANALYZER_SectorRead *self, GObject *disc);
+void image_analyzer_sector_read_set_disc (ImageAnalyzerSectorRead *self, GObject *disc);
 
 
 G_END_DECLS

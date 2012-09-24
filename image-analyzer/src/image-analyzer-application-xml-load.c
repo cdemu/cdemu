@@ -498,7 +498,7 @@ static void treestore_add_disc (GtkTreeStore *treestore, GtkTreeIter *parent, xm
 /**********************************************************************\
  *                             XML Data Display                       *
 \**********************************************************************/
-gboolean image_analyzer_application_display_xml_data (IMAGE_ANALYZER_Application *self)
+gboolean image_analyzer_application_display_xml_data (ImageAnalyzerApplication *self)
 {
     xmlNodePtr root_node;
 

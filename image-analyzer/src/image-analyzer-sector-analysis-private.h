@@ -20,9 +20,9 @@
 #ifndef __IMAGE_ANALYZER_SECTOR_ANALYSIS_PRIVATE_H__
 #define __IMAGE_ANALYZER_SECTOR_ANALYSIS_PRIVATE_H__
 
-#define IMAGE_ANALYZER_SECTOR_ANALYSIS_GET_PRIVATE(obj) (G_TYPE_INSTANCE_GET_PRIVATE((obj), IMAGE_ANALYZER_TYPE_SECTOR_ANALYSIS, IMAGE_ANALYZER_SectorAnalysisPrivate))
+#define IMAGE_ANALYZER_SECTOR_ANALYSIS_GET_PRIVATE(obj) (G_TYPE_INSTANCE_GET_PRIVATE((obj), IMAGE_ANALYZER_TYPE_SECTOR_ANALYSIS, ImageAnalyzerSectorAnalysisPrivate))
 
-struct _IMAGE_ANALYZER_SectorAnalysisPrivate {
+struct _ImageAnalyzerSectorAnalysisPrivate {
     /* Text entry */
     GtkWidget *text_view;
     GtkTextBuffer *buffer;

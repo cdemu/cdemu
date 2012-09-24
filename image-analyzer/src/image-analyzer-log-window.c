@@ -31,7 +31,7 @@
 /**********************************************************************\
  *                             Public API                             *
 \**********************************************************************/
-void image_analyzer_log_window_clear_log (IMAGE_ANALYZER_LogWindow *self)
+void image_analyzer_log_window_clear_log (ImageAnalyzerLogWindow *self)
 {
     GtkTextBuffer *buffer;
 
@@ -39,7 +39,7 @@ void image_analyzer_log_window_clear_log (IMAGE_ANALYZER_LogWindow *self)
     gtk_text_buffer_set_text(buffer, "", -1);
 }
 
-void image_analyzer_log_window_append_to_log (IMAGE_ANALYZER_LogWindow *self, const gchar *message)
+void image_analyzer_log_window_append_to_log (ImageAnalyzerLogWindow *self, const gchar *message)
 {
     if (message) {
         GtkTextBuffer *buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(self->priv->text_view));
@@ -51,7 +51,7 @@ void image_analyzer_log_window_append_to_log (IMAGE_ANALYZER_LogWindow *self, co
 }
 
 
-gchar *image_analyzer_log_window_get_log_text (IMAGE_ANALYZER_LogWindow *self)
+gchar *image_analyzer_log_window_get_log_text (ImageAnalyzerLogWindow *self)
 {
     GtkTextBuffer *buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(self->priv->text_view));
     GtkTextIter start, end;
@@ -62,7 +62,7 @@ gchar *image_analyzer_log_window_get_log_text (IMAGE_ANALYZER_LogWindow *self)
 }
 
 
-void image_analyzer_log_window_set_debug_to_stdout (IMAGE_ANALYZER_LogWindow *self, gboolean enabled)
+void image_analyzer_log_window_set_debug_to_stdout (ImageAnalyzerLogWindow *self, gboolean enabled)
 {
     gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(self->priv->checkbutton_stdout), enabled);
 }
@@ -71,18 +71,18 @@ void image_analyzer_log_window_set_debug_to_stdout (IMAGE_ANALYZER_LogWindow *se
 /**********************************************************************\
  *                             GUI callbacks                          *
 \**********************************************************************/
-static void ui_callback_clear_button_clicked (GtkButton *button G_GNUC_UNUSED, IMAGE_ANALYZER_LogWindow *self)
+static void ui_callback_clear_button_clicked (GtkButton *button G_GNUC_UNUSED, ImageAnalyzerLogWindow *self)
 {
     image_analyzer_log_window_clear_log(self);
 }
 
-static void ui_callback_debug_to_stdout_button_toggled (GtkToggleButton *togglebutton, IMAGE_ANALYZER_LogWindow *self)
+static void ui_callback_debug_to_stdout_button_toggled (GtkToggleButton *togglebutton, ImageAnalyzerLogWindow *self)
 {
     g_signal_emit_by_name(self, "debug-to-stdout-change-requested", gtk_toggle_button_get_active(togglebutton));
 
 }
 
-static void ui_callback_debug_mask_button_clicked (GtkButton *button G_GNUC_UNUSED, IMAGE_ANALYZER_LogWindow *self)
+static void ui_callback_debug_mask_button_clicked (GtkButton *button G_GNUC_UNUSED, ImageAnalyzerLogWindow *self)
 {
     g_signal_emit_by_name(self, "debug-mask-change-requested");
 }
@@ -91,7 +91,7 @@ static void ui_callback_debug_mask_button_clicked (GtkButton *button G_GNUC_UNUS
 /**********************************************************************\
  *                              GUI setup                             *
 \**********************************************************************/
-static void setup_gui (IMAGE_ANALYZER_LogWindow *self)
+static void setup_gui (ImageAnalyzerLogWindow *self)
 {
     GtkWidget *vbox, *hbox, *scrolledwindow;
     GtkWidget *widget;
@@ -147,16 +147,16 @@ static void setup_gui (IMAGE_ANALYZER_LogWindow *self)
 /**********************************************************************\
  *                             Object init                            *
 \**********************************************************************/
-G_DEFINE_TYPE(IMAGE_ANALYZER_LogWindow, image_analyzer_log_window, GTK_TYPE_WINDOW);
+G_DEFINE_TYPE(ImageAnalyzerLogWindow, image_analyzer_log_window, GTK_TYPE_WINDOW);
 
-static void image_analyzer_log_window_init (IMAGE_ANALYZER_LogWindow *self)
+static void image_analyzer_log_window_init (ImageAnalyzerLogWindow *self)
 {
     self->priv = IMAGE_ANALYZER_LOG_WINDOW_GET_PRIVATE(self);
 
     setup_gui(self);
 }
 
-static void image_analyzer_log_window_class_init (IMAGE_ANALYZER_LogWindowClass *klass)
+static void image_analyzer_log_window_class_init (ImageAnalyzerLogWindowClass *klass)
 {
     /* Signals */
     g_signal_new("debug-mask-change-requested",
@@ -181,5 +181,5 @@ static void image_analyzer_log_window_class_init (IMAGE_ANALYZER_LogWindowClass 
                  G_TYPE_BOOLEAN);
 
     /* Register private structure */
-    g_type_class_add_private(klass, sizeof(IMAGE_ANALYZER_LogWindowPrivate));
+    g_type_class_add_private(klass, sizeof(ImageAnalyzerLogWindowPrivate));
 }
