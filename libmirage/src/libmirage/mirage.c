@@ -156,8 +156,8 @@ gboolean libmirage_shutdown (GError **error)
 
 /**
  * libmirage_set_password_function:
- * @func: (in): a password function pointer
- * @user_data: (in) (closure): pointer to user data to be passed to the password function
+ * @func: (in) (scope call): a password function pointer
+ * @user_data: (in): pointer to user data to be passed to the password function
  * @error: (in) (allow-none): location to store error, or %NULL
  *
  * <para>
@@ -253,7 +253,7 @@ gchar *libmirage_obtain_password (GError **error)
  * only the first filename is used.
  * </para>
  *
- * Returns: a #MIRAGE_Disc object on success, %NULL on failure. The reference to
+ * Returns: (transfer full): a #MIRAGE_Disc object on success, %NULL on failure. The reference to
  * the object should be released using g_object_unref() when no longer needed.
  **/
 GObject *libmirage_create_disc (gchar **filenames, GObject *debug_context, GHashTable *params, GError **error)
@@ -335,7 +335,7 @@ GObject *libmirage_create_disc (gchar **filenames, GObject *debug_context, GHash
  * interface, then its debug context is retrieved and set to the file stream.
  * </para>
  *
- * Returns: a #MIRAGE_Fragment object on success, %NULL on failure. The reference
+ * Returns: (transfer full): a #MIRAGE_Fragment object on success, %NULL on failure. The reference
  * to the object should be released using g_object_unref() when no longer needed.
  **/
 GObject *libmirage_create_fragment (GType fragment_interface, GObject *stream, GObject *debug_context, GError **error)
@@ -405,7 +405,7 @@ GObject *libmirage_create_fragment (GType fragment_interface, GObject *stream, G
  * interface, then its debug context is retrieved and set to the file stream.
  * </para>
  *
- * Returns: on success, an object inheriting #GFilterInputStream (and therefore
+ * Returns: (transfer full): on success, an object inheriting #GFilterInputStream (and therefore
  * #GInputStream) and implementing #GSeekable interface is returned, which
  * can be used to access data stored in file. On failure, %NULL is returned.
  * The reference to the object should be released using g_object_unref()
@@ -500,7 +500,7 @@ GObject *libmirage_create_file_stream (const gchar *filename, GObject *debug_con
 
 /**
  * libmirage_for_each_parser:
- * @func: (in) : callback function
+ * @func: (in) (scope call): callback function
  * @user_data: (in) (closure): data to be passed to callback function
  * @error: (out) (allow-none): location to store error, or %NULL
  *
@@ -543,7 +543,7 @@ gboolean libmirage_for_each_parser (MIRAGE_CallbackFunction func, gpointer user_
 
 /**
  * libmirage_for_each_fragment:
- * @func: (in) : callback function
+ * @func: (in) (scope call): callback function
  * @user_data: (in) (closure): data to be passed to callback function
  * @error: (out) (allow-none): location to store error, or %NULL
  *
@@ -586,7 +586,7 @@ gboolean libmirage_for_each_fragment (MIRAGE_CallbackFunction func, gpointer use
 
 /**
  * libmirage_for_each_file_filter:
- * @func: (in) : callback function
+ * @func: (in) (scope call): callback function
  * @user_data: (in) (closure): data to be passed to callback function
  * @error: (out) (allow-none): location to store error, or %NULL
  *

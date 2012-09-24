@@ -995,7 +995,7 @@ GObject *mirage_track_get_fragment_by_address (MIRAGE_Track *self, gint address,
 /**
  * mirage_track_for_each_fragment:
  * @self: a #MIRAGE_Track
- * @func: (in) : callback function
+ * @func: (in) (scope call): callback function
  * @user_data: (in) (closure): data to be passed to callback function
  *
  * <para>
@@ -1315,7 +1315,7 @@ GObject *mirage_track_get_index_by_address (MIRAGE_Track *self, gint address, GE
 /**
  * mirage_track_for_each_index:
  * @self: a #MIRAGE_Track
- * @func: (in) : callback function
+ * @func: (in) (scope call): callback function
  * @user_data: (in) (closure): user data to be passed to callback function
  *
  * <para>
@@ -1575,7 +1575,7 @@ GObject *mirage_track_get_language_by_code (MIRAGE_Track *self, gint langcode, G
 /**
  * mirage_track_for_each_language:
  * @self: a #MIRAGE_Track
- * @func: (in) : callback function
+ * @func: (in) (scope call): callback function
  * @user_data: (in) (closure): data to be passed to callback function
  *
  * <para>
