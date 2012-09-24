@@ -45,6 +45,11 @@ Currently supported image formats:
  - Cdrdao's (TOC, BIN) image format
  - XCDRoast (TOC, BIN) image format
 
+Currently supported file filters:
+ - GZip (GZ) container format
+ - Compressed ISO (CSO) container format
+ - Error Code Modeller (ECM) container format
+
 libMirage has a plug-in based system, which allows a simple addition of new
 image format parsers or data-file access fragments. It also supports runtime
 debugging via debug traces; there are special debug context objects that can
