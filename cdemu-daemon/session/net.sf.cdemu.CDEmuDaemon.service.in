@@ -1,0 +1,3 @@
+[D-BUS Service]
+Name=net.sf.cdemu.CDEmuDaemon
+Exec=@libexecdir@/cdemu-daemon-session.sh
