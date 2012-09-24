@@ -95,12 +95,12 @@ struct BLANK_CDB
 {
     guint8  code;
 
-    #if (G_BYTE_ORDER == G_BIG_ENDIAN)
+    #if G_BYTE_ORDER == G_BIG_ENDIAN
         guint8  __dummy1__  : 3;
         guint8  immed       : 1;
         guint8  __dummy2__  : 1;
         guint8  blanking    : 3;
-    #elif (G_BYTE_ORDER == G_LITTLE_ENDIAN)
+    #else
         guint8  blanking    : 3;
         guint8  __dummy2__  : 1;
         guint8  immed       : 1;
@@ -122,19 +122,19 @@ struct CLOSE_TRACK_SESSION_CDB
 {
     guint8  code;
 
-    #if (G_BYTE_ORDER == G_BIG_ENDIAN)
+    #if G_BYTE_ORDER == G_BIG_ENDIAN
         guint8  __dummy1__  : 7;
         guint8  immed       : 1;
-    #elif (G_BYTE_ORDER == G_LITTLE_ENDIAN)
+    #else
         guint8  immed       : 1;
         guint8  __dummy1__  : 7;
     #endif
 
-    #if (G_BYTE_ORDER == G_BIG_ENDIAN)
+    #if G_BYTE_ORDER == G_BIG_ENDIAN
         guint8  __dummy2__  : 6;
         guint8  session     : 1;
         guint8  track       : 1;
-    #elif (G_BYTE_ORDER == G_LITTLE_ENDIAN)
+    #else
         guint8  track       : 1;
         guint8  session     : 1;
         guint8  __dummy2__  : 7;
@@ -157,12 +157,12 @@ struct ERASE_10_CDB
 {
     guint8  code;
 
-    #if (G_BYTE_ORDER == G_BIG_ENDIAN)
+    #if G_BYTE_ORDER == G_BIG_ENDIAN
         guint8  __dummy1__  : 5;
         guint8  era         : 1;
         guint8  __dummy2__  : 1;
         guint8  reladr      : 1;
-    #elif (G_BYTE_ORDER == G_LITTLE_ENDIAN)
+    #else
         guint8  reladr      : 1;
         guint8  __dummy2__  : 1;
         guint8  era         : 1;
@@ -184,12 +184,12 @@ struct FORMAT_UNIT_CDB
 {
     guint8  code;
 
-    #if (G_BYTE_ORDER == G_BIG_ENDIAN)
+    #if G_BYTE_ORDER == G_BIG_ENDIAN
         guint8  __dummy1__  : 3;
         guint8  fmt_data    : 1;
         guint8  cmp_list    : 1;
         guint8  fmt_code    : 3;
-    #elif (G_BYTE_ORDER == G_LITTLE_ENDIAN)
+    #else
         guint8  fmt_code    : 3;
         guint8  cmp_list    : 1;
         guint8  fmt_data    : 1;
@@ -211,11 +211,11 @@ struct GET_CONFIGURATION_CDB
 {
     guint8  code;
 
-    #if (G_BYTE_ORDER == G_BIG_ENDIAN)
+    #if G_BYTE_ORDER == G_BIG_ENDIAN
         guint8  __dummy1__  : 3;
         guint8  __dummy2__  : 3;
         guint8  rt          : 2;
-    #elif (G_BYTE_ORDER == G_LITTLE_ENDIAN)
+    #else
         guint8  rt          : 2;
         guint8  __dummy2__  : 3;
         guint8  __dummy1__  : 3;
@@ -246,11 +246,11 @@ struct GET_EVENT_STATUS_NOTIFICATION_CDB
 {
     guint8  code;
 
-    #if (G_BYTE_ORDER == G_BIG_ENDIAN)
+    #if G_BYTE_ORDER == G_BIG_ENDIAN
         guint8  __dummy1__  : 3;
         guint8  __dummy2__  : 4;
         guint8  immed       : 1;
-    #elif (G_BYTE_ORDER == G_LITTLE_ENDIAN)
+    #else
         guint8  immed       : 1;
         guint8  __dummy2__  : 4;
         guint8  __dummy1__  : 3;
@@ -258,7 +258,7 @@ struct GET_EVENT_STATUS_NOTIFICATION_CDB
 
     guint8  __dummy3__[2];
 
-    #if (G_BYTE_ORDER == G_BIG_ENDIAN)
+    #if G_BYTE_ORDER == G_BIG_ENDIAN
         guint8  __dummy5__  : 1;
         guint8  dev_busy    : 1;
         guint8  multi_init  : 1;
@@ -267,7 +267,7 @@ struct GET_EVENT_STATUS_NOTIFICATION_CDB
         guint8  pwr_man     : 1;
         guint8  op_chg      : 1;
         guint8  __dummy4__  : 1;
-    #elif (G_BYTE_ORDER == G_LITTLE_ENDIAN)
+    #else
         guint8  __dummy4__  : 1;
         guint8  op_chg      : 1;
         guint8  pwr_man     : 1;
@@ -289,17 +289,17 @@ struct GET_EVENT_STATUS_NOTIFICATION_Header
 {
     guint16 length;
 
-    #if (G_BYTE_ORDER == G_BIG_ENDIAN)
+    #if G_BYTE_ORDER == G_BIG_ENDIAN
         guint8  nea         : 1;
         guint8  __dummy1__  : 4;
         guint8  not_class   : 3;
-    #elif (G_BYTE_ORDER == G_LITTLE_ENDIAN)
+    #else
         guint8  not_class   : 3;
         guint8  __dummy1__  : 4;
         guint8  nea         : 1;
     #endif
 
-    #if (G_BYTE_ORDER == G_BIG_ENDIAN)
+    #if G_BYTE_ORDER == G_BIG_ENDIAN
         guint8  __dummy5__  : 1;
         guint8  dev_busy    : 1;
         guint8  multi_init  : 1;
@@ -308,7 +308,7 @@ struct GET_EVENT_STATUS_NOTIFICATION_Header
         guint8  pwr_man     : 1;
         guint8  op_chg      : 1;
         guint8  __dummy4__  : 1;
-    #elif (G_BYTE_ORDER == G_LITTLE_ENDIAN)
+    #else
         guint8  __dummy4__  : 1;
         guint8  op_chg      : 1;
         guint8  pwr_man     : 1;
@@ -322,19 +322,19 @@ struct GET_EVENT_STATUS_NOTIFICATION_Header
 
 struct GET_EVENT_STATUS_NOTIFICATION_MediaEventDescriptor
 {
-    #if (G_BYTE_ORDER == G_BIG_ENDIAN)
+    #if G_BYTE_ORDER == G_BIG_ENDIAN
         guint8  __dummy1__  : 4;
         guint8  event       : 4;
-    #elif (G_BYTE_ORDER == G_LITTLE_ENDIAN)
+    #else
         guint8  event       : 4;
         guint8  __dummy1__  : 4;
     #endif
 
-    #if (G_BYTE_ORDER == G_BIG_ENDIAN)
+    #if G_BYTE_ORDER == G_BIG_ENDIAN
         guint8  __dummy2__  : 6;
         guint8  present     : 1;
         guint8  opened      : 1;
-    #elif (G_BYTE_ORDER == G_LITTLE_ENDIAN)
+    #else
         guint8  opened      : 1;
         guint8  present     : 1;
         guint8  __dummy2__  : 6;
@@ -361,10 +361,10 @@ struct GET_PERFORMANCE_CDB
 {
     guint8  code;
 
-    #if (G_BYTE_ORDER == G_BIG_ENDIAN)
+    #if G_BYTE_ORDER == G_BIG_ENDIAN
         guint8  __dummy1__  : 3;
         guint8  data_type   : 5;
-    #elif (G_BYTE_ORDER == G_LITTLE_ENDIAN)
+    #else
         guint8  data_type   : 5;
         guint8  __dummy1__  : 3;
     #endif
@@ -388,11 +388,11 @@ struct INQUIRY_CDB
 {
     guint8  code;
 
-    #if (G_BYTE_ORDER == G_BIG_ENDIAN)
+    #if G_BYTE_ORDER == G_BIG_ENDIAN
         guint8  __dummy1__  : 6;
         guint8  __dummy2__  : 1;
         guint8  evpd        : 1;
-    #elif (G_BYTE_ORDER == G_LITTLE_ENDIAN)
+    #else
         guint8  evpd        : 1;
         guint8  __dummy2__  : 1;
         guint8  __dummy1__  : 6;
@@ -407,43 +407,43 @@ struct INQUIRY_CDB
 
 struct INQUIRY_Data
 {
-    #if (G_BYTE_ORDER == G_BIG_ENDIAN)
+    #if G_BYTE_ORDER == G_BIG_ENDIAN
         guint8  per_qual    : 3;
         guint8  per_dev     : 5;
-    #elif (G_BYTE_ORDER == G_LITTLE_ENDIAN)
+    #else
         guint8  per_dev     : 3;
         guint8  per_qual    : 5;
     #endif
 
-    #if (G_BYTE_ORDER == G_BIG_ENDIAN)
+    #if G_BYTE_ORDER == G_BIG_ENDIAN
         guint8  rmb         : 1;
         guint8  __dummy1__  : 7;
-    #elif (G_BYTE_ORDER == G_LITTLE_ENDIAN)
+    #else
         guint8  __dummy1__  : 7;
         guint8  rmb         : 1;
     #endif
 
     guint8  version;
 
-    #if (G_BYTE_ORDER == G_BIG_ENDIAN)
+    #if G_BYTE_ORDER == G_BIG_ENDIAN
         guint8  atapi_version   : 4;
         guint8  response_fmt    : 4;
-    #elif (G_BYTE_ORDER == G_LITTLE_ENDIAN)
+    #else
         guint8  response_fmt    : 4;
         guint8  atapi_version   : 4;
     #endif
 
     guint8  length;
 
-    #if (G_BYTE_ORDER == G_BIG_ENDIAN)
+    #if G_BYTE_ORDER == G_BIG_ENDIAN
         guint8  sccs        : 1;
         guint8  __dummy3__  : 7;
-    #elif (G_BYTE_ORDER == G_LITTLE_ENDIAN)
+    #else
         guint8  __dummy3__  : 7;
         guint8  sccs        : 1;
     #endif
 
-    #if (G_BYTE_ORDER == G_BIG_ENDIAN)
+    #if G_BYTE_ORDER == G_BIG_ENDIAN
         guint8  bque        : 1;
         guint8  encserv     : 1;
         guint8  __dummy4__  : 1;
@@ -452,7 +452,7 @@ struct INQUIRY_Data
         guint8  __dummy5__  : 1;
         guint8  __dummy6__  : 1;
         guint8  addr16      : 1;
-    #elif (G_BYTE_ORDER == G_LITTLE_ENDIAN)
+    #else
         guint8  addr16      : 1;
         guint8  __dummy6__  : 1;
         guint8  __dummy5__  : 1;
@@ -463,7 +463,7 @@ struct INQUIRY_Data
         guint8  bque        : 1;
     #endif
 
-    #if (G_BYTE_ORDER == G_BIG_ENDIAN)
+    #if G_BYTE_ORDER == G_BIG_ENDIAN
         guint8  reladr      : 1;
         guint8  __dummy7__  : 1;
         guint8  wbus16      : 1;
@@ -472,7 +472,7 @@ struct INQUIRY_Data
         guint8  __dummy8__  : 1;
         guint8  cmdque      : 1;
         guint8  __dummy9__  : 1;
-    #elif (G_BYTE_ORDER == G_LITTLE_ENDIAN)
+    #else
         guint8  __dummy9__  : 1;
         guint8  cmdque      : 1;
         guint8  __dummy8__  : 1;
@@ -488,12 +488,12 @@ struct INQUIRY_Data
     gchar  product_rev[4];
     gchar  vendor_spec1[20];
 
-    #if (G_BYTE_ORDER == G_BIG_ENDIAN)
+    #if G_BYTE_ORDER == G_BIG_ENDIAN
         guint8  __dummy10__ : 4;
         guint8  clocking    : 2;
         guint8  qas         : 1;
         guint8  ius         : 1;
-    #elif (G_BYTE_ORDER == G_LITTLE_ENDIAN)
+    #else
         guint8  ius         : 1;
         guint8  qas         : 1;
         guint8  clocking    : 2;
@@ -522,11 +522,11 @@ struct LOAD_UNLOAD_MEDIUM_CDB
 {
     guint8  code;
 
-    #if (G_BYTE_ORDER == G_BIG_ENDIAN)
+    #if G_BYTE_ORDER == G_BIG_ENDIAN
         guint8  __dummy1__  : 3;
         guint8  __dummy2__  : 4;
         guint8  immed       : 1;
-    #elif (G_BYTE_ORDER == G_LITTLE_ENDIAN)
+    #else
         guint8  immed       : 1;
         guint8  __dummy2__  : 4;
         guint8  __dummy1__  : 3;
@@ -534,11 +534,11 @@ struct LOAD_UNLOAD_MEDIUM_CDB
 
     guint8  __dummy3__[2];
 
-    #if (G_BYTE_ORDER == G_BIG_ENDIAN)
+    #if G_BYTE_ORDER == G_BIG_ENDIAN
         guint8  __dummy4__  : 6;
         guint8  lo_unlo     : 1;
         guint8  start       : 1;
-    #elif (G_BYTE_ORDER == G_LITTLE_ENDIAN)
+    #else
         guint8  start       : 1;
         guint8  lo_unlo     : 1;
         guint8  __dummy4__  : 6;
@@ -561,10 +561,10 @@ struct MECHANISM_STATUS_CDB
 {
     guint8  code;
 
-    #if (G_BYTE_ORDER == G_BIG_ENDIAN)
+    #if G_BYTE_ORDER == G_BIG_ENDIAN
         guint8  __dummy1__  : 3;
         guint8  __dummy2__  : 5;
-    #elif (G_BYTE_ORDER == G_LITTLE_ENDIAN)
+    #else
         guint8  __dummy2__  : 5;
         guint8  __dummy1__  : 3;
     #endif
@@ -586,12 +586,12 @@ struct MODE_SELECT_6_CDB
 {
     guint8  code;
 
-    #if (G_BYTE_ORDER == G_BIG_ENDIAN)
+    #if G_BYTE_ORDER == G_BIG_ENDIAN
         guint8  __dummy1__  : 3;
         guint8  pf          : 1;
         guint8  __dummy2__  : 3;
         guint8  sp          : 1;
-    #elif (G_BYTE_ORDER == G_LITTLE_ENDIAN)
+    #else
         guint8  sp          : 1;
         guint8  __dummy2__  : 3;
         guint8  pf          : 1;
@@ -613,12 +613,12 @@ struct MODE_SELECT_10_CDB
 {
     guint8  code;
 
-    #if (G_BYTE_ORDER == G_BIG_ENDIAN)
+    #if G_BYTE_ORDER == G_BIG_ENDIAN
         guint8  __dummy1__  : 3;
         guint8  pf          : 1;
         guint8  __dummy2__  : 3;
         guint8  sp          : 1;
-    #elif (G_BYTE_ORDER == G_LITTLE_ENDIAN)
+    #else
         guint8  sp          : 1;
         guint8  __dummy2__  : 3;
         guint8  pf          : 1;
@@ -640,20 +640,20 @@ struct MODE_SENSE_6_CDB
 {
     guint8  code;
 
-    #if (G_BYTE_ORDER == G_BIG_ENDIAN)
+    #if G_BYTE_ORDER == G_BIG_ENDIAN
         guint8  __dummy1__  : 4;
         guint8  dbd         : 1;
         guint8  __dummy2__  : 3;
-    #elif (G_BYTE_ORDER == G_LITTLE_ENDIAN)
+    #else
         guint8  __dummy2__  : 3;
         guint8  dbd         : 1;
         guint8  __dummy1__  : 4;
     #endif
 
-    #if (G_BYTE_ORDER == G_BIG_ENDIAN)
+    #if G_BYTE_ORDER == G_BIG_ENDIAN
         guint8  pc          : 2;
         guint8  page_code   : 6;
-    #elif (G_BYTE_ORDER == G_LITTLE_ENDIAN)
+    #else
         guint8  page_code   : 6;
         guint8  pc          : 2;
     #endif
@@ -681,22 +681,22 @@ struct MODE_SENSE_10_CDB
 {
     guint8  code;
 
-    #if (G_BYTE_ORDER == G_BIG_ENDIAN)
+    #if G_BYTE_ORDER == G_BIG_ENDIAN
         guint8  __dummy1__  : 3;
         guint8  llbaa       : 1;
         guint8  dbd         : 1;
         guint8  __dummy2__  : 3;
-    #elif (G_BYTE_ORDER == G_LITTLE_ENDIAN)
+    #else
         guint8  __dummy2__  : 3;
         guint8  dbd         : 1;
         guint8  llbaa       : 1;
         guint8  __dummy1__  : 3;
     #endif
 
-    #if (G_BYTE_ORDER == G_BIG_ENDIAN)
+    #if G_BYTE_ORDER == G_BIG_ENDIAN
         guint8  pc          : 2;
         guint8  page_code   : 6;
-    #elif (G_BYTE_ORDER == G_LITTLE_ENDIAN)
+    #else
         guint8  page_code   : 6;
         guint8  pc          : 2;
     #endif
@@ -727,20 +727,20 @@ struct PAUSE_RESUME_CDB
 {
     guint8  code;
 
-    #if (G_BYTE_ORDER == G_BIG_ENDIAN)
+    #if G_BYTE_ORDER == G_BIG_ENDIAN
         guint8  __dummy1__  : 3;
         guint8  __dummy2__  : 5;
-    #elif (G_BYTE_ORDER == G_LITTLE_ENDIAN)
+    #else
         guint8  __dummy2__  : 5;
         guint8  __dummy1__  : 3;
     #endif
 
     guint8  __dummy3__[6];
 
-    #if (G_BYTE_ORDER == G_BIG_ENDIAN)
+    #if G_BYTE_ORDER == G_BIG_ENDIAN
         guint8  __dummy4__  : 7;
         guint8  resume      : 1;
-    #elif (G_BYTE_ORDER == G_LITTLE_ENDIAN)
+    #else
         guint8  resume      : 1;
         guint8  __dummy4__  : 7;
     #endif
@@ -756,11 +756,11 @@ struct PLAY_AUDIO_10_CDB
 {
     guint8  code;
 
-    #if (G_BYTE_ORDER == G_BIG_ENDIAN)
+    #if G_BYTE_ORDER == G_BIG_ENDIAN
         guint8  __dummy1__  : 3;
         guint8  __dummy2__  : 4;
         guint8  reladr      : 1;
-    #elif (G_BYTE_ORDER == G_LITTLE_ENDIAN)
+    #else
         guint8  reladr      : 1;
         guint8  __dummy2__  : 4;
         guint8  __dummy1__  : 3;
@@ -783,11 +783,11 @@ struct PLAY_AUDIO_12_CDB
 {
     guint8  code;
 
-    #if (G_BYTE_ORDER == G_BIG_ENDIAN)
+    #if G_BYTE_ORDER == G_BIG_ENDIAN
         guint8  __dummy1__  : 3;
         guint8  __dummy2__  : 4;
         guint8  reladr      : 1;
-    #elif (G_BYTE_ORDER == G_LITTLE_ENDIAN)
+    #else
         guint8  reladr      : 1;
         guint8  __dummy2__  : 4;
         guint8  __dummy1__  : 3;
@@ -810,10 +810,10 @@ struct PLAY_AUDIO_MSF_CDB
 {
     guint8  code;
 
-    #if (G_BYTE_ORDER == G_BIG_ENDIAN)
+    #if G_BYTE_ORDER == G_BIG_ENDIAN
         guint8  __dummy1__  : 3;
         guint8  __dummy2__  : 5;
-    #elif (G_BYTE_ORDER == G_LITTLE_ENDIAN)
+    #else
         guint8  __dummy2__  : 5;
         guint8  __dummy1__  : 3;
     #endif
@@ -841,10 +841,10 @@ struct PREVENT_ALLOW_MEDIUM_REMOVAL_CDB
 
     guint8  __dummy1__[3];
 
-    #if (G_BYTE_ORDER == G_BIG_ENDIAN)
+    #if G_BYTE_ORDER == G_BIG_ENDIAN
         guint8  __dummy2__  : 6;
         guint8  prevent     : 2;
-    #elif (G_BYTE_ORDER == G_LITTLE_ENDIAN)
+    #else
         guint8  prevent     : 2;
         guint8  __dummy2__  : 6;
     #endif
@@ -860,13 +860,13 @@ struct READ_10_CDB
 {
     guint8  code;
 
-    #if (G_BYTE_ORDER == G_BIG_ENDIAN)
+    #if G_BYTE_ORDER == G_BIG_ENDIAN
         guint8  __dummy1__  : 3;
         guint8  dpo         : 1;
         guint8  fua         : 1;
         guint8  __dummy2__  : 2;
         guint8  reladr      : 1;
-    #elif (G_BYTE_ORDER == G_LITTLE_ENDIAN)
+    #else
         guint8  reladr      : 1;
         guint8  __dummy2__  : 2;
         guint8  fua         : 1;
@@ -891,13 +891,13 @@ struct READ_12_CDB
 {
     guint8  code;
 
-    #if (G_BYTE_ORDER == G_BIG_ENDIAN)
+    #if G_BYTE_ORDER == G_BIG_ENDIAN
         guint8  __dummy1__  : 3;
         guint8  dpo         : 1;
         guint8  fua         : 1;
         guint8  __dummy2__  : 2;
         guint8  reladr      : 1;
-    #elif (G_BYTE_ORDER == G_LITTLE_ENDIAN)
+    #else
         guint8  reladr      : 1;
         guint8  __dummy2__  : 2;
         guint8  fua         : 1;
@@ -909,10 +909,10 @@ struct READ_12_CDB
 
     guint32 length;
 
-    #if (G_BYTE_ORDER == G_BIG_ENDIAN)
+    #if G_BYTE_ORDER == G_BIG_ENDIAN
         guint8  stream      : 1;
         guint8  __dummy3__  : 7;
-    #elif (G_BYTE_ORDER == G_LITTLE_ENDIAN)
+    #else
         guint8  __dummy3__  : 7;
         guint8  stream      : 1;
     #endif
@@ -928,26 +928,26 @@ struct READ_BUFFER_CDB
 {
     guint8  code;
 
-    #if (G_BYTE_ORDER == G_BIG_ENDIAN)
+    #if G_BYTE_ORDER == G_BIG_ENDIAN
         guint8  __dummy1__  : 3;
         guint8  mode        : 5;
-    #elif (G_BYTE_ORDER == G_LITTLE_ENDIAN)
+    #else
         guint8  mode        : 5;
         guint8  __dummy1__  : 3;
     #endif
 
     /* life sucks, 3 bytes field suck... */
-    #if (G_BYTE_ORDER == G_BIG_ENDIAN)
+    #if G_BYTE_ORDER == G_BIG_ENDIAN
         guint32 buf_id  : 8;
-    #elif (G_BYTE_ORDER == G_LITTLE_ENDIAN)
+    #else
         guint32 buf_id  : 8;
     #endif
     guint32 buf_off : 24;
 
     guint32 length  : 24;
-    #if (G_BYTE_ORDER == G_BIG_ENDIAN)
+    #if G_BYTE_ORDER == G_BIG_ENDIAN
         guint32 control : 8;
-    #elif (G_BYTE_ORDER == G_LITTLE_ENDIAN)
+    #else
         guint32 control : 8;
     #endif
 };
@@ -960,11 +960,11 @@ struct READ_BUFFER_CAPACITY_CDB
 {
     guint8  code;
 
-    #if (G_BYTE_ORDER == G_BIG_ENDIAN)
+    #if G_BYTE_ORDER == G_BIG_ENDIAN
         guint8  __dummy1__  : 3;
         guint8  __dummy2__  : 4;
         guint8  block       : 1;
-    #elif (G_BYTE_ORDER == G_LITTLE_ENDIAN)
+    #else
         guint8  block       : 1;
         guint8  __dummy2__  : 4;
         guint8  __dummy1__  : 3;
@@ -985,11 +985,11 @@ struct READ_CAPACITY_CDB
 {
     guint8  code;
 
-    #if (G_BYTE_ORDER == G_BIG_ENDIAN)
+    #if G_BYTE_ORDER == G_BIG_ENDIAN
         guint8  __dummy1__  : 3;
         guint8  __dummy2__  : 4;
         guint8  reladr      : 1;
-    #elif (G_BYTE_ORDER == G_LITTLE_ENDIAN)
+    #else
         guint8  reladr      : 1;
         guint8  __dummy2__  : 4;
         guint8  __dummy1__  : 3;
@@ -999,10 +999,10 @@ struct READ_CAPACITY_CDB
 
     guint8  __dummy3__[2];
 
-    #if (G_BYTE_ORDER == G_BIG_ENDIAN)
+    #if G_BYTE_ORDER == G_BIG_ENDIAN
         guint8  __dummy4__  : 7;
         guint8  pmi         : 1;
-    #elif (G_BYTE_ORDER == G_LITTLE_ENDIAN)
+    #else
         guint8  pmi         : 1;
         guint8  __dummy4__  : 7;
     #endif
@@ -1024,12 +1024,12 @@ struct READ_CD_CDB
 {
     guint8  code;
 
-    #if (G_BYTE_ORDER == G_BIG_ENDIAN)
+    #if G_BYTE_ORDER == G_BIG_ENDIAN
         guint8  __dummy1__  : 3;
         guint8  sect_type   : 3;
         guint8  __dummy2__  : 1;
         guint8  reladr      : 1;
-    #elif (G_BYTE_ORDER == G_LITTLE_ENDIAN)
+    #else
         guint8  reladr      : 1;
         guint8  __dummy2__  : 1;
         guint8  sect_type   : 3;
@@ -1042,10 +1042,10 @@ struct READ_CD_CDB
 
     guint8  byte9; /* MCSB */
 
-    #if (G_BYTE_ORDER == G_BIG_ENDIAN)
+    #if G_BYTE_ORDER == G_BIG_ENDIAN
         guint8  __dummy4__  : 5;
         guint8  subchan     : 3;
-    #elif (G_BYTE_ORDER == G_LITTLE_ENDIAN)
+    #else
         guint8  subchan     : 3;
         guint8  __dummy4__  : 5;
     #endif
@@ -1062,11 +1062,11 @@ struct READ_CD_MSF_CDB
 {
     guint8  code;
 
-    #if (G_BYTE_ORDER == G_BIG_ENDIAN)
+    #if G_BYTE_ORDER == G_BIG_ENDIAN
         guint8  __dummy1__  : 3;
         guint8  sect_type   : 3;
         guint8  __dummy2__  : 2;
-    #elif (G_BYTE_ORDER == G_LITTLE_ENDIAN)
+    #else
         guint8  __dummy2__  : 2;
         guint8  sect_type   : 3;
         guint8  __dummy1__  : 3;
@@ -1084,10 +1084,10 @@ struct READ_CD_MSF_CDB
 
     guint8  byte9; /* MCSB */
 
-    #if (G_BYTE_ORDER == G_BIG_ENDIAN)
+    #if G_BYTE_ORDER == G_BIG_ENDIAN
         guint8  __dummy5__  : 5;
         guint8  subchan     : 3;
-    #elif (G_BYTE_ORDER == G_LITTLE_ENDIAN)
+    #else
         guint8  subchan     : 3;
         guint8  __dummy5__  : 5;
     #endif
@@ -1103,10 +1103,10 @@ struct READ_DISC_INFORMATION_CDB
 {
     guint8  code;
 
-    #if (G_BYTE_ORDER == G_BIG_ENDIAN)
+    #if G_BYTE_ORDER == G_BIG_ENDIAN
         guint8  __dummy1__  : 5;
         guint8  type        : 3;
-    #elif (G_BYTE_ORDER == G_LITTLE_ENDIAN)
+    #else
         guint8  type        : 3;
         guint8  __dummy1__  : 5;
     #endif
@@ -1122,12 +1122,12 @@ struct READ_DISC_INFORMATION_Data
 {
     guint16    length;
 
-    #if (G_BYTE_ORDER == G_BIG_ENDIAN)
+    #if G_BYTE_ORDER == G_BIG_ENDIAN
         guint8  __dummy1__  : 3;
         guint8  erasable    : 1;
         guint8  lsession_state  : 2;
         guint8  disc_status : 2;
-    #elif (G_BYTE_ORDER == G_LITTLE_ENDIAN)
+    #else
         guint8  disc_status : 2;
         guint8  lsession_state  : 2;
         guint8  erasable    : 1;
@@ -1139,14 +1139,14 @@ struct READ_DISC_INFORMATION_Data
     guint8  ftrack_lsession1;
     guint8  ltrack_lsession1;
 
-    #if (G_BYTE_ORDER == G_BIG_ENDIAN)
+    #if G_BYTE_ORDER == G_BIG_ENDIAN
         guint8  did_v       : 1;
         guint8  dbc_v       : 1;
         guint8  uru         : 1;
         guint8  __dummy2__  : 2;
         guint8  dbit        : 1;
         guint8  bg_fmt      : 2;
-    #elif (G_BYTE_ORDER == G_LITTLE_ENDIAN)
+    #else
         guint8  bg_fmt      : 2;
         guint8  dbit        : 1;
         guint8  __dummy2__  : 2;
@@ -1177,10 +1177,10 @@ struct READ_DVD_STRUCTURE_CDB
 {
     guint8  code;
 
-    #if (G_BYTE_ORDER == G_BIG_ENDIAN)
+    #if G_BYTE_ORDER == G_BIG_ENDIAN
         guint8  __dummy1__  : 3;
         guint8  __dummy2__  : 5;
-    #elif (G_BYTE_ORDER == G_LITTLE_ENDIAN)
+    #else
         guint8  __dummy2__  : 5;
         guint8  __dummy1__  : 3;
     #endif
@@ -1193,10 +1193,10 @@ struct READ_DVD_STRUCTURE_CDB
 
     guint16 length;
 
-    #if (G_BYTE_ORDER == G_BIG_ENDIAN)
+    #if G_BYTE_ORDER == G_BIG_ENDIAN
         guint8  agid        : 2;
         guint8  __dummy3__  : 6;
-    #elif (G_BYTE_ORDER == G_LITTLE_ENDIAN)
+    #else
         guint8  __dummy3__  : 6;
         guint8  agid        : 2;
     #endif
@@ -1213,70 +1213,70 @@ struct READ_DVD_STRUCTURE_Header
 
 struct READ_DVD_STRUCTURE_Format_0x0000_Descriptor
 {
-    #if (G_BYTE_ORDER == G_BIG_ENDIAN)
+    #if G_BYTE_ORDER == G_BIG_ENDIAN
         guint8  book_type   : 4;
         guint8  part_ver    : 4;
-    #elif (G_BYTE_ORDER == G_LITTLE_ENDIAN)
+    #else
         guint8  part_ver    : 4;
         guint8  book_type   : 4;
     #endif
 
-    #if (G_BYTE_ORDER == G_BIG_ENDIAN)
+    #if G_BYTE_ORDER == G_BIG_ENDIAN
         guint8  disc_size   : 4;
         guint8  max_rate    : 4;
-    #elif (G_BYTE_ORDER == G_LITTLE_ENDIAN)
+    #else
         guint8  max_rate    : 4;
         guint8  disc_size   : 4;
     #endif
 
-    #if (G_BYTE_ORDER == G_BIG_ENDIAN)
+    #if G_BYTE_ORDER == G_BIG_ENDIAN
         guint8  __dummy1__  : 1;
         guint8  num_layers  : 2;
         guint8  track_path  : 1;
         guint8  layer_type  : 4;
-    #elif (G_BYTE_ORDER == G_LITTLE_ENDIAN)
+    #else
         guint8  layer_type  : 4;
         guint8  track_path  : 1;
         guint8  num_layers  : 2;
         guint8  __dummy1__  : 1;
     #endif
 
-    #if (G_BYTE_ORDER == G_BIG_ENDIAN)
+    #if G_BYTE_ORDER == G_BIG_ENDIAN
         guint8  linear_density  : 4;
         guint8  track_density   : 4;
-    #elif (G_BYTE_ORDER == G_LITTLE_ENDIAN)
+    #else
         guint8  track_density   : 4;
         guint8  linear_density  : 4;
     #endif
 
-    #if (G_BYTE_ORDER == G_BIG_ENDIAN)
+    #if G_BYTE_ORDER == G_BIG_ENDIAN
         guint32 __dummy2__      : 8;
         guint32 data_start      : 24;
-    #elif (G_BYTE_ORDER == G_LITTLE_ENDIAN)
+    #else
         guint32 data_start      : 24;
         guint32 __dummy2__      : 8;
     #endif
 
-    #if (G_BYTE_ORDER == G_BIG_ENDIAN)
+    #if G_BYTE_ORDER == G_BIG_ENDIAN
         guint32 __dummy3__      : 8;
         guint32 data_end        : 24;
-    #elif (G_BYTE_ORDER == G_LITTLE_ENDIAN)
+    #else
         guint32 data_end        : 24;
         guint32 __dummy3__      : 8;
     #endif
 
-    #if (G_BYTE_ORDER == G_BIG_ENDIAN)
+    #if G_BYTE_ORDER == G_BIG_ENDIAN
         guint32 __dummy4__      : 8;
         guint32 layer0_end      : 24;
-    #elif (G_BYTE_ORDER == G_LITTLE_ENDIAN)
+    #else
         guint32 layer0_end      : 24;
         guint32 __dummy4__      : 8;
     #endif
 
-    #if (G_BYTE_ORDER == G_BIG_ENDIAN)
+    #if G_BYTE_ORDER == G_BIG_ENDIAN
         guint8  bca             : 1;
         guint8  __dummy5__      : 7;
-    #elif (G_BYTE_ORDER == G_LITTLE_ENDIAN)
+    #else
         guint8  __dummy5__      : 7;
         guint8  bca             : 1;
     #endif
@@ -1305,10 +1305,10 @@ struct READ_FORMAT_CAPACITIES_CDB
 {
     guint8  code;
 
-    #if (G_BYTE_ORDER == G_BIG_ENDIAN)
+    #if G_BYTE_ORDER == G_BIG_ENDIAN
         guint8  __dummy1__  : 3;
         guint8  __dummy2__  : 5;
-    #elif (G_BYTE_ORDER == G_LITTLE_ENDIAN)
+    #else
         guint8  __dummy2__  : 5;
         guint8  __dummy1__  : 3;
     #endif
@@ -1328,23 +1328,23 @@ struct READ_SUBCHANNEL_CDB
 {
     guint8  code;
 
-    #if (G_BYTE_ORDER == G_BIG_ENDIAN)
+    #if G_BYTE_ORDER == G_BIG_ENDIAN
         guint8  __dummy1__  : 3;
         guint8  __dummy2__  : 3;
         guint8  time        : 1;
         guint8  __dummy3__  : 1;
-    #elif (G_BYTE_ORDER == G_LITTLE_ENDIAN)
+    #else
         guint8  __dummy3__  : 1;
         guint8  time        : 1;
         guint8  __dummy2__  : 3;
         guint8  __dummy1__  : 3;
     #endif
 
-    #if (G_BYTE_ORDER == G_BIG_ENDIAN)
+    #if G_BYTE_ORDER == G_BIG_ENDIAN
         guint8  __dummy4__  : 1;
         guint8  subq        : 1;
         guint8  __dummy5__  : 6;
-    #elif (G_BYTE_ORDER == G_LITTLE_ENDIAN)
+    #else
         guint8  __dummy5__  : 6;
         guint8  subq        : 1;
         guint8  __dummy4__  : 1;
@@ -1382,10 +1382,10 @@ struct READ_SUBCHANNEL_Data1
 {
     guint8  fmt_code;
 
-    #if (G_BYTE_ORDER == G_BIG_ENDIAN)
+    #if G_BYTE_ORDER == G_BIG_ENDIAN
         guint8  adr         : 4;
         guint8  ctl         : 4;
-    #elif (G_BYTE_ORDER == G_LITTLE_ENDIAN)
+    #else
         guint8  ctl         : 4;
         guint8  adr         : 4;
     #endif
@@ -1402,10 +1402,10 @@ struct READ_SUBCHANNEL_Data2
     guint8  fmt_code;
     guint8  __dummy1__[3];
 
-    #if (G_BYTE_ORDER == G_BIG_ENDIAN)
+    #if G_BYTE_ORDER == G_BIG_ENDIAN
         guint8  mcval       : 1;
         guint8  __dummy2__  : 7;
-    #elif (G_BYTE_ORDER == G_LITTLE_ENDIAN)
+    #else
         guint8  __dummy2__  : 7;
         guint8  mcval       : 1;
     #endif
@@ -1419,10 +1419,10 @@ struct READ_SUBCHANNEL_Data3
 {
     guint8  fmt_code;
 
-    #if (G_BYTE_ORDER == G_BIG_ENDIAN)
+    #if G_BYTE_ORDER == G_BIG_ENDIAN
         guint8  adr         : 4;
         guint8  ctl         : 4;
-    #elif (G_BYTE_ORDER == G_LITTLE_ENDIAN)
+    #else
         guint8  ctl         : 4;
         guint8  adr         : 4;
     #endif
@@ -1431,10 +1431,10 @@ struct READ_SUBCHANNEL_Data3
 
     guint8  __dummy1__;
 
-    #if (G_BYTE_ORDER == G_BIG_ENDIAN)
+    #if G_BYTE_ORDER == G_BIG_ENDIAN
         guint8  tcval       : 1;
         guint8  __dummy2__  : 7;
-    #elif (G_BYTE_ORDER == G_LITTLE_ENDIAN)
+    #else
         guint8  __dummy2__  : 7;
         guint8  tcval       : 1;
     #endif
@@ -1453,22 +1453,22 @@ struct READ_TOC_PMA_ATIP_CDB
 {
     guint8  code;
 
-    #if (G_BYTE_ORDER == G_BIG_ENDIAN)
+    #if G_BYTE_ORDER == G_BIG_ENDIAN
         guint8  __dummy1__  : 3;
         guint8  __dummy2__  : 3;
         guint8  time        : 1;
         guint8  __dummy3__  : 1;
-    #elif (G_BYTE_ORDER == G_LITTLE_ENDIAN)
+    #else
         guint8  __dummy3__  : 1;
         guint8  time        : 1;
         guint8  __dummy2__  : 3;
         guint8  __dummy1__  : 3;
     #endif
 
-    #if (G_BYTE_ORDER == G_BIG_ENDIAN)
+    #if G_BYTE_ORDER == G_BIG_ENDIAN
         guint8  __dummy4__  : 4;
         guint8  format      : 4;
-    #elif (G_BYTE_ORDER == G_LITTLE_ENDIAN)
+    #else
         guint8  format      : 4;
         guint8  __dummy4__  : 4;
     #endif
@@ -1493,10 +1493,10 @@ struct READ_TOC_PMA_ATIP_0000_Descriptor
 {
     guint8  __dummy1__;
 
-    #if (G_BYTE_ORDER == G_BIG_ENDIAN)
+    #if G_BYTE_ORDER == G_BIG_ENDIAN
         guint8  adr         : 4;
         guint8  ctl         : 4;
-    #elif (G_BYTE_ORDER == G_LITTLE_ENDIAN)
+    #else
         guint8  ctl         : 4;
         guint8  adr         : 4;
     #endif
@@ -1516,10 +1516,10 @@ struct READ_TOC_PMA_ATIP_0001_Data
 
     guint8  __dummy1__;
 
-    #if (G_BYTE_ORDER == G_BIG_ENDIAN)
+    #if G_BYTE_ORDER == G_BIG_ENDIAN
         guint8  adr         : 4;
         guint8  ctl         : 4;
-    #elif (G_BYTE_ORDER == G_LITTLE_ENDIAN)
+    #else
         guint8  ctl         : 4;
         guint8  adr         : 4;
     #endif
@@ -1542,10 +1542,10 @@ struct READ_TOC_PMA_ATIP_0010_Descriptor
 {
     guint8  session;
 
-    #if (G_BYTE_ORDER == G_BIG_ENDIAN)
+    #if G_BYTE_ORDER == G_BIG_ENDIAN
         guint8  adr         : 4;
         guint8  ctl         : 4;
-    #elif (G_BYTE_ORDER == G_LITTLE_ENDIAN)
+    #else
         guint8  ctl         : 4;
         guint8  adr         : 4;
     #endif
@@ -1581,11 +1581,11 @@ struct READ_TRACK_INFORMATION_CDB
 {
     guint8  code;
 
-    #if (G_BYTE_ORDER == G_BIG_ENDIAN)
+    #if G_BYTE_ORDER == G_BIG_ENDIAN
         guint8  __dummy1__  : 5;
         guint8  open        : 1;
         guint8  type        : 2;
-    #elif (G_BYTE_ORDER == G_LITTLE_ENDIAN)
+    #else
         guint8  type        : 2;
         guint8  open        : 1;
         guint8  __dummy1__  : 5;
@@ -1609,25 +1609,25 @@ struct READ_TRACK_INFORMATION_Data
 
     guint8  __dummy1__;
 
-    #if (G_BYTE_ORDER == G_BIG_ENDIAN)
+    #if G_BYTE_ORDER == G_BIG_ENDIAN
         guint8  ljrs        : 2;
         guint8  damage      : 1;
         guint8  copy        : 1;
         guint8  track_mode  : 4;
-    #elif (G_BYTE_ORDER == G_LITTLE_ENDIAN)
+    #else
         guint8  track_mode  : 4;
         guint8  copy        : 1;
         guint8  damage      : 1;
         guint8  ljrs        : 2;
     #endif
 
-    #if (G_BYTE_ORDER == G_BIG_ENDIAN)
+    #if G_BYTE_ORDER == G_BIG_ENDIAN
         guint8  rt          : 1;
         guint8  blank       : 1;
         guint8  packet      : 1;
         guint8  fp          : 1;
         guint8  data_mode   : 4;
-    #elif (G_BYTE_ORDER == G_LITTLE_ENDIAN)
+    #else
         guint8  data_mode   : 4;
         guint8  fp          : 1;
         guint8  packet      : 1;
@@ -1635,11 +1635,11 @@ struct READ_TRACK_INFORMATION_Data
         guint8  rt          : 1;
     #endif
 
-    #if (G_BYTE_ORDER == G_BIG_ENDIAN)
+    #if G_BYTE_ORDER == G_BIG_ENDIAN
         guint8  __dummy3__  : 6;
         guint8  lra_v       : 1;
         guint8  nwa_v       : 1;
-    #elif (G_BYTE_ORDER == G_LITTLE_ENDIAN)
+    #else
         guint8  nwa_v       : 1;
         guint8  lra_v       : 1;
         guint8  __dummy3__  : 6;
@@ -1671,10 +1671,10 @@ struct REPAIR_TRACK_CDB
 {
     guint8  code;
 
-    #if (G_BYTE_ORDER == G_BIG_ENDIAN)
+    #if G_BYTE_ORDER == G_BIG_ENDIAN
         guint8  __dummy1__  : 7;
         guint8  immed       : 1;
-    #elif (G_BYTE_ORDER == G_LITTLE_ENDIAN)
+    #else
         guint8  immed       : 1;
         guint8  __dummy1__  : 7;
     #endif
@@ -1696,10 +1696,10 @@ struct REPORT_KEY_CDB
 {
     guint8  code;
 
-    #if (G_BYTE_ORDER == G_BIG_ENDIAN)
+    #if G_BYTE_ORDER == G_BIG_ENDIAN
         guint8  __dummy1__  : 3;
         guint8  __dummy2__  : 5;
-    #elif (G_BYTE_ORDER == G_LITTLE_ENDIAN)
+    #else
         guint8  __dummy2__  : 5;
         guint8  __dummy1__  : 3;
     #endif
@@ -1712,10 +1712,10 @@ struct REPORT_KEY_CDB
 
     guint16 length;
 
-    #if (G_BYTE_ORDER == G_BIG_ENDIAN)
+    #if G_BYTE_ORDER == G_BIG_ENDIAN
         guint8  agid        : 2;
         guint8  key_format  : 6;
-    #elif (G_BYTE_ORDER == G_LITTLE_ENDIAN)
+    #else
         guint8  key_format  : 6;
         guint8  agid        : 2;
     #endif
@@ -1729,11 +1729,11 @@ struct REPORT_KEY_001000_Data
     guint8  __dummy1__;
     guint8  __dummy2__;
 
-    #if (G_BYTE_ORDER == G_BIG_ENDIAN)
+    #if G_BYTE_ORDER == G_BIG_ENDIAN
         guint8  type_code   : 2;
         guint8  vendor_resets   : 3;
         guint8  user_changes    : 3;
-    #elif (G_BYTE_ORDER == G_LITTLE_ENDIAN)
+    #else
         guint8  user_changes    : 3;
         guint8  vendor_resets   : 3;
         guint8  type_code   : 2;
@@ -1752,10 +1752,10 @@ struct REQUEST_SENSE_CDB
 {
     guint8  code;
 
-    #if (G_BYTE_ORDER == G_BIG_ENDIAN)
+    #if G_BYTE_ORDER == G_BIG_ENDIAN
         guint8  __dummy1__  : 7;
         guint8  desc        : 1;
-    #elif (G_BYTE_ORDER == G_LITTLE_ENDIAN)
+    #else
         guint8  desc        : 1;
         guint8  __dummy1__  : 7;
     #endif
@@ -1769,23 +1769,23 @@ struct REQUEST_SENSE_CDB
 
 struct REQUEST_SENSE_SenseFixed
 {
-    #if (G_BYTE_ORDER == G_BIG_ENDIAN)
+    #if G_BYTE_ORDER == G_BIG_ENDIAN
         guint8  valid       : 1;
         guint8  res_code    : 7;
-    #elif (G_BYTE_ORDER == G_LITTLE_ENDIAN)
+    #else
         guint8  res_code    : 7;
         guint8  valid       : 1;
     #endif
 
     guint8  __dummy1__;
 
-    #if (G_BYTE_ORDER == G_BIG_ENDIAN)
+    #if G_BYTE_ORDER == G_BIG_ENDIAN
         guint8  file_mark   : 1;
         guint8  eom         : 1;
         guint8  ili         : 1;
         guint8  __dummy2__  : 1;
         guint8  sense_key   : 4;
-    #elif (G_BYTE_ORDER == G_LITTLE_ENDIAN)
+    #else
         guint8  sense_key   : 4;
         guint8  __dummy2__  : 1;
         guint8  ili         : 1;
@@ -1803,10 +1803,10 @@ struct REQUEST_SENSE_SenseFixed
     guint8  ascq;
     guint8  fruc;
 
-    #if (G_BYTE_ORDER == G_BIG_ENDIAN)
+    #if G_BYTE_ORDER == G_BIG_ENDIAN
         guint8  sksv        : 1;
         guint8  sk_spec0    : 7;
-    #elif (G_BYTE_ORDER == G_LITTLE_ENDIAN)
+    #else
         guint8  sk_spec0    : 7;
         guint8  sksv        : 1;
     #endif
@@ -1837,12 +1837,12 @@ struct SCAN_CDB
 {
     guint8  code;
 
-    #if (G_BYTE_ORDER == G_BIG_ENDIAN)
+    #if G_BYTE_ORDER == G_BIG_ENDIAN
         guint8  __dummy1__  : 3;
         guint8  direct      : 1;
         guint8  __dummy2__  : 3;
         guint8  reladr      : 1;
-    #elif (G_BYTE_ORDER == G_LITTLE_ENDIAN)
+    #else
         guint8  reladr      : 1;
         guint8  __dummy2__  : 3;
         guint8  direct      : 1;
@@ -1853,10 +1853,10 @@ struct SCAN_CDB
 
     guint8  __dummy3__[3];
 
-    #if (G_BYTE_ORDER == G_BIG_ENDIAN)
+    #if G_BYTE_ORDER == G_BIG_ENDIAN
         guint8  type        : 2;
         guint8  __dummy4__  : 6;
-    #elif (G_BYTE_ORDER == G_LITTLE_ENDIAN)
+    #else
         guint8  __dummy4__  : 6;
         guint8  type        : 2;
     #endif
@@ -1906,10 +1906,10 @@ struct SEND_DVD_STRUCTURE_CDB
 {
     guint8  code;
 
-    #if (G_BYTE_ORDER == G_BIG_ENDIAN)
+    #if G_BYTE_ORDER == G_BIG_ENDIAN
         guint8  __dummy1__  : 3;
         guint8  __dummy2__  : 5;
-    #elif (G_BYTE_ORDER == G_LITTLE_ENDIAN)
+    #else
         guint8  __dummy2__  : 5;
         guint8  __dummy1__  : 3;
     #endif
@@ -1933,11 +1933,11 @@ struct SEND_EVENT_CDB
 {
     guint8  code;
 
-    #if (G_BYTE_ORDER == G_BIG_ENDIAN)
+    #if G_BYTE_ORDER == G_BIG_ENDIAN
         guint8  __dummy1__  : 3;
         guint8  __dummy2__  : 4;
         guint8  immed       : 1;
-    #elif (G_BYTE_ORDER == G_LITTLE_ENDIAN)
+    #else
         guint8  immed       : 1;
         guint8  __dummy2__  : 4;
         guint8  __dummy1__  : 3;
@@ -1960,10 +1960,10 @@ struct SEND_KEY_CDB
 {
     guint8  code;
 
-    #if (G_BYTE_ORDER == G_BIG_ENDIAN)
+    #if G_BYTE_ORDER == G_BIG_ENDIAN
         guint8  __dummy1__  : 3;
         guint8  __dummy2__  : 5;
-    #elif (G_BYTE_ORDER == G_LITTLE_ENDIAN)
+    #else
         guint8  __dummy2__  : 5;
         guint8  __dummy1__  : 3;
     #endif
@@ -1972,10 +1972,10 @@ struct SEND_KEY_CDB
 
     guint16 length;
 
-    #if (G_BYTE_ORDER == G_BIG_ENDIAN)
+    #if G_BYTE_ORDER == G_BIG_ENDIAN
         guint8  agid        : 2;
         guint8  key_fmt     : 6;
-    #elif (G_BYTE_ORDER == G_LITTLE_ENDIAN)
+    #else
         guint8  key_fmt     : 6;
         guint8  agid        : 2;
     #endif
@@ -1991,11 +1991,11 @@ struct SEND_OPC_INFORMATION_CDB
 {
     guint8  code;
 
-    #if (G_BYTE_ORDER == G_BIG_ENDIAN)
+    #if G_BYTE_ORDER == G_BIG_ENDIAN
         guint8  __dummy1__  : 3;
         guint8  __dummy2__  : 4;
         guint8  do_opc      : 1;
-    #elif (G_BYTE_ORDER == G_LITTLE_ENDIAN)
+    #else
         guint8  do_opc      : 1;
         guint8  __dummy2__  : 4;
         guint8  __dummy1__  : 3;
@@ -2016,10 +2016,10 @@ struct SET_CD_SPEED_CDB
 {
     guint8  code;
 
-    #if (G_BYTE_ORDER == G_BIG_ENDIAN)
+    #if G_BYTE_ORDER == G_BIG_ENDIAN
         guint8  __dummy1__  : 6;
         guint8  rot_ctl     : 2;
-    #elif (G_BYTE_ORDER == G_LITTLE_ENDIAN)
+    #else
         guint8  rot_ctl     : 2;
         guint8  __dummy1__  : 6;
     #endif
@@ -2041,10 +2041,10 @@ struct SET_READ_AHEAD_CDB
 {
     guint8  code;
 
-    #if (G_BYTE_ORDER == G_BIG_ENDIAN)
+    #if G_BYTE_ORDER == G_BIG_ENDIAN
         guint8  __dummy1__  : 3;
         guint8  __dummy2__  : 5;
-    #elif (G_BYTE_ORDER == G_LITTLE_ENDIAN)
+    #else
         guint8  __dummy2__  : 5;
         guint8  __dummy1__  : 3;
     #endif
@@ -2066,10 +2066,10 @@ struct SET_STREAMING_CDB
 {
     guint8  code;
 
-    #if (G_BYTE_ORDER == G_BIG_ENDIAN)
+    #if G_BYTE_ORDER == G_BIG_ENDIAN
         guint8  __dummy1__  : 3;
         guint8  __dummy2__  : 5;
-    #elif (G_BYTE_ORDER == G_LITTLE_ENDIAN)
+    #else
         guint8  __dummy2__  : 5;
         guint8  __dummy1__  : 3;
     #endif
@@ -2089,22 +2089,22 @@ struct START_STOP_UNIT_CDB
 {
     guint8  code;
 
-    #if (G_BYTE_ORDER == G_BIG_ENDIAN)
+    #if G_BYTE_ORDER == G_BIG_ENDIAN
         guint8  __dummy1__  : 7;
         guint8  immed       : 1;
-    #elif (G_BYTE_ORDER == G_LITTLE_ENDIAN)
+    #else
         guint8  immed       : 1;
         guint8  __dummy1__  : 7;
     #endif
 
     guint8  __dummy2__[2];
 
-    #if (G_BYTE_ORDER == G_BIG_ENDIAN)
+    #if G_BYTE_ORDER == G_BIG_ENDIAN
         guint8  pwr_cond    : 4;
         guint8  __dummy3__  : 2;
         guint8  lo_ej       : 1;
         guint8  start       : 1;
-    #elif (G_BYTE_ORDER == G_LITTLE_ENDIAN)
+    #else
         guint8  start       : 1;
         guint8  lo_ej       : 1;
         guint8  __dummy3__  : 2;
@@ -2122,10 +2122,10 @@ struct STOP_PLAY_SCAN_CDB
 {
     guint8  code;
 
-    #if (G_BYTE_ORDER == G_BIG_ENDIAN)
+    #if G_BYTE_ORDER == G_BIG_ENDIAN
         guint8  __dummy1__  : 3;
         guint8  __dummy2__  : 5;
-    #elif (G_BYTE_ORDER == G_LITTLE_ENDIAN)
+    #else
         guint8  __dummy2__  : 5;
         guint8  __dummy1__  : 3;
     #endif
@@ -2143,12 +2143,12 @@ struct SYNCHRONIZE_CACHE_CDB
 {
     guint8  code;
 
-    #if (G_BYTE_ORDER == G_BIG_ENDIAN)
+    #if G_BYTE_ORDER == G_BIG_ENDIAN
         guint8  __dummy1__  : 3;
         guint8  __dummy2__  : 3;
         guint8  immed       : 1;
         guint8  reladr      : 1;
-    #elif (G_BYTE_ORDER == G_LITTLE_ENDIAN)
+    #else
         guint8  reladr      : 1;
         guint8  immed       : 1;
         guint8  __dummy2__  : 3;
@@ -2185,14 +2185,14 @@ struct VERIFY_10_CDB
 {
     guint8  code;
 
-    #if (G_BYTE_ORDER == G_BIG_ENDIAN)
+    #if G_BYTE_ORDER == G_BIG_ENDIAN
         guint8  __dummy1__  : 3;
         guint8  dpo         : 1;
         guint8  __dummy2__  : 1;
         guint8  __dummy3__  : 1;
         guint8  bytchk      : 1;
         guint8  reladr      : 1;
-    #elif (G_BYTE_ORDER == G_LITTLE_ENDIAN)
+    #else
         guint8  reladr      : 1;
         guint8  bytchk      : 1;
         guint8  __dummy3__  : 1;
@@ -2218,13 +2218,13 @@ struct WRITE_10_CDB
 {
     guint8  code;
 
-    #if (G_BYTE_ORDER == G_BIG_ENDIAN)
+    #if G_BYTE_ORDER == G_BIG_ENDIAN
         guint8  __dummy1__  : 3;
         guint8  dpo         : 1;
         guint8  fua         : 1;
         guint8  __dummy2__  : 2;
         guint8  reladr      : 1;
-    #elif (G_BYTE_ORDER == G_LITTLE_ENDIAN)
+    #else
         guint8  reladr      : 1;
         guint8  __dummy2__  : 2;
         guint8  fua         : 1;
@@ -2249,14 +2249,14 @@ struct WRITE_12_CDB
 {
     guint8  code;
 
-    #if (G_BYTE_ORDER == G_BIG_ENDIAN)
+    #if G_BYTE_ORDER == G_BIG_ENDIAN
         guint8  __dummy1__  : 3;
         guint8  dpo         : 1;
         guint8  fua         : 1;
         guint8  ebp         : 1;
         guint8  __dummy2__  : 1;
         guint8  reladr      : 1;
-    #elif (G_BYTE_ORDER == G_LITTLE_ENDIAN)
+    #else
         guint8  reladr      : 1;
         guint8  __dummy2__  : 1;
         guint8  ebp         : 1;
@@ -2269,10 +2269,10 @@ struct WRITE_12_CDB
 
     guint32 length;
 
-    #if (G_BYTE_ORDER == G_BIG_ENDIAN)
+    #if G_BYTE_ORDER == G_BIG_ENDIAN
         guint8  stream      : 1;
         guint8  __dummy3__  : 7;
-    #elif (G_BYTE_ORDER == G_LITTLE_ENDIAN)
+    #else
         guint8  __dummy3__  : 7;
         guint8  stream      : 1;
     #endif
@@ -2288,13 +2288,13 @@ struct WRITE_AND_VERIFY_10_CDB
 {
     guint8  code;
 
-    #if (G_BYTE_ORDER == G_BIG_ENDIAN)
+    #if G_BYTE_ORDER == G_BIG_ENDIAN
         guint8  __dummy1__  : 3;
         guint8  dpo         : 1;
         guint8  __dummy2__  : 2;
         guint8  bytchk      : 1;
         guint8  reladr      : 1;
-    #elif (G_BYTE_ORDER == G_LITTLE_ENDIAN)
+    #else
         guint8  reladr      : 1;
         guint8  bytchk      : 1;
         guint8  __dummy2__  : 2;
@@ -2319,24 +2319,24 @@ struct WRITE_BUFFER_CDB
 {
     guint8  code;
 
-    #if (G_BYTE_ORDER == G_BIG_ENDIAN)
+    #if G_BYTE_ORDER == G_BIG_ENDIAN
         guint8  __dummy1__  : 3;
         guint8  mode        : 5;
-    #elif (G_BYTE_ORDER == G_LITTLE_ENDIAN)
+    #else
         guint8  mode        : 5;
         guint8  __dummy1__  : 3;
     #endif
 
-    #if (G_BYTE_ORDER == G_BIG_ENDIAN)
+    #if G_BYTE_ORDER == G_BIG_ENDIAN
         guint32 buf_id      : 8;
-    #elif (G_BYTE_ORDER == G_LITTLE_ENDIAN)
+    #else
         guint32 buf_id      : 8;
     #endif
     guint32 buf_off : 24;
 
-    #if (G_BYTE_ORDER == G_BIG_ENDIAN)
+    #if G_BYTE_ORDER == G_BIG_ENDIAN
         guint32 length      : 24;
-    #elif (G_BYTE_ORDER == G_LITTLE_ENDIAN)
+    #else
         guint32 length      : 24;
     #endif
     guint32 control : 8;
