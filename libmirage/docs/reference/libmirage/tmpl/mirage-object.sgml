@@ -1,19 +1,19 @@
 <!-- ##### SECTION Title ##### -->
-MIRAGE_Object object
+MirageObject object
 
 <!-- ##### SECTION Short_Description ##### -->
 Base object class
 
 <!-- ##### SECTION Long_Description ##### -->
 <para>
-#MIRAGE_Object is used as a base object class throughout libMirage. It implements
+#MirageObject is used as a base object class throughout libMirage. It implements
 support for layout definitions (setting object's parent and children) and debugging
 via debug contexts.
 </para>
 
 <!-- ##### SECTION See_Also ##### -->
 <para>
-#MIRAGE_DebugContext
+#MirageDebugContext
 </para>
 
 <!-- ##### SECTION Stability_Level ##### -->
@@ -22,18 +22,18 @@ via debug contexts.
 <!-- ##### SECTION Image ##### -->
 
 
-<!-- ##### STRUCT MIRAGE_Object ##### -->
+<!-- ##### STRUCT MirageObject ##### -->
 <para>
 
 </para>
 
 
-<!-- ##### SIGNAL MIRAGE_Object::object-modified ##### -->
+<!-- ##### SIGNAL MirageObject::object-modified ##### -->
 <para>
 
 </para>
 
-@mirage_object: the object which received the signal.
+@mirageobject: the object which received the signal.
 
 <!-- ##### FUNCTION mirage_object_set_parent ##### -->
 <para>

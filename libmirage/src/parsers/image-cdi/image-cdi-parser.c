@@ -25,9 +25,9 @@
 /**********************************************************************\
  *                          Private structure                         *
 \**********************************************************************/
-#define MIRAGE_PARSER_CDI_GET_PRIVATE(obj) (G_TYPE_INSTANCE_GET_PRIVATE((obj), MIRAGE_TYPE_PARSER_CDI, MIRAGE_Parser_CDIPrivate))
+#define MIRAGE_PARSER_CDI_GET_PRIVATE(obj) (G_TYPE_INSTANCE_GET_PRIVATE((obj), MIRAGE_TYPE_PARSER_CDI, MirageParser_CDIPrivate))
 
-struct _MIRAGE_Parser_CDIPrivate
+struct _MirageParser_CDIPrivate
 {
     GObject *disc;
 
@@ -69,7 +69,7 @@ typedef struct
     gint expected;
 } ExpectedField;
 
-static void mirage_parser_cdi_whine_on_unexpected (MIRAGE_Parser_CDI *self, guint8 *data, ExpectedField *fields, gint fields_len, gchar *func_name, gchar *extra_comment)
+static void mirage_parser_cdi_whine_on_unexpected (MirageParser_CDI *self, guint8 *data, ExpectedField *fields, gint fields_len, gchar *func_name, gchar *extra_comment)
 {
     for (gint z = 0; z < fields_len; z++) {
         if (data[fields[z].offset] != fields[z].expected) {
@@ -80,7 +80,7 @@ static void mirage_parser_cdi_whine_on_unexpected (MIRAGE_Parser_CDI *self, guin
 #endif
 
 
-static void mirage_parser_cdi_decode_medium_type (MIRAGE_Parser_CDI *self, gint medium_type)
+static void mirage_parser_cdi_decode_medium_type (MirageParser_CDI *self, gint medium_type)
 {
     /* Decode and set medium type only if we haven't done it yet */
     if (!self->priv->medium_type_set) {
@@ -104,24 +104,24 @@ static void mirage_parser_cdi_decode_medium_type (MIRAGE_Parser_CDI *self, gint 
     }
 }
 
-static gboolean mirage_parser_cdi_decode_track_mode (MIRAGE_Parser_CDI *self, gint raw_mode, gint *decoded_mode, gint *tfile_format, GError **error)
+static gboolean mirage_parser_cdi_decode_track_mode (MirageParser_CDI *self, gint raw_mode, gint *decoded_mode, gint *tfile_format, GError **error)
 {
     /* Simple; raw mode represents track mode. And if it happens to be audio, guess
        what the data format will be? */
     switch (raw_mode) {
         case 0: {
             *decoded_mode = MIRAGE_MODE_AUDIO;
-            *tfile_format = FR_BIN_TFILE_AUDIO;
+            *tfile_format = MIRAGE_TFILE_AUDIO;
             break;
         }
         case 1: {
             *decoded_mode = MIRAGE_MODE_MODE1;
-            *tfile_format = FR_BIN_TFILE_DATA;
+            *tfile_format = MIRAGE_TFILE_DATA;
             break;
         }
         case 2: {
             *decoded_mode = MIRAGE_MODE_MODE2_MIXED;
-            *tfile_format = FR_BIN_TFILE_DATA;
+            *tfile_format = MIRAGE_TFILE_DATA;
             break;
         }
         default: {
@@ -135,7 +135,7 @@ static gboolean mirage_parser_cdi_decode_track_mode (MIRAGE_Parser_CDI *self, gi
 }
 
 
-static gboolean mirage_parser_cdi_decode_read_mode (MIRAGE_Parser_CDI *self, gint read_mode, gint *tfile_sectsize, gint *sfile_sectsize, gint *sfile_format, GError **error)
+static gboolean mirage_parser_cdi_decode_read_mode (MirageParser_CDI *self, gint read_mode, gint *tfile_sectsize, gint *sfile_sectsize, gint *sfile_format, GError **error)
 {
     switch (read_mode) {
         case 0: {
@@ -157,14 +157,14 @@ static gboolean mirage_parser_cdi_decode_read_mode (MIRAGE_Parser_CDI *self, gin
             /* 2352+16-byte sectors (any track read raw + PQ subchannel) */
             *tfile_sectsize = 2352;
             *sfile_sectsize = 16;
-            *sfile_format = FR_BIN_SFILE_PQ16 | FR_BIN_SFILE_INT; /* PQ, internal */
+            *sfile_format = MIRAGE_SFILE_PQ16 | MIRAGE_SFILE_INT; /* PQ, internal */
             break;
         }
         case 4: {
             /* 2352+96-byte sectors (any track read raw + PW subchannel) */
             *tfile_sectsize = 2352;
             *sfile_sectsize = 96;
-            *sfile_format = FR_BIN_SFILE_PW96_INT | FR_BIN_SFILE_INT; /* PW96 interleaved, internal */
+            *sfile_format = MIRAGE_SFILE_PW96_INT | MIRAGE_SFILE_INT; /* PW96 interleaved, internal */
             break;
         }
         default: {
@@ -177,7 +177,7 @@ static gboolean mirage_parser_cdi_decode_read_mode (MIRAGE_Parser_CDI *self, gin
     return TRUE;
 }
 
-static gint mirage_parser_cdi_decode_session_type (MIRAGE_Parser_CDI *self, gint raw_session_type)
+static gint mirage_parser_cdi_decode_session_type (MirageParser_CDI *self, gint raw_session_type)
 {
     switch (raw_session_type) {
         case 0: return MIRAGE_SESSION_CD_DA; /* CD-DA */
@@ -191,7 +191,7 @@ static gint mirage_parser_cdi_decode_session_type (MIRAGE_Parser_CDI *self, gint
 
 /* Function for parsing header that appears at the beginning of every track block
    and at the beginning of the disc block */
-static gboolean mirage_parser_cdi_parse_header (MIRAGE_Parser_CDI *self, GError **error G_GNUC_UNUSED)
+static gboolean mirage_parser_cdi_parse_header (MirageParser_CDI *self, GError **error G_GNUC_UNUSED)
 {
     /* Recongised fields */
     gint num_all_tracks = 0;
@@ -299,7 +299,7 @@ static gboolean mirage_parser_cdi_parse_header (MIRAGE_Parser_CDI *self, GError 
     return TRUE;
 }
 
-static gboolean mirage_parser_cdi_parse_cdtext (MIRAGE_Parser_CDI *self, GError **error G_GNUC_UNUSED)
+static gboolean mirage_parser_cdi_parse_cdtext (MirageParser_CDI *self, GError **error G_GNUC_UNUSED)
 {
     /* It seems that each CD-TEXT block for track consists of 18 bytes, each (?)
        denoting length of field it represents; if it's non-zero, it's followed by declared
@@ -318,7 +318,7 @@ static gboolean mirage_parser_cdi_parse_cdtext (MIRAGE_Parser_CDI *self, GError 
     return TRUE;
 }
 
-static gboolean mirage_parser_cdi_load_track (MIRAGE_Parser_CDI *self, GError **error)
+static gboolean mirage_parser_cdi_load_track (MirageParser_CDI *self, GError **error)
 {
     /* Recongised fields */
     gint num_indices = 0;
@@ -666,7 +666,7 @@ static gboolean mirage_parser_cdi_load_track (MIRAGE_Parser_CDI *self, GError **
     mirage_track_set_mode(MIRAGE_TRACK(track), decoded_mode);
 
     /* Create BINARY fragment */
-    fragment = mirage_create_fragment(MIRAGE_TYPE_FRAG_IFACE_BINARY, self->priv->cdi_stream, G_OBJECT(self), error);
+    fragment = mirage_create_fragment(MIRAGE_TYPE_FRAGMENT_IFACE_BINARY, self->priv->cdi_stream, G_OBJECT(self), error);
     if (!fragment) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: failed to create BINARY fragment!\n", __debug__);
         g_object_unref(track);
@@ -677,7 +677,7 @@ static gboolean mirage_parser_cdi_load_track (MIRAGE_Parser_CDI *self, GError **
 
     mirage_fragment_set_length(MIRAGE_FRAGMENT(fragment), fragment_len);
 
-    if (!mirage_frag_iface_binary_track_file_set_file(MIRAGE_FRAG_IFACE_BINARY(fragment), self->priv->cdi_filename, self->priv->cdi_stream, error)) {
+    if (!mirage_fragment_iface_binary_track_file_set_file(MIRAGE_FRAGMENT_IFACE_BINARY(fragment), self->priv->cdi_filename, self->priv->cdi_stream, error)) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to set track data file!\n", __debug__);
         g_object_unref(fragment);
         g_object_unref(track);
@@ -685,12 +685,12 @@ static gboolean mirage_parser_cdi_load_track (MIRAGE_Parser_CDI *self, GError **
         g_free(indices);
         return FALSE;
     }
-    mirage_frag_iface_binary_track_file_set_offset(MIRAGE_FRAG_IFACE_BINARY(fragment), tfile_offset);
-    mirage_frag_iface_binary_track_file_set_sectsize(MIRAGE_FRAG_IFACE_BINARY(fragment), tfile_sectsize);
-    mirage_frag_iface_binary_track_file_set_format(MIRAGE_FRAG_IFACE_BINARY(fragment), tfile_format);
+    mirage_fragment_iface_binary_track_file_set_offset(MIRAGE_FRAGMENT_IFACE_BINARY(fragment), tfile_offset);
+    mirage_fragment_iface_binary_track_file_set_sectsize(MIRAGE_FRAGMENT_IFACE_BINARY(fragment), tfile_sectsize);
+    mirage_fragment_iface_binary_track_file_set_format(MIRAGE_FRAGMENT_IFACE_BINARY(fragment), tfile_format);
 
-    mirage_frag_iface_binary_subchannel_file_set_sectsize(MIRAGE_FRAG_IFACE_BINARY(fragment), sfile_sectsize);
-    mirage_frag_iface_binary_subchannel_file_set_format(MIRAGE_FRAG_IFACE_BINARY(fragment), sfile_format);
+    mirage_fragment_iface_binary_subchannel_file_set_sectsize(MIRAGE_FRAGMENT_IFACE_BINARY(fragment), sfile_sectsize);
+    mirage_fragment_iface_binary_subchannel_file_set_format(MIRAGE_FRAGMENT_IFACE_BINARY(fragment), sfile_format);
 
     mirage_track_add_fragment(MIRAGE_TRACK(track), -1, fragment);
 
@@ -739,7 +739,7 @@ static gboolean mirage_parser_cdi_load_track (MIRAGE_Parser_CDI *self, GError **
     return TRUE;
 }
 
-static gboolean mirage_parser_cdi_load_session (MIRAGE_Parser_CDI *self, GError **error)
+static gboolean mirage_parser_cdi_load_session (MirageParser_CDI *self, GError **error)
 {
     gint num_tracks = 0;
 
@@ -796,7 +796,7 @@ static gboolean mirage_parser_cdi_load_session (MIRAGE_Parser_CDI *self, GError 
     return TRUE;
 }
 
-static gboolean mirage_parser_cdi_load_disc (MIRAGE_Parser_CDI *self, GError **error)
+static gboolean mirage_parser_cdi_load_disc (MirageParser_CDI *self, GError **error)
 {
     gboolean succeeded = TRUE;
     gint num_sessions = 0;
@@ -934,11 +934,11 @@ end:
 }
 
 /**********************************************************************\
- *                MIRAGE_Parser methods implementation                *
+ *                MirageParser methods implementation                *
 \**********************************************************************/
-static GObject *mirage_parser_cdi_load_image (MIRAGE_Parser *_self, gchar **filenames, GError **error)
+static GObject *mirage_parser_cdi_load_image (MirageParser *_self, gchar **filenames, GError **error)
 {
-    MIRAGE_Parser_CDI *self = MIRAGE_PARSER_CDI(_self);
+    MirageParser_CDI *self = MIRAGE_PARSER_CDI(_self);
 
     gboolean succeeded = TRUE;
     guint64 offset;
@@ -1017,7 +1017,7 @@ end:
 /**********************************************************************\
  *                             Object init                            *
 \**********************************************************************/
-G_DEFINE_DYNAMIC_TYPE(MIRAGE_Parser_CDI, mirage_parser_cdi, MIRAGE_TYPE_PARSER);
+G_DEFINE_DYNAMIC_TYPE(MirageParser_CDI, mirage_parser_cdi, MIRAGE_TYPE_PARSER);
 
 void mirage_parser_cdi_type_register (GTypeModule *type_module)
 {
@@ -1025,7 +1025,7 @@ void mirage_parser_cdi_type_register (GTypeModule *type_module)
 }
 
 
-static void mirage_parser_cdi_init (MIRAGE_Parser_CDI *self)
+static void mirage_parser_cdi_init (MirageParser_CDI *self)
 {
     self->priv = MIRAGE_PARSER_CDI_GET_PRIVATE(self);
 
@@ -1041,7 +1041,7 @@ static void mirage_parser_cdi_init (MIRAGE_Parser_CDI *self)
 
 static void mirage_parser_cdi_dispose (GObject *gobject)
 {
-    MIRAGE_Parser_CDI *self = MIRAGE_PARSER_CDI(gobject);
+    MirageParser_CDI *self = MIRAGE_PARSER_CDI(gobject);
 
     if (self->priv->cdi_stream) {
         g_object_unref(self->priv->cdi_stream);
@@ -1054,7 +1054,7 @@ static void mirage_parser_cdi_dispose (GObject *gobject)
 
 static void mirage_parser_cdi_finalize (GObject *gobject)
 {
-    MIRAGE_Parser_CDI *self = MIRAGE_PARSER_CDI(gobject);
+    MirageParser_CDI *self = MIRAGE_PARSER_CDI(gobject);
 
     g_free(self->priv->cdi_filename);
 
@@ -1062,10 +1062,10 @@ static void mirage_parser_cdi_finalize (GObject *gobject)
     return G_OBJECT_CLASS(mirage_parser_cdi_parent_class)->finalize(gobject);
 }
 
-static void mirage_parser_cdi_class_init (MIRAGE_Parser_CDIClass *klass)
+static void mirage_parser_cdi_class_init (MirageParser_CDIClass *klass)
 {
     GObjectClass *gobject_class = G_OBJECT_CLASS(klass);
-    MIRAGE_ParserClass *parser_class = MIRAGE_PARSER_CLASS(klass);
+    MirageParserClass *parser_class = MIRAGE_PARSER_CLASS(klass);
 
     gobject_class->dispose = mirage_parser_cdi_dispose;
     gobject_class->finalize = mirage_parser_cdi_finalize;
@@ -1073,9 +1073,9 @@ static void mirage_parser_cdi_class_init (MIRAGE_Parser_CDIClass *klass)
     parser_class->load_image = mirage_parser_cdi_load_image;
 
     /* Register private structure */
-    g_type_class_add_private(klass, sizeof(MIRAGE_Parser_CDIPrivate));
+    g_type_class_add_private(klass, sizeof(MirageParser_CDIPrivate));
 }
 
-static void mirage_parser_cdi_class_finalize (MIRAGE_Parser_CDIClass *klass G_GNUC_UNUSED)
+static void mirage_parser_cdi_class_finalize (MirageParser_CDIClass *klass G_GNUC_UNUSED)
 {
 }

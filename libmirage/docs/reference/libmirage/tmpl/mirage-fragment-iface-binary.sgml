@@ -1,0 +1,220 @@
+<!-- ##### SECTION Title ##### -->
+MirageFragmentIfaceBinary interface
+
+<!-- ##### SECTION Short_Description ##### -->
+Binary Fragment interface
+
+<!-- ##### SECTION Long_Description ##### -->
+<para>
+#MirageFragmentIfaceBinary is Binary Fragment interface that can be implemented
+by a #MirageFragment implementation.
+</para>
+
+<!-- ##### SECTION See_Also ##### -->
+<para>
+#MirageFragment
+</para>
+
+<!-- ##### SECTION Stability_Level ##### -->
+
+
+<!-- ##### SECTION Image ##### -->
+
+
+<!-- ##### ENUM MirageTrackFileFormat ##### -->
+<para>
+
+</para>
+
+@MIRAGE_TFILE_DATA: 
+@MIRAGE_TFILE_AUDIO: 
+@MIRAGE_TFILE_AUDIO_SWAP: 
+
+<!-- ##### ENUM MirageSubchannelFileFormat ##### -->
+<para>
+
+</para>
+
+@MIRAGE_SFILE_INT: 
+@MIRAGE_SFILE_EXT: 
+@MIRAGE_SFILE_PW96_INT: 
+@MIRAGE_SFILE_PW96_LIN: 
+@MIRAGE_SFILE_RW96: 
+@MIRAGE_SFILE_PQ16: 
+
+<!-- ##### STRUCT MirageFragmentIfaceBinary ##### -->
+<para>
+
+</para>
+
+
+<!-- ##### FUNCTION mirage_fragment_iface_binary_track_file_set_file ##### -->
+<para>
+
+</para>
+
+@self: 
+@filename: 
+@stream: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION mirage_fragment_iface_binary_track_file_get_file ##### -->
+<para>
+
+</para>
+
+@self: 
+@Returns: 
+
+
+<!-- ##### FUNCTION mirage_fragment_iface_binary_track_file_set_offset ##### -->
+<para>
+
+</para>
+
+@self: 
+@offset: 
+
+
+<!-- ##### FUNCTION mirage_fragment_iface_binary_track_file_get_offset ##### -->
+<para>
+
+</para>
+
+@self: 
+@Returns: 
+
+
+<!-- ##### FUNCTION mirage_fragment_iface_binary_track_file_set_sectsize ##### -->
+<para>
+
+</para>
+
+@self: 
+@sectsize: 
+
+
+<!-- ##### FUNCTION mirage_fragment_iface_binary_track_file_get_sectsize ##### -->
+<para>
+
+</para>
+
+@self: 
+@Returns: 
+
+
+<!-- ##### FUNCTION mirage_fragment_iface_binary_track_file_set_format ##### -->
+<para>
+
+</para>
+
+@self: 
+@format: 
+
+
+<!-- ##### FUNCTION mirage_fragment_iface_binary_track_file_get_format ##### -->
+<para>
+
+</para>
+
+@self: 
+@Returns: 
+
+
+<!-- ##### FUNCTION mirage_fragment_iface_binary_track_file_get_position ##### -->
+<para>
+
+</para>
+
+@self: 
+@address: 
+@Returns: 
+
+
+<!-- ##### FUNCTION mirage_fragment_iface_binary_subchannel_file_set_file ##### -->
+<para>
+
+</para>
+
+@self: 
+@filename: 
+@stream: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION mirage_fragment_iface_binary_subchannel_file_get_file ##### -->
+<para>
+
+</para>
+
+@self: 
+@Returns: 
+
+
+<!-- ##### FUNCTION mirage_fragment_iface_binary_subchannel_file_set_offset ##### -->
+<para>
+
+</para>
+
+@self: 
+@offset: 
+
+
+<!-- ##### FUNCTION mirage_fragment_iface_binary_subchannel_file_get_offset ##### -->
+<para>
+
+</para>
+
+@self: 
+@Returns: 
+
+
+<!-- ##### FUNCTION mirage_fragment_iface_binary_subchannel_file_set_sectsize ##### -->
+<para>
+
+</para>
+
+@self: 
+@sectsize: 
+
+
+<!-- ##### FUNCTION mirage_fragment_iface_binary_subchannel_file_get_sectsize ##### -->
+<para>
+
+</para>
+
+@self: 
+@Returns: 
+
+
+<!-- ##### FUNCTION mirage_fragment_iface_binary_subchannel_file_set_format ##### -->
+<para>
+
+</para>
+
+@self: 
+@format: 
+
+
+<!-- ##### FUNCTION mirage_fragment_iface_binary_subchannel_file_get_format ##### -->
+<para>
+
+</para>
+
+@self: 
+@Returns: 
+
+
+<!-- ##### FUNCTION mirage_fragment_iface_binary_subchannel_file_get_position ##### -->
+<para>
+
+</para>
+
+@self: 
+@address: 
+@Returns: 
+
+

@@ -25,9 +25,9 @@
 /**********************************************************************\
  *                          Private structure                         *
 \**********************************************************************/
-#define MIRAGE_PARSER_ISO_GET_PRIVATE(obj) (G_TYPE_INSTANCE_GET_PRIVATE((obj), MIRAGE_TYPE_PARSER_ISO, MIRAGE_Parser_ISOPrivate))
+#define MIRAGE_PARSER_ISO_GET_PRIVATE(obj) (G_TYPE_INSTANCE_GET_PRIVATE((obj), MIRAGE_TYPE_PARSER_ISO, MirageParser_ISOPrivate))
 
-struct _MIRAGE_Parser_ISOPrivate
+struct _MirageParser_ISOPrivate
 {
     GObject *disc;
 
@@ -36,7 +36,7 @@ struct _MIRAGE_Parser_ISOPrivate
 };
 
 
-static gboolean mirage_parser_iso_is_file_valid (MIRAGE_Parser_ISO *self, gchar *filename, GError **error)
+static gboolean mirage_parser_iso_is_file_valid (MirageParser_ISO *self, gchar *filename, GError **error)
 {
     gboolean succeeded;
     gsize file_length;
@@ -143,7 +143,7 @@ end:
     return succeeded;
 }
 
-static gboolean mirage_parser_iso_load_track (MIRAGE_Parser_ISO *self, gchar *filename, GError **error)
+static gboolean mirage_parser_iso_load_track (MirageParser_ISO *self, gchar *filename, GError **error)
 {
     GObject *session;
     GObject *track;
@@ -161,7 +161,7 @@ static gboolean mirage_parser_iso_load_track (MIRAGE_Parser_ISO *self, gchar *fi
 
     /* Create data fragment */
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: creating data fragment\n", __debug__);
-    fragment = mirage_create_fragment(MIRAGE_TYPE_FRAG_IFACE_BINARY, data_stream, G_OBJECT(self), error);
+    fragment = mirage_create_fragment(MIRAGE_TYPE_FRAGMENT_IFACE_BINARY, data_stream, G_OBJECT(self), error);
     if (!fragment) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to create BINARY fragment!\n", __debug__);
         g_object_unref(data_stream);
@@ -169,14 +169,14 @@ static gboolean mirage_parser_iso_load_track (MIRAGE_Parser_ISO *self, gchar *fi
     }
 
     /* Set file */
-    if (!mirage_frag_iface_binary_track_file_set_file(MIRAGE_FRAG_IFACE_BINARY(fragment), filename, data_stream, error)) {
+    if (!mirage_fragment_iface_binary_track_file_set_file(MIRAGE_FRAGMENT_IFACE_BINARY(fragment), filename, data_stream, error)) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to set track data file!\n", __debug__);
         g_object_unref(data_stream);
         g_object_unref(fragment);
         return FALSE;
     }
-    mirage_frag_iface_binary_track_file_set_sectsize(MIRAGE_FRAG_IFACE_BINARY(fragment), self->priv->track_sectsize);
-    mirage_frag_iface_binary_track_file_set_format(MIRAGE_FRAG_IFACE_BINARY(fragment), FR_BIN_TFILE_DATA);
+    mirage_fragment_iface_binary_track_file_set_sectsize(MIRAGE_FRAGMENT_IFACE_BINARY(fragment), self->priv->track_sectsize);
+    mirage_fragment_iface_binary_track_file_set_format(MIRAGE_FRAGMENT_IFACE_BINARY(fragment), MIRAGE_TFILE_DATA);
 
     /* Use whole file */
     if (!mirage_fragment_use_the_rest_of_file(MIRAGE_FRAGMENT(fragment), error)) {
@@ -212,11 +212,11 @@ static gboolean mirage_parser_iso_load_track (MIRAGE_Parser_ISO *self, gchar *fi
 
 
 /**********************************************************************\
- *                MIRAGE_Parser methods implementation                *
+ *                MirageParser methods implementation                *
 \**********************************************************************/
-static GObject *mirage_parser_iso_load_image (MIRAGE_Parser *_self, gchar **filenames, GError **error)
+static GObject *mirage_parser_iso_load_image (MirageParser *_self, gchar **filenames, GError **error)
 {
-    MIRAGE_Parser_ISO *self = MIRAGE_PARSER_ISO(_self);
+    MirageParser_ISO *self = MIRAGE_PARSER_ISO(_self);
 
     gboolean succeeded = TRUE;
 
@@ -272,7 +272,7 @@ end:
 /**********************************************************************\
  *                             Object init                            *
 \**********************************************************************/
-G_DEFINE_DYNAMIC_TYPE(MIRAGE_Parser_ISO, mirage_parser_iso, MIRAGE_TYPE_PARSER);
+G_DEFINE_DYNAMIC_TYPE(MirageParser_ISO, mirage_parser_iso, MIRAGE_TYPE_PARSER);
 
 void mirage_parser_iso_type_register (GTypeModule *type_module)
 {
@@ -280,7 +280,7 @@ void mirage_parser_iso_type_register (GTypeModule *type_module)
 }
 
 
-static void mirage_parser_iso_init (MIRAGE_Parser_ISO *self)
+static void mirage_parser_iso_init (MirageParser_ISO *self)
 {
     self->priv = MIRAGE_PARSER_ISO_GET_PRIVATE(self);
 
@@ -292,16 +292,16 @@ static void mirage_parser_iso_init (MIRAGE_Parser_ISO *self)
     );
 }
 
-static void mirage_parser_iso_class_init (MIRAGE_Parser_ISOClass *klass)
+static void mirage_parser_iso_class_init (MirageParser_ISOClass *klass)
 {
-    MIRAGE_ParserClass *parser_class = MIRAGE_PARSER_CLASS(klass);
+    MirageParserClass *parser_class = MIRAGE_PARSER_CLASS(klass);
 
     parser_class->load_image = mirage_parser_iso_load_image;
 
     /* Register private structure */
-    g_type_class_add_private(klass, sizeof(MIRAGE_Parser_ISOPrivate));
+    g_type_class_add_private(klass, sizeof(MirageParser_ISOPrivate));
 }
 
-static void mirage_parser_iso_class_finalize (MIRAGE_Parser_ISOClass *klass G_GNUC_UNUSED)
+static void mirage_parser_iso_class_finalize (MirageParser_ISOClass *klass G_GNUC_UNUSED)
 {
 }

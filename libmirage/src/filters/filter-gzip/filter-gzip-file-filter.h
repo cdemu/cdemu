@@ -24,27 +24,27 @@
 G_BEGIN_DECLS
 
 #define MIRAGE_TYPE_FILE_FILTER_GZIP            (mirage_file_filter_gzip_get_type())
-#define MIRAGE_FILE_FILTER_GZIP(obj)            (G_TYPE_CHECK_INSTANCE_CAST((obj), MIRAGE_TYPE_FILE_FILTER_GZIP, MIRAGE_FileFilter_GZIP))
-#define MIRAGE_FILE_FILTER_GZIP_CLASS(klass)    (G_TYPE_CHECK_CLASS_CAST((klass), MIRAGE_TYPE_FILE_FILTER_GZIP, MIRAGE_FileFilter_GZIPClass))
+#define MIRAGE_FILE_FILTER_GZIP(obj)            (G_TYPE_CHECK_INSTANCE_CAST((obj), MIRAGE_TYPE_FILE_FILTER_GZIP, MirageFileFilterGzip))
+#define MIRAGE_FILE_FILTER_GZIP_CLASS(klass)    (G_TYPE_CHECK_CLASS_CAST((klass), MIRAGE_TYPE_FILE_FILTER_GZIP, MirageFileFilterGzipClass))
 #define MIRAGE_IS_FILE_FILTER_GZIP(obj)         (G_TYPE_CHECK_INSTANCE_TYPE((obj), MIRAGE_TYPE_FILE_FILTER_GZIP))
 #define MIRAGE_IS_FILE_FILTER_GZIP_CLASS(klass) (G_TYPE_CHECK_CLASS_TYPE((klass), MIRAGE_TYPE_FILE_FILTER_GZIP))
-#define MIRAGE_FILE_FILTER_GZIP_GET_CLASS(obj)  (G_TYPE_INSTANCE_GET_CLASS((obj), MIRAGE_TYPE_FILE_FILTER_GZIP, MIRAGE_FileFilter_GZIPClass))
+#define MIRAGE_FILE_FILTER_GZIP_GET_CLASS(obj)  (G_TYPE_INSTANCE_GET_CLASS((obj), MIRAGE_TYPE_FILE_FILTER_GZIP, MirageFileFilterGzipClass))
 
-typedef struct _MIRAGE_FileFilter_GZIP        MIRAGE_FileFilter_GZIP;
-typedef struct _MIRAGE_FileFilter_GZIPClass   MIRAGE_FileFilter_GZIPClass;
-typedef struct _MIRAGE_FileFilter_GZIPPrivate MIRAGE_FileFilter_GZIPPrivate;
+typedef struct _MirageFileFilterGzip        MirageFileFilterGzip;
+typedef struct _MirageFileFilterGzipClass   MirageFileFilterGzipClass;
+typedef struct _MirageFileFilterGzipPrivate MirageFileFilterGzipPrivate;
 
-struct _MIRAGE_FileFilter_GZIP
+struct _MirageFileFilterGzip
 {
-    MIRAGE_FileFilter parent_instance;
+    MirageFileFilter parent_instance;
 
     /*< private >*/
-    MIRAGE_FileFilter_GZIPPrivate *priv;
+    MirageFileFilterGzipPrivate *priv;
 };
 
-struct _MIRAGE_FileFilter_GZIPClass
+struct _MirageFileFilterGzipClass
 {
-    MIRAGE_FileFilterClass parent_class;
+    MirageFileFilterClass parent_class;
 };
 
 /* Used by MIRAGE_TYPE_FILE_FILTER_GZIP */

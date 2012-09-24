@@ -25,9 +25,9 @@
 /**********************************************************************\
  *                          Private structure                         *
 \**********************************************************************/
-#define MIRAGE_PARSER_MDX_GET_PRIVATE(obj) (G_TYPE_INSTANCE_GET_PRIVATE((obj), MIRAGE_TYPE_PARSER_MDX, MIRAGE_Parser_MDXPrivate))
+#define MIRAGE_PARSER_MDX_GET_PRIVATE(obj) (G_TYPE_INSTANCE_GET_PRIVATE((obj), MIRAGE_TYPE_PARSER_MDX, MirageParser_MDXPrivate))
 
-struct _MIRAGE_Parser_MDXPrivate
+struct _MirageParser_MDXPrivate
 {
     GObject *disc;
 
@@ -35,7 +35,7 @@ struct _MIRAGE_Parser_MDXPrivate
 };
 
 
-static gboolean mirage_parser_mdx_determine_track_mode (MIRAGE_Parser_MDX *self, GObject *stream, guint64 offset, guint64 length, gint *track_mode,  gint *sector_size, gint *subchannel_type, gint *subchannel_size, GError **error)
+static gboolean mirage_parser_mdx_determine_track_mode (MirageParser_MDX *self, GObject *stream, guint64 offset, guint64 length, gint *track_mode,  gint *sector_size, gint *subchannel_type, gint *subchannel_size, GError **error)
 {
     /* FIXME: add subchannel support */
     *subchannel_type = 0;
@@ -137,7 +137,7 @@ static gchar *__helper_find_binary_file (const gchar *declared_filename, const g
 }
 
 
-static gboolean mirage_parser_mdx_get_track (MIRAGE_Parser_MDX *self, const gchar *filename, GObject **ret_track, GError **error)
+static gboolean mirage_parser_mdx_get_track (MirageParser_MDX *self, const gchar *filename, GObject **ret_track, GError **error)
 {
     gboolean succeeded = TRUE;
 
@@ -245,7 +245,7 @@ static gboolean mirage_parser_mdx_get_track (MIRAGE_Parser_MDX *self, const gcha
 
     /* Create data fragment */
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: creating data fragment\n", __debug__);
-    data_fragment = mirage_create_fragment(MIRAGE_TYPE_FRAG_IFACE_BINARY, data_stream, G_OBJECT(self), error);
+    data_fragment = mirage_create_fragment(MIRAGE_TYPE_FRAGMENT_IFACE_BINARY, data_stream, G_OBJECT(self), error);
     if (!data_fragment) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to create BINARY fragment!\n", __debug__);
         g_free(data_file);
@@ -253,7 +253,7 @@ static gboolean mirage_parser_mdx_get_track (MIRAGE_Parser_MDX *self, const gcha
     }
 
     /* Set file */
-    if (!mirage_frag_iface_binary_track_file_set_file(MIRAGE_FRAG_IFACE_BINARY(data_fragment), data_file, data_stream, error)) {
+    if (!mirage_fragment_iface_binary_track_file_set_file(MIRAGE_FRAGMENT_IFACE_BINARY(data_fragment), data_file, data_stream, error)) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to set track data file!\n", __debug__);
         g_free(data_file);
         g_object_unref(data_stream);
@@ -263,9 +263,9 @@ static gboolean mirage_parser_mdx_get_track (MIRAGE_Parser_MDX *self, const gcha
     g_free(data_file);
     g_object_unref(data_stream);
 
-    mirage_frag_iface_binary_track_file_set_format(MIRAGE_FRAG_IFACE_BINARY(data_fragment), FR_BIN_TFILE_DATA);
-    mirage_frag_iface_binary_track_file_set_offset(MIRAGE_FRAG_IFACE_BINARY(data_fragment), offset);
-    mirage_frag_iface_binary_track_file_set_sectsize(MIRAGE_FRAG_IFACE_BINARY(data_fragment), sector_size);
+    mirage_fragment_iface_binary_track_file_set_format(MIRAGE_FRAGMENT_IFACE_BINARY(data_fragment), MIRAGE_TFILE_DATA);
+    mirage_fragment_iface_binary_track_file_set_offset(MIRAGE_FRAGMENT_IFACE_BINARY(data_fragment), offset);
+    mirage_fragment_iface_binary_track_file_set_sectsize(MIRAGE_FRAGMENT_IFACE_BINARY(data_fragment), sector_size);
 
     mirage_fragment_set_length(MIRAGE_FRAGMENT(data_fragment), num_sectors);
 
@@ -276,7 +276,7 @@ static gboolean mirage_parser_mdx_get_track (MIRAGE_Parser_MDX *self, const gcha
     return TRUE;
 }
 
-static gboolean mirage_parser_mdx_load_disc (MIRAGE_Parser_MDX *self, gchar *filename, GError **error)
+static gboolean mirage_parser_mdx_load_disc (MirageParser_MDX *self, gchar *filename, GError **error)
 {
     GObject *session;
     GObject *track;
@@ -326,11 +326,11 @@ static gboolean mirage_parser_mdx_load_disc (MIRAGE_Parser_MDX *self, gchar *fil
 
 
 /**********************************************************************\
- *                MIRAGE_Parser methods implementation                *
+ *                MirageParser methods implementation                *
 \**********************************************************************/
-static GObject *mirage_parser_mdx_load_image (MIRAGE_Parser *_self, gchar **filenames, GError **error)
+static GObject *mirage_parser_mdx_load_image (MirageParser *_self, gchar **filenames, GError **error)
 {
-    MIRAGE_Parser_MDX *self = MIRAGE_PARSER_MDX(_self);
+    MirageParser_MDX *self = MIRAGE_PARSER_MDX(_self);
 
     gboolean succeeded = TRUE;
     gchar signature[17];
@@ -380,7 +380,7 @@ static GObject *mirage_parser_mdx_load_image (MIRAGE_Parser *_self, gchar **file
 /**********************************************************************\
  *                             Object init                            *
 \**********************************************************************/
-G_DEFINE_DYNAMIC_TYPE(MIRAGE_Parser_MDX, mirage_parser_mdx, MIRAGE_TYPE_PARSER);
+G_DEFINE_DYNAMIC_TYPE(MirageParser_MDX, mirage_parser_mdx, MIRAGE_TYPE_PARSER);
 
 void mirage_parser_mdx_type_register (GTypeModule *type_module)
 {
@@ -388,7 +388,7 @@ void mirage_parser_mdx_type_register (GTypeModule *type_module)
 }
 
 
-static void mirage_parser_mdx_init (MIRAGE_Parser_MDX *self)
+static void mirage_parser_mdx_init (MirageParser_MDX *self)
 {
     self->priv = MIRAGE_PARSER_MDX_GET_PRIVATE(self);
 
@@ -404,7 +404,7 @@ static void mirage_parser_mdx_init (MIRAGE_Parser_MDX *self)
 
 static void mirage_parser_mdx_dispose (GObject *gobject)
 {
-    MIRAGE_Parser_MDX *self = MIRAGE_PARSER_MDX(gobject);
+    MirageParser_MDX *self = MIRAGE_PARSER_MDX(gobject);
 
     if (self->priv->stream) {
         g_object_unref(self->priv->stream);
@@ -415,19 +415,19 @@ static void mirage_parser_mdx_dispose (GObject *gobject)
     return G_OBJECT_CLASS(mirage_parser_mdx_parent_class)->dispose(gobject);
 }
 
-static void mirage_parser_mdx_class_init (MIRAGE_Parser_MDXClass *klass)
+static void mirage_parser_mdx_class_init (MirageParser_MDXClass *klass)
 {
     GObjectClass *gobject_class = G_OBJECT_CLASS(klass);
-    MIRAGE_ParserClass *parser_class = MIRAGE_PARSER_CLASS(klass);
+    MirageParserClass *parser_class = MIRAGE_PARSER_CLASS(klass);
 
     gobject_class->dispose = mirage_parser_mdx_dispose;
 
     parser_class->load_image = mirage_parser_mdx_load_image;
 
     /* Register private structure */
-    g_type_class_add_private(klass, sizeof(MIRAGE_Parser_MDXPrivate));
+    g_type_class_add_private(klass, sizeof(MirageParser_MDXPrivate));
 }
 
-static void mirage_parser_mdx_class_finalize (MIRAGE_Parser_MDXClass *klass G_GNUC_UNUSED)
+static void mirage_parser_mdx_class_finalize (MirageParser_MDXClass *klass G_GNUC_UNUSED)
 {
 }

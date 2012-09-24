@@ -29,11 +29,11 @@
 /**********************************************************************\
  *                          Private structure                         *
 \**********************************************************************/
-#define MIRAGE_FILE_FILTER_GET_PRIVATE(obj) (G_TYPE_INSTANCE_GET_PRIVATE((obj), MIRAGE_TYPE_FILE_FILTER, MIRAGE_FileFilterPrivate))
+#define MIRAGE_FILE_FILTER_GET_PRIVATE(obj) (G_TYPE_INSTANCE_GET_PRIVATE((obj), MIRAGE_TYPE_FILE_FILTER, MirageFileFilterPrivate))
 
-struct _MIRAGE_FileFilterPrivate
+struct _MirageFileFilterPrivate
 {
-    MIRAGE_FileFilterInfo *file_filter_info;
+    MirageFileFilterInfo *file_filter_info;
 
     GObject *debug_context;
 };
@@ -42,7 +42,7 @@ struct _MIRAGE_FileFilterPrivate
 /**********************************************************************\
  *                          Private functions                         *
 \**********************************************************************/
-static void destroy_file_filter_info (MIRAGE_FileFilterInfo *info)
+static void destroy_file_filter_info (MirageFileFilterInfo *info)
 {
     /* Free info and its content */
     if (info) {
@@ -59,7 +59,7 @@ static void destroy_file_filter_info (MIRAGE_FileFilterInfo *info)
 \**********************************************************************/
 /**
  * mirage_file_filter_generate_file_filter_info:
- * @self: a #MIRAGE_FileFilter
+ * @self: a #MirageFileFilter
  * @id: (in): file filter ID
  * @name: (in): file filter name
  *
@@ -68,13 +68,13 @@ static void destroy_file_filter_info (MIRAGE_FileFilterInfo *info)
  * for creating file filter information in file filter implementations.
  * </para>
  **/
-void mirage_file_filter_generate_file_filter_info (MIRAGE_FileFilter *self, const gchar *id, const gchar *name)
+void mirage_file_filter_generate_file_filter_info (MirageFileFilter *self, const gchar *id, const gchar *name)
 {
     /* Free old info */
     destroy_file_filter_info(self->priv->file_filter_info);
 
     /* Create new info */
-    self->priv->file_filter_info = g_new0(MIRAGE_FileFilterInfo, 1);
+    self->priv->file_filter_info = g_new0(MirageFileFilterInfo, 1);
 
     self->priv->file_filter_info->id = g_strdup(id);
     self->priv->file_filter_info->name = g_strdup(name);
@@ -84,7 +84,7 @@ void mirage_file_filter_generate_file_filter_info (MIRAGE_FileFilter *self, cons
 
 /**
  * mirage_file_filter_get_file_filter_info:
- * @self: a #MIRAGE_FileFilter
+ * @self: a #MirageFileFilter
  *
  * <para>
  * Retrieves file filter information.
@@ -93,7 +93,7 @@ void mirage_file_filter_generate_file_filter_info (MIRAGE_FileFilter *self, cons
  * Returns: (transfer none): a pointer to file filter information structure. The
  * structure belongs to object and therefore should not be modified.
  **/
-const MIRAGE_FileFilterInfo *mirage_file_filter_get_file_filter_info (MIRAGE_FileFilter *self)
+const MirageFileFilterInfo *mirage_file_filter_get_file_filter_info (MirageFileFilter *self)
 {
     return self->priv->file_filter_info;
 }
@@ -101,7 +101,7 @@ const MIRAGE_FileFilterInfo *mirage_file_filter_get_file_filter_info (MIRAGE_Fil
 
 /**
  * mirage_file_filter_can_handle_data_format:
- * @self: a #MIRAGE_FileFilter
+ * @self: a #MirageFileFilter
  * @error: (out) (allow-none): location to store error, or %NULL
  *
  * <para>
@@ -110,7 +110,7 @@ const MIRAGE_FileFilterInfo *mirage_file_filter_get_file_filter_info (MIRAGE_Fil
  *
  * Returns: %TRUE if file filter can handle data in underlying stream, %FALSE if not
  **/
-gboolean mirage_file_filter_can_handle_data_format (MIRAGE_FileFilter *self, GError **error)
+gboolean mirage_file_filter_can_handle_data_format (MirageFileFilter *self, GError **error)
 {
     /* Provided by implementation */
     return MIRAGE_FILE_FILTER_GET_CLASS(self)->can_handle_data_format(self, error);
@@ -123,7 +123,7 @@ gboolean mirage_file_filter_can_handle_data_format (MIRAGE_FileFilter *self, GEr
 \**********************************************************************/
 static goffset mirage_file_filter_tell (GSeekable *_self)
 {
-    MIRAGE_FileFilter *self = MIRAGE_FILE_FILTER(_self);
+    MirageFileFilter *self = MIRAGE_FILE_FILTER(_self);
     /* Provided by implementation */
     return MIRAGE_FILE_FILTER_GET_CLASS(self)->tell(self);
 }
@@ -136,7 +136,7 @@ static gboolean mirage_file_filter_can_seek (GSeekable *_self G_GNUC_UNUSED)
 
 static gboolean mirage_file_filter_seek (GSeekable *_self, goffset offset, GSeekType type, GCancellable *cancellable G_GNUC_UNUSED, GError **error)
 {
-    MIRAGE_FileFilter *self = MIRAGE_FILE_FILTER(_self);
+    MirageFileFilter *self = MIRAGE_FILE_FILTER(_self);
     /* Provided by implementation */
     return MIRAGE_FILE_FILTER_GET_CLASS(self)->seek(self, offset, type, error);
 }
@@ -160,17 +160,17 @@ static gboolean mirage_file_filter_truncate_fn (GSeekable *_self G_GNUC_UNUSED, 
 \**********************************************************************/
 static gssize mirage_file_filter_read (GInputStream *_self, void *buffer, gsize count, GCancellable *cancellable G_GNUC_UNUSED, GError **error)
 {
-    MIRAGE_FileFilter *self = MIRAGE_FILE_FILTER(_self);
+    MirageFileFilter *self = MIRAGE_FILE_FILTER(_self);
     return MIRAGE_FILE_FILTER_GET_CLASS(self)->read(self, buffer, count, error);
 }
 
 
 /**********************************************************************\
- *              MIRAGE_Debuggable methods implementation              *
+ *              MirageDebuggable methods implementation              *
 \**********************************************************************/
-static void mirage_file_filter_set_debug_context (MIRAGE_Debuggable *_self, GObject *debug_context)
+static void mirage_file_filter_set_debug_context (MirageDebuggable *_self, GObject *debug_context)
 {
-    MIRAGE_FileFilter *self = MIRAGE_FILE_FILTER(_self);
+    MirageFileFilter *self = MIRAGE_FILE_FILTER(_self);
 
     if (debug_context == self->priv->debug_context) {
         /* Don't do anything if we're trying to set the same context */
@@ -189,15 +189,15 @@ static void mirage_file_filter_set_debug_context (MIRAGE_Debuggable *_self, GObj
     }
 }
 
-static GObject *mirage_file_filter_get_debug_context (MIRAGE_Debuggable *_self)
+static GObject *mirage_file_filter_get_debug_context (MirageDebuggable *_self)
 {
-    MIRAGE_FileFilter *self = MIRAGE_FILE_FILTER(_self);
+    MirageFileFilter *self = MIRAGE_FILE_FILTER(_self);
     return self->priv->debug_context;
 }
 
-static void mirage_file_filter_debug_messagev (MIRAGE_Debuggable *_self, gint level, gchar *format, va_list args)
+static void mirage_file_filter_debug_messagev (MirageDebuggable *_self, gint level, gchar *format, va_list args)
 {
-    MIRAGE_FileFilter *self = MIRAGE_FILE_FILTER(_self);
+    MirageFileFilter *self = MIRAGE_FILE_FILTER(_self);
 
     gint debug_mask;
     const gchar *name;
@@ -239,9 +239,9 @@ static void mirage_file_filter_debug_messagev (MIRAGE_Debuggable *_self, gint le
  *                             Object init                            *
 \**********************************************************************/
 static void mirage_file_filter_gseekable_init (GSeekableIface *iface);
-static void mirage_file_filter_debuggable_init (MIRAGE_DebuggableInterface *iface);
+static void mirage_file_filter_debuggable_init (MirageDebuggableInterface *iface);
 
-G_DEFINE_TYPE_EXTENDED(MIRAGE_FileFilter,
+G_DEFINE_TYPE_EXTENDED(MirageFileFilter,
                        mirage_file_filter,
                        G_TYPE_FILTER_INPUT_STREAM,
                        0,
@@ -251,7 +251,7 @@ G_DEFINE_TYPE_EXTENDED(MIRAGE_FileFilter,
                                              mirage_file_filter_debuggable_init));
 
 
-static void mirage_file_filter_init (MIRAGE_FileFilter *self)
+static void mirage_file_filter_init (MirageFileFilter *self)
 {
     self->priv = MIRAGE_FILE_FILTER_GET_PRIVATE(self);
 
@@ -261,7 +261,7 @@ static void mirage_file_filter_init (MIRAGE_FileFilter *self)
 
 static void mirage_file_filter_dispose (GObject *gobject)
 {
-    MIRAGE_FileFilter *self = MIRAGE_FILE_FILTER(gobject);
+    MirageFileFilter *self = MIRAGE_FILE_FILTER(gobject);
 
     /* Unref debug context (if we have it) */
     if (self->priv->debug_context) {
@@ -275,7 +275,7 @@ static void mirage_file_filter_dispose (GObject *gobject)
 
 static void mirage_file_filter_finalize (GObject *gobject)
 {
-    MIRAGE_FileFilter *self = MIRAGE_FILE_FILTER(gobject);
+    MirageFileFilter *self = MIRAGE_FILE_FILTER(gobject);
 
     /* Free file filter info */
     destroy_file_filter_info(self->priv->file_filter_info);
@@ -284,7 +284,7 @@ static void mirage_file_filter_finalize (GObject *gobject)
     return G_OBJECT_CLASS(mirage_file_filter_parent_class)->finalize(gobject);
 }
 
-static void mirage_file_filter_class_init (MIRAGE_FileFilterClass *klass)
+static void mirage_file_filter_class_init (MirageFileFilterClass *klass)
 {
     GObjectClass *gobject_class = G_OBJECT_CLASS(klass);
     GInputStreamClass *ginputstream_class = G_INPUT_STREAM_CLASS(klass);
@@ -295,7 +295,7 @@ static void mirage_file_filter_class_init (MIRAGE_FileFilterClass *klass)
     ginputstream_class->read_fn = mirage_file_filter_read;
 
     /* Register private structure */
-    g_type_class_add_private(klass, sizeof(MIRAGE_FileFilterPrivate));
+    g_type_class_add_private(klass, sizeof(MirageFileFilterPrivate));
 }
 
 static void mirage_file_filter_gseekable_init (GSeekableIface *iface)
@@ -307,7 +307,7 @@ static void mirage_file_filter_gseekable_init (GSeekableIface *iface)
     iface->truncate_fn = mirage_file_filter_truncate_fn;
 }
 
-static void mirage_file_filter_debuggable_init (MIRAGE_DebuggableInterface *iface)
+static void mirage_file_filter_debuggable_init (MirageDebuggableInterface *iface)
 {
     iface->set_debug_context = mirage_file_filter_set_debug_context;
     iface->get_debug_context = mirage_file_filter_get_debug_context;

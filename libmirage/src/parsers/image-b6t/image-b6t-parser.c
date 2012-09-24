@@ -29,9 +29,9 @@
 /**********************************************************************\
  *                          Private structure                         *
 \**********************************************************************/
-#define MIRAGE_PARSER_B6T_GET_PRIVATE(obj) (G_TYPE_INSTANCE_GET_PRIVATE((obj), MIRAGE_TYPE_PARSER_B6T, MIRAGE_Parser_B6TPrivate))
+#define MIRAGE_PARSER_B6T_GET_PRIVATE(obj) (G_TYPE_INSTANCE_GET_PRIVATE((obj), MIRAGE_TYPE_PARSER_B6T, MirageParser_B6TPrivate))
 
-struct _MIRAGE_Parser_B6TPrivate
+struct _MirageParser_B6TPrivate
 {
     GObject *disc;
 
@@ -169,7 +169,7 @@ static inline void dpm_data_fix_endian (guint32 *dpm_data, guint32 num_entries)
 /**********************************************************************\
  *                          Parsing functions                         *
 \**********************************************************************/
-static gboolean mirage_parser_b6t_load_bwa_file (MIRAGE_Parser_B6T *self, GError **error)
+static gboolean mirage_parser_b6t_load_bwa_file (MirageParser_B6T *self, GError **error)
 {
     gchar *bwa_filename;
     gchar *bwa_fullpath;
@@ -273,7 +273,7 @@ static gboolean mirage_parser_b6t_load_bwa_file (MIRAGE_Parser_B6T *self, GError
     return TRUE;
 }
 
-static void mirage_parser_b6t_parse_internal_dpm_data (MIRAGE_Parser_B6T *self)
+static void mirage_parser_b6t_parse_internal_dpm_data (MirageParser_B6T *self)
 {
     if (self->priv->disc_block_2->dpm_data_length) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: reading internal DPM data; 0x%X bytes\n", __debug__, self->priv->disc_block_2->dpm_data_length);
@@ -362,7 +362,7 @@ static void mirage_parser_b6t_parse_internal_dpm_data (MIRAGE_Parser_B6T *self)
     }
 }
 
-static gboolean mirage_parser_b6t_setup_track_fragments (MIRAGE_Parser_B6T *self, GObject *cur_track, gint start_sector, gint length, GError **error)
+static gboolean mirage_parser_b6t_setup_track_fragments (MirageParser_B6T *self, GObject *cur_track, gint start_sector, gint length, GError **error)
 {
     GList *entry;
 
@@ -411,7 +411,7 @@ static gboolean mirage_parser_b6t_setup_track_fragments (MIRAGE_Parser_B6T *self
 
             /* We'd like a BINARY fragment */
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: creating BINARY fragment\n", __debug__);
-            data_fragment = mirage_create_fragment(MIRAGE_TYPE_FRAG_IFACE_BINARY, data_stream, G_OBJECT(self), error);
+            data_fragment = mirage_create_fragment(MIRAGE_TYPE_FRAGMENT_IFACE_BINARY, data_stream, G_OBJECT(self), error);
             if (!data_fragment) {
                 g_object_unref(data_stream);
                 g_free(filename);
@@ -442,12 +442,12 @@ static gboolean mirage_parser_b6t_setup_track_fragments (MIRAGE_Parser_B6T *self
                 switch (sfile_sectsize) {
                     case 16: {
                         /* Internal subchannel, PQ */
-                        sfile_format = FR_BIN_SFILE_PQ16 | FR_BIN_SFILE_INT;
+                        sfile_format = MIRAGE_SFILE_PQ16 | MIRAGE_SFILE_INT;
                         break;
                     }
                     case 96: {
                         /* Internal subchannel, linear PW96 */
-                        sfile_format = FR_BIN_SFILE_PW96_LIN | FR_BIN_SFILE_INT;
+                        sfile_format = MIRAGE_SFILE_PW96_LIN | MIRAGE_SFILE_INT;
                         break;
                     }
                     default: {
@@ -460,14 +460,14 @@ static gboolean mirage_parser_b6t_setup_track_fragments (MIRAGE_Parser_B6T *self
             /* Data format */
             if ((data_block->type & 0x00008000) == 0x00008000) {
                 MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: data block is for audio data\n", __debug__);
-                tfile_format = FR_BIN_TFILE_AUDIO;
+                tfile_format = MIRAGE_TFILE_AUDIO;
             } else {
                 MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: data block is for data track\n", __debug__);
-                tfile_format = FR_BIN_TFILE_DATA;
+                tfile_format = MIRAGE_TFILE_DATA;
             }
 
             /* Set file */
-            if (!mirage_frag_iface_binary_track_file_set_file(MIRAGE_FRAG_IFACE_BINARY(data_fragment), filename, data_stream, error)) {
+            if (!mirage_fragment_iface_binary_track_file_set_file(MIRAGE_FRAGMENT_IFACE_BINARY(data_fragment), filename, data_stream, error)) {
                 MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to set track data file!\n", __debug__);
                 g_object_unref(data_stream);
                 g_free(filename);
@@ -476,12 +476,12 @@ static gboolean mirage_parser_b6t_setup_track_fragments (MIRAGE_Parser_B6T *self
             g_object_unref(data_stream);
             g_free(filename);
 
-            mirage_frag_iface_binary_track_file_set_sectsize(MIRAGE_FRAG_IFACE_BINARY(data_fragment), tfile_sectsize);
-            mirage_frag_iface_binary_track_file_set_offset(MIRAGE_FRAG_IFACE_BINARY(data_fragment), tfile_offset);
-            mirage_frag_iface_binary_track_file_set_format(MIRAGE_FRAG_IFACE_BINARY(data_fragment), tfile_format);
+            mirage_fragment_iface_binary_track_file_set_sectsize(MIRAGE_FRAGMENT_IFACE_BINARY(data_fragment), tfile_sectsize);
+            mirage_fragment_iface_binary_track_file_set_offset(MIRAGE_FRAGMENT_IFACE_BINARY(data_fragment), tfile_offset);
+            mirage_fragment_iface_binary_track_file_set_format(MIRAGE_FRAGMENT_IFACE_BINARY(data_fragment), tfile_format);
 
-            mirage_frag_iface_binary_subchannel_file_set_sectsize(MIRAGE_FRAG_IFACE_BINARY(data_fragment), sfile_sectsize);
-            mirage_frag_iface_binary_subchannel_file_set_format(MIRAGE_FRAG_IFACE_BINARY(data_fragment), sfile_format);
+            mirage_fragment_iface_binary_subchannel_file_set_sectsize(MIRAGE_FRAGMENT_IFACE_BINARY(data_fragment), sfile_sectsize);
+            mirage_fragment_iface_binary_subchannel_file_set_format(MIRAGE_FRAGMENT_IFACE_BINARY(data_fragment), sfile_format);
 
             mirage_fragment_set_length(MIRAGE_FRAGMENT(data_fragment), tmp_length);
 
@@ -505,7 +505,7 @@ static gboolean mirage_parser_b6t_setup_track_fragments (MIRAGE_Parser_B6T *self
     return TRUE;
 }
 
-static gboolean mirage_parser_b6t_parse_header (MIRAGE_Parser_B6T *self, GError **error)
+static gboolean mirage_parser_b6t_parse_header (MirageParser_B6T *self, GError **error)
 {
     gchar *header;
 
@@ -526,7 +526,7 @@ static gboolean mirage_parser_b6t_parse_header (MIRAGE_Parser_B6T *self, GError 
 }
 
 
-static gboolean mirage_parser_b6t_parse_pma_data (MIRAGE_Parser_B6T *self, GError **error G_GNUC_UNUSED)
+static gboolean mirage_parser_b6t_parse_pma_data (MirageParser_B6T *self, GError **error G_GNUC_UNUSED)
 {
     if (self->priv->disc_block_1->pma_data_length) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: PMA data not used yet; skipping 0x%X bytes\n", __debug__, self->priv->disc_block_1->pma_data_length);
@@ -536,7 +536,7 @@ static gboolean mirage_parser_b6t_parse_pma_data (MIRAGE_Parser_B6T *self, GErro
     return TRUE;
 }
 
-static gboolean mirage_parser_b6t_parse_atip_data (MIRAGE_Parser_B6T *self, GError **error G_GNUC_UNUSED)
+static gboolean mirage_parser_b6t_parse_atip_data (MirageParser_B6T *self, GError **error G_GNUC_UNUSED)
 {
     if (self->priv->disc_block_1->atip_data_length) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: ATIP data not used yet; skipping 0x%X bytes\n", __debug__, self->priv->disc_block_1->atip_data_length);
@@ -546,7 +546,7 @@ static gboolean mirage_parser_b6t_parse_atip_data (MIRAGE_Parser_B6T *self, GErr
     return TRUE;
 }
 
-static gboolean mirage_parser_b6t_parse_cdtext_data (MIRAGE_Parser_B6T *self, GError **error G_GNUC_UNUSED)
+static gboolean mirage_parser_b6t_parse_cdtext_data (MirageParser_B6T *self, GError **error G_GNUC_UNUSED)
 {
     if (self->priv->disc_block_1->cdtext_data_length) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: reading CD-TEXT data; 0x%X bytes\n", __debug__, self->priv->disc_block_1->cdtext_data_length);
@@ -559,7 +559,7 @@ static gboolean mirage_parser_b6t_parse_cdtext_data (MIRAGE_Parser_B6T *self, GE
     return TRUE;
 }
 
-static void mirage_parser_b6t_parse_bca (MIRAGE_Parser_B6T *self)
+static void mirage_parser_b6t_parse_bca (MirageParser_B6T *self)
 {
     if (self->priv->disc_block_1->dvdrom_bca_length) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: reading BCA data; 0x%X bytes\n", __debug__, self->priv->disc_block_1->dvdrom_bca_length);
@@ -572,7 +572,7 @@ static void mirage_parser_b6t_parse_bca (MIRAGE_Parser_B6T *self)
     }
 }
 
-static void mirage_parser_b6t_parse_dvd_structures (MIRAGE_Parser_B6T *self)
+static void mirage_parser_b6t_parse_dvd_structures (MirageParser_B6T *self)
 {
     gint length = 0;
 
@@ -627,7 +627,7 @@ static void mirage_parser_b6t_parse_dvd_structures (MIRAGE_Parser_B6T *self)
 }
 
 
-static gboolean mirage_parser_b6t_decode_disc_type (MIRAGE_Parser_B6T *self, GError **error)
+static gboolean mirage_parser_b6t_decode_disc_type (MirageParser_B6T *self, GError **error)
 {
     switch (self->priv->disc_block_1->disc_type) {
         case 0x08: {
@@ -680,7 +680,7 @@ static gboolean mirage_parser_b6t_decode_disc_type (MIRAGE_Parser_B6T *self, GEr
     return TRUE;
 }
 
-static gboolean mirage_parser_b6t_parse_disc_blocks (MIRAGE_Parser_B6T *self, GError **error)
+static gboolean mirage_parser_b6t_parse_disc_blocks (MirageParser_B6T *self, GError **error)
 {
     /* 112 bytes a.k.a. first parser block */
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: reading 'disc block 1'\n", __debug__);
@@ -861,7 +861,7 @@ static gint sort_data_blocks (B6T_DataBlock *block1, B6T_DataBlock *block2)
     }
 }
 
-static gboolean mirage_parser_b6t_parse_data_blocks (MIRAGE_Parser_B6T *self, GError **error G_GNUC_UNUSED)
+static gboolean mirage_parser_b6t_parse_data_blocks (MirageParser_B6T *self, GError **error G_GNUC_UNUSED)
 {
     gsize length = 0;
 
@@ -929,7 +929,7 @@ static gboolean mirage_parser_b6t_parse_data_blocks (MIRAGE_Parser_B6T *self, GE
     return TRUE;
 }
 
-static gboolean mirage_parser_b6t_parse_track_entry (MIRAGE_Parser_B6T *self, GError **error)
+static gboolean mirage_parser_b6t_parse_track_entry (MirageParser_B6T *self, GError **error)
 {
     GObject *track;
     B6T_Track *track_entry;
@@ -1062,7 +1062,7 @@ static gboolean mirage_parser_b6t_parse_track_entry (MIRAGE_Parser_B6T *self, GE
     return TRUE;
 }
 
-static gboolean mirage_parser_b6t_parse_session (MIRAGE_Parser_B6T *self, GError **error)
+static gboolean mirage_parser_b6t_parse_session (MirageParser_B6T *self, GError **error)
 {
     B6T_Session *session_entry;
 
@@ -1123,7 +1123,7 @@ static gboolean mirage_parser_b6t_parse_session (MIRAGE_Parser_B6T *self, GError
     return TRUE;
 }
 
-static gboolean mirage_parser_b6t_parse_sessions (MIRAGE_Parser_B6T *self, GError **error)
+static gboolean mirage_parser_b6t_parse_sessions (MirageParser_B6T *self, GError **error)
 {
     gsize length = 0;
 
@@ -1150,7 +1150,7 @@ static gboolean mirage_parser_b6t_parse_sessions (MIRAGE_Parser_B6T *self, GErro
     return TRUE;
 }
 
-static gboolean mirage_parser_b6t_parse_footer (MIRAGE_Parser_B6T *self, GError **error)
+static gboolean mirage_parser_b6t_parse_footer (MirageParser_B6T *self, GError **error)
 {
     /* Read footer */
     gchar *footer = MIRAGE_CAST_PTR(self->priv->cur_ptr, 0, gchar *);
@@ -1168,7 +1168,7 @@ static gboolean mirage_parser_b6t_parse_footer (MIRAGE_Parser_B6T *self, GError 
     return TRUE;
 }
 
-static gboolean mirage_parser_b6t_load_disc (MIRAGE_Parser_B6T *self, GError **error)
+static gboolean mirage_parser_b6t_load_disc (MirageParser_B6T *self, GError **error)
 {
     /* Start at the beginning */
     self->priv->cur_ptr = self->priv->b6t_data;
@@ -1241,11 +1241,11 @@ static gboolean mirage_parser_b6t_load_disc (MIRAGE_Parser_B6T *self, GError **e
 
 
 /**********************************************************************\
- *                 MIRAGE_Parser methods implementation               *
+ *                 MirageParser methods implementation               *
 \**********************************************************************/
-static GObject *mirage_parser_b6t_load_image (MIRAGE_Parser *_self, gchar **filenames, GError **error)
+static GObject *mirage_parser_b6t_load_image (MirageParser *_self, gchar **filenames, GError **error)
 {
-    MIRAGE_Parser_B6T *self = MIRAGE_PARSER_B6T(_self);
+    MirageParser_B6T *self = MIRAGE_PARSER_B6T(_self);
 
     gboolean succeeded = TRUE;
     GObject *stream;
@@ -1327,7 +1327,7 @@ end:
 /**********************************************************************\
  *                             Object init                            *
 \**********************************************************************/
-G_DEFINE_DYNAMIC_TYPE(MIRAGE_Parser_B6T, mirage_parser_b6t, MIRAGE_TYPE_PARSER);
+G_DEFINE_DYNAMIC_TYPE(MirageParser_B6T, mirage_parser_b6t, MIRAGE_TYPE_PARSER);
 
 void mirage_parser_b6t_type_register (GTypeModule *type_module)
 {
@@ -1335,7 +1335,7 @@ void mirage_parser_b6t_type_register (GTypeModule *type_module)
 }
 
 
-static void mirage_parser_b6t_init (MIRAGE_Parser_B6T *self)
+static void mirage_parser_b6t_init (MirageParser_B6T *self)
 {
     self->priv = MIRAGE_PARSER_B6T_GET_PRIVATE(self);
 
@@ -1353,7 +1353,7 @@ static void mirage_parser_b6t_init (MIRAGE_Parser_B6T *self)
 
 static void mirage_parser_b6t_finalize (GObject *gobject)
 {
-    MIRAGE_Parser_B6T *self = MIRAGE_PARSER_B6T(gobject);
+    MirageParser_B6T *self = MIRAGE_PARSER_B6T(gobject);
     GList *entry;
 
     /* Free list of data blocks */
@@ -1375,19 +1375,19 @@ static void mirage_parser_b6t_finalize (GObject *gobject)
     return G_OBJECT_CLASS(mirage_parser_b6t_parent_class)->finalize(gobject);
 }
 
-static void mirage_parser_b6t_class_init (MIRAGE_Parser_B6TClass *klass)
+static void mirage_parser_b6t_class_init (MirageParser_B6TClass *klass)
 {
     GObjectClass *gobject_class = G_OBJECT_CLASS(klass);
-    MIRAGE_ParserClass *parser_class = MIRAGE_PARSER_CLASS(klass);
+    MirageParserClass *parser_class = MIRAGE_PARSER_CLASS(klass);
 
     gobject_class->finalize = mirage_parser_b6t_finalize;
 
     parser_class->load_image = mirage_parser_b6t_load_image;
 
     /* Register private structure */
-    g_type_class_add_private(klass, sizeof(MIRAGE_Parser_B6TPrivate));
+    g_type_class_add_private(klass, sizeof(MirageParser_B6TPrivate));
 }
 
-static void mirage_parser_b6t_class_finalize (MIRAGE_Parser_B6TClass *klass G_GNUC_UNUSED)
+static void mirage_parser_b6t_class_finalize (MirageParser_B6TClass *klass G_GNUC_UNUSED)
 {
 }

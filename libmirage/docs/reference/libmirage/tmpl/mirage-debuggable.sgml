@@ -1,18 +1,18 @@
 <!-- ##### SECTION Title ##### -->
-MIRAGE_Debuggable interface
+MirageDebuggable interface
 
 <!-- ##### SECTION Short_Description ##### -->
 Debuggable interface
 
 <!-- ##### SECTION Long_Description ##### -->
 <para>
-#MIRAGE_Debuggable is an interface for debuggable objects. It allows a #MIRAGE_DebugContext
+#MirageDebuggable is an interface for debuggable objects. It allows a #MirageDebugContext
 to be attached to the object and control the level of its debug verbosity.
 </para>
 
 <!-- ##### SECTION See_Also ##### -->
 <para>
-#MIRAGE_DebugContext
+#MirageDebugContext
 </para>
 
 <!-- ##### SECTION Stability_Level ##### -->
@@ -31,7 +31,7 @@ to be attached to the object and control the level of its debug verbosity.
 @...: 
 
 
-<!-- ##### STRUCT MIRAGE_Debuggable ##### -->
+<!-- ##### STRUCT MirageDebuggable ##### -->
 <para>
 
 </para>

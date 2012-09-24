@@ -24,7 +24,7 @@
 G_BEGIN_DECLS
 
 /**
- * MIRAGE_ParserInfo:
+ * MirageParserInfo:
  * @id: parser ID
  * @name: parser name
  * @description: image file description
@@ -42,8 +42,8 @@ G_BEGIN_DECLS
  * to be used for building file type filters in GUI applications.
  * </para>
  **/
-typedef struct _MIRAGE_ParserInfo MIRAGE_ParserInfo;
-struct _MIRAGE_ParserInfo
+typedef struct _MirageParserInfo MirageParserInfo;
+struct _MirageParserInfo
 {
     gchar *id;
     gchar *name;
@@ -53,37 +53,37 @@ struct _MIRAGE_ParserInfo
 
 
 #define MIRAGE_TYPE_PARSER            (mirage_parser_get_type())
-#define MIRAGE_PARSER(obj)            (G_TYPE_CHECK_INSTANCE_CAST((obj), MIRAGE_TYPE_PARSER, MIRAGE_Parser))
-#define MIRAGE_PARSER_CLASS(klass)    (G_TYPE_CHECK_CLASS_CAST((klass), MIRAGE_TYPE_PARSER, MIRAGE_ParserClass))
+#define MIRAGE_PARSER(obj)            (G_TYPE_CHECK_INSTANCE_CAST((obj), MIRAGE_TYPE_PARSER, MirageParser))
+#define MIRAGE_PARSER_CLASS(klass)    (G_TYPE_CHECK_CLASS_CAST((klass), MIRAGE_TYPE_PARSER, MirageParserClass))
 #define MIRAGE_IS_PARSER(obj)         (G_TYPE_CHECK_INSTANCE_TYPE((obj), MIRAGE_TYPE_PARSER))
 #define MIRAGE_IS_PARSER_CLASS(klass) (G_TYPE_CHECK_CLASS_TYPE((klass), MIRAGE_TYPE_PARSER))
-#define MIRAGE_PARSER_GET_CLASS(obj)  (G_TYPE_INSTANCE_GET_CLASS((obj), MIRAGE_TYPE_PARSER, MIRAGE_ParserClass))
+#define MIRAGE_PARSER_GET_CLASS(obj)  (G_TYPE_INSTANCE_GET_CLASS((obj), MIRAGE_TYPE_PARSER, MirageParserClass))
 
-typedef struct _MIRAGE_Parser           MIRAGE_Parser;
-typedef struct _MIRAGE_ParserClass      MIRAGE_ParserClass;
-typedef struct _MIRAGE_ParserPrivate    MIRAGE_ParserPrivate;
+typedef struct _MirageParser           MirageParser;
+typedef struct _MirageParserClass      MirageParserClass;
+typedef struct _MirageParserPrivate    MirageParserPrivate;
 
 /**
- * MIRAGE_Parser:
+ * MirageParser:
  *
  * <para>
  * Contains private data only, and should be accessed using the functions below.
  * </para>
  **/
-struct _MIRAGE_Parser
+struct _MirageParser
 {
-    MIRAGE_Object parent_instance;
+    MirageObject parent_instance;
 
     /*< private >*/
-    MIRAGE_ParserPrivate *priv;
+    MirageParserPrivate *priv;
 } ;
 
-struct _MIRAGE_ParserClass
+struct _MirageParserClass
 {
-    MIRAGE_ObjectClass parent_class;
+    MirageObjectClass parent_class;
 
     /* Class members */
-    GObject *(*load_image) (MIRAGE_Parser *self, gchar **filenames, GError **error);
+    GObject *(*load_image) (MirageParser *self, gchar **filenames, GError **error);
 };
 
 /* Used by MIRAGE_TYPE_PARSER */
@@ -93,19 +93,19 @@ GType mirage_parser_get_type (void);
 /**********************************************************************\
  *                             Public API                             *
 \**********************************************************************/
-void mirage_parser_generate_parser_info (MIRAGE_Parser *self, const gchar *id, const gchar *name, const gchar *description, const gchar *mime_type);
-const MIRAGE_ParserInfo *mirage_parser_get_parser_info (MIRAGE_Parser *self);
+void mirage_parser_generate_parser_info (MirageParser *self, const gchar *id, const gchar *name, const gchar *description, const gchar *mime_type);
+const MirageParserInfo *mirage_parser_get_parser_info (MirageParser *self);
 
-GObject *mirage_parser_load_image (MIRAGE_Parser *self, gchar **filenames, GError **error);
+GObject *mirage_parser_load_image (MirageParser *self, gchar **filenames, GError **error);
 
-gint mirage_parser_guess_medium_type (MIRAGE_Parser *self, GObject *disc);
-void mirage_parser_add_redbook_pregap (MIRAGE_Parser *self, GObject *disc);
+gint mirage_parser_guess_medium_type (MirageParser *self, GObject *disc);
+void mirage_parser_add_redbook_pregap (MirageParser *self, GObject *disc);
 
-void mirage_parser_set_params (MIRAGE_Parser *self, GHashTable *params);
-GVariant *mirage_parser_get_param (MIRAGE_Parser *self, const gchar *name, const GVariantType *type);
-const gchar *mirage_parser_get_param_string (MIRAGE_Parser *self, const gchar *name);
+void mirage_parser_set_params (MirageParser *self, GHashTable *params);
+GVariant *mirage_parser_get_param (MirageParser *self, const gchar *name, const GVariantType *type);
+const gchar *mirage_parser_get_param_string (MirageParser *self, const gchar *name);
 
-GObject *mirage_parser_get_cached_data_stream (MIRAGE_Parser *self, const gchar *filename, GError **error);
+GObject *mirage_parser_get_cached_data_stream (MirageParser *self, const gchar *filename, GError **error);
 
 G_END_DECLS
 

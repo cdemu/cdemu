@@ -24,34 +24,34 @@
 G_BEGIN_DECLS
 
 #define MIRAGE_TYPE_INDEX            (mirage_index_get_type())
-#define MIRAGE_INDEX(obj)            (G_TYPE_CHECK_INSTANCE_CAST((obj), MIRAGE_TYPE_INDEX, MIRAGE_Index))
-#define MIRAGE_INDEX_CLASS(klass)    (G_TYPE_CHECK_CLASS_CAST((klass), MIRAGE_TYPE_INDEX, MIRAGE_IndexClass))
+#define MIRAGE_INDEX(obj)            (G_TYPE_CHECK_INSTANCE_CAST((obj), MIRAGE_TYPE_INDEX, MirageIndex))
+#define MIRAGE_INDEX_CLASS(klass)    (G_TYPE_CHECK_CLASS_CAST((klass), MIRAGE_TYPE_INDEX, MirageIndexClass))
 #define MIRAGE_IS_INDEX(obj)         (G_TYPE_CHECK_INSTANCE_TYPE((obj), MIRAGE_TYPE_INDEX))
 #define MIRAGE_IS_INDEX_CLASS(klass) (G_TYPE_CHECK_CLASS_TYPE((klass), MIRAGE_TYPE_INDEX))
-#define MIRAGE_INDEX_GET_CLASS(obj)  (G_TYPE_INSTANCE_GET_CLASS((obj), MIRAGE_TYPE_INDEX, MIRAGE_IndexClass))
+#define MIRAGE_INDEX_GET_CLASS(obj)  (G_TYPE_INSTANCE_GET_CLASS((obj), MIRAGE_TYPE_INDEX, MirageIndexClass))
 
-typedef struct _MIRAGE_Index        MIRAGE_Index;
-typedef struct _MIRAGE_IndexClass   MIRAGE_IndexClass;
-typedef struct _MIRAGE_IndexPrivate MIRAGE_IndexPrivate;
+typedef struct _MirageIndex        MirageIndex;
+typedef struct _MirageIndexClass   MirageIndexClass;
+typedef struct _MirageIndexPrivate MirageIndexPrivate;
 
 /**
- * MIRAGE_Index:
+ * MirageIndex:
  *
  * <para>
  * Contains private data only, and should be accessed using the functions below.
  * </para>
  **/
-struct _MIRAGE_Index
+struct _MirageIndex
 {
-    MIRAGE_Object parent_instance;
+    MirageObject parent_instance;
 
     /*< private >*/
-    MIRAGE_IndexPrivate *priv;
+    MirageIndexPrivate *priv;
 };
 
-struct _MIRAGE_IndexClass
+struct _MirageIndexClass
 {
-    MIRAGE_ObjectClass parent_class;
+    MirageObjectClass parent_class;
 };
 
 /* Used by MIRAGE_TYPE_INDEX */
@@ -61,11 +61,11 @@ GType mirage_index_get_type (void);
 /**********************************************************************\
  *                             Public API                             *
 \**********************************************************************/
-void mirage_index_set_number (MIRAGE_Index *self, gint number);
-gint mirage_index_get_number (MIRAGE_Index *self);
+void mirage_index_set_number (MirageIndex *self, gint number);
+gint mirage_index_get_number (MirageIndex *self);
 
-void mirage_index_set_address (MIRAGE_Index *self, gint address);
-gint mirage_index_get_address (MIRAGE_Index *self);
+void mirage_index_set_address (MirageIndex *self, gint address);
+gint mirage_index_get_address (MirageIndex *self);
 
 G_END_DECLS
 

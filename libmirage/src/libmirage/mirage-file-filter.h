@@ -24,7 +24,7 @@
 G_BEGIN_DECLS
 
 /**
- * MIRAGE_FileFilterInfo:
+ * MirageFileFilterInfo:
  * @id: file filter ID
  * @name: file filter name
  *
@@ -33,8 +33,8 @@ G_BEGIN_DECLS
  * with call to mirage_file_filter_get_file_filter_info().
  * </para>
  **/
-typedef struct _MIRAGE_FileFilterInfo MIRAGE_FileFilterInfo;
-struct _MIRAGE_FileFilterInfo
+typedef struct _MirageFileFilterInfo MirageFileFilterInfo;
+struct _MirageFileFilterInfo
 {
     gchar *id;
     gchar *name;
@@ -45,44 +45,44 @@ struct _MIRAGE_FileFilterInfo
  *                        File filter object                          *
 \**********************************************************************/
 #define MIRAGE_TYPE_FILE_FILTER            (mirage_file_filter_get_type())
-#define MIRAGE_FILE_FILTER(obj)            (G_TYPE_CHECK_INSTANCE_CAST((obj), MIRAGE_TYPE_FILE_FILTER, MIRAGE_FileFilter))
-#define MIRAGE_FILE_FILTER_CLASS(klass)    (G_TYPE_CHECK_CLASS_CAST((klass), MIRAGE_TYPE_FILE_FILTER, MIRAGE_FileFilterClass))
+#define MIRAGE_FILE_FILTER(obj)            (G_TYPE_CHECK_INSTANCE_CAST((obj), MIRAGE_TYPE_FILE_FILTER, MirageFileFilter))
+#define MIRAGE_FILE_FILTER_CLASS(klass)    (G_TYPE_CHECK_CLASS_CAST((klass), MIRAGE_TYPE_FILE_FILTER, MirageFileFilterClass))
 #define MIRAGE_IS_FILE_FILTER(obj)         (G_TYPE_CHECK_INSTANCE_TYPE((obj), MIRAGE_TYPE_FILE_FILTER))
 #define MIRAGE_IS_FILE_FILTER_CLASS(klass) (G_TYPE_CHECK_CLASS_TYPE((klass), MIRAGE_TYPE_FILE_FILTER))
-#define MIRAGE_FILE_FILTER_GET_CLASS(obj)  (G_TYPE_INSTANCE_GET_CLASS((obj), MIRAGE_TYPE_FILE_FILTER, MIRAGE_FileFilterClass))
+#define MIRAGE_FILE_FILTER_GET_CLASS(obj)  (G_TYPE_INSTANCE_GET_CLASS((obj), MIRAGE_TYPE_FILE_FILTER, MirageFileFilterClass))
 
-typedef struct _MIRAGE_FileFilter         MIRAGE_FileFilter;
-typedef struct _MIRAGE_FileFilterClass    MIRAGE_FileFilterClass;
-typedef struct _MIRAGE_FileFilterPrivate  MIRAGE_FileFilterPrivate;
+typedef struct _MirageFileFilter         MirageFileFilter;
+typedef struct _MirageFileFilterClass    MirageFileFilterClass;
+typedef struct _MirageFileFilterPrivate  MirageFileFilterPrivate;
 
 /**
- * MIRAGE_FileFilter:
+ * MirageFileFilter:
  *
  * <para>
  * Contains private data only, and should be accessed using the functions below.
  * </para>
  **/
-struct _MIRAGE_FileFilter
+struct _MirageFileFilter
 {
     GFilterInputStream parent_instance;
 
     /*< private >*/
-    MIRAGE_FileFilterPrivate *priv;
+    MirageFileFilterPrivate *priv;
 };
 
-struct _MIRAGE_FileFilterClass
+struct _MirageFileFilterClass
 {
     GFilterInputStreamClass parent_class;
 
     /* Class members */
-    gboolean (*can_handle_data_format) (MIRAGE_FileFilter *self, GError **error);
+    gboolean (*can_handle_data_format) (MirageFileFilter *self, GError **error);
 
     /* Functions reimplemented from GInputStream: */
-    gssize (*read) (MIRAGE_FileFilter *self, void *buffer, gsize count, GError **error);
+    gssize (*read) (MirageFileFilter *self, void *buffer, gsize count, GError **error);
 
     /* Functions reimplemented from GSeekable: */
-    goffset (*tell) (MIRAGE_FileFilter *self);
-    gboolean (*seek) (MIRAGE_FileFilter *self, goffset offset, GSeekType type, GError **error);
+    goffset (*tell) (MirageFileFilter *self);
+    gboolean (*seek) (MirageFileFilter *self, goffset offset, GSeekType type, GError **error);
 };
 
 /* Used by MIRAGE_TYPE_FILE_FILTER */
@@ -92,10 +92,10 @@ GType mirage_file_filter_get_type (void);
 /**********************************************************************\
  *                             Public API                             *
 \**********************************************************************/
-void mirage_file_filter_generate_file_filter_info (MIRAGE_FileFilter *self, const gchar *id, const gchar *name);
-const MIRAGE_FileFilterInfo *mirage_file_filter_get_file_filter_info (MIRAGE_FileFilter *self);
+void mirage_file_filter_generate_file_filter_info (MirageFileFilter *self, const gchar *id, const gchar *name);
+const MirageFileFilterInfo *mirage_file_filter_get_file_filter_info (MirageFileFilter *self);
 
-gboolean mirage_file_filter_can_handle_data_format (MIRAGE_FileFilter *self, GError **error);
+gboolean mirage_file_filter_can_handle_data_format (MirageFileFilter *self, GError **error);
 
 G_END_DECLS
 

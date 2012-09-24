@@ -24,27 +24,27 @@
 G_BEGIN_DECLS
 
 #define MIRAGE_TYPE_FILE_FILTER_CSO            (mirage_file_filter_cso_get_type())
-#define MIRAGE_FILE_FILTER_CSO(obj)            (G_TYPE_CHECK_INSTANCE_CAST((obj), MIRAGE_TYPE_FILE_FILTER_CSO, MIRAGE_FileFilter_CSO))
-#define MIRAGE_FILE_FILTER_CSO_CLASS(klass)    (G_TYPE_CHECK_CLASS_CAST((klass), MIRAGE_TYPE_FILE_FILTER_CSO, MIRAGE_FileFilter_CSOClass))
+#define MIRAGE_FILE_FILTER_CSO(obj)            (G_TYPE_CHECK_INSTANCE_CAST((obj), MIRAGE_TYPE_FILE_FILTER_CSO, MirageFileFilterCso))
+#define MIRAGE_FILE_FILTER_CSO_CLASS(klass)    (G_TYPE_CHECK_CLASS_CAST((klass), MIRAGE_TYPE_FILE_FILTER_CSO, MirageFileFilterCsoClass))
 #define MIRAGE_IS_FILE_FILTER_CSO(obj)         (G_TYPE_CHECK_INSTANCE_TYPE((obj), MIRAGE_TYPE_FILE_FILTER_CSO))
 #define MIRAGE_IS_FILE_FILTER_CSO_CLASS(klass) (G_TYPE_CHECK_CLASS_TYPE((klass), MIRAGE_TYPE_FILE_FILTER_CSO))
-#define MIRAGE_FILE_FILTER_CSO_GET_CLASS(obj)  (G_TYPE_INSTANCE_GET_CLASS((obj), MIRAGE_TYPE_FILE_FILTER_CSO, MIRAGE_FileFilter_CSOClass))
+#define MIRAGE_FILE_FILTER_CSO_GET_CLASS(obj)  (G_TYPE_INSTANCE_GET_CLASS((obj), MIRAGE_TYPE_FILE_FILTER_CSO, MirageFileFilterCsoClass))
 
-typedef struct _MIRAGE_FileFilter_CSO        MIRAGE_FileFilter_CSO;
-typedef struct _MIRAGE_FileFilter_CSOClass   MIRAGE_FileFilter_CSOClass;
-typedef struct _MIRAGE_FileFilter_CSOPrivate MIRAGE_FileFilter_CSOPrivate;
+typedef struct _MirageFileFilterCso        MirageFileFilterCso;
+typedef struct _MirageFileFilterCsoClass   MirageFileFilterCsoClass;
+typedef struct _MirageFileFilterCsoPrivate MirageFileFilterCsoPrivate;
 
-struct _MIRAGE_FileFilter_CSO
+struct _MirageFileFilterCso
 {
-    MIRAGE_FileFilter parent_instance;
+    MirageFileFilter parent_instance;
 
     /*< private >*/
-    MIRAGE_FileFilter_CSOPrivate *priv;
+    MirageFileFilterCsoPrivate *priv;
 };
 
-struct _MIRAGE_FileFilter_CSOClass
+struct _MirageFileFilterCsoClass
 {
-    MIRAGE_FileFilterClass parent_class;
+    MirageFileFilterClass parent_class;
 };
 
 /* Used by MIRAGE_TYPE_FILE_FILTER_CSO */

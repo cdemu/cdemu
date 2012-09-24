@@ -1,24 +1,24 @@
 <!-- ##### SECTION Title ##### -->
-MIRAGE_Fragment object
+MirageFragment object
 
 <!-- ##### SECTION Short_Description ##### -->
 Base object for fragment implementations
 
 <!-- ##### SECTION Long_Description ##### -->
 <para>
-#MIRAGE_Fragment object is a base object for fragment implementations. It provides
+#MirageFragment object is a base object for fragment implementations. It provides
 functions that are used by image parsers to provide access to data in image files.
 </para>
 
 <para>
-#MIRAGE_Fragment provides two virtual functions: mirage_fragment_get_fragment_info(),
+#MirageFragment provides two virtual functions: mirage_fragment_get_fragment_info(),
 mirage_fragment_can_handle_data_format(). These must be implemented
-by fragment implementations which derive from #MIRAGE_Fragment object.
+by fragment implementations which derive from #MirageFragment object.
 </para>
 
 <para>
-Every fragment implementation needs to implement one of fragment interfaces: 
-#MIRAGE_FragIface_Null, #MIRAGE_FragIface_Binary or #MIRAGE_FragIface_Audio.
+Every fragment implementation needs to implement one of fragment interfaces:
+#MirageFragmentIfaceNull, #MirageFragmentIfaceBinary or #MirageFragmentIfaceAudio.
 Which interface a fragment implementation implements depends on the way the
 implementation handles data.
 </para>
@@ -34,7 +34,7 @@ implementation handles data.
 <!-- ##### SECTION Image ##### -->
 
 
-<!-- ##### STRUCT MIRAGE_FragmentInfo ##### -->
+<!-- ##### STRUCT MirageFragmentInfo ##### -->
 <para>
 
 </para>
@@ -42,7 +42,7 @@ implementation handles data.
 @id: 
 @name: 
 
-<!-- ##### STRUCT MIRAGE_Fragment ##### -->
+<!-- ##### STRUCT MirageFragment ##### -->
 <para>
 
 </para>

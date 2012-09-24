@@ -29,21 +29,21 @@
 /**********************************************************************\
  *                          Private structure                         *
 \**********************************************************************/
-#define MIRAGE_FRAGMENT_GET_PRIVATE(obj) (G_TYPE_INSTANCE_GET_PRIVATE((obj), MIRAGE_TYPE_FRAGMENT, MIRAGE_FragmentPrivate))
+#define MIRAGE_FRAGMENT_GET_PRIVATE(obj) (G_TYPE_INSTANCE_GET_PRIVATE((obj), MIRAGE_TYPE_FRAGMENT, MirageFragmentPrivate))
 
-struct _MIRAGE_FragmentPrivate
+struct _MirageFragmentPrivate
 {
     gint address; /* Address (relative to track start) */
     gint length; /* Length, in sectors */
 
-    MIRAGE_FragmentInfo *fragment_info;
+    MirageFragmentInfo *fragment_info;
 };
 
 
 /**********************************************************************\
  *                          Private functions                         *
 \**********************************************************************/
-static void destroy_fragment_info (MIRAGE_FragmentInfo *info)
+static void destroy_fragment_info (MirageFragmentInfo *info)
 {
     /* Free info and its content */
     if (info) {
@@ -54,12 +54,12 @@ static void destroy_fragment_info (MIRAGE_FragmentInfo *info)
     }
 }
 
-static void mirage_fragment_commit_topdown_change (MIRAGE_Fragment *self G_GNUC_UNUSED)
+static void mirage_fragment_commit_topdown_change (MirageFragment *self G_GNUC_UNUSED)
 {
     /* Nothing to do here */
 }
 
-static void mirage_fragment_commit_bottomup_change (MIRAGE_Fragment *self)
+static void mirage_fragment_commit_bottomup_change (MirageFragment *self)
 {
     /* Signal fragment change */
     g_signal_emit_by_name(MIRAGE_OBJECT(self), "object-modified", NULL);
@@ -71,7 +71,7 @@ static void mirage_fragment_commit_bottomup_change (MIRAGE_Fragment *self)
 \**********************************************************************/
 /**
  * mirage_fragment_generate_fragment_info:
- * @self: a #MIRAGE_Fragment
+ * @self: a #MirageFragment
  * @id: (in): fragment ID
  * @name: (in): fragment name
  *
@@ -80,13 +80,13 @@ static void mirage_fragment_commit_bottomup_change (MIRAGE_Fragment *self)
  * for creating fragment information in fragment implementations.
  * </para>
  **/
-void mirage_fragment_generate_fragment_info (MIRAGE_Fragment *self, const gchar *id, const gchar *name)
+void mirage_fragment_generate_fragment_info (MirageFragment *self, const gchar *id, const gchar *name)
 {
     /* Free old info */
     destroy_fragment_info(self->priv->fragment_info);
 
     /* Create new info */
-    self->priv->fragment_info = g_new0(MIRAGE_FragmentInfo, 1);
+    self->priv->fragment_info = g_new0(MirageFragmentInfo, 1);
 
     self->priv->fragment_info->id = g_strdup(id);
     self->priv->fragment_info->name = g_strdup(name);
@@ -96,7 +96,7 @@ void mirage_fragment_generate_fragment_info (MIRAGE_Fragment *self, const gchar 
 
 /**
  * mirage_fragment_get_fragment_info:
- * @self: a #MIRAGE_Fragment
+ * @self: a #MirageFragment
  *
  * <para>
  * Retrieves fragment information.
@@ -105,7 +105,7 @@ void mirage_fragment_generate_fragment_info (MIRAGE_Fragment *self, const gchar 
  * Returns: (transfer none): a pointer to fragment information structure. The
  * structure belongs to object and should not be modified.
  **/
-const MIRAGE_FragmentInfo *mirage_fragment_get_fragment_info (MIRAGE_Fragment *self)
+const MirageFragmentInfo *mirage_fragment_get_fragment_info (MirageFragment *self)
 {
     return self->priv->fragment_info;
 }
@@ -113,7 +113,7 @@ const MIRAGE_FragmentInfo *mirage_fragment_get_fragment_info (MIRAGE_Fragment *s
 
 /**
  * mirage_fragment_can_handle_data_format:
- * @self: a #MIRAGE_Fragment
+ * @self: a #MirageFragment
  * @stream: (in): data stream
  * @error: (out) (allow-none): location to store error, or %NULL
  *
@@ -123,7 +123,7 @@ const MIRAGE_FragmentInfo *mirage_fragment_get_fragment_info (MIRAGE_Fragment *s
  *
  * Returns: %TRUE if fragment can handle data file, %FALSE if not
  **/
-gboolean mirage_fragment_can_handle_data_format (MIRAGE_Fragment *self, GObject *stream, GError **error)
+gboolean mirage_fragment_can_handle_data_format (MirageFragment *self, GObject *stream, GError **error)
 {
     /* Provided by implementation */
     return MIRAGE_FRAGMENT_GET_CLASS(self)->can_handle_data_format(self, stream, error);
@@ -132,7 +132,7 @@ gboolean mirage_fragment_can_handle_data_format (MIRAGE_Fragment *self, GObject 
 
 /**
  * mirage_fragment_set_address:
- * @self: a #MIRAGE_Fragment
+ * @self: a #MirageFragment
  * @address: (in): start address
  *
  * <para>
@@ -147,7 +147,7 @@ gboolean mirage_fragment_can_handle_data_format (MIRAGE_Fragment *self, GObject 
  * Causes top-down change.
  * </note>
  **/
-void mirage_fragment_set_address (MIRAGE_Fragment *self, gint address)
+void mirage_fragment_set_address (MirageFragment *self, gint address)
 {
     /* Set address */
     self->priv->address = address;
@@ -157,7 +157,7 @@ void mirage_fragment_set_address (MIRAGE_Fragment *self, gint address)
 
 /**
  * mirage_fragment_get_address:
- * @self: a #MIRAGE_Fragment
+ * @self: a #MirageFragment
  *
  * <para>
  * Retrieves fragment's start address. The @address is given in sectors.
@@ -169,7 +169,7 @@ void mirage_fragment_set_address (MIRAGE_Fragment *self, gint address)
  *
  * Returns: start address
  **/
-gint mirage_fragment_get_address (MIRAGE_Fragment *self)
+gint mirage_fragment_get_address (MirageFragment *self)
 {
     /* Return address */
     return self->priv->address;
@@ -177,7 +177,7 @@ gint mirage_fragment_get_address (MIRAGE_Fragment *self)
 
 /**
  * mirage_fragment_set_length:
- * @self: a #MIRAGE_Fragment
+ * @self: a #MirageFragment
  * @length: length
  *
  * <para>
@@ -192,7 +192,7 @@ gint mirage_fragment_get_address (MIRAGE_Fragment *self)
  * Causes bottom-up change.
  * </note>
  **/
-void mirage_fragment_set_length (MIRAGE_Fragment *self, gint length)
+void mirage_fragment_set_length (MirageFragment *self, gint length)
 {
     /* Set length */
     self->priv->length = length;
@@ -202,7 +202,7 @@ void mirage_fragment_set_length (MIRAGE_Fragment *self, gint length)
 
 /**
  * mirage_fragment_get_length:
- * @self: a #MIRAGE_Fragment
+ * @self: a #MirageFragment
  *
  * <para>
  * Retrieves fragment's length. The returned @length is given in sectors.
@@ -214,7 +214,7 @@ void mirage_fragment_set_length (MIRAGE_Fragment *self, gint length)
  *
  * Returns: length
  **/
-gint mirage_fragment_get_length (MIRAGE_Fragment *self)
+gint mirage_fragment_get_length (MirageFragment *self)
 {
     /* Return length */
     return self->priv->length;
@@ -223,7 +223,7 @@ gint mirage_fragment_get_length (MIRAGE_Fragment *self)
 
 /**
  * mirage_fragment_use_the_rest_of_file:
- * @self: a #MIRAGE_Fragment
+ * @self: a #MirageFragment
  * @error: (out) (allow-none): location to store error, or %NULL
  *
  * <para>
@@ -233,7 +233,7 @@ gint mirage_fragment_get_length (MIRAGE_Fragment *self)
  *
  * Returns: %TRUE on success, %FALSE on failure
  **/
-gboolean mirage_fragment_use_the_rest_of_file (MIRAGE_Fragment *self, GError **error)
+gboolean mirage_fragment_use_the_rest_of_file (MirageFragment *self, GError **error)
 {
     /* Provided by implementation */
     return MIRAGE_FRAGMENT_GET_CLASS(self)->use_the_rest_of_file(self, error);
@@ -242,7 +242,7 @@ gboolean mirage_fragment_use_the_rest_of_file (MIRAGE_Fragment *self, GError **e
 
 /**
  * mirage_fragment_read_main_data:
- * @self: a #MIRAGE_Fragment
+ * @self: a #MirageFragment
  * @address: (in): address
  * @buf: (out caller-allocates): buffer to read data into
  * @length: (out): location to store read data length
@@ -256,7 +256,7 @@ gboolean mirage_fragment_use_the_rest_of_file (MIRAGE_Fragment *self, GError **e
  *
  * Returns: %TRUE on success, %FALSE on failure
  **/
-gboolean mirage_fragment_read_main_data (MIRAGE_Fragment *self, gint address, guint8 *buf, gint *length, GError **error)
+gboolean mirage_fragment_read_main_data (MirageFragment *self, gint address, guint8 *buf, gint *length, GError **error)
 {
     /* Provided by implementation */
     return MIRAGE_FRAGMENT_GET_CLASS(self)->read_main_data(self, address, buf, length, error);
@@ -264,7 +264,7 @@ gboolean mirage_fragment_read_main_data (MIRAGE_Fragment *self, gint address, gu
 
 /**
  * mirage_fragment_read_subchannel_data:
- * @self: a #MIRAGE_Fragment
+ * @self: a #MirageFragment
  * @address: (in): address
  * @buf: (out caller-allocates): buffer to read data into
  * @length: (out): location to store read data length
@@ -278,7 +278,7 @@ gboolean mirage_fragment_read_main_data (MIRAGE_Fragment *self, gint address, gu
  *
  * Returns: %TRUE on success, %FALSE on failure
  **/
-gboolean mirage_fragment_read_subchannel_data (MIRAGE_Fragment *self, gint address, guint8 *buf, gint *length, GError **error)
+gboolean mirage_fragment_read_subchannel_data (MirageFragment *self, gint address, guint8 *buf, gint *length, GError **error)
 {
     /* Provided by implementation */
     return MIRAGE_FRAGMENT_GET_CLASS(self)->read_subchannel_data(self, address, buf, length, error);
@@ -288,10 +288,10 @@ gboolean mirage_fragment_read_subchannel_data (MIRAGE_Fragment *self, gint addre
 /**********************************************************************\
  *                             Object init                            *
 \**********************************************************************/
-G_DEFINE_TYPE(MIRAGE_Fragment, mirage_fragment, MIRAGE_TYPE_OBJECT);
+G_DEFINE_TYPE(MirageFragment, mirage_fragment, MIRAGE_TYPE_OBJECT);
 
 
-static void mirage_fragment_init (MIRAGE_Fragment *self)
+static void mirage_fragment_init (MirageFragment *self)
 {
     self->priv = MIRAGE_FRAGMENT_GET_PRIVATE(self);
 
@@ -300,7 +300,7 @@ static void mirage_fragment_init (MIRAGE_Fragment *self)
 
 static void mirage_fragment_finalize (GObject *gobject)
 {
-    MIRAGE_Fragment *self = MIRAGE_FRAGMENT(gobject);
+    MirageFragment *self = MIRAGE_FRAGMENT(gobject);
 
     /* Free fragment info */
     destroy_fragment_info(self->priv->fragment_info);
@@ -309,7 +309,7 @@ static void mirage_fragment_finalize (GObject *gobject)
     return G_OBJECT_CLASS(mirage_fragment_parent_class)->finalize(gobject);
 }
 
-static void mirage_fragment_class_init (MIRAGE_FragmentClass *klass)
+static void mirage_fragment_class_init (MirageFragmentClass *klass)
 {
     GObjectClass *gobject_class = G_OBJECT_CLASS(klass);
 
@@ -321,18 +321,18 @@ static void mirage_fragment_class_init (MIRAGE_FragmentClass *klass)
     klass->read_subchannel_data = NULL;
 
     /* Register private structure */
-    g_type_class_add_private(klass, sizeof(MIRAGE_FragmentPrivate));
+    g_type_class_add_private(klass, sizeof(MirageFragmentPrivate));
 }
 
 
 /**********************************************************************\
  *                            Null interface                          *
 \**********************************************************************/
-GType mirage_frag_iface_null_get_type (void) {
+GType mirage_fragment_iface_null_get_type (void) {
     static GType iface_type = 0;
     if (iface_type == 0) {
         static const GTypeInfo info = {
-            sizeof(MIRAGE_FragIface_NullInterface),
+            sizeof(MirageFragmentIfaceNullInterface),
             NULL,   /* base_init */
             NULL,   /* base_finalize */
             NULL,   /* class_init */
@@ -344,7 +344,7 @@ GType mirage_frag_iface_null_get_type (void) {
             NULL    /* value_table */
         };
 
-        iface_type = g_type_register_static(G_TYPE_INTERFACE, "MIRAGE_FragIface_Null", &info, 0);
+        iface_type = g_type_register_static(G_TYPE_INTERFACE, "MirageFragmentIfaceNull", &info, 0);
     }
 
     return iface_type;
@@ -355,8 +355,8 @@ GType mirage_frag_iface_null_get_type (void) {
  *                           Binary interface                         *
 \**********************************************************************/
 /**
- * mirage_frag_iface_binary_track_file_set_file:
- * @self: a #MIRAGE_FragIface_Binary
+ * mirage_fragment_iface_binary_track_file_set_file:
+ * @self: a #MirageFragmentIfaceBinary
  * @filename: (in): track file filename
  * @stream: (in) (allow-none) (transfer full): a #GInputStream on file
  * @error: (out) (allow-none): location to store error, or %NULL
@@ -369,14 +369,14 @@ GType mirage_frag_iface_null_get_type (void) {
  *
  * Returns: %TRUE on success, %FALSE on failure
  **/
-gboolean mirage_frag_iface_binary_track_file_set_file (MIRAGE_FragIface_Binary *self, const gchar *filename, GObject *stream, GError **error)
+gboolean mirage_fragment_iface_binary_track_file_set_file (MirageFragmentIfaceBinary *self, const gchar *filename, GObject *stream, GError **error)
 {
-    return MIRAGE_FRAG_IFACE_BINARY_GET_INTERFACE(self)->track_file_set_file(self, filename, stream, error);
+    return MIRAGE_FRAGMENT_IFACE_BINARY_GET_INTERFACE(self)->track_file_set_file(self, filename, stream, error);
 }
 
 /**
- * mirage_frag_iface_binary_track_file_get_file:
- * @self: a #MIRAGE_FragIface_Binary
+ * mirage_fragment_iface_binary_track_file_get_file:
+ * @self: a #MirageFragmentIfaceBinary
  *
  * <para>
  * Retrieves track file name.
@@ -385,28 +385,28 @@ gboolean mirage_frag_iface_binary_track_file_set_file (MIRAGE_FragIface_Binary *
  * Returns: (transfer none): track file name string. The string belongs to
  * object and should not be modified.
  **/
-const gchar *mirage_frag_iface_binary_track_file_get_file (MIRAGE_FragIface_Binary *self)
+const gchar *mirage_fragment_iface_binary_track_file_get_file (MirageFragmentIfaceBinary *self)
 {
-    return MIRAGE_FRAG_IFACE_BINARY_GET_INTERFACE(self)->track_file_get_file(self);
+    return MIRAGE_FRAGMENT_IFACE_BINARY_GET_INTERFACE(self)->track_file_get_file(self);
 }
 
 /**
- * mirage_frag_iface_binary_track_file_set_offset:
- * @self: a #MIRAGE_FragIface_Binary
+ * mirage_fragment_iface_binary_track_file_set_offset:
+ * @self: a #MirageFragmentIfaceBinary
  * @offset: (in): track file offset
  *
  * <para>
  * Sets track file offset.
  * </para>
  **/
-void mirage_frag_iface_binary_track_file_set_offset (MIRAGE_FragIface_Binary *self, guint64 offset)
+void mirage_fragment_iface_binary_track_file_set_offset (MirageFragmentIfaceBinary *self, guint64 offset)
 {
-    return MIRAGE_FRAG_IFACE_BINARY_GET_INTERFACE(self)->track_file_set_offset(self, offset);
+    return MIRAGE_FRAGMENT_IFACE_BINARY_GET_INTERFACE(self)->track_file_set_offset(self, offset);
 }
 
 /**
- * mirage_frag_iface_binary_track_file_get_offset:
- * @self: a #MIRAGE_FragIface_Binary
+ * mirage_fragment_iface_binary_track_file_get_offset:
+ * @self: a #MirageFragmentIfaceBinary
  *
  * <para>
  * Retrieves track file offset.
@@ -414,29 +414,29 @@ void mirage_frag_iface_binary_track_file_set_offset (MIRAGE_FragIface_Binary *se
  *
  * Returns: track file offset
  **/
-guint64 mirage_frag_iface_binary_track_file_get_offset (MIRAGE_FragIface_Binary *self)
+guint64 mirage_fragment_iface_binary_track_file_get_offset (MirageFragmentIfaceBinary *self)
 {
-    return MIRAGE_FRAG_IFACE_BINARY_GET_INTERFACE(self)->track_file_get_offset(self);
+    return MIRAGE_FRAGMENT_IFACE_BINARY_GET_INTERFACE(self)->track_file_get_offset(self);
 }
 
 
 /**
- * mirage_frag_iface_binary_track_file_set_sectsize:
- * @self: a #MIRAGE_FragIface_Binary
+ * mirage_fragment_iface_binary_track_file_set_sectsize:
+ * @self: a #MirageFragmentIfaceBinary
  * @sectsize: (in): track file sector size
  *
  * <para>
  * Sets track file sector size.
  * </para>
  **/
-void mirage_frag_iface_binary_track_file_set_sectsize (MIRAGE_FragIface_Binary *self, gint sectsize)
+void mirage_fragment_iface_binary_track_file_set_sectsize (MirageFragmentIfaceBinary *self, gint sectsize)
 {
-    return MIRAGE_FRAG_IFACE_BINARY_GET_INTERFACE(self)->track_file_set_sectsize(self, sectsize);
+    return MIRAGE_FRAGMENT_IFACE_BINARY_GET_INTERFACE(self)->track_file_set_sectsize(self, sectsize);
 }
 
 /**
- * mirage_frag_iface_binary_track_file_get_sectsize:
- * @self: a #MIRAGE_FragIface_Binary
+ * mirage_fragment_iface_binary_track_file_get_sectsize:
+ * @self: a #MirageFragmentIfaceBinary
  *
  * <para>
  * Retrieves track file sector size.
@@ -444,29 +444,29 @@ void mirage_frag_iface_binary_track_file_set_sectsize (MIRAGE_FragIface_Binary *
  *
  * Returns: track file sector size
  **/
-gint mirage_frag_iface_binary_track_file_get_sectsize (MIRAGE_FragIface_Binary *self)
+gint mirage_fragment_iface_binary_track_file_get_sectsize (MirageFragmentIfaceBinary *self)
 {
-    return MIRAGE_FRAG_IFACE_BINARY_GET_INTERFACE(self)->track_file_get_sectsize(self);
+    return MIRAGE_FRAGMENT_IFACE_BINARY_GET_INTERFACE(self)->track_file_get_sectsize(self);
 }
 
 
 /**
- * mirage_frag_iface_binary_track_file_set_format:
- * @self: a #MIRAGE_FragIface_Binary
+ * mirage_fragment_iface_binary_track_file_set_format:
+ * @self: a #MirageFragmentIfaceBinary
  * @format: (in): track file data format
  *
  * <para>
  * Sets track file data format. @format must be one of #MIRAGE_BINARY_TrackFile_Format.
  * </para>
  **/
-void mirage_frag_iface_binary_track_file_set_format (MIRAGE_FragIface_Binary *self, gint format)
+void mirage_fragment_iface_binary_track_file_set_format (MirageFragmentIfaceBinary *self, gint format)
 {
-    return MIRAGE_FRAG_IFACE_BINARY_GET_INTERFACE(self)->track_file_set_format(self, format);
+    return MIRAGE_FRAGMENT_IFACE_BINARY_GET_INTERFACE(self)->track_file_set_format(self, format);
 }
 
 /**
- * mirage_frag_iface_binary_track_file_get_format:
- * @self: a #MIRAGE_FragIface_Binary
+ * mirage_fragment_iface_binary_track_file_get_format:
+ * @self: a #MirageFragmentIfaceBinary
  *
  * <para>
  * Retrieves track file data format.
@@ -474,15 +474,15 @@ void mirage_frag_iface_binary_track_file_set_format (MIRAGE_FragIface_Binary *se
  *
  * Returns: track file data format
  **/
-gint mirage_frag_iface_binary_track_file_get_format (MIRAGE_FragIface_Binary *self)
+gint mirage_fragment_iface_binary_track_file_get_format (MirageFragmentIfaceBinary *self)
 {
-    return MIRAGE_FRAG_IFACE_BINARY_GET_INTERFACE(self)->track_file_get_format(self);
+    return MIRAGE_FRAGMENT_IFACE_BINARY_GET_INTERFACE(self)->track_file_get_format(self);
 }
 
 
 /**
- * mirage_frag_iface_binary_track_file_get_position:
- * @self: a #MIRAGE_FragIface_Binary
+ * mirage_fragment_iface_binary_track_file_get_position:
+ * @self: a #MirageFragmentIfaceBinary
  * @address: (in): address
  *
  * <para>
@@ -492,14 +492,14 @@ gint mirage_frag_iface_binary_track_file_get_format (MIRAGE_FragIface_Binary *se
  *
  * Returns: position in track file
  **/
-guint64 mirage_frag_iface_binary_track_file_get_position (MIRAGE_FragIface_Binary *self, gint address)
+guint64 mirage_fragment_iface_binary_track_file_get_position (MirageFragmentIfaceBinary *self, gint address)
 {
-    return MIRAGE_FRAG_IFACE_BINARY_GET_INTERFACE(self)->track_file_get_position(self, address);
+    return MIRAGE_FRAGMENT_IFACE_BINARY_GET_INTERFACE(self)->track_file_get_position(self, address);
 }
 
 /**
- * mirage_frag_iface_binary_subchannel_file_set_file:
- * @self: a #MIRAGE_FragIface_Binary
+ * mirage_fragment_iface_binary_subchannel_file_set_file:
+ * @self: a #MirageFragmentIfaceBinary
  * @filename: (in): subchannel file filename
  * @stream: (in) (allow-none) (transfer full): a #GInputStream on file
  * @error: (out) (allow-none): location to store error, or %NULL
@@ -512,14 +512,14 @@ guint64 mirage_frag_iface_binary_track_file_get_position (MIRAGE_FragIface_Binar
  *
  * Returns: %TRUE on success, %FALSE on failure
  **/
-gboolean mirage_frag_iface_binary_subchannel_file_set_file (MIRAGE_FragIface_Binary *self, const gchar *filename, GObject *stream, GError **error)
+gboolean mirage_fragment_iface_binary_subchannel_file_set_file (MirageFragmentIfaceBinary *self, const gchar *filename, GObject *stream, GError **error)
 {
-    return MIRAGE_FRAG_IFACE_BINARY_GET_INTERFACE(self)->subchannel_file_set_file(self, filename, stream, error);
+    return MIRAGE_FRAGMENT_IFACE_BINARY_GET_INTERFACE(self)->subchannel_file_set_file(self, filename, stream, error);
 }
 
 /**
- * mirage_frag_iface_binary_subchannel_file_get_file:
- * @self: a #MIRAGE_FragIface_Binary
+ * mirage_fragment_iface_binary_subchannel_file_get_file:
+ * @self: a #MirageFragmentIfaceBinary
  *
  * <para>
  * Retrieves subchannel file name.
@@ -528,29 +528,29 @@ gboolean mirage_frag_iface_binary_subchannel_file_set_file (MIRAGE_FragIface_Bin
  * Returns: (transfer none): subchannel file name string. The string belongs to
  * object and should not be modified.
  **/
-const gchar *mirage_frag_iface_binary_subchannel_file_get_file (MIRAGE_FragIface_Binary *self)
+const gchar *mirage_fragment_iface_binary_subchannel_file_get_file (MirageFragmentIfaceBinary *self)
 {
-    return MIRAGE_FRAG_IFACE_BINARY_GET_INTERFACE(self)->subchannel_file_get_file(self);
+    return MIRAGE_FRAGMENT_IFACE_BINARY_GET_INTERFACE(self)->subchannel_file_get_file(self);
 }
 
 
 /**
- * mirage_frag_iface_binary_subchannel_file_set_offset:
- * @self: a #MIRAGE_FragIface_Binary
+ * mirage_fragment_iface_binary_subchannel_file_set_offset:
+ * @self: a #MirageFragmentIfaceBinary
  * @offset: (in): subchannel file offset
  *
  * <para>
  * Sets subchannel file offset.
  * </para>
  **/
-void mirage_frag_iface_binary_subchannel_file_set_offset (MIRAGE_FragIface_Binary *self, guint64 offset)
+void mirage_fragment_iface_binary_subchannel_file_set_offset (MirageFragmentIfaceBinary *self, guint64 offset)
 {
-    return MIRAGE_FRAG_IFACE_BINARY_GET_INTERFACE(self)->subchannel_file_set_offset(self, offset);
+    return MIRAGE_FRAGMENT_IFACE_BINARY_GET_INTERFACE(self)->subchannel_file_set_offset(self, offset);
 }
 
 /**
- * mirage_frag_iface_binary_subchannel_file_get_offset:
- * @self: a #MIRAGE_FragIface_Binary
+ * mirage_fragment_iface_binary_subchannel_file_get_offset:
+ * @self: a #MirageFragmentIfaceBinary
  *
  * <para>
  * Retrieves subchannel file offset.
@@ -558,28 +558,28 @@ void mirage_frag_iface_binary_subchannel_file_set_offset (MIRAGE_FragIface_Binar
  *
  * Returns: subchannel file offset
  **/
-guint64 mirage_frag_iface_binary_subchannel_file_get_offset (MIRAGE_FragIface_Binary *self)
+guint64 mirage_fragment_iface_binary_subchannel_file_get_offset (MirageFragmentIfaceBinary *self)
 {
-    return MIRAGE_FRAG_IFACE_BINARY_GET_INTERFACE(self)->subchannel_file_get_offset(self);
+    return MIRAGE_FRAGMENT_IFACE_BINARY_GET_INTERFACE(self)->subchannel_file_get_offset(self);
 }
 
 /**
- * mirage_frag_iface_binary_subchannel_file_set_sectsize:
- * @self: a #MIRAGE_FragIface_Binary
+ * mirage_fragment_iface_binary_subchannel_file_set_sectsize:
+ * @self: a #MirageFragmentIfaceBinary
  * @sectsize: (in): subchannel file sector size
  *
  * <para>
  * Sets subchannel file sector size.
  * </para>
  **/
-void mirage_frag_iface_binary_subchannel_file_set_sectsize (MIRAGE_FragIface_Binary *self, gint sectsize)
+void mirage_fragment_iface_binary_subchannel_file_set_sectsize (MirageFragmentIfaceBinary *self, gint sectsize)
 {
-    return MIRAGE_FRAG_IFACE_BINARY_GET_INTERFACE(self)->subchannel_file_set_sectsize(self, sectsize);
+    return MIRAGE_FRAGMENT_IFACE_BINARY_GET_INTERFACE(self)->subchannel_file_set_sectsize(self, sectsize);
 }
 
 /**
- * mirage_frag_iface_binary_subchannel_file_get_sectsize:
- * @self: a #MIRAGE_FragIface_Binary
+ * mirage_fragment_iface_binary_subchannel_file_get_sectsize:
+ * @self: a #MirageFragmentIfaceBinary
  *
  * <para>
  * Retrieves subchannel file sector size.
@@ -587,15 +587,15 @@ void mirage_frag_iface_binary_subchannel_file_set_sectsize (MIRAGE_FragIface_Bin
  *
  * Returns: subchannel file sector size
  **/
-gint mirage_frag_iface_binary_subchannel_file_get_sectsize (MIRAGE_FragIface_Binary *self)
+gint mirage_fragment_iface_binary_subchannel_file_get_sectsize (MirageFragmentIfaceBinary *self)
 {
-    return MIRAGE_FRAG_IFACE_BINARY_GET_INTERFACE(self)->subchannel_file_get_sectsize(self);
+    return MIRAGE_FRAGMENT_IFACE_BINARY_GET_INTERFACE(self)->subchannel_file_get_sectsize(self);
 }
 
 
 /**
- * mirage_frag_iface_binary_subchannel_file_set_format:
- * @self: a #MIRAGE_FragIface_Binary
+ * mirage_fragment_iface_binary_subchannel_file_set_format:
+ * @self: a #MirageFragmentIfaceBinary
  * @format: (in): subchannel file data format
  *
  * <para>
@@ -603,14 +603,14 @@ gint mirage_frag_iface_binary_subchannel_file_get_sectsize (MIRAGE_FragIface_Bin
  * #MIRAGE_BINARY_SubchannelFile_Format.
  * </para>
  **/
-void mirage_frag_iface_binary_subchannel_file_set_format (MIRAGE_FragIface_Binary *self, gint format)
+void mirage_fragment_iface_binary_subchannel_file_set_format (MirageFragmentIfaceBinary *self, gint format)
 {
-    return MIRAGE_FRAG_IFACE_BINARY_GET_INTERFACE(self)->subchannel_file_set_format(self, format);
+    return MIRAGE_FRAGMENT_IFACE_BINARY_GET_INTERFACE(self)->subchannel_file_set_format(self, format);
 }
 
 /**
- * mirage_frag_iface_binary_subchannel_file_get_format:
- * @self: a #MIRAGE_FragIface_Binary
+ * mirage_fragment_iface_binary_subchannel_file_get_format:
+ * @self: a #MirageFragmentIfaceBinary
  *
  * <para>
  * Retrieves subchannel file data format.
@@ -618,15 +618,15 @@ void mirage_frag_iface_binary_subchannel_file_set_format (MIRAGE_FragIface_Binar
  *
  * Returns: subchannel data format
  **/
-gint mirage_frag_iface_binary_subchannel_file_get_format (MIRAGE_FragIface_Binary *self)
+gint mirage_fragment_iface_binary_subchannel_file_get_format (MirageFragmentIfaceBinary *self)
 {
-    return MIRAGE_FRAG_IFACE_BINARY_GET_INTERFACE(self)->subchannel_file_get_format(self);
+    return MIRAGE_FRAGMENT_IFACE_BINARY_GET_INTERFACE(self)->subchannel_file_get_format(self);
 }
 
 
 /**
- * mirage_frag_iface_binary_subchannel_file_get_position:
- * @self: a #MIRAGE_FragIface_Binary
+ * mirage_fragment_iface_binary_subchannel_file_get_position:
+ * @self: a #MirageFragmentIfaceBinary
  * @address: (in): address
  *
  * <para>
@@ -636,17 +636,17 @@ gint mirage_frag_iface_binary_subchannel_file_get_format (MIRAGE_FragIface_Binar
  *
  * Returns: position in subchannel file
  **/
-guint64 mirage_frag_iface_binary_subchannel_file_get_position (MIRAGE_FragIface_Binary *self, gint address)
+guint64 mirage_fragment_iface_binary_subchannel_file_get_position (MirageFragmentIfaceBinary *self, gint address)
 {
-    return MIRAGE_FRAG_IFACE_BINARY_GET_INTERFACE(self)->subchannel_file_get_position(self, address);
+    return MIRAGE_FRAGMENT_IFACE_BINARY_GET_INTERFACE(self)->subchannel_file_get_position(self, address);
 }
 
 
-GType mirage_frag_iface_binary_get_type (void) {
+GType mirage_fragment_iface_binary_get_type (void) {
     static GType iface_type = 0;
     if (iface_type == 0) {
         static const GTypeInfo info = {
-            sizeof(MIRAGE_FragIface_BinaryInterface),
+            sizeof(MirageFragmentIfaceBinaryInterface),
             NULL,   /* base_init */
             NULL,   /* base_finalize */
             NULL,   /* class_init */
@@ -658,7 +658,7 @@ GType mirage_frag_iface_binary_get_type (void) {
             NULL    /* value_table */
         };
 
-        iface_type = g_type_register_static(G_TYPE_INTERFACE, "MIRAGE_FragIface_Binary", &info, 0);
+        iface_type = g_type_register_static(G_TYPE_INTERFACE, "MirageFragmentIfaceBinary", &info, 0);
     }
 
     return iface_type;
@@ -669,8 +669,8 @@ GType mirage_frag_iface_binary_get_type (void) {
  *                            Audio interface                         *
 \**********************************************************************/
 /**
- * mirage_frag_iface_audio_set_file:
- * @self: a #MIRAGE_FragIface_Audio
+ * mirage_fragment_iface_audio_set_file:
+ * @self: a #MirageFragmentIfaceAudio
  * @filename: (in): filename
  * @stream: (in) (allow-none) (transfer full): a #GInputStream on file
  * @error: (out) (allow-none): location to store error, or %NULL
@@ -683,14 +683,14 @@ GType mirage_frag_iface_binary_get_type (void) {
  *
  * Returns: %TRUE on success, %FALSE on failure
  **/
-gboolean mirage_frag_iface_audio_set_file (MIRAGE_FragIface_Audio *self, const gchar *filename, GObject *stream, GError **error)
+gboolean mirage_fragment_iface_audio_set_file (MirageFragmentIfaceAudio *self, const gchar *filename, GObject *stream, GError **error)
 {
-    return MIRAGE_FRAG_IFACE_AUDIO_GET_INTERFACE(self)->set_file(self, filename, stream, error);
+    return MIRAGE_FRAGMENT_IFACE_AUDIO_GET_INTERFACE(self)->set_file(self, filename, stream, error);
 }
 
 /**
- * mirage_frag_iface_audio_get_file:
- * @self: a #MIRAGE_FragIface_Audio
+ * mirage_fragment_iface_audio_get_file:
+ * @self: a #MirageFragmentIfaceAudio
  *
  * <para>
  * Retrieves filename of audio file.
@@ -699,28 +699,28 @@ gboolean mirage_frag_iface_audio_set_file (MIRAGE_FragIface_Audio *self, const g
  * Returns: (transfer none): audio file name string. The string belongs to
  * object and should not be modified.
  **/
-const gchar *mirage_frag_iface_audio_get_file (MIRAGE_FragIface_Audio *self)
+const gchar *mirage_fragment_iface_audio_get_file (MirageFragmentIfaceAudio *self)
 {
-    return MIRAGE_FRAG_IFACE_AUDIO_GET_INTERFACE(self)->get_file(self);
+    return MIRAGE_FRAGMENT_IFACE_AUDIO_GET_INTERFACE(self)->get_file(self);
 }
 
 /**
- * mirage_frag_iface_audio_set_offset:
- * @self: a #MIRAGE_FragIface_Audio
+ * mirage_fragment_iface_audio_set_offset:
+ * @self: a #MirageFragmentIfaceAudio
  * @offset: (in): offset
  *
  * <para>
  * Sets offset within audio file, in sectors.
  * </para>
  **/
-void mirage_frag_iface_audio_set_offset (MIRAGE_FragIface_Audio *self, gint offset)
+void mirage_fragment_iface_audio_set_offset (MirageFragmentIfaceAudio *self, gint offset)
 {
-    return MIRAGE_FRAG_IFACE_AUDIO_GET_INTERFACE(self)->set_offset(self, offset);
+    return MIRAGE_FRAGMENT_IFACE_AUDIO_GET_INTERFACE(self)->set_offset(self, offset);
 }
 
 /**
- * mirage_frag_iface_audio_get_offset:
- * @self: a #MIRAGE_FragIface_Audio
+ * mirage_fragment_iface_audio_get_offset:
+ * @self: a #MirageFragmentIfaceAudio
  *
  * <para>
  * Retrieves offset within audio file, in sectors.
@@ -728,16 +728,16 @@ void mirage_frag_iface_audio_set_offset (MIRAGE_FragIface_Audio *self, gint offs
  *
  * Returns: offset
  **/
-gint mirage_frag_iface_audio_get_offset (MIRAGE_FragIface_Audio *self)
+gint mirage_fragment_iface_audio_get_offset (MirageFragmentIfaceAudio *self)
 {
-    return MIRAGE_FRAG_IFACE_AUDIO_GET_INTERFACE(self)->get_offset(self);
+    return MIRAGE_FRAGMENT_IFACE_AUDIO_GET_INTERFACE(self)->get_offset(self);
 }
 
-GType mirage_frag_iface_audio_get_type (void) {
+GType mirage_fragment_iface_audio_get_type (void) {
     static GType iface_type = 0;
     if (iface_type == 0) {
         static const GTypeInfo info = {
-            sizeof(MIRAGE_FragIface_AudioInterface),
+            sizeof(MirageFragmentIfaceAudioInterface),
             NULL,   /* base_init */
             NULL,   /* base_finalize */
             NULL,   /* class_init */
@@ -749,7 +749,7 @@ GType mirage_frag_iface_audio_get_type (void) {
             NULL    /* value_table */
         };
 
-        iface_type = g_type_register_static(G_TYPE_INTERFACE, "MIRAGE_FragIface_Audio", &info, 0);
+        iface_type = g_type_register_static(G_TYPE_INTERFACE, "MirageFragmentIfaceAudio", &info, 0);
     }
 
     return iface_type;

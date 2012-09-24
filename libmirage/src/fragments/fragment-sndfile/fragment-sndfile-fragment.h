@@ -16,7 +16,7 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
- 
+
 #ifndef __MIRAGE_FRAGMENT_SNDFILE_FRAGMENT_H__
 #define __MIRAGE_FRAGMENT_SNDFILE_FRAGMENT_H__
 
@@ -24,27 +24,27 @@
 G_BEGIN_DECLS
 
 #define MIRAGE_TYPE_FRAGMENT_SNDFILE            (mirage_fragment_sndfile_get_type())
-#define MIRAGE_FRAGMENT_SNDFILE(obj)            (G_TYPE_CHECK_INSTANCE_CAST((obj), MIRAGE_TYPE_FRAGMENT_SNDFILE, MIRAGE_Fragment_SNDFILE))
-#define MIRAGE_FRAGMENT_SNDFILE_CLASS(klass)    (G_TYPE_CHECK_CLASS_CAST((klass), MIRAGE_TYPE_FRAGMENT_SNDFILE, MIRAGE_Fragment_SNDFILEClass))
+#define MIRAGE_FRAGMENT_SNDFILE(obj)            (G_TYPE_CHECK_INSTANCE_CAST((obj), MIRAGE_TYPE_FRAGMENT_SNDFILE, MirageFragmentSndfile))
+#define MIRAGE_FRAGMENT_SNDFILE_CLASS(klass)    (G_TYPE_CHECK_CLASS_CAST((klass), MIRAGE_TYPE_FRAGMENT_SNDFILE, MirageFragmentSndfileClass))
 #define MIRAGE_IS_FRAGMENT_SNDFILE(obj)         (G_TYPE_CHECK_INSTANCE_TYPE((obj), MIRAGE_TYPE_FRAGMENT_SNDFILE))
 #define MIRAGE_IS_FRAGMENT_SNDFILE_CLASS(klass) (G_TYPE_CHECK_CLASS_TYPE((klass), MIRAGE_TYPE_FRAGMENT_SNDFILE))
-#define MIRAGE_FRAGMENT_SNDFILE_GET_CLASS(obj)  (G_TYPE_INSTANCE_GET_CLASS((obj), MIRAGE_TYPE_FRAGMENT_SNDFILE, MIRAGE_Fragment_SNDFILEClass))
+#define MIRAGE_FRAGMENT_SNDFILE_GET_CLASS(obj)  (G_TYPE_INSTANCE_GET_CLASS((obj), MIRAGE_TYPE_FRAGMENT_SNDFILE, MirageFragmentSndfileClass))
 
-typedef struct _MIRAGE_Fragment_SNDFILE         MIRAGE_Fragment_SNDFILE;
-typedef struct _MIRAGE_Fragment_SNDFILEClass    MIRAGE_Fragment_SNDFILEClass;
-typedef struct _MIRAGE_Fragment_SNDFILEPrivate  MIRAGE_Fragment_SNDFILEPrivate;
+typedef struct _MirageFragmentSndfile         MirageFragmentSndfile;
+typedef struct _MirageFragmentSndfileClass    MirageFragmentSndfileClass;
+typedef struct _MirageFragmentSndfilePrivate  MirageFragmentSndfilePrivate;
 
-struct _MIRAGE_Fragment_SNDFILE
+struct _MirageFragmentSndfile
 {
-    MIRAGE_Fragment parent_instance;
+    MirageFragment parent_instance;
 
     /*< private >*/
-    MIRAGE_Fragment_SNDFILEPrivate *priv;
+    MirageFragmentSndfilePrivate *priv;
 };
 
-struct _MIRAGE_Fragment_SNDFILEClass
+struct _MirageFragmentSndfileClass
 {
-    MIRAGE_FragmentClass parent_class;
+    MirageFragmentClass parent_class;
 };
 
 /* Used by MIRAGE_TYPE_FRAGMENT_SNDFILE */

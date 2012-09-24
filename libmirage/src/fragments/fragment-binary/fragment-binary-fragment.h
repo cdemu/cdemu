@@ -16,7 +16,7 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
- 
+
 #ifndef __MIRAGE_FRAGMENT_BINARY_FRAGMENT_H__
 #define __MIRAGE_FRAGMENT_BINARY_FRAGMENT_H__
 
@@ -24,27 +24,27 @@
 G_BEGIN_DECLS
 
 #define MIRAGE_TYPE_FRAGMENT_BINARY            (mirage_fragment_binary_get_type())
-#define MIRAGE_FRAGMENT_BINARY(obj)            (G_TYPE_CHECK_INSTANCE_CAST((obj), MIRAGE_TYPE_FRAGMENT_BINARY, MIRAGE_Fragment_BINARY))
-#define MIRAGE_FRAGMENT_BINARY_CLASS(klass)    (G_TYPE_CHECK_CLASS_CAST((klass), MIRAGE_TYPE_FRAGMENT_BINARY, MIRAGE_Fragment_BINARYClass))
+#define MIRAGE_FRAGMENT_BINARY(obj)            (G_TYPE_CHECK_INSTANCE_CAST((obj), MIRAGE_TYPE_FRAGMENT_BINARY, MirageFragmentBinary))
+#define MIRAGE_FRAGMENT_BINARY_CLASS(klass)    (G_TYPE_CHECK_CLASS_CAST((klass), MIRAGE_TYPE_FRAGMENT_BINARY, MirageFragmentBinaryClass))
 #define MIRAGE_IS_FRAGMENT_BINARY(obj)         (G_TYPE_CHECK_INSTANCE_TYPE((obj), MIRAGE_TYPE_FRAGMENT_BINARY))
 #define MIRAGE_IS_FRAGMENT_BINARY_CLASS(klass) (G_TYPE_CHECK_CLASS_TYPE((klass), MIRAGE_TYPE_FRAGMENT_BINARY))
-#define MIRAGE_FRAGMENT_BINARY_GET_CLASS(obj)  (G_TYPE_INSTANCE_GET_CLASS((obj), MIRAGE_TYPE_FRAGMENT_BINARY, MIRAGE_Fragment_BINARYClass))
+#define MIRAGE_FRAGMENT_BINARY_GET_CLASS(obj)  (G_TYPE_INSTANCE_GET_CLASS((obj), MIRAGE_TYPE_FRAGMENT_BINARY, MirageFragmentBinaryClass))
 
-typedef struct _MIRAGE_Fragment_BINARY          MIRAGE_Fragment_BINARY;
-typedef struct _MIRAGE_Fragment_BINARYClass     MIRAGE_Fragment_BINARYClass;
-typedef struct _MIRAGE_Fragment_BINARYPrivate   MIRAGE_Fragment_BINARYPrivate;
+typedef struct _MirageFragmentBinary          MirageFragmentBinary;
+typedef struct _MirageFragmentBinaryClass     MirageFragmentBinaryClass;
+typedef struct _MirageFragmentBinaryPrivate   MirageFragmentBinaryPrivate;
 
-struct _MIRAGE_Fragment_BINARY
+struct _MirageFragmentBinary
 {
-    MIRAGE_Fragment parent_instance;
+    MirageFragment parent_instance;
 
     /*< private >*/
-    MIRAGE_Fragment_BINARYPrivate *priv;
+    MirageFragmentBinaryPrivate *priv;
 };
 
-struct _MIRAGE_Fragment_BINARYClass
+struct _MirageFragmentBinaryClass
 {
-    MIRAGE_FragmentClass parent_class;
+    MirageFragmentClass parent_class;
 };
 
 /* Used by MIRAGE_TYPE_FRAGMENT_BINARY */

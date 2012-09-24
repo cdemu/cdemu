@@ -1,7 +1,7 @@
 /*
  *  libMirage: NRG image parser: Parser object
  *  Copyright (C) 2006-2012 Rok Mandeljc
- * 
+ *
  *  Reverse-engineering work in March, 2005 by Henrik Stokseth.
  *
  *  This program is free software; you can redistribute it and/or modify
@@ -26,27 +26,27 @@
 G_BEGIN_DECLS
 
 #define MIRAGE_TYPE_PARSER_NRG            (mirage_parser_nrg_get_type())
-#define MIRAGE_PARSER_NRG(obj)            (G_TYPE_CHECK_INSTANCE_CAST((obj), MIRAGE_TYPE_PARSER_NRG, MIRAGE_Parser_NRG))
-#define MIRAGE_PARSER_NRG_CLASS(klass)    (G_TYPE_CHECK_CLASS_CAST((klass), MIRAGE_TYPE_PARSER_NRG, MIRAGE_Parser_NRGClass))
+#define MIRAGE_PARSER_NRG(obj)            (G_TYPE_CHECK_INSTANCE_CAST((obj), MIRAGE_TYPE_PARSER_NRG, MirageParser_NRG))
+#define MIRAGE_PARSER_NRG_CLASS(klass)    (G_TYPE_CHECK_CLASS_CAST((klass), MIRAGE_TYPE_PARSER_NRG, MirageParser_NRGClass))
 #define MIRAGE_IS_PARSER_NRG(obj)         (G_TYPE_CHECK_INSTANCE_TYPE((obj), MIRAGE_TYPE_PARSER_NRG))
 #define MIRAGE_IS_PARSER_NRG_CLASS(klass) (G_TYPE_CHECK_CLASS_TYPE((klass), MIRAGE_TYPE_PARSER_NRG))
-#define MIRAGE_PARSER_NRG_GET_CLASS(obj)  (G_TYPE_INSTANCE_GET_CLASS((obj), MIRAGE_TYPE_PARSER_NRG, MIRAGE_Parser_NRGClass))
+#define MIRAGE_PARSER_NRG_GET_CLASS(obj)  (G_TYPE_INSTANCE_GET_CLASS((obj), MIRAGE_TYPE_PARSER_NRG, MirageParser_NRGClass))
 
-typedef struct _MIRAGE_Parser_NRG           MIRAGE_Parser_NRG;
-typedef struct _MIRAGE_Parser_NRGClass      MIRAGE_Parser_NRGClass;
-typedef struct _MIRAGE_Parser_NRGPrivate    MIRAGE_Parser_NRGPrivate;
+typedef struct _MirageParser_NRG           MirageParser_NRG;
+typedef struct _MirageParser_NRGClass      MirageParser_NRGClass;
+typedef struct _MirageParser_NRGPrivate    MirageParser_NRGPrivate;
 
-struct _MIRAGE_Parser_NRG
+struct _MirageParser_NRG
 {
-    MIRAGE_Parser parent_instance;
+    MirageParser parent_instance;
 
     /*< private >*/
-    MIRAGE_Parser_NRGPrivate *priv;
+    MirageParser_NRGPrivate *priv;
 };
 
-struct _MIRAGE_Parser_NRGClass
+struct _MirageParser_NRGClass
 {
-    MIRAGE_ParserClass parent_class;
+    MirageParserClass parent_class;
 };
 
 /* Used by MIRAGE_TYPE_PARSER_NRG */

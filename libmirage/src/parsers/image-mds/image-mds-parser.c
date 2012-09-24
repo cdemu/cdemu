@@ -27,9 +27,9 @@
 /**********************************************************************\
  *                          Private structure                         *
 \**********************************************************************/
-#define MIRAGE_PARSER_MDS_GET_PRIVATE(obj) (G_TYPE_INSTANCE_GET_PRIVATE((obj), MIRAGE_TYPE_PARSER_MDS, MIRAGE_Parser_MDSPrivate))
+#define MIRAGE_PARSER_MDS_GET_PRIVATE(obj) (G_TYPE_INSTANCE_GET_PRIVATE((obj), MIRAGE_TYPE_PARSER_MDS, MirageParser_MDSPrivate))
 
-struct _MIRAGE_Parser_MDSPrivate
+struct _MirageParser_MDSPrivate
 {
     GObject *disc;
 
@@ -142,7 +142,7 @@ static inline void widechar_filename_fix_endian (gunichar2 *filename)
     00: Mode 2, 01: Audio, 02: Mode 1, 03: Mode 2, 04: Mode 2 Form 1, 05: Mode 2 Form 2, 06: UKNONOWN, 07: Mode 2
     08: Mode 2, 09: Audio, 0A: Mode 1, 0B: Mode 2, 0C: Mode 2 Form 1, 0D: Mode 2 Form 2, 0E: UKNONOWN, 0F: Mode 2
 */
-static gint mirage_parser_mds_convert_track_mode (MIRAGE_Parser_MDS *self, gint mode)
+static gint mirage_parser_mds_convert_track_mode (MirageParser_MDS *self, gint mode)
 {
     /* convert between two values */
     static const struct {
@@ -200,7 +200,7 @@ static gchar *__helper_find_binary_file (gchar *declared_filename, gchar *mds_fi
     return bin_fullpath;
 }
 
-static void mirage_parser_mds_parse_dpm_block (MIRAGE_Parser_MDS *self, guint32 dpm_block_offset)
+static void mirage_parser_mds_parse_dpm_block (MirageParser_MDS *self, guint32 dpm_block_offset)
 {
     guint8 *cur_ptr;
 
@@ -240,7 +240,7 @@ static void mirage_parser_mds_parse_dpm_block (MIRAGE_Parser_MDS *self, guint32 
     mirage_disc_set_dpm_data(MIRAGE_DISC(self->priv->disc), dpm_start_sector, dpm_resolution, dpm_num_entries, dpm_data);
 }
 
-static void mirage_parser_mds_parse_dpm_data (MIRAGE_Parser_MDS *self)
+static void mirage_parser_mds_parse_dpm_data (MirageParser_MDS *self)
 {
     guint8 *cur_ptr;
 
@@ -278,7 +278,7 @@ static void mirage_parser_mds_parse_dpm_data (MIRAGE_Parser_MDS *self)
     }
 }
 
-static void mirage_parser_mds_parse_disc_structures (MIRAGE_Parser_MDS *self)
+static void mirage_parser_mds_parse_disc_structures (MirageParser_MDS *self)
 {
     guint8 *cur_ptr;
 
@@ -295,54 +295,54 @@ static void mirage_parser_mds_parse_disc_structures (MIRAGE_Parser_MDS *self)
        data consists of 8200 bytes, containing afore-mentioned sequence for each
        layer. */
     if (self->priv->header->disc_structures_offset) {
-        MIRAGE_DiscStruct_Copyright *copy_info;
-        MIRAGE_DiscStruct_Manufacture *manu_info;
-        MIRAGE_DiscStruct_PhysInfo *phys_info;
+        MirageDiscStructureCopyright *copy_info;
+        MirageDiscStructureManufacturingData *manu_info;
+        MirageDiscStructurePhysicalInfo *phys_info;
 
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: reading disc structures\n", __debug__);
 
         cur_ptr = self->priv->mds_data + self->priv->header->disc_structures_offset;
 
         /* DVD copyright information */
-        copy_info = MIRAGE_CAST_PTR(cur_ptr, 0, MIRAGE_DiscStruct_Copyright *);
-        cur_ptr += sizeof(MIRAGE_DiscStruct_Copyright);
+        copy_info = MIRAGE_CAST_PTR(cur_ptr, 0, MirageDiscStructureCopyright *);
+        cur_ptr += sizeof(MirageDiscStructureCopyright);
 
         /* DVD manufacture information */
-        manu_info = MIRAGE_CAST_PTR(cur_ptr, 0, MIRAGE_DiscStruct_Manufacture *);
-        cur_ptr += sizeof(MIRAGE_DiscStruct_Manufacture);
+        manu_info = MIRAGE_CAST_PTR(cur_ptr, 0, MirageDiscStructureManufacturingData *);
+        cur_ptr += sizeof(MirageDiscStructureManufacturingData);
 
         /* Physical information */
-        phys_info = MIRAGE_CAST_PTR(cur_ptr, 0, MIRAGE_DiscStruct_PhysInfo *);
-        cur_ptr += sizeof(MIRAGE_DiscStruct_PhysInfo);
+        phys_info = MIRAGE_CAST_PTR(cur_ptr, 0, MirageDiscStructurePhysicalInfo *);
+        cur_ptr += sizeof(MirageDiscStructurePhysicalInfo);
 
-        mirage_disc_set_disc_structure(MIRAGE_DISC(self->priv->disc), 0, 0x0000, (guint8 *)phys_info, sizeof(MIRAGE_DiscStruct_Copyright));
-        mirage_disc_set_disc_structure(MIRAGE_DISC(self->priv->disc), 0, 0x0001, (guint8 *)copy_info, sizeof(MIRAGE_DiscStruct_Manufacture));
-        mirage_disc_set_disc_structure(MIRAGE_DISC(self->priv->disc), 0, 0x0004, (guint8 *)manu_info, sizeof(MIRAGE_DiscStruct_PhysInfo));
+        mirage_disc_set_disc_structure(MIRAGE_DISC(self->priv->disc), 0, 0x0000, (guint8 *)phys_info, sizeof(MirageDiscStructureCopyright));
+        mirage_disc_set_disc_structure(MIRAGE_DISC(self->priv->disc), 0, 0x0001, (guint8 *)copy_info, sizeof(MirageDiscStructureManufacturingData));
+        mirage_disc_set_disc_structure(MIRAGE_DISC(self->priv->disc), 0, 0x0004, (guint8 *)manu_info, sizeof(MirageDiscStructurePhysicalInfo));
 
         /* Second round if it's dual-layer... */
         if (phys_info->num_layers == 0x01) {
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: dual-layer disc; reading disc structures for second layer\n", __debug__);
 
             /* DVD copyright information */
-            copy_info = MIRAGE_CAST_PTR(cur_ptr, 0, MIRAGE_DiscStruct_Copyright *);
-            cur_ptr += sizeof(MIRAGE_DiscStruct_Copyright);
+            copy_info = MIRAGE_CAST_PTR(cur_ptr, 0, MirageDiscStructureCopyright *);
+            cur_ptr += sizeof(MirageDiscStructureCopyright);
 
             /* DVD manufacture information */
-            manu_info = MIRAGE_CAST_PTR(cur_ptr, 0, MIRAGE_DiscStruct_Manufacture *);
-            cur_ptr += sizeof(MIRAGE_DiscStruct_Manufacture);
+            manu_info = MIRAGE_CAST_PTR(cur_ptr, 0, MirageDiscStructureManufacturingData *);
+            cur_ptr += sizeof(MirageDiscStructureManufacturingData);
 
             /* Physical information */
-            phys_info = MIRAGE_CAST_PTR(cur_ptr, 0, MIRAGE_DiscStruct_PhysInfo *);
-            cur_ptr += sizeof(MIRAGE_DiscStruct_PhysInfo);
+            phys_info = MIRAGE_CAST_PTR(cur_ptr, 0, MirageDiscStructurePhysicalInfo *);
+            cur_ptr += sizeof(MirageDiscStructurePhysicalInfo);
 
-            mirage_disc_set_disc_structure(MIRAGE_DISC(self->priv->disc), 0, 0x0000, (guint8 *)phys_info, sizeof(MIRAGE_DiscStruct_Copyright));
-            mirage_disc_set_disc_structure(MIRAGE_DISC(self->priv->disc), 0, 0x0001, (guint8 *)copy_info, sizeof(MIRAGE_DiscStruct_Manufacture));
-            mirage_disc_set_disc_structure(MIRAGE_DISC(self->priv->disc), 0, 0x0004, (guint8 *)manu_info, sizeof(MIRAGE_DiscStruct_PhysInfo));
+            mirage_disc_set_disc_structure(MIRAGE_DISC(self->priv->disc), 0, 0x0000, (guint8 *)phys_info, sizeof(MirageDiscStructureCopyright));
+            mirage_disc_set_disc_structure(MIRAGE_DISC(self->priv->disc), 0, 0x0001, (guint8 *)copy_info, sizeof(MirageDiscStructureManufacturingData));
+            mirage_disc_set_disc_structure(MIRAGE_DISC(self->priv->disc), 0, 0x0004, (guint8 *)manu_info, sizeof(MirageDiscStructurePhysicalInfo));
         }
     }
 }
 
-static void mirage_parser_mds_parse_bca (MIRAGE_Parser_MDS *self)
+static void mirage_parser_mds_parse_bca (MirageParser_MDS *self)
 {
     guint8 *cur_ptr;
 
@@ -356,7 +356,7 @@ static void mirage_parser_mds_parse_bca (MIRAGE_Parser_MDS *self)
     }
 }
 
-static gchar *mirage_parser_mds_get_track_filename (MIRAGE_Parser_MDS *self, MDS_Footer *footer_block, GError **error)
+static gchar *mirage_parser_mds_get_track_filename (MirageParser_MDS *self, MDS_Footer *footer_block, GError **error)
 {
     gchar *tmp_mdf_filename;
     gchar *mdf_filename;
@@ -395,7 +395,7 @@ static gchar *mirage_parser_mds_get_track_filename (MIRAGE_Parser_MDS *self, MDS
     return mdf_filename;
 }
 
-static gboolean mirage_parser_mds_parse_track_entries (MIRAGE_Parser_MDS *self, MDS_SessionBlock *session_block, GError **error)
+static gboolean mirage_parser_mds_parse_track_entries (MirageParser_MDS *self, MDS_SessionBlock *session_block, GError **error)
 {
     GObject *session;
     guint8 *cur_ptr;
@@ -494,7 +494,7 @@ static gboolean mirage_parser_mds_parse_track_entries (MIRAGE_Parser_MDS *self, 
                therefore, we need to provide NULL fragment for pregap */
             if (extra_block && extra_block->pregap) {
                 /* Creating NULL fragment should never fail */
-                GObject *fragment = mirage_create_fragment(MIRAGE_TYPE_FRAG_IFACE_NULL, NULL, G_OBJECT(self), NULL);;
+                GObject *fragment = mirage_create_fragment(MIRAGE_TYPE_FRAGMENT_IFACE_NULL, NULL, G_OBJECT(self), NULL);;
 
                 MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: track has pregap (0x%X); creating NULL fragment\n", __debug__, extra_block->pregap);
 
@@ -529,16 +529,16 @@ static gboolean mirage_parser_mds_parse_track_entries (MIRAGE_Parser_MDS *self, 
                 }
 
                 if (converted_mode == MIRAGE_MODE_AUDIO) {
-                    tfile_format = FR_BIN_TFILE_AUDIO;
+                    tfile_format = MIRAGE_TFILE_AUDIO;
                 } else {
-                    tfile_format = FR_BIN_TFILE_DATA;
+                    tfile_format = MIRAGE_TFILE_DATA;
                 }
 
                 /* Subchannel */
                 switch ((MDS_SubChan) block->subchannel) {
                     case PW_INTERLEAVED: {
                         sfile_sectsize = 96;
-                        sfile_format = FR_BIN_SFILE_PW96_INT | FR_BIN_SFILE_INT;
+                        sfile_format = MIRAGE_SFILE_PW96_INT | MIRAGE_SFILE_INT;
 
                         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: subchannel found; interleaved PW96\n", __debug__);
 
@@ -598,7 +598,7 @@ static gboolean mirage_parser_mds_parse_track_entries (MIRAGE_Parser_MDS *self, 
                 }
 
                 /* Create data fragment */
-                GObject *fragment = mirage_create_fragment(MIRAGE_TYPE_FRAG_IFACE_BINARY, data_stream, G_OBJECT(self), error);
+                GObject *fragment = mirage_create_fragment(MIRAGE_TYPE_FRAGMENT_IFACE_BINARY, data_stream, G_OBJECT(self), error);
                 if (!fragment) {
                     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: failed to create fragment!\n", __debug__);
                     g_object_unref(data_stream);
@@ -611,7 +611,7 @@ static gboolean mirage_parser_mds_parse_track_entries (MIRAGE_Parser_MDS *self, 
                 mirage_fragment_set_length(MIRAGE_FRAGMENT(fragment), fragment_len);
 
                 /* Set file */
-                if (!mirage_frag_iface_binary_track_file_set_file(MIRAGE_FRAG_IFACE_BINARY(fragment), mdf_filename, data_stream, error)) {
+                if (!mirage_fragment_iface_binary_track_file_set_file(MIRAGE_FRAGMENT_IFACE_BINARY(fragment), mdf_filename, data_stream, error)) {
                     MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to set track data file!\n", __debug__);
                     g_object_unref(data_stream);
                     g_free(mdf_filename);
@@ -623,12 +623,12 @@ static gboolean mirage_parser_mds_parse_track_entries (MIRAGE_Parser_MDS *self, 
                 g_object_unref(data_stream);
                 g_free(mdf_filename);
 
-                mirage_frag_iface_binary_track_file_set_offset(MIRAGE_FRAG_IFACE_BINARY(fragment), tfile_offset);
-                mirage_frag_iface_binary_track_file_set_sectsize(MIRAGE_FRAG_IFACE_BINARY(fragment), tfile_sectsize);
-                mirage_frag_iface_binary_track_file_set_format(MIRAGE_FRAG_IFACE_BINARY(fragment), tfile_format);
+                mirage_fragment_iface_binary_track_file_set_offset(MIRAGE_FRAGMENT_IFACE_BINARY(fragment), tfile_offset);
+                mirage_fragment_iface_binary_track_file_set_sectsize(MIRAGE_FRAGMENT_IFACE_BINARY(fragment), tfile_sectsize);
+                mirage_fragment_iface_binary_track_file_set_format(MIRAGE_FRAGMENT_IFACE_BINARY(fragment), tfile_format);
 
-                mirage_frag_iface_binary_subchannel_file_set_sectsize(MIRAGE_FRAG_IFACE_BINARY(fragment), sfile_sectsize);
-                mirage_frag_iface_binary_subchannel_file_set_format(MIRAGE_FRAG_IFACE_BINARY(fragment), sfile_format);
+                mirage_fragment_iface_binary_subchannel_file_set_sectsize(MIRAGE_FRAGMENT_IFACE_BINARY(fragment), sfile_sectsize);
+                mirage_fragment_iface_binary_subchannel_file_set_format(MIRAGE_FRAGMENT_IFACE_BINARY(fragment), sfile_format);
 
                 mirage_track_add_fragment(MIRAGE_TRACK(track), -1, fragment);
                 g_object_unref(fragment);
@@ -648,7 +648,7 @@ static gboolean mirage_parser_mds_parse_track_entries (MIRAGE_Parser_MDS *self, 
     return TRUE;
 }
 
-static gboolean mirage_parser_mds_parse_sessions (MIRAGE_Parser_MDS *self, GError **error)
+static gboolean mirage_parser_mds_parse_sessions (MirageParser_MDS *self, GError **error)
 {
     guint8 *cur_ptr;
 
@@ -721,7 +721,7 @@ static gboolean mirage_parser_mds_parse_sessions (MIRAGE_Parser_MDS *self, GErro
     return TRUE;
 }
 
-static gboolean mirage_parser_mds_load_disc (MIRAGE_Parser_MDS *self, GError **error)
+static gboolean mirage_parser_mds_load_disc (MirageParser_MDS *self, GError **error)
 {
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "\n");
 
@@ -752,11 +752,11 @@ static gboolean mirage_parser_mds_load_disc (MIRAGE_Parser_MDS *self, GError **e
 }
 
 /**********************************************************************\
- *                MIRAGE_Parser methods implementation                *
+ *                MirageParser methods implementation                *
 \**********************************************************************/
-static GObject *mirage_parser_mds_load_image (MIRAGE_Parser *_self, gchar **filenames, GError **error)
+static GObject *mirage_parser_mds_load_image (MirageParser *_self, gchar **filenames, GError **error)
 {
-    MIRAGE_Parser_MDS *self = MIRAGE_PARSER_MDS(_self);
+    MirageParser_MDS *self = MIRAGE_PARSER_MDS(_self);
 
     gboolean succeeded = TRUE;
     guint8 *cur_ptr;
@@ -878,7 +878,7 @@ end:
 /**********************************************************************\
  *                             Object init                            *
 \**********************************************************************/
-G_DEFINE_DYNAMIC_TYPE(MIRAGE_Parser_MDS, mirage_parser_mds, MIRAGE_TYPE_PARSER);
+G_DEFINE_DYNAMIC_TYPE(MirageParser_MDS, mirage_parser_mds, MIRAGE_TYPE_PARSER);
 
 void mirage_parser_mds_type_register (GTypeModule *type_module)
 {
@@ -886,7 +886,7 @@ void mirage_parser_mds_type_register (GTypeModule *type_module)
 }
 
 
-static void mirage_parser_mds_init (MIRAGE_Parser_MDS *self)
+static void mirage_parser_mds_init (MirageParser_MDS *self)
 {
     self->priv = MIRAGE_PARSER_MDS_GET_PRIVATE(self);
 
@@ -903,7 +903,7 @@ static void mirage_parser_mds_init (MIRAGE_Parser_MDS *self)
 
 static void mirage_parser_mds_finalize (GObject *gobject)
 {
-    MIRAGE_Parser_MDS *self = MIRAGE_PARSER_MDS(gobject);
+    MirageParser_MDS *self = MIRAGE_PARSER_MDS(gobject);
 
     g_free(self->priv->mds_filename);
     g_free(self->priv->mds_data);
@@ -912,19 +912,19 @@ static void mirage_parser_mds_finalize (GObject *gobject)
     return G_OBJECT_CLASS(mirage_parser_mds_parent_class)->finalize(gobject);
 }
 
-static void mirage_parser_mds_class_init (MIRAGE_Parser_MDSClass *klass)
+static void mirage_parser_mds_class_init (MirageParser_MDSClass *klass)
 {
     GObjectClass *gobject_class = G_OBJECT_CLASS(klass);
-    MIRAGE_ParserClass *parser_class = MIRAGE_PARSER_CLASS(klass);
+    MirageParserClass *parser_class = MIRAGE_PARSER_CLASS(klass);
 
     gobject_class->finalize = mirage_parser_mds_finalize;
 
     parser_class->load_image = mirage_parser_mds_load_image;
 
     /* Register private structure */
-    g_type_class_add_private(klass, sizeof(MIRAGE_Parser_MDSPrivate));
+    g_type_class_add_private(klass, sizeof(MirageParser_MDSPrivate));
 }
 
-static void mirage_parser_mds_class_finalize (MIRAGE_Parser_MDSClass *klass G_GNUC_UNUSED)
+static void mirage_parser_mds_class_finalize (MirageParser_MDSClass *klass G_GNUC_UNUSED)
 {
 }

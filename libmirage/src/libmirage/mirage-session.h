@@ -24,7 +24,7 @@
 G_BEGIN_DECLS
 
 /**
- * MIRAGE_SessionTypes:
+ * MirageSessionTypes:
  * @MIRAGE_SESSION_CD_DA: CD AUDIO
  * @MIRAGE_SESSION_CD_ROM: CD-ROM
  * @MIRAGE_SESSION_CD_I: CD-I
@@ -40,38 +40,38 @@ typedef enum
     MIRAGE_SESSION_CD_ROM    = 0x00,
     MIRAGE_SESSION_CD_I      = 0x10,
     MIRAGE_SESSION_CD_ROM_XA = 0x20,
-} MIRAGE_SessionTypes;
+} MirageSessionTypes;
 
 
 #define MIRAGE_TYPE_SESSION            (mirage_session_get_type())
-#define MIRAGE_SESSION(obj)            (G_TYPE_CHECK_INSTANCE_CAST((obj), MIRAGE_TYPE_SESSION, MIRAGE_Session))
-#define MIRAGE_SESSION_CLASS(klass)    (G_TYPE_CHECK_CLASS_CAST((klass), MIRAGE_TYPE_SESSION, MIRAGE_SessionClass))
+#define MIRAGE_SESSION(obj)            (G_TYPE_CHECK_INSTANCE_CAST((obj), MIRAGE_TYPE_SESSION, MirageSession))
+#define MIRAGE_SESSION_CLASS(klass)    (G_TYPE_CHECK_CLASS_CAST((klass), MIRAGE_TYPE_SESSION, MirageSessionClass))
 #define MIRAGE_IS_SESSION(obj)         (G_TYPE_CHECK_INSTANCE_TYPE((obj), MIRAGE_TYPE_SESSION))
 #define MIRAGE_IS_SESSION_CLASS(klass) (G_TYPE_CHECK_CLASS_TYPE((klass), MIRAGE_TYPE_SESSION))
-#define MIRAGE_SESSION_GET_CLASS(obj)  (G_TYPE_INSTANCE_GET_CLASS((obj), MIRAGE_TYPE_SESSION, MIRAGE_SessionClass))
+#define MIRAGE_SESSION_GET_CLASS(obj)  (G_TYPE_INSTANCE_GET_CLASS((obj), MIRAGE_TYPE_SESSION, MirageSessionClass))
 
-typedef struct _MIRAGE_Session          MIRAGE_Session;
-typedef struct _MIRAGE_SessionClass     MIRAGE_SessionClass;
-typedef struct _MIRAGE_SessionPrivate   MIRAGE_SessionPrivate;
+typedef struct _MirageSession          MirageSession;
+typedef struct _MirageSessionClass     MirageSessionClass;
+typedef struct _MirageSessionPrivate   MirageSessionPrivate;
 
 /**
- * MIRAGE_Session:
+ * MirageSession:
  *
  * <para>
  * Contains private data only, and should be accessed using the functions below.
  * </para>
  **/
-struct _MIRAGE_Session
+struct _MirageSession
 {
-    MIRAGE_Object parent_instance;
+    MirageObject parent_instance;
 
     /*< private >*/
-    MIRAGE_SessionPrivate *priv;
+    MirageSessionPrivate *priv;
 };
 
-struct _MIRAGE_SessionClass
+struct _MirageSessionClass
 {
-    MIRAGE_ObjectClass parent_class;
+    MirageObjectClass parent_class;
 };
 
 /* Used by MIRAGE_TYPE_SESSION */
@@ -82,53 +82,53 @@ GType mirage_session_get_type (void);
  *                             Public API                             *
 \**********************************************************************/
 /* Session type */
-void mirage_session_set_session_type (MIRAGE_Session *self, gint type);
-gint mirage_session_get_session_type (MIRAGE_Session *self);
+void mirage_session_set_session_type (MirageSession *self, gint type);
+gint mirage_session_get_session_type (MirageSession *self);
 
 /* Layout */
-void mirage_session_layout_set_session_number (MIRAGE_Session *self, gint number);
-gint mirage_session_layout_get_session_number (MIRAGE_Session *self);
-void mirage_session_layout_set_first_track (MIRAGE_Session *self, gint first_track);
-gint mirage_session_layout_get_first_track (MIRAGE_Session *self);
-void mirage_session_layout_set_start_sector (MIRAGE_Session *self, gint start_sector);
-gint mirage_session_layout_get_start_sector (MIRAGE_Session *self);
-gint mirage_session_layout_get_length (MIRAGE_Session *self);
+void mirage_session_layout_set_session_number (MirageSession *self, gint number);
+gint mirage_session_layout_get_session_number (MirageSession *self);
+void mirage_session_layout_set_first_track (MirageSession *self, gint first_track);
+gint mirage_session_layout_get_first_track (MirageSession *self);
+void mirage_session_layout_set_start_sector (MirageSession *self, gint start_sector);
+gint mirage_session_layout_get_start_sector (MirageSession *self);
+gint mirage_session_layout_get_length (MirageSession *self);
 
 /* Convenience functions for setting/getting length of session's lead-out */
-void mirage_session_set_leadout_length (MIRAGE_Session *self, gint length);
-gint mirage_session_get_leadout_length (MIRAGE_Session *self);
+void mirage_session_set_leadout_length (MirageSession *self, gint length);
+gint mirage_session_get_leadout_length (MirageSession *self);
 
 /* Tracks handling */
-gint mirage_session_get_number_of_tracks (MIRAGE_Session *self);
-void mirage_session_add_track_by_index (MIRAGE_Session *self, gint index, GObject *track);
-gboolean mirage_session_add_track_by_number (MIRAGE_Session *self, gint number, GObject *track, GError **error);
-gboolean mirage_session_remove_track_by_index (MIRAGE_Session *self, gint index, GError **error);
-gboolean mirage_session_remove_track_by_number (MIRAGE_Session *self, gint number, GError **error);
-void mirage_session_remove_track_by_object (MIRAGE_Session *self, GObject *track);
-GObject *mirage_session_get_track_by_index (MIRAGE_Session *self, gint index, GError **error);
-GObject *mirage_session_get_track_by_number (MIRAGE_Session *self, gint number, GError **error);
-GObject *mirage_session_get_track_by_address (MIRAGE_Session *self, gint address, GError **error);
-gboolean mirage_session_for_each_track (MIRAGE_Session *self, MIRAGE_CallbackFunction func, gpointer user_data);
-GObject *mirage_session_get_track_before (MIRAGE_Session *self, GObject *track, GError **error);
-GObject *mirage_session_get_track_after (MIRAGE_Session *self, GObject *track, GError **error);
+gint mirage_session_get_number_of_tracks (MirageSession *self);
+void mirage_session_add_track_by_index (MirageSession *self, gint index, GObject *track);
+gboolean mirage_session_add_track_by_number (MirageSession *self, gint number, GObject *track, GError **error);
+gboolean mirage_session_remove_track_by_index (MirageSession *self, gint index, GError **error);
+gboolean mirage_session_remove_track_by_number (MirageSession *self, gint number, GError **error);
+void mirage_session_remove_track_by_object (MirageSession *self, GObject *track);
+GObject *mirage_session_get_track_by_index (MirageSession *self, gint index, GError **error);
+GObject *mirage_session_get_track_by_number (MirageSession *self, gint number, GError **error);
+GObject *mirage_session_get_track_by_address (MirageSession *self, gint address, GError **error);
+gboolean mirage_session_for_each_track (MirageSession *self, MirageCallbackFunction func, gpointer user_data);
+GObject *mirage_session_get_track_before (MirageSession *self, GObject *track, GError **error);
+GObject *mirage_session_get_track_after (MirageSession *self, GObject *track, GError **error);
 
 /* Languages (CD-Text) handling */
-gint mirage_session_get_number_of_languages (MIRAGE_Session *self);
-gboolean mirage_session_add_language (MIRAGE_Session *self, gint langcode, GObject *language, GError **error);
-gboolean mirage_session_remove_language_by_index (MIRAGE_Session *self, gint index, GError **error);
-gboolean mirage_session_remove_language_by_code (MIRAGE_Session *self, gint langcode, GError **error);
-void mirage_session_remove_language_by_object (MIRAGE_Session *self, GObject *language);
-GObject *mirage_session_get_language_by_index (MIRAGE_Session *self, gint index, GError **error);
-GObject *mirage_session_get_language_by_code (MIRAGE_Session *self, gint langcode, GError **error);
-gboolean mirage_session_for_each_language (MIRAGE_Session *self, MIRAGE_CallbackFunction func, gpointer user_data);
+gint mirage_session_get_number_of_languages (MirageSession *self);
+gboolean mirage_session_add_language (MirageSession *self, gint langcode, GObject *language, GError **error);
+gboolean mirage_session_remove_language_by_index (MirageSession *self, gint index, GError **error);
+gboolean mirage_session_remove_language_by_code (MirageSession *self, gint langcode, GError **error);
+void mirage_session_remove_language_by_object (MirageSession *self, GObject *language);
+GObject *mirage_session_get_language_by_index (MirageSession *self, gint index, GError **error);
+GObject *mirage_session_get_language_by_code (MirageSession *self, gint langcode, GError **error);
+gboolean mirage_session_for_each_language (MirageSession *self, MirageCallbackFunction func, gpointer user_data);
 
 /* Direct CD-Text handling */
-gboolean mirage_session_set_cdtext_data (MIRAGE_Session *self, guint8 *data, gint len, GError **error);
-gboolean mirage_session_get_cdtext_data (MIRAGE_Session *self, guint8 **data, gint *len, GError **error);
+gboolean mirage_session_set_cdtext_data (MirageSession *self, guint8 *data, gint len, GError **error);
+gboolean mirage_session_get_cdtext_data (MirageSession *self, guint8 **data, gint *len, GError **error);
 
 /* Two nice convenience functions */
-GObject *mirage_session_get_prev (MIRAGE_Session *self, GError **error);
-GObject *mirage_session_get_next (MIRAGE_Session *self, GError **error);
+GObject *mirage_session_get_prev (MirageSession *self, GError **error);
+GObject *mirage_session_get_next (MirageSession *self, GError **error);
 
 G_END_DECLS
 

@@ -30,36 +30,36 @@
 \**********************************************************************/
 /**
  * mirage_debuggable_set_debug_context:
- * @self: a #MIRAGE_Debuggable
- * @debug_context: (in): debug context (a #MIRAGE_DebugContext)
+ * @self: a #MirageDebuggable
+ * @debug_context: (in): debug context (a #MirageDebugContext)
  *
  * <para>
  * Sets object's debug context.
  * </para>
  **/
-void mirage_debuggable_set_debug_context (MIRAGE_Debuggable *self, GObject *debug_context)
+void mirage_debuggable_set_debug_context (MirageDebuggable *self, GObject *debug_context)
 {
     return MIRAGE_DEBUGGABLE_GET_INTERFACE(self)->set_debug_context(self, debug_context);
 }
 
 /**
  * mirage_debuggable_get_debug_context:
- * @self: a #MIRAGE_Debuggable
+ * @self: a #MirageDebuggable
  *
  * <para>
  * Retrieves object's debug context.
  * </para>
  *
- * Returns: (transfer none): object's debug context (a #MIRAGE_DebugContext), or %NULL
+ * Returns: (transfer none): object's debug context (a #MirageDebugContext), or %NULL
  **/
-GObject *mirage_debuggable_get_debug_context (MIRAGE_Debuggable *self)
+GObject *mirage_debuggable_get_debug_context (MirageDebuggable *self)
 {
     return MIRAGE_DEBUGGABLE_GET_INTERFACE(self)->get_debug_context(self);
 }
 
 /**
  * mirage_debuggable_debug_messagev:
- * @self: a #MIRAGE_Debuggable
+ * @self: a #MirageDebuggable
  * @level: (in): debug level
  * @format: (in): message format. See the printf() documentation.
  * @args: (in): parameters to insert into the format string.
@@ -71,14 +71,14 @@ GObject *mirage_debuggable_get_debug_context (MIRAGE_Debuggable *self)
  * %MIRAGE_DEBUG_ERROR.
  * </para>
  **/
-void mirage_debuggable_debug_messagev (MIRAGE_Debuggable *self, gint level, gchar *format, va_list args)
+void mirage_debuggable_debug_messagev (MirageDebuggable *self, gint level, gchar *format, va_list args)
 {
     return MIRAGE_DEBUGGABLE_GET_INTERFACE(self)->debug_messagev(self, level, format, args);
 }
 
 /**
  * mirage_debuggable_debug_message:
- * @self: a #MIRAGE_Debuggable
+ * @self: a #MirageDebuggable
  * @level: (in): debug level
  * @format: (in): message format. See the printf() documentation.
  * @...: (in): parameters to insert into the format string.
@@ -90,7 +90,7 @@ void mirage_debuggable_debug_messagev (MIRAGE_Debuggable *self, gint level, gcha
  * %MIRAGE_DEBUG_ERROR.
  * </para>
  **/
-void mirage_debuggable_debug_message (MIRAGE_Debuggable *self, gint level, gchar *format, ...)
+void mirage_debuggable_debug_message (MirageDebuggable *self, gint level, gchar *format, ...)
 {
     va_list args;
     va_start(args, format);
@@ -102,7 +102,7 @@ GType mirage_debuggable_get_type (void) {
     static GType iface_type = 0;
     if (iface_type == 0) {
         static const GTypeInfo info = {
-            sizeof(MIRAGE_DebuggableInterface),
+            sizeof(MirageDebuggableInterface),
             NULL,   /* base_init */
             NULL,   /* base_finalize */
             NULL,   /* class_init */
@@ -114,7 +114,7 @@ GType mirage_debuggable_get_type (void) {
             NULL    /* value_table */
         };
 
-        iface_type = g_type_register_static(G_TYPE_INTERFACE, "MIRAGE_Debuggable", &info, 0);
+        iface_type = g_type_register_static(G_TYPE_INTERFACE, "MirageDebuggable", &info, 0);
     }
 
     return iface_type;
@@ -124,9 +124,9 @@ GType mirage_debuggable_get_type (void) {
 /**********************************************************************\
  *                          Private structure                         *
 \**********************************************************************/
-#define MIRAGE_DEBUG_CONTEXT_GET_PRIVATE(obj) (G_TYPE_INSTANCE_GET_PRIVATE((obj), MIRAGE_TYPE_DEBUG_CONTEXT, MIRAGE_DebugContextPrivate))
+#define MIRAGE_DEBUG_CONTEXT_GET_PRIVATE(obj) (G_TYPE_INSTANCE_GET_PRIVATE((obj), MIRAGE_TYPE_DEBUG_CONTEXT, MirageDebugContextPrivate))
 
-struct _MIRAGE_DebugContextPrivate
+struct _MirageDebugContextPrivate
 {
     gchar *name; /* Debug context name... e.g. 'Device 1' */
     gchar *domain; /* Debug context domain... e.g. 'libMirage' */
@@ -140,14 +140,14 @@ struct _MIRAGE_DebugContextPrivate
 \**********************************************************************/
 /**
  * mirage_debug_context_set_domain:
- * @self: a #MIRAGE_DebugContext
+ * @self: a #MirageDebugContext
  * @domain: (in): domain name
  *
  * <para>
  * Sets debug context's domain name to @domain.
  * </para>
  **/
-void mirage_debug_context_set_domain (MIRAGE_DebugContext *self, const gchar *domain)
+void mirage_debug_context_set_domain (MirageDebugContext *self, const gchar *domain)
 {
     /* Set domain */
     g_free(self->priv->domain);
@@ -156,7 +156,7 @@ void mirage_debug_context_set_domain (MIRAGE_DebugContext *self, const gchar *do
 
 /**
  * mirage_debug_context_get_domain:
- * @self: a #MIRAGE_DebugContext
+ * @self: a #MirageDebugContext
  *
  * <para>
  * Retrieves debug context's domain name.
@@ -164,7 +164,7 @@ void mirage_debug_context_set_domain (MIRAGE_DebugContext *self, const gchar *do
  *
  * Returns: (transfer none): pointer to buffer containing the domain name, or %NULL. The buffer belongs to the object and should not be modified.
  **/
-const gchar *mirage_debug_context_get_domain (MIRAGE_DebugContext *self)
+const gchar *mirage_debug_context_get_domain (MirageDebugContext *self)
 {
     return self->priv->domain;
 }
@@ -172,14 +172,14 @@ const gchar *mirage_debug_context_get_domain (MIRAGE_DebugContext *self)
 
 /**
  * mirage_debug_context_set_name:
- * @self: a #MIRAGE_DebugContext
+ * @self: a #MirageDebugContext
  * @name: (in): name
  *
  * <para>
  * Sets debug context's name to @name.
  * </para>
  **/
-void mirage_debug_context_set_name (MIRAGE_DebugContext *self, const gchar *name)
+void mirage_debug_context_set_name (MirageDebugContext *self, const gchar *name)
 {
     /* Set name */
     g_free(self->priv->name);
@@ -188,7 +188,7 @@ void mirage_debug_context_set_name (MIRAGE_DebugContext *self, const gchar *name
 
 /**
  * mirage_debug_context_get_name:
- * @self: a #MIRAGE_DebugContext
+ * @self: a #MirageDebugContext
  *
  * <para>
  * Retrieves debug context's name.
@@ -196,7 +196,7 @@ void mirage_debug_context_set_name (MIRAGE_DebugContext *self, const gchar *name
  *
  * Returns: pointer to buffer containing the name, or %NULL. The buffer belongs to the object and should not be modified.
  **/
-const gchar *mirage_debug_context_get_name (MIRAGE_DebugContext *self)
+const gchar *mirage_debug_context_get_name (MirageDebugContext *self)
 {
     return self->priv->name;
 }
@@ -204,14 +204,14 @@ const gchar *mirage_debug_context_get_name (MIRAGE_DebugContext *self)
 
 /**
  * mirage_debug_context_set_debug_mask:
- * @self: a #MIRAGE_DebugContext
+ * @self: a #MirageDebugContext
  * @debug_mask: (in): debug mask
  *
  * <para>
  * Sets debug context's debug mask.
  * </para>
  **/
-void mirage_debug_context_set_debug_mask (MIRAGE_DebugContext *self, gint debug_mask)
+void mirage_debug_context_set_debug_mask (MirageDebugContext *self, gint debug_mask)
 {
     /* Set debug mask */
     self->priv->debug_mask = debug_mask;
@@ -219,7 +219,7 @@ void mirage_debug_context_set_debug_mask (MIRAGE_DebugContext *self, gint debug_
 
 /**
  * mirage_debug_context_get_debug_mask:
- * @self: a #MIRAGE_DebugContext
+ * @self: a #MirageDebugContext
  *
  * <para>
  * Retrieves debug context's debug mask.
@@ -227,7 +227,7 @@ void mirage_debug_context_set_debug_mask (MIRAGE_DebugContext *self, gint debug_
  *
  * Returns: debug context's debug mask
  **/
-gint mirage_debug_context_get_debug_mask (MIRAGE_DebugContext *self)
+gint mirage_debug_context_get_debug_mask (MirageDebugContext *self)
 {
     /* Return debug mask */
     return self->priv->debug_mask;
@@ -237,10 +237,10 @@ gint mirage_debug_context_get_debug_mask (MIRAGE_DebugContext *self)
 /**********************************************************************\
  *                             Object init                            *
 \**********************************************************************/
-G_DEFINE_TYPE(MIRAGE_DebugContext, mirage_debug_context, G_TYPE_OBJECT);
+G_DEFINE_TYPE(MirageDebugContext, mirage_debug_context, G_TYPE_OBJECT);
 
 
-static void mirage_debug_context_init (MIRAGE_DebugContext *self)
+static void mirage_debug_context_init (MirageDebugContext *self)
 {
     self->priv = MIRAGE_DEBUG_CONTEXT_GET_PRIVATE(self);
 
@@ -250,7 +250,7 @@ static void mirage_debug_context_init (MIRAGE_DebugContext *self)
 
 static void mirage_debug_context_finalize (GObject *gobject)
 {
-    MIRAGE_DebugContext *self = MIRAGE_DEBUG_CONTEXT(gobject);
+    MirageDebugContext *self = MIRAGE_DEBUG_CONTEXT(gobject);
 
     g_free(self->priv->domain);
     g_free(self->priv->name);
@@ -259,12 +259,12 @@ static void mirage_debug_context_finalize (GObject *gobject)
     return G_OBJECT_CLASS(mirage_debug_context_parent_class)->finalize(gobject);
 }
 
-static void mirage_debug_context_class_init (MIRAGE_DebugContextClass *klass)
+static void mirage_debug_context_class_init (MirageDebugContextClass *klass)
 {
     GObjectClass *gobject_class = G_OBJECT_CLASS(klass);
 
     gobject_class->finalize = mirage_debug_context_finalize;
 
     /* Register private structure */
-    g_type_class_add_private(klass, sizeof(MIRAGE_DebugContextPrivate));
+    g_type_class_add_private(klass, sizeof(MirageDebugContextPrivate));
 }

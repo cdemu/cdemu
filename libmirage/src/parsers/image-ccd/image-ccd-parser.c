@@ -25,9 +25,9 @@
 /**********************************************************************\
  *                          Private structure                         *
 \**********************************************************************/
-#define MIRAGE_PARSER_CCD_GET_PRIVATE(obj) (G_TYPE_INSTANCE_GET_PRIVATE((obj), MIRAGE_TYPE_PARSER_CCD, MIRAGE_Parser_CCDPrivate))
+#define MIRAGE_PARSER_CCD_GET_PRIVATE(obj) (G_TYPE_INSTANCE_GET_PRIVATE((obj), MIRAGE_TYPE_PARSER_CCD, MirageParser_CCDPrivate))
 
-struct _MIRAGE_Parser_CCDPrivate
+struct _MirageParser_CCDPrivate
 {
     GObject *disc;
 
@@ -88,7 +88,7 @@ static gint sort_entries (CCD_Entry *entry1, CCD_Entry *entry2)
     }
 }
 
-static gboolean mirage_parser_ccd_sort_entries (MIRAGE_Parser_CCD *self, GError **error G_GNUC_UNUSED)
+static gboolean mirage_parser_ccd_sort_entries (MirageParser_CCD *self, GError **error G_GNUC_UNUSED)
 {
     GList *entry;
 
@@ -114,7 +114,7 @@ static gboolean mirage_parser_ccd_sort_entries (MIRAGE_Parser_CCD *self, GError 
     return TRUE;
 }
 
-static gboolean mirage_parser_ccd_determine_track_mode (MIRAGE_Parser_CCD *self, GObject *track, GError **error)
+static gboolean mirage_parser_ccd_determine_track_mode (MirageParser_CCD *self, GObject *track, GError **error)
 {
     GObject *fragment;
     guint8 *buf = g_try_malloc(2352);
@@ -152,7 +152,7 @@ static gboolean mirage_parser_ccd_determine_track_mode (MIRAGE_Parser_CCD *self,
     return TRUE;
 }
 
-static gboolean mirage_parser_ccd_clean_parsed_structures (MIRAGE_Parser_CCD *self, GError **error G_GNUC_UNUSED)
+static gboolean mirage_parser_ccd_clean_parsed_structures (MirageParser_CCD *self, GError **error G_GNUC_UNUSED)
 {
     GList *entry = NULL;
 
@@ -181,7 +181,7 @@ static gboolean mirage_parser_ccd_clean_parsed_structures (MIRAGE_Parser_CCD *se
     return TRUE;
 }
 
-static gboolean mirage_parser_ccd_build_disc_layout (MIRAGE_Parser_CCD *self, GError **error)
+static gboolean mirage_parser_ccd_build_disc_layout (MirageParser_CCD *self, GError **error)
 {
     GList *entry = NULL;
 
@@ -280,7 +280,7 @@ static gboolean mirage_parser_ccd_build_disc_layout (MIRAGE_Parser_CCD *self, GE
 
 
             /* Data fragment */
-            fragment = mirage_create_fragment(MIRAGE_TYPE_FRAG_IFACE_BINARY, self->priv->img_stream, G_OBJECT(self), error);
+            fragment = mirage_create_fragment(MIRAGE_TYPE_FRAGMENT_IFACE_BINARY, self->priv->img_stream, G_OBJECT(self), error);
             if (!fragment) {
                 MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to create data fragment!\n", __debug__);
                 g_object_unref(track);
@@ -288,27 +288,27 @@ static gboolean mirage_parser_ccd_build_disc_layout (MIRAGE_Parser_CCD *self, GE
                 return FALSE;
             }
 
-            if (!mirage_frag_iface_binary_track_file_set_file(MIRAGE_FRAG_IFACE_BINARY(fragment), self->priv->img_filename, self->priv->img_stream, error)) {
+            if (!mirage_fragment_iface_binary_track_file_set_file(MIRAGE_FRAGMENT_IFACE_BINARY(fragment), self->priv->img_filename, self->priv->img_stream, error)) {
                 MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to set track data file!\n", __debug__);
                 g_object_unref(fragment);
                 g_object_unref(track);
                 g_object_unref(session);
                 return FALSE;
             }
-            mirage_frag_iface_binary_track_file_set_sectsize(MIRAGE_FRAG_IFACE_BINARY(fragment), 2352);
-            mirage_frag_iface_binary_track_file_set_offset(MIRAGE_FRAG_IFACE_BINARY(fragment), self->priv->offset*2352);
-            mirage_frag_iface_binary_track_file_set_format(MIRAGE_FRAG_IFACE_BINARY(fragment), FR_BIN_TFILE_DATA);
+            mirage_fragment_iface_binary_track_file_set_sectsize(MIRAGE_FRAGMENT_IFACE_BINARY(fragment), 2352);
+            mirage_fragment_iface_binary_track_file_set_offset(MIRAGE_FRAGMENT_IFACE_BINARY(fragment), self->priv->offset*2352);
+            mirage_fragment_iface_binary_track_file_set_format(MIRAGE_FRAGMENT_IFACE_BINARY(fragment), MIRAGE_TFILE_DATA);
 
-            if (!mirage_frag_iface_binary_subchannel_file_set_file(MIRAGE_FRAG_IFACE_BINARY(fragment), self->priv->sub_filename, self->priv->sub_stream, error)) {
+            if (!mirage_fragment_iface_binary_subchannel_file_set_file(MIRAGE_FRAGMENT_IFACE_BINARY(fragment), self->priv->sub_filename, self->priv->sub_stream, error)) {
                 MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to set subchannel data file!\n", __debug__);
                 g_object_unref(fragment);
                 g_object_unref(track);
                 g_object_unref(session);
                 return FALSE;
             }
-            mirage_frag_iface_binary_subchannel_file_set_sectsize(MIRAGE_FRAG_IFACE_BINARY(fragment), 96);
-            mirage_frag_iface_binary_subchannel_file_set_offset(MIRAGE_FRAG_IFACE_BINARY(fragment), self->priv->offset*96);
-            mirage_frag_iface_binary_subchannel_file_set_format(MIRAGE_FRAG_IFACE_BINARY(fragment), FR_BIN_SFILE_PW96_LIN | FR_BIN_SFILE_EXT);
+            mirage_fragment_iface_binary_subchannel_file_set_sectsize(MIRAGE_FRAGMENT_IFACE_BINARY(fragment), 96);
+            mirage_fragment_iface_binary_subchannel_file_set_offset(MIRAGE_FRAGMENT_IFACE_BINARY(fragment), self->priv->offset*96);
+            mirage_fragment_iface_binary_subchannel_file_set_format(MIRAGE_FRAGMENT_IFACE_BINARY(fragment), MIRAGE_SFILE_PW96_LIN | MIRAGE_SFILE_EXT);
 
             mirage_track_add_fragment(MIRAGE_TRACK(track), -1, fragment);
 
@@ -319,7 +319,7 @@ static gboolean mirage_parser_ccd_build_disc_layout (MIRAGE_Parser_CCD *self, GE
 
             /* If track mode is determined to be audio, set fragment's format accordingly */
             if (mirage_track_get_mode(MIRAGE_TRACK(track)) == MIRAGE_MODE_AUDIO) {
-                mirage_frag_iface_binary_track_file_set_format(MIRAGE_FRAG_IFACE_BINARY(fragment), FR_BIN_TFILE_AUDIO);
+                mirage_fragment_iface_binary_track_file_set_format(MIRAGE_FRAGMENT_IFACE_BINARY(fragment), MIRAGE_TFILE_AUDIO);
             }
 
             /* ISRC */
@@ -390,7 +390,7 @@ static gboolean mirage_parser_ccd_build_disc_layout (MIRAGE_Parser_CCD *self, GE
 /**********************************************************************\
  *                       Regex parsing engine                         *
 \**********************************************************************/
-typedef gboolean (*CCD_RegexCallback) (MIRAGE_Parser_CCD *self, GMatchInfo *match_info, GError **error);
+typedef gboolean (*CCD_RegexCallback) (MirageParser_CCD *self, GMatchInfo *match_info, GError **error);
 
 typedef struct
 {
@@ -400,7 +400,7 @@ typedef struct
 
 
 /*** [CloneCD] ***/
-static gboolean mirage_parser_ccd_callback_clonecd (MIRAGE_Parser_CCD *self, GMatchInfo *match_info G_GNUC_UNUSED, GError **error G_GNUC_UNUSED)
+static gboolean mirage_parser_ccd_callback_clonecd (MirageParser_CCD *self, GMatchInfo *match_info G_GNUC_UNUSED, GError **error G_GNUC_UNUSED)
 {
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "\n"); /* To make log more readable */
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: parsed [CloneCD] header\n", __debug__);
@@ -413,7 +413,7 @@ static gboolean mirage_parser_ccd_callback_clonecd (MIRAGE_Parser_CCD *self, GMa
     return TRUE;
 }
 
-static gboolean mirage_parser_ccd_callback_clonecd_version (MIRAGE_Parser_CCD *self, GMatchInfo *match_info, GError **error G_GNUC_UNUSED)
+static gboolean mirage_parser_ccd_callback_clonecd_version (MirageParser_CCD *self, GMatchInfo *match_info, GError **error G_GNUC_UNUSED)
 {
     CCD_CloneCD *clonecd = self->priv->cur_data;
     gchar *value_str = g_match_info_fetch_named(match_info, "value");
@@ -428,7 +428,7 @@ static gboolean mirage_parser_ccd_callback_clonecd_version (MIRAGE_Parser_CCD *s
 
 
 /*** [Disc] ***/
-static gboolean mirage_parser_ccd_callback_disc (MIRAGE_Parser_CCD *self, GMatchInfo *match_info G_GNUC_UNUSED, GError **error G_GNUC_UNUSED)
+static gboolean mirage_parser_ccd_callback_disc (MirageParser_CCD *self, GMatchInfo *match_info G_GNUC_UNUSED, GError **error G_GNUC_UNUSED)
 {
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "\n"); /* To make log more readable */
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: parsed [Disc] header\n", __debug__);
@@ -441,7 +441,7 @@ static gboolean mirage_parser_ccd_callback_disc (MIRAGE_Parser_CCD *self, GMatch
     return TRUE;
 }
 
-static gboolean mirage_parser_ccd_callback_disc_toc_entries (MIRAGE_Parser_CCD *self, GMatchInfo *match_info, GError **error G_GNUC_UNUSED)
+static gboolean mirage_parser_ccd_callback_disc_toc_entries (MirageParser_CCD *self, GMatchInfo *match_info, GError **error G_GNUC_UNUSED)
 {
     CCD_Disc *disc = self->priv->cur_data;
     gchar *value_str = g_match_info_fetch_named(match_info, "value");
@@ -454,7 +454,7 @@ static gboolean mirage_parser_ccd_callback_disc_toc_entries (MIRAGE_Parser_CCD *
     return TRUE;
 }
 
-static gboolean mirage_parser_ccd_callback_disc_sessions (MIRAGE_Parser_CCD *self, GMatchInfo *match_info, GError **error G_GNUC_UNUSED)
+static gboolean mirage_parser_ccd_callback_disc_sessions (MirageParser_CCD *self, GMatchInfo *match_info, GError **error G_GNUC_UNUSED)
 {
     CCD_Disc *disc = self->priv->cur_data;
     gchar *value_str = g_match_info_fetch_named(match_info, "value");
@@ -467,7 +467,7 @@ static gboolean mirage_parser_ccd_callback_disc_sessions (MIRAGE_Parser_CCD *sel
     return TRUE;
 }
 
-static gboolean mirage_parser_ccd_callback_disc_data_tracks_scrambled (MIRAGE_Parser_CCD *self, GMatchInfo *match_info, GError **error G_GNUC_UNUSED)
+static gboolean mirage_parser_ccd_callback_disc_data_tracks_scrambled (MirageParser_CCD *self, GMatchInfo *match_info, GError **error G_GNUC_UNUSED)
 {
     CCD_Disc *disc = self->priv->cur_data;
     gchar *value_str = g_match_info_fetch_named(match_info, "value");
@@ -480,7 +480,7 @@ static gboolean mirage_parser_ccd_callback_disc_data_tracks_scrambled (MIRAGE_Pa
     return TRUE;
 }
 
-static gboolean mirage_parser_ccd_callback_disc_cdtext_length (MIRAGE_Parser_CCD *self, GMatchInfo *match_info, GError **error G_GNUC_UNUSED)
+static gboolean mirage_parser_ccd_callback_disc_cdtext_length (MirageParser_CCD *self, GMatchInfo *match_info, GError **error G_GNUC_UNUSED)
 {
     CCD_Disc *disc = self->priv->cur_data;
     gchar *value_str = g_match_info_fetch_named(match_info, "value");
@@ -493,7 +493,7 @@ static gboolean mirage_parser_ccd_callback_disc_cdtext_length (MIRAGE_Parser_CCD
     return TRUE;
 }
 
-static gboolean mirage_parser_ccd_callback_disc_catalog (MIRAGE_Parser_CCD *self, GMatchInfo *match_info, GError **error G_GNUC_UNUSED)
+static gboolean mirage_parser_ccd_callback_disc_catalog (MirageParser_CCD *self, GMatchInfo *match_info, GError **error G_GNUC_UNUSED)
 {
     CCD_Disc *disc = self->priv->cur_data;
     gchar *value_str = g_match_info_fetch_named(match_info, "value");
@@ -508,7 +508,7 @@ static gboolean mirage_parser_ccd_callback_disc_catalog (MIRAGE_Parser_CCD *self
 
 
 /*** [Session X] ***/
-static gboolean mirage_parser_ccd_callback_session (MIRAGE_Parser_CCD *self, GMatchInfo *match_info, GError **error G_GNUC_UNUSED)
+static gboolean mirage_parser_ccd_callback_session (MirageParser_CCD *self, GMatchInfo *match_info, GError **error G_GNUC_UNUSED)
 {
     gchar *number_str = g_match_info_fetch_named(match_info, "number");
     CCD_Session *session;
@@ -529,7 +529,7 @@ static gboolean mirage_parser_ccd_callback_session (MIRAGE_Parser_CCD *self, GMa
     return TRUE;
 }
 
-static gboolean mirage_parser_ccd_callback_session_pregap_mode (MIRAGE_Parser_CCD *self, GMatchInfo *match_info, GError **error G_GNUC_UNUSED)
+static gboolean mirage_parser_ccd_callback_session_pregap_mode (MirageParser_CCD *self, GMatchInfo *match_info, GError **error G_GNUC_UNUSED)
 {
     CCD_Session *session = self->priv->cur_data;
     gchar *value_str = g_match_info_fetch_named(match_info, "value");
@@ -542,7 +542,7 @@ static gboolean mirage_parser_ccd_callback_session_pregap_mode (MIRAGE_Parser_CC
     return TRUE;
 }
 
-static gboolean mirage_parser_ccd_callback_session_pregap_subc (MIRAGE_Parser_CCD *self, GMatchInfo *match_info, GError **error G_GNUC_UNUSED)
+static gboolean mirage_parser_ccd_callback_session_pregap_subc (MirageParser_CCD *self, GMatchInfo *match_info, GError **error G_GNUC_UNUSED)
 {
     CCD_Session *session = self->priv->cur_data;
     gchar *value_str = g_match_info_fetch_named(match_info, "value");
@@ -557,7 +557,7 @@ static gboolean mirage_parser_ccd_callback_session_pregap_subc (MIRAGE_Parser_CC
 
 
 /*** [Entry X] ***/
-static gboolean mirage_parser_ccd_callback_entry (MIRAGE_Parser_CCD *self, GMatchInfo *match_info, GError **error G_GNUC_UNUSED)
+static gboolean mirage_parser_ccd_callback_entry (MirageParser_CCD *self, GMatchInfo *match_info, GError **error G_GNUC_UNUSED)
 {
     gchar *number_str = g_match_info_fetch_named(match_info, "number");
     CCD_Entry *entry;
@@ -578,7 +578,7 @@ static gboolean mirage_parser_ccd_callback_entry (MIRAGE_Parser_CCD *self, GMatc
     return TRUE;
 }
 
-static gboolean mirage_parser_ccd_callback_entry_session (MIRAGE_Parser_CCD *self, GMatchInfo *match_info, GError **error G_GNUC_UNUSED)
+static gboolean mirage_parser_ccd_callback_entry_session (MirageParser_CCD *self, GMatchInfo *match_info, GError **error G_GNUC_UNUSED)
 {
     CCD_Entry *entry = self->priv->cur_data;
     gchar *value_str = g_match_info_fetch_named(match_info, "value");
@@ -591,7 +591,7 @@ static gboolean mirage_parser_ccd_callback_entry_session (MIRAGE_Parser_CCD *sel
     return TRUE;
 }
 
-static gboolean mirage_parser_ccd_callback_entry_point (MIRAGE_Parser_CCD *self, GMatchInfo *match_info, GError **error G_GNUC_UNUSED)
+static gboolean mirage_parser_ccd_callback_entry_point (MirageParser_CCD *self, GMatchInfo *match_info, GError **error G_GNUC_UNUSED)
 {
     CCD_Entry *entry = self->priv->cur_data;
     gchar *value_str = g_match_info_fetch_named(match_info, "value");
@@ -604,7 +604,7 @@ static gboolean mirage_parser_ccd_callback_entry_point (MIRAGE_Parser_CCD *self,
     return TRUE;
 }
 
-static gboolean mirage_parser_ccd_callback_entry_adr (MIRAGE_Parser_CCD *self, GMatchInfo *match_info, GError **error G_GNUC_UNUSED)
+static gboolean mirage_parser_ccd_callback_entry_adr (MirageParser_CCD *self, GMatchInfo *match_info, GError **error G_GNUC_UNUSED)
 {
     CCD_Entry *entry = self->priv->cur_data;
     gchar *value_str = g_match_info_fetch_named(match_info, "value");
@@ -617,7 +617,7 @@ static gboolean mirage_parser_ccd_callback_entry_adr (MIRAGE_Parser_CCD *self, G
     return TRUE;
 }
 
-static gboolean mirage_parser_ccd_callback_entry_control (MIRAGE_Parser_CCD *self, GMatchInfo *match_info, GError **error G_GNUC_UNUSED)
+static gboolean mirage_parser_ccd_callback_entry_control (MirageParser_CCD *self, GMatchInfo *match_info, GError **error G_GNUC_UNUSED)
 {
     CCD_Entry *entry = self->priv->cur_data;
     gchar *value_str = g_match_info_fetch_named(match_info, "value");
@@ -630,7 +630,7 @@ static gboolean mirage_parser_ccd_callback_entry_control (MIRAGE_Parser_CCD *sel
     return TRUE;
 }
 
-static gboolean mirage_parser_ccd_callback_entry_trackno (MIRAGE_Parser_CCD *self, GMatchInfo *match_info, GError **error G_GNUC_UNUSED)
+static gboolean mirage_parser_ccd_callback_entry_trackno (MirageParser_CCD *self, GMatchInfo *match_info, GError **error G_GNUC_UNUSED)
 {
     CCD_Entry *entry = self->priv->cur_data;
     gchar *value_str = g_match_info_fetch_named(match_info, "value");
@@ -643,7 +643,7 @@ static gboolean mirage_parser_ccd_callback_entry_trackno (MIRAGE_Parser_CCD *sel
     return TRUE;
 }
 
-static gboolean mirage_parser_ccd_callback_entry_amin (MIRAGE_Parser_CCD *self, GMatchInfo *match_info, GError **error G_GNUC_UNUSED)
+static gboolean mirage_parser_ccd_callback_entry_amin (MirageParser_CCD *self, GMatchInfo *match_info, GError **error G_GNUC_UNUSED)
 {
     CCD_Entry *entry = self->priv->cur_data;
     gchar *value_str = g_match_info_fetch_named(match_info, "value");
@@ -656,7 +656,7 @@ static gboolean mirage_parser_ccd_callback_entry_amin (MIRAGE_Parser_CCD *self, 
     return TRUE;
 }
 
-static gboolean mirage_parser_ccd_callback_entry_asec (MIRAGE_Parser_CCD *self, GMatchInfo *match_info, GError **error G_GNUC_UNUSED)
+static gboolean mirage_parser_ccd_callback_entry_asec (MirageParser_CCD *self, GMatchInfo *match_info, GError **error G_GNUC_UNUSED)
 {
     CCD_Entry *entry = self->priv->cur_data;
     gchar *value_str = g_match_info_fetch_named(match_info, "value");
@@ -669,7 +669,7 @@ static gboolean mirage_parser_ccd_callback_entry_asec (MIRAGE_Parser_CCD *self, 
     return TRUE;
 }
 
-static gboolean mirage_parser_ccd_callback_entry_aframe (MIRAGE_Parser_CCD *self, GMatchInfo *match_info, GError **error G_GNUC_UNUSED)
+static gboolean mirage_parser_ccd_callback_entry_aframe (MirageParser_CCD *self, GMatchInfo *match_info, GError **error G_GNUC_UNUSED)
 {
     CCD_Entry *entry = self->priv->cur_data;
     gchar *value_str = g_match_info_fetch_named(match_info, "value");
@@ -682,7 +682,7 @@ static gboolean mirage_parser_ccd_callback_entry_aframe (MIRAGE_Parser_CCD *self
     return TRUE;
 }
 
-static gboolean mirage_parser_ccd_callback_entry_alba (MIRAGE_Parser_CCD *self, GMatchInfo *match_info, GError **error G_GNUC_UNUSED)
+static gboolean mirage_parser_ccd_callback_entry_alba (MirageParser_CCD *self, GMatchInfo *match_info, GError **error G_GNUC_UNUSED)
 {
     CCD_Entry *entry = self->priv->cur_data;
     gchar *value_str = g_match_info_fetch_named(match_info, "value");
@@ -695,7 +695,7 @@ static gboolean mirage_parser_ccd_callback_entry_alba (MIRAGE_Parser_CCD *self, 
     return TRUE;
 }
 
-static gboolean mirage_parser_ccd_callback_entry_zero (MIRAGE_Parser_CCD *self, GMatchInfo *match_info, GError **error G_GNUC_UNUSED)
+static gboolean mirage_parser_ccd_callback_entry_zero (MirageParser_CCD *self, GMatchInfo *match_info, GError **error G_GNUC_UNUSED)
 {
     CCD_Entry *entry = self->priv->cur_data;
     gchar *value_str = g_match_info_fetch_named(match_info, "value");
@@ -708,7 +708,7 @@ static gboolean mirage_parser_ccd_callback_entry_zero (MIRAGE_Parser_CCD *self, 
     return TRUE;
 }
 
-static gboolean mirage_parser_ccd_callback_entry_pmin (MIRAGE_Parser_CCD *self, GMatchInfo *match_info, GError **error G_GNUC_UNUSED)
+static gboolean mirage_parser_ccd_callback_entry_pmin (MirageParser_CCD *self, GMatchInfo *match_info, GError **error G_GNUC_UNUSED)
 {
     CCD_Entry *entry = self->priv->cur_data;
     gchar *value_str = g_match_info_fetch_named(match_info, "value");
@@ -721,7 +721,7 @@ static gboolean mirage_parser_ccd_callback_entry_pmin (MIRAGE_Parser_CCD *self, 
     return TRUE;
 }
 
-static gboolean mirage_parser_ccd_callback_entry_psec (MIRAGE_Parser_CCD *self, GMatchInfo *match_info, GError **error G_GNUC_UNUSED)
+static gboolean mirage_parser_ccd_callback_entry_psec (MirageParser_CCD *self, GMatchInfo *match_info, GError **error G_GNUC_UNUSED)
 {
     CCD_Entry *entry = self->priv->cur_data;
     gchar *value_str = g_match_info_fetch_named(match_info, "value");
@@ -734,7 +734,7 @@ static gboolean mirage_parser_ccd_callback_entry_psec (MIRAGE_Parser_CCD *self, 
     return TRUE;
 }
 
-static gboolean mirage_parser_ccd_callback_entry_pframe (MIRAGE_Parser_CCD *self, GMatchInfo *match_info, GError **error G_GNUC_UNUSED)
+static gboolean mirage_parser_ccd_callback_entry_pframe (MirageParser_CCD *self, GMatchInfo *match_info, GError **error G_GNUC_UNUSED)
 {
     CCD_Entry *entry = self->priv->cur_data;
     gchar *value_str = g_match_info_fetch_named(match_info, "value");
@@ -747,7 +747,7 @@ static gboolean mirage_parser_ccd_callback_entry_pframe (MIRAGE_Parser_CCD *self
     return TRUE;
 }
 
-static gboolean mirage_parser_ccd_callback_entry_plba (MIRAGE_Parser_CCD *self, GMatchInfo *match_info, GError **error G_GNUC_UNUSED)
+static gboolean mirage_parser_ccd_callback_entry_plba (MirageParser_CCD *self, GMatchInfo *match_info, GError **error G_GNUC_UNUSED)
 {
     CCD_Entry *entry = self->priv->cur_data;
     gchar *value_str = g_match_info_fetch_named(match_info, "value");
@@ -767,7 +767,7 @@ static gint find_entry_by_point (CCD_Entry *entry, gpointer data)
     return !(entry->Point == point);
 }
 
-static gboolean mirage_parser_ccd_callback_track (MIRAGE_Parser_CCD *self, GMatchInfo *match_info, GError **error)
+static gboolean mirage_parser_ccd_callback_track (MirageParser_CCD *self, GMatchInfo *match_info, GError **error)
 {
     gchar *number_str = g_match_info_fetch_named(match_info, "number");
     gint number = g_strtod(number_str, NULL);
@@ -792,7 +792,7 @@ static gboolean mirage_parser_ccd_callback_track (MIRAGE_Parser_CCD *self, GMatc
     return TRUE;
 }
 
-static gboolean mirage_parser_ccd_callback_track_mode (MIRAGE_Parser_CCD *self, GMatchInfo *match_info, GError **error G_GNUC_UNUSED)
+static gboolean mirage_parser_ccd_callback_track_mode (MirageParser_CCD *self, GMatchInfo *match_info, GError **error G_GNUC_UNUSED)
 {
     CCD_Entry *entry = self->priv->cur_data;
     gchar *value_str = g_match_info_fetch_named(match_info, "value");
@@ -805,7 +805,7 @@ static gboolean mirage_parser_ccd_callback_track_mode (MIRAGE_Parser_CCD *self, 
     return TRUE;
 }
 
-static gboolean mirage_parser_ccd_callback_track_index0 (MIRAGE_Parser_CCD *self, GMatchInfo *match_info, GError **error G_GNUC_UNUSED)
+static gboolean mirage_parser_ccd_callback_track_index0 (MirageParser_CCD *self, GMatchInfo *match_info, GError **error G_GNUC_UNUSED)
 {
     CCD_Entry *entry = self->priv->cur_data;
     gchar *value_str = g_match_info_fetch_named(match_info, "value");
@@ -818,7 +818,7 @@ static gboolean mirage_parser_ccd_callback_track_index0 (MIRAGE_Parser_CCD *self
     return TRUE;
 }
 
-static gboolean mirage_parser_ccd_callback_track_index1 (MIRAGE_Parser_CCD *self, GMatchInfo *match_info, GError **error G_GNUC_UNUSED)
+static gboolean mirage_parser_ccd_callback_track_index1 (MirageParser_CCD *self, GMatchInfo *match_info, GError **error G_GNUC_UNUSED)
 {
     CCD_Entry *entry = self->priv->cur_data;
     gchar *value_str = g_match_info_fetch_named(match_info, "value");
@@ -831,7 +831,7 @@ static gboolean mirage_parser_ccd_callback_track_index1 (MIRAGE_Parser_CCD *self
     return TRUE;
 }
 
-static gboolean mirage_parser_ccd_callback_track_isrc (MIRAGE_Parser_CCD *self, GMatchInfo *match_info, GError **error G_GNUC_UNUSED)
+static gboolean mirage_parser_ccd_callback_track_isrc (MirageParser_CCD *self, GMatchInfo *match_info, GError **error G_GNUC_UNUSED)
 {
     CCD_Entry *entry = self->priv->cur_data;
     gchar *value_str = g_match_info_fetch_named(match_info, "value");
@@ -858,7 +858,7 @@ static inline void append_regex_rule (GList **list_ptr, const gchar *rule, CCD_R
     *list_ptr = list;
 }
 
-static void mirage_parser_ccd_init_regex_parser (MIRAGE_Parser_CCD *self)
+static void mirage_parser_ccd_init_regex_parser (MirageParser_CCD *self)
 {
     /* Ignore empty lines */
     append_regex_rule(&self->priv->regex_rules, "^[\\s]*$", NULL);
@@ -919,7 +919,7 @@ static void free_regex_rules (GList *rules)
     g_list_free(rules);
 }
 
-static void mirage_parser_ccd_cleanup_regex_parser (MIRAGE_Parser_CCD *self)
+static void mirage_parser_ccd_cleanup_regex_parser (MirageParser_CCD *self)
 {
     free_regex_rules(self->priv->regex_rules);
     free_regex_rules(self->priv->regex_rules_clonecd);
@@ -929,7 +929,7 @@ static void mirage_parser_ccd_cleanup_regex_parser (MIRAGE_Parser_CCD *self)
     free_regex_rules(self->priv->regex_rules_track);
 }
 
-static gboolean mirage_parser_ccd_parse_ccd_file (MIRAGE_Parser_CCD *self, gchar *filename, GError **error)
+static gboolean mirage_parser_ccd_parse_ccd_file (MirageParser_CCD *self, gchar *filename, GError **error)
 {
     GError *io_error = NULL;
     GIOChannel *io_channel;
@@ -1049,11 +1049,11 @@ static gboolean mirage_parser_ccd_parse_ccd_file (MIRAGE_Parser_CCD *self, gchar
 }
 
 /**********************************************************************\
- *                 MIRAGE_Parser methods implementation               *
+ *                 MirageParser methods implementation               *
 \**********************************************************************/
-static GObject *mirage_parser_ccd_load_image (MIRAGE_Parser *_self, gchar **filenames, GError **error)
+static GObject *mirage_parser_ccd_load_image (MirageParser *_self, gchar **filenames, GError **error)
 {
-    MIRAGE_Parser_CCD *self = MIRAGE_PARSER_CCD(_self);
+    MirageParser_CCD *self = MIRAGE_PARSER_CCD(_self);
 
     gboolean succeeded = TRUE;
 
@@ -1140,7 +1140,7 @@ end:
 /**********************************************************************\
  *                             Object init                            *
 \**********************************************************************/
-G_DEFINE_DYNAMIC_TYPE(MIRAGE_Parser_CCD, mirage_parser_ccd, MIRAGE_TYPE_PARSER);
+G_DEFINE_DYNAMIC_TYPE(MirageParser_CCD, mirage_parser_ccd, MIRAGE_TYPE_PARSER);
 
 void mirage_parser_ccd_type_register (GTypeModule *type_module)
 {
@@ -1148,7 +1148,7 @@ void mirage_parser_ccd_type_register (GTypeModule *type_module)
 }
 
 
-static void mirage_parser_ccd_init (MIRAGE_Parser_CCD *self)
+static void mirage_parser_ccd_init (MirageParser_CCD *self)
 {
     self->priv = MIRAGE_PARSER_CCD_GET_PRIVATE(self);
 
@@ -1171,7 +1171,7 @@ static void mirage_parser_ccd_init (MIRAGE_Parser_CCD *self)
 
 static void mirage_parser_ccd_dispose (GObject *gobject)
 {
-    MIRAGE_Parser_CCD *self = MIRAGE_PARSER_CCD(gobject);
+    MirageParser_CCD *self = MIRAGE_PARSER_CCD(gobject);
 
     if (self->priv->img_stream) {
         g_object_unref(self->priv->img_stream);
@@ -1190,7 +1190,7 @@ static void mirage_parser_ccd_dispose (GObject *gobject)
 
 static void mirage_parser_ccd_finalize (GObject *gobject)
 {
-    MIRAGE_Parser_CCD *self = MIRAGE_PARSER_CCD(gobject);
+    MirageParser_CCD *self = MIRAGE_PARSER_CCD(gobject);
 
     g_free(self->priv->img_filename);
     g_free(self->priv->sub_filename);
@@ -1202,10 +1202,10 @@ static void mirage_parser_ccd_finalize (GObject *gobject)
     return G_OBJECT_CLASS(mirage_parser_ccd_parent_class)->finalize(gobject);
 }
 
-static void mirage_parser_ccd_class_init (MIRAGE_Parser_CCDClass *klass)
+static void mirage_parser_ccd_class_init (MirageParser_CCDClass *klass)
 {
     GObjectClass *gobject_class = G_OBJECT_CLASS(klass);
-    MIRAGE_ParserClass *parser_class = MIRAGE_PARSER_CLASS(klass);
+    MirageParserClass *parser_class = MIRAGE_PARSER_CLASS(klass);
 
     gobject_class->dispose = mirage_parser_ccd_dispose;
     gobject_class->finalize = mirage_parser_ccd_finalize;
@@ -1213,9 +1213,9 @@ static void mirage_parser_ccd_class_init (MIRAGE_Parser_CCDClass *klass)
     parser_class->load_image = mirage_parser_ccd_load_image;
 
     /* Register private structure */
-    g_type_class_add_private(klass, sizeof(MIRAGE_Parser_CCDPrivate));
+    g_type_class_add_private(klass, sizeof(MirageParser_CCDPrivate));
 }
 
-static void mirage_parser_ccd_class_finalize (MIRAGE_Parser_CCDClass *klass G_GNUC_UNUSED)
+static void mirage_parser_ccd_class_finalize (MirageParser_CCDClass *klass G_GNUC_UNUSED)
 {
 }

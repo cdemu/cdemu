@@ -29,9 +29,9 @@
 /**********************************************************************\
  *                          Private structure                         *
 \**********************************************************************/
-#define MIRAGE_DISC_GET_PRIVATE(obj) (G_TYPE_INSTANCE_GET_PRIVATE((obj), MIRAGE_TYPE_DISC, MIRAGE_DiscPrivate))
+#define MIRAGE_DISC_GET_PRIVATE(obj) (G_TYPE_INSTANCE_GET_PRIVATE((obj), MIRAGE_TYPE_DISC, MirageDiscPrivate))
 
-struct _MIRAGE_DiscPrivate
+struct _MirageDiscPrivate
 {
     gchar **filenames;
 
@@ -67,10 +67,10 @@ struct _MIRAGE_DiscPrivate
 /**********************************************************************\
  *                          Private functions                         *
 \**********************************************************************/
-static void mirage_disc_remove_session (MIRAGE_Disc *self, GObject *session);
+static void mirage_disc_remove_session (MirageDisc *self, GObject *session);
 
 
-static gboolean mirage_disc_check_for_encoded_mcn (MIRAGE_Disc *self)
+static gboolean mirage_disc_check_for_encoded_mcn (MirageDisc *self)
 {
     GObject *track = NULL;
     gint start_address = 0;
@@ -134,7 +134,7 @@ static gboolean mirage_disc_check_for_encoded_mcn (MIRAGE_Disc *self)
 }
 
 
-static void mirage_disc_commit_topdown_change (MIRAGE_Disc *self)
+static void mirage_disc_commit_topdown_change (MirageDisc *self)
 {
     GList *entry;
 
@@ -160,7 +160,7 @@ static void mirage_disc_commit_topdown_change (MIRAGE_Disc *self)
     }
 }
 
-static void mirage_disc_commit_bottomup_change (MIRAGE_Disc *self)
+static void mirage_disc_commit_bottomup_change (MirageDisc *self)
 {
     GList *entry;
 
@@ -187,7 +187,7 @@ static void mirage_disc_commit_bottomup_change (MIRAGE_Disc *self)
     mirage_disc_commit_topdown_change(self);
 }
 
-static void mirage_disc_session_modified_handler (GObject *session, MIRAGE_Disc *self)
+static void mirage_disc_session_modified_handler (GObject *session, MirageDisc *self)
 {
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_DISC, "%s: start\n", __debug__);
 
@@ -202,7 +202,7 @@ static void mirage_disc_session_modified_handler (GObject *session, MIRAGE_Disc 
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_DISC, "%s: end\n", __debug__);
 }
 
-static void mirage_disc_remove_session (MIRAGE_Disc *self, GObject *session)
+static void mirage_disc_remove_session (MirageDisc *self, GObject *session)
 {
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_DISC, "%s: start\n", __debug__);
 
@@ -221,13 +221,13 @@ static void mirage_disc_remove_session (MIRAGE_Disc *self, GObject *session)
 }
 
 
-static gboolean mirage_disc_generate_disc_structure (MIRAGE_Disc *self, gint layer, gint type, guint8 **data, gint *len)
+static gboolean mirage_disc_generate_disc_structure (MirageDisc *self, gint layer, gint type, guint8 **data, gint *len)
 {
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_DISC, "%s: start (layer: %d, type: 0x%X)\n", __debug__, layer, type);
 
     switch (type) {
         case 0x0000: {
-            MIRAGE_DiscStruct_PhysInfo *phys_info = g_new0(MIRAGE_DiscStruct_PhysInfo, 1);
+            MirageDiscStructurePhysicalInfo *phys_info = g_new0(MirageDiscStructurePhysicalInfo, 1);
 
             gint disc_length = mirage_disc_layout_get_length(self);
 
@@ -247,12 +247,12 @@ static gboolean mirage_disc_generate_disc_structure (MIRAGE_Disc *self, gint lay
             phys_info->bca = 0;
 
             *data = (guint8 *)phys_info;
-            *len  = sizeof(MIRAGE_DiscStruct_PhysInfo);
+            *len  = sizeof(MirageDiscStructurePhysicalInfo);
 
             return TRUE;
         }
         case 0x0001: {
-            MIRAGE_DiscStruct_Copyright *copy_info = g_new0(MIRAGE_DiscStruct_Copyright, 1);
+            MirageDiscStructureCopyright *copy_info = g_new0(MirageDiscStructureCopyright, 1);
 
             if (self->priv->dvd_report_css) {
                 copy_info->copy_protection = 0x01; /* CSS/CPPM */
@@ -263,16 +263,16 @@ static gboolean mirage_disc_generate_disc_structure (MIRAGE_Disc *self, gint lay
             }
 
             *data = (guint8 *)copy_info;
-            *len  = sizeof(MIRAGE_DiscStruct_Copyright);
+            *len  = sizeof(MirageDiscStructureCopyright);
 
             return TRUE;
         }
         case 0x0004: {
-            MIRAGE_DiscStruct_Manufacture *manu_info = g_new0(MIRAGE_DiscStruct_Manufacture, 1);
+            MirageDiscStructureManufacturingData *manu_info = g_new0(MirageDiscStructureManufacturingData, 1);
 
             /* Leave it empty */
             *data = (guint8 *)manu_info;
-            *len  = sizeof(MIRAGE_DiscStruct_Manufacture);
+            *len  = sizeof(MirageDiscStructureManufacturingData);
 
             return TRUE;
         }
@@ -312,18 +312,18 @@ static void free_disc_structure_data (GArray *array)
 \**********************************************************************/
 /**
  * mirage_disc_set_medium_type:
- * @self: a #MIRAGE_Disc
+ * @self: a #MirageDisc
  * @medium_type: (in): medium type
  *
  * <para>
- * Sets medium type. @medium_type must be one of #MIRAGE_MediumTypes.
+ * Sets medium type. @medium_type must be one of #MirageMediumTypes.
  * </para>
  *
  * <note>
  * Intended for internal use only.
  * </note>
  **/
-void mirage_disc_set_medium_type (MIRAGE_Disc *self, gint medium_type)
+void mirage_disc_set_medium_type (MirageDisc *self, gint medium_type)
 {
     /* Set medium type */
     self->priv->medium_type = medium_type;
@@ -331,7 +331,7 @@ void mirage_disc_set_medium_type (MIRAGE_Disc *self, gint medium_type)
 
 /**
  * mirage_disc_get_medium_type:
- * @self: a #MIRAGE_Disc
+ * @self: a #MirageDisc
  *
  * <para>
  * Retrieves medium type.
@@ -339,7 +339,7 @@ void mirage_disc_set_medium_type (MIRAGE_Disc *self, gint medium_type)
  *
  * Returns: medium type
  **/
-gint mirage_disc_get_medium_type (MIRAGE_Disc *self)
+gint mirage_disc_get_medium_type (MirageDisc *self)
 {
     /* Return medium type */
     return self->priv->medium_type;
@@ -348,7 +348,7 @@ gint mirage_disc_get_medium_type (MIRAGE_Disc *self)
 
 /**
  * mirage_disc_set_filenames:
- * @self: a #MIRAGE_Disc
+ * @self: a #MirageDisc
  * @filenames: (in) (array zero-terminated=1): %NULL-terminated array of filenames
  *
  * <para>
@@ -359,7 +359,7 @@ gint mirage_disc_get_medium_type (MIRAGE_Disc *self)
  * Intended for internal use only, in image parser implementations.
  * </note>
  **/
-void mirage_disc_set_filenames (MIRAGE_Disc *self, gchar **filenames)
+void mirage_disc_set_filenames (MirageDisc *self, gchar **filenames)
 {
     /* Free old filenames */
     g_strfreev(self->priv->filenames);
@@ -369,7 +369,7 @@ void mirage_disc_set_filenames (MIRAGE_Disc *self, gchar **filenames)
 
 /**
  * mirage_disc_set_filename:
- * @self: a #MIRAGE_Disc
+ * @self: a #MirageDisc
  * @filename: (in): filename
  *
  * <para>
@@ -382,7 +382,7 @@ void mirage_disc_set_filenames (MIRAGE_Disc *self, gchar **filenames)
  * Intended for internal use only, in image parser implementations.
  * </note>
  **/
-void mirage_disc_set_filename (MIRAGE_Disc *self, const gchar *filename)
+void mirage_disc_set_filename (MirageDisc *self, const gchar *filename)
 {
     /* Free old filenames */
     g_strfreev(self->priv->filenames);
@@ -393,7 +393,7 @@ void mirage_disc_set_filename (MIRAGE_Disc *self, const gchar *filename)
 
 /**
  * mirage_disc_get_filenames:
- * @self: a #MIRAGE_Disc
+ * @self: a #MirageDisc
  *
  * <para>
  * Retrieves image filename(s).
@@ -402,7 +402,7 @@ void mirage_disc_set_filename (MIRAGE_Disc *self, const gchar *filename)
  * Returns: (transfer none) (array zero-terminated=1): pointer to %NULL-terminated
  * array of filenames. The array belongs to the object and should not be modified.
  **/
-gchar **mirage_disc_get_filenames (MIRAGE_Disc *self)
+gchar **mirage_disc_get_filenames (MirageDisc *self)
 {
     /* Return filenames */
     return self->priv->filenames;
@@ -411,7 +411,7 @@ gchar **mirage_disc_get_filenames (MIRAGE_Disc *self)
 
 /**
  * mirage_disc_set_mcn:
- * @self: a #MIRAGE_Disc
+ * @self: a #MirageDisc
  * @mcn: (in): MCN
  *
  * <para>
@@ -428,7 +428,7 @@ gchar **mirage_disc_get_filenames (MIRAGE_Disc *self)
  * Intended for internal use only.
  * </note>
  **/
-void mirage_disc_set_mcn (MIRAGE_Disc *self, const gchar *mcn)
+void mirage_disc_set_mcn (MirageDisc *self, const gchar *mcn)
 {
     /* MCN can be set only if none of the tracks have fragments that contain
        subchannel; this is because MCN is encoded in the subchannel, and cannot
@@ -443,7 +443,7 @@ void mirage_disc_set_mcn (MIRAGE_Disc *self, const gchar *mcn)
 
 /**
  * mirage_disc_get_mcn:
- * @self: a #MIRAGE_Disc
+ * @self: a #MirageDisc
  *
  * <para>
  * Retrieves MCN.
@@ -452,7 +452,7 @@ void mirage_disc_set_mcn (MIRAGE_Disc *self, const gchar *mcn)
  * Returns: (transfer none): pointer to MCN string, or %NULL. The string
  * belongs to the object and should not be modified.
  **/
-const gchar *mirage_disc_get_mcn (MIRAGE_Disc *self)
+const gchar *mirage_disc_get_mcn (MirageDisc *self)
 {
     /* Return pointer to MCN */
     return self->priv->mcn;
@@ -461,7 +461,7 @@ const gchar *mirage_disc_get_mcn (MIRAGE_Disc *self)
 
 /**
  * mirage_disc_layout_set_first_session:
- * @self: a #MIRAGE_Disc
+ * @self: a #MirageDisc
  * @first_session: (in): first session number
  *
  * <para>
@@ -477,7 +477,7 @@ const gchar *mirage_disc_get_mcn (MIRAGE_Disc *self)
  * Causes top-down change.
  * </note>
  **/
-void mirage_disc_layout_set_first_session (MIRAGE_Disc *self, gint first_session)
+void mirage_disc_layout_set_first_session (MirageDisc *self, gint first_session)
 {
     /* Set first session */
     self->priv->first_session = first_session;
@@ -487,7 +487,7 @@ void mirage_disc_layout_set_first_session (MIRAGE_Disc *self, gint first_session
 
 /**
  * mirage_disc_layout_get_first_session:
- * @self: a #MIRAGE_Disc
+ * @self: a #MirageDisc
  *
  * <para>
  * Retrieves session number of the first session in the disc layout.
@@ -499,7 +499,7 @@ void mirage_disc_layout_set_first_session (MIRAGE_Disc *self, gint first_session
  *
  * Returns: first session number
  **/
-gint mirage_disc_layout_get_first_session (MIRAGE_Disc *self)
+gint mirage_disc_layout_get_first_session (MirageDisc *self)
 {
     /* Return first session */
     return self->priv->first_session;
@@ -507,7 +507,7 @@ gint mirage_disc_layout_get_first_session (MIRAGE_Disc *self)
 
 /**
  * mirage_disc_layout_set_first_track:
- * @self: a #MIRAGE_Disc
+ * @self: a #MirageDisc
  * @first_track: (in): first track number
  *
  * <para>
@@ -523,7 +523,7 @@ gint mirage_disc_layout_get_first_session (MIRAGE_Disc *self)
  * Causes top-down change.
  * </note>
  **/
-void mirage_disc_layout_set_first_track (MIRAGE_Disc *self, gint first_track)
+void mirage_disc_layout_set_first_track (MirageDisc *self, gint first_track)
 {
     /* Set first track */
     self->priv->first_track = first_track;
@@ -533,7 +533,7 @@ void mirage_disc_layout_set_first_track (MIRAGE_Disc *self, gint first_track)
 
 /**
  * mirage_disc_layout_get_first_track:
- * @self: a #MIRAGE_Disc
+ * @self: a #MirageDisc
  *
  * <para>
  * Retrieves track number of the first track in the disc layout.
@@ -545,7 +545,7 @@ void mirage_disc_layout_set_first_track (MIRAGE_Disc *self, gint first_track)
  *
  * Returns: first track number
  **/
-gint mirage_disc_layout_get_first_track (MIRAGE_Disc *self)
+gint mirage_disc_layout_get_first_track (MirageDisc *self)
 {
     /* Return first track */
     return self->priv->first_track;
@@ -553,7 +553,7 @@ gint mirage_disc_layout_get_first_track (MIRAGE_Disc *self)
 
 /**
  * mirage_disc_layout_set_start_sector:
- * @self: a #MIRAGE_Disc
+ * @self: a #MirageDisc
  * @start_sector: (in): start sector
  *
  * <para>
@@ -569,7 +569,7 @@ gint mirage_disc_layout_get_first_track (MIRAGE_Disc *self)
  * Causes top-down change.
  * </note>
  **/
-void mirage_disc_layout_set_start_sector (MIRAGE_Disc *self, gint start_sector)
+void mirage_disc_layout_set_start_sector (MirageDisc *self, gint start_sector)
 {
     /* Set start sector */
     self->priv->start_sector = start_sector;
@@ -579,7 +579,7 @@ void mirage_disc_layout_set_start_sector (MIRAGE_Disc *self, gint start_sector)
 
 /**
  * mirage_disc_layout_get_start_sector:
- * @self: a #MIRAGE_Disc
+ * @self: a #MirageDisc
  *
  * <para>
  * Retrieves start sector of the disc layout.
@@ -591,7 +591,7 @@ void mirage_disc_layout_set_start_sector (MIRAGE_Disc *self, gint start_sector)
  *
  * Returns: start sector
  **/
-gint mirage_disc_layout_get_start_sector (MIRAGE_Disc *self)
+gint mirage_disc_layout_get_start_sector (MirageDisc *self)
 {
     /* Return start sector */
     return self->priv->start_sector;
@@ -599,7 +599,7 @@ gint mirage_disc_layout_get_start_sector (MIRAGE_Disc *self)
 
 /**
  * mirage_disc_layout_get_length:
- * @self: a #MIRAGE_Disc
+ * @self: a #MirageDisc
  *
  * <para>
  * Retrieves length of the disc layout. The returned length is given in sectors.
@@ -607,7 +607,7 @@ gint mirage_disc_layout_get_start_sector (MIRAGE_Disc *self)
  *
  * Returns: disc layout length
  **/
-gint mirage_disc_layout_get_length (MIRAGE_Disc *self)
+gint mirage_disc_layout_get_length (MirageDisc *self)
 {
     /* Return length */
     return self->priv->length;
@@ -616,7 +616,7 @@ gint mirage_disc_layout_get_length (MIRAGE_Disc *self)
 
 /**
  * mirage_disc_get_number_of_sessions:
- * @self: a #MIRAGE_Disc
+ * @self: a #MirageDisc
  *
  * <para>
  * Retrieves number of sessions in the disc layout.
@@ -624,7 +624,7 @@ gint mirage_disc_layout_get_length (MIRAGE_Disc *self)
  *
  * Returns: number of sessions
  **/
-gboolean mirage_disc_get_number_of_sessions (MIRAGE_Disc *self)
+gboolean mirage_disc_get_number_of_sessions (MirageDisc *self)
 {
     /* Return number of sessions */
     return g_list_length(self->priv->sessions_list); /* Length of list */
@@ -632,9 +632,9 @@ gboolean mirage_disc_get_number_of_sessions (MIRAGE_Disc *self)
 
 /**
  * mirage_disc_add_session_by_index:
- * @self: a #MIRAGE_Disc
+ * @self: a #MirageDisc
  * @index: (in): index at which session should be added
- * @session: (in) (transfer full): a #MIRAGE_Session to be added
+ * @session: (in) (transfer full): a #MirageSession to be added
  *
  * <para>
  * Adds session to disc layout.
@@ -651,7 +651,7 @@ gboolean mirage_disc_get_number_of_sessions (MIRAGE_Disc *self)
  * Causes bottom-up change.
  * </note>
  **/
-void mirage_disc_add_session_by_index (MIRAGE_Disc *self, gint index, GObject *session)
+void mirage_disc_add_session_by_index (MirageDisc *self, gint index, GObject *session)
 {
     gint num_sessions;
 
@@ -690,9 +690,9 @@ void mirage_disc_add_session_by_index (MIRAGE_Disc *self, gint index, GObject *s
 
 /**
  * mirage_disc_add_session_by_number:
- * @self: a #MIRAGE_Disc
+ * @self: a #MirageDisc
  * @number: (in): session number for the added session
- * @session: (in) (transfer full): a #MIRAGE_Session to be added
+ * @session: (in) (transfer full): a #MirageSession to be added
  * @error: (out) (allow-none): location to store error, or %NULL
  *
  * <para>
@@ -711,7 +711,7 @@ void mirage_disc_add_session_by_index (MIRAGE_Disc *self, gint index, GObject *s
  *
  * Returns: %TRUE on success, %FALSE on failure
  **/
-gboolean mirage_disc_add_session_by_number (MIRAGE_Disc *self, gint number, GObject *session, GError **error)
+gboolean mirage_disc_add_session_by_number (MirageDisc *self, gint number, GObject *session, GError **error)
 {
     GObject *tmp_session;
 
@@ -746,7 +746,7 @@ gboolean mirage_disc_add_session_by_number (MIRAGE_Disc *self, gint number, GObj
 
 /**
  * mirage_disc_remove_session_by_index:
- * @self: a #MIRAGE_Disc
+ * @self: a #MirageDisc
  * @index: (in): index of session to be removed
  * @error: (out) (allow-none): location to store error, or %NULL
  *
@@ -766,7 +766,7 @@ gboolean mirage_disc_add_session_by_number (MIRAGE_Disc *self, gint number, GObj
  *
  * Returns: %TRUE on success, %FALSE on failure
  **/
-gboolean mirage_disc_remove_session_by_index (MIRAGE_Disc *self, gint index, GError **error)
+gboolean mirage_disc_remove_session_by_index (MirageDisc *self, gint index, GError **error)
 {
     /* Find session by index */
     GObject *session = mirage_disc_get_session_by_index(self, index, error);
@@ -783,7 +783,7 @@ gboolean mirage_disc_remove_session_by_index (MIRAGE_Disc *self, gint index, GEr
 
 /**
  * mirage_disc_remove_session_by_number:
- * @self: a #MIRAGE_Disc
+ * @self: a #MirageDisc
  * @number: (in): session number of session to be removed
  * @error: (out) (allow-none): location to store error, or %NULL
  *
@@ -801,7 +801,7 @@ gboolean mirage_disc_remove_session_by_index (MIRAGE_Disc *self, gint index, GEr
  *
  * Returns: %TRUE on success, %FALSE on failure
  **/
-gboolean mirage_disc_remove_session_by_number (MIRAGE_Disc *self, gint number, GError **error)
+gboolean mirage_disc_remove_session_by_number (MirageDisc *self, gint number, GError **error)
 {
     /* Find session by number */
     GObject *session = mirage_disc_get_session_by_number(self, number, error);
@@ -818,7 +818,7 @@ gboolean mirage_disc_remove_session_by_number (MIRAGE_Disc *self, gint number, G
 
 /**
  * mirage_disc_remove_session_by_object:
- * @self: a #MIRAGE_Disc
+ * @self: a #MirageDisc
  * @session: (in): session object to be removed
  *
  * <para>
@@ -826,14 +826,14 @@ gboolean mirage_disc_remove_session_by_number (MIRAGE_Disc *self, gint number, G
  * </para>
  *
  * <para>
- * @session is a #MIRAGE_Session object to be removed.
+ * @session is a #MirageSession object to be removed.
  * </para>
  *
  * <note>
  * Causes bottom-up change.
  * </note>
  **/
-void mirage_disc_remove_session_by_object (MIRAGE_Disc *self, GObject *session)
+void mirage_disc_remove_session_by_object (MirageDisc *self, GObject *session)
 {
     mirage_disc_remove_session(self, session);
 }
@@ -841,7 +841,7 @@ void mirage_disc_remove_session_by_object (MIRAGE_Disc *self, GObject *session)
 
 /**
  * mirage_disc_get_session_by_index:
- * @self: a #MIRAGE_Disc
+ * @self: a #MirageDisc
  * @index: (in): index of session to be retrieved
  * @error: (out) (allow-none):location to store error, or %NULL
  *
@@ -852,11 +852,11 @@ void mirage_disc_remove_session_by_object (MIRAGE_Disc *self, GObject *session)
  * function fails.
  * </para>
  *
- * Returns: (transfer full): a #MIRAGE_Session on success, %NULL on failure.
+ * Returns: (transfer full): a #MirageSession on success, %NULL on failure.
  * The reference to the object should be released using g_object_unref()
  * when no longer needed.
  **/
-GObject *mirage_disc_get_session_by_index (MIRAGE_Disc *self, gint index, GError **error)
+GObject *mirage_disc_get_session_by_index (MirageDisc *self, gint index, GError **error)
 {
     GObject *session;
     gint num_sessions;
@@ -884,7 +884,7 @@ GObject *mirage_disc_get_session_by_index (MIRAGE_Disc *self, gint index, GError
 
 /**
  * mirage_disc_get_session_by_number:
- * @self: a #MIRAGE_Disc
+ * @self: a #MirageDisc
  * @number: (in): number of session to be retrieved
  * @error: (out) (allow-none): location to store error, or %NULL
  *
@@ -892,11 +892,11 @@ GObject *mirage_disc_get_session_by_index (MIRAGE_Disc *self, gint index, GError
  * Retrieves session by session number.
  * </para>
  *
- * Returns: (transfer full): a #MIRAGE_Session on success, %NULL on failure.
+ * Returns: (transfer full): a #MirageSession on success, %NULL on failure.
  * The reference to the object should be released using g_object_unref()
  * when no longer needed.
  **/
-GObject *mirage_disc_get_session_by_number (MIRAGE_Disc *self, gint session_number, GError **error)
+GObject *mirage_disc_get_session_by_number (MirageDisc *self, gint session_number, GError **error)
 {
     GObject *session;
     GList *entry ;
@@ -926,7 +926,7 @@ GObject *mirage_disc_get_session_by_number (MIRAGE_Disc *self, gint session_numb
 
 /**
  * mirage_disc_get_session_by_address:
- * @self: a #MIRAGE_Disc
+ * @self: a #MirageDisc
  * @address: (in) address belonging to session to be retrieved
  * @error: (out) (allow-none): location to store error, or %NULL
  *
@@ -936,11 +936,11 @@ GObject *mirage_disc_get_session_by_number (MIRAGE_Disc *self, gint session_numb
  * start and end sector).
  * </para>
  *
- * Returns: (transfer full): a #MIRAGE_Session on success, %NULL on failure.
+ * Returns: (transfer full): a #MirageSession on success, %NULL on failure.
  * The reference to the object should be released using g_object_unref()
  * when no longer needed.
  **/
-GObject *mirage_disc_get_session_by_address (MIRAGE_Disc *self, gint address, GError **error)
+GObject *mirage_disc_get_session_by_address (MirageDisc *self, gint address, GError **error)
 {
     GObject *session;
     GList *entry;
@@ -981,7 +981,7 @@ GObject *mirage_disc_get_session_by_address (MIRAGE_Disc *self, gint address, GE
 
 /**
  * mirage_disc_get_session_by_track:
- * @self: a #MIRAGE_Disc
+ * @self: a #MirageDisc
  * @track: (in): number of track belonging to session to be retrieved
  * @error: (out) (allow-none): location to store error, or %NULL
  *
@@ -990,11 +990,11 @@ GObject *mirage_disc_get_session_by_address (MIRAGE_Disc *self, gint address, GE
  * that is part of the session.
  * </para>
  *
- * Returns: (transfer full): a #MIRAGE_Session on success, %NULL on failure.
+ * Returns: (transfer full): a #MirageSession on success, %NULL on failure.
  * The reference to the object should be released using g_object_unref()
  * when no longer needed.
  **/
-GObject *mirage_disc_get_session_by_track (MIRAGE_Disc *self, gint track_number, GError **error)
+GObject *mirage_disc_get_session_by_track (MirageDisc *self, gint track_number, GError **error)
 {
     GObject *session;
     GList *entry;
@@ -1030,7 +1030,7 @@ GObject *mirage_disc_get_session_by_track (MIRAGE_Disc *self, gint track_number,
 
 /**
  * mirage_disc_for_each_session:
- * @self: a #MIRAGE_Disc
+ * @self: a #MirageDisc
  * @func: (in) (scope call): callback function
  * @user_data: (in) (closure): data to be passed to callback function
  *
@@ -1044,7 +1044,7 @@ GObject *mirage_disc_get_session_by_track (MIRAGE_Disc *self, gint track_number,
  *
  * Returns: %TRUE on success, %FALSE on failure
  **/
-gboolean mirage_disc_for_each_session (MIRAGE_Disc *self, MIRAGE_CallbackFunction func, gpointer user_data)
+gboolean mirage_disc_for_each_session (MirageDisc *self, MirageCallbackFunction func, gpointer user_data)
 {
     GList *entry;
 
@@ -1060,7 +1060,7 @@ gboolean mirage_disc_for_each_session (MIRAGE_Disc *self, MIRAGE_CallbackFunctio
 
 /**
  * mirage_disc_get_session_before:
- * @self: a #MIRAGE_Disc
+ * @self: a #MirageDisc
  * @session: (in): a session
  * @error: (out) (allow-none): location to store error, or %NULL
  *
@@ -1068,11 +1068,11 @@ gboolean mirage_disc_for_each_session (MIRAGE_Disc *self, MIRAGE_CallbackFunctio
  * Retrieves session that comes before @session.
  * </para>
  *
- * Returns: (transfer full): a #MIRAGE_Session on success, %NULL on failure.
+ * Returns: (transfer full): a #MirageSession on success, %NULL on failure.
  * The reference to the object should be released using g_object_unref()
  * when no longer needed.
  **/
-GObject *mirage_disc_get_session_before (MIRAGE_Disc *self, GObject *session, GError **error)
+GObject *mirage_disc_get_session_before (MirageDisc *self, GObject *session, GError **error)
 {
     gint index;
 
@@ -1094,7 +1094,7 @@ GObject *mirage_disc_get_session_before (MIRAGE_Disc *self, GObject *session, GE
 
 /**
  * mirage_disc_get_session_after:
- * @self: a #MIRAGE_Disc
+ * @self: a #MirageDisc
  * @session: (in): a session
  * @error: (out) (allow-none): location to store error, or %NULL
  *
@@ -1102,11 +1102,11 @@ GObject *mirage_disc_get_session_before (MIRAGE_Disc *self, GObject *session, GE
  * Retrieves session that comes after @session.
  * </para>
  *
- * Returns: (transfer full): a #MIRAGE_Session on success, %NULL on failure.
+ * Returns: (transfer full): a #MirageSession on success, %NULL on failure.
  * The reference to the object should be released using g_object_unref()
  * when no longer needed.
  **/
-GObject *mirage_disc_get_session_after (MIRAGE_Disc *self, GObject *session, GError **error)
+GObject *mirage_disc_get_session_after (MirageDisc *self, GObject *session, GError **error)
 {
     gint num_sessions, index;
 
@@ -1130,7 +1130,7 @@ GObject *mirage_disc_get_session_after (MIRAGE_Disc *self, GObject *session, GEr
 
 /**
  * mirage_disc_get_number_of_tracks:
- * @self: a #MIRAGE_Disc
+ * @self: a #MirageDisc
  *
  * <para>
  * Retrieves number of tracks in the disc layout.
@@ -1138,7 +1138,7 @@ GObject *mirage_disc_get_session_after (MIRAGE_Disc *self, GObject *session, GEr
  *
  * Returns: number of tracks
  **/
-gint mirage_disc_get_number_of_tracks (MIRAGE_Disc *self)
+gint mirage_disc_get_number_of_tracks (MirageDisc *self)
 {
     /* Return number of tracks */
     return self->priv->tracks_number;
@@ -1146,9 +1146,9 @@ gint mirage_disc_get_number_of_tracks (MIRAGE_Disc *self)
 
 /**
  * mirage_disc_add_track_by_index:
- * @self: a #MIRAGE_Disc
+ * @self: a #MirageDisc
  * @index: (in): index at which track should be added
- * @track: (in) (transfer full): a #MIRAGE_Track to be added
+ * @track: (in) (transfer full): a #MirageTrack to be added
  * @error: (out) (allow-none): location to store error, or %NULL
  *
  * <para>
@@ -1179,7 +1179,7 @@ gint mirage_disc_get_number_of_tracks (MIRAGE_Disc *self)
  *
  * Returns: %TRUE on success, %FALSE on failure
  **/
-gboolean mirage_disc_add_track_by_index (MIRAGE_Disc *self, gint index, GObject *track, GError **error)
+gboolean mirage_disc_add_track_by_index (MirageDisc *self, gint index, GObject *track, GError **error)
 {
     GList *entry;
     gint num_tracks;
@@ -1228,9 +1228,9 @@ gboolean mirage_disc_add_track_by_index (MIRAGE_Disc *self, gint index, GObject 
 
 /**
  * mirage_disc_add_track_by_number:
- * @self: a #MIRAGE_Disc
+ * @self: a #MirageDisc
  * @number: (in): track number for the added track
- * @track: (in) (transfer full): a #MIRAGE_Track to be added
+ * @track: (in) (transfer full): a #MirageTrack to be added
  * @error: (out) (allow-none): location to store error, or %NULL
  *
  * <para>
@@ -1260,7 +1260,7 @@ gboolean mirage_disc_add_track_by_index (MIRAGE_Disc *self, gint index, GObject 
  *
  * Returns: %TRUE on success, %FALSE on failure
  **/
-gboolean mirage_disc_add_track_by_number (MIRAGE_Disc *self, gint number, GObject *track, GError **error)
+gboolean mirage_disc_add_track_by_number (MirageDisc *self, gint number, GObject *track, GError **error)
 {
     GObject *session;
     GObject *last_track;
@@ -1303,7 +1303,7 @@ gboolean mirage_disc_add_track_by_number (MIRAGE_Disc *self, gint number, GObjec
 
 /**
  * mirage_disc_remove_track_by_index:
- * @self: a #MIRAGE_Disc
+ * @self: a #MirageDisc
  * @index: (in): index of track to be removed
  * @error: (out) (allow-none): location to store error, or %NULL
  *
@@ -1323,7 +1323,7 @@ gboolean mirage_disc_add_track_by_number (MIRAGE_Disc *self, gint number, GObjec
  *
  * Returns: %TRUE on success, %FALSE on failure
  **/
-gboolean mirage_disc_remove_track_by_index (MIRAGE_Disc *self, gint index, GError **error)
+gboolean mirage_disc_remove_track_by_index (MirageDisc *self, gint index, GError **error)
 {
     GObject *session;
     GObject *track;
@@ -1351,7 +1351,7 @@ gboolean mirage_disc_remove_track_by_index (MIRAGE_Disc *self, gint index, GErro
 
 /**
  * mirage_disc_remove_track_by_number:
- * @self: a #MIRAGE_Disc
+ * @self: a #MirageDisc
  * @number: (in): track number of track to be removed
  * @error: (out) (allow-none): location to store error, or %NULL
  *
@@ -1371,7 +1371,7 @@ gboolean mirage_disc_remove_track_by_index (MIRAGE_Disc *self, gint index, GErro
  *
  * Returns: %TRUE on success, %FALSE on failure
  **/
-gboolean mirage_disc_remove_track_by_number (MIRAGE_Disc *self, gint number, GError **error)
+gboolean mirage_disc_remove_track_by_number (MirageDisc *self, gint number, GError **error)
 {
     GObject *session;
     GObject *track;
@@ -1405,7 +1405,7 @@ gboolean mirage_disc_remove_track_by_number (MIRAGE_Disc *self, gint number, GEr
 
 /**
  * mirage_disc_get_track_by_index:
- * @self: a #MIRAGE_Disc
+ * @self: a #MirageDisc
  * @index: (in): index of track to be retrieved
  * @error: (out) (allow-none): location to store error, or %NULL
  *
@@ -1422,11 +1422,11 @@ gboolean mirage_disc_remove_track_by_number (MIRAGE_Disc *self, gint number, GEr
  * The rest of behavior is same as of mirage_session_get_track_by_index().
  * </para>
  *
- * Returns: (transfer full): a #MIRAGE_Track on success, %NULL on failure.
+ * Returns: (transfer full): a #MirageTrack on success, %NULL on failure.
  * The reference to the object should be released using g_object_unref()
  * when no longer needed.
  **/
-GObject *mirage_disc_get_track_by_index (MIRAGE_Disc *self, gint index, GError **error)
+GObject *mirage_disc_get_track_by_index (MirageDisc *self, gint index, GError **error)
 {
     GList *entry;
     gint num_tracks;
@@ -1462,7 +1462,7 @@ GObject *mirage_disc_get_track_by_index (MIRAGE_Disc *self, gint index, GError *
 
 /**
  * mirage_disc_get_track_by_number:
- * @self: a #MIRAGE_Disc
+ * @self: a #MirageDisc
  * @number: (in): track number of track to be retrieved
  * @error: (out) (allow-none): location to store error, or %NULL
  *
@@ -1476,11 +1476,11 @@ GObject *mirage_disc_get_track_by_index (MIRAGE_Disc *self, gint index, GError *
  * The rest of behavior is same as of mirage_session_get_track_by_number().
  * </para>
  *
- * Returns: (transfer full): a #MIRAGE_Track on success, %NULL on failure.
+ * Returns: (transfer full): a #MirageTrack on success, %NULL on failure.
  * The reference to the object should be released using g_object_unref()
  * when no longer needed.
  **/
-GObject *mirage_disc_get_track_by_number (MIRAGE_Disc *self, gint number, GError **error)
+GObject *mirage_disc_get_track_by_number (MirageDisc *self, gint number, GError **error)
 {
     GObject *session;
     GObject *track;
@@ -1500,7 +1500,7 @@ GObject *mirage_disc_get_track_by_number (MIRAGE_Disc *self, gint number, GError
 
 /**
  * mirage_disc_get_track_by_address:
- * @self: a #MIRAGE_Disc
+ * @self: a #MirageDisc
  * @address: (in): address belonging to track to be retrieved
  * @error: (out) (allow-none): location to store error, or %NULL
  *
@@ -1520,11 +1520,11 @@ GObject *mirage_disc_get_track_by_number (MIRAGE_Disc *self, gint number, GError
  * The rest of behavior is same as of mirage_session_get_track_by_address().
  * </para>
  *
- * Returns: (transfer full): a #MIRAGE_Track on success, %NULL on failure.
+ * Returns: (transfer full): a #MirageTrack on success, %NULL on failure.
  * The reference to the object should be released using g_object_unref()
  * when no longer needed.
  **/
-GObject *mirage_disc_get_track_by_address (MIRAGE_Disc *self, gint address, GError **error)
+GObject *mirage_disc_get_track_by_address (MirageDisc *self, gint address, GError **error)
 {
     GObject *session;
     GObject *track;
@@ -1545,7 +1545,7 @@ GObject *mirage_disc_get_track_by_address (MIRAGE_Disc *self, gint address, GErr
 
 /**
  * mirage_disc_set_disc_structure:
- * @self: a #MIRAGE_Disc
+ * @self: a #MirageDisc
  * @layer: (in): disc layer
  * @type: (in): disc structure type
  * @data: (in): disc structure data to be set
@@ -1561,7 +1561,7 @@ GObject *mirage_disc_get_track_by_address (MIRAGE_Disc *self, gint address, GErr
  * silently fails on invalid disc types.
  * </note>
  **/
-void mirage_disc_set_disc_structure (MIRAGE_Disc *self, gint layer, gint type, const guint8 *data, gint len)
+void mirage_disc_set_disc_structure (MirageDisc *self, gint layer, gint type, const guint8 *data, gint len)
 {
     GArray *array;
     guint8 *data_copy;
@@ -1585,7 +1585,7 @@ void mirage_disc_set_disc_structure (MIRAGE_Disc *self, gint layer, gint type, c
 
 /**
  * mirage_disc_get_disc_structure:
- * @self: a #MIRAGE_Disc
+ * @self: a #MirageDisc
  * @layer: (in): disc layer
  * @type: (in): disc structure type
  * @data: (out) (transfer none) (allow-none): location to store buffer containing disc structure data, or %NULL
@@ -1606,7 +1606,7 @@ void mirage_disc_set_disc_structure (MIRAGE_Disc *self, gint layer, gint type, c
  *
  * Returns: %TRUE on success, %FALSE on failure
  **/
-gboolean mirage_disc_get_disc_structure (MIRAGE_Disc *self, gint layer, gint type, const guint8 **data, gint *len, GError **error)
+gboolean mirage_disc_get_disc_structure (MirageDisc *self, gint layer, gint type, const guint8 **data, gint *len, GError **error)
 {
     gint key = ((layer & 0x0000FFFF) << 16) | (type & 0x0000FFFF);
     GArray *array;
@@ -1646,7 +1646,7 @@ gboolean mirage_disc_get_disc_structure (MIRAGE_Disc *self, gint layer, gint typ
 
 /**
  * mirage_disc_get_sector:
- * @self: a #MIRAGE_Disc
+ * @self: a #MirageDisc
  * @address: (in): sector address
  * @error: (out) (allow-none): location to store error, or %NULL
  *
@@ -1662,7 +1662,7 @@ gboolean mirage_disc_get_disc_structure (MIRAGE_Disc *self, gint layer, gint typ
  *
  * Returns: (transfer full): sector object on success, %NULL on failure
  **/
-GObject *mirage_disc_get_sector (MIRAGE_Disc *self, gint address, GError **error)
+GObject *mirage_disc_get_sector (MirageDisc *self, gint address, GError **error)
 {
     GObject *track, *sector;
 
@@ -1682,7 +1682,7 @@ GObject *mirage_disc_get_sector (MIRAGE_Disc *self, gint address, GError **error
 
 /**
  * mirage_disc_read_sector:
- * @self: a #MIRAGE_Disc
+ * @self: a #MirageDisc
  * @address: (in): sector address
  * @main_sel: (in): main channel selection flags
  * @subc_sel: (in): subchannel selection flags
@@ -1702,7 +1702,7 @@ GObject *mirage_disc_get_sector (MIRAGE_Disc *self, gint address, GError **error
  *
  * Returns: %TRUE on success, %FALSE on failure
  **/
-gboolean mirage_disc_read_sector (MIRAGE_Disc *self, gint address, guint8 main_sel, guint8 subc_sel, guint8 *ret_buf, gint *ret_len, GError **error)
+gboolean mirage_disc_read_sector (MirageDisc *self, gint address, guint8 main_sel, guint8 subc_sel, guint8 *ret_buf, gint *ret_len, GError **error)
 {
     gboolean succeeded;
     GObject *track;
@@ -1723,7 +1723,7 @@ gboolean mirage_disc_read_sector (MIRAGE_Disc *self, gint address, guint8 main_s
 
 /**
  * mirage_disc_set_dpm_data:
- * @self: a #MIRAGE_Disc
+ * @self: a #MirageDisc
  * @start: (in): DPM start sector
  * @resolution: (in): DPM data resolution
  * @num_entries: (in): number of DPM entries
@@ -1736,7 +1736,7 @@ gboolean mirage_disc_read_sector (MIRAGE_Disc *self, gint address, guint8 main_s
  * @data.
  * </para>
  **/
-void mirage_disc_set_dpm_data (MIRAGE_Disc *self, gint start, gint resolution, gint num_entries, const guint32 *data)
+void mirage_disc_set_dpm_data (MirageDisc *self, gint start, gint resolution, gint num_entries, const guint32 *data)
 {
     /* Free old DPM data */
     g_free(self->priv->dpm_data);
@@ -1756,7 +1756,7 @@ void mirage_disc_set_dpm_data (MIRAGE_Disc *self, gint start, gint resolution, g
 
 /**
  * mirage_disc_get_dpm_data:
- * @self: a #MIRAGE_Disc
+ * @self: a #MirageDisc
  * @start: (out) (allow-none): location to store DPM start sector, or %NULL
  * @resolution: (out) (allow-none): location to store DPM data resolution, or %NULL
  * @num_entries: (out) (allow-none): location to store number of DPM entries, or %NULL
@@ -1768,7 +1768,7 @@ void mirage_disc_set_dpm_data (MIRAGE_Disc *self, gint start, gint resolution, g
  * modified.
  * </para>
  **/
-void mirage_disc_get_dpm_data (MIRAGE_Disc *self, gint *start, gint *resolution, gint *num_entries, const guint32 **data)
+void mirage_disc_get_dpm_data (MirageDisc *self, gint *start, gint *resolution, gint *num_entries, const guint32 **data)
 {
     if (start) {
         *start = self->priv->dpm_start;
@@ -1786,7 +1786,7 @@ void mirage_disc_get_dpm_data (MIRAGE_Disc *self, gint *start, gint *resolution,
 
 /**
  * mirage_disc_get_dpm_data_for_sector:
- * @self: a #MIRAGE_Disc
+ * @self: a #MirageDisc
  * @address: (in): address of sector to retrieve DPM data for
  * @angle: (out) (allow-none): location to store sector angle, or %NULL
  * @density: (out) (allow-none): location to store sector density, or %NULL
@@ -1801,7 +1801,7 @@ void mirage_disc_get_dpm_data (MIRAGE_Disc *self, gint *start, gint *resolution,
  *
  * Returns: %TRUE on success, %FALSE on failure
  **/
-gboolean mirage_disc_get_dpm_data_for_sector (MIRAGE_Disc *self, gint address, gdouble *angle, gdouble *density, GError **error)
+gboolean mirage_disc_get_dpm_data_for_sector (MirageDisc *self, gint address, gdouble *angle, gdouble *density, GError **error)
 {
     gint rel_address;
     gint idx_bottom;
@@ -1875,10 +1875,10 @@ gboolean mirage_disc_get_dpm_data_for_sector (MIRAGE_Disc *self, gint address, g
 /**********************************************************************\
  *                             Object init                            *
 \**********************************************************************/
-G_DEFINE_TYPE(MIRAGE_Disc, mirage_disc, MIRAGE_TYPE_OBJECT);
+G_DEFINE_TYPE(MirageDisc, mirage_disc, MIRAGE_TYPE_OBJECT);
 
 
-static void mirage_disc_init (MIRAGE_Disc *self)
+static void mirage_disc_init (MirageDisc *self)
 {
     self->priv = MIRAGE_DISC_GET_PRIVATE(self);
 
@@ -1903,7 +1903,7 @@ static void mirage_disc_init (MIRAGE_Disc *self)
 
 static void mirage_disc_dispose (GObject *gobject)
 {
-    MIRAGE_Disc *self = MIRAGE_DISC(gobject);
+    MirageDisc *self = MIRAGE_DISC(gobject);
     GList *entry;
 
     /* Unref sessions */
@@ -1924,7 +1924,7 @@ static void mirage_disc_dispose (GObject *gobject)
 
 static void mirage_disc_finalize (GObject *gobject)
 {
-    MIRAGE_Disc *self = MIRAGE_DISC(gobject);
+    MirageDisc *self = MIRAGE_DISC(gobject);
 
     g_list_free(self->priv->sessions_list);
 
@@ -1941,7 +1941,7 @@ static void mirage_disc_finalize (GObject *gobject)
 
 static void mirage_disc_set_property (GObject *gobject, guint property_id, const GValue *value, GParamSpec *pspec)
 {
-    MIRAGE_Disc *self = MIRAGE_DISC(gobject);
+    MirageDisc *self = MIRAGE_DISC(gobject);
 
     switch (property_id) {
         case PROP_MIRAGE_DISC_DVD_REPORT_CSS: {
@@ -1955,7 +1955,7 @@ static void mirage_disc_set_property (GObject *gobject, guint property_id, const
 
 static void mirage_disc_get_property (GObject *gobject, guint property_id, GValue *value, GParamSpec *pspec)
 {
-    MIRAGE_Disc *self = MIRAGE_DISC(gobject);
+    MirageDisc *self = MIRAGE_DISC(gobject);
 
     switch (property_id) {
         case PROP_MIRAGE_DISC_DVD_REPORT_CSS: {
@@ -1967,7 +1967,7 @@ static void mirage_disc_get_property (GObject *gobject, guint property_id, GValu
     return G_OBJECT_CLASS(mirage_disc_parent_class)->get_property(gobject, property_id, value, pspec);
 }
 
-static void mirage_disc_class_init (MIRAGE_DiscClass *klass)
+static void mirage_disc_class_init (MirageDiscClass *klass)
 {
     GObjectClass *gobject_class = G_OBJECT_CLASS(klass);
 
@@ -1977,11 +1977,11 @@ static void mirage_disc_class_init (MIRAGE_DiscClass *klass)
     gobject_class->set_property = mirage_disc_set_property;
 
     /* Register private structure */
-    g_type_class_add_private(klass, sizeof(MIRAGE_DiscPrivate));
+    g_type_class_add_private(klass, sizeof(MirageDiscPrivate));
 
     /* Property: PROP_MIRAGE_DISC_DVD_REPORT_CSS */
     /**
-    * MIRAGE_Disc:dvd-report-css:
+    * MirageDisc:dvd-report-css:
     *
     * Flag controlling whether the generated Disc Structure 0x01 should
     * report that DVD is CSS-encrypted or not. Relevant only for DVD images;

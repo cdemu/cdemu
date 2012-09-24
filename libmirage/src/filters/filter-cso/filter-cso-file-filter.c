@@ -31,9 +31,9 @@ typedef struct
 /**********************************************************************\
  *                          Private structure                         *
 \**********************************************************************/
-#define MIRAGE_FILE_FILTER_CSO_GET_PRIVATE(obj) (G_TYPE_INSTANCE_GET_PRIVATE((obj), MIRAGE_TYPE_FILE_FILTER_CSO, MIRAGE_FileFilter_CSOPrivate))
+#define MIRAGE_FILE_FILTER_CSO_GET_PRIVATE(obj) (G_TYPE_INSTANCE_GET_PRIVATE((obj), MIRAGE_TYPE_FILE_FILTER_CSO, MirageFileFilterCsoPrivate))
 
-struct _MIRAGE_FileFilter_CSOPrivate
+struct _MirageFileFilterCsoPrivate
 {
     ciso_header_t header;
 
@@ -59,7 +59,7 @@ struct _MIRAGE_FileFilter_CSOPrivate
 /**********************************************************************\
  *                           Part indexing                            *
 \**********************************************************************/
-static gboolean mirage_file_filter_cso_read_index (MIRAGE_FileFilter_CSO *self, GError **error)
+static gboolean mirage_file_filter_cso_read_index (MirageFileFilterCso *self, GError **error)
 {
     GInputStream *stream = g_filter_input_stream_get_base_stream(G_FILTER_INPUT_STREAM(self));
     z_stream *zlib_stream = &self->priv->zlib_stream;
@@ -159,7 +159,7 @@ static gboolean mirage_file_filter_cso_read_index (MIRAGE_FileFilter_CSO *self, 
 /**********************************************************************\
  *                              Seeking                               *
 \**********************************************************************/
-static gboolean mirage_file_filter_cso_set_current_position (MIRAGE_FileFilter_CSO *self, goffset new_position, GError **error)
+static gboolean mirage_file_filter_cso_set_current_position (MirageFileFilterCso *self, goffset new_position, GError **error)
 {
     /* If new position matches current position, do nothing */
     if (new_position == self->priv->cur_position) {
@@ -194,7 +194,7 @@ static gboolean mirage_file_filter_cso_set_current_position (MIRAGE_FileFilter_C
 /**********************************************************************\
  *                         Reading from parts                         *
 \**********************************************************************/
-static gssize mirage_filter_cso_read_from_part (MIRAGE_FileFilter_CSO *self, guint8 *buffer, gsize count)
+static gssize mirage_filter_cso_read_from_part (MirageFileFilterCso *self, guint8 *buffer, gsize count)
 {
     GInputStream *stream = g_filter_input_stream_get_base_stream(G_FILTER_INPUT_STREAM(self));
 
@@ -306,11 +306,11 @@ static gssize mirage_filter_cso_read_from_part (MIRAGE_FileFilter_CSO *self, gui
 
 
 /**********************************************************************\
- *              MIRAGE_FileFilter methods implementations             *
+ *              MirageFileFilter methods implementations             *
 \**********************************************************************/
-static gboolean mirage_file_filter_cso_can_handle_data_format (MIRAGE_FileFilter *_self, GError **error)
+static gboolean mirage_file_filter_cso_can_handle_data_format (MirageFileFilter *_self, GError **error)
 {
-    MIRAGE_FileFilter_CSO *self = MIRAGE_FILE_FILTER_CSO(_self);
+    MirageFileFilterCso *self = MIRAGE_FILE_FILTER_CSO(_self);
     GInputStream *stream = g_filter_input_stream_get_base_stream(G_FILTER_INPUT_STREAM(self));
 
     ciso_header_t *header = &self->priv->header;
@@ -340,9 +340,9 @@ static gboolean mirage_file_filter_cso_can_handle_data_format (MIRAGE_FileFilter
 }
 
 
-static gssize mirage_file_filter_cso_read (MIRAGE_FileFilter *_self, void *buffer, gsize count, GError **error)
+static gssize mirage_file_filter_cso_read (MirageFileFilter *_self, void *buffer, gsize count, GError **error)
 {
-    MIRAGE_FileFilter_CSO *self = MIRAGE_FILE_FILTER_CSO(_self);
+    MirageFileFilterCso *self = MIRAGE_FILE_FILTER_CSO(_self);
 
     gssize total_read, read_len;
     guint8 *ptr = buffer;
@@ -386,15 +386,15 @@ static gssize mirage_file_filter_cso_read (MIRAGE_FileFilter *_self, void *buffe
 }
 
 
-static goffset mirage_file_filter_cso_tell (MIRAGE_FileFilter *_self)
+static goffset mirage_file_filter_cso_tell (MirageFileFilter *_self)
 {
-    MIRAGE_FileFilter_CSO *self = MIRAGE_FILE_FILTER_CSO(_self);
+    MirageFileFilterCso *self = MIRAGE_FILE_FILTER_CSO(_self);
     return self->priv->cur_position;
 }
 
-static gboolean mirage_file_filter_cso_seek (MIRAGE_FileFilter *_self, goffset offset, GSeekType type, GError **error)
+static gboolean mirage_file_filter_cso_seek (MirageFileFilter *_self, goffset offset, GSeekType type, GError **error)
 {
-    MIRAGE_FileFilter_CSO *self = MIRAGE_FILE_FILTER_CSO(_self);
+    MirageFileFilterCso *self = MIRAGE_FILE_FILTER_CSO(_self);
     goffset new_position;
 
     /* Compute new position */
@@ -431,7 +431,7 @@ static gboolean mirage_file_filter_cso_seek (MIRAGE_FileFilter *_self, goffset o
 /**********************************************************************\
  *                             Object init                            *
 \**********************************************************************/
-G_DEFINE_DYNAMIC_TYPE(MIRAGE_FileFilter_CSO, mirage_file_filter_cso, MIRAGE_TYPE_FILE_FILTER);
+G_DEFINE_DYNAMIC_TYPE(MirageFileFilterCso, mirage_file_filter_cso, MIRAGE_TYPE_FILE_FILTER);
 
 void mirage_file_filter_cso_type_register (GTypeModule *type_module)
 {
@@ -439,7 +439,7 @@ void mirage_file_filter_cso_type_register (GTypeModule *type_module)
 }
 
 
-static void mirage_file_filter_cso_init (MIRAGE_FileFilter_CSO *self)
+static void mirage_file_filter_cso_init (MirageFileFilterCso *self)
 {
     self->priv = MIRAGE_FILE_FILTER_CSO_GET_PRIVATE(self);
 
@@ -461,7 +461,7 @@ static void mirage_file_filter_cso_init (MIRAGE_FileFilter_CSO *self)
 
 static void mirage_file_filter_cso_finalize (GObject *gobject)
 {
-    MIRAGE_FileFilter_CSO *self = MIRAGE_FILE_FILTER_CSO(gobject);
+    MirageFileFilterCso *self = MIRAGE_FILE_FILTER_CSO(gobject);
 
     g_free(self->priv->parts);
     g_free(self->priv->part_buffer);
@@ -472,10 +472,10 @@ static void mirage_file_filter_cso_finalize (GObject *gobject)
     return G_OBJECT_CLASS(mirage_file_filter_cso_parent_class)->finalize(gobject);
 }
 
-static void mirage_file_filter_cso_class_init (MIRAGE_FileFilter_CSOClass *klass)
+static void mirage_file_filter_cso_class_init (MirageFileFilterCsoClass *klass)
 {
     GObjectClass *gobject_class = G_OBJECT_CLASS(klass);
-    MIRAGE_FileFilterClass *file_filter_class = MIRAGE_FILE_FILTER_CLASS(klass);
+    MirageFileFilterClass *file_filter_class = MIRAGE_FILE_FILTER_CLASS(klass);
 
     gobject_class->finalize = mirage_file_filter_cso_finalize;
 
@@ -487,9 +487,9 @@ static void mirage_file_filter_cso_class_init (MIRAGE_FileFilter_CSOClass *klass
     file_filter_class->seek = mirage_file_filter_cso_seek;
 
     /* Register private structure */
-    g_type_class_add_private(klass, sizeof(MIRAGE_FileFilter_CSOPrivate));
+    g_type_class_add_private(klass, sizeof(MirageFileFilterCsoPrivate));
 }
 
-static void mirage_file_filter_cso_class_finalize (MIRAGE_FileFilter_CSOClass *klass G_GNUC_UNUSED)
+static void mirage_file_filter_cso_class_finalize (MirageFileFilterCsoClass *klass G_GNUC_UNUSED)
 {
 }

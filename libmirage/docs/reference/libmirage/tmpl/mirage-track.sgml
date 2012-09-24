@@ -1,14 +1,14 @@
 <!-- ##### SECTION Title ##### -->
-MIRAGE_Track object
+MirageTrack object
 
 <!-- ##### SECTION Short_Description ##### -->
 Object representing a track
 
 <!-- ##### SECTION Long_Description ##### -->
 <para>
-#MIRAGE_Track object represents a track in the disc layout. It provides 
+#MirageTrack object represents a track in the disc layout. It provides
 functions for manipulating track data and layout; setting track type and flags,
-adding and removing fragments, indices and languages, accessing and reading of 
+adding and removing fragments, indices and languages, accessing and reading of
 sectors, etc.
 </para>
 
@@ -30,16 +30,16 @@ sectors, etc.
 
 
 
-<!-- ##### ENUM MIRAGE_TrackFlags ##### -->
+<!-- ##### ENUM MirageTrackFlags ##### -->
 <para>
 
 </para>
 
-@MIRAGE_TRACKF_FOURCHANNEL: 
-@MIRAGE_TRACKF_COPYPERMITTED: 
-@MIRAGE_TRACKF_PREEMPHASIS: 
+@MIRAGE_TRACK_FLAG_FOURCHANNEL: 
+@MIRAGE_TRACK_FLAG_COPYPERMITTED: 
+@MIRAGE_TRACK_FLAG_PREEMPHASIS: 
 
-<!-- ##### ENUM MIRAGE_TrackModes ##### -->
+<!-- ##### ENUM MirageTrackModes ##### -->
 <para>
 
 </para>
@@ -52,7 +52,7 @@ sectors, etc.
 @MIRAGE_MODE_MODE2_FORM2: 
 @MIRAGE_MODE_MODE2_MIXED: 
 
-<!-- ##### ENUM MIRAGE_TrackConstants ##### -->
+<!-- ##### ENUM MirageTrackConstants ##### -->
 <para>
 
 </para>
@@ -60,7 +60,7 @@ sectors, etc.
 @MIRAGE_TRACK_LEADIN: 
 @MIRAGE_TRACK_LEADOUT: 
 
-<!-- ##### STRUCT MIRAGE_Track ##### -->
+<!-- ##### STRUCT MirageTrack ##### -->
 <para>
 
 </para>

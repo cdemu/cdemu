@@ -29,9 +29,9 @@
 /**********************************************************************\
  *                         Private structure                          *
 \**********************************************************************/
-#define MIRAGE_TRACK_GET_PRIVATE(obj) (G_TYPE_INSTANCE_GET_PRIVATE((obj), MIRAGE_TYPE_TRACK, MIRAGE_TrackPrivate))
+#define MIRAGE_TRACK_GET_PRIVATE(obj) (G_TYPE_INSTANCE_GET_PRIVATE((obj), MIRAGE_TYPE_TRACK, MirageTrackPrivate))
 
-struct _MIRAGE_TrackPrivate
+struct _MirageTrackPrivate
 {
     /* Layout settings */
     gint track_number; /* Track number */
@@ -61,7 +61,7 @@ struct _MIRAGE_TrackPrivate
 /**********************************************************************\
  *                          Private functions                         *
 \**********************************************************************/
-static gboolean mirage_track_check_for_encoded_isrc (MIRAGE_Track *self, GError **error)
+static gboolean mirage_track_check_for_encoded_isrc (MirageTrack *self, GError **error)
 {
     /* Check if we have fragment with subchannel */
     GObject *fragment = mirage_track_find_fragment_with_subchannel(self, NULL);
@@ -109,7 +109,7 @@ static gboolean mirage_track_check_for_encoded_isrc (MIRAGE_Track *self, GError 
 }
 
 
-static void mirage_track_rearrange_indices (MIRAGE_Track *self)
+static void mirage_track_rearrange_indices (MirageTrack *self)
 {
     GList *entry;
 
@@ -136,7 +136,7 @@ static void mirage_track_rearrange_indices (MIRAGE_Track *self)
     }
 }
 
-static void mirage_track_commit_topdown_change (MIRAGE_Track *self)
+static void mirage_track_commit_topdown_change (MirageTrack *self)
 {
     GList *entry;
 
@@ -154,7 +154,7 @@ static void mirage_track_commit_topdown_change (MIRAGE_Track *self)
     }
 }
 
-static void mirage_track_commit_bottomup_change (MIRAGE_Track *self)
+static void mirage_track_commit_bottomup_change (MirageTrack *self)
 {
     GList *entry;
     GObject *session;
@@ -182,14 +182,14 @@ static void mirage_track_commit_bottomup_change (MIRAGE_Track *self)
     }
 }
 
-static void mirage_track_fragment_modified_handler (GObject *fragment G_GNUC_UNUSED, MIRAGE_Track *self)
+static void mirage_track_fragment_modified_handler (GObject *fragment G_GNUC_UNUSED, MirageTrack *self)
 {
     /* Bottom-up change */
     mirage_track_commit_bottomup_change(self);
 }
 
 
-static void mirage_track_remove_fragment (MIRAGE_Track *self, GObject *fragment)
+static void mirage_track_remove_fragment (MirageTrack *self, GObject *fragment)
 {
     /* Disconnect signal handler (find it by handler function and user data) */
     g_signal_handlers_disconnect_by_func(MIRAGE_OBJECT(fragment), mirage_track_fragment_modified_handler, self);
@@ -202,7 +202,7 @@ static void mirage_track_remove_fragment (MIRAGE_Track *self, GObject *fragment)
     mirage_track_commit_bottomup_change(self);
 }
 
-static void mirage_track_remove_index (MIRAGE_Track *self, GObject *index)
+static void mirage_track_remove_index (MirageTrack *self, GObject *index)
 {
     /* Remove it from list and unref it */
     self->priv->indices_list = g_list_remove(self->priv->indices_list, index);
@@ -212,7 +212,7 @@ static void mirage_track_remove_index (MIRAGE_Track *self, GObject *index)
     mirage_track_rearrange_indices(self);
 }
 
-static void mirage_track_remove_language (MIRAGE_Track *self, GObject *language)
+static void mirage_track_remove_language (MirageTrack *self, GObject *language)
 {
     /* Remove it from list and unref it */
     self->priv->languages_list = g_list_remove(self->priv->languages_list, language);
@@ -254,14 +254,14 @@ static gint sort_languages_by_code (GObject *language1, GObject *language2)
 \******************************************************************************/
 /**
  * mirage_track_set_flags:
- * @self: a #MIRAGE_Track
+ * @self: a #MirageTrack
  * @flags: (in): track flags
  *
  * <para>
- * Sets track flags. @flags must be a combination of #MIRAGE_TrackFlags.
+ * Sets track flags. @flags must be a combination of #MirageTrackFlags.
  * </para>
  **/
-void mirage_track_set_flags (MIRAGE_Track *self, gint flags)
+void mirage_track_set_flags (MirageTrack *self, gint flags)
 {
     /* Set flags */
     self->priv->flags = flags;
@@ -269,7 +269,7 @@ void mirage_track_set_flags (MIRAGE_Track *self, gint flags)
 
 /**
  * mirage_track_get_flags:
- * @self: a #MIRAGE_Track
+ * @self: a #MirageTrack
  *
  * <para>
  * Retrieves track flags.
@@ -277,7 +277,7 @@ void mirage_track_set_flags (MIRAGE_Track *self, gint flags)
  *
  * Returns: track flags
  **/
-gint mirage_track_get_flags (MIRAGE_Track *self)
+gint mirage_track_get_flags (MirageTrack *self)
 {
     /* Return flags */
     return self->priv->flags;
@@ -286,14 +286,14 @@ gint mirage_track_get_flags (MIRAGE_Track *self)
 
 /**
  * mirage_track_set_mode:
- * @self: a #MIRAGE_Track
+ * @self: a #MirageTrack
  * @mode: (in): track mode
  *
  * <para>
- * Sets track mode. @mode must be one of #MIRAGE_TrackModes.
+ * Sets track mode. @mode must be one of #MirageTrackModes.
  * </para>
  **/
-void mirage_track_set_mode (MIRAGE_Track *self, gint mode)
+void mirage_track_set_mode (MirageTrack *self, gint mode)
 {
     /* Set mode */
     self->priv->mode = mode;
@@ -301,7 +301,7 @@ void mirage_track_set_mode (MIRAGE_Track *self, gint mode)
 
 /**
  * mirage_track_get_mode:
- * @self: a #MIRAGE_Track
+ * @self: a #MirageTrack
  *
  * <para>
  * Retrieves track mode.
@@ -309,7 +309,7 @@ void mirage_track_set_mode (MIRAGE_Track *self, gint mode)
  *
  * Returns: track mode
  **/
-gint mirage_track_get_mode (MIRAGE_Track *self)
+gint mirage_track_get_mode (MirageTrack *self)
 {
     /* Return mode */
     return self->priv->mode;
@@ -318,7 +318,7 @@ gint mirage_track_get_mode (MIRAGE_Track *self)
 
 /**
  * mirage_track_get_adr:
- * @self: a #MIRAGE_Track
+ * @self: a #MirageTrack
  *
  * <para>
  * Retrieves track's ADR.
@@ -330,7 +330,7 @@ gint mirage_track_get_mode (MIRAGE_Track *self)
  *
  * Returns: ADR value
  **/
-gint mirage_track_get_adr (MIRAGE_Track *self G_GNUC_UNUSED)
+gint mirage_track_get_adr (MirageTrack *self G_GNUC_UNUSED)
 {
     /* Return adr; always 1 */
     return 1;
@@ -339,7 +339,7 @@ gint mirage_track_get_adr (MIRAGE_Track *self G_GNUC_UNUSED)
 
 /**
  * mirage_track_set_ctl:
- * @self: a #MIRAGE_Track
+ * @self: a #MirageTrack
  * @ctl: (in): track's CTL
  *
  * <para>
@@ -347,23 +347,23 @@ gint mirage_track_get_adr (MIRAGE_Track *self G_GNUC_UNUSED)
  * using mirage_track_set_flags(). Track mode set with CTL is ignored.
  * </para>
  **/
-void mirage_track_set_ctl (MIRAGE_Track *self, gint ctl)
+void mirage_track_set_ctl (MirageTrack *self, gint ctl)
 {
     gint flags = 0;
 
     /* We ignore track mode (data type) here */
 
     /* Flags */
-    if (ctl & 0x01) flags |= MIRAGE_TRACKF_PREEMPHASIS;
-    if (ctl & 0x02) flags |= MIRAGE_TRACKF_COPYPERMITTED;
-    if (ctl & 0x08) flags |= MIRAGE_TRACKF_FOURCHANNEL;
+    if (ctl & 0x01) flags |= MIRAGE_TRACK_FLAG_PREEMPHASIS;
+    if (ctl & 0x02) flags |= MIRAGE_TRACK_FLAG_COPYPERMITTED;
+    if (ctl & 0x08) flags |= MIRAGE_TRACK_FLAG_FOURCHANNEL;
 
     return mirage_track_set_flags(self, flags);
 }
 
 /**
  * mirage_track_get_ctl:
- * @self: a #MIRAGE_Track
+ * @self: a #MirageTrack
  *
  * <para>
  * Retrieves track's CTL. CTL is calculated on basis of track mode and track
@@ -372,7 +372,7 @@ void mirage_track_set_ctl (MIRAGE_Track *self, gint ctl)
  *
  * Returns: CTL value
  **/
-gint mirage_track_get_ctl (MIRAGE_Track *self)
+gint mirage_track_get_ctl (MirageTrack *self)
 {
     /* Return ctl */
     gint ctl = 0;
@@ -385,9 +385,9 @@ gint mirage_track_get_ctl (MIRAGE_Track *self)
 
     /* Flags */
     gint flags = mirage_track_get_flags(self);
-    if (flags & MIRAGE_TRACKF_FOURCHANNEL) ctl |= 0x8;
-    if (flags & MIRAGE_TRACKF_COPYPERMITTED) ctl |= 0x2;
-    if (flags & MIRAGE_TRACKF_PREEMPHASIS) ctl |= 0x1;
+    if (flags & MIRAGE_TRACK_FLAG_FOURCHANNEL) ctl |= 0x8;
+    if (flags & MIRAGE_TRACK_FLAG_COPYPERMITTED) ctl |= 0x2;
+    if (flags & MIRAGE_TRACK_FLAG_PREEMPHASIS) ctl |= 0x1;
 
     return ctl;
 }
@@ -395,7 +395,7 @@ gint mirage_track_get_ctl (MIRAGE_Track *self)
 
 /**
  * mirage_track_set_isrc:
- * @self: a #MIRAGE_Track
+ * @self: a #MirageTrack
  * @isrc: (in): MCN
  *
  * <para>
@@ -407,7 +407,7 @@ gint mirage_track_get_ctl (MIRAGE_Track *self)
  * fails if track contains fragments with subchannel data provided.
  * </para>
  **/
-void mirage_track_set_isrc (MIRAGE_Track *self, const gchar *isrc)
+void mirage_track_set_isrc (MirageTrack *self, const gchar *isrc)
 {
     /* ISRC is encoded in track's subchannel. This means that if subchannel is
        provided by one of track's fragments (and therefore won't be generated by
@@ -424,7 +424,7 @@ void mirage_track_set_isrc (MIRAGE_Track *self, const gchar *isrc)
 
 /**
  * mirage_track_get_isrc:
- * @self: a #MIRAGE_Track
+ * @self: a #MirageTrack
  *
  * <para>
  * Retrieves ISRC.
@@ -433,7 +433,7 @@ void mirage_track_set_isrc (MIRAGE_Track *self, const gchar *isrc)
  * Returns: (transfer none): pointer to ISRC string, or %NULL. The string
  * belongs to the object and should not be modified.
  **/
-const gchar *mirage_track_get_isrc (MIRAGE_Track *self)
+const gchar *mirage_track_get_isrc (MirageTrack *self)
 {
     /* Return ISRC */
     return self->priv->isrc;
@@ -442,13 +442,13 @@ const gchar *mirage_track_get_isrc (MIRAGE_Track *self)
 
 /**
  * mirage_track_get_sector:
- * @self: a #MIRAGE_Track
+ * @self: a #MirageTrack
  * @address: (in): sector address
  * @abs: (in): absolute address
  * @error: (out) (allow-none): location to store error, or %NULL
  *
  * <para>
- * Retrieves a sector. @address is sector address for which a #MIRAGE_Sector
+ * Retrieves a sector. @address is sector address for which a #MirageSector
  * object representing sector should be returned. @abs specifies whether @address
  * is absolute or relative; if %TRUE, @address is absolute (i.e. relative to start
  * of the disc), if %FALSE, it is relative (i.e. relative to start of the track).
@@ -461,7 +461,7 @@ const gchar *mirage_track_get_isrc (MIRAGE_Track *self)
  * Returns: (transfer full): sector object on success, %NULL on failure. The sector object
  * should be released with g_object_unref() when no longer needed.
  **/
-GObject *mirage_track_get_sector (MIRAGE_Track *self, gint address, gboolean abs, GError **error)
+GObject *mirage_track_get_sector (MirageTrack *self, gint address, gboolean abs, GError **error)
 {
     GObject *sector = NULL;
 
@@ -494,7 +494,7 @@ GObject *mirage_track_get_sector (MIRAGE_Track *self, gint address, gboolean abs
 
 /**
  * mirage_track_read_sector:
- * @self: a #MIRAGE_Track
+ * @self: a #MirageTrack
  * @address: (in): sector address
  * @abs: (in): absolute address
  * @main_sel: (in): main channel selection flags
@@ -505,7 +505,7 @@ GObject *mirage_track_get_sector (MIRAGE_Track *self, gint address, gboolean abs
  *
  * <para>
  * Reads data from sector at address @address. It internally acquires a
- * #MIRAGE_Sector object by passing @address and @abs to mirage_track_get_sector();
+ * #MirageSector object by passing @address and @abs to mirage_track_get_sector();
  * behavior of those two arguments is determined by that function.
  * </para>
  *
@@ -514,8 +514,8 @@ GObject *mirage_track_get_sector (MIRAGE_Track *self, gint address, gboolean abs
  * mirage_sector_get_sync(), mirage_sector_get_header(),
  * mirage_sector_get_data(), mirage_sector_get_edc_ecc() and mirage_sector_get_subchannel().
  * in accord with main channel and subchannel selection flags. @main_sel can
- * be a combination of #MIRAGE_Sector_MCSB and @subc_sel must be one of
- * #MIRAGE_Sector_SubchannelFormat.
+ * be a combination of #MirageSectorMCSB and @subc_sel must be one of
+ * #MirageSectorSubchannelFormat.
  * </para>
  *
  * <para>
@@ -531,7 +531,7 @@ GObject *mirage_track_get_sector (MIRAGE_Track *self, gint address, gboolean abs
  *
  * Returns: %TRUE on success, %FALSE on failure
  **/
-gboolean mirage_track_read_sector (MIRAGE_Track *self, gint address, gboolean abs, guint8 main_sel, guint8 subc_sel, guint8 *ret_buf, gint *ret_len, GError **error)
+gboolean mirage_track_read_sector (MirageTrack *self, gint address, gboolean abs, guint8 main_sel, guint8 subc_sel, guint8 *ret_buf, gint *ret_len, GError **error)
 {
     GObject *sector = mirage_track_get_sector(self, address, abs, error);
 
@@ -642,7 +642,7 @@ gboolean mirage_track_read_sector (MIRAGE_Track *self, gint address, gboolean ab
 
 /**
  * mirage_track_layout_get_session_number:
- * @self: a #MIRAGE_Track
+ * @self: a #MirageTrack
  *
  * <para>
  * Retrieves track's session number. If track is not part of disc layout, 0
@@ -651,7 +651,7 @@ gboolean mirage_track_read_sector (MIRAGE_Track *self, gint address, gboolean ab
  *
  * Returns: session number
  **/
-gint mirage_track_layout_get_session_number (MIRAGE_Track *self)
+gint mirage_track_layout_get_session_number (MirageTrack *self)
 {
     /* Get parent session... if it's not found, return 0 */
     GObject *session = mirage_object_get_parent(MIRAGE_OBJECT(self));
@@ -668,7 +668,7 @@ gint mirage_track_layout_get_session_number (MIRAGE_Track *self)
 
 /**
  * mirage_track_layout_set_track_number:
- * @self: a #MIRAGE_Track
+ * @self: a #MirageTrack
  * @track_number: (in): track number
  *
  * <para>
@@ -679,7 +679,7 @@ gint mirage_track_layout_get_session_number (MIRAGE_Track *self)
  * Intended for internal use only.
  * </note>
  **/
-void mirage_track_layout_set_track_number (MIRAGE_Track *self, gint track_number)
+void mirage_track_layout_set_track_number (MirageTrack *self, gint track_number)
 {
     /* Set track number */
     self->priv->track_number = track_number;
@@ -687,7 +687,7 @@ void mirage_track_layout_set_track_number (MIRAGE_Track *self, gint track_number
 
 /**
  * mirage_track_layout_get_track_number:
- * @self: a #MIRAGE_Track
+ * @self: a #MirageTrack
  *
  * <para>
  * Retrieves track's track number.
@@ -695,7 +695,7 @@ void mirage_track_layout_set_track_number (MIRAGE_Track *self, gint track_number
  *
  * Returns: track number
  **/
-gint mirage_track_layout_get_track_number (MIRAGE_Track *self)
+gint mirage_track_layout_get_track_number (MirageTrack *self)
 {
     /* Return track number */
     return self->priv->track_number;
@@ -703,7 +703,7 @@ gint mirage_track_layout_get_track_number (MIRAGE_Track *self)
 
 /**
  * mirage_track_layout_set_start_sector:
- * @self: a #MIRAGE_Track
+ * @self: a #MirageTrack
  * @start_sector: (in): start sector
  *
  * <para>
@@ -718,7 +718,7 @@ gint mirage_track_layout_get_track_number (MIRAGE_Track *self)
  * Causes top-down change.
  * </note>
  **/
-void mirage_track_layout_set_start_sector (MIRAGE_Track *self, gint start_sector)
+void mirage_track_layout_set_start_sector (MirageTrack *self, gint start_sector)
 {
     /* Set start sector */
     self->priv->start_sector = start_sector;
@@ -728,7 +728,7 @@ void mirage_track_layout_set_start_sector (MIRAGE_Track *self, gint start_sector
 
 /**
  * mirage_track_layout_get_start_sector:
- * @self: a #MIRAGE_Track
+ * @self: a #MirageTrack
  *
  * <para>
  * Retrieves track's start sector.
@@ -736,7 +736,7 @@ void mirage_track_layout_set_start_sector (MIRAGE_Track *self, gint start_sector
  *
  * Returns: start sector
  **/
-gint mirage_track_layout_get_start_sector (MIRAGE_Track *self)
+gint mirage_track_layout_get_start_sector (MirageTrack *self)
 {
     /* Return start sector */
     return self->priv->start_sector;
@@ -744,7 +744,7 @@ gint mirage_track_layout_get_start_sector (MIRAGE_Track *self)
 
 /**
  * mirage_track_layout_get_length:
- * @self: a #MIRAGE_Track
+ * @self: a #MirageTrack
  *
  * <para>
  * Retrieves track's length. The returned length is given in sectors.
@@ -752,7 +752,7 @@ gint mirage_track_layout_get_start_sector (MIRAGE_Track *self)
  *
  * Returns: track length
  **/
-gint mirage_track_layout_get_length (MIRAGE_Track *self)
+gint mirage_track_layout_get_length (MirageTrack *self)
 {
     /* Return track's real length */
     return self->priv->length;
@@ -761,7 +761,7 @@ gint mirage_track_layout_get_length (MIRAGE_Track *self)
 
 /**
  * mirage_track_get_number_of_fragments:
- * @self: a #MIRAGE_Track
+ * @self: a #MirageTrack
  *
  * <para>
  * Retrieves number of fragments making up the track.
@@ -769,7 +769,7 @@ gint mirage_track_layout_get_length (MIRAGE_Track *self)
  *
  * Returns: number of fragments
  **/
-gint mirage_track_get_number_of_fragments (MIRAGE_Track *self)
+gint mirage_track_get_number_of_fragments (MirageTrack *self)
 {
     /* Return number of fragments */
     return g_list_length(self->priv->fragments_list); /* Length of list */
@@ -777,9 +777,9 @@ gint mirage_track_get_number_of_fragments (MIRAGE_Track *self)
 
 /**
  * mirage_track_add_fragment:
- * @self: a #MIRAGE_Track
+ * @self: a #MirageTrack
  * @index: (in): index at which fragment should be added
- * @fragment: (in): a #MIRAGE_Fragment to be added
+ * @fragment: (in): a #MirageFragment to be added
  *
  * <para>
  * Adds a fragment implementation to track. @index is index at which fragment
@@ -799,7 +799,7 @@ gint mirage_track_get_number_of_fragments (MIRAGE_Track *self)
  * Causes bottom-up change.
  * </note>
  **/
-void mirage_track_add_fragment (MIRAGE_Track *self, gint index, GObject *fragment)
+void mirage_track_add_fragment (MirageTrack *self, gint index, GObject *fragment)
 {
     gint num_fragments;
 
@@ -842,7 +842,7 @@ void mirage_track_add_fragment (MIRAGE_Track *self, gint index, GObject *fragmen
 
 /**
  * mirage_track_remove_fragment_by_index:
- * @self: a #MIRAGE_Track
+ * @self: a #MirageTrack
  * @index: (in): index of fragment to be removed.
  * @error: (out) (allow-none): location to store error, or %NULL
  *
@@ -862,7 +862,7 @@ void mirage_track_add_fragment (MIRAGE_Track *self, gint index, GObject *fragmen
  *
  * Returns: %TRUE on success, %FALSE on failure
  **/
-gboolean mirage_track_remove_fragment_by_index (MIRAGE_Track *self, gint index, GError **error)
+gboolean mirage_track_remove_fragment_by_index (MirageTrack *self, gint index, GError **error)
 {
     /* Find fragment by index */
     GObject *fragment = mirage_track_get_fragment_by_index(self, index, error);
@@ -879,7 +879,7 @@ gboolean mirage_track_remove_fragment_by_index (MIRAGE_Track *self, gint index, 
 
 /**
  * mirage_track_remove_fragment_by_object:
- * @self: a #MIRAGE_Track
+ * @self: a #MirageTrack
  * @fragment: (in): fragment object to be removed
  *
  * <para>
@@ -887,21 +887,21 @@ gboolean mirage_track_remove_fragment_by_index (MIRAGE_Track *self, gint index, 
  * </para>
  *
  * <para>
- * @fragment is a #MIRAGE_Fragment object to be removed.
+ * @fragment is a #MirageFragment object to be removed.
  * </para>
  *
  * <note>
  * Causes bottom-up change.
  * </note>
  **/
-void mirage_track_remove_fragment_by_object (MIRAGE_Track *self, GObject *fragment)
+void mirage_track_remove_fragment_by_object (MirageTrack *self, GObject *fragment)
 {
     mirage_track_remove_fragment(self, fragment);
 }
 
 /**
  * mirage_track_get_fragment_by_index:
- * @self: a #MIRAGE_Track
+ * @self: a #MirageTrack
  * @index: (in): index of fragment to be retrieved
  * @error: (out) (allow-none): location to store error, or %NULL
  *
@@ -912,11 +912,11 @@ void mirage_track_remove_fragment_by_object (MIRAGE_Track *self, GObject *fragme
  * function fails.
  * </para>
  *
- * Returns: (transfer full): a #MIRAGE_Fragment on success, %NULL on failure.
+ * Returns: (transfer full): a #MirageFragment on success, %NULL on failure.
  * The reference to the object should be released using g_object_unref()
  * when no longer needed.
  **/
-GObject *mirage_track_get_fragment_by_index (MIRAGE_Track *self, gint index, GError **error)
+GObject *mirage_track_get_fragment_by_index (MirageTrack *self, gint index, GError **error)
 {
     GObject *fragment;
     gint num_fragments;
@@ -944,7 +944,7 @@ GObject *mirage_track_get_fragment_by_index (MIRAGE_Track *self, gint index, GEr
 
 /**
  * mirage_track_get_fragment_by_address:
- * @self: a #MIRAGE_Track
+ * @self: a #MirageTrack
  * @address: (in): address belonging to fragment to be retrieved
  * @error: (out) (allow-none): location to store error, or %NULL
  *
@@ -954,11 +954,11 @@ GObject *mirage_track_get_fragment_by_index (MIRAGE_Track *self, gint index, GEr
  * start and end address).
  * </para>
  *
- * Returns: (transfer full): a #MIRAGE_Fragment on success, %NULL on failure.
+ * Returns: (transfer full): a #MirageFragment on success, %NULL on failure.
  * The reference to the object should be released using g_object_unref()
  * when no longer needed.
  **/
-GObject *mirage_track_get_fragment_by_address (MIRAGE_Track *self, gint address, GError **error)
+GObject *mirage_track_get_fragment_by_address (MirageTrack *self, gint address, GError **error)
 {
     GObject *fragment;
     GList *entry;
@@ -994,7 +994,7 @@ GObject *mirage_track_get_fragment_by_address (MIRAGE_Track *self, gint address,
 
 /**
  * mirage_track_for_each_fragment:
- * @self: a #MIRAGE_Track
+ * @self: a #MirageTrack
  * @func: (in) (scope call): callback function
  * @user_data: (in) (closure): data to be passed to callback function
  *
@@ -1008,7 +1008,7 @@ GObject *mirage_track_get_fragment_by_address (MIRAGE_Track *self, gint address,
  *
  * Returns: %TRUE on success, %FALSE on failure
  **/
-gboolean mirage_track_for_each_fragment (MIRAGE_Track *self, MIRAGE_CallbackFunction func, gpointer user_data)
+gboolean mirage_track_for_each_fragment (MirageTrack *self, MirageCallbackFunction func, gpointer user_data)
 {
     GList *entry;
 
@@ -1025,7 +1025,7 @@ gboolean mirage_track_for_each_fragment (MIRAGE_Track *self, MIRAGE_CallbackFunc
 
 /**
  * mirage_track_find_fragment_with_subchannel:
- * @self: a #MIRAGE_Track
+ * @self: a #MirageTrack
  * @error: (out) (allow-none): location to store error, or %NULL
  *
  * <para>
@@ -1038,11 +1038,11 @@ gboolean mirage_track_for_each_fragment (MIRAGE_Track *self, MIRAGE_CallbackFunc
  * Intended for internal use only.
  * </note>
  *
- * Returns: (transfer full): a #MIRAGE_Fragment on success, %NULL on failure.
+ * Returns: (transfer full): a #MirageFragment on success, %NULL on failure.
  * The reference to the object should be released using g_object_unref()
  * when no longer needed.
  **/
-GObject *mirage_track_find_fragment_with_subchannel (MIRAGE_Track *self, GError **error)
+GObject *mirage_track_find_fragment_with_subchannel (MirageTrack *self, GError **error)
 {
     GObject *fragment;
     GList *entry;
@@ -1074,7 +1074,7 @@ GObject *mirage_track_find_fragment_with_subchannel (MIRAGE_Track *self, GError 
 
 /**
  * mirage_track_set_track_start:
- * @self: a #MIRAGE_Track
+ * @self: a #MirageTrack
  * @track_start: (in): track start address
  *
  * <para>
@@ -1084,7 +1084,7 @@ GObject *mirage_track_find_fragment_with_subchannel (MIRAGE_Track *self, GError 
  * that one sets the address at which track "physically" starts (i.e. where index 00 starts).
  * </para>
  **/
-void mirage_track_set_track_start (MIRAGE_Track *self, gint track_start)
+void mirage_track_set_track_start (MirageTrack *self, gint track_start)
 {
     /* Set track start */
     self->priv->track_start = track_start;
@@ -1092,7 +1092,7 @@ void mirage_track_set_track_start (MIRAGE_Track *self, gint track_start)
 
 /**
  * mirage_track_get_track_start:
- * @self: a #MIRAGE_Track
+ * @self: a #MirageTrack
  *
  * <para>
  * Retrieves track start address. This is track-relative address at which pregap
@@ -1101,7 +1101,7 @@ void mirage_track_set_track_start (MIRAGE_Track *self, gint track_start)
  *
  * Returns: track start address
  **/
-gint mirage_track_get_track_start (MIRAGE_Track *self)
+gint mirage_track_get_track_start (MirageTrack *self)
 {
     /* Return track start */
     return self->priv->track_start;
@@ -1110,7 +1110,7 @@ gint mirage_track_get_track_start (MIRAGE_Track *self)
 
 /**
  * mirage_track_get_number_of_indices:
- * @self: a #MIRAGE_Track
+ * @self: a #MirageTrack
  *
  * <para>
  * Retrieves number of indices the track contains. Note that this includes
@@ -1119,7 +1119,7 @@ gint mirage_track_get_track_start (MIRAGE_Track *self)
  *
  * Returns: number of indices
  **/
-gint mirage_track_get_number_of_indices (MIRAGE_Track *self)
+gint mirage_track_get_number_of_indices (MirageTrack *self)
 {
     /* Return number of indices */
     return g_list_length(self->priv->indices_list); /* Length of list */
@@ -1127,7 +1127,7 @@ gint mirage_track_get_number_of_indices (MIRAGE_Track *self)
 
 /**
  * mirage_track_add_index:
- * @self: a #MIRAGE_Track
+ * @self: a #MirageTrack
  * @address: (in): address at which the index is to be added
  * @error: (out) (allow-none): location to store error, or %NULL
  *
@@ -1147,7 +1147,7 @@ gint mirage_track_get_number_of_indices (MIRAGE_Track *self)
  *
  * Returns: %TRUE on success, %FALSE on failure
  **/
-gboolean mirage_track_add_index (MIRAGE_Track *self, gint address, GError **error)
+gboolean mirage_track_add_index (MirageTrack *self, gint address, GError **error)
 {
     GObject *index;
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_TRACK, "%s: address: 0x%X\n", __debug__, address);
@@ -1178,7 +1178,7 @@ gboolean mirage_track_add_index (MIRAGE_Track *self, gint address, GError **erro
 
 /**
  * mirage_track_remove_index_by_number:
- * @self: a #MIRAGE_Track
+ * @self: a #MirageTrack
  * @number: (in): index number of index to be removed
  * @error: (out) (allow-none): location to store error, or %NULL
  *
@@ -1192,7 +1192,7 @@ gboolean mirage_track_add_index (MIRAGE_Track *self, gint address, GError **erro
  *
  * Returns: %TRUE on success, %FALSE on failure
  **/
-gboolean mirage_track_remove_index_by_number (MIRAGE_Track *self, gint number, GError **error)
+gboolean mirage_track_remove_index_by_number (MirageTrack *self, gint number, GError **error)
 {
     /* Find index by number */
     GObject *index = mirage_track_get_index_by_number(self, number, error);
@@ -1209,7 +1209,7 @@ gboolean mirage_track_remove_index_by_number (MIRAGE_Track *self, gint number, G
 
 /**
  * mirage_track_remove_index_by_object:
- * @self: a #MIRAGE_Track
+ * @self: a #MirageTrack
  * @index: (in): index object to be removed
  *
  * <para>
@@ -1217,10 +1217,10 @@ gboolean mirage_track_remove_index_by_number (MIRAGE_Track *self, gint number, G
  * </para>
  *
  * <para>
- * @index is a #MIRAGE_Index object to be removed.
+ * @index is a #MirageIndex object to be removed.
  * </para>
  **/
-void mirage_track_remove_index_by_object (MIRAGE_Track *self, GObject *index)
+void mirage_track_remove_index_by_object (MirageTrack *self, GObject *index)
 {
     mirage_track_remove_index(self, index);
 }
@@ -1228,7 +1228,7 @@ void mirage_track_remove_index_by_object (MIRAGE_Track *self, GObject *index)
 
 /**
  * mirage_track_get_index_by_number:
- * @self: a #MIRAGE_Track
+ * @self: a #MirageTrack
  * @number: (in): index number of index to be retrieved
  * @error: (out) (allow-none): location to store error, or %NULL
  *
@@ -1238,11 +1238,11 @@ void mirage_track_remove_index_by_object (MIRAGE_Track *self, GObject *index)
  * If @number is out of range, regardless of the sign, the function fails.
  * </para>
  *
- * Returns: (transfer full): a #MIRAGE_Index on success, %NULL on failure.
+ * Returns: (transfer full): a #MirageIndex on success, %NULL on failure.
  * The reference to the object should be released using g_object_unref()
  * when no longer needed.
  **/
-GObject *mirage_track_get_index_by_number (MIRAGE_Track *self, gint number, GError **error)
+GObject *mirage_track_get_index_by_number (MirageTrack *self, gint number, GError **error)
 {
     GObject *index;
     gint num_indices;
@@ -1270,7 +1270,7 @@ GObject *mirage_track_get_index_by_number (MIRAGE_Track *self, gint number, GErr
 
 /**
  * mirage_track_get_index_by_address:
- * @self: a #MIRAGE_Track
+ * @self: a #MirageTrack
  * @address: (in): address belonging to index to be retrieved
  * @error: (out) (allow-none): location to store error, or %NULL
  *
@@ -1280,11 +1280,11 @@ GObject *mirage_track_get_index_by_number (MIRAGE_Track *self, gint number, GErr
  * start and end sector).
  * </para>
  *
- * Returns: (transfer full): a #MIRAGE_Index on success, %NULL on failure.
+ * Returns: (transfer full): a #MirageIndex on success, %NULL on failure.
  * The reference to the object should be released using g_object_unref()
  * when no longer needed.
  **/
-GObject *mirage_track_get_index_by_address (MIRAGE_Track *self, gint address, GError **error)
+GObject *mirage_track_get_index_by_address (MirageTrack *self, gint address, GError **error)
 {
     GObject *index;
     GList *entry;
@@ -1314,7 +1314,7 @@ GObject *mirage_track_get_index_by_address (MIRAGE_Track *self, gint address, GE
 
 /**
  * mirage_track_for_each_index:
- * @self: a #MIRAGE_Track
+ * @self: a #MirageTrack
  * @func: (in) (scope call): callback function
  * @user_data: (in) (closure): user data to be passed to callback function
  *
@@ -1328,7 +1328,7 @@ GObject *mirage_track_get_index_by_address (MIRAGE_Track *self, gint address, GE
  *
  * Returns: %TRUE on success, %FALSE on failure
  **/
-gboolean mirage_track_for_each_index (MIRAGE_Track *self, MIRAGE_CallbackFunction func, gpointer user_data)
+gboolean mirage_track_for_each_index (MirageTrack *self, MirageCallbackFunction func, gpointer user_data)
 {
     GList *entry;
 
@@ -1346,7 +1346,7 @@ gboolean mirage_track_for_each_index (MIRAGE_Track *self, MIRAGE_CallbackFunctio
 
 /**
  * mirage_track_get_number_of_languages:
- * @self: a #MIRAGE_Track
+ * @self: a #MirageTrack
  *
  * <para>
  * Retrieves number of languages the track contains.
@@ -1354,7 +1354,7 @@ gboolean mirage_track_for_each_index (MIRAGE_Track *self, MIRAGE_CallbackFunctio
  *
  * Returns: number of languages
  **/
-gint mirage_track_get_number_of_languages (MIRAGE_Track *self)
+gint mirage_track_get_number_of_languages (MirageTrack *self)
 {
     /* Return number of languages */
     return g_list_length(self->priv->languages_list); /* Length of list */
@@ -1362,9 +1362,9 @@ gint mirage_track_get_number_of_languages (MIRAGE_Track *self)
 
 /**
  * mirage_track_add_language:
- * @self: a #MIRAGE_Track
+ * @self: a #MirageTrack
  * @langcode: (in): language code for the added language
- * @language: (in) (transfer full) (allow-none): a #MIRAGE_Language to be added
+ * @language: (in) (transfer full) (allow-none): a #MirageLanguage to be added
  * @error: (out) (allow-none): location to store error, or %NULL
  *
  * <para>
@@ -1378,7 +1378,7 @@ gint mirage_track_get_number_of_languages (MIRAGE_Track *self)
  *
  * Returns: %TRUE on success, %FALSE on failure
  **/
-gboolean mirage_track_add_language (MIRAGE_Track *self, gint langcode, GObject *language, GError **error)
+gboolean mirage_track_add_language (MirageTrack *self, gint langcode, GObject *language, GError **error)
 {
     GObject *tmp_language;
 
@@ -1407,7 +1407,7 @@ gboolean mirage_track_add_language (MIRAGE_Track *self, gint langcode, GObject *
 
 /**
  * mirage_track_remove_language_by_index:
- * @self: a #MIRAGE_Track
+ * @self: a #MirageTrack
  * @index: (in): index of language to be removed
  * @error: (out) (allow-none): location to store error, or %NULL
  *
@@ -1423,7 +1423,7 @@ gboolean mirage_track_add_language (MIRAGE_Track *self, gint langcode, GObject *
  *
  * Returns: %TRUE on success, %FALSE on failure
  **/
-gboolean mirage_track_remove_language_by_index (MIRAGE_Track *self, gint index, GError **error)
+gboolean mirage_track_remove_language_by_index (MirageTrack *self, gint index, GError **error)
 {
     /* Find track by index */
     GObject *language = mirage_track_get_language_by_index(self, index, error);
@@ -1440,7 +1440,7 @@ gboolean mirage_track_remove_language_by_index (MIRAGE_Track *self, gint index, 
 
 /**
  * mirage_track_remove_language_by_code:
- * @self: a #MIRAGE_Track
+ * @self: a #MirageTrack
  * @langcode: (in): language code of language to be removed
  * @error: (out) (allow-none): location to store error, or %NULL
  *
@@ -1454,7 +1454,7 @@ gboolean mirage_track_remove_language_by_index (MIRAGE_Track *self, gint index, 
  *
  * Returns: %TRUE on success, %FALSE on failure
  **/
-gboolean mirage_track_remove_language_by_code (MIRAGE_Track *self, gint langcode, GError **error)
+gboolean mirage_track_remove_language_by_code (MirageTrack *self, gint langcode, GError **error)
 {
     /* Find language by code */
     GObject *language = mirage_track_get_language_by_code(self, langcode, error);
@@ -1471,7 +1471,7 @@ gboolean mirage_track_remove_language_by_code (MIRAGE_Track *self, gint langcode
 
 /**
  * mirage_track_remove_language_by_object:
- * @self: a #MIRAGE_Track
+ * @self: a #MirageTrack
  * @language: (in): language object to be removed
  *
  * <para>
@@ -1479,17 +1479,17 @@ gboolean mirage_track_remove_language_by_code (MIRAGE_Track *self, gint langcode
  * </para>
  *
  * <para>
- * @language is a #MIRAGE_Language object to be removed.
+ * @language is a #MirageLanguage object to be removed.
  * </para>
  **/
-void mirage_track_remove_language_by_object (MIRAGE_Track *self, GObject *language)
+void mirage_track_remove_language_by_object (MirageTrack *self, GObject *language)
 {
     mirage_track_remove_language(self, language);
 }
 
 /**
  * mirage_track_get_language_by_index:
- * @self: a #MIRAGE_Track
+ * @self: a #MirageTrack
  * @index: (in): index of language to be retrieved
  * @error: (out) (allow-none): location to store error, or %NULL
  *
@@ -1500,11 +1500,11 @@ void mirage_track_remove_language_by_object (MIRAGE_Track *self, GObject *langua
  * function fails.
  * </para>
  *
- * Returns: (transfer full): a #MIRAGE_Language on success, %NULL on failure.
+ * Returns: (transfer full): a #MirageLanguage on success, %NULL on failure.
  * The reference to the object should be released using g_object_unref()
  * when no longer needed.
  **/
-GObject *mirage_track_get_language_by_index (MIRAGE_Track *self, gint index, GError **error)
+GObject *mirage_track_get_language_by_index (MirageTrack *self, gint index, GError **error)
 {
     GObject *language;
     gint num_languages;
@@ -1532,7 +1532,7 @@ GObject *mirage_track_get_language_by_index (MIRAGE_Track *self, gint index, GEr
 
 /**
  * mirage_track_get_language_by_code:
- * @self: a #MIRAGE_Track
+ * @self: a #MirageTrack
  * @langcode: (in): language code of language to be retrieved
  * @error: (out) (allow-none): location to store error, or %NULL
  *
@@ -1540,11 +1540,11 @@ GObject *mirage_track_get_language_by_index (MIRAGE_Track *self, gint index, GEr
  * Retrieves language by language code.
  * </para>
  *
- * Returns: (transfer full): a #MIRAGE_Language on success, %NULL on failure.
+ * Returns: (transfer full): a #MirageLanguage on success, %NULL on failure.
  * The reference to the object should be released using g_object_unref()
  * when no longer needed.
  **/
-GObject *mirage_track_get_language_by_code (MIRAGE_Track *self, gint langcode, GError **error)
+GObject *mirage_track_get_language_by_code (MirageTrack *self, gint langcode, GError **error)
 {
     GObject *language;
     GList *entry;
@@ -1574,7 +1574,7 @@ GObject *mirage_track_get_language_by_code (MIRAGE_Track *self, gint langcode, G
 
 /**
  * mirage_track_for_each_language:
- * @self: a #MIRAGE_Track
+ * @self: a #MirageTrack
  * @func: (in) (scope call): callback function
  * @user_data: (in) (closure): data to be passed to callback function
  *
@@ -1588,7 +1588,7 @@ GObject *mirage_track_get_language_by_code (MIRAGE_Track *self, gint langcode, G
  *
  * Returns: %TRUE on success, %FALSE on failure
  **/
-gboolean mirage_track_for_each_language (MIRAGE_Track *self, MIRAGE_CallbackFunction func, gpointer user_data)
+gboolean mirage_track_for_each_language (MirageTrack *self, MirageCallbackFunction func, gpointer user_data)
 {
     GList *entry;
 
@@ -1605,18 +1605,18 @@ gboolean mirage_track_for_each_language (MIRAGE_Track *self, MIRAGE_CallbackFunc
 
 /**
  * mirage_track_get_prev:
- * @self: a #MIRAGE_Track
+ * @self: a #MirageTrack
  * @error: (out) (allow-none): location to store error, or %NULL
  *
  * <para>
  * Retrieves track that is placed before @self in session layout.
  * </para>
  *
- * Returns: (transfer full): a #MIRAGE_Track on success, %NULL on failure.
+ * Returns: (transfer full): a #MirageTrack on success, %NULL on failure.
  * The reference to the object should be released using g_object_unref()
  * when no longer needed.
  **/
-GObject *mirage_track_get_prev (MIRAGE_Track *self, GError **error)
+GObject *mirage_track_get_prev (MirageTrack *self, GError **error)
 {
     GObject *session;
     GObject *track;
@@ -1636,18 +1636,18 @@ GObject *mirage_track_get_prev (MIRAGE_Track *self, GError **error)
 
 /**
  * mirage_track_get_next:
- * @self: a #MIRAGE_Track
+ * @self: a #MirageTrack
  * @error: (out) (allow-none): location to store error, or %NULL
  *
  * <para>
  * Retrieves track that is placed after @self in session layout
  * </para>
  *
- * Returns: (transfer full): a #MIRAGE_Track on success, %NULL on failure.
+ * Returns: (transfer full): a #MirageTrack on success, %NULL on failure.
  * The reference to the object should be released using g_object_unref()
  * when no longer needed.
  **/
-GObject *mirage_track_get_next (MIRAGE_Track *self, GError **error)
+GObject *mirage_track_get_next (MirageTrack *self, GError **error)
 {
     GObject *session;
     GObject *track;
@@ -1669,10 +1669,10 @@ GObject *mirage_track_get_next (MIRAGE_Track *self, GError **error)
 /**********************************************************************\
  *                             Object init                            *
 \**********************************************************************/
-G_DEFINE_TYPE(MIRAGE_Track, mirage_track, MIRAGE_TYPE_OBJECT);
+G_DEFINE_TYPE(MirageTrack, mirage_track, MIRAGE_TYPE_OBJECT);
 
 
-static void mirage_track_init (MIRAGE_Track *self)
+static void mirage_track_init (MirageTrack *self)
 {
     self->priv = MIRAGE_TRACK_GET_PRIVATE(self);
 
@@ -1687,7 +1687,7 @@ static void mirage_track_init (MIRAGE_Track *self)
 
 static void mirage_track_dispose (GObject *gobject)
 {
-    MIRAGE_Track *self = MIRAGE_TRACK(gobject);
+    MirageTrack *self = MIRAGE_TRACK(gobject);
     GList *entry;
 
     /* Unref fragments */
@@ -1728,7 +1728,7 @@ static void mirage_track_dispose (GObject *gobject)
 
 static void mirage_track_finalize (GObject *gobject)
 {
-    MIRAGE_Track *self = MIRAGE_TRACK(gobject);
+    MirageTrack *self = MIRAGE_TRACK(gobject);
 
     g_list_free(self->priv->fragments_list);
     g_list_free(self->priv->indices_list);
@@ -1740,7 +1740,7 @@ static void mirage_track_finalize (GObject *gobject)
     return G_OBJECT_CLASS(mirage_track_parent_class)->finalize(gobject);
 }
 
-static void mirage_track_class_init (MIRAGE_TrackClass *klass)
+static void mirage_track_class_init (MirageTrackClass *klass)
 {
     GObjectClass *gobject_class = G_OBJECT_CLASS(klass);
 
@@ -1748,5 +1748,5 @@ static void mirage_track_class_init (MIRAGE_TrackClass *klass)
     gobject_class->finalize = mirage_track_finalize;
 
     /* Register private structure */
-    g_type_class_add_private(klass, sizeof(MIRAGE_TrackPrivate));
+    g_type_class_add_private(klass, sizeof(MirageTrackPrivate));
 }

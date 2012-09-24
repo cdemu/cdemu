@@ -1,22 +1,22 @@
 <!-- ##### SECTION Title ##### -->
-MIRAGE_Disc object
+MirageDisc object
 
 <!-- ##### SECTION Short_Description ##### -->
 Object representing a disc
 
 <!-- ##### SECTION Long_Description ##### -->
 <para>
-#MIRAGE_Disc object is a top-level object in the disc layout representation, representing the actual disc.
+#MirageDisc object is a top-level object in the disc layout representation, representing the actual disc.
 </para>
 <para>
-It provides functions for manipulating the disc layout; adding and removing 
+It provides functions for manipulating the disc layout; adding and removing
 sessions and tracks, manipulating disc's MCN and medium type, and convenience
 functions for accessing and reading of sectors within the disc layout.
 </para>
 
 <!-- ##### SECTION See_Also ##### -->
 <para>
-#MIRAGE_Session, #MIRAGE_Track, #MIRAGE_Object, #MIRAGE_Parser
+#MirageSession, #MirageTrack, #MirageObject, #MirageParser
 </para>
 
 <!-- ##### SECTION Stability_Level ##### -->
@@ -32,7 +32,7 @@ functions for accessing and reading of sectors within the disc layout.
 
 
 
-<!-- ##### ENUM MIRAGE_MediumTypes ##### -->
+<!-- ##### ENUM MirageMediumTypes ##### -->
 <para>
 
 </para>
@@ -42,13 +42,13 @@ functions for accessing and reading of sectors within the disc layout.
 @MIRAGE_MEDIUM_BD: 
 @MIRAGE_MEDIUM_HD: 
 
-<!-- ##### STRUCT MIRAGE_Disc ##### -->
+<!-- ##### STRUCT MirageDisc ##### -->
 <para>
 
 </para>
 
 
-<!-- ##### ARG MIRAGE_Disc:dvd-report-css ##### -->
+<!-- ##### ARG MirageDisc:dvd-report-css ##### -->
 <para>
 
 </para>

@@ -33,10 +33,10 @@ G_BEGIN_DECLS
 #define MIRAGE_ISRC_SIZE 12
 
 /**
- * MIRAGE_TrackFlags:
- * @MIRAGE_TRACKF_FOURCHANNEL: four channel audio
- * @MIRAGE_TRACKF_COPYPERMITTED: copy permitted
- * @MIRAGE_TRACKF_PREEMPHASIS: pre-emphasis
+ * MirageTrackFlags:
+ * @MIRAGE_TRACK_FLAG_FOURCHANNEL: four channel audio
+ * @MIRAGE_TRACK_FLAG_COPYPERMITTED: copy permitted
+ * @MIRAGE_TRACK_FLAG_PREEMPHASIS: pre-emphasis
  *
  * <para>
  * Track flags.
@@ -44,13 +44,13 @@ G_BEGIN_DECLS
  **/
 typedef enum
 {
-    MIRAGE_TRACKF_FOURCHANNEL   = 0x01,
-    MIRAGE_TRACKF_COPYPERMITTED = 0x02,
-    MIRAGE_TRACKF_PREEMPHASIS   = 0x04,
-} MIRAGE_TrackFlags;
+    MIRAGE_TRACK_FLAG_FOURCHANNEL   = 0x01,
+    MIRAGE_TRACK_FLAG_COPYPERMITTED = 0x02,
+    MIRAGE_TRACK_FLAG_PREEMPHASIS   = 0x04,
+} MirageTrackFlags;
 
 /**
- * MIRAGE_TrackModes:
+ * MirageTrackModes:
  * @MIRAGE_MODE_MODE0: Mode 0
  * @MIRAGE_MODE_AUDIO: Audio
  * @MIRAGE_MODE_MODE1: Mode 1
@@ -72,10 +72,10 @@ typedef enum
     MIRAGE_MODE_MODE2_FORM1 = 0x04,
     MIRAGE_MODE_MODE2_FORM2 = 0x05,
     MIRAGE_MODE_MODE2_MIXED = 0x06,
-} MIRAGE_TrackModes;
+} MirageTrackModes;
 
 /**
- * MIRAGE_TrackConstants:
+ * MirageTrackConstants:
  * @MIRAGE_TRACK_LEADIN: Lead-in track
  * @MIRAGE_TRACK_LEADOUT: Lead-out track
  *
@@ -87,38 +87,38 @@ typedef enum
 {
     MIRAGE_TRACK_LEADIN  = 0x00,
     MIRAGE_TRACK_LEADOUT = 0xAA,
-} MIRAGE_TrackConstants;
+} MirageTrackConstants;
 
 
 #define MIRAGE_TYPE_TRACK            (mirage_track_get_type())
-#define MIRAGE_TRACK(obj)            (G_TYPE_CHECK_INSTANCE_CAST((obj), MIRAGE_TYPE_TRACK, MIRAGE_Track))
-#define MIRAGE_TRACK_CLASS(klass)    (G_TYPE_CHECK_CLASS_CAST((klass), MIRAGE_TYPE_TRACK, MIRAGE_TrackClass))
+#define MIRAGE_TRACK(obj)            (G_TYPE_CHECK_INSTANCE_CAST((obj), MIRAGE_TYPE_TRACK, MirageTrack))
+#define MIRAGE_TRACK_CLASS(klass)    (G_TYPE_CHECK_CLASS_CAST((klass), MIRAGE_TYPE_TRACK, MirageTrackClass))
 #define MIRAGE_IS_TRACK(obj)         (G_TYPE_CHECK_INSTANCE_TYPE((obj), MIRAGE_TYPE_TRACK))
 #define MIRAGE_IS_TRACK_CLASS(klass) (G_TYPE_CHECK_CLASS_TYPE((klass), MIRAGE_TYPE_TRACK))
-#define MIRAGE_TRACK_GET_CLASS(obj)  (G_TYPE_INSTANCE_GET_CLASS((obj), MIRAGE_TYPE_TRACK, MIRAGE_TrackClass))
+#define MIRAGE_TRACK_GET_CLASS(obj)  (G_TYPE_INSTANCE_GET_CLASS((obj), MIRAGE_TYPE_TRACK, MirageTrackClass))
 
-typedef struct _MIRAGE_Track        MIRAGE_Track;
-typedef struct _MIRAGE_TrackClass   MIRAGE_TrackClass;
-typedef struct _MIRAGE_TrackPrivate MIRAGE_TrackPrivate;
+typedef struct _MirageTrack        MirageTrack;
+typedef struct _MirageTrackClass   MirageTrackClass;
+typedef struct _MirageTrackPrivate MirageTrackPrivate;
 
 /**
- * MIRAGE_Track:
+ * MirageTrack:
  *
  * <para>
  * Contains private data only, and should be accessed using the functions below.
  * </para>
  **/
-struct _MIRAGE_Track
+struct _MirageTrack
 {
-    MIRAGE_Object parent_instance;
+    MirageObject parent_instance;
 
     /*< private >*/
-    MIRAGE_TrackPrivate *priv;
+    MirageTrackPrivate *priv;
 };
 
-struct _MIRAGE_TrackClass
+struct _MirageTrackClass
 {
-    MIRAGE_ObjectClass parent_class;
+    MirageObjectClass parent_class;
 };
 
 /* Used by MIRAGE_TYPE_TRACK */
@@ -129,72 +129,72 @@ GType mirage_track_get_type (void);
  *                             Public API                             *
 \**********************************************************************/
 /* Track flags */
-void mirage_track_set_flags (MIRAGE_Track *self, gint flags);
-gint mirage_track_get_flags (MIRAGE_Track *self);
+void mirage_track_set_flags (MirageTrack *self, gint flags);
+gint mirage_track_get_flags (MirageTrack *self);
 
 /* Track mode */
-void mirage_track_set_mode (MIRAGE_Track *self, gint mode);
-gint mirage_track_get_mode (MIRAGE_Track *self);
+void mirage_track_set_mode (MirageTrack *self, gint mode);
+gint mirage_track_get_mode (MirageTrack *self);
 
 /* Adr/Ctl */
-gint mirage_track_get_adr (MIRAGE_Track *self);
+gint mirage_track_get_adr (MirageTrack *self);
 
-void mirage_track_set_ctl (MIRAGE_Track *self, gint ctl);
-gint mirage_track_get_ctl (MIRAGE_Track *self);
+void mirage_track_set_ctl (MirageTrack *self, gint ctl);
+gint mirage_track_get_ctl (MirageTrack *self);
 
 /* ISRC */
-void mirage_track_set_isrc (MIRAGE_Track *self, const gchar *isrc);
-const gchar * mirage_track_get_isrc (MIRAGE_Track *self);
+void mirage_track_set_isrc (MirageTrack *self, const gchar *isrc);
+const gchar * mirage_track_get_isrc (MirageTrack *self);
 
 /* Read and get sector */
-GObject *mirage_track_get_sector (MIRAGE_Track *self, gint address, gboolean abs, GError **error);
-gboolean mirage_track_read_sector (MIRAGE_Track *self, gint address, gboolean abs, guint8 main_sel, guint8 subc_sel, guint8 *ret_buf, gint *ret_len, GError **error);
+GObject *mirage_track_get_sector (MirageTrack *self, gint address, gboolean abs, GError **error);
+gboolean mirage_track_read_sector (MirageTrack *self, gint address, gboolean abs, guint8 main_sel, guint8 subc_sel, guint8 *ret_buf, gint *ret_len, GError **error);
 
 /* Layout */
-gint mirage_track_layout_get_session_number (MIRAGE_Track *self);
-void mirage_track_layout_set_track_number (MIRAGE_Track *self, gint track_number);
-gint mirage_track_layout_get_track_number (MIRAGE_Track *self);
-void mirage_track_layout_set_start_sector (MIRAGE_Track *self, gint start_sector);
-gint mirage_track_layout_get_start_sector (MIRAGE_Track *self);
-gint mirage_track_layout_get_length (MIRAGE_Track *self);
+gint mirage_track_layout_get_session_number (MirageTrack *self);
+void mirage_track_layout_set_track_number (MirageTrack *self, gint track_number);
+gint mirage_track_layout_get_track_number (MirageTrack *self);
+void mirage_track_layout_set_start_sector (MirageTrack *self, gint start_sector);
+gint mirage_track_layout_get_start_sector (MirageTrack *self);
+gint mirage_track_layout_get_length (MirageTrack *self);
 
 /* Data fragments handling */
-gint mirage_track_get_number_of_fragments (MIRAGE_Track *self);
-void mirage_track_add_fragment (MIRAGE_Track *self, gint index, GObject *fragment);
-gboolean mirage_track_remove_fragment_by_index (MIRAGE_Track *self, gint index, GError **error);
-void mirage_track_remove_fragment_by_object (MIRAGE_Track *self, GObject *fragment);
-GObject *mirage_track_get_fragment_by_index (MIRAGE_Track *self, gint index, GError **error);
-GObject *mirage_track_get_fragment_by_address (MIRAGE_Track *self, gint address, GError **error);
-gboolean mirage_track_for_each_fragment (MIRAGE_Track *self, MIRAGE_CallbackFunction func, gpointer user_data);
+gint mirage_track_get_number_of_fragments (MirageTrack *self);
+void mirage_track_add_fragment (MirageTrack *self, gint index, GObject *fragment);
+gboolean mirage_track_remove_fragment_by_index (MirageTrack *self, gint index, GError **error);
+void mirage_track_remove_fragment_by_object (MirageTrack *self, GObject *fragment);
+GObject *mirage_track_get_fragment_by_index (MirageTrack *self, gint index, GError **error);
+GObject *mirage_track_get_fragment_by_address (MirageTrack *self, gint address, GError **error);
+gboolean mirage_track_for_each_fragment (MirageTrack *self, MirageCallbackFunction func, gpointer user_data);
 
-GObject *mirage_track_find_fragment_with_subchannel (MIRAGE_Track *self, GError **error);
+GObject *mirage_track_find_fragment_with_subchannel (MirageTrack *self, GError **error);
 
 /* Track start */
-void mirage_track_set_track_start (MIRAGE_Track *self, gint track_start);
-gint mirage_track_get_track_start (MIRAGE_Track *self);
+void mirage_track_set_track_start (MirageTrack *self, gint track_start);
+gint mirage_track_get_track_start (MirageTrack *self);
 
 /* Indices handling */
-gint mirage_track_get_number_of_indices (MIRAGE_Track *self);
-gboolean mirage_track_add_index (MIRAGE_Track *self, gint address, GError **error);
-gboolean mirage_track_remove_index_by_number (MIRAGE_Track *self, gint number, GError **error);
-void mirage_track_remove_index_by_object (MIRAGE_Track *self, GObject *index);
-GObject *mirage_track_get_index_by_number (MIRAGE_Track *self, gint number, GError **error);
-GObject *mirage_track_get_index_by_address (MIRAGE_Track *self, gint address, GError **error);
-gboolean mirage_track_for_each_index (MIRAGE_Track *self, MIRAGE_CallbackFunction func, gpointer user_data);
+gint mirage_track_get_number_of_indices (MirageTrack *self);
+gboolean mirage_track_add_index (MirageTrack *self, gint address, GError **error);
+gboolean mirage_track_remove_index_by_number (MirageTrack *self, gint number, GError **error);
+void mirage_track_remove_index_by_object (MirageTrack *self, GObject *index);
+GObject *mirage_track_get_index_by_number (MirageTrack *self, gint number, GError **error);
+GObject *mirage_track_get_index_by_address (MirageTrack *self, gint address, GError **error);
+gboolean mirage_track_for_each_index (MirageTrack *self, MirageCallbackFunction func, gpointer user_data);
 
 /* Languages (CD-Text) handling */
-gint mirage_track_get_number_of_languages (MIRAGE_Track *self);
-gboolean mirage_track_add_language (MIRAGE_Track *self, gint langcode, GObject *language, GError **error);
-gboolean mirage_track_remove_language_by_index (MIRAGE_Track *self, gint index, GError **error);
-gboolean mirage_track_remove_language_by_code (MIRAGE_Track *self, gint langcode, GError **error);
-void mirage_track_remove_language_by_object (MIRAGE_Track *self, GObject *language);
-GObject *mirage_track_get_language_by_index (MIRAGE_Track *self, gint index, GError **error);
-GObject *mirage_track_get_language_by_code (MIRAGE_Track *self, gint langcode, GError **error);
-gboolean mirage_track_for_each_language (MIRAGE_Track *self, MIRAGE_CallbackFunction func, gpointer user_data);
+gint mirage_track_get_number_of_languages (MirageTrack *self);
+gboolean mirage_track_add_language (MirageTrack *self, gint langcode, GObject *language, GError **error);
+gboolean mirage_track_remove_language_by_index (MirageTrack *self, gint index, GError **error);
+gboolean mirage_track_remove_language_by_code (MirageTrack *self, gint langcode, GError **error);
+void mirage_track_remove_language_by_object (MirageTrack *self, GObject *language);
+GObject *mirage_track_get_language_by_index (MirageTrack *self, gint index, GError **error);
+GObject *mirage_track_get_language_by_code (MirageTrack *self, gint langcode, GError **error);
+gboolean mirage_track_for_each_language (MirageTrack *self, MirageCallbackFunction func, gpointer user_data);
 
 /* Two nice convenience functions */
-GObject *mirage_track_get_prev (MIRAGE_Track *self, GError **error);
-GObject *mirage_track_get_next (MIRAGE_Track *self, GError **error);
+GObject *mirage_track_get_prev (MirageTrack *self, GError **error);
+GObject *mirage_track_get_next (MirageTrack *self, GError **error);
 
 G_END_DECLS
 

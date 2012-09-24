@@ -29,13 +29,13 @@
 /**********************************************************************\
  *                          Private structure                         *
 \**********************************************************************/
-#define MIRAGE_PARSER_GET_PRIVATE(obj) (G_TYPE_INSTANCE_GET_PRIVATE((obj), MIRAGE_TYPE_PARSER, MIRAGE_ParserPrivate))
+#define MIRAGE_PARSER_GET_PRIVATE(obj) (G_TYPE_INSTANCE_GET_PRIVATE((obj), MIRAGE_TYPE_PARSER, MirageParserPrivate))
 
-struct _MIRAGE_ParserPrivate
+struct _MirageParserPrivate
 {
     GHashTable *parser_params;
 
-    MIRAGE_ParserInfo *parser_info;
+    MirageParserInfo *parser_info;
 
     /* Data stream cache */
     GHashTable *stream_cache;
@@ -45,7 +45,7 @@ struct _MIRAGE_ParserPrivate
 /**********************************************************************\
  *                          Private functions                         *
 \**********************************************************************/
-static void destroy_parser_info (MIRAGE_ParserInfo *info)
+static void destroy_parser_info (MirageParserInfo *info)
 {
     /* Free info and its content */
     if (info) {
@@ -64,7 +64,7 @@ static void destroy_parser_info (MIRAGE_ParserInfo *info)
 \**********************************************************************/
 /**
  * mirage_parser_generate_parser_info:
- * @self: a #MIRAGE_Parser
+ * @self: a #MirageParser
  * @id: (in): parser ID
  * @name: (in): parser name
  * @description: (in): image file description
@@ -75,13 +75,13 @@ static void destroy_parser_info (MIRAGE_ParserInfo *info)
  * for creating parser information in parser implementations.
  * </para>
  **/
-void mirage_parser_generate_parser_info (MIRAGE_Parser *self, const gchar *id, const gchar *name, const gchar *description, const gchar *mime_type)
+void mirage_parser_generate_parser_info (MirageParser *self, const gchar *id, const gchar *name, const gchar *description, const gchar *mime_type)
 {
     /* Free old info */
     destroy_parser_info(self->priv->parser_info);
 
     /* Create new info */
-    self->priv->parser_info = g_new0(MIRAGE_ParserInfo, 1);
+    self->priv->parser_info = g_new0(MirageParserInfo, 1);
 
     self->priv->parser_info->id = g_strdup(id);
     self->priv->parser_info->name = g_strdup(name);
@@ -93,7 +93,7 @@ void mirage_parser_generate_parser_info (MIRAGE_Parser *self, const gchar *id, c
 
 /**
  * mirage_parser_get_parser_info:
- * @self: a #MIRAGE_Parser
+ * @self: a #MirageParser
  *
  * <para>
  * Retrieves parser information.
@@ -102,7 +102,7 @@ void mirage_parser_generate_parser_info (MIRAGE_Parser *self, const gchar *id, c
  * Returns: a pointer to parser information structure.  The
  * structure belongs to object and should not be modified.
  **/
-const MIRAGE_ParserInfo *mirage_parser_get_parser_info (MIRAGE_Parser *self)
+const MirageParserInfo *mirage_parser_get_parser_info (MirageParser *self)
 {
     return self->priv->parser_info;
 }
@@ -110,7 +110,7 @@ const MIRAGE_ParserInfo *mirage_parser_get_parser_info (MIRAGE_Parser *self)
 
 /**
  * mirage_parser_load_image:
- * @self: a #MIRAGE_Parser
+ * @self: a #MirageParser
  * @filenames: (in): image filename(s)
  * @error: (out) (allow-none): location to store error, or %NULL
  *
@@ -120,7 +120,7 @@ const MIRAGE_ParserInfo *mirage_parser_get_parser_info (MIRAGE_Parser *self)
  *
  * Returns: (transfer full): disc object representing image on success, %NULL on failure
  **/
-GObject *mirage_parser_load_image (MIRAGE_Parser *self, gchar **filenames, GError **error)
+GObject *mirage_parser_load_image (MirageParser *self, gchar **filenames, GError **error)
 {
     GObject *disc;
 
@@ -148,7 +148,7 @@ GObject *mirage_parser_load_image (MIRAGE_Parser *self, gchar **filenames, GErro
 
 /**
  * mirage_parser_guess_medium_type:
- * @self: a #MIRAGE_Parser
+ * @self: a #MirageParser
  * @disc: (in): disc object
  *
  * <para>
@@ -165,7 +165,7 @@ GObject *mirage_parser_load_image (MIRAGE_Parser *self, gchar **filenames, GErro
  *
  * Returns: a value from #MIRAGE_MediumTypes, according to the guessed medium type.
  **/
-gint mirage_parser_guess_medium_type (MIRAGE_Parser *self, GObject *disc)
+gint mirage_parser_guess_medium_type (MirageParser *self, GObject *disc)
 {
     gint length = mirage_disc_layout_get_length(MIRAGE_DISC(disc));
 
@@ -181,7 +181,7 @@ gint mirage_parser_guess_medium_type (MIRAGE_Parser *self, GObject *disc)
 
 /**
  * mirage_parser_add_redbook_pregap:
- * @self: a #MIRAGE_Parser
+ * @self: a #MirageParser
  * @disc: (in): disc object
  *
  * <para>
@@ -200,7 +200,7 @@ gint mirage_parser_guess_medium_type (MIRAGE_Parser *self, GObject *disc)
  * CD-ROM. On other discs, it does nothing.
  * </para>
  **/
-void mirage_parser_add_redbook_pregap (MIRAGE_Parser *self, GObject *disc)
+void mirage_parser_add_redbook_pregap (MirageParser *self, GObject *disc)
 {
     gint num_sessions;
 
@@ -241,7 +241,7 @@ void mirage_parser_add_redbook_pregap (MIRAGE_Parser *self, GObject *disc)
         }
 
         /* Add pregap fragment - NULL fragment creation should never fail */
-        fragment = mirage_create_fragment(MIRAGE_TYPE_FRAG_IFACE_NULL, NULL, G_OBJECT(self), NULL);
+        fragment = mirage_create_fragment(MIRAGE_TYPE_FRAGMENT_IFACE_NULL, NULL, G_OBJECT(self), NULL);
         mirage_fragment_set_length(MIRAGE_FRAGMENT(fragment), 150);
         mirage_track_add_fragment(MIRAGE_TRACK(track), 0, fragment);
         g_object_unref(fragment);
@@ -262,7 +262,7 @@ void mirage_parser_add_redbook_pregap (MIRAGE_Parser *self, GObject *disc)
 
 /**
  * mirage_parser_set_params:
- * @self: a #MIRAGE_Parser
+ * @self: a #MirageParser
  * @params: (in): a #GHashTable containing parameters
  *
  * <para>
@@ -283,14 +283,14 @@ void mirage_parser_add_redbook_pregap (MIRAGE_Parser *self, GObject *disc)
  * In case of unsupported parameter, the parser implementation should simply ignore it.
  * </para>
  **/
-void mirage_parser_set_params (MIRAGE_Parser *self, GHashTable *params)
+void mirage_parser_set_params (MirageParser *self, GHashTable *params)
 {
     self->priv->parser_params = params; /* Just store pointer */
 }
 
 /**
  * mirage_parser_get_param_string:
- * @self: a #MIRAGE_Parser
+ * @self: a #MirageParser
  * @name: (in): parameter name (key)
  *
  * <para>
@@ -303,7 +303,7 @@ void mirage_parser_set_params (MIRAGE_Parser *self, GHashTable *params)
  * the parameters hash table that was passed to the parser, and as such should
  * not be modified.
  **/
-const gchar *mirage_parser_get_param_string (MIRAGE_Parser *self, const gchar *name)
+const gchar *mirage_parser_get_param_string (MirageParser *self, const gchar *name)
 {
     /* Get value */
     GVariant *value = mirage_parser_get_param(self, name, G_VARIANT_TYPE_STRING);
@@ -318,7 +318,7 @@ const gchar *mirage_parser_get_param_string (MIRAGE_Parser *self, const gchar *n
 
 /**
  * mirage_parser_get_param:
- * @self: a #MIRAGE_Parser
+ * @self: a #MirageParser
  * @name: (in): parameter name (key)
  * @type: (in): expected value type (set to %G_VARIANT_TYPE_ANY to disable type checking)
  *
@@ -332,7 +332,7 @@ const gchar *mirage_parser_get_param_string (MIRAGE_Parser *self, const gchar *n
  * the parameters hash table that was passed to the parser, and as such should
  * not be modified.
  **/
-GVariant *mirage_parser_get_param (MIRAGE_Parser *self, const gchar *name, const GVariantType *type)
+GVariant *mirage_parser_get_param (MirageParser *self, const gchar *name, const GVariantType *type)
 {
     GVariant *value;
 
@@ -358,7 +358,7 @@ GVariant *mirage_parser_get_param (MIRAGE_Parser *self, const gchar *name, const
 
 /**
  * mirage_parser_get_cached_data_stream:
- * @self: a #MIRAGE_Parser
+ * @self: a #MirageParser
  * @filename: (in): filename
  * @error: (out) (allow-none): location to store error, or %NULL
  *
@@ -375,7 +375,7 @@ GVariant *mirage_parser_get_param (MIRAGE_Parser *self, const gchar *name, const
  * failure. The reference to stream should be released using g_object_unref()
  * when no longer needed.
  **/
-GObject *mirage_parser_get_cached_data_stream (MIRAGE_Parser *self, const gchar *filename, GError **error)
+GObject *mirage_parser_get_cached_data_stream (MirageParser *self, const gchar *filename, GError **error)
 {
     GObject *stream = g_hash_table_lookup(self->priv->stream_cache, filename);
 
@@ -398,10 +398,10 @@ GObject *mirage_parser_get_cached_data_stream (MIRAGE_Parser *self, const gchar 
 /**********************************************************************\
  *                             Object init                            *
 \**********************************************************************/
-G_DEFINE_TYPE(MIRAGE_Parser, mirage_parser, MIRAGE_TYPE_OBJECT);
+G_DEFINE_TYPE(MirageParser, mirage_parser, MIRAGE_TYPE_OBJECT);
 
 
-static void mirage_parser_init (MIRAGE_Parser *self)
+static void mirage_parser_init (MirageParser *self)
 {
     self->priv = MIRAGE_PARSER_GET_PRIVATE(self);
 
@@ -417,7 +417,7 @@ static void mirage_parser_init (MIRAGE_Parser *self)
 
 static void mirage_parser_dispose (GObject *gobject)
 {
-    MIRAGE_Parser *self = MIRAGE_PARSER(gobject);
+    MirageParser *self = MIRAGE_PARSER(gobject);
 
     if (self->priv->stream_cache) {
         g_hash_table_unref(self->priv->stream_cache);
@@ -430,7 +430,7 @@ static void mirage_parser_dispose (GObject *gobject)
 
 static void mirage_parser_finalize (GObject *gobject)
 {
-    MIRAGE_Parser *self = MIRAGE_PARSER(gobject);
+    MirageParser *self = MIRAGE_PARSER(gobject);
 
     destroy_parser_info(self->priv->parser_info);
 
@@ -438,7 +438,7 @@ static void mirage_parser_finalize (GObject *gobject)
     return G_OBJECT_CLASS(mirage_parser_parent_class)->finalize(gobject);
 }
 
-static void mirage_parser_class_init (MIRAGE_ParserClass *klass)
+static void mirage_parser_class_init (MirageParserClass *klass)
 {
     GObjectClass *gobject_class = G_OBJECT_CLASS(klass);
 
@@ -448,5 +448,5 @@ static void mirage_parser_class_init (MIRAGE_ParserClass *klass)
     klass->load_image = NULL;
 
     /* Register private structure */
-    g_type_class_add_private(klass, sizeof(MIRAGE_ParserPrivate));
+    g_type_class_add_private(klass, sizeof(MirageParserPrivate));
 }

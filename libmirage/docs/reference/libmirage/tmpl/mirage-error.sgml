@@ -14,7 +14,7 @@ g_set_error().
 
 <para>
 Unless coming from underlying GLib's systems, the returned error code is one of
-#MIRAGE_ErrorCodes.
+#MirageErrorCodes.
 </para>
 
 <!-- ##### SECTION See_Also ##### -->
@@ -28,7 +28,7 @@ Unless coming from underlying GLib's systems, the returned error code is one of
 <!-- ##### SECTION Image ##### -->
 
 
-<!-- ##### ENUM MIRAGE_ErrorCodes ##### -->
+<!-- ##### ENUM MirageErrorCodes ##### -->
 <para>
 
 </para>

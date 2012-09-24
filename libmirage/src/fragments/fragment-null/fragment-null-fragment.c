@@ -23,24 +23,24 @@
 
 
 /**********************************************************************\
- *               MIRAGE_Fragment methods implementations              *
+ *               MirageFragment methods implementations              *
 \**********************************************************************/
-static gboolean mirage_fragment_null_can_handle_data_format (MIRAGE_Fragment *_self G_GNUC_UNUSED, GObject *stream G_GNUC_UNUSED, GError **error G_GNUC_UNUSED)
+static gboolean mirage_fragment_null_can_handle_data_format (MirageFragment *_self G_GNUC_UNUSED, GObject *stream G_GNUC_UNUSED, GError **error G_GNUC_UNUSED)
 {
     /* NULL doesn't need any data checks; what's important is interface type,
        which is filtered out elsewhere */
     return TRUE;
 }
 
-static gboolean mirage_fragment_null_use_the_rest_of_file (MIRAGE_Fragment *_self G_GNUC_UNUSED, GError **error G_GNUC_UNUSED)
+static gboolean mirage_fragment_null_use_the_rest_of_file (MirageFragment *_self G_GNUC_UNUSED, GError **error G_GNUC_UNUSED)
 {
     /* No file, nothing to use */
     return TRUE;
 }
 
-static gboolean mirage_fragment_null_read_main_data (MIRAGE_Fragment *_self, gint address G_GNUC_UNUSED, guint8 *buf G_GNUC_UNUSED, gint *length, GError **error G_GNUC_UNUSED)
+static gboolean mirage_fragment_null_read_main_data (MirageFragment *_self, gint address G_GNUC_UNUSED, guint8 *buf G_GNUC_UNUSED, gint *length, GError **error G_GNUC_UNUSED)
 {
-    MIRAGE_Fragment_NULL *self = MIRAGE_FRAGMENT_NULL(_self);
+    MirageFragmentNull *self = MIRAGE_FRAGMENT_NULL(_self);
     /* Nothing to read */
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_FRAGMENT, "%s: no data in NULL fragment\n", __debug__);
     if (length) {
@@ -49,9 +49,9 @@ static gboolean mirage_fragment_null_read_main_data (MIRAGE_Fragment *_self, gin
     return TRUE;
 }
 
-static gboolean mirage_fragment_null_read_subchannel_data (MIRAGE_Fragment *_self, gint address G_GNUC_UNUSED, guint8 *buf G_GNUC_UNUSED, gint *length, GError **error G_GNUC_UNUSED)
+static gboolean mirage_fragment_null_read_subchannel_data (MirageFragment *_self, gint address G_GNUC_UNUSED, guint8 *buf G_GNUC_UNUSED, gint *length, GError **error G_GNUC_UNUSED)
 {
-    MIRAGE_Fragment_NULL *self = MIRAGE_FRAGMENT_NULL(_self);
+    MirageFragmentNull *self = MIRAGE_FRAGMENT_NULL(_self);
     /* Nothing to read */
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_FRAGMENT, "%s: no data in NULL fragment\n", __debug__);
     if (length) {
@@ -64,11 +64,11 @@ static gboolean mirage_fragment_null_read_subchannel_data (MIRAGE_Fragment *_sel
 /**********************************************************************\
  *                             Object init                            *
 \**********************************************************************/
-G_DEFINE_DYNAMIC_TYPE_EXTENDED(MIRAGE_Fragment_NULL,
+G_DEFINE_DYNAMIC_TYPE_EXTENDED(MirageFragmentNull,
                                mirage_fragment_null,
                                MIRAGE_TYPE_FRAGMENT,
                                0,
-                               G_IMPLEMENT_INTERFACE_DYNAMIC(MIRAGE_TYPE_FRAG_IFACE_NULL, NULL));
+                               G_IMPLEMENT_INTERFACE_DYNAMIC(MIRAGE_TYPE_FRAGMENT_IFACE_NULL, NULL));
 
 void mirage_fragment_null_type_register (GTypeModule *type_module)
 {
@@ -76,7 +76,7 @@ void mirage_fragment_null_type_register (GTypeModule *type_module)
 }
 
 
-static void mirage_fragment_null_init (MIRAGE_Fragment_NULL *self)
+static void mirage_fragment_null_init (MirageFragmentNull *self)
 {
     /*self->priv = MIRAGE_FRAGMENT_NULL_GET_PRIVATE(self);*/
 
@@ -86,9 +86,9 @@ static void mirage_fragment_null_init (MIRAGE_Fragment_NULL *self)
     );
 }
 
-static void mirage_fragment_null_class_init (MIRAGE_Fragment_NULLClass *klass)
+static void mirage_fragment_null_class_init (MirageFragmentNullClass *klass)
 {
-    MIRAGE_FragmentClass *fragment_class = MIRAGE_FRAGMENT_CLASS(klass);
+    MirageFragmentClass *fragment_class = MIRAGE_FRAGMENT_CLASS(klass);
 
     fragment_class->can_handle_data_format = mirage_fragment_null_can_handle_data_format;
     fragment_class->use_the_rest_of_file = mirage_fragment_null_use_the_rest_of_file;
@@ -96,6 +96,6 @@ static void mirage_fragment_null_class_init (MIRAGE_Fragment_NULLClass *klass)
     fragment_class->read_subchannel_data = mirage_fragment_null_read_subchannel_data;
 }
 
-static void mirage_fragment_null_class_finalize (MIRAGE_Fragment_NULLClass *klass G_GNUC_UNUSED)
+static void mirage_fragment_null_class_finalize (MirageFragmentNullClass *klass G_GNUC_UNUSED)
 {
 }

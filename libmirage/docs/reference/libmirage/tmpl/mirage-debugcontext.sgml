@@ -1,31 +1,31 @@
 <!-- ##### SECTION Title ##### -->
-MIRAGE_DebugContext object
+MirageDebugContext object
 
 <!-- ##### SECTION Short_Description ##### -->
 Debug context object
 
 <!-- ##### SECTION Long_Description ##### -->
 <para>
-libMirage supports changing of debug message verbosity on fly, without the need 
-to restart the application. To achieve this, #MIRAGE_DebugContext objects are used.
+libMirage supports changing of debug message verbosity on fly, without the need
+to restart the application. To achieve this, #MirageDebugContext objects are used.
 </para>
 <para>
 As implied by its name, the object itself is a context that can be attached to
-any object that is derived from #MIRAGE_Object. It stores a name string, debug name
-string and integer value representing debug mask. The idea behind debug context is 
-to have a container object that a #MIRAGE_Object can pass to its children. This way, 
-when debug context's debug mask is changed, the change is automatically propagated 
+any object that is derived from #MirageObject. It stores a name string, debug name
+string and integer value representing debug mask. The idea behind debug context is
+to have a container object that a #MirageObject can pass to its children. This way,
+when debug context's debug mask is changed, the change is automatically propagated
 to the children as well, because they all share the same context.
 </para>
 <para>
-It should be noted that a #MIRAGE_DebugContext object is just a container 
-providing name and debug mask, while the actual debug message functionality is 
-implemented by a #MIRAGE_Object.
+It should be noted that a #MirageDebugContext object is just a container
+providing name and debug mask, while the actual debug message functionality is
+implemented by a #MirageObject.
 </para>
 
 <!-- ##### SECTION See_Also ##### -->
 <para>
-#MIRAGE_Object
+#MirageObject
 </para>
 
 <!-- ##### SECTION Stability_Level ##### -->
@@ -34,7 +34,7 @@ implemented by a #MIRAGE_Object.
 <!-- ##### SECTION Image ##### -->
 
 
-<!-- ##### ENUM MIRAGE_DebugMasks ##### -->
+<!-- ##### ENUM MirageDebugMasks ##### -->
 <para>
 
 </para>
@@ -50,7 +50,7 @@ implemented by a #MIRAGE_Object.
 @MIRAGE_DEBUG_CDTEXT: 
 @MIRAGE_DEBUG_FILE: 
 
-<!-- ##### STRUCT MIRAGE_DebugContext ##### -->
+<!-- ##### STRUCT MirageDebugContext ##### -->
 <para>
 
 </para>

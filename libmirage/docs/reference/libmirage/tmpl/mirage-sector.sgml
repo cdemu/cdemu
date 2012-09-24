@@ -1,18 +1,18 @@
 <!-- ##### SECTION Title ##### -->
-MIRAGE_Sector object
+MirageSector object
 
 <!-- ##### SECTION Short_Description ##### -->
 Object representing a sector
 
 <!-- ##### SECTION Long_Description ##### -->
 <para>
-#MIRAGE_Sector object represents a sector. It provides access to the sector
+#MirageSector object represents a sector. It provides access to the sector
 data, generating it if needed.
 </para>
 
 <!-- ##### SECTION See_Also ##### -->
 <para>
-#MIRAGE_Track
+#MirageTrack
 </para>
 
 <!-- ##### SECTION Stability_Level ##### -->
@@ -21,7 +21,7 @@ data, generating it if needed.
 <!-- ##### SECTION Image ##### -->
 
 
-<!-- ##### ENUM MIRAGE_Sector_MCSB ##### -->
+<!-- ##### ENUM MirageSectorMCSB ##### -->
 <para>
 
 </para>
@@ -34,7 +34,7 @@ data, generating it if needed.
 @MIRAGE_MCSB_C2_2: 
 @MIRAGE_MCSB_C2_1: 
 
-<!-- ##### ENUM MIRAGE_Sector_SubchannelFormat ##### -->
+<!-- ##### ENUM MirageSectorSubchannelFormat ##### -->
 <para>
 
 </para>
@@ -43,7 +43,7 @@ data, generating it if needed.
 @MIRAGE_SUBCHANNEL_PQ: 
 @MIRAGE_SUBCHANNEL_RW: 
 
-<!-- ##### ENUM MIRAGE_Sector_ValidData ##### -->
+<!-- ##### ENUM MirageSectorValidData ##### -->
 <para>
 
 </para>
@@ -55,7 +55,7 @@ data, generating it if needed.
 @MIRAGE_VALID_EDC_ECC: 
 @MIRAGE_VALID_SUBCHAN: 
 
-<!-- ##### STRUCT MIRAGE_Sector ##### -->
+<!-- ##### STRUCT MirageSector ##### -->
 <para>
 
 </para>

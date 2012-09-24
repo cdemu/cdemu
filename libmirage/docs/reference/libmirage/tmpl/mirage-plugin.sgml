@@ -1,23 +1,23 @@
 <!-- ##### SECTION Title ##### -->
-MIRAGE_Plugin object
+MiragePlugin object
 
 <!-- ##### SECTION Short_Description ##### -->
 Plugin object
 
 <!-- ##### SECTION Long_Description ##### -->
 <para>
-#MIRAGE_Plugin object is a base object of libMirage's plugin system and derives
+#MiragePlugin object is a base object of libMirage's plugin system and derives
 from #GTypeModule. It provides support for loadable modules that contain either
 image parser or fragment implementations.
 </para>
 <para>
-The plugin system is used internally by libMirage, and should generally not be 
+The plugin system is used internally by libMirage, and should generally not be
 used elsewhere.
 </para>
 
 <!-- ##### SECTION See_Also ##### -->
 <para>
-#MIRAGE_Parser, #MIRAGE_Fragment
+#MirageParser, #MirageFragment
 </para>
 
 <!-- ##### SECTION Stability_Level ##### -->
@@ -26,13 +26,13 @@ used elsewhere.
 <!-- ##### SECTION Image ##### -->
 
 
-<!-- ##### STRUCT MIRAGE_Plugin ##### -->
+<!-- ##### STRUCT MiragePlugin ##### -->
 <para>
 
 </para>
 
 
-<!-- ##### ARG MIRAGE_Plugin:filename ##### -->
+<!-- ##### ARG MiragePlugin:filename ##### -->
 <para>
 
 </para>

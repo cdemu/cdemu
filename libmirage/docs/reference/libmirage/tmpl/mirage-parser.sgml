@@ -1,26 +1,26 @@
 <!-- ##### SECTION Title ##### -->
-MIRAGE_Parser object
+MirageParser object
 
 <!-- ##### SECTION Short_Description ##### -->
 Base object for parsers implementation
 
 <!-- ##### SECTION Long_Description ##### -->
 <para>
-#MIRAGE_Parser object is a base object for image parser implementations. In addition to 
-providing function for image loading and obtaining parser information, it also provides 
+#MirageParser object is a base object for image parser implementations. In addition to
+providing function for image loading and obtaining parser information, it also provides
 some helper functions that can be used in parser implementations.
 </para>
 <para>
-#MIRAGE_Parser provides a single virtual function - mirage_parser_load_image(). This 
-function must be implemented by image parsers, which derive from #MIRAGE_Parser object.
+#MirageParser provides a single virtual function - mirage_parser_load_image(). This
+function must be implemented by image parsers, which derive from #MirageParser object.
 The function must first check if given file(s) are supported by the given parser, and
-then the actual loading is performed. The result is a #MIRAGE_Disc object, which 
+then the actual loading is performed. The result is a #MirageDisc object, which
 represents the disc stored in the image file(s).
 </para>
 
 <!-- ##### SECTION See_Also ##### -->
 <para>
-#MIRAGE_Disc
+#MirageDisc
 </para>
 
 <!-- ##### SECTION Stability_Level ##### -->
@@ -29,7 +29,7 @@ represents the disc stored in the image file(s).
 <!-- ##### SECTION Image ##### -->
 
 
-<!-- ##### STRUCT MIRAGE_ParserInfo ##### -->
+<!-- ##### STRUCT MirageParserInfo ##### -->
 <para>
 
 </para>
@@ -39,7 +39,7 @@ represents the disc stored in the image file(s).
 @description: 
 @mime_type: 
 
-<!-- ##### STRUCT MIRAGE_Parser ##### -->
+<!-- ##### STRUCT MirageParser ##### -->
 <para>
 
 </para>

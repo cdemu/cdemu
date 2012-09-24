@@ -1,18 +1,18 @@
 <!-- ##### SECTION Title ##### -->
-MIRAGE_FragIface_Null interface
+MirageFragmentIfaceNull interface
 
 <!-- ##### SECTION Short_Description ##### -->
 Null Fragment interface
 
 <!-- ##### SECTION Long_Description ##### -->
 <para>
-#MIRAGE_FragIface_Null is Null Fragment interface that can be implemented
-by a #MIRAGE_Fragment implementation.
+#MirageFragmentIfaceNull is Null Fragment interface that can be implemented
+by a #MirageFragment implementation.
 </para>
 
 <!-- ##### SECTION See_Also ##### -->
 <para>
-#MIRAGE_Fragment
+#MirageFragment
 </para>
 
 <!-- ##### SECTION Stability_Level ##### -->
@@ -21,7 +21,7 @@ by a #MIRAGE_Fragment implementation.
 <!-- ##### SECTION Image ##### -->
 
 
-<!-- ##### STRUCT MIRAGE_FragIface_Null ##### -->
+<!-- ##### STRUCT MirageFragmentIfaceNull ##### -->
 <para>
 
 </para>

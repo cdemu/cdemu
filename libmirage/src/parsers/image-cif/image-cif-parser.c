@@ -25,9 +25,9 @@
 /**********************************************************************\
  *                          Private structure                         *
 \**********************************************************************/
-#define MIRAGE_PARSER_CIF_GET_PRIVATE(obj) (G_TYPE_INSTANCE_GET_PRIVATE((obj), MIRAGE_TYPE_PARSER_CIF, MIRAGE_Parser_CIFPrivate))
+#define MIRAGE_PARSER_CIF_GET_PRIVATE(obj) (G_TYPE_INSTANCE_GET_PRIVATE((obj), MIRAGE_TYPE_PARSER_CIF, MirageParser_CIFPrivate))
 
-struct _MIRAGE_Parser_CIFPrivate
+struct _MirageParser_CIFPrivate
 {
     GObject *disc;
 
@@ -104,7 +104,7 @@ static inline gboolean gap_between_tracks (gint mode_prev, gint mode_cur)
 /**********************************************************************\
  *                   Descriptor reading and parsing                   *
 \**********************************************************************/
-static gboolean mirage_parser_cif_read_descriptor (MIRAGE_Parser_CIF *self, guint8 **data, guint16 *length, GError **error)
+static gboolean mirage_parser_cif_read_descriptor (MirageParser_CIF *self, guint8 **data, guint16 *length, GError **error)
 {
     guint16 subblock_length;
     guint8 *subblock_data;
@@ -143,7 +143,7 @@ static gboolean mirage_parser_cif_read_descriptor (MIRAGE_Parser_CIF *self, guin
 }
 
 
-static GObject *mirage_parser_cif_parse_track_descriptor (MIRAGE_Parser_CIF *self, guint8 *data, guint16 length G_GNUC_UNUSED, GError **error)
+static GObject *mirage_parser_cif_parse_track_descriptor (MirageParser_CIF *self, guint8 *data, guint16 length G_GNUC_UNUSED, GError **error)
 {
     GObject *track;
     GObject *fragment;
@@ -246,7 +246,7 @@ static GObject *mirage_parser_cif_parse_track_descriptor (MIRAGE_Parser_CIF *sel
     mirage_track_set_mode(MIRAGE_TRACK(track), track_mode);
 
     /* Create data fragment */
-    fragment = mirage_create_fragment(MIRAGE_TYPE_FRAG_IFACE_BINARY, self->priv->cif_stream, G_OBJECT(self), error);
+    fragment = mirage_create_fragment(MIRAGE_TYPE_FRAGMENT_IFACE_BINARY, self->priv->cif_stream, G_OBJECT(self), error);
     if (!fragment) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to create fragment!\n", __debug__);
         g_object_unref(track);
@@ -254,7 +254,7 @@ static GObject *mirage_parser_cif_parse_track_descriptor (MIRAGE_Parser_CIF *sel
     }
 
     /* Set file */
-    if (!mirage_frag_iface_binary_track_file_set_file(MIRAGE_FRAG_IFACE_BINARY(fragment), self->priv->cif_filename, self->priv->cif_stream, error)) {
+    if (!mirage_fragment_iface_binary_track_file_set_file(MIRAGE_FRAGMENT_IFACE_BINARY(fragment), self->priv->cif_filename, self->priv->cif_stream, error)) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to set track data file!\n", __debug__);
         g_object_unref(fragment);
         g_object_unref(track);
@@ -262,12 +262,12 @@ static GObject *mirage_parser_cif_parse_track_descriptor (MIRAGE_Parser_CIF *sel
     }
 
     /* Set offset, length, sector size and data type */
-    mirage_frag_iface_binary_track_file_set_offset(MIRAGE_FRAG_IFACE_BINARY(fragment), offset_entry->offset);
-    mirage_frag_iface_binary_track_file_set_sectsize(MIRAGE_FRAG_IFACE_BINARY(fragment), sector_size);
+    mirage_fragment_iface_binary_track_file_set_offset(MIRAGE_FRAGMENT_IFACE_BINARY(fragment), offset_entry->offset);
+    mirage_fragment_iface_binary_track_file_set_sectsize(MIRAGE_FRAGMENT_IFACE_BINARY(fragment), sector_size);
     if ((CIF_Track) descriptor->type == AUDIO) {
-        mirage_frag_iface_binary_track_file_set_format(MIRAGE_FRAG_IFACE_BINARY(fragment), FR_BIN_TFILE_AUDIO);
+        mirage_fragment_iface_binary_track_file_set_format(MIRAGE_FRAGMENT_IFACE_BINARY(fragment), MIRAGE_TFILE_AUDIO);
     } else {
-        mirage_frag_iface_binary_track_file_set_format(MIRAGE_FRAG_IFACE_BINARY(fragment), FR_BIN_TFILE_DATA);
+        mirage_fragment_iface_binary_track_file_set_format(MIRAGE_FRAGMENT_IFACE_BINARY(fragment), MIRAGE_TFILE_DATA);
     }
 
     mirage_fragment_set_length(MIRAGE_FRAGMENT(fragment), track_length);
@@ -281,7 +281,7 @@ static GObject *mirage_parser_cif_parse_track_descriptor (MIRAGE_Parser_CIF *sel
     return track;
 }
 
-static GObject *mirage_parser_cif_parse_session_descriptor (MIRAGE_Parser_CIF *self, guint8 *data, guint16 length G_GNUC_UNUSED, GError **error)
+static GObject *mirage_parser_cif_parse_session_descriptor (MirageParser_CIF *self, guint8 *data, guint16 length G_GNUC_UNUSED, GError **error)
 {
     GObject *session;
     CIF_SessionDescriptor *descriptor = (CIF_SessionDescriptor *)data;
@@ -367,7 +367,7 @@ static GObject *mirage_parser_cif_parse_session_descriptor (MIRAGE_Parser_CIF *s
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: adding pregap: %d (0x%X)\n", __debug__, pregap_length, pregap_length);
 
             /* Create NULL fragment - creation should never fail */
-            fragment = mirage_create_fragment(MIRAGE_TYPE_FRAG_IFACE_NULL, NULL, G_OBJECT(self), error);
+            fragment = mirage_create_fragment(MIRAGE_TYPE_FRAGMENT_IFACE_NULL, NULL, G_OBJECT(self), error);
 
             mirage_fragment_set_length(MIRAGE_FRAGMENT(fragment), pregap_length);
 
@@ -391,7 +391,7 @@ static GObject *mirage_parser_cif_parse_session_descriptor (MIRAGE_Parser_CIF *s
 }
 
 
-static gboolean mirage_parser_cif_parse_disc_descriptor (MIRAGE_Parser_CIF *self, guint8 *data, guint16 length G_GNUC_UNUSED, GError **error)
+static gboolean mirage_parser_cif_parse_disc_descriptor (MirageParser_CIF *self, guint8 *data, guint16 length G_GNUC_UNUSED, GError **error)
 {
     CIF_DiscDescriptor *descriptor = (CIF_DiscDescriptor *)data;
 
@@ -471,7 +471,7 @@ static gboolean mirage_parser_cif_parse_disc_descriptor (MIRAGE_Parser_CIF *self
 }
 
 
-static gboolean mirage_parser_cif_parse_disc_block (MIRAGE_Parser_CIF *self, GError **error)
+static gboolean mirage_parser_cif_parse_disc_block (MirageParser_CIF *self, GError **error)
 {
     guint8 *descriptor_data;
     guint16 descriptor_length;
@@ -504,7 +504,7 @@ static gboolean mirage_parser_cif_parse_disc_block (MIRAGE_Parser_CIF *self, GEr
     return TRUE;
 }
 
-static gboolean mirage_parser_cif_parse_ofs_block (MIRAGE_Parser_CIF *self, GError **error)
+static gboolean mirage_parser_cif_parse_ofs_block (MirageParser_CIF *self, GError **error)
 {
     guint16 num_entries;
 
@@ -562,7 +562,7 @@ static gboolean mirage_parser_cif_parse_ofs_block (MIRAGE_Parser_CIF *self, GErr
 }
 
 
-static gboolean mirage_parser_cif_parse_blocks (MIRAGE_Parser_CIF *self, GError **error)
+static gboolean mirage_parser_cif_parse_blocks (MirageParser_CIF *self, GError **error)
 {
     guint64 file_size;
     CIF_Header header;
@@ -629,7 +629,7 @@ static gboolean mirage_parser_cif_parse_blocks (MIRAGE_Parser_CIF *self, GError 
 }
 
 
-static gboolean mirage_parser_cif_load_disc (MIRAGE_Parser_CIF *self, GError **error)
+static gboolean mirage_parser_cif_load_disc (MirageParser_CIF *self, GError **error)
 {
     /* Parse blocks */
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: parsing RIFF blocks\n", __debug__);
@@ -663,11 +663,11 @@ static gboolean mirage_parser_cif_load_disc (MIRAGE_Parser_CIF *self, GError **e
 
 
 /**********************************************************************\
- *                MIRAGE_Parser methods implementation                *
+ *                MirageParser methods implementation                *
 \**********************************************************************/
-static GObject *mirage_parser_cif_load_image (MIRAGE_Parser *_self, gchar **filenames, GError **error)
+static GObject *mirage_parser_cif_load_image (MirageParser *_self, gchar **filenames, GError **error)
 {
-    MIRAGE_Parser_CIF *self = MIRAGE_PARSER_CIF(_self);
+    MirageParser_CIF *self = MIRAGE_PARSER_CIF(_self);
 
     gboolean succeeded = TRUE;
     CIF_Header header;
@@ -716,7 +716,7 @@ static GObject *mirage_parser_cif_load_image (MIRAGE_Parser *_self, gchar **file
 /**********************************************************************\
  *                             Object init                            *
 \**********************************************************************/
-G_DEFINE_DYNAMIC_TYPE(MIRAGE_Parser_CIF, mirage_parser_cif, MIRAGE_TYPE_PARSER);
+G_DEFINE_DYNAMIC_TYPE(MirageParser_CIF, mirage_parser_cif, MIRAGE_TYPE_PARSER);
 
 void mirage_parser_cif_type_register (GTypeModule *type_module)
 {
@@ -724,7 +724,7 @@ void mirage_parser_cif_type_register (GTypeModule *type_module)
 }
 
 
-static void mirage_parser_cif_init (MIRAGE_Parser_CIF *self)
+static void mirage_parser_cif_init (MirageParser_CIF *self)
 {
     self->priv = MIRAGE_PARSER_CIF_GET_PRIVATE(self);
 
@@ -743,7 +743,7 @@ static void mirage_parser_cif_init (MIRAGE_Parser_CIF *self)
 
 static void mirage_parser_cif_dispose (GObject *gobject)
 {
-    MIRAGE_Parser_CIF *self = MIRAGE_PARSER_CIF(gobject);
+    MirageParser_CIF *self = MIRAGE_PARSER_CIF(gobject);
 
     if (self->priv->cif_stream) {
         g_object_unref(self->priv->cif_stream);
@@ -756,7 +756,7 @@ static void mirage_parser_cif_dispose (GObject *gobject)
 
 static void mirage_parser_cif_finalize (GObject *gobject)
 {
-    MIRAGE_Parser_CIF *self = MIRAGE_PARSER_CIF(gobject);
+    MirageParser_CIF *self = MIRAGE_PARSER_CIF(gobject);
 
     g_free(self->priv->cif_filename);
     g_free(self->priv->offset_entries);
@@ -765,10 +765,10 @@ static void mirage_parser_cif_finalize (GObject *gobject)
     return G_OBJECT_CLASS(mirage_parser_cif_parent_class)->finalize(gobject);
 }
 
-static void mirage_parser_cif_class_init (MIRAGE_Parser_CIFClass *klass)
+static void mirage_parser_cif_class_init (MirageParser_CIFClass *klass)
 {
     GObjectClass *gobject_class = G_OBJECT_CLASS(klass);
-    MIRAGE_ParserClass *parser_class = MIRAGE_PARSER_CLASS(klass);
+    MirageParserClass *parser_class = MIRAGE_PARSER_CLASS(klass);
 
     gobject_class->dispose = mirage_parser_cif_dispose;
     gobject_class->finalize = mirage_parser_cif_finalize;
@@ -776,9 +776,9 @@ static void mirage_parser_cif_class_init (MIRAGE_Parser_CIFClass *klass)
     parser_class->load_image = mirage_parser_cif_load_image;
 
     /* Register private structure */
-    g_type_class_add_private(klass, sizeof(MIRAGE_Parser_CIFPrivate));
+    g_type_class_add_private(klass, sizeof(MirageParser_CIFPrivate));
 }
 
-static void mirage_parser_cif_class_finalize (MIRAGE_Parser_CIFClass *klass G_GNUC_UNUSED)
+static void mirage_parser_cif_class_finalize (MirageParser_CIFClass *klass G_GNUC_UNUSED)
 {
 }

@@ -1,7 +1,7 @@
 /*
  *  libMirage: MDS image parser: Parser object
  *  Copyright (C) 2006-2012 Rok Mandeljc
- * 
+ *
  *  Reverse-engineering work in March, 2005 by Henrik Stokseth.
  *
  *  This program is free software; you can redistribute it and/or modify
@@ -26,27 +26,27 @@
 G_BEGIN_DECLS
 
 #define MIRAGE_TYPE_PARSER_MDS            (mirage_parser_mds_get_type())
-#define MIRAGE_PARSER_MDS(obj)            (G_TYPE_CHECK_INSTANCE_CAST((obj), MIRAGE_TYPE_PARSER_MDS, MIRAGE_Parser_MDS))
-#define MIRAGE_PARSER_MDS_CLASS(klass)    (G_TYPE_CHECK_CLASS_CAST((klass), MIRAGE_TYPE_PARSER_MDS, MIRAGE_Parser_MDSClass))
+#define MIRAGE_PARSER_MDS(obj)            (G_TYPE_CHECK_INSTANCE_CAST((obj), MIRAGE_TYPE_PARSER_MDS, MirageParser_MDS))
+#define MIRAGE_PARSER_MDS_CLASS(klass)    (G_TYPE_CHECK_CLASS_CAST((klass), MIRAGE_TYPE_PARSER_MDS, MirageParser_MDSClass))
 #define MIRAGE_IS_PARSER_MDS(obj)         (G_TYPE_CHECK_INSTANCE_TYPE((obj), MIRAGE_TYPE_PARSER_MDS))
 #define MIRAGE_IS_PARSER_MDS_CLASS(klass) (G_TYPE_CHECK_CLASS_TYPE((klass), MIRAGE_TYPE_PARSER_MDS))
-#define MIRAGE_PARSER_MDS_GET_CLASS(obj)  (G_TYPE_INSTANCE_GET_CLASS((obj), MIRAGE_TYPE_PARSER_MDS, MIRAGE_Parser_MDSClass))
+#define MIRAGE_PARSER_MDS_GET_CLASS(obj)  (G_TYPE_INSTANCE_GET_CLASS((obj), MIRAGE_TYPE_PARSER_MDS, MirageParser_MDSClass))
 
-typedef struct _MIRAGE_Parser_MDS MIRAGE_Parser_MDS;
-typedef struct _MIRAGE_Parser_MDSClass MIRAGE_Parser_MDSClass;
-typedef struct _MIRAGE_Parser_MDSPrivate MIRAGE_Parser_MDSPrivate;
+typedef struct _MirageParser_MDS MirageParser_MDS;
+typedef struct _MirageParser_MDSClass MirageParser_MDSClass;
+typedef struct _MirageParser_MDSPrivate MirageParser_MDSPrivate;
 
-struct _MIRAGE_Parser_MDS
+struct _MirageParser_MDS
 {
-    MIRAGE_Parser parent_instance;
+    MirageParser parent_instance;
 
     /*< private >*/
-    MIRAGE_Parser_MDSPrivate *priv;
+    MirageParser_MDSPrivate *priv;
 };
 
-struct _MIRAGE_Parser_MDSClass
+struct _MirageParser_MDSClass
 {
-    MIRAGE_ParserClass parent_class;
+    MirageParserClass parent_class;
 };
 
 /* Used by MIRAGE_TYPE_PARSER_MDS */

@@ -1,18 +1,18 @@
 <!-- ##### SECTION Title ##### -->
-MIRAGE_FragIface_Audio interface
+MirageFragmentIfaceAudio interface
 
 <!-- ##### SECTION Short_Description ##### -->
 Audio Fragment interface
 
 <!-- ##### SECTION Long_Description ##### -->
 <para>
-#MIRAGE_FragIface_Audio is Audio Fragment interface that can be implemented
-by a #MIRAGE_Fragment implementation.
+#MirageFragmentIfaceAudio is Audio Fragment interface that can be implemented
+by a #MirageFragment implementation.
 </para>
 
 <!-- ##### SECTION See_Also ##### -->
 <para>
-#MIRAGE_Fragment
+#MirageFragment
 </para>
 
 <!-- ##### SECTION Stability_Level ##### -->
@@ -21,13 +21,13 @@ by a #MIRAGE_Fragment implementation.
 <!-- ##### SECTION Image ##### -->
 
 
-<!-- ##### STRUCT MIRAGE_FragIface_Audio ##### -->
+<!-- ##### STRUCT MirageFragmentIfaceAudio ##### -->
 <para>
 
 </para>
 
 
-<!-- ##### FUNCTION mirage_frag_iface_audio_set_file ##### -->
+<!-- ##### FUNCTION mirage_fragment_iface_audio_set_file ##### -->
 <para>
 
 </para>
@@ -39,7 +39,7 @@ by a #MIRAGE_Fragment implementation.
 @Returns: 
 
 
-<!-- ##### FUNCTION mirage_frag_iface_audio_get_file ##### -->
+<!-- ##### FUNCTION mirage_fragment_iface_audio_get_file ##### -->
 <para>
 
 </para>
@@ -48,7 +48,7 @@ by a #MIRAGE_Fragment implementation.
 @Returns: 
 
 
-<!-- ##### FUNCTION mirage_frag_iface_audio_set_offset ##### -->
+<!-- ##### FUNCTION mirage_fragment_iface_audio_set_offset ##### -->
 <para>
 
 </para>
@@ -57,7 +57,7 @@ by a #MIRAGE_Fragment implementation.
 @offset: 
 
 
-<!-- ##### FUNCTION mirage_frag_iface_audio_get_offset ##### -->
+<!-- ##### FUNCTION mirage_fragment_iface_audio_get_offset ##### -->
 <para>
 
 </para>

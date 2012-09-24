@@ -24,7 +24,7 @@
 G_BEGIN_DECLS
 
 /**
- * MIRAGE_Language_PackTypes:
+ * MirageLanguagePackTypes:
  * @MIRAGE_LANGUAGE_PACK_TITLE: Album name and Track titles
  * @MIRAGE_LANGUAGE_PACK_PERFORMER: Singer/player/conductor/orchestra
  * @MIRAGE_LANGUAGE_PACK_SONGWRITER: Name of the songwriter
@@ -64,38 +64,38 @@ typedef enum
     MIRAGE_LANGUAGE_PACK_CLOSED_INFO = 0x8D,
     MIRAGE_LANGUAGE_PACK_UPC_ISRC    = 0x8E,
     MIRAGE_LANGUAGE_PACK_SIZE        = 0x8F,
-} MIRAGE_Language_PackTypes;
+} MirageLanguagePackTypes;
 
 
 #define MIRAGE_TYPE_LANGUAGE            (mirage_language_get_type())
-#define MIRAGE_LANGUAGE(obj)            (G_TYPE_CHECK_INSTANCE_CAST((obj), MIRAGE_TYPE_LANGUAGE, MIRAGE_Language))
-#define MIRAGE_LANGUAGE_CLASS(klass)    (G_TYPE_CHECK_CLASS_CAST((klass), MIRAGE_TYPE_LANGUAGE, MIRAGE_LanguageClass))
+#define MIRAGE_LANGUAGE(obj)            (G_TYPE_CHECK_INSTANCE_CAST((obj), MIRAGE_TYPE_LANGUAGE, MirageLanguage))
+#define MIRAGE_LANGUAGE_CLASS(klass)    (G_TYPE_CHECK_CLASS_CAST((klass), MIRAGE_TYPE_LANGUAGE, MirageLanguageClass))
 #define MIRAGE_IS_LANGUAGE(obj)         (G_TYPE_CHECK_INSTANCE_TYPE((obj), MIRAGE_TYPE_LANGUAGE))
 #define MIRAGE_IS_LANGUAGE_CLASS(klass) (G_TYPE_CHECK_CLASS_TYPE((klass), MIRAGE_TYPE_LANGUAGE))
-#define MIRAGE_LANGUAGE_GET_CLASS(obj)  (G_TYPE_INSTANCE_GET_CLASS((obj), MIRAGE_TYPE_LANGUAGE, MIRAGE_LanguageClass))
+#define MIRAGE_LANGUAGE_GET_CLASS(obj)  (G_TYPE_INSTANCE_GET_CLASS((obj), MIRAGE_TYPE_LANGUAGE, MirageLanguageClass))
 
-typedef struct _MIRAGE_Language         MIRAGE_Language;
-typedef struct _MIRAGE_LanguageClass    MIRAGE_LanguageClass;
-typedef struct _MIRAGE_LanguagePrivate  MIRAGE_LanguagePrivate;
+typedef struct _MirageLanguage         MirageLanguage;
+typedef struct _MirageLanguageClass    MirageLanguageClass;
+typedef struct _MirageLanguagePrivate  MirageLanguagePrivate;
 
 /**
- * MIRAGE_Language:
+ * MirageLanguage:
  *
  * <para>
  * Contains private data only, and should be accessed using the functions below.
  * </para>
  **/
-struct _MIRAGE_Language
+struct _MirageLanguage
 {
-    MIRAGE_Object parent_instance;
+    MirageObject parent_instance;
 
     /*< private >*/
-    MIRAGE_LanguagePrivate *priv;
+    MirageLanguagePrivate *priv;
 };
 
-struct _MIRAGE_LanguageClass
+struct _MirageLanguageClass
 {
-    MIRAGE_ObjectClass parent_class;
+    MirageObjectClass parent_class;
 };
 
 /* Used by MIRAGE_TYPE_LANGUAGE */
@@ -106,12 +106,12 @@ GType mirage_language_get_type (void);
  *                             Public API                             *
 \**********************************************************************/
 /* Langcode: set/get */
-void mirage_language_set_langcode (MIRAGE_Language *self, gint langcode);
-gint mirage_language_get_langcode (MIRAGE_Language *self);
+void mirage_language_set_langcode (MirageLanguage *self, gint langcode);
+gint mirage_language_get_langcode (MirageLanguage *self);
 
 /* Field: set/get */
-gboolean mirage_language_set_pack_data (MIRAGE_Language *self, gint pack_type, const gchar *pack_data, gint length, GError **error);
-gboolean mirage_language_get_pack_data (MIRAGE_Language *self, gint pack_type, const gchar **pack_data, gint *length, GError **error);
+gboolean mirage_language_set_pack_data (MirageLanguage *self, gint pack_type, const gchar *pack_data, gint length, GError **error);
+gboolean mirage_language_get_pack_data (MirageLanguage *self, gint pack_type, const gchar **pack_data, gint *length, GError **error);
 
 G_END_DECLS
 

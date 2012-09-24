@@ -1,19 +1,19 @@
 <!-- ##### SECTION Title ##### -->
-MIRAGE_Session object
+MirageSession object
 
 <!-- ##### SECTION Short_Description ##### -->
 Object representing a session
 
 <!-- ##### SECTION Long_Description ##### -->
 <para>
-#MIRAGE_Session object represents a session in the disc layout. It provides 
+#MirageSession object represents a session in the disc layout. It provides
 functions for manipulating session layout; setting session type, adding and removing
 tracks and languages, setting CD-TEXT data, etc.
 </para>
 
 <!-- ##### SECTION See_Also ##### -->
 <para>
-#MIRAGE_Disc, #MIRAGE_Track, #MIRAGE_Language, #MIRAGE_CDTextEncDec
+#MirageDisc, #MirageTrack, #MirageLanguage, #MirageCdTextCoder
 </para>
 
 <!-- ##### SECTION Stability_Level ##### -->
@@ -22,7 +22,7 @@ tracks and languages, setting CD-TEXT data, etc.
 <!-- ##### SECTION Image ##### -->
 
 
-<!-- ##### ENUM MIRAGE_SessionTypes ##### -->
+<!-- ##### ENUM MirageSessionTypes ##### -->
 <para>
 
 </para>
@@ -32,7 +32,7 @@ tracks and languages, setting CD-TEXT data, etc.
 @MIRAGE_SESSION_CD_I: 
 @MIRAGE_SESSION_CD_ROM_XA: 
 
-<!-- ##### STRUCT MIRAGE_Session ##### -->
+<!-- ##### STRUCT MirageSession ##### -->
 <para>
 
 </para>

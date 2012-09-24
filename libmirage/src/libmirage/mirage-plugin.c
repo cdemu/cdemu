@@ -27,21 +27,21 @@
 /**********************************************************************\
  *                         Private structure                          *
 \**********************************************************************/
-#define MIRAGE_PLUGIN_GET_PRIVATE(obj) (G_TYPE_INSTANCE_GET_PRIVATE((obj), MIRAGE_TYPE_PLUGIN, MIRAGE_PluginPrivate))
+#define MIRAGE_PLUGIN_GET_PRIVATE(obj) (G_TYPE_INSTANCE_GET_PRIVATE((obj), MIRAGE_TYPE_PLUGIN, MiragePluginPrivate))
 
-struct _MIRAGE_PluginPrivate
+struct _MiragePluginPrivate
 {
     gchar *filename;
     GModule *library;
 
-    void (*mirage_plugin_load_plugin) (MIRAGE_Plugin *module);
-    void (*mirage_plugin_unload_plugin) (MIRAGE_Plugin *module);
+    void (*mirage_plugin_load_plugin) (MiragePlugin *module);
+    void (*mirage_plugin_unload_plugin) (MiragePlugin *module);
 } ;
 
 typedef enum
 {
     PROPERTY_FILENAME = 1,
-} MIRAGE_PluginProperties;
+} MiragePluginProperties;
 
 
 /**********************************************************************\
@@ -55,12 +55,12 @@ typedef enum
  * Creates new plugin.
  * </para>
  *
- * Returns: (transfer full): a new #MIRAGE_Plugin object that represents plugin. It should be
+ * Returns: (transfer full): a new #MiragePlugin object that represents plugin. It should be
  * released with g_object_unref() when no longer needed.
  **/
-MIRAGE_Plugin *mirage_plugin_new (const gchar *filename)
+MiragePlugin *mirage_plugin_new (const gchar *filename)
 {
-    MIRAGE_Plugin *plugin = NULL;
+    MiragePlugin *plugin = NULL;
 
     g_return_val_if_fail(filename != NULL, NULL);
     plugin = g_object_new(MIRAGE_TYPE_PLUGIN, "filename", filename, NULL);
@@ -74,7 +74,7 @@ MIRAGE_Plugin *mirage_plugin_new (const gchar *filename)
 \**********************************************************************/
 static gboolean mirage_plugin_load_module (GTypeModule *_self)
 {
-    MIRAGE_Plugin *self = MIRAGE_PLUGIN(_self);
+    MiragePlugin *self = MIRAGE_PLUGIN(_self);
     gint *plugin_lt_current;
 
     if (!self->priv->filename) {
@@ -117,7 +117,7 @@ static gboolean mirage_plugin_load_module (GTypeModule *_self)
 
 static void mirage_plugin_unload_module (GTypeModule *_self)
 {
-    MIRAGE_Plugin *self = MIRAGE_PLUGIN(_self);
+    MiragePlugin *self = MIRAGE_PLUGIN(_self);
 
     self->priv->mirage_plugin_unload_plugin(self);
 
@@ -132,10 +132,10 @@ static void mirage_plugin_unload_module (GTypeModule *_self)
 /**********************************************************************\
  *                             Object init                            *
 \**********************************************************************/
-G_DEFINE_TYPE(MIRAGE_Plugin, mirage_plugin, G_TYPE_TYPE_MODULE);
+G_DEFINE_TYPE(MiragePlugin, mirage_plugin, G_TYPE_TYPE_MODULE);
 
 
-static void mirage_plugin_init (MIRAGE_Plugin *self)
+static void mirage_plugin_init (MiragePlugin *self)
 {
     self->priv = MIRAGE_PLUGIN_GET_PRIVATE(self);
 
@@ -147,7 +147,7 @@ static void mirage_plugin_init (MIRAGE_Plugin *self)
 
 static void mirage_plugin_finalize (GObject *gobject)
 {
-    MIRAGE_Plugin *self = MIRAGE_PLUGIN(gobject);
+    MiragePlugin *self = MIRAGE_PLUGIN(gobject);
 
     g_free(self->priv->filename);
 
@@ -157,7 +157,7 @@ static void mirage_plugin_finalize (GObject *gobject)
 
 static void mirage_plugin_get_property (GObject *gobject, guint property_id, GValue *value, GParamSpec *pspec)
 {
-    MIRAGE_Plugin *self = MIRAGE_PLUGIN(gobject);
+    MiragePlugin *self = MIRAGE_PLUGIN(gobject);
     switch (property_id) {
         case PROPERTY_FILENAME: {
             g_value_set_string(value, self->priv->filename);
@@ -173,7 +173,7 @@ static void mirage_plugin_get_property (GObject *gobject, guint property_id, GVa
 
 static void mirage_plugin_set_property (GObject *gobject, guint property_id, const GValue *value, GParamSpec *pspec)
 {
-    MIRAGE_Plugin *self = MIRAGE_PLUGIN(gobject);
+    MiragePlugin *self = MIRAGE_PLUGIN(gobject);
     switch (property_id) {
         case PROPERTY_FILENAME: {
             g_free(self->priv->filename);
@@ -189,7 +189,7 @@ static void mirage_plugin_set_property (GObject *gobject, guint property_id, con
 }
 
 
-static void mirage_plugin_class_init (MIRAGE_PluginClass *klass)
+static void mirage_plugin_class_init (MiragePluginClass *klass)
 {
     GObjectClass *gobject_class = G_OBJECT_CLASS(klass);
     GTypeModuleClass *gmodule_class = G_TYPE_MODULE_CLASS(klass);
@@ -202,7 +202,7 @@ static void mirage_plugin_class_init (MIRAGE_PluginClass *klass)
     gmodule_class->unload = mirage_plugin_unload_module;
 
     /* Register private structure */
-    g_type_class_add_private(klass, sizeof(MIRAGE_PluginPrivate));
+    g_type_class_add_private(klass, sizeof(MiragePluginPrivate));
 
     /* Install properties */
     g_object_class_install_property(gobject_class, PROPERTY_FILENAME, g_param_spec_string ("filename", "Filename", "The filename of the module", NULL, G_PARAM_READWRITE | G_PARAM_CONSTRUCT_ONLY));

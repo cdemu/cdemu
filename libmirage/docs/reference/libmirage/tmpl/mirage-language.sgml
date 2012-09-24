@@ -1,12 +1,12 @@
 <!-- ##### SECTION Title ##### -->
-MIRAGE_Language object
+MirageLanguage object
 
 <!-- ##### SECTION Short_Description ##### -->
 Object representing a language for session or track
 
 <!-- ##### SECTION Long_Description ##### -->
 <para>
-#MIRAGE_Language object represents a CD-TEXT language for session or track. It
+#MirageLanguage object represents a CD-TEXT language for session or track. It
 is a container object that stores language code and CD-TEXT pack data for different
 pack types.
 </para>
@@ -22,7 +22,7 @@ pack types.
 <!-- ##### SECTION Image ##### -->
 
 
-<!-- ##### ENUM MIRAGE_Language_PackTypes ##### -->
+<!-- ##### ENUM MirageLanguagePackTypes ##### -->
 <para>
 
 </para>
@@ -44,7 +44,7 @@ pack types.
 @MIRAGE_LANGUAGE_PACK_UPC_ISRC: 
 @MIRAGE_LANGUAGE_PACK_SIZE: 
 
-<!-- ##### STRUCT MIRAGE_Language ##### -->
+<!-- ##### STRUCT MirageLanguage ##### -->
 <para>
 
 </para>

@@ -104,7 +104,7 @@ void mirage_helper_subchannel_q_encode_isrc (guint8 *buf, const gchar *isrc);
 void mirage_helper_subchannel_q_decode_isrc (const guint8 *buf, gchar *isrc);
 
 /**
- * MIRAGE_SubChannel:
+ * MirageSubChannel:
  * @SUBCHANNEL_W: W subchannel data
  * @SUBCHANNEL_V: V subchannel data
  * @SUBCHANNEL_U: U subchannel data
@@ -126,7 +126,7 @@ typedef enum
     SUBCHANNEL_R = 5,
     SUBCHANNEL_Q = 6,
     SUBCHANNEL_P = 7,
-} MIRAGE_SubChannel;
+} MirageSubChannel;
 
 void mirage_helper_subchannel_interleave (gint subchan, const guint8 *channel12, guint8 *channel96);
 void mirage_helper_subchannel_deinterleave (gint subchan, const guint8 *channel96, guint8 *channel12);

@@ -27,9 +27,9 @@
 /**********************************************************************\
  *                          Private structure                         *
 \**********************************************************************/
-#define MIRAGE_OBJECT_GET_PRIVATE(obj) (G_TYPE_INSTANCE_GET_PRIVATE((obj), MIRAGE_TYPE_OBJECT, MIRAGE_ObjectPrivate))
+#define MIRAGE_OBJECT_GET_PRIVATE(obj) (G_TYPE_INSTANCE_GET_PRIVATE((obj), MIRAGE_TYPE_OBJECT, MirageObjectPrivate))
 
-struct _MIRAGE_ObjectPrivate
+struct _MirageObjectPrivate
 {
     GObject *parent; /* Soft-reference (= no ref) to parent */
 
@@ -42,7 +42,7 @@ struct _MIRAGE_ObjectPrivate
 /**********************************************************************\
  *                         Private functions                          *
 \**********************************************************************/
-static void mirage_object_child_destroyed_handler (MIRAGE_Object *self, GObject *where_the_object_was)
+static void mirage_object_child_destroyed_handler (MirageObject *self, GObject *where_the_object_was)
 {
     /* Remove child object's address from list */
     self->priv->children_list = g_list_remove(self->priv->children_list, where_the_object_was);
@@ -54,14 +54,14 @@ static void mirage_object_child_destroyed_handler (MIRAGE_Object *self, GObject 
 \**********************************************************************/
 /**
  * mirage_object_set_parent:
- * @self: a #MIRAGE_Object
+ * @self: a #MirageObject
  * @parent: (in): parent
  *
  * <para>
  * Sets object's parent.
  * </para>
  **/
-void mirage_object_set_parent (MIRAGE_Object *self, GObject *parent)
+void mirage_object_set_parent (MirageObject *self, GObject *parent)
 {
     if (self->priv->parent) {
         /* Remove previous weak reference pointer */
@@ -82,7 +82,7 @@ void mirage_object_set_parent (MIRAGE_Object *self, GObject *parent)
 
 /**
  * mirage_object_get_parent:
- * @self: a #MIRAGE_Object
+ * @self: a #MirageObject
  *
  * <para>
  * Retrieves object's parent.
@@ -90,7 +90,7 @@ void mirage_object_set_parent (MIRAGE_Object *self, GObject *parent)
  *
  * Returns: (transfer full): parent object, or %NULL.
  **/
-GObject *mirage_object_get_parent (MIRAGE_Object *self)
+GObject *mirage_object_get_parent (MirageObject *self)
 {
     if (self->priv->parent) {
         g_object_ref(self->priv->parent);
@@ -101,14 +101,14 @@ GObject *mirage_object_get_parent (MIRAGE_Object *self)
 
 /**
  * mirage_object_attach_child:
- * @self: a #MIRAGE_Object
+ * @self: a #MirageObject
  * @child: (in): child
  *
  * <para>
  * Attaches child to the object.
  * </para>
  **/
-void mirage_object_attach_child (MIRAGE_Object *self, GObject *child)
+void mirage_object_attach_child (MirageObject *self, GObject *child)
 {
     /* Add child to our children list */
     self->priv->children_list = g_list_append(self->priv->children_list, child);
@@ -123,7 +123,7 @@ void mirage_object_attach_child (MIRAGE_Object *self, GObject *child)
 
 /**
  * mirage_object_detach_child:
- * @self: a #MIRAGE_Object
+ * @self: a #MirageObject
  * @child: (in): child
  *
  * <para>
@@ -131,7 +131,7 @@ void mirage_object_attach_child (MIRAGE_Object *self, GObject *child)
  * it may have been passed to while being attached to the parent.
  * </para>
  **/
-void mirage_object_detach_child (MIRAGE_Object *self, GObject *child)
+void mirage_object_detach_child (MirageObject *self, GObject *child)
 {
     /* Remove child from our children list */
     self->priv->children_list = g_list_remove(self->priv->children_list, child);
@@ -142,11 +142,11 @@ void mirage_object_detach_child (MIRAGE_Object *self, GObject *child)
 
 
 /**********************************************************************\
- *              MIRAGE_Debuggable methods implementation              *
+ *              MirageDebuggable methods implementation              *
 \**********************************************************************/
-static void mirage_object_set_debug_context (MIRAGE_Debuggable *_self, GObject *debug_context)
+static void mirage_object_set_debug_context (MirageDebuggable *_self, GObject *debug_context)
 {
-    MIRAGE_Object *self = MIRAGE_OBJECT(_self);
+    MirageObject *self = MIRAGE_OBJECT(_self);
     GList *entry = NULL;
 
     if (debug_context == self->priv->debug_context) {
@@ -172,15 +172,15 @@ static void mirage_object_set_debug_context (MIRAGE_Debuggable *_self, GObject *
     }
 }
 
-static GObject *mirage_object_get_debug_context (MIRAGE_Debuggable *_self)
+static GObject *mirage_object_get_debug_context (MirageDebuggable *_self)
 {
-    MIRAGE_Object *self = MIRAGE_OBJECT(_self);
+    MirageObject *self = MIRAGE_OBJECT(_self);
     return self->priv->debug_context;
 }
 
-static void mirage_object_debug_messagev (MIRAGE_Debuggable *_self, gint level, gchar *format, va_list args)
+static void mirage_object_debug_messagev (MirageDebuggable *_self, gint level, gchar *format, va_list args)
 {
-    MIRAGE_Object *self = MIRAGE_OBJECT(_self);
+    MirageObject *self = MIRAGE_OBJECT(_self);
 
     gint debug_mask;
     const gchar *name;
@@ -221,16 +221,16 @@ static void mirage_object_debug_messagev (MIRAGE_Debuggable *_self, gint level, 
 /**********************************************************************\
  *                             Object init                            *
 \**********************************************************************/
-static void mirage_object_debuggable_init (MIRAGE_DebuggableInterface *iface);
+static void mirage_object_debuggable_init (MirageDebuggableInterface *iface);
 
-G_DEFINE_TYPE_EXTENDED(MIRAGE_Object,
+G_DEFINE_TYPE_EXTENDED(MirageObject,
                        mirage_object,
                        G_TYPE_OBJECT,
                        0,
                        G_IMPLEMENT_INTERFACE(MIRAGE_TYPE_DEBUGGABLE,
                                              mirage_object_debuggable_init));
 
-static void mirage_object_init (MIRAGE_Object *self)
+static void mirage_object_init (MirageObject *self)
 {
     self->priv = MIRAGE_OBJECT_GET_PRIVATE(self);
 
@@ -241,7 +241,7 @@ static void mirage_object_init (MIRAGE_Object *self)
 
 static void mirage_object_dispose (GObject *gobject)
 {
-    MIRAGE_Object *self = MIRAGE_OBJECT(gobject);
+    MirageObject *self = MIRAGE_OBJECT(gobject);
 
     /* Remove weak reference pointer to parent */
     if (self->priv->parent) {
@@ -260,7 +260,7 @@ static void mirage_object_dispose (GObject *gobject)
 
 static void mirage_object_finalize (GObject *gobject)
 {
-    MIRAGE_Object *self = MIRAGE_OBJECT(gobject);
+    MirageObject *self = MIRAGE_OBJECT(gobject);
 
     /* Free our list of weak references to children */
     g_list_free(self->priv->children_list);
@@ -269,7 +269,7 @@ static void mirage_object_finalize (GObject *gobject)
     return G_OBJECT_CLASS(mirage_object_parent_class)->finalize(gobject);
 }
 
-static void mirage_object_class_init (MIRAGE_ObjectClass *klass)
+static void mirage_object_class_init (MirageObjectClass *klass)
 {
     GObjectClass *gobject_class = G_OBJECT_CLASS(klass);
 
@@ -277,21 +277,21 @@ static void mirage_object_class_init (MIRAGE_ObjectClass *klass)
     gobject_class->finalize = mirage_object_finalize;
 
     /* Register private structure */
-    g_type_class_add_private(klass, sizeof(MIRAGE_ObjectPrivate));
+    g_type_class_add_private(klass, sizeof(MirageObjectPrivate));
 
     /* Signals */
     /**
-     * MIRAGE_Object::object-modified:
+     * MirageObject::object-modified:
      * @mirage_object: the object which received the signal
      *
      * <para>
-     * Emitted when a #MIRAGE_Object is changed in a way that causes bottom-up change.
+     * Emitted when a #MirageObject is changed in a way that causes bottom-up change.
      * </para>
      */
     klass->signal_object_modified = g_signal_new("object-modified", G_OBJECT_CLASS_TYPE(klass), (G_SIGNAL_RUN_LAST | G_SIGNAL_DETAILED), 0, NULL, NULL, g_cclosure_marshal_VOID__VOID, G_TYPE_NONE, 0, NULL);
 }
 
-static void mirage_object_debuggable_init (MIRAGE_DebuggableInterface *iface)
+static void mirage_object_debuggable_init (MirageDebuggableInterface *iface)
 {
     iface->set_debug_context = mirage_object_set_debug_context;
     iface->get_debug_context = mirage_object_get_debug_context;

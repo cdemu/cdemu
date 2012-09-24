@@ -24,27 +24,27 @@
 G_BEGIN_DECLS
 
 #define MIRAGE_TYPE_PARSER_DAA            (mirage_parser_daa_get_type())
-#define MIRAGE_PARSER_DAA(obj)            (G_TYPE_CHECK_INSTANCE_CAST((obj), MIRAGE_TYPE_PARSER_DAA, MIRAGE_Parser_DAA))
-#define MIRAGE_PARSER_DAA_CLASS(klass)    (G_TYPE_CHECK_CLASS_CAST((klass), MIRAGE_TYPE_PARSER_DAA, MIRAGE_Parser_DAAClass))
+#define MIRAGE_PARSER_DAA(obj)            (G_TYPE_CHECK_INSTANCE_CAST((obj), MIRAGE_TYPE_PARSER_DAA, MirageParser_DAA))
+#define MIRAGE_PARSER_DAA_CLASS(klass)    (G_TYPE_CHECK_CLASS_CAST((klass), MIRAGE_TYPE_PARSER_DAA, MirageParser_DAAClass))
 #define MIRAGE_IS_PARSER_DAA(obj)         (G_TYPE_CHECK_INSTANCE_TYPE((obj), MIRAGE_TYPE_PARSER_DAA))
 #define MIRAGE_IS_PARSER_DAA_CLASS(klass) (G_TYPE_CHECK_CLASS_TYPE((klass), MIRAGE_TYPE_PARSER_DAA))
-#define MIRAGE_PARSER_DAA_GET_CLASS(obj)  (G_TYPE_INSTANCE_GET_CLASS((obj), MIRAGE_TYPE_PARSER_DAA, MIRAGE_Parser_DAAClass))
+#define MIRAGE_PARSER_DAA_GET_CLASS(obj)  (G_TYPE_INSTANCE_GET_CLASS((obj), MIRAGE_TYPE_PARSER_DAA, MirageParser_DAAClass))
 
-typedef struct _MIRAGE_Parser_DAA MIRAGE_Parser_DAA;
-typedef struct _MIRAGE_Parser_DAAClass MIRAGE_Parser_DAAClass;
-typedef struct _MIRAGE_Parser_DAAPrivate MIRAGE_Parser_DAAPrivate;
+typedef struct _MirageParser_DAA MirageParser_DAA;
+typedef struct _MirageParser_DAAClass MirageParser_DAAClass;
+typedef struct _MirageParser_DAAPrivate MirageParser_DAAPrivate;
 
-struct _MIRAGE_Parser_DAA
+struct _MirageParser_DAA
 {
-    MIRAGE_Parser parent_instance;
+    MirageParser parent_instance;
 
     /*< private >*/
-    MIRAGE_Parser_DAAPrivate *priv;
+    MirageParser_DAAPrivate *priv;
 };
 
-struct _MIRAGE_Parser_DAAClass
+struct _MirageParser_DAAClass
 {
-    MIRAGE_ParserClass parent_class;
+    MirageParserClass parent_class;
 };
 
 /* Used by MIRAGE_TYPE_PARSER_DAA */

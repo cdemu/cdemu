@@ -29,9 +29,9 @@
 /**********************************************************************\
  *                          Private structure                         *
 \**********************************************************************/
-#define MIRAGE_SECTOR_GET_PRIVATE(obj) (G_TYPE_INSTANCE_GET_PRIVATE((obj), MIRAGE_TYPE_SECTOR, MIRAGE_SectorPrivate))
+#define MIRAGE_SECTOR_GET_PRIVATE(obj) (G_TYPE_INSTANCE_GET_PRIVATE((obj), MIRAGE_TYPE_SECTOR, MirageSectorPrivate))
 
-struct _MIRAGE_SectorPrivate
+struct _MirageSectorPrivate
 {
     gint type;
     gint address;
@@ -46,9 +46,9 @@ struct _MIRAGE_SectorPrivate
 /**********************************************************************\
  *                          Private functions                         *
 \**********************************************************************/
-static void mirage_sector_generate_subchannel (MIRAGE_Sector *self);
+static void mirage_sector_generate_subchannel (MirageSector *self);
 
-static void mirage_sector_generate_sync (MIRAGE_Sector *self)
+static void mirage_sector_generate_sync (MirageSector *self)
 {
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_SECTOR, "%s: generating sync\n", __debug__);
 
@@ -69,7 +69,7 @@ static void mirage_sector_generate_sync (MIRAGE_Sector *self)
     self->priv->valid_data |= MIRAGE_VALID_SYNC;
 }
 
-static void mirage_sector_generate_header (MIRAGE_Sector *self)
+static void mirage_sector_generate_header (MirageSector *self)
 {
     GObject *track;
     gint start_sector;
@@ -116,7 +116,7 @@ static void mirage_sector_generate_header (MIRAGE_Sector *self)
     self->priv->valid_data |= MIRAGE_VALID_HEADER;
 }
 
-static void mirage_sector_generate_subheader (MIRAGE_Sector *self)
+static void mirage_sector_generate_subheader (MirageSector *self)
 {
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_SECTOR, "%s: generating subheader\n", __debug__);
 
@@ -141,7 +141,7 @@ static void mirage_sector_generate_subheader (MIRAGE_Sector *self)
     self->priv->valid_data |= MIRAGE_VALID_SUBHEADER;
 }
 
-static void mirage_sector_generate_edc_ecc (MIRAGE_Sector *self)
+static void mirage_sector_generate_edc_ecc (MirageSector *self)
 {
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_SECTOR, "%s: generating EDC/ECC\n", __debug__);
 
@@ -200,7 +200,7 @@ static void mirage_sector_generate_edc_ecc (MIRAGE_Sector *self)
 \**********************************************************************/
 /**
  * mirage_sector_feed_data:
- * @self: a #MIRAGE_Sector
+ * @self: a #MirageSector
  * @address: (in): address the sector represents. Given in sectors.
  * @track: (in); track the sector belongs to
  * @error: (out) (allow-none): location to store error, or %NULL
@@ -216,7 +216,7 @@ static void mirage_sector_generate_edc_ecc (MIRAGE_Sector *self)
  *
  * Returns: %TRUE on success, %FALSE on failure
  **/
-gboolean mirage_sector_feed_data (MIRAGE_Sector *self, gint address, GObject *track, GError **error)
+gboolean mirage_sector_feed_data (MirageSector *self, gint address, GObject *track, GError **error)
 {
     GError *local_error = NULL;
     GObject *fragment;
@@ -796,15 +796,15 @@ gboolean mirage_sector_feed_data (MIRAGE_Sector *self, gint address, GObject *tr
 
 /**
  * mirage_sector_get_sector_type:
- * @self: a #MIRAGE_Sector
+ * @self: a #MirageSector
  *
  * <para>
- * Retrieves sector type (track mode); one of #MIRAGE_TrackModes.
+ * Retrieves sector type (track mode); one of #MirageTrackModes.
  * </para>
  *
  * Returns: sector type (track mode)
  **/
-gint mirage_sector_get_sector_type (MIRAGE_Sector *self)
+gint mirage_sector_get_sector_type (MirageSector *self)
 {
     /* Return sector type */
     return self->priv->type;
@@ -813,7 +813,7 @@ gint mirage_sector_get_sector_type (MIRAGE_Sector *self)
 
 /**
  * mirage_sector_get_sync:
- * @self: a #MIRAGE_Sector
+ * @self: a #MirageSector
  * @ret_buf: (out) (transfer none) (allow-none): location to store pointer to buffer containing sync pattern, or %NULL
  * @ret_len: (out) (allow-none): location to store length of sync pattern, or %NULL. Length is given in bytes.
  * @error: (out) (allow-none): location to store error, or %NULL
@@ -830,7 +830,7 @@ gint mirage_sector_get_sector_type (MIRAGE_Sector *self)
  *
  * Returns: %TRUE on success, %FALSE on failure
  **/
-gboolean mirage_sector_get_sync (MIRAGE_Sector *self, const guint8 **ret_buf, gint *ret_len, GError **error)
+gboolean mirage_sector_get_sync (MirageSector *self, const guint8 **ret_buf, gint *ret_len, GError **error)
 {
     gboolean succeeded = TRUE;
     guint8 *buf = NULL;
@@ -873,7 +873,7 @@ gboolean mirage_sector_get_sync (MIRAGE_Sector *self, const guint8 **ret_buf, gi
 
 /**
  * mirage_sector_get_header:
- * @self: a #MIRAGE_Sector
+ * @self: a #MirageSector
  * @ret_buf: (out) (transfer none) (allow-none): location to store pointer to buffer containing header, or %NULL
  * @ret_len: (out) (allow-none): location to store length of header, or %NULL. Length is given in bytes.
  * @error: (out) (allow-none): location to store error, or %NULL
@@ -890,7 +890,7 @@ gboolean mirage_sector_get_sync (MIRAGE_Sector *self, const guint8 **ret_buf, gi
  *
  * Returns: %TRUE on success, %FALSE on failure
  **/
-gboolean mirage_sector_get_header (MIRAGE_Sector *self, const guint8 **ret_buf, gint *ret_len, GError **error)
+gboolean mirage_sector_get_header (MirageSector *self, const guint8 **ret_buf, gint *ret_len, GError **error)
 {
     gboolean succeeded = TRUE;
     guint8 *buf = NULL;
@@ -933,7 +933,7 @@ gboolean mirage_sector_get_header (MIRAGE_Sector *self, const guint8 **ret_buf, 
 
 /**
  * mirage_sector_get_subheader:
- * @self: a #MIRAGE_Sector
+ * @self: a #MirageSector
  * @ret_buf: (out) (transfer none) (allow-none): location to store pointer to buffer containing subheader, or %NULL
  * @ret_len: (out) (allow-none): location to store length of subheader, or %NULL. Length is given in bytes.
  * @error: (out) (allow-none): location to store error, or %NULL
@@ -950,7 +950,7 @@ gboolean mirage_sector_get_header (MIRAGE_Sector *self, const guint8 **ret_buf, 
  *
  * Returns: %TRUE on success, %FALSE on failure
  **/
-gboolean mirage_sector_get_subheader (MIRAGE_Sector *self, const guint8 **ret_buf, gint *ret_len, GError **error)
+gboolean mirage_sector_get_subheader (MirageSector *self, const guint8 **ret_buf, gint *ret_len, GError **error)
 {
     gboolean succeeded = TRUE;
     guint8 *buf = NULL;
@@ -990,7 +990,7 @@ gboolean mirage_sector_get_subheader (MIRAGE_Sector *self, const guint8 **ret_bu
 
 /**
  * mirage_sector_get_data:
- * @self: a #MIRAGE_Sector
+ * @self: a #MirageSector
  * @ret_buf: (out) (transfer none) (allow-none): location to store pointer to buffer containing user data, or %NULL
  * @ret_len: (out) (allow-none): location to store length of user data, or %NULL. Length is given in bytes.
  * @error: (out) (allow-none): location to store error, or %NULL
@@ -1003,7 +1003,7 @@ gboolean mirage_sector_get_subheader (MIRAGE_Sector *self, const guint8 **ret_bu
  *
  * Returns: %TRUE on success, %FALSE on failure
  **/
-gboolean mirage_sector_get_data (MIRAGE_Sector *self, const guint8 **ret_buf, gint *ret_len, GError **error)
+gboolean mirage_sector_get_data (MirageSector *self, const guint8 **ret_buf, gint *ret_len, GError **error)
 {
     gboolean succeeded = TRUE;
     guint8 *buf = NULL;
@@ -1065,7 +1065,7 @@ gboolean mirage_sector_get_data (MIRAGE_Sector *self, const guint8 **ret_buf, gi
 
 /**
  * mirage_sector_get_edc_ecc:
- * @self: a #MIRAGE_Sector
+ * @self: a #MirageSector
  * @ret_buf: (out) (transfer none) (allow-none): location to store pointer to buffer containing EDC/ECC data, or %NULL
  * @ret_len: (out) (allow-none): location to store length of EDC/ECC data, or %NULL. Length is given in bytes.
  * @error: (out) (allow-none): location to store error, or %NULL
@@ -1082,7 +1082,7 @@ gboolean mirage_sector_get_data (MIRAGE_Sector *self, const guint8 **ret_buf, gi
  *
  * Returns: %TRUE on success, %FALSE on failure
  **/
-gboolean mirage_sector_get_edc_ecc (MIRAGE_Sector *self, const guint8 **ret_buf, gint *ret_len, GError **error)
+gboolean mirage_sector_get_edc_ecc (MirageSector *self, const guint8 **ret_buf, gint *ret_len, GError **error)
 {
     gboolean succeeded = TRUE;
     guint8 *buf = NULL;
@@ -1131,14 +1131,14 @@ gboolean mirage_sector_get_edc_ecc (MIRAGE_Sector *self, const guint8 **ret_buf,
 
 /**
  * mirage_sector_get_subchannel:
- * @self: a #MIRAGE_Sector
+ * @self: a #MirageSector
  * @format: (in): subchannel format
  * @ret_buf: (out) (transfer none) (allow-none): location to store pointer to buffer containing subchannel, or %NULL
  * @ret_len: (out) (allow-none): location to store length of subchannel data, or %NULL. Length is given in bytes.
  * @error: (out) (allow-none): location to store error, or %NULL
  *
  * <para>
- * Retrieves sector's subchannel. @type must be one of #MIRAGE_Sector_SubchannelFormat.
+ * Retrieves sector's subchannel. @type must be one of #MirageSectorSubchannelFormat.
  * The pointer to appropriate location in sector's data buffer is stored into
  * @ret_buf;  therefore, the buffer should not be modified.
  * </para>
@@ -1149,7 +1149,7 @@ gboolean mirage_sector_get_edc_ecc (MIRAGE_Sector *self, const guint8 **ret_buf,
  *
  * Returns: %TRUE on success, %FALSE on failure
  **/
-gboolean mirage_sector_get_subchannel (MIRAGE_Sector *self, gint format, const guint8 **ret_buf, gint *ret_len, GError **error)
+gboolean mirage_sector_get_subchannel (MirageSector *self, gint format, const guint8 **ret_buf, gint *ret_len, GError **error)
 {
     /* Generate subchannel if it's not provided */
     if (!(self->priv->valid_data & MIRAGE_VALID_SUBCHAN)) {
@@ -1192,7 +1192,7 @@ gboolean mirage_sector_get_subchannel (MIRAGE_Sector *self, gint format, const g
 
 /**
  * mirage_sector_verify_lec:
- * @self: a #MIRAGE_Sector
+ * @self: a #MirageSector
  *
  * <para>
  * Verifies the sector data in terms of L-EC error detection/correction.
@@ -1209,7 +1209,7 @@ gboolean mirage_sector_get_subchannel (MIRAGE_Sector *self, gint format, const g
  *
  * <para>
  * This function requires EDC/ECC data to be provided by the image. If it
- * is not provided, it would be generated by #MIRAGE_Sector on first access
+ * is not provided, it would be generated by #MirageSector on first access
  * via mirage_sector_get_edc_ecc() using the same algorithm as the one used
  * by this function. Therefore, in case of EDC/ECC data missing, the verification
  * automatically succeeds.
@@ -1217,7 +1217,7 @@ gboolean mirage_sector_get_subchannel (MIRAGE_Sector *self, gint format, const g
  *
  * Returns: %TRUE if sector passes verification (i.e. no L-EC errors are detected) otherwise %FALSE
  **/
-gboolean mirage_sector_verify_lec (MIRAGE_Sector *self)
+gboolean mirage_sector_verify_lec (MirageSector *self)
 {
     gboolean valid = TRUE;
 
@@ -1262,7 +1262,7 @@ gboolean mirage_sector_verify_lec (MIRAGE_Sector *self)
 
 /**
  * mirage_sector_verify_subchannel_crc:
- * @self: a #MIRAGE_Sector
+ * @self: a #MirageSector
  *
  * <para>
  * Verifies the Q subchannel's CRC for the sector.
@@ -1275,7 +1275,7 @@ gboolean mirage_sector_verify_lec (MIRAGE_Sector *self)
  *
  * <para>
  * This function requires subchannel data to be provided by the image. If it
- * is not provided, it would be generated by #MIRAGE_Sector on first access
+ * is not provided, it would be generated by #MirageSector on first access
  * via mirage_sector_get_subchannel() using the same algorithm as the one used
  * by this function. Therefore, in case of subchannel data missing, the verification
  * automatically succeeds.
@@ -1283,7 +1283,7 @@ gboolean mirage_sector_verify_lec (MIRAGE_Sector *self)
  *
  * Returns: %TRUE if sector's Q subchannel CRC passes verification otherwise %FALSE
  **/
-gboolean mirage_sector_verify_subchannel_crc (MIRAGE_Sector *self)
+gboolean mirage_sector_verify_subchannel_crc (MirageSector *self)
 {
     gboolean valid = TRUE;
 
@@ -1313,10 +1313,10 @@ gboolean mirage_sector_verify_subchannel_crc (MIRAGE_Sector *self)
 /**********************************************************************\
  *                             Object init                            *
 \**********************************************************************/
-G_DEFINE_TYPE(MIRAGE_Sector, mirage_sector, MIRAGE_TYPE_OBJECT);
+G_DEFINE_TYPE(MirageSector, mirage_sector, MIRAGE_TYPE_OBJECT);
 
 
-static void mirage_sector_init (MIRAGE_Sector *self)
+static void mirage_sector_init (MirageSector *self)
 {
     self->priv = MIRAGE_SECTOR_GET_PRIVATE(self);
 
@@ -1324,17 +1324,17 @@ static void mirage_sector_init (MIRAGE_Sector *self)
     self->priv->type = 0xDEADBEEF;
 }
 
-static void mirage_sector_class_init (MIRAGE_SectorClass *klass)
+static void mirage_sector_class_init (MirageSectorClass *klass)
 {
     /* Register private structure */
-    g_type_class_add_private(klass, sizeof(MIRAGE_SectorPrivate));
+    g_type_class_add_private(klass, sizeof(MirageSectorPrivate));
 }
 
 
 /**********************************************************************\
  *                        Subchannel generation                       *
 \**********************************************************************/
-static gint subchannel_generate_p (MIRAGE_Sector *self, guint8 *buf)
+static gint subchannel_generate_p (MirageSector *self, guint8 *buf)
 {
     gint address = self->priv->address;
 
@@ -1363,7 +1363,7 @@ static gint subchannel_generate_p (MIRAGE_Sector *self, guint8 *buf)
     return 12;
 }
 
-static gint subchannel_generate_q (MIRAGE_Sector *self, guint8 *buf)
+static gint subchannel_generate_q (MirageSector *self, guint8 *buf)
 {
     gint address = self->priv->address;
 
@@ -1542,43 +1542,43 @@ static gint subchannel_generate_q (MIRAGE_Sector *self, guint8 *buf)
     return 12;
 }
 
-static gint subchannel_generate_r (MIRAGE_Sector *self G_GNUC_UNUSED, guint8 *buf)
+static gint subchannel_generate_r (MirageSector *self G_GNUC_UNUSED, guint8 *buf)
 {
     memset(buf, 0, 12);
     return 12;
 }
 
-static gint subchannel_generate_s (MIRAGE_Sector *self G_GNUC_UNUSED, guint8 *buf)
+static gint subchannel_generate_s (MirageSector *self G_GNUC_UNUSED, guint8 *buf)
 {
     memset(buf, 0, 12);
     return 12;
 }
 
-static gint subchannel_generate_t (MIRAGE_Sector *self G_GNUC_UNUSED, guint8 *buf)
+static gint subchannel_generate_t (MirageSector *self G_GNUC_UNUSED, guint8 *buf)
 {
     memset(buf, 0, 12);
     return 12;
 }
 
-static gint subchannel_generate_u (MIRAGE_Sector *self G_GNUC_UNUSED, guint8 *buf)
+static gint subchannel_generate_u (MirageSector *self G_GNUC_UNUSED, guint8 *buf)
 {
     memset(buf, 0, 12);
     return 12;
 }
 
-static gint subchannel_generate_v (MIRAGE_Sector *self G_GNUC_UNUSED, guint8 *buf)
+static gint subchannel_generate_v (MirageSector *self G_GNUC_UNUSED, guint8 *buf)
 {
     memset(buf, 0, 12);
     return 12;
 }
 
-static gint subchannel_generate_w (MIRAGE_Sector *self G_GNUC_UNUSED, guint8 *buf)
+static gint subchannel_generate_w (MirageSector *self G_GNUC_UNUSED, guint8 *buf)
 {
     memset(buf, 0, 12);
     return 12;
 }
 
-static void mirage_sector_generate_subchannel (MIRAGE_Sector *self)
+static void mirage_sector_generate_subchannel (MirageSector *self)
 {
     guint8 tmp_buf[12];
     /* Generate subchannel: only P/Q can be generated at the moment

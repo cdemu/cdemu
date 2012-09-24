@@ -24,27 +24,27 @@
 G_BEGIN_DECLS
 
 #define MIRAGE_TYPE_FILE_FILTER_ECM            (mirage_file_filter_ecm_get_type())
-#define MIRAGE_FILE_FILTER_ECM(obj)            (G_TYPE_CHECK_INSTANCE_CAST((obj), MIRAGE_TYPE_FILE_FILTER_ECM, MIRAGE_FileFilter_ECM))
-#define MIRAGE_FILE_FILTER_ECM_CLASS(klass)    (G_TYPE_CHECK_CLASS_CAST((klass), MIRAGE_TYPE_FILE_FILTER_ECM, MIRAGE_FileFilter_ECMClass))
+#define MIRAGE_FILE_FILTER_ECM(obj)            (G_TYPE_CHECK_INSTANCE_CAST((obj), MIRAGE_TYPE_FILE_FILTER_ECM, MirageFileFilterEcm))
+#define MIRAGE_FILE_FILTER_ECM_CLASS(klass)    (G_TYPE_CHECK_CLASS_CAST((klass), MIRAGE_TYPE_FILE_FILTER_ECM, MirageFileFilterEcmClass))
 #define MIRAGE_IS_FILE_FILTER_ECM(obj)         (G_TYPE_CHECK_INSTANCE_TYPE((obj), MIRAGE_TYPE_FILE_FILTER_ECM))
 #define MIRAGE_IS_FILE_FILTER_ECM_CLASS(klass) (G_TYPE_CHECK_CLASS_TYPE((klass), MIRAGE_TYPE_FILE_FILTER_ECM))
-#define MIRAGE_FILE_FILTER_ECM_GET_CLASS(obj)  (G_TYPE_INSTANCE_GET_CLASS((obj), MIRAGE_TYPE_FILE_FILTER_ECM, MIRAGE_FileFilter_ECMClass))
+#define MIRAGE_FILE_FILTER_ECM_GET_CLASS(obj)  (G_TYPE_INSTANCE_GET_CLASS((obj), MIRAGE_TYPE_FILE_FILTER_ECM, MirageFileFilterEcmClass))
 
-typedef struct _MIRAGE_FileFilter_ECM        MIRAGE_FileFilter_ECM;
-typedef struct _MIRAGE_FileFilter_ECMClass   MIRAGE_FileFilter_ECMClass;
-typedef struct _MIRAGE_FileFilter_ECMPrivate MIRAGE_FileFilter_ECMPrivate;
+typedef struct _MirageFileFilterEcm        MirageFileFilterEcm;
+typedef struct _MirageFileFilterEcmClass   MirageFileFilterEcmClass;
+typedef struct _MirageFileFilterEcmPrivate MirageFileFilterEcmPrivate;
 
-struct _MIRAGE_FileFilter_ECM
+struct _MirageFileFilterEcm
 {
-    MIRAGE_FileFilter parent_instance;
+    MirageFileFilter parent_instance;
 
     /*< private >*/
-    MIRAGE_FileFilter_ECMPrivate *priv;
+    MirageFileFilterEcmPrivate *priv;
 };
 
-struct _MIRAGE_FileFilter_ECMClass
+struct _MirageFileFilterEcmClass
 {
-    MIRAGE_FileFilterClass parent_class;
+    MirageFileFilterClass parent_class;
 };
 
 /* Used by MIRAGE_TYPE_FILE_FILTER_ECM */

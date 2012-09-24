@@ -41,9 +41,9 @@ typedef struct
 /**********************************************************************\
  *                          Private structure                         *
 \**********************************************************************/
-#define MIRAGE_FILE_FILTER_GZIP_GET_PRIVATE(obj) (G_TYPE_INSTANCE_GET_PRIVATE((obj), MIRAGE_TYPE_FILE_FILTER_GZIP, MIRAGE_FileFilter_GZIPPrivate))
+#define MIRAGE_FILE_FILTER_GZIP_GET_PRIVATE(obj) (G_TYPE_INSTANCE_GET_PRIVATE((obj), MIRAGE_TYPE_FILE_FILTER_GZIP, MirageFileFilterGzipPrivate))
 
-struct _MIRAGE_FileFilter_GZIPPrivate
+struct _MirageFileFilterGzipPrivate
 {
     goffset cur_position;
 
@@ -69,7 +69,7 @@ struct _MIRAGE_FileFilter_GZIPPrivate
 /**********************************************************************\
  *                           Part indexing                            *
 \**********************************************************************/
-static gboolean mirage_file_filter_gzip_compute_part_sizes (MIRAGE_FileFilter_GZIP *self, GError **error)
+static gboolean mirage_file_filter_gzip_compute_part_sizes (MirageFileFilterGzip *self, GError **error)
 {
     GZIP_Part *part;
     gint max_size = 0;
@@ -103,7 +103,7 @@ static gboolean mirage_file_filter_gzip_compute_part_sizes (MIRAGE_FileFilter_GZ
     return TRUE;
 }
 
-static gboolean mirage_file_filter_gzip_append_part (MIRAGE_FileFilter_GZIP *self, gint bits, goffset raw_offset, goffset offset, gint left, guint8 *window, GError **error)
+static gboolean mirage_file_filter_gzip_append_part (MirageFileFilterGzip *self, gint bits, goffset raw_offset, goffset offset, gint left, guint8 *window, GError **error)
 {
     /* If no parts have been allocated yet, do so now; start with eight */
     if (!self->priv->allocated_parts) {
@@ -146,7 +146,7 @@ static gboolean mirage_file_filter_gzip_append_part (MIRAGE_FileFilter_GZIP *sel
     return TRUE;
 }
 
-static gboolean mirage_file_filter_gzip_build_index (MIRAGE_FileFilter_GZIP *self, GError **error)
+static gboolean mirage_file_filter_gzip_build_index (MirageFileFilterGzip *self, GError **error)
 {
     GInputStream *stream = g_filter_input_stream_get_base_stream(G_FILTER_INPUT_STREAM(self));
     z_stream *zlib_stream = &self->priv->zlib_stream;
@@ -294,7 +294,7 @@ static inline gboolean is_within_part (goffset position, const GZIP_Part *part, 
 }
 
 
-static gboolean mirage_file_filter_gzip_set_current_position (MIRAGE_FileFilter_GZIP *self, goffset new_position, GError **error)
+static gboolean mirage_file_filter_gzip_set_current_position (MirageFileFilterGzip *self, goffset new_position, GError **error)
 {
     /* If new position matches current position, do nothing */
     if (new_position == self->priv->cur_position) {
@@ -356,7 +356,7 @@ static gboolean mirage_file_filter_gzip_set_current_position (MIRAGE_FileFilter_
 /**********************************************************************\
  *                         Reading from parts                         *
 \**********************************************************************/
-static gssize mirage_filter_gzip_read_from_part (MIRAGE_FileFilter_GZIP *self, guint8 *buffer, gsize count)
+static gssize mirage_filter_gzip_read_from_part (MirageFileFilterGzip *self, guint8 *buffer, gsize count)
 {
     GInputStream *stream = g_filter_input_stream_get_base_stream(G_FILTER_INPUT_STREAM(self));
     goffset part_offset;
@@ -471,11 +471,11 @@ static gssize mirage_filter_gzip_read_from_part (MIRAGE_FileFilter_GZIP *self, g
 
 
 /**********************************************************************\
- *              MIRAGE_FileFilter methods implementations             *
+ *              MirageFileFilter methods implementations             *
 \**********************************************************************/
-static gboolean mirage_file_filter_gzip_can_handle_data_format (MIRAGE_FileFilter *_self, GError **error)
+static gboolean mirage_file_filter_gzip_can_handle_data_format (MirageFileFilter *_self, GError **error)
 {
-    MIRAGE_FileFilter_GZIP *self = MIRAGE_FILE_FILTER_GZIP(_self);
+    MirageFileFilterGzip *self = MIRAGE_FILE_FILTER_GZIP(_self);
     GInputStream *stream = g_filter_input_stream_get_base_stream(G_FILTER_INPUT_STREAM(self));
 
     guint8 sig[2];
@@ -502,9 +502,9 @@ static gboolean mirage_file_filter_gzip_can_handle_data_format (MIRAGE_FileFilte
 }
 
 
-static gssize mirage_file_filter_gzip_read (MIRAGE_FileFilter *_self, void *buffer, gsize count, GError **error)
+static gssize mirage_file_filter_gzip_read (MirageFileFilter *_self, void *buffer, gsize count, GError **error)
 {
-    MIRAGE_FileFilter_GZIP *self = MIRAGE_FILE_FILTER_GZIP(_self);
+    MirageFileFilterGzip *self = MIRAGE_FILE_FILTER_GZIP(_self);
 
     gssize total_read, read_len;
     guint8 *ptr = buffer;
@@ -548,15 +548,15 @@ static gssize mirage_file_filter_gzip_read (MIRAGE_FileFilter *_self, void *buff
 }
 
 
-static goffset mirage_file_filter_gzip_tell (MIRAGE_FileFilter *_self)
+static goffset mirage_file_filter_gzip_tell (MirageFileFilter *_self)
 {
-    MIRAGE_FileFilter_GZIP *self = MIRAGE_FILE_FILTER_GZIP(_self);
+    MirageFileFilterGzip *self = MIRAGE_FILE_FILTER_GZIP(_self);
     return self->priv->cur_position;
 }
 
-static gboolean mirage_file_filter_gzip_seek (MIRAGE_FileFilter *_self, goffset offset, GSeekType type, GError **error)
+static gboolean mirage_file_filter_gzip_seek (MirageFileFilter *_self, goffset offset, GSeekType type, GError **error)
 {
-    MIRAGE_FileFilter_GZIP *self = MIRAGE_FILE_FILTER_GZIP(_self);
+    MirageFileFilterGzip *self = MIRAGE_FILE_FILTER_GZIP(_self);
     goffset new_position;
 
     /* Compute new position */
@@ -593,7 +593,7 @@ static gboolean mirage_file_filter_gzip_seek (MIRAGE_FileFilter *_self, goffset 
 /**********************************************************************\
  *                             Object init                            *
 \**********************************************************************/
-G_DEFINE_DYNAMIC_TYPE(MIRAGE_FileFilter_GZIP, mirage_file_filter_gzip, MIRAGE_TYPE_FILE_FILTER);
+G_DEFINE_DYNAMIC_TYPE(MirageFileFilterGzip, mirage_file_filter_gzip, MIRAGE_TYPE_FILE_FILTER);
 
 void mirage_file_filter_gzip_type_register (GTypeModule *type_module)
 {
@@ -601,7 +601,7 @@ void mirage_file_filter_gzip_type_register (GTypeModule *type_module)
 }
 
 
-static void mirage_file_filter_gzip_init (MIRAGE_FileFilter_GZIP *self)
+static void mirage_file_filter_gzip_init (MirageFileFilterGzip *self)
 {
     self->priv = MIRAGE_FILE_FILTER_GZIP_GET_PRIVATE(self);
 
@@ -626,7 +626,7 @@ static void mirage_file_filter_gzip_init (MIRAGE_FileFilter_GZIP *self)
 
 static void mirage_file_filter_gzip_finalize (GObject *gobject)
 {
-    MIRAGE_FileFilter_GZIP *self = MIRAGE_FILE_FILTER_GZIP(gobject);
+    MirageFileFilterGzip *self = MIRAGE_FILE_FILTER_GZIP(gobject);
 
     g_free(self->priv->parts);
     g_free(self->priv->part_buffer);
@@ -637,10 +637,10 @@ static void mirage_file_filter_gzip_finalize (GObject *gobject)
     return G_OBJECT_CLASS(mirage_file_filter_gzip_parent_class)->finalize(gobject);
 }
 
-static void mirage_file_filter_gzip_class_init (MIRAGE_FileFilter_GZIPClass *klass)
+static void mirage_file_filter_gzip_class_init (MirageFileFilterGzipClass *klass)
 {
     GObjectClass *gobject_class = G_OBJECT_CLASS(klass);
-    MIRAGE_FileFilterClass *file_filter_class = MIRAGE_FILE_FILTER_CLASS(klass);
+    MirageFileFilterClass *file_filter_class = MIRAGE_FILE_FILTER_CLASS(klass);
 
     gobject_class->finalize = mirage_file_filter_gzip_finalize;
 
@@ -652,9 +652,9 @@ static void mirage_file_filter_gzip_class_init (MIRAGE_FileFilter_GZIPClass *kla
     file_filter_class->seek = mirage_file_filter_gzip_seek;
 
     /* Register private structure */
-    g_type_class_add_private(klass, sizeof(MIRAGE_FileFilter_GZIPPrivate));
+    g_type_class_add_private(klass, sizeof(MirageFileFilterGzipPrivate));
 }
 
-static void mirage_file_filter_gzip_class_finalize (MIRAGE_FileFilter_GZIPClass *klass G_GNUC_UNUSED)
+static void mirage_file_filter_gzip_class_finalize (MirageFileFilterGzipClass *klass G_GNUC_UNUSED)
 {
 }

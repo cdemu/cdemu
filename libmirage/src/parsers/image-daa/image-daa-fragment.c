@@ -33,7 +33,7 @@
 /**********************************************************************\
  *                          Private structure                         *
 \**********************************************************************/
-#define MIRAGE_FRAGMENT_DAA_GET_PRIVATE(obj) (G_TYPE_INSTANCE_GET_PRIVATE((obj), MIRAGE_TYPE_FRAGMENT_DAA, MIRAGE_Fragment_DAAPrivate))
+#define MIRAGE_FRAGMENT_DAA_GET_PRIVATE(obj) (G_TYPE_INSTANCE_GET_PRIVATE((obj), MIRAGE_TYPE_FRAGMENT_DAA, MirageFragment_DAAPrivate))
 
 enum
 {
@@ -60,7 +60,7 @@ typedef struct
 typedef gchar * (*DAA_create_filename_func) (gchar *main_filename, gint index);
 
 
-struct _MIRAGE_Fragment_DAAPrivate
+struct _MirageFragment_DAAPrivate
 {
     /* Filename components */
     gchar *main_filename;
@@ -360,7 +360,7 @@ static void daa_crypt_init (guint8 *pwdkey, const gchar *pass, guint8 *daakey)
 /**********************************************************************\
  *                            Compression                             *
 \**********************************************************************/
-static gboolean mirage_fragment_daa_initialize_zlib (MIRAGE_Fragment_DAA *self, GError **error)
+static gboolean mirage_fragment_daa_initialize_zlib (MirageFragment_DAA *self, GError **error)
 {
     z_stream *zlib_stream = &self->priv->zlib_stream;
     gint ret;
@@ -381,7 +381,7 @@ static gboolean mirage_fragment_daa_initialize_zlib (MIRAGE_Fragment_DAA *self, 
     return TRUE;
 }
 
-static gint mirage_fragment_daa_inflate_zlib (MIRAGE_Fragment_DAA *self, guint8 *in_buf, gsize in_len, gsize uncompressed_size)
+static gint mirage_fragment_daa_inflate_zlib (MirageFragment_DAA *self, guint8 *in_buf, gsize in_len, gsize uncompressed_size)
 {
     z_stream *zlib_stream = &self->priv->zlib_stream;
     gint ret;
@@ -405,14 +405,14 @@ static gint mirage_fragment_daa_inflate_zlib (MIRAGE_Fragment_DAA *self, guint8 
 }
 
 
-static gboolean mirage_fragment_daa_initialize_lzma (MIRAGE_Fragment_DAA *self, GError **error G_GNUC_UNUSED)
+static gboolean mirage_fragment_daa_initialize_lzma (MirageFragment_DAA *self, GError **error G_GNUC_UNUSED)
 {
     LzmaDec_Construct(&self->priv->lzma_decoder);
     LzmaDec_Allocate(&self->priv->lzma_decoder, self->priv->header.format2.lzma_props, LZMA_PROPS_SIZE, &lzma_allocator);
     return TRUE;
 }
 
-static gint mirage_fragment_daa_inflate_lzma (MIRAGE_Fragment_DAA *self, guint8 *in_buf, gsize in_len, gsize uncompressed_size)
+static gint mirage_fragment_daa_inflate_lzma (MirageFragment_DAA *self, guint8 *in_buf, gsize in_len, gsize uncompressed_size)
 {
     ELzmaStatus status;
     SizeT inlen, outlen;
@@ -458,7 +458,7 @@ static gint mirage_fragment_daa_inflate_lzma (MIRAGE_Fragment_DAA *self, guint8 
 /**********************************************************************\
  *                            Data accesss                            *
 \**********************************************************************/
-static gboolean mirage_fragment_daa_read_main_header (MIRAGE_Fragment_DAA *self, GObject *stream, DAA_MainHeader *header, GError **error)
+static gboolean mirage_fragment_daa_read_main_header (MirageFragment_DAA *self, GObject *stream, DAA_MainHeader *header, GError **error)
 {
     guint32 crc;
 
@@ -507,7 +507,7 @@ static gboolean mirage_fragment_daa_read_main_header (MIRAGE_Fragment_DAA *self,
     return TRUE;
 }
 
-static gboolean mirage_fragment_daa_read_part_header (MIRAGE_Fragment_DAA *self, GObject *stream, DAA_PartHeader *header, GError **error)
+static gboolean mirage_fragment_daa_read_part_header (MirageFragment_DAA *self, GObject *stream, DAA_PartHeader *header, GError **error)
 {
     guint32 crc;
 
@@ -549,7 +549,7 @@ static gboolean mirage_fragment_daa_read_part_header (MIRAGE_Fragment_DAA *self,
     return TRUE;
 }
 
-static gboolean mirage_fragment_daa_read_from_stream (MIRAGE_Fragment_DAA *self, guint64 offset, guint32 length, guint8 *buffer, GError **error)
+static gboolean mirage_fragment_daa_read_from_stream (MirageFragment_DAA *self, guint64 offset, guint32 length, guint8 *buffer, GError **error)
 {
     /* A rather complex loop, thanks to the possibility that a chunk spans across
        multiple part files... */
@@ -610,7 +610,7 @@ static gboolean mirage_fragment_daa_read_from_stream (MIRAGE_Fragment_DAA *self,
 /**********************************************************************\
  *                         Descriptor parsing                         *
 \**********************************************************************/
-static gboolean mirage_fragment_daa_parse_descriptor_split (MIRAGE_Fragment_DAA *self, GObject *stream, gint descriptor_size, GError **error)
+static gboolean mirage_fragment_daa_parse_descriptor_split (MirageFragment_DAA *self, GObject *stream, gint descriptor_size, GError **error)
 {
     DAA_DescriptorSplit descriptor;
 
@@ -659,7 +659,7 @@ static gboolean mirage_fragment_daa_parse_descriptor_split (MIRAGE_Fragment_DAA 
     return TRUE;
 }
 
-static gboolean mirage_fragment_daa_parse_descriptor_encryption (MIRAGE_Fragment_DAA *self, GObject *stream, gint descriptor_size, GError **error)
+static gboolean mirage_fragment_daa_parse_descriptor_encryption (MirageFragment_DAA *self, GObject *stream, gint descriptor_size, GError **error)
 {
     DAA_DescriptorEncryption descriptor;
     guint8 computed_key[128];
@@ -719,7 +719,7 @@ static gboolean mirage_fragment_daa_parse_descriptor_encryption (MIRAGE_Fragment
     return TRUE;
 }
 
-static gboolean mirage_fragment_daa_parse_descriptors (MIRAGE_Fragment_DAA *self, GObject *stream, GError **error)
+static gboolean mirage_fragment_daa_parse_descriptors (MirageFragment_DAA *self, GObject *stream, GError **error)
 {
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "\n");
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: parsing descriptors (stream position: 0x%lX)\n", __debug__, g_seekable_tell(G_SEEKABLE(stream)));
@@ -787,7 +787,7 @@ static gboolean mirage_fragment_daa_parse_descriptors (MIRAGE_Fragment_DAA *self
 /**********************************************************************\
  *                         Chunk table parsing                        *
 \**********************************************************************/
-static gboolean mirage_fragment_daa_parse_chunk_table (MIRAGE_Fragment_DAA *self, GObject *stream, GError **error)
+static gboolean mirage_fragment_daa_parse_chunk_table (MirageFragment_DAA *self, GObject *stream, GError **error)
 {
     guint8 *tmp_chunks_data;
     gint tmp_chunks_len;
@@ -914,7 +914,7 @@ static gboolean mirage_fragment_daa_parse_chunk_table (MIRAGE_Fragment_DAA *self
 /**********************************************************************\
  *                       Part table construction                       *
 \**********************************************************************/
-static gboolean mirage_fragment_daa_build_part_table (MIRAGE_Fragment_DAA *self, GObject *stream, GError **error)
+static gboolean mirage_fragment_daa_build_part_table (MirageFragment_DAA *self, GObject *stream, GError **error)
 {
     gint tmp_offset = 0;
     guint64 part_length, tmp_position;
@@ -1028,7 +1028,7 @@ static gboolean mirage_fragment_daa_build_part_table (MIRAGE_Fragment_DAA *self,
 /**********************************************************************\
  *                         Buffer allocation                          *
 \**********************************************************************/
-static gboolean mirage_fragment_daa_setup_buffer (MIRAGE_Fragment_DAA *self, GError **error)
+static gboolean mirage_fragment_daa_setup_buffer (MirageFragment_DAA *self, GError **error)
 {
     gint fragment_length;
 
@@ -1066,7 +1066,7 @@ static gboolean mirage_fragment_daa_setup_buffer (MIRAGE_Fragment_DAA *self, GEr
 /**********************************************************************\
  *                        DAA file parsing                            *
 \**********************************************************************/
-static gboolean mirage_fragment_daa_parse_daa_file (MIRAGE_Fragment_DAA *self, GObject *stream, GError **error)
+static gboolean mirage_fragment_daa_parse_daa_file (MirageFragment_DAA *self, GObject *stream, GError **error)
 {
     /* Read main header */
     if (!mirage_fragment_daa_read_main_header(self, stream, &self->priv->header, error)) {
@@ -1161,7 +1161,7 @@ static gboolean mirage_fragment_daa_parse_daa_file (MIRAGE_Fragment_DAA *self, G
 /**********************************************************************\
  *                  Interface implementation: <private>               *
 \**********************************************************************/
-gboolean mirage_fragment_daa_set_file (MIRAGE_Fragment_DAA *self, const gchar *filename, const gchar *password, GError **error)
+gboolean mirage_fragment_daa_set_file (MirageFragment_DAA *self, const gchar *filename, const gchar *password, GError **error)
 {
     gchar signature[16];
     GObject *stream;
@@ -1207,25 +1207,25 @@ gboolean mirage_fragment_daa_set_file (MIRAGE_Fragment_DAA *self, const gchar *f
 
 
 /**********************************************************************\
- *                MIRAGE_Fragment methods implementations             *
+ *                MirageFragment methods implementations             *
 \**********************************************************************/
-static gboolean mirage_fragment_daa_can_handle_data_format (MIRAGE_Fragment *_self G_GNUC_UNUSED, GObject *stream G_GNUC_UNUSED, GError **error G_GNUC_UNUSED)
+static gboolean mirage_fragment_daa_can_handle_data_format (MirageFragment *_self G_GNUC_UNUSED, GObject *stream G_GNUC_UNUSED, GError **error G_GNUC_UNUSED)
 {
     /* Not implemented */
     g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_PARSER_ERROR, "Function not implemented!");
     return FALSE;
 }
 
-static gboolean mirage_fragment_daa_use_the_rest_of_file (MIRAGE_Fragment *_self G_GNUC_UNUSED, GError **error G_GNUC_UNUSED)
+static gboolean mirage_fragment_daa_use_the_rest_of_file (MirageFragment *_self G_GNUC_UNUSED, GError **error G_GNUC_UNUSED)
 {
     /* Not implemented */
     g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_PARSER_ERROR, "Function not implemented!");
     return FALSE;
 }
 
-static gboolean mirage_fragment_daa_read_main_data (MIRAGE_Fragment *_self, gint address, guint8 *buf, gint *length, GError **error)
+static gboolean mirage_fragment_daa_read_main_data (MirageFragment *_self, gint address, guint8 *buf, gint *length, GError **error)
 {
-    MIRAGE_Fragment_DAA *self = MIRAGE_FRAGMENT_DAA(_self);
+    MirageFragment_DAA *self = MIRAGE_FRAGMENT_DAA(_self);
 
     gint chunk_index = address / self->priv->sectors_per_chunk;
     gint chunk_offset = address % self->priv->sectors_per_chunk;
@@ -1325,9 +1325,9 @@ static gboolean mirage_fragment_daa_read_main_data (MIRAGE_Fragment *_self, gint
     return TRUE;
 }
 
-static gboolean mirage_fragment_daa_read_subchannel_data (MIRAGE_Fragment *_self, gint address G_GNUC_UNUSED, guint8 *buf G_GNUC_UNUSED, gint *length, GError **error G_GNUC_UNUSED)
+static gboolean mirage_fragment_daa_read_subchannel_data (MirageFragment *_self, gint address G_GNUC_UNUSED, guint8 *buf G_GNUC_UNUSED, gint *length, GError **error G_GNUC_UNUSED)
 {
-    MIRAGE_Fragment_DAA *self = MIRAGE_FRAGMENT_DAA(_self);
+    MirageFragment_DAA *self = MIRAGE_FRAGMENT_DAA(_self);
 
     /* Nothing to read */
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_FRAGMENT, "%s: no subchannel data in DAA fragment\n", __debug__);
@@ -1342,7 +1342,7 @@ static gboolean mirage_fragment_daa_read_subchannel_data (MIRAGE_Fragment *_self
 /**********************************************************************\
  *                             Object init                            *
 \**********************************************************************/
-G_DEFINE_DYNAMIC_TYPE(MIRAGE_Fragment_DAA, mirage_fragment_daa, MIRAGE_TYPE_FRAGMENT);
+G_DEFINE_DYNAMIC_TYPE(MirageFragment_DAA, mirage_fragment_daa, MIRAGE_TYPE_FRAGMENT);
 
 void mirage_fragment_daa_type_register (GTypeModule *type_module)
 {
@@ -1350,7 +1350,7 @@ void mirage_fragment_daa_type_register (GTypeModule *type_module)
 }
 
 
-static void mirage_fragment_daa_init (MIRAGE_Fragment_DAA *self)
+static void mirage_fragment_daa_init (MirageFragment_DAA *self)
 {
     self->priv = MIRAGE_FRAGMENT_DAA_GET_PRIVATE(self);
 
@@ -1369,7 +1369,7 @@ static void mirage_fragment_daa_init (MIRAGE_Fragment_DAA *self)
 
 static void mirage_fragment_daa_finalize (GObject *gobject)
 {
-    MIRAGE_Fragment_DAA *self = MIRAGE_FRAGMENT_DAA(gobject);
+    MirageFragment_DAA *self = MIRAGE_FRAGMENT_DAA(gobject);
 
     /* Free stream */
     inflateEnd(&self->priv->zlib_stream);
@@ -1399,10 +1399,10 @@ static void mirage_fragment_daa_finalize (GObject *gobject)
     return G_OBJECT_CLASS(mirage_fragment_daa_parent_class)->finalize(gobject);
 }
 
-static void mirage_fragment_daa_class_init (MIRAGE_Fragment_DAAClass *klass)
+static void mirage_fragment_daa_class_init (MirageFragment_DAAClass *klass)
 {
     GObjectClass *gobject_class = G_OBJECT_CLASS(klass);
-    MIRAGE_FragmentClass *fragment_class = MIRAGE_FRAGMENT_CLASS(klass);
+    MirageFragmentClass *fragment_class = MIRAGE_FRAGMENT_CLASS(klass);
 
     gobject_class->finalize = mirage_fragment_daa_finalize;
 
@@ -1412,9 +1412,9 @@ static void mirage_fragment_daa_class_init (MIRAGE_Fragment_DAAClass *klass)
     fragment_class->read_subchannel_data = mirage_fragment_daa_read_subchannel_data;
 
     /* Register private structure */
-    g_type_class_add_private(klass, sizeof(MIRAGE_Fragment_DAAPrivate));
+    g_type_class_add_private(klass, sizeof(MirageFragment_DAAPrivate));
 }
 
-static void mirage_fragment_daa_class_finalize (MIRAGE_Fragment_DAAClass *klass G_GNUC_UNUSED)
+static void mirage_fragment_daa_class_finalize (MirageFragment_DAAClass *klass G_GNUC_UNUSED)
 {
 }

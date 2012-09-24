@@ -24,32 +24,32 @@
 G_BEGIN_DECLS
 
 #define MIRAGE_TYPE_PLUGIN            (mirage_plugin_get_type())
-#define MIRAGE_PLUGIN(obj)            (G_TYPE_CHECK_INSTANCE_CAST((obj), MIRAGE_TYPE_PLUGIN, MIRAGE_Plugin))
-#define MIRAGE_PLUGIN_CLASS(klass)    (G_TYPE_CHECK_CLASS_CAST((klass), MIRAGE_TYPE_PLUGIN, MIRAGE_PluginClass))
+#define MIRAGE_PLUGIN(obj)            (G_TYPE_CHECK_INSTANCE_CAST((obj), MIRAGE_TYPE_PLUGIN, MiragePlugin))
+#define MIRAGE_PLUGIN_CLASS(klass)    (G_TYPE_CHECK_CLASS_CAST((klass), MIRAGE_TYPE_PLUGIN, MiragePluginClass))
 #define MIRAGE_IS_PLUGIN(obj)         (G_TYPE_CHECK_INSTANCE_TYPE((obj), MIRAGE_TYPE_PLUGIN))
 #define MIRAGE_IS_PLUGIN_CLASS(klass) (G_TYPE_CHECK_CLASS_TYPE((klass), MIRAGE_TYPE_PLUGIN))
-#define MIRAGE_PLUGIN_GET_CLASS(obj)  (G_TYPE_INSTANCE_GET_CLASS((obj), MIRAGE_TYPE_PLUGIN, MIRAGE_PluginClass))
+#define MIRAGE_PLUGIN_GET_CLASS(obj)  (G_TYPE_INSTANCE_GET_CLASS((obj), MIRAGE_TYPE_PLUGIN, MiragePluginClass))
 
-typedef struct _MIRAGE_Plugin           MIRAGE_Plugin;
-typedef struct _MIRAGE_PluginClass      MIRAGE_PluginClass;
-typedef struct _MIRAGE_PluginPrivate    MIRAGE_PluginPrivate;
+typedef struct _MiragePlugin           MiragePlugin;
+typedef struct _MiragePluginClass      MiragePluginClass;
+typedef struct _MiragePluginPrivate    MiragePluginPrivate;
 
 /**
- * MIRAGE_Plugin:
+ * MiragePlugin:
  *
  * <para>
  * Contains private data only, and should be accessed using the functions below.
  * </para>
  **/
-struct _MIRAGE_Plugin
+struct _MiragePlugin
 {
     GTypeModule parent_instance;
 
     /*< private >*/
-    MIRAGE_PluginPrivate *priv;
+    MiragePluginPrivate *priv;
 };
 
-struct _MIRAGE_PluginClass
+struct _MiragePluginClass
 {
     GTypeModuleClass parent_class;
 };
@@ -61,7 +61,7 @@ GType mirage_plugin_get_type (void);
 /**********************************************************************\
  *                             Public API                             *
 \**********************************************************************/
-MIRAGE_Plugin *mirage_plugin_new (const gchar *filename);
+MiragePlugin *mirage_plugin_new (const gchar *filename);
 
 G_END_DECLS
 

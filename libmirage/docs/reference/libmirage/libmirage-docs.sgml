@@ -16,14 +16,14 @@
         <title>libMirage API Reference</title>
 
         <xi:include href="xml/mirage-libmirage.xml"/>
-        <xi:include href="xml/mirage-cdtext-encdec.xml"/>
+        <xi:include href="xml/mirage-cdtext-coder.xml"/>
         <xi:include href="xml/mirage-debugcontext.xml"/>
         <xi:include href="xml/mirage-debuggable.xml"/>
         <xi:include href="xml/mirage-disc.xml"/>
         <xi:include href="xml/mirage-file-filter.xml"/>
-        <xi:include href="xml/mirage-frag_iface-null.xml"/>
-        <xi:include href="xml/mirage-frag_iface-binary.xml"/>
-        <xi:include href="xml/mirage-frag_iface-audio.xml"/>
+        <xi:include href="xml/mirage-fragment-iface-null.xml"/>
+        <xi:include href="xml/mirage-fragment-iface-binary.xml"/>
+        <xi:include href="xml/mirage-fragment-iface-audio.xml"/>
         <xi:include href="xml/mirage-fragment.xml"/>
         <xi:include href="xml/mirage-index.xml"/>
         <xi:include href="xml/mirage-language.xml"/>

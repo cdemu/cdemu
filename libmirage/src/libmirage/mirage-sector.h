@@ -24,7 +24,7 @@
 G_BEGIN_DECLS
 
 /**
- * MIRAGE_Sector_MCSB:
+ * MirageSectorMCSB:
  * @MIRAGE_MCSB_SYNC: sync pattern
  * @MIRAGE_MCSB_SUBHEADER: subheader
  * @MIRAGE_MCSB_HEADER: header
@@ -46,10 +46,10 @@ typedef enum
     MIRAGE_MCSB_EDC_ECC   = 0x08,
     MIRAGE_MCSB_C2_2      = 0x04,
     MIRAGE_MCSB_C2_1      = 0x02,
-} MIRAGE_Sector_MCSB;
+} MirageSectorMCSB;
 
 /**
- * MIRAGE_Sector_SubchannelFormat:
+ * MirageSectorSubchannelFormat:
  * @MIRAGE_SUBCHANNEL_PW: PW subchannel; 96 bytes, interleaved P-W
  * @MIRAGE_SUBCHANNEL_PQ: PQ subchannel; 16 bytes, Q subchannel
  * @MIRAGE_SUBCHANNEL_RW: RW subchannel; 96 bytes, deinterleaved R-W
@@ -63,10 +63,10 @@ typedef enum
     MIRAGE_SUBCHANNEL_PW = 0x01,
     MIRAGE_SUBCHANNEL_PQ = 0x02,
     MIRAGE_SUBCHANNEL_RW = 0x03
-} MIRAGE_Sector_SubchannelFormat;
+} MirageSectorSubchannelFormat;
 
 /**
- * MIRAGE_Sector_ValidData:
+ * MirageSectorValidData:
  * @MIRAGE_VALID_SYNC: sync pattern valid
  * @MIRAGE_VALID_HEADER: header valid
  * @MIRAGE_VALID_SUBHEADER: subheader valid
@@ -86,41 +86,41 @@ typedef enum
     MIRAGE_VALID_DATA      = 0x08,
     MIRAGE_VALID_EDC_ECC   = 0x10,
     MIRAGE_VALID_SUBCHAN   = 0x20,
-} MIRAGE_Sector_ValidData;
+} MirageSectorValidData;
 
 
 /******************************************************************************\
  *                              Base sector class                             *
 \******************************************************************************/
 #define MIRAGE_TYPE_SECTOR            (mirage_sector_get_type())
-#define MIRAGE_SECTOR(obj)            (G_TYPE_CHECK_INSTANCE_CAST((obj), MIRAGE_TYPE_SECTOR, MIRAGE_Sector))
-#define MIRAGE_SECTOR_CLASS(klass)    (G_TYPE_CHECK_CLASS_CAST((klass), MIRAGE_TYPE_SECTOR, MIRAGE_SectorClass))
+#define MIRAGE_SECTOR(obj)            (G_TYPE_CHECK_INSTANCE_CAST((obj), MIRAGE_TYPE_SECTOR, MirageSector))
+#define MIRAGE_SECTOR_CLASS(klass)    (G_TYPE_CHECK_CLASS_CAST((klass), MIRAGE_TYPE_SECTOR, MirageSectorClass))
 #define MIRAGE_IS_SECTOR(obj)         (G_TYPE_CHECK_INSTANCE_TYPE((obj), MIRAGE_TYPE_SECTOR))
 #define MIRAGE_IS_SECTOR_CLASS(klass) (G_TYPE_CHECK_CLASS_TYPE((klass), MIRAGE_TYPE_SECTOR))
-#define MIRAGE_SECTOR_GET_CLASS(obj)  (G_TYPE_INSTANCE_GET_CLASS((obj), MIRAGE_TYPE_SECTOR, MIRAGE_SectorClass))
+#define MIRAGE_SECTOR_GET_CLASS(obj)  (G_TYPE_INSTANCE_GET_CLASS((obj), MIRAGE_TYPE_SECTOR, MirageSectorClass))
 
-typedef struct _MIRAGE_Sector           MIRAGE_Sector;
-typedef struct _MIRAGE_SectorClass      MIRAGE_SectorClass;
-typedef struct _MIRAGE_SectorPrivate    MIRAGE_SectorPrivate;
+typedef struct _MirageSector           MirageSector;
+typedef struct _MirageSectorClass      MirageSectorClass;
+typedef struct _MirageSectorPrivate    MirageSectorPrivate;
 
 /**
- * MIRAGE_Sector:
+ * MirageSector:
  *
  * <para>
  * Contains private data only, and should be accessed using the functions below.
  * </para>
  **/
-struct _MIRAGE_Sector
+struct _MirageSector
 {
-    MIRAGE_Object parent_instance;
+    MirageObject parent_instance;
 
     /*< private >*/
-    MIRAGE_SectorPrivate *priv;
+    MirageSectorPrivate *priv;
 };
 
-struct _MIRAGE_SectorClass
+struct _MirageSectorClass
 {
-    MIRAGE_ObjectClass parent_class;
+    MirageObjectClass parent_class;
 } ;
 
 /* Used by MIRAGE_TYPE_SECTOR */
@@ -130,19 +130,19 @@ GType mirage_sector_get_type (void);
 /**********************************************************************\
  *                             Public API                             *
 \**********************************************************************/
-gboolean mirage_sector_feed_data (MIRAGE_Sector *self, gint address, GObject *track, GError **error);
+gboolean mirage_sector_feed_data (MirageSector *self, gint address, GObject *track, GError **error);
 
-gint mirage_sector_get_sector_type (MIRAGE_Sector *self);
+gint mirage_sector_get_sector_type (MirageSector *self);
 
-gboolean mirage_sector_get_sync (MIRAGE_Sector *self, const guint8 **ret_buf, gint *ret_len, GError **error);
-gboolean mirage_sector_get_header (MIRAGE_Sector *self, const guint8 **ret_buf, gint *ret_len, GError **error);
-gboolean mirage_sector_get_subheader (MIRAGE_Sector *self, const guint8 **ret_buf, gint *ret_len, GError **error);
-gboolean mirage_sector_get_data (MIRAGE_Sector *self, const guint8 **ret_buf, gint *ret_len, GError **error);
-gboolean mirage_sector_get_edc_ecc (MIRAGE_Sector *self, const guint8 **ret_buf, gint *ret_len, GError **error);
-gboolean mirage_sector_get_subchannel (MIRAGE_Sector *self, gint format, const guint8 **ret_buf, gint *ret_len, GError **error);
+gboolean mirage_sector_get_sync (MirageSector *self, const guint8 **ret_buf, gint *ret_len, GError **error);
+gboolean mirage_sector_get_header (MirageSector *self, const guint8 **ret_buf, gint *ret_len, GError **error);
+gboolean mirage_sector_get_subheader (MirageSector *self, const guint8 **ret_buf, gint *ret_len, GError **error);
+gboolean mirage_sector_get_data (MirageSector *self, const guint8 **ret_buf, gint *ret_len, GError **error);
+gboolean mirage_sector_get_edc_ecc (MirageSector *self, const guint8 **ret_buf, gint *ret_len, GError **error);
+gboolean mirage_sector_get_subchannel (MirageSector *self, gint format, const guint8 **ret_buf, gint *ret_len, GError **error);
 
-gboolean mirage_sector_verify_lec (MIRAGE_Sector *self);
-gboolean mirage_sector_verify_subchannel_crc (MIRAGE_Sector *self);
+gboolean mirage_sector_verify_lec (MirageSector *self);
+gboolean mirage_sector_verify_subchannel_crc (MirageSector *self);
 
 G_END_DECLS
 

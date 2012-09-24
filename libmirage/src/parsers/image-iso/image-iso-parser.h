@@ -24,27 +24,27 @@
 G_BEGIN_DECLS
 
 #define MIRAGE_TYPE_PARSER_ISO            (mirage_parser_iso_get_type())
-#define MIRAGE_PARSER_ISO(obj)            (G_TYPE_CHECK_INSTANCE_CAST((obj), MIRAGE_TYPE_PARSER_ISO, MIRAGE_Parser_ISO))
-#define MIRAGE_PARSER_ISO_CLASS(klass)    (G_TYPE_CHECK_CLASS_CAST((klass), MIRAGE_TYPE_PARSER_ISO, MIRAGE_Parser_ISOClass))
+#define MIRAGE_PARSER_ISO(obj)            (G_TYPE_CHECK_INSTANCE_CAST((obj), MIRAGE_TYPE_PARSER_ISO, MirageParser_ISO))
+#define MIRAGE_PARSER_ISO_CLASS(klass)    (G_TYPE_CHECK_CLASS_CAST((klass), MIRAGE_TYPE_PARSER_ISO, MirageParser_ISOClass))
 #define MIRAGE_IS_PARSER_ISO(obj)         (G_TYPE_CHECK_INSTANCE_TYPE((obj), MIRAGE_TYPE_PARSER_ISO))
 #define MIRAGE_IS_PARSER_ISO_CLASS(klass) (G_TYPE_CHECK_CLASS_TYPE((klass), MIRAGE_TYPE_PARSER_ISO))
-#define MIRAGE_PARSER_ISO_GET_CLASS(obj)  (G_TYPE_INSTANCE_GET_CLASS((obj), MIRAGE_TYPE_PARSER_ISO, MIRAGE_Parser_ISOClass))
+#define MIRAGE_PARSER_ISO_GET_CLASS(obj)  (G_TYPE_INSTANCE_GET_CLASS((obj), MIRAGE_TYPE_PARSER_ISO, MirageParser_ISOClass))
 
-typedef struct _MIRAGE_Parser_ISO           MIRAGE_Parser_ISO;
-typedef struct _MIRAGE_Parser_ISOClass      MIRAGE_Parser_ISOClass;
-typedef struct _MIRAGE_Parser_ISOPrivate    MIRAGE_Parser_ISOPrivate;
+typedef struct _MirageParser_ISO           MirageParser_ISO;
+typedef struct _MirageParser_ISOClass      MirageParser_ISOClass;
+typedef struct _MirageParser_ISOPrivate    MirageParser_ISOPrivate;
 
-struct _MIRAGE_Parser_ISO
+struct _MirageParser_ISO
 {
-    MIRAGE_Parser parent_instance;
+    MirageParser parent_instance;
 
     /*< private >*/
-    MIRAGE_Parser_ISOPrivate *priv;
+    MirageParser_ISOPrivate *priv;
 };
 
-struct _MIRAGE_Parser_ISOClass
+struct _MirageParser_ISOClass
 {
-    MIRAGE_ParserClass parent_class;
+    MirageParserClass parent_class;
 };
 
 /* Used by MIRAGE_TYPE_PARSER_ISO */

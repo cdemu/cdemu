@@ -17,14 +17,14 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
 
-#ifndef __MIRAGE_CDTEXT_ENCDEC_H__
-#define __MIRAGE_CDTEXT_ENCDEC_H__
+#ifndef __MIRAGE_CDTEXT_CODER_H__
+#define __MIRAGE_CDTEXT_CODER_H__
 
 
 G_BEGIN_DECLS
 
 /**
- * MIRAGE_CDTextDataCallback:
+ * MirageCdTextDataCallback:
  * @langcode: language code
  * @type: pack type
  * @track: track number
@@ -50,63 +50,63 @@ G_BEGIN_DECLS
  *
  * Returns: %TRUE on success, %FALSE on failure
  **/
-typedef gboolean (*MIRAGE_CDTextDataCallback) (gint langcode, gint type, gint track, const guint8 *data, gint data_len, gpointer user_data);
+typedef gboolean (*MirageCdTextDataCallback) (gint langcode, gint type, gint track, const guint8 *data, gint data_len, gpointer user_data);
 
 /******************************************************************************\
  *                               CD-TEXT EncDec                              *
 \******************************************************************************/
-#define MIRAGE_TYPE_CDTEXT_ENCDEC            (mirage_cdtext_encdec_get_type())
-#define MIRAGE_CDTEXT_ENCDEC(obj)            (G_TYPE_CHECK_INSTANCE_CAST((obj), MIRAGE_TYPE_CDTEXT_ENCDEC, MIRAGE_CDTextEncDec))
-#define MIRAGE_CDTEXT_ENCDEC_CLASS(klass)    (G_TYPE_CHECK_CLASS_CAST((klass), MIRAGE_TYPE_CDTEXT_ENCDEC, MIRAGE_CDTextEncDecClass))
-#define MIRAGE_IS_CDTEXT_ENCDEC(obj)         (G_TYPE_CHECK_INSTANCE_TYPE((obj), MIRAGE_TYPE_CDTEXT_ENCDEC))
-#define MIRAGE_IS_CDTEXT_ENCDEC_CLASS(klass) (G_TYPE_CHECK_CLASS_TYPE((klass), MIRAGE_TYPE_CDTEXT_ENCDEC))
-#define MIRAGE_CDTEXT_ENCDEC_GET_CLASS(obj)  (G_TYPE_INSTANCE_GET_CLASS((obj), MIRAGE_TYPE_CDTEXT_ENCDEC, MIRAGE_CDTextEncDecClass))
+#define MIRAGE_TYPE_CDTEXT_CODER            (mirage_cdtext_coder_get_type())
+#define MIRAGE_CDTEXT_CODER(obj)            (G_TYPE_CHECK_INSTANCE_CAST((obj), MIRAGE_TYPE_CDTEXT_CODER, MirageCdTextCoder))
+#define MIRAGE_CDTEXT_CODER_CLASS(klass)    (G_TYPE_CHECK_CLASS_CAST((klass), MIRAGE_TYPE_CDTEXT_CODER, MirageCdTextCoderClass))
+#define MIRAGE_IS_CDTEXT_CODER(obj)         (G_TYPE_CHECK_INSTANCE_TYPE((obj), MIRAGE_TYPE_CDTEXT_CODER))
+#define MIRAGE_IS_CDTEXT_CODER_CLASS(klass) (G_TYPE_CHECK_CLASS_TYPE((klass), MIRAGE_TYPE_CDTEXT_CODER))
+#define MIRAGE_CDTEXT_CODER_GET_CLASS(obj)  (G_TYPE_INSTANCE_GET_CLASS((obj), MIRAGE_TYPE_CDTEXT_CODER, MirageCdTextCoderClass))
 
-typedef struct _MIRAGE_CDTextEncDec         MIRAGE_CDTextEncDec;
-typedef struct _MIRAGE_CDTextEncDecClass    MIRAGE_CDTextEncDecClass;
-typedef struct _MIRAGE_CDTextEncDecPrivate  MIRAGE_CDTextEncDecPrivate;
+typedef struct _MirageCdTextCoder         MirageCdTextCoder;
+typedef struct _MirageCdTextCoderClass    MirageCdTextCoderClass;
+typedef struct _MirageCdTextCoderPrivate  MirageCdTextCoderPrivate;
 
 /**
- * MIRAGE_CDTextEncDec:
+ * MirageCdTextCoder:
  *
  * <para>
  * Contains private data only, and should be accessed using the functions below.
  * </para>
  **/
-struct _MIRAGE_CDTextEncDec
+struct _MirageCdTextCoder
 {
-    MIRAGE_Object parent_instance;
+    MirageObject parent_instance;
 
     /*< private >*/
-    MIRAGE_CDTextEncDecPrivate *priv;
+    MirageCdTextCoderPrivate *priv;
 };
 
-struct _MIRAGE_CDTextEncDecClass
+struct _MirageCdTextCoderClass
 {
-    MIRAGE_ObjectClass parent_class;
+    MirageObjectClass parent_class;
 };
 
-/* Used by MIRAGE_TYPE_CDTEXT_ENCDEC */
-GType mirage_cdtext_encdec_get_type (void);
+/* Used by MIRAGE_TYPE_CDTEXT_CODER */
+GType mirage_cdtext_coder_get_type (void);
 
 
 /**********************************************************************\
  *                         Public API: Encoder                        *
 \**********************************************************************/
-void mirage_cdtext_encoder_init (MIRAGE_CDTextEncDec *self, guint8 *buffer, gint buflen);
-gboolean mirage_cdtext_encoder_set_block_info (MIRAGE_CDTextEncDec *self, gint block, gint langcode, gint charset, gint copyright, GError **error);
-void mirage_cdtext_encoder_add_data (MIRAGE_CDTextEncDec *self, gint langcode, gint type, gint track, const guint8 *data, gint data_len);
-void mirage_cdtext_encoder_encode (MIRAGE_CDTextEncDec *self, guint8 **buffer, gint *buflen);
+void mirage_cdtext_encoder_init (MirageCdTextCoder *self, guint8 *buffer, gint buflen);
+gboolean mirage_cdtext_encoder_set_block_info (MirageCdTextCoder *self, gint block, gint langcode, gint charset, gint copyright, GError **error);
+void mirage_cdtext_encoder_add_data (MirageCdTextCoder *self, gint langcode, gint type, gint track, const guint8 *data, gint data_len);
+void mirage_cdtext_encoder_encode (MirageCdTextCoder *self, guint8 **buffer, gint *buflen);
 
 
 /**********************************************************************\
  *                         Public API: Decoder                        *
 \**********************************************************************/
-void mirage_cdtext_decoder_init (MIRAGE_CDTextEncDec *self, guint8 *buffer, gint buflen);
-gboolean mirage_cdtext_decoder_get_block_info (MIRAGE_CDTextEncDec *self, gint block, gint *langcode, gint *charset, gint *copyright, GError **error);
-gboolean mirage_cdtext_decoder_get_data (MIRAGE_CDTextEncDec *self, gint block, MIRAGE_CDTextDataCallback callback_func, gpointer user_data);
+void mirage_cdtext_decoder_init (MirageCdTextCoder *self, guint8 *buffer, gint buflen);
+gboolean mirage_cdtext_decoder_get_block_info (MirageCdTextCoder *self, gint block, gint *langcode, gint *charset, gint *copyright, GError **error);
+gboolean mirage_cdtext_decoder_get_data (MirageCdTextCoder *self, gint block, MirageCdTextDataCallback callback_func, gpointer user_data);
 
 
 G_END_DECLS
 
-#endif /* __MIRAGE_CDTEXT_ENCDEC_H__ */
+#endif /* __MIRAGE_CDTEXT_CODER_H__ */

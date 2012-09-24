@@ -16,7 +16,7 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
- 
+
 #ifndef __IMAGE_XCDROAST_PARSER_H__
 #define __IMAGE_XCDROAST_PARSER_H__
 
@@ -24,27 +24,27 @@
 G_BEGIN_DECLS
 
 #define MIRAGE_TYPE_PARSER_XCDROAST            (mirage_parser_xcdroast_get_type())
-#define MIRAGE_PARSER_XCDROAST(obj)            (G_TYPE_CHECK_INSTANCE_CAST((obj), MIRAGE_TYPE_PARSER_XCDROAST, MIRAGE_Parser_XCDROAST))
-#define MIRAGE_PARSER_XCDROAST_CLASS(klass)    (G_TYPE_CHECK_CLASS_CAST((klass), MIRAGE_TYPE_PARSER_XCDROAST, MIRAGE_Parser_XCDROASTClass))
+#define MIRAGE_PARSER_XCDROAST(obj)            (G_TYPE_CHECK_INSTANCE_CAST((obj), MIRAGE_TYPE_PARSER_XCDROAST, MirageParser_XCDROAST))
+#define MIRAGE_PARSER_XCDROAST_CLASS(klass)    (G_TYPE_CHECK_CLASS_CAST((klass), MIRAGE_TYPE_PARSER_XCDROAST, MirageParser_XCDROASTClass))
 #define MIRAGE_IS_PARSER_XCDROAST(obj)         (G_TYPE_CHECK_INSTANCE_TYPE((obj), MIRAGE_TYPE_PARSER_XCDROAST))
 #define MIRAGE_IS_PARSER_XCDROAST_CLASS(klass) (G_TYPE_CHECK_CLASS_TYPE((klass), MIRAGE_TYPE_PARSER_XCDROAST))
-#define MIRAGE_PARSER_XCDROAST_GET_CLASS(obj)  (G_TYPE_INSTANCE_GET_CLASS((obj), MIRAGE_TYPE_PARSER_XCDROAST, MIRAGE_Parser_XCDROASTClass))
+#define MIRAGE_PARSER_XCDROAST_GET_CLASS(obj)  (G_TYPE_INSTANCE_GET_CLASS((obj), MIRAGE_TYPE_PARSER_XCDROAST, MirageParser_XCDROASTClass))
 
-typedef struct _MIRAGE_Parser_XCDROAST          MIRAGE_Parser_XCDROAST;
-typedef struct _MIRAGE_Parser_XCDROASTClass     MIRAGE_Parser_XCDROASTClass;
-typedef struct _MIRAGE_Parser_XCDROASTPrivate   MIRAGE_Parser_XCDROASTPrivate;
+typedef struct _MirageParser_XCDROAST          MirageParser_XCDROAST;
+typedef struct _MirageParser_XCDROASTClass     MirageParser_XCDROASTClass;
+typedef struct _MirageParser_XCDROASTPrivate   MirageParser_XCDROASTPrivate;
 
-struct _MIRAGE_Parser_XCDROAST
+struct _MirageParser_XCDROAST
 {
-    MIRAGE_Parser parent_instance;
+    MirageParser parent_instance;
 
     /*< private >*/
-    MIRAGE_Parser_XCDROASTPrivate *priv;
+    MirageParser_XCDROASTPrivate *priv;
 };
 
-struct _MIRAGE_Parser_XCDROASTClass
+struct _MirageParser_XCDROASTClass
 {
-    MIRAGE_ParserClass parent_class;
+    MirageParserClass parent_class;
 };
 
 /* Used by MIRAGE_TYPE_PARSER_XCDROAST */

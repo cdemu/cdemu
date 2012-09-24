@@ -98,7 +98,7 @@ typedef struct
     #endif
 
     guint8 media_specific[2031];
-} MIRAGE_DiscStruct_PhysInfo;
+} MirageDiscStructurePhysicalInfo;
 
 typedef struct
 {
@@ -106,12 +106,12 @@ typedef struct
    guint8   region_info;
    guint8   __dummy1__;
    guint8   __dummy2__;
-} MIRAGE_DiscStruct_Copyright;
+} MirageDiscStructureCopyright;
 
 typedef struct
 {
     guint8  disc_manufacturing_data[2048];
-} MIRAGE_DiscStruct_Manufacture;
+} MirageDiscStructureManufacturingData;
 
 G_END_DECLS
 

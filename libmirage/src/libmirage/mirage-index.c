@@ -27,9 +27,9 @@
 /**********************************************************************\
  *                          Private structure                         *
 \**********************************************************************/
-#define MIRAGE_INDEX_GET_PRIVATE(obj) (G_TYPE_INSTANCE_GET_PRIVATE((obj), MIRAGE_TYPE_INDEX, MIRAGE_IndexPrivate))
+#define MIRAGE_INDEX_GET_PRIVATE(obj) (G_TYPE_INSTANCE_GET_PRIVATE((obj), MIRAGE_TYPE_INDEX, MirageIndexPrivate))
 
-struct _MIRAGE_IndexPrivate
+struct _MirageIndexPrivate
 {
     gint number;  /* Index' number */
     gint address; /* Index' start address (relative to track start) */
@@ -41,14 +41,14 @@ struct _MIRAGE_IndexPrivate
 \**********************************************************************/
 /**
  * mirage_index_set_number:
- * @self: a #MIRAGE_Index
+ * @self: a #MirageIndex
  * @number: (in): index number
  *
  * <para>
  * Sets index' index number.
  * </para>
  **/
-void mirage_index_set_number (MIRAGE_Index *self, gint number)
+void mirage_index_set_number (MirageIndex *self, gint number)
 {
     /* Set number */
     self->priv->number = number;
@@ -56,7 +56,7 @@ void mirage_index_set_number (MIRAGE_Index *self, gint number)
 
 /**
  * mirage_index_get_number:
- * @self: a #MIRAGE_Index
+ * @self: a #MirageIndex
  *
  * <para>
  * Retrieves index' index number.
@@ -64,7 +64,7 @@ void mirage_index_set_number (MIRAGE_Index *self, gint number)
  *
  * Returns: index number
  **/
-gint mirage_index_get_number (MIRAGE_Index *self)
+gint mirage_index_get_number (MirageIndex *self)
 {
     /* Return number */
     return self->priv->number;
@@ -73,14 +73,14 @@ gint mirage_index_get_number (MIRAGE_Index *self)
 
 /**
  * mirage_index_set_address:
- * @self: a #MIRAGE_Index
+ * @self: a #MirageIndex
  * @address: (in): address
  *
  * <para>
  * Sets index' start address. The @address is given in sectors.
  * </para>
  **/
-void mirage_index_set_address (MIRAGE_Index *self, gint address)
+void mirage_index_set_address (MirageIndex *self, gint address)
 {
     /* Set address */
     self->priv->address = address;
@@ -88,7 +88,7 @@ void mirage_index_set_address (MIRAGE_Index *self, gint address)
 
 /**
  * mirage_index_get_address:
- * @self: a #MIRAGE_Index
+ * @self: a #MirageIndex
  *
  * <para>
  * Retrieves index' start adddress. The @address is given in sectors.
@@ -96,7 +96,7 @@ void mirage_index_set_address (MIRAGE_Index *self, gint address)
  *
  * Returns: address
  **/
-gint mirage_index_get_address (MIRAGE_Index *self)
+gint mirage_index_get_address (MirageIndex *self)
 {
     /* Return address */
     return self->priv->address;
@@ -106,10 +106,10 @@ gint mirage_index_get_address (MIRAGE_Index *self)
 /**********************************************************************\
  *                             Object init                            *
 \**********************************************************************/
-G_DEFINE_TYPE(MIRAGE_Index, mirage_index, MIRAGE_TYPE_OBJECT);
+G_DEFINE_TYPE(MirageIndex, mirage_index, MIRAGE_TYPE_OBJECT);
 
 
-static void mirage_index_init (MIRAGE_Index *self)
+static void mirage_index_init (MirageIndex *self)
 {
     self->priv = MIRAGE_INDEX_GET_PRIVATE(self);
 
@@ -117,8 +117,8 @@ static void mirage_index_init (MIRAGE_Index *self)
     self->priv->address = 0;
 }
 
-static void mirage_index_class_init (MIRAGE_IndexClass *klass)
+static void mirage_index_class_init (MirageIndexClass *klass)
 {
     /* Register private structure */
-    g_type_class_add_private(klass, sizeof(MIRAGE_IndexPrivate));
+    g_type_class_add_private(klass, sizeof(MirageIndexPrivate));
 }

@@ -2,7 +2,7 @@ lib_LTLIBRARIES = libmirage.la
 
 libmirage_la_SOURCES = \
     mirage.c \
-    mirage-cdtext-encdec.c \
+    mirage-cdtext-coder.c \
     mirage-debug.c \
     mirage-disc.c \
     mirage-error.c \
@@ -38,7 +38,7 @@ libmirage_la_LDFLAGS = \
 libmirageincludedir=$(includedir)/libmirage
 libmirageinclude_HEADERS = \
     mirage.h \
-    mirage-cdtext-encdec.h \
+    mirage-cdtext-coder.h \
     mirage-debug.h \
     mirage-disc.h \
     mirage-disc-structures.h \

@@ -24,33 +24,33 @@
 G_BEGIN_DECLS
 
 #define MIRAGE_TYPE_OBJECT            (mirage_object_get_type())
-#define MIRAGE_OBJECT(obj)            (G_TYPE_CHECK_INSTANCE_CAST((obj), MIRAGE_TYPE_OBJECT, MIRAGE_Object))
-#define MIRAGE_OBJECT_CLASS(klass)    (G_TYPE_CHECK_CLASS_CAST((klass), MIRAGE_TYPE_OBJECT, MIRAGE_ObjectClass))
+#define MIRAGE_OBJECT(obj)            (G_TYPE_CHECK_INSTANCE_CAST((obj), MIRAGE_TYPE_OBJECT, MirageObject))
+#define MIRAGE_OBJECT_CLASS(klass)    (G_TYPE_CHECK_CLASS_CAST((klass), MIRAGE_TYPE_OBJECT, MirageObjectClass))
 #define MIRAGE_IS_OBJECT(obj)         (G_TYPE_CHECK_INSTANCE_TYPE((obj), MIRAGE_TYPE_OBJECT))
 #define MIRAGE_IS_OBJECT_CLASS(klass) (G_TYPE_CHECK_CLASS_TYPE((klass), MIRAGE_TYPE_OBJECT))
-#define MIRAGE_OBJECT_GET_CLASS(obj)  (G_TYPE_INSTANCE_GET_CLASS((obj), MIRAGE_TYPE_OBJECT, MIRAGE_ObjectClass))
+#define MIRAGE_OBJECT_GET_CLASS(obj)  (G_TYPE_INSTANCE_GET_CLASS((obj), MIRAGE_TYPE_OBJECT, MirageObjectClass))
 
-typedef struct _MIRAGE_Object           MIRAGE_Object;
-typedef struct _MIRAGE_ObjectClass      MIRAGE_ObjectClass;
-typedef struct _MIRAGE_ObjectPrivate    MIRAGE_ObjectPrivate;
+typedef struct _MirageObject           MirageObject;
+typedef struct _MirageObjectClass      MirageObjectClass;
+typedef struct _MirageObjectPrivate    MirageObjectPrivate;
 
 
 /**
- * MIRAGE_Object:
+ * MirageObject:
  *
  * <para>
  * Contains private data only, and should be accessed using the functions below.
  * </para>
  **/
-struct _MIRAGE_Object
+struct _MirageObject
 {
     GObject parent_instance;
 
     /*< private >*/
-    MIRAGE_ObjectPrivate *priv;
+    MirageObjectPrivate *priv;
 };
 
-struct _MIRAGE_ObjectClass
+struct _MirageObjectClass
 {
     GObjectClass parent_class;
 
@@ -65,11 +65,11 @@ GType mirage_object_get_type (void);
 /**********************************************************************\
  *                             Public API                             *
 \**********************************************************************/
-void mirage_object_set_parent (MIRAGE_Object *self, GObject *parent);
-GObject *mirage_object_get_parent (MIRAGE_Object *self);
+void mirage_object_set_parent (MirageObject *self, GObject *parent);
+GObject *mirage_object_get_parent (MirageObject *self);
 
-void mirage_object_attach_child (MIRAGE_Object *self, GObject *child);
-void mirage_object_detach_child (MIRAGE_Object *self, GObject *child);
+void mirage_object_attach_child (MirageObject *self, GObject *child);
+void mirage_object_detach_child (MirageObject *self, GObject *child);
 
 G_END_DECLS
 

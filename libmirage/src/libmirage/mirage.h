@@ -40,7 +40,7 @@
 G_BEGIN_DECLS
 
 /**
- * MIRAGE_CallbackFunction:
+ * MirageCallbackFunction:
  * @data: (out): data
  * @user_data: (closure): user data passed to iteration function
  *
@@ -53,10 +53,10 @@ G_BEGIN_DECLS
  *
  * Returns: %TRUE on success, otherwise %FALSE
  **/
-typedef gboolean (*MIRAGE_CallbackFunction) (const gpointer data, gpointer user_data);
+typedef gboolean (*MirageCallbackFunction) (const gpointer data, gpointer user_data);
 
 /**
- * MIRAGE_PasswordFunction:
+ * MiragePasswordFunction:
  * @user_data: (closure): user data passed to password function
  *
  * <para>
@@ -70,10 +70,10 @@ typedef gboolean (*MIRAGE_CallbackFunction) (const gpointer data, gpointer user_
  * be a copy, allocated via function such as g_strdup(), and will be freed after
  * it is used.
  **/
-typedef gchar *(*MIRAGE_PasswordFunction) (gpointer user_data);
+typedef gchar *(*MiragePasswordFunction) (gpointer user_data);
 
 /**
- * MIRAGE_DebugMask:
+ * MirageDebugMask:
  * @name: name
  * @value: value
  *
@@ -84,25 +84,25 @@ typedef gchar *(*MIRAGE_PasswordFunction) (gpointer user_data);
 typedef struct {
     gchar *name;
     gint value;
-} MIRAGE_DebugMask;
+} MirageDebugMask;
 
 
 /* *** libMirage API *** */
 gboolean mirage_init (GError **error);
 gboolean mirage_shutdown (GError **error);
 
-gboolean mirage_set_password_function (MIRAGE_PasswordFunction func, gpointer user_data, GError **error);
+gboolean mirage_set_password_function (MiragePasswordFunction func, gpointer user_data, GError **error);
 gchar *mirage_obtain_password (GError **error);
 
 GObject *mirage_create_disc (gchar **filenames, GObject *debug_context, GHashTable *params, GError **error);
 GObject *mirage_create_fragment (GType fragment_interface, GObject *stream, GObject *debug_context, GError **error);
 GObject *mirage_create_file_stream (const gchar *filename, GObject *debug_context, GError **error);
 
-gboolean mirage_for_each_parser (MIRAGE_CallbackFunction func, gpointer user_data, GError **error);
-gboolean mirage_for_each_fragment (MIRAGE_CallbackFunction func, gpointer user_data, GError **error);
-gboolean mirage_for_each_file_filter (MIRAGE_CallbackFunction func, gpointer user_data, GError **error);
+gboolean mirage_for_each_parser (MirageCallbackFunction func, gpointer user_data, GError **error);
+gboolean mirage_for_each_fragment (MirageCallbackFunction func, gpointer user_data, GError **error);
+gboolean mirage_for_each_file_filter (MirageCallbackFunction func, gpointer user_data, GError **error);
 
-gboolean mirage_get_supported_debug_masks (const MIRAGE_DebugMask **masks, gint *num_masks, GError **error);
+gboolean mirage_get_supported_debug_masks (const MirageDebugMask **masks, gint *num_masks, GError **error);
 
 G_END_DECLS
 
@@ -120,7 +120,7 @@ G_END_DECLS
 
 #include "mirage-disc-structures.h"
 
-#include "mirage-cdtext-encdec.h"
+#include "mirage-cdtext-coder.h"
 
 #include "mirage-utils.h"
 

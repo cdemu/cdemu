@@ -31,7 +31,7 @@ GType  mirage_error_get_type (void);
 
 
 /**
- * MIRAGE_ErrorCodes:
+ * MirageErrorCodes:
  * @MIRAGE_ERROR_LIBRARY_ERROR: error in core libMirage code
  * @MIRAGE_ERROR_PARSER_ERROR: error in parser code
  * @MIRAGE_ERROR_FRAGMENT_ERROR: error in fragment code
@@ -63,7 +63,7 @@ typedef enum
     MIRAGE_ERROR_DATA_FILE_ERROR,
     MIRAGE_ERROR_CANNOT_HANDLE,
     MIRAGE_ERROR_ENCRYPTED_IMAGE,
-} MIRAGE_ErrorCodes;
+} MirageErrorCodes;
 
 G_END_DECLS
 

@@ -27,9 +27,9 @@
 /**********************************************************************\
  *                          Private structure                         *
 \**********************************************************************/
-#define MIRAGE_PARSER_NRG_GET_PRIVATE(obj) (G_TYPE_INSTANCE_GET_PRIVATE((obj), MIRAGE_TYPE_PARSER_NRG, MIRAGE_Parser_NRGPrivate))
+#define MIRAGE_PARSER_NRG_GET_PRIVATE(obj) (G_TYPE_INSTANCE_GET_PRIVATE((obj), MIRAGE_TYPE_PARSER_NRG, MirageParser_NRGPrivate))
 
-struct _MIRAGE_Parser_NRGPrivate
+struct _MirageParser_NRGPrivate
 {
     GObject *disc;
 
@@ -80,7 +80,7 @@ static NRG_BlockIDs NRGBlockID[] = {
     { NULL,   0,  0  }
 };
 
-static gboolean mirage_parser_nrg_build_block_index (MIRAGE_Parser_NRG *self, GError **error)
+static gboolean mirage_parser_nrg_build_block_index (MirageParser_NRG *self, GError **error)
 {
     NRGBlockIndexEntry *blockentry;
     GList *blockindex = NULL;
@@ -143,7 +143,7 @@ static gboolean mirage_parser_nrg_build_block_index (MIRAGE_Parser_NRG *self, GE
     return TRUE;
 }
 
-static gboolean mirage_parser_nrg_destroy_block_index (MIRAGE_Parser_NRG *self)
+static gboolean mirage_parser_nrg_destroy_block_index (MirageParser_NRG *self)
 {
     if (self->priv->block_index) {
         GList *entry;
@@ -164,7 +164,7 @@ static gint find_by_block_id (const NRGBlockIndexEntry *blockentry, const gchar 
     return memcmp(blockentry->block_id, block_id, 4);
 }
 
-static NRGBlockIndexEntry *mirage_parser_nrg_find_block_entry (MIRAGE_Parser_NRG *self, gchar *block_id, gint index)
+static NRGBlockIndexEntry *mirage_parser_nrg_find_block_entry (MirageParser_NRG *self, gchar *block_id, gint index)
 {
     GList *list_start = self->priv->block_index;
     gint cur_index = 0;
@@ -190,7 +190,7 @@ static NRGBlockIndexEntry *mirage_parser_nrg_find_block_entry (MIRAGE_Parser_NRG
     return NULL;
 }
 
-static gboolean mirage_parser_nrg_load_medium_type (MIRAGE_Parser_NRG *self, GError **error)
+static gboolean mirage_parser_nrg_load_medium_type (MirageParser_NRG *self, GError **error)
 {
     NRGBlockIndexEntry *blockentry;
     guint8 *cur_ptr;
@@ -235,7 +235,7 @@ static gboolean mirage_parser_nrg_load_medium_type (MIRAGE_Parser_NRG *self, GEr
     return TRUE;
 }
 
-static void mirage_parser_nrg_decode_mode (MIRAGE_Parser_NRG *self, gint code, gint *mode, gint *main_sectsize, gint *sub_sectsize)
+static void mirage_parser_nrg_decode_mode (MirageParser_NRG *self, gint code, gint *mode, gint *main_sectsize, gint *sub_sectsize)
 {
     /* The meaning of the following codes was determined experimentally; we're
        missing mappings for Mode 2 Formless, but that doesn't seem a very common
@@ -324,7 +324,7 @@ static void mirage_parser_nrg_decode_mode (MIRAGE_Parser_NRG *self, gint code, g
     }
 }
 
-static gboolean mirage_parser_nrg_load_etn_data (MIRAGE_Parser_NRG *self, gint session_num, GError **error)
+static gboolean mirage_parser_nrg_load_etn_data (MirageParser_NRG *self, gint session_num, GError **error)
 {
     NRGBlockIndexEntry *blockentry;
     guint8 *cur_ptr;
@@ -383,7 +383,7 @@ static gboolean mirage_parser_nrg_load_etn_data (MIRAGE_Parser_NRG *self, gint s
     return TRUE;
 }
 
-static gboolean mirage_parser_nrg_load_cue_data (MIRAGE_Parser_NRG *self, gint session_num, GError **error)
+static gboolean mirage_parser_nrg_load_cue_data (MirageParser_NRG *self, gint session_num, GError **error)
 {
     NRGBlockIndexEntry *blockentry;
     guint8 *cur_ptr;
@@ -444,7 +444,7 @@ static gboolean mirage_parser_nrg_load_cue_data (MIRAGE_Parser_NRG *self, gint s
     return TRUE;
 }
 
-static gboolean mirage_parser_nrg_load_dao_data (MIRAGE_Parser_NRG *self, gint session_num, GError **error)
+static gboolean mirage_parser_nrg_load_dao_data (MirageParser_NRG *self, gint session_num, GError **error)
 {
     NRGBlockIndexEntry *blockentry;
     guint8 *cur_ptr;
@@ -517,7 +517,7 @@ static gboolean mirage_parser_nrg_load_dao_data (MIRAGE_Parser_NRG *self, gint s
     return TRUE;
 }
 
-static gboolean mirage_parser_nrg_load_session (MIRAGE_Parser_NRG *self, gint session_num, GError **error)
+static gboolean mirage_parser_nrg_load_session (MirageParser_NRG *self, gint session_num, GError **error)
 {
     gboolean succeeded = TRUE;
 
@@ -595,7 +595,7 @@ static gboolean mirage_parser_nrg_load_session (MIRAGE_Parser_NRG *self, gint se
             /* Create a binary fragment */
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: creating pregap fragment\n", __debug__);
 
-            fragment = mirage_create_fragment(MIRAGE_TYPE_FRAG_IFACE_BINARY, self->priv->nrg_stream, G_OBJECT(self), error);
+            fragment = mirage_create_fragment(MIRAGE_TYPE_FRAGMENT_IFACE_BINARY, self->priv->nrg_stream, G_OBJECT(self), error);
             if (!fragment) {
                 MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to create fragment!\n", __debug__);
                 g_object_unref(track);
@@ -608,14 +608,14 @@ static gboolean mirage_parser_nrg_load_session (MIRAGE_Parser_NRG *self, gint se
             tfile_sectsize = main_sectsize; /* We use the one from decoded mode code */
             tfile_offset = dao_block->pregap_offset;
             if (mode == MIRAGE_MODE_AUDIO) {
-                tfile_format = FR_BIN_TFILE_AUDIO;
+                tfile_format = MIRAGE_TFILE_AUDIO;
             } else {
-                tfile_format = FR_BIN_TFILE_DATA;
+                tfile_format = MIRAGE_TFILE_DATA;
             }
 
             mirage_fragment_set_length(MIRAGE_FRAGMENT(fragment), fragment_len);
 
-            if (!mirage_frag_iface_binary_track_file_set_file(MIRAGE_FRAG_IFACE_BINARY(fragment), self->priv->nrg_filename, self->priv->nrg_stream, error)) {
+            if (!mirage_fragment_iface_binary_track_file_set_file(MIRAGE_FRAGMENT_IFACE_BINARY(fragment), self->priv->nrg_filename, self->priv->nrg_stream, error)) {
                 MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to set track data file!\n", __debug__);
                 g_object_unref(fragment);
                 g_object_unref(track);
@@ -623,17 +623,17 @@ static gboolean mirage_parser_nrg_load_session (MIRAGE_Parser_NRG *self, gint se
                 succeeded = FALSE;
                 goto end;
             }
-            mirage_frag_iface_binary_track_file_set_offset(MIRAGE_FRAG_IFACE_BINARY(fragment), tfile_offset);
-            mirage_frag_iface_binary_track_file_set_sectsize(MIRAGE_FRAG_IFACE_BINARY(fragment), tfile_sectsize);
-            mirage_frag_iface_binary_track_file_set_format(MIRAGE_FRAG_IFACE_BINARY(fragment), tfile_format);
+            mirage_fragment_iface_binary_track_file_set_offset(MIRAGE_FRAGMENT_IFACE_BINARY(fragment), tfile_offset);
+            mirage_fragment_iface_binary_track_file_set_sectsize(MIRAGE_FRAGMENT_IFACE_BINARY(fragment), tfile_sectsize);
+            mirage_fragment_iface_binary_track_file_set_format(MIRAGE_FRAGMENT_IFACE_BINARY(fragment), tfile_format);
 
             /* Subchannel */
             if (sub_sectsize) {
                 sfile_sectsize = sub_sectsize; /* We use the one from decoded mode code */
-                sfile_format = FR_BIN_SFILE_PW96_INT | FR_BIN_SFILE_INT; /* PW96 interleaved, internal */
+                sfile_format = MIRAGE_SFILE_PW96_INT | MIRAGE_SFILE_INT; /* PW96 interleaved, internal */
 
-                mirage_frag_iface_binary_subchannel_file_set_sectsize(MIRAGE_FRAG_IFACE_BINARY(fragment), sfile_sectsize);
-                mirage_frag_iface_binary_subchannel_file_set_format(MIRAGE_FRAG_IFACE_BINARY(fragment), sfile_format);
+                mirage_fragment_iface_binary_subchannel_file_set_sectsize(MIRAGE_FRAGMENT_IFACE_BINARY(fragment), sfile_sectsize);
+                mirage_fragment_iface_binary_subchannel_file_set_format(MIRAGE_FRAGMENT_IFACE_BINARY(fragment), sfile_format);
             }
 
             mirage_track_add_fragment(MIRAGE_TRACK(track), -1, fragment);
@@ -647,7 +647,7 @@ static gboolean mirage_parser_nrg_load_session (MIRAGE_Parser_NRG *self, gint se
             /* Create a binary fragment */
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: creating data fragment\n", __debug__);
 
-            fragment = mirage_create_fragment(MIRAGE_TYPE_FRAG_IFACE_BINARY, self->priv->nrg_stream, G_OBJECT(self), error);
+            fragment = mirage_create_fragment(MIRAGE_TYPE_FRAGMENT_IFACE_BINARY, self->priv->nrg_stream, G_OBJECT(self), error);
             if (!fragment) {
                 MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to create fragment!\n", __debug__);
                 succeeded = FALSE;
@@ -660,14 +660,14 @@ static gboolean mirage_parser_nrg_load_session (MIRAGE_Parser_NRG *self, gint se
             tfile_sectsize = main_sectsize; /* We use the one from decoded mode code */
             tfile_offset = dao_block->start_offset;
             if (mode == MIRAGE_MODE_AUDIO) {
-                tfile_format = FR_BIN_TFILE_AUDIO;
+                tfile_format = MIRAGE_TFILE_AUDIO;
             } else {
-                tfile_format = FR_BIN_TFILE_DATA;
+                tfile_format = MIRAGE_TFILE_DATA;
             }
 
             mirage_fragment_set_length(MIRAGE_FRAGMENT(fragment), fragment_len);
 
-            if (!mirage_frag_iface_binary_track_file_set_file(MIRAGE_FRAG_IFACE_BINARY(fragment), self->priv->nrg_filename, self->priv->nrg_stream, error)) {
+            if (!mirage_fragment_iface_binary_track_file_set_file(MIRAGE_FRAGMENT_IFACE_BINARY(fragment), self->priv->nrg_filename, self->priv->nrg_stream, error)) {
                 MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to set track data file!\n", __debug__);
                 g_object_unref(fragment);
                 g_object_unref(track);
@@ -675,17 +675,17 @@ static gboolean mirage_parser_nrg_load_session (MIRAGE_Parser_NRG *self, gint se
                 succeeded = FALSE;
                 goto end;
             }
-            mirage_frag_iface_binary_track_file_set_offset(MIRAGE_FRAG_IFACE_BINARY(fragment), tfile_offset);
-            mirage_frag_iface_binary_track_file_set_sectsize(MIRAGE_FRAG_IFACE_BINARY(fragment), tfile_sectsize);
-            mirage_frag_iface_binary_track_file_set_format(MIRAGE_FRAG_IFACE_BINARY(fragment), tfile_format);
+            mirage_fragment_iface_binary_track_file_set_offset(MIRAGE_FRAGMENT_IFACE_BINARY(fragment), tfile_offset);
+            mirage_fragment_iface_binary_track_file_set_sectsize(MIRAGE_FRAGMENT_IFACE_BINARY(fragment), tfile_sectsize);
+            mirage_fragment_iface_binary_track_file_set_format(MIRAGE_FRAGMENT_IFACE_BINARY(fragment), tfile_format);
 
             /* Subchannel */
             if (sub_sectsize) {
                 sfile_sectsize = sub_sectsize; /* We use the one from decoded mode code */
-                sfile_format = FR_BIN_SFILE_PW96_INT | FR_BIN_SFILE_INT; /* PW96 interleaved, internal */
+                sfile_format = MIRAGE_SFILE_PW96_INT | MIRAGE_SFILE_INT; /* PW96 interleaved, internal */
 
-                mirage_frag_iface_binary_subchannel_file_set_sectsize(MIRAGE_FRAG_IFACE_BINARY(fragment), sfile_sectsize);
-                mirage_frag_iface_binary_subchannel_file_set_format(MIRAGE_FRAG_IFACE_BINARY(fragment), sfile_format);
+                mirage_fragment_iface_binary_subchannel_file_set_sectsize(MIRAGE_FRAGMENT_IFACE_BINARY(fragment), sfile_sectsize);
+                mirage_fragment_iface_binary_subchannel_file_set_format(MIRAGE_FRAGMENT_IFACE_BINARY(fragment), sfile_format);
             }
 
             mirage_track_add_fragment(MIRAGE_TRACK(track), -1, fragment);
@@ -775,7 +775,7 @@ end:
     return succeeded;
 }
 
-static gboolean mirage_parser_nrg_load_session_tao (MIRAGE_Parser_NRG *self, gint session_num, GError **error)
+static gboolean mirage_parser_nrg_load_session_tao (MirageParser_NRG *self, gint session_num, GError **error)
 {
     gboolean succeeded = TRUE;
 
@@ -830,7 +830,7 @@ static gboolean mirage_parser_nrg_load_session_tao (MIRAGE_Parser_NRG *self, gin
         GObject *fragment;
 
         /* Pregap fragment - creation of NULL fragment should never fail */
-        fragment = mirage_create_fragment(MIRAGE_TYPE_FRAG_IFACE_NULL, NULL, G_OBJECT(self), error);
+        fragment = mirage_create_fragment(MIRAGE_TYPE_FRAGMENT_IFACE_NULL, NULL, G_OBJECT(self), error);
 
         mirage_track_add_fragment(MIRAGE_TRACK(track), 0, fragment);
         mirage_fragment_set_length(MIRAGE_FRAGMENT(fragment), 150);
@@ -844,7 +844,7 @@ static gboolean mirage_parser_nrg_load_session_tao (MIRAGE_Parser_NRG *self, gin
         if (fragment_len) {
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: creating data fragment\n", __debug__);
 
-            fragment = mirage_create_fragment(MIRAGE_TYPE_FRAG_IFACE_BINARY, self->priv->nrg_stream, G_OBJECT(self), error);
+            fragment = mirage_create_fragment(MIRAGE_TYPE_FRAGMENT_IFACE_BINARY, self->priv->nrg_stream, G_OBJECT(self), error);
             if (!fragment) {
                 MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to create fragment!\n", __debug__);
                 g_object_unref(track);
@@ -857,14 +857,14 @@ static gboolean mirage_parser_nrg_load_session_tao (MIRAGE_Parser_NRG *self, gin
             tfile_sectsize = main_sectsize; /* We use the one from decoded mode code */
             tfile_offset = etn_block->offset;
             if (mode == MIRAGE_MODE_AUDIO) {
-                tfile_format = FR_BIN_TFILE_AUDIO;
+                tfile_format = MIRAGE_TFILE_AUDIO;
             } else {
-                tfile_format = FR_BIN_TFILE_DATA;
+                tfile_format = MIRAGE_TFILE_DATA;
             }
 
             mirage_fragment_set_length(MIRAGE_FRAGMENT(fragment), fragment_len);
 
-            if (!mirage_frag_iface_binary_track_file_set_file(MIRAGE_FRAG_IFACE_BINARY(fragment), self->priv->nrg_filename, self->priv->nrg_stream, error)) {
+            if (!mirage_fragment_iface_binary_track_file_set_file(MIRAGE_FRAGMENT_IFACE_BINARY(fragment), self->priv->nrg_filename, self->priv->nrg_stream, error)) {
                 MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to set track data file!\n", __debug__);
                 g_object_unref(fragment);
                 g_object_unref(track);
@@ -872,17 +872,17 @@ static gboolean mirage_parser_nrg_load_session_tao (MIRAGE_Parser_NRG *self, gin
                 succeeded = FALSE;
                 goto end;
             }
-            mirage_frag_iface_binary_track_file_set_offset(MIRAGE_FRAG_IFACE_BINARY(fragment), tfile_offset);
-            mirage_frag_iface_binary_track_file_set_sectsize(MIRAGE_FRAG_IFACE_BINARY(fragment), tfile_sectsize);
-            mirage_frag_iface_binary_track_file_set_format(MIRAGE_FRAG_IFACE_BINARY(fragment), tfile_format);
+            mirage_fragment_iface_binary_track_file_set_offset(MIRAGE_FRAGMENT_IFACE_BINARY(fragment), tfile_offset);
+            mirage_fragment_iface_binary_track_file_set_sectsize(MIRAGE_FRAGMENT_IFACE_BINARY(fragment), tfile_sectsize);
+            mirage_fragment_iface_binary_track_file_set_format(MIRAGE_FRAGMENT_IFACE_BINARY(fragment), tfile_format);
 
             /* Subchannel */
             if (sub_sectsize) {
                 sfile_sectsize = sub_sectsize; /* We use the one from decoded mode code */
-                sfile_format = FR_BIN_SFILE_PW96_INT | FR_BIN_SFILE_INT; /* PW96 interleaved, internal */
+                sfile_format = MIRAGE_SFILE_PW96_INT | MIRAGE_SFILE_INT; /* PW96 interleaved, internal */
 
-                mirage_frag_iface_binary_subchannel_file_set_sectsize(MIRAGE_FRAG_IFACE_BINARY(fragment), sfile_sectsize);
-                mirage_frag_iface_binary_subchannel_file_set_format(MIRAGE_FRAG_IFACE_BINARY(fragment), sfile_format);
+                mirage_fragment_iface_binary_subchannel_file_set_sectsize(MIRAGE_FRAGMENT_IFACE_BINARY(fragment), sfile_sectsize);
+                mirage_fragment_iface_binary_subchannel_file_set_format(MIRAGE_FRAGMENT_IFACE_BINARY(fragment), sfile_format);
             }
 
             mirage_track_add_fragment(MIRAGE_TRACK(track), -1, fragment);
@@ -903,7 +903,7 @@ end:
     return succeeded;
 }
 
-static gboolean mirage_parser_nrg_load_cdtext (MIRAGE_Parser_NRG *self, GError **error)
+static gboolean mirage_parser_nrg_load_cdtext (MirageParser_NRG *self, GError **error)
 {
     NRGBlockIndexEntry *blockentry;
     guint8 *cur_ptr;
@@ -940,11 +940,11 @@ static gboolean mirage_parser_nrg_load_cdtext (MIRAGE_Parser_NRG *self, GError *
 
 
 /**********************************************************************\
- *                MIRAGE_Parser methods implementation                *
+ *                MirageParser methods implementation                *
 \**********************************************************************/
-static GObject *mirage_parser_nrg_load_image (MIRAGE_Parser *_self, gchar **filenames, GError **error)
+static GObject *mirage_parser_nrg_load_image (MirageParser *_self, gchar **filenames, GError **error)
 {
-    MIRAGE_Parser_NRG *self = MIRAGE_PARSER_NRG(_self);
+    MirageParser_NRG *self = MIRAGE_PARSER_NRG(_self);
 
     gboolean succeeded = TRUE;
     guint64 file_size;
@@ -1111,7 +1111,7 @@ end:
 /**********************************************************************\
  *                             Object init                            *
 \**********************************************************************/
-G_DEFINE_DYNAMIC_TYPE(MIRAGE_Parser_NRG, mirage_parser_nrg, MIRAGE_TYPE_PARSER);
+G_DEFINE_DYNAMIC_TYPE(MirageParser_NRG, mirage_parser_nrg, MIRAGE_TYPE_PARSER);
 
 void mirage_parser_nrg_type_register (GTypeModule *type_module)
 {
@@ -1119,7 +1119,7 @@ void mirage_parser_nrg_type_register (GTypeModule *type_module)
 }
 
 
-static void mirage_parser_nrg_init (MIRAGE_Parser_NRG *self)
+static void mirage_parser_nrg_init (MirageParser_NRG *self)
 {
     self->priv = MIRAGE_PARSER_NRG_GET_PRIVATE(self);
 
@@ -1137,7 +1137,7 @@ static void mirage_parser_nrg_init (MIRAGE_Parser_NRG *self)
 
 static void mirage_parser_nrg_dispose (GObject *gobject)
 {
-    MIRAGE_Parser_NRG *self = MIRAGE_PARSER_NRG(gobject);
+    MirageParser_NRG *self = MIRAGE_PARSER_NRG(gobject);
 
     if (self->priv->nrg_stream) {
         g_object_unref(self->priv->nrg_stream);
@@ -1151,7 +1151,7 @@ static void mirage_parser_nrg_dispose (GObject *gobject)
 
 static void mirage_parser_nrg_finalize (GObject *gobject)
 {
-    MIRAGE_Parser_NRG *self = MIRAGE_PARSER_NRG(gobject);
+    MirageParser_NRG *self = MIRAGE_PARSER_NRG(gobject);
 
     g_free(self->priv->nrg_filename);
     g_free(self->priv->nrg_data);
@@ -1160,10 +1160,10 @@ static void mirage_parser_nrg_finalize (GObject *gobject)
     return G_OBJECT_CLASS(mirage_parser_nrg_parent_class)->finalize(gobject);
 }
 
-static void mirage_parser_nrg_class_init (MIRAGE_Parser_NRGClass *klass)
+static void mirage_parser_nrg_class_init (MirageParser_NRGClass *klass)
 {
     GObjectClass *gobject_class = G_OBJECT_CLASS(klass);
-    MIRAGE_ParserClass *parser_class = MIRAGE_PARSER_CLASS(klass);
+    MirageParserClass *parser_class = MIRAGE_PARSER_CLASS(klass);
 
     gobject_class->dispose = mirage_parser_nrg_dispose;
     gobject_class->finalize = mirage_parser_nrg_finalize;
@@ -1171,9 +1171,9 @@ static void mirage_parser_nrg_class_init (MIRAGE_Parser_NRGClass *klass)
     parser_class->load_image = mirage_parser_nrg_load_image;
 
     /* Register private structure */
-    g_type_class_add_private(klass, sizeof(MIRAGE_Parser_NRGPrivate));
+    g_type_class_add_private(klass, sizeof(MirageParser_NRGPrivate));
 }
 
-static void mirage_parser_nrg_class_finalize (MIRAGE_Parser_NRGClass *klass G_GNUC_UNUSED)
+static void mirage_parser_nrg_class_finalize (MirageParser_NRGClass *klass G_GNUC_UNUSED)
 {
 }
