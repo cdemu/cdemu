@@ -1,8 +1,8 @@
-.TH CDEMUD 8 "Apr 22, 2011"
+.TH CDEMU-DAEMON 8 "Sep 25, 2012"
 .SH NAME
 cdemud \- The CDEmu daemon
 .SH SYNOPSIS
-.B cdemud
+.B cdemu-daemon
 [options]
 .SH DESCRIPTION
 This is CDEmu daemon, the userspace daemon part of the userspace-cdemu suite, a
@@ -50,10 +50,10 @@ Display the help message.
 .SH EXAMPLES
 .TP
 .B Running daemon on default bus with PulseAudio audio driver and 4 virtual devices:
-cdemud --num-devices=4 --audio-driver=pulse
+cdemu-daemon --num-devices=4 --audio-driver=pulse
 .TP
 .B Running daemon on system bus with 2 virtual devices and logging redirected to a file:
-cdemud --num-devices=2 --bus=system --logfile=/tmp/cdemu-daemon.log
+cdemu-daemon --num-devices=2 --bus=system --logfile=/tmp/cdemu-daemon.log
 .TP
 .SH AUTHORS
 .PP

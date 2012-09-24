@@ -1,5 +1,5 @@
 /*
- *  CDEmuD: Daemon object
+ *  CDEmu daemon: Daemon object
  *  Copyright (C) 2006-2012 Rok Mandeljc
  *
  *  This program is free software; you can redistribute it and/or modify
@@ -17,8 +17,8 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
 
-#include "cdemud.h"
-#include "cdemud-daemon-private.h"
+#include "cdemu.h"
+#include "cdemu-daemon-private.h"
 
 #define __debug__ "Daemon"
 
@@ -26,31 +26,31 @@
 /**********************************************************************\
  *                           Signal handlers                          *
 \**********************************************************************/
-static void device_status_changed_handler (GObject *device, CDEMUD_Daemon *self)
+static void device_status_changed_handler (GObject *device, CdemuDaemon *self)
 {
-    gint number = cdemud_device_get_device_number(CDEMUD_DEVICE(device));
-    cdemud_daemon_dbus_emit_device_status_changed (self, number);
+    gint number = cdemu_device_get_device_number(CDEMU_DEVICE(device));
+    cdemu_daemon_dbus_emit_device_status_changed (self, number);
 }
 
-static void device_option_changed_handler (GObject *device, gchar *option, CDEMUD_Daemon *self)
+static void device_option_changed_handler (GObject *device, gchar *option, CdemuDaemon *self)
 {
-    gint number = cdemud_device_get_device_number(CDEMUD_DEVICE(device));
-    cdemud_daemon_dbus_emit_device_option_changed(self, number, option);
+    gint number = cdemu_device_get_device_number(CDEMU_DEVICE(device));
+    cdemu_daemon_dbus_emit_device_option_changed(self, number, option);
 }
 
 
 /**********************************************************************\
  *                           Device mapping                           *
 \**********************************************************************/
-static gboolean device_mapping_callback (CDEMUD_Daemon *self)
+static gboolean device_mapping_callback (CdemuDaemon *self)
 {
     gboolean run_again = FALSE;
 
     /* Try to setup mapping on each device */
     for (gint i = 0; i < self->priv->number_of_devices; i++) {
-        GObject *device = cdemud_daemon_get_device(self, i, NULL);
+        GObject *device = cdemu_daemon_get_device(self, i, NULL);
 
-        run_again = !cdemud_device_setup_mapping(CDEMUD_DEVICE(device));
+        run_again = !cdemu_device_setup_mapping(CDEMU_DEVICE(device));
         g_object_unref(device);
 
         /* Try again later? */
@@ -66,7 +66,7 @@ static gboolean device_mapping_callback (CDEMUD_Daemon *self)
 
     /* If we're done here, it's time to send the "DeviceMappingsReady" signal */
     if (!run_again) {
-        cdemud_daemon_dbus_emit_device_mappings_ready(self);
+        cdemu_daemon_dbus_emit_device_mappings_ready(self);
     }
 
     return run_again;
@@ -76,15 +76,15 @@ static gboolean device_mapping_callback (CDEMUD_Daemon *self)
 /******************************************************************************\
  *                                 Public API                                 *
 \******************************************************************************/
-gboolean cdemud_daemon_initialize_and_start (CDEMUD_Daemon *self, gint num_devices, gchar *ctl_device, gchar *audio_driver, gboolean system_bus)
+gboolean cdemu_daemon_initialize_and_start (CdemuDaemon *self, gint num_devices, gchar *ctl_device, gchar *audio_driver, gboolean system_bus)
 {
     GObject *debug_context;
     GBusType bus_type = system_bus ? G_BUS_TYPE_SYSTEM : G_BUS_TYPE_SESSION;
 
     /* Debug context; so that we get daemon's errors/warnings from the very beginning */
     debug_context = g_object_new(MIRAGE_TYPE_DEBUG_CONTEXT, NULL);
-    mirage_debug_context_set_name(MIRAGE_DEBUG_CONTEXT(debug_context), "cdemud");
-    mirage_debug_context_set_domain(MIRAGE_DEBUG_CONTEXT(debug_context), "CDEMUD");
+    mirage_debug_context_set_name(MIRAGE_DEBUG_CONTEXT(debug_context), "cdemu");
+    mirage_debug_context_set_domain(MIRAGE_DEBUG_CONTEXT(debug_context), "CDEMU");
     mirage_debuggable_set_debug_context(MIRAGE_DEBUGGABLE(self), debug_context);
     g_object_unref(debug_context);
 
@@ -104,20 +104,20 @@ gboolean cdemud_daemon_initialize_and_start (CDEMUD_Daemon *self, gint num_devic
        instance of the server). We're actually going to claim it once we create
        the devices, but we want to avoid the device creation if name claim is
        already doomed to fail... */
-    if (!cdemud_daemon_dbus_check_if_name_is_available(self, bus_type)) {
+    if (!cdemu_daemon_dbus_check_if_name_is_available(self, bus_type)) {
         return FALSE;
     }
 
     /* Create desired number of devices */
     for (gint i = 0; i < self->priv->number_of_devices; i++) {
         /* Create CDEmu device object */
-        GObject *dev =  g_object_new(CDEMUD_TYPE_DEVICE, NULL);
+        GObject *dev =  g_object_new(CDEMU_TYPE_DEVICE, NULL);
 
-        if (cdemud_device_initialize(CDEMUD_DEVICE(dev), i, self->priv->ctl_device, audio_driver)) {
+        if (cdemu_device_initialize(CDEMU_DEVICE(dev), i, self->priv->ctl_device, audio_driver)) {
             /* Set parent */
             mirage_object_set_parent(MIRAGE_OBJECT(dev), G_OBJECT(self));
-            /* Don't attach child... MIRAGE_Objects pass debug context to children,
-               and CDEMUD_Devices have each its own context... */
+            /* Don't attach child... MirageObjects pass debug context to children,
+               and CdemuDevices have each its own context... */
             /* Add handling for signals from the device... this allows us to
                pass them on via DBUS */
             g_signal_connect(dev, "status-changed", (GCallback)device_status_changed_handler, self);
@@ -126,7 +126,7 @@ gboolean cdemud_daemon_initialize_and_start (CDEMUD_Daemon *self, gint num_devic
             /* Add it to devices list */
             self->priv->list_of_devices = g_list_append(self->priv->list_of_devices, dev);
         } else {
-            CDEMUD_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: failed to initialize device %i!\n", __debug__, i);
+            CDEMU_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: failed to initialize device %i!\n", __debug__, i);
             g_object_unref(dev);
             return FALSE;
         }
@@ -140,26 +140,26 @@ gboolean cdemud_daemon_initialize_and_start (CDEMUD_Daemon *self, gint num_devic
 
 
     /* Register on D-Bus bus */
-    cdemud_daemon_dbus_register_on_bus(self, bus_type);
+    cdemu_daemon_dbus_register_on_bus(self, bus_type);
 
     /* Run the main loop */
     g_main_loop_run(self->priv->main_loop);
 
 
     /* Cleanup D-Bus */
-    cdemud_daemon_dbus_cleanup(self);
+    cdemu_daemon_dbus_cleanup(self);
 
     return TRUE;
 }
 
-void cdemud_daemon_stop_daemon (CDEMUD_Daemon *self)
+void cdemu_daemon_stop_daemon (CdemuDaemon *self)
 {
     /* Stop the main loop */
     g_main_loop_quit(self->priv->main_loop);
 }
 
 
-GObject *cdemud_daemon_get_device (CDEMUD_Daemon *self, gint device_number, GError **error)
+GObject *cdemu_daemon_get_device (CdemuDaemon *self, gint device_number, GError **error)
 {
     /* Get device */
     if (device_number >= 0 && device_number < self->priv->number_of_devices) {
@@ -168,7 +168,7 @@ GObject *cdemud_daemon_get_device (CDEMUD_Daemon *self, gint device_number, GErr
         return device;
     }
 
-    g_set_error(error, CDEMUD_ERROR, CDEMUD_ERROR_INVALID_ARGUMENT, "Invalid device number!");
+    g_set_error(error, CDEMU_ERROR, CDEMU_ERROR_INVALID_ARGUMENT, "Invalid device number!");
     return NULL;
 }
 
@@ -176,11 +176,11 @@ GObject *cdemud_daemon_get_device (CDEMUD_Daemon *self, gint device_number, GErr
 /**********************************************************************\
  *                             Object init                            *
 \**********************************************************************/
-G_DEFINE_TYPE(CDEMUD_Daemon, cdemud_daemon, MIRAGE_TYPE_OBJECT);
+G_DEFINE_TYPE(CdemuDaemon, cdemu_daemon, MIRAGE_TYPE_OBJECT);
 
-static void cdemud_daemon_init (CDEMUD_Daemon *self)
+static void cdemu_daemon_init (CdemuDaemon *self)
 {
-    self->priv = CDEMUD_DAEMON_GET_PRIVATE(self);
+    self->priv = CDEMU_DAEMON_GET_PRIVATE(self);
 
     self->priv->main_loop = NULL;
     self->priv->list_of_devices = NULL;
@@ -194,9 +194,9 @@ static void cdemud_daemon_init (CDEMUD_Daemon *self)
     self->priv->owner_id = 0;
 }
 
-static void cdemud_daemon_dispose (GObject *gobject)
+static void cdemu_daemon_dispose (GObject *gobject)
 {
-    CDEMUD_Daemon *self = CDEMUD_DAEMON(gobject);
+    CdemuDaemon *self = CDEMU_DAEMON(gobject);
     GList *entry = NULL;
 
     /* Unref main loop */
@@ -212,12 +212,12 @@ static void cdemud_daemon_dispose (GObject *gobject)
     }
 
     /* Chain up to the parent class */
-    return G_OBJECT_CLASS(cdemud_daemon_parent_class)->dispose(gobject);
+    return G_OBJECT_CLASS(cdemu_daemon_parent_class)->dispose(gobject);
 }
 
-static void cdemud_daemon_finalize (GObject *gobject)
+static void cdemu_daemon_finalize (GObject *gobject)
 {
-    CDEMUD_Daemon *self = CDEMUD_DAEMON(gobject);
+    CdemuDaemon *self = CDEMU_DAEMON(gobject);
 
     /* Free devices list */
     g_list_free(self->priv->list_of_devices);
@@ -232,16 +232,16 @@ static void cdemud_daemon_finalize (GObject *gobject)
     ao_shutdown();
 
     /* Chain up to the parent class */
-    return G_OBJECT_CLASS(cdemud_daemon_parent_class)->finalize(gobject);
+    return G_OBJECT_CLASS(cdemu_daemon_parent_class)->finalize(gobject);
 }
 
-static void cdemud_daemon_class_init (CDEMUD_DaemonClass *klass)
+static void cdemu_daemon_class_init (CdemuDaemonClass *klass)
 {
     GObjectClass *gobject_class = G_OBJECT_CLASS(klass);
 
-    gobject_class->dispose = cdemud_daemon_dispose;
-    gobject_class->finalize = cdemud_daemon_finalize;
+    gobject_class->dispose = cdemu_daemon_dispose;
+    gobject_class->finalize = cdemu_daemon_finalize;
 
     /* Register private structure */
-    g_type_class_add_private(klass, sizeof(CDEMUD_DaemonPrivate));
+    g_type_class_add_private(klass, sizeof(CdemuDaemonPrivate));
 }

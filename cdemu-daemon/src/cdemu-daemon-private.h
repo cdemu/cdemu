@@ -1,5 +1,5 @@
 /*
- *  CDEmuD: Daemon object - private
+ *  CDEmu daemon: Daemon object - private
  *  Copyright (C) 2012 Rok Mandeljc
  *
  *  This program is free software; you can redistribute it and/or modify
@@ -17,12 +17,12 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
 
-#ifndef __CDEMUD_DAEMON_PRIVATE_H__
-#define __CDEMUD_DAEMON_PRIVATE_H__
+#ifndef __CDEMU_DAEMON_PRIVATE_H__
+#define __CDEMU_DAEMON_PRIVATE_H__
 
-#define CDEMUD_DAEMON_GET_PRIVATE(obj) (G_TYPE_INSTANCE_GET_PRIVATE((obj), CDEMUD_TYPE_DAEMON, CDEMUD_DaemonPrivate))
+#define CDEMU_DAEMON_GET_PRIVATE(obj) (G_TYPE_INSTANCE_GET_PRIVATE((obj), CDEMU_TYPE_DAEMON, CdemuDaemonPrivate))
 
-struct _CDEMUD_DaemonPrivate
+struct _CdemuDaemonPrivate
 {
     gchar *version;
 
@@ -45,13 +45,13 @@ struct _CDEMUD_DaemonPrivate
 };
 
 /* Daemon's D-BUS API */
-gboolean cdemud_daemon_dbus_check_if_name_is_available (CDEMUD_Daemon *self, GBusType bus_type);
-void cdemud_daemon_dbus_register_on_bus (CDEMUD_Daemon *self, GBusType bus_type);
-void cdemud_daemon_dbus_cleanup (CDEMUD_Daemon *self);
+gboolean cdemu_daemon_dbus_check_if_name_is_available (CdemuDaemon *self, GBusType bus_type);
+void cdemu_daemon_dbus_register_on_bus (CdemuDaemon *self, GBusType bus_type);
+void cdemu_daemon_dbus_cleanup (CdemuDaemon *self);
 
-void cdemud_daemon_dbus_emit_device_status_changed (CDEMUD_Daemon *self, gint number);
-void cdemud_daemon_dbus_emit_device_option_changed (CDEMUD_Daemon *self, gint number, const gchar *option);
-void cdemud_daemon_dbus_emit_device_mappings_ready (CDEMUD_Daemon *self);
+void cdemu_daemon_dbus_emit_device_status_changed (CdemuDaemon *self, gint number);
+void cdemu_daemon_dbus_emit_device_option_changed (CdemuDaemon *self, gint number, const gchar *option);
+void cdemu_daemon_dbus_emit_device_mappings_ready (CdemuDaemon *self);
 
 
-#endif /* __CDEMUD_DAEMON_PRIVATE_H__ */
+#endif /* __CDEMU_DAEMON_PRIVATE_H__ */

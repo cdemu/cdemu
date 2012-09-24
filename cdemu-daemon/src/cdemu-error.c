@@ -1,5 +1,5 @@
 /*
- *  CDEmuD: Error handling
+ *  CDEmu daemon: Error handling
  *  Copyright (C) 2006-2012 Rok Mandeljc
  *
  *  This program is free software; you can redistribute it and/or modify
@@ -17,15 +17,15 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
 
-#include "cdemud.h"
+#include "cdemu.h"
 
 
-GQuark cdemud_error_quark (void)
+GQuark cdemu_error_quark (void)
 {
     static GQuark q = 0;
 
     if (q == 0) {
-        q = g_quark_from_static_string("cdemud-error");
+        q = g_quark_from_static_string("cdemu-error");
     }
 
     return q;
@@ -33,14 +33,14 @@ GQuark cdemud_error_quark (void)
 
 
 #define ENUM_ENTRY(NAME, DESC) { NAME, "" #NAME "", DESC }
-GType cdemud_error_get_type (void)
+GType cdemu_error_get_type (void)
 {
     static GType type = 0;
     if (type == 0) {
         static const GEnumValue values[] = {
-            ENUM_ENTRY(CDEMUD_ERROR_INVALID_ARGUMENT, "InvalidArgument"),
-            ENUM_ENTRY(CDEMUD_ERROR_ALREADY_LOADED, "AlreadyLoaded"),
-            ENUM_ENTRY(CDEMUD_ERROR_DEVICE_LOCKED, "DeviceLocked"),
+            ENUM_ENTRY(CDEMU_ERROR_INVALID_ARGUMENT, "InvalidArgument"),
+            ENUM_ENTRY(CDEMU_ERROR_ALREADY_LOADED, "AlreadyLoaded"),
+            ENUM_ENTRY(CDEMU_ERROR_DEVICE_LOCKED, "DeviceLocked"),
             { 0, 0, 0 }
         };
 

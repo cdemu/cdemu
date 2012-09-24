@@ -1,5 +1,5 @@
 /*
- *  CDEmuD: Debugging facilities
+ *  CDEmu daemon: error handling
  *  Copyright (C) 2006-2012 Rok Mandeljc
  *
  *  This program is free software; you can redistribute it and/or modify
@@ -17,26 +17,23 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
 
-#ifndef __CDEMUD_DEBUG_H__
-#define __CDEMUD_DEBUG_H__
+#ifndef __CDEMU_ERROR_H__
+#define __CDEMU_ERROR_H__
 
-/* Debug masks */
-typedef enum
+#define CDEMU_ERROR (cdemu_error_quark ())
+#define CDEMU_TYPE_ERROR (cdemu_error_get_type ())
+
+/* Error codes */
+enum
 {
-    /* Debug types; need to be same as in libMirage because we use its debug context */
-    DAEMON_DEBUG_ERROR = MIRAGE_DEBUG_ERROR,
-    DAEMON_DEBUG_WARNING = MIRAGE_DEBUG_WARNING,
-    /* Debug masks */
-    DAEMON_DEBUG_DEVICE = 0x0001,
-    DAEMON_DEBUG_MMC = 0x0002,
-    DAEMON_DEBUG_DELAY = 0x0004,
-    DAEMON_DEBUG_AUDIOPLAY = 0x0008,
-    DAEMON_DEBUG_KERNEL_IO = 0x0010,
-} CDEMUD_DeviceDebugMasks;
+    CDEMU_ERROR_INVALID_ARGUMENT,
+    CDEMU_ERROR_ALREADY_LOADED,
+    CDEMU_ERROR_DEVICE_LOCKED,
+};
 
-/* Debug macro */
-#define CDEMUD_DEBUG(obj, lvl, msg...) { \
-    mirage_debuggable_debug_message(MIRAGE_DEBUGGABLE(obj), lvl, msg);  \
-}
+#include <glib.h>
 
-#endif /* __CDEMUD_DEBUG_H__ */
+GQuark cdemu_error_quark (void);
+GType  cdemu_error_get_type (void);
+
+#endif /* __CDEMU_ERROR_H__ */

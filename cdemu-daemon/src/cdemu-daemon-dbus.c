@@ -1,5 +1,5 @@
 /*
- *  CDEmuD: Daemon object - D-Bus
+ *  CDEmu daemon: Daemon object - D-Bus
  *  Copyright (C) 2012 Rok Mandeljc
  *
  *  This program is free software; you can redistribute it and/or modify
@@ -17,17 +17,17 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
 
-#include "cdemud.h"
-#include "cdemud-daemon-private.h"
+#include "cdemu.h"
+#include "cdemu-daemon-private.h"
 
 #define __debug__ "Daemon: D-Bus"
 
 
 /* Daemon's name on D-Bus */
-#define CDEMUD_DBUS_NAME "net.sf.cdemu.CDEMUD_Daemon"
+#define CDEMU_DAEMON_DBUS_NAME "net.sf.cdemu.CDEmuDaemon"
 
-#define DBUS_ERROR_CDEMUD "net.sf.cdemu.CDEMUD_Daemon.CDEmuDaemon"
-#define DBUS_ERROR_LIBMIRAGE "net.sf.cdemu.CDEMUD_Daemon.libMirage"
+#define DBUS_ERROR_CDEMU "net.sf.cdemu.CDEmuDaemon.errorDaemon"
+#define DBUS_ERROR_LIBMIRAGE "net.sf.cdemu.CDEmuDaemon.errorMirage"
 
 static const gchar introspection_xml[];
 
@@ -67,7 +67,7 @@ static void register_error_domain (const gchar *prefix, GType code_enum)
  *                     D-Bus interface implementation                 *
 \**********************************************************************/
 /* Helper that encodes the list of masks */
-static GVariantBuilder *encode_masks (const MIRAGE_DebugMask *masks, gint num_masks)
+static GVariantBuilder *encode_masks (const MirageDebugMask *masks, gint num_masks)
 {
     GVariantBuilder *builder = g_variant_builder_new(G_VARIANT_TYPE("a(si)"));
 
@@ -79,7 +79,7 @@ static GVariantBuilder *encode_masks (const MIRAGE_DebugMask *masks, gint num_ma
 
 
 /* Helper that encodes the list of supported parsers */
-static gboolean append_parser_to_builder (MIRAGE_ParserInfo *parser, GVariantBuilder *builder)
+static gboolean append_parser_to_builder (MirageParserInfo *parser, GVariantBuilder *builder)
 {
     g_variant_builder_add(builder, "(ssss)", parser->id, parser->name, parser->description, parser->mime_type);
     return TRUE;
@@ -88,12 +88,12 @@ static gboolean append_parser_to_builder (MIRAGE_ParserInfo *parser, GVariantBui
 static GVariantBuilder *encode_parsers ()
 {
     GVariantBuilder *builder = g_variant_builder_new(G_VARIANT_TYPE("a(ssss)"));
-    mirage_for_each_parser((MIRAGE_CallbackFunction)append_parser_to_builder, builder, NULL);
+    mirage_for_each_parser((MirageCallbackFunction)append_parser_to_builder, builder, NULL);
     return builder;
 }
 
 /* Helper that encodes the list of supported fragments */
-static gboolean append_fragment_to_builder (MIRAGE_FragmentInfo *fragment, GVariantBuilder *builder)
+static gboolean append_fragment_to_builder (MirageFragmentInfo *fragment, GVariantBuilder *builder)
 {
     g_variant_builder_add(builder, "(ss)", fragment->id, fragment->name);
     return TRUE;
@@ -102,12 +102,12 @@ static gboolean append_fragment_to_builder (MIRAGE_FragmentInfo *fragment, GVari
 static GVariantBuilder *encode_fragments ()
 {
     GVariantBuilder *builder = g_variant_builder_new(G_VARIANT_TYPE("a(ss)"));
-    mirage_for_each_fragment((MIRAGE_CallbackFunction)append_fragment_to_builder, builder, NULL);
+    mirage_for_each_fragment((MirageCallbackFunction)append_fragment_to_builder, builder, NULL);
     return builder;
 }
 
 /* D-Bus method handler */
-static void cdemud_daemon_dbus_handle_method_call (GDBusConnection *connection G_GNUC_UNUSED, const gchar *sender G_GNUC_UNUSED, const gchar *object_path G_GNUC_UNUSED, const gchar *interface_name G_GNUC_UNUSED, const gchar *method_name, GVariant *parameters, GDBusMethodInvocation *invocation, CDEMUD_Daemon *self)
+static void cdemu_daemon_dbus_handle_method_call (GDBusConnection *connection G_GNUC_UNUSED, const gchar *sender G_GNUC_UNUSED, const gchar *object_path G_GNUC_UNUSED, const gchar *interface_name G_GNUC_UNUSED, const gchar *method_name, GVariant *parameters, GDBusMethodInvocation *invocation, CdemuDaemon *self)
 {
     GError *error = NULL;
     gboolean succeeded = FALSE;
@@ -122,9 +122,9 @@ static void cdemud_daemon_dbus_handle_method_call (GDBusConnection *connection G
         GObject *device;
 
         g_variant_get(parameters, "(i^as@a{sv})", &device_number, &filenames, &options);
-        device = cdemud_daemon_get_device(self, device_number, &error);
+        device = cdemu_daemon_get_device(self, device_number, &error);
         if (device) {
-            succeeded = cdemud_device_load_disc(CDEMUD_DEVICE(device), filenames, options, &error);
+            succeeded = cdemu_device_load_disc(CDEMU_DEVICE(device), filenames, options, &error);
         }
 
         g_object_unref(device);
@@ -135,9 +135,9 @@ static void cdemud_daemon_dbus_handle_method_call (GDBusConnection *connection G
         GObject *device;
 
         g_variant_get(parameters, "(i)", &device_number);
-        device = cdemud_daemon_get_device(self, device_number, &error);
+        device = cdemu_daemon_get_device(self, device_number, &error);
         if (device) {
-            succeeded = cdemud_device_unload_disc(CDEMUD_DEVICE(device), &error);
+            succeeded = cdemu_device_unload_disc(CDEMU_DEVICE(device), &error);
         }
 
         g_object_unref(device);
@@ -147,12 +147,12 @@ static void cdemud_daemon_dbus_handle_method_call (GDBusConnection *connection G
         GObject *device;
 
         g_variant_get(parameters, "(i)", &device_number);
-        device = cdemud_daemon_get_device(self, device_number, &error);
+        device = cdemu_daemon_get_device(self, device_number, &error);
         if (device) {
             gboolean loaded;
             gchar **file_names;
 
-            loaded = cdemud_device_get_status(CDEMUD_DEVICE(device), &file_names);
+            loaded = cdemu_device_get_status(CDEMU_DEVICE(device), &file_names);
             ret = g_variant_new("(b^as)", loaded, file_names);
             g_strfreev(file_names);
 
@@ -168,9 +168,9 @@ static void cdemud_daemon_dbus_handle_method_call (GDBusConnection *connection G
         GObject *device;
 
         g_variant_get(parameters, "(isv)", &device_number, &option_name, &option_value);
-        device = cdemud_daemon_get_device(self, device_number, &error);
+        device = cdemu_daemon_get_device(self, device_number, &error);
         if (device) {
-            succeeded = cdemud_device_set_option(CDEMUD_DEVICE(device), option_name, option_value, &error);
+            succeeded = cdemu_device_set_option(CDEMU_DEVICE(device), option_name, option_value, &error);
         }
 
         g_object_unref(device);
@@ -183,9 +183,9 @@ static void cdemud_daemon_dbus_handle_method_call (GDBusConnection *connection G
         GObject *device;
 
         g_variant_get(parameters, "(is)", &device_number, &option_name);
-        device = cdemud_daemon_get_device(self, device_number, &error);
+        device = cdemu_daemon_get_device(self, device_number, &error);
         if (device) {
-            GVariant *option_value = cdemud_device_get_option(CDEMUD_DEVICE(device), option_name, &error);
+            GVariant *option_value = cdemu_device_get_option(CDEMU_DEVICE(device), option_name, &error);
             if (option_value) {
                 ret = g_variant_new("(v)", option_value);
                 succeeded = TRUE;
@@ -204,11 +204,11 @@ static void cdemud_daemon_dbus_handle_method_call (GDBusConnection *connection G
         GObject *device;
 
         g_variant_get(parameters, "(i)", &device_number);
-        device = cdemud_daemon_get_device(self, device_number, &error);
+        device = cdemu_daemon_get_device(self, device_number, &error);
         if (device) {
             gchar *sr_device, *sg_device;
 
-            cdemud_device_get_mapping(CDEMUD_DEVICE(device), &sr_device, &sg_device);
+            cdemu_device_get_mapping(CDEMU_DEVICE(device), &sr_device, &sg_device);
             ret = g_variant_new("(ss)", sr_device ? sr_device : "", sg_device ? sg_device : "");
             succeeded = TRUE;
 
@@ -231,7 +231,7 @@ static void cdemud_daemon_dbus_handle_method_call (GDBusConnection *connection G
         succeeded = TRUE;
     } else if (!g_strcmp0(method_name, "EnumDaemonDebugMasks")) {
         /* *** EnumDaemonDebugMasks *** */
-        static const MIRAGE_DebugMask dbg_masks[] = {
+        static const MirageDebugMask dbg_masks[] = {
             { "DAEMON_DEBUG_DEVICE", DAEMON_DEBUG_DEVICE },
             { "DAEMON_DEBUG_MMC", DAEMON_DEBUG_MMC },
             { "DAEMON_DEBUG_DELAY", DAEMON_DEBUG_DELAY },
@@ -243,7 +243,7 @@ static void cdemud_daemon_dbus_handle_method_call (GDBusConnection *connection G
         succeeded = TRUE;
     } else if (!g_strcmp0(method_name, "EnumLibraryDebugMasks")) {
         /* *** EnumLibraryDebugMasks *** */
-        const MIRAGE_DebugMask *dbg_masks;
+        const MirageDebugMask *dbg_masks;
         gint num_dbg_masks;
 
         succeeded = mirage_get_supported_debug_masks(&dbg_masks, &num_dbg_masks, &error);
@@ -259,7 +259,7 @@ static void cdemud_daemon_dbus_handle_method_call (GDBusConnection *connection G
         ret = g_variant_new("(a(ss))", encode_fragments());
         succeeded = TRUE;
     } else {
-        g_set_error(&error, CDEMUD_ERROR, CDEMUD_ERROR_INVALID_ARGUMENT, "Invalid method name '%s'!", method_name);
+        g_set_error(&error, CDEMU_ERROR, CDEMU_ERROR_INVALID_ARGUMENT, "Invalid method name '%s'!", method_name);
     }
 
     if (succeeded) {
@@ -268,8 +268,8 @@ static void cdemud_daemon_dbus_handle_method_call (GDBusConnection *connection G
         /* We need to map the code */
         if (error->domain == MIRAGE_ERROR) {
             error->domain = g_quark_from_string(DBUS_ERROR_LIBMIRAGE);
-        } else if (error->domain == CDEMUD_ERROR) {
-            error->domain = g_quark_from_string(DBUS_ERROR_CDEMUD);
+        } else if (error->domain == CDEMU_ERROR) {
+            error->domain = g_quark_from_string(DBUS_ERROR_CDEMU);
         }
         g_dbus_method_invocation_return_gerror(invocation, error);
     }
@@ -277,14 +277,14 @@ static void cdemud_daemon_dbus_handle_method_call (GDBusConnection *connection G
 
 /* Interface VTable */
 static const GDBusInterfaceVTable dbus_interface_vtable = {
-    (GDBusInterfaceMethodCallFunc)cdemud_daemon_dbus_handle_method_call,
+    (GDBusInterfaceMethodCallFunc)cdemu_daemon_dbus_handle_method_call,
     NULL,
     NULL,
     { NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL }
 };
 
 
-static void on_bus_acquired (GDBusConnection *connection, const gchar *name G_GNUC_UNUSED, CDEMUD_Daemon *self)
+static void on_bus_acquired (GDBusConnection *connection, const gchar *name G_GNUC_UNUSED, CdemuDaemon *self)
 {
     /* Create introspection data from our embedded xml */
     GDBusNodeInfo *introspection_data;
@@ -293,7 +293,7 @@ static void on_bus_acquired (GDBusConnection *connection, const gchar *name G_GN
     self->priv->connection = connection;
 
     /* Register D-Bus error domains */
-    register_error_domain(DBUS_ERROR_CDEMUD, CDEMUD_TYPE_ERROR);
+    register_error_domain(DBUS_ERROR_CDEMU, CDEMU_TYPE_ERROR);
     register_error_domain(DBUS_ERROR_LIBMIRAGE, MIRAGE_TYPE_ERROR);
 
     /* Register object */
@@ -301,7 +301,7 @@ static void on_bus_acquired (GDBusConnection *connection, const gchar *name G_GN
 
     g_dbus_connection_register_object(
         connection,
-        "/CDEMUD_Daemon",
+        "/Daemon",
         introspection_data->interfaces[0],
         &dbus_interface_vtable,
         self,
@@ -313,16 +313,16 @@ static void on_bus_acquired (GDBusConnection *connection, const gchar *name G_GN
 }
 
 
-static void on_name_lost (GDBusConnection *connection G_GNUC_UNUSED, const gchar *name G_GNUC_UNUSED, CDEMUD_Daemon *self)
+static void on_name_lost (GDBusConnection *connection G_GNUC_UNUSED, const gchar *name G_GNUC_UNUSED, CdemuDaemon *self)
 {
-    cdemud_daemon_stop_daemon(self);
+    cdemu_daemon_stop_daemon(self);
 }
 
 
 /**********************************************************************\
  *                    Daemon's D-Bus functions                        *
 \**********************************************************************/
-gboolean cdemud_daemon_dbus_check_if_name_is_available (CDEMUD_Daemon *self, GBusType bus_type)
+gboolean cdemu_daemon_dbus_check_if_name_is_available (CdemuDaemon *self, GBusType bus_type)
 {
     GDBusProxy *dbus_proxy;
     GError *dbus_error = NULL;
@@ -341,7 +341,7 @@ gboolean cdemud_daemon_dbus_check_if_name_is_available (CDEMUD_Daemon *self, GBu
     );
 
     if (!dbus_proxy) {
-        CDEMUD_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: failed to get proxy for 'org.freedesktop.DBus' on %s bus: %s!\n", __debug__, bus_type == G_BUS_TYPE_SYSTEM ? "system" : "session", dbus_error->message);
+        CDEMU_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: failed to get proxy for 'org.freedesktop.DBus' on %s bus: %s!\n", __debug__, bus_type == G_BUS_TYPE_SYSTEM ? "system" : "session", dbus_error->message);
         g_error_free(dbus_error);
         return FALSE;
     }
@@ -349,7 +349,7 @@ gboolean cdemud_daemon_dbus_check_if_name_is_available (CDEMUD_Daemon *self, GBu
     dbus_reply = g_dbus_proxy_call_sync(
         dbus_proxy,
         "NameHasOwner",
-        g_variant_new("(s)", CDEMUD_DBUS_NAME),
+        g_variant_new("(s)", CDEMU_DAEMON_DBUS_NAME),
         G_DBUS_CALL_FLAGS_NO_AUTO_START,
         -1,
         NULL,
@@ -357,7 +357,7 @@ gboolean cdemud_daemon_dbus_check_if_name_is_available (CDEMUD_Daemon *self, GBu
     );
 
     if (!dbus_reply) {
-        CDEMUD_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: failed to check if name '%s' is already taken on %s bus!\n", __debug__, CDEMUD_DBUS_NAME, bus_type == G_BUS_TYPE_SYSTEM ? "system" : "session");
+        CDEMU_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: failed to check if name '%s' is already taken on %s bus!\n", __debug__, CDEMU_DAEMON_DBUS_NAME, bus_type == G_BUS_TYPE_SYSTEM ? "system" : "session");
         g_error_free(dbus_error);
         g_object_unref(dbus_proxy);
         return FALSE;
@@ -369,19 +369,19 @@ gboolean cdemud_daemon_dbus_check_if_name_is_available (CDEMUD_Daemon *self, GBu
     g_object_unref(dbus_proxy);
 
     if (name_taken) {
-        CDEMUD_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: name '%s' is already taken on %s bus! Is there another instance already running?\n", __debug__, CDEMUD_DBUS_NAME, bus_type == G_BUS_TYPE_SYSTEM ? "system" : "session");
+        CDEMU_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: name '%s' is already taken on %s bus! Is there another instance already running?\n", __debug__, CDEMU_DAEMON_DBUS_NAME, bus_type == G_BUS_TYPE_SYSTEM ? "system" : "session");
         return FALSE;
     }
 
     return TRUE;
 }
 
-void cdemud_daemon_dbus_register_on_bus (CDEMUD_Daemon *self, GBusType bus_type)
+void cdemu_daemon_dbus_register_on_bus (CdemuDaemon *self, GBusType bus_type)
 {
     /* Claim name on D-BUS */
     self->priv->owner_id = g_bus_own_name(
         bus_type,
-        CDEMUD_DBUS_NAME,
+        CDEMU_DAEMON_DBUS_NAME,
         G_BUS_NAME_OWNER_FLAGS_NONE,
         (GBusAcquiredCallback)on_bus_acquired,
         NULL,
@@ -391,7 +391,7 @@ void cdemud_daemon_dbus_register_on_bus (CDEMUD_Daemon *self, GBusType bus_type)
     );
 }
 
-void cdemud_daemon_dbus_cleanup (CDEMUD_Daemon *self)
+void cdemu_daemon_dbus_cleanup (CdemuDaemon *self)
 {
     /* Release D-Bus name */
     g_bus_unown_name(self->priv->owner_id);
@@ -401,31 +401,31 @@ void cdemud_daemon_dbus_cleanup (CDEMUD_Daemon *self)
 /**********************************************************************\
  *                      D-Bus Signal emission                         *
 \**********************************************************************/
-void cdemud_daemon_dbus_emit_device_status_changed (CDEMUD_Daemon *self, gint number)
+void cdemu_daemon_dbus_emit_device_status_changed (CdemuDaemon *self, gint number)
 {
     if (self->priv->connection) {
         g_dbus_connection_emit_signal(self->priv->connection, NULL,
-            "/CDEMUD_Daemon", "net.sf.cdemu.CDEMUD_Daemon",
+            "/Daemon", CDEMU_DAEMON_DBUS_NAME,
             "DeviceStatusChanged", g_variant_new("(i)", number),
             NULL);
     }
 }
 
-void cdemud_daemon_dbus_emit_device_option_changed (CDEMUD_Daemon *self, gint number, const gchar *option)
+void cdemu_daemon_dbus_emit_device_option_changed (CdemuDaemon *self, gint number, const gchar *option)
 {
     if (self->priv->connection) {
         g_dbus_connection_emit_signal(self->priv->connection, NULL,
-            "/CDEMUD_Daemon", "net.sf.cdemu.CDEMUD_Daemon",
+            "/Daemon", CDEMU_DAEMON_DBUS_NAME,
             "DeviceOptionChanged", g_variant_new("(is)", number, option),
             NULL);
     }
 }
 
-void cdemud_daemon_dbus_emit_device_mappings_ready (CDEMUD_Daemon *self)
+void cdemu_daemon_dbus_emit_device_mappings_ready (CdemuDaemon *self)
 {
     if (self->priv->connection) {
         g_dbus_connection_emit_signal(self->priv->connection, NULL,
-            "/CDEMUD_Daemon", "net.sf.cdemu.CDEMUD_Daemon",
+            "/Daemon", CDEMU_DAEMON_DBUS_NAME,
             "DeviceMappingsReady", g_variant_new("()"),
             NULL);
     }
@@ -437,7 +437,7 @@ void cdemud_daemon_dbus_emit_device_mappings_ready (CDEMUD_Daemon *self)
 \**********************************************************************/
 static const gchar introspection_xml[] =
     "<node>"
-    "    <interface name='net.sf.cdemu.CDEMUD_Daemon'>"
+    "    <interface name='" CDEMU_DAEMON_DBUS_NAME "'>"
     "        <!-- Information-related methods -->"
     "        <method name='GetDaemonVersion'>"
     "            <arg name='version' type='s' direction='out'/>"

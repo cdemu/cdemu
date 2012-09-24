@@ -1,5 +1,5 @@
 /*
- *  CDEmuD: Device object - packet commands
+ *  CDEmu daemon: Device object - packet commands
  *  Copyright (C) 2006-2012 Rok Mandeljc
  *
  *  This program is free software; you can redistribute it and/or modify
@@ -17,8 +17,8 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
 
-#include "cdemud.h"
-#include "cdemud-device-private.h"
+#include "cdemu.h"
+#include "cdemu-device-private.h"
 
 #define __debug__ "MMC-3"
 
@@ -116,19 +116,19 @@ static gint map_mcsb (guint8 *byte9, gint mode_code)
  *                     Packet command implementations                 *
 \**********************************************************************/
 /* GET CONFIGURATION*/
-static gboolean command_get_configuration (CDEMUD_Device *self, guint8 *raw_cdb)
+static gboolean command_get_configuration (CdemuDevice *self, guint8 *raw_cdb)
 {
     struct GET_CONFIGURATION_CDB *cdb = (struct GET_CONFIGURATION_CDB*)raw_cdb;
     struct GET_CONFIGURATION_Header *ret_header = (struct GET_CONFIGURATION_Header *)self->priv->buffer;
     self->priv->buffer_size = sizeof(struct GET_CONFIGURATION_Header);
     guint8 *ret_data = self->priv->buffer+self->priv->buffer_size;
 
-    CDEMUD_DEBUG(self, DAEMON_DEBUG_MMC, "%s: requesting features from 0x%X on, with RT flag 0x%X\n", __debug__, GUINT16_FROM_BE(cdb->sfn), cdb->rt);
+    CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: requesting features from 0x%X on, with RT flag 0x%X\n", __debug__, GUINT16_FROM_BE(cdb->sfn), cdb->rt);
 
     /* Go over *all* features, and copy them according to RT value */
     GList *entry = NULL;
     G_LIST_FOR_EACH(entry, self->priv->features_list) {
-        struct Feature_GENERAL *feature = entry->data;
+        struct FeatureGeneral *feature = entry->data;
 
         /* We want this feature copied if:
             a) RT is 0x00 and feature's code >= SFN
@@ -144,7 +144,7 @@ static gboolean command_get_configuration (CDEMUD_Device *self, guint8 *raw_cdb)
                 (cdb->rt == 0x01 && feature->cur) ||
                 (cdb->rt == 0x02 && GUINT16_FROM_BE(feature->code) == GUINT16_FROM_BE(cdb->sfn))) {
 
-                CDEMUD_DEBUG(self, DAEMON_DEBUG_MMC, "%s: copying feature 0x%X\n", __debug__, GUINT16_FROM_BE(feature->code));
+                CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: copying feature 0x%X\n", __debug__, GUINT16_FROM_BE(feature->code));
 
                 /* Copy feature */
                 memcpy(ret_data, feature, feature->length + 4);
@@ -153,7 +153,7 @@ static gboolean command_get_configuration (CDEMUD_Device *self, guint8 *raw_cdb)
 
                 /* Break the loop if RT is 0x02 */
                 if (cdb->rt == 0x02) {
-                    CDEMUD_DEBUG(self, DAEMON_DEBUG_MMC, "%s: got the feature we wanted (0x%X), breaking the loop\n", __debug__, GUINT16_FROM_BE(cdb->sfn));
+                    CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: got the feature we wanted (0x%X), breaking the loop\n", __debug__, GUINT16_FROM_BE(cdb->sfn));
                     break;
                 }
             }
@@ -165,21 +165,21 @@ static gboolean command_get_configuration (CDEMUD_Device *self, guint8 *raw_cdb)
     ret_header->cur_profile = GUINT16_TO_BE(self->priv->current_profile);
 
     /* Write data */
-    cdemud_device_write_buffer(self, GUINT16_FROM_BE(cdb->length));
+    cdemu_device_write_buffer(self, GUINT16_FROM_BE(cdb->length));
 
     return TRUE;
 }
 
 /* GET EVENT/STATUS NOTIFICATION*/
-static gboolean command_get_event_status_notification (CDEMUD_Device *self, guint8 *raw_cdb)
+static gboolean command_get_event_status_notification (CdemuDevice *self, guint8 *raw_cdb)
 {
     struct GET_EVENT_STATUS_NOTIFICATION_CDB *cdb = (struct GET_EVENT_STATUS_NOTIFICATION_CDB*)raw_cdb;
     struct GET_EVENT_STATUS_NOTIFICATION_Header *ret_header = (struct GET_EVENT_STATUS_NOTIFICATION_Header *)self->priv->buffer;
     self->priv->buffer_size = sizeof(struct GET_EVENT_STATUS_NOTIFICATION_Header);
 
     if (!cdb->immed) {
-        CDEMUD_DEBUG(self, DAEMON_DEBUG_MMC, "%s: asynchronous type not supported yet!\n", __debug__);
-        cdemud_device_write_sense(self, ILLEGAL_REQUEST, INVALID_FIELD_IN_CDB);
+        CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: asynchronous type not supported yet!\n", __debug__);
+        cdemu_device_write_sense(self, ILLEGAL_REQUEST, INVALID_FIELD_IN_CDB);
         return FALSE;
     }
 
@@ -194,32 +194,32 @@ static gboolean command_get_event_status_notification (CDEMUD_Device *self, guin
         struct GET_EVENT_STATUS_NOTIFICATION_MediaEventDescriptor *ret_desc = (struct GET_EVENT_STATUS_NOTIFICATION_MediaEventDescriptor *)(self->priv->buffer+self->priv->buffer_size);
         self->priv->buffer_size += sizeof(struct GET_EVENT_STATUS_NOTIFICATION_MediaEventDescriptor);
 
-        CDEMUD_DEBUG(self, DAEMON_DEBUG_MMC, "%s: media event class\n", __debug__);
+        CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: media event class\n", __debug__);
 
         ret_header->nea = 0;
         ret_header->not_class = 4; /* Media notification class */
 
         /* Report current media event and then reset it */
-        CDEMUD_DEBUG(self, DAEMON_DEBUG_MMC, "%s: reporting media event 0x%X\n", __debug__, self->priv->media_event);
+        CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: reporting media event 0x%X\n", __debug__, self->priv->media_event);
         ret_desc->event = self->priv->media_event;
         self->priv->media_event = MEDIA_EVENT_NOCHANGE;
 
         /* Media status */
         ret_desc->present = self->priv->loaded;
-        CDEMUD_DEBUG(self, DAEMON_DEBUG_MMC, "%s: medium present: %d\n", __debug__, ret_desc->present);
+        CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: medium present: %d\n", __debug__, ret_desc->present);
     }
 
     /* Header */
     ret_header->length = GUINT16_TO_BE(self->priv->buffer_size - 2);
 
     /* Write data */
-    cdemud_device_write_buffer(self, GUINT16_FROM_BE(cdb->length));
+    cdemu_device_write_buffer(self, GUINT16_FROM_BE(cdb->length));
 
     return TRUE;
 }
 
 /* INQUIRY*/
-static gboolean command_inquiry (CDEMUD_Device *self, guint8 *raw_cdb)
+static gboolean command_inquiry (CdemuDevice *self, guint8 *raw_cdb)
 {
     struct INQUIRY_CDB *cdb = (struct INQUIRY_CDB *)raw_cdb;
 
@@ -229,8 +229,8 @@ static gboolean command_inquiry (CDEMUD_Device *self, guint8 *raw_cdb)
     if (cdb->evpd || cdb->page_code) {
         /* We don't support either; so as stated in SPC, return CHECK CONDITION,
            ILLEGAL REQUEST and INVALID FIELD IN CDB */
-        CDEMUD_DEBUG(self, DAEMON_DEBUG_MMC, "%s: invalid field in CDB\n", __debug__);
-        cdemud_device_write_sense(self, ILLEGAL_REQUEST, INVALID_FIELD_IN_CDB);
+        CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: invalid field in CDB\n", __debug__);
+        cdemu_device_write_sense(self, ILLEGAL_REQUEST, INVALID_FIELD_IN_CDB);
         return FALSE;
     }
 
@@ -250,13 +250,13 @@ static gboolean command_inquiry (CDEMUD_Device *self, guint8 *raw_cdb)
     ret_data->ver_desc1 = GUINT16_TO_BE(0x02A0); /* We'll try to pass as MMC-3 device */
 
     /* Write data */
-    cdemud_device_write_buffer(self, GUINT16_FROM_BE(cdb->length));
+    cdemu_device_write_buffer(self, GUINT16_FROM_BE(cdb->length));
 
     return TRUE;
 }
 
 /* MODE SELECT*/
-static gboolean command_mode_select (CDEMUD_Device *self, guint8 *raw_cdb)
+static gboolean command_mode_select (CdemuDevice *self, guint8 *raw_cdb)
 {
     gint transfer_len = 0;
     /*gint sp;
@@ -275,15 +275,15 @@ static gboolean command_mode_select (CDEMUD_Device *self, guint8 *raw_cdb)
         transfer_len = GUINT16_FROM_BE(cdb->length);
     } else {
         /* Because bad things happen to good people... :/ */
-        CDEMUD_DEBUG(self, DAEMON_DEBUG_ERROR, "%s: someone called this function when they shouldn't have :/...\n", __debug__);
-        cdemud_device_write_sense(self, ILLEGAL_REQUEST, INVALID_FIELD_IN_CDB);
+        CDEMU_DEBUG(self, DAEMON_DEBUG_ERROR, "%s: someone called this function when they shouldn't have :/...\n", __debug__);
+        cdemu_device_write_sense(self, ILLEGAL_REQUEST, INVALID_FIELD_IN_CDB);
         return FALSE;
     }
 
     /* Read the parameter list */
-    cdemud_device_read_buffer(self, transfer_len);
+    cdemu_device_read_buffer(self, transfer_len);
 
-    /*if (CDEMUD_DEBUG_ON(self, DAEMON_DEBUG_DEV_PC_DUMP)) {
+    /*if (CDEMU_DEBUG_ON(self, DAEMON_DEBUG_DEV_PC_DUMP)) {
         g_print(">>> MODE SELECT DATA <<<\n");
         for (gint i = 0; i < transfer_len; i++) {
             g_print("0x%02X ", self->priv->buffer[i]);
@@ -309,8 +309,8 @@ static gboolean command_mode_select (CDEMUD_Device *self, guint8 *raw_cdb)
 
     /* Someday when I'm in good mood I might implement this */
     if (blkdesc_len) {
-        CDEMUD_DEBUG(self, DAEMON_DEBUG_MMC, "%s: block descriptor provided... but ATAPI devices shouldn't support that\n", __debug__);
-        cdemud_device_write_sense(self, ILLEGAL_REQUEST, INVALID_FIELD_IN_PARAMETER_LIST);
+        CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: block descriptor provided... but ATAPI devices shouldn't support that\n", __debug__);
+        cdemu_device_write_sense(self, ILLEGAL_REQUEST, INVALID_FIELD_IN_PARAMETER_LIST);
         return FALSE;
     }
 
@@ -318,44 +318,44 @@ static gboolean command_mode_select (CDEMUD_Device *self, guint8 *raw_cdb)
     gint page_size = transfer_len - offset;
 
     if (page_size) {
-        struct ModePage_GENERAL *mode_page_new  = (struct ModePage_GENERAL *)(self->priv->buffer+offset);
-        struct ModePage_GENERAL *mode_page_mask = NULL;
-        struct ModePage_GENERAL *mode_page_cur  = NULL;
+        struct ModePageGeneral *mode_page_new  = (struct ModePageGeneral *)(self->priv->buffer+offset);
+        struct ModePageGeneral *mode_page_mask = NULL;
+        struct ModePageGeneral *mode_page_cur  = NULL;
 
-        CDEMUD_DEBUG(self, DAEMON_DEBUG_MMC, "%s: mode page 0x%X\n", __debug__, mode_page_new->code);
+        CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: mode page 0x%X\n", __debug__, mode_page_new->code);
 
         /* Get pointer to current data */
-        mode_page_cur = cdemud_device_get_mode_page(self, mode_page_new->code, MODE_PAGE_CURRENT);
+        mode_page_cur = cdemu_device_get_mode_page(self, mode_page_new->code, MODE_PAGE_CURRENT);
         if (!mode_page_cur) {
-            CDEMUD_DEBUG(self, DAEMON_DEBUG_MMC, "%s: we don't have mode page 0x%X\n", __debug__, mode_page_new->code);
-            cdemud_device_write_sense(self, ILLEGAL_REQUEST, INVALID_FIELD_IN_PARAMETER_LIST);
+            CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: we don't have mode page 0x%X\n", __debug__, mode_page_new->code);
+            cdemu_device_write_sense(self, ILLEGAL_REQUEST, INVALID_FIELD_IN_PARAMETER_LIST);
             return FALSE;
         }
 
         /* Some length checking */
         if (page_size - 2 != mode_page_cur->length) {
-            CDEMUD_DEBUG(self, DAEMON_DEBUG_MMC, "%s: declared page size doesn't match length of data we were given!\n", __debug__);
-            cdemud_device_write_sense(self, ILLEGAL_REQUEST, INVALID_FIELD_IN_PARAMETER_LIST);
+            CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: declared page size doesn't match length of data we were given!\n", __debug__);
+            cdemu_device_write_sense(self, ILLEGAL_REQUEST, INVALID_FIELD_IN_PARAMETER_LIST);
             return FALSE;
         }
 
         /* Some more length checking */
         if (mode_page_new->length != mode_page_cur->length) {
-            CDEMUD_DEBUG(self, DAEMON_DEBUG_MMC, "%s: invalid page size!\n", __debug__);
-            cdemud_device_write_sense(self, ILLEGAL_REQUEST, INVALID_FIELD_IN_PARAMETER_LIST);
+            CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: invalid page size!\n", __debug__);
+            cdemu_device_write_sense(self, ILLEGAL_REQUEST, INVALID_FIELD_IN_PARAMETER_LIST);
             return FALSE;
         }
 
         /* Now we need to check if only values that can be changed are set */
-        mode_page_mask = cdemud_device_get_mode_page(self, mode_page_new->code, MODE_PAGE_MASK);
+        mode_page_mask = cdemu_device_get_mode_page(self, mode_page_new->code, MODE_PAGE_MASK);
         guint8 *raw_data_new  = ((guint8 *)mode_page_new) + 2;
         guint8 *raw_data_mask = ((guint8 *)mode_page_mask) + 2;
 
         for (gint i = 1; i < mode_page_new->length; i++) {
             /* Compare every byte against the mask (except first byte) */
             if (raw_data_new[i] & ~raw_data_mask[i]) {
-                CDEMUD_DEBUG(self, DAEMON_DEBUG_MMC, "%s: invalid value set on byte %i!\n", __debug__, i);
-                cdemud_device_write_sense(self, ILLEGAL_REQUEST, INVALID_FIELD_IN_PARAMETER_LIST);
+                CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: invalid value set on byte %i!\n", __debug__, i);
+                cdemu_device_write_sense(self, ILLEGAL_REQUEST, INVALID_FIELD_IN_PARAMETER_LIST);
                 return FALSE;
             }
         }
@@ -368,7 +368,7 @@ static gboolean command_mode_select (CDEMUD_Device *self, guint8 *raw_cdb)
 }
 
 /* MODE SENSE*/
-static gboolean command_mode_sense (CDEMUD_Device *self, guint8 *raw_cdb)
+static gboolean command_mode_sense (CdemuDevice *self, guint8 *raw_cdb)
 {
     gint page_code = 0;
     gint transfer_len = 0;
@@ -393,16 +393,16 @@ static gboolean command_mode_sense (CDEMUD_Device *self, guint8 *raw_cdb)
         self->priv->buffer_size = sizeof(struct MODE_SENSE_10_Header);
     } else {
         /* Because bad things happen to good people... :/ */
-        CDEMUD_DEBUG(self, DAEMON_DEBUG_ERROR, "%s: someone called this function when they shouldn't have :/...\n", __debug__);
-        cdemud_device_write_sense(self, ILLEGAL_REQUEST, INVALID_FIELD_IN_CDB);
+        CDEMU_DEBUG(self, DAEMON_DEBUG_ERROR, "%s: someone called this function when they shouldn't have :/...\n", __debug__);
+        cdemu_device_write_sense(self, ILLEGAL_REQUEST, INVALID_FIELD_IN_CDB);
         return FALSE;
     }
     guint8 *ret_data = self->priv->buffer+self->priv->buffer_size;
 
     /* We don't support saving mode pages */
     if (pc == 0x03) {
-        CDEMUD_DEBUG(self, DAEMON_DEBUG_MMC, "%s: requested saved values; we don't support saving!\n", __debug__);
-        cdemud_device_write_sense(self, ILLEGAL_REQUEST, SAVING_PARAMETERS_NOT_SUPPORTED);
+        CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: requested saved values; we don't support saving!\n", __debug__);
+        cdemu_device_write_sense(self, ILLEGAL_REQUEST, SAVING_PARAMETERS_NOT_SUPPORTED);
         return FALSE;
     }
 
@@ -411,28 +411,28 @@ static gboolean command_mode_sense (CDEMUD_Device *self, guint8 *raw_cdb)
     GList *entry = NULL;
     gboolean page_found = FALSE;
     G_LIST_FOR_EACH(entry, self->priv->mode_pages_list) {
-        struct ModePage_GENERAL *mode_page = g_array_index((GArray *)entry->data, struct ModePage_GENERAL *, 0);
+        struct ModePageGeneral *mode_page = g_array_index((GArray *)entry->data, struct ModePageGeneral *, 0);
 
         /* Check if we want this page copied */
         if (page_code == 0x3F || (page_code == mode_page->code)) {
             switch (pc) {
                 case 0x00: {
                     /* Current values */
-                    mode_page = g_array_index((GArray *)entry->data, struct ModePage_GENERAL *, MODE_PAGE_CURRENT);
+                    mode_page = g_array_index((GArray *)entry->data, struct ModePageGeneral *, MODE_PAGE_CURRENT);
                     break;
                 }
                 case 0x01: {
                     /* Changeable values */
-                    mode_page = g_array_index((GArray *)entry->data, struct ModePage_GENERAL *, MODE_PAGE_MASK);
+                    mode_page = g_array_index((GArray *)entry->data, struct ModePageGeneral *, MODE_PAGE_MASK);
                     break;
                 }
                 case 0x02: {
                     /* Default value */
-                    mode_page = g_array_index((GArray *)entry->data, struct ModePage_GENERAL *, MODE_PAGE_DEFAULT);
+                    mode_page = g_array_index((GArray *)entry->data, struct ModePageGeneral *, MODE_PAGE_DEFAULT);
                     break;
                 }
                 default: {
-                    CDEMUD_DEBUG(self, DAEMON_DEBUG_ERROR, "%s: PC value is 0x%X and it shouldn't be!\n", __debug__, pc);
+                    CDEMU_DEBUG(self, DAEMON_DEBUG_ERROR, "%s: PC value is 0x%X and it shouldn't be!\n", __debug__, pc);
                     break;
                 }
             }
@@ -442,7 +442,7 @@ static gboolean command_mode_sense (CDEMUD_Device *self, guint8 *raw_cdb)
             ret_data += mode_page->length + 2;
 
             if (page_code != 0x3F) {
-                CDEMUD_DEBUG(self, DAEMON_DEBUG_MMC, "%s: got the page we wanted (0x%X), breaking the loop\n", __debug__, page_code);
+                CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: got the page we wanted (0x%X), breaking the loop\n", __debug__, page_code);
                 page_found = TRUE;
                 break;
             }
@@ -451,8 +451,8 @@ static gboolean command_mode_sense (CDEMUD_Device *self, guint8 *raw_cdb)
 
     /* If we aren't returning all pages, check if page was found */
     if (page_code != 0x3F && !page_found) {
-        CDEMUD_DEBUG(self, DAEMON_DEBUG_MMC, "%s: page 0x%X not found!\n", __debug__, page_code);
-        cdemud_device_write_sense(self, ILLEGAL_REQUEST, INVALID_FIELD_IN_CDB);
+        CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: page 0x%X not found!\n", __debug__, page_code);
+        cdemu_device_write_sense(self, ILLEGAL_REQUEST, INVALID_FIELD_IN_CDB);
         return FALSE;
     }
 
@@ -466,16 +466,16 @@ static gboolean command_mode_sense (CDEMUD_Device *self, guint8 *raw_cdb)
     }
 
     /* Write data */
-    cdemud_device_write_buffer(self, transfer_len);
+    cdemu_device_write_buffer(self, transfer_len);
 
     return TRUE;
 }
 
 /* PAUSE/RESUME*/
-static gboolean command_pause_resume (CDEMUD_Device *self, guint8 *raw_cdb)
+static gboolean command_pause_resume (CdemuDevice *self, guint8 *raw_cdb)
 {
     struct PAUSE_RESUME_CDB *cdb = (struct PAUSE_RESUME_CDB *)raw_cdb;
-    gint audio_status = cdemud_audio_get_status(CDEMUD_AUDIO(self->priv->audio_play));
+    gint audio_status = cdemu_audio_get_status(CDEMU_AUDIO(self->priv->audio_play));
 
     /* Resume */
     if (cdb->resume == 1) {
@@ -484,14 +484,14 @@ static gboolean command_pause_resume (CDEMUD_Device *self, guint8 *raw_cdb)
            error) */
         if ((audio_status != AUDIO_STATUS_PAUSED)
             && (audio_status != AUDIO_STATUS_PLAYING)) {
-            CDEMUD_DEBUG(self, DAEMON_DEBUG_MMC, "%s: resume requested while in invalid state!\n", __debug__);
-            cdemud_device_write_sense(self, ILLEGAL_REQUEST, COMMAND_SEQUENCE_ERROR);
+            CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: resume requested while in invalid state!\n", __debug__);
+            cdemu_device_write_sense(self, ILLEGAL_REQUEST, COMMAND_SEQUENCE_ERROR);
             return FALSE;
         }
 
         /* Resume; we set status to playing, and fire the callback */
         if (audio_status != AUDIO_STATUS_PLAYING) {
-            cdemud_audio_resume(CDEMUD_AUDIO(self->priv->audio_play));
+            cdemu_audio_resume(CDEMU_AUDIO(self->priv->audio_play));
         }
     }
 
@@ -501,14 +501,14 @@ static gboolean command_pause_resume (CDEMUD_Device *self, guint8 *raw_cdb)
            operation can't be paused (being already paused doesn't count) */
         if ((audio_status != AUDIO_STATUS_PAUSED)
             && (audio_status != AUDIO_STATUS_PLAYING)) {
-            CDEMUD_DEBUG(self, DAEMON_DEBUG_MMC, "%s: pause requested while in invalid state!\n", __debug__);
-            cdemud_device_write_sense(self, ILLEGAL_REQUEST, COMMAND_SEQUENCE_ERROR);
+            CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: pause requested while in invalid state!\n", __debug__);
+            cdemu_device_write_sense(self, ILLEGAL_REQUEST, COMMAND_SEQUENCE_ERROR);
             return FALSE;
         }
 
        /* Pause; stop the playback and force status to AUDIO_STATUS_PAUSED */
         if (audio_status != AUDIO_STATUS_PAUSED) {
-            cdemud_audio_pause(CDEMUD_AUDIO(self->priv->audio_play));
+            cdemu_audio_pause(CDEMU_AUDIO(self->priv->audio_play));
         }
     }
 
@@ -516,7 +516,7 @@ static gboolean command_pause_resume (CDEMUD_Device *self, guint8 *raw_cdb)
 }
 
 /* PLAY AUDIO*/
-static gboolean command_play_audio (CDEMUD_Device *self, guint8 *raw_cdb)
+static gboolean command_play_audio (CdemuDevice *self, guint8 *raw_cdb)
 {
     guint32 start_sector = 0;
     guint32 end_sector = 0;
@@ -539,24 +539,24 @@ static gboolean command_play_audio (CDEMUD_Device *self, guint8 *raw_cdb)
         end_sector = mirage_helper_msf2lba(cdb->end_m, cdb->end_s, cdb->end_f, TRUE);
     } else {
         /* Because bad things happen to good people... :/ */
-        CDEMUD_DEBUG(self, DAEMON_DEBUG_ERROR, "%s: someone called this function when they shouldn't have :/...\n", __debug__);
-        cdemud_device_write_sense(self, ILLEGAL_REQUEST, INVALID_FIELD_IN_CDB);
+        CDEMU_DEBUG(self, DAEMON_DEBUG_ERROR, "%s: someone called this function when they shouldn't have :/...\n", __debug__);
+        cdemu_device_write_sense(self, ILLEGAL_REQUEST, INVALID_FIELD_IN_CDB);
         return FALSE;
     }
 
      /* Check if we have medium loaded */
     if (!self->priv->loaded) {
-        CDEMUD_DEBUG(self, DAEMON_DEBUG_MMC, "%s: medium not present\n", __debug__);
-        cdemud_device_write_sense(self, NOT_READY, MEDIUM_NOT_PRESENT);
+        CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: medium not present\n", __debug__);
+        cdemu_device_write_sense(self, NOT_READY, MEDIUM_NOT_PRESENT);
         return FALSE;
     }
 
-    CDEMUD_DEBUG(self, DAEMON_DEBUG_MMC, "%s: playing from sector 0x%X to sector 0x%X\n", __debug__, start_sector, end_sector);
+    CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: playing from sector 0x%X to sector 0x%X\n", __debug__, start_sector, end_sector);
 
     /* Play */
-    if (!cdemud_audio_start(CDEMUD_AUDIO(self->priv->audio_play), start_sector, end_sector, self->priv->disc)) {
+    if (!cdemu_audio_start(CDEMU_AUDIO(self->priv->audio_play), start_sector, end_sector, self->priv->disc)) {
         /* FIXME: write sense */
-        CDEMUD_DEBUG(self, DAEMON_DEBUG_MMC, "%s: failed to start audio play!\n", __debug__);
+        CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: failed to start audio play!\n", __debug__);
         return FALSE;
     }
 
@@ -564,10 +564,10 @@ static gboolean command_play_audio (CDEMUD_Device *self, guint8 *raw_cdb)
 }
 
 /* PREVENT/ALLOW MEDIUM REMOVAL*/
-static gboolean command_prevent_allow_medium_removal (CDEMUD_Device *self, guint8 *raw_cdb)
+static gboolean command_prevent_allow_medium_removal (CdemuDevice *self, guint8 *raw_cdb)
 {
     struct PREVENT_ALLOW_MEDIUM_REMOVAL_CDB *cdb = (struct PREVENT_ALLOW_MEDIUM_REMOVAL_CDB*)raw_cdb;
-    struct ModePage_0x2A *p_0x2A = cdemud_device_get_mode_page(self, 0x2A, MODE_PAGE_CURRENT);
+    struct ModePage_0x2A *p_0x2A = cdemu_device_get_mode_page(self, 0x2A, MODE_PAGE_CURRENT);
 
     /* That's the locking, right? */
     if (cdb->prevent) {
@@ -586,12 +586,12 @@ static gboolean command_prevent_allow_medium_removal (CDEMUD_Device *self, guint
 }
 
 /* READ (10) and READ (12)*/
-static gboolean command_read (CDEMUD_Device *self, guint8 *raw_cdb)
+static gboolean command_read (CdemuDevice *self, guint8 *raw_cdb)
 {
     gint start_sector; /* MUST be signed because it may be negative! */
     gint num_sectors;
 
-    struct ModePage_0x01 *p_0x01 = cdemud_device_get_mode_page(self, 0x01, MODE_PAGE_CURRENT);
+    struct ModePage_0x01 *p_0x01 = cdemu_device_get_mode_page(self, 0x01, MODE_PAGE_CURRENT);
 
     /* READ 10 vs READ 12 */
     if (raw_cdb[0] == (PacketCommand) READ_10) {
@@ -604,36 +604,36 @@ static gboolean command_read (CDEMUD_Device *self, guint8 *raw_cdb)
         num_sectors  = GUINT32_FROM_BE(cdb->length);
     } else {
         /* Because bad things happen to good people... :/ */
-        CDEMUD_DEBUG(self, DAEMON_DEBUG_ERROR, "%s: someone called this function when they shouldn't have :/...\n", __debug__);
-        cdemud_device_write_sense(self, ILLEGAL_REQUEST, INVALID_FIELD_IN_CDB);
+        CDEMU_DEBUG(self, DAEMON_DEBUG_ERROR, "%s: someone called this function when they shouldn't have :/...\n", __debug__);
+        cdemu_device_write_sense(self, ILLEGAL_REQUEST, INVALID_FIELD_IN_CDB);
         return FALSE;
     }
 
-    CDEMUD_DEBUG(self, DAEMON_DEBUG_MMC, "%s: read request; start sector: 0x%X, number of sectors: %d\n", __debug__, start_sector, num_sectors);
+    CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: read request; start sector: 0x%X, number of sectors: %d\n", __debug__, start_sector, num_sectors);
 
     /* Check if we have medium loaded (because we use track later... >.<) */
     if (!self->priv->loaded) {
-        CDEMUD_DEBUG(self, DAEMON_DEBUG_MMC, "%s: medium not present\n", __debug__);
-        cdemud_device_write_sense(self, NOT_READY, MEDIUM_NOT_PRESENT);
+        CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: medium not present\n", __debug__);
+        cdemu_device_write_sense(self, NOT_READY, MEDIUM_NOT_PRESENT);
         return FALSE;
     }
-    MIRAGE_Disc *disc = MIRAGE_DISC(self->priv->disc);
+    MirageDisc *disc = MIRAGE_DISC(self->priv->disc);
 
     /* Set up delay emulation */
-    cdemud_device_delay_begin(self, start_sector, num_sectors);
+    cdemu_device_delay_begin(self, start_sector, num_sectors);
 
     /* Process each sector */
     for (gint sector = start_sector; sector < start_sector + num_sectors; sector++) {
         GError *error = NULL;
         GObject *cur_sector = mirage_disc_get_sector(disc, sector, &error);
         if (!cur_sector) {
-            CDEMUD_DEBUG(self, DAEMON_DEBUG_MMC, "%s: failed to read sector: %s\n", __debug__, error->message);
+            CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: failed to read sector: %s\n", __debug__, error->message);
             g_error_free(error);
-            cdemud_device_write_sense_full(self, ILLEGAL_REQUEST, ILLEGAL_MODE_FOR_THIS_TRACK, 0, sector);
+            cdemu_device_write_sense_full(self, ILLEGAL_REQUEST, ILLEGAL_MODE_FOR_THIS_TRACK, 0, sector);
             return FALSE;
         }
 
-        cdemud_device_flush_buffer(self);
+        cdemu_device_flush_buffer(self);
 
         /* Here we do the emulation of "bad sectors"... if we're dealing with
            a bad sector, then its EDC/ECC won't correspond to actual data. So
@@ -646,9 +646,9 @@ static gboolean command_read (CDEMUD_Device *self, guint8 *raw_cdb)
 
             if ((sector_type == MIRAGE_MODE_MODE1 || sector_type == MIRAGE_MODE_MODE2_FORM1)
                 && !mirage_sector_verify_lec(MIRAGE_SECTOR(cur_sector))) {
-                CDEMUD_DEBUG(self, DAEMON_DEBUG_MMC, "%s: bad sector detected, triggering read error!\n", __debug__);
+                CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: bad sector detected, triggering read error!\n", __debug__);
                 g_object_unref(cur_sector);
-                cdemud_device_write_sense_full(self, MEDIUM_ERROR, UNRECOVERED_READ_ERROR, 0, sector);
+                cdemu_device_write_sense_full(self, MEDIUM_ERROR, UNRECOVERED_READ_ERROR, 0, sector);
                 return FALSE;
             }
         }
@@ -660,9 +660,9 @@ static gboolean command_read (CDEMUD_Device *self, guint8 *raw_cdb)
 
         mirage_sector_get_data(MIRAGE_SECTOR(cur_sector), &tmp_buf, &tmp_len, NULL);
         if (tmp_len != 2048) {
-            CDEMUD_DEBUG(self, DAEMON_DEBUG_MMC, "%s: sector 0x%X does not have 2048-byte user data (%i)\n", __debug__, sector, tmp_len);
+            CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: sector 0x%X does not have 2048-byte user data (%i)\n", __debug__, sector, tmp_len);
             g_object_unref(cur_sector);
-            cdemud_device_write_sense_full(self, ILLEGAL_REQUEST, ILLEGAL_MODE_FOR_THIS_TRACK, 1, sector);
+            cdemu_device_write_sense_full(self, ILLEGAL_REQUEST, ILLEGAL_MODE_FOR_THIS_TRACK, 1, sector);
             return FALSE;
         }
 
@@ -674,17 +674,17 @@ static gboolean command_read (CDEMUD_Device *self, guint8 *raw_cdb)
         /* Free sector */
         g_object_unref(cur_sector);
         /* Write sector */
-        cdemud_device_write_buffer(self, self->priv->buffer_size);
+        cdemu_device_write_buffer(self, self->priv->buffer_size);
     }
 
     /* Perform delay emulation */
-    cdemud_device_delay_finalize(self);
+    cdemu_device_delay_finalize(self);
 
     return TRUE;
 }
 
 /* READ CAPACITY*/
-static gboolean command_read_capacity (CDEMUD_Device *self, guint8 *raw_cdb G_GNUC_UNUSED)
+static gboolean command_read_capacity (CdemuDevice *self, guint8 *raw_cdb G_GNUC_UNUSED)
 {
     /*struct READ_CAPACITY_CDB *cdb = (struct READ_CAPACITY_CDB *)raw_cdb;*/
     struct READ_CAPACITY_Data *ret_data = (struct READ_CAPACITY_Data *)self->priv->buffer;
@@ -693,8 +693,8 @@ static gboolean command_read_capacity (CDEMUD_Device *self, guint8 *raw_cdb G_GN
     gint last_sector = 0;
 
     if (!self->priv->loaded) {
-        CDEMUD_DEBUG(self, DAEMON_DEBUG_MMC, "%s: medium not present\n", __debug__);
-        cdemud_device_write_sense(self, NOT_READY, MEDIUM_NOT_PRESENT);
+        CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: medium not present\n", __debug__);
+        cdemu_device_write_sense(self, NOT_READY, MEDIUM_NOT_PRESENT);
         return FALSE;
     }
 
@@ -715,20 +715,20 @@ static gboolean command_read_capacity (CDEMUD_Device *self, guint8 *raw_cdb G_GN
     ret_data->block_size = GUINT32_TO_BE(2048);
 
     /* Write data */
-    cdemud_device_write_buffer(self, self->priv->buffer_size);
+    cdemu_device_write_buffer(self, self->priv->buffer_size);
 
     return TRUE;
 }
 
 /* READ CD and READ CD MSF*/
-static gboolean command_read_cd (CDEMUD_Device *self, guint8 *raw_cdb)
+static gboolean command_read_cd (CdemuDevice *self, guint8 *raw_cdb)
 {
     gint start_sector; /* MUST be signed because it may be negative! */
     gint num_sectors;
     gint exp_sect_type;
     gint subchan_mode;
 
-    struct ModePage_0x01 *p_0x01 = cdemud_device_get_mode_page(self, 0x01, MODE_PAGE_CURRENT);
+    struct ModePage_0x01 *p_0x01 = cdemu_device_get_mode_page(self, 0x01, MODE_PAGE_CURRENT);
 
     /* READ CD vs READ CD MSF */
     if (raw_cdb[0] == (PacketCommand) READ_CD) {
@@ -751,26 +751,26 @@ static gboolean command_read_cd (CDEMUD_Device *self, guint8 *raw_cdb)
         subchan_mode = cdb->subchan;
     } else {
         /* Because bad things happen to good people... :/ */
-        CDEMUD_DEBUG(self, DAEMON_DEBUG_ERROR, "%s: someone called this function when they shouldn't have :/...\n", __debug__);
-        cdemud_device_write_sense(self, ILLEGAL_REQUEST, INVALID_FIELD_IN_CDB);
+        CDEMU_DEBUG(self, DAEMON_DEBUG_ERROR, "%s: someone called this function when they shouldn't have :/...\n", __debug__);
+        cdemu_device_write_sense(self, ILLEGAL_REQUEST, INVALID_FIELD_IN_CDB);
         return FALSE;
     }
 
-    CDEMUD_DEBUG(self, DAEMON_DEBUG_MMC, "%s: READ CD:\n-> Address: 0x%08X\n-> Length: %i\n-> Expected sector (in libMirage type): 0x%X\n-> MCSB: 0x%X\n-> SubChannel: 0x%X\n",
+    CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: READ CD:\n-> Address: 0x%08X\n-> Length: %i\n-> Expected sector (in libMirage type): 0x%X\n-> MCSB: 0x%X\n-> SubChannel: 0x%X\n",
         __debug__, start_sector, num_sectors, exp_sect_type, raw_cdb[9], subchan_mode);
 
 
     /* Check if we have medium loaded */
     if (!self->priv->loaded) {
-        CDEMUD_DEBUG(self, DAEMON_DEBUG_MMC, "%s: medium not present\n", __debug__);
-        cdemud_device_write_sense(self, NOT_READY, MEDIUM_NOT_PRESENT);
+        CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: medium not present\n", __debug__);
+        cdemu_device_write_sense(self, NOT_READY, MEDIUM_NOT_PRESENT);
         return FALSE;
     }
 
     /* Not supported for DVD-ROMs, right? */
-    if (self->priv->current_profile == DVDROM) {
-        CDEMUD_DEBUG(self, DAEMON_DEBUG_MMC, "%s: READ CD not supported on DVD Media!\n", __debug__);
-        cdemud_device_write_sense(self, ILLEGAL_REQUEST, INVALID_FIELD_IN_CDB);
+    if (self->priv->current_profile == PROFILE_DVDROM) {
+        CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: READ CD not supported on DVD Media!\n", __debug__);
+        cdemu_device_write_sense(self, ILLEGAL_REQUEST, INVALID_FIELD_IN_CDB);
         return FALSE;
     }
 
@@ -780,13 +780,13 @@ static gboolean command_read_cd (CDEMUD_Device *self, guint8 *raw_cdb)
        there's transfer length > 0x00 and thus subchannel is verified */
     if (subchan_mode == 0x04) {
         /* invalid subchannel requested (don't support R-W yet) */
-        CDEMUD_DEBUG(self, DAEMON_DEBUG_MMC, "%s: R-W subchannel reading not supported yet\n", __debug__);
-        cdemud_device_write_sense(self, ILLEGAL_REQUEST, INVALID_FIELD_IN_CDB);
+        CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: R-W subchannel reading not supported yet\n", __debug__);
+        cdemu_device_write_sense(self, ILLEGAL_REQUEST, INVALID_FIELD_IN_CDB);
         return FALSE;
     }
 
 
-    MIRAGE_Disc* disc = MIRAGE_DISC(self->priv->disc);
+    MirageDisc* disc = MIRAGE_DISC(self->priv->disc);
     GObject *first_sector;
     GError *error = NULL;
     gint prev_sector_type G_GNUC_UNUSED;
@@ -794,33 +794,33 @@ static gboolean command_read_cd (CDEMUD_Device *self, guint8 *raw_cdb)
     /* Read first sector to determine its type */
     first_sector = mirage_disc_get_sector(disc, start_sector, &error);
     if (!first_sector) {
-        CDEMUD_DEBUG(self, DAEMON_DEBUG_MMC, "%s: failed to get start sector: %s\n", __debug__, error->message);
+        CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: failed to get start sector: %s\n", __debug__, error->message);
         g_error_free(error);
-        cdemud_device_write_sense_full(self, ILLEGAL_REQUEST, ILLEGAL_MODE_FOR_THIS_TRACK, 0, start_sector);
+        cdemu_device_write_sense_full(self, ILLEGAL_REQUEST, ILLEGAL_MODE_FOR_THIS_TRACK, 0, start_sector);
         return FALSE;
     }
     prev_sector_type = mirage_sector_get_sector_type(MIRAGE_SECTOR(first_sector));
     g_object_unref(first_sector);
 
     /* Set up delay emulation */
-    cdemud_device_delay_begin(self, start_sector, num_sectors);
+    cdemu_device_delay_begin(self, start_sector, num_sectors);
 
     /* Process each sector */
-    CDEMUD_DEBUG(self, DAEMON_DEBUG_MMC, "%s: start sector: 0x%X (%i); start + num: 0x%X (%i)\n", __debug__, start_sector, start_sector, start_sector+num_sectors, start_sector+num_sectors);
+    CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: start sector: 0x%X (%i); start + num: 0x%X (%i)\n", __debug__, start_sector, start_sector, start_sector+num_sectors, start_sector+num_sectors);
     for (gint sector = start_sector; sector < start_sector + num_sectors; sector++) {
         GObject *cur_sector;
 
-        CDEMUD_DEBUG(self, DAEMON_DEBUG_MMC, "%s: reading sector 0x%X (%i)\n", __debug__, sector, sector);
+        CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: reading sector 0x%X (%i)\n", __debug__, sector, sector);
 
         cur_sector = mirage_disc_get_sector(disc, sector, &error);
         if (!cur_sector) {
-            CDEMUD_DEBUG(self, DAEMON_DEBUG_MMC, "%s: failed to get sector: %s!\n", __debug__, error->message);
+            CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: failed to get sector: %s!\n", __debug__, error->message);
             g_error_free(error);
-            cdemud_device_write_sense_full(self, ILLEGAL_REQUEST, ILLEGAL_MODE_FOR_THIS_TRACK, 0, sector);
+            cdemu_device_write_sense_full(self, ILLEGAL_REQUEST, ILLEGAL_MODE_FOR_THIS_TRACK, 0, sector);
             return FALSE;
         }
 
-        cdemud_device_flush_buffer(self);
+        cdemu_device_flush_buffer(self);
 
         /* Expected sector stuff check... basically, if we have CDB->ExpectedSectorType
            set, we compare its translated value with our sector type, period. However, if
@@ -830,9 +830,9 @@ static gboolean command_read_cd (CDEMUD_Device *self, guint8 *raw_cdb)
 
         /* Break if current sector type doesn't match expected one*/
         if (exp_sect_type && (cur_sector_type != exp_sect_type)) {
-            CDEMUD_DEBUG(self, DAEMON_DEBUG_MMC, "%s: expected sector type mismatch (expecting %i, got %i)!\n", __debug__, exp_sect_type, cur_sector_type);
+            CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: expected sector type mismatch (expecting %i, got %i)!\n", __debug__, exp_sect_type, cur_sector_type);
             g_object_unref(cur_sector);
-            cdemud_device_write_sense_full(self, ILLEGAL_REQUEST, ILLEGAL_MODE_FOR_THIS_TRACK, 1, sector);
+            cdemu_device_write_sense_full(self, ILLEGAL_REQUEST, ILLEGAL_MODE_FOR_THIS_TRACK, 1, sector);
             return FALSE;
         }
 
@@ -841,9 +841,9 @@ static gboolean command_read_cd (CDEMUD_Device *self, guint8 *raw_cdb)
         /* NOTE: if we're going to be doing this, we need to account for the
            fact that Mode 2 Form 1 and Mode 2 Form 2 can alternate... */
         if (prev_sector_type != cur_sector_type) {
-            CDEMUD_DEBUG(self, DAEMON_DEBUG_MMC, "%s: previous sector type (%i) different from current one (%i)!\n", __debug__, prev_sector_type, cur_sector_type);
+            CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: previous sector type (%i) different from current one (%i)!\n", __debug__, prev_sector_type, cur_sector_type);
             g_object_unref(cur_sector);
-            cdemud_device_write_sense_full(self, ILLEGAL_REQUEST, ILLEGAL_MODE_FOR_THIS_TRACK, 0, sector);
+            cdemu_device_write_sense_full(self, ILLEGAL_REQUEST, ILLEGAL_MODE_FOR_THIS_TRACK, 0, sector);
             return FALSE;
         }
 #endif
@@ -857,18 +857,18 @@ static gboolean command_read_cd (CDEMUD_Device *self, guint8 *raw_cdb)
         if (!p_0x01->dcr) {
             if ((cur_sector_type == MIRAGE_MODE_MODE1 || cur_sector_type == MIRAGE_MODE_MODE2_FORM1)
                 && !mirage_sector_verify_lec(MIRAGE_SECTOR(cur_sector))) {
-                CDEMUD_DEBUG(self, DAEMON_DEBUG_MMC, "%s: bad sector detected, triggering read error!\n", __debug__);
+                CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: bad sector detected, triggering read error!\n", __debug__);
                 g_object_unref(cur_sector);
-                cdemud_device_write_sense_full(self, MEDIUM_ERROR, UNRECOVERED_READ_ERROR, 0, sector);
+                cdemu_device_write_sense_full(self, MEDIUM_ERROR, UNRECOVERED_READ_ERROR, 0, sector);
                 return FALSE;
             }
         }
 
         /* Map the MCSB: operation performed on raw Byte9 */
         if (map_mcsb(&raw_cdb[9], cur_sector_type) == -1) {
-            CDEMUD_DEBUG(self, DAEMON_DEBUG_MMC, "%s: invalid MCSB: %X\n", __debug__, raw_cdb[9]);
+            CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: invalid MCSB: %X\n", __debug__, raw_cdb[9]);
             g_object_unref(cur_sector);
-            cdemud_device_write_sense(self, ILLEGAL_REQUEST, INVALID_FIELD_IN_CDB);
+            cdemu_device_write_sense(self, ILLEGAL_REQUEST, INVALID_FIELD_IN_CDB);
             return FALSE;
         }
 
@@ -880,14 +880,14 @@ static gboolean command_read_cd (CDEMUD_Device *self, guint8 *raw_cdb)
         gint read_length = 0;
 
         if (!mirage_disc_read_sector(disc, sector, raw_cdb[9], subchan_mode, ptr, &read_length, &error)) {
-            CDEMUD_DEBUG(self, DAEMON_DEBUG_MMC, "%s: failed to read sector 0x%X: %s\n", __debug__, sector, error->message);
+            CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: failed to read sector 0x%X: %s\n", __debug__, sector, error->message);
             g_error_free(error);
             g_object_unref(cur_sector);
-            cdemud_device_write_sense_full(self, ILLEGAL_REQUEST, ILLEGAL_MODE_FOR_THIS_TRACK, 0, sector);
+            cdemu_device_write_sense_full(self, ILLEGAL_REQUEST, ILLEGAL_MODE_FOR_THIS_TRACK, 0, sector);
             return FALSE;
         }
 
-        CDEMUD_DEBUG(self, DAEMON_DEBUG_MMC, "%s: read length: 0x%X, buffer size: 0x%X\n", __debug__, read_length, self->priv->buffer_size);
+        CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: read length: 0x%X, buffer size: 0x%X\n", __debug__, read_length, self->priv->buffer_size);
         self->priv->buffer_size += read_length;
 
         /* Previous sector type */
@@ -897,24 +897,24 @@ static gboolean command_read_cd (CDEMUD_Device *self, guint8 *raw_cdb)
         /* Free sector */
         g_object_unref(cur_sector);
         /* Write sector */
-        cdemud_device_write_buffer(self, self->priv->buffer_size);
+        cdemu_device_write_buffer(self, self->priv->buffer_size);
     }
 
     /* Perform delay emulation */
-    cdemud_device_delay_finalize(self);
+    cdemu_device_delay_finalize(self);
 
     return TRUE;
 }
 
 /* READ DISC INFORMATION*/
-static gboolean command_read_disc_information (CDEMUD_Device *self, guint8 *raw_cdb)
+static gboolean command_read_disc_information (CdemuDevice *self, guint8 *raw_cdb)
 {
     struct READ_DISC_INFORMATION_CDB *cdb = (struct READ_DISC_INFORMATION_CDB *)raw_cdb;
 
     /* Check if we have medium loaded */
     if (!self->priv->loaded) {
-        CDEMUD_DEBUG(self, DAEMON_DEBUG_MMC, "%s: medium not present\n", __debug__);
-        cdemud_device_write_sense(self, NOT_READY, MEDIUM_NOT_PRESENT);
+        CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: medium not present\n", __debug__);
+        cdemu_device_write_sense(self, NOT_READY, MEDIUM_NOT_PRESENT);
         return FALSE;
     }
 
@@ -923,14 +923,14 @@ static gboolean command_read_disc_information (CDEMUD_Device *self, guint8 *raw_
             struct READ_DISC_INFORMATION_Data *ret_data = (struct READ_DISC_INFORMATION_Data *)self->priv->buffer;
             self->priv->buffer_size = sizeof(struct READ_DISC_INFORMATION_Data);
 
-            CDEMUD_DEBUG(self, DAEMON_DEBUG_MMC, "%s: standard disc information\n", __debug__);
+            CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: standard disc information\n", __debug__);
 
             ret_data->length = GUINT16_TO_BE(self->priv->buffer_size - 2);
             ret_data->lsession_state = 0x03; /* complete */
             ret_data->disc_status = 0x02; /* complete */
             ret_data->ftrack_disc = 0x01;
 
-            MIRAGE_Disc *disc = MIRAGE_DISC(self->priv->disc);
+            MirageDisc *disc = MIRAGE_DISC(self->priv->disc);
             gint num_sessions = mirage_disc_get_number_of_sessions(disc);
             ret_data->sessions0 = (num_sessions & 0xFF00) >> 8;
             ret_data->sessions1 = num_sessions & 0xFF;
@@ -987,20 +987,20 @@ static gboolean command_read_disc_information (CDEMUD_Device *self, guint8 *raw_
             break;
         }
         default: {
-            CDEMUD_DEBUG(self, DAEMON_DEBUG_MMC, "%s: data type 0x%X not supported!\n", __debug__, cdb->type);
-            cdemud_device_write_sense(self, ILLEGAL_REQUEST, INVALID_FIELD_IN_CDB);
+            CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: data type 0x%X not supported!\n", __debug__, cdb->type);
+            cdemu_device_write_sense(self, ILLEGAL_REQUEST, INVALID_FIELD_IN_CDB);
             return FALSE;
         }
     }
 
     /* Write data */
-    cdemud_device_write_buffer(self, self->priv->buffer_size);
+    cdemu_device_write_buffer(self, self->priv->buffer_size);
 
     return TRUE;
 }
 
 /* READ DVD STRUCTURE*/
-static gboolean command_read_dvd_structure (CDEMUD_Device *self, guint8 *raw_cdb)
+static gboolean command_read_dvd_structure (CdemuDevice *self, guint8 *raw_cdb)
 {
     struct READ_DVD_STRUCTURE_CDB *cdb = (struct READ_DVD_STRUCTURE_CDB *)raw_cdb;
     struct READ_DVD_STRUCTURE_Header *head = (struct READ_DVD_STRUCTURE_Header *)self->priv->buffer;
@@ -1008,14 +1008,14 @@ static gboolean command_read_dvd_structure (CDEMUD_Device *self, guint8 *raw_cdb
 
     /* Check if we have medium loaded */
     if (!self->priv->loaded) {
-        CDEMUD_DEBUG(self, DAEMON_DEBUG_MMC, "%s: medium not present\n", __debug__);
-        cdemud_device_write_sense(self, NOT_READY, MEDIUM_NOT_PRESENT);
+        CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: medium not present\n", __debug__);
+        cdemu_device_write_sense(self, NOT_READY, MEDIUM_NOT_PRESENT);
         return FALSE;
     }
 
-    if (self->priv->current_profile != DVDROM) {
-        CDEMUD_DEBUG(self, DAEMON_DEBUG_MMC, "%s: READ DVD STRUCTURE is supported only with DVD media\n", __debug__);
-        cdemud_device_write_sense(self, ILLEGAL_REQUEST, CANNOT_READ_MEDIUM_INCOMPATIBLE_FORMAT);
+    if (self->priv->current_profile != PROFILE_DVDROM) {
+        CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: READ DVD STRUCTURE is supported only with DVD media\n", __debug__);
+        cdemu_device_write_sense(self, ILLEGAL_REQUEST, CANNOT_READ_MEDIUM_INCOMPATIBLE_FORMAT);
         return FALSE;
     }
 
@@ -1023,10 +1023,10 @@ static gboolean command_read_dvd_structure (CDEMUD_Device *self, guint8 *raw_cdb
     const guint8 *tmp_data = NULL;
     gint tmp_len = 0;
 
-    CDEMUD_DEBUG(self, DAEMON_DEBUG_MMC, "%s: requested structure: 0x%X; layer: %d\n", __debug__, cdb->format, cdb->layer);
+    CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: requested structure: 0x%X; layer: %d\n", __debug__, cdb->format, cdb->layer);
     if (!mirage_disc_get_disc_structure(MIRAGE_DISC(self->priv->disc), cdb->layer, cdb->format, &tmp_data, &tmp_len, NULL)) {
-        CDEMUD_DEBUG(self, DAEMON_DEBUG_MMC, "%s: structure not present on disc!\n", __debug__);
-        cdemud_device_write_sense(self, ILLEGAL_REQUEST, INVALID_FIELD_IN_CDB);
+        CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: structure not present on disc!\n", __debug__);
+        cdemu_device_write_sense(self, ILLEGAL_REQUEST, INVALID_FIELD_IN_CDB);
         return FALSE;
     }
 
@@ -1037,24 +1037,24 @@ static gboolean command_read_dvd_structure (CDEMUD_Device *self, guint8 *raw_cdb
     head->length = GUINT16_TO_BE(self->priv->buffer_size - 2);
 
     /* Write data */
-    cdemud_device_write_buffer(self, GUINT16_FROM_BE(cdb->length));
+    cdemu_device_write_buffer(self, GUINT16_FROM_BE(cdb->length));
 
     return TRUE;
 }
 
 /* READ SUB-CHANNEL*/
-static gboolean command_read_subchannel (CDEMUD_Device *self, guint8 *raw_cdb)
+static gboolean command_read_subchannel (CdemuDevice *self, guint8 *raw_cdb)
 {
     struct READ_SUBCHANNEL_CDB *cdb = (struct READ_SUBCHANNEL_CDB *)raw_cdb;
     struct READ_SUBCHANNEL_Header *ret_header = (struct READ_SUBCHANNEL_Header *)self->priv->buffer;
     self->priv->buffer_size = sizeof(struct READ_SUBCHANNEL_Header);
 
-    MIRAGE_Disc *disc = MIRAGE_DISC(self->priv->disc);
+    MirageDisc *disc = MIRAGE_DISC(self->priv->disc);
 
     /* Check if we have medium loaded */
     if (!self->priv->loaded) {
-        CDEMUD_DEBUG(self, DAEMON_DEBUG_MMC, "%s: medium not present\n", __debug__);
-        cdemud_device_write_sense(self, NOT_READY, MEDIUM_NOT_PRESENT);
+        CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: medium not present\n", __debug__);
+        cdemu_device_write_sense(self, NOT_READY, MEDIUM_NOT_PRESENT);
         return FALSE;
     }
 
@@ -1074,13 +1074,13 @@ static gboolean command_read_subchannel (CDEMUD_Device *self, guint8 *raw_cdb)
 
                 gint current_position = self->priv->current_sector;
 
-                CDEMUD_DEBUG(self, DAEMON_DEBUG_MMC, "%s: current position (sector 0x%X)\n", __debug__, current_position);
+                CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: current position (sector 0x%X)\n", __debug__, current_position);
                 ret_data->fmt_code = 0x01;
 
                 /* Read current sector's PQ subchannel */
                 guint8 tmp_buf[16];
                 if (!mirage_disc_read_sector(MIRAGE_DISC(self->priv->disc), current_position, 0x00, MIRAGE_SUBCHANNEL_PQ, tmp_buf, NULL, NULL)) {
-                    CDEMUD_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: failed to read subchannel of sector 0x%X!\n", __debug__, current_position);
+                    CDEMU_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: failed to read subchannel of sector 0x%X!\n", __debug__, current_position);
                 }
 
                 /* Copy ADR/CTL, track number and index */
@@ -1102,11 +1102,11 @@ static gboolean command_read_subchannel (CDEMUD_Device *self, guint8 *raw_cdb)
                    requires READ CD to return BCD data) */
                 gint correction = 1;
                 while ((tmp_buf[0] & 0x0F) != 0x01) {
-                    CDEMUD_DEBUG(self, DAEMON_DEBUG_MMC, "%s: got a sector that's not Mode-1 Q; taking next one (0x%X)!\n", __debug__, current_position+correction);
+                    CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: got a sector that's not Mode-1 Q; taking next one (0x%X)!\n", __debug__, current_position+correction);
 
                     /* Read from next sector */
                     if (!mirage_disc_read_sector(MIRAGE_DISC(self->priv->disc), current_position+correction, 0x00, MIRAGE_SUBCHANNEL_PQ, tmp_buf, NULL, NULL)) {
-                        CDEMUD_DEBUG(self, DAEMON_DEBUG_MMC, "%s: failed to read subchannel of sector 0x%X!\n", __debug__, current_position+correction);
+                        CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: failed to read subchannel of sector 0x%X!\n", __debug__, current_position+correction);
                         break;
                     }
 
@@ -1138,7 +1138,7 @@ static gboolean command_read_subchannel (CDEMUD_Device *self, guint8 *raw_cdb)
                 struct READ_SUBCHANNEL_Data2 *ret_data = (struct READ_SUBCHANNEL_Data2 *)(self->priv->buffer+self->priv->buffer_size);
                 self->priv->buffer_size += sizeof(struct READ_SUBCHANNEL_Data2);
 
-                CDEMUD_DEBUG(self, DAEMON_DEBUG_MMC, "%s: MCN/UPC/EAN\n", __debug__);
+                CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: MCN/UPC/EAN\n", __debug__);
                 ret_data->fmt_code = 0x02;
 
                 /* Go over first 100 sectors; if MCN is present, it should be there */
@@ -1146,7 +1146,7 @@ static gboolean command_read_subchannel (CDEMUD_Device *self, guint8 *raw_cdb)
                     guint8 tmp_buf[16];
 
                     if (!mirage_disc_read_sector(MIRAGE_DISC(self->priv->disc), sector, 0, MIRAGE_SUBCHANNEL_PQ, tmp_buf, NULL, NULL)) {
-                        CDEMUD_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: failed to read subchannel of sector 0x%X!\n", __debug__, sector);
+                        CDEMU_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: failed to read subchannel of sector 0x%X!\n", __debug__, sector);
                         continue;
                     }
 
@@ -1154,7 +1154,7 @@ static gboolean command_read_subchannel (CDEMUD_Device *self, guint8 *raw_cdb)
                         /* Mode-2 Q found */
                         mirage_helper_subchannel_q_decode_mcn(&tmp_buf[1], (gchar *)ret_data->mcn);
                         ret_data->mcval = 1;
-                        CDEMUD_DEBUG(self, DAEMON_DEBUG_MMC, "%s: found MCN in subchannel of sector 0x%X: <%.13s>\n", __debug__, sector, ret_data->mcn);
+                        CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: found MCN in subchannel of sector 0x%X: <%.13s>\n", __debug__, sector, ret_data->mcn);
                         break;
                     }
                 }
@@ -1166,13 +1166,13 @@ static gboolean command_read_subchannel (CDEMUD_Device *self, guint8 *raw_cdb)
                 struct READ_SUBCHANNEL_Data3 *ret_data = (struct READ_SUBCHANNEL_Data3 *)(self->priv->buffer+self->priv->buffer_size);
                 self->priv->buffer_size += sizeof(struct READ_SUBCHANNEL_Data3);
 
-                CDEMUD_DEBUG(self, DAEMON_DEBUG_MMC, "%s: ISRC\n", __debug__);
+                CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: ISRC\n", __debug__);
                 ret_data->fmt_code = 0x03;
 
                 GObject *track = mirage_disc_get_track_by_number(disc, cdb->track, NULL);
                 if (!track) {
-                    CDEMUD_DEBUG(self, DAEMON_DEBUG_MMC, "%s: failed to get track %i!\n", __debug__, cdb->track);
-                    cdemud_device_write_sense(self, ILLEGAL_REQUEST, INVALID_FIELD_IN_CDB);
+                    CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: failed to get track %i!\n", __debug__, cdb->track);
+                    cdemu_device_write_sense(self, ILLEGAL_REQUEST, INVALID_FIELD_IN_CDB);
                     return FALSE;
                 }
 
@@ -1181,7 +1181,7 @@ static gboolean command_read_subchannel (CDEMUD_Device *self, guint8 *raw_cdb)
                     guint8 tmp_buf[16];
 
                     if (!mirage_track_read_sector(MIRAGE_TRACK(track), sector, FALSE, 0, MIRAGE_SUBCHANNEL_PQ, tmp_buf, NULL, NULL)) {
-                        CDEMUD_DEBUG(self, DAEMON_DEBUG_MMC, "%s: failed to read subchannel of sector 0x%X\n", __debug__, sector);
+                        CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: failed to read subchannel of sector 0x%X\n", __debug__, sector);
                         continue;
                     }
 
@@ -1194,7 +1194,7 @@ static gboolean command_read_subchannel (CDEMUD_Device *self, guint8 *raw_cdb)
                         /* Copy ISRC */
                         mirage_helper_subchannel_q_decode_isrc(&tmp_buf[1], (gchar *)ret_data->isrc);
                         ret_data->tcval = 1;
-                        CDEMUD_DEBUG(self, DAEMON_DEBUG_MMC, "%s: found ISRC in subchannel of sector 0x%X: <%.12s>\n", __debug__, sector, ret_data->isrc);
+                        CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: found ISRC in subchannel of sector 0x%X: <%.12s>\n", __debug__, sector, ret_data->isrc);
                         break;
                     }
                 }
@@ -1204,59 +1204,59 @@ static gboolean command_read_subchannel (CDEMUD_Device *self, guint8 *raw_cdb)
                 break;
             }
             default: {
-                CDEMUD_DEBUG(self, DAEMON_DEBUG_MMC, "%s: unknown!\n", __debug__);
+                CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: unknown!\n", __debug__);
                 break;
             }
         }
     }
 
     /* Header */
-    ret_header->audio_status = cdemud_audio_get_status(CDEMUD_AUDIO(self->priv->audio_play)); /* Audio status */
+    ret_header->audio_status = cdemu_audio_get_status(CDEMU_AUDIO(self->priv->audio_play)); /* Audio status */
     ret_header->length = GUINT32_TO_BE(self->priv->buffer_size - 4);
 
     /* Write data */
-    cdemud_device_write_buffer(self, GUINT16_FROM_BE(cdb->length));
+    cdemu_device_write_buffer(self, GUINT16_FROM_BE(cdb->length));
 
     return TRUE;
 }
 
 /* READ TOC/PMA/ATIP*/
-static gboolean command_read_toc_pma_atip (CDEMUD_Device *self, guint8 *raw_cdb)
+static gboolean command_read_toc_pma_atip (CdemuDevice *self, guint8 *raw_cdb)
 {
     struct READ_TOC_PMA_ATIP_CDB *cdb = (struct READ_TOC_PMA_ATIP_CDB *)raw_cdb;
 
     if (!self->priv->loaded) {
-        CDEMUD_DEBUG(self, DAEMON_DEBUG_MMC, "%s: medium not present\n", __debug__);
-        cdemud_device_write_sense(self, NOT_READY, MEDIUM_NOT_PRESENT);
+        CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: medium not present\n", __debug__);
+        cdemu_device_write_sense(self, NOT_READY, MEDIUM_NOT_PRESENT);
         return FALSE;
     }
 
     /* MMC: No fabrication for DVD media is defined for forms other than 000b and 001b. */
-    if ((self->priv->current_profile == DVDROM) && !((cdb->format == 0x00) || (cdb->format == 0x01))) {
-        CDEMUD_DEBUG(self, DAEMON_DEBUG_MMC, "%s: invalid format type (0x%X) for DVD-ROM image!\n", __debug__, cdb->format);
-        cdemud_device_write_sense(self, ILLEGAL_REQUEST, INVALID_FIELD_IN_CDB);
+    if ((self->priv->current_profile == PROFILE_DVDROM) && !((cdb->format == 0x00) || (cdb->format == 0x01))) {
+        CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: invalid format type (0x%X) for DVD-ROM image!\n", __debug__, cdb->format);
+        cdemu_device_write_sense(self, ILLEGAL_REQUEST, INVALID_FIELD_IN_CDB);
         return FALSE;
     }
 
-    MIRAGE_Disc *disc = MIRAGE_DISC(self->priv->disc);
+    MirageDisc *disc = MIRAGE_DISC(self->priv->disc);
 
     /* Alcohol 120% was being a PITA claiming I was feeding it 'empty disc'...
        upon checking INF-8020, it turns out what MMC-3 specifies as control byte
        is actually used... so we do compatibility mapping here */
     if (cdb->format == 0) {
         if (cdb->control == 0x40) {
-            CDEMUD_DEBUG(self, DAEMON_DEBUG_MMC, "%s: compliance to INF-8020 obviously expected... playing along\n", __debug__);
+            CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: compliance to INF-8020 obviously expected... playing along\n", __debug__);
             cdb->format = 0x01;
         }
         if (cdb->control == 0x80) {
-            CDEMUD_DEBUG(self, DAEMON_DEBUG_MMC, "%s: compliance to INF-8020 obviously expected... playing along\n", __debug__);
+            CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: compliance to INF-8020 obviously expected... playing along\n", __debug__);
             cdb->format = 0x02;
         }
     }
 
     switch (cdb->format) {
         case 0x00: {
-            CDEMUD_DEBUG(self, DAEMON_DEBUG_MMC, "%s: formatted TOC\n", __debug__);
+            CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: formatted TOC\n", __debug__);
             /* Formatted TOC */
             struct READ_TOC_PMA_ATIP_0000_Header *ret_header = (struct READ_TOC_PMA_ATIP_0000_Header *)self->priv->buffer;
             self->priv->buffer_size = sizeof(struct READ_TOC_PMA_ATIP_0000_Header);
@@ -1277,8 +1277,8 @@ static gboolean command_read_toc_pma_atip (CDEMUD_Device *self, guint8 *raw_cdb)
                 num_tracks = mirage_track_layout_get_track_number(MIRAGE_TRACK(cur_track));
                 g_object_unref(cur_track);
                 if (cdb->number > num_tracks) {
-                    CDEMUD_DEBUG(self, DAEMON_DEBUG_MMC, "%s: starting track number (%i) exceeds last track number (%i)!\n", __debug__, cdb->number, num_tracks);
-                    cdemud_device_write_sense(self, ILLEGAL_REQUEST, INVALID_FIELD_IN_CDB);
+                    CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: starting track number (%i) exceeds last track number (%i)!\n", __debug__, cdb->number, num_tracks);
+                    cdemu_device_write_sense(self, ILLEGAL_REQUEST, INVALID_FIELD_IN_CDB);
                     return FALSE;
                 }
 
@@ -1288,7 +1288,7 @@ static gboolean command_read_toc_pma_atip (CDEMUD_Device *self, guint8 *raw_cdb)
                 for (gint i = 0; i < num_tracks; i++) {
                     cur_track = mirage_disc_get_track_by_index(disc, i, NULL);
                     if (!cur_track) {
-                        CDEMUD_DEBUG(self, DAEMON_DEBUG_MMC, "%s: failed to get track with index %i (whole disc)!\n", __debug__, i);
+                        CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: failed to get track with index %i (whole disc)!\n", __debug__, i);
                         break;
                     }
 
@@ -1360,7 +1360,7 @@ static gboolean command_read_toc_pma_atip (CDEMUD_Device *self, guint8 *raw_cdb)
             break;
         }
         case 0x01: {
-            CDEMUD_DEBUG(self, DAEMON_DEBUG_MMC, "%s: multisession information\n", __debug__);
+            CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: multisession information\n", __debug__);
             /* Multi-session info */
             struct READ_TOC_PMA_ATIP_0001_Data *ret_data = (struct READ_TOC_PMA_ATIP_0001_Data *)self->priv->buffer;
             self->priv->buffer_size += sizeof(struct READ_TOC_PMA_ATIP_0001_Data);
@@ -1401,7 +1401,7 @@ static gboolean command_read_toc_pma_atip (CDEMUD_Device *self, guint8 *raw_cdb)
             break;
         }
         case 0x02: {
-            CDEMUD_DEBUG(self, DAEMON_DEBUG_MMC, "%s: raw TOC\n", __debug__);
+            CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: raw TOC\n", __debug__);
             /* Raw TOC */
             struct READ_TOC_PMA_ATIP_0010_Header *ret_header = (struct READ_TOC_PMA_ATIP_0010_Header *)self->priv->buffer;
             self->priv->buffer_size = sizeof(struct READ_TOC_PMA_ATIP_0010_Header);
@@ -1415,7 +1415,7 @@ static gboolean command_read_toc_pma_atip (CDEMUD_Device *self, guint8 *raw_cdb)
 
                 cur_session = mirage_disc_get_session_by_index(disc, i, NULL);
                 if (!cur_session) {
-                    CDEMUD_DEBUG(self, DAEMON_DEBUG_MMC, "%s: failed to get session by index %i!\n", __debug__, i);
+                    CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: failed to get session by index %i!\n", __debug__, i);
                     break;
                 }
 
@@ -1478,7 +1478,7 @@ static gboolean command_read_toc_pma_atip (CDEMUD_Device *self, guint8 *raw_cdb)
                     for (gint j = 0; j < num_tracks; j++) {
                         cur_track = mirage_session_get_track_by_index(MIRAGE_SESSION(cur_session), j, NULL);
                         if (!cur_track) {
-                            CDEMUD_DEBUG(self, DAEMON_DEBUG_MMC, "%s: failed to get track with index %i in session %i!\n", __debug__, j, session_number);
+                            CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: failed to get track with index %i in session %i!\n", __debug__, j, session_number);
                             break;
                         }
 
@@ -1504,7 +1504,7 @@ static gboolean command_read_toc_pma_atip (CDEMUD_Device *self, guint8 *raw_cdb)
                        a good idea to come up with B0 descriptors... */
                     if (num_sessions > 1) {
                         gint leadout_length;
-                        CDEMUD_DEBUG(self, DAEMON_DEBUG_MMC, "%s: multisession disc; cooking up a B0 descriptor for session %i!\n", __debug__, session_number);
+                        CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: multisession disc; cooking up a B0 descriptor for session %i!\n", __debug__, session_number);
 
                         leadout_length = mirage_session_get_leadout_length(MIRAGE_SESSION(cur_session));
 
@@ -1541,7 +1541,7 @@ static gboolean command_read_toc_pma_atip (CDEMUD_Device *self, guint8 *raw_cdb)
 
                         /* Add up C0 for session 1 */
                         if (session_number == 1) {
-                            CDEMUD_DEBUG(self, DAEMON_DEBUG_MMC, "%s: multisession disc; cooking up a C0 descriptor for session %i!\n", __debug__, session_number);
+                            CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: multisession disc; cooking up a C0 descriptor for session %i!\n", __debug__, session_number);
 
                             ret_desc->session = session_number;
                             ret_desc->adr = 0x05;
@@ -1582,7 +1582,7 @@ static gboolean command_read_toc_pma_atip (CDEMUD_Device *self, guint8 *raw_cdb)
             break;
         }
         case 0x04: {
-            CDEMUD_DEBUG(self, DAEMON_DEBUG_MMC, "%s: ATIP\n", __debug__);
+            CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: ATIP\n", __debug__);
             /* ATIP */
             struct READ_TOC_PMA_ATIP_0100_Header *ret_header = (struct READ_TOC_PMA_ATIP_0100_Header *)self->priv->buffer;
             self->priv->buffer_size = sizeof(struct READ_TOC_PMA_ATIP_0100_Header);
@@ -1593,7 +1593,7 @@ static gboolean command_read_toc_pma_atip (CDEMUD_Device *self, guint8 *raw_cdb)
             break;
         }
         case 0x05: {
-            CDEMUD_DEBUG(self, DAEMON_DEBUG_MMC, "%s: CD-Text\n", __debug__);
+            CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: CD-Text\n", __debug__);
             /* CD-TEXT */
             struct READ_TOC_PMA_ATIP_0101_Header *ret_header = (struct READ_TOC_PMA_ATIP_0101_Header *)self->priv->buffer;
             self->priv->buffer_size = sizeof(struct READ_TOC_PMA_ATIP_0101_Header);
@@ -1605,11 +1605,11 @@ static gboolean command_read_toc_pma_atip (CDEMUD_Device *self, guint8 *raw_cdb)
             /* FIXME: for the time being, return data for first session */
             session = mirage_disc_get_session_by_index(MIRAGE_DISC(self->priv->disc), 0, NULL);
             if (!mirage_session_get_cdtext_data(MIRAGE_SESSION(session), &tmp_data, &tmp_len, NULL)) {
-                CDEMUD_DEBUG(self, DAEMON_DEBUG_MMC, "%s: failed to get CD-TEXT data!\n", __debug__);
+                CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: failed to get CD-TEXT data!\n", __debug__);
             }
             g_object_unref(session);
 
-            CDEMUD_DEBUG(self, DAEMON_DEBUG_MMC, "%s: length of CD-TEXT data: 0x%X\n", __debug__, tmp_len);
+            CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: length of CD-TEXT data: 0x%X\n", __debug__, tmp_len);
 
             memcpy(self->priv->buffer+sizeof(struct READ_TOC_PMA_ATIP_0101_Header), tmp_data, tmp_len);
             g_free(tmp_data);
@@ -1621,31 +1621,31 @@ static gboolean command_read_toc_pma_atip (CDEMUD_Device *self, guint8 *raw_cdb)
             break;
         }
         default: {
-            CDEMUD_DEBUG(self, DAEMON_DEBUG_MMC, "%s: format %X not suppoted yet\n", __debug__, cdb->format);
-            cdemud_device_write_sense(self, ILLEGAL_REQUEST, INVALID_FIELD_IN_CDB);
+            CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: format %X not suppoted yet\n", __debug__, cdb->format);
+            cdemu_device_write_sense(self, ILLEGAL_REQUEST, INVALID_FIELD_IN_CDB);
             return FALSE;
         }
     }
 
     /* Write data */
-    cdemud_device_write_buffer(self, GUINT16_FROM_BE(cdb->length));
+    cdemu_device_write_buffer(self, GUINT16_FROM_BE(cdb->length));
 
     return TRUE;
 }
 
 /* READ TRACK INFORMATION*/
-static gboolean command_read_track_information (CDEMUD_Device *self, guint8 *raw_cdb)
+static gboolean command_read_track_information (CdemuDevice *self, guint8 *raw_cdb)
 {
     struct READ_TRACK_INFORMATION_CDB *cdb = (struct READ_TRACK_INFORMATION_CDB *)raw_cdb;
     struct READ_TRACK_INFORMATION_Data *ret_data = (struct READ_TRACK_INFORMATION_Data *)self->priv->buffer;
     self->priv->buffer_size = sizeof(struct READ_TRACK_INFORMATION_Data);
 
-    MIRAGE_Disc *disc = MIRAGE_DISC(self->priv->disc);
+    MirageDisc *disc = MIRAGE_DISC(self->priv->disc);
     GObject *track = NULL;
 
     if (!self->priv->loaded) {
-        CDEMUD_DEBUG(self, DAEMON_DEBUG_MMC, "%s: medium not present\n", __debug__);
-        cdemud_device_write_sense(self, NOT_READY, MEDIUM_NOT_PRESENT);
+        CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: medium not present\n", __debug__);
+        cdemu_device_write_sense(self, NOT_READY, MEDIUM_NOT_PRESENT);
         return FALSE;
     }
 
@@ -1654,7 +1654,7 @@ static gboolean command_read_track_information (CDEMUD_Device *self, guint8 *raw
     switch (cdb->type) {
         case 0x00: {
             /* LBA */
-            CDEMUD_DEBUG(self, DAEMON_DEBUG_MMC, "%s: requested track containing sector 0x%X\n", __debug__, number);
+            CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: requested track containing sector 0x%X\n", __debug__, number);
             track = mirage_disc_get_track_by_address(disc, number, NULL);
             break;
         }
@@ -1663,19 +1663,19 @@ static gboolean command_read_track_information (CDEMUD_Device *self, guint8 *raw
             switch (number) {
                 case 0x00: {
                     /* Lead-in: not supported */
-                    CDEMUD_DEBUG(self, DAEMON_DEBUG_MMC, "%s: requested lead-in; not supported!\n", __debug__);
-                    cdemud_device_write_sense(self, ILLEGAL_REQUEST, INVALID_FIELD_IN_CDB);
+                    CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: requested lead-in; not supported!\n", __debug__);
+                    cdemu_device_write_sense(self, ILLEGAL_REQUEST, INVALID_FIELD_IN_CDB);
                     return FALSE;
                 }
                 case 0xFF: {
                     /* Invisible/Incomplete track: not supported */
-                    CDEMUD_DEBUG(self, DAEMON_DEBUG_MMC, "%s: requested invisible/incomplete track; not supported!\n", __debug__);
-                    cdemud_device_write_sense(self, ILLEGAL_REQUEST, INVALID_FIELD_IN_CDB);
+                    CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: requested invisible/incomplete track; not supported!\n", __debug__);
+                    cdemu_device_write_sense(self, ILLEGAL_REQUEST, INVALID_FIELD_IN_CDB);
                     return FALSE;
                 }
                 default: {
                     /* Track number */
-                    CDEMUD_DEBUG(self, DAEMON_DEBUG_MMC, "%s: requested track %i\n", __debug__, number);
+                    CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: requested track %i\n", __debug__, number);
                     track = mirage_disc_get_track_by_number(disc, number, NULL);
                     break;
                 }
@@ -1685,7 +1685,7 @@ static gboolean command_read_track_information (CDEMUD_Device *self, guint8 *raw
         case 0x02: {
             /* Session number */
             GObject *session;
-            CDEMUD_DEBUG(self, DAEMON_DEBUG_MMC, "%s: requested first track in session %i\n", __debug__, number);
+            CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: requested first track in session %i\n", __debug__, number);
 
             session = mirage_disc_get_session_by_number(disc, number, NULL);
             track = mirage_session_get_track_by_index(MIRAGE_SESSION(session), 0, NULL);
@@ -1696,8 +1696,8 @@ static gboolean command_read_track_information (CDEMUD_Device *self, guint8 *raw
 
     /* Check if track was found */
     if (!track) {
-        CDEMUD_DEBUG(self, DAEMON_DEBUG_MMC, "%s: couldn't find track!\n", __debug__);
-        cdemud_device_write_sense(self, ILLEGAL_REQUEST, INVALID_FIELD_IN_CDB);
+        CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: couldn't find track!\n", __debug__);
+        cdemu_device_write_sense(self, ILLEGAL_REQUEST, INVALID_FIELD_IN_CDB);
         return FALSE;
     }
 
@@ -1738,13 +1738,13 @@ static gboolean command_read_track_information (CDEMUD_Device *self, guint8 *raw
     ret_data->track_size = GUINT32_TO_BE(length);
 
     /* Write data */
-    cdemud_device_write_buffer(self, GUINT16_FROM_BE(cdb->length));
+    cdemu_device_write_buffer(self, GUINT16_FROM_BE(cdb->length));
 
     return TRUE;
 }
 
 /* REPORT KEY*/
-static gboolean command_report_key (CDEMUD_Device *self, guint8 *raw_cdb)
+static gboolean command_report_key (CdemuDevice *self, guint8 *raw_cdb)
 {
     struct REPORT_KEY_CDB *cdb = (struct REPORT_KEY_CDB *)raw_cdb;
 
@@ -1761,32 +1761,32 @@ static gboolean command_report_key (CDEMUD_Device *self, guint8 *raw_cdb)
 
         data->length = GUINT16_TO_BE(self->priv->buffer_size - 2);
     } else {
-        if (self->priv->current_profile != DVDROM) {
-            CDEMUD_DEBUG(self, DAEMON_DEBUG_MMC, "%s: not supported with non-DVD media!\n", __debug__);
-            cdemud_device_write_sense(self, ILLEGAL_REQUEST, CANNOT_READ_MEDIUM_INCOMPATIBLE_FORMAT);
+        if (self->priv->current_profile != PROFILE_DVDROM) {
+            CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: not supported with non-DVD media!\n", __debug__);
+            cdemu_device_write_sense(self, ILLEGAL_REQUEST, CANNOT_READ_MEDIUM_INCOMPATIBLE_FORMAT);
             return FALSE;
         }
 
         /* We don't support these yet */
-        CDEMUD_DEBUG(self, DAEMON_DEBUG_MMC, "%s: FIXME: not implemented yet!\n", __debug__);
-        cdemud_device_write_sense(self, ILLEGAL_REQUEST, INVALID_FIELD_IN_CDB);
+        CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: FIXME: not implemented yet!\n", __debug__);
+        cdemu_device_write_sense(self, ILLEGAL_REQUEST, INVALID_FIELD_IN_CDB);
         return FALSE;
     }
 
     /* Write data */
-    cdemud_device_write_buffer(self, GUINT16_FROM_BE(cdb->length));
+    cdemu_device_write_buffer(self, GUINT16_FROM_BE(cdb->length));
 
     return TRUE;
 }
 
 /* REQUEST SENSE*/
-static gboolean command_request_sense (CDEMUD_Device *self, guint8 *raw_cdb)
+static gboolean command_request_sense (CdemuDevice *self, guint8 *raw_cdb)
 {
     struct REQUEST_SENSE_CDB *cdb = (struct REQUEST_SENSE_CDB *)raw_cdb;
     struct REQUEST_SENSE_SenseFixed *sense = (struct REQUEST_SENSE_SenseFixed *)self->priv->buffer;
     self->priv->buffer_size = sizeof(struct REQUEST_SENSE_SenseFixed);
 
-    CDEMUD_DEBUG(self, DAEMON_DEBUG_MMC, "%s: returning sense data\n", __debug__);
+    CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: returning sense data\n", __debug__);
 
     /* REQUEST SENSE is used for retrieving deferred errors; right now, we
        don't support reporting those (actually, we don't generate them, either),
@@ -1801,37 +1801,37 @@ static gboolean command_request_sense (CDEMUD_Device *self, guint8 *raw_cdb)
        the additional sense code qualifier field. */
     sense->sense_key = (SenseKey) NO_SENSE;
     sense->asc = (AdditionalSenseCode) NO_ADDITIONAL_SENSE_INFORMATION;
-    sense->ascq = cdemud_audio_get_status(CDEMUD_AUDIO(self->priv->audio_play));
+    sense->ascq = cdemu_audio_get_status(CDEMU_AUDIO(self->priv->audio_play));
 
     /* Write data */
-    cdemud_device_write_buffer(self, cdb->length);
+    cdemu_device_write_buffer(self, cdb->length);
 
     return TRUE;
 }
 
 /* SEEK (10)*/
-static gboolean command_seek (CDEMUD_Device *self, guint8 *raw_cdb G_GNUC_UNUSED)
+static gboolean command_seek (CdemuDevice *self, guint8 *raw_cdb G_GNUC_UNUSED)
 {
     /*struct SET_CD_SPEED_CDB *cdb = (struct SET_CD_SPEED_CDB *)raw_cdb;*/
-    CDEMUD_DEBUG(self, DAEMON_DEBUG_MMC, "%s: nothing to do here yet...\n", __debug__);
+    CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: nothing to do here yet...\n", __debug__);
     return TRUE;
 }
 
 /* SET CD SPEED*/
-static gboolean command_set_cd_speed (CDEMUD_Device *self, guint8 *raw_cdb)
+static gboolean command_set_cd_speed (CdemuDevice *self, guint8 *raw_cdb)
 {
     struct SET_CD_SPEED_CDB *cdb = (struct SET_CD_SPEED_CDB *)raw_cdb;
-    struct ModePage_0x2A *p_0x2A = cdemud_device_get_mode_page(self, 0x2A, MODE_PAGE_CURRENT);
+    struct ModePage_0x2A *p_0x2A = cdemu_device_get_mode_page(self, 0x2A, MODE_PAGE_CURRENT);
 
     /* Set the value to mode page and do nothing else at the moment...
        Note that we don't have to convert from BE neither for comparison (because
        it's 0xFFFF and unsigned short) nor when setting value (because it's BE in
        mode page anyway) */
     if (cdb->read_speed == 0xFFFF) {
-        CDEMUD_DEBUG(self, DAEMON_DEBUG_MMC, "%s: setting read speed to max\n", __debug__);
+        CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: setting read speed to max\n", __debug__);
         p_0x2A->cur_read_speed = p_0x2A->max_read_speed;
     } else {
-        CDEMUD_DEBUG(self, DAEMON_DEBUG_MMC, "%s: setting read speed to %i kB/s\n", __debug__, GUINT16_FROM_BE(cdb->read_speed));
+        CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: setting read speed to %i kB/s\n", __debug__, GUINT16_FROM_BE(cdb->read_speed));
         p_0x2A->cur_read_speed = cdb->read_speed;
     }
 
@@ -1840,22 +1840,22 @@ static gboolean command_set_cd_speed (CDEMUD_Device *self, guint8 *raw_cdb)
 
 
 /* START/STOP UNIT */
-static gboolean command_start_stop_unit (CDEMUD_Device *self, guint8 *raw_cdb)
+static gboolean command_start_stop_unit (CdemuDevice *self, guint8 *raw_cdb)
 {
     struct START_STOP_UNIT_CDB *cdb = (struct START_STOP_UNIT_CDB *)raw_cdb;
 
-    CDEMUD_DEBUG(self, DAEMON_DEBUG_MMC, "%s: lo_ej: %d; start: %d\n", __debug__, cdb->lo_ej, cdb->start);
+    CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: lo_ej: %d; start: %d\n", __debug__, cdb->lo_ej, cdb->start);
 
     if (cdb->lo_ej) {
         if (!cdb->start) {
 
-            CDEMUD_DEBUG(self, DAEMON_DEBUG_MMC, "%s: unloading disc...\n", __debug__);
-            if (!cdemud_device_unload_disc_private(self, FALSE, NULL)) {
-                CDEMUD_DEBUG(self, DAEMON_DEBUG_MMC, "%s: failed to unload disc\n", __debug__);
-                cdemud_device_write_sense(self, NOT_READY, MEDIUM_REMOVAL_PREVENTED);
+            CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: unloading disc...\n", __debug__);
+            if (!cdemu_device_unload_disc_private(self, FALSE, NULL)) {
+                CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: failed to unload disc\n", __debug__);
+                cdemu_device_write_sense(self, NOT_READY, MEDIUM_REMOVAL_PREVENTED);
                 return FALSE;
             } else {
-                CDEMUD_DEBUG(self, DAEMON_DEBUG_MMC, "%s: successfully unloaded disc\n", __debug__);
+                CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: successfully unloaded disc\n", __debug__);
             }
         }
     }
@@ -1865,14 +1865,14 @@ static gboolean command_start_stop_unit (CDEMUD_Device *self, guint8 *raw_cdb)
 
 
 /* TEST UNIT READY*/
-static gboolean command_test_unit_ready (CDEMUD_Device *self, guint8 *raw_cdb G_GNUC_UNUSED)
+static gboolean command_test_unit_ready (CdemuDevice *self, guint8 *raw_cdb G_GNUC_UNUSED)
 {
     /*struct TEST_UNIT_READY_CDB *cdb = (struct TEST_UNIT_READY_CDB *)raw_cdb;*/
 
     /* Check if we have medium loaded */
     if (!self->priv->loaded) {
-        CDEMUD_DEBUG(self, DAEMON_DEBUG_MMC, "%s: medium not present\n", __debug__);
-        cdemud_device_write_sense(self, NOT_READY, MEDIUM_NOT_PRESENT);
+        CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: medium not present\n", __debug__);
+        cdemu_device_write_sense(self, NOT_READY, MEDIUM_NOT_PRESENT);
         return FALSE;
     }
 
@@ -1880,9 +1880,9 @@ static gboolean command_test_unit_ready (CDEMUD_Device *self, guint8 *raw_cdb G_
        MEDIUM MAY HAVE CHANGED whenever medium changes... this is required for
        linux SCSI layer to set medium block size properly upon disc insertion */
     if (self->priv->media_event == MEDIA_EVENT_NEW_MEDIA) {
-        CDEMUD_DEBUG(self, DAEMON_DEBUG_MMC, "%s: reporting media changed\n", __debug__);
+        CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: reporting media changed\n", __debug__);
         self->priv->media_event = MEDIA_EVENT_NOCHANGE;
-        cdemud_device_write_sense(self, UNIT_ATTENTION, NOT_READY_TO_READY_CHANGE_MEDIUM_MAY_HAVE_CHANGED);
+        cdemu_device_write_sense(self, UNIT_ATTENTION, NOT_READY_TO_READY_CHANGE_MEDIUM_MAY_HAVE_CHANGED);
         return FALSE;
     }
 
@@ -1893,7 +1893,7 @@ static gboolean command_test_unit_ready (CDEMUD_Device *self, guint8 *raw_cdb G_
 /**********************************************************************\
  *                      Packet command switch                         *
 \**********************************************************************/
-gint cdemud_device_execute_command (CDEMUD_Device *self, CDEMUD_Command *cmd)
+gint cdemu_device_execute_command (CdemuDevice *self, CDEMU_Command *cmd)
 {
     SenseStatus status = CHECK_CONDITION;
 
@@ -1901,10 +1901,10 @@ gint cdemud_device_execute_command (CDEMUD_Device *self, CDEMUD_Command *cmd)
     self->priv->cur_len = 0;
 
     /* Flush buffer */
-    cdemud_device_flush_buffer(self);
+    cdemu_device_flush_buffer(self);
 
-    CDEMUD_DEBUG(self, DAEMON_DEBUG_MMC, "\n");
-    CDEMUD_DEBUG(self, DAEMON_DEBUG_MMC, "%s: %02X %02X %02X %02X %02X %02X %02X %02X %02X %02X %02X %02X\n", __debug__,
+    CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "\n");
+    CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: %02X %02X %02X %02X %02X %02X %02X %02X %02X %02X %02X %02X\n", __debug__,
         cmd->cdb[0], cmd->cdb[1], cmd->cdb[2], cmd->cdb[3], cmd->cdb[4], cmd->cdb[5],
         cmd->cdb[6], cmd->cdb[7], cmd->cdb[8], cmd->cdb[9], cmd->cdb[10], cmd->cdb[11]);
 
@@ -1912,7 +1912,7 @@ gint cdemud_device_execute_command (CDEMUD_Device *self, CDEMUD_Command *cmd)
     static struct {
         PacketCommand cmd;
         gchar *debug_name;
-        gboolean (*implementation)(CDEMUD_Device *, guint8 *);
+        gboolean (*implementation)(CdemuDevice *, guint8 *);
         gboolean disturbs_audio_play;
     } packet_commands[] = {
         { GET_EVENT_STATUS_NOTIFICATION,
@@ -2034,7 +2034,7 @@ gint cdemud_device_execute_command (CDEMUD_Device *self, CDEMUD_Command *cmd)
         if (packet_commands[i].cmd == cmd->cdb[0]) {
             gboolean succeeded = FALSE;
 
-            CDEMUD_DEBUG(self, DAEMON_DEBUG_MMC, "%s: command: %s\n", __debug__, packet_commands[i].debug_name);
+            CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: command: %s\n", __debug__, packet_commands[i].debug_name);
 
             /* Lock */
             g_mutex_lock(self->priv->device_mutex);
@@ -2044,9 +2044,9 @@ gint cdemud_device_execute_command (CDEMUD_Device *self, CDEMUD_Command *cmd)
 
             /* Stop audio play if command disturbs it */
             if (packet_commands[i].disturbs_audio_play) {
-                gint audio_status = cdemud_audio_get_status(CDEMUD_AUDIO(self->priv->audio_play));
+                gint audio_status = cdemu_audio_get_status(CDEMU_AUDIO(self->priv->audio_play));
                 if (audio_status == AUDIO_STATUS_PLAYING || audio_status == AUDIO_STATUS_PAUSED) {
-                    cdemud_audio_stop(CDEMUD_AUDIO(self->priv->audio_play));
+                    cdemu_audio_stop(CDEMU_AUDIO(self->priv->audio_play));
                 }
             }
             /* Execute the command */
@@ -2057,15 +2057,15 @@ gint cdemud_device_execute_command (CDEMUD_Device *self, CDEMUD_Command *cmd)
             /* Unlock */
             g_mutex_unlock(self->priv->device_mutex);
 
-            CDEMUD_DEBUG(self, DAEMON_DEBUG_MMC, "%s: command completed with status %d\n", __debug__, status);
+            CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: command completed with status %d\n", __debug__, status);
 
             return status;
         }
     }
 
     /* Command not found */
-    CDEMUD_DEBUG(self, DAEMON_DEBUG_MMC, "%s: packet command %02Xh not implemented yet!\n", __debug__, cmd->cdb[0]);
-    cdemud_device_write_sense(self, ILLEGAL_REQUEST, INVALID_COMMAND_OPERATION_CODE);
+    CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: packet command %02Xh not implemented yet!\n", __debug__, cmd->cdb[0]);
+    cdemu_device_write_sense(self, ILLEGAL_REQUEST, INVALID_COMMAND_OPERATION_CODE);
     self->priv->cmd->out_len = self->priv->cur_len;
 
     return status;

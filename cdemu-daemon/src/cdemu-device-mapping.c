@@ -1,5 +1,5 @@
  /*
- *  CDEmuD: Device object - Device mapping
+ *  CDEmu daemon: Device object - Device mapping
  *  Copyright (C) 2006-2012 Rok Mandeljc
  *
  *  This program is free software; you can redistribute it and/or modify
@@ -17,13 +17,13 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
 
-#include "cdemud.h"
-#include "cdemud-device-private.h"
+#include "cdemu.h"
+#include "cdemu-device-private.h"
 
 #define __debug__ "Mapping"
 
 
-gboolean cdemud_device_setup_mapping (CDEMUD_Device *self)
+gboolean cdemu_device_setup_mapping (CdemuDevice *self)
 {
     gboolean complete = TRUE;
     gint ioctl_ret;
@@ -42,7 +42,7 @@ gboolean cdemud_device_setup_mapping (CDEMUD_Device *self)
         complete = FALSE; /* ... try again later */
     } else if (ioctl_ret < 0) {
         /* Other errors */
-        CDEMUD_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: error while performing ioctl (%d); device mapping info will not be available\n", __debug__, ioctl_ret);
+        CDEMU_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: error while performing ioctl (%d); device mapping info will not be available\n", __debug__, ioctl_ret);
     } else {
         /* FIXME: until we figure how to get SCSI CD-ROM and SCSI Generic Device
            device paths directly from kernel, we'll have to live with parsing of the
@@ -54,7 +54,7 @@ gboolean cdemud_device_setup_mapping (CDEMUD_Device *self)
         gchar path_sg[16] = "";
 
         if (!dir_dev) {
-            CDEMUD_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: sysfs device for device #%i (%s) could not be opened; device mapping info for this device will not be available\n", __debug__, self->priv->number, sysfs_dev_path);
+            CDEMU_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: sysfs device for device #%i (%s) could not be opened; device mapping info for this device will not be available\n", __debug__, self->priv->number, sysfs_dev_path);
         } else {
             /* Iterate through sysfs dir */
             const gchar *entry_name;
@@ -105,14 +105,14 @@ gboolean cdemud_device_setup_mapping (CDEMUD_Device *self)
             if (strlen(path_sr)) {
                 self->priv->device_sr = g_strconcat("/dev/", path_sr, NULL);
             } else {
-                CDEMUD_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: device mapping (SCSI CD-ROM) for device #%i could not be determined; device mapping info for this device will not be available\n", __debug__, self->priv->number);
+                CDEMU_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: device mapping (SCSI CD-ROM) for device #%i could not be determined; device mapping info for this device will not be available\n", __debug__, self->priv->number);
                 self->priv->device_sr = NULL;
             }
 
             if (strlen(path_sg)) {
                 self->priv->device_sg = g_strconcat("/dev/", path_sg, NULL);
             } else {
-                CDEMUD_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: device mapping (SCSI generic) for device #%i could not be determined; device mapping info for this device will not be available\n", __debug__, self->priv->number);
+                CDEMU_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: device mapping (SCSI generic) for device #%i could not be determined; device mapping info for this device will not be available\n", __debug__, self->priv->number);
                 self->priv->device_sg = NULL;
             }
         }
@@ -124,7 +124,7 @@ gboolean cdemud_device_setup_mapping (CDEMUD_Device *self)
     return complete;
 }
 
-void cdemud_device_get_mapping (CDEMUD_Device *self, gchar **sr_device, gchar **sg_device)
+void cdemu_device_get_mapping (CdemuDevice *self, gchar **sr_device, gchar **sg_device)
 {
     /* Return values, if applicable */
     if (self->priv->device_sr) {

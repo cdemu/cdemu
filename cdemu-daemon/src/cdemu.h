@@ -1,5 +1,5 @@
 /*
- *  CDEmuD: Main header
+ *  CDEmu daemon: Main header
  *  Copyright (C) 2006-2012 Rok Mandeljc
  *
  *  This program is free software; you can redistribute it and/or modify
@@ -18,8 +18,8 @@
  */
 
 
-#ifndef __CDEMUD_H__
-#define __CDEMUD_H__
+#ifndef __CDEMU_H__
+#define __CDEMU_H__
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -43,28 +43,22 @@
 #include <mirage.h>
 
 
-#include "cdemud-audio.h"
+#include "cdemu-audio.h"
 
-#include "cdemud-mmc-features.h"
-#include "cdemud-mode-pages.h"
-#include "cdemud-packet-commands.h"
-#include "cdemud-sense-constants.h"
+#include "cdemu-mmc-features.h"
+#include "cdemu-mode-pages.h"
+#include "cdemu-packet-commands.h"
+#include "cdemu-sense-constants.h"
 
-#include "cdemud-error.h"
-#include "cdemud-debug.h"
+#include "cdemu-error.h"
+#include "cdemu-debug.h"
 
-#include "cdemud-daemon.h"
-#include "cdemud-device.h"
+#include "cdemu-daemon.h"
+#include "cdemu-device.h"
 
 
 /* Commonly used macros */
-#define CDEMUD_CHECK_ARG(param) \
-    if (!param) { \
-        cdemud_error(CDEMUD_E_INVALIDARG, error); \
-        return FALSE; \
-    }
-
 #define G_LIST_FOR_EACH(cursor,list) \
     for ((cursor) = (list); (cursor); (cursor) = (cursor)->next)
 
-#endif /* __CDEMUD_H__ */
+#endif /* __CDEMU_H__ */

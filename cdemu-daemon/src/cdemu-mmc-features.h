@@ -23,7 +23,7 @@
 #pragma pack(1)
 
 /* FEATURES */
-struct Feature_GENERAL
+struct FeatureGeneral
 {
     guint16 code;
 
@@ -430,11 +430,11 @@ struct Feature_0x0107
     guint8  __dummy3__[3];
 };
 
-/* PROFILES */
+/* Profiles */
 typedef enum {
-    NONE    = 0x0000,
-    CDROM   = 0x0008,
-    DVDROM  = 0x0010
+    PROFILE_NONE = 0x0000,
+    PROFILE_CDROM = 0x0008,
+    PROFILE_DVDROM = 0x0010
 } Profile;
 
 #pragma pack()

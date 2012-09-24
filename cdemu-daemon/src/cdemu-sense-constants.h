@@ -1,5 +1,5 @@
 /*
- *  CDEmuD: Sense keys, ASC/ASCQ combinations
+ *  CDEmu daemon: Sense keys, ASC/ASCQ combinations
  *  Copyright (C) 2006-2012 Rok Mandeljc
  *
  *  This program is free software; you can redistribute it and/or modify
@@ -17,8 +17,8 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
 
-#ifndef __CDEMUD_SENSE_CONSTANTS_H__
-#define __CDEMUD_SENSE_CONSTANTS_H__
+#ifndef __CDEMU_SENSE_CONSTANTS_H__
+#define __CDEMU_SENSE_CONSTANTS_H__
 
 /* Status codes */
 typedef enum {
@@ -356,4 +356,4 @@ static inline guint32 make_status(SenseStatus status, SenseKey sensekey, Additio
     return val;
 }
 
-#endif /* __CDEMUD_SENSE_CONSTANTS_H__ */
+#endif /* __CDEMU_SENSE_CONSTANTS_H__ */

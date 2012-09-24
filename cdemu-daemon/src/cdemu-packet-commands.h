@@ -1,5 +1,5 @@
 /*
- *  CDEmuD: Packet command definitions
+ *  CDEmu daemon: Packet command definitions
  *  Copyright (C) 2006-2012 Rok Mandeljc
  *
  *  This program is free software; you can redistribute it and/or modify
@@ -17,8 +17,8 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
 
-#ifndef __CDEMUD_PACKET_COMMANDS_H__
-#define __CDEMUD_PACKET_COMMANDS_H__
+#ifndef __CDEMU_PACKET_COMMANDS_H__
+#define __CDEMU_PACKET_COMMANDS_H__
 
 typedef enum {
     BLANK                         = 0xA1,
@@ -2344,4 +2344,4 @@ struct WRITE_BUFFER_CDB
 
 #pragma pack()
 
-#endif /* __CDEMUD_PACKET_COMMANDS_H__ */
+#endif /* __CDEMU_PACKET_COMMANDS_H__ */

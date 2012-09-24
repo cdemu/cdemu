@@ -22,15 +22,15 @@
 
 #pragma pack(1)
 
-enum
+typedef enum
 {
     MODE_PAGE_CURRENT = 0,
     MODE_PAGE_DEFAULT = 1,
     MODE_PAGE_MASK = 2
-};
+} ModePageType;
 
 
-struct ModePage_GENERAL
+struct ModePageGeneral
 {
     #if G_BYTE_ORDER == G_BIG_ENDIAN
         guint8  ps          : 1;

@@ -1,5 +1,5 @@
 /*
- *  CDEmuD: Device object - private
+ *  CDEmu daemon: Device object - private
  *  Copyright (C) 2012 Rok Mandeljc
  *
  *  This program is free software; you can redistribute it and/or modify
@@ -17,14 +17,14 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
 
-#ifndef __CDEMUD_DEVICE_PRIVATE_H__
-#define __CDEMUD_DEVICE_PRIVATE_H__
+#ifndef __CDEMU_DEVICE_PRIVATE_H__
+#define __CDEMU_DEVICE_PRIVATE_H__
 
-#define CDEMUD_DEVICE_GET_PRIVATE(obj) (G_TYPE_INSTANCE_GET_PRIVATE((obj), CDEMUD_TYPE_DEVICE, CDEMUD_DevicePrivate))
+#define CDEMU_DEVICE_GET_PRIVATE(obj) (G_TYPE_INSTANCE_GET_PRIVATE((obj), CDEMU_TYPE_DEVICE, CdemuDevicePrivate))
 
-typedef struct _CDEMUD_Command CDEMUD_Command;
+typedef struct _CDEMU_Command CDEMU_Command;
 
-struct _CDEMUD_Command
+struct _CDEMU_Command
 {
     guint8 cdb[12];
     guint8 *in;
@@ -33,7 +33,7 @@ struct _CDEMUD_Command
     guint out_len;
 };
 
-struct _CDEMUD_DevicePrivate
+struct _CdemuDevicePrivate
 {
     /* Device I/O thread */
     GIOChannel *io_channel;
@@ -50,7 +50,7 @@ struct _CDEMUD_DevicePrivate
     GMutex *device_mutex;
 
     /* Command */
-    CDEMUD_Command *cmd;
+    CDEMU_Command *cmd;
     guint cur_len;
 
     /* Buffer/"cache" */
@@ -108,37 +108,37 @@ struct _CDEMUD_DevicePrivate
 
 
 /* Commands */
-gint cdemud_device_execute_command (CDEMUD_Device *self, CDEMUD_Command *cmd);
+gint cdemu_device_execute_command (CdemuDevice *self, CDEMU_Command *cmd);
 
 /* Delay emulation */
-void cdemud_device_delay_begin (CDEMUD_Device *self, gint address, gint num_sectors);
-void cdemud_device_delay_finalize (CDEMUD_Device *self);
+void cdemu_device_delay_begin (CdemuDevice *self, gint address, gint num_sectors);
+void cdemu_device_delay_finalize (CdemuDevice *self);
 
 /* Features */
-gpointer cdemud_device_get_feature (CDEMUD_Device *self, gint feature);
-void cdemud_device_features_init (CDEMUD_Device *self);
-void cdemud_device_features_cleanup (CDEMUD_Device *self);
-void cdemud_device_set_profile (CDEMUD_Device *self, Profile profile);
+gpointer cdemu_device_get_feature (CdemuDevice *self, gint feature);
+void cdemu_device_features_init (CdemuDevice *self);
+void cdemu_device_features_cleanup (CdemuDevice *self);
+void cdemu_device_set_profile (CdemuDevice *self, Profile profile);
 
 /* Kernel <-> userspace I/O */
-void cdemud_device_write_buffer (CDEMUD_Device *self, guint32 length);
-void cdemud_device_read_buffer (CDEMUD_Device *self, guint32 length);
-void cdemud_device_flush_buffer (CDEMUD_Device *self);
+void cdemu_device_write_buffer (CdemuDevice *self, guint32 length);
+void cdemu_device_read_buffer (CdemuDevice *self, guint32 length);
+void cdemu_device_flush_buffer (CdemuDevice *self);
 
-void cdemud_device_write_sense_full (CDEMUD_Device *self, SenseKey sense_key, guint16 asc_ascq, gint ili, guint32 command_info);
-void cdemud_device_write_sense (CDEMUD_Device *self, SenseKey sense_key, guint16 asc_ascq);
+void cdemu_device_write_sense_full (CdemuDevice *self, SenseKey sense_key, guint16 asc_ascq, gint ili, guint32 command_info);
+void cdemu_device_write_sense (CdemuDevice *self, SenseKey sense_key, guint16 asc_ascq);
 
-GThread *cdemud_device_create_io_thread (CDEMUD_Device *self);
-void cdemud_device_stop_io_thread (CDEMUD_Device *self);
+GThread *cdemu_device_create_io_thread (CdemuDevice *self);
+void cdemu_device_stop_io_thread (CdemuDevice *self);
 
 /* Load/unload */
-gboolean cdemud_device_unload_disc_private (CDEMUD_Device *self, gboolean force, GError **error);
+gboolean cdemu_device_unload_disc_private (CdemuDevice *self, gboolean force, GError **error);
 
 /* Mode pages */
-gpointer cdemud_device_get_mode_page (CDEMUD_Device *self, gint page, gint type);
-void cdemud_device_mode_pages_init (CDEMUD_Device *self);
-void cdemud_device_mode_pages_cleanup (CDEMUD_Device *self);
+gpointer cdemu_device_get_mode_page (CdemuDevice *self, gint page, gint type);
+void cdemu_device_mode_pages_init (CdemuDevice *self);
+void cdemu_device_mode_pages_cleanup (CdemuDevice *self);
 
 
 
-#endif /* __CDEMUD_DEVICE_PRIVATE_H__ */
+#endif /* __CDEMU_DEVICE_PRIVATE_H__ */

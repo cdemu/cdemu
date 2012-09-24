@@ -1,5 +1,5 @@
  /*
- *  CDEmuD: Device object - Userspace <-> Kernel bridge
+ *  CDEmu daemon: Device object - Userspace <-> Kernel bridge
  *  Copyright (C) 2006-2012 Rok Mandeljc
  *
  *  This program is free software; you can redistribute it and/or modify
@@ -17,8 +17,8 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
 
-#include "cdemud.h"
-#include "cdemud-device-private.h"
+#include "cdemu.h"
+#include "cdemu-device-private.h"
 
 #define __debug__ "MMC-3"
 
@@ -36,12 +36,12 @@
 
 static inline GArray *get_blank_mode_page (gint code, gint size)
 {
-    GArray *array = g_array_sized_new(FALSE, TRUE, sizeof(struct ModePage_GENERAL *), 3);
+    GArray *array = g_array_sized_new(FALSE, TRUE, sizeof(struct ModePageGeneral *), 3);
     g_assert (array != NULL);
 
-    struct ModePage_GENERAL *page = g_malloc0(size);
-    struct ModePage_GENERAL *mask = g_malloc0(size);
-    struct ModePage_GENERAL *page_copy = g_memdup(page, size);
+    struct ModePageGeneral *page = g_malloc0(size);
+    struct ModePageGeneral *mask = g_malloc0(size);
+    struct ModePageGeneral *page_copy = g_memdup(page, size);
 
     /* Initialize page and mask */
     page->code = mask->code = code;
@@ -57,8 +57,8 @@ static inline GArray *get_blank_mode_page (gint code, gint size)
 
 static inline gint compare_mode_pages (GArray *mode_page1_ptr, GArray *mode_page2_ptr)
 {
-    struct ModePage_GENERAL *mode_page1 = g_array_index(mode_page1_ptr, struct ModePage_GENERAL *, 0);
-    struct ModePage_GENERAL *mode_page2 = g_array_index(mode_page2_ptr, struct ModePage_GENERAL *, 0);
+    struct ModePageGeneral *mode_page1 = g_array_index(mode_page1_ptr, struct ModePageGeneral *, 0);
+    struct ModePageGeneral *mode_page2 = g_array_index(mode_page2_ptr, struct ModePageGeneral *, 0);
 
     if (mode_page1->code < mode_page2->code) {
         return -1;
@@ -71,7 +71,7 @@ static inline gint compare_mode_pages (GArray *mode_page1_ptr, GArray *mode_page
 
 static inline gint find_mode_page (GArray *mode_page_ptr, gconstpointer code_ptr)
 {
-    struct ModePage_GENERAL *mode_page = g_array_index(mode_page_ptr, struct ModePage_GENERAL *, 0);
+    struct ModePageGeneral *mode_page = g_array_index(mode_page_ptr, struct ModePageGeneral *, 0);
     gint code = GPOINTER_TO_INT(code_ptr);
 
     if (mode_page->code < code) {
@@ -87,7 +87,7 @@ static inline gint find_mode_page (GArray *mode_page_ptr, gconstpointer code_ptr
 /**********************************************************************\
  *                    Mode pages public API                           *
 \**********************************************************************/
-gpointer cdemud_device_get_mode_page (CDEMUD_Device *self, gint page, gint type)
+gpointer cdemu_device_get_mode_page (CdemuDevice *self, gint page, gint type)
 {
     GList *entry = NULL;
     entry = g_list_find_custom(self->priv->mode_pages_list, GINT_TO_POINTER(page), (GCompareFunc)find_mode_page);
@@ -101,7 +101,7 @@ gpointer cdemud_device_get_mode_page (CDEMUD_Device *self, gint page, gint type)
 }
 
 
-void cdemud_device_mode_pages_init (CDEMUD_Device *self)
+void cdemu_device_mode_pages_init (CdemuDevice *self)
 {
     GArray *cur_mode_page;
 
@@ -226,7 +226,7 @@ void cdemud_device_mode_pages_init (CDEMUD_Device *self)
     return;
 };
 
-void cdemud_device_mode_pages_cleanup (CDEMUD_Device *self)
+void cdemu_device_mode_pages_cleanup (CdemuDevice *self)
 {
     GList *entry;
     G_LIST_FOR_EACH(entry, self->priv->mode_pages_list) {

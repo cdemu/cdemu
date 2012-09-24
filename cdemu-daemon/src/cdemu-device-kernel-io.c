@@ -1,5 +1,5 @@
 /*
- *  CDEmuD: Device object - Userspace <-> Kernel bridge
+ *  CDEmu daemon: Device object - Userspace <-> Kernel bridge
  *  Copyright (C) 2006-2012 Rok Mandeljc
  *
  *  This program is free software; you can redistribute it and/or modify
@@ -17,8 +17,8 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
 
-#include "cdemud.h"
-#include "cdemud-device-private.h"
+#include "cdemu.h"
+#include "cdemu-device-private.h"
 
 #define __debug__ "Kernel I/O"
 
@@ -51,39 +51,39 @@ struct vhba_response
 /**********************************************************************\
  *                         Data buffer I/O                            *
 \**********************************************************************/
-void cdemud_device_write_buffer (CDEMUD_Device *self, guint32 length)
+void cdemu_device_write_buffer (CdemuDevice *self, guint32 length)
 {
     guint32 len;
 
-    CDEMUD_DEBUG(self, DAEMON_DEBUG_KERNEL_IO, "%s: write request (%d bytes)\n", __debug__, length);
+    CDEMU_DEBUG(self, DAEMON_DEBUG_KERNEL_IO, "%s: write request (%d bytes)\n", __debug__, length);
 
     len = MIN(self->priv->buffer_size, length);
     if (self->priv->cur_len + len > self->priv->cmd->out_len) {
-        CDEMUD_DEBUG(self, DAEMON_DEBUG_KERNEL_IO, "%s: OUT buffer too small, truncating!\n", __debug__);
+        CDEMU_DEBUG(self, DAEMON_DEBUG_KERNEL_IO, "%s: OUT buffer too small, truncating!\n", __debug__);
         len = self->priv->cmd->out_len - self->priv->cur_len;
     }
 
-    CDEMUD_DEBUG(self, DAEMON_DEBUG_KERNEL_IO, "%s: copying %d bytes to OUT buffer at offset %d\n", __debug__, len, self->priv->cur_len);
+    CDEMU_DEBUG(self, DAEMON_DEBUG_KERNEL_IO, "%s: copying %d bytes to OUT buffer at offset %d\n", __debug__, len, self->priv->cur_len);
     memcpy(self->priv->cmd->out + self->priv->cur_len, self->priv->buffer, len);
     self->priv->cur_len += len;
 }
 
-void cdemud_device_read_buffer (CDEMUD_Device *self, guint32 length)
+void cdemu_device_read_buffer (CdemuDevice *self, guint32 length)
 {
     guint32 len;
 
-    CDEMUD_DEBUG(self, DAEMON_DEBUG_KERNEL_IO, "%s: read request (%d bytes)\n", __debug__, length);
+    CDEMU_DEBUG(self, DAEMON_DEBUG_KERNEL_IO, "%s: read request (%d bytes)\n", __debug__, length);
 
     len = MIN(self->priv->cmd->in_len, length);
-    CDEMUD_DEBUG(self, DAEMON_DEBUG_KERNEL_IO, "%s: copying %d bytes from IN buffer\n", __debug__, len);
+    CDEMU_DEBUG(self, DAEMON_DEBUG_KERNEL_IO, "%s: copying %d bytes from IN buffer\n", __debug__, len);
     memcpy(self->priv->buffer, self->priv->cmd->in, len);
     self->priv->buffer_size = len;
 }
 
 
-void cdemud_device_flush_buffer (CDEMUD_Device *self)
+void cdemu_device_flush_buffer (CdemuDevice *self)
 {
-    CDEMUD_DEBUG(self, DAEMON_DEBUG_KERNEL_IO, "%s: flushing buffer\n", __debug__);
+    CDEMU_DEBUG(self, DAEMON_DEBUG_KERNEL_IO, "%s: flushing buffer\n", __debug__);
 
     memset(self->priv->buffer, 0, self->priv->buffer_size);
     self->priv->buffer_size = 0;
@@ -93,7 +93,7 @@ void cdemud_device_flush_buffer (CDEMUD_Device *self)
 /**********************************************************************\
  *                       Sense buffer I/O                             *
 \**********************************************************************/
-void cdemud_device_write_sense_full (CDEMUD_Device *self, SenseKey sense_key, guint16 asc_ascq, gint ili, guint32 command_info)
+void cdemu_device_write_sense_full (CdemuDevice *self, SenseKey sense_key, guint16 asc_ascq, gint ili, guint32 command_info)
 {
     /* Initialize sense */
     struct REQUEST_SENSE_SenseFixed sense;
@@ -115,41 +115,41 @@ void cdemud_device_write_sense_full (CDEMUD_Device *self, SenseKey sense_key, gu
     sense.cmd_info[2] = (command_info & 0x0000FF00) >>  8;
     sense.cmd_info[3] = (command_info & 0x000000FF) >>  0;
 
-    CDEMUD_DEBUG(self, DAEMON_DEBUG_KERNEL_IO, "%s: writing sense (%d bytes) to OUT buffer\n", __debug__, sizeof(struct REQUEST_SENSE_SenseFixed));
+    CDEMU_DEBUG(self, DAEMON_DEBUG_KERNEL_IO, "%s: writing sense (%d bytes) to OUT buffer\n", __debug__, sizeof(struct REQUEST_SENSE_SenseFixed));
 
     memcpy(self->priv->cmd->out, &sense, sizeof(struct REQUEST_SENSE_SenseFixed));
     self->priv->cur_len = sizeof(struct REQUEST_SENSE_SenseFixed);
 }
 
-void cdemud_device_write_sense (CDEMUD_Device *self, SenseKey sense_key, guint16 asc_ascq)
+void cdemu_device_write_sense (CdemuDevice *self, SenseKey sense_key, guint16 asc_ascq)
 {
-    return cdemud_device_write_sense_full(self, sense_key, asc_ascq, 0, 0x0000);
+    return cdemu_device_write_sense_full(self, sense_key, asc_ascq, 0, 0x0000);
 }
 
 
 /**********************************************************************\
  *                    Kernel <-> userspace I/O                        *
 \**********************************************************************/
-static gboolean cdemud_device_io_handler (GIOChannel *source, GIOCondition condition G_GNUC_UNUSED, CDEMUD_Device *self)
+static gboolean cdemu_device_io_handler (GIOChannel *source, GIOCondition condition G_GNUC_UNUSED, CdemuDevice *self)
 {
     gint fd = g_io_channel_unix_get_fd(source);
 
-    CDEMUD_Command cmd;
+    CDEMU_Command cmd;
     guchar *buf = g_try_malloc0(BUF_SIZE);
     struct vhba_request *vreq = (void *) buf;
     struct vhba_response *vres = (void *) buf;
 
     if (!buf) {
-        CDEMUD_DEBUG(self, DAEMON_DEBUG_ERROR, "%s: failed to allocate memory.\n", __debug__);
+        CDEMU_DEBUG(self, DAEMON_DEBUG_ERROR, "%s: failed to allocate memory.\n", __debug__);
         return FALSE;
     }
 
     if (read(fd, vreq, BUF_SIZE) < sizeof(*vreq)) {
-        CDEMUD_DEBUG(self, DAEMON_DEBUG_ERROR, "%s: failed to read request from control device!\n", __debug__);
+        CDEMU_DEBUG(self, DAEMON_DEBUG_ERROR, "%s: failed to read request from control device!\n", __debug__);
         return FALSE;
     }
 
-    /* Initialize CDEMUD_Command */
+    /* Initialize CDEMU_Command */
     memcpy(cmd.cdb, vreq->cdb, vreq->cdb_len);
     if (vreq->cdb_len < 12) {
         memset(cmd.cdb + vreq->cdb_len, 0, 12 - vreq->cdb_len);
@@ -165,12 +165,12 @@ static gboolean cdemud_device_io_handler (GIOChannel *source, GIOCondition condi
 
     /* Note that vreq and vres share buffer */
     vres->tag = vreq->tag;
-    vres->status = cdemud_device_execute_command(self, &cmd);
+    vres->status = cdemu_device_execute_command(self, &cmd);
 
     vres->data_len = cmd.out_len;
 
     if (write(fd, (void *)vres, BUF_SIZE) < sizeof(*vres)) {
-        CDEMUD_DEBUG(self, DAEMON_DEBUG_ERROR, "%s: failed to write response to control device!\n", __debug__);
+        CDEMU_DEBUG(self, DAEMON_DEBUG_ERROR, "%s: failed to write response to control device!\n", __debug__);
         return FALSE;
     }
 
@@ -179,7 +179,7 @@ static gboolean cdemud_device_io_handler (GIOChannel *source, GIOCondition condi
     return TRUE;
 }
 
-static gpointer cdemud_device_io_thread (CDEMUD_Device *self)
+static gpointer cdemu_device_io_thread (CdemuDevice *self)
 {
     GSource *source;
 
@@ -189,7 +189,7 @@ static gpointer cdemud_device_io_thread (CDEMUD_Device *self)
 
     /* Create watch source */
     source = g_io_create_watch(self->priv->io_channel, G_IO_IN);
-    g_source_set_callback(source, (GSourceFunc)cdemud_device_io_handler, self, NULL);
+    g_source_set_callback(source, (GSourceFunc)cdemu_device_io_handler, self, NULL);
     g_source_attach(source, self->priv->main_context);
     g_source_unref(source);
 
@@ -203,12 +203,12 @@ static gpointer cdemud_device_io_thread (CDEMUD_Device *self)
 }
 
 
-GThread *cdemud_device_create_io_thread (CDEMUD_Device *self)
+GThread *cdemu_device_create_io_thread (CdemuDevice *self)
 {
-    return g_thread_create((GThreadFunc)cdemud_device_io_thread, self, TRUE, NULL);
+    return g_thread_create((GThreadFunc)cdemu_device_io_thread, self, TRUE, NULL);
 }
 
-void cdemud_device_stop_io_thread (CDEMUD_Device *self)
+void cdemu_device_stop_io_thread (CdemuDevice *self)
 {
     if (self->priv->main_loop) {
         if (g_main_loop_is_running(self->priv->main_loop)) {

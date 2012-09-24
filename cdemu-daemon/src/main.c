@@ -1,5 +1,5 @@
 /*
- *  CDEmuD: main
+ *  CDEmu daemon: main
  *  Copyright (C) 2006-2012 Rok Mandeljc
  *
  *  This program is free software; you can redistribute it and/or modify
@@ -17,7 +17,7 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
 
-#include "cdemud.h"
+#include "cdemu.h"
 
 GObject *daemon_obj;
 FILE *logfile;
@@ -60,7 +60,7 @@ static void __unix_signal_handler (int signal)
         case SIGQUIT:
         case SIGTERM:
         case SIGHUP: {
-            cdemud_daemon_stop_daemon(CDEMUD_DAEMON(daemon_obj));
+            cdemu_daemon_stop_daemon(CDEMU_DAEMON(daemon_obj));
             break;
         }
         default: {
@@ -161,13 +161,13 @@ int main (int argc, char **argv)
     }
 
     /* Create daemon */
-    daemon_obj = g_object_new(CDEMUD_TYPE_DAEMON, NULL);
+    daemon_obj = g_object_new(CDEMU_TYPE_DAEMON, NULL);
 
     /* Signal trapping */
     setup_signal_trap();
 
     /* Initialize and start daemon */
-    if (cdemud_daemon_initialize_and_start(CDEMUD_DAEMON(daemon_obj), num_devices, ctl_device, audio_driver, use_system_bus)) {
+    if (cdemu_daemon_initialize_and_start(CDEMU_DAEMON(daemon_obj), num_devices, ctl_device, audio_driver, use_system_bus)) {
         /* Printed when daemon stops */
         g_message("Stopping daemon.\n");
     } else {

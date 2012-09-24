@@ -1,4 +1,4 @@
 [D-BUS Service]
-Name=net.sf.cdemu.CDEMUD_Daemon
+Name=net.sf.cdemu.CdemuDaemon
 Exec=@libexecdir@/cdemu-daemon-system.sh
 User=root

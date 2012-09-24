@@ -1,0 +1,61 @@
+/*
+ *  CDEmu daemon: Daemon object
+ *  Copyright (C) 2006-2012 Rok Mandeljc
+ *
+ *  This program is free software; you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation; either version 2 of the License, or
+ *  (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with this program; if not, write to the Free Software
+ *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ */
+
+#ifndef __CDEMU_DAEMON_H__
+#define __CDEMU_DAEMON_H__
+
+G_BEGIN_DECLS
+
+#define CDEMU_TYPE_DAEMON            (cdemu_daemon_get_type())
+#define CDEMU_DAEMON(obj)            (G_TYPE_CHECK_INSTANCE_CAST((obj), CDEMU_TYPE_DAEMON, CdemuDaemon))
+#define CDEMU_DAEMON_CLASS(klass)    (G_TYPE_CHECK_CLASS_CAST((klass), CDEMU_TYPE_DAEMON, CdemuDaemonClass))
+#define CDEMU_IS_DAEMON(obj)         (G_TYPE_CHECK_INSTANCE_TYPE((obj), CDEMU_TYPE_DAEMON))
+#define CDEMU_IS_DAEMON_CLASS(klass) (G_TYPE_CHECK_CLASS_TYPE((klass), CDEMU_TYPE_DAEMON))
+#define CDEMU_DAEMON_GET_CLASS(obj)  (G_TYPE_INSTANCE_GET_CLASS((obj), CDEMU_TYPE_DAEMON, CdemuDaemonClass))
+
+typedef struct _CdemuDaemon           CdemuDaemon;
+typedef struct _CdemuDaemonClass      CdemuDaemonClass;
+typedef struct _CdemuDaemonPrivate    CdemuDaemonPrivate;
+
+struct _CdemuDaemon
+{
+    MirageObject parent_instance;
+
+    /*< private >*/
+    CdemuDaemonPrivate *priv;
+};
+
+struct _CdemuDaemonClass
+{
+    MirageObjectClass parent_class;
+};
+
+
+/* Used by CDEMU_TYPE_DAEMON */
+GType cdemu_daemon_get_type (void);
+
+/* Public API */
+gboolean cdemu_daemon_initialize_and_start (CdemuDaemon *self, gint num_devices, gchar *ctl_device, gchar *audio_driver, gboolean system_bus);
+void cdemu_daemon_stop_daemon (CdemuDaemon *self);
+GObject *cdemu_daemon_get_device (CdemuDaemon *self, gint device_number, GError **error);
+
+
+G_END_DECLS
+
+#endif /* __CDEMU_DAEMON_H__ */

@@ -1,5 +1,5 @@
  /*
- *  CDEmuD: Device object - Features and profiles
+ *  CDEmu daemon: Device object - Features and profiles
  *  Copyright (C) 2006-2012 Rok Mandeljc
  *
  *  This program is free software; you can redistribute it and/or modify
@@ -17,8 +17,8 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
 
-#include "cdemud.h"
-#include "cdemud-device-private.h"
+#include "cdemu.h"
+#include "cdemu-device-private.h"
 
 #define __debug__ "MMC-3"
 
@@ -26,7 +26,7 @@
 /**********************************************************************\
  *                                Helpers                             *
 \**********************************************************************/
-static gint compare_features (struct Feature_GENERAL *feature1, struct Feature_GENERAL *feature2)
+static gint compare_features (struct FeatureGeneral *feature1, struct FeatureGeneral *feature2)
 {
     gint code1 = GUINT16_FROM_BE(feature1->code);
     gint code2 = GUINT16_FROM_BE(feature2->code);
@@ -40,7 +40,7 @@ static gint compare_features (struct Feature_GENERAL *feature1, struct Feature_G
     }
 }
 
-static gint find_feature (struct Feature_GENERAL *feature, gconstpointer code_ptr)
+static gint find_feature (struct FeatureGeneral *feature, gconstpointer code_ptr)
 {
     gint feat_code = GUINT16_FROM_BE(feature->code);
     gint code = GPOINTER_TO_INT(code_ptr);
@@ -74,7 +74,7 @@ static gint find_feature (struct Feature_GENERAL *feature, gconstpointer code_pt
 /**********************************************************************\
  *                           Features API                             *
 \**********************************************************************/
-gpointer cdemud_device_get_feature (CDEMUD_Device *self, gint feature)
+gpointer cdemu_device_get_feature (CdemuDevice *self, gint feature)
 {
     GList *entry = NULL;
     entry = g_list_find_custom(self->priv->features_list, GINT_TO_POINTER(feature), (GCompareFunc)find_feature);
@@ -86,7 +86,7 @@ gpointer cdemud_device_get_feature (CDEMUD_Device *self, gint feature)
     return NULL;
 }
 
-void cdemud_device_features_init (CDEMUD_Device *self)
+void cdemu_device_features_init (CdemuDevice *self)
 {
     /* Feature 0x0000: Profile List */
     /* IMPLEMENTATION NOTE: persistent; we support two profiles; CD-ROM and
@@ -94,8 +94,8 @@ void cdemud_device_features_init (CDEMUD_Device *self)
     FEATURE_DEFINITION_START(0x0000)
     feature->per = 1;
 
-    feature->profiles[0].profile = GUINT16_TO_BE((Profile) CDROM);
-    feature->profiles[1].profile = GUINT16_TO_BE((Profile) DVDROM);
+    feature->profiles[0].profile = GUINT16_TO_BE((Profile) PROFILE_CDROM);
+    feature->profiles[1].profile = GUINT16_TO_BE((Profile) PROFILE_DVDROM);
 
     FEATURE_DEFINITION_END()
 
@@ -218,7 +218,7 @@ void cdemud_device_features_init (CDEMUD_Device *self)
 }
 
 
-void cdemud_device_features_cleanup (CDEMUD_Device *self)
+void cdemu_device_features_cleanup (CdemuDevice *self)
 {
     GList *entry;
     G_LIST_FOR_EACH(entry, self->priv->features_list) {
@@ -237,7 +237,7 @@ void cdemud_device_features_cleanup (CDEMUD_Device *self)
    certain profile, features get their 'current' bit reset (unless 'persistent'
    bit is set), and then if they are associated with the profile, they are set
    again */
-static guint32 Features_PROFILE_CDROM[] =
+static guint32 Features_PROFILE_PROFILE_CDROM[] =
 {
     0x0010, /* Random Readable Feature */
     0x001D, /* Multi-read Feature */
@@ -246,7 +246,7 @@ static guint32 Features_PROFILE_CDROM[] =
     0x0107, /* Real Time Streaming Feature */
 };
 
-static guint32 Features_PROFILE_DVDROM[] =
+static guint32 Features_PROFILE_PROFILE_DVDROM[] =
 {
     0x0010, /* Random Readable Feature */
     0x001F, /* DVD Read Feature */
@@ -255,13 +255,13 @@ static guint32 Features_PROFILE_DVDROM[] =
 };
 
 
-static void cdemud_device_set_current_features (CDEMUD_Device *self, guint32 *feats, gint feats_len)
+static void cdemu_device_set_current_features (CdemuDevice *self, guint32 *feats, gint feats_len)
 {
     /* Go over the features list and reset 'current' bits of features that
        don't have 'persistent' bit set */
     GList *entry;
     G_LIST_FOR_EACH(entry, self->priv->features_list) {
-        struct Feature_GENERAL *feature = entry->data;
+        struct FeatureGeneral *feature = entry->data;
 
         if (!feature->per) {
             feature->cur = 0;
@@ -272,45 +272,45 @@ static void cdemud_device_set_current_features (CDEMUD_Device *self, guint32 *fe
 
     /* Now go over list of input features and set their 'current' bits */
     for (gint i = 0; i < feats_len; i++) {
-        struct Feature_GENERAL *feature = cdemud_device_get_feature(self, feats[i]);
+        struct FeatureGeneral *feature = cdemu_device_get_feature(self, feats[i]);
         if (feature) {
             feature->cur = 1;
         } else {
-            CDEMUD_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: feature 0x%X not found; shouldn't happen!\n", __debug__, feats[i]);
+            CDEMU_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: feature 0x%X not found; shouldn't happen!\n", __debug__, feats[i]);
         }
     }
 }
 
-void cdemud_device_set_profile (CDEMUD_Device *self, Profile profile)
+void cdemu_device_set_profile (CdemuDevice *self, Profile profile)
 {
     /* Set current profile */
     self->priv->current_profile = profile;
 
     /* Features */
     switch (profile) {
-        case NONE: {
+        case PROFILE_NONE: {
             /* Current features */
-            cdemud_device_set_current_features(self, NULL, 0);
+            cdemu_device_set_current_features(self, NULL, 0);
             /* Profiles */
-            struct Feature_0x0000 *f_0x0000 = cdemud_device_get_feature(self, 0x0000);
+            struct Feature_0x0000 *f_0x0000 = cdemu_device_get_feature(self, 0x0000);
             f_0x0000->profiles[0].cur = 0;
             f_0x0000->profiles[1].cur = 0;
             break;
         }
-        case CDROM: {
+        case PROFILE_CDROM: {
             /* Current features */
-            cdemud_device_set_current_features(self, Features_PROFILE_CDROM, G_N_ELEMENTS(Features_PROFILE_CDROM));
+            cdemu_device_set_current_features(self, Features_PROFILE_PROFILE_CDROM, G_N_ELEMENTS(Features_PROFILE_PROFILE_CDROM));
             /* Profiles */
-            struct Feature_0x0000 *f_0x0000 = cdemud_device_get_feature(self, 0x0000);
+            struct Feature_0x0000 *f_0x0000 = cdemu_device_get_feature(self, 0x0000);
             f_0x0000->profiles[0].cur = 1;
             f_0x0000->profiles[1].cur = 0;
             break;
         }
-        case DVDROM: {
+        case PROFILE_DVDROM: {
             /* Current features */
-            cdemud_device_set_current_features(self, Features_PROFILE_DVDROM, G_N_ELEMENTS(Features_PROFILE_DVDROM));
+            cdemu_device_set_current_features(self, Features_PROFILE_PROFILE_DVDROM, G_N_ELEMENTS(Features_PROFILE_PROFILE_DVDROM));
            /* Profiles */
-            struct Feature_0x0000 *f_0x0000 = cdemud_device_get_feature(self, 0x0000);
+            struct Feature_0x0000 *f_0x0000 = cdemu_device_get_feature(self, 0x0000);
             f_0x0000->profiles[0].cur = 0;
             f_0x0000->profiles[1].cur = 1;
             break;

@@ -1,5 +1,5 @@
  /*
- *  CDEmuD: Device object - Disc load/unload
+ *  CDEmu daemon: Device object - Disc load/unload
  *  Copyright (C) 2006-2012 Rok Mandeljc
  *
  *  This program is free software; you can redistribute it and/or modify
@@ -17,8 +17,8 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
 
-#include "cdemud.h"
-#include "cdemud-device-private.h"
+#include "cdemu.h"
+#include "cdemu-device-private.h"
 
 #define __debug__ "Device"
 
@@ -50,14 +50,14 @@ static GHashTable *convert_g_variant_to_g_hash_table (GVariant *variant)
 /**********************************************************************\
  *                              Load disc                             *
 \**********************************************************************/
-static gboolean cdemud_device_load_disc_private (CDEMUD_Device *self, gchar **filenames, GHashTable *options, GError **error)
+static gboolean cdemu_device_load_disc_private (CdemuDevice *self, gchar **filenames, GHashTable *options, GError **error)
 {
     gint media_type;
 
      /* Well, we won't do anything if we're already loaded */
     if (self->priv->loaded) {
-        CDEMUD_DEBUG(self, DAEMON_DEBUG_MMC, "%s: device already loaded\n", __debug__);
-        g_set_error(error, CDEMUD_ERROR, CDEMUD_ERROR_ALREADY_LOADED, "Device is already loaded!");
+        CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: device already loaded\n", __debug__);
+        g_set_error(error, CDEMU_ERROR, CDEMU_ERROR_ALREADY_LOADED, "Device is already loaded!");
         return FALSE;
     }
 
@@ -77,15 +77,15 @@ static gboolean cdemud_device_load_disc_private (CDEMUD_Device *self, gchar **fi
     media_type = mirage_disc_get_medium_type(MIRAGE_DISC(self->priv->disc));
     switch (media_type) {
         case MIRAGE_MEDIUM_CD: {
-            cdemud_device_set_profile(self, CDROM);
+            cdemu_device_set_profile(self, PROFILE_CDROM);
             break;
         }
         case MIRAGE_MEDIUM_DVD: {
-            cdemud_device_set_profile(self, DVDROM);
+            cdemu_device_set_profile(self, PROFILE_DVDROM);
             break;
         }
         default: {
-            CDEMUD_DEBUG(self, DAEMON_DEBUG_MMC, "%s: unknown media type: 0x%X!\n", __debug__, media_type);
+            CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: unknown media type: 0x%X!\n", __debug__, media_type);
             break;
         }
     }
@@ -96,7 +96,7 @@ static gboolean cdemud_device_load_disc_private (CDEMUD_Device *self, gchar **fi
     return TRUE;
 }
 
-gboolean cdemud_device_load_disc (CDEMUD_Device *self, gchar **filenames, GVariant *options, GError **error)
+gboolean cdemu_device_load_disc (CdemuDevice *self, gchar **filenames, GVariant *options, GError **error)
 {
     gboolean succeeded = TRUE;
 
@@ -105,7 +105,7 @@ gboolean cdemud_device_load_disc (CDEMUD_Device *self, gchar **filenames, GVaria
 
     /* Load */
     g_mutex_lock(self->priv->device_mutex);
-    succeeded = cdemud_device_load_disc_private(self, filenames, options_dict, error);
+    succeeded = cdemu_device_load_disc_private(self, filenames, options_dict, error);
     g_mutex_unlock(self->priv->device_mutex);
 
     /* Free the options dictionary */
@@ -118,7 +118,7 @@ gboolean cdemud_device_load_disc (CDEMUD_Device *self, gchar **filenames, GVaria
 /**********************************************************************\
  *                              Unload disc                           *
 \**********************************************************************/
-gboolean cdemud_device_unload_disc_private (CDEMUD_Device *self, gboolean force, GError **error)
+gboolean cdemu_device_unload_disc_private (CdemuDevice *self, gboolean force, GError **error)
 {
     /* We have to report eject request, even if it doesn't actually get carried
        out, for example because device is locked. However, this should give
@@ -127,8 +127,8 @@ gboolean cdemud_device_unload_disc_private (CDEMUD_Device *self, gboolean force,
 
     /* Check if the door is locked */
     if (!force && self->priv->locked) {
-        CDEMUD_DEBUG(self, DAEMON_DEBUG_MMC, "%s: device is locked\n", __debug__);
-        g_set_error(error, CDEMUD_ERROR, CDEMUD_ERROR_DEVICE_LOCKED, "Device is locked!");
+        CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: device is locked\n", __debug__);
+        g_set_error(error, CDEMU_ERROR, CDEMU_ERROR_DEVICE_LOCKED, "Device is locked!");
         return FALSE;
     }
 
@@ -140,7 +140,7 @@ gboolean cdemud_device_unload_disc_private (CDEMUD_Device *self, gboolean force,
         self->priv->loaded = FALSE;
         self->priv->media_event = MEDIA_EVENT_MEDIA_REMOVAL;
         /* Current profile: None */
-        cdemud_device_set_profile(self, NONE);
+        cdemu_device_set_profile(self, PROFILE_NONE);
 
         /* Send notification */
         g_signal_emit_by_name(self, "status-changed", NULL);
@@ -149,12 +149,12 @@ gboolean cdemud_device_unload_disc_private (CDEMUD_Device *self, gboolean force,
     return TRUE;
 }
 
-gboolean cdemud_device_unload_disc (CDEMUD_Device *self, GError **error)
+gboolean cdemu_device_unload_disc (CdemuDevice *self, GError **error)
 {
     gboolean succeeded;
 
     g_mutex_lock(self->priv->device_mutex);
-    succeeded = cdemud_device_unload_disc_private(self, FALSE, error);
+    succeeded = cdemu_device_unload_disc_private(self, FALSE, error);
     g_mutex_unlock(self->priv->device_mutex);
 
     /* Currently, the only case of unload command failing is when device is
