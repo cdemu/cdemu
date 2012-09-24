@@ -115,13 +115,12 @@ static gboolean mirage_file_filter_cso_read_index (MIRAGE_FileFilter_CSO *self, 
         if (i > 0) {
             CSO_Part *prev_part = &self->priv->parts[i-1];
 
-            if (i + 1 == self->priv->num_indices) {
-                prev_part->comp_size = 0; /* EOF index has no size */
-            } else {
-                prev_part->comp_size = cur_part->offset - prev_part->offset;
-            }
+            prev_part->comp_size = cur_part->offset - prev_part->offset;
         }
     }
+
+    /* EOF index has no size */
+    self->priv->parts[self->priv->num_indices - 1].comp_size = 0;
 
     /* Initialize zlib stream */
     zlib_stream->zalloc = Z_NULL;
