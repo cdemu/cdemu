@@ -1031,7 +1031,7 @@ GObject *mirage_disc_get_session_by_track (MIRAGE_Disc *self, gint track_number,
 /**
  * mirage_disc_for_each_session:
  * @self: a #MIRAGE_Disc
- * @func: (in) (closure closure): callback function
+ * @func: (in) : callback function
  * @user_data: (in) (closure): data to be passed to callback function
  *
  * <para>

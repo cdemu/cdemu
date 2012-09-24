@@ -721,7 +721,7 @@ gboolean mirage_cdtext_decoder_get_block_info (MIRAGE_CDTextEncDec *self, gint b
  * mirage_cdtext_decoder_get_data:
  * @self: a #MIRAGE_CDTextEncDec
  * @block: (in): block number
- * @callback_func: (in) (closure closure): callback function
+ * @callback_func: (in) : callback function
  * @user_data: (in) (closure): data to be passed to callback function
  *
  * <para>

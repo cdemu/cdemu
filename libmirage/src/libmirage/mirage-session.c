@@ -808,7 +808,7 @@ GObject *mirage_session_get_track_by_address (MIRAGE_Session *self, gint address
 /**
  * mirage_session_for_each_track:
  * @self: a #MIRAGE_Session
- * @func: (in) (closure closure): callback function
+ * @func: (in) : callback function
  * @user_data: (in) (closure): data to be passed to callback function
  *
  * <para>
@@ -1140,7 +1140,7 @@ GObject *mirage_session_get_language_by_code (MIRAGE_Session *self, gint langcod
 /**
  * mirage_session_for_each_language:
  * @self: a #MIRAGE_Session
- * @func: (in) (closure closure): callback function
+ * @func: (in) : callback function
  * @user_data: (in) (closure): data to be passed to callback function
  *
  * <para>
