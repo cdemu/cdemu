@@ -60,6 +60,9 @@ AC_SYS_LARGEFILE
 # Gtk-doc check
 GTK_DOC_CHECK([1.4])
 
+# GObject introspection
+GOBJECT_INTROSPECTION_CHECK([1.30.0])
+
 # Libraries check
 PKG_CHECK_MODULES(glib, glib-2.0 >= 2.24)
 PKG_CHECK_MODULES(gobject, gobject-2.0 >= 2.24)

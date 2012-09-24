@@ -58,3 +58,31 @@ libmirageinclude_HEADERS = \
 
 EXTRA_DIST = \
     mirage-version.h.in
+
+CLEANFILES =
+
+# GObject introspection
+-include $(INTROSPECTION_MAKEFILE)
+INTROSPECTION_GIRS =
+INTROSPECTION_SCANNER_ARGS = --add-include-path=$(srcdir) --warn-all --symbol-prefix=mirage --identifier-prefix=Mirage
+INTROSPECTION_COMPILER_ARGS = --includedir=$(srcdir)
+
+if HAVE_INTROSPECTION
+introspection_sources = $(libmirage_la_SOURCES) $(libmirageinclude_HEADERS)
+
+libMirage-1.0.gir: libmirage.la
+libMirage_1_0_gir_INCLUDES = GObject-2.0 Gio-2.0 GLib-2.0 GModule-2.0
+libMirage_1_0_gir_CFLAGS = $(INCLUDES)
+libMirage_1_0_gir_LIBS = libmirage.la
+libMirage_1_0_gir_FILES = $(introspection_sources)
+libMirage_1_0_gir_VERSION = $(MIRAGE_MAJOR_VERSION).$(MIRAGE_MINOR_VERSION)
+INTROSPECTION_GIRS += libMirage-1.0.gir
+
+girdir = $(datadir)/gir-1.0
+gir_DATA = $(INTROSPECTION_GIRS)
+
+typelibdir = $(libdir)/girepository-1.0
+typelib_DATA = $(INTROSPECTION_GIRS:.gir=.typelib)
+
+CLEANFILES += $(gir_DATA) $(typelib_DATA)
+endif
