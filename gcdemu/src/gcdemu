@@ -52,8 +52,8 @@ textdomain(app_name)
 #               CDEmuDaemonProxy: Daemon proxy object                  #
 ########################################################################
 class CDEmuDaemonProxy (GObject.GObject):
-    _name = 'net.sf.cdemu.CDEMUD_Daemon'
-    _object_path = '/CDEMUD_Daemon'
+    _name = 'net.sf.cdemu.CDEmuDaemon'
+    _object_path = '/Daemon'
 
     def __init__ (self):
         GObject.GObject.__init__(self)
@@ -86,7 +86,7 @@ class CDEmuDaemonProxy (GObject.GObject):
             bus = Gio.bus_get_sync(Gio.BusType.SESSION, None)
 
         # Create proxy on our interface
-        self.proxy = Gio.DBusProxy.new_sync(bus, 0, None, self._name, self._object_path, 'net.sf.cdemu.CDEMUD_Daemon', None)
+        self.proxy = Gio.DBusProxy.new_sync(bus, 0, None, self._name, self._object_path, 'net.sf.cdemu.CDEmuDaemon', None)
 
         # Connect signal: g-signal
         handler_id = self.proxy.connect("g-signal", self.on_g_signal)
@@ -381,7 +381,7 @@ class CDEmuDevice (GObject.GObject):
         try:
             self.proxy.DeviceLoad(self.number, filenames, params)
         except GLib.GError as e:
-            if "net.sf.cdemu.CDEMUD_Daemon.libMirage.EncryptedImage" in str(e):
+            if "net.sf.cdemu.CDEmuDaemon.errorMirage.EncryptedImage" in str(e):
                 # Need password, raise proper exception...
                 raise CDEmuNeedPassword()
             else:

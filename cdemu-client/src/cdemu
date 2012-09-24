@@ -158,7 +158,7 @@ class CDEmu (object):
             self.dbus_iface.DeviceLoad(device, filenames, params)
             return True
         except dbus.DBusException as e:
-            if e.get_dbus_name() == "net.sf.cdemu.CDEMUD_Daemon.libMirage.EncryptedImage":
+            if e.get_dbus_name() == "net.sf.cdemu.CDEmuDaemon.errorMirage.EncryptedImage":
                 # We need password
                 print(_("The image you are trying to load is encrypted."))
                 params["password"] = getpass.getpass(_("Password: ")) # Append password to params
@@ -788,8 +788,8 @@ class CDEmu (object):
                 self.bus_type = "system"
                 self.dbus_bus = dbus.SystemBus()
 
-            self.dbus_proxy = self.dbus_bus.get_object("net.sf.cdemu.CDEMUD_Daemon", "/CDEMUD_Daemon")
-            self.dbus_iface = dbus.Interface(self.dbus_proxy, "net.sf.cdemu.CDEMUD_Daemon")
+            self.dbus_proxy = self.dbus_bus.get_object("net.sf.cdemu.CDEmuDaemon", "/Daemon")
+            self.dbus_iface = dbus.Interface(self.dbus_proxy, "net.sf.cdemu.CDEmuDaemon")
         except dbus.DBusException as e:
             self.print_error(_("Failed to connect to CDEmu daemon: %s") % (e))
             return False
