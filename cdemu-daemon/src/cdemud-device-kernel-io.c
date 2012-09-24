@@ -139,10 +139,10 @@ static gboolean cdemud_device_io_handler (GIOChannel *source, GIOCondition condi
     struct vhba_request *vreq = (void *) buf;
     struct vhba_response *vres = (void *) buf;
 
-	if (!buf) {
+    if (!buf) {
         CDEMUD_DEBUG(self, DAEMON_DEBUG_ERROR, "%s: failed to allocate memory.\n", __debug__);
         return FALSE;
-	}
+    }
 
     if (read(fd, vreq, BUF_SIZE) < sizeof(*vreq)) {
         CDEMUD_DEBUG(self, DAEMON_DEBUG_ERROR, "%s: failed to read request from control device!\n", __debug__);
@@ -174,7 +174,7 @@ static gboolean cdemud_device_io_handler (GIOChannel *source, GIOCondition condi
         return FALSE;
     }
 
-	g_free(buf);
+    g_free(buf);
 
     return TRUE;
 }

@@ -104,7 +104,7 @@ typedef enum
     /* NeroAPI >= 5.5.9.4 */
     MEDIA_NO_CDR    = 0x00080, /* Exclude CD-R */
     MEDIA_NO_CDRW   = 0x00100, /* Exclude CD-RW */
-    MEDIA_CDRW      = MEDIA_CD|MEDIA_NO_CDR,  /* CD-RW */	
+    MEDIA_CDRW      = MEDIA_CD|MEDIA_NO_CDR,  /* CD-RW */
     MEDIA_CDR       = MEDIA_CD|MEDIA_NO_CDRW, /* CD-R */
     MEDIA_DVD_ROM   = 0x00200, /* DVD-ROM (non writable) */
     MEDIA_CDROM     = 0x00400, /* CD-ROM (non writable) */
@@ -130,7 +130,7 @@ typedef enum
 
     /* NeroAPI >= 6.6.0.8 */
     MEDIA_DVD_M_R9      = 0x80000, /* DVD-R Dual Layer 9GB */
-    MEDIA_DVD_ANY_R9	= MEDIA_DVD_P_R9|MEDIA_DVD_M_R9, /* Any DVD Dual/Double Layer 9GB */
+    MEDIA_DVD_ANY_R9 = MEDIA_DVD_P_R9|MEDIA_DVD_M_R9, /* Any DVD Dual/Double Layer 9GB */
     MEDIA_DVD_ANY       = MEDIA_DVD_M|MEDIA_DVD_P|MEDIA_DVD_RAM|MEDIA_DVD_ANY_R9, /* Any DVD-Media */
 
     /* NeroAPI >= 6.6.0.8 */

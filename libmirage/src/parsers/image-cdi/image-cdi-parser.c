@@ -734,7 +734,7 @@ static gboolean mirage_parser_cdi_load_track (MIRAGE_Parser_CDI *self, GError **
     g_object_unref(session);
     g_object_unref(track);
 
-	g_free(indices);
+    g_free(indices);
 
     return TRUE;
 }

@@ -121,14 +121,14 @@ static gboolean mirage_parser_readcd_determine_track_mode (MIRAGE_Parser_READCD 
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: track mode determined to be: %d\n", __debug__, track_mode);
     mirage_track_set_mode(MIRAGE_TRACK(track), track_mode);
 
-	g_free(buf);
+    g_free(buf);
 
     return TRUE;
 
 error:
-	g_free(buf);
-	
-	return FALSE;
+    g_free(buf);
+
+    return FALSE;
 }
 
 static gboolean mirage_parser_readcd_finish_previous_track (MIRAGE_Parser_READCD *self, gint next_address)

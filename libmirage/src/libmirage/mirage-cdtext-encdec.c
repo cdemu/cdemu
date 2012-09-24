@@ -35,7 +35,7 @@ typedef struct
     guint8 pack_type;
     guint8 track_number;
     guint8 seq_number;
-	guint8 block_number;
+    guint8 block_number;
     /* Data */
     guint8 data[12];
     /* CRC */
@@ -45,12 +45,12 @@ typedef struct
 typedef struct
 {
     guint8 charset;
-	guint8 first_track;
-	guint8 last_track;
-	guint8 copyright;
-	guint8 pack_count[16];
-	guint8 last_seqnum[8];
-	guint8 language_codes[8];
+    guint8 first_track;
+    guint8 last_track;
+    guint8 copyright;
+    guint8 pack_count[16];
+    guint8 last_seqnum[8];
+    guint8 language_codes[8];
 } CDTextSizeInfo;
 
 static const guint16 cdtext_crc_lut[256] = {

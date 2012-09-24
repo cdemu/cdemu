@@ -45,7 +45,7 @@ gchar *dump_flags (gint val, const DUMP_Value *values, gint num_values)
     static gchar tmp_string[256] = "";
     gchar *ptr = tmp_string;
 
-	memset(tmp_string, 0, sizeof(tmp_string));
+    memset(tmp_string, 0, sizeof(tmp_string));
 
     for (gint i = 0; i < num_values; i++) {
         if ((val & values[i].value) == values[i].value) {
