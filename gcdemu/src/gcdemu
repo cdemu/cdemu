@@ -41,7 +41,7 @@ from gi.repository import Notify
 # *** Globals ***
 app_name = "gcdemu"
 app_version = "1.6.0"
-supported_daemon_interface_version = 3
+supported_daemon_interface_version = 4
 
 # I18n
 bindtextdomain(app_name)

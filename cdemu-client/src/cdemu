@@ -36,7 +36,7 @@ from gettext import bindtextdomain, textdomain
 # *** Globals ***
 app_name = "cdemu-client"
 app_version = "1.6.0"
-supported_daemon_interface_version = 3
+supported_daemon_interface_version = 4
 
 
 # I18n

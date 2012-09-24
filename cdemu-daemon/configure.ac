@@ -16,7 +16,7 @@ AM_INIT_AUTOMAKE(AC_PACKAGE_NAME, AC_PACKAGE_VERSION)
 AC_CONFIG_HEADERS([config.h])
 
 # D-BUS interface version (change whenever interface changes)
-AC_DEFINE(DAEMON_INTERFACE_VERSION, 3, [D-BUS interface version])
+AC_DEFINE(DAEMON_INTERFACE_VERSION, 4, [D-BUS interface version])
 
 AM_MAINTAINER_MODE
 

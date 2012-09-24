@@ -230,15 +230,15 @@ Communication between CDEmu daemon and a client is done via D-BUS. CDEmu daemon
 registers itself on either sytem or session bus, where it exposes the interface
 which can be used by client to control the daemon.
 
-Currently implemented interface version: 3 (since v.1.5.0)
+Currently implemented interface version: 4 (since v.1.6.0)
 
 
 6.1. D-BUS name and object path
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-The name CDEmu daemon requests on the system bus is "net.sf.cdemu.CDEMUD_Daemon",
-whereas the object path is "/CDEMUD_Daemon". The name of the interface is
-"net.sf.cdemu.CDEMUD_Daemon".
+The name CDEmu daemon requests on the system bus is "net.sf.cdemu.CDEmuDaemon",
+whereas the object path is "/Daemon". The name of the interface is
+"net.sf.cdemu.CDEmuDaemon".
 
 To illustrate, a simple python program connecting to daemon registered on system
 bus would therefore look like this:
@@ -248,8 +248,8 @@ if getattr(dbus, 'version', (0,0,0)) >= (0,41,0):
     import dbus.glib
 
 system_bus = dbus.SystemBus()
-dbus_proxy = system_bus.get_object('net.sf.cdemu.CDEMUD_Daemon', '/CDEMUD_Daemon')
-dbus_iface = dbus.Interface(dbus_proxy, 'net.sf.cdemu.CDEMUD_Daemon')
+dbus_proxy = system_bus.get_object('net.sf.cdemu.CDEmuDaemon', '/Daemon')
+dbus_iface = dbus.Interface(dbus_proxy, 'net.sf.cdemu.CDEmuDaemon')
 
 6.2. Methods
 ~~~~~~~~~~~~
