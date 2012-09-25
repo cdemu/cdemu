@@ -24,31 +24,6 @@
 G_BEGIN_DECLS
 
 /**
- * MirageSectorMCSB:
- * @MIRAGE_MCSB_SYNC: sync pattern
- * @MIRAGE_MCSB_SUBHEADER: subheader
- * @MIRAGE_MCSB_HEADER: header
- * @MIRAGE_MCSB_DATA: user data
- * @MIRAGE_MCSB_EDC_ECC: EDC/ECC code
- * @MIRAGE_MCSB_C2_2: C2 layer 2 error
- * @MIRAGE_MCSB_C2_1: C2 layer 1 error
- *
- * <para>
- * Main channel selection flags.
- * </para>
- **/
-typedef enum
-{
-    MIRAGE_MCSB_SYNC      = 0x80,
-    MIRAGE_MCSB_SUBHEADER = 0x40,
-    MIRAGE_MCSB_HEADER    = 0x20,
-    MIRAGE_MCSB_DATA      = 0x10,
-    MIRAGE_MCSB_EDC_ECC   = 0x08,
-    MIRAGE_MCSB_C2_2      = 0x04,
-    MIRAGE_MCSB_C2_1      = 0x02,
-} MirageSectorMCSB;
-
-/**
  * MirageSectorSubchannelFormat:
  * @MIRAGE_SUBCHANNEL_PW: PW subchannel; 96 bytes, interleaved P-W
  * @MIRAGE_SUBCHANNEL_PQ: PQ subchannel; 16 bytes, Q subchannel

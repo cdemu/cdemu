@@ -61,19 +61,19 @@ struct _MirageTrackPrivate
 /**********************************************************************\
  *                          Private functions                         *
 \**********************************************************************/
-static gboolean mirage_track_check_for_encoded_isrc (MirageTrack *self, GError **error)
+static gboolean mirage_track_check_for_encoded_isrc (MirageTrack *self)
 {
     /* Check if we have fragment with subchannel */
     GObject *fragment = mirage_track_find_fragment_with_subchannel(self, NULL);
 
     if (fragment) {
-        gint start, end;
+        gint start_address, end_address;
 
         /* According to INF8090, ISRC, if present, must be encoded in at least
            one sector in 100 consequtive sectors. So we read first hundred
            sectors' subchannel, and extract ISRC if we find it. */
-        start = mirage_fragment_get_address(MIRAGE_FRAGMENT(fragment));
-        end = start + 100;
+        start_address = mirage_fragment_get_address(MIRAGE_FRAGMENT(fragment));
+        end_address = start_address + 100;
 
         g_object_unref(fragment);
 
@@ -82,23 +82,35 @@ static gboolean mirage_track_check_for_encoded_isrc (MirageTrack *self, GError *
         g_free(self->priv->isrc);
         self->priv->isrc = NULL;
 
-        for (gint sector = start; sector < end; sector++) {
-            guint8 tmp_buf[16];
+        for (gint address = start_address; address < end_address; address++) {
+            GObject *sector;
+            const guint8 *buf;
+            gint buflen;
 
-            if (!mirage_track_read_sector(self, sector, FALSE, 0, MIRAGE_SUBCHANNEL_PQ, tmp_buf, NULL, error)) {
-                return FALSE;
+            /* Get sector */
+            sector = mirage_track_get_sector(self, address, FALSE, NULL);
+            if (!sector) {
+                continue;
             }
 
-            if ((tmp_buf[0] & 0x0F) == 0x03) {
+            /* Get PQ subchannel */
+            if (!mirage_sector_get_subchannel(MIRAGE_SECTOR(sector), MIRAGE_SUBCHANNEL_PQ, &buf, &buflen, NULL)) {
+                g_object_unref(sector);
+                continue;
+            }
+
+            if ((buf[0] & 0x0F) == 0x03) {
                 /* Mode-3 Q found */
                 gchar tmp_isrc[12];
 
-                mirage_helper_subchannel_q_decode_isrc(&tmp_buf[1], tmp_isrc);
+                mirage_helper_subchannel_q_decode_isrc(&buf[1], tmp_isrc);
                 MIRAGE_DEBUG(self, MIRAGE_DEBUG_TRACK, "%s: found ISRC: <%s>\n", __debug__, tmp_isrc);
 
                 /* Set ISRC */
                 self->priv->isrc = g_strndup(tmp_isrc, 12);
             }
+
+            g_object_unref(sector);
         }
     } else {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_TRACK, "%s: no fragments with subchannel found\n", __debug__);
@@ -168,7 +180,7 @@ static void mirage_track_commit_bottomup_change (MirageTrack *self)
     }
 
     /* Bottom-up change = change in fragments, so ISRC could've changed... */
-    mirage_track_check_for_encoded_isrc(self, NULL);
+    mirage_track_check_for_encoded_isrc(self);
 
     /* Signal track change */
     g_signal_emit_by_name(MIRAGE_OBJECT(self), "object-modified", NULL);
@@ -490,153 +502,6 @@ GObject *mirage_track_get_sector (MirageTrack *self, gint address, gboolean abs,
     }
 
     return sector;
-}
-
-/**
- * mirage_track_read_sector:
- * @self: a #MirageTrack
- * @address: (in): sector address
- * @abs: (in): absolute address
- * @main_sel: (in): main channel selection flags
- * @subc_sel: (in): subchannel selection flags
- * @ret_buf: (out caller-allocates) (allow-none) (array length=ret_len): buffer to write data into, or %NULL
- * @ret_len: (allow-none): location to store written data length, or %NULL
- * @error: (out) (allow-none): location to store error, or %NULL
- *
- * <para>
- * Reads data from sector at address @address. It internally acquires a
- * #MirageSector object by passing @address and @abs to mirage_track_get_sector();
- * behavior of those two arguments is determined by that function.
- * </para>
- *
- * <para>
- * If sector object is successfully acquired, its data is read using
- * mirage_sector_get_sync(), mirage_sector_get_header(),
- * mirage_sector_get_data(), mirage_sector_get_edc_ecc() and mirage_sector_get_subchannel().
- * in accord with main channel and subchannel selection flags. @main_sel can
- * be a combination of #MirageSectorMCSB and @subc_sel must be one of
- * #MirageSectorSubchannelFormat.
- * </para>
- *
- * <para>
- * Data is written into buffer provided in @ret_buf, and written data length
- * is stored into @ret_len.
- * </para>
- *
- * <note>
- * If any of data fields specified in @main_sel are inappropriate for the given
- * track's mode, they are silently ignored (for example, if subheaders were
- * requested in Mode 1 track).
- * </note>
- *
- * Returns: %TRUE on success, %FALSE on failure
- **/
-gboolean mirage_track_read_sector (MirageTrack *self, gint address, gboolean abs, guint8 main_sel, guint8 subc_sel, guint8 *ret_buf, gint *ret_len, GError **error)
-{
-    GObject *sector = mirage_track_get_sector(self, address, abs, error);
-
-    if (!sector) {
-        return FALSE;
-    }
-
-    gint len = 0;
-    guint8 *ptr = ret_buf;
-
-    const guint8 *tmp_buf;
-    gint tmp_len;
-
-    /* Read whatever was requested in main channel selection byte... request must
-       be appropriate for sector we're dealing with... (FIXME: checking?) */
-    /* Sync */
-    if (main_sel & MIRAGE_MCSB_SYNC) {
-        mirage_sector_get_sync(MIRAGE_SECTOR(sector), &tmp_buf, &tmp_len, NULL);
-        if (ret_buf) {
-            memcpy(ptr, tmp_buf, tmp_len);
-            ptr += tmp_len;
-        }
-        len += tmp_len;
-    }
-    /* Header */
-    if (main_sel & MIRAGE_MCSB_HEADER) {
-        mirage_sector_get_header(MIRAGE_SECTOR(sector), &tmp_buf, &tmp_len, NULL);
-        if (ret_buf) {
-            memcpy(ptr, tmp_buf, tmp_len);
-            ptr += tmp_len;
-        }
-        len += tmp_len;
-    }
-    /* Sub-Header */
-    if (main_sel & MIRAGE_MCSB_SUBHEADER) {
-        mirage_sector_get_subheader(MIRAGE_SECTOR(sector), &tmp_buf, &tmp_len, NULL);
-        if (ret_buf) {
-            memcpy(ptr, tmp_buf, tmp_len);
-            ptr += tmp_len;
-        }
-        len += tmp_len;
-    }
-    /* User Data */
-    if (main_sel & MIRAGE_MCSB_DATA) {
-        mirage_sector_get_data(MIRAGE_SECTOR(sector), &tmp_buf, &tmp_len, NULL);
-        if (ret_buf) {
-            memcpy(ptr, tmp_buf, tmp_len);
-            ptr += tmp_len;
-        }
-        len += tmp_len;
-    }
-    /* EDC/ECC */
-    if (main_sel & MIRAGE_MCSB_EDC_ECC) {
-        mirage_sector_get_edc_ecc(MIRAGE_SECTOR(sector), &tmp_buf, &tmp_len, NULL);
-        if (ret_buf) {
-            memcpy(ptr, tmp_buf, tmp_len);
-            ptr += tmp_len;
-        }
-        len += tmp_len;
-    }
-
-    /* "read" C2 Error: nothing to copy, just set the offset and all ;) */
-    if (main_sel & MIRAGE_MCSB_C2_1) {
-        if (ret_buf) {
-            ptr += 294;
-        }
-        len += 294;
-    } else if (main_sel & MIRAGE_MCSB_C2_2) {
-        if (ret_buf) {
-            ptr += 296;
-        }
-        len += 296;
-    }
-
-    /* Subchannel */
-    switch (subc_sel) {
-        case MIRAGE_SUBCHANNEL_PW: {
-            /* RAW P-W */
-            mirage_sector_get_subchannel(MIRAGE_SECTOR(sector), MIRAGE_SUBCHANNEL_PW, &tmp_buf, &tmp_len, NULL);
-            if (ret_buf) {
-                memcpy(ptr, tmp_buf, tmp_len);
-                ptr += tmp_len;
-            }
-            len += tmp_len;
-            break;
-        }
-        case MIRAGE_SUBCHANNEL_PQ: {
-            /* Q */
-            mirage_sector_get_subchannel(MIRAGE_SECTOR(sector), MIRAGE_SUBCHANNEL_PQ, &tmp_buf, &tmp_len, NULL);
-            if (ret_buf) {
-                memcpy(ptr, tmp_buf, tmp_len);
-                ptr += tmp_len;
-            }
-            len += tmp_len;
-            break;
-        }
-    }
-
-    g_object_unref(sector);
-
-    if (ret_len) {
-        *ret_len = len;
-    }
-
-    return TRUE;
 }
 
 

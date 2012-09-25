@@ -106,25 +106,36 @@ static gboolean mirage_disc_check_for_encoded_mcn (MirageDisc *self)
         /* According to INF8090, MCN, if present, must be encoded in at least
            one sector in 100 consequtive sectors. So we read first hundred
            sectors' subchannel, and extract MCN if we find it. */
-        for (gint cur_address = start_address; cur_address < end_address; cur_address++) {
-            guint8 tmp_buf[16];
+        for (gint address = start_address; address < end_address; address++) {
+            GObject *sector;
+            const guint8 *buf;
+            gint buflen;
 
-            if (!mirage_track_read_sector(MIRAGE_TRACK(track), cur_address, FALSE, 0, MIRAGE_SUBCHANNEL_PQ, tmp_buf, NULL, NULL)) {
-                g_object_unref(track);
-                return FALSE;
+            /* Get sector */
+            sector = mirage_track_get_sector(MIRAGE_TRACK(track), address, FALSE, NULL);
+            if (!sector) {
+                continue;
             }
 
-            if ((tmp_buf[0] & 0x0F) == 0x02) {
+            /* Get PQ subchannel */
+            if (!mirage_sector_get_subchannel(MIRAGE_SECTOR(sector), MIRAGE_SUBCHANNEL_PQ, &buf, &buflen, NULL)) {
+                g_object_unref(sector);
+                continue;
+            }
+
+            if ((buf[0] & 0x0F) == 0x02) {
                 /* Mode-2 Q found */
                 gchar tmp_mcn[13];
 
-                mirage_helper_subchannel_q_decode_mcn(&tmp_buf[1], tmp_mcn);
+                mirage_helper_subchannel_q_decode_mcn(&buf[1], tmp_mcn);
 
                 MIRAGE_DEBUG(self, MIRAGE_DEBUG_TRACK, "%s: found MCN: <%s>\n", __debug__, tmp_mcn);
 
                 /* Set MCN */
                 self->priv->mcn = g_strndup(tmp_mcn, 13);
             }
+
+            g_object_unref(sector);
         }
 
         g_object_unref(track);
@@ -1678,46 +1689,6 @@ GObject *mirage_disc_get_sector (MirageDisc *self, gint address, GError **error)
     g_object_unref(track);
 
     return sector;
-}
-
-/**
- * mirage_disc_read_sector:
- * @self: a #MirageDisc
- * @address: (in): sector address
- * @main_sel: (in): main channel selection flags
- * @subc_sel: (in): subchannel selection flags
- * @ret_buf: (out caller-allocates) (allow-none) (array length=ret_len): buffer to write data into, or %NULL
- * @ret_len: (out) (allow-none): location to store written data length, or %NULL
- * @error: (out) (allow-none): location to store error, or %NULL
- *
- * <para>
- * Reads sector data from sector at address @address. The function attempts to
- * retrieve appropriate track using mirage_disc_get_track_by_address(),
- * then reads sector data using mirage_track_read_sector().
- * </para>
- *
- * <para>
- * The rest of behavior is same as of mirage_track_read_sector().
- * </para>
- *
- * Returns: %TRUE on success, %FALSE on failure
- **/
-gboolean mirage_disc_read_sector (MirageDisc *self, gint address, guint8 main_sel, guint8 subc_sel, guint8 *ret_buf, gint *ret_len, GError **error)
-{
-    gboolean succeeded;
-    GObject *track;
-
-    /* Fetch the right track */
-    track = mirage_disc_get_track_by_address(self, address, error);
-    if (!track) {
-        return FALSE;
-    }
-    /* Read sector */
-    succeeded = mirage_track_read_sector(MIRAGE_TRACK(track), address, TRUE, main_sel, subc_sel, ret_buf, ret_len, error);
-    /* Unref track */
-    g_object_unref(track);
-
-    return succeeded;
 }
 
 

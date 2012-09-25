@@ -159,22 +159,6 @@ sectors, etc.
 @Returns: 
 
 
-<!-- ##### FUNCTION mirage_track_read_sector ##### -->
-<para>
-
-</para>
-
-@self: 
-@address: 
-@abs: 
-@main_sel: 
-@subc_sel: 
-@ret_buf: 
-@ret_len: 
-@error: 
-@Returns: 
-
-
 <!-- ##### FUNCTION mirage_track_layout_get_session_number ##### -->
 <para>
 

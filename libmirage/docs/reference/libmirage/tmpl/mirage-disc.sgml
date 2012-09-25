@@ -443,21 +443,6 @@ functions for accessing and reading of sectors within the disc layout.
 @Returns: 
 
 
-<!-- ##### FUNCTION mirage_disc_read_sector ##### -->
-<para>
-
-</para>
-
-@self: 
-@address: 
-@main_sel: 
-@subc_sel: 
-@ret_buf: 
-@ret_len: 
-@error: 
-@Returns: 
-
-
 <!-- ##### FUNCTION mirage_disc_set_dpm_data ##### -->
 <para>
 

@@ -21,19 +21,6 @@ data, generating it if needed.
 <!-- ##### SECTION Image ##### -->
 
 
-<!-- ##### ENUM MirageSectorMCSB ##### -->
-<para>
-
-</para>
-
-@MIRAGE_MCSB_SYNC: 
-@MIRAGE_MCSB_SUBHEADER: 
-@MIRAGE_MCSB_HEADER: 
-@MIRAGE_MCSB_DATA: 
-@MIRAGE_MCSB_EDC_ECC: 
-@MIRAGE_MCSB_C2_2: 
-@MIRAGE_MCSB_C2_1: 
-
 <!-- ##### ENUM MirageSectorSubchannelFormat ##### -->
 <para>
 

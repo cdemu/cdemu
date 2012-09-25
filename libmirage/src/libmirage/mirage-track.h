@@ -147,8 +147,7 @@ void mirage_track_set_isrc (MirageTrack *self, const gchar *isrc);
 const gchar * mirage_track_get_isrc (MirageTrack *self);
 
 /* Read and get sector */
-GObject *mirage_track_get_sector (MirageTrack *self, gint address, gboolean abs, GError **error);
-gboolean mirage_track_read_sector (MirageTrack *self, gint address, gboolean abs, guint8 main_sel, guint8 subc_sel, guint8 *ret_buf, gint *ret_len, GError **error);
+GObject *mirage_track_get_sector (MirageTrack *self, gint address, gboolean abs, GError **error);gint mirage_track_read_sector (MirageTrack *self, gint address, gboolean abs, guint8 main_sel, guint8 subc_sel, guint8 *buffer, gint buffer_size, GError **error);
 
 /* Layout */
 gint mirage_track_layout_get_session_number (MirageTrack *self);
