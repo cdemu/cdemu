@@ -80,7 +80,7 @@ static void cdemu_device_delay_increase (CdemuDevice *self, gint address, gint n
         rotations = fabs(dpm_angle - self->priv->current_angle);
         self->priv->current_angle = dpm_angle;
 
-        CDEMU_DEBUG(self, DAEMON_DEBUG_DELAY, "%s: 0x%X->0x%X (%d): %f rotations\n", __debug__, self->priv->current_sector, address, abs(self->priv->current_sector - address), rotations);
+        CDEMU_DEBUG(self, DAEMON_DEBUG_DELAY, "%s: 0x%X->0x%X (%d): %f rotations\n", __debug__, self->priv->current_address, address, abs(self->priv->current_address - address), rotations);
 
         /* We emulate moving the head if amount of rotations exceeds 10 */
         if (rotations >= 10.0) {

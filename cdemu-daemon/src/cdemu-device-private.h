@@ -71,7 +71,7 @@ struct _CdemuDevicePrivate
     gint media_event;
 
     /* Last accessed sector */
-    gint current_sector;
+    gint current_address;
 
     /* Mode pages */
     GList *mode_pages_list;

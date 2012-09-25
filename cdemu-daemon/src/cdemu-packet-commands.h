@@ -1019,6 +1019,26 @@ struct READ_CAPACITY_Data
 /**********************************************************************\
  *                               READ CD                              *
 \**********************************************************************/
+struct READ_CD_MSCB
+{
+    #if G_BYTE_ORDER == G_BIG_ENDIAN
+        guint8  sync        : 1;
+        guint8  subheader   : 1;
+        guint8  header      : 1;
+        guint8  data        : 1;
+        guint8  edc_ecc     : 1;
+        guint8  c2_error    : 2;
+        guint8  __dummy_3__ : 1;
+    #else
+        guint8  __dummy_3__ : 1;
+        guint8  c2_error    : 2;
+        guint8  edc_ecc     : 1;
+        guint8  data        : 1;
+        guint8  header      : 1;
+        guint8  subheader   : 1;
+        guint8  sync        : 1;
+    #endif
+};
 
 struct READ_CD_CDB
 {

@@ -39,76 +39,114 @@ static gint map_expected_sector_type (gint type)
     }
 }
 
-static gint map_mcsb (guint8 *byte9, gint mode_code)
+static gint read_sector_data (GObject *sector, GObject *disc, gint address, guint8 mcsb_byte, gint subchannel, guint8 *buffer, GError **error)
 {
-    guint8 mode = 0;
-    guint8 cur_mode = (*byte9) & 0xF8;
+    guint8 *ptr = buffer;
+    gint read_length = 0;
 
-    /* The matrix (TM) */
-    static gint matrix[32][6] = {
-        {0x00,  0x00, 0x00, 0x00, 0x00, 0x00},
-        {0x08,  0x10, 0x08, 0x10, 0x10, 0x10},
-        {0x10,  0x10, 0x10, 0x10, 0x10, 0x10},
-        {0x18,  0x10, 0x18, 0x10, 0x18, 0x18},
-        {0x20,  0x10, 0x20, 0x20, 0x20, 0x20},
-        {0x28,  0x10,   -1,   -1,   -1,   -1},
-        {0x30,  0x10, 0x30, 0x30,   -1,   -1},
-        {0x38,  0x10, 0x38, 0x30,   -1,   -1},
-        {0x40,  0x10, 0x00, 0x00, 0x40, 0x40},
-        {0x48,  0x10,   -1,   -1,   -1,   -1},
-        {0x50,  0x10, 0x10, 0x10, 0x50, 0x50},
-        {0x58,  0x10, 0x18, 0x10, 0x58, 0x58},
-        {0x60,  0x10, 0x20, 0x20, 0x60, 0x60},
-        {0x68,  0x10,   -1,   -1,   -1,   -1},
-        {0x70,  0x10, 0x30, 0x30, 0x70, 0x70},
-        {0x78,  0x10, 0x38, 0x38, 0x78, 0x78},
-        {0x80,  0x10, 0x80, 0x80, 0x80, 0x80},
-        {0x88,  0x10,   -1,   -1,   -1,   -1},
-        {0x90,  0x10,   -1,   -1,   -1,   -1},
-        {0x98,  0x10,   -1,   -1,   -1,   -1},
-        {0xA0,  0x10, 0xA0, 0xA0, 0xA0, 0xA0},
-        {0xA8,  0x10,   -1,   -1,   -1,   -1},
-        {0xB0,  0x10, 0xB0, 0xB0,   -1,   -1},
-        {0xB8,  0x10, 0xB8, 0xB0,   -1,   -1},
-        {0xC0,  0x10,   -1,   -1,   -1,   -1},
-        {0xC8,  0x10,   -1,   -1,   -1,   -1},
-        {0xD0,  0x10,   -1,   -1,   -1,   -1},
-        {0xD8,  0x10,   -1,   -1,   -1,   -1},
-        {0xE0,  0x10, 0xA0, 0xA0, 0xE0, 0xE0},
-        {0xE8,  0x10,   -1,   -1,   -1,   -1},
-        {0xF0,  0x10, 0xB0, 0xB0, 0xF0, 0xF0},
-        {0xF8,  0x10, 0xB8, 0xB8, 0xF8, 0xF8}
-    };
+    const guint8 *tmp_buf;
+    gint tmp_len;
 
-    /* First, let's decode mode_code :)
-        - CD-DA = 1
-        - Mode 1 = 2
-        - Mode 2 Formless = 3
-        - Mode 2 Form 1 = 4
-        - Mode 2 Form 2 = 5
-        (so that values are actually offsets in matrix) */
-    switch (mode_code) {
-        case MIRAGE_MODE_AUDIO: mode = 1; break;
-        case MIRAGE_MODE_MODE1: mode = 2; break;
-        case MIRAGE_MODE_MODE2: mode = 3; break;
-        case MIRAGE_MODE_MODE2_FORM1: mode = 4; break;
-        case MIRAGE_MODE_MODE2_FORM2: mode = 5; break;
-        return -1;
-    }
-
-    for (gint i = 0; i < 32; i++) {
-        if (cur_mode == matrix[i][0]) {
-            /* Clear current MCSB */
-            cur_mode &= 0x07;
-            /* Apply new MCSB */
-            cur_mode |= matrix[i][mode];
-            /* Write */
-            *byte9 = cur_mode;
-            return 0;
+    /* If sector is provided, use it... */
+    if (sector) {
+        g_object_ref(sector);
+    } else {
+        /* ... otherwise, obtain it */
+        sector = mirage_disc_get_sector(MIRAGE_DISC(disc), address, error);
+        if (!sector) {
+            return -1;
         }
     }
 
-    return -1;
+    /* Main channel selection byte */
+    if (mcsb_byte) {
+        struct READ_CD_MSCB *mcsb = (struct READ_CD_MSCB *)&mcsb_byte;
+
+        /* Sync */
+        if (mcsb->sync) {
+            mirage_sector_get_sync(MIRAGE_SECTOR(sector), &tmp_buf, &tmp_len, NULL);
+            memcpy(ptr, tmp_buf, tmp_len);
+            ptr += tmp_len;
+            read_length += tmp_len;
+        }
+
+        /* Header */
+        if (mcsb->header) {
+            mirage_sector_get_header(MIRAGE_SECTOR(sector), &tmp_buf, &tmp_len, NULL);
+            memcpy(ptr, tmp_buf, tmp_len);
+            ptr += tmp_len;
+            read_length += tmp_len;
+        }
+
+        /* Subheader */
+        if (mcsb->subheader) {
+            mirage_sector_get_subheader(MIRAGE_SECTOR(sector), &tmp_buf, &tmp_len, NULL);
+            memcpy(ptr, tmp_buf, tmp_len);
+            ptr += tmp_len;
+            read_length += tmp_len;
+        }
+
+        /* Data */
+        if (mcsb->data) {
+            mirage_sector_get_data(MIRAGE_SECTOR(sector), &tmp_buf, &tmp_len, NULL);
+            memcpy(ptr, tmp_buf, tmp_len);
+            ptr += tmp_len;
+            read_length += tmp_len;
+        }
+
+        /* EDC/ECC */
+        if (mcsb->edc_ecc) {
+            mirage_sector_get_edc_ecc(MIRAGE_SECTOR(sector), &tmp_buf, &tmp_len, NULL);
+            memcpy(ptr, tmp_buf, tmp_len);
+            ptr += tmp_len;
+            read_length += tmp_len;
+        }
+
+        /* C2 error bits: fill with zeros */
+        switch (mcsb->c2_error) {
+            case 0x01: {
+                /* C2 error block data */
+                tmp_len = 294;
+                break;
+            }
+            case 0x02: {
+                /* C2 and block error bits */
+                tmp_len = 296;
+                break;
+            }
+            default: {
+                tmp_len = 0;
+                break;
+            }
+        }
+        memset(ptr, 0, tmp_len);
+        ptr += tmp_len;
+        read_length += tmp_len;
+    }
+
+    /* Subchannel: we support only RAW and PQ */
+    switch (subchannel) {
+        case 0x01: {
+            mirage_sector_get_subchannel(MIRAGE_SECTOR(sector), MIRAGE_SUBCHANNEL_PW, &tmp_buf, &tmp_len, NULL);
+            break;
+        }
+        case 0x02: {
+            mirage_sector_get_subchannel(MIRAGE_SECTOR(sector), MIRAGE_SUBCHANNEL_PQ, &tmp_buf, &tmp_len, NULL);
+            break;
+        }
+        default: {
+            tmp_buf = NULL;
+            tmp_len = 0;
+        }
+    }
+    memcpy(ptr, tmp_buf, tmp_len);
+    ptr += tmp_len;
+    read_length += tmp_len;
+
+    /* Release sector */
+    g_object_unref(sector);
+
+    return read_length;
 }
 
 
@@ -588,7 +626,7 @@ static gboolean command_prevent_allow_medium_removal (CdemuDevice *self, guint8 
 /* READ (10) and READ (12)*/
 static gboolean command_read (CdemuDevice *self, guint8 *raw_cdb)
 {
-    gint start_sector; /* MUST be signed because it may be negative! */
+    gint start_address; /* MUST be signed because it may be negative! */
     gint num_sectors;
 
     struct ModePage_0x01 *p_0x01 = cdemu_device_get_mode_page(self, 0x01, MODE_PAGE_CURRENT);
@@ -596,11 +634,11 @@ static gboolean command_read (CdemuDevice *self, guint8 *raw_cdb)
     /* READ 10 vs READ 12 */
     if (raw_cdb[0] == (PacketCommand) READ_10) {
         struct READ_10_CDB *cdb = (struct READ_10_CDB *)raw_cdb;
-        start_sector = GUINT32_FROM_BE(cdb->lba);
+        start_address = GUINT32_FROM_BE(cdb->lba);
         num_sectors  = GUINT16_FROM_BE(cdb->length);
     } else if (raw_cdb[0] == (PacketCommand) READ_12) {
         struct READ_12_CDB *cdb = (struct READ_12_CDB *)raw_cdb;
-        start_sector = GUINT32_FROM_BE(cdb->lba);
+        start_address = GUINT32_FROM_BE(cdb->lba);
         num_sectors  = GUINT32_FROM_BE(cdb->length);
     } else {
         /* Because bad things happen to good people... :/ */
@@ -609,7 +647,7 @@ static gboolean command_read (CdemuDevice *self, guint8 *raw_cdb)
         return FALSE;
     }
 
-    CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: read request; start sector: 0x%X, number of sectors: %d\n", __debug__, start_sector, num_sectors);
+    CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: read request; start sector: 0x%X, number of sectors: %d\n", __debug__, start_address, num_sectors);
 
     /* Check if we have medium loaded (because we use track later... >.<) */
     if (!self->priv->loaded) {
@@ -617,19 +655,19 @@ static gboolean command_read (CdemuDevice *self, guint8 *raw_cdb)
         cdemu_device_write_sense(self, NOT_READY, MEDIUM_NOT_PRESENT);
         return FALSE;
     }
-    MirageDisc *disc = MIRAGE_DISC(self->priv->disc);
+    GObject *disc = self->priv->disc;
 
     /* Set up delay emulation */
-    cdemu_device_delay_begin(self, start_sector, num_sectors);
+    cdemu_device_delay_begin(self, start_address, num_sectors);
 
     /* Process each sector */
-    for (gint sector = start_sector; sector < start_sector + num_sectors; sector++) {
+    for (gint address = start_address; address < start_address + num_sectors; address++) {
         GError *error = NULL;
-        GObject *cur_sector = mirage_disc_get_sector(disc, sector, &error);
-        if (!cur_sector) {
+        GObject *sector = mirage_disc_get_sector(MIRAGE_DISC(disc), address, &error);
+        if (!sector) {
             CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: failed to read sector: %s\n", __debug__, error->message);
             g_error_free(error);
-            cdemu_device_write_sense_full(self, ILLEGAL_REQUEST, ILLEGAL_MODE_FOR_THIS_TRACK, 0, sector);
+            cdemu_device_write_sense_full(self, ILLEGAL_REQUEST, ILLEGAL_MODE_FOR_THIS_TRACK, 0, address);
             return FALSE;
         }
 
@@ -642,37 +680,36 @@ static gboolean command_read (CdemuDevice *self, guint8 *raw_cdb)
            tests indicate this should be done only for Mode 1 or Mode 2 Form 1
            sectors */
         if (!p_0x01->dcr) {
-            gint sector_type = mirage_sector_get_sector_type(MIRAGE_SECTOR(cur_sector));
+            gint sector_type = mirage_sector_get_sector_type(MIRAGE_SECTOR(sector));
 
             if ((sector_type == MIRAGE_MODE_MODE1 || sector_type == MIRAGE_MODE_MODE2_FORM1)
-                && !mirage_sector_verify_lec(MIRAGE_SECTOR(cur_sector))) {
+                && !mirage_sector_verify_lec(MIRAGE_SECTOR(sector))) {
                 CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: bad sector detected, triggering read error!\n", __debug__);
-                g_object_unref(cur_sector);
-                cdemu_device_write_sense_full(self, MEDIUM_ERROR, UNRECOVERED_READ_ERROR, 0, sector);
+                g_object_unref(sector);
+                cdemu_device_write_sense_full(self, MEDIUM_ERROR, UNRECOVERED_READ_ERROR, 0, address);
                 return FALSE;
             }
         }
 
         /* READ 10/12 should support only sectors with 2048-byte user data */
-        gint tmp_len = 0;
-        const guint8 *tmp_buf = NULL;
-        guint8 *cache_ptr = self->priv->buffer+self->priv->buffer_size;
+        const guint8 *tmp_buf;
+        gint tmp_len;
 
-        mirage_sector_get_data(MIRAGE_SECTOR(cur_sector), &tmp_buf, &tmp_len, NULL);
+        mirage_sector_get_data(MIRAGE_SECTOR(sector), &tmp_buf, &tmp_len, NULL);
         if (tmp_len != 2048) {
-            CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: sector 0x%X does not have 2048-byte user data (%i)\n", __debug__, sector, tmp_len);
-            g_object_unref(cur_sector);
-            cdemu_device_write_sense_full(self, ILLEGAL_REQUEST, ILLEGAL_MODE_FOR_THIS_TRACK, 1, sector);
+            CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: sector 0x%X does not have 2048-byte user data (%i)\n", __debug__, address, tmp_len);
+            g_object_unref(sector);
+            cdemu_device_write_sense_full(self, ILLEGAL_REQUEST, ILLEGAL_MODE_FOR_THIS_TRACK, 1, address);
             return FALSE;
         }
 
-        memcpy(cache_ptr, tmp_buf, tmp_len);
+        memcpy(self->priv->buffer+self->priv->buffer_size, tmp_buf, tmp_len);
         self->priv->buffer_size += tmp_len;
 
         /* Needed for some other commands */
-        self->priv->current_sector = sector;
+        self->priv->current_address = address;
         /* Free sector */
-        g_object_unref(cur_sector);
+        g_object_unref(sector);
         /* Write sector */
         cdemu_device_write_buffer(self, self->priv->buffer_size);
     }
@@ -723,10 +760,10 @@ static gboolean command_read_capacity (CdemuDevice *self, guint8 *raw_cdb G_GNUC
 /* READ CD and READ CD MSF*/
 static gboolean command_read_cd (CdemuDevice *self, guint8 *raw_cdb)
 {
-    gint start_sector; /* MUST be signed because it may be negative! */
+    gint start_address; /* MUST be signed because it may be negative! */
     gint num_sectors;
     gint exp_sect_type;
-    gint subchan_mode;
+    gint subchannel_mode;
 
     struct ModePage_0x01 *p_0x01 = cdemu_device_get_mode_page(self, 0x01, MODE_PAGE_CURRENT);
 
@@ -734,21 +771,21 @@ static gboolean command_read_cd (CdemuDevice *self, guint8 *raw_cdb)
     if (raw_cdb[0] == (PacketCommand) READ_CD) {
         struct READ_CD_CDB *cdb = (struct READ_CD_CDB *)raw_cdb;
 
-        start_sector = GUINT32_FROM_BE(cdb->lba);
+        start_address = GUINT32_FROM_BE(cdb->lba);
         num_sectors = GUINT24_FROM_BE(cdb->length);
 
         exp_sect_type = map_expected_sector_type(cdb->sect_type);
-        subchan_mode = cdb->subchan;
+        subchannel_mode = cdb->subchan;
     } else if (raw_cdb[0] == (PacketCommand) READ_CD_MSF) {
         struct READ_CD_MSF_CDB *cdb = (struct READ_CD_MSF_CDB *)raw_cdb;
-        gint32 end_sector = 0;
+        gint32 end_address = 0;
 
-        start_sector = mirage_helper_msf2lba(cdb->start_m, cdb->start_s, cdb->start_f, TRUE);
-        end_sector = mirage_helper_msf2lba(cdb->end_m, cdb->end_s, cdb->end_f, TRUE);
-        num_sectors = end_sector - start_sector;
+        start_address = mirage_helper_msf2lba(cdb->start_m, cdb->start_s, cdb->start_f, TRUE);
+        end_address = mirage_helper_msf2lba(cdb->end_m, cdb->end_s, cdb->end_f, TRUE);
+        num_sectors = end_address - start_address;
 
         exp_sect_type = map_expected_sector_type(cdb->sect_type);
-        subchan_mode = cdb->subchan;
+        subchannel_mode = cdb->subchan;
     } else {
         /* Because bad things happen to good people... :/ */
         CDEMU_DEBUG(self, DAEMON_DEBUG_ERROR, "%s: someone called this function when they shouldn't have :/...\n", __debug__);
@@ -757,7 +794,7 @@ static gboolean command_read_cd (CdemuDevice *self, guint8 *raw_cdb)
     }
 
     CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: READ CD:\n-> Address: 0x%08X\n-> Length: %i\n-> Expected sector (in libMirage type): 0x%X\n-> MCSB: 0x%X\n-> SubChannel: 0x%X\n",
-        __debug__, start_sector, num_sectors, exp_sect_type, raw_cdb[9], subchan_mode);
+        __debug__, start_address, num_sectors, exp_sect_type, raw_cdb[9], subchannel_mode);
 
 
     /* Check if we have medium loaded */
@@ -778,7 +815,7 @@ static gboolean command_read_cd (CdemuDevice *self, guint8 *raw_cdb)
        length 0x00 to determine which subchannel modes are supported; without this
        clause, call with R-W subchannel passes, causing app choke on it later (when
        there's transfer length > 0x00 and thus subchannel is verified */
-    if (subchan_mode == 0x04) {
+    if (subchannel_mode == 0x04) {
         /* invalid subchannel requested (don't support R-W yet) */
         CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: R-W subchannel reading not supported yet\n", __debug__);
         cdemu_device_write_sense(self, ILLEGAL_REQUEST, INVALID_FIELD_IN_CDB);
@@ -792,31 +829,31 @@ static gboolean command_read_cd (CdemuDevice *self, guint8 *raw_cdb)
     gint prev_sector_type G_GNUC_UNUSED;
 
     /* Read first sector to determine its type */
-    first_sector = mirage_disc_get_sector(disc, start_sector, &error);
+    first_sector = mirage_disc_get_sector(disc, start_address, &error);
     if (!first_sector) {
         CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: failed to get start sector: %s\n", __debug__, error->message);
         g_error_free(error);
-        cdemu_device_write_sense_full(self, ILLEGAL_REQUEST, ILLEGAL_MODE_FOR_THIS_TRACK, 0, start_sector);
+        cdemu_device_write_sense_full(self, ILLEGAL_REQUEST, ILLEGAL_MODE_FOR_THIS_TRACK, 0, start_address);
         return FALSE;
     }
     prev_sector_type = mirage_sector_get_sector_type(MIRAGE_SECTOR(first_sector));
     g_object_unref(first_sector);
 
     /* Set up delay emulation */
-    cdemu_device_delay_begin(self, start_sector, num_sectors);
+    cdemu_device_delay_begin(self, start_address, num_sectors);
 
     /* Process each sector */
-    CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: start sector: 0x%X (%i); start + num: 0x%X (%i)\n", __debug__, start_sector, start_sector, start_sector+num_sectors, start_sector+num_sectors);
-    for (gint sector = start_sector; sector < start_sector + num_sectors; sector++) {
-        GObject *cur_sector;
+    CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: start sector: 0x%X (%i); start + num: 0x%X (%i)\n", __debug__, start_address, start_address, start_address+num_sectors, start_address+num_sectors);
+    for (gint address = start_address; address < start_address + num_sectors; address++) {
+        GObject *sector;
 
-        CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: reading sector 0x%X (%i)\n", __debug__, sector, sector);
+        CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: reading sector 0x%X (%i)\n", __debug__, address, address);
 
-        cur_sector = mirage_disc_get_sector(disc, sector, &error);
-        if (!cur_sector) {
+        sector = mirage_disc_get_sector(disc, address, &error);
+        if (!sector) {
             CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: failed to get sector: %s!\n", __debug__, error->message);
             g_error_free(error);
-            cdemu_device_write_sense_full(self, ILLEGAL_REQUEST, ILLEGAL_MODE_FOR_THIS_TRACK, 0, sector);
+            cdemu_device_write_sense_full(self, ILLEGAL_REQUEST, ILLEGAL_MODE_FOR_THIS_TRACK, 0, address);
             return FALSE;
         }
 
@@ -826,13 +863,13 @@ static gboolean command_read_cd (CdemuDevice *self, guint8 *raw_cdb)
            set, we compare its translated value with our sector type, period. However, if
            it's 0, then "The Logical Unit shall always terminate a command at the sector
            where a transition between CD-ROM and CD-DA data occurs." */
-        gint cur_sector_type = mirage_sector_get_sector_type(MIRAGE_SECTOR(cur_sector));
+        gint sector_type = mirage_sector_get_sector_type(MIRAGE_SECTOR(sector));
 
         /* Break if current sector type doesn't match expected one*/
-        if (exp_sect_type && (cur_sector_type != exp_sect_type)) {
-            CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: expected sector type mismatch (expecting %i, got %i)!\n", __debug__, exp_sect_type, cur_sector_type);
-            g_object_unref(cur_sector);
-            cdemu_device_write_sense_full(self, ILLEGAL_REQUEST, ILLEGAL_MODE_FOR_THIS_TRACK, 1, sector);
+        if (exp_sect_type && (sector_type != exp_sect_type)) {
+            CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: expected sector type mismatch (expecting %i, got %i)!\n", __debug__, exp_sect_type, sector_type);
+            g_object_unref(sector);
+            cdemu_device_write_sense_full(self, ILLEGAL_REQUEST, ILLEGAL_MODE_FOR_THIS_TRACK, 1, address);
             return FALSE;
         }
 
@@ -840,10 +877,10 @@ static gboolean command_read_cd (CdemuDevice *self, guint8 *raw_cdb)
         /* Break if mode (sector type) has changed */
         /* NOTE: if we're going to be doing this, we need to account for the
            fact that Mode 2 Form 1 and Mode 2 Form 2 can alternate... */
-        if (prev_sector_type != cur_sector_type) {
-            CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: previous sector type (%i) different from current one (%i)!\n", __debug__, prev_sector_type, cur_sector_type);
-            g_object_unref(cur_sector);
-            cdemu_device_write_sense_full(self, ILLEGAL_REQUEST, ILLEGAL_MODE_FOR_THIS_TRACK, 0, sector);
+        if (prev_sector_type != sector_type) {
+            CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: previous sector type (%i) different from current one (%i)!\n", __debug__, prev_sector_type, sector_type);
+            g_object_unref(sector);
+            cdemu_device_write_sense_full(self, ILLEGAL_REQUEST, ILLEGAL_MODE_FOR_THIS_TRACK, 0, address);
             return FALSE;
         }
 #endif
@@ -855,35 +892,22 @@ static gboolean command_read_cd (CdemuDevice *self, guint8 *raw_cdb)
            tests indicate this should be done only for Mode 1 or Mode 2 Form 1
            sectors */
         if (!p_0x01->dcr) {
-            if ((cur_sector_type == MIRAGE_MODE_MODE1 || cur_sector_type == MIRAGE_MODE_MODE2_FORM1)
-                && !mirage_sector_verify_lec(MIRAGE_SECTOR(cur_sector))) {
+            if ((sector_type == MIRAGE_MODE_MODE1 || sector_type == MIRAGE_MODE_MODE2_FORM1)
+                && !mirage_sector_verify_lec(MIRAGE_SECTOR(sector))) {
                 CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: bad sector detected, triggering read error!\n", __debug__);
-                g_object_unref(cur_sector);
-                cdemu_device_write_sense_full(self, MEDIUM_ERROR, UNRECOVERED_READ_ERROR, 0, sector);
+                g_object_unref(sector);
+                cdemu_device_write_sense_full(self, MEDIUM_ERROR, UNRECOVERED_READ_ERROR, 0, address);
                 return FALSE;
             }
         }
 
-        /* Map the MCSB: operation performed on raw Byte9 */
-        if (map_mcsb(&raw_cdb[9], cur_sector_type) == -1) {
-            CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: invalid MCSB: %X\n", __debug__, raw_cdb[9]);
-            g_object_unref(cur_sector);
-            cdemu_device_write_sense(self, ILLEGAL_REQUEST, INVALID_FIELD_IN_CDB);
-            return FALSE;
-        }
-
-        /* We read data here... we use reading method provided by libmirage, instead
-           of copying all sector's data ourselves... yeah, it's a waste of resources
-           to have sector created twice this way, but I hate to duplicate code...
-           FIXME: find a better way to do it? */
-        guint8 *ptr = self->priv->buffer+self->priv->buffer_size;
-        gint read_length = 0;
-
-        if (!mirage_disc_read_sector(disc, sector, raw_cdb[9], subchan_mode, ptr, &read_length, &error)) {
-            CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: failed to read sector 0x%X: %s\n", __debug__, sector, error->message);
+        /* We read data here. NOTE: we do not verify MCSB for illegal combinations */
+        gint read_length = read_sector_data(sector, NULL, 0, raw_cdb[9], subchannel_mode, self->priv->buffer+self->priv->buffer_size, &error);
+        if (read_length == -1) {
+            CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: failed to read sector 0x%X: %s\n", __debug__, address, error->message);
             g_error_free(error);
-            g_object_unref(cur_sector);
-            cdemu_device_write_sense_full(self, ILLEGAL_REQUEST, ILLEGAL_MODE_FOR_THIS_TRACK, 0, sector);
+            g_object_unref(sector);
+            cdemu_device_write_sense_full(self, ILLEGAL_REQUEST, ILLEGAL_MODE_FOR_THIS_TRACK, 0, address);
             return FALSE;
         }
 
@@ -891,11 +915,11 @@ static gboolean command_read_cd (CdemuDevice *self, guint8 *raw_cdb)
         self->priv->buffer_size += read_length;
 
         /* Previous sector type */
-        prev_sector_type = cur_sector_type;
+        prev_sector_type = sector_type;
         /* Needed for some other commands */
-        self->priv->current_sector = sector;
+        self->priv->current_address = address;
         /* Free sector */
-        g_object_unref(cur_sector);
+        g_object_unref(sector);
         /* Write sector */
         cdemu_device_write_buffer(self, self->priv->buffer_size);
     }
@@ -1049,7 +1073,7 @@ static gboolean command_read_subchannel (CdemuDevice *self, guint8 *raw_cdb)
     struct READ_SUBCHANNEL_Header *ret_header = (struct READ_SUBCHANNEL_Header *)self->priv->buffer;
     self->priv->buffer_size = sizeof(struct READ_SUBCHANNEL_Header);
 
-    MirageDisc *disc = MIRAGE_DISC(self->priv->disc);
+    GObject *disc = self->priv->disc;
 
     /* Check if we have medium loaded */
     if (!self->priv->loaded) {
@@ -1072,15 +1096,15 @@ static gboolean command_read_subchannel (CdemuDevice *self, guint8 *raw_cdb)
                 struct READ_SUBCHANNEL_Data1 *ret_data = (struct READ_SUBCHANNEL_Data1 *)(self->priv->buffer+self->priv->buffer_size);
                 self->priv->buffer_size += sizeof(struct READ_SUBCHANNEL_Data1);
 
-                gint current_position = self->priv->current_sector;
+                gint current_address = self->priv->current_address;
 
-                CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: current position (sector 0x%X)\n", __debug__, current_position);
+                CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: current position (sector 0x%X)\n", __debug__, current_address);
                 ret_data->fmt_code = 0x01;
 
                 /* Read current sector's PQ subchannel */
                 guint8 tmp_buf[16];
-                if (!mirage_disc_read_sector(MIRAGE_DISC(self->priv->disc), current_position, 0x00, MIRAGE_SUBCHANNEL_PQ, tmp_buf, NULL, NULL)) {
-                    CDEMU_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: failed to read subchannel of sector 0x%X!\n", __debug__, current_position);
+                if (read_sector_data(NULL, disc, current_address, 0x00 /* MCSB: empty */, 0x02 /* Subchannel: PQ */, tmp_buf, NULL) != 16) {
+                    CDEMU_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: failed to read subchannel of sector 0x%X!\n", __debug__, current_address);
                 }
 
                 /* Copy ADR/CTL, track number and index */
@@ -1102,11 +1126,11 @@ static gboolean command_read_subchannel (CdemuDevice *self, guint8 *raw_cdb)
                    requires READ CD to return BCD data) */
                 gint correction = 1;
                 while ((tmp_buf[0] & 0x0F) != 0x01) {
-                    CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: got a sector that's not Mode-1 Q; taking next one (0x%X)!\n", __debug__, current_position+correction);
+                    CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: got a sector that's not Mode-1 Q; taking next one (0x%X)!\n", __debug__, current_address+correction);
 
                     /* Read from next sector */
-                    if (!mirage_disc_read_sector(MIRAGE_DISC(self->priv->disc), current_position+correction, 0x00, MIRAGE_SUBCHANNEL_PQ, tmp_buf, NULL, NULL)) {
-                        CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: failed to read subchannel of sector 0x%X!\n", __debug__, current_position+correction);
+                    if (read_sector_data(NULL, disc, current_address+correction, 0x00 /* MCSB: empty */, 0x02 /* Subchannel: PQ */, tmp_buf, NULL) != 16) {
+                        CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: failed to read subchannel of sector 0x%X!\n", __debug__, current_address+correction);
                         break;
                     }
 
@@ -1145,7 +1169,7 @@ static gboolean command_read_subchannel (CdemuDevice *self, guint8 *raw_cdb)
                 for (gint sector = 0; sector < 100; sector++) {
                     guint8 tmp_buf[16];
 
-                    if (!mirage_disc_read_sector(MIRAGE_DISC(self->priv->disc), sector, 0, MIRAGE_SUBCHANNEL_PQ, tmp_buf, NULL, NULL)) {
+                    if (read_sector_data(NULL, disc, sector, 0x00 /* MSCB: empty */, 0x02 /* Subchannel: PQ */, tmp_buf, NULL) != 16) {
                         CDEMU_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: failed to read subchannel of sector 0x%X!\n", __debug__, sector);
                         continue;
                     }
@@ -1169,7 +1193,7 @@ static gboolean command_read_subchannel (CdemuDevice *self, guint8 *raw_cdb)
                 CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: ISRC\n", __debug__);
                 ret_data->fmt_code = 0x03;
 
-                GObject *track = mirage_disc_get_track_by_number(disc, cdb->track, NULL);
+                GObject *track = mirage_disc_get_track_by_number(MIRAGE_DISC(disc), cdb->track, NULL);
                 if (!track) {
                     CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: failed to get track %i!\n", __debug__, cdb->track);
                     cdemu_device_write_sense(self, ILLEGAL_REQUEST, INVALID_FIELD_IN_CDB);
@@ -1177,13 +1201,24 @@ static gboolean command_read_subchannel (CdemuDevice *self, guint8 *raw_cdb)
                 }
 
                 /* Go over first 100 sectors; if ISRC is present, it should be there */
-                for (gint sector = 0; sector < 100; sector++) {
+                for (gint address = 0; address < 100; address++) {
                     guint8 tmp_buf[16];
+                    GObject *sector;
 
-                    if (!mirage_track_read_sector(MIRAGE_TRACK(track), sector, FALSE, 0, MIRAGE_SUBCHANNEL_PQ, tmp_buf, NULL, NULL)) {
-                        CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: failed to read subchannel of sector 0x%X\n", __debug__, sector);
+                    /* Get sector */
+                    sector = mirage_track_get_sector(MIRAGE_TRACK(track), address, FALSE, NULL);
+                    if (!sector) {
+                        CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: failed to get sector 0x%X\n", __debug__, address);
                         continue;
                     }
+
+                    /* Read sector */
+                    if (read_sector_data(sector, NULL, 0, 0x00 /* MCSB: empty*/, 0x02 /* Subchannel: PQ */, tmp_buf, NULL) != 16) {
+                        CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: failed to read subchannel of sector 0x%X\n", __debug__, address);
+                        continue;
+                    }
+
+                    g_object_unref(sector);
 
                     if ((tmp_buf[0] & 0x0F) == 0x03) {
                         /* Mode-3 Q found */
