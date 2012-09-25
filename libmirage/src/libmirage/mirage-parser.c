@@ -359,7 +359,7 @@ GVariant *mirage_parser_get_param (MirageParser *self, const gchar *name, const 
 /**
  * mirage_parser_get_cached_data_stream:
  * @self: a #MirageParser
- * @filename: (in): filename
+ * @filename: (in) (transfer none): filename
  * @error: (out) (allow-none): location to store error, or %NULL
  *
  * <para>

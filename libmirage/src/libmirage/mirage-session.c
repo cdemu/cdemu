@@ -1214,7 +1214,7 @@ static gboolean set_cdtext_data (gint langcode, gint type, gint track_number, gu
 /**
  * mirage_session_set_cdtext_data:
  * @self: a #MirageSession
- * @data: (in): buffer containing encoded CD-TEXT data
+ * @data: (in) (array length=len): buffer containing encoded CD-TEXT data
  * @len: (in): length of data in buffer
  * @error: (out) (allow-none): location to store error, or %NULL
  *
@@ -1255,7 +1255,7 @@ gboolean mirage_session_set_cdtext_data (MirageSession *self, guint8 *data, gint
 /**
  * mirage_session_get_cdtext_data:
  * @self: a #MirageSession
- * @data: (out) (transfer full): location to return buffer with encoded CD-TEXT data
+ * @data: (out callee-allocates) (transfer full) (array length=len): location to return buffer with encoded CD-TEXT data
  * @len: (out): location to return length of data in buffer
  * @error: (out) (allow-none): location to store error, or %NULL
  *

@@ -64,9 +64,9 @@ typedef enum
 
 /**
  * MIRAGE_DEBUG:
- * @obj: object
- * @lvl: debug level
- * @msg...: debug message
+ * @obj: (in): object
+ * @lvl: (in): debug level
+ * @msg...: (in): debug message
  *
  * <para>
  * Debugging macro, provided for convenience. It performs cast to #MirageDebuggable

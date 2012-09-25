@@ -396,7 +396,7 @@ gint mirage_track_get_ctl (MirageTrack *self)
 /**
  * mirage_track_set_isrc:
  * @self: a #MirageTrack
- * @isrc: (in): MCN
+ * @isrc: (in) (transfer none): ISRC
  *
  * <para>
  * Sets MCN.
@@ -499,7 +499,7 @@ GObject *mirage_track_get_sector (MirageTrack *self, gint address, gboolean abs,
  * @abs: (in): absolute address
  * @main_sel: (in): main channel selection flags
  * @subc_sel: (in): subchannel selection flags
- * @ret_buf: (out caller-allocates) (allow-none): buffer to write data into, or %NULL
+ * @ret_buf: (out caller-allocates) (allow-none) (array length=ret_len): buffer to write data into, or %NULL
  * @ret_len: (allow-none): location to store written data length, or %NULL
  * @error: (out) (allow-none): location to store error, or %NULL
  *

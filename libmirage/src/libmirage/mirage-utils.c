@@ -119,8 +119,8 @@ static gchar *find_data_file (const gchar *path, const gchar *filename)
 
 /**
  * mirage_helper_find_data_file:
- * @filename: (in): declared filename
- * @path: (in) (allow-none): path where to look for file (can be a filename), or %NULL
+ * @filename: (in) (transfer none): declared filename
+ * @path: (in) (allow-none) (transfer none): path where to look for file (can be a filename), or %NULL
  *
  * <para>
  * Attempts to find a file with filename @filename and path @path. @filename can
@@ -199,7 +199,7 @@ gchar *mirage_helper_find_data_file (const gchar *filename, const gchar *path)
 
 /**
  * mirage_helper_get_suffix:
- * @filename: (in): filename
+ * @filename: (in) (transfer none): filename
  *
  * <para>
  * Retrieves suffix from @filename.
@@ -214,8 +214,8 @@ gchar *mirage_helper_get_suffix (const gchar *filename)
 
 /**
  * mirage_helper_has_suffix:
- * @filename: (in): filename
- * @suffix: (in): suffix
+ * @filename: (in) (transfer none): filename
+ * @suffix: (in) (transfer none): suffix
  *
  * <para>
  * Checks whether file name @filename ends with suffix @suffix.
@@ -243,8 +243,8 @@ gboolean mirage_helper_has_suffix (const gchar *filename, const gchar *suffix)
 
 /**
  * mirage_helper_strcasecmp:
- * @str1: (in): first string
- * @str2: (in): second string
+ * @str1: (in) (transfer none): first string
+ * @str2: (in) (transfer none): second string
  *
  * <para>
  * Replacement function for g_strcasecmp/strcasecmp, which can properly handle UTF-8.
@@ -273,8 +273,8 @@ gint mirage_helper_strcasecmp (const gchar *str1, const gchar *str2)
 
 /**
  * mirage_helper_strncasecmp:
- * @str1: (in): first string
- * @str2: (in): second string
+ * @str1: (in) (transfer none): first string
+ * @str2: (in) (transfer none): second string
  * @len: (in): length of string to compare
  *
  * <para>
@@ -403,7 +403,7 @@ gint mirage_helper_msf2lba (guint8 m, guint8 s, guint8 f, gboolean diff)
 
 /**
  * mirage_helper_msf2lba_str:
- * @msf: (in): MSF string
+ * @msf: (in) (transfer none): MSF string
  * @diff: (in): difference
  *
  * <para>
@@ -561,7 +561,7 @@ static const guint16 q_crc_lut[256] = {
 
 /**
  * mirage_helper_subchannel_q_calculate_crc:
- * @data: (in): buffer containing Q subchannel data
+ * @data: (in) (transfer none) (array fixed-size=10): buffer containing Q subchannel data (10 bytes)
  *
  * <para>
  * Calculates the CRC-16 checksum of the Q subchannel data stored in @data.
@@ -582,8 +582,8 @@ guint16 mirage_helper_subchannel_q_calculate_crc (const guint8 *data)
 
 /**
  * mirage_helper_subchannel_q_encode_mcn:
- * @buf: (out caller-allocates): buffer to encode MCN into
- * @mcn: (in): MCN string
+ * @buf: (out caller-allocates) (array fixed-size=7): buffer to encode MCN into (7 bytes)
+ * @mcn: (in) (transfer none) (array fixed-size=13): MCN string (13 bytes)
  *
  * <para>
  * Encodes MCN string @mcn into buffer @buf.
@@ -602,8 +602,8 @@ void mirage_helper_subchannel_q_encode_mcn (guint8 *buf, const gchar *mcn)
 
 /**
  * mirage_helper_subchannel_q_decode_mcn:
- * @buf: (in): buffer containing encoded MCN
- * @mcn: (out caller-allocates): string to decode MCN into
+ * @buf: (in) (transfer none) (array fixed-size=7): buffer containing encoded MCN (7 bytes)
+ * @mcn: (out caller-allocates) (array fixed-size=13): string to decode MCN into (13 bytes)
  *
  * <para>
  * Decodes MCN stored in @buf into string @mcn.
@@ -629,8 +629,8 @@ void mirage_helper_subchannel_q_decode_mcn (const guint8 *buf, gchar *mcn)
 
 /**
  * mirage_helper_subchannel_q_encode_isrc:
- * @buf: (out caller-allocates): buffer to encode ISRC into
- * @isrc: (in): ISRC string
+ * @buf: (out caller-allocates) (array fixed-size=8): buffer to encode ISRC into (8 bytes)
+ * @isrc: (in) (transfer none) (array fixed-size=12): ISRC string (12 bytes)
  *
  * <para>
  * Encodes ISRC string @isrc into buffer @buf.
@@ -662,8 +662,8 @@ void mirage_helper_subchannel_q_encode_isrc (guint8 *buf, const gchar *isrc)
 
 /**
  * mirage_helper_subchannel_q_decode_isrc:
- * @buf: (in): buffer containing encoded ISRC
- * @isrc: (out caller-allocates): string to decode ISRC into
+ * @buf: (in) (transfer none) (array fixed-size=8): buffer containing encoded ISRC (8 bytes)
+ * @isrc: (out caller-allocates) (array fixed-size=12): string to decode ISRC into (12 bytes)
  *
  * <para>
  * Decodes ISRC stored in @buf into string @isrc.
@@ -700,8 +700,8 @@ void mirage_helper_subchannel_q_decode_isrc (const guint8 *buf, gchar *isrc)
 /**
  * mirage_helper_subchannel_interleave:
  * @subchan: (in): subchannel type
- * @channel12: (in): buffer containing subchannel data to interleave
- * @channel96: (out caller-allocates): buffer to interleave subchannel data into
+ * @channel12: (in) (transfer none) (array fixed-size=12): buffer containing subchannel data to interleave (12 bytes)
+ * @channel96: (out caller-allocates) (array fixed-size=96): buffer to interleave subchannel data into (96 bytes)
  *
  * <para>
  * Interleaves subchannel data of type @subchan stored in @channel12 into
@@ -711,10 +711,11 @@ void mirage_helper_subchannel_q_decode_isrc (const guint8 *buf, gchar *isrc)
 void mirage_helper_subchannel_interleave (gint subchan, const guint8 *channel12, guint8 *channel96)
 {
     guint8 *ptr = channel96;
+    guint8 val;
 
     for (gint i = 0; i < 12; i++) {
         for (gint j = 0; j < 8; j++) {
-            guint8 val = (channel12[i] & (0x01 << j)) >> j; /* Make it 1 or 0 */
+            val = (channel12[i] & (0x01 << j)) >> j; /* Make it 1 or 0 */
             ptr[7-j] |= (val << subchan);
         }
         ptr += 8;
@@ -724,8 +725,8 @@ void mirage_helper_subchannel_interleave (gint subchan, const guint8 *channel12,
 /**
  * mirage_helper_subchannel_deinterleave:
  * @subchan: (in): subchannel type
- * @channel96: (in): buffer containing subchannel data to deinterleave
- * @channel12: (out caller-allocates): buffer to deinterleave subchannel data into
+ * @channel96: (in) (transfer none) (array fixed-size=96): buffer containing subchannel data to deinterleave (96 bytes)
+ * @channel12: (out caller-allocates) (array fixed-size=12): buffer to deinterleave subchannel data into (12 bytes)
  *
  * <para>
  * Deinterleaves subchannel data of type @subchan from subchannel data stored in
@@ -845,9 +846,9 @@ static const guint32 edc_lut[256] = {
 
 /**
  * mirage_helper_sector_edc_ecc_compute_edc_block:
- * @src: (in): data to calculate EDC data for
+ * @src: (in) (transfer none) (array length=size): data to calculate EDC data for
  * @size: (in): size of data in @src
- * @dest: (out caller-allocates): buffer to write calculated EDC data into
+ * @dest: (out caller-allocates) (array fixed-size=4): buffer to write calculated EDC data into (4 bytes)
  *
  * <para>
  * Calculates EDC (error detection code) for data in @src of length @size and
@@ -895,7 +896,7 @@ void mirage_helper_sector_edc_ecc_compute_edc_block (const guint8 *src, guint16 
 
 /**
  * mirage_helper_sector_edc_ecc_compute_ecc_block:
- * @src: (in): data to calculate ECC data for
+ * @src: (in) (transfer none): data to calculate ECC data for
  * @major_count: (in): major count
  * @minor_count: (in): minor count
  * @major_mult: (in): major multiplicator
@@ -933,15 +934,19 @@ void mirage_helper_sector_edc_ecc_compute_edc_block (const guint8 *src, guint16 
 void mirage_helper_sector_edc_ecc_compute_ecc_block (const guint8 *src, guint32 major_count, guint32 minor_count, guint32 major_mult, guint32 minor_inc, guint8 *dest)
 {
     guint32 size = major_count * minor_count;
+    guint32 index;
+    guint8 ecc_a, ecc_b, temp;
 
     for (guint32 major = 0; major < major_count; major++) {
-        guint32 index = (major >> 1) * major_mult + (major & 1);
-        guint8 ecc_a = 0;
-        guint8 ecc_b = 0;
+        index = (major >> 1) * major_mult + (major & 1);
+        ecc_a = 0;
+        ecc_b = 0;
         for (guint32 minor = 0; minor < minor_count; minor++) {
-            guint8 temp = src[index];
+            temp = src[index];
             index += minor_inc;
-            if (index >= size) index -= size;
+            if (index >= size) {
+                index -= size;
+            }
             ecc_a ^= temp;
             ecc_b ^= temp;
             ecc_a = ecc_f_lut[ecc_a];

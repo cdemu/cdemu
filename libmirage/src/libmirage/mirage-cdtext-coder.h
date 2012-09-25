@@ -25,11 +25,11 @@ G_BEGIN_DECLS
 
 /**
  * MirageCdTextDataCallback:
- * @langcode: language code
- * @type: pack type
- * @track: track number
- * @data: data
- * @data_len: data length
+ * @langcode: (in): language code
+ * @type: (in): pack type
+ * @track: (in): track number
+ * @data: (in) (transfer none) (array length=data_len): data
+ * @data_len: (in): data length
  * @user_data: (closure): user data
  *
  * <para>

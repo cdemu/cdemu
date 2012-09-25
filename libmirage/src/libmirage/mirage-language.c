@@ -119,7 +119,7 @@ gint mirage_language_get_langcode (MirageLanguage *self)
  * mirage_language_set_pack_data:
  * @self: a #MirageLanguage
  * @pack_type: (in): pack type
- * @pack_data: (in): pack data
+ * @pack_data: (in) (transfer none) (array length=length): pack data
  * @length: (in): length of pack data
  * @error: (out) (allow-none): location to store error, or %NULL
  *
@@ -158,7 +158,7 @@ gboolean mirage_language_set_pack_data (MirageLanguage *self, gint pack_type, co
  * mirage_language_get_pack_data:
  * @self: a #MirageLanguage
  * @pack_type: (in): pack type
- * @pack_data: (out) (transfer none) (allow-none): location to store buffer containing pack data, or %NULL
+ * @pack_data: (out) (transfer none) (allow-none) (array length=length): location to store buffer containing pack data, or %NULL
  * @length: (out) (allow-none): location to store length of pack data, or %NULL
  * @error: (out) (allow-none): location to store error, or %NULL
  *

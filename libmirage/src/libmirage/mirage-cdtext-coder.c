@@ -361,7 +361,7 @@ static void mirage_cdtext_decoder_read_size_info (MirageCdTextCoder *self G_GNUC
 /**
  * mirage_cdtext_encoder_init:
  * @self: a #MirageCdTextCoder
- * @buffer: (in): buffer into which data will be encoded
+ * @buffer: (in) (array length=buflen): buffer into which data will be encoded
  * @buflen: (in): buffer length
  *
  * <para>
@@ -418,11 +418,11 @@ gboolean mirage_cdtext_encoder_set_block_info (MirageCdTextCoder *self, gint blo
 /**
  * mirage_cdtext_encoder_add_data:
  * @self: a #MirageCdTextCoder
- * @langcode: language code
- * @type: data type
- * @track: track number
- * @data: data
- * @data_len: data length
+ * @langcode: (in): language code
+ * @type: (in): data type
+ * @track: (in): track number
+ * @data: (in) (transfer none) (array length=data_len): data
+ * @data_len: (in): data length
  *
  * <para>
  * Adds data to the encoder. @langcode is language code of the block the data
@@ -463,7 +463,7 @@ void mirage_cdtext_encoder_add_data (MirageCdTextCoder *self, gint langcode, gin
 /**
  * mirage_cdtext_encoder_encode:
  * @self: a #MirageCdTextCoder
- * @buffer: (out): location to store buffer
+ * @buffer: (out) (array length=buflen): location to store buffer
  * @buflen: (out): location to store buffer length
  *
  * <para>
@@ -549,7 +549,7 @@ void mirage_cdtext_encoder_encode (MirageCdTextCoder *self, guint8 **buffer, gin
 /**
  * mirage_cdtext_decoder_init:
  * @self: a #MirageCdTextCoder
- * @buffer: (in): buffer containing encoded data
+ * @buffer: (in) (array length=buflen): buffer containing encoded data
  * @buflen: (in): length of data in buffer
  *
  * <para>

@@ -412,7 +412,7 @@ gchar **mirage_disc_get_filenames (MirageDisc *self)
 /**
  * mirage_disc_set_mcn:
  * @self: a #MirageDisc
- * @mcn: (in): MCN
+ * @mcn: (in) (transfer none): MCN
  *
  * <para>
  * Sets MCN (Media Catalogue Number).
@@ -1548,7 +1548,7 @@ GObject *mirage_disc_get_track_by_address (MirageDisc *self, gint address, GErro
  * @self: a #MirageDisc
  * @layer: (in): disc layer
  * @type: (in): disc structure type
- * @data: (in): disc structure data to be set
+ * @data: (in) (array length=len): disc structure data to be set
  * @len: (in): length of disc structure data
  *
  * <para>
@@ -1588,7 +1588,7 @@ void mirage_disc_set_disc_structure (MirageDisc *self, gint layer, gint type, co
  * @self: a #MirageDisc
  * @layer: (in): disc layer
  * @type: (in): disc structure type
- * @data: (out) (transfer none) (allow-none): location to store buffer containing disc structure data, or %NULL
+ * @data: (out) (transfer none) (allow-none) (array length=len): location to store buffer containing disc structure data, or %NULL
  * @len: (out) (allow-none): location to store data length, or %NULL
  * @error: location to store error, or %NULL
  *
@@ -1686,7 +1686,7 @@ GObject *mirage_disc_get_sector (MirageDisc *self, gint address, GError **error)
  * @address: (in): sector address
  * @main_sel: (in): main channel selection flags
  * @subc_sel: (in): subchannel selection flags
- * @ret_buf: (out caller-allocates) (allow-none): buffer to write data into, or %NULL
+ * @ret_buf: (out caller-allocates) (allow-none) (array length=ret_len): buffer to write data into, or %NULL
  * @ret_len: (out) (allow-none): location to store written data length, or %NULL
  * @error: (out) (allow-none): location to store error, or %NULL
  *
@@ -1727,7 +1727,7 @@ gboolean mirage_disc_read_sector (MirageDisc *self, gint address, guint8 main_se
  * @start: (in): DPM start sector
  * @resolution: (in): DPM data resolution
  * @num_entries: (in): number of DPM entries
- * @data: buffer (in): containing DPM data
+ * @data: buffer (in) (array length=num_entries): containing DPM data
  *
  * <para>
  * Sets the DPM data for disc. If @num_entries is not positive, DPM data is reset.
@@ -1760,7 +1760,7 @@ void mirage_disc_set_dpm_data (MirageDisc *self, gint start, gint resolution, gi
  * @start: (out) (allow-none): location to store DPM start sector, or %NULL
  * @resolution: (out) (allow-none): location to store DPM data resolution, or %NULL
  * @num_entries: (out) (allow-none): location to store number of DPM entries, or %NULL
- * @data: (out) (allow-none): location to store pointer to buffer containing DPM data, or %NULL
+ * @data: (out) (allow-none) (array length=num_entries): location to store pointer to buffer containing DPM data, or %NULL
  *
  * <para>
  * Retrieves DPM data for disc. The pointer to buffer containing DPM data entries

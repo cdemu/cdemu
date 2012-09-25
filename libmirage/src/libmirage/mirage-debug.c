@@ -31,7 +31,7 @@
 /**
  * mirage_debuggable_set_debug_context:
  * @self: a #MirageDebuggable
- * @debug_context: (in): debug context (a #MirageDebugContext)
+ * @debug_context: (in) (transfer full): debug context (a #MirageDebugContext)
  *
  * <para>
  * Sets object's debug context.

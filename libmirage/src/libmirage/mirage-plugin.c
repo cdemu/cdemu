@@ -49,7 +49,7 @@ typedef enum
 \**********************************************************************/
 /**
  * mirage_plugin_new:
- * @filename: (in): plugin's filename
+ * @filename: (in) (transfer none): plugin's filename
  *
  * <para>
  * Creates new plugin.
