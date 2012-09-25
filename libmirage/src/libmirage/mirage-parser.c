@@ -111,7 +111,7 @@ const MirageParserInfo *mirage_parser_get_parser_info (MirageParser *self)
 /**
  * mirage_parser_load_image:
  * @self: a #MirageParser
- * @filenames: (in): image filename(s)
+ * @filenames: (in) (array zero-terminated=1): array of image filename(s)
  * @error: (out) (allow-none): location to store error, or %NULL
  *
  * <para>

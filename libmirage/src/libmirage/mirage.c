@@ -630,7 +630,7 @@ gboolean mirage_for_each_file_filter (MirageCallbackFunction func, gpointer user
 
 /**
  * mirage_get_supported_debug_masks:
- * @masks: (out) (transfer none): location to store pointer to masks array
+ * @masks: (out) (transfer none) (array length=num_masks): location to store pointer to masks array
  * @num_masks: (out): location to store number of elements in masks array
  * @error: (out) (allow-none): location to store error, or %NULL
  *
