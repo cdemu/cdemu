@@ -30,7 +30,7 @@ G_BEGIN_DECLS
  * @track: track number
  * @data: data
  * @data_len: data length
- * @user_data: user data
+ * @user_data: (closure): user data
  *
  * <para>
  * Specifies the type of callback functions that can be passed to

@@ -41,7 +41,7 @@ G_BEGIN_DECLS
 
 /**
  * MirageCallbackFunction:
- * @data: (out): data
+ * @data: (in): data
  * @user_data: (closure): user data passed to iteration function
  *
  * <para>

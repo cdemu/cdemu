@@ -99,7 +99,7 @@ void mirage_parser_generate_parser_info (MirageParser *self, const gchar *id, co
  * Retrieves parser information.
  * </para>
  *
- * Returns: a pointer to parser information structure.  The
+ * Returns: (transfer none): a pointer to parser information structure.  The
  * structure belongs to object and should not be modified.
  **/
 const MirageParserInfo *mirage_parser_get_parser_info (MirageParser *self)
