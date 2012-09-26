@@ -229,7 +229,7 @@ gchar *mirage_obtain_password (GError **error)
  * mirage_create_disc:
  * @filenames: (in) (array zero-terminated=1): filename(s)
  * @debug_context: (in) (allow-none): debug context to be attached to disc object, or %NULL
- * @params: (in) (allow-none): parser parameters, or %NULL
+ * @params: (in) (allow-none) (element-type GValue): parser parameters, or %NULL
  * @error: (out) (allow-none): location to store error, or %NULL
  *
  * <para>

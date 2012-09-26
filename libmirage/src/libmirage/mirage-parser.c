@@ -263,7 +263,7 @@ void mirage_parser_add_redbook_pregap (MirageParser *self, GObject *disc)
 /**
  * mirage_parser_set_params:
  * @self: a #MirageParser
- * @params: (in): a #GHashTable containing parameters
+ * @params: (in) (element-type GValue): a #GHashTable containing parameters
  *
  * <para>
  * An internal function that sets the parsing parameters to parser
