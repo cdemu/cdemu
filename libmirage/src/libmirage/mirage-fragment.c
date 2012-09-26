@@ -178,7 +178,7 @@ gint mirage_fragment_get_address (MirageFragment *self)
 /**
  * mirage_fragment_set_length:
  * @self: a #MirageFragment
- * @length: length
+ * @length: (in): length
  *
  * <para>
  * Sets fragment's length. The @length is given in sectors.
@@ -244,7 +244,7 @@ gboolean mirage_fragment_use_the_rest_of_file (MirageFragment *self, GError **er
  * mirage_fragment_read_main_data:
  * @self: a #MirageFragment
  * @address: (in): address
- * @buf: (out caller-allocates): buffer to read data into
+ * @buf: (out caller-allocates) (array length=length): buffer to read data into
  * @length: (out): location to store read data length
  * @error: (out) (allow-none): location to store error, or %NULL
  *
@@ -266,7 +266,7 @@ gboolean mirage_fragment_read_main_data (MirageFragment *self, gint address, gui
  * mirage_fragment_read_subchannel_data:
  * @self: a #MirageFragment
  * @address: (in): address
- * @buf: (out caller-allocates): buffer to read data into
+ * @buf: (out caller-allocates) (array length=length): buffer to read data into
  * @length: (out): location to store read data length
  * @error: (out) (allow-none): location to store error, or %NULL
  *
