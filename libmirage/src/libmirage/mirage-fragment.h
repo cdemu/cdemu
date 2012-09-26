@@ -79,8 +79,8 @@ struct _MirageFragmentClass
 
     gboolean (*use_the_rest_of_file) (MirageFragment *self, GError **error);
 
-    gboolean (*read_main_data) (MirageFragment *self, gint address, guint8 *buf, gint *length, GError **error);
-    gboolean (*read_subchannel_data) (MirageFragment *self, gint address, guint8 *buf, gint *length, GError **error);
+    gboolean (*read_main_data) (MirageFragment *self, gint address, guint8 **buffer, gint *length, GError **error);
+    gboolean (*read_subchannel_data) (MirageFragment *self, gint address, guint8 **buffer, gint *length, GError **error);
 };
 
 /* Used by MIRAGE_TYPE_FRAGMENT */
@@ -103,8 +103,8 @@ gint mirage_fragment_get_length (MirageFragment *self);
 
 gboolean mirage_fragment_use_the_rest_of_file (MirageFragment *self, GError **error);
 
-gboolean mirage_fragment_read_main_data (MirageFragment *self, gint address, guint8 *buf, gint *length, GError **error);
-gboolean mirage_fragment_read_subchannel_data (MirageFragment *self, gint address, guint8 *buf, gint *length, GError **error);
+gboolean mirage_fragment_read_main_data (MirageFragment *self, gint address, guint8 **buffer, gint *length, GError **error);
+gboolean mirage_fragment_read_subchannel_data (MirageFragment *self, gint address, guint8 **buffer, gint *length, GError **error);
 
 
 /**********************************************************************\

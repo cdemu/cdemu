@@ -1223,7 +1223,7 @@ static gboolean mirage_fragment_daa_use_the_rest_of_file (MirageFragment *_self 
     return FALSE;
 }
 
-static gboolean mirage_fragment_daa_read_main_data (MirageFragment *_self, gint address, guint8 *buf, gint *length, GError **error)
+static gboolean mirage_fragment_daa_read_main_data (MirageFragment *_self, gint address, guint8 **buffer, gint *length, GError **error)
 {
     MirageFragmentDaa *self = MIRAGE_FRAGMENT_DAA(_self);
 
@@ -1313,26 +1313,29 @@ static gboolean mirage_fragment_daa_read_main_data (MirageFragment *_self, gint 
     }
 
 
-    /* Copy data */
-    if (buf) {
-        memcpy(buf, self->priv->buffer + (chunk_offset*2048), 2048);
-    }
+    /* Length */
+    *length = 2048;
 
-    if (length) {
-        *length = 2048;
+    /* Data */
+    if (buffer) {
+        guint8 *data_buffer = g_malloc0(2049);
+        memcpy(data_buffer, self->priv->buffer + (chunk_offset*2048), 2048);
+        *buffer = data_buffer;
     }
 
     return TRUE;
 }
 
-static gboolean mirage_fragment_daa_read_subchannel_data (MirageFragment *_self, gint address G_GNUC_UNUSED, guint8 *buf G_GNUC_UNUSED, gint *length, GError **error G_GNUC_UNUSED)
+static gboolean mirage_fragment_daa_read_subchannel_data (MirageFragment *_self, gint address G_GNUC_UNUSED, guint8 **buffer, gint *length, GError **error G_GNUC_UNUSED)
 {
     MirageFragmentDaa *self = MIRAGE_FRAGMENT_DAA(_self);
 
-    /* Nothing to read */
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_FRAGMENT, "%s: no subchannel data in DAA fragment\n", __debug__);
-    if (length) {
-        *length = 0;
+
+    /* Nothing to read */
+    *length = 0;
+    if (buffer) {
+        *buffer = NULL;
     }
 
     return TRUE;

@@ -38,25 +38,33 @@ static gboolean mirage_fragment_null_use_the_rest_of_file (MirageFragment *_self
     return TRUE;
 }
 
-static gboolean mirage_fragment_null_read_main_data (MirageFragment *_self, gint address G_GNUC_UNUSED, guint8 *buf G_GNUC_UNUSED, gint *length, GError **error G_GNUC_UNUSED)
+static gboolean mirage_fragment_null_read_main_data (MirageFragment *_self, gint address G_GNUC_UNUSED, guint8 **buffer, gint *length, GError **error G_GNUC_UNUSED)
 {
     MirageFragmentNull *self = MIRAGE_FRAGMENT_NULL(_self);
-    /* Nothing to read */
+
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_FRAGMENT, "%s: no data in NULL fragment\n", __debug__);
-    if (length) {
-        *length = 0;
+
+    /* Nothing to read */
+    *length = 0;
+    if (buffer) {
+        *buffer = NULL;
     }
+
     return TRUE;
 }
 
-static gboolean mirage_fragment_null_read_subchannel_data (MirageFragment *_self, gint address G_GNUC_UNUSED, guint8 *buf G_GNUC_UNUSED, gint *length, GError **error G_GNUC_UNUSED)
+static gboolean mirage_fragment_null_read_subchannel_data (MirageFragment *_self, gint address G_GNUC_UNUSED, guint8 **buffer, gint *length, GError **error G_GNUC_UNUSED)
 {
     MirageFragmentNull *self = MIRAGE_FRAGMENT_NULL(_self);
-    /* Nothing to read */
+
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_FRAGMENT, "%s: no data in NULL fragment\n", __debug__);
-    if (length) {
-        *length = 0;
+
+    /* Nothing to read */
+    *length = 0;
+    if (buffer) {
+        *buffer = NULL;
     }
+
     return TRUE;
 }
 

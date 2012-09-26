@@ -93,42 +93,33 @@ end:
 static gboolean mirage_parser_readcd_determine_track_mode (MirageParserReadcd *self, GObject *track, GError **error)
 {
     GObject *fragment;
-    guint8 *buf = g_try_malloc(2532);
     gint track_mode;
-
-    if(!buf) {
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_CANNOT_HANDLE, "Failed to allocate memory.");
-        return FALSE;
-    }
+    guint8 *buffer;
+    gint length;
 
     /* Get last fragment */
     fragment = mirage_track_get_fragment_by_index(MIRAGE_TRACK(track), -1, error);
     if (!fragment) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to get fragment\n", __debug__);
-        goto error;
+        return FALSE;
     }
 
     //* Read main sector data from fragment; 2352-byte sectors are assumed */
-    if (!mirage_fragment_read_main_data(MIRAGE_FRAGMENT(fragment), 0, buf, NULL, error)) {
+    if (!mirage_fragment_read_main_data(MIRAGE_FRAGMENT(fragment), 0, &buffer, &length, error)) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: failed to read data from fragment to determine track mode!\n", __debug__);
         g_object_unref(fragment);
-        goto error;
+        return FALSE;
     }
     g_object_unref(fragment);
 
     /* Determine track mode*/
-    track_mode = mirage_helper_determine_sector_type(buf);
+    track_mode = mirage_helper_determine_sector_type(buffer);
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: track mode determined to be: %d\n", __debug__, track_mode);
     mirage_track_set_mode(MIRAGE_TRACK(track), track_mode);
 
-    g_free(buf);
+    g_free(buffer);
 
     return TRUE;
-
-error:
-    g_free(buf);
-
-    return FALSE;
 }
 
 static gboolean mirage_parser_readcd_finish_previous_track (MirageParserReadcd *self, gint next_address)

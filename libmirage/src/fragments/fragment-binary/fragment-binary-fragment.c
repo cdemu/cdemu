@@ -320,55 +320,63 @@ static gboolean mirage_fragment_binary_use_the_rest_of_file (MirageFragment *_se
     return TRUE;
 }
 
-static gboolean mirage_fragment_binary_read_main_data (MirageFragment *_self, gint address, guint8 *buf, gint *length, GError **error G_GNUC_UNUSED)
+static gboolean mirage_fragment_binary_read_main_data (MirageFragment *_self, gint address, guint8 **buffer, gint *length, GError **error G_GNUC_UNUSED)
 {
     MirageFragmentBinary *self = MIRAGE_FRAGMENT_BINARY(_self);
 
     guint64 position;
     gint read_len;
 
+    /* Clear both variables */
+    *length = 0;
+    if (buffer) {
+        *buffer = NULL;
+    }
+
     /* We need file to read data from... but if it's missing, we don't read
        anything and this is not considered an error */
     if (!self->priv->tfile_stream) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_FRAGMENT, "%s: no data file stream!\n", __debug__);
-        if (length) {
-            *length = 0;
-        }
         return TRUE;
     }
 
     /* Determine position within file */
     position = mirage_fragment_iface_binary_track_file_get_position(MIRAGE_FRAGMENT_IFACE_BINARY(self), address);
 
-    if (buf) {
+    /* Length */
+    *length = self->priv->tfile_sectsize;
+
+    /* Data */
+    if (buffer) {
+        guint8 *data_buffer = g_malloc0(self->priv->tfile_sectsize);
+
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_FRAGMENT, "%s: reading from position 0x%llX\n", __debug__, position);
 
         /* Note: we ignore all errors here in order to be able to cope with truncated mini images */
         g_seekable_seek(G_SEEKABLE(self->priv->tfile_stream), position, G_SEEK_SET, NULL, NULL);
-        read_len = g_input_stream_read(G_INPUT_STREAM(self->priv->tfile_stream), buf, self->priv->tfile_sectsize, NULL, NULL);
+        read_len = g_input_stream_read(G_INPUT_STREAM(self->priv->tfile_stream), data_buffer, self->priv->tfile_sectsize, NULL, NULL);
 
         /*if (read_len != self->priv->tfile_sectsize) {
             mirage_error(MIRAGE_E_READFAILED, error);
+            g_fre(data_buffer);
             return FALSE;
         }*/
 
         /* Binary audio files may need to be swapped from BE to LE */
         if (self->priv->tfile_format == MIRAGE_TFILE_AUDIO_SWAP) {
             for (gint i = 0; i < read_len; i+=2) {
-                guint16 *ptr = (guint16 *)&buf[i];
+                guint16 *ptr = (guint16 *)&data_buffer[i];
                 *ptr = GUINT16_SWAP_LE_BE(*ptr);
             }
         }
-    }
 
-    if (length) {
-        *length = self->priv->tfile_sectsize;
+        *buffer = data_buffer;
     }
 
     return TRUE;
 }
 
-static gboolean mirage_fragment_binary_read_subchannel_data (MirageFragment *_self, gint address, guint8 *buf, gint *length, GError **error G_GNUC_UNUSED)
+static gboolean mirage_fragment_binary_read_subchannel_data (MirageFragment *_self, gint address, guint8 **buffer, gint *length, GError **error G_GNUC_UNUSED)
 {
     MirageFragmentBinary *self = MIRAGE_FRAGMENT_BINARY(_self);
 
@@ -376,13 +384,15 @@ static gboolean mirage_fragment_binary_read_subchannel_data (MirageFragment *_se
     guint64 position;
     gint read_len;
 
+    /* Clear both variables */
+    *length = 0;
+    if (buffer) {
+        *buffer = NULL;
+    }
 
     /* If there's no subchannel, return 0 for the length */
     if (!self->priv->sfile_sectsize) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_FRAGMENT, "%s: no subchannel (sectsize = 0)!\n", __debug__);
-        if (length) {
-            *length = 0;
-        }
         return TRUE;
     }
 
@@ -398,9 +408,6 @@ static gboolean mirage_fragment_binary_read_subchannel_data (MirageFragment *_se
 
     if (!stream) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_FRAGMENT, "%s: no stream!\n", __debug__);
-        if (length) {
-            *length = 0;
-        }
         return TRUE;
     }
 
@@ -408,18 +415,25 @@ static gboolean mirage_fragment_binary_read_subchannel_data (MirageFragment *_se
     /* Determine position within file */
     position = mirage_fragment_iface_binary_subchannel_file_get_position(MIRAGE_FRAGMENT_IFACE_BINARY(self), address);
 
-    /* Read only if there's buffer to read into */
-    if (buf) {
-        guint8 tmp_buf[96];
+
+    /* Length */
+    *length = 96; /* Always 96, because we do the processing here */
+
+    /* Data */
+    if (buffer) {
+        guint8 *data_buffer = g_malloc0(96);
+        guint8 *raw_buffer = g_malloc0(self->priv->sfile_sectsize);
 
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_FRAGMENT, "%s: reading from position 0x%llX\n", __debug__, position);
         /* We read into temporary buffer, because we might need to perform some
            magic on the data */
         g_seekable_seek(G_SEEKABLE(stream), position, G_SEEK_SET, NULL, NULL);
-        read_len = g_input_stream_read(G_INPUT_STREAM(stream), tmp_buf, self->priv->sfile_sectsize, NULL, NULL);
+        read_len = g_input_stream_read(G_INPUT_STREAM(stream), raw_buffer, self->priv->sfile_sectsize, NULL, NULL);
 
         if (read_len != self->priv->sfile_sectsize) {
             /*mirage_error(MIRAGE_E_READFAILED, error);
+            g_free(raw_buffer);
+            g_free(data_buffer);
             return FALSE;*/
         }
 
@@ -429,20 +443,19 @@ static gboolean mirage_fragment_binary_read_subchannel_data (MirageFragment *_se
             /* 96-byte deinterleaved PW; grab each subchannel and interleave it
                into destination buffer */
             for (gint i = 0; i < 8; i++) {
-                guint8 *ptr = tmp_buf + i*12;
-                mirage_helper_subchannel_interleave(7 - i, ptr, buf);
+                mirage_helper_subchannel_interleave(7 - i, raw_buffer + i*12, data_buffer);
             }
         } else if (self->priv->sfile_format & MIRAGE_SFILE_PW96_INT) {
             /* 96-byte interleaved PW; just copy it */
-            memcpy(buf, tmp_buf, 96);
+            memcpy(data_buffer, raw_buffer, 96);
         } else if (self->priv->sfile_format & MIRAGE_SFILE_PQ16) {
             /* 16-byte PQ; interleave it and pretend everything else's 0 */
-            mirage_helper_subchannel_interleave(SUBCHANNEL_Q, tmp_buf, buf);
+            mirage_helper_subchannel_interleave(SUBCHANNEL_Q, raw_buffer, data_buffer);
         }
-    }
 
-    if (length) {
-        *length = 96; /* Always 96, because we do the processing here */
+        g_free(raw_buffer);
+
+        *buffer = data_buffer;
     }
 
     return TRUE;

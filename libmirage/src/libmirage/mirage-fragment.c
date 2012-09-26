@@ -244,44 +244,48 @@ gboolean mirage_fragment_use_the_rest_of_file (MirageFragment *self, GError **er
  * mirage_fragment_read_main_data:
  * @self: a #MirageFragment
  * @address: (in): address
- * @buf: (out caller-allocates) (array length=length): buffer to read data into
+ * @buffer: (out) (allow-none) (transfer full) (array length=length): location to store pointer to buffer with read data, or %NULL
  * @length: (out): location to store read data length
  * @error: (out) (allow-none): location to store error, or %NULL
  *
  * <para>
- * Reads main channel selection data for sector at fragment-relative
- * @address into @buf and stores read length into @length.
- * Both @address and and @length is given in sectors.
+ * Reads main channel data for sector at fragment-relative @address (given
+ * in sectors). The buffer for reading data into is allocated by function
+ * and should be freed using g_free() when no longer needed. The pointer
+ * to buffer is stored into @buffer and the length of read data is stored into
+ * @length.
  * </para>
  *
  * Returns: %TRUE on success, %FALSE on failure
  **/
-gboolean mirage_fragment_read_main_data (MirageFragment *self, gint address, guint8 *buf, gint *length, GError **error)
+gboolean mirage_fragment_read_main_data (MirageFragment *self, gint address, guint8 **buffer, gint *length, GError **error)
 {
     /* Provided by implementation */
-    return MIRAGE_FRAGMENT_GET_CLASS(self)->read_main_data(self, address, buf, length, error);
+    return MIRAGE_FRAGMENT_GET_CLASS(self)->read_main_data(self, address, buffer, length, error);
 }
 
 /**
  * mirage_fragment_read_subchannel_data:
  * @self: a #MirageFragment
  * @address: (in): address
- * @buf: (out caller-allocates) (array length=length): buffer to read data into
+ * @buffer: (out) (allow-none) (transfer full) (array length=length): location to store pointer to buffer with read data, or %NULL
  * @length: (out): location to store read data length
  * @error: (out) (allow-none): location to store error, or %NULL
  *
  * <para>
- * Reads subchannel channel selection data for sector at fragment-relative
- * @address into @buf and stores read length into @length.
- * Both @address and @length is given in sectors.
+ * Reads subchannel data for sector at fragment-relative @address (given
+ * in sectors). The buffer for reading data into is allocated by function
+ * and should be freed using g_free() when no longer needed. The pointer
+ * to buffer is stored into @buffer and the length of read data is stored into
+ * @length.
  * </para>
  *
  * Returns: %TRUE on success, %FALSE on failure
  **/
-gboolean mirage_fragment_read_subchannel_data (MirageFragment *self, gint address, guint8 *buf, gint *length, GError **error)
+gboolean mirage_fragment_read_subchannel_data (MirageFragment *self, gint address, guint8 **buffer, gint *length, GError **error)
 {
     /* Provided by implementation */
-    return MIRAGE_FRAGMENT_GET_CLASS(self)->read_subchannel_data(self, address, buf, length, error);
+    return MIRAGE_FRAGMENT_GET_CLASS(self)->read_subchannel_data(self, address, buffer, length, error);
 }
 
 

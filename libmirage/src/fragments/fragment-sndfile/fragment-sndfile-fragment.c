@@ -246,48 +246,58 @@ static gboolean mirage_fragment_sndfile_use_the_rest_of_file (MirageFragment *_s
     return TRUE;
 }
 
-static gboolean mirage_fragment_sndfile_read_main_data (MirageFragment *_self, gint address, guint8 *buf, gint *length, GError **error)
+static gboolean mirage_fragment_sndfile_read_main_data (MirageFragment *_self, gint address, guint8 **buffer, gint *length, GError **error)
 {
     MirageFragmentSndfile *self = MIRAGE_FRAGMENT_SNDFILE(_self);
     sf_count_t position;
     sf_count_t read_len;
 
+    /* Clear variables */
+    *length = 0;
+    if (buffer) {
+        *buffer = NULL;
+    }
+
     /* We need file to read data from... but if it's missing, we don't read
        anything and this is not considered an error */
     if (!self->priv->sndfile) {
-        if (length) {
-            *length = 0;
-        }
         return TRUE;
     }
 
     /* Determine position within file */
     position = self->priv->offset + address*SNDFILE_FRAMES_PER_SECTOR;
 
-    if (buf) {
+    /* Length */
+    *length = 2352; /* Always */
+
+    /* Data */
+    if (buffer) {
+        guint8 *data_buffer = g_malloc0(2352);
+
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_FRAGMENT, "%s: reading from position 0x%llX (frames)\n", __debug__, position);
         sf_seek(self->priv->sndfile, position, SEEK_SET);
-        read_len = sf_readf_short(self->priv->sndfile, (short *)buf, SNDFILE_FRAMES_PER_SECTOR);
+        read_len = sf_readf_short(self->priv->sndfile, (short *)data_buffer, SNDFILE_FRAMES_PER_SECTOR);
 
         if (read_len != SNDFILE_FRAMES_PER_SECTOR) {
             g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_FRAGMENT_ERROR, "Failed to read %ld bytes of audio data!", read_len);
+            g_free(data_buffer);
             return FALSE;
         }
-    }
 
-    if (length) {
-        *length = 2352; /* Always */
+        *buffer = data_buffer;
     }
 
     return TRUE;
 }
 
-static gboolean mirage_fragment_sndfile_read_subchannel_data (MirageFragment *_self G_GNUC_UNUSED, gint address G_GNUC_UNUSED, guint8 *buf G_GNUC_UNUSED, gint *length, GError **error G_GNUC_UNUSED)
+static gboolean mirage_fragment_sndfile_read_subchannel_data (MirageFragment *_self G_GNUC_UNUSED, gint address G_GNUC_UNUSED, guint8 **buffer G_GNUC_UNUSED, gint *length, GError **error G_GNUC_UNUSED)
 {
     /* Nothing to read */
-    if (length) {
-        *length = 0;
+    *length = 0;
+    if (buffer) {
+        *buffer = NULL;
     }
+
     return TRUE;
 }
 

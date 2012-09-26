@@ -220,7 +220,9 @@ gboolean mirage_sector_feed_data (MirageSector *self, gint address, GObject *tra
 {
     GError *local_error = NULL;
     GObject *fragment;
-    gint mode, sectsize, data_offset, fragment_start;
+    gint mode, data_offset, fragment_start;
+    guint8 *buffer;
+    gint length;
 
     /* Get track mode */
     mode = mirage_track_get_mode(MIRAGE_TRACK(track));
@@ -246,16 +248,14 @@ gboolean mirage_sector_feed_data (MirageSector *self, gint address, GObject *tra
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_SECTOR, "%s: got fragment for track-relative address 0x%X... %p\n", __debug__, address, fragment);
 
     /* *** Main channel data ***/
-
-    /* Get sector size by performing 'empty' read */
-    if (!mirage_fragment_read_main_data(MIRAGE_FRAGMENT(fragment), address, NULL, &sectsize, &local_error)) {
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_SECTOR_ERROR, "Failed get main sector data length: %s", local_error->message);
+    if (!mirage_fragment_read_main_data(MIRAGE_FRAGMENT(fragment), address, &buffer, &length, &local_error)) {
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_SECTOR_ERROR, "Failed read main channel data: %s", local_error->message);
         g_error_free(local_error);
         g_object_unref(fragment);
         return FALSE;
     }
 
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_SECTOR, "%s: main channel sector size: %d\n", __debug__, sectsize);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_SECTOR, "%s: main channel data size: %d\n", __debug__, length);
 
     /* Now, calculate offset and valid data based on mode and sector size */
     data_offset = 0;
@@ -263,7 +263,7 @@ gboolean mirage_sector_feed_data (MirageSector *self, gint address, GObject *tra
         case MIRAGE_MODE_AUDIO: {
             /* Audio sector structure:
                 data (2352) */
-            switch (sectsize) {
+            switch (length) {
                 case 0: {
                     /* Nothing; pregap */
                     break;
@@ -283,8 +283,9 @@ gboolean mirage_sector_feed_data (MirageSector *self, gint address, GObject *tra
                     break;
                 }
                 default: {
-                    MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: unhandled sector size %d for Audio sector!\n", __debug__, sectsize);
-                    g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_SECTOR_ERROR, "Unhandled sector size %d for Audio sector!", sectsize);
+                    MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: unhandled sector size %d for Audio sector!\n", __debug__, length);
+                    g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_SECTOR_ERROR, "Unhandled sector size %d for Audio sector!", length);
+                    g_free(buffer);
                     return FALSE;
                 }
             }
@@ -293,7 +294,7 @@ gboolean mirage_sector_feed_data (MirageSector *self, gint address, GObject *tra
         case MIRAGE_MODE_MODE0: {
             /* Mode 0 sector structue:
                 sync (12) + header (4) + data (2336) */
-            switch (sectsize) {
+            switch (length) {
                 case 0: {
                     /* Nothing; pregap */
                     break;
@@ -329,8 +330,9 @@ gboolean mirage_sector_feed_data (MirageSector *self, gint address, GObject *tra
                     break;
                 }
                 default: {
-                    MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: unhandled sector size %d for Mode 0 sector!\n", __debug__, sectsize);
-                    g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_SECTOR_ERROR, "Unhandled sector size %d for Mode 0 sector!", sectsize);
+                    MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: unhandled sector size %d for Mode 0 sector!\n", __debug__, length);
+                    g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_SECTOR_ERROR, "Unhandled sector size %d for Mode 0 sector!", length);
+                    g_free(buffer);
                     return FALSE;
                 }
             }
@@ -340,7 +342,7 @@ gboolean mirage_sector_feed_data (MirageSector *self, gint address, GObject *tra
         case MIRAGE_MODE_MODE1: {
             /* Mode 1 sector structue:
                 sync (12) + header (4) + data (2048) + EDC/ECC (288) */
-            switch (sectsize) {
+            switch (length) {
                 case 0: {
                     /* Nothing; pregap */
                     break;
@@ -409,8 +411,9 @@ gboolean mirage_sector_feed_data (MirageSector *self, gint address, GObject *tra
                     break;
                 }
                 default: {
-                    MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: unhandled sector size %d for Mode 1 sector!\n", __debug__, sectsize);
-                    g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_SECTOR_ERROR, "Unhandled sector size %d for Mode 1 sector!", sectsize);
+                    MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: unhandled sector size %d for Mode 1 sector!\n", __debug__, length);
+                    g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_SECTOR_ERROR, "Unhandled sector size %d for Mode 1 sector!", length);
+                    g_free(buffer);
                     return FALSE;
                 }
             }
@@ -420,7 +423,7 @@ gboolean mirage_sector_feed_data (MirageSector *self, gint address, GObject *tra
         case MIRAGE_MODE_MODE2: {
             /* Mode 2 formless sector structue:
                 sync (12) + header (4) + data (2336) */
-            switch (sectsize) {
+            switch (length) {
                 case 0: {
                     /* Nothing; pregap */
                     break;
@@ -456,8 +459,9 @@ gboolean mirage_sector_feed_data (MirageSector *self, gint address, GObject *tra
                     break;
                 }
                 default: {
-                    MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: unhandled sector size %d for Mode 2 Formless sector!\n", __debug__, sectsize);
-                    g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_SECTOR_ERROR, "Unhandled sector size %d for Mode 2 Formless sector!", sectsize);
+                    MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: unhandled sector size %d for Mode 2 Formless sector!\n", __debug__, length);
+                    g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_SECTOR_ERROR, "Unhandled sector size %d for Mode 2 Formless sector!", length);
+                    g_free(buffer);
                     return FALSE;
                 }
             }
@@ -467,7 +471,7 @@ gboolean mirage_sector_feed_data (MirageSector *self, gint address, GObject *tra
         case MIRAGE_MODE_MODE2_FORM1: {
             /* Mode 2 Form 1 sector structue:
                 sync (12) + header (4) + subheader (8) + data (2048) + EDC/ECC (280) */
-            switch (sectsize) {
+            switch (length) {
                 case 0: {
                     /* Nothing; pregap */
                     break;
@@ -561,8 +565,9 @@ gboolean mirage_sector_feed_data (MirageSector *self, gint address, GObject *tra
                     break;
                 }
                 default: {
-                    MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: unhandled sector size %d for Mode 2 Form 1 sector!\n", __debug__, sectsize);
-                    g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_SECTOR_ERROR, "Unhandled sector size %d for Mode 2 Form 1 sector!", sectsize);
+                    MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: unhandled sector size %d for Mode 2 Form 1 sector!\n", __debug__, length);
+                    g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_SECTOR_ERROR, "Unhandled sector size %d for Mode 2 Form 1 sector!", length);
+                    g_free(buffer);
                     return FALSE;
                 }
             }
@@ -572,7 +577,7 @@ gboolean mirage_sector_feed_data (MirageSector *self, gint address, GObject *tra
         case MIRAGE_MODE_MODE2_FORM2: {
             /* Mode 2 Form 2 sector structue:
                 sync (12) + header (4) + subheader (8) + data (2324) + EDC/ECC (4) */
-            switch (sectsize) {
+            switch (length) {
                 case 0: {
                     /* Nothing; pregap */
                     break;
@@ -670,8 +675,9 @@ gboolean mirage_sector_feed_data (MirageSector *self, gint address, GObject *tra
                     break;
                 }
                 default: {
-                    MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: unhandled sector size %d for Mode 2 Form 2 sector!\n", __debug__, sectsize);
-                    g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_SECTOR_ERROR, "Unhandled sector size %d for Mode 2 Form 2 sector!", sectsize);
+                    MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: unhandled sector size %d for Mode 2 Form 2 sector!\n", __debug__, length);
+                    g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_SECTOR_ERROR, "Unhandled sector size %d for Mode 2 Form 2 sector!", length);
+                    g_free(buffer);
                     return FALSE;
                 }
             }
@@ -684,7 +690,7 @@ gboolean mirage_sector_feed_data (MirageSector *self, gint address, GObject *tra
                having to provide subheader data, both Form 1 and Form 2 sectors
                must be of same size; this is true only if at least subheader,
                data and EDC/ECC are provided */
-            switch (sectsize) {
+            switch (length) {
                 case 0: {
                     /* Nothing; pregap */
                     break;
@@ -741,8 +747,9 @@ gboolean mirage_sector_feed_data (MirageSector *self, gint address, GObject *tra
                     break;
                 }
                 default: {
-                    MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: unhandled sector size %d for Mode 2 Mixed sector!\n", __debug__, sectsize);
-                    g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_SECTOR_ERROR, "Unhandled sector size %d for Mode 2 Mixed sector!", sectsize);
+                    MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: unhandled sector size %d for Mode 2 Mixed sector!\n", __debug__, length);
+                    g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_SECTOR_ERROR, "Unhandled sector size %d for Mode 2 Mixed sector!", length);
+                    g_free(buffer);
                     return FALSE;
                 }
             }
@@ -751,13 +758,10 @@ gboolean mirage_sector_feed_data (MirageSector *self, gint address, GObject *tra
         }
     }
 
-    /* Read */
-    if (!mirage_fragment_read_main_data(MIRAGE_FRAGMENT(fragment), address, self->priv->sector_data+data_offset, &sectsize, &local_error)) {
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_SECTOR_ERROR, "Failed to read main sector data: %s", local_error->message);
-        g_error_free(local_error);
-        g_object_unref(fragment);
-        return FALSE;
-    }
+    /* Copy data from buffer */
+    memcpy(self->priv->sector_data+data_offset, buffer, length);
+    g_free(buffer);
+
 
     /* Now, if we had Mode 2 Mixed, we can determine whether we have
        Mode 2 Form 1 or Mode 2 Form 2 */
@@ -775,18 +779,20 @@ gboolean mirage_sector_feed_data (MirageSector *self, gint address, GObject *tra
     /* *** Subchannel *** */
     /* Read subchannel... fragment should *always* return us 96-byte interleaved
        PW subchannel (or nothing) */
-    if (!mirage_fragment_read_subchannel_data(MIRAGE_FRAGMENT(fragment), address, self->priv->subchan_pw, &sectsize, &local_error)) {
+    if (!mirage_fragment_read_subchannel_data(MIRAGE_FRAGMENT(fragment), address, &buffer, &length, &local_error)) {
         g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_SECTOR_ERROR, "Failed to read subchannel data: %s", local_error->message);
         g_error_free(local_error);
         g_object_unref(fragment);
         return FALSE;
     }
 
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_SECTOR, "%s: subchannel sector size: %d\n", __debug__, sectsize);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_SECTOR, "%s: subchannel sector size: %d\n", __debug__, length);
 
-    if (sectsize) {
+    if (length) {
         self->priv->valid_data |= MIRAGE_VALID_SUBCHAN;
+        memcpy(self->priv->subchan_pw, buffer, length);
     }
+    g_free(buffer);
 
     g_object_unref(fragment);
 

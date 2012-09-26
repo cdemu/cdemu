@@ -960,7 +960,7 @@ void mirage_helper_sector_edc_ecc_compute_ecc_block (const guint8 *src, guint32 
 
 /**
  * mirage_helper_determine_sector_type:
- * @buf: (in): buffer containing at least first 16 bytes of sector's data
+ * @buf: (in) (transfer none): buffer containing at least first 16 bytes of sector's data
  *
  * <para>
  * Determines sector type from its data, based on first 16 bytes, which

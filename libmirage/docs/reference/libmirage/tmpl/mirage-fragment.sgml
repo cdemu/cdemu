@@ -131,7 +131,7 @@ implementation handles data.
 
 @self: 
 @address: 
-@buf: 
+@buffer: 
 @length: 
 @error: 
 @Returns: 
@@ -144,7 +144,7 @@ implementation handles data.
 
 @self: 
 @address: 
-@buf: 
+@buffer: 
 @length: 
 @error: 
 @Returns: 
