@@ -70,6 +70,7 @@ PKG_CHECK_MODULES(gmodule, gmodule-2.0 >= 2.24)
 PKG_CHECK_MODULES(gio, gio-2.0 >= 2.24)
 PKG_CHECK_MODULES(sndfile, sndfile >= 1.0.0)
 PKG_CHECK_MODULES(zlib, zlib)
+PKG_CHECK_MODULES(liblzma, liblzma >= 5.0.0)
 
 # Compile with more warnings
 AC_ARG_ENABLE(more-warnings,
