@@ -1,4 +1,5 @@
 usr/lib/*/lib*.so.*
 usr/lib/*/libmirage-1.6/*.so
+usr/lib/*/girepository-1.0/*
 usr/share/mime/packages/*.xml
 

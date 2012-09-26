@@ -4,7 +4,6 @@ Priority: optional
 Homepage: http://cdemu.sourceforge.net/
 Maintainer: Henrik Stokseth <henrik@hw0.org>
 Build-Depends: debhelper (>= 9), dkms
-Build-Depends-Indep: sed
 Standards-Version: 3.9.3
 
 

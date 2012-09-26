@@ -1,23 +1,15 @@
 libmirage.so.7 libmirage7 #MINVER#
- libmirage_create_disc@Base 1.2.0
- libmirage_create_file_stream@Base 1.6.0
- libmirage_create_fragment@Base 1.2.0
- libmirage_for_each_file_filter@Base 1.6.0
- libmirage_for_each_fragment@Base 1.2.0
- libmirage_for_each_parser@Base 1.2.0
- libmirage_get_supported_debug_masks@Base 1.2.0
- libmirage_init@Base 1.2.0
- libmirage_obtain_password@Base 1.2.0
- libmirage_set_password_function@Base 1.2.0
- libmirage_shutdown@Base 1.2.0
+ mirage_cdtext_coder_get_type@Base 1.6.0
  mirage_cdtext_decoder_get_block_info@Base 1.0.0
  mirage_cdtext_decoder_get_data@Base 1.0.0
  mirage_cdtext_decoder_init@Base 1.0.0
- mirage_cdtext_encdec_get_type@Base 1.0.0
  mirage_cdtext_encoder_add_data@Base 1.0.0
  mirage_cdtext_encoder_encode@Base 1.0.0
  mirage_cdtext_encoder_init@Base 1.0.0
  mirage_cdtext_encoder_set_block_info@Base 1.0.0
+ mirage_create_disc@Base 1.6.0
+ mirage_create_file_stream@Base 1.6.0
+ mirage_create_fragment@Base 1.6.0
  mirage_debug_context_get_debug_mask@Base 1.0.0
  mirage_debug_context_get_domain@Base 1.0.0
  mirage_debug_context_get_name@Base 1.0.0
@@ -61,7 +53,6 @@ libmirage.so.7 libmirage7 #MINVER#
  mirage_disc_layout_set_first_session@Base 1.0.0
  mirage_disc_layout_set_first_track@Base 1.0.0
  mirage_disc_layout_set_start_sector@Base 1.0.0
- mirage_disc_read_sector@Base 1.0.0
  mirage_disc_remove_session_by_index@Base 1.0.0
  mirage_disc_remove_session_by_number@Base 1.0.0
  mirage_disc_remove_session_by_object@Base 1.0.0
@@ -79,42 +70,46 @@ libmirage.so.7 libmirage7 #MINVER#
  mirage_file_filter_generate_file_filter_info@Base 1.6.0
  mirage_file_filter_get_file_filter_info@Base 1.6.0
  mirage_file_filter_get_type@Base 1.6.0
- mirage_frag_iface_audio_get_file@Base 1.5.0
- mirage_frag_iface_audio_get_offset@Base 1.5.0
- mirage_frag_iface_audio_get_type@Base 1.5.0
- mirage_frag_iface_audio_set_file@Base 1.5.0
- mirage_frag_iface_audio_set_offset@Base 1.5.0
- mirage_frag_iface_binary_get_type@Base 1.5.0
- mirage_frag_iface_binary_subchannel_file_get_file@Base 1.6.0
- mirage_frag_iface_binary_subchannel_file_get_format@Base 1.5.0
- mirage_frag_iface_binary_subchannel_file_get_offset@Base 1.5.0
- mirage_frag_iface_binary_subchannel_file_get_position@Base 1.5.0
- mirage_frag_iface_binary_subchannel_file_get_sectsize@Base 1.5.0
- mirage_frag_iface_binary_subchannel_file_set_file@Base 1.6.0
- mirage_frag_iface_binary_subchannel_file_set_format@Base 1.5.0
- mirage_frag_iface_binary_subchannel_file_set_offset@Base 1.5.0
- mirage_frag_iface_binary_subchannel_file_set_sectsize@Base 1.5.0
- mirage_frag_iface_binary_track_file_get_file@Base 1.6.0
- mirage_frag_iface_binary_track_file_get_format@Base 1.5.0
- mirage_frag_iface_binary_track_file_get_offset@Base 1.5.0
- mirage_frag_iface_binary_track_file_get_position@Base 1.5.0
- mirage_frag_iface_binary_track_file_get_sectsize@Base 1.5.0
- mirage_frag_iface_binary_track_file_set_file@Base 1.6.0
- mirage_frag_iface_binary_track_file_set_format@Base 1.5.0
- mirage_frag_iface_binary_track_file_set_offset@Base 1.5.0
- mirage_frag_iface_binary_track_file_set_sectsize@Base 1.5.0
- mirage_frag_iface_null_get_type@Base 1.5.0
+ mirage_for_each_file_filter@Base 1.6.0
+ mirage_for_each_fragment@Base 1.6.0
+ mirage_for_each_parser@Base 1.6.0
  mirage_fragment_can_handle_data_format@Base 1.0.0
  mirage_fragment_generate_fragment_info@Base 1.2.0
  mirage_fragment_get_address@Base 1.0.0
  mirage_fragment_get_fragment_info@Base 1.0.0
  mirage_fragment_get_length@Base 1.0.0
  mirage_fragment_get_type@Base 1.0.0
+ mirage_fragment_iface_audio_get_file@Base 1.6.0
+ mirage_fragment_iface_audio_get_offset@Base 1.6.0
+ mirage_fragment_iface_audio_get_type@Base 1.6.0
+ mirage_fragment_iface_audio_set_file@Base 1.6.0
+ mirage_fragment_iface_audio_set_offset@Base 1.6.0
+ mirage_fragment_iface_binary_get_type@Base 1.6.0
+ mirage_fragment_iface_binary_subchannel_file_get_file@Base 1.6.0
+ mirage_fragment_iface_binary_subchannel_file_get_format@Base 1.6.0
+ mirage_fragment_iface_binary_subchannel_file_get_offset@Base 1.6.0
+ mirage_fragment_iface_binary_subchannel_file_get_position@Base 1.6.0
+ mirage_fragment_iface_binary_subchannel_file_get_sectsize@Base 1.6.0
+ mirage_fragment_iface_binary_subchannel_file_set_file@Base 1.6.0
+ mirage_fragment_iface_binary_subchannel_file_set_format@Base 1.6.0
+ mirage_fragment_iface_binary_subchannel_file_set_offset@Base 1.6.0
+ mirage_fragment_iface_binary_subchannel_file_set_sectsize@Base 1.6.0
+ mirage_fragment_iface_binary_track_file_get_file@Base 1.6.0
+ mirage_fragment_iface_binary_track_file_get_format@Base 1.6.0
+ mirage_fragment_iface_binary_track_file_get_offset@Base 1.6.0
+ mirage_fragment_iface_binary_track_file_get_position@Base 1.6.0
+ mirage_fragment_iface_binary_track_file_get_sectsize@Base 1.6.0
+ mirage_fragment_iface_binary_track_file_set_file@Base 1.6.0
+ mirage_fragment_iface_binary_track_file_set_format@Base 1.6.0
+ mirage_fragment_iface_binary_track_file_set_offset@Base 1.6.0
+ mirage_fragment_iface_binary_track_file_set_sectsize@Base 1.6.0
+ mirage_fragment_iface_null_get_type@Base 1.6.0
  mirage_fragment_read_main_data@Base 1.0.0
  mirage_fragment_read_subchannel_data@Base 1.0.0
  mirage_fragment_set_address@Base 1.0.0
  mirage_fragment_set_length@Base 1.0.0
  mirage_fragment_use_the_rest_of_file@Base 1.0.0
+ mirage_get_supported_debug_masks@Base 1.6.0
  mirage_helper_ascii2isrc@Base 1.0.0
  mirage_helper_bcd2hex@Base 1.0.0
  mirage_helper_determine_sector_type@Base 1.6.0
@@ -143,6 +138,7 @@ libmirage.so.7 libmirage7 #MINVER#
  mirage_index_get_type@Base 1.0.0
  mirage_index_set_address@Base 1.0.0
  mirage_index_set_number@Base 1.0.0
+ mirage_init@Base 1.6.0
  mirage_language_get_langcode@Base 1.0.0
  mirage_language_get_pack_data@Base 1.0.0
  mirage_language_get_type@Base 1.0.0
@@ -159,6 +155,7 @@ libmirage.so.7 libmirage7 #MINVER#
  mirage_object_get_parent@Base 1.0.0
  mirage_object_get_type@Base 1.0.0
  mirage_object_set_parent@Base 1.0.0
+ mirage_obtain_password@Base 1.6.0
  mirage_parser_add_redbook_pregap@Base 1.2.0
  mirage_parser_generate_parser_info@Base 1.2.0
  mirage_parser_get_cached_data_stream@Base 1.6.0
@@ -221,6 +218,8 @@ libmirage.so.7 libmirage7 #MINVER#
  mirage_session_set_cdtext_data@Base 1.0.0
  mirage_session_set_leadout_length@Base 1.0.0
  mirage_session_set_session_type@Base 1.0.0
+ mirage_set_password_function@Base 1.6.0
+ mirage_shutdown@Base 1.6.0
  mirage_track_add_fragment@Base 1.0.0
  mirage_track_add_index@Base 1.0.0
  mirage_track_add_language@Base 1.0.0
@@ -253,7 +252,6 @@ libmirage.so.7 libmirage7 #MINVER#
  mirage_track_layout_get_track_number@Base 1.0.0
  mirage_track_layout_set_start_sector@Base 1.0.0
  mirage_track_layout_set_track_number@Base 1.0.0
- mirage_track_read_sector@Base 1.0.0
  mirage_track_remove_fragment_by_index@Base 1.0.0
  mirage_track_remove_fragment_by_object@Base 1.0.0
  mirage_track_remove_index_by_number@Base 1.0.0

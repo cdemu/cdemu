@@ -1,1 +1,1 @@
-compression = "bzip2"
+compression = "xz"

@@ -4,14 +4,16 @@ Priority: optional
 Homepage: http://cdemu.sourceforge.net/
 Maintainer: Henrik Stokseth <henrik@hw0.org>
 Build-Depends: pkg-config (>= 0.14), libglib2.0-dev (>= 2.28), libsndfile1-dev,
- zlib1g-dev, gtk-doc-tools, debhelper (>= 9), dh-apport
+ zlib1g-dev, gtk-doc-tools, gobject-introspection, debhelper (>= 9), dh-apport,
+ autotools-dev
 Standards-Version: 3.9.3
 
 
 Package: libmirage7
 Section: libs
 Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends}
+Pre-Depends: multiarch-support
+Depends: ${shlibs:Depends}, ${gir:Depends}, ${misc:Depends}
 Description: CD-ROM image access library
  This is libMirage library, a CD-ROM image access library, and part of the
  CDEmu suite, a free, GPL CD/DVD-ROM device emulator for Linux. It is
@@ -26,7 +28,7 @@ Package: libmirage7-dbg
 Section: debug
 Priority: extra
 Architecture: any
-Depends: libmirage7 (= ${binary:Version}), ${shlibs:Depends}, ${misc:Depends}
+Depends: libmirage7 (= ${binary:Version}), ${shlibs:Depends}, ${gir:Depends}, ${misc:Depends}
 Description: CD-ROM image access library (debugging symbols)
  This package provides detached debugging symbols.
 
@@ -34,7 +36,8 @@ Description: CD-ROM image access library (debugging symbols)
 Package: libmirage7-dev
 Section: libdevel
 Architecture: any
-Depends: libmirage7 (= ${binary:Version}), ${shlibs:Depends}, ${misc:Depends}
+Pre-Depends: multiarch-support
+Depends: libmirage7 (= ${binary:Version}), ${shlibs:Depends}, ${gir:Depends}, ${misc:Depends}
 Description: CD-ROM image access library (development files)
  This package contains files needed to develop with libMirage.
 
@@ -42,7 +45,7 @@ Description: CD-ROM image access library (development files)
 Package: libmirage7-doc
 Section: doc
 Architecture: all
-Depends: ${shlibs:Depends}, ${misc:Depends}
+Depends: ${shlibs:Depends}, ${gir:Depends}, ${misc:Depends}
 Recommends: devhelp
 Description: CD-ROM image access library (documentation)
  This package contains documentation for libMirage.

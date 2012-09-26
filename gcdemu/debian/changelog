@@ -1,6 +1,6 @@
-gcdemu (1.6.0-1ubuntu0~precise1~ppa1) precise; urgency=low
+gcdemu (1.6.0-1ubuntu0~quantal1~ppa1) quantal; urgency=low
 
   * Initial Release. Closes: (LP: #105452, LP: #184662)
 
- -- Henrik Stokseth (Henrik) <henrik@hw0.org>  Mon, 09 Jan 2012 12:00:00 +0100
+ -- Henrik Stokseth (Henrik) <henrik@hw0.org>  Wed, 26 Sep 2012 12:00:00 +0100
 

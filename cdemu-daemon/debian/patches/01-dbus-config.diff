@@ -4,14 +4,14 @@ Origin: vendor
 Forwarded: not-needed
 Last-Update: 2011-05-01
 
---- cdemu-daemon-1.4.0.orig/system/cdemud-dbus.conf
-+++ cdemu-daemon-1.4.0/system/cdemud-dbus.conf
+--- cdemu-daemon-1.4.0.orig/system/cdemu-daemon-dbus.conf
++++ cdemu-daemon-1.4.0/system/cdemu-daemon-dbus.conf
 @@ -7,7 +7,7 @@
      <policy user="root">
-         <allow own="net.sf.cdemu.CDEMUD_Daemon"/>
+         <allow own="net.sf.cdemu.CDEmuDaemon"/>
      </policy>
 -    <policy group="root">
 +    <policy group="cdrom">
-         <allow own="net.sf.cdemu.CDEMUD_Daemon"/>
+         <allow own="net.sf.cdemu.CDEmuDaemon"/>
      </policy>
-     
+

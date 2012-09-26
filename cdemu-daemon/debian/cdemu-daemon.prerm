@@ -16,10 +16,10 @@ mywarning ()
 case "$1" in
 	remove|upgrade|deconfigure)
 		# Kill any session instances of cdemu-daemon running.
-		pkill -KILL "^cdemud$" && mywarning "Killed running daemon instances."
+		pkill -KILL "^cdemu-daemon$" && mywarning "Killed running daemon instances."
 
 		# Unset GID on cdemu daemon
-		dpkg-statoverride --remove "/usr/bin/cdemud" || myerror "Removing statoverride failed."
+		dpkg-statoverride --remove "/usr/bin/cdemu-daemon" || myerror "Removing statoverride failed."
 	;;
 
 	failed-upgrade)

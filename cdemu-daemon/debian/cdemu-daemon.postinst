@@ -16,7 +16,7 @@ mywarning ()
 case "$1" in
 	configure)
 		# Set GID on cdemu daemon
-		dpkg-statoverride --update --add root cdrom 2755 "/usr/bin/cdemud" || myerror "Adding statoverride failed."
+		dpkg-statoverride --update --add root cdrom 2755 "/usr/bin/cdemu-daemon" || myerror "Adding statoverride failed."
 	;;
 
 	abort-upgrade|abort-remove|abort-deconfigure)

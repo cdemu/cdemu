@@ -18,7 +18,7 @@ export VHBA_VERSION
 
 default: modules
 install: modules_install
-dist: dist-bzip2
+dist: dist-xz
 
 modules modules_install clean:
 	$(MAKE) -C $(KDIR) M=$(PWD) $@
@@ -33,10 +33,14 @@ dist-dir:
 	install -m 644 -t $(PACKAGE)/debian/source  $(shell find debian/source -type f)
 
 dist-gzip: dist-dir
-	tar -czf $(PACKAGE).tar.gz $(PACKAGE)
+	tar -c $(PACKAGE) | gzip > $(PACKAGE).tar.gz
 	rm -rf $(PACKAGE)
 
 dist-bzip2: dist-dir
-	tar -cjf $(PACKAGE).tar.bz2 $(PACKAGE)
+	tar -c $(PACKAGE) | bzip2 > $(PACKAGE).tar.bz2 
+	rm -rf $(PACKAGE)
+
+dist-xz: dist-dir
+	tar -c $(PACKAGE) | xz > $(PACKAGE).tar.xz
 	rm -rf $(PACKAGE)
 
