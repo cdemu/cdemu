@@ -280,10 +280,10 @@ static gboolean command_inquiry (CdemuDevice *self, guint8 *raw_cdb)
     ret_data->atapi_version = 3; /* Should be 3 according to INF8090 */
     ret_data->response_fmt = 0x02; /* Should be 2 according to INF8090 */
     ret_data->length = sizeof(struct INQUIRY_Data) - 5;
-    strncpy(ret_data->vendor_id, self->priv->id_vendor_id, 8);
-    strncpy(ret_data->product_id, self->priv->id_product_id, 16);
-    strncpy(ret_data->product_rev, self->priv->id_revision, 4);
-    strncpy(ret_data->vendor_spec1, self->priv->id_vendor_specific, 20);
+    g_strlcpy(ret_data->vendor_id, self->priv->id_vendor_id, 8);
+    g_strlcpy(ret_data->product_id, self->priv->id_product_id, 16);
+    g_strlcpy(ret_data->product_rev, self->priv->id_revision, 4);
+    g_strlcpy(ret_data->vendor_spec1, self->priv->id_vendor_specific, 20);
 
     ret_data->ver_desc1 = GUINT16_TO_BE(0x02A0); /* We'll try to pass as MMC-3 device */
 

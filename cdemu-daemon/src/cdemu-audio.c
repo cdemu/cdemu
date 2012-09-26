@@ -172,7 +172,7 @@ void cdemu_audio_initialize (CdemuAudio *self, gchar *driver, gint *cur_sector_p
     self->priv->status = AUDIO_STATUS_NOSTATUS;
 
     /* Get driver ID */
-    if (!strcmp(driver, "default")) {
+    if (!g_strcmp0(driver, "default")) {
         self->priv->driver_id = ao_default_driver_id();
     } else {
         self->priv->driver_id = ao_driver_id(driver);

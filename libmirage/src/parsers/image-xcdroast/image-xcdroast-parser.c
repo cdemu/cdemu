@@ -63,7 +63,7 @@ static gchar *create_xinf_filename (gchar *track_filename)
     baselen -= suffixlen;
 
     xinf_filename = g_new(gchar, baselen + 6); /* baselen + . + xinf + \0 */
-    strncpy(xinf_filename, track_filename, baselen); /* Copy basename */
+    g_strlcpy(xinf_filename, track_filename, baselen); /* Copy basename */
     g_snprintf(xinf_filename+baselen, 6, ".xinf");
 
     return xinf_filename;

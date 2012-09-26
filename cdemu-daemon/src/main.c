@@ -46,7 +46,7 @@ static void log_handler_stdout (const gchar *log_domain G_GNUC_UNUSED, GLogLevel
 
 static void log_handler_logfile (const gchar *log_domain G_GNUC_UNUSED, GLogLevelFlags log_level G_GNUC_UNUSED, const gchar *message, gpointer unused_data G_GNUC_UNUSED)
 {
-    fprintf(logfile, "%s", message);
+    g_fprintf(logfile, "%s", message);
     fflush(logfile);
 }
 

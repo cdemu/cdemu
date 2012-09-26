@@ -70,7 +70,7 @@ gboolean cdemu_device_setup_mapping (CdemuDevice *self)
                         GDir *tmp_dir = g_dir_open(dirpath, 0, NULL);
                         const gchar *tmp_sr = g_dir_read_name(tmp_dir);
 
-                        strcpy(path_sr, tmp_sr);
+                        g_strlcpy(path_sr, tmp_sr, sizeof(path_sr));
 
                         g_dir_close(tmp_dir);
                         g_free(dirpath);
@@ -89,7 +89,7 @@ gboolean cdemu_device_setup_mapping (CdemuDevice *self)
                         gchar *tmp_path = g_file_read_link(symlink, NULL);
                         gchar *tmp_sg = g_path_get_basename(tmp_path);
 
-                        strcpy(path_sg, tmp_sg);
+                        g_strlcpy(path_sg, tmp_sg, sizeof(path_sg));
 
                         g_free(tmp_sg);
                         g_free(tmp_path);
