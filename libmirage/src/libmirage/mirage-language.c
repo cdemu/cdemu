@@ -119,7 +119,7 @@ gint mirage_language_get_langcode (MirageLanguage *self)
  * mirage_language_set_pack_data:
  * @self: a #MirageLanguage
  * @pack_type: (in): pack type
- * @pack_data: (in) (transfer none) (array length=length): pack data
+ * @pack_data: (in) (array length=length): pack data
  * @length: (in): length of pack data
  * @error: (out) (allow-none): location to store error, or %NULL
  *

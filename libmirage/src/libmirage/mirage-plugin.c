@@ -49,13 +49,13 @@ typedef enum
 \**********************************************************************/
 /**
  * mirage_plugin_new:
- * @filename: (in) (transfer none): plugin's filename
+ * @filename: (in): plugin's filename
  *
  * <para>
  * Creates new plugin.
  * </para>
  *
- * Returns: (transfer full): a new #MiragePlugin object that represents plugin. It should be
+ * Returns: a new #MiragePlugin object that represents plugin. It should be
  * released with g_object_unref() when no longer needed.
  **/
 MiragePlugin *mirage_plugin_new (const gchar *filename)

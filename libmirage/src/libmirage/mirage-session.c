@@ -676,7 +676,7 @@ void mirage_session_remove_track_by_object (MirageSession *self, GObject *track)
  * function fails.
  * </para>
  *
- * Returns: (transfer full): a #MirageTrack on success, %NULL on failure.
+ * Returns: a #MirageTrack on success, %NULL on failure.
  * The reference to the object should be released using g_object_unref()
  * when no longer needed.
  **/
@@ -718,7 +718,7 @@ GObject *mirage_session_get_track_by_index (MirageSession *self, gint index, GEr
  * Retrieves track by track number.
  * </para>
  *
- * Returns: (transfer full): a #MirageTrack on success, %NULL on failure.
+ * Returns: a #MirageTrack on success, %NULL on failure.
  * The reference to the object should be released using g_object_unref()
  * when no longer needed.
  **/
@@ -762,7 +762,7 @@ GObject *mirage_session_get_track_by_number (MirageSession *self, gint track_num
  * start and end sector).
  * </para>
  *
- * Returns: (transfer full): a #MirageTrack on success, %NULL on failure.
+ * Returns: a #MirageTrack on success, %NULL on failure.
  * The reference to the object should be released using g_object_unref()
  * when no longer needed.
  **/
@@ -845,7 +845,7 @@ gboolean mirage_session_for_each_track (MirageSession *self, MirageCallbackFunct
  * Retrieves track that comes before @track.
  * </para>
  *
- * Returns: (transfer full): a #MirageTrack on success, %NULL on failure.
+ * Returns: a #MirageTrack on success, %NULL on failure.
  * The reference to the object should be released using g_object_unref()
  * when no longer needed.
  **/
@@ -880,7 +880,7 @@ GObject *mirage_session_get_track_before (MirageSession *self, GObject *track, G
  * Retrieves track that comes after @track.
  * </para>
  *
- * Returns: (transfer full): a #MirageTrack on success, %NULL on failure.
+ * Returns: a #MirageTrack on success, %NULL on failure.
  * The reference to the object should be released using g_object_unref()
  * when no longer needed.
  **/
@@ -1065,7 +1065,7 @@ void mirage_session_remove_language_by_object (MirageSession *self, GObject *lan
  * function fails.
  * </para>
  *
- * Returns: (transfer full): a #MirageLanguage on success, %NULL on failure.
+ * Returns: a #MirageLanguage on success, %NULL on failure.
  * The reference to the object should be released using g_object_unref()
  * when no longer needed.
  **/
@@ -1105,7 +1105,7 @@ GObject *mirage_session_get_language_by_index (MirageSession *self, gint index, 
  * Retrieves language by language code.
  * </para>
  *
- * Returns: (transfer full): a #MirageLanguage on success, %NULL on failure.
+ * Returns: a #MirageLanguage on success, %NULL on failure.
  * The reference to the object should be released using g_object_unref()
  * when no longer needed.
  **/
@@ -1389,7 +1389,7 @@ gboolean mirage_session_get_cdtext_data (MirageSession *self, guint8 **data, gin
  * Retrieves session that is placed before @self in disc layout.
  * </para>
  *
- * Returns: (transfer full): a #MirageSession on success, %NULL on failure.
+ * Returns: a #MirageSession on success, %NULL on failure.
  * The reference to the object should be released using g_object_unref()
  * when no longer needed.
  **/
@@ -1420,7 +1420,7 @@ GObject *mirage_session_get_prev (MirageSession *self, GError **error)
  * Retrieves session that is placed after @self in disc layout.
  * </para>
  *
- * Returns: (transfer full): a #MirageSession on success, %NULL on failure.
+ * Returns: a #MirageSession on success, %NULL on failure.
  * The reference to the object should be released using g_object_unref()
  * when no longer needed.
  **/

@@ -28,9 +28,9 @@ G_BEGIN_DECLS
  * @langcode: (in): language code
  * @type: (in): pack type
  * @track: (in): track number
- * @data: (in) (transfer none) (array length=data_len): data
+ * @data: (in) (array length=data_len): data
  * @data_len: (in): data length
- * @user_data: (closure): user data
+ * @user_data: (in) (closure): user data
  *
  * <para>
  * Specifies the type of callback functions that can be passed to

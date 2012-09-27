@@ -88,7 +88,7 @@ void mirage_object_set_parent (MirageObject *self, GObject *parent)
  * Retrieves object's parent.
  * </para>
  *
- * Returns: (transfer full): parent object, or %NULL.
+ * Returns: parent object, or %NULL.
  **/
 GObject *mirage_object_get_parent (MirageObject *self)
 {

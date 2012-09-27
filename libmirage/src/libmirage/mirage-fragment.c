@@ -244,7 +244,7 @@ gboolean mirage_fragment_use_the_rest_of_file (MirageFragment *self, GError **er
  * mirage_fragment_read_main_data:
  * @self: a #MirageFragment
  * @address: (in): address
- * @buffer: (out) (allow-none) (transfer full) (array length=length): location to store pointer to buffer with read data, or %NULL
+ * @buffer: (out) (allow-none) (array length=length): location to store pointer to buffer with read data, or %NULL
  * @length: (out): location to store read data length
  * @error: (out) (allow-none): location to store error, or %NULL
  *
@@ -268,7 +268,7 @@ gboolean mirage_fragment_read_main_data (MirageFragment *self, gint address, gui
  * mirage_fragment_read_subchannel_data:
  * @self: a #MirageFragment
  * @address: (in): address
- * @buffer: (out) (allow-none) (transfer full) (array length=length): location to store pointer to buffer with read data, or %NULL
+ * @buffer: (out) (allow-none) (array length=length): location to store pointer to buffer with read data, or %NULL
  * @length: (out): location to store read data length
  * @error: (out) (allow-none): location to store error, or %NULL
  *

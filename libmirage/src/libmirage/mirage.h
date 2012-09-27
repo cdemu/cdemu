@@ -42,7 +42,7 @@ G_BEGIN_DECLS
 /**
  * MirageCallbackFunction:
  * @data: (in): data
- * @user_data: (closure): user data passed to iteration function
+ * @user_data: (in) (closure): user data passed to iteration function
  *
  * <para>
  * Callback function type used in libMirage's iteration functions. A pointer to
@@ -57,7 +57,7 @@ typedef gboolean (*MirageCallbackFunction) (const gpointer data, gpointer user_d
 
 /**
  * MiragePasswordFunction:
- * @user_data: (closure): user data passed to password function
+ * @user_data: (in) (closure): user data passed to password function
  *
  * <para>
  * Password function type used in libMirage's to obtain password for encrypted

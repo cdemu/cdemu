@@ -118,7 +118,7 @@ const MirageParserInfo *mirage_parser_get_parser_info (MirageParser *self)
  * Loads the image stored in @filenames.
  * </para>
  *
- * Returns: (transfer full): disc object representing image on success, %NULL on failure
+ * Returns: disc object representing image on success, %NULL on failure
  **/
 GObject *mirage_parser_load_image (MirageParser *self, gchar **filenames, GError **error)
 {
@@ -359,7 +359,7 @@ GVariant *mirage_parser_get_param (MirageParser *self, const gchar *name, const 
 /**
  * mirage_parser_get_cached_data_stream:
  * @self: a #MirageParser
- * @filename: (in) (transfer none): filename
+ * @filename: (in): filename
  * @error: (out) (allow-none): location to store error, or %NULL
  *
  * <para>
@@ -371,8 +371,8 @@ GVariant *mirage_parser_get_param (MirageParser *self, const gchar *name, const 
  * adds it to the cache.
  * </para>
  *
- * Returns: (transfer full): data stream object on success, %NULL on
- * failure. The reference to stream should be released using g_object_unref()
+ * Returns: data stream object on success, %NULL on failure.
+ * The reference to stream should be released using g_object_unref()
  * when no longer needed.
  **/
 GObject *mirage_parser_get_cached_data_stream (MirageParser *self, const gchar *filename, GError **error)

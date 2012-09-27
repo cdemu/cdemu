@@ -421,7 +421,7 @@ gboolean mirage_cdtext_encoder_set_block_info (MirageCdTextCoder *self, gint blo
  * @langcode: (in): language code
  * @type: (in): data type
  * @track: (in): track number
- * @data: (in) (transfer none) (array length=data_len): data
+ * @data: (in) (array length=data_len): data
  * @data_len: (in): data length
  *
  * <para>

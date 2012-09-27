@@ -156,9 +156,9 @@ gboolean mirage_shutdown (GError **error)
 
 /**
  * mirage_set_password_function:
- * @func: (in) (scope call): a password function pointer
- * @user_data: (in): pointer to user data to be passed to the password function
- * @error: (in) (allow-none): location to store error, or %NULL
+ * @func: (in) (allow-none) (scope call): a password function pointer
+ * @user_data: (in) (closure): pointer to user data to be passed to the password function
+ * @error: (out) (allow-none): location to store error, or %NULL
  *
  * <para>
  * Sets the password function to libMirage. The function is used by parsers
@@ -196,7 +196,7 @@ gboolean mirage_set_password_function (MiragePasswordFunction func, gpointer use
  * provided via mirage_set_password_function().
  * </para>
  *
- * Returns: (transfer full): password string on success, %NULL on failure. The string should be
+ * Returns: password string on success, %NULL on failure. The string should be
  * freed with g_free() when no longer needed.
  **/
 gchar *mirage_obtain_password (GError **error)
@@ -253,7 +253,7 @@ gchar *mirage_obtain_password (GError **error)
  * only the first filename is used.
  * </para>
  *
- * Returns: (transfer full): a #MirageDisc object on success, %NULL on failure. The reference to
+ * Returns: a #MirageDisc object on success, %NULL on failure. The reference to
  * the object should be released using g_object_unref() when no longer needed.
  **/
 GObject *mirage_create_disc (gchar **filenames, GObject *debug_context, GHashTable *params, GError **error)
@@ -335,7 +335,7 @@ GObject *mirage_create_disc (gchar **filenames, GObject *debug_context, GHashTab
  * interface, then its debug context is retrieved and set to the file stream.
  * </para>
  *
- * Returns: (transfer full): a #MirageFragment object on success, %NULL on failure. The reference
+ * Returns: a #MirageFragment object on success, %NULL on failure. The reference
  * to the object should be released using g_object_unref() when no longer needed.
  **/
 GObject *mirage_create_fragment (GType fragment_interface, GObject *stream, GObject *debug_context, GError **error)
@@ -405,7 +405,7 @@ GObject *mirage_create_fragment (GType fragment_interface, GObject *stream, GObj
  * interface, then its debug context is retrieved and set to the file stream.
  * </para>
  *
- * Returns: (transfer full): on success, an object inheriting #GFilterInputStream (and therefore
+ * Returns: on success, an object inheriting #GFilterInputStream (and therefore
  * #GInputStream) and implementing #GSeekable interface is returned, which
  * can be used to access data stored in file. On failure, %NULL is returned.
  * The reference to the object should be released using g_object_unref()
