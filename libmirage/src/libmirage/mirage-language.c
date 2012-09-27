@@ -53,7 +53,7 @@ struct _MirageLanguagePrivate
 \**********************************************************************/
 static MirageLanguage_Pack *mirage_language_get_pack_by_type (MirageLanguage *self, gint pack_type)
 {
-    static const gint pack_types[] = {
+    static const MirageLanguagePackTypes pack_types[] = {
         MIRAGE_LANGUAGE_PACK_TITLE,
         MIRAGE_LANGUAGE_PACK_PERFORMER,
         MIRAGE_LANGUAGE_PACK_SONGWRITER,
@@ -130,7 +130,7 @@ gint mirage_language_get_langcode (MirageLanguage *self)
  *
  * Returns: %TRUE on success, %FALSE on failure
  **/
-gboolean mirage_language_set_pack_data (MirageLanguage *self, gint pack_type, const gchar *pack_data, gint length, GError **error)
+gboolean mirage_language_set_pack_data (MirageLanguage *self, MirageLanguagePackTypes pack_type, const gchar *pack_data, gint length, GError **error)
 {
     MirageLanguage_Pack *pack = mirage_language_get_pack_by_type(self, pack_type);
 
@@ -170,7 +170,7 @@ gboolean mirage_language_set_pack_data (MirageLanguage *self, gint pack_type, co
  *
  * Returns: %TRUE on success, %FALSE on failure
  **/
-gboolean mirage_language_get_pack_data (MirageLanguage *self, gint pack_type, const gchar **pack_data, gint *length, GError **error)
+gboolean mirage_language_get_pack_data (MirageLanguage *self, MirageLanguagePackTypes pack_type, const gchar **pack_data, gint *length, GError **error)
 {
     MirageLanguage_Pack *pack = mirage_language_get_pack_by_type(self, pack_type);
 

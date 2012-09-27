@@ -133,8 +133,8 @@ void mirage_track_set_flags (MirageTrack *self, gint flags);
 gint mirage_track_get_flags (MirageTrack *self);
 
 /* Track mode */
-void mirage_track_set_mode (MirageTrack *self, gint mode);
-gint mirage_track_get_mode (MirageTrack *self);
+void mirage_track_set_mode (MirageTrack *self, MirageTrackModes mode);
+MirageTrackModes mirage_track_get_mode (MirageTrack *self);
 
 /* Adr/Ctl */
 gint mirage_track_get_adr (MirageTrack *self);

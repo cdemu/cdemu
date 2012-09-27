@@ -972,9 +972,9 @@ void mirage_helper_sector_edc_ecc_compute_ecc_block (const guint8 *src, guint32 
  * track mode in cases when full (2352-byte) sector data is available.
  * </para>
  *
- * Returns: sector type (%MIRAGE_MODE_AUDIO, %MIRAGE_MODE_MODE0, %MIRAGE_MODE_MODE1, %MIRAGE_MODE_MODE2_MIXED)
+ * Returns: sector type (one of %MirageTrackModes)
  **/
-gint mirage_helper_determine_sector_type (const guint8 *buf)
+MirageTrackModes mirage_helper_determine_sector_type (const guint8 *buf)
 {
     if (!memcmp(buf, mirage_pattern_sync, sizeof(mirage_pattern_sync))) {
         switch (buf[15]) {

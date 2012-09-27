@@ -33,7 +33,7 @@
 
 struct _MirageSectorPrivate
 {
-    gint type;
+    MirageTrackModes type;
     gint address;
 
     gint valid_data;          /* Which parts of sector data are valid */
@@ -810,7 +810,7 @@ gboolean mirage_sector_feed_data (MirageSector *self, gint address, GObject *tra
  *
  * Returns: sector type (track mode)
  **/
-gint mirage_sector_get_sector_type (MirageSector *self)
+MirageTrackModes mirage_sector_get_sector_type (MirageSector *self)
 {
     /* Return sector type */
     return self->priv->type;
@@ -1144,7 +1144,7 @@ gboolean mirage_sector_get_edc_ecc (MirageSector *self, const guint8 **ret_buf, 
  * @error: (out) (allow-none): location to store error, or %NULL
  *
  * <para>
- * Retrieves sector's subchannel. @type must be one of #MirageSectorSubchannelFormat.
+ * Retrieves sector's subchannel. @format must be one of #MirageSectorSubchannelFormat.
  * The pointer to appropriate location in sector's data buffer is stored into
  * @ret_buf;  therefore, the buffer should not be modified.
  * </para>
@@ -1155,7 +1155,7 @@ gboolean mirage_sector_get_edc_ecc (MirageSector *self, const guint8 **ret_buf, 
  *
  * Returns: %TRUE on success, %FALSE on failure
  **/
-gboolean mirage_sector_get_subchannel (MirageSector *self, gint format, const guint8 **ret_buf, gint *ret_len, GError **error)
+gboolean mirage_sector_get_subchannel (MirageSector *self, MirageSectorSubchannelFormat format, const guint8 **ret_buf, gint *ret_len, GError **error)
 {
     /* Generate subchannel if it's not provided */
     if (!(self->priv->valid_data & MIRAGE_VALID_SUBCHAN)) {

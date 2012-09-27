@@ -97,8 +97,8 @@ GType mirage_disc_get_type (void);
  *                             Public API                             *
 \**********************************************************************/
 /* Medium type */
-void mirage_disc_set_medium_type (MirageDisc *self, gint medium_type);
-gint mirage_disc_get_medium_type (MirageDisc *self);
+void mirage_disc_set_medium_type (MirageDisc *self, MirageMediumTypes medium_type);
+MirageMediumTypes mirage_disc_get_medium_type (MirageDisc *self);
 
 /* Filename */
 void mirage_disc_set_filenames (MirageDisc *self, gchar **filenames);

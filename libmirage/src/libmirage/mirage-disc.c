@@ -35,7 +35,7 @@ struct _MirageDiscPrivate
 {
     gchar **filenames;
 
-    gint medium_type;
+    MirageMediumTypes medium_type;
 
     gchar *mcn;
     gboolean mcn_encoded; /* Is MCN encoded in one of track's fragment's subchannel? */
@@ -334,7 +334,7 @@ static void free_disc_structure_data (GArray *array)
  * Intended for internal use only.
  * </note>
  **/
-void mirage_disc_set_medium_type (MirageDisc *self, gint medium_type)
+void mirage_disc_set_medium_type (MirageDisc *self, MirageMediumTypes medium_type)
 {
     /* Set medium type */
     self->priv->medium_type = medium_type;
@@ -350,7 +350,7 @@ void mirage_disc_set_medium_type (MirageDisc *self, gint medium_type)
  *
  * Returns: medium type
  **/
-gint mirage_disc_get_medium_type (MirageDisc *self)
+MirageMediumTypes mirage_disc_get_medium_type (MirageDisc *self)
 {
     /* Return medium type */
     return self->priv->medium_type;

@@ -82,8 +82,8 @@ GType mirage_session_get_type (void);
  *                             Public API                             *
 \**********************************************************************/
 /* Session type */
-void mirage_session_set_session_type (MirageSession *self, gint type);
-gint mirage_session_get_session_type (MirageSession *self);
+void mirage_session_set_session_type (MirageSession *self, MirageSessionTypes type);
+MirageSessionTypes mirage_session_get_session_type (MirageSession *self);
 
 /* Layout */
 void mirage_session_layout_set_session_number (MirageSession *self, gint number);

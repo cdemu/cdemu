@@ -40,7 +40,7 @@ struct _MirageSessionPrivate
     gint length; /* Length of session (sum of tracks' length) */
 
     /* Session type */
-    gint session_type;
+    MirageSessionTypes session_type;
 
     /* Tracks list */
     GList *tracks_list;
@@ -183,7 +183,7 @@ static gint sort_tracks_by_number (GObject *track1, GObject *track2)
  * Sets session type. @type must be one of #MirageSessionTypes.
  * </para>
  **/
-void mirage_session_set_session_type (MirageSession *self, gint type)
+void mirage_session_set_session_type (MirageSession *self, MirageSessionTypes type)
 {
     /* Set session type */
     self->priv->session_type =type;
@@ -199,7 +199,7 @@ void mirage_session_set_session_type (MirageSession *self, gint type)
  *
  * Returns: session type
  **/
-gint mirage_session_get_session_type (MirageSession *self)
+MirageSessionTypes mirage_session_get_session_type (MirageSession *self)
 {
     /* Return session number */
     return self->priv->session_type;

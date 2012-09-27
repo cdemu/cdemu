@@ -42,7 +42,7 @@ struct _MirageTrackPrivate
 
     /* Track mode and flags */
     gint flags; /* Track flags */
-    gint mode;  /* Track mode */
+    MirageTrackModes mode;  /* Track mode */
 
     gchar *isrc; /* ISRC */
     gboolean isrc_encoded; /* Is ISRC encoded in one of track's fragment's subchannel? */
@@ -305,7 +305,7 @@ gint mirage_track_get_flags (MirageTrack *self)
  * Sets track mode. @mode must be one of #MirageTrackModes.
  * </para>
  **/
-void mirage_track_set_mode (MirageTrack *self, gint mode)
+void mirage_track_set_mode (MirageTrack *self, MirageTrackModes mode)
 {
     /* Set mode */
     self->priv->mode = mode;
@@ -321,7 +321,7 @@ void mirage_track_set_mode (MirageTrack *self, gint mode)
  *
  * Returns: track mode
  **/
-gint mirage_track_get_mode (MirageTrack *self)
+MirageTrackModes mirage_track_get_mode (MirageTrack *self)
 {
     /* Return mode */
     return self->priv->mode;

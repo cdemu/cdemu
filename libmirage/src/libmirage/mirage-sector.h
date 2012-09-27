@@ -107,14 +107,14 @@ GType mirage_sector_get_type (void);
 \**********************************************************************/
 gboolean mirage_sector_feed_data (MirageSector *self, gint address, GObject *track, GError **error);
 
-gint mirage_sector_get_sector_type (MirageSector *self);
+MirageTrackModes mirage_sector_get_sector_type (MirageSector *self);
 
 gboolean mirage_sector_get_sync (MirageSector *self, const guint8 **ret_buf, gint *ret_len, GError **error);
 gboolean mirage_sector_get_header (MirageSector *self, const guint8 **ret_buf, gint *ret_len, GError **error);
 gboolean mirage_sector_get_subheader (MirageSector *self, const guint8 **ret_buf, gint *ret_len, GError **error);
 gboolean mirage_sector_get_data (MirageSector *self, const guint8 **ret_buf, gint *ret_len, GError **error);
 gboolean mirage_sector_get_edc_ecc (MirageSector *self, const guint8 **ret_buf, gint *ret_len, GError **error);
-gboolean mirage_sector_get_subchannel (MirageSector *self, gint format, const guint8 **ret_buf, gint *ret_len, GError **error);
+gboolean mirage_sector_get_subchannel (MirageSector *self, MirageSectorSubchannelFormat format, const guint8 **ret_buf, gint *ret_len, GError **error);
 
 gboolean mirage_sector_verify_lec (MirageSector *self);
 gboolean mirage_sector_verify_subchannel_crc (MirageSector *self);
