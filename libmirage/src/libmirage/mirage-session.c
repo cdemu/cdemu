@@ -177,7 +177,7 @@ static gint sort_tracks_by_number (GObject *track1, GObject *track2)
 /**
  * mirage_session_set_session_type:
  * @self: a #MirageSession
- * @type: (in); session type
+ * @type: (in): session type
  *
  * <para>
  * Sets session type. @type must be one of #MirageSessionTypes.

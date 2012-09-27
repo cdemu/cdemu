@@ -202,7 +202,7 @@ static void mirage_sector_generate_edc_ecc (MirageSector *self)
  * mirage_sector_feed_data:
  * @self: a #MirageSector
  * @address: (in): address the sector represents. Given in sectors.
- * @track: (in); track the sector belongs to
+ * @track: (in): track the sector belongs to
  * @error: (out) (allow-none): location to store error, or %NULL
  *
  * <para>

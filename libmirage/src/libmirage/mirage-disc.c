@@ -938,7 +938,7 @@ GObject *mirage_disc_get_session_by_number (MirageDisc *self, gint session_numbe
 /**
  * mirage_disc_get_session_by_address:
  * @self: a #MirageDisc
- * @address: (in) address belonging to session to be retrieved
+ * @address: (in): address belonging to session to be retrieved
  * @error: (out) (allow-none): location to store error, or %NULL
  *
  * <para>
@@ -1601,7 +1601,7 @@ void mirage_disc_set_disc_structure (MirageDisc *self, gint layer, gint type, co
  * @type: (in): disc structure type
  * @data: (out) (transfer none) (allow-none) (array length=len): location to store buffer containing disc structure data, or %NULL
  * @len: (out) (allow-none): location to store data length, or %NULL
- * @error: location to store error, or %NULL
+ * @error: (out) (allow-none): location to store error, or %NULL
  *
  * <para>
  * Retrieves disc structure of type @type from layer @layer. The pointer to buffer
@@ -1698,7 +1698,7 @@ GObject *mirage_disc_get_sector (MirageDisc *self, gint address, GError **error)
  * @start: (in): DPM start sector
  * @resolution: (in): DPM data resolution
  * @num_entries: (in): number of DPM entries
- * @data: buffer (in) (array length=num_entries): containing DPM data
+ * @data: (in) (array length=num_entries): buffer containing DPM data
  *
  * <para>
  * Sets the DPM data for disc. If @num_entries is not positive, DPM data is reset.
