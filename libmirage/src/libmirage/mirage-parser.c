@@ -118,7 +118,7 @@ const MirageParserInfo *mirage_parser_get_parser_info (MirageParser *self)
  * Loads the image stored in @filenames.
  * </para>
  *
- * Returns: disc object representing image on success, %NULL on failure
+ * Returns: (transfer full): disc object representing image on success, %NULL on failure
  **/
 GObject *mirage_parser_load_image (MirageParser *self, gchar **filenames, GError **error)
 {
@@ -132,12 +132,12 @@ GObject *mirage_parser_load_image (MirageParser *self, gchar **filenames, GError
 
     /* If 'dvd-report-css' flag is passed to the parser, pass it on to
        the disc object */
-    GVariant *dvd_report_css = mirage_parser_get_param(self, "dvd-report-css", G_VARIANT_TYPE_BOOLEAN);
+    const GVariant *dvd_report_css = mirage_parser_get_param(self, "dvd-report-css", G_VARIANT_TYPE_BOOLEAN);
     if (dvd_report_css) {
         /* Convert GVariant to GValue... */
         GValue dvd_report_css2;
         g_value_init(&dvd_report_css2, G_TYPE_BOOLEAN);
-        g_value_set_boolean(&dvd_report_css2, g_variant_get_boolean(dvd_report_css));
+        g_value_set_boolean(&dvd_report_css2, g_variant_get_boolean((GVariant *) dvd_report_css));
 
         g_object_set_property(disc, "dvd-report-css", &dvd_report_css2);
     }
@@ -306,13 +306,13 @@ void mirage_parser_set_params (MirageParser *self, GHashTable *params)
 const gchar *mirage_parser_get_param_string (MirageParser *self, const gchar *name)
 {
     /* Get value */
-    GVariant *value = mirage_parser_get_param(self, name, G_VARIANT_TYPE_STRING);
+    const GVariant *value = mirage_parser_get_param(self, name, G_VARIANT_TYPE_STRING);
 
     if (!value) {
         return NULL;
     }
 
-    return g_variant_get_string(value, NULL);
+    return g_variant_get_string((GVariant *) value, NULL);
 }
 
 
@@ -332,7 +332,7 @@ const gchar *mirage_parser_get_param_string (MirageParser *self, const gchar *na
  * the parameters hash table that was passed to the parser, and as such should
  * not be modified.
  **/
-GVariant *mirage_parser_get_param (MirageParser *self, const gchar *name, const GVariantType *type)
+const GVariant *mirage_parser_get_param (MirageParser *self, const gchar *name, const GVariantType *type)
 {
     GVariant *value;
 
@@ -371,7 +371,7 @@ GVariant *mirage_parser_get_param (MirageParser *self, const gchar *name, const 
  * adds it to the cache.
  * </para>
  *
- * Returns: data stream object on success, %NULL on failure.
+ * Returns: (transfer full): data stream object on success, %NULL on failure.
  * The reference to stream should be released using g_object_unref()
  * when no longer needed.
  **/

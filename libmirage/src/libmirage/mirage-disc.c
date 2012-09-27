@@ -413,10 +413,10 @@ void mirage_disc_set_filename (MirageDisc *self, const gchar *filename)
  * Returns: (transfer none) (array zero-terminated=1): pointer to %NULL-terminated
  * array of filenames. The array belongs to the object and should not be modified.
  **/
-gchar **mirage_disc_get_filenames (MirageDisc *self)
+const gchar **mirage_disc_get_filenames (MirageDisc *self)
 {
     /* Return filenames */
-    return self->priv->filenames;
+    return (const gchar **) self->priv->filenames;
 }
 
 
@@ -863,7 +863,7 @@ void mirage_disc_remove_session_by_object (MirageDisc *self, GObject *session)
  * function fails.
  * </para>
  *
- * Returns: a #MirageSession on success, %NULL on failure.
+ * Returns: (transfer full): a #MirageSession on success, %NULL on failure.
  * The reference to the object should be released using g_object_unref()
  * when no longer needed.
  **/
@@ -903,7 +903,7 @@ GObject *mirage_disc_get_session_by_index (MirageDisc *self, gint index, GError 
  * Retrieves session by session number.
  * </para>
  *
- * Returns: a #MirageSession on success, %NULL on failure.
+ * Returns: (transfer full): a #MirageSession on success, %NULL on failure.
  * The reference to the object should be released using g_object_unref()
  * when no longer needed.
  **/
@@ -947,7 +947,7 @@ GObject *mirage_disc_get_session_by_number (MirageDisc *self, gint session_numbe
  * start and end sector).
  * </para>
  *
- * Returns: a #MirageSession on success, %NULL on failure.
+ * Returns: (transfer full): a #MirageSession on success, %NULL on failure.
  * The reference to the object should be released using g_object_unref()
  * when no longer needed.
  **/
@@ -1001,7 +1001,7 @@ GObject *mirage_disc_get_session_by_address (MirageDisc *self, gint address, GEr
  * that is part of the session.
  * </para>
  *
- * Returns: a #MirageSession on success, %NULL on failure.
+ * Returns: (transfer full): a #MirageSession on success, %NULL on failure.
  * The reference to the object should be released using g_object_unref()
  * when no longer needed.
  **/
@@ -1079,7 +1079,7 @@ gboolean mirage_disc_for_each_session (MirageDisc *self, MirageCallbackFunction 
  * Retrieves session that comes before @session.
  * </para>
  *
- * Returns: a #MirageSession on success, %NULL on failure.
+ * Returns: (transfer full): a #MirageSession on success, %NULL on failure.
  * The reference to the object should be released using g_object_unref()
  * when no longer needed.
  **/
@@ -1113,7 +1113,7 @@ GObject *mirage_disc_get_session_before (MirageDisc *self, GObject *session, GEr
  * Retrieves session that comes after @session.
  * </para>
  *
- * Returns: a #MirageSession on success, %NULL on failure.
+ * Returns: (transfer full): a #MirageSession on success, %NULL on failure.
  * The reference to the object should be released using g_object_unref()
  * when no longer needed.
  **/
@@ -1433,7 +1433,7 @@ gboolean mirage_disc_remove_track_by_number (MirageDisc *self, gint number, GErr
  * The rest of behavior is same as of mirage_session_get_track_by_index().
  * </para>
  *
- * Returns: a #MirageTrack on success, %NULL on failure.
+ * Returns: (transfer full): a #MirageTrack on success, %NULL on failure.
  * The reference to the object should be released using g_object_unref()
  * when no longer needed.
  **/
@@ -1487,7 +1487,7 @@ GObject *mirage_disc_get_track_by_index (MirageDisc *self, gint index, GError **
  * The rest of behavior is same as of mirage_session_get_track_by_number().
  * </para>
  *
- * Returns: a #MirageTrack on success, %NULL on failure.
+ * Returns: (transfer full): a #MirageTrack on success, %NULL on failure.
  * The reference to the object should be released using g_object_unref()
  * when no longer needed.
  **/
@@ -1531,7 +1531,7 @@ GObject *mirage_disc_get_track_by_number (MirageDisc *self, gint number, GError 
  * The rest of behavior is same as of mirage_session_get_track_by_address().
  * </para>
  *
- * Returns: a #MirageTrack on success, %NULL on failure.
+ * Returns: (transfer full): a #MirageTrack on success, %NULL on failure.
  * The reference to the object should be released using g_object_unref()
  * when no longer needed.
  **/
@@ -1671,7 +1671,7 @@ gboolean mirage_disc_get_disc_structure (MirageDisc *self, gint layer, gint type
  * then retrieves sector object using mirage_track_get_sector().
  * </para>
  *
- * Returns: sector object on success, %NULL on failure
+ * Returns: (transfer full): sector object on success, %NULL on failure
  **/
 GObject *mirage_disc_get_sector (MirageDisc *self, gint address, GError **error)
 {

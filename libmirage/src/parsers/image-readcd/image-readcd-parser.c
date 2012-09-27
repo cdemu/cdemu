@@ -302,7 +302,8 @@ static gboolean mirage_parser_readcd_parse_toc (MirageParserReadcd *self, const 
     /* NOTE: the mirage_parser_readcd_is_file_valid() check guarantees that the
        image filename has a valid suffix... */
     gchar *tmp_data_filename = g_strdup(filename);
-    *mirage_helper_get_suffix(tmp_data_filename) = 0; /* Skip the suffix */
+    const gchar *suffix = mirage_helper_get_suffix(tmp_data_filename);
+    tmp_data_filename[suffix-tmp_data_filename] = '\0'; /* Skip the suffix */
 
     self->priv->data_filename = mirage_helper_find_data_file(tmp_data_filename, filename);
 

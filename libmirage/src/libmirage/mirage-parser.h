@@ -102,7 +102,7 @@ gint mirage_parser_guess_medium_type (MirageParser *self, GObject *disc);
 void mirage_parser_add_redbook_pregap (MirageParser *self, GObject *disc);
 
 void mirage_parser_set_params (MirageParser *self, GHashTable *params);
-GVariant *mirage_parser_get_param (MirageParser *self, const gchar *name, const GVariantType *type);
+const GVariant *mirage_parser_get_param (MirageParser *self, const gchar *name, const GVariantType *type);
 const gchar *mirage_parser_get_param_string (MirageParser *self, const gchar *name);
 
 GObject *mirage_parser_get_cached_data_stream (MirageParser *self, const gchar *filename, GError **error);

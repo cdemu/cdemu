@@ -75,7 +75,7 @@ extern const guint8 mirage_pattern_bea01[8];
 gchar *mirage_helper_find_data_file (const gchar *filename, const gchar *path);
 
 /* File suffix retrieval and matching */
-gchar *mirage_helper_get_suffix (const gchar *filename);
+const gchar *mirage_helper_get_suffix (const gchar *filename);
 gboolean mirage_helper_has_suffix (const gchar *filename, const gchar *suffix);
 
 /* Case-insensitive string comparison; works on UTF-8 strings */

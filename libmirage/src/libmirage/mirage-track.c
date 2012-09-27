@@ -470,7 +470,7 @@ const gchar *mirage_track_get_isrc (MirageTrack *self)
  * A reference to sector is stored in @sector; it
  * </para>
  *
- * Returns: sector object on success, %NULL on failure. The sector object
+ * Returns: (transfer full): sector object on success, %NULL on failure. The sector object
  * should be released with g_object_unref() when no longer needed.
  **/
 GObject *mirage_track_get_sector (MirageTrack *self, gint address, gboolean abs, GError **error)
@@ -777,7 +777,7 @@ void mirage_track_remove_fragment_by_object (MirageTrack *self, GObject *fragmen
  * function fails.
  * </para>
  *
- * Returns: a #MirageFragment on success, %NULL on failure.
+ * Returns: (transfer full): a #MirageFragment on success, %NULL on failure.
  * The reference to the object should be released using g_object_unref()
  * when no longer needed.
  **/
@@ -819,7 +819,7 @@ GObject *mirage_track_get_fragment_by_index (MirageTrack *self, gint index, GErr
  * start and end address).
  * </para>
  *
- * Returns: a #MirageFragment on success, %NULL on failure.
+ * Returns: (transfer full): a #MirageFragment on success, %NULL on failure.
  * The reference to the object should be released using g_object_unref()
  * when no longer needed.
  **/
@@ -903,7 +903,7 @@ gboolean mirage_track_for_each_fragment (MirageTrack *self, MirageCallbackFuncti
  * Intended for internal use only.
  * </note>
  *
- * Returns: a #MirageFragment on success, %NULL on failure.
+ * Returns: (transfer full): a #MirageFragment on success, %NULL on failure.
  * The reference to the object should be released using g_object_unref()
  * when no longer needed.
  **/
@@ -1103,7 +1103,7 @@ void mirage_track_remove_index_by_object (MirageTrack *self, GObject *index)
  * If @number is out of range, regardless of the sign, the function fails.
  * </para>
  *
- * Returns: a #MirageIndex on success, %NULL on failure.
+ * Returns: (transfer full): a #MirageIndex on success, %NULL on failure.
  * The reference to the object should be released using g_object_unref()
  * when no longer needed.
  **/
@@ -1145,7 +1145,7 @@ GObject *mirage_track_get_index_by_number (MirageTrack *self, gint number, GErro
  * start and end sector).
  * </para>
  *
- * Returns: a #MirageIndex on success, %NULL on failure.
+ * Returns: (transfer full): a #MirageIndex on success, %NULL on failure.
  * The reference to the object should be released using g_object_unref()
  * when no longer needed.
  **/
@@ -1365,7 +1365,7 @@ void mirage_track_remove_language_by_object (MirageTrack *self, GObject *languag
  * function fails.
  * </para>
  *
- * Returns: a #MirageLanguage on success, %NULL on failure.
+ * Returns: (transfer full): a #MirageLanguage on success, %NULL on failure.
  * The reference to the object should be released using g_object_unref()
  * when no longer needed.
  **/
@@ -1405,7 +1405,7 @@ GObject *mirage_track_get_language_by_index (MirageTrack *self, gint index, GErr
  * Retrieves language by language code.
  * </para>
  *
- * Returns: a #MirageLanguage on success, %NULL on failure.
+ * Returns: (transfer full): a #MirageLanguage on success, %NULL on failure.
  * The reference to the object should be released using g_object_unref()
  * when no longer needed.
  **/
@@ -1477,7 +1477,7 @@ gboolean mirage_track_for_each_language (MirageTrack *self, MirageCallbackFuncti
  * Retrieves track that is placed before @self in session layout.
  * </para>
  *
- * Returns: a #MirageTrack on success, %NULL on failure.
+ * Returns: (transfer full): a #MirageTrack on success, %NULL on failure.
  * The reference to the object should be released using g_object_unref()
  * when no longer needed.
  **/
@@ -1508,7 +1508,7 @@ GObject *mirage_track_get_prev (MirageTrack *self, GError **error)
  * Retrieves track that is placed after @self in session layout
  * </para>
  *
- * Returns: a #MirageTrack on success, %NULL on failure.
+ * Returns: (transfer full): a #MirageTrack on success, %NULL on failure.
  * The reference to the object should be released using g_object_unref()
  * when no longer needed.
  **/

@@ -207,7 +207,7 @@ gchar *mirage_helper_find_data_file (const gchar *filename, const gchar *path)
  *
  * Returns: (transfer none): pointer to character in @filename at which the suffix starts.
  **/
-gchar *mirage_helper_get_suffix (const gchar *filename)
+const gchar *mirage_helper_get_suffix (const gchar *filename)
 {
     return g_strrstr(filename, ".");
 }
@@ -225,12 +225,10 @@ gchar *mirage_helper_get_suffix (const gchar *filename)
  **/
 gboolean mirage_helper_has_suffix (const gchar *filename, const gchar *suffix)
 {
-    gchar *file_suffix = NULL;
-
     g_return_val_if_fail(filename != NULL, FALSE);
     g_return_val_if_fail(suffix != NULL, FALSE);
 
-    file_suffix = mirage_helper_get_suffix(filename);
+    const gchar *file_suffix = mirage_helper_get_suffix(filename);
 
     /* If file has no suffix, don't bother */
     if (!file_suffix) {

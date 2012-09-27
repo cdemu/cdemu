@@ -253,7 +253,7 @@ gchar *mirage_obtain_password (GError **error)
  * only the first filename is used.
  * </para>
  *
- * Returns: a #MirageDisc object on success, %NULL on failure. The reference to
+ * Returns: (transfer full): a #MirageDisc object on success, %NULL on failure. The reference to
  * the object should be released using g_object_unref() when no longer needed.
  **/
 GObject *mirage_create_disc (gchar **filenames, GObject *debug_context, GHashTable *params, GError **error)
@@ -335,7 +335,7 @@ GObject *mirage_create_disc (gchar **filenames, GObject *debug_context, GHashTab
  * interface, then its debug context is retrieved and set to the file stream.
  * </para>
  *
- * Returns: a #MirageFragment object on success, %NULL on failure. The reference
+ * Returns: (transfer full): a #MirageFragment object on success, %NULL on failure. The reference
  * to the object should be released using g_object_unref() when no longer needed.
  **/
 GObject *mirage_create_fragment (GType fragment_interface, GObject *stream, GObject *debug_context, GError **error)
@@ -405,7 +405,7 @@ GObject *mirage_create_fragment (GType fragment_interface, GObject *stream, GObj
  * interface, then its debug context is retrieved and set to the file stream.
  * </para>
  *
- * Returns: on success, an object inheriting #GFilterInputStream (and therefore
+ * Returns: (transfer full): on success, an object inheriting #GFilterInputStream (and therefore
  * #GInputStream) and implementing #GSeekable interface is returned, which
  * can be used to access data stored in file. On failure, %NULL is returned.
  * The reference to the object should be released using g_object_unref()

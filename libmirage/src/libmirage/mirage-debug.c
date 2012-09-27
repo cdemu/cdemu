@@ -194,7 +194,7 @@ void mirage_debug_context_set_name (MirageDebugContext *self, const gchar *name)
  * Retrieves debug context's name.
  * </para>
  *
- * Returns: pointer to buffer containing the name, or %NULL. The buffer belongs to the object and should not be modified.
+ * Returns: (transfer none): pointer to buffer containing the name, or %NULL. The buffer belongs to the object and should not be modified.
  **/
 const gchar *mirage_debug_context_get_name (MirageDebugContext *self)
 {
