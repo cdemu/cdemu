@@ -1,4 +1,5 @@
 SUBDIRS = \
     filter-cso \
     filter-ecm \
-    filter-gzip
+    filter-gzip \
+    filter-xz
