@@ -8,6 +8,7 @@ set (filters_LIST
     filter-daa
     filter-ecm
     filter-gzip
+    filter-isz
     filter-xz
 )
 
@@ -32,6 +33,7 @@ set (mimetype_FILES
     src/filters/filter-daa/libmirage-daa.xml
     src/filters/filter-daa/libmirage-gbi.xml
     src/filters/filter-ecm/libmirage-ecm.xml
+    src/filters/filter-isz/libmirage-isz.xml
     src/parsers/image-b6t/libmirage-b6t.xml
     src/parsers/image-c2d/libmirage-c2d.xml
     src/parsers/image-ccd/libmirage-ccd.xml
@@ -127,6 +129,11 @@ set (filter-gzip_SOURCES
 set (filter-cso_SOURCES
     src/filters/filter-cso/filter-cso-plugin.c
     src/filters/filter-cso/filter-cso-file-filter.c
+)
+
+set (filter-isz_SOURCES
+    src/filters/filter-isz/filter-isz-plugin.c
+    src/filters/filter-isz/filter-isz-file-filter.c
 )
 
 set (image-mdx_SOURCES

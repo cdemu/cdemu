@@ -93,6 +93,7 @@ option (STRICT_WARNINGS "Enable more warnings" off)
 # Tests
 
 find_package (PkgConfig 0.16 REQUIRED)
+find_package (BZip2 1.0.0 REQUIRED)
 
 pkg_check_modules (LibGlib REQUIRED glib-2.0>=2.24 gobject-2.0>=2.24
     gmodule-2.0>=2.24 gio-2.0>=2.24)
@@ -186,7 +187,7 @@ to_list_spaces (filters_LDFLAGS filters_S_LDFLAGS)
 foreach (filter ${filters_LIST})
     add_library (${filter} MODULE ${${filter}_SOURCES})
 
-    target_link_libraries (${filter} ${LibGlib_LIBRARIES} ${ZLib_LIBRARIES})
+    target_link_libraries (${filter} ${LibGlib_LIBRARIES} ${ZLib_LIBRARIES} ${BZIP2_LIBRARY})
 
     if (filter STREQUAL "filter-xz")
         to_list_spaces (LibLzma_CFLAGS extra_CFLAGS)
