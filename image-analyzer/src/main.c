@@ -31,7 +31,7 @@
  *                                Main function                               *
 \******************************************************************************/
 static gboolean debug_to_stdout = FALSE;
-static gint debug_mask_initial = 0;
+static gint debug_mask_initial = MIRAGE_DEBUG_PARSER;
 
 static GOptionEntry option_entries[] = {
     { "debug-to-stdout", 's', 0, G_OPTION_ARG_NONE, &debug_to_stdout, "Print libMirage debug to stdout as well.", NULL },
