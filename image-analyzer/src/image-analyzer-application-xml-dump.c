@@ -322,7 +322,7 @@ static gboolean xml_dump_session (GObject *session, xmlNodePtr parent)
 static gboolean xml_dump_disc (GObject *disc, xmlNodePtr parent)
 {
     gint medium_type;
-    gchar **filenames;
+    const gchar **filenames;
     const gchar *mcn;
     gint first_session, first_track;
     gint start_sector, length;

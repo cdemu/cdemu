@@ -105,7 +105,7 @@ static gboolean image_analyzer_disc_topology_refresh (ImageAnalyzerDiscTopology 
             "reset"
         );
     } else {
-        gchar **filenames = mirage_disc_get_filenames(MIRAGE_DISC(disc));
+        const gchar **filenames = mirage_disc_get_filenames(MIRAGE_DISC(disc));
         gchar *basename = g_path_get_basename(filenames[0]);
 
         mirage_disc_get_dpm_data(MIRAGE_DISC(disc), &dpm_start, &dpm_entries, &dpm_resolution, NULL);
