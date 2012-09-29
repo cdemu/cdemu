@@ -304,6 +304,14 @@ control the daemon:
 
     - Returns supported image parsers.
 
+* EnumSupportedFileFilters (filters)
+    + filters: out; "a(ssss)"
+        Array of structures containing information about supported file filters.
+        Each structure has multiple fields; filter ID (string), filter name
+        (string), file type description (string) and file type MIME type (string).
+
+    - Returns supported image parsers.
+
 * EnumSupportedFragments (fragments)
     + framgents: out; "a(ss)"
         Array of structures containing information about supported fragments.

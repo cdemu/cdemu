@@ -79,9 +79,9 @@ static GVariantBuilder *encode_masks (const MirageDebugMask *masks, gint num_mas
 
 
 /* Helper that encodes the list of supported parsers */
-static gboolean append_parser_to_builder (MirageParserInfo *parser, GVariantBuilder *builder)
+static gboolean append_parser_to_builder (MirageParserInfo *info, GVariantBuilder *builder)
 {
-    g_variant_builder_add(builder, "(ssss)", parser->id, parser->name, parser->description, parser->mime_type);
+    g_variant_builder_add(builder, "(ssss)", info->id, info->name, info->description, info->mime_type);
     return TRUE;
 }
 
@@ -92,10 +92,26 @@ static GVariantBuilder *encode_parsers ()
     return builder;
 }
 
-/* Helper that encodes the list of supported fragments */
-static gboolean append_fragment_to_builder (MirageFragmentInfo *fragment, GVariantBuilder *builder)
+
+/* Helper that encodes the list of supported file filters */
+static gboolean append_filter_to_builder (MirageFileFilterInfo *info, GVariantBuilder *builder)
 {
-    g_variant_builder_add(builder, "(ss)", fragment->id, fragment->name);
+    g_variant_builder_add(builder, "(ssss)", info->id, info->name, info->description, info->mime_type);
+    return TRUE;
+}
+
+static GVariantBuilder *encode_file_filters ()
+{
+    GVariantBuilder *builder = g_variant_builder_new(G_VARIANT_TYPE("a(ssss)"));
+    mirage_for_each_file_filter((MirageCallbackFunction)append_filter_to_builder, builder, NULL);
+    return builder;
+}
+
+
+/* Helper that encodes the list of supported fragments */
+static gboolean append_fragment_to_builder (MirageFragmentInfo *info, GVariantBuilder *builder)
+{
+    g_variant_builder_add(builder, "(ss)", info->id, info->name);
     return TRUE;
 }
 
@@ -253,6 +269,10 @@ static void cdemu_daemon_dbus_handle_method_call (GDBusConnection *connection G_
     } else if (!g_strcmp0(method_name, "EnumSupportedParsers")) {
         /* *** EnumSupportedParsers *** */
         ret = g_variant_new("(a(ssss))", encode_parsers());
+        succeeded = TRUE;
+    } else if (!g_strcmp0(method_name, "EnumSupportedFileFilters")) {
+        /* *** EnumSupportedFileFilters *** */
+        ret = g_variant_new("(a(ssss))", encode_file_filters());
         succeeded = TRUE;
     } else if (!g_strcmp0(method_name, "EnumSupportedFragments")) {
         /* *** EnumSupportedFragments *** */
@@ -456,6 +476,9 @@ static const gchar introspection_xml[] =
     "        </method>"
     "        <method name='EnumSupportedParsers'>"
     "            <arg name='parsers' type='a(ssss)' direction='out'/>"
+    "        </method>"
+    "        <method name='EnumSupportedFileFilters'>"
+    "            <arg name='filters' type='a(ssss)' direction='out'/>"
     "        </method>"
     "        <method name='EnumSupportedFragments'>"
     "            <arg name='fragments' type='a(ss)' direction='out'/>"
