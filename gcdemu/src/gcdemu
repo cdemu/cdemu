@@ -129,6 +129,9 @@ class CDEmuDaemonProxy (GObject.GObject):
     def EnumSupportedParsers (self):
         return self.proxy.EnumSupportedParsers()
 
+    def EnumSupportedFileFilters (self):
+        return self.proxy.EnumSupportedFileFilters()
+
     def EnumSupportedFragments (self):
         return self.proxy.EnumSupportedFragments()
 
@@ -263,6 +266,9 @@ class CDEmu (GObject.GObject):
 
         # Get supported parsers
         self.supported_parsers = self.daemon_proxy.EnumSupportedParsers()
+
+        # Get supported file filters
+        self.supported_file_filters = self.daemon_proxy.EnumSupportedFileFilters()
 
         # Get number of devices
         num_devices = self.daemon_proxy.GetNumberOfDevices()
@@ -826,7 +832,7 @@ class gCDEmuDevice (GObject.GObject):
         # because Gtk and AppIndicator versions handle different signals
 
         # Create file chooser dialog
-        self.file_chooser = gCDEMuFileChooserDialog(cdemu.supported_parsers)
+        self.file_chooser = gCDEMuFileChooserDialog(cdemu.supported_parsers, cdemu.supported_file_filters)
 
         # Create password dialog
         self.password_dialog = gCDEMuPasswordDialog()
@@ -1339,31 +1345,41 @@ GObject.signal_new("debug-mask-changed", gCDEmuDeviceDebugMaskPage,
 #           gCDEMuFileChooserDialog: file chooser dialog               #
 ########################################################################
 class gCDEMuFileChooserDialog (Gtk.FileChooserDialog):
-    def __init__ (self, parsers):
+    def __init__ (self, parsers, file_filters):
         Gtk.FileChooserDialog.__init__(self, _("Open file"), None, Gtk.FileChooserAction.OPEN, (Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL, Gtk.STOCK_OPEN, Gtk.ResponseType.ACCEPT))
 
         self.set_select_multiple(True)
         self.set_local_only(False)
 
         # Set filters based on supported parser information
-        filefilter = Gtk.FileFilter()
-        filefilter.set_name(_("All files"))
-        filefilter.add_pattern("*")
-        self.add_filter(filefilter)
+        filter_entry = Gtk.FileFilter()
+        filter_entry.set_name(_("All files"))
+        filter_entry.add_pattern("*")
+        self.add_filter(filter_entry)
 
         all_images = Gtk.FileFilter()
         all_images.set_name(_("All image files"))
         self.add_filter(all_images)
 
-        for parser in parsers:
-            filefilter = Gtk.FileFilter()
+        for info in parsers:
+            filter_entry = Gtk.FileFilter()
 
-            filefilter.set_name(parser[2])
-            filefilter.add_mime_type(parser[3])
+            filter_entry.set_name(info[2])
+            filter_entry.add_mime_type(info[3])
 
-            all_images.add_mime_type(parser[3])
+            all_images.add_mime_type(info[3])
 
-            self.add_filter(filefilter)
+            self.add_filter(filter_entry)
+
+        for info in file_filters:
+            filter_entry = Gtk.FileFilter()
+
+            filter_entry.set_name(info[2])
+            filter_entry.add_mime_type(info[3])
+
+            all_images.add_mime_type(info[3])
+
+            self.add_filter(filter_entry)
 
         # Extra options
         widget = self.create_extra_options_widget()
