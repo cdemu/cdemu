@@ -22,6 +22,9 @@
 #define __debug__ "MDX-Parser"
 
 
+static const guint8 mdx_signature[17] = { 'M', 'E', 'D', 'I', 'A', ' ', 'D', 'E', 'S', 'C', 'R', 'I', 'P', 'T', 'O', 'R', 0x02 };
+
+
 /**********************************************************************\
  *                          Private structure                         *
 \**********************************************************************/
@@ -348,11 +351,12 @@ static GObject *mirage_parser_mdx_load_image (MirageParser *_self, gchar **filen
     }
 
     /* This parsers handles v.2.X images (new DT format) */
-    if (memcmp(signature, "MEDIA DESCRIPTOR\x02", 17)) {
+    if (memcmp(signature, mdx_signature, sizeof(mdx_signature))) {
         g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_CANNOT_HANDLE, "Parser cannot handle given image!");
         return FALSE;
     }
 
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: parsing the image...\n", __debug__);
 
     /* Create disc */
     self->priv->disc = g_object_new(MIRAGE_TYPE_DISC, NULL);
@@ -369,8 +373,10 @@ static GObject *mirage_parser_mdx_load_image (MirageParser *_self, gchar **filen
     /* Return disc */
     mirage_object_detach_child(MIRAGE_OBJECT(self), self->priv->disc);
     if (succeeded) {
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: parsing completed successfully\n\n", __debug__);
         return self->priv->disc;
     } else {
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: parsing failed!\n\n", __debug__);
         g_object_unref(self->priv->disc);
         return NULL;
     }

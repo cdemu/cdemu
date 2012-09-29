@@ -24,6 +24,10 @@
 #define __debug__ "NRG-Parser"
 
 
+static const guint8 nero_signature[4] = { 'N', 'E', 'R', 'O' };
+static const guint8 ner5_signature[4] = { 'N', 'E', 'R', '5' };
+
+
 /**********************************************************************\
  *                          Private structure                         *
 \**********************************************************************/
@@ -969,12 +973,12 @@ static GObject *mirage_parser_nrg_load_image (MirageParser *_self, gchar **filen
         return FALSE;
     }
 
-    if (!memcmp(sig, "NER5", sizeof(sig))) {
+    if (!memcmp(sig, ner5_signature, sizeof(ner5_signature))) {
         /* New format, 64-bit offset */
         guint64 tmp_offset = 0;
         self->priv->old_format = FALSE;
 
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: new format\n", __debug__);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: parsing the image (new format)...\n", __debug__);
 
         if (g_input_stream_read(G_INPUT_STREAM(self->priv->nrg_stream), &tmp_offset, sizeof(tmp_offset), NULL, NULL) != sizeof(tmp_offset)) {
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read trailer offset (64-bit)!\n", __debug__);
@@ -991,11 +995,11 @@ static GObject *mirage_parser_nrg_load_image (MirageParser *_self, gchar **filen
             return FALSE;
         }
 
-        if (!memcmp(sig, "NERO", sizeof(sig))) {
+        if (!memcmp(sig, nero_signature, sizeof(nero_signature))) {
             guint32 tmp_offset = 0;
             self->priv->old_format = TRUE;
 
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: old format\n", __debug__);
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: parsing the image (old format)...\n", __debug__);
 
             if (g_input_stream_read(G_INPUT_STREAM(self->priv->nrg_stream), &tmp_offset, sizeof(tmp_offset), NULL, NULL) != sizeof(tmp_offset)) {
                 MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read trailer offset!\n", __debug__);
@@ -1100,8 +1104,10 @@ end:
     /* Return disc */
     mirage_object_detach_child(MIRAGE_OBJECT(self), self->priv->disc);
     if (succeeded) {
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: parsing completed successfully\n\n", __debug__);
         return self->priv->disc;
     } else {
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: parsing failed!\n\n", __debug__);
         g_object_unref(self->priv->disc);
         return NULL;
     }

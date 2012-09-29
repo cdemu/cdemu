@@ -22,6 +22,12 @@
 #define __debug__ "CIF-Parser"
 
 
+static const guint8 riff_signature[4] = { 'R', 'I', 'F', 'F' };
+static const guint8 imag_signature[4] = { 'I', 'M', 'A', 'G' };
+static const guint8  ofs_signature[4] = { 'o', 'f', 's', ' ' };
+static const guint8 disc_signature[4] = { 'd', 'i', 's', 'c' };
+
+
 /**********************************************************************\
  *                          Private structure                         *
 \**********************************************************************/
@@ -538,7 +544,7 @@ static gboolean mirage_parser_cif_parse_ofs_block (MirageParserCif *self, GError
         }
 
         /* Match "RIFF" */
-        if (memcmp(entry.riff, "RIFF", 4)) {
+        if (memcmp(entry.riff, riff_signature, sizeof(riff_signature))) {
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: expected 'RIFF', got '%.4s'\n", __debug__, entry.riff);
             g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_PARSER_ERROR, "Invalid FOURCC; expected 'RIFF', got '%.4s'", entry.riff);
             return FALSE;
@@ -583,7 +589,7 @@ static gboolean mirage_parser_cif_parse_blocks (MirageParserCif *self, GError **
         }
 
         /* Match "RIFF" */
-        if (memcmp(header.riff, "RIFF", 4)) {
+        if (memcmp(header.riff, riff_signature, sizeof(riff_signature))) {
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: expected 'RIFF', got '%.4s'\n", __debug__, header.riff);
             g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_PARSER_ERROR, "Invalid FOURCC; expected 'RIFF', got '%.4s'", header.riff);
             return FALSE;
@@ -603,10 +609,10 @@ static gboolean mirage_parser_cif_parse_blocks (MirageParserCif *self, GError **
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: RIFF chunk of type '%.4s': offset %lld (0x%llX), length %ld (0x%lX)\n", __debug__, header.type, offset, offset, header.length, header.length);
 
         /* We need to store "disc" and "ofs " offsets */
-        if (!memcmp(header.type, "disc", 4)) {
+        if (!memcmp(header.type, disc_signature, sizeof(disc_signature))) {
             self->priv->disc_offset = offset;
             self->priv->disc_length = header.length;
-        } else if (!memcmp(header.type, "ofs ", 4)) {
+        } else if (!memcmp(header.type, ofs_signature, sizeof(ofs_signature))) {
             self->priv->ofs_offset = offset;
             self->priv->ofs_length = header.length;
         }
@@ -686,11 +692,12 @@ static GObject *mirage_parser_cif_load_image (MirageParser *_self, gchar **filen
     /* Match "RIFF" at the beginning and "imag" that comes after length
        field. We could probably also match length, since it appears to
        be fixed, but this should sufficient... */
-    if (memcmp(header.riff, "RIFF", 4) || memcmp(header.type, "imag", 4)) {
+    if (memcmp(header.riff, riff_signature, sizeof(riff_signature)) || memcmp(header.type, imag_signature, sizeof(imag_signature))) {
         g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_CANNOT_HANDLE, "Parser cannot handle given image!");
         return FALSE;
     }
 
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: parsing the image...\n", __debug__);
 
     /* Create disc */
     self->priv->disc = g_object_new(MIRAGE_TYPE_DISC, NULL);
@@ -705,8 +712,10 @@ static GObject *mirage_parser_cif_load_image (MirageParser *_self, gchar **filen
     /* Return disc */
     mirage_object_detach_child(MIRAGE_OBJECT(self), self->priv->disc);
     if (succeeded) {
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: parsing completed successfully\n\n", __debug__);
         return self->priv->disc;
     } else {
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: parsing failed!\n\n", __debug__);
         g_object_unref(self->priv->disc);
         return NULL;
     }

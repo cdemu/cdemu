@@ -30,9 +30,6 @@
 
 G_BEGIN_DECLS
 
-#define C2D_SIGNATURE_1 "Adaptec CeQuadrat VirtualCD File"
-#define C2D_SIGNATURE_2 "Roxio Image File Format 3.0"
-
 typedef enum {
     COPYRIGHT   = 0x01, /* Copyright */
     PREEMPHASIS = 0x02, /* Pre-emphasis */

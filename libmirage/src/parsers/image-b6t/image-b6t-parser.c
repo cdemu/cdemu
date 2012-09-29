@@ -26,6 +26,9 @@
     if (field != expected) MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: unexpected value in field %s: expected 0x%X, got 0x%X\n", __debug__, #field, expected, field);
 
 
+static const guint8 b6t_signature[16] = { 'B', 'W', 'T', '5', ' ', 'S', 'T', 'R', 'E', 'A', 'M', ' ', 'S', 'I', 'G', 'N' } ;
+
+
 /**********************************************************************\
  *                          Private structure                         *
 \**********************************************************************/
@@ -1267,12 +1270,13 @@ static GObject *mirage_parser_b6t_load_image (MirageParser *_self, gchar **filen
         return FALSE;
     }
 
-    if (memcmp(header, "BWT5 STREAM SIGN", 16)) {
+    if (memcmp(header, b6t_signature, sizeof(b6t_signature))) {
         g_object_unref(stream);
         g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_CANNOT_HANDLE, "Parser cannot handle given image!");
         return FALSE;
     }
 
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: parsing the image...\n", __debug__);
 
     /* Create disc */
     self->priv->disc = g_object_new(MIRAGE_TYPE_DISC, NULL);
@@ -1305,9 +1309,6 @@ static GObject *mirage_parser_b6t_load_image (MirageParser *_self, gchar **filen
 
     /* Load disc */
     succeeded = mirage_parser_b6t_load_disc(self, error);
-    if (!succeeded) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to load disc!\n", __debug__);
-    }
 
 end:
     g_free(self->priv->b6t_data);
@@ -1316,8 +1317,10 @@ end:
     /* Return disc */
     mirage_object_detach_child(MIRAGE_OBJECT(self), self->priv->disc);
     if (succeeded) {
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: parsing completed successfully\n\n", __debug__);
         return self->priv->disc;
     } else {
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: parsing failed!\n\n", __debug__);
         g_object_unref(self->priv->disc);
         return NULL;
     }

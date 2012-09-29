@@ -22,6 +22,10 @@
 #define __debug__ "C2D-Parser"
 
 
+static guint8 c2d_signature1[] = { 'A', 'd', 'a', 'p', 't', 'e', 'c', ' ', 'C', 'e', 'Q', 'u', 'a', 'd', 'r', 'a', 't', ' ', 'V', 'i', 'r', 't', 'u', 'a', 'l', 'C', 'D', ' ', 'F', 'i', 'l', 'e' };
+static guint8 c2d_signature2[] = { 'R', 'o', 'x', 'i', 'o', ' ', 'I', 'm', 'a', 'g', 'e', ' ', 'F', 'i', 'l', 'e', ' ', 'F', 'o', 'r', 'm', 'a', 't', ' ', '3', '.', '0' };
+
+
 /**********************************************************************\
  *                          Private structure                         *
 \**********************************************************************/
@@ -535,12 +539,13 @@ static GObject *mirage_parser_c2d_load_image (MirageParser *_self, gchar **filen
         return FALSE;
     }
 
-    if (memcmp(sig, C2D_SIGNATURE_1, sizeof(C2D_SIGNATURE_1) - 1)
-        && memcmp(sig, C2D_SIGNATURE_2, sizeof(C2D_SIGNATURE_2) - 1)) {
+    if (memcmp(sig, c2d_signature1, sizeof(c2d_signature1))
+        && memcmp(sig, c2d_signature2, sizeof(c2d_signature2))) {
         g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_CANNOT_HANDLE, "Parser cannot handle given image!");
         return FALSE;
     }
 
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: parsing the image...\n", __debug__);
 
     /* Reset position */
     g_seekable_seek(G_SEEKABLE(self->priv->c2d_stream), 0, G_SEEK_SET, NULL, NULL);
@@ -597,8 +602,10 @@ end:
     /* Return disc */
     mirage_object_detach_child(MIRAGE_OBJECT(self), self->priv->disc);
     if (succeeded) {
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: parsing completed successfully\n\n", __debug__);
         return self->priv->disc;
     } else {
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: parsing failed!\n\n", __debug__);
         g_object_unref(self->priv->disc);
         return NULL;
     }
