@@ -619,7 +619,7 @@ static void mirage_parser_c2d_init (MirageParserC2d *self)
 {
     self->priv = MIRAGE_PARSER_C2D_GET_PRIVATE(self);
 
-    mirage_parser_generate_parser_info(MIRAGE_PARSER(self),
+    mirage_parser_generate_info(MIRAGE_PARSER(self),
         "PARSER-C2D",
         "C2D Image Parser",
         "C2D (CeQuadrat WinOnCD) images",

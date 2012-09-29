@@ -392,7 +392,7 @@ static void mirage_parser_mdx_init (MirageParserMdx *self)
 {
     self->priv = MIRAGE_PARSER_MDX_GET_PRIVATE(self);
 
-    mirage_parser_generate_parser_info(MIRAGE_PARSER(self),
+    mirage_parser_generate_info(MIRAGE_PARSER(self),
         "PARSER-MDX",
         "MDX Image Parser",
         "MDX images",

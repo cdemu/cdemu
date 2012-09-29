@@ -284,7 +284,7 @@ static void mirage_parser_iso_init (MirageParserIso *self)
 {
     self->priv = MIRAGE_PARSER_ISO_GET_PRIVATE(self);
 
-    mirage_parser_generate_parser_info(MIRAGE_PARSER(self),
+    mirage_parser_generate_info(MIRAGE_PARSER(self),
         "PARSER-ISO",
         "ISO Image Parser",
         "ISO images",

@@ -1350,7 +1350,7 @@ static void mirage_parser_toc_init (MirageParserToc *self)
 {
     self->priv = MIRAGE_PARSER_TOC_GET_PRIVATE(self);
 
-    mirage_parser_generate_parser_info(MIRAGE_PARSER(self),
+    mirage_parser_generate_info(MIRAGE_PARSER(self),
         "PARSER-TOC",
         "TOC Image Parser",
         "Cdrdao TOC files",

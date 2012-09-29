@@ -605,9 +605,11 @@ static void mirage_file_filter_gzip_init (MirageFileFilterGzip *self)
 {
     self->priv = MIRAGE_FILE_FILTER_GZIP_GET_PRIVATE(self);
 
-    mirage_file_filter_generate_file_filter_info(MIRAGE_FILE_FILTER(self),
+    mirage_file_filter_generate_info(MIRAGE_FILE_FILTER(self),
         "FILTER-GZIP",
-        "GZIP File Filter"
+        "GZIP File Filter",
+        "Gzip-compressed images",
+        "application/x-gzip"
     );
 
     self->priv->file_size = 0;

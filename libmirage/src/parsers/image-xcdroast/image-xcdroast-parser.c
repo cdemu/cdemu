@@ -900,7 +900,7 @@ static void mirage_parser_xcdroast_init (MirageParserXcdroast *self)
 {
     self->priv = MIRAGE_PARSER_XCDROAST_GET_PRIVATE(self);
 
-    mirage_parser_generate_parser_info(MIRAGE_PARSER(self),
+    mirage_parser_generate_info(MIRAGE_PARSER(self),
         "PARSER-XCDROAST",
         "X-CD-Roast Image Parser",
         "X-CD-Roast TOC files",

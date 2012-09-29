@@ -618,9 +618,11 @@ static void mirage_file_filter_ecm_init (MirageFileFilterEcm *self)
 {
     self->priv = MIRAGE_FILE_FILTER_ECM_GET_PRIVATE(self);
 
-    mirage_file_filter_generate_file_filter_info(MIRAGE_FILE_FILTER(self),
+    mirage_file_filter_generate_info(MIRAGE_FILE_FILTER(self),
         "FILTER-ECM",
-        "ECM File Filter"
+        "ECM File Filter",
+        "ECM'ified images",
+        "application/x-ecm"
     );
 
     self->priv->file_size = 0;

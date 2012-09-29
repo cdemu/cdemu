@@ -38,6 +38,8 @@ mirage_create_file_stream()
 
 @id: 
 @name: 
+@description: 
+@mime_type: 
 
 <!-- ##### STRUCT MirageFileFilter ##### -->
 <para>
@@ -55,7 +57,7 @@ mirage_create_file_stream()
 @Returns: 
 
 
-<!-- ##### FUNCTION mirage_file_filter_generate_file_filter_info ##### -->
+<!-- ##### FUNCTION mirage_file_filter_generate_info ##### -->
 <para>
 
 </para>
@@ -63,9 +65,11 @@ mirage_create_file_stream()
 @self: 
 @id: 
 @name: 
+@description: 
+@mime_type: 
 
 
-<!-- ##### FUNCTION mirage_file_filter_get_file_filter_info ##### -->
+<!-- ##### FUNCTION mirage_file_filter_get_info ##### -->
 <para>
 
 </para>

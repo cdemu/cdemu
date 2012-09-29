@@ -27,6 +27,8 @@ G_BEGIN_DECLS
  * MirageFileFilterInfo:
  * @id: file filter ID
  * @name: file filter name
+ * @description: file type description
+ * @mime_type: file type MIME
  *
  * <para>
  * A structure containing file filter information. It can be obtained
@@ -38,6 +40,8 @@ struct _MirageFileFilterInfo
 {
     gchar *id;
     gchar *name;
+    gchar *description;
+    gchar *mime_type;
 };
 
 
@@ -92,8 +96,8 @@ GType mirage_file_filter_get_type (void);
 /**********************************************************************\
  *                             Public API                             *
 \**********************************************************************/
-void mirage_file_filter_generate_file_filter_info (MirageFileFilter *self, const gchar *id, const gchar *name);
-const MirageFileFilterInfo *mirage_file_filter_get_file_filter_info (MirageFileFilter *self);
+void mirage_file_filter_generate_info (MirageFileFilter *self, const gchar *id, const gchar *name, const gchar *description, const gchar *mime_type);
+const MirageFileFilterInfo *mirage_file_filter_get_info (MirageFileFilter *self);
 
 gboolean mirage_file_filter_can_handle_data_format (MirageFileFilter *self, GError **error);
 

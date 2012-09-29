@@ -1123,7 +1123,7 @@ static void mirage_parser_nrg_init (MirageParserNrg *self)
 {
     self->priv = MIRAGE_PARSER_NRG_GET_PRIVATE(self);
 
-    mirage_parser_generate_parser_info(MIRAGE_PARSER(self),
+    mirage_parser_generate_info(MIRAGE_PARSER(self),
         "PARSER-NRG",
         "NRG Image Parser",
         "NRG (Nero Burning Rom) images",

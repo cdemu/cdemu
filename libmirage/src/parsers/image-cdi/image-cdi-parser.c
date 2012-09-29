@@ -1029,7 +1029,7 @@ static void mirage_parser_cdi_init (MirageParserCdi *self)
 {
     self->priv = MIRAGE_PARSER_CDI_GET_PRIVATE(self);
 
-    mirage_parser_generate_parser_info(MIRAGE_PARSER(self),
+    mirage_parser_generate_info(MIRAGE_PARSER(self),
         "PARSER-CDI",
         "CDI Image Parser",
         "CDI (DiscJuggler) images",

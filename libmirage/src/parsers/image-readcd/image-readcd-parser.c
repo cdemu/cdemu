@@ -496,7 +496,7 @@ static void mirage_parser_readcd_init (MirageParserReadcd *self)
 {
     self->priv = MIRAGE_PARSER_READCD_GET_PRIVATE(self);
 
-    mirage_parser_generate_parser_info(MIRAGE_PARSER(self),
+    mirage_parser_generate_info(MIRAGE_PARSER(self),
         "PARSER-READCD",
         "READCD Image Parser",
         "READCD images",

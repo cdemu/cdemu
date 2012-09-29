@@ -33,7 +33,7 @@
 
 struct _MirageFileFilterPrivate
 {
-    MirageFileFilterInfo *file_filter_info;
+    MirageFileFilterInfo *info;
 
     GObject *debug_context;
 };
@@ -42,12 +42,14 @@ struct _MirageFileFilterPrivate
 /**********************************************************************\
  *                          Private functions                         *
 \**********************************************************************/
-static void destroy_file_filter_info (MirageFileFilterInfo *info)
+static void destroy_info (MirageFileFilterInfo *info)
 {
     /* Free info and its content */
     if (info) {
         g_free(info->id);
         g_free(info->name);
+        g_free(info->description);
+        g_free(info->mime_type);
 
         g_free(info);
     }
@@ -58,32 +60,37 @@ static void destroy_file_filter_info (MirageFileFilterInfo *info)
  *                             Public API                             *
 \**********************************************************************/
 /**
- * mirage_file_filter_generate_file_filter_info:
+ * mirage_file_filter_generate_info:
  * @self: a #MirageFileFilter
  * @id: (in): file filter ID
  * @name: (in): file filter name
+ * @description: (in): file type description
+ * @mime_type: (in): file type MIME
  *
  * <para>
  * Generates file filter information from the input fields. It is intended as a function
  * for creating file filter information in file filter implementations.
  * </para>
  **/
-void mirage_file_filter_generate_file_filter_info (MirageFileFilter *self, const gchar *id, const gchar *name)
+void mirage_file_filter_generate_info (MirageFileFilter *self, const gchar *id, const gchar *name, const gchar *description, const gchar *mime_type)
 {
     /* Free old info */
-    destroy_file_filter_info(self->priv->file_filter_info);
+    destroy_info(self->priv->info);
 
     /* Create new info */
-    self->priv->file_filter_info = g_new0(MirageFileFilterInfo, 1);
+    self->priv->info = g_new0(MirageFileFilterInfo, 1);
 
-    self->priv->file_filter_info->id = g_strdup(id);
-    self->priv->file_filter_info->name = g_strdup(name);
+    self->priv->info->id = g_strdup(id);
+    self->priv->info->name = g_strdup(name);
+
+    self->priv->info->description = g_strdup(description);
+    self->priv->info->mime_type = g_strdup(mime_type);
 
     return;
 }
 
 /**
- * mirage_file_filter_get_file_filter_info:
+ * mirage_file_filter_get_info:
  * @self: a #MirageFileFilter
  *
  * <para>
@@ -93,9 +100,9 @@ void mirage_file_filter_generate_file_filter_info (MirageFileFilter *self, const
  * Returns: (transfer none): a pointer to file filter information structure. The
  * structure belongs to object and therefore should not be modified.
  **/
-const MirageFileFilterInfo *mirage_file_filter_get_file_filter_info (MirageFileFilter *self)
+const MirageFileFilterInfo *mirage_file_filter_get_info (MirageFileFilter *self)
 {
-    return self->priv->file_filter_info;
+    return self->priv->info;
 }
 
 
@@ -255,7 +262,7 @@ static void mirage_file_filter_init (MirageFileFilter *self)
 {
     self->priv = MIRAGE_FILE_FILTER_GET_PRIVATE(self);
 
-    self->priv->file_filter_info = NULL;
+    self->priv->info = NULL;
     self->priv->debug_context = NULL;
 }
 
@@ -278,7 +285,7 @@ static void mirage_file_filter_finalize (GObject *gobject)
     MirageFileFilter *self = MIRAGE_FILE_FILTER(gobject);
 
     /* Free file filter info */
-    destroy_file_filter_info(self->priv->file_filter_info);
+    destroy_info(self->priv->info);
 
     /* Chain up to the parent class */
     return G_OBJECT_CLASS(mirage_file_filter_parent_class)->finalize(gobject);

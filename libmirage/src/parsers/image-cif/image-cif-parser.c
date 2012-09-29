@@ -728,7 +728,7 @@ static void mirage_parser_cif_init (MirageParserCif *self)
 {
     self->priv = MIRAGE_PARSER_CIF_GET_PRIVATE(self);
 
-    mirage_parser_generate_parser_info(MIRAGE_PARSER(self),
+    mirage_parser_generate_info(MIRAGE_PARSER(self),
         "PARSER-CIF",
         "CIF Image Parser",
         "CIF (Adaptec Easy CD Creator) images",

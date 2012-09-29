@@ -1055,7 +1055,7 @@ static void mirage_parser_cue_init (MirageParserCue *self)
 {
     self->priv = MIRAGE_PARSER_CUE_GET_PRIVATE(self);
 
-    mirage_parser_generate_parser_info(MIRAGE_PARSER(self),
+    mirage_parser_generate_info(MIRAGE_PARSER(self),
         "PARSER-CUE",
         "CUE Image Parser",
         "CUE images",

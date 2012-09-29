@@ -46,8 +46,8 @@ MIRAGE_LT_AGE
 MirageFileFilterInfo
 MirageFileFilter
 mirage_file_filter_can_handle_data_format
-mirage_file_filter_generate_file_filter_info
-mirage_file_filter_get_file_filter_info
+mirage_file_filter_generate_info
+mirage_file_filter_get_info
 <SUBSECTION Standard>
 MIRAGE_FILE_FILTER
 MIRAGE_IS_FILE_FILTER
@@ -498,8 +498,8 @@ mirage_cdtext_coder_get_type
 <TITLE>MirageParser object</TITLE>
 MirageParserInfo
 MirageParser
-mirage_parser_generate_parser_info
-mirage_parser_get_parser_info
+mirage_parser_generate_info
+mirage_parser_get_info
 mirage_parser_load_image
 mirage_parser_add_redbook_pregap
 mirage_parser_guess_medium_type

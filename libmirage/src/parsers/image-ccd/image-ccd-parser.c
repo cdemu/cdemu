@@ -1146,7 +1146,7 @@ static void mirage_parser_ccd_init (MirageParserCcd *self)
 {
     self->priv = MIRAGE_PARSER_CCD_GET_PRIVATE(self);
 
-    mirage_parser_generate_parser_info(MIRAGE_PARSER(self),
+    mirage_parser_generate_info(MIRAGE_PARSER(self),
         "PARSER-CCD",
         "CCD Image Parser",
         "CCD (CloneCD) images",

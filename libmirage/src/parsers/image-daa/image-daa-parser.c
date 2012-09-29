@@ -144,7 +144,7 @@ static void mirage_parser_daa_init (MirageParserDaa *self)
 {
     self->priv = MIRAGE_PARSER_DAA_GET_PRIVATE(self);
 
-    mirage_parser_generate_parser_info(MIRAGE_PARSER(self),
+    mirage_parser_generate_info(MIRAGE_PARSER(self),
         "PARSER-DAA",
         "DAA Image Parser",
         "PowerISO direct access archives",

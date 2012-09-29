@@ -443,9 +443,11 @@ static void mirage_file_filter_cso_init (MirageFileFilterCso *self)
 {
     self->priv = MIRAGE_FILE_FILTER_CSO_GET_PRIVATE(self);
 
-    mirage_file_filter_generate_file_filter_info(MIRAGE_FILE_FILTER(self),
+    mirage_file_filter_generate_info(MIRAGE_FILE_FILTER(self),
         "FILTER-CSO",
-        "CSO File Filter"
+        "CSO File Filter",
+        "Compressed ISO images",
+        "application/x-cso"
     );
 
     self->priv->cur_position = 0;

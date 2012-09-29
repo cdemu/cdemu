@@ -1339,7 +1339,7 @@ static void mirage_parser_b6t_init (MirageParserB6t *self)
 {
     self->priv = MIRAGE_PARSER_B6T_GET_PRIVATE(self);
 
-    mirage_parser_generate_parser_info(MIRAGE_PARSER(self),
+    mirage_parser_generate_info(MIRAGE_PARSER(self),
         "PARSER-B6T",
         "B6T Image Parser",
         "BlindWrite 5/6 images",

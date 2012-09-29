@@ -510,9 +510,11 @@ static void mirage_file_filter_xz_init (MirageFileFilterXz *self)
 {
     self->priv = MIRAGE_FILE_FILTER_XZ_GET_PRIVATE(self);
 
-    mirage_file_filter_generate_file_filter_info(MIRAGE_FILE_FILTER(self),
+    mirage_file_filter_generate_info(MIRAGE_FILE_FILTER(self),
         "FILTER-XZ",
-        "XZ File Filter"
+        "XZ File Filter",
+        "Xz-compressed images",
+        "application/x-xz"
     );
 
     self->priv->file_size = 0;

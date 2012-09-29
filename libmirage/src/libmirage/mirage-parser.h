@@ -93,8 +93,8 @@ GType mirage_parser_get_type (void);
 /**********************************************************************\
  *                             Public API                             *
 \**********************************************************************/
-void mirage_parser_generate_parser_info (MirageParser *self, const gchar *id, const gchar *name, const gchar *description, const gchar *mime_type);
-const MirageParserInfo *mirage_parser_get_parser_info (MirageParser *self);
+void mirage_parser_generate_info (MirageParser *self, const gchar *id, const gchar *name, const gchar *description, const gchar *mime_type);
+const MirageParserInfo *mirage_parser_get_info (MirageParser *self);
 
 GObject *mirage_parser_load_image (MirageParser *self, gchar **filenames, GError **error);
 

@@ -529,7 +529,7 @@ gboolean mirage_for_each_parser (MirageCallbackFunction func, gpointer user_data
         GObject *parser;
 
         parser = g_object_new(libmirage.parsers[i], NULL);
-        parser_info = mirage_parser_get_parser_info(MIRAGE_PARSER(parser));
+        parser_info = mirage_parser_get_info(MIRAGE_PARSER(parser));
         succeeded = (*func)((const gpointer)parser_info, user_data);
         g_object_unref(parser);
         if (!succeeded) {
@@ -615,7 +615,7 @@ gboolean mirage_for_each_file_filter (MirageCallbackFunction func, gpointer user
         GObject *filter;
 
         filter = g_object_new(libmirage.file_filters[i], NULL);
-        file_filter_info = mirage_file_filter_get_file_filter_info(MIRAGE_FILE_FILTER(filter));
+        file_filter_info = mirage_file_filter_get_info(MIRAGE_FILE_FILTER(filter));
         succeeded = (*func)((const gpointer)file_filter_info, user_data);
         g_object_unref(filter);
         if (!succeeded) {

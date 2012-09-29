@@ -45,7 +45,7 @@ represents the disc stored in the image file(s).
 </para>
 
 
-<!-- ##### FUNCTION mirage_parser_generate_parser_info ##### -->
+<!-- ##### FUNCTION mirage_parser_generate_info ##### -->
 <para>
 
 </para>
@@ -57,7 +57,7 @@ represents the disc stored in the image file(s).
 @mime_type: 
 
 
-<!-- ##### FUNCTION mirage_parser_get_parser_info ##### -->
+<!-- ##### FUNCTION mirage_parser_get_info ##### -->
 <para>
 
 </para>
