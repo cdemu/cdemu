@@ -578,20 +578,69 @@ static void mirage_parser_xcdroast_cleanup_regex_parser (MirageParserXcdroast *s
 }
 
 
+static GDataInputStream *mirage_parser_xcdroast_create_data_stream (MirageParserXcdroast *self, const gchar *filename, GError **error)
+{
+    GObject *stream;
+    GDataInputStream *data_stream;
+    const gchar *encoding;
+
+    /* Create file input stream */
+    stream = mirage_create_file_stream(filename, mirage_debuggable_get_debug_context(MIRAGE_DEBUGGABLE(self)), error);
+    if (!stream) {
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to create stream!\n", __debug__);
+        return NULL;
+    }
+
+    /* If provided, use the specified encoding */
+    encoding = mirage_parser_get_param_string(MIRAGE_PARSER(self), "encoding");
+    if (encoding) {
+        GCharsetConverter *converter;
+        GInputStream *converter_stream;
+
+        /* Create converter */
+        converter = g_charset_converter_new("UTF-8", encoding, error);
+        if (!converter) {
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to create converter from '%s'!\n", __debug__, encoding);
+            g_object_unref(stream);
+            return NULL;
+        }
+
+        /* Create converter stream */
+        converter_stream = g_converter_input_stream_new(G_INPUT_STREAM(stream), G_CONVERTER(converter));
+
+        g_object_unref(converter);
+
+        /* Switch the stream */
+        g_object_unref(stream);
+        stream = G_OBJECT(converter_stream);
+    }
+
+    /* Create data stream */
+    data_stream = g_data_input_stream_new(G_INPUT_STREAM(stream));
+    if (!data_stream) {
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to create data stream!\n", __debug__);
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_PARSER_ERROR, "Failed to create data stream!");
+        g_object_unref(stream);
+        return NULL;
+    }
+    g_object_unref(stream);
+
+    g_data_input_stream_set_newline_type(data_stream, G_DATA_STREAM_NEWLINE_TYPE_ANY);
+
+    return data_stream;
+}
+
+
 static gboolean mirage_parser_xcdroast_parse_xinf_file (MirageParserXcdroast *self, gchar *filename, GError **error)
 {
-    GError *io_error = NULL;
-    GIOChannel *io_channel;
+    GDataInputStream *data_stream;
     gboolean succeeded = TRUE;
 
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: opening XINF file: %s\n", __debug__, filename);
 
-    /* Create IO channel for file */
-    io_channel = g_io_channel_new_file(filename, "r", &io_error);
-    if (!io_channel) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to create IO channel: %s\n", __debug__, io_error->message);
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, "Failed to create I/O channel on file '%s': %s", filename, io_error->message);
-        g_error_free(io_error);
+    /* Create GDataInputStream */
+    data_stream = mirage_parser_xcdroast_create_data_stream(self, filename, error);
+    if (!data_stream) {
         return FALSE;
     }
 
@@ -599,25 +648,26 @@ static gboolean mirage_parser_xcdroast_parse_xinf_file (MirageParserXcdroast *se
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: parsing XINF\n", __debug__);
 
     /* Read file line-by-line */
-    for (gint line_nr = 1; ; line_nr++) {
-        GIOStatus status;
-        gchar *line_str;
-        gsize line_len;
+    for (gint line_number = 1; ; line_number++) {
+        GError *local_error = NULL;
+        gchar *line_string;
+        gsize line_length;
 
-        status = g_io_channel_read_line(io_channel, &line_str, &line_len, NULL, &io_error);
+        /* Read line */
+        line_string = g_data_input_stream_read_line_utf8(data_stream, &line_length, NULL, &local_error);
 
-        /* Handle EOF */
-        if (status == G_IO_STATUS_EOF) {
-            break;
-        }
-
-        /* Handle abnormal status */
-        if (status != G_IO_STATUS_NORMAL) {
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: status %d while reading line #%d from IO channel: %s\n", __debug__, status, line_nr, io_error ? io_error->message : "no error message");
-            g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, "Status %d while reading line #%d from IO channel: %s", status, line_nr, io_error ? io_error->message : "no error message");
-            g_error_free(io_error);
-            succeeded = FALSE;
-            break;
+        /* Handle error */
+        if (!line_string) {
+            if (!local_error) {
+                /* EOF */
+                break;
+            } else {
+                MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read line #%d: %s\n", __debug__, line_number, local_error->message);
+                g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, "Failed to read line #%d: %s!", line_number, local_error->message);
+                g_error_free(local_error);
+                succeeded = FALSE;
+                break;
+            }
         }
 
         /* GRegex matching engine */
@@ -630,7 +680,7 @@ static gboolean mirage_parser_xcdroast_parse_xinf_file (MirageParserXcdroast *se
             XCDROAST_RegexRule *regex_rule = entry->data;
 
             /* Try to match the given rule */
-            if (g_regex_match(regex_rule->regex, line_str, 0, &match_info)) {
+            if (g_regex_match(regex_rule->regex, line_string, 0, &match_info)) {
                 if (regex_rule->callback_func) {
                     succeeded = regex_rule->callback_func(self, match_info, error);
                 }
@@ -648,11 +698,11 @@ static gboolean mirage_parser_xcdroast_parse_xinf_file (MirageParserXcdroast *se
 
         /* Complain if we failed to match the line (should it be fatal?) */
         if (!matched) {
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to match line #%d: %s\n", __debug__, line_nr, line_str);
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to match line #%d: %s\n", __debug__, line_number, line_string);
             /* succeeded = FALSE */
         }
 
-        g_free(line_str);
+        g_free(line_string);
 
         /* In case callback didn't succeed... */
         if (!succeeded) {
@@ -661,25 +711,21 @@ static gboolean mirage_parser_xcdroast_parse_xinf_file (MirageParserXcdroast *se
     }
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: done parsing XINF\n\n", __debug__);
 
-    g_io_channel_unref(io_channel);
+    g_object_unref(data_stream);
 
     return succeeded;
 }
 
 static gboolean mirage_parser_xcdroast_parse_toc_file (MirageParserXcdroast *self, gchar *filename, GError **error)
 {
-    GError *io_error = NULL;
-    GIOChannel *io_channel;
+    GDataInputStream *data_stream;
     gboolean succeeded = TRUE;
 
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: opening TOC file: %s\n", __debug__, filename);
 
-    /* Create IO channel for file */
-    io_channel = g_io_channel_new_file(filename, "r", &io_error);
-    if (!io_channel) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to create IO channel: %s\n", __debug__, io_error->message);
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, "Failed to create I/O channel on file '%s': %s", filename, io_error->message);
-        g_error_free(io_error);
+    /* Create GDataInputStream */
+    data_stream = mirage_parser_xcdroast_create_data_stream(self, filename, error);
+    if (!data_stream) {
         return FALSE;
     }
 
@@ -687,25 +733,26 @@ static gboolean mirage_parser_xcdroast_parse_toc_file (MirageParserXcdroast *sel
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: parsing TOC\n", __debug__);
 
     /* Read file line-by-line */
-    for (gint line_nr = 1; ; line_nr++) {
-        GIOStatus status;
-        gchar *line_str;
-        gsize line_len;
+    for (gint line_number = 1; ; line_number++) {
+        GError *local_error = NULL;
+        gchar *line_string;
+        gsize line_length;
 
-        status = g_io_channel_read_line(io_channel, &line_str, &line_len, NULL, &io_error);
+        /* Read line */
+        line_string = g_data_input_stream_read_line_utf8(data_stream, &line_length, NULL, &local_error);
 
-        /* Handle EOF */
-        if (status == G_IO_STATUS_EOF) {
-            break;
-        }
-
-        /* Handle abnormal status */
-        if (status != G_IO_STATUS_NORMAL) {
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: status %d while reading line #%d from IO channel: %s\n", __debug__, status, line_nr, io_error ? io_error->message : "no error message");
-            g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, "Status %d while reading line #%d from IO channel: %s", status, line_nr, io_error ? io_error->message : "no error message");
-            g_error_free(io_error);
-            succeeded = FALSE;
-            break;
+        /* Handle error */
+        if (!line_string) {
+            if (!local_error) {
+                /* EOF */
+                break;
+            } else {
+                MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read line #%d: %s\n", __debug__, line_number, local_error->message);
+                g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, "Failed to read line #%d: %s!", line_number, local_error->message);
+                g_error_free(local_error);
+                succeeded = FALSE;
+                break;
+            }
         }
 
         /* GRegex matching engine */
@@ -718,7 +765,7 @@ static gboolean mirage_parser_xcdroast_parse_toc_file (MirageParserXcdroast *sel
             XCDROAST_RegexRule *regex_rule = entry->data;
 
             /* Try to match the given rule */
-            if (g_regex_match(regex_rule->regex, line_str, 0, &match_info)) {
+            if (g_regex_match(regex_rule->regex, line_string, 0, &match_info)) {
                 if (regex_rule->callback_func) {
                     succeeded = regex_rule->callback_func(self, match_info, error);
                 }
@@ -736,11 +783,11 @@ static gboolean mirage_parser_xcdroast_parse_toc_file (MirageParserXcdroast *sel
 
         /* Complain if we failed to match the line (should it be fatal?) */
         if (!matched) {
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to match line #%d: %s\n", __debug__, line_nr, line_str);
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to match line #%d: %s\n", __debug__, line_number, line_string);
             /* succeeded = FALSE */
         }
 
-        g_free(line_str);
+        g_free(line_string);
 
         /* In case callback didn't succeed... */
         if (!succeeded) {
@@ -749,7 +796,7 @@ static gboolean mirage_parser_xcdroast_parse_toc_file (MirageParserXcdroast *sel
     }
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: parsing TOC\n", __debug__);
 
-    g_io_channel_unref(io_channel);
+    g_object_unref(data_stream);
 
     return succeeded;
 }
@@ -758,6 +805,7 @@ static gboolean mirage_parser_xcdroast_parse_toc_file (MirageParserXcdroast *sel
 static gboolean mirage_parser_xcdroast_check_toc_file (MirageParserXcdroast *self, const gchar *filename)
 {
     gboolean succeeded = FALSE;
+    GDataInputStream *data_stream;
 
     /* Check suffix - must be .toc */
     if (!mirage_helper_has_suffix(filename, ".toc")) {
@@ -768,36 +816,35 @@ static gboolean mirage_parser_xcdroast_check_toc_file (MirageParserXcdroast *sel
        Because cdrdao also uses .toc for its images, we need to make
        sure this one was created by X-CD-Roast... for that, we check for
        of comment containing "X-CD-Roast" */
-    GIOChannel *io_channel;
-
-    /* Create IO channel for file */
-    io_channel = g_io_channel_new_file(filename, "r", NULL);
-    if (!io_channel) {
+    data_stream = mirage_parser_xcdroast_create_data_stream(self, filename, NULL);
+    if (!data_stream) {
         return FALSE;
     }
 
     /* Read file line-by-line */
     for (gint line_nr = 1; ; line_nr++) {
-        GIOStatus status;
-        gchar *line_str;
-        gsize line_len;
+        GError *local_error = NULL;
+        gchar *line_string;
+        gsize line_length;
 
+        gboolean matched = FALSE;
         GMatchInfo *match_info = NULL;
 
-        status = g_io_channel_read_line(io_channel, &line_str, &line_len, NULL, NULL);
+        /* Read line */
+        line_string = g_data_input_stream_read_line_utf8(data_stream, &line_length, NULL, &local_error);
 
-        /* Handle EOF */
-        if (status == G_IO_STATUS_EOF) {
-            break;
-        }
-
-        /* Handle abnormal status */
-        if (status != G_IO_STATUS_NORMAL) {
-            break;
+        /* Handle error */
+        if (!line_string) {
+            if (!local_error) {
+                /* EOF */
+                break;
+            } else {
+                break;
+            }
         }
 
         /* Try to match the rule */
-        if (g_regex_match(self->priv->regex_comment_ptr, line_str, 0, &match_info)) {
+        if (g_regex_match(self->priv->regex_comment_ptr, line_string, 0, &match_info)) {
             gchar *comment = g_match_info_fetch_named(match_info, "comment");
 
             /* Search for "X-CD-Roast" in the comment... */
@@ -810,7 +857,7 @@ static gboolean mirage_parser_xcdroast_check_toc_file (MirageParserXcdroast *sel
         /* Free match info */
         g_match_info_free(match_info);
 
-        g_free(line_str);
+        g_free(line_string);
 
         /* If we found the header, break the loop */
         if (succeeded) {
@@ -818,7 +865,7 @@ static gboolean mirage_parser_xcdroast_check_toc_file (MirageParserXcdroast *sel
         }
     }
 
-    g_io_channel_unref(io_channel);
+    g_object_unref(data_stream);
 
     return succeeded;
 }

@@ -996,29 +996,69 @@ static void mirage_parser_toc_cleanup_regex_parser (MirageParserToc *self)
 }
 
 
-static gboolean mirage_parser_toc_parse_toc_file (MirageParserToc *self, gchar *filename, GError **error)
+static GDataInputStream *mirage_parser_toc_create_data_stream (MirageParserToc *self, const gchar *filename, GError **error)
 {
-    GError *io_error = NULL;
-    GIOChannel *io_channel;
-    gboolean succeeded = TRUE;
+    GObject *stream;
+    GDataInputStream *data_stream;
+    const gchar *encoding;
 
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: opening file: %s\n", __debug__, filename);
-
-    /* Create IO channel for file */
-    io_channel = g_io_channel_new_file(filename, "r", &io_error);
-    if (!io_channel) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to create IO channel: %s\n", __debug__, io_error->message);
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, "Failed to create I/O channel on file '%s': %s", filename, io_error->message);
-        g_error_free(io_error);
-        return FALSE;
+    /* Create file input stream */
+    stream = mirage_create_file_stream(filename, mirage_debuggable_get_debug_context(MIRAGE_DEBUGGABLE(self)), error);
+    if (!stream) {
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to create stream!\n", __debug__);
+        return NULL;
     }
 
-    /* If provided, use the specified encoding; otherwise, use default (since
-       .toc file is linux-specific and should be fine with UTF-8 anyway) */
-    const gchar *encoding = mirage_parser_get_param_string(MIRAGE_PARSER(self), "encoding");
+    /* If provided, use the specified encoding */
+    encoding = mirage_parser_get_param_string(MIRAGE_PARSER(self), "encoding");
     if (encoding) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: using specified encoding: %s\n", __debug__, encoding);
-        g_io_channel_set_encoding(io_channel, encoding, NULL);
+        GCharsetConverter *converter;
+        GInputStream *converter_stream;
+
+        /* Create converter */
+        converter = g_charset_converter_new("UTF-8", encoding, error);
+        if (!converter) {
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to create converter from '%s'!\n", __debug__, encoding);
+            g_object_unref(stream);
+            return NULL;
+        }
+
+        /* Create converter stream */
+        converter_stream = g_converter_input_stream_new(G_INPUT_STREAM(stream), G_CONVERTER(converter));
+
+        g_object_unref(converter);
+
+        /* Switch the stream */
+        g_object_unref(stream);
+        stream = G_OBJECT(converter_stream);
+    }
+
+    /* Create data stream */
+    data_stream = g_data_input_stream_new(G_INPUT_STREAM(stream));
+    if (!data_stream) {
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to create data stream!\n", __debug__);
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_PARSER_ERROR, "Failed to create data stream!");
+        g_object_unref(stream);
+        return NULL;
+    }
+    g_object_unref(stream);
+
+    g_data_input_stream_set_newline_type(data_stream, G_DATA_STREAM_NEWLINE_TYPE_ANY);
+
+    return data_stream;
+}
+
+static gboolean mirage_parser_toc_parse_toc_file (MirageParserToc *self, const gchar *filename, GError **error)
+{
+    GDataInputStream *data_stream;
+    gboolean succeeded = TRUE;
+
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: opening TOC file: %s\n", __debug__, filename);
+
+    /* Create GDataInputStream */
+    data_stream = mirage_parser_toc_create_data_stream(self, filename, error);
+    if (!data_stream) {
+        return FALSE;
     }
 
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "\n");
@@ -1029,28 +1069,29 @@ static gboolean mirage_parser_toc_parse_toc_file (MirageParserToc *self, gchar *
     GString *cdtext_string = NULL;
 
     /* Read file line-by-line */
-    for (gint line_nr = 1; ; line_nr++) {
-        GIOStatus status;
-        gchar *line_str;
-        gsize line_len;
+    for (gint line_number = 1; ; line_number++) {
+        GError *local_error = NULL;
+        gchar *line_string;
+        gsize line_length;
 
         gboolean matched = FALSE;
         GMatchInfo *match_info = NULL;
 
-        status = g_io_channel_read_line(io_channel, &line_str, &line_len, NULL, &io_error);
+        /* Read line */
+        line_string = g_data_input_stream_read_line_utf8(data_stream, &line_length, NULL, &local_error);
 
-        /* Handle EOF */
-        if (status == G_IO_STATUS_EOF) {
-            break;
-        }
-
-        /* Handle abnormal status */
-        if (status != G_IO_STATUS_NORMAL) {
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: status %d while reading line #%d from IO channel: %s\n", __debug__, status, line_nr, io_error ? io_error->message : "no error message");
-            g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, "Status %d while reading line #%d from IO channel: %s", status, line_nr, io_error ? io_error->message : "no error message");
-            g_error_free(io_error);
-            succeeded = FALSE;
-            break;
+        /* Handle error */
+        if (!line_string) {
+            if (!local_error) {
+                /* EOF */
+                break;
+            } else {
+                MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read line #%d: %s\n", __debug__, line_number, local_error->message);
+                g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, "Failed to read line #%d: %s!", line_number, local_error->message);
+                g_error_free(local_error);
+                succeeded = FALSE;
+                break;
+            }
         }
 
         /* If we're not in the middle of CD-TEXT parsing, use GRegex matching
@@ -1064,7 +1105,7 @@ static gboolean mirage_parser_toc_parse_toc_file (MirageParserToc *self, gchar *
                 TOC_RegexRule *regex_rule = entry->data;
 
                 /* Try to match the given rule */
-                if (g_regex_match(regex_rule->regex, line_str, 0, &match_info)) {
+                if (g_regex_match(regex_rule->regex, line_string, 0, &match_info)) {
                     if (regex_rule->callback_func) {
                         succeeded = regex_rule->callback_func(self, match_info, error);
                     }
@@ -1083,10 +1124,10 @@ static gboolean mirage_parser_toc_parse_toc_file (MirageParserToc *self, gchar *
             /* Try to partially match CDTEXT; this one should *never* match in
                full, unless *everything* was in a single line... */
             if (!matched) {
-                g_regex_match(self->priv->regex_cdtext, line_str, G_REGEX_MATCH_PARTIAL, &match_info);
+                g_regex_match(self->priv->regex_cdtext, line_string, G_REGEX_MATCH_PARTIAL, &match_info);
                 if (g_match_info_is_partial_match(match_info)) {
                     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: partially matched CDTEXT; beginning CD-TEXT parsing\n", __debug__);
-                    cdtext_string = g_string_new(line_str);
+                    cdtext_string = g_string_new(line_string);
                     parsing_cdtext = TRUE;
                     matched = TRUE;
                 }
@@ -1094,7 +1135,7 @@ static gboolean mirage_parser_toc_parse_toc_file (MirageParserToc *self, gchar *
             }
         } else {
             /* Append the line to CDTEXT string */
-            g_string_append(cdtext_string, line_str);
+            g_string_append(cdtext_string, line_string);
 
             if (g_regex_match(self->priv->regex_cdtext, cdtext_string->str, G_REGEX_MATCH_PARTIAL, &match_info)) {
                 /* FIXME: can we live with failure? */
@@ -1118,11 +1159,11 @@ static gboolean mirage_parser_toc_parse_toc_file (MirageParserToc *self, gchar *
 
         /* Complain if we failed to match the line (should it be fatal?) */
         if (!matched) {
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to match line #%d: %s\n", __debug__, line_nr, line_str);
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to match line #%d: %s\n", __debug__, line_number, line_string);
             /* succeeded = FALSE */
         }
 
-        g_free(line_str);
+        g_free(line_string);
 
         /* In case callback didn't succeed... */
         if (!succeeded) {
@@ -1130,7 +1171,7 @@ static gboolean mirage_parser_toc_parse_toc_file (MirageParserToc *self, gchar *
         }
     }
 
-    g_io_channel_unref(io_channel);
+    g_object_unref(data_stream);
 
     return succeeded;
 }
@@ -1168,10 +1209,10 @@ static void mirage_parser_toc_cleanup_session_data (MirageParserToc *self)
     self->priv->mixed_mode_offset = 0;
 }
 
-
 static gboolean mirage_parser_toc_check_toc_file (MirageParserToc *self, const gchar *filename)
 {
     gboolean succeeded = FALSE;
+    GDataInputStream *data_stream;
 
     /* Check suffix - must be .toc */
     if (!mirage_helper_has_suffix(filename, ".toc")) {
@@ -1182,49 +1223,41 @@ static gboolean mirage_parser_toc_check_toc_file (MirageParserToc *self, const g
        Because X-CD Roast also uses .toc for its images, we need to make
        sure this one was created by cdrdao... for that, we check for presence
        of CD_DA/CD_ROM_XA/CD_ROM/CD_I directive. */
-    GIOChannel *io_channel;
-
-    /* Create IO channel for file */
-    io_channel = g_io_channel_new_file(filename, "r", NULL);
-    if (!io_channel) {
+    data_stream = mirage_parser_toc_create_data_stream(self, filename, NULL);
+    if (!data_stream) {
         return FALSE;
     }
 
-    /* If provided, use the specified encoding; otherwise, use default (since
-       .toc file is linux-specific and should be fine with UTF-8 anyway) */
-    const gchar *encoding = mirage_parser_get_param_string(MIRAGE_PARSER(self), "encoding");
-    if (encoding) {
-        g_io_channel_set_encoding(io_channel, encoding, NULL);
-    }
-
     /* Read file line-by-line */
-    for (gint line_nr = 1; ; line_nr++) {
-        GIOStatus status;
-        gchar *line_str;
-        gsize line_len;
+    for (gint line_number = 1; ; line_number++) {
+        GError *local_error = NULL;
+        gchar *line_string;
+        gsize line_length;
 
+        gboolean matched = FALSE;
         GMatchInfo *match_info = NULL;
 
-        status = g_io_channel_read_line(io_channel, &line_str, &line_len, NULL, NULL);
+        /* Read line */
+        line_string = g_data_input_stream_read_line_utf8(data_stream, &line_length, NULL, &local_error);
 
-        /* Handle EOF */
-        if (status == G_IO_STATUS_EOF) {
-            break;
-        }
-
-        /* Handle abnormal status */
-        if (status != G_IO_STATUS_NORMAL) {
-            break;
+        /* Handle error */
+        if (!line_string) {
+            if (!local_error) {
+                /* EOF */
+                break;
+            } else {
+                break;
+            }
         }
 
         /* Try to match the rule */
-        if (g_regex_match(self->priv->regex_header_ptr, line_str, 0, &match_info)) {
+        if (g_regex_match(self->priv->regex_header_ptr, line_string, 0, &match_info)) {
             succeeded = TRUE;
         }
         /* Free match info */
         g_match_info_free(match_info);
 
-        g_free(line_str);
+        g_free(line_string);
 
         /* If we found the header, break the loop */
         if (succeeded) {
@@ -1232,7 +1265,7 @@ static gboolean mirage_parser_toc_check_toc_file (MirageParserToc *self, const g
         }
     }
 
-    g_io_channel_unref(io_channel);
+    g_object_unref(data_stream);
 
     return succeeded;
 }
