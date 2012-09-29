@@ -47,6 +47,7 @@ Currently supported image formats:
 
 Currently supported file filters:
  - GZip (GZ) container format
+ - XZ (XZ) container format
  - Compressed ISO (CSO) container format
  - Error Code Modeller (ECM) container format
 

@@ -67,8 +67,8 @@ libmirage.so.7 libmirage7 #MINVER#
  mirage_error_get_type@Base 1.4.0
  mirage_error_quark@Base 1.0.0
  mirage_file_filter_can_handle_data_format@Base 1.6.0
- mirage_file_filter_generate_file_filter_info@Base 1.6.0
- mirage_file_filter_get_file_filter_info@Base 1.6.0
+ mirage_file_filter_generate_info@Base 1.6.0
+ mirage_file_filter_get_info@Base 1.6.0
  mirage_file_filter_get_type@Base 1.6.0
  mirage_for_each_file_filter@Base 1.6.0
  mirage_for_each_fragment@Base 1.6.0
@@ -157,11 +157,11 @@ libmirage.so.7 libmirage7 #MINVER#
  mirage_object_set_parent@Base 1.0.0
  mirage_obtain_password@Base 1.6.0
  mirage_parser_add_redbook_pregap@Base 1.2.0
- mirage_parser_generate_parser_info@Base 1.2.0
+ mirage_parser_generate_info@Base 1.2.0
  mirage_parser_get_cached_data_stream@Base 1.6.0
+ mirage_parser_get_info@Base 1.2.0
  mirage_parser_get_param@Base 1.5.0
  mirage_parser_get_param_string@Base 1.2.0
- mirage_parser_get_parser_info@Base 1.2.0
  mirage_parser_get_type@Base 1.2.0
  mirage_parser_guess_medium_type@Base 1.2.0
  mirage_parser_load_image@Base 1.2.0
