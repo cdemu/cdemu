@@ -612,7 +612,7 @@ gboolean mirage_for_each_file_filter (MirageCallbackFunction func, gpointer user
 
     /* Create a dummy stream - because at gio 2.32, unreferencing the
        GFilterInputStream apparently tries to unref the underlying stream */
-    GObject *dummy_stream = g_memory_input_stream_new();
+    GInputStream *dummy_stream = g_memory_input_stream_new();
 
     /* Go over all file filters */
     for (gint i = 0; i < libmirage.num_file_filters; i++) {
