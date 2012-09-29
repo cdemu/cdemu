@@ -676,7 +676,7 @@ class CDEmu (object):
 
         return True
 
-    def cmd_enum_supported_parsers (self, arguments):
+    def cmd_enum_parsers (self, arguments):
         # Display supported parsers
         try:
             parsers = self.dbus_iface.EnumSupportedParsers()
@@ -689,15 +689,36 @@ class CDEmu (object):
             self.set_color(1, 34)
             print(_("Supported parsers:"))
             self.set_color(0)
-            for parser in parsers:
-                print("  %s: %s" % (parser[0], parser[2]))
+            for info in parsers:
+                print("  %s: %s" % (info[0], info[2]))
         else:
-            self.print_invalid_number_of_parameters("enum-supported-parsers")
+            self.print_invalid_number_of_parameters("enum-parsers")
             return False
 
         return True
 
-    def cmd_enum_supported_fragments (self, arguments):
+    def cmd_enum_file_filters (self, arguments):
+        # Display supported file filters
+        try:
+            filters = self.dbus_iface.EnumSupportedFileFilters()
+        except dbus.DBusException as e:
+            self.print_error(_("Failed to enumerate supported file filters: %s") % (e))
+            return False
+
+        if len(arguments) == 0:
+            # Print all file filters
+            self.set_color(1, 34)
+            print(_("Supported file filters:"))
+            self.set_color(0)
+            for info in filters:
+                print("  %s: %s" % (info[0], info[2]))
+        else:
+            self.print_invalid_number_of_parameters("enum-file-filters")
+            return False
+
+        return True
+
+    def cmd_enum_fragments (self, arguments):
         # Display supported fragments
         try:
             fragments = self.dbus_iface.EnumSupportedFragments()
@@ -710,10 +731,10 @@ class CDEmu (object):
             self.set_color(1, 34)
             print(_("Supported fragments:"))
             self.set_color(0)
-            for fragment in fragments:
-                print("  %s: %s" % (fragment[0], fragment[1]))
+            for info in fragments:
+                print("  %s: %s" % (info[0], info[1]))
         else:
-            self.print_invalid_number_of_parameters("enum-supported-fragments")
+            self.print_invalid_number_of_parameters("enum-fragments")
             return False
 
         return True
@@ -934,19 +955,26 @@ class CDEmu (object):
             _("displays/sets device ID"),
             cmd_device_id
         ],
-        # Enum-supported-parsers
+        # Enum-parsers
         [
-            "enum-supported-parsers",
+            "enum-parsers",
             "",
             _("enumerates supported parsers"),
-            cmd_enum_supported_parsers
+            cmd_enum_parsers
         ],
-        # Enum-supported-fragments
+        # Enum-file-filters
         [
-            "enum-supported-fragments",
+            "enum-file-filters",
+            "",
+            _("enumerates supported file filters"),
+            cmd_enum_file_filters
+        ],
+        # Enum-fragments
+        [
+            "enum-fragments",
             "",
             _("enumerates supported fragments"),
-            cmd_enum_supported_fragments
+            cmd_enum_fragments
         ],
         # Enum-daemon-debug-masks
         [

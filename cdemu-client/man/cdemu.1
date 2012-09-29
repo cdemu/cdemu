@@ -1,4 +1,4 @@
-.TH CDEMU 1 "Dec 27, 2011"
+.TH CDEMU 1 "Sep 29, 2012"
 .SH NAME
 cdemu \- a simple command-line CDEmu client
 .SH SYNOPSIS
@@ -62,7 +62,7 @@ not use Unicode.
 Mark the DVD image as CSS-encrypted. This influences the generation of fake
 Disc Structure 0x01, and as such works only with images of DVD videos that do
 not provide this information (most images, with exception of perhaps mds/mdf, don't).
-Enabling this option allows images of CSS-encrypted DVDs (e.g. created using 'dd' 
+Enabling this option allows images of CSS-encrypted DVDs (e.g. created using 'dd'
 or 'readcd' without running through a CSS decryption step when creating the image)
 to be played by a deCSS-enabled Linux media player.
 .SH COMMANDS
@@ -116,10 +116,13 @@ Displays/sets device ID. \fBdevice\fR is the number of the desired device.
 \fBnew-vendor-specific\fR is the new vendor-specific string to be set (20 characters max).
 If new values are ommitted, currently set values are displayed.
 .TP
-.B enum-supported-parsers
+.B enum-parsers
 Enumerates supported parsers.
 .TP
-.B enum-supported-fragments
+.B enum-file-filters
+Enumerates supported file filters.
+.TP
+.B enum-fragments
 Enumerates supported fragments.
 .TP
 .B enum-daemon-debug-masks
@@ -172,10 +175,13 @@ cdemu tr-emulation 0 1
 cdemu device-id 0 "MyVendor" "MyProduct" "1.0.0" "Test device ID"
 .TP
 .B Enumerating supported parsers:
-cdemu enum-supported-parsers
+cdemu enum-parsers
+.TP
+.B Enumerating supported file filters:
+cdemu enum-file-filters
 .TP
 .B Enumerating supported fragments:
-cdemu enum-supported-fragments
+cdemu enum-fragments
 .TP
 .B Enumerating supported daemon debug masks:
 cdemu enum-daemon-debug-masks

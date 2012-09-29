@@ -104,10 +104,13 @@ Changing device ID of first device:
  cdemu device-id 0 "MyVendor" "MyProduct" "1.0.0" "Test device ID"
 
 Enumerating supported parsers:
- cdemu enum-supported-parsers
+ cdemu enum-parsers
+
+Enumerating supported file filters:
+ cdemu enum-file-filters
 
 Enumerating supported fragments:
- cdemu enum-supported-fragments
+ cdemu enum-fragments
 
 Displaying daemon and library version:
  cdemu version
