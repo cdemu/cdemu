@@ -48,7 +48,7 @@ implemented by a #MirageObject.
 @MIRAGE_DEBUG_SECTOR: 
 @MIRAGE_DEBUG_FRAGMENT: 
 @MIRAGE_DEBUG_CDTEXT: 
-@MIRAGE_DEBUG_FILE: 
+@MIRAGE_DEBUG_FILE_IO: 
 
 <!-- ##### STRUCT MirageDebugContext ##### -->
 <para>

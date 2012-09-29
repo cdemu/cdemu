@@ -75,6 +75,8 @@ static gboolean mirage_file_filter_xz_read_header_and_footer (MirageFileFilterXz
     GInputStream *stream = g_filter_input_stream_get_base_stream(G_FILTER_INPUT_STREAM(self));
     lzma_ret ret;
 
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: parsing header and footer...\n", __debug__);
+
     /* Allocate read buffer: header and footer (12 bytes) */
     if (!mirage_file_filter_xz_reallocate_read_buffer(self, LZMA_STREAM_HEADER_SIZE, error)) {
         return FALSE;
@@ -141,6 +143,8 @@ static gboolean mirage_file_filter_xz_read_index (MirageFileFilterXz *self, GErr
     gsize in_pos = 0;
     lzma_ret ret;
 
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: parsing index...\n", __debug__);
+
     /* Allocate read buffer: compressed index size is declared in footer */
     if (!mirage_file_filter_xz_reallocate_read_buffer(self, self->priv->footer.backward_size, error)) {
         return FALSE;
@@ -172,7 +176,7 @@ static gboolean mirage_file_filter_xz_read_index (MirageFileFilterXz *self, GErr
 
     /* Store file size */
     self->priv->file_size = lzma_index_uncompressed_size(self->priv->index);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_FILE, "%s: file size: %lld (0x%llX)\n", __debug__, self->priv->file_size, self->priv->file_size);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: file size: %lld (0x%llX)\n", __debug__, self->priv->file_size, self->priv->file_size);
 
 
     return TRUE;
@@ -211,14 +215,14 @@ static gboolean mirage_file_filter_xz_parse_stream (MirageFileFilterXz *self, GE
     /* Find maximum block size */
     lzma_index_iter index_iter;
 
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_FILE, "%s: listing blocks...\n", __debug__);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: listing blocks...\n", __debug__);
     lzma_index_iter_init(&index_iter, self->priv->index);
     while (lzma_index_iter_next(&index_iter, LZMA_INDEX_ITER_BLOCK) == 0) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_FILE, "%s: block #%d:\n", __debug__, index_iter.block.number_in_file);
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_FILE, "%s: uncompressed size #%ld:\n", __debug__, index_iter.block.uncompressed_size, max_block_size);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: block #%d:\n", __debug__, index_iter.block.number_in_file);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: uncompressed size #%ld:\n", __debug__, index_iter.block.uncompressed_size, max_block_size);
         max_block_size = MAX(max_block_size, index_iter.block.uncompressed_size);
     }
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_FILE, "\n");
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "\n");
 
 
     /* For performance reasons, we limit the allowed size of blocks */
@@ -276,14 +280,14 @@ static gssize mirage_filter_xz_read_from_part (MirageFileFilterXz *self, guint8 
     /* Find block */
     lzma_index_iter_init(&index_iter, self->priv->index);
     if (lzma_index_iter_locate(&index_iter, self->priv->cur_position)) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_FILE, "%s: current position %ld (0x%lX) beyond end of stream, doing nothing!\n", __debug__, self->priv->cur_position, self->priv->cur_position);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_FILE_IO, "%s: current position %ld (0x%lX) beyond end of stream, doing nothing!\n", __debug__, self->priv->cur_position, self->priv->cur_position);
         return 0;
     }
 
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_FILE, "%s: current position: %ld (block #%d) -> read %ld bytes\n", __debug__, self->priv->cur_position, index_iter.block.number_in_file, count);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_FILE_IO, "%s: current position: %ld (block #%d) -> read %ld bytes\n", __debug__, self->priv->cur_position, index_iter.block.number_in_file, count);
 
     /* If we do not have block in cache, uncompress it */
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_FILE, "%s: currently cached block: #%d\n", __debug__, self->priv->cached_block_number);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_FILE_IO, "%s: currently cached block: #%d\n", __debug__, self->priv->cached_block_number);
     if (index_iter.block.number_in_file != self->priv->cached_block_number) {
         lzma_stream lzma = LZMA_STREAM_INIT;
         lzma_filter filters[LZMA_FILTERS_MAX+1];
@@ -317,7 +321,7 @@ static gssize mirage_filter_xz_read_from_part (MirageFileFilterXz *self, guint8 
         block.compressed_size = LZMA_VLI_UNKNOWN;
         block.filters = filters;
 
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_FILE, "%s: block header size: %d!\n", __debug__, block.header_size);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_FILE_IO, "%s: block header size: %d!\n", __debug__, block.header_size);
 
 
         /* Read and decode header */
@@ -367,7 +371,7 @@ static gssize mirage_filter_xz_read_from_part (MirageFileFilterXz *self, guint8 
     block_offset = self->priv->cur_position - index_iter.block.uncompressed_stream_offset;
     count = MIN(count, index_iter.block.uncompressed_size - block_offset);
 
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_FILE, "%s: offset within block: %ld, copying %d bytes\n", __debug__, block_offset, count);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_FILE_IO, "%s: offset within block: %ld, copying %d bytes\n", __debug__, block_offset, count);
 
     memcpy(buffer, self->priv->block_buffer + block_offset, count);
 
@@ -393,15 +397,20 @@ static gboolean mirage_file_filter_xz_can_handle_data_format (MirageFileFilter *
     }
 
     /* Check signature */
-    if (memcmp(sig, xz_signature, sizeof(sig))) {
+    if (memcmp(sig, xz_signature, sizeof(xz_signature))) {
         g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_CANNOT_HANDLE, "Filter cannot handle given data!");
         return FALSE;
     }
 
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: parsing the underlying stream data...\n", __debug__);
+
     /* Parse XZ stream */
     if (!mirage_file_filter_xz_parse_stream(self, error)) {
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: parsing failed!\n\n", __debug__);
         return FALSE;
     }
+
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: parsing completed successfully\n\n", __debug__);
 
     return TRUE;
 }
@@ -414,7 +423,7 @@ static gssize mirage_file_filter_xz_read (MirageFileFilter *_self, void *buffer,
     gssize total_read, read_len;
     guint8 *ptr = buffer;
 
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_FILE, "%s: read %ld (0x%lX) bytes from current position %ld (0x%lX)!\n", __debug__, count, count, self->priv->cur_position, self->priv->cur_position);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_FILE_IO, "%s: read %ld (0x%lX) bytes from current position %ld (0x%lX)!\n", __debug__, count, count, self->priv->cur_position, self->priv->cur_position);
 
     /* Read until all is read */
     total_read = 0;
@@ -433,7 +442,7 @@ static gssize mirage_file_filter_xz_read (MirageFileFilter *_self, void *buffer,
         total_read += read_len;
         count -= read_len;
 
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_FILE, "%s: read %ld (0x%lX) bytes... %ld (0x%lX) remaining\n\n", __debug__, read_len, read_len, count, count);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_FILE_IO, "%s: read %ld (0x%lX) bytes... %ld (0x%lX) remaining\n\n", __debug__, read_len, read_len, count, count);
 
         /* Update position */
         if (!mirage_file_filter_xz_set_current_position(self, self->priv->cur_position+read_len, error)) {
@@ -443,11 +452,11 @@ static gssize mirage_file_filter_xz_read (MirageFileFilter *_self, void *buffer,
 
         /* Check if we're at end of stream */
         if (self->priv->cur_position >= self->priv->file_size) {
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_FILE, "%s: end of stream reached!\n", __debug__);
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_FILE_IO, "%s: end of stream reached!\n", __debug__);
             break;
         }
     }
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_FILE, "%s: read complete\n", __debug__);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_FILE_IO, "%s: read complete\n", __debug__);
 
     return total_read;
 }
@@ -484,7 +493,7 @@ static gboolean mirage_file_filter_xz_seek (MirageFileFilter *_self, goffset off
         }
     }
 
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_FILE, "%s: request for seek to %ld (0x%lX)\n", __debug__, new_position, new_position);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_FILE_IO, "%s: request for seek to %ld (0x%lX)\n", __debug__, new_position, new_position);
 
     /* Seek */
     if (!mirage_file_filter_xz_set_current_position(self, new_position, error)) {

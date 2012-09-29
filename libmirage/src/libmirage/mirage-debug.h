@@ -26,14 +26,14 @@
  * MirageDebugMasks:
  * @MIRAGE_DEBUG_ERROR: error message
  * @MIRAGE_DEBUG_WARNING: warning message
- * @MIRAGE_DEBUG_PARSER: message belonging to parser
+ * @MIRAGE_DEBUG_PARSER: message belonging to disc parser and file stream parser
  * @MIRAGE_DEBUG_DISC: message belonging to disc
  * @MIRAGE_DEBUG_SESSION: message belonging to session
  * @MIRAGE_DEBUG_TRACK: message belonging to track
  * @MIRAGE_DEBUG_SECTOR: message belonging to sector
  * @MIRAGE_DEBUG_FRAGMENT: message belonging to fragment
  * @MIRAGE_DEBUG_CDTEXT: message belonging to CD-TEXT encoder/decoder
- * @MIRAGE_DEBUG_FILE: messages belonging to file filter
+ * @MIRAGE_DEBUG_FILE_IO: messages belonging to file filter I/O operations
  *
  * <para>
  * Debug message types and debug masks used to control verbosity of various
@@ -48,17 +48,17 @@
 typedef enum
 {
     /* Debug types */
-    MIRAGE_DEBUG_ERROR    = 0x00F1,
-    MIRAGE_DEBUG_WARNING  = 0x00F2,
+    MIRAGE_DEBUG_ERROR    = -1,
+    MIRAGE_DEBUG_WARNING  = -2,
     /* Debug masks */
-    MIRAGE_DEBUG_PARSER   = 0x0001,
-    MIRAGE_DEBUG_DISC     = 0x0002,
-    MIRAGE_DEBUG_SESSION  = 0x0004,
-    MIRAGE_DEBUG_TRACK    = 0x0008,
-    MIRAGE_DEBUG_SECTOR   = 0x0010,
-    MIRAGE_DEBUG_FRAGMENT = 0x0020,
-    MIRAGE_DEBUG_CDTEXT   = 0x0040,
-    MIRAGE_DEBUG_FILE     = 0x0080,
+    MIRAGE_DEBUG_PARSER  = 0x1,
+    MIRAGE_DEBUG_DISC = 0x2,
+    MIRAGE_DEBUG_SESSION = 0x4,
+    MIRAGE_DEBUG_TRACK = 0x8,
+    MIRAGE_DEBUG_SECTOR = 0x10,
+    MIRAGE_DEBUG_FRAGMENT = 0x20,
+    MIRAGE_DEBUG_CDTEXT = 0x40,
+    MIRAGE_DEBUG_FILE_IO = 0x80,
 } MirageDebugMasks;
 
 
