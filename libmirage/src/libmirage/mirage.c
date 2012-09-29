@@ -602,29 +602,36 @@ gboolean mirage_for_each_fragment (MirageCallbackFunction func, gpointer user_da
  **/
 gboolean mirage_for_each_file_filter (MirageCallbackFunction func, gpointer user_data, GError **error)
 {
+    gboolean succeeded = TRUE;
+
     /* Make sure libMirage is initialized */
     if (!libmirage.initialized) {
         g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_LIBRARY_ERROR, "Library not initialized!");
         return FALSE;
     }
 
+    /* Create a dummy stream - because at gio 2.32, unreferencing the
+       GFilterInputStream apparently tries to unref the underlying stream */
+    GObject *dummy_stream = g_memory_input_stream_new();
+
     /* Go over all file filters */
     for (gint i = 0; i < libmirage.num_file_filters; i++) {
         const MirageFileFilterInfo *file_filter_info;
-        gboolean succeeded;
         GObject *filter;
 
-        filter = g_object_new(libmirage.file_filters[i], NULL);
+        filter = g_object_new(libmirage.file_filters[i], "base-stream", dummy_stream, "close-base-stream", FALSE, NULL);
         file_filter_info = mirage_file_filter_get_info(MIRAGE_FILE_FILTER(filter));
         succeeded = (*func)((const gpointer)file_filter_info, user_data);
         g_object_unref(filter);
         if (!succeeded) {
             g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_LIBRARY_ERROR, "Iteration has been cancelled!");
-            return FALSE;
+            break;
         }
     }
 
-    return TRUE;
+    g_object_unref(dummy_stream);
+
+    return succeeded;
 }
 
 
