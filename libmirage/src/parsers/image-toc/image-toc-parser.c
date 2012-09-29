@@ -1136,6 +1136,7 @@ static gboolean mirage_parser_toc_parse_toc_file (MirageParserToc *self, const g
         } else {
             /* Append the line to CDTEXT string */
             g_string_append(cdtext_string, line_string);
+            g_string_append(cdtext_string, "\n");
 
             if (g_regex_match(self->priv->regex_cdtext, cdtext_string->str, G_REGEX_MATCH_PARTIAL, &match_info)) {
                 /* FIXME: can we live with failure? */
