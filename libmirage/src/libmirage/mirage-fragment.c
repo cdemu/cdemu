@@ -362,17 +362,14 @@ GType mirage_fragment_iface_null_get_type (void) {
  * mirage_fragment_iface_binary_main_data_set_stream:
  * @self: a #MirageFragmentIfaceBinary
  * @stream: (in) (transfer full): a #GInputStream on main data file
- * @error: (out) (allow-none): location to store error, or %NULL
  *
  * <para>
  * Sets main data stream.
  * </para>
- *
- * Returns: %TRUE on success, %FALSE on failure
  **/
-gboolean mirage_fragment_iface_binary_main_data_set_stream (MirageFragmentIfaceBinary *self, GObject *stream, GError **error)
+void mirage_fragment_iface_binary_main_data_set_stream (MirageFragmentIfaceBinary *self, GObject *stream)
 {
-    return MIRAGE_FRAGMENT_IFACE_BINARY_GET_INTERFACE(self)->main_data_set_stream(self, stream, error);
+    return MIRAGE_FRAGMENT_IFACE_BINARY_GET_INTERFACE(self)->main_data_set_stream(self, stream);
 }
 
 /**
@@ -502,17 +499,14 @@ guint64 mirage_fragment_iface_binary_main_data_get_position (MirageFragmentIface
  * mirage_fragment_iface_binary_subchannel_data_set_stream:
  * @self: a #MirageFragmentIfaceBinary
  * @stream: (in) (transfer full): a #GInputStream on subchannel data file
- * @error: (out) (allow-none): location to store error, or %NULL
  *
  * <para>
  * Sets subchannel data stream.
  * </para>
- *
- * Returns: %TRUE on success, %FALSE on failure
  **/
-gboolean mirage_fragment_iface_binary_subchannel_data_set_stream (MirageFragmentIfaceBinary *self, GObject *stream, GError **error)
+void mirage_fragment_iface_binary_subchannel_data_set_stream (MirageFragmentIfaceBinary *self, GObject *stream)
 {
-    return MIRAGE_FRAGMENT_IFACE_BINARY_GET_INTERFACE(self)->subchannel_data_set_stream(self, stream, error);
+    return MIRAGE_FRAGMENT_IFACE_BINARY_GET_INTERFACE(self)->subchannel_data_set_stream(self, stream);
 }
 
 /**
@@ -670,17 +664,14 @@ GType mirage_fragment_iface_binary_get_type (void) {
  * mirage_fragment_iface_audio_set_stream:
  * @self: a #MirageFragmentIfaceAudio
  * @stream: (in) (transfer full): a #GInputStream on audio file
- * @error: (out) (allow-none): location to store error, or %NULL
  *
  * <para>
  * Sets audio file stream.
  * </para>
- *
- * Returns: %TRUE on success, %FALSE on failure
  **/
-gboolean mirage_fragment_iface_audio_set_stream (MirageFragmentIfaceAudio *self, GObject *stream, GError **error)
+void mirage_fragment_iface_audio_set_stream (MirageFragmentIfaceAudio *self, GObject *stream)
 {
-    return MIRAGE_FRAGMENT_IFACE_AUDIO_GET_INTERFACE(self)->set_stream(self, stream, error);
+    return MIRAGE_FRAGMENT_IFACE_AUDIO_GET_INTERFACE(self)->set_stream(self, stream);
 }
 
 /**

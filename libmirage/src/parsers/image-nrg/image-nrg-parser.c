@@ -582,12 +582,12 @@ static gboolean mirage_parser_nrg_load_session (MirageParserNrg *self, gint sess
            I'm not sure why image file has the offsets separated - maybe they
            don't have to be adjacent?
         */
-        gint tfile_sectsize;
-        guint64 tfile_offset;
-        guint64 tfile_format;
+        gint main_size;
+        guint64 main_offset;
+        guint64 main_format;
 
-        gint sfile_sectsize;
-        guint64 sfile_format;
+        gint subchannel_size;
+        guint64 subchannel_format;
 
         gint fragment_len;
 
@@ -609,35 +609,28 @@ static gboolean mirage_parser_nrg_load_session (MirageParserNrg *self, gint sess
             }
 
             /* Main channel data */
-            tfile_sectsize = main_sectsize; /* We use the one from decoded mode code */
-            tfile_offset = dao_block->pregap_offset;
+            main_size = main_sectsize; /* We use the one from decoded mode code */
+            main_offset = dao_block->pregap_offset;
             if (mode == MIRAGE_MODE_AUDIO) {
-                tfile_format = MIRAGE_MAIN_AUDIO;
+                main_format = MIRAGE_MAIN_AUDIO;
             } else {
-                tfile_format = MIRAGE_MAIN_DATA;
+                main_format = MIRAGE_MAIN_DATA;
             }
 
             mirage_fragment_set_length(MIRAGE_FRAGMENT(fragment), fragment_len);
 
-            if (!mirage_fragment_iface_binary_main_data_set_stream(MIRAGE_FRAGMENT_IFACE_BINARY(fragment), self->priv->nrg_stream, error)) {
-                MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to set track data file!\n", __debug__);
-                g_object_unref(fragment);
-                g_object_unref(track);
-                g_object_unref(session);
-                succeeded = FALSE;
-                goto end;
-            }
-            mirage_fragment_iface_binary_main_data_set_offset(MIRAGE_FRAGMENT_IFACE_BINARY(fragment), tfile_offset);
-            mirage_fragment_iface_binary_main_data_set_size(MIRAGE_FRAGMENT_IFACE_BINARY(fragment), tfile_sectsize);
-            mirage_fragment_iface_binary_main_data_set_format(MIRAGE_FRAGMENT_IFACE_BINARY(fragment), tfile_format);
+            mirage_fragment_iface_binary_main_data_set_stream(MIRAGE_FRAGMENT_IFACE_BINARY(fragment), self->priv->nrg_stream);
+            mirage_fragment_iface_binary_main_data_set_offset(MIRAGE_FRAGMENT_IFACE_BINARY(fragment), main_offset);
+            mirage_fragment_iface_binary_main_data_set_size(MIRAGE_FRAGMENT_IFACE_BINARY(fragment), main_size);
+            mirage_fragment_iface_binary_main_data_set_format(MIRAGE_FRAGMENT_IFACE_BINARY(fragment), main_format);
 
             /* Subchannel */
             if (sub_sectsize) {
-                sfile_sectsize = sub_sectsize; /* We use the one from decoded mode code */
-                sfile_format = MIRAGE_SUBCHANNEL_PW96_INT | MIRAGE_SUBCHANNEL_INT; /* PW96 interleaved, internal */
+                subchannel_size = sub_sectsize; /* We use the one from decoded mode code */
+                subchannel_format = MIRAGE_SUBCHANNEL_PW96_INT | MIRAGE_SUBCHANNEL_INT; /* PW96 interleaved, internal */
 
-                mirage_fragment_iface_binary_subchannel_data_set_size(MIRAGE_FRAGMENT_IFACE_BINARY(fragment), sfile_sectsize);
-                mirage_fragment_iface_binary_subchannel_data_set_format(MIRAGE_FRAGMENT_IFACE_BINARY(fragment), sfile_format);
+                mirage_fragment_iface_binary_subchannel_data_set_size(MIRAGE_FRAGMENT_IFACE_BINARY(fragment), subchannel_size);
+                mirage_fragment_iface_binary_subchannel_data_set_format(MIRAGE_FRAGMENT_IFACE_BINARY(fragment), subchannel_format);
             }
 
             mirage_track_add_fragment(MIRAGE_TRACK(track), -1, fragment);
@@ -661,35 +654,28 @@ static gboolean mirage_parser_nrg_load_session (MirageParserNrg *self, gint sess
             }
 
             /* Main channel data */
-            tfile_sectsize = main_sectsize; /* We use the one from decoded mode code */
-            tfile_offset = dao_block->start_offset;
+            main_size = main_sectsize; /* We use the one from decoded mode code */
+            main_offset = dao_block->start_offset;
             if (mode == MIRAGE_MODE_AUDIO) {
-                tfile_format = MIRAGE_MAIN_AUDIO;
+                main_format = MIRAGE_MAIN_AUDIO;
             } else {
-                tfile_format = MIRAGE_MAIN_DATA;
+                main_format = MIRAGE_MAIN_DATA;
             }
 
             mirage_fragment_set_length(MIRAGE_FRAGMENT(fragment), fragment_len);
 
-            if (!mirage_fragment_iface_binary_main_data_set_stream(MIRAGE_FRAGMENT_IFACE_BINARY(fragment), self->priv->nrg_stream, error)) {
-                MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to set track data file!\n", __debug__);
-                g_object_unref(fragment);
-                g_object_unref(track);
-                g_object_unref(session);
-                succeeded = FALSE;
-                goto end;
-            }
-            mirage_fragment_iface_binary_main_data_set_offset(MIRAGE_FRAGMENT_IFACE_BINARY(fragment), tfile_offset);
-            mirage_fragment_iface_binary_main_data_set_size(MIRAGE_FRAGMENT_IFACE_BINARY(fragment), tfile_sectsize);
-            mirage_fragment_iface_binary_main_data_set_format(MIRAGE_FRAGMENT_IFACE_BINARY(fragment), tfile_format);
+            mirage_fragment_iface_binary_main_data_set_stream(MIRAGE_FRAGMENT_IFACE_BINARY(fragment), self->priv->nrg_stream);
+            mirage_fragment_iface_binary_main_data_set_offset(MIRAGE_FRAGMENT_IFACE_BINARY(fragment), main_offset);
+            mirage_fragment_iface_binary_main_data_set_size(MIRAGE_FRAGMENT_IFACE_BINARY(fragment), main_size);
+            mirage_fragment_iface_binary_main_data_set_format(MIRAGE_FRAGMENT_IFACE_BINARY(fragment), main_format);
 
             /* Subchannel */
             if (sub_sectsize) {
-                sfile_sectsize = sub_sectsize; /* We use the one from decoded mode code */
-                sfile_format = MIRAGE_SUBCHANNEL_PW96_INT | MIRAGE_SUBCHANNEL_INT; /* PW96 interleaved, internal */
+                subchannel_size = sub_sectsize; /* We use the one from decoded mode code */
+                subchannel_format = MIRAGE_SUBCHANNEL_PW96_INT | MIRAGE_SUBCHANNEL_INT; /* PW96 interleaved, internal */
 
-                mirage_fragment_iface_binary_subchannel_data_set_size(MIRAGE_FRAGMENT_IFACE_BINARY(fragment), sfile_sectsize);
-                mirage_fragment_iface_binary_subchannel_data_set_format(MIRAGE_FRAGMENT_IFACE_BINARY(fragment), sfile_format);
+                mirage_fragment_iface_binary_subchannel_data_set_size(MIRAGE_FRAGMENT_IFACE_BINARY(fragment), subchannel_size);
+                mirage_fragment_iface_binary_subchannel_data_set_format(MIRAGE_FRAGMENT_IFACE_BINARY(fragment), subchannel_format);
             }
 
             mirage_track_add_fragment(MIRAGE_TRACK(track), -1, fragment);
@@ -822,12 +808,12 @@ static gboolean mirage_parser_nrg_load_session_tao (MirageParserNrg *self, gint 
            I'm not sure why image file has the offsets separated - maybe they
            don't have to be adjacent?
         */
-        gint tfile_sectsize;
-        guint64 tfile_offset;
-        guint64 tfile_format;
+        gint main_size;
+        guint64 main_offset;
+        guint64 main_format;
 
-        gint sfile_sectsize;
-        guint64 sfile_format;
+        gint subchannel_size;
+        guint64 subchannel_format;
 
         gint fragment_len;
 
@@ -858,35 +844,28 @@ static gboolean mirage_parser_nrg_load_session_tao (MirageParserNrg *self, gint 
             }
 
             /* Main channel data */
-            tfile_sectsize = main_sectsize; /* We use the one from decoded mode code */
-            tfile_offset = etn_block->offset;
+            main_size = main_sectsize; /* We use the one from decoded mode code */
+            main_offset = etn_block->offset;
             if (mode == MIRAGE_MODE_AUDIO) {
-                tfile_format = MIRAGE_MAIN_AUDIO;
+                main_format = MIRAGE_MAIN_AUDIO;
             } else {
-                tfile_format = MIRAGE_MAIN_DATA;
+                main_format = MIRAGE_MAIN_DATA;
             }
 
             mirage_fragment_set_length(MIRAGE_FRAGMENT(fragment), fragment_len);
 
-            if (!mirage_fragment_iface_binary_main_data_set_stream(MIRAGE_FRAGMENT_IFACE_BINARY(fragment), self->priv->nrg_stream, error)) {
-                MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to set track data file!\n", __debug__);
-                g_object_unref(fragment);
-                g_object_unref(track);
-                g_object_unref(session);
-                succeeded = FALSE;
-                goto end;
-            }
-            mirage_fragment_iface_binary_main_data_set_offset(MIRAGE_FRAGMENT_IFACE_BINARY(fragment), tfile_offset);
-            mirage_fragment_iface_binary_main_data_set_size(MIRAGE_FRAGMENT_IFACE_BINARY(fragment), tfile_sectsize);
-            mirage_fragment_iface_binary_main_data_set_format(MIRAGE_FRAGMENT_IFACE_BINARY(fragment), tfile_format);
+            mirage_fragment_iface_binary_main_data_set_stream(MIRAGE_FRAGMENT_IFACE_BINARY(fragment), self->priv->nrg_stream);
+            mirage_fragment_iface_binary_main_data_set_offset(MIRAGE_FRAGMENT_IFACE_BINARY(fragment), main_offset);
+            mirage_fragment_iface_binary_main_data_set_size(MIRAGE_FRAGMENT_IFACE_BINARY(fragment), main_size);
+            mirage_fragment_iface_binary_main_data_set_format(MIRAGE_FRAGMENT_IFACE_BINARY(fragment), main_format);
 
             /* Subchannel */
             if (sub_sectsize) {
-                sfile_sectsize = sub_sectsize; /* We use the one from decoded mode code */
-                sfile_format = MIRAGE_SUBCHANNEL_PW96_INT | MIRAGE_SUBCHANNEL_INT; /* PW96 interleaved, internal */
+                subchannel_size = sub_sectsize; /* We use the one from decoded mode code */
+                subchannel_format = MIRAGE_SUBCHANNEL_PW96_INT | MIRAGE_SUBCHANNEL_INT; /* PW96 interleaved, internal */
 
-                mirage_fragment_iface_binary_subchannel_data_set_size(MIRAGE_FRAGMENT_IFACE_BINARY(fragment), sfile_sectsize);
-                mirage_fragment_iface_binary_subchannel_data_set_format(MIRAGE_FRAGMENT_IFACE_BINARY(fragment), sfile_format);
+                mirage_fragment_iface_binary_subchannel_data_set_size(MIRAGE_FRAGMENT_IFACE_BINARY(fragment), subchannel_size);
+                mirage_fragment_iface_binary_subchannel_data_set_format(MIRAGE_FRAGMENT_IFACE_BINARY(fragment), subchannel_format);
             }
 
             mirage_track_add_fragment(MIRAGE_TRACK(track), -1, fragment);

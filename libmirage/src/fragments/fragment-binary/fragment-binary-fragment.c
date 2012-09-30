@@ -44,7 +44,7 @@ struct _MirageFragmentBinaryPrivate
 /**********************************************************************\
  *                     Binary Interface implementation                *
 \**********************************************************************/
-static gboolean mirage_fragment_binary_main_data_set_stream (MirageFragmentIfaceBinary *_self, GObject *stream, GError **error G_GNUC_UNUSED)
+static void mirage_fragment_binary_main_data_set_stream (MirageFragmentIfaceBinary *_self, GObject *stream)
 {
     MirageFragmentBinary *self = MIRAGE_FRAGMENT_BINARY(_self);
 
@@ -57,8 +57,6 @@ static gboolean mirage_fragment_binary_main_data_set_stream (MirageFragmentIface
     /* Set new stream */
     self->priv->main_stream = stream;
     g_object_ref(stream);
-
-    return TRUE;
 }
 
 static const gchar *mirage_fragment_binary_main_data_get_filename (MirageFragmentIfaceBinary *_self)
@@ -137,7 +135,7 @@ static guint64 mirage_fragment_binary_main_data_get_position (MirageFragmentIfac
 }
 
 
-static gboolean mirage_fragment_binary_subchannel_data_set_stream (MirageFragmentIfaceBinary *_self, GObject *stream, GError **error G_GNUC_UNUSED)
+static void mirage_fragment_binary_subchannel_data_set_stream (MirageFragmentIfaceBinary *_self, GObject *stream)
 {
     MirageFragmentBinary *self = MIRAGE_FRAGMENT_BINARY(_self);
 
@@ -150,8 +148,6 @@ static gboolean mirage_fragment_binary_subchannel_data_set_stream (MirageFragmen
     /* Set new stream */
     self->priv->subchannel_stream = stream;
     g_object_ref(stream);
-
-    return TRUE;
 }
 
 static const gchar *mirage_fragment_binary_subchannel_data_get_filename (MirageFragmentIfaceBinary *_self)

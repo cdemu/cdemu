@@ -34,8 +34,6 @@ by a #MirageFragment implementation.
 
 @self: 
 @stream: 
-@error: 
-@Returns: 
 
 
 <!-- ##### FUNCTION mirage_fragment_iface_audio_get_filename ##### -->

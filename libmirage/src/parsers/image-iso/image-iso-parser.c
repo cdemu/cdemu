@@ -168,13 +168,8 @@ static gboolean mirage_parser_iso_load_track (MirageParserIso *self, gchar *file
         return FALSE;
     }
 
-    /* Set file */
-    if (!mirage_fragment_iface_binary_main_data_set_stream(MIRAGE_FRAGMENT_IFACE_BINARY(fragment), data_stream, error)) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to set track data file!\n", __debug__);
-        g_object_unref(data_stream);
-        g_object_unref(fragment);
-        return FALSE;
-    }
+    /* Set stream */
+    mirage_fragment_iface_binary_main_data_set_stream(MIRAGE_FRAGMENT_IFACE_BINARY(fragment), data_stream);
     mirage_fragment_iface_binary_main_data_set_size(MIRAGE_FRAGMENT_IFACE_BINARY(fragment), self->priv->track_sectsize);
     mirage_fragment_iface_binary_main_data_set_format(MIRAGE_FRAGMENT_IFACE_BINARY(fragment), MIRAGE_MAIN_DATA);
 

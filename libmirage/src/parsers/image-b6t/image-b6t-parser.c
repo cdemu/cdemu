@@ -412,49 +412,50 @@ static gboolean mirage_parser_b6t_setup_track_fragments (MirageParserB6t *self, 
                 return FALSE;
             }
 
+            g_free(filename);
+
             /* We'd like a BINARY fragment */
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: creating BINARY fragment\n", __debug__);
             data_fragment = mirage_create_fragment(MIRAGE_TYPE_FRAGMENT_IFACE_BINARY, data_stream, G_OBJECT(self), error);
             if (!data_fragment) {
                 g_object_unref(data_stream);
-                g_free(filename);
                 MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to create BINARY fragment!\n", __debug__);
                 return FALSE;
             }
 
-            gint tfile_sectsize = 0;
-            gint tfile_format = 0;
-            guint64 tfile_offset = 0;
+            gint main_size = 0;
+            gint main_format = 0;
+            guint64 main_offset = 0;
 
-            gint sfile_format = 0;
-            gint sfile_sectsize = 0;
+            gint subchannel_format = 0;
+            gint subchannel_size = 0;
 
             /* We calculate sector size... */
-            tfile_sectsize = data_block->length_bytes/data_block->length_sectors;
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: track file sector size: %i (0x%X)\n", __debug__, tfile_sectsize, tfile_sectsize);
+            main_size = data_block->length_bytes/data_block->length_sectors;
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: track file sector size: %i (0x%X)\n", __debug__, main_size, main_size);
             /* Use sector size to calculate offset */
-            tfile_offset = data_block->offset + (start_sector - data_block->start_sector)*tfile_sectsize;
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: track file offset: 0x%llX\n", __debug__, tfile_offset);
+            main_offset = data_block->offset + (start_sector - data_block->start_sector)*main_size;
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: track file offset: 0x%llX\n", __debug__, main_offset);
             /* Adjust sector size to account for subchannel */
-            if (tfile_sectsize > 2352) {
+            if (main_size > 2352) {
                 /* If it's more than full sector, we have subchannel */
                 MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: track file sector size implies subchannel data...\n", __debug__);
-                sfile_sectsize = tfile_sectsize - 2352;
-                tfile_sectsize = 2352;
-                MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: subchannel sector size: %i (0x%X)\n", __debug__, sfile_sectsize, sfile_sectsize);
-                switch (sfile_sectsize) {
+                subchannel_size = main_size - 2352;
+                main_size = 2352;
+                MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: subchannel sector size: %i (0x%X)\n", __debug__, subchannel_size, subchannel_size);
+                switch (subchannel_size) {
                     case 16: {
                         /* Internal subchannel, PQ */
-                        sfile_format = MIRAGE_SUBCHANNEL_PQ16 | MIRAGE_SUBCHANNEL_INT;
+                        subchannel_format = MIRAGE_SUBCHANNEL_PQ16 | MIRAGE_SUBCHANNEL_INT;
                         break;
                     }
                     case 96: {
                         /* Internal subchannel, linear PW96 */
-                        sfile_format = MIRAGE_SUBCHANNEL_PW96_LIN | MIRAGE_SUBCHANNEL_INT;
+                        subchannel_format = MIRAGE_SUBCHANNEL_PW96_LIN | MIRAGE_SUBCHANNEL_INT;
                         break;
                     }
                     default: {
-                        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: unhandled subchannel sector size: %i (0x%X)\n", __debug__, sfile_sectsize, sfile_sectsize);
+                        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: unhandled subchannel sector size: %i (0x%X)\n", __debug__, subchannel_size, subchannel_size);
                         break;
                     }
                 }
@@ -463,28 +464,22 @@ static gboolean mirage_parser_b6t_setup_track_fragments (MirageParserB6t *self, 
             /* Data format */
             if ((data_block->type & 0x00008000) == 0x00008000) {
                 MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: data block is for audio data\n", __debug__);
-                tfile_format = MIRAGE_MAIN_AUDIO;
+                main_format = MIRAGE_MAIN_AUDIO;
             } else {
                 MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: data block is for data track\n", __debug__);
-                tfile_format = MIRAGE_MAIN_DATA;
+                main_format = MIRAGE_MAIN_DATA;
             }
 
-            /* Set file */
-            if (!mirage_fragment_iface_binary_main_data_set_stream(MIRAGE_FRAGMENT_IFACE_BINARY(data_fragment), data_stream, error)) {
-                MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to set track data file!\n", __debug__);
-                g_object_unref(data_stream);
-                g_free(filename);
-                return FALSE;
-            }
+            /* Set stream */
+            mirage_fragment_iface_binary_main_data_set_stream(MIRAGE_FRAGMENT_IFACE_BINARY(data_fragment), data_stream);
             g_object_unref(data_stream);
-            g_free(filename);
 
-            mirage_fragment_iface_binary_main_data_set_size(MIRAGE_FRAGMENT_IFACE_BINARY(data_fragment), tfile_sectsize);
-            mirage_fragment_iface_binary_main_data_set_offset(MIRAGE_FRAGMENT_IFACE_BINARY(data_fragment), tfile_offset);
-            mirage_fragment_iface_binary_main_data_set_format(MIRAGE_FRAGMENT_IFACE_BINARY(data_fragment), tfile_format);
+            mirage_fragment_iface_binary_main_data_set_size(MIRAGE_FRAGMENT_IFACE_BINARY(data_fragment), main_size);
+            mirage_fragment_iface_binary_main_data_set_offset(MIRAGE_FRAGMENT_IFACE_BINARY(data_fragment), main_offset);
+            mirage_fragment_iface_binary_main_data_set_format(MIRAGE_FRAGMENT_IFACE_BINARY(data_fragment), main_format);
 
-            mirage_fragment_iface_binary_subchannel_data_set_size(MIRAGE_FRAGMENT_IFACE_BINARY(data_fragment), sfile_sectsize);
-            mirage_fragment_iface_binary_subchannel_data_set_format(MIRAGE_FRAGMENT_IFACE_BINARY(data_fragment), sfile_format);
+            mirage_fragment_iface_binary_subchannel_data_set_size(MIRAGE_FRAGMENT_IFACE_BINARY(data_fragment), subchannel_size);
+            mirage_fragment_iface_binary_subchannel_data_set_format(MIRAGE_FRAGMENT_IFACE_BINARY(data_fragment), subchannel_format);
 
             mirage_fragment_set_length(MIRAGE_FRAGMENT(data_fragment), tmp_length);
 

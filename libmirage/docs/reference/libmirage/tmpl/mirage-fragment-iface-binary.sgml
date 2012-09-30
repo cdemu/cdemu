@@ -55,8 +55,6 @@ by a #MirageFragment implementation.
 
 @self: 
 @stream: 
-@error: 
-@Returns: 
 
 
 <!-- ##### FUNCTION mirage_fragment_iface_binary_main_data_get_filename ##### -->
@@ -139,8 +137,6 @@ by a #MirageFragment implementation.
 
 @self: 
 @stream: 
-@error: 
-@Returns: 
 
 
 <!-- ##### FUNCTION mirage_fragment_iface_binary_subchannel_data_get_filename ##### -->

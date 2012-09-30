@@ -519,36 +519,36 @@ static gboolean mirage_parser_mds_parse_track_entries (MirageParserMds *self, MD
                 /* NOTE: endian already fixed at this point! */
 
                 /* Fragment properties */
-                guint64 tfile_offset = 0; /* Corrected below, if needed */
-                gint tfile_sectsize = block->sector_size;
-                gint tfile_format = 0;
+                guint64 main_offset = 0; /* Corrected below, if needed */
+                gint main_size = block->sector_size;
+                gint main_format = 0;
 
-                gint sfile_sectsize = 0;
-                gint sfile_format = 0;
+                gint subchannel_size = 0;
+                gint subchannel_format = 0;
 
                 if (j == 0) {
                     /* Apply offset only if it's the first file... */
-                    tfile_offset = block->start_offset;
+                    main_offset = block->start_offset;
                 }
 
                 if (converted_mode == MIRAGE_MODE_AUDIO) {
-                    tfile_format = MIRAGE_MAIN_AUDIO;
+                    main_format = MIRAGE_MAIN_AUDIO;
                 } else {
-                    tfile_format = MIRAGE_MAIN_DATA;
+                    main_format = MIRAGE_MAIN_DATA;
                 }
 
                 /* Subchannel */
                 switch ((MDS_SubChan) block->subchannel) {
                     case PW_INTERLEAVED: {
-                        sfile_sectsize = 96;
-                        sfile_format = MIRAGE_SUBCHANNEL_PW96_INT | MIRAGE_SUBCHANNEL_INT;
+                        subchannel_size = 96;
+                        subchannel_format = MIRAGE_SUBCHANNEL_PW96_INT | MIRAGE_SUBCHANNEL_INT;
 
                         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: subchannel found; interleaved PW96\n", __debug__);
 
                         /* We need to correct the data for track sector size...
                            MDS format has already added 96 bytes to sector size,
                            so we need to subtract it */
-                        tfile_sectsize = block->sector_size - sfile_sectsize;
+                        main_size = block->sector_size - subchannel_size;
 
                         break;
                     }
@@ -581,6 +581,7 @@ static gboolean mirage_parser_mds_parse_track_entries (MirageParserMds *self, MD
                     g_object_unref(session);
                     return FALSE;
                 }
+                g_free(mdf_filename);
 
                 /* Determine fragment's length */
                 gint fragment_len = 0;
@@ -596,7 +597,7 @@ static gboolean mirage_parser_mds_parse_track_entries (MirageParserMds *self, MD
                     g_seekable_seek(G_SEEKABLE(data_stream), 0, G_SEEK_END, NULL, NULL);
                     fragment_len = g_seekable_tell(G_SEEKABLE(data_stream));
 
-                    fragment_len = (fragment_len - tfile_offset)/(tfile_sectsize + sfile_sectsize); /* We could've just divided by 2048, too :) */
+                    fragment_len = (fragment_len - main_offset)/(main_size + subchannel_size); /* We could've just divided by 2048, too :) */
                     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: DVD-ROM; track's fragment length: 0x%X\n", __debug__, fragment_len);
                 }
 
@@ -605,7 +606,6 @@ static gboolean mirage_parser_mds_parse_track_entries (MirageParserMds *self, MD
                 if (!fragment) {
                     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: failed to create fragment!\n", __debug__);
                     g_object_unref(data_stream);
-                    g_free(mdf_filename);
                     g_object_unref(track);
                     g_object_unref(session);
                     return FALSE;
@@ -613,25 +613,16 @@ static gboolean mirage_parser_mds_parse_track_entries (MirageParserMds *self, MD
 
                 mirage_fragment_set_length(MIRAGE_FRAGMENT(fragment), fragment_len);
 
-                /* Set file */
-                if (!mirage_fragment_iface_binary_main_data_set_stream(MIRAGE_FRAGMENT_IFACE_BINARY(fragment), data_stream, error)) {
-                    MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to set track data file!\n", __debug__);
-                    g_object_unref(data_stream);
-                    g_free(mdf_filename);
-                    g_object_unref(fragment);
-                    g_object_unref(track);
-                    g_object_unref(session);
-                    return FALSE;
-                }
+                /* Set stream */
+                mirage_fragment_iface_binary_main_data_set_stream(MIRAGE_FRAGMENT_IFACE_BINARY(fragment), data_stream);
                 g_object_unref(data_stream);
-                g_free(mdf_filename);
 
-                mirage_fragment_iface_binary_main_data_set_offset(MIRAGE_FRAGMENT_IFACE_BINARY(fragment), tfile_offset);
-                mirage_fragment_iface_binary_main_data_set_size(MIRAGE_FRAGMENT_IFACE_BINARY(fragment), tfile_sectsize);
-                mirage_fragment_iface_binary_main_data_set_format(MIRAGE_FRAGMENT_IFACE_BINARY(fragment), tfile_format);
+                mirage_fragment_iface_binary_main_data_set_offset(MIRAGE_FRAGMENT_IFACE_BINARY(fragment), main_offset);
+                mirage_fragment_iface_binary_main_data_set_size(MIRAGE_FRAGMENT_IFACE_BINARY(fragment), main_size);
+                mirage_fragment_iface_binary_main_data_set_format(MIRAGE_FRAGMENT_IFACE_BINARY(fragment), main_format);
 
-                mirage_fragment_iface_binary_subchannel_data_set_size(MIRAGE_FRAGMENT_IFACE_BINARY(fragment), sfile_sectsize);
-                mirage_fragment_iface_binary_subchannel_data_set_format(MIRAGE_FRAGMENT_IFACE_BINARY(fragment), sfile_format);
+                mirage_fragment_iface_binary_subchannel_data_set_size(MIRAGE_FRAGMENT_IFACE_BINARY(fragment), subchannel_size);
+                mirage_fragment_iface_binary_subchannel_data_set_format(MIRAGE_FRAGMENT_IFACE_BINARY(fragment), subchannel_format);
 
                 mirage_track_add_fragment(MIRAGE_TRACK(track), -1, fragment);
                 g_object_unref(fragment);

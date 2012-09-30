@@ -215,12 +215,7 @@ static gboolean mirage_parser_readcd_parse_toc_entry (MirageParserReadcd *self, 
             goto end;
         }
 
-        if (!mirage_fragment_iface_binary_main_data_set_stream(MIRAGE_FRAGMENT_IFACE_BINARY(self), self->priv->data_stream, error)) {
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to set track data file!\n", __debug__);
-            g_object_unref(fragment);
-            succeeded = FALSE;
-            goto end;
-        }
+        mirage_fragment_iface_binary_main_data_set_stream(MIRAGE_FRAGMENT_IFACE_BINARY(self), self->priv->data_stream);
         mirage_fragment_iface_binary_main_data_set_size(MIRAGE_FRAGMENT_IFACE_BINARY(fragment), 2352);
         mirage_fragment_iface_binary_main_data_set_offset(MIRAGE_FRAGMENT_IFACE_BINARY(fragment), track_lba*2448);
         mirage_fragment_iface_binary_main_data_set_format(MIRAGE_FRAGMENT_IFACE_BINARY(fragment), MIRAGE_MAIN_DATA);
@@ -265,12 +260,7 @@ static gboolean mirage_parser_readcd_parse_toc_entry (MirageParserReadcd *self, 
                     goto end;
                 }
 
-                if (!mirage_fragment_iface_binary_main_data_set_stream(MIRAGE_FRAGMENT_IFACE_BINARY(fragment), self->priv->data_stream, error)) {
-                    MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to set track data file!\n", __debug__);
-                    g_object_unref(fragment);
-                    succeeded = FALSE;
-                    goto end;
-                }
+                mirage_fragment_iface_binary_main_data_set_stream(MIRAGE_FRAGMENT_IFACE_BINARY(fragment), self->priv->data_stream);
                 mirage_fragment_iface_binary_main_data_set_size(MIRAGE_FRAGMENT_IFACE_BINARY(fragment), 2352);
                 mirage_fragment_iface_binary_main_data_set_offset(MIRAGE_FRAGMENT_IFACE_BINARY(fragment), (track_lba - 150)*2448);
                 mirage_fragment_iface_binary_main_data_set_format(MIRAGE_FRAGMENT_IFACE_BINARY(fragment), MIRAGE_MAIN_DATA);

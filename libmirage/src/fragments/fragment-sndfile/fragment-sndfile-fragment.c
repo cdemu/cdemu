@@ -110,7 +110,7 @@ static SF_VIRTUAL_IO sndfile_io_bridge = {
 /**********************************************************************\
  *                   Audio interface implementation                   *
 \**********************************************************************/
-static gboolean mirage_fragment_sndfile_set_stream (MirageFragmentIfaceAudio *_self, GObject *stream, GError **error)
+static void mirage_fragment_sndfile_set_stream (MirageFragmentIfaceAudio *_self, GObject *stream)
 {
     MirageFragmentSndfile *self = MIRAGE_FRAGMENT_SNDFILE(_self);
 
@@ -128,12 +128,9 @@ static gboolean mirage_fragment_sndfile_set_stream (MirageFragmentIfaceAudio *_s
     self->priv->stream = stream;
     g_object_ref(stream);
 
-    /* Open sndfile */
+    /* Open sndfile - this is guaranteed to succeed, since it already
+       passed the mirage_fragment_can_handle_data() */
     self->priv->sndfile = sf_open_virtual(&sndfile_io_bridge, SFM_READ, &self->priv->format, self->priv->stream);
-    if (!self->priv->sndfile) {
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_FRAGMENT_ERROR, "Failed to open audio file!");
-        return FALSE;
-    }
 
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_FRAGMENT, "%s: SNDFILE file format:\n"
             " -> frames = %lli\n"
@@ -149,8 +146,6 @@ static gboolean mirage_fragment_sndfile_set_stream (MirageFragmentIfaceAudio *_s
             self->priv->format.format,
             self->priv->format.sections,
             self->priv->format.seekable);
-
-    return TRUE;
 }
 
 static const gchar *mirage_fragment_sndfile_get_filename (MirageFragmentIfaceAudio *_self)

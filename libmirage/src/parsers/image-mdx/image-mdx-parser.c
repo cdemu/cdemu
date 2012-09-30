@@ -144,7 +144,6 @@ static gboolean mirage_parser_mdx_get_track (MirageParserMdx *self, const gchar 
 {
     gboolean succeeded = TRUE;
 
-    gchar *data_file;
     GObject *data_stream;
     guint64 offset;
     guint64 length;
@@ -185,9 +184,6 @@ static gboolean mirage_parser_mdx_get_track (MirageParserMdx *self, const gchar 
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  - blocksize size: %lld (0x%llX)\n", __debug__, header.blockinfo_size);
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "\n");
 
-        /* Data filename */
-        data_file = g_strdup(filename);
-
         /* Offset: end of header */
         offset = g_seekable_tell(G_SEEKABLE(data_stream));
 
@@ -195,14 +191,14 @@ static gboolean mirage_parser_mdx_get_track (MirageParserMdx *self, const gchar 
         length = header.footer_offset - offset;
     } else if (mirage_helper_has_suffix(filename, ".mds")) {
         /* Find corresponding MDF file */
-        data_file = __helper_find_binary_file("*.mdf", filename);
+        gchar *data_file = __helper_find_binary_file("*.mdf", filename);
 
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: MDS file; corresponding MDF: %s\n", __debug__, data_file);
 
         data_stream = mirage_create_file_stream(data_file, G_OBJECT(self), error);
+        g_free(data_file);
         if (!data_stream) {
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: could not open MDF file!\n", __debug__);
-            g_free(data_file);
             return FALSE;
         }
 
@@ -227,7 +223,6 @@ static gboolean mirage_parser_mdx_get_track (MirageParserMdx *self, const gchar 
     succeeded = mirage_parser_mdx_determine_track_mode(self, data_stream, offset, length, &track_mode, &sector_size, &subchannel_type, &subchannel_size, error);
     if (!succeeded) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to guess track type!\n", __debug__);
-        g_free(data_file);
         g_object_unref(data_stream);
         return FALSE;
     }
@@ -251,19 +246,11 @@ static gboolean mirage_parser_mdx_get_track (MirageParserMdx *self, const gchar 
     data_fragment = mirage_create_fragment(MIRAGE_TYPE_FRAGMENT_IFACE_BINARY, data_stream, G_OBJECT(self), error);
     if (!data_fragment) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to create BINARY fragment!\n", __debug__);
-        g_free(data_file);
         return FALSE;
     }
 
-    /* Set file */
-    if (!mirage_fragment_iface_binary_main_data_set_stream(MIRAGE_FRAGMENT_IFACE_BINARY(data_fragment), data_stream, error)) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to set track data file!\n", __debug__);
-        g_free(data_file);
-        g_object_unref(data_stream);
-        g_object_unref(data_fragment);
-        return FALSE;
-    }
-    g_free(data_file);
+    /* Set stream */
+    mirage_fragment_iface_binary_main_data_set_stream(MIRAGE_FRAGMENT_IFACE_BINARY(data_fragment), data_stream);
     g_object_unref(data_stream);
 
     mirage_fragment_iface_binary_main_data_set_format(MIRAGE_FRAGMENT_IFACE_BINARY(data_fragment), MIRAGE_MAIN_DATA);

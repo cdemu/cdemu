@@ -40,10 +40,10 @@ struct _MirageParserTocPrivate
     /* Per-session data */
     gchar *toc_filename;
 
-    gint cur_tfile_sectsize;
+    gint cur_main_size;
 
-    gint cur_sfile_sectsize;
-    gint cur_sfile_format;
+    gint cur_subchannel_size;
+    gint cur_subchannel_format;
 
     gint cur_langcode;
     GHashTable *lang_map;
@@ -106,9 +106,9 @@ static void mirage_parser_toc_add_track (MirageParserToc *self, gchar *mode_stri
     g_object_unref(self->priv->cur_track); /* Don't keep reference */
 
     /* Clear internal data */
-    self->priv->cur_tfile_sectsize = 0;
-    self->priv->cur_sfile_sectsize = 0;
-    self->priv->cur_sfile_format = 0;
+    self->priv->cur_main_size = 0;
+    self->priv->cur_subchannel_size = 0;
+    self->priv->cur_subchannel_format = 0;
 
     /* Decipher mode */
     struct {
@@ -134,7 +134,7 @@ static void mirage_parser_toc_add_track (MirageParserToc *self, gchar *mode_stri
             /* Set track mode */
             mirage_track_set_mode(MIRAGE_TRACK(self->priv->cur_track), track_modes[i].mode);
             /* Store sector size */
-            self->priv->cur_tfile_sectsize = track_modes[i].sectsize;
+            self->priv->cur_main_size = track_modes[i].sectsize;
 
             break;
         }
@@ -154,8 +154,8 @@ static void mirage_parser_toc_add_track (MirageParserToc *self, gchar *mode_stri
         for (gint i = 0; i < G_N_ELEMENTS(subchan_modes); i++) {
             if (!mirage_helper_strcasecmp(subchan_modes[i].str, subchan_string)) {
                 MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: subchannel mode: %s\n", __debug__, subchan_modes[i].str);
-                self->priv->cur_sfile_sectsize = subchan_modes[i].sectsize;
-                self->priv->cur_sfile_format = subchan_modes[i].format;
+                self->priv->cur_subchannel_size = subchan_modes[i].sectsize;
+                self->priv->cur_subchannel_format = subchan_modes[i].format;
                 break;
             }
         }
@@ -163,7 +163,7 @@ static void mirage_parser_toc_add_track (MirageParserToc *self, gchar *mode_stri
 };
 
 
-static gboolean mirage_parser_toc_track_add_fragment (MirageParserToc *self, gint type, gchar *filename_string, gint base_offset, gint start, gint length, GError **error)
+static gboolean mirage_parser_toc_track_add_fragment (MirageParserToc *self, gint type, const gchar *filename_string, gint base_offset, gint start, gint length, GError **error)
 {
     GObject *fragment;
 
@@ -183,15 +183,16 @@ static gboolean mirage_parser_toc_track_add_fragment (MirageParserToc *self, gin
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: using data file: %s\n", __debug__, filename);
 
         /* Create strean */
-        GObject *stream = mirage_parser_get_cached_data_stream(MIRAGE_PARSER(self), filename_string, error);
+        GObject *stream = mirage_parser_get_cached_data_stream(MIRAGE_PARSER(self), filename, error);
         if (!stream) {
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to create stream on data file!\n", __debug__);
             return FALSE;
         }
 
-        /* BINARY can be either explicitly requested; or it can be assumed from
-           *.bin suffix (with TOC_DATA_TYPE_AUDIO), which is a bit hacky, but
-           should work for now... */
+        /* BINARY can be either explicitly requested, or it can be assumed from
+           *.bin suffix (with TOC_DATA_TYPE_AUDIO). Note that we check 'filename_string',
+           which is the original filename, and not the 'filename', which is result of
+           our search. */
         if (type == TOC_DATA_TYPE_DATA || mirage_helper_has_suffix(filename_string, ".bin")) {
             /* Binary data; we'd like a BINARY fragment */
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: creating BINARY fragment\n", __debug__);
@@ -203,15 +204,15 @@ static gboolean mirage_parser_toc_track_add_fragment (MirageParserToc *self, gin
                 return FALSE;
             }
 
-            gint tfile_sectsize;
-            gint tfile_format;
-            guint64 tfile_offset;
+            gint main_size;
+            gint main_format;
+            guint64 main_offset;
 
-            gint sfile_format;
-            gint sfile_sectsize;
+            gint subchannel_format;
+            gint subchannel_size;
 
             /* Track file */
-            tfile_sectsize = self->priv->cur_tfile_sectsize;
+            main_size = self->priv->cur_main_size;
 
             /* If we're dealing with BINARY AUDIO data, we need to swap it...
                (type == TOC_DATA_TYPE_AUDIO) is not sufficient check, because
@@ -220,9 +221,9 @@ static gboolean mirage_parser_toc_track_add_fragment (MirageParserToc *self, gin
                we simply check whether we have an audio track or not... */
             gint mode = mirage_track_get_mode(MIRAGE_TRACK(self->priv->cur_track));
             if (mode == MIRAGE_MODE_AUDIO) {
-                tfile_format = MIRAGE_MAIN_AUDIO_SWAP;
+                main_format = MIRAGE_MAIN_AUDIO_SWAP;
             } else {
-                tfile_format = MIRAGE_MAIN_DATA;
+                main_format = MIRAGE_MAIN_DATA;
             }
 
             /* Some TOC files don't seem to contain #base_offset entries that
@@ -245,32 +246,26 @@ static gboolean mirage_parser_toc_track_add_fragment (MirageParserToc *self, gin
                    get file changed next time we're called...*/
                 if (type == TOC_DATA_TYPE_DATA) {
                     /* Increase only if it's data... */
-                    self->priv->mixed_mode_offset += length * (self->priv->cur_tfile_sectsize + self->priv->cur_sfile_sectsize);
+                    self->priv->mixed_mode_offset += length * (self->priv->cur_main_size + self->priv->cur_subchannel_size);
                 }
             }
 
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: using base offset: 0x%lX\n", __debug__, base_offset);
-            tfile_offset = base_offset + start * (self->priv->cur_tfile_sectsize + self->priv->cur_sfile_sectsize);
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: calculated track file offset: 0x%llX\n", __debug__, tfile_offset);
+            main_offset = base_offset + start * (self->priv->cur_main_size + self->priv->cur_subchannel_size);
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: calculated track file offset: 0x%llX\n", __debug__, main_offset);
 
-            /* Subchannel file */
-            sfile_sectsize = self->priv->cur_sfile_sectsize;
-            sfile_format = self->priv->cur_sfile_format;
+            /* Subchannel */
+            subchannel_size = self->priv->cur_subchannel_size;
+            subchannel_format = self->priv->cur_subchannel_format;
 
-            /* Set file */
-            if (!mirage_fragment_iface_binary_main_data_set_stream(MIRAGE_FRAGMENT_IFACE_BINARY(fragment), stream, error)) {
-                MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to set track data file!\n", __debug__);
-                g_free(filename);
-                g_object_unref(stream);
-                g_object_unref(fragment);
-                return FALSE;
-            }
-            mirage_fragment_iface_binary_main_data_set_size(MIRAGE_FRAGMENT_IFACE_BINARY(fragment), tfile_sectsize);
-            mirage_fragment_iface_binary_main_data_set_offset(MIRAGE_FRAGMENT_IFACE_BINARY(fragment), tfile_offset);
-            mirage_fragment_iface_binary_main_data_set_format(MIRAGE_FRAGMENT_IFACE_BINARY(fragment), tfile_format);
+            /* Set stream */
+            mirage_fragment_iface_binary_main_data_set_stream(MIRAGE_FRAGMENT_IFACE_BINARY(fragment), stream);
+            mirage_fragment_iface_binary_main_data_set_size(MIRAGE_FRAGMENT_IFACE_BINARY(fragment), main_size);
+            mirage_fragment_iface_binary_main_data_set_offset(MIRAGE_FRAGMENT_IFACE_BINARY(fragment), main_offset);
+            mirage_fragment_iface_binary_main_data_set_format(MIRAGE_FRAGMENT_IFACE_BINARY(fragment), main_format);
 
-            mirage_fragment_iface_binary_subchannel_data_set_size(MIRAGE_FRAGMENT_IFACE_BINARY(fragment), sfile_sectsize);
-            mirage_fragment_iface_binary_subchannel_data_set_format(MIRAGE_FRAGMENT_IFACE_BINARY(fragment), sfile_format);
+            mirage_fragment_iface_binary_subchannel_data_set_size(MIRAGE_FRAGMENT_IFACE_BINARY(fragment), subchannel_size);
+            mirage_fragment_iface_binary_subchannel_data_set_format(MIRAGE_FRAGMENT_IFACE_BINARY(fragment), subchannel_format);
         } else {
             /* Audio data; we'd like an AUDIO fragment, and hopefully Mirage can
                find one that can handle given file format */
@@ -283,14 +278,8 @@ static gboolean mirage_parser_toc_track_add_fragment (MirageParserToc *self, gin
                 return FALSE;
             }
 
-            /* Set file */
-            if (!mirage_fragment_iface_audio_set_stream(MIRAGE_FRAGMENT_IFACE_AUDIO(fragment), stream, error)) {
-                MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to set track data file!\n", __debug__);
-                g_free(filename);
-                g_object_unref(stream);
-                g_object_unref(fragment);
-                return FALSE;
-            }
+            /* Set stream */
+            mirage_fragment_iface_audio_set_stream(MIRAGE_FRAGMENT_IFACE_AUDIO(fragment), stream);
 
             /* Set offset */
             mirage_fragment_iface_audio_set_offset(MIRAGE_FRAGMENT_IFACE_AUDIO(fragment), start);
@@ -1197,10 +1186,10 @@ static void mirage_parser_toc_cleanup_session_data (MirageParserToc *self)
     g_free(self->priv->toc_filename);
     self->priv->toc_filename = NULL;
 
-    self->priv->cur_tfile_sectsize = 0;
+    self->priv->cur_main_size = 0;
 
-    self->priv->cur_sfile_sectsize = 0;
-    self->priv->cur_sfile_format = 0;
+    self->priv->cur_subchannel_size = 0;
+    self->priv->cur_subchannel_format = 0;
 
     self->priv->cur_langcode = 0;
     g_hash_table_destroy(self->priv->lang_map);

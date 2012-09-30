@@ -260,14 +260,7 @@ static GObject *mirage_parser_cif_parse_track_descriptor (MirageParserCif *self,
     }
 
     /* Set file */
-    if (!mirage_fragment_iface_binary_main_data_set_stream(MIRAGE_FRAGMENT_IFACE_BINARY(fragment), self->priv->cif_stream, error)) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to set track data file!\n", __debug__);
-        g_object_unref(fragment);
-        g_object_unref(track);
-        return NULL;
-    }
-
-    /* Set offset, length, sector size and data type */
+    mirage_fragment_iface_binary_main_data_set_stream(MIRAGE_FRAGMENT_IFACE_BINARY(fragment), self->priv->cif_stream);
     mirage_fragment_iface_binary_main_data_set_offset(MIRAGE_FRAGMENT_IFACE_BINARY(fragment), offset_entry->offset);
     mirage_fragment_iface_binary_main_data_set_size(MIRAGE_FRAGMENT_IFACE_BINARY(fragment), sector_size);
     if ((CIF_Track) descriptor->type == AUDIO) {
