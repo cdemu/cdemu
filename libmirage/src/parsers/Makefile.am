@@ -5,7 +5,6 @@ SUBDIRS = \
    image-cdi \
    image-cif \
    image-cue \
-   image-daa \
    image-iso \
    image-mds \
    image-mdx \

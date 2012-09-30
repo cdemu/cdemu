@@ -125,6 +125,8 @@ AC_CONFIG_FILES([
     src/Makefile
     src/filters/Makefile
     src/filters/filter-cso/Makefile
+    src/filters/filter-daa/Makefile
+    src/filters/filter-daa/lzma-sdk/Makefile
     src/filters/filter-ecm/Makefile
     src/filters/filter-gzip/Makefile
     src/filters/filter-xz/Makefile
@@ -141,8 +143,6 @@ AC_CONFIG_FILES([
     src/parsers/image-cdi/Makefile
     src/parsers/image-cif/Makefile
     src/parsers/image-cue/Makefile
-    src/parsers/image-daa/Makefile
-    src/parsers/image-daa/lzma-sdk/Makefile
     src/parsers/image-iso/Makefile
     src/parsers/image-mds/Makefile
     src/parsers/image-mdx/Makefile

@@ -11,19 +11,17 @@ AM_CPPFLAGS = \
 
 plugindir = $(MIRAGE_PLUGIN_DIR)
 
-plugin_LTLIBRARIES = image-daa.la
+plugin_LTLIBRARIES = filter-daa.la
 
 noinst_HEADERS = \
-    image-daa.h \
-    image-daa-fragment.h \
-    image-daa-parser.h
+    filter-daa.h \
+    filter-daa-file-filter.h
 
-image_daa_la_SOURCES = \
-    image-daa-fragment.c \
-    image-daa-parser.c \
-    image-daa-plugin.c
+filter_daa_la_SOURCES = \
+    filter-daa-file-filter.c \
+    filter-daa-plugin.c
 
-image_daa_la_LIBADD = \
+filter_daa_la_LIBADD = \
     $(glib_LIBS) \
     $(gobject_LIBS) \
     $(gmodule_LIBS) \
@@ -31,12 +29,12 @@ image_daa_la_LIBADD = \
     $(zlib_LIBS) \
     $(builddir)/lzma-sdk/liblzma-sdk.la
 
-image_daa_la_LDFLAGS = \
+filter_daa_la_LDFLAGS = \
     -module \
     -avoid-version
 
 
 mimedir = $(datadir)/mime/packages
-mime_DATA = libmirage-image-daa.xml
+mime_DATA = libmirage-filter-daa.xml
 
 EXTRA_DIST = $(mime_DATA)

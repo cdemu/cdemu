@@ -20,8 +20,8 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
 
-#ifndef __IMAGE_DAA_H__
-#define __IMAGE_DAA_H__
+#ifndef __FILTER_DAA_H__
+#define __FILTER_DAA_H__
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -30,17 +30,12 @@
 #include <errno.h>
 
 #include "mirage.h"
-#include "image-daa-parser.h"
-#include "image-daa-fragment.h"
+#include "filter-daa-file-filter.h"
 
 
 G_BEGIN_DECLS
 
 #pragma pack(1)
-
-/* Defined in image-fragment-daa.c */
-extern const gchar daa_main_signature[16];
-extern const gchar daa_part_signature[16];
 
 
 typedef enum
@@ -143,4 +138,4 @@ static inline guint read_bits (guint bits, guint8 *in, guint in_bits)
 
 G_END_DECLS
 
-#endif /* __IMAGE_DAA_H__ */
+#endif /* __FILTER_DAA_H__ */

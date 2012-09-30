@@ -17,7 +17,7 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
 
-#include "image-daa.h"
+#include "filter-daa.h"
 
 G_MODULE_EXPORT void mirage_plugin_load_plugin (MiragePlugin *plugin);
 G_MODULE_EXPORT void mirage_plugin_unload_plugin (MiragePlugin *plugin);
@@ -26,8 +26,7 @@ G_MODULE_EXPORT guint mirage_plugin_lt_current = MIRAGE_LT_CURRENT;
 
 G_MODULE_EXPORT void mirage_plugin_load_plugin (MiragePlugin *plugin)
 {
-    mirage_parser_daa_type_register(G_TYPE_MODULE(plugin));
-    mirage_fragment_daa_type_register(G_TYPE_MODULE(plugin));
+    mirage_file_filter_daa_type_register(G_TYPE_MODULE(plugin));
 }
 
 G_MODULE_EXPORT void mirage_plugin_unload_plugin (MiragePlugin *plugin G_GNUC_UNUSED)
