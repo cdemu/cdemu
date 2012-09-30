@@ -102,7 +102,7 @@ static gboolean image_analyzer_disc_topology_refresh (ImageAnalyzerDiscTopology 
             "unset border; unset key; "
             "set title 'No disc loaded'; "
             "plot [][0:1] 2 notitle; "
-            "reset"
+            "reset \n"
         );
     } else {
         const gchar **filenames = mirage_disc_get_filenames(MIRAGE_DISC(disc));
@@ -117,7 +117,7 @@ static gboolean image_analyzer_disc_topology_refresh (ImageAnalyzerDiscTopology 
                 "unset xtics; unset ytics; "
                 "unset border; unset key; "
                 "set title '%s%s: no topology data'; "
-                "plot [][0:1] 2 notitle; ",
+                "plot [][0:1] 2 notitle; \n",
                 basename,
                 filenames[1] ? "..." : ""
             );
