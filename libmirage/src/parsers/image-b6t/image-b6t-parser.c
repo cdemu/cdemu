@@ -38,7 +38,7 @@ struct _MirageParserB6tPrivate
 {
     GObject *disc;
 
-    gchar *b6t_filename;
+    const gchar *b6t_filename;
     guint64 b6t_length;
     guint8 *b6t_data;
 
@@ -1241,7 +1241,7 @@ static gboolean mirage_parser_b6t_load_disc (MirageParserB6t *self, GError **err
 /**********************************************************************\
  *                 MirageParser methods implementation               *
 \**********************************************************************/
-static GObject *mirage_parser_b6t_load_image (MirageParser *_self, gchar **filenames, GError **error)
+static GObject *mirage_parser_b6t_load_image (MirageParser *_self, GObject **streams, GError **error)
 {
     MirageParserB6t *self = MIRAGE_PARSER_B6T(_self);
 
@@ -1251,10 +1251,8 @@ static GObject *mirage_parser_b6t_load_image (MirageParser *_self, gchar **filen
     guint8 header[16];
 
     /* Check if we can load the image */
-    stream = mirage_create_file_stream(filenames[0], G_OBJECT(self), error);
-    if (!stream) {
-        return FALSE;
-    }
+    stream = streams[0];
+    g_object_ref(streams);
 
     /* Read and verify header; we could also check the footer, but I think
        header check only is sufficient */
@@ -1277,9 +1275,10 @@ static GObject *mirage_parser_b6t_load_image (MirageParser *_self, gchar **filen
     self->priv->disc = g_object_new(MIRAGE_TYPE_DISC, NULL);
     mirage_object_attach_child(MIRAGE_OBJECT(self), self->priv->disc);
 
-    mirage_disc_set_filename(MIRAGE_DISC(self->priv->disc), filenames[0]);
-    self->priv->b6t_filename = g_strdup(filenames[0]);
+    self->priv->b6t_filename = mirage_get_file_stream_filename(stream);
+    mirage_disc_set_filename(MIRAGE_DISC(self->priv->disc), self->priv->b6t_filename);
 
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: B6T filename: %s\n", __debug__, self->priv->b6t_filename);
 
     /* Get file size */
     g_seekable_seek(G_SEEKABLE(stream), 0, G_SEEK_END, NULL, NULL);
@@ -1296,7 +1295,7 @@ static GObject *mirage_parser_b6t_load_image (MirageParser *_self, gchar **filen
     g_object_unref(stream);
 
     if (read_length != self->priv->b6t_length) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read whole B6T file '%s' (%lld out of %lld bytes read)!\n", __debug__, filenames[0], read_length, self->priv->b6t_length);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read whole B6T file (%lld out of %lld bytes read)!\n", __debug__, read_length, self->priv->b6t_length);
         g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, "Failed to read whoe B6T file!");
         succeeded = FALSE;
         goto end;
@@ -1344,7 +1343,6 @@ static void mirage_parser_b6t_init (MirageParserB6t *self)
         "application/x-b6t"
     );
 
-    self->priv->b6t_filename = NULL;
     self->priv->b6t_data = NULL;
     self->priv->data_blocks_list = NULL;
 }
@@ -1366,7 +1364,6 @@ static void mirage_parser_b6t_finalize (GObject *gobject)
     }
     g_list_free(self->priv->data_blocks_list);
 
-    g_free(self->priv->b6t_filename);
     g_free(self->priv->b6t_data);
 
     /* Chain up to the parent class */
