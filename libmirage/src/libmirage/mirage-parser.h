@@ -32,7 +32,7 @@ G_BEGIN_DECLS
  *
  * <para>
  * A structure containing parser information. It can be obtained with call to
- * mirage_parser_get_parser_info().
+ * mirage_parser_get_info().
  * </para>
  *
  * <para>

@@ -32,7 +32,7 @@ G_BEGIN_DECLS
  *
  * <para>
  * A structure containing file filter information. It can be obtained
- * with call to mirage_file_filter_get_file_filter_info().
+ * with call to mirage_file_filter_get_info().
  * </para>
  **/
 typedef struct _MirageFileFilterInfo MirageFileFilterInfo;

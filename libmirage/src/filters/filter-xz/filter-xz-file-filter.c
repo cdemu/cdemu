@@ -185,9 +185,7 @@ static gboolean mirage_file_filter_xz_read_index (MirageFileFilterXz *self, GErr
 
 static gboolean mirage_file_filter_xz_parse_stream (MirageFileFilterXz *self, GError **error)
 {
-    GInputStream *stream = g_filter_input_stream_get_base_stream(G_FILTER_INPUT_STREAM(self));
     guint64 max_block_size = 0;
-    gint ret;
 
     /* Read and decode header and footer */
     if (!mirage_file_filter_xz_read_header_and_footer(self, error)) {

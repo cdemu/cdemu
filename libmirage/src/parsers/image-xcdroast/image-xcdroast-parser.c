@@ -827,7 +827,6 @@ static gboolean mirage_parser_xcdroast_check_toc_file (MirageParserXcdroast *sel
         gchar *line_string;
         gsize line_length;
 
-        gboolean matched = FALSE;
         GMatchInfo *match_info = NULL;
 
         /* Read line */
