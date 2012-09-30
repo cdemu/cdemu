@@ -17,8 +17,8 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
 
-#ifndef __MIRAGE_FILTER_GZIP_FILE_FILTER_H__
-#define __MIRAGE_FILTER_GZIP_FILE_FILTER_H__
+#ifndef __FILTER_GZIP_FILE_FILTER_H__
+#define __FILTER_GZIP_FILE_FILTER_H__
 
 
 G_BEGIN_DECLS
@@ -53,4 +53,4 @@ void mirage_file_filter_gzip_type_register (GTypeModule *type_module);
 
 G_END_DECLS
 
-#endif /* __MIRAGE_FILTER_GZIP_FILE_FILTER_H__ */
+#endif /* __FILTER_GZIP_FILE_FILTER_H__ */

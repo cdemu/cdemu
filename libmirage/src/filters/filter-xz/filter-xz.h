@@ -1,5 +1,5 @@
 /*
- *  libMirage: GZIP file filter
+ *  libMirage: XZ file filter
  *  Copyright (C) 2012 Rok Mandeljc
  *
  *  This program is free software; you can redistribute it and/or modify
@@ -17,8 +17,8 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
 
-#ifndef __MIRAGE_FILTER_GZIP_H__
-#define __MIRAGE_FILTER_GZIP_H__
+#ifndef __FILTER_XZ_H__
+#define __FILTER_XZ_H__
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -33,4 +33,4 @@ G_BEGIN_DECLS
 
 G_END_DECLS
 
-#endif /* __MIRAGE_FILTER_GZIP_H__ */
+#endif /* __FILTER_XZ_H__ */
