@@ -37,7 +37,6 @@ struct _MirageParserNrgPrivate
 {
     GObject *disc;
 
-    gchar *nrg_filename;
     GObject *nrg_stream;
 
     GList *block_index;
@@ -925,20 +924,18 @@ static gboolean mirage_parser_nrg_load_cdtext (MirageParserNrg *self, GError **e
 /**********************************************************************\
  *                MirageParser methods implementation                *
 \**********************************************************************/
-static GObject *mirage_parser_nrg_load_image (MirageParser *_self, gchar **filenames, GError **error)
+static GObject *mirage_parser_nrg_load_image (MirageParser *_self, GObject **streams, GError **error)
 {
     MirageParserNrg *self = MIRAGE_PARSER_NRG(_self);
-
+    const gchar *nrg_filename;
     gboolean succeeded = TRUE;
     guint64 file_size;
     guint64 trailer_offset;
     gchar sig[4];
 
     /* Open file */
-    self->priv->nrg_stream = mirage_create_file_stream(filenames[0], G_OBJECT(self), error);
-    if (!self->priv->nrg_stream) {
-        return FALSE;
-    }
+    self->priv->nrg_stream = streams[0];
+    g_object_ref(self->priv->nrg_stream);
 
     /* Get file size */
     g_seekable_seek(G_SEEKABLE(self->priv->nrg_stream), 0, G_SEEK_END, NULL, NULL);
@@ -1001,8 +998,10 @@ static GObject *mirage_parser_nrg_load_image (MirageParser *_self, gchar **filen
     self->priv->disc = g_object_new(MIRAGE_TYPE_DISC, NULL);
     mirage_object_attach_child(MIRAGE_OBJECT(self), self->priv->disc);
 
-    mirage_disc_set_filename(MIRAGE_DISC(self->priv->disc), filenames[0]);
-    self->priv->nrg_filename = g_strdup(filenames[0]);
+    nrg_filename = mirage_get_file_stream_filename(self->priv->nrg_stream);
+    mirage_disc_set_filename(MIRAGE_DISC(self->priv->disc), nrg_filename);
+
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: NRG filename: %s\n", __debug__, nrg_filename);
 
     /* Set CD-ROM as default medium type, will be changed accordingly if there
        is a MTYP block provided */
@@ -1115,7 +1114,6 @@ static void mirage_parser_nrg_init (MirageParserNrg *self)
         "application/x-nrg"
     );
 
-    self->priv->nrg_filename = NULL;
     self->priv->nrg_stream = NULL;
     self->priv->nrg_data = NULL;
 }
@@ -1138,7 +1136,6 @@ static void mirage_parser_nrg_finalize (GObject *gobject)
 {
     MirageParserNrg *self = MIRAGE_PARSER_NRG(gobject);
 
-    g_free(self->priv->nrg_filename);
     g_free(self->priv->nrg_data);
 
     /* Chain up to the parent class */

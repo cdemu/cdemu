@@ -1252,7 +1252,7 @@ static GObject *mirage_parser_b6t_load_image (MirageParser *_self, GObject **str
 
     /* Check if we can load the image */
     stream = streams[0];
-    g_object_ref(streams);
+    g_object_ref(stream);
 
     /* Read and verify header; we could also check the footer, but I think
        header check only is sufficient */

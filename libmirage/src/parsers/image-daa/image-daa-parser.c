@@ -36,19 +36,18 @@ struct _MirageParserDaaPrivate
 /**********************************************************************\
  *                 MirageParser methods implementation                *
 \**********************************************************************/
-static GObject *mirage_parser_daa_load_image (MirageParser *_self, gchar **filenames, GError **error)
+static GObject *mirage_parser_daa_load_image (MirageParser *_self, GObject **streams, GError **error)
 {
     MirageParserDaa *self = MIRAGE_PARSER_DAA(_self);
-
+    const gchar *daa_filename;
     gboolean succeeded = TRUE;
     GObject *stream;
     gchar signature[16] = "";
 
     /* Open file */
-    stream = mirage_create_file_stream(filenames[0], G_OBJECT(self), error);
-    if (!stream) {
-        return FALSE;
-    }
+    stream = streams[0];
+    g_object_ref(stream);
+    daa_filename = mirage_get_file_stream_filename(stream);
 
     /* Read signature */
     g_seekable_seek(G_SEEKABLE(stream), 0, G_SEEK_SET, NULL, NULL);
@@ -71,7 +70,9 @@ static GObject *mirage_parser_daa_load_image (MirageParser *_self, gchar **filen
     self->priv->disc = g_object_new(MIRAGE_TYPE_DISC, NULL);
     mirage_object_attach_child(MIRAGE_OBJECT(self), self->priv->disc);
 
-    mirage_disc_set_filename(MIRAGE_DISC(self->priv->disc), filenames[0]);
+    mirage_disc_set_filename(MIRAGE_DISC(self->priv->disc), daa_filename);
+
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: DAA filename: %s\n", __debug__, daa_filename);
 
     /* Add session */
     GObject *session = g_object_new(MIRAGE_TYPE_SESSION, NULL);
@@ -97,7 +98,7 @@ static GObject *mirage_parser_daa_load_image (MirageParser *_self, gchar **filen
 
     mirage_track_add_fragment(MIRAGE_TRACK(track), -1, fragment);
 
-    if (!mirage_fragment_daa_set_file(MIRAGE_FRAGMENT_DAA(fragment), filenames[0], password, &local_error)) {
+    if (!mirage_fragment_daa_set_file(MIRAGE_FRAGMENT_DAA(fragment), daa_filename, password, &local_error)) {
         /* Don't make buzz for password failures */
         if (local_error->code != MIRAGE_ERROR_ENCRYPTED_IMAGE) {
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to set file to fragment: %s!\n", __debug__, local_error->message);

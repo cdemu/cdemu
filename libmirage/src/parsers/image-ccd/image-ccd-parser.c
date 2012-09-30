@@ -912,18 +912,13 @@ static void mirage_parser_ccd_cleanup_regex_parser (MirageParserCcd *self)
 }
 
 
-static GDataInputStream *mirage_parser_ccd_create_data_stream (MirageParserCcd *self, const gchar *filename, GError **error)
+static GDataInputStream *mirage_parser_ccd_create_data_stream (MirageParserCcd *self, GObject *stream, GError **error)
 {
-    GObject *stream;
     GDataInputStream *data_stream;
     const gchar *encoding;
 
-    /* Create file input stream */
-    stream = mirage_create_file_stream(filename, mirage_debuggable_get_debug_context(MIRAGE_DEBUGGABLE(self)), error);
-    if (!stream) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to create stream!\n", __debug__);
-        return NULL;
-    }
+    /* Add reference to provided input stream */
+    g_object_ref(stream);
 
     /* If provided, use the specified encoding to convert to UTF-8 */
     encoding = mirage_parser_get_param_string(MIRAGE_PARSER(self), "encoding");
@@ -965,15 +960,13 @@ static GDataInputStream *mirage_parser_ccd_create_data_stream (MirageParserCcd *
     return data_stream;
 }
 
-static gboolean mirage_parser_ccd_parse_ccd_file (MirageParserCcd *self, gchar *filename, GError **error)
+static gboolean mirage_parser_ccd_parse_ccd_file (MirageParserCcd *self, GObject *stream, GError **error)
 {
     GDataInputStream *data_stream;
     gboolean succeeded = TRUE;
 
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: opening CCD file: %s\n", __debug__, filename);
-
     /* Create GDataInputStream */
-    data_stream = mirage_parser_ccd_create_data_stream(self, filename, error);
+    data_stream = mirage_parser_ccd_create_data_stream(self, stream, error);
     if (!data_stream) {
         return FALSE;
     }
@@ -1077,14 +1070,15 @@ static gboolean mirage_parser_ccd_parse_ccd_file (MirageParserCcd *self, gchar *
 /**********************************************************************\
  *                 MirageParser methods implementation               *
 \**********************************************************************/
-static GObject *mirage_parser_ccd_load_image (MirageParser *_self, gchar **filenames, GError **error)
+static GObject *mirage_parser_ccd_load_image (MirageParser *_self, GObject **streams, GError **error)
 {
     MirageParserCcd *self = MIRAGE_PARSER_CCD(_self);
 
     gboolean succeeded = TRUE;
+    const gchar *ccd_filename = mirage_get_file_stream_filename(streams[0]);
 
     /* Check if we can load the file; we check the suffix */
-    if (!mirage_helper_has_suffix(filenames[0], ".ccd")) {
+    if (!mirage_helper_has_suffix(ccd_filename, ".ccd")) {
         g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_CANNOT_HANDLE, "Parser cannot handle given image!");
         return FALSE;
     }
@@ -1095,12 +1089,14 @@ static GObject *mirage_parser_ccd_load_image (MirageParser *_self, gchar **filen
     self->priv->disc = g_object_new(MIRAGE_TYPE_DISC, NULL);
     mirage_object_attach_child(MIRAGE_OBJECT(self), self->priv->disc);
 
-    mirage_disc_set_filename(MIRAGE_DISC(self->priv->disc), filenames[0]);
+    mirage_disc_set_filename(MIRAGE_DISC(self->priv->disc), ccd_filename);
+
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: CCD filename: %s\n", __debug__, ccd_filename);
 
     /* Compose image and subchannel filename */
-    gint len = strlen(filenames[0]);
-    gchar *tmp_img_filename = g_strdup(filenames[0]);
-    gchar *tmp_sub_filename = g_strdup(filenames[0]);
+    gint len = strlen(ccd_filename);
+    gchar *tmp_img_filename = g_strdup(ccd_filename);
+    gchar *tmp_sub_filename = g_strdup(ccd_filename);
 
     g_snprintf(tmp_img_filename+len-3, 4, "img");
     g_snprintf(tmp_sub_filename+len-3, 4, "sub");
@@ -1109,8 +1105,8 @@ static GObject *mirage_parser_ccd_load_image (MirageParser *_self, gchar **filen
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: assumed subchannel file: %s\n", __debug__, tmp_sub_filename);
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "\n");
 
-    self->priv->img_filename = mirage_helper_find_data_file(tmp_img_filename, filenames[0]);
-    self->priv->sub_filename = mirage_helper_find_data_file(tmp_sub_filename, filenames[0]);
+    self->priv->img_filename = mirage_helper_find_data_file(tmp_img_filename, ccd_filename);
+    self->priv->sub_filename = mirage_helper_find_data_file(tmp_sub_filename, ccd_filename);
 
     g_free(tmp_img_filename);
     g_free(tmp_sub_filename);
@@ -1120,7 +1116,7 @@ static GObject *mirage_parser_ccd_load_image (MirageParser *_self, gchar **filen
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "\n");
 
     if (!self->priv->img_filename) {
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_DATA_FILE_ERROR, "Could not find track data file!");
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_DATA_FILE_ERROR, "Could not find main data file!");
         return FALSE;
     }
     if (!self->priv->sub_filename) {
@@ -1133,18 +1129,18 @@ static GObject *mirage_parser_ccd_load_image (MirageParser *_self, gchar **filen
     /* Open streams */
     self->priv->img_stream = mirage_create_file_stream(self->priv->img_filename, G_OBJECT(self), error);
     if (!self->priv->img_stream) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: failed to create stream on data file '%s'!\n", __debug__, self->priv->img_filename);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: failed to create stream on main data file '%s'!\n", __debug__, self->priv->img_filename);
         return FALSE;
     }
 
     self->priv->sub_stream = mirage_create_file_stream(self->priv->sub_filename, G_OBJECT(self), error);
     if (!self->priv->sub_stream) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: failed to create stream on subchannel file '%s'!\n", __debug__, self->priv->sub_filename);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: failed to create stream on subchannel data file '%s'!\n", __debug__, self->priv->sub_filename);
         return FALSE;
     }
 
     /* Parse the CCD */
-    if (!mirage_parser_ccd_parse_ccd_file(self, filenames[0], error)) {
+    if (!mirage_parser_ccd_parse_ccd_file(self, streams[0], error)) {
         succeeded = FALSE;
         goto end;
     }

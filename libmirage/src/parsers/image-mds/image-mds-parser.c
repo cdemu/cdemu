@@ -40,7 +40,7 @@ struct _MirageParserMdsPrivate
 
     gint32 prev_session_end;
 
-    gchar *mds_filename;
+    const gchar *mds_filename;
     guint64 mds_length;
     guint8 *mds_data;
 };
@@ -175,7 +175,7 @@ static gint mirage_parser_mds_convert_track_mode (MirageParserMds *self, gint mo
 }
 
 
-static gchar *__helper_find_binary_file (gchar *declared_filename, gchar *mds_filename)
+static gchar *__helper_find_binary_file (const gchar *declared_filename, const gchar *mds_filename)
 {
     gchar *bin_filename;
     gchar *bin_fullpath;
@@ -748,7 +748,7 @@ static gboolean mirage_parser_mds_load_disc (MirageParserMds *self, GError **err
 /**********************************************************************\
  *                MirageParser methods implementation                *
 \**********************************************************************/
-static GObject *mirage_parser_mds_load_image (MirageParser *_self, gchar **filenames, GError **error)
+static GObject *mirage_parser_mds_load_image (MirageParser *_self, GObject **streams, GError **error)
 {
     MirageParserMds *self = MIRAGE_PARSER_MDS(_self);
 
@@ -759,10 +759,8 @@ static GObject *mirage_parser_mds_load_image (MirageParser *_self, gchar **filen
     gchar signature[17];
 
     /* Check if we can load the image */
-    stream = mirage_create_file_stream(filenames[0], G_OBJECT(self), error);
-    if (!stream) {
-        return FALSE;
-    }
+    stream = streams[0];
+    g_object_ref(stream);
 
     /* Read signature and first byte of version */
     if (g_input_stream_read(G_INPUT_STREAM(stream), signature, sizeof(signature), NULL, NULL) != sizeof(signature)) {
@@ -784,9 +782,10 @@ static GObject *mirage_parser_mds_load_image (MirageParser *_self, gchar **filen
     self->priv->disc = g_object_new(MIRAGE_TYPE_DISC, NULL);
     mirage_object_attach_child(MIRAGE_OBJECT(self), self->priv->disc);
 
-    mirage_disc_set_filename(MIRAGE_DISC(self->priv->disc), filenames[0]);
-    self->priv->mds_filename = g_strdup(filenames[0]);
+    self->priv->mds_filename = mirage_get_file_stream_filename(stream);
+    mirage_disc_set_filename(MIRAGE_DISC(self->priv->disc), self->priv->mds_filename);
 
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: MDs filename: %s\n", __debug__, self->priv->mds_filename);
 
     /* Get file size */
     g_seekable_seek(G_SEEKABLE(stream), 0, G_SEEK_END, NULL, NULL);
@@ -803,7 +802,7 @@ static GObject *mirage_parser_mds_load_image (MirageParser *_self, gchar **filen
     g_object_unref(stream);
 
     if (read_length != self->priv->mds_length) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read whole MDS file '%s' (%lld out of %lld bytes read)!\n", __debug__, filenames[0], read_length, self->priv->mds_length);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read whole MDS file (%lld out of %lld bytes read)!\n", __debug__, read_length, self->priv->mds_length);
         g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, "Failed to read whole MDS file!");
         succeeded = FALSE;
         goto end;
@@ -895,7 +894,6 @@ static void mirage_parser_mds_init (MirageParserMds *self)
         "application/x-mds"
     );
 
-    self->priv->mds_filename = NULL;
     self->priv->mds_data = NULL;
 }
 
@@ -903,7 +901,6 @@ static void mirage_parser_mds_finalize (GObject *gobject)
 {
     MirageParserMds *self = MIRAGE_PARSER_MDS(gobject);
 
-    g_free(self->priv->mds_filename);
     g_free(self->priv->mds_data);
 
     /* Chain up to the parent class */

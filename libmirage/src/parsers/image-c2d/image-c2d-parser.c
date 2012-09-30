@@ -35,7 +35,6 @@ struct _MirageParserC2dPrivate
 {
     GObject *disc;
 
-    gchar *c2d_filename;
     GObject *c2d_stream;
 
     C2D_HeaderBlock *header_block;
@@ -514,20 +513,19 @@ static gboolean mirage_parser_c2d_load_disc (MirageParserC2d *self, GError **err
 /**********************************************************************\
  *                 MirageParser methods implementation               *
 \**********************************************************************/
-static GObject *mirage_parser_c2d_load_image (MirageParser *_self, gchar **filenames, GError **error)
+static GObject *mirage_parser_c2d_load_image (MirageParser *_self, GObject **streams, GError **error)
 {
     MirageParserC2d *self = MIRAGE_PARSER_C2D(_self);
-
+    const gchar *c2d_filename;
     gboolean succeeded = TRUE;
     gchar sig[32] = "";
 
-    /* Open file */
-    self->priv->c2d_stream = mirage_create_file_stream(filenames[0], G_OBJECT(self), error);
-    if (!self->priv->c2d_stream) {
-        return FALSE;
-    }
+    /* Check if we can load the image */
+    self->priv->c2d_stream = streams[0];
+    g_object_ref(streams[0]);
 
     /* Read signature */
+    g_seekable_seek(G_SEEKABLE(self->priv->c2d_stream), 0, G_SEEK_SET, NULL, NULL);
     if (g_input_stream_read(G_INPUT_STREAM(self->priv->c2d_stream), sig, sizeof(sig), NULL, NULL) != sizeof(sig)) {
         g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, "Failed to read signature!");
         return FALSE;
@@ -548,8 +546,10 @@ static GObject *mirage_parser_c2d_load_image (MirageParser *_self, gchar **filen
     self->priv->disc = g_object_new(MIRAGE_TYPE_DISC, NULL);
     mirage_object_attach_child(MIRAGE_OBJECT(self), self->priv->disc);
 
-    mirage_disc_set_filename(MIRAGE_DISC(self->priv->disc), filenames[0]);
-    self->priv->c2d_filename = g_strdup(filenames[0]);
+    c2d_filename = mirage_get_file_stream_filename(self->priv->c2d_stream);
+    mirage_disc_set_filename(MIRAGE_DISC(self->priv->disc), c2d_filename);
+
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: C2D filename: %s\n", __debug__, c2d_filename);
 
     /* Load image header */
     self->priv->c2d_data = g_try_malloc(sizeof(C2D_HeaderBlock));
@@ -627,7 +627,6 @@ static void mirage_parser_c2d_init (MirageParserC2d *self)
         "application/x-c2d"
     );
 
-    self->priv->c2d_filename = NULL;
     self->priv->c2d_stream = NULL;
     self->priv->c2d_data = NULL;
 }
@@ -649,7 +648,6 @@ static void mirage_parser_c2d_finalize (GObject *gobject)
 {
     MirageParserC2d *self = MIRAGE_PARSER_C2D(gobject);
 
-    g_free(self->priv->c2d_filename);
     g_free(self->priv->c2d_data);
 
     /* Chain up to the parent class */

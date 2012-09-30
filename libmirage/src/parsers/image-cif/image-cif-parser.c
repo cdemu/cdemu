@@ -37,7 +37,6 @@ struct _MirageParserCifPrivate
 {
     GObject *disc;
 
-    gchar *cif_filename;
     GObject *cif_stream;
 
     /* "disc" block offset and length */
@@ -664,18 +663,16 @@ static gboolean mirage_parser_cif_load_disc (MirageParserCif *self, GError **err
 /**********************************************************************\
  *                MirageParser methods implementation                *
 \**********************************************************************/
-static GObject *mirage_parser_cif_load_image (MirageParser *_self, gchar **filenames, GError **error)
+static GObject *mirage_parser_cif_load_image (MirageParser *_self, GObject **streams, GError **error)
 {
     MirageParserCif *self = MIRAGE_PARSER_CIF(_self);
-
+    const gchar *cif_filename;
     gboolean succeeded = TRUE;
     CIF_Header header;
 
     /* Check file signature */
-    self->priv->cif_stream = mirage_create_file_stream(filenames[0], G_OBJECT(self), error);
-    if (!self->priv->cif_stream) {
-        return FALSE;
-    }
+    self->priv->cif_stream = streams[0];
+    g_object_ref(self->priv->cif_stream);
 
     if (g_input_stream_read(G_INPUT_STREAM(self->priv->cif_stream), &header, sizeof(header), NULL, NULL) != sizeof(header)) {
         g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, "Failed to read header!");
@@ -696,8 +693,10 @@ static GObject *mirage_parser_cif_load_image (MirageParser *_self, gchar **filen
     self->priv->disc = g_object_new(MIRAGE_TYPE_DISC, NULL);
     mirage_object_attach_child(MIRAGE_OBJECT(self), self->priv->disc);
 
-    mirage_disc_set_filename(MIRAGE_DISC(self->priv->disc), filenames[0]);
-    self->priv->cif_filename = g_strdup(filenames[0]);
+    cif_filename = mirage_get_file_stream_filename(self->priv->cif_stream);
+    mirage_disc_set_filename(MIRAGE_DISC(self->priv->disc), cif_filename);
+
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: CIF filename: %s\n", __debug__, cif_filename);
 
     /* Load disc */
     succeeded = mirage_parser_cif_load_disc(self, error);
@@ -737,7 +736,6 @@ static void mirage_parser_cif_init (MirageParserCif *self)
         "application/x-cif"
     );
 
-    self->priv->cif_filename = NULL;
     self->priv->offset_entries = NULL;
 
     self->priv->track_counter = 0;
@@ -760,7 +758,6 @@ static void mirage_parser_cif_finalize (GObject *gobject)
 {
     MirageParserCif *self = MIRAGE_PARSER_CIF(gobject);
 
-    g_free(self->priv->cif_filename);
     g_free(self->priv->offset_entries);
 
     /* Chain up to the parent class */

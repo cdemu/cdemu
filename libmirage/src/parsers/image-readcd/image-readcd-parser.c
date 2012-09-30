@@ -33,6 +33,7 @@ struct _MirageParserReadcdPrivate {
     gint cur_lba;
     gint leadout_lba;
 
+    const gchar *toc_filename;
     gchar *data_filename;
     GObject *data_stream;
 
@@ -43,32 +44,24 @@ struct _MirageParserReadcdPrivate {
 };
 
 
-static gboolean mirage_parser_readcd_is_file_valid (MirageParserReadcd *self, const gchar *filename, GError **error)
+static gboolean mirage_parser_readcd_is_file_valid (MirageParserReadcd *self, GObject *stream, GError **error)
 {
-    gboolean succeeded;
-    GObject *stream;
     guint64 file_size;
-
     guint16 toc_len;
 
     /* File must have .toc suffix */
-    if (!mirage_helper_has_suffix(filename, ".toc")) {
+    if (!mirage_helper_has_suffix(mirage_get_file_stream_filename(stream), ".toc")) {
         g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_CANNOT_HANDLE, "Parser cannot handle given image!");
         return FALSE;
     }
 
-    stream = mirage_create_file_stream(filename, G_OBJECT(self), error);
-    if (!stream) {
-        return FALSE;
-    }
 
     /* First 4 bytes of TOC are its header; and first 2 bytes of that indicate
        the length */
     if (g_input_stream_read(G_INPUT_STREAM(stream), &toc_len, sizeof(toc_len), NULL, NULL) != sizeof(toc_len)) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read 2-byte TOC length!\n", __debug__);
         g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, "Failed to read 2-byte TOC length!");
-        succeeded = FALSE;
-        goto end;
+        return FALSE;
     }
     toc_len = GUINT16_FROM_BE(toc_len);
 
@@ -78,16 +71,12 @@ static gboolean mirage_parser_readcd_is_file_valid (MirageParserReadcd *self, co
     file_size = g_seekable_tell(G_SEEKABLE(stream));
 
     if (file_size - 2 == toc_len + 2) {
-        succeeded = TRUE;
-    } else {
-        /* Nope, can't load the file */
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_CANNOT_HANDLE, "Parser cannot handle given image!");
-        succeeded = FALSE;
+        return TRUE;
     }
 
-end:
-    g_object_unref(stream);
-    return succeeded;
+    /* Nope, can't load the file */
+    g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_CANNOT_HANDLE, "Parser cannot handle given image!");
+    return FALSE;
 }
 
 static gboolean mirage_parser_readcd_determine_track_mode (MirageParserReadcd *self, GObject *track, GError **error)
@@ -282,22 +271,23 @@ end:
     return succeeded;
 }
 
-static gboolean mirage_parser_readcd_parse_toc (MirageParserReadcd *self, const gchar *filename, GError **error)
+static gboolean mirage_parser_readcd_parse_toc (MirageParserReadcd *self, GObject *stream, GError **error)
 {
-    gboolean succeeded = TRUE;
-    GObject *stream;
+    gboolean succeeded;
     guint64 file_size, read_size;
-    guint8 *data = NULL;
+    guint8 *data;
+
+    gchar *tmp_data_filename;
+    const gchar *suffix;
 
     /* NOTE: the mirage_parser_readcd_is_file_valid() check guarantees that the
        image filename has a valid suffix... */
-    gchar *tmp_data_filename = g_strdup(filename);
-    const gchar *suffix = mirage_helper_get_suffix(tmp_data_filename);
+    tmp_data_filename = g_strdup(self->priv->toc_filename);
+    suffix = mirage_helper_get_suffix(tmp_data_filename);
     tmp_data_filename[suffix-tmp_data_filename] = '\0'; /* Skip the suffix */
 
-    self->priv->data_filename = mirage_helper_find_data_file(tmp_data_filename, filename);
+    self->priv->data_filename = mirage_helper_find_data_file(tmp_data_filename, self->priv->toc_filename);
 
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: TOC filename: %s\n", __debug__, filename);
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: data filename: %s\n", __debug__, tmp_data_filename);
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: actual data filename: %s\n", __debug__, self->priv->data_filename);
 
@@ -319,12 +309,6 @@ static gboolean mirage_parser_readcd_parse_toc (MirageParserReadcd *self, const 
 
 
     /* Read whole TOC file */
-    stream = mirage_create_file_stream(filename, G_OBJECT(self), error);
-    if (!stream) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to open TOC file '%s'!\n", __debug__, filename);
-        return FALSE;
-    }
-
     g_seekable_seek(G_SEEKABLE(stream), 0, G_SEEK_END, NULL, NULL);
     file_size = g_seekable_tell(G_SEEKABLE(stream));
 
@@ -333,13 +317,11 @@ static gboolean mirage_parser_readcd_parse_toc (MirageParserReadcd *self, const 
     g_seekable_seek(G_SEEKABLE(stream), 0, G_SEEK_SET, NULL, NULL);
     read_size = g_input_stream_read(G_INPUT_STREAM(stream), data, file_size, NULL, NULL);
 
-    g_object_unref(stream);
-
     if (read_size != file_size) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read whole TOC file!\n", __debug__);
         g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, "Failed to read whole TOC file!");
-        succeeded = FALSE;
-        goto end;
+        g_free(data);
+        return FALSE;
     }
 
 
@@ -379,7 +361,8 @@ static gboolean mirage_parser_readcd_parse_toc (MirageParserReadcd *self, const 
         /* Parse TOC entry */
         succeeded = mirage_parser_readcd_parse_toc_entry(self, data+cur_off, error);
         if (!succeeded) {
-            goto end;
+            g_free(data);
+            return FALSE;
         }
 
         cur_off += 11;
@@ -400,23 +383,25 @@ static gboolean mirage_parser_readcd_parse_toc (MirageParserReadcd *self, const 
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: start sector type: %Xh\n", __debug__, sector0);
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: end sector type: %Xh\n", __debug__, sectorE);
 
-end:
-    g_free(data);
-
-    return succeeded;
+    return TRUE;
 }
 
 
 /**********************************************************************\
  *                MirageParser methods implementation               *
 \**********************************************************************/
-static GObject *mirage_parser_readcd_load_image (MirageParser *_self, gchar **filenames, GError **error)
+static GObject *mirage_parser_readcd_load_image (MirageParser *_self, GObject **streams, GError **error)
 {
     MirageParserReadcd *self = MIRAGE_PARSER_READCD(_self);
     gboolean succeeded = TRUE;
+    GObject *stream;
 
     /* Check if file can be loaded */
-    if (!mirage_parser_readcd_is_file_valid(self, filenames[0], error)) {
+    stream = streams[0];
+    g_object_ref(stream);
+
+    if (!mirage_parser_readcd_is_file_valid(self, stream, error)) {
+        g_object_unref(stream);
         return FALSE;
     }
 
@@ -427,41 +412,43 @@ static GObject *mirage_parser_readcd_load_image (MirageParser *_self, gchar **fi
     mirage_object_attach_child(MIRAGE_OBJECT(self), self->priv->disc);
 
     /* Set filenames */
-    mirage_disc_set_filename(MIRAGE_DISC(self->priv->disc), filenames[0]);
+    self->priv->toc_filename = mirage_get_file_stream_filename(stream);
+    mirage_disc_set_filename(MIRAGE_DISC(self->priv->disc), self->priv->toc_filename);
+
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: TOC filename: %s\n", __debug__, self->priv->toc_filename);
 
     /* Read and parse TOC */
-    if (!mirage_parser_readcd_parse_toc(self, filenames[0], error)) {
-        succeeded = FALSE;
-        goto end;
-    }
+    succeeded = mirage_parser_readcd_parse_toc(self, stream, error);
+    g_object_unref(stream);
 
-    /* If it's a multisession disc, fix up the lead-in/lead-out lengths
-       (NOTE: last session is left out for readibility; but it's irrelevant) */
-    gint num_sessions = mirage_disc_get_number_of_sessions(MIRAGE_DISC(self->priv->disc));
-    for (gint i = 0; i < num_sessions - 1; i++) {
-        GObject *session = mirage_disc_get_session_by_index(MIRAGE_DISC(self->priv->disc), i, NULL);
+    if (succeeded) {
+        /* If it's a multisession disc, fix up the lead-in/lead-out lengths
+           (NOTE: last session is left out for readibility; but it's irrelevant) */
+        gint num_sessions = mirage_disc_get_number_of_sessions(MIRAGE_DISC(self->priv->disc));
+        for (gint i = 0; i < num_sessions - 1; i++) {
+            GObject *session = mirage_disc_get_session_by_index(MIRAGE_DISC(self->priv->disc), i, NULL);
 
-        if (i == 0) {
-            /* Actually, it should be 6750 previous leadout, 4500 current leadin */
-            mirage_session_set_leadout_length(MIRAGE_SESSION(session), 11250);
-        } else {
-            /* Actually, it should be 2250 previous leadout, 4500 current leadin */
-            mirage_session_set_leadout_length(MIRAGE_SESSION(session), 6750);
+            if (i == 0) {
+                /* Actually, it should be 6750 previous leadout, 4500 current leadin */
+                mirage_session_set_leadout_length(MIRAGE_SESSION(session), 11250);
+            } else {
+                /* Actually, it should be 2250 previous leadout, 4500 current leadin */
+                mirage_session_set_leadout_length(MIRAGE_SESSION(session), 6750);
+            }
+
+            g_object_unref(session);
         }
 
-        g_object_unref(session);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "\n");
+
+        /* Now guess medium type and if it's a CD-ROM, add Red Book pregap */
+        gint medium_type = mirage_parser_guess_medium_type(MIRAGE_PARSER(self), self->priv->disc);
+        mirage_disc_set_medium_type(MIRAGE_DISC(self->priv->disc), medium_type);
+        if (medium_type == MIRAGE_MEDIUM_CD) {
+            mirage_parser_add_redbook_pregap(MIRAGE_PARSER(self), self->priv->disc);
+        }
     }
 
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "\n");
-
-    /* Now guess medium type and if it's a CD-ROM, add Red Book pregap */
-    gint medium_type = mirage_parser_guess_medium_type(MIRAGE_PARSER(self), self->priv->disc);
-    mirage_disc_set_medium_type(MIRAGE_DISC(self->priv->disc), medium_type);
-    if (medium_type == MIRAGE_MEDIUM_CD) {
-        mirage_parser_add_redbook_pregap(MIRAGE_PARSER(self), self->priv->disc);
-    }
-
-end:
     /* Return disc */
     mirage_object_detach_child(MIRAGE_OBJECT(self), self->priv->disc);
     if (succeeded) {

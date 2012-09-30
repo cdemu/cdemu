@@ -38,7 +38,7 @@ struct _MirageParserTocPrivate
     GObject *cur_track;
 
     /* Per-session data */
-    gchar *toc_filename;
+    const gchar *toc_filename;
 
     gint cur_main_size;
 
@@ -985,18 +985,13 @@ static void mirage_parser_toc_cleanup_regex_parser (MirageParserToc *self)
 }
 
 
-static GDataInputStream *mirage_parser_toc_create_data_stream (MirageParserToc *self, const gchar *filename, GError **error)
+static GDataInputStream *mirage_parser_toc_create_data_stream (MirageParserToc *self, GObject *stream, GError **error)
 {
-    GObject *stream;
     GDataInputStream *data_stream;
     const gchar *encoding;
 
-    /* Create file input stream */
-    stream = mirage_create_file_stream(filename, mirage_debuggable_get_debug_context(MIRAGE_DEBUGGABLE(self)), error);
-    if (!stream) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to create stream!\n", __debug__);
-        return NULL;
-    }
+    /* Add reference to provided input stream */
+    g_object_ref(stream);
 
     /* If provided, use the specified encoding */
     encoding = mirage_parser_get_param_string(MIRAGE_PARSER(self), "encoding");
@@ -1037,15 +1032,13 @@ static GDataInputStream *mirage_parser_toc_create_data_stream (MirageParserToc *
     return data_stream;
 }
 
-static gboolean mirage_parser_toc_parse_toc_file (MirageParserToc *self, const gchar *filename, GError **error)
+static gboolean mirage_parser_toc_parse_toc_file (MirageParserToc *self, GObject *stream, GError **error)
 {
     GDataInputStream *data_stream;
     gboolean succeeded = TRUE;
 
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: opening TOC file: %s\n", __debug__, filename);
-
     /* Create GDataInputStream */
-    data_stream = mirage_parser_toc_create_data_stream(self, filename, error);
+    data_stream = mirage_parser_toc_create_data_stream(self, stream, error);
     if (!data_stream) {
         return FALSE;
     }
@@ -1183,7 +1176,6 @@ static void mirage_parser_toc_cleanup_session_data (MirageParserToc *self)
     self->priv->cur_track = NULL;
 
     /* Cleanup per-session data */
-    g_free(self->priv->toc_filename);
     self->priv->toc_filename = NULL;
 
     self->priv->cur_main_size = 0;
@@ -1199,13 +1191,13 @@ static void mirage_parser_toc_cleanup_session_data (MirageParserToc *self)
     self->priv->mixed_mode_offset = 0;
 }
 
-static gboolean mirage_parser_toc_check_toc_file (MirageParserToc *self, const gchar *filename)
+static gboolean mirage_parser_toc_check_toc_file (MirageParserToc *self, GObject *stream)
 {
     gboolean succeeded = FALSE;
     GDataInputStream *data_stream;
 
     /* Check suffix - must be .toc */
-    if (!mirage_helper_has_suffix(filename, ".toc")) {
+    if (!mirage_helper_has_suffix(mirage_get_file_stream_filename(stream), ".toc")) {
         return FALSE;
     }
 
@@ -1213,7 +1205,7 @@ static gboolean mirage_parser_toc_check_toc_file (MirageParserToc *self, const g
        Because X-CD Roast also uses .toc for its images, we need to make
        sure this one was created by cdrdao... for that, we check for presence
        of CD_DA/CD_ROM_XA/CD_ROM/CD_I directive. */
-    data_stream = mirage_parser_toc_create_data_stream(self, filename, NULL);
+    data_stream = mirage_parser_toc_create_data_stream(self, stream, NULL);
     if (!data_stream) {
         return FALSE;
     }
@@ -1263,18 +1255,28 @@ static gboolean mirage_parser_toc_check_toc_file (MirageParserToc *self, const g
 /**********************************************************************\
  *                 MirageParser methods implementation               *
 \**********************************************************************/
-static GObject *mirage_parser_toc_load_image (MirageParser *_self, gchar **filenames, GError **error)
+static GObject *mirage_parser_toc_load_image (MirageParser *_self, GObject **streams, GError **error)
 {
     MirageParserToc *self = MIRAGE_PARSER_TOC(_self);
-
+    gint num_streams;
+    const gchar **filenames;
     gboolean succeeded = TRUE;
 
-    /* Check if we can load file(s) */
-    for (gint i = 0; i < g_strv_length(filenames); i++) {
-        if (!mirage_parser_toc_check_toc_file(self, filenames[i])) {
+    /* Determine number of streams */
+    for (num_streams = 0; streams[num_streams]; num_streams++);
+
+    /* Allocate array of filename pointers */
+    filenames = g_new0(const gchar *, num_streams + 1);
+
+    /* Check if all streams are valid */
+    for (gint i = 0; i < num_streams; i++) {
+        if (!mirage_parser_toc_check_toc_file(self, streams[i])) {
             g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_CANNOT_HANDLE, "Parser cannot handle given image!");
+            g_free(filenames);
             return FALSE;
         }
+
+        filenames[i] = mirage_get_file_stream_filename(streams[i]);
     }
 
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: parsing the image...\n", __debug__);
@@ -1284,15 +1286,15 @@ static GObject *mirage_parser_toc_load_image (MirageParser *_self, gchar **filen
     mirage_object_attach_child(MIRAGE_OBJECT(self), self->priv->disc);
 
     mirage_disc_set_filenames(MIRAGE_DISC(self->priv->disc), filenames);
+    g_free(filenames);
 
     /* Each TOC/BIN is one session, so we load all given filenames */
-    for (gint i = 0; i < g_strv_length(filenames); i++) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: loading session #%i: '%s'!\n", __debug__, i, filenames[i]);
-        mirage_parser_toc_init_session_data(self);
-
+    for (gint i = 0; i < num_streams; i++) {
         /* Store the TOC filename */
-        g_free(self->priv->toc_filename);
-        self->priv->toc_filename = g_strdup(filenames[i]);
+        self->priv->toc_filename = mirage_get_file_stream_filename(streams[i]);
+
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: loading session #%i: TOC file '%s'!\n", __debug__, i, self->priv->toc_filename);
+        mirage_parser_toc_init_session_data(self);
 
         /* There's slight problem with multi-session TOC images, namely that each
            TOC can be used independently... in order words, there's no way to determine
@@ -1327,7 +1329,7 @@ static GObject *mirage_parser_toc_load_image (MirageParser *_self, gchar **filen
         g_object_unref(self->priv->cur_session); /* Don't keep reference */
 
         /* Parse TOC */
-        succeeded = mirage_parser_toc_parse_toc_file(self, filenames[i], error);
+        succeeded = mirage_parser_toc_parse_toc_file(self, streams[i], error);
 
         /* Cleanup */
         mirage_parser_toc_cleanup_session_data(self);

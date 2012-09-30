@@ -31,7 +31,7 @@ struct _MirageParserCuePrivate
 {
     GObject *disc;
 
-    gchar *cue_filename;
+    const gchar *cue_filename;
 
     gchar *cur_data_filename; /* Data file filename */
     gchar *cur_data_type; /* Data type; determines which fragment type to use */
@@ -872,18 +872,13 @@ static const gchar *mirage_parser_cue_detect_encoding (MirageParserCue *self, GO
     return NULL;
 }
 
-static GDataInputStream *mirage_parser_cue_create_data_stream (MirageParserCue *self, const gchar *filename, GError **error)
+static GDataInputStream *mirage_parser_cue_create_data_stream (MirageParserCue *self, GObject *stream, GError **error)
 {
-    GObject *stream;
     GDataInputStream *data_stream;
     const gchar *encoding;
 
-    /* Create file input stream */
-    stream = mirage_create_file_stream(filename, mirage_debuggable_get_debug_context(MIRAGE_DEBUGGABLE(self)), error);
-    if (!stream) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to create stream!\n", __debug__);
-        return NULL;
-    }
+    /* Add reference to provided input stream */
+    g_object_ref(stream);
 
     /* If provided, use the specified encoding; otherwise, try to detect it */
     encoding = mirage_parser_get_param_string(MIRAGE_PARSER(self), "encoding");;
@@ -931,15 +926,13 @@ static GDataInputStream *mirage_parser_cue_create_data_stream (MirageParserCue *
     return data_stream;
 }
 
-static gboolean mirage_parser_cue_parse_cue_file (MirageParserCue *self, gchar *filename, GError **error)
+static gboolean mirage_parser_cue_parse_cue_file (MirageParserCue *self, GObject *stream, GError **error)
 {
     GDataInputStream *data_stream;
     gboolean succeeded = TRUE;
 
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: opening CUE file: %s\n", __debug__, filename);
-
     /* Create GDataInputStream */
-    data_stream = mirage_parser_cue_create_data_stream(self, filename, error);
+    data_stream = mirage_parser_cue_create_data_stream(self, stream, error);
     if (!data_stream) {
         return FALSE;
     }
@@ -1018,14 +1011,15 @@ static gboolean mirage_parser_cue_parse_cue_file (MirageParserCue *self, gchar *
 /**********************************************************************\
  *                 MirageParser methods implementation               *
 \**********************************************************************/
-static GObject *mirage_parser_cue_load_image (MirageParser *_self, gchar **filenames, GError **error)
+static GObject *mirage_parser_cue_load_image (MirageParser *_self, GObject **streams, GError **error)
 {
     MirageParserCue *self = MIRAGE_PARSER_CUE(_self);
 
     gboolean succeeded = TRUE;
 
     /* Check if we can load the file; we check the suffix */
-    if (!mirage_helper_has_suffix(filenames[0], ".cue")) {
+    self->priv->cue_filename = mirage_get_file_stream_filename(streams[0]);
+    if (!mirage_helper_has_suffix(self->priv->cue_filename, ".cue")) {
         g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_CANNOT_HANDLE, "Parser cannot handle given image!");
         return FALSE;
     }
@@ -1036,8 +1030,9 @@ static GObject *mirage_parser_cue_load_image (MirageParser *_self, gchar **filen
     self->priv->disc = g_object_new(MIRAGE_TYPE_DISC, NULL);
     mirage_object_attach_child(MIRAGE_OBJECT(self), self->priv->disc);
 
-    mirage_disc_set_filename(MIRAGE_DISC(self->priv->disc), filenames[0]);
-    self->priv->cue_filename = g_strdup(filenames[0]);
+    mirage_disc_set_filename(MIRAGE_DISC(self->priv->disc), self->priv->cue_filename);
+
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: CUE filename: %s\n", __debug__, self->priv->cue_filename);
 
     /* First session is created manually (in case we're dealing with normal
        CUE file, which doesn't have session definitions anyway); note that we
@@ -1047,7 +1042,7 @@ static GObject *mirage_parser_cue_load_image (MirageParser *_self, gchar **filen
     g_object_unref(self->priv->cur_session);
 
     /* Parse the CUE */
-    if (!mirage_parser_cue_parse_cue_file(self, self->priv->cue_filename, error)) {
+    if (!mirage_parser_cue_parse_cue_file(self, streams[0], error)) {
         succeeded = FALSE;
         goto end;
     }
@@ -1107,7 +1102,6 @@ static void mirage_parser_cue_init (MirageParserCue *self)
 
     mirage_parser_cue_init_regex_parser(self);
 
-    self->priv->cue_filename = NULL;
     self->priv->cur_data_filename = NULL;
     self->priv->cur_data_type = NULL;
 }
@@ -1117,7 +1111,6 @@ static void mirage_parser_cue_finalize (GObject *gobject)
     MirageParserCue *self = MIRAGE_PARSER_CUE(gobject);
 
     /* Free elements of private structure */
-    g_free(self->priv->cue_filename);
     g_free(self->priv->cur_data_filename);
     g_free(self->priv->cur_data_type);
 

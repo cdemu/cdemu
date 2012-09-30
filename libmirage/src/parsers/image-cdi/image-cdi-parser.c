@@ -31,7 +31,6 @@ struct _MirageParserCdiPrivate
 {
     GObject *disc;
 
-    gchar *cdi_filename;
     GObject *cdi_stream;
 
     gboolean medium_type_set;
@@ -929,34 +928,35 @@ end:
 /**********************************************************************\
  *                MirageParser methods implementation                *
 \**********************************************************************/
-static GObject *mirage_parser_cdi_load_image (MirageParser *_self, gchar **filenames, GError **error)
+static GObject *mirage_parser_cdi_load_image (MirageParser *_self, GObject **streams, GError **error)
 {
     MirageParserCdi *self = MIRAGE_PARSER_CDI(_self);
-
+    const gchar *cdi_filename;
     gboolean succeeded = TRUE;
     guint64 offset;
     gint32 descriptor_length;
 
     /* Check if we can load the file; we check the suffix */
-    if (!mirage_helper_has_suffix(filenames[0], ".cdi")) {
+    cdi_filename = mirage_get_file_stream_filename(streams[0]);
+
+    if (!mirage_helper_has_suffix(cdi_filename, ".cdi")) {
         g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_CANNOT_HANDLE, "Parser cannot handle given image!");
         return FALSE;
     }
 
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: parsing the image...\n", __debug__);
 
-    /* Open file */
-    self->priv->cdi_stream = mirage_create_file_stream(filenames[0], G_OBJECT(self), error);
-    if (!self->priv->cdi_stream) {
-        return FALSE;
-    }
+    /* Add reference to stream */
+    self->priv->cdi_stream = streams[0];
+    g_object_ref(self->priv->cdi_stream);
 
     /* Create disc */
     self->priv->disc = g_object_new(MIRAGE_TYPE_DISC, NULL);
     mirage_object_attach_child(MIRAGE_OBJECT(self), self->priv->disc);
 
-    mirage_disc_set_filename(MIRAGE_DISC(self->priv->disc), filenames[0]);
-    self->priv->cdi_filename = g_strdup(filenames[0]);
+    mirage_disc_set_filename(MIRAGE_DISC(self->priv->disc), cdi_filename);
+
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: CDI filename: %s\n", __debug__, cdi_filename);
 
     /* The descriptor is stored at the end of CDI image; I'm quite positive that
        last four bytes represent length of descriptor data */
@@ -1032,8 +1032,6 @@ static void mirage_parser_cdi_init (MirageParserCdi *self)
         "CDI (DiscJuggler) images",
         "application/x-cdi"
     );
-
-    self->priv->cdi_filename = NULL;
 }
 
 static void mirage_parser_cdi_dispose (GObject *gobject)
@@ -1049,23 +1047,12 @@ static void mirage_parser_cdi_dispose (GObject *gobject)
     return G_OBJECT_CLASS(mirage_parser_cdi_parent_class)->dispose(gobject);
 }
 
-static void mirage_parser_cdi_finalize (GObject *gobject)
-{
-    MirageParserCdi *self = MIRAGE_PARSER_CDI(gobject);
-
-    g_free(self->priv->cdi_filename);
-
-    /* Chain up to the parent class */
-    return G_OBJECT_CLASS(mirage_parser_cdi_parent_class)->finalize(gobject);
-}
-
 static void mirage_parser_cdi_class_init (MirageParserCdiClass *klass)
 {
     GObjectClass *gobject_class = G_OBJECT_CLASS(klass);
     MirageParserClass *parser_class = MIRAGE_PARSER_CLASS(klass);
 
     gobject_class->dispose = mirage_parser_cdi_dispose;
-    gobject_class->finalize = mirage_parser_cdi_finalize;
 
     parser_class->load_image = mirage_parser_cdi_load_image;
 
