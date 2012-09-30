@@ -395,7 +395,6 @@ GObject *mirage_parser_get_cached_data_stream (MirageParser *self, const gchar *
 }
 
 
-
 /**
  * mirage_parser_create_text_stream:
  * @self: a #MirageParser
@@ -404,12 +403,14 @@ GObject *mirage_parser_get_cached_data_stream (MirageParser *self, const gchar *
  *
  * <para>
  * Constructs a filter chain for reading text files on top of provided
- * @stream. The first filter is
- *
+ * @stream. First, if encoding is provided via parser parameters, or if
+ * a multi-byte encoding is detected, a #GConverterInputStream with a
+ * #GCharsetConverter is applied. Then on top of it, a #GDataInputStream
+ * is created, which can be used to read text file line-by-line.
  * </para>
  *
  * Returns: (transfer full): a #GDataInputStream object on success,
- *  encoding, or %NULL on failure.
+ * or %NULL on failure.
  **/
 GDataInputStream *mirage_parser_create_text_stream (MirageParser *self, GObject *stream, GError **error)
 {

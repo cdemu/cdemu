@@ -508,6 +508,7 @@ mirage_parser_get_param
 mirage_parser_get_param_string
 mirage_parser_set_params
 mirage_parser_get_cached_data_stream
+mirage_parser_create_text_stream
 <SUBSECTION Standard>
 MIRAGE_PARSER
 MIRAGE_IS_PARSER
@@ -569,6 +570,7 @@ mirage_helper_subchannel_deinterleave
 mirage_helper_sector_edc_ecc_compute_edc_block
 mirage_helper_sector_edc_ecc_compute_ecc_block
 mirage_helper_determine_sector_type
+mirage_helper_encoding_from_bom
 </SECTION>
 
 <SECTION>
