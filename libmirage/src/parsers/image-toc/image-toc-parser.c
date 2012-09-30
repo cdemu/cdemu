@@ -147,8 +147,8 @@ static void mirage_parser_toc_add_track (MirageParserToc *self, gchar *mode_stri
             gint format;
             gint sectsize;
         } subchan_modes[] = {
-            {"RW_RAW", MIRAGE_SFILE_PW96_INT | MIRAGE_SFILE_INT, 96 },
-            {"RW", MIRAGE_SFILE_RW96 | MIRAGE_SFILE_INT, 96 },
+            {"RW_RAW", MIRAGE_SUBCHANNEL_PW96_INT | MIRAGE_SUBCHANNEL_INT, 96 },
+            {"RW", MIRAGE_SUBCHANNEL_RW96 | MIRAGE_SUBCHANNEL_INT, 96 },
         };
 
         for (gint i = 0; i < G_N_ELEMENTS(subchan_modes); i++) {
@@ -220,9 +220,9 @@ static gboolean mirage_parser_toc_track_add_fragment (MirageParserToc *self, gin
                we simply check whether we have an audio track or not... */
             gint mode = mirage_track_get_mode(MIRAGE_TRACK(self->priv->cur_track));
             if (mode == MIRAGE_MODE_AUDIO) {
-                tfile_format = MIRAGE_TFILE_AUDIO_SWAP;
+                tfile_format = MIRAGE_MAIN_AUDIO_SWAP;
             } else {
-                tfile_format = MIRAGE_TFILE_DATA;
+                tfile_format = MIRAGE_MAIN_DATA;
             }
 
             /* Some TOC files don't seem to contain #base_offset entries that
@@ -258,19 +258,19 @@ static gboolean mirage_parser_toc_track_add_fragment (MirageParserToc *self, gin
             sfile_format = self->priv->cur_sfile_format;
 
             /* Set file */
-            if (!mirage_fragment_iface_binary_track_file_set_file(MIRAGE_FRAGMENT_IFACE_BINARY(fragment), filename, stream, error)) {
+            if (!mirage_fragment_iface_binary_main_data_set_stream(MIRAGE_FRAGMENT_IFACE_BINARY(fragment), stream, error)) {
                 MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to set track data file!\n", __debug__);
                 g_free(filename);
                 g_object_unref(stream);
                 g_object_unref(fragment);
                 return FALSE;
             }
-            mirage_fragment_iface_binary_track_file_set_sectsize(MIRAGE_FRAGMENT_IFACE_BINARY(fragment), tfile_sectsize);
-            mirage_fragment_iface_binary_track_file_set_offset(MIRAGE_FRAGMENT_IFACE_BINARY(fragment), tfile_offset);
-            mirage_fragment_iface_binary_track_file_set_format(MIRAGE_FRAGMENT_IFACE_BINARY(fragment), tfile_format);
+            mirage_fragment_iface_binary_main_data_set_size(MIRAGE_FRAGMENT_IFACE_BINARY(fragment), tfile_sectsize);
+            mirage_fragment_iface_binary_main_data_set_offset(MIRAGE_FRAGMENT_IFACE_BINARY(fragment), tfile_offset);
+            mirage_fragment_iface_binary_main_data_set_format(MIRAGE_FRAGMENT_IFACE_BINARY(fragment), tfile_format);
 
-            mirage_fragment_iface_binary_subchannel_file_set_sectsize(MIRAGE_FRAGMENT_IFACE_BINARY(fragment), sfile_sectsize);
-            mirage_fragment_iface_binary_subchannel_file_set_format(MIRAGE_FRAGMENT_IFACE_BINARY(fragment), sfile_format);
+            mirage_fragment_iface_binary_subchannel_data_set_size(MIRAGE_FRAGMENT_IFACE_BINARY(fragment), sfile_sectsize);
+            mirage_fragment_iface_binary_subchannel_data_set_format(MIRAGE_FRAGMENT_IFACE_BINARY(fragment), sfile_format);
         } else {
             /* Audio data; we'd like an AUDIO fragment, and hopefully Mirage can
                find one that can handle given file format */
@@ -284,7 +284,7 @@ static gboolean mirage_parser_toc_track_add_fragment (MirageParserToc *self, gin
             }
 
             /* Set file */
-            if (!mirage_fragment_iface_audio_set_file(MIRAGE_FRAGMENT_IFACE_AUDIO(fragment), filename, stream, error)) {
+            if (!mirage_fragment_iface_audio_set_stream(MIRAGE_FRAGMENT_IFACE_AUDIO(fragment), stream, error)) {
                 MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to set track data file!\n", __debug__);
                 g_free(filename);
                 g_object_unref(stream);

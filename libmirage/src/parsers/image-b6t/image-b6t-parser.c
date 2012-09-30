@@ -445,12 +445,12 @@ static gboolean mirage_parser_b6t_setup_track_fragments (MirageParserB6t *self, 
                 switch (sfile_sectsize) {
                     case 16: {
                         /* Internal subchannel, PQ */
-                        sfile_format = MIRAGE_SFILE_PQ16 | MIRAGE_SFILE_INT;
+                        sfile_format = MIRAGE_SUBCHANNEL_PQ16 | MIRAGE_SUBCHANNEL_INT;
                         break;
                     }
                     case 96: {
                         /* Internal subchannel, linear PW96 */
-                        sfile_format = MIRAGE_SFILE_PW96_LIN | MIRAGE_SFILE_INT;
+                        sfile_format = MIRAGE_SUBCHANNEL_PW96_LIN | MIRAGE_SUBCHANNEL_INT;
                         break;
                     }
                     default: {
@@ -463,14 +463,14 @@ static gboolean mirage_parser_b6t_setup_track_fragments (MirageParserB6t *self, 
             /* Data format */
             if ((data_block->type & 0x00008000) == 0x00008000) {
                 MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: data block is for audio data\n", __debug__);
-                tfile_format = MIRAGE_TFILE_AUDIO;
+                tfile_format = MIRAGE_MAIN_AUDIO;
             } else {
                 MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: data block is for data track\n", __debug__);
-                tfile_format = MIRAGE_TFILE_DATA;
+                tfile_format = MIRAGE_MAIN_DATA;
             }
 
             /* Set file */
-            if (!mirage_fragment_iface_binary_track_file_set_file(MIRAGE_FRAGMENT_IFACE_BINARY(data_fragment), filename, data_stream, error)) {
+            if (!mirage_fragment_iface_binary_main_data_set_stream(MIRAGE_FRAGMENT_IFACE_BINARY(data_fragment), data_stream, error)) {
                 MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to set track data file!\n", __debug__);
                 g_object_unref(data_stream);
                 g_free(filename);
@@ -479,12 +479,12 @@ static gboolean mirage_parser_b6t_setup_track_fragments (MirageParserB6t *self, 
             g_object_unref(data_stream);
             g_free(filename);
 
-            mirage_fragment_iface_binary_track_file_set_sectsize(MIRAGE_FRAGMENT_IFACE_BINARY(data_fragment), tfile_sectsize);
-            mirage_fragment_iface_binary_track_file_set_offset(MIRAGE_FRAGMENT_IFACE_BINARY(data_fragment), tfile_offset);
-            mirage_fragment_iface_binary_track_file_set_format(MIRAGE_FRAGMENT_IFACE_BINARY(data_fragment), tfile_format);
+            mirage_fragment_iface_binary_main_data_set_size(MIRAGE_FRAGMENT_IFACE_BINARY(data_fragment), tfile_sectsize);
+            mirage_fragment_iface_binary_main_data_set_offset(MIRAGE_FRAGMENT_IFACE_BINARY(data_fragment), tfile_offset);
+            mirage_fragment_iface_binary_main_data_set_format(MIRAGE_FRAGMENT_IFACE_BINARY(data_fragment), tfile_format);
 
-            mirage_fragment_iface_binary_subchannel_file_set_sectsize(MIRAGE_FRAGMENT_IFACE_BINARY(data_fragment), sfile_sectsize);
-            mirage_fragment_iface_binary_subchannel_file_set_format(MIRAGE_FRAGMENT_IFACE_BINARY(data_fragment), sfile_format);
+            mirage_fragment_iface_binary_subchannel_data_set_size(MIRAGE_FRAGMENT_IFACE_BINARY(data_fragment), sfile_sectsize);
+            mirage_fragment_iface_binary_subchannel_data_set_format(MIRAGE_FRAGMENT_IFACE_BINARY(data_fragment), sfile_format);
 
             mirage_fragment_set_length(MIRAGE_FRAGMENT(data_fragment), tmp_length);
 

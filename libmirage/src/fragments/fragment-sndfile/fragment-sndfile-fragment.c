@@ -29,7 +29,6 @@
 
 struct _MirageFragmentSndfilePrivate
 {
-    gchar *filename;
     GObject *stream;
 
     SNDFILE *sndfile;
@@ -111,10 +110,9 @@ static SF_VIRTUAL_IO sndfile_io_bridge = {
 /**********************************************************************\
  *                   Audio interface implementation                   *
 \**********************************************************************/
-static gboolean mirage_fragment_sndfile_set_file (MirageFragmentIfaceAudio *_self, const gchar *filename, GObject *stream, GError **error)
+static gboolean mirage_fragment_sndfile_set_stream (MirageFragmentIfaceAudio *_self, GObject *stream, GError **error)
 {
     MirageFragmentSndfile *self = MIRAGE_FRAGMENT_SNDFILE(_self);
-    GError *local_error = NULL;
 
     /* If stream is already set, release it and reset format */
     if (self->priv->stream) {
@@ -125,25 +123,10 @@ static gboolean mirage_fragment_sndfile_set_file (MirageFragmentIfaceAudio *_sel
         sf_close(self->priv->sndfile);
         memset(&self->priv->format, 0, sizeof(self->priv->format));
     }
-    if (self->priv->filename) {
-        g_free(self->priv->filename);
-        self->priv->filename = NULL;
-    }
 
-    /* Set new stream */
-    if (stream) {
-        /* Set the provided stream */
-        self->priv->stream = stream;
-        g_object_ref(stream);
-    } else {
-        /* Open new stream */
-        self->priv->stream = mirage_create_file_stream(filename, G_OBJECT(self), &local_error);
-        if (!self->priv->stream) {
-            g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_FRAGMENT_ERROR, "Failed to create file stream on audio file '%s': %s", filename, local_error->message);
-            g_error_free(local_error);
-            return FALSE;
-        }
-    }
+    /* Set the provided stream */
+    self->priv->stream = stream;
+    g_object_ref(stream);
 
     /* Open sndfile */
     self->priv->sndfile = sf_open_virtual(&sndfile_io_bridge, SFM_READ, &self->priv->format, self->priv->stream);
@@ -151,8 +134,6 @@ static gboolean mirage_fragment_sndfile_set_file (MirageFragmentIfaceAudio *_sel
         g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_FRAGMENT_ERROR, "Failed to open audio file!");
         return FALSE;
     }
-
-    self->priv->filename = g_strdup(filename);
 
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_FRAGMENT, "%s: SNDFILE file format:\n"
             " -> frames = %lli\n"
@@ -172,11 +153,11 @@ static gboolean mirage_fragment_sndfile_set_file (MirageFragmentIfaceAudio *_sel
     return TRUE;
 }
 
-static const gchar *mirage_fragment_sndfile_get_file (MirageFragmentIfaceAudio *_self)
+static const gchar *mirage_fragment_sndfile_get_filename (MirageFragmentIfaceAudio *_self)
 {
     MirageFragmentSndfile *self = MIRAGE_FRAGMENT_SNDFILE(_self);
     /* Return filename */
-    return self->priv->filename;
+    return mirage_get_file_stream_filename(self->priv->stream);
 }
 
 static void mirage_fragment_sndfile_set_offset (MirageFragmentIfaceAudio *_self, gint offset)
@@ -329,7 +310,7 @@ static void mirage_fragment_sndfile_init (MirageFragmentSndfile *self)
         "libsndfile Fragment"
     );
 
-    self->priv->filename = NULL;
+    self->priv->stream = NULL;
     self->priv->sndfile = NULL;
 }
 
@@ -339,7 +320,7 @@ static void mirage_fragment_sndfile_dispose (GObject *gobject)
 
     if (self->priv->stream) {
         g_object_unref(self->priv->stream);
-        self->priv->stream = 0;
+        self->priv->stream = NULL;
     }
 
     /* Chain up to the parent class */
@@ -350,7 +331,6 @@ static void mirage_fragment_sndfile_finalize (GObject *gobject)
 {
     MirageFragmentSndfile *self = MIRAGE_FRAGMENT_SNDFILE(gobject);
 
-    g_free(self->priv->filename);
     if (self->priv->sndfile) {
         sf_close(self->priv->sndfile);
     }
@@ -383,8 +363,8 @@ static void mirage_fragment_sndfile_class_finalize (MirageFragmentSndfileClass *
 
 static void mirage_fragment_sndfile_fragment_iface_audio_init (MirageFragmentIfaceAudioInterface *iface)
 {
-    iface->set_file = mirage_fragment_sndfile_set_file;
-    iface->get_file = mirage_fragment_sndfile_get_file;
+    iface->set_stream = mirage_fragment_sndfile_set_stream;
+    iface->get_filename = mirage_fragment_sndfile_get_filename;
     iface->set_offset = mirage_fragment_sndfile_set_offset;
     iface->get_offset = mirage_fragment_sndfile_get_offset;
 }

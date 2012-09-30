@@ -548,7 +548,7 @@ GObject *mirage_create_file_stream (const gchar *filename, GObject *debug_contex
  * Returns: (transfer none): on success, a pointer to filename on which
  * the underyling file stream was opened. On failure, %NULL is returned.
  **/
-const gchar *mirage_get_file_stream_filename (GInputStream *stream)
+const gchar *mirage_get_file_stream_filename (GObject *stream)
 {
     if (G_IS_FILTER_INPUT_STREAM(stream)) {
         /* Recursively traverse the filter stream chain */
@@ -556,7 +556,7 @@ const gchar *mirage_get_file_stream_filename (GInputStream *stream)
         if (!base_stream) {
             return NULL;
         } else {
-            return mirage_get_file_stream_filename(base_stream);
+            return mirage_get_file_stream_filename(G_OBJECT(base_stream));
         }
     } else if (G_IS_FILE_INPUT_STREAM(stream)) {
         /* We are at the bottom; get filename from our mapping table */

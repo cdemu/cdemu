@@ -363,9 +363,9 @@ static gboolean mirage_parser_c2d_parse_track_entries (MirageParserC2d *self, GE
         gint tfile_format = 0;
 
         if (converted_mode == MIRAGE_MODE_AUDIO) {
-            tfile_format = MIRAGE_TFILE_AUDIO;
+            tfile_format = MIRAGE_MAIN_AUDIO;
         } else {
-            tfile_format = MIRAGE_TFILE_DATA;
+            tfile_format = MIRAGE_MAIN_DATA;
         }
 
         gint fragment_len = track_last_sector - track_first_sector + 1;
@@ -374,33 +374,33 @@ static gboolean mirage_parser_c2d_parse_track_entries (MirageParserC2d *self, GE
         mirage_fragment_set_length(MIRAGE_FRAGMENT(data_fragment), fragment_len);
 
         /* Set file */
-        if(!mirage_fragment_iface_binary_track_file_set_file(MIRAGE_FRAGMENT_IFACE_BINARY(data_fragment), self->priv->c2d_filename, self->priv->c2d_stream, error)) {
+        if(!mirage_fragment_iface_binary_main_data_set_stream(MIRAGE_FRAGMENT_IFACE_BINARY(data_fragment), self->priv->c2d_stream, error)) {
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to set track data file!\n", __debug__);
             g_object_unref(data_fragment);
             g_object_unref(cur_point);
             g_object_unref(cur_session);
             return FALSE;
         }
-        mirage_fragment_iface_binary_track_file_set_offset(MIRAGE_FRAGMENT_IFACE_BINARY(data_fragment), tfile_offset);
-        mirage_fragment_iface_binary_track_file_set_sectsize(MIRAGE_FRAGMENT_IFACE_BINARY(data_fragment), tfile_sectsize);
-        mirage_fragment_iface_binary_track_file_set_format(MIRAGE_FRAGMENT_IFACE_BINARY(data_fragment), tfile_format);
+        mirage_fragment_iface_binary_main_data_set_offset(MIRAGE_FRAGMENT_IFACE_BINARY(data_fragment), tfile_offset);
+        mirage_fragment_iface_binary_main_data_set_size(MIRAGE_FRAGMENT_IFACE_BINARY(data_fragment), tfile_sectsize);
+        mirage_fragment_iface_binary_main_data_set_format(MIRAGE_FRAGMENT_IFACE_BINARY(data_fragment), tfile_format);
 
         /* Subchannel */
         switch (cur_tb->sector_size) {
             case 2448: {
                 gint sfile_sectsize = 96;
-                gint sfile_format = MIRAGE_SFILE_PW96_INT | MIRAGE_SFILE_INT;
+                gint sfile_format = MIRAGE_SUBCHANNEL_PW96_INT | MIRAGE_SUBCHANNEL_INT;
 
                 MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   subchannel found; interleaved PW96\n", __debug__);
 
-                mirage_fragment_iface_binary_subchannel_file_set_sectsize(MIRAGE_FRAGMENT_IFACE_BINARY(data_fragment), sfile_sectsize);
-                mirage_fragment_iface_binary_subchannel_file_set_format(MIRAGE_FRAGMENT_IFACE_BINARY(data_fragment), sfile_format);
+                mirage_fragment_iface_binary_subchannel_data_set_size(MIRAGE_FRAGMENT_IFACE_BINARY(data_fragment), sfile_sectsize);
+                mirage_fragment_iface_binary_subchannel_data_set_format(MIRAGE_FRAGMENT_IFACE_BINARY(data_fragment), sfile_format);
 
                 /* We need to correct the data for track sector size...
                    C2D format has already added 96 bytes to sector size,
                    so we need to subtract it */
                 tfile_sectsize = cur_tb->sector_size - sfile_sectsize;
-                mirage_fragment_iface_binary_track_file_set_sectsize(MIRAGE_FRAGMENT_IFACE_BINARY(data_fragment), tfile_sectsize);
+                mirage_fragment_iface_binary_main_data_set_size(MIRAGE_FRAGMENT_IFACE_BINARY(data_fragment), tfile_sectsize);
 
                 break;
             }

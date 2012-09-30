@@ -152,15 +152,15 @@ static gboolean mirage_parser_cue_add_track (MirageParserCue *self, gint number,
         gint sectsize;
         gint format;
     } track_modes[] = {
-        {"AUDIO",      MIRAGE_MODE_AUDIO, 2352, MIRAGE_TFILE_AUDIO},
-        {"CDG",        MIRAGE_MODE_AUDIO, 2448, MIRAGE_TFILE_AUDIO},
-        {"MODE1/2048", MIRAGE_MODE_MODE1, 2048, MIRAGE_TFILE_DATA},
-        {"MODE1/2352", MIRAGE_MODE_MODE1, 2352, MIRAGE_TFILE_DATA},
+        {"AUDIO",      MIRAGE_MODE_AUDIO, 2352, MIRAGE_MAIN_AUDIO},
+        {"CDG",        MIRAGE_MODE_AUDIO, 2448, MIRAGE_MAIN_AUDIO},
+        {"MODE1/2048", MIRAGE_MODE_MODE1, 2048, MIRAGE_MAIN_DATA},
+        {"MODE1/2352", MIRAGE_MODE_MODE1, 2352, MIRAGE_MAIN_DATA},
         /* Not sure about the following ones, but MIXED should take care of them */
-        {"MODE2/2336", MIRAGE_MODE_MODE2_MIXED, 2336, MIRAGE_TFILE_DATA},
-        {"MODE2/2352", MIRAGE_MODE_MODE2_MIXED, 2352, MIRAGE_TFILE_DATA},
-        {"CDI/2336",   MIRAGE_MODE_MODE2_MIXED, 2336, MIRAGE_TFILE_DATA},
-        {"CDI/2352",   MIRAGE_MODE_MODE2_MIXED, 2352, MIRAGE_TFILE_DATA},
+        {"MODE2/2336", MIRAGE_MODE_MODE2_MIXED, 2336, MIRAGE_MAIN_DATA},
+        {"MODE2/2352", MIRAGE_MODE_MODE2_MIXED, 2352, MIRAGE_MAIN_DATA},
+        {"CDI/2336",   MIRAGE_MODE_MODE2_MIXED, 2336, MIRAGE_MAIN_DATA},
+        {"CDI/2352",   MIRAGE_MODE_MODE2_MIXED, 2352, MIRAGE_MAIN_DATA},
     };
 
     for (i = 0; i < G_N_ELEMENTS(track_modes); i++) {
@@ -256,8 +256,8 @@ static gboolean mirage_parser_cue_add_index (MirageParserCue *self, gint number,
                            vary between the tracks; so in case we're dealing with
                            binary, we need to keep track of the offset within file */
                         if (MIRAGE_IS_FRAGMENT_IFACE_BINARY(fragment)) {
-                            gint tfile_sectsize = mirage_fragment_iface_binary_track_file_get_sectsize(MIRAGE_FRAGMENT_IFACE_BINARY(fragment));
-                            gint sfile_sectsize = mirage_fragment_iface_binary_subchannel_file_get_sectsize(MIRAGE_FRAGMENT_IFACE_BINARY(fragment));
+                            gint tfile_sectsize = mirage_fragment_iface_binary_main_data_get_size(MIRAGE_FRAGMENT_IFACE_BINARY(fragment));
+                            gint sfile_sectsize = mirage_fragment_iface_binary_subchannel_data_get_size(MIRAGE_FRAGMENT_IFACE_BINARY(fragment));
 
                             self->priv->binary_offset += fragment_length * (tfile_sectsize + sfile_sectsize);
                         }
@@ -299,20 +299,20 @@ static gboolean mirage_parser_cue_add_index (MirageParserCue *self, gint number,
                     return FALSE;
                 }
 
-                if (!mirage_fragment_iface_binary_track_file_set_file(MIRAGE_FRAGMENT_IFACE_BINARY(fragment), self->priv->cur_data_filename, data_stream, error)) {
+                if (!mirage_fragment_iface_binary_main_data_set_stream(MIRAGE_FRAGMENT_IFACE_BINARY(fragment), data_stream, error)) {
                     MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to set track data file!\n", __debug__);
                     g_object_unref(data_stream);
                     g_object_unref(fragment);
                     return FALSE;
                 }
-                mirage_fragment_iface_binary_track_file_set_sectsize(MIRAGE_FRAGMENT_IFACE_BINARY(fragment), tfile_sectsize);
-                mirage_fragment_iface_binary_track_file_set_offset(MIRAGE_FRAGMENT_IFACE_BINARY(fragment), self->priv->binary_offset);
-                mirage_fragment_iface_binary_track_file_set_format(MIRAGE_FRAGMENT_IFACE_BINARY(fragment), self->priv->cur_data_format);
+                mirage_fragment_iface_binary_main_data_set_size(MIRAGE_FRAGMENT_IFACE_BINARY(fragment), tfile_sectsize);
+                mirage_fragment_iface_binary_main_data_set_offset(MIRAGE_FRAGMENT_IFACE_BINARY(fragment), self->priv->binary_offset);
+                mirage_fragment_iface_binary_main_data_set_format(MIRAGE_FRAGMENT_IFACE_BINARY(fragment), self->priv->cur_data_format);
 
                 if (sfile_sectsize) {
-                    mirage_fragment_iface_binary_subchannel_file_set_sectsize(MIRAGE_FRAGMENT_IFACE_BINARY(fragment), sfile_sectsize);
+                    mirage_fragment_iface_binary_subchannel_data_set_size(MIRAGE_FRAGMENT_IFACE_BINARY(fragment), sfile_sectsize);
                     /* FIXME: what format of subchannel is there anyway? */
-                    mirage_fragment_iface_binary_subchannel_file_set_format(MIRAGE_FRAGMENT_IFACE_BINARY(fragment), MIRAGE_SFILE_PW96_INT | MIRAGE_SFILE_INT);
+                    mirage_fragment_iface_binary_subchannel_data_set_format(MIRAGE_FRAGMENT_IFACE_BINARY(fragment), MIRAGE_SUBCHANNEL_PW96_INT | MIRAGE_SUBCHANNEL_INT);
                 }
             } else {
                 /* One of the audio files; we'll request fragment with AUDIO
@@ -325,7 +325,7 @@ static gboolean mirage_parser_cue_add_index (MirageParserCue *self, gint number,
                     return FALSE;
                 }
 
-                if (!mirage_fragment_iface_audio_set_file(MIRAGE_FRAGMENT_IFACE_AUDIO(fragment), self->priv->cur_data_filename, data_stream, error)) {
+                if (!mirage_fragment_iface_audio_set_stream(MIRAGE_FRAGMENT_IFACE_AUDIO(fragment), data_stream, error)) {
                     MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to set track data file!\n", __debug__);
                     g_object_unref(data_stream);
                     g_object_unref(fragment);
@@ -805,7 +805,7 @@ static void mirage_parser_cue_init_regex_parser (MirageParserCue *self)
 
     append_regex_rule(&self->priv->regex_rules, "REM\\s+(?<comment>.+)$", mirage_parser_cue_callback_comment);
 
-    append_regex_rule(&self->priv->regex_rules, "CDTEXTFILE\\s+(?<filename>.+)$", mirage_parser_cue_callback_cdtext);
+    append_regex_rule(&self->priv->regex_rules, "CDTEXMAIN\\s+(?<filename>.+)$", mirage_parser_cue_callback_cdtext);
 
     append_regex_rule(&self->priv->regex_rules, "CATALOG\\s+(?<catalog>\\d{13})$", mirage_parser_cue_callback_catalog);
 

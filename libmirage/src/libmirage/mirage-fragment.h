@@ -138,10 +138,10 @@ GType mirage_fragment_iface_null_get_type (void);
  *                     Binary fragment interface                      *
 \**********************************************************************/
 /**
- * MirageTrackFileFormat:
- * @MIRAGE_TFILE_DATA: binary data
- * @MIRAGE_TFILE_AUDIO: audio data
- * @MIRAGE_TFILE_AUDIO_SWAP: audio data that needs to be swapped
+ * MirageMainDataFormat:
+ * @MIRAGE_MAIN_DATA: binary data
+ * @MIRAGE_MAIN_AUDIO: audio data
+ * @MIRAGE_MAIN_AUDIO_SWAP: audio data that needs to be swapped
  *
  * <para>
  * Track file data formats.
@@ -149,19 +149,19 @@ GType mirage_fragment_iface_null_get_type (void);
  **/
 typedef enum
 {
-    MIRAGE_TFILE_DATA  = 0x01,
-    MIRAGE_TFILE_AUDIO = 0x02,
-    MIRAGE_TFILE_AUDIO_SWAP = 0x04,
-} MirageTrackFileFormat;
+    MIRAGE_MAIN_DATA  = 0x01,
+    MIRAGE_MAIN_AUDIO = 0x02,
+    MIRAGE_MAIN_AUDIO_SWAP = 0x04,
+} MirageMainDataFormat;
 
 /**
- * MirageSubchannelFileFormat:
- * @MIRAGE_SFILE_INT: internal subchannel (i.e. included in track file)
- * @MIRAGE_SFILE_EXT: external subchannel (i.e. provided by separate file)
- * @MIRAGE_SFILE_PW96_INT: P-W subchannel, 96 bytes, interleaved
- * @MIRAGE_SFILE_PW96_LIN: P-W subchannel, 96 bytes, linear
- * @MIRAGE_SFILE_RW96: R-W subchannel, 96 bytes, deinterleaved
- * @MIRAGE_SFILE_PQ16: PQ subchannel, 16 bytes
+ * MirageSubchannelDataFormat:
+ * @MIRAGE_SUBCHANNEL_INT: internal subchannel (i.e. included in track file)
+ * @MIRAGE_SUBCHANNEL_EXT: external subchannel (i.e. provided by separate file)
+ * @MIRAGE_SUBCHANNEL_PW96_INT: P-W subchannel, 96 bytes, interleaved
+ * @MIRAGE_SUBCHANNEL_PW96_LIN: P-W subchannel, 96 bytes, linear
+ * @MIRAGE_SUBCHANNEL_RW96: R-W subchannel, 96 bytes, deinterleaved
+ * @MIRAGE_SUBCHANNEL_PQ16: PQ subchannel, 16 bytes
  *
  * <para>
  * Subchannel file data formats.
@@ -169,14 +169,14 @@ typedef enum
  **/
 typedef enum
 {
-    MIRAGE_SFILE_INT = 0x01,
-    MIRAGE_SFILE_EXT = 0x02,
+    MIRAGE_SUBCHANNEL_INT = 0x01,
+    MIRAGE_SUBCHANNEL_EXT = 0x02,
 
-    MIRAGE_SFILE_PW96_INT = 0x10,
-    MIRAGE_SFILE_PW96_LIN = 0x20,
-    MIRAGE_SFILE_RW96     = 0x40,
-    MIRAGE_SFILE_PQ16     = 0x80,
-} MirageSubchannelFileFormat;
+    MIRAGE_SUBCHANNEL_PW96_INT = 0x10,
+    MIRAGE_SUBCHANNEL_PW96_LIN = 0x20,
+    MIRAGE_SUBCHANNEL_RW96     = 0x40,
+    MIRAGE_SUBCHANNEL_PQ16     = 0x80,
+} MirageSubchannelDataFormat;
 
 #define MIRAGE_TYPE_FRAGMENT_IFACE_BINARY                 (mirage_fragment_iface_binary_get_type())
 #define MIRAGE_FRAGMENT_IFACE_BINARY(obj)                 (G_TYPE_CHECK_INSTANCE_CAST((obj), MIRAGE_TYPE_FRAGMENT_IFACE_BINARY, MirageFragmentIfaceBinary))
@@ -198,27 +198,27 @@ struct _MirageFragmentIfaceBinaryInterface
     GTypeInterface parent_iface;
 
     /* Interface methods */
-    gboolean (*track_file_set_file) (MirageFragmentIfaceBinary *self, const gchar *filename, GObject *stream, GError **error);
-    const gchar *(*track_file_get_file) (MirageFragmentIfaceBinary *self);
-    void (*track_file_set_offset) (MirageFragmentIfaceBinary *self, guint64 offset);
-    guint64 (*track_file_get_offset) (MirageFragmentIfaceBinary *self);
-    void (*track_file_set_sectsize) (MirageFragmentIfaceBinary *self, gint sectsize);
-    gint (*track_file_get_sectsize) (MirageFragmentIfaceBinary *self);
-    void (*track_file_set_format) (MirageFragmentIfaceBinary *self, gint format);
-    gint (*track_file_get_format) (MirageFragmentIfaceBinary *self);
+    gboolean (*main_data_set_stream) (MirageFragmentIfaceBinary *self, GObject *stream, GError **error);
+    const gchar *(*main_data_get_filename) (MirageFragmentIfaceBinary *self);
+    void (*main_data_set_offset) (MirageFragmentIfaceBinary *self, guint64 offset);
+    guint64 (*main_data_get_offset) (MirageFragmentIfaceBinary *self);
+    void (*main_data_set_size) (MirageFragmentIfaceBinary *self, gint sectsize);
+    gint (*main_data_get_size) (MirageFragmentIfaceBinary *self);
+    void (*main_data_set_format) (MirageFragmentIfaceBinary *self, gint format);
+    gint (*main_data_get_format) (MirageFragmentIfaceBinary *self);
 
-    guint64 (*track_file_get_position) (MirageFragmentIfaceBinary *self, gint address);
+    guint64 (*main_data_get_position) (MirageFragmentIfaceBinary *self, gint address);
 
-    gboolean (*subchannel_file_set_file) (MirageFragmentIfaceBinary *self, const gchar *filename, GObject *stream, GError **error);
-    const gchar *(*subchannel_file_get_file) (MirageFragmentIfaceBinary *self);
-    void (*subchannel_file_set_offset) (MirageFragmentIfaceBinary *self, guint64 offset);
-    guint64 (*subchannel_file_get_offset) (MirageFragmentIfaceBinary *self);
-    void (*subchannel_file_set_sectsize) (MirageFragmentIfaceBinary *self, gint sectsize);
-    gint (*subchannel_file_get_sectsize) (MirageFragmentIfaceBinary *self);
-    void (*subchannel_file_set_format) (MirageFragmentIfaceBinary *self, gint format);
-    gint (*subchannel_file_get_format) (MirageFragmentIfaceBinary *self);
+    gboolean (*subchannel_data_set_stream) (MirageFragmentIfaceBinary *self, GObject *stream, GError **error);
+    const gchar *(*subchannel_data_get_filename) (MirageFragmentIfaceBinary *self);
+    void (*subchannel_data_set_offset) (MirageFragmentIfaceBinary *self, guint64 offset);
+    guint64 (*subchannel_data_get_offset) (MirageFragmentIfaceBinary *self);
+    void (*subchannel_data_set_size) (MirageFragmentIfaceBinary *self, gint sectsize);
+    gint (*subchannel_data_get_size) (MirageFragmentIfaceBinary *self);
+    void (*subchannel_data_set_format) (MirageFragmentIfaceBinary *self, gint format);
+    gint (*subchannel_data_get_format) (MirageFragmentIfaceBinary *self);
 
-    guint64 (*subchannel_file_get_position) (MirageFragmentIfaceBinary *self, gint address);
+    guint64 (*subchannel_data_get_position) (MirageFragmentIfaceBinary *self, gint address);
 
 };
 
@@ -226,28 +226,28 @@ struct _MirageFragmentIfaceBinaryInterface
 GType mirage_fragment_iface_binary_get_type (void);
 
 /* Track file */
-gboolean mirage_fragment_iface_binary_track_file_set_file (MirageFragmentIfaceBinary *self, const gchar *filename, GObject *stream, GError **error);
-const gchar *mirage_fragment_iface_binary_track_file_get_file (MirageFragmentIfaceBinary *self);
-void mirage_fragment_iface_binary_track_file_set_offset (MirageFragmentIfaceBinary *self, guint64 offset);
-guint64 mirage_fragment_iface_binary_track_file_get_offset (MirageFragmentIfaceBinary *self);
-void mirage_fragment_iface_binary_track_file_set_sectsize (MirageFragmentIfaceBinary *self, gint sectsize);
-gint mirage_fragment_iface_binary_track_file_get_sectsize (MirageFragmentIfaceBinary *self);
-void mirage_fragment_iface_binary_track_file_set_format (MirageFragmentIfaceBinary *self, gint format);
-gint mirage_fragment_iface_binary_track_file_get_format (MirageFragmentIfaceBinary *self);
+gboolean mirage_fragment_iface_binary_main_data_set_stream (MirageFragmentIfaceBinary *self, GObject *stream, GError **error);
+const gchar *mirage_fragment_iface_binary_main_data_get_filename (MirageFragmentIfaceBinary *self);
+void mirage_fragment_iface_binary_main_data_set_offset (MirageFragmentIfaceBinary *self, guint64 offset);
+guint64 mirage_fragment_iface_binary_main_data_get_offset (MirageFragmentIfaceBinary *self);
+void mirage_fragment_iface_binary_main_data_set_size (MirageFragmentIfaceBinary *self, gint sectsize);
+gint mirage_fragment_iface_binary_main_data_get_size (MirageFragmentIfaceBinary *self);
+void mirage_fragment_iface_binary_main_data_set_format (MirageFragmentIfaceBinary *self, gint format);
+gint mirage_fragment_iface_binary_main_data_get_format (MirageFragmentIfaceBinary *self);
 
-guint64 mirage_fragment_iface_binary_track_file_get_position (MirageFragmentIfaceBinary *self, gint address);
+guint64 mirage_fragment_iface_binary_main_data_get_position (MirageFragmentIfaceBinary *self, gint address);
 
 /* Subchannel file */
-gboolean mirage_fragment_iface_binary_subchannel_file_set_file (MirageFragmentIfaceBinary *self, const gchar *filename, GObject *stream, GError **error);
-const gchar *mirage_fragment_iface_binary_subchannel_file_get_file (MirageFragmentIfaceBinary *self);
-void mirage_fragment_iface_binary_subchannel_file_set_offset (MirageFragmentIfaceBinary *self, guint64 offset);
-guint64 mirage_fragment_iface_binary_subchannel_file_get_offset (MirageFragmentIfaceBinary *self);
-void mirage_fragment_iface_binary_subchannel_file_set_sectsize (MirageFragmentIfaceBinary *self, gint sectsize);
-gint mirage_fragment_iface_binary_subchannel_file_get_sectsize (MirageFragmentIfaceBinary *self);
-void mirage_fragment_iface_binary_subchannel_file_set_format (MirageFragmentIfaceBinary *self, gint format);
-gint mirage_fragment_iface_binary_subchannel_file_get_format (MirageFragmentIfaceBinary *self);
+gboolean mirage_fragment_iface_binary_subchannel_data_set_stream (MirageFragmentIfaceBinary *self, GObject *stream, GError **error);
+const gchar *mirage_fragment_iface_binary_subchannel_data_get_filename (MirageFragmentIfaceBinary *self);
+void mirage_fragment_iface_binary_subchannel_data_set_offset (MirageFragmentIfaceBinary *self, guint64 offset);
+guint64 mirage_fragment_iface_binary_subchannel_data_get_offset (MirageFragmentIfaceBinary *self);
+void mirage_fragment_iface_binary_subchannel_data_set_size (MirageFragmentIfaceBinary *self, gint sectsize);
+gint mirage_fragment_iface_binary_subchannel_data_get_size (MirageFragmentIfaceBinary *self);
+void mirage_fragment_iface_binary_subchannel_data_set_format (MirageFragmentIfaceBinary *self, gint format);
+gint mirage_fragment_iface_binary_subchannel_data_get_format (MirageFragmentIfaceBinary *self);
 
-guint64 mirage_fragment_iface_binary_subchannel_file_get_position (MirageFragmentIfaceBinary *self, gint address);
+guint64 mirage_fragment_iface_binary_subchannel_data_get_position (MirageFragmentIfaceBinary *self, gint address);
 
 
 /**********************************************************************\
@@ -273,8 +273,8 @@ struct _MirageFragmentIfaceAudioInterface
     GTypeInterface parent_iface;
 
     /* Interface methods */
-    gboolean (*set_file) (MirageFragmentIfaceAudio *self, const gchar *filename, GObject *stream, GError **error);
-    const gchar *(*get_file) (MirageFragmentIfaceAudio *self);
+    gboolean (*set_stream) (MirageFragmentIfaceAudio *self, GObject *stream, GError **error);
+    const gchar *(*get_filename) (MirageFragmentIfaceAudio *self);
     void (*set_offset) (MirageFragmentIfaceAudio *self, gint offset);
     gint (*get_offset) (MirageFragmentIfaceAudio *self);
 };
@@ -282,8 +282,8 @@ struct _MirageFragmentIfaceAudioInterface
 /* Used by MIRAGE_TYPE_FRAGMENT_IFACE_AUDIO */
 GType mirage_fragment_iface_audio_get_type (void);
 
-gboolean mirage_fragment_iface_audio_set_file (MirageFragmentIfaceAudio *self, const gchar *filename, GObject *stream, GError **error);
-const gchar *mirage_fragment_iface_audio_get_file (MirageFragmentIfaceAudio *self);
+gboolean mirage_fragment_iface_audio_set_stream (MirageFragmentIfaceAudio *self, GObject *stream, GError **error);
+const gchar *mirage_fragment_iface_audio_get_filename (MirageFragmentIfaceAudio *self);
 void mirage_fragment_iface_audio_set_offset (MirageFragmentIfaceAudio *self, gint offset);
 gint mirage_fragment_iface_audio_get_offset (MirageFragmentIfaceAudio *self);
 

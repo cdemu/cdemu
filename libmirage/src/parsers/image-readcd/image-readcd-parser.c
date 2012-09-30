@@ -215,18 +215,18 @@ static gboolean mirage_parser_readcd_parse_toc_entry (MirageParserReadcd *self, 
             goto end;
         }
 
-        if (!mirage_fragment_iface_binary_track_file_set_file(MIRAGE_FRAGMENT_IFACE_BINARY(fragment), self->priv->data_filename, self->priv->data_stream, error)) {
+        if (!mirage_fragment_iface_binary_main_data_set_stream(MIRAGE_FRAGMENT_IFACE_BINARY(self), self->priv->data_stream, error)) {
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to set track data file!\n", __debug__);
             g_object_unref(fragment);
             succeeded = FALSE;
             goto end;
         }
-        mirage_fragment_iface_binary_track_file_set_sectsize(MIRAGE_FRAGMENT_IFACE_BINARY(fragment), 2352);
-        mirage_fragment_iface_binary_track_file_set_offset(MIRAGE_FRAGMENT_IFACE_BINARY(fragment), track_lba*2448);
-        mirage_fragment_iface_binary_track_file_set_format(MIRAGE_FRAGMENT_IFACE_BINARY(fragment), MIRAGE_TFILE_DATA);
+        mirage_fragment_iface_binary_main_data_set_size(MIRAGE_FRAGMENT_IFACE_BINARY(fragment), 2352);
+        mirage_fragment_iface_binary_main_data_set_offset(MIRAGE_FRAGMENT_IFACE_BINARY(fragment), track_lba*2448);
+        mirage_fragment_iface_binary_main_data_set_format(MIRAGE_FRAGMENT_IFACE_BINARY(fragment), MIRAGE_MAIN_DATA);
 
-        mirage_fragment_iface_binary_subchannel_file_set_sectsize(MIRAGE_FRAGMENT_IFACE_BINARY(fragment), 96);
-        mirage_fragment_iface_binary_subchannel_file_set_format(MIRAGE_FRAGMENT_IFACE_BINARY(fragment), MIRAGE_SFILE_PW96_INT | MIRAGE_SFILE_INT);
+        mirage_fragment_iface_binary_subchannel_data_set_size(MIRAGE_FRAGMENT_IFACE_BINARY(fragment), 96);
+        mirage_fragment_iface_binary_subchannel_data_set_format(MIRAGE_FRAGMENT_IFACE_BINARY(fragment), MIRAGE_SUBCHANNEL_PW96_INT | MIRAGE_SUBCHANNEL_INT);
 
         mirage_track_add_fragment(MIRAGE_TRACK(self->priv->cur_track), -1, fragment);
         g_object_unref(fragment);
@@ -265,18 +265,18 @@ static gboolean mirage_parser_readcd_parse_toc_entry (MirageParserReadcd *self, 
                     goto end;
                 }
 
-                if (!mirage_fragment_iface_binary_track_file_set_file(MIRAGE_FRAGMENT_IFACE_BINARY(fragment), self->priv->data_filename, self->priv->data_stream, error)) {
+                if (!mirage_fragment_iface_binary_main_data_set_stream(MIRAGE_FRAGMENT_IFACE_BINARY(fragment), self->priv->data_stream, error)) {
                     MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to set track data file!\n", __debug__);
                     g_object_unref(fragment);
                     succeeded = FALSE;
                     goto end;
                 }
-                mirage_fragment_iface_binary_track_file_set_sectsize(MIRAGE_FRAGMENT_IFACE_BINARY(fragment), 2352);
-                mirage_fragment_iface_binary_track_file_set_offset(MIRAGE_FRAGMENT_IFACE_BINARY(fragment), (track_lba - 150)*2448);
-                mirage_fragment_iface_binary_track_file_set_format(MIRAGE_FRAGMENT_IFACE_BINARY(fragment), MIRAGE_TFILE_DATA);
+                mirage_fragment_iface_binary_main_data_set_size(MIRAGE_FRAGMENT_IFACE_BINARY(fragment), 2352);
+                mirage_fragment_iface_binary_main_data_set_offset(MIRAGE_FRAGMENT_IFACE_BINARY(fragment), (track_lba - 150)*2448);
+                mirage_fragment_iface_binary_main_data_set_format(MIRAGE_FRAGMENT_IFACE_BINARY(fragment), MIRAGE_MAIN_DATA);
 
-                mirage_fragment_iface_binary_subchannel_file_set_sectsize(MIRAGE_FRAGMENT_IFACE_BINARY(fragment), 96);
-                mirage_fragment_iface_binary_subchannel_file_set_format(MIRAGE_FRAGMENT_IFACE_BINARY(fragment), MIRAGE_SFILE_PW96_INT | MIRAGE_SFILE_INT);
+                mirage_fragment_iface_binary_subchannel_data_set_size(MIRAGE_FRAGMENT_IFACE_BINARY(fragment), 96);
+                mirage_fragment_iface_binary_subchannel_data_set_format(MIRAGE_FRAGMENT_IFACE_BINARY(fragment), MIRAGE_SUBCHANNEL_PW96_INT | MIRAGE_SUBCHANNEL_INT);
 
                 mirage_fragment_set_length(MIRAGE_FRAGMENT(fragment), 150);
 

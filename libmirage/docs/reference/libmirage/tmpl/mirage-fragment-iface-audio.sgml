@@ -27,19 +27,18 @@ by a #MirageFragment implementation.
 </para>
 
 
-<!-- ##### FUNCTION mirage_fragment_iface_audio_set_file ##### -->
+<!-- ##### FUNCTION mirage_fragment_iface_audio_set_stream ##### -->
 <para>
 
 </para>
 
 @self: 
-@filename: 
 @stream: 
 @error: 
 @Returns: 
 
 
-<!-- ##### FUNCTION mirage_fragment_iface_audio_get_file ##### -->
+<!-- ##### FUNCTION mirage_fragment_iface_audio_get_filename ##### -->
 <para>
 
 </para>

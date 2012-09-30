@@ -260,7 +260,7 @@ static GObject *mirage_parser_cif_parse_track_descriptor (MirageParserCif *self,
     }
 
     /* Set file */
-    if (!mirage_fragment_iface_binary_track_file_set_file(MIRAGE_FRAGMENT_IFACE_BINARY(fragment), self->priv->cif_filename, self->priv->cif_stream, error)) {
+    if (!mirage_fragment_iface_binary_main_data_set_stream(MIRAGE_FRAGMENT_IFACE_BINARY(fragment), self->priv->cif_stream, error)) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to set track data file!\n", __debug__);
         g_object_unref(fragment);
         g_object_unref(track);
@@ -268,12 +268,12 @@ static GObject *mirage_parser_cif_parse_track_descriptor (MirageParserCif *self,
     }
 
     /* Set offset, length, sector size and data type */
-    mirage_fragment_iface_binary_track_file_set_offset(MIRAGE_FRAGMENT_IFACE_BINARY(fragment), offset_entry->offset);
-    mirage_fragment_iface_binary_track_file_set_sectsize(MIRAGE_FRAGMENT_IFACE_BINARY(fragment), sector_size);
+    mirage_fragment_iface_binary_main_data_set_offset(MIRAGE_FRAGMENT_IFACE_BINARY(fragment), offset_entry->offset);
+    mirage_fragment_iface_binary_main_data_set_size(MIRAGE_FRAGMENT_IFACE_BINARY(fragment), sector_size);
     if ((CIF_Track) descriptor->type == AUDIO) {
-        mirage_fragment_iface_binary_track_file_set_format(MIRAGE_FRAGMENT_IFACE_BINARY(fragment), MIRAGE_TFILE_AUDIO);
+        mirage_fragment_iface_binary_main_data_set_format(MIRAGE_FRAGMENT_IFACE_BINARY(fragment), MIRAGE_MAIN_AUDIO);
     } else {
-        mirage_fragment_iface_binary_track_file_set_format(MIRAGE_FRAGMENT_IFACE_BINARY(fragment), MIRAGE_TFILE_DATA);
+        mirage_fragment_iface_binary_main_data_set_format(MIRAGE_FRAGMENT_IFACE_BINARY(fragment), MIRAGE_MAIN_DATA);
     }
 
     mirage_fragment_set_length(MIRAGE_FRAGMENT(fragment), track_length);

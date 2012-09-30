@@ -111,17 +111,17 @@ static gboolean mirage_parser_cdi_decode_track_mode (MirageParserCdi *self, gint
     switch (raw_mode) {
         case 0: {
             *decoded_mode = MIRAGE_MODE_AUDIO;
-            *tfile_format = MIRAGE_TFILE_AUDIO;
+            *tfile_format = MIRAGE_MAIN_AUDIO;
             break;
         }
         case 1: {
             *decoded_mode = MIRAGE_MODE_MODE1;
-            *tfile_format = MIRAGE_TFILE_DATA;
+            *tfile_format = MIRAGE_MAIN_DATA;
             break;
         }
         case 2: {
             *decoded_mode = MIRAGE_MODE_MODE2_MIXED;
-            *tfile_format = MIRAGE_TFILE_DATA;
+            *tfile_format = MIRAGE_MAIN_DATA;
             break;
         }
         default: {
@@ -157,14 +157,14 @@ static gboolean mirage_parser_cdi_decode_read_mode (MirageParserCdi *self, gint 
             /* 2352+16-byte sectors (any track read raw + PQ subchannel) */
             *tfile_sectsize = 2352;
             *sfile_sectsize = 16;
-            *sfile_format = MIRAGE_SFILE_PQ16 | MIRAGE_SFILE_INT; /* PQ, internal */
+            *sfile_format = MIRAGE_SUBCHANNEL_PQ16 | MIRAGE_SUBCHANNEL_INT; /* PQ, internal */
             break;
         }
         case 4: {
             /* 2352+96-byte sectors (any track read raw + PW subchannel) */
             *tfile_sectsize = 2352;
             *sfile_sectsize = 96;
-            *sfile_format = MIRAGE_SFILE_PW96_INT | MIRAGE_SFILE_INT; /* PW96 interleaved, internal */
+            *sfile_format = MIRAGE_SUBCHANNEL_PW96_INT | MIRAGE_SUBCHANNEL_INT; /* PW96 interleaved, internal */
             break;
         }
         default: {
@@ -677,7 +677,7 @@ static gboolean mirage_parser_cdi_load_track (MirageParserCdi *self, GError **er
 
     mirage_fragment_set_length(MIRAGE_FRAGMENT(fragment), fragment_len);
 
-    if (!mirage_fragment_iface_binary_track_file_set_file(MIRAGE_FRAGMENT_IFACE_BINARY(fragment), self->priv->cdi_filename, self->priv->cdi_stream, error)) {
+    if (!mirage_fragment_iface_binary_main_data_set_stream(MIRAGE_FRAGMENT_IFACE_BINARY(fragment), self->priv->cdi_stream, error)) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to set track data file!\n", __debug__);
         g_object_unref(fragment);
         g_object_unref(track);
@@ -685,12 +685,12 @@ static gboolean mirage_parser_cdi_load_track (MirageParserCdi *self, GError **er
         g_free(indices);
         return FALSE;
     }
-    mirage_fragment_iface_binary_track_file_set_offset(MIRAGE_FRAGMENT_IFACE_BINARY(fragment), tfile_offset);
-    mirage_fragment_iface_binary_track_file_set_sectsize(MIRAGE_FRAGMENT_IFACE_BINARY(fragment), tfile_sectsize);
-    mirage_fragment_iface_binary_track_file_set_format(MIRAGE_FRAGMENT_IFACE_BINARY(fragment), tfile_format);
+    mirage_fragment_iface_binary_main_data_set_offset(MIRAGE_FRAGMENT_IFACE_BINARY(fragment), tfile_offset);
+    mirage_fragment_iface_binary_main_data_set_size(MIRAGE_FRAGMENT_IFACE_BINARY(fragment), tfile_sectsize);
+    mirage_fragment_iface_binary_main_data_set_format(MIRAGE_FRAGMENT_IFACE_BINARY(fragment), tfile_format);
 
-    mirage_fragment_iface_binary_subchannel_file_set_sectsize(MIRAGE_FRAGMENT_IFACE_BINARY(fragment), sfile_sectsize);
-    mirage_fragment_iface_binary_subchannel_file_set_format(MIRAGE_FRAGMENT_IFACE_BINARY(fragment), sfile_format);
+    mirage_fragment_iface_binary_subchannel_data_set_size(MIRAGE_FRAGMENT_IFACE_BINARY(fragment), sfile_sectsize);
+    mirage_fragment_iface_binary_subchannel_data_set_format(MIRAGE_FRAGMENT_IFACE_BINARY(fragment), sfile_format);
 
     mirage_track_add_fragment(MIRAGE_TRACK(track), -1, fragment);
 
