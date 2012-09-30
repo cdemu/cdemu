@@ -370,12 +370,12 @@ MirageMediumTypes mirage_disc_get_medium_type (MirageDisc *self)
  * Intended for internal use only, in image parser implementations.
  * </note>
  **/
-void mirage_disc_set_filenames (MirageDisc *self, gchar **filenames)
+void mirage_disc_set_filenames (MirageDisc *self, const gchar **filenames)
 {
     /* Free old filenames */
     g_strfreev(self->priv->filenames);
     /* Set filenames */
-    self->priv->filenames = g_strdupv(filenames);
+    self->priv->filenames = g_strdupv((gchar **)filenames);
 }
 
 /**

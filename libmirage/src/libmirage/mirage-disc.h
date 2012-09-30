@@ -101,7 +101,7 @@ void mirage_disc_set_medium_type (MirageDisc *self, MirageMediumTypes medium_typ
 MirageMediumTypes mirage_disc_get_medium_type (MirageDisc *self);
 
 /* Filename */
-void mirage_disc_set_filenames (MirageDisc *self, gchar **filenames);
+void mirage_disc_set_filenames (MirageDisc *self, const gchar **filenames);
 void mirage_disc_set_filename (MirageDisc *self, const gchar *filename);
 const gchar **mirage_disc_get_filenames (MirageDisc *self);
 
