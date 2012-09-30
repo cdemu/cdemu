@@ -95,40 +95,40 @@ static gboolean xml_dump_fragment (GObject *fragment, xmlNodePtr parent)
     if (MIRAGE_IS_FRAGMENT_IFACE_NULL(fragment)) {
         /* Nothing to do here*/
     } else if (MIRAGE_IS_FRAGMENT_IFACE_BINARY(fragment)) {
-        const gchar *tfile_name, *sfile_name;
-        guint64 tfile_offset, sfile_offset;
-        gint tfile_sectsize, sfile_sectsize;
-        gint tfile_format, sfile_format;
+        const gchar *main_name, *subchannel_name;
+        guint64 main_offset, subchannel_offset;
+        gint main_size, subchannel_size;
+        gint main_format, subchannel_format;
 
-        tfile_name = mirage_fragment_iface_binary_track_file_get_file(MIRAGE_FRAGMENT_IFACE_BINARY(fragment));
-        xml_add_node_with_content(parent, TAG_TFILE_NAME, "%s", tfile_name);
+        main_name = mirage_fragment_iface_binary_main_data_get_filename(MIRAGE_FRAGMENT_IFACE_BINARY(fragment));
+        xml_add_node_with_content(parent, TAG_MAIN_NAME, "%s", main_name);
 
-        tfile_offset = mirage_fragment_iface_binary_track_file_get_offset(MIRAGE_FRAGMENT_IFACE_BINARY(fragment));
-        xml_add_node_with_content(parent, TAG_TFILE_OFFSET, "%lld", tfile_offset);
+        main_offset = mirage_fragment_iface_binary_main_data_get_offset(MIRAGE_FRAGMENT_IFACE_BINARY(fragment));
+        xml_add_node_with_content(parent, TAG_MAIN_OFFSET, "%lld", main_offset);
 
 
-        tfile_sectsize = mirage_fragment_iface_binary_track_file_get_sectsize(MIRAGE_FRAGMENT_IFACE_BINARY(fragment));
-        xml_add_node_with_content(parent, TAG_TFILE_SECTSIZE, "%d", tfile_sectsize);
+        main_size = mirage_fragment_iface_binary_main_data_get_size(MIRAGE_FRAGMENT_IFACE_BINARY(fragment));
+        xml_add_node_with_content(parent, TAG_MAIN_SIZE, "%d", main_size);
 
-        tfile_format = mirage_fragment_iface_binary_track_file_get_format(MIRAGE_FRAGMENT_IFACE_BINARY(fragment));
-        xml_add_node_with_content(parent, TAG_TFILE_FORMAT, "0x%X", tfile_format);
+        main_format = mirage_fragment_iface_binary_main_data_get_format(MIRAGE_FRAGMENT_IFACE_BINARY(fragment));
+        xml_add_node_with_content(parent, TAG_MAIN_FORMAT, "0x%X", main_format);
 
-        sfile_name = mirage_fragment_iface_binary_subchannel_file_get_file(MIRAGE_FRAGMENT_IFACE_BINARY(fragment));
-        xml_add_node_with_content(parent, TAG_SFILE_NAME, "%s", sfile_name);
+        subchannel_name = mirage_fragment_iface_binary_subchannel_data_get_filename(MIRAGE_FRAGMENT_IFACE_BINARY(fragment));
+        xml_add_node_with_content(parent, TAG_SUBCHANNEL_NAME, "%s", subchannel_name);
 
-        sfile_offset = mirage_fragment_iface_binary_subchannel_file_get_offset(MIRAGE_FRAGMENT_IFACE_BINARY(fragment));
-        xml_add_node_with_content(parent, TAG_SFILE_OFFSET, "%lld", sfile_offset);
+        subchannel_offset = mirage_fragment_iface_binary_subchannel_data_get_offset(MIRAGE_FRAGMENT_IFACE_BINARY(fragment));
+        xml_add_node_with_content(parent, TAG_SUBCHANNEL_OFFSET, "%lld", subchannel_offset);
 
-        sfile_sectsize = mirage_fragment_iface_binary_subchannel_file_get_sectsize(MIRAGE_FRAGMENT_IFACE_BINARY(fragment));
-        xml_add_node_with_content(parent, TAG_SFILE_SECTSIZE, "%d", sfile_sectsize);
+        subchannel_size = mirage_fragment_iface_binary_subchannel_data_get_size(MIRAGE_FRAGMENT_IFACE_BINARY(fragment));
+        xml_add_node_with_content(parent, TAG_SUBCHANNEL_SIZE, "%d", subchannel_size);
 
-        sfile_format = mirage_fragment_iface_binary_subchannel_file_get_format(MIRAGE_FRAGMENT_IFACE_BINARY(fragment));
-        xml_add_node_with_content(parent, TAG_SFILE_FORMAT, "0x%X", sfile_format);
+        subchannel_format = mirage_fragment_iface_binary_subchannel_data_get_format(MIRAGE_FRAGMENT_IFACE_BINARY(fragment));
+        xml_add_node_with_content(parent, TAG_SUBCHANNEL_FORMAT, "0x%X", subchannel_format);
     } else if (MIRAGE_IS_FRAGMENT_IFACE_AUDIO(fragment)) {
         const gchar *filename;
         gint offset;
 
-        filename = mirage_fragment_iface_audio_get_file(MIRAGE_FRAGMENT_IFACE_AUDIO(fragment));
+        filename = mirage_fragment_iface_audio_get_filename(MIRAGE_FRAGMENT_IFACE_AUDIO(fragment));
         xml_add_node_with_content(parent, TAG_FILENAME, "%s", filename);
 
         offset = mirage_fragment_iface_audio_get_offset(MIRAGE_FRAGMENT_IFACE_AUDIO(fragment));

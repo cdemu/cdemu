@@ -113,32 +113,32 @@ static void treestore_add_fragment (GtkTreeStore *treestore, GtkTreeIter *parent
         } else if (!g_ascii_strcasecmp((gchar *)cur_node->name, TAG_LENGTH)) {
             gint length = xml_node_get_double(cur_node);
             treestore_add_node(treestore, &node, NULL, "Length: %d (0x%X)", length, length);
-        } else if (!g_ascii_strcasecmp((gchar *)cur_node->name, TAG_TFILE_NAME)) {
+        } else if (!g_ascii_strcasecmp((gchar *)cur_node->name, TAG_MAIN_NAME)) {
             gchar *filename = xml_node_get_string(cur_node);
-            treestore_add_node(treestore, &node, NULL, "Track file: Name: %s", filename);
+            treestore_add_node(treestore, &node, NULL, "Main data: File name: %s", filename);
             g_free(filename);
-        } else if (!g_ascii_strcasecmp((gchar *)cur_node->name, TAG_TFILE_OFFSET)) {
-            guint64 tfile_offset = xml_node_get_uint64(cur_node);
-            treestore_add_node(treestore, &node, NULL, "Track file: Offset: %lli (0x%llX)", tfile_offset, tfile_offset);
-        } else if (!g_ascii_strcasecmp((gchar *)cur_node->name, TAG_TFILE_SECTSIZE)) {
-            gint tfile_sectsize  = xml_node_get_double(cur_node);
-            treestore_add_node(treestore, &node, NULL, "Track file: Sector size: %d (0x%X)", tfile_sectsize, tfile_sectsize);
-        } else if (!g_ascii_strcasecmp((gchar *)cur_node->name, TAG_TFILE_FORMAT)) {
-            gint tfile_format = xml_node_get_double(cur_node);
-            treestore_add_node(treestore, &node, NULL, "Track file: Format: 0x%X (%s)", tfile_format, dump_binary_fragment_tfile_format(tfile_format));
-        }  else if (!g_ascii_strcasecmp((gchar *)cur_node->name, TAG_SFILE_NAME)) {
+        } else if (!g_ascii_strcasecmp((gchar *)cur_node->name, TAG_MAIN_OFFSET)) {
+            guint64 main_offset = xml_node_get_uint64(cur_node);
+            treestore_add_node(treestore, &node, NULL, "Main data: Offset: %lli (0x%llX)", main_offset, main_offset);
+        } else if (!g_ascii_strcasecmp((gchar *)cur_node->name, TAG_MAIN_SIZE)) {
+            gint main_size  = xml_node_get_double(cur_node);
+            treestore_add_node(treestore, &node, NULL, "Main data: Size: %d (0x%X)", main_size, main_size);
+        } else if (!g_ascii_strcasecmp((gchar *)cur_node->name, TAG_MAIN_FORMAT)) {
+            gint main_format = xml_node_get_double(cur_node);
+            treestore_add_node(treestore, &node, NULL, "Main data: Format: 0x%X (%s)", main_format, dump_binary_fragment_main_format(main_format));
+        }  else if (!g_ascii_strcasecmp((gchar *)cur_node->name, TAG_SUBCHANNEL_NAME)) {
             gchar *filename = xml_node_get_string(cur_node);
-            treestore_add_node(treestore, &node, NULL, "Subchannel file: Name: %s", filename);
+            treestore_add_node(treestore, &node, NULL, "Subchannel data: File name: %s", filename);
             g_free(filename);
-        } else if (!g_ascii_strcasecmp((gchar *)cur_node->name, TAG_SFILE_OFFSET)) {
-            guint64 sfile_offset = xml_node_get_uint64(cur_node);
-            treestore_add_node(treestore, &node, NULL, "Subchannel file: Offset: %lli (0x%llX)", sfile_offset, sfile_offset);
-        } else if (!g_ascii_strcasecmp((gchar *)cur_node->name, TAG_SFILE_SECTSIZE)) {
-            gint sfile_sectsize  = xml_node_get_double(cur_node);
-            treestore_add_node(treestore, &node, NULL, "Subchannel file: Sector size: %d (0x%X)", sfile_sectsize, sfile_sectsize);
-        } else if (!g_ascii_strcasecmp((gchar *)cur_node->name, TAG_SFILE_FORMAT)) {
-            gint sfile_format = xml_node_get_double(cur_node);
-            treestore_add_node(treestore, &node, NULL, "Subchannel file: Format: 0x%X (%s)", sfile_format, dump_binary_fragment_sfile_format(sfile_format));
+        } else if (!g_ascii_strcasecmp((gchar *)cur_node->name, TAG_SUBCHANNEL_OFFSET)) {
+            guint64 subchannel_offset = xml_node_get_uint64(cur_node);
+            treestore_add_node(treestore, &node, NULL, "Subchannel data: Offset: %lli (0x%llX)", subchannel_offset, subchannel_offset);
+        } else if (!g_ascii_strcasecmp((gchar *)cur_node->name, TAG_SUBCHANNEL_SIZE)) {
+            gint subchannel_size  = xml_node_get_double(cur_node);
+            treestore_add_node(treestore, &node, NULL, "Subchannel data: Size: %d (0x%X)", subchannel_size, subchannel_size);
+        } else if (!g_ascii_strcasecmp((gchar *)cur_node->name, TAG_SUBCHANNEL_FORMAT)) {
+            gint subchannel_format = xml_node_get_double(cur_node);
+            treestore_add_node(treestore, &node, NULL, "Subchannel data: Format: 0x%X (%s)", subchannel_format, dump_binary_fragment_subchannel_format(subchannel_format));
         } else if (!g_ascii_strcasecmp((gchar *)cur_node->name, TAG_FILENAME)) {
             gchar *filename = xml_node_get_string(cur_node);
             treestore_add_node(treestore, &node, NULL, "Filename: %s", filename);

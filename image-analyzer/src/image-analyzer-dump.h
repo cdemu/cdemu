@@ -41,8 +41,8 @@ gchar *dump_track_flags (gint track_flags);
 gchar *dump_track_mode (gint track_mode);
 gchar *dump_session_type (gint session_type);
 gchar *dump_medium_type (gint medium_type);
-gchar *dump_binary_fragment_tfile_format (gint format);
-gchar *dump_binary_fragment_sfile_format (gint format);
+gchar *dump_binary_fragment_main_format (gint format);
+gchar *dump_binary_fragment_subchannel_format (gint format);
 
 
 G_END_DECLS
