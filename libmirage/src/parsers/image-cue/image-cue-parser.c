@@ -830,109 +830,13 @@ static void mirage_parser_cue_cleanup_regex_parser (MirageParserCue *self)
     g_list_free(self->priv->regex_rules);
 }
 
-static const gchar *mirage_parser_cue_detect_encoding (MirageParserCue *self, GObject *stream)
-{
-    static const guint8 bom_utf32be[] = { 0x00, 0x00, 0xFE, 0xFF };
-    static const gchar utf32be[] = "utf-32be";
-    static const guint8 bom_utf32le[] = { 0xFF, 0xFE, 0x00, 0x00 };
-    static const gchar utf32le[] = "utf-32le";
-    static const guint8 bom_utf16be[] = { 0xFE, 0xFF };
-    static const gchar utf16be[] = "utf-16be";
-    static const guint8 bom_utf16le[] = { 0xFF, 0xFE };
-    static const gchar utf16le[] = "utf-16le";
-
-    /* Read first four bytes */
-    gchar bom[4];
-    goffset position = g_seekable_tell(G_SEEKABLE(stream));
-    gsize read_len;
-
-    g_seekable_seek(G_SEEKABLE(stream), 0, G_SEEK_SET, NULL, NULL);
-    read_len = g_input_stream_read(G_INPUT_STREAM(stream), bom, sizeof(bom), NULL, NULL);
-    g_seekable_seek(G_SEEKABLE(stream), position, G_SEEK_SET, NULL, NULL);
-    if (read_len != sizeof(bom)) {
-        return NULL;
-    }
-
-    /* Identify the encoding */
-    if (!memcmp(bom, bom_utf32be, sizeof(bom_utf32be))) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: UTF-32 BE BOM found\n", __debug__);
-        return utf32be;
-    } else if (!memcmp(bom, bom_utf32le, sizeof(bom_utf32le))) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: UTF-32 LE BOM found\n", __debug__);
-        return utf32le;
-    } else if (!memcmp(bom, bom_utf16be, sizeof(bom_utf16be))) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: UTF-16 BE BOM found\n", __debug__);
-        return utf16be;
-    } else if (!memcmp(bom, bom_utf16le, sizeof(bom_utf16le))) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: UTF-16 LE BOM found\n", __debug__);
-        return utf16le;
-    }
-
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: no BOM found, assuming UTF-8\n", __debug__);
-    return NULL;
-}
-
-static GDataInputStream *mirage_parser_cue_create_data_stream (MirageParserCue *self, GObject *stream, GError **error)
-{
-    GDataInputStream *data_stream;
-    const gchar *encoding;
-
-    /* Add reference to provided input stream */
-    g_object_ref(stream);
-
-    /* If provided, use the specified encoding; otherwise, try to detect it */
-    encoding = mirage_parser_get_param_string(MIRAGE_PARSER(self), "encoding");;
-    if (encoding) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: using specified encoding: %s\n", __debug__, encoding);
-    } else {
-        encoding = mirage_parser_cue_detect_encoding(self, stream);
-    }
-
-    if (encoding) {
-        GCharsetConverter *converter;
-        GInputStream *converter_stream;
-
-        /* Create converter */
-        converter = g_charset_converter_new("UTF-8", encoding, error);
-        if (!converter) {
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to create converter from '%s'!\n", __debug__, encoding);
-            g_object_unref(stream);
-            return FALSE;
-        }
-
-        /* Create converter stream */
-        converter_stream = g_converter_input_stream_new(G_INPUT_STREAM(stream), G_CONVERTER(converter));
-
-        g_object_unref(converter);
-
-        /* Switch the stream */
-        g_object_unref(stream);
-        stream = G_OBJECT(converter_stream);
-    }
-
-    /* Create data stream */
-    data_stream = g_data_input_stream_new(G_INPUT_STREAM(stream));
-    if (!data_stream) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to create data stream!\n", __debug__);
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_PARSER_ERROR, "Failed to create data stream!");
-        g_object_unref(stream);
-        return FALSE;
-    }
-
-    g_object_unref(stream);
-
-    g_data_input_stream_set_newline_type(data_stream, G_DATA_STREAM_NEWLINE_TYPE_ANY);
-
-    return data_stream;
-}
-
 static gboolean mirage_parser_cue_parse_cue_file (MirageParserCue *self, GObject *stream, GError **error)
 {
     GDataInputStream *data_stream;
     gboolean succeeded = TRUE;
 
     /* Create GDataInputStream */
-    data_stream = mirage_parser_cue_create_data_stream(self, stream, error);
+    data_stream = mirage_parser_create_text_stream(MIRAGE_PARSER(self), stream, error);
     if (!data_stream) {
         return FALSE;
     }

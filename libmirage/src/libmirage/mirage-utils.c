@@ -986,3 +986,47 @@ MirageTrackModes mirage_helper_determine_sector_type (const guint8 *buf)
     return MIRAGE_MODE_AUDIO;
 }
 
+
+/**********************************************************************\
+ *                         Text data encoding                         *
+\**********************************************************************/
+static const guint8 bom_utf32be[] = { 0x00, 0x00, 0xFE, 0xFF };
+static const gchar utf32be[] = "utf-32be";
+
+static const guint8 bom_utf32le[] = { 0xFF, 0xFE, 0x00, 0x00 };
+static const gchar utf32le[] = "utf-32le";
+
+static const guint8 bom_utf16be[] = { 0xFE, 0xFF };
+static const gchar utf16be[] = "utf-16be";
+
+static const guint8 bom_utf16le[] = { 0xFF, 0xFE };
+static const gchar utf16le[] = "utf-16le";
+
+/**
+ * mirage_helper_encoding_from_bom:
+ * @buffer: (in) (transfer none) (array fixed-size=4): a 4-byte buffer containing BOM
+ *
+ * <para>
+ * Tries to decode BOM provided in @buffer, and based on the result
+ * returns the following encodings: UTF-32BE, UTF32-LE, UTF-16LE, UTF-16BE
+ * or UTF-8 (if BOM is not valid).
+ * </para>
+ *
+ * Returns: (transfer none): the name of encoding, or %NULL if UTF-8 is
+ * assumed. The string is statically stored and should not be modified.
+ **/
+const gchar *mirage_helper_encoding_from_bom (const guint8 *buffer)
+{
+    /* Identify the encoding */
+    if (!memcmp(buffer, bom_utf32be, sizeof(bom_utf32be))) {
+        return utf32be;
+    } else if (!memcmp(buffer, bom_utf32le, sizeof(bom_utf32le))) {
+        return utf32le;
+    } else if (!memcmp(buffer, bom_utf16be, sizeof(bom_utf16be))) {
+        return utf16be;
+    } else if (!memcmp(buffer, bom_utf16le, sizeof(bom_utf16le))) {
+        return utf16le;
+    }
+
+    return NULL;
+}

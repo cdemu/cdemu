@@ -912,61 +912,13 @@ static void mirage_parser_ccd_cleanup_regex_parser (MirageParserCcd *self)
 }
 
 
-static GDataInputStream *mirage_parser_ccd_create_data_stream (MirageParserCcd *self, GObject *stream, GError **error)
-{
-    GDataInputStream *data_stream;
-    const gchar *encoding;
-
-    /* Add reference to provided input stream */
-    g_object_ref(stream);
-
-    /* If provided, use the specified encoding to convert to UTF-8 */
-    encoding = mirage_parser_get_param_string(MIRAGE_PARSER(self), "encoding");
-    if (encoding) {
-        GCharsetConverter *converter;
-        GInputStream *converter_stream;
-
-        /* Create converter */
-        converter = g_charset_converter_new("UTF-8", encoding, error);
-        if (!converter) {
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to create converter from '%s'!\n", __debug__, encoding);
-            g_object_unref(stream);
-            return NULL;
-        }
-
-        /* Create converter stream */
-        converter_stream = g_converter_input_stream_new(G_INPUT_STREAM(stream), G_CONVERTER(converter));
-
-        g_object_unref(converter);
-
-        /* Switch the stream */
-        g_object_unref(stream);
-        stream = G_OBJECT(converter_stream);
-    }
-
-    /* Create data stream */
-    data_stream = g_data_input_stream_new(G_INPUT_STREAM(stream));
-    if (!data_stream) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to create data stream!\n", __debug__);
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_PARSER_ERROR, "Failed to create data stream!");
-        g_object_unref(stream);
-        return NULL;
-    }
-
-    g_object_unref(stream);
-
-    g_data_input_stream_set_newline_type(data_stream, G_DATA_STREAM_NEWLINE_TYPE_ANY);
-
-    return data_stream;
-}
-
 static gboolean mirage_parser_ccd_parse_ccd_file (MirageParserCcd *self, GObject *stream, GError **error)
 {
     GDataInputStream *data_stream;
     gboolean succeeded = TRUE;
 
     /* Create GDataInputStream */
-    data_stream = mirage_parser_ccd_create_data_stream(self, stream, error);
+    data_stream = mirage_parser_create_text_stream(MIRAGE_PARSER(self), stream, error);
     if (!data_stream) {
         return FALSE;
     }

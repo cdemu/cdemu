@@ -185,7 +185,7 @@ static GObject *mirage_parser_iso_load_image (MirageParser *_self, GObject **str
 
     /* Check if file can be loaded */
     stream = streams[0];
-    g_object_ref(streams);
+    g_object_ref(stream);
     iso_filename = mirage_get_file_stream_filename(stream);
 
     if (!mirage_parser_iso_is_file_valid(self, stream, error)) {

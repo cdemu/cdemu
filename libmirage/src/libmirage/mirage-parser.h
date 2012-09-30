@@ -107,6 +107,8 @@ const gchar *mirage_parser_get_param_string (MirageParser *self, const gchar *na
 
 GObject *mirage_parser_get_cached_data_stream (MirageParser *self, const gchar *filename, GError **error);
 
+GDataInputStream *mirage_parser_create_text_stream (MirageParser *self, GObject *stream, GError **error);
+
 G_END_DECLS
 
 #endif /* __MIRAGE_PARSER_H__ */

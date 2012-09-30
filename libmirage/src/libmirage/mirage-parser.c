@@ -395,6 +395,90 @@ GObject *mirage_parser_get_cached_data_stream (MirageParser *self, const gchar *
 }
 
 
+
+/**
+ * mirage_parser_create_text_stream:
+ * @self: a #MirageParser
+ * @stream: (in) (transfer full): a #GInputStream
+ * @error: (out) (allow-none): location to store error, or %NULL
+ *
+ * <para>
+ * Constructs a filter chain for reading text files on top of provided
+ * @stream. The first filter is
+ *
+ * </para>
+ *
+ * Returns: (transfer full): a #GDataInputStream object on success,
+ *  encoding, or %NULL on failure.
+ **/
+GDataInputStream *mirage_parser_create_text_stream (MirageParser *self, GObject *stream, GError **error)
+{
+    GDataInputStream *data_stream;
+    const gchar *encoding;
+
+    /* Add reference to provided input stream */
+    g_object_ref(stream);
+
+    /* If provided, use the specified encoding; otherwise, try to detect it */
+    encoding = mirage_parser_get_param_string(MIRAGE_PARSER(self), "encoding");;
+    if (encoding) {
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: using specified encoding: %s\n", __debug__, encoding);
+    } else {
+        /* Detect encoding */
+        guint8 bom[4] = { 0 };
+
+        g_seekable_seek(G_SEEKABLE(stream), 0, G_SEEK_SET, NULL, NULL);
+        g_input_stream_read(G_INPUT_STREAM(stream), bom, sizeof(bom), NULL, NULL);
+
+        encoding = mirage_helper_encoding_from_bom(bom);
+
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: detect encoding: %s\n", __debug__, encoding);
+    }
+
+    /* Reset stream position, just in case */
+    g_seekable_seek(G_SEEKABLE(stream), 0, G_SEEK_SET, NULL, NULL);
+
+    /* If needed, set up charset converter */
+    if (encoding) {
+        GCharsetConverter *converter;
+        GInputStream *converter_stream;
+
+        /* Create converter */
+        converter = g_charset_converter_new("UTF-8", encoding, error);
+        if (!converter) {
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to create converter from '%s'!\n", __debug__, encoding);
+            g_object_unref(stream);
+            return FALSE;
+        }
+
+        /* Create converter stream */
+        converter_stream = g_converter_input_stream_new(G_INPUT_STREAM(stream), G_CONVERTER(converter));
+        g_filter_input_stream_set_close_base_stream(G_FILTER_INPUT_STREAM(converter_stream), FALSE);
+
+        g_object_unref(converter);
+
+        /* Switch the stream */
+        g_object_unref(stream);
+        stream = G_OBJECT(converter_stream);
+    }
+
+    /* Create data stream */
+    data_stream = g_data_input_stream_new(G_INPUT_STREAM(stream));
+    if (!data_stream) {
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to create data stream!\n", __debug__);
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_PARSER_ERROR, "Failed to create data stream!");
+        g_object_unref(stream);
+        return FALSE;
+    }
+    g_filter_input_stream_set_close_base_stream(G_FILTER_INPUT_STREAM(data_stream), FALSE);
+    g_data_input_stream_set_newline_type(data_stream, G_DATA_STREAM_NEWLINE_TYPE_ANY);
+
+    g_object_unref(stream);
+
+    return data_stream;
+}
+
+
 /**********************************************************************\
  *                             Object init                            *
 \**********************************************************************/

@@ -763,6 +763,7 @@ static GObject *mirage_parser_mds_load_image (MirageParser *_self, GObject **str
     g_object_ref(stream);
 
     /* Read signature and first byte of version */
+    g_seekable_seek(G_SEEKABLE(stream), 0, G_SEEK_SET, NULL, NULL);
     if (g_input_stream_read(G_INPUT_STREAM(stream), signature, sizeof(signature), NULL, NULL) != sizeof(signature)) {
         g_object_unref(stream);
         g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, "Failed to read signature and version!");

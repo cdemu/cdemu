@@ -137,6 +137,10 @@ void mirage_helper_sector_edc_ecc_compute_ecc_block (const guint8 *src, guint32 
 
 MirageTrackModes mirage_helper_determine_sector_type (const guint8 *buf);
 
+/* Text data encoding */
+const gchar *mirage_helper_encoding_from_bom (const guint8 *buffer);
+
+
 G_END_DECLS
 
 #endif /* __MIRAGE_UTILS_H__ */
