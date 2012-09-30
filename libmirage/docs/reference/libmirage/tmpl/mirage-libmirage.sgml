@@ -150,6 +150,15 @@ respectively. The list of supported debug masks can be obtained using mirage_get
 @Returns: 
 
 
+<!-- ##### FUNCTION mirage_get_file_stream_filename ##### -->
+<para>
+
+</para>
+
+@stream: 
+@Returns: 
+
+
 <!-- ##### FUNCTION mirage_for_each_parser ##### -->
 <para>
 

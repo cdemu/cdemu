@@ -23,6 +23,7 @@
 
 #include "mirage.h"
 
+
 static struct
 {
     gboolean initialized;
@@ -39,7 +40,11 @@ static struct
     /* Password function */
     MiragePasswordFunction password_function;
     gpointer password_data;
+
+    /* GFileInputStream -> filename mapping */
+    GHashTable *file_streams_map;
 } libmirage;
+
 
 static const MirageDebugMask dbg_masks[] = {
     { "MIRAGE_DEBUG_PARSER", MIRAGE_DEBUG_PARSER },
@@ -52,6 +57,30 @@ static const MirageDebugMask dbg_masks[] = {
     { "MIRAGE_DEBUG_FILE_IO", MIRAGE_DEBUG_FILE_IO },
 };
 
+
+
+/**********************************************************************\
+ *          GFileInputStream -> filename mapping management           *
+\**********************************************************************/
+static inline void stream_destroyed_handler (gpointer unused G_GNUC_UNUSED, GObject *stream)
+{
+    g_hash_table_remove(libmirage.file_streams_map, stream);
+}
+
+static inline void mirage_file_streams_map_add (GObject *stream, const gchar *filename)
+{
+    /* Insert into the table */
+    g_hash_table_insert(libmirage.file_streams_map, stream, g_strdup(filename));
+
+    /* Enable cleanup when stream is destroyed */
+    g_object_weak_ref(stream, (GWeakNotify)stream_destroyed_handler, NULL);
+}
+
+
+
+/**********************************************************************\
+ *                         Public API                                 *
+\**********************************************************************/
 /**
  * mirage_init:
  * @error: (out) (allow-none): location to store error, or %NULL
@@ -117,6 +146,9 @@ gboolean mirage_init (GError **error)
     libmirage.password_function = NULL;
     libmirage.password_data = NULL;
 
+    /* GFileInputStream -> filename map */
+    libmirage.file_streams_map = g_hash_table_new_full(g_direct_hash, g_direct_equal, NULL, g_free);
+
     /* We're officially initialized now */
     libmirage.initialized = TRUE;
 
@@ -147,6 +179,9 @@ gboolean mirage_shutdown (GError **error)
     g_free(libmirage.parsers);
     g_free(libmirage.fragments);
     g_free(libmirage.file_filters);
+
+    /* Free GFileInputStream -> filename map */
+    g_hash_table_unref(libmirage.file_streams_map);
 
     /* We're not initialized anymore */
     libmirage.initialized = FALSE;
@@ -458,6 +493,9 @@ GObject *mirage_create_file_stream (const gchar *filename, GObject *debug_contex
         return FALSE;
     }
 
+    /* Store the GFileInputStream -> filename mapping */
+    mirage_file_streams_map_add(stream, filename);
+
     /* Construct a chain of filters */
     GObject *filter;
     gboolean found_new;
@@ -495,6 +533,38 @@ GObject *mirage_create_file_stream (const gchar *filename, GObject *debug_contex
     g_seekable_seek(G_SEEKABLE(stream), 0, G_SEEK_SET, NULL, NULL);
 
     return stream;
+}
+
+
+/**
+ * mirage_get_file_stream_filename:
+ * @stream: (in): a #GInputStream
+ *
+ * <para>
+ * Traverses the chain of file filters and retrieves the filename on which
+ * the #GFileInputStream, located at the bottom of the chain, was opened.
+ * </para>
+ *
+ * Returns: (transfer none): on success, a pointer to filename on which
+ * the underyling file stream was opened. On failure, %NULL is returned.
+ **/
+const gchar *mirage_get_file_stream_filename (GInputStream *stream)
+{
+    if (G_IS_FILTER_INPUT_STREAM(stream)) {
+        /* Recursively traverse the filter stream chain */
+        GInputStream *base_stream = g_filter_input_stream_get_base_stream(G_FILTER_INPUT_STREAM(stream));
+        if (!base_stream) {
+            return NULL;
+        } else {
+            return mirage_get_file_stream_filename(base_stream);
+        }
+    } else if (G_IS_FILE_INPUT_STREAM(stream)) {
+        /* We are at the bottom; get filename from our mapping table */
+        return g_hash_table_lookup(libmirage.file_streams_map, stream);
+    }
+
+    /* Invalid stream type */
+    return NULL;
 }
 
 

@@ -13,6 +13,7 @@ mirage_obtain_password
 mirage_create_disc
 mirage_create_fragment
 mirage_create_file_stream
+mirage_get_file_stream_filename
 mirage_for_each_parser
 mirage_for_each_fragment
 mirage_for_each_file_filter

@@ -98,6 +98,8 @@ GObject *mirage_create_disc (gchar **filenames, GObject *debug_context, GHashTab
 GObject *mirage_create_fragment (GType fragment_interface, GObject *stream, GObject *debug_context, GError **error);
 GObject *mirage_create_file_stream (const gchar *filename, GObject *debug_context, GError **error);
 
+const gchar *mirage_get_file_stream_filename (GInputStream *stream);
+
 gboolean mirage_for_each_parser (MirageCallbackFunction func, gpointer user_data, GError **error);
 gboolean mirage_for_each_fragment (MirageCallbackFunction func, gpointer user_data, GError **error);
 gboolean mirage_for_each_file_filter (MirageCallbackFunction func, gpointer user_data, GError **error);
