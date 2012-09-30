@@ -216,8 +216,8 @@ static gboolean mirage_file_filter_xz_parse_stream (MirageFileFilterXz *self, GE
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: listing blocks...\n", __debug__);
     lzma_index_iter_init(&index_iter, self->priv->index);
     while (lzma_index_iter_next(&index_iter, LZMA_INDEX_ITER_BLOCK) == 0) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: block #%d:\n", __debug__, index_iter.block.number_in_file);
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: uncompressed size #%ld:\n", __debug__, index_iter.block.uncompressed_size, max_block_size);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: block #%d\n", __debug__, index_iter.block.number_in_file);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: uncompressed size #%ld\n", __debug__, index_iter.block.uncompressed_size, max_block_size);
         max_block_size = MAX(max_block_size, index_iter.block.uncompressed_size);
     }
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "\n");
