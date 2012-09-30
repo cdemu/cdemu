@@ -293,7 +293,8 @@ gchar *mirage_obtain_password (GError **error)
  **/
 GObject *mirage_create_disc (gchar **filenames, GObject *debug_context, GHashTable *params, GError **error)
 {
-    GObject *disc;
+    GObject *disc = NULL;
+    GObject **streams;
 
     /* Make sure libMirage is initialized */
     if (!libmirage.initialized) {
@@ -301,11 +302,12 @@ GObject *mirage_create_disc (gchar **filenames, GObject *debug_context, GHashTab
         return NULL;
     }
 
-    /* Check if filename(s) is/are valid */
-    for (gint i = 0; i < g_strv_length(filenames); i++) {
-        if (!g_file_test(filenames[i], G_FILE_TEST_IS_REGULAR)) {
-            g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, "Invalid image file '%s'!", filenames[i]);
-            return NULL;
+    /* Create streams */
+    streams = g_new0(GObject *, g_strv_length(filenames)+1);
+    for (gint i = 0; filenames[i]; i++) {
+        streams[i] = mirage_create_file_stream(filenames[i], debug_context, error);
+        if (!streams[i]) {
+            goto end;
         }
     }
 
@@ -324,14 +326,14 @@ GObject *mirage_create_disc (gchar **filenames, GObject *debug_context, GHashTab
         mirage_parser_set_params(MIRAGE_PARSER(parser), params);
 
         /* Try loading image */
-        disc = mirage_parser_load_image(MIRAGE_PARSER(parser), filenames, &local_error);
+        disc = mirage_parser_load_image(MIRAGE_PARSER(parser), streams, &local_error);
 
         /* Free parser */
         g_object_unref(parser);
 
         /* If loading succeeded, break the loop */
         if (disc) {
-            return disc;
+            goto end;
         } else {
             /* MIRAGE_ERROR_CANNOT_HANDLE is the only acceptable error here; anything
                other indicates that parser attempted to handle image and failed */
@@ -339,14 +341,22 @@ GObject *mirage_create_disc (gchar **filenames, GObject *debug_context, GHashTab
                 g_error_free(local_error);
             } else {
                 g_propagate_error(error, local_error);
-                return NULL;
+                goto end;
             }
         }
     }
 
     /* No parser found */
     g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_PARSER_ERROR, "No parser can handle the image file!");
-    return NULL;
+
+end:
+    /* Close streams */
+    for (gint i = 0; streams[i]; i++) {
+        g_object_unref(streams[i]);
+    }
+    g_free(streams);
+
+    return disc;
 }
 
 

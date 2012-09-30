@@ -111,21 +111,21 @@ const MirageParserInfo *mirage_parser_get_info (MirageParser *self)
 /**
  * mirage_parser_load_image:
  * @self: a #MirageParser
- * @filenames: (in) (array zero-terminated=1): array of image filename(s)
+ * @streams: (in) (array zero-terminated=1): %NULL-terminated array of data streams
  * @error: (out) (allow-none): location to store error, or %NULL
  *
  * <para>
- * Loads the image stored in @filenames.
+ * Loads the image stored in @streams.
  * </para>
  *
- * Returns: (transfer full): disc object representing image on success, %NULL on failure
+ * Returns: (transfer full): a #MirageDisc object representing image on success, %NULL on failure
  **/
-GObject *mirage_parser_load_image (MirageParser *self, gchar **filenames, GError **error)
+GObject *mirage_parser_load_image (MirageParser *self, GObject **streams, GError **error)
 {
     GObject *disc;
 
     /* Load the image */
-    disc = MIRAGE_PARSER_GET_CLASS(self)->load_image(self, filenames, error);
+    disc = MIRAGE_PARSER_GET_CLASS(self)->load_image(self, streams, error);
     if (!disc) {
         return NULL;
     }

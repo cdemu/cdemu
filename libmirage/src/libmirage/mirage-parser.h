@@ -83,7 +83,7 @@ struct _MirageParserClass
     MirageObjectClass parent_class;
 
     /* Class members */
-    GObject *(*load_image) (MirageParser *self, gchar **filenames, GError **error);
+    GObject *(*load_image) (MirageParser *self, GObject **streams, GError **error);
 };
 
 /* Used by MIRAGE_TYPE_PARSER */
@@ -96,7 +96,7 @@ GType mirage_parser_get_type (void);
 void mirage_parser_generate_info (MirageParser *self, const gchar *id, const gchar *name, const gchar *description, const gchar *mime_type);
 const MirageParserInfo *mirage_parser_get_info (MirageParser *self);
 
-GObject *mirage_parser_load_image (MirageParser *self, gchar **filenames, GError **error);
+GObject *mirage_parser_load_image (MirageParser *self, GObject **streams, GError **error);
 
 gint mirage_parser_guess_medium_type (MirageParser *self, GObject *disc);
 void mirage_parser_add_redbook_pregap (MirageParser *self, GObject *disc);

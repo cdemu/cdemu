@@ -72,7 +72,7 @@ represents the disc stored in the image file(s).
 </para>
 
 @self: 
-@filenames: 
+@streams: 
 @error: 
 @Returns: 
 
