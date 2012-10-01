@@ -106,6 +106,7 @@ static gboolean mirage_file_filter_cso_read_index (MirageFileFilterCso *self, GE
 
         CSO_Part *cur_part = &self->priv->parts[i];
 
+        /* Read index entry */
         ret = g_input_stream_read(G_INPUT_STREAM(stream), &buf, sizeof(buf), NULL, NULL);
         if (ret != sizeof(guint32)) {
             g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, "Failed to read from index!");
@@ -113,6 +114,10 @@ static gboolean mirage_file_filter_cso_read_index (MirageFileFilterCso *self, GE
             return FALSE;
         }
 
+        /* Fixup endianness */
+        buf = GUINT32_FROM_LE(buf);
+
+        /* Calculate part info */
         cur_part->offset = (buf & 0x7FFFFFFF) << header->idx_align;
         cur_part->raw = buf >> 31;
         if (i > 0) {
@@ -311,6 +316,15 @@ static gssize mirage_filter_cso_read_from_part (MirageFileFilterCso *self, guint
 /**********************************************************************\
  *              MirageFileFilter methods implementations             *
 \**********************************************************************/
+static void mirage_file_filter_fixup_header(MirageFileFilterCso *self)
+{
+    ciso_header_t *header = &self->priv->header;
+
+    header->header_size = GUINT32_FROM_LE(header->header_size);
+    header->total_bytes = GUINT64_FROM_LE(header->total_bytes);
+    header->block_size  = GUINT64_FROM_LE(header->block_size);
+}
+
 static gboolean mirage_file_filter_cso_can_handle_data_format (MirageFileFilter *_self, GError **error)
 {
     MirageFileFilterCso *self = MIRAGE_FILE_FILTER_CSO(_self);
@@ -324,6 +338,9 @@ static gboolean mirage_file_filter_cso_can_handle_data_format (MirageFileFilter 
         g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, "Failed to read CISO header!");
         return FALSE;
     }
+
+    /* Fixup header endianness */
+    mirage_file_filter_fixup_header(self);
 
     /* Validate CISO header */
     if (memcmp(&header->magic, ciso_signature, sizeof(ciso_signature)) || header->version > 1 ||
