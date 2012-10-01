@@ -6,6 +6,7 @@ set (fragments_LIST
 set (filters_LIST
     filter-cso
     filter-daa
+    filter-dmg
     filter-ecm
     filter-gzip
     filter-isz
@@ -119,6 +120,11 @@ set (filter-daa_SOURCES
     src/filters/filter-daa/lzma-sdk/LzmaDec.c
     src/filters/filter-daa/filter-daa-file-filter.c
     src/filters/filter-daa/filter-daa-plugin.c
+)
+
+set (filter-dmg_SOURCES
+    src/filters/filter-dmg/filter-dmg-file-filter.c
+    src/filters/filter-dmg/filter-dmg-plugin.c
 )
 
 set (filter-gzip_SOURCES
