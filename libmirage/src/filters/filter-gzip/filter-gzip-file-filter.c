@@ -48,13 +48,6 @@ static const guint8 gzip_signature[2] = { 0x1F, 0x8B };
 
 struct _MirageFileFilterGzipPrivate
 {
-    goffset cur_position;
-
-    gint cur_part_idx;
-    const GZIP_Part *cur_part;
-
-    guint64 file_size;
-
     /* I/O buffer */
     guint8 *io_buffer;
     gint io_buffer_size;
@@ -68,7 +61,7 @@ struct _MirageFileFilterGzipPrivate
     gint allocated_parts;
 
     /* Cache */
-    gint cached_part_idx;
+    gint cached_part;
     guint8 *part_buffer;
     gint part_buffer_size;
 
@@ -80,7 +73,7 @@ struct _MirageFileFilterGzipPrivate
 /**********************************************************************\
  *                           Part indexing                            *
 \**********************************************************************/
-static gboolean mirage_file_filter_gzip_compute_part_sizes (MirageFileFilterGzip *self, GError **error)
+static gboolean mirage_file_filter_gzip_compute_part_sizes (MirageFileFilterGzip *self, guint64 file_size, GError **error)
 {
     GZIP_Part *part;
     gint max_size = 0;
@@ -97,7 +90,7 @@ static gboolean mirage_file_filter_gzip_compute_part_sizes (MirageFileFilterGzip
 
     /* Last part size */
     part = &self->priv->parts[self->priv->num_parts-1];
-    part->size = self->priv->file_size - part->offset;
+    part->size = file_size - part->offset;
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: part #%d: offset: %lld, size: %lld\n", __debug__, self->priv->num_parts-1, part->offset, part->size);
 
     max_size = MAX(max_size, part->size);
@@ -256,13 +249,8 @@ static gboolean mirage_file_filter_gzip_build_index (MirageFileFilterGzip *self,
         } while (zlib_stream->avail_in);
     } while (ret != Z_STREAM_END);
 
-    /* totalOut holds the size of the stream */
-    self->priv->file_size = totalOut;
-
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: number of parts: %d\n", __debug__, self->priv->num_parts);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: original stream size: %ld (0x%lX)\n", __debug__, self->priv->file_size, self->priv->file_size);
-
     /* At least one part must be present */
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: number of parts: %d\n", __debug__, self->priv->num_parts);
     if (!self->priv->num_parts) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: no parts in GZIP file!\n", __debug__);
         g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, "No parts in GZIP file!");
@@ -273,14 +261,13 @@ static gboolean mirage_file_filter_gzip_build_index (MirageFileFilterGzip *self,
     self->priv->parts = g_renew(GZIP_Part, self->priv->parts, self->priv->num_parts);
 
     /* Compute sizes of parts and allocate part buffer */
-    if (!mirage_file_filter_gzip_compute_part_sizes(self, error)) {
+    if (!mirage_file_filter_gzip_compute_part_sizes(self, totalOut, error)) {
         return FALSE;
     }
 
-    /* Set stream position to beginning */
-    self->priv->cur_position = 0;
-    self->priv->cur_part_idx = 0;
-    self->priv->cur_part = &self->priv->parts[self->priv->cur_part_idx];
+    /* Store file size (= totalOut) */
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: file size: %lld (0x%llX)\n", __debug__, totalOut, totalOut);
+    mirage_file_filter_set_file_size(MIRAGE_FILE_FILTER(self), totalOut);
 
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: index building completed\n", __debug__);
 
@@ -288,112 +275,119 @@ static gboolean mirage_file_filter_gzip_build_index (MirageFileFilterGzip *self,
 }
 
 
-
 /**********************************************************************\
- *                              Seeking                               *
+ *              MirageFileFilter methods implementations             *
 \**********************************************************************/
-static inline gboolean is_within_part (goffset position, const GZIP_Part *part, gboolean last_part)
+static gboolean mirage_file_filter_gzip_can_handle_data_format (MirageFileFilter *_self, GError **error)
 {
-    if (last_part) {
-        return position >= part->offset;
-    } else {
-        return position >= part->offset && position < (part->offset + part->size);
-    }
-}
+    MirageFileFilterGzip *self = MIRAGE_FILE_FILTER_GZIP(_self);
+    GInputStream *stream = g_filter_input_stream_get_base_stream(G_FILTER_INPUT_STREAM(self));
 
+    guint8 sig[2];
 
-static gboolean mirage_file_filter_gzip_set_current_position (MirageFileFilterGzip *self, goffset new_position, GError **error)
-{
-    /* If new position matches current position, do nothing */
-    if (new_position == self->priv->cur_position) {
-        return TRUE;
-    }
-
-    /* Validate new position */
-    if (new_position < 0) {
-        g_set_error(error, G_IO_ERROR, G_IO_ERROR_INVALID_ARGUMENT, "Seek before beginning of file not allowed!");
+    /* Look for gzip signature at the beginning */
+    g_seekable_seek(G_SEEKABLE(stream), 0, G_SEEK_SET, NULL, NULL);
+    if (g_input_stream_read(G_INPUT_STREAM(stream), sig, sizeof(sig), NULL, NULL) != sizeof(sig)) {
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, "Failed to read 4 signature bytes!");
         return FALSE;
     }
 
-    /* Seeking beyond end of file appears to be supported by GFileInputStream, so we allow it as well */
-    /*if (new_position > self->priv->file_size) {
-        g_set_error(error, G_IO_ERROR, G_IO_ERROR_INVALID_ARGUMENT, "Seek beyond end of file not allowed!");
+    /* Check signature */
+    if (memcmp(sig, gzip_signature, sizeof(gzip_signature))) {
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_CANNOT_HANDLE, "Filter cannot handle given data!");
         return FALSE;
-    }*/
-
-    /* Find the corresponding part */
-    if (is_within_part(new_position, self->priv->cur_part, FALSE)) {
-        /* Position still within current part; nothing to do */
-    } else if (is_within_part(new_position, &self->priv->parts[0], FALSE)) {
-        /* Position within first part */
-        self->priv->cur_part_idx = 0;
-    } else if (is_within_part(new_position, &self->priv->parts[self->priv->num_parts-1], TRUE)) {
-        /* Position within last part */
-        self->priv->cur_part_idx = self->priv->num_parts - 1;
-    } else {
-        /* Seek part-by-part in appropriate direction (do not check first and last part, though) */
-        if (new_position < self->priv->cur_position) {
-            /* Seek backward */
-            for (gint i = self->priv->cur_part_idx; i > 0; i--) {
-                if (is_within_part(new_position, &self->priv->parts[i], FALSE)) {
-                    self->priv->cur_part_idx = i;
-                    break;
-                }
-            }
-        } else {
-            /* Seek foward */
-            for (gint i = self->priv->cur_part_idx; i < self->priv->num_parts-1; i++) {
-                if (is_within_part(new_position, &self->priv->parts[i], FALSE)) {
-                    self->priv->cur_part_idx = i;
-                    break;
-                }
-            }
-        }
     }
-    self->priv->cur_part = &self->priv->parts[self->priv->cur_part_idx];
 
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_FILE_IO, "%s: position %ld (0x%lX) found in part #%d!\n", __debug__, new_position, new_position, self->priv->cur_part_idx);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: parsing the underlying stream data...\n", __debug__);
 
-    /* Set new position */
-    self->priv->cur_position = new_position;
+    /* Build index */
+    if (!mirage_file_filter_gzip_build_index(self, error)) {
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: parsing failed!\n\n", __debug__);
+        return FALSE;
+    }
+
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: parsing completed successfully\n\n", __debug__);
 
     return TRUE;
 }
 
 
-/**********************************************************************\
- *                         Reading from parts                         *
-\**********************************************************************/
-static gssize mirage_filter_gzip_read_from_part (MirageFileFilterGzip *self, guint8 *buffer, gsize count)
+static gint mirage_file_filter_gzip_find_part (MirageFileFilterGzip *self, goffset position)
 {
-    GInputStream *stream = g_filter_input_stream_get_base_stream(G_FILTER_INPUT_STREAM(self));
-    goffset part_offset;
+    const GZIP_Part *part;
+    gint part_index;
 
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_FILE_IO, "%s: current position: %ld (part #%d, offset: %ld, size: %d, raw offset: %ld) -> read %d bytes\n", __debug__, self->priv->cur_position, self->priv->cur_part_idx, self->priv->cur_part->offset, self->priv->cur_part->size, self->priv->cur_part->raw_offset, count);
-
-    /* Make sure we're not at end of stream */
-    if (self->priv->cur_position >= self->priv->file_size) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_FILE_IO, "%s: read beyond end of stream, doing nothing!\n", __debug__);
-        return 0;
+    /* Size of part buffer is, by design, same as max size of part. Therefore,
+       as initial approximation, we assume all parts are of that size */
+    part_index = position / self->priv->part_buffer_size;
+    if (part_index < 0 || part_index >= self->priv->num_parts) {
+        return -1;
     }
 
+    part = &self->priv->parts[part_index];
+
+    if (position < part->offset) {
+        /* Seek backward */
+        for (gint i = part_index; i > 0; i--) {
+            part = &self->priv->parts[i];
+            if (position >= part->offset) {
+                part_index = i;
+                break;
+            } else {
+                part_index = -1; /* Set to invalid */
+            }
+        }
+    } else if (position > part->offset + part->size) {
+        /* Seek forward */
+        for (gint i = part_index; i < self->priv->num_parts; i++) {
+            part = &self->priv->parts[i];
+            if (position < part->offset + part->size) {
+                part_index = i;
+                break;
+            } else {
+                part_index = -1; /* Set to invalid */
+            }
+        }
+    }
+
+    return part_index;
+}
+
+static gssize mirage_file_filter_gzip_partial_read (MirageFileFilter *_self, void *buffer, gsize count)
+{
+    MirageFileFilterGzip *self = MIRAGE_FILE_FILTER_GZIP(_self);
+    GInputStream *stream = g_filter_input_stream_get_base_stream(G_FILTER_INPUT_STREAM(self));
+    goffset stream_position = mirage_file_filter_get_position(MIRAGE_FILE_FILTER(self));
+    const GZIP_Part *part;
+    gint part_idx;
+
+    /* Find part that corresponds to current position */
+    part_idx = mirage_file_filter_gzip_find_part(self, stream_position);
+    if (part_idx == -1) {
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_FILE_IO, "%s: stream position %ld (0x%lX) beyond end of stream, doing nothing!\n", __debug__, stream_position, stream_position);
+        return 0;
+    }
+    part = &self->priv->parts[part_idx];
+
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_FILE_IO, "%s: stream position: %ld (0x%lX) -> part #%d (cached: #%d)\n", __debug__, stream_position, part_idx, self->priv->cached_part);
+
     /* If we do not have part in cache, uncompress it */
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_FILE_IO, "%s: currently cached part: #%d\n", __debug__, self->priv->cached_part_idx);
-    if (self->priv->cur_part_idx != self->priv->cached_part_idx) {
+    if (part_idx != self->priv->cached_part) {
         z_stream *zlib_stream = &self->priv->zlib_stream;
-        const GZIP_Part *part = self->priv->cur_part;
-        goffset stream_offset;
+        goffset underlying_stream_offset;
         gint ret;
 
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_FILE_IO, "%s: part not cached, reading...\n", __debug__);
+
         /* Offset in underlying stream */
-        stream_offset = part->raw_offset;
+        underlying_stream_offset = part->raw_offset;
         if (part->bits) {
-            stream_offset--;
+            underlying_stream_offset--;
         }
 
         /* Seek to the position */
-        if (!g_seekable_seek(G_SEEKABLE(stream), stream_offset, G_SEEK_SET, NULL, NULL)) {
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to seek to %ld in underlying stream!\n", __debug__, stream_offset);
+        if (!g_seekable_seek(G_SEEKABLE(stream), underlying_stream_offset, G_SEEK_SET, NULL, NULL)) {
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to seek to %ld in underlying stream!\n", __debug__, underlying_stream_offset);
             return -1;
         }
 
@@ -447,142 +441,20 @@ static gssize mirage_filter_gzip_read_from_part (MirageFileFilterGzip *self, gui
 
 
         /* Set currently cached part */
-        self->priv->cached_part_idx = self->priv->cur_part_idx;
+        self->priv->cached_part = part_idx;
+    } else {
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_FILE_IO, "%s: part already cached\n", __debug__);
     }
 
-    part_offset = self->priv->cur_position - self->priv->cur_part->offset;
-    count = MIN(count, self->priv->cur_part->size - part_offset);
+    /* Copy data */
+    goffset part_offset = stream_position - part->offset;
+    count = MIN(count, part->size - part_offset);
 
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_FILE_IO, "%s: offset within part: %ld, copying %d bytes\n", __debug__, part_offset, count);
 
     memcpy(buffer, self->priv->part_buffer + part_offset, count);
 
     return count;
-}
-
-
-/**********************************************************************\
- *              MirageFileFilter methods implementations             *
-\**********************************************************************/
-static gboolean mirage_file_filter_gzip_can_handle_data_format (MirageFileFilter *_self, GError **error)
-{
-    MirageFileFilterGzip *self = MIRAGE_FILE_FILTER_GZIP(_self);
-    GInputStream *stream = g_filter_input_stream_get_base_stream(G_FILTER_INPUT_STREAM(self));
-
-    guint8 sig[2];
-
-    /* Look for gzip signature at the beginning */
-    g_seekable_seek(G_SEEKABLE(stream), 0, G_SEEK_SET, NULL, NULL);
-    if (g_input_stream_read(G_INPUT_STREAM(stream), sig, sizeof(sig), NULL, NULL) != sizeof(sig)) {
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, "Failed to read 4 signature bytes!");
-        return FALSE;
-    }
-
-    /* Check signature */
-    if (memcmp(sig, gzip_signature, sizeof(gzip_signature))) {
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_CANNOT_HANDLE, "Filter cannot handle given data!");
-        return FALSE;
-    }
-
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: parsing the underlying stream data...\n", __debug__);
-
-    /* Build index */
-    if (!mirage_file_filter_gzip_build_index(self, error)) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: parsing failed!\n\n", __debug__);
-        return FALSE;
-    }
-
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: parsing completed successfully\n\n", __debug__);
-
-    return TRUE;
-}
-
-
-static gssize mirage_file_filter_gzip_read (MirageFileFilter *_self, void *buffer, gsize count, GError **error)
-{
-    MirageFileFilterGzip *self = MIRAGE_FILE_FILTER_GZIP(_self);
-
-    gssize total_read, read_len;
-    guint8 *ptr = buffer;
-
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_FILE_IO, "%s: read %ld (0x%lX) bytes from current position %ld (0x%lX)!\n", __debug__, count, count, self->priv->cur_position, self->priv->cur_position);
-
-    /* Read until all is read */
-    total_read = 0;
-
-    while (count > 0) {
-        /* Read a single block from current part */
-        read_len = mirage_filter_gzip_read_from_part(self, ptr, count);
-
-        if (read_len == -1) {
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read data block!\n", __debug__);
-            g_set_error(error, G_IO_ERROR, G_IO_ERROR_FAILED, "Failed to read a data block from GZIP stream.");
-            return -1;
-        }
-
-        ptr += read_len;
-        total_read += read_len;
-        count -= read_len;
-
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_FILE_IO, "%s: read %ld (0x%lX) bytes... %ld (0x%lX) remaining\n\n", __debug__, read_len, read_len, count, count);
-
-        /* Update position */
-        if (!mirage_file_filter_gzip_set_current_position(self, self->priv->cur_position+read_len, error)) {
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to update position!\n", __debug__);
-            return -1;
-        }
-
-        /* Check if we're at end of stream */
-        if (self->priv->cur_position >= self->priv->file_size) {
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_FILE_IO, "%s: end of stream reached!\n", __debug__);
-            break;
-        }
-    }
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_FILE_IO, "%s: read complete\n", __debug__);
-
-    return total_read;
-}
-
-
-static goffset mirage_file_filter_gzip_tell (MirageFileFilter *_self)
-{
-    MirageFileFilterGzip *self = MIRAGE_FILE_FILTER_GZIP(_self);
-    return self->priv->cur_position;
-}
-
-static gboolean mirage_file_filter_gzip_seek (MirageFileFilter *_self, goffset offset, GSeekType type, GError **error)
-{
-    MirageFileFilterGzip *self = MIRAGE_FILE_FILTER_GZIP(_self);
-    goffset new_position;
-
-    /* Compute new position */
-    switch (type) {
-        case G_SEEK_SET: {
-            new_position = offset;
-            break;
-        }
-        case G_SEEK_CUR: {
-            new_position = self->priv->cur_position + offset;
-            break;
-        }
-        case G_SEEK_END: {
-            new_position = self->priv->file_size + offset;
-            break;
-        }
-        default: {
-            g_set_error(error, G_IO_ERROR, G_IO_ERROR_INVALID_ARGUMENT, "Invalid seek type.");
-            return FALSE;
-        }
-    }
-
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_FILE_IO, "%s: request for seek to %ld (0x%lX)\n", __debug__, new_position, new_position);
-
-    /* Seek */
-    if (!mirage_file_filter_gzip_set_current_position(self, new_position, error)) {
-        return FALSE;
-    }
-
-    return TRUE;
 }
 
 
@@ -608,11 +480,7 @@ static void mirage_file_filter_gzip_init (MirageFileFilterGzip *self)
         "application/x-gzip"
     );
 
-    self->priv->file_size = 0;
-
-    self->priv->cur_position = 0;
-    self->priv->cur_part_idx = 0;
-    self->priv->cur_part = NULL;
+    self->priv->cached_part = -1;
 
     self->priv->allocated_parts = 0;
     self->priv->num_parts = 0;
@@ -620,8 +488,6 @@ static void mirage_file_filter_gzip_init (MirageFileFilterGzip *self)
 
     self->priv->io_buffer = NULL;
     self->priv->window_buffer = NULL;
-
-    self->priv->cached_part_idx = -1;
     self->priv->part_buffer = NULL;
 }
 
@@ -650,10 +516,7 @@ static void mirage_file_filter_gzip_class_init (MirageFileFilterGzipClass *klass
 
     file_filter_class->can_handle_data_format = mirage_file_filter_gzip_can_handle_data_format;
 
-    file_filter_class->read = mirage_file_filter_gzip_read;
-
-    file_filter_class->tell = mirage_file_filter_gzip_tell;
-    file_filter_class->seek = mirage_file_filter_gzip_seek;
+    file_filter_class->partial_read = mirage_file_filter_gzip_partial_read;
 
     /* Register private structure */
     g_type_class_add_private(klass, sizeof(MirageFileFilterGzipPrivate));
