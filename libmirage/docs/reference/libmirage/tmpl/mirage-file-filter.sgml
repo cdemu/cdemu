@@ -8,9 +8,7 @@ File filter object
 <para>
 #MirageFileFilter is a basic unit of file access abstraction used in
 libMirage. It inherits from #GFilterInputStream and implements #GSeekable
-interface. The relevant functions for seeking and reading from underlying
-stream can be implemented by implementing virtual functions of #MirageFileFilter
-object.
+interface.
 </para>
 
 <para>
@@ -18,6 +16,19 @@ When opening a file with libMirage, mirage_create_file_stream() function
 should be used. This creates a chain of #MirageFileFilter objects on top
 of a #GFileInputStream, and returns the top object on the chain. This allows
 transparent access to, for example, compressed data stored in the file.
+</para>
+
+<para>
+There are two ways to implement a #MirageFileFilter. For full control
+over the logic for reading from parts and managing position in the stream,
+use "full interface", which requires implementation of three virtual functions:
+read(), seek() and tell(). The second option is to use "simplified interface",
+which provides framework for stream position management and reading logic, and
+requires that file filter implements partial_read() function. Additionally,
+it requires that file filter implementation sets the file stream size using
+mirage_file_filter_set_file_size() function. In partial_read(), the
+current position in the stream, which is managed by the framework, can
+be obtained using mirage_file_filter_get_position().
 </para>
 
 <!-- ##### SECTION See_Also ##### -->
@@ -70,6 +81,24 @@ mirage_create_file_stream()
 
 
 <!-- ##### FUNCTION mirage_file_filter_get_info ##### -->
+<para>
+
+</para>
+
+@self: 
+@Returns: 
+
+
+<!-- ##### FUNCTION mirage_file_filter_set_file_size ##### -->
+<para>
+
+</para>
+
+@self: 
+@size: 
+
+
+<!-- ##### FUNCTION mirage_file_filter_get_position ##### -->
 <para>
 
 </para>

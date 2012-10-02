@@ -49,6 +49,8 @@ MirageFileFilter
 mirage_file_filter_can_handle_data_format
 mirage_file_filter_generate_info
 mirage_file_filter_get_info
+mirage_file_filter_set_file_size
+mirage_file_filter_get_position
 <SUBSECTION Standard>
 MIRAGE_FILE_FILTER
 MIRAGE_IS_FILE_FILTER

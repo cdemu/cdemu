@@ -36,6 +36,10 @@ struct _MirageFileFilterPrivate
     MirageFileFilterInfo *info;
 
     GObject *debug_context;
+
+    /* Simplified interface */
+    guint64 file_size;
+    goffset position;
 };
 
 
@@ -124,6 +128,50 @@ gboolean mirage_file_filter_can_handle_data_format (MirageFileFilter *self, GErr
 }
 
 
+/**
+ * mirage_file_filter_set_file_size:
+ * @self: a #MirageFileFilter
+ * @size: (in): size of the stream
+ *
+ * <para>
+ * Sets size of the stream.
+ * </para>
+ *
+ * <para>
+ * This function is intented for use in file filter implementations that
+ * are based on the simplified interface. It should be used by the
+ * implementation to set the stream size during stream parsing; the set
+ * stream size is then used by the read function that is implemented by
+ * the simplified interface.
+ * </para>
+ **/
+void mirage_file_filter_set_file_size (MirageFileFilter *self, gsize size)
+{
+    self->priv->file_size = size;
+}
+
+/**
+ * mirage_file_filter_get_position:
+ * @self: a #MirageFileFilter
+ *
+ * <para>
+ * Retrieves position in the stream.
+ * </para>
+ *
+ * <para>
+ * This function is intented for use in file filter implementations that
+ * are based on the simplified interface. It should be used by the
+ * implementation's partial_read() function to determine position to
+ * read from without having to worry about position management and update.
+ * </para>
+ *
+ * Returns: position in the stream
+ **/
+goffset mirage_file_filter_get_position (MirageFileFilter *self)
+{
+    return self->priv->position;
+}
+
 
 /**********************************************************************\
  *                  GSeekable methods implementations                 *
@@ -159,6 +207,95 @@ static gboolean mirage_file_filter_truncate_fn (GSeekable *_self G_GNUC_UNUSED, 
     /* Truncation is not implemented */
     g_set_error(error, G_IO_ERROR, G_IO_ERROR_NOT_SUPPORTED, "Function not implemented!");
     return FALSE;
+}
+
+
+/**********************************************************************\
+ *   Default implementation of I/O functions (simplified interface)   *
+\**********************************************************************/
+static gboolean mirage_file_filter_seek_impl (MirageFileFilter *self, goffset offset, GSeekType type, GError **error)
+{
+    goffset new_position;
+
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_FILE_IO, "%s: seek: %ld (0x%lX), type %d\n", __debug__, offset, offset, type);
+
+    /* Compute new position */
+    switch (type) {
+        case G_SEEK_SET: {
+            new_position = offset;
+            break;
+        }
+        case G_SEEK_CUR: {
+            new_position = self->priv->position + offset;
+            break;
+        }
+        case G_SEEK_END: {
+            new_position = self->priv->file_size + offset;
+            break;
+        }
+        default: {
+            g_set_error(error, G_IO_ERROR, G_IO_ERROR_INVALID_ARGUMENT, "Invalid seek type.");
+            return FALSE;
+        }
+    }
+
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_FILE_IO, "%s: seeking to position %ld (0x%lX)\n", __debug__, new_position, new_position);
+
+    /* Validate new position */
+    if (new_position < 0) {
+        g_set_error(error, G_IO_ERROR, G_IO_ERROR_INVALID_ARGUMENT, "Seek before beginning of file not allowed!");
+        return FALSE;
+    }
+
+    /* Set new position */
+    self->priv->position = new_position;
+
+    return TRUE;
+}
+
+static goffset mirage_file_filter_tell_impl (MirageFileFilter *self)
+{
+    /* Return stored position */
+    return self->priv->position;
+}
+
+static gssize mirage_file_filter_read_impl (MirageFileFilter *self, void *buffer, gsize count, GError **error)
+{
+    gssize total_read, read_len;
+    guint8 *ptr = buffer;
+
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_FILE_IO, "%s: read %ld (0x%lX) bytes from position %ld (0x%lX)!\n", __debug__, count, count, self->priv->position, self->priv->position);
+
+    /* Read until all is read */
+    total_read = 0;
+
+    while (count > 0) {
+        /* Do a partial read using implementation's function */
+        read_len = MIRAGE_FILE_FILTER_GET_CLASS(self)->partial_read(self, ptr, count);
+        if (read_len == -1) {
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to do a partial read!\n", __debug__);
+            g_set_error(error, G_IO_ERROR, G_IO_ERROR_FAILED, "Failed to do a partial read.");
+            return -1;
+        }
+
+        ptr += read_len;
+        total_read += read_len;
+        count -= read_len;
+
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_FILE_IO, "%s: read %ld (0x%lX) bytes... %ld (0x%lX) remaining\n", __debug__, read_len, read_len, count, count);
+
+        /* Update position */
+        self->priv->position += read_len;
+
+        /* Check if we're at end of stream */
+        if (self->priv->position >= self->priv->file_size) {
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_FILE_IO, "%s: end of stream reached!\n", __debug__);
+            break;
+        }
+    }
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_FILE_IO, "%s: read complete\n", __debug__);
+
+    return total_read;
 }
 
 
@@ -264,6 +401,9 @@ static void mirage_file_filter_init (MirageFileFilter *self)
 
     self->priv->info = NULL;
     self->priv->debug_context = NULL;
+
+    self->priv->file_size = 0;
+    self->priv->position = 0;
 }
 
 static void mirage_file_filter_dispose (GObject *gobject)
@@ -300,6 +440,11 @@ static void mirage_file_filter_class_init (MirageFileFilterClass *klass)
     gobject_class->finalize = mirage_file_filter_finalize;
 
     ginputstream_class->read_fn = mirage_file_filter_read;
+
+    /* Default I/O functions implementations for simplified interface */
+    klass->read = mirage_file_filter_read_impl;
+    klass->tell = mirage_file_filter_tell_impl;
+    klass->seek = mirage_file_filter_seek_impl;
 
     /* Register private structure */
     g_type_class_add_private(klass, sizeof(MirageFileFilterPrivate));

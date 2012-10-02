@@ -81,12 +81,16 @@ struct _MirageFileFilterClass
     /* Class members */
     gboolean (*can_handle_data_format) (MirageFileFilter *self, GError **error);
 
+
     /* Functions reimplemented from GInputStream: */
     gssize (*read) (MirageFileFilter *self, void *buffer, gsize count, GError **error);
 
     /* Functions reimplemented from GSeekable: */
     goffset (*tell) (MirageFileFilter *self);
     gboolean (*seek) (MirageFileFilter *self, goffset offset, GSeekType type, GError **error);
+
+    /* Simplified interface */
+    gssize (*partial_read) (MirageFileFilter *self, void *buffer, gsize count);
 };
 
 /* Used by MIRAGE_TYPE_FILE_FILTER */
@@ -100,6 +104,11 @@ void mirage_file_filter_generate_info (MirageFileFilter *self, const gchar *id, 
 const MirageFileFilterInfo *mirage_file_filter_get_info (MirageFileFilter *self);
 
 gboolean mirage_file_filter_can_handle_data_format (MirageFileFilter *self, GError **error);
+
+void mirage_file_filter_set_file_size (MirageFileFilter *self, gsize size);
+
+goffset mirage_file_filter_get_position (MirageFileFilter *self);
+
 
 G_END_DECLS
 
