@@ -295,7 +295,7 @@ static gssize mirage_file_filter_xz_partial_read (MirageFileFilter *_self, void 
         return 0;
     }
 
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_FILE_IO, "%s: stream position: %ld (0x%lX) -> block #%d (cached: #%d)\n", __debug__, stream_position, index_iter.block.number_in_file, self->priv->cached_block_number);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_FILE_IO, "%s: stream position: %ld (0x%lX) -> block #%d (cached: #%d)\n", __debug__, stream_position, stream_position, index_iter.block.number_in_file, self->priv->cached_block_number);
 
     /* If we do not have block in cache, uncompress it */
     if (index_iter.block.number_in_file != self->priv->cached_block_number) {
