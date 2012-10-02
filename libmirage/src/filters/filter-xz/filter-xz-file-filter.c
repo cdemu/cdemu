@@ -35,14 +35,11 @@ static const guint8 xz_signature[6] = { 0xFD, '7', 'z', 'X', 'Z', 0x00 };
 
 struct _MirageFileFilterXzPrivate
 {
-    guint64 file_size;
-    goffset cur_position;
-
-    /* */
+    /* I/O buffer */
     guint8 *io_buffer;
     gint io_buffer_size;
 
-    /* */
+    /* Block (inflate) buffer */
     gint cached_block_number;
     guint8 *block_buffer;
     gint block_buffer_size;
@@ -66,6 +63,7 @@ static gboolean mirage_file_filter_xz_reallocate_read_buffer (MirageFileFilterXz
 
     return TRUE;
 }
+
 
 /**********************************************************************\
  *                           Stream parsing                           *
@@ -175,9 +173,9 @@ static gboolean mirage_file_filter_xz_read_index (MirageFileFilterXz *self, GErr
     }
 
     /* Store file size */
-    self->priv->file_size = lzma_index_uncompressed_size(self->priv->index);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: file size: %lld (0x%llX)\n", __debug__, self->priv->file_size, self->priv->file_size);
-
+    guint64 file_size = lzma_index_uncompressed_size(self->priv->index);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: file size: %lld (0x%llX)\n", __debug__, file_size, file_size);
+    mirage_file_filter_set_file_size(MIRAGE_FILE_FILTER(self), file_size);
 
     return TRUE;
 }
@@ -247,45 +245,59 @@ static gboolean mirage_file_filter_xz_parse_stream (MirageFileFilterXz *self, GE
 }
 
 
-
 /**********************************************************************\
- *                              Seeking                               *
+ *              MirageFileFilter methods implementations             *
 \**********************************************************************/
-static gboolean mirage_file_filter_xz_set_current_position (MirageFileFilterXz *self, goffset new_position, GError **error)
+static gboolean mirage_file_filter_xz_can_handle_data_format (MirageFileFilter *_self, GError **error)
 {
-    /* Validate new position */
-    if (new_position < 0) {
-        g_set_error(error, G_IO_ERROR, G_IO_ERROR_INVALID_ARGUMENT, "Seek before beginning of file not allowed!");
+    MirageFileFilterXz *self = MIRAGE_FILE_FILTER_XZ(_self);
+    GInputStream *stream = g_filter_input_stream_get_base_stream(G_FILTER_INPUT_STREAM(self));
+
+    guint8 sig[6];
+
+    /* Look for signature at the beginning */
+    g_seekable_seek(G_SEEKABLE(stream), 0, G_SEEK_SET, NULL, NULL);
+    if (g_input_stream_read(G_INPUT_STREAM(stream), sig, sizeof(sig), NULL, NULL) != sizeof(sig)) {
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, "Failed to read 6 signature bytes!");
         return FALSE;
     }
 
-    /* Set new position; corresponding block is determined upon read */
-    self->priv->cur_position = new_position;
+    /* Check signature */
+    if (memcmp(sig, xz_signature, sizeof(xz_signature))) {
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_CANNOT_HANDLE, "Filter cannot handle given data!");
+        return FALSE;
+    }
+
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: parsing the underlying stream data...\n", __debug__);
+
+    /* Parse XZ stream */
+    if (!mirage_file_filter_xz_parse_stream(self, error)) {
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: parsing failed!\n\n", __debug__);
+        return FALSE;
+    }
+
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: parsing completed successfully\n\n", __debug__);
 
     return TRUE;
 }
 
-
-/**********************************************************************\
- *                         Reading from parts                         *
-\**********************************************************************/
-static gssize mirage_filter_xz_read_from_part (MirageFileFilterXz *self, guint8 *buffer, gsize count)
+static gssize mirage_file_filter_xz_partial_read (MirageFileFilter *_self, void *buffer, gsize count)
 {
+    MirageFileFilterXz *self = MIRAGE_FILE_FILTER_XZ(_self);
     GInputStream *stream = g_filter_input_stream_get_base_stream(G_FILTER_INPUT_STREAM(self));
-    goffset block_offset;
+    goffset stream_position = mirage_file_filter_get_position(MIRAGE_FILE_FILTER(self));
     lzma_index_iter index_iter;
 
-    /* Find block */
+    /* Find block that corresponds to current position */
     lzma_index_iter_init(&index_iter, self->priv->index);
-    if (lzma_index_iter_locate(&index_iter, self->priv->cur_position)) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_FILE_IO, "%s: current position %ld (0x%lX) beyond end of stream, doing nothing!\n", __debug__, self->priv->cur_position, self->priv->cur_position);
+    if (lzma_index_iter_locate(&index_iter, stream_position)) {
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_FILE_IO, "%s: stream position %ld (0x%lX) beyond end of stream, doing nothing!\n", __debug__, stream_position, stream_position);
         return 0;
     }
 
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_FILE_IO, "%s: current position: %ld (block #%d) -> read %ld bytes\n", __debug__, self->priv->cur_position, index_iter.block.number_in_file, count);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_FILE_IO, "%s: stream position: %ld (0x%lX) -> block #%d (cached: #%d)\n", __debug__, stream_position, index_iter.block.number_in_file, self->priv->cached_block_number);
 
     /* If we do not have block in cache, uncompress it */
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_FILE_IO, "%s: currently cached block: #%d\n", __debug__, self->priv->cached_block_number);
     if (index_iter.block.number_in_file != self->priv->cached_block_number) {
         lzma_stream lzma = LZMA_STREAM_INIT;
         lzma_filter filters[LZMA_FILTERS_MAX+1];
@@ -293,6 +305,8 @@ static gssize mirage_filter_xz_read_from_part (MirageFileFilterXz *self, guint8 
 
         guint8 value;
         gint ret;
+
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_FILE_IO, "%s: block not cached, reading...\n", __debug__);
 
         /* Seek to the position */
         if (!g_seekable_seek(G_SEEKABLE(stream), index_iter.block.compressed_file_offset, G_SEEK_SET, NULL, NULL)) {
@@ -364,9 +378,12 @@ static gssize mirage_filter_xz_read_from_part (MirageFileFilterXz *self, guint8 
 
         /* Store the number of currently stored block */
         self->priv->cached_block_number = index_iter.block.number_in_file;
+    } else {
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_FILE_IO, "%s: block already cached\n", __debug__);
     }
 
-    block_offset = self->priv->cur_position - index_iter.block.uncompressed_stream_offset;
+    /* Copy data */
+    goffset block_offset = stream_position - index_iter.block.uncompressed_stream_offset;
     count = MIN(count, index_iter.block.uncompressed_size - block_offset);
 
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_FILE_IO, "%s: offset within block: %ld, copying %d bytes\n", __debug__, block_offset, count);
@@ -374,131 +391,6 @@ static gssize mirage_filter_xz_read_from_part (MirageFileFilterXz *self, guint8 
     memcpy(buffer, self->priv->block_buffer + block_offset, count);
 
     return count;
-}
-
-
-/**********************************************************************\
- *              MirageFileFilter methods implementations             *
-\**********************************************************************/
-static gboolean mirage_file_filter_xz_can_handle_data_format (MirageFileFilter *_self, GError **error)
-{
-    MirageFileFilterXz *self = MIRAGE_FILE_FILTER_XZ(_self);
-    GInputStream *stream = g_filter_input_stream_get_base_stream(G_FILTER_INPUT_STREAM(self));
-
-    guint8 sig[6];
-
-    /* Look for signature at the beginning */
-    g_seekable_seek(G_SEEKABLE(stream), 0, G_SEEK_SET, NULL, NULL);
-    if (g_input_stream_read(G_INPUT_STREAM(stream), sig, sizeof(sig), NULL, NULL) != sizeof(sig)) {
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, "Failed to read 6 signature bytes!");
-        return FALSE;
-    }
-
-    /* Check signature */
-    if (memcmp(sig, xz_signature, sizeof(xz_signature))) {
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_CANNOT_HANDLE, "Filter cannot handle given data!");
-        return FALSE;
-    }
-
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: parsing the underlying stream data...\n", __debug__);
-
-    /* Parse XZ stream */
-    if (!mirage_file_filter_xz_parse_stream(self, error)) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: parsing failed!\n\n", __debug__);
-        return FALSE;
-    }
-
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: parsing completed successfully\n\n", __debug__);
-
-    return TRUE;
-}
-
-
-static gssize mirage_file_filter_xz_read (MirageFileFilter *_self, void *buffer, gsize count, GError **error)
-{
-    MirageFileFilterXz *self = MIRAGE_FILE_FILTER_XZ(_self);
-
-    gssize total_read, read_len;
-    guint8 *ptr = buffer;
-
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_FILE_IO, "%s: read %ld (0x%lX) bytes from current position %ld (0x%lX)!\n", __debug__, count, count, self->priv->cur_position, self->priv->cur_position);
-
-    /* Read until all is read */
-    total_read = 0;
-
-    while (count > 0) {
-        /* Read a single block from current part */
-        read_len = mirage_filter_xz_read_from_part(self, ptr, count);
-
-        if (read_len == -1) {
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read data block!\n", __debug__);
-            g_set_error(error, G_IO_ERROR, G_IO_ERROR_FAILED, "Failed to read a data block from GZIP stream.");
-            return -1;
-        }
-
-        ptr += read_len;
-        total_read += read_len;
-        count -= read_len;
-
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_FILE_IO, "%s: read %ld (0x%lX) bytes... %ld (0x%lX) remaining\n\n", __debug__, read_len, read_len, count, count);
-
-        /* Update position */
-        if (!mirage_file_filter_xz_set_current_position(self, self->priv->cur_position+read_len, error)) {
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to update position!\n", __debug__);
-            return -1;
-        }
-
-        /* Check if we're at end of stream */
-        if (self->priv->cur_position >= self->priv->file_size) {
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_FILE_IO, "%s: end of stream reached!\n", __debug__);
-            break;
-        }
-    }
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_FILE_IO, "%s: read complete\n", __debug__);
-
-    return total_read;
-}
-
-
-static goffset mirage_file_filter_xz_tell (MirageFileFilter *_self)
-{
-    MirageFileFilterXz *self = MIRAGE_FILE_FILTER_XZ(_self);
-    return self->priv->cur_position;
-}
-
-static gboolean mirage_file_filter_xz_seek (MirageFileFilter *_self, goffset offset, GSeekType type, GError **error)
-{
-    MirageFileFilterXz *self = MIRAGE_FILE_FILTER_XZ(_self);
-    goffset new_position;
-
-    /* Compute new position */
-    switch (type) {
-        case G_SEEK_SET: {
-            new_position = offset;
-            break;
-        }
-        case G_SEEK_CUR: {
-            new_position = self->priv->cur_position + offset;
-            break;
-        }
-        case G_SEEK_END: {
-            new_position = self->priv->file_size + offset;
-            break;
-        }
-        default: {
-            g_set_error(error, G_IO_ERROR, G_IO_ERROR_INVALID_ARGUMENT, "Invalid seek type.");
-            return FALSE;
-        }
-    }
-
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_FILE_IO, "%s: request for seek to %ld (0x%lX)\n", __debug__, new_position, new_position);
-
-    /* Seek */
-    if (!mirage_file_filter_xz_set_current_position(self, new_position, error)) {
-        return FALSE;
-    }
-
-    return TRUE;
 }
 
 
@@ -523,9 +415,6 @@ static void mirage_file_filter_xz_init (MirageFileFilterXz *self)
         "Xz-compressed images",
         "application/x-xz"
     );
-
-    self->priv->file_size = 0;
-    self->priv->cur_position = 0;
 
     self->priv->cached_block_number = -1;
 
@@ -557,10 +446,7 @@ static void mirage_file_filter_xz_class_init (MirageFileFilterXzClass *klass)
 
     file_filter_class->can_handle_data_format = mirage_file_filter_xz_can_handle_data_format;
 
-    file_filter_class->read = mirage_file_filter_xz_read;
-
-    file_filter_class->tell = mirage_file_filter_xz_tell;
-    file_filter_class->seek = mirage_file_filter_xz_seek;
+    file_filter_class->partial_read = mirage_file_filter_xz_partial_read;
 
     /* Register private structure */
     g_type_class_add_private(klass, sizeof(MirageFileFilterXzPrivate));
