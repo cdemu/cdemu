@@ -270,6 +270,12 @@ static gssize mirage_file_filter_read_impl (MirageFileFilter *self, void *buffer
     total_read = 0;
 
     while (count > 0) {
+        /* Check if we're at end of stream */
+        if (self->priv->position >= self->priv->file_size) {
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_FILE_IO, "%s: end of stream reached!\n", __debug__);
+            break;
+        }
+
         /* Do a partial read using implementation's function */
         read_len = MIRAGE_FILE_FILTER_GET_CLASS(self)->partial_read(self, ptr, count);
         if (read_len == -1) {
@@ -286,12 +292,6 @@ static gssize mirage_file_filter_read_impl (MirageFileFilter *self, void *buffer
 
         /* Update position */
         self->priv->position += read_len;
-
-        /* Check if we're at end of stream */
-        if (self->priv->position >= self->priv->file_size) {
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_FILE_IO, "%s: end of stream reached!\n", __debug__);
-            break;
-        }
     }
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_FILE_IO, "%s: read complete\n", __debug__);
 
