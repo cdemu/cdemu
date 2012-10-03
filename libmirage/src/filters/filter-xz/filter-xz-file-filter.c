@@ -285,17 +285,17 @@ static gssize mirage_file_filter_xz_partial_read (MirageFileFilter *_self, void 
 {
     MirageFileFilterXz *self = MIRAGE_FILE_FILTER_XZ(_self);
     GInputStream *stream = g_filter_input_stream_get_base_stream(G_FILTER_INPUT_STREAM(self));
-    goffset stream_position = mirage_file_filter_get_position(MIRAGE_FILE_FILTER(self));
+    goffset position = mirage_file_filter_get_position(MIRAGE_FILE_FILTER(self));
     lzma_index_iter index_iter;
 
     /* Find block that corresponds to current position */
     lzma_index_iter_init(&index_iter, self->priv->index);
-    if (lzma_index_iter_locate(&index_iter, stream_position)) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_FILE_IO, "%s: stream position %ld (0x%lX) beyond end of stream, doing nothing!\n", __debug__, stream_position, stream_position);
+    if (lzma_index_iter_locate(&index_iter, position)) {
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_FILE_IO, "%s: stream position %ld (0x%lX) beyond end of stream, doing nothing!\n", __debug__, position, position);
         return 0;
     }
 
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_FILE_IO, "%s: stream position: %ld (0x%lX) -> block #%d (cached: #%d)\n", __debug__, stream_position, stream_position, index_iter.block.number_in_file, self->priv->cached_block_number);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_FILE_IO, "%s: stream position: %ld (0x%lX) -> block #%d (cached: #%d)\n", __debug__, position, position, index_iter.block.number_in_file, self->priv->cached_block_number);
 
     /* If we do not have block in cache, uncompress it */
     if (index_iter.block.number_in_file != self->priv->cached_block_number) {
@@ -383,7 +383,7 @@ static gssize mirage_file_filter_xz_partial_read (MirageFileFilter *_self, void 
     }
 
     /* Copy data */
-    goffset block_offset = stream_position - index_iter.block.uncompressed_stream_offset;
+    goffset block_offset = position - index_iter.block.uncompressed_stream_offset;
     count = MIN(count, index_iter.block.uncompressed_size - block_offset);
 
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_FILE_IO, "%s: offset within block: %ld, copying %d bytes\n", __debug__, block_offset, count);

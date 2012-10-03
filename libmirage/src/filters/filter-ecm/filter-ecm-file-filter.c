@@ -44,22 +44,15 @@ static const guint8 ecm_signature[4] = { 'E', 'C', 'M', 0x00 };
 
 struct _MirageFileFilterEcmPrivate
 {
-    goffset cur_position;
-
-    gint cur_part_idx;
-    const ECM_Part *cur_part;
-
-    guint64 file_size;
-
     /* Part list */
     ECM_Part *parts;
     gint num_parts;
     gint allocated_parts;
 
     /* Cache */
-    gint cache_part_idx;
-    gint cache_block_idx;
-    guint8 cache_buffer[2352];
+    gint cached_part;
+    gint cached_block;
+    guint8 buffer[2352];
 };
 
 
@@ -112,6 +105,8 @@ static gboolean mirage_file_filter_ecm_build_index (MirageFileFilterEcm *self, G
 
     gint8 type;
     guint32 num;
+
+    guint64 file_size = 0;
 
     goffset raw_offset;
     gsize raw_size;
@@ -197,16 +192,15 @@ static gboolean mirage_file_filter_ecm_build_index (MirageFileFilterEcm *self, G
         }
 
         /* Append to list of parts */
-        if (!mirage_file_filter_ecm_append_part(self, num, type, raw_offset, raw_size, self->priv->file_size, size, error)) {
+        if (!mirage_file_filter_ecm_append_part(self, num, type, raw_offset, raw_size, file_size, size, error)) {
             return FALSE;
         }
 
         /* Original file size */
-        self->priv->file_size += size;
+        file_size += size;
     }
 
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: number of parts: %d!\n", __debug__, self->priv->num_parts);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: original stream size: %ld!\n", __debug__, self->priv->file_size);
 
     /* At least one part must be present */
     if (!self->priv->num_parts) {
@@ -218,267 +212,13 @@ static gboolean mirage_file_filter_ecm_build_index (MirageFileFilterEcm *self, G
     /* Release unused allocated parts */
     self->priv->parts = g_renew(ECM_Part, self->priv->parts, self->priv->num_parts);
 
-    /* Set stream position to beginning */
-    self->priv->cur_position = 0;
-    self->priv->cur_part_idx = 0;
-    self->priv->cur_part = &self->priv->parts[self->priv->cur_part_idx];
+    /* Store file size */
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: file size: %lld (0x%llX)\n", __debug__, file_size, file_size);
+    mirage_file_filter_set_file_size(MIRAGE_FILE_FILTER(self), file_size);
 
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: successfully built index\n", __debug__);
-
-    return TRUE;
-}
-
-
-
-/**********************************************************************\
- *                              Seeking                               *
-\**********************************************************************/
-static inline gboolean is_within_part (goffset position, const ECM_Part *part, gboolean last_part)
-{
-    if (last_part) {
-        return position >= part->offset;
-    } else {
-        return position >= part->offset && position < (part->offset + part->size);
-    }
-}
-
-
-static gboolean mirage_file_filter_ecm_set_current_position (MirageFileFilterEcm *self, goffset new_position, GError **error)
-{
-    /* If new position matches current position, do nothing */
-    if (new_position == self->priv->cur_position) {
-        return TRUE;
-    }
-
-    /* Validate new position */
-    if (new_position < 0) {
-        g_set_error(error, G_IO_ERROR, G_IO_ERROR_INVALID_ARGUMENT, "Seek before beginning of file not allowed!");
-        return FALSE;
-    }
-
-    /* Seeking beyond end of file appears to be supported by GFileInputStream, so we allow it as well */
-    /*if (new_position > self->priv->file_size) {
-        g_set_error(error, G_IO_ERROR, G_IO_ERROR_INVALID_ARGUMENT, "Seek beyond end of file not allowed!");
-        return FALSE;
-    }*/
-
-    /* Find the corresponding part */
-    if (is_within_part(new_position, self->priv->cur_part, FALSE)) {
-        /* Position still within current part; nothing to do */
-    } else if (is_within_part(new_position, &self->priv->parts[0], FALSE)) {
-        /* Position within first part */
-        self->priv->cur_part_idx = 0;
-    } else if (is_within_part(new_position, &self->priv->parts[self->priv->num_parts-1], TRUE)) {
-        /* Position within last part */
-        self->priv->cur_part_idx = self->priv->num_parts - 1;
-    } else {
-        /* Seek part-by-part in appropriate direction (do not check first and last part, though) */
-        if (new_position < self->priv->cur_position) {
-            /* Seek backward */
-            for (gint i = self->priv->cur_part_idx; i > 0; i--) {
-                if (is_within_part(new_position, &self->priv->parts[i], FALSE)) {
-                    self->priv->cur_part_idx = i;
-                    break;
-                }
-            }
-        } else {
-            /* Seek foward */
-            for (gint i = self->priv->cur_part_idx; i < self->priv->num_parts-1; i++) {
-                if (is_within_part(new_position, &self->priv->parts[i], FALSE)) {
-                    self->priv->cur_part_idx = i;
-                    break;
-                }
-            }
-        }
-    }
-    self->priv->cur_part = &self->priv->parts[self->priv->cur_part_idx];
-
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_FILE_IO, "%s: position %ld (0x%lX) found in part #%d!\n", __debug__, new_position, new_position, self->priv->cur_part_idx);
-
-    /* Set new position */
-    self->priv->cur_position = new_position;
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: index building completed\n", __debug__);
 
     return TRUE;
-}
-
-
-/**********************************************************************\
- *                         Reading from parts                         *
-\**********************************************************************/
-static gssize mirage_filter_ecm_read_single_block_from_part (MirageFileFilterEcm *self, guint8 *buffer, gsize count)
-{
-    GInputStream *stream = g_filter_input_stream_get_base_stream(G_FILTER_INPUT_STREAM(self));
-
-    goffset part_offset, buffer_offset, stream_offset;
-    gint block_idx;
-    gssize read_len;
-
-    gint block_size, raw_block_size, skip_bytes;
-
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_FILE_IO, "%s: current position: %ld (part #%d, type %d, offset: %ld, size: %ld, raw offset: %ld, raw size: %ld) -> read %d bytes\n", __debug__, self->priv->cur_position, self->priv->cur_part_idx, self->priv->cur_part->type, self->priv->cur_part->offset, self->priv->cur_part->size, self->priv->cur_part->raw_offset, self->priv->cur_part->raw_size, count);
-
-    /* Make sure we're not at end of stream */
-    if (self->priv->cur_position >= self->priv->file_size) {
-        return 0;
-    }
-
-    /* Compute offset within part */
-    part_offset = self->priv->cur_position - self->priv->cur_part->offset;
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_FILE_IO, "%s: offset within part: %ld\n", __debug__, part_offset);
-
-    /* Decode types */
-    switch (self->priv->cur_part->type) {
-        case ECM_RAW: {
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_FILE_IO, "%s: part type: raw => reading raw bytes\n", __debug__);
-
-            /* This one is different from others, because we read data directly */
-            stream_offset = self->priv->cur_part->raw_offset + part_offset;
-
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_FILE_IO, "%s: seeking to %ld (0x%lX) in underlying stream\n", __debug__, part_offset, stream_offset);
-            if (!g_seekable_seek(G_SEEKABLE(stream), stream_offset, G_SEEK_SET, NULL, NULL)) {
-                MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to seek to %ld in underlying stream!\n", __debug__, stream_offset);
-                return -1;
-            }
-
-            /* Read all available data */
-            count = MIN(count, self->priv->cur_part->size - part_offset);
-
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_FILE_IO, "%s: reading %ld (0x%lX) bytes from underlying stream\n", __debug__, count, count);
-            read_len = g_input_stream_read(G_INPUT_STREAM(stream), buffer, count, NULL, NULL);
-            if (read_len != count) {
-                MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read %ld bytes from underlying stream!\n", __debug__, count);
-                return -1;
-            }
-
-            return read_len;
-        }
-        case ECM_MODE1_2352: {
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_FILE_IO, "%s: part type: Mode 1 (2051 -> 2352)\n", __debug__);
-            block_size = 2352;
-            raw_block_size = 3+2048;
-            skip_bytes = 0;
-            break;
-        }
-        case ECM_MODE2_FORM1_2336: {
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_FILE_IO, "%s: part type: Mode 2 Form 1 (2052 -> 2336)\n", __debug__);
-            block_size = 2336;
-            raw_block_size = 4+2048;
-            skip_bytes = 16;
-            break;
-        }
-        case ECM_MODE2_FORM2_2336: {
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_FILE_IO, "%s: part type: Mode 2 Form 1 (2328 -> 2336)\n", __debug__);
-            block_size = 2336;
-            raw_block_size = 4+2324;
-            skip_bytes = 16;
-            break;
-        }
-        default: {
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: unhandled type %d!\n", __debug__, self->priv->cur_part->type);
-            return -1;
-        }
-    }
-
-    /* Compute the block number, and offset within buffer */
-    block_idx = part_offset / block_size;
-    buffer_offset = part_offset % block_size;
-
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_FILE_IO, "%s: reading from block %d; buffer offset: %d\n", __debug__, block_idx, buffer_offset);
-
-    /* If this particular block in this particular part is not cached,
-       read the data and reconstruct ECC/EDC */
-    if (self->priv->cache_part_idx != self->priv->cur_part_idx || self->priv->cache_block_idx != block_idx) {
-        /* Compute offset within underlying stream */
-        stream_offset = self->priv->cur_part->raw_offset + block_idx*raw_block_size;
-
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_FILE_IO, "%s: seeking to %ld (0x%lX) in underlying stream\n", __debug__, part_offset, part_offset);
-        if (!g_seekable_seek(G_SEEKABLE(stream), stream_offset, G_SEEK_SET, NULL, NULL)) {
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to seek to %ld in underlying stream!\n", __debug__, part_offset);
-            return -1;
-        }
-
-        /* Read and reconstruct sector data */
-        switch (self->priv->cur_part->type) {
-            case ECM_MODE1_2352: {
-                /* Read data */
-                if (g_input_stream_read(G_INPUT_STREAM(stream), self->priv->cache_buffer+0x00C, 0x003, NULL, NULL) != 0x003) {
-                    MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read %ld bytes from underlying stream!\n", __debug__, 0x003);
-                    return -1;
-                }
-                if (g_input_stream_read(G_INPUT_STREAM(stream), self->priv->cache_buffer+0x010, 0x800, NULL, NULL) != 0x800) {
-                    MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read %ld bytes from underlying stream!\n", __debug__, 0x800);
-                    return -1;
-                }
-
-                /* Set sync pattern */
-                memcpy(self->priv->cache_buffer, mirage_pattern_sync, sizeof(mirage_pattern_sync));
-
-                /* Set mode byte in header */
-                self->priv->cache_buffer[0x00F] = 1;
-
-                /* Generate EDC */
-                mirage_helper_sector_edc_ecc_compute_edc_block(self->priv->cache_buffer+0x000, 0x810, self->priv->cache_buffer+0x810);
-
-                /* Generate ECC P/Q codes */
-                mirage_helper_sector_edc_ecc_compute_ecc_block(self->priv->cache_buffer+0x00C, 86, 24, 2, 86, self->priv->cache_buffer+0x81C); /* P */
-                mirage_helper_sector_edc_ecc_compute_ecc_block(self->priv->cache_buffer+0x00C, 52, 43, 86, 88, self->priv->cache_buffer+0x8C8); /* Q */
-
-                break;
-            }
-            case ECM_MODE2_FORM1_2336: {
-                /* Read data */
-                if (g_input_stream_read(G_INPUT_STREAM(stream), self->priv->cache_buffer+0x014, 0x804, NULL, NULL) != 0x804) {
-                    MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read %ld bytes from underlying stream!\n", __debug__, 0x804);
-                    return -1;
-                }
-
-                /* Make sure that header fields are zeroed out */
-                memset(self->priv->cache_buffer+0x00C, 0, 4);
-
-                /* Duplicate subheader */
-                memcpy(self->priv->cache_buffer+0x010, self->priv->cache_buffer+0x014, 4);
-
-                /* Generate EDC */
-                mirage_helper_sector_edc_ecc_compute_edc_block(self->priv->cache_buffer+0x010, 0x808, self->priv->cache_buffer+0x818);
-
-                /* Generate ECC P/Q codes */
-                mirage_helper_sector_edc_ecc_compute_ecc_block(self->priv->cache_buffer+0x00C, 86, 24, 2, 86, self->priv->cache_buffer+0x81C); /* P */
-                mirage_helper_sector_edc_ecc_compute_ecc_block(self->priv->cache_buffer+0x00C, 52, 43, 86, 88, self->priv->cache_buffer+0x8C8); /* Q */
-
-                break;
-            }
-            case ECM_MODE2_FORM2_2336: {
-                /* Read data */
-                if (g_input_stream_read(G_INPUT_STREAM(stream), self->priv->cache_buffer+0x014, 0x918, NULL, NULL) != 0x918) {
-                    MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read %ld bytes from underlying stream!\n", __debug__, 0x918);
-                    return -1;
-                }
-
-                /* Duplicate subheader */
-                memcpy(self->priv->cache_buffer+0x010, self->priv->cache_buffer+0x014, 4);
-
-                /* Generate EDC */
-                mirage_helper_sector_edc_ecc_compute_edc_block(self->priv->cache_buffer+0x010, 0x91C, self->priv->cache_buffer+0x92C);
-
-                break;
-            }
-            default: {
-                MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: unhandled type %d!\n", __debug__, self->priv->cur_part->type);
-                return -1;
-            }
-        }
-
-        self->priv->cache_part_idx = self->priv->cur_part_idx;
-        self->priv->cache_block_idx = block_idx;
-    }
-
-    /* Copy from cache buffer */
-    read_len = MIN(count, block_size - buffer_offset);
-    memcpy(buffer, self->priv->cache_buffer+skip_bytes+buffer_offset, read_len);
-
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_FILE_IO, "%s: block read complete (%d bytes)!\n", __debug__, read_len);
-
-    return read_len;
 }
 
 
@@ -519,92 +259,245 @@ static gboolean mirage_file_filter_ecm_can_handle_data_format (MirageFileFilter 
 }
 
 
-static gssize mirage_file_filter_ecm_read (MirageFileFilter *_self, void *buffer, gsize count, GError **error)
+static gint mirage_file_filter_ecm_find_part (MirageFileFilterEcm *self, goffset position)
 {
-    MirageFileFilterEcm *self = MIRAGE_FILE_FILTER_ECM(_self);
+    const ECM_Part *part;
+    gint part_index;
 
-    gssize total_read, read_len;
-    guint8 *ptr = buffer;
-
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_FILE_IO, "%s: read %ld (0x%lX) bytes from current position %ld (0x%lX)!\n", __debug__, count, count, self->priv->cur_position, self->priv->cur_position);
-
-    /* Read until all is read */
-    total_read = 0;
-
-    while (count > 0) {
-        /* Read a single block from current part */
-        read_len = mirage_filter_ecm_read_single_block_from_part(self, ptr, count);
-
-        if (read_len == -1) {
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read data block!\n", __debug__);
-            g_set_error(error, G_IO_ERROR, G_IO_ERROR_FAILED, "Failed to read a data block from ECM stream.");
-            return -1;
-        }
-
-        ptr += read_len;
-        total_read += read_len;
-        count -= read_len;
-
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_FILE_IO, "%s: read %ld (0x%lX) bytes... %ld (0x%lX) remaining\n\n", __debug__, read_len, read_len, count, count);
-
-        /* Update position */
-        if (!mirage_file_filter_ecm_set_current_position(self, self->priv->cur_position+read_len, error)) {
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to update position!\n", __debug__);
-            return -1;
-        }
-
-        /* Check if we're at end of stream */
-        if (self->priv->cur_position >= self->priv->file_size) {
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_FILE_IO, "%s: end of stream reached!\n", __debug__);
-            break;
+    /* Check if position is within currently cached part */
+    part_index = self->priv->cached_part;
+    if (part_index != -1 ) {
+        part = &self->priv->parts[part_index];
+        if (position >= part->offset && position < (part->offset + part->size)) {
+            return part_index;
         }
     }
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_FILE_IO, "%s: read complete\n", __debug__);
 
-    return total_read;
+    /* Check if it's within the first part */
+    part_index = 0;
+    part = &self->priv->parts[part_index];
+    if (position >= part->offset && position < (part->offset + part->size)) {
+        return part_index;
+    }
+
+    /* Check if it's within the last part */
+    part_index = self->priv->num_parts - 1;
+    part = &self->priv->parts[part_index];
+    if (position >= part->offset && position < (part->offset + part->size)) {
+        return part_index;
+    }
+
+    /* Seek from currently cached part */
+    part_index = (self->priv->cached_part != -1) ? self->priv->cached_part : 0;
+    part = &self->priv->parts[part_index];
+
+    if (position < part->offset) {
+        /* Seek backward (first part has already been checked) */
+        for (gint i = part_index; i > 0; i--) {
+            part = &self->priv->parts[i];
+            if (position >= part->offset) {
+                return i;
+            }
+        }
+    } else {
+        /* Seek forward (last part has already been checked) */
+        for (gint i = part_index; i < self->priv->num_parts - 1; i++) {
+            part = &self->priv->parts[i];
+            if (position < part->offset + part->size) {
+                return i;
+            }
+        }
+    }
+
+    /* Part not found */
+    return -1;
 }
 
-
-static goffset mirage_file_filter_ecm_tell (MirageFileFilter *_self)
+static gssize mirage_file_filter_ecm_partial_read (MirageFileFilter *_self, void *buffer, gsize count)
 {
     MirageFileFilterEcm *self = MIRAGE_FILE_FILTER_ECM(_self);
-    return self->priv->cur_position;
-}
+    GInputStream *stream = g_filter_input_stream_get_base_stream(G_FILTER_INPUT_STREAM(self));
+    goffset position = mirage_file_filter_get_position(MIRAGE_FILE_FILTER(self));
+    const ECM_Part *part;
+    gint part_idx;
 
-static gboolean mirage_file_filter_ecm_seek (MirageFileFilter *_self, goffset offset, GSeekType type, GError **error)
-{
-    MirageFileFilterEcm *self = MIRAGE_FILE_FILTER_ECM(_self);
-    goffset new_position;
+    goffset part_offset, stream_offset;
 
-    /* Compute new position */
-    switch (type) {
-        case G_SEEK_SET: {
-            new_position = offset;
+    gint block_idx;
+    gint block_size, raw_block_size, skip_bytes;
+
+    /* Find part that corresponds to current position */
+    part_idx = mirage_file_filter_ecm_find_part(self, position);
+    if (part_idx == -1) {
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_FILE_IO, "%s: stream position %ld (0x%lX) beyond end of stream, doing nothing!\n", __debug__, position, position);
+        return 0;
+    }
+    part = &self->priv->parts[part_idx];
+
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_FILE_IO, "%s: stream position: %ld (0x%lX) -> part #%d\n", __debug__, position, position, part_idx);
+
+    /* Compute offset within part */
+    part_offset = position - part->offset;
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_FILE_IO, "%s: offset within part: %ld\n", __debug__, part_offset);
+
+    /* Decode part type */
+    switch (part->type) {
+        case ECM_RAW: {
+            /* This one is different from others, because we read data directly */
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_FILE_IO, "%s: part type: raw => reading raw bytes\n", __debug__);
+
+            /* Seek to appropriate position */
+            stream_offset = part->raw_offset + part_offset;
+            if (!g_seekable_seek(G_SEEKABLE(stream), stream_offset, G_SEEK_SET, NULL, NULL)) {
+                MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to seek to %ld in underlying stream!\n", __debug__, stream_offset);
+                return -1;
+            }
+
+            /* Read all available data */
+            count = MIN(count, part->size - part_offset);
+
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_FILE_IO, "%s: reading %d bytes\n", __debug__, count);
+            if (g_input_stream_read(G_INPUT_STREAM(stream), buffer, count, NULL, NULL) != count) {
+                MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read %ld bytes from underlying stream!\n", __debug__, count);
+                return -1;
+            }
+
+            return count;
+        }
+        case ECM_MODE1_2352: {
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_FILE_IO, "%s: part type: Mode 1 (2051 -> 2352)\n", __debug__);
+            block_size = 2352;
+            raw_block_size = 3+2048;
+            skip_bytes = 0;
             break;
         }
-        case G_SEEK_CUR: {
-            new_position = self->priv->cur_position + offset;
+        case ECM_MODE2_FORM1_2336: {
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_FILE_IO, "%s: part type: Mode 2 Form 1 (2052 -> 2336)\n", __debug__);
+            block_size = 2336;
+            raw_block_size = 4+2048;
+            skip_bytes = 16;
             break;
         }
-        case G_SEEK_END: {
-            new_position = self->priv->file_size + offset;
+        case ECM_MODE2_FORM2_2336: {
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_FILE_IO, "%s: part type: Mode 2 Form 1 (2328 -> 2336)\n", __debug__);
+            block_size = 2336;
+            raw_block_size = 4+2324;
+            skip_bytes = 16;
             break;
         }
         default: {
-            g_set_error(error, G_IO_ERROR, G_IO_ERROR_INVALID_ARGUMENT, "Invalid seek type.");
-            return FALSE;
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: unhandled type %d!\n", __debug__, part->type);
+            return -1;
         }
     }
 
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_FILE_IO, "%s: request for seek to %ld (0x%lX)\n", __debug__, new_position, new_position);
+    /* Compute the block number within part */
+    block_idx = part_offset / block_size;
 
-    /* Seek */
-    if (!mirage_file_filter_ecm_set_current_position(self, new_position, error)) {
-        return FALSE;
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_FILE_IO, "%s: reading from block %d in part %d\n", __debug__, block_idx, part_idx);
+
+    /* If this particular block in this particular part is not cached,
+       read the data and reconstruct ECC/EDC */
+    if (part_idx != self->priv->cached_part || block_idx != self->priv->cached_block) {
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_FILE_IO, "%s: block not cached, reading...\n", __debug__);
+
+        /* Compute offset within underlying stream */
+        stream_offset = part->raw_offset + block_idx*raw_block_size;
+
+        if (!g_seekable_seek(G_SEEKABLE(stream), stream_offset, G_SEEK_SET, NULL, NULL)) {
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to seek to %ld in underlying stream!\n", __debug__, part_offset);
+            return -1;
+        }
+
+        /* Read and reconstruct sector data */
+        switch (part->type) {
+            case ECM_MODE1_2352: {
+                /* Read data */
+                if (g_input_stream_read(G_INPUT_STREAM(stream), self->priv->buffer+0x00C, 0x003, NULL, NULL) != 0x003) {
+                    MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read %ld bytes from underlying stream!\n", __debug__, 0x003);
+                    return -1;
+                }
+                if (g_input_stream_read(G_INPUT_STREAM(stream), self->priv->buffer+0x010, 0x800, NULL, NULL) != 0x800) {
+                    MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read %ld bytes from underlying stream!\n", __debug__, 0x800);
+                    return -1;
+                }
+
+                /* Set sync pattern */
+                memcpy(self->priv->buffer, mirage_pattern_sync, sizeof(mirage_pattern_sync));
+
+                /* Set mode byte in header */
+                self->priv->buffer[0x00F] = 1;
+
+                /* Generate EDC */
+                mirage_helper_sector_edc_ecc_compute_edc_block(self->priv->buffer+0x000, 0x810, self->priv->buffer+0x810);
+
+                /* Generate ECC P/Q codes */
+                mirage_helper_sector_edc_ecc_compute_ecc_block(self->priv->buffer+0x00C, 86, 24, 2, 86, self->priv->buffer+0x81C); /* P */
+                mirage_helper_sector_edc_ecc_compute_ecc_block(self->priv->buffer+0x00C, 52, 43, 86, 88, self->priv->buffer+0x8C8); /* Q */
+
+                break;
+            }
+            case ECM_MODE2_FORM1_2336: {
+                /* Read data */
+                if (g_input_stream_read(G_INPUT_STREAM(stream), self->priv->buffer+0x014, 0x804, NULL, NULL) != 0x804) {
+                    MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read %ld bytes from underlying stream!\n", __debug__, 0x804);
+                    return -1;
+                }
+
+                /* Make sure that header fields are zeroed out */
+                memset(self->priv->buffer+0x00C, 0, 4);
+
+                /* Duplicate subheader */
+                memcpy(self->priv->buffer+0x010, self->priv->buffer+0x014, 4);
+
+                /* Generate EDC */
+                mirage_helper_sector_edc_ecc_compute_edc_block(self->priv->buffer+0x010, 0x808, self->priv->buffer+0x818);
+
+                /* Generate ECC P/Q codes */
+                mirage_helper_sector_edc_ecc_compute_ecc_block(self->priv->buffer+0x00C, 86, 24, 2, 86, self->priv->buffer+0x81C); /* P */
+                mirage_helper_sector_edc_ecc_compute_ecc_block(self->priv->buffer+0x00C, 52, 43, 86, 88, self->priv->buffer+0x8C8); /* Q */
+
+                break;
+            }
+            case ECM_MODE2_FORM2_2336: {
+                /* Read data */
+                if (g_input_stream_read(G_INPUT_STREAM(stream), self->priv->buffer+0x014, 0x918, NULL, NULL) != 0x918) {
+                    MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read %ld bytes from underlying stream!\n", __debug__, 0x918);
+                    return -1;
+                }
+
+                /* Duplicate subheader */
+                memcpy(self->priv->buffer+0x010, self->priv->buffer+0x014, 4);
+
+                /* Generate EDC */
+                mirage_helper_sector_edc_ecc_compute_edc_block(self->priv->buffer+0x010, 0x91C, self->priv->buffer+0x92C);
+
+                break;
+            }
+            default: {
+                MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: unhandled type %d!\n", __debug__, part->type);
+                return -1;
+            }
+        }
+
+        /* Set currently cached block and part */
+        self->priv->cached_part = part_idx;
+        self->priv->cached_block = block_idx;
+    } else {
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_FILE_IO, "%s: block already cached\n", __debug__);
     }
 
-    return TRUE;
+    /* Copy data */
+    gint block_offset = part_offset % block_size;
+    count = MIN(count, block_size - block_offset);
+
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_FILE_IO, "%s: offset within block: %ld, copying %d bytes\n", __debug__, block_offset, count);
+
+    memcpy(buffer, self->priv->buffer + skip_bytes + block_offset, count);
+
+    return count;
 }
+
 
 
 /**********************************************************************\
@@ -629,18 +522,12 @@ static void mirage_file_filter_ecm_init (MirageFileFilterEcm *self)
         "application/x-ecm"
     );
 
-    self->priv->file_size = 0;
-
-    self->priv->cur_position = 0;
-    self->priv->cur_part_idx = 0;
-    self->priv->cur_part = NULL;
-
     self->priv->allocated_parts = 0;
     self->priv->num_parts = 0;
     self->priv->parts = NULL;
 
-    self->priv->cache_part_idx = -1;
-    self->priv->cache_block_idx = -1;
+    self->priv->cached_part = -1;
+    self->priv->cached_block = -1;
 }
 
 static void mirage_file_filter_ecm_finalize (GObject *gobject)
@@ -662,10 +549,7 @@ static void mirage_file_filter_ecm_class_init (MirageFileFilterEcmClass *klass)
 
     file_filter_class->can_handle_data_format = mirage_file_filter_ecm_can_handle_data_format;
 
-    file_filter_class->read = mirage_file_filter_ecm_read;
-
-    file_filter_class->tell = mirage_file_filter_ecm_tell;
-    file_filter_class->seek = mirage_file_filter_ecm_seek;
+    file_filter_class->partial_read = mirage_file_filter_ecm_partial_read;
 
     /* Register private structure */
     g_type_class_add_private(klass, sizeof(MirageFileFilterEcmPrivate));

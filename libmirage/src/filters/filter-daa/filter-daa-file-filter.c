@@ -1196,10 +1196,10 @@ static gboolean mirage_file_filter_daa_can_handle_data_format (MirageFileFilter 
 static gssize mirage_file_filter_daa_partial_read (MirageFileFilter *_self, void *buffer, gsize count)
 {
     MirageFileFilterDaa *self = MIRAGE_FILE_FILTER_DAA(_self);
-    goffset stream_position = mirage_file_filter_get_position(MIRAGE_FILE_FILTER(self));
-    gint chunk_index = stream_position / self->priv->chunk_size;
+    goffset position = mirage_file_filter_get_position(MIRAGE_FILE_FILTER(self));
+    gint chunk_index = position / self->priv->chunk_size;
 
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_FILE_IO, "%s: stream position: %ld (0x%lX) -> chunk #%d (cached: #%d)\n", __debug__, stream_position, chunk_index, self->priv->cached_chunk);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_FILE_IO, "%s: stream position: %ld (0x%lX) -> chunk #%d (cached: #%d)\n", __debug__, position, chunk_index, self->priv->cached_chunk);
 
     /* Inflate, if necessary */
     if (chunk_index != self->priv->cached_chunk) {
@@ -1267,7 +1267,7 @@ static gssize mirage_file_filter_daa_partial_read (MirageFileFilter *_self, void
 
 
     /* Copy data */
-    gint chunk_offset = stream_position % self->priv->chunk_size;
+    gint chunk_offset = position % self->priv->chunk_size;
     count = MIN(count, self->priv->cached_chunk_size - chunk_offset);
 
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_FILE_IO, "%s: offset within chunk: %ld, copying %d bytes\n", __debug__, chunk_offset, count);

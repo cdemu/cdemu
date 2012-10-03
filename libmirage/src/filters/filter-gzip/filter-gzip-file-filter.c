@@ -370,19 +370,19 @@ static gssize mirage_file_filter_gzip_partial_read (MirageFileFilter *_self, voi
 {
     MirageFileFilterGzip *self = MIRAGE_FILE_FILTER_GZIP(_self);
     GInputStream *stream = g_filter_input_stream_get_base_stream(G_FILTER_INPUT_STREAM(self));
-    goffset stream_position = mirage_file_filter_get_position(MIRAGE_FILE_FILTER(self));
+    goffset position = mirage_file_filter_get_position(MIRAGE_FILE_FILTER(self));
     const GZIP_Part *part;
     gint part_idx;
 
     /* Find part that corresponds to current position */
-    part_idx = mirage_file_filter_gzip_find_part(self, stream_position);
+    part_idx = mirage_file_filter_gzip_find_part(self, position);
     if (part_idx == -1) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_FILE_IO, "%s: stream position %ld (0x%lX) beyond end of stream, doing nothing!\n", __debug__, stream_position, stream_position);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_FILE_IO, "%s: stream position %ld (0x%lX) beyond end of stream, doing nothing!\n", __debug__, position, position);
         return 0;
     }
     part = &self->priv->parts[part_idx];
 
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_FILE_IO, "%s: stream position: %ld (0x%lX) -> part #%d (cached: #%d)\n", __debug__, stream_position, stream_position, part_idx, self->priv->cached_part);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_FILE_IO, "%s: stream position: %ld (0x%lX) -> part #%d (cached: #%d)\n", __debug__, position, position, part_idx, self->priv->cached_part);
 
     /* If we do not have part in cache, uncompress it */
     if (part_idx != self->priv->cached_part) {
@@ -460,7 +460,7 @@ static gssize mirage_file_filter_gzip_partial_read (MirageFileFilter *_self, voi
     }
 
     /* Copy data */
-    goffset part_offset = stream_position - part->offset;
+    goffset part_offset = position - part->offset;
     count = MIN(count, part->size - part_offset);
 
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_FILE_IO, "%s: offset within part: %ld, copying %d bytes\n", __debug__, part_offset, count);
