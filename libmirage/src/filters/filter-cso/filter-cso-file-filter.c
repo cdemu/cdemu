@@ -40,19 +40,19 @@ struct _MirageFileFilterCsoPrivate
 {
     ciso_header_t header;
 
-    goffset cur_position;
-
-    gint cur_part_idx;
-    const CSO_Part *cur_part;
-
     /* Part list */
     CSO_Part *parts;
     gint num_parts;
     gint num_indices;
 
-    /* Cache */
-    gint cache_part_idx;
-    guint8 *part_buffer;
+    /* Inflate buffer */
+    guint8 *inflate_buffer;
+    gint inflate_buffer_size;
+    gint cached_part;
+
+    /* I/O buffer */
+    guint8 *io_buffer;
+    gint io_buffer_size;
 
     /* Zlib stream */
     z_stream zlib_stream;
@@ -96,7 +96,6 @@ static gboolean mirage_file_filter_cso_read_index (MirageFileFilterCso *self, GE
     /* Position at the beginning of the index */
     if (!g_seekable_seek(G_SEEKABLE(stream), sizeof(ciso_header_t), G_SEEK_SET, NULL, NULL)) {
         g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, "Failed to seek to the beginning of index!");
-        g_free(self->priv->parts);
         return FALSE;
     }
 
@@ -110,7 +109,6 @@ static gboolean mirage_file_filter_cso_read_index (MirageFileFilterCso *self, GE
         ret = g_input_stream_read(G_INPUT_STREAM(stream), &buf, sizeof(buf), NULL, NULL);
         if (ret != sizeof(guint32)) {
             g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, "Failed to read from index!");
-            g_free(self->priv->parts);
             return FALSE;
         }
 
@@ -141,175 +139,31 @@ static gboolean mirage_file_filter_cso_read_index (MirageFileFilterCso *self, GE
 
     if (ret != Z_OK) {
         g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, "Failed to initialize zlib's inflate (error: %d)!", ret);
-        g_free(self->priv->parts);
         return FALSE;
     }
 
-    /* Allocate part cache */
-    self->priv->part_buffer = g_try_malloc(header->block_size);
-    if (!self->priv->part_buffer) {
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, "Failed to allocate memory for part cache!");
-        g_free(self->priv->parts);
+    /* Allocate inflate buffer */
+    self->priv->inflate_buffer_size = header->block_size;
+    self->priv->inflate_buffer = g_try_malloc(self->priv->inflate_buffer_size);
+    if (!self->priv->inflate_buffer) {
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, "Failed to allocate memory for inflate buffer!");
         return FALSE;
     }
 
-    /* Set stream position to beginning */
-    self->priv->cur_position = 0;
-    self->priv->cur_part_idx = 0;
-    self->priv->cur_part = &self->priv->parts[self->priv->cur_part_idx];
+    /* Allocate I/O buffer */
+    self->priv->io_buffer_size = header->block_size;
+    self->priv->io_buffer = g_try_malloc(self->priv->io_buffer_size);
+    if (!self->priv->io_buffer) {
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, "Failed to allocate memory for I/O buffer!");
+        return FALSE;
+    }
+
+    /* Set file size */
+    mirage_file_filter_set_file_size(MIRAGE_FILE_FILTER(self), header->total_bytes);
 
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: successfully read index\n\n", __debug__);
 
     return TRUE;
-}
-
-
-/**********************************************************************\
- *                              Seeking                               *
-\**********************************************************************/
-static gboolean mirage_file_filter_cso_set_current_position (MirageFileFilterCso *self, goffset new_position, GError **error)
-{
-    /* If new position matches current position, do nothing */
-    if (new_position == self->priv->cur_position) {
-        return TRUE;
-    }
-
-    /* Validate new position */
-    if (new_position < 0) {
-        g_set_error(error, G_IO_ERROR, G_IO_ERROR_INVALID_ARGUMENT, "Seek before beginning of file not allowed!");
-        return FALSE;
-    }
-
-    /* Seeking beyond end of file appears to be supported by GFileInputStream, so we allow it as well */
-    /*if (new_position > self->priv->header.total_bytes) {
-        g_set_error(error, G_IO_ERROR, G_IO_ERROR_INVALID_ARGUMENT, "Seek beyond end of file not allowed!");
-        return FALSE;
-    }*/
-
-    /* Find the corresponding part */
-    self->priv->cur_part_idx = new_position / self->priv->header.block_size;
-    self->priv->cur_part = &self->priv->parts[self->priv->cur_part_idx];
-
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_FILE_IO, "%s: position %ld (0x%lX) found in part #%d!\n", __debug__, new_position, new_position, self->priv->cur_part_idx);
-
-    /* Set new position */
-    self->priv->cur_position = new_position;
-
-    return TRUE;
-}
-
-
-/**********************************************************************\
- *                         Reading from parts                         *
-\**********************************************************************/
-static gssize mirage_filter_cso_read_from_part (MirageFileFilterCso *self, guint8 *buffer, gsize count)
-{
-    GInputStream *stream = g_filter_input_stream_get_base_stream(G_FILTER_INPUT_STREAM(self));
-
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_FILE_IO, "%s: current position: %ld (part #%d, offset: %ld, size: %d) -> read %d bytes\n",
-                 __debug__, self->priv->cur_position, self->priv->cur_part_idx, self->priv->cur_part->offset, self->priv->cur_part->comp_size, count);
-
-    /* Make sure we're not at end of stream */
-    if (self->priv->cur_position >= self->priv->header.total_bytes) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_FILE_IO, "%s: read beyond end of stream, doing nothing!\n", __debug__);
-        return 0;
-    }
-
-    /* If we do not have part in cache, uncompress it */
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_FILE_IO, "%s: currently cached part: #%d\n", __debug__, self->priv->cache_part_idx);
-    if (self->priv->cur_part_idx != self->priv->cache_part_idx) {
-        z_stream *zlib_stream = &self->priv->zlib_stream;
-        const CSO_Part *part = self->priv->cur_part;
-
-        goffset stream_offset;
-
-        guint8 *chunk_buffer = g_try_malloc(self->priv->header.block_size);
-
-        if (!chunk_buffer) {
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: Failed to allocate memory.\n", __debug__);
-            return -1;
-        }
-
-        gint ret;
-
-        /* Offset in underlying stream */
-        stream_offset = part->offset;
-
-        /* Seek to the position */
-        if (!g_seekable_seek(G_SEEKABLE(stream), stream_offset, G_SEEK_SET, NULL, NULL)) {
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to seek to %ld in underlying stream!\n", __debug__, stream_offset);
-            g_free(chunk_buffer);
-            return -1;
-        }
-
-        /* Read a part, either raw or compressed */
-        if (part->raw) {
-            /* Read uncompressed part */
-            ret = g_input_stream_read(G_INPUT_STREAM(stream), self->priv->part_buffer, self->priv->header.block_size, NULL, NULL);
-            if (ret == -1) {
-                MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read %d bytes from underlying stream!", __debug__, self->priv->header.block_size);
-                g_free(chunk_buffer);
-                return -1;
-            } else if (ret == 0) {
-                MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: inexpectedly reached EOF!", __debug__);
-                g_free(chunk_buffer);
-                return -1;
-            }
-        } else {
-            /* Reset inflate engine */
-            ret = inflateReset2(zlib_stream, -15);
-            if (ret != Z_OK) {
-                MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to reset inflate engine!\n", __debug__);
-                g_free(chunk_buffer);
-                return -1;
-            }
-
-            /* Uncompress whole part */
-            zlib_stream->avail_in = 0;
-            zlib_stream->avail_out = self->priv->header.block_size;
-            zlib_stream->next_out = self->priv->part_buffer;
-
-            do {
-                /* Read */
-                if (!zlib_stream->avail_in) {
-                    /* Read some compressed data */
-                    ret = g_input_stream_read(G_INPUT_STREAM(stream), chunk_buffer, self->priv->header.block_size, NULL, NULL);
-                    if (ret == -1) {
-                        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read %d bytes from underlying stream!", __debug__, self->priv->header.block_size);
-                        g_free(chunk_buffer);
-                        return -1;
-                    } else if (ret == 0) {
-                        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: inexpectedly reached EOF!", __debug__);
-                        g_free(chunk_buffer);
-                        return -1;
-                    }
-                    zlib_stream->avail_in = ret;
-                    zlib_stream->next_in = chunk_buffer;
-                }
-
-                /* Inflate */
-                ret = inflate(zlib_stream, Z_NO_FLUSH);
-                if (ret == Z_NEED_DICT || ret == Z_MEM_ERROR || ret == Z_DATA_ERROR) {
-                    MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to inflate part: %s!", __debug__, zlib_stream->msg);
-                    g_free(chunk_buffer);
-                    return -1;
-                }
-            } while (zlib_stream->avail_out);
-
-            g_free(chunk_buffer);
-        }
-    }
-
-    /* Set currently cached part */
-    self->priv->cache_part_idx = self->priv->cur_part_idx;
-
-    count = MIN(count, self->priv->header.block_size);
-
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_FILE_IO, "%s: copying %d bytes\n", __debug__, count);
-
-    memcpy(buffer, self->priv->part_buffer, count);
-
-    return count;
 }
 
 
@@ -322,7 +176,7 @@ static void mirage_file_filter_fixup_header(MirageFileFilterCso *self)
 
     header->header_size = GUINT32_FROM_LE(header->header_size);
     header->total_bytes = GUINT64_FROM_LE(header->total_bytes);
-    header->block_size  = GUINT32_FROM_LE(header->block_size);
+    header->block_size  = GUINT64_FROM_LE(header->block_size);
 }
 
 static gboolean mirage_file_filter_cso_can_handle_data_format (MirageFileFilter *_self, GError **error)
@@ -364,91 +218,102 @@ static gboolean mirage_file_filter_cso_can_handle_data_format (MirageFileFilter 
 }
 
 
-static gssize mirage_file_filter_cso_read (MirageFileFilter *_self, void *buffer, gsize count, GError **error)
+static gssize mirage_file_filter_cso_partial_read (MirageFileFilter *_self, void *buffer, gsize count)
 {
     MirageFileFilterCso *self = MIRAGE_FILE_FILTER_CSO(_self);
+    GInputStream *stream = g_filter_input_stream_get_base_stream(G_FILTER_INPUT_STREAM(self));
+    goffset position = mirage_file_filter_get_position(MIRAGE_FILE_FILTER(self));
+    gint part_idx;
 
-    gssize total_read, read_len;
-    guint8 *ptr = buffer;
+    /* Find part that corresponds tho current position */
+    part_idx = position / self->priv->header.block_size;
 
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_FILE_IO, "%s: read %ld (0x%lX) bytes from current position %ld (0x%lX)!\n", __debug__, count, count, self->priv->cur_position, self->priv->cur_position);
+    if (part_idx >= self->priv->num_parts) {
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_FILE_IO, "%s: stream position %ld (0x%lX) beyond end of stream, doing nothing!\n", __debug__, position, position);
+        return 0;
+    }
 
-    /* Read until all is read */
-    total_read = 0;
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_FILE_IO, "%s: stream position: %ld (0x%lX) -> part #%d (cached: #%d)\n", __debug__, position, part_idx, self->priv->cached_part);
 
-    while (count > 0) {
-        /* Read a single block from current part */
-        read_len = mirage_filter_cso_read_from_part(self, ptr, count);
+    /* If we do not have part in cache, uncompress it */
+    if (part_idx != self->priv->cached_part) {
+        const CSO_Part *part = &self->priv->parts[part_idx];
+        z_stream *zlib_stream = &self->priv->zlib_stream;
+        gint ret;
 
-        if (read_len == -1) {
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read data block!\n", __debug__);
-            g_set_error(error, G_IO_ERROR, G_IO_ERROR_FAILED, "Failed to read a data block from CSO stream.");
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_FILE_IO, "%s: part not cached, reading...\n", __debug__);
+
+        /* Seek to the position */
+        if (!g_seekable_seek(G_SEEKABLE(stream), part->offset, G_SEEK_SET, NULL, NULL)) {
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to seek to %ld in underlying stream!\n", __debug__, part->offset);
             return -1;
         }
 
-        ptr += read_len;
-        total_read += read_len;
-        count -= read_len;
+        /* Read a part, either raw or compressed */
+        if (part->raw) {
+            /* Read uncompressed part */
+            ret = g_input_stream_read(G_INPUT_STREAM(stream), self->priv->inflate_buffer, self->priv->inflate_buffer_size, NULL, NULL);
+            if (ret == -1) {
+                MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read %d bytes from underlying stream!\n", __debug__, self->priv->inflate_buffer_size);
+                return -1;
+            } else if (ret == 0) {
+                MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: unexpectedly reached EOF!\n", __debug__);
+                return -1;
+            }
+        } else {
+            /* Reset inflate engine */
+            ret = inflateReset2(zlib_stream, -15);
+            if (ret != Z_OK) {
+                MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to reset inflate engine!\n", __debug__);
+                return -1;
+            }
 
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_FILE_IO, "%s: read %ld (0x%lX) bytes... %ld (0x%lX) remaining\n\n", __debug__, read_len, read_len, count, count);
+            /* Uncompress whole part */
+            zlib_stream->avail_in = 0;
+            zlib_stream->avail_out = self->priv->inflate_buffer_size;
+            zlib_stream->next_out = self->priv->inflate_buffer;
 
-        /* Update position */
-        if (!mirage_file_filter_cso_set_current_position(self, self->priv->cur_position+read_len, error)) {
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to update position!\n", __debug__);
-            return -1;
+            do {
+                /* Read */
+                if (!zlib_stream->avail_in) {
+                    /* Read some compressed data */
+                    ret = g_input_stream_read(G_INPUT_STREAM(stream), self->priv->io_buffer, self->priv->io_buffer_size, NULL, NULL);
+                    if (ret == -1) {
+                        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read %d bytes from underlying stream!\n", __debug__, self->priv->io_buffer_size);
+                        return -1;
+                    } else if (ret == 0) {
+                        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: unexpectedly reached EOF\n!", __debug__);
+                        return -1;
+                    }
+                    zlib_stream->avail_in = ret;
+                    zlib_stream->next_in = self->priv->io_buffer;
+                }
+
+                /* Inflate */
+                ret = inflate(zlib_stream, Z_NO_FLUSH);
+                if (ret == Z_NEED_DICT || ret == Z_MEM_ERROR || ret == Z_DATA_ERROR) {
+                    MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to inflate part: %s\n!", __debug__, zlib_stream->msg);
+                    return -1;
+                }
+            } while (zlib_stream->avail_out);
         }
 
-        /* Check if we're at end of stream */
-        if (self->priv->cur_position >= self->priv->header.total_bytes) {
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_FILE_IO, "%s: end of stream reached!\n", __debug__);
-            break;
-        }
-    }
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_FILE_IO, "%s: read complete\n", __debug__);
-
-    return total_read;
-}
-
-
-static goffset mirage_file_filter_cso_tell (MirageFileFilter *_self)
-{
-    MirageFileFilterCso *self = MIRAGE_FILE_FILTER_CSO(_self);
-    return self->priv->cur_position;
-}
-
-static gboolean mirage_file_filter_cso_seek (MirageFileFilter *_self, goffset offset, GSeekType type, GError **error)
-{
-    MirageFileFilterCso *self = MIRAGE_FILE_FILTER_CSO(_self);
-    goffset new_position;
-
-    /* Compute new position */
-    switch (type) {
-        case G_SEEK_SET: {
-            new_position = offset;
-            break;
-        }
-        case G_SEEK_CUR: {
-            new_position = self->priv->cur_position + offset;
-            break;
-        }
-        case G_SEEK_END: {
-            new_position = self->priv->header.total_bytes + offset;
-            break;
-        }
-        default: {
-            g_set_error(error, G_IO_ERROR, G_IO_ERROR_INVALID_ARGUMENT, "Invalid seek type.");
-            return FALSE;
-        }
-    }
-
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_FILE_IO, "%s: request for seek to %ld (0x%lX)\n", __debug__, new_position, new_position);
-
-    /* Seek */
-    if (!mirage_file_filter_cso_set_current_position(self, new_position, error)) {
-        return FALSE;
+        /* Set currently cached part */
+        self->priv->cached_part = part_idx;
+    } else {
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_FILE_IO, "%s: part already cached\n", __debug__);
     }
 
-    return TRUE;
+
+    /* Copy data */
+    goffset part_offset = position % self->priv->header.block_size;
+    count = MIN(count, self->priv->header.block_size - part_offset);
+
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_FILE_IO, "%s: offset within part: %ld, copying %d bytes\n", __debug__, part_offset, count);
+
+    memcpy(buffer, self->priv->inflate_buffer, count);
+
+    return count;
 }
 
 
@@ -474,15 +339,12 @@ static void mirage_file_filter_cso_init (MirageFileFilterCso *self)
         "application/x-cso"
     );
 
-    self->priv->cur_position = 0;
-    self->priv->cur_part_idx = 0;
-    self->priv->cur_part = NULL;
-
     self->priv->num_parts = 0;
     self->priv->parts = NULL;
 
-    self->priv->cache_part_idx = -1;
-    self->priv->part_buffer = NULL;
+    self->priv->cached_part = -1;
+    self->priv->inflate_buffer = NULL;
+    self->priv->io_buffer = NULL;
 }
 
 static void mirage_file_filter_cso_finalize (GObject *gobject)
@@ -490,7 +352,8 @@ static void mirage_file_filter_cso_finalize (GObject *gobject)
     MirageFileFilterCso *self = MIRAGE_FILE_FILTER_CSO(gobject);
 
     g_free(self->priv->parts);
-    g_free(self->priv->part_buffer);
+    g_free(self->priv->inflate_buffer);
+    g_free(self->priv->io_buffer);
 
     inflateEnd(&self->priv->zlib_stream);
 
@@ -507,10 +370,7 @@ static void mirage_file_filter_cso_class_init (MirageFileFilterCsoClass *klass)
 
     file_filter_class->can_handle_data_format = mirage_file_filter_cso_can_handle_data_format;
 
-    file_filter_class->read = mirage_file_filter_cso_read;
-
-    file_filter_class->tell = mirage_file_filter_cso_tell;
-    file_filter_class->seek = mirage_file_filter_cso_seek;
+    file_filter_class->partial_read = mirage_file_filter_cso_partial_read;
 
     /* Register private structure */
     g_type_class_add_private(klass, sizeof(MirageFileFilterCsoPrivate));
