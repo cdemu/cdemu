@@ -1197,7 +1197,14 @@ static gssize mirage_file_filter_daa_partial_read (MirageFileFilter *_self, void
 {
     MirageFileFilterDaa *self = MIRAGE_FILE_FILTER_DAA(_self);
     goffset position = mirage_file_filter_get_position(MIRAGE_FILE_FILTER(self));
-    gint chunk_index = position / self->priv->chunk_size;
+    gint chunk_index;
+
+    /* Find chunk that corresponds to current position */
+    chunk_index = position / self->priv->chunk_size;
+    if (chunk_index >= self->priv->num_chunks) {
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_FILE_IO, "%s: stream position %ld (0x%lX) beyond end of stream, doing nothing!\n", __debug__, position, position);
+        return 0;
+    }
 
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_FILE_IO, "%s: stream position: %ld (0x%lX) -> chunk #%d (cached: #%d)\n", __debug__, position, chunk_index, self->priv->cached_chunk);
 
