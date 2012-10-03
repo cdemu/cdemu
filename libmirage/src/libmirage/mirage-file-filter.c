@@ -161,7 +161,7 @@ void mirage_file_filter_set_file_size (MirageFileFilter *self, gsize size)
  * <para>
  * This function is intented for use in file filter implementations that
  * are based on the simplified interface. It should be used by the
- * implementation's partial_read() function to determine position to
+ * implementation's partial_read function to determine position to
  * read from without having to worry about position management and update.
  * </para>
  *
