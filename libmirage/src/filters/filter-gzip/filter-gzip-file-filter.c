@@ -317,40 +317,53 @@ static gint mirage_file_filter_gzip_find_part (MirageFileFilterGzip *self, goffs
     const GZIP_Part *part;
     gint part_index;
 
-    /* Size of part buffer is, by design, same as max size of part. Therefore,
-       as initial approximation, we assume all parts are of that size */
-    part_index = position / self->priv->part_buffer_size;
-    if (part_index < 0 || part_index >= self->priv->num_parts) {
-        return -1;
+    /* Check if position is within currently cached part */
+    part_index = self->priv->cached_part;
+    if (part_index != -1 ) {
+        part = &self->priv->parts[part_index];
+        if (position >= part->offset && position < (part->offset + part->size)) {
+            return part_index;
+        }
     }
 
+    /* Check if it's within the first part */
+    part_index = 0;
+    part = &self->priv->parts[part_index];
+    if (position >= part->offset && position < (part->offset + part->size)) {
+        return part_index;
+    }
+
+    /* Check if it's within the last part */
+    part_index = self->priv->num_parts - 1;
+    part = &self->priv->parts[part_index];
+    if (position >= part->offset && position < (part->offset + part->size)) {
+        return part_index;
+    }
+
+    /* Seek from currently cached part */
+    part_index = (self->priv->cached_part != -1) ? self->priv->cached_part : 0;
     part = &self->priv->parts[part_index];
 
     if (position < part->offset) {
-        /* Seek backward */
+        /* Seek backward (first part has already been checked) */
         for (gint i = part_index; i > 0; i--) {
             part = &self->priv->parts[i];
             if (position >= part->offset) {
-                part_index = i;
-                break;
-            } else {
-                part_index = -1; /* Set to invalid */
+                return i;
             }
         }
-    } else if (position > part->offset + part->size) {
-        /* Seek forward */
-        for (gint i = part_index; i < self->priv->num_parts; i++) {
+    } else {
+        /* Seek forward (last part has already been checked) */
+        for (gint i = part_index; i < self->priv->num_parts - 1; i++) {
             part = &self->priv->parts[i];
             if (position < part->offset + part->size) {
-                part_index = i;
-                break;
-            } else {
-                part_index = -1; /* Set to invalid */
+                return i;
             }
         }
     }
 
-    return part_index;
+    /* Part not found */
+    return -1;
 }
 
 static gssize mirage_file_filter_gzip_partial_read (MirageFileFilter *_self, void *buffer, gsize count)
