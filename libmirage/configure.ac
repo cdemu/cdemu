@@ -23,6 +23,9 @@ AC_CONFIG_SRCDIR(src/libmirage/mirage.c)
 AM_INIT_AUTOMAKE([-Wall 1.6 gnu])
 AC_CONFIG_HEADERS([config.h])
 
+# Silent builds by default (requires automake 1.11)
+m4_ifdef([AM_SILENT_RULES], [AM_SILENT_RULES([yes])])
+
 # Versioning
 AC_SUBST(MIRAGE_MAJOR_VERSION, libmirage_major_version)
 AC_SUBST(MIRAGE_MINOR_VERSION, libmirage_minor_version)

@@ -15,6 +15,9 @@ AC_CONFIG_SRCDIR(src/main.c)
 AM_INIT_AUTOMAKE(AC_PACKAGE_NAME, AC_PACKAGE_VERSION)
 AC_CONFIG_HEADERS([config.h])
 
+# Silent builds by default (requires automake 1.11)
+m4_ifdef([AM_SILENT_RULES], [AM_SILENT_RULES([yes])])
+
 # D-BUS interface version (change whenever interface changes)
 AC_DEFINE(DAEMON_INTERFACE_VERSION, 4, [D-BUS interface version])
 

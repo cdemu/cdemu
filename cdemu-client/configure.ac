@@ -14,6 +14,9 @@ AC_INIT([cdemu-client],[cdemu_version],[http://cdemu.sf.net])
 AC_CONFIG_SRCDIR(src/cdemu)
 AM_INIT_AUTOMAKE(AC_PACKAGE_NAME, AC_PACKAGE_VERSION)
 
+# Silent builds by default (requires automake 1.11)
+m4_ifdef([AM_SILENT_RULES], [AM_SILENT_RULES([yes])])
+
 AM_MAINTAINER_MODE
 
 # Intltool

@@ -9,6 +9,9 @@ AC_CONFIG_SRCDIR(src/main.c)
 AM_INIT_AUTOMAKE(AC_PACKAGE_NAME, AC_PACKAGE_VERSION)
 AC_CONFIG_HEADERS([config.h])
 
+# Silent builds by default (requires automake 1.11)
+m4_ifdef([AM_SILENT_RULES], [AM_SILENT_RULES([yes])])
+
 AM_MAINTAINER_MODE
 
 # Programs
@@ -27,7 +30,7 @@ PKG_CHECK_MODULES(gobject, gobject-2.0 >= 2.24)
 
 # Gtk2 vs. Gtk3 switch
 AC_ARG_ENABLE(gtk3,
-    AC_HELP_STRING([--enable-gtk3], [compile using Gtk3]),
+    AS_HELP_STRING([--enable-gtk3],[compile using Gtk3]),
     [case "${enableval}" in
          yes) ENABLE_GTK3=yes ;;
          no) ENABLE_GTK3=no ;;
