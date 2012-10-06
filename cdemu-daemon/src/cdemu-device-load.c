@@ -62,7 +62,7 @@ static gboolean cdemu_device_load_disc_private (CdemuDevice *self, gchar **filen
     }
 
     /* Load... */
-    self->priv->disc = mirage_create_disc(filenames, self->priv->disc_debug, options, error);
+    self->priv->disc = mirage_create_disc(filenames, G_OBJECT(self->priv->disc_debug), options, error);
 
     /* Check if loading succeeded */
     if (!self->priv->disc) {
@@ -74,7 +74,7 @@ static gboolean cdemu_device_load_disc_private (CdemuDevice *self, gchar **filen
     self->priv->media_event = MEDIA_EVENT_NEW_MEDIA;
 
     /* Set current profile (and modify feature flags accordingly */
-    media_type = mirage_disc_get_medium_type(MIRAGE_DISC(self->priv->disc));
+    media_type = mirage_disc_get_medium_type(self->priv->disc);
     switch (media_type) {
         case MIRAGE_MEDIUM_CD: {
             cdemu_device_set_profile(self, PROFILE_CDROM);

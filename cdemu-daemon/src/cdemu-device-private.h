@@ -22,9 +22,9 @@
 
 #define CDEMU_DEVICE_GET_PRIVATE(obj) (G_TYPE_INSTANCE_GET_PRIVATE((obj), CDEMU_TYPE_DEVICE, CdemuDevicePrivate))
 
-typedef struct _CDEMU_Command CDEMU_Command;
+typedef struct _CdemuCommand CdemuCommand;
 
-struct _CDEMU_Command
+struct _CdemuCommand
 {
     guint8 cdb[12];
     guint8 *in;
@@ -50,7 +50,7 @@ struct _CdemuDevicePrivate
     GMutex *device_mutex;
 
     /* Command */
-    CDEMU_Command *cmd;
+    CdemuCommand *cmd;
     guint cur_len;
 
     /* Buffer/"cache" */
@@ -58,12 +58,12 @@ struct _CdemuDevicePrivate
     gint buffer_size;
 
     /* Audio play */
-    GObject *audio_play;
+    CdemuAudio *audio_play;
 
     /* Disc */
     gboolean loaded;
-    GObject *disc;
-    GObject *disc_debug; /* Debug context for disc */
+    MirageDisc *disc;
+    MirageDebugContext *disc_debug; /* Debug context for disc */
 
     /* Locked flag */
     gboolean locked;
@@ -108,7 +108,7 @@ struct _CdemuDevicePrivate
 
 
 /* Commands */
-gint cdemu_device_execute_command (CdemuDevice *self, CDEMU_Command *cmd);
+gint cdemu_device_execute_command (CdemuDevice *self, CdemuCommand *cmd);
 
 /* Delay emulation */
 void cdemu_device_delay_begin (CdemuDevice *self, gint address, gint num_sectors);

@@ -20,9 +20,16 @@
 #ifndef __CDEMU_DEVICE_H__
 #define __CDEMU_DEVICE_H__
 
+/* Forward declarations */
+typedef struct _CdemuAudio CdemuAudio;
+typedef struct _CdemuCommand CdemuCommand;
+
 
 G_BEGIN_DECLS
 
+/**********************************************************************\
+ *                        CdemuDevice object                          *
+\**********************************************************************/
 #define CDEMU_TYPE_DEVICE            (cdemu_device_get_type())
 #define CDEMU_DEVICE(obj)            (G_TYPE_CHECK_INSTANCE_CAST((obj), CDEMU_TYPE_DEVICE, CdemuDevice))
 #define CDEMU_DEVICE_CLASS(klass)    (G_TYPE_CHECK_CLASS_CAST((klass), CDEMU_TYPE_DEVICE, CdemuDeviceClass))
@@ -59,7 +66,7 @@ gboolean cdemu_device_initialize (CdemuDevice *self, gint number, gchar *ctl_dev
 
 gint cdemu_device_get_device_number (CdemuDevice *self);
 
-gboolean cdemu_device_get_status (CdemuDevice *self,gchar ***file_names);
+gboolean cdemu_device_get_status (CdemuDevice *self, gchar ***file_names);
 
 gboolean cdemu_device_load_disc (CdemuDevice *self, gchar **file_names, GVariant *options, GError **error);
 gboolean cdemu_device_unload_disc (CdemuDevice *self, GError **error);

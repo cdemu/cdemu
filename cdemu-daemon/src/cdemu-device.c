@@ -48,7 +48,7 @@ static void cdemu_device_set_device_id (CdemuDevice *self, const gchar *vendor_i
 \**********************************************************************/
 gboolean cdemu_device_initialize (CdemuDevice *self, gint number, gchar *ctl_device, gchar *audio_driver)
 {
-    GObject *debug_context;
+    MirageDebugContext *debug_context;
 
     self->priv->mapping_complete = FALSE;
 
@@ -61,8 +61,8 @@ gboolean cdemu_device_initialize (CdemuDevice *self, gint number, gchar *ctl_dev
 
     /* Create debug context for device */
     debug_context = g_object_new(MIRAGE_TYPE_DEBUG_CONTEXT, NULL);
-    mirage_debug_context_set_name(MIRAGE_DEBUG_CONTEXT(debug_context), self->priv->device_name);
-    mirage_debug_context_set_domain(MIRAGE_DEBUG_CONTEXT(debug_context), "CDEMU");
+    mirage_debug_context_set_name(debug_context, self->priv->device_name);
+    mirage_debug_context_set_domain(debug_context, "CDEMU");
     mirage_debuggable_set_debug_context(MIRAGE_DEBUGGABLE(self), debug_context);
     g_object_unref(debug_context);
 
@@ -83,16 +83,16 @@ gboolean cdemu_device_initialize (CdemuDevice *self, gint number, gchar *ctl_dev
     /* Create audio play object */
     self->priv->audio_play = g_object_new(CDEMU_TYPE_AUDIO, NULL);
     /* Set parent */
-    mirage_object_set_parent(MIRAGE_OBJECT(self->priv->audio_play), G_OBJECT(self));
+    mirage_object_set_parent(MIRAGE_OBJECT(self->priv->audio_play), self);
     /* Attach child... so that it'll get device's debug context */
     mirage_object_attach_child(MIRAGE_OBJECT(self), self->priv->audio_play);
     /* Initialize */
-    cdemu_audio_initialize(CDEMU_AUDIO(self->priv->audio_play), audio_driver, &self->priv->current_address, self->priv->device_mutex);
+    cdemu_audio_initialize(self->priv->audio_play, audio_driver, &self->priv->current_address, self->priv->device_mutex);
 
     /* Create debug context for disc */
     self->priv->disc_debug = g_object_new(MIRAGE_TYPE_DEBUG_CONTEXT, NULL);
-    mirage_debug_context_set_name(MIRAGE_DEBUG_CONTEXT(self->priv->disc_debug), self->priv->device_name);
-    mirage_debug_context_set_domain(MIRAGE_DEBUG_CONTEXT(self->priv->disc_debug), "libMirage");
+    mirage_debug_context_set_name(self->priv->disc_debug, self->priv->device_name);
+    mirage_debug_context_set_domain(self->priv->disc_debug, "libMirage");
 
     /* Set up default device ID */
     cdemu_device_set_device_id(self, "CDEmu   ", "Virt. CD/DVD-ROM", "1.10", "    cdemu.sf.net    ");
@@ -137,7 +137,7 @@ gboolean cdemu_device_get_status (CdemuDevice *self, gchar ***file_names)
 
     loaded = self->priv->loaded;
     if (loaded) {
-        MirageDisc *disc = MIRAGE_DISC(self->priv->disc);
+        MirageDisc *disc = self->priv->disc;
         if (file_names) {
             const gchar **tmp_filenames = mirage_disc_get_filenames(disc);
             *file_names = g_strdupv((gchar **)tmp_filenames);
@@ -176,14 +176,14 @@ GVariant *cdemu_device_get_option (CdemuDevice *self, gchar *option_name, GError
         option_value = g_variant_new("(ssss)", self->priv->id_vendor_id, self->priv->id_product_id, self->priv->id_revision, self->priv->id_vendor_specific);
     } else if (!g_strcmp0(option_name, "daemon-debug-mask")) {
         /* *** daemon-debug-mask *** */
-        GObject *context = mirage_debuggable_get_debug_context(MIRAGE_DEBUGGABLE(self));
+        MirageDebugContext *context = mirage_debuggable_get_debug_context(MIRAGE_DEBUGGABLE(self));
         if (context) {
-            gint mask = mirage_debug_context_get_debug_mask(MIRAGE_DEBUG_CONTEXT(context));
+            gint mask = mirage_debug_context_get_debug_mask(context);
             option_value = g_variant_new("i", mask);
         }
     } else if (!g_strcmp0(option_name, "library-debug-mask")) {
         /* *** library-debug-mask *** */
-        gint mask = mirage_debug_context_get_debug_mask(MIRAGE_DEBUG_CONTEXT(self->priv->disc_debug));
+        gint mask = mirage_debug_context_get_debug_mask(self->priv->disc_debug);
         option_value = g_variant_new("i", mask);
     } else {
         /* Option not found */
@@ -243,11 +243,11 @@ gboolean cdemu_device_set_option (CdemuDevice *self, gchar *option_name, GVarian
             g_set_error(error, CDEMU_ERROR, CDEMU_ERROR_INVALID_ARGUMENT, "Invalid argument type for option '%s'!", option_name);
             succeeded = FALSE;
         } else {
-            GObject *context = mirage_debuggable_get_debug_context(MIRAGE_DEBUGGABLE(self));
+            MirageDebugContext *context = mirage_debuggable_get_debug_context(MIRAGE_DEBUGGABLE(self));
             if (context) {
                 gint mask;
                 g_variant_get(option_value, "i", &mask);
-                mirage_debug_context_set_debug_mask(MIRAGE_DEBUG_CONTEXT(context), mask);
+                mirage_debug_context_set_debug_mask(context, mask);
             }
         }
     } else if (!g_strcmp0(option_name, "library-debug-mask")) {
@@ -258,7 +258,7 @@ gboolean cdemu_device_set_option (CdemuDevice *self, gchar *option_name, GVarian
         } else {
             gint mask;
             g_variant_get(option_value, "i", &mask);
-            mirage_debug_context_set_debug_mask(MIRAGE_DEBUG_CONTEXT(self->priv->disc_debug), mask);
+            mirage_debug_context_set_debug_mask(self->priv->disc_debug, mask);
         }
     } else {
         /* Option not found */

@@ -19,7 +19,7 @@
 
 #include "cdemu.h"
 
-GObject *daemon_obj;
+CdemuDaemon *daemon_obj;
 FILE *logfile;
 
 static gint num_devices = 1;
@@ -60,7 +60,7 @@ static void __unix_signal_handler (int signal)
         case SIGQUIT:
         case SIGTERM:
         case SIGHUP: {
-            cdemu_daemon_stop_daemon(CDEMU_DAEMON(daemon_obj));
+            cdemu_daemon_stop_daemon(daemon_obj);
             break;
         }
         default: {
@@ -167,7 +167,7 @@ int main (int argc, char **argv)
     setup_signal_trap();
 
     /* Initialize and start daemon */
-    if (cdemu_daemon_initialize_and_start(CDEMU_DAEMON(daemon_obj), num_devices, ctl_device, audio_driver, use_system_bus)) {
+    if (cdemu_daemon_initialize_and_start(daemon_obj, num_devices, ctl_device, audio_driver, use_system_bus)) {
         /* Printed when daemon stops */
         g_message("Stopping daemon.\n");
     } else {

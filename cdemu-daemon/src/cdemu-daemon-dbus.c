@@ -88,7 +88,7 @@ static gboolean append_parser_to_builder (MirageParserInfo *info, GVariantBuilde
 static GVariantBuilder *encode_parsers ()
 {
     GVariantBuilder *builder = g_variant_builder_new(G_VARIANT_TYPE("a(ssss)"));
-    mirage_for_each_parser((MirageCallbackFunction)append_parser_to_builder, builder, NULL);
+    mirage_enumerate_parsers((MirageCallbackFunction)append_parser_to_builder, builder, NULL);
     return builder;
 }
 
@@ -103,7 +103,7 @@ static gboolean append_filter_to_builder (MirageFileFilterInfo *info, GVariantBu
 static GVariantBuilder *encode_file_filters ()
 {
     GVariantBuilder *builder = g_variant_builder_new(G_VARIANT_TYPE("a(ssss)"));
-    mirage_for_each_file_filter((MirageCallbackFunction)append_filter_to_builder, builder, NULL);
+    mirage_enumerate_file_filters((MirageCallbackFunction)append_filter_to_builder, builder, NULL);
     return builder;
 }
 
@@ -118,7 +118,7 @@ static gboolean append_fragment_to_builder (MirageFragmentInfo *info, GVariantBu
 static GVariantBuilder *encode_fragments ()
 {
     GVariantBuilder *builder = g_variant_builder_new(G_VARIANT_TYPE("a(ss)"));
-    mirage_for_each_fragment((MirageCallbackFunction)append_fragment_to_builder, builder, NULL);
+    mirage_enumerate_fragments((MirageCallbackFunction)append_fragment_to_builder, builder, NULL);
     return builder;
 }
 
@@ -135,12 +135,12 @@ static void cdemu_daemon_dbus_handle_method_call (GDBusConnection *connection G_
         gchar **filenames;
         GVariant *options;
 
-        GObject *device;
+        CdemuDevice *device;
 
         g_variant_get(parameters, "(i^as@a{sv})", &device_number, &filenames, &options);
         device = cdemu_daemon_get_device(self, device_number, &error);
         if (device) {
-            succeeded = cdemu_device_load_disc(CDEMU_DEVICE(device), filenames, options, &error);
+            succeeded = cdemu_device_load_disc(device, filenames, options, &error);
         }
 
         g_object_unref(device);
@@ -148,19 +148,19 @@ static void cdemu_daemon_dbus_handle_method_call (GDBusConnection *connection G_
     } else if (!g_strcmp0(method_name, "DeviceUnload")) {
         /* *** DeviceUnload *** */
         gint device_number;
-        GObject *device;
+        CdemuDevice *device;
 
         g_variant_get(parameters, "(i)", &device_number);
         device = cdemu_daemon_get_device(self, device_number, &error);
         if (device) {
-            succeeded = cdemu_device_unload_disc(CDEMU_DEVICE(device), &error);
+            succeeded = cdemu_device_unload_disc(device, &error);
         }
 
         g_object_unref(device);
     } else if (!g_strcmp0(method_name, "DeviceGetStatus")) {
         /* *** DeviceGetStatus *** */
         gint device_number;
-        GObject *device;
+        CdemuDevice *device;
 
         g_variant_get(parameters, "(i)", &device_number);
         device = cdemu_daemon_get_device(self, device_number, &error);
@@ -168,7 +168,7 @@ static void cdemu_daemon_dbus_handle_method_call (GDBusConnection *connection G_
             gboolean loaded;
             gchar **file_names;
 
-            loaded = cdemu_device_get_status(CDEMU_DEVICE(device), &file_names);
+            loaded = cdemu_device_get_status(device, &file_names);
             ret = g_variant_new("(b^as)", loaded, file_names);
             g_strfreev(file_names);
 
@@ -181,12 +181,12 @@ static void cdemu_daemon_dbus_handle_method_call (GDBusConnection *connection G_
         gint device_number;
         gchar *option_name;
         GVariant *option_value;
-        GObject *device;
+        CdemuDevice *device;
 
         g_variant_get(parameters, "(isv)", &device_number, &option_name, &option_value);
         device = cdemu_daemon_get_device(self, device_number, &error);
         if (device) {
-            succeeded = cdemu_device_set_option(CDEMU_DEVICE(device), option_name, option_value, &error);
+            succeeded = cdemu_device_set_option(device, option_name, option_value, &error);
         }
 
         g_object_unref(device);
@@ -196,12 +196,12 @@ static void cdemu_daemon_dbus_handle_method_call (GDBusConnection *connection G_
         /* *** DeviceGetOption *** */
         gint device_number;
         gchar *option_name;
-        GObject *device;
+        CdemuDevice *device;
 
         g_variant_get(parameters, "(is)", &device_number, &option_name);
         device = cdemu_daemon_get_device(self, device_number, &error);
         if (device) {
-            GVariant *option_value = cdemu_device_get_option(CDEMU_DEVICE(device), option_name, &error);
+            GVariant *option_value = cdemu_device_get_option(device, option_name, &error);
             if (option_value) {
                 ret = g_variant_new("(v)", option_value);
                 succeeded = TRUE;
@@ -217,14 +217,14 @@ static void cdemu_daemon_dbus_handle_method_call (GDBusConnection *connection G_
     } else if (!g_strcmp0(method_name, "DeviceGetMapping")) {
         /* *** DeviceGetMapping *** */
         gint device_number;
-        GObject *device;
+        CdemuDevice *device;
 
         g_variant_get(parameters, "(i)", &device_number);
         device = cdemu_daemon_get_device(self, device_number, &error);
         if (device) {
             gchar *sr_device, *sg_device;
 
-            cdemu_device_get_mapping(CDEMU_DEVICE(device), &sr_device, &sg_device);
+            cdemu_device_get_mapping(device, &sr_device, &sg_device);
             ret = g_variant_new("(ss)", sr_device ? sr_device : "", sg_device ? sg_device : "");
             succeeded = TRUE;
 

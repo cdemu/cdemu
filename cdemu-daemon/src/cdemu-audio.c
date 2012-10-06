@@ -49,7 +49,7 @@ static gpointer cdemu_audio_playback_thread (CdemuAudio *self)
         /* Process sectors; we go over playing range, check sectors' type, keep
            track of where we are and try to produce some sound. libao's play
            function should keep our timing */
-        GObject *sector;
+        MirageSector *sector;
         GError *error = NULL;
         const guint8 *tmp_buffer;
         gint tmp_len;
@@ -75,7 +75,7 @@ static gpointer cdemu_audio_playback_thread (CdemuAudio *self)
 
         /* Get sector */
         CDEMU_DEBUG(self, DAEMON_DEBUG_AUDIOPLAY, "%s: playing sector %d (0x%X)\n", __debug__, self->priv->cur_sector, self->priv->cur_sector);
-        sector = mirage_disc_get_sector(MIRAGE_DISC(self->priv->disc), self->priv->cur_sector, &error);
+        sector = mirage_disc_get_sector(self->priv->disc, self->priv->cur_sector, &error);
         if (!sector) {
             CDEMU_DEBUG(self, DAEMON_DEBUG_AUDIOPLAY, "%s: failed to get sector 0x%X: %s\n", __debug__, self->priv->cur_sector, error->message);
             g_error_free(error);
@@ -86,7 +86,7 @@ static gpointer cdemu_audio_playback_thread (CdemuAudio *self)
 
         /* This one covers both sector not being an audio one and sector changing
            from audio to data one */
-        type = mirage_sector_get_sector_type(MIRAGE_SECTOR(sector));
+        type = mirage_sector_get_sector_type(sector);
         if (type != MIRAGE_MODE_AUDIO) {
             CDEMU_DEBUG(self, DAEMON_DEBUG_AUDIOPLAY, "%s: non-audio sector!\n", __debug__);
             g_object_unref(sector); /* Unref here; we won't need it anymore... */
@@ -106,7 +106,7 @@ static gpointer cdemu_audio_playback_thread (CdemuAudio *self)
 
 
         /* Play sector */
-        mirage_sector_get_data(MIRAGE_SECTOR(sector), &tmp_buffer, &tmp_len, NULL);
+        mirage_sector_get_data(sector, &tmp_buffer, &tmp_len, NULL);
         if (ao_play(self->priv->device, (gchar *)tmp_buffer, tmp_len) == 0) {
             CDEMU_DEBUG(self, DAEMON_DEBUG_ERROR, "%s: playback error!\n", __debug__);
             self->priv->status = AUDIO_STATUS_ERROR; /* Audio operation stopped due to error */
@@ -192,7 +192,7 @@ void cdemu_audio_initialize (CdemuAudio *self, gchar *driver, gint *cur_sector_p
     /* *Don't* open the device here; we'll do it when we actually start playing */
 }
 
-gboolean cdemu_audio_start (CdemuAudio *self, gint start, gint end, GObject *disc)
+gboolean cdemu_audio_start (CdemuAudio *self, gint start, gint end, MirageDisc *disc)
 {
     gboolean succeeded = TRUE;
 

@@ -20,8 +20,15 @@
 #ifndef __CDEMU_DAEMON_H__
 #define __CDEMU_DAEMON_H__
 
+/* Forward declarations */
+typedef struct _CdemuDevice CdemuDevice;
+
+
 G_BEGIN_DECLS
 
+/**********************************************************************\
+ *                        CdemuDaemon object                          *
+\**********************************************************************/
 #define CDEMU_TYPE_DAEMON            (cdemu_daemon_get_type())
 #define CDEMU_DAEMON(obj)            (G_TYPE_CHECK_INSTANCE_CAST((obj), CDEMU_TYPE_DAEMON, CdemuDaemon))
 #define CDEMU_DAEMON_CLASS(klass)    (G_TYPE_CHECK_CLASS_CAST((klass), CDEMU_TYPE_DAEMON, CdemuDaemonClass))
@@ -53,7 +60,7 @@ GType cdemu_daemon_get_type (void);
 /* Public API */
 gboolean cdemu_daemon_initialize_and_start (CdemuDaemon *self, gint num_devices, gchar *ctl_device, gchar *audio_driver, gboolean system_bus);
 void cdemu_daemon_stop_daemon (CdemuDaemon *self);
-GObject *cdemu_daemon_get_device (CdemuDaemon *self, gint device_number, GError **error);
+CdemuDevice *cdemu_daemon_get_device (CdemuDaemon *self, gint device_number, GError **error);
 
 
 G_END_DECLS

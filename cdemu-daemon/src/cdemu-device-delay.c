@@ -32,7 +32,7 @@ static void cdemu_device_delay_increase (CdemuDevice *self, gint address, gint n
     gdouble dpm_angle = 0;
     gdouble dpm_density = 0;
 
-    if (!mirage_disc_get_dpm_data_for_sector(MIRAGE_DISC(self->priv->disc), address, &dpm_angle, &dpm_density, NULL)) {
+    if (!mirage_disc_get_dpm_data_for_sector(self->priv->disc, address, &dpm_angle, &dpm_density, NULL)) {
         CDEMU_DEBUG(self, DAEMON_DEBUG_DELAY, "%s: failed to get DPM data for sector 0x%X\n", __debug__, address);
         return;
     }

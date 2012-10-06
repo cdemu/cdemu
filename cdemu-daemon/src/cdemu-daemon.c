@@ -26,15 +26,15 @@
 /**********************************************************************\
  *                           Signal handlers                          *
 \**********************************************************************/
-static void device_status_changed_handler (GObject *device, CdemuDaemon *self)
+static void device_status_changed_handler (CdemuDevice *device, CdemuDaemon *self)
 {
-    gint number = cdemu_device_get_device_number(CDEMU_DEVICE(device));
-    cdemu_daemon_dbus_emit_device_status_changed (self, number);
+    gint number = cdemu_device_get_device_number(device);
+    cdemu_daemon_dbus_emit_device_status_changed(self, number);
 }
 
-static void device_option_changed_handler (GObject *device, gchar *option, CdemuDaemon *self)
+static void device_option_changed_handler (CdemuDevice *device, gchar *option, CdemuDaemon *self)
 {
-    gint number = cdemu_device_get_device_number(CDEMU_DEVICE(device));
+    gint number = cdemu_device_get_device_number(device);
     cdemu_daemon_dbus_emit_device_option_changed(self, number, option);
 }
 
@@ -48,9 +48,9 @@ static gboolean device_mapping_callback (CdemuDaemon *self)
 
     /* Try to setup mapping on each device */
     for (gint i = 0; i < self->priv->number_of_devices; i++) {
-        GObject *device = cdemu_daemon_get_device(self, i, NULL);
+        CdemuDevice *device = cdemu_daemon_get_device(self, i, NULL);
 
-        run_again = !cdemu_device_setup_mapping(CDEMU_DEVICE(device));
+        run_again = !cdemu_device_setup_mapping(device);
         g_object_unref(device);
 
         /* Try again later? */
@@ -78,13 +78,13 @@ static gboolean device_mapping_callback (CdemuDaemon *self)
 \******************************************************************************/
 gboolean cdemu_daemon_initialize_and_start (CdemuDaemon *self, gint num_devices, gchar *ctl_device, gchar *audio_driver, gboolean system_bus)
 {
-    GObject *debug_context;
+    MirageDebugContext *debug_context;
     GBusType bus_type = system_bus ? G_BUS_TYPE_SYSTEM : G_BUS_TYPE_SESSION;
 
     /* Debug context; so that we get daemon's errors/warnings from the very beginning */
     debug_context = g_object_new(MIRAGE_TYPE_DEBUG_CONTEXT, NULL);
-    mirage_debug_context_set_name(MIRAGE_DEBUG_CONTEXT(debug_context), "cdemu");
-    mirage_debug_context_set_domain(MIRAGE_DEBUG_CONTEXT(debug_context), "CDEMU");
+    mirage_debug_context_set_name(debug_context, "cdemu");
+    mirage_debug_context_set_domain(debug_context, "CDEMU");
     mirage_debuggable_set_debug_context(MIRAGE_DEBUGGABLE(self), debug_context);
     g_object_unref(debug_context);
 
@@ -111,11 +111,11 @@ gboolean cdemu_daemon_initialize_and_start (CdemuDaemon *self, gint num_devices,
     /* Create desired number of devices */
     for (gint i = 0; i < self->priv->number_of_devices; i++) {
         /* Create CDEmu device object */
-        GObject *dev =  g_object_new(CDEMU_TYPE_DEVICE, NULL);
+        CdemuDevice *dev = g_object_new(CDEMU_TYPE_DEVICE, NULL);
 
-        if (cdemu_device_initialize(CDEMU_DEVICE(dev), i, self->priv->ctl_device, audio_driver)) {
+        if (cdemu_device_initialize(dev, i, self->priv->ctl_device, audio_driver)) {
             /* Set parent */
-            mirage_object_set_parent(MIRAGE_OBJECT(dev), G_OBJECT(self));
+            mirage_object_set_parent(MIRAGE_OBJECT(dev), self);
             /* Don't attach child... MirageObjects pass debug context to children,
                and CdemuDevices have each its own context... */
             /* Add handling for signals from the device... this allows us to
@@ -159,11 +159,11 @@ void cdemu_daemon_stop_daemon (CdemuDaemon *self)
 }
 
 
-GObject *cdemu_daemon_get_device (CdemuDaemon *self, gint device_number, GError **error)
+CdemuDevice *cdemu_daemon_get_device (CdemuDaemon *self, gint device_number, GError **error)
 {
     /* Get device */
     if (device_number >= 0 && device_number < self->priv->number_of_devices) {
-        GObject *device = g_list_nth_data(self->priv->list_of_devices, device_number);
+        CdemuDevice *device = g_list_nth_data(self->priv->list_of_devices, device_number);
         g_object_ref(device);
         return device;
     }
@@ -203,7 +203,7 @@ static void cdemu_daemon_dispose (GObject *gobject)
 
     /* Unref all devices */
     for (GList *entry = self->priv->list_of_devices; entry; entry = entry->next) {
-        GObject *dev = entry->data;
+        CdemuDevice *dev = entry->data;
         if (dev) {
             g_object_unref(dev);
             entry->data = NULL;

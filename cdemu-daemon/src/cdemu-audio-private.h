@@ -34,7 +34,7 @@ struct _CdemuAudioPrivate
     ao_device *device;
 
     /* Pointer to disc */
-    GObject *disc;
+    MirageDisc *disc;
 
     GMutex *device_mutex;
 
