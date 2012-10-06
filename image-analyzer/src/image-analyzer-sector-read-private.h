@@ -32,7 +32,7 @@ struct _ImageAnalyzerSectorReadPrivate
     GtkWidget *spinbutton;
 
     /* Disc */
-    GObject *disc;
+    MirageDisc *disc;
 };
 
 

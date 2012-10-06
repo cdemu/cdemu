@@ -82,7 +82,7 @@ static gboolean image_analyzer_disc_topology_run_gnuplot (ImageAnalyzerDiscTopol
     return TRUE;
 }
 
-static gboolean image_analyzer_disc_topology_refresh (ImageAnalyzerDiscTopology *self, GObject *disc)
+static gboolean image_analyzer_disc_topology_refresh (ImageAnalyzerDiscTopology *self, MirageDisc *disc)
 {
     gboolean dpm_valid = FALSE;
     gint dpm_start, dpm_entries, dpm_resolution;
@@ -105,10 +105,10 @@ static gboolean image_analyzer_disc_topology_refresh (ImageAnalyzerDiscTopology 
             "reset \n"
         );
     } else {
-        const gchar **filenames = mirage_disc_get_filenames(MIRAGE_DISC(disc));
+        const gchar **filenames = mirage_disc_get_filenames(disc);
         gchar *basename = g_path_get_basename(filenames[0]);
 
-        mirage_disc_get_dpm_data(MIRAGE_DISC(disc), &dpm_start, &dpm_entries, &dpm_resolution, NULL);
+        mirage_disc_get_dpm_data(disc, &dpm_start, &dpm_entries, &dpm_resolution, NULL);
 
         if (!dpm_entries) {
             /* No DPM data */
@@ -158,7 +158,7 @@ static gboolean image_analyzer_disc_topology_refresh (ImageAnalyzerDiscTopology 
             address = dpm_start + i*dpm_resolution;
             density = 0;
 
-            if (!mirage_disc_get_dpm_data_for_sector(MIRAGE_DISC(disc), address, NULL, &density, NULL)) {
+            if (!mirage_disc_get_dpm_data_for_sector(disc, address, NULL, &density, NULL)) {
                 /*g_debug("%s: failed to get DPM data for address 0x%X\n", __func__, address);*/
                 continue;
             }
@@ -189,7 +189,7 @@ static gboolean image_analyzer_disc_topology_refresh (ImageAnalyzerDiscTopology 
 /**********************************************************************\
  *                             Public API                             *
 \**********************************************************************/
-void image_analyzer_disc_topology_set_disc (ImageAnalyzerDiscTopology *self, GObject *disc)
+void image_analyzer_disc_topology_set_disc (ImageAnalyzerDiscTopology *self, MirageDisc *disc)
 {
     /* Just refresh; we don't need disc reference */
     image_analyzer_disc_topology_refresh(self, disc);

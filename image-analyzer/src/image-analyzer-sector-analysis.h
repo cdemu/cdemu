@@ -53,7 +53,7 @@ struct _ImageAnalyzerSectorAnalysisClass
 GType image_analyzer_sector_analysis_get_type (void);
 
 /* Public API */
-void image_analyzer_sector_analysis_set_disc (ImageAnalyzerSectorAnalysis *self, GObject *disc);
+void image_analyzer_sector_analysis_set_disc (ImageAnalyzerSectorAnalysis *self, MirageDisc *disc);
 
 
 G_END_DECLS

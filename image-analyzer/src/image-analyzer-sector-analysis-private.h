@@ -28,7 +28,7 @@ struct _ImageAnalyzerSectorAnalysisPrivate {
     GtkTextBuffer *buffer;
 
     /* Disc */
-    GObject *disc;
+    MirageDisc *disc;
 };
 
 #endif /* __IMAGE_ANALYZER_SECTOR_ANALYSIS_PRIVATE_H__ */

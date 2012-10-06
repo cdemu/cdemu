@@ -79,7 +79,7 @@ static void image_analyzer_application_set_debug_to_stdout (ImageAnalyzerApplica
 static void image_analyzer_application_set_debug_mask (ImageAnalyzerApplication *self, gint debug_mask)
 {
     /* Debug mask */
-    mirage_debug_context_set_debug_mask (MIRAGE_DEBUG_CONTEXT(self->priv->debug_context), debug_mask);
+    mirage_debug_context_set_debug_mask(self->priv->debug_context, debug_mask);
 }
 
 static void image_analyzer_application_change_debug_mask (ImageAnalyzerApplication *self)
@@ -96,7 +96,7 @@ static void image_analyzer_application_change_debug_mask (ImageAnalyzerApplicati
     mirage_get_supported_debug_masks(&valid_masks, &num_valid_masks, NULL);
 
     /* Get mask from debug context */
-    mask = mirage_debug_context_get_debug_mask(MIRAGE_DEBUG_CONTEXT(self->priv->debug_context));
+    mask = mirage_debug_context_get_debug_mask(self->priv->debug_context);
 
     /* Construct dialog */
     dialog = gtk_dialog_new_with_buttons("Debug mask",
@@ -136,7 +136,7 @@ static void image_analyzer_application_change_debug_mask (ImageAnalyzerApplicati
         }
 
         /* Set the mask */
-        mirage_debug_context_set_debug_mask(MIRAGE_DEBUG_CONTEXT(self->priv->debug_context), mask);
+        mirage_debug_context_set_debug_mask(self->priv->debug_context, mask);
     }
 
     /* Destroy dialog */
@@ -574,8 +574,8 @@ static GtkWidget *build_dialog_open_image (ImageAnalyzerApplication *self)
     /* Filters provided by parsers and file filters */
     context.dialog = dialog;
     context.all_images = filter;
-    mirage_for_each_parser((MirageCallbackFunction)append_parser_info, &context, NULL);
-    mirage_for_each_file_filter((MirageCallbackFunction)append_file_filter_info, &context, NULL);
+    mirage_enumerate_parsers((MirageCallbackFunction)append_parser_info, &context, NULL);
+    mirage_enumerate_file_filters((MirageCallbackFunction)append_file_filter_info, &context, NULL);
 
     return dialog;
 }
@@ -866,8 +866,8 @@ static void image_analyzer_application_init (ImageAnalyzerApplication *self)
 
     /* Setup debug context */
     self->priv->debug_context = g_object_new(MIRAGE_TYPE_DEBUG_CONTEXT, NULL);
-    mirage_debug_context_set_domain(MIRAGE_DEBUG_CONTEXT(self->priv->debug_context), "Image analyzer");
-    mirage_debug_context_set_debug_mask(MIRAGE_DEBUG_CONTEXT(self->priv->debug_context), MIRAGE_DEBUG_PARSER);
+    mirage_debug_context_set_domain(self->priv->debug_context, "Image analyzer");
+    mirage_debug_context_set_debug_mask(self->priv->debug_context, MIRAGE_DEBUG_PARSER);
 
     /* Setup GUI */
     setup_gui(self);

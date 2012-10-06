@@ -51,7 +51,7 @@ struct _ImageAnalyzerSectorReadClass {
 GType image_analyzer_sector_read_get_type (void);
 
 /* Public API */
-void image_analyzer_sector_read_set_disc (ImageAnalyzerSectorRead *self, GObject *disc);
+void image_analyzer_sector_read_set_disc (ImageAnalyzerSectorRead *self, MirageDisc *disc);
 
 
 G_END_DECLS

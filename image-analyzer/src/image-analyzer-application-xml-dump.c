@@ -73,7 +73,7 @@ static xmlNodePtr xml_add_node_with_content (xmlNodePtr parent, gchar *name, gch
 /**********************************************************************\
  *                         XML dump functions                         *
 \**********************************************************************/
-static gboolean xml_dump_fragment (GObject *fragment, xmlNodePtr parent)
+static gboolean xml_dump_fragment (MirageFragment *fragment, xmlNodePtr parent)
 {
     const MirageFragmentInfo *fragment_info;
     gint address, length;
@@ -81,14 +81,14 @@ static gboolean xml_dump_fragment (GObject *fragment, xmlNodePtr parent)
     /* Make fragment node parent */
     parent = xml_add_node(parent, TAG_FRAGMENT);
 
-    fragment_info = mirage_fragment_get_fragment_info(MIRAGE_FRAGMENT(fragment));
+    fragment_info = mirage_fragment_get_fragment_info(fragment);
     xml_add_node_with_content(parent, TAG_FRAGMENT_ID, "%s", fragment_info->id);
 
 
-    address = mirage_fragment_get_address(MIRAGE_FRAGMENT(fragment));
+    address = mirage_fragment_get_address(fragment);
     xml_add_node_with_content(parent, TAG_ADDRESS, "%d", address);
 
-    length = mirage_fragment_get_length(MIRAGE_FRAGMENT(fragment));
+    length = mirage_fragment_get_length(fragment);
     xml_add_node_with_content(parent, TAG_LENGTH, "%d", length);
 
 
@@ -138,23 +138,23 @@ static gboolean xml_dump_fragment (GObject *fragment, xmlNodePtr parent)
     return TRUE;
 }
 
-static gboolean xml_dump_index (GObject *index, xmlNodePtr parent)
+static gboolean xml_dump_index (MirageIndex *index, xmlNodePtr parent)
 {
     gint number, address;
 
     /* Make index node parent */
     parent = xml_add_node(parent, TAG_INDEX);
 
-    number = mirage_index_get_number(MIRAGE_INDEX(index));
+    number = mirage_index_get_number(index);
     xml_add_node_with_content(parent, TAG_NUMBER, "%d", number);
 
-    address = mirage_index_get_address(MIRAGE_INDEX(index));
+    address = mirage_index_get_address(index);
     xml_add_node_with_content(parent, TAG_ADDRESS, "%d", address);
 
     return TRUE;
 }
 
-static gboolean xml_dump_language (GObject *language, xmlNodePtr parent)
+static gboolean xml_dump_language (MirageLanguage *language, xmlNodePtr parent)
 {
     static const struct {
         gchar *tag;
@@ -178,18 +178,18 @@ static gboolean xml_dump_language (GObject *language, xmlNodePtr parent)
         { TAG_SIZE, MIRAGE_LANGUAGE_PACK_SIZE },
     };
 
-    gint langcode;
+    gint code;
 
     /* Make language node parent */
     parent = xml_add_node(parent, TAG_LANGUAGE);
 
-    langcode = mirage_language_get_langcode(MIRAGE_LANGUAGE(language));
-    xml_add_node_with_content(parent, TAG_LANGUAGE_CODE, "%d", langcode);
+    code = mirage_language_get_code(language);
+    xml_add_node_with_content(parent, TAG_LANGUAGE_CODE, "%d", code);
 
     for (gint i = 0; i < G_N_ELEMENTS(pack_types); i++) {
         const gchar *data;
         gint len;
-        if (mirage_language_get_pack_data(MIRAGE_LANGUAGE(language), pack_types[i].code, &data, &len, NULL)) {
+        if (mirage_language_get_pack_data(language, pack_types[i].code, &data, &len, NULL)) {
             xmlNodePtr pack_node = xml_add_node_with_content(parent, pack_types[i].tag, "%s", data);
             xml_add_attribute(pack_node, ATTR_LENGTH, "%d", len);
         }
@@ -198,7 +198,7 @@ static gboolean xml_dump_language (GObject *language, xmlNodePtr parent)
     return TRUE;
 }
 
-static gboolean xml_dump_track (GObject *track, xmlNodePtr parent)
+static gboolean xml_dump_track (MirageTrack *track, xmlNodePtr parent)
 {
     gint flags, mode;
     gint adr, ctl;
@@ -212,64 +212,64 @@ static gboolean xml_dump_track (GObject *track, xmlNodePtr parent)
     /* Make track node parent */
     parent = xml_add_node(parent, TAG_TRACK);
 
-    flags = mirage_track_get_flags(MIRAGE_TRACK(track));
+    flags = mirage_track_get_flags(track);
     xml_add_node_with_content(parent, TAG_FLAGS, "0x%X", flags);
 
-    mode = mirage_track_get_mode(MIRAGE_TRACK(track));
+    mode = mirage_track_get_mode(track);
     xml_add_node_with_content(parent, TAG_MODE, "0x%X", mode);
 
-    adr = mirage_track_get_adr(MIRAGE_TRACK(track));
+    adr = mirage_track_get_adr(track);
     xml_add_node_with_content(parent, TAG_ADR, "%d", adr);
 
-    ctl = mirage_track_get_ctl(MIRAGE_TRACK(track));
+    ctl = mirage_track_get_ctl(track);
     xml_add_node_with_content(parent, TAG_CTL, "%d", ctl);
 
-    isrc = mirage_track_get_isrc(MIRAGE_TRACK(track));
+    isrc = mirage_track_get_isrc(track);
     if (isrc) xml_add_node_with_content(parent, TAG_ISRC, "%s", isrc);
 
-    session_number = mirage_track_layout_get_session_number(MIRAGE_TRACK(track));
+    session_number = mirage_track_layout_get_session_number(track);
     xml_add_node_with_content(parent, TAG_SESSION_NUMBER, "%d", session_number);
 
-    track_number = mirage_track_layout_get_track_number(MIRAGE_TRACK(track));
+    track_number = mirage_track_layout_get_track_number(track);
     xml_add_node_with_content(parent, TAG_TRACK_NUMBER, "%d", track_number);
 
-    start_sector = mirage_track_layout_get_start_sector(MIRAGE_TRACK(track));
+    start_sector = mirage_track_layout_get_start_sector(track);
     xml_add_node_with_content(parent, TAG_START_SECTOR, "%d", start_sector);
 
-    length = mirage_track_layout_get_length(MIRAGE_TRACK(track));
+    length = mirage_track_layout_get_length(track);
     xml_add_node_with_content(parent, TAG_LENGTH, "%d", length);
 
-    num_fragments = mirage_track_get_number_of_fragments(MIRAGE_TRACK(track));
+    num_fragments = mirage_track_get_number_of_fragments(track);
     xml_add_node_with_content(parent, TAG_NUM_FRAGMENTS, "%d", num_fragments);
 
     if (num_fragments) {
         xmlNodePtr node = xml_add_node(parent, TAG_FRAGMENTS);
-        mirage_track_for_each_fragment(MIRAGE_TRACK(track), (MirageCallbackFunction)xml_dump_fragment, node);
+        mirage_track_enumerate_fragments(track, (MirageCallbackFunction)xml_dump_fragment, node);
     }
 
-    track_start = mirage_track_get_track_start(MIRAGE_TRACK(track));
+    track_start = mirage_track_get_track_start(track);
     xml_add_node_with_content(parent, TAG_TRACK_START, "%d", track_start);
 
-    num_indices = mirage_track_get_number_of_indices(MIRAGE_TRACK(track));
+    num_indices = mirage_track_get_number_of_indices(track);
     xml_add_node_with_content(parent, TAG_NUM_INDICES, "%d", num_indices);
 
     if (num_indices) {
         xmlNodePtr node = xml_add_node(parent, TAG_INDICES);
-        mirage_track_for_each_index(MIRAGE_TRACK(track), (MirageCallbackFunction)xml_dump_index, node);
+        mirage_track_enumerate_indices(track, (MirageCallbackFunction)xml_dump_index, node);
     }
 
-    num_languages = mirage_track_get_number_of_languages(MIRAGE_TRACK(track));
+    num_languages = mirage_track_get_number_of_languages(track);
     xml_add_node_with_content(parent, TAG_NUM_LANGUAGES, "%d", num_languages);
 
     if (num_languages) {
         xmlNodePtr node = xml_add_node(parent, TAG_LANGUAGES);
-        mirage_track_for_each_language(MIRAGE_TRACK(track), (MirageCallbackFunction)xml_dump_language, node);
+        mirage_track_enumerate_languages(track, (MirageCallbackFunction)xml_dump_language, node);
     }
 
     return TRUE;
 }
 
-static gboolean xml_dump_session (GObject *session, xmlNodePtr parent)
+static gboolean xml_dump_session (MirageSession *session, xmlNodePtr parent)
 {
     gint session_type, session_number;
     gint first_track;
@@ -280,46 +280,46 @@ static gboolean xml_dump_session (GObject *session, xmlNodePtr parent)
     /* Make session node parent */
     parent = xml_add_node(parent, TAG_SESSION);
 
-    session_type = mirage_session_get_session_type(MIRAGE_SESSION(session));
+    session_type = mirage_session_get_session_type(session);
     xml_add_node_with_content(parent, TAG_SESSION_TYPE, "0x%X", session_type);
 
-    session_number = mirage_session_layout_get_session_number(MIRAGE_SESSION(session));
+    session_number = mirage_session_layout_get_session_number(session);
     xml_add_node_with_content(parent, TAG_SESSION_NUMBER, "%d", session_number);
 
-    first_track = mirage_session_layout_get_first_track(MIRAGE_SESSION(session));
+    first_track = mirage_session_layout_get_first_track(session);
     xml_add_node_with_content(parent, TAG_FIRST_TRACK, "%d", first_track);
 
-    start_sector = mirage_session_layout_get_start_sector(MIRAGE_SESSION(session));
+    start_sector = mirage_session_layout_get_start_sector(session);
     xml_add_node_with_content(parent, TAG_START_SECTOR, "%d", start_sector);
 
-    length = mirage_session_layout_get_length(MIRAGE_SESSION(session));
+    length = mirage_session_layout_get_length(session);
     xml_add_node_with_content(parent, TAG_LENGTH, "%d", length);
 
-    leadout_length = mirage_session_get_leadout_length(MIRAGE_SESSION(session));
+    leadout_length = mirage_session_get_leadout_length(session);
     xml_add_node_with_content(parent, TAG_LEADOUT_LENGTH, "%d", leadout_length);
 
-    num_tracks = mirage_session_get_number_of_tracks(MIRAGE_SESSION(session));
+    num_tracks = mirage_session_get_number_of_tracks(session);
     xml_add_node_with_content(parent, TAG_NUM_TRACKS, "%d", num_tracks);
 
     if (num_tracks) {
         xmlNodePtr node = xml_add_node(parent, TAG_TRACKS);
-        mirage_session_for_each_track(MIRAGE_SESSION(session), (MirageCallbackFunction)xml_dump_track, node);
+        mirage_session_enumerate_tracks(session, (MirageCallbackFunction)xml_dump_track, node);
     }
 
-    num_languages = mirage_session_get_number_of_languages(MIRAGE_SESSION(session));
+    num_languages = mirage_session_get_number_of_languages(session);
     xml_add_node_with_content(parent, TAG_NUM_LANGUAGES, "%d", num_languages);
 
     if (num_languages) {
         xmlNodePtr node = xml_add_node(parent, TAG_LANGUAGES);
-        mirage_session_for_each_language(MIRAGE_SESSION(session), (MirageCallbackFunction)xml_dump_language, node);
+        mirage_session_enumerate_languages(session, (MirageCallbackFunction)xml_dump_language, node);
     }
 
-    //mirage_session_get_cdtext_data(MIRAGE_SESSION(session), guint8 **data, gint *len, NULL);
+    //mirage_session_get_cdtext_data(session, guint8 **data, gint *len, NULL);
 
     return TRUE;
 }
 
-static gboolean xml_dump_disc (GObject *disc, xmlNodePtr parent)
+static gboolean xml_dump_disc (MirageDisc *disc, xmlNodePtr parent)
 {
     gint medium_type;
     const gchar **filenames;
@@ -336,42 +336,42 @@ static gboolean xml_dump_disc (GObject *disc, xmlNodePtr parent)
     /* Make disc node parent */
     parent = xml_add_node(parent, TAG_DISC);
 
-    medium_type = mirage_disc_get_medium_type(MIRAGE_DISC(disc));
+    medium_type = mirage_disc_get_medium_type(disc);
     xml_add_node_with_content(parent, TAG_MEDIUM_TYPE, "0x%X", medium_type);
 
-    filenames = mirage_disc_get_filenames(MIRAGE_DISC(disc));
+    filenames = mirage_disc_get_filenames(disc);
     node = xml_add_node(parent, TAG_FILENAMES);
     for (gint i = 0; filenames[i]; i++) {
         xml_add_node_with_content(node, TAG_FILENAME, "%s", filenames[i]);
     }
 
-    mcn = mirage_disc_get_mcn(MIRAGE_DISC(disc));
+    mcn = mirage_disc_get_mcn(disc);
     if (mcn) xml_add_node_with_content(parent, TAG_MCN, "%s", mcn);
 
-    first_session = mirage_disc_layout_get_first_session(MIRAGE_DISC(disc));
+    first_session = mirage_disc_layout_get_first_session(disc);
     xml_add_node_with_content(parent, TAG_FIRST_SESSION, "%d", first_session);
 
-    first_track = mirage_disc_layout_get_first_track(MIRAGE_DISC(disc));
+    first_track = mirage_disc_layout_get_first_track(disc);
     xml_add_node_with_content(parent, TAG_FIRST_TRACK, "%d", first_track);
 
-    start_sector = mirage_disc_layout_get_start_sector(MIRAGE_DISC(disc));
+    start_sector = mirage_disc_layout_get_start_sector(disc);
     xml_add_node_with_content(parent, TAG_START_SECTOR, "%d", start_sector);
 
-    length = mirage_disc_layout_get_length(MIRAGE_DISC(disc));
+    length = mirage_disc_layout_get_length(disc);
     xml_add_node_with_content(parent, TAG_LENGTH, "%d", length);
 
-    num_sessions = mirage_disc_get_number_of_sessions(MIRAGE_DISC(disc));
+    num_sessions = mirage_disc_get_number_of_sessions(disc);
     xml_add_node_with_content(parent, TAG_NUM_SESSIONS, "%d", num_sessions);
 
-    num_tracks = mirage_disc_get_number_of_tracks(MIRAGE_DISC(disc));
+    num_tracks = mirage_disc_get_number_of_tracks(disc);
     xml_add_node_with_content(parent, TAG_NUM_TRACKS, "%d", num_tracks);
 
     if (num_sessions) {
         xmlNodePtr session_node = xml_add_node(parent, TAG_SESSIONS);
-        mirage_disc_for_each_session(MIRAGE_DISC(disc), (MirageCallbackFunction)xml_dump_session, session_node);
+        mirage_disc_enumerate_sessions(disc, (MirageCallbackFunction)xml_dump_session, session_node);
     }
 
-    mirage_disc_get_dpm_data(MIRAGE_DISC(disc), &dpm_start, &dpm_resolution, &dpm_entries, &dpm_data);
+    mirage_disc_get_dpm_data(disc, &dpm_start, &dpm_resolution, &dpm_entries, &dpm_data);
     if (dpm_entries) {
         node = xml_add_node(parent, TAG_DPM);
 

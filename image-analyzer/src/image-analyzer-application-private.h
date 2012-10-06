@@ -26,7 +26,7 @@ struct _ImageAnalyzerApplicationPrivate
 {
     /* Disc */
     gboolean loaded;
-    GObject *disc; /* Disc */
+    MirageDisc *disc; /* Disc */
 
     /* Dialogs */
     GtkWidget *dialog_open_image;
@@ -52,7 +52,7 @@ struct _ImageAnalyzerApplicationPrivate
     xmlDocPtr xml_doc;
 
     /* Debug */
-    GObject *debug_context;
+    MirageDebugContext *debug_context;
     gboolean debug_to_stdout;
 };
 

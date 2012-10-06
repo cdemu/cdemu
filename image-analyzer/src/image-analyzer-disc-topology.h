@@ -53,7 +53,7 @@ GType image_analyzer_disc_topology_get_type (void);
 
 
 /* Public API */
-void image_analyzer_disc_topology_set_disc (ImageAnalyzerDiscTopology *self, GObject *disc);
+void image_analyzer_disc_topology_set_disc (ImageAnalyzerDiscTopology *self, MirageDisc *disc);
 
 
 G_END_DECLS
