@@ -77,7 +77,7 @@ respectively. The list of supported debug masks can be obtained using mirage_get
 @name: 
 @value: 
 
-<!-- ##### FUNCTION mirage_init ##### -->
+<!-- ##### FUNCTION mirage_initialize ##### -->
 <para>
 
 </para>

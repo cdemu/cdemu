@@ -6,7 +6,7 @@
 MirageCallbackFunction
 MiragePasswordFunction
 MirageDebugMask
-mirage_init
+mirage_initialize
 mirage_shutdown
 mirage_set_password_function
 mirage_obtain_password

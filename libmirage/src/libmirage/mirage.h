@@ -88,7 +88,7 @@ typedef struct {
 
 
 /* *** libMirage API *** */
-gboolean mirage_init (GError **error);
+gboolean mirage_initialize (GError **error);
 gboolean mirage_shutdown (GError **error);
 
 gboolean mirage_set_password_function (MiragePasswordFunction func, gpointer user_data, GError **error);

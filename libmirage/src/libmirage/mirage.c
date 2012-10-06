@@ -82,7 +82,7 @@ static inline void mirage_file_streams_map_add (GObject *stream, const gchar *fi
  *                         Public API                                 *
 \**********************************************************************/
 /**
- * mirage_init:
+ * mirage_initialize:
  * @error: (out) (allow-none): location to store error, or %NULL
  *
  * <para>
@@ -92,7 +92,7 @@ static inline void mirage_file_streams_map_add (GObject *stream, const gchar *fi
  *
  * Returns: %TRUE on success, %FALSE on failure
  **/
-gboolean mirage_init (GError **error)
+gboolean mirage_initialize (GError **error)
 {
     const gchar *plugin_file;
     GDir *plugins_dir;
