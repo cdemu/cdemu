@@ -21,7 +21,6 @@
 #define __MIRAGE_DEBUG_H__
 
 
-/* Debug masks */
 /**
  * MirageDebugMasks:
  * @MIRAGE_DEBUG_ERROR: error message
@@ -75,7 +74,7 @@ typedef enum
  * </para>
  **/
 #define MIRAGE_DEBUG(obj, lvl, ...) { \
-    mirage_debug_context_message(MIRAGE_DEBUG_CONTEXT(mirage_debuggable_get_debug_context(MIRAGE_DEBUGGABLE(obj))), lvl, __VA_ARGS__); \
+    mirage_debug_context_message(mirage_debuggable_get_debug_context(MIRAGE_DEBUGGABLE(obj)), lvl, __VA_ARGS__); \
 }
 
 
@@ -83,42 +82,7 @@ G_BEGIN_DECLS
 
 
 /**********************************************************************\
- *                        Debuggable interface                        *
-\**********************************************************************/
-#define MIRAGE_TYPE_DEBUGGABLE                 (mirage_debuggable_get_type())
-#define MIRAGE_DEBUGGABLE(obj)                 (G_TYPE_CHECK_INSTANCE_CAST((obj), MIRAGE_TYPE_DEBUGGABLE, MirageDebuggable))
-#define MIRAGE_IS_DEBUGGABLE(obj)              (G_TYPE_CHECK_INSTANCE_TYPE((obj), MIRAGE_TYPE_DEBUGGABLE))
-#define MIRAGE_DEBUGGABLE_GET_INTERFACE(inst)  (G_TYPE_INSTANCE_GET_INTERFACE((inst), MIRAGE_TYPE_DEBUGGABLE, MirageDebuggableInterface))
-
-/**
- * MirageDebuggable:
- *
- * <para>
- * Dummy interface structure.
- * </para>
- **/
-typedef struct _MirageDebuggable             MirageDebuggable;
-typedef struct _MirageDebuggableInterface    MirageDebuggableInterface;
-
-struct _MirageDebuggableInterface
-{
-    GTypeInterface parent_iface;
-
-    /* Interface methods */
-    void (*set_debug_context) (MirageDebuggable *self, GObject *debug_context);
-    GObject *(*get_debug_context) (MirageDebuggable *self);
-};
-
-/* Used by MIRAGE_TYPE_DEBUGGABLE */
-GType mirage_debuggable_get_type (void);
-
-/* Public API */
-void mirage_debuggable_set_debug_context (MirageDebuggable *self, GObject *debug_context);
-GObject *mirage_debuggable_get_debug_context (MirageDebuggable *self);
-
-
-/**********************************************************************\
- *                        Debug context object                        *
+ *                      MirageDebugContext object                     *
 \**********************************************************************/
 #define MIRAGE_TYPE_DEBUG_CONTEXT            (mirage_debug_context_get_type())
 #define MIRAGE_DEBUG_CONTEXT(obj)            (G_TYPE_CHECK_INSTANCE_CAST((obj), MIRAGE_TYPE_DEBUG_CONTEXT, MirageDebugContext))
@@ -154,7 +118,6 @@ struct _MirageDebugContextClass
 /* Used by MIRAGE_TYPE_DEBUG_CONTEXT */
 GType mirage_debug_context_get_type (void);
 
-/* Public API */
 void mirage_debug_context_set_debug_mask (MirageDebugContext *self, gint debug_mask);
 gint mirage_debug_context_get_debug_mask (MirageDebugContext *self);
 
@@ -166,6 +129,40 @@ const gchar *mirage_debug_context_get_name (MirageDebugContext *self);
 
 void mirage_debug_context_message (MirageDebugContext *self, gint level, gchar *format, ...);
 void mirage_debug_context_messagev (MirageDebugContext *self, gint level, gchar *format, va_list args);
+
+
+/**********************************************************************\
+ *                     MirageDebuggable interface                     *
+\**********************************************************************/
+#define MIRAGE_TYPE_DEBUGGABLE                 (mirage_debuggable_get_type())
+#define MIRAGE_DEBUGGABLE(obj)                 (G_TYPE_CHECK_INSTANCE_CAST((obj), MIRAGE_TYPE_DEBUGGABLE, MirageDebuggable))
+#define MIRAGE_IS_DEBUGGABLE(obj)              (G_TYPE_CHECK_INSTANCE_TYPE((obj), MIRAGE_TYPE_DEBUGGABLE))
+#define MIRAGE_DEBUGGABLE_GET_INTERFACE(inst)  (G_TYPE_INSTANCE_GET_INTERFACE((inst), MIRAGE_TYPE_DEBUGGABLE, MirageDebuggableInterface))
+
+/**
+ * MirageDebuggable:
+ *
+ * <para>
+ * Dummy interface structure.
+ * </para>
+ **/
+typedef struct _MirageDebuggable             MirageDebuggable;
+typedef struct _MirageDebuggableInterface    MirageDebuggableInterface;
+
+struct _MirageDebuggableInterface
+{
+    GTypeInterface parent_iface;
+
+    /* Interface methods */
+    void (*set_debug_context) (MirageDebuggable *self, MirageDebugContext *debug_context);
+    MirageDebugContext *(*get_debug_context) (MirageDebuggable *self);
+};
+
+/* Used by MIRAGE_TYPE_DEBUGGABLE */
+GType mirage_debuggable_get_type (void);
+
+void mirage_debuggable_set_debug_context (MirageDebuggable *self, MirageDebugContext *debug_context);
+MirageDebugContext *mirage_debuggable_get_debug_context (MirageDebuggable *self);
 
 
 G_END_DECLS

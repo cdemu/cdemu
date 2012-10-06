@@ -90,7 +90,7 @@ by a #MirageFragment implementation.
 </para>
 
 @self: 
-@sectsize: 
+@size: 
 
 
 <!-- ##### FUNCTION mirage_fragment_iface_binary_main_data_get_size ##### -->
@@ -172,7 +172,7 @@ by a #MirageFragment implementation.
 </para>
 
 @self: 
-@sectsize: 
+@size: 
 
 
 <!-- ##### FUNCTION mirage_fragment_iface_binary_subchannel_data_get_size ##### -->

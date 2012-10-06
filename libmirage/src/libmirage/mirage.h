@@ -87,27 +87,6 @@ typedef struct {
 } MirageDebugMask;
 
 
-/* *** libMirage API *** */
-gboolean mirage_initialize (GError **error);
-gboolean mirage_shutdown (GError **error);
-
-gboolean mirage_set_password_function (MiragePasswordFunction func, gpointer user_data, GError **error);
-gchar *mirage_obtain_password (GError **error);
-
-GObject *mirage_create_disc (gchar **filenames, GObject *debug_context, GHashTable *params, GError **error);
-GObject *mirage_create_fragment (GType fragment_interface, GObject *stream, GObject *debug_context, GError **error);
-GObject *mirage_create_file_stream (const gchar *filename, GObject *debug_context, GError **error);
-
-const gchar *mirage_get_file_stream_filename (GObject *stream);
-
-gboolean mirage_for_each_parser (MirageCallbackFunction func, gpointer user_data, GError **error);
-gboolean mirage_for_each_fragment (MirageCallbackFunction func, gpointer user_data, GError **error);
-gboolean mirage_for_each_file_filter (MirageCallbackFunction func, gpointer user_data, GError **error);
-
-gboolean mirage_get_supported_debug_masks (const MirageDebugMask **masks, gint *num_masks, GError **error);
-
-G_END_DECLS
-
 #include "mirage-object.h"
 
 #include "mirage-file-filter.h"
@@ -125,5 +104,26 @@ G_END_DECLS
 #include "mirage-cdtext-coder.h"
 
 #include "mirage-utils.h"
+
+/* *** libMirage API *** */
+gboolean mirage_initialize (GError **error);
+gboolean mirage_shutdown (GError **error);
+
+gboolean mirage_set_password_function (MiragePasswordFunction func, gpointer user_data, GError **error);
+gchar *mirage_obtain_password (GError **error);
+
+MirageDisc *mirage_create_disc (gchar **filenames, GObject *debug_context, GHashTable *params, GError **error);
+MirageFragment *mirage_create_fragment (GType fragment_interface, GInputStream *stream, GObject *debug_context, GError **error);
+GInputStream *mirage_create_file_stream (const gchar *filename, GObject *debug_context, GError **error);
+
+const gchar *mirage_get_file_stream_filename (GInputStream *stream);
+
+gboolean mirage_enumerate_parsers (MirageCallbackFunction func, gpointer user_data, GError **error);
+gboolean mirage_enumerate_fragments (MirageCallbackFunction func, gpointer user_data, GError **error);
+gboolean mirage_enumerate_file_filters (MirageCallbackFunction func, gpointer user_data, GError **error);
+
+gboolean mirage_get_supported_debug_masks (const MirageDebugMask **masks, gint *num_masks, GError **error);
+
+G_END_DECLS
 
 #endif /* __MIRAGE_H__ */

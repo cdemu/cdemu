@@ -29,14 +29,14 @@
 
 struct _MirageParserIsoPrivate
 {
-    GObject *disc;
+    MirageDisc *disc;
 
     gint track_mode;
     gint track_sectsize;
 };
 
 
-static gboolean mirage_parser_iso_is_file_valid (MirageParserIso *self, GObject *stream, GError **error)
+static gboolean mirage_parser_iso_is_file_valid (MirageParserIso *self, GInputStream *stream, GError **error)
 {
     gsize file_length;
 
@@ -56,7 +56,7 @@ static gboolean mirage_parser_iso_is_file_valid (MirageParserIso *self, GObject 
             return FALSE;
         }
 
-        if (g_input_stream_read(G_INPUT_STREAM(stream), buf, 8, NULL, NULL) != 8) {
+        if (g_input_stream_read(stream, buf, 8, NULL, NULL) != 8) {
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read 8-byte pattern!\n", __debug__);
             g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, "Failed to read 8-byte pattern!");
             return FALSE;
@@ -83,7 +83,7 @@ static gboolean mirage_parser_iso_is_file_valid (MirageParserIso *self, GObject 
             return FALSE;
         }
 
-        if (g_input_stream_read(G_INPUT_STREAM(stream), buf, 16, NULL, NULL) != 16) {
+        if (g_input_stream_read(stream, buf, 16, NULL, NULL) != 16) {
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read 16-byte pattern!\n", __debug__);
             g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, "Failed to read 16-byte pattern!");
             return FALSE;
@@ -121,11 +121,11 @@ static gboolean mirage_parser_iso_is_file_valid (MirageParserIso *self, GObject 
     return FALSE;
 }
 
-static gboolean mirage_parser_iso_load_track (MirageParserIso *self, GObject *stream, GError **error)
+static gboolean mirage_parser_iso_load_track (MirageParserIso *self, GInputStream *stream, GError **error)
 {
-    GObject *session;
-    GObject *track;
-    GObject *fragment;
+    MirageSession *session;
+    MirageTrack *track;
+    MirageFragment *fragment;
 
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: loading track...\n", __debug__);
 
@@ -143,7 +143,7 @@ static gboolean mirage_parser_iso_load_track (MirageParserIso *self, GObject *st
     mirage_fragment_iface_binary_main_data_set_format(MIRAGE_FRAGMENT_IFACE_BINARY(fragment), MIRAGE_MAIN_DATA);
 
     /* Use whole file */
-    if (!mirage_fragment_use_the_rest_of_file(MIRAGE_FRAGMENT(fragment), error)) {
+    if (!mirage_fragment_use_the_rest_of_file(fragment, error)) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to use the rest of file!\n", __debug__);
         g_object_unref(fragment);
         return FALSE;
@@ -152,17 +152,17 @@ static gboolean mirage_parser_iso_load_track (MirageParserIso *self, GObject *st
     /* Add track */
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: adding track\n", __debug__);
 
-    session = mirage_disc_get_session_by_index(MIRAGE_DISC(self->priv->disc), -1, NULL);
+    session = mirage_disc_get_session_by_index(self->priv->disc, -1, NULL);
 
     track = g_object_new(MIRAGE_TYPE_TRACK, NULL);
-    mirage_session_add_track_by_index(MIRAGE_SESSION(session), -1, track);
+    mirage_session_add_track_by_index(session, -1, track);
     g_object_unref(session);
 
     /* Set track mode */
-    mirage_track_set_mode(MIRAGE_TRACK(track), self->priv->track_mode);
+    mirage_track_set_mode(track, self->priv->track_mode);
 
     /* Add fragment to track */
-    mirage_track_add_fragment(MIRAGE_TRACK(track), -1, fragment);
+    mirage_track_add_fragment(track, -1, fragment);
 
     g_object_unref(fragment);
     g_object_unref(track);
@@ -176,11 +176,11 @@ static gboolean mirage_parser_iso_load_track (MirageParserIso *self, GObject *st
 /**********************************************************************\
  *                MirageParser methods implementation                *
 \**********************************************************************/
-static GObject *mirage_parser_iso_load_image (MirageParser *_self, GObject **streams, GError **error)
+static MirageDisc *mirage_parser_iso_load_image (MirageParser *_self, GInputStream **streams, GError **error)
 {
     MirageParserIso *self = MIRAGE_PARSER_ISO(_self);
     const gchar *iso_filename;
-    GObject *stream;
+    GInputStream *stream;
     gboolean succeeded = TRUE;
 
     /* Check if file can be loaded */
@@ -200,16 +200,16 @@ static GObject *mirage_parser_iso_load_image (MirageParser *_self, GObject **str
     mirage_object_attach_child(MIRAGE_OBJECT(self), self->priv->disc);
 
     /* Set filenames */
-    mirage_disc_set_filename(MIRAGE_DISC(self->priv->disc), iso_filename);
+    mirage_disc_set_filename(self->priv->disc, iso_filename);
 
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: ISO filename: %s\n", __debug__, iso_filename);
 
     /* Session: one session (with possibly multiple tracks) */
-    GObject *session = g_object_new(MIRAGE_TYPE_SESSION, NULL);
-    mirage_disc_add_session_by_index(MIRAGE_DISC(self->priv->disc), 0, session);
+    MirageSession *session = g_object_new(MIRAGE_TYPE_SESSION, NULL);
+    mirage_disc_add_session_by_index(self->priv->disc, 0, session);
 
     /* ISO image parser assumes single-track image, so we're dealing with regular CD-ROM session */
-    mirage_session_set_session_type(MIRAGE_SESSION(session), MIRAGE_SESSION_CD_ROM);
+    mirage_session_set_session_type(session, MIRAGE_SESSION_CD_ROM);
     g_object_unref(session);
 
     /* Load track */
@@ -224,7 +224,7 @@ static GObject *mirage_parser_iso_load_image (MirageParser *_self, GObject **str
 
     /* Now guess medium type and if it's a CD-ROM, add Red Book pregap */
     gint medium_type = mirage_parser_guess_medium_type(MIRAGE_PARSER(self), self->priv->disc);
-    mirage_disc_set_medium_type(MIRAGE_DISC(self->priv->disc), medium_type);
+    mirage_disc_set_medium_type(self->priv->disc, medium_type);
     if (medium_type == MIRAGE_MEDIUM_CD) {
         mirage_parser_add_redbook_pregap(MIRAGE_PARSER(self), self->priv->disc);
     }

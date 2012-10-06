@@ -23,6 +23,10 @@
 
 G_BEGIN_DECLS
 
+
+/**********************************************************************\
+ *                          MiragePlugin object                       *
+\**********************************************************************/
 #define MIRAGE_TYPE_PLUGIN            (mirage_plugin_get_type())
 #define MIRAGE_PLUGIN(obj)            (G_TYPE_CHECK_INSTANCE_CAST((obj), MIRAGE_TYPE_PLUGIN, MiragePlugin))
 #define MIRAGE_PLUGIN_CLASS(klass)    (G_TYPE_CHECK_CLASS_CAST((klass), MIRAGE_TYPE_PLUGIN, MiragePluginClass))
@@ -57,10 +61,6 @@ struct _MiragePluginClass
 /* Used by MIRAGE_TYPE_PLUGIN */
 GType mirage_plugin_get_type (void);
 
-
-/**********************************************************************\
- *                             Public API                             *
-\**********************************************************************/
 MiragePlugin *mirage_plugin_new (const gchar *filename);
 
 G_END_DECLS

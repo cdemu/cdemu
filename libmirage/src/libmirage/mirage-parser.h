@@ -20,6 +20,9 @@
 #ifndef __MIRAGE_PARSER_H__
 #define __MIRAGE_PARSER_H__
 
+/* Forward declarations */
+typedef struct _MirageDisc MirageDisc;
+
 
 G_BEGIN_DECLS
 
@@ -52,6 +55,9 @@ struct _MirageParserInfo
 };
 
 
+/**********************************************************************\
+ *                         MirageParser object                        *
+\**********************************************************************/
 #define MIRAGE_TYPE_PARSER            (mirage_parser_get_type())
 #define MIRAGE_PARSER(obj)            (G_TYPE_CHECK_INSTANCE_CAST((obj), MIRAGE_TYPE_PARSER, MirageParser))
 #define MIRAGE_PARSER_CLASS(klass)    (G_TYPE_CHECK_CLASS_CAST((klass), MIRAGE_TYPE_PARSER, MirageParserClass))
@@ -83,31 +89,27 @@ struct _MirageParserClass
     MirageObjectClass parent_class;
 
     /* Class members */
-    GObject *(*load_image) (MirageParser *self, GObject **streams, GError **error);
+    MirageDisc *(*load_image) (MirageParser *self, GInputStream **streams, GError **error);
 };
 
 /* Used by MIRAGE_TYPE_PARSER */
 GType mirage_parser_get_type (void);
 
-
-/**********************************************************************\
- *                             Public API                             *
-\**********************************************************************/
 void mirage_parser_generate_info (MirageParser *self, const gchar *id, const gchar *name, const gchar *description, const gchar *mime_type);
 const MirageParserInfo *mirage_parser_get_info (MirageParser *self);
 
-GObject *mirage_parser_load_image (MirageParser *self, GObject **streams, GError **error);
+MirageDisc *mirage_parser_load_image (MirageParser *self, GInputStream **streams, GError **error);
 
-gint mirage_parser_guess_medium_type (MirageParser *self, GObject *disc);
-void mirage_parser_add_redbook_pregap (MirageParser *self, GObject *disc);
+gint mirage_parser_guess_medium_type (MirageParser *self, MirageDisc *disc);
+void mirage_parser_add_redbook_pregap (MirageParser *self, MirageDisc *disc);
 
 void mirage_parser_set_params (MirageParser *self, GHashTable *params);
 const GVariant *mirage_parser_get_param (MirageParser *self, const gchar *name, const GVariantType *type);
 const gchar *mirage_parser_get_param_string (MirageParser *self, const gchar *name);
 
-GObject *mirage_parser_get_cached_data_stream (MirageParser *self, const gchar *filename, GError **error);
+GInputStream *mirage_parser_get_cached_data_stream (MirageParser *self, const gchar *filename, GError **error);
 
-GDataInputStream *mirage_parser_create_text_stream (MirageParser *self, GObject *stream, GError **error);
+GDataInputStream *mirage_parser_create_text_stream (MirageParser *self, GInputStream *stream, GError **error);
 
 G_END_DECLS
 

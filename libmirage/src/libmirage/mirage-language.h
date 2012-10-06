@@ -67,6 +67,9 @@ typedef enum
 } MirageLanguagePackTypes;
 
 
+/**********************************************************************\
+ *                        MirageLanguage object                       *
+\**********************************************************************/
 #define MIRAGE_TYPE_LANGUAGE            (mirage_language_get_type())
 #define MIRAGE_LANGUAGE(obj)            (G_TYPE_CHECK_INSTANCE_CAST((obj), MIRAGE_TYPE_LANGUAGE, MirageLanguage))
 #define MIRAGE_LANGUAGE_CLASS(klass)    (G_TYPE_CHECK_CLASS_CAST((klass), MIRAGE_TYPE_LANGUAGE, MirageLanguageClass))
@@ -101,13 +104,9 @@ struct _MirageLanguageClass
 /* Used by MIRAGE_TYPE_LANGUAGE */
 GType mirage_language_get_type (void);
 
-
-/**********************************************************************\
- *                             Public API                             *
-\**********************************************************************/
 /* Langcode: set/get */
-void mirage_language_set_langcode (MirageLanguage *self, gint langcode);
-gint mirage_language_get_langcode (MirageLanguage *self);
+void mirage_language_set_code (MirageLanguage *self, gint code);
+gint mirage_language_get_code (MirageLanguage *self);
 
 /* Field: set/get */
 gboolean mirage_language_set_pack_data (MirageLanguage *self, MirageLanguagePackTypes pack_type, const gchar *pack_data, gint length, GError **error);

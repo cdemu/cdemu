@@ -10,7 +10,7 @@ These functions represent the core of the libMirage API.
 </para>
 
 <para>
-Before libMirage is used, it must be initialized using mirage_init(). This initializes the plugin
+Before libMirage is used, it must be initialized using mirage_initialize(). This initializes the plugin
 system and loads the image parser and data fragment plugins. When library is no longer needed, it
 can be shut down using mirage_shutdown(), which frees the plugin data.
 </para>
@@ -159,7 +159,7 @@ respectively. The list of supported debug masks can be obtained using mirage_get
 @Returns: 
 
 
-<!-- ##### FUNCTION mirage_for_each_parser ##### -->
+<!-- ##### FUNCTION mirage_enumerate_parsers ##### -->
 <para>
 
 </para>
@@ -170,7 +170,7 @@ respectively. The list of supported debug masks can be obtained using mirage_get
 @Returns: 
 
 
-<!-- ##### FUNCTION mirage_for_each_fragment ##### -->
+<!-- ##### FUNCTION mirage_enumerate_fragments ##### -->
 <para>
 
 </para>
@@ -181,7 +181,7 @@ respectively. The list of supported debug masks can be obtained using mirage_get
 @Returns: 
 
 
-<!-- ##### FUNCTION mirage_for_each_file_filter ##### -->
+<!-- ##### FUNCTION mirage_enumerate_file_filters ##### -->
 <para>
 
 </para>

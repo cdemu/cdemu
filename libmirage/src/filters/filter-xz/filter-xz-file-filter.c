@@ -87,7 +87,7 @@ static gboolean mirage_file_filter_xz_read_header_and_footer (MirageFileFilterXz
         return FALSE;
     }
 
-    if (g_input_stream_read(G_INPUT_STREAM(stream), self->priv->io_buffer, LZMA_STREAM_HEADER_SIZE, NULL, NULL) != LZMA_STREAM_HEADER_SIZE) {
+    if (g_input_stream_read(stream, self->priv->io_buffer, LZMA_STREAM_HEADER_SIZE, NULL, NULL) != LZMA_STREAM_HEADER_SIZE) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read stream's header!\n", __debug__);
         g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, "Failed to read stream's header!");
         return FALSE;
@@ -108,7 +108,7 @@ static gboolean mirage_file_filter_xz_read_header_and_footer (MirageFileFilterXz
         return FALSE;
     }
 
-    if (g_input_stream_read(G_INPUT_STREAM(stream), self->priv->io_buffer, LZMA_STREAM_HEADER_SIZE, NULL, NULL) != LZMA_STREAM_HEADER_SIZE) {
+    if (g_input_stream_read(stream, self->priv->io_buffer, LZMA_STREAM_HEADER_SIZE, NULL, NULL) != LZMA_STREAM_HEADER_SIZE) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read stream's footer!\n", __debug__);
         g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, "Failed to read stream's footer!");
         return FALSE;
@@ -154,7 +154,7 @@ static gboolean mirage_file_filter_xz_read_index (MirageFileFilterXz *self, GErr
         return FALSE;
     }
 
-    if (g_input_stream_read(G_INPUT_STREAM(stream), self->priv->io_buffer, self->priv->footer.backward_size, NULL, NULL) != self->priv->footer.backward_size) {
+    if (g_input_stream_read(stream, self->priv->io_buffer, self->priv->footer.backward_size, NULL, NULL) != self->priv->footer.backward_size) {
         g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, "Failed to read stream's index!");
         return FALSE;
     }
@@ -257,7 +257,7 @@ static gboolean mirage_file_filter_xz_can_handle_data_format (MirageFileFilter *
 
     /* Look for signature at the beginning */
     g_seekable_seek(G_SEEKABLE(stream), 0, G_SEEK_SET, NULL, NULL);
-    if (g_input_stream_read(G_INPUT_STREAM(stream), sig, sizeof(sig), NULL, NULL) != sizeof(sig)) {
+    if (g_input_stream_read(stream, sig, sizeof(sig), NULL, NULL) != sizeof(sig)) {
         g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, "Failed to read 6 signature bytes!");
         return FALSE;
     }
@@ -315,7 +315,7 @@ static gssize mirage_file_filter_xz_partial_read (MirageFileFilter *_self, void 
         }
 
         /* Read first byte of block header */
-        ret = g_input_stream_read(G_INPUT_STREAM(stream), &value, sizeof(value), NULL, NULL);
+        ret = g_input_stream_read(stream, &value, sizeof(value), NULL, NULL);
         if (ret != sizeof(value)) {
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read first byte of block header!\n", __debug__);
             return -1;
@@ -337,7 +337,7 @@ static gssize mirage_file_filter_xz_partial_read (MirageFileFilter *_self, void 
 
 
         /* Read and decode header */
-        ret = g_input_stream_read(G_INPUT_STREAM(stream), self->priv->io_buffer, block.header_size, NULL, NULL);
+        ret = g_input_stream_read(stream, self->priv->io_buffer, block.header_size, NULL, NULL);
         if (ret != block.header_size) {
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read block header!\n", __debug__);
             return -1;
@@ -363,7 +363,7 @@ static gssize mirage_file_filter_xz_partial_read (MirageFileFilter *_self, void 
         /* Read and uncompress */
         while (1) {
             lzma.next_in = self->priv->io_buffer;
-            lzma.avail_in = g_input_stream_read(G_INPUT_STREAM(stream), self->priv->io_buffer, self->priv->io_buffer_size, NULL, NULL);
+            lzma.avail_in = g_input_stream_read(stream, self->priv->io_buffer, self->priv->io_buffer_size, NULL, NULL);
 
             ret = lzma_code(&lzma, LZMA_RUN);
             if (ret == LZMA_STREAM_END) {

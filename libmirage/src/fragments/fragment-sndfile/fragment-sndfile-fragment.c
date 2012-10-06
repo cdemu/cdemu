@@ -29,7 +29,7 @@
 
 struct _MirageFragmentSndfilePrivate
 {
-    GObject *stream;
+    GInputStream *stream;
 
     SNDFILE *sndfile;
     SF_INFO format;
@@ -40,7 +40,7 @@ struct _MirageFragmentSndfilePrivate
 /**********************************************************************\
  *                        libsndfile I/O bridge                        *
 \**********************************************************************/
-static sf_count_t sndfile_io_get_filelen (GObject *stream)
+static sf_count_t sndfile_io_get_filelen (GInputStream *stream)
 {
     goffset position, size;
 
@@ -57,7 +57,7 @@ static sf_count_t sndfile_io_get_filelen (GObject *stream)
     return size;
 }
 
-static sf_count_t sndfile_io_seek (sf_count_t offset, int whence, GObject *stream)
+static sf_count_t sndfile_io_seek (sf_count_t offset, int whence, GInputStream *stream)
 {
     GSeekType seek_type;
 
@@ -88,12 +88,12 @@ static sf_count_t sndfile_io_seek (sf_count_t offset, int whence, GObject *strea
     return g_seekable_tell(G_SEEKABLE(stream));
 }
 
-static sf_count_t sndfile_io_read (void *ptr, sf_count_t count, GObject *stream)
+static sf_count_t sndfile_io_read (void *ptr, sf_count_t count, GInputStream *stream)
 {
-    return g_input_stream_read(G_INPUT_STREAM(stream), ptr, count, NULL, NULL);
+    return g_input_stream_read(stream, ptr, count, NULL, NULL);
 }
 
-static  sf_count_t sndfile_io_tell (GObject *stream)
+static  sf_count_t sndfile_io_tell (GInputStream *stream)
 {
     return g_seekable_tell(G_SEEKABLE(stream));
 }
@@ -110,7 +110,7 @@ static SF_VIRTUAL_IO sndfile_io_bridge = {
 /**********************************************************************\
  *                   Audio interface implementation                   *
 \**********************************************************************/
-static void mirage_fragment_sndfile_set_stream (MirageFragmentIfaceAudio *_self, GObject *stream)
+static void mirage_fragment_sndfile_set_stream (MirageFragmentIfaceAudio *_self, GInputStream *stream)
 {
     MirageFragmentSndfile *self = MIRAGE_FRAGMENT_SNDFILE(_self);
 
@@ -173,7 +173,7 @@ static gint mirage_fragment_sndfile_get_offset (MirageFragmentIfaceAudio *_self)
 /**********************************************************************\
  *               MirageFragment methods implementations              *
 \**********************************************************************/
-static gboolean mirage_fragment_sndfile_can_handle_data_format (MirageFragment *_self G_GNUC_UNUSED, GObject *stream, GError **error)
+static gboolean mirage_fragment_sndfile_can_handle_data_format (MirageFragment *_self G_GNUC_UNUSED, GInputStream *stream, GError **error)
 {
     SNDFILE *sndfile;
     SF_INFO format;

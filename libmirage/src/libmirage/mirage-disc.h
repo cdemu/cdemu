@@ -20,6 +20,11 @@
 #ifndef __MIRAGE_DISC_H__
 #define __MIRAGE_DISC_H__
 
+/* Forward declarations */
+typedef struct _MirageSession MirageSession;
+typedef struct _MirageTrack MirageTrack;
+typedef struct _MirageSector MirageSector;
+
 
 G_BEGIN_DECLS
 
@@ -58,6 +63,9 @@ enum
 };
 
 
+/**********************************************************************\
+ *                          MirageDisc object                         *
+\**********************************************************************/
 #define MIRAGE_TYPE_DISC            (mirage_disc_get_type())
 #define MIRAGE_DISC(obj)            (G_TYPE_CHECK_INSTANCE_CAST((obj), MIRAGE_TYPE_DISC, MirageDisc))
 #define MIRAGE_DISC_CLASS(klass)    (G_TYPE_CHECK_CLASS_CAST((klass), MIRAGE_TYPE_DISC, MirageDiscClass))
@@ -92,10 +100,6 @@ struct _MirageDiscClass
 /* Used by MIRAGE_TYPE_DISC */
 GType mirage_disc_get_type (void);
 
-
-/**********************************************************************\
- *                             Public API                             *
-\**********************************************************************/
 /* Medium type */
 void mirage_disc_set_medium_type (MirageDisc *self, MirageMediumTypes medium_type);
 MirageMediumTypes mirage_disc_get_medium_type (MirageDisc *self);
@@ -120,35 +124,35 @@ gint mirage_disc_layout_get_length (MirageDisc *self);
 
 /* Session handling */
 gint mirage_disc_get_number_of_sessions (MirageDisc *self);
-void mirage_disc_add_session_by_index (MirageDisc *self, gint index, GObject *session);
-gboolean mirage_disc_add_session_by_number (MirageDisc *self, gint number, GObject *session, GError **error);
+void mirage_disc_add_session_by_index (MirageDisc *self, gint index, MirageSession *session);
+gboolean mirage_disc_add_session_by_number (MirageDisc *self, gint number, MirageSession *session, GError **error);
 gboolean mirage_disc_remove_session_by_index (MirageDisc *self, gint index, GError **error);
 gboolean mirage_disc_remove_session_by_number (MirageDisc *self, gint number, GError **error);
-void mirage_disc_remove_session_by_object (MirageDisc *self, GObject *session);
-GObject *mirage_disc_get_session_by_index (MirageDisc *self, gint index, GError **error);
-GObject *mirage_disc_get_session_by_number (MirageDisc *self, gint number, GError **error);
-GObject *mirage_disc_get_session_by_address (MirageDisc *self, gint address, GError **error);
-GObject *mirage_disc_get_session_by_track (MirageDisc *self, gint track, GError **error);
-gboolean mirage_disc_for_each_session (MirageDisc *self, MirageCallbackFunction func, gpointer user_data);
-GObject *mirage_disc_get_session_before (MirageDisc *self, GObject *session, GError **error);
-GObject *mirage_disc_get_session_after (MirageDisc *self, GObject *session, GError **error);
+void mirage_disc_remove_session_by_object (MirageDisc *self, MirageSession *session);
+MirageSession *mirage_disc_get_session_by_index (MirageDisc *self, gint index, GError **error);
+MirageSession *mirage_disc_get_session_by_number (MirageDisc *self, gint number, GError **error);
+MirageSession *mirage_disc_get_session_by_address (MirageDisc *self, gint address, GError **error);
+MirageSession *mirage_disc_get_session_by_track (MirageDisc *self, gint track, GError **error);
+gboolean mirage_disc_enumerate_sessions (MirageDisc *self, MirageCallbackFunction func, gpointer user_data);
+MirageSession *mirage_disc_get_session_before (MirageDisc *self, MirageSession *session, GError **error);
+MirageSession *mirage_disc_get_session_after (MirageDisc *self, MirageSession *session, GError **error);
 
 /* Track handling */
 gint mirage_disc_get_number_of_tracks (MirageDisc *self);
-gboolean mirage_disc_add_track_by_index (MirageDisc *self, gint index, GObject *track, GError **error);
-gboolean mirage_disc_add_track_by_number (MirageDisc *self, gint number, GObject *track, GError **error);
+gboolean mirage_disc_add_track_by_index (MirageDisc *self, gint index, MirageTrack *track, GError **error);
+gboolean mirage_disc_add_track_by_number (MirageDisc *self, gint number, MirageTrack *track, GError **error);
 gboolean mirage_disc_remove_track_by_index (MirageDisc *self, gint index, GError **error);
 gboolean mirage_disc_remove_track_by_number (MirageDisc *self, gint number, GError **error);
-GObject *mirage_disc_get_track_by_index (MirageDisc *self, gint index, GError **error);
-GObject *mirage_disc_get_track_by_number (MirageDisc *self, gint number, GError **error);
-GObject *mirage_disc_get_track_by_address (MirageDisc *self, gint address, GError **error);
+MirageTrack *mirage_disc_get_track_by_index (MirageDisc *self, gint index, GError **error);
+MirageTrack *mirage_disc_get_track_by_number (MirageDisc *self, gint number, GError **error);
+MirageTrack *mirage_disc_get_track_by_address (MirageDisc *self, gint address, GError **error);
 
 /* Disc structures */
 void mirage_disc_set_disc_structure (MirageDisc *self, gint layer, gint type, const guint8 *data, gint len);
 gboolean mirage_disc_get_disc_structure (MirageDisc *self, gint layer, gint type, const guint8 **data, gint *len, GError **error);
 
 /* Direct sector access */
-GObject *mirage_disc_get_sector (MirageDisc *self, gint address, GError **error);
+MirageSector *mirage_disc_get_sector (MirageDisc *self, gint address, GError **error);
 
 /* DPM */
 void mirage_disc_set_dpm_data (MirageDisc *self, gint start, gint resolution, gint num_entries, const guint32 *data);

@@ -232,7 +232,7 @@ tracks and languages, setting CD-TEXT data, etc.
 @Returns: 
 
 
-<!-- ##### FUNCTION mirage_session_for_each_track ##### -->
+<!-- ##### FUNCTION mirage_session_enumerate_tracks ##### -->
 <para>
 
 </para>
@@ -280,7 +280,7 @@ tracks and languages, setting CD-TEXT data, etc.
 </para>
 
 @self: 
-@langcode: 
+@code: 
 @language: 
 @error: 
 @Returns: 
@@ -303,7 +303,7 @@ tracks and languages, setting CD-TEXT data, etc.
 </para>
 
 @self: 
-@langcode: 
+@code: 
 @error: 
 @Returns: 
 
@@ -334,12 +334,12 @@ tracks and languages, setting CD-TEXT data, etc.
 </para>
 
 @self: 
-@langcode: 
+@code: 
 @error: 
 @Returns: 
 
 
-<!-- ##### FUNCTION mirage_session_for_each_language ##### -->
+<!-- ##### FUNCTION mirage_session_enumerate_languages ##### -->
 <para>
 
 </para>

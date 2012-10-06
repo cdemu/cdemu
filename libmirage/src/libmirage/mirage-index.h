@@ -23,6 +23,10 @@
 
 G_BEGIN_DECLS
 
+
+/**********************************************************************\
+ *                          MirageIndex object                        *
+\**********************************************************************/
 #define MIRAGE_TYPE_INDEX            (mirage_index_get_type())
 #define MIRAGE_INDEX(obj)            (G_TYPE_CHECK_INSTANCE_CAST((obj), MIRAGE_TYPE_INDEX, MirageIndex))
 #define MIRAGE_INDEX_CLASS(klass)    (G_TYPE_CHECK_CLASS_CAST((klass), MIRAGE_TYPE_INDEX, MirageIndexClass))
@@ -57,10 +61,6 @@ struct _MirageIndexClass
 /* Used by MIRAGE_TYPE_INDEX */
 GType mirage_index_get_type (void);
 
-
-/**********************************************************************\
- *                             Public API                             *
-\**********************************************************************/
 void mirage_index_set_number (MirageIndex *self, gint number);
 gint mirage_index_get_number (MirageIndex *self);
 

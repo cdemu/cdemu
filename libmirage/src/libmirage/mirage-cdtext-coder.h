@@ -52,9 +52,10 @@ G_BEGIN_DECLS
  **/
 typedef gboolean (*MirageCdTextDataCallback) (gint langcode, gint type, gint track, const guint8 *data, gint data_len, gpointer user_data);
 
-/******************************************************************************\
- *                               CD-TEXT EncDec                              *
-\******************************************************************************/
+
+/**********************************************************************\
+ *                       MirageCdTextCoder object                     *
+\**********************************************************************/
 #define MIRAGE_TYPE_CDTEXT_CODER            (mirage_cdtext_coder_get_type())
 #define MIRAGE_CDTEXT_CODER(obj)            (G_TYPE_CHECK_INSTANCE_CAST((obj), MIRAGE_TYPE_CDTEXT_CODER, MirageCdTextCoder))
 #define MIRAGE_CDTEXT_CODER_CLASS(klass)    (G_TYPE_CHECK_CLASS_CAST((klass), MIRAGE_TYPE_CDTEXT_CODER, MirageCdTextCoderClass))
@@ -89,19 +90,13 @@ struct _MirageCdTextCoderClass
 /* Used by MIRAGE_TYPE_CDTEXT_CODER */
 GType mirage_cdtext_coder_get_type (void);
 
-
-/**********************************************************************\
- *                         Public API: Encoder                        *
-\**********************************************************************/
+/* API: Encoder */
 void mirage_cdtext_encoder_init (MirageCdTextCoder *self, guint8 *buffer, gint buflen);
 gboolean mirage_cdtext_encoder_set_block_info (MirageCdTextCoder *self, gint block, gint langcode, gint charset, gint copyright, GError **error);
 void mirage_cdtext_encoder_add_data (MirageCdTextCoder *self, gint langcode, gint type, gint track, const guint8 *data, gint data_len);
 void mirage_cdtext_encoder_encode (MirageCdTextCoder *self, guint8 **buffer, gint *buflen);
 
-
-/**********************************************************************\
- *                         Public API: Decoder                        *
-\**********************************************************************/
+/* API: Decoder */
 void mirage_cdtext_decoder_init (MirageCdTextCoder *self, guint8 *buffer, gint buflen);
 gboolean mirage_cdtext_decoder_get_block_info (MirageCdTextCoder *self, gint block, gint *langcode, gint *charset, gint *copyright, GError **error);
 gboolean mirage_cdtext_decoder_get_data (MirageCdTextCoder *self, gint block, MirageCdTextDataCallback callback_func, gpointer user_data);

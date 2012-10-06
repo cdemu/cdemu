@@ -106,7 +106,7 @@ static gboolean mirage_file_filter_cso_read_index (MirageFileFilterCso *self, GE
         CSO_Part *cur_part = &self->priv->parts[i];
 
         /* Read index entry */
-        ret = g_input_stream_read(G_INPUT_STREAM(stream), &buf, sizeof(buf), NULL, NULL);
+        ret = g_input_stream_read(stream, &buf, sizeof(buf), NULL, NULL);
         if (ret != sizeof(guint32)) {
             g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, "Failed to read from index!");
             return FALSE;
@@ -188,7 +188,7 @@ static gboolean mirage_file_filter_cso_can_handle_data_format (MirageFileFilter 
 
     /* Read CISO header */
     g_seekable_seek(G_SEEKABLE(stream), 0, G_SEEK_SET, NULL, NULL);
-    if (g_input_stream_read(G_INPUT_STREAM(stream), header, sizeof(ciso_header_t), NULL, NULL) != sizeof(ciso_header_t)) {
+    if (g_input_stream_read(stream, header, sizeof(ciso_header_t), NULL, NULL) != sizeof(ciso_header_t)) {
         g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, "Failed to read CISO header!");
         return FALSE;
     }
@@ -252,7 +252,7 @@ static gssize mirage_file_filter_cso_partial_read (MirageFileFilter *_self, void
         /* Read a part, either raw or compressed */
         if (part->raw) {
             /* Read uncompressed part */
-            ret = g_input_stream_read(G_INPUT_STREAM(stream), self->priv->inflate_buffer, self->priv->inflate_buffer_size, NULL, NULL);
+            ret = g_input_stream_read(stream, self->priv->inflate_buffer, self->priv->inflate_buffer_size, NULL, NULL);
             if (ret == -1) {
                 MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read %d bytes from underlying stream!\n", __debug__, self->priv->inflate_buffer_size);
                 return -1;
@@ -277,7 +277,7 @@ static gssize mirage_file_filter_cso_partial_read (MirageFileFilter *_self, void
                 /* Read */
                 if (!zlib_stream->avail_in) {
                     /* Read some compressed data */
-                    ret = g_input_stream_read(G_INPUT_STREAM(stream), self->priv->io_buffer, self->priv->io_buffer_size, NULL, NULL);
+                    ret = g_input_stream_read(stream, self->priv->io_buffer, self->priv->io_buffer_size, NULL, NULL);
                     if (ret == -1) {
                         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read %d bytes from underlying stream!\n", __debug__, self->priv->io_buffer_size);
                         return -1;

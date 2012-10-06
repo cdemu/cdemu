@@ -37,7 +37,7 @@
  * Sets object's debug context.
  * </para>
  **/
-void mirage_debuggable_set_debug_context (MirageDebuggable *self, GObject *debug_context)
+void mirage_debuggable_set_debug_context (MirageDebuggable *self, MirageDebugContext *debug_context)
 {
     return MIRAGE_DEBUGGABLE_GET_INTERFACE(self)->set_debug_context(self, debug_context);
 }
@@ -52,7 +52,7 @@ void mirage_debuggable_set_debug_context (MirageDebuggable *self, GObject *debug
  *
  * Returns: (transfer none): object's debug context (a #MirageDebugContext), or %NULL
  **/
-GObject *mirage_debuggable_get_debug_context (MirageDebuggable *self)
+MirageDebugContext *mirage_debuggable_get_debug_context (MirageDebuggable *self)
 {
     return MIRAGE_DEBUGGABLE_GET_INTERFACE(self)->get_debug_context(self);
 }

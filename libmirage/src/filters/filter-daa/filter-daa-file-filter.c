@@ -56,7 +56,7 @@ typedef struct
 
 typedef struct
 {
-    GObject *stream;
+    GInputStream *stream;
     guint64 offset;
     guint64 start;
     guint64 end;
@@ -461,7 +461,7 @@ static gint mirage_file_filter_daa_inflate_lzma (MirageFileFilterDaa *self, guin
 /**********************************************************************\
  *                            Data accesss                            *
 \**********************************************************************/
-static gboolean mirage_file_filter_daa_read_main_header (MirageFileFilterDaa *self, GObject *stream, DAA_MainHeader *header, GError **error)
+static gboolean mirage_file_filter_daa_read_main_header (MirageFileFilterDaa *self, GInputStream *stream, DAA_MainHeader *header, GError **error)
 {
     guint32 crc;
 
@@ -469,7 +469,7 @@ static gboolean mirage_file_filter_daa_read_main_header (MirageFileFilterDaa *se
     g_seekable_seek(G_SEEKABLE(stream), 0, G_SEEK_SET, NULL, NULL);
 
     /* Read main header */
-    if (g_input_stream_read(G_INPUT_STREAM(stream), header, sizeof(DAA_MainHeader), NULL, NULL) != sizeof(DAA_MainHeader)) {
+    if (g_input_stream_read(stream, header, sizeof(DAA_MainHeader), NULL, NULL) != sizeof(DAA_MainHeader)) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read main file's header!\n", __debug__);
         g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, "Failed to read main file's header!");
         return FALSE;
@@ -510,7 +510,7 @@ static gboolean mirage_file_filter_daa_read_main_header (MirageFileFilterDaa *se
     return TRUE;
 }
 
-static gboolean mirage_file_filter_daa_read_part_header (MirageFileFilterDaa *self, GObject *stream, DAA_PartHeader *header, GError **error)
+static gboolean mirage_file_filter_daa_read_part_header (MirageFileFilterDaa *self, GInputStream *stream, DAA_PartHeader *header, GError **error)
 {
     guint32 crc;
 
@@ -518,7 +518,7 @@ static gboolean mirage_file_filter_daa_read_part_header (MirageFileFilterDaa *se
     g_seekable_seek(G_SEEKABLE(stream), 0, G_SEEK_SET, NULL, NULL);
 
     /* Read main header */
-    if (g_input_stream_read(G_INPUT_STREAM(stream), header, sizeof(DAA_PartHeader), NULL, NULL) != sizeof(DAA_PartHeader)) {
+    if (g_input_stream_read(stream, header, sizeof(DAA_PartHeader), NULL, NULL) != sizeof(DAA_PartHeader)) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read part file's header!\n", __debug__);
         g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, "Failed to read part file's header!");
         return FALSE;
@@ -595,7 +595,7 @@ static gboolean mirage_file_filter_daa_read_from_stream (MirageFileFilterDaa *se
             return FALSE;
         }
 
-        if (g_input_stream_read(G_INPUT_STREAM(part->stream), buffer, read_length, NULL, NULL) != read_length) {
+        if (g_input_stream_read(part->stream, buffer, read_length, NULL, NULL) != read_length) {
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read 0x%X bytes!\n", __debug__, read_length);
             g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_FRAGMENT_ERROR, "Failed to read 0x%X bytes!", read_length);
             return FALSE;
@@ -619,7 +619,7 @@ static gboolean mirage_file_filter_daa_parse_descriptor_split (MirageFileFilterD
     DAA_DescriptorSplit descriptor;
 
     /* First field is number of parts (files) */
-    if (g_input_stream_read(G_INPUT_STREAM(stream), &descriptor, sizeof(descriptor), NULL, NULL) != sizeof(descriptor)) {
+    if (g_input_stream_read(stream, &descriptor, sizeof(descriptor), NULL, NULL) != sizeof(descriptor)) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read descriptor data!\n", __debug__);
         g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, "Failed to read descriptor data!");
         return FALSE;
@@ -677,7 +677,7 @@ static gboolean mirage_file_filter_daa_parse_descriptor_encryption (MirageFileFi
     }
 
     /* Read descriptor data */
-    if (g_input_stream_read(G_INPUT_STREAM(stream), &descriptor, sizeof(descriptor), NULL, NULL) != sizeof(descriptor)) {
+    if (g_input_stream_read(stream, &descriptor, sizeof(descriptor), NULL, NULL) != sizeof(descriptor)) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read descriptor data!\n", __debug__);
         g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, "Failed to read descriptor data!");
         return FALSE;
@@ -740,7 +740,7 @@ static gboolean mirage_file_filter_daa_parse_descriptors (MirageFileFilterDaa *s
         DAA_DescriptorHeader descriptor_header;
 
         /* Read descriptor header */
-        if (g_input_stream_read(G_INPUT_STREAM(stream), &descriptor_header, sizeof(descriptor_header), NULL, NULL) != sizeof(descriptor_header)) {
+        if (g_input_stream_read(stream, &descriptor_header, sizeof(descriptor_header), NULL, NULL) != sizeof(descriptor_header)) {
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read descriptor header!\n", __debug__);
             g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, "Failed to read descriptor type!");
             return FALSE;
@@ -820,7 +820,7 @@ static gboolean mirage_file_filter_daa_parse_chunk_table (MirageFileFilterDaa *s
 
     /* Read chunk data */
     g_seekable_seek(G_SEEKABLE(stream), self->priv->chunk_table_offset, G_SEEK_SET, NULL, NULL);
-    if (g_input_stream_read(G_INPUT_STREAM(stream), tmp_chunks_data, tmp_chunks_len, NULL, NULL) != tmp_chunks_len) {
+    if (g_input_stream_read(stream, tmp_chunks_data, tmp_chunks_len, NULL, NULL) != tmp_chunks_len) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read chunk table data!\n", __debug__);
         g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, "Failed to read chunk table data!");
         return FALSE;
@@ -962,7 +962,7 @@ static gboolean mirage_file_filter_daa_build_part_table (MirageFileFilterDaa *se
 
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: creating part for main file\n\n", __debug__);
 
-    part->stream = G_OBJECT(stream);
+    part->stream = stream;
     g_object_ref(part->stream);
 
     part->offset = self->priv->chunk_data_offset;
@@ -1004,7 +1004,7 @@ static gboolean mirage_file_filter_daa_build_part_table (MirageFileFilterDaa *se
         g_free(part_filename);
 
         /* Read signature */
-        if (g_input_stream_read(G_INPUT_STREAM(part->stream), part_signature, sizeof(part_signature), NULL, NULL) != sizeof(part_signature)) {
+        if (g_input_stream_read(part->stream, part_signature, sizeof(part_signature), NULL, NULL) != sizeof(part_signature)) {
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read part's signature!\n", __debug__);
             g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_DATA_FILE_ERROR, "Failed to read part's signature!");
             return FALSE;
@@ -1057,7 +1057,7 @@ static gboolean mirage_file_filter_daa_parse_daa_file (MirageFileFilterDaa *self
     GInputStream *stream = g_filter_input_stream_get_base_stream(G_FILTER_INPUT_STREAM(self));
 
     /* Read main header */
-    if (!mirage_file_filter_daa_read_main_header(self, G_OBJECT(stream), &self->priv->header, error)) {
+    if (!mirage_file_filter_daa_read_main_header(self, stream, &self->priv->header, error)) {
         return FALSE;
     }
 
@@ -1165,7 +1165,7 @@ static gboolean mirage_file_filter_daa_can_handle_data_format (MirageFileFilter 
 
     /* Look for signature at the beginning */
     g_seekable_seek(G_SEEKABLE(stream), 0, G_SEEK_SET, NULL, NULL);
-    if (g_input_stream_read(G_INPUT_STREAM(stream), signature, sizeof(signature), NULL, NULL) != sizeof(signature)) {
+    if (g_input_stream_read(stream, signature, sizeof(signature), NULL, NULL) != sizeof(signature)) {
         g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, "Failed to read 16-byte signature!");
         return FALSE;
     }
@@ -1179,7 +1179,7 @@ static gboolean mirage_file_filter_daa_can_handle_data_format (MirageFileFilter 
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: parsing the underlying stream data...\n", __debug__);
 
     /* Store filename for later processing */
-    self->priv->main_filename = mirage_get_file_stream_filename(G_OBJECT(stream));
+    self->priv->main_filename = mirage_get_file_stream_filename(stream);
 
     /* Parse DAA file */
     if (!mirage_file_filter_daa_parse_daa_file(self, error)) {

@@ -29,9 +29,9 @@
 
 struct _MirageParserCdiPrivate
 {
-    GObject *disc;
+    MirageDisc *disc;
 
-    GObject *cdi_stream;
+    GInputStream *cdi_stream;
 
     gboolean medium_type_set;
 
@@ -86,12 +86,12 @@ static void mirage_parser_cdi_decode_medium_type (MirageParserCdi *self, gint me
         switch (medium_type) {
             case 0x98: {
                 /* CD-ROM */
-                mirage_disc_set_medium_type(MIRAGE_DISC(self->priv->disc), MIRAGE_MEDIUM_CD);
+                mirage_disc_set_medium_type(self->priv->disc, MIRAGE_MEDIUM_CD);
                 break;
             }
             case 0x38: {
                 /* DVD-ROM */
-                mirage_disc_set_medium_type(MIRAGE_DISC(self->priv->disc), MIRAGE_MEDIUM_DVD);
+                mirage_disc_set_medium_type(self->priv->disc, MIRAGE_MEDIUM_DVD);
                 break;
             }
             default: {
@@ -298,7 +298,7 @@ static gboolean mirage_parser_cdi_parse_header (MirageParserCdi *self, GError **
     return TRUE;
 }
 
-static gboolean mirage_parser_cdi_parse_cdtext (MirageParserCdi *self, GError **error G_GNUC_UNUSED)
+static void mirage_parser_cdi_parse_cdtext (MirageParserCdi *self)
 {
     /* It seems that each CD-TEXT block for track consists of 18 bytes, each (?)
        denoting length of field it represents; if it's non-zero, it's followed by declared
@@ -313,8 +313,6 @@ static gboolean mirage_parser_cdi_parse_cdtext (MirageParserCdi *self, GError **
         }
 
     }
-
-    return TRUE;
 }
 
 static gboolean mirage_parser_cdi_load_track (MirageParserCdi *self, GError **error)
@@ -366,7 +364,7 @@ static gboolean mirage_parser_cdi_load_track (MirageParserCdi *self, GError **er
 
     for (gint i = 0; i < num_cdtext_blocks; i++) {
         /* Parse CD-Text */
-        mirage_parser_cdi_parse_cdtext(self, error);
+        mirage_parser_cdi_parse_cdtext(self);
     }
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "\n");
 
@@ -628,10 +626,10 @@ static gboolean mirage_parser_cdi_load_track (MirageParserCdi *self, GError **er
 
     gint fragment_len = track_length;
 
-    GObject *fragment;
+    MirageFragment *fragment;
 
-    GObject *session;
-    GObject *track;
+    MirageSession *session;
+    MirageTrack *track;
 
 
     /* Track mode; also determines BINARY format */
@@ -650,7 +648,7 @@ static gboolean mirage_parser_cdi_load_track (MirageParserCdi *self, GError **er
     }
 
     /* Fetch current session */
-    session = mirage_disc_get_session_by_index(MIRAGE_DISC(self->priv->disc), -1, error);
+    session = mirage_disc_get_session_by_index(self->priv->disc, -1, error);
     if (!session) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: failed to get last session!\n", __debug__);
         g_free(indices);
@@ -659,10 +657,10 @@ static gboolean mirage_parser_cdi_load_track (MirageParserCdi *self, GError **er
 
     /* Add track */
     track = g_object_new(MIRAGE_TYPE_TRACK, NULL);
-    mirage_session_add_track_by_index(MIRAGE_SESSION(session), -1, track);
+    mirage_session_add_track_by_index(session, -1, track);
 
     /* Set track mode */
-    mirage_track_set_mode(MIRAGE_TRACK(track), decoded_mode);
+    mirage_track_set_mode(track, decoded_mode);
 
     /* Create BINARY fragment */
     fragment = mirage_create_fragment(MIRAGE_TYPE_FRAGMENT_IFACE_BINARY, self->priv->cdi_stream, G_OBJECT(self), error);
@@ -674,7 +672,7 @@ static gboolean mirage_parser_cdi_load_track (MirageParserCdi *self, GError **er
         return FALSE;
     }
 
-    mirage_fragment_set_length(MIRAGE_FRAGMENT(fragment), fragment_len);
+    mirage_fragment_set_length(fragment, fragment_len);
 
     mirage_fragment_iface_binary_main_data_set_stream(MIRAGE_FRAGMENT_IFACE_BINARY(fragment), self->priv->cdi_stream);
     mirage_fragment_iface_binary_main_data_set_offset(MIRAGE_FRAGMENT_IFACE_BINARY(fragment), main_offset);
@@ -684,19 +682,19 @@ static gboolean mirage_parser_cdi_load_track (MirageParserCdi *self, GError **er
     mirage_fragment_iface_binary_subchannel_data_set_size(MIRAGE_FRAGMENT_IFACE_BINARY(fragment), subchannel_size);
     mirage_fragment_iface_binary_subchannel_data_set_format(MIRAGE_FRAGMENT_IFACE_BINARY(fragment), subchannel_format);
 
-    mirage_track_add_fragment(MIRAGE_TRACK(track), -1, fragment);
+    mirage_track_add_fragment(track, -1, fragment);
 
     g_object_unref(fragment);
 
 
     /* Set track flags, based on CTL */
-    mirage_track_set_ctl(MIRAGE_TRACK(track), track_ctl);
+    mirage_track_set_ctl(track, track_ctl);
 
     /* Set ISRC */
     if (isrc_valid) {
         /* Don't check for error here; if fragment was created with subchannel
            data, then this call will fail, but it doesn't matter anyway... */
-        mirage_track_set_isrc(MIRAGE_TRACK(track), isrc);
+        mirage_track_set_isrc(track, isrc);
     }
 
     /* Indices; each entry represents length of corresponding index, whereas
@@ -707,16 +705,16 @@ static gboolean mirage_parser_cdi_load_track (MirageParserCdi *self, GError **er
        entry is used to set track start outside the loop, whereas the last entry
        isn't needed, because it spans to the end of the track, anyway */
     gint index_address = indices[0];
-    mirage_track_set_track_start(MIRAGE_TRACK(track), indices[0]);
+    mirage_track_set_track_start(track, indices[0]);
     for (gint i = 1; i < num_indices - 1; i++) {
         index_address += indices[i];
-        mirage_track_add_index(MIRAGE_TRACK(track), index_address, NULL);
+        mirage_track_add_index(track, index_address, NULL);
     }
 
     /* Set session type, if this is the last track in session */
     if (!not_last_track) {
         session_type = mirage_parser_cdi_decode_session_type(self, session_type);
-        mirage_session_set_session_type(MIRAGE_SESSION(session), session_type);
+        mirage_session_set_session_type(session, session_type);
     }
 
 
@@ -766,8 +764,8 @@ static gboolean mirage_parser_cdi_load_session (MirageParserCdi *self, GError **
 
     if (num_tracks) {
         /* Add session */
-        GObject *session = g_object_new(MIRAGE_TYPE_SESSION, NULL);
-        mirage_disc_add_session_by_index(MIRAGE_DISC(self->priv->disc), -1, session);
+        MirageSession *session = g_object_new(MIRAGE_TYPE_SESSION, NULL);
+        mirage_disc_add_session_by_index(self->priv->disc, -1, session);
         g_object_unref(session);
 
         /* Load tracks */
@@ -887,8 +885,8 @@ static gboolean mirage_parser_cdi_load_disc (MirageParserCdi *self, GError **err
 
     if (cdtext_length) {
         /* FIXME: CD-TEXT data is for the first session only, I think... */
-        GObject *first_session = mirage_disc_get_session_by_index(MIRAGE_DISC(self->priv->disc), 0, NULL);
-        if (!mirage_session_set_cdtext_data(MIRAGE_SESSION(first_session), cdtext_data, cdtext_length, NULL)) {
+        MirageSession *first_session = mirage_disc_get_session_by_index(self->priv->disc, 0, NULL);
+        if (!mirage_session_set_cdtext_data(first_session, cdtext_data, cdtext_length, NULL)) {
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to load CD-TEXT!\n");
         }
         g_object_unref(first_session);
@@ -928,7 +926,7 @@ end:
 /**********************************************************************\
  *                MirageParser methods implementation                *
 \**********************************************************************/
-static GObject *mirage_parser_cdi_load_image (MirageParser *_self, GObject **streams, GError **error)
+static MirageDisc *mirage_parser_cdi_load_image (MirageParser *_self, GInputStream **streams, GError **error)
 {
     MirageParserCdi *self = MIRAGE_PARSER_CDI(_self);
     const gchar *cdi_filename;
@@ -954,7 +952,7 @@ static GObject *mirage_parser_cdi_load_image (MirageParser *_self, GObject **str
     self->priv->disc = g_object_new(MIRAGE_TYPE_DISC, NULL);
     mirage_object_attach_child(MIRAGE_OBJECT(self), self->priv->disc);
 
-    mirage_disc_set_filename(MIRAGE_DISC(self->priv->disc), cdi_filename);
+    mirage_disc_set_filename(self->priv->disc, cdi_filename);
 
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: CDI filename: %s\n", __debug__, cdi_filename);
 
@@ -962,7 +960,7 @@ static GObject *mirage_parser_cdi_load_image (MirageParser *_self, GObject **str
        last four bytes represent length of descriptor data */
     offset = -(guint64)(sizeof(descriptor_length));
     g_seekable_seek(G_SEEKABLE(self->priv->cdi_stream), offset, G_SEEK_END, NULL, NULL);
-    if (g_input_stream_read(G_INPUT_STREAM(self->priv->cdi_stream), &descriptor_length, sizeof(descriptor_length), NULL, NULL) != sizeof(descriptor_length)) {
+    if (g_input_stream_read(self->priv->cdi_stream, &descriptor_length, sizeof(descriptor_length), NULL, NULL) != sizeof(descriptor_length)) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read descriptor length!\n", __debug__);
         g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, "Failed to read descriptor length!");
         succeeded = FALSE;
@@ -975,7 +973,7 @@ static GObject *mirage_parser_cdi_load_image (MirageParser *_self, GObject **str
     self->priv->cur_ptr = self->priv->cdi_data = g_malloc(descriptor_length);
     offset = -(guint64)(descriptor_length);
     g_seekable_seek(G_SEEKABLE(self->priv->cdi_stream), offset, G_SEEK_END, NULL, NULL);
-    if (g_input_stream_read(G_INPUT_STREAM(self->priv->cdi_stream), self->priv->cdi_data, descriptor_length, NULL, NULL) != descriptor_length) {
+    if (g_input_stream_read(self->priv->cdi_stream, self->priv->cdi_data, descriptor_length, NULL, NULL) != descriptor_length) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read descriptor!\n", __debug__);
         g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, "Failed to read descriptor!");
         succeeded = FALSE;
@@ -993,9 +991,9 @@ static GObject *mirage_parser_cdi_load_image (MirageParser *_self, GObject **str
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: disc seems to have been loaded successfully\n", __debug__);
     }
 
-    /* Make parser start at -150... it seems both CD and DVD images start at -150
+    /* Make disc start at -150... it seems both CD and DVD images start at -150
        in CDI (regardless of medium, there's 150 sectors pregap at the beginning) */
-    mirage_disc_layout_set_start_sector(MIRAGE_DISC(self->priv->disc), -150);
+    mirage_disc_layout_set_start_sector(self->priv->disc, -150);
 
 end:
     /* Return disc */

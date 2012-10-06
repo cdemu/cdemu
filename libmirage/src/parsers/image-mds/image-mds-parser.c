@@ -34,7 +34,7 @@ static const guint8 mds_signature[17] = { 'M', 'E', 'D', 'I', 'A', ' ', 'D', 'E'
 
 struct _MirageParserMdsPrivate
 {
-    GObject *disc;
+    MirageDisc *disc;
 
     MDS_Header *header;
 
@@ -240,7 +240,7 @@ static void mirage_parser_mds_parse_dpm_block (MirageParserMds *self, guint32 dp
     dpm_data_fix_endian(dpm_data, dpm_num_entries);
 
     /* Set DPM data */
-    mirage_disc_set_dpm_data(MIRAGE_DISC(self->priv->disc), dpm_start_sector, dpm_resolution, dpm_num_entries, dpm_data);
+    mirage_disc_set_dpm_data(self->priv->disc, dpm_start_sector, dpm_resolution, dpm_num_entries, dpm_data);
 }
 
 static void mirage_parser_mds_parse_dpm_data (MirageParserMds *self)
@@ -318,9 +318,9 @@ static void mirage_parser_mds_parse_disc_structures (MirageParserMds *self)
         phys_info = MIRAGE_CAST_PTR(cur_ptr, 0, MirageDiscStructurePhysicalInfo *);
         cur_ptr += sizeof(MirageDiscStructurePhysicalInfo);
 
-        mirage_disc_set_disc_structure(MIRAGE_DISC(self->priv->disc), 0, 0x0000, (guint8 *)phys_info, sizeof(MirageDiscStructureCopyright));
-        mirage_disc_set_disc_structure(MIRAGE_DISC(self->priv->disc), 0, 0x0001, (guint8 *)copy_info, sizeof(MirageDiscStructureManufacturingData));
-        mirage_disc_set_disc_structure(MIRAGE_DISC(self->priv->disc), 0, 0x0004, (guint8 *)manu_info, sizeof(MirageDiscStructurePhysicalInfo));
+        mirage_disc_set_disc_structure(self->priv->disc, 0, 0x0000, (guint8 *)phys_info, sizeof(MirageDiscStructureCopyright));
+        mirage_disc_set_disc_structure(self->priv->disc, 0, 0x0001, (guint8 *)copy_info, sizeof(MirageDiscStructureManufacturingData));
+        mirage_disc_set_disc_structure(self->priv->disc, 0, 0x0004, (guint8 *)manu_info, sizeof(MirageDiscStructurePhysicalInfo));
 
         /* Second round if it's dual-layer... */
         if (phys_info->num_layers == 0x01) {
@@ -338,9 +338,9 @@ static void mirage_parser_mds_parse_disc_structures (MirageParserMds *self)
             phys_info = MIRAGE_CAST_PTR(cur_ptr, 0, MirageDiscStructurePhysicalInfo *);
             cur_ptr += sizeof(MirageDiscStructurePhysicalInfo);
 
-            mirage_disc_set_disc_structure(MIRAGE_DISC(self->priv->disc), 0, 0x0000, (guint8 *)phys_info, sizeof(MirageDiscStructureCopyright));
-            mirage_disc_set_disc_structure(MIRAGE_DISC(self->priv->disc), 0, 0x0001, (guint8 *)copy_info, sizeof(MirageDiscStructureManufacturingData));
-            mirage_disc_set_disc_structure(MIRAGE_DISC(self->priv->disc), 0, 0x0004, (guint8 *)manu_info, sizeof(MirageDiscStructurePhysicalInfo));
+            mirage_disc_set_disc_structure(self->priv->disc, 0, 0x0000, (guint8 *)phys_info, sizeof(MirageDiscStructureCopyright));
+            mirage_disc_set_disc_structure(self->priv->disc, 0, 0x0001, (guint8 *)copy_info, sizeof(MirageDiscStructureManufacturingData));
+            mirage_disc_set_disc_structure(self->priv->disc, 0, 0x0004, (guint8 *)manu_info, sizeof(MirageDiscStructurePhysicalInfo));
         }
     }
 }
@@ -355,7 +355,7 @@ static void mirage_parser_mds_parse_bca (MirageParserMds *self)
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: reading BCA data (0x%X bytes)\n", __debug__, self->priv->header->bca_len);
 
         cur_ptr = self->priv->mds_data + self->priv->header->bca_data_offset;
-        mirage_disc_set_disc_structure(MIRAGE_DISC(self->priv->disc), 0, 0x0003, MIRAGE_CAST_PTR(cur_ptr, 0, guint8 *), self->priv->header->bca_len);
+        mirage_disc_set_disc_structure(self->priv->disc, 0, 0x0003, MIRAGE_CAST_PTR(cur_ptr, 0, guint8 *), self->priv->header->bca_len);
     }
 }
 
@@ -400,17 +400,17 @@ static gchar *mirage_parser_mds_get_track_filename (MirageParserMds *self, MDS_F
 
 static gboolean mirage_parser_mds_parse_track_entries (MirageParserMds *self, MDS_SessionBlock *session_block, GError **error)
 {
-    GObject *session;
+    MirageSession *session;
     guint8 *cur_ptr;
     gint medium_type;
 
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: reading track blocks\n", __debug__);
 
     /* Fetch medium type which we'll need later */
-    medium_type = mirage_disc_get_medium_type(MIRAGE_DISC(self->priv->disc));
+    medium_type = mirage_disc_get_medium_type(self->priv->disc);
 
     /* Get current session */
-    session = mirage_disc_get_session_by_index(MIRAGE_DISC(self->priv->disc), -1, error);
+    session = mirage_disc_get_session_by_index(self->priv->disc, -1, error);
     if (!session) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to get current session!\n", __debug__);
         return FALSE;
@@ -475,11 +475,11 @@ static gboolean mirage_parser_mds_parse_track_entries (MirageParserMds *self, MD
 
         if (block->point > 0 && block->point < 99) {
             /* Track entry */
-            GObject *track = g_object_new(MIRAGE_TYPE_TRACK, NULL);
+            MirageTrack *track = g_object_new(MIRAGE_TYPE_TRACK, NULL);
 
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: entry is for track %i\n", __debug__, block->point);
 
-            if (!mirage_session_add_track_by_number(MIRAGE_SESSION(session), block->point, track, error)) {
+            if (!mirage_session_add_track_by_number(session, block->point, track, error)) {
                 MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to add track!\n", __debug__);
                 g_object_unref(track);
                 g_object_unref(session);
@@ -488,25 +488,25 @@ static gboolean mirage_parser_mds_parse_track_entries (MirageParserMds *self, MD
 
             gint converted_mode = mirage_parser_mds_convert_track_mode(self, block->mode);
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: track mode: 0x%X\n", __debug__, converted_mode);
-            mirage_track_set_mode(MIRAGE_TRACK(track), converted_mode);
+            mirage_track_set_mode(track, converted_mode);
 
             /* Flags: decoded from Ctl */
-            mirage_track_set_ctl(MIRAGE_TRACK(track), block->adr_ctl & 0x0F);
+            mirage_track_set_ctl(track, block->adr_ctl & 0x0F);
 
             /* MDS format doesn't seem to store pregap data in its data file;
                therefore, we need to provide NULL fragment for pregap */
             if (extra_block && extra_block->pregap) {
                 /* Creating NULL fragment should never fail */
-                GObject *fragment = mirage_create_fragment(MIRAGE_TYPE_FRAGMENT_IFACE_NULL, NULL, G_OBJECT(self), NULL);;
+                MirageFragment *fragment = mirage_create_fragment(MIRAGE_TYPE_FRAGMENT_IFACE_NULL, NULL, G_OBJECT(self), NULL);;
 
                 MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: track has pregap (0x%X); creating NULL fragment\n", __debug__, extra_block->pregap);
 
-                mirage_fragment_set_length(MIRAGE_FRAGMENT(fragment), extra_block->pregap);
+                mirage_fragment_set_length(fragment, extra_block->pregap);
 
-                mirage_track_add_fragment(MIRAGE_TRACK(track), -1, fragment);
+                mirage_track_add_fragment(track, -1, fragment);
                 g_object_unref(fragment);
 
-                mirage_track_set_track_start(MIRAGE_TRACK(track), extra_block->pregap);
+                mirage_track_set_track_start(track, extra_block->pregap);
             }
 
             /* Data fragment(s): it seems that MDS allows splitting of MDF files into multiple files; it also seems
@@ -538,7 +538,7 @@ static gboolean mirage_parser_mds_parse_track_entries (MirageParserMds *self, MD
                 }
 
                 /* Subchannel */
-                switch ((MDS_SubChan) block->subchannel) {
+                switch (block->subchannel) {
                     case PW_INTERLEAVED: {
                         subchannel_size = 96;
                         subchannel_format = MIRAGE_SUBCHANNEL_PW96_INT | MIRAGE_SUBCHANNEL_INT;
@@ -573,7 +573,7 @@ static gboolean mirage_parser_mds_parse_track_entries (MirageParserMds *self, MD
                 }
 
                 /* Data stream */
-                GObject *data_stream = mirage_parser_get_cached_data_stream(MIRAGE_PARSER(self), mdf_filename, error);
+                GInputStream *data_stream = mirage_parser_get_cached_data_stream(MIRAGE_PARSER(self), mdf_filename, error);
                 if (!data_stream) {
                     MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to open stream on data file: %s!\n", __debug__, mdf_filename);
                     g_free(mdf_filename);
@@ -602,7 +602,7 @@ static gboolean mirage_parser_mds_parse_track_entries (MirageParserMds *self, MD
                 }
 
                 /* Create data fragment */
-                GObject *fragment = mirage_create_fragment(MIRAGE_TYPE_FRAGMENT_IFACE_BINARY, data_stream, G_OBJECT(self), error);
+                MirageFragment *fragment = mirage_create_fragment(MIRAGE_TYPE_FRAGMENT_IFACE_BINARY, data_stream, G_OBJECT(self), error);
                 if (!fragment) {
                     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: failed to create fragment!\n", __debug__);
                     g_object_unref(data_stream);
@@ -611,7 +611,7 @@ static gboolean mirage_parser_mds_parse_track_entries (MirageParserMds *self, MD
                     return FALSE;
                 }
 
-                mirage_fragment_set_length(MIRAGE_FRAGMENT(fragment), fragment_len);
+                mirage_fragment_set_length(fragment, fragment_len);
 
                 /* Set stream */
                 mirage_fragment_iface_binary_main_data_set_stream(MIRAGE_FRAGMENT_IFACE_BINARY(fragment), data_stream);
@@ -624,7 +624,7 @@ static gboolean mirage_parser_mds_parse_track_entries (MirageParserMds *self, MD
                 mirage_fragment_iface_binary_subchannel_data_set_size(MIRAGE_FRAGMENT_IFACE_BINARY(fragment), subchannel_size);
                 mirage_fragment_iface_binary_subchannel_data_set_format(MIRAGE_FRAGMENT_IFACE_BINARY(fragment), subchannel_format);
 
-                mirage_track_add_fragment(MIRAGE_TRACK(track), -1, fragment);
+                mirage_track_add_fragment(track, -1, fragment);
                 g_object_unref(fragment);
             }
 
@@ -673,20 +673,20 @@ static gboolean mirage_parser_mds_parse_sessions (MirageParserMds *self, GError 
            this session's start address and previous session's end... */
         if (i == 0) {
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: first session; setting disc's start to 0x%X (%i)\n", __debug__, session_block->session_start, session_block->session_start);
-            mirage_disc_layout_set_start_sector(MIRAGE_DISC(self->priv->disc), session_block->session_start);
+            mirage_disc_layout_set_start_sector(self->priv->disc, session_block->session_start);
         } else {
             guint32 leadout_length = session_block->session_start - self->priv->prev_session_end;
-            GObject *prev_session;
+            MirageSession *prev_session;
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: previous session's leadout length: 0x%X (%i)\n", __debug__, leadout_length, leadout_length);
 
             /* Use -1 as an index, since we still haven't added current session */
-            prev_session = mirage_disc_get_session_by_index(MIRAGE_DISC(self->priv->disc), -1, error);
+            prev_session = mirage_disc_get_session_by_index(self->priv->disc, -1, error);
             if (!prev_session) {
                 MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to get previous session!\n", __debug__);
                 return FALSE;
             }
 
-            mirage_session_set_leadout_length(MIRAGE_SESSION(prev_session), leadout_length);
+            mirage_session_set_leadout_length(prev_session, leadout_length);
 
             g_object_unref(prev_session);
         }
@@ -695,8 +695,8 @@ static gboolean mirage_parser_mds_parse_sessions (MirageParserMds *self, GError 
         self->priv->prev_session_end = session_block->session_end;
 
         /* Add session */
-        GObject *session = g_object_new(MIRAGE_TYPE_SESSION, NULL);
-        if (!mirage_disc_add_session_by_number(MIRAGE_DISC(self->priv->disc), session_block->session_number, session, error)) {
+        MirageSession *session = g_object_new(MIRAGE_TYPE_SESSION, NULL);
+        if (!mirage_disc_add_session_by_number(self->priv->disc, session_block->session_number, session, error)) {
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to add session!\n", __debug__);
             g_object_unref(session);
             return FALSE;
@@ -748,13 +748,13 @@ static gboolean mirage_parser_mds_load_disc (MirageParserMds *self, GError **err
 /**********************************************************************\
  *                MirageParser methods implementation                *
 \**********************************************************************/
-static GObject *mirage_parser_mds_load_image (MirageParser *_self, GObject **streams, GError **error)
+static MirageDisc *mirage_parser_mds_load_image (MirageParser *_self, GInputStream **streams, GError **error)
 {
     MirageParserMds *self = MIRAGE_PARSER_MDS(_self);
 
     gboolean succeeded = TRUE;
     guint8 *cur_ptr;
-    GObject *stream;
+    GInputStream *stream;
     guint64 read_length;
     gchar signature[17];
 
@@ -764,7 +764,7 @@ static GObject *mirage_parser_mds_load_image (MirageParser *_self, GObject **str
 
     /* Read signature and first byte of version */
     g_seekable_seek(G_SEEKABLE(stream), 0, G_SEEK_SET, NULL, NULL);
-    if (g_input_stream_read(G_INPUT_STREAM(stream), signature, sizeof(signature), NULL, NULL) != sizeof(signature)) {
+    if (g_input_stream_read(stream, signature, sizeof(signature), NULL, NULL) != sizeof(signature)) {
         g_object_unref(stream);
         g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, "Failed to read signature and version!");
         return FALSE;
@@ -784,7 +784,7 @@ static GObject *mirage_parser_mds_load_image (MirageParser *_self, GObject **str
     mirage_object_attach_child(MIRAGE_OBJECT(self), self->priv->disc);
 
     self->priv->mds_filename = mirage_get_file_stream_filename(stream);
-    mirage_disc_set_filename(MIRAGE_DISC(self->priv->disc), self->priv->mds_filename);
+    mirage_disc_set_filename(self->priv->disc, self->priv->mds_filename);
 
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: MDs filename: %s\n", __debug__, self->priv->mds_filename);
 
@@ -798,7 +798,7 @@ static GObject *mirage_parser_mds_load_image (MirageParser *_self, GObject **str
 
     /* Read whole file */
     g_seekable_seek(G_SEEKABLE(stream), 0, G_SEEK_SET, NULL, NULL);
-    read_length = g_input_stream_read(G_INPUT_STREAM(stream), self->priv->mds_data, self->priv->mds_length, NULL, NULL);
+    read_length = g_input_stream_read(stream, self->priv->mds_data, self->priv->mds_length, NULL, NULL);
 
     g_object_unref(stream);
 
@@ -832,19 +832,19 @@ static GObject *mirage_parser_mds_load_image (MirageParser *_self, GObject **str
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  session blocks offset: 0x%X\n", __debug__, self->priv->header->sessions_blocks_offset);
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  DPM blocks offset: 0x%X\n\n", __debug__, self->priv->header->dpm_blocks_offset);
 
-    switch ((MDS_Medium) self->priv->header->medium_type) {
+    switch (self->priv->header->medium_type) {
         case CD:
         case CD_R:
         case CD_RW: {
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: CD-ROM image\n", __debug__);
-            mirage_disc_set_medium_type(MIRAGE_DISC(self->priv->disc), MIRAGE_MEDIUM_CD);
+            mirage_disc_set_medium_type(self->priv->disc, MIRAGE_MEDIUM_CD);
             succeeded = mirage_parser_mds_load_disc(self, error);
             break;
         }
         case DVD:
         case DVD_MINUS_R: {
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: DVD-ROM image\n", __debug__);
-            mirage_disc_set_medium_type(MIRAGE_DISC(self->priv->disc), MIRAGE_MEDIUM_DVD);
+            mirage_disc_set_medium_type(self->priv->disc, MIRAGE_MEDIUM_DVD);
             succeeded = mirage_parser_mds_load_disc(self, error);
             break;
         }

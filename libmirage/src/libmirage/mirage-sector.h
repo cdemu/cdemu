@@ -20,6 +20,9 @@
 #ifndef __MIRAGE_SECTOR_H__
 #define __MIRAGE_SECTOR_H__
 
+/* Forward declarations */
+typedef struct _MirageTrack MirageTrack;
+
 
 G_BEGIN_DECLS
 
@@ -64,9 +67,9 @@ typedef enum
 } MirageSectorValidData;
 
 
-/******************************************************************************\
- *                              Base sector class                             *
-\******************************************************************************/
+/**********************************************************************\
+ *                         MirageSector object                        *
+\**********************************************************************/
 #define MIRAGE_TYPE_SECTOR            (mirage_sector_get_type())
 #define MIRAGE_SECTOR(obj)            (G_TYPE_CHECK_INSTANCE_CAST((obj), MIRAGE_TYPE_SECTOR, MirageSector))
 #define MIRAGE_SECTOR_CLASS(klass)    (G_TYPE_CHECK_CLASS_CAST((klass), MIRAGE_TYPE_SECTOR, MirageSectorClass))
@@ -101,11 +104,8 @@ struct _MirageSectorClass
 /* Used by MIRAGE_TYPE_SECTOR */
 GType mirage_sector_get_type (void);
 
-
-/**********************************************************************\
- *                             Public API                             *
-\**********************************************************************/
-gboolean mirage_sector_feed_data (MirageSector *self, gint address, GObject *track, GError **error);
+/* Public API */
+gboolean mirage_sector_feed_data (MirageSector *self, gint address, MirageTrack *track, GError **error);
 
 MirageTrackModes mirage_sector_get_sector_type (MirageSector *self);
 

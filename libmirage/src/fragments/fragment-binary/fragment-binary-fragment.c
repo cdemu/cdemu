@@ -29,12 +29,12 @@
 
 struct _MirageFragmentBinaryPrivate
 {
-    GObject *main_stream; /* Main data stream */
+    GInputStream *main_stream; /* Main data stream */
     gint main_size; /* Main data sector size */
     gint main_format; /* Main data format */
     guint64 main_offset; /* Offset in main data file */
 
-    GObject *subchannel_stream; /* Subchannel data stream */
+    GInputStream *subchannel_stream; /* Subchannel data stream */
     gint subchannel_size; /* Subchannel data sector size*/
     gint subchannel_format; /* Subchannel data format */
     guint64 subchannel_offset; /* Offset in subchannel data file */
@@ -44,7 +44,7 @@ struct _MirageFragmentBinaryPrivate
 /**********************************************************************\
  *                     Binary Interface implementation                *
 \**********************************************************************/
-static void mirage_fragment_binary_main_data_set_stream (MirageFragmentIfaceBinary *_self, GObject *stream)
+static void mirage_fragment_binary_main_data_set_stream (MirageFragmentIfaceBinary *_self, GInputStream *stream)
 {
     MirageFragmentBinary *self = MIRAGE_FRAGMENT_BINARY(_self);
 
@@ -135,7 +135,7 @@ static guint64 mirage_fragment_binary_main_data_get_position (MirageFragmentIfac
 }
 
 
-static void mirage_fragment_binary_subchannel_data_set_stream (MirageFragmentIfaceBinary *_self, GObject *stream)
+static void mirage_fragment_binary_subchannel_data_set_stream (MirageFragmentIfaceBinary *_self, GInputStream *stream)
 {
     MirageFragmentBinary *self = MIRAGE_FRAGMENT_BINARY(_self);
 
@@ -229,7 +229,7 @@ static guint64 mirage_fragment_binary_subchannel_data_get_position (MirageFragme
 /**********************************************************************\
  *               MirageFragment methods implementations              *
 \**********************************************************************/
-static gboolean mirage_fragment_binary_can_handle_data_format (MirageFragment *_self G_GNUC_UNUSED, GObject *stream, GError **error)
+static gboolean mirage_fragment_binary_can_handle_data_format (MirageFragment *_self G_GNUC_UNUSED, GInputStream *stream, GError **error)
 {
     /* Make sure stream is provided */
     if (!stream) {
@@ -314,7 +314,7 @@ static gboolean mirage_fragment_binary_read_main_data (MirageFragment *_self, gi
 
         /* Note: we ignore all errors here in order to be able to cope with truncated mini images */
         g_seekable_seek(G_SEEKABLE(self->priv->main_stream), position, G_SEEK_SET, NULL, NULL);
-        read_len = g_input_stream_read(G_INPUT_STREAM(self->priv->main_stream), data_buffer, self->priv->main_size, NULL, NULL);
+        read_len = g_input_stream_read(self->priv->main_stream, data_buffer, self->priv->main_size, NULL, NULL);
 
         /*if (read_len != self->priv->main_size) {
             mirage_error(MIRAGE_E_READFAILED, error);
@@ -340,7 +340,7 @@ static gboolean mirage_fragment_binary_read_subchannel_data (MirageFragment *_se
 {
     MirageFragmentBinary *self = MIRAGE_FRAGMENT_BINARY(_self);
 
-    GObject *stream;
+    GInputStream *stream;
     guint64 position;
     gint read_len;
 
@@ -388,7 +388,7 @@ static gboolean mirage_fragment_binary_read_subchannel_data (MirageFragment *_se
         /* We read into temporary buffer, because we might need to perform some
            magic on the data */
         g_seekable_seek(G_SEEKABLE(stream), position, G_SEEK_SET, NULL, NULL);
-        read_len = g_input_stream_read(G_INPUT_STREAM(stream), raw_buffer, self->priv->subchannel_size, NULL, NULL);
+        read_len = g_input_stream_read(stream, raw_buffer, self->priv->subchannel_size, NULL, NULL);
 
         if (read_len != self->priv->subchannel_size) {
             /*mirage_error(MIRAGE_E_READFAILED, error);

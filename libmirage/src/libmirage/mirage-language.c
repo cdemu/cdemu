@@ -41,7 +41,7 @@ typedef struct
 
 struct _MirageLanguagePrivate
 {
-    gint langcode;
+    gint code;
 
     gint packs_number;
     MirageLanguage_Pack *packs;
@@ -86,21 +86,21 @@ static MirageLanguage_Pack *mirage_language_get_pack_by_type (MirageLanguage *se
  *                             Public API                             *
 \**********************************************************************/
 /**
- * mirage_language_set_langcode:
+ * mirage_language_set_code:
  * @self: a #MirageLanguage
- * @langcode: (in): language code
+ * @code: (in): language code
  *
  * <para>
  * Sets language's language code.
  * </para>
  **/
-void mirage_language_set_langcode (MirageLanguage *self, gint langcode)
+void mirage_language_set_code (MirageLanguage *self, gint code)
 {
-    self->priv->langcode = langcode;
+    self->priv->code = code;
 }
 
 /**
- * mirage_language_get_langcode:
+ * mirage_language_get_code:
  * @self: a #MirageLanguage
  *
  * <para>
@@ -109,9 +109,9 @@ void mirage_language_set_langcode (MirageLanguage *self, gint langcode)
  *
  * Returns: language code
  **/
-gint mirage_language_get_langcode (MirageLanguage *self)
+gint mirage_language_get_code (MirageLanguage *self)
 {
-    return self->priv->langcode;
+    return self->priv->code;
 }
 
 

@@ -120,9 +120,9 @@ const MirageParserInfo *mirage_parser_get_info (MirageParser *self)
  *
  * Returns: (transfer full): a #MirageDisc object representing image on success, %NULL on failure
  **/
-GObject *mirage_parser_load_image (MirageParser *self, GObject **streams, GError **error)
+MirageDisc *mirage_parser_load_image (MirageParser *self, GInputStream **streams, GError **error)
 {
-    GObject *disc;
+    MirageDisc *disc;
 
     /* Load the image */
     disc = MIRAGE_PARSER_GET_CLASS(self)->load_image(self, streams, error);
@@ -139,7 +139,7 @@ GObject *mirage_parser_load_image (MirageParser *self, GObject **streams, GError
         g_value_init(&dvd_report_css2, G_TYPE_BOOLEAN);
         g_value_set_boolean(&dvd_report_css2, g_variant_get_boolean((GVariant *) dvd_report_css));
 
-        g_object_set_property(disc, "dvd-report-css", &dvd_report_css2);
+        g_object_set_property(G_OBJECT(disc), "dvd-report-css", &dvd_report_css2);
     }
 
     return disc;
@@ -165,9 +165,9 @@ GObject *mirage_parser_load_image (MirageParser *self, GObject **streams, GError
  *
  * Returns: a value from #MirageMediumTypes, according to the guessed medium type.
  **/
-gint mirage_parser_guess_medium_type (MirageParser *self, GObject *disc)
+gint mirage_parser_guess_medium_type (MirageParser *self, MirageDisc *disc)
 {
-    gint length = mirage_disc_layout_get_length(MIRAGE_DISC(disc));
+    gint length = mirage_disc_layout_get_length(disc);
 
     /* FIXME: add other media types? */
     if (length <= 90*60*75) {
@@ -200,12 +200,12 @@ gint mirage_parser_guess_medium_type (MirageParser *self, GObject *disc)
  * CD-ROM. On other discs, it does nothing.
  * </para>
  **/
-void mirage_parser_add_redbook_pregap (MirageParser *self, GObject *disc)
+void mirage_parser_add_redbook_pregap (MirageParser *self, MirageDisc *disc)
 {
     gint num_sessions;
 
     /* Red Book pregap is found only on CD-ROMs */
-    if (mirage_disc_get_medium_type(MIRAGE_DISC(disc)) != MIRAGE_MEDIUM_CD) {
+    if (mirage_disc_get_medium_type(disc) != MIRAGE_MEDIUM_CD) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: Red Book pregap exists only on CD-ROMs!\n", __debug__);
         return;
     }
@@ -214,26 +214,26 @@ void mirage_parser_add_redbook_pregap (MirageParser *self, GObject *disc)
 
     /* CD-ROMs start at -150 as per Red Book... */
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: setting disc layout start at -150\n", __debug__);
-    mirage_disc_layout_set_start_sector(MIRAGE_DISC(disc), -150);
+    mirage_disc_layout_set_start_sector(disc, -150);
 
-    num_sessions = mirage_disc_get_number_of_sessions(MIRAGE_DISC(disc));
+    num_sessions = mirage_disc_get_number_of_sessions(disc);
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: %d session(s)\n", __debug__, num_sessions);
 
     /* Put 150 sector pregap into every first track of each session */
     for (gint i = 0; i < num_sessions; i++) {
-        GObject *session;
-        GObject *track;
-        GObject *fragment;
+        MirageSession *session;
+        MirageTrack *track;
+        MirageFragment *fragment;
 
         gint track_start;
 
-        session = mirage_disc_get_session_by_index(MIRAGE_DISC(disc), i, NULL);
+        session = mirage_disc_get_session_by_index(disc, i, NULL);
         if (!session) {
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: failed to get session with index %i!\n", __debug__, i);
             return;
         }
 
-        track = mirage_session_get_track_by_index(MIRAGE_SESSION(session), 0, NULL);
+        track = mirage_session_get_track_by_index(session, 0, NULL);
         if (!track) {
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: failed to first track of session with index %i!\n", __debug__, i);
             g_object_unref(session);
@@ -242,15 +242,15 @@ void mirage_parser_add_redbook_pregap (MirageParser *self, GObject *disc)
 
         /* Add pregap fragment - NULL fragment creation should never fail */
         fragment = mirage_create_fragment(MIRAGE_TYPE_FRAGMENT_IFACE_NULL, NULL, G_OBJECT(self), NULL);
-        mirage_fragment_set_length(MIRAGE_FRAGMENT(fragment), 150);
-        mirage_track_add_fragment(MIRAGE_TRACK(track), 0, fragment);
+        mirage_fragment_set_length(fragment, 150);
+        mirage_track_add_fragment(track, 0, fragment);
         g_object_unref(fragment);
 
         /* Track starts at 150... well, unless it already has a pregap, in
            which case they should stack */
-        track_start = mirage_track_get_track_start(MIRAGE_TRACK(track));
+        track_start = mirage_track_get_track_start(track);
         track_start += 150;
-        mirage_track_set_track_start(MIRAGE_TRACK(track), track_start);
+        mirage_track_set_track_start(track, track_start);
 
         g_object_unref(track);
         g_object_unref(session);
@@ -375,9 +375,9 @@ const GVariant *mirage_parser_get_param (MirageParser *self, const gchar *name, 
  * The reference to stream should be released using g_object_unref()
  * when no longer needed.
  **/
-GObject *mirage_parser_get_cached_data_stream (MirageParser *self, const gchar *filename, GError **error)
+GInputStream *mirage_parser_get_cached_data_stream (MirageParser *self, const gchar *filename, GError **error)
 {
-    GObject *stream = g_hash_table_lookup(self->priv->stream_cache, filename);
+    GInputStream *stream = g_hash_table_lookup(self->priv->stream_cache, filename);
 
     if (!stream) {
         /* Stream not in cache, open a stream on filename... */
@@ -412,7 +412,7 @@ GObject *mirage_parser_get_cached_data_stream (MirageParser *self, const gchar *
  * Returns: (transfer full): a #GDataInputStream object on success,
  * or %NULL on failure.
  **/
-GDataInputStream *mirage_parser_create_text_stream (MirageParser *self, GObject *stream, GError **error)
+GDataInputStream *mirage_parser_create_text_stream (MirageParser *self, GInputStream *stream, GError **error)
 {
     GDataInputStream *data_stream;
     const gchar *encoding;
@@ -429,7 +429,7 @@ GDataInputStream *mirage_parser_create_text_stream (MirageParser *self, GObject 
         guint8 bom[4] = { 0 };
 
         g_seekable_seek(G_SEEKABLE(stream), 0, G_SEEK_SET, NULL, NULL);
-        g_input_stream_read(G_INPUT_STREAM(stream), bom, sizeof(bom), NULL, NULL);
+        g_input_stream_read(stream, bom, sizeof(bom), NULL, NULL);
 
         encoding = mirage_helper_encoding_from_bom(bom);
 
@@ -453,18 +453,18 @@ GDataInputStream *mirage_parser_create_text_stream (MirageParser *self, GObject 
         }
 
         /* Create converter stream */
-        converter_stream = g_converter_input_stream_new(G_INPUT_STREAM(stream), G_CONVERTER(converter));
+        converter_stream = g_converter_input_stream_new(stream, G_CONVERTER(converter));
         g_filter_input_stream_set_close_base_stream(G_FILTER_INPUT_STREAM(converter_stream), FALSE);
 
         g_object_unref(converter);
 
         /* Switch the stream */
         g_object_unref(stream);
-        stream = G_OBJECT(converter_stream);
+        stream = converter_stream;
     }
 
     /* Create data stream */
-    data_stream = g_data_input_stream_new(G_INPUT_STREAM(stream));
+    data_stream = g_data_input_stream_new(stream);
     if (!data_stream) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to create data stream!\n", __debug__);
         g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_PARSER_ERROR, "Failed to create data stream!");

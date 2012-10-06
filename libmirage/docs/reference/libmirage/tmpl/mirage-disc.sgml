@@ -285,7 +285,7 @@ functions for accessing and reading of sectors within the disc layout.
 @Returns: 
 
 
-<!-- ##### FUNCTION mirage_disc_for_each_session ##### -->
+<!-- ##### FUNCTION mirage_disc_enumerate_sessions ##### -->
 <para>
 
 </para>

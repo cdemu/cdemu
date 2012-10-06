@@ -25,7 +25,7 @@
 /**********************************************************************\
  *               MirageFragment methods implementations              *
 \**********************************************************************/
-static gboolean mirage_fragment_null_can_handle_data_format (MirageFragment *_self G_GNUC_UNUSED, GObject *stream G_GNUC_UNUSED, GError **error G_GNUC_UNUSED)
+static gboolean mirage_fragment_null_can_handle_data_format (MirageFragment *_self G_GNUC_UNUSED, GInputStream *stream G_GNUC_UNUSED, GError **error G_GNUC_UNUSED)
 {
     /* NULL doesn't need any data checks; what's important is interface type,
        which is filtered out elsewhere */

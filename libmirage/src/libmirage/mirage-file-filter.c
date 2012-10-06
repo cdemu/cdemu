@@ -35,7 +35,7 @@ struct _MirageFileFilterPrivate
 {
     MirageFileFilterInfo *info;
 
-    GObject *debug_context;
+    MirageDebugContext *debug_context;
 
     /* Simplified interface */
     guint64 file_size;
@@ -312,7 +312,7 @@ static gssize mirage_file_filter_read (GInputStream *_self, void *buffer, gsize 
 /**********************************************************************\
  *              MirageDebuggable methods implementation              *
 \**********************************************************************/
-static void mirage_file_filter_set_debug_context (MirageDebuggable *_self, GObject *debug_context)
+static void mirage_file_filter_set_debug_context (MirageDebuggable *_self, MirageDebugContext *debug_context)
 {
     MirageFileFilter *self = MIRAGE_FILE_FILTER(_self);
 
@@ -333,7 +333,7 @@ static void mirage_file_filter_set_debug_context (MirageDebuggable *_self, GObje
     }
 }
 
-static GObject *mirage_file_filter_get_debug_context (MirageDebuggable *_self)
+static MirageDebugContext *mirage_file_filter_get_debug_context (MirageDebuggable *_self)
 {
     MirageFileFilter *self = MIRAGE_FILE_FILTER(_self);
     return self->priv->debug_context;

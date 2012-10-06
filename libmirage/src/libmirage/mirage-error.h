@@ -23,8 +23,8 @@
 
 G_BEGIN_DECLS
 
-#define MIRAGE_ERROR (mirage_error_quark ())
-#define MIRAGE_TYPE_ERROR (mirage_error_get_type ())
+#define MIRAGE_ERROR (mirage_error_quark())
+#define MIRAGE_TYPE_ERROR (mirage_error_get_type())
 
 GQuark mirage_error_quark (void);
 GType  mirage_error_get_type (void);

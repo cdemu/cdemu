@@ -35,9 +35,9 @@ static const guint8 disc_signature[4] = { 'd', 'i', 's', 'c' };
 
 struct _MirageParserCifPrivate
 {
-    GObject *disc;
+    MirageDisc *disc;
 
-    GObject *cif_stream;
+    GInputStream *cif_stream;
 
     /* "disc" block offset and length */
     guint64 disc_offset;
@@ -115,7 +115,7 @@ static gboolean mirage_parser_cif_read_descriptor (MirageParserCif *self, guint8
     guint8 *subblock_data;
 
     /* Read entry length */
-    if (g_input_stream_read(G_INPUT_STREAM(self->priv->cif_stream), &subblock_length, sizeof(subblock_length), NULL, NULL) != sizeof(subblock_length)) {
+    if (g_input_stream_read(self->priv->cif_stream, &subblock_length, sizeof(subblock_length), NULL, NULL) != sizeof(subblock_length)) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: failed to read sub-block length!\n", __debug__);
         g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, "Failed to read sub-block length!");
         return FALSE;
@@ -134,7 +134,7 @@ static gboolean mirage_parser_cif_read_descriptor (MirageParserCif *self, guint8
 
     /* Allocate buffer and read data */
     subblock_data = g_malloc(subblock_length);
-    if (g_input_stream_read(G_INPUT_STREAM(self->priv->cif_stream), subblock_data, subblock_length, NULL, NULL) != subblock_length) {
+    if (g_input_stream_read(self->priv->cif_stream, subblock_data, subblock_length, NULL, NULL) != subblock_length) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: failed to read sub-block data (%d bytes)!\n", __debug__, subblock_length);
         g_free(subblock_data);
         g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, "Failed to read sub-block data (%d bytes)!", subblock_length);
@@ -148,10 +148,10 @@ static gboolean mirage_parser_cif_read_descriptor (MirageParserCif *self, guint8
 }
 
 
-static GObject *mirage_parser_cif_parse_track_descriptor (MirageParserCif *self, guint8 *data, guint16 length G_GNUC_UNUSED, GError **error)
+static MirageTrack *mirage_parser_cif_parse_track_descriptor (MirageParserCif *self, guint8 *data, guint16 length G_GNUC_UNUSED, GError **error)
 {
-    GObject *track;
-    GObject *fragment;
+    MirageTrack *track;
+    MirageFragment *fragment;
 
     CIF_TrackDescriptor *descriptor = (CIF_TrackDescriptor *)data;
     CIF_OffsetEntry *offset_entry = &self->priv->offset_entries[self->priv->track_counter++]; /* Corresponding offset entry; we also increment track counter here */
@@ -206,7 +206,7 @@ static GObject *mirage_parser_cif_parse_track_descriptor (MirageParserCif *self,
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "\n");
 
     /* Set track mode */
-    switch ((CIF_Track) descriptor->type) {
+    switch (descriptor->type) {
         case AUDIO: {
             track_mode = MIRAGE_MODE_AUDIO;
             sector_size = 2352;
@@ -248,7 +248,7 @@ static GObject *mirage_parser_cif_parse_track_descriptor (MirageParserCif *self,
     /* Create new track */
     track = g_object_new(MIRAGE_TYPE_TRACK, NULL);
 
-    mirage_track_set_mode(MIRAGE_TRACK(track), track_mode);
+    mirage_track_set_mode(track, track_mode);
 
     /* Create data fragment */
     fragment = mirage_create_fragment(MIRAGE_TYPE_FRAGMENT_IFACE_BINARY, self->priv->cif_stream, G_OBJECT(self), error);
@@ -268,9 +268,9 @@ static GObject *mirage_parser_cif_parse_track_descriptor (MirageParserCif *self,
         mirage_fragment_iface_binary_main_data_set_format(MIRAGE_FRAGMENT_IFACE_BINARY(fragment), MIRAGE_MAIN_DATA);
     }
 
-    mirage_fragment_set_length(MIRAGE_FRAGMENT(fragment), track_length);
+    mirage_fragment_set_length(fragment, track_length);
 
-    mirage_track_add_fragment(MIRAGE_TRACK(track), -1, fragment);
+    mirage_track_add_fragment(track, -1, fragment);
 
     g_object_unref(fragment);
 
@@ -279,9 +279,9 @@ static GObject *mirage_parser_cif_parse_track_descriptor (MirageParserCif *self,
     return track;
 }
 
-static GObject *mirage_parser_cif_parse_session_descriptor (MirageParserCif *self, guint8 *data, guint16 length G_GNUC_UNUSED, GError **error)
+static MirageSession *mirage_parser_cif_parse_session_descriptor (MirageParserCif *self, guint8 *data, guint16 length G_GNUC_UNUSED, GError **error)
 {
-    GObject *session;
+    MirageSession *session;
     CIF_SessionDescriptor *descriptor = (CIF_SessionDescriptor *)data;
 
     descriptor->descriptor_length = GUINT16_FROM_LE(descriptor->descriptor_length);
@@ -311,17 +311,17 @@ static GObject *mirage_parser_cif_parse_session_descriptor (MirageParserCif *sel
     session = g_object_new(MIRAGE_TYPE_SESSION, NULL);
 
     /* Set session type */
-    switch ((CIF_Session) descriptor->session_type) {
+    switch (descriptor->session_type) {
         case CDDA: {
-            mirage_session_set_session_type(MIRAGE_SESSION(session), MIRAGE_SESSION_CD_DA);
+            mirage_session_set_session_type(session, MIRAGE_SESSION_CD_DA);
             break;
         }
         case CDROM: {
-            mirage_session_set_session_type(MIRAGE_SESSION(session), MIRAGE_SESSION_CD_ROM);
+            mirage_session_set_session_type(session, MIRAGE_SESSION_CD_ROM);
             break;
         }
         case CDROMXA: {
-            mirage_session_set_session_type(MIRAGE_SESSION(session), MIRAGE_SESSION_CD_ROM_XA);
+            mirage_session_set_session_type(session, MIRAGE_SESSION_CD_ROM_XA);
             break;
         }
         default: {
@@ -336,7 +336,7 @@ static GObject *mirage_parser_cif_parse_session_descriptor (MirageParserCif *sel
     for (gint i = 0; i < descriptor->num_tracks; i++) {
         guint8 *descriptor_data;
         guint16 descriptor_length;
-        GObject *track;
+        MirageTrack *track;
         gint track_mode;
 
         /* Read track descriptor */
@@ -354,12 +354,12 @@ static GObject *mirage_parser_cif_parse_session_descriptor (MirageParserCif *sel
             return NULL;
         }
 
-        track_mode = mirage_track_get_mode(MIRAGE_TRACK(track));
+        track_mode = mirage_track_get_mode(track);
 
         /* If it is a first track in session, or if track mode has changed,
            add 150-sector pregap. */
         if (i == 0 || gap_between_tracks(self->priv->prev_track_mode, track_mode)) {
-            GObject *fragment;
+            MirageFragment *fragment;
             gint pregap_length = 150;
 
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: adding pregap: %d (0x%X)\n", __debug__, pregap_length, pregap_length);
@@ -367,17 +367,17 @@ static GObject *mirage_parser_cif_parse_session_descriptor (MirageParserCif *sel
             /* Create NULL fragment - creation should never fail */
             fragment = mirage_create_fragment(MIRAGE_TYPE_FRAGMENT_IFACE_NULL, NULL, G_OBJECT(self), error);
 
-            mirage_fragment_set_length(MIRAGE_FRAGMENT(fragment), pregap_length);
+            mirage_fragment_set_length(fragment, pregap_length);
 
-            mirage_track_add_fragment(MIRAGE_TRACK(track), 0, fragment);
+            mirage_track_add_fragment(track, 0, fragment);
             g_object_unref(fragment);
 
             /* Set new track start */
-            mirage_track_set_track_start(MIRAGE_TRACK(track), pregap_length);
+            mirage_track_set_track_start(track, pregap_length);
         }
 
         /* Add track */
-        mirage_session_add_track_by_index(MIRAGE_SESSION(session), i, track);
+        mirage_session_add_track_by_index(session, i, track);
 
         g_object_unref(track);
         g_free(descriptor_data);
@@ -420,7 +420,7 @@ static gboolean mirage_parser_cif_parse_disc_descriptor (MirageParserCif *self, 
     for (gint i = 0; i < descriptor->num_sessions; i++) {
         guint8 *descriptor_data;
         guint16 descriptor_length;
-        GObject *session;
+        MirageSession *session;
 
         /* Read session descriptor */
         if (!mirage_parser_cif_read_descriptor(self, &descriptor_data, &descriptor_length, error)) {
@@ -435,17 +435,17 @@ static gboolean mirage_parser_cif_parse_disc_descriptor (MirageParserCif *self, 
             return FALSE;
         }
 
-        mirage_disc_add_session_by_index(MIRAGE_DISC(self->priv->disc), i, session);
+        mirage_disc_add_session_by_index(self->priv->disc, i, session);
 
         g_object_unref(session);
         g_free(descriptor_data);
 
         /* Set leadout of the previous session */
         if (i > 0) {
-            GObject *prev_session;
+            MirageSession *prev_session;
             gint leadout_length;
 
-            prev_session = mirage_disc_get_session_by_index(MIRAGE_DISC(self->priv->disc), i-1, error);
+            prev_session = mirage_disc_get_session_by_index(self->priv->disc, i-1, error);
             if (!prev_session) {
                 MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: failed to get previous session!\n", __debug__);
                 return FALSE;
@@ -458,7 +458,7 @@ static gboolean mirage_parser_cif_parse_disc_descriptor (MirageParserCif *self, 
                 leadout_length = 6750; /* Actually, it should be 2250 previous leadout, 4500 current leadin */
             }
 
-            mirage_session_set_leadout_length(MIRAGE_SESSION(prev_session), leadout_length);
+            mirage_session_set_leadout_length(prev_session, leadout_length);
 
             g_object_unref(prev_session);
         }
@@ -513,7 +513,7 @@ static gboolean mirage_parser_cif_parse_ofs_block (MirageParserCif *self, GError
     g_seekable_seek(G_SEEKABLE(self->priv->cif_stream), 8, G_SEEK_CUR, NULL, NULL);
 
     /* Read number of entries */
-    if (g_input_stream_read(G_INPUT_STREAM(self->priv->cif_stream), &num_entries, sizeof(num_entries), NULL, NULL) != sizeof(num_entries)) {
+    if (g_input_stream_read(self->priv->cif_stream, &num_entries, sizeof(num_entries), NULL, NULL) != sizeof(num_entries)) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read number of entries!\n", __debug__);
         g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, "Failed to read number of entries");
         return FALSE;
@@ -529,7 +529,7 @@ static gboolean mirage_parser_cif_parse_ofs_block (MirageParserCif *self, GError
         CIF_OffsetEntry entry;
 
         /* Read whole entry */
-        if (g_input_stream_read(G_INPUT_STREAM(self->priv->cif_stream), &entry, sizeof(entry), NULL, NULL) != sizeof(entry)) {
+        if (g_input_stream_read(self->priv->cif_stream, &entry, sizeof(entry), NULL, NULL) != sizeof(entry)) {
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read off entry!\n", __debug__);
             g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, "Failed to read off entry!");
             return FALSE;
@@ -574,7 +574,7 @@ static gboolean mirage_parser_cif_parse_blocks (MirageParserCif *self, GError **
     g_seekable_seek(G_SEEKABLE(self->priv->cif_stream), 0, G_SEEK_SET, NULL, NULL);
     while (g_seekable_tell(G_SEEKABLE(self->priv->cif_stream)) < file_size) {
         /* Read whole header */
-        if (g_input_stream_read(G_INPUT_STREAM(self->priv->cif_stream), &header, sizeof(header), NULL, NULL) != sizeof(header)) {
+        if (g_input_stream_read(self->priv->cif_stream, &header, sizeof(header), NULL, NULL) != sizeof(header)) {
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read header!\n", __debug__);
             g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, "Failed to read header!");
             return FALSE;
@@ -637,10 +637,10 @@ static gboolean mirage_parser_cif_load_disc (MirageParserCif *self, GError **err
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "\n");
 
     /* CIF format is CD-only */
-    mirage_disc_set_medium_type(MIRAGE_DISC(self->priv->disc), MIRAGE_MEDIUM_CD);
+    mirage_disc_set_medium_type(self->priv->disc, MIRAGE_MEDIUM_CD);
 
     /* CD-ROMs start at -150 as per Red Book... */
-    mirage_disc_layout_set_start_sector(MIRAGE_DISC(self->priv->disc), -150);
+    mirage_disc_layout_set_start_sector(self->priv->disc, -150);
 
     /* Parse "ofs " block */
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: parsing 'ofs ' block\n", __debug__);
@@ -663,7 +663,7 @@ static gboolean mirage_parser_cif_load_disc (MirageParserCif *self, GError **err
 /**********************************************************************\
  *                MirageParser methods implementation                *
 \**********************************************************************/
-static GObject *mirage_parser_cif_load_image (MirageParser *_self, GObject **streams, GError **error)
+static MirageDisc *mirage_parser_cif_load_image (MirageParser *_self, GInputStream **streams, GError **error)
 {
     MirageParserCif *self = MIRAGE_PARSER_CIF(_self);
     const gchar *cif_filename;
@@ -674,7 +674,7 @@ static GObject *mirage_parser_cif_load_image (MirageParser *_self, GObject **str
     self->priv->cif_stream = streams[0];
     g_object_ref(self->priv->cif_stream);
 
-    if (g_input_stream_read(G_INPUT_STREAM(self->priv->cif_stream), &header, sizeof(header), NULL, NULL) != sizeof(header)) {
+    if (g_input_stream_read(self->priv->cif_stream, &header, sizeof(header), NULL, NULL) != sizeof(header)) {
         g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, "Failed to read header!");
         return FALSE;
     }
@@ -694,7 +694,7 @@ static GObject *mirage_parser_cif_load_image (MirageParser *_self, GObject **str
     mirage_object_attach_child(MIRAGE_OBJECT(self), self->priv->disc);
 
     cif_filename = mirage_get_file_stream_filename(self->priv->cif_stream);
-    mirage_disc_set_filename(MIRAGE_DISC(self->priv->disc), cif_filename);
+    mirage_disc_set_filename(self->priv->disc, cif_filename);
 
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: CIF filename: %s\n", __debug__, cif_filename);
 

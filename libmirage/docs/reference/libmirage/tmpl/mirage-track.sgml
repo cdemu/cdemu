@@ -159,6 +159,22 @@ sectors, etc.
 @Returns: 
 
 
+<!-- ##### FUNCTION mirage_track_read_sector ##### -->
+<para>
+
+</para>
+
+@self: 
+@address: 
+@abs: 
+@main_sel: 
+@subc_sel: 
+@buffer: 
+@buffer_size: 
+@error: 
+@Returns: 
+
+
 <!-- ##### FUNCTION mirage_track_layout_get_session_number ##### -->
 <para>
 
@@ -274,7 +290,7 @@ sectors, etc.
 @Returns: 
 
 
-<!-- ##### FUNCTION mirage_track_for_each_fragment ##### -->
+<!-- ##### FUNCTION mirage_track_enumerate_fragments ##### -->
 <para>
 
 </para>
@@ -375,7 +391,7 @@ sectors, etc.
 @Returns: 
 
 
-<!-- ##### FUNCTION mirage_track_for_each_index ##### -->
+<!-- ##### FUNCTION mirage_track_enumerate_indices ##### -->
 <para>
 
 </para>
@@ -401,7 +417,7 @@ sectors, etc.
 </para>
 
 @self: 
-@langcode: 
+@code: 
 @language: 
 @error: 
 @Returns: 
@@ -424,7 +440,7 @@ sectors, etc.
 </para>
 
 @self: 
-@langcode: 
+@code: 
 @error: 
 @Returns: 
 
@@ -455,12 +471,12 @@ sectors, etc.
 </para>
 
 @self: 
-@langcode: 
+@code: 
 @error: 
 @Returns: 
 
 
-<!-- ##### FUNCTION mirage_track_for_each_language ##### -->
+<!-- ##### FUNCTION mirage_track_enumerate_languages ##### -->
 <para>
 
 </para>

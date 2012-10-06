@@ -123,7 +123,7 @@ const MirageFragmentInfo *mirage_fragment_get_info (MirageFragment *self)
  *
  * Returns: %TRUE if fragment can handle data file, %FALSE if not
  **/
-gboolean mirage_fragment_can_handle_data_format (MirageFragment *self, GObject *stream, GError **error)
+gboolean mirage_fragment_can_handle_data_format (MirageFragment *self, GInputStream *stream, GError **error)
 {
     /* Provided by implementation */
     return MIRAGE_FRAGMENT_GET_CLASS(self)->can_handle_data_format(self, stream, error);
@@ -367,7 +367,7 @@ GType mirage_fragment_iface_null_get_type (void) {
  * Sets main data stream.
  * </para>
  **/
-void mirage_fragment_iface_binary_main_data_set_stream (MirageFragmentIfaceBinary *self, GObject *stream)
+void mirage_fragment_iface_binary_main_data_set_stream (MirageFragmentIfaceBinary *self, GInputStream *stream)
 {
     return MIRAGE_FRAGMENT_IFACE_BINARY_GET_INTERFACE(self)->main_data_set_stream(self, stream);
 }
@@ -421,15 +421,15 @@ guint64 mirage_fragment_iface_binary_main_data_get_offset (MirageFragmentIfaceBi
 /**
  * mirage_fragment_iface_binary_main_data_set_size:
  * @self: a #MirageFragmentIfaceBinary
- * @sectsize: (in): main data file sector size
+ * @size: (in): main data file sector size
  *
  * <para>
  * Sets main data file sector size.
  * </para>
  **/
-void mirage_fragment_iface_binary_main_data_set_size (MirageFragmentIfaceBinary *self, gint sectsize)
+void mirage_fragment_iface_binary_main_data_set_size (MirageFragmentIfaceBinary *self, gint size)
 {
-    return MIRAGE_FRAGMENT_IFACE_BINARY_GET_INTERFACE(self)->main_data_set_size(self, sectsize);
+    return MIRAGE_FRAGMENT_IFACE_BINARY_GET_INTERFACE(self)->main_data_set_size(self, size);
 }
 
 /**
@@ -504,7 +504,7 @@ guint64 mirage_fragment_iface_binary_main_data_get_position (MirageFragmentIface
  * Sets subchannel data stream.
  * </para>
  **/
-void mirage_fragment_iface_binary_subchannel_data_set_stream (MirageFragmentIfaceBinary *self, GObject *stream)
+void mirage_fragment_iface_binary_subchannel_data_set_stream (MirageFragmentIfaceBinary *self, GInputStream *stream)
 {
     return MIRAGE_FRAGMENT_IFACE_BINARY_GET_INTERFACE(self)->subchannel_data_set_stream(self, stream);
 }
@@ -558,15 +558,15 @@ guint64 mirage_fragment_iface_binary_subchannel_data_get_offset (MirageFragmentI
 /**
  * mirage_fragment_iface_binary_subchannel_data_set_size:
  * @self: a #MirageFragmentIfaceBinary
- * @sectsize: (in): subchannel data file sector size
+ * @size: (in): subchannel data file sector size
  *
  * <para>
  * Sets subchannel data file sector size.
  * </para>
  **/
-void mirage_fragment_iface_binary_subchannel_data_set_size (MirageFragmentIfaceBinary *self, gint sectsize)
+void mirage_fragment_iface_binary_subchannel_data_set_size (MirageFragmentIfaceBinary *self, gint size)
 {
-    return MIRAGE_FRAGMENT_IFACE_BINARY_GET_INTERFACE(self)->subchannel_data_set_size(self, sectsize);
+    return MIRAGE_FRAGMENT_IFACE_BINARY_GET_INTERFACE(self)->subchannel_data_set_size(self, size);
 }
 
 /**
@@ -669,7 +669,7 @@ GType mirage_fragment_iface_binary_get_type (void) {
  * Sets audio file stream.
  * </para>
  **/
-void mirage_fragment_iface_audio_set_stream (MirageFragmentIfaceAudio *self, GObject *stream)
+void mirage_fragment_iface_audio_set_stream (MirageFragmentIfaceAudio *self, GInputStream *stream)
 {
     return MIRAGE_FRAGMENT_IFACE_AUDIO_GET_INTERFACE(self)->set_stream(self, stream);
 }

@@ -46,7 +46,7 @@ struct _MirageFileFilterInfo
 
 
 /**********************************************************************\
- *                        File filter object                          *
+ *                     MirageFileFilter object                        *
 \**********************************************************************/
 #define MIRAGE_TYPE_FILE_FILTER            (mirage_file_filter_get_type())
 #define MIRAGE_FILE_FILTER(obj)            (G_TYPE_CHECK_INSTANCE_CAST((obj), MIRAGE_TYPE_FILE_FILTER, MirageFileFilter))
@@ -96,10 +96,6 @@ struct _MirageFileFilterClass
 /* Used by MIRAGE_TYPE_FILE_FILTER */
 GType mirage_file_filter_get_type (void);
 
-
-/**********************************************************************\
- *                             Public API                             *
-\**********************************************************************/
 void mirage_file_filter_generate_info (MirageFileFilter *self, const gchar *id, const gchar *name, const gchar *description, const gchar *mime_type);
 const MirageFileFilterInfo *mirage_file_filter_get_info (MirageFileFilter *self);
 

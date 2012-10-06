@@ -62,12 +62,12 @@ static const MirageDebugMask dbg_masks[] = {
 /**********************************************************************\
  *          GFileInputStream -> filename mapping management           *
 \**********************************************************************/
-static inline void stream_destroyed_handler (gpointer unused G_GNUC_UNUSED, GObject *stream)
+static inline void stream_destroyed_handler (gpointer unused G_GNUC_UNUSED, gpointer stream)
 {
     g_hash_table_remove(libmirage.file_streams_map, stream);
 }
 
-static inline void mirage_file_streams_map_add (GObject *stream, const gchar *filename)
+static inline void mirage_file_streams_map_add (gpointer stream, const gchar *filename)
 {
     /* Insert into the table */
     g_hash_table_insert(libmirage.file_streams_map, stream, g_strdup(filename));
@@ -291,10 +291,10 @@ gchar *mirage_obtain_password (GError **error)
  * Returns: (transfer full): a #MirageDisc object on success, %NULL on failure. The reference to
  * the object should be released using g_object_unref() when no longer needed.
  **/
-GObject *mirage_create_disc (gchar **filenames, GObject *debug_context, GHashTable *params, GError **error)
+MirageDisc *mirage_create_disc (gchar **filenames, GObject *debug_context, GHashTable *params, GError **error)
 {
-    GObject *disc = NULL;
-    GObject **streams;
+    MirageDisc *disc = NULL;
+    GInputStream **streams;
 
     /* Make sure libMirage is initialized */
     if (!libmirage.initialized) {
@@ -303,7 +303,7 @@ GObject *mirage_create_disc (gchar **filenames, GObject *debug_context, GHashTab
     }
 
     /* Create streams */
-    streams = g_new0(GObject *, g_strv_length(filenames)+1);
+    streams = g_new0(GInputStream *, g_strv_length(filenames)+1);
     for (gint i = 0; filenames[i]; i++) {
         streams[i] = mirage_create_file_stream(filenames[i], debug_context, error);
         if (!streams[i]) {
@@ -314,19 +314,19 @@ GObject *mirage_create_disc (gchar **filenames, GObject *debug_context, GHashTab
     /* Go over all parsers */
     for (gint i = 0; i < libmirage.num_parsers; i++) {
         GError *local_error = NULL;
-        GObject *parser;
+        MirageParser *parser;
 
         /* Create parser object */
         parser = g_object_new(libmirage.parsers[i], NULL);
 
         /* Attach the debug context to parser */
-        mirage_debuggable_set_debug_context(MIRAGE_DEBUGGABLE(parser), debug_context);
+        mirage_debuggable_set_debug_context(MIRAGE_DEBUGGABLE(parser), MIRAGE_DEBUG_CONTEXT(debug_context));
 
         /* Pass the parameters to parser */
-        mirage_parser_set_params(MIRAGE_PARSER(parser), params);
+        mirage_parser_set_params(parser, params);
 
         /* Try loading image */
-        disc = mirage_parser_load_image(MIRAGE_PARSER(parser), streams, &local_error);
+        disc = mirage_parser_load_image(parser, streams, &local_error);
 
         /* Free parser */
         g_object_unref(parser);
@@ -383,10 +383,10 @@ end:
  * Returns: (transfer full): a #MirageFragment object on success, %NULL on failure. The reference
  * to the object should be released using g_object_unref() when no longer needed.
  **/
-GObject *mirage_create_fragment (GType fragment_interface, GObject *stream, GObject *debug_context, GError **error)
+MirageFragment *mirage_create_fragment (GType fragment_interface, GInputStream *stream, GObject *debug_context, GError **error)
 {
     gboolean succeeded = TRUE;
-    GObject *fragment;
+    MirageFragment *fragment;
 
     /* Make sure libMirage is initialized */
     if (!libmirage.initialized) {
@@ -399,7 +399,7 @@ GObject *mirage_create_fragment (GType fragment_interface, GObject *stream, GObj
        debug context */
     if (debug_context) {
         if (MIRAGE_IS_DEBUGGABLE(debug_context)) {
-            debug_context = mirage_debuggable_get_debug_context(MIRAGE_DEBUGGABLE(debug_context));
+            debug_context = G_OBJECT(mirage_debuggable_get_debug_context(MIRAGE_DEBUGGABLE(debug_context)));
         } else if (!MIRAGE_IS_DEBUG_CONTEXT(debug_context)) {
             g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_LIBRARY_ERROR, "Invalid debug context or debuggable object!");
             return NULL;
@@ -415,10 +415,10 @@ GObject *mirage_create_fragment (GType fragment_interface, GObject *stream, GObj
         succeeded = G_TYPE_CHECK_INSTANCE_TYPE((fragment), fragment_interface);
         if (succeeded) {
             /* Set debug context */
-            mirage_debuggable_set_debug_context(MIRAGE_DEBUGGABLE(fragment), debug_context);
+            mirage_debuggable_set_debug_context(MIRAGE_DEBUGGABLE(fragment), MIRAGE_DEBUG_CONTEXT(debug_context));
 
             /* Check if fragment can handle file format */
-            succeeded = mirage_fragment_can_handle_data_format(MIRAGE_FRAGMENT(fragment), stream, NULL);
+            succeeded = mirage_fragment_can_handle_data_format(fragment, stream, NULL);
             if (succeeded) {
                 return fragment;
             }
@@ -456,9 +456,9 @@ GObject *mirage_create_fragment (GType fragment_interface, GObject *stream, GObj
  * The reference to the object should be released using g_object_unref()
  * when no longer needed.
  **/
-GObject *mirage_create_file_stream (const gchar *filename, GObject *debug_context, GError **error)
+GInputStream *mirage_create_file_stream (const gchar *filename, GObject *debug_context, GError **error)
 {
-    GObject *stream;
+    GInputStream *stream;
     GFile *file;
     GFileType file_type;
     GError *local_error = NULL;
@@ -474,7 +474,7 @@ GObject *mirage_create_file_stream (const gchar *filename, GObject *debug_contex
        debug context */
     if (debug_context) {
         if (MIRAGE_IS_DEBUGGABLE(debug_context)) {
-            debug_context = mirage_debuggable_get_debug_context(MIRAGE_DEBUGGABLE(debug_context));
+            debug_context = G_OBJECT(mirage_debuggable_get_debug_context(MIRAGE_DEBUGGABLE(debug_context)));
         } else if (!MIRAGE_IS_DEBUG_CONTEXT(debug_context)) {
             g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_LIBRARY_ERROR, "Invalid debug context or debuggable object!");
             return NULL;
@@ -493,7 +493,7 @@ GObject *mirage_create_file_stream (const gchar *filename, GObject *debug_contex
     }
 
     /* Create stream */
-    stream = G_OBJECT(g_file_read(file, NULL, &local_error));
+    stream = G_INPUT_STREAM(g_file_read(file, NULL, &local_error));
 
     g_object_unref(file);
 
@@ -507,7 +507,7 @@ GObject *mirage_create_file_stream (const gchar *filename, GObject *debug_contex
     mirage_file_streams_map_add(stream, filename);
 
     /* Construct a chain of filters */
-    GObject *filter;
+    MirageFileFilter *filter;
     gboolean found_new;
 
     do {
@@ -517,9 +517,9 @@ GObject *mirage_create_file_stream (const gchar *filename, GObject *debug_contex
             /* Create filter object and check if it can handle data */
             filter = g_object_new(libmirage.file_filters[i], "base-stream", stream, "close-base-stream", FALSE, NULL);
 
-            mirage_debuggable_set_debug_context(MIRAGE_DEBUGGABLE(filter), debug_context);
+            mirage_debuggable_set_debug_context(MIRAGE_DEBUGGABLE(filter), MIRAGE_DEBUG_CONTEXT(debug_context));
 
-            if (!mirage_file_filter_can_handle_data_format(MIRAGE_FILE_FILTER(filter), NULL)) {
+            if (!mirage_file_filter_can_handle_data_format(filter, NULL)) {
                 /* Cannot handle data format... */
                 g_object_unref(filter);
             } else {
@@ -530,7 +530,7 @@ GObject *mirage_create_file_stream (const gchar *filename, GObject *debug_contex
                 g_filter_input_stream_set_close_base_stream (G_FILTER_INPUT_STREAM(filter), TRUE);
 
                 /* Filter becomes new underlying stream */
-                stream = filter;
+                stream = G_INPUT_STREAM(filter);
 
                 /* Repeat the whole cycle */
                 found_new = TRUE;
@@ -558,7 +558,7 @@ GObject *mirage_create_file_stream (const gchar *filename, GObject *debug_contex
  * Returns: (transfer none): on success, a pointer to filename on which
  * the underyling file stream was opened. On failure, %NULL is returned.
  **/
-const gchar *mirage_get_file_stream_filename (GObject *stream)
+const gchar *mirage_get_file_stream_filename (GInputStream *stream)
 {
     if (G_IS_FILTER_INPUT_STREAM(stream)) {
         /* Recursively traverse the filter stream chain */
@@ -566,7 +566,7 @@ const gchar *mirage_get_file_stream_filename (GObject *stream)
         if (!base_stream) {
             return NULL;
         } else {
-            return mirage_get_file_stream_filename(G_OBJECT(base_stream));
+            return mirage_get_file_stream_filename(base_stream);
         }
     } else if (G_IS_FILE_INPUT_STREAM(stream)) {
         /* We are at the bottom; get filename from our mapping table */
@@ -579,7 +579,7 @@ const gchar *mirage_get_file_stream_filename (GObject *stream)
 
 
 /**
- * mirage_for_each_parser:
+ * mirage_enumerate_parsers:
  * @func: (in) (scope call): callback function
  * @user_data: (in) (closure): data to be passed to callback function
  * @error: (out) (allow-none): location to store error, or %NULL
@@ -594,7 +594,7 @@ const gchar *mirage_get_file_stream_filename (GObject *stream)
  *
  * Returns: %TRUE on success, %FALSE on failure
  **/
-gboolean mirage_for_each_parser (MirageCallbackFunction func, gpointer user_data, GError **error)
+gboolean mirage_enumerate_parsers (MirageCallbackFunction func, gpointer user_data, GError **error)
 {
     /* Make sure libMirage is initialized */
     if (!libmirage.initialized) {
@@ -622,7 +622,7 @@ gboolean mirage_for_each_parser (MirageCallbackFunction func, gpointer user_data
 }
 
 /**
- * mirage_for_each_fragment:
+ * mirage_enumerate_fragments:
  * @func: (in) (scope call): callback function
  * @user_data: (in) (closure): data to be passed to callback function
  * @error: (out) (allow-none): location to store error, or %NULL
@@ -637,7 +637,7 @@ gboolean mirage_for_each_parser (MirageCallbackFunction func, gpointer user_data
  *
  * Returns: %TRUE on success, %FALSE on failure
  **/
-gboolean mirage_for_each_fragment (MirageCallbackFunction func, gpointer user_data, GError **error)
+gboolean mirage_enumerate_fragments (MirageCallbackFunction func, gpointer user_data, GError **error)
 {
     /* Make sure libMirage is initialized */
     if (!libmirage.initialized) {
@@ -665,7 +665,7 @@ gboolean mirage_for_each_fragment (MirageCallbackFunction func, gpointer user_da
 }
 
 /**
- * mirage_for_each_file_filter:
+ * mirage_enumerate_file_filters:
  * @func: (in) (scope call): callback function
  * @user_data: (in) (closure): data to be passed to callback function
  * @error: (out) (allow-none): location to store error, or %NULL
@@ -680,7 +680,7 @@ gboolean mirage_for_each_fragment (MirageCallbackFunction func, gpointer user_da
  *
  * Returns: %TRUE on success, %FALSE on failure
  **/
-gboolean mirage_for_each_file_filter (MirageCallbackFunction func, gpointer user_data, GError **error)
+gboolean mirage_enumerate_file_filters (MirageCallbackFunction func, gpointer user_data, GError **error)
 {
     gboolean succeeded = TRUE;
 

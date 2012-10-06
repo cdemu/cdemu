@@ -23,6 +23,10 @@
 
 G_BEGIN_DECLS
 
+
+/**********************************************************************\
+ *                          MirageObject object                       *
+\**********************************************************************/
 #define MIRAGE_TYPE_OBJECT            (mirage_object_get_type())
 #define MIRAGE_OBJECT(obj)            (G_TYPE_CHECK_INSTANCE_CAST((obj), MIRAGE_TYPE_OBJECT, MirageObject))
 #define MIRAGE_OBJECT_CLASS(klass)    (G_TYPE_CHECK_CLASS_CAST((klass), MIRAGE_TYPE_OBJECT, MirageObjectClass))
@@ -61,15 +65,11 @@ struct _MirageObjectClass
 /* Used by MIRAGE_TYPE_OBJECT */
 GType mirage_object_get_type (void);
 
+void mirage_object_set_parent (MirageObject *self, gpointer parent);
+gpointer mirage_object_get_parent (MirageObject *self);
 
-/**********************************************************************\
- *                             Public API                             *
-\**********************************************************************/
-void mirage_object_set_parent (MirageObject *self, GObject *parent);
-GObject *mirage_object_get_parent (MirageObject *self);
-
-void mirage_object_attach_child (MirageObject *self, GObject *child);
-void mirage_object_detach_child (MirageObject *self, GObject *child);
+void mirage_object_attach_child (MirageObject *self, gpointer child);
+void mirage_object_detach_child (MirageObject *self, gpointer child);
 
 G_END_DECLS
 

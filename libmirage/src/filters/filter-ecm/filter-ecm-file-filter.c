@@ -125,7 +125,7 @@ static gboolean mirage_file_filter_ecm_build_index (MirageFileFilterEcm *self, G
         gint bits = 5;
 
         /* Read type and number of sectors */
-        if (g_input_stream_read(G_INPUT_STREAM(stream), &c, sizeof(c), NULL, NULL) != sizeof(c)) {
+        if (g_input_stream_read(stream, &c, sizeof(c), NULL, NULL) != sizeof(c)) {
             g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, "Failed to read a byte!");
             return FALSE;
         }
@@ -134,7 +134,7 @@ static gboolean mirage_file_filter_ecm_build_index (MirageFileFilterEcm *self, G
         num = (c >> 2) & 0x1F;
 
         while (c & 0x80) {
-            if (g_input_stream_read(G_INPUT_STREAM(stream), &c, sizeof(c), NULL, NULL) != sizeof(c)) {
+            if (g_input_stream_read(stream, &c, sizeof(c), NULL, NULL) != sizeof(c)) {
                 g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, "Failed to read a byte!");
                 return FALSE;
             }
@@ -234,7 +234,7 @@ static gboolean mirage_file_filter_ecm_can_handle_data_format (MirageFileFilter 
 
     /* Look for "ECM " signature at the beginning */
     g_seekable_seek(G_SEEKABLE(stream), 0, G_SEEK_SET, NULL, NULL);
-    if (g_input_stream_read(G_INPUT_STREAM(stream), sig, sizeof(sig), NULL, NULL) != sizeof(sig)) {
+    if (g_input_stream_read(stream, sig, sizeof(sig), NULL, NULL) != sizeof(sig)) {
         g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, "Failed to read 4 signature bytes!");
         return FALSE;
     }
@@ -357,7 +357,7 @@ static gssize mirage_file_filter_ecm_partial_read (MirageFileFilter *_self, void
             count = MIN(count, part->size - part_offset);
 
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_FILE_IO, "%s: reading %d bytes\n", __debug__, count);
-            if (g_input_stream_read(G_INPUT_STREAM(stream), buffer, count, NULL, NULL) != count) {
+            if (g_input_stream_read(stream, buffer, count, NULL, NULL) != count) {
                 MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read %ld bytes from underlying stream!\n", __debug__, count);
                 return -1;
             }
@@ -413,11 +413,11 @@ static gssize mirage_file_filter_ecm_partial_read (MirageFileFilter *_self, void
         switch (part->type) {
             case ECM_MODE1_2352: {
                 /* Read data */
-                if (g_input_stream_read(G_INPUT_STREAM(stream), self->priv->buffer+0x00C, 0x003, NULL, NULL) != 0x003) {
+                if (g_input_stream_read(stream, self->priv->buffer+0x00C, 0x003, NULL, NULL) != 0x003) {
                     MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read %ld bytes from underlying stream!\n", __debug__, 0x003);
                     return -1;
                 }
-                if (g_input_stream_read(G_INPUT_STREAM(stream), self->priv->buffer+0x010, 0x800, NULL, NULL) != 0x800) {
+                if (g_input_stream_read(stream, self->priv->buffer+0x010, 0x800, NULL, NULL) != 0x800) {
                     MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read %ld bytes from underlying stream!\n", __debug__, 0x800);
                     return -1;
                 }
@@ -439,7 +439,7 @@ static gssize mirage_file_filter_ecm_partial_read (MirageFileFilter *_self, void
             }
             case ECM_MODE2_FORM1_2336: {
                 /* Read data */
-                if (g_input_stream_read(G_INPUT_STREAM(stream), self->priv->buffer+0x014, 0x804, NULL, NULL) != 0x804) {
+                if (g_input_stream_read(stream, self->priv->buffer+0x014, 0x804, NULL, NULL) != 0x804) {
                     MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read %ld bytes from underlying stream!\n", __debug__, 0x804);
                     return -1;
                 }
@@ -461,7 +461,7 @@ static gssize mirage_file_filter_ecm_partial_read (MirageFileFilter *_self, void
             }
             case ECM_MODE2_FORM2_2336: {
                 /* Read data */
-                if (g_input_stream_read(G_INPUT_STREAM(stream), self->priv->buffer+0x014, 0x918, NULL, NULL) != 0x918) {
+                if (g_input_stream_read(stream, self->priv->buffer+0x014, 0x918, NULL, NULL) != 0x918) {
                     MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read %ld bytes from underlying stream!\n", __debug__, 0x918);
                     return -1;
                 }

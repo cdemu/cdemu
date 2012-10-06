@@ -50,16 +50,16 @@ pack types.
 </para>
 
 
-<!-- ##### FUNCTION mirage_language_set_langcode ##### -->
+<!-- ##### FUNCTION mirage_language_set_code ##### -->
 <para>
 
 </para>
 
 @self: 
-@langcode: 
+@code: 
 
 
-<!-- ##### FUNCTION mirage_language_get_langcode ##### -->
+<!-- ##### FUNCTION mirage_language_get_code ##### -->
 <para>
 
 </para>
