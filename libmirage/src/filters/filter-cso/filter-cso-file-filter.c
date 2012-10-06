@@ -176,7 +176,7 @@ static void mirage_file_filter_fixup_header(MirageFileFilterCso *self)
 
     header->header_size = GUINT32_FROM_LE(header->header_size);
     header->total_bytes = GUINT64_FROM_LE(header->total_bytes);
-    header->block_size  = GUINT64_FROM_LE(header->block_size);
+    header->block_size  = GUINT32_FROM_LE(header->block_size);
 }
 
 static gboolean mirage_file_filter_cso_can_handle_data_format (MirageFileFilter *_self, GError **error)
