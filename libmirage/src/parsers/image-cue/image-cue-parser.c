@@ -819,9 +819,7 @@ static void mirage_parser_cue_init_regex_parser (MirageParserCue *self)
 
 static void mirage_parser_cue_cleanup_regex_parser (MirageParserCue *self)
 {
-    GList *entry;
-
-    G_LIST_FOR_EACH(entry, self->priv->regex_rules) {
+    for (GList *entry = self->priv->regex_rules; entry; entry = entry->next) {
         CUE_RegexRule *rule = entry->data;
         g_regex_unref(rule->regex);
         g_free(rule);
@@ -870,10 +868,9 @@ static gboolean mirage_parser_cue_parse_cue_file (MirageParserCue *self, GObject
         /* GRegex matching engine */
         GMatchInfo *match_info = NULL;
         gboolean matched = FALSE;
-        GList *entry;
 
         /* Go over all matching rules */
-        G_LIST_FOR_EACH(entry, self->priv->regex_rules) {
+        for (GList *entry = self->priv->regex_rules; entry; entry = entry->next) {
             CUE_RegexRule *regex_rule = entry->data;
 
             /* Try to match the given rule */

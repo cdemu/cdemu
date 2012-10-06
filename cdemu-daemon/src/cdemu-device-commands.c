@@ -164,8 +164,7 @@ static gboolean command_get_configuration (CdemuDevice *self, guint8 *raw_cdb)
     CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: requesting features from 0x%X on, with RT flag 0x%X\n", __debug__, GUINT16_FROM_BE(cdb->sfn), cdb->rt);
 
     /* Go over *all* features, and copy them according to RT value */
-    GList *entry = NULL;
-    G_LIST_FOR_EACH(entry, self->priv->features_list) {
+    for (GList *entry = self->priv->features_list; entry; entry = entry->next) {
         struct FeatureGeneral *feature = entry->data;
 
         /* We want this feature copied if:
@@ -446,9 +445,8 @@ static gboolean command_mode_sense (CdemuDevice *self, guint8 *raw_cdb)
 
     /* Go over *all* pages, and if we want all pages, copy 'em all, otherwise
        copy just the one we've got request for and break the loop */
-    GList *entry = NULL;
     gboolean page_found = FALSE;
-    G_LIST_FOR_EACH(entry, self->priv->mode_pages_list) {
+    for (GList *entry = self->priv->mode_pages_list; entry; entry = entry->next) {
         struct ModePageGeneral *mode_page = g_array_index((GArray *)entry->data, struct ModePageGeneral *, 0);
 
         /* Check if we want this page copied */

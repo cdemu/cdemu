@@ -123,8 +123,6 @@ static gboolean mirage_track_check_for_encoded_isrc (MirageTrack *self)
 
 static void mirage_track_rearrange_indices (MirageTrack *self)
 {
-    GList *entry;
-
     /* Rearrange indices: set their numbers */
     /* Indices numbers start with 2 (0 and 1 are controlled via
        get/set_track_start... and while we're at it, if index lies before
@@ -133,7 +131,8 @@ static void mirage_track_rearrange_indices (MirageTrack *self)
     gint cur_index = 2;
     g_assert(self->priv->indices_list != NULL);
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_TRACK, "%s: rearranging indices (%d indices found)...\n", __debug__, g_list_length(self->priv->indices_list));
-    G_LIST_FOR_EACH(entry, self->priv->indices_list) {
+
+    for (GList *entry = self->priv->indices_list; entry; entry = entry->next) {
         GObject *index = entry->data;
         gint address = mirage_index_get_address(MIRAGE_INDEX(index));
 
@@ -150,14 +149,13 @@ static void mirage_track_rearrange_indices (MirageTrack *self)
 
 static void mirage_track_commit_topdown_change (MirageTrack *self)
 {
-    GList *entry;
-
     /* No need to rearrange indices, because they don't have anything to do with
        the global layout */
 
     /* Rearrange fragments: set start sectors */
     gint cur_fragment_address = 0;
-    G_LIST_FOR_EACH(entry, self->priv->fragments_list) {
+
+    for (GList *entry = self->priv->fragments_list; entry; entry = entry->next) {
         GObject *fragment = entry->data;
 
         /* Set fragment's start address */
@@ -168,13 +166,12 @@ static void mirage_track_commit_topdown_change (MirageTrack *self)
 
 static void mirage_track_commit_bottomup_change (MirageTrack *self)
 {
-    GList *entry;
     GObject *session;
 
     /* Calculate track length */
     self->priv->length = 0; /* Reset; it'll be recalculated */
 
-    G_LIST_FOR_EACH(entry, self->priv->fragments_list) {
+    for (GList *entry = self->priv->fragments_list; entry; entry = entry->next) {
         GObject *fragment = entry->data;
         self->priv->length += mirage_fragment_get_length(MIRAGE_FRAGMENT(fragment));
     }
@@ -825,12 +822,10 @@ GObject *mirage_track_get_fragment_by_index (MirageTrack *self, gint index, GErr
  **/
 GObject *mirage_track_get_fragment_by_address (MirageTrack *self, gint address, GError **error)
 {
-    GObject *fragment;
-    GList *entry;
+    GObject *fragment = NULL;
 
     /* Go over all fragments */
-    fragment = NULL;
-    G_LIST_FOR_EACH(entry, self->priv->fragments_list) {
+    for (GList *entry = self->priv->fragments_list; entry; entry = entry->next) {
         gint cur_address;
         gint cur_length;
 
@@ -875,9 +870,7 @@ GObject *mirage_track_get_fragment_by_address (MirageTrack *self, gint address, 
  **/
 gboolean mirage_track_for_each_fragment (MirageTrack *self, MirageCallbackFunction func, gpointer user_data)
 {
-    GList *entry;
-
-    G_LIST_FOR_EACH(entry, self->priv->fragments_list) {
+    for (GList *entry = self->priv->fragments_list; entry; entry = entry->next) {
         gboolean succeeded = (*func) ((entry->data), user_data);
         if (!succeeded) {
             return FALSE;
@@ -909,12 +902,10 @@ gboolean mirage_track_for_each_fragment (MirageTrack *self, MirageCallbackFuncti
  **/
 GObject *mirage_track_find_fragment_with_subchannel (MirageTrack *self, GError **error)
 {
-    GObject *fragment;
-    GList *entry;
+    GObject *fragment = NULL;
 
     /* Go over all fragments */
-    fragment = NULL;
-    G_LIST_FOR_EACH(entry, self->priv->fragments_list) {
+    for (GList *entry = self->priv->fragments_list; entry; entry = entry->next) {
         gint subchan_sectsize = 0;
         fragment = entry->data;
 
@@ -1151,12 +1142,10 @@ GObject *mirage_track_get_index_by_number (MirageTrack *self, gint number, GErro
  **/
 GObject *mirage_track_get_index_by_address (MirageTrack *self, gint address, GError **error)
 {
-    GObject *index;
-    GList *entry;
+    GObject *index = NULL;
 
     /* Go over all indices */
-    index = NULL;
-    G_LIST_FOR_EACH(entry, self->priv->indices_list) {
+    for (GList *entry = self->priv->indices_list; entry; entry = entry->next) {
         GObject *cur_index = entry->data;
 
         /* We return the last index whose address doesn't surpass requested address */
@@ -1195,9 +1184,7 @@ GObject *mirage_track_get_index_by_address (MirageTrack *self, gint address, GEr
  **/
 gboolean mirage_track_for_each_index (MirageTrack *self, MirageCallbackFunction func, gpointer user_data)
 {
-    GList *entry;
-
-    G_LIST_FOR_EACH(entry, self->priv->indices_list) {
+    for (GList *entry = self->priv->indices_list; entry; entry = entry->next) {
         gboolean succeeded = (*func) (MIRAGE_INDEX(entry->data), user_data);
         if (!succeeded) {
             return FALSE;
@@ -1411,12 +1398,10 @@ GObject *mirage_track_get_language_by_index (MirageTrack *self, gint index, GErr
  **/
 GObject *mirage_track_get_language_by_code (MirageTrack *self, gint langcode, GError **error)
 {
-    GObject *language;
-    GList *entry;
+    GObject *language = NULL;
 
     /* Go over all languages */
-    language = NULL;
-    G_LIST_FOR_EACH(entry, self->priv->languages_list) {
+    for (GList *entry = self->priv->languages_list; entry; entry = entry->next) {
         language = entry->data;
 
         /* Break the loop if code matches */
@@ -1455,9 +1440,7 @@ GObject *mirage_track_get_language_by_code (MirageTrack *self, gint langcode, GE
  **/
 gboolean mirage_track_for_each_language (MirageTrack *self, MirageCallbackFunction func, gpointer user_data)
 {
-    GList *entry;
-
-    G_LIST_FOR_EACH(entry, self->priv->languages_list) {
+    for (GList *entry = self->priv->languages_list; entry; entry = entry->next) {
         gboolean succeeded = (*func) (MIRAGE_LANGUAGE(entry->data), user_data);
         if (!succeeded) {
             return FALSE;
@@ -1553,10 +1536,9 @@ static void mirage_track_init (MirageTrack *self)
 static void mirage_track_dispose (GObject *gobject)
 {
     MirageTrack *self = MIRAGE_TRACK(gobject);
-    GList *entry;
 
     /* Unref fragments */
-    G_LIST_FOR_EACH(entry, self->priv->fragments_list) {
+    for (GList *entry = self->priv->fragments_list; entry; entry = entry->next) {
         if (entry->data) {
             GObject *fragment = entry->data;
             /* Disconnect signal handler and unref */
@@ -1568,7 +1550,7 @@ static void mirage_track_dispose (GObject *gobject)
     }
 
     /* Unref indices */
-    G_LIST_FOR_EACH(entry, self->priv->indices_list) {
+    for (GList *entry = self->priv->indices_list; entry; entry = entry->next) {
         if (entry->data) {
             GObject *index = entry->data;
             g_object_unref(index);
@@ -1578,7 +1560,7 @@ static void mirage_track_dispose (GObject *gobject)
     }
 
     /* Unref languages */
-    G_LIST_FOR_EACH(entry, self->priv->languages_list) {
+    for (GList *entry = self->priv->languages_list; entry; entry = entry->next) {
         if (entry->data) {
             GObject *language = entry->data;
             g_object_unref(language);

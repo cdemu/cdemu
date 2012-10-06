@@ -182,17 +182,18 @@ static void mirage_cdtext_coder_cleanup (MirageCdTextCoder *self)
     /* Cleanup the lists */
     for (gint i = 0; i < self->priv->num_blocks; i++) {
         GList *list = self->priv->blocks[i].packs_list;
-        if (list) {
-            GList *entry = NULL;
-            G_LIST_FOR_EACH(entry, list) {
-                /* Free pack data */
-                gpointer pack_data = g_array_index((GArray *) entry->data, gpointer, 3);
-                g_free(pack_data);
-                /* Free pack */
-                g_array_free((GArray *) entry->data, TRUE);
-            }
-            g_list_free(list);
+        if (!list) {
+            continue;
         }
+
+        for (GList *entry = list; entry; entry = entry->next) {
+            /* Free pack data */
+            gpointer pack_data = g_array_index((GArray *) entry->data, gpointer, 3);
+            g_free(pack_data);
+            /* Free pack */
+            g_array_free((GArray *) entry->data, TRUE);
+        }
+        g_list_free(list);
     }
 
     self->priv->buffer = NULL;
@@ -483,12 +484,10 @@ void mirage_cdtext_encoder_encode (MirageCdTextCoder *self, guint8 **buffer, gin
     for (gint i = 0; i < self->priv->num_blocks; i++) {
         /* Block is valid only if it has langcode set */
         if (self->priv->blocks[i].langcode) {
-            GList *entry = NULL;
-
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_CDTEXT, "%s: encoding block %i; langcode %i\n", __debug__, i, self->priv->blocks[i].langcode);
 
             /* Encode all on list */
-            G_LIST_FOR_EACH(entry, self->priv->blocks[i].packs_list) {
+            for (GList *entry = self->priv->blocks[i].packs_list; entry; entry = entry->next) {
                 GArray *pack_data = entry->data;
                 mirage_cdtext_encoder_pack_data(self, pack_data);
             }
@@ -738,10 +737,8 @@ gboolean mirage_cdtext_decoder_get_block_info (MirageCdTextCoder *self, gint blo
  **/
 gboolean mirage_cdtext_decoder_get_data (MirageCdTextCoder *self, gint block, MirageCdTextDataCallback callback_func, gpointer user_data)
 {
-    GList *entry;
-
     /* Go over the list and call the callback for each entry */
-    G_LIST_FOR_EACH(entry, self->priv->blocks[block].packs_list) {
+    for(GList *entry = self->priv->blocks[block].packs_list; entry; entry = entry->next) {
         GArray *pack_data = entry->data;
 
         gint block_number = g_array_index(pack_data, gint, 0);

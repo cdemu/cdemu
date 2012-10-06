@@ -554,9 +554,7 @@ static void mirage_parser_xcdroast_init_regex_parser (MirageParserXcdroast *self
 
 static void mirage_parser_xcdroast_cleanup_regex_parser (MirageParserXcdroast *self)
 {
-    GList *entry;
-
-    G_LIST_FOR_EACH(entry, self->priv->regex_rules_toc) {
+    for (GList *entry = self->priv->regex_rules_toc; entry; entry = entry->next) {
         XCDROAST_RegexRule *rule = entry->data;
         g_regex_unref(rule->regex);
         g_free(rule);
@@ -564,7 +562,7 @@ static void mirage_parser_xcdroast_cleanup_regex_parser (MirageParserXcdroast *s
 
     g_list_free(self->priv->regex_rules_toc);
 
-    G_LIST_FOR_EACH(entry, self->priv->regex_rules_xinf) {
+    for (GList *entry = self->priv->regex_rules_xinf; entry; entry = entry->next) {
         XCDROAST_RegexRule *rule = entry->data;
         g_regex_unref(rule->regex);
         g_free(rule);
@@ -614,10 +612,9 @@ static gboolean mirage_parser_xcdroast_parse_xinf_file (MirageParserXcdroast *se
         /* GRegex matching engine */
         GMatchInfo *match_info = NULL;
         gboolean matched = FALSE;
-        GList *entry;
 
         /* Go over all matching rules */
-        G_LIST_FOR_EACH(entry, self->priv->regex_rules_xinf) {
+        for (GList *entry = self->priv->regex_rules_xinf; entry; entry = entry->next) {
             XCDROAST_RegexRule *regex_rule = entry->data;
 
             /* Try to match the given rule */
@@ -697,10 +694,9 @@ static gboolean mirage_parser_xcdroast_parse_toc_file (MirageParserXcdroast *sel
         /* GRegex matching engine */
         GMatchInfo *match_info = NULL;
         gboolean matched = FALSE;
-        GList *entry;
 
         /* Go over all matching rules */
-        G_LIST_FOR_EACH(entry, self->priv->regex_rules_toc) {
+        for (GList *entry = self->priv->regex_rules_toc; entry; entry = entry->next) {
             XCDROAST_RegexRule *regex_rule = entry->data;
 
             /* Try to match the given rule */

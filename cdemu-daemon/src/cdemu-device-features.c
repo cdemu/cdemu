@@ -220,8 +220,7 @@ void cdemu_device_features_init (CdemuDevice *self)
 
 void cdemu_device_features_cleanup (CdemuDevice *self)
 {
-    GList *entry;
-    G_LIST_FOR_EACH(entry, self->priv->features_list) {
+    for (GList *entry = self->priv->features_list; entry; entry = entry->next) {
         if (entry->data) {
             g_free(entry->data);
         }
@@ -259,8 +258,7 @@ static void cdemu_device_set_current_features (CdemuDevice *self, guint32 *feats
 {
     /* Go over the features list and reset 'current' bits of features that
        don't have 'persistent' bit set */
-    GList *entry;
-    G_LIST_FOR_EACH(entry, self->priv->features_list) {
+    for (GList *entry = self->priv->features_list; entry; entry = entry->next) {
         struct FeatureGeneral *feature = entry->data;
 
         if (!feature->per) {

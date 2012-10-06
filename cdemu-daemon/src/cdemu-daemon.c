@@ -197,13 +197,12 @@ static void cdemu_daemon_init (CdemuDaemon *self)
 static void cdemu_daemon_dispose (GObject *gobject)
 {
     CdemuDaemon *self = CDEMU_DAEMON(gobject);
-    GList *entry = NULL;
 
     /* Unref main loop */
     g_main_loop_unref(self->priv->main_loop);
 
     /* Unref all devices */
-    G_LIST_FOR_EACH(entry, self->priv->list_of_devices) {
+    for (GList *entry = self->priv->list_of_devices; entry; entry = entry->next) {
         GObject *dev = entry->data;
         if (dev) {
             g_object_unref(dev);

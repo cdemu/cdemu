@@ -56,9 +56,4 @@
 #include "cdemu-daemon.h"
 #include "cdemu-device.h"
 
-
-/* Commonly used macros */
-#define G_LIST_FOR_EACH(cursor,list) \
-    for ((cursor) = (list); (cursor); (cursor) = (cursor)->next)
-
 #endif /* __CDEMU_H__ */

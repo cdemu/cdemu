@@ -548,7 +548,6 @@ mirage_plugin_get_type
 MirageSubChannel
 MIRAGE_CAST_DATA
 MIRAGE_CAST_PTR
-G_LIST_FOR_EACH
 mirage_helper_find_data_file
 mirage_helper_get_suffix
 mirage_helper_has_suffix

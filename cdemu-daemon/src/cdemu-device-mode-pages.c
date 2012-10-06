@@ -228,8 +228,7 @@ void cdemu_device_mode_pages_init (CdemuDevice *self)
 
 void cdemu_device_mode_pages_cleanup (CdemuDevice *self)
 {
-    GList *entry;
-    G_LIST_FOR_EACH(entry, self->priv->mode_pages_list) {
+    for (GList *entry = self->priv->mode_pages_list; entry; entry = entry->next) {
         if (entry->data) {
             GArray *array = entry->data;
 

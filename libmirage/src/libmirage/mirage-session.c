@@ -55,13 +55,11 @@ struct _MirageSessionPrivate
 \**********************************************************************/
 static void mirage_session_commit_topdown_change (MirageSession *self)
 {
-    GList *entry;
-
     /* Rearrange tracks: set numbers, set start sectors */
     gint cur_track_address = self->priv->start_sector;
     gint cur_track_number  = self->priv->first_track;
 
-    G_LIST_FOR_EACH(entry, self->priv->tracks_list) {
+    for (GList *entry = self->priv->tracks_list; entry; entry = entry->next) {
         GObject *track = entry->data;
 
         /* Set track's number */
@@ -79,13 +77,12 @@ static void mirage_session_commit_topdown_change (MirageSession *self)
 
 static void mirage_session_commit_bottomup_change (MirageSession *self)
 {
-    GList *entry;
     GObject *disc;
 
     /* Calculate session length */
     self->priv->length = 0; /* Reset; it'll be recalculated */
 
-    G_LIST_FOR_EACH(entry, self->priv->tracks_list) {
+    for (GList *entry = self->priv->tracks_list; entry; entry = entry->next) {
         GObject *track = entry->data;
         self->priv->length += mirage_track_layout_get_length(MIRAGE_TRACK(track));
     }
@@ -724,12 +721,10 @@ GObject *mirage_session_get_track_by_index (MirageSession *self, gint index, GEr
  **/
 GObject *mirage_session_get_track_by_number (MirageSession *self, gint track_number, GError **error)
 {
-    GObject *track;
-    GList *entry;
+    GObject *track = NULL;
 
     /* Go over all tracks */
-    track = NULL;
-    G_LIST_FOR_EACH(entry, self->priv->tracks_list) {
+    for (GList *entry = self->priv->tracks_list; entry; entry = entry->next) {
         track = entry->data;
 
         /* Break the loop if number matches */
@@ -768,8 +763,7 @@ GObject *mirage_session_get_track_by_number (MirageSession *self, gint track_num
  **/
 GObject *mirage_session_get_track_by_address (MirageSession *self, gint address, GError **error)
 {
-    GObject *track;
-    GList *entry;
+    GObject *track = NULL;
 
     if ((address < self->priv->start_sector) || (address >= (self->priv->start_sector + self->priv->length))) {
         g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_SESSION_ERROR, "Track address %d out of range!", address);
@@ -777,8 +771,7 @@ GObject *mirage_session_get_track_by_address (MirageSession *self, gint address,
     }
 
     /* Go over all tracks */
-    track = NULL;
-    G_LIST_FOR_EACH(entry, self->priv->tracks_list) {
+    for (GList *entry = self->priv->tracks_list; entry; entry = entry->next) {
         gint start_sector;
         gint length;
 
@@ -823,9 +816,7 @@ GObject *mirage_session_get_track_by_address (MirageSession *self, gint address,
  **/
 gboolean mirage_session_for_each_track (MirageSession *self, MirageCallbackFunction func, gpointer user_data)
 {
-    GList *entry;
-
-    G_LIST_FOR_EACH(entry, self->priv->tracks_list) {
+    for (GList *entry = self->priv->tracks_list; entry; entry = entry->next) {
         gboolean succeeded = (*func) (MIRAGE_TRACK(entry->data), user_data);
         if (!succeeded) {
             return FALSE;
@@ -1111,12 +1102,10 @@ GObject *mirage_session_get_language_by_index (MirageSession *self, gint index, 
  **/
 GObject *mirage_session_get_language_by_code (MirageSession *self, gint langcode, GError **error)
 {
-    GObject *language;
-    GList *entry;
+    GObject *language = NULL;
 
     /* Go over all languages */
-    language = NULL;
-    G_LIST_FOR_EACH(entry, self->priv->languages_list) {
+    for (GList *entry = self->priv->languages_list; entry; entry = entry->next) {
         language = entry->data;
 
         /* Break the loop if code matches */
@@ -1155,9 +1144,7 @@ GObject *mirage_session_get_language_by_code (MirageSession *self, gint langcode
  **/
 gboolean mirage_session_for_each_language (MirageSession *self, MirageCallbackFunction func, gpointer user_data)
 {
-    GList *entry;
-
-    G_LIST_FOR_EACH(entry, self->priv->languages_list) {
+    for (GList *entry = self->priv->languages_list; entry; entry = entry->next) {
         gboolean succeeded = (*func) (MIRAGE_LANGUAGE(entry->data), user_data);
         if (!succeeded) {
             return FALSE;
@@ -1475,10 +1462,9 @@ static void mirage_session_init (MirageSession *self)
 static void mirage_session_dispose (GObject *gobject)
 {
     MirageSession *self = MIRAGE_SESSION(gobject);
-    GList *entry;
 
     /* Unref tracks */
-    G_LIST_FOR_EACH(entry, self->priv->tracks_list) {
+    for (GList *entry = self->priv->tracks_list; entry; entry = entry->next) {
         if (entry->data) {
             GObject *track = entry->data;
             /* Disconnect signal handler and unref */
@@ -1490,7 +1476,7 @@ static void mirage_session_dispose (GObject *gobject)
     }
 
     /* Unref languages */
-    G_LIST_FOR_EACH(entry, self->priv->languages_list) {
+    for (GList *entry = self->priv->languages_list; entry; entry = entry->next) {
         if (entry->data) {
             GObject *language = entry->data;
             g_object_unref(language);

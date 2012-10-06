@@ -57,20 +57,6 @@ extern const guint8 mirage_pattern_bea01[8];
 **/
 #define MIRAGE_CAST_PTR(buf,off,type) ((type)(buf+off))
 
-/**
- * G_LIST_FOR_EACH:
- * @cursor: cursor
- * @list: list
- *
- * <para>
- * A macro providing for loop on GList. @cursor is a cursor of type #GList*, and
- * is used to store current element in the list. @list is a GLib's double linked
- * list that for loop should be performed on.
- * </para>
- **/
-#define G_LIST_FOR_EACH(cursor,list) \
-    for ((cursor) = (list); (cursor); (cursor) = (cursor)->next)
-
 /* File finding */
 gchar *mirage_helper_find_data_file (const gchar *filename, const gchar *path);
 

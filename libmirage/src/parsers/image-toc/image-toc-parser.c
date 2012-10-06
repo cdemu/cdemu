@@ -966,9 +966,7 @@ static void mirage_parser_toc_init_regex_parser (MirageParserToc *self)
 
 static void mirage_parser_toc_cleanup_regex_parser (MirageParserToc *self)
 {
-    GList *entry;
-
-    G_LIST_FOR_EACH(entry, self->priv->regex_rules) {
+    for (GList *entry = self->priv->regex_rules; entry; entry = entry->next) {
         TOC_RegexRule *rule = entry->data;
         g_regex_unref(rule->regex);
         g_free(rule);
@@ -1032,11 +1030,8 @@ static gboolean mirage_parser_toc_parse_toc_file (MirageParserToc *self, GObject
         /* If we're not in the middle of CD-TEXT parsing, use GRegex matching
            engine, otherwise do the custom stuff */
         if (!parsing_cdtext) {
-            /* GRegex matching engine */
-            GList *entry;
-
             /* Go over all matching rules */
-            G_LIST_FOR_EACH(entry, self->priv->regex_rules) {
+            for (GList *entry = self->priv->regex_rules; entry; entry = entry->next) {
                 TOC_RegexRule *regex_rule = entry->data;
 
                 /* Try to match the given rule */

@@ -149,9 +149,7 @@ static gboolean mirage_parser_nrg_build_block_index (MirageParserNrg *self, GErr
 static gboolean mirage_parser_nrg_destroy_block_index (MirageParserNrg *self)
 {
     if (self->priv->block_index) {
-        GList *entry;
-
-        G_LIST_FOR_EACH(entry, self->priv->block_index) {
+        for (GList *entry = self->priv->block_index; entry; entry = entry->next) {
             g_free(entry->data);
         }
         g_list_free(self->priv->block_index);

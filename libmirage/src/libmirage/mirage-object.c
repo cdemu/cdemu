@@ -147,7 +147,6 @@ void mirage_object_detach_child (MirageObject *self, GObject *child)
 static void mirage_object_set_debug_context (MirageDebuggable *_self, GObject *debug_context)
 {
     MirageObject *self = MIRAGE_OBJECT(_self);
-    GList *entry = NULL;
 
     if (debug_context == self->priv->debug_context) {
         /* Don't do anything if we're trying to set the same context */
@@ -166,7 +165,7 @@ static void mirage_object_set_debug_context (MirageDebuggable *_self, GObject *d
     }
 
     /* Propagate the change to all children */
-    G_LIST_FOR_EACH(entry, self->priv->children_list) {
+    for (GList *entry = self->priv->children_list; entry; entry = entry->next) {
         GObject *object = entry->data;
         mirage_debuggable_set_debug_context(MIRAGE_DEBUGGABLE(object), debug_context);
     }

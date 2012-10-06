@@ -147,14 +147,12 @@ static gboolean mirage_disc_check_for_encoded_mcn (MirageDisc *self)
 
 static void mirage_disc_commit_topdown_change (MirageDisc *self)
 {
-    GList *entry;
-
     /* Rearrange sessions: set numbers, set first tracks, set start sectors */
     gint cur_session_address = self->priv->start_sector;
     gint cur_session_number = self->priv->first_session;
     gint cur_session_ftrack = self->priv->first_track;
 
-    G_LIST_FOR_EACH(entry, self->priv->sessions_list) {
+    for (GList *entry = self->priv->sessions_list; entry; entry = entry->next) {
         GObject *session = entry->data;
 
         /* Set session's number */
@@ -173,13 +171,11 @@ static void mirage_disc_commit_topdown_change (MirageDisc *self)
 
 static void mirage_disc_commit_bottomup_change (MirageDisc *self)
 {
-    GList *entry;
-
     /* Calculate disc length and number of tracks */
     self->priv->length = 0; /* Reset; it'll be recalculated */
     self->priv->tracks_number = 0; /* Reset; it'll be recalculated */
 
-    G_LIST_FOR_EACH(entry, self->priv->sessions_list) {
+    for (GList *entry = self->priv->sessions_list; entry; entry = entry->next) {
         GObject *session = entry->data;
 
         /* Disc length */
@@ -909,12 +905,10 @@ GObject *mirage_disc_get_session_by_index (MirageDisc *self, gint index, GError 
  **/
 GObject *mirage_disc_get_session_by_number (MirageDisc *self, gint session_number, GError **error)
 {
-    GObject *session;
-    GList *entry ;
+    GObject *session = NULL;
 
     /* Go over all sessions */
-    session = NULL;
-    G_LIST_FOR_EACH(entry, self->priv->sessions_list) {
+    for (GList *entry = self->priv->sessions_list; entry; entry = entry->next) {
         session = entry->data;
 
         /* Break the loop if number matches */
@@ -953,8 +947,7 @@ GObject *mirage_disc_get_session_by_number (MirageDisc *self, gint session_numbe
  **/
 GObject *mirage_disc_get_session_by_address (MirageDisc *self, gint address, GError **error)
 {
-    GObject *session;
-    GList *entry;
+    GObject *session = NULL;
 
     if ((address < self->priv->start_sector) || (address >= self->priv->start_sector + self->priv->length)) {
         g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_DISC_ERROR, "Session address %d (0x%X) out of range!", address, address);
@@ -962,8 +955,7 @@ GObject *mirage_disc_get_session_by_address (MirageDisc *self, gint address, GEr
     }
 
     /* Go over all sessions */
-    session = NULL;
-    G_LIST_FOR_EACH(entry, self->priv->sessions_list) {
+    for (GList *entry = self->priv->sessions_list; entry; entry = entry->next) {
         gint start_sector;
         gint length;
 
@@ -1007,12 +999,10 @@ GObject *mirage_disc_get_session_by_address (MirageDisc *self, gint address, GEr
  **/
 GObject *mirage_disc_get_session_by_track (MirageDisc *self, gint track_number, GError **error)
 {
-    GObject *session;
-    GList *entry;
+    GObject *session = NULL;
 
     /* Go over all sessions */
-    session = NULL;
-    G_LIST_FOR_EACH(entry, self->priv->sessions_list) {
+    for (GList *entry = self->priv->sessions_list; entry; entry = entry->next) {
         gint first_track;
         gint num_tracks;
 
@@ -1057,9 +1047,7 @@ GObject *mirage_disc_get_session_by_track (MirageDisc *self, gint track_number, 
  **/
 gboolean mirage_disc_for_each_session (MirageDisc *self, MirageCallbackFunction func, gpointer user_data)
 {
-    GList *entry;
-
-    G_LIST_FOR_EACH(entry, self->priv->sessions_list) {
+    for (GList *entry = self->priv->sessions_list; entry; entry = entry->next) {
         gboolean succeeded = (*func) (MIRAGE_SESSION(entry->data), user_data);
         if (!succeeded) {
             return FALSE;
@@ -1192,7 +1180,6 @@ gint mirage_disc_get_number_of_tracks (MirageDisc *self)
  **/
 gboolean mirage_disc_add_track_by_index (MirageDisc *self, gint index, GObject *track, GError **error)
 {
-    GList *entry;
     gint num_tracks;
     gint count;
 
@@ -1219,7 +1206,7 @@ gboolean mirage_disc_add_track_by_index (MirageDisc *self, gint index, GObject *
     /* Iterate over all the sessions and determine the one where track with
        desired index should be in */
     count = 0;
-    G_LIST_FOR_EACH(entry, self->priv->sessions_list) {
+    for (GList *entry = self->priv->sessions_list; entry; entry = entry->next) {
         GObject *session = entry->data;
 
         num_tracks = mirage_session_get_number_of_tracks(MIRAGE_SESSION(session));
@@ -1439,7 +1426,6 @@ gboolean mirage_disc_remove_track_by_number (MirageDisc *self, gint number, GErr
  **/
 GObject *mirage_disc_get_track_by_index (MirageDisc *self, gint index, GError **error)
 {
-    GList *entry;
     gint num_tracks;
     gint count;
 
@@ -1454,7 +1440,7 @@ GObject *mirage_disc_get_track_by_index (MirageDisc *self, gint index, GError **
 
     /* Loop over the sessions */
     count = 0;
-    G_LIST_FOR_EACH(entry, self->priv->sessions_list) {
+    for (GList *entry = self->priv->sessions_list; entry; entry = entry->next) {
         GObject *session = entry->data;
 
         num_tracks = mirage_session_get_number_of_tracks(MIRAGE_SESSION(session));
@@ -1875,10 +1861,9 @@ static void mirage_disc_init (MirageDisc *self)
 static void mirage_disc_dispose (GObject *gobject)
 {
     MirageDisc *self = MIRAGE_DISC(gobject);
-    GList *entry;
 
     /* Unref sessions */
-    G_LIST_FOR_EACH(entry, self->priv->sessions_list) {
+    for (GList *entry = self->priv->sessions_list; entry; entry = entry->next) {
         if (entry->data) {
             GObject *session = entry->data;
             /* Disconnect signal handler and unref */

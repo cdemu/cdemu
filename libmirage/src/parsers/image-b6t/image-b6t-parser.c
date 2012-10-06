@@ -367,8 +367,6 @@ static void mirage_parser_b6t_parse_internal_dpm_data (MirageParserB6t *self)
 
 static gboolean mirage_parser_b6t_setup_track_fragments (MirageParserB6t *self, GObject *cur_track, gint start_sector, gint length, GError **error)
 {
-    GList *entry;
-
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: setting up data blocks for track starting at sector 0x%X (%i), length 0x%X\n", __debug__, start_sector, start_sector, length);
 
     /* Data blocks are nice concept that's similar to libMirage's fragments; they
@@ -382,7 +380,7 @@ static gboolean mirage_parser_b6t_setup_track_fragments (MirageParserB6t *self, 
        its own block. But all the blocks will make up a single track. So contrary to
        libMirage's fragments, where fragments are subunits of tracks, it is possible
        for single data block to contain data for multiple tracks. */
-    G_LIST_FOR_EACH(entry, self->priv->data_blocks_list) {
+    for (GList *entry = self->priv->data_blocks_list; entry; entry = entry->next) {
         B6T_DataBlock *data_block = entry->data;
 
         if (start_sector >= data_block->start_sector && start_sector < data_block->start_sector + data_block->length_sectors) {
@@ -1350,10 +1348,9 @@ static void mirage_parser_b6t_init (MirageParserB6t *self)
 static void mirage_parser_b6t_finalize (GObject *gobject)
 {
     MirageParserB6t *self = MIRAGE_PARSER_B6T(gobject);
-    GList *entry;
 
     /* Free list of data blocks */
-    G_LIST_FOR_EACH(entry, self->priv->data_blocks_list) {
+    for (GList *entry = self->priv->data_blocks_list; entry; entry = entry->next) {
         if (entry->data) {
             B6T_DataBlock *data_block = entry->data;
             /* Free filename */

@@ -148,8 +148,6 @@ static gboolean mirage_parser_ccd_determine_track_mode (MirageParserCcd *self, G
 
 static gboolean mirage_parser_ccd_clean_parsed_structures (MirageParserCcd *self, GError **error G_GNUC_UNUSED)
 {
-    GList *entry = NULL;
-
     /* CloneCD header */
     g_free(self->priv->header);
 
@@ -158,14 +156,14 @@ static gboolean mirage_parser_ccd_clean_parsed_structures (MirageParserCcd *self
     g_free(self->priv->disc_data);
 
     /* Sessions list */
-    G_LIST_FOR_EACH(entry, self->priv->sessions_list) {
+    for (GList *entry = self->priv->sessions_list; entry; entry = entry->next) {
         CCD_Session *ccd_session = entry->data;
         g_free(ccd_session);
     }
     g_list_free(self->priv->sessions_list);
 
     /* Entries list */
-    G_LIST_FOR_EACH(entry, self->priv->entries_list) {
+    for (GList *entry = self->priv->entries_list; entry; entry = entry->next) {
         CCD_Entry *ccd_entry = entry->data;
         g_free(ccd_entry->ISRC);
         g_free(ccd_entry);
@@ -177,8 +175,6 @@ static gboolean mirage_parser_ccd_clean_parsed_structures (MirageParserCcd *self
 
 static gboolean mirage_parser_ccd_build_disc_layout (MirageParserCcd *self, GError **error)
 {
-    GList *entry = NULL;
-
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "\n");
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: building disc layout\n", __debug__);
 
@@ -192,7 +188,7 @@ static gboolean mirage_parser_ccd_build_disc_layout (MirageParserCcd *self, GErr
     }
 
     /* Go over stored entries and build the layout */
-    G_LIST_FOR_EACH(entry, self->priv->entries_list) {
+    for (GList *entry = self->priv->entries_list; entry; entry = entry->next) {
         CCD_Entry *ccd_cur_entry = entry->data;
         CCD_Entry *ccd_next_entry = entry->next ? entry->next->data : NULL;
 
@@ -891,9 +887,7 @@ static void mirage_parser_ccd_init_regex_parser (MirageParserCcd *self)
 
 static void free_regex_rules (GList *rules)
 {
-    GList *entry;
-
-    G_LIST_FOR_EACH(entry, rules) {
+    for (GList *entry = rules; entry; entry = entry->next) {
         CCD_RegexRule *rule = entry->data;
         g_regex_unref(rule->regex);
         g_free(rule);
@@ -952,11 +946,10 @@ static gboolean mirage_parser_ccd_parse_ccd_file (MirageParserCcd *self, GObject
         /* GRegex matching engine */
         GMatchInfo *match_info = NULL;
         gboolean matched = FALSE;
-        GList *entry;
 
         /* If current rules are active, use those */
         if (self->priv->cur_rules) {
-            G_LIST_FOR_EACH(entry, self->priv->cur_rules) {
+            for (GList *entry = self->priv->cur_rules; entry; entry = entry->next) {
                 CCD_RegexRule *regex_rule = entry->data;
 
                 /* Try to match the given rule */
@@ -979,7 +972,7 @@ static gboolean mirage_parser_ccd_parse_ccd_file (MirageParserCcd *self, GObject
 
         /* If no match was found, try base rules */
         if (!matched) {
-            G_LIST_FOR_EACH(entry, self->priv->regex_rules) {
+            for (GList *entry = self->priv->regex_rules; entry; entry = entry->next) {
                 CCD_RegexRule *regex_rule = entry->data;
 
                 /* Try to match the given rule */
