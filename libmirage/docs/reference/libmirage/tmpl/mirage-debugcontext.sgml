@@ -17,15 +17,10 @@ to have a container object that a #MirageObject can pass to its children. This w
 when debug context's debug mask is changed, the change is automatically propagated
 to the children as well, because they all share the same context.
 </para>
-<para>
-It should be noted that a #MirageDebugContext object is just a container
-providing name and debug mask, while the actual debug message functionality is
-implemented by a #MirageObject.
-</para>
 
 <!-- ##### SECTION See_Also ##### -->
 <para>
-#MirageObject
+#MirageObject, #MirageFileFilter
 </para>
 
 <!-- ##### SECTION Stability_Level ##### -->
@@ -108,5 +103,27 @@ implemented by a #MirageObject.
 
 @self: 
 @Returns: 
+
+
+<!-- ##### FUNCTION mirage_debug_context_message ##### -->
+<para>
+
+</para>
+
+@self: 
+@level: 
+@format: 
+@...: 
+
+
+<!-- ##### FUNCTION mirage_debug_context_messagev ##### -->
+<para>
+
+</para>
+
+@self: 
+@level: 
+@format: 
+@args: 
 
 

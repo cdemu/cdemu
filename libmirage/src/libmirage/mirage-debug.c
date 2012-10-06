@@ -57,46 +57,6 @@ GObject *mirage_debuggable_get_debug_context (MirageDebuggable *self)
     return MIRAGE_DEBUGGABLE_GET_INTERFACE(self)->get_debug_context(self);
 }
 
-/**
- * mirage_debuggable_debug_messagev:
- * @self: a #MirageDebuggable
- * @level: (in): debug level
- * @format: (in): message format. See the printf() documentation.
- * @args: (in): parameters to insert into the format string.
- *
- * <para>
- * Outputs debug message with verbosity level @level, format string @format and
- * format arguments @args. The message is displayed if object's debug context
- * has mask that covers @level, or if @level is either %MIRAGE_DEBUG_WARNING or
- * %MIRAGE_DEBUG_ERROR.
- * </para>
- **/
-void mirage_debuggable_debug_messagev (MirageDebuggable *self, gint level, gchar *format, va_list args)
-{
-    return MIRAGE_DEBUGGABLE_GET_INTERFACE(self)->debug_messagev(self, level, format, args);
-}
-
-/**
- * mirage_debuggable_debug_message:
- * @self: a #MirageDebuggable
- * @level: (in): debug level
- * @format: (in): message format. See the printf() documentation.
- * @...: (in): parameters to insert into the format string.
- *
- * <para>
- * Outputs debug message with verbosity level @level, format string @format and
- * format arguments @Varargs. The message is displayed if object's debug context
- * has mask that covers @level, or if @level is either %MIRAGE_DEBUG_WARNING or
- * %MIRAGE_DEBUG_ERROR.
- * </para>
- **/
-void mirage_debuggable_debug_message (MirageDebuggable *self, gint level, gchar *format, ...)
-{
-    va_list args;
-    va_start(args, format);
-    MIRAGE_DEBUGGABLE_GET_INTERFACE(self)->debug_messagev(self, level, format, args);
-    va_end(args);
-}
 
 GType mirage_debuggable_get_type (void) {
     static GType iface_type = 0;
@@ -231,6 +191,67 @@ gint mirage_debug_context_get_debug_mask (MirageDebugContext *self)
 {
     /* Return debug mask */
     return self->priv->debug_mask;
+}
+
+
+/**
+ * mirage_debug_context_messagev:
+ * @self: a #MirageDebugContext
+ * @level: (in): debug level
+ * @format: (in): message format. See the printf() documentation.
+ * @args: (in): parameters to insert into the format string.
+ *
+ * <para>
+ * Outputs debug message with verbosity level @level, format string @format and
+ * format arguments @args. The message is displayed if debug context has mask
+ * that covers @level, or if @level is either %MIRAGE_DEBUG_WARNING or
+ * %MIRAGE_DEBUG_ERROR.
+ * </para>
+ **/
+void mirage_debug_context_messagev (MirageDebugContext *self, gint level, gchar *format, va_list args)
+{
+    gchar *new_format;
+
+    /* Insert name in case we have it */
+    if (self->priv->name) {
+        new_format = g_strdup_printf("%s: %s", self->priv->name, format);
+    } else {
+        new_format = g_strdup(format);
+    }
+
+    if (level == MIRAGE_DEBUG_ERROR) {
+        g_logv(self->priv->domain, G_LOG_LEVEL_ERROR, new_format, args);
+    } else if (level == MIRAGE_DEBUG_WARNING) {
+        g_logv(self->priv->domain, G_LOG_LEVEL_WARNING, new_format, args);
+    } else {
+        if (self->priv->debug_mask & level) {
+            g_logv(self->priv->domain, G_LOG_LEVEL_DEBUG, new_format, args);
+        }
+    }
+
+    g_free(new_format);
+}
+
+/**
+ * mirage_debug_context_message:
+ * @self: a #MirageDebugContext
+ * @level: (in): debug level
+ * @format: (in): message format. See the printf() documentation.
+ * @...: (in): parameters to insert into the format string.
+ *
+ * <para>
+ * Outputs debug message with verbosity level @level, format string @format and
+ * format arguments @Varargs. The message is displayed if debug context has mask
+ * that covers @level, or if @level is either %MIRAGE_DEBUG_WARNING or
+ * %MIRAGE_DEBUG_ERROR.
+ * </para>
+ **/
+void mirage_debug_context_message (MirageDebugContext *self, gint level, gchar *format, ...)
+{
+    va_list args;
+    va_start(args, format);
+    mirage_debug_context_messagev(self, level, format, args);
+    va_end(args);
 }
 
 

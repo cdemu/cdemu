@@ -339,45 +339,6 @@ static GObject *mirage_file_filter_get_debug_context (MirageDebuggable *_self)
     return self->priv->debug_context;
 }
 
-static void mirage_file_filter_debug_messagev (MirageDebuggable *_self, gint level, gchar *format, va_list args)
-{
-    MirageFileFilter *self = MIRAGE_FILE_FILTER(_self);
-
-    gint debug_mask;
-    const gchar *name;
-    const gchar *domain;
-    gchar *new_format;
-
-    /* Make sure we have debug context set */
-    if (!self->priv->debug_context || !MIRAGE_IS_DEBUG_CONTEXT(self->priv->debug_context)) {
-        return;
-    }
-
-    /* Get debug mask, domain and name */
-    debug_mask = mirage_debug_context_get_debug_mask(MIRAGE_DEBUG_CONTEXT(self->priv->debug_context));
-    domain = mirage_debug_context_get_domain(MIRAGE_DEBUG_CONTEXT(self->priv->debug_context));
-    name = mirage_debug_context_get_name(MIRAGE_DEBUG_CONTEXT(self->priv->debug_context));
-
-    /* Insert name in case we have it */
-    if (name) {
-        new_format = g_strdup_printf("%s: %s", name, format);
-    } else {
-        new_format = g_strdup(format);
-    }
-
-    if (level == MIRAGE_DEBUG_ERROR) {
-        g_logv(domain, G_LOG_LEVEL_ERROR, new_format, args);
-    } else if (level == MIRAGE_DEBUG_WARNING) {
-        g_logv(domain, G_LOG_LEVEL_WARNING, new_format, args);
-    } else {
-        if (debug_mask & level) {
-            g_logv(domain, G_LOG_LEVEL_DEBUG, new_format, args);
-        }
-    }
-
-    g_free(new_format);
-}
-
 
 /**********************************************************************\
  *                             Object init                            *
@@ -463,5 +424,4 @@ static void mirage_file_filter_debuggable_init (MirageDebuggableInterface *iface
 {
     iface->set_debug_context = mirage_file_filter_set_debug_context;
     iface->get_debug_context = mirage_file_filter_get_debug_context;
-    iface->debug_messagev = mirage_file_filter_debug_messagev;
 }

@@ -70,12 +70,12 @@ typedef enum
  *
  * <para>
  * Debugging macro, provided for convenience. It performs cast to #MirageDebuggable
- * interface on @obj, then calls mirage_debuggable_debug_message() with debug level @lvl and
- * debug message @msg....
+ * interface on @obj, acquires its #MirageDebugContext and calls mirage_debug_context_message()
+ * with debug level @lvl and debug message @msg....
  * </para>
  **/
 #define MIRAGE_DEBUG(obj, lvl, ...) { \
-    mirage_debuggable_debug_message(MIRAGE_DEBUGGABLE(obj), lvl, __VA_ARGS__); \
+    mirage_debug_context_message(MIRAGE_DEBUG_CONTEXT(mirage_debuggable_get_debug_context(MIRAGE_DEBUGGABLE(obj))), lvl, __VA_ARGS__); \
 }
 
 
@@ -107,9 +107,6 @@ struct _MirageDebuggableInterface
     /* Interface methods */
     void (*set_debug_context) (MirageDebuggable *self, GObject *debug_context);
     GObject *(*get_debug_context) (MirageDebuggable *self);
-
-    void (*debug_message) (MirageDebuggable *self, gint level, gchar *format, ...);
-    void (*debug_messagev) (MirageDebuggable *self, gint level, gchar *format, va_list args);
 };
 
 /* Used by MIRAGE_TYPE_DEBUGGABLE */
@@ -118,9 +115,6 @@ GType mirage_debuggable_get_type (void);
 /* Public API */
 void mirage_debuggable_set_debug_context (MirageDebuggable *self, GObject *debug_context);
 GObject *mirage_debuggable_get_debug_context (MirageDebuggable *self);
-
-void mirage_debuggable_debug_message (MirageDebuggable *self, gint level, gchar *format, ...);
-void mirage_debuggable_debug_messagev (MirageDebuggable *self, gint level, gchar *format, va_list args);
 
 
 /**********************************************************************\
@@ -169,6 +163,9 @@ const gchar *mirage_debug_context_get_domain (MirageDebugContext *self);
 
 void mirage_debug_context_set_name (MirageDebugContext *self, const gchar *name);
 const gchar *mirage_debug_context_get_name (MirageDebugContext *self);
+
+void mirage_debug_context_message (MirageDebugContext *self, gint level, gchar *format, ...);
+void mirage_debug_context_messagev (MirageDebugContext *self, gint level, gchar *format, va_list args);
 
 
 G_END_DECLS

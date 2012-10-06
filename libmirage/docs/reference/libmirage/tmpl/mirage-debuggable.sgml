@@ -37,28 +37,6 @@ to be attached to the object and control the level of its debug verbosity.
 </para>
 
 
-<!-- ##### FUNCTION mirage_debuggable_debug_message ##### -->
-<para>
-
-</para>
-
-@self: 
-@level: 
-@format: 
-@...: 
-
-
-<!-- ##### FUNCTION mirage_debuggable_debug_messagev ##### -->
-<para>
-
-</para>
-
-@self: 
-@level: 
-@format: 
-@args: 
-
-
 <!-- ##### FUNCTION mirage_debuggable_get_debug_context ##### -->
 <para>
 
