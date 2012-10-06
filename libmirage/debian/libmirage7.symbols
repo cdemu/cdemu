@@ -14,11 +14,11 @@ libmirage.so.7 libmirage7 #MINVER#
  mirage_debug_context_get_domain@Base 1.0.0
  mirage_debug_context_get_name@Base 1.0.0
  mirage_debug_context_get_type@Base 1.0.0
+ mirage_debug_context_message@Base 1.6.0
+ mirage_debug_context_messagev@Base 1.6.0
  mirage_debug_context_set_debug_mask@Base 1.0.0
  mirage_debug_context_set_domain@Base 1.0.0
  mirage_debug_context_set_name@Base 1.0.0
- mirage_debuggable_debug_message@Base 1.6.0
- mirage_debuggable_debug_messagev@Base 1.6.0
  mirage_debuggable_get_debug_context@Base 1.6.0
  mirage_debuggable_get_type@Base 1.6.0
  mirage_debuggable_set_debug_context@Base 1.6.0
@@ -26,7 +26,7 @@ libmirage.so.7 libmirage7 #MINVER#
  mirage_disc_add_session_by_number@Base 1.0.0
  mirage_disc_add_track_by_index@Base 1.0.0
  mirage_disc_add_track_by_number@Base 1.0.0
- mirage_disc_for_each_session@Base 1.0.0
+ mirage_disc_enumerate_sessions@Base 1.6.0
  mirage_disc_get_disc_structure@Base 1.0.0
  mirage_disc_get_dpm_data@Base 1.1.0
  mirage_disc_get_dpm_data_for_sector@Base 1.1.0
@@ -64,6 +64,9 @@ libmirage.so.7 libmirage7 #MINVER#
  mirage_disc_set_filenames@Base 1.0.0
  mirage_disc_set_mcn@Base 1.0.0
  mirage_disc_set_medium_type@Base 1.0.0
+ mirage_enumerate_file_filters@Base 1.6.0
+ mirage_enumerate_fragments@Base 1.6.0
+ mirage_enumerate_parsers@Base 1.6.0
  mirage_error_get_type@Base 1.4.0
  mirage_error_quark@Base 1.0.0
  mirage_file_filter_can_handle_data_format@Base 1.6.0
@@ -72,13 +75,10 @@ libmirage.so.7 libmirage7 #MINVER#
  mirage_file_filter_get_position@Base 1.6.0
  mirage_file_filter_get_type@Base 1.6.0
  mirage_file_filter_set_file_size@Base 1.6.0
- mirage_for_each_file_filter@Base 1.6.0
- mirage_for_each_fragment@Base 1.6.0
- mirage_for_each_parser@Base 1.6.0
  mirage_fragment_can_handle_data_format@Base 1.0.0
- mirage_fragment_generate_fragment_info@Base 1.2.0
+ mirage_fragment_generate_info@Base 1.6.0
  mirage_fragment_get_address@Base 1.0.0
- mirage_fragment_get_fragment_info@Base 1.0.0
+ mirage_fragment_get_info@Base 1.6.0
  mirage_fragment_get_length@Base 1.0.0
  mirage_fragment_get_type@Base 1.0.0
  mirage_fragment_iface_audio_get_filename@Base 1.6.0
@@ -142,11 +142,11 @@ libmirage.so.7 libmirage7 #MINVER#
  mirage_index_get_type@Base 1.0.0
  mirage_index_set_address@Base 1.0.0
  mirage_index_set_number@Base 1.0.0
- mirage_init@Base 1.6.0
- mirage_language_get_langcode@Base 1.0.0
+ mirage_initialize@Base 1.6.0
+ mirage_language_get_code@Base 1.6.0
  mirage_language_get_pack_data@Base 1.0.0
  mirage_language_get_type@Base 1.0.0
- mirage_language_set_langcode@Base 1.0.0
+ mirage_language_set_code@Base 1.6.0
  mirage_language_set_pack_data@Base 1.0.0
  mirage_lt_age@Base 1.2.0
  mirage_lt_current@Base 1.2.0
@@ -190,8 +190,8 @@ libmirage.so.7 libmirage7 #MINVER#
  mirage_session_add_language@Base 1.0.0
  mirage_session_add_track_by_index@Base 1.0.0
  mirage_session_add_track_by_number@Base 1.0.0
- mirage_session_for_each_language@Base 1.0.0
- mirage_session_for_each_track@Base 1.0.0
+ mirage_session_enumerate_languages@Base 1.6.0
+ mirage_session_enumerate_tracks@Base 1.6.0
  mirage_session_get_cdtext_data@Base 1.0.0
  mirage_session_get_language_by_code@Base 1.0.0
  mirage_session_get_language_by_index@Base 1.0.0
@@ -228,10 +228,10 @@ libmirage.so.7 libmirage7 #MINVER#
  mirage_track_add_fragment@Base 1.0.0
  mirage_track_add_index@Base 1.0.0
  mirage_track_add_language@Base 1.0.0
+ mirage_track_enumerate_fragments@Base 1.6.0
+ mirage_track_enumerate_indices@Base 1.6.0
+ mirage_track_enumerate_languages@Base 1.6.0
  mirage_track_find_fragment_with_subchannel@Base 1.0.0
- mirage_track_for_each_fragment@Base 1.0.0
- mirage_track_for_each_index@Base 1.0.0
- mirage_track_for_each_language@Base 1.0.0
  mirage_track_get_adr@Base 1.0.0
  mirage_track_get_ctl@Base 1.0.0
  mirage_track_get_flags@Base 1.0.0

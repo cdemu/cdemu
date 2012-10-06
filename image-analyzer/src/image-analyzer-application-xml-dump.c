@@ -81,7 +81,7 @@ static gboolean xml_dump_fragment (MirageFragment *fragment, xmlNodePtr parent)
     /* Make fragment node parent */
     parent = xml_add_node(parent, TAG_FRAGMENT);
 
-    fragment_info = mirage_fragment_get_fragment_info(fragment);
+    fragment_info = mirage_fragment_get_info(fragment);
     xml_add_node_with_content(parent, TAG_FRAGMENT_ID, "%s", fragment_info->id);
 
 
