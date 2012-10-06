@@ -27,3 +27,8 @@ filter_ecm_la_LIBADD = \
 filter_ecm_la_LDFLAGS = \
     -module \
     -avoid-version
+
+mimedir = $(datadir)/mime/packages
+mime_DATA = libmirage-filter-ecm.xml
+
+EXTRA_DIST = $(mime_DATA)
