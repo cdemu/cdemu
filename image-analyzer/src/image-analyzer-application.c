@@ -39,21 +39,32 @@
 #include "image-analyzer-xml-tags.h"
 
 
-#define DEBUG_DOMAIN_PARSER "libMirage parser"
-
-
 /**********************************************************************\
  *                      Debug and logging redirection                 *
 \**********************************************************************/
-static void capture_log (const gchar *log_domain G_GNUC_UNUSED, GLogLevelFlags log_level G_GNUC_UNUSED, const gchar *message, ImageAnalyzerApplication *self)
+static void capture_log (const gchar *log_domain G_GNUC_UNUSED, GLogLevelFlags log_level, const gchar *message, ImageAnalyzerApplication *self)
 {
-    /* Print to stdout? */
+    /* Append to log */
+    image_analyzer_log_window_append_to_log(IMAGE_ANALYZER_LOG_WINDOW(self->priv->dialog_log), message);
+
+    /* Errors, critical errors and warnings are always printed to stdout */
+    if (log_level & G_LOG_LEVEL_ERROR) {
+        g_print("ERROR: %s", message);
+        return;
+    }
+    if (log_level & G_LOG_LEVEL_CRITICAL) {
+        g_print("CRITICAL: %s", message);
+        return;
+    }
+    if (log_level & G_LOG_LEVEL_WARNING) {
+        g_print("WARNING: %s", message);
+        return;
+    }
+
+    /* Debug messages are printed to stdout only if user requested so */
     if (self->priv->debug_to_stdout) {
         g_print("%s", message);
     }
-
-    /* Append to log */
-    image_analyzer_log_window_append_to_log(IMAGE_ANALYZER_LOG_WINDOW(self->priv->dialog_log), message);
 }
 
 static void image_analyzer_application_set_debug_to_stdout (ImageAnalyzerApplication *self, gboolean enabled)
@@ -855,14 +866,14 @@ static void image_analyzer_application_init (ImageAnalyzerApplication *self)
 
     /* Setup debug context */
     self->priv->debug_context = g_object_new(MIRAGE_TYPE_DEBUG_CONTEXT, NULL);
-    mirage_debug_context_set_domain(MIRAGE_DEBUG_CONTEXT(self->priv->debug_context), DEBUG_DOMAIN_PARSER);
+    mirage_debug_context_set_domain(MIRAGE_DEBUG_CONTEXT(self->priv->debug_context), "Image analyzer");
     mirage_debug_context_set_debug_mask(MIRAGE_DEBUG_CONTEXT(self->priv->debug_context), MIRAGE_DEBUG_PARSER);
 
     /* Setup GUI */
     setup_gui(self);
 
     /* Setup log handler */
-    g_log_set_handler(DEBUG_DOMAIN_PARSER, G_LOG_LEVEL_MASK, (GLogFunc)capture_log, self);
+    g_log_set_handler(NULL, G_LOG_LEVEL_MASK, (GLogFunc)capture_log, self);
 }
 
 static void image_analyzer_application_finalize (GObject *gobject)
