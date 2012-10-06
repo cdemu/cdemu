@@ -360,8 +360,8 @@ mirage_index_get_type
 <TITLE>MirageFragment object</TITLE>
 MirageFragmentInfo
 MirageFragment
-mirage_fragment_generate_fragment_info
-mirage_fragment_get_fragment_info
+mirage_fragment_generate_info
+mirage_fragment_get_info
 mirage_fragment_can_handle_data_format
 mirage_fragment_set_address
 mirage_fragment_get_address

@@ -444,7 +444,7 @@ static void mirage_fragment_binary_init (MirageFragmentBinary *self)
 {
     self->priv = MIRAGE_FRAGMENT_BINARY_GET_PRIVATE(self);
 
-    mirage_fragment_generate_fragment_info(MIRAGE_FRAGMENT(self),
+    mirage_fragment_generate_info(MIRAGE_FRAGMENT(self),
         "FRAGMENT-BINARY",
         "Binary Fragment"
     );

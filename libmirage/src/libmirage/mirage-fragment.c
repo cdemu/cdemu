@@ -70,7 +70,7 @@ static void mirage_fragment_commit_bottomup_change (MirageFragment *self)
  *                             Public API                             *
 \**********************************************************************/
 /**
- * mirage_fragment_generate_fragment_info:
+ * mirage_fragment_generate_info:
  * @self: a #MirageFragment
  * @id: (in): fragment ID
  * @name: (in): fragment name
@@ -80,7 +80,7 @@ static void mirage_fragment_commit_bottomup_change (MirageFragment *self)
  * for creating fragment information in fragment implementations.
  * </para>
  **/
-void mirage_fragment_generate_fragment_info (MirageFragment *self, const gchar *id, const gchar *name)
+void mirage_fragment_generate_info (MirageFragment *self, const gchar *id, const gchar *name)
 {
     /* Free old info */
     destroy_fragment_info(self->priv->fragment_info);
@@ -95,7 +95,7 @@ void mirage_fragment_generate_fragment_info (MirageFragment *self, const gchar *
 }
 
 /**
- * mirage_fragment_get_fragment_info:
+ * mirage_fragment_get_info:
  * @self: a #MirageFragment
  *
  * <para>
@@ -105,7 +105,7 @@ void mirage_fragment_generate_fragment_info (MirageFragment *self, const gchar *
  * Returns: (transfer none): a pointer to fragment information structure. The
  * structure belongs to object and should not be modified.
  **/
-const MirageFragmentInfo *mirage_fragment_get_fragment_info (MirageFragment *self)
+const MirageFragmentInfo *mirage_fragment_get_info (MirageFragment *self)
 {
     return self->priv->fragment_info;
 }

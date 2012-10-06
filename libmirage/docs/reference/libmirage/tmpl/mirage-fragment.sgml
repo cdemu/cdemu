@@ -48,7 +48,7 @@ implementation handles data.
 </para>
 
 
-<!-- ##### FUNCTION mirage_fragment_generate_fragment_info ##### -->
+<!-- ##### FUNCTION mirage_fragment_generate_info ##### -->
 <para>
 
 </para>
@@ -58,7 +58,7 @@ implementation handles data.
 @name: 
 
 
-<!-- ##### FUNCTION mirage_fragment_get_fragment_info ##### -->
+<!-- ##### FUNCTION mirage_fragment_get_info ##### -->
 <para>
 
 </para>

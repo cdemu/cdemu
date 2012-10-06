@@ -652,7 +652,7 @@ gboolean mirage_for_each_fragment (MirageCallbackFunction func, gpointer user_da
         GObject *fragment;
 
         fragment = g_object_new(libmirage.fragments[i], NULL);
-        fragment_info = mirage_fragment_get_fragment_info(MIRAGE_FRAGMENT(fragment));
+        fragment_info = mirage_fragment_get_info(MIRAGE_FRAGMENT(fragment));
         succeeded = (*func)((const gpointer)fragment_info, user_data);
         g_object_unref(fragment);
         if (!succeeded) {

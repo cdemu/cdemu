@@ -90,8 +90,8 @@ GType mirage_fragment_get_type (void);
 /**********************************************************************\
  *                             Public API                             *
 \**********************************************************************/
-void mirage_fragment_generate_fragment_info (MirageFragment *self, const gchar *id, const gchar *name);
-const MirageFragmentInfo *mirage_fragment_get_fragment_info (MirageFragment *self);
+void mirage_fragment_generate_info (MirageFragment *self, const gchar *id, const gchar *name);
+const MirageFragmentInfo *mirage_fragment_get_info (MirageFragment *self);
 
 gboolean mirage_fragment_can_handle_data_format (MirageFragment *self, GObject *stream, GError **error);
 

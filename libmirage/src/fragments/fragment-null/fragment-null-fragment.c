@@ -88,7 +88,7 @@ static void mirage_fragment_null_init (MirageFragmentNull *self)
 {
     /*self->priv = MIRAGE_FRAGMENT_NULL_GET_PRIVATE(self);*/
 
-    mirage_fragment_generate_fragment_info(MIRAGE_FRAGMENT(self),
+    mirage_fragment_generate_info(MIRAGE_FRAGMENT(self),
         "FRAGMENT-NULL",
         "NULL Fragment"
     );

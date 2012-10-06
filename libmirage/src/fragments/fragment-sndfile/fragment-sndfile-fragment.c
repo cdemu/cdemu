@@ -300,7 +300,7 @@ static void mirage_fragment_sndfile_init (MirageFragmentSndfile *self)
 {
     self->priv = MIRAGE_FRAGMENT_SNDFILE_GET_PRIVATE(self);
 
-    mirage_fragment_generate_fragment_info(MIRAGE_FRAGMENT(self),
+    mirage_fragment_generate_info(MIRAGE_FRAGMENT(self),
         "FRAGMENT-SNDFILE",
         "libsndfile Fragment"
     );
