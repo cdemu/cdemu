@@ -69,7 +69,9 @@ libmirage.so.7 libmirage7 #MINVER#
  mirage_file_filter_can_handle_data_format@Base 1.6.0
  mirage_file_filter_generate_info@Base 1.6.0
  mirage_file_filter_get_info@Base 1.6.0
+ mirage_file_filter_get_position@Base 1.6.0
  mirage_file_filter_get_type@Base 1.6.0
+ mirage_file_filter_set_file_size@Base 1.6.0
  mirage_for_each_file_filter@Base 1.6.0
  mirage_for_each_fragment@Base 1.6.0
  mirage_for_each_parser@Base 1.6.0
@@ -79,40 +81,42 @@ libmirage.so.7 libmirage7 #MINVER#
  mirage_fragment_get_fragment_info@Base 1.0.0
  mirage_fragment_get_length@Base 1.0.0
  mirage_fragment_get_type@Base 1.0.0
- mirage_fragment_iface_audio_get_file@Base 1.6.0
+ mirage_fragment_iface_audio_get_filename@Base 1.6.0
  mirage_fragment_iface_audio_get_offset@Base 1.6.0
  mirage_fragment_iface_audio_get_type@Base 1.6.0
- mirage_fragment_iface_audio_set_file@Base 1.6.0
  mirage_fragment_iface_audio_set_offset@Base 1.6.0
+ mirage_fragment_iface_audio_set_stream@Base 1.6.0
  mirage_fragment_iface_binary_get_type@Base 1.6.0
- mirage_fragment_iface_binary_subchannel_file_get_file@Base 1.6.0
- mirage_fragment_iface_binary_subchannel_file_get_format@Base 1.6.0
- mirage_fragment_iface_binary_subchannel_file_get_offset@Base 1.6.0
- mirage_fragment_iface_binary_subchannel_file_get_position@Base 1.6.0
- mirage_fragment_iface_binary_subchannel_file_get_sectsize@Base 1.6.0
- mirage_fragment_iface_binary_subchannel_file_set_file@Base 1.6.0
- mirage_fragment_iface_binary_subchannel_file_set_format@Base 1.6.0
- mirage_fragment_iface_binary_subchannel_file_set_offset@Base 1.6.0
- mirage_fragment_iface_binary_subchannel_file_set_sectsize@Base 1.6.0
- mirage_fragment_iface_binary_track_file_get_file@Base 1.6.0
- mirage_fragment_iface_binary_track_file_get_format@Base 1.6.0
- mirage_fragment_iface_binary_track_file_get_offset@Base 1.6.0
- mirage_fragment_iface_binary_track_file_get_position@Base 1.6.0
- mirage_fragment_iface_binary_track_file_get_sectsize@Base 1.6.0
- mirage_fragment_iface_binary_track_file_set_file@Base 1.6.0
- mirage_fragment_iface_binary_track_file_set_format@Base 1.6.0
- mirage_fragment_iface_binary_track_file_set_offset@Base 1.6.0
- mirage_fragment_iface_binary_track_file_set_sectsize@Base 1.6.0
+ mirage_fragment_iface_binary_main_data_get_filename@Base 1.6.0
+ mirage_fragment_iface_binary_main_data_get_format@Base 1.6.0
+ mirage_fragment_iface_binary_main_data_get_offset@Base 1.6.0
+ mirage_fragment_iface_binary_main_data_get_position@Base 1.6.0
+ mirage_fragment_iface_binary_main_data_get_size@Base 1.6.0
+ mirage_fragment_iface_binary_main_data_set_format@Base 1.6.0
+ mirage_fragment_iface_binary_main_data_set_offset@Base 1.6.0
+ mirage_fragment_iface_binary_main_data_set_size@Base 1.6.0
+ mirage_fragment_iface_binary_main_data_set_stream@Base 1.6.0
+ mirage_fragment_iface_binary_subchannel_data_get_filename@Base 1.6.0
+ mirage_fragment_iface_binary_subchannel_data_get_format@Base 1.6.0
+ mirage_fragment_iface_binary_subchannel_data_get_offset@Base 1.6.0
+ mirage_fragment_iface_binary_subchannel_data_get_position@Base 1.6.0
+ mirage_fragment_iface_binary_subchannel_data_get_size@Base 1.6.0
+ mirage_fragment_iface_binary_subchannel_data_set_format@Base 1.6.0
+ mirage_fragment_iface_binary_subchannel_data_set_offset@Base 1.6.0
+ mirage_fragment_iface_binary_subchannel_data_set_size@Base 1.6.0
+ mirage_fragment_iface_binary_subchannel_data_set_stream@Base 1.6.0
  mirage_fragment_iface_null_get_type@Base 1.6.0
  mirage_fragment_read_main_data@Base 1.0.0
  mirage_fragment_read_subchannel_data@Base 1.0.0
  mirage_fragment_set_address@Base 1.0.0
  mirage_fragment_set_length@Base 1.0.0
  mirage_fragment_use_the_rest_of_file@Base 1.0.0
+ mirage_get_file_stream_filename@Base 1.6.0
  mirage_get_supported_debug_masks@Base 1.6.0
  mirage_helper_ascii2isrc@Base 1.0.0
  mirage_helper_bcd2hex@Base 1.0.0
  mirage_helper_determine_sector_type@Base 1.6.0
+ mirage_helper_encoding_from_bom@Base 1.6.0
  mirage_helper_find_data_file@Base 1.1.0
  mirage_helper_get_suffix@Base 1.0.0
  mirage_helper_has_suffix@Base 1.0.0
@@ -157,6 +161,7 @@ libmirage.so.7 libmirage7 #MINVER#
  mirage_object_set_parent@Base 1.0.0
  mirage_obtain_password@Base 1.6.0
  mirage_parser_add_redbook_pregap@Base 1.2.0
+ mirage_parser_create_text_stream@Base 1.6.0
  mirage_parser_generate_info@Base 1.2.0
  mirage_parser_get_cached_data_stream@Base 1.6.0
  mirage_parser_get_info@Base 1.2.0
