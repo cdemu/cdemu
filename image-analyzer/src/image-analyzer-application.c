@@ -501,15 +501,30 @@ typedef struct
     GtkFileFilter *all_images;
 } ImageAnalyzerFilterContext;
 
-static gboolean append_file_filter (MirageParserInfo *parser_info, ImageAnalyzerFilterContext *context)
+static gboolean append_parser_info (MirageParserInfo *info, ImageAnalyzerFilterContext *context)
 {
     GtkFileFilter *filter = gtk_file_filter_new();
-    gtk_file_filter_set_name(filter, parser_info->description);
+    gtk_file_filter_set_name(filter, info->description);
 
     /* Per-parser filter */
-    gtk_file_filter_add_mime_type(filter, parser_info->mime_type);
+    gtk_file_filter_add_mime_type(filter, info->mime_type);
     /* "All images" filter */
-    gtk_file_filter_add_mime_type(context->all_images, parser_info->mime_type);
+    gtk_file_filter_add_mime_type(context->all_images, info->mime_type);
+
+    gtk_file_chooser_add_filter(GTK_FILE_CHOOSER(context->dialog), filter);
+
+    return TRUE;
+}
+
+static gboolean append_file_filter_info (MirageFileFilterInfo *info, ImageAnalyzerFilterContext *context)
+{
+    GtkFileFilter *filter = gtk_file_filter_new();
+    gtk_file_filter_set_name(filter, info->description);
+
+    /* Per-parser filter */
+    gtk_file_filter_add_mime_type(filter, info->mime_type);
+    /* "All images" filter */
+    gtk_file_filter_add_mime_type(context->all_images, info->mime_type);
 
     gtk_file_chooser_add_filter(GTK_FILE_CHOOSER(context->dialog), filter);
 
@@ -545,10 +560,11 @@ static GtkWidget *build_dialog_open_image (ImageAnalyzerApplication *self)
     gtk_file_filter_set_name(filter, "All images");
     gtk_file_chooser_add_filter(GTK_FILE_CHOOSER(dialog), filter);
 
-    /* Per-parser filters */
+    /* Filters provided by parsers and file filters */
     context.dialog = dialog;
     context.all_images = filter;
-    mirage_for_each_parser((MirageCallbackFunction)append_file_filter, &context, NULL);
+    mirage_for_each_parser((MirageCallbackFunction)append_parser_info, &context, NULL);
+    mirage_for_each_file_filter((MirageCallbackFunction)append_file_filter_info, &context, NULL);
 
     return dialog;
 }
