@@ -29,3 +29,8 @@ filter_cso_la_LIBADD = \
 filter_cso_la_LDFLAGS = \
     -module \
     -avoid-version
+
+mimedir = $(datadir)/mime/packages
+mime_DATA = libmirage-filter-cso.xml
+
+EXTRA_DIST = $(mime_DATA)
