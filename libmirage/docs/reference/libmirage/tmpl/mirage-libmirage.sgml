@@ -35,8 +35,9 @@ implementation - this function is usually used by image parsers.
 </para>
 
 <para>
-Supported image parsers and fragments can be enumerated using mirage_for_each_parser() and mirage_for_each_fragment(),
-respectively. The list of supported debug masks can be obtained using mirage_get_supported_debug_masks().
+Supported image parsers, file filters and fragments can be enumerated using mirage_enumerate_parsers(),
+mirage_enumerate_file_filters() and mirage_enumerate_fragments(), respectively. The list of supported
+debug masks can be obtained using mirage_get_supported_debug_masks().
 </para>
 
 <!-- ##### SECTION See_Also ##### -->
