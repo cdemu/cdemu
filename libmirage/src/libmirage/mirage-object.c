@@ -81,7 +81,7 @@ void mirage_object_set_parent (MirageObject *self, gpointer parent)
         g_signal_connect_swapped(parent, "debug-context-changed", (GCallback)mirage_object_parent_debug_context_changed_handler, self);
 
         /* Set parent's debug context by simulating the signal */
-        mirage_object_parent_debug_context_changed_handler(parent, self);
+        mirage_object_parent_debug_context_changed_handler(self, parent);
     }
 }
 

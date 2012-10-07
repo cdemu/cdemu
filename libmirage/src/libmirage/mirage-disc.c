@@ -733,7 +733,7 @@ gboolean mirage_disc_add_session_by_number (MirageDisc *self, gint number, Mirag
     /* Set session number */
     mirage_session_layout_set_session_number(session, number);
     /* Set parent */
-    mirage_object_set_parent(MIRAGE_OBJECT(session), MIRAGE_OBJECT(self));
+    mirage_object_set_parent(MIRAGE_OBJECT(session), self);
 
     /* Insert session into sessions list */
     self->priv->sessions_list = g_list_insert_sorted(self->priv->sessions_list, session, (GCompareFunc)sort_sessions_by_number);
