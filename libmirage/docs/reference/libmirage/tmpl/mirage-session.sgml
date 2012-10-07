@@ -58,6 +58,13 @@ tracks and languages, setting CD-TEXT data, etc.
 </para>
 
 
+<!-- ##### SIGNAL MirageSession::layout-changed ##### -->
+<para>
+
+</para>
+
+@miragesession: the object which received the signal.
+
 <!-- ##### FUNCTION mirage_session_set_session_type ##### -->
 <para>
 

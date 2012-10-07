@@ -58,8 +58,7 @@ struct _MirageObjectClass
 {
     GObjectClass parent_class;
 
-    /* Class members */
-    gint signal_object_modified;
+    /* Signals */
     gint signal_debug_context_changed;
 };
 

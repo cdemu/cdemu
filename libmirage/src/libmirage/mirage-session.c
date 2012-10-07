@@ -88,7 +88,7 @@ static void mirage_session_commit_bottomup_change (MirageSession *self)
     }
 
     /* Signal session change */
-    g_signal_emit_by_name(self, "object-modified", NULL);
+    g_signal_emit_by_name(self, "layout-changed", NULL);
     /* If we don't have parent, we should complete the arc by committing top-down change */
     disc = mirage_object_get_parent(MIRAGE_OBJECT(self));
     if (!disc) {
@@ -98,7 +98,7 @@ static void mirage_session_commit_bottomup_change (MirageSession *self)
     }
 }
 
-static void mirage_session_track_modified_handler (MirageTrack *track G_GNUC_UNUSED, MirageSession *self)
+static void mirage_session_track_layout_changed_handler (MirageSession *self, MirageTrack *track G_GNUC_UNUSED)
 {
     /* Bottom-up change */
     mirage_session_commit_bottomup_change(self);
@@ -107,7 +107,7 @@ static void mirage_session_track_modified_handler (MirageTrack *track G_GNUC_UNU
 static void mirage_session_remove_track (MirageSession *self, MirageTrack *track)
 {
     /* Disconnect signal handler (find it by handler function and user data) */
-    g_signal_handlers_disconnect_by_func(track, mirage_session_track_modified_handler, self);
+    g_signal_handlers_disconnect_by_func(track, mirage_session_track_layout_changed_handler, self);
 
     /* Remove track from list and unref it */
     self->priv->tracks_list = g_list_remove(self->priv->tracks_list, track);
@@ -492,7 +492,7 @@ void mirage_session_add_track_by_index (MirageSession *self, gint index, MirageT
     self->priv->tracks_list = g_list_insert(self->priv->tracks_list, track, index + 1);
 
     /* Connect track modified signal */
-    g_signal_connect(track, "object-modified", (GCallback)mirage_session_track_modified_handler, self);
+    g_signal_connect_swapped(track, "layout-changed", (GCallback)mirage_session_track_layout_changed_handler, self);
 
     /* Bottom-up change */
     mirage_session_commit_bottomup_change(self);
@@ -544,7 +544,7 @@ gboolean mirage_session_add_track_by_number (MirageSession *self, gint number, M
     self->priv->tracks_list = g_list_insert_sorted(self->priv->tracks_list, track, (GCompareFunc)sort_tracks_by_number);
 
     /* Connect track modified signal */
-    g_signal_connect(track, "object-modified", (GCallback)mirage_session_track_modified_handler, self);
+    g_signal_connect_swapped(track, "layout-changed", (GCallback)mirage_session_track_layout_changed_handler, self);
 
     /* Bottom-up change */
     mirage_session_commit_bottomup_change(self);
@@ -1462,7 +1462,7 @@ static void mirage_session_dispose (GObject *gobject)
         if (entry->data) {
             MirageTrack *track = entry->data;
             /* Disconnect signal handler and unref */
-            g_signal_handlers_disconnect_by_func(track, mirage_session_track_modified_handler, self);
+            g_signal_handlers_disconnect_by_func(track, mirage_session_track_layout_changed_handler, self);
             g_object_unref(track);
 
             entry->data = NULL;
@@ -1503,4 +1503,15 @@ static void mirage_session_class_init (MirageSessionClass *klass)
 
     /* Register private structure */
     g_type_class_add_private(klass, sizeof(MirageSessionPrivate));
+
+    /* Signals */
+    /**
+     * MirageSession::layout-changed:
+     * @session: a #MirageSession
+     *
+     * <para>
+     * Emitted when a layout of #MirageSession changed in a way that causes a bottom-up change.
+     * </para>
+     */
+    klass->signal_layout_changed = g_signal_new("layout-changed", G_OBJECT_CLASS_TYPE(klass), G_SIGNAL_RUN_LAST, 0, NULL, NULL, g_cclosure_marshal_VOID__VOID, G_TYPE_NONE, 0, NULL);
 }

@@ -86,6 +86,13 @@ sectors, etc.
 </para>
 
 
+<!-- ##### SIGNAL MirageTrack::layout-changed ##### -->
+<para>
+
+</para>
+
+@miragetrack: the object which received the signal.
+
 <!-- ##### FUNCTION mirage_track_set_flags ##### -->
 <para>
 

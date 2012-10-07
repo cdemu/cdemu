@@ -35,13 +35,6 @@ of debug context changes.
 
 @mirageobject: the object which received the signal.
 
-<!-- ##### SIGNAL MirageObject::object-modified ##### -->
-<para>
-
-</para>
-
-@mirageobject: the object which received the signal.
-
 <!-- ##### FUNCTION mirage_object_set_parent ##### -->
 <para>
 

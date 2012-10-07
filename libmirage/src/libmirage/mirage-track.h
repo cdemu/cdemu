@@ -159,6 +159,9 @@ struct _MirageTrack
 struct _MirageTrackClass
 {
     MirageObjectClass parent_class;
+
+    /* Signals */
+    gint signal_layout_changed;
 };
 
 /* Used by MIRAGE_TYPE_TRACK */

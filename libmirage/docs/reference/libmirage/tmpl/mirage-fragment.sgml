@@ -48,6 +48,13 @@ implementation handles data.
 </para>
 
 
+<!-- ##### SIGNAL MirageFragment::layout-changed ##### -->
+<para>
+
+</para>
+
+@miragefragment: the object which received the signal.
+
 <!-- ##### FUNCTION mirage_fragment_generate_info ##### -->
 <para>
 

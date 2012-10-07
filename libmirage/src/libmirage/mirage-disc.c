@@ -189,12 +189,12 @@ static void mirage_disc_commit_bottomup_change (MirageDisc *self)
     mirage_disc_check_for_encoded_mcn(self);
 
     /* Signal disc change */
-    g_signal_emit_by_name(self, "object-modified", NULL);
+    g_signal_emit_by_name(self, "layout-changed", NULL);
     /* Disc is where we complete the arc by committing top-down change */
     mirage_disc_commit_topdown_change(self);
 }
 
-static void mirage_disc_session_modified_handler (MirageSession *session, MirageDisc *self)
+static void mirage_disc_session_layout_changed_handler (MirageDisc *self, MirageSession *session)
 {
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_DISC, "%s: start\n", __debug__);
 
@@ -214,7 +214,7 @@ static void mirage_disc_remove_session (MirageDisc *self, MirageSession *session
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_DISC, "%s: start\n", __debug__);
 
     /* Disconnect signal handler (find it by handler function and user data) */
-    g_signal_handlers_disconnect_by_func(session, mirage_disc_session_modified_handler, self);
+    g_signal_handlers_disconnect_by_func(session, mirage_disc_session_layout_changed_handler, self);
 
     /* Remove session from list and unref it */
     self->priv->sessions_list = g_list_remove(self->priv->sessions_list, session);
@@ -687,7 +687,7 @@ void mirage_disc_add_session_by_index (MirageDisc *self, gint index, MirageSessi
     self->priv->sessions_list = g_list_insert(self->priv->sessions_list, session, index);
 
     /* Connect session modified signal */
-    g_signal_connect(session, "object-modified", (GCallback)mirage_disc_session_modified_handler, self);
+    g_signal_connect_swapped(session, "layout-changed", (GCallback)mirage_disc_session_layout_changed_handler, self);
 
     /* Bottom-up change */
     mirage_disc_commit_bottomup_change(self);
@@ -739,7 +739,7 @@ gboolean mirage_disc_add_session_by_number (MirageDisc *self, gint number, Mirag
     self->priv->sessions_list = g_list_insert_sorted(self->priv->sessions_list, session, (GCompareFunc)sort_sessions_by_number);
 
     /* Connect session modified signal */
-    g_signal_connect(session, "object-modified", (GCallback)mirage_disc_session_modified_handler, self);
+    g_signal_connect_swapped(session, "layout-changed", (GCallback)mirage_disc_session_layout_changed_handler, self);
 
     /* Bottom-up change */
     mirage_disc_commit_bottomup_change(self);
@@ -1864,7 +1864,7 @@ static void mirage_disc_dispose (GObject *gobject)
         if (entry->data) {
             MirageSession *session = entry->data;
             /* Disconnect signal handler and unref */
-            g_signal_handlers_disconnect_by_func(session, mirage_disc_session_modified_handler, self);
+            g_signal_handlers_disconnect_by_func(session, mirage_disc_session_layout_changed_handler, self);
             g_object_unref(session);
 
             entry->data = NULL;
@@ -1931,6 +1931,18 @@ static void mirage_disc_class_init (MirageDiscClass *klass)
 
     /* Register private structure */
     g_type_class_add_private(klass, sizeof(MirageDiscPrivate));
+
+
+    /* Signals */
+    /**
+     * MirageDisc::layout-changed:
+     * @disc: a #MirageDisc
+     *
+     * <para>
+     * Emitted when a layout of #MirageDisc changed in a way that causes a bottom-up change.
+     * </para>
+     */
+    klass->signal_layout_changed = g_signal_new("layout-changed", G_OBJECT_CLASS_TYPE(klass), G_SIGNAL_RUN_LAST, 0, NULL, NULL, g_cclosure_marshal_VOID__VOID, G_TYPE_NONE, 0, NULL);
 
     /* Property: PROP_MIRAGE_DISC_DVD_REPORT_CSS */
     /**

@@ -111,6 +111,9 @@ struct _MirageSession
 struct _MirageSessionClass
 {
     MirageObjectClass parent_class;
+
+    /* Signals */
+    gint signal_layout_changed;
 };
 
 /* Used by MIRAGE_TYPE_SESSION */

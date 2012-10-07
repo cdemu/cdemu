@@ -180,7 +180,7 @@ static void mirage_track_commit_bottomup_change (MirageTrack *self)
     mirage_track_check_for_encoded_isrc(self);
 
     /* Signal track change */
-    g_signal_emit_by_name(self, "object-modified", NULL);
+    g_signal_emit_by_name(self, "layout-changed", NULL);
 
     /* If we don't have parent, we should complete the arc by committing top-down change */
     session = mirage_object_get_parent(MIRAGE_OBJECT(self));
@@ -191,7 +191,7 @@ static void mirage_track_commit_bottomup_change (MirageTrack *self)
     }
 }
 
-static void mirage_track_fragment_modified_handler (MirageFragment *fragment G_GNUC_UNUSED, MirageTrack *self)
+static void mirage_track_fragment_layout_changed_handler (MirageTrack *self, MirageFragment *fragment G_GNUC_UNUSED)
 {
     /* Bottom-up change */
     mirage_track_commit_bottomup_change(self);
@@ -201,7 +201,7 @@ static void mirage_track_fragment_modified_handler (MirageFragment *fragment G_G
 static void mirage_track_remove_fragment (MirageTrack *self, MirageFragment *fragment)
 {
     /* Disconnect signal handler (find it by handler function and user data) */
-    g_signal_handlers_disconnect_by_func(fragment, mirage_track_fragment_modified_handler, self);
+    g_signal_handlers_disconnect_by_func(fragment, mirage_track_fragment_layout_changed_handler, self);
 
     /* Remove fragment from list and unref it */
     self->priv->fragments_list = g_list_remove(self->priv->fragments_list, fragment);
@@ -692,7 +692,7 @@ void mirage_track_add_fragment (MirageTrack *self, gint index, MirageFragment *f
     self->priv->fragments_list = g_list_insert(self->priv->fragments_list, fragment, index);
 
     /* Connect fragment modified signal */
-    g_signal_connect(fragment, "object-modified", (GCallback)mirage_track_fragment_modified_handler, self);
+    g_signal_connect_swapped(fragment, "layout-changed", (GCallback)mirage_track_fragment_layout_changed_handler, self);
 
     /* Bottom-up change */
     mirage_track_commit_bottomup_change(self);
@@ -1536,7 +1536,7 @@ static void mirage_track_dispose (GObject *gobject)
         if (entry->data) {
             MirageFragment *fragment = entry->data;
             /* Disconnect signal handler and unref */
-            g_signal_handlers_disconnect_by_func(fragment, mirage_track_fragment_modified_handler, self);
+            g_signal_handlers_disconnect_by_func(fragment, mirage_track_fragment_layout_changed_handler, self);
             g_object_unref(fragment);
 
             entry->data = NULL;
@@ -1590,4 +1590,15 @@ static void mirage_track_class_init (MirageTrackClass *klass)
 
     /* Register private structure */
     g_type_class_add_private(klass, sizeof(MirageTrackPrivate));
+
+    /* Signals */
+    /**
+     * MirageTrack::layout-changed:
+     * @track: a #MirageTrack
+     *
+     * <para>
+     * Emitted when a layout of #MirageTrack changed in a way that causes a bottom-up change.
+     * </para>
+     */
+    klass->signal_layout_changed = g_signal_new("layout-changed", G_OBJECT_CLASS_TYPE(klass), G_SIGNAL_RUN_LAST, 0, NULL, NULL, g_cclosure_marshal_VOID__VOID, G_TYPE_NONE, 0, NULL);
 }

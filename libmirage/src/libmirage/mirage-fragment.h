@@ -81,6 +81,9 @@ struct _MirageFragmentClass
 
     gboolean (*read_main_data) (MirageFragment *self, gint address, guint8 **buffer, gint *length, GError **error);
     gboolean (*read_subchannel_data) (MirageFragment *self, gint address, guint8 **buffer, gint *length, GError **error);
+
+    /* Signals */
+    gint signal_layout_changed;
 };
 
 /* Used by MIRAGE_TYPE_FRAGMENT */

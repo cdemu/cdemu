@@ -58,6 +58,13 @@ functions for accessing and reading of sectors within the disc layout.
 </para>
 
 
+<!-- ##### SIGNAL MirageDisc::layout-changed ##### -->
+<para>
+
+</para>
+
+@miragedisc: the object which received the signal.
+
 <!-- ##### ARG MirageDisc:dvd-report-css ##### -->
 <para>
 

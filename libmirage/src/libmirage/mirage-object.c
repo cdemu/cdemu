@@ -40,7 +40,7 @@ struct _MirageObjectPrivate
 /**********************************************************************\
  *                        Debug context changes                       *
 \**********************************************************************/
-static void mirage_object_parent_debug_context_changed_handler (MirageObject *parent, MirageObject *self)
+static void mirage_object_parent_debug_context_changed_handler (MirageObject *self, MirageObject *parent)
 {
     /* Get the new debug context and set it */
     MirageDebugContext *debug_context = mirage_debuggable_get_debug_context(MIRAGE_DEBUGGABLE(parent));
@@ -78,7 +78,7 @@ void mirage_object_set_parent (MirageObject *self, gpointer parent)
         g_object_add_weak_pointer(parent, &self->priv->parent);
 
         /* Connect "*/
-        g_signal_connect(parent, "debug-context-changed", (GCallback)mirage_object_parent_debug_context_changed_handler, self);
+        g_signal_connect_swapped(parent, "debug-context-changed", (GCallback)mirage_object_parent_debug_context_changed_handler, self);
 
         /* Set parent's debug context by simulating the signal */
         mirage_object_parent_debug_context_changed_handler(parent, self);
@@ -188,15 +188,14 @@ static void mirage_object_class_init (MirageObjectClass *klass)
 
     /* Signals */
     /**
-     * MirageObject::object-modified:
-     * @mirage_object: the object which received the signal
+     * MirageObject::debug-context-changed:
+     * @object: a #MirageObject
      *
      * <para>
-     * Emitted when a #MirageObject is changed in a way that causes bottom-up change.
+     * Emitted when a new #MirageDebugContext is set to a #MirageObject.
      * </para>
      */
-    klass->signal_object_modified = g_signal_new("object-modified", G_OBJECT_CLASS_TYPE(klass), (G_SIGNAL_RUN_LAST | G_SIGNAL_DETAILED), 0, NULL, NULL, g_cclosure_marshal_VOID__VOID, G_TYPE_NONE, 0, NULL);
-    klass->signal_debug_context_changed = g_signal_new("debug-context-changed", G_OBJECT_CLASS_TYPE(klass), (G_SIGNAL_RUN_LAST | G_SIGNAL_DETAILED), 0, NULL, NULL, g_cclosure_marshal_VOID__VOID, G_TYPE_NONE, 0, NULL);
+    klass->signal_debug_context_changed = g_signal_new("debug-context-changed", G_OBJECT_CLASS_TYPE(klass), G_SIGNAL_RUN_LAST, 0, NULL, NULL, g_cclosure_marshal_VOID__VOID, G_TYPE_NONE, 0, NULL);
 }
 
 static void mirage_object_debuggable_init (MirageDebuggableInterface *iface)

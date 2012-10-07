@@ -110,6 +110,9 @@ struct _MirageDisc
 struct _MirageDiscClass
 {
     MirageObjectClass parent_class;
+
+    /* Signals */
+    gint signal_layout_changed;
 };
 
 /* Used by MIRAGE_TYPE_DISC */

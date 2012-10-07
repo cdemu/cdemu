@@ -62,7 +62,7 @@ static void mirage_fragment_commit_topdown_change (MirageFragment *self G_GNUC_U
 static void mirage_fragment_commit_bottomup_change (MirageFragment *self)
 {
     /* Signal fragment change */
-    g_signal_emit_by_name(MIRAGE_OBJECT(self), "object-modified", NULL);
+    g_signal_emit_by_name(self, "layout-changed", NULL);
 }
 
 
@@ -326,6 +326,17 @@ static void mirage_fragment_class_init (MirageFragmentClass *klass)
 
     /* Register private structure */
     g_type_class_add_private(klass, sizeof(MirageFragmentPrivate));
+
+    /* Signals */
+    /**
+     * MirageFragment::layout-changed:
+     * @fragment: a #MirageFragment
+     *
+     * <para>
+     * Emitted when a layout of #MirageFragment changed in a way that causes a bottom-up change.
+     * </para>
+     */
+    klass->signal_layout_changed = g_signal_new("layout-changed", G_OBJECT_CLASS_TYPE(klass), G_SIGNAL_RUN_LAST, 0, NULL, NULL, g_cclosure_marshal_VOID__VOID, G_TYPE_NONE, 0, NULL);
 }
 
 
