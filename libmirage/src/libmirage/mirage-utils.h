@@ -20,6 +20,10 @@
 #ifndef __MIRAGE_UTILS_H__
 #define __MIRAGE_UTILS_H__
 
+/* Forward declarations */
+typedef enum _MirageTrackModes MirageTrackModes;
+
+
 G_BEGIN_DECLS
 
 
@@ -102,7 +106,7 @@ void mirage_helper_subchannel_q_decode_isrc (const guint8 *buf, gchar *isrc);
  *
  * Subchannel type for interleaving/deinterleaving.
  **/
-typedef enum
+typedef enum _MirageSubChannel
 {
     SUBCHANNEL_W = 0,
     SUBCHANNEL_V = 1,

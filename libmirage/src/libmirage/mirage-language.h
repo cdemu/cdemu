@@ -46,7 +46,7 @@ G_BEGIN_DECLS
  * CD-TEXT pack types
  * </para>
  **/
-typedef enum
+typedef enum _MirageLanguagePackTypes
 {
     MIRAGE_LANGUAGE_PACK_TITLE       = 0x80,
     MIRAGE_LANGUAGE_PACK_PERFORMER   = 0x81,

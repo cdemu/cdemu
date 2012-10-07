@@ -44,7 +44,7 @@
  * together to control verbosity of libMirage.
  * </para>
  **/
-typedef enum
+typedef enum _MirageDebugMasks
 {
     /* Debug types */
     MIRAGE_DEBUG_ERROR    = -1,

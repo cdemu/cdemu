@@ -48,7 +48,7 @@ GType  mirage_error_get_type (void);
  *
  * Error codes for libMirage library.
  **/
-typedef enum
+typedef enum _MirageErrorCodes
 {
     MIRAGE_ERROR_LIBRARY_ERROR,
     MIRAGE_ERROR_PARSER_ERROR,

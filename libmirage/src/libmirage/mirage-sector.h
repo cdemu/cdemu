@@ -22,6 +22,7 @@
 
 /* Forward declarations */
 typedef struct _MirageTrack MirageTrack;
+typedef enum _MirageTrackModes MirageTrackModes;
 
 
 G_BEGIN_DECLS
@@ -36,7 +37,7 @@ G_BEGIN_DECLS
  * Subchannel selection flags.
  * </para>
  **/
-typedef enum
+typedef enum _MirageSectorSubchannelFormat
 {
     MIRAGE_SUBCHANNEL_PW = 0x01,
     MIRAGE_SUBCHANNEL_PQ = 0x02,
@@ -56,7 +57,7 @@ typedef enum
  * Sector data validity flags.
  * </para>
  **/
-typedef enum
+typedef enum _MirageSectorValidData
 {
     MIRAGE_VALID_SYNC      = 0x01,
     MIRAGE_VALID_HEADER    = 0x02,

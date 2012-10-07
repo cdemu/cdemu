@@ -48,7 +48,7 @@ G_BEGIN_DECLS
  * Track flags.
  * </para>
  **/
-typedef enum
+typedef enum _MirageTrackFlags
 {
     MIRAGE_TRACK_FLAG_FOURCHANNEL   = 0x01,
     MIRAGE_TRACK_FLAG_COPYPERMITTED = 0x02,
@@ -69,7 +69,7 @@ typedef enum
  * Track modes.
  * </para>
  **/
-typedef enum
+typedef enum _MirageTrackModes
 {
     MIRAGE_MODE_MODE0       = 0x00,
     MIRAGE_MODE_AUDIO       = 0x01,
@@ -89,7 +89,7 @@ typedef enum
  * Track constants.
  * </para>
  **/
-typedef enum
+typedef enum _MirageTrackConstants
 {
     MIRAGE_TRACK_LEADIN  = 0x00,
     MIRAGE_TRACK_LEADOUT = 0xAA,

@@ -31,13 +31,27 @@
 #include <math.h>
 #include <string.h>
 
+#include "mirage-object.h"
+
+#include "mirage-cdtext-coder.h"
+#include "mirage-debug.h"
+#include "mirage-disc.h"
+#include "mirage-disc-structures.h"
+#include "mirage-error.h"
+#include "mirage-file-filter.h"
+#include "mirage-fragment.h"
+#include "mirage-index.h"
+#include "mirage-language.h"
+#include "mirage-parser.h"
+#include "mirage-plugin.h"
+#include "mirage-sector.h"
+#include "mirage-session.h"
+#include "mirage-track.h"
+#include "mirage-utils.h"
 #include "mirage-version.h"
 
-#include "mirage-debug.h"
-#include "mirage-error.h"
-#include "mirage-plugin.h"
-
 G_BEGIN_DECLS
+
 
 /**
  * MirageCallbackFunction:
@@ -86,24 +100,6 @@ typedef struct {
     gint value;
 } MirageDebugMask;
 
-
-#include "mirage-object.h"
-
-#include "mirage-file-filter.h"
-#include "mirage-parser.h"
-#include "mirage-disc.h"
-#include "mirage-fragment.h"
-#include "mirage-index.h"
-#include "mirage-language.h"
-#include "mirage-session.h"
-#include "mirage-track.h"
-#include "mirage-sector.h"
-
-#include "mirage-disc-structures.h"
-
-#include "mirage-cdtext-coder.h"
-
-#include "mirage-utils.h"
 
 /* *** libMirage API *** */
 gboolean mirage_initialize (GError **error);

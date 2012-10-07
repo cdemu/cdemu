@@ -48,7 +48,7 @@ G_BEGIN_DECLS
  * Medium types.
  * </para>
  **/
-typedef enum
+typedef enum _MirageMediumTypes
 {
     MIRAGE_MEDIUM_CD  = 0x01,
     MIRAGE_MEDIUM_DVD = 0x02,

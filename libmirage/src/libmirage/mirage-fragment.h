@@ -144,7 +144,7 @@ GType mirage_fragment_iface_null_get_type (void);
  * Track file data formats.
  * </para>
  **/
-typedef enum
+typedef enum _MirageMainDataFormat
 {
     MIRAGE_MAIN_DATA  = 0x01,
     MIRAGE_MAIN_AUDIO = 0x02,
@@ -164,7 +164,7 @@ typedef enum
  * Subchannel file data formats.
  * </para>
  **/
-typedef enum
+typedef enum _MirageSubchannelDataFormat
 {
     MIRAGE_SUBCHANNEL_INT = 0x01,
     MIRAGE_SUBCHANNEL_EXT = 0x02,
