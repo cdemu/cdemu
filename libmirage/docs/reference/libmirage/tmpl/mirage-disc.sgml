@@ -42,6 +42,16 @@ functions for accessing and reading of sectors within the disc layout.
 @MIRAGE_MEDIUM_BD: 
 @MIRAGE_MEDIUM_HD: 
 
+<!-- ##### USER_FUNCTION MirageEnumSessionCallback ##### -->
+<para>
+
+</para>
+
+@session: 
+@user_data: 
+@Returns: 
+
+
 <!-- ##### STRUCT MirageDisc ##### -->
 <para>
 

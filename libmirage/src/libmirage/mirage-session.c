@@ -814,7 +814,7 @@ MirageTrack *mirage_session_get_track_by_address (MirageSession *self, gint addr
  *
  * Returns: %TRUE on success, %FALSE on failure
  **/
-gboolean mirage_session_enumerate_tracks (MirageSession *self, MirageCallbackFunction func, gpointer user_data)
+gboolean mirage_session_enumerate_tracks (MirageSession *self, MirageEnumTrackCallback func, gpointer user_data)
 {
     for (GList *entry = self->priv->tracks_list; entry; entry = entry->next) {
         gboolean succeeded = (*func)(entry->data, user_data);
@@ -1142,7 +1142,7 @@ MirageLanguage *mirage_session_get_language_by_code (MirageSession *self, gint c
  *
  * Returns: %TRUE on success, %FALSE on failure
  **/
-gboolean mirage_session_enumerate_languages (MirageSession *self, MirageCallbackFunction func, gpointer user_data)
+gboolean mirage_session_enumerate_languages (MirageSession *self, MirageEnumLanguageCallback func, gpointer user_data)
 {
     for (GList *entry = self->priv->languages_list; entry; entry = entry->next) {
         gboolean succeeded = (*func)(entry->data, user_data);

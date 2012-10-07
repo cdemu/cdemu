@@ -32,6 +32,26 @@ tracks and languages, setting CD-TEXT data, etc.
 @MIRAGE_SESSION_CD_I: 
 @MIRAGE_SESSION_CD_ROM_XA: 
 
+<!-- ##### USER_FUNCTION MirageEnumTrackCallback ##### -->
+<para>
+
+</para>
+
+@track: 
+@user_data: 
+@Returns: 
+
+
+<!-- ##### USER_FUNCTION MirageEnumLanguageCallback ##### -->
+<para>
+
+</para>
+
+@language: 
+@user_data: 
+@Returns: 
+
+
 <!-- ##### STRUCT MirageSession ##### -->
 <para>
 

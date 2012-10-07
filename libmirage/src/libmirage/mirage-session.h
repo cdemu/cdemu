@@ -47,6 +47,38 @@ typedef enum _MirageSessionTypes
 } MirageSessionTypes;
 
 
+/**
+ * MirageEnumTrackCallback:
+ * @track: (in): track
+ * @user_data: (in) (closure): user data passed to enumeration function
+ *
+ * <para>
+ * Callback function type used with mirage_session_enumerate_tracks().
+ * A pointer to a track object is stored in @track, without incrementing
+ * its reference counter. @user_data is user data passed to enumeration function.
+ * </para>
+ *
+ * Returns: %TRUE on success, otherwise %FALSE
+ **/
+typedef gboolean (*MirageEnumTrackCallback) (MirageTrack *track, gpointer user_data);
+
+/**
+ * MirageEnumLanguageCallback:
+ * @language: (in): language
+ * @user_data: (in) (closure): user data passed to enumeration function
+ *
+ * <para>
+ * Callback function type used with mirage_session_enumerate_languages() and
+ * mirage_track_enumerate_languages(). A pointer to a language object is
+ * stored in @language, without incrementing its reference counter.
+ * @user_data is user data passed to enumeration function.
+ * </para>
+ *
+ * Returns: %TRUE on success, otherwise %FALSE
+ **/
+typedef gboolean (*MirageEnumLanguageCallback) (MirageLanguage *language, gpointer user_data);
+
+
 /**********************************************************************\
  *                         MirageSession object                       *
 \**********************************************************************/
@@ -111,7 +143,7 @@ void mirage_session_remove_track_by_object (MirageSession *self, MirageTrack *tr
 MirageTrack *mirage_session_get_track_by_index (MirageSession *self, gint index, GError **error);
 MirageTrack *mirage_session_get_track_by_number (MirageSession *self, gint number, GError **error);
 MirageTrack *mirage_session_get_track_by_address (MirageSession *self, gint address, GError **error);
-gboolean mirage_session_enumerate_tracks (MirageSession *self, MirageCallbackFunction func, gpointer user_data);
+gboolean mirage_session_enumerate_tracks (MirageSession *self, MirageEnumTrackCallback func, gpointer user_data);
 MirageTrack *mirage_session_get_track_before (MirageSession *self, MirageTrack *track, GError **error);
 MirageTrack *mirage_session_get_track_after (MirageSession *self, MirageTrack *track, GError **error);
 
@@ -123,7 +155,7 @@ gboolean mirage_session_remove_language_by_code (MirageSession *self, gint code,
 void mirage_session_remove_language_by_object (MirageSession *self, MirageLanguage *language);
 MirageLanguage *mirage_session_get_language_by_index (MirageSession *self, gint index, GError **error);
 MirageLanguage *mirage_session_get_language_by_code (MirageSession *self, gint code, GError **error);
-gboolean mirage_session_enumerate_languages (MirageSession *self, MirageCallbackFunction func, gpointer user_data);
+gboolean mirage_session_enumerate_languages (MirageSession *self, MirageEnumLanguageCallback func, gpointer user_data);
 
 /* Direct CD-Text handling */
 gboolean mirage_session_set_cdtext_data (MirageSession *self, guint8 *data, gint len, GError **error);

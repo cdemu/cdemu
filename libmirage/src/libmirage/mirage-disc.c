@@ -1045,7 +1045,7 @@ MirageSession *mirage_disc_get_session_by_track (MirageDisc *self, gint track_nu
  *
  * Returns: %TRUE on success, %FALSE on failure
  **/
-gboolean mirage_disc_enumerate_sessions (MirageDisc *self, MirageCallbackFunction func, gpointer user_data)
+gboolean mirage_disc_enumerate_sessions (MirageDisc *self, MirageEnumSessionCallback func, gpointer user_data)
 {
     for (GList *entry = self->priv->sessions_list; entry; entry = entry->next) {
         gboolean succeeded = (*func)(entry->data, user_data);

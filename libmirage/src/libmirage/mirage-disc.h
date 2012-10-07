@@ -57,10 +57,20 @@ typedef enum _MirageMediumTypes
 } MirageMediumTypes;
 
 
-enum
-{
-    PROP_MIRAGE_DISC_DVD_REPORT_CSS = 1,
-};
+/**
+ * MirageEnumSessionCallback:
+ * @session: (in): session
+ * @user_data: (in) (closure): user data passed to enumeration function
+ *
+ * <para>
+ * Callback function type used with mirage_disc_enumerate_sessions().
+ * A pointer to a session object is stored in @session, without incrementing
+ * its reference counter. @user_data is user data passed to enumeration function.
+ * </para>
+ *
+ * Returns: %TRUE on success, otherwise %FALSE
+ **/
+typedef gboolean (*MirageEnumSessionCallback) (MirageSession *session, gpointer user_data);
 
 
 /**********************************************************************\
@@ -76,6 +86,11 @@ enum
 typedef struct _MirageDisc         MirageDisc;
 typedef struct _MirageDiscClass    MirageDiscClass;
 typedef struct _MirageDiscPrivate  MirageDiscPrivate;
+
+enum
+{
+    PROP_MIRAGE_DISC_DVD_REPORT_CSS = 1,
+};
 
 /**
  * MirageDisc:
@@ -133,7 +148,7 @@ MirageSession *mirage_disc_get_session_by_index (MirageDisc *self, gint index, G
 MirageSession *mirage_disc_get_session_by_number (MirageDisc *self, gint number, GError **error);
 MirageSession *mirage_disc_get_session_by_address (MirageDisc *self, gint address, GError **error);
 MirageSession *mirage_disc_get_session_by_track (MirageDisc *self, gint track, GError **error);
-gboolean mirage_disc_enumerate_sessions (MirageDisc *self, MirageCallbackFunction func, gpointer user_data);
+gboolean mirage_disc_enumerate_sessions (MirageDisc *self, MirageEnumSessionCallback func, gpointer user_data);
 MirageSession *mirage_disc_get_session_before (MirageDisc *self, MirageSession *session, GError **error);
 MirageSession *mirage_disc_get_session_after (MirageDisc *self, MirageSession *session, GError **error);
 

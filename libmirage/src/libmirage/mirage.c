@@ -594,7 +594,7 @@ const gchar *mirage_get_file_stream_filename (GInputStream *stream)
  *
  * Returns: %TRUE on success, %FALSE on failure
  **/
-gboolean mirage_enumerate_parsers (MirageCallbackFunction func, gpointer user_data, GError **error)
+gboolean mirage_enumerate_parsers (MirageEnumParserInfoCallback func, gpointer user_data, GError **error)
 {
     /* Make sure libMirage is initialized */
     if (!libmirage.initialized) {
@@ -610,7 +610,7 @@ gboolean mirage_enumerate_parsers (MirageCallbackFunction func, gpointer user_da
 
         parser = g_object_new(libmirage.parsers[i], NULL);
         parser_info = mirage_parser_get_info(MIRAGE_PARSER(parser));
-        succeeded = (*func)((const gpointer)parser_info, user_data);
+        succeeded = (*func)(parser_info, user_data);
         g_object_unref(parser);
         if (!succeeded) {
             g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_LIBRARY_ERROR, "Iteration has been cancelled!");
@@ -637,7 +637,7 @@ gboolean mirage_enumerate_parsers (MirageCallbackFunction func, gpointer user_da
  *
  * Returns: %TRUE on success, %FALSE on failure
  **/
-gboolean mirage_enumerate_fragments (MirageCallbackFunction func, gpointer user_data, GError **error)
+gboolean mirage_enumerate_fragments (MirageEnumFragmentInfoCallback func, gpointer user_data, GError **error)
 {
     /* Make sure libMirage is initialized */
     if (!libmirage.initialized) {
@@ -653,7 +653,7 @@ gboolean mirage_enumerate_fragments (MirageCallbackFunction func, gpointer user_
 
         fragment = g_object_new(libmirage.fragments[i], NULL);
         fragment_info = mirage_fragment_get_info(MIRAGE_FRAGMENT(fragment));
-        succeeded = (*func)((const gpointer)fragment_info, user_data);
+        succeeded = (*func)(fragment_info, user_data);
         g_object_unref(fragment);
         if (!succeeded) {
             g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_LIBRARY_ERROR, "Iteration has been cancelled!");
@@ -680,7 +680,7 @@ gboolean mirage_enumerate_fragments (MirageCallbackFunction func, gpointer user_
  *
  * Returns: %TRUE on success, %FALSE on failure
  **/
-gboolean mirage_enumerate_file_filters (MirageCallbackFunction func, gpointer user_data, GError **error)
+gboolean mirage_enumerate_file_filters (MirageEnumFileFilterInfoCallback func, gpointer user_data, GError **error)
 {
     gboolean succeeded = TRUE;
 
@@ -701,7 +701,7 @@ gboolean mirage_enumerate_file_filters (MirageCallbackFunction func, gpointer us
 
         filter = g_object_new(libmirage.file_filters[i], "base-stream", dummy_stream, "close-base-stream", FALSE, NULL);
         file_filter_info = mirage_file_filter_get_info(MIRAGE_FILE_FILTER(filter));
-        succeeded = (*func)((const gpointer)file_filter_info, user_data);
+        succeeded = (*func)(file_filter_info, user_data);
         g_object_unref(filter);
         if (!succeeded) {
             g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_LIBRARY_ERROR, "Iteration has been cancelled!");

@@ -3,7 +3,9 @@
 <SECTION>
 <FILE>mirage-libmirage</FILE>
 <TITLE>Main libMirage functions</TITLE>
-MirageCallbackFunction
+MirageEnumParserInfoCallback
+MirageEnumFragmentInfoCallback
+MirageEnumFileFilterInfoCallback
 MiragePasswordFunction
 MirageDebugMask
 mirage_initialize
@@ -69,6 +71,7 @@ mirage_file_filter_get_type
 <TITLE>MirageDisc object</TITLE>
 MIRAGE_MCN_SIZE
 MirageMediumTypes
+MirageEnumSessionCallback
 MirageDisc
 mirage_disc_set_medium_type
 mirage_disc_get_medium_type
@@ -128,6 +131,8 @@ mirage_disc_get_type
 <FILE>mirage-session</FILE>
 <TITLE>MirageSession object</TITLE>
 MirageSessionTypes
+MirageEnumTrackCallback
+MirageEnumLanguageCallback
 MirageSession
 mirage_session_set_session_type
 mirage_session_get_session_type
@@ -184,6 +189,8 @@ MIRAGE_ISRC_SIZE
 MirageTrackFlags
 MirageTrackModes
 MirageTrackConstants
+MirageEnumFragmentCallback
+MirageEnumIndexCallback
 MirageTrack
 mirage_track_set_flags
 mirage_track_get_flags

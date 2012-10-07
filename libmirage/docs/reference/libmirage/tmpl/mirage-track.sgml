@@ -60,6 +60,26 @@ sectors, etc.
 @MIRAGE_TRACK_LEADIN: 
 @MIRAGE_TRACK_LEADOUT: 
 
+<!-- ##### USER_FUNCTION MirageEnumFragmentCallback ##### -->
+<para>
+
+</para>
+
+@fragment: 
+@user_data: 
+@Returns: 
+
+
+<!-- ##### USER_FUNCTION MirageEnumIndexCallback ##### -->
+<para>
+
+</para>
+
+@index: 
+@user_data: 
+@Returns: 
+
+
 <!-- ##### STRUCT MirageTrack ##### -->
 <para>
 

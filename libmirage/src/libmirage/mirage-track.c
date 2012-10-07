@@ -868,7 +868,7 @@ MirageFragment *mirage_track_get_fragment_by_address (MirageTrack *self, gint ad
  *
  * Returns: %TRUE on success, %FALSE on failure
  **/
-gboolean mirage_track_enumerate_fragments (MirageTrack *self, MirageCallbackFunction func, gpointer user_data)
+gboolean mirage_track_enumerate_fragments (MirageTrack *self, MirageEnumFragmentCallback func, gpointer user_data)
 {
     for (GList *entry = self->priv->fragments_list; entry; entry = entry->next) {
         gboolean succeeded = (*func)(entry->data, user_data);
@@ -1182,7 +1182,7 @@ MirageIndex *mirage_track_get_index_by_address (MirageTrack *self, gint address,
  *
  * Returns: %TRUE on success, %FALSE on failure
  **/
-gboolean mirage_track_enumerate_indices (MirageTrack *self, MirageCallbackFunction func, gpointer user_data)
+gboolean mirage_track_enumerate_indices (MirageTrack *self, MirageEnumIndexCallback func, gpointer user_data)
 {
     for (GList *entry = self->priv->indices_list; entry; entry = entry->next) {
         gboolean succeeded = (*func)(entry->data, user_data);
@@ -1438,7 +1438,7 @@ MirageLanguage *mirage_track_get_language_by_code (MirageTrack *self, gint code,
  *
  * Returns: %TRUE on success, %FALSE on failure
  **/
-gboolean mirage_track_enumerate_languages (MirageTrack *self, MirageCallbackFunction func, gpointer user_data)
+gboolean mirage_track_enumerate_languages (MirageTrack *self, MirageEnumLanguageCallback func, gpointer user_data)
 {
     for (GList *entry = self->priv->languages_list; entry; entry = entry->next) {
         gboolean succeeded = (*func)(entry->data, user_data);

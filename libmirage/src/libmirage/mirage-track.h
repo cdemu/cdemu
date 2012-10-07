@@ -96,6 +96,37 @@ typedef enum _MirageTrackConstants
 } MirageTrackConstants;
 
 
+/**
+ * MirageEnumIndexCallback:
+ * @index: (in): index
+ * @user_data: (in) (closure): user data passed to enumeration function
+ *
+ * <para>
+ * Callback function type used with mirage_track_enumerate_indices().
+ * A pointer to an index object is stored in @index, without incrementing
+ * its reference counter. @user_data is user data passed to enumeration function.
+ * </para>
+ *
+ * Returns: %TRUE on success, otherwise %FALSE
+ **/
+typedef gboolean (*MirageEnumIndexCallback) (MirageIndex *index, gpointer user_data);
+
+/**
+ * MirageEnumFragmentCallback:
+ * @fragment: (in): fragment
+ * @user_data: (in) (closure): user data passed to enumeration function
+ *
+ * <para>
+ * Callback function type used with mirage_track_enumerate_fragments().
+ * A pointer to a fragment object is stored in @fragment, without incrementing
+ * its reference counter. @user_data is user data passed to enumeration function.
+ * </para>
+ *
+ * Returns: %TRUE on success, otherwise %FALSE
+ **/
+typedef gboolean (*MirageEnumFragmentCallback) (MirageFragment *fragment, gpointer user_data);
+
+
 /**********************************************************************\
  *                          MirageTrack object                        *
 \**********************************************************************/
@@ -170,7 +201,7 @@ gboolean mirage_track_remove_fragment_by_index (MirageTrack *self, gint index, G
 void mirage_track_remove_fragment_by_object (MirageTrack *self, MirageFragment *fragment);
 MirageFragment *mirage_track_get_fragment_by_index (MirageTrack *self, gint index, GError **error);
 MirageFragment *mirage_track_get_fragment_by_address (MirageTrack *self, gint address, GError **error);
-gboolean mirage_track_enumerate_fragments (MirageTrack *self, MirageCallbackFunction func, gpointer user_data);
+gboolean mirage_track_enumerate_fragments (MirageTrack *self, MirageEnumFragmentCallback func, gpointer user_data);
 
 MirageFragment *mirage_track_find_fragment_with_subchannel (MirageTrack *self, GError **error);
 
@@ -185,7 +216,7 @@ gboolean mirage_track_remove_index_by_number (MirageTrack *self, gint number, GE
 void mirage_track_remove_index_by_object (MirageTrack *self, MirageIndex *index);
 MirageIndex *mirage_track_get_index_by_number (MirageTrack *self, gint number, GError **error);
 MirageIndex *mirage_track_get_index_by_address (MirageTrack *self, gint address, GError **error);
-gboolean mirage_track_enumerate_indices (MirageTrack *self, MirageCallbackFunction func, gpointer user_data);
+gboolean mirage_track_enumerate_indices (MirageTrack *self, MirageEnumIndexCallback func, gpointer user_data);
 
 /* Languages (CD-Text) handling */
 gint mirage_track_get_number_of_languages (MirageTrack *self);
@@ -195,7 +226,7 @@ gboolean mirage_track_remove_language_by_code (MirageTrack *self, gint code, GEr
 void mirage_track_remove_language_by_object (MirageTrack *self, MirageLanguage *language);
 MirageLanguage *mirage_track_get_language_by_index (MirageTrack *self, gint index, GError **error);
 MirageLanguage *mirage_track_get_language_by_code (MirageTrack *self, gint code, GError **error);
-gboolean mirage_track_enumerate_languages (MirageTrack *self, MirageCallbackFunction func, gpointer user_data);
+gboolean mirage_track_enumerate_languages (MirageTrack *self, MirageEnumLanguageCallback func, gpointer user_data);
 
 /* Two nice convenience functions */
 MirageTrack *mirage_track_get_prev (MirageTrack *self, GError **error);

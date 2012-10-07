@@ -51,12 +51,32 @@ debug masks can be obtained using mirage_get_supported_debug_masks().
 <!-- ##### SECTION Image ##### -->
 
 
-<!-- ##### USER_FUNCTION MirageCallbackFunction ##### -->
+<!-- ##### USER_FUNCTION MirageEnumParserInfoCallback ##### -->
 <para>
 
 </para>
 
-@data: 
+@info: 
+@user_data: 
+@Returns: 
+
+
+<!-- ##### USER_FUNCTION MirageEnumFragmentInfoCallback ##### -->
+<para>
+
+</para>
+
+@info: 
+@user_data: 
+@Returns: 
+
+
+<!-- ##### USER_FUNCTION MirageEnumFileFilterInfoCallback ##### -->
+<para>
+
+</para>
+
+@info: 
 @user_data: 
 @Returns: 
 
