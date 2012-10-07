@@ -574,8 +574,8 @@ static GtkWidget *build_dialog_open_image (ImageAnalyzerApplication *self)
     /* Filters provided by parsers and file filters */
     context.dialog = dialog;
     context.all_images = filter;
-    mirage_enumerate_parsers((MirageCallbackFunction)append_parser_info, &context, NULL);
-    mirage_enumerate_file_filters((MirageCallbackFunction)append_file_filter_info, &context, NULL);
+    mirage_enumerate_parsers((MirageEnumParserInfoCallback)append_parser_info, &context, NULL);
+    mirage_enumerate_file_filters((MirageEnumFileFilterInfoCallback)append_file_filter_info, &context, NULL);
 
     return dialog;
 }

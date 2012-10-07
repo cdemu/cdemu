@@ -244,7 +244,7 @@ static gboolean xml_dump_track (MirageTrack *track, xmlNodePtr parent)
 
     if (num_fragments) {
         xmlNodePtr node = xml_add_node(parent, TAG_FRAGMENTS);
-        mirage_track_enumerate_fragments(track, (MirageCallbackFunction)xml_dump_fragment, node);
+        mirage_track_enumerate_fragments(track, (MirageEnumFragmentCallback)xml_dump_fragment, node);
     }
 
     track_start = mirage_track_get_track_start(track);
@@ -255,7 +255,7 @@ static gboolean xml_dump_track (MirageTrack *track, xmlNodePtr parent)
 
     if (num_indices) {
         xmlNodePtr node = xml_add_node(parent, TAG_INDICES);
-        mirage_track_enumerate_indices(track, (MirageCallbackFunction)xml_dump_index, node);
+        mirage_track_enumerate_indices(track, (MirageEnumIndexCallback)xml_dump_index, node);
     }
 
     num_languages = mirage_track_get_number_of_languages(track);
@@ -263,7 +263,7 @@ static gboolean xml_dump_track (MirageTrack *track, xmlNodePtr parent)
 
     if (num_languages) {
         xmlNodePtr node = xml_add_node(parent, TAG_LANGUAGES);
-        mirage_track_enumerate_languages(track, (MirageCallbackFunction)xml_dump_language, node);
+        mirage_track_enumerate_languages(track, (MirageEnumLanguageCallback)xml_dump_language, node);
     }
 
     return TRUE;
@@ -303,7 +303,7 @@ static gboolean xml_dump_session (MirageSession *session, xmlNodePtr parent)
 
     if (num_tracks) {
         xmlNodePtr node = xml_add_node(parent, TAG_TRACKS);
-        mirage_session_enumerate_tracks(session, (MirageCallbackFunction)xml_dump_track, node);
+        mirage_session_enumerate_tracks(session, (MirageEnumTrackCallback)xml_dump_track, node);
     }
 
     num_languages = mirage_session_get_number_of_languages(session);
@@ -311,7 +311,7 @@ static gboolean xml_dump_session (MirageSession *session, xmlNodePtr parent)
 
     if (num_languages) {
         xmlNodePtr node = xml_add_node(parent, TAG_LANGUAGES);
-        mirage_session_enumerate_languages(session, (MirageCallbackFunction)xml_dump_language, node);
+        mirage_session_enumerate_languages(session, (MirageEnumLanguageCallback)xml_dump_language, node);
     }
 
     //mirage_session_get_cdtext_data(session, guint8 **data, gint *len, NULL);
@@ -368,7 +368,7 @@ static gboolean xml_dump_disc (MirageDisc *disc, xmlNodePtr parent)
 
     if (num_sessions) {
         xmlNodePtr session_node = xml_add_node(parent, TAG_SESSIONS);
-        mirage_disc_enumerate_sessions(disc, (MirageCallbackFunction)xml_dump_session, session_node);
+        mirage_disc_enumerate_sessions(disc, (MirageEnumSessionCallback)xml_dump_session, session_node);
     }
 
     mirage_disc_get_dpm_data(disc, &dpm_start, &dpm_resolution, &dpm_entries, &dpm_data);
