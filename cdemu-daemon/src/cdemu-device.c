@@ -84,8 +84,6 @@ gboolean cdemu_device_initialize (CdemuDevice *self, gint number, gchar *ctl_dev
     self->priv->audio_play = g_object_new(CDEMU_TYPE_AUDIO, NULL);
     /* Set parent */
     mirage_object_set_parent(MIRAGE_OBJECT(self->priv->audio_play), self);
-    /* Attach child... so that it'll get device's debug context */
-    mirage_object_attach_child(MIRAGE_OBJECT(self), self->priv->audio_play);
     /* Initialize */
     cdemu_audio_initialize(self->priv->audio_play, audio_driver, &self->priv->current_address, self->priv->device_mutex);
 

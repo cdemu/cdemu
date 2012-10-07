@@ -88,7 +88,7 @@ static gboolean append_parser_to_builder (MirageParserInfo *info, GVariantBuilde
 static GVariantBuilder *encode_parsers ()
 {
     GVariantBuilder *builder = g_variant_builder_new(G_VARIANT_TYPE("a(ssss)"));
-    mirage_enumerate_parsers((MirageCallbackFunction)append_parser_to_builder, builder, NULL);
+    mirage_enumerate_parsers((MirageEnumParserInfoCallback)append_parser_to_builder, builder, NULL);
     return builder;
 }
 
@@ -103,7 +103,7 @@ static gboolean append_filter_to_builder (MirageFileFilterInfo *info, GVariantBu
 static GVariantBuilder *encode_file_filters ()
 {
     GVariantBuilder *builder = g_variant_builder_new(G_VARIANT_TYPE("a(ssss)"));
-    mirage_enumerate_file_filters((MirageCallbackFunction)append_filter_to_builder, builder, NULL);
+    mirage_enumerate_file_filters((MirageEnumFileFilterInfoCallback)append_filter_to_builder, builder, NULL);
     return builder;
 }
 
@@ -118,7 +118,7 @@ static gboolean append_fragment_to_builder (MirageFragmentInfo *info, GVariantBu
 static GVariantBuilder *encode_fragments ()
 {
     GVariantBuilder *builder = g_variant_builder_new(G_VARIANT_TYPE("a(ss)"));
-    mirage_enumerate_fragments((MirageCallbackFunction)append_fragment_to_builder, builder, NULL);
+    mirage_enumerate_fragments((MirageEnumFragmentInfoCallback)append_fragment_to_builder, builder, NULL);
     return builder;
 }
 
