@@ -11,7 +11,7 @@ functions that are used by image parsers to provide access to data in image file
 </para>
 
 <para>
-#MirageFragment provides two virtual functions: mirage_fragment_get_fragment_info(),
+#MirageFragment provides two virtual functions: mirage_fragment_get_info(),
 mirage_fragment_can_handle_data_format(). These must be implemented
 by fragment implementations which derive from #MirageFragment object.
 </para>

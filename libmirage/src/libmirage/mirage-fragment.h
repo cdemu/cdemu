@@ -30,7 +30,7 @@ G_BEGIN_DECLS
  *
  * <para>
  * A structure containing fragment information. It can be obtained with call to
- * mirage_fragment_get_fragment_info().
+ * mirage_fragment_get_info().
  * </para>
  **/
 typedef struct _MirageFragmentInfo MirageFragmentInfo;
