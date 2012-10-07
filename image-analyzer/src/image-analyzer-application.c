@@ -866,14 +866,14 @@ static void image_analyzer_application_init (ImageAnalyzerApplication *self)
 
     /* Setup debug context */
     self->priv->debug_context = g_object_new(MIRAGE_TYPE_DEBUG_CONTEXT, NULL);
-    mirage_debug_context_set_domain(self->priv->debug_context, "Image analyzer");
+    mirage_debug_context_set_domain(self->priv->debug_context, "libMirage");
     mirage_debug_context_set_debug_mask(self->priv->debug_context, MIRAGE_DEBUG_PARSER);
 
     /* Setup GUI */
     setup_gui(self);
 
     /* Setup log handler */
-    g_log_set_handler(NULL, G_LOG_LEVEL_MASK, (GLogFunc)capture_log, self);
+    g_log_set_handler("libMirage", G_LOG_LEVEL_MASK, (GLogFunc)capture_log, self);
 }
 
 static void image_analyzer_application_finalize (GObject *gobject)
