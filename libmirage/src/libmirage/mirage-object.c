@@ -54,7 +54,7 @@ static void mirage_object_parent_debug_context_changed_handler (MirageObject *pa
 /**
  * mirage_object_set_parent:
  * @self: a #MirageObject
- * @parent: (in) (allow-none): parent
+ * @parent: (in) (allow-none) (type MirageObject): parent
  *
  * <para>
  * Sets object's parent. If @parent is %NULL, the object's parent is
@@ -93,7 +93,7 @@ void mirage_object_set_parent (MirageObject *self, gpointer parent)
  * Returns pointer to object's parent object.
  * </para>
  *
- * Returns: (transfer full): parent object, or %NULL.
+ * Returns: (transfer full) (type MirageObject): parent object, or %NULL.
  **/
 gpointer mirage_object_get_parent (MirageObject *self)
 {
