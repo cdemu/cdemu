@@ -213,7 +213,7 @@ void mirage_debug_context_messagev (MirageDebugContext *self, gint level, gchar 
     gchar *new_format;
 
     /* Insert name in case we have it */
-    if (self->priv->name) {
+    if (self && self->priv->name) {
         new_format = g_strdup_printf("%s: %s", self->priv->name, format);
     } else {
         new_format = g_strdup(format);
@@ -223,7 +223,7 @@ void mirage_debug_context_messagev (MirageDebugContext *self, gint level, gchar 
         g_logv(self->priv->domain, G_LOG_LEVEL_ERROR, new_format, args);
     } else if (level == MIRAGE_DEBUG_WARNING) {
         g_logv(self->priv->domain, G_LOG_LEVEL_WARNING, new_format, args);
-    } else {
+    } else if (self) {
         if (self->priv->debug_mask & level) {
             g_logv(self->priv->domain, G_LOG_LEVEL_DEBUG, new_format, args);
         }
