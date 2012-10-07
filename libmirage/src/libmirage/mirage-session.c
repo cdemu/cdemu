@@ -486,8 +486,6 @@ void mirage_session_add_track_by_index (MirageSession *self, gint index, MirageT
     g_object_ref(track);
     /* Set parent */
     mirage_object_set_parent(MIRAGE_OBJECT(track), self);
-    /* Attach child */
-    mirage_object_attach_child(MIRAGE_OBJECT(self), track);
 
     /* Insert track into track list... take into account that lead-in has index 0,
        thus all indexes should be increased by 1 */
@@ -541,8 +539,6 @@ gboolean mirage_session_add_track_by_number (MirageSession *self, gint number, M
     mirage_track_layout_set_track_number(track, number);
     /* Set parent */
     mirage_object_set_parent(MIRAGE_OBJECT(track), self);
-    /* Attach child */
-    mirage_object_attach_child(MIRAGE_OBJECT(self), track);
 
     /* Insert track into track list */
     self->priv->tracks_list = g_list_insert_sorted(self->priv->tracks_list, track, (GCompareFunc)sort_tracks_by_number);
@@ -951,8 +947,6 @@ gboolean mirage_session_add_language (MirageSession *self, gint code, MirageLang
     mirage_language_set_code(language, code);
     /* Set parent */
     mirage_object_set_parent(MIRAGE_OBJECT(language), self);
-    /* Attach child */
-    mirage_object_attach_child(MIRAGE_OBJECT(self), language);
 
     /* Insert language into language list */
     self->priv->languages_list = g_list_insert_sorted(self->priv->languages_list, language, (GCompareFunc)sort_languages_by_code);
@@ -1221,7 +1215,7 @@ gboolean mirage_session_set_cdtext_data (MirageSession *self, guint8 *data, gint
 
     /* Create decoder object and hope it'll do all the dirty work correctly... */
     decoder = g_object_new(MIRAGE_TYPE_CDTEXT_CODER, NULL);
-    mirage_object_attach_child(MIRAGE_OBJECT(self), decoder);
+    mirage_object_set_parent(MIRAGE_OBJECT(decoder), self);
 
     mirage_cdtext_decoder_init(decoder, data, len);
 
@@ -1275,7 +1269,7 @@ gboolean mirage_session_get_cdtext_data (MirageSession *self, guint8 **data, gin
     /* Set up encoder */
     encoder = g_object_new(MIRAGE_TYPE_CDTEXT_CODER, NULL);
     mirage_cdtext_encoder_init(encoder, buffer, buflen);
-    mirage_object_attach_child(MIRAGE_OBJECT(self), encoder);
+    mirage_object_set_parent(MIRAGE_OBJECT(encoder), self);
 
     /* Supported pack types */
     gint pack_types[] = {

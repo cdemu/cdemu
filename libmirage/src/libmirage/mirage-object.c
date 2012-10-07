@@ -34,18 +34,17 @@ struct _MirageObjectPrivate
     gpointer parent; /* Soft-reference (= no ref) to parent */
 
     MirageDebugContext *debug_context; /* Debug context */
-
-    GList *children_list; /* "Children" list */
 };
 
 
 /**********************************************************************\
- *                         Private functions                          *
+ *                        Debug context changes                       *
 \**********************************************************************/
-static void mirage_object_child_destroyed_handler (MirageObject *self, GObject *child)
+static void mirage_object_parent_debug_context_changed_handler (MirageObject *parent, MirageObject *self)
 {
-    /* Remove child object's address from list */
-    self->priv->children_list = g_list_remove(self->priv->children_list, child);
+    /* Get the new debug context and set it */
+    MirageDebugContext *debug_context = mirage_debuggable_get_debug_context(MIRAGE_DEBUGGABLE(parent));
+    mirage_debuggable_set_debug_context(MIRAGE_DEBUGGABLE(self), debug_context);
 }
 
 
@@ -55,28 +54,34 @@ static void mirage_object_child_destroyed_handler (MirageObject *self, GObject *
 /**
  * mirage_object_set_parent:
  * @self: a #MirageObject
- * @parent: (in): parent
+ * @parent: (in) (allow-none): parent
  *
  * <para>
- * Sets object's parent.
+ * Sets object's parent. If @parent is %NULL, the object's parent is
+ * reset.
  * </para>
  **/
 void mirage_object_set_parent (MirageObject *self, gpointer parent)
 {
     if (self->priv->parent) {
+        /* Remove "debug-context-change" signal handler */
+        g_signal_handlers_disconnect_by_func(self->priv->parent, mirage_object_parent_debug_context_changed_handler, self);
+
         /* Remove previous weak reference pointer */
         g_object_remove_weak_pointer(G_OBJECT(self->priv->parent), &self->priv->parent);
     }
 
-    /* Set weak reference pointer to parent */
+    self->priv->parent = parent;
+
     if (parent) {
-        /* Actually, we must manually set the parent pointer, too... even though
-           one might think g_object_add_weak_pointer() will do it for us... */
-        self->priv->parent = parent;
+        /* Add weak pointer to parent */
         g_object_add_weak_pointer(parent, &self->priv->parent);
-    } else {
-        /* Passing NULL in parent means reseting current parent */
-        self->priv->parent = NULL;
+
+        /* Connect "*/
+        g_signal_connect(parent, "debug-context-changed", (GCallback)mirage_object_parent_debug_context_changed_handler, self);
+
+        /* Set parent's debug context by simulating the signal */
+        mirage_object_parent_debug_context_changed_handler(parent, self);
     }
 }
 
@@ -85,59 +90,15 @@ void mirage_object_set_parent (MirageObject *self, gpointer parent)
  * @self: a #MirageObject
  *
  * <para>
- * Retrieves object's parent.
+ * Returns pointer to object's parent object, without incrementing its
+ * reference counter.
  * </para>
  *
- * Returns: (transfer full): parent object, or %NULL.
+ * Returns: (transfer none): parent object, or %NULL.
  **/
 gpointer mirage_object_get_parent (MirageObject *self)
 {
-    if (self->priv->parent) {
-        g_object_ref(self->priv->parent);
-    }
     return self->priv->parent;
-}
-
-
-/**
- * mirage_object_attach_child:
- * @self: a #MirageObject
- * @child: (in): child
- *
- * <para>
- * Attaches child to the object.
- * </para>
- **/
-void mirage_object_attach_child (MirageObject *self, gpointer child)
-{
-    /* Add child to our children list */
-    self->priv->children_list = g_list_append(self->priv->children_list, child);
-
-    /* Add weak reference to child (so that when it gets destroyed, our callback
-       will remove it from list) */
-    g_object_weak_ref(child, (GWeakNotify)mirage_object_child_destroyed_handler, self);
-
-    /* Set debug context to child */
-    mirage_debuggable_set_debug_context(MIRAGE_DEBUGGABLE(child), self->priv->debug_context);
-}
-
-/**
- * mirage_object_detach_child:
- * @self: a #MirageObject
- * @child: (in): child
- *
- * <para>
- * Detaches child from the object. Note that the child will keep the debug context
- * it may have been passed to while being attached to the parent.
- * </para>
- **/
-void mirage_object_detach_child (MirageObject *self, gpointer child)
-{
-    /* Remove child from our children list */
-    self->priv->children_list = g_list_remove(self->priv->children_list, child);
-
-    /* Remove weak reference to child */
-    g_object_weak_unref(child, (GWeakNotify)mirage_object_child_destroyed_handler, self);
 }
 
 
@@ -164,10 +125,8 @@ static void mirage_object_set_debug_context (MirageDebuggable *_self, MirageDebu
         g_object_ref(self->priv->debug_context);
     }
 
-    /* Propagate the change to all children */
-    for (GList *entry = self->priv->children_list; entry; entry = entry->next) {
-        mirage_debuggable_set_debug_context(MIRAGE_DEBUGGABLE(entry->data), debug_context);
-    }
+    /* Signal change, so that children object can pick it up */
+    g_signal_emit_by_name(self, "debug-context-changed", NULL);
 }
 
 static MirageDebugContext *mirage_object_get_debug_context (MirageDebuggable *_self)
@@ -195,7 +154,6 @@ static void mirage_object_init (MirageObject *self)
 
     self->priv->parent = NULL;
     self->priv->debug_context = NULL;
-    self->priv->children_list = NULL;
 }
 
 static void mirage_object_dispose (GObject *gobject)
@@ -217,23 +175,11 @@ static void mirage_object_dispose (GObject *gobject)
     return G_OBJECT_CLASS(mirage_object_parent_class)->dispose(gobject);
 }
 
-static void mirage_object_finalize (GObject *gobject)
-{
-    MirageObject *self = MIRAGE_OBJECT(gobject);
-
-    /* Free our list of weak references to children */
-    g_list_free(self->priv->children_list);
-
-    /* Chain up to the parent class */
-    return G_OBJECT_CLASS(mirage_object_parent_class)->finalize(gobject);
-}
-
 static void mirage_object_class_init (MirageObjectClass *klass)
 {
     GObjectClass *gobject_class = G_OBJECT_CLASS(klass);
 
     gobject_class->dispose = mirage_object_dispose;
-    gobject_class->finalize = mirage_object_finalize;
 
     /* Register private structure */
     g_type_class_add_private(klass, sizeof(MirageObjectPrivate));
@@ -248,6 +194,7 @@ static void mirage_object_class_init (MirageObjectClass *klass)
      * </para>
      */
     klass->signal_object_modified = g_signal_new("object-modified", G_OBJECT_CLASS_TYPE(klass), (G_SIGNAL_RUN_LAST | G_SIGNAL_DETAILED), 0, NULL, NULL, g_cclosure_marshal_VOID__VOID, G_TYPE_NONE, 0, NULL);
+    klass->signal_debug_context_changed = g_signal_new("debug-context-changed", G_OBJECT_CLASS_TYPE(klass), (G_SIGNAL_RUN_LAST | G_SIGNAL_DETAILED), 0, NULL, NULL, g_cclosure_marshal_VOID__VOID, G_TYPE_NONE, 0, NULL);
 }
 
 static void mirage_object_debuggable_init (MirageDebuggableInterface *iface)

@@ -284,8 +284,6 @@ mirage_sector_get_type
 MirageObject
 mirage_object_set_parent
 mirage_object_get_parent
-mirage_object_attach_child
-mirage_object_detach_child
 <SUBSECTION Standard>
 MIRAGE_OBJECT
 MIRAGE_IS_OBJECT

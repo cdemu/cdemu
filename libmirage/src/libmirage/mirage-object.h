@@ -60,6 +60,7 @@ struct _MirageObjectClass
 
     /* Class members */
     gint signal_object_modified;
+    gint signal_debug_context_changed;
 };
 
 /* Used by MIRAGE_TYPE_OBJECT */
@@ -67,9 +68,6 @@ GType mirage_object_get_type (void);
 
 void mirage_object_set_parent (MirageObject *self, gpointer parent);
 gpointer mirage_object_get_parent (MirageObject *self);
-
-void mirage_object_attach_child (MirageObject *self, gpointer child);
-void mirage_object_detach_child (MirageObject *self, gpointer child);
 
 G_END_DECLS
 

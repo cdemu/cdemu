@@ -47,7 +47,7 @@ void mirage_debuggable_set_debug_context (MirageDebuggable *self, MirageDebugCon
  * @self: a #MirageDebuggable
  *
  * <para>
- * Retrieves object's debug context.
+ * Retrieves object's debug context, without incrementing its reference counter.
  * </para>
  *
  * Returns: (transfer none): object's debug context (a #MirageDebugContext), or %NULL

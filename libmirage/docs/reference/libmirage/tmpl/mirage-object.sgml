@@ -7,8 +7,8 @@ Base object class
 <!-- ##### SECTION Long_Description ##### -->
 <para>
 #MirageObject is used as a base object class throughout libMirage. It implements
-support for layout definitions (setting object's parent and children) and debugging
-via debug contexts.
+support for constructing parent-child hierarchy, which allows propagation
+of debug context changes.
 </para>
 
 <!-- ##### SECTION See_Also ##### -->
@@ -27,6 +27,13 @@ via debug contexts.
 
 </para>
 
+
+<!-- ##### SIGNAL MirageObject::debug-context-changed ##### -->
+<para>
+
+</para>
+
+@mirageobject: the object which received the signal.
 
 <!-- ##### SIGNAL MirageObject::object-modified ##### -->
 <para>
@@ -51,23 +58,5 @@ via debug contexts.
 
 @self: 
 @Returns: 
-
-
-<!-- ##### FUNCTION mirage_object_attach_child ##### -->
-<para>
-
-</para>
-
-@self: 
-@child: 
-
-
-<!-- ##### FUNCTION mirage_object_detach_child ##### -->
-<para>
-
-</para>
-
-@self: 
-@child: 
 
 

@@ -1026,7 +1026,7 @@ static MirageDisc *mirage_parser_ccd_load_image (MirageParser *_self, GInputStre
 
     /* Create disc */
     self->priv->disc = g_object_new(MIRAGE_TYPE_DISC, NULL);
-    mirage_object_attach_child(MIRAGE_OBJECT(self), self->priv->disc);
+    mirage_object_set_parent(MIRAGE_OBJECT(self->priv->disc), self);
 
     mirage_disc_set_filename(self->priv->disc, ccd_filename);
 
@@ -1092,7 +1092,6 @@ static MirageDisc *mirage_parser_ccd_load_image (MirageParser *_self, GInputStre
 
 end:
     /* Return disc */
-    mirage_object_detach_child(MIRAGE_OBJECT(self), self->priv->disc);
     if (succeeded) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: parsing completed successfully\n\n", __debug__);
         return self->priv->disc;

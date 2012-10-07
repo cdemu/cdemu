@@ -486,8 +486,8 @@ MirageSector *mirage_track_get_sector (MirageTrack *self, gint address, gboolean
     if (address >= 0 && address < self->priv->length) {
         /* Create sector object */
         sector = g_object_new(MIRAGE_TYPE_SECTOR, NULL);
-        /* While sector isn't strictly a child, we still need to attach it for debug context */
-        mirage_object_attach_child(MIRAGE_OBJECT(self), sector);
+        mirage_object_set_parent(MIRAGE_OBJECT(sector), self);
+
         /* Feed data to sector */
         if (!mirage_sector_feed_data(sector, address, self, error)) {
             g_object_unref(sector);
@@ -687,8 +687,6 @@ void mirage_track_add_fragment (MirageTrack *self, gint index, MirageFragment *f
     /* We don't set fragment's start address here, because layout recalculation will do it for us */
     /* Set parent */
     mirage_object_set_parent(MIRAGE_OBJECT(fragment), self);
-    /* Attach child */
-    mirage_object_attach_child(MIRAGE_OBJECT(self), fragment);
 
     /* Insert fragment into fragment list */
     self->priv->fragments_list = g_list_insert(self->priv->fragments_list, fragment, index);
@@ -1020,8 +1018,6 @@ gboolean mirage_track_add_index (MirageTrack *self, gint address, GError **error
     mirage_index_set_address(index, address);
     /* Set parent */
     mirage_object_set_parent(MIRAGE_OBJECT(index), self);
-    /* Attach child */
-    mirage_object_attach_child(MIRAGE_OBJECT(self), index);
 
     /* Insert index into indices list */
     self->priv->indices_list = g_list_insert_sorted(self->priv->indices_list, index, (GCompareFunc)sort_indices_by_address);
@@ -1248,8 +1244,6 @@ gboolean mirage_track_add_language (MirageTrack *self, gint code, MirageLanguage
     mirage_language_set_code(language, code);
     /* Set parent */
     mirage_object_set_parent(MIRAGE_OBJECT(language), self);
-    /* Attach child */
-    mirage_object_attach_child(MIRAGE_OBJECT(self), language);
 
     /* Insert language to language list */
     self->priv->languages_list = g_list_insert_sorted(self->priv->languages_list, language, (GCompareFunc)sort_languages_by_code);
