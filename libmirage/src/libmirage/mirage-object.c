@@ -90,14 +90,16 @@ void mirage_object_set_parent (MirageObject *self, gpointer parent)
  * @self: a #MirageObject
  *
  * <para>
- * Returns pointer to object's parent object, without incrementing its
- * reference counter.
+ * Returns pointer to object's parent object.
  * </para>
  *
- * Returns: (transfer none): parent object, or %NULL.
+ * Returns: (transfer full): parent object, or %NULL.
  **/
 gpointer mirage_object_get_parent (MirageObject *self)
 {
+    if (self->priv->parent) {
+        g_object_ref(self->priv->parent);
+    }
     return self->priv->parent;
 }
 
