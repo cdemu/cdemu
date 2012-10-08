@@ -105,25 +105,3 @@ to the children as well, because they all share the same context.
 @Returns: 
 
 
-<!-- ##### FUNCTION mirage_debug_context_message ##### -->
-<para>
-
-</para>
-
-@self: 
-@level: 
-@format: 
-@...: 
-
-
-<!-- ##### FUNCTION mirage_debug_context_messagev ##### -->
-<para>
-
-</para>
-
-@self: 
-@level: 
-@format: 
-@args: 
-
-

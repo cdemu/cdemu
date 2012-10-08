@@ -304,6 +304,8 @@ MIRAGE_DEBUG
 MirageDebuggable
 mirage_debuggable_get_debug_context
 mirage_debuggable_set_debug_context
+mirage_debuggable_message
+mirage_debuggable_messagev
 <SUBSECTION Standard>
 MIRAGE_DEBUGGABLE
 MIRAGE_IS_DEBUGGABLE
@@ -325,8 +327,6 @@ mirage_debug_context_set_domain
 mirage_debug_context_get_domain
 mirage_debug_context_set_name
 mirage_debug_context_get_name
-mirage_debug_context_message
-mirage_debug_context_messagev
 <SUBSECTION Standard>
 MIRAGE_DEBUG_CONTEXT
 MIRAGE_IS_DEBUG_CONTEXT

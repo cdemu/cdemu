@@ -68,13 +68,13 @@ typedef enum _MirageDebugMasks
  * @msg...: (in): debug message
  *
  * <para>
- * Debugging macro, provided for convenience. It performs cast to #MirageDebuggable
- * interface on @obj, acquires its #MirageDebugContext and calls mirage_debug_context_message()
+ * Debugging macro, provided for convenience. It performs cast to
+ * #MirageDebuggable interface on @obj and calls mirage_debuggable_message()
  * with debug level @lvl and debug message @msg....
  * </para>
  **/
 #define MIRAGE_DEBUG(obj, lvl, ...) { \
-    mirage_debug_context_message(mirage_debuggable_get_debug_context(MIRAGE_DEBUGGABLE(obj)), lvl, __VA_ARGS__); \
+    mirage_debuggable_message(MIRAGE_DEBUGGABLE(obj), lvl, __VA_ARGS__); \
 }
 
 
@@ -127,9 +127,6 @@ const gchar *mirage_debug_context_get_domain (MirageDebugContext *self);
 void mirage_debug_context_set_name (MirageDebugContext *self, const gchar *name);
 const gchar *mirage_debug_context_get_name (MirageDebugContext *self);
 
-void mirage_debug_context_message (MirageDebugContext *self, gint level, gchar *format, ...);
-void mirage_debug_context_messagev (MirageDebugContext *self, gint level, gchar *format, va_list args);
-
 
 /**********************************************************************\
  *                     MirageDebuggable interface                     *
@@ -164,6 +161,8 @@ GType mirage_debuggable_get_type (void);
 void mirage_debuggable_set_debug_context (MirageDebuggable *self, MirageDebugContext *debug_context);
 MirageDebugContext *mirage_debuggable_get_debug_context (MirageDebuggable *self);
 
+void mirage_debuggable_message (MirageDebuggable *self, gint level, gchar *format, ...);
+void mirage_debuggable_messagev (MirageDebuggable *self, gint level, gchar *format, va_list args);
 
 G_END_DECLS
 

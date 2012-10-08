@@ -55,3 +55,25 @@ to be attached to the object and control the level of its debug verbosity.
 @debug_context: 
 
 
+<!-- ##### FUNCTION mirage_debuggable_message ##### -->
+<para>
+
+</para>
+
+@self: 
+@level: 
+@format: 
+@...: 
+
+
+<!-- ##### FUNCTION mirage_debuggable_messagev ##### -->
+<para>
+
+</para>
+
+@self: 
+@level: 
+@format: 
+@args: 
+
+
