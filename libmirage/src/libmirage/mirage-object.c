@@ -45,6 +45,7 @@ static void mirage_object_parent_debug_context_changed_handler (MirageObject *se
     /* Get the new debug context and set it */
     MirageDebugContext *debug_context = mirage_debuggable_get_debug_context(MIRAGE_DEBUGGABLE(parent));
     mirage_debuggable_set_debug_context(MIRAGE_DEBUGGABLE(self), debug_context);
+    g_object_unref(debug_context);
 }
 
 
@@ -134,6 +135,9 @@ static void mirage_object_set_debug_context (MirageDebuggable *_self, MirageDebu
 static MirageDebugContext *mirage_object_get_debug_context (MirageDebuggable *_self)
 {
     MirageObject *self = MIRAGE_OBJECT(_self);
+    if (self->priv->debug_context) {
+        g_object_ref(self->priv->debug_context);
+    }
     return self->priv->debug_context;
 }
 

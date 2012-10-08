@@ -400,6 +400,7 @@ MirageFragment *mirage_create_fragment (GType fragment_interface, GInputStream *
     if (debug_context) {
         if (MIRAGE_IS_DEBUGGABLE(debug_context)) {
             debug_context = G_OBJECT(mirage_debuggable_get_debug_context(MIRAGE_DEBUGGABLE(debug_context)));
+            g_object_unref(debug_context); /* Keep just pointer */
         } else if (!MIRAGE_IS_DEBUG_CONTEXT(debug_context)) {
             g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_LIBRARY_ERROR, "Invalid debug context or debuggable object!");
             return NULL;
@@ -475,6 +476,7 @@ GInputStream *mirage_create_file_stream (const gchar *filename, GObject *debug_c
     if (debug_context) {
         if (MIRAGE_IS_DEBUGGABLE(debug_context)) {
             debug_context = G_OBJECT(mirage_debuggable_get_debug_context(MIRAGE_DEBUGGABLE(debug_context)));
+            g_object_unref(debug_context); /* Keep just pointer */
         } else if (!MIRAGE_IS_DEBUG_CONTEXT(debug_context)) {
             g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_LIBRARY_ERROR, "Invalid debug context or debuggable object!");
             return NULL;

@@ -47,10 +47,12 @@ void mirage_debuggable_set_debug_context (MirageDebuggable *self, MirageDebugCon
  * @self: a #MirageDebuggable
  *
  * <para>
- * Retrieves object's debug context, without incrementing its reference counter.
+ * Retrieves object's debug context.
  * </para>
  *
- * Returns: (transfer none): object's debug context (a #MirageDebugContext), or %NULL
+ * Returns: (transfer full): object's debug context (a #MirageDebugContext), or %NULL.
+ * The reference to debug context is incremented, and should be released using g_object_unref()
+ * when no longer needed.
  **/
 MirageDebugContext *mirage_debuggable_get_debug_context (MirageDebuggable *self)
 {
@@ -88,6 +90,7 @@ void mirage_debuggable_messagev (MirageDebuggable *self, gint level, gchar *form
         name = mirage_debug_context_get_name(debug_context);
         domain = mirage_debug_context_get_domain(debug_context);
         debug_mask = mirage_debug_context_get_debug_mask(debug_context);
+        g_object_unref(debug_context);
     }
 
     /* If we have a name, prepend it */

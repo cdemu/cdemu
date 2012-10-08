@@ -336,6 +336,9 @@ static void mirage_file_filter_set_debug_context (MirageDebuggable *_self, Mirag
 static MirageDebugContext *mirage_file_filter_get_debug_context (MirageDebuggable *_self)
 {
     MirageFileFilter *self = MIRAGE_FILE_FILTER(_self);
+    if (self->priv->debug_context) {
+        g_object_ref(self->priv->debug_context);
+    }
     return self->priv->debug_context;
 }
 
