@@ -14,13 +14,13 @@ libmirage.so.7 libmirage7 #MINVER#
  mirage_debug_context_get_domain@Base 1.0.0
  mirage_debug_context_get_name@Base 1.0.0
  mirage_debug_context_get_type@Base 1.0.0
- mirage_debug_context_message@Base 1.6.0
- mirage_debug_context_messagev@Base 1.6.0
  mirage_debug_context_set_debug_mask@Base 1.0.0
  mirage_debug_context_set_domain@Base 1.0.0
  mirage_debug_context_set_name@Base 1.0.0
  mirage_debuggable_get_debug_context@Base 1.6.0
  mirage_debuggable_get_type@Base 1.6.0
+ mirage_debuggable_message@Base 1.6.0
+ mirage_debuggable_messagev@Base 1.6.0
  mirage_debuggable_set_debug_context@Base 1.6.0
  mirage_disc_add_session_by_index@Base 1.0.0
  mirage_disc_add_session_by_number@Base 1.0.0
@@ -154,8 +154,6 @@ libmirage.so.7 libmirage7 #MINVER#
  mirage_major_version@Base 1.2.0
  mirage_micro_version@Base 1.2.0
  mirage_minor_version@Base 1.2.0
- mirage_object_attach_child@Base 1.0.0
- mirage_object_detach_child@Base 1.2.0
  mirage_object_get_parent@Base 1.0.0
  mirage_object_get_type@Base 1.0.0
  mirage_object_set_parent@Base 1.0.0
