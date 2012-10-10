@@ -1,0 +1,9 @@
+/* config.h - configuration file */
+
+/* General stuff */
+#define PACKAGE_NAME "@cdemu-daemon_NAME@"
+#define PACKAGE_VERSION "@cdemu-daemon_VERSION@"
+
+/* Configuration values */
+#define DAEMON_INTERFACE_VERSION @cdemu-daemon_INTERFACE_VERSION@
+
