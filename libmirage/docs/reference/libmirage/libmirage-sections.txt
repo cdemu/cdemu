@@ -202,7 +202,6 @@ mirage_track_get_ctl
 mirage_track_set_isrc
 mirage_track_get_isrc
 mirage_track_get_sector
-mirage_track_read_sector
 mirage_track_layout_get_session_number
 mirage_track_layout_set_track_number
 mirage_track_layout_get_track_number

@@ -61,7 +61,7 @@ MirageDebugContext *mirage_debuggable_get_debug_context (MirageDebuggable *self)
 
 
 /**
- * mirage_debugable_messagev:
+ * mirage_debuggable_messagev:
  * @self: a #MirageDebuggable
  * @level: (in): debug level
  * @format: (in): message format. See the printf() documentation.
@@ -112,7 +112,7 @@ void mirage_debuggable_messagev (MirageDebuggable *self, gint level, gchar *form
 }
 
 /**
- * mirage_debug_context_message:
+ * mirage_debuggable_message:
  * @self: a #MirageDebuggable
  * @level: (in): debug level
  * @format: (in): message format. See the printf() documentation.
