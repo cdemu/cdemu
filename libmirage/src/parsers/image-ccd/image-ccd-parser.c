@@ -264,7 +264,7 @@ static gboolean mirage_parser_ccd_build_disc_layout (MirageParserCcd *self, GErr
 
 
             /* Data fragment */
-            fragment = mirage_create_fragment(MIRAGE_TYPE_FRAGMENT_IFACE_BINARY, self->priv->img_stream, G_OBJECT(self), error);
+            fragment = mirage_create_fragment(MIRAGE_TYPE_FRAGMENT_IFACE_BINARY, self->priv->img_stream, self, error);
             if (!fragment) {
                 MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to create data fragment!\n", __debug__);
                 g_object_unref(track);
@@ -1066,13 +1066,13 @@ static MirageDisc *mirage_parser_ccd_load_image (MirageParser *_self, GInputStre
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: creating data file streams...\n", __debug__);
 
     /* Open streams */
-    self->priv->img_stream = mirage_create_file_stream(self->priv->img_filename, G_OBJECT(self), error);
+    self->priv->img_stream = mirage_create_file_stream(self->priv->img_filename, self, error);
     if (!self->priv->img_stream) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: failed to create stream on main data file '%s'!\n", __debug__, self->priv->img_filename);
         return FALSE;
     }
 
-    self->priv->sub_stream = mirage_create_file_stream(self->priv->sub_filename, G_OBJECT(self), error);
+    self->priv->sub_stream = mirage_create_file_stream(self->priv->sub_filename, self, error);
     if (!self->priv->sub_stream) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: failed to create stream on subchannel data file '%s'!\n", __debug__, self->priv->sub_filename);
         return FALSE;

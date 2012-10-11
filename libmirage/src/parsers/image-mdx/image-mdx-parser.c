@@ -196,7 +196,7 @@ static MirageTrack *mirage_parser_mdx_get_track (MirageParserMdx *self, GError *
 
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: MDS file; corresponding MDF: %s\n", __debug__, data_file);
 
-        data_stream = mirage_create_file_stream(data_file, G_OBJECT(self), error);
+        data_stream = mirage_create_file_stream(data_file, self, error);
         g_free(data_file);
         if (!data_stream) {
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: could not open MDF file!\n", __debug__);
@@ -244,7 +244,7 @@ static MirageTrack *mirage_parser_mdx_get_track (MirageParserMdx *self, GError *
 
     /* Create data fragment */
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: creating data fragment\n", __debug__);
-    data_fragment = mirage_create_fragment(MIRAGE_TYPE_FRAGMENT_IFACE_BINARY, data_stream, G_OBJECT(self), error);
+    data_fragment = mirage_create_fragment(MIRAGE_TYPE_FRAGMENT_IFACE_BINARY, data_stream, self, error);
     if (!data_fragment) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to create BINARY fragment!\n", __debug__);
         return NULL;

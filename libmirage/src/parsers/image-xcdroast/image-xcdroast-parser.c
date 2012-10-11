@@ -87,7 +87,7 @@ static gboolean mirage_parser_xcdroast_add_track (MirageParserXcdroast *self, TO
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: adding %d sector pregap\n", __debug__, self->priv->set_pregap);
 
         /* Creation of NULL fragment should never fail */
-        fragment = mirage_create_fragment(MIRAGE_TYPE_FRAGMENT_IFACE_NULL, NULL, G_OBJECT(self), error);
+        fragment = mirage_create_fragment(MIRAGE_TYPE_FRAGMENT_IFACE_NULL, NULL, self, error);
 
         mirage_fragment_set_length(fragment, self->priv->set_pregap);
 
@@ -108,7 +108,7 @@ static gboolean mirage_parser_xcdroast_add_track (MirageParserXcdroast *self, TO
     }
 
     /* Open stream */
-    GInputStream *data_stream = mirage_create_file_stream(data_file, G_OBJECT(self), error);
+    GInputStream *data_stream = mirage_create_file_stream(data_file, self, error);
     if (!data_stream) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to create stream on data file '%s'!\n", __debug__, data_file);
         g_free(data_file);
@@ -124,7 +124,7 @@ static gboolean mirage_parser_xcdroast_add_track (MirageParserXcdroast *self, TO
             mirage_track_set_mode(track, MIRAGE_MODE_MODE1);
 
             /* Create and add binary fragment, using whole file */
-            fragment = mirage_create_fragment(MIRAGE_TYPE_FRAGMENT_IFACE_BINARY, data_stream, G_OBJECT(self), error);
+            fragment = mirage_create_fragment(MIRAGE_TYPE_FRAGMENT_IFACE_BINARY, data_stream, self, error);
             if (!fragment) {
                 MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to create BINARY fragment!\n", __debug__);
                 g_object_unref(data_stream);
@@ -164,7 +164,7 @@ static gboolean mirage_parser_xcdroast_add_track (MirageParserXcdroast *self, TO
             mirage_track_set_mode(track, MIRAGE_MODE_AUDIO);
 
             /* Create and add audio fragment, using whole file */
-            fragment = mirage_create_fragment(MIRAGE_TYPE_FRAGMENT_IFACE_AUDIO, data_stream, G_OBJECT(self), error);
+            fragment = mirage_create_fragment(MIRAGE_TYPE_FRAGMENT_IFACE_AUDIO, data_stream, self, error);
             if (!fragment) {
                 MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to create AUDIO fragment!\n", __debug__);
                 g_object_unref(data_stream);
@@ -200,7 +200,7 @@ static gboolean mirage_parser_xcdroast_add_track (MirageParserXcdroast *self, TO
     gchar *xinf_filename = create_xinf_filename(track_info->file);
     gchar *real_xinf_filename = mirage_helper_find_data_file(xinf_filename, self->priv->toc_filename);
 
-    GInputStream *xinf_stream = mirage_create_file_stream(real_xinf_filename, G_OBJECT(self), error);
+    GInputStream *xinf_stream = mirage_create_file_stream(real_xinf_filename, self, error);
 
     if (xinf_stream) {
         if (mirage_parser_xcdroast_parse_xinf_file(self, xinf_stream, NULL)) {

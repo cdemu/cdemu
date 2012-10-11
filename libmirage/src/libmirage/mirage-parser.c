@@ -241,7 +241,7 @@ void mirage_parser_add_redbook_pregap (MirageParser *self, MirageDisc *disc)
         }
 
         /* Add pregap fragment - NULL fragment creation should never fail */
-        fragment = mirage_create_fragment(MIRAGE_TYPE_FRAGMENT_IFACE_NULL, NULL, G_OBJECT(self), NULL);
+        fragment = mirage_create_fragment(MIRAGE_TYPE_FRAGMENT_IFACE_NULL, NULL, self, NULL);
         mirage_fragment_set_length(fragment, 150);
         mirage_track_add_fragment(track, 0, fragment);
         g_object_unref(fragment);
@@ -381,7 +381,7 @@ GInputStream *mirage_parser_get_cached_data_stream (MirageParser *self, const gc
 
     if (!stream) {
         /* Stream not in cache, open a stream on filename... */
-        stream = mirage_create_file_stream(filename, G_OBJECT(self), error);
+        stream = mirage_create_file_stream(filename, self, error);
         if (!stream) {
             return stream;
         }

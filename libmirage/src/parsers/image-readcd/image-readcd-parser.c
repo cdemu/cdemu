@@ -197,7 +197,7 @@ static gboolean mirage_parser_readcd_parse_toc_entry (MirageParserReadcd *self, 
         mirage_track_set_ctl(self->priv->cur_track, entry[1]);
 
         /* Data fragment */
-        MirageFragment *fragment = mirage_create_fragment(MIRAGE_TYPE_FRAGMENT_IFACE_BINARY, self->priv->data_stream, G_OBJECT(self), error);
+        MirageFragment *fragment = mirage_create_fragment(MIRAGE_TYPE_FRAGMENT_IFACE_BINARY, self->priv->data_stream, self, error);
         if (!fragment) {
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to create data fragment!\n", __debug__);
             succeeded = FALSE;
@@ -243,7 +243,7 @@ static gboolean mirage_parser_readcd_parse_toc_entry (MirageParserReadcd *self, 
                 g_object_unref(prev_track);
 
                 /* Current track: add 150-frame pregap with data from data file */
-                fragment = mirage_create_fragment(MIRAGE_TYPE_FRAGMENT_IFACE_BINARY, self->priv->data_stream, G_OBJECT(self), error);
+                fragment = mirage_create_fragment(MIRAGE_TYPE_FRAGMENT_IFACE_BINARY, self->priv->data_stream, self, error);
                 if (!fragment) {
                     MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to create data fragment!\n", __debug__);
                     succeeded = FALSE;
@@ -301,7 +301,7 @@ static gboolean mirage_parser_readcd_parse_toc (MirageParserReadcd *self, GInput
         return FALSE;
     }
 
-    self->priv->data_stream = mirage_create_file_stream(self->priv->data_filename, G_OBJECT(self), error);
+    self->priv->data_stream = mirage_create_file_stream(self->priv->data_filename, self, error);
     if (!self->priv->data_stream) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to open data file '%s'!\n", __debug__, self->priv->data_filename);
         g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_DATA_FILE_ERROR, "Failed to create stream on data file!");

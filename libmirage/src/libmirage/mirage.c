@@ -291,7 +291,7 @@ gchar *mirage_obtain_password (GError **error)
  * Returns: (transfer full): a #MirageDisc object on success, %NULL on failure. The reference to
  * the object should be released using g_object_unref() when no longer needed.
  **/
-MirageDisc *mirage_create_disc (gchar **filenames, GObject *debug_context, GHashTable *params, GError **error)
+MirageDisc *mirage_create_disc (gchar **filenames, MirageDebugContext *debug_context, GHashTable *params, GError **error)
 {
     MirageDisc *disc = NULL;
     GInputStream **streams;
@@ -320,7 +320,7 @@ MirageDisc *mirage_create_disc (gchar **filenames, GObject *debug_context, GHash
         parser = g_object_new(libmirage.parsers[i], NULL);
 
         /* Attach the debug context to parser */
-        mirage_debuggable_set_debug_context(MIRAGE_DEBUGGABLE(parser), MIRAGE_DEBUG_CONTEXT(debug_context));
+        mirage_debuggable_set_debug_context(MIRAGE_DEBUGGABLE(parser), debug_context);
 
         /* Pass the parameters to parser */
         mirage_parser_set_params(parser, params);
@@ -365,7 +365,7 @@ end:
  * mirage_create_fragment:
  * @fragment_interface: (in): interface that fragment should implement
  * @stream: (in): the data stream that fragment should be able to handle
- * @debug_context: (in) (allow-none): debug context or debuggable object to set to fragment, or %NULL
+ * @debug_context: (in) (allow-none) (type GObject*): debug context or debuggable object to set to fragment, or %NULL
  * @error: (out) (allow-none): location to store error, or %NULL
  *
  * <para>
@@ -383,7 +383,7 @@ end:
  * Returns: (transfer full): a #MirageFragment object on success, %NULL on failure. The reference
  * to the object should be released using g_object_unref() when no longer needed.
  **/
-MirageFragment *mirage_create_fragment (GType fragment_interface, GInputStream *stream, GObject *debug_context, GError **error)
+MirageFragment *mirage_create_fragment (GType fragment_interface, GInputStream *stream, gpointer debug_context, GError **error)
 {
     gboolean succeeded = TRUE;
     MirageFragment *fragment;
@@ -399,7 +399,7 @@ MirageFragment *mirage_create_fragment (GType fragment_interface, GInputStream *
        debug context */
     if (debug_context) {
         if (MIRAGE_IS_DEBUGGABLE(debug_context)) {
-            debug_context = G_OBJECT(mirage_debuggable_get_debug_context(MIRAGE_DEBUGGABLE(debug_context)));
+            debug_context = mirage_debuggable_get_debug_context(MIRAGE_DEBUGGABLE(debug_context));
             g_object_unref(debug_context); /* Keep just pointer */
         } else if (!MIRAGE_IS_DEBUG_CONTEXT(debug_context)) {
             g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_LIBRARY_ERROR, "Invalid debug context or debuggable object!");
@@ -416,7 +416,7 @@ MirageFragment *mirage_create_fragment (GType fragment_interface, GInputStream *
         succeeded = G_TYPE_CHECK_INSTANCE_TYPE((fragment), fragment_interface);
         if (succeeded) {
             /* Set debug context */
-            mirage_debuggable_set_debug_context(MIRAGE_DEBUGGABLE(fragment), MIRAGE_DEBUG_CONTEXT(debug_context));
+            mirage_debuggable_set_debug_context(MIRAGE_DEBUGGABLE(fragment), debug_context);
 
             /* Check if fragment can handle file format */
             succeeded = mirage_fragment_can_handle_data_format(fragment, stream, NULL);
@@ -437,7 +437,7 @@ MirageFragment *mirage_create_fragment (GType fragment_interface, GInputStream *
 /**
  * mirage_create_file_stream:
  * @filename: (in): filename to create stream on
- * @debug_context: (in) (allow-none): debug context or debuggable object to set to file stream, or %NULL
+ * @debug_context: (in) (allow-none) (type GObject*): debug context or debuggable object to set to file stream, or %NULL
  * @error: (out) (allow-none): location to store error, or %NULL
  *
  * <para>
@@ -457,7 +457,7 @@ MirageFragment *mirage_create_fragment (GType fragment_interface, GInputStream *
  * The reference to the object should be released using g_object_unref()
  * when no longer needed.
  **/
-GInputStream *mirage_create_file_stream (const gchar *filename, GObject *debug_context, GError **error)
+GInputStream *mirage_create_file_stream (const gchar *filename, gpointer debug_context, GError **error)
 {
     GInputStream *stream;
     GFile *file;
@@ -475,7 +475,7 @@ GInputStream *mirage_create_file_stream (const gchar *filename, GObject *debug_c
        debug context */
     if (debug_context) {
         if (MIRAGE_IS_DEBUGGABLE(debug_context)) {
-            debug_context = G_OBJECT(mirage_debuggable_get_debug_context(MIRAGE_DEBUGGABLE(debug_context)));
+            debug_context = mirage_debuggable_get_debug_context(MIRAGE_DEBUGGABLE(debug_context));
             g_object_unref(debug_context); /* Keep just pointer */
         } else if (!MIRAGE_IS_DEBUG_CONTEXT(debug_context)) {
             g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_LIBRARY_ERROR, "Invalid debug context or debuggable object!");
@@ -519,7 +519,7 @@ GInputStream *mirage_create_file_stream (const gchar *filename, GObject *debug_c
             /* Create filter object and check if it can handle data */
             filter = g_object_new(libmirage.file_filters[i], "base-stream", stream, "close-base-stream", FALSE, NULL);
 
-            mirage_debuggable_set_debug_context(MIRAGE_DEBUGGABLE(filter), MIRAGE_DEBUG_CONTEXT(debug_context));
+            mirage_debuggable_set_debug_context(MIRAGE_DEBUGGABLE(filter), debug_context);
 
             if (!mirage_file_filter_can_handle_data_format(filter, NULL)) {
                 /* Cannot handle data format... */
