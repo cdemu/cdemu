@@ -1,12 +1,13 @@
-prefix=@prefix@
-exec_prefix=@exec_prefix@
-libdir=@libdir@
-includedir=@includedir@
+prefix=@CMAKE_INSTALL_PREFIX@
+exec_prefix=${prefix}
+libdir=@CMAKE_INSTALL_FULL_LIBDIR@
+includedir=@CMAKE_INSTALL_FULL_INCLUDEDIR@
 plugindir=@MIRAGE_PLUGIN_DIR@
 
-Name: @PACKAGE_NAME@
-Description: CD-ROM image access library
-Version: @PACKAGE_VERSION@
+Name: @PROJECT_NAME@
+Description: CD/DVD-ROM image access library
+Version: @PROJECT_VERSION@
 Requires: glib-2.0 gobject-2.0 gmodule-2.0 gio-2.0
 Libs: -L${libdir} -lmirage
 Cflags: -I${includedir}/libmirage
+
