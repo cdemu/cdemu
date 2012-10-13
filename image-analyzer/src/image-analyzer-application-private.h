@@ -52,7 +52,7 @@ struct _ImageAnalyzerApplicationPrivate
     xmlDocPtr xml_doc;
 
     /* Debug */
-    MirageDebugContext *debug_context;
+    MirageContext *mirage_context;
     gboolean debug_to_stdout;
 };
 

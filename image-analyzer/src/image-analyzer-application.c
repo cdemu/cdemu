@@ -79,7 +79,7 @@ static void image_analyzer_application_set_debug_to_stdout (ImageAnalyzerApplica
 static void image_analyzer_application_set_debug_mask (ImageAnalyzerApplication *self, gint debug_mask)
 {
     /* Debug mask */
-    mirage_debug_context_set_debug_mask(self->priv->debug_context, debug_mask);
+    mirage_context_set_debug_mask(self->priv->mirage_context, debug_mask);
 }
 
 static void image_analyzer_application_change_debug_mask (ImageAnalyzerApplication *self)
@@ -96,7 +96,7 @@ static void image_analyzer_application_change_debug_mask (ImageAnalyzerApplicati
     mirage_get_supported_debug_masks(&valid_masks, &num_valid_masks, NULL);
 
     /* Get mask from debug context */
-    mask = mirage_debug_context_get_debug_mask(self->priv->debug_context);
+    mask = mirage_context_get_debug_mask(self->priv->mirage_context);
 
     /* Construct dialog */
     dialog = gtk_dialog_new_with_buttons("Debug mask",
@@ -136,7 +136,7 @@ static void image_analyzer_application_change_debug_mask (ImageAnalyzerApplicati
         }
 
         /* Set the mask */
-        mirage_debug_context_set_debug_mask(self->priv->debug_context, mask);
+        mirage_context_set_debug_mask(self->priv->mirage_context, mask);
     }
 
     /* Destroy dialog */
@@ -266,7 +266,7 @@ static gboolean image_analyzer_application_open_image (ImageAnalyzerApplication 
     image_analyzer_application_close_image_or_dump(self);
 
     /* Create disc */
-    self->priv->disc = mirage_create_disc(filenames, G_OBJECT(self->priv->debug_context), NULL, &error);
+    self->priv->disc = mirage_create_disc(filenames, self->priv->mirage_context, NULL, &error);
     if (!self->priv->disc) {
         g_warning("Failed to create disc: %s\n", error->message);
         image_analyzer_application_message(self, "Failed to open image: %s", error->message);
@@ -865,9 +865,9 @@ static void image_analyzer_application_init (ImageAnalyzerApplication *self)
     self->priv->disc = NULL;
 
     /* Setup debug context */
-    self->priv->debug_context = g_object_new(MIRAGE_TYPE_DEBUG_CONTEXT, NULL);
-    mirage_debug_context_set_domain(self->priv->debug_context, "libMirage");
-    mirage_debug_context_set_debug_mask(self->priv->debug_context, MIRAGE_DEBUG_PARSER);
+    self->priv->mirage_context = g_object_new(MIRAGE_TYPE_CONTEXT, NULL);
+    mirage_context_set_debug_domain(self->priv->mirage_context, "libMirage");
+    mirage_context_set_debug_mask(self->priv->mirage_context, MIRAGE_DEBUG_PARSER);
 
     /* Setup GUI */
     setup_gui(self);
@@ -883,8 +883,8 @@ static void image_analyzer_application_finalize (GObject *gobject)
     /* Close image */
     image_analyzer_application_close_image_or_dump(self);
 
-    if (self->priv->debug_context) {
-        g_object_unref(self->priv->debug_context);
+    if (self->priv->mirage_context) {
+        g_object_unref(self->priv->mirage_context);
     }
 
     gtk_widget_destroy(self->priv->window);

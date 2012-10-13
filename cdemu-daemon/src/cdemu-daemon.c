@@ -78,15 +78,15 @@ static gboolean device_mapping_callback (CdemuDaemon *self)
 \******************************************************************************/
 gboolean cdemu_daemon_initialize_and_start (CdemuDaemon *self, gint num_devices, gchar *ctl_device, gchar *audio_driver, gboolean system_bus)
 {
-    MirageDebugContext *debug_context;
+    MirageContext *context;
     GBusType bus_type = system_bus ? G_BUS_TYPE_SYSTEM : G_BUS_TYPE_SESSION;
 
-    /* Debug context; so that we get daemon's errors/warnings from the very beginning */
-    debug_context = g_object_new(MIRAGE_TYPE_DEBUG_CONTEXT, NULL);
-    mirage_debug_context_set_name(debug_context, "cdemu");
-    mirage_debug_context_set_domain(debug_context, "CDEMU");
-    mirage_debuggable_set_debug_context(MIRAGE_DEBUGGABLE(self), debug_context);
-    g_object_unref(debug_context);
+    /* Create a MirageContext and use it as debug context */
+    context = g_object_new(MIRAGE_TYPE_CONTEXT, NULL);
+    mirage_context_set_debug_name(context, "cdemu");
+    mirage_context_set_debug_domain(context, "CDEMU");
+    mirage_contextual_set_context(MIRAGE_CONTEXTUAL(self), context);
+    g_object_unref(context);
 
     /* Control device */
     self->priv->ctl_device = g_strdup(ctl_device);

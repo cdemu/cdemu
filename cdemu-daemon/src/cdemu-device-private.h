@@ -63,7 +63,7 @@ struct _CdemuDevicePrivate
     /* Disc */
     gboolean loaded;
     MirageDisc *disc;
-    MirageDebugContext *disc_debug; /* Debug context for disc */
+    MirageContext *mirage_context; /* libMirage context */
 
     /* Locked flag */
     gboolean locked;
