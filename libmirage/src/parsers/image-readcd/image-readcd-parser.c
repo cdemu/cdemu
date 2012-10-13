@@ -50,7 +50,7 @@ static gboolean mirage_parser_readcd_is_file_valid (MirageParserReadcd *self, GI
     guint16 toc_len;
 
     /* File must have .toc suffix */
-    if (!mirage_helper_has_suffix(mirage_get_file_stream_filename(stream), ".toc")) {
+    if (!mirage_helper_has_suffix(mirage_contextual_get_file_stream_filename(MIRAGE_CONTEXTUAL(self), stream), ".toc")) {
         g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_CANNOT_HANDLE, "Parser cannot handle given image!");
         return FALSE;
     }
@@ -301,7 +301,7 @@ static gboolean mirage_parser_readcd_parse_toc (MirageParserReadcd *self, GInput
         return FALSE;
     }
 
-    self->priv->data_stream = mirage_create_file_stream(self->priv->data_filename, self, error);
+    self->priv->data_stream = mirage_contextual_create_file_stream(MIRAGE_CONTEXTUAL(self), self->priv->data_filename, error);
     if (!self->priv->data_stream) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to open data file '%s'!\n", __debug__, self->priv->data_filename);
         g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_DATA_FILE_ERROR, "Failed to create stream on data file!");
@@ -413,7 +413,7 @@ static MirageDisc *mirage_parser_readcd_load_image (MirageParser *_self, GInputS
     mirage_object_set_parent(MIRAGE_OBJECT(self->priv->disc), self);
 
     /* Set filenames */
-    self->priv->toc_filename = mirage_get_file_stream_filename(stream);
+    self->priv->toc_filename = mirage_contextual_get_file_stream_filename(MIRAGE_CONTEXTUAL(self), stream);
     mirage_disc_set_filename(self->priv->disc, self->priv->toc_filename);
 
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: TOC filename: %s\n", __debug__, self->priv->toc_filename);

@@ -196,7 +196,7 @@ static MirageTrack *mirage_parser_mdx_get_track (MirageParserMdx *self, GError *
 
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: MDS file; corresponding MDF: %s\n", __debug__, data_file);
 
-        data_stream = mirage_create_file_stream(data_file, self, error);
+        data_stream = mirage_contextual_create_file_stream(MIRAGE_CONTEXTUAL(self), data_file, error);
         g_free(data_file);
         if (!data_stream) {
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: could not open MDF file!\n", __debug__);
@@ -349,7 +349,7 @@ static MirageDisc *mirage_parser_mdx_load_image (MirageParser *_self, GInputStre
     mirage_object_set_parent(MIRAGE_OBJECT(self->priv->disc), self);
 
     /* Set filenames */
-    self->priv->mdx_filename = mirage_get_file_stream_filename(self->priv->stream);
+    self->priv->mdx_filename = mirage_contextual_get_file_stream_filename(MIRAGE_CONTEXTUAL(self), self->priv->stream);
     mirage_disc_set_filename(self->priv->disc, self->priv->mdx_filename);
 
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: MDX filename: %s\n", __debug__, self->priv->mdx_filename);

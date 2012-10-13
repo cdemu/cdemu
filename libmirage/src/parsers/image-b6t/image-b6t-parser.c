@@ -193,7 +193,7 @@ static gboolean mirage_parser_b6t_load_bwa_file (MirageParserB6t *self, GError *
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: found BWA file: '%s'\n", __debug__, bwa_fullpath);
 
         /* Open BWA file */
-        stream = mirage_create_file_stream(bwa_fullpath, self, error);
+        stream = mirage_contextual_create_file_stream(MIRAGE_CONTEXTUAL(self), bwa_fullpath, error);
         g_free(bwa_fullpath);
 
         if (!stream) {
@@ -1274,7 +1274,7 @@ static MirageDisc *mirage_parser_b6t_load_image (MirageParser *_self, GInputStre
     self->priv->disc = g_object_new(MIRAGE_TYPE_DISC, NULL);
     mirage_object_set_parent(MIRAGE_OBJECT(self->priv->disc), self);
 
-    self->priv->b6t_filename = mirage_get_file_stream_filename(stream);
+    self->priv->b6t_filename = mirage_contextual_get_file_stream_filename(MIRAGE_CONTEXTUAL(self), stream);
     mirage_disc_set_filename(self->priv->disc, self->priv->b6t_filename);
 
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: B6T filename: %s\n", __debug__, self->priv->b6t_filename);

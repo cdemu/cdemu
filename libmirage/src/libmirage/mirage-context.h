@@ -79,6 +79,9 @@ MirageDisc *mirage_context_load_image (MirageContext *self, gchar **filenames, G
 
 MirageFragment *mirage_context_create_fragment (MirageContext *self, GType fragment_interface, GInputStream *stream, GError **error);
 
+GInputStream *mirage_context_create_file_stream (MirageContext *self, const gchar *filename, GError **error);
+const gchar *mirage_context_get_file_stream_filename (MirageContext *self, GInputStream *stream);
+
 
 /**********************************************************************\
  *                     MirageContextual interface                     *
@@ -117,6 +120,8 @@ void mirage_contextual_debug_message (MirageContextual *self, gint level, gchar 
 void mirage_contextual_debug_messagev (MirageContextual *self, gint level, gchar *format, va_list args);
 
 MirageFragment *mirage_contextual_create_fragment (MirageContextual *self, GType fragment_interface, GInputStream *stream, GError **error);
+GInputStream *mirage_contextual_create_file_stream (MirageContextual *self, const gchar *filename, GError **error);
+const gchar *mirage_contextual_get_file_stream_filename (MirageContextual *self, GInputStream *stream);
 
 G_END_DECLS
 

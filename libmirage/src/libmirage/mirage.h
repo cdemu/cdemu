@@ -141,10 +141,6 @@ gboolean mirage_shutdown (GError **error);
 gboolean mirage_set_password_function (MiragePasswordFunction func, gpointer user_data, GError **error);
 gchar *mirage_obtain_password (GError **error);
 
-GInputStream *mirage_create_file_stream (const gchar *filename, gpointer context, GError **error);
-
-const gchar *mirage_get_file_stream_filename (GInputStream *stream);
-
 gboolean mirage_get_parsers_type (GType **types, gint *num_parsers, GError **error);
 gboolean mirage_get_parsers_info (const MirageParserInfo **info, gint *num_parsers, GError **error);
 gboolean mirage_enumerate_parsers (MirageEnumParserInfoCallback func, gpointer user_data, GError **error);

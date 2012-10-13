@@ -186,7 +186,7 @@ static MirageDisc *mirage_parser_iso_load_image (MirageParser *_self, GInputStre
     /* Check if file can be loaded */
     stream = streams[0];
     g_object_ref(stream);
-    iso_filename = mirage_get_file_stream_filename(stream);
+    iso_filename = mirage_contextual_get_file_stream_filename(MIRAGE_CONTEXTUAL(self), stream);
 
     if (!mirage_parser_iso_is_file_valid(self, stream, error)) {
         g_object_unref(stream);

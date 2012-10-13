@@ -108,7 +108,7 @@ static gboolean mirage_parser_xcdroast_add_track (MirageParserXcdroast *self, TO
     }
 
     /* Open stream */
-    GInputStream *data_stream = mirage_create_file_stream(data_file, self, error);
+    GInputStream *data_stream = mirage_contextual_create_file_stream(MIRAGE_CONTEXTUAL(self), data_file, error);
     if (!data_stream) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to create stream on data file '%s'!\n", __debug__, data_file);
         g_free(data_file);
@@ -200,7 +200,7 @@ static gboolean mirage_parser_xcdroast_add_track (MirageParserXcdroast *self, TO
     gchar *xinf_filename = create_xinf_filename(track_info->file);
     gchar *real_xinf_filename = mirage_helper_find_data_file(xinf_filename, self->priv->toc_filename);
 
-    GInputStream *xinf_stream = mirage_create_file_stream(real_xinf_filename, self, error);
+    GInputStream *xinf_stream = mirage_contextual_create_file_stream(MIRAGE_CONTEXTUAL(self), real_xinf_filename, error);
 
     if (xinf_stream) {
         if (mirage_parser_xcdroast_parse_xinf_file(self, xinf_stream, NULL)) {
@@ -586,7 +586,7 @@ static gboolean mirage_parser_xcdroast_parse_xinf_file (MirageParserXcdroast *se
     }
 
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "\n");
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: parsing XINF: %s\n", __debug__, mirage_get_file_stream_filename(stream));
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: parsing XINF: %s\n", __debug__, mirage_contextual_get_file_stream_filename(MIRAGE_CONTEXTUAL(self), stream));
 
     /* Read file line-by-line */
     for (gint line_number = 1; ; line_number++) {
@@ -668,7 +668,7 @@ static gboolean mirage_parser_xcdroast_parse_toc_file (MirageParserXcdroast *sel
     }
 
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "\n");
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: parsing TOC: %s\n", __debug__, mirage_get_file_stream_filename(stream));
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: parsing TOC: %s\n", __debug__, mirage_contextual_get_file_stream_filename(MIRAGE_CONTEXTUAL(self), stream));
 
     /* Read file line-by-line */
     for (gint line_number = 1; ; line_number++) {
@@ -745,7 +745,7 @@ static gboolean mirage_parser_xcdroast_check_toc_file (MirageParserXcdroast *sel
     GDataInputStream *data_stream;
 
     /* Check suffix - must be .toc */
-    if (!mirage_helper_has_suffix(mirage_get_file_stream_filename(stream), ".toc")) {
+    if (!mirage_helper_has_suffix(mirage_contextual_get_file_stream_filename(MIRAGE_CONTEXTUAL(self), stream), ".toc")) {
         return FALSE;
     }
 
@@ -828,7 +828,7 @@ static MirageDisc *mirage_parser_xcdroast_load_image (MirageParser *_self, GInpu
     self->priv->disc = g_object_new(MIRAGE_TYPE_DISC, NULL);
     mirage_object_set_parent(MIRAGE_OBJECT(self->priv->disc), self);
 
-    self->priv->toc_filename = mirage_get_file_stream_filename(streams[0]);
+    self->priv->toc_filename = mirage_contextual_get_file_stream_filename(MIRAGE_CONTEXTUAL(self), streams[0]);
     mirage_disc_set_filename(self->priv->disc, self->priv->toc_filename);
 
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: TOC filename: %s\n", __debug__, self->priv->toc_filename);

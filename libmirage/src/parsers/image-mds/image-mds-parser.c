@@ -783,7 +783,7 @@ static MirageDisc *mirage_parser_mds_load_image (MirageParser *_self, GInputStre
     self->priv->disc = g_object_new(MIRAGE_TYPE_DISC, NULL);
     mirage_object_set_parent(MIRAGE_OBJECT(self->priv->disc), self);
 
-    self->priv->mds_filename = mirage_get_file_stream_filename(stream);
+    self->priv->mds_filename = mirage_contextual_get_file_stream_filename(MIRAGE_CONTEXTUAL(self), stream);
     mirage_disc_set_filename(self->priv->disc, self->priv->mds_filename);
 
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: MDs filename: %s\n", __debug__, self->priv->mds_filename);

@@ -63,7 +63,7 @@ static const gchar *mirage_fragment_binary_main_data_get_filename (MirageFragmen
 {
     MirageFragmentBinary *self = MIRAGE_FRAGMENT_BINARY(_self);
     /* Return file name */
-    return mirage_get_file_stream_filename(self->priv->main_stream);
+    return mirage_contextual_get_file_stream_filename(MIRAGE_CONTEXTUAL(self), self->priv->main_stream);
 }
 
 
@@ -154,7 +154,7 @@ static const gchar *mirage_fragment_binary_subchannel_data_get_filename (MirageF
 {
     MirageFragmentBinary *self = MIRAGE_FRAGMENT_BINARY(_self);
     /* Return file name */
-    return mirage_get_file_stream_filename(self->priv->subchannel_stream);
+    return mirage_contextual_get_file_stream_filename(MIRAGE_CONTEXTUAL(self), self->priv->subchannel_stream);
 }
 
 

@@ -996,7 +996,7 @@ static MirageDisc *mirage_parser_nrg_load_image (MirageParser *_self, GInputStre
     self->priv->disc = g_object_new(MIRAGE_TYPE_DISC, NULL);
     mirage_object_set_parent(MIRAGE_OBJECT(self->priv->disc), self);
 
-    nrg_filename = mirage_get_file_stream_filename(self->priv->nrg_stream);
+    nrg_filename = mirage_contextual_get_file_stream_filename(MIRAGE_CONTEXTUAL(self), self->priv->nrg_stream);
     mirage_disc_set_filename(self->priv->disc, nrg_filename);
 
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: NRG filename: %s\n", __debug__, nrg_filename);

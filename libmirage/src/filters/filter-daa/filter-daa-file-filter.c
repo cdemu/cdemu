@@ -995,7 +995,7 @@ static gboolean mirage_file_filter_daa_build_part_table (MirageFileFilterDaa *se
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: part #%i: %s\n", __debug__, i, part_filename);
 
         /* Create stream */
-        part->stream = mirage_create_file_stream(part_filename, self, error);
+        part->stream = mirage_contextual_create_file_stream(MIRAGE_CONTEXTUAL(self), part_filename, error);
         if (!part->stream) {
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to open stream on file '%s'!\n", __debug__, part_filename);
             g_free(part_filename);
@@ -1179,7 +1179,7 @@ static gboolean mirage_file_filter_daa_can_handle_data_format (MirageFileFilter 
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: parsing the underlying stream data...\n", __debug__);
 
     /* Store filename for later processing */
-    self->priv->main_filename = mirage_get_file_stream_filename(stream);
+    self->priv->main_filename = mirage_contextual_get_file_stream_filename(MIRAGE_CONTEXTUAL(self), stream);
 
     /* Parse DAA file */
     if (!mirage_file_filter_daa_parse_daa_file(self, error)) {

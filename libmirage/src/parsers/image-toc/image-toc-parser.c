@@ -1145,7 +1145,7 @@ static gboolean mirage_parser_toc_check_toc_file (MirageParserToc *self, GInputS
     GDataInputStream *data_stream;
 
     /* Check suffix - must be .toc */
-    if (!mirage_helper_has_suffix(mirage_get_file_stream_filename(stream), ".toc")) {
+    if (!mirage_helper_has_suffix(mirage_contextual_get_file_stream_filename(MIRAGE_CONTEXTUAL(self), stream), ".toc")) {
         return FALSE;
     }
 
@@ -1224,7 +1224,7 @@ static MirageDisc *mirage_parser_toc_load_image (MirageParser *_self, GInputStre
             return FALSE;
         }
 
-        filenames[i] = mirage_get_file_stream_filename(streams[i]);
+        filenames[i] = mirage_contextual_get_file_stream_filename(MIRAGE_CONTEXTUAL(self), streams[i]);
     }
 
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: parsing the image...\n", __debug__);
@@ -1239,7 +1239,7 @@ static MirageDisc *mirage_parser_toc_load_image (MirageParser *_self, GInputStre
     /* Each TOC/BIN is one session, so we load all given filenames */
     for (gint i = 0; i < num_streams; i++) {
         /* Store the TOC filename */
-        self->priv->toc_filename = mirage_get_file_stream_filename(streams[i]);
+        self->priv->toc_filename = mirage_contextual_get_file_stream_filename(MIRAGE_CONTEXTUAL(self), streams[i]);
 
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: loading session #%i: TOC file '%s'!\n", __debug__, i, self->priv->toc_filename);
         mirage_parser_toc_init_session_data(self);

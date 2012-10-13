@@ -935,7 +935,7 @@ static MirageDisc *mirage_parser_cdi_load_image (MirageParser *_self, GInputStre
     gint32 descriptor_length;
 
     /* Check if we can load the file; we check the suffix */
-    cdi_filename = mirage_get_file_stream_filename(streams[0]);
+    cdi_filename = mirage_contextual_get_file_stream_filename(MIRAGE_CONTEXTUAL(self), streams[0]);
 
     if (!mirage_helper_has_suffix(cdi_filename, ".cdi")) {
         g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_CANNOT_HANDLE, "Parser cannot handle given image!");

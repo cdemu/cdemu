@@ -152,7 +152,7 @@ static const gchar *mirage_fragment_sndfile_get_filename (MirageFragmentIfaceAud
 {
     MirageFragmentSndfile *self = MIRAGE_FRAGMENT_SNDFILE(_self);
     /* Return filename */
-    return mirage_get_file_stream_filename(self->priv->stream);
+    return mirage_contextual_get_file_stream_filename(MIRAGE_CONTEXTUAL(self), self->priv->stream);
 }
 
 static void mirage_fragment_sndfile_set_offset (MirageFragmentIfaceAudio *_self, gint offset)

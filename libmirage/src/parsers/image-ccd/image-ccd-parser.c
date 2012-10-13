@@ -1014,7 +1014,7 @@ static MirageDisc *mirage_parser_ccd_load_image (MirageParser *_self, GInputStre
     MirageParserCcd *self = MIRAGE_PARSER_CCD(_self);
 
     gboolean succeeded = TRUE;
-    const gchar *ccd_filename = mirage_get_file_stream_filename(streams[0]);
+    const gchar *ccd_filename = mirage_contextual_get_file_stream_filename(MIRAGE_CONTEXTUAL(self), streams[0]);
 
     /* Check if we can load the file; we check the suffix */
     if (!mirage_helper_has_suffix(ccd_filename, ".ccd")) {
@@ -1066,13 +1066,13 @@ static MirageDisc *mirage_parser_ccd_load_image (MirageParser *_self, GInputStre
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: creating data file streams...\n", __debug__);
 
     /* Open streams */
-    self->priv->img_stream = mirage_create_file_stream(self->priv->img_filename, self, error);
+    self->priv->img_stream = mirage_contextual_create_file_stream(MIRAGE_CONTEXTUAL(self), self->priv->img_filename, error);
     if (!self->priv->img_stream) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: failed to create stream on main data file '%s'!\n", __debug__, self->priv->img_filename);
         return FALSE;
     }
 
-    self->priv->sub_stream = mirage_create_file_stream(self->priv->sub_filename, self, error);
+    self->priv->sub_stream = mirage_contextual_create_file_stream(MIRAGE_CONTEXTUAL(self), self->priv->sub_filename, error);
     if (!self->priv->sub_stream) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: failed to create stream on subchannel data file '%s'!\n", __debug__, self->priv->sub_filename);
         return FALSE;

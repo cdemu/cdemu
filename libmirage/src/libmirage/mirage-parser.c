@@ -357,7 +357,7 @@ GInputStream *mirage_parser_get_cached_data_stream (MirageParser *self, const gc
 
     if (!stream) {
         /* Stream not in cache, open a stream on filename... */
-        stream = mirage_create_file_stream(filename, self, error);
+        stream = mirage_contextual_create_file_stream(MIRAGE_CONTEXTUAL(self), filename, error);
         if (!stream) {
             return stream;
         }
