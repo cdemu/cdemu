@@ -30,12 +30,15 @@ static struct
 
     guint num_parsers;
     GType *parsers;
+    MirageParserInfo *parsers_info;
 
     guint num_fragments;
     GType *fragments;
+    MirageFragmentInfo *fragments_info;
 
     guint num_file_filters;
     GType *file_filters;
+    MirageFileFilterInfo *file_filters_info;
 
     /* Password function */
     MiragePasswordFunction password_function;
@@ -76,6 +79,51 @@ static inline void mirage_file_streams_map_add (gpointer stream, const gchar *fi
     g_object_weak_ref(stream, (GWeakNotify)stream_destroyed_handler, NULL);
 }
 
+
+/**********************************************************************\
+ *            Parsers, fragments and file filters list                *
+\**********************************************************************/
+static void initialize_parsers_list ()
+{
+    libmirage.parsers = g_type_children(MIRAGE_TYPE_PARSER, &libmirage.num_parsers);
+
+    libmirage.parsers_info = g_new(MirageParserInfo, libmirage.num_parsers);
+    for (gint i = 0; i < libmirage.num_parsers; i++) {
+        MirageParser *parser = g_object_new(libmirage.parsers[i], NULL);
+        libmirage.parsers_info[i] = *mirage_parser_get_info(parser);
+        g_object_unref(parser);
+    }
+}
+
+static void initialize_fragments_list ()
+{
+    libmirage.fragments = g_type_children(MIRAGE_TYPE_FRAGMENT, &libmirage.num_fragments);
+
+    libmirage.fragments_info = g_new(MirageFragmentInfo, libmirage.num_fragments);
+    for (gint i = 0; i < libmirage.num_fragments; i++) {
+        MirageFragment *fragment = g_object_new(libmirage.fragments[i], NULL);
+        libmirage.fragments_info[i] = *mirage_fragment_get_info(fragment);
+        g_object_unref(fragment);
+    }
+}
+
+static void initialize_file_filters_list ()
+{
+    /* Create a dummy stream - because at gio 2.32, unreferencing the
+       GFilterInputStream apparently tries to unref the underlying stream */
+    GInputStream *dummy_stream = g_memory_input_stream_new();
+
+    libmirage.file_filters = g_type_children(MIRAGE_TYPE_FILE_FILTER, &libmirage.num_file_filters);
+
+    libmirage.file_filters_info = g_new(MirageFileFilterInfo, libmirage.num_file_filters);
+    for (gint i = 0; i < libmirage.num_file_filters; i++) {
+        MirageFileFilter *file_filter = g_object_new(libmirage.file_filters[i], "base-stream", dummy_stream, "close-base-stream", FALSE, NULL);
+        libmirage.file_filters_info[i] = *mirage_file_filter_get_info(file_filter);
+        g_object_unref(file_filter);
+    }
+
+    g_object_unref(dummy_stream);
+}
 
 
 /**********************************************************************\
@@ -138,9 +186,9 @@ gboolean mirage_initialize (GError **error)
     g_dir_close(plugins_dir);
 
     /* *** Get parsers, fragments and file filters *** */
-    libmirage.parsers = g_type_children(MIRAGE_TYPE_PARSER, &libmirage.num_parsers);
-    libmirage.fragments = g_type_children(MIRAGE_TYPE_FRAGMENT, &libmirage.num_fragments);
-    libmirage.file_filters = g_type_children(MIRAGE_TYPE_FILE_FILTER, &libmirage.num_file_filters);
+    initialize_parsers_list();
+    initialize_fragments_list();
+    initialize_file_filters_list();
 
     /* Reset password function pointers */
     libmirage.password_function = NULL;
@@ -599,15 +647,7 @@ gboolean mirage_enumerate_parsers (MirageEnumParserInfoCallback func, gpointer u
 
     /* Go over all parsers */
     for (gint i = 0; i < libmirage.num_parsers; i++) {
-        const MirageParserInfo *parser_info;
-        gboolean succeeded;
-        GObject *parser;
-
-        parser = g_object_new(libmirage.parsers[i], NULL);
-        parser_info = mirage_parser_get_info(MIRAGE_PARSER(parser));
-        succeeded = (*func)(parser_info, user_data);
-        g_object_unref(parser);
-        if (!succeeded) {
+        if (!(*func)(&libmirage.parsers_info[i], user_data)) {
             g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_LIBRARY_ERROR, "Iteration has been cancelled!");
             return FALSE;
         }
@@ -642,15 +682,7 @@ gboolean mirage_enumerate_fragments (MirageEnumFragmentInfoCallback func, gpoint
 
     /* Go over all fragments */
     for (gint i = 0; i < libmirage.num_fragments; i++) {
-        const MirageFragmentInfo *fragment_info;
-        gboolean succeeded;
-        GObject *fragment;
-
-        fragment = g_object_new(libmirage.fragments[i], NULL);
-        fragment_info = mirage_fragment_get_info(MIRAGE_FRAGMENT(fragment));
-        succeeded = (*func)(fragment_info, user_data);
-        g_object_unref(fragment);
-        if (!succeeded) {
+        if (!(*func)(&libmirage.fragments_info[i], user_data)) {
             g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_LIBRARY_ERROR, "Iteration has been cancelled!");
             return FALSE;
         }
@@ -677,36 +709,21 @@ gboolean mirage_enumerate_fragments (MirageEnumFragmentInfoCallback func, gpoint
  **/
 gboolean mirage_enumerate_file_filters (MirageEnumFileFilterInfoCallback func, gpointer user_data, GError **error)
 {
-    gboolean succeeded = TRUE;
-
     /* Make sure libMirage is initialized */
     if (!libmirage.initialized) {
         g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_LIBRARY_ERROR, "Library not initialized!");
         return FALSE;
     }
 
-    /* Create a dummy stream - because at gio 2.32, unreferencing the
-       GFilterInputStream apparently tries to unref the underlying stream */
-    GInputStream *dummy_stream = g_memory_input_stream_new();
-
     /* Go over all file filters */
     for (gint i = 0; i < libmirage.num_file_filters; i++) {
-        const MirageFileFilterInfo *file_filter_info;
-        GObject *filter;
-
-        filter = g_object_new(libmirage.file_filters[i], "base-stream", dummy_stream, "close-base-stream", FALSE, NULL);
-        file_filter_info = mirage_file_filter_get_info(MIRAGE_FILE_FILTER(filter));
-        succeeded = (*func)(file_filter_info, user_data);
-        g_object_unref(filter);
-        if (!succeeded) {
+        if (!(*func)(&libmirage.file_filters_info[i], user_data)) {
             g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_LIBRARY_ERROR, "Iteration has been cancelled!");
-            break;
+            return FALSE;
         }
     }
 
-    g_object_unref(dummy_stream);
-
-    return succeeded;
+    return TRUE;
 }
 
 
