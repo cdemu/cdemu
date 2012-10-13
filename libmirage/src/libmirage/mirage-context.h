@@ -20,6 +20,9 @@
 #ifndef __MIRAGE_CONTEXT_H__
 #define __MIRAGE_CONTEXT_H__
 
+/* Forward declarations */
+typedef struct _MirageDisc MirageDisc;
+
 
 G_BEGIN_DECLS
 
@@ -69,6 +72,9 @@ const gchar *mirage_context_get_debug_domain (MirageContext *self);
 
 void mirage_context_set_debug_name (MirageContext *self, const gchar *name);
 const gchar *mirage_context_get_debug_name (MirageContext *self);
+
+
+MirageDisc *mirage_context_load_image (MirageContext *self, gchar **filenames, GHashTable *params, GError **error);
 
 
 /**********************************************************************\

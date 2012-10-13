@@ -26,7 +26,7 @@
 
 
 /**********************************************************************\
- *                          Debuggable interface                      *
+ *                          Contextual interface                      *
 \**********************************************************************/
 /**
  * mirage_contextual_set_context:
@@ -267,6 +267,108 @@ gint mirage_context_get_debug_mask (MirageContext *self)
 {
     /* Return debug mask */
     return self->priv->debug_mask;
+}
+
+
+
+/**
+ * mirage_context_load_image:
+ * @self: a #MirageContext
+ * @filenames: (in) (array zero-terminated=1): filename(s)
+ * @params: (in) (allow-none) (element-type gchar* GValue): parser parameters, or %NULL
+ * @error: (out) (allow-none): location to store error, or %NULL
+ *
+ * <para>
+ * Creates a #MirageDisc object representing image stored in @filenames. @filenames
+ * is a NULL-terminated list of filenames containing image data. The function tries
+ * to find a parser that can handle give filename(s) and uses it to load the data
+ * into disc object.
+ * </para>
+ *
+ * <para>
+ * @params, if not %NULL, is a #GHashTable containing parser parameters (such as
+ * password, encoding, etc.) - it must have strings for its keys and values of
+ * #GValue type. The hash table is passed to the parser; whether parameters are
+ * actually used (or supported) by the parser, however, depends on the parser
+ * implementation. If parser does not support a parameter, it will be ignored.
+ * </para>
+ *
+ * <para>
+ * If multiple filenames are provided and parser supports only single-file images,
+ * only the first filename is used.
+ * </para>
+ *
+ * Returns: (transfer full): a #MirageDisc object on success, %NULL on failure. The reference to
+ * the object should be released using g_object_unref() when no longer needed.
+ **/
+MirageDisc *mirage_context_load_image (MirageContext *self, gchar **filenames, GHashTable *params, GError **error)
+{
+    MirageDisc *disc = NULL;
+    GInputStream **streams;
+
+    gint num_parsers;
+    GType *parser_types;
+
+    /* Get a list of supported parsers */
+    if (!mirage_get_parsers_type(&parser_types, &num_parsers, error)) {
+        return NULL;
+    }
+
+    /* Create streams */
+    streams = g_new0(GInputStream *, g_strv_length(filenames)+1);
+    for (gint i = 0; filenames[i]; i++) {
+        streams[i] = mirage_create_file_stream(filenames[i], self, error);
+        if (!streams[i]) {
+            goto end;
+        }
+    }
+
+    /* Go over all parsers */
+    for (gint i = 0; i < num_parsers; i++) {
+        GError *local_error = NULL;
+        MirageParser *parser;
+
+        /* Create parser object */
+        parser = g_object_new(parser_types[i], NULL);
+
+        /* Attach context to parser */
+        mirage_contextual_set_context(MIRAGE_CONTEXTUAL(parser), self);
+
+        /* Pass the parameters to parser */
+        mirage_parser_set_params(parser, params);
+
+        /* Try loading image */
+        disc = mirage_parser_load_image(parser, streams, &local_error);
+
+        /* Free parser */
+        g_object_unref(parser);
+
+        /* If loading succeeded, break the loop */
+        if (disc) {
+            goto end;
+        } else {
+            /* MIRAGE_ERROR_CANNOT_HANDLE is the only acceptable error here; anything
+               other indicates that parser attempted to handle image and failed */
+            if (local_error->code == MIRAGE_ERROR_CANNOT_HANDLE) {
+                g_error_free(local_error);
+            } else {
+                g_propagate_error(error, local_error);
+                goto end;
+            }
+        }
+    }
+
+    /* No parser found */
+    g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_PARSER_ERROR, "No parser can handle the image file!");
+
+end:
+    /* Close streams */
+    for (gint i = 0; streams[i]; i++) {
+        g_object_unref(streams[i]);
+    }
+    g_free(streams);
+
+    return disc;
 }
 
 

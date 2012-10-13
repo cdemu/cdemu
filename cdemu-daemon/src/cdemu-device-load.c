@@ -62,7 +62,7 @@ static gboolean cdemu_device_load_disc_private (CdemuDevice *self, gchar **filen
     }
 
     /* Load... */
-    self->priv->disc = mirage_create_disc(filenames, self->priv->mirage_context, options, error);
+    self->priv->disc = mirage_context_load_image(self->priv->mirage_context, filenames, options, error);
 
     /* Check if loading succeeded */
     if (!self->priv->disc) {
