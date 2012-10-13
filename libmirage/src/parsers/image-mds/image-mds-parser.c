@@ -496,8 +496,8 @@ static gboolean mirage_parser_mds_parse_track_entries (MirageParserMds *self, MD
             /* MDS format doesn't seem to store pregap data in its data file;
                therefore, we need to provide NULL fragment for pregap */
             if (extra_block && extra_block->pregap) {
-                /* Creating NULL fragment should never fail */
-                MirageFragment *fragment = mirage_create_fragment(MIRAGE_TYPE_FRAGMENT_IFACE_NULL, NULL, self, NULL);;
+                /* Create NULL fragment */
+                MirageFragment *fragment = g_object_new(MIRAGE_TYPE_FRAGMENT, NULL);
 
                 MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: track has pregap (0x%X); creating NULL fragment\n", __debug__, extra_block->pregap);
 

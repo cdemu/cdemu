@@ -338,8 +338,8 @@ static gboolean mirage_parser_c2d_parse_track_entries (MirageParserC2d *self, GE
 
         /* Pregap fragment at the beginning of track */
         if ((track_entry->point == 1) && (track_entry->index == 1)) {
-            /* Creating NULL fragment should never fail */
-            MirageFragment *pregap_fragment = mirage_create_fragment(MIRAGE_TYPE_FRAGMENT_IFACE_NULL, NULL, self, error);
+            /* Create NULL fragment */
+            MirageFragment *pregap_fragment = g_object_new(MIRAGE_TYPE_FRAGMENT, NULL);
 
             mirage_fragment_set_length(pregap_fragment, 150);
 

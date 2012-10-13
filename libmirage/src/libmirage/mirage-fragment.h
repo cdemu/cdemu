@@ -108,33 +108,6 @@ gboolean mirage_fragment_read_subchannel_data (MirageFragment *self, gint addres
 
 
 /**********************************************************************\
- *                  MirageFragmentIfaceNull interface                 *
-\**********************************************************************/
-#define MIRAGE_TYPE_FRAGMENT_IFACE_NULL                (mirage_fragment_iface_null_get_type())
-#define MIRAGE_FRAGMENT_IFACE_NULL(obj)                (G_TYPE_CHECK_INSTANCE_CAST((obj), MIRAGE_TYPE_FRAGMENT_IFACE_NULL, MIRAGE_FragmentIface_Null))
-#define MIRAGE_IS_FRAGMENT_IFACE_NULL(obj)             (G_TYPE_CHECK_INSTANCE_TYPE((obj), MIRAGE_TYPE_FRAGMENT_IFACE_NULL))
-#define MIRAGE_FRAGMENT_IFACE_NULL_GET_INTERFACE(inst) (G_TYPE_INSTANCE_GET_INTERFACE((inst), MIRAGE_TYPE_FRAGMENT_IFACE_NULL, MIRAGE_FragmentIface_NullInterface))
-
-/**
- * MirageFragmentIfaceNull:
- *
- * <para>
- * Dummy interface structure.
- * </para>
- **/
-typedef struct _MirageFragmentIfaceNull          MirageFragmentIfaceNull;
-typedef struct _MirageFragmentIfaceNullInterface MirageFragmentIfaceNullInterface;
-
-struct _MirageFragmentIfaceNullInterface
-{
-    GTypeInterface parent_iface;
-};
-
-/* Used by MIRAGE_TYPE_FRAGMENT_IFACE_NULL */
-GType mirage_fragment_iface_null_get_type (void);
-
-
-/**********************************************************************\
  *                MirageFragmentIfaceBinary interface                 *
 \**********************************************************************/
 /**

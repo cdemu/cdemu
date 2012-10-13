@@ -1,6 +1,5 @@
 set (fragments_LIST
     fragment-binary
-    fragment-null
     fragment-sndfile
 )
 
@@ -88,11 +87,6 @@ set (libmirage_SOURCES
 set (fragment-binary_SOURCES
     src/fragments/fragment-binary/fragment-binary-fragment.c
     src/fragments/fragment-binary/fragment-binary-plugin.c
-)
-
-set (fragment-null_SOURCES
-    src/fragments/fragment-null/fragment-null-plugin.c
-    src/fragments/fragment-null/fragment-null-fragment.c
 )
 
 set (fragment-sndfile_SOURCES

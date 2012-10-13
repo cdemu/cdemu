@@ -290,6 +290,49 @@ gboolean mirage_fragment_read_subchannel_data (MirageFragment *self, gint addres
 
 
 /**********************************************************************\
+ *                Default implementation: NULL fragment               *
+\**********************************************************************/
+static gboolean mirage_fragment_null_can_handle_data_format (MirageFragment *self G_GNUC_UNUSED, GInputStream *stream G_GNUC_UNUSED, GError **error)
+{
+    /* This should never get called, anyway */
+    g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_CANNOT_HANDLE, "Fragment cannot handle given data!");
+    return FALSE;
+}
+
+static gboolean mirage_fragment_null_use_the_rest_of_file (MirageFragment *self G_GNUC_UNUSED, GError **error G_GNUC_UNUSED)
+{
+    /* No file, nothing to use */
+    return TRUE;
+}
+
+static gboolean mirage_fragment_null_read_main_data (MirageFragment *self, gint address G_GNUC_UNUSED, guint8 **buffer, gint *length, GError **error G_GNUC_UNUSED)
+{
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_FRAGMENT, "%s: no data in NULL fragment\n", __debug__);
+
+    /* Nothing to read */
+    *length = 0;
+    if (buffer) {
+        *buffer = NULL;
+    }
+
+    return TRUE;
+}
+
+static gboolean mirage_fragment_null_read_subchannel_data (MirageFragment *self, gint address G_GNUC_UNUSED, guint8 **buffer, gint *length, GError **error G_GNUC_UNUSED)
+{
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_FRAGMENT, "%s: no data in NULL fragment\n", __debug__);
+
+    /* Nothing to read */
+    *length = 0;
+    if (buffer) {
+        *buffer = NULL;
+    }
+
+    return TRUE;
+}
+
+
+/**********************************************************************\
  *                             Object init                            *
 \**********************************************************************/
 G_DEFINE_TYPE(MirageFragment, mirage_fragment, MIRAGE_TYPE_OBJECT);
@@ -299,7 +342,12 @@ static void mirage_fragment_init (MirageFragment *self)
 {
     self->priv = MIRAGE_FRAGMENT_GET_PRIVATE(self);
 
+    /* Default fragment implementation is NULL fragment */
     self->priv->fragment_info = NULL;
+    mirage_fragment_generate_info(self,
+        "FRAGMENT-NULL",
+        "NULL Fragment"
+    );
 }
 
 static void mirage_fragment_finalize (GObject *gobject)
@@ -319,10 +367,11 @@ static void mirage_fragment_class_init (MirageFragmentClass *klass)
 
     gobject_class->finalize = mirage_fragment_finalize;
 
-    klass->can_handle_data_format = NULL;
-    klass->use_the_rest_of_file = NULL;
-    klass->read_main_data = NULL;
-    klass->read_subchannel_data = NULL;
+    /* Default implementation: NULL fragment */
+    klass->can_handle_data_format = mirage_fragment_null_can_handle_data_format;
+    klass->use_the_rest_of_file = mirage_fragment_null_use_the_rest_of_file;
+    klass->read_main_data = mirage_fragment_null_read_main_data;
+    klass->read_subchannel_data = mirage_fragment_null_read_subchannel_data;
 
     /* Register private structure */
     g_type_class_add_private(klass, sizeof(MirageFragmentPrivate));
@@ -337,32 +386,6 @@ static void mirage_fragment_class_init (MirageFragmentClass *klass)
      * </para>
      */
     klass->signal_layout_changed = g_signal_new("layout-changed", G_OBJECT_CLASS_TYPE(klass), G_SIGNAL_RUN_LAST, 0, NULL, NULL, g_cclosure_marshal_VOID__VOID, G_TYPE_NONE, 0, NULL);
-}
-
-
-/**********************************************************************\
- *                            Null interface                          *
-\**********************************************************************/
-GType mirage_fragment_iface_null_get_type (void) {
-    static GType iface_type = 0;
-    if (iface_type == 0) {
-        static const GTypeInfo info = {
-            sizeof(MirageFragmentIfaceNullInterface),
-            NULL,   /* base_init */
-            NULL,   /* base_finalize */
-            NULL,   /* class_init */
-            NULL,   /* class_finalize */
-            NULL,   /* class_data */
-            0,
-            0,      /* n_preallocs */
-            NULL,   /* instance_init */
-            NULL    /* value_table */
-        };
-
-        iface_type = g_type_register_static(G_TYPE_INTERFACE, "MirageFragmentIfaceNull", &info, 0);
-    }
-
-    return iface_type;
 }
 
 

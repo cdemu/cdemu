@@ -169,9 +169,9 @@ static gboolean mirage_parser_toc_track_add_fragment (MirageParserToc *self, gin
 
     /* Create appropriate fragment */
     if (type == TOC_DATA_TYPE_NONE) {
-        /* Empty fragment; we'd like a NULL fragment - creation should never fail */
+        /* Empty fragment; create NULL fragment */
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: creating NULL fragment\n", __debug__);
-        fragment = mirage_create_fragment(MIRAGE_TYPE_FRAGMENT_IFACE_NULL, NULL, self, NULL);
+        fragment = g_object_new(MIRAGE_TYPE_FRAGMENT, NULL);
     } else {
         /* Find filename */
         gchar *filename = mirage_helper_find_data_file(filename_string, self->priv->toc_filename);

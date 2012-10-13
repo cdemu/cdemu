@@ -92,9 +92,7 @@ static gboolean xml_dump_fragment (MirageFragment *fragment, xmlNodePtr parent)
     xml_add_node_with_content(parent, TAG_LENGTH, "%d", length);
 
 
-    if (MIRAGE_IS_FRAGMENT_IFACE_NULL(fragment)) {
-        /* Nothing to do here*/
-    } else if (MIRAGE_IS_FRAGMENT_IFACE_BINARY(fragment)) {
+    if (MIRAGE_IS_FRAGMENT_IFACE_BINARY(fragment)) {
         const gchar *main_name, *subchannel_name;
         guint64 main_offset, subchannel_offset;
         gint main_size, subchannel_size;

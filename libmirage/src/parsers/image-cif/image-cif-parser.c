@@ -364,8 +364,8 @@ static MirageSession *mirage_parser_cif_parse_session_descriptor (MirageParserCi
 
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: adding pregap: %d (0x%X)\n", __debug__, pregap_length, pregap_length);
 
-            /* Create NULL fragment - creation should never fail */
-            fragment = mirage_create_fragment(MIRAGE_TYPE_FRAGMENT_IFACE_NULL, NULL, self, error);
+            /* Create NULL fragment */
+            fragment = g_object_new(MIRAGE_TYPE_FRAGMENT, NULL);
 
             mirage_fragment_set_length(fragment, pregap_length);
 

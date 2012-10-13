@@ -378,8 +378,8 @@ void mirage_session_set_leadout_length (MirageSession *self, gint length)
        get the last fragment in track */
     fragment = mirage_track_get_fragment_by_index(leadout, -1, NULL);
     if (!fragment) {
-        /* Create NULL fragment - should never fail */
-        fragment = mirage_create_fragment(MIRAGE_TYPE_FRAGMENT_IFACE_NULL, NULL, G_OBJECT(self), NULL);
+        /* Create NULL fragment */
+        fragment = g_object_new(MIRAGE_TYPE_FRAGMENT, NULL);
         mirage_track_add_fragment(leadout, 0, fragment);
     }
 
