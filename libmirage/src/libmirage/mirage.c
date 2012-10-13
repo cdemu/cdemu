@@ -622,6 +622,58 @@ const gchar *mirage_get_file_stream_filename (GInputStream *stream)
 
 
 /**
+ * mirage_get_parsers_type:
+ * @types: (out) (array length=num_parsers): array of parsers' #GType values
+ * @num_parsers: (out): number of supported parsers
+ * @error: (out) (allow-none): location to store error, or %NULL
+ *
+ * <para>
+ * Retrieves #GType values for supported parsers.
+ * </para>
+ *
+ * Returns: %TRUE on success, %FALSE on failure
+ **/
+gboolean mirage_get_parsers_type (GType **types, gint *num_parsers, GError **error)
+{
+    /* Make sure libMirage is initialized */
+    if (!libmirage.initialized) {
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_LIBRARY_ERROR, "Library not initialized!");
+        return FALSE;
+    }
+
+    *types = libmirage.parsers;
+    *num_parsers = libmirage.num_parsers;
+
+    return TRUE;
+}
+
+/**
+ * mirage_get_parsers_info:
+ * @info: (out) (array length=num_parsers) (transfer none): array of parsers' information structures
+ * @num_parsers: (out): number of supported parsers
+ * @error: (out) (allow-none): location to store error, or %NULL
+ *
+ * <para>
+ * Retrieves information structures for supported parsers.
+ * </para>
+ *
+ * Returns: %TRUE on success, %FALSE on failure
+ **/
+gboolean mirage_get_parsers_info (const MirageParserInfo **info, gint *num_parsers, GError **error)
+{
+    /* Make sure libMirage is initialized */
+    if (!libmirage.initialized) {
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_LIBRARY_ERROR, "Library not initialized!");
+        return FALSE;
+    }
+
+    *info = libmirage.parsers_info;
+    *num_parsers = libmirage.num_parsers;
+
+    return TRUE;
+}
+
+/**
  * mirage_enumerate_parsers:
  * @func: (in) (scope call): callback function
  * @user_data: (in) (closure): data to be passed to callback function
@@ -652,6 +704,59 @@ gboolean mirage_enumerate_parsers (MirageEnumParserInfoCallback func, gpointer u
             return FALSE;
         }
     }
+
+    return TRUE;
+}
+
+
+/**
+ * mirage_get_fragments_type:
+ * @types: (out) (array length=num_fragments): array of fragments' #GType values
+ * @num_fragments: (out): number of supported fragments
+ * @error: (out) (allow-none): location to store error, or %NULL
+ *
+ * <para>
+ * Retrieves #GType values for supported fragments.
+ * </para>
+ *
+ * Returns: %TRUE on success, %FALSE on failure
+ **/
+gboolean mirage_get_fragments_type (GType **types, gint *num_fragments, GError **error)
+{
+    /* Make sure libMirage is initialized */
+    if (!libmirage.initialized) {
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_LIBRARY_ERROR, "Library not initialized!");
+        return FALSE;
+    }
+
+    *types = libmirage.fragments;
+    *num_fragments = libmirage.num_fragments;
+
+    return TRUE;
+}
+
+/**
+ * mirage_get_fragments_info:
+ * @info: (out) (array length=num_fragments) (transfer none): array of fragments' information structures
+ * @num_fragments: (out): number of supported fragments
+ * @error: (out) (allow-none): location to store error, or %NULL
+ *
+ * <para>
+ * Retrieves information structures for supported fragments.
+ * </para>
+ *
+ * Returns: %TRUE on success, %FALSE on failure
+ **/
+gboolean mirage_get_fragments_info (const MirageFragmentInfo **info, gint *num_fragments, GError **error)
+{
+    /* Make sure libMirage is initialized */
+    if (!libmirage.initialized) {
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_LIBRARY_ERROR, "Library not initialized!");
+        return FALSE;
+    }
+
+    *info = libmirage.fragments_info;
+    *num_fragments = libmirage.num_fragments;
 
     return TRUE;
 }
@@ -687,6 +792,59 @@ gboolean mirage_enumerate_fragments (MirageEnumFragmentInfoCallback func, gpoint
             return FALSE;
         }
     }
+
+    return TRUE;
+}
+
+
+/**
+ * mirage_get_file_filters_type:
+ * @types: (out) (array length=num_file_filters): array of file filters' #GType values
+ * @num_file_filters: (out): number of supported file filters
+ * @error: (out) (allow-none): location to store error, or %NULL
+ *
+ * <para>
+ * Retrieves #GType values for supported file filters.
+ * </para>
+ *
+ * Returns: %TRUE on success, %FALSE on failure
+ **/
+gboolean mirage_get_file_filters_type (GType **types, gint *num_file_filters, GError **error)
+{
+    /* Make sure libMirage is initialized */
+    if (!libmirage.initialized) {
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_LIBRARY_ERROR, "Library not initialized!");
+        return FALSE;
+    }
+
+    *types = libmirage.file_filters;
+    *num_file_filters = libmirage.num_file_filters;
+
+    return TRUE;
+}
+
+/**
+ * mirage_get_file_filters_info:
+ * @info: (out) (array length=num_file_filters) (transfer none): array of file filters' information structures
+ * @num_file_filters: (out): number of supported file filters
+ * @error: (out) (allow-none): location to store error, or %NULL
+ *
+ * <para>
+ * Retrieves information structures for supported file filters.
+ * </para>
+ *
+ * Returns: %TRUE on success, %FALSE on failure
+ **/
+gboolean mirage_get_file_filters_info (const MirageFileFilterInfo **info, gint *num_file_filters, GError **error)
+{
+    /* Make sure libMirage is initialized */
+    if (!libmirage.initialized) {
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_LIBRARY_ERROR, "Library not initialized!");
+        return FALSE;
+    }
+
+    *info = libmirage.file_filters_info;
+    *num_file_filters = libmirage.num_file_filters;
 
     return TRUE;
 }
