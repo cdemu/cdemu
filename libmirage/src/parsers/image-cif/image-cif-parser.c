@@ -251,7 +251,7 @@ static MirageTrack *mirage_parser_cif_parse_track_descriptor (MirageParserCif *s
     mirage_track_set_mode(track, track_mode);
 
     /* Create data fragment */
-    fragment = mirage_create_fragment(MIRAGE_TYPE_FRAGMENT_IFACE_BINARY, self->priv->cif_stream, self, error);
+    fragment = mirage_contextual_create_fragment(MIRAGE_CONTEXTUAL(self), MIRAGE_TYPE_FRAGMENT_IFACE_BINARY, self->priv->cif_stream, error);
     if (!fragment) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to create fragment!\n", __debug__);
         g_object_unref(track);

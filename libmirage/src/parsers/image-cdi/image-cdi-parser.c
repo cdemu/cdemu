@@ -663,7 +663,7 @@ static gboolean mirage_parser_cdi_load_track (MirageParserCdi *self, GError **er
     mirage_track_set_mode(track, decoded_mode);
 
     /* Create BINARY fragment */
-    fragment = mirage_create_fragment(MIRAGE_TYPE_FRAGMENT_IFACE_BINARY, self->priv->cdi_stream, self, error);
+    fragment = mirage_contextual_create_fragment(MIRAGE_CONTEXTUAL(self), MIRAGE_TYPE_FRAGMENT_IFACE_BINARY, self->priv->cdi_stream, error);
     if (!fragment) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: failed to create BINARY fragment!\n", __debug__);
         g_object_unref(track);

@@ -22,6 +22,7 @@
 
 /* Forward declarations */
 typedef struct _MirageDisc MirageDisc;
+typedef struct _MirageFragment MirageFragment;
 
 
 G_BEGIN_DECLS
@@ -76,6 +77,8 @@ const gchar *mirage_context_get_debug_name (MirageContext *self);
 
 MirageDisc *mirage_context_load_image (MirageContext *self, gchar **filenames, GHashTable *params, GError **error);
 
+MirageFragment *mirage_context_create_fragment (MirageContext *self, GType fragment_interface, GInputStream *stream, GError **error);
+
 
 /**********************************************************************\
  *                     MirageContextual interface                     *
@@ -112,6 +115,8 @@ MirageContext *mirage_contextual_get_context (MirageContextual *self);
 
 void mirage_contextual_debug_message (MirageContextual *self, gint level, gchar *format, ...);
 void mirage_contextual_debug_messagev (MirageContextual *self, gint level, gchar *format, va_list args);
+
+MirageFragment *mirage_contextual_create_fragment (MirageContextual *self, GType fragment_interface, GInputStream *stream, GError **error);
 
 G_END_DECLS
 

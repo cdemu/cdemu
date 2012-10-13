@@ -348,7 +348,7 @@ static gboolean mirage_parser_c2d_parse_track_entries (MirageParserC2d *self, GE
         }
 
         /* Data fragment */
-        MirageFragment *data_fragment = mirage_create_fragment(MIRAGE_TYPE_FRAGMENT_IFACE_BINARY, self->priv->c2d_stream, self, error);
+        MirageFragment *data_fragment = mirage_contextual_create_fragment(MIRAGE_CONTEXTUAL(self), MIRAGE_TYPE_FRAGMENT_IFACE_BINARY, self->priv->c2d_stream, error);
         if (!data_fragment) {
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: failed to create fragment!\n", __debug__);
             g_object_unref(cur_track);
