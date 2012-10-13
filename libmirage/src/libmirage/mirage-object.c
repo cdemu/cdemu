@@ -45,7 +45,9 @@ static void mirage_object_parent_context_changed_handler (MirageObject *self, Mi
     /* Get the new context and set it */
     MirageContext *context = mirage_contextual_get_context(MIRAGE_CONTEXTUAL(parent));
     mirage_contextual_set_context(MIRAGE_CONTEXTUAL(self), context);
-    g_object_unref(context);
+    if (context) {
+        g_object_unref(context);
+    }
 }
 
 
