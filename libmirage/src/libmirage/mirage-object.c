@@ -33,19 +33,19 @@ struct _MirageObjectPrivate
 {
     gpointer parent; /* Soft-reference (= no ref) to parent */
 
-    MirageDebugContext *debug_context; /* Debug context */
+    MirageContext *context;
 };
 
 
 /**********************************************************************\
  *                        Debug context changes                       *
 \**********************************************************************/
-static void mirage_object_parent_debug_context_changed_handler (MirageObject *self, MirageObject *parent)
+static void mirage_object_parent_context_changed_handler (MirageObject *self, MirageObject *parent)
 {
-    /* Get the new debug context and set it */
-    MirageDebugContext *debug_context = mirage_debuggable_get_debug_context(MIRAGE_DEBUGGABLE(parent));
-    mirage_debuggable_set_debug_context(MIRAGE_DEBUGGABLE(self), debug_context);
-    g_object_unref(debug_context);
+    /* Get the new context and set it */
+    MirageContext *context = mirage_contextual_get_context(MIRAGE_CONTEXTUAL(parent));
+    mirage_contextual_set_context(MIRAGE_CONTEXTUAL(self), context);
+    g_object_unref(context);
 }
 
 
@@ -66,7 +66,7 @@ void mirage_object_set_parent (MirageObject *self, gpointer parent)
 {
     if (self->priv->parent) {
         /* Remove "debug-context-change" signal handler */
-        g_signal_handlers_disconnect_by_func(self->priv->parent, mirage_object_parent_debug_context_changed_handler, self);
+        g_signal_handlers_disconnect_by_func(self->priv->parent, mirage_object_parent_context_changed_handler, self);
 
         /* Remove previous weak reference pointer */
         g_object_remove_weak_pointer(G_OBJECT(self->priv->parent), &self->priv->parent);
@@ -79,10 +79,10 @@ void mirage_object_set_parent (MirageObject *self, gpointer parent)
         g_object_add_weak_pointer(parent, &self->priv->parent);
 
         /* Connect "*/
-        g_signal_connect_swapped(parent, "debug-context-changed", (GCallback)mirage_object_parent_debug_context_changed_handler, self);
+        g_signal_connect_swapped(parent, "context-changed", (GCallback)mirage_object_parent_context_changed_handler, self);
 
-        /* Set parent's debug context by simulating the signal */
-        mirage_object_parent_debug_context_changed_handler(self, parent);
+        /* Set parent's context by simulating the signal */
+        mirage_object_parent_context_changed_handler(self, parent);
     }
 }
 
@@ -106,60 +106,60 @@ gpointer mirage_object_get_parent (MirageObject *self)
 
 
 /**********************************************************************\
- *              MirageDebuggable methods implementation              *
+ *              MirageContextual methods implementation               *
 \**********************************************************************/
-static void mirage_object_set_debug_context (MirageDebuggable *_self, MirageDebugContext *debug_context)
+static void mirage_object_set_context (MirageContextual *_self, MirageContext *context)
 {
     MirageObject *self = MIRAGE_OBJECT(_self);
 
-    if (debug_context == self->priv->debug_context) {
+    if (context == self->priv->context) {
         /* Don't do anything if we're trying to set the same context */
         return;
     }
 
-    /* If debug context is already set, free it */
-    if (self->priv->debug_context) {
-        g_object_unref(self->priv->debug_context);
+    /* If context is already set, free it */
+    if (self->priv->context) {
+        g_object_unref(self->priv->context);
     }
 
-    /* Set debug context and ref it */
-    self->priv->debug_context = debug_context;
-    if (self->priv->debug_context) {
-        g_object_ref(self->priv->debug_context);
+    /* Set context and ref it */
+    self->priv->context = context;
+    if (self->priv->context) {
+        g_object_ref(self->priv->context);
     }
 
     /* Signal change, so that children object can pick it up */
-    g_signal_emit_by_name(self, "debug-context-changed", NULL);
+    g_signal_emit_by_name(self, "context-changed", NULL);
 }
 
-static MirageDebugContext *mirage_object_get_debug_context (MirageDebuggable *_self)
+static MirageContext *mirage_object_get_context (MirageContextual *_self)
 {
     MirageObject *self = MIRAGE_OBJECT(_self);
-    if (self->priv->debug_context) {
-        g_object_ref(self->priv->debug_context);
+    if (self->priv->context) {
+        g_object_ref(self->priv->context);
     }
-    return self->priv->debug_context;
+    return self->priv->context;
 }
 
 
 /**********************************************************************\
  *                             Object init                            *
 \**********************************************************************/
-static void mirage_object_debuggable_init (MirageDebuggableInterface *iface);
+static void mirage_object_contextual_init (MirageContextualInterface *iface);
 
 G_DEFINE_TYPE_EXTENDED(MirageObject,
                        mirage_object,
                        G_TYPE_OBJECT,
                        0,
-                       G_IMPLEMENT_INTERFACE(MIRAGE_TYPE_DEBUGGABLE,
-                                             mirage_object_debuggable_init));
+                       G_IMPLEMENT_INTERFACE(MIRAGE_TYPE_CONTEXTUAL,
+                                             mirage_object_contextual_init));
 
 static void mirage_object_init (MirageObject *self)
 {
     self->priv = MIRAGE_OBJECT_GET_PRIVATE(self);
 
     self->priv->parent = NULL;
-    self->priv->debug_context = NULL;
+    self->priv->context = NULL;
 }
 
 static void mirage_object_dispose (GObject *gobject)
@@ -171,10 +171,10 @@ static void mirage_object_dispose (GObject *gobject)
         g_object_remove_weak_pointer(G_OBJECT(self->priv->parent), &self->priv->parent);
     }
 
-    /* Unref debug context (if we have it) */
-    if (self->priv->debug_context) {
-        g_object_unref(self->priv->debug_context);
-        self->priv->debug_context = NULL;
+    /* Unref context */
+    if (self->priv->context) {
+        g_object_unref(self->priv->context);
+        self->priv->context = NULL;
     }
 
     /* Chain up to the parent class */
@@ -192,18 +192,18 @@ static void mirage_object_class_init (MirageObjectClass *klass)
 
     /* Signals */
     /**
-     * MirageObject::debug-context-changed:
+     * MirageObject::context-changed:
      * @object: a #MirageObject
      *
      * <para>
-     * Emitted when a new #MirageDebugContext is set to a #MirageObject.
+     * Emitted when a new #MirageContext is set to a #MirageObject.
      * </para>
      */
-    klass->signal_debug_context_changed = g_signal_new("debug-context-changed", G_OBJECT_CLASS_TYPE(klass), G_SIGNAL_RUN_LAST, 0, NULL, NULL, g_cclosure_marshal_VOID__VOID, G_TYPE_NONE, 0, NULL);
+    klass->signal_context_changed = g_signal_new("context-changed", G_OBJECT_CLASS_TYPE(klass), G_SIGNAL_RUN_LAST, 0, NULL, NULL, g_cclosure_marshal_VOID__VOID, G_TYPE_NONE, 0, NULL);
 }
 
-static void mirage_object_debuggable_init (MirageDebuggableInterface *iface)
+static void mirage_object_contextual_init (MirageContextualInterface *iface)
 {
-    iface->set_debug_context = mirage_object_set_debug_context;
-    iface->get_debug_context = mirage_object_get_debug_context;
+    iface->set_context = mirage_object_set_context;
+    iface->get_context = mirage_object_get_context;
 }

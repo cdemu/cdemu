@@ -35,7 +35,7 @@ struct _MirageFileFilterPrivate
 {
     MirageFileFilterInfo *info;
 
-    MirageDebugContext *debug_context;
+    MirageContext *context;
 
     /* Simplified interface */
     guint64 file_size;
@@ -310,36 +310,36 @@ static gssize mirage_file_filter_read (GInputStream *_self, void *buffer, gsize 
 
 
 /**********************************************************************\
- *              MirageDebuggable methods implementation              *
+ *              MirageContextual methods implementation               *
 \**********************************************************************/
-static void mirage_file_filter_set_debug_context (MirageDebuggable *_self, MirageDebugContext *debug_context)
+static void mirage_file_filter_set_context (MirageContextual *_self, MirageContext *context)
 {
     MirageFileFilter *self = MIRAGE_FILE_FILTER(_self);
 
-    if (debug_context == self->priv->debug_context) {
+    if (context == self->priv->context) {
         /* Don't do anything if we're trying to set the same context */
         return;
     }
 
-    /* If debug context is already set, free it */
-    if (self->priv->debug_context) {
-        g_object_unref(self->priv->debug_context);
+    /* If context is already set, free it */
+    if (self->priv->context) {
+        g_object_unref(self->priv->context);
     }
 
-    /* Set debug context and ref it */
-    self->priv->debug_context = debug_context;
-    if (self->priv->debug_context) {
-        g_object_ref(self->priv->debug_context);
+    /* Set context and ref it */
+    self->priv->context = context;
+    if (self->priv->context) {
+        g_object_ref(self->priv->context);
     }
 }
 
-static MirageDebugContext *mirage_file_filter_get_debug_context (MirageDebuggable *_self)
+static MirageContext *mirage_file_filter_get_context (MirageContextual *_self)
 {
     MirageFileFilter *self = MIRAGE_FILE_FILTER(_self);
-    if (self->priv->debug_context) {
-        g_object_ref(self->priv->debug_context);
+    if (self->priv->context) {
+        g_object_ref(self->priv->context);
     }
-    return self->priv->debug_context;
+    return self->priv->context;
 }
 
 
@@ -347,7 +347,7 @@ static MirageDebugContext *mirage_file_filter_get_debug_context (MirageDebuggabl
  *                             Object init                            *
 \**********************************************************************/
 static void mirage_file_filter_gseekable_init (GSeekableIface *iface);
-static void mirage_file_filter_debuggable_init (MirageDebuggableInterface *iface);
+static void mirage_file_filter_contextual_init (MirageContextualInterface *iface);
 
 G_DEFINE_TYPE_EXTENDED(MirageFileFilter,
                        mirage_file_filter,
@@ -355,8 +355,8 @@ G_DEFINE_TYPE_EXTENDED(MirageFileFilter,
                        0,
                        G_IMPLEMENT_INTERFACE(G_TYPE_SEEKABLE,
                                              mirage_file_filter_gseekable_init);
-                       G_IMPLEMENT_INTERFACE(MIRAGE_TYPE_DEBUGGABLE,
-                                             mirage_file_filter_debuggable_init));
+                       G_IMPLEMENT_INTERFACE(MIRAGE_TYPE_CONTEXTUAL,
+                                             mirage_file_filter_contextual_init));
 
 
 static void mirage_file_filter_init (MirageFileFilter *self)
@@ -364,7 +364,7 @@ static void mirage_file_filter_init (MirageFileFilter *self)
     self->priv = MIRAGE_FILE_FILTER_GET_PRIVATE(self);
 
     self->priv->info = NULL;
-    self->priv->debug_context = NULL;
+    self->priv->context = NULL;
 
     self->priv->file_size = 0;
     self->priv->position = 0;
@@ -375,9 +375,9 @@ static void mirage_file_filter_dispose (GObject *gobject)
     MirageFileFilter *self = MIRAGE_FILE_FILTER(gobject);
 
     /* Unref debug context (if we have it) */
-    if (self->priv->debug_context) {
-        g_object_unref(self->priv->debug_context);
-        self->priv->debug_context = NULL;
+    if (self->priv->context) {
+        g_object_unref(self->priv->context);
+        self->priv->context = NULL;
     }
 
     /* Chain up to the parent class */
@@ -423,8 +423,8 @@ static void mirage_file_filter_gseekable_init (GSeekableIface *iface)
     iface->truncate_fn = mirage_file_filter_truncate_fn;
 }
 
-static void mirage_file_filter_debuggable_init (MirageDebuggableInterface *iface)
+static void mirage_file_filter_contextual_init (MirageContextualInterface *iface)
 {
-    iface->set_debug_context = mirage_file_filter_set_debug_context;
-    iface->get_debug_context = mirage_file_filter_get_debug_context;
+    iface->set_context = mirage_file_filter_set_context;
+    iface->get_context = mirage_file_filter_get_context;
 }

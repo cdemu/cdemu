@@ -59,7 +59,7 @@ struct _MirageObjectClass
     GObjectClass parent_class;
 
     /* Signals */
-    gint signal_debug_context_changed;
+    gint signal_context_changed;
 };
 
 /* Used by MIRAGE_TYPE_OBJECT */

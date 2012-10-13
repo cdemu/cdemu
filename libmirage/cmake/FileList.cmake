@@ -46,6 +46,7 @@ set (mimetype_FILES
 set (libmirage_HEADERS
     src/libmirage/mirage.h
     src/libmirage/mirage-cdtext-coder.h
+    src/libmirage/mirage-context.h
     src/libmirage/mirage-debug.h
     src/libmirage/mirage-disc.h
     src/libmirage/mirage-disc-structures.h
@@ -67,7 +68,7 @@ set (libmirage_HEADERS
 set (libmirage_SOURCES
     src/libmirage/mirage.c
     src/libmirage/mirage-cdtext-coder.c
-    src/libmirage/mirage-debug.c
+    src/libmirage/mirage-context.c
     src/libmirage/mirage-disc.c
     src/libmirage/mirage-error.c
     src/libmirage/mirage-file-filter.c

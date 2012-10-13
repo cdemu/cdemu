@@ -263,7 +263,7 @@ gchar *mirage_obtain_password (GError **error)
 /**
  * mirage_create_disc:
  * @filenames: (in) (array zero-terminated=1): filename(s)
- * @debug_context: (in) (allow-none): debug context to be attached to disc object, or %NULL
+ * @context: (in): a #MirageContext to be attached to disc object
  * @params: (in) (allow-none) (element-type gchar* GValue): parser parameters, or %NULL
  * @error: (out) (allow-none): location to store error, or %NULL
  *
@@ -271,8 +271,7 @@ gchar *mirage_obtain_password (GError **error)
  * Creates a #MirageDisc object representing image stored in @filenames. @filenames
  * is a NULL-terminated list of filenames containing image data. The function tries
  * to find a parser that can handle give filename(s), creates disc implementation,
- * attaches @debug_context to it (if provided) and attempts to load the data into
- * disc object.
+ * attaches @context to it and attempts to load the data into disc object.
  * </para>
  *
  * <para>
@@ -291,7 +290,7 @@ gchar *mirage_obtain_password (GError **error)
  * Returns: (transfer full): a #MirageDisc object on success, %NULL on failure. The reference to
  * the object should be released using g_object_unref() when no longer needed.
  **/
-MirageDisc *mirage_create_disc (gchar **filenames, MirageDebugContext *debug_context, GHashTable *params, GError **error)
+MirageDisc *mirage_create_disc (gchar **filenames, MirageContext *context, GHashTable *params, GError **error)
 {
     MirageDisc *disc = NULL;
     GInputStream **streams;
@@ -305,7 +304,7 @@ MirageDisc *mirage_create_disc (gchar **filenames, MirageDebugContext *debug_con
     /* Create streams */
     streams = g_new0(GInputStream *, g_strv_length(filenames)+1);
     for (gint i = 0; filenames[i]; i++) {
-        streams[i] = mirage_create_file_stream(filenames[i], debug_context, error);
+        streams[i] = mirage_create_file_stream(filenames[i], context, error);
         if (!streams[i]) {
             goto end;
         }
@@ -319,8 +318,8 @@ MirageDisc *mirage_create_disc (gchar **filenames, MirageDebugContext *debug_con
         /* Create parser object */
         parser = g_object_new(libmirage.parsers[i], NULL);
 
-        /* Attach the debug context to parser */
-        mirage_debuggable_set_debug_context(MIRAGE_DEBUGGABLE(parser), debug_context);
+        /* Attach context to parser */
+        mirage_contextual_set_context(MIRAGE_CONTEXTUAL(parser), context);
 
         /* Pass the parameters to parser */
         mirage_parser_set_params(parser, params);
@@ -365,25 +364,25 @@ end:
  * mirage_create_fragment:
  * @fragment_interface: (in): interface that fragment should implement
  * @stream: (in): the data stream that fragment should be able to handle
- * @debug_context: (in) (allow-none) (type GObject*): debug context or debuggable object to set to fragment, or %NULL
+ * @context: (in) (type GObject*): context or contextual object to set to fragment
  * @error: (out) (allow-none): location to store error, or %NULL
  *
  * <para>
  * Creates a #MirageFragment implementation that implements interface specified
- * by @fragment_interface and can handle data stored in @stream. If provided,
- * @debug_context is set to the fragment.
+ * by @fragment_interface and can handle data stored in @stream. The provided
+ * @context is set to the fragment.
  * </para>
  *
  * <para>
- * If @debug_context is a #MirageDebugContext object, it is set to the file stream's
- * #MirageDebuggable interface. If @debug is an object implementing #MirageDebuggable
- * interface, then its debug context is retrieved and set to the file stream.
+ * If @context is a #MirageContext object, it is set to the file stream's
+ * #MirageContextual interface. If @context is an object implementing #MirageContextual
+ * interface, then its context is retrieved and set to the file stream.
  * </para>
  *
  * Returns: (transfer full): a #MirageFragment object on success, %NULL on failure. The reference
  * to the object should be released using g_object_unref() when no longer needed.
  **/
-MirageFragment *mirage_create_fragment (GType fragment_interface, GInputStream *stream, gpointer debug_context, GError **error)
+MirageFragment *mirage_create_fragment (GType fragment_interface, GInputStream *stream, gpointer context, GError **error)
 {
     gboolean succeeded = TRUE;
     MirageFragment *fragment;
@@ -394,17 +393,14 @@ MirageFragment *mirage_create_fragment (GType fragment_interface, GInputStream *
         return NULL;
     }
 
-    /* debug_context can be either a MirageDebugContext or an object implementing
-       MirageDebuggable interface... in the latter case, fetch its actual
-       debug context */
-    if (debug_context) {
-        if (MIRAGE_IS_DEBUGGABLE(debug_context)) {
-            debug_context = mirage_debuggable_get_debug_context(MIRAGE_DEBUGGABLE(debug_context));
-            g_object_unref(debug_context); /* Keep just pointer */
-        } else if (!MIRAGE_IS_DEBUG_CONTEXT(debug_context)) {
-            g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_LIBRARY_ERROR, "Invalid debug context or debuggable object!");
-            return NULL;
-        }
+    /* context can be either a MirageContext or an object implementing
+       MirageContextual interface... in the latter case, fetch its actual context */
+    if (MIRAGE_IS_CONTEXTUAL(context)) {
+        context = mirage_contextual_get_context(MIRAGE_CONTEXTUAL(context));
+        g_object_unref(context); /* Keep just pointer */
+    } else if (!MIRAGE_IS_CONTEXT(context)) {
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_LIBRARY_ERROR, "Invalid context or contextual object!");
+        return NULL;
     }
 
     /* Go over all fragments */
@@ -415,8 +411,8 @@ MirageFragment *mirage_create_fragment (GType fragment_interface, GInputStream *
         /* Check if requested interface is supported */
         succeeded = G_TYPE_CHECK_INSTANCE_TYPE((fragment), fragment_interface);
         if (succeeded) {
-            /* Set debug context */
-            mirage_debuggable_set_debug_context(MIRAGE_DEBUGGABLE(fragment), debug_context);
+            /* Set context */
+            mirage_contextual_set_context(MIRAGE_CONTEXTUAL(fragment), context);
 
             /* Check if fragment can handle file format */
             succeeded = mirage_fragment_can_handle_data_format(fragment, stream, NULL);
@@ -437,18 +433,18 @@ MirageFragment *mirage_create_fragment (GType fragment_interface, GInputStream *
 /**
  * mirage_create_file_stream:
  * @filename: (in): filename to create stream on
- * @debug_context: (in) (allow-none) (type GObject*): debug context or debuggable object to set to file stream, or %NULL
+ * @context: (in) (type GObject*): context or contextual object to set to file stream
  * @error: (out) (allow-none): location to store error, or %NULL
  *
  * <para>
  * Opens a file pointed to by @filename and creates a chain of file filters
- * on top of it. If provided, @debug_context is set to the file stream.
+ * on top of it. The provided @context is set to the file stream.
  * </para>
  *
  * <para>
- * If @debug_context is a #MirageDebugContext object, it is set to the file stream's
- * #MirageDebuggable interface. If @debug is an object implementing #MirageDebuggable
- * interface, then its debug context is retrieved and set to the file stream.
+ * If @context is a #MirageContext object, it is set to the file stream's
+ * #MirageContextual interface. If @context is an object implementing #MirageContextual
+ * interface, then its context is retrieved and set to the file stream.
  * </para>
  *
  * Returns: (transfer full): on success, an object inheriting #GFilterInputStream (and therefore
@@ -457,7 +453,7 @@ MirageFragment *mirage_create_fragment (GType fragment_interface, GInputStream *
  * The reference to the object should be released using g_object_unref()
  * when no longer needed.
  **/
-GInputStream *mirage_create_file_stream (const gchar *filename, gpointer debug_context, GError **error)
+GInputStream *mirage_create_file_stream (const gchar *filename, gpointer context, GError **error)
 {
     GInputStream *stream;
     GFile *file;
@@ -470,17 +466,14 @@ GInputStream *mirage_create_file_stream (const gchar *filename, gpointer debug_c
         return NULL;
     }
 
-    /* debug_context can be either a MirageDebugContext or an object implementing
-       MirageDebuggable interface... in the latter case, fetch its actual
-       debug context */
-    if (debug_context) {
-        if (MIRAGE_IS_DEBUGGABLE(debug_context)) {
-            debug_context = mirage_debuggable_get_debug_context(MIRAGE_DEBUGGABLE(debug_context));
-            g_object_unref(debug_context); /* Keep just pointer */
-        } else if (!MIRAGE_IS_DEBUG_CONTEXT(debug_context)) {
-            g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_LIBRARY_ERROR, "Invalid debug context or debuggable object!");
-            return NULL;
-        }
+    /* context can be either a MirageContext or an object implementing
+       MirageContextual interface... in the latter case, fetch its actual context */
+    if (MIRAGE_IS_CONTEXTUAL(context)) {
+        context = mirage_contextual_get_context(MIRAGE_CONTEXTUAL(context));
+        g_object_unref(context); /* Keep just pointer */
+    } else if (!MIRAGE_IS_CONTEXT(context)) {
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_LIBRARY_ERROR, "Invalid context or contextual object!");
+        return NULL;
     }
 
     /* Open file; at the bottom of the chain, there's always a GFileStream */
@@ -519,7 +512,7 @@ GInputStream *mirage_create_file_stream (const gchar *filename, gpointer debug_c
             /* Create filter object and check if it can handle data */
             filter = g_object_new(libmirage.file_filters[i], "base-stream", stream, "close-base-stream", FALSE, NULL);
 
-            mirage_debuggable_set_debug_context(MIRAGE_DEBUGGABLE(filter), debug_context);
+            mirage_contextual_set_context(MIRAGE_CONTEXTUAL(filter), context);
 
             if (!mirage_file_filter_can_handle_data_format(filter, NULL)) {
                 /* Cannot handle data format... */
@@ -529,7 +522,7 @@ GInputStream *mirage_create_file_stream (const gchar *filename, gpointer debug_c
                 g_object_unref(stream);
 
                 /* Now the underlying stream should be closed when we close filter's stream */
-                g_filter_input_stream_set_close_base_stream (G_FILTER_INPUT_STREAM(filter), TRUE);
+                g_filter_input_stream_set_close_base_stream(G_FILTER_INPUT_STREAM(filter), TRUE);
 
                 /* Filter becomes new underlying stream */
                 stream = G_INPUT_STREAM(filter);

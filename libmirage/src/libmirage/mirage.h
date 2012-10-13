@@ -31,6 +31,7 @@
 #include <math.h>
 #include <string.h>
 
+#include "mirage-context.h"
 #include "mirage-object.h"
 
 #include "mirage-cdtext-coder.h"
@@ -140,9 +141,9 @@ gboolean mirage_shutdown (GError **error);
 gboolean mirage_set_password_function (MiragePasswordFunction func, gpointer user_data, GError **error);
 gchar *mirage_obtain_password (GError **error);
 
-MirageDisc *mirage_create_disc (gchar **filenames, MirageDebugContext *debug_context, GHashTable *params, GError **error);
-MirageFragment *mirage_create_fragment (GType fragment_interface, GInputStream *stream, gpointer debug_context, GError **error);
-GInputStream *mirage_create_file_stream (const gchar *filename, gpointer debug_context, GError **error);
+MirageDisc *mirage_create_disc (gchar **filenames, MirageContext *context, GHashTable *params, GError **error);
+MirageFragment *mirage_create_fragment (GType fragment_interface, GInputStream *stream, gpointer context, GError **error);
+GInputStream *mirage_create_file_stream (const gchar *filename, gpointer context, GError **error);
 
 const gchar *mirage_get_file_stream_filename (GInputStream *stream);
 
