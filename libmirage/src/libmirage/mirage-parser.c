@@ -33,30 +33,13 @@
 
 struct _MirageParserPrivate
 {
-    GHashTable *parser_params;
+    MirageParserInfo info;
 
-    MirageParserInfo *info;
+    GHashTable *parser_params;
 
     /* Data stream cache */
     GHashTable *stream_cache;
 };
-
-
-/**********************************************************************\
- *                          Private functions                         *
-\**********************************************************************/
-static void destroy_info (MirageParserInfo *info)
-{
-    /* Free info and its content */
-    if (info) {
-        g_free(info->id);
-        g_free(info->name);
-        g_free(info->description);
-        g_free(info->mime_type);
-
-        g_free(info);
-    }
-}
 
 
 /**********************************************************************\
@@ -77,17 +60,10 @@ static void destroy_info (MirageParserInfo *info)
  **/
 void mirage_parser_generate_info (MirageParser *self, const gchar *id, const gchar *name, const gchar *description, const gchar *mime_type)
 {
-    /* Free old info */
-    destroy_info(self->priv->info);
-
-    /* Create new info */
-    self->priv->info = g_new0(MirageParserInfo, 1);
-
-    self->priv->info->id = g_strdup(id);
-    self->priv->info->name = g_strdup(name);
-
-    self->priv->info->description = g_strdup(description);
-    self->priv->info->mime_type = g_strdup(mime_type);
+    g_snprintf(self->priv->info.id, sizeof(self->priv->info.id), "%s", id);
+    g_snprintf(self->priv->info.name, sizeof(self->priv->info.name), "%s", name);
+    g_snprintf(self->priv->info.description, sizeof(self->priv->info.description), "%s", description);
+    g_snprintf(self->priv->info.mime_type, sizeof(self->priv->info.mime_type), "%s", mime_type);
 }
 
 
@@ -104,7 +80,7 @@ void mirage_parser_generate_info (MirageParser *self, const gchar *id, const gch
  **/
 const MirageParserInfo *mirage_parser_get_info (MirageParser *self)
 {
-    return self->priv->info;
+    return &self->priv->info;
 }
 
 
@@ -491,7 +467,6 @@ static void mirage_parser_init (MirageParser *self)
     self->priv = MIRAGE_PARSER_GET_PRIVATE(self);
 
     self->priv->parser_params = NULL;
-    self->priv->info = NULL;
 
     /* Stream cache hash table */
     self->priv->stream_cache = g_hash_table_new_full(g_str_hash,
@@ -510,17 +485,7 @@ static void mirage_parser_dispose (GObject *gobject)
     }
 
     /* Chain up to the parent class */
-    return G_OBJECT_CLASS(mirage_parser_parent_class)->finalize(gobject);
-}
-
-static void mirage_parser_finalize (GObject *gobject)
-{
-    MirageParser *self = MIRAGE_PARSER(gobject);
-
-    destroy_info(self->priv->info);
-
-    /* Chain up to the parent class */
-    return G_OBJECT_CLASS(mirage_parser_parent_class)->finalize(gobject);
+    return G_OBJECT_CLASS(mirage_parser_parent_class)->dispose(gobject);
 }
 
 static void mirage_parser_class_init (MirageParserClass *klass)
@@ -528,7 +493,6 @@ static void mirage_parser_class_init (MirageParserClass *klass)
     GObjectClass *gobject_class = G_OBJECT_CLASS(klass);
 
     gobject_class->dispose = mirage_parser_dispose;
-    gobject_class->finalize = mirage_parser_finalize;
 
     klass->load_image = NULL;
 

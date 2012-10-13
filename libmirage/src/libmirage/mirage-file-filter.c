@@ -33,7 +33,7 @@
 
 struct _MirageFileFilterPrivate
 {
-    MirageFileFilterInfo *info;
+    MirageFileFilterInfo info;
 
     MirageContext *context;
 
@@ -41,23 +41,6 @@ struct _MirageFileFilterPrivate
     guint64 file_size;
     goffset position;
 };
-
-
-/**********************************************************************\
- *                          Private functions                         *
-\**********************************************************************/
-static void destroy_info (MirageFileFilterInfo *info)
-{
-    /* Free info and its content */
-    if (info) {
-        g_free(info->id);
-        g_free(info->name);
-        g_free(info->description);
-        g_free(info->mime_type);
-
-        g_free(info);
-    }
-}
 
 
 /**********************************************************************\
@@ -78,19 +61,10 @@ static void destroy_info (MirageFileFilterInfo *info)
  **/
 void mirage_file_filter_generate_info (MirageFileFilter *self, const gchar *id, const gchar *name, const gchar *description, const gchar *mime_type)
 {
-    /* Free old info */
-    destroy_info(self->priv->info);
-
-    /* Create new info */
-    self->priv->info = g_new0(MirageFileFilterInfo, 1);
-
-    self->priv->info->id = g_strdup(id);
-    self->priv->info->name = g_strdup(name);
-
-    self->priv->info->description = g_strdup(description);
-    self->priv->info->mime_type = g_strdup(mime_type);
-
-    return;
+    g_snprintf(self->priv->info.id, sizeof(self->priv->info.id), "%s", id);
+    g_snprintf(self->priv->info.name, sizeof(self->priv->info.name), "%s", name);
+    g_snprintf(self->priv->info.description, sizeof(self->priv->info.description), "%s", description);
+    g_snprintf(self->priv->info.mime_type, sizeof(self->priv->info.mime_type), "%s", mime_type);
 }
 
 /**
@@ -106,7 +80,7 @@ void mirage_file_filter_generate_info (MirageFileFilter *self, const gchar *id, 
  **/
 const MirageFileFilterInfo *mirage_file_filter_get_info (MirageFileFilter *self)
 {
-    return self->priv->info;
+    return &self->priv->info;
 }
 
 
@@ -363,7 +337,6 @@ static void mirage_file_filter_init (MirageFileFilter *self)
 {
     self->priv = MIRAGE_FILE_FILTER_GET_PRIVATE(self);
 
-    self->priv->info = NULL;
     self->priv->context = NULL;
 
     self->priv->file_size = 0;
@@ -384,24 +357,12 @@ static void mirage_file_filter_dispose (GObject *gobject)
     return G_OBJECT_CLASS(mirage_file_filter_parent_class)->dispose(gobject);
 }
 
-static void mirage_file_filter_finalize (GObject *gobject)
-{
-    MirageFileFilter *self = MIRAGE_FILE_FILTER(gobject);
-
-    /* Free file filter info */
-    destroy_info(self->priv->info);
-
-    /* Chain up to the parent class */
-    return G_OBJECT_CLASS(mirage_file_filter_parent_class)->finalize(gobject);
-}
-
 static void mirage_file_filter_class_init (MirageFileFilterClass *klass)
 {
     GObjectClass *gobject_class = G_OBJECT_CLASS(klass);
     GInputStreamClass *ginputstream_class = G_INPUT_STREAM_CLASS(klass);
 
     gobject_class->dispose = mirage_file_filter_dispose;
-    gobject_class->finalize = mirage_file_filter_finalize;
 
     ginputstream_class->read_fn = mirage_file_filter_read;
 

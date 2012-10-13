@@ -48,10 +48,10 @@ G_BEGIN_DECLS
 typedef struct _MirageParserInfo MirageParserInfo;
 struct _MirageParserInfo
 {
-    gchar *id;
-    gchar *name;
-    gchar *description;
-    gchar *mime_type;
+    gchar id[32];
+    gchar name[32];
+    gchar description[64];
+    gchar mime_type[32];
 };
 
 

@@ -33,27 +33,16 @@
 
 struct _MirageFragmentPrivate
 {
+    MirageFragmentInfo info;
+
     gint address; /* Address (relative to track start) */
     gint length; /* Length, in sectors */
-
-    MirageFragmentInfo *fragment_info;
 };
 
 
 /**********************************************************************\
  *                          Private functions                         *
 \**********************************************************************/
-static void destroy_fragment_info (MirageFragmentInfo *info)
-{
-    /* Free info and its content */
-    if (info) {
-        g_free(info->id);
-        g_free(info->name);
-
-        g_free(info);
-    }
-}
-
 static void mirage_fragment_commit_topdown_change (MirageFragment *self G_GNUC_UNUSED)
 {
     /* Nothing to do here */
@@ -82,16 +71,8 @@ static void mirage_fragment_commit_bottomup_change (MirageFragment *self)
  **/
 void mirage_fragment_generate_info (MirageFragment *self, const gchar *id, const gchar *name)
 {
-    /* Free old info */
-    destroy_fragment_info(self->priv->fragment_info);
-
-    /* Create new info */
-    self->priv->fragment_info = g_new0(MirageFragmentInfo, 1);
-
-    self->priv->fragment_info->id = g_strdup(id);
-    self->priv->fragment_info->name = g_strdup(name);
-
-    return;
+    g_snprintf(self->priv->info.id, sizeof(self->priv->info.id), "%s", id);
+    g_snprintf(self->priv->info.name, sizeof(self->priv->info.name), "%s", name);
 }
 
 /**
@@ -107,7 +88,7 @@ void mirage_fragment_generate_info (MirageFragment *self, const gchar *id, const
  **/
 const MirageFragmentInfo *mirage_fragment_get_info (MirageFragment *self)
 {
-    return self->priv->fragment_info;
+    return &self->priv->info;
 }
 
 
@@ -343,30 +324,14 @@ static void mirage_fragment_init (MirageFragment *self)
     self->priv = MIRAGE_FRAGMENT_GET_PRIVATE(self);
 
     /* Default fragment implementation is NULL fragment */
-    self->priv->fragment_info = NULL;
     mirage_fragment_generate_info(self,
         "FRAGMENT-NULL",
         "NULL Fragment"
     );
 }
 
-static void mirage_fragment_finalize (GObject *gobject)
-{
-    MirageFragment *self = MIRAGE_FRAGMENT(gobject);
-
-    /* Free fragment info */
-    destroy_fragment_info(self->priv->fragment_info);
-
-    /* Chain up to the parent class */
-    return G_OBJECT_CLASS(mirage_fragment_parent_class)->finalize(gobject);
-}
-
 static void mirage_fragment_class_init (MirageFragmentClass *klass)
 {
-    GObjectClass *gobject_class = G_OBJECT_CLASS(klass);
-
-    gobject_class->finalize = mirage_fragment_finalize;
-
     /* Default implementation: NULL fragment */
     klass->can_handle_data_format = mirage_fragment_null_can_handle_data_format;
     klass->use_the_rest_of_file = mirage_fragment_null_use_the_rest_of_file;

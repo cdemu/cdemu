@@ -38,10 +38,10 @@ G_BEGIN_DECLS
 typedef struct _MirageFileFilterInfo MirageFileFilterInfo;
 struct _MirageFileFilterInfo
 {
-    gchar *id;
-    gchar *name;
-    gchar *description;
-    gchar *mime_type;
+    gchar id[32];
+    gchar name[32];
+    gchar description[64];
+    gchar mime_type[32];
 };
 
 
