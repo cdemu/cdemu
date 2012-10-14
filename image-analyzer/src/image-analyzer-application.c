@@ -818,9 +818,6 @@ static void setup_gui (ImageAnalyzerApplication *self)
     /* Accelerator group */
     accel_group = gtk_ui_manager_get_accel_group(self->priv->ui_manager);
     gtk_window_add_accel_group(GTK_WINDOW(self->priv->window), accel_group);
-
-    /* Set libMirage password function */
-    mirage_set_password_function((MiragePasswordFunction)image_analyzer_application_get_password, self, NULL);
 }
 
 
@@ -864,10 +861,11 @@ static void image_analyzer_application_init (ImageAnalyzerApplication *self)
 
     self->priv->disc = NULL;
 
-    /* Setup debug context */
+    /* Setup libMirage context */
     self->priv->mirage_context = g_object_new(MIRAGE_TYPE_CONTEXT, NULL);
     mirage_context_set_debug_domain(self->priv->mirage_context, "libMirage");
     mirage_context_set_debug_mask(self->priv->mirage_context, MIRAGE_DEBUG_PARSER);
+    mirage_context_set_password_function(self->priv->mirage_context, (MiragePasswordFunction)image_analyzer_application_get_password, self);
 
     /* Setup GUI */
     setup_gui(self);

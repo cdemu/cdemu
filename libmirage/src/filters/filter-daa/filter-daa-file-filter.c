@@ -697,7 +697,7 @@ static gboolean mirage_file_filter_daa_parse_descriptor_encryption (MirageFileFi
         daa_crypt_init(computed_key, self->priv->password, descriptor.daa_key);
     } else {
         /* Get password from user via password function */
-        gchar *prompt_password = mirage_obtain_password(NULL);
+        gchar *prompt_password = mirage_contextual_obtain_password(MIRAGE_CONTEXTUAL(self), NULL);
         if (!prompt_password) {
             /* Password not provided (or password function is not set) */
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  failed to obtain password for encrypted image!\n", __debug__);

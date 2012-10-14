@@ -28,6 +28,24 @@ typedef struct _MirageFragment MirageFragment;
 G_BEGIN_DECLS
 
 
+/**
+ * MiragePasswordFunction:
+ * @user_data: (in) (closure): user data passed to password function
+ *
+ * <para>
+ * Password function type used to obtain password for encrypted
+ * images. A password function needs to be set to #MirageContext via
+ * mirage_context_set_password_function(), along with @user_data that
+ * the password function should be called with.
+ * </para>
+ *
+ * Returns: password string on success, otherwise %NULL. Password string should
+ * be a copy, allocated via function such as g_strdup(), and will be freed after
+ * it is used.
+ **/
+typedef gchar *(*MiragePasswordFunction) (gpointer user_data);
+
+
 /**********************************************************************\
  *                        MirageContext object                        *
 \**********************************************************************/
@@ -74,6 +92,8 @@ const gchar *mirage_context_get_debug_domain (MirageContext *self);
 void mirage_context_set_debug_name (MirageContext *self, const gchar *name);
 const gchar *mirage_context_get_debug_name (MirageContext *self);
 
+void mirage_context_set_password_function (MirageContext *self, MiragePasswordFunction func, gpointer user_data);
+gchar *mirage_context_obtain_password (MirageContext *self, GError **error);
 
 MirageDisc *mirage_context_load_image (MirageContext *self, gchar **filenames, GHashTable *params, GError **error);
 
@@ -118,6 +138,8 @@ MirageContext *mirage_contextual_get_context (MirageContextual *self);
 
 void mirage_contextual_debug_message (MirageContextual *self, gint level, gchar *format, ...);
 void mirage_contextual_debug_messagev (MirageContextual *self, gint level, gchar *format, va_list args);
+
+gchar *mirage_contextual_obtain_password (MirageContextual *self, GError **error);
 
 MirageFragment *mirage_contextual_create_fragment (MirageContextual *self, GType fragment_interface, GInputStream *stream, GError **error);
 GInputStream *mirage_contextual_create_file_stream (MirageContextual *self, const gchar *filename, GError **error);

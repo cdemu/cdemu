@@ -102,22 +102,6 @@ typedef gboolean (*MirageEnumFragmentInfoCallback) (const MirageFragmentInfo *in
  **/
 typedef gboolean (*MirageEnumFileFilterInfoCallback) (const MirageFileFilterInfo *info, gpointer user_data);
 
-/**
- * MiragePasswordFunction:
- * @user_data: (in) (closure): user data passed to password function
- *
- * <para>
- * Password function type used in libMirage's to obtain password for encrypted
- * images. A password function needs to be set to libMirage via
- * mirage_set_password_function(), along with @user_data that the password
- * function should be called with.
- * </para>
- *
- * Returns: password string on success, otherwise %NULL. Password string should
- * be a copy, allocated via function such as g_strdup(), and will be freed after
- * it is used.
- **/
-typedef gchar *(*MiragePasswordFunction) (gpointer user_data);
 
 /**
  * MirageDebugMask:
@@ -137,9 +121,6 @@ typedef struct {
 /* *** libMirage API *** */
 gboolean mirage_initialize (GError **error);
 gboolean mirage_shutdown (GError **error);
-
-gboolean mirage_set_password_function (MiragePasswordFunction func, gpointer user_data, GError **error);
-gchar *mirage_obtain_password (GError **error);
 
 gboolean mirage_get_parsers_type (GType **types, gint *num_parsers, GError **error);
 gboolean mirage_get_parsers_info (const MirageParserInfo **info, gint *num_parsers, GError **error);

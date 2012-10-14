@@ -39,10 +39,6 @@ static struct
     guint num_file_filters;
     GType *file_filters;
     MirageFileFilterInfo *file_filters_info;
-
-    /* Password function */
-    MiragePasswordFunction password_function;
-    gpointer password_data;
 } libmirage;
 
 
@@ -168,10 +164,6 @@ gboolean mirage_initialize (GError **error)
     initialize_fragments_list();
     initialize_file_filters_list();
 
-    /* Reset password function pointers */
-    libmirage.password_function = NULL;
-    libmirage.password_data = NULL;
-
     /* We're officially initialized now */
     libmirage.initialized = TRUE;
 
@@ -207,76 +199,6 @@ gboolean mirage_shutdown (GError **error)
     libmirage.initialized = FALSE;
 
     return TRUE;
-}
-
-/**
- * mirage_set_password_function:
- * @func: (in) (allow-none) (scope call): a password function pointer
- * @user_data: (in) (closure): pointer to user data to be passed to the password function
- * @error: (out) (allow-none): location to store error, or %NULL
- *
- * <para>
- * Sets the password function to libMirage. The function is used by parsers
- * that support encrypted images to obtain password for unlocking such images.
- * </para>
- *
- * <para>
- * Both @func and @user_data can be %NULL; in that case the appropriate setting
- * will be reset.
- * </para>
- *
- * Returns: %TRUE on success, %FALSE on failure
- **/
-gboolean mirage_set_password_function (MiragePasswordFunction func, gpointer user_data, GError **error)
-{
-    /* Make sure libMirage is initialized */
-    if (!libmirage.initialized) {
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_LIBRARY_ERROR, "Library not initialized!");
-        return FALSE;
-    }
-
-    /* Store the pointers */
-    libmirage.password_function = func;
-    libmirage.password_data = user_data;
-
-    return TRUE;
-}
-
-/**
- * mirage_obtain_password:
- * @error: (out) (allow-none): location to store error, or %NULL
- *
- * <para>
- * Obtains password string, using the #MiragePasswordFunction callback that was
- * provided via mirage_set_password_function().
- * </para>
- *
- * Returns: password string on success, %NULL on failure. The string should be
- * freed with g_free() when no longer needed.
- **/
-gchar *mirage_obtain_password (GError **error)
-{
-    gchar *password;
-
-    /* Make sure libMirage is initialized */
-    if (!libmirage.initialized) {
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_LIBRARY_ERROR, "Library not initialized!");
-        return NULL;
-    }
-
-    if (!libmirage.password_function) {
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_LIBRARY_ERROR, "Password function has not been set!");
-        return NULL;
-    }
-
-    /* Call the function pointer */
-    password = (*libmirage.password_function)(libmirage.password_data);
-
-    if (!password) {
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_LIBRARY_ERROR, "Password has not been provided!");
-    }
-
-    return password;
 }
 
 

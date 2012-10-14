@@ -135,6 +135,40 @@ void mirage_contextual_debug_message (MirageContextual *self, gint level, gchar 
 
 
 /**
+ * mirage_contextual_obtain_password:
+ * @self: a #MirageContextual
+ * @error: (out) (allow-none): location to store error, or %NULL
+ *
+ * <para>
+ * Obtains password string, using the #MiragePasswordFunction callback
+ * that was provided via mirage_context_set_password_function().
+ * </para>
+ *
+ * <note>
+ * This is a convenience function that retrieves a #MirageContext from
+ * @self and calls mirage_context_obtain_password().
+ * </note>
+ *
+ * Returns: password string on success, %NULL on failure. The string should be
+ * freed with g_free() when no longer needed.
+ **/
+gchar *mirage_contextual_obtain_password (MirageContextual *self, GError **error)
+{
+    MirageContext *context = mirage_contextual_get_context(self);
+    gchar *password = NULL;
+
+    if (!context) {
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_LIBRARY_ERROR, "Context not set!");
+    } else {
+        password = mirage_context_obtain_password(context, error);
+        g_object_unref(context);
+    }
+
+    return password;
+}
+
+
+/**
  * mirage_contextual_create_fragment:
  * @self: a #MirageContextual
  * @fragment_interface: (in): interface that fragment should implement
@@ -269,10 +303,15 @@ GType mirage_contextual_get_type (void) {
 
 struct _MirageContextPrivate
 {
+    /* Debugging */
     gchar *name; /* Debug context name... e.g. 'Device 1' */
     gchar *domain; /* Debug context domain... e.g. 'libMirage' */
 
     gint debug_mask; /* Debug mask */
+
+    /* Password function */
+    MiragePasswordFunction password_function;
+    gpointer password_data;
 
     /* GFileInputStream -> filename mapping */
     GHashTable *file_streams_map;
@@ -395,6 +434,62 @@ gint mirage_context_get_debug_mask (MirageContext *self)
     return self->priv->debug_mask;
 }
 
+
+/**
+ * mirage_context_set_password_function:
+ * @self: a #MirageContext
+ * @func: (in) (allow-none) (scope call): a password function pointer
+ * @user_data: (in) (closure): pointer to user data to be passed to the password function
+ *
+ * <para>
+ * Sets the password function to context. The function is used by parsers
+ * that support encrypted images to obtain password for unlocking such images.
+ * </para>
+ *
+ * <para>
+ * Both @func and @user_data can be %NULL; in that case the appropriate setting
+ * will be reset.
+ * </para>
+ **/
+void mirage_context_set_password_function (MirageContext *self, MiragePasswordFunction func, gpointer user_data)
+{
+    /* Store the pointers */
+    self->priv->password_function = func;
+    self->priv->password_data = user_data;
+}
+
+/**
+ * mirage_context_obtain_password:
+ * @self: a #MirageContext
+ * @error: (out) (allow-none): location to store error, or %NULL
+ *
+ * <para>
+ * Obtains password string, using the #MiragePasswordFunction callback
+ * that was provided via mirage_context_set_password_function().
+ * </para>
+ *
+ * Returns: password string on success, %NULL on failure. The string should be
+ * freed with g_free() when no longer needed.
+ **/
+gchar *mirage_context_obtain_password (MirageContext *self, GError **error)
+{
+    gchar *password;
+
+    /* Make sure we have a password function */
+    if (!self->priv->password_function) {
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_LIBRARY_ERROR, "Context does not have a password function!");
+        return NULL;
+    }
+
+    /* Call the function pointer */
+    password = (*self->priv->password_function)(self->priv->password_data);
+
+    if (!password) {
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_LIBRARY_ERROR, "Password has not been provided!");
+    }
+
+    return password;
+}
 
 
 /**
