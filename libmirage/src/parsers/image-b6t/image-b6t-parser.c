@@ -404,7 +404,7 @@ static gboolean mirage_parser_b6t_setup_track_fragments (MirageParserB6t *self, 
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: using data file: %s\n", __debug__, filename);
 
             /* Create stream */
-            data_stream = mirage_parser_get_cached_data_stream(MIRAGE_PARSER(self), filename, error);
+            data_stream = mirage_contextual_create_file_stream(MIRAGE_CONTEXTUAL(self), filename, error);
             if (!data_stream) {
                 MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to create stream on data file '%s'\n", __debug__, filename);
                 g_free(filename);

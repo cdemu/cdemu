@@ -313,15 +313,47 @@ struct _MirageContextPrivate
     MiragePasswordFunction password_function;
     gpointer password_data;
 
+    /* Data stream cache */
+    GHashTable *stream_cache;
+
     /* GFileInputStream -> filename mapping */
     GHashTable *file_streams_map;
 };
 
 
 /**********************************************************************\
+ *                          Stream cache                              *
+\**********************************************************************/
+static inline void mirage_context_stream_cache_remove (MirageContext *self, gpointer stream)
+{
+    GHashTableIter iter;
+    gpointer key, value;
+
+    /* Iterate over table and remove the entry corresponding to stream */
+    g_hash_table_iter_init(&iter, self->priv->stream_cache);
+
+    while (g_hash_table_iter_next(&iter, &key, &value)) {
+        if (value == stream) {
+            g_hash_table_iter_remove(&iter);
+            break;
+        }
+    }
+}
+
+static inline void mirage_context_stream_cache_add (MirageContext *self, const gchar *filename, gpointer stream)
+{
+    /* Insert into the table */
+    g_hash_table_insert(self->priv->stream_cache, g_strdup(filename), stream);
+
+    /* Cleanup when stream is destroyed */
+    g_object_weak_ref(stream, (GWeakNotify)mirage_context_stream_cache_remove, self);
+}
+
+
+/**********************************************************************\
  *          GFileInputStream -> filename mapping management           *
 \**********************************************************************/
-static inline void mirage_context_stream_destroyed_handler (MirageContext *self, gpointer stream)
+static inline void mirage_context_file_streams_map_remove (MirageContext *self, gpointer stream)
 {
     g_hash_table_remove(self->priv->file_streams_map, stream);
 }
@@ -331,8 +363,8 @@ static inline void mirage_context_file_streams_map_add (MirageContext *self, gpo
     /* Insert into the table */
     g_hash_table_insert(self->priv->file_streams_map, stream, g_strdup(filename));
 
-    /* Enable cleanup when stream is destroyed */
-    g_object_weak_ref(stream, (GWeakNotify)mirage_context_stream_destroyed_handler, self);
+    /* Cleanup when stream is destroyed */
+    g_object_weak_ref(stream, (GWeakNotify)mirage_context_file_streams_map_remove, self);
 }
 
 
@@ -677,6 +709,13 @@ GInputStream *mirage_context_create_file_stream (MirageContext *self, const gcha
     gint num_file_filters;
     GType *file_filter_types;
 
+    /* Check if we are already caching the stream */
+    stream = g_hash_table_lookup(self->priv->stream_cache, filename);
+    if (stream) {
+        g_object_ref(stream);
+        return stream;
+    }
+
     /* Get the list of supported file filters */
     if (!mirage_get_file_filters_type(&file_filter_types, &num_file_filters, error)) {
         return NULL;
@@ -743,6 +782,9 @@ GInputStream *mirage_context_create_file_stream (MirageContext *self, const gcha
     /* Make sure that the stream we're returning is rewound to the beginning */
     g_seekable_seek(G_SEEKABLE(stream), 0, G_SEEK_SET, NULL, NULL);
 
+    /* Add to file stream cache */
+    mirage_context_stream_cache_add(self, filename, stream);
+
     return stream;
 }
 
@@ -793,6 +835,8 @@ static void mirage_context_init (MirageContext *self)
     self->priv->domain = NULL;
     self->priv->name = NULL;
 
+    self->priv->stream_cache = g_hash_table_new_full(g_str_hash, g_str_equal, g_free, NULL);
+
     self->priv->file_streams_map = g_hash_table_new_full(g_direct_hash, g_direct_equal, NULL, g_free);
 }
 
@@ -802,6 +846,9 @@ static void mirage_context_finalize (GObject *gobject)
 
     g_free(self->priv->domain);
     g_free(self->priv->name);
+
+    /* Free stream cache */
+    g_hash_table_unref(self->priv->stream_cache);
 
     /* Free GFileInputStream -> filename map */
     g_hash_table_unref(self->priv->file_streams_map);
