@@ -268,7 +268,7 @@ if (GTKDOC_ENABLED AND GTKDOC_FOUND)
         IGNORE_HFILES src/libmirage/mirage-disc-structures.h
         CONTENT_FILES version.xml
         CFLAGS ${libmirage_CFLAGS} -I${PROJECT_SOURCE_DIR}/src/libmirage
-        LDFLAGS ${libmirage_LDFLAGS} -L${PROJECT_BINARY_DIR} -l${GTKDOC_LIB}
+        LDFLAGS ${libmirage_LDFLAGS} -L${PROJECT_BINARY_DIR} -Wl,-rpath,${PROJECT_BINARY_DIR} -l${GTKDOC_LIB}
     )
 endif ()
 
