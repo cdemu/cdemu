@@ -17,6 +17,42 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
 
+/**
+ * SECTION: mirage-fragment
+ * @title: MirageFragment
+ * @short_description: Base object for fragment implementations.
+ * @see_also: #MirageFragmentIfaceAudio, #MirageFragmentIfaceBinary
+ * @include: mirage-fragment.h
+ *
+ * <para>
+ * #MirageFragment object is a base object for fragment implementations.
+ * It provides functions that are used by image parsers to provide access
+ * to data in image files.
+ * </para>
+ *
+ * <para>
+ * #MirageFragment provides two virtual functions: mirage_fragment_get_info(),
+ * mirage_fragment_can_handle_data_format(). These must be implemented
+ * by fragment implementations which derive from #MirageFragment object.
+ * </para>
+ *
+ * <para>
+ * Every fragment implementation needs to implement one of the following
+ * fragment interfaces: #MirageFragmentIfaceBinary or #MirageFragmentIfaceAudio.
+ * Which interface a fragment implementation implements depends on the
+ * way the implementation handles data.
+ * </para>
+ *
+ * <para>
+ * While fragment implementations are usually obtained from context
+ * using mirage_context_create_fragment(), the default implementation
+ * can be obtained using g_object_new() and MIRAGE_TYPE_FRAGMENT. The
+ * default fragment object implementation provides so called "NULL"
+ * fragment, which returns no data, and is used by libMirage to represent
+ * data in tracks' pregaps and postgaps.
+ * </para>
+ */
+
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif

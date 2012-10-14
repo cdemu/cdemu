@@ -20,6 +20,30 @@
 #ifndef __MIRAGE_DEBUG_H__
 #define __MIRAGE_DEBUG_H__
 
+/**
+ * SECTION: mirage-debug
+ * @title: Debug
+ * @short_description: Debugging facilities.
+ * @see_also: #MirageContext, #MirageContextual
+ * @include: mirage-debug.h
+ *
+ * <para>
+ * libMirage supports changing of debug message verbosity on fly,
+ * without the need to restart the application. This is achieved by using
+ * #MirageContext objects, which are attached to objects implementing
+ * #MirageContextual interface. Such an object is #MirageObject, which
+ * can obtain context from its parent. This way, all objects in the
+ * hierarchy share the same context, and same debug verbosity setting.
+ * </para>
+ *
+ * <para>
+ * Debug verbosity can be controlled via mask, which can be set to the
+ * context using mirage_context_set_debug_mask(). See #MirageDebugMasks.
+ * The actual printing of debug messages within the code is achieved by
+ * mirage_contextual_debug_messagev() or mirage_contextual_debug_message(),
+ * or by convenience macro MIRAGE_DEBUG().
+ * </para>
+ */
 
 /**
  * MirageDebugMasks:

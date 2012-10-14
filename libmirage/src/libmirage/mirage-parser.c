@@ -17,6 +17,30 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
 
+/**
+ * SECTION: mirage-parser
+ * @title: MirageParser
+ * @short_description: Base object for parsers implementation.
+ * @see_also: #MirageDisc, #MirageContext
+ * @include: mirage-parser.h
+ *
+ * <para>
+ * #MirageParser object is a base object for image parser implementations.
+ * In addition to providing function for image loading and obtaining
+ * parser information, it also provides some helper functions that can
+ * be used in parser implementations.
+ * </para>
+ *
+ * <para>
+ * #MirageParser provides a single virtual function - mirage_parser_load_image().
+ * This function must be implemented by image parsers, which derive from
+ * #MirageParser object. The function must first check if given file(s)
+ * are supported by the given parser, and then the actual loading is
+ * performed. The result is a #MirageDisc object, which represents the
+ * disc stored in the image file(s).
+</para>
+ */
+
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif

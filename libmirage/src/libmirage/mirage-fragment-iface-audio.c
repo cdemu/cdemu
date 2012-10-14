@@ -17,6 +17,19 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
 
+/**
+ * SECTION: mirage-fragment-iface-audio
+ * @title: MirageFragmentIfaceAudio
+ * @short_description: Audio Fragment interface.
+ * @see_also: #MirageFragment
+ * @include: mirage-fragment-iface-audio.h
+ *
+ * <para>
+ * #MirageFragmentIfaceAudio is Audio Fragment interface that can be
+ * implemented by a #MirageFragment implementation.
+ * </para>
+ */
+
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif

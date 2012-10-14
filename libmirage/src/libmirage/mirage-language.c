@@ -17,6 +17,20 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
 
+/**
+ * SECTION: mirage-language
+ * @title: MirageLanguage
+ * @short_description: Object representing a language for session or track.
+ * @see_also: #MirageSession, #MirageTrack, #MirageCdTextCoder
+ * @include: mirage-language.h
+ *
+ * <para>
+ * #MirageLanguage object represents a CD-TEXT language for session or
+ * track. It is a container object that stores language code and CD-TEXT
+ * pack data for different pack types.
+ * </para>
+ */
+
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif

@@ -17,6 +17,34 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
 
+/**
+ * SECTION: mirage-context
+ * @title: MirageContext
+ * @short_description: Context object.
+ * @see_also: #MirageContextual, #MirageObject, #MirageFileFilter
+ * @include: mirage-context.h
+ *
+ * <para>
+ * #MirageContext provides a context, which is attached to libMirage's
+ * objects. This way, it allows sharing and propagation of settings, such
+ * as debug verbosity, parser options, password function, etc. It also
+ * provides file stream caching and #GInputStream to filename resolution,
+ * which is used by image parsers.
+ * </para>
+ *
+ * <para>
+ * Due to all the properties it holds, #MirageContext is designed as the
+ * core object of libMirage and provides the library's main functionality,
+ * the loading of image files. Therefore, loading an image usually looks
+ * as follows:
+ * - initialize the library using mirage_initialize()
+ * - create a #MirageContext object, i.e. using g_object_new() and %MIRAGE_TYPE_CONTEXT
+ * - (optionally) set debug name, domain and mask
+ * - load the image using mirage_context_load_image()
+ *
+ * </para>
+ */
+
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif

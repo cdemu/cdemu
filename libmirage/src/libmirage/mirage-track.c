@@ -17,6 +17,21 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
 
+/**
+ * SECTION: mirage-track
+ * @title: MirageTrack
+ * @short_description: Object representing a track.
+ * @see_also: #MirageDisc, #MirageSession, #MirageLanguage, #MirageSector
+ * @include: mirage-track.h
+ *
+ * <para>
+ * #MirageTrack object represents a track in the disc layout. It provides
+ * functions for manipulating track data and layout; setting track type
+ * and flags, adding and removing fragments, indices and languages,
+ * accessing and reading of sectors, etc.
+ * </para>
+ */
+
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif

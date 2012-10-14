@@ -17,6 +17,30 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
 
+/**
+ * SECTION: mirage-disc
+ * @title: MirageDisc
+ * @short_description: Object representing an optical disc.
+ * @see_also: #MirageSession, #MirageTrack, #MirageObject, #MirageParser, #MirageContext
+ * @include: mirage-disc.h
+ *
+ * <para>
+ * #MirageDisc object is a top-level object in the disc layout
+ * representation, representing the actual disc.
+ * </para>
+ *
+ * <para>
+ * It provides functions for manipulating the disc layout; adding and
+ * removing sessions and tracks, manipulating disc's MCN and medium
+ * type, and convenience functions for accessing sectors on the disc.
+ * </para>
+ *
+ * <para>
+ * Typically, a #MirageDisc is obtained as a result of loading an image
+ * using #MirageContext and its mirage_context_load_image() function.
+ * </para>
+ */
+
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif

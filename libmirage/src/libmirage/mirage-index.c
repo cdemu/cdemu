@@ -17,6 +17,20 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
 
+/**
+ * SECTION: mirage-index
+ * @title: MirageIndex
+ * @short_description: Object representing an index within track.
+ * @see_also: #MirageTrack
+ * @include: mirage-index.h
+ *
+ * <para>
+ * #MirageIndex object represents an index within a track. It is a
+ * container object that stores the index number and corresponding
+ * address.
+ * </para>
+ */
+
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif

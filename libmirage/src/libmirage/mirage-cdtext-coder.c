@@ -17,6 +17,45 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
 
+/**
+ * SECTION: mirage-cdtext-coder
+ * @title: MirageCdTextCoder
+ * @short_description: General-purpose CD-TEXT encoder/decoder object.
+ * @see_also: #MirageLanguage, #MirageSession
+ * @include: mirage-cdtext-coder.h
+ *
+ * <para>
+ * #MirageCdTextCoder object is a general-purpose CD-TEXT encoder/decoder.
+ * It was designed to be used by #MirageSession objects to encode and decode
+ * CD-TEXT data, but it could be used in other applications as well.
+ * </para>
+ *
+ * <para>
+ * It is loosely based on the CD-TEXT encoding/decoding code found in
+ * cdrdao and supports 8 CD-TEXT blocks with pack types from 0x80 to
+ * 0x8F. When encoding data, pack size data (pack type 0x8F) is always
+ * generated.
+ * </para>
+ *
+ * <para>
+ * To be used as encoder, a #MirageCdTextCoder encoder must be first
+ * initialized with mirage_cdtext_encoder_init(). Then, information for
+ * at least one CD-TEXT block (up to 8 are supported) should be set with
+ * mirage_cdtext_encoder_set_block_info(). After all the CD-TEXT data is
+ * added to encoder with mirage_cdtext_encoder_add_data(), buffer containing
+ * the encoded data can be obtained with mirage_cdtext_encoder_encode().
+ * </para>
+ *
+ * <para>
+ * To use a #MirageCdTextCoder as CD-TEXT decoder, one should first
+ * initialize it with mirage_cdtext_decoder_init(). This function already
+ * performs all the decoding; block information can be obtained with
+ * mirage_cdtext_decoder_get_block_info() and data for each block can
+ * be obtained with mirage_cdtext_decoder_get_data() and the appropriate
+ * callback function.
+ * </para>
+ */
+
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif

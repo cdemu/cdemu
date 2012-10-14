@@ -17,6 +17,42 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
 
+/**
+ * SECTION: mirage-file-filter
+ * @title: MirageFileFilter
+ * @short_description: File filter object.
+ * @see_also: #MirageContext
+ * @include: mirage-file-filter.h
+ *
+ * <para>
+ * #MirageFileFilter is a basic unit of file access abstraction used in
+ * libMirage. It inherits from #GFilterInputStream and implements #GSeekable
+ * interface.
+ * </para>
+ *
+ * <para>
+ * When opening a file with libMirage, mirage_context_create_file_stream()
+ * function should be used. It creates a chain of #MirageFileFilter objects
+ * on top of a #GFileInputStream, and returns the top object on the chain.
+ * This allows transparent access to, for example, compressed data stored
+ * in the file.
+ * </para>
+ *
+ * <para>
+ * There are two ways to implement a #MirageFileFilter. For full control
+ * over the logic for reading from parts and managing position in the
+ * stream, use "full interface", which requires implementation of three
+ * virtual functions: read, seek and tell. The second option is to use
+ * "simplified interface", which provides framework for stream position
+ * management and reading logic, and requires that file filter implements
+ * partial_read function. Additionally, it requires that file filter
+ * implementation sets the file stream size using
+ * mirage_file_filter_set_file_size() function. In partial_read, the
+ * current position in the stream, which is managed by the framework, can
+ * be obtained using mirage_file_filter_get_position().
+ * </para>
+ */
+
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif

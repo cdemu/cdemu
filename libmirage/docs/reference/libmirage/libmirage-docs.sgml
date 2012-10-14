@@ -19,9 +19,7 @@
         <xi:include href="xml/mirage-cdtext-coder.xml"/>
         <xi:include href="xml/mirage-context.xml"/>
         <xi:include href="xml/mirage-contextual.xml"/>
-        <xi:include href="xml/mirage-debug.xml"/>
         <xi:include href="xml/mirage-disc.xml"/>
-        <xi:include href="xml/mirage-error.xml"/>
         <xi:include href="xml/mirage-file-filter.xml"/>
         <xi:include href="xml/mirage-fragment.xml"/>
         <xi:include href="xml/mirage-fragment-iface-audio.xml"/>
@@ -34,6 +32,9 @@
         <xi:include href="xml/mirage-sector.xml"/>
         <xi:include href="xml/mirage-session.xml"/>
         <xi:include href="xml/mirage-track.xml"/>
+
+        <xi:include href="xml/mirage-debug.xml"/>
+        <xi:include href="xml/mirage-error.xml"/>
         <xi:include href="xml/mirage-utils.xml"/>
         <xi:include href="xml/mirage-version.xml"/>
 

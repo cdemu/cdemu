@@ -17,6 +17,21 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
 
+/**
+ * SECTION: mirage-session
+ * @title: MirageSession
+ * @short_description: Object representing a session.
+ * @see_also: #MirageDisc, #MirageTrack, #MirageLanguage, #MirageCdTextCoder
+ * @include: mirage-session.h
+ *
+ * <para>
+ * #MirageSession object represents a session in the disc layout. It
+ * provides functions for manipulating session layout; setting session
+ * type, adding and removing tracks and languages, setting CD-TEXT data,
+ * etc.
+ * </para>
+ */
+
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif

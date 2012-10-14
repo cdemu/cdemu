@@ -17,6 +17,29 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
 
+/**
+ * SECTION: mirage-libmirage
+ * @title: Main
+ * @short_description: Core libMirage functions
+ * @see_also: #MirageContext
+ * @include: mirage.h
+ *
+ * <para>
+ * These functions represent the core of the libMirage API. Before the
+ * library can be used, it must be initialized using mirage_initialize(),
+ * which loads the plugins containing image parsers, data fragments and
+ * file filters. When library is no longer needed, it can be shut down
+ * using mirage_shutdown(), which unloads the plugins.
+ * </para>
+ *
+ * <para>
+ * The core functions listed in this section enable enumeration of
+ * supported parsers, data fragments and file filters. Most of the core
+ * functionality of libMirage, such as loading images, is encapsulated
+ * in #MirageContext object, which can be obtained using GLib's g_object_new().
+ * </para>
+ */
+
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif

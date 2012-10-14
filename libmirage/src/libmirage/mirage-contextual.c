@@ -17,6 +17,36 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
 
+/**
+ * SECTION: mirage-contextual
+ * @title: MirageContextual
+ * @short_description: Interface for attaching context to objects.
+ * @see_also: #MirageContext, #MirageObject, #MirageFileFilter
+ * @include: mirage-contextual.h
+ *
+ * <para>
+ * #MirageContextual provides an interface that allows attachment of a
+ * #MirageContext to the object implementing it. The object must implement
+ * two functions for getting and setting the context - mirage_contextual_get_context()
+ * and mirage_contextual_set_context().
+ * </para>
+ *
+ * <para>
+ * In addition, #MirageContextual provides some shared code that can be
+ * used by implementations. Most notable are debugging facilities, in
+ * form of functions mirage_contextual_debug_message() and
+ * mirage_contextual_debug_messagev(), which print debug messages depending
+ * on the settings of the attached context.
+ * </para>
+ *
+ * <para>
+ * Furthermore, for convenience of parser and file filter implementations,
+ * passthrough is provided for some functions of #MirageContext. Using these
+ * functions is equivalent to getting and verifying the attached context,
+ * calling its function directly, and releasing the reference.
+ * </para>
+ */
+
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif

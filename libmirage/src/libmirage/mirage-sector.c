@@ -17,6 +17,19 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
 
+/**
+ * SECTION: mirage-sector
+ * @title: MirageSector
+ * @short_description: Object representing a sector.
+ * @see_also: #MirageTrack
+ * @include: mirage-sector.h
+ *
+ * <para>
+ * #MirageSector object represents a sector. It provides access to the
+ * sector data, generating it if needed.
+ * </para>
+ */
+
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif

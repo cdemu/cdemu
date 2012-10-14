@@ -17,6 +17,19 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
 
+/**
+ * SECTION: mirage-utils
+ * @title: Utilities
+ * @short_description: Various helper and utility functions.
+ * @include: mirage-utils.h
+ *
+ * <para>
+ * These functions cover various functionality. They are exported
+ * because, while primarily designed to be used within libMirage, they
+ * could also prove useful to other applications.
+ * </para>
+ */
+
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif

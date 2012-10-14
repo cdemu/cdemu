@@ -17,6 +17,22 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
 
+/**
+ * SECTION: mirage-object
+ * @title: MirageObject
+ * @short_description: Base object class.
+ * @see_also: #MirageContext, #MirageContextual
+ * @include: mirage-object.h
+ *
+ * <para>
+ * #MirageObject is used as a base object class throughout libMirage. It
+ * implements #MirageContextual interface, which allows attachment of
+ * #MirageContext. It also implements support for constructing parent-child
+ * hierarchy, which allows propagation of the #MirageContext from parent
+ * to the child objects.
+ * </para>
+ */
+
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif

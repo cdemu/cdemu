@@ -17,6 +17,26 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
 
+/**
+ * SECTION: mirage-plugin
+ * @title: MiragePlugin
+ * @short_description: Plugin object.
+ * @see_also: #MirageParser, #MirageFragment, #MirageFileFilter
+ * @include: mirage-plugin.h
+ *
+ * <para>
+ * #MiragePlugin object is a base object of libMirage's plugin system
+ * and derives from #GTypeModule. It provides support for loadable
+ * modules that contain implementations of image parsers, data fragments
+ * or file filters.
+ * </para>
+ *
+ * <para>
+ * The plugin system is used internally by libMirage, and should
+ * generally not be used elsewhere.
+ * </para>
+ */
+
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
