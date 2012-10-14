@@ -58,9 +58,6 @@ struct _MirageDiscPrivate
     gint dpm_resolution;
     gint dpm_num_entries;
     guint32 *dpm_data;
-
-    /* User-supplied properties */
-    gboolean dvd_report_css; /* Whether to report that DVD image is CSS-encrypted or not */
 };
 
 
@@ -261,7 +258,16 @@ static gboolean mirage_disc_generate_disc_structure (MirageDisc *self, gint laye
         case 0x0001: {
             MirageDiscStructureCopyright *copy_info = g_new0(MirageDiscStructureCopyright, 1);
 
-            if (self->priv->dvd_report_css) {
+            GVariant *dvd_report_css_value;
+            gboolean dvd_report_css = FALSE;
+
+            dvd_report_css_value = mirage_contextual_get_option(MIRAGE_CONTEXTUAL(self), "dvd-report-css");
+            if (dvd_report_css_value) {
+                dvd_report_css = g_variant_get_boolean(dvd_report_css_value);
+                g_variant_unref(dvd_report_css_value);
+            }
+
+            if (dvd_report_css) {
                 copy_info->copy_protection = 0x01; /* CSS/CPPM */
                 copy_info->region_info = 0x00; /* Playable in all regions */
             } else {
@@ -1850,9 +1856,6 @@ static void mirage_disc_init (MirageDisc *self)
 
     /* Create disc structures hash table */
     self->priv->disc_structures = g_hash_table_new_full(g_direct_hash, g_direct_equal, NULL, (GDestroyNotify)free_disc_structure_data);
-
-    /* Default values for user-supplied properties */
-    self->priv->dvd_report_css = FALSE;
 }
 
 static void mirage_disc_dispose (GObject *gobject)
@@ -1892,42 +1895,12 @@ static void mirage_disc_finalize (GObject *gobject)
     return G_OBJECT_CLASS(mirage_disc_parent_class)->finalize(gobject);
 }
 
-static void mirage_disc_set_property (GObject *gobject, guint property_id, const GValue *value, GParamSpec *pspec)
-{
-    MirageDisc *self = MIRAGE_DISC(gobject);
-
-    switch (property_id) {
-        case PROP_MIRAGE_DISC_DVD_REPORT_CSS: {
-            self->priv->dvd_report_css = g_value_get_boolean(value);
-            return;
-        }
-    }
-
-    return G_OBJECT_CLASS(mirage_disc_parent_class)->set_property(gobject, property_id, value, pspec);
-}
-
-static void mirage_disc_get_property (GObject *gobject, guint property_id, GValue *value, GParamSpec *pspec)
-{
-    MirageDisc *self = MIRAGE_DISC(gobject);
-
-    switch (property_id) {
-        case PROP_MIRAGE_DISC_DVD_REPORT_CSS: {
-            g_value_set_boolean(value, self->priv->dvd_report_css);
-            return;
-        }
-    }
-
-    return G_OBJECT_CLASS(mirage_disc_parent_class)->get_property(gobject, property_id, value, pspec);
-}
-
 static void mirage_disc_class_init (MirageDiscClass *klass)
 {
     GObjectClass *gobject_class = G_OBJECT_CLASS(klass);
 
     gobject_class->dispose = mirage_disc_dispose;
     gobject_class->finalize = mirage_disc_finalize;
-    gobject_class->get_property = mirage_disc_get_property;
-    gobject_class->set_property = mirage_disc_set_property;
 
     /* Register private structure */
     g_type_class_add_private(klass, sizeof(MirageDiscPrivate));
@@ -1943,16 +1916,4 @@ static void mirage_disc_class_init (MirageDiscClass *klass)
      * </para>
      */
     klass->signal_layout_changed = g_signal_new("layout-changed", G_OBJECT_CLASS_TYPE(klass), G_SIGNAL_RUN_LAST, 0, NULL, NULL, g_cclosure_marshal_VOID__VOID, G_TYPE_NONE, 0, NULL);
-
-    /* Property: PROP_MIRAGE_DISC_DVD_REPORT_CSS */
-    /**
-    * MirageDisc:dvd-report-css:
-    *
-    * Flag controlling whether the generated Disc Structure 0x01 should
-    * report that DVD is CSS-encrypted or not. Relevant only for DVD images;
-    * and as it controls the generation of fake Disc Structures, it affects
-    * only DVD images that do not provide Disc Structure information.
-    **/
-    GParamSpec *pspec = g_param_spec_boolean("dvd-report-css", "DVD Report CSS flag", "Set/Get DVD Report CSS flag", FALSE, G_PARAM_READWRITE);
-    g_object_class_install_property(gobject_class, PROP_MIRAGE_DISC_DVD_REPORT_CSS, pspec);
 }

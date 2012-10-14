@@ -34,8 +34,6 @@
 struct _MirageParserPrivate
 {
     MirageParserInfo info;
-
-    GHashTable *parser_params;
 };
 
 
@@ -95,27 +93,7 @@ const MirageParserInfo *mirage_parser_get_info (MirageParser *self)
  **/
 MirageDisc *mirage_parser_load_image (MirageParser *self, GInputStream **streams, GError **error)
 {
-    MirageDisc *disc;
-
-    /* Load the image */
-    disc = MIRAGE_PARSER_GET_CLASS(self)->load_image(self, streams, error);
-    if (!disc) {
-        return NULL;
-    }
-
-    /* If 'dvd-report-css' flag is passed to the parser, pass it on to
-       the disc object */
-    const GVariant *dvd_report_css = mirage_parser_get_param(self, "dvd-report-css", G_VARIANT_TYPE_BOOLEAN);
-    if (dvd_report_css) {
-        /* Convert GVariant to GValue... */
-        GValue dvd_report_css2;
-        g_value_init(&dvd_report_css2, G_TYPE_BOOLEAN);
-        g_value_set_boolean(&dvd_report_css2, g_variant_get_boolean((GVariant *) dvd_report_css));
-
-        g_object_set_property(G_OBJECT(disc), "dvd-report-css", &dvd_report_css2);
-    }
-
-    return disc;
+    return MIRAGE_PARSER_GET_CLASS(self)->load_image(self, streams, error);
 }
 
 
@@ -234,102 +212,6 @@ void mirage_parser_add_redbook_pregap (MirageParser *self, MirageDisc *disc)
 
 
 /**
- * mirage_parser_set_params:
- * @self: a #MirageParser
- * @params: (in) (element-type gchar* GValue): a #GHashTable containing parameters
- *
- * <para>
- * An internal function that sets the parsing parameters to parser
- * (such as password, encoding, etc.). It is meant to be used by mirage_create_disc()
- * to pass the parsing parameters to parser before performing the parsing.
- * </para>
- *
- * <para>
- * @params is a #GHashTable that must have strings for its keys and values of
- * #GValue type.
- * </para>
- *
- * <para>
- * Note that only pointer to @params is stored; therefore, the hash table must
- * still be valid when mirage_parser_load_image() is called. Another thing to
- * note is that whether parameter is used or not is up to the parser implementation.
- * In case of unsupported parameter, the parser implementation should simply ignore it.
- * </para>
- **/
-void mirage_parser_set_params (MirageParser *self, GHashTable *params)
-{
-    self->priv->parser_params = params; /* Just store pointer */
-}
-
-/**
- * mirage_parser_get_param_string:
- * @self: a #MirageParser
- * @name: (in): parameter name (key)
- *
- * <para>
- * An internal function that retrieves a string parameter named @name. It is meant
- * to be used by parser implementation to retrieve the parameter value during the
- * parsing.
- * </para>
- *
- * Returns: (transfer none): string value, or %NULL. The string belongs to whoever owns
- * the parameters hash table that was passed to the parser, and as such should
- * not be modified.
- **/
-const gchar *mirage_parser_get_param_string (MirageParser *self, const gchar *name)
-{
-    /* Get value */
-    const GVariant *value = mirage_parser_get_param(self, name, G_VARIANT_TYPE_STRING);
-
-    if (!value) {
-        return NULL;
-    }
-
-    return g_variant_get_string((GVariant *) value, NULL);
-}
-
-
-/**
- * mirage_parser_get_param:
- * @self: a #MirageParser
- * @name: (in): parameter name (key)
- * @type: (in): expected value type (set to %G_VARIANT_TYPE_ANY to disable type checking)
- *
- * <para>
- * An internal function that retrieves a boolean parameter named @name. It is meant
- * to be used by parser implementation to retrieve the parameter value during the
- * parsing.
- * </para>
- *
- * Returns: (transfer none): parameter variant. Note that variant belongs to whoever owns
- * the parameters hash table that was passed to the parser, and as such should
- * not be modified.
- **/
-const GVariant *mirage_parser_get_param (MirageParser *self, const gchar *name, const GVariantType *type)
-{
-    GVariant *value;
-
-    /* Make sure parameters are set */
-    if (!self->priv->parser_params) {
-        return NULL;
-    }
-
-    /* Lookup value */
-    value = g_hash_table_lookup(self->priv->parser_params, name);
-    if (!value) {
-        return NULL;
-    }
-
-    /* Verify type */
-    if (!g_variant_is_of_type(value, type)) {
-        return NULL;
-    }
-
-    return value;
-}
-
-
-/**
  * mirage_parser_create_text_stream:
  * @self: a #MirageParser
  * @stream: (in) (transfer full): a #GInputStream
@@ -349,14 +231,17 @@ const GVariant *mirage_parser_get_param (MirageParser *self, const gchar *name, 
 GDataInputStream *mirage_parser_create_text_stream (MirageParser *self, GInputStream *stream, GError **error)
 {
     GDataInputStream *data_stream;
+    GVariant *encoding_value;
     const gchar *encoding;
 
     /* Add reference to provided input stream */
     g_object_ref(stream);
 
     /* If provided, use the specified encoding; otherwise, try to detect it */
-    encoding = mirage_parser_get_param_string(MIRAGE_PARSER(self), "encoding");;
-    if (encoding) {
+    encoding_value = mirage_contextual_get_option(MIRAGE_CONTEXTUAL(self), "encoding");;
+    if (encoding_value) {
+        encoding = g_variant_get_string(encoding_value, NULL);
+        g_variant_unref(encoding_value);
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: using specified encoding: %s\n", __debug__, encoding);
     } else {
         /* Detect encoding */
@@ -423,8 +308,6 @@ G_DEFINE_TYPE(MirageParser, mirage_parser, MIRAGE_TYPE_OBJECT);
 static void mirage_parser_init (MirageParser *self)
 {
     self->priv = MIRAGE_PARSER_GET_PRIVATE(self);
-
-    self->priv->parser_params = NULL;
 }
 
 static void mirage_parser_class_init (MirageParserClass *klass)

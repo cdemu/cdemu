@@ -103,10 +103,6 @@ MirageDisc *mirage_parser_load_image (MirageParser *self, GInputStream **streams
 gint mirage_parser_guess_medium_type (MirageParser *self, MirageDisc *disc);
 void mirage_parser_add_redbook_pregap (MirageParser *self, MirageDisc *disc);
 
-void mirage_parser_set_params (MirageParser *self, GHashTable *params);
-const GVariant *mirage_parser_get_param (MirageParser *self, const gchar *name, const GVariantType *type);
-const gchar *mirage_parser_get_param_string (MirageParser *self, const gchar *name);
-
 GDataInputStream *mirage_parser_create_text_stream (MirageParser *self, GInputStream *stream, GError **error);
 
 G_END_DECLS

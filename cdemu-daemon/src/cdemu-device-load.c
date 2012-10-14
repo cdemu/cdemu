@@ -24,33 +24,9 @@
 
 
 /**********************************************************************\
- *                              Helpers                               *
-\**********************************************************************/
-static GHashTable *convert_g_variant_to_g_hash_table (GVariant *variant)
-{
-    GHashTable *table;
-
-    /* Hash table: key = string, value = variant */
-    table = g_hash_table_new_full(g_str_hash, g_str_equal, (GDestroyNotify)g_free, (GDestroyNotify)g_variant_unref);
-
-    /* Iterate over variant */
-    for (gint i = 0; i < g_variant_n_children(variant); i++) {
-        gchar *key;
-        GVariant *value;
-
-        g_variant_get_child(variant, i, "{sv}", &key, &value);
-
-        g_hash_table_insert(table, key, value);
-    }
-
-    return table;
-}
-
-
-/**********************************************************************\
  *                              Load disc                             *
 \**********************************************************************/
-static gboolean cdemu_device_load_disc_private (CdemuDevice *self, gchar **filenames, GHashTable *options, GError **error)
+static gboolean cdemu_device_load_disc_private (CdemuDevice *self, gchar **filenames, GVariant *options, GError **error)
 {
     gint media_type;
 
@@ -61,8 +37,18 @@ static gboolean cdemu_device_load_disc_private (CdemuDevice *self, gchar **filen
         return FALSE;
     }
 
+    /* Set options to the context */
+    mirage_context_clear_options(self->priv->mirage_context);
+    for (gint i = 0; i < g_variant_n_children(options); i++) {
+        gchar *key;
+        GVariant *value;
+
+        g_variant_get_child(options, i, "{sv}", &key, &value);
+        mirage_context_set_option(self->priv->mirage_context, key, value);
+    }
+
     /* Load... */
-    self->priv->disc = mirage_context_load_image(self->priv->mirage_context, filenames, options, error);
+    self->priv->disc = mirage_context_load_image(self->priv->mirage_context, filenames, error);
 
     /* Check if loading succeeded */
     if (!self->priv->disc) {
@@ -100,16 +86,10 @@ gboolean cdemu_device_load_disc (CdemuDevice *self, gchar **filenames, GVariant 
 {
     gboolean succeeded = TRUE;
 
-    /* Convert the GVariant-encoded dictionary into a GHashTable */
-    GHashTable *options_dict = convert_g_variant_to_g_hash_table(options);
-
     /* Load */
     g_mutex_lock(self->priv->device_mutex);
-    succeeded = cdemu_device_load_disc_private(self, filenames, options_dict, error);
+    succeeded = cdemu_device_load_disc_private(self, filenames, options, error);
     g_mutex_unlock(self->priv->device_mutex);
-
-    /* Free the options dictionary */
-    g_hash_table_unref(options_dict);
 
     return succeeded;
 }

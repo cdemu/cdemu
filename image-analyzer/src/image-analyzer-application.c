@@ -265,8 +265,8 @@ static gboolean image_analyzer_application_open_image (ImageAnalyzerApplication 
     /* Close any opened image or dump */
     image_analyzer_application_close_image_or_dump(self);
 
-    /* Create disc */
-    self->priv->disc = mirage_context_load_image(self->priv->mirage_context, filenames, NULL, &error);
+    /* Load image */
+    self->priv->disc = mirage_context_load_image(self->priv->mirage_context, filenames, &error);
     if (!self->priv->disc) {
         g_warning("Failed to create disc: %s\n", error->message);
         image_analyzer_application_message(self, "Failed to open image: %s", error->message);

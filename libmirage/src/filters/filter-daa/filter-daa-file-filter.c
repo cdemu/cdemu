@@ -690,11 +690,13 @@ static gboolean mirage_file_filter_daa_parse_descriptor_encryption (MirageFileFi
     }
 
 
-    /* First, check if password has already been provided via parser parameters
+    /* First, check if password has already been provided via context options
        (separate code paths because if acquired via password function, the string
        must be freed) */
-    if (self->priv->password) {
-        daa_crypt_init(computed_key, self->priv->password, descriptor.daa_key);
+    GVariant *password_value = mirage_contextual_get_option(MIRAGE_CONTEXTUAL(self), "password");
+    if (password_value) {
+        daa_crypt_init(computed_key, g_variant_get_string(password_value, NULL), descriptor.daa_key);
+        g_variant_unref(password_value);
     } else {
         /* Get password from user via password function */
         gchar *prompt_password = mirage_contextual_obtain_password(MIRAGE_CONTEXTUAL(self), NULL);

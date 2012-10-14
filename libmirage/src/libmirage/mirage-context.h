@@ -92,10 +92,14 @@ const gchar *mirage_context_get_debug_domain (MirageContext *self);
 void mirage_context_set_debug_name (MirageContext *self, const gchar *name);
 const gchar *mirage_context_get_debug_name (MirageContext *self);
 
+void mirage_context_clear_options (MirageContext *self);
+void mirage_context_set_option (MirageContext *self, const gchar *name, GVariant *value);
+GVariant *mirage_context_get_option (MirageContext *self, const gchar *name);
+
 void mirage_context_set_password_function (MirageContext *self, MiragePasswordFunction func, gpointer user_data);
 gchar *mirage_context_obtain_password (MirageContext *self, GError **error);
 
-MirageDisc *mirage_context_load_image (MirageContext *self, gchar **filenames, GHashTable *params, GError **error);
+MirageDisc *mirage_context_load_image (MirageContext *self, gchar **filenames, GError **error);
 
 MirageFragment *mirage_context_create_fragment (MirageContext *self, GType fragment_interface, GInputStream *stream, GError **error);
 
@@ -138,6 +142,8 @@ MirageContext *mirage_contextual_get_context (MirageContextual *self);
 
 void mirage_contextual_debug_message (MirageContextual *self, gint level, gchar *format, ...);
 void mirage_contextual_debug_messagev (MirageContextual *self, gint level, gchar *format, va_list args);
+
+GVariant *mirage_contextual_get_option (MirageContextual *self, const gchar *name);
 
 gchar *mirage_contextual_obtain_password (MirageContextual *self, GError **error);
 

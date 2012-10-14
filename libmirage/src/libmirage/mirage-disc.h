@@ -87,10 +87,6 @@ typedef struct _MirageDisc         MirageDisc;
 typedef struct _MirageDiscClass    MirageDiscClass;
 typedef struct _MirageDiscPrivate  MirageDiscPrivate;
 
-enum
-{
-    PROP_MIRAGE_DISC_DVD_REPORT_CSS = 1,
-};
 
 /**
  * MirageDisc:

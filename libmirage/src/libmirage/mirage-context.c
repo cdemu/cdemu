@@ -135,6 +135,37 @@ void mirage_contextual_debug_message (MirageContextual *self, gint level, gchar 
 
 
 /**
+ * mirage_contextual_get_option:
+ * @self: a #MirageContextual
+ * @name: (in): option name
+ *
+ * <para>
+ * Retrieves option named @name from the context.
+ * </para>
+ *
+ * <note>
+ * This is a convenience function that retrieves a #MirageContext from
+ * @self and calls mirage_context_get_option().
+ * </note>
+ *
+ * Returns: (transfer full): a #GVariant containing the option value on
+ * success, %NULL on failure.
+ **/
+GVariant *mirage_contextual_get_option (MirageContextual *self, const gchar *name)
+{
+    MirageContext *context = mirage_contextual_get_context(self);
+    GVariant *value = NULL;
+
+    if (context) {
+        value = mirage_context_get_option(context, name);
+        g_object_unref(context);
+    }
+
+    return value;
+}
+
+
+/**
  * mirage_contextual_obtain_password:
  * @self: a #MirageContextual
  * @error: (out) (allow-none): location to store error, or %NULL
@@ -309,6 +340,9 @@ struct _MirageContextPrivate
 
     gint debug_mask; /* Debug mask */
 
+    /* Options */
+    GHashTable *options;
+
     /* Password function */
     MiragePasswordFunction password_function;
     gpointer password_data;
@@ -468,6 +502,59 @@ gint mirage_context_get_debug_mask (MirageContext *self)
 
 
 /**
+ * miragecontext_clear_options:
+ * @self: a #MirageContext
+ *
+ * <para>
+ * Clears all the options from the context.
+ * </para>
+ **/
+void mirage_context_clear_options (MirageContext *self)
+{
+    /* Remove all entries from hash table */
+    g_hash_table_remove_all(self->priv->options);
+}
+
+/**
+ * mirage_context_set_option:
+ * @self: a #MirageContext
+ * @name: (in): option name
+ * @value: (in) (transfer full): option value
+ *
+ * <para>
+ * Sets an option to the context. If option with the specified name already
+ * exists, it is replaced.
+ * </para>
+ **/
+void mirage_context_set_option (MirageContext *self, const gchar *name, GVariant *value)
+{
+    g_variant_ref_sink(value); /* Claim reference */
+	g_hash_table_replace(self->priv->options, g_strdup(name), value); /* Use replace() instead of insert() so that old key gets released */
+}
+
+/**
+ * mirage_context_get_option:
+ * @self: a #MirageContext
+ * @name: (in): option name
+ *
+ * <para>
+ * Retrieves option named @name from the context.
+ * </para>
+ *
+ * Returns: (transfer full): pointer to a #GVariant containing the option
+ * value on success, %NULL on failure.
+ **/
+GVariant *mirage_context_get_option (MirageContext *self, const gchar *name)
+{
+    GVariant *value = g_hash_table_lookup(self->priv->options, name);
+    if (value) {
+        g_variant_ref(value);
+    }
+    return value;
+}
+
+
+/**
  * mirage_context_set_password_function:
  * @self: a #MirageContext
  * @func: (in) (allow-none) (scope call): a password function pointer
@@ -528,7 +615,6 @@ gchar *mirage_context_obtain_password (MirageContext *self, GError **error)
  * mirage_context_load_image:
  * @self: a #MirageContext
  * @filenames: (in) (array zero-terminated=1): filename(s)
- * @params: (in) (allow-none) (element-type gchar* GValue): parser parameters, or %NULL
  * @error: (out) (allow-none): location to store error, or %NULL
  *
  * <para>
@@ -539,14 +625,6 @@ gchar *mirage_context_obtain_password (MirageContext *self, GError **error)
  * </para>
  *
  * <para>
- * @params, if not %NULL, is a #GHashTable containing parser parameters (such as
- * password, encoding, etc.) - it must have strings for its keys and values of
- * #GValue type. The hash table is passed to the parser; whether parameters are
- * actually used (or supported) by the parser, however, depends on the parser
- * implementation. If parser does not support a parameter, it will be ignored.
- * </para>
- *
- * <para>
  * If multiple filenames are provided and parser supports only single-file images,
  * only the first filename is used.
  * </para>
@@ -554,7 +632,7 @@ gchar *mirage_context_obtain_password (MirageContext *self, GError **error)
  * Returns: (transfer full): a #MirageDisc object on success, %NULL on failure. The reference to
  * the object should be released using g_object_unref() when no longer needed.
  **/
-MirageDisc *mirage_context_load_image (MirageContext *self, gchar **filenames, GHashTable *params, GError **error)
+MirageDisc *mirage_context_load_image (MirageContext *self, gchar **filenames, GError **error)
 {
     MirageDisc *disc = NULL;
     GInputStream **streams;
@@ -586,9 +664,6 @@ MirageDisc *mirage_context_load_image (MirageContext *self, gchar **filenames, G
 
         /* Attach context to parser */
         mirage_contextual_set_context(MIRAGE_CONTEXTUAL(parser), self);
-
-        /* Pass the parameters to parser */
-        mirage_parser_set_params(parser, params);
 
         /* Try loading image */
         disc = mirage_parser_load_image(parser, streams, &local_error);
@@ -835,8 +910,13 @@ static void mirage_context_init (MirageContext *self)
     self->priv->domain = NULL;
     self->priv->name = NULL;
 
+    /* Options */
+    self->priv->options = g_hash_table_new_full(g_str_hash, g_str_equal, g_free, (GDestroyNotify)g_variant_unref);
+
+    /* Stream cache */
     self->priv->stream_cache = g_hash_table_new_full(g_str_hash, g_str_equal, g_free, NULL);
 
+    /* GFileInputStream -> filename map */
     self->priv->file_streams_map = g_hash_table_new_full(g_direct_hash, g_direct_equal, NULL, g_free);
 }
 
@@ -846,6 +926,9 @@ static void mirage_context_finalize (GObject *gobject)
 
     g_free(self->priv->domain);
     g_free(self->priv->name);
+
+    /* Free options */
+    g_hash_table_unref(self->priv->options);
 
     /* Free stream cache */
     g_hash_table_unref(self->priv->stream_cache);
