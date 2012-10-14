@@ -14,27 +14,27 @@ find_package (PkgConfig REQUIRED QUIET)
 pkg_check_modules (GTKDOC REQUIRED QUIET gtk-doc)
 
 function (gtk_doc)
-	set (options QUIET VERBOSE)
-	set (oneValueArgs
+    set (options QUIET VERBOSE)
+    set (oneValueArgs
         MODULE
         MAIN_SGML_FILE
         SOURCE_DIR
         DOCS_DIR
-	)
-	set (multiValueArgs
-	    SOURCES
-	    IGNORE_HFILES
-	    CFLAGS
-	    LDFLAGS
-	    CONTENT_FILES
-	    EXPAND_CONTENT_FILES
-	)
+    )
+    set (multiValueArgs
+        SOURCES
+        IGNORE_HFILES
+        CFLAGS
+        LDFLAGS
+        CONTENT_FILES
+        EXPAND_CONTENT_FILES
+    )
 
-	CMAKE_PARSE_ARGUMENTS (GTKDOC "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
+    CMAKE_PARSE_ARGUMENTS (GTKDOC "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
 
-	if (GTKDOC_UNPARSED_ARGUMENTS)
-		message (FATAL_ERROR "Unknown keys given to GTK_DOC(): \"${GTKDOC_UNPARSED_ARGUMENTS}\"")
-	endif (GTKDOC_UNPARSED_ARGUMENTS)
+    if (GTKDOC_UNPARSED_ARGUMENTS)
+        message (FATAL_ERROR "Unknown keys given to GTK_DOC(): \"${GTKDOC_UNPARSED_ARGUMENTS}\"")
+    endif (GTKDOC_UNPARSED_ARGUMENTS)
 
     # setup build
     set (SETUP_FILES
@@ -114,8 +114,8 @@ function (gtk_doc)
         ${GTKDOC_DOCS_BUILDDIR}/sgml-build.stamp
         ${GTKDOC_DOCS_BUILDDIR}/html-build.stamp)
 
-   	install (
-   	    CODE "file (GLOB HTML_FILES \"${GTKDOC_DOCS_BUILDDIR}/html/*\")"
+    install (
+        CODE "file (GLOB HTML_FILES \"${GTKDOC_DOCS_BUILDDIR}/html/*\")"
         CODE "file (INSTALL \${HTML_FILES} DESTINATION \"${CMAKE_INSTALL_FULL_DATADIR}/gtk-doc/html/${GTKDOC_MODULE}\")"
     )
 

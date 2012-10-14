@@ -121,16 +121,16 @@ add_library (mirage SHARED ${libmirage_SOURCES})
 target_link_libraries (mirage ${LibGlib_LIBRARIES})
 
 set_target_properties (mirage PROPERTIES 
-	COMPILE_FLAGS ${mirage_S_CFLAGS}
-	COMPILE_DEFINITIONS "${mirage_DEFS}"
-	LINK_FLAGS ${mirage_S_LDFLAGS}
-	LIBRARY_OUTPUT_NAME mirage
-	SOVERSION ${MIRAGE_SOVERSION}
+    COMPILE_FLAGS ${mirage_S_CFLAGS}
+    COMPILE_DEFINITIONS "${mirage_DEFS}"
+    LINK_FLAGS ${mirage_S_LDFLAGS}
+    LIBRARY_OUTPUT_NAME mirage
+    SOVERSION ${MIRAGE_SOVERSION}
 )
 
 install (
-	TARGETS mirage
-	DESTINATION ${CMAKE_INSTALL_LIBDIR}
+    TARGETS mirage
+    DESTINATION ${CMAKE_INSTALL_LIBDIR}
 )
 
 install (
@@ -245,7 +245,7 @@ if (INTROSPECTION_ENABLED AND INTROSPECTION_FOUND)
     gobject_introspection (
         FILENAME libMirage-1.0.gir
         NSVERSION ${MIRAGE_VERSION_SHORT}
-		INCLUDES GObject-2.0 Gio-2.0 GLib-2.0 GModule-2.0
+        INCLUDES GObject-2.0 Gio-2.0 GLib-2.0 GModule-2.0
         LIBRARY mirage
         QUIET
         SCANNER_ARGS --add-include-path=${PROJECT_SOURCE_DIR} --warn-all
