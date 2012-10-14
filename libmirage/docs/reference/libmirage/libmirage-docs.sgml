@@ -17,14 +17,15 @@
 
         <xi:include href="xml/mirage-libmirage.xml"/>
         <xi:include href="xml/mirage-cdtext-coder.xml"/>
-        <xi:include href="xml/mirage-debugcontext.xml"/>
-        <xi:include href="xml/mirage-debuggable.xml"/>
+        <xi:include href="xml/mirage-context.xml"/>
+        <xi:include href="xml/mirage-contextual.xml"/>
+        <xi:include href="xml/mirage-debug.xml"/>
         <xi:include href="xml/mirage-disc.xml"/>
+        <xi:include href="xml/mirage-error.xml"/>
         <xi:include href="xml/mirage-file-filter.xml"/>
-        <xi:include href="xml/mirage-fragment-iface-null.xml"/>
-        <xi:include href="xml/mirage-fragment-iface-binary.xml"/>
-        <xi:include href="xml/mirage-fragment-iface-audio.xml"/>
         <xi:include href="xml/mirage-fragment.xml"/>
+        <xi:include href="xml/mirage-fragment-iface-audio.xml"/>
+        <xi:include href="xml/mirage-fragment-iface-binary.xml"/>
         <xi:include href="xml/mirage-index.xml"/>
         <xi:include href="xml/mirage-language.xml"/>
         <xi:include href="xml/mirage-object.xml"/>
@@ -33,9 +34,8 @@
         <xi:include href="xml/mirage-sector.xml"/>
         <xi:include href="xml/mirage-session.xml"/>
         <xi:include href="xml/mirage-track.xml"/>
-        <xi:include href="xml/mirage-version.xml"/>
         <xi:include href="xml/mirage-utils.xml"/>
-        <xi:include href="xml/mirage-error.xml"/>
+        <xi:include href="xml/mirage-version.xml"/>
 
         <xi:include href="xml/annotation-glossary.xml"><xi:fallback /></xi:include>
         <xi:include href="xml/api-index-full.xml"><xi:fallback /></xi:include>

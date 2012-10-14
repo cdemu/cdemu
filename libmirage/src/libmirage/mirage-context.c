@@ -61,7 +61,7 @@ MirageContext *mirage_contextual_get_context (MirageContextual *self)
 
 
 /**
- * mirage_contextual_messagev:
+ * mirage_contextual_debug_messagev:
  * @self: a #MirageContextual
  * @level: (in): debug level
  * @format: (in): message format. See the printf() documentation.
@@ -502,7 +502,7 @@ gint mirage_context_get_debug_mask (MirageContext *self)
 
 
 /**
- * miragecontext_clear_options:
+ * mirage_context_clear_options:
  * @self: a #MirageContext
  *
  * <para>

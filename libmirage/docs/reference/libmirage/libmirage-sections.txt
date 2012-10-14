@@ -2,7 +2,7 @@
 
 <SECTION>
 <FILE>mirage-libmirage</FILE>
-<TITLE>Main libMirage functions</TITLE>
+<TITLE>Main Library Functions</TITLE>
 MirageEnumParserInfoCallback
 MirageEnumFragmentInfoCallback
 MirageEnumFileFilterInfoCallback
@@ -10,21 +10,21 @@ MiragePasswordFunction
 MirageDebugMask
 mirage_initialize
 mirage_shutdown
-mirage_set_password_function
-mirage_obtain_password
-mirage_create_disc
-mirage_create_fragment
-mirage_create_file_stream
-mirage_get_file_stream_filename
+mirage_get_parsers_info
+mirage_get_parsers_type
 mirage_enumerate_parsers
+mirage_get_fragments_info
+mirage_get_fragments_type
 mirage_enumerate_fragments
+mirage_get_file_filters_info
+mirage_get_file_filters_type
 mirage_enumerate_file_filters
 mirage_get_supported_debug_masks
 </SECTION>
 
 <SECTION>
 <FILE>mirage-version</FILE>
-<TITLE>Version information</TITLE>
+<TITLE>Version Information</TITLE>
 mirage_major_version
 mirage_minor_version
 mirage_micro_version
@@ -44,8 +44,70 @@ MIRAGE_LT_AGE
 </SECTION>
 
 <SECTION>
+<FILE>mirage-context</FILE>
+<TITLE>MirageContext Object</TITLE>
+MirageContext
+mirage_context_set_debug_mask
+mirage_context_get_debug_mask
+mirage_context_set_debug_domain
+mirage_context_get_debug_domain
+mirage_context_set_debug_name
+mirage_context_get_debug_name
+mirage_context_clear_options
+mirage_context_set_option
+mirage_context_get_option
+mirage_context_set_password_function
+mirage_context_obtain_password
+mirage_context_load_image
+mirage_context_create_fragment
+mirage_context_create_file_stream
+mirage_context_get_file_stream_filename
+<SUBSECTION Standard>
+MIRAGE_CONTEXT
+MIRAGE_IS_CONTEXT
+MIRAGE_TYPE_CONTEXT
+MIRAGE_CONTEXT_CLASS
+MIRAGE_IS_CONTEXT_CLASS
+MIRAGE_CONTEXT_GET_CLASS
+<SUBSECTION Private>
+MirageContextClass
+MirageContextPrivate
+mirage_context_get_type
+</SECTION>
+
+<SECTION>
+<FILE>mirage-contextual</FILE>
+<TITLE>MirageContextual Interface</TITLE>
+MirageContextual
+mirage_contextual_set_context
+mirage_contextual_get_context
+mirage_contextual_debug_message
+mirage_contextual_debug_messagev
+mirage_contextual_get_option
+mirage_contextual_obtain_password
+mirage_contextual_create_fragment
+mirage_contextual_create_file_stream
+mirage_contextual_get_file_stream_filename
+<SUBSECTION Standard>
+MIRAGE_CONTEXTUAL
+MIRAGE_IS_CONTEXTUAL
+MIRAGE_TYPE_CONTEXTUAL
+MIRAGE_CONTEXTUAL_GET_INTERFACE
+<SUBSECTION Private>
+MirageContextualInterface
+mirage_contextual_get_type
+</SECTION>
+
+<SECTION>
+<FILE>mirage-debug</FILE>
+<TITLE>libMirage Debugging Facilities</TITLE>
+MirageDebugMasks
+MIRAGE_DEBUG
+</SECTION>
+
+<SECTION>
 <FILE>mirage-file-filter</FILE>
-<TITLE>MirageFileFilter object</TITLE>
+<TITLE>MirageFileFilter Object</TITLE>
 MirageFileFilterInfo
 MirageFileFilter
 mirage_file_filter_can_handle_data_format
@@ -68,7 +130,7 @@ mirage_file_filter_get_type
 
 <SECTION>
 <FILE>mirage-disc</FILE>
-<TITLE>MirageDisc object</TITLE>
+<TITLE>MirageDisc Object</TITLE>
 MIRAGE_MCN_SIZE
 MirageMediumTypes
 MirageEnumSessionCallback
@@ -129,7 +191,7 @@ mirage_disc_get_type
 
 <SECTION>
 <FILE>mirage-session</FILE>
-<TITLE>MirageSession object</TITLE>
+<TITLE>MirageSession Object</TITLE>
 MirageSessionTypes
 MirageEnumTrackCallback
 MirageEnumLanguageCallback
@@ -184,7 +246,7 @@ mirage_session_get_type
 
 <SECTION>
 <FILE>mirage-track</FILE>
-<TITLE>MirageTrack object</TITLE>
+<TITLE>MirageTrack Object</TITLE>
 MIRAGE_ISRC_SIZE
 MirageTrackFlags
 MirageTrackModes
@@ -250,7 +312,7 @@ mirage_track_get_type
 
 <SECTION>
 <FILE>mirage-sector</FILE>
-<TITLE>MirageSector object</TITLE>
+<TITLE>MirageSector Object</TITLE>
 MirageSectorSubchannelFormat
 MirageSectorValidData
 MirageSector
@@ -279,7 +341,7 @@ mirage_sector_get_type
 
 <SECTION>
 <FILE>mirage-object</FILE>
-<TITLE>MirageObject object</TITLE>
+<TITLE>MirageObject Object</TITLE>
 MirageObject
 mirage_object_set_parent
 mirage_object_get_parent
@@ -297,51 +359,8 @@ mirage_object_get_type
 </SECTION>
 
 <SECTION>
-<FILE>mirage-debuggable</FILE>
-<TITLE>MirageDebuggable interface</TITLE>
-MIRAGE_DEBUG
-MirageDebuggable
-mirage_debuggable_get_debug_context
-mirage_debuggable_set_debug_context
-mirage_debuggable_message
-mirage_debuggable_messagev
-<SUBSECTION Standard>
-MIRAGE_DEBUGGABLE
-MIRAGE_IS_DEBUGGABLE
-MIRAGE_TYPE_DEBUGGABLE
-MIRAGE_DEBUGGABLE_GET_INTERFACE
-<SUBSECTION Private>
-MirageDebuggableInterface
-mirage_debuggable_get_type
-</SECTION>
-
-<SECTION>
-<FILE>mirage-debugcontext</FILE>
-<TITLE>MirageDebugContext object</TITLE>
-MirageDebugMasks
-MirageDebugContext
-mirage_debug_context_set_debug_mask
-mirage_debug_context_get_debug_mask
-mirage_debug_context_set_domain
-mirage_debug_context_get_domain
-mirage_debug_context_set_name
-mirage_debug_context_get_name
-<SUBSECTION Standard>
-MIRAGE_DEBUG_CONTEXT
-MIRAGE_IS_DEBUG_CONTEXT
-MIRAGE_TYPE_DEBUG_CONTEXT
-MIRAGE_DEBUG_CONTEXT_CLASS
-MIRAGE_IS_DEBUG_CONTEXT_CLASS
-MIRAGE_DEBUG_CONTEXT_GET_CLASS
-<SUBSECTION Private>
-MirageDebugContextClass
-MirageDebugContextPrivate
-mirage_debug_context_get_type
-</SECTION>
-
-<SECTION>
 <FILE>mirage-index</FILE>
-<TITLE>MirageIndex object</TITLE>
+<TITLE>MirageIndex Object</TITLE>
 MirageIndex
 mirage_index_set_number
 mirage_index_get_number
@@ -362,7 +381,7 @@ mirage_index_get_type
 
 <SECTION>
 <FILE>mirage-fragment</FILE>
-<TITLE>MirageFragment object</TITLE>
+<TITLE>MirageFragment Object</TITLE>
 MirageFragmentInfo
 MirageFragment
 mirage_fragment_generate_info
@@ -389,22 +408,8 @@ mirage_fragment_get_type
 </SECTION>
 
 <SECTION>
-<FILE>mirage-fragment-iface-null</FILE>
-<TITLE>MirageFragmentIfaceNull interface</TITLE>
-MirageFragmentIfaceNull
-<SUBSECTION Standard>
-MIRAGE_TYPE_FRAGMENT_IFACE_NULL
-MIRAGE_FRAGMENT_IFACE_NULL
-MIRAGE_IS_FRAGMENT_IFACE_NULL
-MIRAGE_FRAGMENT_IFACE_NULL_GET_INTERFACE
-<SUBSECTION Private>
-MirageFragmentIfaceNullInterface
-mirage_fragment_iface_null_get_type
-</SECTION>
-
-<SECTION>
 <FILE>mirage-fragment-iface-binary</FILE>
-<TITLE>MirageFragmentIfaceBinary interface</TITLE>
+<TITLE>MirageFragmentIfaceBinary Interface</TITLE>
 MirageMainDataFormat
 MirageSubchannelDataFormat
 MirageFragmentIfaceBinary
@@ -438,7 +443,7 @@ mirage_fragment_iface_binary_get_type
 
 <SECTION>
 <FILE>mirage-fragment-iface-audio</FILE>
-<TITLE>MirageFragmentIfaceAudio interface</TITLE>
+<TITLE>MirageFragmentIfaceAudio Interface</TITLE>
 MirageFragmentIfaceAudio
 mirage_fragment_iface_audio_set_stream
 mirage_fragment_iface_audio_get_filename
@@ -456,7 +461,7 @@ mirage_fragment_iface_audio_get_type
 
 <SECTION>
 <FILE>mirage-language</FILE>
-<TITLE>MirageLanguage object</TITLE>
+<TITLE>MirageLanguage Object</TITLE>
 MirageLanguagePackTypes
 MirageLanguage
 mirage_language_set_code
@@ -478,7 +483,7 @@ mirage_language_get_type
 
 <SECTION>
 <FILE>mirage-cdtext-coder</FILE>
-<TITLE>MirageCdTextCoder object</TITLE>
+<TITLE>MirageCdTextCoder Object</TITLE>
 MirageCdTextDataCallback
 MirageCdTextCoder
 mirage_cdtext_encoder_init
@@ -503,7 +508,7 @@ mirage_cdtext_coder_get_type
 
 <SECTION>
 <FILE>mirage-parser</FILE>
-<TITLE>MirageParser object</TITLE>
+<TITLE>MirageParser Object</TITLE>
 MirageParserInfo
 MirageParser
 mirage_parser_generate_info
@@ -511,10 +516,6 @@ mirage_parser_get_info
 mirage_parser_load_image
 mirage_parser_add_redbook_pregap
 mirage_parser_guess_medium_type
-mirage_parser_get_param
-mirage_parser_get_param_string
-mirage_parser_set_params
-mirage_parser_get_cached_data_stream
 mirage_parser_create_text_stream
 <SUBSECTION Standard>
 MIRAGE_PARSER
@@ -531,7 +532,7 @@ mirage_parser_get_type
 
 <SECTION>
 <FILE>mirage-plugin</FILE>
-<TITLE>MiragePlugin object</TITLE>
+<TITLE>MiragePlugin Object</TITLE>
 MiragePlugin
 mirage_plugin_new
 <SUBSECTION Standard>
@@ -549,7 +550,7 @@ mirage_plugin_get_type
 
 <SECTION>
 <FILE>mirage-utils</FILE>
-<TITLE>Utility functions</TITLE>
+<TITLE>Utility Functions</TITLE>
 MirageSubChannel
 MIRAGE_CAST_DATA
 MIRAGE_CAST_PTR
@@ -580,7 +581,7 @@ mirage_helper_encoding_from_bom
 </SECTION>
 
 <SECTION>
-<TITLE>Error reporting</TITLE>
+<TITLE>Error Reporting</TITLE>
 <FILE>mirage-error</FILE>
 MirageErrorCodes
 mirage_error_quark

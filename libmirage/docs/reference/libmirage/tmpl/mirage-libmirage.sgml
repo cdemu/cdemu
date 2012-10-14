@@ -116,67 +116,25 @@ debug masks can be obtained using mirage_get_supported_debug_masks().
 @Returns: 
 
 
-<!-- ##### FUNCTION mirage_set_password_function ##### -->
+<!-- ##### FUNCTION mirage_get_parsers_info ##### -->
 <para>
 
 </para>
 
-@func: 
-@user_data: 
+@info: 
+@num_parsers: 
 @error: 
 @Returns: 
 
 
-<!-- ##### FUNCTION mirage_obtain_password ##### -->
+<!-- ##### FUNCTION mirage_get_parsers_type ##### -->
 <para>
 
 </para>
 
+@types: 
+@num_parsers: 
 @error: 
-@Returns: 
-
-
-<!-- ##### FUNCTION mirage_create_disc ##### -->
-<para>
-
-</para>
-
-@filenames: 
-@debug_context: 
-@params: 
-@error: 
-@Returns: 
-
-
-<!-- ##### FUNCTION mirage_create_fragment ##### -->
-<para>
-
-</para>
-
-@fragment_interface: 
-@stream: 
-@debug_context: 
-@error: 
-@Returns: 
-
-
-<!-- ##### FUNCTION mirage_create_file_stream ##### -->
-<para>
-
-</para>
-
-@filename: 
-@debug_context: 
-@error: 
-@Returns: 
-
-
-<!-- ##### FUNCTION mirage_get_file_stream_filename ##### -->
-<para>
-
-</para>
-
-@stream: 
 @Returns: 
 
 
@@ -191,6 +149,28 @@ debug masks can be obtained using mirage_get_supported_debug_masks().
 @Returns: 
 
 
+<!-- ##### FUNCTION mirage_get_fragments_info ##### -->
+<para>
+
+</para>
+
+@info: 
+@num_fragments: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION mirage_get_fragments_type ##### -->
+<para>
+
+</para>
+
+@types: 
+@num_fragments: 
+@error: 
+@Returns: 
+
+
 <!-- ##### FUNCTION mirage_enumerate_fragments ##### -->
 <para>
 
@@ -198,6 +178,28 @@ debug masks can be obtained using mirage_get_supported_debug_masks().
 
 @func: 
 @user_data: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION mirage_get_file_filters_info ##### -->
+<para>
+
+</para>
+
+@info: 
+@num_file_filters: 
+@error: 
+@Returns: 
+
+
+<!-- ##### FUNCTION mirage_get_file_filters_type ##### -->
+<para>
+
+</para>
+
+@types: 
+@num_file_filters: 
 @error: 
 @Returns: 
 

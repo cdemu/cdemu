@@ -28,7 +28,7 @@ of debug context changes.
 </para>
 
 
-<!-- ##### SIGNAL MirageObject::debug-context-changed ##### -->
+<!-- ##### SIGNAL MirageObject::context-changed ##### -->
 <para>
 
 </para>
