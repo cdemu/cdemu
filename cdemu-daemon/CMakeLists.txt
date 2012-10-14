@@ -2,9 +2,8 @@ cmake_minimum_required (VERSION 2.8.5)
 
 # Project name and version
 project (cdemu-daemon C)
-set (cdemu-daemon_NAME "cdemu-daemon")
-set (cdemu-daemon_VERSION "1.6.0")
-set (cdemu-daemon_INTERFACE_VERSION "4")
+set (PROJECT_VERSION 1.6.0)
+set (cdemu-daemon_INTERFACE_VERSION 4)
 
 # Search in the `cmake' directory for additional CMake modules.
 list (APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
@@ -15,6 +14,9 @@ include (GNUInstallDirs)
 
 include (Utilities)
 include (FileList)
+
+mark_as_advanced (CLEAR CMAKE_INSTALL_SYSCONFDIR)
+mark_as_advanced (CLEAR CMAKE_VERBOSE_MAKEFILE)
 
 # Configuration
 configure_file (

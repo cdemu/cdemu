@@ -2,8 +2,7 @@ cmake_minimum_required (VERSION 2.8.5)
 
 # Project name and version
 project (image-analyzer C)
-set (image-analyzer_NAME "image-analyzer")
-set (image-analyzer_VERSION "1.6.0")
+set (PROJECT_VERSION 1.6.0)
 
 # Search in the `cmake' directory for additional CMake modules.
 list (APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
@@ -14,6 +13,9 @@ include (GNUInstallDirs)
 
 include (Utilities)
 include (FileList)
+
+mark_as_advanced (CLEAR CMAKE_INSTALL_SYSCONFDIR)
+mark_as_advanced (CLEAR CMAKE_VERBOSE_MAKEFILE)
 
 # Configuration
 configure_file (
