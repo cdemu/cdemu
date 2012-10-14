@@ -506,48 +506,16 @@ static void callback_debug_mask_change_requested (ImageAnalyzerLogWindow *log_wi
 /**********************************************************************\
  *                           GUI build helpers                        *
 \**********************************************************************/
-typedef struct
-{
-    GtkWidget *dialog;
-    GtkFileFilter *all_images;
-} ImageAnalyzerFilterContext;
-
-static gboolean append_parser_info (MirageParserInfo *info, ImageAnalyzerFilterContext *context)
-{
-    GtkFileFilter *filter = gtk_file_filter_new();
-    gtk_file_filter_set_name(filter, info->description);
-
-    /* Per-parser filter */
-    gtk_file_filter_add_mime_type(filter, info->mime_type);
-    /* "All images" filter */
-    gtk_file_filter_add_mime_type(context->all_images, info->mime_type);
-
-    gtk_file_chooser_add_filter(GTK_FILE_CHOOSER(context->dialog), filter);
-
-    return TRUE;
-}
-
-static gboolean append_file_filter_info (MirageFileFilterInfo *info, ImageAnalyzerFilterContext *context)
-{
-    GtkFileFilter *filter = gtk_file_filter_new();
-    gtk_file_filter_set_name(filter, info->description);
-
-    /* Per-parser filter */
-    gtk_file_filter_add_mime_type(filter, info->mime_type);
-    /* "All images" filter */
-    gtk_file_filter_add_mime_type(context->all_images, info->mime_type);
-
-    gtk_file_chooser_add_filter(GTK_FILE_CHOOSER(context->dialog), filter);
-
-    return TRUE;
-}
-
 static GtkWidget *build_dialog_open_image (ImageAnalyzerApplication *self)
 {
-    ImageAnalyzerFilterContext context;
-
     GtkWidget *dialog;
-    GtkFileFilter *filter;
+    GtkFileFilter *filter_all;
+
+    const MirageParserInfo *parsers;
+    gint num_parsers;
+
+    const MirageFileFilterInfo *file_filters;
+    gint num_file_filters;
 
     dialog = gtk_file_chooser_dialog_new(
         "Open File",
@@ -561,21 +529,47 @@ static GtkWidget *build_dialog_open_image (ImageAnalyzerApplication *self)
     gtk_file_chooser_set_local_only(GTK_FILE_CHOOSER(dialog), FALSE);
 
     /* "All files" filter */
-    filter = gtk_file_filter_new();
-    gtk_file_filter_set_name(filter, "All files");
-    gtk_file_filter_add_pattern(filter, "*");
-    gtk_file_chooser_add_filter(GTK_FILE_CHOOSER(dialog), filter);
+    filter_all = gtk_file_filter_new();
+    gtk_file_filter_set_name(filter_all, "All files");
+    gtk_file_filter_add_pattern(filter_all, "*");
+    gtk_file_chooser_add_filter(GTK_FILE_CHOOSER(dialog), filter_all);
 
     /* "All images" filter */
-    filter= gtk_file_filter_new();
-    gtk_file_filter_set_name(filter, "All images");
-    gtk_file_chooser_add_filter(GTK_FILE_CHOOSER(dialog), filter);
+    filter_all = gtk_file_filter_new();
+    gtk_file_filter_set_name(filter_all, "All images");
+    gtk_file_chooser_add_filter(GTK_FILE_CHOOSER(dialog), filter_all);
 
-    /* Filters provided by parsers and file filters */
-    context.dialog = dialog;
-    context.all_images = filter;
-    mirage_enumerate_parsers((MirageEnumParserInfoCallback)append_parser_info, &context, NULL);
-    mirage_enumerate_file_filters((MirageEnumFileFilterInfoCallback)append_file_filter_info, &context, NULL);
+    /* Get list of supported parsers */
+    mirage_get_parsers_info(&parsers, &num_parsers, NULL);
+    for (gint i = 0; i < num_parsers; i++) {
+        const MirageParserInfo *info = &parsers[i];
+        GtkFileFilter *filter;
+
+        /* Create a parser-specific file chooser filter */
+        filter = gtk_file_filter_new();
+        gtk_file_filter_set_name(filter, info->description);
+        gtk_file_filter_add_mime_type(filter, info->mime_type);
+        gtk_file_chooser_add_filter(GTK_FILE_CHOOSER(dialog), filter);
+
+        /* "All images" filter */
+        gtk_file_filter_add_mime_type(filter_all, info->mime_type);
+    }
+
+    /* Get list of supported file filters */
+    mirage_get_file_filters_info(&file_filters, &num_file_filters, NULL);
+    for (gint i = 0; i < num_file_filters; i++) {
+        const MirageFileFilterInfo *info = &file_filters[i];
+        GtkFileFilter *filter;
+
+        /* Create a parser-specific file chooser filter */
+        filter = gtk_file_filter_new();
+        gtk_file_filter_set_name(filter, info->description);
+        gtk_file_filter_add_mime_type(filter, info->mime_type);
+        gtk_file_chooser_add_filter(GTK_FILE_CHOOSER(dialog), filter);
+
+        /* "All images" filter */
+        gtk_file_filter_add_mime_type(filter_all, info->mime_type);
+    }
 
     return dialog;
 }
