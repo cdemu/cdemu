@@ -32,6 +32,7 @@
 #include <string.h>
 
 #include "mirage-context.h"
+#include "mirage-contextual.h"
 #include "mirage-object.h"
 
 #include "mirage-cdtext-coder.h"
@@ -41,6 +42,8 @@
 #include "mirage-error.h"
 #include "mirage-file-filter.h"
 #include "mirage-fragment.h"
+#include "mirage-fragment-iface-audio.h"
+#include "mirage-fragment-iface-binary.h"
 #include "mirage-index.h"
 #include "mirage-language.h"
 #include "mirage-parser.h"

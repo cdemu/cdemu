@@ -46,12 +46,15 @@ set (libmirage_HEADERS
     src/libmirage/mirage.h
     src/libmirage/mirage-cdtext-coder.h
     src/libmirage/mirage-context.h
+    src/libmirage/mirage-contextual.h
     src/libmirage/mirage-debug.h
     src/libmirage/mirage-disc.h
     src/libmirage/mirage-disc-structures.h
     src/libmirage/mirage-error.h
     src/libmirage/mirage-file-filter.h
     src/libmirage/mirage-fragment.h
+    src/libmirage/mirage-fragment-iface-audio.h
+    src/libmirage/mirage-fragment-iface-binary.h
     src/libmirage/mirage-index.h
     src/libmirage/mirage-language.h
     src/libmirage/mirage-object.h
@@ -68,10 +71,13 @@ set (libmirage_SOURCES
     src/libmirage/mirage.c
     src/libmirage/mirage-cdtext-coder.c
     src/libmirage/mirage-context.c
+    src/libmirage/mirage-contextual.c
     src/libmirage/mirage-disc.c
     src/libmirage/mirage-error.c
     src/libmirage/mirage-file-filter.c
     src/libmirage/mirage-fragment.c
+    src/libmirage/mirage-fragment-iface-audio.c
+    src/libmirage/mirage-fragment-iface-binary.c
     src/libmirage/mirage-index.c
     src/libmirage/mirage-language.c
     src/libmirage/mirage-object.c
