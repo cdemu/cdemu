@@ -5,10 +5,6 @@
 #export DH_VERBOSE=1
 
 
-build:
-	-test -x autogen.sh && ./autogen.sh
-	dh build --with autotools_dev,python2
-
 %:
-	dh $@ --with autotools_dev,python2
+	dh $@ --with python2
 

@@ -64,7 +64,7 @@ option (STRICT_WARNINGS "Enable more warnings" off)
 
 find_package (PkgConfig 0.16 REQUIRED)
 
-pkg_check_modules (LibMirage REQUIRED libmirage>=${cdemu-daemon_VERSION})
+pkg_check_modules (LibMirage REQUIRED libmirage>=${PROJECT_VERSION})
 pkg_check_modules (LibGlib REQUIRED glib-2.0>=2.24 gobject-2.0>=2.24 gmodule-2.0>=2.24 gthread-2.0>=2.24 gio-2.0>=2.26)
 pkg_check_modules (LibAO REQUIRED ao>=0.8.0)
 

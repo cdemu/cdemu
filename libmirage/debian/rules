@@ -5,9 +5,6 @@
 #export DH_VERBOSE=1
 
 
-override_dh_auto_configure:
-	dh_auto_configure -- --disable-static --enable-gtk-doc --enable-introspection=yes
-
 override_dh_strip:
 	dh_strip --dbg-package="libmirage7-dbg"
 
@@ -17,16 +14,6 @@ override_dh_makeshlibs:
 override_dh_shlibdeps:
 	dh_shlibdeps --exclude="libmirage-1.6"
 
-build:
-	-test -x autogen.sh && ./autogen.sh
-	dh build --with autotools_dev,apport,gir
-
-clean:
-	# Hack! Because GTK-Doc is retarded.
-	rm -f docs/reference/libmirage/html/*.html
-
-	dh clean --with autotools_dev,apport,gir
-
 %:
-	dh $@ --with autotools_dev,apport,gir
+	dh $@ --with apport,gir
 

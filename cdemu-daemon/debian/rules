@@ -5,16 +5,9 @@
 #export DH_VERBOSE=1
 
 
-override_dh_auto_configure:
-	dh_auto_configure -- --enable-session-bus-service --disable-system-bus-service
-
 override_dh_strip:
 	dh_strip --dbg-package="cdemu-daemon-dbg"
 
-build:
-	-test -x autogen.sh && ./autogen.sh
-	dh build --with autotools_dev,apport
-
 %:
-	dh $@ --with autotools_dev,apport
+	dh $@ --with apport
 

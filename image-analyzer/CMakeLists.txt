@@ -54,7 +54,7 @@ option (STRICT_WARNINGS "Enable more warnings" off)
 find_package (PkgConfig 0.16 REQUIRED)
 find_package (Gnuplot 4.0)
 
-pkg_check_modules (LibMirage REQUIRED libmirage>=${image-analyzer_VERSION})
+pkg_check_modules (LibMirage REQUIRED libmirage>=${PROJECT_VERSION})
 pkg_check_modules (LibGlib REQUIRED glib-2.0>=2.24 gobject-2.0>=2.24)
 pkg_check_modules (LibXml REQUIRED libxml-2.0>=2.0.0)
 

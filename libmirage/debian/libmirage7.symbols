@@ -1,4 +1,4 @@
-libmirage.so.7 libmirage7 #MINVER#
+libmirage.so.7.0.0 libmirage7 #MINVER#
  mirage_cdtext_coder_get_type@Base 1.6.0
  mirage_cdtext_decoder_get_block_info@Base 1.0.0
  mirage_cdtext_decoder_get_data@Base 1.0.0
