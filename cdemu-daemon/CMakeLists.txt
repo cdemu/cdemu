@@ -68,6 +68,8 @@ pkg_check_modules (LibMirage REQUIRED libmirage>=${PROJECT_VERSION})
 pkg_check_modules (LibGlib REQUIRED glib-2.0>=2.24 gobject-2.0>=2.24 gmodule-2.0>=2.24 gthread-2.0>=2.24 gio-2.0>=2.26)
 pkg_check_modules (LibAO REQUIRED ao>=0.8.0)
 
+include_directories (SYSTEM ${LibMirage_INCLUDE_DIRS})
+
 list (APPEND cdemu-daemon_CFLAGS ${LibMirage_CFLAGS})
 list (APPEND cdemu-daemon_CFLAGS ${LibGlib_CFLAGS})
 list (APPEND cdemu-daemon_CFLAGS ${LibAO_CFLAGS})

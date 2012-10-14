@@ -32,7 +32,7 @@ include (Utilities)
 include (FileList)
 
 set (MIRAGE_INSTALL_PLUGINDIR "${CMAKE_INSTALL_LIBDIR}/${PROJECT_NAME}-${MIRAGE_VERSION_SHORT}"
-    CACHE STRING "Path to libMirage plugin directory." FORCE)
+    CACHE PATH "Path to libMirage plugin directory." FORCE)
 set (MIRAGE_PLUGIN_DIR "${CMAKE_INSTALL_PREFIX}/${MIRAGE_INSTALL_PLUGINDIR}")
 mark_as_advanced (MIRAGE_INSTALL_PLUGINDIR)
 
@@ -58,6 +58,11 @@ configure_file (
     @ONLY
 )
 include_directories (${PROJECT_BINARY_DIR})
+
+set_directory_properties (
+    PROPERTY ADDITIONAL_MAKE_CLEAN_FILES 
+    "${PROJECT_SOURCE_DIR}/src/libmirage/mirage-version.h;${PROJECT_SOURCE_DIR}/docs/reference/libmirage/version.xml"
+)
 
 if (NOT CMAKE_BUILD_TYPE)
     set (CMAKE_BUILD_TYPE RelWithDebInfo CACHE STRING

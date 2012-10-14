@@ -51,7 +51,7 @@ function (gettext_process_po_files po_dir)
         set (gmo_files ${gmo_files} ${gmo_file})
     endforeach ()
 
-    set (translations-target "${PROJECT_NAME}-translations")
+    set (translations-target "${PROJECT_NAME} translations")
     add_custom_target (${translations-target} ALL DEPENDS ${gmo_files})
 endfunction ()
 
@@ -61,11 +61,11 @@ function (intltool_merge options po_dir in_filename out_filename)
     endif ()
     add_custom_command (
         OUTPUT ${out_filename}
-        COMMAND intltool-merge ${options} ${options2} -u ${PROJECT_SOURCE_DIR}/${po_dir}
+        COMMAND ${INTLTOOL_MERGE_EXECUTABLE} ${options} ${options2} -u ${PROJECT_SOURCE_DIR}/${po_dir}
             ${PROJECT_SOURCE_DIR}/${in_filename} ${out_filename} 
         DEPENDS ${in_filename}
     )
-    set (intltool-merge-target "intltool-merge-${out_filename}")
+    set (intltool-merge-target "intltool-merge ${out_filename}")
     add_custom_target (${intltool-merge-target} ALL DEPENDS ${out_filename})
 endfunction ()
 

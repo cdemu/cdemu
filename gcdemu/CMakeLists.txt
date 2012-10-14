@@ -18,12 +18,18 @@ mark_as_advanced (GETTEXT_MSGMERGE_EXECUTABLE)
 # Configuration
 
 option (BUILD_NLS "Support for multiple languages" on)
+option (COMPILE_SCHEMAS "Compile glib schemas" on)
 
 # Tests
 
 find_package (IntlTool 0.21 REQUIRED)
-find_package (Gettext REQUIRED)
+find_package (Gettext 0.15 REQUIRED)
 find_package (PythonInterp 2.6 REQUIRED)
+
+if (COMPILE_SCHEMAS)
+    find_program (GLIB_COMPILE_SCHEMAS_EXECUTABLE NAMES glib-compile-schemas)
+    mark_as_advanced (GLIB_COMPILE_SCHEMAS_EXECUTABLE)
+endif ()
 
 # Installation
 
@@ -35,9 +41,13 @@ install (
 intltool_merge ("-x" po data/apps.gcdemu.gschema.xml.in apps.gcdemu.gschema.xml)
 install (
     FILES ${PROJECT_BINARY_DIR}/apps.gcdemu.gschema.xml
-    DESTINATION ${CMAKE_INSTALL_DATADIR}/glib-2.0/schemas/
+    DESTINATION ${CMAKE_INSTALL_DATADIR}/glib-2.0/schemas
 )
-#TODO: Call glib-compile-schemas on installation.
+if (COMPILE_SCHEMAS)
+    install (CODE
+        "execute_process (COMMAND ${GLIB_COMPILE_SCHEMAS_EXECUTABLE} ${CMAKE_INSTALL_FULL_DATADIR}/glib-2.0/schemas)"
+    )
+endif ()
 
 intltool_merge ("-d" po data/gcdemu.desktop.in gcdemu.desktop)
 install (

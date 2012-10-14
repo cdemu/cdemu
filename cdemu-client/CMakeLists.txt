@@ -22,7 +22,7 @@ option (BUILD_NLS "Support for multiple languages" on)
 # Tests
 
 find_package (IntlTool 0.21 REQUIRED)
-find_package (Gettext REQUIRED)
+find_package (Gettext 0.15 REQUIRED)
 find_package (PythonInterp 2.6 REQUIRED)
 
 # Installation

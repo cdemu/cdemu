@@ -58,6 +58,8 @@ pkg_check_modules (LibMirage REQUIRED libmirage>=${PROJECT_VERSION})
 pkg_check_modules (LibGlib REQUIRED glib-2.0>=2.24 gobject-2.0>=2.24)
 pkg_check_modules (LibXml REQUIRED libxml-2.0>=2.0.0)
 
+include_directories (SYSTEM ${LibMirage_INCLUDE_DIRS})
+
 list (APPEND image-analyzer_CFLAGS ${LibMirage_CFLAGS})
 list (APPEND image-analyzer_CFLAGS ${LibGlib_CFLAGS})
 list (APPEND image-analyzer_CFLAGS ${LibXml_CFLAGS})
