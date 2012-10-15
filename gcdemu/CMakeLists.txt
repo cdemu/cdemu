@@ -50,8 +50,10 @@ if (COMPILE_SCHEMAS)
 endif ()
 
 intltool_merge ("-d" po data/gcdemu.desktop.in gcdemu.desktop)
+intltool_merge ("-d" po data/gcdemu-indicator.desktop.in gcdemu-indicator.desktop)
 install (
     FILES ${PROJECT_BINARY_DIR}/gcdemu.desktop
+    ${PROJECT_BINARY_DIR}/gcdemu-indicator.desktop
     DESTINATION ${CMAKE_INSTALL_DATADIR}/applications
 )
 

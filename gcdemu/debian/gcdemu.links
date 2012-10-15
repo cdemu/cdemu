@@ -1,5 +1,6 @@
-usr/share/pixmaps/gcdemu.svg           usr/share/icons/hicolor/scalable/apps/gcdemu.svg
-usr/share/pixmaps/gcdemu-icon.svg      usr/share/icons/hicolor/scalable/apps/gcdemu-icon.svg
-usr/share/pixmaps/gcdemu-icon-gray.svg usr/share/icons/hicolor/scalable/apps/gcdemu-icon-gray.svg
+usr/share/pixmaps/gcdemu.svg  usr/share/icons/hicolor/scalable/apps/gcdemu.svg
+usr/share/pixmaps/gcdemu-icon.svg  usr/share/icons/hicolor/scalable/apps/gcdemu-icon.svg
+usr/share/pixmaps/gcdemu-icon-gray.svg  usr/share/icons/hicolor/scalable/apps/gcdemu-icon-gray.svg
 usr/share/applications/gcdemu.desktop  etc/xdg/autostart/gcdemu.desktop
+usr/share/applications/gcdemu-indicator.desktop  etc/xdg/autostart/gcdemu-indicator.desktop
 
