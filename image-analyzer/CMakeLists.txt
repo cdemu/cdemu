@@ -47,6 +47,7 @@ if (STRICT_WARNINGS AND CMAKE_COMPILER_IS_GNUCC)
 endif ()
 
 option (GTK3_ENABLED "Compile using Gtk3" on)
+option (POST_INSTALL_HOOKS "Run post-install hooks" on)
 option (STRICT_WARNINGS "Enable more warnings" off)
 
 # Tests
@@ -57,6 +58,11 @@ find_package (Gnuplot 4.0)
 pkg_check_modules (LibMirage REQUIRED libmirage>=${PROJECT_VERSION})
 pkg_check_modules (LibGlib REQUIRED glib-2.0>=2.24 gobject-2.0>=2.24)
 pkg_check_modules (LibXml REQUIRED libxml-2.0>=2.0.0)
+
+if (POST_INSTALL_HOOKS)
+    find_program (UPDATE_DESKTOP_DATABASE_EXECUTABLE NAMES update-desktop-database)
+    mark_as_advanced (UPDATE_DESKTOP_DATABASE_EXECUTABLE)
+endif ()
 
 include_directories (SYSTEM ${LibMirage_INCLUDE_DIRS})
 
@@ -111,4 +117,9 @@ install (
     FILES ${PROJECT_SOURCE_DIR}/data/image-analyzer.desktop 
     DESTINATION ${CMAKE_INSTALL_DATADIR}/applications
 )
+if (POST_INSTALL_HOOKS)
+    install (CODE
+        "execute_process (COMMAND ${UPDATE_DESKTOP_DATABASE_EXECUTABLE} ${CMAKE_INSTALL_FULL_DATADIR}/applications)"
+    )
+endif ()
 

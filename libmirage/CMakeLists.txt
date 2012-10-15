@@ -88,6 +88,7 @@ endif ()
 
 option (GTKDOC_ENABLED "Use gtk-doc to build documentation" on)
 option (INTROSPECTION_ENABLED "Generate gobject introspection files" on)
+option (POST_INSTALL_HOOKS "Run post-install hooks" on)
 option (STRICT_WARNINGS "Enable more warnings" off)
 
 # Tests
@@ -105,6 +106,11 @@ endif ()
 
 if (GTKDOC_ENABLED)
     pkg_check_modules (GTKDOC REQUIRED gtk-doc>=1.4)
+endif ()
+
+if (POST_INSTALL_HOOKS)
+    find_program (UPDATE_MIME_DATABASE_EXECUTABLE NAMES update-mime-database)
+    mark_as_advanced (UPDATE_MIME_DATABASE_EXECUTABLE)
 endif ()
 
 list (APPEND libmirage_CFLAGS ${LibGlib_CFLAGS})
@@ -244,6 +250,11 @@ install (
     FILES ${mimetype_FILES} 
     DESTINATION ${CMAKE_INSTALL_DATADIR}/mime/packages
 )
+if (POST_INSTALL_HOOKS)
+    install (CODE
+        "execute_process (COMMAND ${UPDATE_MIME_DATABASE_EXECUTABLE} ${CMAKE_INSTALL_FULL_DATADIR}/mime/packages)"
+    )
+endif ()
 
 # Introspection stuff
 if (INTROSPECTION_ENABLED AND INTROSPECTION_FOUND)

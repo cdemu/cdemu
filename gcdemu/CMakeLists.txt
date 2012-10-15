@@ -18,7 +18,7 @@ mark_as_advanced (GETTEXT_MSGMERGE_EXECUTABLE)
 # Configuration
 
 option (BUILD_NLS "Support for multiple languages" on)
-option (COMPILE_SCHEMAS "Compile glib schemas" on)
+option (POST_INSTALL_HOOKS "Run post-install hooks" on)
 
 # Tests
 
@@ -26,9 +26,11 @@ find_package (IntlTool 0.21 REQUIRED)
 find_package (Gettext 0.15 REQUIRED)
 find_package (PythonInterp 2.6 REQUIRED)
 
-if (COMPILE_SCHEMAS)
+if (POST_INSTALL_HOOKS)
     find_program (GLIB_COMPILE_SCHEMAS_EXECUTABLE NAMES glib-compile-schemas)
     mark_as_advanced (GLIB_COMPILE_SCHEMAS_EXECUTABLE)
+    find_program (UPDATE_DESKTOP_DATABASE_EXECUTABLE NAMES update-desktop-database)
+    mark_as_advanced (UPDATE_DESKTOP_DATABASE_EXECUTABLE)
 endif ()
 
 # Installation
@@ -43,7 +45,7 @@ install (
     FILES ${PROJECT_BINARY_DIR}/apps.gcdemu.gschema.xml
     DESTINATION ${CMAKE_INSTALL_DATADIR}/glib-2.0/schemas
 )
-if (COMPILE_SCHEMAS)
+if (POST_INSTALL_HOOKS)
     install (CODE
         "execute_process (COMMAND ${GLIB_COMPILE_SCHEMAS_EXECUTABLE} ${CMAKE_INSTALL_FULL_DATADIR}/glib-2.0/schemas)"
     )
@@ -56,6 +58,11 @@ install (
     ${PROJECT_BINARY_DIR}/gcdemu-indicator.desktop
     DESTINATION ${CMAKE_INSTALL_DATADIR}/applications
 )
+if (POST_INSTALL_HOOKS)
+    install (CODE
+        "execute_process (COMMAND ${UPDATE_DESKTOP_DATABASE_EXECUTABLE} ${CMAKE_INSTALL_FULL_DATADIR}/applications)"
+    )
+endif ()
 
 install (
     FILES data/gcdemu-icon-gray.svg data/gcdemu-icon.svg data/gcdemu.svg
