@@ -7,21 +7,32 @@ libmirage.so.7.0.0 libmirage7 #MINVER#
  mirage_cdtext_encoder_encode@Base 1.0.0
  mirage_cdtext_encoder_init@Base 1.0.0
  mirage_cdtext_encoder_set_block_info@Base 1.0.0
- mirage_create_disc@Base 1.6.0
- mirage_create_file_stream@Base 1.6.0
- mirage_create_fragment@Base 1.6.0
- mirage_debug_context_get_debug_mask@Base 1.0.0
- mirage_debug_context_get_domain@Base 1.0.0
- mirage_debug_context_get_name@Base 1.0.0
- mirage_debug_context_get_type@Base 1.0.0
- mirage_debug_context_set_debug_mask@Base 1.0.0
- mirage_debug_context_set_domain@Base 1.0.0
- mirage_debug_context_set_name@Base 1.0.0
- mirage_debuggable_get_debug_context@Base 1.6.0
- mirage_debuggable_get_type@Base 1.6.0
- mirage_debuggable_message@Base 1.6.0
- mirage_debuggable_messagev@Base 1.6.0
- mirage_debuggable_set_debug_context@Base 1.6.0
+ mirage_context_clear_options@Base 1.6.0
+ mirage_context_create_file_stream@Base 1.6.0
+ mirage_context_create_fragment@Base 1.6.0
+ mirage_context_get_debug_domain@Base 1.6.0
+ mirage_context_get_debug_mask@Base 1.6.0
+ mirage_context_get_debug_name@Base 1.6.0
+ mirage_context_get_file_stream_filename@Base 1.6.0
+ mirage_context_get_option@Base 1.6.0
+ mirage_context_get_type@Base 1.6.0
+ mirage_context_load_image@Base 1.6.0
+ mirage_context_obtain_password@Base 1.6.0
+ mirage_context_set_debug_domain@Base 1.6.0
+ mirage_context_set_debug_mask@Base 1.6.0
+ mirage_context_set_debug_name@Base 1.6.0
+ mirage_context_set_option@Base 1.6.0
+ mirage_context_set_password_function@Base 1.6.0
+ mirage_contextual_create_file_stream@Base 1.6.0
+ mirage_contextual_create_fragment@Base 1.6.0
+ mirage_contextual_debug_message@Base 1.6.0
+ mirage_contextual_debug_messagev@Base 1.6.0
+ mirage_contextual_get_context@Base 1.6.0
+ mirage_contextual_get_file_stream_filename@Base 1.6.0
+ mirage_contextual_get_option@Base 1.6.0
+ mirage_contextual_get_type@Base 1.6.0
+ mirage_contextual_obtain_password@Base 1.6.0
+ mirage_contextual_set_context@Base 1.6.0
  mirage_disc_add_session_by_index@Base 1.0.0
  mirage_disc_add_session_by_number@Base 1.0.0
  mirage_disc_add_track_by_index@Base 1.0.0
@@ -105,13 +116,17 @@ libmirage.so.7.0.0 libmirage7 #MINVER#
  mirage_fragment_iface_binary_subchannel_data_set_offset@Base 1.6.0
  mirage_fragment_iface_binary_subchannel_data_set_size@Base 1.6.0
  mirage_fragment_iface_binary_subchannel_data_set_stream@Base 1.6.0
- mirage_fragment_iface_null_get_type@Base 1.6.0
  mirage_fragment_read_main_data@Base 1.0.0
  mirage_fragment_read_subchannel_data@Base 1.0.0
  mirage_fragment_set_address@Base 1.0.0
  mirage_fragment_set_length@Base 1.0.0
  mirage_fragment_use_the_rest_of_file@Base 1.0.0
- mirage_get_file_stream_filename@Base 1.6.0
+ mirage_get_file_filters_info@Base 1.6.0
+ mirage_get_file_filters_type@Base 1.6.0
+ mirage_get_fragments_info@Base 1.6.0
+ mirage_get_fragments_type@Base 1.6.0
+ mirage_get_parsers_info@Base 1.6.0
+ mirage_get_parsers_type@Base 1.6.0
  mirage_get_supported_debug_masks@Base 1.6.0
  mirage_helper_ascii2isrc@Base 1.0.0
  mirage_helper_bcd2hex@Base 1.0.0
@@ -157,18 +172,13 @@ libmirage.so.7.0.0 libmirage7 #MINVER#
  mirage_object_get_parent@Base 1.0.0
  mirage_object_get_type@Base 1.0.0
  mirage_object_set_parent@Base 1.0.0
- mirage_obtain_password@Base 1.6.0
  mirage_parser_add_redbook_pregap@Base 1.2.0
  mirage_parser_create_text_stream@Base 1.6.0
  mirage_parser_generate_info@Base 1.2.0
- mirage_parser_get_cached_data_stream@Base 1.6.0
  mirage_parser_get_info@Base 1.2.0
- mirage_parser_get_param@Base 1.5.0
- mirage_parser_get_param_string@Base 1.2.0
  mirage_parser_get_type@Base 1.2.0
  mirage_parser_guess_medium_type@Base 1.2.0
  mirage_parser_load_image@Base 1.2.0
- mirage_parser_set_params@Base 1.2.0
  mirage_pattern_bea01@Base 1.6.0
  mirage_pattern_cd001@Base 1.6.0
  mirage_pattern_sync@Base 1.6.0
@@ -221,7 +231,6 @@ libmirage.so.7.0.0 libmirage7 #MINVER#
  mirage_session_set_cdtext_data@Base 1.0.0
  mirage_session_set_leadout_length@Base 1.0.0
  mirage_session_set_session_type@Base 1.0.0
- mirage_set_password_function@Base 1.6.0
  mirage_shutdown@Base 1.6.0
  mirage_track_add_fragment@Base 1.0.0
  mirage_track_add_index@Base 1.0.0
