@@ -46,7 +46,7 @@ function (gtk_doc)
         ${GTKDOC_MODULE}.types
     )
 
-    string (REPLACE "${PROJECT_SOURCE_DIR}" "${PROJECT_BINARY_DIR}" 
+    string (REPLACE "${PROJECT_SOURCE_DIR}" "${PROJECT_BINARY_DIR}"
         GTKDOC_DOCS_BUILDDIR "${GTKDOC_DOCS_DIR}")
 
     foreach (infile ${SETUP_FILES})
@@ -63,14 +63,14 @@ function (gtk_doc)
     to_list_spaces (GTKDOC_LDFLAGS GTKDOC_S_LDFLAGS)
     file (
         WRITE ${PROJECT_BINARY_DIR}/run-scangobj
-        "#!/bin/sh\n" 
+        "#!/bin/sh\n"
         "export CFLAGS=\"${GTKDOC_S_CFLAGS}\"\n"
         "export LDFLAGS=\"${GTKDOC_S_LDFLAGS}\"\n"
         "gtkdoc-scangobj --module=\"${GTKDOC_MODULE}\"\n"
     )
     add_custom_command (
         OUTPUT ${GTKDOC_DOCS_BUILDDIR}/scan-build.stamp
-        COMMAND gtkdoc-scan --module=${GTKDOC_MODULE} --source-dir=${GTKDOC_SOURCE_DIR} 
+        COMMAND gtkdoc-scan --module=${GTKDOC_MODULE} --source-dir=${GTKDOC_SOURCE_DIR}
             --ignore-headers="${GTKDOC_IGNORE_HFILES}"
         COMMAND sh ${PROJECT_BINARY_DIR}/run-scangobj
         COMMAND touch ${GTKDOC_DOCS_BUILDDIR}/scan-build.stamp
@@ -79,21 +79,21 @@ function (gtk_doc)
         VERBATIM
     )
 
-    add_custom_target ("gtkdoc-scan ${GTKDOC_MODULE}" ALL 
+    add_custom_target ("gtkdoc-scan ${GTKDOC_MODULE}" ALL
         DEPENDS mirage ${GTKDOC_SOURCES} ${GTKDOC_DOCS_BUILDDIR}/scan-build.stamp)
 
     # build xml
     add_custom_command (
         OUTPUT ${GTKDOC_DOCS_BUILDDIR}/sgml-build.stamp
         COMMAND gtkdoc-mkdb --module=${GTKDOC_MODULE} --sgml-mode --output-format=xml
-            --main-sgml-file=${GTKDOC_MAIN_SGML_FILE}
+            --main-sgml-file=${GTKDOC_MAIN_SGML_FILE} --source-dir=${GTKDOC_SOURCE_DIR}
         COMMAND touch ${GTKDOC_DOCS_BUILDDIR}/sgml-build.stamp
         WORKING_DIRECTORY ${GTKDOC_DOCS_BUILDDIR}
         DEPENDS ${GTKDOC_DOCS_BUILDDIR}/scan-build.stamp
         VERBATIM
     )
 
-    add_custom_target ("gtkdoc-xml ${GTKDOC_MODULE}" ALL 
+    add_custom_target ("gtkdoc-xml ${GTKDOC_MODULE}" ALL
         DEPENDS ${GTKDOC_DOCS_BUILDDIR}/scan-build.stamp
         ${GTKDOC_DOCS_BUILDDIR}/sgml-build.stamp)
 
@@ -109,7 +109,7 @@ function (gtk_doc)
         VERBATIM
     )
 
-    add_custom_target ("gtkdoc-html ${GTKDOC_MODULE}" ALL 
+    add_custom_target ("gtkdoc-html ${GTKDOC_MODULE}" ALL
         DEPENDS ${GTKDOC_DOCS_BUILDDIR}/scan-build.stamp
         ${GTKDOC_DOCS_BUILDDIR}/sgml-build.stamp
         ${GTKDOC_DOCS_BUILDDIR}/html-build.stamp)
