@@ -28,9 +28,10 @@ retrieving/setting devices' debug masks.
 
 2. Requirements:
 ~~~~~~~~~~~~~~~~
- - python 2.4 or newer
- - D-BUS python bindings
- - intltool
+ - Python 2.6 or newer
+ - D-BUS Python bindings
+ - IntlTool 0.21 or newer
+ - GetText 0.15 or newer
 
 
 3. Installation:

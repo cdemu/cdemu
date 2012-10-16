@@ -487,7 +487,7 @@ class gCDEmu:
     def load_logo (self):
         # Lookup "icon" in standard paths
         icon_info = Gtk.IconTheme().lookup_icon("gcdemu", 0, 0)
-        if icon_info == None:
+        if icon_info is None:
             print ("Pixmap '%s' not found in standard pixmap paths!" % ("gcdemu"))
             self.logo = None
             return
@@ -755,7 +755,7 @@ class gCDEmu_Gtk (gCDEmu):
             icon_name = self.icon_disconnected
             tooltip_text = _('gCDEmu - disconnected')
 
-        if icon_name == None:
+        if icon_name is None:
             icon_name = "image-missing" # Fallback icon
 
         self.tray_icon.set_from_icon_name(icon_name)

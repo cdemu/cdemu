@@ -78,8 +78,6 @@ class CDEmu (object):
             # No harm, just print a warning
             self.print_error(_("Failed to load configuration from file '%s': %s") % (path, e))
 
-        return
-
     # attrs is a comma separated list of integers, where valid values include
     # foreground: 30-37, background: 40-47, reset: 0, bold: 1. (ECMA-48 / VT102)
     def set_color(self, *attrs):
@@ -134,7 +132,7 @@ class CDEmu (object):
             return print_usage
 
         # Connect
-        if self.connect() != True:
+        if not self.connect():
             self.print_error(_("Failed to connect to daemon (bus: '%s')!") % (self.bus_type))
             return False
 
@@ -258,9 +256,7 @@ class CDEmu (object):
             self.print_error(_("Failed to get number of devices: %s") % (e))
             return False
 
-        self.set_color(1, 34)
-        print(_("Devices' status:"))
-        self.set_color(0)
+        self.print_header (_("Devices' status:"))
         print("%-5s %-10s %s" % (_("DEV"), _("LOADED"), _("FILENAME")))
         for device in range (0, nr_devices):
             try:
@@ -269,7 +265,7 @@ class CDEmu (object):
                 self.print_error(_("Failed to get status of device %i: %s") % (device, e))
                 continue
 
-            if loaded == False:
+            if not loaded:
                 filenames = [ "" ]
 
             # First line is for all device's data, the rest are for additional filenames
@@ -287,9 +283,7 @@ class CDEmu (object):
             self.print_error(_("Failed to get number of devices: %s") % (e))
             return False
 
-        self.set_color(1, 34)
-        print(_("Device mapping:"))
-        self.set_color(0)
+        self.print_header (_("Device mapping:"))
         print("%-5s %-15s %-15s" % (_("DEV"), _("SCSI CD-ROM"), _("SCSI generic")))
         for device in range (0, nr_devices):
             try:
@@ -616,9 +610,7 @@ class CDEmu (object):
                 for device in range(0, nr_devices):
                     try:
                         values = self.dbus_iface.DeviceGetOption(device, "device-id")
-                        device_id = []
-                        for value in values:
-                            device_id.append(str(value))
+                        device_id = map(str, values)
                     except dbus.DBusException as e:
                         self.print_error(_("Failed to get device ID of device %i: %s") % (device, e))
                         continue
@@ -628,9 +620,7 @@ class CDEmu (object):
                 try:
                     device = int(arguments[0], 0)
                     values = self.dbus_iface.DeviceGetOption(device, "device-id")
-                    device_id = []
-                    for value in values:
-                        device_id.append(str(value))
+                    device_id = map (str, values)
                 except dbus.DBusException as e:
                     self.print_error(_("Failed to get device ID of device %i: %s") % (device, e))
                     return False
@@ -686,9 +676,7 @@ class CDEmu (object):
 
         if len(arguments) == 0:
             # Print all parsers
-            self.set_color(1, 34)
-            print(_("Supported parsers:"))
-            self.set_color(0)
+            self.print_header (_("Supported parsers:"))
             for info in parsers:
                 print("  %s: %s" % (info[0], info[2]))
         else:
@@ -707,9 +695,7 @@ class CDEmu (object):
 
         if len(arguments) == 0:
             # Print all file filters
-            self.set_color(1, 34)
-            print(_("Supported file filters:"))
-            self.set_color(0)
+            self.print_header (_("Supported file filters:"))
             for info in filters:
                 print("  %s: %s" % (info[0], info[2]))
         else:
@@ -728,9 +714,7 @@ class CDEmu (object):
 
         if len(arguments) == 0:
             # Print all fragments
-            self.set_color(1, 34)
-            print(_("Supported fragments:"))
-            self.set_color(0)
+            self.print_header (_("Supported fragments:"))
             for info in fragments:
                 print("  %s: %s" % (info[0], info[1]))
         else:
@@ -751,9 +735,7 @@ class CDEmu (object):
             self.print_error(_("Failed to enumerate supported daemon debug masks: %s") % (e))
             return False
 
-        self.set_color(1, 34)
-        print(_("Supported daemon debug masks:"))
-        self.set_color(0)
+        self.print_header (_("Supported daemon debug masks:"))
         for debug_mask in debug_masks:
             print("  %-25s: 0x%04X" % (debug_mask[0], debug_mask[1]))
 
@@ -771,9 +753,7 @@ class CDEmu (object):
             self.print_error(_("Failed to enumerate supported library debug masks: %s") % (e))
             return False
 
-        self.set_color(1, 34)
-        print(_("Supported library debug masks:"))
-        self.set_color(0)
+        self.print_header (_("Supported library debug masks:"))
         for debug_mask in debug_masks:
             print("  %-25s: 0x%04X" % (debug_mask[0], debug_mask[1]))
 
@@ -834,164 +814,122 @@ class CDEmu (object):
             if cur_command[0] == command:
                 # We need to make sure we're not trying to 'translate' empty
                 # string for the third argument
-                self.set_color(1, 34)
-                print(_("Usage:")),
-                self.set_color(0)
-                print(_(" %s %s %s") % ("cdemu", cur_command[0], cur_command[1] != "" and _(cur_command[1]) or ""))
-
-        return
+                self.print_header (_("Usage:")),
+                print(_("  %s %s %s") % ("cdemu", cur_command[0], cur_command[1] != "" and _(cur_command[1]) or ""))
 
     def print_full_usage (self):
-        self.set_color(1, 34)
-        print(_("Usage:")),
-        self.set_color(0)
-        print(_(" %s [options] <command> <command parameters>") % ("cdemu"))
+        self.print_header (_("Usage:")),
+        print(_("  %s [options] <command> <command parameters>") % ("cdemu"))
         print("")
-        self.set_color(1, 34)
-        print(_("Commands:"))
-        self.set_color(0)
+        self.print_header (_("Commands:"))
         for cur_command in self.commands:
             print("  %-25s %s" % (cur_command[0], _(cur_command[2])))
         print("")
-        self.set_color(1, 34)
-        print(_("Options:"))
-        self.set_color(0)
+        self.print_header (_("Options:"))
         print("  %-25s %s" % ("-h, --help", _("displays help message")))
         print("  %-25s %s" % ("-v, --version", _("displays program version")))
         print("  %-25s %s" % ("-b, --bus", _("sets D-BUS bus type to use; valid values are 'session' and 'system'")))
         print("")
-        self.set_color(1, 34)
-        print(_("Optional parser parameters (valid only for 'load' command):"))
-        self.set_color(0)
+        self.print_header (_("Optional parser parameters (valid only for 'load' command):"))
         print("  %-30s %s" % ("--password=<string>", _("password for encrypted images")))
         print("  %-30s %s" % ("--encoding=<string>", _("encoding for text-based images")))
         print("  %-30s %s" % ("--dvd-report-css=<true/false>", _("flag the DVD disc as CSS-encoded")))
 
-        return
-
     def print_invalid_number_of_parameters (self, command):
         self.print_error(_("Invalid number of parameters for command '%s'!") % (command))
         self.print_command_usage(command)
-        return
 
     def print_version (self):
         print("%s %s - (C) Rok Mandeljc" % (app_name, app_version))
-        return
+
+    def print_header (self, message):
+        self.set_color(1, 34)
+        print (message)
+        self.set_color(0)
 
     def print_error (self, message):
         self.set_color(1, 31)
         print(_("ERROR: %s") % (message))
         self.set_color(0)
-        return
 
     def print_warning (self, message):
         self.set_color(1, 33)
         print(_("WARNING: %s") % (message))
         self.set_color(0)
-        return
 
     # Commands
     commands = [
-        # Load
         [
             "load",
             _("<device> <image file> [...]"),
             _("loads the device"),
             cmd_load_device
-        ],
-        # Unload
-        [
+        ], [
             "unload",
             _("<device>"),
             _("unloads the device"),
             cmd_unload_device
-        ],
-        # Status
-        [
+        ], [
             "status",
             "",
             _("displays the devices' status"),
             cmd_display_status
-        ],
-        # Device mapping
-        [
+        ], [
             "device-mapping",
             "",
             _("displays the device mapping information"),
             cmd_device_mapping
-        ],
-        # Daemon-debug-mask
-        [
+        ], [
             "daemon-debug-mask",
             _("<device> [new value]"),
             _("displays/sets daemon debug mask"),
             cmd_daemon_debug_mask
-        ],
-        # Library-debug-mask
-        [
+        ], [
             "library-debug-mask",
             _("<device> [new value]"),
             _("displays/sets library debug mask"),
             cmd_library_debug_mask
-        ],
-        # DPM-emulation
-        [
+        ], [
             "dpm-emulation",
             _("<device> [new value]"),
             _("displays/sets DPM emulation flag"),
             cmd_dpm_emulation
-        ],
-        # TR-emulation
-        [
+        ], [
             "tr-emulation",
             _("<device> [new value]"),
             _("displays/sets transfer rate emulation flag"),
             cmd_tr_emulation
-        ],
-        # Device-ID
-        [
+        ], [
             "device-id",
             _("<device> [new vendor_id] [new product_id] [new revision] [new vendor_specific]"),
             _("displays/sets device ID"),
             cmd_device_id
-        ],
-        # Enum-parsers
-        [
+        ], [
             "enum-parsers",
             "",
             _("enumerates supported parsers"),
             cmd_enum_parsers
-        ],
-        # Enum-file-filters
-        [
+        ], [
             "enum-file-filters",
             "",
             _("enumerates supported file filters"),
             cmd_enum_file_filters
-        ],
-        # Enum-fragments
-        [
+        ], [
             "enum-fragments",
             "",
             _("enumerates supported fragments"),
             cmd_enum_fragments
-        ],
-        # Enum-daemon-debug-masks
-        [
+        ], [
             "enum-daemon-debug-masks",
             "",
             _("enumerates valid daemon debug masks"),
             cmd_enum_daemon_debug_masks
-        ],
-        # Enum-library-debug-masks
-        [
+        ], [
             "enum-library-debug-masks",
             "",
             _("enumerates valid library debug masks"),
             cmd_enum_library_debug_masks
-        ],
-        # Version
-        [
+        ], [
             "version",
             "",
             _("displays version information"),

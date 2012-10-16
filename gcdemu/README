@@ -37,12 +37,13 @@ notifications via libnotify (provided that python bindings are installed).
 2. Requirements:
 ~~~~~~~~~~~~~~~~
 
- - python 2.4 or newer
- - PyGObject 3.0.0 or newer; (gtk-3, gobject and glib modules are required)
- - intltool
+ - Python 2.6 or newer
+ - PyGObject 3.0.0 or newer (gtk-3, gobject and glib modules are required)
+ - IntlTool 0.21 or newer
+ - GetText 0.15 or newer
 
- - libnotify (optional)
- - AppIndicator PyGObject introspection data (optional; for AppIndicator mode)
+ - libnotify GIR files (optional; for desktop notifications)
+ - AppIndicator GIR files (optional; for indicator mode)
 
 
 3. Installation:
