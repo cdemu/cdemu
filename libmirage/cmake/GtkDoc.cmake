@@ -100,7 +100,7 @@ function (gtk_doc)
     # build html and fix cross-references
     add_custom_command (
         OUTPUT ${GTKDOC_DOCS_BUILDDIR}/html-build.stamp
-        COMMAND mkdir html
+        COMMAND mkdir -p html
         COMMAND cd html && gtkdoc-mkhtml ${GTKDOC_MODULE} ../${GTKDOC_MAIN_SGML_FILE}
         COMMAND gtkdoc-fixxref --module=${GTKDOC_MODULE} --module-dir=html
         COMMAND touch ${GTKDOC_DOCS_BUILDDIR}/html-build.stamp
