@@ -24,27 +24,21 @@
  * @see_also: #MirageContext, #MirageObject, #MirageFileFilter
  * @include: mirage-contextual.h
  *
- * <para>
  * #MirageContextual provides an interface that allows attachment of a
  * #MirageContext to the object implementing it. The object must implement
  * two functions for getting and setting the context - mirage_contextual_get_context()
  * and mirage_contextual_set_context().
- * </para>
  *
- * <para>
  * In addition, #MirageContextual provides some shared code that can be
  * used by implementations. Most notable are debugging facilities, in
  * form of functions mirage_contextual_debug_message() and
  * mirage_contextual_debug_messagev(), which print debug messages depending
  * on the settings of the attached context.
- * </para>
  *
- * <para>
  * Furthermore, for convenience of parser and file filter implementations,
  * passthrough is provided for some functions of #MirageContext. Using these
  * functions is equivalent to getting and verifying the attached context,
  * calling its function directly, and releasing the reference.
- * </para>
  */
 
 #ifdef HAVE_CONFIG_H
@@ -62,10 +56,8 @@
  * @self: a #MirageContextual
  * @context: (in) (transfer full): debug context (a #MirageContext)
  *
- * <para>
- * Sets object's debug context.
- * </para>
- **/
+ * Sets/attaches a context.
+ */
 void mirage_contextual_set_context (MirageContextual *self, MirageContext *context)
 {
     return MIRAGE_CONTEXTUAL_GET_INTERFACE(self)->set_context(self, context);
@@ -75,14 +67,12 @@ void mirage_contextual_set_context (MirageContextual *self, MirageContext *conte
  * mirage_contextual_get_context:
  * @self: a #MirageContextual
  *
- * <para>
- * Retrieves object's debug context.
- * </para>
+ * Retrieves the attached context.
  *
- * Returns: (transfer full): object's debug context (a #MirageContext), or %NULL.
- * The reference to debug context is incremented, and should be released using g_object_unref()
+ * Returns: (transfer full): attached context (a #MirageContext), or %NULL.
+ * The reference to context is incremented, and should be released using g_object_unref()
  * when no longer needed.
- **/
+ */
 MirageContext *mirage_contextual_get_context (MirageContextual *self)
 {
     return MIRAGE_CONTEXTUAL_GET_INTERFACE(self)->get_context(self);
@@ -99,13 +89,11 @@ MirageContext *mirage_contextual_get_context (MirageContextual *self)
  * @format: (in): message format. See the printf() documentation.
  * @args: (in): parameters to insert into the format string.
  *
- * <para>
  * Outputs debug message with verbosity level @level, format string @format and
  * format arguments @args. The message is displayed if debug context has mask
  * that covers @level, or if @level is either %MIRAGE_DEBUG_WARNING or
  * %MIRAGE_DEBUG_ERROR.
- * </para>
- **/
+ */
 void mirage_contextual_debug_messagev (MirageContextual *self, gint level, gchar *format, va_list args)
 {
     const gchar *name = NULL;
@@ -150,13 +138,11 @@ void mirage_contextual_debug_messagev (MirageContextual *self, gint level, gchar
  * @format: (in): message format. See the printf() documentation.
  * @...: (in): parameters to insert into the format string.
  *
- * <para>
  * Outputs debug message with verbosity level @level, format string @format and
  * format arguments @Varargs. The message is displayed if debug context has mask
  * that covers @level, or if @level is either %MIRAGE_DEBUG_WARNING or
  * %MIRAGE_DEBUG_ERROR.
- * </para>
- **/
+ */
 void mirage_contextual_debug_message (MirageContextual *self, gint level, gchar *format, ...)
 {
     va_list args;
@@ -174,9 +160,7 @@ void mirage_contextual_debug_message (MirageContextual *self, gint level, gchar 
  * @self: a #MirageContextual
  * @name: (in): option name
  *
- * <para>
  * Retrieves option named @name from the context.
- * </para>
  *
  * <note>
  * This is a convenience function that retrieves a #MirageContext from
@@ -185,7 +169,7 @@ void mirage_contextual_debug_message (MirageContextual *self, gint level, gchar 
  *
  * Returns: (transfer full): a #GVariant containing the option value on
  * success, %NULL on failure.
- **/
+ */
 GVariant *mirage_contextual_get_option (MirageContextual *self, const gchar *name)
 {
     MirageContext *context = mirage_contextual_get_context(self);
@@ -205,10 +189,8 @@ GVariant *mirage_contextual_get_option (MirageContextual *self, const gchar *nam
  * @self: a #MirageContextual
  * @error: (out) (allow-none): location to store error, or %NULL
  *
- * <para>
  * Obtains password string, using the #MiragePasswordFunction callback
  * that was provided via mirage_context_set_password_function().
- * </para>
  *
  * <note>
  * This is a convenience function that retrieves a #MirageContext from
@@ -217,7 +199,7 @@ GVariant *mirage_contextual_get_option (MirageContextual *self, const gchar *nam
  *
  * Returns: password string on success, %NULL on failure. The string should be
  * freed with g_free() when no longer needed.
- **/
+ */
 gchar *mirage_contextual_obtain_password (MirageContextual *self, GError **error)
 {
     MirageContext *context = mirage_contextual_get_context(self);
@@ -241,10 +223,8 @@ gchar *mirage_contextual_obtain_password (MirageContextual *self, GError **error
  * @stream: (in): the data stream that fragment should be able to handle
  * @error: (out) (allow-none): location to store error, or %NULL
  *
- * <para>
  * Creates a #MirageFragment implementation that implements interface specified
  * by @fragment_interface and can handle data stored in @stream.
- * </para>
  *
  * <note>
  * This is a convenience function that retrieves a #MirageContext from
@@ -253,7 +233,7 @@ gchar *mirage_contextual_obtain_password (MirageContextual *self, GError **error
  *
  * Returns: (transfer full): a #MirageFragment object on success, %NULL on failure. The reference
  * to the object should be released using g_object_unref() when no longer needed.
- **/
+ */
 MirageFragment *mirage_contextual_create_fragment (MirageContextual *self, GType fragment_interface, GInputStream *stream, GError **error)
 {
     MirageContext *context = mirage_contextual_get_context(self);
@@ -275,10 +255,8 @@ MirageFragment *mirage_contextual_create_fragment (MirageContextual *self, GType
  * @filename: (in): filename to create stream on
  * @error: (out) (allow-none): location to store error, or %NULL
  *
- * <para>
  * Opens a file pointed to by @filename and creates a chain of file filters
  * on top of it.
- * </para>
  *
  * <note>
  * This is a convenience function that retrieves a #MirageContext from
@@ -290,7 +268,7 @@ MirageFragment *mirage_contextual_create_fragment (MirageContextual *self, GType
  * can be used to access data stored in file. On failure, %NULL is returned.
  * The reference to the object should be released using g_object_unref()
  * when no longer needed.
- **/
+ */
 GInputStream *mirage_contextual_create_file_stream (MirageContextual *self, const gchar *filename, GError **error)
 {
     MirageContext *context = mirage_contextual_get_context(self);
@@ -312,10 +290,8 @@ GInputStream *mirage_contextual_create_file_stream (MirageContextual *self, cons
  * @self: a #MirageContextual
  * @stream: (in): a #GInputStream
  *
- * <para>
  * Traverses the chain of file filters and retrieves the filename on which
  * the #GFileInputStream, located at the bottom of the chain, was opened.
- * </para>
  *
  * <note>
  * This is a convenience function that retrieves a #MirageContext from
@@ -324,7 +300,7 @@ GInputStream *mirage_contextual_create_file_stream (MirageContextual *self, cons
  *
  * Returns: (transfer none): on success, a pointer to filename on which
  * the underyling file stream was opened. On failure, %NULL is returned.
- **/
+ */
 const gchar *mirage_contextual_get_file_stream_filename (MirageContextual *self, GInputStream *stream)
 {
     MirageContext *context = mirage_contextual_get_context(self);

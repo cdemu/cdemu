@@ -23,16 +23,12 @@
  * @short_description: Version information variables.
  * @include: mirage-version.h
  *
- * <para>
  * libMirage provides version information, primarily useful in configure
  * checks for builds that have a configure script. It can also be used
  * in applications when displaying underlying system version information.
- * </para>
  *
- * <para>
  * Additionaly, libtool version is also exposed, which is primarily
  * intended to be used in libMirage's plugin system.
- * </para>
  */
 
 #ifdef HAVE_CONFIG_H
@@ -44,130 +40,98 @@
 /**
  * mirage_major_version:
  *
- * <para>
  * The major version number of the libMirage library. (e.g. in libMirage version
  * 1.2.5 this is 1.)
- * </para>
  *
- * <para>
  * This variable is in the library, so it represents the version of libMirage
  * library you have linked against (contrary to %MIRAGE_MAJOR_VERSION macro,
  * which represents the version of the libMirage headers you have included).
- * </para>
- **/
+ */
 const guint mirage_major_version = MIRAGE_MAJOR_VERSION;
 
 /**
  * mirage_minor_version:
  *
- * <para>
  * The minor version number of the libMirage library. (e.g. in libMirage version
  * 1.2.5 this is 2.)
- * </para>
  *
- * <para>
  * This variable is in the library, so it represents the version of libMirage
  * library you have linked against (contrary to %MIRAGE_MINOR_VERSION macro,
  * which represents the version of the libMirage headers you have included).
- * </para>
- **/
+ */
 const guint mirage_minor_version = MIRAGE_MINOR_VERSION;
 
 /**
  * mirage_micro_version:
  *
- * <para>
  * The micro version number of the libMirage library. (e.g. in libMirage version
  * 1.2.5 this is 5.)
- * </para>
  *
- * <para>
  * This variable is in the library, so it represents the version of libMirage
  * library you have linked against (contrary to %MIRAGE_MICRO_VERSION macro,
  * which represents the version of the libMirage headers you have included).
- * </para>
- **/
+ */
 const guint mirage_micro_version = MIRAGE_MICRO_VERSION;
 
 
 /**
  * mirage_version_long:
  *
- * <para>
  * The long version string of the libMirage library.
- * </para>
  *
- * <para>
  * This variable is in the library, so it represents the version of libMirage
  * library you have linked against (contrary to %MIRAGE_VERSION_LONG macro,
  * which represents the version of the libMirage headers you have included).
- * </para>
- **/
+ */
 const gchar *mirage_version_long = MIRAGE_VERSION_LONG;
 
 /**
  * mirage_version_short:
  *
- * <para>
  * The long version string of the libMirage library.
- * </para>
  *
- * <para>
  * This variable is in the library, so it represents the version of libMirage
  * library you have linked against (contrary to %MIRAGE_VERSION_SHORT macro,
  * which represents the version of the libMirage headers you have included).
- * </para>
- **/
+ */
 const gchar *mirage_version_short = MIRAGE_VERSION_SHORT;
 
 
 /**
  * mirage_lt_current:
  *
- * <para>
  * The current component of libtool version of the libMirage library. It is
  * intended to be used in libMirage's plugin system and should not be of much
  * interest to application developers.
- * </para>
  *
- * <para>
  * This variable is in the library, so it represents the version of libMirage
  * library you have linked against (contrary to %MIRAGE_LT_CURRENT macro,
  * which represents the version of the libMirage headers you have included).
- * </para>
- **/
+ */
 const guint mirage_lt_current = MIRAGE_LT_CURRENT;
 
 /**
  * mirage_lt_revision:
  *
- * <para>
  * The revision component of libtool version of the libMirage library. It is
  * intended to be used in libMirage's plugin system and should not be of much
  * interest to application developers.
- * </para>
  *
- * <para>
  * This variable is in the library, so it represents the version of libMirage
  * library you have linked against (contrary to %MIRAGE_LT_REVISION macro,
  * which represents the version of the libMirage headers you have included).
- * </para>
- **/
+ */
 const guint mirage_lt_revision = MIRAGE_LT_REVISION;
 
 /**
  * mirage_lt_age:
  *
- * <para>
  * The age component of libtool version of the libMirage library. It is
  * intended to be used in libMirage's plugin system and should not be of much
  * interest to application developers.
- * </para>
  *
- * <para>
  * This variable is in the library, so it represents the version of libMirage
  * library you have linked against (contrary to %MIRAGE_LT_AGE macro,
  * which represents the version of the libMirage headers you have included).
- * </para>
- **/
+ */
 const guint mirage_lt_age = MIRAGE_LT_AGE;

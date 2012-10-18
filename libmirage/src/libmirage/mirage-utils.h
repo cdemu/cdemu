@@ -39,11 +39,9 @@ extern const guint8 mirage_pattern_bea01[8];
  * @off: offset in buffer at which to get data
  * @type: data type (i.e. 'guint64')
  *
- * <para>
  * A macro for easy retrieval of data from (unsigned integer) buffer. Mostly to
  * be used in binary image parsers, for example, to retrieve guint32 or guint16
  * value from buffer.
- * </para>
 **/
 #define MIRAGE_CAST_DATA(buf,off,type) (*((type *)(buf+off)))
 
@@ -53,11 +51,9 @@ extern const guint8 mirage_pattern_bea01[8];
  * @off: offset in buffer at which to place pointer
  * @type: pointer type (i.e. 'gchar *')
  *
- * <para>
  * A macro for easy placing of pointers within (unsigned integer) buffer. Mostly
  * to be used in binary image parsers, for example, to retrieve a string or a
  * structure from buffer.
- * </para>
 **/
 #define MIRAGE_CAST_PTR(buf,off,type) ((type)(buf+off))
 
@@ -105,7 +101,7 @@ void mirage_helper_subchannel_q_decode_isrc (const guint8 *buf, gchar *isrc);
  * @SUBCHANNEL_P: P subchannel data
  *
  * Subchannel type for interleaving/deinterleaving.
- **/
+ */
 typedef enum _MirageSubChannel
 {
     SUBCHANNEL_W = 0,

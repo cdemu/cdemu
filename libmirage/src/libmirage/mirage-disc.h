@@ -31,10 +31,8 @@ G_BEGIN_DECLS
 /**
  * MIRAGE_MCN_SIZE:
  *
- * <para>
  * Length of MCN string.
- * </para>
- **/
+ */
 #define MIRAGE_MCN_SIZE 13
 
 /**
@@ -44,10 +42,8 @@ G_BEGIN_DECLS
  * @MIRAGE_MEDIUM_BD: BD (Blue-Ray) disc
  * @MIRAGE_MEDIUM_HD: HD-DVD disc
  *
- * <para>
  * Medium types.
- * </para>
- **/
+ */
 typedef enum _MirageMediumTypes
 {
     MIRAGE_MEDIUM_CD  = 0x01,
@@ -62,14 +58,12 @@ typedef enum _MirageMediumTypes
  * @session: (in): session
  * @user_data: (in) (closure): user data passed to enumeration function
  *
- * <para>
  * Callback function type used with mirage_disc_enumerate_sessions().
  * A pointer to a session object is stored in @session, without incrementing
  * its reference counter. @user_data is user data passed to enumeration function.
- * </para>
  *
  * Returns: %TRUE on success, otherwise %FALSE
- **/
+ */
 typedef gboolean (*MirageEnumSessionCallback) (MirageSession *session, gpointer user_data);
 
 
@@ -91,10 +85,10 @@ typedef struct _MirageDiscPrivate  MirageDiscPrivate;
 /**
  * MirageDisc:
  *
- * <para>
- * Contains private data only, and should be accessed using the functions below.
- * </para>
- **/
+ * All the fields in the <structname>MirageDisc</structname>
+ * structure are private to the #MirageDisc implementation and
+ * should never be accessed directly.
+ */
 struct _MirageDisc
 {
     MirageObject parent_instance;
@@ -103,6 +97,14 @@ struct _MirageDisc
     MirageDiscPrivate *priv;
 };
 
+/**
+ * MirageDiscClass:
+ *
+ * @parent_class: the parent class
+ * @signal_layout_changed: "layout-changed" signal identifier
+ *
+ * The class structure for the <structname>MirageDisc</structname> type.
+ */
 struct _MirageDiscClass
 {
     MirageObjectClass parent_class;

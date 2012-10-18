@@ -39,13 +39,20 @@ G_BEGIN_DECLS
 /**
  * MirageContextual:
  *
- * <para>
- * Dummy interface structure.
- * </para>
- **/
+ * An object that can be attached a #MirageContext.
+ */
 typedef struct _MirageContextual             MirageContextual;
 typedef struct _MirageContextualInterface    MirageContextualInterface;
 
+/**
+ * MirageContextualInterface:
+ * @parent_iface: the parent interface
+ * @set_context: sets/attaches the context
+ * @get_context: retrieves the attached context
+ *
+ * Provides an interface for implementing objects that can be attached a
+ * #MirageContext.
+ */
 struct _MirageContextualInterface
 {
     GTypeInterface parent_iface;

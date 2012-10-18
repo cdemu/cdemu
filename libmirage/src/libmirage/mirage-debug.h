@@ -27,22 +27,18 @@
  * @see_also: #MirageContext, #MirageContextual
  * @include: mirage-debug.h
  *
- * <para>
  * libMirage supports changing of debug message verbosity on fly,
  * without the need to restart the application. This is achieved by using
  * #MirageContext objects, which are attached to objects implementing
  * #MirageContextual interface. Such an object is #MirageObject, which
  * can obtain context from its parent. This way, all objects in the
  * hierarchy share the same context, and same debug verbosity setting.
- * </para>
  *
- * <para>
  * Debug verbosity can be controlled via mask, which can be set to the
  * context using mirage_context_set_debug_mask(). See #MirageDebugMasks.
  * The actual printing of debug messages within the code is achieved by
  * mirage_contextual_debug_messagev() or mirage_contextual_debug_message(),
  * or by convenience macro MIRAGE_DEBUG().
- * </para>
  */
 
 /**
@@ -58,16 +54,12 @@
  * @MIRAGE_DEBUG_CDTEXT: message belonging to CD-TEXT encoder/decoder
  * @MIRAGE_DEBUG_FILE_IO: messages belonging to file filter I/O operations
  *
- * <para>
  * Debug message types and debug masks used to control verbosity of various
  * parts of libMirage.
- * </para>
  *
- * <para>
  * All masks except %MIRAGE_DEBUG_ERROR and %MIRAGE_DEBUG_WARNING can be combined
  * together to control verbosity of libMirage.
- * </para>
- **/
+ */
 typedef enum _MirageDebugMasks
 {
     /* Debug types */
@@ -91,12 +83,10 @@ typedef enum _MirageDebugMasks
  * @lvl: (in): debug level
  * @msg...: (in): debug message
  *
- * <para>
  * Debugging macro, provided for convenience. It performs cast to
  * #MirageContextual interface on @obj and calls mirage_contextual_debug_message()
  * with debug level @lvl and debug message @msg....
- * </para>
- **/
+ */
 #define MIRAGE_DEBUG(obj, lvl, ...) mirage_contextual_debug_message(MIRAGE_CONTEXTUAL(obj), lvl, __VA_ARGS__)
 
 

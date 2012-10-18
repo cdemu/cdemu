@@ -24,13 +24,11 @@
  * @see_also: #MirageContext, #MirageContextual
  * @include: mirage-object.h
  *
- * <para>
  * #MirageObject is used as a base object class throughout libMirage. It
  * implements #MirageContextual interface, which allows attachment of
  * #MirageContext. It also implements support for constructing parent-child
  * hierarchy, which allows propagation of the #MirageContext from parent
  * to the child objects.
- * </para>
  */
 
 #ifdef HAVE_CONFIG_H
@@ -75,11 +73,9 @@ static void mirage_object_parent_context_changed_handler (MirageObject *self, Mi
  * @self: a #MirageObject
  * @parent: (in) (allow-none) (type MirageObject): parent
  *
- * <para>
  * Sets object's parent. If @parent is %NULL, the object's parent is
  * reset.
- * </para>
- **/
+ */
 void mirage_object_set_parent (MirageObject *self, gpointer parent)
 {
     if (self->priv->parent) {
@@ -108,12 +104,10 @@ void mirage_object_set_parent (MirageObject *self, gpointer parent)
  * mirage_object_get_parent:
  * @self: a #MirageObject
  *
- * <para>
  * Returns pointer to object's parent object.
- * </para>
  *
  * Returns: (transfer full) (type MirageObject): parent object, or %NULL.
- **/
+ */
 gpointer mirage_object_get_parent (MirageObject *self)
 {
     if (self->priv->parent) {
@@ -213,9 +207,7 @@ static void mirage_object_class_init (MirageObjectClass *klass)
      * MirageObject::context-changed:
      * @object: a #MirageObject
      *
-     * <para>
      * Emitted when a new #MirageContext is set to a #MirageObject.
-     * </para>
      */
     klass->signal_context_changed = g_signal_new("context-changed", G_OBJECT_CLASS_TYPE(klass), G_SIGNAL_RUN_LAST, 0, NULL, NULL, g_cclosure_marshal_VOID__VOID, G_TYPE_NONE, 0, NULL);
 }

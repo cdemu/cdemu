@@ -24,10 +24,8 @@
  * @see_also: #MirageTrack
  * @include: mirage-sector.h
  *
- * <para>
  * #MirageSector object represents a sector. It provides access to the
  * sector data, generating it if needed.
- * </para>
  */
 
 #ifdef HAVE_CONFIG_H
@@ -218,17 +216,15 @@ static void mirage_sector_generate_edc_ecc (MirageSector *self)
  * @track: (in): track the sector belongs to
  * @error: (out) (allow-none): location to store error, or %NULL
  *
- * <para>
  * Feeds data to sector. It finds appropriate fragment to feed from, reads data
  * into sector object and sets data validity flags.
- * </para>
  *
  * <note>
  * Intended for internal use.
  * </note>
  *
  * Returns: %TRUE on success, %FALSE on failure
- **/
+ */
 gboolean mirage_sector_feed_data (MirageSector *self, gint address, MirageTrack *track, GError **error)
 {
     GError *local_error = NULL;
@@ -817,12 +813,10 @@ gboolean mirage_sector_feed_data (MirageSector *self, gint address, MirageTrack 
  * mirage_sector_get_sector_type:
  * @self: a #MirageSector
  *
- * <para>
  * Retrieves sector type (track mode); one of #MirageTrackModes.
- * </para>
  *
  * Returns: sector type (track mode)
- **/
+ */
 MirageTrackModes mirage_sector_get_sector_type (MirageSector *self)
 {
     /* Return sector type */
@@ -837,18 +831,14 @@ MirageTrackModes mirage_sector_get_sector_type (MirageSector *self)
  * @ret_len: (out) (allow-none): location to store length of sync pattern, or %NULL. Length is given in bytes.
  * @error: (out) (allow-none): location to store error, or %NULL
  *
- * <para>
  * Retrieves sector's sync pattern. The pointer to appropriate location in
  * sector's data buffer is stored into @ret_buf; therefore, the buffer should not
  * be modified.
- * </para>
  *
- * <para>
  * If sync pattern is not provided by image file(s), it is generated.
- * </para>
  *
  * Returns: %TRUE on success, %FALSE on failure
- **/
+ */
 gboolean mirage_sector_get_sync (MirageSector *self, const guint8 **ret_buf, gint *ret_len, GError **error)
 {
     gboolean succeeded = TRUE;
@@ -897,18 +887,14 @@ gboolean mirage_sector_get_sync (MirageSector *self, const guint8 **ret_buf, gin
  * @ret_len: (out) (allow-none): location to store length of header, or %NULL. Length is given in bytes.
  * @error: (out) (allow-none): location to store error, or %NULL
  *
- * <para>
  * Retrieves sector's header. The pointer to appropriate location in
  * sector's data buffer is stored into @ret_buf; therefore, the buffer should not
  * be modified.
- * </para>
  *
- * <para>
  * If header is not provided by image file(s), it is generated.
- * </para>
  *
  * Returns: %TRUE on success, %FALSE on failure
- **/
+ */
 gboolean mirage_sector_get_header (MirageSector *self, const guint8 **ret_buf, gint *ret_len, GError **error)
 {
     gboolean succeeded = TRUE;
@@ -957,18 +943,14 @@ gboolean mirage_sector_get_header (MirageSector *self, const guint8 **ret_buf, g
  * @ret_len: (out) (allow-none): location to store length of subheader, or %NULL. Length is given in bytes.
  * @error: (out) (allow-none): location to store error, or %NULL
  *
- * <para>
  * Retrieves sector's subheader. The pointer to appropriate location in
  * sector's data buffer is stored into @ret_buf;  therefore, the buffer should not
  * be modified.
- * </para>
  *
- * <para>
  * If subheader is not provided by image file(s), it is generated.
- * </para>
  *
  * Returns: %TRUE on success, %FALSE on failure
- **/
+ */
 gboolean mirage_sector_get_subheader (MirageSector *self, const guint8 **ret_buf, gint *ret_len, GError **error)
 {
     gboolean succeeded = TRUE;
@@ -1014,14 +996,12 @@ gboolean mirage_sector_get_subheader (MirageSector *self, const guint8 **ret_buf
  * @ret_len: (out) (allow-none): location to store length of user data, or %NULL. Length is given in bytes.
  * @error: (out) (allow-none): location to store error, or %NULL
  *
- * <para>
  * Retrieves sector's user data. The pointer to appropriate location in
  * sector's data buffer is stored into @ret_buf;  therefore, the buffer should not
  * be modified.
- * </para>
  *
  * Returns: %TRUE on success, %FALSE on failure
- **/
+ */
 gboolean mirage_sector_get_data (MirageSector *self, const guint8 **ret_buf, gint *ret_len, GError **error)
 {
     gboolean succeeded = TRUE;
@@ -1089,18 +1069,14 @@ gboolean mirage_sector_get_data (MirageSector *self, const guint8 **ret_buf, gin
  * @ret_len: (out) (allow-none): location to store length of EDC/ECC data, or %NULL. Length is given in bytes.
  * @error: (out) (allow-none): location to store error, or %NULL
  *
- * <para>
  * Retrieves sector's EDC/ECC data. The pointer to appropriate location in
  * sector's data buffer is stored into @ret_buf;  therefore, the buffer should not
  * be modified.
- * </para>
  *
- * <para>
  * If EDC/ECC data is not provided by image file(s), it is generated.
- * </para>
  *
  * Returns: %TRUE on success, %FALSE on failure
- **/
+ */
 gboolean mirage_sector_get_edc_ecc (MirageSector *self, const guint8 **ret_buf, gint *ret_len, GError **error)
 {
     gboolean succeeded = TRUE;
@@ -1156,18 +1132,14 @@ gboolean mirage_sector_get_edc_ecc (MirageSector *self, const guint8 **ret_buf, 
  * @ret_len: (out) (allow-none): location to store length of subchannel data, or %NULL. Length is given in bytes.
  * @error: (out) (allow-none): location to store error, or %NULL
  *
- * <para>
  * Retrieves sector's subchannel. @format must be one of #MirageSectorSubchannelFormat.
  * The pointer to appropriate location in sector's data buffer is stored into
  * @ret_buf;  therefore, the buffer should not be modified.
- * </para>
  *
- * <para>
  * If subchannel is not provided by image file(s), it is generated.
- * </para>
  *
  * Returns: %TRUE on success, %FALSE on failure
- **/
+ */
 gboolean mirage_sector_get_subchannel (MirageSector *self, MirageSectorSubchannelFormat format, const guint8 **ret_buf, gint *ret_len, GError **error)
 {
     /* Generate subchannel if it's not provided */
@@ -1213,29 +1185,23 @@ gboolean mirage_sector_get_subchannel (MirageSector *self, MirageSectorSubchanne
  * mirage_sector_verify_lec:
  * @self: a #MirageSector
  *
- * <para>
  * Verifies the sector data in terms of L-EC error detection/correction.
  * Data sectors (Mode 1, Mode 2 Form 1 and Mode 2 Form 2) contain error
  * detection/error correction codes which is part of so called layered
  * error correction. This function calculates the EDC for sector data and
  * compares it with EDC provided by the image file.
- * </para>
  *
- * <para>
  * As a result of comparison, the sectors with intentionally faulty EDC
  * (and possibly ECC, though ECC is not verified) can be discovered.
- * </para>
  *
- * <para>
  * This function requires EDC/ECC data to be provided by the image. If it
  * is not provided, it would be generated by #MirageSector on first access
  * via mirage_sector_get_edc_ecc() using the same algorithm as the one used
  * by this function. Therefore, in case of EDC/ECC data missing, the verification
  * automatically succeeds.
- * </para>
  *
  * Returns: %TRUE if sector passes verification (i.e. no L-EC errors are detected) otherwise %FALSE
- **/
+ */
 gboolean mirage_sector_verify_lec (MirageSector *self)
 {
     gboolean valid = TRUE;
@@ -1283,25 +1249,19 @@ gboolean mirage_sector_verify_lec (MirageSector *self)
  * mirage_sector_verify_subchannel_crc:
  * @self: a #MirageSector
  *
- * <para>
  * Verifies the Q subchannel's CRC for the sector.
- * </para>
  *
- * <para>
  * As a result of comparison, the sectors with intentionally faulty Q subchannel
  * can be discovered.
- * </para>
  *
- * <para>
  * This function requires subchannel data to be provided by the image. If it
  * is not provided, it would be generated by #MirageSector on first access
  * via mirage_sector_get_subchannel() using the same algorithm as the one used
  * by this function. Therefore, in case of subchannel data missing, the verification
  * automatically succeeds.
- * </para>
  *
  * Returns: %TRUE if sector's Q subchannel CRC passes verification otherwise %FALSE
- **/
+ */
 gboolean mirage_sector_verify_subchannel_crc (MirageSector *self)
 {
     gboolean valid = TRUE;

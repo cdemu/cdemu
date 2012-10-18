@@ -62,15 +62,13 @@ G_BEGIN_DECLS
  * @info: (in): parser info
  * @user_data: (in) (closure): user data passed to enumeration function
  *
- * <para>
  * Callback function type used with mirage_enumerate_parsers().
  * A pointer to parser information structure is stored in @info; the
  * structure belongs to the parser object and should not be modified.
  * @user_data is user data passed to enumeration function.
- * </para>
  *
  * Returns: %TRUE on success, otherwise %FALSE
- **/
+ */
 typedef gboolean (*MirageEnumParserInfoCallback) (const MirageParserInfo *info, gpointer user_data);
 
 /**
@@ -78,15 +76,13 @@ typedef gboolean (*MirageEnumParserInfoCallback) (const MirageParserInfo *info, 
  * @info: (in): fragment info
  * @user_data: (in) (closure): user data passed to enumeration function
  *
- * <para>
  * Callback function type used with mirage_enumerate_fragments().
  * A pointer to fragment information structure is stored in @info; the
  * structure belongs to the fragment object and should not be modified.
  * @user_data is user data passed to enumeration function.
- * </para>
  *
  * Returns: %TRUE on success, otherwise %FALSE
- **/
+ */
 typedef gboolean (*MirageEnumFragmentInfoCallback) (const MirageFragmentInfo *info, gpointer user_data);
 
 /**
@@ -94,15 +90,13 @@ typedef gboolean (*MirageEnumFragmentInfoCallback) (const MirageFragmentInfo *in
  * @info: (in): file filter info
  * @user_data: (in) (closure): user data passed to enumeration function
  *
- * <para>
  * Callback function type used with mirage_enumerate_file_filters().
  * A pointer to file filter information structure is stored in @info; the
  * structure belongs to the file filter object and should not be modified.
  * @user_data is user data passed to enumeration function.
- * </para>
  *
  * Returns: %TRUE on success, otherwise %FALSE
- **/
+ */
 typedef gboolean (*MirageEnumFileFilterInfoCallback) (const MirageFileFilterInfo *info, gpointer user_data);
 
 
@@ -111,10 +105,8 @@ typedef gboolean (*MirageEnumFileFilterInfoCallback) (const MirageFileFilterInfo
  * @name: name
  * @value: value
  *
- * <para>
  * Structure containing debug mask information.
- * </para>
- **/
+ */
 typedef struct {
     gchar *name;
     gint value;

@@ -42,10 +42,8 @@ G_BEGIN_DECLS
  * @MIRAGE_LANGUAGE_PACK_UPC_ISRC: UPC/EAN code of album and ISRC for tracks
  * @MIRAGE_LANGUAGE_PACK_SIZE: Size information of the block
  *
- * <para>
  * CD-TEXT pack types
- * </para>
- **/
+ */
 typedef enum _MirageLanguagePackTypes
 {
     MIRAGE_LANGUAGE_PACK_TITLE       = 0x80,
@@ -84,10 +82,10 @@ typedef struct _MirageLanguagePrivate  MirageLanguagePrivate;
 /**
  * MirageLanguage:
  *
- * <para>
- * Contains private data only, and should be accessed using the functions below.
- * </para>
- **/
+ * All the fields in the <structname>MirageLanguage</structname>
+ * structure are private to the #MirageLanguage implementation and
+ * should never be accessed directly.
+ */
 struct _MirageLanguage
 {
     MirageObject parent_instance;
@@ -96,6 +94,13 @@ struct _MirageLanguage
     MirageLanguagePrivate *priv;
 };
 
+/**
+ * MirageLanguageClass:
+ *
+ * @parent_class: the parent class
+ *
+ * The class structure for the <structname>MirageLanguage</structname> type.
+ */
 struct _MirageLanguageClass
 {
     MirageObjectClass parent_class;

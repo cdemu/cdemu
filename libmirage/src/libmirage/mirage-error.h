@@ -47,7 +47,7 @@ GType  mirage_error_get_type (void);
  * @MIRAGE_ERROR_ENCRYPTED_IMAGE: image is encrypted and password needs to be provided
  *
  * Error codes for libMirage library.
- **/
+ */
 typedef enum _MirageErrorCodes
 {
     MIRAGE_ERROR_LIBRARY_ERROR,

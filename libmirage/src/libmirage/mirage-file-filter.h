@@ -30,11 +30,9 @@ G_BEGIN_DECLS
  * @description: file type description
  * @mime_type: file type MIME
  *
- * <para>
  * A structure containing file filter information. It can be obtained
  * with call to mirage_file_filter_get_info().
- * </para>
- **/
+ */
 typedef struct _MirageFileFilterInfo MirageFileFilterInfo;
 struct _MirageFileFilterInfo
 {
@@ -62,10 +60,10 @@ typedef struct _MirageFileFilterPrivate  MirageFileFilterPrivate;
 /**
  * MirageFileFilter:
  *
- * <para>
- * Contains private data only, and should be accessed using the functions below.
- * </para>
- **/
+ * All the fields in the <structname>MirageFileFilter</structname>
+ * structure are private to the #MirageFileFilter implementation and
+ * should never be accessed directly.
+ */
 struct _MirageFileFilter
 {
     GFilterInputStream parent_instance;
@@ -74,6 +72,18 @@ struct _MirageFileFilter
     MirageFileFilterPrivate *priv;
 };
 
+/**
+ * MirageFileFilterClass:
+ *
+ * @parent_class: the parent class
+ * @can_handle_data_format: checks whether file filter can handle data stored in underyling stream
+ * @read: reads data from stream
+ * @tell: tells the current location within stream
+ * @seek: seeks to a location within stream
+ * @partial_read: reads a chunk of requested data from stream
+ *
+ * The class structure for the <structname>MirageFileFilter</structname> type.
+ */
 struct _MirageFileFilterClass
 {
     GFilterInputStreamClass parent_class;

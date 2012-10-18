@@ -24,21 +24,16 @@
  * @see_also: #MirageContext
  * @include: mirage-file-filter.h
  *
- * <para>
  * #MirageFileFilter is a basic unit of file access abstraction used in
  * libMirage. It inherits from #GFilterInputStream and implements #GSeekable
  * interface.
- * </para>
  *
- * <para>
  * When opening a file with libMirage, mirage_context_create_file_stream()
  * function should be used. It creates a chain of #MirageFileFilter objects
  * on top of a #GFileInputStream, and returns the top object on the chain.
  * This allows transparent access to, for example, compressed data stored
  * in the file.
- * </para>
  *
- * <para>
  * There are two ways to implement a #MirageFileFilter. For full control
  * over the logic for reading from parts and managing position in the
  * stream, use "full interface", which requires implementation of three
@@ -50,7 +45,6 @@
  * mirage_file_filter_set_file_size() function. In partial_read, the
  * current position in the stream, which is managed by the framework, can
  * be obtained using mirage_file_filter_get_position().
- * </para>
  */
 
 #ifdef HAVE_CONFIG_H
@@ -90,11 +84,9 @@ struct _MirageFileFilterPrivate
  * @description: (in): file type description
  * @mime_type: (in): file type MIME
  *
- * <para>
  * Generates file filter information from the input fields. It is intended as a function
  * for creating file filter information in file filter implementations.
- * </para>
- **/
+ */
 void mirage_file_filter_generate_info (MirageFileFilter *self, const gchar *id, const gchar *name, const gchar *description, const gchar *mime_type)
 {
     g_snprintf(self->priv->info.id, sizeof(self->priv->info.id), "%s", id);
@@ -107,13 +99,11 @@ void mirage_file_filter_generate_info (MirageFileFilter *self, const gchar *id, 
  * mirage_file_filter_get_info:
  * @self: a #MirageFileFilter
  *
- * <para>
  * Retrieves file filter information.
- * </para>
  *
  * Returns: (transfer none): a pointer to file filter information structure. The
  * structure belongs to object and therefore should not be modified.
- **/
+ */
 const MirageFileFilterInfo *mirage_file_filter_get_info (MirageFileFilter *self)
 {
     return &self->priv->info;
@@ -125,12 +115,10 @@ const MirageFileFilterInfo *mirage_file_filter_get_info (MirageFileFilter *self)
  * @self: a #MirageFileFilter
  * @error: (out) (allow-none): location to store error, or %NULL
  *
- * <para>
- * Checks whether file info can handle data stored in underyling stream.
- * </para>
+ * Checks whether file filter can handle data stored in underyling stream.
  *
  * Returns: %TRUE if file filter can handle data in underlying stream, %FALSE if not
- **/
+ */
 gboolean mirage_file_filter_can_handle_data_format (MirageFileFilter *self, GError **error)
 {
     /* Provided by implementation */
@@ -143,18 +131,14 @@ gboolean mirage_file_filter_can_handle_data_format (MirageFileFilter *self, GErr
  * @self: a #MirageFileFilter
  * @size: (in): size of the stream
  *
- * <para>
  * Sets size of the stream.
- * </para>
  *
- * <para>
  * This function is intented for use in file filter implementations that
  * are based on the simplified interface. It should be used by the
  * implementation to set the stream size during stream parsing; the set
  * stream size is then used by the read function that is implemented by
  * the simplified interface.
- * </para>
- **/
+ */
 void mirage_file_filter_set_file_size (MirageFileFilter *self, gsize size)
 {
     self->priv->file_size = size;
@@ -164,19 +148,15 @@ void mirage_file_filter_set_file_size (MirageFileFilter *self, gsize size)
  * mirage_file_filter_get_position:
  * @self: a #MirageFileFilter
  *
- * <para>
  * Retrieves position in the stream.
- * </para>
  *
- * <para>
  * This function is intented for use in file filter implementations that
  * are based on the simplified interface. It should be used by the
  * implementation's partial_read function to determine position to
  * read from without having to worry about position management and update.
- * </para>
  *
  * Returns: position in the stream
- **/
+ */
 goffset mirage_file_filter_get_position (MirageFileFilter *self)
 {
     return self->priv->position;

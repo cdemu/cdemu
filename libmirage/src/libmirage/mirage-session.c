@@ -24,12 +24,10 @@
  * @see_also: #MirageDisc, #MirageTrack, #MirageLanguage, #MirageCdTextCoder
  * @include: mirage-session.h
  *
- * <para>
  * #MirageSession object represents a session in the disc layout. It
  * provides functions for manipulating session layout; setting session
  * type, adding and removing tracks and languages, setting CD-TEXT data,
  * etc.
- * </para>
  */
 
 #ifdef HAVE_CONFIG_H
@@ -191,10 +189,8 @@ static gint sort_tracks_by_number (MirageTrack *track1, MirageTrack *track2)
  * @self: a #MirageSession
  * @type: (in): session type
  *
- * <para>
  * Sets session type. @type must be one of #MirageSessionTypes.
- * </para>
- **/
+ */
 void mirage_session_set_session_type (MirageSession *self, MirageSessionTypes type)
 {
     /* Set session type */
@@ -205,12 +201,10 @@ void mirage_session_set_session_type (MirageSession *self, MirageSessionTypes ty
  * mirage_session_get_session_type:
  * @self: a #MirageSession
  *
- * <para>
  * Retrieves session type.
- * </para>
  *
  * Returns: session type
- **/
+ */
 MirageSessionTypes mirage_session_get_session_type (MirageSession *self)
 {
     /* Return session number */
@@ -223,14 +217,12 @@ MirageSessionTypes mirage_session_get_session_type (MirageSession *self)
  * @self: a #MirageSession
  * @number: (in): session number
  *
- * <para>
  * Sets sessions's session number.
- * </para>
  *
  * <note>
  * Intended for internal use only.
  * </note>
- **/
+ */
 void mirage_session_layout_set_session_number (MirageSession *self, gint number)
 {
     /* Set session number */
@@ -241,12 +233,10 @@ void mirage_session_layout_set_session_number (MirageSession *self, gint number)
  * mirage_session_layout_get_session_number:
  * @self: a #MirageSession
  *
- * <para>
  * Retrieves sessions's session number.
- * </para>
  *
  * Returns: session number
- **/
+ */
 gint mirage_session_layout_get_session_number (MirageSession *self)
 {
     /* Return session number */
@@ -258,10 +248,8 @@ gint mirage_session_layout_get_session_number (MirageSession *self)
  * @self: a #MirageSession
  * @first_track: (in): first track number
  *
- * <para>
  * Sets first track number to @first_track. This is a number that is
  * assigned to the first track in the session layout.
- * </para>
  *
  * <note>
  * Intended for internal use only.
@@ -270,7 +258,7 @@ gint mirage_session_layout_get_session_number (MirageSession *self)
  * <note>
  * Causes top-down change.
  * </note>
- **/
+ */
 void mirage_session_layout_set_first_track (MirageSession *self, gint first_track)
 {
     /* Set first track */
@@ -283,16 +271,14 @@ void mirage_session_layout_set_first_track (MirageSession *self, gint first_trac
  * mirage_session_layout_get_first_track:
  * @self: a #MirageSession
  *
- * <para>
  * Retrieves track number of the first track in the session layout.
- * </para>
  *
  * <note>
  * Intended for internal use only.
  * </note>
  *
  * Returns: first track number
- **/
+ */
 gint mirage_session_layout_get_first_track (MirageSession *self)
 {
     /* Return first track */
@@ -304,10 +290,8 @@ gint mirage_session_layout_get_first_track (MirageSession *self)
  * @self: a #MirageSession
  * @start_sector: (in): start sector
  *
- * <para>
  * Sets start sector of the session layout to @start_sector. This is a sector at which
  * the first track in the session layout will start.
- * </para>
  *
  * <note>
  * Intended for internal use only.
@@ -316,7 +300,7 @@ gint mirage_session_layout_get_first_track (MirageSession *self)
  * <note>
  * Causes top-down change.
  * </note>
- **/
+ */
 void mirage_session_layout_set_start_sector (MirageSession *self, gint start_sector)
 {
     /* Set start sector */
@@ -329,16 +313,14 @@ void mirage_session_layout_set_start_sector (MirageSession *self, gint start_sec
  * mirage_session_layout_get_start_sector:
  * @self: a #MirageSession
  *
- * <para>
  * Retrieves start sector of the session layout.
- * </para>
  *
  * <note>
  * Intended for internal use only.
  * </note>
  *
  * Returns: start sector
- **/
+ */
 gint mirage_session_layout_get_start_sector (MirageSession *self)
 {
     /* Return start sector */
@@ -349,14 +331,12 @@ gint mirage_session_layout_get_start_sector (MirageSession *self)
  * mirage_session_layout_get_length:
  * @self: a #MirageSession
  *
- * <para>
  * Retrieves length of the session layout. This means the length of
  * all tracks combined, including lead-in and lead-out tracks. The returned
  * length is given in sectors.
- * </para>
  *
  * Returns: session layout length
- **/
+ */
 gint mirage_session_layout_get_length (MirageSession *self)
 {
     /* Return length */
@@ -369,16 +349,14 @@ gint mirage_session_layout_get_length (MirageSession *self)
  * @self: a #MirageSession
  * @length: (in): leadout length
  *
- * <para>
  * Sets session's leadout length to @length. It does so by creating NULL fragment
  * and adding it to leadout. This function is internally used to properly handle
  * multi-session disc layouts. The length is given in sectors.
- * </para>
  *
  * <note>
  * Intended for internal use only.
  * </note>
- **/
+ */
 void mirage_session_set_leadout_length (MirageSession *self, gint length)
 {
     MirageTrack *leadout;
@@ -412,16 +390,14 @@ void mirage_session_set_leadout_length (MirageSession *self, gint length)
  * mirage_session_get_leadout_length:
  * @self: a #MirageSession
  *
- * <para>
  * Retrieves session's leadout length. The returned length is given in sectors.
- * </para>
  *
  * <note>
  * Intended for internal use only.
  * </note>
  *
  * Returns: leadout length
- **/
+ */
 gint mirage_session_get_leadout_length (MirageSession *self)
 {
     MirageTrack *leadout;
@@ -445,12 +421,10 @@ gint mirage_session_get_leadout_length (MirageSession *self)
  * mirage_session_get_number_of_tracks:
  * @self: a #MirageSession
  *
- * <para>
  * Retrieves number of tracks in the session layout.
- * </para>
  *
  * Returns: number of tracks
- **/
+ */
 gint mirage_session_get_number_of_tracks (MirageSession *self)
 {
     /* Return number of tracks */
@@ -463,21 +437,17 @@ gint mirage_session_get_number_of_tracks (MirageSession *self)
  * @index: (in): index at which track should be added
  * @track: (in) (transfer full): a #MirageTrack to be added
  *
- * <para>
  * Adds track to session layout.
- * </para>
  *
- * <para>
  * @index is the index at which track is added. Negative index denotes
  * index going backwards (i.e. -1 adds track at the end, -2 adds track
  * second-to-last, etc.). If index, either negative or positive, is too big,
  * track is respectively added at the beginning or at the end of the layout.
- * </para>
  *
  * <note>
  * Causes bottom-up change.
  * </note>
- **/
+ */
 void mirage_session_add_track_by_index (MirageSession *self, gint index, MirageTrack *track)
 {
     gint num_tracks;
@@ -520,22 +490,18 @@ void mirage_session_add_track_by_index (MirageSession *self, gint index, MirageT
  * @track: (in) (transfer full): a #MirageTrack to be added
  * @error: (out) (allow-none): location to store error, or %NULL
  *
- * <para>
  * Adds track to session layout.
- * </para>
  *
- * <para>
  * @number is track number that should be assigned to added track. It determines
  * track's position in the layout. If track with that number already exists in
  * the layout, the function fails.
- * </para>
  *
  * <note>
  * Causes bottom-up change.
  * </note>
  *
  * Returns: %TRUE on success, %FALSE on failure
- **/
+ */
 gboolean mirage_session_add_track_by_number (MirageSession *self, gint number, MirageTrack *track, GError **error)
 {
     MirageTrack *tmp_track;
@@ -573,22 +539,18 @@ gboolean mirage_session_add_track_by_number (MirageSession *self, gint number, M
  * @index: (in): index of track to be removed
  * @error: (out) (allow-none): location to store error, or %NULL
  *
- * <para>
  * Removes track from session layout.
- * </para>
  *
- * <para>
  * @index is the index of the track to be removed. This function calls
  * mirage_session_get_track_by_index() so @index behavior is determined by that
  * function.
- * </para>
  *
  * <note>
  * Causes bottom-up change.
  * </note>
  *
  * Returns: %TRUE on success, %FALSE on failure
- **/
+ */
 gboolean mirage_session_remove_track_by_index (MirageSession *self, gint index, GError **error)
 {
     MirageTrack *track;
@@ -612,20 +574,16 @@ gboolean mirage_session_remove_track_by_index (MirageSession *self, gint index, 
  * @number: (in): track number of track to be removed
  * @error: (out) (allow-none): location to store error, or %NULL
  *
- * <para>
  * Removes track from session layout.
- * </para>
  *
- * <para>
  * @number is track number of the track to be removed.
- * </para>
  *
  * <note>
  * Causes bottom-up change.
  * </note>
  *
  * Returns: %TRUE on success, %FALSE on failure
- **/
+ */
 gboolean mirage_session_remove_track_by_number (MirageSession *self, gint number, GError **error)
 {
     MirageTrack *track;
@@ -654,18 +612,14 @@ gboolean mirage_session_remove_track_by_number (MirageSession *self, gint number
  * @self: a #MirageSession
  * @track: (in): track object to be removed
  *
- * <para>
  * Removes track from session layout.
- * </para>
  *
- * <para>
  * @track is a #MirageTrack object to be removed.
- * </para>
  *
  * <note>
  * Causes bottom-up change.
  * </note>
- **/
+ */
 void mirage_session_remove_track_by_object (MirageSession *self, MirageTrack *track)
 {
     mirage_session_remove_track(self, track);
@@ -677,17 +631,15 @@ void mirage_session_remove_track_by_object (MirageSession *self, MirageTrack *tr
  * @index: (in): index of track to be retrieved
  * @error: (out) (allow-none): location to store error, or %NULL
  *
- * <para>
  * Retrieves track by index. If @index is negative, tracks from the end of
  * layout are retrieved (e.g. -1 is for last track, -2 for second-to-last
  * track, etc.). If @index is out of range, regardless of the sign, the
  * function fails.
- * </para>
  *
  * Returns: (transfer full): a #MirageTrack on success, %NULL on failure.
  * The reference to the object should be released using g_object_unref()
  * when no longer needed.
- **/
+ */
 MirageTrack *mirage_session_get_track_by_index (MirageSession *self, gint index, GError **error)
 {
     MirageTrack *track;
@@ -722,14 +674,12 @@ MirageTrack *mirage_session_get_track_by_index (MirageSession *self, gint index,
  * @number: (in): number of track to be retrieved
  * @error: (out) (allow-none): location to store error, or %NULL
  *
- * <para>
  * Retrieves track by track number.
- * </para>
  *
  * Returns: (transfer full): a #MirageTrack on success, %NULL on failure.
  * The reference to the object should be released using g_object_unref()
  * when no longer needed.
- **/
+ */
 MirageTrack *mirage_session_get_track_by_number (MirageSession *self, gint track_number, GError **error)
 {
     MirageTrack *track = NULL;
@@ -762,16 +712,14 @@ MirageTrack *mirage_session_get_track_by_number (MirageSession *self, gint track
  * @address: (in): address belonging to track to be retrieved
  * @error: (out) (allow-none): location to store error, or %NULL
  *
- * <para>
  * Retrieves track by address. @address must be valid (disc-relative) sector
  * address that is part of the track to be retrieved (i.e. lying between tracks's
  * start and end sector).
- * </para>
  *
  * Returns: (transfer full): a #MirageTrack on success, %NULL on failure.
  * The reference to the object should be released using g_object_unref()
  * when no longer needed.
- **/
+ */
 MirageTrack *mirage_session_get_track_by_address (MirageSession *self, gint address, GError **error)
 {
     MirageTrack *track = NULL;
@@ -815,16 +763,12 @@ MirageTrack *mirage_session_get_track_by_address (MirageSession *self, gint addr
  * @func: (in) (scope call): callback function
  * @user_data: (in) (closure): data to be passed to callback function
  *
- * <para>
  * Iterates over tracks list, calling @func for each track in the layout.
- * </para>
  *
- * <para>
  * If @func returns %FALSE, the function immediately returns %FALSE.
- * </para>
  *
  * Returns: %TRUE on success, %FALSE on failure
- **/
+ */
 gboolean mirage_session_enumerate_tracks (MirageSession *self, MirageEnumTrackCallback func, gpointer user_data)
 {
     for (GList *entry = self->priv->tracks_list; entry; entry = entry->next) {
@@ -843,14 +787,12 @@ gboolean mirage_session_enumerate_tracks (MirageSession *self, MirageEnumTrackCa
  * @track: (in): a track
  * @error: (out) (allow-none): location to store error, or %NULL
  *
- * <para>
  * Retrieves track that comes before @track.
- * </para>
  *
  * Returns: (transfer full): a #MirageTrack on success, %NULL on failure.
  * The reference to the object should be released using g_object_unref()
  * when no longer needed.
- **/
+ */
 MirageTrack *mirage_session_get_track_before (MirageSession *self, MirageTrack *track, GError **error)
 {
     gint index;
@@ -878,14 +820,12 @@ MirageTrack *mirage_session_get_track_before (MirageSession *self, MirageTrack *
  * @track: (in): a track
  * @error: (out) (allow-none): location to store error, or %NULL
  *
- * <para>
  * Retrieves track that comes after @track.
- * </para>
  *
  * Returns: (transfer full): a #MirageTrack on success, %NULL on failure.
  * The reference to the object should be released using g_object_unref()
  * when no longer needed.
- **/
+ */
 MirageTrack *mirage_session_get_track_after (MirageSession *self, MirageTrack *track, GError **error)
 {
     gint num_tracks;
@@ -914,12 +854,10 @@ MirageTrack *mirage_session_get_track_after (MirageSession *self, MirageTrack *t
  * mirage_session_get_number_of_languages:
  * @self: a #MirageSession
  *
- * <para>
  * Retrieves number of languages the session contains.
- * </para>
  *
  * Returns: number of languages
- **/
+ */
 gint mirage_session_get_number_of_languages (MirageSession *self)
 {
     /* Return number of languages */
@@ -933,17 +871,13 @@ gint mirage_session_get_number_of_languages (MirageSession *self)
  * @language: (in) (transfer full): a #MirageLanguage to be added
  * @error: (out) (allow-none): location to store error, or %NULL
  *
- * <para>
  * Adds language to session.
- * </para>
  *
- * <para>
  * @code is language code that should be assigned to added language. If
  * language with that code is already present in the session, the function fails.
- * </para>
  *
  * Returns: %TRUE on success, %FALSE on failure
- **/
+ */
 gboolean mirage_session_add_language (MirageSession *self, gint code, MirageLanguage *language, GError **error)
 {
     MirageLanguage *tmp_language;
@@ -975,19 +909,15 @@ gboolean mirage_session_add_language (MirageSession *self, gint code, MirageLang
  * @index: (in): index of language to be removed
  * @error: (out) (allow-none): location to store error, or %NULL
  *
- * <para>
  * Removes language from session.
- * </para>
  *
- * <para>
  * @index is the index of the language to be removed. This function calls
  * mirage_session_get_language_by_index() so @index behavior is determined by that
  * function.
- * </para>
  *
  * Returns: %TRUE on success, %FALSE on failure
 
- **/
+ */
 gboolean mirage_session_remove_language_by_index (MirageSession *self, gint index, GError **error)
 {
     /* Find language by index */
@@ -1009,16 +939,12 @@ gboolean mirage_session_remove_language_by_index (MirageSession *self, gint inde
  * @code: (in): language code of language to be removed
  * @error: (out) (allow-none): location to store error, or %NULL
  *
- * <para>
  * Removes language from session.
- * </para>
  *
- * <para>
  * @code is language code the language to be removed.
- * </para>
  *
  * Returns: %TRUE on success, %FALSE on failure
- **/
+ */
 gboolean mirage_session_remove_language_by_code (MirageSession *self, gint code, GError **error)
 {
     /* Find language by code */
@@ -1039,14 +965,10 @@ gboolean mirage_session_remove_language_by_code (MirageSession *self, gint code,
  * @self: a #MirageSession
  * @language: (in): language object to be removed
  *
- * <para>
  * Removes language from session.
- * </para>
  *
- * <para>
  * @language is a #MirageLanguage object to be removed.
- * </para>
- **/
+ */
 void mirage_session_remove_language_by_object (MirageSession *self, MirageLanguage *language)
 {
     mirage_session_remove_language(self, language);
@@ -1058,17 +980,15 @@ void mirage_session_remove_language_by_object (MirageSession *self, MirageLangua
  * @index: (in): index of language to be retrieved
  * @error: (out) (allow-none): location to store error, or %NULL
  *
- * <para>
  * Retrieves language by index. If @index is negative, languages from the end of
  * session are retrieved (e.g. -1 is for last language, -2 for second-to-last
  * language, etc.). If @index is out of range, regardless of the sign, the
  * function fails.
- * </para>
  *
  * Returns: (transfer full): a #MirageLanguage on success, %NULL on failure.
  * The reference to the object should be released using g_object_unref()
  * when no longer needed.
- **/
+ */
 MirageLanguage *mirage_session_get_language_by_index (MirageSession *self, gint index, GError **error)
 {
     MirageLanguage *language;
@@ -1101,14 +1021,12 @@ MirageLanguage *mirage_session_get_language_by_index (MirageSession *self, gint 
  * @code: (in): language code of language to be retrieved
  * @error: (out) (allow-none): location to store error, or %NULL
  *
- * <para>
  * Retrieves language by language code.
- * </para>
  *
  * Returns: (transfer full): a #MirageLanguage on success, %NULL on failure.
  * The reference to the object should be released using g_object_unref()
  * when no longer needed.
- **/
+ */
 MirageLanguage *mirage_session_get_language_by_code (MirageSession *self, gint code, GError **error)
 {
     MirageLanguage *language = NULL;
@@ -1141,16 +1059,12 @@ MirageLanguage *mirage_session_get_language_by_code (MirageSession *self, gint c
  * @func: (in) (scope call): callback function
  * @user_data: (in) (closure): data to be passed to callback function
  *
- * <para>
  * Iterates over languages list, calling @func for each language.
- * </para>
  *
- * <para>
  * If @func returns %FALSE, the function immediately returns %FALSE.
- * </para>
  *
  * Returns: %TRUE on success, %FALSE on failure
- **/
+ */
 gboolean mirage_session_enumerate_languages (MirageSession *self, MirageEnumLanguageCallback func, gpointer user_data)
 {
     for (GList *entry = self->priv->languages_list; entry; entry = entry->next) {
@@ -1214,15 +1128,13 @@ static gboolean set_cdtext_data (gint code, gint type, gint track_number, guint8
  * @len: (in): length of data in buffer
  * @error: (out) (allow-none): location to store error, or %NULL
  *
- * <para>
  * Sets CD-TEXT data for session. It internally creates and uses #MirageCdTextCoder
  * object as a decoder to decode data in @data. Decoded data is stored in #MirageLanguage
  * objects in both session and its tracks. Therefore session must have same number of tracks
  * as the encoded CD-TEXT data.
- * </para>
  *
  * Returns: %TRUE on success, %FALSE on failure
- **/
+ */
 gboolean mirage_session_set_cdtext_data (MirageSession *self, guint8 *data, gint len, GError **error)
 {
     MirageCdTextCoder *decoder;
@@ -1255,15 +1167,13 @@ gboolean mirage_session_set_cdtext_data (MirageSession *self, guint8 *data, gint
  * @len: (out): location to return length of data in buffer
  * @error: (out) (allow-none): location to store error, or %NULL
  *
- * <para>
  * Returns CD-TEXT data for session. It internally creates and uses #MirageCdTextCoder
  * object as an encoder to encode data from #MirageLanguage objects from both session and
  * its tracks. Buffer with encoded data is stored in @data; it should be freed with
  * g_free() when no longer needed.
- * </para>
  *
  * Returns: %TRUE on success, %FALSE on failure
- **/
+ */
 gboolean mirage_session_get_cdtext_data (MirageSession *self, guint8 **data, gint *len, GError **error)
 {
     gint num_languages;
@@ -1381,14 +1291,12 @@ gboolean mirage_session_get_cdtext_data (MirageSession *self, guint8 **data, gin
  * @self: a #MirageSession
  * @error: (out) (allow-none): location to store error, or %NULL
  *
- * <para>
  * Retrieves session that is placed before @self in disc layout.
- * </para>
  *
  * Returns: (transfer full): a #MirageSession on success, %NULL on failure.
  * The reference to the object should be released using g_object_unref()
  * when no longer needed.
- **/
+ */
 MirageSession *mirage_session_get_prev (MirageSession *self, GError **error)
 {
     MirageDisc *disc;
@@ -1412,14 +1320,12 @@ MirageSession *mirage_session_get_prev (MirageSession *self, GError **error)
  * @self: a #MirageSession
  * @error: (out) (allow-none): location to store error, or %NULL
  *
- * <para>
  * Retrieves session that is placed after @self in disc layout.
- * </para>
  *
  * Returns: (transfer full): a #MirageSession on success, %NULL on failure.
  * The reference to the object should be released using g_object_unref()
  * when no longer needed.
- **/
+ */
 MirageSession *mirage_session_get_next (MirageSession *self, GError **error)
 {
     MirageDisc *disc;
@@ -1524,9 +1430,7 @@ static void mirage_session_class_init (MirageSessionClass *klass)
      * MirageSession::layout-changed:
      * @session: a #MirageSession
      *
-     * <para>
      * Emitted when a layout of #MirageSession changed in a way that causes a bottom-up change.
-     * </para>
      */
     klass->signal_layout_changed = g_signal_new("layout-changed", G_OBJECT_CLASS_TYPE(klass), G_SIGNAL_RUN_LAST, 0, NULL, NULL, g_cclosure_marshal_VOID__VOID, G_TYPE_NONE, 0, NULL);
 }

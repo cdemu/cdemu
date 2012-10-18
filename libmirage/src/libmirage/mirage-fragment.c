@@ -24,33 +24,25 @@
  * @see_also: #MirageFragmentIfaceAudio, #MirageFragmentIfaceBinary
  * @include: mirage-fragment.h
  *
- * <para>
  * #MirageFragment object is a base object for fragment implementations.
  * It provides functions that are used by image parsers to provide access
  * to data in image files.
- * </para>
  *
- * <para>
  * #MirageFragment provides two virtual functions: mirage_fragment_get_info(),
  * mirage_fragment_can_handle_data_format(). These must be implemented
  * by fragment implementations which derive from #MirageFragment object.
- * </para>
  *
- * <para>
  * Every fragment implementation needs to implement one of the following
  * fragment interfaces: #MirageFragmentIfaceBinary or #MirageFragmentIfaceAudio.
  * Which interface a fragment implementation implements depends on the
  * way the implementation handles data.
- * </para>
  *
- * <para>
  * While fragment implementations are usually obtained from context
  * using mirage_context_create_fragment(), the default implementation
  * can be obtained using g_object_new() and MIRAGE_TYPE_FRAGMENT. The
  * default fragment object implementation provides so called "NULL"
  * fragment, which returns no data, and is used by libMirage to represent
  * data in tracks' pregaps and postgaps.
- * </para>
  */
 
 #ifdef HAVE_CONFIG_H
@@ -100,11 +92,9 @@ static void mirage_fragment_commit_bottomup_change (MirageFragment *self)
  * @id: (in): fragment ID
  * @name: (in): fragment name
  *
- * <para>
  * Generates fragment information from the input fields. It is intended as a function
  * for creating fragment information in fragment implementations.
- * </para>
- **/
+ */
 void mirage_fragment_generate_info (MirageFragment *self, const gchar *id, const gchar *name)
 {
     g_snprintf(self->priv->info.id, sizeof(self->priv->info.id), "%s", id);
@@ -115,13 +105,11 @@ void mirage_fragment_generate_info (MirageFragment *self, const gchar *id, const
  * mirage_fragment_get_info:
  * @self: a #MirageFragment
  *
- * <para>
  * Retrieves fragment information.
- * </para>
  *
  * Returns: (transfer none): a pointer to fragment information structure. The
  * structure belongs to object and should not be modified.
- **/
+ */
 const MirageFragmentInfo *mirage_fragment_get_info (MirageFragment *self)
 {
     return &self->priv->info;
@@ -134,12 +122,10 @@ const MirageFragmentInfo *mirage_fragment_get_info (MirageFragment *self)
  * @stream: (in): data stream
  * @error: (out) (allow-none): location to store error, or %NULL
  *
- * <para>
- * Checks whether parser can handle data stored in @stream.
- * </para>
+ * Checks whether fragment can handle data stored in @stream.
  *
  * Returns: %TRUE if fragment can handle data file, %FALSE if not
- **/
+ */
 gboolean mirage_fragment_can_handle_data_format (MirageFragment *self, GInputStream *stream, GError **error)
 {
     /* Provided by implementation */
@@ -152,9 +138,7 @@ gboolean mirage_fragment_can_handle_data_format (MirageFragment *self, GInputStr
  * @self: a #MirageFragment
  * @address: (in): start address
  *
- * <para>
  * Sets fragment's start address. The @address is given in sectors.
- * </para>
  *
  * <note>
  * Intended for internal use only.
@@ -163,7 +147,7 @@ gboolean mirage_fragment_can_handle_data_format (MirageFragment *self, GInputStr
  * <note>
  * Causes top-down change.
  * </note>
- **/
+ */
 void mirage_fragment_set_address (MirageFragment *self, gint address)
 {
     /* Set address */
@@ -176,16 +160,14 @@ void mirage_fragment_set_address (MirageFragment *self, gint address)
  * mirage_fragment_get_address:
  * @self: a #MirageFragment
  *
- * <para>
  * Retrieves fragment's start address. The @address is given in sectors.
- * </para>
  *
  * <note>
  * Intended for internal use only.
  * </note>
  *
  * Returns: start address
- **/
+ */
 gint mirage_fragment_get_address (MirageFragment *self)
 {
     /* Return address */
@@ -197,9 +179,7 @@ gint mirage_fragment_get_address (MirageFragment *self)
  * @self: a #MirageFragment
  * @length: (in): length
  *
- * <para>
  * Sets fragment's length. The @length is given in sectors.
- * </para>
  *
  * <note>
  * Intended for internal use only.
@@ -208,7 +188,7 @@ gint mirage_fragment_get_address (MirageFragment *self)
  * <note>
  * Causes bottom-up change.
  * </note>
- **/
+ */
 void mirage_fragment_set_length (MirageFragment *self, gint length)
 {
     /* Set length */
@@ -221,16 +201,14 @@ void mirage_fragment_set_length (MirageFragment *self, gint length)
  * mirage_fragment_get_length:
  * @self: a #MirageFragment
  *
- * <para>
  * Retrieves fragment's length. The returned @length is given in sectors.
- * </para>
  *
  * <note>
  * Intended for internal use only.
  * </note>
  *
  * Returns: length
- **/
+ */
 gint mirage_fragment_get_length (MirageFragment *self)
 {
     /* Return length */
@@ -243,13 +221,11 @@ gint mirage_fragment_get_length (MirageFragment *self)
  * @self: a #MirageFragment
  * @error: (out) (allow-none): location to store error, or %NULL
  *
- * <para>
  * Uses the rest of data file. It automatically calculates and sets fragment's
  * length.
- * </para>
  *
  * Returns: %TRUE on success, %FALSE on failure
- **/
+ */
 gboolean mirage_fragment_use_the_rest_of_file (MirageFragment *self, GError **error)
 {
     /* Provided by implementation */
@@ -265,16 +241,14 @@ gboolean mirage_fragment_use_the_rest_of_file (MirageFragment *self, GError **er
  * @length: (out): location to store read data length
  * @error: (out) (allow-none): location to store error, or %NULL
  *
- * <para>
  * Reads main channel data for sector at fragment-relative @address (given
  * in sectors). The buffer for reading data into is allocated by function
  * and should be freed using g_free() when no longer needed. The pointer
  * to buffer is stored into @buffer and the length of read data is stored into
  * @length.
- * </para>
  *
  * Returns: %TRUE on success, %FALSE on failure
- **/
+ */
 gboolean mirage_fragment_read_main_data (MirageFragment *self, gint address, guint8 **buffer, gint *length, GError **error)
 {
     /* Provided by implementation */
@@ -289,16 +263,14 @@ gboolean mirage_fragment_read_main_data (MirageFragment *self, gint address, gui
  * @length: (out): location to store read data length
  * @error: (out) (allow-none): location to store error, or %NULL
  *
- * <para>
  * Reads subchannel data for sector at fragment-relative @address (given
  * in sectors). The buffer for reading data into is allocated by function
  * and should be freed using g_free() when no longer needed. The pointer
  * to buffer is stored into @buffer and the length of read data is stored into
  * @length.
- * </para>
  *
  * Returns: %TRUE on success, %FALSE on failure
- **/
+ */
 gboolean mirage_fragment_read_subchannel_data (MirageFragment *self, gint address, guint8 **buffer, gint *length, GError **error)
 {
     /* Provided by implementation */
@@ -382,9 +354,7 @@ static void mirage_fragment_class_init (MirageFragmentClass *klass)
      * MirageFragment::layout-changed:
      * @fragment: a #MirageFragment
      *
-     * <para>
      * Emitted when a layout of #MirageFragment changed in a way that causes a bottom-up change.
-     * </para>
      */
     klass->signal_layout_changed = g_signal_new("layout-changed", G_OBJECT_CLASS_TYPE(klass), G_SIGNAL_RUN_LAST, 0, NULL, NULL, g_cclosure_marshal_VOID__VOID, G_TYPE_NONE, 0, NULL);
 }

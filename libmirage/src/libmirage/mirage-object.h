@@ -42,10 +42,10 @@ typedef struct _MirageObjectPrivate    MirageObjectPrivate;
 /**
  * MirageObject:
  *
- * <para>
- * Contains private data only, and should be accessed using the functions below.
- * </para>
- **/
+ * All the fields in the <structname>MirageObject</structname>
+ * structure are private to the #MirageObject implementation and
+ * should never be accessed directly.
+ */
 struct _MirageObject
 {
     GObject parent_instance;
@@ -54,6 +54,14 @@ struct _MirageObject
     MirageObjectPrivate *priv;
 };
 
+/**
+ * MirageObjectClass:
+ *
+ * @parent_class: the parent class
+ * @signal_context_changed: "context-changed" signal identifier
+ *
+ * The class structure for the <structname>MirageObject</structname> type.
+ */
 struct _MirageObjectClass
 {
     GObjectClass parent_class;

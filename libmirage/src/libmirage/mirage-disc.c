@@ -24,21 +24,15 @@
  * @see_also: #MirageSession, #MirageTrack, #MirageObject, #MirageParser, #MirageContext
  * @include: mirage-disc.h
  *
- * <para>
  * #MirageDisc object is a top-level object in the disc layout
  * representation, representing the actual disc.
- * </para>
  *
- * <para>
  * It provides functions for manipulating the disc layout; adding and
  * removing sessions and tracks, manipulating disc's MCN and medium
  * type, and convenience functions for accessing sectors on the disc.
- * </para>
  *
- * <para>
  * Typically, a #MirageDisc is obtained as a result of loading an image
  * using #MirageContext and its mirage_context_load_image() function.
- * </para>
  */
 
 #ifdef HAVE_CONFIG_H
@@ -352,14 +346,12 @@ static void free_disc_structure_data (GArray *array)
  * @self: a #MirageDisc
  * @medium_type: (in): medium type
  *
- * <para>
  * Sets medium type. @medium_type must be one of #MirageMediumTypes.
- * </para>
  *
  * <note>
  * Intended for internal use only.
  * </note>
- **/
+ */
 void mirage_disc_set_medium_type (MirageDisc *self, MirageMediumTypes medium_type)
 {
     /* Set medium type */
@@ -370,12 +362,10 @@ void mirage_disc_set_medium_type (MirageDisc *self, MirageMediumTypes medium_typ
  * mirage_disc_get_medium_type:
  * @self: a #MirageDisc
  *
- * <para>
  * Retrieves medium type.
- * </para>
  *
  * Returns: medium type
- **/
+ */
 MirageMediumTypes mirage_disc_get_medium_type (MirageDisc *self)
 {
     /* Return medium type */
@@ -388,14 +378,12 @@ MirageMediumTypes mirage_disc_get_medium_type (MirageDisc *self)
  * @self: a #MirageDisc
  * @filenames: (in) (array zero-terminated=1): %NULL-terminated array of filenames
  *
- * <para>
  * Sets image filename(s).
- * </para>
  *
  * <note>
  * Intended for internal use only, in image parser implementations.
  * </note>
- **/
+ */
 void mirage_disc_set_filenames (MirageDisc *self, const gchar **filenames)
 {
     /* Free old filenames */
@@ -409,16 +397,14 @@ void mirage_disc_set_filenames (MirageDisc *self, const gchar **filenames)
  * @self: a #MirageDisc
  * @filename: (in): filename
  *
- * <para>
  * Sets image filename. The functionality is similar to mirage_disc_set_filenames(),
  * except that only one filename is set. It is intended to be used in parsers which
  * support only single-file images.
- * </para>
  *
  * <note>
  * Intended for internal use only, in image parser implementations.
  * </note>
- **/
+ */
 void mirage_disc_set_filename (MirageDisc *self, const gchar *filename)
 {
     /* Free old filenames */
@@ -432,13 +418,11 @@ void mirage_disc_set_filename (MirageDisc *self, const gchar *filename)
  * mirage_disc_get_filenames:
  * @self: a #MirageDisc
  *
- * <para>
  * Retrieves image filename(s).
- * </para>
  *
  * Returns: (transfer none) (array zero-terminated=1): pointer to %NULL-terminated
  * array of filenames. The array belongs to the object and should not be modified.
- **/
+ */
 const gchar **mirage_disc_get_filenames (MirageDisc *self)
 {
     /* Return filenames */
@@ -451,20 +435,16 @@ const gchar **mirage_disc_get_filenames (MirageDisc *self)
  * @self: a #MirageDisc
  * @mcn: (in): MCN
  *
- * <para>
  * Sets MCN (Media Catalogue Number).
- * </para>
  *
- * <para>
  * Because MCN is stored in subchannel data, this function silently
  * fails if any of disc's tracks contains fragments with subchannel
  * data provided.
- * </para>
  *
  * <note>
  * Intended for internal use only.
  * </note>
- **/
+ */
 void mirage_disc_set_mcn (MirageDisc *self, const gchar *mcn)
 {
     /* MCN can be set only if none of the tracks have fragments that contain
@@ -482,13 +462,11 @@ void mirage_disc_set_mcn (MirageDisc *self, const gchar *mcn)
  * mirage_disc_get_mcn:
  * @self: a #MirageDisc
  *
- * <para>
  * Retrieves MCN.
- * </para>
  *
  * Returns: (transfer none): pointer to MCN string, or %NULL. The string
  * belongs to the object and should not be modified.
- **/
+ */
 const gchar *mirage_disc_get_mcn (MirageDisc *self)
 {
     /* Return pointer to MCN */
@@ -501,10 +479,8 @@ const gchar *mirage_disc_get_mcn (MirageDisc *self)
  * @self: a #MirageDisc
  * @first_session: (in): first session number
  *
- * <para>
  * Sets first session number to @first_session. This is a number that is
  * assigned to the first session in the disc layout.
- * </para>
  *
  * <note>
  * Intended for internal use only.
@@ -513,7 +489,7 @@ const gchar *mirage_disc_get_mcn (MirageDisc *self)
  * <note>
  * Causes top-down change.
  * </note>
- **/
+ */
 void mirage_disc_layout_set_first_session (MirageDisc *self, gint first_session)
 {
     /* Set first session */
@@ -526,16 +502,14 @@ void mirage_disc_layout_set_first_session (MirageDisc *self, gint first_session)
  * mirage_disc_layout_get_first_session:
  * @self: a #MirageDisc
  *
- * <para>
  * Retrieves session number of the first session in the disc layout.
- * </para>
  *
  * <note>
  * Intended for internal use only.
  * </note>
  *
  * Returns: first session number
- **/
+ */
 gint mirage_disc_layout_get_first_session (MirageDisc *self)
 {
     /* Return first session */
@@ -547,10 +521,8 @@ gint mirage_disc_layout_get_first_session (MirageDisc *self)
  * @self: a #MirageDisc
  * @first_track: (in): first track number
  *
- * <para>
  * Sets first track number to @first_track. This is a number that is
  * assigned to the first track in the disc layout.
- * </para>
  *
  * <note>
  * Intended for internal use only.
@@ -559,7 +531,7 @@ gint mirage_disc_layout_get_first_session (MirageDisc *self)
  * <note>
  * Causes top-down change.
  * </note>
- **/
+ */
 void mirage_disc_layout_set_first_track (MirageDisc *self, gint first_track)
 {
     /* Set first track */
@@ -572,16 +544,14 @@ void mirage_disc_layout_set_first_track (MirageDisc *self, gint first_track)
  * mirage_disc_layout_get_first_track:
  * @self: a #MirageDisc
  *
- * <para>
  * Retrieves track number of the first track in the disc layout.
- * </para>
  *
  * <note>
  * Intended for internal use only.
  * </note>
  *
  * Returns: first track number
- **/
+ */
 gint mirage_disc_layout_get_first_track (MirageDisc *self)
 {
     /* Return first track */
@@ -593,10 +563,8 @@ gint mirage_disc_layout_get_first_track (MirageDisc *self)
  * @self: a #MirageDisc
  * @start_sector: (in): start sector
  *
- * <para>
  * Sets start sector of the disc layout to @start_sector. This is a sector at which
  * the first session (and consequently first track) in the disc layout will start.
- * </para>
  *
  * <note>
  * Intended for internal use only.
@@ -605,7 +573,7 @@ gint mirage_disc_layout_get_first_track (MirageDisc *self)
  * <note>
  * Causes top-down change.
  * </note>
- **/
+ */
 void mirage_disc_layout_set_start_sector (MirageDisc *self, gint start_sector)
 {
     /* Set start sector */
@@ -618,16 +586,14 @@ void mirage_disc_layout_set_start_sector (MirageDisc *self, gint start_sector)
  * mirage_disc_layout_get_start_sector:
  * @self: a #MirageDisc
  *
- * <para>
  * Retrieves start sector of the disc layout.
- * </para>
  *
  * <note>
  * Intended for internal use only.
  * </note>
  *
  * Returns: start sector
- **/
+ */
 gint mirage_disc_layout_get_start_sector (MirageDisc *self)
 {
     /* Return start sector */
@@ -638,12 +604,10 @@ gint mirage_disc_layout_get_start_sector (MirageDisc *self)
  * mirage_disc_layout_get_length:
  * @self: a #MirageDisc
  *
- * <para>
  * Retrieves length of the disc layout. The returned length is given in sectors.
- * </para>
  *
  * Returns: disc layout length
- **/
+ */
 gint mirage_disc_layout_get_length (MirageDisc *self)
 {
     /* Return length */
@@ -655,12 +619,10 @@ gint mirage_disc_layout_get_length (MirageDisc *self)
  * mirage_disc_get_number_of_sessions:
  * @self: a #MirageDisc
  *
- * <para>
  * Retrieves number of sessions in the disc layout.
- * </para>
  *
  * Returns: number of sessions
- **/
+ */
 gboolean mirage_disc_get_number_of_sessions (MirageDisc *self)
 {
     /* Return number of sessions */
@@ -673,21 +635,17 @@ gboolean mirage_disc_get_number_of_sessions (MirageDisc *self)
  * @index: (in): index at which session should be added
  * @session: (in) (transfer full): a #MirageSession to be added
  *
- * <para>
  * Adds session to disc layout.
- * </para>
  *
- * <para>
  * @index is the index at which session is added. Negative index denotes
  * index going backwards (i.e. -1 adds session at the end, -2 adds session
  * second-to-last, etc.). If index, either negative or positive, is too big,
  * session is added at the beginning or at the end of the layout, respectively.
- * </para>
  *
  * <note>
  * Causes bottom-up change.
  * </note>
- **/
+ */
 void mirage_disc_add_session_by_index (MirageDisc *self, gint index, MirageSession *session)
 {
     gint num_sessions;
@@ -730,22 +688,18 @@ void mirage_disc_add_session_by_index (MirageDisc *self, gint index, MirageSessi
  * @session: (in) (transfer full): a #MirageSession to be added
  * @error: (out) (allow-none): location to store error, or %NULL
  *
- * <para>
  * Adds session to disc layout.
- * </para>
  *
- * <para>
  * @number is session number that should be assigned to added session. It determines
  * session's position in the layout. If session with that number already exists in
  * the layout, the function fails.
- * </para>
  *
  * <note>
  * Causes bottom-up change.
  * </note>
  *
  * Returns: %TRUE on success, %FALSE on failure
- **/
+ */
 gboolean mirage_disc_add_session_by_number (MirageDisc *self, gint number, MirageSession *session, GError **error)
 {
     MirageSession *tmp_session;
@@ -783,22 +737,18 @@ gboolean mirage_disc_add_session_by_number (MirageDisc *self, gint number, Mirag
  * @index: (in): index of session to be removed
  * @error: (out) (allow-none): location to store error, or %NULL
  *
- * <para>
  * Removes session from disc layout.
- * </para>
  *
- * <para>
  * @index is the index of the session to be removed. This function calls
  * mirage_disc_get_session_by_index() so @index behavior is determined by that
  * function.
- * </para>
  *
  * <note>
  * Causes bottom-up change.
  * </note>
  *
  * Returns: %TRUE on success, %FALSE on failure
- **/
+ */
 gboolean mirage_disc_remove_session_by_index (MirageDisc *self, gint index, GError **error)
 {
     /* Find session by index */
@@ -820,20 +770,16 @@ gboolean mirage_disc_remove_session_by_index (MirageDisc *self, gint index, GErr
  * @number: (in): session number of session to be removed
  * @error: (out) (allow-none): location to store error, or %NULL
  *
- * <para>
  * Removes session from disc layout.
- * </para>
  *
- * <para>
  * @number is session number of the session to be removed.
- * </para>
  *
  * <note>
  * Causes bottom-up change.
  * </note>
  *
  * Returns: %TRUE on success, %FALSE on failure
- **/
+ */
 gboolean mirage_disc_remove_session_by_number (MirageDisc *self, gint number, GError **error)
 {
     /* Find session by number */
@@ -854,18 +800,14 @@ gboolean mirage_disc_remove_session_by_number (MirageDisc *self, gint number, GE
  * @self: a #MirageDisc
  * @session: (in): session object to be removed
  *
- * <para>
  * Removes session from disc layout.
- * </para>
  *
- * <para>
  * @session is a #MirageSession object to be removed.
- * </para>
  *
  * <note>
  * Causes bottom-up change.
  * </note>
- **/
+ */
 void mirage_disc_remove_session_by_object (MirageDisc *self, MirageSession *session)
 {
     mirage_disc_remove_session(self, session);
@@ -878,17 +820,15 @@ void mirage_disc_remove_session_by_object (MirageDisc *self, MirageSession *sess
  * @index: (in): index of session to be retrieved
  * @error: (out) (allow-none):location to store error, or %NULL
  *
- * <para>
  * Retrieves session by index. If @index is negative, sessions from the end of
  * layout are retrieved (e.g. -1 is for last session, -2 for second-to-last
  * session, etc.). If @index is out of range, regardless of the sign, the
  * function fails.
- * </para>
  *
  * Returns: (transfer full): a #MirageSession on success, %NULL on failure.
  * The reference to the object should be released using g_object_unref()
  * when no longer needed.
- **/
+ */
 MirageSession *mirage_disc_get_session_by_index (MirageDisc *self, gint index, GError **error)
 {
     MirageSession *session;
@@ -921,14 +861,12 @@ MirageSession *mirage_disc_get_session_by_index (MirageDisc *self, gint index, G
  * @number: (in): number of session to be retrieved
  * @error: (out) (allow-none): location to store error, or %NULL
  *
- * <para>
  * Retrieves session by session number.
- * </para>
  *
  * Returns: (transfer full): a #MirageSession on success, %NULL on failure.
  * The reference to the object should be released using g_object_unref()
  * when no longer needed.
- **/
+ */
 MirageSession *mirage_disc_get_session_by_number (MirageDisc *self, gint session_number, GError **error)
 {
     MirageSession *session = NULL;
@@ -961,16 +899,14 @@ MirageSession *mirage_disc_get_session_by_number (MirageDisc *self, gint session
  * @address: (in): address belonging to session to be retrieved
  * @error: (out) (allow-none): location to store error, or %NULL
  *
- * <para>
  * Retrieves session by address. @address must be valid (disc-relative) sector
  * address that is part of the session to be retrieved (i.e. lying between session's
  * start and end sector).
- * </para>
  *
  * Returns: (transfer full): a #MirageSession on success, %NULL on failure.
  * The reference to the object should be released using g_object_unref()
  * when no longer needed.
- **/
+ */
 MirageSession *mirage_disc_get_session_by_address (MirageDisc *self, gint address, GError **error)
 {
     MirageSession *session = NULL;
@@ -1014,15 +950,13 @@ MirageSession *mirage_disc_get_session_by_address (MirageDisc *self, gint addres
  * @track: (in): number of track belonging to session to be retrieved
  * @error: (out) (allow-none): location to store error, or %NULL
  *
- * <para>
  * Retrieves session by track number. @track must be valid track number of track
  * that is part of the session.
- * </para>
  *
  * Returns: (transfer full): a #MirageSession on success, %NULL on failure.
  * The reference to the object should be released using g_object_unref()
  * when no longer needed.
- **/
+ */
 MirageSession *mirage_disc_get_session_by_track (MirageDisc *self, gint track_number, GError **error)
 {
     MirageSession *session = NULL;
@@ -1061,16 +995,12 @@ MirageSession *mirage_disc_get_session_by_track (MirageDisc *self, gint track_nu
  * @func: (in) (scope call): callback function
  * @user_data: (in) (closure): data to be passed to callback function
  *
- * <para>
  * Iterates over sessions list, calling @func for each session in the layout.
- * </para>
  *
- * <para>
  * If @func returns %FALSE, the function immediately returns %FALSE.
- * </para>
  *
  * Returns: %TRUE on success, %FALSE on failure
- **/
+ */
 gboolean mirage_disc_enumerate_sessions (MirageDisc *self, MirageEnumSessionCallback func, gpointer user_data)
 {
     for (GList *entry = self->priv->sessions_list; entry; entry = entry->next) {
@@ -1089,14 +1019,12 @@ gboolean mirage_disc_enumerate_sessions (MirageDisc *self, MirageEnumSessionCall
  * @session: (in): a session
  * @error: (out) (allow-none): location to store error, or %NULL
  *
- * <para>
  * Retrieves session that comes before @session.
- * </para>
  *
  * Returns: (transfer full): a #MirageSession on success, %NULL on failure.
  * The reference to the object should be released using g_object_unref()
  * when no longer needed.
- **/
+ */
 MirageSession *mirage_disc_get_session_before (MirageDisc *self, MirageSession *session, GError **error)
 {
     gint index;
@@ -1123,14 +1051,12 @@ MirageSession *mirage_disc_get_session_before (MirageDisc *self, MirageSession *
  * @session: (in): a session
  * @error: (out) (allow-none): location to store error, or %NULL
  *
- * <para>
  * Retrieves session that comes after @session.
- * </para>
  *
  * Returns: (transfer full): a #MirageSession on success, %NULL on failure.
  * The reference to the object should be released using g_object_unref()
  * when no longer needed.
- **/
+ */
 MirageSession *mirage_disc_get_session_after (MirageDisc *self, MirageSession *session, GError **error)
 {
     gint num_sessions, index;
@@ -1157,12 +1083,10 @@ MirageSession *mirage_disc_get_session_after (MirageDisc *self, MirageSession *s
  * mirage_disc_get_number_of_tracks:
  * @self: a #MirageDisc
  *
- * <para>
  * Retrieves number of tracks in the disc layout.
- * </para>
  *
  * Returns: number of tracks
- **/
+ */
 gint mirage_disc_get_number_of_tracks (MirageDisc *self)
 {
     /* Return number of tracks */
@@ -1176,11 +1100,8 @@ gint mirage_disc_get_number_of_tracks (MirageDisc *self)
  * @track: (in) (transfer full): a #MirageTrack to be added
  * @error: (out) (allow-none): location to store error, or %NULL
  *
- * <para>
  * Adds track to disc layout.
- * </para>
  *
- * <para>
  * @index is the index at which track is added. The function attempts to find
  * appropriate session by iterating over sessions list and verifying index ranges,
  * then adds the track using mirage_session_add_track_by_index(). Negative
@@ -1188,22 +1109,17 @@ gint mirage_disc_get_number_of_tracks (MirageDisc *self)
  * session, etc.). If @index, either negative or positive, is too big, track is
  * respectively added  at the beginning of the first or at the end of the last
  * session in the layout.
- * </para>
  *
- * <para>
  * If disc layout is empty (i.e. contains no sessions), then session is created.
- * </para>
  *
- * <para>
  * The rest of behavior is same as of mirage_session_add_track_by_index().
- * </para>
  *
  * <note>
  * Causes bottom-up change.
  * </note>
  *
  * Returns: %TRUE on success, %FALSE on failure
- **/
+ */
 gboolean mirage_disc_add_track_by_index (MirageDisc *self, gint index, MirageTrack *track, GError **error)
 {
     gint num_tracks;
@@ -1257,33 +1173,25 @@ gboolean mirage_disc_add_track_by_index (MirageDisc *self, gint index, MirageTra
  * @track: (in) (transfer full): a #MirageTrack to be added
  * @error: (out) (allow-none): location to store error, or %NULL
  *
- * <para>
  * Adds track to disc layout.
- * </para>
  *
- * <para>
  * @number is track number that should be assigned to added track. It determines
  * track's position in the layout. The function attempts to find appropriate session
  * using mirage_disc_get_session_by_track(), then adds the track using
  * mirage_session_add_track_by_number().
- * </para>
  *
- * <para>
  * If disc layout is empty (i.e. contains no sessions), then session is created.
  * If @number is greater than last track's number, the track is added at the end
  * of last session.
- * </para>
  *
- * <para>
  * The rest of behavior is same as of mirage_session_add_track_by_number().
- * </para>
  *
  * <note>
  * Causes bottom-up change.
  * </note>
  *
  * Returns: %TRUE on success, %FALSE on failure
- **/
+ */
 gboolean mirage_disc_add_track_by_number (MirageDisc *self, gint number, MirageTrack *track, GError **error)
 {
     MirageSession *session;
@@ -1331,22 +1239,18 @@ gboolean mirage_disc_add_track_by_number (MirageDisc *self, gint number, MirageT
  * @index: (in): index of track to be removed
  * @error: (out) (allow-none): location to store error, or %NULL
  *
- * <para>
  * Removes track from disc layout.
- * </para>
  *
- * <para>
  * @index is the index of the track to be removed. This function calls
  * mirage_disc_get_track_by_index() so @index behavior is determined by that
  * function.
- * </para>
  *
  * <note>
  * Causes bottom-up change.
  * </note>
  *
  * Returns: %TRUE on success, %FALSE on failure
- **/
+ */
 gboolean mirage_disc_remove_track_by_index (MirageDisc *self, gint index, GError **error)
 {
     MirageSession *session;
@@ -1379,22 +1283,18 @@ gboolean mirage_disc_remove_track_by_index (MirageDisc *self, gint index, GError
  * @number: (in): track number of track to be removed
  * @error: (out) (allow-none): location to store error, or %NULL
  *
- * <para>
  * Removes track from disc layout.
- * </para>
  *
- * <para>
  * @number is track number of the track to be removed. This function calls
  * mirage_disc_get_track_by_number() so @number behavior is determined by that
  * function.
- * </para>
  *
  * <note>
  * Causes bottom-up change.
  * </note>
  *
  * Returns: %TRUE on success, %FALSE on failure
- **/
+ */
 gboolean mirage_disc_remove_track_by_number (MirageDisc *self, gint number, GError **error)
 {
     MirageSession *session;
@@ -1433,23 +1333,19 @@ gboolean mirage_disc_remove_track_by_number (MirageDisc *self, gint number, GErr
  * @index: (in): index of track to be retrieved
  * @error: (out) (allow-none): location to store error, or %NULL
  *
- * <para>
  * Retrieves track by index. The function attempts to find appropriate session
  * by iterating over sessions list and verifying index ranges, then retrieves
  * the track using mirage_session_get_track_by_index(). If @index is negative,
  * tracks from the end of layout are retrieved (e.g. -1 is for last track, -2
  * for second-to-last track, etc.). If @index is out of range, regardless of
  * the sign, the function fails.
- * </para>
  *
- * <para>
  * The rest of behavior is same as of mirage_session_get_track_by_index().
- * </para>
  *
  * Returns: (transfer full): a #MirageTrack on success, %NULL on failure.
  * The reference to the object should be released using g_object_unref()
  * when no longer needed.
- **/
+ */
 MirageTrack *mirage_disc_get_track_by_index (MirageDisc *self, gint index, GError **error)
 {
     gint num_tracks;
@@ -1489,20 +1385,16 @@ MirageTrack *mirage_disc_get_track_by_index (MirageDisc *self, gint index, GErro
  * @number: (in): track number of track to be retrieved
  * @error: (out) (allow-none): location to store error, or %NULL
  *
- * <para>
  * Retrieves track by track number. The function attempts to find appropriate session
  * using mirage_disc_get_session_by_track(), then retrieves the track using
  * mirage_session_get_track_by_number().
- * </para>
  *
- * <para>
  * The rest of behavior is same as of mirage_session_get_track_by_number().
- * </para>
  *
  * Returns: (transfer full): a #MirageTrack on success, %NULL on failure.
  * The reference to the object should be released using g_object_unref()
  * when no longer needed.
- **/
+ */
 MirageTrack *mirage_disc_get_track_by_number (MirageDisc *self, gint number, GError **error)
 {
     MirageSession *session;
@@ -1527,26 +1419,20 @@ MirageTrack *mirage_disc_get_track_by_number (MirageDisc *self, gint number, GEr
  * @address: (in): address belonging to track to be retrieved
  * @error: (out) (allow-none): location to store error, or %NULL
  *
- * <para>
  * Retrieves track by address. @address must be valid (disc-relative) sector
  * address that is part of the track to be retrieved (i.e. lying between track's
  * start and end sector).
- * </para>
  *
- * <para>
  * The function attempts to find appropriate session using
  * mirage_disc_get_session_by_address(), then retrieves the track using
  * mirage_session_get_track_by_address().
- * </para>
  *
- * <para>
  * The rest of behavior is same as of mirage_session_get_track_by_address().
- * </para>
  *
  * Returns: (transfer full): a #MirageTrack on success, %NULL on failure.
  * The reference to the object should be released using g_object_unref()
  * when no longer needed.
- **/
+ */
 MirageTrack *mirage_disc_get_track_by_address (MirageDisc *self, gint address, GError **error)
 {
     MirageSession *session;
@@ -1574,16 +1460,14 @@ MirageTrack *mirage_disc_get_track_by_address (MirageDisc *self, gint address, G
  * @data: (in) (array length=len): disc structure data to be set
  * @len: (in): length of disc structure data
  *
- * <para>
  * Sets disc structure of type @type to layer @layer to disc. @data is buffer
  * containing disc structure data and @len is data length.
- * </para>
  *
  * <note>
  * Disc structures are valid only for DVD and BD discs. This function
  * silently fails on invalid disc types.
  * </note>
- **/
+ */
 void mirage_disc_set_disc_structure (MirageDisc *self, gint layer, gint type, const guint8 *data, gint len)
 {
     GArray *array;
@@ -1615,11 +1499,9 @@ void mirage_disc_set_disc_structure (MirageDisc *self, gint layer, gint type, co
  * @len: (out) (allow-none): location to store data length, or %NULL
  * @error: (out) (allow-none): location to store error, or %NULL
  *
- * <para>
  * Retrieves disc structure of type @type from layer @layer. The pointer to buffer
  * containing the disc structure is stored in @data; the buffer belongs to the
  * object and therefore should not be modified.
- * </para>
  *
  * <note>
  * Disc structures are valid only for DVD and BD discs; therefore, if disc type
@@ -1628,7 +1510,7 @@ void mirage_disc_set_disc_structure (MirageDisc *self, gint layer, gint type, co
  * </note>
  *
  * Returns: %TRUE on success, %FALSE on failure
- **/
+ */
 gboolean mirage_disc_get_disc_structure (MirageDisc *self, gint layer, gint type, const guint8 **data, gint *len, GError **error)
 {
     gint key = ((layer & 0x0000FFFF) << 16) | (type & 0x0000FFFF);
@@ -1673,18 +1555,14 @@ gboolean mirage_disc_get_disc_structure (MirageDisc *self, gint layer, gint type
  * @address: (in): sector address
  * @error: (out) (allow-none): location to store error, or %NULL
  *
- * <para>
  * Retrieves sector object representing sector at sector address @address.
- * </para>
  *
- * <para>
  * This function attempts to retrieve appropriate track using
  * mirage_disc_get_track_by_address(),
  * then retrieves sector object using mirage_track_get_sector().
- * </para>
  *
  * Returns: (transfer full): sector object on success, %NULL on failure
- **/
+ */
 MirageSector *mirage_disc_get_sector (MirageDisc *self, gint address, GError **error)
 {
     MirageTrack *track;
@@ -1713,13 +1591,11 @@ MirageSector *mirage_disc_get_sector (MirageDisc *self, gint address, GError **e
  * @num_entries: (in): number of DPM entries
  * @data: (in) (array length=num_entries): buffer containing DPM data
  *
- * <para>
  * Sets the DPM data for disc. If @num_entries is not positive, DPM data is reset.
  * @start is the address at which DPM data begins, @resolution is resolution of
  * DPM data and @num_entries is the number of DPM entries in buffer pointed to by
  * @data.
- * </para>
- **/
+ */
 void mirage_disc_set_dpm_data (MirageDisc *self, gint start, gint resolution, gint num_entries, const guint32 *data)
 {
     /* Free old DPM data */
@@ -1746,12 +1622,10 @@ void mirage_disc_set_dpm_data (MirageDisc *self, gint start, gint resolution, gi
  * @num_entries: (out) (allow-none): location to store number of DPM entries, or %NULL
  * @data: (out) (allow-none) (array length=num_entries): location to store pointer to buffer containing DPM data, or %NULL
  *
- * <para>
  * Retrieves DPM data for disc. The pointer to buffer containing DPM data entries
  * is stored in @data; the buffer belongs to object and therefore should not be
  * modified.
- * </para>
- **/
+ */
 void mirage_disc_get_dpm_data (MirageDisc *self, gint *start, gint *resolution, gint *num_entries, const guint32 **data)
 {
     if (start) {
@@ -1776,15 +1650,13 @@ void mirage_disc_get_dpm_data (MirageDisc *self, gint *start, gint *resolution, 
  * @density: (out) (allow-none): location to store sector density, or %NULL
  * @error: (out) (allow-none): location to store error, or %NULL
  *
- * <para>
  * Retrieves DPM data for sector at address @address. Two pieces of data can be
  * retrieved; first one is sector angle, expressed in rotations (i.e. 0.25 would
  * mean 1/4 of rotation or 90˚ and 1.0 means one full rotation or 360˚), and the
  * other one is sector density at given address, expressed in degrees per sector).
- * </para>
  *
  * Returns: %TRUE on success, %FALSE on failure
- **/
+ */
 gboolean mirage_disc_get_dpm_data_for_sector (MirageDisc *self, gint address, gdouble *angle, gdouble *density, GError **error)
 {
     gint rel_address;
@@ -1935,9 +1807,7 @@ static void mirage_disc_class_init (MirageDiscClass *klass)
      * MirageDisc::layout-changed:
      * @disc: a #MirageDisc
      *
-     * <para>
      * Emitted when a layout of #MirageDisc changed in a way that causes a bottom-up change.
-     * </para>
      */
     klass->signal_layout_changed = g_signal_new("layout-changed", G_OBJECT_CLASS_TYPE(klass), G_SIGNAL_RUN_LAST, 0, NULL, NULL, g_cclosure_marshal_VOID__VOID, G_TYPE_NONE, 0, NULL);
 }

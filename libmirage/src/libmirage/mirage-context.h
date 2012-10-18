@@ -32,17 +32,15 @@ G_BEGIN_DECLS
  * MiragePasswordFunction:
  * @user_data: (in) (closure): user data passed to password function
  *
- * <para>
  * Password function type used to obtain password for encrypted
  * images. A password function needs to be set to #MirageContext via
  * mirage_context_set_password_function(), along with @user_data that
  * the password function should be called with.
- * </para>
  *
  * Returns: password string on success, otherwise %NULL. Password string should
  * be a copy, allocated via function such as g_strdup(), and will be freed after
  * it is used.
- **/
+ */
 typedef gchar *(*MiragePasswordFunction) (gpointer user_data);
 
 
@@ -63,10 +61,10 @@ typedef struct _MirageContextPrivate  MirageContextPrivate;
 /**
  * MirageContext:
  *
- * <para>
- * Contains private data only, and should be accessed using the functions below.
- * </para>
- **/
+ * All the fields in the <structname>MirageContext</structname>
+ * structure are private to the #MirageContext implementation and
+ * should never be accessed directly.
+ */
 struct _MirageContext
 {
     GObject parent_instance;
@@ -75,6 +73,13 @@ struct _MirageContext
     MirageContextPrivate *priv;
 };
 
+/**
+ * MirageContextClass:
+ *
+ * @parent_class: the parent class
+ *
+ * The class structure for the <structname>MirageContext</structname> type.
+ */
 struct _MirageContextClass
 {
     GObjectClass parent_class;

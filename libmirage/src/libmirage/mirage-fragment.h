@@ -28,11 +28,9 @@ G_BEGIN_DECLS
  * @id: fragment ID
  * @name: fragment name
  *
- * <para>
  * A structure containing fragment information. It can be obtained with call to
  * mirage_fragment_get_info().
- * </para>
- **/
+ */
 typedef struct _MirageFragmentInfo MirageFragmentInfo;
 struct _MirageFragmentInfo
 {
@@ -58,10 +56,10 @@ typedef struct _MirageFragmentPrivate  MirageFragmentPrivate;
 /**
  * MirageFragment:
  *
- * <para>
- * Contains private data only, and should be accessed using the functions below.
- * </para>
- **/
+ * All the fields in the <structname>MirageFragment</structname>
+ * structure are private to the #MirageFragment implementation and
+ * should never be accessed directly.
+ */
 struct _MirageFragment
 {
     MirageObject parent_instance;
@@ -70,6 +68,18 @@ struct _MirageFragment
     MirageFragmentPrivate *priv;
 };
 
+/**
+ * MirageFragmentClass:
+ *
+ * @parent_class: the parent class
+ * @can_handle_data_format: checks whether fragment can handle data stored in stream
+ * @use_the_rest_of_file: uses the rest of data file
+ * @read_main_data: reads main channel data for sector at specified address
+ * @read_subchannel_data: reads subchannel data for sector at specified address
+ * @signal_layout_changed: "layout-changed" signal identifier
+ *
+ * The class structure for the <structname>MirageFragment</structname> type.
+ */
 struct _MirageFragmentClass
 {
     MirageObjectClass parent_class;

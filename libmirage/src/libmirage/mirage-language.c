@@ -24,11 +24,9 @@
  * @see_also: #MirageSession, #MirageTrack, #MirageCdTextCoder
  * @include: mirage-language.h
  *
- * <para>
  * #MirageLanguage object represents a CD-TEXT language for session or
  * track. It is a container object that stores language code and CD-TEXT
  * pack data for different pack types.
- * </para>
  */
 
 #ifdef HAVE_CONFIG_H
@@ -104,10 +102,8 @@ static MirageLanguage_Pack *mirage_language_get_pack_by_type (MirageLanguage *se
  * @self: a #MirageLanguage
  * @code: (in): language code
  *
- * <para>
  * Sets language's language code.
- * </para>
- **/
+ */
 void mirage_language_set_code (MirageLanguage *self, gint code)
 {
     self->priv->code = code;
@@ -117,12 +113,10 @@ void mirage_language_set_code (MirageLanguage *self, gint code)
  * mirage_language_get_code:
  * @self: a #MirageLanguage
  *
- * <para>
  * Retrieves language's language code.
- * </para>
  *
  * Returns: language code
- **/
+ */
 gint mirage_language_get_code (MirageLanguage *self)
 {
     return self->priv->code;
@@ -137,13 +131,11 @@ gint mirage_language_get_code (MirageLanguage *self)
  * @length: (in): length of pack data
  * @error: (out) (allow-none): location to store error, or %NULL
  *
- * <para>
  * Sets pack data of type @pack_type to data in @pack_data. @length is length of
  * data in @pack_data. @pack_type must be one of #MirageLanguagePackTypes.
- * </para>
  *
  * Returns: %TRUE on success, %FALSE on failure
- **/
+ */
 gboolean mirage_language_set_pack_data (MirageLanguage *self, MirageLanguagePackTypes pack_type, const gchar *pack_data, gint length, GError **error)
 {
     MirageLanguage_Pack *pack = mirage_language_get_pack_by_type(self, pack_type);
@@ -176,14 +168,12 @@ gboolean mirage_language_set_pack_data (MirageLanguage *self, MirageLanguagePack
  * @length: (out) (allow-none): location to store length of pack data, or %NULL
  * @error: (out) (allow-none): location to store error, or %NULL
  *
- * <para>
  * Retrieves pack data of type @pack_type. A pointer to buffer containing pack
  * data is stored in @pack data; the buffer belongs to the object and therefore
  * should not be modified.
- * </para>
  *
  * Returns: %TRUE on success, %FALSE on failure
- **/
+ */
 gboolean mirage_language_get_pack_data (MirageLanguage *self, MirageLanguagePackTypes pack_type, const gchar **pack_data, gint *length, GError **error)
 {
     MirageLanguage_Pack *pack = mirage_language_get_pack_by_type(self, pack_type);

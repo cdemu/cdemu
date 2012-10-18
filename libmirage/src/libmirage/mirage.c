@@ -24,20 +24,16 @@
  * @see_also: #MirageContext
  * @include: mirage.h
  *
- * <para>
  * These functions represent the core of the libMirage API. Before the
  * library can be used, it must be initialized using mirage_initialize(),
  * which loads the plugins containing image parsers, data fragments and
  * file filters. When library is no longer needed, it can be shut down
  * using mirage_shutdown(), which unloads the plugins.
- * </para>
  *
- * <para>
  * The core functions listed in this section enable enumeration of
  * supported parsers, data fragments and file filters. Most of the core
  * functionality of libMirage, such as loading images, is encapsulated
  * in #MirageContext object, which can be obtained using GLib's g_object_new().
- * </para>
  */
 
 #ifdef HAVE_CONFIG_H
@@ -130,13 +126,11 @@ static void initialize_file_filters_list ()
  * mirage_initialize:
  * @error: (out) (allow-none): location to store error, or %NULL
  *
- * <para>
  * Initializes libMirage library. It should be called before any other of
  * libMirage functions.
- * </para>
  *
  * Returns: %TRUE on success, %FALSE on failure
- **/
+ */
 gboolean mirage_initialize (GError **error)
 {
     const gchar *plugin_file;
@@ -198,13 +192,11 @@ gboolean mirage_initialize (GError **error)
  * mirage_shutdown:
  * @error: (out) (allow-none): location to store error, or %NULL
  *
- * <para>
  * Shuts down libMirage library. It should be called when libMirage is no longer
  * needed.
- * </para>
  *
  * Returns: %TRUE on success, %FALSE on failure
- **/
+ */
 gboolean mirage_shutdown (GError **error)
 {
     /* Make sure libMirage is initialized */
@@ -231,12 +223,10 @@ gboolean mirage_shutdown (GError **error)
  * @num_parsers: (out): number of supported parsers
  * @error: (out) (allow-none): location to store error, or %NULL
  *
- * <para>
  * Retrieves #GType values for supported parsers.
- * </para>
  *
  * Returns: %TRUE on success, %FALSE on failure
- **/
+ */
 gboolean mirage_get_parsers_type (GType **types, gint *num_parsers, GError **error)
 {
     /* Make sure libMirage is initialized */
@@ -257,12 +247,10 @@ gboolean mirage_get_parsers_type (GType **types, gint *num_parsers, GError **err
  * @num_parsers: (out): number of supported parsers
  * @error: (out) (allow-none): location to store error, or %NULL
  *
- * <para>
  * Retrieves information structures for supported parsers.
- * </para>
  *
  * Returns: %TRUE on success, %FALSE on failure
- **/
+ */
 gboolean mirage_get_parsers_info (const MirageParserInfo **info, gint *num_parsers, GError **error)
 {
     /* Make sure libMirage is initialized */
@@ -283,16 +271,12 @@ gboolean mirage_get_parsers_info (const MirageParserInfo **info, gint *num_parse
  * @user_data: (in) (closure): data to be passed to callback function
  * @error: (out) (allow-none): location to store error, or %NULL
  *
- * <para>
  * Iterates over list of supported parsers, calling @func for each parser.
- * </para>
  *
- * <para>
  * If @func returns %FALSE, the function immediately returns %FALSE.
- * </para>
  *
  * Returns: %TRUE on success, %FALSE on failure
- **/
+ */
 gboolean mirage_enumerate_parsers (MirageEnumParserInfoCallback func, gpointer user_data, GError **error)
 {
     /* Make sure libMirage is initialized */
@@ -319,12 +303,10 @@ gboolean mirage_enumerate_parsers (MirageEnumParserInfoCallback func, gpointer u
  * @num_fragments: (out): number of supported fragments
  * @error: (out) (allow-none): location to store error, or %NULL
  *
- * <para>
  * Retrieves #GType values for supported fragments.
- * </para>
  *
  * Returns: %TRUE on success, %FALSE on failure
- **/
+ */
 gboolean mirage_get_fragments_type (GType **types, gint *num_fragments, GError **error)
 {
     /* Make sure libMirage is initialized */
@@ -345,12 +327,10 @@ gboolean mirage_get_fragments_type (GType **types, gint *num_fragments, GError *
  * @num_fragments: (out): number of supported fragments
  * @error: (out) (allow-none): location to store error, or %NULL
  *
- * <para>
  * Retrieves information structures for supported fragments.
- * </para>
  *
  * Returns: %TRUE on success, %FALSE on failure
- **/
+ */
 gboolean mirage_get_fragments_info (const MirageFragmentInfo **info, gint *num_fragments, GError **error)
 {
     /* Make sure libMirage is initialized */
@@ -371,16 +351,12 @@ gboolean mirage_get_fragments_info (const MirageFragmentInfo **info, gint *num_f
  * @user_data: (in) (closure): data to be passed to callback function
  * @error: (out) (allow-none): location to store error, or %NULL
  *
- * <para>
  * Iterates over list of supported fragments, calling @func for each fragment.
- * </para>
  *
- * <para>
  * If @func returns %FALSE, the function immediately returns %FALSE.
- * </para>
  *
  * Returns: %TRUE on success, %FALSE on failure
- **/
+ */
 gboolean mirage_enumerate_fragments (MirageEnumFragmentInfoCallback func, gpointer user_data, GError **error)
 {
     /* Make sure libMirage is initialized */
@@ -407,12 +383,10 @@ gboolean mirage_enumerate_fragments (MirageEnumFragmentInfoCallback func, gpoint
  * @num_file_filters: (out): number of supported file filters
  * @error: (out) (allow-none): location to store error, or %NULL
  *
- * <para>
  * Retrieves #GType values for supported file filters.
- * </para>
  *
  * Returns: %TRUE on success, %FALSE on failure
- **/
+ */
 gboolean mirage_get_file_filters_type (GType **types, gint *num_file_filters, GError **error)
 {
     /* Make sure libMirage is initialized */
@@ -433,12 +407,10 @@ gboolean mirage_get_file_filters_type (GType **types, gint *num_file_filters, GE
  * @num_file_filters: (out): number of supported file filters
  * @error: (out) (allow-none): location to store error, or %NULL
  *
- * <para>
  * Retrieves information structures for supported file filters.
- * </para>
  *
  * Returns: %TRUE on success, %FALSE on failure
- **/
+ */
 gboolean mirage_get_file_filters_info (const MirageFileFilterInfo **info, gint *num_file_filters, GError **error)
 {
     /* Make sure libMirage is initialized */
@@ -459,16 +431,12 @@ gboolean mirage_get_file_filters_info (const MirageFileFilterInfo **info, gint *
  * @user_data: (in) (closure): data to be passed to callback function
  * @error: (out) (allow-none): location to store error, or %NULL
  *
- * <para>
  * Iterates over list of supported file filters, calling @func for each fragment.
- * </para>
  *
- * <para>
  * If @func returns %FALSE, the function immediately returns %FALSE.
- * </para>
  *
  * Returns: %TRUE on success, %FALSE on failure
- **/
+ */
 gboolean mirage_enumerate_file_filters (MirageEnumFileFilterInfoCallback func, gpointer user_data, GError **error)
 {
     /* Make sure libMirage is initialized */
@@ -495,15 +463,13 @@ gboolean mirage_enumerate_file_filters (MirageEnumFileFilterInfoCallback func, g
  * @num_masks: (out): location to store number of elements in masks array
  * @error: (out) (allow-none): location to store error, or %NULL
  *
- * <para>
  * Retrieves the pointer to array of supported debug masks and stores it in @masks.
  * The array consists of one or more structures of type #MirageDebugMask. The
  * number of elements in the array is stored in @num_masks. The array belongs to
  * libMirage and should not be altered or freed.
- * </para>
  *
  * Returns: %TRUE on success, %FALSE on failure
- **/
+ */
 gboolean mirage_get_supported_debug_masks (const MirageDebugMask **masks, gint *num_masks, GError **error)
 {
     /* Make sure libMirage is initialized */

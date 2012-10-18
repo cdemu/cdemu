@@ -23,16 +23,12 @@
  * @short_description: Error reporting facilities.
  * @include: mirage-error.h
  *
- * <para>
  * libMirage uses GLib's #GError system for reporting errors. Many
  * functions provided by libMirage's objects take an optional @error
  * parameter. If @error is not %NULL, in case that such function should
  * fail, a #GError error is set into it using g_set_error().
- * </para>
- * <para>
  * Unless coming from underlying GLib's systems, the returned error
  * code is one of #MirageErrorCodes.
- * </para>
  */
 
 #ifdef HAVE_CONFIG_H
@@ -44,12 +40,10 @@
 /**
  * mirage_error_quark:
  *
- * <para>
  * Registers an error quark for libMirage if necessary.
- * </para>
  *
  * Return value: The error quark used for libMirage errors.
- **/
+ */
 GQuark mirage_error_quark (void)
 {
     static GQuark q = 0;

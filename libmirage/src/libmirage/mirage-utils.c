@@ -23,11 +23,9 @@
  * @short_description: Various helper and utility functions.
  * @include: mirage-utils.h
  *
- * <para>
  * These functions cover various functionality. They are exported
  * because, while primarily designed to be used within libMirage, they
  * could also prove useful to other applications.
- * </para>
  */
 
 #ifdef HAVE_CONFIG_H
@@ -43,29 +41,23 @@
 /**
  * mirage_pattern_sync:
  *
- * <para>
  * A 12-byte sync pattern, found at the beginning of non-audio sectors.
- * </para>
- **/
+ */
 const guint8 mirage_pattern_sync[12] = { 0x00, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0x00 };
 
 /**
  * mirage_pattern_cd001:
  *
- * <para>
  * A 8-byte CD001 pattern, found at 16th sector of ISO data tracks.
- * </para>
- **/
+ */
 const guint8 mirage_pattern_cd001[8] = { 0x01, 0x43, 0x44, 0x30, 0x30, 0x31, 0x01, 0x00 };
 
 
 /**
  * mirage_pattern_bea01:
  *
- * <para>
  * A 8-byte BEA01 pattern, found at 16th sector of UDF data tracks.
- * </para>
- **/
+ */
 const guint8 mirage_pattern_bea01[8] = { 0x00, 0x42, 0x45, 0x41, 0x30, 0x31, 0x01, 0x00 };
 
 
@@ -135,37 +127,29 @@ static gchar *find_data_file (const gchar *path, const gchar *filename)
  * @filename: (in): declared filename
  * @path: (in) (allow-none): path where to look for file (can be a filename), or %NULL
  *
- * <para>
  * Attempts to find a file with filename @filename and path @path. @filename can
  * be file's basename or an absolute path. @path can be either directory path (in
  * this case, it must end with '/') or a filename (i.e. of file descriptor).
- * </para>
- * <para>If @filename is an absolute path, its existence is first checked. If it
+ *
+ * If @filename is an absolute path, its existence is first checked. If it
  * does not exist, search (see below) is performed in @filename's dirname. If
  * still no match is found and @path is not %NULL, @path's dirname is combined
  * with @filename's basename, and the combination's existence is checked. If
  * that fails as well, search (see below) is performed in @path's dirname.
- * </para>
- * <para>
  * Searching in the directory is performed as follows. Directory is opened
  * and its content is case-insensitively compared to @filename's basename.
  * All filenames whose beginning match @filename are considered, and the
  * shortest one is returned. This way, all possible case variations
  * (i.e. file.iso, FILE.ISO, FiLe.IsO, etc.) are taken into account.
- * </para>
- * <para>
  * This function can return a filename with additional suffices, but only if
  * a file without those extra suffices does not exist. E.g., if search is
  * done for 'data.img', and only 'data.img.gz' exists, it will be returned.
  * However, if both 'data.img' and 'data.img.gz' exist, the former will be
  * returned.
- * </para>
- * <para>
  * The returned string should be freed when no longer needed.
- * </para>
  *
  * Returns: a newly allocated string containing the fullpath of file, or %NULL.
- **/
+ */
 gchar *mirage_helper_find_data_file (const gchar *filename, const gchar *path)
 {
     gchar *ret_filename = NULL;
@@ -214,12 +198,10 @@ gchar *mirage_helper_find_data_file (const gchar *filename, const gchar *path)
  * mirage_helper_get_suffix:
  * @filename: (in): filename
  *
- * <para>
  * Retrieves suffix from @filename.
- * </para>
  *
  * Returns: (transfer none): pointer to character in @filename at which the suffix starts.
- **/
+ */
 const gchar *mirage_helper_get_suffix (const gchar *filename)
 {
     return g_strrstr(filename, ".");
@@ -230,12 +212,10 @@ const gchar *mirage_helper_get_suffix (const gchar *filename)
  * @filename: (in): filename
  * @suffix: (in): suffix
  *
- * <para>
  * Checks whether file name @filename ends with suffix @suffix.
- * </para>
  *
  * Returns: %TRUE if @filename contains suffix @suffix, %FALSE if not
- **/
+ */
 gboolean mirage_helper_has_suffix (const gchar *filename, const gchar *suffix)
 {
     g_return_val_if_fail(filename != NULL, FALSE);
@@ -257,20 +237,16 @@ gboolean mirage_helper_has_suffix (const gchar *filename, const gchar *suffix)
  * @str1: (in): first string
  * @str2: (in): second string
  *
- * <para>
  * Replacement function for g_strcasecmp/strcasecmp, which can properly handle UTF-8.
  * Glib docs state this is only an approximation, albeit it should be a fairly good one.
- * </para>
  *
- * <para>
  * It compares the two strings @str1 and @str2, ignoring the case of the characters.
  * It returns an integer less than, equal to, or greater than zero if @str1 is found,
  * respectively, to be less than, to match, or be greater than @str2.
- * </para>
  *
  * Returns: an integer less than, equal to, or greater than zero  if  @str1
  * is  found, respectively, to  be less than, to match, or be greater than @str2.
- **/
+ */
 gint mirage_helper_strcasecmp (const gchar *str1, const gchar *str2)
 {
     gchar *s1 = g_utf8_casefold(str1, -1);
@@ -288,22 +264,18 @@ gint mirage_helper_strcasecmp (const gchar *str1, const gchar *str2)
  * @str2: (in): second string
  * @len: (in): length of string to compare
  *
- * <para>
  * Replacement function for g_strncasecmp/strncasecmp, which can properly handle UTF-8.
  * Glib docs state this is only an approximation, albeit it should be a fairly good one.
- * </para>
  *
- * <para>
  * It compares first @len characters of string @str1 and @str2, ignoring the case of
  * the characters. It returns an integer less than, equal to, or greater than zero if
  * first @len characters of @str1 is found, respectively, to be less than, to match,
  * or be greater than first @len characters of @str2.
- * </para>
  *
  * Returns: an integer less than, equal to, or greater than zero  if  first @len
  * characters of @str1 is found, respectively, to  be less than, to match, or
  * be greater than first @len characters of @str2.
- **/
+ */
 gint mirage_helper_strncasecmp (const gchar *str1, const gchar *str2, gint len)
 {
     gchar *s1 = g_utf8_casefold(str1, len);
@@ -327,18 +299,14 @@ gint mirage_helper_strncasecmp (const gchar *str1, const gchar *str2, gint len)
  * @s: (out) (allow-none): location to store seconds, or %NULL
  * @f: (out) (allow-none): location to store frames, or %NULL
  *
- * <para>
  * Converts LBA sector address stored in @lba into MSF address, storing each field
  * into @m, @s and @f, respectively.
- * </para>
  *
- * <para>
  * If @diff is %TRUE, 150 frames difference is accounted for; this should be
  * used when converting absolute addresses. When converting relative addresses
  * (or lengths), @diff should be set to %FALSE.
- * </para>
  *
- **/
+ */
 void mirage_helper_lba2msf (gint lba, gboolean diff, guint8 *m, guint8 *s, guint8 *f)
 {
     if (diff) {
@@ -356,19 +324,15 @@ void mirage_helper_lba2msf (gint lba, gboolean diff, guint8 *m, guint8 *s, guint
  * @lba: (in): LBA address
  * @diff: (in): account for the difference
  *
- * <para>
  * Converts LBA sector address stored in @lba into MSF address.
- * </para>
  *
- * <para>
  * If @diff is %TRUE, 150 frames difference is accounted for; this should be
  * used when converting absolute addresses. When converting relative addresses
  * (or lengths), @diff should be set to %FALSE.
- * </para>
  *
  * Returns: a newly-allocated string containing MSF address; it should be freed
  * with g_free() when no longer needed.
- **/
+ */
 gchar *mirage_helper_lba2msf_str (gint lba, gboolean diff)
 {
     gchar *ret;
@@ -388,18 +352,14 @@ gchar *mirage_helper_lba2msf_str (gint lba, gboolean diff)
  * @f: (in): frames
  * @diff: (in): difference
  *
- * <para>
  * Converts MSF sector address stored in @m, @s and @f into LBA address.
- * </para>
  *
- * <para>
  * If @diff is %TRUE, 150 frames difference is accounted for; this should be
  * used when converting absolute addresses. When converting relative addresses
  * (or lengths), @diff should be set to %FALSE.
- * </para>
  *
  * Returns: integer representing LBA address
- **/
+ */
 gint mirage_helper_msf2lba (guint8 m, guint8 s, guint8 f, gboolean diff)
 {
     gint lba = (m*60+s)*75 + f;
@@ -417,18 +377,14 @@ gint mirage_helper_msf2lba (guint8 m, guint8 s, guint8 f, gboolean diff)
  * @msf: (in): MSF string
  * @diff: (in): difference
  *
- * <para>
  * Converts MSF sector address stored in @msf string into LBA address.
- * </para>
  *
- * <para>
  * If @diff is %TRUE, 150 frames difference is accounted for; this should be
  * used when converting absolute addresses. When converting relative addresses
  * (or lengths), @diff should be set to %FALSE.
- * </para>
  *
  * Returns: integer representing LBA address or -1 on failure.
- **/
+ */
 gint mirage_helper_msf2lba_str (const gchar *msf, gboolean diff)
 {
     gint ret, m, s, f;
@@ -447,12 +403,10 @@ gint mirage_helper_msf2lba_str (const gchar *msf, gboolean diff)
  * mirage_helper_hex2bcd:
  * @hex: (in): hex-encoded integer
  *
- * <para>
  * Converts hex-encoded integer into bcd-encoded integer.
- * </para>
  *
  * Returns: bcd-encoded integer
- **/
+ */
 gint mirage_helper_hex2bcd (gint hex)
 {
     if (hex >= 0 && hex <= 99) {
@@ -466,12 +420,10 @@ gint mirage_helper_hex2bcd (gint hex)
  * mirage_helper_bcd2hex:
  * @bcd: (in): bcd-encoded integer
  *
- * <para>
  * Converts bcd-encoded integer into hex-encoded integer.
- * </para>
  *
  * Returns: hex-encoded integer
- **/
+ */
 gint mirage_helper_bcd2hex (gint bcd)
 {
     guint8 d1 = bcd & 0x0f;
@@ -492,12 +444,10 @@ gint mirage_helper_bcd2hex (gint bcd)
  * mirage_helper_ascii2isrc:
  * @c: (in): ASCII character
  *
- * <para>
  * Converts ASCII character @c into ISRC character.
- * </para>
  *
  * Returns: ISRC character
- **/
+ */
 guint8 mirage_helper_ascii2isrc (gchar c)
 {
     if (g_ascii_isdigit(c)) {
@@ -516,12 +466,10 @@ guint8 mirage_helper_ascii2isrc (gchar c)
  * mirage_helper_isrc2ascii:
  * @c: (in): ISRC character
  *
- * <para>
  * Converts ISRC character @c into ASCII character.
- * </para>
  *
  * Returns: ACSII character
- **/
+ */
 gchar mirage_helper_isrc2ascii (guint8 c)
 {
     if (c <= 9) {
@@ -574,12 +522,10 @@ static const guint16 q_crc_lut[256] = {
  * mirage_helper_subchannel_q_calculate_crc:
  * @data: (in) (array fixed-size=10): buffer containing Q subchannel data (10 bytes)
  *
- * <para>
  * Calculates the CRC-16 checksum of the Q subchannel data stored in @data.
- * </para>
  *
  * Returns: CRC-16 checksum of Q subchannel data
- **/
+ */
 guint16 mirage_helper_subchannel_q_calculate_crc (const guint8 *data)
 {
     guint16 crc = 0;
@@ -596,10 +542,8 @@ guint16 mirage_helper_subchannel_q_calculate_crc (const guint8 *data)
  * @buf: (out caller-allocates) (array fixed-size=7): buffer to encode MCN into (7 bytes)
  * @mcn: (in) (array fixed-size=13): MCN string (13 bytes)
  *
- * <para>
  * Encodes MCN string @mcn into buffer @buf.
- * </para>
- **/
+ */
 void mirage_helper_subchannel_q_encode_mcn (guint8 *buf, const gchar *mcn)
 {
     buf[0] = ((mcn[0] - '0') << 4)  | ((mcn[1] - '0') & 0x0F);
@@ -616,10 +560,8 @@ void mirage_helper_subchannel_q_encode_mcn (guint8 *buf, const gchar *mcn)
  * @buf: (in) (array fixed-size=7): buffer containing encoded MCN (7 bytes)
  * @mcn: (out caller-allocates) (array fixed-size=13): string to decode MCN into (13 bytes)
  *
- * <para>
  * Decodes MCN stored in @buf into string @mcn.
- * </para>
- **/
+ */
 void mirage_helper_subchannel_q_decode_mcn (const guint8 *buf, gchar *mcn)
 {
     mcn[0]  = ((buf[0] >> 4) & 0x0F) + '0';
@@ -643,10 +585,8 @@ void mirage_helper_subchannel_q_decode_mcn (const guint8 *buf, gchar *mcn)
  * @buf: (out caller-allocates) (array fixed-size=8): buffer to encode ISRC into (8 bytes)
  * @isrc: (in) (array fixed-size=12): ISRC string (12 bytes)
  *
- * <para>
  * Encodes ISRC string @isrc into buffer @buf.
- * </para>
- **/
+ */
 void mirage_helper_subchannel_q_encode_isrc (guint8 *buf, const gchar *isrc)
 {
     guint8 d;
@@ -676,10 +616,8 @@ void mirage_helper_subchannel_q_encode_isrc (guint8 *buf, const gchar *isrc)
  * @buf: (in) (array fixed-size=8): buffer containing encoded ISRC (8 bytes)
  * @isrc: (out caller-allocates) (array fixed-size=12): string to decode ISRC into (12 bytes)
  *
- * <para>
  * Decodes ISRC stored in @buf into string @isrc.
- * </para>
- **/
+ */
 void mirage_helper_subchannel_q_decode_isrc (const guint8 *buf, gchar *isrc)
 {
     guint8 d;
@@ -714,11 +652,9 @@ void mirage_helper_subchannel_q_decode_isrc (const guint8 *buf, gchar *isrc)
  * @channel12: (in) (array fixed-size=12): buffer containing subchannel data to interleave (12 bytes)
  * @channel96: (out caller-allocates) (array fixed-size=96): buffer to interleave subchannel data into (96 bytes)
  *
- * <para>
  * Interleaves subchannel data of type @subchan stored in @channel12 into
  * subchannel data stored in @subchannel96.
- * </para>
- **/
+ */
 void mirage_helper_subchannel_interleave (gint subchan, const guint8 *channel12, guint8 *channel96)
 {
     guint8 *ptr = channel96;
@@ -739,11 +675,9 @@ void mirage_helper_subchannel_interleave (gint subchan, const guint8 *channel12,
  * @channel96: (in) (array fixed-size=96): buffer containing subchannel data to deinterleave (96 bytes)
  * @channel12: (out caller-allocates) (array fixed-size=12): buffer to deinterleave subchannel data into (12 bytes)
  *
- * <para>
  * Deinterleaves subchannel data of type @subchan from subchannel data stored in
  * @channel96 and writes the resulting subhcannel data into @subchannel12.
- * </para>
- **/
+ */
 void mirage_helper_subchannel_deinterleave (gint subchan, const guint8 *channel96, guint8 *channel12)
 {
     for (gint i = 0; i < 12; i++) {
@@ -861,36 +795,32 @@ static const guint32 edc_lut[256] = {
  * @size: (in): size of data in @src
  * @dest: (out caller-allocates) (array fixed-size=4): buffer to write calculated EDC data into (4 bytes)
  *
- * <para>
  * Calculates EDC (error detection code) for data in @src of length @size and
  * writes the result into @dest.
- * </para>
  *
- * <para>
  * To calculate EDC for different types of sectors and store it into sector data, use:
  * <itemizedlist>
- *  <listitem>
- *    Mode 1 sector:
- *    <para><code>
- *    mirage_helper_sector_edc_ecc_compute_edc_block(sector_buffer+0x00, 0x810, sector_buffer+0x810);
- *    </code></para>
- *  </listitem>
- *  <listitem>
- *    Mode 2 Form 1 sector:
- *    <para><code>
- *    mirage_helper_sector_edc_ecc_compute_edc_block(sector_buffer+0x10, 0x808, sector_buffer+0x818);
- *    </code></para>
- *  </listitem>
- *  <listitem>
- *    Mode 2 Form 2 sector:
- *    <para><code>
- *    mirage_helper_sector_edc_ecc_compute_edc_block(sector_buffer+0x10, 0x91C, sector_buffer+0x92C);
- *    </code></para>
- *  </listitem>
+ * <listitem>
+ * Mode 1 sector:
+ * <programlisting>
+ * mirage_helper_sector_edc_ecc_compute_edc_block(sector_buffer+0x00, 0x810, sector_buffer+0x810);
+ * </programlisting>
+ * </listitem>
+ * <listitem>
+ * Mode 2 Form 1 sector:
+ * <programlisting>
+ * mirage_helper_sector_edc_ecc_compute_edc_block(sector_buffer+0x10, 0x808, sector_buffer+0x818);
+ * </programlisting>
+ * </listitem>
+ * <listitem>
+ * Mode 2 Form 2 sector:
+ * <programlisting>
+ * mirage_helper_sector_edc_ecc_compute_edc_block(sector_buffer+0x10, 0x91C, sector_buffer+0x92C);
+ * </programlisting>
+ * </listitem>
  * </itemizedlist>
  * (This is assuming all other sector data is already stored in sector_buffer and that sector_buffer is 2532 bytes long)
- * </para>
- **/
+ */
 void mirage_helper_sector_edc_ecc_compute_edc_block (const guint8 *src, guint16 size, guint8 *dest)
 {
     guint32 edc = 0;
@@ -914,34 +844,30 @@ void mirage_helper_sector_edc_ecc_compute_edc_block (const guint8 *src, guint16 
  * @minor_inc: (in): minor increment
  * @dest: (out caller-allocates): buffer to write calculated ECC data into
  *
- * <para>
  * Calculates ECC (error correction code) for data in @src and writes the result
  * into @dest. The code assumes 2352 byte sectors. It can calculate both P and Q
  * layer of ECC data, depending on @major_count, @minor_count, @major_mult and
  * minor_inc.
- * </para>
  *
- * <para>
  * To calculate ECC (first P, then Q layer) for different types of sectors and store it into sector data, use:
  * <itemizedlist>
- *  <listitem>
- *    Mode 1 sector:
- *    <para><code>
- *    mirage_helper_sector_edc_ecc_compute_ecc_block(sector_buffer+0xC, 86, 24, 2, 86, sector_buffer+0x81C);
- *    mirage_helper_sector_edc_ecc_compute_ecc_block(sector_buffer+0xC, 52, 43, 86, 88, sector_buffer+0x8C8);
- *    </code></para>
- *  </listitem>
- *  <listitem>
- *    Mode 2 Form 1 sector:
- *    <para><code>
- *    mirage_helper_sector_edc_ecc_compute_ecc_block(sector_buffer+0xC, 86, 24, 2, 86, sector_buffer+0x81C);
- *    mirage_helper_sector_edc_ecc_compute_ecc_block(sector_buffer+0xC, 52, 43, 86, 88, sector_buffer+0x8C8);
- *    </code></para>
- *  </listitem>
+ * <listitem>
+ * Mode 1 sector:
+ * <programlisting>
+ * mirage_helper_sector_edc_ecc_compute_ecc_block(sector_buffer+0xC, 86, 24, 2, 86, sector_buffer+0x81C);
+ * mirage_helper_sector_edc_ecc_compute_ecc_block(sector_buffer+0xC, 52, 43, 86, 88, sector_buffer+0x8C8);
+ * </programlisting>
+ * </listitem>
+ * <listitem>
+ * Mode 2 Form 1 sector:
+ * <programlisting>
+ * mirage_helper_sector_edc_ecc_compute_ecc_block(sector_buffer+0xC, 86, 24, 2, 86, sector_buffer+0x81C); \n
+ * mirage_helper_sector_edc_ecc_compute_ecc_block(sector_buffer+0xC, 52, 43, 86, 88, sector_buffer+0x8C8);
+ * </programlisting>
+ * </listitem>
  * </itemizedlist>
  * (This is assuming all other sector data, including EDC, is already stored in sector_buffer and that sector_buffer is 2532 bytes long)
- * </para>
- **/
+ */
 void mirage_helper_sector_edc_ecc_compute_ecc_block (const guint8 *src, guint32 major_count, guint32 minor_count, guint32 major_mult, guint32 minor_inc, guint8 *dest)
 {
     guint32 size = major_count * minor_count;
@@ -973,18 +899,14 @@ void mirage_helper_sector_edc_ecc_compute_ecc_block (const guint8 *src, guint32 
  * mirage_helper_determine_sector_type:
  * @buf: (in): buffer containing at least first 16 bytes of sector's data
  *
- * <para>
  * Determines sector type from its data, based on first 16 bytes, which
  * correspond to sync pattern and header.
- * </para>
  *
- * <para>
  * This function is intened to be used in image parsers, for determining
  * track mode in cases when full (2352-byte) sector data is available.
- * </para>
  *
  * Returns: sector type (one of %MirageTrackModes)
- **/
+ */
 MirageTrackModes mirage_helper_determine_sector_type (const guint8 *buf)
 {
     if (!memcmp(buf, mirage_pattern_sync, sizeof(mirage_pattern_sync))) {
@@ -1019,15 +941,13 @@ static const gchar utf16le[] = "utf-16le";
  * mirage_helper_encoding_from_bom:
  * @buffer: (in) (transfer none) (array fixed-size=4): a 4-byte buffer containing BOM
  *
- * <para>
  * Tries to decode BOM provided in @buffer, and based on the result
  * returns the following encodings: UTF-32BE, UTF32-LE, UTF-16LE, UTF-16BE
  * or UTF-8 (if BOM is not valid).
- * </para>
  *
  * Returns: (transfer none): the name of encoding, or %NULL if UTF-8 is
  * assumed. The string is statically stored and should not be modified.
- **/
+ */
 const gchar *mirage_helper_encoding_from_bom (const guint8 *buffer)
 {
     /* Identify the encoding */

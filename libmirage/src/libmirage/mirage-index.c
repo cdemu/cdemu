@@ -24,11 +24,9 @@
  * @see_also: #MirageTrack
  * @include: mirage-index.h
  *
- * <para>
  * #MirageIndex object represents an index within a track. It is a
  * container object that stores the index number and corresponding
  * address.
- * </para>
  */
 
 #ifdef HAVE_CONFIG_H
@@ -58,10 +56,8 @@ struct _MirageIndexPrivate
  * @self: a #MirageIndex
  * @number: (in): index number
  *
- * <para>
  * Sets index' index number.
- * </para>
- **/
+ */
 void mirage_index_set_number (MirageIndex *self, gint number)
 {
     /* Set number */
@@ -72,12 +68,10 @@ void mirage_index_set_number (MirageIndex *self, gint number)
  * mirage_index_get_number:
  * @self: a #MirageIndex
  *
- * <para>
  * Retrieves index' index number.
- * </para>
  *
  * Returns: index number
- **/
+ */
 gint mirage_index_get_number (MirageIndex *self)
 {
     /* Return number */
@@ -90,10 +84,8 @@ gint mirage_index_get_number (MirageIndex *self)
  * @self: a #MirageIndex
  * @address: (in): address
  *
- * <para>
  * Sets index' start address. The @address is given in sectors.
- * </para>
- **/
+ */
 void mirage_index_set_address (MirageIndex *self, gint address)
 {
     /* Set address */
@@ -104,12 +96,10 @@ void mirage_index_set_address (MirageIndex *self, gint address)
  * mirage_index_get_address:
  * @self: a #MirageIndex
  *
- * <para>
  * Retrieves index' start adddress. The @address is given in sectors.
- * </para>
  *
  * Returns: address
- **/
+ */
 gint mirage_index_get_address (MirageIndex *self)
 {
     /* Return address */

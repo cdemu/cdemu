@@ -33,18 +33,14 @@ G_BEGIN_DECLS
  * @description: image file description
  * @mime_type: image file MIME type
  *
- * <para>
  * A structure containing parser information. It can be obtained with call to
  * mirage_parser_get_info().
- * </para>
  *
- * <para>
  * @description is a string contraining image file description (e.g. "CloneCD
  * images") and @mime_type is a string representing the image file MIME type
  * (e.g. "application/libmirage-mds"). Together, this information is intended
  * to be used for building file type filters in GUI applications.
- * </para>
- **/
+ */
 typedef struct _MirageParserInfo MirageParserInfo;
 struct _MirageParserInfo
 {
@@ -72,10 +68,10 @@ typedef struct _MirageParserPrivate    MirageParserPrivate;
 /**
  * MirageParser:
  *
- * <para>
- * Contains private data only, and should be accessed using the functions below.
- * </para>
- **/
+ * All the fields in the <structname>MirageParser</structname>
+ * structure are private to the #MirageParser implementation and
+ * should never be accessed directly.
+ */
 struct _MirageParser
 {
     MirageObject parent_instance;
@@ -84,6 +80,14 @@ struct _MirageParser
     MirageParserPrivate *priv;
 } ;
 
+/**
+ * MirageParserClass:
+ *
+ * @parent_class: the parent class
+ * @load_image: loads image
+ *
+ * The class structure for the <structname>MirageParser</structname> type.
+ */
 struct _MirageParserClass
 {
     MirageObjectClass parent_class;

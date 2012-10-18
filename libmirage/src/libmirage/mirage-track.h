@@ -32,10 +32,8 @@ G_BEGIN_DECLS
 /**
  * MIRAGE_ISRC_SIZE:
  *
- * <para>
  * Length of ISRC string.
- * </para>
- **/
+ */
 #define MIRAGE_ISRC_SIZE 12
 
 /**
@@ -44,10 +42,8 @@ G_BEGIN_DECLS
  * @MIRAGE_TRACK_FLAG_COPYPERMITTED: copy permitted
  * @MIRAGE_TRACK_FLAG_PREEMPHASIS: pre-emphasis
  *
- * <para>
  * Track flags.
- * </para>
- **/
+ */
 typedef enum _MirageTrackFlags
 {
     MIRAGE_TRACK_FLAG_FOURCHANNEL   = 0x01,
@@ -65,10 +61,8 @@ typedef enum _MirageTrackFlags
  * @MIRAGE_MODE_MODE2_FORM2: Mode 2 Form 2
  * @MIRAGE_MODE_MODE2_MIXED: Mode 2 Mixed
  *
- * <para>
  * Track modes.
- * </para>
- **/
+ */
 typedef enum _MirageTrackModes
 {
     MIRAGE_MODE_MODE0       = 0x00,
@@ -85,10 +79,8 @@ typedef enum _MirageTrackModes
  * @MIRAGE_TRACK_LEADIN: Lead-in track
  * @MIRAGE_TRACK_LEADOUT: Lead-out track
  *
- * <para>
  * Track constants.
- * </para>
- **/
+ */
 typedef enum _MirageTrackConstants
 {
     MIRAGE_TRACK_LEADIN  = 0x00,
@@ -101,14 +93,12 @@ typedef enum _MirageTrackConstants
  * @index: (in): index
  * @user_data: (in) (closure): user data passed to enumeration function
  *
- * <para>
  * Callback function type used with mirage_track_enumerate_indices().
  * A pointer to an index object is stored in @index, without incrementing
  * its reference counter. @user_data is user data passed to enumeration function.
- * </para>
  *
  * Returns: %TRUE on success, otherwise %FALSE
- **/
+ */
 typedef gboolean (*MirageEnumIndexCallback) (MirageIndex *index, gpointer user_data);
 
 /**
@@ -116,14 +106,12 @@ typedef gboolean (*MirageEnumIndexCallback) (MirageIndex *index, gpointer user_d
  * @fragment: (in): fragment
  * @user_data: (in) (closure): user data passed to enumeration function
  *
- * <para>
  * Callback function type used with mirage_track_enumerate_fragments().
  * A pointer to a fragment object is stored in @fragment, without incrementing
  * its reference counter. @user_data is user data passed to enumeration function.
- * </para>
  *
  * Returns: %TRUE on success, otherwise %FALSE
- **/
+ */
 typedef gboolean (*MirageEnumFragmentCallback) (MirageFragment *fragment, gpointer user_data);
 
 
@@ -144,10 +132,10 @@ typedef struct _MirageTrackPrivate MirageTrackPrivate;
 /**
  * MirageTrack:
  *
- * <para>
- * Contains private data only, and should be accessed using the functions below.
- * </para>
- **/
+ * All the fields in the <structname>MirageTrack</structname>
+ * structure are private to the #MirageTrack implementation and
+ * should never be accessed directly.
+ */
 struct _MirageTrack
 {
     MirageObject parent_instance;
@@ -156,6 +144,14 @@ struct _MirageTrack
     MirageTrackPrivate *priv;
 };
 
+/**
+ * MirageTrackClass:
+ *
+ * @parent_class: the parent class
+ * @signal_layout_changed: "layout-changed" signal identifier
+ *
+ * The class structure for the <structname>MirageTrack</structname> type.
+ */
 struct _MirageTrackClass
 {
     MirageObjectClass parent_class;

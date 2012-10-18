@@ -24,21 +24,17 @@
  * @see_also: #MirageDisc, #MirageContext
  * @include: mirage-parser.h
  *
- * <para>
  * #MirageParser object is a base object for image parser implementations.
  * In addition to providing function for image loading and obtaining
  * parser information, it also provides some helper functions that can
  * be used in parser implementations.
- * </para>
  *
- * <para>
  * #MirageParser provides a single virtual function - mirage_parser_load_image().
  * This function must be implemented by image parsers, which derive from
  * #MirageParser object. The function must first check if given file(s)
  * are supported by the given parser, and then the actual loading is
  * performed. The result is a #MirageDisc object, which represents the
  * disc stored in the image file(s).
-</para>
  */
 
 #ifdef HAVE_CONFIG_H
@@ -72,11 +68,9 @@ struct _MirageParserPrivate
  * @description: (in): image file description
  * @mime_type: (in): image file MIME type
  *
- * <para>
  * Generates parser information from the input fields. It is intended as a function
  * for creating parser information in parser implementations.
- * </para>
- **/
+ */
 void mirage_parser_generate_info (MirageParser *self, const gchar *id, const gchar *name, const gchar *description, const gchar *mime_type)
 {
     g_snprintf(self->priv->info.id, sizeof(self->priv->info.id), "%s", id);
@@ -90,13 +84,11 @@ void mirage_parser_generate_info (MirageParser *self, const gchar *id, const gch
  * mirage_parser_get_info:
  * @self: a #MirageParser
  *
- * <para>
  * Retrieves parser information.
- * </para>
  *
  * Returns: (transfer none): a pointer to parser information structure.  The
  * structure belongs to object and should not be modified.
- **/
+ */
 const MirageParserInfo *mirage_parser_get_info (MirageParser *self)
 {
     return &self->priv->info;
@@ -109,12 +101,10 @@ const MirageParserInfo *mirage_parser_get_info (MirageParser *self)
  * @streams: (in) (array zero-terminated=1): %NULL-terminated array of data streams
  * @error: (out) (allow-none): location to store error, or %NULL
  *
- * <para>
  * Loads the image stored in @streams.
- * </para>
  *
  * Returns: (transfer full): a #MirageDisc object representing image on success, %NULL on failure
- **/
+ */
 MirageDisc *mirage_parser_load_image (MirageParser *self, GInputStream **streams, GError **error)
 {
     return MIRAGE_PARSER_GET_CLASS(self)->load_image(self, streams, error);
@@ -126,20 +116,16 @@ MirageDisc *mirage_parser_load_image (MirageParser *self, GInputStream **streams
  * @self: a #MirageParser
  * @disc: (in): disc object
  *
- * <para>
  * Attempts to guess medium type by looking at the length of the disc layout.
  * Currently, it supports identification of CD-ROM media, which are assumed to
  * have layout length of 90 minutes or less.
- * </para>
  *
- * <para>
  * Note that this function does not set the medium type to disc object; you still
  * need to do it via mirage_disc_set_medium_type(). It is meant to be used in
  * simple parsers whose image files don't provide medium type information.
- * </para>
  *
  * Returns: a value from #MirageMediumTypes, according to the guessed medium type.
- **/
+ */
 gint mirage_parser_guess_medium_type (MirageParser *self, MirageDisc *disc)
 {
     gint length = mirage_disc_layout_get_length(disc);
@@ -159,22 +145,16 @@ gint mirage_parser_guess_medium_type (MirageParser *self, MirageDisc *disc)
  * @self: a #MirageParser
  * @disc: (in): disc object
  *
- * <para>
  * A helper function, intended to be used in simpler parsers that don't get proper
  * pregap information from the image file.
- * </para>
  *
- * <para>
  * First, it sets disc layout start to -150. Then, it adds 150-sector pregap to
  * first track of each session found on the layout; for this, a NULL fragment is
  * used. If track already has a pregap, then the pregaps are stacked.
- * </para>
  *
- * <para>
  * Note that the function works only on discs which have medium type set to
  * CD-ROM. On other discs, it does nothing.
- * </para>
- **/
+ */
 void mirage_parser_add_redbook_pregap (MirageParser *self, MirageDisc *disc)
 {
     gint num_sessions;
@@ -241,17 +221,15 @@ void mirage_parser_add_redbook_pregap (MirageParser *self, MirageDisc *disc)
  * @stream: (in) (transfer full): a #GInputStream
  * @error: (out) (allow-none): location to store error, or %NULL
  *
- * <para>
  * Constructs a filter chain for reading text files on top of provided
  * @stream. First, if encoding is provided via parser parameters, or if
  * a multi-byte encoding is detected, a #GConverterInputStream with a
  * #GCharsetConverter is applied. Then on top of it, a #GDataInputStream
  * is created, which can be used to read text file line-by-line.
- * </para>
  *
  * Returns: (transfer full): a #GDataInputStream object on success,
  * or %NULL on failure.
- **/
+ */
 GDataInputStream *mirage_parser_create_text_stream (MirageParser *self, GInputStream *stream, GError **error)
 {
     GDataInputStream *data_stream;

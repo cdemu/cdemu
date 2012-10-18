@@ -32,24 +32,18 @@ G_BEGIN_DECLS
  * @data_len: (in): data length
  * @user_data: (in) (closure): user data
  *
- * <para>
  * Specifies the type of callback functions that can be passed to
  * mirage_cdtext_decoder_get_data().
- * </para>
  *
- * <para>
  * @langcode is the language code assigned to the block which data belongs to.
  * @track is the number of track to which data belongs to, or 0 if data is global
  * (belongs to session/disc). @data is buffer containing data and @data_len
  * is the length of data in the buffer.
- * </para>
  *
- * <para>
  * @data points to buffer that belongs to decoder and therefore should not be freed.
- * </para>
  *
  * Returns: %TRUE on success, %FALSE on failure
- **/
+ */
 typedef gboolean (*MirageCdTextDataCallback) (gint langcode, gint type, gint track, const guint8 *data, gint data_len, gpointer user_data);
 
 
@@ -70,10 +64,10 @@ typedef struct _MirageCdTextCoderPrivate  MirageCdTextCoderPrivate;
 /**
  * MirageCdTextCoder:
  *
- * <para>
- * Contains private data only, and should be accessed using the functions below.
- * </para>
- **/
+ * All the fields in the <structname>MirageCdTextCoder</structname>
+ * structure are private to the #MirageCdTextCoder implementation and
+ * should never be accessed directly.
+ */
 struct _MirageCdTextCoder
 {
     MirageObject parent_instance;
@@ -82,6 +76,13 @@ struct _MirageCdTextCoder
     MirageCdTextCoderPrivate *priv;
 };
 
+/**
+ * MirageCdTextCoderClass:
+ *
+ * @parent_class: the parent class
+ *
+ * The class structure for the <structname>MirageCdTextCoder</structname> type.
+ */
 struct _MirageCdTextCoderClass
 {
     MirageObjectClass parent_class;

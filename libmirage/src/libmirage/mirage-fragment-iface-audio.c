@@ -24,10 +24,8 @@
  * @see_also: #MirageFragment
  * @include: mirage-fragment-iface-audio.h
  *
- * <para>
  * #MirageFragmentIfaceAudio is Audio Fragment interface that can be
  * implemented by a #MirageFragment implementation.
- * </para>
  */
 
 #ifdef HAVE_CONFIG_H
@@ -44,10 +42,8 @@
  * @self: a #MirageFragmentIfaceAudio
  * @stream: (in) (transfer full): a #GInputStream on audio file
  *
- * <para>
  * Sets audio file stream.
- * </para>
- **/
+ */
 void mirage_fragment_iface_audio_set_stream (MirageFragmentIfaceAudio *self, GInputStream *stream)
 {
     return MIRAGE_FRAGMENT_IFACE_AUDIO_GET_INTERFACE(self)->set_stream(self, stream);
@@ -57,13 +53,11 @@ void mirage_fragment_iface_audio_set_stream (MirageFragmentIfaceAudio *self, GIn
  * mirage_fragment_iface_audio_get_filename:
  * @self: a #MirageFragmentIfaceAudio
  *
- * <para>
  * Retrieves filename of audio file.
- * </para>
  *
  * Returns: (transfer none): pointer to audio file name string. The
  * string belongs to object and should not be modified.
- **/
+ */
 const gchar *mirage_fragment_iface_audio_get_filename (MirageFragmentIfaceAudio *self)
 {
     return MIRAGE_FRAGMENT_IFACE_AUDIO_GET_INTERFACE(self)->get_filename(self);
@@ -74,10 +68,8 @@ const gchar *mirage_fragment_iface_audio_get_filename (MirageFragmentIfaceAudio 
  * @self: a #MirageFragmentIfaceAudio
  * @offset: (in): offset
  *
- * <para>
  * Sets offset within audio file, in sectors.
- * </para>
- **/
+ */
 void mirage_fragment_iface_audio_set_offset (MirageFragmentIfaceAudio *self, gint offset)
 {
     return MIRAGE_FRAGMENT_IFACE_AUDIO_GET_INTERFACE(self)->set_offset(self, offset);
@@ -87,12 +79,10 @@ void mirage_fragment_iface_audio_set_offset (MirageFragmentIfaceAudio *self, gin
  * mirage_fragment_iface_audio_get_offset:
  * @self: a #MirageFragmentIfaceAudio
  *
- * <para>
  * Retrieves offset within audio file, in sectors.
- * </para>
  *
  * Returns: offset
- **/
+ */
 gint mirage_fragment_iface_audio_get_offset (MirageFragmentIfaceAudio *self)
 {
     return MIRAGE_FRAGMENT_IFACE_AUDIO_GET_INTERFACE(self)->get_offset(self);

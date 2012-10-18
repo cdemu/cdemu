@@ -24,17 +24,13 @@
  * @see_also: #MirageParser, #MirageFragment, #MirageFileFilter
  * @include: mirage-plugin.h
  *
- * <para>
  * #MiragePlugin object is a base object of libMirage's plugin system
  * and derives from #GTypeModule. It provides support for loadable
  * modules that contain implementations of image parsers, data fragments
  * or file filters.
- * </para>
  *
- * <para>
  * The plugin system is used internally by libMirage, and should
  * generally not be used elsewhere.
- * </para>
  */
 
 #ifdef HAVE_CONFIG_H
@@ -71,13 +67,11 @@ typedef enum
  * mirage_plugin_new:
  * @filename: (in): plugin's filename
  *
- * <para>
  * Creates new plugin.
- * </para>
  *
  * Returns: a new #MiragePlugin object that represents plugin. It should be
  * released with g_object_unref() when no longer needed.
- **/
+ */
 MiragePlugin *mirage_plugin_new (const gchar *filename)
 {
     MiragePlugin *plugin = NULL;

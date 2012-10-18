@@ -24,15 +24,12 @@
  * @see_also: #MirageContextual, #MirageObject, #MirageFileFilter
  * @include: mirage-context.h
  *
- * <para>
  * #MirageContext provides a context, which is attached to libMirage's
  * objects. This way, it allows sharing and propagation of settings, such
  * as debug verbosity, parser options, password function, etc. It also
  * provides file stream caching and #GInputStream to filename resolution,
  * which is used by image parsers.
- * </para>
  *
- * <para>
  * Due to all the properties it holds, #MirageContext is designed as the
  * core object of libMirage and provides the library's main functionality,
  * the loading of image files. Therefore, loading an image usually looks
@@ -42,7 +39,6 @@
  * - (optionally) set debug name, domain and mask
  * - load the image using mirage_context_load_image()
  *
- * </para>
  */
 
 #ifdef HAVE_CONFIG_H
@@ -135,10 +131,8 @@ static inline void mirage_context_file_streams_map_add (MirageContext *self, gpo
  * @self: a #MirageContext
  * @domain: (in): domain name
  *
- * <para>
  * Sets debug context's domain name to @domain.
- * </para>
- **/
+ */
 void mirage_context_set_debug_domain (MirageContext *self, const gchar *domain)
 {
     /* Set domain */
@@ -150,12 +144,10 @@ void mirage_context_set_debug_domain (MirageContext *self, const gchar *domain)
  * mirage_context_get_debug_domain:
  * @self: a #MirageContext
  *
- * <para>
  * Retrieves debug context's domain name.
- * </para>
  *
  * Returns: (transfer none): pointer to buffer containing the domain name, or %NULL. The buffer belongs to the object and should not be modified.
- **/
+ */
 const gchar *mirage_context_get_debug_domain (MirageContext *self)
 {
     return self->priv->domain;
@@ -167,10 +159,8 @@ const gchar *mirage_context_get_debug_domain (MirageContext *self)
  * @self: a #MirageContext
  * @name: (in): name
  *
- * <para>
  * Sets debug context's name to @name.
- * </para>
- **/
+ */
 void mirage_context_set_debug_name (MirageContext *self, const gchar *name)
 {
     /* Set name */
@@ -182,12 +172,10 @@ void mirage_context_set_debug_name (MirageContext *self, const gchar *name)
  * mirage_context_get_debug_name:
  * @self: a #MirageContext
  *
- * <para>
  * Retrieves debug context's name.
- * </para>
  *
  * Returns: (transfer none): pointer to buffer containing the name, or %NULL. The buffer belongs to the object and should not be modified.
- **/
+ */
 const gchar *mirage_context_get_debug_name (MirageContext *self)
 {
     return self->priv->name;
@@ -199,10 +187,8 @@ const gchar *mirage_context_get_debug_name (MirageContext *self)
  * @self: a #MirageContext
  * @debug_mask: (in): debug mask
  *
- * <para>
  * Sets debug context's debug mask.
- * </para>
- **/
+ */
 void mirage_context_set_debug_mask (MirageContext *self, gint debug_mask)
 {
     /* Set debug mask */
@@ -213,12 +199,10 @@ void mirage_context_set_debug_mask (MirageContext *self, gint debug_mask)
  * mirage_context_get_debug_mask:
  * @self: a #MirageContext
  *
- * <para>
  * Retrieves debug context's debug mask.
- * </para>
  *
  * Returns: debug context's debug mask
- **/
+ */
 gint mirage_context_get_debug_mask (MirageContext *self)
 {
     /* Return debug mask */
@@ -233,10 +217,8 @@ gint mirage_context_get_debug_mask (MirageContext *self)
  * mirage_context_clear_options:
  * @self: a #MirageContext
  *
- * <para>
  * Clears all the options from the context.
- * </para>
- **/
+ */
 void mirage_context_clear_options (MirageContext *self)
 {
     /* Remove all entries from hash table */
@@ -249,11 +231,9 @@ void mirage_context_clear_options (MirageContext *self)
  * @name: (in): option name
  * @value: (in) (transfer full): option value
  *
- * <para>
  * Sets an option to the context. If option with the specified name already
  * exists, it is replaced.
- * </para>
- **/
+ */
 void mirage_context_set_option (MirageContext *self, const gchar *name, GVariant *value)
 {
     g_variant_ref_sink(value); /* Claim reference */
@@ -265,13 +245,11 @@ void mirage_context_set_option (MirageContext *self, const gchar *name, GVariant
  * @self: a #MirageContext
  * @name: (in): option name
  *
- * <para>
  * Retrieves option named @name from the context.
- * </para>
  *
  * Returns: (transfer full): pointer to a #GVariant containing the option
  * value on success, %NULL on failure.
- **/
+ */
 GVariant *mirage_context_get_option (MirageContext *self, const gchar *name)
 {
     GVariant *value = g_hash_table_lookup(self->priv->options, name);
@@ -291,16 +269,12 @@ GVariant *mirage_context_get_option (MirageContext *self, const gchar *name)
  * @func: (in) (allow-none) (scope call): a password function pointer
  * @user_data: (in) (closure): pointer to user data to be passed to the password function
  *
- * <para>
  * Sets the password function to context. The function is used by parsers
  * that support encrypted images to obtain password for unlocking such images.
- * </para>
  *
- * <para>
  * Both @func and @user_data can be %NULL; in that case the appropriate setting
  * will be reset.
- * </para>
- **/
+ */
 void mirage_context_set_password_function (MirageContext *self, MiragePasswordFunction func, gpointer user_data)
 {
     /* Store the pointers */
@@ -313,14 +287,12 @@ void mirage_context_set_password_function (MirageContext *self, MiragePasswordFu
  * @self: a #MirageContext
  * @error: (out) (allow-none): location to store error, or %NULL
  *
- * <para>
  * Obtains password string, using the #MiragePasswordFunction callback
  * that was provided via mirage_context_set_password_function().
- * </para>
  *
  * Returns: password string on success, %NULL on failure. The string should be
  * freed with g_free() when no longer needed.
- **/
+ */
 gchar *mirage_context_obtain_password (MirageContext *self, GError **error)
 {
     gchar *password;
@@ -351,21 +323,17 @@ gchar *mirage_context_obtain_password (MirageContext *self, GError **error)
  * @filenames: (in) (array zero-terminated=1): filename(s)
  * @error: (out) (allow-none): location to store error, or %NULL
  *
- * <para>
  * Creates a #MirageDisc object representing image stored in @filenames. @filenames
  * is a NULL-terminated list of filenames containing image data. The function tries
  * to find a parser that can handle give filename(s) and uses it to load the data
  * into disc object.
- * </para>
  *
- * <para>
  * If multiple filenames are provided and parser supports only single-file images,
  * only the first filename is used.
- * </para>
  *
  * Returns: (transfer full): a #MirageDisc object on success, %NULL on failure. The reference to
  * the object should be released using g_object_unref() when no longer needed.
- **/
+ */
 MirageDisc *mirage_context_load_image (MirageContext *self, gchar **filenames, GError **error)
 {
     MirageDisc *disc = NULL;
@@ -444,14 +412,12 @@ end:
  * @stream: (in): the data stream that fragment should be able to handle
  * @error: (out) (allow-none): location to store error, or %NULL
  *
- * <para>
  * Creates a #MirageFragment implementation that implements interface specified
  * by @fragment_interface and can handle data stored in @stream.
- * </para>
  *
  * Returns: (transfer full): a #MirageFragment object on success, %NULL on failure. The reference
  * to the object should be released using g_object_unref() when no longer needed.
- **/
+ */
 MirageFragment *mirage_context_create_fragment (MirageContext *self, GType fragment_interface, GInputStream *stream, GError **error)
 {
     gboolean succeeded = TRUE;
@@ -503,17 +469,15 @@ MirageFragment *mirage_context_create_fragment (MirageContext *self, GType fragm
  * @filename: (in): filename to create stream on
  * @error: (out) (allow-none): location to store error, or %NULL
  *
- * <para>
  * Opens a file pointed to by @filename and creates a chain of file filters
  * on top of it.
- * </para>
  *
  * Returns: (transfer full): on success, an object inheriting #GFilterInputStream (and therefore
  * #GInputStream) and implementing #GSeekable interface is returned, which
  * can be used to access data stored in file. On failure, %NULL is returned.
  * The reference to the object should be released using g_object_unref()
  * when no longer needed.
- **/
+ */
 GInputStream *mirage_context_create_file_stream (MirageContext *self, const gchar *filename, GError **error)
 {
     GInputStream *stream;
@@ -609,14 +573,12 @@ GInputStream *mirage_context_create_file_stream (MirageContext *self, const gcha
  * @self: a #MirageContext
  * @stream: (in): a #GInputStream
  *
- * <para>
  * Traverses the chain of file filters and retrieves the filename on which
  * the #GFileInputStream, located at the bottom of the chain, was opened.
- * </para>
  *
  * Returns: (transfer none): on success, a pointer to filename on which
  * the underyling file stream was opened. On failure, %NULL is returned.
- **/
+ */
 const gchar *mirage_context_get_file_stream_filename (MirageContext *self, GInputStream *stream)
 {
     if (G_IS_FILTER_INPUT_STREAM(stream)) {

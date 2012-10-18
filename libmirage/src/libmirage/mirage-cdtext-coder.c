@@ -24,36 +24,28 @@
  * @see_also: #MirageLanguage, #MirageSession
  * @include: mirage-cdtext-coder.h
  *
- * <para>
  * #MirageCdTextCoder object is a general-purpose CD-TEXT encoder/decoder.
  * It was designed to be used by #MirageSession objects to encode and decode
  * CD-TEXT data, but it could be used in other applications as well.
- * </para>
  *
- * <para>
  * It is loosely based on the CD-TEXT encoding/decoding code found in
  * cdrdao and supports 8 CD-TEXT blocks with pack types from 0x80 to
  * 0x8F. When encoding data, pack size data (pack type 0x8F) is always
  * generated.
- * </para>
  *
- * <para>
  * To be used as encoder, a #MirageCdTextCoder encoder must be first
  * initialized with mirage_cdtext_encoder_init(). Then, information for
  * at least one CD-TEXT block (up to 8 are supported) should be set with
  * mirage_cdtext_encoder_set_block_info(). After all the CD-TEXT data is
  * added to encoder with mirage_cdtext_encoder_add_data(), buffer containing
  * the encoded data can be obtained with mirage_cdtext_encoder_encode().
- * </para>
  *
- * <para>
  * To use a #MirageCdTextCoder as CD-TEXT decoder, one should first
  * initialize it with mirage_cdtext_decoder_init(). This function already
  * performs all the decoding; block information can be obtained with
  * mirage_cdtext_decoder_get_block_info() and data for each block can
  * be obtained with mirage_cdtext_decoder_get_data() and the appropriate
  * callback function.
- * </para>
  */
 
 #ifdef HAVE_CONFIG_H
@@ -404,10 +396,8 @@ static void mirage_cdtext_decoder_read_size_info (MirageCdTextCoder *self G_GNUC
  * @buffer: (in) (array length=buflen): buffer into which data will be encoded
  * @buflen: (in): buffer length
  *
- * <para>
  * Initializes CD-TEXT encoder.
- * </para>
- **/
+ */
 void mirage_cdtext_encoder_init (MirageCdTextCoder *self, guint8 *buffer, gint buflen)
 {
     /* Cleanup old data */
@@ -429,15 +419,13 @@ void mirage_cdtext_encoder_init (MirageCdTextCoder *self, guint8 *buffer, gint b
  * @copyright: (in): copyright flag
  * @error: (out) (allow-none): location to store error, or %NULL
  *
- * <para>
  * Sets block information for CD-TEXT block specified by @block. @block must be
  * a valid block number (0-7). @langcode is the language code that is to be assigned
  * to the block (e.g. 9 for English), @charset denotes character set that is used within
  * the block, and @copyright is the copyright flag for the block.
- * </para>
  *
  * Returns: %TRUE on success, %FALSE on failure
- **/
+ */
 gboolean mirage_cdtext_encoder_set_block_info (MirageCdTextCoder *self, gint block, gint langcode, gint charset, gint copyright, GError **error)
 {
     /* Verify that block is valid */
@@ -464,23 +452,19 @@ gboolean mirage_cdtext_encoder_set_block_info (MirageCdTextCoder *self, gint blo
  * @data: (in) (array length=data_len): data
  * @data_len: (in): data length
  *
- * <para>
  * Adds data to the encoder. @langcode is language code of the block the data
  * should be added to. @type denotes pack type and should be one of #MirageLanguagePackTypes.
  * @track is track number the data belongs to, or 0 if data is global (belongs to disc/session).
  * @data is buffer containing data to be added, and @data_len is length of data in the buffer.
- * </para>
  *
- * <para>
  * This function does not perform any encoding yet; it merely adds the data into
  * encoder's internal representation of CD-TEXT block.
- * </para>
  *
  * <note>
  * Block needs to have its information set with mirage_cdtext_encoder_set_block_info()
  * before data can be added to it.
  * </note>
- **/
+ */
 void mirage_cdtext_encoder_add_data (MirageCdTextCoder *self, gint langcode, gint type, gint track, const guint8 *data, gint data_len)
 {
     /* Langcode -> block conversion */
@@ -506,15 +490,11 @@ void mirage_cdtext_encoder_add_data (MirageCdTextCoder *self, gint langcode, gin
  * @buffer: (out) (array length=buflen): location to store buffer
  * @buflen: (out): location to store buffer length
  *
- * <para>
  * Encodes the CD-TEXT data. Pointer to buffer containing the encoded data is
  * stored in @buffer, and length of data in buffer is stored in @buflen.
- * </para>
  *
- * <para>
  * Note that @buffer is the same as the argument passed to mirage_cdtext_encoder_init().
- * </para>
- **/
+ */
 void mirage_cdtext_encoder_encode (MirageCdTextCoder *self, guint8 **buffer, gint *buflen)
 {
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_CDTEXT, "%s: encoding CD-TEXT...\n", __debug__);
@@ -590,19 +570,15 @@ void mirage_cdtext_encoder_encode (MirageCdTextCoder *self, guint8 **buffer, gin
  * @buffer: (in) (array length=buflen): buffer containing encoded data
  * @buflen: (in): length of data in buffer
  *
- * <para>
  * Initializes CD-TEXT decoder. @buffer is the buffer containing encoded CD-TEXT
  * data and @buflen is length of data in the buffer.
- * </para>
  *
- * <para>
  * This function decodes CD-TEXT data and stores it in decoder's internal representation.
  * Information about decoded CD-TEXT blocks and their data can be obtained via
  * subsequent calls to mirage_cdtext_decoder_get_block_info() and
  * mirage_cdtext_decoder_get_data().
- * </para>
  *
- **/
+ */
 void mirage_cdtext_decoder_init (MirageCdTextCoder *self, guint8 *buffer, gint buflen)
 {
     /* Cleanup old data */
@@ -720,15 +696,13 @@ void mirage_cdtext_decoder_init (MirageCdTextCoder *self, guint8 *buffer, gint b
  * @copyright: (out) (allow-none): location to store copyright flag, or %NULL
  * @error: (out) (allow-none): location to store error, or %NULL
  *
- * <para>
  * Retrieves block information for CD-TEXT block specified by @block. @block
  * must be a valid block number (0-7). Language code assigned to the block is
  * stored in @langcode, code of character set used within block is stored in
  * @charset and block's copyright flag is stored in @copyright.
- * </para>
  *
  * Returns: %TRUE on success, %FALSE on failure
- **/
+ */
 gboolean mirage_cdtext_decoder_get_block_info (MirageCdTextCoder *self, gint block, gint *langcode, gint *charset, gint *copyright, GError **error)
 {
     /* Verify that block is valid */
@@ -762,18 +736,14 @@ gboolean mirage_cdtext_decoder_get_block_info (MirageCdTextCoder *self, gint blo
  * @callback_func: (in) (scope call): callback function
  * @user_data: (in) (closure): data to be passed to callback function
  *
- * <para>
  * Retrieves data for CD-TEXT block specified by @block. @block must be a valid
  * block number (0-7). It calls @callback_func for every data pack that has been
  * encoded in the block.
- * </para>
  *
- * <para>
  * If @callback_func returns %FALSE, the function immediately returns %FALSE.
- * </para>
  *
  * Returns: %TRUE on success, %FALSE on failure
- **/
+ */
 gboolean mirage_cdtext_decoder_get_data (MirageCdTextCoder *self, gint block, MirageCdTextDataCallback callback_func, gpointer user_data)
 {
     /* Go over the list and call the callback for each entry */

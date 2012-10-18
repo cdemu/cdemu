@@ -41,10 +41,10 @@ typedef struct _MirageIndexPrivate MirageIndexPrivate;
 /**
  * MirageIndex:
  *
- * <para>
- * Contains private data only, and should be accessed using the functions below.
- * </para>
- **/
+ * All the fields in the <structname>MirageIndex</structname>
+ * structure are private to the #MirageIndex implementation and
+ * should never be accessed directly.
+ */
 struct _MirageIndex
 {
     MirageObject parent_instance;
@@ -53,6 +53,13 @@ struct _MirageIndex
     MirageIndexPrivate *priv;
 };
 
+/**
+ * MirageIndexClass:
+ *
+ * @parent_class: the parent class
+ *
+ * The class structure for the <structname>MirageIndex</structname> type.
+ */
 struct _MirageIndexClass
 {
     MirageObjectClass parent_class;

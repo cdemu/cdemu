@@ -35,13 +35,22 @@ G_BEGIN_DECLS
 /**
  * MirageFragmentIfaceAudio:
  *
- * <para>
- * Dummy interface structure.
- * </para>
- **/
+ * A fragment object that provides access to audio data.
+ */
 typedef struct _MirageFragmentIfaceAudio          MirageFragmentIfaceAudio;
 typedef struct _MirageFragmentIfaceAudioInterface MirageFragmentIfaceAudioInterface;
 
+/**
+ * MirageFragmentIfaceAudioInterface:
+ * @parent_iface: the parent interface
+ * @set_stream: sets audio file stream
+ * @get_filename: retrieves filename of audio file
+ * @set_offset: sets offset within audio file
+ * @get_offset: retrieves offset within audio file
+ *
+ * Provides an interface for implementing fragment objects that provide
+ * access to audio data.
+ */
 struct _MirageFragmentIfaceAudioInterface
 {
     GTypeInterface parent_iface;

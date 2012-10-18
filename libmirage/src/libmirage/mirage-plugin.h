@@ -41,10 +41,10 @@ typedef struct _MiragePluginPrivate    MiragePluginPrivate;
 /**
  * MiragePlugin:
  *
- * <para>
- * Contains private data only, and should be accessed using the functions below.
- * </para>
- **/
+ * All the fields in the <structname>MiragePlugin</structname>
+ * structure are private to the #MiragePlugin implementation and
+ * should never be accessed directly.
+ */
 struct _MiragePlugin
 {
     GTypeModule parent_instance;
@@ -53,6 +53,13 @@ struct _MiragePlugin
     MiragePluginPrivate *priv;
 };
 
+/**
+ * MiragePluginClass:
+ *
+ * @parent_class: the parent class
+ *
+ * The class structure for the <structname>MiragePlugin</structname> type.
+ */
 struct _MiragePluginClass
 {
     GTypeModuleClass parent_class;

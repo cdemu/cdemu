@@ -33,10 +33,8 @@ G_BEGIN_DECLS
  * @MIRAGE_SUBCHANNEL_PQ: PQ subchannel; 16 bytes, Q subchannel
  * @MIRAGE_SUBCHANNEL_RW: RW subchannel; 96 bytes, deinterleaved R-W
  *
- * <para>
  * Subchannel selection flags.
- * </para>
- **/
+ */
 typedef enum _MirageSectorSubchannelFormat
 {
     MIRAGE_SUBCHANNEL_PW = 0x01,
@@ -53,10 +51,8 @@ typedef enum _MirageSectorSubchannelFormat
  * @MIRAGE_VALID_EDC_ECC: EDC/ECC data valid
  * @MIRAGE_VALID_SUBCHAN: subchannel valid
  *
- * <para>
  * Sector data validity flags.
- * </para>
- **/
+ */
 typedef enum _MirageSectorValidData
 {
     MIRAGE_VALID_SYNC      = 0x01,
@@ -85,10 +81,10 @@ typedef struct _MirageSectorPrivate    MirageSectorPrivate;
 /**
  * MirageSector:
  *
- * <para>
- * Contains private data only, and should be accessed using the functions below.
- * </para>
- **/
+ * All the fields in the <structname>MirageSector</structname>
+ * structure are private to the #MirageSector implementation and
+ * should never be accessed directly.
+ */
 struct _MirageSector
 {
     MirageObject parent_instance;
@@ -97,10 +93,17 @@ struct _MirageSector
     MirageSectorPrivate *priv;
 };
 
+/**
+ * MirageSectorClass:
+ *
+ * @parent_class: the parent class
+ *
+ * The class structure for the <structname>MirageSector</structname> type.
+ */
 struct _MirageSectorClass
 {
     MirageObjectClass parent_class;
-} ;
+};
 
 /* Used by MIRAGE_TYPE_SECTOR */
 GType mirage_sector_get_type (void);

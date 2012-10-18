@@ -30,10 +30,8 @@ G_BEGIN_DECLS
  * @MIRAGE_MAIN_AUDIO: audio data
  * @MIRAGE_MAIN_AUDIO_SWAP: audio data that needs to be swapped
  *
- * <para>
  * Track file data formats.
- * </para>
- **/
+ */
 typedef enum _MirageMainDataFormat
 {
     MIRAGE_MAIN_DATA  = 0x01,
@@ -50,10 +48,8 @@ typedef enum _MirageMainDataFormat
  * @MIRAGE_SUBCHANNEL_RW96: R-W subchannel, 96 bytes, deinterleaved
  * @MIRAGE_SUBCHANNEL_PQ16: PQ subchannel, 16 bytes
  *
- * <para>
  * Subchannel file data formats.
- * </para>
- **/
+ */
 typedef enum _MirageSubchannelDataFormat
 {
     MIRAGE_SUBCHANNEL_INT = 0x01,
@@ -77,13 +73,36 @@ typedef enum _MirageSubchannelDataFormat
 /**
  * MirageFragmentIfaceBinary:
  *
- * <para>
- * Dummy interface structure.
- * </para>
- **/
+ * A fragment object that provides access to raw binary data.
+ */
 typedef struct _MirageFragmentIfaceBinary             MirageFragmentIfaceBinary;
 typedef struct _MirageFragmentIfaceBinaryInterface    MirageFragmentIfaceBinaryInterface;
 
+/**
+ * MirageFragmentIfaceBinaryInterface:
+ * @parent_iface: the parent interface
+ * @main_data_set_stream: sets main data stream
+ * @main_data_get_filename: retrieves filename of main data file
+ * @main_data_set_offset: sets main data file offset
+ * @main_data_get_offset: retrieves main data file offset
+ * @main_data_set_size: sets main data file sector size
+ * @main_data_get_size: retrieves main data file sector size
+ * @main_data_set_format: sets main data file format
+ * @main_data_get_format: retrieves main data file format
+ * @main_data_get_position: calculates position of main data for sector at specified address
+ * @subchannel_data_set_stream: sets subchannel data stream
+ * @subchannel_data_get_filename: retrieves subchannel data file name
+ * @subchannel_data_set_offset: sets subchannel data file offset
+ * @subchannel_data_get_offset: retrieves subchannel data file offset
+ * @subchannel_data_set_size: sets subchannel data file sector size
+ * @subchannel_data_get_size: retrieves subchannel data file sector size
+ * @subchannel_data_set_format: sets subchannel data file format
+ * @subchannel_data_get_format: retrieves subchannel data file format
+ * @subchannel_data_get_position: calculates position of subchannel data for sector at specified address
+ *
+ * Provides an interface for implementing fragment objects that provide
+ * access to raw binary data.
+ */
 struct _MirageFragmentIfaceBinaryInterface
 {
     GTypeInterface parent_iface;

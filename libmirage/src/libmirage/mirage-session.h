@@ -34,10 +34,8 @@ G_BEGIN_DECLS
  * @MIRAGE_SESSION_CD_I: CD-I
  * @MIRAGE_SESSION_CD_ROM_XA: CD-ROM XA
  *
- * <para>
  * Session types
- * </para>
- **/
+ */
 typedef enum _MirageSessionTypes
 {
     MIRAGE_SESSION_CD_DA     = 0x00,
@@ -52,14 +50,12 @@ typedef enum _MirageSessionTypes
  * @track: (in): track
  * @user_data: (in) (closure): user data passed to enumeration function
  *
- * <para>
  * Callback function type used with mirage_session_enumerate_tracks().
  * A pointer to a track object is stored in @track, without incrementing
  * its reference counter. @user_data is user data passed to enumeration function.
- * </para>
  *
  * Returns: %TRUE on success, otherwise %FALSE
- **/
+ */
 typedef gboolean (*MirageEnumTrackCallback) (MirageTrack *track, gpointer user_data);
 
 /**
@@ -67,15 +63,13 @@ typedef gboolean (*MirageEnumTrackCallback) (MirageTrack *track, gpointer user_d
  * @language: (in): language
  * @user_data: (in) (closure): user data passed to enumeration function
  *
- * <para>
  * Callback function type used with mirage_session_enumerate_languages() and
  * mirage_track_enumerate_languages(). A pointer to a language object is
  * stored in @language, without incrementing its reference counter.
  * @user_data is user data passed to enumeration function.
- * </para>
  *
  * Returns: %TRUE on success, otherwise %FALSE
- **/
+ */
 typedef gboolean (*MirageEnumLanguageCallback) (MirageLanguage *language, gpointer user_data);
 
 
@@ -96,10 +90,10 @@ typedef struct _MirageSessionPrivate   MirageSessionPrivate;
 /**
  * MirageSession:
  *
- * <para>
- * Contains private data only, and should be accessed using the functions below.
- * </para>
- **/
+ * All the fields in the <structname>MirageSession</structname>
+ * structure are private to the #MirageSession implementation and
+ * should never be accessed directly.
+ */
 struct _MirageSession
 {
     MirageObject parent_instance;
@@ -108,6 +102,14 @@ struct _MirageSession
     MirageSessionPrivate *priv;
 };
 
+/**
+ * MirageSessionClass:
+ *
+ * @parent_class: the parent class
+ * @signal_layout_changed: "layout-changed" signal identifier
+ *
+ * The class structure for the <structname>MirageSession</structname> type.
+ */
 struct _MirageSessionClass
 {
     MirageObjectClass parent_class;
