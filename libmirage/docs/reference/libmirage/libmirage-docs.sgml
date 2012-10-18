@@ -15,7 +15,7 @@
     <chapter id="api-reference">
         <title>libMirage API Reference</title>
 
-        <xi:include href="xml/mirage-libmirage.xml"/>
+        <xi:include href="xml/mirage.xml"/>
         <xi:include href="xml/mirage-cdtext-coder.xml"/>
         <xi:include href="xml/mirage-context.xml"/>
         <xi:include href="xml/mirage-contextual.xml"/>

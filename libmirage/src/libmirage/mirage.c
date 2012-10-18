@@ -18,7 +18,7 @@
  */
 
 /**
- * SECTION: mirage-libmirage
+ * SECTION: mirage
  * @title: Main
  * @short_description: Core libMirage functions
  * @see_also: #MirageContext
