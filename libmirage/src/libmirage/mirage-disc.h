@@ -21,9 +21,11 @@
 #define __MIRAGE_DISC_H__
 
 /* Forward declarations */
+#ifndef __GTK_DOC_IGNORE__
 typedef struct _MirageSession MirageSession;
 typedef struct _MirageTrack MirageTrack;
 typedef struct _MirageSector MirageSector;
+#endif
 
 
 G_BEGIN_DECLS

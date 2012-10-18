@@ -21,8 +21,10 @@
 #define __MIRAGE_SECTOR_H__
 
 /* Forward declarations */
+#ifndef __GTK_DOC_IGNORE__
 typedef struct _MirageTrack MirageTrack;
 typedef enum _MirageTrackModes MirageTrackModes;
+#endif
 
 
 G_BEGIN_DECLS

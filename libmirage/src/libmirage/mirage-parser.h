@@ -21,7 +21,9 @@
 #define __MIRAGE_PARSER_H__
 
 /* Forward declarations */
+#ifndef __GTK_DOC_IGNORE__
 typedef struct _MirageDisc MirageDisc;
+#endif
 
 
 G_BEGIN_DECLS

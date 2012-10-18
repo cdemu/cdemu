@@ -21,10 +21,12 @@
 #define __MIRAGE_TRACK_H__
 
 /* Forward declarations */
+#ifndef __GTK_DOC_IGNORE__
 typedef struct _MirageFragment MirageFragment;
 typedef struct _MirageIndex MirageIndex;
 typedef struct _MirageLanguage MirageLanguage;
 typedef struct _MirageSector MirageSector;
+#endif
 
 
 G_BEGIN_DECLS
