@@ -55,7 +55,6 @@ struct _MiragePlugin
 
 /**
  * MiragePluginClass:
- *
  * @parent_class: the parent class
  *
  * The class structure for the <structname>MiragePlugin</structname> type.

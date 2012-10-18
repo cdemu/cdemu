@@ -101,7 +101,6 @@ struct _MirageDisc
 
 /**
  * MirageDiscClass:
- *
  * @parent_class: the parent class
  * @signal_layout_changed: "layout-changed" signal identifier
  *

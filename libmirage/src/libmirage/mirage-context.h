@@ -77,7 +77,6 @@ struct _MirageContext
 
 /**
  * MirageContextClass:
- *
  * @parent_class: the parent class
  *
  * The class structure for the <structname>MirageContext</structname> type.

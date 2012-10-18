@@ -96,7 +96,6 @@ struct _MirageLanguage
 
 /**
  * MirageLanguageClass:
- *
  * @parent_class: the parent class
  *
  * The class structure for the <structname>MirageLanguage</structname> type.

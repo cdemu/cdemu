@@ -84,7 +84,6 @@ struct _MirageParser
 
 /**
  * MirageParserClass:
- *
  * @parent_class: the parent class
  * @load_image: loads image
  *

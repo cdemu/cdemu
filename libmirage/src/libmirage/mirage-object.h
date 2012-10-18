@@ -56,7 +56,6 @@ struct _MirageObject
 
 /**
  * MirageObjectClass:
- *
  * @parent_class: the parent class
  * @signal_context_changed: "context-changed" signal identifier
  *

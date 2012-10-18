@@ -70,7 +70,6 @@ struct _MirageFragment
 
 /**
  * MirageFragmentClass:
- *
  * @parent_class: the parent class
  * @can_handle_data_format: checks whether fragment can handle data stored in stream
  * @use_the_rest_of_file: uses the rest of data file

@@ -97,7 +97,6 @@ struct _MirageSector
 
 /**
  * MirageSectorClass:
- *
  * @parent_class: the parent class
  *
  * The class structure for the <structname>MirageSector</structname> type.

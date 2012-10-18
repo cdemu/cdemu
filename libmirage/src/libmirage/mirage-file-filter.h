@@ -74,7 +74,6 @@ struct _MirageFileFilter
 
 /**
  * MirageFileFilterClass:
- *
  * @parent_class: the parent class
  * @can_handle_data_format: checks whether file filter can handle data stored in underyling stream
  * @read: reads data from stream

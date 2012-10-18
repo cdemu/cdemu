@@ -78,7 +78,6 @@ struct _MirageCdTextCoder
 
 /**
  * MirageCdTextCoderClass:
- *
  * @parent_class: the parent class
  *
  * The class structure for the <structname>MirageCdTextCoder</structname> type.
