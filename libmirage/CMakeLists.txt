@@ -60,7 +60,7 @@ configure_file (
 include_directories (${PROJECT_BINARY_DIR})
 
 set_directory_properties (
-    PROPERTY ADDITIONAL_MAKE_CLEAN_FILES 
+    PROPERTY ADDITIONAL_MAKE_CLEAN_FILES
     "${PROJECT_SOURCE_DIR}/src/libmirage/mirage-version.h;${PROJECT_SOURCE_DIR}/docs/reference/libmirage/version.xml"
 )
 
@@ -131,7 +131,7 @@ add_library (mirage SHARED ${libmirage_SOURCES})
 
 target_link_libraries (mirage ${LibGlib_LIBRARIES})
 
-set_target_properties (mirage PROPERTIES 
+set_target_properties (mirage PROPERTIES
     COMPILE_FLAGS ${mirage_S_CFLAGS}
     COMPILE_DEFINITIONS "${mirage_DEFS}"
     LINK_FLAGS ${mirage_S_LDFLAGS}
@@ -164,7 +164,7 @@ foreach (fragment ${fragments_LIST})
 
     target_link_libraries (${fragment} ${LibGlib_LIBRARIES} ${LibSndFile_LIBRARIES})
 
-    set_target_properties (${fragment} PROPERTIES 
+    set_target_properties (${fragment} PROPERTIES
         COMPILE_FLAGS ${fragments_S_CFLAGS}
         COMPILE_DEFINITIONS "${fragments_DEFS}"
         LINK_FLAGS ${fragments_S_LDFLAGS}
@@ -172,7 +172,7 @@ foreach (fragment ${fragments_LIST})
     )
 
     install (
-        TARGETS ${fragment} 
+        TARGETS ${fragment}
         DESTINATION ${MIRAGE_INSTALL_PLUGINDIR}
     )
 endforeach ()
@@ -204,7 +204,7 @@ foreach (filter ${filters_LIST})
         set (extra_LDFLAGS)
     endif ()
 
-    set_target_properties (${filter} PROPERTIES 
+    set_target_properties (${filter} PROPERTIES
         COMPILE_FLAGS "${filters_S_CFLAGS} ${extra_CFLAGS}"
         COMPILE_DEFINITIONS "${filters_DEFS}"
         LINK_FLAGS "${filters_S_LDFLAGS} ${extra_LDFLAGS}"
@@ -212,7 +212,7 @@ foreach (filter ${filters_LIST})
     )
 
     install (
-        TARGETS ${filter} 
+        TARGETS ${filter}
         DESTINATION ${MIRAGE_INSTALL_PLUGINDIR}
     )
 endforeach ()
@@ -232,7 +232,7 @@ foreach (parser ${parsers_LIST})
 
     target_link_libraries (${parser} ${LibGlib_LIBRARIES} ${ZLib_LIBRARIES})
 
-    set_target_properties (${parser} PROPERTIES 
+    set_target_properties (${parser} PROPERTIES
         COMPILE_FLAGS ${parsers_S_CFLAGS}
         COMPILE_DEFINITIONS "${parsers_DEFS}"
         LINK_FLAGS ${parsers_S_LDFLAGS}
@@ -240,19 +240,19 @@ foreach (parser ${parsers_LIST})
     )
 
     install (
-        TARGETS ${parser} 
+        TARGETS ${parser}
         DESTINATION ${MIRAGE_INSTALL_PLUGINDIR}
     )
 endforeach ()
 
 # Mimetype files
 install (
-    FILES ${mimetype_FILES} 
+    FILES ${mimetype_FILES}
     DESTINATION ${CMAKE_INSTALL_DATADIR}/mime/packages
 )
 if (POST_INSTALL_HOOKS)
     install (CODE
-        "execute_process (COMMAND ${UPDATE_MIME_DATABASE_EXECUTABLE} ${CMAKE_INSTALL_FULL_DATADIR}/mime/packages)"
+        "execute_process (COMMAND ${UPDATE_MIME_DATABASE_EXECUTABLE} ${CMAKE_INSTALL_FULL_DATADIR}/mime)"
     )
 endif ()
 
@@ -290,7 +290,7 @@ endif ()
 
 # Install misc.
 install (
-    FILES ${PROJECT_BINARY_DIR}/libmirage.pc 
+    FILES ${PROJECT_BINARY_DIR}/libmirage.pc
     DESTINATION ${CMAKE_INSTALL_LIBDIR}/pkgconfig
 )
 
