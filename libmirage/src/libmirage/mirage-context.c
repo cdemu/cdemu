@@ -377,8 +377,9 @@ MirageDisc *mirage_context_load_image (MirageContext *self, gchar **filenames, G
         if (disc) {
             goto end;
         } else {
-            /* MIRAGE_ERROR_CANNOT_HANDLE is the only acceptable error here; anything
-               other indicates that parser attempted to handle image and failed */
+            /* MIRAGE_ERROR_CANNOT_HANDLE is the only acceptable error
+               here; anything else indicates that parser attempted to
+               handle image and failed */
             if (local_error->code == MIRAGE_ERROR_CANNOT_HANDLE) {
                 g_error_free(local_error);
             } else {
@@ -533,14 +534,27 @@ GInputStream *mirage_context_create_file_stream (MirageContext *self, const gcha
         found_new = FALSE;
 
         for (gint i = 0; i < num_file_filters; i++) {
+            GError *local_error = NULL;
+
             /* Create filter object and check if it can handle data */
             filter = g_object_new(file_filter_types[i], "base-stream", stream, "close-base-stream", FALSE, NULL);
 
             mirage_contextual_set_context(MIRAGE_CONTEXTUAL(filter), self);
 
-            if (!mirage_file_filter_can_handle_data_format(filter, NULL)) {
+            if (!mirage_file_filter_can_handle_data_format(filter, &local_error)) {
                 /* Cannot handle data format... */
                 g_object_unref(filter);
+
+                /* MIRAGE_ERROR_CANNOT_HANDLE is the only acceptable
+                   error here; anything else indicates that filter
+                   attempted to handle underlying stream and failed */
+                if (local_error->code == MIRAGE_ERROR_CANNOT_HANDLE) {
+                    g_error_free(local_error);
+                } else {
+                    g_propagate_error(error, local_error);
+                    g_object_unref(stream);
+                    return NULL;
+                }
             } else {
                 /* Release reference to (now) underlying stream */
                 g_object_unref(stream);
