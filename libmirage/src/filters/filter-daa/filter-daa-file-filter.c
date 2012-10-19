@@ -107,7 +107,7 @@ struct _MirageFileFilterDaaPrivate
 
     /* Encryption */
     gboolean encrypted;
-    const gchar *password;
+    guint8 decryption_table[128][256];
 };
 
 
@@ -216,9 +216,7 @@ static gchar *create_filename_func_3 (const gchar *main_filename, gint index)
 /**********************************************************************\
  *                  DAA decryption (Luigi Auriemma)                   *
 \**********************************************************************/
-static guint8 daa_crypt_table[128][256];
-
-static void daa_crypt_key (const gchar *pass, gint num)
+static void mirage_filter_daa_create_decryption_table (MirageFileFilterDaa *self, const gchar *pass, gint num)
 {
     gint a, b, c, d, s, i, p;
     gint passlen;
@@ -226,7 +224,7 @@ static void daa_crypt_key (const gchar *pass, gint num)
     guint8 *tab;
 
     passlen = strlen(pass);
-    tab = daa_crypt_table[num - 1];
+    tab = self->priv->decryption_table[num - 1];
     d = num << 1;
 
     for (i = 0; i < 256; i++) {
@@ -303,16 +301,17 @@ static void daa_crypt_key (const gchar *pass, gint num)
             tab[s] = c;
         }
     }
-
-    return;
 }
 
-static void daa_crypt_block (guint8 *ret, guint8 *data, gint size)
+/* Decrypt block of specified size */
+static void mirage_filter_daa_decrypt_block (MirageFileFilterDaa *self, guint8 *ret, guint8 *data, gint size)
 {
     guint8 c, t, *tab;
 
-    if (!size) return;
-    tab = daa_crypt_table[size - 1];
+    if (!size) {
+        return;
+    }
+    tab = self->priv->decryption_table[size - 1];
 
     memset(ret, 0, size);
     for (gint i = 0; i < size; i++) {
@@ -326,11 +325,9 @@ static void daa_crypt_block (guint8 *ret, guint8 *data, gint size)
         if (t & 1) c <<= 4;
         ret[t >> 1] |= c;
     }
-
-    return;
 }
 
-static void daa_crypt (guint8 *data, gint size)
+static void mirage_file_filter_daa_decrypt_buffer (MirageFileFilterDaa *self, guint8 *data, gint size)
 {
     gint blocks, rem;
     guint8 tmp[128];
@@ -338,24 +335,26 @@ static void daa_crypt (guint8 *data, gint size)
 
     blocks = size >> 7;
     for (p = data; blocks--; p += 128) {
-        daa_crypt_block(tmp, p, 128);
+        mirage_filter_daa_decrypt_block(self, tmp, p, 128);
         memcpy(p, tmp, 128);
     }
 
     rem = size & 127;
     if (rem) {
-        daa_crypt_block(tmp, p, rem);
+        mirage_filter_daa_decrypt_block(self, tmp, p, rem);
         memcpy(p, tmp, rem);
     }
 }
 
-static void daa_crypt_init (guint8 *pwdkey, const gchar *pass, guint8 *daakey)
+static void mirage_file_filter_daa_initialize_decryption (MirageFileFilterDaa *self, guint8 *pwdkey, const gchar *password, guint8 *daakey)
 {
+    /* Create decryption table */
     for (gint i = 1; i <= 128; i++) {
-        daa_crypt_key(pass, i);
+        mirage_filter_daa_create_decryption_table(self, password, i);
     }
 
-    daa_crypt_block(pwdkey, daakey, 128);
+    /* Get password hash */
+    mirage_filter_daa_decrypt_block(self, pwdkey, daakey, 128);
 }
 
 
@@ -695,7 +694,7 @@ static gboolean mirage_file_filter_daa_parse_descriptor_encryption (MirageFileFi
        must be freed) */
     GVariant *password_value = mirage_contextual_get_option(MIRAGE_CONTEXTUAL(self), "password");
     if (password_value) {
-        daa_crypt_init(computed_key, g_variant_get_string(password_value, NULL), descriptor.daa_key);
+        mirage_file_filter_daa_initialize_decryption(self, computed_key, g_variant_get_string(password_value, NULL), descriptor.daa_key);
         g_variant_unref(password_value);
     } else {
         /* Get password from user via password function */
@@ -707,7 +706,7 @@ static gboolean mirage_file_filter_daa_parse_descriptor_encryption (MirageFileFi
             return FALSE;
         }
 
-        daa_crypt_init(computed_key, prompt_password, descriptor.daa_key);
+        mirage_file_filter_daa_initialize_decryption(self, computed_key, prompt_password, descriptor.daa_key);
         g_free(prompt_password);
     }
 
@@ -1234,7 +1233,7 @@ static gssize mirage_file_filter_daa_partial_read (MirageFileFilter *_self, void
         /* Decrypt if encrypted */
         if (self->priv->encrypted) {
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_FILE_IO, "%s: decrypting...\n", __debug__);
-            daa_crypt(self->priv->io_buffer, chunk->length);
+            mirage_file_filter_daa_decrypt_buffer(self, self->priv->io_buffer, chunk->length);
         }
 
         /* Inflate */
