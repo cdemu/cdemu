@@ -9,11 +9,15 @@ list (APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
 
 include (GNUInstallDirs)
 
-mark_as_advanced (CLEAR CMAKE_INSTALL_SYSCONFDIR)
-mark_as_advanced (CLEAR CMAKE_VERBOSE_MAKEFILE)
+mark_as_advanced (CLEAR
+    CMAKE_INSTALL_SYSCONFDIR
+    CMAKE_VERBOSE_MAKEFILE
+)
 
-mark_as_advanced (GETTEXT_MSGFMT_EXECUTABLE)
-mark_as_advanced (GETTEXT_MSGMERGE_EXECUTABLE)
+mark_as_advanced (
+    GETTEXT_MSGFMT_EXECUTABLE
+    GETTEXT_MSGMERGE_EXECUTABLE
+)
 
 # Configuration
 

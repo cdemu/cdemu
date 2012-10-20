@@ -9,11 +9,15 @@ list (APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
 
 include (GNUInstallDirs)
 
-mark_as_advanced (CLEAR CMAKE_INSTALL_SYSCONFDIR)
-mark_as_advanced (CLEAR CMAKE_VERBOSE_MAKEFILE)
+mark_as_advanced (CLEAR
+    CMAKE_INSTALL_SYSCONFDIR
+    CMAKE_VERBOSE_MAKEFILE
+)
 
-mark_as_advanced (GETTEXT_MSGFMT_EXECUTABLE)
-mark_as_advanced (GETTEXT_MSGMERGE_EXECUTABLE)
+mark_as_advanced (
+    GETTEXT_MSGFMT_EXECUTABLE
+    GETTEXT_MSGMERGE_EXECUTABLE
+)
 
 # Configuration
 
@@ -28,9 +32,11 @@ find_package (PythonInterp 2.6 REQUIRED)
 
 if (POST_INSTALL_HOOKS)
     find_program (GLIB_COMPILE_SCHEMAS_EXECUTABLE NAMES glib-compile-schemas)
-    mark_as_advanced (GLIB_COMPILE_SCHEMAS_EXECUTABLE)
     find_program (UPDATE_DESKTOP_DATABASE_EXECUTABLE NAMES update-desktop-database)
-    mark_as_advanced (UPDATE_DESKTOP_DATABASE_EXECUTABLE)
+    mark_as_advanced (
+        GLIB_COMPILE_SCHEMAS_EXECUTABLE
+        UPDATE_DESKTOP_DATABASE_EXECUTABLE
+    )
 endif ()
 
 # Installation

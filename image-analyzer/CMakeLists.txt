@@ -14,8 +14,10 @@ include (GNUInstallDirs)
 include (Utilities)
 include (FileList)
 
-mark_as_advanced (CLEAR CMAKE_INSTALL_SYSCONFDIR)
-mark_as_advanced (CLEAR CMAKE_VERBOSE_MAKEFILE)
+mark_as_advanced (CLEAR
+    CMAKE_INSTALL_SYSCONFDIR
+    CMAKE_VERBOSE_MAKEFILE
+)
 
 # Configuration
 configure_file (
@@ -34,7 +36,8 @@ list (APPEND image-analyzer_CFLAGS -std=c99)
 list (APPEND image-analyzer_DEFS HAVE_CONFIG_H)
 
 if (STRICT_WARNINGS AND CMAKE_COMPILER_IS_GNUCC)
-    list (APPEND image-analyzer_CFLAGS -Wall -Wextra -Wshadow -Wmissing-declarations -Wmissing-prototypes -Wnested-externs -Wpointer-arith -Wcast-align)
+    list (APPEND image-analyzer_CFLAGS -Wall -Wextra -Wshadow -Wmissing-declarations
+        -Wmissing-prototypes -Wnested-externs -Wpointer-arith -Wcast-align)
     list (APPEND image-analyzer_DEFS G_DISABLE_DEPRECATED)
     check_c_compiler_flag (-Wno-strict-aliasing CC_HAVE_NSA)
     check_c_compiler_flag (-Wno-sign-compare CC_HAVE_NSC)
@@ -66,13 +69,10 @@ endif ()
 
 include_directories (SYSTEM ${LibMirage_INCLUDE_DIRS})
 
-list (APPEND image-analyzer_CFLAGS ${LibMirage_CFLAGS})
-list (APPEND image-analyzer_CFLAGS ${LibGlib_CFLAGS})
-list (APPEND image-analyzer_CFLAGS ${LibXml_CFLAGS})
-
-list (APPEND image-analyzer_LDFLAGS ${LibMirage_LDFLAGS})
-list (APPEND image-analyzer_LDFLAGS ${LibGlib_LDFLAGS})
-list (APPEND image-analyzer_LDFLAGS ${LibXml_LDFLAGS})
+list (APPEND image-analyzer_CFLAGS ${LibMirage_CFLAGS} ${LibGlib_CFLAGS}
+    ${LibXml_CFLAGS})
+list (APPEND image-analyzer_LDFLAGS ${LibMirage_LDFLAGS} ${LibGlib_LDFLAGS}
+    ${LibXml_LDFLAGS})
 
 if (GTK3_ENABLED)
     pkg_check_modules (GTK3 REQUIRED gtk+-3.0>=3.0)
@@ -89,7 +89,8 @@ include_directories (${PROJECT_SOURCE_DIR}/src)
 
 add_executable (image-analyzer ${image-analyzer_SOURCES})
 
-target_link_libraries (image-analyzer ${LibMirage_LIBRARIES} ${LibGlib_LIBRARIES} ${LibXml_LIBRARIES})
+target_link_libraries (image-analyzer ${LibMirage_LIBRARIES}
+    ${LibGlib_LIBRARIES} ${LibXml_LIBRARIES})
 
 if (GTK3_ENABLED)
     target_link_libraries (image-analyzer ${GTK3_LIBRARIES})

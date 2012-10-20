@@ -15,8 +15,10 @@ include (GNUInstallDirs)
 include (Utilities)
 include (FileList)
 
-mark_as_advanced (CLEAR CMAKE_INSTALL_SYSCONFDIR)
-mark_as_advanced (CLEAR CMAKE_VERBOSE_MAKEFILE)
+mark_as_advanced (CLEAR
+    CMAKE_INSTALL_SYSCONFDIR
+    CMAKE_VERBOSE_MAKEFILE
+)
 
 # Configuration
 configure_file (
@@ -44,7 +46,8 @@ list (APPEND cdemu-daemon_CFLAGS -std=gnu99)
 list (APPEND cdemu-daemon_DEFS HAVE_CONFIG_H)
 
 if (STRICT_WARNINGS AND CMAKE_COMPILER_IS_GNUCC)
-    list (APPEND cdemu-daemon_CFLAGS -Wall -Wextra -Wshadow -Wmissing-declarations -Wmissing-prototypes -Wnested-externs -Wpointer-arith -Wcast-align)
+    list (APPEND cdemu-daemon_CFLAGS -Wall -Wextra -Wshadow -Wmissing-declarations
+        -Wmissing-prototypes -Wnested-externs -Wpointer-arith -Wcast-align)
     list (APPEND cdemu-daemon_DEFS G_DISABLE_DEPRECATED)
     check_c_compiler_flag (-Wno-strict-aliasing CC_HAVE_NSA)
     check_c_compiler_flag (-Wno-sign-compare CC_HAVE_NSC)
@@ -65,18 +68,16 @@ option (STRICT_WARNINGS "Enable more warnings" off)
 find_package (PkgConfig 0.16 REQUIRED)
 
 pkg_check_modules (LibMirage REQUIRED libmirage>=${PROJECT_VERSION})
-pkg_check_modules (LibGlib REQUIRED glib-2.0>=2.24 gobject-2.0>=2.24 gmodule-2.0>=2.24 gthread-2.0>=2.24 gio-2.0>=2.26)
+pkg_check_modules (LibGlib REQUIRED glib-2.0>=2.24 gobject-2.0>=2.24
+    gmodule-2.0>=2.24 gthread-2.0>=2.24 gio-2.0>=2.26)
 pkg_check_modules (LibAO REQUIRED ao>=0.8.0)
 
 include_directories (SYSTEM ${LibMirage_INCLUDE_DIRS})
 
-list (APPEND cdemu-daemon_CFLAGS ${LibMirage_CFLAGS})
-list (APPEND cdemu-daemon_CFLAGS ${LibGlib_CFLAGS})
-list (APPEND cdemu-daemon_CFLAGS ${LibAO_CFLAGS})
-
-list (APPEND cdemu-daemon_LDFLAGS ${LibMirage_LDFLAGS})
-list (APPEND cdemu-daemon_LDFLAGS ${LibGlib_LDFLAGS})
-list (APPEND cdemu-daemon_LDFLAGS ${LibAO_LDFLAGS})
+list (APPEND cdemu-daemon_CFLAGS ${LibMirage_CFLAGS} ${LibGlib_CFLAGS}
+    ${LibAO_CFLAGS})
+list (APPEND cdemu-daemon_LDFLAGS ${LibMirage_LDFLAGS} ${LibGlib_LDFLAGS}
+    ${LibAO_LDFLAGS})
 
 # Source files
 include_directories (${PROJECT_SOURCE_DIR}/src)

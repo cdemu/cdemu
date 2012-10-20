@@ -36,8 +36,10 @@ set (MIRAGE_INSTALL_PLUGINDIR "${CMAKE_INSTALL_LIBDIR}/${PROJECT_NAME}-${MIRAGE_
 set (MIRAGE_PLUGIN_DIR "${CMAKE_INSTALL_PREFIX}/${MIRAGE_INSTALL_PLUGINDIR}")
 mark_as_advanced (MIRAGE_INSTALL_PLUGINDIR)
 
-mark_as_advanced (CLEAR CMAKE_INSTALL_SYSCONFDIR)
-mark_as_advanced (CLEAR CMAKE_VERBOSE_MAKEFILE)
+mark_as_advanced (CLEAR
+    CMAKE_INSTALL_SYSCONFDIR
+    CMAKE_VERBOSE_MAKEFILE
+)
 
 # Configuration
 configure_file (
@@ -59,9 +61,13 @@ configure_file (
 )
 include_directories (${PROJECT_BINARY_DIR})
 
+set (extra_clean_files
+    ${PROJECT_SOURCE_DIR}/src/libmirage/mirage-version.h
+    ${PROJECT_SOURCE_DIR}/docs/reference/libmirage/version.xml
+)
+
 set_directory_properties (
-    PROPERTY ADDITIONAL_MAKE_CLEAN_FILES
-    "${PROJECT_SOURCE_DIR}/src/libmirage/mirage-version.h;${PROJECT_SOURCE_DIR}/docs/reference/libmirage/version.xml"
+    PROPERTY ADDITIONAL_MAKE_CLEAN_FILES "${extra_clean_files}"
 )
 
 if (NOT CMAKE_BUILD_TYPE)
@@ -74,7 +80,8 @@ list (APPEND libmirage_CFLAGS -std=c99)
 list (APPEND libmirage_DEFS HAVE_CONFIG_H)
 
 if (STRICT_WARNINGS AND CMAKE_COMPILER_IS_GNUCC)
-    list (APPEND libmirage_CFLAGS -Wall -Wextra -Wshadow -Wmissing-declarations -Wmissing-prototypes -Wnested-externs -Wpointer-arith -Wcast-align)
+    list (APPEND libmirage_CFLAGS -Wall -Wextra -Wshadow -Wmissing-declarations
+        -Wmissing-prototypes -Wnested-externs -Wpointer-arith -Wcast-align)
     list (APPEND libmirage_DEFS G_DISABLE_DEPRECATED)
     check_c_compiler_flag (-Wno-strict-aliasing CC_HAVE_NSA)
     check_c_compiler_flag (-Wno-sign-compare CC_HAVE_NSC)
@@ -95,7 +102,8 @@ option (STRICT_WARNINGS "Enable more warnings" off)
 
 find_package (PkgConfig 0.16 REQUIRED)
 
-pkg_check_modules (LibGlib REQUIRED glib-2.0>=2.24 gobject-2.0>=2.24 gmodule-2.0>=2.24 gio-2.0>=2.24)
+pkg_check_modules (LibGlib REQUIRED glib-2.0>=2.24 gobject-2.0>=2.24
+    gmodule-2.0>=2.24 gio-2.0>=2.24)
 pkg_check_modules (ZLib REQUIRED zlib>=1.2.0)
 pkg_check_modules (LibLzma REQUIRED liblzma>=5.0.0)
 pkg_check_modules (LibSndFile REQUIRED sndfile>=1.0.0)
@@ -118,8 +126,8 @@ list (APPEND libmirage_LDFLAGS ${LibGlib_LDFLAGS})
 
 # Main library source files
 list (APPEND mirage_CFLAGS ${libmirage_CFLAGS})
-list (APPEND mirage_DEFS ${libmirage_DEFS})
-list (APPEND mirage_DEFS MIRAGE_PLUGIN_DIR="${MIRAGE_PLUGIN_DIR}")
+list (APPEND mirage_DEFS ${libmirage_DEFS}
+    MIRAGE_PLUGIN_DIR="${MIRAGE_PLUGIN_DIR}")
 list (APPEND mirage_LDFLAGS ${libmirage_LDFLAGS})
 
 to_list_spaces (mirage_CFLAGS mirage_S_CFLAGS)
@@ -150,11 +158,9 @@ install (
 )
 
 # Fragments source files
-list (APPEND fragments_CFLAGS ${libmirage_CFLAGS})
-list (APPEND fragments_CFLAGS ${LibSndFile_CFLAGS})
+list (APPEND fragments_CFLAGS ${libmirage_CFLAGS} ${LibSndFile_CFLAGS})
 list (APPEND fragments_DEFS ${libmirage_DEFS})
-list (APPEND fragments_LDFLAGS ${libmirage_LDFLAGS})
-list (APPEND fragments_LDFLAGS ${LibSndFile_LDFLAGS})
+list (APPEND fragments_LDFLAGS ${libmirage_LDFLAGS} ${LibSndFile_LDFLAGS})
 
 to_list_spaces (fragments_CFLAGS fragments_S_CFLAGS)
 to_list_spaces (fragments_LDFLAGS fragments_S_LDFLAGS)
@@ -178,11 +184,9 @@ foreach (fragment ${fragments_LIST})
 endforeach ()
 
 # Filters source files
-list (APPEND filters_CFLAGS ${libmirage_CFLAGS})
-list (APPEND filters_CFLAGS ${ZLib_CFLAGS})
+list (APPEND filters_CFLAGS ${libmirage_CFLAGS} ${ZLib_CFLAGS})
 list (APPEND filters_DEFS ${libmirage_DEFS})
-list (APPEND filters_LDFLAGS ${libmirage_LDFLAGS})
-list (APPEND filters_LDFLAGS ${ZLib_LDFLAGS})
+list (APPEND filters_LDFLAGS ${libmirage_LDFLAGS} ${ZLib_LDFLAGS})
 
 to_list_spaces (filters_CFLAGS filters_S_CFLAGS)
 to_list_spaces (filters_LDFLAGS filters_S_LDFLAGS)
@@ -218,11 +222,9 @@ foreach (filter ${filters_LIST})
 endforeach ()
 
 # Parsers source files
-list (APPEND parsers_CFLAGS ${libmirage_CFLAGS})
-list (APPEND parsers_CFLAGS ${ZLib_CFLAGS})
+list (APPEND parsers_CFLAGS ${libmirage_CFLAGS} ${ZLib_CFLAGS})
 list (APPEND parsers_DEFS ${libmirage_DEFS})
-list (APPEND parsers_LDFLAGS ${libmirage_LDFLAGS})
-list (APPEND parsers_LDFLAGS ${ZLib_LDFLAGS})
+list (APPEND parsers_LDFLAGS ${libmirage_LDFLAGS} ${ZLib_LDFLAGS})
 
 to_list_spaces (parsers_CFLAGS parsers_S_CFLAGS)
 to_list_spaces (parsers_LDFLAGS parsers_S_LDFLAGS)
@@ -284,7 +286,8 @@ if (GTKDOC_ENABLED AND GTKDOC_FOUND)
         IGNORE_HFILES src/libmirage/mirage-disc-structures.h
         CONTENT_FILES version.xml
         CFLAGS ${libmirage_CFLAGS} -I${PROJECT_SOURCE_DIR}/src/libmirage
-        LDFLAGS ${libmirage_LDFLAGS} -L${PROJECT_BINARY_DIR} -Wl,-rpath,${PROJECT_BINARY_DIR} -l${GTKDOC_LIB}
+        LDFLAGS ${libmirage_LDFLAGS} -L${PROJECT_BINARY_DIR}
+            -Wl,-rpath,${PROJECT_BINARY_DIR} -l${GTKDOC_LIB}
     )
 endif ()
 
