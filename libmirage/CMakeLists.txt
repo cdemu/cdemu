@@ -52,7 +52,7 @@ configure_file (
 )
 configure_file (
     ${PROJECT_SOURCE_DIR}/docs/reference/libmirage/version.xml.in
-    ${PROJECT_SOURCE_DIR}/docs/reference/libmirage/version.xml
+    ${PROJECT_BINARY_DIR}/docs/reference/libmirage/version.xml
 )
 configure_file (
     ${PROJECT_SOURCE_DIR}/libmirage.pc.in
@@ -63,7 +63,7 @@ include_directories (${PROJECT_BINARY_DIR})
 
 set (extra_clean_files
     ${PROJECT_SOURCE_DIR}/src/libmirage/mirage-version.h
-    ${PROJECT_SOURCE_DIR}/docs/reference/libmirage/version.xml
+    ${PROJECT_BINARY_DIR}/docs/reference/libmirage/version.xml
 )
 
 set_directory_properties (
@@ -284,7 +284,6 @@ if (GTKDOC_ENABLED AND GTKDOC_FOUND)
         SOURCES ${libmirage_HEADERS} ${libmirage_SOURCES}
         DOCS_DIR ${PROJECT_SOURCE_DIR}/docs/reference/libmirage
         IGNORE_HFILES src/libmirage/mirage-disc-structures.h
-        CONTENT_FILES version.xml
         CFLAGS ${libmirage_CFLAGS} -I${PROJECT_SOURCE_DIR}/src/libmirage
         LDFLAGS ${libmirage_LDFLAGS} -L${PROJECT_BINARY_DIR}
             -Wl,-rpath,${PROJECT_BINARY_DIR} -l${GTKDOC_LIB}
