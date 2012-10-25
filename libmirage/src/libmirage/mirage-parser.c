@@ -304,7 +304,7 @@ GDataInputStream *mirage_parser_create_text_stream (MirageParser *self, GInputSt
 /**********************************************************************\
  *                             Object init                            *
 \**********************************************************************/
-G_DEFINE_TYPE(MirageParser, mirage_parser, MIRAGE_TYPE_OBJECT);
+G_DEFINE_ABSTRACT_TYPE(MirageParser, mirage_parser, MIRAGE_TYPE_OBJECT);
 
 
 static void mirage_parser_init (MirageParser *self)

@@ -339,14 +339,11 @@ static MirageContext *mirage_file_filter_get_context (MirageContextual *_self)
 static void mirage_file_filter_gseekable_init (GSeekableIface *iface);
 static void mirage_file_filter_contextual_init (MirageContextualInterface *iface);
 
-G_DEFINE_TYPE_EXTENDED(MirageFileFilter,
-                       mirage_file_filter,
-                       G_TYPE_FILTER_INPUT_STREAM,
-                       0,
-                       G_IMPLEMENT_INTERFACE(G_TYPE_SEEKABLE,
-                                             mirage_file_filter_gseekable_init);
-                       G_IMPLEMENT_INTERFACE(MIRAGE_TYPE_CONTEXTUAL,
-                                             mirage_file_filter_contextual_init));
+G_DEFINE_ABSTRACT_TYPE_WITH_CODE(MirageFileFilter,
+                                 mirage_file_filter,
+                                 G_TYPE_FILTER_INPUT_STREAM,
+                                 G_IMPLEMENT_INTERFACE(G_TYPE_SEEKABLE, mirage_file_filter_gseekable_init);
+                                 G_IMPLEMENT_INTERFACE(MIRAGE_TYPE_CONTEXTUAL, mirage_file_filter_contextual_init));
 
 
 static void mirage_file_filter_init (MirageFileFilter *self)

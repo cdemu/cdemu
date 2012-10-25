@@ -21,7 +21,7 @@
  * SECTION: mirage-fragment
  * @title: MirageFragment
  * @short_description: Base object for fragment implementations.
- * @see_also: #MirageFragmentIfaceAudio, #MirageFragmentIfaceBinary
+ * @see_also: #MirageAudioFragment, #MirageDataFragment
  * @include: mirage-fragment.h
  *
  * #MirageFragment object is a base object for fragment implementations.
@@ -33,7 +33,7 @@
  * by fragment implementations which derive from #MirageFragment object.
  *
  * Every fragment implementation needs to implement one of the following
- * fragment interfaces: #MirageFragmentIfaceBinary or #MirageFragmentIfaceAudio.
+ * fragment interfaces: #MirageDataFragment or #MirageAudioFragment.
  * Which interface a fragment implementation implements depends on the
  * way the implementation handles data.
  *

@@ -159,12 +159,10 @@ static MirageContext *mirage_object_get_context (MirageContextual *_self)
 \**********************************************************************/
 static void mirage_object_contextual_init (MirageContextualInterface *iface);
 
-G_DEFINE_TYPE_EXTENDED(MirageObject,
-                       mirage_object,
-                       G_TYPE_OBJECT,
-                       0,
-                       G_IMPLEMENT_INTERFACE(MIRAGE_TYPE_CONTEXTUAL,
-                                             mirage_object_contextual_init));
+G_DEFINE_TYPE_WITH_CODE(MirageObject,
+                        mirage_object,
+                        G_TYPE_OBJECT,
+                        G_IMPLEMENT_INTERFACE(MIRAGE_TYPE_CONTEXTUAL, mirage_object_contextual_init));
 
 static void mirage_object_init (MirageObject *self)
 {
