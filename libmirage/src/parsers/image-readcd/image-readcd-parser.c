@@ -197,20 +197,20 @@ static gboolean mirage_parser_readcd_parse_toc_entry (MirageParserReadcd *self, 
         mirage_track_set_ctl(self->priv->cur_track, entry[1]);
 
         /* Data fragment */
-        MirageFragment *fragment = mirage_contextual_create_fragment(MIRAGE_CONTEXTUAL(self), MIRAGE_TYPE_FRAGMENT_IFACE_BINARY, self->priv->data_stream, error);
+        MirageFragment *fragment = mirage_contextual_create_fragment(MIRAGE_CONTEXTUAL(self), MIRAGE_TYPE_DATA_FRAGMENT, self->priv->data_stream, error);
         if (!fragment) {
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to create data fragment!\n", __debug__);
             succeeded = FALSE;
             goto end;
         }
 
-        mirage_fragment_iface_binary_main_data_set_stream(MIRAGE_FRAGMENT_IFACE_BINARY(self), self->priv->data_stream);
-        mirage_fragment_iface_binary_main_data_set_size(MIRAGE_FRAGMENT_IFACE_BINARY(fragment), 2352);
-        mirage_fragment_iface_binary_main_data_set_offset(MIRAGE_FRAGMENT_IFACE_BINARY(fragment), track_lba*2448);
-        mirage_fragment_iface_binary_main_data_set_format(MIRAGE_FRAGMENT_IFACE_BINARY(fragment), MIRAGE_MAIN_DATA);
+        mirage_data_fragment_main_data_set_stream(MIRAGE_DATA_FRAGMENT(self), self->priv->data_stream);
+        mirage_data_fragment_main_data_set_size(MIRAGE_DATA_FRAGMENT(fragment), 2352);
+        mirage_data_fragment_main_data_set_offset(MIRAGE_DATA_FRAGMENT(fragment), track_lba*2448);
+        mirage_data_fragment_main_data_set_format(MIRAGE_DATA_FRAGMENT(fragment), MIRAGE_MAIN_DATA);
 
-        mirage_fragment_iface_binary_subchannel_data_set_size(MIRAGE_FRAGMENT_IFACE_BINARY(fragment), 96);
-        mirage_fragment_iface_binary_subchannel_data_set_format(MIRAGE_FRAGMENT_IFACE_BINARY(fragment), MIRAGE_SUBCHANNEL_PW96_INT | MIRAGE_SUBCHANNEL_INT);
+        mirage_data_fragment_subchannel_data_set_size(MIRAGE_DATA_FRAGMENT(fragment), 96);
+        mirage_data_fragment_subchannel_data_set_format(MIRAGE_DATA_FRAGMENT(fragment), MIRAGE_SUBCHANNEL_PW96_INT | MIRAGE_SUBCHANNEL_INT);
 
         mirage_track_add_fragment(MIRAGE_TRACK(self->priv->cur_track), -1, fragment);
         g_object_unref(fragment);
@@ -243,20 +243,20 @@ static gboolean mirage_parser_readcd_parse_toc_entry (MirageParserReadcd *self, 
                 g_object_unref(prev_track);
 
                 /* Current track: add 150-frame pregap with data from data file */
-                fragment = mirage_contextual_create_fragment(MIRAGE_CONTEXTUAL(self), MIRAGE_TYPE_FRAGMENT_IFACE_BINARY, self->priv->data_stream, error);
+                fragment = mirage_contextual_create_fragment(MIRAGE_CONTEXTUAL(self), MIRAGE_TYPE_DATA_FRAGMENT, self->priv->data_stream, error);
                 if (!fragment) {
                     MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to create data fragment!\n", __debug__);
                     succeeded = FALSE;
                     goto end;
                 }
 
-                mirage_fragment_iface_binary_main_data_set_stream(MIRAGE_FRAGMENT_IFACE_BINARY(fragment), self->priv->data_stream);
-                mirage_fragment_iface_binary_main_data_set_size(MIRAGE_FRAGMENT_IFACE_BINARY(fragment), 2352);
-                mirage_fragment_iface_binary_main_data_set_offset(MIRAGE_FRAGMENT_IFACE_BINARY(fragment), (track_lba - 150)*2448);
-                mirage_fragment_iface_binary_main_data_set_format(MIRAGE_FRAGMENT_IFACE_BINARY(fragment), MIRAGE_MAIN_DATA);
+                mirage_data_fragment_main_data_set_stream(MIRAGE_DATA_FRAGMENT(fragment), self->priv->data_stream);
+                mirage_data_fragment_main_data_set_size(MIRAGE_DATA_FRAGMENT(fragment), 2352);
+                mirage_data_fragment_main_data_set_offset(MIRAGE_DATA_FRAGMENT(fragment), (track_lba - 150)*2448);
+                mirage_data_fragment_main_data_set_format(MIRAGE_DATA_FRAGMENT(fragment), MIRAGE_MAIN_DATA);
 
-                mirage_fragment_iface_binary_subchannel_data_set_size(MIRAGE_FRAGMENT_IFACE_BINARY(fragment), 96);
-                mirage_fragment_iface_binary_subchannel_data_set_format(MIRAGE_FRAGMENT_IFACE_BINARY(fragment), MIRAGE_SUBCHANNEL_PW96_INT | MIRAGE_SUBCHANNEL_INT);
+                mirage_data_fragment_subchannel_data_set_size(MIRAGE_DATA_FRAGMENT(fragment), 96);
+                mirage_data_fragment_subchannel_data_set_format(MIRAGE_DATA_FRAGMENT(fragment), MIRAGE_SUBCHANNEL_PW96_INT | MIRAGE_SUBCHANNEL_INT);
 
                 mirage_fragment_set_length(fragment, 150);
 

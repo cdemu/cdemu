@@ -255,9 +255,9 @@ static gboolean mirage_parser_cue_add_index (MirageParserCue *self, gint number,
                         /* Binary fragments/files are pain because sector size can
                            vary between the tracks; so in case we're dealing with
                            binary, we need to keep track of the offset within file */
-                        if (MIRAGE_IS_FRAGMENT_IFACE_BINARY(fragment)) {
-                            gint main_size = mirage_fragment_iface_binary_main_data_get_size(MIRAGE_FRAGMENT_IFACE_BINARY(fragment));
-                            gint subchannel_size = mirage_fragment_iface_binary_subchannel_data_get_size(MIRAGE_FRAGMENT_IFACE_BINARY(fragment));
+                        if (MIRAGE_IS_DATA_FRAGMENT(fragment)) {
+                            gint main_size = mirage_data_fragment_main_data_get_size(MIRAGE_DATA_FRAGMENT(fragment));
+                            gint subchannel_size = mirage_data_fragment_subchannel_data_get_size(MIRAGE_DATA_FRAGMENT(fragment));
 
                             self->priv->binary_offset += fragment_length * (main_size + subchannel_size);
                         }
@@ -292,38 +292,38 @@ static gboolean mirage_parser_cue_add_index (MirageParserCue *self, gint number,
                     main_size = self->priv->cur_data_sectsize;
                 }
 
-                fragment = mirage_contextual_create_fragment(MIRAGE_CONTEXTUAL(self), MIRAGE_TYPE_FRAGMENT_IFACE_BINARY, data_stream, error);
+                fragment = mirage_contextual_create_fragment(MIRAGE_CONTEXTUAL(self), MIRAGE_TYPE_DATA_FRAGMENT, data_stream, error);
                 if (!fragment) {
                     MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to create data fragment!\n", __debug__);
                     g_object_unref(data_stream);
                     return FALSE;
                 }
 
-                mirage_fragment_iface_binary_main_data_set_stream(MIRAGE_FRAGMENT_IFACE_BINARY(fragment), data_stream);
-                mirage_fragment_iface_binary_main_data_set_size(MIRAGE_FRAGMENT_IFACE_BINARY(fragment), main_size);
-                mirage_fragment_iface_binary_main_data_set_offset(MIRAGE_FRAGMENT_IFACE_BINARY(fragment), self->priv->binary_offset);
-                mirage_fragment_iface_binary_main_data_set_format(MIRAGE_FRAGMENT_IFACE_BINARY(fragment), self->priv->cur_data_format);
+                mirage_data_fragment_main_data_set_stream(MIRAGE_DATA_FRAGMENT(fragment), data_stream);
+                mirage_data_fragment_main_data_set_size(MIRAGE_DATA_FRAGMENT(fragment), main_size);
+                mirage_data_fragment_main_data_set_offset(MIRAGE_DATA_FRAGMENT(fragment), self->priv->binary_offset);
+                mirage_data_fragment_main_data_set_format(MIRAGE_DATA_FRAGMENT(fragment), self->priv->cur_data_format);
 
                 if (subchannel_size) {
-                    mirage_fragment_iface_binary_subchannel_data_set_size(MIRAGE_FRAGMENT_IFACE_BINARY(fragment), subchannel_size);
+                    mirage_data_fragment_subchannel_data_set_size(MIRAGE_DATA_FRAGMENT(fragment), subchannel_size);
                     /* FIXME: what format of subchannel is there anyway? */
-                    mirage_fragment_iface_binary_subchannel_data_set_format(MIRAGE_FRAGMENT_IFACE_BINARY(fragment), MIRAGE_SUBCHANNEL_PW96_INT | MIRAGE_SUBCHANNEL_INT);
+                    mirage_data_fragment_subchannel_data_set_format(MIRAGE_DATA_FRAGMENT(fragment), MIRAGE_SUBCHANNEL_PW96_INT | MIRAGE_SUBCHANNEL_INT);
                 }
             } else {
                 /* One of the audio files; we'll request fragment with AUDIO
                    interface and hope Mirage finds one that can handle the file
                    for us */
-                fragment = mirage_contextual_create_fragment(MIRAGE_CONTEXTUAL(self), MIRAGE_TYPE_FRAGMENT_IFACE_AUDIO, data_stream, error);
+                fragment = mirage_contextual_create_fragment(MIRAGE_CONTEXTUAL(self), MIRAGE_TYPE_AUDIO_FRAGMENT, data_stream, error);
                 if (!fragment) {
                     MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: unknown/unsupported file type: %s\n", __debug__, self->priv->cur_data_type);
                     g_object_unref(data_stream);
                     return FALSE;
                 }
 
-                mirage_fragment_iface_audio_set_stream(MIRAGE_FRAGMENT_IFACE_AUDIO(fragment), data_stream);
+                mirage_audio_fragment_set_stream(MIRAGE_AUDIO_FRAGMENT(fragment), data_stream);
 
                 /* Offset in audio file is equivalent to current address in CUE */
-                mirage_fragment_iface_audio_set_offset(MIRAGE_FRAGMENT_IFACE_AUDIO(fragment), address);
+                mirage_audio_fragment_set_offset(MIRAGE_AUDIO_FRAGMENT(fragment), address);
             }
 
             mirage_track_add_fragment(self->priv->cur_track, -1, fragment);

@@ -1,5 +1,5 @@
 set (fragments_LIST
-    fragment-binary
+    fragment-raw
     fragment-sndfile
 )
 
@@ -44,17 +44,17 @@ set (mimetype_FILES
 
 set (libmirage_HEADERS
     src/libmirage/mirage.h
+    src/libmirage/mirage-audio-fragment.h
     src/libmirage/mirage-cdtext-coder.h
     src/libmirage/mirage-context.h
     src/libmirage/mirage-contextual.h
+    src/libmirage/mirage-data-fragment.h
     src/libmirage/mirage-debug.h
     src/libmirage/mirage-disc.h
     src/libmirage/mirage-disc-structures.h
     src/libmirage/mirage-error.h
     src/libmirage/mirage-file-filter.h
     src/libmirage/mirage-fragment.h
-    src/libmirage/mirage-fragment-iface-audio.h
-    src/libmirage/mirage-fragment-iface-binary.h
     src/libmirage/mirage-index.h
     src/libmirage/mirage-language.h
     src/libmirage/mirage-object.h
@@ -69,15 +69,15 @@ set (libmirage_HEADERS
 
 set (libmirage_SOURCES
     src/libmirage/mirage.c
+    src/libmirage/mirage-audio-fragment.c
     src/libmirage/mirage-cdtext-coder.c
     src/libmirage/mirage-context.c
     src/libmirage/mirage-contextual.c
+    src/libmirage/mirage-data-fragment.c
     src/libmirage/mirage-disc.c
     src/libmirage/mirage-error.c
     src/libmirage/mirage-file-filter.c
     src/libmirage/mirage-fragment.c
-    src/libmirage/mirage-fragment-iface-audio.c
-    src/libmirage/mirage-fragment-iface-binary.c
     src/libmirage/mirage-index.c
     src/libmirage/mirage-language.c
     src/libmirage/mirage-object.c
@@ -90,9 +90,9 @@ set (libmirage_SOURCES
     src/libmirage/mirage-version.c
 )
 
-set (fragment-binary_SOURCES
-    src/fragments/fragment-binary/fragment-binary-fragment.c
-    src/fragments/fragment-binary/fragment-binary-plugin.c
+set (fragment-raw_SOURCES
+    src/fragments/fragment-raw/fragment-raw-fragment.c
+    src/fragments/fragment-raw/fragment-raw-plugin.c
 )
 
 set (fragment-sndfile_SOURCES

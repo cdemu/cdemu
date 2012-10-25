@@ -131,16 +131,16 @@ static gboolean mirage_parser_iso_load_track (MirageParserIso *self, GInputStrea
 
     /* Create data fragment */
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: creating data fragment\n", __debug__);
-    fragment = mirage_contextual_create_fragment(MIRAGE_CONTEXTUAL(self), MIRAGE_TYPE_FRAGMENT_IFACE_BINARY, stream, error);
+    fragment = mirage_contextual_create_fragment(MIRAGE_CONTEXTUAL(self), MIRAGE_TYPE_DATA_FRAGMENT, stream, error);
     if (!fragment) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to create BINARY fragment!\n", __debug__);
         return FALSE;
     }
 
     /* Set stream */
-    mirage_fragment_iface_binary_main_data_set_stream(MIRAGE_FRAGMENT_IFACE_BINARY(fragment), stream);
-    mirage_fragment_iface_binary_main_data_set_size(MIRAGE_FRAGMENT_IFACE_BINARY(fragment), self->priv->track_sectsize);
-    mirage_fragment_iface_binary_main_data_set_format(MIRAGE_FRAGMENT_IFACE_BINARY(fragment), MIRAGE_MAIN_DATA);
+    mirage_data_fragment_main_data_set_stream(MIRAGE_DATA_FRAGMENT(fragment), stream);
+    mirage_data_fragment_main_data_set_size(MIRAGE_DATA_FRAGMENT(fragment), self->priv->track_sectsize);
+    mirage_data_fragment_main_data_set_format(MIRAGE_DATA_FRAGMENT(fragment), MIRAGE_MAIN_DATA);
 
     /* Use whole file */
     if (!mirage_fragment_use_the_rest_of_file(fragment, error)) {

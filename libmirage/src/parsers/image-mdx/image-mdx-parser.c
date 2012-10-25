@@ -244,19 +244,19 @@ static MirageTrack *mirage_parser_mdx_get_track (MirageParserMdx *self, GError *
 
     /* Create data fragment */
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: creating data fragment\n", __debug__);
-    data_fragment = mirage_contextual_create_fragment(MIRAGE_CONTEXTUAL(self), MIRAGE_TYPE_FRAGMENT_IFACE_BINARY, data_stream, error);
+    data_fragment = mirage_contextual_create_fragment(MIRAGE_CONTEXTUAL(self), MIRAGE_TYPE_DATA_FRAGMENT, data_stream, error);
     if (!data_fragment) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to create BINARY fragment!\n", __debug__);
         return NULL;
     }
 
     /* Set stream */
-    mirage_fragment_iface_binary_main_data_set_stream(MIRAGE_FRAGMENT_IFACE_BINARY(data_fragment), data_stream);
+    mirage_data_fragment_main_data_set_stream(MIRAGE_DATA_FRAGMENT(data_fragment), data_stream);
     g_object_unref(data_stream);
 
-    mirage_fragment_iface_binary_main_data_set_format(MIRAGE_FRAGMENT_IFACE_BINARY(data_fragment), MIRAGE_MAIN_DATA);
-    mirage_fragment_iface_binary_main_data_set_offset(MIRAGE_FRAGMENT_IFACE_BINARY(data_fragment), offset);
-    mirage_fragment_iface_binary_main_data_set_size(MIRAGE_FRAGMENT_IFACE_BINARY(data_fragment), sector_size);
+    mirage_data_fragment_main_data_set_format(MIRAGE_DATA_FRAGMENT(data_fragment), MIRAGE_MAIN_DATA);
+    mirage_data_fragment_main_data_set_offset(MIRAGE_DATA_FRAGMENT(data_fragment), offset);
+    mirage_data_fragment_main_data_set_size(MIRAGE_DATA_FRAGMENT(data_fragment), sector_size);
 
     mirage_fragment_set_length(data_fragment, num_sectors);
 

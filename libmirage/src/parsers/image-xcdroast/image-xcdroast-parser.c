@@ -124,7 +124,7 @@ static gboolean mirage_parser_xcdroast_add_track (MirageParserXcdroast *self, TO
             mirage_track_set_mode(track, MIRAGE_MODE_MODE1);
 
             /* Create and add binary fragment, using whole file */
-            fragment = mirage_contextual_create_fragment(MIRAGE_CONTEXTUAL(self), MIRAGE_TYPE_FRAGMENT_IFACE_BINARY, data_stream, error);
+            fragment = mirage_contextual_create_fragment(MIRAGE_CONTEXTUAL(self), MIRAGE_TYPE_DATA_FRAGMENT, data_stream, error);
             if (!fragment) {
                 MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to create BINARY fragment!\n", __debug__);
                 g_object_unref(data_stream);
@@ -132,10 +132,10 @@ static gboolean mirage_parser_xcdroast_add_track (MirageParserXcdroast *self, TO
                 return FALSE;
             }
 
-            mirage_fragment_iface_binary_main_data_set_stream(MIRAGE_FRAGMENT_IFACE_BINARY(fragment), data_stream);
-            mirage_fragment_iface_binary_main_data_set_size(MIRAGE_FRAGMENT_IFACE_BINARY(fragment), 2048);
-            mirage_fragment_iface_binary_main_data_set_offset(MIRAGE_FRAGMENT_IFACE_BINARY(fragment), 0);
-            mirage_fragment_iface_binary_main_data_set_format(MIRAGE_FRAGMENT_IFACE_BINARY(fragment), MIRAGE_MAIN_DATA);
+            mirage_data_fragment_main_data_set_stream(MIRAGE_DATA_FRAGMENT(fragment), data_stream);
+            mirage_data_fragment_main_data_set_size(MIRAGE_DATA_FRAGMENT(fragment), 2048);
+            mirage_data_fragment_main_data_set_offset(MIRAGE_DATA_FRAGMENT(fragment), 0);
+            mirage_data_fragment_main_data_set_format(MIRAGE_DATA_FRAGMENT(fragment), MIRAGE_MAIN_DATA);
 
             mirage_fragment_use_the_rest_of_file(fragment, NULL);
 
@@ -164,7 +164,7 @@ static gboolean mirage_parser_xcdroast_add_track (MirageParserXcdroast *self, TO
             mirage_track_set_mode(track, MIRAGE_MODE_AUDIO);
 
             /* Create and add audio fragment, using whole file */
-            fragment = mirage_contextual_create_fragment(MIRAGE_CONTEXTUAL(self), MIRAGE_TYPE_FRAGMENT_IFACE_AUDIO, data_stream, error);
+            fragment = mirage_contextual_create_fragment(MIRAGE_CONTEXTUAL(self), MIRAGE_TYPE_AUDIO_FRAGMENT, data_stream, error);
             if (!fragment) {
                 MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to create AUDIO fragment!\n", __debug__);
                 g_object_unref(data_stream);
@@ -172,7 +172,7 @@ static gboolean mirage_parser_xcdroast_add_track (MirageParserXcdroast *self, TO
                 return FALSE;
             }
 
-            mirage_fragment_iface_audio_set_stream(MIRAGE_FRAGMENT_IFACE_AUDIO(fragment), data_stream);
+            mirage_audio_fragment_set_stream(MIRAGE_AUDIO_FRAGMENT(fragment), data_stream);
 
             mirage_fragment_use_the_rest_of_file(fragment, NULL);
 

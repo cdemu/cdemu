@@ -1,5 +1,5 @@
 /*
- *  libMirage: BINARY fragment: Fragment object
+ *  libMirage: RAW fragment: Fragment object
  *  Copyright (C) 2007-2012 Rok Mandeljc
  *
  *  This program is free software; you can redistribute it and/or modify
@@ -17,17 +17,17 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
 
-#include "fragment-binary.h"
+#include "fragment-raw.h"
 
-#define __debug__ "BINARY-Fragment"
+#define __debug__ "RAW-Fragment"
 
 
 /**********************************************************************\
  *                          Private structure                         *
 \**********************************************************************/
-#define MIRAGE_FRAGMENT_BINARY_GET_PRIVATE(obj) (G_TYPE_INSTANCE_GET_PRIVATE((obj), MIRAGE_TYPE_FRAGMENT_BINARY, MirageFragmentBinaryPrivate))
+#define MIRAGE_FRAGMENT_RAW_GET_PRIVATE(obj) (G_TYPE_INSTANCE_GET_PRIVATE((obj), MIRAGE_TYPE_FRAGMENT_RAW, MirageFragmentRawPrivate))
 
-struct _MirageFragmentBinaryPrivate
+struct _MirageFragmentRawPrivate
 {
     GInputStream *main_stream; /* Main data stream */
     gint main_size; /* Main data sector size */
@@ -44,9 +44,9 @@ struct _MirageFragmentBinaryPrivate
 /**********************************************************************\
  *                     Binary Interface implementation                *
 \**********************************************************************/
-static void mirage_fragment_binary_main_data_set_stream (MirageFragmentIfaceBinary *_self, GInputStream *stream)
+static void mirage_fragment_raw_main_data_set_stream (MirageDataFragment *_self, GInputStream *stream)
 {
-    MirageFragmentBinary *self = MIRAGE_FRAGMENT_BINARY(_self);
+    MirageFragmentRaw *self = MIRAGE_FRAGMENT_RAW(_self);
 
     /* Release old stream */
     if (self->priv->main_stream) {
@@ -59,62 +59,62 @@ static void mirage_fragment_binary_main_data_set_stream (MirageFragmentIfaceBina
     g_object_ref(stream);
 }
 
-static const gchar *mirage_fragment_binary_main_data_get_filename (MirageFragmentIfaceBinary *_self)
+static const gchar *mirage_fragment_raw_main_data_get_filename (MirageDataFragment *_self)
 {
-    MirageFragmentBinary *self = MIRAGE_FRAGMENT_BINARY(_self);
+    MirageFragmentRaw *self = MIRAGE_FRAGMENT_RAW(_self);
     /* Return file name */
     return mirage_contextual_get_file_stream_filename(MIRAGE_CONTEXTUAL(self), self->priv->main_stream);
 }
 
 
-static void mirage_fragment_binary_main_data_set_offset (MirageFragmentIfaceBinary *_self, guint64 offset)
+static void mirage_fragment_raw_main_data_set_offset (MirageDataFragment *_self, guint64 offset)
 {
-    MirageFragmentBinary *self = MIRAGE_FRAGMENT_BINARY(_self);
+    MirageFragmentRaw *self = MIRAGE_FRAGMENT_RAW(_self);
     /* Set offset */
     self->priv->main_offset = offset;
 }
 
-static guint64 mirage_fragment_binary_main_data_get_offset (MirageFragmentIfaceBinary *_self)
+static guint64 mirage_fragment_raw_main_data_get_offset (MirageDataFragment *_self)
 {
-    MirageFragmentBinary *self = MIRAGE_FRAGMENT_BINARY(_self);
+    MirageFragmentRaw *self = MIRAGE_FRAGMENT_RAW(_self);
     /* Return offset */
     return self->priv->main_offset;
 }
 
 
-static void mirage_fragment_binary_main_data_set_size (MirageFragmentIfaceBinary *_self, gint size)
+static void mirage_fragment_raw_main_data_set_size (MirageDataFragment *_self, gint size)
 {
-    MirageFragmentBinary *self = MIRAGE_FRAGMENT_BINARY(_self);
+    MirageFragmentRaw *self = MIRAGE_FRAGMENT_RAW(_self);
     /* Set sector size */
     self->priv->main_size = size;
 }
 
-static gint mirage_fragment_binary_main_data_get_size (MirageFragmentIfaceBinary *_self)
+static gint mirage_fragment_raw_main_data_get_size (MirageDataFragment *_self)
 {
-    MirageFragmentBinary *self = MIRAGE_FRAGMENT_BINARY(_self);
+    MirageFragmentRaw *self = MIRAGE_FRAGMENT_RAW(_self);
     /* Return sector size */
     return self->priv->main_size;
 }
 
 
-static void mirage_fragment_binary_main_data_set_format (MirageFragmentIfaceBinary *_self, gint format)
+static void mirage_fragment_raw_main_data_set_format (MirageDataFragment *_self, gint format)
 {
-    MirageFragmentBinary *self = MIRAGE_FRAGMENT_BINARY(_self);
+    MirageFragmentRaw *self = MIRAGE_FRAGMENT_RAW(_self);
     /* Set format */
     self->priv->main_format = format;
 }
 
-static gint mirage_fragment_binary_main_data_get_format (MirageFragmentIfaceBinary *_self)
+static gint mirage_fragment_raw_main_data_get_format (MirageDataFragment *_self)
 {
-    MirageFragmentBinary *self = MIRAGE_FRAGMENT_BINARY(_self);
+    MirageFragmentRaw *self = MIRAGE_FRAGMENT_RAW(_self);
     /* Return format */
     return self->priv->main_format;
 }
 
 
-static guint64 mirage_fragment_binary_main_data_get_position (MirageFragmentIfaceBinary *_self, gint address)
+static guint64 mirage_fragment_raw_main_data_get_position (MirageDataFragment *_self, gint address)
 {
-    MirageFragmentBinary *self = MIRAGE_FRAGMENT_BINARY(_self);
+    MirageFragmentRaw *self = MIRAGE_FRAGMENT_RAW(_self);
     gint size_full;
 
     /* Calculate 'full' sector size:
@@ -135,9 +135,9 @@ static guint64 mirage_fragment_binary_main_data_get_position (MirageFragmentIfac
 }
 
 
-static void mirage_fragment_binary_subchannel_data_set_stream (MirageFragmentIfaceBinary *_self, GInputStream *stream)
+static void mirage_fragment_raw_subchannel_data_set_stream (MirageDataFragment *_self, GInputStream *stream)
 {
-    MirageFragmentBinary *self = MIRAGE_FRAGMENT_BINARY(_self);
+    MirageFragmentRaw *self = MIRAGE_FRAGMENT_RAW(_self);
 
     /* Release old stream */
     if (self->priv->subchannel_stream) {
@@ -150,61 +150,61 @@ static void mirage_fragment_binary_subchannel_data_set_stream (MirageFragmentIfa
     g_object_ref(stream);
 }
 
-static const gchar *mirage_fragment_binary_subchannel_data_get_filename (MirageFragmentIfaceBinary *_self)
+static const gchar *mirage_fragment_raw_subchannel_data_get_filename (MirageDataFragment *_self)
 {
-    MirageFragmentBinary *self = MIRAGE_FRAGMENT_BINARY(_self);
+    MirageFragmentRaw *self = MIRAGE_FRAGMENT_RAW(_self);
     /* Return file name */
     return mirage_contextual_get_file_stream_filename(MIRAGE_CONTEXTUAL(self), self->priv->subchannel_stream);
 }
 
 
-static void mirage_fragment_binary_subchannel_data_set_offset (MirageFragmentIfaceBinary *_self, guint64 offset)
+static void mirage_fragment_raw_subchannel_data_set_offset (MirageDataFragment *_self, guint64 offset)
 {
-    MirageFragmentBinary *self = MIRAGE_FRAGMENT_BINARY(_self);
+    MirageFragmentRaw *self = MIRAGE_FRAGMENT_RAW(_self);
     /* Set offset */
     self->priv->subchannel_offset = offset;
 }
 
-static guint64 mirage_fragment_binary_subchannel_data_get_offset (MirageFragmentIfaceBinary *_self)
+static guint64 mirage_fragment_raw_subchannel_data_get_offset (MirageDataFragment *_self)
 {
-    MirageFragmentBinary *self = MIRAGE_FRAGMENT_BINARY(_self);
+    MirageFragmentRaw *self = MIRAGE_FRAGMENT_RAW(_self);
     /* Return offset */
     return self->priv->subchannel_offset;
 }
 
-static void mirage_fragment_binary_subchannel_data_set_size (MirageFragmentIfaceBinary *_self, gint size)
+static void mirage_fragment_raw_subchannel_data_set_size (MirageDataFragment *_self, gint size)
 {
-    MirageFragmentBinary *self = MIRAGE_FRAGMENT_BINARY(_self);
+    MirageFragmentRaw *self = MIRAGE_FRAGMENT_RAW(_self);
     /* Set sector size */
     self->priv->subchannel_size = size;
 }
 
-static gint mirage_fragment_binary_subchannel_data_get_size (MirageFragmentIfaceBinary *_self)
+static gint mirage_fragment_raw_subchannel_data_get_size (MirageDataFragment *_self)
 {
-    MirageFragmentBinary *self = MIRAGE_FRAGMENT_BINARY(_self);
+    MirageFragmentRaw *self = MIRAGE_FRAGMENT_RAW(_self);
     /* Return sector size */
     return self->priv->subchannel_size;
 }
 
 
-static void mirage_fragment_binary_subchannel_data_set_format (MirageFragmentIfaceBinary *_self, gint format)
+static void mirage_fragment_raw_subchannel_data_set_format (MirageDataFragment *_self, gint format)
 {
-    MirageFragmentBinary *self = MIRAGE_FRAGMENT_BINARY(_self);
+    MirageFragmentRaw *self = MIRAGE_FRAGMENT_RAW(_self);
     /* Set format */
     self->priv->subchannel_format = format;
 }
 
-static gint mirage_fragment_binary_subchannel_data_get_format (MirageFragmentIfaceBinary *_self)
+static gint mirage_fragment_raw_subchannel_data_get_format (MirageDataFragment *_self)
 {
-    MirageFragmentBinary *self = MIRAGE_FRAGMENT_BINARY(_self);
+    MirageFragmentRaw *self = MIRAGE_FRAGMENT_RAW(_self);
     /* Return format */
     return self->priv->subchannel_format;
 }
 
 
-static guint64 mirage_fragment_binary_subchannel_data_get_position (MirageFragmentIfaceBinary *_self, gint address)
+static guint64 mirage_fragment_raw_subchannel_data_get_position (MirageDataFragment *_self, gint address)
 {
-    MirageFragmentBinary *self = MIRAGE_FRAGMENT_BINARY(_self);
+    MirageFragmentRaw *self = MIRAGE_FRAGMENT_RAW(_self);
     guint64 offset = 0;
 
     /* Either we have internal or external subchannel */
@@ -212,7 +212,7 @@ static guint64 mirage_fragment_binary_subchannel_data_get_position (MirageFragme
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_FRAGMENT, "%s: internal subchannel, position is at end of main channel data\n", __debug__);
         /* Subchannel is contained in track file; get position in track file
            for that sector, and add to it length of track data sector */
-        offset = mirage_fragment_iface_binary_main_data_get_position(MIRAGE_FRAGMENT_IFACE_BINARY(self), address);
+        offset = mirage_data_fragment_main_data_get_position(MIRAGE_DATA_FRAGMENT(self), address);
         offset += self->priv->main_size;
     } else if (self->priv->subchannel_format & MIRAGE_SUBCHANNEL_EXT) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_FRAGMENT, "%s: external subchannel, calculating position\n", __debug__);
@@ -229,7 +229,7 @@ static guint64 mirage_fragment_binary_subchannel_data_get_position (MirageFragme
 /**********************************************************************\
  *               MirageFragment methods implementations              *
 \**********************************************************************/
-static gboolean mirage_fragment_binary_can_handle_data_format (MirageFragment *_self G_GNUC_UNUSED, GInputStream *stream, GError **error)
+static gboolean mirage_fragment_raw_can_handle_data_format (MirageFragment *_self G_GNUC_UNUSED, GInputStream *stream, GError **error)
 {
     /* Make sure stream is provided */
     if (!stream) {
@@ -242,9 +242,9 @@ static gboolean mirage_fragment_binary_can_handle_data_format (MirageFragment *_
     return TRUE;
 }
 
-static gboolean mirage_fragment_binary_use_the_rest_of_file (MirageFragment *_self, GError **error)
+static gboolean mirage_fragment_raw_use_the_rest_of_file (MirageFragment *_self, GError **error)
 {
-    MirageFragmentBinary *self = MIRAGE_FRAGMENT_BINARY(_self);
+    MirageFragmentRaw *self = MIRAGE_FRAGMENT_RAW(_self);
     GError *local_error = NULL;
 
     goffset file_size;
@@ -280,9 +280,9 @@ static gboolean mirage_fragment_binary_use_the_rest_of_file (MirageFragment *_se
     return TRUE;
 }
 
-static gboolean mirage_fragment_binary_read_main_data (MirageFragment *_self, gint address, guint8 **buffer, gint *length, GError **error G_GNUC_UNUSED)
+static gboolean mirage_fragment_raw_read_main_data (MirageFragment *_self, gint address, guint8 **buffer, gint *length, GError **error G_GNUC_UNUSED)
 {
-    MirageFragmentBinary *self = MIRAGE_FRAGMENT_BINARY(_self);
+    MirageFragmentRaw *self = MIRAGE_FRAGMENT_RAW(_self);
 
     guint64 position;
     gint read_len;
@@ -301,7 +301,7 @@ static gboolean mirage_fragment_binary_read_main_data (MirageFragment *_self, gi
     }
 
     /* Determine position within file */
-    position = mirage_fragment_iface_binary_main_data_get_position(MIRAGE_FRAGMENT_IFACE_BINARY(self), address);
+    position = mirage_data_fragment_main_data_get_position(MIRAGE_DATA_FRAGMENT(self), address);
 
     /* Length */
     *length = self->priv->main_size;
@@ -336,9 +336,9 @@ static gboolean mirage_fragment_binary_read_main_data (MirageFragment *_self, gi
     return TRUE;
 }
 
-static gboolean mirage_fragment_binary_read_subchannel_data (MirageFragment *_self, gint address, guint8 **buffer, gint *length, GError **error G_GNUC_UNUSED)
+static gboolean mirage_fragment_raw_read_subchannel_data (MirageFragment *_self, gint address, guint8 **buffer, gint *length, GError **error G_GNUC_UNUSED)
 {
-    MirageFragmentBinary *self = MIRAGE_FRAGMENT_BINARY(_self);
+    MirageFragmentRaw *self = MIRAGE_FRAGMENT_RAW(_self);
 
     GInputStream *stream;
     guint64 position;
@@ -373,7 +373,7 @@ static gboolean mirage_fragment_binary_read_subchannel_data (MirageFragment *_se
 
 
     /* Determine position within file */
-    position = mirage_fragment_iface_binary_subchannel_data_get_position(MIRAGE_FRAGMENT_IFACE_BINARY(self), address);
+    position = mirage_data_fragment_subchannel_data_get_position(MIRAGE_DATA_FRAGMENT(self), address);
 
 
     /* Length */
@@ -425,37 +425,37 @@ static gboolean mirage_fragment_binary_read_subchannel_data (MirageFragment *_se
 /**********************************************************************\
  *                             Object init                            *
 \**********************************************************************/
-static void mirage_fragment_binary_fragment_iface_binary_init (MirageFragmentIfaceBinaryInterface *iface);
+static void mirage_fragment_raw_data_fragment_init (MirageDataFragmentInterface *iface);
 
-G_DEFINE_DYNAMIC_TYPE_EXTENDED(MirageFragmentBinary,
-                               mirage_fragment_binary,
+G_DEFINE_DYNAMIC_TYPE_EXTENDED(MirageFragmentRaw,
+                               mirage_fragment_raw,
                                MIRAGE_TYPE_FRAGMENT,
                                0,
-                               G_IMPLEMENT_INTERFACE_DYNAMIC(MIRAGE_TYPE_FRAGMENT_IFACE_BINARY,
-                                                             mirage_fragment_binary_fragment_iface_binary_init));
+                               G_IMPLEMENT_INTERFACE_DYNAMIC(MIRAGE_TYPE_DATA_FRAGMENT,
+                                                             mirage_fragment_raw_data_fragment_init));
 
-void mirage_fragment_binary_type_register (GTypeModule *type_module)
+void mirage_fragment_raw_type_register (GTypeModule *type_module)
 {
-    return mirage_fragment_binary_register_type(type_module);
+    return mirage_fragment_raw_register_type(type_module);
 }
 
 
-static void mirage_fragment_binary_init (MirageFragmentBinary *self)
+static void mirage_fragment_raw_init (MirageFragmentRaw *self)
 {
-    self->priv = MIRAGE_FRAGMENT_BINARY_GET_PRIVATE(self);
+    self->priv = MIRAGE_FRAGMENT_RAW_GET_PRIVATE(self);
 
     mirage_fragment_generate_info(MIRAGE_FRAGMENT(self),
-        "FRAGMENT-BINARY",
-        "Binary Fragment"
+        "FRAGMENT-RAW",
+        "Raw Fragment"
     );
 
     self->priv->main_stream = NULL;
     self->priv->subchannel_stream = NULL;
 }
 
-static void mirage_fragment_binary_dispose (GObject *gobject)
+static void mirage_fragment_raw_dispose (GObject *gobject)
 {
-    MirageFragmentBinary *self = MIRAGE_FRAGMENT_BINARY(gobject);
+    MirageFragmentRaw *self = MIRAGE_FRAGMENT_RAW(gobject);
 
     if (self->priv->main_stream) {
         g_object_unref(self->priv->main_stream);
@@ -467,51 +467,51 @@ static void mirage_fragment_binary_dispose (GObject *gobject)
     }
 
     /* Chain up to the parent class */
-    return G_OBJECT_CLASS(mirage_fragment_binary_parent_class)->dispose(gobject);
+    return G_OBJECT_CLASS(mirage_fragment_raw_parent_class)->dispose(gobject);
 }
 
-static void mirage_fragment_binary_class_init (MirageFragmentBinaryClass *klass)
+static void mirage_fragment_raw_class_init (MirageFragmentRawClass *klass)
 {
     GObjectClass *gobject_class = G_OBJECT_CLASS(klass);
     MirageFragmentClass *fragment_class = MIRAGE_FRAGMENT_CLASS(klass);
 
-    gobject_class->dispose = mirage_fragment_binary_dispose;
+    gobject_class->dispose = mirage_fragment_raw_dispose;
 
-    fragment_class->can_handle_data_format = mirage_fragment_binary_can_handle_data_format;
-    fragment_class->use_the_rest_of_file = mirage_fragment_binary_use_the_rest_of_file;
-    fragment_class->read_main_data = mirage_fragment_binary_read_main_data;
-    fragment_class->read_subchannel_data = mirage_fragment_binary_read_subchannel_data;
+    fragment_class->can_handle_data_format = mirage_fragment_raw_can_handle_data_format;
+    fragment_class->use_the_rest_of_file = mirage_fragment_raw_use_the_rest_of_file;
+    fragment_class->read_main_data = mirage_fragment_raw_read_main_data;
+    fragment_class->read_subchannel_data = mirage_fragment_raw_read_subchannel_data;
 
     /* Register private structure */
-    g_type_class_add_private(klass, sizeof(MirageFragmentBinaryPrivate));
+    g_type_class_add_private(klass, sizeof(MirageFragmentRawPrivate));
 }
 
-static void mirage_fragment_binary_class_finalize (MirageFragmentBinaryClass *klass G_GNUC_UNUSED)
+static void mirage_fragment_raw_class_finalize (MirageFragmentRawClass *klass G_GNUC_UNUSED)
 {
 }
 
 
-static void mirage_fragment_binary_fragment_iface_binary_init (MirageFragmentIfaceBinaryInterface *iface)
+static void mirage_fragment_raw_data_fragment_init (MirageDataFragmentInterface *iface)
 {
-    iface->main_data_set_stream = mirage_fragment_binary_main_data_set_stream;
-    iface->main_data_get_filename = mirage_fragment_binary_main_data_get_filename;
-    iface->main_data_set_offset = mirage_fragment_binary_main_data_set_offset;
-    iface->main_data_get_offset = mirage_fragment_binary_main_data_get_offset;
-    iface->main_data_set_size = mirage_fragment_binary_main_data_set_size;
-    iface->main_data_get_size = mirage_fragment_binary_main_data_get_size;
-    iface->main_data_set_format = mirage_fragment_binary_main_data_set_format;
-    iface->main_data_get_format = mirage_fragment_binary_main_data_get_format;
+    iface->main_data_set_stream = mirage_fragment_raw_main_data_set_stream;
+    iface->main_data_get_filename = mirage_fragment_raw_main_data_get_filename;
+    iface->main_data_set_offset = mirage_fragment_raw_main_data_set_offset;
+    iface->main_data_get_offset = mirage_fragment_raw_main_data_get_offset;
+    iface->main_data_set_size = mirage_fragment_raw_main_data_set_size;
+    iface->main_data_get_size = mirage_fragment_raw_main_data_get_size;
+    iface->main_data_set_format = mirage_fragment_raw_main_data_set_format;
+    iface->main_data_get_format = mirage_fragment_raw_main_data_get_format;
 
-    iface->main_data_get_position = mirage_fragment_binary_main_data_get_position;
+    iface->main_data_get_position = mirage_fragment_raw_main_data_get_position;
 
-    iface->subchannel_data_set_stream = mirage_fragment_binary_subchannel_data_set_stream;
-    iface->subchannel_data_get_filename = mirage_fragment_binary_subchannel_data_get_filename;
-    iface->subchannel_data_set_offset = mirage_fragment_binary_subchannel_data_set_offset;
-    iface->subchannel_data_get_offset = mirage_fragment_binary_subchannel_data_get_offset;
-    iface->subchannel_data_set_size = mirage_fragment_binary_subchannel_data_set_size;
-    iface->subchannel_data_get_size = mirage_fragment_binary_subchannel_data_get_size;
-    iface->subchannel_data_set_format = mirage_fragment_binary_subchannel_data_set_format;
-    iface->subchannel_data_get_format = mirage_fragment_binary_subchannel_data_get_format;
+    iface->subchannel_data_set_stream = mirage_fragment_raw_subchannel_data_set_stream;
+    iface->subchannel_data_get_filename = mirage_fragment_raw_subchannel_data_get_filename;
+    iface->subchannel_data_set_offset = mirage_fragment_raw_subchannel_data_set_offset;
+    iface->subchannel_data_get_offset = mirage_fragment_raw_subchannel_data_get_offset;
+    iface->subchannel_data_set_size = mirage_fragment_raw_subchannel_data_set_size;
+    iface->subchannel_data_get_size = mirage_fragment_raw_subchannel_data_get_size;
+    iface->subchannel_data_set_format = mirage_fragment_raw_subchannel_data_set_format;
+    iface->subchannel_data_get_format = mirage_fragment_raw_subchannel_data_get_format;
 
-    iface->subchannel_data_get_position = mirage_fragment_binary_subchannel_data_get_position;
+    iface->subchannel_data_get_position = mirage_fragment_raw_subchannel_data_get_position;
 }

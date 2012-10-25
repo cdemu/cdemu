@@ -1,5 +1,5 @@
 /*
- *  libMirage: BINARY fragment: Plugin exports
+ *  libMirage: RAW fragment: Plugin exports
  *  Copyright (C) 2007-2012 Rok Mandeljc
  *
  *  This program is free software; you can redistribute it and/or modify
@@ -17,7 +17,7 @@
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
 
-#include "fragment-binary.h"
+#include "fragment-raw.h"
 
 G_MODULE_EXPORT void mirage_plugin_load_plugin (MiragePlugin *plugin);
 G_MODULE_EXPORT void mirage_plugin_unload_plugin (MiragePlugin *plugin);
@@ -26,7 +26,7 @@ G_MODULE_EXPORT guint mirage_plugin_lt_current = MIRAGE_LT_CURRENT;
 
 G_MODULE_EXPORT void mirage_plugin_load_plugin (MiragePlugin *plugin)
 {
-    mirage_fragment_binary_type_register(G_TYPE_MODULE(plugin));
+    mirage_fragment_raw_type_register(G_TYPE_MODULE(plugin));
 }
 
 G_MODULE_EXPORT void mirage_plugin_unload_plugin (MiragePlugin *plugin G_GNUC_UNUSED)

@@ -348,7 +348,7 @@ static gboolean mirage_parser_c2d_parse_track_entries (MirageParserC2d *self, GE
         }
 
         /* Data fragment */
-        MirageFragment *data_fragment = mirage_contextual_create_fragment(MIRAGE_CONTEXTUAL(self), MIRAGE_TYPE_FRAGMENT_IFACE_BINARY, self->priv->c2d_stream, error);
+        MirageFragment *data_fragment = mirage_contextual_create_fragment(MIRAGE_CONTEXTUAL(self), MIRAGE_TYPE_DATA_FRAGMENT, self->priv->c2d_stream, error);
         if (!data_fragment) {
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: failed to create fragment!\n", __debug__);
             g_object_unref(cur_track);
@@ -373,10 +373,10 @@ static gboolean mirage_parser_c2d_parse_track_entries (MirageParserC2d *self, GE
         mirage_fragment_set_length(data_fragment, fragment_len);
 
         /* Set stream */
-        mirage_fragment_iface_binary_main_data_set_stream(MIRAGE_FRAGMENT_IFACE_BINARY(data_fragment), self->priv->c2d_stream);
-        mirage_fragment_iface_binary_main_data_set_offset(MIRAGE_FRAGMENT_IFACE_BINARY(data_fragment), main_offset);
-        mirage_fragment_iface_binary_main_data_set_size(MIRAGE_FRAGMENT_IFACE_BINARY(data_fragment), main_size);
-        mirage_fragment_iface_binary_main_data_set_format(MIRAGE_FRAGMENT_IFACE_BINARY(data_fragment), main_format);
+        mirage_data_fragment_main_data_set_stream(MIRAGE_DATA_FRAGMENT(data_fragment), self->priv->c2d_stream);
+        mirage_data_fragment_main_data_set_offset(MIRAGE_DATA_FRAGMENT(data_fragment), main_offset);
+        mirage_data_fragment_main_data_set_size(MIRAGE_DATA_FRAGMENT(data_fragment), main_size);
+        mirage_data_fragment_main_data_set_format(MIRAGE_DATA_FRAGMENT(data_fragment), main_format);
 
         /* Subchannel */
         switch (track_entry->sector_size) {
@@ -386,14 +386,14 @@ static gboolean mirage_parser_c2d_parse_track_entries (MirageParserC2d *self, GE
 
                 MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   subchannel found; interleaved PW96\n", __debug__);
 
-                mirage_fragment_iface_binary_subchannel_data_set_size(MIRAGE_FRAGMENT_IFACE_BINARY(data_fragment), subchannel_size);
-                mirage_fragment_iface_binary_subchannel_data_set_format(MIRAGE_FRAGMENT_IFACE_BINARY(data_fragment), subchannel_format);
+                mirage_data_fragment_subchannel_data_set_size(MIRAGE_DATA_FRAGMENT(data_fragment), subchannel_size);
+                mirage_data_fragment_subchannel_data_set_format(MIRAGE_DATA_FRAGMENT(data_fragment), subchannel_format);
 
                 /* We need to correct the data for track sector size...
                    C2D format has already added 96 bytes to sector size,
                    so we need to subtract it */
                 main_size = track_entry->sector_size - subchannel_size;
-                mirage_fragment_iface_binary_main_data_set_size(MIRAGE_FRAGMENT_IFACE_BINARY(data_fragment), main_size);
+                mirage_data_fragment_main_data_set_size(MIRAGE_DATA_FRAGMENT(data_fragment), main_size);
 
                 break;
             }

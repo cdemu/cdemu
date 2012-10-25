@@ -1,5 +1,5 @@
 /*
- *  libMirage: FragmentIfaceAudio interface
+ *  libMirage: AudioFragment interface
  *  Copyright (C) 2006-2012 Rok Mandeljc
  *
  *  This program is free software; you can redistribute it and/or modify
@@ -18,13 +18,13 @@
  */
 
 /**
- * SECTION: mirage-fragment-iface-audio
- * @title: MirageFragmentIfaceAudio
+ * SECTION: mirage-audio-fragment
+ * @title: MirageAudioFragment
  * @short_description: Audio Fragment interface.
  * @see_also: #MirageFragment
  * @include: mirage-fragment-iface-audio.h
  *
- * #MirageFragmentIfaceAudio is Audio Fragment interface that can be
+ * #MirageAudioFragment is Audio Fragment interface that can be
  * implemented by a #MirageFragment implementation.
  */
 
@@ -38,61 +38,61 @@
 
 
 /**
- * mirage_fragment_iface_audio_set_stream:
- * @self: a #MirageFragmentIfaceAudio
+ * mirage_audio_fragment_set_stream:
+ * @self: a #MirageAudioFragment
  * @stream: (in) (transfer full): a #GInputStream on audio file
  *
  * Sets audio file stream.
  */
-void mirage_fragment_iface_audio_set_stream (MirageFragmentIfaceAudio *self, GInputStream *stream)
+void mirage_audio_fragment_set_stream (MirageAudioFragment *self, GInputStream *stream)
 {
-    return MIRAGE_FRAGMENT_IFACE_AUDIO_GET_INTERFACE(self)->set_stream(self, stream);
+    return MIRAGE_AUDIO_FRAGMENT_GET_INTERFACE(self)->set_stream(self, stream);
 }
 
 /**
- * mirage_fragment_iface_audio_get_filename:
- * @self: a #MirageFragmentIfaceAudio
+ * mirage_audio_fragment_get_filename:
+ * @self: a #MirageAudioFragment
  *
  * Retrieves filename of audio file.
  *
  * Returns: (transfer none): pointer to audio file name string. The
  * string belongs to object and should not be modified.
  */
-const gchar *mirage_fragment_iface_audio_get_filename (MirageFragmentIfaceAudio *self)
+const gchar *mirage_audio_fragment_get_filename (MirageAudioFragment *self)
 {
-    return MIRAGE_FRAGMENT_IFACE_AUDIO_GET_INTERFACE(self)->get_filename(self);
+    return MIRAGE_AUDIO_FRAGMENT_GET_INTERFACE(self)->get_filename(self);
 }
 
 /**
- * mirage_fragment_iface_audio_set_offset:
- * @self: a #MirageFragmentIfaceAudio
+ * mirage_audio_fragment_set_offset:
+ * @self: a #MirageAudioFragment
  * @offset: (in): offset
  *
  * Sets offset within audio file, in sectors.
  */
-void mirage_fragment_iface_audio_set_offset (MirageFragmentIfaceAudio *self, gint offset)
+void mirage_audio_fragment_set_offset (MirageAudioFragment *self, gint offset)
 {
-    return MIRAGE_FRAGMENT_IFACE_AUDIO_GET_INTERFACE(self)->set_offset(self, offset);
+    return MIRAGE_AUDIO_FRAGMENT_GET_INTERFACE(self)->set_offset(self, offset);
 }
 
 /**
- * mirage_fragment_iface_audio_get_offset:
- * @self: a #MirageFragmentIfaceAudio
+ * mirage_audio_fragment_get_offset:
+ * @self: a #MirageAudioFragment
  *
  * Retrieves offset within audio file, in sectors.
  *
  * Returns: offset
  */
-gint mirage_fragment_iface_audio_get_offset (MirageFragmentIfaceAudio *self)
+gint mirage_audio_fragment_get_offset (MirageAudioFragment *self)
 {
-    return MIRAGE_FRAGMENT_IFACE_AUDIO_GET_INTERFACE(self)->get_offset(self);
+    return MIRAGE_AUDIO_FRAGMENT_GET_INTERFACE(self)->get_offset(self);
 }
 
-GType mirage_fragment_iface_audio_get_type (void) {
+GType mirage_audio_fragment_get_type (void) {
     static GType iface_type = 0;
     if (iface_type == 0) {
         static const GTypeInfo info = {
-            sizeof(MirageFragmentIfaceAudioInterface),
+            sizeof(MirageAudioFragmentInterface),
             NULL,   /* base_init */
             NULL,   /* base_finalize */
             NULL,   /* class_init */
@@ -104,7 +104,7 @@ GType mirage_fragment_iface_audio_get_type (void) {
             NULL    /* value_table */
         };
 
-        iface_type = g_type_register_static(G_TYPE_INTERFACE, "MirageFragmentIfaceAudio", &info, 0);
+        iface_type = g_type_register_static(G_TYPE_INTERFACE, "MirageAudioFragment", &info, 0);
     }
 
     return iface_type;

@@ -196,7 +196,7 @@ static gboolean mirage_parser_toc_track_add_fragment (MirageParserToc *self, gin
         if (type == TOC_DATA_TYPE_DATA || mirage_helper_has_suffix(filename_string, ".bin")) {
             /* Binary data; we'd like a BINARY fragment */
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: creating BINARY fragment\n", __debug__);
-            fragment = mirage_contextual_create_fragment(MIRAGE_CONTEXTUAL(self), MIRAGE_TYPE_FRAGMENT_IFACE_BINARY, stream, error);
+            fragment = mirage_contextual_create_fragment(MIRAGE_CONTEXTUAL(self), MIRAGE_TYPE_DATA_FRAGMENT, stream, error);
             if (!fragment) {
                 MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to create BINARY fragment!\n", __debug__);
                 g_free(filename);
@@ -259,18 +259,18 @@ static gboolean mirage_parser_toc_track_add_fragment (MirageParserToc *self, gin
             subchannel_format = self->priv->cur_subchannel_format;
 
             /* Set stream */
-            mirage_fragment_iface_binary_main_data_set_stream(MIRAGE_FRAGMENT_IFACE_BINARY(fragment), stream);
-            mirage_fragment_iface_binary_main_data_set_size(MIRAGE_FRAGMENT_IFACE_BINARY(fragment), main_size);
-            mirage_fragment_iface_binary_main_data_set_offset(MIRAGE_FRAGMENT_IFACE_BINARY(fragment), main_offset);
-            mirage_fragment_iface_binary_main_data_set_format(MIRAGE_FRAGMENT_IFACE_BINARY(fragment), main_format);
+            mirage_data_fragment_main_data_set_stream(MIRAGE_DATA_FRAGMENT(fragment), stream);
+            mirage_data_fragment_main_data_set_size(MIRAGE_DATA_FRAGMENT(fragment), main_size);
+            mirage_data_fragment_main_data_set_offset(MIRAGE_DATA_FRAGMENT(fragment), main_offset);
+            mirage_data_fragment_main_data_set_format(MIRAGE_DATA_FRAGMENT(fragment), main_format);
 
-            mirage_fragment_iface_binary_subchannel_data_set_size(MIRAGE_FRAGMENT_IFACE_BINARY(fragment), subchannel_size);
-            mirage_fragment_iface_binary_subchannel_data_set_format(MIRAGE_FRAGMENT_IFACE_BINARY(fragment), subchannel_format);
+            mirage_data_fragment_subchannel_data_set_size(MIRAGE_DATA_FRAGMENT(fragment), subchannel_size);
+            mirage_data_fragment_subchannel_data_set_format(MIRAGE_DATA_FRAGMENT(fragment), subchannel_format);
         } else {
             /* Audio data; we'd like an AUDIO fragment, and hopefully Mirage can
                find one that can handle given file format */
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: creating AUDIO fragment\n", __debug__);
-            fragment = mirage_contextual_create_fragment(MIRAGE_CONTEXTUAL(self), MIRAGE_TYPE_FRAGMENT_IFACE_AUDIO, stream, error);
+            fragment = mirage_contextual_create_fragment(MIRAGE_CONTEXTUAL(self), MIRAGE_TYPE_AUDIO_FRAGMENT, stream, error);
             if (!fragment) {
                 MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to create appropriate AUDIO fragment!\n", __debug__);
                 g_free(filename);
@@ -279,10 +279,10 @@ static gboolean mirage_parser_toc_track_add_fragment (MirageParserToc *self, gin
             }
 
             /* Set stream */
-            mirage_fragment_iface_audio_set_stream(MIRAGE_FRAGMENT_IFACE_AUDIO(fragment), stream);
+            mirage_audio_fragment_set_stream(MIRAGE_AUDIO_FRAGMENT(fragment), stream);
 
             /* Set offset */
-            mirage_fragment_iface_audio_set_offset(MIRAGE_FRAGMENT_IFACE_AUDIO(fragment), start);
+            mirage_audio_fragment_set_offset(MIRAGE_AUDIO_FRAGMENT(fragment), start);
         }
 
         g_free(filename);

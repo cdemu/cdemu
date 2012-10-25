@@ -602,7 +602,7 @@ static gboolean mirage_parser_mds_parse_track_entries (MirageParserMds *self, MD
                 }
 
                 /* Create data fragment */
-                MirageFragment *fragment = mirage_contextual_create_fragment(MIRAGE_CONTEXTUAL(self), MIRAGE_TYPE_FRAGMENT_IFACE_BINARY, data_stream, error);
+                MirageFragment *fragment = mirage_contextual_create_fragment(MIRAGE_CONTEXTUAL(self), MIRAGE_TYPE_DATA_FRAGMENT, data_stream, error);
                 if (!fragment) {
                     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: failed to create fragment!\n", __debug__);
                     g_object_unref(data_stream);
@@ -614,15 +614,15 @@ static gboolean mirage_parser_mds_parse_track_entries (MirageParserMds *self, MD
                 mirage_fragment_set_length(fragment, fragment_len);
 
                 /* Set stream */
-                mirage_fragment_iface_binary_main_data_set_stream(MIRAGE_FRAGMENT_IFACE_BINARY(fragment), data_stream);
+                mirage_data_fragment_main_data_set_stream(MIRAGE_DATA_FRAGMENT(fragment), data_stream);
                 g_object_unref(data_stream);
 
-                mirage_fragment_iface_binary_main_data_set_offset(MIRAGE_FRAGMENT_IFACE_BINARY(fragment), main_offset);
-                mirage_fragment_iface_binary_main_data_set_size(MIRAGE_FRAGMENT_IFACE_BINARY(fragment), main_size);
-                mirage_fragment_iface_binary_main_data_set_format(MIRAGE_FRAGMENT_IFACE_BINARY(fragment), main_format);
+                mirage_data_fragment_main_data_set_offset(MIRAGE_DATA_FRAGMENT(fragment), main_offset);
+                mirage_data_fragment_main_data_set_size(MIRAGE_DATA_FRAGMENT(fragment), main_size);
+                mirage_data_fragment_main_data_set_format(MIRAGE_DATA_FRAGMENT(fragment), main_format);
 
-                mirage_fragment_iface_binary_subchannel_data_set_size(MIRAGE_FRAGMENT_IFACE_BINARY(fragment), subchannel_size);
-                mirage_fragment_iface_binary_subchannel_data_set_format(MIRAGE_FRAGMENT_IFACE_BINARY(fragment), subchannel_format);
+                mirage_data_fragment_subchannel_data_set_size(MIRAGE_DATA_FRAGMENT(fragment), subchannel_size);
+                mirage_data_fragment_subchannel_data_set_format(MIRAGE_DATA_FRAGMENT(fragment), subchannel_format);
 
                 mirage_track_add_fragment(track, -1, fragment);
                 g_object_unref(fragment);

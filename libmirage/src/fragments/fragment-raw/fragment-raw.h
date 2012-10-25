@@ -1,5 +1,5 @@
 /*
- *  libMirage: BINARY fragment
+ *  libMirage: RAW fragment
  *  Copyright (C) 2007-2012 Rok Mandeljc
  *
  *  This program is free software; you can redistribute it and/or modify
@@ -16,19 +16,19 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
  */
- 
-#ifndef __MIRAGE_FRAGMENT_BINARY_H__
-#define __MIRAGE_FRAGMENT_BINARY_H__
+
+#ifndef __MIRAGE_FRAGMENT_RAW_H__
+#define __MIRAGE_FRAGMENT_RAW_H__
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
 
 #include "mirage.h"
-#include "fragment-binary-fragment.h"
+#include "fragment-raw-fragment.h"
 
 G_BEGIN_DECLS
 
 G_END_DECLS
 
-#endif /* __MIRAGE_FRAGMENT_BINARY_H__ */
+#endif /* __MIRAGE_FRAGMENT_RAW_H__ */
