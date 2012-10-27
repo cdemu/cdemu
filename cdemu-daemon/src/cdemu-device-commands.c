@@ -300,12 +300,12 @@ static gboolean command_mode_select (CdemuDevice *self, guint8 *raw_cdb)
     gint pf;*/
 
     /* MODE SELECT (6) vs MODE SELECT (10) */
-    if (raw_cdb[0] == (PacketCommand) MODE_SELECT_6) {
+    if (raw_cdb[0] == MODE_SELECT_6) {
         struct MODE_SELECT_6_CDB *cdb = (struct MODE_SELECT_6_CDB *)raw_cdb;
         /*sp = cdb->sp;
         pf = cdb->pf;*/
         transfer_len = cdb->length;
-    } else if (raw_cdb[0] == (PacketCommand) MODE_SELECT_10) {
+    } else if (raw_cdb[0] == MODE_SELECT_10) {
         struct MODE_SELECT_10_CDB *cdb = (struct MODE_SELECT_10_CDB *)raw_cdb;
         /*sp = cdb->sp;
         pf = cdb->pf;*/
@@ -334,11 +334,11 @@ static gboolean command_mode_select (CdemuDevice *self, guint8 *raw_cdb)
     /* Try to decipher mode select data... MODE SENSE (6) vs MODE SENSE (10) */
     gint blkdesc_len = 0;
     gint offset = 0;
-    if (raw_cdb[0] == (PacketCommand) MODE_SELECT_6) {
+    if (raw_cdb[0] == MODE_SELECT_6) {
         struct MODE_SENSE_6_Header *header = (struct MODE_SENSE_6_Header *)self->priv->buffer;
         blkdesc_len = header->blkdesc_len;
         offset = sizeof(struct MODE_SENSE_6_Header) + blkdesc_len;
-    } else if (raw_cdb[0] == (PacketCommand) MODE_SELECT_10) {
+    } else if (raw_cdb[0] == MODE_SELECT_10) {
         struct MODE_SENSE_10_Header *header = (struct MODE_SENSE_10_Header *)self->priv->buffer;
         blkdesc_len = GUINT16_FROM_BE(header->blkdesc_len);
         offset = sizeof(struct MODE_SENSE_10_Header) + blkdesc_len;
@@ -412,7 +412,7 @@ static gboolean command_mode_sense (CdemuDevice *self, guint8 *raw_cdb)
     gint pc = 0;
 
     /* MODE SENSE (6) vs MODE SENSE (10) */
-    if (raw_cdb[0] == (PacketCommand) MODE_SENSE_6) {
+    if (raw_cdb[0] == MODE_SENSE_6) {
         struct MODE_SENSE_6_CDB *cdb = (struct MODE_SENSE_6_CDB *)raw_cdb;
 
         pc = cdb->pc;
@@ -420,7 +420,7 @@ static gboolean command_mode_sense (CdemuDevice *self, guint8 *raw_cdb)
         transfer_len = cdb->length;
 
         self->priv->buffer_size = sizeof(struct MODE_SENSE_6_Header);
-    } else if (raw_cdb[0] == (PacketCommand) MODE_SENSE_10) {
+    } else if (raw_cdb[0] == MODE_SENSE_10) {
         struct MODE_SENSE_10_CDB *cdb = (struct MODE_SENSE_10_CDB *)raw_cdb;
 
         pc = cdb->pc;
@@ -493,10 +493,10 @@ static gboolean command_mode_sense (CdemuDevice *self, guint8 *raw_cdb)
     }
 
     /* Header; MODE SENSE (6) vs MODE SENSE (10) */
-    if (raw_cdb[0] == (PacketCommand) MODE_SENSE_6) {
+    if (raw_cdb[0] == MODE_SENSE_6) {
         struct MODE_SENSE_6_Header *ret_header = (struct MODE_SENSE_6_Header *)self->priv->buffer;
         ret_header->length = self->priv->buffer_size - 2;
-    } else if (raw_cdb[0] == (PacketCommand) MODE_SENSE_10) {
+    } else if (raw_cdb[0] == MODE_SENSE_10) {
         struct MODE_SENSE_10_Header *ret_header = (struct MODE_SENSE_10_Header *)self->priv->buffer;
         ret_header->length = GUINT16_TO_BE(self->priv->buffer_size - 2);
     }
@@ -558,17 +558,17 @@ static gboolean command_play_audio (CdemuDevice *self, guint8 *raw_cdb)
     guint32 end_sector = 0;
 
     /* PLAY AUDIO (10) vs PLAY AUDIO (12) vs PLAY AUDIO MSF */
-    if (raw_cdb[0] == (PacketCommand) PLAY_AUDIO_10) {
+    if (raw_cdb[0] == PLAY_AUDIO_10) {
         struct PLAY_AUDIO_10_CDB *cdb = (struct PLAY_AUDIO_10_CDB *)raw_cdb;
 
         start_sector = GUINT32_FROM_BE(cdb->lba);
         end_sector = GUINT32_FROM_BE(cdb->lba) + GUINT16_FROM_BE(cdb->play_len);
-    } else if (raw_cdb[0] == (PacketCommand) PLAY_AUDIO_12) {
+    } else if (raw_cdb[0] == PLAY_AUDIO_12) {
         struct PLAY_AUDIO_12_CDB *cdb = (struct PLAY_AUDIO_12_CDB *)raw_cdb;
 
         start_sector = GUINT32_FROM_BE(cdb->lba);
         end_sector = GUINT32_FROM_BE(cdb->lba) + GUINT32_FROM_BE(cdb->play_len);
-    } else if (raw_cdb[0] == (PacketCommand) PLAY_AUDIO_MSF) {
+    } else if (raw_cdb[0] == PLAY_AUDIO_MSF) {
         struct PLAY_AUDIO_MSF_CDB *cdb = (struct PLAY_AUDIO_MSF_CDB *)raw_cdb;
 
         start_sector = mirage_helper_msf2lba(cdb->start_m, cdb->start_s, cdb->start_f, TRUE);
@@ -630,11 +630,11 @@ static gboolean command_read (CdemuDevice *self, guint8 *raw_cdb)
     struct ModePage_0x01 *p_0x01 = cdemu_device_get_mode_page(self, 0x01, MODE_PAGE_CURRENT);
 
     /* READ 10 vs READ 12 */
-    if (raw_cdb[0] == (PacketCommand) READ_10) {
+    if (raw_cdb[0] == READ_10) {
         struct READ_10_CDB *cdb = (struct READ_10_CDB *)raw_cdb;
         start_address = GUINT32_FROM_BE(cdb->lba);
         num_sectors  = GUINT16_FROM_BE(cdb->length);
-    } else if (raw_cdb[0] == (PacketCommand) READ_12) {
+    } else if (raw_cdb[0] == READ_12) {
         struct READ_12_CDB *cdb = (struct READ_12_CDB *)raw_cdb;
         start_address = GUINT32_FROM_BE(cdb->lba);
         num_sectors  = GUINT32_FROM_BE(cdb->length);
@@ -766,7 +766,7 @@ static gboolean command_read_cd (CdemuDevice *self, guint8 *raw_cdb)
     struct ModePage_0x01 *p_0x01 = cdemu_device_get_mode_page(self, 0x01, MODE_PAGE_CURRENT);
 
     /* READ CD vs READ CD MSF */
-    if (raw_cdb[0] == (PacketCommand) READ_CD) {
+    if (raw_cdb[0] == READ_CD) {
         struct READ_CD_CDB *cdb = (struct READ_CD_CDB *)raw_cdb;
 
         start_address = GUINT32_FROM_BE(cdb->lba);
@@ -774,7 +774,7 @@ static gboolean command_read_cd (CdemuDevice *self, guint8 *raw_cdb)
 
         exp_sect_type = map_expected_sector_type(cdb->sect_type);
         subchannel_mode = cdb->subchan;
-    } else if (raw_cdb[0] == (PacketCommand) READ_CD_MSF) {
+    } else if (raw_cdb[0] == READ_CD_MSF) {
         struct READ_CD_MSF_CDB *cdb = (struct READ_CD_MSF_CDB *)raw_cdb;
         gint32 end_address = 0;
 
@@ -1832,8 +1832,8 @@ static gboolean command_request_sense (CdemuDevice *self, guint8 *raw_cdb)
        REQUEST SENSE command. The sense key is set to NO SENSE, the ASC is set
        to NO ADDITIONAL SENSE DATA and the audio status is reported in
        the additional sense code qualifier field. */
-    sense->sense_key = (SenseKey) NO_SENSE;
-    sense->asc = (AdditionalSenseCode) NO_ADDITIONAL_SENSE_INFORMATION;
+    sense->sense_key = NO_SENSE;
+    sense->asc = NO_ADDITIONAL_SENSE_INFORMATION;
     sense->ascq = cdemu_audio_get_status(CDEMU_AUDIO(self->priv->audio_play));
 
     /* Write data */

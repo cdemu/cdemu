@@ -104,7 +104,7 @@ void cdemu_device_write_sense_full (CdemuDevice *self, SenseKey sense_key, guint
     sense.length = 0x0A; /* Additional sense length */
 
     /* Sense key and ASC/ASCQ */
-    sense.sense_key = (SenseKey) sense_key;
+    sense.sense_key = sense_key;
     sense.asc = (asc_ascq & 0xFF00) >> 8; /* ASC */
     sense.ascq = (asc_ascq & 0x00FF) >> 0; /* ASCQ */
     /* ILI bit */

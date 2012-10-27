@@ -94,8 +94,8 @@ void cdemu_device_features_init (CdemuDevice *self)
     FEATURE_DEFINITION_START(0x0000)
     feature->per = 1;
 
-    feature->profiles[0].profile = GUINT16_TO_BE((Profile) PROFILE_CDROM);
-    feature->profiles[1].profile = GUINT16_TO_BE((Profile) PROFILE_DVDROM);
+    feature->profiles[0].profile = GUINT16_TO_BE(PROFILE_CDROM);
+    feature->profiles[1].profile = GUINT16_TO_BE(PROFILE_DVDROM);
 
     FEATURE_DEFINITION_END()
 
