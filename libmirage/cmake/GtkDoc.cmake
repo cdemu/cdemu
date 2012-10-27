@@ -76,7 +76,7 @@ function (gtk_doc)
     add_custom_command (
         OUTPUT ${GTKDOC_DOCS_BUILDDIR}/scan-build.stamp
         COMMAND gtkdoc-scan --module=${GTKDOC_MODULE} ${GTKDOC_SOURCE_DIR_LIST}
-            --ignore-headers="${GTKDOC_IGNORE_HFILES}"
+            --ignore-headers=${GTKDOC_IGNORE_HFILES}
         COMMAND sh ${PROJECT_BINARY_DIR}/run-scangobj
         COMMAND touch ${GTKDOC_DOCS_BUILDDIR}/scan-build.stamp
         WORKING_DIRECTORY ${GTKDOC_DOCS_BUILDDIR}

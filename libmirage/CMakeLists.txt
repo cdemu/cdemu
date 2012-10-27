@@ -284,7 +284,7 @@ if (GTKDOC_ENABLED AND GTKDOC_FOUND)
         SOURCE_DIR ${PROJECT_SOURCE_DIR}/src/libmirage ${PROJECT_BINARY_DIR}/src/libmirage
         SOURCES ${libmirage_HEADERS} ${libmirage_SOURCES}
         DOCS_DIR ${PROJECT_SOURCE_DIR}/docs/reference/libmirage
-        IGNORE_HFILES src/libmirage/mirage-disc-structures.h
+        IGNORE_HFILES mirage-disc-structures.h
         CFLAGS ${libmirage_CFLAGS} -I${PROJECT_SOURCE_DIR}/src/libmirage
         LDFLAGS ${libmirage_LDFLAGS} -L${PROJECT_BINARY_DIR}
             -Wl,-rpath,${PROJECT_BINARY_DIR} -l${GTKDOC_LIB}
