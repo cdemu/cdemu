@@ -48,7 +48,7 @@ list (APPEND cdemu-daemon_DEFS HAVE_CONFIG_H)
 if (STRICT_WARNINGS AND CMAKE_COMPILER_IS_GNUCC)
     list (APPEND cdemu-daemon_CFLAGS -Wall -Wextra -Wshadow -Wmissing-declarations
         -Wmissing-prototypes -Wnested-externs -Wpointer-arith -Wcast-align)
-    list (APPEND cdemu-daemon_DEFS -DG_DISABLE_DEPRECATED)
+    list (APPEND cdemu-daemon_DEFS G_DISABLE_DEPRECATED)
     check_c_compiler_flag (-Wno-strict-aliasing CC_HAVE_NSA)
     check_c_compiler_flag (-Wno-sign-compare CC_HAVE_NSC)
     if (CC_HAVE_NSA)
@@ -87,12 +87,11 @@ add_executable (cdemu-daemon ${cdemu-daemon_SOURCES})
 target_link_libraries (cdemu-daemon ${LibMirage_LIBRARIES} ${LibGlib_LIBRARIES} ${LibAO_LIBRARIES})
 
 to_list_spaces (cdemu-daemon_CFLAGS cdemu-daemon_S_CFLAGS)
-to_list_spaces (cdemu-daemon_DEFS cdemu-daemon_S_DEFS)
 to_list_spaces (cdemu-daemon_LDFLAGS cdemu-daemon_S_LDFLAGS)
 
 set_target_properties (cdemu-daemon PROPERTIES
     COMPILE_FLAGS ${cdemu-daemon_S_CFLAGS}
-    COMPILE_DEFINITIONS ${cdemu-daemon_S_DEFS}
+    COMPILE_DEFINITIONS "${cdemu-daemon_DEFS}"
     LINK_FLAGS ${cdemu-daemon_S_LDFLAGS}
 )
 
