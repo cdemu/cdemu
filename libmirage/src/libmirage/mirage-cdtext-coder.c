@@ -71,7 +71,7 @@ typedef struct
     guint8 data[12];
     /* CRC */
     guint8 crc[2];
-} CDTextPack;
+} CDTextEncodedPack;
 
 typedef struct
 {
@@ -132,7 +132,7 @@ typedef struct
 
     GList *packs_list; /* List of packs data */
 
-    CDTextPack *size_info; /* Pointer to size info packs */
+    CDTextEncodedPack *size_info; /* Pointer to size info packs */
     gint seq_count; /* Sequence count */
     gint pack_count[16]; /* Pack types count */
 } MirageCdTextCoderBlock;
@@ -145,7 +145,7 @@ struct _MirageCdTextCoderPrivate
     gint buflen;
 
     /* EncDec */
-    CDTextPack *cur_pack; /* Pointer to current pack */
+    CDTextEncodedPack *cur_pack; /* Pointer to current pack */
     gint cur_pack_fill; /* How much of current pack is used */
 
     /* Blocks */
@@ -254,7 +254,7 @@ static gint mirage_cdtext_coder_block2lang (MirageCdTextCoder *self, gint block)
 }
 
 
-static void add_crc_to_pack (CDTextPack *pack)
+static void add_crc_to_pack (CDTextEncodedPack *pack)
 {
     /* Calculate CRC for given pack */
     guint8 *data = (guint8 *)pack;
@@ -373,10 +373,10 @@ static void mirage_cdtext_encoder_generate_size_info (MirageCdTextCoder *self, g
     *len = sizeof(CDTextSizeInfo);
 }
 
-static void mirage_cdtext_decoder_read_size_info (MirageCdTextCoder *self G_GNUC_UNUSED, CDTextPack *size_info_pack, CDTextSizeInfo **data)
+static void mirage_cdtext_decoder_read_size_info (MirageCdTextCoder *self G_GNUC_UNUSED, CDTextEncodedPack *size_info_pack, CDTextSizeInfo **data)
 {
     guint8 *size_info = g_malloc0(sizeof(CDTextSizeInfo));
-    CDTextPack *cur_pack = size_info_pack;
+    CDTextEncodedPack *cur_pack = size_info_pack;
 
     for (gint i = 0; i < sizeof(CDTextSizeInfo)/12; i++) {
         memcpy(size_info+12*i, cur_pack->data, 12);
@@ -407,7 +407,7 @@ void mirage_cdtext_encoder_init (MirageCdTextCoder *self, guint8 *buffer, gint b
     self->priv->buffer = buffer;
     self->priv->buflen = buflen;
 
-    self->priv->cur_pack = (CDTextPack *)self->priv->buffer;
+    self->priv->cur_pack = (CDTextEncodedPack *)self->priv->buffer;
 }
 
 /**
@@ -548,13 +548,13 @@ void mirage_cdtext_encoder_encode (MirageCdTextCoder *self, guint8 **buffer, gin
     }
 
     /* Generate CRC for all packs */
-    self->priv->cur_pack = (CDTextPack *)self->priv->buffer;
+    self->priv->cur_pack = (CDTextEncodedPack *)self->priv->buffer;
     for (gint i = 0; i < self->priv->length; i++) {
         add_crc_to_pack(self->priv->cur_pack);
         self->priv->cur_pack++;
     }
 
-    *buflen = self->priv->length*sizeof(CDTextPack);
+    *buflen = self->priv->length*sizeof(CDTextEncodedPack);
     *buffer = self->priv->buffer;
 
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_CDTEXT, "%s: done encoding CD-TEXT; length: 0x%X\n", __debug__, *buflen);
@@ -587,13 +587,13 @@ void mirage_cdtext_decoder_init (MirageCdTextCoder *self, guint8 *buffer, gint b
     /* Set new buffer */
     self->priv->buffer = buffer;
     self->priv->buflen = buflen;
-    self->priv->cur_pack = (CDTextPack *)self->priv->buffer;
-    self->priv->length = buflen/sizeof(CDTextPack);
+    self->priv->cur_pack = (CDTextEncodedPack *)self->priv->buffer;
+    self->priv->length = buflen/sizeof(CDTextEncodedPack);
 
     /* Read size info packs */
     gint i = 0;
     while (i < self->priv->length) {
-        CDTextPack *cur_pack = self->priv->cur_pack+i;
+        CDTextEncodedPack *cur_pack = self->priv->cur_pack+i;
 
         if (cur_pack->pack_type == 0x8F) {
             gint block = (cur_pack->block_number & 0xF0) >> 4;
