@@ -243,7 +243,7 @@ static void mirage_disc_remove_session (MirageDisc *self, MirageSession *session
 }
 
 
-static gboolean mirage_disc_generate_disc_structure (MirageDisc *self, gint layer, gint type, guint8 **data, gint *len)
+static void mirage_disc_generate_disc_structure (MirageDisc *self, gint layer, gint type)
 {
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_DISC, "%s: start (layer: %d, type: 0x%X)\n", __debug__, layer, type);
 
@@ -268,10 +268,9 @@ static gboolean mirage_disc_generate_disc_structure (MirageDisc *self, gint laye
             phys_info->layer0_end = GUINT32_FROM_BE(0x00) >>8; /* We don't contain multiple layers, but we don't use OTP, so we might get away with this */
             phys_info->bca = 0;
 
-            *data = (guint8 *)phys_info;
-            *len  = sizeof(MirageDiscStructurePhysicalInfo);
-
-            return TRUE;
+            /* Store the structure */
+            mirage_disc_set_disc_structure(self, layer, type, (const guint8 *)phys_info, sizeof(MirageDiscStructurePhysicalInfo));
+            break;
         }
         case 0x0001: {
             MirageDiscStructureCopyright *copy_info = g_new0(MirageDiscStructureCopyright, 1);
@@ -293,23 +292,18 @@ static gboolean mirage_disc_generate_disc_structure (MirageDisc *self, gint laye
                 copy_info->region_info = 0x00; /* N/A */
             }
 
-            *data = (guint8 *)copy_info;
-            *len  = sizeof(MirageDiscStructureCopyright);
-
-            return TRUE;
+            /* Store the structure */
+            mirage_disc_set_disc_structure(self, layer, type, (const guint8 *)copy_info, sizeof(MirageDiscStructureCopyright));
+            break;
         }
         case 0x0004: {
             MirageDiscStructureManufacturingData *manu_info = g_new0(MirageDiscStructureManufacturingData, 1);
 
-            /* Leave it empty */
-            *data = (guint8 *)manu_info;
-            *len  = sizeof(MirageDiscStructureManufacturingData);
-
-            return TRUE;
+            /* Store the structure */
+            mirage_disc_set_disc_structure(self, layer, type, (const guint8 *)manu_info, sizeof(MirageDiscStructureManufacturingData));
+            break;
         }
     }
-
-    return FALSE;
 }
 
 
@@ -1500,8 +1494,6 @@ gboolean mirage_disc_get_disc_structure (MirageDisc *self, gint layer, gint type
 {
     gint key = ((layer & 0x0000FFFF) << 16) | (type & 0x0000FFFF);
     GByteArray *array;
-    guint8 *tmp_data;
-    gint tmp_len;
 
     if (self->priv->medium_type != MIRAGE_MEDIUM_DVD && self->priv->medium_type != MIRAGE_MEDIUM_BD) {
         g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_DISC_ERROR, "Invalid medium type!");
@@ -1512,22 +1504,23 @@ gboolean mirage_disc_get_disc_structure (MirageDisc *self, gint layer, gint type
 
     if (!array) {
         /* Structure needs to be fabricated (if appropriate) */
-        if (!mirage_disc_generate_disc_structure(self, layer, type, &tmp_data, &tmp_len)) {
-            g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_DISC_ERROR, "Failed to generate fake disc structure data!");
+        mirage_disc_generate_disc_structure(self, layer, type);
+
+        /* Try getting it again */
+        array = g_hash_table_lookup(self->priv->disc_structures, GINT_TO_POINTER(key));
+
+        if (!array) {
+            g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_DISC_ERROR, "Disc structure data not provided and could not be fabricated!");
             return FALSE;
         }
-    } else {
-        /* Structure was provided by image */
-        tmp_len = array->len;
-        tmp_data = array->data;
     }
 
     if (data) {
         /* Return data to user if she wants it */
-        *data = tmp_data;
+        *data = array->data;
     }
     if (len) {
-        *len = tmp_len;
+        *len = array->len;
     }
 
     return TRUE;
