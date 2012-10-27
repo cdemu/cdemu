@@ -327,16 +327,6 @@ static gint sort_sessions_by_number (MirageSession *session1, MirageSession *ses
     }
 }
 
-static void free_disc_structure_data (GArray *array)
-{
-    /* Free data */
-    gpointer data = g_array_index(array, gpointer, 1);
-    g_free(data);
-
-    /* Free array */
-    g_array_free(array, TRUE);
-}
-
 
 /**********************************************************************\
  *                             Public API                             *
@@ -1470,22 +1460,17 @@ MirageTrack *mirage_disc_get_track_by_address (MirageDisc *self, gint address, G
  */
 void mirage_disc_set_disc_structure (MirageDisc *self, gint layer, gint type, const guint8 *data, gint len)
 {
-    GArray *array;
-    guint8 *data_copy;
+    GByteArray *array;
     gint key = ((layer & 0x0000FFFF) << 16) | (type & 0x0000FFFF);
 
     if (self->priv->medium_type != MIRAGE_MEDIUM_DVD && self->priv->medium_type != MIRAGE_MEDIUM_BD) {
         return;
     }
 
-    /* We need to copy the data, and pack it together with its length... guess
-       a value array is one of the ways to go... */
-    array = g_array_sized_new(FALSE, TRUE, sizeof(gpointer), 2);
-    g_assert(sizeof(gpointer) >= sizeof(gint));
-    data_copy = g_memdup(data, len);
-
-    array = g_array_append_val(array, len);
-    array = g_array_append_val(array, data_copy);
+    /* Store the data in a GByteArray (FIXME someday, we'll migrate
+       this to GBytes, which requires GLib 2.32) */
+    array = g_byte_array_new();
+    array = g_byte_array_append(array, data, len);
 
     g_hash_table_insert(self->priv->disc_structures, GINT_TO_POINTER(key), array);
 }
@@ -1514,7 +1499,7 @@ void mirage_disc_set_disc_structure (MirageDisc *self, gint layer, gint type, co
 gboolean mirage_disc_get_disc_structure (MirageDisc *self, gint layer, gint type, const guint8 **data, gint *len, GError **error)
 {
     gint key = ((layer & 0x0000FFFF) << 16) | (type & 0x0000FFFF);
-    GArray *array;
+    GByteArray *array;
     guint8 *tmp_data;
     gint tmp_len;
 
@@ -1533,8 +1518,8 @@ gboolean mirage_disc_get_disc_structure (MirageDisc *self, gint layer, gint type
         }
     } else {
         /* Structure was provided by image */
-        tmp_len = g_array_index(array, gint, 0);
-        tmp_data = g_array_index(array, guint8 *, 1);
+        tmp_len = array->len;
+        tmp_data = array->data;
     }
 
     if (data) {
@@ -1751,7 +1736,7 @@ static void mirage_disc_init (MirageDisc *self)
     self->priv->first_track  = 1;
 
     /* Create disc structures hash table */
-    self->priv->disc_structures = g_hash_table_new_full(g_direct_hash, g_direct_equal, NULL, (GDestroyNotify)free_disc_structure_data);
+    self->priv->disc_structures = g_hash_table_new_full(g_direct_hash, g_direct_equal, NULL, (GDestroyNotify)g_byte_array_unref);
 }
 
 static void mirage_disc_dispose (GObject *gobject)
@@ -1770,6 +1755,12 @@ static void mirage_disc_dispose (GObject *gobject)
         }
     }
 
+    /* Unref disc structure table */
+    if (self->priv->disc_structures) {
+        g_hash_table_unref(self->priv->disc_structures);
+        self->priv->disc_structures = NULL;
+    }
+
     /* Chain up to the parent class */
     return G_OBJECT_CLASS(mirage_disc_parent_class)->dispose(gobject);
 }
@@ -1784,8 +1775,6 @@ static void mirage_disc_finalize (GObject *gobject)
     g_free(self->priv->mcn);
 
     g_free(self->priv->dpm_data);
-
-    g_hash_table_destroy(self->priv->disc_structures);
 
     /* Chain up to the parent class */
     return G_OBJECT_CLASS(mirage_disc_parent_class)->finalize(gobject);
