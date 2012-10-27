@@ -62,6 +62,16 @@
 \**********************************************************************/
 typedef struct
 {
+    gint block_number;
+    gint pack_type;
+    gint track_number;
+
+    guint8 *data;
+    gint data_len;
+} CDTextDecodedPack;
+
+typedef struct
+{
     /* Header */
     guint8 pack_type;
     guint8 track_number;
@@ -159,46 +169,21 @@ struct _MirageCdTextCoderPrivate
 /***********************************************************************\
  *                          Private functions                          *
 \***********************************************************************/
-static GArray *create_value_array (gint block, gint type, gint track, const guint8 *data, gint data_len)
+static gint sort_pack_data (CDTextDecodedPack *pack1, CDTextDecodedPack *pack2)
 {
-    GArray *pack_data = g_array_sized_new(FALSE, TRUE, sizeof(gpointer), 5);
-    g_assert(sizeof(gpointer) >= sizeof(gint));
-    guint8 *data_copy = g_memdup(data, data_len);
-
-    /* Internal representation of pack: block, type, track, data, length */
-    g_array_append_val(pack_data, block);
-    g_array_append_val(pack_data, type);
-    g_array_append_val(pack_data, track);
-    g_array_append_val(pack_data, data_copy);
-    g_array_append_val(pack_data, data_len);
-
-    return pack_data;
-}
-
-static gint sort_pack_data (GArray *pack1, GArray *pack2)
-{
-    gint block1 = g_array_index(pack1, gint, 0);
-    gint block2 = g_array_index(pack2, gint, 0);
-
-    if (block1 < block2) {
+    if (pack1->block_number < pack2->block_number) {
         return -1;
-    } else if (block1 > block2) {
+    } else if (pack1->block_number > pack2->block_number) {
         return 1;
     } else {
-        gint type1 = g_array_index(pack1, gint, 1);
-        gint type2 = g_array_index(pack2, gint, 1);
-
-        if (type1 < type2) {
+        if (pack1->pack_type < pack2->pack_type) {
             return -1;
-        } else if (type1 > type2) {
+        } else if (pack1->pack_type > pack2->pack_type) {
             return 1;
         } else {
-            gint track1 = g_array_index(pack1, gint, 2);
-            gint track2 = g_array_index(pack2, gint, 2);
-
-            if (track1 < track2) {
+            if (pack1->track_number < pack2->track_number) {
                 return -1;
-            } else if (track1 > track2) {
+            } else if (pack1->track_number > pack2->track_number) {
                 return 1;
             } else {
                 return 0;
@@ -218,11 +203,10 @@ static void mirage_cdtext_coder_cleanup (MirageCdTextCoder *self)
         }
 
         for (GList *entry = list; entry; entry = entry->next) {
-            /* Free pack data */
-            gpointer pack_data = g_array_index((GArray *) entry->data, gpointer, 3);
+            CDTextDecodedPack *pack_data = entry->data;
+
+            g_free(pack_data->data);
             g_free(pack_data);
-            /* Free pack */
-            g_array_free((GArray *) entry->data, TRUE);
         }
         g_list_free(list);
     }
@@ -300,28 +284,23 @@ static void mirage_cdtext_encoder_initialize_pack (MirageCdTextCoder *self, gint
     }
 }
 
-static void mirage_cdtext_encoder_pack_data (MirageCdTextCoder *self, GArray *pack) {
-    /* Unpack data */
-    gint block_number = g_array_index(pack, gint, 0);
-    gint pack_type = g_array_index(pack, gint, 1);
-    gint track_number = g_array_index(pack, gint, 2);
-    guint8 *data = g_array_index(pack, guint8 *, 3);
-    gint len = g_array_index(pack, gint, 4);
-
+static void mirage_cdtext_encoder_encode_pack (MirageCdTextCoder *self, CDTextDecodedPack *pack) {
     /* If current pack is already initialized and the data we're trying to pack
        is if different type, open new pack; this way, we don't have to check if
        the language has changed (if it has, so has the pack type... from 0x8F
        to 0x8X */
-    if (self->priv->cur_pack->pack_type && (pack_type != self->priv->cur_pack->pack_type)) {
+    if (self->priv->cur_pack->pack_type && (pack->pack_type != self->priv->cur_pack->pack_type)) {
         /*g_debug("%s: Different pack type, open new pack!\n", __debug__);*/
         self->priv->cur_pack++;
         self->priv->cur_pack_fill = 0;
     }
 
-    gint cur_len = len;
-    guint8 *ptr = data;
+    gint cur_len = pack->data_len;
+    guint8 *ptr = pack->data;
     gint carry_len = 0; /* How many of characters are contained in previous pack(s) */
     while (cur_len > 0) {
+        gint copy_len;
+
         /* If the current pack is full, open a new one */
         if (self->priv->cur_pack_fill == 12) {
             /*g_debug("%s: Current pack full, moving to next!\n", __debug__);*/
@@ -330,9 +309,9 @@ static void mirage_cdtext_encoder_pack_data (MirageCdTextCoder *self, GArray *pa
             self->priv->cur_pack_fill = 0;
         }
 
-        mirage_cdtext_encoder_initialize_pack(self, block_number, pack_type, track_number, carry_len);
+        mirage_cdtext_encoder_initialize_pack(self, pack->block_number, pack->pack_type, pack->track_number, carry_len);
 
-        gint copy_len = MIN(12 - self->priv->cur_pack_fill, cur_len);
+        copy_len = MIN(12 - self->priv->cur_pack_fill, cur_len);
         /*g_debug("%s: Copying %i bytes (cur_len = %i, cur_fill = %i)\n", __debug__, copy_len, cur_len, encoder->cur_pack_fill);*/
 
         memcpy(self->priv->cur_pack->data+self->priv->cur_pack_fill, ptr, copy_len);
@@ -467,9 +446,16 @@ gboolean mirage_cdtext_encoder_set_block_info (MirageCdTextCoder *self, gint blo
  */
 void mirage_cdtext_encoder_add_data (MirageCdTextCoder *self, gint code, gint type, gint track, const guint8 *data, gint data_len)
 {
-    /* Language code -> block conversion */
-    gint block = mirage_cdtext_coder_lang2block(self, code);
-    GArray *pack_data = create_value_array(block, type, track, data, data_len);
+    CDTextDecodedPack *pack_data;
+    gint block = mirage_cdtext_coder_lang2block(self, code); /* Language code -> block conversion */
+
+    /* Create pack structure */
+    pack_data = g_new0(CDTextDecodedPack, 1);
+    pack_data->block_number = block;
+    pack_data->pack_type = type;
+    pack_data->track_number = track;
+    pack_data->data = g_memdup(data, data_len);
+    pack_data->data_len = data_len;
 
     /* Add internal representation to ordered list... */
     self->priv->blocks[block].packs_list = g_list_insert_sorted(self->priv->blocks[block].packs_list, pack_data, (GCompareFunc)sort_pack_data);
@@ -507,17 +493,21 @@ void mirage_cdtext_encoder_encode (MirageCdTextCoder *self, guint8 **buffer, gin
 
             /* Encode all on list */
             for (GList *entry = self->priv->blocks[i].packs_list; entry; entry = entry->next) {
-                GArray *pack_data = entry->data;
-                mirage_cdtext_encoder_pack_data(self, pack_data);
+                mirage_cdtext_encoder_encode_pack(self, entry->data);
             }
 
             /* We need to 'reserve' some space for size info */
+            CDTextDecodedPack pack_data;
             CDTextSizeInfo size_info;
             memset(&size_info, 0, sizeof(size_info));
 
-            GArray *dummy_data = create_value_array(i, 0x8F, 0, (guint8 *)&size_info, sizeof(size_info));
-            mirage_cdtext_encoder_pack_data(self, dummy_data);
-            g_array_free(dummy_data, TRUE);
+            pack_data.block_number = i;
+            pack_data.pack_type = 0x8F;
+            pack_data.track_number = 0;
+            pack_data.data = (guint8 *)&size_info;
+            pack_data.data_len = sizeof(size_info);
+
+            mirage_cdtext_encoder_encode_pack(self, &pack_data);
         } else {
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_CDTEXT, "%s: block %i not valid\n", __debug__, i);
         }
@@ -527,22 +517,35 @@ void mirage_cdtext_encoder_encode (MirageCdTextCoder *self, guint8 **buffer, gin
     for (gint i = 0; i < 8; i++) {
         /* Having pointer set means we're using this language... */
         if (self->priv->blocks[i].size_info) {
-            guint8 *size_info = NULL;
-            gint size_info_len = 0;
+            guint8 *size_info;
+            gint size_info_len;
 
+            gint old_len;
+
+            /* Generate size info */
             mirage_cdtext_encoder_generate_size_info(self, i, &size_info, &size_info_len);
 
             /* Write into previously reserved size info packs */
-            /*g_debug("%s: Writing info into packs at %p\n", __debug__, encoder.size_info[i]);*/
             self->priv->cur_pack = self->priv->blocks[i].size_info;
             self->priv->cur_pack_fill = 0;
-            gint old_len = self->priv->length;
 
-            GArray *pack_data = create_value_array(i, 0x8F, 0, (guint8 *)size_info, size_info_len);
-            mirage_cdtext_encoder_pack_data(self, pack_data);
+            /* Store current length */
+            old_len = self->priv->length;
+
+            /* Encode pack */
+            CDTextDecodedPack pack_data;
+            pack_data.block_number = i;
+            pack_data.pack_type = 0x8F;
+            pack_data.track_number = 0;
+            pack_data.data = size_info;
+            pack_data.data_len = size_info_len;
+
+            mirage_cdtext_encoder_encode_pack(self, &pack_data);
+
+            /* Restore length */
             self->priv->length = old_len;
 
-            g_array_free(pack_data, TRUE);
+            /* Free size info */
             g_free(size_info);
         }
     }
@@ -659,10 +662,14 @@ void mirage_cdtext_decoder_init (MirageCdTextCoder *self, guint8 *buffer, gint b
                to check whether string doesn't contain just "\0", which keeps getting
                returned once we hit the padding at the end of a pack types...) */
             if (!tmp_buffer[tmp_len-1] && strlen(tmp_buffer)) {
-                /*g_debug("%s: block: %i; pack type: 0x%X; track: %i; len: %i; data: %s\n", __debug__, block, self->priv->cur_pack->pack_type, cur_track, tmp_len, tmp_buffer);*/
-
                 /* Pack the data and add it to the list; as simple as that... */
-                GArray *pack_data = create_value_array(block, self->priv->cur_pack->pack_type, cur_track, (guint8 *)tmp_buffer, tmp_len);
+                CDTextDecodedPack *pack_data = g_new0(CDTextDecodedPack, 1);
+                pack_data->block_number = block;
+                pack_data->pack_type = self->priv->cur_pack->pack_type;
+                pack_data->track_number = cur_track;
+                pack_data->data = g_memdup(tmp_buffer, tmp_len);
+                pack_data->data_len = tmp_len;
+
                 self->priv->blocks[block].packs_list = g_list_insert_sorted(self->priv->blocks[block].packs_list, pack_data, (GCompareFunc)sort_pack_data);
 
                 /* Clear the temporary buffer */
@@ -748,17 +755,10 @@ gboolean mirage_cdtext_decoder_get_data (MirageCdTextCoder *self, gint block, Mi
 {
     /* Go over the list and call the callback for each entry */
     for(GList *entry = self->priv->blocks[block].packs_list; entry; entry = entry->next) {
-        GArray *pack_data = entry->data;
+        CDTextDecodedPack *pack_data = entry->data;
+        gint code = mirage_cdtext_coder_block2lang(self, pack_data->block_number);
 
-        gint block_number = g_array_index(pack_data, gint, 0);
-        gint pack_type = g_array_index(pack_data, gint, 1);
-        gint track_number = g_array_index(pack_data, gint, 2);
-        guint8 *data = g_array_index(pack_data, guint8 *, 3);
-        gint len = g_array_index(pack_data, gint, 4);
-
-        gint code = mirage_cdtext_coder_block2lang(self, block_number);
-
-        if (!callback_func(code, pack_type, track_number, data, len, user_data)) {
+        if (!callback_func(code, pack_data->pack_type, pack_data->track_number, pack_data->data, pack_data->data_len, user_data)) {
             return FALSE;
         }
     }
