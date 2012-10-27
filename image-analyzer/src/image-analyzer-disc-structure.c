@@ -67,7 +67,6 @@ static gboolean image_analyzer_disc_structure_append_text (ImageAnalyzerDiscStru
 \**********************************************************************/
 static void image_analyzer_disc_structure_ui_callback_get_structure (GtkWidget *button G_GNUC_UNUSED, ImageAnalyzerDiscStructure *self)
 {
-    MirageSector *sector;
     GError *error = NULL;
     gboolean succeeded;
     gint layer, type;

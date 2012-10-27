@@ -92,44 +92,44 @@ static gboolean xml_dump_fragment (MirageFragment *fragment, xmlNodePtr parent)
     xml_add_node_with_content(parent, TAG_LENGTH, "%d", length);
 
 
-    if (MIRAGE_IS_FRAGMENT_IFACE_BINARY(fragment)) {
+    if (MIRAGE_IS_DATA_FRAGMENT(fragment)) {
         const gchar *main_name, *subchannel_name;
         guint64 main_offset, subchannel_offset;
         gint main_size, subchannel_size;
         gint main_format, subchannel_format;
 
-        main_name = mirage_fragment_iface_binary_main_data_get_filename(MIRAGE_FRAGMENT_IFACE_BINARY(fragment));
+        main_name = mirage_data_fragment_main_data_get_filename(MIRAGE_DATA_FRAGMENT(fragment));
         xml_add_node_with_content(parent, TAG_MAIN_NAME, "%s", main_name);
 
-        main_offset = mirage_fragment_iface_binary_main_data_get_offset(MIRAGE_FRAGMENT_IFACE_BINARY(fragment));
+        main_offset = mirage_data_fragment_main_data_get_offset(MIRAGE_DATA_FRAGMENT(fragment));
         xml_add_node_with_content(parent, TAG_MAIN_OFFSET, "%lld", main_offset);
 
 
-        main_size = mirage_fragment_iface_binary_main_data_get_size(MIRAGE_FRAGMENT_IFACE_BINARY(fragment));
+        main_size = mirage_data_fragment_main_data_get_size(MIRAGE_DATA_FRAGMENT(fragment));
         xml_add_node_with_content(parent, TAG_MAIN_SIZE, "%d", main_size);
 
-        main_format = mirage_fragment_iface_binary_main_data_get_format(MIRAGE_FRAGMENT_IFACE_BINARY(fragment));
+        main_format = mirage_data_fragment_main_data_get_format(MIRAGE_DATA_FRAGMENT(fragment));
         xml_add_node_with_content(parent, TAG_MAIN_FORMAT, "0x%X", main_format);
 
-        subchannel_name = mirage_fragment_iface_binary_subchannel_data_get_filename(MIRAGE_FRAGMENT_IFACE_BINARY(fragment));
+        subchannel_name = mirage_data_fragment_subchannel_data_get_filename(MIRAGE_DATA_FRAGMENT(fragment));
         xml_add_node_with_content(parent, TAG_SUBCHANNEL_NAME, "%s", subchannel_name);
 
-        subchannel_offset = mirage_fragment_iface_binary_subchannel_data_get_offset(MIRAGE_FRAGMENT_IFACE_BINARY(fragment));
+        subchannel_offset = mirage_data_fragment_subchannel_data_get_offset(MIRAGE_DATA_FRAGMENT(fragment));
         xml_add_node_with_content(parent, TAG_SUBCHANNEL_OFFSET, "%lld", subchannel_offset);
 
-        subchannel_size = mirage_fragment_iface_binary_subchannel_data_get_size(MIRAGE_FRAGMENT_IFACE_BINARY(fragment));
+        subchannel_size = mirage_data_fragment_subchannel_data_get_size(MIRAGE_DATA_FRAGMENT(fragment));
         xml_add_node_with_content(parent, TAG_SUBCHANNEL_SIZE, "%d", subchannel_size);
 
-        subchannel_format = mirage_fragment_iface_binary_subchannel_data_get_format(MIRAGE_FRAGMENT_IFACE_BINARY(fragment));
+        subchannel_format = mirage_data_fragment_subchannel_data_get_format(MIRAGE_DATA_FRAGMENT(fragment));
         xml_add_node_with_content(parent, TAG_SUBCHANNEL_FORMAT, "0x%X", subchannel_format);
-    } else if (MIRAGE_IS_FRAGMENT_IFACE_AUDIO(fragment)) {
+    } else if (MIRAGE_IS_AUDIO_FRAGMENT(fragment)) {
         const gchar *filename;
         gint offset;
 
-        filename = mirage_fragment_iface_audio_get_filename(MIRAGE_FRAGMENT_IFACE_AUDIO(fragment));
+        filename = mirage_audio_fragment_get_filename(MIRAGE_AUDIO_FRAGMENT(fragment));
         xml_add_node_with_content(parent, TAG_FILENAME, "%s", filename);
 
-        offset = mirage_fragment_iface_audio_get_offset(MIRAGE_FRAGMENT_IFACE_AUDIO(fragment));
+        offset = mirage_audio_fragment_get_offset(MIRAGE_AUDIO_FRAGMENT(fragment));
         xml_add_node_with_content(parent, TAG_OFFSET, "%d", offset);
     }
 

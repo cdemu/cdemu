@@ -101,21 +101,21 @@ endif ()
 to_list_spaces (image-analyzer_CFLAGS image-analyzer_S_CFLAGS)
 to_list_spaces (image-analyzer_LDFLAGS image-analyzer_S_LDFLAGS)
 
-set_target_properties (image-analyzer PROPERTIES 
+set_target_properties (image-analyzer PROPERTIES
     COMPILE_FLAGS ${image-analyzer_S_CFLAGS}
-    COMPILE_DEFINITIONS ${image-analyzer_DEFS}
+    COMPILE_DEFINITIONS "${image-analyzer_DEFS}"
     LINK_FLAGS ${image-analyzer_S_LDFLAGS}
 )
 
 # Installation
 
 install (
-    TARGETS image-analyzer 
+    TARGETS image-analyzer
     DESTINATION ${CMAKE_INSTALL_BINDIR}
 )
 
 install (
-    FILES ${PROJECT_SOURCE_DIR}/data/image-analyzer.desktop 
+    FILES ${PROJECT_SOURCE_DIR}/data/image-analyzer.desktop
     DESTINATION ${CMAKE_INSTALL_DATADIR}/applications
 )
 if (POST_INSTALL_HOOKS)
