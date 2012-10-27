@@ -36,6 +36,7 @@ struct _ImageAnalyzerApplicationPrivate
     GtkWidget *dialog_sector;
     GtkWidget *dialog_analysis;
     GtkWidget *dialog_topology;
+    GtkWidget *dialog_structure;
 
     /* Window */
     GtkWidget *window;
