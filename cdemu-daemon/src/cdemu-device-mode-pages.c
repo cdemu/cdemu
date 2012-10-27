@@ -31,34 +31,14 @@
 
 
 /**********************************************************************\
- *                    Mode page declaration macros                    *
+ *                    Mode page declaration helpers                   *
 \**********************************************************************/
 
-static inline GArray *get_blank_mode_page (gint code, gint size)
-{
-    GArray *array = g_array_sized_new(FALSE, TRUE, sizeof(struct ModePageGeneral *), 3);
-    g_assert (array != NULL);
-
-    struct ModePageGeneral *page = g_malloc0(size);
-    struct ModePageGeneral *mask = g_malloc0(size);
-    struct ModePageGeneral *page_copy = g_memdup(page, size);
-
-    /* Initialize page and mask */
-    page->code = mask->code = code;
-    page->length = mask->length = size - 2;
-
-    /* Pack pointers into value array */ \
-    g_array_append_val(array, page); /* MODE_PAGE_CURRENT */
-    g_array_append_val(array, page_copy); /* MODE_PAGE_DEFAULT */
-    g_array_append_val(array, mask); /* MODE_PAGE_MASK */
-
-    return array;
-}
 
 static inline gint compare_mode_pages (GArray *mode_page1_ptr, GArray *mode_page2_ptr)
 {
-    struct ModePageGeneral *mode_page1 = g_array_index(mode_page1_ptr, struct ModePageGeneral *, 0);
-    struct ModePageGeneral *mode_page2 = g_array_index(mode_page2_ptr, struct ModePageGeneral *, 0);
+    struct ModePageGeneral *mode_page1 = g_array_index(mode_page1_ptr, struct ModePageGeneral *, MODE_PAGE_DEFAULT);
+    struct ModePageGeneral *mode_page2 = g_array_index(mode_page2_ptr, struct ModePageGeneral *, MODE_PAGE_DEFAULT);
 
     if (mode_page1->code < mode_page2->code) {
         return -1;
@@ -71,7 +51,7 @@ static inline gint compare_mode_pages (GArray *mode_page1_ptr, GArray *mode_page
 
 static inline gint find_mode_page (GArray *mode_page_ptr, gconstpointer code_ptr)
 {
-    struct ModePageGeneral *mode_page = g_array_index(mode_page_ptr, struct ModePageGeneral *, 0);
+    struct ModePageGeneral *mode_page = g_array_index(mode_page_ptr, struct ModePageGeneral *, MODE_PAGE_DEFAULT);
     gint code = GPOINTER_TO_INT(code_ptr);
 
     if (mode_page->code < code) {
@@ -82,6 +62,42 @@ static inline gint find_mode_page (GArray *mode_page_ptr, gconstpointer code_ptr
         return 0;
     }
 }
+
+
+static inline GArray *initialize_mode_page (gint code, gint size)
+{
+    GArray *array = g_array_sized_new(FALSE, TRUE, sizeof(struct ModePageGeneral *), 3);
+    g_assert(array != NULL);
+
+    struct ModePageGeneral *page_current = g_malloc0(size);
+    struct ModePageGeneral *page_default = g_malloc0(size);
+    struct ModePageGeneral *page_mask = g_malloc0(size);
+
+    /* Initialize default page and mask; current page is initialized in
+       append_mode_page() function */
+    page_default->code   = page_mask->code   = code;
+    page_default->length = page_mask->length = size - 2;
+
+    /* Pack pointers into value array */ \
+    g_array_append_val(array, page_current); /* MODE_PAGE_CURRENT */
+    g_array_append_val(array, page_default); /* MODE_PAGE_DEFAULT */
+    g_array_append_val(array, page_mask); /* MODE_PAGE_MASK */
+
+    return array;
+}
+
+static inline GList *append_mode_page (GList *list, GArray *mode_page)
+{
+    struct ModePageGeneral *page_default = g_array_index(mode_page, struct ModePageGeneral *, MODE_PAGE_DEFAULT);
+    struct ModePageGeneral *page_current = g_array_index(mode_page, struct ModePageGeneral *, MODE_PAGE_CURRENT);
+
+    /* Make a copy of MODE_PAGE_DEFAULT to MODE_PAGE_CURRENT */
+    memcpy(page_current, page_default, page_default->length + 2);
+
+    /* Append mode page array to the list */
+    return g_list_insert_sorted(list, mode_page, (GCompareFunc)compare_mode_pages);
+}
+
 
 
 /**********************************************************************\
@@ -103,7 +119,7 @@ gpointer cdemu_device_get_mode_page (CdemuDevice *self, gint page, gint type)
 
 void cdemu_device_mode_pages_init (CdemuDevice *self)
 {
-    GArray *cur_mode_page;
+    GArray *mode_page;
 
     /*** Mode page 0x01: Read/Write Error Recovery Parameters Mode Page ***/
     /* IMPLEMENTATION NOTE: read retry is set to 1, because we're a virtual
@@ -111,40 +127,40 @@ void cdemu_device_mode_pages_init (CdemuDevice *self)
        Alchohol 120% virtual device reports as well). We allow it to be changed,
        though, since it makes no difference. We do allow DCR bit to be changed,
        too, because according to INF8020 it affects the way subchannel is read */
-    cur_mode_page = get_blank_mode_page (0x01, sizeof(struct ModePage_0x01));
-    if (cur_mode_page) {
-        struct ModePage_0x01 *page = g_array_index(cur_mode_page, struct ModePage_0x01 *, 0);
-        struct ModePage_0x01 *mask = g_array_index(cur_mode_page, struct ModePage_0x01 *, 1);
+    mode_page = initialize_mode_page(0x01, sizeof(struct ModePage_0x01));
+    if (mode_page) {
+        struct ModePage_0x01 *page = g_array_index(mode_page, struct ModePage_0x01 *, MODE_PAGE_DEFAULT);
+        struct ModePage_0x01 *mask = g_array_index(mode_page, struct ModePage_0x01 *, MODE_PAGE_MASK);
 
         page->read_retry = 0x01;
 
         mask->dcr = 1;
         mask->read_retry = 0xFF;
     }
-    self->priv->mode_pages_list = g_list_insert_sorted(self->priv->mode_pages_list, cur_mode_page, (GCompareFunc)compare_mode_pages);
+    self->priv->mode_pages_list = append_mode_page(self->priv->mode_pages_list, mode_page);
 
     /*** Mode Page 0x0D: CD Device Parameters Mode Page ****/
     /* IMPLEMENTATION NOTE: this one is marked as reserved in ATAPI, but all
        my drives return it anyway. We just set seconds per minutes and frames
        per second values, with no option of changing anything */
-    cur_mode_page = get_blank_mode_page (0x0D, sizeof(struct ModePage_0x0D));
-    if (cur_mode_page) {
-        struct ModePage_0x0D *page = g_array_index(cur_mode_page, struct ModePage_0x0D *, 0);
+    mode_page = initialize_mode_page(0x0D, sizeof(struct ModePage_0x0D));
+    if (mode_page) {
+        struct ModePage_0x0D *page = g_array_index(mode_page, struct ModePage_0x0D *, MODE_PAGE_DEFAULT);
 
         page->spm = GUINT16_TO_BE(60);
         page->fps = GUINT16_TO_BE(75);
     }
-    self->priv->mode_pages_list = g_list_insert_sorted(self->priv->mode_pages_list, cur_mode_page, (GCompareFunc)compare_mode_pages);
+    self->priv->mode_pages_list = append_mode_page(self->priv->mode_pages_list, mode_page);
 
     /*** Mode Page 0x0E: CD Audio Control Mode Page ***/
     /* IMPLEMENTATION NOTE: IMMED bit is set to 1 in accord with ATAPI, and SOTC
        to 0. There is an obsolete field that is set to 75 according to ATAPI,
        and two unmuted audio ports (1 and 2). We don't support changing of IMMED,
        but SOTC can be changed, and so can all port-related fields */
-    cur_mode_page = get_blank_mode_page (0x0E, sizeof(struct ModePage_0x0E));
-    if (cur_mode_page) {
-        struct ModePage_0x0E *page = g_array_index(cur_mode_page, struct ModePage_0x0E *, 0);
-        struct ModePage_0x0E *mask = g_array_index(cur_mode_page, struct ModePage_0x0E *, 1);
+    mode_page = initialize_mode_page(0x0E, sizeof(struct ModePage_0x0E));
+    if (mode_page) {
+        struct ModePage_0x0E *page = g_array_index(mode_page, struct ModePage_0x0E *, MODE_PAGE_DEFAULT);
+        struct ModePage_0x0E *mask = g_array_index(mode_page, struct ModePage_0x0E *, MODE_PAGE_MASK);
 
         page->immed = 0;
         page->__dummy4__[4] = 75;
@@ -163,27 +179,27 @@ void cdemu_device_mode_pages_init (CdemuDevice *self)
         mask->port3csel = 0xF;
         mask->port3vol  = 0xFF;
     }
-    self->priv->mode_pages_list = g_list_insert_sorted(self->priv->mode_pages_list, cur_mode_page, (GCompareFunc)compare_mode_pages);
+    self->priv->mode_pages_list = append_mode_page(self->priv->mode_pages_list, mode_page);
 
     /*** Mode Page 0x1A: Power Condition Mode Page ***/
     /* IMPLEMENTATION NOTE: No values for timers are set, though they can be */
-    cur_mode_page = get_blank_mode_page (0x1A, sizeof(struct ModePage_0x1A));
-    if (cur_mode_page) {
-        struct ModePage_0x1A *mask = g_array_index(cur_mode_page, struct ModePage_0x1A *, 1);
+    mode_page = initialize_mode_page(0x1A, sizeof(struct ModePage_0x1A));
+    if (mode_page) {
+        struct ModePage_0x1A *mask = g_array_index(mode_page, struct ModePage_0x1A *, MODE_PAGE_MASK);
 
         mask->idle  = 1;
         mask->stdby = 1;
         mask->idle_timer  = 0xFFFFFFFF;
         mask->stdby_timer = 0xFFFFFFFF;
     }
-    self->priv->mode_pages_list = g_list_insert_sorted(self->priv->mode_pages_list, cur_mode_page, (GCompareFunc)compare_mode_pages);
+    self->priv->mode_pages_list = append_mode_page(self->priv->mode_pages_list, mode_page);
 
     /*** Mode Page 0x2A: CD/DVD Capabilities and Mechanical Status Mode Page ***/
     /* IMPLEMENTATION NOTE: We claim to do things we can (more or less), and nothing
        can be changed, just like INF8090 says */
-    cur_mode_page = get_blank_mode_page (0x2A, sizeof(struct ModePage_0x2A));
-    if (cur_mode_page) {
-        struct ModePage_0x2A *page = g_array_index(cur_mode_page, struct ModePage_0x2A *, 0);
+    mode_page = initialize_mode_page(0x2A, sizeof(struct ModePage_0x2A));
+    if (mode_page) {
+        struct ModePage_0x2A *page = g_array_index(mode_page, struct ModePage_0x2A *, MODE_PAGE_DEFAULT);
 
         page->dvdr_read = 1;
         page->dvdrom_read = 1;
@@ -221,9 +237,7 @@ void cdemu_device_mode_pages_init (CdemuDevice *self)
 
         page->copy_man_rev = GUINT16_TO_BE(0x01);
     }
-    self->priv->mode_pages_list = g_list_insert_sorted(self->priv->mode_pages_list, cur_mode_page, (GCompareFunc)compare_mode_pages);
-
-    return;
+    self->priv->mode_pages_list = append_mode_page(self->priv->mode_pages_list, mode_page);
 };
 
 void cdemu_device_mode_pages_cleanup (CdemuDevice *self)
