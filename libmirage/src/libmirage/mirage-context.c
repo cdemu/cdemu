@@ -534,7 +534,7 @@ GInputStream *mirage_context_create_file_stream (MirageContext *self, const gcha
         found_new = FALSE;
 
         for (gint i = 0; i < num_file_filters; i++) {
-            GError *local_error = NULL;
+            local_error = NULL;
 
             /* Create filter object and check if it can handle data */
             filter = g_object_new(file_filter_types[i], "base-stream", stream, "close-base-stream", FALSE, NULL);
