@@ -62,15 +62,6 @@ configure_file (
 include_directories (${PROJECT_BINARY_DIR})
 include_directories (${PROJECT_BINARY_DIR}/src/libmirage)
 
-set (extra_clean_files
-    ${PROJECT_SOURCE_DIR}/src/libmirage/mirage-version.h
-    ${PROJECT_BINARY_DIR}/docs/reference/libmirage/version.xml
-)
-
-set_directory_properties (
-    PROPERTY ADDITIONAL_MAKE_CLEAN_FILES "${extra_clean_files}"
-)
-
 if (NOT CMAKE_BUILD_TYPE)
     set (CMAKE_BUILD_TYPE RelWithDebInfo CACHE STRING
         "Choose the type of build: None Debug Release RelWithDebInfo MinSizeRel."
