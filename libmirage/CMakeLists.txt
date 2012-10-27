@@ -48,7 +48,7 @@ configure_file (
 )
 configure_file (
     ${PROJECT_SOURCE_DIR}/src/libmirage/mirage-version.h.in
-    ${PROJECT_SOURCE_DIR}/src/libmirage/mirage-version.h
+    ${PROJECT_BINARY_DIR}/src/libmirage/mirage-version.h
 )
 configure_file (
     ${PROJECT_SOURCE_DIR}/docs/reference/libmirage/version.xml.in
@@ -60,6 +60,7 @@ configure_file (
     @ONLY
 )
 include_directories (${PROJECT_BINARY_DIR})
+include_directories (${PROJECT_BINARY_DIR}/src/libmirage)
 
 set (extra_clean_files
     ${PROJECT_SOURCE_DIR}/src/libmirage/mirage-version.h
@@ -280,7 +281,7 @@ if (GTKDOC_ENABLED AND GTKDOC_FOUND)
     gtk_doc (
         MODULE ${PROJECT_NAME}
         MAIN_SGML_FILE ${PROJECT_NAME}-docs.sgml
-        SOURCE_DIR ${PROJECT_SOURCE_DIR}/src/libmirage
+        SOURCE_DIR ${PROJECT_SOURCE_DIR}/src/libmirage ${PROJECT_BINARY_DIR}/src/libmirage
         SOURCES ${libmirage_HEADERS} ${libmirage_SOURCES}
         DOCS_DIR ${PROJECT_SOURCE_DIR}/docs/reference/libmirage
         IGNORE_HFILES src/libmirage/mirage-disc-structures.h

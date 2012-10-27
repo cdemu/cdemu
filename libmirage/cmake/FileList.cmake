@@ -64,7 +64,7 @@ set (libmirage_HEADERS
     src/libmirage/mirage-session.h
     src/libmirage/mirage-track.h
     src/libmirage/mirage-utils.h
-    src/libmirage/mirage-version.h
+    ${PROJECT_BINARY_DIR}/src/libmirage/mirage-version.h
 )
 
 set (libmirage_SOURCES

@@ -18,11 +18,11 @@ function (gtk_doc)
     set (oneValueArgs
         MODULE
         MAIN_SGML_FILE
-        SOURCE_DIR
         DOCS_DIR
     )
     set (multiValueArgs
         SOURCES
+        SOURCE_DIR
         IGNORE_HFILES
         CFLAGS
         LDFLAGS
@@ -58,6 +58,11 @@ function (gtk_doc)
         endif ()
     endforeach ()
 
+    # prepare source dirs
+    foreach (dir ${GTKDOC_SOURCE_DIR})
+        set (GTKDOC_SOURCE_DIR_LIST ${GTKDOC_SOURCE_DIR_LIST} --source-dir=${dir})
+    endforeach ()
+
     # scan header files and introspect gobjects
     to_list_spaces (GTKDOC_CFLAGS GTKDOC_S_CFLAGS)
     to_list_spaces (GTKDOC_LDFLAGS GTKDOC_S_LDFLAGS)
@@ -70,7 +75,7 @@ function (gtk_doc)
     )
     add_custom_command (
         OUTPUT ${GTKDOC_DOCS_BUILDDIR}/scan-build.stamp
-        COMMAND gtkdoc-scan --module=${GTKDOC_MODULE} --source-dir=${GTKDOC_SOURCE_DIR}
+        COMMAND gtkdoc-scan --module=${GTKDOC_MODULE} ${GTKDOC_SOURCE_DIR_LIST}
             --ignore-headers="${GTKDOC_IGNORE_HFILES}"
         COMMAND sh ${PROJECT_BINARY_DIR}/run-scangobj
         COMMAND touch ${GTKDOC_DOCS_BUILDDIR}/scan-build.stamp
@@ -86,7 +91,7 @@ function (gtk_doc)
     add_custom_command (
         OUTPUT ${GTKDOC_DOCS_BUILDDIR}/sgml-build.stamp
         COMMAND gtkdoc-mkdb --module=${GTKDOC_MODULE} --sgml-mode --output-format=xml
-            --main-sgml-file=${GTKDOC_MAIN_SGML_FILE} --source-dir=${GTKDOC_SOURCE_DIR}
+            --main-sgml-file=${GTKDOC_MAIN_SGML_FILE} ${GTKDOC_SOURCE_DIR_LIST}
         COMMAND touch ${GTKDOC_DOCS_BUILDDIR}/sgml-build.stamp
         WORKING_DIRECTORY ${GTKDOC_DOCS_BUILDDIR}
         DEPENDS ${GTKDOC_DOCS_BUILDDIR}/scan-build.stamp
