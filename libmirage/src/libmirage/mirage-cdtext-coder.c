@@ -124,7 +124,7 @@ static const guint16 cdtext_crc_lut[256] = {
 
 typedef struct
 {
-    gint langcode; /* Language codes */
+    gint code; /* Language code */
     gint charset; /* Character set */
     gint first_track; /* First track */
     gint last_track; /* Last track */
@@ -234,12 +234,12 @@ static void mirage_cdtext_coder_cleanup (MirageCdTextCoder *self)
 }
 
 
-static gint mirage_cdtext_coder_lang2block (MirageCdTextCoder *self, gint langcode)
+static gint mirage_cdtext_coder_lang2block (MirageCdTextCoder *self, gint code)
 {
     gint ret = 0;
 
     for (gint i = 0; i < 8; i++) {
-        if (self->priv->blocks[i].langcode == langcode) {
+        if (self->priv->blocks[i].code == code) {
             ret = i;
             break;
         }
@@ -250,7 +250,7 @@ static gint mirage_cdtext_coder_lang2block (MirageCdTextCoder *self, gint langco
 
 static gint mirage_cdtext_coder_block2lang (MirageCdTextCoder *self, gint block)
 {
-    return self->priv->blocks[block].langcode;
+    return self->priv->blocks[block].code;
 }
 
 
@@ -365,7 +365,7 @@ static void mirage_cdtext_encoder_generate_size_info (MirageCdTextCoder *self, g
         /* Set only if we have at least one pack for that language */
         if (self->priv->blocks[i].seq_count > 0) {
             size_info->last_seqnum[i] = self->priv->blocks[i].seq_count-1; /* It overshoots by one */
-            size_info->language_codes[i] = self->priv->blocks[i].langcode;
+            size_info->language_codes[i] = self->priv->blocks[i].code;
         }
     }
 
@@ -414,19 +414,19 @@ void mirage_cdtext_encoder_init (MirageCdTextCoder *self, guint8 *buffer, gint b
  * mirage_cdtext_encoder_set_block_info:
  * @self: a #MirageCdTextCoder
  * @block: (in): block number
- * @langcode: (in): language code
+ * @code: (in): language code
  * @charset: (in): character set
  * @copyright: (in): copyright flag
  * @error: (out) (allow-none): location to store error, or %NULL
  *
  * Sets block information for CD-TEXT block specified by @block. @block must be
- * a valid block number (0-7). @langcode is the language code that is to be assigned
+ * a valid block number (0-7). @code is the language code that is to be assigned
  * to the block (e.g. 9 for English), @charset denotes character set that is used within
  * the block, and @copyright is the copyright flag for the block.
  *
  * Returns: %TRUE on success, %FALSE on failure
  */
-gboolean mirage_cdtext_encoder_set_block_info (MirageCdTextCoder *self, gint block, gint langcode, gint charset, gint copyright, GError **error)
+gboolean mirage_cdtext_encoder_set_block_info (MirageCdTextCoder *self, gint block, gint code, gint charset, gint copyright, GError **error)
 {
     /* Verify that block is valid */
     if (block > self->priv->num_blocks) {
@@ -435,8 +435,8 @@ gboolean mirage_cdtext_encoder_set_block_info (MirageCdTextCoder *self, gint blo
         return FALSE;
     }
 
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_CDTEXT, "%s: initialized block %i; langcode: %i; charset: %i; copyright: %i\n", __debug__, block, langcode, charset, copyright);
-    self->priv->blocks[block].langcode = langcode;
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_CDTEXT, "%s: initialized block %i; code: %i; charset: %i; copyright: %i\n", __debug__, block, code, charset, copyright);
+    self->priv->blocks[block].code = code;
     self->priv->blocks[block].charset = charset;
     self->priv->blocks[block].copyright = copyright;
 
@@ -446,13 +446,13 @@ gboolean mirage_cdtext_encoder_set_block_info (MirageCdTextCoder *self, gint blo
 /**
  * mirage_cdtext_encoder_add_data:
  * @self: a #MirageCdTextCoder
- * @langcode: (in): language code
+ * @code: (in): language code
  * @type: (in): data type
  * @track: (in): track number
  * @data: (in) (array length=data_len): data
  * @data_len: (in): data length
  *
- * Adds data to the encoder. @langcode is language code of the block the data
+ * Adds data to the encoder. @code is language code of the block the data
  * should be added to. @type denotes pack type and should be one of #MirageLanguagePackTypes.
  * @track is track number the data belongs to, or 0 if data is global (belongs to disc/session).
  * @data is buffer containing data to be added, and @data_len is length of data in the buffer.
@@ -465,10 +465,10 @@ gboolean mirage_cdtext_encoder_set_block_info (MirageCdTextCoder *self, gint blo
  * before data can be added to it.
  * </note>
  */
-void mirage_cdtext_encoder_add_data (MirageCdTextCoder *self, gint langcode, gint type, gint track, const guint8 *data, gint data_len)
+void mirage_cdtext_encoder_add_data (MirageCdTextCoder *self, gint code, gint type, gint track, const guint8 *data, gint data_len)
 {
-    /* Langcode -> block conversion */
-    gint block = mirage_cdtext_coder_lang2block(self, langcode);
+    /* Language code -> block conversion */
+    gint block = mirage_cdtext_coder_lang2block(self, code);
     GArray *pack_data = create_value_array(block, type, track, data, data_len);
 
     /* Add internal representation to ordered list... */
@@ -501,9 +501,9 @@ void mirage_cdtext_encoder_encode (MirageCdTextCoder *self, guint8 **buffer, gin
 
     /* Encode all blocks */
     for (gint i = 0; i < self->priv->num_blocks; i++) {
-        /* Block is valid only if it has langcode set */
-        if (self->priv->blocks[i].langcode) {
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_CDTEXT, "%s: encoding block %i; langcode %i\n", __debug__, i, self->priv->blocks[i].langcode);
+        /* Block is valid only if it has language code set */
+        if (self->priv->blocks[i].code) {
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_CDTEXT, "%s: encoding block %i; code %i\n", __debug__, i, self->priv->blocks[i].code);
 
             /* Encode all on list */
             for (GList *entry = self->priv->blocks[i].packs_list; entry; entry = entry->next) {
@@ -601,7 +601,7 @@ void mirage_cdtext_decoder_init (MirageCdTextCoder *self, guint8 *buffer, gint b
 
             CDTextSizeInfo *size_info = NULL;
             mirage_cdtext_decoder_read_size_info(self, cur_pack, &size_info);
-            self->priv->blocks[block].langcode = size_info->language_codes[block];
+            self->priv->blocks[block].code = size_info->language_codes[block];
             self->priv->blocks[block].charset = size_info->charset;
             self->priv->blocks[block].copyright = size_info->copyright;
             self->priv->blocks[block].first_track = size_info->first_track;
@@ -691,33 +691,33 @@ void mirage_cdtext_decoder_init (MirageCdTextCoder *self, guint8 *buffer, gint b
  * mirage_cdtext_decoder_get_block_info:
  * @self: a #MirageCdTextCoder
  * @block: (in): block number
- * @langcode: (out) (allow-none): location to store language code, or %NULL
+ * @code: (out) (allow-none): location to store language code, or %NULL
  * @charset: (out) (allow-none): location to store character set, or %NULL
  * @copyright: (out) (allow-none): location to store copyright flag, or %NULL
  * @error: (out) (allow-none): location to store error, or %NULL
  *
  * Retrieves block information for CD-TEXT block specified by @block. @block
  * must be a valid block number (0-7). Language code assigned to the block is
- * stored in @langcode, code of character set used within block is stored in
+ * stored in @code, code of character set used within block is stored in
  * @charset and block's copyright flag is stored in @copyright.
  *
  * Returns: %TRUE on success, %FALSE on failure
  */
-gboolean mirage_cdtext_decoder_get_block_info (MirageCdTextCoder *self, gint block, gint *langcode, gint *charset, gint *copyright, GError **error)
+gboolean mirage_cdtext_decoder_get_block_info (MirageCdTextCoder *self, gint block, gint *code, gint *charset, gint *copyright, GError **error)
 {
     /* Verify that block is valid */
     if (block > self->priv->num_blocks) {
         g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_LANGUAGE_ERROR, "Block number %d exceeds number of blocks %d!", block, self->priv->num_blocks);
         return FALSE;
     }
-    if (!self->priv->blocks[block].langcode) {
+    if (!self->priv->blocks[block].code) {
         /* FIXME: error */
         g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_LANGUAGE_ERROR, "Requested block %d has no language code set!", block);
         return FALSE;
     }
 
-    if (langcode) {
-        *langcode = self->priv->blocks[block].langcode;
+    if (code) {
+        *code = self->priv->blocks[block].code;
     }
     if (charset) {
         *charset = self->priv->blocks[block].charset;
@@ -756,9 +756,9 @@ gboolean mirage_cdtext_decoder_get_data (MirageCdTextCoder *self, gint block, Mi
         guint8 *data = g_array_index(pack_data, guint8 *, 3);
         gint len = g_array_index(pack_data, gint, 4);
 
-        gint langcode = mirage_cdtext_coder_block2lang(self, block_number);
+        gint code = mirage_cdtext_coder_block2lang(self, block_number);
 
-        if (!callback_func(langcode, pack_type, track_number, data, len, user_data)) {
+        if (!callback_func(code, pack_type, track_number, data, len, user_data)) {
             return FALSE;
         }
     }
