@@ -1500,6 +1500,11 @@ gboolean mirage_disc_get_disc_structure (MirageDisc *self, gint layer, gint type
         return FALSE;
     }
 
+    if (layer < 0 || layer > 1) {
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_DISC_ERROR, "Invalid layer %d!", layer);
+        return FALSE;
+    }
+
     array = g_hash_table_lookup(self->priv->disc_structures, GINT_TO_POINTER(key));
 
     if (!array) {
