@@ -56,19 +56,22 @@ static gint find_feature (struct FeatureGeneral *feature, gconstpointer code_ptr
 
 
 /**********************************************************************\
- *                      Feature declaration macros                    *
+ *                      Feature declaration helpers                   *
 \**********************************************************************/
-#define FEATURE_DEFINITION_START(CODE) \
-    if (1) { \
-        struct Feature_##CODE *feature = g_new0(struct Feature_##CODE, 1); \
-        /* Initialize feature */ \
-        feature->code = GUINT16_TO_BE(CODE); \
-        feature->length = sizeof(struct Feature_##CODE) - 4;
+static struct FeatureGeneral *initialize_feature (gint code, gint size)
+{
+    struct FeatureGeneral *feature = g_malloc0(size);
 
-#define FEATURE_DEFINITION_END() \
-        /* Insert into list */ \
-        self->priv->features_list = g_list_insert_sorted(self->priv->features_list, feature, (GCompareFunc)compare_features); \
-    }
+    feature->code = GUINT16_TO_BE(code);
+    feature->length = size - 4;
+
+    return feature;
+}
+
+static GList *append_feature (GList *list, struct FeatureGeneral *feature)
+{
+    return g_list_insert_sorted(list, feature, (GCompareFunc)compare_features);
+}
 
 
 /**********************************************************************\
@@ -88,118 +91,158 @@ gpointer cdemu_device_get_feature (CdemuDevice *self, gint feature)
 
 void cdemu_device_features_init (CdemuDevice *self)
 {
+    struct FeatureGeneral *general_feature;
+
     /* Feature 0x0000: Profile List */
     /* IMPLEMENTATION NOTE: persistent; we support two profiles; CD-ROM and
        DVD-ROM. Version is left at 0x00, as per INF8090 */
-    FEATURE_DEFINITION_START(0x0000)
-    feature->per = 1;
+    general_feature = initialize_feature(0x0000, sizeof(struct Feature_0x0000));
+    if (general_feature) {
+        struct Feature_0x0000 *feature = (struct Feature_0x0000 *)general_feature;
 
-    feature->profiles[0].profile = GUINT16_TO_BE(PROFILE_CDROM);
-    feature->profiles[1].profile = GUINT16_TO_BE(PROFILE_DVDROM);
+        feature->per = 1;
 
-    FEATURE_DEFINITION_END()
-
+        feature->profiles[0].profile = GUINT16_TO_BE(PROFILE_CDROM);
+        feature->profiles[1].profile = GUINT16_TO_BE(PROFILE_DVDROM);
+    }
+    self->priv->features_list = append_feature(self->priv->features_list, general_feature);
 
     /* Feature 0x0001: Core Feature */
     /* IMPLEMENTATION NOTE: persistent; INF8090 requires us to set version to
        0x02. We emulate ATAPI device, thus interface is set to ATAPI. We don't
        support everything that's required for INQ2 bit (namely, vital product
        information) and we don't support device busy event class */
-    FEATURE_DEFINITION_START(0x0001)
-    feature->per = 1;
-    feature->ver = 0x02;
+    general_feature = initialize_feature(0x0001, sizeof(struct Feature_0x0001));
+    if (general_feature) {
+        struct Feature_0x0001 *feature = (struct Feature_0x0001 *)general_feature;
 
-    feature->interface = GUINT32_TO_BE(0x02); /* ATAPI */
-    FEATURE_DEFINITION_END()
+        feature->per = 1;
+        feature->ver = 0x02;
+
+        feature->interface = GUINT32_TO_BE(0x02); /* ATAPI */
+    }
+    self->priv->features_list = append_feature(self->priv->features_list, general_feature);
 
 
     /* Feature 0x0002: Morphing Feature */
     /* IMPLEMENTATION NOTE: persistent; version set to 0x01 as per INF8090. Both
        Async and OCEvent bits are left at 0. */
-    FEATURE_DEFINITION_START(0x0002)
-    feature->per = 1;
-    feature->ver = 0x01;
-    FEATURE_DEFINITION_END()
+    general_feature = initialize_feature(0x0002, sizeof(struct Feature_0x0002));
+    if (general_feature) {
+        struct Feature_0x0002 *feature = (struct Feature_0x0002 *)general_feature;
+
+        feature->per = 1;
+        feature->ver = 0x01;
+    }
+    self->priv->features_list = append_feature(self->priv->features_list, general_feature);
 
 
     /* Feature 0x0003: Removable Medium Feature */
     /* IMPLEMENTATION NOTE: persistent; version left at 0x00 as there's none
        specified in INF8090. Mechanism is set to 'Tray' (0x001), and we support
        both eject and lock. Prevent jumper is not present. */
-    FEATURE_DEFINITION_START(0x0003)
-    feature->per = 1;
+    general_feature = initialize_feature(0x0003, sizeof(struct Feature_0x0003));
+    if (general_feature) {
+        struct Feature_0x0003 *feature = (struct Feature_0x0003 *)general_feature;
 
-    feature->mechanism = 0x001;
-    feature->eject = 1;
-    feature->lock = 1;
-    FEATURE_DEFINITION_END()
+        feature->per = 1;
+
+        feature->mechanism = 0x001;
+        feature->eject = 1;
+        feature->lock = 1;
+    }
+    self->priv->features_list = append_feature(self->priv->features_list, general_feature);
 
 
     /* Feature 0x0010: Random Readable Feature */
     /* IMPLEMENTATION NOTE: non-persistent; version left at 0x00. Block size is
        2048 bytes and we set blocking to 1 (as recommended for most CD-ROMs...
        it's non-essential, really). Read-write error recovery page is present */
-    FEATURE_DEFINITION_START(0x0010)
-    feature->block_size = GUINT32_TO_BE(2048);
-    feature->blocking = GUINT16_TO_BE(1);
-    feature->pp = 1;
-    FEATURE_DEFINITION_END()
+    general_feature = initialize_feature(0x0010, sizeof(struct Feature_0x0010));
+    if (general_feature) {
+        struct Feature_0x0010 *feature = (struct Feature_0x0010 *)general_feature;
+
+        feature->block_size = GUINT32_TO_BE(2048);
+        feature->blocking = GUINT16_TO_BE(1);
+        feature->pp = 1;
+    }
+    self->priv->features_list = append_feature(self->priv->features_list, general_feature);
 
 
     /* Feature 0x001D: Multi-read Feature */
     /* IMPLEMENTATION NOTE: non-persistent; version left at 0x00. No other content. */
-    FEATURE_DEFINITION_START(0x001D)
-    FEATURE_DEFINITION_END()
+    general_feature = initialize_feature(0x001D, sizeof(struct Feature_0x001D));
+    self->priv->features_list = append_feature(self->priv->features_list, general_feature);
 
 
     /* Feature 0x001E: CD Read Feature */
     /* IMPLEMENTATION NOTE: non-persistent; version set to 0x02 as per INF8090.
        Both C2Flags and CDText bits are set, while DAP is not supported. */
-    FEATURE_DEFINITION_START(0x001E)
-    feature->ver = 0x02;
+    general_feature = initialize_feature(0x001E, sizeof(struct Feature_0x001E));
+    if (general_feature) {
+        struct Feature_0x001E *feature = (struct Feature_0x001E *)general_feature;
 
-    feature->c2flags = 1;
-    feature->cdtext = 1;
-    FEATURE_DEFINITION_END()
+        feature->ver = 0x02;
+
+        feature->c2flags = 1;
+        feature->cdtext = 1;
+    }
+    self->priv->features_list = append_feature(self->priv->features_list, general_feature);
 
 
     /* Feature 0x001F: DVD Read Feature */
     /* IMPLEMENTATION NOTE: non-persistent; version set to 0x01 as per INF8090.
        We claim we conform to DVD Multi Specification Version 1.1 and that we
        support dual-layer DVD-R */
-    FEATURE_DEFINITION_START(0x001F)
-    feature->ver = 0x01;
+    general_feature = initialize_feature(0x001F, sizeof(struct Feature_0x001F));
+    if (general_feature) {
+        struct Feature_0x001F *feature = (struct Feature_0x001F *)general_feature;
 
-    feature->multi110 = 1;
-    feature->dualr = 1;
-    FEATURE_DEFINITION_END()
+        feature->ver = 0x01;
+
+        feature->multi110 = 1;
+        feature->dualr = 1;
+    }
+    self->priv->features_list = append_feature(self->priv->features_list, general_feature);
 
 
     /* Feature 0x0100: Power Management Feature */
     /* IMPLEMENTATION NOTE: persistent; version left at 0x00. No other content. */
-    FEATURE_DEFINITION_START(0x0100)
-    feature->per = 1;
-    FEATURE_DEFINITION_END()
+    general_feature = initialize_feature(0x0100, sizeof(struct Feature_0x0100));
+    if (general_feature) {
+        struct Feature_0x0100 *feature = (struct Feature_0x0100 *)general_feature;
+
+        feature->per = 1;
+    }
+    self->priv->features_list = append_feature(self->priv->features_list, general_feature);
 
 
     /* Feature 0x0103: CD External Audio Play Feature */
     /* IMPLEMENTATION NOTE: non-persistent; version left at 0x00. Separate volume
        and separate channel mute are supported, and so is scan. Volume levels is
        set to 0x100. */
-    FEATURE_DEFINITION_START(0x0103)
-    feature->scm = 1;
-    feature->sv = 1;
-    feature->scan = 1;
-    feature->vol_lvls = GUINT16_TO_BE(0x0100);
-    FEATURE_DEFINITION_END()
+    general_feature = initialize_feature(0x0103, sizeof(struct Feature_0x0103));
+    if (general_feature) {
+        struct Feature_0x0103 *feature = (struct Feature_0x0103 *)general_feature;
+
+        feature->scm = 1;
+        feature->sv = 1;
+        feature->scan = 1;
+        feature->vol_lvls = GUINT16_TO_BE(0x0100);
+    }
+    self->priv->features_list = append_feature(self->priv->features_list, general_feature);
 
 
     /* Feature 0x0106: DVD CSS Feature */
     /* IMPLEMENTATION NOTE: non-persistent; version left at 0x00. CSS version is
        set to 0x01 as per INF8090. */
-    FEATURE_DEFINITION_START(0x0106)
-    feature->css_ver = 0x01;
-    FEATURE_DEFINITION_END()
+    general_feature = initialize_feature(0x0106, sizeof(struct Feature_0x0106));
+    if (general_feature) {
+        struct Feature_0x0106 *feature = (struct Feature_0x0106 *)general_feature;
+
+        feature->css_ver = 0x01;
+    }
+    self->priv->features_list = append_feature(self->priv->features_list, general_feature);
 
 
     /* Feature 0x0107: Real Time Streaming Feature */
@@ -207,14 +250,16 @@ void cdemu_device_features_init (CdemuDevice *self)
        We claim we support READ BUFFER CAPACITY and we do support SET CD SPEED. We
        don't support mode page 0x2A with write speed performance descriptors and
        we don't support the rest of write-related functions. */
-    FEATURE_DEFINITION_START(0x0107)
-    feature->ver = 0x03;
+    general_feature = initialize_feature(0x0107, sizeof(struct Feature_0x0107));
+    if (general_feature) {
+        struct Feature_0x0107 *feature = (struct Feature_0x0107 *)general_feature;
 
-    feature->rbcb = 1;
-    feature->scs = 1;
-    FEATURE_DEFINITION_END()
+        feature->ver = 0x03;
 
-    return;
+        feature->rbcb = 1;
+        feature->scs = 1;
+    }
+    self->priv->features_list = append_feature(self->priv->features_list, general_feature);
 }
 
 
