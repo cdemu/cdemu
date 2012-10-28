@@ -1,4 +1,9 @@
 libmirage.so.7.0.0 libmirage7 #MINVER#
+ mirage_audio_fragment_get_filename@Base 1.6.0
+ mirage_audio_fragment_get_offset@Base 1.6.0
+ mirage_audio_fragment_get_type@Base 1.6.0
+ mirage_audio_fragment_set_offset@Base 1.6.0
+ mirage_audio_fragment_set_stream@Base 1.6.0
  mirage_cdtext_coder_get_type@Base 1.6.0
  mirage_cdtext_decoder_get_block_info@Base 1.0.0
  mirage_cdtext_decoder_get_data@Base 1.0.0
@@ -33,6 +38,25 @@ libmirage.so.7.0.0 libmirage7 #MINVER#
  mirage_contextual_get_type@Base 1.6.0
  mirage_contextual_obtain_password@Base 1.6.0
  mirage_contextual_set_context@Base 1.6.0
+ mirage_data_fragment_get_type@Base 1.6.0
+ mirage_data_fragment_main_data_get_filename@Base 1.6.0
+ mirage_data_fragment_main_data_get_format@Base 1.6.0
+ mirage_data_fragment_main_data_get_offset@Base 1.6.0
+ mirage_data_fragment_main_data_get_position@Base 1.6.0
+ mirage_data_fragment_main_data_get_size@Base 1.6.0
+ mirage_data_fragment_main_data_set_format@Base 1.6.0
+ mirage_data_fragment_main_data_set_offset@Base 1.6.0
+ mirage_data_fragment_main_data_set_size@Base 1.6.0
+ mirage_data_fragment_main_data_set_stream@Base 1.6.0
+ mirage_data_fragment_subchannel_data_get_filename@Base 1.6.0
+ mirage_data_fragment_subchannel_data_get_format@Base 1.6.0
+ mirage_data_fragment_subchannel_data_get_offset@Base 1.6.0
+ mirage_data_fragment_subchannel_data_get_position@Base 1.6.0
+ mirage_data_fragment_subchannel_data_get_size@Base 1.6.0
+ mirage_data_fragment_subchannel_data_set_format@Base 1.6.0
+ mirage_data_fragment_subchannel_data_set_offset@Base 1.6.0
+ mirage_data_fragment_subchannel_data_set_size@Base 1.6.0
+ mirage_data_fragment_subchannel_data_set_stream@Base 1.6.0
  mirage_disc_add_session_by_index@Base 1.0.0
  mirage_disc_add_session_by_number@Base 1.0.0
  mirage_disc_add_track_by_index@Base 1.0.0
@@ -92,30 +116,6 @@ libmirage.so.7.0.0 libmirage7 #MINVER#
  mirage_fragment_get_info@Base 1.6.0
  mirage_fragment_get_length@Base 1.0.0
  mirage_fragment_get_type@Base 1.0.0
- mirage_fragment_iface_audio_get_filename@Base 1.6.0
- mirage_fragment_iface_audio_get_offset@Base 1.6.0
- mirage_fragment_iface_audio_get_type@Base 1.6.0
- mirage_fragment_iface_audio_set_offset@Base 1.6.0
- mirage_fragment_iface_audio_set_stream@Base 1.6.0
- mirage_fragment_iface_binary_get_type@Base 1.6.0
- mirage_fragment_iface_binary_main_data_get_filename@Base 1.6.0
- mirage_fragment_iface_binary_main_data_get_format@Base 1.6.0
- mirage_fragment_iface_binary_main_data_get_offset@Base 1.6.0
- mirage_fragment_iface_binary_main_data_get_position@Base 1.6.0
- mirage_fragment_iface_binary_main_data_get_size@Base 1.6.0
- mirage_fragment_iface_binary_main_data_set_format@Base 1.6.0
- mirage_fragment_iface_binary_main_data_set_offset@Base 1.6.0
- mirage_fragment_iface_binary_main_data_set_size@Base 1.6.0
- mirage_fragment_iface_binary_main_data_set_stream@Base 1.6.0
- mirage_fragment_iface_binary_subchannel_data_get_filename@Base 1.6.0
- mirage_fragment_iface_binary_subchannel_data_get_format@Base 1.6.0
- mirage_fragment_iface_binary_subchannel_data_get_offset@Base 1.6.0
- mirage_fragment_iface_binary_subchannel_data_get_position@Base 1.6.0
- mirage_fragment_iface_binary_subchannel_data_get_size@Base 1.6.0
- mirage_fragment_iface_binary_subchannel_data_set_format@Base 1.6.0
- mirage_fragment_iface_binary_subchannel_data_set_offset@Base 1.6.0
- mirage_fragment_iface_binary_subchannel_data_set_size@Base 1.6.0
- mirage_fragment_iface_binary_subchannel_data_set_stream@Base 1.6.0
  mirage_fragment_read_main_data@Base 1.0.0
  mirage_fragment_read_subchannel_data@Base 1.0.0
  mirage_fragment_set_address@Base 1.0.0
