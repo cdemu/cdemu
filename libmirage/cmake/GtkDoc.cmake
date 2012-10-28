@@ -60,7 +60,7 @@ function (gtk_doc)
 
     # prepare source dirs
     foreach (dir ${GTKDOC_SOURCE_DIR})
-        set (GTKDOC_SOURCE_DIR_LIST ${GTKDOC_SOURCE_DIR_LIST} --source-dir=${dir})
+        list (APPEND GTKDOC_SOURCE_DIR_LIST --source-dir=${dir})
     endforeach ()
 
     # scan header files and introspect gobjects
@@ -74,50 +74,48 @@ function (gtk_doc)
         "gtkdoc-scangobj --module=\"${GTKDOC_MODULE}\"\n"
     )
     add_custom_command (
-        OUTPUT ${GTKDOC_DOCS_BUILDDIR}/scan-build.stamp
+        OUTPUT ${GTKDOC_DOCS_BUILDDIR}/scan.stamp
         COMMAND gtkdoc-scan --module=${GTKDOC_MODULE} ${GTKDOC_SOURCE_DIR_LIST}
             --ignore-headers=${GTKDOC_IGNORE_HFILES}
         COMMAND sh ${PROJECT_BINARY_DIR}/run-scangobj
-        COMMAND touch ${GTKDOC_DOCS_BUILDDIR}/scan-build.stamp
+        COMMAND touch ${GTKDOC_DOCS_BUILDDIR}/scan.stamp
         WORKING_DIRECTORY ${GTKDOC_DOCS_BUILDDIR}
         DEPENDS mirage ${GTKDOC_SOURCES}
         VERBATIM
     )
 
     add_custom_target ("gtkdoc-scan ${GTKDOC_MODULE}" ALL
-        DEPENDS mirage ${GTKDOC_SOURCES} ${GTKDOC_DOCS_BUILDDIR}/scan-build.stamp)
+        DEPENDS mirage ${GTKDOC_SOURCES} ${GTKDOC_DOCS_BUILDDIR}/scan.stamp)
 
     # build xml
     add_custom_command (
-        OUTPUT ${GTKDOC_DOCS_BUILDDIR}/sgml-build.stamp
+        OUTPUT ${GTKDOC_DOCS_BUILDDIR}/sgml.stamp
         COMMAND gtkdoc-mkdb --module=${GTKDOC_MODULE} --sgml-mode --output-format=xml
             --main-sgml-file=${GTKDOC_MAIN_SGML_FILE} ${GTKDOC_SOURCE_DIR_LIST}
-        COMMAND touch ${GTKDOC_DOCS_BUILDDIR}/sgml-build.stamp
         WORKING_DIRECTORY ${GTKDOC_DOCS_BUILDDIR}
-        DEPENDS ${GTKDOC_DOCS_BUILDDIR}/scan-build.stamp
+        DEPENDS ${GTKDOC_DOCS_BUILDDIR}/scan.stamp
         VERBATIM
     )
 
     add_custom_target ("gtkdoc-xml ${GTKDOC_MODULE}" ALL
-        DEPENDS ${GTKDOC_DOCS_BUILDDIR}/scan-build.stamp
-        ${GTKDOC_DOCS_BUILDDIR}/sgml-build.stamp)
+        DEPENDS ${GTKDOC_DOCS_BUILDDIR}/scan.stamp
+        ${GTKDOC_DOCS_BUILDDIR}/sgml.stamp)
 
     # build html and fix cross-references
     add_custom_command (
-        OUTPUT ${GTKDOC_DOCS_BUILDDIR}/html-build.stamp
+        OUTPUT ${GTKDOC_DOCS_BUILDDIR}/html.stamp
         COMMAND mkdir -p html
         COMMAND cd html && gtkdoc-mkhtml ${GTKDOC_MODULE} ../${GTKDOC_MAIN_SGML_FILE}
         COMMAND gtkdoc-fixxref --module=${GTKDOC_MODULE} --module-dir=html
-        COMMAND touch ${GTKDOC_DOCS_BUILDDIR}/html-build.stamp
         WORKING_DIRECTORY ${GTKDOC_DOCS_BUILDDIR}
-        DEPENDS ${GTKDOC_DOCS_BUILDDIR}/sgml-build.stamp
+        DEPENDS ${GTKDOC_DOCS_BUILDDIR}/sgml.stamp
         VERBATIM
     )
 
     add_custom_target ("gtkdoc-html ${GTKDOC_MODULE}" ALL
-        DEPENDS ${GTKDOC_DOCS_BUILDDIR}/scan-build.stamp
-        ${GTKDOC_DOCS_BUILDDIR}/sgml-build.stamp
-        ${GTKDOC_DOCS_BUILDDIR}/html-build.stamp)
+        DEPENDS ${GTKDOC_DOCS_BUILDDIR}/scan.stamp
+        ${GTKDOC_DOCS_BUILDDIR}/sgml.stamp
+        ${GTKDOC_DOCS_BUILDDIR}/html.stamp)
 
     install (
         CODE "file (GLOB HTML_FILES \"${GTKDOC_DOCS_BUILDDIR}/html/*\")"
