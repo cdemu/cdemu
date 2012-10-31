@@ -116,6 +116,63 @@ static gboolean mirage_parser_iso_is_file_valid (MirageParserIso *self, GInputSt
         return TRUE;
     }
 
+    /* Macintosh .CDR image check */
+    /* These are raw images with typical Mac partitioning starting with a
+       Driver Descriptor Map (DDM) and GUID Partition Map Entries following.
+       Each are exactly 512-bytes long and have "ER" and "PM" signatures. */
+    guint8 mac_buf[512];
+
+    if (!g_seekable_seek(G_SEEKABLE(stream), 0, G_SEEK_SET, NULL, NULL)) {
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to seek to DDM block!\n", __debug__);
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, "Failed to seek to DDM block!");
+        return FALSE;
+    }
+
+    if (g_input_stream_read(stream, mac_buf, sizeof(mac_buf), NULL, NULL) != sizeof(mac_buf)) {
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read DDM block!\n", __debug__);
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, "Failed to read DDM block!");
+        return FALSE;
+    }
+
+    if (!memcmp(mac_buf, "ER", 2)) {
+        self->priv->track_sectsize = GUINT16_FROM_BE(*((guint16 *) mac_buf + 1));
+        self->priv->track_mode = MIRAGE_MODE_MODE1;
+
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: %u-byte Macintosh GUID partitioned track, Mode 1 assumed\n",
+                     __debug__, self->priv->track_sectsize);
+
+        for (gint part = 0;; part++) {
+            gchar *part_name;
+            gchar *part_type;
+
+            guint32 num_parts;
+
+            if (g_input_stream_read(stream, mac_buf, sizeof(mac_buf), NULL, NULL) != sizeof(mac_buf)) {
+                MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read partition map entry!\n", __debug__);
+                g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, "Failed to read partition map entry!");
+                return FALSE;
+            }
+
+            if (memcmp(mac_buf, "PM", 2)) {
+                MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: invalid partition map entry!\n", __debug__);
+                g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, "invalid partition map entry!");
+                return FALSE;
+            }
+
+            num_parts = GUINT32_FROM_BE(*((guint32 *) mac_buf + 1));
+            part_name = (gchar *) mac_buf + 16;
+            part_type = (gchar *) mac_buf + 48;
+
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: Part. %2i name: %.32s\n", __debug__, part, part_name);
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:          type: %.32s\n", __debug__, part_type);
+
+            /* Last partition? */
+            if (part + 1 >= num_parts) break;
+        }
+
+        return TRUE;
+    }
+
     /* Nope, can't load the file */
     g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_CANNOT_HANDLE, "Parser cannot handle given image!");
     return FALSE;
