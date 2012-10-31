@@ -996,8 +996,8 @@ static void mirage_parser_cue_init (MirageParserCue *self)
     mirage_parser_generate_info(MIRAGE_PARSER(self),
         "PARSER-CUE",
         "CUE Image Parser",
-        "CUE images",
-        "application/x-cue"
+        1,
+        "CUE images", "application/x-cue"
     );
 
     mirage_parser_cue_init_regex_parser(self);

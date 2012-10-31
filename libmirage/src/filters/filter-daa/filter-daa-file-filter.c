@@ -1291,7 +1291,7 @@ static gboolean mirage_file_filter_daa_can_handle_data_format (MirageFileFilter 
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: DAA (PowerISO) format\n", __debug__);
         self->priv->image_type = IMAGE_DAA;
     } else if (!memcmp(signature, gbi_main_signature, sizeof(gbi_main_signature))) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: GBI (GBurner) format\n", __debug__);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: GBI (gBurner) format\n", __debug__);
         self->priv->image_type = IMAGE_GBI;
     } else {
         g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_CANNOT_HANDLE, "Filter cannot handle given data!");
@@ -1425,8 +1425,9 @@ static void mirage_file_filter_daa_init (MirageFileFilterDaa *self)
     mirage_file_filter_generate_info(MIRAGE_FILE_FILTER(self),
         "FILTER-DAA",
         "DAA File Filter",
-        "PowerISO direct access archives",
-        "application/x-daa"
+        2,
+        "PowerISO images (DAA)", "application/x-daa",
+        "gBurner images (GBI)", "application/x-gbi"
     );
 
     self->priv->chunk_table = NULL;

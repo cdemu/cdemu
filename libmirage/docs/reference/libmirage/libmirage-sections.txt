@@ -225,6 +225,7 @@ mirage_error_get_type
 <SECTION>
 <FILE>mirage-file-filter</FILE>
 <TITLE>MirageFileFilter</TITLE>
+MIRAGE_FILE_FILTER_MAX_TYPES
 MirageFileFilter
 MirageFileFilterClass
 MirageFileFilterInfo
@@ -333,6 +334,7 @@ mirage_object_get_type
 <SECTION>
 <FILE>mirage-parser</FILE>
 <TITLE>MirageParser</TITLE>
+MIRAGE_PARSER_MAX_TYPES
 MirageParser
 MirageParserClass
 MirageParserInfo

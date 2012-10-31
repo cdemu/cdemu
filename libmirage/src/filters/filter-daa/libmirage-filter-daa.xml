@@ -3,7 +3,7 @@
     <mime-type type="application/x-daa">
         <sub-class-of type="application/octet-stream"/>
 
-        <comment>PowerISO Direct Access Archive image file</comment>
+        <comment>PowerISO image file (DAA)</comment>
 
         <glob pattern="*.daa"/>
 

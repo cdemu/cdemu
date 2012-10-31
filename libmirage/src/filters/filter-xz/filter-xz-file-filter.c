@@ -412,8 +412,8 @@ static void mirage_file_filter_xz_init (MirageFileFilterXz *self)
     mirage_file_filter_generate_info(MIRAGE_FILE_FILTER(self),
         "FILTER-XZ",
         "XZ File Filter",
-        "Xz-compressed images",
-        "application/x-xz"
+        1,
+        "Xz-compressed images", "application/x-xz"
     );
 
     self->priv->cached_block_number = -1;

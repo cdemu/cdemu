@@ -678,7 +678,8 @@ class CDEmu (object):
             # Print all parsers
             self.print_header (_("Supported parsers:"))
             for info in parsers:
-                print("  %s: %s" % (info[0], info[2]))
+                for description, mime_type in info[2]:
+                    print("  %s: %s: %s" % (info[0], mime_type, description))
         else:
             self.print_invalid_number_of_parameters("enum-parsers")
             return False
@@ -697,7 +698,8 @@ class CDEmu (object):
             # Print all file filters
             self.print_header (_("Supported file filters:"))
             for info in filters:
-                print("  %s: %s" % (info[0], info[2]))
+                for description, mime_type in info[2]:
+                    print("  %s: %s: %s" % (info[0], mime_type, description))
         else:
             self.print_invalid_number_of_parameters("enum-file-filters")
             return False

@@ -480,8 +480,8 @@ static void mirage_parser_readcd_init (MirageParserReadcd *self)
     mirage_parser_generate_info(MIRAGE_PARSER(self),
         "PARSER-READCD",
         "READCD Image Parser",
-        "READCD images",
-        "application/x-cd-image"
+        1,
+        "READCD images", "application/x-cd-image"
     );
 
     self->priv->data_filename = NULL;

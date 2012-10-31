@@ -489,8 +489,8 @@ static void mirage_file_filter_gzip_init (MirageFileFilterGzip *self)
     mirage_file_filter_generate_info(MIRAGE_FILE_FILTER(self),
         "FILTER-GZIP",
         "GZIP File Filter",
-        "Gzip-compressed images",
-        "application/x-gzip"
+        1,
+        "Gzip-compressed images", "application/x-gzip"
     );
 
     self->priv->cached_part = -1;

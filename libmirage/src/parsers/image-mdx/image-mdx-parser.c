@@ -388,8 +388,8 @@ static void mirage_parser_mdx_init (MirageParserMdx *self)
     mirage_parser_generate_info(MIRAGE_PARSER(self),
         "PARSER-MDX",
         "MDX Image Parser",
-        "MDX images",
-        "application/x-mdx"
+        1,
+        "MDX images", "application/x-mdx"
     );
 
     self->priv->stream = NULL;

@@ -319,8 +319,8 @@ static void mirage_parser_iso_init (MirageParserIso *self)
     mirage_parser_generate_info(MIRAGE_PARSER(self),
         "PARSER-ISO",
         "ISO Image Parser",
-        "ISO images",
-        "application/x-cd-image"
+        1,
+        "ISO images", "application/x-cd-image"
     );
 }
 

@@ -335,8 +335,8 @@ static void mirage_file_filter_cso_init (MirageFileFilterCso *self)
     mirage_file_filter_generate_info(MIRAGE_FILE_FILTER(self),
         "FILTER-CSO",
         "CSO File Filter",
-        "Compressed ISO images",
-        "application/x-cso"
+        1,
+        "Compressed ISO images", "application/x-cso"
     );
 
     self->priv->num_parts = 0;

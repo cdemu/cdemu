@@ -29,27 +29,31 @@ typedef struct _MirageDisc MirageDisc;
 G_BEGIN_DECLS
 
 /**
+ * MIRAGE_PARSER_MAX_TYPES:
+ *
+ * Maximal number of MIME types that can be defined as supported by a parser.
+ */
+#define MIRAGE_PARSER_MAX_TYPES 4
+
+/**
  * MirageParserInfo:
  * @id: parser ID
  * @name: parser name
- * @description: image file description
- * @mime_type: image file MIME type
+ * @num_types: number of valid description and mime_types
+ * @description: (array fixed-size=4): file type descriptions
+ * @mime_type: (array fixed-size=4): file type MIMEs
  *
  * A structure containing parser information. It can be obtained with call to
  * mirage_parser_get_info().
- *
- * @description is a string contraining image file description (e.g. "CloneCD
- * images") and @mime_type is a string representing the image file MIME type
- * (e.g. "application/libmirage-mds"). Together, this information is intended
- * to be used for building file type filters in GUI applications.
  */
 typedef struct _MirageParserInfo MirageParserInfo;
 struct _MirageParserInfo
 {
     gchar id[32];
     gchar name[32];
-    gchar description[64];
-    gchar mime_type[32];
+    gint num_types;
+    gchar description[MIRAGE_PARSER_MAX_TYPES][64];
+    gchar mime_type[MIRAGE_PARSER_MAX_TYPES][32];
 };
 
 
@@ -100,7 +104,7 @@ struct _MirageParserClass
 /* Used by MIRAGE_TYPE_PARSER */
 GType mirage_parser_get_type (void);
 
-void mirage_parser_generate_info (MirageParser *self, const gchar *id, const gchar *name, const gchar *description, const gchar *mime_type);
+void mirage_parser_generate_info (MirageParser *self, const gchar *id, const gchar *name, gint num_types, ...);
 const MirageParserInfo *mirage_parser_get_info (MirageParser *self);
 
 MirageDisc *mirage_parser_load_image (MirageParser *self, GInputStream **streams, GError **error);

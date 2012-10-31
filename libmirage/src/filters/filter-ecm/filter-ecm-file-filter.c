@@ -518,8 +518,8 @@ static void mirage_file_filter_ecm_init (MirageFileFilterEcm *self)
     mirage_file_filter_generate_info(MIRAGE_FILE_FILTER(self),
         "FILTER-ECM",
         "ECM File Filter",
-        "ECM'ified images",
-        "application/x-ecm"
+        1,
+        "ECM'ified images", "application/x-ecm"
     );
 
     self->priv->allocated_parts = 0;

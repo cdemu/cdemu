@@ -888,8 +888,8 @@ static void mirage_parser_xcdroast_init (MirageParserXcdroast *self)
     mirage_parser_generate_info(MIRAGE_PARSER(self),
         "PARSER-XCDROAST",
         "X-CD-Roast Image Parser",
-        "X-CD-Roast TOC files",
-        "application/x-xcdroast"
+        1,
+        "X-CD-Roast TOC files", "application/x-xcdroast"
     );
 
     mirage_parser_xcdroast_init_regex_parser(self);

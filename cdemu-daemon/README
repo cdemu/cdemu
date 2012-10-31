@@ -296,19 +296,21 @@ control the daemon:
       the daemon.
 
 * EnumSupportedParsers (parsers)
-    + parsers: out; "a(ssss)"
+    + parsers: out; "a(ssa(ss))"
         Array of structures containing information about supported parsers.
         Each structure has multiple fields; parser ID (string), parser name
-        (string), image type description (string) and image file MIME type
+        (string), and array of supported file types, each comprising a file
+        type description (string) and image file MIME type
         (string).
 
     - Returns supported image parsers.
 
 * EnumSupportedFileFilters (filters)
-    + filters: out; "a(ssss)"
+    + filters: out; "a(ssa(ss))"
         Array of structures containing information about supported file filters.
         Each structure has multiple fields; filter ID (string), filter name
-        (string), file type description (string) and file type MIME type (string).
+        (string), and array of supported file types, each comprising a file
+        type description (string) and file type MIME type (string).
 
     - Returns supported image parsers.
 

@@ -1362,24 +1362,26 @@ class gCDEMuFileChooserDialog (Gtk.FileChooserDialog):
         self.add_filter(all_images)
 
         for info in parsers:
-            filter_entry = Gtk.FileFilter()
+            for description, mime_type in info[2]:
+                filter_entry = Gtk.FileFilter()
 
-            filter_entry.set_name(info[2])
-            filter_entry.add_mime_type(info[3])
+                filter_entry.set_name(description)
+                filter_entry.add_mime_type(mime_type)
 
-            all_images.add_mime_type(info[3])
+                all_images.add_mime_type(mime_type)
 
-            self.add_filter(filter_entry)
+                self.add_filter(filter_entry)
 
         for info in file_filters:
-            filter_entry = Gtk.FileFilter()
+            for description, mime_type in info[2]:
+                filter_entry = Gtk.FileFilter()
 
-            filter_entry.set_name(info[2])
-            filter_entry.add_mime_type(info[3])
+                filter_entry.set_name(description)
+                filter_entry.add_mime_type(mime_type)
 
-            all_images.add_mime_type(info[3])
+                all_images.add_mime_type(mime_type)
 
-            self.add_filter(filter_entry)
+                self.add_filter(filter_entry)
 
         # Extra options
         widget = self.create_extra_options_widget()

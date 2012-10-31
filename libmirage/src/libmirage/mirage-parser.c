@@ -65,18 +65,35 @@ struct _MirageParserPrivate
  * @self: a #MirageParser
  * @id: (in): parser ID
  * @name: (in): parser name
- * @description: (in): image file description
- * @mime_type: (in): image file MIME type
+ * @num_types: (in): number of MIME types (max %MIRAGE_FILE_FILTER_MAX_TYPES)
+ * @...: (in): description and MIME type string pairs, one for each defined type
  *
  * Generates parser information from the input fields. It is intended as a function
  * for creating parser information in parser implementations.
  */
-void mirage_parser_generate_info (MirageParser *self, const gchar *id, const gchar *name, const gchar *description, const gchar *mime_type)
+void mirage_parser_generate_info (MirageParser *self, const gchar *id, const gchar *name, gint num_types, ...)
 {
+    va_list args;
+
+    g_assert(num_types <= MIRAGE_PARSER_MAX_TYPES);
+
     g_snprintf(self->priv->info.id, sizeof(self->priv->info.id), "%s", id);
     g_snprintf(self->priv->info.name, sizeof(self->priv->info.name), "%s", name);
-    g_snprintf(self->priv->info.description, sizeof(self->priv->info.description), "%s", description);
-    g_snprintf(self->priv->info.mime_type, sizeof(self->priv->info.mime_type), "%s", mime_type);
+
+    self->priv->info.num_types = num_types;
+
+    /* Copy/clear type descriptions and MIME types */
+    va_start(args, num_types);
+    for (gint i = 0; i < MIRAGE_PARSER_MAX_TYPES; i++) {
+        if (i < num_types) {
+            g_snprintf(self->priv->info.description[i], sizeof(self->priv->info.description[i]), "%s", va_arg(args, const gchar *));
+            g_snprintf(self->priv->info.mime_type[i], sizeof(self->priv->info.mime_type[i]), "%s", va_arg(args, const gchar *));
+        } else {
+            memset(self->priv->info.description[i], 0, sizeof(self->priv->info.description[i]));
+            memset(self->priv->info.mime_type[i], 0, sizeof(self->priv->info.mime_type[i]));
+        }
+    }
+    va_end(args);
 }
 
 

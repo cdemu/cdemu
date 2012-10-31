@@ -1107,8 +1107,8 @@ static void mirage_parser_nrg_init (MirageParserNrg *self)
     mirage_parser_generate_info(MIRAGE_PARSER(self),
         "PARSER-NRG",
         "NRG Image Parser",
-        "NRG (Nero Burning Rom) images",
-        "application/x-nrg"
+        1,
+        "NRG (Nero Burning Rom) images", "application/x-nrg"
     );
 
     self->priv->nrg_stream = NULL;

@@ -890,8 +890,8 @@ static void mirage_parser_mds_init (MirageParserMds *self)
     mirage_parser_generate_info(MIRAGE_PARSER(self),
         "PARSER-MDS",
         "MDS Image Parser",
-        "MDS (Media descriptor) images",
-        "application/x-mds"
+        1,
+        "MDS (Media descriptor) images", "application/x-mds"
     );
 
     self->priv->mds_data = NULL;

@@ -81,13 +81,22 @@ static GVariantBuilder *encode_masks (const MirageDebugMask *masks, gint num_mas
 /* Helper that encodes the list of supported parsers */
 static gboolean append_parser_to_builder (MirageParserInfo *info, GVariantBuilder *builder)
 {
-    g_variant_builder_add(builder, "(ssss)", info->id, info->name, info->description, info->mime_type);
+    GVariantBuilder types_builder;
+    GVariant *types;
+
+    g_variant_builder_init(&types_builder, G_VARIANT_TYPE("a(ss)"));
+    for (gint i = 0; i < info->num_types; i++) {
+        g_variant_builder_add(&types_builder, "(ss)", info->description[i], info->mime_type[i]);
+    }
+    types = g_variant_builder_end(&types_builder);
+
+    g_variant_builder_add(builder, "(ss@a(ss))", info->id, info->name, types);
     return TRUE;
 }
 
 static GVariantBuilder *encode_parsers ()
 {
-    GVariantBuilder *builder = g_variant_builder_new(G_VARIANT_TYPE("a(ssss)"));
+    GVariantBuilder *builder = g_variant_builder_new(G_VARIANT_TYPE("a(ssa(ss))"));
     mirage_enumerate_parsers((MirageEnumParserInfoCallback)append_parser_to_builder, builder, NULL);
     return builder;
 }
@@ -96,13 +105,22 @@ static GVariantBuilder *encode_parsers ()
 /* Helper that encodes the list of supported file filters */
 static gboolean append_filter_to_builder (MirageFileFilterInfo *info, GVariantBuilder *builder)
 {
-    g_variant_builder_add(builder, "(ssss)", info->id, info->name, info->description, info->mime_type);
+    GVariantBuilder types_builder;
+    GVariant *types;
+
+    g_variant_builder_init(&types_builder, G_VARIANT_TYPE("a(ss)"));
+    for (gint i = 0; i < info->num_types; i++) {
+        g_variant_builder_add(&types_builder, "(ss)", info->description[i], info->mime_type[i]);
+    }
+    types = g_variant_builder_end(&types_builder);
+
+    g_variant_builder_add(builder, "(ss@a(ss))", info->id, info->name, types);
     return TRUE;
 }
 
 static GVariantBuilder *encode_file_filters ()
 {
-    GVariantBuilder *builder = g_variant_builder_new(G_VARIANT_TYPE("a(ssss)"));
+    GVariantBuilder *builder = g_variant_builder_new(G_VARIANT_TYPE("a(ssa(ss))"));
     mirage_enumerate_file_filters((MirageEnumFileFilterInfoCallback)append_filter_to_builder, builder, NULL);
     return builder;
 }
@@ -268,11 +286,11 @@ static void cdemu_daemon_dbus_handle_method_call (GDBusConnection *connection G_
         }
     } else if (!g_strcmp0(method_name, "EnumSupportedParsers")) {
         /* *** EnumSupportedParsers *** */
-        ret = g_variant_new("(a(ssss))", encode_parsers());
+        ret = g_variant_new("(a(ssa(ss)))", encode_parsers());
         succeeded = TRUE;
     } else if (!g_strcmp0(method_name, "EnumSupportedFileFilters")) {
         /* *** EnumSupportedFileFilters *** */
-        ret = g_variant_new("(a(ssss))", encode_file_filters());
+        ret = g_variant_new("(a(ssa(ss)))", encode_file_filters());
         succeeded = TRUE;
     } else if (!g_strcmp0(method_name, "EnumSupportedFragments")) {
         /* *** EnumSupportedFragments *** */
@@ -475,10 +493,10 @@ static const gchar introspection_xml[] =
     "            <arg name='masks' type='a(si)' direction='out'/>"
     "        </method>"
     "        <method name='EnumSupportedParsers'>"
-    "            <arg name='parsers' type='a(ssss)' direction='out'/>"
+    "            <arg name='parsers' type='a(ssa(ss))' direction='out'/>"
     "        </method>"
     "        <method name='EnumSupportedFileFilters'>"
-    "            <arg name='filters' type='a(ssss)' direction='out'/>"
+    "            <arg name='filters' type='a(ssa(ss))' direction='out'/>"
     "        </method>"
     "        <method name='EnumSupportedFragments'>"
     "            <arg name='fragments' type='a(ss)' direction='out'/>"
