@@ -110,32 +110,6 @@ typedef struct
 
 #pragma pack()
 
-/* Luigi Auriemma's bit packing function */
-static inline guint read_bits (guint bits, guint8 *in, guint in_bits)
-{
-    gint seek_bits;
-    gint rem;
-    gint seek = 0;
-    gint ret = 0;
-    gint mask = 0xFFFFFFFF;
-
-    if (bits > 32) return 0;
-    if (bits < 32) mask = (1 << bits) - 1;
-    for (;;) {
-        seek_bits = in_bits & 7;
-        ret |= ((in[in_bits >> 3] >> seek_bits) & mask) << seek;
-        rem = 8 - seek_bits;
-        if (rem >= bits)
-            break;
-        bits -= rem;
-        in_bits += rem;
-        seek += rem;
-        mask = (1 << bits) - 1;
-    }
-
-    return ret;
-}
-
 G_END_DECLS
 
 #endif /* __FILTER_DAA_H__ */

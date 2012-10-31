@@ -34,24 +34,31 @@
 const gchar daa_main_signature[16] = "DAA";
 const gchar daa_part_signature[16] = "DAA VOL";
 
+const gchar gbi_main_signature[16] = "GBI";
+const gchar gbi_part_signature[16] = "GBI VOL";
+
 
 /**********************************************************************\
  *                          Private structure                         *
 \**********************************************************************/
 #define MIRAGE_FILE_FILTER_DAA_GET_PRIVATE(obj) (G_TYPE_INSTANCE_GET_PRIVATE((obj), MIRAGE_TYPE_FILE_FILTER_DAA, MirageFileFilterDaaPrivate))
 
-enum
-{
-    DAA_COMPRESSION_NONE = 0x00,
-    DAA_COMPRESSION_ZLIB = 0x10,
-    DAA_COMPRESSION_LZMA = 0x20,
-};
+typedef enum {
+    COMPRESSION_NONE = 0x00,
+    COMPRESSION_ZLIB = 0x10,
+    COMPRESSION_LZMA = 0x20,
+} CompressionType;
+
+typedef enum {
+    IMAGE_DAA = 0x00,
+    IMAGE_GBI = 0x01,
+} ImageType;
 
 typedef struct
 {
     guint64 offset;
     guint32 length;
-    gint compression;
+    CompressionType compression;
 } DAA_Chunk;
 
 typedef struct
@@ -73,6 +80,13 @@ struct _MirageFileFilterDaaPrivate
 
     /* Header */
     DAA_MainHeader header;
+
+    ImageType image_type;
+
+    gboolean compressed_chunk_table;
+    gboolean obfuscated_chunk_table;
+    gboolean obfuscated_bits;
+    gint bit_swap_type;
 
     gint chunk_table_offset;
     gint chunk_data_offset;
@@ -481,7 +495,7 @@ static gboolean mirage_file_filter_daa_read_main_header (MirageFileFilterDaa *se
     daa_main_header_fix_endian(header);
 
     /* Debug */
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: DAA main file header:\n", __debug__);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: Main file header:\n", __debug__);
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   - signature: %.16s\n", __debug__, header->signature);
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   - chunk_table_offset: 0x%X (%d)\n", __debug__, header->chunk_table_offset, header->chunk_table_offset);
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   - format_version: 0x%X\n", __debug__, header->format_version);
@@ -530,7 +544,7 @@ static gboolean mirage_file_filter_daa_read_part_header (MirageFileFilterDaa *se
     daa_part_header_fix_endian(header);
 
     /* Debug */
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: DAA part file header:\n", __debug__);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: Part file header:\n", __debug__);
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   - signature: %.16s\n", __debug__, header->signature);
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   - chunk_data_offset: 0x%X (%d)\n", __debug__, header->chunk_data_offset, header->chunk_data_offset);
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   - format2 header:\n", __debug__);
@@ -795,6 +809,66 @@ static gboolean mirage_file_filter_daa_parse_descriptors (MirageFileFilterDaa *s
 /**********************************************************************\
  *                         Chunk table parsing                        *
 \**********************************************************************/
+static void deobfuscate_chunk_table_gbi (guint8 *data, gint size, guint8 crc8)
+{
+    guint8 d = size / 4;
+    for (gint i = 0; i < size; i++) {
+        data[i] -= crc8;
+        data[i] ^= d;
+    }
+}
+
+static void deobfuscate_chunk_table_daa (guint8 *data, gint size, guint64 iso_size)
+{
+    guint8 a, c;
+
+    iso_size /= 2048;
+    a = (iso_size >> 8) & 0xff;
+    c = iso_size & 0xff;
+    for (gint i = 0; i < size; i++) {
+        data[i] -= c;
+        c += a;
+    }
+}
+
+static inline guint read_bits (guint bits, guint8 *in, guint in_bits, gboolean bits_obfuscated, gint *bits_obfuscation_counter)
+{
+    static const guint8 obfuscation_mask[] = { 0x0A, 0x35, 0x2D, 0x3F, 0x08, 0x33, 0x09, 0x15 };
+    guint seek_bits;
+    guint rem;
+    guint seek = 0;
+    guint ret = 0;
+    guint mask = 0xFFFFFFFF;
+
+    if (bits > 32) {
+        return 0;
+    }
+
+    if (bits < 32) {
+        mask = (1 << bits) - 1;
+    }
+
+    for (;;) {
+        seek_bits = in_bits & 7;
+        ret |= ((in[in_bits >> 3] >> seek_bits)) << seek;
+        rem = 8 - seek_bits;
+        if (rem >= bits) {
+            break;
+        }
+        bits -= rem;
+        in_bits += rem;
+        seek += rem;
+    }
+
+    if (bits_obfuscated) {
+        gint counter = *bits_obfuscation_counter;
+        ret ^= ((counter ^ obfuscation_mask[counter & 7]) & 0xff) * 0x01010101;
+        *bits_obfuscation_counter = counter++;
+    }
+
+    return ret & mask;
+}
+
 static gboolean mirage_file_filter_daa_parse_chunk_table (MirageFileFilterDaa *self, GError **error)
 {
     GInputStream *stream = g_filter_input_stream_get_base_stream(G_FILTER_INPUT_STREAM(self));
@@ -804,6 +878,7 @@ static gboolean mirage_file_filter_daa_parse_chunk_table (MirageFileFilterDaa *s
     gint tmp_offset = 0;
 
     gint bit_pos = 0; /* Bit position */
+    gint bit_obfuscation_counter = 0; /* Bit obfuscation counter */
 
     gint max_chunk_size = 0;
 
@@ -825,6 +900,15 @@ static gboolean mirage_file_filter_daa_parse_chunk_table (MirageFileFilterDaa *s
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read chunk table data!\n", __debug__);
         g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, "Failed to read chunk table data!");
         return FALSE;
+    }
+
+    /* De-obfuscate chunk table data */
+    if (self->priv->image_type == IMAGE_GBI) {
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: applying GBI-specific chunk table deobfuscation...\n", __debug__);
+        deobfuscate_chunk_table_gbi(tmp_chunks_data, tmp_chunks_len, self->priv->header.crc & 0xff);
+    } else if (self->priv->obfuscated_chunk_table) {
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: applying DAA-specific chunk table deobfuscation...\n", __debug__);
+        deobfuscate_chunk_table_daa(tmp_chunks_data, tmp_chunks_len, self->priv->header.iso_size);
     }
 
     /* Compute number of chunks */
@@ -868,12 +952,12 @@ static gboolean mirage_file_filter_daa_parse_chunk_table (MirageFileFilterDaa *s
             }
             case FORMAT_VERSION2: {
                 /* In version 2, chunk table is bit-packed */
-                tmp_chunk_length = read_bits(self->priv->bitsize_length, tmp_chunks_data, bit_pos);
+                tmp_chunk_length = read_bits(self->priv->bitsize_length, tmp_chunks_data, bit_pos, self->priv->obfuscated_bits, NULL);
                 bit_pos += self->priv->bitsize_length;
 
-                tmp_chunk_length += 5; /* LZMA props size */
+                tmp_chunk_length += LZMA_PROPS_SIZE; /* LZMA props size */
 
-                tmp_compression_type = read_bits(self->priv->bitsize_type, tmp_chunks_data, bit_pos);
+                tmp_compression_type = read_bits(self->priv->bitsize_type, tmp_chunks_data, bit_pos, self->priv->obfuscated_bits, &bit_obfuscation_counter);
                 bit_pos += self->priv->bitsize_type;
 
                 /* Detect uncompressed chunk */
@@ -888,17 +972,17 @@ static gboolean mirage_file_filter_daa_parse_chunk_table (MirageFileFilterDaa *s
            can use either only LZMA or combination of zlib and LZMA */
         switch (tmp_compression_type) {
             case -1: {
-                tmp_compression_type = DAA_COMPRESSION_NONE;
+                tmp_compression_type = COMPRESSION_NONE;
                 compression_type_string = "NONE";
                 break;
             }
             case 0: {
-                tmp_compression_type = DAA_COMPRESSION_LZMA;
+                tmp_compression_type = COMPRESSION_LZMA;
                 compression_type_string = "LZMA";
                 break;
             }
             case 1: {
-                tmp_compression_type = DAA_COMPRESSION_ZLIB;
+                tmp_compression_type = COMPRESSION_ZLIB;
                 compression_type_string = "ZLIB";
                 break;
             }
@@ -1012,7 +1096,8 @@ static gboolean mirage_file_filter_daa_build_part_table (MirageFileFilterDaa *se
         }
 
         /* Read header */
-        if (!memcmp(part_signature, daa_part_signature, sizeof(daa_part_signature))) {
+        if (!memcmp(part_signature, daa_part_signature, sizeof(daa_part_signature))
+            || !memcmp(part_signature, gbi_part_signature, sizeof(gbi_part_signature))) {
             DAA_PartHeader part_header;
             if (!mirage_file_filter_daa_read_part_header(self, part->stream, &part_header, error)) {
                 return FALSE;
@@ -1089,8 +1174,38 @@ static gboolean mirage_file_filter_daa_parse_daa_file (MirageFileFilterDaa *self
             self->priv->chunk_data_offset = self->priv->header.chunk_data_offset & 0x00FFFFFF;
             self->priv->chunk_size = (self->priv->header.chunk_size & 0x00000FFF) << 14;
 
+            /* Chunk table compression/obfuscation flags */
+            self->priv->compressed_chunk_table = self->priv->header.chunk_size & 0x4000;
+
+            self->priv->obfuscated_bits = self->priv->header.chunk_size & 0x20000;
+            self->priv->obfuscated_chunk_table = self->priv->header.chunk_size & 0x8000000;
+
+            self->priv->bit_swap_type = (self->priv->header.chunk_size >> 0x17) & 3;;
+            if (self->priv->image_type == IMAGE_GBI) {
+                self->priv->bit_swap_type ^= 1;
+            }
+
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: actual chunk_data_offset: 0x%X (%d)\n", __debug__, self->priv->chunk_data_offset, self->priv->chunk_data_offset);
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: actual chunk_size: 0x%X (%d)\n", __debug__, self->priv->chunk_size, self->priv->chunk_size);
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: compressed chunk table: %d\n", __debug__, self->priv->compressed_chunk_table);
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: obfuscated chunk table: %d\n", __debug__, self->priv->obfuscated_chunk_table);
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: obfuscated bits in chunk table: %d\n", __debug__, self->priv->obfuscated_bits);
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: bit swap type: %d\n", __debug__, self->priv->bit_swap_type);
+
+            /* We do not handle compressed chunk table yet, as I'd like
+               to have a test image first... */
+            if (self->priv->compressed_chunk_table) {
+                MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: compressed chunk table not supported yet!\n", __debug__);
+                g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_PARSER_ERROR, "Compressed chunk table not supported yet!");
+                return FALSE;
+            }
+
+            /* We do not handle swapped bytes, either */
+            if (self->priv->bit_swap_type != 0) {
+                MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: bit swap type %d not supported yet!\n", __debug__, self->priv->bit_swap_type);
+                g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_PARSER_ERROR, "Bit swap type %d not supported yet!", self->priv->bit_swap_type);
+                return FALSE;
+            }
 
             /* Decipher bit size for type and length fields of chunk table */
             bsize_type = self->priv->header.format2.chunk_table_bit_settings & 7;
@@ -1172,7 +1287,13 @@ static gboolean mirage_file_filter_daa_can_handle_data_format (MirageFileFilter 
     }
 
     /* Check signature */
-    if (memcmp(signature, daa_main_signature, sizeof(daa_main_signature))) {
+    if (!memcmp(signature, daa_main_signature, sizeof(daa_main_signature))) {
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: DAA (PowerISO) format\n", __debug__);
+        self->priv->image_type = IMAGE_DAA;
+    } else if (!memcmp(signature, gbi_main_signature, sizeof(gbi_main_signature))) {
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: GBI (GBurner) format\n", __debug__);
+        self->priv->image_type = IMAGE_GBI;
+    } else {
         g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_CANNOT_HANDLE, "Filter cannot handle given data!");
         return FALSE;
     }
@@ -1239,16 +1360,16 @@ static gssize mirage_file_filter_daa_partial_read (MirageFileFilter *_self, void
         /* Inflate */
         memset(self->priv->inflate_buffer, 0, self->priv->inflate_buffer_size); /* Clear the buffer in case we get a failure */
         switch (chunk->compression) {
-            case DAA_COMPRESSION_NONE: {
+            case COMPRESSION_NONE: {
                 inflated_size = chunk->length - 4;
                 memcpy(self->priv->inflate_buffer, self->priv->io_buffer, inflated_size);
                 break;
             }
-            case DAA_COMPRESSION_ZLIB: {
+            case COMPRESSION_ZLIB: {
                 inflated_size = mirage_file_filter_daa_inflate_zlib(self, self->priv->io_buffer, chunk->length);
                 break;
             }
-            case DAA_COMPRESSION_LZMA: {
+            case COMPRESSION_LZMA: {
                 inflated_size = mirage_file_filter_daa_inflate_lzma(self, self->priv->io_buffer, chunk->length);
                 break;
             }
