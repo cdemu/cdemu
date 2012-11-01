@@ -340,7 +340,7 @@ MirageDisc *mirage_context_load_image (MirageContext *self, gchar **filenames, G
     GInputStream **streams;
 
     gint num_parsers;
-    GType *parser_types;
+    const GType *parser_types;
 
     /* Get the list of supported parsers */
     if (!mirage_get_parsers_type(&parser_types, &num_parsers, error)) {
@@ -425,7 +425,7 @@ MirageFragment *mirage_context_create_fragment (MirageContext *self, GType fragm
     MirageFragment *fragment = NULL;
 
     gint num_fragments;
-    GType *fragment_types;
+    const GType *fragment_types;
 
     /* Get the list of supported fragments */
     if (!mirage_get_fragments_type(&fragment_types, &num_fragments, error)) {
@@ -487,7 +487,7 @@ GInputStream *mirage_context_create_file_stream (MirageContext *self, const gcha
     GError *local_error = NULL;
 
     gint num_file_filters;
-    GType *file_filter_types;
+    const GType *file_filter_types;
 
     /* Check if we are already caching the stream */
     stream = g_hash_table_lookup(self->priv->stream_cache, filename);

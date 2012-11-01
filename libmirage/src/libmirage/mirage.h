@@ -117,15 +117,15 @@ typedef struct {
 gboolean mirage_initialize (GError **error);
 gboolean mirage_shutdown (GError **error);
 
-gboolean mirage_get_parsers_type (GType **types, gint *num_parsers, GError **error);
+gboolean mirage_get_parsers_type (const GType **types, gint *num_parsers, GError **error);
 gboolean mirage_get_parsers_info (const MirageParserInfo **info, gint *num_parsers, GError **error);
 gboolean mirage_enumerate_parsers (MirageEnumParserInfoCallback func, gpointer user_data, GError **error);
 
-gboolean mirage_get_fragments_type (GType **types, gint *num_fragments, GError **error);
+gboolean mirage_get_fragments_type (const GType **types, gint *num_fragments, GError **error);
 gboolean mirage_get_fragments_info (const MirageFragmentInfo **info, gint *num_fragments, GError **error);
 gboolean mirage_enumerate_fragments (MirageEnumFragmentInfoCallback func, gpointer user_data, GError **error);
 
-gboolean mirage_get_file_filters_type (GType **types, gint *num_file_filters, GError **error);
+gboolean mirage_get_file_filters_type (const GType **types, gint *num_file_filters, GError **error);
 gboolean mirage_get_file_filters_info (const MirageFileFilterInfo **info, gint *num_file_filters, GError **error);
 gboolean mirage_enumerate_file_filters (MirageEnumFileFilterInfoCallback func, gpointer user_data, GError **error);
 

@@ -219,7 +219,7 @@ gboolean mirage_shutdown (GError **error)
 
 /**
  * mirage_get_parsers_type:
- * @types: (out) (array length=num_parsers): array of parsers' #GType values
+ * @types: (out) (array length=num_parsers) (transfer none): array of parsers' #GType values
  * @num_parsers: (out): number of supported parsers
  * @error: (out) (allow-none): location to store error, or %NULL
  *
@@ -227,7 +227,7 @@ gboolean mirage_shutdown (GError **error)
  *
  * Returns: %TRUE on success, %FALSE on failure
  */
-gboolean mirage_get_parsers_type (GType **types, gint *num_parsers, GError **error)
+gboolean mirage_get_parsers_type (const GType **types, gint *num_parsers, GError **error)
 {
     /* Make sure libMirage is initialized */
     if (!libmirage.initialized) {
@@ -299,7 +299,7 @@ gboolean mirage_enumerate_parsers (MirageEnumParserInfoCallback func, gpointer u
 
 /**
  * mirage_get_fragments_type:
- * @types: (out) (array length=num_fragments): array of fragments' #GType values
+ * @types: (out) (array length=num_fragments) (transfer none): array of fragments' #GType values
  * @num_fragments: (out): number of supported fragments
  * @error: (out) (allow-none): location to store error, or %NULL
  *
@@ -307,7 +307,7 @@ gboolean mirage_enumerate_parsers (MirageEnumParserInfoCallback func, gpointer u
  *
  * Returns: %TRUE on success, %FALSE on failure
  */
-gboolean mirage_get_fragments_type (GType **types, gint *num_fragments, GError **error)
+gboolean mirage_get_fragments_type (const GType **types, gint *num_fragments, GError **error)
 {
     /* Make sure libMirage is initialized */
     if (!libmirage.initialized) {
@@ -379,7 +379,7 @@ gboolean mirage_enumerate_fragments (MirageEnumFragmentInfoCallback func, gpoint
 
 /**
  * mirage_get_file_filters_type:
- * @types: (out) (array length=num_file_filters): array of file filters' #GType values
+ * @types: (out) (array length=num_file_filters) (transfer none): array of file filters' #GType values
  * @num_file_filters: (out): number of supported file filters
  * @error: (out) (allow-none): location to store error, or %NULL
  *
@@ -387,7 +387,7 @@ gboolean mirage_enumerate_fragments (MirageEnumFragmentInfoCallback func, gpoint
  *
  * Returns: %TRUE on success, %FALSE on failure
  */
-gboolean mirage_get_file_filters_type (GType **types, gint *num_file_filters, GError **error)
+gboolean mirage_get_file_filters_type (const GType **types, gint *num_file_filters, GError **error)
 {
     /* Make sure libMirage is initialized */
     if (!libmirage.initialized) {
