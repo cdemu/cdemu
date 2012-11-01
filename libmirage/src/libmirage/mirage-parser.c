@@ -58,6 +58,59 @@ struct _MirageParserPrivate
 
 
 /**********************************************************************\
+ *                           Parser info API                          *
+\**********************************************************************/
+static void mirage_parser_info_generate (MirageParserInfo *info, const gchar *id, const gchar *name, gint num_types, va_list args)
+{
+    /* Free old fields */
+    mirage_parser_info_free(info);
+
+    /* Copy ID and name */
+    info->id = g_strdup(id);
+    info->name = g_strdup(name);
+
+    /* Copy description and MIME type strings */
+    info->description = g_new0(gchar *, num_types+1);
+    info->mime_type = g_new0(gchar *, num_types+1);
+
+    for (gint i = 0; i < num_types; i++) {
+        info->description[i] = g_strdup(va_arg(args, const gchar *));
+        info->mime_type[i] = g_strdup(va_arg(args, const gchar *));
+    }
+}
+
+/**
+ * mirage_parser_info_copy:
+ * @info: (in): a #MirageParserInfo to copy data from
+ * @dest: (in): a #MirageParserInfo to copy data to
+ *
+ * Copies parser information from @info to @dest.
+ */
+void mirage_parser_info_copy (const MirageParserInfo *info, MirageParserInfo *dest)
+{
+    dest->id = g_strdup(info->id);
+    dest->name = g_strdup(info->name);
+    dest->description = g_strdupv(info->description);
+    dest->mime_type = g_strdupv(info->mime_type);
+}
+
+/**
+ * mirage_parser_info_free:
+ * @info: (in): a #MirageParserInfo to free
+ *
+ * Frees the allocated fields in @info (but not the structure itself!).
+ */
+void mirage_parser_info_free (MirageParserInfo *info)
+{
+    g_free(info->id);
+    g_free(info->name);
+
+    g_strfreev(info->description);
+    g_strfreev(info->mime_type);
+}
+
+
+/**********************************************************************\
  *                             Public API                             *
 \**********************************************************************/
 /**
@@ -65,7 +118,7 @@ struct _MirageParserPrivate
  * @self: a #MirageParser
  * @id: (in): parser ID
  * @name: (in): parser name
- * @num_types: (in): number of MIME types (max %MIRAGE_FILE_FILTER_MAX_TYPES)
+ * @num_types: (in): number of MIME types
  * @...: (in): description and MIME type string pairs, one for each defined type
  *
  * Generates parser information from the input fields. It is intended as a function
@@ -74,28 +127,12 @@ struct _MirageParserPrivate
 void mirage_parser_generate_info (MirageParser *self, const gchar *id, const gchar *name, gint num_types, ...)
 {
     va_list args;
-
-    g_assert(num_types <= MIRAGE_PARSER_MAX_TYPES);
-
-    g_snprintf(self->priv->info.id, sizeof(self->priv->info.id), "%s", id);
-    g_snprintf(self->priv->info.name, sizeof(self->priv->info.name), "%s", name);
-
-    self->priv->info.num_types = num_types;
-
-    /* Copy/clear type descriptions and MIME types */
     va_start(args, num_types);
-    for (gint i = 0; i < MIRAGE_PARSER_MAX_TYPES; i++) {
-        if (i < num_types) {
-            g_snprintf(self->priv->info.description[i], sizeof(self->priv->info.description[i]), "%s", va_arg(args, const gchar *));
-            g_snprintf(self->priv->info.mime_type[i], sizeof(self->priv->info.mime_type[i]), "%s", va_arg(args, const gchar *));
-        } else {
-            memset(self->priv->info.description[i], 0, sizeof(self->priv->info.description[i]));
-            memset(self->priv->info.mime_type[i], 0, sizeof(self->priv->info.mime_type[i]));
-        }
-    }
+
+    mirage_parser_info_generate(&self->priv->info, id, name, num_types, args);
+
     va_end(args);
 }
-
 
 /**
  * mirage_parser_get_info:
@@ -327,10 +364,28 @@ G_DEFINE_ABSTRACT_TYPE(MirageParser, mirage_parser, MIRAGE_TYPE_OBJECT);
 static void mirage_parser_init (MirageParser *self)
 {
     self->priv = MIRAGE_PARSER_GET_PRIVATE(self);
+
+    /* Make sure all fields are empty */
+    memset(&self->priv->info, 0, sizeof(self->priv->info));
+}
+
+static void mirage_parser_finalize (GObject *gobject)
+{
+    MirageParser *self = MIRAGE_PARSER(gobject);
+
+    /* Free info structure */
+    mirage_parser_info_free(&self->priv->info);
+
+    /* Chain up to the parent class */
+    return G_OBJECT_CLASS(mirage_parser_parent_class)->finalize(gobject);
 }
 
 static void mirage_parser_class_init (MirageParserClass *klass)
 {
+    GObjectClass *gobject_class = G_OBJECT_CLASS(klass);
+
+    gobject_class->finalize = mirage_parser_finalize;
+
     klass->load_image = NULL;
 
     /* Register private structure */

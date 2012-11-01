@@ -24,19 +24,11 @@
 G_BEGIN_DECLS
 
 /**
- * MIRAGE_FILE_FILTER_MAX_TYPES:
- *
- * Maximal number of MIME types that can be defined as supported by a file filter.
- */
-#define MIRAGE_FILE_FILTER_MAX_TYPES 4
-
-/**
  * MirageFileFilterInfo:
  * @id: file filter ID
  * @name: file filter name
- * @num_types: number of valid description and mime_types
- * @description: (array fixed-size=4): file type descriptions
- * @mime_type: (array fixed-size=4): file type MIMEs
+ * @description: (array zero-terminated=1): zero-terminated array of file type description strings
+ * @mime_type: (array zero-terminated=1): zero-terminated array of file type MIME strings
  *
  * A structure containing file filter information. It can be obtained
  * with call to mirage_file_filter_get_info().
@@ -44,12 +36,14 @@ G_BEGIN_DECLS
 typedef struct _MirageFileFilterInfo MirageFileFilterInfo;
 struct _MirageFileFilterInfo
 {
-    gchar id[32];
-    gchar name[32];
-    gint num_types;
-    gchar description[MIRAGE_FILE_FILTER_MAX_TYPES][64];
-    gchar mime_type[MIRAGE_FILE_FILTER_MAX_TYPES][32];
+    gchar *id;
+    gchar *name;
+    gchar **description;
+    gchar **mime_type;
 };
+
+void mirage_file_filter_info_copy (const MirageFileFilterInfo *info, MirageFileFilterInfo *dest);
+void mirage_file_filter_info_free (MirageFileFilterInfo *info);
 
 
 /**********************************************************************\

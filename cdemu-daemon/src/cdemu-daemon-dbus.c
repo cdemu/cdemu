@@ -85,7 +85,7 @@ static gboolean append_parser_to_builder (MirageParserInfo *info, GVariantBuilde
     GVariant *types;
 
     g_variant_builder_init(&types_builder, G_VARIANT_TYPE("a(ss)"));
-    for (gint i = 0; i < info->num_types; i++) {
+    for (gint i = 0; info->description[i]; i++) {
         g_variant_builder_add(&types_builder, "(ss)", info->description[i], info->mime_type[i]);
     }
     types = g_variant_builder_end(&types_builder);
@@ -109,7 +109,7 @@ static gboolean append_filter_to_builder (MirageFileFilterInfo *info, GVariantBu
     GVariant *types;
 
     g_variant_builder_init(&types_builder, G_VARIANT_TYPE("a(ss)"));
-    for (gint i = 0; i < info->num_types; i++) {
+    for (gint i = 0; info->description[i]; i++) {
         g_variant_builder_add(&types_builder, "(ss)", info->description[i], info->mime_type[i]);
     }
     types = g_variant_builder_end(&types_builder);

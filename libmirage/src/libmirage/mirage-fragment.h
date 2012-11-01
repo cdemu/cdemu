@@ -34,9 +34,12 @@ G_BEGIN_DECLS
 typedef struct _MirageFragmentInfo MirageFragmentInfo;
 struct _MirageFragmentInfo
 {
-    gchar id[32];
-    gchar name[32];
+    gchar *id;
+    gchar *name;
 };
+
+void mirage_fragment_info_copy (const MirageFragmentInfo *info, MirageFragmentInfo *dest);
+void mirage_fragment_info_free (MirageFragmentInfo *info);
 
 
 /**********************************************************************\

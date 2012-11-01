@@ -555,8 +555,8 @@ static GtkWidget *build_dialog_open_image (ImageAnalyzerApplication *self)
         const MirageParserInfo *info = &parsers[i];
         GtkFileFilter *filter;
 
-        /* Go over all types */
-        for (gint j = 0; j < info->num_types; j++) {
+        /* Go over all types (NULL-terminated list) */
+        for (gint j = 0; info->description[j]; j++) {
             /* Create a parser-specific file chooser filter */
             filter = gtk_file_filter_new();
             gtk_file_filter_set_name(filter, info->description[j]);
@@ -574,8 +574,8 @@ static GtkWidget *build_dialog_open_image (ImageAnalyzerApplication *self)
         const MirageFileFilterInfo *info = &file_filters[i];
         GtkFileFilter *filter;
 
-        /* Go over all types */
-        for (gint j = 0; j < info->num_types; j++) {
+        /* Go over all types (NULL-terminated list) */
+        for (gint j = 0; info->description[j]; j++) {
             /* Create a parser-specific file chooser filter */
             filter = gtk_file_filter_new();
             gtk_file_filter_set_name(filter, info->description[j]);

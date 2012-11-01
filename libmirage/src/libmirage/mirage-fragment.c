@@ -69,6 +69,45 @@ struct _MirageFragmentPrivate
 
 
 /**********************************************************************\
+ *                          Fragment info API                          *
+\**********************************************************************/
+static void mirage_fragment_info_generate (MirageFragmentInfo *info, const gchar *id, const gchar *name)
+{
+    /* Free old fields */
+    mirage_fragment_info_free(info);
+
+    /* Copy ID and name */
+    info->id = g_strdup(id);
+    info->name = g_strdup(name);
+}
+
+/**
+ * mirage_fragment_info_copy:
+ * @info: (in): a #MirageParserInfo to copy data from
+ * @dest: (in): a #MirageParserInfo to copy data to
+ *
+ * Copies parser information from @info to @dest.
+ */
+void mirage_fragment_info_copy (const MirageFragmentInfo *info, MirageFragmentInfo *dest)
+{
+    dest->id = g_strdup(info->id);
+    dest->name = g_strdup(info->name);
+}
+
+/**
+ * mirage_fragment_info_free:
+ * @info: (in): a #MirageParserInfo to free
+ *
+ * Frees the allocated fields in @info (but not the structure itself!).
+ */
+void mirage_fragment_info_free (MirageFragmentInfo *info)
+{
+    g_free(info->id);
+    g_free(info->name);
+}
+
+
+/**********************************************************************\
  *                          Private functions                         *
 \**********************************************************************/
 static void mirage_fragment_commit_topdown_change (MirageFragment *self G_GNUC_UNUSED)
@@ -97,8 +136,7 @@ static void mirage_fragment_commit_bottomup_change (MirageFragment *self)
  */
 void mirage_fragment_generate_info (MirageFragment *self, const gchar *id, const gchar *name)
 {
-    g_snprintf(self->priv->info.id, sizeof(self->priv->info.id), "%s", id);
-    g_snprintf(self->priv->info.name, sizeof(self->priv->info.name), "%s", name);
+    mirage_fragment_info_generate(&self->priv->info, id, name);
 }
 
 /**
@@ -331,6 +369,9 @@ static void mirage_fragment_init (MirageFragment *self)
 {
     self->priv = MIRAGE_FRAGMENT_GET_PRIVATE(self);
 
+    /* Make sure all fields are empty */
+    memset(&self->priv->info, 0, sizeof(self->priv->info));
+
     /* Default fragment implementation is NULL fragment */
     mirage_fragment_generate_info(self,
         "FRAGMENT-NULL",
@@ -338,8 +379,23 @@ static void mirage_fragment_init (MirageFragment *self)
     );
 }
 
+static void mirage_fragment_finalize (GObject *gobject)
+{
+    MirageFragment *self = MIRAGE_FRAGMENT(gobject);
+
+    /* Free info structure */
+    mirage_fragment_info_free(&self->priv->info);
+
+    /* Chain up to the parent class */
+    return G_OBJECT_CLASS(mirage_fragment_parent_class)->finalize(gobject);
+}
+
 static void mirage_fragment_class_init (MirageFragmentClass *klass)
 {
+    GObjectClass *gobject_class = G_OBJECT_CLASS(klass);
+
+    gobject_class->finalize = mirage_fragment_finalize;
+
     /* Default implementation: NULL fragment */
     klass->can_handle_data_format = mirage_fragment_null_can_handle_data_format;
     klass->use_the_rest_of_file = mirage_fragment_null_use_the_rest_of_file;

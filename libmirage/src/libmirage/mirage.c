@@ -80,10 +80,10 @@ static void initialize_parsers_list ()
 {
     libmirage.parsers = g_type_children(MIRAGE_TYPE_PARSER, &libmirage.num_parsers);
 
-    libmirage.parsers_info = g_new(MirageParserInfo, libmirage.num_parsers);
+    libmirage.parsers_info = g_new0(MirageParserInfo, libmirage.num_parsers);
     for (gint i = 0; i < libmirage.num_parsers; i++) {
         MirageParser *parser = g_object_new(libmirage.parsers[i], NULL);
-        libmirage.parsers_info[i] = *mirage_parser_get_info(parser);
+        mirage_parser_info_copy(mirage_parser_get_info(parser), &libmirage.parsers_info[i]);
         g_object_unref(parser);
     }
 }
@@ -92,10 +92,10 @@ static void initialize_fragments_list ()
 {
     libmirage.fragments = g_type_children(MIRAGE_TYPE_FRAGMENT, &libmirage.num_fragments);
 
-    libmirage.fragments_info = g_new(MirageFragmentInfo, libmirage.num_fragments);
+    libmirage.fragments_info = g_new0(MirageFragmentInfo, libmirage.num_fragments);
     for (gint i = 0; i < libmirage.num_fragments; i++) {
         MirageFragment *fragment = g_object_new(libmirage.fragments[i], NULL);
-        libmirage.fragments_info[i] = *mirage_fragment_get_info(fragment);
+        mirage_fragment_info_copy(mirage_fragment_get_info(fragment), &libmirage.fragments_info[i]);
         g_object_unref(fragment);
     }
 }
@@ -108,10 +108,10 @@ static void initialize_file_filters_list ()
 
     libmirage.file_filters = g_type_children(MIRAGE_TYPE_FILE_FILTER, &libmirage.num_file_filters);
 
-    libmirage.file_filters_info = g_new(MirageFileFilterInfo, libmirage.num_file_filters);
+    libmirage.file_filters_info = g_new0(MirageFileFilterInfo, libmirage.num_file_filters);
     for (gint i = 0; i < libmirage.num_file_filters; i++) {
         MirageFileFilter *file_filter = g_object_new(libmirage.file_filters[i], "base-stream", dummy_stream, "close-base-stream", FALSE, NULL);
-        libmirage.file_filters_info[i] = *mirage_file_filter_get_info(file_filter);
+        mirage_file_filter_info_copy(mirage_file_filter_get_info(file_filter), &libmirage.file_filters_info[i]);
         g_object_unref(file_filter);
     }
 
@@ -205,9 +205,25 @@ gboolean mirage_shutdown (GError **error)
         return FALSE;
     }
 
-    /* Free parsers, fragments and file filters */
+    /* Free parser info */
+    for (gint i = 0; i < libmirage.num_parsers; i++) {
+        mirage_parser_info_free(&libmirage.parsers_info[i]);
+    }
+    g_free(libmirage.parsers_info);
     g_free(libmirage.parsers);
+
+    /* Free fragment info */
+    for (gint i = 0; i < libmirage.num_fragments; i++) {
+        mirage_fragment_info_free(&libmirage.fragments_info[i]);
+    }
+    g_free(libmirage.fragments_info);
     g_free(libmirage.fragments);
+
+    /* Free file filter info */
+    for (gint i = 0; i < libmirage.num_file_filters; i++) {
+        mirage_file_filter_info_free(&libmirage.file_filters_info[i]);
+    }
+    g_free(libmirage.file_filters_info);
     g_free(libmirage.file_filters);
 
     /* We're not initialized anymore */

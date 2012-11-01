@@ -225,10 +225,11 @@ mirage_error_get_type
 <SECTION>
 <FILE>mirage-file-filter</FILE>
 <TITLE>MirageFileFilter</TITLE>
-MIRAGE_FILE_FILTER_MAX_TYPES
 MirageFileFilter
 MirageFileFilterClass
 MirageFileFilterInfo
+mirage_file_filter_info_copy
+mirage_file_filter_info_free
 mirage_file_filter_can_handle_data_format
 mirage_file_filter_generate_info
 mirage_file_filter_get_info
@@ -251,6 +252,8 @@ mirage_file_filter_get_type
 MirageFragment
 MirageFragmentClass
 MirageFragmentInfo
+mirage_fragment_info_copy
+mirage_fragment_info_free
 mirage_fragment_can_handle_data_format
 mirage_fragment_generate_info
 mirage_fragment_get_address
@@ -334,10 +337,11 @@ mirage_object_get_type
 <SECTION>
 <FILE>mirage-parser</FILE>
 <TITLE>MirageParser</TITLE>
-MIRAGE_PARSER_MAX_TYPES
 MirageParser
 MirageParserClass
 MirageParserInfo
+mirage_parser_info_copy
+mirage_parser_info_free
 mirage_parser_add_redbook_pregap
 mirage_parser_create_text_stream
 mirage_parser_generate_info

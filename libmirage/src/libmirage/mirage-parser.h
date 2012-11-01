@@ -28,20 +28,13 @@ typedef struct _MirageDisc MirageDisc;
 
 G_BEGIN_DECLS
 
-/**
- * MIRAGE_PARSER_MAX_TYPES:
- *
- * Maximal number of MIME types that can be defined as supported by a parser.
- */
-#define MIRAGE_PARSER_MAX_TYPES 4
 
 /**
  * MirageParserInfo:
  * @id: parser ID
  * @name: parser name
- * @num_types: number of valid description and mime_types
- * @description: (array fixed-size=4): file type descriptions
- * @mime_type: (array fixed-size=4): file type MIMEs
+ * @description: (array zero-terminated=1): zero-terminated array of file type description strings
+ * @mime_type: (array zero-terminated=1): zero-terminated array of file type MIME strings
  *
  * A structure containing parser information. It can be obtained with call to
  * mirage_parser_get_info().
@@ -49,12 +42,14 @@ G_BEGIN_DECLS
 typedef struct _MirageParserInfo MirageParserInfo;
 struct _MirageParserInfo
 {
-    gchar id[32];
-    gchar name[32];
-    gint num_types;
-    gchar description[MIRAGE_PARSER_MAX_TYPES][64];
-    gchar mime_type[MIRAGE_PARSER_MAX_TYPES][32];
+    gchar *id;
+    gchar *name;
+    gchar **description;
+    gchar **mime_type;
 };
+
+void mirage_parser_info_copy (const MirageParserInfo *info, MirageParserInfo *dest);
+void mirage_parser_info_free (MirageParserInfo *info);
 
 
 /**********************************************************************\
