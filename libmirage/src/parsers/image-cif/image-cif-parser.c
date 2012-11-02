@@ -732,7 +732,7 @@ static void mirage_parser_cif_init (MirageParserCif *self)
         "PARSER-CIF",
         "CIF Image Parser",
         1,
-        "CIF (Adaptec Easy CD Creator) images", "application/x-cif"
+        "Adaptec Easy CD/DVD Creator images (*.cif)", "application/x-cif"
     );
 
     self->priv->offset_entries = NULL;

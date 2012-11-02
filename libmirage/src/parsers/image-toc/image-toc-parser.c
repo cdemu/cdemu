@@ -1329,7 +1329,7 @@ static void mirage_parser_toc_init (MirageParserToc *self)
         "PARSER-TOC",
         "TOC Image Parser",
         1,
-        "Cdrdao TOC files", "application/x-cdrdao-toc"
+        "cdrdao images (*.toc)", "application/x-cdrdao-toc"
     );
 
     mirage_parser_toc_init_regex_parser(self);

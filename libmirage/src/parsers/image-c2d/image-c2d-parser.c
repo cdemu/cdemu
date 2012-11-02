@@ -623,7 +623,7 @@ static void mirage_parser_c2d_init (MirageParserC2d *self)
         "PARSER-C2D",
         "C2D Image Parser",
         1,
-        "C2D (CeQuadrat WinOnCD) images", "application/x-c2d"
+        "WinOnCD images (*.c2d)", "application/x-c2d"
     );
 
     self->priv->c2d_stream = NULL;

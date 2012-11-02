@@ -320,7 +320,7 @@ static void mirage_parser_iso_init (MirageParserIso *self)
         "PARSER-ISO",
         "ISO Image Parser",
         1,
-        "ISO images", "application/x-cd-image"
+        "ISO images (*.iso, *.bin, *.img)", "application/x-cd-image"
     );
 }
 

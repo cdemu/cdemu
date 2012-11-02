@@ -1122,7 +1122,7 @@ static void mirage_parser_ccd_init (MirageParserCcd *self)
         "PARSER-CCD",
         "CCD Image Parser",
         1,
-        "CCD (CloneCD) images", "application/x-ccd"
+        "CloneCD images (*.ccd)", "application/x-ccd"
     );
 
     /* Init regex parser engine */

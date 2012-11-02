@@ -1027,7 +1027,7 @@ static void mirage_parser_cdi_init (MirageParserCdi *self)
         "PARSER-CDI",
         "CDI Image Parser",
         1,
-        "CDI (DiscJuggler) images", "application/x-cdi"
+        "DiscJuggler images (*.cdi)", "application/x-cdi"
     );
 }
 

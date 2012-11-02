@@ -1338,7 +1338,7 @@ static void mirage_parser_b6t_init (MirageParserB6t *self)
         "PARSER-B6T",
         "B6T Image Parser",
         1,
-        "BlindWrite 5/6 images", "application/x-b6t"
+        "BlindWrite 5/6 images (*.b5t, *.b6t)", "application/x-b6t"
     );
 
     self->priv->b6t_data = NULL;

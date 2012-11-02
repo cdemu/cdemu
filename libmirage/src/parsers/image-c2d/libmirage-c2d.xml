@@ -3,7 +3,7 @@
     <mime-type type="application/x-c2d">
         <sub-class-of type="application/octet-stream"/>
 
-        <comment>Roxio WinOnCD image file</comment>
+        <comment>WinOnCD image file</comment>
 
         <glob pattern="*.c2d"/>
 

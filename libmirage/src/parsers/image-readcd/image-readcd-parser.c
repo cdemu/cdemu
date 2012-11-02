@@ -481,7 +481,7 @@ static void mirage_parser_readcd_init (MirageParserReadcd *self)
         "PARSER-READCD",
         "READCD Image Parser",
         1,
-        "READCD images", "application/x-cd-image"
+        "readcd images (*.toc)", "application/x-cd-image"
     );
 
     self->priv->data_filename = NULL;

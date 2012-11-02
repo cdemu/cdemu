@@ -28,18 +28,20 @@ set (parsers_LIST
 )
 
 set (mimetype_FILES
-    src/filters/filter-ecm/libmirage-filter-ecm.xml
-    src/filters/filter-daa/libmirage-filter-daa.xml
-    src/filters/filter-cso/libmirage-filter-cso.xml
-    src/parsers/image-mdx/libmirage-image-mdx.xml
-    src/parsers/image-cif/libmirage-image-cif.xml
-    src/parsers/image-nrg/libmirage-image-nrg.xml
-    src/parsers/image-cdi/libmirage-image-cdi.xml
-    src/parsers/image-c2d/libmirage-image-c2d.xml
-    src/parsers/image-b6t/libmirage-image-b6t.xml
-    src/parsers/image-xcdroast/libmirage-image-xcdroast.xml
-    src/parsers/image-ccd/libmirage-image-ccd.xml
-    src/parsers/image-mds/libmirage-image-mds.xml
+    src/filters/filter-cso/libmirage-cso.xml
+    src/filters/filter-daa/libmirage-daa.xml
+    src/filters/filter-daa/libmirage-gbi.xml
+    src/filters/filter-ecm/libmirage-ecm.xml
+    src/parsers/image-b6t/libmirage-b6t.xml
+    src/parsers/image-c2d/libmirage-c2d.xml
+    src/parsers/image-ccd/libmirage-ccd.xml
+    src/parsers/image-cdi/libmirage-cdi.xml
+    src/parsers/image-cif/libmirage-cif.xml
+    src/parsers/image-mds/libmirage-mds.xml
+    src/parsers/image-mds/libmirage-xmd.xml
+    src/parsers/image-mdx/libmirage-mdx.xml
+    src/parsers/image-nrg/libmirage-nrg.xml
+    src/parsers/image-xcdroast/libmirage-xcdroast.xml
 )
 
 set (libmirage_HEADERS

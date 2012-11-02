@@ -1,15 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <mime-info xmlns="http://www.freedesktop.org/standards/shared-mime-info">
-    <mime-type type="application/x-cso">
+    <mime-type type="application/x-mdx">
         <sub-class-of type="application/octet-stream"/>
 
-        <comment>Compressed ISO image</comment>
+        <comment>DaemonTools image file</comment>
 
-        <glob pattern="*.cso"/>
-        <glob pattern="*.ciso"/>
+        <glob pattern="*.mds"/>
+        <glob pattern="*.mdx"/>
 
         <magic priority="50">
-            <match value="CISO" type="string" offset="0"/>
+             <match value="MEDIA DESCRIPTOR\x02" type="string" offset="0"/>
         </magic>
     </mime-type>
 </mime-info>

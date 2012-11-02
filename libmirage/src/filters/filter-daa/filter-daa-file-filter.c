@@ -1426,8 +1426,8 @@ static void mirage_file_filter_daa_init (MirageFileFilterDaa *self)
         "FILTER-DAA",
         "DAA File Filter",
         2,
-        "PowerISO images (DAA)", "application/x-daa",
-        "gBurner images (GBI)", "application/x-gbi"
+        "PowerISO images (*.daa)", "application/x-daa",
+        "gBurner images (*.gbi)", "application/x-gbi"
     );
 
     self->priv->chunk_table = NULL;

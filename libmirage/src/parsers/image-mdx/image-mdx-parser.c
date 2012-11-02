@@ -389,7 +389,7 @@ static void mirage_parser_mdx_init (MirageParserMdx *self)
         "PARSER-MDX",
         "MDX Image Parser",
         1,
-        "MDX images", "application/x-mdx"
+        "DaemonTools images (*.mdx, *.mds)", "application/x-mdx"
     );
 
     self->priv->stream = NULL;
