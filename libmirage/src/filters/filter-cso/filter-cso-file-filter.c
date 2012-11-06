@@ -277,7 +277,7 @@ static gssize mirage_file_filter_cso_partial_read (MirageFileFilter *_self, void
                 /* Read */
                 if (!zlib_stream->avail_in) {
                     /* Read some compressed data */
-                    ret = g_input_stream_read(stream, self->priv->io_buffer, self->priv->io_buffer_size, NULL, NULL);
+                    ret = g_input_stream_read(stream, self->priv->io_buffer, part->comp_size, NULL, NULL);
                     if (ret == -1) {
                         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read %d bytes from underlying stream!\n", __debug__, self->priv->io_buffer_size);
                         return -1;
@@ -311,7 +311,7 @@ static gssize mirage_file_filter_cso_partial_read (MirageFileFilter *_self, void
 
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_FILE_IO, "%s: offset within part: %ld, copying %d bytes\n", __debug__, part_offset, count);
 
-    memcpy(buffer, self->priv->inflate_buffer, count);
+    memcpy(buffer, &self->priv->inflate_buffer[part_offset], count);
 
     return count;
 }
