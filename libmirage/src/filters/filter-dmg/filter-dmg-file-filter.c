@@ -968,6 +968,12 @@ static gboolean mirage_file_filter_dmg_can_handle_data_format (MirageFileFilter 
     /* Output koly block info */
     mirage_file_filter_dmg_print_koly_block(self, koly_block);
 
+    /* FIXME: Handle segmented images */
+    if (koly_block->segment_count > 1) {
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_CANNOT_HANDLE, "Can't handle segmented images yet!");
+        return FALSE;
+    }
+
     /* Set file size */
     mirage_file_filter_set_file_size(MIRAGE_FILE_FILTER(self), koly_block->sector_count * DMG_SECTOR_SIZE);
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: original stream size: %ld\n",
