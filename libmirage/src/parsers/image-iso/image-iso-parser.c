@@ -120,7 +120,8 @@ static gboolean mirage_parser_iso_is_file_valid (MirageParserIso *self, GInputSt
     /* These are raw images with typical Mac partitioning starting with a
        Driver Descriptor Map (DDM) and GUID Partition Map Entries following.
        Each are exactly 512-bytes long and have "ER" and "PM" signatures. */
-    guint8 mac_buf[512];
+    guint8  mac_buf[512];
+    guint16 mac_sectsize;
 
     if (!g_seekable_seek(G_SEEKABLE(stream), 0, G_SEEK_SET, NULL, NULL)) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to seek to DDM block!\n", __debug__);
@@ -135,11 +136,17 @@ static gboolean mirage_parser_iso_is_file_valid (MirageParserIso *self, GInputSt
     }
 
     if (!memcmp(mac_buf, "ER", 2)) {
-        self->priv->track_sectsize = GUINT16_FROM_BE(*((guint16 *) mac_buf + 1));
-        self->priv->track_mode = MIRAGE_MODE_MODE1;
+        mac_sectsize = GUINT16_FROM_BE(*((guint16 *) mac_buf + 1));
 
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: %u-byte Macintosh GUID partitioned track, Mode 1 assumed\n",
-                     __debug__, self->priv->track_sectsize);
+                     __debug__, mac_sectsize);
+
+        if (mac_sectsize == 512) {
+            self->priv->track_sectsize = 2048;
+        } else {
+            self->priv->track_sectsize = mac_sectsize;
+        }
+        self->priv->track_mode = MIRAGE_MODE_MODE1;
 
         for (gint part = 0;; part++) {
             gchar *part_name;
