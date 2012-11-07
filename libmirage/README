@@ -36,8 +36,7 @@ Currently supported image formats:
  - DiscJuggler (CDI) file format
  - Easy CD Creator (CIF) file format
  - CDRwin (CUE, BIN) image format
- - PowerISO (DAA) image format
- - Track loader (ISO, UDF) for ISO9660 and UDF track images
+ - Raw track loader (ISO, UDF etc.) image format
  - Alcohol 120% (MDS) image format
  - Daemon Tools (MDX) image format
  - Nero Burning ROM (NRG) image format
@@ -46,10 +45,13 @@ Currently supported image formats:
  - XCDRoast (TOC, BIN) image format
 
 Currently supported file filters:
+ - Apple Disk Image (DMG) container format
  - GZip (GZ) container format
  - XZ (XZ) container format
  - Compressed ISO (CSO) container format
+ - Compressed ISO (ISZ) container format
  - Error Code Modeller (ECM) container format
+ - PowerISO (DAA) image format
 
 libMirage has a plug-in based system, which allows a simple addition of new
 image format parsers or data-file access fragments. It also supports runtime
