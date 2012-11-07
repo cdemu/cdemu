@@ -33,8 +33,6 @@
 
 G_BEGIN_DECLS
 
-#define ISZ_SIGNATURE "IsZ!"
-
 typedef enum {
     NONE     = 0,
     PASSWORD = 1,
@@ -71,7 +69,7 @@ typedef struct ISZ_Header_s {
     guint8  reserved;         /* reserved */
     /* Additional data not mentioned in the specification */
     guint32 checksum1;        /* checksum of uncompressed data */
-    guint32 data_size;        /* data size */
+    guint32 data_size;        /* total input data size */
     guint32 unknown;          /* ? */
     guint32 checksum2;        /* checksum of compressed data */
 } ISZ_Header; /* length: 64 bytes */
@@ -83,20 +81,22 @@ typedef struct ISZ_Footer_s {
 
 typedef struct {
     guint64 size;             /* segment size in bytes */
-    guint32 num_chunks;       /* number of chunks in current file */
-    guint32 first_chunk_num;  /* first chunk number in current file */
-    guint32 chunk_offs;       /* offset to first chunk in current file */
-    guint32 left_size;        /* incompltete chunk bytes in next file */
+    guint32 num_chunks;       /* number of chunks in segment */
+    guint32 first_chunk_num;  /* first chunk number in segment */
+    guint32 chunk_offs;       /* offset to first chunk data in segment */
+    guint32 left_size;        /* incomplete chunk data bytes in next segment */
 } ISZ_Segment; /* length: 24 bytes */
 
 #pragma pack()
 
 typedef struct {
     /* Read from chunk table */
-    guint8  type;     /* One of ISZ_ChunkType */
-    guint32 length;   /* Chunk length */
+    guint8  type;       /* One of ISZ_ChunkType */
+    guint32 length;     /* Chunk length */
     /* Computed values */
-    guint64 offset;   /* Offset to input data */
+    guint8  segment;    /* Segment that has (start of) chunk */
+    guint64 offset;     /* Offset to input data */
+    guint64 adj_offset; /* Offset adjusted relative to start of segment data */
 } ISZ_Chunk; /* length depending on ptr_len */
 
 G_END_DECLS
