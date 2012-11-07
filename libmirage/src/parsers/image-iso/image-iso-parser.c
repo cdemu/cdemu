@@ -148,35 +148,6 @@ static gboolean mirage_parser_iso_is_file_valid (MirageParserIso *self, GInputSt
         }
         self->priv->track_mode = MIRAGE_MODE_MODE1;
 
-        for (gint part = 0;; part++) {
-            gchar *part_name;
-            gchar *part_type;
-
-            guint32 num_parts;
-
-            if (g_input_stream_read(stream, mac_buf, sizeof(mac_buf), NULL, NULL) != sizeof(mac_buf)) {
-                MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read partition map entry!\n", __debug__);
-                g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, "Failed to read partition map entry!");
-                return FALSE;
-            }
-
-            if (memcmp(mac_buf, "PM", 2)) {
-                MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: invalid partition map entry!\n", __debug__);
-                g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, "invalid partition map entry!");
-                return FALSE;
-            }
-
-            num_parts = GUINT32_FROM_BE(*((guint32 *) mac_buf + 1));
-            part_name = (gchar *) mac_buf + 16;
-            part_type = (gchar *) mac_buf + 48;
-
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: Part. %2i name: %.32s\n", __debug__, part, part_name);
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:          type: %.32s\n", __debug__, part_type);
-
-            /* Last partition? */
-            if (part + 1 >= num_parts) break;
-        }
-
         return TRUE;
     }
 

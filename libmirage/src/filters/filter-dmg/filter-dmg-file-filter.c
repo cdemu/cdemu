@@ -926,10 +926,12 @@ static gboolean mirage_file_filter_dmg_read_index (MirageFileFilterDmg *self, GE
     }
 
     /* Allocate I/O buffer */
-    self->priv->io_buffer = g_try_malloc(self->priv->io_buffer_size);
-    if (!self->priv->io_buffer) {
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, "Failed to allocate memory for I/O buffer!");
-        return FALSE;
+    if (self->priv->io_buffer_size) {
+        self->priv->io_buffer = g_try_malloc(self->priv->io_buffer_size);
+        if (!self->priv->io_buffer) {
+            g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, "Failed to allocate memory for I/O buffer!");
+            return FALSE;
+        }
     }
 
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: successfully generated index\n\n", __debug__);
