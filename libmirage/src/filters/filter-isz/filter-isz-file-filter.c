@@ -280,6 +280,8 @@ static gboolean mirage_file_filter_isz_read_index (MirageFileFilterIsz *self, GE
     self->priv->num_parts = header->num_blocks;
     original_size = header->total_sectors * header->sect_size;
 
+    mirage_file_filter_set_file_size(MIRAGE_FILE_FILTER(self), original_size);
+
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: number of parts: %d\n", __debug__, self->priv->num_parts);
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: original stream size: %ld\n",
                  __debug__, original_size);
@@ -384,15 +386,25 @@ static gboolean mirage_file_filter_isz_read_index (MirageFileFilterIsz *self, GE
         g_free(chunk_buffer);
     }
 
-    /* We don't have a chunk table so initialize a 1-part index */
+    /* We don't have a chunk table so initialize a part index */
     else {
-        ISZ_Chunk *cur_part = &self->priv->parts[0];
+        for (gint i = 0; i < self->priv->num_parts; i++) {
+            ISZ_Chunk *cur_part = &self->priv->parts[i];
 
-        cur_part->type       = DATA;
-        cur_part->length     = header->data_size;
-        cur_part->segment    = 0;
-        cur_part->offset     = 0;
-        cur_part->adj_offset = 0;
+            if (i == self->priv->num_parts - 1) {
+                cur_part->length = header->data_size % header->block_size;
+            } else {
+                cur_part->length = header->block_size;
+            }
+
+            cur_part->type       = DATA;
+            cur_part->segment    = 0;
+            cur_part->offset     = header->block_size * i;
+            cur_part->adj_offset = header->block_size * i;
+
+            /*MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: Part %4u: type: %u offs: %8u adj: %8u len: %6u seg: %2u\n",
+                         __debug__, i, cur_part->type, cur_part->offset, cur_part->adj_offset, cur_part->length, cur_part->segment);*/
+        }
     }
 
     /* Initialize zlib stream */
@@ -438,9 +450,6 @@ static gboolean mirage_file_filter_isz_read_index (MirageFileFilterIsz *self, GE
         g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, "Failed to allocate memory for I/O buffer!");
         return FALSE;
     }
-
-    /* Set file size */
-    mirage_file_filter_set_file_size(MIRAGE_FILE_FILTER(self), original_size);
 
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: successfully read index\n\n", __debug__);
 
@@ -547,10 +556,10 @@ static gssize mirage_file_filter_isz_read_raw_chunk (MirageFileFilterIsz *self, 
     ISZ_Segment *segment = &self->priv->segments[part->segment];
     GInputStream *stream = self->priv->streams[part->segment];
 
-    gint to_read = part->length;
-    gint have_read = 0;
-    gint ret;
-    gint part_offs = segment->chunk_offs + part->adj_offset;
+    gsize   to_read = part->length;
+    gsize   have_read = 0;
+    goffset part_offs = segment->chunk_offs + part->adj_offset;
+    gint    ret;
 
     /* Seek to the position */
     if (!g_seekable_seek(G_SEEKABLE(stream), part_offs, G_SEEK_SET, NULL, NULL)) {
