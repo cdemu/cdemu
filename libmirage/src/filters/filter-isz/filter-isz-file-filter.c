@@ -198,32 +198,84 @@ static gboolean mirage_file_filter_isz_read_segments (MirageFileFilterIsz *self,
     return TRUE;
 }
 
-static gboolean mirage_file_filter_isz_create_new_segment (MirageFileFilterIsz *self, GError **error)
+static gboolean mirage_file_filter_isz_create_new_segment_table (MirageFileFilterIsz *self, GError **error)
 {
     ISZ_Header *header = &self->priv->header;
 
-    ISZ_Segment *segment;
+    gint sector_count = 0;
 
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: creating a new segment\n", __debug__);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: creating a new segment table\n", __debug__);
 
-    /* Allocate segment */
-    self->priv->num_segments = 1;
-    self->priv->segments = segment = g_try_new(ISZ_Segment, self->priv->num_segments);
-    if (!self->priv->segments) {
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, "Failed to allocate memory for segment table!");
-        return FALSE;
+    if (header->segment_size) {
+        /* Allocate segments */
+        self->priv->num_segments = header->data_size / (header->segment_size - header->header_size);
+        if (header->data_size % (header->segment_size - header->header_size)) {
+            self->priv->num_segments++;
+        }
+        self->priv->segments = g_try_new(ISZ_Segment, self->priv->num_segments);
+        if (!self->priv->segments) {
+            g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, "Failed to allocate memory for segment table!");
+            return FALSE;
+        }
+
+        /* Fill in data for segments */
+        for (gint s = 0; s < self->priv->num_segments; s++) {
+            ISZ_Segment *cur_segment  = &self->priv->segments[s];
+            ISZ_Segment *prev_segment = &self->priv->segments[s - 1];
+
+            cur_segment->first_chunk_num = sector_count;
+            cur_segment->size = header->segment_size;
+
+            if (s == self->priv->num_segments - 1) {
+                cur_segment->num_chunks = header->num_blocks - sector_count;
+                cur_segment->chunk_offs = header->data_offs + prev_segment->left_size;
+                cur_segment->left_size = 0;
+            } else if (s > 0) {
+                cur_segment->num_chunks = (cur_segment->size - header->header_size - prev_segment->left_size) / header->block_size;
+                if ((cur_segment->size - header->header_size - prev_segment->left_size) % header->block_size) {
+                    cur_segment->num_chunks++;
+                }
+                cur_segment->chunk_offs = header->data_offs + prev_segment->left_size;
+                cur_segment->left_size = (cur_segment->size - header->header_size - prev_segment->left_size) % header->block_size;
+            } else {
+                cur_segment->num_chunks = (cur_segment->size - header->header_size) / header->block_size;
+                if ((cur_segment->size - header->header_size) % header->block_size) {
+                    cur_segment->num_chunks++;
+                }
+                cur_segment->chunk_offs = header->data_offs;
+                cur_segment->left_size = (cur_segment->size - header->header_size) % header->block_size;
+            }
+
+            sector_count += cur_segment->num_chunks;
+
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  %2d: %lu %u %u %u %u\n", __debug__, s,
+                         cur_segment->size, cur_segment->num_chunks, cur_segment->first_chunk_num,
+                         cur_segment->chunk_offs, cur_segment->left_size);
+        }
+    } else {
+        ISZ_Segment *cur_segment;
+
+        /* Allocate segment */
+        self->priv->num_segments = 1;
+        self->priv->segments = cur_segment = g_try_new(ISZ_Segment, self->priv->num_segments);
+        if (!self->priv->segments) {
+            g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, "Failed to allocate memory for segment table!");
+            return FALSE;
+        }
+
+        /* Fill in data for segment */
+        cur_segment->size = header->total_sectors * header->sect_size;
+        cur_segment->num_chunks = header->num_blocks;
+        cur_segment->first_chunk_num = 0;
+        cur_segment->chunk_offs = header->data_offs;
+        cur_segment->left_size = 0;
+
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   0: %lu %u %u %u %u\n", __debug__,
+                     cur_segment->size, cur_segment->num_chunks, cur_segment->first_chunk_num,
+                     cur_segment->chunk_offs, cur_segment->left_size);
     }
 
-    /* Fill in data for segment */
-    segment->size = header->total_sectors * header->sect_size;
-    segment->num_chunks = header->num_blocks;
-    segment->first_chunk_num = 0;
-    segment->chunk_offs = header->data_offs;
-    segment->left_size = 0;
-
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  0: %lu %u %u %u %u\n", __debug__,
-                 segment->size, segment->num_chunks, segment->first_chunk_num,
-                 segment->chunk_offs, segment->left_size);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: successfully created a new segment table\n", __debug__);
 
     return TRUE;
 }
@@ -274,6 +326,7 @@ static gboolean mirage_file_filter_isz_read_index (MirageFileFilterIsz *self, GE
     ISZ_Header *header = &self->priv->header;
 
     gint ret, original_size;
+    gint last_segment = 0;
 
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: reading part index\n", __debug__);
 
@@ -304,7 +357,6 @@ static gboolean mirage_file_filter_isz_read_index (MirageFileFilterIsz *self, GE
     if (header->chunk_offs) {
         guint8 *chunk_buffer = NULL;
         gint   chunk_buf_size;
-        gint last_segment = 0;
 
         /* Chunk pointer length > 4 not implemented */
         if (header->ptr_len > 4) {
@@ -345,7 +397,7 @@ static gboolean mirage_file_filter_isz_read_index (MirageFileFilterIsz *self, GE
             gint    chunk_len_mask = (1 << chunk_len_bits) - 1;
             gint    chunk_type_mask = (1 << chunk_type_bits) - 1;
 
-            ISZ_Chunk *cur_part = &self->priv->parts[i];
+            ISZ_Chunk *cur_part  = &self->priv->parts[i];
 
             /* Calculate index entry */
             cur_part->length = *chunk_ptr & chunk_len_mask;
@@ -353,34 +405,6 @@ static gboolean mirage_file_filter_isz_read_index (MirageFileFilterIsz *self, GE
 
             /* Fixup endianness */
             cur_part->length = GUINT32_FROM_LE(cur_part->length);
-
-            /* Calculate input offset */
-            if (i == 0) {
-                cur_part->offset = 0;
-                cur_part->adj_offset = 0;
-            } else {
-                ISZ_Chunk *prev_part = &self->priv->parts[i - 1];
-
-                cur_part->offset = prev_part->offset + prev_part->length;
-                cur_part->adj_offset = prev_part->adj_offset + prev_part->length;
-            }
-
-            /* Which segment holds this chunk? */
-            for (gint s = 0; s < self->priv->num_segments; s++) {
-                ISZ_Segment *segment = &self->priv->segments[s];
-
-                if ((i >= segment->first_chunk_num) && (i < segment->first_chunk_num + segment->num_chunks)) {
-                    cur_part->segment = s;
-                }
-            }
-
-            if (cur_part->segment > last_segment) {
-                last_segment = cur_part->segment;
-                cur_part->adj_offset = 0;
-            }
-
-            /*MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: Part %4u: type: %u offs: %8u adj: %8u len: %6u seg: %2u\n",
-                         __debug__, i, cur_part->type, cur_part->offset, cur_part->adj_offset, cur_part->length, cur_part->segment);*/
         }
 
         g_free(chunk_buffer);
@@ -389,22 +413,48 @@ static gboolean mirage_file_filter_isz_read_index (MirageFileFilterIsz *self, GE
     /* We don't have a chunk table so initialize a part index */
     else {
         for (gint i = 0; i < self->priv->num_parts; i++) {
-            ISZ_Chunk *cur_part = &self->priv->parts[i];
+            ISZ_Chunk *cur_part  = &self->priv->parts[i];
+
+            cur_part->type = DATA;
 
             if (i == self->priv->num_parts - 1) {
                 cur_part->length = header->data_size % header->block_size;
             } else {
                 cur_part->length = header->block_size;
             }
-
-            cur_part->type       = DATA;
-            cur_part->segment    = 0;
-            cur_part->offset     = header->block_size * i;
-            cur_part->adj_offset = header->block_size * i;
-
-            /*MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: Part %4u: type: %u offs: %8u adj: %8u len: %6u seg: %2u\n",
-                         __debug__, i, cur_part->type, cur_part->offset, cur_part->adj_offset, cur_part->length, cur_part->segment);*/
         }
+    }
+
+    /* Compute offsets for index */
+    for (gint i = 0; i < self->priv->num_parts; i++) {
+        ISZ_Chunk *cur_part  = &self->priv->parts[i];
+        ISZ_Chunk *prev_part = &self->priv->parts[i - 1];
+
+        /* Calculate input offset */
+        if (i == 0) {
+            cur_part->offset = 0;
+            cur_part->adj_offset = 0;
+        } else {
+            cur_part->offset = prev_part->offset + prev_part->length;
+            cur_part->adj_offset = prev_part->adj_offset + prev_part->length;
+        }
+
+        /* Which segment holds this chunk? */
+        for (gint s = 0; s < self->priv->num_segments; s++) {
+            ISZ_Segment *segment = &self->priv->segments[s];
+
+            if ((i >= segment->first_chunk_num) && (i < segment->first_chunk_num + segment->num_chunks)) {
+                cur_part->segment = s;
+            }
+        }
+
+        if (cur_part->segment > last_segment) {
+            last_segment = cur_part->segment;
+            cur_part->adj_offset = 0;
+        }
+
+        /*MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: Part %4u: type: %u offs: %8u adj: %8u len: %6u seg: %2u\n",
+                     __debug__, i, cur_part->type, cur_part->offset, cur_part->adj_offset, cur_part->length, cur_part->segment);*/
     }
 
     /* Initialize zlib stream */
@@ -527,7 +577,7 @@ static gboolean mirage_file_filter_isz_can_handle_data_format (MirageFileFilter 
             return FALSE;
         }
     } else {
-        if (!mirage_file_filter_isz_create_new_segment(self, error)) {
+        if (!mirage_file_filter_isz_create_new_segment_table(self, error)) {
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: creating a new segment failed!\n\n", __debug__);
             return FALSE;
         }
