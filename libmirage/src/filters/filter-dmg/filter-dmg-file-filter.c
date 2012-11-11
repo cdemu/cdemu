@@ -1305,10 +1305,11 @@ static gssize mirage_file_filter_dmg_partial_read (MirageFileFilter *_self, void
             }
 
             /* Inflate */
-            ret = (gint) adc_decompress(part->in_length, self->priv->io_buffer, self->priv->inflate_buffer_size,
+            ret = (gint) adc_decompress(part->in_length, self->priv->io_buffer, part->num_sectors * DMG_SECTOR_SIZE,
                            self->priv->inflate_buffer, &written_bytes);
 
             g_assert (ret == part->in_length);
+            g_assert (written_bytes == part->num_sectors * DMG_SECTOR_SIZE);
         } else {
             /* We should never get here... */
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: Encountered unknown chunk type %u!\n", __debug__, part->type);
