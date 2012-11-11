@@ -24,6 +24,7 @@
 #include "config.h"
 #endif
 
+#include "adc.h"
 #include <zlib.h>
 #include <bzlib.h>
 

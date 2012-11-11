@@ -125,6 +125,7 @@ set (filter-daa_SOURCES
 set (filter-dmg_SOURCES
     src/filters/filter-dmg/filter-dmg-file-filter.c
     src/filters/filter-dmg/filter-dmg-plugin.c
+    src/filters/filter-dmg/adc.c
 )
 
 set (filter-gzip_SOURCES

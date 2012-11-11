@@ -1232,7 +1232,7 @@ static gssize mirage_file_filter_dmg_partial_read (MirageFileFilter *_self, void
             /* Read uncompressed part */
             ret = mirage_file_filter_dmg_read_raw_chunk (self, self->priv->inflate_buffer, part_idx);
             if (ret != part->in_length) {
-                MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read raw chunk!\n", __debug__, self->priv->inflate_buffer_size);
+                MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read raw chunk!\n", __debug__);
                 return -1;
             }
         } else if (part->type == ZLIB) {
@@ -1252,7 +1252,7 @@ static gssize mirage_file_filter_dmg_partial_read (MirageFileFilter *_self, void
             /* Read some compressed data */
             ret = mirage_file_filter_dmg_read_raw_chunk (self, self->priv->io_buffer, part_idx);
             if (ret != part->in_length) {
-                MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read raw chunk!\n", __debug__, self->priv->inflate_buffer_size);
+                MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read raw chunk!\n", __debug__);
                 return -1;
             }
 
@@ -1281,7 +1281,7 @@ static gssize mirage_file_filter_dmg_partial_read (MirageFileFilter *_self, void
             /* Read some compressed data */
             ret = mirage_file_filter_dmg_read_raw_chunk (self, self->priv->io_buffer, part_idx);
             if (ret != part->in_length) {
-                MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read raw chunk!\n", __debug__, self->priv->inflate_buffer_size);
+                MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read raw chunk!\n", __debug__);
                 return -1;
             }
 
@@ -1294,9 +1294,21 @@ static gssize mirage_file_filter_dmg_partial_read (MirageFileFilter *_self, void
                 }
             } while (bzip2_stream->avail_in);
         } else if (part->type == ADC) {
-            /* FIXME: Add support for ADC decompression */
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: Encountered unknown chunk type %u!\n", __debug__, part->type);
-            return -1;
+            /* FIXME: ADC decompression needs testing */
+            gsize written_bytes;
+
+            /* Read some compressed data */
+            ret = mirage_file_filter_dmg_read_raw_chunk (self, self->priv->io_buffer, part_idx);
+            if (ret != part->in_length) {
+                MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read raw chunk!\n", __debug__);
+                return -1;
+            }
+
+            /* Inflate */
+            ret = (gint) adc_decompress(part->in_length, self->priv->io_buffer, self->priv->inflate_buffer_size,
+                           self->priv->inflate_buffer, &written_bytes);
+
+            g_assert (ret == part->in_length);
         } else {
             /* We should never get here... */
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: Encountered unknown chunk type %u!\n", __debug__, part->type);
