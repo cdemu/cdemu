@@ -33,6 +33,8 @@ struct _MirageParserIsoPrivate
 
     gint track_mode;
     gint track_sectsize;
+
+    gboolean needs_padding;
 };
 
 
@@ -122,6 +124,7 @@ static gboolean mirage_parser_iso_is_file_valid (MirageParserIso *self, GInputSt
        Each are exactly 512-bytes long and have "ER" and "PM" signatures. */
     guint8  mac_buf[512];
     guint16 mac_sectsize;
+    guint32 mac_dev_sectors;
 
     if (!g_seekable_seek(G_SEEKABLE(stream), 0, G_SEEK_SET, NULL, NULL)) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to seek to DDM block!\n", __debug__);
@@ -136,16 +139,28 @@ static gboolean mirage_parser_iso_is_file_valid (MirageParserIso *self, GInputSt
     }
 
     if (!memcmp(mac_buf, "ER", 2)) {
-        mac_sectsize = GUINT16_FROM_BE(*((guint16 *) mac_buf + 1));
+        mac_sectsize    = GUINT16_FROM_BE(*((guint16 *) mac_buf + 1));
+        mac_dev_sectors = GUINT32_FROM_BE(*((guint32 *) mac_buf + 1));
 
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: %u-byte Macintosh GUID partitioned track, Mode 1 assumed\n",
                      __debug__, mac_sectsize);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  Reported number of device sectors: %u\n",
+                     __debug__, mac_dev_sectors);
 
-        if (mac_sectsize == 512) {
-            self->priv->track_sectsize = 2048;
+        if (mac_sectsize == 512 || mac_sectsize == 1024) {
+            if (file_length % 2048) {
+                self->priv->needs_padding = TRUE;
+            } else {
+                self->priv->needs_padding = FALSE;
+            }
+        } else if (mac_sectsize == 2048) {
+            self->priv->needs_padding = FALSE;
         } else {
-            self->priv->track_sectsize = mac_sectsize;
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: Parser cannot map this sector size!\n", __debug__);
+            g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_CANNOT_HANDLE, "Parser cannot map this sector size!");
+            return FALSE;
         }
+        self->priv->track_sectsize = 2048;
         self->priv->track_mode = MIRAGE_MODE_MODE1;
 
         return TRUE;
@@ -182,6 +197,15 @@ static gboolean mirage_parser_iso_load_track (MirageParserIso *self, GInputStrea
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to use the rest of file!\n", __debug__);
         g_object_unref(fragment);
         return FALSE;
+    }
+
+    /* Add one sector to cover otherwise truncated data */
+    if (self->priv->needs_padding) {
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: applying padding sector!\n", __debug__);
+
+        gint cur_length = mirage_fragment_get_length(MIRAGE_FRAGMENT(fragment));
+
+        mirage_fragment_set_length(MIRAGE_FRAGMENT(fragment), cur_length + 1);
     }
 
     /* Add track */
@@ -300,6 +324,8 @@ static void mirage_parser_iso_init (MirageParserIso *self)
         1,
         "ISO images (*.iso, *.bin, *.img)", "application/x-cd-image"
     );
+
+    self->priv->needs_padding = FALSE;
 }
 
 static void mirage_parser_iso_class_init (MirageParserIsoClass *klass)
