@@ -41,9 +41,9 @@ static inline gint8 adc_chunk_size(guint8 byte)
     gint8 chunk_size = -1;
 
     switch (adc_chunk_type(byte)) {
-		case PLAIN:
-		    chunk_size = (byte & 0x7F) + 1;
-		    break;
+        case PLAIN:
+            chunk_size = (byte & 0x7F) + 1;
+            break;
         case TWOBYTE:
             chunk_size = ((byte & 0x3F) >> 2) + 3;
             break;

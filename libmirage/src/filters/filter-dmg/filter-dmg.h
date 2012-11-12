@@ -36,6 +36,12 @@ G_BEGIN_DECLS
 
 #define DMG_SECTOR_SIZE 512
 
+/* Resource types */
+typedef enum {
+    RT_BLKX = 1,
+    RT_PLST = 2
+} DMG_res_type;
+
 /* Block types */
 typedef enum {
     ADC     = G_MININT32+4,
@@ -48,6 +54,13 @@ typedef enum {
     COMMENT = G_MAXINT32-1,
 } DMG_block_type;
 
+/* Checksum types */
+typedef enum {
+    CT_NONE  = 0,
+    CT_CRC32 = 2
+} DMG_checksum_type;
+
+/* Partition Map Flags */
 typedef enum {
     PME_VALID         = 0x0001,
     PME_ALLOCATED     = 0x0002,
@@ -64,7 +77,7 @@ typedef enum {
 #pragma pack(1)
 
 typedef struct {
-    guint32 type; /* should be 2 */
+    guint32 type; /* One of DMG_checksum_type */
     guint32 size; /* should be 32 */
     guint32 data[32]; /* checksum */
 } checksum_t; /* length: 136 bytes */
@@ -74,52 +87,52 @@ typedef struct {
     guint32    version;
     guint32    header_size; /* 512 */
     guint32    flags;
-    guint64    running_data_fork_offset;
-    guint64    data_fork_offset; /* image data */
+    guint64    running_data_fork_offset; /* image data segment start offset */
+    guint64    data_fork_offset; /* image data segment */
     guint64    data_fork_length;
     guint64    rsrc_fork_offset; /* binary descriptors */
     guint64    rsrc_fork_length;
-    guint32    segment_number;
-    guint32    segment_count;
+    guint32    segment_number; /* this segment (starts at 1) */
+    guint32    segment_count; /* total number of segments */
     guint32    segment_id[4];
-    checksum_t data_fork_checksum;
+    checksum_t data_fork_checksum; /* checksum for image data segment (compressed) */
     guint64    xml_offset; /* xml descriptors */
     guint64    xml_length;
     guint32    reserved1[30];
-    checksum_t master_checksum;
+    checksum_t master_checksum; /* checksum of all the blkx_block_t checksums */
     guint32    image_variant;
-    guint64    sector_count;
+    guint64    sector_count; /* total number of sectors in image */
     guint32    reserved2[3];
 } koly_block_t; /* length: 512 bytes */
 
 typedef struct {
     guint32 mish_header_length; /* size of mish header */
-    guint32 mish_total_length; /* size of mish header and mish blocks (but not last block) */
+    guint32 mish_total_length;  /* size of mish header and mish blocks (but not rsrc blocks) */
     guint32 mish_blocks_length; /* size of "blkx" blocks and "plst" blocks */
-    guint32 rsrc_blocks_length; /* size of rsrc blocks */
+    guint32 rsrc_total_length;  /* size of rsrc header, rsrc blocks and rsrc names */
     guint32 reserved[60]; /* zero padding */
 } mish_header_t; /* length: 256 bytes */
 
 typedef struct {
     gchar      signature[4]; /* "mish" */
     guint32    info_version;
-    guint64    first_sector_number;
-    guint64    sector_count;
-    guint64    data_start;
+    guint64    first_sector_number; /* first sector in partition */
+    guint64    sector_count; /* number of sectors in partition */
+    guint64    data_start; /* input offset */
     guint32    decompressed_buffer_requested;
-    gint32     blocks_descriptor;
+    gint32     blocks_descriptor; /* partition ID */
     guint32    reserved[6];
-    checksum_t checksum;
-    guint32    blocks_run_count;
+    checksum_t checksum; /* checksum of partition data (decompressed) */
+    guint32    blocks_run_count; /* number of parts */
 } blkx_block_t; /* length: 204 bytes */
 
 typedef struct {
     gint32  block_type; /* One of DMG_block_type */
     guint32 reserved; /* zero padding */
-    guint64 sector_offset;
-    guint64 sector_count;
-    guint64 compressed_offset;
-    guint64 compressed_length;
+    guint64 sector_offset; /* starting sector */
+    guint64 sector_count; /* number of sectors */
+    guint64 compressed_offset; /* input offset */
+    guint64 compressed_length; /* input length */
 } blkx_data_t; /* length: 40 bytes */
 
 typedef struct {
@@ -170,13 +183,19 @@ typedef struct {
     guint32 mish_header_length;
     guint32 mish_total_length;
     guint32 mish_blocks_length;
-    guint32 rsrc_blocks_length;
+    guint32 rsrc_total_length;
     /* then continues ... */
-    guint16 unknown1[7];
-    gchar   blkx_sign[4];
-    guint32 unknown2;
-    gchar   plst_sign[4];
-    guint32 unknown3;
+    guint16 unknown1[4];
+    guint16 mark_offset; /* offset to marker (or length including rsrc_size) */
+    guint16 rsrc_length; /* length of rsrc_header_t + rsrc_block_t * n */
+    /* MARKER: blkx and plst rsrc_block_t offsets start from here */
+    guint16 unknown2; /* info_version? */
+    gchar   blkx_sign[4]; /* "blkx" */
+    guint16 last_blkx_rsrc; /* index of last blkx rsrc_block_t */
+    guint16 blkx_rsrc_offset; /* offset to blkx rsrc_block_t */
+    gchar   plst_sign[4]; /* "plst" */
+    guint16 last_plst_rsrc; /* index of last plst rsrc_block_t */
+    guint16 plst_rsrc_offset; /* offset to plst rsrc_block_t */
 } rsrc_header_t; /* length: 46 bytes */
 
 typedef struct {
@@ -188,11 +207,6 @@ typedef struct {
 } rsrc_block_t; /* length: 12 bytes */
 
 #pragma pack()
-
-typedef enum {
-    RT_BLKX = 1,
-    RT_PLST = 2
-} DMG_res_type;
 
 typedef struct {
     gpointer     data;
