@@ -609,6 +609,8 @@ static gssize mirage_file_filter_isz_read_raw_chunk (MirageFileFilterIsz *self, 
     gsize   to_read = part->length;
     gsize   have_read = 0;
     goffset part_offs = segment->chunk_offs + part->adj_offset;
+    gsize   part_avail = chunk_num < segment->first_chunk_num + segment->num_chunks - 1 ?
+                         part->length : part->length - segment->left_size;
     gint    ret;
 
     /* Seek to the position */
@@ -618,7 +620,7 @@ static gssize mirage_file_filter_isz_read_raw_chunk (MirageFileFilterIsz *self, 
     }
 
     /* Read raw chunk data */
-    ret = g_input_stream_read(stream, &buffer[have_read], to_read, NULL, NULL);
+    ret = g_input_stream_read(stream, &buffer[have_read], MIN(to_read, part_avail), NULL, NULL);
     if (ret < 0) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read %d bytes from underlying stream!\n", __debug__, to_read);
         return -1;
