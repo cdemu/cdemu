@@ -48,6 +48,54 @@ static gboolean mirage_parser_iso_is_file_valid (MirageParserIso *self, GInputSt
     }
     file_length = g_seekable_tell(G_SEEKABLE(stream));
 
+    /* Macintosh .CDR image check */
+    /* These are raw images with typical Mac partitioning starting with a
+       Driver Descriptor Map (DDM) and GUID Partition Map Entries following.
+       Each are exactly 512-bytes long and have "ER" and "PM" signatures. */
+    guint8  mac_buf[512];
+    guint16 mac_sectsize;
+    guint32 mac_dev_sectors;
+
+    if (!g_seekable_seek(G_SEEKABLE(stream), 0, G_SEEK_SET, NULL, NULL)) {
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to seek to DDM block!\n", __debug__);
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, "Failed to seek to DDM block!");
+        return FALSE;
+    }
+
+    if (g_input_stream_read(stream, mac_buf, sizeof(mac_buf), NULL, NULL) != sizeof(mac_buf)) {
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read DDM block!\n", __debug__);
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, "Failed to read DDM block!");
+        return FALSE;
+    }
+
+    if (!memcmp(mac_buf, "ER", 2)) {
+        mac_sectsize    = GUINT16_FROM_BE(*((guint16 *) mac_buf + 1));
+        mac_dev_sectors = GUINT32_FROM_BE(*((guint32 *) mac_buf + 1));
+
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: %u-byte Macintosh GUID partitioned track, Mode 1 assumed\n",
+                     __debug__, mac_sectsize);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  Reported number of device sectors: %u\n",
+                     __debug__, mac_dev_sectors);
+
+        if (mac_sectsize == 512 || mac_sectsize == 1024) {
+            if (file_length % 2048) {
+                self->priv->needs_padding = TRUE;
+            } else {
+                self->priv->needs_padding = FALSE;
+            }
+        } else if (mac_sectsize == 2048) {
+            self->priv->needs_padding = FALSE;
+        } else {
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: Parser cannot map this sector size!\n", __debug__);
+            g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_CANNOT_HANDLE, "Parser cannot map this sector size!");
+            return FALSE;
+        }
+        self->priv->track_sectsize = 2048;
+        self->priv->track_mode = MIRAGE_MODE_MODE1;
+
+        return TRUE;
+    }
+
     /* 2048-byte standard ISO9660/UDF image check */
     if (file_length % 2048 == 0) {
         guint8 buf[8];
@@ -114,54 +162,6 @@ static gboolean mirage_parser_iso_is_file_valid (MirageParserIso *self, GInputSt
         self->priv->track_mode = MIRAGE_MODE_MODE2_MIXED;
 
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: 2336-byte track, Mode 2 Mixed assumed (unreliable!)\n", __debug__);
-
-        return TRUE;
-    }
-
-    /* Macintosh .CDR image check */
-    /* These are raw images with typical Mac partitioning starting with a
-       Driver Descriptor Map (DDM) and GUID Partition Map Entries following.
-       Each are exactly 512-bytes long and have "ER" and "PM" signatures. */
-    guint8  mac_buf[512];
-    guint16 mac_sectsize;
-    guint32 mac_dev_sectors;
-
-    if (!g_seekable_seek(G_SEEKABLE(stream), 0, G_SEEK_SET, NULL, NULL)) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to seek to DDM block!\n", __debug__);
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, "Failed to seek to DDM block!");
-        return FALSE;
-    }
-
-    if (g_input_stream_read(stream, mac_buf, sizeof(mac_buf), NULL, NULL) != sizeof(mac_buf)) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read DDM block!\n", __debug__);
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, "Failed to read DDM block!");
-        return FALSE;
-    }
-
-    if (!memcmp(mac_buf, "ER", 2)) {
-        mac_sectsize    = GUINT16_FROM_BE(*((guint16 *) mac_buf + 1));
-        mac_dev_sectors = GUINT32_FROM_BE(*((guint32 *) mac_buf + 1));
-
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: %u-byte Macintosh GUID partitioned track, Mode 1 assumed\n",
-                     __debug__, mac_sectsize);
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  Reported number of device sectors: %u\n",
-                     __debug__, mac_dev_sectors);
-
-        if (mac_sectsize == 512 || mac_sectsize == 1024) {
-            if (file_length % 2048) {
-                self->priv->needs_padding = TRUE;
-            } else {
-                self->priv->needs_padding = FALSE;
-            }
-        } else if (mac_sectsize == 2048) {
-            self->priv->needs_padding = FALSE;
-        } else {
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: Parser cannot map this sector size!\n", __debug__);
-            g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_CANNOT_HANDLE, "Parser cannot map this sector size!");
-            return FALSE;
-        }
-        self->priv->track_sectsize = 2048;
-        self->priv->track_mode = MIRAGE_MODE_MODE1;
 
         return TRUE;
     }
