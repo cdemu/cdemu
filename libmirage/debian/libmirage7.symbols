@@ -1,9 +1,4 @@
 libmirage.so.7.0.0 libmirage7 #MINVER#
- mirage_audio_fragment_get_filename@Base 1.6.0
- mirage_audio_fragment_get_offset@Base 1.6.0
- mirage_audio_fragment_get_type@Base 1.6.0
- mirage_audio_fragment_set_offset@Base 1.6.0
- mirage_audio_fragment_set_stream@Base 1.6.0
  mirage_cdtext_coder_get_type@Base 1.6.0
  mirage_cdtext_decoder_get_block_info@Base 1.0.0
  mirage_cdtext_decoder_get_data@Base 1.0.0
@@ -14,7 +9,6 @@ libmirage.so.7.0.0 libmirage7 #MINVER#
  mirage_cdtext_encoder_set_block_info@Base 1.0.0
  mirage_context_clear_options@Base 1.6.0
  mirage_context_create_file_stream@Base 1.6.0
- mirage_context_create_fragment@Base 1.6.0
  mirage_context_get_debug_domain@Base 1.6.0
  mirage_context_get_debug_mask@Base 1.6.0
  mirage_context_get_debug_name@Base 1.6.0
@@ -29,7 +23,6 @@ libmirage.so.7.0.0 libmirage7 #MINVER#
  mirage_context_set_option@Base 1.6.0
  mirage_context_set_password_function@Base 1.6.0
  mirage_contextual_create_file_stream@Base 1.6.0
- mirage_contextual_create_fragment@Base 1.6.0
  mirage_contextual_debug_message@Base 1.6.0
  mirage_contextual_debug_messagev@Base 1.6.0
  mirage_contextual_get_context@Base 1.6.0
@@ -38,25 +31,6 @@ libmirage.so.7.0.0 libmirage7 #MINVER#
  mirage_contextual_get_type@Base 1.6.0
  mirage_contextual_obtain_password@Base 1.6.0
  mirage_contextual_set_context@Base 1.6.0
- mirage_data_fragment_get_type@Base 1.6.0
- mirage_data_fragment_main_data_get_filename@Base 1.6.0
- mirage_data_fragment_main_data_get_format@Base 1.6.0
- mirage_data_fragment_main_data_get_offset@Base 1.6.0
- mirage_data_fragment_main_data_get_position@Base 1.6.0
- mirage_data_fragment_main_data_get_size@Base 1.6.0
- mirage_data_fragment_main_data_set_format@Base 1.6.0
- mirage_data_fragment_main_data_set_offset@Base 1.6.0
- mirage_data_fragment_main_data_set_size@Base 1.6.0
- mirage_data_fragment_main_data_set_stream@Base 1.6.0
- mirage_data_fragment_subchannel_data_get_filename@Base 1.6.0
- mirage_data_fragment_subchannel_data_get_format@Base 1.6.0
- mirage_data_fragment_subchannel_data_get_offset@Base 1.6.0
- mirage_data_fragment_subchannel_data_get_position@Base 1.6.0
- mirage_data_fragment_subchannel_data_get_size@Base 1.6.0
- mirage_data_fragment_subchannel_data_set_format@Base 1.6.0
- mirage_data_fragment_subchannel_data_set_offset@Base 1.6.0
- mirage_data_fragment_subchannel_data_set_size@Base 1.6.0
- mirage_data_fragment_subchannel_data_set_stream@Base 1.6.0
  mirage_disc_add_session_by_index@Base 1.0.0
  mirage_disc_add_session_by_number@Base 1.0.0
  mirage_disc_add_track_by_index@Base 1.0.0
@@ -100,7 +74,6 @@ libmirage.so.7.0.0 libmirage7 #MINVER#
  mirage_disc_set_mcn@Base 1.0.0
  mirage_disc_set_medium_type@Base 1.0.0
  mirage_enumerate_file_filters@Base 1.6.0
- mirage_enumerate_fragments@Base 1.6.0
  mirage_enumerate_parsers@Base 1.6.0
  mirage_error_get_type@Base 1.4.0
  mirage_error_quark@Base 1.0.0
@@ -109,22 +82,35 @@ libmirage.so.7.0.0 libmirage7 #MINVER#
  mirage_file_filter_get_info@Base 1.6.0
  mirage_file_filter_get_position@Base 1.6.0
  mirage_file_filter_get_type@Base 1.6.0
+ mirage_file_filter_info_copy@Base 1.6.0
+ mirage_file_filter_info_free@Base 1.6.0
  mirage_file_filter_set_file_size@Base 1.6.0
- mirage_fragment_can_handle_data_format@Base 1.0.0
- mirage_fragment_generate_info@Base 1.6.0
  mirage_fragment_get_address@Base 1.0.0
- mirage_fragment_get_info@Base 1.6.0
  mirage_fragment_get_length@Base 1.0.0
  mirage_fragment_get_type@Base 1.0.0
+ mirage_fragment_main_data_get_filename@Base 1.6.0
+ mirage_fragment_main_data_get_format@Base 1.6.0
+ mirage_fragment_main_data_get_offset@Base 1.6.0
+ mirage_fragment_main_data_get_size@Base 1.6.0
+ mirage_fragment_main_data_set_format@Base 1.6.0
+ mirage_fragment_main_data_set_offset@Base 1.6.0
+ mirage_fragment_main_data_set_size@Base 1.6.0
+ mirage_fragment_main_data_set_stream@Base 1.6.0
  mirage_fragment_read_main_data@Base 1.0.0
  mirage_fragment_read_subchannel_data@Base 1.0.0
  mirage_fragment_set_address@Base 1.0.0
  mirage_fragment_set_length@Base 1.0.0
+ mirage_fragment_subchannel_data_get_filename@Base 1.6.0
+ mirage_fragment_subchannel_data_get_format@Base 1.6.0
+ mirage_fragment_subchannel_data_get_offset@Base 1.6.0
+ mirage_fragment_subchannel_data_get_size@Base 1.6.0
+ mirage_fragment_subchannel_data_set_format@Base 1.6.0
+ mirage_fragment_subchannel_data_set_offset@Base 1.6.0
+ mirage_fragment_subchannel_data_set_size@Base 1.6.0
+ mirage_fragment_subchannel_data_set_stream@Base 1.6.0
  mirage_fragment_use_the_rest_of_file@Base 1.0.0
  mirage_get_file_filters_info@Base 1.6.0
  mirage_get_file_filters_type@Base 1.6.0
- mirage_get_fragments_info@Base 1.6.0
- mirage_get_fragments_type@Base 1.6.0
  mirage_get_parsers_info@Base 1.6.0
  mirage_get_parsers_type@Base 1.6.0
  mirage_get_supported_debug_masks@Base 1.6.0
@@ -178,6 +164,8 @@ libmirage.so.7.0.0 libmirage7 #MINVER#
  mirage_parser_get_info@Base 1.2.0
  mirage_parser_get_type@Base 1.2.0
  mirage_parser_guess_medium_type@Base 1.2.0
+ mirage_parser_info_copy@Base 1.6.0
+ mirage_parser_info_free@Base 1.6.0
  mirage_parser_load_image@Base 1.2.0
  mirage_pattern_bea01@Base 1.6.0
  mirage_pattern_cd001@Base 1.6.0
