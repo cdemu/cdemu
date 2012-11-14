@@ -317,6 +317,27 @@ static gboolean mirage_file_filter_isz_open_streams (MirageFileFilterIsz *self, 
     return TRUE;
 }
 
+static inline void mirage_file_filter_isz_decode_chunk_ptr(guint8 *chunk_ptr, guint8 ptr_len, guint8 *type, guint32 *length)
+{
+    guint8  temp_buf[sizeof(guint32)] = {0};
+    guint32 *temp_ptr = (guint32 *) temp_buf;
+
+    guint32 chunk_len_bits  = ptr_len * 8 - 2;
+    guint32 chunk_type_bits = 2;
+    guint32 chunk_len_mask  = (1 << chunk_len_bits) - 1;
+    guint32 chunk_type_mask = (1 << chunk_type_bits) - 1;
+
+    g_assert (ptr_len <= sizeof(guint32));
+
+    for (gint b = 0; b < ptr_len; b++) {
+        temp_buf[b] = chunk_ptr[b];
+    }
+    *temp_ptr = GUINT32_FROM_LE(*temp_ptr);
+
+    *length = *temp_ptr & chunk_len_mask;
+    *type   = (*temp_ptr >> chunk_len_bits) & chunk_type_mask;
+}
+
 static gboolean mirage_file_filter_isz_read_index (MirageFileFilterIsz *self, GError **error)
 {
     GInputStream *stream = g_filter_input_stream_get_base_stream(G_FILTER_INPUT_STREAM(self));
@@ -376,6 +397,7 @@ static gboolean mirage_file_filter_isz_read_index (MirageFileFilterIsz *self, GE
         /* Position at the beginning of the chunk table */
         if (!g_seekable_seek(G_SEEKABLE(stream), header->chunk_offs, G_SEEK_SET, NULL, NULL)) {
             g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, "Failed to seek to the beginning of chunk table!");
+            g_free (chunk_buffer);
             return FALSE;
         }
 
@@ -383,6 +405,7 @@ static gboolean mirage_file_filter_isz_read_index (MirageFileFilterIsz *self, GE
         ret = g_input_stream_read(stream, chunk_buffer, chunk_buf_size, NULL, NULL);
         if (ret != chunk_buf_size) {
             g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, "Failed to read index!");
+            g_free (chunk_buffer);
             return FALSE;
         }
 
@@ -391,20 +414,11 @@ static gboolean mirage_file_filter_isz_read_index (MirageFileFilterIsz *self, GE
 
         /* Compute index from chunk table */
         for (gint i = 0; i < self->priv->num_parts; i++) {
-            guint32 *chunk_ptr = (guint32 *) ((guint8 *) &chunk_buffer[i * header->ptr_len]);
-            gint    chunk_len_bits = header->ptr_len * 8 - 2;
-            gint    chunk_type_bits = 2;
-            gint    chunk_len_mask = (1 << chunk_len_bits) - 1;
-            gint    chunk_type_mask = (1 << chunk_type_bits) - 1;
-
+            guint8 *chunk_ptr = &chunk_buffer[i * header->ptr_len];
             ISZ_Chunk *cur_part  = &self->priv->parts[i];
 
             /* Calculate index entry */
-            cur_part->length = *chunk_ptr & chunk_len_mask;
-            cur_part->type   = (*chunk_ptr >> chunk_len_bits) & chunk_type_mask;
-
-            /* Fixup endianness */
-            cur_part->length = GUINT32_FROM_LE(cur_part->length);
+            mirage_file_filter_isz_decode_chunk_ptr(chunk_ptr, header->ptr_len, &cur_part->type, &cur_part->length);
         }
 
         g_free(chunk_buffer);
@@ -735,7 +749,7 @@ static gssize mirage_file_filter_isz_partial_read (MirageFileFilter *_self, void
             /* Reset decompress engine */
             ret = BZ2_bzDecompressInit(bzip2_stream, 0, 0);
             if (ret != BZ_OK) {
-                MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to reset decompress engine!\n", __debug__);
+                MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to initialize decompress engine!\n", __debug__);
                 return -1;
             }
 
@@ -763,6 +777,13 @@ static gssize mirage_file_filter_isz_partial_read (MirageFileFilter *_self, void
                     return -1;
                 }
             } while (bzip2_stream->avail_in);
+
+            /* Uninitialize decompress engine */
+            ret = BZ2_bzDecompressEnd(bzip2_stream);
+            if (ret != BZ_OK) {
+                MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to uninitialize decompress engine!\n", __debug__);
+                return -1;
+            }
         } else {
             /* We should never get here... */
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: Encountered unknown chunk type %u!\n", __debug__, part->type);
