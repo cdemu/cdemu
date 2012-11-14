@@ -1314,7 +1314,7 @@ static gssize mirage_file_filter_dmg_partial_read (MirageFileFilter *_self, void
             /* Reset decompress engine */
             ret = BZ2_bzDecompressInit(bzip2_stream, 0, 0);
             if (ret != BZ_OK) {
-                MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to reset decompress engine!\n", __debug__);
+                MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to initialize decompress engine!\n", __debug__);
                 return -1;
             }
 
@@ -1339,6 +1339,13 @@ static gssize mirage_file_filter_dmg_partial_read (MirageFileFilter *_self, void
                     return -1;
                 }
             } while (bzip2_stream->avail_in);
+
+            /* Uninitialize decompress engine */
+            ret = BZ2_bzDecompressEnd(bzip2_stream);
+            if (ret != BZ_OK) {
+                MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to uninitialize decompress engine!\n", __debug__);
+                return -1;
+            }
         } else if (part->type == ADC) {
             /* FIXME: ADC decompression needs testing */
             gsize written_bytes;
