@@ -68,10 +68,10 @@ typedef struct ISZ_Header_s {
     guint32 data_offs;        /* data offset */
     guint8  reserved;         /* reserved */
     /* Additional data not mentioned in the specification */
-    guint32 checksum1;        /* checksum of uncompressed data */
+    guint32 checksum1;        /* CRC32 of uncompressed data (apply binary NOT) */
     guint32 data_size;        /* total input data size */
     guint32 unknown;          /* ? */
-    guint32 checksum2;        /* checksum of compressed data */
+    guint32 checksum2;        /* CRC32 of compressed data (apply binary NOT) */
 } ISZ_Header; /* length: 64 bytes */
 
 typedef struct ISZ_Footer_s {

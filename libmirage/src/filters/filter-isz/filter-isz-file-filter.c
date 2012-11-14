@@ -570,10 +570,10 @@ static gboolean mirage_file_filter_isz_can_handle_data_format (MirageFileFilter 
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  chunk_offs: 0x%x\n", __debug__, header->chunk_offs);
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  seg_offs: 0x%x\n", __debug__, header->seg_offs);
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  data_offs: 0x%x\n", __debug__, header->data_offs);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  checksum1: 0x%x\n", __debug__, header->checksum1);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  checksum1: 0x%x (actually: 0x%x)\n", __debug__, header->checksum1, ~header->checksum1);
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  data_size: %u\n", __debug__, header->data_size);
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  unknown: %u\n", __debug__, header->unknown);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  checksum2: 0x%x\n", __debug__, header->checksum2);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  checksum2: 0x%x (actually: 0x%x)\n", __debug__, header->checksum2, ~header->checksum2);
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "\n");
 
     /* FIXME: Handle encrypted images */
