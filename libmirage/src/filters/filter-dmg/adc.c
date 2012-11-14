@@ -36,9 +36,9 @@ static inline ADC_ChunkType adc_chunk_type(guint8 byte)
     return chunk_type;
 }
 
-static inline gint8 adc_chunk_size(guint8 byte)
+static inline guint8 adc_chunk_size(guint8 byte)
 {
-    gint8 chunk_size = -1;
+    guint8 chunk_size;
 
     switch (adc_chunk_type(byte)) {
         case PLAIN:
@@ -55,9 +55,9 @@ static inline gint8 adc_chunk_size(guint8 byte)
     return chunk_size;
 }
 
-static inline gint16 adc_chunk_offset(guint8 *chunk_start)
+static inline guint16 adc_chunk_offset(guint8 *chunk_start)
 {
-    gint16 chunk_offset = -1;
+    guint16 chunk_offset;
 
     switch (adc_chunk_type(*chunk_start)) {
         case PLAIN:
@@ -84,8 +84,8 @@ gsize adc_decompress(gsize in_size, guint8 *input, gsize avail_size, guint8 *out
 
     ADC_ChunkType chunk_type;
 
-    gint8  chunk_size;
-    gint16 offset;
+    guint8  chunk_size;
+    guint16 offset;
 
     if (in_size == 0)
         return 0;

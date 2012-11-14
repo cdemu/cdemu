@@ -884,7 +884,7 @@ static gboolean mirage_file_filter_dmg_read_index (MirageFileFilterDmg *self, GE
             temp_part.type = cur_blkx_data[n].block_type;
             temp_part.first_sector = cur_blkx_block->first_sector_number + cur_blkx_data[n].sector_offset;
             temp_part.num_sectors = cur_blkx_data[n].sector_count;
-            temp_part.in_offset = koly_block->data_fork_offset + cur_blkx_block->data_start + cur_blkx_data[n].compressed_offset;
+            temp_part.in_offset = cur_blkx_block->data_start + cur_blkx_data[n].compressed_offset;
             temp_part.in_length = cur_blkx_data[n].compressed_length;
 
             /* Find segment belonging to part */
@@ -917,7 +917,7 @@ static gboolean mirage_file_filter_dmg_read_index (MirageFileFilterDmg *self, GE
                 }
             }
 
-            /*MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%u %u %u %u %d ",
+            /*MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%u: %u %u %u %u %d ", cur_part-1,
                          temp_part.first_sector, temp_part.num_sectors,
                          temp_part.in_offset, temp_part.in_length, temp_part.segment);
             switch (cur_blkx_data[n].block_type) {
@@ -1191,6 +1191,8 @@ static gssize mirage_file_filter_dmg_read_raw_chunk (MirageFileFilterDmg *self, 
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to seek to %ld in underlying stream!\n", __debug__, part_offs);
         return -1;
     }
+
+    /*MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: raw position: %u\n", __debug__, part_offs);*/
 
     /* Read raw chunk data */
     ret = g_input_stream_read(stream, &buffer[have_read], MIN(to_read, part_avail), NULL, NULL);
