@@ -544,8 +544,8 @@ static gint nesting_level = 0;
 
 static rsrc_block_t xml_rsrc_block = {0};
 
-static void start_element (GMarkupParseContext *context, const gchar *element_name, const gchar **attribute_names,
-                           const gchar **attribute_values, gpointer user_data, GError **error)
+static void start_element (GMarkupParseContext *context G_GNUC_UNUSED, const gchar *element_name, const gchar **attribute_names G_GNUC_UNUSED,
+                           const gchar **attribute_values G_GNUC_UNUSED, gpointer user_data, GError **error G_GNUC_UNUSED)
 {
     MirageFileFilterDmg *self = (MirageFileFilterDmg *) user_data;
 
@@ -567,7 +567,7 @@ static void start_element (GMarkupParseContext *context, const gchar *element_na
     /*MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: Start element: %s\n", __debug__, element_name);*/
 }
 
-static void end_element (GMarkupParseContext *context, const gchar *element_name, gpointer user_data, GError **error)
+static void end_element (GMarkupParseContext *context G_GNUC_UNUSED, const gchar *element_name, gpointer user_data, GError **error G_GNUC_UNUSED)
 {
     MirageFileFilterDmg *self = (MirageFileFilterDmg *) user_data;
 
@@ -600,7 +600,7 @@ static void end_element (GMarkupParseContext *context, const gchar *element_name
     /*MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: End element: %s\n", __debug__, element_name);*/
 }
 
-static void xml_text (GMarkupParseContext *context, const gchar *text, gsize text_len, gpointer user_data, GError **error)
+static void xml_text (GMarkupParseContext *context G_GNUC_UNUSED, const gchar *text, gsize text_len, gpointer user_data, GError **error)
 {
     MirageFileFilterDmg *self = (MirageFileFilterDmg *) user_data;
 

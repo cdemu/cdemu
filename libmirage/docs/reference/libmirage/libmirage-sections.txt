@@ -72,7 +72,7 @@ mirage_context_get_type
 <SECTION>
 <FILE>mirage-contextual</FILE>
 <TITLE>MirageContextual</TITLE>
-MirageContextualI
+MirageContextual
 MirageContextualInterface
 mirage_contextual_create_file_stream
 mirage_contextual_debug_message
