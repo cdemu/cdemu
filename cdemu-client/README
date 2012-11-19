@@ -110,9 +110,6 @@ Enumerating supported parsers:
 Enumerating supported file filters:
  cdemu enum-file-filters
 
-Enumerating supported fragments:
- cdemu enum-fragments
-
 Displaying daemon and library version:
  cdemu version
 

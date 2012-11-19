@@ -150,32 +150,6 @@ install (
     DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/libmirage
 )
 
-# Fragments source files
-list (APPEND fragments_CFLAGS ${libmirage_CFLAGS} ${LibSndFile_CFLAGS})
-list (APPEND fragments_DEFS ${libmirage_DEFS})
-list (APPEND fragments_LDFLAGS ${libmirage_LDFLAGS} ${LibSndFile_LDFLAGS})
-
-to_list_spaces (fragments_CFLAGS fragments_S_CFLAGS)
-to_list_spaces (fragments_LDFLAGS fragments_S_LDFLAGS)
-
-foreach (fragment ${fragments_LIST})
-    add_library (${fragment} MODULE ${${fragment}_SOURCES})
-
-    target_link_libraries (${fragment} ${LibGlib_LIBRARIES} ${LibSndFile_LIBRARIES})
-
-    set_target_properties (${fragment} PROPERTIES
-        COMPILE_FLAGS ${fragments_S_CFLAGS}
-        COMPILE_DEFINITIONS "${fragments_DEFS}"
-        LINK_FLAGS ${fragments_S_LDFLAGS}
-        PREFIX ""
-    )
-
-    install (
-        TARGETS ${fragment}
-        DESTINATION ${MIRAGE_INSTALL_PLUGINDIR}
-    )
-endforeach ()
-
 # Filters source files
 list (APPEND filters_CFLAGS ${libmirage_CFLAGS} ${ZLib_CFLAGS})
 list (APPEND filters_DEFS ${libmirage_DEFS})

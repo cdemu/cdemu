@@ -663,24 +663,17 @@ static gboolean mirage_parser_cdi_load_track (MirageParserCdi *self, GError **er
     mirage_track_set_mode(track, decoded_mode);
 
     /* Create BINARY fragment */
-    fragment = mirage_contextual_create_fragment(MIRAGE_CONTEXTUAL(self), MIRAGE_TYPE_DATA_FRAGMENT, self->priv->cdi_stream, error);
-    if (!fragment) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: failed to create BINARY fragment!\n", __debug__);
-        g_object_unref(track);
-        g_object_unref(session);
-        g_free(indices);
-        return FALSE;
-    }
+    fragment = g_object_new(MIRAGE_TYPE_FRAGMENT, NULL);
 
     mirage_fragment_set_length(fragment, fragment_len);
 
-    mirage_data_fragment_main_data_set_stream(MIRAGE_DATA_FRAGMENT(fragment), self->priv->cdi_stream);
-    mirage_data_fragment_main_data_set_offset(MIRAGE_DATA_FRAGMENT(fragment), main_offset);
-    mirage_data_fragment_main_data_set_size(MIRAGE_DATA_FRAGMENT(fragment), main_size);
-    mirage_data_fragment_main_data_set_format(MIRAGE_DATA_FRAGMENT(fragment), main_format);
+    mirage_fragment_main_data_set_stream(fragment, self->priv->cdi_stream);
+    mirage_fragment_main_data_set_offset(fragment, main_offset);
+    mirage_fragment_main_data_set_size(fragment, main_size);
+    mirage_fragment_main_data_set_format(fragment, main_format);
 
-    mirage_data_fragment_subchannel_data_set_size(MIRAGE_DATA_FRAGMENT(fragment), subchannel_size);
-    mirage_data_fragment_subchannel_data_set_format(MIRAGE_DATA_FRAGMENT(fragment), subchannel_format);
+    mirage_fragment_subchannel_data_set_size(fragment, subchannel_size);
+    mirage_fragment_subchannel_data_set_format(fragment, subchannel_format);
 
     mirage_track_add_fragment(track, -1, fragment);
 

@@ -264,23 +264,17 @@ static gboolean mirage_parser_ccd_build_disc_layout (MirageParserCcd *self, GErr
 
 
             /* Data fragment */
-            fragment = mirage_contextual_create_fragment(MIRAGE_CONTEXTUAL(self), MIRAGE_TYPE_DATA_FRAGMENT, self->priv->img_stream, error);
-            if (!fragment) {
-                MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to create data fragment!\n", __debug__);
-                g_object_unref(track);
-                g_object_unref(session);
-                return FALSE;
-            }
+            fragment = g_object_new(MIRAGE_TYPE_FRAGMENT, NULL);
 
-            mirage_data_fragment_main_data_set_stream(MIRAGE_DATA_FRAGMENT(fragment), self->priv->img_stream);
-            mirage_data_fragment_main_data_set_size(MIRAGE_DATA_FRAGMENT(fragment), 2352);
-            mirage_data_fragment_main_data_set_offset(MIRAGE_DATA_FRAGMENT(fragment), self->priv->offset*2352);
-            mirage_data_fragment_main_data_set_format(MIRAGE_DATA_FRAGMENT(fragment), MIRAGE_MAIN_DATA);
+            mirage_fragment_main_data_set_stream(fragment, self->priv->img_stream);
+            mirage_fragment_main_data_set_size(fragment, 2352);
+            mirage_fragment_main_data_set_offset(fragment, self->priv->offset*2352);
+            mirage_fragment_main_data_set_format(fragment, MIRAGE_MAIN_DATA);
 
-            mirage_data_fragment_subchannel_data_set_stream(MIRAGE_DATA_FRAGMENT(fragment), self->priv->sub_stream);
-            mirage_data_fragment_subchannel_data_set_size(MIRAGE_DATA_FRAGMENT(fragment), 96);
-            mirage_data_fragment_subchannel_data_set_offset(MIRAGE_DATA_FRAGMENT(fragment), self->priv->offset*96);
-            mirage_data_fragment_subchannel_data_set_format(MIRAGE_DATA_FRAGMENT(fragment), MIRAGE_SUBCHANNEL_PW96_LIN | MIRAGE_SUBCHANNEL_EXT);
+            mirage_fragment_subchannel_data_set_stream(fragment, self->priv->sub_stream);
+            mirage_fragment_subchannel_data_set_size(fragment, 96);
+            mirage_fragment_subchannel_data_set_offset(fragment, self->priv->offset*96);
+            mirage_fragment_subchannel_data_set_format(fragment, MIRAGE_SUBCHANNEL_PW96_LIN | MIRAGE_SUBCHANNEL_EXT);
 
             mirage_track_add_fragment(track, -1, fragment);
 
@@ -291,7 +285,7 @@ static gboolean mirage_parser_ccd_build_disc_layout (MirageParserCcd *self, GErr
 
             /* If track mode is determined to be audio, set fragment's format accordingly */
             if (mirage_track_get_mode(track) == MIRAGE_MODE_AUDIO) {
-                mirage_data_fragment_main_data_set_format(MIRAGE_DATA_FRAGMENT(fragment), MIRAGE_MAIN_AUDIO);
+                mirage_fragment_main_data_set_format(fragment, MIRAGE_MAIN_AUDIO);
             }
 
             /* ISRC */

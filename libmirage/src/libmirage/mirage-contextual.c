@@ -217,39 +217,6 @@ gchar *mirage_contextual_obtain_password (MirageContextual *self, GError **error
 
 
 /**
- * mirage_contextual_create_fragment:
- * @self: a #MirageContextual
- * @fragment_interface: (in): interface that fragment should implement
- * @stream: (in): the data stream that fragment should be able to handle
- * @error: (out) (allow-none): location to store error, or %NULL
- *
- * Creates a #MirageFragment implementation that implements interface specified
- * by @fragment_interface and can handle data stored in @stream.
- *
- * <note>
- * This is a convenience function that retrieves a #MirageContext from
- * @self and calls mirage_context_create_fragment().
- * </note>
- *
- * Returns: (transfer full): a #MirageFragment object on success, %NULL on failure. The reference
- * to the object should be released using g_object_unref() when no longer needed.
- */
-MirageFragment *mirage_contextual_create_fragment (MirageContextual *self, GType fragment_interface, GInputStream *stream, GError **error)
-{
-    MirageContext *context = mirage_contextual_get_context(self);
-    MirageFragment *fragment = NULL;
-
-    if (!context) {
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_LIBRARY_ERROR, "Context not set!");
-    } else {
-        fragment = mirage_context_create_fragment(context, fragment_interface, stream, error);
-        g_object_unref(context);
-    }
-
-    return fragment;
-}
-
-/**
  * mirage_contextual_create_file_stream:
  * @self: a #MirageContextual
  * @filename: (in): filename to create stream on

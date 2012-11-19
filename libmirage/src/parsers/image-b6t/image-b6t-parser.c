@@ -386,8 +386,8 @@ static gboolean mirage_parser_b6t_setup_track_fragments (MirageParserB6t *self, 
         if (start_sector >= data_block->start_sector && start_sector < data_block->start_sector + data_block->length_sectors) {
             gint tmp_length;
             gchar *filename;
-            MirageFragment *data_fragment;
-            GInputStream *data_stream;
+            MirageFragment *fragment;
+            GInputStream *stream;
 
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: found a block %i\n", __debug__, g_list_position(self->priv->data_blocks_list, entry));
 
@@ -404,8 +404,8 @@ static gboolean mirage_parser_b6t_setup_track_fragments (MirageParserB6t *self, 
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: using data file: %s\n", __debug__, filename);
 
             /* Create stream */
-            data_stream = mirage_contextual_create_file_stream(MIRAGE_CONTEXTUAL(self), filename, error);
-            if (!data_stream) {
+            stream = mirage_contextual_create_file_stream(MIRAGE_CONTEXTUAL(self), filename, error);
+            if (!stream) {
                 MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to create stream on data file '%s'\n", __debug__, filename);
                 g_free(filename);
                 return FALSE;
@@ -413,14 +413,8 @@ static gboolean mirage_parser_b6t_setup_track_fragments (MirageParserB6t *self, 
 
             g_free(filename);
 
-            /* We'd like a BINARY fragment */
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: creating BINARY fragment\n", __debug__);
-            data_fragment = mirage_contextual_create_fragment(MIRAGE_CONTEXTUAL(self), MIRAGE_TYPE_DATA_FRAGMENT, data_stream, error);
-            if (!data_fragment) {
-                g_object_unref(data_stream);
-                MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to create BINARY fragment!\n", __debug__);
-                return FALSE;
-            }
+            /* Create and setup data fragment */
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: creating data fragment\n", __debug__);
 
             gint main_size = 0;
             gint main_format = 0;
@@ -469,22 +463,25 @@ static gboolean mirage_parser_b6t_setup_track_fragments (MirageParserB6t *self, 
                 main_format = MIRAGE_MAIN_DATA;
             }
 
+            /* Create fragment object */
+            fragment = g_object_new(MIRAGE_TYPE_FRAGMENT, NULL);
+
             /* Set stream */
-            mirage_data_fragment_main_data_set_stream(MIRAGE_DATA_FRAGMENT(data_fragment), data_stream);
-            g_object_unref(data_stream);
+            mirage_fragment_main_data_set_stream(fragment, stream);
+            g_object_unref(stream);
 
-            mirage_data_fragment_main_data_set_size(MIRAGE_DATA_FRAGMENT(data_fragment), main_size);
-            mirage_data_fragment_main_data_set_offset(MIRAGE_DATA_FRAGMENT(data_fragment), main_offset);
-            mirage_data_fragment_main_data_set_format(MIRAGE_DATA_FRAGMENT(data_fragment), main_format);
+            mirage_fragment_main_data_set_size(fragment, main_size);
+            mirage_fragment_main_data_set_offset(fragment, main_offset);
+            mirage_fragment_main_data_set_format(fragment, main_format);
 
-            mirage_data_fragment_subchannel_data_set_size(MIRAGE_DATA_FRAGMENT(data_fragment), subchannel_size);
-            mirage_data_fragment_subchannel_data_set_format(MIRAGE_DATA_FRAGMENT(data_fragment), subchannel_format);
+            mirage_fragment_subchannel_data_set_size(fragment, subchannel_size);
+            mirage_fragment_subchannel_data_set_format(fragment, subchannel_format);
 
-            mirage_fragment_set_length(data_fragment, tmp_length);
+            mirage_fragment_set_length(fragment, tmp_length);
 
             /* Add fragment */
-            mirage_track_add_fragment(cur_track, -1, data_fragment);
-            g_object_unref(data_fragment);
+            mirage_track_add_fragment(cur_track, -1, fragment);
+            g_object_unref(fragment);
 
             /* Calculate remaining track length */
             length -= tmp_length;

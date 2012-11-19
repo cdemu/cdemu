@@ -181,16 +181,11 @@ static gboolean mirage_parser_iso_load_track (MirageParserIso *self, GInputStrea
 
     /* Create data fragment */
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: creating data fragment\n", __debug__);
-    fragment = mirage_contextual_create_fragment(MIRAGE_CONTEXTUAL(self), MIRAGE_TYPE_DATA_FRAGMENT, stream, error);
-    if (!fragment) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to create BINARY fragment!\n", __debug__);
-        return FALSE;
-    }
+    fragment = g_object_new(MIRAGE_TYPE_FRAGMENT, NULL);
 
-    /* Set stream */
-    mirage_data_fragment_main_data_set_stream(MIRAGE_DATA_FRAGMENT(fragment), stream);
-    mirage_data_fragment_main_data_set_size(MIRAGE_DATA_FRAGMENT(fragment), self->priv->track_sectsize);
-    mirage_data_fragment_main_data_set_format(MIRAGE_DATA_FRAGMENT(fragment), MIRAGE_MAIN_DATA);
+    mirage_fragment_main_data_set_stream(fragment, stream);
+    mirage_fragment_main_data_set_size(fragment, self->priv->track_sectsize);
+    mirage_fragment_main_data_set_format(fragment, MIRAGE_MAIN_DATA);
 
     /* Use whole file */
     if (!mirage_fragment_use_the_rest_of_file(fragment, error)) {
@@ -203,9 +198,9 @@ static gboolean mirage_parser_iso_load_track (MirageParserIso *self, GInputStrea
     if (self->priv->needs_padding) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: applying padding sector!\n", __debug__);
 
-        gint cur_length = mirage_fragment_get_length(MIRAGE_FRAGMENT(fragment));
+        gint cur_length = mirage_fragment_get_length(fragment);
 
-        mirage_fragment_set_length(MIRAGE_FRAGMENT(fragment), cur_length + 1);
+        mirage_fragment_set_length(fragment, cur_length + 1);
     }
 
     /* Add track */

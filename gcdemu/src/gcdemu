@@ -132,9 +132,6 @@ class CDEmuDaemonProxy (GObject.GObject):
     def EnumSupportedFileFilters (self):
         return self.proxy.EnumSupportedFileFilters()
 
-    def EnumSupportedFragments (self):
-        return self.proxy.EnumSupportedFragments()
-
 
     def GetNumberOfDevices (self):
         return self.proxy.GetNumberOfDevices()

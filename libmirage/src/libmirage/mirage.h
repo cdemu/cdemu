@@ -35,9 +35,7 @@
 #include "mirage-contextual.h"
 #include "mirage-object.h"
 
-#include "mirage-audio-fragment.h"
 #include "mirage-cdtext-coder.h"
-#include "mirage-data-fragment.h"
 #include "mirage-debug.h"
 #include "mirage-disc.h"
 #include "mirage-disc-structures.h"
@@ -70,20 +68,6 @@ G_BEGIN_DECLS
  * Returns: %TRUE on success, otherwise %FALSE
  */
 typedef gboolean (*MirageEnumParserInfoCallback) (const MirageParserInfo *info, gpointer user_data);
-
-/**
- * MirageEnumFragmentInfoCallback:
- * @info: (in): fragment info
- * @user_data: (in) (closure): user data passed to enumeration function
- *
- * Callback function type used with mirage_enumerate_fragments().
- * A pointer to fragment information structure is stored in @info; the
- * structure belongs to the fragment object and should not be modified.
- * @user_data is user data passed to enumeration function.
- *
- * Returns: %TRUE on success, otherwise %FALSE
- */
-typedef gboolean (*MirageEnumFragmentInfoCallback) (const MirageFragmentInfo *info, gpointer user_data);
 
 /**
  * MirageEnumFileFilterInfoCallback:
@@ -120,10 +104,6 @@ gboolean mirage_shutdown (GError **error);
 gboolean mirage_get_parsers_type (const GType **types, gint *num_parsers, GError **error);
 gboolean mirage_get_parsers_info (const MirageParserInfo **info, gint *num_parsers, GError **error);
 gboolean mirage_enumerate_parsers (MirageEnumParserInfoCallback func, gpointer user_data, GError **error);
-
-gboolean mirage_get_fragments_type (const GType **types, gint *num_fragments, GError **error);
-gboolean mirage_get_fragments_info (const MirageFragmentInfo **info, gint *num_fragments, GError **error);
-gboolean mirage_enumerate_fragments (MirageEnumFragmentInfoCallback func, gpointer user_data, GError **error);
 
 gboolean mirage_get_file_filters_type (const GType **types, gint *num_file_filters, GError **error);
 gboolean mirage_get_file_filters_info (const MirageFileFilterInfo **info, gint *num_file_filters, GError **error);

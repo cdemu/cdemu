@@ -22,8 +22,6 @@
         <xi:include href="xml/mirage-disc.xml"/>
         <xi:include href="xml/mirage-file-filter.xml"/>
         <xi:include href="xml/mirage-fragment.xml"/>
-        <xi:include href="xml/mirage-audio-fragment.xml"/>
-        <xi:include href="xml/mirage-data-fragment.xml"/>
         <xi:include href="xml/mirage-index.xml"/>
         <xi:include href="xml/mirage-language.xml"/>
         <xi:include href="xml/mirage-object.xml"/>

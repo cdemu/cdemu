@@ -596,14 +596,7 @@ static gboolean mirage_parser_nrg_load_session (MirageParserNrg *self, gint sess
             /* Create a binary fragment */
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: creating pregap fragment\n", __debug__);
 
-            fragment = mirage_contextual_create_fragment(MIRAGE_CONTEXTUAL(self), MIRAGE_TYPE_DATA_FRAGMENT, self->priv->nrg_stream, error);
-            if (!fragment) {
-                MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to create fragment!\n", __debug__);
-                g_object_unref(track);
-                g_object_unref(session);
-                succeeded = FALSE;
-                goto end;
-            }
+            fragment = g_object_new(MIRAGE_TYPE_FRAGMENT, NULL);
 
             /* Main channel data */
             main_size = main_sectsize; /* We use the one from decoded mode code */
@@ -616,18 +609,18 @@ static gboolean mirage_parser_nrg_load_session (MirageParserNrg *self, gint sess
 
             mirage_fragment_set_length(fragment, fragment_len);
 
-            mirage_data_fragment_main_data_set_stream(MIRAGE_DATA_FRAGMENT(fragment), self->priv->nrg_stream);
-            mirage_data_fragment_main_data_set_offset(MIRAGE_DATA_FRAGMENT(fragment), main_offset);
-            mirage_data_fragment_main_data_set_size(MIRAGE_DATA_FRAGMENT(fragment), main_size);
-            mirage_data_fragment_main_data_set_format(MIRAGE_DATA_FRAGMENT(fragment), main_format);
+            mirage_fragment_main_data_set_stream(fragment, self->priv->nrg_stream);
+            mirage_fragment_main_data_set_offset(fragment, main_offset);
+            mirage_fragment_main_data_set_size(fragment, main_size);
+            mirage_fragment_main_data_set_format(fragment, main_format);
 
             /* Subchannel */
             if (sub_sectsize) {
                 subchannel_size = sub_sectsize; /* We use the one from decoded mode code */
                 subchannel_format = MIRAGE_SUBCHANNEL_PW96_INT | MIRAGE_SUBCHANNEL_INT; /* PW96 interleaved, internal */
 
-                mirage_data_fragment_subchannel_data_set_size(MIRAGE_DATA_FRAGMENT(fragment), subchannel_size);
-                mirage_data_fragment_subchannel_data_set_format(MIRAGE_DATA_FRAGMENT(fragment), subchannel_format);
+                mirage_fragment_subchannel_data_set_size(fragment, subchannel_size);
+                mirage_fragment_subchannel_data_set_format(fragment, subchannel_format);
             }
 
             mirage_track_add_fragment(track, -1, fragment);
@@ -641,14 +634,7 @@ static gboolean mirage_parser_nrg_load_session (MirageParserNrg *self, gint sess
             /* Create a binary fragment */
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: creating data fragment\n", __debug__);
 
-            fragment = mirage_contextual_create_fragment(MIRAGE_CONTEXTUAL(self), MIRAGE_TYPE_DATA_FRAGMENT, self->priv->nrg_stream, error);
-            if (!fragment) {
-                MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to create fragment!\n", __debug__);
-                succeeded = FALSE;
-                g_object_unref(track);
-                g_object_unref(session);
-                goto end;
-            }
+            fragment = g_object_new(MIRAGE_TYPE_FRAGMENT, NULL);
 
             /* Main channel data */
             main_size = main_sectsize; /* We use the one from decoded mode code */
@@ -661,18 +647,18 @@ static gboolean mirage_parser_nrg_load_session (MirageParserNrg *self, gint sess
 
             mirage_fragment_set_length(fragment, fragment_len);
 
-            mirage_data_fragment_main_data_set_stream(MIRAGE_DATA_FRAGMENT(fragment), self->priv->nrg_stream);
-            mirage_data_fragment_main_data_set_offset(MIRAGE_DATA_FRAGMENT(fragment), main_offset);
-            mirage_data_fragment_main_data_set_size(MIRAGE_DATA_FRAGMENT(fragment), main_size);
-            mirage_data_fragment_main_data_set_format(MIRAGE_DATA_FRAGMENT(fragment), main_format);
+            mirage_fragment_main_data_set_stream(fragment, self->priv->nrg_stream);
+            mirage_fragment_main_data_set_offset(fragment, main_offset);
+            mirage_fragment_main_data_set_size(fragment, main_size);
+            mirage_fragment_main_data_set_format(fragment, main_format);
 
             /* Subchannel */
             if (sub_sectsize) {
                 subchannel_size = sub_sectsize; /* We use the one from decoded mode code */
                 subchannel_format = MIRAGE_SUBCHANNEL_PW96_INT | MIRAGE_SUBCHANNEL_INT; /* PW96 interleaved, internal */
 
-                mirage_data_fragment_subchannel_data_set_size(MIRAGE_DATA_FRAGMENT(fragment), subchannel_size);
-                mirage_data_fragment_subchannel_data_set_format(MIRAGE_DATA_FRAGMENT(fragment), subchannel_format);
+                mirage_fragment_subchannel_data_set_size(fragment, subchannel_size);
+                mirage_fragment_subchannel_data_set_format(fragment, subchannel_format);
             }
 
             mirage_track_add_fragment(track, -1, fragment);
@@ -831,14 +817,7 @@ static gboolean mirage_parser_nrg_load_session_tao (MirageParserNrg *self, gint 
         if (fragment_len) {
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: creating data fragment\n", __debug__);
 
-            fragment = mirage_contextual_create_fragment(MIRAGE_CONTEXTUAL(self), MIRAGE_TYPE_DATA_FRAGMENT, self->priv->nrg_stream, error);
-            if (!fragment) {
-                MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to create fragment!\n", __debug__);
-                g_object_unref(track);
-                g_object_unref(session);
-                succeeded = FALSE;
-                goto end;
-            }
+            fragment = g_object_new(MIRAGE_TYPE_FRAGMENT, NULL);
 
             /* Main channel data */
             main_size = main_sectsize; /* We use the one from decoded mode code */
@@ -851,18 +830,18 @@ static gboolean mirage_parser_nrg_load_session_tao (MirageParserNrg *self, gint 
 
             mirage_fragment_set_length(fragment, fragment_len);
 
-            mirage_data_fragment_main_data_set_stream(MIRAGE_DATA_FRAGMENT(fragment), self->priv->nrg_stream);
-            mirage_data_fragment_main_data_set_offset(MIRAGE_DATA_FRAGMENT(fragment), main_offset);
-            mirage_data_fragment_main_data_set_size(MIRAGE_DATA_FRAGMENT(fragment), main_size);
-            mirage_data_fragment_main_data_set_format(MIRAGE_DATA_FRAGMENT(fragment), main_format);
+            mirage_fragment_main_data_set_stream(fragment, self->priv->nrg_stream);
+            mirage_fragment_main_data_set_offset(fragment, main_offset);
+            mirage_fragment_main_data_set_size(fragment, main_size);
+            mirage_fragment_main_data_set_format(fragment, main_format);
 
             /* Subchannel */
             if (sub_sectsize) {
                 subchannel_size = sub_sectsize; /* We use the one from decoded mode code */
                 subchannel_format = MIRAGE_SUBCHANNEL_PW96_INT | MIRAGE_SUBCHANNEL_INT; /* PW96 interleaved, internal */
 
-                mirage_data_fragment_subchannel_data_set_size(MIRAGE_DATA_FRAGMENT(fragment), subchannel_size);
-                mirage_data_fragment_subchannel_data_set_format(MIRAGE_DATA_FRAGMENT(fragment), subchannel_format);
+                mirage_fragment_subchannel_data_set_size(fragment, subchannel_size);
+                mirage_fragment_subchannel_data_set_format(fragment, subchannel_format);
             }
 
             mirage_track_add_fragment(track, -1, fragment);

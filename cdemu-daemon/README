@@ -314,14 +314,6 @@ control the daemon:
 
     - Returns supported image parsers.
 
-* EnumSupportedFragments (fragments)
-    + framgents: out; "a(ss)"
-        Array of structures containing information about supported fragments.
-        Each structure has two fields; fragment ID (string) and fragment name
-        (string).
-
-    - Returns supported fragments.
-
 * GetNumberOfDevices (number_of_devices)
     + number_of_devices: out; "i"
         Number of devices (int).

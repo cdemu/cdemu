@@ -26,14 +26,14 @@
  *
  * These functions represent the core of the libMirage API. Before the
  * library can be used, it must be initialized using mirage_initialize(),
- * which loads the plugins containing image parsers, data fragments and
- * file filters. When library is no longer needed, it can be shut down
- * using mirage_shutdown(), which unloads the plugins.
+ * which loads the plugins containing image parsers and file filters.
+ * When library is no longer needed, it can be shut down using
+ * mirage_shutdown(), which unloads the plugins.
  *
  * The core functions listed in this section enable enumeration of
- * supported parsers, data fragments and file filters. Most of the core
- * functionality of libMirage, such as loading images, is encapsulated
- * in #MirageContext object, which can be obtained using GLib's g_object_new().
+ * supported parsers and file filters. Most of the core functionality
+ * of libMirage, such as loading images, is encapsulated in #MirageContext
+ * object, which can be obtained using GLib's g_object_new().
  */
 
 #ifdef HAVE_CONFIG_H
@@ -50,10 +50,6 @@ static struct
     guint num_parsers;
     GType *parsers;
     MirageParserInfo *parsers_info;
-
-    guint num_fragments;
-    GType *fragments;
-    MirageFragmentInfo *fragments_info;
 
     guint num_file_filters;
     GType *file_filters;
@@ -85,18 +81,6 @@ static void initialize_parsers_list ()
         MirageParser *parser = g_object_new(libmirage.parsers[i], NULL);
         mirage_parser_info_copy(mirage_parser_get_info(parser), &libmirage.parsers_info[i]);
         g_object_unref(parser);
-    }
-}
-
-static void initialize_fragments_list ()
-{
-    libmirage.fragments = g_type_children(MIRAGE_TYPE_FRAGMENT, &libmirage.num_fragments);
-
-    libmirage.fragments_info = g_new0(MirageFragmentInfo, libmirage.num_fragments);
-    for (gint i = 0; i < libmirage.num_fragments; i++) {
-        MirageFragment *fragment = g_object_new(libmirage.fragments[i], NULL);
-        mirage_fragment_info_copy(mirage_fragment_get_info(fragment), &libmirage.fragments_info[i]);
-        g_object_unref(fragment);
     }
 }
 
@@ -176,9 +160,8 @@ gboolean mirage_initialize (GError **error)
 
     g_dir_close(plugins_dir);
 
-    /* *** Get parsers, fragments and file filters *** */
+    /* *** Get parsers and file filters *** */
     initialize_parsers_list();
-    initialize_fragments_list();
     initialize_file_filters_list();
 
     /* We're officially initialized now */
@@ -211,13 +194,6 @@ gboolean mirage_shutdown (GError **error)
     }
     g_free(libmirage.parsers_info);
     g_free(libmirage.parsers);
-
-    /* Free fragment info */
-    for (gint i = 0; i < libmirage.num_fragments; i++) {
-        mirage_fragment_info_free(&libmirage.fragments_info[i]);
-    }
-    g_free(libmirage.fragments_info);
-    g_free(libmirage.fragments);
 
     /* Free file filter info */
     for (gint i = 0; i < libmirage.num_file_filters; i++) {
@@ -314,86 +290,6 @@ gboolean mirage_enumerate_parsers (MirageEnumParserInfoCallback func, gpointer u
 
 
 /**
- * mirage_get_fragments_type:
- * @types: (out) (array length=num_fragments) (transfer none): array of fragments' #GType values
- * @num_fragments: (out): number of supported fragments
- * @error: (out) (allow-none): location to store error, or %NULL
- *
- * Retrieves #GType values for supported fragments.
- *
- * Returns: %TRUE on success, %FALSE on failure
- */
-gboolean mirage_get_fragments_type (const GType **types, gint *num_fragments, GError **error)
-{
-    /* Make sure libMirage is initialized */
-    if (!libmirage.initialized) {
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_LIBRARY_ERROR, "Library not initialized!");
-        return FALSE;
-    }
-
-    *types = libmirage.fragments;
-    *num_fragments = libmirage.num_fragments;
-
-    return TRUE;
-}
-
-/**
- * mirage_get_fragments_info:
- * @info: (out) (array length=num_fragments) (transfer none): array of fragments' information structures
- * @num_fragments: (out): number of supported fragments
- * @error: (out) (allow-none): location to store error, or %NULL
- *
- * Retrieves information structures for supported fragments.
- *
- * Returns: %TRUE on success, %FALSE on failure
- */
-gboolean mirage_get_fragments_info (const MirageFragmentInfo **info, gint *num_fragments, GError **error)
-{
-    /* Make sure libMirage is initialized */
-    if (!libmirage.initialized) {
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_LIBRARY_ERROR, "Library not initialized!");
-        return FALSE;
-    }
-
-    *info = libmirage.fragments_info;
-    *num_fragments = libmirage.num_fragments;
-
-    return TRUE;
-}
-
-/**
- * mirage_enumerate_fragments:
- * @func: (in) (scope call): callback function
- * @user_data: (in) (closure): data to be passed to callback function
- * @error: (out) (allow-none): location to store error, or %NULL
- *
- * Iterates over list of supported fragments, calling @func for each fragment.
- *
- * If @func returns %FALSE, the function immediately returns %FALSE.
- *
- * Returns: %TRUE on success, %FALSE on failure
- */
-gboolean mirage_enumerate_fragments (MirageEnumFragmentInfoCallback func, gpointer user_data, GError **error)
-{
-    /* Make sure libMirage is initialized */
-    if (!libmirage.initialized) {
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_LIBRARY_ERROR, "Library not initialized!");
-        return FALSE;
-    }
-
-    /* Go over all fragments */
-    for (gint i = 0; i < libmirage.num_fragments; i++) {
-        if (!(*func)(&libmirage.fragments_info[i], user_data)) {
-            g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_LIBRARY_ERROR, "Iteration has been cancelled!");
-            return FALSE;
-        }
-    }
-
-    return TRUE;
-}
-
-
-/**
  * mirage_get_file_filters_type:
  * @types: (out) (array length=num_file_filters) (transfer none): array of file filters' #GType values
  * @num_file_filters: (out): number of supported file filters
@@ -447,7 +343,7 @@ gboolean mirage_get_file_filters_info (const MirageFileFilterInfo **info, gint *
  * @user_data: (in) (closure): data to be passed to callback function
  * @error: (out) (allow-none): location to store error, or %NULL
  *
- * Iterates over list of supported file filters, calling @func for each fragment.
+ * Iterates over list of supported file filters, calling @func for each file filter.
  *
  * If @func returns %FALSE, the function immediately returns %FALSE.
  *

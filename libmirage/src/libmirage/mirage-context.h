@@ -23,7 +23,6 @@
 /* Forward declarations */
 #ifndef __GTK_DOC_IGNORE__
 typedef struct _MirageDisc MirageDisc;
-typedef struct _MirageFragment MirageFragment;
 #endif
 
 
@@ -106,8 +105,6 @@ void mirage_context_set_password_function (MirageContext *self, MiragePasswordFu
 gchar *mirage_context_obtain_password (MirageContext *self, GError **error);
 
 MirageDisc *mirage_context_load_image (MirageContext *self, gchar **filenames, GError **error);
-
-MirageFragment *mirage_context_create_fragment (MirageContext *self, GType fragment_interface, GInputStream *stream, GError **error);
 
 GInputStream *mirage_context_create_file_stream (MirageContext *self, const gchar *filename, GError **error);
 const gchar *mirage_context_get_file_stream_filename (MirageContext *self, GInputStream *stream);

@@ -24,22 +24,41 @@
 G_BEGIN_DECLS
 
 /**
- * MirageFragmentInfo:
- * @id: fragment ID
- * @name: fragment name
+ * MirageMainDataFormat:
+ * @MIRAGE_MAIN_DATA: binary data
+ * @MIRAGE_MAIN_AUDIO: audio data
+ * @MIRAGE_MAIN_AUDIO_SWAP: audio data that needs to be swapped
  *
- * A structure containing fragment information. It can be obtained with call to
- * mirage_fragment_get_info().
+ * Track file data formats.
  */
-typedef struct _MirageFragmentInfo MirageFragmentInfo;
-struct _MirageFragmentInfo
+typedef enum _MirageMainDataFormat
 {
-    gchar *id;
-    gchar *name;
-};
+    MIRAGE_MAIN_DATA  = 0x01,
+    MIRAGE_MAIN_AUDIO = 0x02,
+    MIRAGE_MAIN_AUDIO_SWAP = 0x04,
+} MirageMainDataFormat;
 
-void mirage_fragment_info_copy (const MirageFragmentInfo *info, MirageFragmentInfo *dest);
-void mirage_fragment_info_free (MirageFragmentInfo *info);
+/**
+ * MirageSubchannelDataFormat:
+ * @MIRAGE_SUBCHANNEL_INT: internal subchannel (i.e. included in track file)
+ * @MIRAGE_SUBCHANNEL_EXT: external subchannel (i.e. provided by separate file)
+ * @MIRAGE_SUBCHANNEL_PW96_INT: P-W subchannel, 96 bytes, interleaved
+ * @MIRAGE_SUBCHANNEL_PW96_LIN: P-W subchannel, 96 bytes, linear
+ * @MIRAGE_SUBCHANNEL_RW96: R-W subchannel, 96 bytes, deinterleaved
+ * @MIRAGE_SUBCHANNEL_PQ16: PQ subchannel, 16 bytes
+ *
+ * Subchannel file data formats.
+ */
+typedef enum _MirageSubchannelDataFormat
+{
+    MIRAGE_SUBCHANNEL_INT = 0x01,
+    MIRAGE_SUBCHANNEL_EXT = 0x02,
+
+    MIRAGE_SUBCHANNEL_PW96_INT = 0x10,
+    MIRAGE_SUBCHANNEL_PW96_LIN = 0x20,
+    MIRAGE_SUBCHANNEL_RW96     = 0x40,
+    MIRAGE_SUBCHANNEL_PQ16     = 0x80,
+} MirageSubchannelDataFormat;
 
 
 /**********************************************************************\
@@ -74,10 +93,6 @@ struct _MirageFragment
 /**
  * MirageFragmentClass:
  * @parent_class: the parent class
- * @can_handle_data_format: checks whether fragment can handle data stored in stream
- * @use_the_rest_of_file: uses the rest of data file
- * @read_main_data: reads main channel data for sector at specified address
- * @read_subchannel_data: reads subchannel data for sector at specified address
  * @signal_layout_changed: "layout-changed" signal identifier
  *
  * The class structure for the <structname>MirageFragment</structname> type.
@@ -86,14 +101,6 @@ struct _MirageFragmentClass
 {
     MirageObjectClass parent_class;
 
-    /* Class members */
-    gboolean (*can_handle_data_format) (MirageFragment *self, GInputStream *stream, GError **error);
-
-    gboolean (*use_the_rest_of_file) (MirageFragment *self, GError **error);
-
-    gboolean (*read_main_data) (MirageFragment *self, gint address, guint8 **buffer, gint *length, GError **error);
-    gboolean (*read_subchannel_data) (MirageFragment *self, gint address, guint8 **buffer, gint *length, GError **error);
-
     /* Signals */
     gint signal_layout_changed;
 };
@@ -101,12 +108,7 @@ struct _MirageFragmentClass
 /* Used by MIRAGE_TYPE_FRAGMENT */
 GType mirage_fragment_get_type (void);
 
-
-void mirage_fragment_generate_info (MirageFragment *self, const gchar *id, const gchar *name);
-const MirageFragmentInfo *mirage_fragment_get_info (MirageFragment *self);
-
-gboolean mirage_fragment_can_handle_data_format (MirageFragment *self, GInputStream *stream, GError **error);
-
+/* Address/length */
 void mirage_fragment_set_address (MirageFragment *self, gint address);
 gint mirage_fragment_get_address (MirageFragment *self);
 
@@ -115,8 +117,30 @@ gint mirage_fragment_get_length (MirageFragment *self);
 
 gboolean mirage_fragment_use_the_rest_of_file (MirageFragment *self, GError **error);
 
+/* Main data */
+void mirage_fragment_main_data_set_stream (MirageFragment *self, GInputStream *stream);
+const gchar *mirage_fragment_main_data_get_filename (MirageFragment *self);
+void mirage_fragment_main_data_set_offset (MirageFragment *self, guint64 offset);
+guint64 mirage_fragment_main_data_get_offset (MirageFragment *self);
+void mirage_fragment_main_data_set_size (MirageFragment *self, gint size);
+gint mirage_fragment_main_data_get_size (MirageFragment *self);
+void mirage_fragment_main_data_set_format (MirageFragment *self, gint format);
+gint mirage_fragment_main_data_get_format (MirageFragment *self);
+
 gboolean mirage_fragment_read_main_data (MirageFragment *self, gint address, guint8 **buffer, gint *length, GError **error);
+
+/* Subchannel */
+void mirage_fragment_subchannel_data_set_stream (MirageFragment *self, GInputStream *stream);
+const gchar *mirage_fragment_subchannel_data_get_filename (MirageFragment *self);
+void mirage_fragment_subchannel_data_set_offset (MirageFragment *self, guint64 offset);
+guint64 mirage_fragment_subchannel_data_get_offset (MirageFragment *self);
+void mirage_fragment_subchannel_data_set_size (MirageFragment *self, gint size);
+gint mirage_fragment_subchannel_data_get_size (MirageFragment *self);
+void mirage_fragment_subchannel_data_set_format (MirageFragment *self, gint format);
+gint mirage_fragment_subchannel_data_get_format (MirageFragment *self);
+
 gboolean mirage_fragment_read_subchannel_data (MirageFragment *self, gint address, guint8 **buffer, gint *length, GError **error);
+
 
 G_END_DECLS
 

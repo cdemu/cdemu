@@ -126,20 +126,6 @@ static GVariantBuilder *encode_file_filters ()
 }
 
 
-/* Helper that encodes the list of supported fragments */
-static gboolean append_fragment_to_builder (MirageFragmentInfo *info, GVariantBuilder *builder)
-{
-    g_variant_builder_add(builder, "(ss)", info->id, info->name);
-    return TRUE;
-}
-
-static GVariantBuilder *encode_fragments ()
-{
-    GVariantBuilder *builder = g_variant_builder_new(G_VARIANT_TYPE("a(ss)"));
-    mirage_enumerate_fragments((MirageEnumFragmentInfoCallback)append_fragment_to_builder, builder, NULL);
-    return builder;
-}
-
 /* D-Bus method handler */
 static void cdemu_daemon_dbus_handle_method_call (GDBusConnection *connection G_GNUC_UNUSED, const gchar *sender G_GNUC_UNUSED, const gchar *object_path G_GNUC_UNUSED, const gchar *interface_name G_GNUC_UNUSED, const gchar *method_name, GVariant *parameters, GDBusMethodInvocation *invocation, CdemuDaemon *self)
 {
@@ -291,10 +277,6 @@ static void cdemu_daemon_dbus_handle_method_call (GDBusConnection *connection G_
     } else if (!g_strcmp0(method_name, "EnumSupportedFileFilters")) {
         /* *** EnumSupportedFileFilters *** */
         ret = g_variant_new("(a(ssa(ss)))", encode_file_filters());
-        succeeded = TRUE;
-    } else if (!g_strcmp0(method_name, "EnumSupportedFragments")) {
-        /* *** EnumSupportedFragments *** */
-        ret = g_variant_new("(a(ss))", encode_fragments());
         succeeded = TRUE;
     } else {
         g_set_error(&error, CDEMU_ERROR, CDEMU_ERROR_INVALID_ARGUMENT, "Invalid method name '%s'!", method_name);
@@ -497,9 +479,6 @@ static const gchar introspection_xml[] =
     "        </method>"
     "        <method name='EnumSupportedFileFilters'>"
     "            <arg name='filters' type='a(ssa(ss))' direction='out'/>"
-    "        </method>"
-    "        <method name='EnumSupportedFragments'>"
-    "            <arg name='fragments' type='a(ss)' direction='out'/>"
     "        </method>"
 
     "        <!-- Device control methods -->"

@@ -1,8 +1,3 @@
-set (fragments_LIST
-    fragment-raw
-    fragment-sndfile
-)
-
 set (filters_LIST
     filter-cso
     filter-daa
@@ -50,11 +45,9 @@ set (mimetype_FILES
 
 set (libmirage_HEADERS
     src/libmirage/mirage.h
-    src/libmirage/mirage-audio-fragment.h
     src/libmirage/mirage-cdtext-coder.h
     src/libmirage/mirage-context.h
     src/libmirage/mirage-contextual.h
-    src/libmirage/mirage-data-fragment.h
     src/libmirage/mirage-debug.h
     src/libmirage/mirage-disc.h
     src/libmirage/mirage-disc-structures.h
@@ -75,11 +68,9 @@ set (libmirage_HEADERS
 
 set (libmirage_SOURCES
     src/libmirage/mirage.c
-    src/libmirage/mirage-audio-fragment.c
     src/libmirage/mirage-cdtext-coder.c
     src/libmirage/mirage-context.c
     src/libmirage/mirage-contextual.c
-    src/libmirage/mirage-data-fragment.c
     src/libmirage/mirage-disc.c
     src/libmirage/mirage-error.c
     src/libmirage/mirage-file-filter.c
@@ -94,16 +85,6 @@ set (libmirage_SOURCES
     src/libmirage/mirage-track.c
     src/libmirage/mirage-utils.c
     src/libmirage/mirage-version.c
-)
-
-set (fragment-raw_SOURCES
-    src/fragments/fragment-raw/fragment-raw-fragment.c
-    src/fragments/fragment-raw/fragment-raw-plugin.c
-)
-
-set (fragment-sndfile_SOURCES
-    src/fragments/fragment-sndfile/fragment-sndfile-plugin.c
-    src/fragments/fragment-sndfile/fragment-sndfile-fragment.c
 )
 
 set (filter-xz_SOURCES

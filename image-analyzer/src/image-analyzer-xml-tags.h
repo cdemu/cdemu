@@ -101,7 +101,6 @@
 #define TAG_ADDRESS "address"
 
 #define TAG_FRAGMENT "fragment"
-#define TAG_FRAGMENT_ID "fragment-id"
 #define TAG_ADDRESS "address"
 #define TAG_LENGTH "length"
 #define TAG_MAIN_NAME "main-name"
@@ -112,8 +111,5 @@
 #define TAG_SUBCHANNEL_OFFSET "subchannel-offset"
 #define TAG_SUBCHANNEL_SIZE "subchannel-size"
 #define TAG_SUBCHANNEL_FORMAT "subchannel-format"
-#define TAG_ADDRESS "address"
-#define TAG_OFFSET "offset"
-
 
 #endif /* __IMAGE_ANALYZER_XML_TAGS_H__ */

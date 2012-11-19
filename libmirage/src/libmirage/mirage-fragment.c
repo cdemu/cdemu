@@ -20,29 +20,21 @@
 /**
  * SECTION: mirage-fragment
  * @title: MirageFragment
- * @short_description: Base object for fragment implementations.
- * @see_also: #MirageAudioFragment, #MirageDataFragment
+ * @short_description: Fragment object.
  * @include: mirage-fragment.h
  *
- * #MirageFragment object is a base object for fragment implementations.
- * It provides functions that are used by image parsers to provide access
- * to data in image files.
+ * #MirageFragment object represents an interface between a #MirageTrack
+ * and data stream(s) containing the data. It allows tracks to read main
+ * and subchannel data from the streams, which is then fed to sectors.
+ * When constructing a track, a parser will typically create and append
+ * at least one fragment.
  *
- * #MirageFragment provides two virtual functions: mirage_fragment_get_info(),
- * mirage_fragment_can_handle_data_format(). These must be implemented
- * by fragment implementations which derive from #MirageFragment object.
- *
- * Every fragment implementation needs to implement one of the following
- * fragment interfaces: #MirageDataFragment or #MirageAudioFragment.
- * Which interface a fragment implementation implements depends on the
- * way the implementation handles data.
- *
- * While fragment implementations are usually obtained from context
- * using mirage_context_create_fragment(), the default implementation
- * can be obtained using g_object_new() and MIRAGE_TYPE_FRAGMENT. The
- * default fragment object implementation provides so called "NULL"
- * fragment, which returns no data, and is used by libMirage to represent
- * data in tracks' pregaps and postgaps.
+ * A #MirageFragment object is obtained using g_object_new() function.
+ * Both main data file stream and subchannel data file stream can be set
+ * using mirage_fragment_main_data_set_stream() and mirage_fragment_subchannel_data_set_stream()
+ * functions. If no streams are set, a fragment acts as a "NULL" fragment,
+ * and can be used to represent zero-filled pregaps and postgaps in
+ * tracks.
  */
 
 #ifdef HAVE_CONFIG_H
@@ -61,50 +53,19 @@
 
 struct _MirageFragmentPrivate
 {
-    MirageFragmentInfo info;
-
     gint address; /* Address (relative to track start) */
     gint length; /* Length, in sectors */
+
+    GInputStream *main_stream; /* Main data stream */
+    gint main_size; /* Main data sector size */
+    gint main_format; /* Main data format */
+    guint64 main_offset; /* Offset in main data file */
+
+    GInputStream *subchannel_stream; /* Subchannel data stream */
+    gint subchannel_size; /* Subchannel data sector size*/
+    gint subchannel_format; /* Subchannel data format */
+    guint64 subchannel_offset; /* Offset in subchannel data file */
 };
-
-
-/**********************************************************************\
- *                          Fragment info API                          *
-\**********************************************************************/
-static void mirage_fragment_info_generate (MirageFragmentInfo *info, const gchar *id, const gchar *name)
-{
-    /* Free old fields */
-    mirage_fragment_info_free(info);
-
-    /* Copy ID and name */
-    info->id = g_strdup(id);
-    info->name = g_strdup(name);
-}
-
-/**
- * mirage_fragment_info_copy:
- * @info: (in): a #MirageParserInfo to copy data from
- * @dest: (in): a #MirageParserInfo to copy data to
- *
- * Copies parser information from @info to @dest.
- */
-void mirage_fragment_info_copy (const MirageFragmentInfo *info, MirageFragmentInfo *dest)
-{
-    dest->id = g_strdup(info->id);
-    dest->name = g_strdup(info->name);
-}
-
-/**
- * mirage_fragment_info_free:
- * @info: (in): a #MirageParserInfo to free
- *
- * Frees the allocated fields in @info (but not the structure itself!).
- */
-void mirage_fragment_info_free (MirageFragmentInfo *info)
-{
-    g_free(info->id);
-    g_free(info->name);
-}
 
 
 /**********************************************************************\
@@ -123,54 +84,8 @@ static void mirage_fragment_commit_bottomup_change (MirageFragment *self)
 
 
 /**********************************************************************\
- *                             Public API                             *
+ *                      Address/length functions                      *
 \**********************************************************************/
-/**
- * mirage_fragment_generate_info:
- * @self: a #MirageFragment
- * @id: (in): fragment ID
- * @name: (in): fragment name
- *
- * Generates fragment information from the input fields. It is intended as a function
- * for creating fragment information in fragment implementations.
- */
-void mirage_fragment_generate_info (MirageFragment *self, const gchar *id, const gchar *name)
-{
-    mirage_fragment_info_generate(&self->priv->info, id, name);
-}
-
-/**
- * mirage_fragment_get_info:
- * @self: a #MirageFragment
- *
- * Retrieves fragment information.
- *
- * Returns: (transfer none): a pointer to fragment information structure. The
- * structure belongs to object and should not be modified.
- */
-const MirageFragmentInfo *mirage_fragment_get_info (MirageFragment *self)
-{
-    return &self->priv->info;
-}
-
-
-/**
- * mirage_fragment_can_handle_data_format:
- * @self: a #MirageFragment
- * @stream: (in): data stream
- * @error: (out) (allow-none): location to store error, or %NULL
- *
- * Checks whether fragment can handle data stored in @stream.
- *
- * Returns: %TRUE if fragment can handle data file, %FALSE if not
- */
-gboolean mirage_fragment_can_handle_data_format (MirageFragment *self, GInputStream *stream, GError **error)
-{
-    /* Provided by implementation */
-    return MIRAGE_FRAGMENT_GET_CLASS(self)->can_handle_data_format(self, stream, error);
-}
-
-
 /**
  * mirage_fragment_set_address:
  * @self: a #MirageFragment
@@ -266,8 +181,191 @@ gint mirage_fragment_get_length (MirageFragment *self)
  */
 gboolean mirage_fragment_use_the_rest_of_file (MirageFragment *self, GError **error)
 {
-    /* Provided by implementation */
-    return MIRAGE_FRAGMENT_GET_CLASS(self)->use_the_rest_of_file(self, error);
+    GError *local_error = NULL;
+
+    goffset file_size;
+    gint full_size;
+    gint fragment_len;
+
+    if (!self->priv->main_stream) {
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: data file stream not set!\n", __debug__);
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_FRAGMENT_ERROR, "Track data file stream not set!");
+        return FALSE;
+    }
+
+    /* Get file length */
+    if (!g_seekable_seek(G_SEEKABLE(self->priv->main_stream), 0, G_SEEK_END, NULL, &local_error)) {
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to seek to the end of track data file stream: %s\n", __debug__, local_error->message);
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_FRAGMENT_ERROR, "Failed to seek to the end of track data file stream: %s", local_error->message);
+        g_error_free(local_error);
+        return FALSE;
+    }
+    file_size = g_seekable_tell(G_SEEKABLE(self->priv->main_stream));
+
+    /* Use all data from offset on... */
+    full_size = self->priv->main_size;
+    if (self->priv->subchannel_format & MIRAGE_SUBCHANNEL_INT) {
+        full_size += self->priv->subchannel_size;
+    }
+
+    fragment_len = (file_size - self->priv->main_offset) / full_size;
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_FRAGMENT, "%s: using the rest of file (%d sectors)\n", __debug__, fragment_len);
+
+    /* Set the length */
+    mirage_fragment_set_length(MIRAGE_FRAGMENT(self), fragment_len);
+    return TRUE;
+}
+
+
+
+/**********************************************************************\
+ *                           Main data functions                      *
+\**********************************************************************/
+/**
+ * mirage_fragment_main_data_set_stream:
+ * @self: a #MirageFragment
+ * @stream: (in) (transfer full): a #GInputStream on main data file
+ *
+ * Sets main data stream.
+ */
+void mirage_fragment_main_data_set_stream (MirageFragment *self, GInputStream *stream)
+{
+    /* Release old stream */
+    if (self->priv->main_stream) {
+        g_object_unref(self->priv->main_stream);
+        self->priv->main_stream = NULL;
+    }
+
+    /* Set new stream */
+    self->priv->main_stream = stream;
+    g_object_ref(stream);
+}
+
+/**
+ * mirage_fragment_main_data_get_filename:
+ * @self: a #MirageFragment
+ *
+ * Retrieves filename of main data file.
+ *
+ * Returns: (transfer none): pointer to main data file name string.
+ * The string belongs to object and should not be modified.
+ */
+const gchar *mirage_fragment_main_data_get_filename (MirageFragment *self)
+{
+    /* Return file name */
+    return mirage_contextual_get_file_stream_filename(MIRAGE_CONTEXTUAL(self), self->priv->main_stream);
+}
+
+/**
+ * mirage_fragment_main_data_set_offset:
+ * @self: a #MirageFragment
+ * @offset: (in): main data file offset
+ *
+ * Sets main data file offset.
+ */
+void mirage_fragment_main_data_set_offset (MirageFragment *self, guint64 offset)
+{
+    /* Set offset */
+    self->priv->main_offset = offset;
+}
+
+/**
+ * mirage_fragment_main_data_get_offset:
+ * @self: a #MirageFragment
+ *
+ * Retrieves main data file offset.
+ *
+ * Returns: main data file offset
+ */
+guint64 mirage_fragment_main_data_get_offset (MirageFragment *self)
+{
+    /* Return offset */
+    return self->priv->main_offset;
+}
+
+/**
+ * mirage_fragment_main_data_set_size:
+ * @self: a #MirageFragment
+ * @size: (in): main data file sector size
+ *
+ * Sets main data file sector size.
+ */
+void mirage_fragment_main_data_set_size (MirageFragment *self, gint size)
+{
+    /* Set sector size */
+    self->priv->main_size = size;
+}
+
+/**
+ * mirage_fragment_main_data_get_size:
+ * @self: a #MirageFragment
+ *
+ * Retrieves main data file sector size.
+ *
+ * Returns: main data file sector size
+ */
+gint mirage_fragment_main_data_get_size (MirageFragment *self)
+{
+    /* Return sector size */
+    return self->priv->main_size;
+}
+
+/**
+ * mirage_fragment_main_data_set_format:
+ * @self: a #MirageFragment
+ * @format: (in): main data file format
+ *
+ * Sets main data file format. @format must be one of #MirageMainDataFormat.
+ */
+void mirage_fragment_main_data_set_format (MirageFragment *self, gint format)
+{
+    /* Set format */
+    self->priv->main_format = format;
+}
+
+/**
+ * mirage_fragment_main_data_get_format:
+ * @self: a #MirageFragment
+ *
+ * Retrieves main data file format.
+ *
+ * Returns: main data file format
+ */
+gint mirage_fragment_main_data_get_format (MirageFragment *self)
+{
+    /* Return format */
+    return self->priv->main_format;
+}
+
+/**
+ * mirage_fragment_main_data_get_position:
+ * @self: a #MirageFragment
+ * @address: (in): address
+ *
+ * Calculates position of data for sector at address @address within
+ * main data file and stores it in @position.
+ *
+ * Returns: position in main data file
+ */
+static guint64 mirage_fragment_main_data_get_position (MirageFragment *self, gint address)
+{
+    gint size_full;
+
+    /* Calculate 'full' sector size:
+        -> track data + subchannel data, if there's internal subchannel
+        -> track data, if there's external or no subchannel
+    */
+
+    size_full = self->priv->main_size;
+    if (self->priv->subchannel_format & MIRAGE_SUBCHANNEL_INT) {
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_FRAGMENT, "%s: internal subchannel, adding %d to sector size %d\n", __debug__, self->priv->subchannel_size, size_full);
+        size_full += self->priv->subchannel_size;
+    }
+
+    /* We assume address is relative address */
+    /* guint64 casts are required so that the product us 64-bit; product of two
+       32-bit integers would be 32-bit, which would be truncated at overflow... */
+    return self->priv->main_offset + (guint64)address * (guint64)size_full;
 }
 
 
@@ -287,10 +385,211 @@ gboolean mirage_fragment_use_the_rest_of_file (MirageFragment *self, GError **er
  *
  * Returns: %TRUE on success, %FALSE on failure
  */
-gboolean mirage_fragment_read_main_data (MirageFragment *self, gint address, guint8 **buffer, gint *length, GError **error)
+gboolean mirage_fragment_read_main_data (MirageFragment *self, gint address, guint8 **buffer, gint *length, GError **error G_GNUC_UNUSED)
 {
-    /* Provided by implementation */
-    return MIRAGE_FRAGMENT_GET_CLASS(self)->read_main_data(self, address, buffer, length, error);
+    guint64 position;
+    gint read_len;
+
+    /* Clear both variables */
+    *length = 0;
+    if (buffer) {
+        *buffer = NULL;
+    }
+
+    /* We need file to read data from... but if it's missing, we don't read
+       anything and this is not considered an error */
+    if (!self->priv->main_stream) {
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_FRAGMENT, "%s: no data file stream!\n", __debug__);
+        return TRUE;
+    }
+
+    /* Determine position within file */
+    position = mirage_fragment_main_data_get_position(self, address);
+
+    /* Length */
+    *length = self->priv->main_size;
+
+    /* Data */
+    if (buffer) {
+        guint8 *data_buffer = g_malloc0(self->priv->main_size);
+
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_FRAGMENT, "%s: reading from position 0x%llX\n", __debug__, position);
+
+        /* Note: we ignore all errors here in order to be able to cope with truncated mini images */
+        g_seekable_seek(G_SEEKABLE(self->priv->main_stream), position, G_SEEK_SET, NULL, NULL);
+        read_len = g_input_stream_read(self->priv->main_stream, data_buffer, self->priv->main_size, NULL, NULL);
+
+        /*if (read_len != self->priv->main_size) {
+            mirage_error(MIRAGE_E_READFAILED, error);
+            g_fre(data_buffer);
+            return FALSE;
+        }*/
+
+        /* Binary audio files may need to be swapped from BE to LE */
+        if (self->priv->main_format == MIRAGE_MAIN_AUDIO_SWAP) {
+            for (gint i = 0; i < read_len; i+=2) {
+                guint16 *ptr = (guint16 *)&data_buffer[i];
+                *ptr = GUINT16_SWAP_LE_BE(*ptr);
+            }
+        }
+
+        *buffer = data_buffer;
+    }
+
+    return TRUE;
+}
+
+
+/**********************************************************************\
+ *                        Subchannel data functions                   *
+\**********************************************************************/
+/**
+ * mirage_fragment_subchannel_data_set_stream:
+ * @self: a #MirageFragment
+ * @stream: (in) (transfer full): a #GInputStream on subchannel data file
+ *
+ * Sets subchannel data stream.
+ */
+void mirage_fragment_subchannel_data_set_stream (MirageFragment *self, GInputStream *stream)
+{
+    /* Release old stream */
+    if (self->priv->subchannel_stream) {
+        g_object_unref(self->priv->subchannel_stream);
+        self->priv->subchannel_stream = NULL;
+    }
+
+    /* Set new stream */
+    self->priv->subchannel_stream = stream;
+    g_object_ref(stream);
+}
+
+/**
+ * mirage_fragment_subchannel_data_get_filename:
+ * @self: a #MirageFragment
+ *
+ * Retrieves subchannel data file name.
+ *
+ * Returns: (transfer none): pointer to subchannel data file name string.
+ * The string belongs to object and should not be modified.
+ */
+const gchar *mirage_fragment_subchannel_data_get_filename (MirageFragment *self)
+{
+    /* Return file name */
+    return mirage_contextual_get_file_stream_filename(MIRAGE_CONTEXTUAL(self), self->priv->subchannel_stream);
+}
+
+/**
+ * mirage_fragment_subchannel_data_set_offset:
+ * @self: a #MirageFragment
+ * @offset: (in): subchannel data file offset
+ *
+ * Sets subchannel data file offset.
+ */
+void mirage_fragment_subchannel_data_set_offset (MirageFragment *self, guint64 offset)
+{
+    /* Set offset */
+    self->priv->subchannel_offset = offset;
+}
+
+/**
+ * mirage_fragment_subchannel_data_get_offset:
+ * @self: a #MirageFragment
+ *
+ * Retrieves subchannel data file offset.
+ *
+ * Returns: subchannel data file offset
+ */
+guint64 mirage_fragment_subchannel_data_get_offset (MirageFragment *self)
+{
+    /* Return offset */
+    return self->priv->subchannel_offset;
+}
+
+/**
+ * mirage_fragment_subchannel_data_set_size:
+ * @self: a #MirageFragment
+ * @size: (in): subchannel data file sector size
+ *
+ * Sets subchannel data file sector size.
+ */
+void mirage_fragment_subchannel_data_set_size (MirageFragment *self, gint size)
+{
+    /* Set sector size */
+    self->priv->subchannel_size = size;
+}
+
+/**
+ * mirage_fragment_subchannel_data_get_size:
+ * @self: a #MirageFragment
+ *
+ * Retrieves subchannel data file sector size.
+ *
+ * Returns: subchannel data file sector size
+ */
+gint mirage_fragment_subchannel_data_get_size (MirageFragment *self)
+{
+    /* Return sector size */
+    return self->priv->subchannel_size;
+}
+
+/**
+ * mirage_fragment_subchannel_data_set_format:
+ * @self: a #MirageFragment
+ * @format: (in): subchannel data file format
+ *
+ * Sets subchannel data file format. @format must be a combination of
+ * #MirageSubchannelDataFormat.
+ */
+void mirage_fragment_subchannel_data_set_format (MirageFragment *self, gint format)
+{
+    /* Set format */
+    self->priv->subchannel_format = format;
+}
+
+/**
+ * mirage_fragment_subchannel_data_get_format:
+ * @self: a #MirageFragment
+ *
+ * Retrieves subchannel data file format.
+ *
+ * Returns: subchannel data file format
+ */
+gint mirage_fragment_subchannel_data_get_format (MirageFragment *self)
+{
+    /* Return format */
+    return self->priv->subchannel_format;
+}
+
+/**
+ * mirage_fragment_subchannel_data_get_position:
+ * @self: a #MirageFragment
+ * @address: (in): address
+ *
+ * Calculates position of data for sector at address @address within
+ * subchannel data file and stores it in @position.
+ *
+ * Returns: position in subchannel data file
+ */
+static guint64 mirage_fragment_subchannel_data_get_position (MirageFragment *self, gint address)
+{
+    guint64 offset = 0;
+
+    /* Either we have internal or external subchannel */
+    if (self->priv->subchannel_format & MIRAGE_SUBCHANNEL_INT) {
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_FRAGMENT, "%s: internal subchannel, position is at end of main channel data\n", __debug__);
+        /* Subchannel is contained in track file; get position in track file
+           for that sector, and add to it length of track data sector */
+        offset = mirage_fragment_main_data_get_position(self, address);
+        offset += self->priv->main_size;
+    } else if (self->priv->subchannel_format & MIRAGE_SUBCHANNEL_EXT) {
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_FRAGMENT, "%s: external subchannel, calculating position\n", __debug__);
+        /* We assume address is relative address */
+        /* guint64 casts are required so that the product us 64-bit; product of two
+           32-bit integers would be 32-bit, which would be truncated at overflow... */
+        offset = self->priv->subchannel_offset + (guint64)address * (guint64)self->priv->subchannel_size;
+    }
+
+    return offset;
 }
 
 /**
@@ -309,50 +608,84 @@ gboolean mirage_fragment_read_main_data (MirageFragment *self, gint address, gui
  *
  * Returns: %TRUE on success, %FALSE on failure
  */
-gboolean mirage_fragment_read_subchannel_data (MirageFragment *self, gint address, guint8 **buffer, gint *length, GError **error)
+gboolean mirage_fragment_read_subchannel_data (MirageFragment *self, gint address, guint8 **buffer, gint *length, GError **error G_GNUC_UNUSED)
 {
-    /* Provided by implementation */
-    return MIRAGE_FRAGMENT_GET_CLASS(self)->read_subchannel_data(self, address, buffer, length, error);
-}
+    GInputStream *stream;
+    guint64 position;
+    gint read_len;
 
-
-/**********************************************************************\
- *                Default implementation: NULL fragment               *
-\**********************************************************************/
-static gboolean mirage_fragment_null_can_handle_data_format (MirageFragment *self G_GNUC_UNUSED, GInputStream *stream G_GNUC_UNUSED, GError **error)
-{
-    /* This should never get called, anyway */
-    g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_CANNOT_HANDLE, "Fragment cannot handle given data!");
-    return FALSE;
-}
-
-static gboolean mirage_fragment_null_use_the_rest_of_file (MirageFragment *self G_GNUC_UNUSED, GError **error G_GNUC_UNUSED)
-{
-    /* No file, nothing to use */
-    return TRUE;
-}
-
-static gboolean mirage_fragment_null_read_main_data (MirageFragment *self, gint address G_GNUC_UNUSED, guint8 **buffer, gint *length, GError **error G_GNUC_UNUSED)
-{
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_FRAGMENT, "%s: no data in NULL fragment\n", __debug__);
-
-    /* Nothing to read */
+    /* Clear both variables */
     *length = 0;
     if (buffer) {
         *buffer = NULL;
     }
 
-    return TRUE;
-}
+    /* If there's no subchannel, return 0 for the length */
+    if (!self->priv->subchannel_size) {
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_FRAGMENT, "%s: no subchannel (size = 0)!\n", __debug__);
+        return TRUE;
+    }
 
-static gboolean mirage_fragment_null_read_subchannel_data (MirageFragment *self, gint address G_GNUC_UNUSED, guint8 **buffer, gint *length, GError **error G_GNUC_UNUSED)
-{
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_FRAGMENT, "%s: no data in NULL fragment\n", __debug__);
+    /* We need file to read data from... but if it's missing, we don't read
+       anything and this is not considered an error */
+    if (self->priv->subchannel_format & MIRAGE_SUBCHANNEL_INT) {
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_FRAGMENT, "%s: internal subchannel, using track file handle\n", __debug__);
+        stream = self->priv->main_stream;
+    } else {
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_FRAGMENT, "%s: external subchannel, using track file handle\n", __debug__);
+        stream = self->priv->subchannel_stream;
+    }
 
-    /* Nothing to read */
-    *length = 0;
+    if (!stream) {
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_FRAGMENT, "%s: no stream!\n", __debug__);
+        return TRUE;
+    }
+
+
+    /* Determine position within file */
+    position = mirage_fragment_subchannel_data_get_position(self, address);
+
+
+    /* Length */
+    *length = 96; /* Always 96, because we do the processing here */
+
+    /* Data */
     if (buffer) {
-        *buffer = NULL;
+        guint8 *data_buffer = g_malloc0(96);
+        guint8 *raw_buffer = g_malloc0(self->priv->subchannel_size);
+
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_FRAGMENT, "%s: reading from position 0x%llX\n", __debug__, position);
+        /* We read into temporary buffer, because we might need to perform some
+           magic on the data */
+        g_seekable_seek(G_SEEKABLE(stream), position, G_SEEK_SET, NULL, NULL);
+        read_len = g_input_stream_read(stream, raw_buffer, self->priv->subchannel_size, NULL, NULL);
+
+        if (read_len != self->priv->subchannel_size) {
+            /*mirage_error(MIRAGE_E_READFAILED, error);
+            g_free(raw_buffer);
+            g_free(data_buffer);
+            return FALSE;*/
+        }
+
+        /* If we happen to deal with anything that's not RAW 96-byte interleaved PW,
+           we transform it into that here... less fuss for upper level stuff this way */
+        if (self->priv->subchannel_format & MIRAGE_SUBCHANNEL_PW96_LIN) {
+            /* 96-byte deinterleaved PW; grab each subchannel and interleave it
+               into destination buffer */
+            for (gint i = 0; i < 8; i++) {
+                mirage_helper_subchannel_interleave(7 - i, raw_buffer + i*12, data_buffer);
+            }
+        } else if (self->priv->subchannel_format & MIRAGE_SUBCHANNEL_PW96_INT) {
+            /* 96-byte interleaved PW; just copy it */
+            memcpy(data_buffer, raw_buffer, 96);
+        } else if (self->priv->subchannel_format & MIRAGE_SUBCHANNEL_PQ16) {
+            /* 16-byte PQ; interleave it and pretend everything else's 0 */
+            mirage_helper_subchannel_interleave(SUBCHANNEL_Q, raw_buffer, data_buffer);
+        }
+
+        g_free(raw_buffer);
+
+        *buffer = data_buffer;
     }
 
     return TRUE;
@@ -369,38 +702,39 @@ static void mirage_fragment_init (MirageFragment *self)
 {
     self->priv = MIRAGE_FRAGMENT_GET_PRIVATE(self);
 
-    /* Make sure all fields are empty */
-    memset(&self->priv->info, 0, sizeof(self->priv->info));
+    self->priv->main_stream = NULL;
+    self->priv->main_size = 0;
+    self->priv->main_format = 0;
+    self->priv->main_offset = 0;
 
-    /* Default fragment implementation is NULL fragment */
-    mirage_fragment_generate_info(self,
-        "FRAGMENT-NULL",
-        "NULL Fragment"
-    );
+    self->priv->subchannel_stream = NULL;
+    self->priv->subchannel_size = 0;
+    self->priv->subchannel_format = 0;
+    self->priv->subchannel_offset = 0;
 }
 
-static void mirage_fragment_finalize (GObject *gobject)
+static void mirage_fragment_dispose (GObject *gobject)
 {
-    MirageFragment *self = MIRAGE_FRAGMENT(gobject);
+    MirageFragment*self = MIRAGE_FRAGMENT(gobject);
 
-    /* Free info structure */
-    mirage_fragment_info_free(&self->priv->info);
+    if (self->priv->main_stream) {
+        g_object_unref(self->priv->main_stream);
+        self->priv->main_stream = NULL;
+    }
+    if (self->priv->subchannel_stream) {
+        g_object_unref(self->priv->subchannel_stream);
+        self->priv->subchannel_stream = NULL;
+    }
 
     /* Chain up to the parent class */
-    return G_OBJECT_CLASS(mirage_fragment_parent_class)->finalize(gobject);
+    return G_OBJECT_CLASS(mirage_fragment_parent_class)->dispose(gobject);
 }
 
 static void mirage_fragment_class_init (MirageFragmentClass *klass)
 {
     GObjectClass *gobject_class = G_OBJECT_CLASS(klass);
 
-    gobject_class->finalize = mirage_fragment_finalize;
-
-    /* Default implementation: NULL fragment */
-    klass->can_handle_data_format = mirage_fragment_null_can_handle_data_format;
-    klass->use_the_rest_of_file = mirage_fragment_null_use_the_rest_of_file;
-    klass->read_main_data = mirage_fragment_null_read_main_data;
-    klass->read_subchannel_data = mirage_fragment_null_read_subchannel_data;
+    gobject_class->dispose = mirage_fragment_dispose;
 
     /* Register private structure */
     g_type_class_add_private(klass, sizeof(MirageFragmentPrivate));

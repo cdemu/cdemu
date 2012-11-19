@@ -1,8 +1,6 @@
-mirage_audio_fragment_get_type
 mirage_cdtext_coder_get_type
 mirage_context_get_type
 mirage_contextual_get_type
-mirage_data_fragment_get_type
 mirage_disc_get_type
 mirage_error_get_type
 mirage_file_filter_get_type

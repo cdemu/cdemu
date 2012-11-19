@@ -404,64 +404,6 @@ end:
 
 
 /**********************************************************************\
- *                   Public API: fragment creation                    *
-\**********************************************************************/
-/**
- * mirage_context_create_fragment:
- * @self: a #MirageContext
- * @fragment_interface: (in): interface that fragment should implement
- * @stream: (in): the data stream that fragment should be able to handle
- * @error: (out) (allow-none): location to store error, or %NULL
- *
- * Creates a #MirageFragment implementation that implements interface specified
- * by @fragment_interface and can handle data stored in @stream.
- *
- * Returns: (transfer full): a #MirageFragment object on success, %NULL on failure. The reference
- * to the object should be released using g_object_unref() when no longer needed.
- */
-MirageFragment *mirage_context_create_fragment (MirageContext *self, GType fragment_interface, GInputStream *stream, GError **error)
-{
-    gboolean succeeded = TRUE;
-    MirageFragment *fragment = NULL;
-
-    gint num_fragments;
-    const GType *fragment_types;
-
-    /* Get the list of supported fragments */
-    if (!mirage_get_fragments_type(&fragment_types, &num_fragments, error)) {
-        return NULL;
-    }
-
-    /* Go over all fragments */
-    for (gint i = 0; i < num_fragments; i++) {
-        /* Create fragment; check if it implements requested interface, then
-           try to load data... if we fail, we try next one */
-        fragment = g_object_new(fragment_types[i], NULL);
-
-        /* Check if requested interface is supported */
-        succeeded = G_TYPE_CHECK_INSTANCE_TYPE((fragment), fragment_interface);
-        if (succeeded) {
-            /* Set context */
-            mirage_contextual_set_context(MIRAGE_CONTEXTUAL(fragment), self);
-
-            /* Check if fragment can handle file format */
-            succeeded = mirage_fragment_can_handle_data_format(fragment, stream, NULL);
-            if (succeeded) {
-                return fragment;
-            }
-        }
-
-        g_object_unref(fragment);
-        fragment = NULL;
-    }
-
-    /* No fragment found */
-    g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_FRAGMENT_ERROR, "No fragment can handle the given data file!");
-    return fragment;
-}
-
-
-/**********************************************************************\
  *                 Public API: file stream creation                   *
 \**********************************************************************/
 /**

@@ -251,21 +251,16 @@ static MirageTrack *mirage_parser_cif_parse_track_descriptor (MirageParserCif *s
     mirage_track_set_mode(track, track_mode);
 
     /* Create data fragment */
-    fragment = mirage_contextual_create_fragment(MIRAGE_CONTEXTUAL(self), MIRAGE_TYPE_DATA_FRAGMENT, self->priv->cif_stream, error);
-    if (!fragment) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to create fragment!\n", __debug__);
-        g_object_unref(track);
-        return NULL;
-    }
+    fragment = g_object_new(MIRAGE_TYPE_FRAGMENT, NULL);
 
     /* Set file */
-    mirage_data_fragment_main_data_set_stream(MIRAGE_DATA_FRAGMENT(fragment), self->priv->cif_stream);
-    mirage_data_fragment_main_data_set_offset(MIRAGE_DATA_FRAGMENT(fragment), offset_entry->offset);
-    mirage_data_fragment_main_data_set_size(MIRAGE_DATA_FRAGMENT(fragment), sector_size);
-    if ((CIF_Track) descriptor->type == AUDIO) {
-        mirage_data_fragment_main_data_set_format(MIRAGE_DATA_FRAGMENT(fragment), MIRAGE_MAIN_AUDIO);
+    mirage_fragment_main_data_set_stream(fragment, self->priv->cif_stream);
+    mirage_fragment_main_data_set_offset(fragment, offset_entry->offset);
+    mirage_fragment_main_data_set_size(fragment, sector_size);
+    if (descriptor->type == AUDIO) {
+        mirage_fragment_main_data_set_format(fragment, MIRAGE_MAIN_AUDIO);
     } else {
-        mirage_data_fragment_main_data_set_format(MIRAGE_DATA_FRAGMENT(fragment), MIRAGE_MAIN_DATA);
+        mirage_fragment_main_data_set_format(fragment, MIRAGE_MAIN_DATA);
     }
 
     mirage_fragment_set_length(fragment, track_length);

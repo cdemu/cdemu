@@ -23,7 +23,6 @@
 /* Forward declarations */
 #ifndef __GTK_DOC_IGNORE__
 typedef struct _MirageDisc MirageDisc;
-typedef struct _MirageFragment MirageFragment;
 #endif
 
 
@@ -77,7 +76,6 @@ GVariant *mirage_contextual_get_option (MirageContextual *self, const gchar *nam
 
 gchar *mirage_contextual_obtain_password (MirageContextual *self, GError **error);
 
-MirageFragment *mirage_contextual_create_fragment (MirageContextual *self, GType fragment_interface, GInputStream *stream, GError **error);
 GInputStream *mirage_contextual_create_file_stream (MirageContextual *self, const gchar *filename, GError **error);
 const gchar *mirage_contextual_get_file_stream_filename (MirageContextual *self, GInputStream *stream);
 

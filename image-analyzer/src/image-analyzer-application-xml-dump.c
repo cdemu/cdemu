@@ -75,15 +75,15 @@ static xmlNodePtr xml_add_node_with_content (xmlNodePtr parent, gchar *name, gch
 \**********************************************************************/
 static gboolean xml_dump_fragment (MirageFragment *fragment, xmlNodePtr parent)
 {
-    const MirageFragmentInfo *fragment_info;
     gint address, length;
+
+    const gchar *main_name, *subchannel_name;
+    guint64 main_offset, subchannel_offset;
+    gint main_size, subchannel_size;
+    gint main_format, subchannel_format;
 
     /* Make fragment node parent */
     parent = xml_add_node(parent, TAG_FRAGMENT);
-
-    fragment_info = mirage_fragment_get_info(fragment);
-    xml_add_node_with_content(parent, TAG_FRAGMENT_ID, "%s", fragment_info->id);
-
 
     address = mirage_fragment_get_address(fragment);
     xml_add_node_with_content(parent, TAG_ADDRESS, "%d", address);
@@ -91,47 +91,31 @@ static gboolean xml_dump_fragment (MirageFragment *fragment, xmlNodePtr parent)
     length = mirage_fragment_get_length(fragment);
     xml_add_node_with_content(parent, TAG_LENGTH, "%d", length);
 
+    /* Main data */
+    main_name = mirage_fragment_main_data_get_filename(fragment);
+    xml_add_node_with_content(parent, TAG_MAIN_NAME, "%s", main_name);
 
-    if (MIRAGE_IS_DATA_FRAGMENT(fragment)) {
-        const gchar *main_name, *subchannel_name;
-        guint64 main_offset, subchannel_offset;
-        gint main_size, subchannel_size;
-        gint main_format, subchannel_format;
+    main_offset = mirage_fragment_main_data_get_offset(fragment);
+    xml_add_node_with_content(parent, TAG_MAIN_OFFSET, "%lld", main_offset);
 
-        main_name = mirage_data_fragment_main_data_get_filename(MIRAGE_DATA_FRAGMENT(fragment));
-        xml_add_node_with_content(parent, TAG_MAIN_NAME, "%s", main_name);
+    main_size = mirage_fragment_main_data_get_size(fragment);
+    xml_add_node_with_content(parent, TAG_MAIN_SIZE, "%d", main_size);
 
-        main_offset = mirage_data_fragment_main_data_get_offset(MIRAGE_DATA_FRAGMENT(fragment));
-        xml_add_node_with_content(parent, TAG_MAIN_OFFSET, "%lld", main_offset);
+    main_format = mirage_fragment_main_data_get_format(fragment);
+    xml_add_node_with_content(parent, TAG_MAIN_FORMAT, "0x%X", main_format);
 
+    /* Subchannel data */
+    subchannel_name = mirage_fragment_subchannel_data_get_filename(fragment);
+    xml_add_node_with_content(parent, TAG_SUBCHANNEL_NAME, "%s", subchannel_name);
 
-        main_size = mirage_data_fragment_main_data_get_size(MIRAGE_DATA_FRAGMENT(fragment));
-        xml_add_node_with_content(parent, TAG_MAIN_SIZE, "%d", main_size);
+    subchannel_offset = mirage_fragment_subchannel_data_get_offset(fragment);
+    xml_add_node_with_content(parent, TAG_SUBCHANNEL_OFFSET, "%lld", subchannel_offset);
 
-        main_format = mirage_data_fragment_main_data_get_format(MIRAGE_DATA_FRAGMENT(fragment));
-        xml_add_node_with_content(parent, TAG_MAIN_FORMAT, "0x%X", main_format);
+    subchannel_size = mirage_fragment_subchannel_data_get_size(fragment);
+    xml_add_node_with_content(parent, TAG_SUBCHANNEL_SIZE, "%d", subchannel_size);
 
-        subchannel_name = mirage_data_fragment_subchannel_data_get_filename(MIRAGE_DATA_FRAGMENT(fragment));
-        xml_add_node_with_content(parent, TAG_SUBCHANNEL_NAME, "%s", subchannel_name);
-
-        subchannel_offset = mirage_data_fragment_subchannel_data_get_offset(MIRAGE_DATA_FRAGMENT(fragment));
-        xml_add_node_with_content(parent, TAG_SUBCHANNEL_OFFSET, "%lld", subchannel_offset);
-
-        subchannel_size = mirage_data_fragment_subchannel_data_get_size(MIRAGE_DATA_FRAGMENT(fragment));
-        xml_add_node_with_content(parent, TAG_SUBCHANNEL_SIZE, "%d", subchannel_size);
-
-        subchannel_format = mirage_data_fragment_subchannel_data_get_format(MIRAGE_DATA_FRAGMENT(fragment));
-        xml_add_node_with_content(parent, TAG_SUBCHANNEL_FORMAT, "0x%X", subchannel_format);
-    } else if (MIRAGE_IS_AUDIO_FRAGMENT(fragment)) {
-        const gchar *filename;
-        gint offset;
-
-        filename = mirage_audio_fragment_get_filename(MIRAGE_AUDIO_FRAGMENT(fragment));
-        xml_add_node_with_content(parent, TAG_FILENAME, "%s", filename);
-
-        offset = mirage_audio_fragment_get_offset(MIRAGE_AUDIO_FRAGMENT(fragment));
-        xml_add_node_with_content(parent, TAG_OFFSET, "%d", offset);
-    }
+    subchannel_format = mirage_fragment_subchannel_data_get_format(fragment);
+    xml_add_node_with_content(parent, TAG_SUBCHANNEL_FORMAT, "0x%X", subchannel_format);
 
     return TRUE;
 }

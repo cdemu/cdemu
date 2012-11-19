@@ -706,25 +706,6 @@ class CDEmu (object):
 
         return True
 
-    def cmd_enum_fragments (self, arguments):
-        # Display supported fragments
-        try:
-            fragments = self.dbus_iface.EnumSupportedFragments()
-        except dbus.DBusException as e:
-            self.print_error(_("Failed to enumerate supported fragments: %s") % (e))
-            return False
-
-        if len(arguments) == 0:
-            # Print all fragments
-            self.print_header (_("Supported fragments:"))
-            for info in fragments:
-                print("  %s: %s" % (info[0], info[1]))
-        else:
-            self.print_invalid_number_of_parameters("enum-fragments")
-            return False
-
-        return True
-
     def cmd_enum_daemon_debug_masks (self, arguments):
         if len(arguments) != 0:
             self.print_invalid_number_of_parameters("enum-daemon-debug-masks")
@@ -916,11 +897,6 @@ class CDEmu (object):
             "",
             _("enumerates supported file filters"),
             cmd_enum_file_filters
-        ], [
-            "enum-fragments",
-            "",
-            _("enumerates supported fragments"),
-            cmd_enum_fragments
         ], [
             "enum-daemon-debug-masks",
             "",

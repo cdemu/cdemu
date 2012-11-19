@@ -103,11 +103,7 @@ static void treestore_add_fragment (GtkTreeStore *treestore, GtkTreeIter *parent
             continue;
         }
 
-        if (!g_ascii_strcasecmp((gchar *)cur_node->name, TAG_FRAGMENT_ID)) {
-            gchar *fragment_id = xml_node_get_string(cur_node);
-            treestore_add_node(treestore, &node, NULL, "Fragment ID: %s", fragment_id);
-            g_free(fragment_id);
-        } else if (!g_ascii_strcasecmp((gchar *)cur_node->name, TAG_ADDRESS)) {
+        if (!g_ascii_strcasecmp((gchar *)cur_node->name, TAG_ADDRESS)) {
             gint address = xml_node_get_double(cur_node);
             treestore_add_node(treestore, &node, NULL, "Address: %d (0x%X)", address, address);
         } else if (!g_ascii_strcasecmp((gchar *)cur_node->name, TAG_LENGTH)) {
@@ -139,13 +135,6 @@ static void treestore_add_fragment (GtkTreeStore *treestore, GtkTreeIter *parent
         } else if (!g_ascii_strcasecmp((gchar *)cur_node->name, TAG_SUBCHANNEL_FORMAT)) {
             gint subchannel_format = xml_node_get_double(cur_node);
             treestore_add_node(treestore, &node, NULL, "Subchannel data: Format: 0x%X (%s)", subchannel_format, dump_binary_fragment_subchannel_format(subchannel_format));
-        } else if (!g_ascii_strcasecmp((gchar *)cur_node->name, TAG_FILENAME)) {
-            gchar *filename = xml_node_get_string(cur_node);
-            treestore_add_node(treestore, &node, NULL, "Filename: %s", filename);
-            g_free(filename);
-        } else if (!g_ascii_strcasecmp((gchar *)cur_node->name, TAG_OFFSET)) {
-            gint offset = xml_node_get_double(cur_node);
-            treestore_add_node(treestore, &node, NULL, "Offset (sectors): %d (0x%X)", offset, offset);
         }
     }
 }
