@@ -77,6 +77,18 @@ struct _MirageFileFilterDmgPrivate
     /* Compression streams */
     z_stream  zlib_stream;
     bz_stream bzip2_stream;
+
+    /* XML parsing state */
+    gboolean in_key;
+    gboolean in_string;
+    gboolean in_data;
+    gboolean in_blkx;
+    gboolean in_plst;
+
+    gint  nesting_level;
+    gchar *last_key;
+
+    rsrc_block_t xml_rsrc_block;
 };
 
 
@@ -534,33 +546,23 @@ static gboolean mirage_file_filter_dmg_read_bin_descriptor (MirageFileFilterDmg 
     return TRUE;
 }
 
-static gboolean in_key    = FALSE;
-static gboolean in_string = FALSE;
-static gboolean in_data   = FALSE;
-static gboolean in_blkx   = FALSE;
-static gboolean in_plst   = FALSE;
-
-static gint nesting_level = 0;
-
-static rsrc_block_t xml_rsrc_block = {0};
-
 static void start_element (GMarkupParseContext *context G_GNUC_UNUSED, const gchar *element_name, const gchar **attribute_names G_GNUC_UNUSED,
                            const gchar **attribute_values G_GNUC_UNUSED, gpointer user_data, GError **error G_GNUC_UNUSED)
 {
     MirageFileFilterDmg *self = (MirageFileFilterDmg *) user_data;
 
-    nesting_level++;
+    self->priv->nesting_level++;
 
     if (!strncmp(element_name, "key", strlen(element_name))) {
-        in_key = TRUE;
+        self->priv->in_key = TRUE;
     } else if (!strncmp(element_name, "string", strlen(element_name))) {
-        in_string = TRUE;
+        self->priv->in_string = TRUE;
     } else if (!strncmp(element_name, "data", strlen(element_name))) {
-        in_data = TRUE;
+        self->priv->in_data = TRUE;
     } else if (!strncmp(element_name, "dict", strlen(element_name))) {
-        if (nesting_level == 5) {
+        if (self->priv->nesting_level == 5) {
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: Resource start.\n", __debug__);
-            memset(&xml_rsrc_block, 0, sizeof(rsrc_block_t));
+            memset(&self->priv->xml_rsrc_block, 0, sizeof(rsrc_block_t));
         }
     }
 
@@ -572,30 +574,33 @@ static void end_element (GMarkupParseContext *context G_GNUC_UNUSED, const gchar
     MirageFileFilterDmg *self = (MirageFileFilterDmg *) user_data;
 
     if (!strncmp(element_name, "key", strlen(element_name))) {
-        in_key = FALSE;
+        self->priv->in_key = FALSE;
     } else if (!strncmp(element_name, "string", strlen(element_name))) {
-        in_string = FALSE;
+        self->priv->in_string = FALSE;
     } else if (!strncmp(element_name, "data", strlen(element_name))) {
-        in_data = FALSE;
+        self->priv->in_data = FALSE;
     } else if (!strncmp(element_name, "dict", strlen(element_name))) {
-        if (nesting_level == 5) {
-            gchar   *rsrc_name = &self->priv->rsrc_name[xml_rsrc_block.rel_offs_name];
+        if (self->priv->nesting_level == 5) {
+            rsrc_block_t *xml_rsrc_block = &self->priv->xml_rsrc_block;
+
+            gchar   *rsrc_name = &self->priv->rsrc_name[xml_rsrc_block->rel_offs_name];
             GString *temp_str  = g_string_new_len(rsrc_name + 1, (gchar) *rsrc_name);
 
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: Resource end.\n", __debug__);
 
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: ID: %3i Name: %s\n", __debug__, xml_rsrc_block.id, temp_str->str);
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: ID: %3i Name: %s\n", __debug__,
+                         xml_rsrc_block->id, temp_str->str);
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  Attrs: 0x%04hx Offset: 0x%04hx Name offset: 0x%04hx\n", __debug__,
-                         xml_rsrc_block.attrs, xml_rsrc_block.rel_offs_block, xml_rsrc_block.rel_offs_name);
+                         xml_rsrc_block->attrs, xml_rsrc_block->rel_offs_block, xml_rsrc_block->rel_offs_name);
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "\n");
 
             g_string_free(temp_str, TRUE);
 
-            g_array_append_val(self->priv->rsrc_block, xml_rsrc_block);
+            g_array_append_val(self->priv->rsrc_block, *xml_rsrc_block);
         }
     }
 
-    nesting_level--;
+    self->priv->nesting_level--;
 
     /*MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: End element: %s\n", __debug__, element_name);*/
 }
@@ -604,47 +609,49 @@ static void xml_text (GMarkupParseContext *context G_GNUC_UNUSED, const gchar *t
 {
     MirageFileFilterDmg *self = (MirageFileFilterDmg *) user_data;
 
+    rsrc_block_t *xml_rsrc_block = &self->priv->xml_rsrc_block;
+
     GString *text_str = g_string_new_len(text, text_len);
 
-    static gchar last_key[1024] = {0};
+    gchar *last_key = self->priv->last_key;
 
     if (!text_str) {
         g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, "Failed to allocate memory!");
         return;
     }
 
-    if (in_key) {
+    if (self->priv->in_key) {
         if (!strncmp(text_str->str, "blkx", text_str->len)) {
-            in_blkx = TRUE;
-            in_plst = FALSE;
+            self->priv->in_blkx = TRUE;
+            self->priv->in_plst = FALSE;
         } else if (!strncmp(text_str->str, "plst", text_str->len)) {
-            in_blkx = FALSE;
-            in_plst = TRUE;
+            self->priv->in_blkx = FALSE;
+            self->priv->in_plst = TRUE;
         }
 
         /*MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: Key: %s nesting level: %u\n", __debug__, text_str->str, nesting_level);*/
         g_strlcpy(last_key, text_str->str, sizeof(last_key));
     }
 
-    if (in_string) {
-        if (nesting_level == 6) {
+    if (self->priv->in_string) {
+        if (self->priv->nesting_level == 6) {
             gint res;
 
             /*MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  %s: %s\n", __debug__, last_key, text_str->str);*/
             if (!strncmp(last_key, "ID", strlen(last_key))) {
-                res = sscanf(text_str->str, "%hi", &xml_rsrc_block.id);
+                res = sscanf(text_str->str, "%hi", &xml_rsrc_block->id);
                 if (res < 1) {
                     g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, "Failed to convert string to integer!");
                     return;
                 }
             } else if (!strncmp(last_key, "Attributes", strlen(last_key))) {
-                res = sscanf(text_str->str, "%hx", &xml_rsrc_block.attrs);
+                res = sscanf(text_str->str, "%hx", &xml_rsrc_block->attrs);
                 if (res < 1) {
                     g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, "Failed to convert string to integer!");
                     return;
                 }
             } else if (!strncmp(last_key, "Name", strlen(last_key))) {
-                if (in_blkx) {
+                if (self->priv->in_blkx) {
                     gint prev_length = self->priv->rsrc_name_length;
                     gint new_length = prev_length + text_str->len + 1;
 
@@ -656,9 +663,9 @@ static void xml_text (GMarkupParseContext *context G_GNUC_UNUSED, const gchar *t
                     self->priv->rsrc_name_length = new_length;
                     self->priv->rsrc_name[prev_length] = (gchar) text_str->len;
                     memcpy(&self->priv->rsrc_name[prev_length + 1], text_str->str, text_str->len);
-                    xml_rsrc_block.rel_offs_name = prev_length;
+                    xml_rsrc_block->rel_offs_name = prev_length;
                 } else {
-                    xml_rsrc_block.rel_offs_name = -1;
+                    xml_rsrc_block->rel_offs_name = -1;
                 }
             } else if (!strncmp(last_key, "CFName", strlen(last_key))) {
                 /* Duplicate of Name, so ignore it */
@@ -668,7 +675,7 @@ static void xml_text (GMarkupParseContext *context G_GNUC_UNUSED, const gchar *t
         }
     }
 
-    if (in_data && (in_blkx || in_plst)) {
+    if (self->priv->in_data && (self->priv->in_blkx || self->priv->in_plst)) {
         GString *dest_str = g_string_sized_new(text_str->len);
 
         blkx_block_t *cur_blkx_block = NULL;
@@ -714,9 +721,9 @@ static void xml_text (GMarkupParseContext *context G_GNUC_UNUSED, const gchar *t
             rel_offs_block += cur_res.length;
         }
 
-        xml_rsrc_block.rel_offs_block = rel_offs_block;
+        xml_rsrc_block->rel_offs_block = rel_offs_block;
 
-        if (in_blkx) {
+        if (self->priv->in_blkx) {
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: Found blkx resource!\n", __debug__);
 
             /* Locate blkx block + blkx data and fix endianness */
@@ -752,7 +759,7 @@ static void xml_text (GMarkupParseContext *context G_GNUC_UNUSED, const gchar *t
 
             /* Update counts */
             self->priv->num_rsrc_blocks++;
-        } else if (in_plst) {
+        } else if (self->priv->in_plst) {
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: Found plst resource!\n", __debug__);
 
             /* Locate blocks and fix endianness */
@@ -795,17 +802,17 @@ static void xml_text (GMarkupParseContext *context G_GNUC_UNUSED, const gchar *t
     g_string_free(text_str, TRUE);
 }
 
-static const GMarkupParser DMG_XMLParser = {
-    start_element,
-    end_element,
-    xml_text,
-    NULL,
-    NULL
-};
-
 static gboolean mirage_file_filter_dmg_read_xml_descriptor (MirageFileFilterDmg *self, GInputStream *stream, GError **error)
 {
     koly_block_t *koly_block = self->priv->koly_block;
+
+    const GMarkupParser DMG_XMLParser = {
+        start_element,
+        end_element,
+        xml_text,
+        NULL,
+        NULL
+    };
 
     GMarkupParseContext *context = g_markup_parse_context_new (&DMG_XMLParser, 0, self, NULL);
 
@@ -1434,6 +1441,16 @@ static void mirage_file_filter_dmg_init (MirageFileFilterDmg *self)
     self->priv->cached_part = -1;
     self->priv->inflate_buffer = NULL;
     self->priv->io_buffer = NULL;
+
+    self->priv->in_key = FALSE;
+    self->priv->in_string = FALSE;
+    self->priv->in_data = FALSE;
+    self->priv->in_blkx = FALSE;
+    self->priv->in_plst = FALSE;
+
+    self->priv->nesting_level = 0;
+
+    self->priv->last_key = g_malloc0(1024);
 }
 
 static void mirage_file_filter_dmg_finalize (GObject *gobject)
@@ -1453,6 +1470,8 @@ static void mirage_file_filter_dmg_finalize (GObject *gobject)
     g_free(self->priv->parts);
     g_free(self->priv->inflate_buffer);
     g_free(self->priv->io_buffer);
+
+    g_free(self->priv->last_key);
 
     inflateEnd(&self->priv->zlib_stream);
     BZ2_bzDecompressEnd(&self->priv->bzip2_stream);
