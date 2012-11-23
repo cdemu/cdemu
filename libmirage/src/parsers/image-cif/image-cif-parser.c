@@ -669,6 +669,8 @@ static MirageDisc *mirage_parser_cif_load_image (MirageParser *_self, GInputStre
     self->priv->cif_stream = streams[0];
     g_object_ref(self->priv->cif_stream);
 
+    g_seekable_seek(G_SEEKABLE(self->priv->cif_stream), 0, G_SEEK_SET, NULL, NULL);
+
     if (g_input_stream_read(self->priv->cif_stream, &header, sizeof(header), NULL, NULL) != sizeof(header)) {
         g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, "Failed to read header!");
         return FALSE;
