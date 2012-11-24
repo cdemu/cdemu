@@ -76,10 +76,12 @@ static void mirage_file_filter_isz_fixup_header(ISZ_Header *header)
     header->segment_size  = GUINT64_FROM_LE(header->segment_size);
 
     /* additional header data */
-    header->checksum1     = GUINT32_FROM_LE(header->checksum1);
-    header->data_size     = GUINT32_FROM_LE(header->data_size);
-    header->unknown       = GUINT32_FROM_LE(header->unknown);
-    header->checksum2     = GUINT32_FROM_LE(header->checksum2);
+    if (header->header_size > 48) {
+        header->checksum1     = GUINT32_FROM_LE(header->checksum1);
+        header->data_size     = GUINT32_FROM_LE(header->data_size);
+        header->unknown       = GUINT32_FROM_LE(header->unknown);
+        header->checksum2     = GUINT32_FROM_LE(header->checksum2);
+    }
 }
 
 static void mirage_file_filter_isz_fixup_segment(ISZ_Segment *segment)
@@ -94,10 +96,9 @@ static void mirage_file_filter_isz_fixup_segment(ISZ_Segment *segment)
 
 static inline void mirage_file_filter_isz_deobfuscate(guint8 *data, gint length)
 {
-    guint8 code[4] = {0xb6, 0x8c, 0xa5, 0xde};
-
+    /* XOR with the NOT'ed version of the ISZ signature */
     for (gint i = 0; i < length; i++) {
-        data[i] = data[i] ^ code[i % 4];
+        data[i] = data[i] ^ ~isz_signature[i % 4];
     }
 }
 
@@ -208,8 +209,8 @@ static gboolean mirage_file_filter_isz_create_new_segment_table (MirageFileFilte
 
     if (header->segment_size) {
         /* Allocate segments */
-        self->priv->num_segments = header->data_size / (header->segment_size - header->header_size);
-        if (header->data_size % (header->segment_size - header->header_size)) {
+        self->priv->num_segments = header->total_sectors * header->sect_size / (header->segment_size - header->header_size);
+        if (header->total_sectors * header->sect_size % (header->segment_size - header->header_size)) {
             self->priv->num_segments++;
         }
         self->priv->segments = g_try_new(ISZ_Segment, self->priv->num_segments);
@@ -432,7 +433,7 @@ static gboolean mirage_file_filter_isz_read_index (MirageFileFilterIsz *self, GE
             cur_part->type = DATA;
 
             if (i == self->priv->num_parts - 1) {
-                cur_part->length = header->data_size % header->block_size;
+                cur_part->length = header->total_sectors * header->sect_size % header->block_size;
             } else {
                 cur_part->length = header->block_size;
             }
@@ -570,17 +571,17 @@ static gboolean mirage_file_filter_isz_can_handle_data_format (MirageFileFilter 
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  chunk_offs: 0x%x\n", __debug__, header->chunk_offs);
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  seg_offs: 0x%x\n", __debug__, header->seg_offs);
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  data_offs: 0x%x\n", __debug__, header->data_offs);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  checksum1: 0x%x (actually: 0x%x)\n", __debug__, header->checksum1, ~header->checksum1);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  data_size: %u\n", __debug__, header->data_size);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  unknown: %u\n", __debug__, header->unknown);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  checksum2: 0x%x (actually: 0x%x)\n", __debug__, header->checksum2, ~header->checksum2);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "\n");
 
-    /* FIXME: Handle encrypted images */
-    if (header->encryption_type != NONE) {
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_CANNOT_HANDLE, "Filter cannot handle encryption yet!");
-        return FALSE;
+    if (header->header_size > 48) {
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  checksum1: 0x%x (actually: 0x%x)\n", __debug__, header->checksum1, ~header->checksum1);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  data_size: %u\n", __debug__, header->data_size);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  unknown: %u\n", __debug__, header->unknown);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  checksum2: 0x%x (actually: 0x%x)\n", __debug__, header->checksum2, ~header->checksum2);
+    } else {
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  (note: image does not contain checksums)\n", __debug__);
     }
+
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "\n");
 
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: parsing the underlying stream data...\n", __debug__);
 
@@ -645,7 +646,7 @@ static gssize mirage_file_filter_isz_read_raw_chunk (MirageFileFilterIsz *self, 
         have_read += ret;
         to_read -= ret;
     } else if (ret < to_read) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: reading remaining data!\n", __debug__);
+        /*MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: reading remaining data!\n", __debug__);*/
         have_read += ret;
         to_read -= ret;
         g_assert(to_read == segment->left_size);
