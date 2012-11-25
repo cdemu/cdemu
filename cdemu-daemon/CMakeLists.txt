@@ -17,7 +17,20 @@ include (GNUInstallDirs)
 include (Utilities)
 include (FileList)
 
-# Configuration
+# Options
+option (SYSTEM_BUS_SERVICE "Install CDEmu daemon as D-Bus system bus service" off)
+option (SESSION_BUS_SERVICE "Install CDEmu daemon as D-Bus session bus service" on)
+option (STRICT_WARNINGS "Enable more warnings" off)
+
+# Dependencies
+find_package (PkgConfig 0.16 REQUIRED)
+
+pkg_check_modules (LibMirage REQUIRED libmirage>=1.6.0)
+pkg_check_modules (LibGlib REQUIRED glib-2.0>=2.24 gobject-2.0>=2.24
+    gmodule-2.0>=2.24 gthread-2.0>=2.24 gio-2.0>=2.26)
+pkg_check_modules (LibAO REQUIRED ao>=0.8.0)
+
+# Auto-generated files
 configure_file (
     ${PROJECT_SOURCE_DIR}/config.h.in
     ${PROJECT_BINARY_DIR}/config.h
@@ -50,18 +63,11 @@ if (STRICT_WARNINGS AND CMAKE_COMPILER_IS_GNUCC)
     endif ()
 endif ()
 
-option (SYSTEM_BUS_SERVICE "Install CDEmu daemon as D-Bus system bus service" off)
-option (SESSION_BUS_SERVICE "Install CDEmu daemon as D-Bus session bus service" on)
-option (STRICT_WARNINGS "Enable more warnings" off)
+
 
 # Tests
 
-find_package (PkgConfig 0.16 REQUIRED)
 
-pkg_check_modules (LibMirage REQUIRED libmirage>=1.6.0)
-pkg_check_modules (LibGlib REQUIRED glib-2.0>=2.24 gobject-2.0>=2.24
-    gmodule-2.0>=2.24 gthread-2.0>=2.24 gio-2.0>=2.26)
-pkg_check_modules (LibAO REQUIRED ao>=0.8.0)
 
 include_directories (SYSTEM ${LibMirage_INCLUDE_DIRS})
 

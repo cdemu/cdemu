@@ -8,12 +8,11 @@ list (APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
 
 include (GNUInstallDirs)
 
-# Configuration
+# Options
 option (BUILD_NLS "Support for multiple languages" on)
 option (POST_INSTALL_HOOKS "Run post-install hooks" on)
 
-# Tests
-
+# Dependencies
 find_package (IntlTool 0.21 REQUIRED)
 find_package (Gettext 0.15 REQUIRED)
 find_package (PythonInterp 2.6 REQUIRED)

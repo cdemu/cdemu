@@ -16,7 +16,25 @@ include (GNUInstallDirs)
 include (Utilities)
 include (FileList)
 
-# Configuration
+# Options
+option (GTK3_ENABLED "Compile using Gtk3" on)
+option (POST_INSTALL_HOOKS "Run post-install hooks" on)
+option (STRICT_WARNINGS "Enable more warnings" off)
+
+# Dependencies
+find_package (PkgConfig 0.16 REQUIRED)
+find_package (Gnuplot 4.0)
+
+pkg_check_modules (LibMirage REQUIRED libmirage>=1.6.0)
+pkg_check_modules (LibGlib REQUIRED glib-2.0>=2.24 gobject-2.0>=2.24)
+pkg_check_modules (LibXml REQUIRED libxml-2.0>=2.0.0)
+
+if (POST_INSTALL_HOOKS)
+    find_program (UPDATE_DESKTOP_DATABASE_EXECUTABLE NAMES update-desktop-database)
+    mark_as_advanced (UPDATE_DESKTOP_DATABASE_EXECUTABLE)
+endif ()
+
+# AUto-generated files
 configure_file (
     ${PROJECT_SOURCE_DIR}/config.h.in
     ${PROJECT_BINARY_DIR}/config.h
@@ -40,23 +58,11 @@ if (STRICT_WARNINGS AND CMAKE_COMPILER_IS_GNUCC)
     endif ()
 endif ()
 
-option (GTK3_ENABLED "Compile using Gtk3" on)
-option (POST_INSTALL_HOOKS "Run post-install hooks" on)
-option (STRICT_WARNINGS "Enable more warnings" off)
+
 
 # Tests
 
-find_package (PkgConfig 0.16 REQUIRED)
-find_package (Gnuplot 4.0)
 
-pkg_check_modules (LibMirage REQUIRED libmirage>=1.6.0)
-pkg_check_modules (LibGlib REQUIRED glib-2.0>=2.24 gobject-2.0>=2.24)
-pkg_check_modules (LibXml REQUIRED libxml-2.0>=2.0.0)
-
-if (POST_INSTALL_HOOKS)
-    find_program (UPDATE_DESKTOP_DATABASE_EXECUTABLE NAMES update-desktop-database)
-    mark_as_advanced (UPDATE_DESKTOP_DATABASE_EXECUTABLE)
-endif ()
 
 include_directories (SYSTEM ${LibMirage_INCLUDE_DIRS})
 

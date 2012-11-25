@@ -32,10 +32,38 @@ include (GtkDoc)
 include (Utilities)
 include (FileList)
 
+# Options
+option (GTKDOC_ENABLED "Use gtk-doc to build documentation" on)
+option (INTROSPECTION_ENABLED "Generate gobject introspection files" on)
+option (POST_INSTALL_HOOKS "Run post-install hooks" on)
+option (STRICT_WARNINGS "Enable more warnings" off)
+
 # Plugin directory
 set (MIRAGE_PLUGIN_DIR "${CMAKE_INSTALL_FULL_LIBDIR}/libmirage-${MIRAGE_VERSION_SHORT}" CACHE PATH "Path to libMirage plugin directory." FORCE)
 
-# Configuration
+# Dependencies
+find_package (PkgConfig 0.16 REQUIRED)
+find_package (BZip2 1.0.0 REQUIRED)
+
+pkg_check_modules (LibGlib REQUIRED glib-2.0>=2.24 gobject-2.0>=2.24 gmodule-2.0>=2.24 gio-2.0>=2.24)
+pkg_check_modules (ZLib REQUIRED zlib>=1.2.0)
+pkg_check_modules (LibLzma REQUIRED liblzma>=5.0.0)
+pkg_check_modules (LibSndFile REQUIRED sndfile>=1.0.0)
+
+if (INTROSPECTION_ENABLED)
+    pkg_check_modules (INTROSPECTION REQUIRED gobject-introspection-1.0>=1.30.0)
+endif ()
+
+if (GTKDOC_ENABLED)
+    pkg_check_modules (GTKDOC REQUIRED gtk-doc>=1.4)
+endif ()
+
+if (POST_INSTALL_HOOKS)
+    find_program (UPDATE_MIME_DATABASE_EXECUTABLE NAMES update-mime-database)
+    mark_as_advanced (UPDATE_MIME_DATABASE_EXECUTABLE)
+endif ()
+
+# Auto-generated files
 configure_file (
     ${PROJECT_SOURCE_DIR}/config.h.in
     ${PROJECT_BINARY_DIR}/config.h
@@ -73,34 +101,11 @@ if (STRICT_WARNINGS AND CMAKE_COMPILER_IS_GNUCC)
     endif ()
 endif ()
 
-option (GTKDOC_ENABLED "Use gtk-doc to build documentation" on)
-option (INTROSPECTION_ENABLED "Generate gobject introspection files" on)
-option (POST_INSTALL_HOOKS "Run post-install hooks" on)
-option (STRICT_WARNINGS "Enable more warnings" off)
+####
 
 # Tests
 
-find_package (PkgConfig 0.16 REQUIRED)
-find_package (BZip2 1.0.0 REQUIRED)
 
-pkg_check_modules (LibGlib REQUIRED glib-2.0>=2.24 gobject-2.0>=2.24
-    gmodule-2.0>=2.24 gio-2.0>=2.24)
-pkg_check_modules (ZLib REQUIRED zlib>=1.2.0)
-pkg_check_modules (LibLzma REQUIRED liblzma>=5.0.0)
-pkg_check_modules (LibSndFile REQUIRED sndfile>=1.0.0)
-
-if (INTROSPECTION_ENABLED)
-    pkg_check_modules (INTROSPECTION REQUIRED gobject-introspection-1.0>=1.30.0)
-endif ()
-
-if (GTKDOC_ENABLED)
-    pkg_check_modules (GTKDOC REQUIRED gtk-doc>=1.4)
-endif ()
-
-if (POST_INSTALL_HOOKS)
-    find_program (UPDATE_MIME_DATABASE_EXECUTABLE NAMES update-mime-database)
-    mark_as_advanced (UPDATE_MIME_DATABASE_EXECUTABLE)
-endif ()
 
 list (APPEND libmirage_CFLAGS ${LibGlib_CFLAGS})
 list (APPEND libmirage_LDFLAGS ${LibGlib_LDFLAGS})
