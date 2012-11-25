@@ -1,8 +1,7 @@
 cmake_minimum_required (VERSION 2.8.5)
 
-# Project name and version
+# Project name
 project (cdemu-client NONE)
-set (PROJECT_VERSION 1.6.0)
 
 # Search in the `cmake' directory for additional CMake modules.
 list (APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
@@ -38,12 +37,12 @@ endif ()
 # Installation
 
 install (
-    PROGRAMS src/cdemu 
+    PROGRAMS src/cdemu
     DESTINATION ${CMAKE_INSTALL_BINDIR}
 )
 
 install (
-    FILES man/cdemu.1 
+    FILES man/cdemu.1
     DESTINATION ${CMAKE_INSTALL_MANDIR}/man1
 )
 

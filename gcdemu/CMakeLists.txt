@@ -1,8 +1,7 @@
 cmake_minimum_required (VERSION 2.8.5)
 
-# Project name and version
+# Project name
 project (gcdemu NONE)
-set (PROJECT_VERSION 1.6.0)
 
 # Search in the `cmake' directory for additional CMake modules.
 list (APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
@@ -42,7 +41,7 @@ endif ()
 # Installation
 
 install (
-    PROGRAMS src/gcdemu 
+    PROGRAMS src/gcdemu
     DESTINATION ${CMAKE_INSTALL_BINDIR}
 )
 
