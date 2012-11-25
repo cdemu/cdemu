@@ -97,17 +97,13 @@ include_directories (${PROJECT_BINARY_DIR})
 include_directories (${PROJECT_BINARY_DIR}/src/libmirage)
 
 
-# Core CFLAGS and LDFLAGS (common to library and plugins)
-list (APPEND core_CFLAGS ${GLIB_CFLAGS})
-list (APPEND core_LDFLAGS ${GLIB_LDFLAGS})
-
 # *** libMirage core library ***
 add_library (mirage SHARED ${libmirage_SOURCES})
 target_link_libraries (mirage ${GLIB_LIBRARIES})
 
-list (APPEND mirage_CFLAGS ${core_CFLAGS})
-list (APPEND mirage_DEFS ${core_DEFS} MIRAGE_PLUGIN_DIR="${MIRAGE_PLUGIN_DIR}")
-list (APPEND mirage_LDFLAGS ${core_LDFLAGS})
+list (APPEND mirage_CFLAGS ${GLIB_CFLAGS})
+list (APPEND mirage_DEFS MIRAGE_PLUGIN_DIR="${MIRAGE_PLUGIN_DIR}")
+list (APPEND mirage_LDFLAGS ${GLIB_LDFLAGS})
 
 to_list_spaces (mirage_CFLAGS mirage_CFLAGS_STR)
 to_list_spaces (mirage_LDFLAGS mirage_LDFLAGS_STR)
