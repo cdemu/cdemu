@@ -88,14 +88,7 @@ add_definitions (-DHAVE_CONFIG_H -DG_DISABLE_DEPRECATED)
 
 if (CMAKE_COMPILER_IS_GNUCC)
     add_definitions (-Wall -Wextra -Wshadow -Wmissing-declarations -Wmissing-prototypes -Wnested-externs -Wpointer-arith -Wcast-align)
-    check_c_compiler_flag (-Wno-strict-aliasing CC_HAVE_NSA)
-    check_c_compiler_flag (-Wno-sign-compare CC_HAVE_NSC)
-    if (CC_HAVE_NSA)
-        add_definitions (-Wno-strict-aliasing)
-    endif ()
-    if (CC_HAVE_NSC)
-        add_definitions (-Wno-sign-compare)
-    endif ()
+    add_definitions (-Wno-sign-compare)
 endif ()
 
 # Global include directories
