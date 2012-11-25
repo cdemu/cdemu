@@ -45,10 +45,10 @@ set (MIRAGE_PLUGIN_DIR "${CMAKE_INSTALL_FULL_LIBDIR}/libmirage-${MIRAGE_VERSION_
 find_package (PkgConfig 0.16 REQUIRED)
 find_package (BZip2 1.0.0 REQUIRED)
 
-pkg_check_modules (LibGlib REQUIRED glib-2.0>=2.24 gobject-2.0>=2.24 gmodule-2.0>=2.24 gio-2.0>=2.24)
-pkg_check_modules (ZLib REQUIRED zlib>=1.2.0)
-pkg_check_modules (LibLzma REQUIRED liblzma>=5.0.0)
-pkg_check_modules (LibSndFile REQUIRED sndfile>=1.0.0)
+pkg_check_modules (GLIB REQUIRED glib-2.0>=2.24 gobject-2.0>=2.24 gmodule-2.0>=2.24 gio-2.0>=2.24)
+pkg_check_modules (ZLIB REQUIRED zlib>=1.2.0)
+pkg_check_modules (LIBLZMA REQUIRED liblzma>=5.0.0)
+pkg_check_modules (SNDFILE REQUIRED sndfile>=1.0.0)
 
 if (INTROSPECTION_ENABLED)
     pkg_check_modules (INTROSPECTION REQUIRED gobject-introspection-1.0>=1.30.0)
@@ -105,12 +105,12 @@ include_directories (${PROJECT_BINARY_DIR}/src/libmirage)
 
 
 # Core CFLAGS and LDFLAGS (common to library and plugins)
-list (APPEND core_CFLAGS ${LibGlib_CFLAGS})
-list (APPEND core_LDFLAGS ${LibGlib_LDFLAGS})
+list (APPEND core_CFLAGS ${GLIB_CFLAGS})
+list (APPEND core_LDFLAGS ${GLIB_LDFLAGS})
 
 # *** libMirage core library ***
 add_library (mirage SHARED ${libmirage_SOURCES})
-target_link_libraries (mirage ${LibGlib_LIBRARIES})
+target_link_libraries (mirage ${GLIB_LIBRARIES})
 
 list (APPEND mirage_CFLAGS ${core_CFLAGS})
 list (APPEND mirage_DEFS ${core_DEFS} MIRAGE_PLUGIN_DIR="${MIRAGE_PLUGIN_DIR}")
@@ -138,9 +138,9 @@ install (
 )
 
 # *** File filters ***
-list (APPEND filters_CFLAGS ${core_CFLAGS} ${ZLib_CFLAGS})
+list (APPEND filters_CFLAGS ${core_CFLAGS} ${ZLIB_CFLAGS})
 list (APPEND filters_DEFS ${core_DEFS})
-list (APPEND filters_LDFLAGS ${core_LDFLAGS} ${ZLib_LDFLAGS})
+list (APPEND filters_LDFLAGS ${core_LDFLAGS} ${ZLIB_LDFLAGS})
 
 to_list_spaces (filters_CFLAGS filters_CFLAGS_STR)
 to_list_spaces (filters_LDFLAGS filters_LDFLAGS_STR)
@@ -148,19 +148,19 @@ to_list_spaces (filters_LDFLAGS filters_LDFLAGS_STR)
 foreach (filter ${filters_LIST})
     add_library (${filter} MODULE ${${filter}_SOURCES})
 
-    target_link_libraries (${filter} ${LibGlib_LIBRARIES} ${ZLib_LIBRARIES} ${BZIP2_LIBRARY})
+    target_link_libraries (${filter} ${GLIB_LIBRARIES} ${ZLIB_LIBRARIES} ${BZIP2_LIBRARY})
 
     if (filter STREQUAL "filter-xz")
-        to_list_spaces (LibLzma_CFLAGS extra_CFLAGS)
-        to_list_spaces (LibLzma_LDFLAGS extra_LDFLAGS)
-        target_link_libraries (${filter} ${LibLzma_LIBRARIES})
+        to_list_spaces (LIBLZMA_CFLAGS extra_CFLAGS)
+        to_list_spaces (LIBLZMA_LDFLAGS extra_LDFLAGS)
+        target_link_libraries (${filter} ${LIBLZMA_LIBRARIES})
     elseif (filter STREQUAL "filter-daa")
         set (extra_CFLAGS -I${PROJECT_SOURCE_DIR}/src/filters/filter-daa/lzma-sdk)
         set (extra_LDFLAGS)
     elseif (filter STREQUAL "filter-sndfile")
-        to_list_spaces (LibSndFile_CFLAGS extra_CFLAGS)
-        to_list_spaces (LibSndFile_LDFLAGS extra_LDFLAGS)
-        target_link_libraries (${filter} ${LibSndFile_LIBRARIES})
+        to_list_spaces (SNDFILE_CFLAGS extra_CFLAGS)
+        to_list_spaces (SNDFILE_LDFLAGS extra_LDFLAGS)
+        target_link_libraries (${filter} ${SNDFILE_LIBRARIES})
     else ()
         set (extra_CFLAGS)
         set (extra_LDFLAGS)
@@ -180,9 +180,9 @@ foreach (filter ${filters_LIST})
 endforeach ()
 
 # *** Parsers ***
-list (APPEND parsers_CFLAGS ${core_CFLAGS} ${ZLib_CFLAGS})
+list (APPEND parsers_CFLAGS ${core_CFLAGS} ${ZLIB_CFLAGS})
 list (APPEND parsers_DEFS ${core_DEFS})
-list (APPEND parsers_LDFLAGS ${core_LDFLAGS} ${ZLib_LDFLAGS})
+list (APPEND parsers_LDFLAGS ${core_LDFLAGS} ${ZLIB_LDFLAGS})
 
 to_list_spaces (parsers_CFLAGS parsers_CFLAGS_STR)
 to_list_spaces (parsers_LDFLAGS parsers_LDFLAGS_STR)
@@ -190,7 +190,7 @@ to_list_spaces (parsers_LDFLAGS parsers_LDFLAGS_STR)
 foreach (parser ${parsers_LIST})
     add_library (${parser} MODULE ${${parser}_SOURCES})
 
-    target_link_libraries (${parser} ${LibGlib_LIBRARIES} ${ZLib_LIBRARIES})
+    target_link_libraries (${parser} ${GLIB_LIBRARIES} ${ZLIB_LIBRARIES})
 
     set_target_properties (${parser} PROPERTIES
         COMPILE_FLAGS "${parsers_CFLAGS_STR}"
