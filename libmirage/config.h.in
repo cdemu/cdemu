@@ -1,8 +1,4 @@
 /* config.h - configuration file */
 
-/* General stuff */
-#define PACKAGE_NAME "@PROJECT_NAME@"
-#define PACKAGE_VERSION "@PROJECT_VERSION@"
-
 /* Config values */
 

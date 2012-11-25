@@ -1,15 +1,16 @@
 cmake_minimum_required (VERSION 2.8.5)
 
-# Project name and version
+# Project name
 project (libmirage C)
-set (PROJECT_VERSION 1.6.0)
 
-# libMirage release and libtool versioning:
+# Release versioning:
 set (MIRAGE_MAJOR_VERSION 1)
 set (MIRAGE_MINOR_VERSION 6)
 set (MIRAGE_MICRO_VERSION 0)
 set (MIRAGE_VERSION_LONG 1.6.0)
 set (MIRAGE_VERSION_SHORT 1.6)
+
+# Libtool versioning:
 # Increment if the interface has additions, changes, removals.
 set (MIRAGE_LT_CURRENT 7)
 # Increment any time the source changes; set to 0 if you increment CURRENT
