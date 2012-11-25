@@ -20,15 +20,13 @@ include (FileList)
 # Options
 option (SYSTEM_BUS_SERVICE "Install CDEmu daemon as D-Bus system bus service" off)
 option (SESSION_BUS_SERVICE "Install CDEmu daemon as D-Bus session bus service" on)
-option (STRICT_WARNINGS "Enable more warnings" off)
 
 # Dependencies
 find_package (PkgConfig 0.16 REQUIRED)
 
-pkg_check_modules (LibMirage REQUIRED libmirage>=1.6.0)
-pkg_check_modules (LibGlib REQUIRED glib-2.0>=2.24 gobject-2.0>=2.24
-    gmodule-2.0>=2.24 gthread-2.0>=2.24 gio-2.0>=2.26)
-pkg_check_modules (LibAO REQUIRED ao>=0.8.0)
+pkg_check_modules (LIBMIRAGE REQUIRED libmirage>=1.6.0)
+pkg_check_modules (GLIB REQUIRED glib-2.0>=2.24 gobject-2.0>=2.24 gmodule-2.0>=2.24 gthread-2.0>=2.24 gio-2.0>=2.26)
+pkg_check_modules (AO REQUIRED ao>=0.8.0)
 
 # Auto-generated files
 configure_file (
@@ -43,56 +41,38 @@ configure_file (
     ${PROJECT_SOURCE_DIR}/system/net.sf.cdemu.CDEmuDaemon.service.in
     ${PROJECT_BINARY_DIR}/system/net.sf.cdemu.CDEmuDaemon.service
 )
-include_directories (${PROJECT_BINARY_DIR})
 
-#NOTE: Compilation bugs out on using signals and -std=c99
-list (APPEND cdemu-daemon_CFLAGS -std=gnu99)
-list (APPEND cdemu-daemon_DEFS HAVE_CONFIG_H G_DISABLE_DEPRECATED)
+# Global definitions
+add_definitions (-std=gnu99) #NOTE: Compilation bugs out on using signals and -std=c99
+add_definitions (-DHAVE_CONFIG_H -DG_DISABLE_DEPRECATED)
 
-if (STRICT_WARNINGS AND CMAKE_COMPILER_IS_GNUCC)
-    list (APPEND cdemu-daemon_CFLAGS -Wall -Wextra -Wshadow -Wmissing-declarations
-        -Wmissing-prototypes -Wnested-externs -Wpointer-arith -Wcast-align)
-    check_c_compiler_flag (-Wno-strict-aliasing CC_HAVE_NSA)
-    check_c_compiler_flag (-Wno-sign-compare CC_HAVE_NSC)
-    if (CC_HAVE_NSA)
-        list (APPEND cdemu-daemon_CFLAGS -Wno-strict-aliasing)
-    endif ()
-    if (CC_HAVE_NSC)
-        list (APPEND cdemu-daemon_CFLAGS -Wno-sign-compare)
-    endif ()
+if (CMAKE_COMPILER_IS_GNUCC)
+    add_definitions (-Wall -Wextra -Wshadow -Wmissing-declarations -Wmissing-prototypes -Wnested-externs -Wpointer-arith -Wcast-align)
+    add_definitions (-Wno-sign-compare)
 endif ()
 
 
+# Include directories
+include_directories (${PROJECT_BINARY_DIR})
+include_directories (SYSTEM ${LIBMIRAGE_INCLUDE_DIRS})
 
-# Tests
-
-
-
-include_directories (SYSTEM ${LibMirage_INCLUDE_DIRS})
-
-list (APPEND cdemu-daemon_CFLAGS ${LibMirage_CFLAGS} ${LibGlib_CFLAGS}
-    ${LibAO_CFLAGS})
-list (APPEND cdemu-daemon_LDFLAGS ${LibMirage_LDFLAGS} ${LibGlib_LDFLAGS}
-    ${LibAO_LDFLAGS})
-
-# Source files
-include_directories (${PROJECT_SOURCE_DIR}/src)
-
+# *** cdemu-daemon ***
 add_executable (cdemu-daemon ${cdemu-daemon_SOURCES})
+target_link_libraries (cdemu-daemon ${LIBMIRAGE_LIBRARIES} ${GLIB_LIBRARIES} ${AO_LIBRARIES})
 
-target_link_libraries (cdemu-daemon ${LibMirage_LIBRARIES} ${LibGlib_LIBRARIES} ${LibAO_LIBRARIES})
+list (APPEND cdemu_daemon_CFLAGS ${LIBMIRAGE_CFLAGS} ${GLIB_CFLAGS} ${AO_CFLAGS})
+list (APPEND cdemu_daemon_LDFLAGS ${LIBMIRAGE_LDFLAGS} ${GLIB_LDFLAGS} ${AO_LDFLAGS})
 
-to_list_spaces (cdemu-daemon_CFLAGS cdemu-daemon_S_CFLAGS)
-to_list_spaces (cdemu-daemon_LDFLAGS cdemu-daemon_S_LDFLAGS)
+to_list_spaces (cdemu_daemon_CFLAGS cdemu_daemon_CFLAGS_STR)
+to_list_spaces (cdemu_daemon_LDFLAGS cdemu_daemon_LDFLAGS_STR)
 
 set_target_properties (cdemu-daemon PROPERTIES
-    COMPILE_FLAGS ${cdemu-daemon_S_CFLAGS}
-    COMPILE_DEFINITIONS "${cdemu-daemon_DEFS}"
-    LINK_FLAGS ${cdemu-daemon_S_LDFLAGS}
+    COMPILE_FLAGS "${cdemu_daemon_CFLAGS_STR}"
+    COMPILE_DEFINITIONS "${cdemu_daemon_DEFS}"
+    LINK_FLAGS "${cdemu_daemon_LDFLAGS_STR}"
 )
 
 # Installation
-
 install (
     TARGETS cdemu-daemon
     DESTINATION ${CMAKE_INSTALL_BINDIR}
