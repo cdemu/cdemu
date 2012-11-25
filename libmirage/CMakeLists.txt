@@ -85,12 +85,11 @@ include_directories (${PROJECT_BINARY_DIR})
 include_directories (${PROJECT_BINARY_DIR}/src/libmirage)
 
 list (APPEND libmirage_CFLAGS -std=c99)
-list (APPEND libmirage_DEFS HAVE_CONFIG_H)
+list (APPEND libmirage_DEFS HAVE_CONFIG_H G_DISABLE_DEPRECATED)
 
 if (STRICT_WARNINGS AND CMAKE_COMPILER_IS_GNUCC)
     list (APPEND libmirage_CFLAGS -Wall -Wextra -Wshadow -Wmissing-declarations
         -Wmissing-prototypes -Wnested-externs -Wpointer-arith -Wcast-align)
-    list (APPEND libmirage_DEFS G_DISABLE_DEPRECATED)
     check_c_compiler_flag (-Wno-strict-aliasing CC_HAVE_NSA)
     check_c_compiler_flag (-Wno-sign-compare CC_HAVE_NSC)
     if (CC_HAVE_NSA)

@@ -47,12 +47,11 @@ include_directories (${PROJECT_BINARY_DIR})
 
 #NOTE: Compilation bugs out on using signals and -std=c99
 list (APPEND cdemu-daemon_CFLAGS -std=gnu99)
-list (APPEND cdemu-daemon_DEFS HAVE_CONFIG_H)
+list (APPEND cdemu-daemon_DEFS HAVE_CONFIG_H G_DISABLE_DEPRECATED)
 
 if (STRICT_WARNINGS AND CMAKE_COMPILER_IS_GNUCC)
     list (APPEND cdemu-daemon_CFLAGS -Wall -Wextra -Wshadow -Wmissing-declarations
         -Wmissing-prototypes -Wnested-externs -Wpointer-arith -Wcast-align)
-    list (APPEND cdemu-daemon_DEFS G_DISABLE_DEPRECATED)
     check_c_compiler_flag (-Wno-strict-aliasing CC_HAVE_NSA)
     check_c_compiler_flag (-Wno-sign-compare CC_HAVE_NSC)
     if (CC_HAVE_NSA)
