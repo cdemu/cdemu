@@ -56,12 +56,6 @@ configure_file (
 include_directories (${PROJECT_BINARY_DIR})
 include_directories (${PROJECT_BINARY_DIR}/src/libmirage)
 
-if (NOT CMAKE_BUILD_TYPE)
-    set (CMAKE_BUILD_TYPE RelWithDebInfo CACHE STRING
-        "Choose the type of build: None Debug Release RelWithDebInfo MinSizeRel."
-        FORCE)
-endif ()
-
 list (APPEND libmirage_CFLAGS -std=c99)
 list (APPEND libmirage_DEFS HAVE_CONFIG_H)
 

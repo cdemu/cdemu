@@ -32,12 +32,6 @@ configure_file (
 )
 include_directories (${PROJECT_BINARY_DIR})
 
-if (NOT CMAKE_BUILD_TYPE)
-    set (CMAKE_BUILD_TYPE RelWithDebInfo CACHE STRING
-        "Choose the type of build: None Debug Release RelWithDebInfo MinSizeRel."
-        FORCE)
-endif ()
-
 #NOTE: Compilation bugs out on using signals and -std=c99
 list (APPEND cdemu-daemon_CFLAGS -std=gnu99)
 list (APPEND cdemu-daemon_DEFS HAVE_CONFIG_H)

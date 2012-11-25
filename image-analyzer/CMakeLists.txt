@@ -23,12 +23,6 @@ configure_file (
 )
 include_directories (${PROJECT_BINARY_DIR})
 
-if (NOT CMAKE_BUILD_TYPE)
-    set (CMAKE_BUILD_TYPE RelWithDebInfo CACHE STRING
-        "Choose the type of build: None Debug Release RelWithDebInfo MinSizeRel."
-        FORCE)
-endif ()
-
 list (APPEND image-analyzer_CFLAGS -std=c99)
 list (APPEND image-analyzer_DEFS HAVE_CONFIG_H)
 
