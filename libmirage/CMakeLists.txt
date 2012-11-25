@@ -32,10 +32,8 @@ include (GtkDoc)
 include (Utilities)
 include (FileList)
 
-set (MIRAGE_INSTALL_PLUGINDIR "${CMAKE_INSTALL_LIBDIR}/${PROJECT_NAME}-${MIRAGE_VERSION_SHORT}"
-    CACHE PATH "Path to libMirage plugin directory." FORCE)
-set (MIRAGE_PLUGIN_DIR "${CMAKE_INSTALL_PREFIX}/${MIRAGE_INSTALL_PLUGINDIR}")
-mark_as_advanced (MIRAGE_INSTALL_PLUGINDIR)
+# Plugin directory
+set (MIRAGE_PLUGIN_DIR "${CMAKE_INSTALL_FULL_LIBDIR}/libmirage-${MIRAGE_VERSION_SHORT}" CACHE PATH "Path to libMirage plugin directory." FORCE)
 
 mark_as_advanced (CLEAR
     CMAKE_INSTALL_SYSCONFDIR
@@ -189,7 +187,7 @@ foreach (filter ${filters_LIST})
 
     install (
         TARGETS ${filter}
-        DESTINATION ${MIRAGE_INSTALL_PLUGINDIR}
+        DESTINATION ${MIRAGE_PLUGIN_DIR}
     )
 endforeach ()
 
@@ -215,7 +213,7 @@ foreach (parser ${parsers_LIST})
 
     install (
         TARGETS ${parser}
-        DESTINATION ${MIRAGE_INSTALL_PLUGINDIR}
+        DESTINATION ${MIRAGE_PLUGIN_DIR}
     )
 endforeach ()
 
