@@ -1,8 +1,10 @@
 cmake_minimum_required (VERSION 2.8.5)
 
-# Project name and version
+# Project name
 project (image-analyzer C)
-set (PROJECT_VERSION 1.6.0)
+
+# Versioning
+set (IMAGE_ANALYZERPROJECT_VERSION 1.6.0)
 
 # Search in the `cmake' directory for additional CMake modules.
 list (APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
@@ -58,7 +60,7 @@ option (STRICT_WARNINGS "Enable more warnings" off)
 find_package (PkgConfig 0.16 REQUIRED)
 find_package (Gnuplot 4.0)
 
-pkg_check_modules (LibMirage REQUIRED libmirage>=${PROJECT_VERSION})
+pkg_check_modules (LibMirage REQUIRED libmirage>=1.6.0)
 pkg_check_modules (LibGlib REQUIRED glib-2.0>=2.24 gobject-2.0>=2.24)
 pkg_check_modules (LibXml REQUIRED libxml-2.0>=2.0.0)
 

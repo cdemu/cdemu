@@ -1,9 +1,6 @@
 /* config.h - configuration file */
 
-/* General stuff */
-#define PACKAGE_NAME "@PROJECT_NAME@"
-#define PACKAGE_VERSION "@PROJECT_VERSION@"
+#define IMAGE_ANALYZER_VERSION "@IMAGE_ANALYZER_VERSION@"
 
-/* Config flags */
 #define GTK3_ENABLED "@GTK3_ENABLED@"
 

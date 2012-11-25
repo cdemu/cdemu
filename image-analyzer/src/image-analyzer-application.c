@@ -481,7 +481,7 @@ static void ui_callback_about (GtkAction *action G_GNUC_UNUSED, ImageAnalyzerApp
         GTK_WINDOW(self->priv->window),
         "name", "Image Analyzer",
         "comments", "Image Analyzer displays tree structure of disc image created by libMirage.",
-        "version", PACKAGE_VERSION,
+        "version", IMAGE_ANALYZER_VERSION,
         "authors", authors,
         "copyright", "Copyright (C) 2007-2012 Rok Mandeljc",
         NULL);
