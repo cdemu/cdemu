@@ -7,8 +7,8 @@ project (libmirage C)
 set (MIRAGE_MAJOR_VERSION 1)
 set (MIRAGE_MINOR_VERSION 6)
 set (MIRAGE_MICRO_VERSION 0)
-set (MIRAGE_VERSION_LONG 1.6.0)
-set (MIRAGE_VERSION_SHORT 1.6)
+set (MIRAGE_VERSION_LONG ${MIRAGE_MAJOR_VERSION}.${MIRAGE_MINOR_VERSION}.${MIRAGE_MICRO_VERSION})
+set (MIRAGE_VERSION_SHORT ${MIRAGE_MAJOR_VERSION}.${MIRAGE_MINOR_VERSION})
 
 # Libtool versioning:
 # Increment if the interface has additions, changes, removals.
@@ -81,53 +81,48 @@ configure_file (
     ${PROJECT_BINARY_DIR}/libmirage.pc
     @ONLY
 )
-include_directories (${PROJECT_BINARY_DIR})
-include_directories (${PROJECT_BINARY_DIR}/src/libmirage)
 
-list (APPEND libmirage_CFLAGS -std=c99)
-list (APPEND libmirage_DEFS HAVE_CONFIG_H G_DISABLE_DEPRECATED)
+# Global definitions
+add_definitions (-std=c99) # We're compiling using C99
+add_definitions (-DHAVE_CONFIG_H -DG_DISABLE_DEPRECATED)
 
-if (STRICT_WARNINGS AND CMAKE_COMPILER_IS_GNUCC)
-    list (APPEND libmirage_CFLAGS -Wall -Wextra -Wshadow -Wmissing-declarations
-        -Wmissing-prototypes -Wnested-externs -Wpointer-arith -Wcast-align)
+if (CMAKE_COMPILER_IS_GNUCC)
+    add_definitions (-Wall -Wextra -Wshadow -Wmissing-declarations -Wmissing-prototypes -Wnested-externs -Wpointer-arith -Wcast-align)
     check_c_compiler_flag (-Wno-strict-aliasing CC_HAVE_NSA)
     check_c_compiler_flag (-Wno-sign-compare CC_HAVE_NSC)
     if (CC_HAVE_NSA)
-        list (APPEND libmirage_CFLAGS -Wno-strict-aliasing)
+        add_definitions (-Wno-strict-aliasing)
     endif ()
     if (CC_HAVE_NSC)
-        list (APPEND libmirage_CFLAGS -Wno-sign-compare)
+        add_definitions (-Wno-sign-compare)
     endif ()
 endif ()
 
-####
-
-# Tests
-
-
-
-list (APPEND libmirage_CFLAGS ${LibGlib_CFLAGS})
-list (APPEND libmirage_LDFLAGS ${LibGlib_LDFLAGS})
-
-# Main library source files
-list (APPEND mirage_CFLAGS ${libmirage_CFLAGS})
-list (APPEND mirage_DEFS ${libmirage_DEFS}
-    MIRAGE_PLUGIN_DIR="${MIRAGE_PLUGIN_DIR}")
-list (APPEND mirage_LDFLAGS ${libmirage_LDFLAGS})
-
-to_list_spaces (mirage_CFLAGS mirage_S_CFLAGS)
-to_list_spaces (mirage_LDFLAGS mirage_S_LDFLAGS)
-
+# Global include directories
 include_directories (${PROJECT_SOURCE_DIR}/src/libmirage)
+include_directories (${PROJECT_BINARY_DIR})
+include_directories (${PROJECT_BINARY_DIR}/src/libmirage)
 
+
+# Core CFLAGS and LDFLAGS (common to library and plugins)
+list (APPEND core_CFLAGS ${LibGlib_CFLAGS})
+list (APPEND core_LDFLAGS ${LibGlib_LDFLAGS})
+
+# *** libMirage core library ***
 add_library (mirage SHARED ${libmirage_SOURCES})
-
 target_link_libraries (mirage ${LibGlib_LIBRARIES})
 
+list (APPEND mirage_CFLAGS ${core_CFLAGS})
+list (APPEND mirage_DEFS ${core_DEFS} MIRAGE_PLUGIN_DIR="${MIRAGE_PLUGIN_DIR}")
+list (APPEND mirage_LDFLAGS ${core_LDFLAGS})
+
+to_list_spaces (mirage_CFLAGS mirage_CFLAGS_STR)
+to_list_spaces (mirage_LDFLAGS mirage_LDFLAGS_STR)
+
 set_target_properties (mirage PROPERTIES
-    COMPILE_FLAGS ${mirage_S_CFLAGS}
+    COMPILE_FLAGS ${mirage_CFLAGS_STR}
     COMPILE_DEFINITIONS "${mirage_DEFS}"
-    LINK_FLAGS ${mirage_S_LDFLAGS}
+    LINK_FLAGS ${mirage_LDFLAGS_STR}
     LIBRARY_OUTPUT_NAME mirage
     SOVERSION ${MIRAGE_SOVERSION}
 )
@@ -142,13 +137,13 @@ install (
     DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/libmirage
 )
 
-# Filters source files
-list (APPEND filters_CFLAGS ${libmirage_CFLAGS} ${ZLib_CFLAGS})
-list (APPEND filters_DEFS ${libmirage_DEFS})
-list (APPEND filters_LDFLAGS ${libmirage_LDFLAGS} ${ZLib_LDFLAGS})
+# *** File filters ***
+list (APPEND filters_CFLAGS ${core_CFLAGS} ${ZLib_CFLAGS})
+list (APPEND filters_DEFS ${core_DEFS})
+list (APPEND filters_LDFLAGS ${core_LDFLAGS} ${ZLib_LDFLAGS})
 
-to_list_spaces (filters_CFLAGS filters_S_CFLAGS)
-to_list_spaces (filters_LDFLAGS filters_S_LDFLAGS)
+to_list_spaces (filters_CFLAGS filters_CFLAGS_STR)
+to_list_spaces (filters_LDFLAGS filters_LDFLAGS_STR)
 
 foreach (filter ${filters_LIST})
     add_library (${filter} MODULE ${${filter}_SOURCES})
@@ -172,9 +167,9 @@ foreach (filter ${filters_LIST})
     endif ()
 
     set_target_properties (${filter} PROPERTIES
-        COMPILE_FLAGS "${filters_S_CFLAGS} ${extra_CFLAGS}"
+        COMPILE_FLAGS "${filters_CFLAGS_STR} ${extra_CFLAGS}"
         COMPILE_DEFINITIONS "${filters_DEFS}"
-        LINK_FLAGS "${filters_S_LDFLAGS} ${extra_LDFLAGS}"
+        LINK_FLAGS "${filters_LDFLAGS_STR} ${extra_LDFLAGS}"
         PREFIX ""
     )
 
@@ -184,13 +179,13 @@ foreach (filter ${filters_LIST})
     )
 endforeach ()
 
-# Parsers source files
-list (APPEND parsers_CFLAGS ${libmirage_CFLAGS} ${ZLib_CFLAGS})
-list (APPEND parsers_DEFS ${libmirage_DEFS})
-list (APPEND parsers_LDFLAGS ${libmirage_LDFLAGS} ${ZLib_LDFLAGS})
+# *** Parsers ***
+list (APPEND parsers_CFLAGS ${core_CFLAGS} ${ZLib_CFLAGS})
+list (APPEND parsers_DEFS ${core_DEFS})
+list (APPEND parsers_LDFLAGS ${core_LDFLAGS} ${ZLib_LDFLAGS})
 
-to_list_spaces (parsers_CFLAGS parsers_S_CFLAGS)
-to_list_spaces (parsers_LDFLAGS parsers_S_LDFLAGS)
+to_list_spaces (parsers_CFLAGS parsers_CFLAGS_STR)
+to_list_spaces (parsers_LDFLAGS parsers_LDFLAGS_STR)
 
 foreach (parser ${parsers_LIST})
     add_library (${parser} MODULE ${${parser}_SOURCES})
@@ -198,9 +193,9 @@ foreach (parser ${parsers_LIST})
     target_link_libraries (${parser} ${LibGlib_LIBRARIES} ${ZLib_LIBRARIES})
 
     set_target_properties (${parser} PROPERTIES
-        COMPILE_FLAGS ${parsers_S_CFLAGS}
+        COMPILE_FLAGS "${parsers_CFLAGS_STR}"
         COMPILE_DEFINITIONS "${parsers_DEFS}"
-        LINK_FLAGS ${parsers_S_LDFLAGS}
+        LINK_FLAGS "${parsers_LDFLAGS_STR}"
         PREFIX ""
     )
 
@@ -210,7 +205,7 @@ foreach (parser ${parsers_LIST})
     )
 endforeach ()
 
-# Mimetype files
+# *** Mimetype files ***
 install (
     FILES ${mimetype_FILES}
     DESTINATION ${CMAKE_INSTALL_DATADIR}/mime/packages
@@ -221,7 +216,7 @@ if (POST_INSTALL_HOOKS)
     )
 endif ()
 
-# Introspection stuff
+# *** Introspection ***
 if (INTROSPECTION_ENABLED AND INTROSPECTION_FOUND)
     gobject_introspection (
         FILENAME libMirage-1.0.gir
@@ -237,7 +232,7 @@ if (INTROSPECTION_ENABLED AND INTROSPECTION_FOUND)
     )
 endif ()
 
-# Gtk-Doc documentation
+# *** Documentation ***
 if (GTKDOC_ENABLED AND GTKDOC_FOUND)
     get_target_property (GTKDOC_LIB mirage LIBRARY_OUTPUT_NAME)
     gtk_doc (
@@ -247,13 +242,13 @@ if (GTKDOC_ENABLED AND GTKDOC_FOUND)
         SOURCES ${libmirage_HEADERS} ${libmirage_SOURCES}
         DOCS_DIR ${PROJECT_SOURCE_DIR}/docs/reference/libmirage
         IGNORE_HFILES mirage-disc-structures.h
-        CFLAGS ${libmirage_CFLAGS} -I${PROJECT_SOURCE_DIR}/src/libmirage
-        LDFLAGS ${libmirage_LDFLAGS} -L${PROJECT_BINARY_DIR}
+        CFLAGS ${mirage_CFLAGS} -I${PROJECT_SOURCE_DIR}/src/libmirage
+        LDFLAGS ${mirage_LDFLAGS} -L${PROJECT_BINARY_DIR}
             -Wl,-rpath,${PROJECT_BINARY_DIR} -l${GTKDOC_LIB}
     )
 endif ()
 
-# Install misc.
+# *** Pkg-config ***
 install (
     FILES ${PROJECT_BINARY_DIR}/libmirage.pc
     DESTINATION ${CMAKE_INSTALL_LIBDIR}/pkgconfig
