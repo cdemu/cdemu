@@ -1,6 +1,9 @@
 /* config.h - configuration file */
+#ifndef __CONFIG_H__
+#define __CONFIG_H__
 
-#define IMAGE_ANALYZER_VERSION "@IMAGE_ANALYZER_VERSION@"
+#cmakedefine IMAGE_ANALYZER_VERSION "@IMAGE_ANALYZER_VERSION@"
 
 #cmakedefine01 GTK3_ENABLED
 
+#endif /* __CONFIG_H__ */
