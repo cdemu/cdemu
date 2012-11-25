@@ -24,7 +24,7 @@
 #include <math.h>
 #include <glib.h>
 #include <gtk/gtk.h>
-#ifdef GTK3_ENABLED
+#if GTK3_ENABLED
 #include <gtk/gtkx.h>
 #endif
 #include <mirage.h>
@@ -68,7 +68,7 @@ static gboolean image_analyzer_disc_topology_run_gnuplot (ImageAnalyzerDiscTopol
     /* Redirect to socket */
     gtk_widget_show_all(GTK_WIDGET(self));
 
-    cmd = g_strdup_printf("set term x11 window '%lX' ctrlq\n", gtk_socket_get_id(GTK_SOCKET(self->priv->socket)));
+    cmd = g_strdup_printf("set term x11 window '%X' ctrlq\n", gtk_socket_get_id(GTK_SOCKET(self->priv->socket)));
     cmdlen = strlen(cmd);
 
     written = write(self->priv->fd_in, cmd, cmdlen);
