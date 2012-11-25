@@ -239,7 +239,7 @@ static void cdemu_daemon_dbus_handle_method_call (GDBusConnection *connection G_
         g_object_unref(device);
     } else if (!g_strcmp0(method_name, "GetDaemonInterfaceVersion")) {
         /* *** GetDaemonInterfaceVersion *** */
-        ret = g_variant_new("(i)", DAEMON_INTERFACE_VERSION);
+        ret = g_variant_new("(i)", CDEMU_DAEMON_INTERFACE_VERSION);
         succeeded = TRUE;
     } else if (!g_strcmp0(method_name, "GetDaemonVersion")) {
         /* *** GetDaemonVersion *** */

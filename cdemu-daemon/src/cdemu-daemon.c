@@ -184,7 +184,7 @@ static void cdemu_daemon_init (CdemuDaemon *self)
     self->priv->ctl_device = NULL;
 
     /* Set version string */
-    self->priv->version = g_strdup(PACKAGE_VERSION);
+    self->priv->version = g_strdup(CDEMU_DAEMON_VERSION);
 
     /* D-Bus data */
     self->priv->connection = NULL;
