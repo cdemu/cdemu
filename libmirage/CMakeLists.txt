@@ -138,38 +138,51 @@ install (
 )
 
 # *** File filters ***
-list (APPEND filters_CFLAGS ${core_CFLAGS} ${ZLIB_CFLAGS})
-list (APPEND filters_DEFS ${core_DEFS})
-list (APPEND filters_LDFLAGS ${core_LDFLAGS} ${ZLIB_LDFLAGS})
-
-to_list_spaces (filters_CFLAGS filters_CFLAGS_STR)
-to_list_spaces (filters_LDFLAGS filters_LDFLAGS_STR)
-
 foreach (filter ${filters_LIST})
     add_library (${filter} MODULE ${${filter}_SOURCES})
+    target_link_libraries (${filter} ${GLIB_LIBRARIES})
 
-    target_link_libraries (${filter} ${GLIB_LIBRARIES} ${ZLIB_LIBRARIES} ${BZIP2_LIBRARY})
+    list (APPEND ${filter}_CFLAGS ${GLIB_CFLAGS})
+    list (APPEND ${filter}_DEFS "")
+    list (APPEND ${filter}_LDFLAGS ${GLIB_LDFLAGS})
 
-    if (filter STREQUAL "filter-xz")
+    if (filter STREQUAL "filter-cso")
+        list (APPEND ${filter}_CFLAGS ${ZLIB_CFLAGS})
+        list (APPEND ${filter}_LDFLAGS ${ZLIB_LDFLAGS})
+        target_link_libraries (${filter} ${ZLIB_LIBRARIES})
+    elseif (filter STREQUAL "filter-daa")
+        list (APPEND ${filter}_CFLAGS ${ZLIB_CFLAGS} "-I${PROJECT_SOURCE_DIR}/src/filters/filter-daa/lzma-sdk")
+        list (APPEND ${filter}_LDFLAGS ${ZLIB_LDFLAGS})
+        target_link_libraries (${filter} ${ZLIB_LIBRARIES})
+    elseif (filter STREQUAL "filter-dmg")
+        list (APPEND ${filter}_CFLAGS ${ZLIB_CFLAGS})
+        list (APPEND ${filter}_LDFLAGS ${ZLIB_LDFLAGS})
+        target_link_libraries (${filter} ${ZLIB_LIBRARIES} ${BZIP2_LIBRARY})
+    elseif (filter STREQUAL "filter-gzip")
+        list (APPEND ${filter}_CFLAGS ${ZLIB_CFLAGS})
+        list (APPEND ${filter}_LDFLAGS ${ZLIB_LDFLAGS})
+        target_link_libraries (${filter} ${ZLIB_LIBRARIES})
+    elseif (filter STREQUAL "filter-isz")
+        list (APPEND ${filter}_CFLAGS ${ZLIB_CFLAGS})
+        list (APPEND ${filter}_LDFLAGS ${ZLIB_LDFLAGS})
+        target_link_libraries (${filter} ${ZLIB_LIBRARIES} ${BZIP2_LIBRARY})
+    elseif (filter STREQUAL "filter-sndfile")
+        list (APPEND ${filter}_CFLAGS ${SNDFILE_CFLAGS})
+        list (APPEND ${filter}_LDFLAGS ${SNDFILE_LDFLAGS})
+        target_link_libraries (${filter} ${SNDFILE_LIBRARIES})
+    elseif (filter STREQUAL "filter-xz")
         to_list_spaces (LIBLZMA_CFLAGS extra_CFLAGS)
         to_list_spaces (LIBLZMA_LDFLAGS extra_LDFLAGS)
         target_link_libraries (${filter} ${LIBLZMA_LIBRARIES})
-    elseif (filter STREQUAL "filter-daa")
-        set (extra_CFLAGS -I${PROJECT_SOURCE_DIR}/src/filters/filter-daa/lzma-sdk)
-        set (extra_LDFLAGS)
-    elseif (filter STREQUAL "filter-sndfile")
-        to_list_spaces (SNDFILE_CFLAGS extra_CFLAGS)
-        to_list_spaces (SNDFILE_LDFLAGS extra_LDFLAGS)
-        target_link_libraries (${filter} ${SNDFILE_LIBRARIES})
-    else ()
-        set (extra_CFLAGS)
-        set (extra_LDFLAGS)
     endif ()
 
+    to_list_spaces (${filter}_CFLAGS ${filter}_CFLAGS_STR)
+    to_list_spaces (${filter}_LDFLAGS ${filter}_LDFLAGS_STR)
+
     set_target_properties (${filter} PROPERTIES
-        COMPILE_FLAGS "${filters_CFLAGS_STR} ${extra_CFLAGS}"
-        COMPILE_DEFINITIONS "${filters_DEFS}"
-        LINK_FLAGS "${filters_LDFLAGS_STR} ${extra_LDFLAGS}"
+        COMPILE_FLAGS "${${filter}_CFLAGS_STR}"
+        COMPILE_DEFINITIONS "${${filter}_DEFS}"
+        LINK_FLAGS "${${filter}_LDFLAGS_STR}"
         PREFIX ""
     )
 
@@ -180,22 +193,21 @@ foreach (filter ${filters_LIST})
 endforeach ()
 
 # *** Parsers ***
-list (APPEND parsers_CFLAGS ${core_CFLAGS} ${ZLIB_CFLAGS})
-list (APPEND parsers_DEFS ${core_DEFS})
-list (APPEND parsers_LDFLAGS ${core_LDFLAGS} ${ZLIB_LDFLAGS})
-
-to_list_spaces (parsers_CFLAGS parsers_CFLAGS_STR)
-to_list_spaces (parsers_LDFLAGS parsers_LDFLAGS_STR)
-
 foreach (parser ${parsers_LIST})
     add_library (${parser} MODULE ${${parser}_SOURCES})
+    target_link_libraries (${parser} ${GLIB_LIBRARIES})
 
-    target_link_libraries (${parser} ${GLIB_LIBRARIES} ${ZLIB_LIBRARIES})
+    list (APPEND ${parser}_CFLAGS ${GLIB_CFLAGS})
+    list (APPEND ${parser}_DEFS "")
+    list (APPEND ${parser}_LDFLAGS ${GLIB_LDFLAGS})
+
+    to_list_spaces (${parser}_CFLAGS ${parser}_CFLAGS_STR)
+    to_list_spaces (${parser}_LDFLAGS ${parser}_LDFLAGS_STR)
 
     set_target_properties (${parser} PROPERTIES
-        COMPILE_FLAGS "${parsers_CFLAGS_STR}"
-        COMPILE_DEFINITIONS "${parsers_DEFS}"
-        LINK_FLAGS "${parsers_LDFLAGS_STR}"
+        COMPILE_FLAGS "${${parser}_CFLAGS_STR}"
+        COMPILE_DEFINITIONS "${${parser}_DEFS}"
+        LINK_FLAGS "${${parser}_LDFLAGS_STR}"
         PREFIX ""
     )
 
