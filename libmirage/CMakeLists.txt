@@ -20,7 +20,7 @@ set (MIRAGE_LT_REVISION 0)
 set (MIRAGE_LT_AGE 0)
 set (MIRAGE_SOVERSION ${MIRAGE_LT_CURRENT}.${MIRAGE_LT_REVISION}.${MIRAGE_LT_AGE})
 
-# Search in the `cmake' directory for additional CMake modules.
+# Additional CMake modules.
 list (APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
 
 include (CheckCSourceCompiles)
@@ -34,11 +34,6 @@ include (FileList)
 
 # Plugin directory
 set (MIRAGE_PLUGIN_DIR "${CMAKE_INSTALL_FULL_LIBDIR}/libmirage-${MIRAGE_VERSION_SHORT}" CACHE PATH "Path to libMirage plugin directory." FORCE)
-
-mark_as_advanced (CLEAR
-    CMAKE_INSTALL_SYSCONFDIR
-    CMAKE_VERBOSE_MAKEFILE
-)
 
 # Configuration
 configure_file (

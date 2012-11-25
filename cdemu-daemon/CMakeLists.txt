@@ -7,7 +7,7 @@ project (cdemu-daemon C)
 set (CDEMU_DAEMON_VERSION 1.6.0)
 set (CDEMU_DAEMON_INTERFACE_VERSION 4)
 
-# Search in the `cmake' directory for additional CMake modules.
+# Additional CMake modules.
 list (APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
 
 include (CheckCSourceCompiles)
@@ -16,11 +16,6 @@ include (GNUInstallDirs)
 
 include (Utilities)
 include (FileList)
-
-mark_as_advanced (CLEAR
-    CMAKE_INSTALL_SYSCONFDIR
-    CMAKE_VERBOSE_MAKEFILE
-)
 
 # Configuration
 configure_file (

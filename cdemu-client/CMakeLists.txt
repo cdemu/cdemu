@@ -3,23 +3,12 @@ cmake_minimum_required (VERSION 2.8.5)
 # Project name
 project (cdemu-client NONE)
 
-# Search in the `cmake' directory for additional CMake modules.
+# Additional CMake modules.
 list (APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
 
 include (GNUInstallDirs)
 
-mark_as_advanced (CLEAR
-    CMAKE_INSTALL_SYSCONFDIR
-    CMAKE_VERBOSE_MAKEFILE
-)
-
-mark_as_advanced (
-    GETTEXT_MSGFMT_EXECUTABLE
-    GETTEXT_MSGMERGE_EXECUTABLE
-)
-
 # Configuration
-
 option (BUILD_NLS "Support for multiple languages" on)
 option (POST_INSTALL_HOOKS "Run post-install hooks" on)
 
