@@ -21,6 +21,11 @@ include (FileList)
 option (SYSTEM_BUS_SERVICE "Install CDEmu daemon as D-Bus system bus service" off)
 option (SESSION_BUS_SERVICE "Install CDEmu daemon as D-Bus session bus service" on)
 
+# If install prefix is /usr, override the sysconf dir to be /etc instead of /usr/etc
+if ("${CMAKE_INSTALL_PREFIX}" STREQUAL "/usr")
+    set(CMAKE_INSTALL_SYSCONFDIR "/etc" CACHE PATH "read-only single-machine data (/etc)" FORCE)
+endif()
+
 # Dependencies
 find_package (PkgConfig 0.16 REQUIRED)
 
@@ -105,7 +110,7 @@ if (SYSTEM_BUS_SERVICE)
     )
     install (
         FILES system/cdemu-daemon-dbus.conf
-        DESTINATION ${CMAKE_INSTALL_SYSCONFDIR}/etc/dbus-1/system.d
+        DESTINATION ${CMAKE_INSTALL_SYSCONFDIR}/dbus-1/system.d
     )
 endif ()
 
