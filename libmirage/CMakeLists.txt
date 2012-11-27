@@ -36,7 +36,6 @@ include (FileList)
 option (GTKDOC_ENABLED "Use gtk-doc to build documentation" on)
 option (INTROSPECTION_ENABLED "Generate gobject introspection files" on)
 option (POST_INSTALL_HOOKS "Run post-install hooks" on)
-option (STRICT_WARNINGS "Enable more warnings" off)
 
 # Plugin directory
 set (MIRAGE_PLUGIN_DIR "${CMAKE_INSTALL_FULL_LIBDIR}/libmirage-${MIRAGE_VERSION_SHORT}" CACHE PATH "Path to libMirage plugin directory." FORCE)
