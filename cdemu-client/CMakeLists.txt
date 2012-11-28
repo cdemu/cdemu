@@ -12,6 +12,11 @@ include (GNUInstallDirs)
 option (BUILD_NLS "Support for multiple languages" on)
 option (POST_INSTALL_HOOKS "Run post-install hooks" on)
 
+# If install prefix is /usr, override the sysconf dir to be /etc instead of /usr/etc
+if ("${CMAKE_INSTALL_PREFIX}" STREQUAL "/usr")
+    set(CMAKE_INSTALL_SYSCONFDIR "/etc" CACHE PATH "read-only single-machine data (/etc)" FORCE)
+endif()
+
 # Dependencies
 find_package (IntlTool 0.21 REQUIRED)
 find_package (Gettext 0.15 REQUIRED)
