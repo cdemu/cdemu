@@ -4,8 +4,8 @@ cmake_minimum_required (VERSION 2.8.5)
 project (libmirage C)
 
 # Release versioning:
-set (MIRAGE_MAJOR_VERSION 1)
-set (MIRAGE_MINOR_VERSION 6)
+set (MIRAGE_MAJOR_VERSION 2)
+set (MIRAGE_MINOR_VERSION 0)
 set (MIRAGE_MICRO_VERSION 0)
 set (MIRAGE_VERSION_LONG ${MIRAGE_MAJOR_VERSION}.${MIRAGE_MINOR_VERSION}.${MIRAGE_MICRO_VERSION})
 set (MIRAGE_VERSION_SHORT ${MIRAGE_MAJOR_VERSION}.${MIRAGE_MINOR_VERSION})
@@ -219,7 +219,7 @@ endif ()
 # *** Introspection ***
 if (INTROSPECTION_ENABLED AND INTROSPECTION_FOUND)
     gobject_introspection (
-        FILENAME libMirage-1.0.gir
+        FILENAME libMirage-2.0.gir
         NSVERSION ${MIRAGE_VERSION_SHORT}
         INCLUDES GObject-2.0 Gio-2.0 GLib-2.0 GModule-2.0
         LIBRARY mirage

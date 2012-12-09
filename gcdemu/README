@@ -1,5 +1,5 @@
 gCDEmu
-1.6.0
+2.0.0
 ~~~~~
 
 Table of Contents:
@@ -54,7 +54,7 @@ INSTALL file.
 
 
 Note that if during make, you get the following error:
-    make[1]: Entering directory `/tmp/gcdemu-1.1.0/po'
+    make[1]: Entering directory `/tmp/gcdemu-2.0.0/po'
     file=`echo sl | sed 's,.*/,,'`.gmo \
     && rm -f $file && -o $file sl.po
     /bin/sh: -o: not found
@@ -127,7 +127,7 @@ A: Greyed-out icon means that the applet failed to connect to the CDEmu daemon.
 6. A note on encrypted images and password supplying:
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-As of version 1.2.0, CDEmu daemon offers support for encrypted images. When password
+CDEmu daemon offers support for encrypted images. When password
 is required to load an image, gCDEmu will prompt for it and then send it to daemon.
 
 NOTE, HOWEVER, THAT THE PASSWORD IS SENT OVER D-BUS IN A PLAIN STRING FORM, WITHOUT
@@ -200,7 +200,7 @@ Reload the GNOME Shell (press Alt+F2 and enter 'r' or 'gnome-shell --replace').
 
 8. Gtk Application and Ubuntu AppIndicator mode:
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-As of version 1.6.0, gCDEmu can run as Ubuntu AppIndicator, as opposed to
+As of version 2.0.0, gCDEmu can run as Ubuntu AppIndicator, as opposed to
 classic Gtk Application mode. In Gtk Application mode, which is used by
 default, gCDEmu displays a system tray icon, whose appearance depends on
 the settings of your system (see Section 6).

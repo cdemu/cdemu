@@ -12,9 +12,9 @@ Standards-Version: 3.9.3
 Package: gcdemu
 Architecture: all
 Depends: python (>= 2.6.6-3), python-gi (>= 3.0.0), gir1.2-glib-2.0, 
- gir1.2-gtk-3.0, gir1.2-notify-0.7, cdemu-daemon (>= 1.6.0), 
+ gir1.2-gtk-3.0, gir1.2-notify-0.7, cdemu-daemon (>= 2.0.0), 
  ${python:Depends}, ${misc:Depends}
-Recommends: cdemu-client (>= 1.6.0)
+Recommends: cdemu-client (>= 2.0.0)
 Description: GNOME application to control CDEmu daemon
  This is gCDEmu, a GNOME application for controlling CDEmu daemon. It is part of
  the CDEmu suite, a free, GPL CD/DVD-ROM device emulator for Linux.

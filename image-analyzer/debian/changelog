@@ -1,4 +1,4 @@
-image-analyzer (1.6.0-1ubuntu0~quantal1~ppa1) quantal; urgency=low
+image-analyzer (2.0.0-1ubuntu0~quantal1~ppa1) quantal; urgency=low
 
   * Initial Release. Closes: (LP: #105452)
 

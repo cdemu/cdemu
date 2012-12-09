@@ -5,17 +5,14 @@
 #export DH_VERBOSE=1
 
 
-override_dh_auto_configure:
-	dh_auto_configure -- -DCMAKE_INSTALL_FULL_SYSCONFDIR:PATH=/etc -DCMAKE_INSTALL_SYSCONFDIR:PATH=/etc
-
 override_dh_strip:
 	dh_strip --dbg-package="libmirage7-dbg"
 
 override_dh_makeshlibs:
-	dh_makeshlibs --exclude="libmirage-1.6"
+	dh_makeshlibs --exclude="libmirage-2.0"
 
 override_dh_shlibdeps:
-	dh_shlibdeps --exclude="libmirage-1.6"
+	dh_shlibdeps --exclude="libmirage-2.0"
 
 %:
 	dh $@ --with apport,gir

@@ -1,4 +1,4 @@
-cdemu-daemon (1.6.0-1ubuntu0~quantal1~ppa1) quantal; urgency=low
+cdemu-daemon (2.0.0-1ubuntu0~quantal1~ppa1) quantal; urgency=low
 
   * 01-dbus-config.diff: Patch D-BUS configuration.
   * Initial Release. Closes: (LP: #105452, LP: #184649)

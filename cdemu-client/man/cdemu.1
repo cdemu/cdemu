@@ -22,7 +22,7 @@ read README file. The default can be overriden using
 .B --bus
 option.
 .SH ENCRYPTED IMAGES SUPPORT
-As of version 1.2.0, CDEmu daemon offers support for encrypted images. When password
+CDEmu daemon offers support for encrypted images. When password
 is required to load an image (and it hasn't been provided via commandline using
 --password), cdemu-client will prompt for it and then send it to daemon.
 
@@ -42,7 +42,7 @@ Prints version info and exits.
 Sets the D-BUS bus type to use for connection. Valid values are \fIsession\fR
 and \fIsystem\fR. If no bus is specified, the default bus is used.
 .SH PARSER PARAMETERS (used only with 'load' command)
-As of version 1.2.0, parser parameters can be passed to the image parsers when
+Parser parameters can be passed to the image parsers when
 trying to load the image. Parameters are optional; whether they are supported
 by a particular parser or not depends on the parser implementation.
 
