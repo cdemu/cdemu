@@ -11,7 +11,7 @@ Standards-Version: 3.9.3
 Package: cdemu-daemon
 Section: misc
 Architecture: any
-Depends: vhba-dkms (>= 20110915), ${shlibs:Depends}, ${misc:Depends}
+Depends: vhba-dkms (>= 20120422), ${shlibs:Depends}, ${misc:Depends}
 Description: CDEmu daemon
  This is CDEmu daemon, the daemon part of the CDEmu suite,
  a free, GPL CD/DVD-ROM device emulator for Linux.

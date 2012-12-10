@@ -1,7 +1,7 @@
 [Desktop Entry]
 Version=1.0
 _Name=gCDEmu
-_Comment=gCDEmu GTK GUI
+_Comment=gCDEmu GUI
 Icon=gcdemu
 Terminal=false
 Type=Application

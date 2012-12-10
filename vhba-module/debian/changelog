@@ -1,4 +1,4 @@
-vhba-module (20120926-1ubuntu0~quantal1~ppa1) quantal; urgency=low
+vhba-module (20120422-1ubuntu0~quantal1~ppa1) quantal; urgency=low
 
   * Initial Release. Closes: (LP: #105452, LP: #184637)
 

@@ -1543,7 +1543,19 @@ if __name__ == "__main__":
     # Command-line argument parsing
     parser = argparse.ArgumentParser()
     parser.add_argument('--indicator', action="store_true", default=False, help='run gCDEmu in AppIndicator mode')
+    parser.add_argument('--app', action="store_true", default=False, help='run gCDEmu in Application mode')
     args = parser.parse_args()
+
+    # Attempt to autodetect running Desktop Environment
+    if not args.indicator and not args.app:
+        desktop = os.environ['XDG_CURRENT_DESKTOP']
+        print ("Detected desktop environment: %s" % (desktop))
+        if desktop == "Unity":
+            args.indicator = True
+        elif desktop == "GNOME":
+            args.app = True
+        else:
+            args.app = True
 
     if args.indicator:
         # AppIndicator version
