@@ -523,7 +523,7 @@ class gCDEmu:
         self.signals = []
 
         # *** Configuration ***
-        self.settings = Gio.Settings("apps.gcdemu")
+        self.settings = Gio.Settings("net.sf.cdemu.gcdemu")
 
         # Watch over our settings
         self.settings.connect("changed", lambda s, k: self.on_settings_changed(k))

@@ -1,5 +1,5 @@
 <schemalist gettext-domain="gcdemu">
-  <schema id="apps.gcdemu" path="/apps/gcdemu/">
+  <schema id="net.sf.cdemu.gcdemu" path="/net/sf/cdemu/gcdemu/">
     <key name="show-notifications" type="b">
       <default>true</default>
       <_summary>Show notifications</_summary>

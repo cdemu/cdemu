@@ -32,9 +32,9 @@ install (
     DESTINATION ${CMAKE_INSTALL_BINDIR}
 )
 
-intltool_merge ("-x" po data/apps.gcdemu.gschema.xml.in apps.gcdemu.gschema.xml)
+intltool_merge ("-x" po data/net.sf.cdemu.gcdemu.gschema.xml.in net.sf.cdemu.gcdemu.gschema.xml)
 install (
-    FILES ${PROJECT_BINARY_DIR}/apps.gcdemu.gschema.xml
+    FILES ${PROJECT_BINARY_DIR}/net.sf.cdemu.gcdemu.gschema.xml
     DESTINATION ${CMAKE_INSTALL_DATADIR}/glib-2.0/schemas
 )
 if (POST_INSTALL_HOOKS)
