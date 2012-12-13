@@ -206,8 +206,6 @@ function(gobject_introspection)
         VERBATIM
     )
 
-    add_custom_target("${GIR_LIBRARY} gir" ALL DEPENDS ${GIR_LIBRARY} ${GIR_FILENAME})
-
     install(
         FILES ${CMAKE_CURRENT_BINARY_DIR}/${GIR_FILENAME}
         DESTINATION ${GIR_GIRDIR}
@@ -225,6 +223,7 @@ function(gobject_introspection)
         WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
     )
 
+    # Actual target
     add_custom_target("${GIR_LIBRARY} typelib" ALL DEPENDS ${GIR_LIBRARY} ${GIR_FILENAME} ${GIR_TYPELIB})
     install(
         FILES ${CMAKE_CURRENT_BINARY_DIR}/${GIR_TYPELIB}

@@ -84,9 +84,6 @@ function (gtk_doc)
         VERBATIM
     )
 
-    add_custom_target ("gtkdoc-scan ${GTKDOC_MODULE}" ALL
-        DEPENDS mirage ${GTKDOC_SOURCES} ${GTKDOC_DOCS_BUILDDIR}/scan.stamp)
-
     # build xml
     add_custom_command (
         OUTPUT ${GTKDOC_DOCS_BUILDDIR}/sgml.stamp
@@ -96,10 +93,6 @@ function (gtk_doc)
         DEPENDS ${GTKDOC_DOCS_BUILDDIR}/scan.stamp
         VERBATIM
     )
-
-    add_custom_target ("gtkdoc-xml ${GTKDOC_MODULE}" ALL
-        DEPENDS ${GTKDOC_DOCS_BUILDDIR}/scan.stamp
-        ${GTKDOC_DOCS_BUILDDIR}/sgml.stamp)
 
     # build html and fix cross-references
     add_custom_command (
@@ -112,7 +105,8 @@ function (gtk_doc)
         VERBATIM
     )
 
-    add_custom_target ("gtkdoc-html ${GTKDOC_MODULE}" ALL
+    # Actual target
+    add_custom_target ("gtkdoc ${GTKDOC_MODULE}" ALL
         DEPENDS ${GTKDOC_DOCS_BUILDDIR}/scan.stamp
         ${GTKDOC_DOCS_BUILDDIR}/sgml.stamp
         ${GTKDOC_DOCS_BUILDDIR}/html.stamp)
