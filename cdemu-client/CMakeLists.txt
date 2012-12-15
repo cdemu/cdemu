@@ -1,7 +1,7 @@
 cmake_minimum_required (VERSION 2.8.5)
 
 # Project name
-project (cdemu NONE)
+project (cdemu-client NONE)
 
 # Additional CMake modules.
 list (APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
@@ -28,6 +28,7 @@ if (POST_INSTALL_HOOKS)
 endif ()
 
 # Installation
+
 install (
     PROGRAMS src/cdemu
     DESTINATION ${CMAKE_INSTALL_BINDIR}
@@ -55,30 +56,7 @@ if (POST_INSTALL_HOOKS)
     )
 endif ()
 
+if (BUILD_NLS AND GETTEXT_FOUND)
+    gettext_process_po_files (${PROJECT_SOURCE_DIR}/po ${PROJECT_NAME})
+endif ()
 
-# i18n
-if (NOT GETTEXT_MSGFMT_EXECUTABLE)
-	message ("NOTE: msgfmt not found. Translations will *not* be installed!")
-elseif (BUILD_NLS)
-    set (catalogname ${PROJECT_NAME})
-
-    add_custom_target (translations ALL)
-
-    file (GLOB PO_FILES po/*.po)
-
-    foreach (_poFile ${PO_FILES})
-        get_filename_component (_poFileName ${_poFile} NAME)
-        string (REGEX REPLACE "^${catalogname}_?" "" _langCode ${_poFileName} )
-        string (REGEX REPLACE "\\.po$" "" _langCode ${_langCode} )
-
-        if ( _langCode )
-            get_filename_component (_lang ${_poFile} NAME_WE)
-            set (_gmoFile ${CMAKE_CURRENT_BINARY_DIR}/${_lang}.gmo)
-
-            add_custom_command (TARGET translations
-                                COMMAND ${GETTEXT_MSGFMT_EXECUTABLE} --check -o ${_gmoFile} ${_poFile}
-                                DEPENDS ${_poFile})
-            install (FILES ${_gmoFile} DESTINATION ${CMAKE_INSTALL_LOCALEDIR}/${_langCode}/LC_MESSAGES/ RENAME ${catalogname}.mo)
-        endif ()
-    endforeach()
-endif()
