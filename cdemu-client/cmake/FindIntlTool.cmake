@@ -20,7 +20,7 @@ mark_as_advanced (
 
 if (INTLTOOL_UPDATE_EXECUTABLE)
     execute_process (
-        COMMAND ${INTLTOOL_UPDATE_EXECUTABLE} --version 
+        COMMAND ${INTLTOOL_UPDATE_EXECUTABLE} --version
         COMMAND head --lines=1
         COMMAND cut -d " " -f 3
         OUTPUT_VARIABLE INTLTOOL_VERSION
@@ -33,7 +33,7 @@ find_package_handle_standard_args (IntlTool
     VERSION_VAR INTLTOOL_VERSION
 )
 
-function (gettext_process_po_files po_dir)
+function (intltool_process_po_files po_dir catalog_name)
     set (gmo_files)
     file (GLOB po_files ${po_dir}/*.po)
 
@@ -42,13 +42,13 @@ function (gettext_process_po_files po_dir)
         set (gmo_file ${CMAKE_CURRENT_BINARY_DIR}/${lang}.gmo)
         add_custom_command (
             OUTPUT ${gmo_file}
-            COMMAND ${GETTEXT_MSGFMT_EXECUTABLE} -o ${gmo_file} ${po_file} 
+            COMMAND ${GETTEXT_MSGFMT_EXECUTABLE} --check -o ${gmo_file} ${po_file}
             DEPENDS ${po_file}
         )
         install (
-            FILES ${gmo_file} 
-            DESTINATION ${CMAKE_INSTALL_LOCALEDIR}/${lang}/LC_MESSAGES 
-            RENAME ${package_name}.mo
+            FILES ${gmo_file}
+            DESTINATION ${CMAKE_INSTALL_LOCALEDIR}/${lang}/LC_MESSAGES
+            RENAME ${catalog_name}.mo
         )
         set (gmo_files ${gmo_files} ${gmo_file})
     endforeach ()
@@ -64,7 +64,7 @@ function (intltool_merge options po_dir in_filename out_filename)
     add_custom_command (
         OUTPUT ${out_filename}
         COMMAND ${INTLTOOL_MERGE_EXECUTABLE} ${options} ${options2} -u ${PROJECT_SOURCE_DIR}/${po_dir}
-            ${PROJECT_SOURCE_DIR}/${in_filename} ${out_filename} 
+            ${PROJECT_SOURCE_DIR}/${in_filename} ${out_filename}
         DEPENDS ${in_filename}
     )
     set (intltool-merge-target "intltool-merge ${out_filename}")

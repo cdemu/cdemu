@@ -63,6 +63,7 @@ install (
 )
 
 if (BUILD_NLS AND GETTEXT_FOUND)
-    gettext_process_po_files (${PROJECT_SOURCE_DIR}/po ${PROJECT_NAME})
+    # We use the version provided by our FindIntlTool.cmake instead of the gettext version...
+    intltool_process_po_files(${PROJECT_SOURCE_DIR}/po ${PROJECT_NAME})
 endif ()
 
