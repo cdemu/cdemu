@@ -1548,11 +1548,14 @@ if __name__ == "__main__":
 
     # Attempt to autodetect running Desktop Environment
     if not args.indicator and not args.app:
-        desktop = os.environ['XDG_CURRENT_DESKTOP']
-        print ("Detected desktop environment: %s" % (desktop))
-        if desktop == "Unity":
+        if "XDG_CURRENT_DESKTOP" in os.environ:
+            desktop = os.environ["XDG_CURRENT_DESKTOP"]
+        else:
+            desktop = ""
+
+        if desktop == "Unity": # Unity for Ubuntu 11.10 or newer
             args.indicator = True
-        elif desktop == "GNOME":
+        elif desktop == "GNOME": # Gnome newer than 3.4
             args.app = True
         else:
             args.app = True
