@@ -1064,7 +1064,7 @@ static gboolean mirage_file_filter_dmg_open_streams (MirageFileFilterDmg *self, 
     for (gint s = 1; s < self->priv->num_koly_blocks; s++) {
         g_seekable_seek(G_SEEKABLE(streams[s]), -sizeof(koly_block_t), G_SEEK_END, NULL, NULL);
         if (g_input_stream_read(streams[s], &self->priv->koly_block[s], sizeof(koly_block_t), NULL, NULL) != sizeof(koly_block_t)) {
-            g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, "Failed to read trailer!");
+            g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, "Failed to read koly block!");
             return FALSE;
         }
 
@@ -1072,7 +1072,7 @@ static gboolean mirage_file_filter_dmg_open_streams (MirageFileFilterDmg *self, 
 
         /* Validate koly block */
         if (memcmp(self->priv->koly_block[s].signature, koly_signature, sizeof(koly_signature))) {
-            g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_CANNOT_HANDLE, "File filter cannot handle given image!");
+            g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, "Invalid koly block!");
             return FALSE;
         }
 
@@ -1099,7 +1099,7 @@ static gboolean mirage_file_filter_dmg_can_handle_data_format (MirageFileFilter 
     self->priv->num_koly_blocks = 1;
     self->priv->koly_block = koly_block = g_try_new(koly_block_t, self->priv->num_koly_blocks);
     if (!koly_block) {
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, "Failed to allocate memory!");
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, "Failed to allocate memory for koly block!");
         return FALSE;
     }
 
@@ -1113,7 +1113,7 @@ static gboolean mirage_file_filter_dmg_can_handle_data_format (MirageFileFilter 
 
         /* Read koly block */
         if (g_input_stream_read(stream, koly_block, sizeof(koly_block_t), NULL, NULL) != sizeof(koly_block_t)) {
-            g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, "Failed to read trailer!");
+            g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_CANNOT_HANDLE, "File filter cannot handle given image: failed to read koly block!");
             return FALSE;
         }
 
@@ -1122,7 +1122,7 @@ static gboolean mirage_file_filter_dmg_can_handle_data_format (MirageFileFilter 
         /* Validate koly block */
         if (memcmp(koly_block->signature, koly_signature, sizeof(koly_signature))) {
             if (try == 1) {
-                g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_CANNOT_HANDLE, "File filter cannot handle given image!");
+                g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_CANNOT_HANDLE, "File filter cannot handle given image: invalid koly block!");
                 return FALSE;
             }
         } else {
@@ -1131,9 +1131,11 @@ static gboolean mirage_file_filter_dmg_can_handle_data_format (MirageFileFilter 
         }
     }
 
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: parsing the underlying stream data...\n", __debug__);
+
     /* Only perform parsing on the first file in a set */
     if (koly_block->segment_number != 1) {
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_CANNOT_HANDLE, "File is a continuating part of a set, aborting!");
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, "File is not the first file of a set!");
         return FALSE;
     }
 
@@ -1143,7 +1145,7 @@ static gboolean mirage_file_filter_dmg_can_handle_data_format (MirageFileFilter 
     /* Open streams */
     ret = mirage_file_filter_dmg_open_streams (self, error);
     if (!ret) {
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_CANNOT_HANDLE, "Failed to open streams!");
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, "Failed to open streams!");
         return FALSE;
     }
     /* This have been re-allocated, so update local pointer */
@@ -1154,8 +1156,6 @@ static gboolean mirage_file_filter_dmg_can_handle_data_format (MirageFileFilter 
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: original stream size: %lu\n",
                  __debug__, koly_block->sector_count * DMG_SECTOR_SIZE);
 
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: parsing the underlying stream data...\n", __debug__);
-
     /* Read descriptors, either the XML or binary one */
     if (koly_block->xml_offset && koly_block->xml_length) {
         succeeded = mirage_file_filter_dmg_read_xml_descriptor(self, stream, error);
@@ -1164,7 +1164,7 @@ static gboolean mirage_file_filter_dmg_can_handle_data_format (MirageFileFilter 
         succeeded = mirage_file_filter_dmg_read_bin_descriptor(self, stream, error);
         if (!succeeded) goto end;
     } else {
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_CANNOT_HANDLE, "Image lacks either an XML or a binary descriptor!");
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, "Image lacks either an XML or a binary descriptor!");
         return FALSE;
     }
 
