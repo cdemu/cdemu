@@ -121,11 +121,11 @@ void mirage_contextual_debug_messagev (MirageContextual *self, gint level, gchar
     }
 
     if (level == MIRAGE_DEBUG_ERROR) {
-        g_logv(domain, G_LOG_LEVEL_ERROR, format, args);
+        g_logv(domain, G_LOG_LEVEL_ERROR, new_format, args);
     } else if (level == MIRAGE_DEBUG_WARNING) {
-        g_logv(domain, G_LOG_LEVEL_WARNING, format, args);
+        g_logv(domain, G_LOG_LEVEL_WARNING, new_format, args);
     } else if (debug_mask & level) {
-        g_logv(domain, G_LOG_LEVEL_DEBUG, format, args);
+        g_logv(domain, G_LOG_LEVEL_DEBUG, new_format, args);
     }
 
     g_free(new_format);
