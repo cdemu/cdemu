@@ -298,7 +298,7 @@ GDataInputStream *mirage_parser_create_text_stream (MirageParser *self, GInputSt
     if (encoding_value) {
         encoding = g_variant_get_string(encoding_value, NULL);
         g_variant_unref(encoding_value);
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: using specified encoding: %s\n", __debug__, encoding);
+        //MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: using specified encoding: %s\n", __debug__, encoding);
     } else {
         /* Detect encoding */
         guint8 bom[4] = { 0 };
@@ -308,7 +308,7 @@ GDataInputStream *mirage_parser_create_text_stream (MirageParser *self, GInputSt
 
         encoding = mirage_helper_encoding_from_bom(bom);
 
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: detect encoding: %s\n", __debug__, encoding);
+        //MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: detect encoding: %s\n", __debug__, encoding);
     }
 
     /* Reset stream position, just in case */
