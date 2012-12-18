@@ -535,7 +535,7 @@ static gboolean mirage_file_filter_isz_can_handle_data_format (MirageFileFilter 
     /* Read ISZ header */
     g_seekable_seek(G_SEEKABLE(stream), 0, G_SEEK_SET, NULL, NULL);
     if (g_input_stream_read(stream, header, sizeof(ISZ_Header), NULL, NULL) != sizeof(ISZ_Header)) {
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, "Failed to read ISZ header!");
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_CANNOT_HANDLE, "Filter cannot handle given data: failed to read ISZ header!");
         return FALSE;
     }
 
@@ -544,14 +544,16 @@ static gboolean mirage_file_filter_isz_can_handle_data_format (MirageFileFilter 
 
     /* Validate ISZ header */
     if (memcmp(&header->signature, isz_signature, sizeof(isz_signature)) || header->version > 1) {
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_CANNOT_HANDLE, "Filter cannot handle given data!");
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_CANNOT_HANDLE, "Filter cannot handle given data: invalid ISZ header!");
         return FALSE;
     }
 
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: parsing the underlying stream data...\n", __debug__);
+
     /* Only perform parsing on the first file in a set */
-    const gchar *original_filename = mirage_contextual_get_file_stream_filename (MIRAGE_CONTEXTUAL(self), stream);
+    const gchar *original_filename = mirage_contextual_get_file_stream_filename(MIRAGE_CONTEXTUAL(self), stream);
     if (!mirage_helper_has_suffix(original_filename, ".isz")) {
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_CANNOT_HANDLE, "File is a continuating part of a set, aborting!");
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, "File is not the first file of a set!");
         return FALSE;
     }
 
@@ -582,8 +584,6 @@ static gboolean mirage_file_filter_isz_can_handle_data_format (MirageFileFilter 
     }
 
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "\n");
-
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: parsing the underlying stream data...\n", __debug__);
 
     /* Read segment table if one exists */
     if (header->seg_offs) {
