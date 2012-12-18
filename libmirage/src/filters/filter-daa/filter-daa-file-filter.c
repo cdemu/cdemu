@@ -1282,7 +1282,7 @@ static gboolean mirage_file_filter_daa_can_handle_data_format (MirageFileFilter 
     /* Look for signature at the beginning */
     g_seekable_seek(G_SEEKABLE(stream), 0, G_SEEK_SET, NULL, NULL);
     if (g_input_stream_read(stream, signature, sizeof(signature), NULL, NULL) != sizeof(signature)) {
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, "Failed to read 16-byte signature!");
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_CANNOT_HANDLE, "Filter cannot handle given data: failed to read 16-byte signature!");
         return FALSE;
     }
 
@@ -1294,7 +1294,7 @@ static gboolean mirage_file_filter_daa_can_handle_data_format (MirageFileFilter 
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: GBI (gBurner) format\n", __debug__);
         self->priv->image_type = IMAGE_GBI;
     } else {
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_CANNOT_HANDLE, "Filter cannot handle given data!");
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_CANNOT_HANDLE, "Filter cannot handle given data: invalid signature!");
         return FALSE;
     }
 

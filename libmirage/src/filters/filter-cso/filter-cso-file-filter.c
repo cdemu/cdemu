@@ -189,7 +189,7 @@ static gboolean mirage_file_filter_cso_can_handle_data_format (MirageFileFilter 
     /* Read CISO header */
     g_seekable_seek(G_SEEKABLE(stream), 0, G_SEEK_SET, NULL, NULL);
     if (g_input_stream_read(stream, header, sizeof(ciso_header_t), NULL, NULL) != sizeof(ciso_header_t)) {
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, "Failed to read CISO header!");
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_CANNOT_HANDLE, "Filter cannot handle given data: failed to read CISO header!");
         return FALSE;
     }
 
@@ -199,7 +199,7 @@ static gboolean mirage_file_filter_cso_can_handle_data_format (MirageFileFilter 
     /* Validate CISO header */
     if (memcmp(&header->magic, ciso_signature, sizeof(ciso_signature)) || header->version > 1 ||
         header->total_bytes == 0 || header->block_size == 0) {
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_CANNOT_HANDLE, "Filter cannot handle given data!");
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_CANNOT_HANDLE, "Filter cannot handle given data: invalid header!");
         return FALSE;
     }
 

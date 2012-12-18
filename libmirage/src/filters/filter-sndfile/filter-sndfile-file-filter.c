@@ -127,13 +127,13 @@ static gboolean mirage_file_filter_sndfile_can_handle_data_format (MirageFileFil
     /* Try opening sndfile on top of stream */
     self->priv->sndfile = sf_open_virtual(&sndfile_io_bridge, SFM_READ, &self->priv->format, stream);
     if (!self->priv->sndfile) {
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_CANNOT_HANDLE, "Filter cannot handle given data!");
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_CANNOT_HANDLE, "Filter cannot handle given data: failed to open sndfile!");
         return FALSE;
     }
 
     /* Check some additional requirements (two channels and seekable) */
     if (self->priv->format.channels != 2 || self->priv->format.seekable == 0) {
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_CANNOT_HANDLE, "Filter cannot handle given data!");
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_CANNOT_HANDLE, "Filter cannot handle given data: invalid number of channels or non-seekable!");
         return FALSE;
     }
 
