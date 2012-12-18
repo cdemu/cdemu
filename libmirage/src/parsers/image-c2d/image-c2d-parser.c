@@ -60,16 +60,6 @@ static inline void c2d_header_block_fix_endian (C2D_HeaderBlock *block)
     block->offset_c2ck = GUINT32_FROM_LE(block->offset_c2ck);
 }
 
-static inline void c2d_c2ck_block_fix_endian (C2D_C2CKBlock *block)
-{
-    block->block_size = GUINT32_FROM_LE(block->block_size);
-    block->dummy1[0] = GUINT32_FROM_LE(block->dummy1[0]);
-    block->dummy1[1] = GUINT32_FROM_LE(block->dummy1[1]);
-    block->next_offset = GUINT64_FROM_LE(block->next_offset);
-    block->dummy2[0] = GUINT32_FROM_LE(block->dummy2[0]);
-    block->dummy2[1] = GUINT32_FROM_LE(block->dummy2[1]);
-}
-
 static inline void c2d_track_block_fix_endian (C2D_TrackBlock *block)
 {
     block->block_size = GUINT32_FROM_LE(block->block_size);
@@ -89,24 +79,6 @@ static inline void c2d_z_info_fix_endian (C2D_Z_Info *block)
 {
     block->compressed_size = GUINT32_FROM_LE(block->compressed_size);
     block->image_offset = GUINT64_FROM_LE(block->image_offset);
-}
-
-static inline void c2d_c2aw_block_fix_endian (C2D_C2AWBlock *block)
-{
-    block->block_size = GUINT32_FROM_LE(block->block_size);
-    block->info_size = GUINT64_FROM_LE(block->info_size);
-    block->next_offset = GUINT64_FROM_LE(block->next_offset);
-    block->dummy[0] = GUINT32_FROM_LE(block->dummy[0]);
-    block->dummy[1] = GUINT32_FROM_LE(block->dummy[1]);
-}
-
-static inline void c2d_wocd_block_fix_endian (C2D_WOCDBlock *block)
-{
-    block->block_size = GUINT32_FROM_LE(block->block_size);
-
-    for (gint i = 0; i < G_N_ELEMENTS(block->dummy); i++) {
-        block->dummy[i] = GUINT32_FROM_LE(block->dummy[i]);
-    }
 }
 
 
