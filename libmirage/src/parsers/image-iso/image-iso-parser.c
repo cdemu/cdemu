@@ -48,6 +48,13 @@ static gboolean mirage_parser_iso_is_file_valid (MirageParserIso *self, GInputSt
     }
     file_length = g_seekable_tell(G_SEEKABLE(stream));
 
+    /* Make sure the file is large enough to contain at least one sector
+       (also covers the strucutre size of .CDR image check below) */
+    if (file_length < 2048) {
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_CANNOT_HANDLE, "Parser cannot handle given image: file too small!");
+        return FALSE;
+    }
+
     /* Macintosh .CDR image check */
     /* These are raw images with typical Mac partitioning starting with a
        Driver Descriptor Map (DDM) and GUID Partition Map Entries following.
