@@ -51,7 +51,7 @@ static gboolean mirage_parser_readcd_is_file_valid (MirageParserReadcd *self, GI
 
     /* File must have .toc suffix */
     if (!mirage_helper_has_suffix(mirage_contextual_get_file_stream_filename(MIRAGE_CONTEXTUAL(self), stream), ".toc")) {
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_CANNOT_HANDLE, "Parser cannot handle given image!");
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_CANNOT_HANDLE, "Parser cannot handle given image: invalid suffix!");
         return FALSE;
     }
 
@@ -59,8 +59,7 @@ static gboolean mirage_parser_readcd_is_file_valid (MirageParserReadcd *self, GI
     /* First 4 bytes of TOC are its header; and first 2 bytes of that indicate
        the length */
     if (g_input_stream_read(stream, &toc_len, sizeof(toc_len), NULL, NULL) != sizeof(toc_len)) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read 2-byte TOC length!\n", __debug__);
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, "Failed to read 2-byte TOC length!");
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_CANNOT_HANDLE, "Parser cannot handle given image: failed to read 2-byte TOC length!");
         return FALSE;
     }
     toc_len = GUINT16_FROM_BE(toc_len);

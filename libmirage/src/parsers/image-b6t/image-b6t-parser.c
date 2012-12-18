@@ -1255,13 +1255,13 @@ static MirageDisc *mirage_parser_b6t_load_image (MirageParser *_self, GInputStre
     g_seekable_seek(G_SEEKABLE(stream), 0, G_SEEK_SET, NULL, NULL);
     if (g_input_stream_read(stream, header, 16, NULL, NULL) != 16) {
         g_object_unref(stream);
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, "Failed to read 16 bytes from image file stream!");
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_CANNOT_HANDLE, "Parser cannot handle given image: failed to read 16 bytes from image file stream!");
         return FALSE;
     }
 
     if (memcmp(header, b6t_signature, sizeof(b6t_signature))) {
         g_object_unref(stream);
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_CANNOT_HANDLE, "Parser cannot handle given image!");
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_CANNOT_HANDLE, "Parser cannot handle given image: invalid signature!");
         return FALSE;
     }
 

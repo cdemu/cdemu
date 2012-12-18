@@ -211,7 +211,7 @@ static MirageTrack *mirage_parser_mdx_get_track (MirageParserMdx *self, GError *
         length = g_seekable_tell(G_SEEKABLE(data_stream));
     } else {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: invalid filename suffix; only 'mdx' and 'mds' are supported!\n", __debug__);
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_CANNOT_HANDLE, "Parser cannot handle given image!");
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_PARSER_ERROR, "Invalid filename suffix; only 'mdx' and 'mds' are supported!");
         return NULL;
     }
 
@@ -328,13 +328,13 @@ static MirageDisc *mirage_parser_mdx_load_image (MirageParser *_self, GInputStre
     /* Read signature and version */
     g_seekable_seek(G_SEEKABLE(self->priv->stream), 0, G_SEEK_SET, NULL, NULL);
     if (g_input_stream_read(self->priv->stream, signature, sizeof(signature), NULL, NULL) != sizeof(signature)) {
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, "Failed to read signature and version!");
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_CANNOT_HANDLE, "Parser cannot handle given image: failed to read signature and version!");
         return FALSE;
     }
 
     /* This parsers handles v.2.X images (new DT format) */
     if (memcmp(signature, mdx_signature, sizeof(mdx_signature))) {
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_CANNOT_HANDLE, "Parser cannot handle given image!");
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_CANNOT_HANDLE, "Parser cannot handle given image: invalid signature and/or version!");
         return FALSE;
     }
 

@@ -672,7 +672,7 @@ static MirageDisc *mirage_parser_cif_load_image (MirageParser *_self, GInputStre
     g_seekable_seek(G_SEEKABLE(self->priv->cif_stream), 0, G_SEEK_SET, NULL, NULL);
 
     if (g_input_stream_read(self->priv->cif_stream, &header, sizeof(header), NULL, NULL) != sizeof(header)) {
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, "Failed to read header!");
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_CANNOT_HANDLE, "Parser cannot handle given image: failed to read header!");
         return FALSE;
     }
 
@@ -680,7 +680,7 @@ static MirageDisc *mirage_parser_cif_load_image (MirageParser *_self, GInputStre
        field. We could probably also match length, since it appears to
        be fixed, but this should sufficient... */
     if (memcmp(header.riff, riff_signature, sizeof(riff_signature)) || memcmp(header.type, imag_signature, sizeof(imag_signature))) {
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_CANNOT_HANDLE, "Parser cannot handle given image!");
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_CANNOT_HANDLE, "Parser cannot handle given image: invalid header!");
         return FALSE;
     }
 

@@ -1012,7 +1012,7 @@ static MirageDisc *mirage_parser_ccd_load_image (MirageParser *_self, GInputStre
 
     /* Check if we can load the file; we check the suffix */
     if (!mirage_helper_has_suffix(ccd_filename, ".ccd")) {
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_CANNOT_HANDLE, "Parser cannot handle given image!");
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_CANNOT_HANDLE, "Parser cannot handle given image: invalid suffix!");
         return FALSE;
     }
 

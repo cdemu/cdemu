@@ -94,7 +94,7 @@ static gboolean mirage_parser_iso_is_file_valid (MirageParserIso *self, GInputSt
             self->priv->needs_padding = FALSE;
         } else {
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: Parser cannot map this sector size!\n", __debug__);
-            g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_CANNOT_HANDLE, "Parser cannot map this sector size!");
+            g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_PARSER_ERROR, "Parser cannot map this sector size!");
             return FALSE;
         }
         self->priv->track_sectsize = 2048;

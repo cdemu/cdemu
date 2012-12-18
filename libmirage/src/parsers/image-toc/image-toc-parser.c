@@ -1206,7 +1206,7 @@ static MirageDisc *mirage_parser_toc_load_image (MirageParser *_self, GInputStre
     /* Check if all streams are valid */
     for (gint i = 0; i < num_streams; i++) {
         if (!mirage_parser_toc_check_toc_file(self, streams[i])) {
-            g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_CANNOT_HANDLE, "Parser cannot handle given image!");
+            g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_CANNOT_HANDLE, "Parser cannot handle given image: invalid TOC file!");
             g_free(filenames);
             return FALSE;
         }

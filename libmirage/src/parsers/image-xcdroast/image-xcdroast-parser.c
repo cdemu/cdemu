@@ -809,7 +809,7 @@ static MirageDisc *mirage_parser_xcdroast_load_image (MirageParser *_self, GInpu
 
     /* Check if we can load file */
     if (!mirage_parser_xcdroast_check_toc_file(self, streams[0])) {
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_CANNOT_HANDLE, "Parser cannot handle given image!");
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_CANNOT_HANDLE, "Parser cannot handle given image: invalid TOC file!");
         return FALSE;
     }
 

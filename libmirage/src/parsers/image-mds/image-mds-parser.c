@@ -759,14 +759,14 @@ static MirageDisc *mirage_parser_mds_load_image (MirageParser *_self, GInputStre
     g_seekable_seek(G_SEEKABLE(stream), 0, G_SEEK_SET, NULL, NULL);
     if (g_input_stream_read(stream, signature, sizeof(signature), NULL, NULL) != sizeof(signature)) {
         g_object_unref(stream);
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, "Failed to read signature and version!");
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_CANNOT_HANDLE, "Parser cannot handle given image: failed to read signature and version!");
         return FALSE;
     }
 
     /* We can handle only v.1.X images (Alcohol 120% format) */
     if (memcmp(signature, mds_signature, sizeof(mds_signature))) {
         g_object_unref(stream);
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_CANNOT_HANDLE, "Parser cannot handle given image!");
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_CANNOT_HANDLE, "Parser cannot handle given image: invalid signature and/or version!");
         return FALSE;
     }
 

@@ -906,7 +906,7 @@ static MirageDisc *mirage_parser_cue_load_image (MirageParser *_self, GInputStre
     /* Check if we can load the file; we check the suffix */
     self->priv->cue_filename = mirage_contextual_get_file_stream_filename(MIRAGE_CONTEXTUAL(self), streams[0]);
     if (!mirage_helper_has_suffix(self->priv->cue_filename, ".cue")) {
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_CANNOT_HANDLE, "Parser cannot handle given image!");
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_CANNOT_HANDLE, "Parser cannot handle given image: invalid suffix!");
         return FALSE;
     }
 

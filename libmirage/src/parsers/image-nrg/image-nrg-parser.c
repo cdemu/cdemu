@@ -922,7 +922,7 @@ static MirageDisc *mirage_parser_nrg_load_image (MirageParser *_self, GInputStre
     g_seekable_seek(G_SEEKABLE(self->priv->nrg_stream), -12, G_SEEK_END, NULL, NULL);
 
     if (g_input_stream_read(self->priv->nrg_stream, sig, sizeof(sig), NULL, NULL) != sizeof(sig)) {
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, "Failed to read signature!");
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_CANNOT_HANDLE, "Parser cannot handle given image: failed to read signature!");
         return FALSE;
     }
 
@@ -944,7 +944,7 @@ static MirageDisc *mirage_parser_nrg_load_image (MirageParser *_self, GInputStre
         /* Try old format, with 32-bit offset */
         g_seekable_seek(G_SEEKABLE(self->priv->nrg_stream), -8, G_SEEK_END, NULL, NULL);
         if (g_input_stream_read(self->priv->nrg_stream, sig, sizeof(sig), NULL, NULL) != sizeof(sig)) {
-            g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, "Failed to read signature!");
+            g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_CANNOT_HANDLE, "Parser cannot handle given image: failed to read signature!");
             return FALSE;
         }
 
@@ -964,7 +964,7 @@ static MirageDisc *mirage_parser_nrg_load_image (MirageParser *_self, GInputStre
             self->priv->nrg_data_length = (file_size - 8) - trailer_offset;
         } else {
             /* Unknown signature, can't handle the file */
-            g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_CANNOT_HANDLE, "Parser cannot handle given image!");
+            g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_CANNOT_HANDLE, "Parser cannot handle given image: invalid signature!");
             return FALSE;
         }
     }
