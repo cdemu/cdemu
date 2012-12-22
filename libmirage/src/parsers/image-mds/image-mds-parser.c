@@ -652,7 +652,7 @@ static gboolean mirage_parser_mds_parse_sessions (MirageParserMds *self, GError 
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "\n");
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: session block #%i:\n", __debug__, i);
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  start address: 0x%X\n", __debug__, session_block->session_start);
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  length: 0x%X\n", __debug__, session_block->session_end);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  end address: 0x%X\n", __debug__, session_block->session_end);
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  number: %i\n", __debug__, session_block->session_number);
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  number of all blocks: %i\n", __debug__, session_block->num_all_blocks);
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  number of non-track block: %i\n", __debug__, session_block->num_nontrack_blocks);

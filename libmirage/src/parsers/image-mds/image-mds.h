@@ -84,11 +84,11 @@ typedef struct
 {
     gint32 session_start; /* Session's start address */
     gint32 session_end; /* Session's end address */
-    guint16 session_number; /* (Unknown) */
+    guint16 session_number; /* Session number */
     guint8 num_all_blocks; /* Number of all data blocks. */
     guint8 num_nontrack_blocks; /* Number of lead-in data blocks */
-    guint16 first_track; /* Total number of sessions in image? */
-    guint16 last_track; /* Number of regular track data blocks. */
+    guint16 first_track; /* First track in session */
+    guint16 last_track; /* Last track in session */
     guint32 __dummy1__; /* (unknown) */
     guint32 tracks_blocks_offset; /* Offset of lead-in+regular track data blocks. */
 } MDS_SessionBlock; /* length: 24 bytes */
