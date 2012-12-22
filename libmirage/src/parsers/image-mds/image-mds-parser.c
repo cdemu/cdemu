@@ -93,7 +93,6 @@ static inline void mds_session_block_fix_endian (MDS_SessionBlock *block)
 
 static inline void mds_track_block_fix_endian (MDS_TrackBlock *block)
 {
-    block->__dummy3__ = GUINT32_FROM_LE(block->__dummy3__);
     block->extra_offset = GUINT32_FROM_LE(block->extra_offset);
     block->sector_size = GUINT16_FROM_LE(block->sector_size);
 
@@ -432,16 +431,20 @@ static gboolean mirage_parser_mds_parse_track_entries (MirageParserMds *self, MD
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "\n");
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: track block #%i:\n", __debug__, i);
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  mode: 0x%X\n", __debug__, block->mode);
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  subchannel: 0x%X\n", __debug__, block->subchannel);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  subchannel: 0x%X\n\n", __debug__, block->subchannel);
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  adr/ctl: 0x%X\n", __debug__, block->adr_ctl);
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  dummy2: 0x%X\n", __debug__, block->__dummy2__);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  tno: 0x%X\n", __debug__, block->tno);
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  point: 0x%X\n", __debug__, block->point);
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  dummy3: 0x%X\n", __debug__, block->__dummy3__);
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  min: %i\n", __debug__, block->min);
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  sec: %i\n", __debug__, block->sec);
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  frame: %i\n", __debug__, block->frame);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  min: 0x%X\n", __debug__, block->min);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  sec: 0x%X\n", __debug__, block->sec);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  frame: 0x%X\n", __debug__, block->frame);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  zero: 0x%X\n", __debug__, block->zero);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  pmin: 0x%X\n", __debug__, block->pmin);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  psec: 0x%X\n", __debug__, block->psec);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  pframe: 0x%X\n\n", __debug__, block->pframe);
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  extra offset: 0x%X\n", __debug__, block->extra_offset);
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  sector size: 0x%X\n", __debug__, block->sector_size);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  dummy4: 0x%X 0x%X 0x%X 0x%X 0x%X 0x%X 0x%X 0x%X 0x%X 0x%X 0x%X 0x%X 0x%X 0x%X 0x%X 0x%X 0x%X 0x%X\n", __debug__, block->__dummy4__[0], block->__dummy4__[1], block->__dummy4__[2], block->__dummy4__[3], block->__dummy4__[4], block->__dummy4__[5], block->__dummy4__[6], block->__dummy4__[7], block->__dummy4__[8], block->__dummy4__[9], block->__dummy4__[10], block->__dummy4__[11], block->__dummy4__[12], block->__dummy4__[13], block->__dummy4__[14], block->__dummy4__[15], block->__dummy4__[16], block->__dummy4__[17]);
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  start sector: 0x%X\n", __debug__, block->start_sector);
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  start offset: 0x%llX\n", __debug__, block->start_offset);
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  number of files: 0x%X\n", __debug__, block->number_of_files);

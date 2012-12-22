@@ -98,14 +98,20 @@ typedef struct
 {
     guint8 mode; /* Track mode */
     guint8 subchannel; /* Subchannel mode */
-    guint8 adr_ctl; /* Adr/Ctl */
-    guint8 __dummy2__; /* Track flags? */
-    guint8 point; /* Track number. (>0x99 is lead-in track) */
 
-    guint32 __dummy3__;
+    /* These are the fields from Sub-channel Q information, which are
+       also returned in full TOC by READ TOC/PMA/ATIP command */
+    guint8 adr_ctl; /* Adr/Ctl */
+    guint8 tno; /* Track number field */
+    guint8 point; /* Point field (= track number for track entries) */
     guint8 min; /* Min */
     guint8 sec; /* Sec */
     guint8 frame; /* Frame */
+    guint8 zero; /* Zero */
+    guint8 pmin; /* PMin */
+    guint8 psec; /* PSec */
+    guint8 pframe; /* PFrame */
+
     guint32 extra_offset; /* Start offset of this track's extra block. */
     guint16 sector_size; /* Sector size. */
 
