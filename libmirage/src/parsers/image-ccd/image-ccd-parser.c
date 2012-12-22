@@ -47,6 +47,10 @@ struct _MirageParserCcdPrivate
     GList *sessions_list;
     GList *entries_list;
 
+    /* CDText */
+    gint cdtext_entries;
+    guint8 *cdtext_data;
+
     /* Regex engine */
     gpointer cur_data;
     GList *cur_rules;
@@ -57,6 +61,7 @@ struct _MirageParserCcdPrivate
     GList *regex_rules_session;
     GList *regex_rules_entry;
     GList *regex_rules_track;
+    GList *regex_rules_cdtext;
 };
 
 
@@ -338,6 +343,20 @@ static gboolean mirage_parser_ccd_build_disc_layout (MirageParserCcd *self, GErr
             g_object_unref(session);
         }
 
+    }
+
+    /* If CD-TEXT data is available, decode it */
+    if (self->priv->cdtext_data) {
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "\n");
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: setting CD-TEXT\n", __debug__);
+
+        /* Decode CD-TEXT by setting it to first session */
+        MirageSession *session = mirage_disc_get_session_by_index(self->priv->disc, 0, NULL);
+        if (!mirage_session_set_cdtext_data(session, self->priv->cdtext_data, self->priv->cdtext_entries*18, error)) {
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to set CD-TEXT data!\n", __debug__);
+            /* Don't bail on error... */
+        }
+        g_object_unref(session);
     }
 
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "\n");
@@ -811,6 +830,80 @@ static gboolean mirage_parser_ccd_callback_track_isrc (MirageParserCcd *self, GM
 }
 
 
+/*** [CDText] ***/
+static gboolean mirage_parser_ccd_callback_cdtext (MirageParserCcd *self, GMatchInfo *match_info G_GNUC_UNUSED, GError **error G_GNUC_UNUSED)
+{
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "\n"); /* To make log more readable */
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: parsed [CDText] header\n", __debug__);
+
+    self->priv->cur_rules = self->priv->regex_rules_cdtext;
+
+    return TRUE;
+}
+
+static gboolean mirage_parser_ccd_callback_cdtext_entries (MirageParserCcd *self, GMatchInfo *match_info G_GNUC_UNUSED, GError **error G_GNUC_UNUSED)
+{
+    gchar *value_str = g_match_info_fetch_named(match_info, "value");
+
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: parsed: entries = %s\n", __debug__, value_str);
+
+    self->priv->cdtext_entries = g_strtod(value_str, NULL);
+
+    /* Validate declared CD-TEXT length against declared number of entries;
+       each entry corresponds to an 18-byte pack with last two bytes (CRC)
+       removed, so it contains 16 bytes */
+    if (self->priv->disc_data->CDTextLength != self->priv->cdtext_entries * 18) {
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: declared CD-TEXT size (%d) does not match declared number of entries (%d)!\n", __debug__, self->priv->disc_data->CDTextLength, self->priv->cdtext_entries);
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_PARSER_ERROR, "Ddeclared CD-TEXT size (%d) does not match declared number of entries (%d)!\n", self->priv->disc_data->CDTextLength, self->priv->cdtext_entries);
+        return FALSE;
+    }
+
+    self->priv->cdtext_data = g_try_malloc0(self->priv->disc_data->CDTextLength);
+
+    g_free(value_str);
+
+    return TRUE;
+}
+
+static gboolean mirage_parser_ccd_callback_cdtext_entry (MirageParserCcd *self, GMatchInfo *match_info G_GNUC_UNUSED, GError **error G_GNUC_UNUSED)
+{
+    gchar *number_str = g_match_info_fetch_named(match_info, "number");
+    gchar *data_str = g_match_info_fetch_named(match_info, "data");
+
+    gint number;
+    gchar **data_tokens;
+
+    guint8 *data_ptr;
+
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: parsed: entry #%s: data: %s\n", __debug__, number_str, data_str);
+
+    /* Validate entry number */
+    number = g_strtod(number_str, NULL);
+    if (number >= self->priv->cdtext_entries) {
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: invalid CD-TEXT entry #%d (expecting only %d entries)!\n", __debug__, number, self->priv->cdtext_entries);
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_PARSER_ERROR, "Invalid CD-TEXT entry #%d (expecting only %d entries)!\n", number, self->priv->cdtext_entries);
+        return FALSE;
+    }
+
+    data_ptr = self->priv->cdtext_data + number*18;
+
+    /* Split data string on whitespaces */
+    data_tokens = g_strsplit(data_str, " ", -1);
+
+    for (gint i = 0; data_tokens[i]; i++) {
+        data_ptr[i] = g_ascii_strtoll(data_tokens[i], NULL, 16);
+    }
+
+    g_strfreev(data_tokens);
+
+    g_free(number_str);
+    g_free(data_str);
+
+    return TRUE;
+}
+
+
+
 static inline void append_regex_rule (GList **list_ptr, const gchar *rule, CCD_RegexCallback callback)
 {
     GList *list = *list_ptr;
@@ -835,6 +928,7 @@ static void mirage_parser_ccd_init_regex_parser (MirageParserCcd *self)
     append_regex_rule(&self->priv->regex_rules, "^\\s*\\[Session\\s*(?<number>\\d+)\\]", mirage_parser_ccd_callback_session);
     append_regex_rule(&self->priv->regex_rules, "^\\s*\\[Entry\\s*(?<number>\\d+)\\]", mirage_parser_ccd_callback_entry);
     append_regex_rule(&self->priv->regex_rules, "^\\s*\\[TRACK\\s*(?<number>\\d+)\\]", mirage_parser_ccd_callback_track);
+    append_regex_rule(&self->priv->regex_rules, "^\\s*\\[CDText\\]", mirage_parser_ccd_callback_cdtext);
 
     /* [CloneCD] rules */
     append_regex_rule(&self->priv->regex_rules_clonecd, "^\\s*Version\\s*=\\s*(?<value>\\d+)", mirage_parser_ccd_callback_clonecd_version);
@@ -871,6 +965,11 @@ static void mirage_parser_ccd_init_regex_parser (MirageParserCcd *self)
     append_regex_rule(&self->priv->regex_rules_track, "^\\s*INDEX\\s*0\\s*=\\s*(?<value>\\d+)", mirage_parser_ccd_callback_track_index0);
     append_regex_rule(&self->priv->regex_rules_track, "^\\s*INDEX\\s*1\\s*=\\s*(?<value>\\d+)", mirage_parser_ccd_callback_track_index1);
     append_regex_rule(&self->priv->regex_rules_track, "^\\s*ISRC\\s*=\\s*(?<value>\\w+)", mirage_parser_ccd_callback_track_isrc);
+
+    /* [CDText] rules */
+    append_regex_rule(&self->priv->regex_rules_cdtext, "^\\s*Entries\\s*=\\s*(?<value>\\d+)", mirage_parser_ccd_callback_cdtext_entries);
+    append_regex_rule(&self->priv->regex_rules_cdtext, "^\\s*Entry\\s*(?<number>\\d+)\\s*=\\s*(?<data>[[:xdigit:]\\s]+)", mirage_parser_ccd_callback_cdtext_entry);
+
 }
 
 static void free_regex_rules (GList *rules)
@@ -891,6 +990,7 @@ static void mirage_parser_ccd_cleanup_regex_parser (MirageParserCcd *self)
     free_regex_rules(self->priv->regex_rules_session);
     free_regex_rules(self->priv->regex_rules_entry);
     free_regex_rules(self->priv->regex_rules_track);
+    free_regex_rules(self->priv->regex_rules_cdtext);
 }
 
 
@@ -1127,6 +1227,8 @@ static void mirage_parser_ccd_init (MirageParserCcd *self)
 
     self->priv->sub_filename = NULL;
     self->priv->sub_stream = NULL;
+
+    self->priv->cdtext_data = NULL;
 }
 
 static void mirage_parser_ccd_dispose (GObject *gobject)
@@ -1154,6 +1256,8 @@ static void mirage_parser_ccd_finalize (GObject *gobject)
 
     g_free(self->priv->img_filename);
     g_free(self->priv->sub_filename);
+
+    g_free(self->priv->cdtext_data);
 
     /* Cleanup regex parser engine */
     mirage_parser_ccd_cleanup_regex_parser(self);
