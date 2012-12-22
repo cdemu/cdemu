@@ -112,7 +112,8 @@ set_target_properties (mirage PROPERTIES
     COMPILE_DEFINITIONS "${mirage_DEFS}"
     LINK_FLAGS ${mirage_LDFLAGS_STR}
     LIBRARY_OUTPUT_NAME mirage
-    SOVERSION ${MIRAGE_SOVERSION}
+    VERSION ${MIRAGE_SOVERSION}
+    SOVERSION ${MIRAGE_LT_CURRENT}
 )
 
 install (
