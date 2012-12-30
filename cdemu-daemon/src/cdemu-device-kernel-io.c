@@ -149,6 +149,8 @@ static gboolean cdemu_device_io_handler (GIOChannel *source, GIOCondition condit
 
     CDEMU_DEBUG(self, DAEMON_DEBUG_KERNEL_IO, "%s: I/O handler invoked\n", __debug__);
 
+    self->priv->active = TRUE;
+
     /* Read request */
     CDEMU_DEBUG(self, DAEMON_DEBUG_KERNEL_IO, "%s: reading request\n", __debug__);
 
@@ -194,6 +196,18 @@ static gboolean cdemu_device_io_handler (GIOChannel *source, GIOCondition condit
     return TRUE;
 }
 
+static gboolean cdemu_device_io_watchdog (CdemuDevice *self)
+{
+    if (!self->priv->active) {
+        g_signal_emit_by_name(self, "device-inactive", NULL);
+    }
+
+    self->priv->active = FALSE;
+
+    return TRUE;
+}
+
+
 static gpointer cdemu_device_io_thread (CdemuDevice *self)
 {
     GSource *source;
@@ -208,6 +222,14 @@ static gpointer cdemu_device_io_thread (CdemuDevice *self)
     g_source_attach(source, self->priv->main_context);
     g_source_unref(source);
 
+    /* Create watchdog timer - 30 seconds */
+    source = g_timeout_source_new_seconds(30);
+    g_source_set_callback(source, (GSourceFunc)cdemu_device_io_watchdog, self, NULL);
+    g_source_attach(source, self->priv->main_context);
+    g_source_unref(source);
+
+    self->priv->active = TRUE;
+
     /* Run */
     g_main_loop_run(self->priv->main_loop);
 
@@ -218,13 +240,41 @@ static gpointer cdemu_device_io_thread (CdemuDevice *self)
 }
 
 
-GThread *cdemu_device_create_io_thread (CdemuDevice *self)
+/**********************************************************************\
+ *                      Start/stop functions                          *
+\**********************************************************************/
+gboolean cdemu_device_start (CdemuDevice *self, const gchar *ctl_device)
 {
-    return g_thread_create((GThreadFunc)cdemu_device_io_thread, self, TRUE, NULL);
+    GError *local_error = NULL;
+
+    /* Open control device and set up I/O channel */
+    self->priv->io_channel = g_io_channel_new_file(ctl_device, "r+", &local_error);
+    if (!self->priv->io_channel) {
+        CDEMU_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: failed to open control device %s: %s!\n", __debug__, ctl_device, local_error->message);
+        g_error_free(local_error);
+        return FALSE;
+    }
+
+    /* Try setting non-blocking operation */
+    if (g_io_channel_set_flags(self->priv->io_channel, G_IO_FLAG_NONBLOCK, &local_error) != G_IO_STATUS_NORMAL) {
+        CDEMU_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: failed to set NONBLOCK flag to control device: %s!\n", __debug__, local_error->message);
+        g_error_free(local_error);
+    }
+
+    /* Start I/O thread */
+    self->priv->io_thread = g_thread_try_new("I/O thread", (GThreadFunc)cdemu_device_io_thread, self, &local_error);
+    if (!self->priv->io_thread) {
+        CDEMU_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: failed to start I/O thread: %s\n", __debug__, local_error->message);
+        g_error_free(local_error);
+        return FALSE;
+    }
+
+    return TRUE;
 }
 
-void cdemu_device_stop_io_thread (CdemuDevice *self)
+void cdemu_device_stop (CdemuDevice *self)
 {
+    /* Stop the I/O thread */
     if (self->priv->main_loop) {
         if (g_main_loop_is_running(self->priv->main_loop)) {
             g_main_loop_quit(self->priv->main_loop);
@@ -235,4 +285,17 @@ void cdemu_device_stop_io_thread (CdemuDevice *self)
         g_main_loop_unref(self->priv->main_loop);
         self->priv->main_loop = NULL;
     }
+
+    /* Unref thread */
+    if (self->priv->io_thread) {
+        g_thread_unref(self->priv->io_thread);
+        self->priv->io_thread = NULL;
+    }
+
+    /* Close the I/O channel */
+    if (self->priv->io_channel) {
+        g_io_channel_unref(self->priv->io_channel);
+        self->priv->io_channel = NULL;
+    }
 }
+

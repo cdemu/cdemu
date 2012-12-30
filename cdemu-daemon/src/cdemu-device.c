@@ -46,7 +46,7 @@ static void cdemu_device_set_device_id (CdemuDevice *self, const gchar *vendor_i
 /**********************************************************************\
  *                            Device init                             *
 \**********************************************************************/
-gboolean cdemu_device_initialize (CdemuDevice *self, gint number, gchar *ctl_device, gchar *audio_driver)
+gboolean cdemu_device_initialize (CdemuDevice *self, gint number, const gchar *audio_driver)
 {
     MirageContext *context;
     gint buffer_size;
@@ -66,16 +66,6 @@ gboolean cdemu_device_initialize (CdemuDevice *self, gint number, gchar *ctl_dev
     mirage_context_set_debug_domain(context, "CDEMU");
     mirage_contextual_set_context(MIRAGE_CONTEXTUAL(self), context);
     g_object_unref(context);
-
-    /* Open control device and set up I/O channel */
-    self->priv->io_channel = g_io_channel_new_file(ctl_device, "r+", NULL);
-    if (!self->priv->io_channel) {
-        CDEMU_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: failed to open control device %s!\n", __debug__, ctl_device);
-        return FALSE;
-    }
-    if (g_io_channel_set_flags(self->priv->io_channel, G_IO_FLAG_NONBLOCK, NULL) != G_IO_STATUS_NORMAL) {
-        CDEMU_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: failed to set NONBLOCK flag to control device!\n", __debug__);
-    }
 
     /* Allocate kernel I/O buffer */
     buffer_size = cdemu_device_get_kernel_io_buffer_size(self);
@@ -116,13 +106,6 @@ gboolean cdemu_device_initialize (CdemuDevice *self, gint number, gchar *ctl_dev
     /* Enable DPM and disable transfer rate emulation by default */
     self->priv->dpm_emulation = TRUE;
     self->priv->tr_emulation = FALSE;
-
-    /* Start the I/O thread */
-    self->priv->io_thread = cdemu_device_create_io_thread(self);
-    if (!self->priv->io_thread) {
-        CDEMU_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: failed to start I/O thread!\n", __debug__);
-        return FALSE;
-    }
 
     return TRUE;
 }
@@ -334,14 +317,8 @@ static void cdemu_device_dispose (GObject *gobject)
 {
     CdemuDevice *self = CDEMU_DEVICE(gobject);
 
-    /* Stop the I/O thread */
-    cdemu_device_stop_io_thread(self);
-
-    /* Unref I/O channel */
-    if (self->priv->io_channel) {
-        g_io_channel_unref(self->priv->io_channel);
-        self->priv->io_channel = NULL;
-    }
+    /* Stop the device */
+    cdemu_device_stop(self);
 
     /* Unload disc */
     cdemu_device_unload_disc(self, NULL);
@@ -408,6 +385,7 @@ static void cdemu_device_class_init (CdemuDeviceClass *klass)
     /* Signals */
     klass->signals[0] = g_signal_new("status-changed", G_OBJECT_CLASS_TYPE(klass), (G_SIGNAL_RUN_LAST | G_SIGNAL_DETAILED), 0, NULL, NULL, g_cclosure_marshal_VOID__VOID, G_TYPE_NONE, 0, NULL);
     klass->signals[1] = g_signal_new("option-changed", G_OBJECT_CLASS_TYPE(klass), (G_SIGNAL_RUN_LAST | G_SIGNAL_DETAILED), 0, NULL, NULL, g_cclosure_marshal_VOID__STRING, G_TYPE_NONE, 1, G_TYPE_STRING, NULL);
+    klass->signals[2] = g_signal_new("device-inactive", G_OBJECT_CLASS_TYPE(klass), (G_SIGNAL_RUN_LAST | G_SIGNAL_DETAILED), 0, NULL, NULL, g_cclosure_marshal_VOID__VOID, G_TYPE_NONE, 0, NULL);
 
     /* Register private structure */
     g_type_class_add_private(klass, sizeof(CdemuDevicePrivate));

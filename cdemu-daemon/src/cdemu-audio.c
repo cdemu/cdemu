@@ -164,7 +164,7 @@ static void cdemu_audio_stop_playing (CdemuAudio *self, gint status)
 /**********************************************************************\
  *                                 Public API                         *
 \**********************************************************************/
-void cdemu_audio_initialize (CdemuAudio *self, gchar *driver, gint *cur_sector_ptr, GMutex *device_mutex_ptr)
+void cdemu_audio_initialize (CdemuAudio *self, const gchar *driver, gint *cur_sector_ptr, GMutex *device_mutex_ptr)
 {
     self->priv->cur_sector_ptr = cur_sector_ptr;
     self->priv->device_mutex = device_mutex_ptr;

@@ -54,7 +54,7 @@ struct _CdemuDeviceClass
     MirageObjectClass parent_class;
 
     /* Class members */
-    guint signals[2]; /* Signals */
+    guint signals[3]; /* Signals */
 };
 
 
@@ -62,7 +62,7 @@ struct _CdemuDeviceClass
 GType cdemu_device_get_type (void);
 
 /* Public API */
-gboolean cdemu_device_initialize (CdemuDevice *self, gint number, gchar *ctl_device, gchar *audio_driver);
+gboolean cdemu_device_initialize (CdemuDevice *self, gint number, const gchar *audio_driver);
 
 gint cdemu_device_get_device_number (CdemuDevice *self);
 
@@ -77,7 +77,8 @@ gboolean cdemu_device_set_option (CdemuDevice *self, gchar *option_name, GVarian
 gboolean cdemu_device_setup_mapping (CdemuDevice *self);
 void cdemu_device_get_mapping (CdemuDevice *self, gchar **sr_device, gchar **sg_device);
 
-gsize cdemu_device_get_kernel_io_buffer_size (CdemuDevice *self);
+gboolean cdemu_device_start (CdemuDevice *self, const gchar *ctl_device);
+void cdemu_device_stop (CdemuDevice *self);
 
 G_END_DECLS
 

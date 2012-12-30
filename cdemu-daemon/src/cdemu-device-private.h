@@ -42,6 +42,8 @@ struct _CdemuDevicePrivate
     GMainContext *main_context;
     GMainLoop *main_loop;
 
+    gboolean active;
+
     /* Device stuff */
     gint number;
     gchar *device_name;
@@ -124,15 +126,14 @@ void cdemu_device_features_cleanup (CdemuDevice *self);
 void cdemu_device_set_profile (CdemuDevice *self, Profile profile);
 
 /* Kernel <-> userspace I/O */
+gsize cdemu_device_get_kernel_io_buffer_size (CdemuDevice *self);
+
 void cdemu_device_write_buffer (CdemuDevice *self, guint32 length);
 void cdemu_device_read_buffer (CdemuDevice *self, guint32 length);
 void cdemu_device_flush_buffer (CdemuDevice *self);
 
 void cdemu_device_write_sense_full (CdemuDevice *self, SenseKey sense_key, guint16 asc_ascq, gint ili, guint32 command_info);
 void cdemu_device_write_sense (CdemuDevice *self, SenseKey sense_key, guint16 asc_ascq);
-
-GThread *cdemu_device_create_io_thread (CdemuDevice *self);
-void cdemu_device_stop_io_thread (CdemuDevice *self);
 
 /* Load/unload */
 gboolean cdemu_device_unload_disc_private (CdemuDevice *self, gboolean force, GError **error);

@@ -51,7 +51,7 @@ struct _CdemuAudioClass
 GType cdemu_audio_get_type (void);
 
 /* Public API */
-void cdemu_audio_initialize (CdemuAudio *self, gchar *driver, gint *cur_sector_ptr, GMutex *device_mutex_ptr);
+void cdemu_audio_initialize (CdemuAudio *self, const gchar *driver, gint *cur_sector_ptr, GMutex *device_mutex_ptr);
 gboolean cdemu_audio_start (CdemuAudio *self, gint start, gint end, MirageDisc *disc);
 gboolean cdemu_audio_resume (CdemuAudio *self);
 gboolean cdemu_audio_pause (CdemuAudio *self);

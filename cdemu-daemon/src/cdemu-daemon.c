@@ -38,6 +38,17 @@ static void device_option_changed_handler (CdemuDevice *device, gchar *option, C
     cdemu_daemon_dbus_emit_device_option_changed(self, number, option);
 }
 
+static void device_inactive_handler (CdemuDevice *device, CdemuDaemon *self)
+{
+    gint number = cdemu_device_get_device_number(device);
+
+    CDEMU_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: device #%d inactive; attempting a restart!\n", __debug__, number);
+    cdemu_device_stop(device);
+    if (!cdemu_device_start(device, self->priv->ctl_device)) {
+        CDEMU_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: failed to restart device!\n", __debug__);
+    }
+}
+
 
 /**********************************************************************\
  *                           Device mapping                           *
@@ -113,20 +124,29 @@ gboolean cdemu_daemon_initialize_and_start (CdemuDaemon *self, gint num_devices,
         /* Create CDEmu device object */
         CdemuDevice *dev = g_object_new(CDEMU_TYPE_DEVICE, NULL);
 
-        if (cdemu_device_initialize(dev, i, self->priv->ctl_device, audio_driver)) {
-            /* Don't set parent, as devices have their own debug contexts */
-            /* Add handling for signals from the device... this allows us to
-               pass them on via DBUS */
-            g_signal_connect(dev, "status-changed", (GCallback)device_status_changed_handler, self);
-            g_signal_connect(dev, "option-changed", (GCallback)device_option_changed_handler, self);
-
-            /* Add it to devices list */
-            self->priv->list_of_devices = g_list_append(self->priv->list_of_devices, dev);
-        } else {
+        /* Initialize device */
+        if (!cdemu_device_initialize(dev, i, audio_driver)) {
             CDEMU_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: failed to initialize device %i!\n", __debug__, i);
             g_object_unref(dev);
             return FALSE;
         }
+
+        /* Don't set parent, as devices have their own debug contexts */
+        /* Add handling for signals from the device... this allows us to
+           pass them on via DBUS */
+        g_signal_connect(dev, "status-changed", (GCallback)device_status_changed_handler, self);
+        g_signal_connect(dev, "option-changed", (GCallback)device_option_changed_handler, self);
+        g_signal_connect(dev, "device-inactive", (GCallback)device_inactive_handler, self);
+
+        /* Start device */
+        if (!cdemu_device_start(dev, self->priv->ctl_device)) {
+            CDEMU_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: failed to start device %i!\n", __debug__, i);
+            g_object_unref(dev);
+            return FALSE;
+        }
+
+        /* Add it to devices list */
+        self->priv->list_of_devices = g_list_append(self->priv->list_of_devices, dev);
     }
 
     /* In order to build device mapping, we'll have to fire our callback sometime
