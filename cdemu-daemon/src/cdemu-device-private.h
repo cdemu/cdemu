@@ -58,7 +58,7 @@ struct _CdemuDevicePrivate
 
     /* Buffer/"cache" */
     guint8 *buffer;
-    gint buffer_size;
+    guint buffer_size;
 
     /* Audio play */
     CdemuAudio *audio_play;

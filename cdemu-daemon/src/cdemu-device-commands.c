@@ -2063,7 +2063,7 @@ gint cdemu_device_execute_command (CdemuDevice *self, CdemuCommand *cmd)
     };
 
     /* Find the command and execute its implementation handler */
-    for (gint i = 0; i < G_N_ELEMENTS(packet_commands); i++) {
+    for (guint i = 0; i < G_N_ELEMENTS(packet_commands); i++) {
         if (packet_commands[i].cmd == cmd->cdb[0]) {
             gboolean succeeded = FALSE;
 

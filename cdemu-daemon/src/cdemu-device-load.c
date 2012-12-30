@@ -39,7 +39,7 @@ static gboolean cdemu_device_load_disc_private (CdemuDevice *self, gchar **filen
 
     /* Set options to the context */
     mirage_context_clear_options(self->priv->mirage_context);
-    for (gint i = 0; i < g_variant_n_children(options); i++) {
+    for (guint i = 0; i < g_variant_n_children(options); i++) {
         gchar *key;
         GVariant *value;
 

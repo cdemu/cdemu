@@ -153,7 +153,7 @@ static gboolean cdemu_device_io_handler (GIOChannel *source, GIOCondition condit
     CDEMU_DEBUG(self, DAEMON_DEBUG_KERNEL_IO, "%s: reading request\n", __debug__);
 
     ret = read(fd, vreq, BUF_SIZE);
-    if (ret < sizeof(struct vhba_request)) {
+    if (ret < (gssize)sizeof(struct vhba_request)) {
         CDEMU_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: failed to read request from control device (%d bytes; at least %d required)!\n", __debug__, ret, sizeof(struct vhba_request));
         return TRUE; /* Do not remove the callback */
     }
@@ -184,7 +184,7 @@ static gboolean cdemu_device_io_handler (GIOChannel *source, GIOCondition condit
     CDEMU_DEBUG(self, DAEMON_DEBUG_KERNEL_IO, "%s: writing response\n", __debug__);
 
     ret = write(fd, vres, BUF_SIZE);
-    if (ret < sizeof(struct vhba_response)) {
+    if (ret < (gssize)sizeof(struct vhba_response)) {
         CDEMU_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: failed to write response to control device (%d bytes; at least %d required)!\n", __debug__, ret, sizeof(struct vhba_response));
         return TRUE; /* Do not remove the callback */
     }

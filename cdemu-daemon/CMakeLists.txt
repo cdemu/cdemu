@@ -53,7 +53,6 @@ add_definitions (-DHAVE_CONFIG_H -DG_DISABLE_DEPRECATED)
 
 if (CMAKE_COMPILER_IS_GNUCC)
     add_definitions (-Wall -Wextra -Wshadow -Wmissing-declarations -Wmissing-prototypes -Wnested-externs -Wpointer-arith -Wcast-align)
-    add_definitions (-Wno-sign-compare)
 endif ()
 
 
