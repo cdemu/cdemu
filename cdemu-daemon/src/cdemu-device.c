@@ -49,6 +49,7 @@ static void cdemu_device_set_device_id (CdemuDevice *self, const gchar *vendor_i
 gboolean cdemu_device_initialize (CdemuDevice *self, gint number, gchar *ctl_device, gchar *audio_driver)
 {
     MirageContext *context;
+    gint buffer_size;
 
     self->priv->mapping_complete = FALSE;
 
@@ -73,10 +74,19 @@ gboolean cdemu_device_initialize (CdemuDevice *self, gint number, gchar *ctl_dev
         return FALSE;
     }
 
+    /* Allocate kernel I/O buffer */
+    buffer_size = cdemu_device_get_kernel_io_buffer_size(self);
+    self->priv->kernel_io_buffer = g_try_malloc0(buffer_size);
+    if (!self->priv->kernel_io_buffer) {
+        CDEMU_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: failed to allocate kernel I/O buffer (%d bytes)!\n", __debug__, buffer_size);
+        return FALSE;
+    }
+
     /* Allocate buffer/"cache"; 4kB should be enough for everything, I think */
-    self->priv->buffer = g_try_malloc0(4096);
+    buffer_size = 4096;
+    self->priv->buffer = g_try_malloc0(buffer_size);
     if (!self->priv->buffer) {
-        CDEMU_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: failed to allocate buffer!\n", __debug__);
+        CDEMU_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: failed to allocate cache buffer (%d bytes)!\n", __debug__, buffer_size);
         return FALSE;
     }
 
@@ -296,6 +306,7 @@ static void cdemu_device_init (CdemuDevice *self)
     self->priv->device_name = NULL;
     self->priv->device_mutex = NULL;
 
+    self->priv->kernel_io_buffer = NULL;
     self->priv->buffer = NULL;
 
     self->priv->audio_play = NULL;
@@ -361,6 +372,9 @@ static void cdemu_device_finalize (GObject *gobject)
     /* Free device map */
     g_free(self->priv->device_sg);
     g_free(self->priv->device_sr);
+
+    /* Free kernel I/O buffer */
+    g_free(self->priv->kernel_io_buffer);
 
     /* Free buffer/"cache" */
     g_free(self->priv->buffer);

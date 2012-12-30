@@ -29,12 +29,13 @@
 #define OTHER_SECTORS TO_SECTOR(MAX_SENSE + sizeof(struct vhba_response))
 #define BUF_SIZE (512 * (MAX_SECTORS + OTHER_SECTORS))
 
+/* Kernel I/O structures, also defined in VHBA module's source */
+#define MAX_COMMAND_SIZE 16
+
 struct vhba_request
 {
     guint32 tag;
     guint32 lun;
-#define MAX_COMMAND_SIZE       16
-
     guint8 cdb[MAX_COMMAND_SIZE];
     guint8 cdb_len;
     guint32 data_len;
@@ -48,14 +49,21 @@ struct vhba_response
 };
 
 
+/* Compute the required kernel I/O buffer size */
+gsize cdemu_device_get_kernel_io_buffer_size (CdemuDevice *self G_GNUC_UNUSED)
+{
+    return BUF_SIZE;
+}
+
+
 /**********************************************************************\
- *                         Data buffer I/O                            *
+ *             Data buffer (cache) <-> kernel I/O buffer              *
 \**********************************************************************/
 void cdemu_device_write_buffer (CdemuDevice *self, guint32 length)
 {
     guint32 len;
 
-    CDEMU_DEBUG(self, DAEMON_DEBUG_KERNEL_IO, "%s: write request (%d bytes)\n", __debug__, length);
+    CDEMU_DEBUG(self, DAEMON_DEBUG_KERNEL_IO, "%s: write data from cache (%d bytes)\n", __debug__, length);
 
     len = MIN(self->priv->buffer_size, length);
     if (self->priv->cur_len + len > self->priv->cmd->out_len) {
@@ -72,7 +80,7 @@ void cdemu_device_read_buffer (CdemuDevice *self, guint32 length)
 {
     guint32 len;
 
-    CDEMU_DEBUG(self, DAEMON_DEBUG_KERNEL_IO, "%s: read request (%d bytes)\n", __debug__, length);
+    CDEMU_DEBUG(self, DAEMON_DEBUG_KERNEL_IO, "%s: read data to cache (%d bytes)\n", __debug__, length);
 
     len = MIN(self->priv->cmd->in_len, length);
     CDEMU_DEBUG(self, DAEMON_DEBUG_KERNEL_IO, "%s: copying %d bytes from IN buffer\n", __debug__, len);
@@ -83,7 +91,7 @@ void cdemu_device_read_buffer (CdemuDevice *self, guint32 length)
 
 void cdemu_device_flush_buffer (CdemuDevice *self)
 {
-    CDEMU_DEBUG(self, DAEMON_DEBUG_KERNEL_IO, "%s: flushing buffer\n", __debug__);
+    CDEMU_DEBUG(self, DAEMON_DEBUG_KERNEL_IO, "%s: flushing cache\n", __debug__);
 
     memset(self->priv->buffer, 0, self->priv->buffer_size);
     self->priv->buffer_size = 0;
@@ -135,15 +143,10 @@ static gboolean cdemu_device_io_handler (GIOChannel *source, GIOCondition condit
     gint fd = g_io_channel_unix_get_fd(source);
 
     CdemuCommand cmd;
-    guchar *buf = g_try_malloc0(BUF_SIZE);
-    struct vhba_request *vreq = (void *) buf;
-    struct vhba_response *vres = (void *) buf;
+    struct vhba_request *vreq = (gpointer)self->priv->kernel_io_buffer;
+    struct vhba_response *vres = (gpointer)self->priv->kernel_io_buffer;
 
-    if (!buf) {
-        CDEMU_DEBUG(self, DAEMON_DEBUG_ERROR, "%s: failed to allocate memory.\n", __debug__);
-        return FALSE;
-    }
-
+    /* Read request */
     if (read(fd, vreq, BUF_SIZE) < sizeof(*vreq)) {
         CDEMU_DEBUG(self, DAEMON_DEBUG_ERROR, "%s: failed to read request from control device!\n", __debug__);
         return FALSE;
@@ -155,8 +158,8 @@ static gboolean cdemu_device_io_handler (GIOChannel *source, GIOCondition condit
         memset(cmd.cdb + vreq->cdb_len, 0, 12 - vreq->cdb_len);
     }
 
-    cmd.in = (guint8 *) (vreq + 1);
-    cmd.out = (guint8 *) (vres + 1);
+    cmd.in = (guint8 *)(vreq + 1);
+    cmd.out = (guint8 *)(vres + 1);
     cmd.in_len = cmd.out_len = vreq->data_len;
 
     if (cmd.out_len > BUF_SIZE - sizeof(*vres)) {
@@ -173,8 +176,6 @@ static gboolean cdemu_device_io_handler (GIOChannel *source, GIOCondition condit
         CDEMU_DEBUG(self, DAEMON_DEBUG_ERROR, "%s: failed to write response to control device!\n", __debug__);
         return FALSE;
     }
-
-    g_free(buf);
 
     return TRUE;
 }

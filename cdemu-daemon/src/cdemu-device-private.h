@@ -53,6 +53,9 @@ struct _CdemuDevicePrivate
     CdemuCommand *cmd;
     guint cur_len;
 
+    /* Kernel I/O buffer */
+    guint8 *kernel_io_buffer;
+
     /* Buffer/"cache" */
     guint8 *buffer;
     gint buffer_size;

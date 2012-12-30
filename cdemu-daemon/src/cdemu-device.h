@@ -77,6 +77,8 @@ gboolean cdemu_device_set_option (CdemuDevice *self, gchar *option_name, GVarian
 gboolean cdemu_device_setup_mapping (CdemuDevice *self);
 void cdemu_device_get_mapping (CdemuDevice *self, gchar **sr_device, gchar **sg_device);
 
+gsize cdemu_device_get_kernel_io_buffer_size (CdemuDevice *self);
+
 G_END_DECLS
 
 #endif /* __CDEMU_DEVICE_H__ */
