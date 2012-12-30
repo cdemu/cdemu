@@ -687,12 +687,25 @@ static ssize_t vhba_ctl_read (struct file *file, char __user *buf, size_t buf_le
 
     vdev = file->private_data;
 
-    spin_lock_irqsave(&vdev->cmd_lock, flags);
-    vcmd = wait_command(vdev, flags);
-    spin_unlock_irqrestore(&vdev->cmd_lock, flags);
+    /* Get next command */
+    if (file->f_flags & O_NONBLOCK) {
+        /* Non-blocking variant */
+        spin_lock_irqsave(&vdev->cmd_lock, flags);
+        vcmd = next_command(vdev);
+        spin_unlock_irqrestore(&vdev->cmd_lock, flags);
 
-    if (!vcmd) {
-        return -ERESTARTSYS;
+        if (!vcmd) {
+            return -EWOULDBLOCK;
+        }
+    } else {
+        /* Blocking variant */
+        spin_lock_irqsave(&vdev->cmd_lock, flags);
+        vcmd = wait_command(vdev, flags);
+        spin_unlock_irqrestore(&vdev->cmd_lock, flags);
+
+        if (!vcmd) {
+            return -ERESTARTSYS;
+        }
     }
 
     ret = do_request(vcmd->cmd, buf, buf_len);
