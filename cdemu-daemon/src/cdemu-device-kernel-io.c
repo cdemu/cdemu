@@ -146,11 +146,17 @@ static gboolean cdemu_device_io_handler (GIOChannel *source, GIOCondition condit
     struct vhba_request *vreq = (gpointer)self->priv->kernel_io_buffer;
     struct vhba_response *vres = (gpointer)self->priv->kernel_io_buffer;
 
+    CDEMU_DEBUG(self, DAEMON_DEBUG_KERNEL_IO, "%s: I/O handler invoked\n", __debug__);
+
+    CDEMU_DEBUG(self, DAEMON_DEBUG_KERNEL_IO, "%s: reading request\n", __debug__);
+
     /* Read request */
     if (read(fd, vreq, BUF_SIZE) < sizeof(*vreq)) {
         CDEMU_DEBUG(self, DAEMON_DEBUG_ERROR, "%s: failed to read request from control device!\n", __debug__);
         return FALSE;
     }
+
+    CDEMU_DEBUG(self, DAEMON_DEBUG_KERNEL_IO, "%s: successfully read request; cmd %02Xh, in/out len %d, tag %d\n", __debug__, vreq->cdb[0], vreq->data_len, vreq->tag);
 
     /* Initialize CDEMU_Command */
     memcpy(cmd.cdb, vreq->cdb, vreq->cdb_len);
@@ -172,10 +178,14 @@ static gboolean cdemu_device_io_handler (GIOChannel *source, GIOCondition condit
 
     vres->data_len = cmd.out_len;
 
+    CDEMU_DEBUG(self, DAEMON_DEBUG_KERNEL_IO, "%s: writing response\n", __debug__);
+
     if (write(fd, (void *)vres, BUF_SIZE) < sizeof(*vres)) {
         CDEMU_DEBUG(self, DAEMON_DEBUG_ERROR, "%s: failed to write response to control device!\n", __debug__);
         return FALSE;
     }
+
+    CDEMU_DEBUG(self, DAEMON_DEBUG_KERNEL_IO, "%s: I/O handler done\n\n", __debug__);
 
     return TRUE;
 }
