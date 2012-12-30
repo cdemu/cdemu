@@ -73,6 +73,9 @@ gboolean cdemu_device_initialize (CdemuDevice *self, gint number, gchar *ctl_dev
         CDEMU_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: failed to open control device %s!\n", __debug__, ctl_device);
         return FALSE;
     }
+    if (g_io_channel_set_flags(self->priv->io_channel, G_IO_FLAG_NONBLOCK, NULL) != G_IO_STATUS_NORMAL) {
+        CDEMU_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: failed to set NONBLOCK flag to control device!\n", __debug__);
+    }
 
     /* Allocate kernel I/O buffer */
     buffer_size = cdemu_device_get_kernel_io_buffer_size(self);
