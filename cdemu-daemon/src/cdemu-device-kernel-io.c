@@ -149,15 +149,14 @@ static gboolean cdemu_device_io_handler (GIOChannel *source, GIOCondition condit
 
     CDEMU_DEBUG(self, DAEMON_DEBUG_KERNEL_IO, "%s: I/O handler invoked\n", __debug__);
 
-    self->priv->active = TRUE;
-
     /* Read request */
     CDEMU_DEBUG(self, DAEMON_DEBUG_KERNEL_IO, "%s: reading request\n", __debug__);
 
     ret = read(fd, vreq, BUF_SIZE);
     if (ret < (gssize)sizeof(struct vhba_request)) {
         CDEMU_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: failed to read request from control device (%d bytes; at least %d required)!\n", __debug__, ret, sizeof(struct vhba_request));
-        return TRUE; /* Do not remove the callback */
+        /* We do not really need to do anything else here; if error is non-recoverable, the watchdog will kick in anyway */
+        return TRUE;
     }
 
     CDEMU_DEBUG(self, DAEMON_DEBUG_KERNEL_IO, "%s: successfully read request; cmd %02Xh, in/out len %d, tag %d\n", __debug__, vreq->cdb[0], vreq->data_len, vreq->tag);
@@ -188,21 +187,13 @@ static gboolean cdemu_device_io_handler (GIOChannel *source, GIOCondition condit
     ret = write(fd, vres, BUF_SIZE);
     if (ret < (gssize)sizeof(struct vhba_response)) {
         CDEMU_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: failed to write response to control device (%d bytes; at least %d required)!\n", __debug__, ret, sizeof(struct vhba_response));
-        return TRUE; /* Do not remove the callback */
+        /* We do not really need to do anything else here; if error is non-recoverable, the watchdog will kick in anyway */
+        return TRUE;
     }
+
+    self->priv->last_io_activity = g_get_monotonic_time();
 
     CDEMU_DEBUG(self, DAEMON_DEBUG_KERNEL_IO, "%s: I/O handler done\n\n", __debug__);
-
-    return TRUE;
-}
-
-static gboolean cdemu_device_io_watchdog (CdemuDevice *self)
-{
-    if (!self->priv->active) {
-        g_signal_emit_by_name(self, "device-inactive", NULL);
-    }
-
-    self->priv->active = FALSE;
 
     return TRUE;
 }
@@ -210,31 +201,12 @@ static gboolean cdemu_device_io_watchdog (CdemuDevice *self)
 
 static gpointer cdemu_device_io_thread (CdemuDevice *self)
 {
-    GSource *source;
+    /* Initialize the value, in case watchdog fires before any requests are served */
+    self->priv->last_io_activity = g_get_monotonic_time();
 
-    /* Create thread context and main loop */
-    self->priv->main_context = g_main_context_new();
-    self->priv->main_loop = g_main_loop_new(self->priv->main_context, FALSE);
-
-    /* Create watch source */
-    source = g_io_create_watch(self->priv->io_channel, G_IO_IN);
-    g_source_set_callback(source, (GSourceFunc)cdemu_device_io_handler, self, NULL);
-    g_source_attach(source, self->priv->main_context);
-    g_source_unref(source);
-
-    /* Create watchdog timer - 30 seconds */
-    source = g_timeout_source_new_seconds(30);
-    g_source_set_callback(source, (GSourceFunc)cdemu_device_io_watchdog, self, NULL);
-    g_source_attach(source, self->priv->main_context);
-    g_source_unref(source);
-
-    self->priv->active = TRUE;
-
-    /* Run */
+	CDEMU_DEBUG(self, DAEMON_DEBUG_KERNEL_IO, "%s: I/O thread started\n", __debug__);
     g_main_loop_run(self->priv->main_loop);
-
-    /* Cleanup */
-    g_main_context_unref(self->priv->main_context);
+	CDEMU_DEBUG(self, DAEMON_DEBUG_KERNEL_IO, "%s: I/O thread finished\n\n", __debug__);
 
     return NULL;
 }
@@ -261,6 +233,11 @@ gboolean cdemu_device_start (CdemuDevice *self, const gchar *ctl_device)
         g_error_free(local_error);
     }
 
+    /* Create I/O watch */
+    self->priv->io_watch = g_io_create_watch(self->priv->io_channel, G_IO_IN);
+    g_source_set_callback(self->priv->io_watch, (GSourceFunc)cdemu_device_io_handler, self, NULL);
+    g_source_attach(self->priv->io_watch, self->priv->main_context);
+
     /* Start I/O thread */
     self->priv->io_thread = g_thread_try_new("I/O thread", (GThreadFunc)cdemu_device_io_thread, self, &local_error);
     if (!self->priv->io_thread) {
@@ -278,24 +255,29 @@ void cdemu_device_stop (CdemuDevice *self)
     if (self->priv->main_loop) {
         if (g_main_loop_is_running(self->priv->main_loop)) {
             g_main_loop_quit(self->priv->main_loop);
-            /* Wait for the thread to finish */
-            g_thread_join(self->priv->io_thread);
         }
-
-        g_main_loop_unref(self->priv->main_loop);
-        self->priv->main_loop = NULL;
     }
 
-    /* Unref thread */
-    if (self->priv->io_thread) {
-        g_thread_unref(self->priv->io_thread);
-        self->priv->io_thread = NULL;
-    }
+	/* Destroy the I/O watch */
+	if (self->priv->io_watch) {
+		g_source_destroy(self->priv->io_watch);
+		g_source_unref(self->priv->io_watch);
+		self->priv->io_watch = NULL;
+	}
 
     /* Close the I/O channel */
     if (self->priv->io_channel) {
         g_io_channel_unref(self->priv->io_channel);
         self->priv->io_channel = NULL;
+    }
+
+    /* Unref thread */
+    if (self->priv->io_thread) {
+        /* Wait for the thread to finish */
+        g_thread_join(self->priv->io_thread);
+
+        g_thread_unref(self->priv->io_thread);
+        self->priv->io_thread = NULL;
     }
 }
 

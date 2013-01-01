@@ -41,8 +41,9 @@ struct _CdemuDevicePrivate
     GThread *io_thread;
     GMainContext *main_context;
     GMainLoop *main_loop;
+    GSource *io_watch;
 
-    gboolean active;
+    guint64 last_io_activity;
 
     /* Device stuff */
     gint number;

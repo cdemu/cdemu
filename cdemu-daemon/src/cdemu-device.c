@@ -41,6 +41,23 @@ static void cdemu_device_set_device_id (CdemuDevice *self, const gchar *vendor_i
     self->priv->id_vendor_specific = g_strndup(vendor_specific, 20);
 }
 
+static gboolean cdemu_device_io_watchdog (CdemuDevice *self)
+{
+    guint64 diff = g_get_monotonic_time() - self->priv->last_io_activity;
+
+    /* The actual threshold is 5 seconds */
+    if (diff > 5000000) {
+        CDEMU_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: device had no I/O activity in last %.2f seconds!\n", __debug__, diff/1000000.0f);
+
+        /* Emit signal, which will be picked up by daemon */
+        g_signal_emit_by_name(self, "device-inactive", NULL);
+
+        /* Off-line the device by stopping its main loop */
+        //g_main_loop_quit(self->priv->main_loop);
+    }
+
+    return TRUE;
+}
 
 
 /**********************************************************************\
@@ -49,6 +66,7 @@ static void cdemu_device_set_device_id (CdemuDevice *self, const gchar *vendor_i
 gboolean cdemu_device_initialize (CdemuDevice *self, gint number, const gchar *audio_driver)
 {
     MirageContext *context;
+    GSource *source;
     gint buffer_size;
 
     self->priv->mapping_complete = FALSE;
@@ -59,6 +77,16 @@ gboolean cdemu_device_initialize (CdemuDevice *self, gint number, const gchar *a
 
     /* Init device mutex */
     self->priv->device_mutex = g_mutex_new();
+
+    /* Create GLib main context and main loop for events */
+    self->priv->main_context = g_main_context_new();
+    self->priv->main_loop = g_main_loop_new(self->priv->main_context, FALSE);
+
+    /* Create I/O watchdog with 1-second granularity */
+    source = g_timeout_source_new_seconds(1);
+    g_source_set_callback(source, (GSourceFunc)cdemu_device_io_watchdog, self, NULL);
+    g_source_attach(source, self->priv->main_context);
+    g_source_unref(source);
 
     /* Create a MirageContext to use as a debug context for device */
     context = g_object_new(MIRAGE_TYPE_CONTEXT, NULL);
@@ -288,6 +316,7 @@ static void cdemu_device_init (CdemuDevice *self)
     self->priv->io_thread = NULL;
     self->priv->main_context = NULL;
     self->priv->main_loop = NULL;
+    self->priv->io_watch = NULL;
 
     self->priv->device_name = NULL;
     self->priv->device_mutex = NULL;
@@ -333,6 +362,17 @@ static void cdemu_device_dispose (GObject *gobject)
     if (self->priv->mirage_context) {
         g_object_unref(self->priv->mirage_context);
         self->priv->mirage_context = NULL;
+    }
+
+    /* Unref main context and main loop */
+    if (self->priv->main_loop) {
+        g_main_loop_unref(self->priv->main_loop);
+        self->priv->main_loop = NULL;
+    }
+
+    if (self->priv->main_context) {
+        g_main_context_unref(self->priv->main_context);
+        self->priv->main_context = NULL;
     }
 
     /* Chain up to the parent class */

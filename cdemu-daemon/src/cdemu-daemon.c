@@ -38,15 +38,64 @@ static void device_option_changed_handler (CdemuDevice *device, gchar *option, C
     cdemu_daemon_dbus_emit_device_option_changed(self, number, option);
 }
 
+
+/**********************************************************************\
+ *                     Device restart on inactivity                   *
+\**********************************************************************/
+struct DaemonDevicePtr {
+    CdemuDaemon *daemon;
+    CdemuDevice *device;
+};
+
+
+/* Stage 2 of device restart: start */
+static gboolean device_restart_stage2 (struct DaemonDevicePtr *data)
+{
+    CdemuDaemon *self = data->daemon;
+    CdemuDevice *device = data->device;
+
+    /* Start */
+    if (!cdemu_device_start(device, self->priv->ctl_device)) {
+        CDEMU_DEBUG(device, DAEMON_DEBUG_WARNING, "%s: failed to restart device!\n", __debug__);
+    } else {
+        CDEMU_DEBUG(device, DAEMON_DEBUG_DEVICE, "%s: device started successfully\n", __debug__);
+    }
+
+    /* Free the pointer structure */
+    g_free(data);
+
+    return FALSE;
+}
+
+/* Stage 1 of device restart: stop */
+static gboolean device_restart_stage1 (struct DaemonDevicePtr *data)
+{
+    CdemuDaemon *self = data->daemon;
+    CdemuDevice *device = data->device;
+    gint interval = 5; /* 5 seconds */
+
+    /* Properly stop the device (I/O thread clenup) */
+    cdemu_device_stop(device);
+
+    CDEMU_DEBUG(device, DAEMON_DEBUG_DEVICE, "%s: device stopped; starting in %d seconds...\n", __debug__, interval);
+
+    /* Schedule device to be started after some time has passed */
+    g_timeout_add_seconds(interval, (GSourceFunc)device_restart_stage2, data);
+
+    return FALSE;
+}
+
+/* The actual signal handler; since the signal is emitted from the device's
+   I/O thread, this handler is also executed there... so we need to get
+   into our main thread first, which is done by scheduling an idle function */
 static void device_inactive_handler (CdemuDevice *device, CdemuDaemon *self)
 {
-    gint number = cdemu_device_get_device_number(device);
+    struct DaemonDevicePtr *data = g_new(struct DaemonDevicePtr, 1);
+    data->daemon = self;
+    data->device = device;
 
-    CDEMU_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: device #%d inactive; attempting a restart!\n", __debug__, number);
-    cdemu_device_stop(device);
-    if (!cdemu_device_start(device, self->priv->ctl_device)) {
-        CDEMU_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: failed to restart device!\n", __debug__);
-    }
+    CDEMU_DEBUG(device, DAEMON_DEBUG_DEVICE, "%s: restarting device...\n", __debug__);
+    g_idle_add((GSourceFunc)device_restart_stage1, data);
 }
 
 
@@ -82,7 +131,6 @@ static gboolean device_mapping_callback (CdemuDaemon *self)
 
     return run_again;
 }
-
 
 /******************************************************************************\
  *                                 Public API                                 *
@@ -154,7 +202,6 @@ gboolean cdemu_daemon_initialize_and_start (CdemuDaemon *self, gint num_devices,
        active and the SCSI layer actually does device registration on the kernel
        side)... */
     self->priv->mapping_id = g_timeout_add(1000, (GSourceFunc)device_mapping_callback, self);
-
 
     /* Register on D-Bus bus */
     cdemu_daemon_dbus_register_on_bus(self, bus_type);
