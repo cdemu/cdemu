@@ -213,8 +213,8 @@ static gpointer cdemu_device_io_thread (CdemuDevice *self)
     GSource *source;
 
     /* Create thread context and main loop */
-    GMainContext *main_context = g_main_context_new();
-    self->priv->main_loop = g_main_loop_new(main_context, FALSE);
+    self->priv->main_context = g_main_context_new();
+    self->priv->main_loop = g_main_loop_new(self->priv->main_context, FALSE);
 
     /* Create watch source */
     source = g_io_create_watch(self->priv->io_channel, G_IO_IN);
@@ -234,7 +234,7 @@ static gpointer cdemu_device_io_thread (CdemuDevice *self)
     g_main_loop_run(self->priv->main_loop);
 
     /* Cleanup */
-    g_main_context_unref(main_context);
+    g_main_context_unref(self->priv->main_context);
 
     return NULL;
 }
