@@ -207,7 +207,7 @@ static void mirage_object_class_init (MirageObjectClass *klass)
      *
      * Emitted when a new #MirageContext is set to a #MirageObject.
      */
-    klass->signal_context_changed = g_signal_new("context-changed", G_OBJECT_CLASS_TYPE(klass), G_SIGNAL_RUN_LAST, 0, NULL, NULL, g_cclosure_marshal_VOID__VOID, G_TYPE_NONE, 0, NULL);
+    g_signal_new("context-changed", G_OBJECT_CLASS_TYPE(klass), G_SIGNAL_RUN_LAST, 0, NULL, NULL, g_cclosure_marshal_VOID__VOID, G_TYPE_NONE, 0, NULL);
 }
 
 static void mirage_object_contextual_init (MirageContextualInterface *iface)

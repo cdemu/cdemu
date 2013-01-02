@@ -93,16 +93,12 @@ struct _MirageFragment
 /**
  * MirageFragmentClass:
  * @parent_class: the parent class
- * @signal_layout_changed: "layout-changed" signal identifier
  *
  * The class structure for the <structname>MirageFragment</structname> type.
  */
 struct _MirageFragmentClass
 {
     MirageObjectClass parent_class;
-
-    /* Signals */
-    gint signal_layout_changed;
 };
 
 /* Used by MIRAGE_TYPE_FRAGMENT */

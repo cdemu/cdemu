@@ -102,16 +102,12 @@ struct _MirageDisc
 /**
  * MirageDiscClass:
  * @parent_class: the parent class
- * @signal_layout_changed: "layout-changed" signal identifier
  *
  * The class structure for the <structname>MirageDisc</structname> type.
  */
 struct _MirageDiscClass
 {
     MirageObjectClass parent_class;
-
-    /* Signals */
-    gint signal_layout_changed;
 };
 
 /* Used by MIRAGE_TYPE_DISC */

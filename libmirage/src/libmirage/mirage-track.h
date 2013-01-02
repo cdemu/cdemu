@@ -149,16 +149,12 @@ struct _MirageTrack
 /**
  * MirageTrackClass:
  * @parent_class: the parent class
- * @signal_layout_changed: "layout-changed" signal identifier
  *
  * The class structure for the <structname>MirageTrack</structname> type.
  */
 struct _MirageTrackClass
 {
     MirageObjectClass parent_class;
-
-    /* Signals */
-    gint signal_layout_changed;
 };
 
 /* Used by MIRAGE_TYPE_TRACK */

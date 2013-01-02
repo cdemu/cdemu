@@ -57,16 +57,12 @@ struct _MirageObject
 /**
  * MirageObjectClass:
  * @parent_class: the parent class
- * @signal_context_changed: "context-changed" signal identifier
  *
  * The class structure for the <structname>MirageObject</structname> type.
  */
 struct _MirageObjectClass
 {
     GObjectClass parent_class;
-
-    /* Signals */
-    gint signal_context_changed;
 };
 
 /* Used by MIRAGE_TYPE_OBJECT */
