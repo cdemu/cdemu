@@ -52,9 +52,6 @@ struct _CdemuDevice
 struct _CdemuDeviceClass
 {
     MirageObjectClass parent_class;
-
-    /* Class members */
-    guint signals[3]; /* Signals */
 };
 
 

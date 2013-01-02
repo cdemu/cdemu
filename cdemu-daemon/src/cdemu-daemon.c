@@ -70,7 +70,6 @@ static gboolean device_restart_stage2 (struct DaemonDevicePtr *data)
 /* Stage 1 of device restart: stop */
 static gboolean device_restart_stage1 (struct DaemonDevicePtr *data)
 {
-    CdemuDaemon *self = data->daemon;
     CdemuDevice *device = data->device;
     gint interval = 5; /* 5 seconds */
 
