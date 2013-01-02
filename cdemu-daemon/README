@@ -380,22 +380,26 @@ control the daemon:
 In addition to the methods, CDEmu daemon's interface emits the following signals
 in response to the change of status of either the daemon or one of the devices:
 
-* DeviceMappingsReady
-    - emitted when the device mappings are established
-
-* DeviceStatusChange
+* DeviceStatusChanged
     + device_number: "i"
         Device that emitted the signal (int).
 
     - emitted when device is loaded/unloaded
 
-* DeviceOptionChange
+* DeviceOptionChanged
     + device_number: "i"
         Device that emitted the signal (int).
     + option: "s"
         Option that has been changed (string).
 
     - emitted when device's option is changed
+
+* DeviceMappingReady
+    + device_number: "i"
+        Device that emitted the signal (int).
+
+    - emitted when the device's mapping to /dev/srX and /dev/sgY are established
+
 
 
 Daemon start/stop detection:
@@ -408,8 +412,8 @@ org.freedesktop.DBus interface to detect daemon start/stop.
 
 The daemon registers itself on the bus after all devices have been created so
 when the name ownership request is detected, the daemon and devices are ready
-for use. At this point devices' mappings are not ready yet; those become available
-after the daemon emits the "DeviceMappingsReady" signal.
+for use. At this point devices' mappings are not ready yet; when they become
+available, each device emits "DeviceMappingReady" signal.
 
 
 7. Device options
@@ -488,7 +492,7 @@ control device.
 9. Encrypted images and password supplying
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-libMirage offers basic support for encrypted images which is supported by 
+libMirage offers basic support for encrypted images which is supported by
 the CDEmu daemon as well.
 
 Encrypted images require password to decrypt the data. When image loading is
@@ -547,7 +551,7 @@ character control device.
 11. Deprecation of running on system bus
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Running the daemon on system bus is considered deprecated and should be avoided 
+Running the daemon on system bus is considered deprecated and should be avoided
 for various reasons listed below.
 
 First and foremost, running the CDEmu daemon on the system bus leads to security issues in

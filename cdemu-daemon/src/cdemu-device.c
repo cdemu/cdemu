@@ -41,6 +41,10 @@ static void cdemu_device_set_device_id (CdemuDevice *self, const gchar *vendor_i
     self->priv->id_vendor_specific = g_strndup(vendor_specific, 20);
 }
 
+
+/**********************************************************************\
+ *                  Kernel <-> userspace I/O watchdog                 *
+\**********************************************************************/
 static gboolean cdemu_device_io_watchdog (CdemuDevice *self)
 {
     guint64 diff = g_get_monotonic_time() - self->priv->last_io_activity;
@@ -85,6 +89,12 @@ gboolean cdemu_device_initialize (CdemuDevice *self, gint number, const gchar *a
     /* Create I/O watchdog with 1-second granularity */
     source = g_timeout_source_new_seconds(1);
     g_source_set_callback(source, (GSourceFunc)cdemu_device_io_watchdog, self, NULL);
+    g_source_attach(source, self->priv->main_context);
+    g_source_unref(source);
+
+    /* Create mapping setup timer with 1-second granularity */
+    source = g_timeout_source_new_seconds(1);
+    g_source_set_callback(source, (GSourceFunc)cdemu_device_setup_mapping, self, NULL);
     g_source_attach(source, self->priv->main_context);
     g_source_unref(source);
 
@@ -426,6 +436,7 @@ static void cdemu_device_class_init (CdemuDeviceClass *klass)
     g_signal_new("status-changed", G_OBJECT_CLASS_TYPE(klass), G_SIGNAL_RUN_LAST, 0, NULL, NULL, g_cclosure_marshal_VOID__VOID, G_TYPE_NONE, 0, NULL);
     g_signal_new("option-changed", G_OBJECT_CLASS_TYPE(klass), G_SIGNAL_RUN_LAST, 0, NULL, NULL, g_cclosure_marshal_VOID__STRING, G_TYPE_NONE, 1, G_TYPE_STRING, NULL);
     g_signal_new("device-inactive", G_OBJECT_CLASS_TYPE(klass), G_SIGNAL_RUN_LAST, 0, NULL, NULL, g_cclosure_marshal_VOID__VOID, G_TYPE_NONE, 0, NULL);
+    g_signal_new("mapping-ready", G_OBJECT_CLASS_TYPE(klass), G_SIGNAL_RUN_LAST, 0, NULL, NULL, g_cclosure_marshal_VOID__VOID, G_TYPE_NONE, 0, NULL);
 
     /* Register private structure */
     g_type_class_add_private(klass, sizeof(CdemuDevicePrivate));

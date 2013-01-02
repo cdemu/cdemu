@@ -5,7 +5,7 @@ project (cdemu-daemon C)
 
 # Versioning
 set (CDEMU_DAEMON_VERSION 2.0.0)
-set (CDEMU_DAEMON_INTERFACE_VERSION 4)
+set (CDEMU_DAEMON_INTERFACE_VERSION 5)
 
 # Additional CMake modules.
 list (APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)

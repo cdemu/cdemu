@@ -441,12 +441,12 @@ void cdemu_daemon_dbus_emit_device_option_changed (CdemuDaemon *self, gint numbe
     }
 }
 
-void cdemu_daemon_dbus_emit_device_mappings_ready (CdemuDaemon *self)
+void cdemu_daemon_dbus_emit_device_mapping_ready (CdemuDaemon *self, gint number)
 {
     if (self->priv->connection) {
         g_dbus_connection_emit_signal(self->priv->connection, NULL,
             "/Daemon", CDEMU_DAEMON_DBUS_NAME,
-            "DeviceMappingsReady", g_variant_new("()"),
+            "DeviceMappingReady", g_variant_new("(i)", number),
             NULL);
     }
 }
@@ -522,6 +522,8 @@ static const gchar introspection_xml[] =
     "            <arg name='device_number' type='i' direction='out'/>"
     "            <arg name='option' type='s' direction='out'/>"
     "        </signal>"
-    "        <signal name='DeviceMappingsReady'/>"
+    "        <signal name='DeviceMappingReady'>"
+    "            <arg name='device_number' type='i' direction='out'/>"
+    "        </signal>"
     "    </interface>"
     "</node>";

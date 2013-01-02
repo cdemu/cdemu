@@ -25,21 +25,16 @@
 
 gboolean cdemu_device_setup_mapping (CdemuDevice *self)
 {
-    gboolean complete = TRUE;
+    gboolean try_again = FALSE;
     gint ioctl_ret;
     gint32 id[4];
-
-    /* Check if mapping has already been set up */
-    if (self->priv->mapping_complete) {
-        return self->priv->mapping_complete;
-    }
 
     /* Perform IOCTL */
     ioctl_ret = ioctl(g_io_channel_unix_get_fd(self->priv->io_channel), 0xBEEF001, id);
 
     if (ioctl_ret == -ENODEV) {
         /* ENODEV means the device hasn't been registered yet... */
-        complete = FALSE; /* ... try again later */
+        try_again = TRUE; /* ... try again later */
     } else if (ioctl_ret < 0) {
         /* Other errors */
         CDEMU_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: error while performing ioctl (%d); device mapping info will not be available\n", __debug__, ioctl_ret);
@@ -120,8 +115,12 @@ gboolean cdemu_device_setup_mapping (CdemuDevice *self)
         g_free(sysfs_dev_path);
     }
 
-    self->priv->mapping_complete = complete;
-    return complete;
+    /* If we won't be repeating the callback, emit the 'ready' signal */
+    if (!try_again) {
+        g_signal_emit_by_name(self, "mapping-ready", NULL);
+    }
+
+    return try_again;
 }
 
 void cdemu_device_get_mapping (CdemuDevice *self, gchar **sr_device, gchar **sg_device)

@@ -38,6 +38,12 @@ static void device_option_changed_handler (CdemuDevice *device, gchar *option, C
     cdemu_daemon_dbus_emit_device_option_changed(self, number, option);
 }
 
+static void device_mapping_ready_handler (CdemuDevice *device, CdemuDaemon *self)
+{
+    gint number = cdemu_device_get_device_number(device);
+    cdemu_daemon_dbus_emit_device_mapping_ready(self, number);
+}
+
 
 /**********************************************************************\
  *                     Device restart on inactivity                   *
@@ -98,39 +104,6 @@ static void device_inactive_handler (CdemuDevice *device, CdemuDaemon *self)
 }
 
 
-/**********************************************************************\
- *                           Device mapping                           *
-\**********************************************************************/
-static gboolean device_mapping_callback (CdemuDaemon *self)
-{
-    gboolean run_again = FALSE;
-
-    /* Try to setup mapping on each device */
-    for (gint i = 0; i < self->priv->number_of_devices; i++) {
-        CdemuDevice *device = cdemu_daemon_get_device(self, i, NULL);
-
-        run_again = !cdemu_device_setup_mapping(device);
-        g_object_unref(device);
-
-        /* Try again later? */
-        if (run_again) {
-            break;
-        }
-    }
-
-    /* After five attempts, give up */
-    if (self->priv->mapping_attempt++ > 5) {
-        run_again = FALSE;
-    }
-
-    /* If we're done here, it's time to send the "DeviceMappingsReady" signal */
-    if (!run_again) {
-        cdemu_daemon_dbus_emit_device_mappings_ready(self);
-    }
-
-    return run_again;
-}
-
 /******************************************************************************\
  *                                 Public API                                 *
 \******************************************************************************/
@@ -184,6 +157,7 @@ gboolean cdemu_daemon_initialize_and_start (CdemuDaemon *self, gint num_devices,
         g_signal_connect(dev, "status-changed", (GCallback)device_status_changed_handler, self);
         g_signal_connect(dev, "option-changed", (GCallback)device_option_changed_handler, self);
         g_signal_connect(dev, "device-inactive", (GCallback)device_inactive_handler, self);
+        g_signal_connect(dev, "mapping-ready", (GCallback)device_mapping_ready_handler, self);
 
         /* Start device */
         if (!cdemu_device_start(dev, self->priv->ctl_device)) {
@@ -195,12 +169,6 @@ gboolean cdemu_daemon_initialize_and_start (CdemuDaemon *self, gint num_devices,
         /* Add it to devices list */
         self->priv->list_of_devices = g_list_append(self->priv->list_of_devices, dev);
     }
-
-    /* In order to build device mapping, we'll have to fire our callback sometime
-       after the daemon actually starts (so that command handler is actually
-       active and the SCSI layer actually does device registration on the kernel
-       side)... */
-    self->priv->mapping_id = g_timeout_add(1000, (GSourceFunc)device_mapping_callback, self);
 
     /* Register on D-Bus bus */
     cdemu_daemon_dbus_register_on_bus(self, bus_type);

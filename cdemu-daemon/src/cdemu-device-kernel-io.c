@@ -279,5 +279,15 @@ void cdemu_device_stop (CdemuDevice *self)
         g_thread_unref(self->priv->io_thread);
         self->priv->io_thread = NULL;
     }
+
+    /* Clear device mappings */
+    if (self->priv->device_sg) {
+        g_free(self->priv->device_sg);
+        self->priv->device_sg = NULL;
+    }
+    if (self->priv->device_sr) {
+        g_free(self->priv->device_sr);
+        self->priv->device_sr = NULL;
+    }
 }
 

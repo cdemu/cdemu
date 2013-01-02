@@ -41,7 +41,7 @@ from gi.repository import Notify
 # *** Globals ***
 app_name = "gcdemu"
 app_version = "2.0.0"
-supported_daemon_interface_version = 4
+supported_daemon_interface_version = 5
 
 # I18n
 bindtextdomain(app_name)
@@ -101,12 +101,12 @@ class CDEmuDaemonProxy (GObject.GObject):
 
 
     def on_g_signal (self, proxy, sender, signal, params):
-        if signal == "DeviceMappingsReady":
-            self.emit(signal)
-        elif signal == "DeviceStatusChanged":
+        if signal == "DeviceStatusChanged":
             self.emit(signal, params[0])
         elif signal == "DeviceOptionChanged":
             self.emit(signal, params[0], params[1])
+        elif signal == "DeviceMappingReady":
+            self.emit(signal, params[0])
         else:
             print ("Unknown signal: ", sender, signal, params)
 
@@ -166,12 +166,6 @@ GObject.signal_new("DaemonStopped", CDEmuDaemonProxy,
     None,
     ())
 
-
-GObject.signal_new("DeviceMappingsReady", CDEmuDaemonProxy,
-    GObject.SignalFlags.RUN_FIRST,
-    None,
-    ())
-
 GObject.signal_new("DeviceStatusChanged", CDEmuDaemonProxy,
     GObject.SignalFlags.RUN_FIRST,
     None,
@@ -181,6 +175,11 @@ GObject.signal_new("DeviceOptionChanged", CDEmuDaemonProxy,
     GObject.SignalFlags.RUN_FIRST,
     None,
     (GObject.TYPE_INT, GObject.TYPE_STRING ))
+
+GObject.signal_new("DeviceMappingReady", CDEmuDaemonProxy,
+    GObject.SignalFlags.RUN_FIRST,
+    None,
+    (GObject.TYPE_INT, ))
 
 
 ########################################################################
@@ -274,14 +273,8 @@ class CDEmu (GObject.GObject):
         for i in range(0, num_devices):
             self.devices.append(CDEmuDevice(i, self.daemon_proxy))
 
-        self.daemon_proxy.connect("DeviceMappingsReady", lambda p: self.on_device_mappings_ready())
-
         # Emit signal
         self.emit("connection-established", num_devices)
-
-    def on_device_mappings_ready (self):
-        for device in self.devices:
-            device.update_device_mapping()
 
 GObject.type_register(CDEmu)
 GObject.signal_new("error", CDEmu,
@@ -342,6 +335,7 @@ class CDEmuDevice (GObject.GObject):
         # and devices never get destroyed
         self.proxy.connect("DeviceStatusChanged", lambda p, d, obj=weakref.ref(self): obj().on_status_changed(d) if obj() else None)
         self.proxy.connect("DeviceOptionChanged", lambda p, d, o, obj=weakref.ref(self): obj().on_option_changed(d, o) if obj() else None)
+        self.proxy.connect("DeviceMappingReady", lambda p, d, obj=weakref.ref(self): obj().on_mapping_ready(d) if obj() else None)
 
 
     def on_status_changed (self, d):
@@ -372,6 +366,27 @@ class CDEmuDevice (GObject.GObject):
             self.emit("library-debug-mask-changed")
         else:
             print ("Unknown option: %s!" % option)
+
+
+    def on_mapping_ready (self, d):
+        if d != self.number:
+            return
+
+        # Check if mappings really changed
+        changed = False
+        [ sr_path, sg_path ] = self.proxy.DeviceGetMapping(self.number)
+
+        if sr_path != self.sr_path:
+            self.sr_path = sr_path
+            changed = True
+
+        if sg_path != self.sg_path:
+            self.sg_path = sg_path
+            changed = True
+
+        if changed:
+            self.emit("mapping-changed")
+
 
     def unload_device (self):
         try:
@@ -437,13 +452,9 @@ class CDEmuDevice (GObject.GObject):
         except GLib.GError as e:
             self.emit("error", _("Failed to set library debug mask for device #%02d to 0x%X:\n%s") % (self.number, value, e))
 
-    def update_device_mapping (self):
-        [ self.sr_path, self.sg_path ] = self.proxy.DeviceGetMapping(self.number)
-        self.emit("mapping-ready")
-
 
 GObject.type_register(CDEmuDevice)
-GObject.signal_new("mapping-ready", CDEmuDevice,
+GObject.signal_new("mapping-changed", CDEmuDevice,
     GObject.SignalFlags.RUN_FIRST,
     None,
     ())
@@ -878,7 +889,7 @@ class gCDEmuDevice (GObject.GObject):
         self.connect_signal(self.page_library, "debug-mask-changed", lambda w, v: self.device.set_library_debug_mask(v))
 
         # Connect device signals
-        self.connect_signal(self.device, "mapping-ready", lambda w: self.page_status.set_device_mapping(self.device.sg_path, self.device.sr_path))
+        self.connect_signal(self.device, "mapping-changed", lambda w: self.page_status.set_device_mapping(self.device.sg_path, self.device.sr_path))
         self.connect_signal(self.device, "status-changed", lambda w: self.update_status(True))
         self.connect_signal(self.device, "device-id-changed", lambda w: self.update_device_id(True))
         self.connect_signal(self.device, "dpm-emulation-changed", lambda w: self.update_dpm_emulation(True))

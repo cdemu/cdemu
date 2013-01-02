@@ -35,10 +35,6 @@ struct _CdemuDaemonPrivate
     gint number_of_devices;
     GList *list_of_devices;
 
-    /* Device mapping */
-    guint mapping_id;
-    gint mapping_attempt;
-
     /* D-Bus */
     GDBusConnection *connection;
     guint owner_id;
@@ -51,7 +47,7 @@ void cdemu_daemon_dbus_cleanup (CdemuDaemon *self);
 
 void cdemu_daemon_dbus_emit_device_status_changed (CdemuDaemon *self, gint number);
 void cdemu_daemon_dbus_emit_device_option_changed (CdemuDaemon *self, gint number, const gchar *option);
-void cdemu_daemon_dbus_emit_device_mappings_ready (CdemuDaemon *self);
+void cdemu_daemon_dbus_emit_device_mapping_ready (CdemuDaemon *self, gint number);
 
 
 #endif /* __CDEMU_DAEMON_PRIVATE_H__ */
