@@ -122,9 +122,6 @@ gboolean cdemu_daemon_initialize_and_start (CdemuDaemon *self, gint num_devices,
     /* Control device */
     self->priv->ctl_device = g_strdup(ctl_device);
 
-    /* Number of devices */
-    self->priv->number_of_devices = num_devices;
-
     /* Glib's main loop */
     self->priv->main_loop = g_main_loop_new(NULL, FALSE);
 
@@ -140,7 +137,7 @@ gboolean cdemu_daemon_initialize_and_start (CdemuDaemon *self, gint num_devices,
     }
 
     /* Create desired number of devices */
-    for (gint i = 0; i < self->priv->number_of_devices; i++) {
+    for (gint i = 0; i < num_devices; i++) {
         /* Create CDEmu device object */
         CdemuDevice *dev = g_object_new(CDEMU_TYPE_DEVICE, NULL);
 
@@ -167,7 +164,7 @@ gboolean cdemu_daemon_initialize_and_start (CdemuDaemon *self, gint num_devices,
         }
 
         /* Add it to devices list */
-        self->priv->list_of_devices = g_list_append(self->priv->list_of_devices, dev);
+        self->priv->devices = g_list_append(self->priv->devices, dev);
     }
 
     /* Register on D-Bus bus */
@@ -192,15 +189,13 @@ void cdemu_daemon_stop_daemon (CdemuDaemon *self)
 
 CdemuDevice *cdemu_daemon_get_device (CdemuDaemon *self, gint device_number, GError **error)
 {
-    /* Get device */
-    if (device_number >= 0 && device_number < self->priv->number_of_devices) {
-        CdemuDevice *device = g_list_nth_data(self->priv->list_of_devices, device_number);
+    CdemuDevice *device = g_list_nth_data(self->priv->devices, device_number);
+    if (device) {
         g_object_ref(device);
-        return device;
+    } else {
+        g_set_error(error, CDEMU_ERROR, CDEMU_ERROR_INVALID_ARGUMENT, "Invalid device number!");
     }
-
-    g_set_error(error, CDEMU_ERROR, CDEMU_ERROR_INVALID_ARGUMENT, "Invalid device number!");
-    return NULL;
+    return device;
 }
 
 
@@ -214,7 +209,7 @@ static void cdemu_daemon_init (CdemuDaemon *self)
     self->priv = CDEMU_DAEMON_GET_PRIVATE(self);
 
     self->priv->main_loop = NULL;
-    self->priv->list_of_devices = NULL;
+    self->priv->devices = NULL;
     self->priv->ctl_device = NULL;
 
     /* Set version string */
@@ -233,7 +228,7 @@ static void cdemu_daemon_dispose (GObject *gobject)
     g_main_loop_unref(self->priv->main_loop);
 
     /* Unref all devices */
-    for (GList *entry = self->priv->list_of_devices; entry; entry = entry->next) {
+    for (GList *entry = self->priv->devices; entry; entry = entry->next) {
         CdemuDevice *dev = entry->data;
         if (dev) {
             g_object_unref(dev);
@@ -250,7 +245,7 @@ static void cdemu_daemon_finalize (GObject *gobject)
     CdemuDaemon *self = CDEMU_DAEMON(gobject);
 
     /* Free devices list */
-    g_list_free(self->priv->list_of_devices);
+    g_list_free(self->priv->devices);
 
     /* Free control device path */
     g_free(self->priv->ctl_device);

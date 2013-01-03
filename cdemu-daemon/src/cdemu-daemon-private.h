@@ -32,8 +32,7 @@ struct _CdemuDaemonPrivate
     gchar *ctl_device;
 
     /* Devices */
-    gint number_of_devices;
-    GList *list_of_devices;
+    GList *devices;
 
     /* D-Bus */
     GDBusConnection *connection;

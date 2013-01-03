@@ -216,7 +216,7 @@ static void cdemu_daemon_dbus_handle_method_call (GDBusConnection *connection G_
         g_free(option_name);
     } else if (!g_strcmp0(method_name, "GetNumberOfDevices")) {
         /* *** GetNumberOfDevices *** */
-        ret = g_variant_new("(i)", self->priv->number_of_devices);
+        ret = g_variant_new("(i)", g_list_length(self->priv->devices));
         succeeded = TRUE;
     } else if (!g_strcmp0(method_name, "DeviceGetMapping")) {
         /* *** DeviceGetMapping *** */
