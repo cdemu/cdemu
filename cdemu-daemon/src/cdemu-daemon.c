@@ -112,15 +112,15 @@ gboolean cdemu_daemon_initialize_and_start (CdemuDaemon *self, gint num_devices,
     MirageContext *context;
     GBusType bus_type = system_bus ? G_BUS_TYPE_SYSTEM : G_BUS_TYPE_SESSION;
 
+    self->priv->ctl_device = g_strdup(ctl_device);
+    self->priv->audio_driver = g_strdup(audio_driver);
+
     /* Create a MirageContext and use it as debug context */
     context = g_object_new(MIRAGE_TYPE_CONTEXT, NULL);
     mirage_context_set_debug_name(context, "cdemu");
     mirage_context_set_debug_domain(context, "CDEMU");
     mirage_contextual_set_context(MIRAGE_CONTEXTUAL(self), context);
     g_object_unref(context);
-
-    /* Control device */
-    self->priv->ctl_device = g_strdup(ctl_device);
 
     /* Glib's main loop */
     self->priv->main_loop = g_main_loop_new(NULL, FALSE);
@@ -138,33 +138,10 @@ gboolean cdemu_daemon_initialize_and_start (CdemuDaemon *self, gint num_devices,
 
     /* Create desired number of devices */
     for (gint i = 0; i < num_devices; i++) {
-        /* Create CDEmu device object */
-        CdemuDevice *dev = g_object_new(CDEMU_TYPE_DEVICE, NULL);
-
-        /* Initialize device */
-        if (!cdemu_device_initialize(dev, i, audio_driver)) {
-            CDEMU_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: failed to initialize device %i!\n", __debug__, i);
-            g_object_unref(dev);
+        if (!cdemu_daemon_add_device(self)) {
+            CDEMU_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: failed to create device!\n", __debug__);
             return FALSE;
         }
-
-        /* Don't set parent, as devices have their own debug contexts */
-        /* Add handling for signals from the device... this allows us to
-           pass them on via DBUS */
-        g_signal_connect(dev, "status-changed", (GCallback)device_status_changed_handler, self);
-        g_signal_connect(dev, "option-changed", (GCallback)device_option_changed_handler, self);
-        g_signal_connect(dev, "device-inactive", (GCallback)device_inactive_handler, self);
-        g_signal_connect(dev, "mapping-ready", (GCallback)device_mapping_ready_handler, self);
-
-        /* Start device */
-        if (!cdemu_device_start(dev, self->priv->ctl_device)) {
-            CDEMU_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: failed to start device %i!\n", __debug__, i);
-            g_object_unref(dev);
-            return FALSE;
-        }
-
-        /* Add it to devices list */
-        self->priv->devices = g_list_append(self->priv->devices, dev);
     }
 
     /* Register on D-Bus bus */
@@ -186,6 +163,69 @@ void cdemu_daemon_stop_daemon (CdemuDaemon *self)
     g_main_loop_quit(self->priv->main_loop);
 }
 
+
+/**********************************************************************\
+ *                          Device management                         *
+\**********************************************************************/
+gboolean cdemu_daemon_add_device (CdemuDaemon *self)
+{
+    CdemuDevice *device;
+    gint device_number;
+
+    device_number = g_list_length(self->priv->devices);
+
+    /* Create and initialize device object */
+    device = g_object_new(CDEMU_TYPE_DEVICE, NULL);
+    if (!cdemu_device_initialize(device, device_number, self->priv->audio_driver)) {
+        CDEMU_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: failed to initialize device #%i\n", __debug__, device_number);
+        g_object_unref(device);
+        return FALSE;
+    }
+
+    /* Don't set parent, as devices have their own debug contexts */
+
+    /* Add handling for signals from the device... this allows us to
+       pass them on via DBUS */
+    g_signal_connect(device, "status-changed", (GCallback)device_status_changed_handler, self);
+    g_signal_connect(device, "option-changed", (GCallback)device_option_changed_handler, self);
+    g_signal_connect(device, "device-inactive", (GCallback)device_inactive_handler, self);
+    g_signal_connect(device, "mapping-ready", (GCallback)device_mapping_ready_handler, self);
+
+    /* Start device */
+    if (!cdemu_device_start(device, self->priv->ctl_device)) {
+        CDEMU_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: failed to start device #%i!\n", __debug__, device_number);
+        g_object_unref(device);
+        return FALSE;
+    }
+
+    /* Add it to devices list */
+    self->priv->devices = g_list_append(self->priv->devices, device);
+
+    /* Emit signal */
+    cdemu_daemon_dbus_emit_device_added(self);
+
+    return TRUE;
+}
+
+gboolean cdemu_daemon_remove_device (CdemuDaemon *self)
+{
+    /* Get last device entry */
+    GList *entry = g_list_last(self->priv->devices);
+    if (!entry) {
+        return FALSE;
+    }
+
+    /* Release the device, which is enough to stop and free it */
+    g_object_unref(entry->data);
+
+    /* Remove and free node from the list */
+    self->priv->devices = g_list_delete_link(self->priv->devices, entry);
+
+    /* Emit signal */
+    cdemu_daemon_dbus_emit_device_removed(self);
+
+    return TRUE;
+}
 
 CdemuDevice *cdemu_daemon_get_device (CdemuDaemon *self, gint device_number, GError **error)
 {
@@ -211,6 +251,7 @@ static void cdemu_daemon_init (CdemuDaemon *self)
     self->priv->main_loop = NULL;
     self->priv->devices = NULL;
     self->priv->ctl_device = NULL;
+    self->priv->audio_driver = NULL;
 
     /* Set version string */
     self->priv->version = g_strdup(CDEMU_DAEMON_VERSION);
@@ -244,11 +285,11 @@ static void cdemu_daemon_finalize (GObject *gobject)
 {
     CdemuDaemon *self = CDEMU_DAEMON(gobject);
 
+    g_free(self->priv->ctl_device);
+    g_free(self->priv->audio_driver);
+
     /* Free devices list */
     g_list_free(self->priv->devices);
-
-    /* Free control device path */
-    g_free(self->priv->ctl_device);
 
     /* Free version string */
     g_free(self->priv->version);

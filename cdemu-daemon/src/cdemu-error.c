@@ -41,6 +41,7 @@ GType cdemu_error_get_type (void)
             ENUM_ENTRY(CDEMU_ERROR_INVALID_ARGUMENT, "InvalidArgument"),
             ENUM_ENTRY(CDEMU_ERROR_ALREADY_LOADED, "AlreadyLoaded"),
             ENUM_ENTRY(CDEMU_ERROR_DEVICE_LOCKED, "DeviceLocked"),
+            ENUM_ENTRY(CDEMU_ERROR_DAEMON_ERROR, "DaemonError"),
             { 0, 0, 0 }
         };
 

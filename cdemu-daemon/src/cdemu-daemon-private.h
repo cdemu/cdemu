@@ -28,8 +28,9 @@ struct _CdemuDaemonPrivate
 
     GMainLoop *main_loop;
 
-    /* Control device */
+    /* Options */
     gchar *ctl_device;
+    gchar *audio_driver;
 
     /* Devices */
     GList *devices;
@@ -39,6 +40,11 @@ struct _CdemuDaemonPrivate
     guint owner_id;
 };
 
+/* Device management */
+gboolean cdemu_daemon_add_device (CdemuDaemon *self);
+gboolean cdemu_daemon_remove_device (CdemuDaemon *self);
+CdemuDevice *cdemu_daemon_get_device (CdemuDaemon *self, gint device_number, GError **error);
+
 /* Daemon's D-BUS API */
 gboolean cdemu_daemon_dbus_check_if_name_is_available (CdemuDaemon *self, GBusType bus_type);
 void cdemu_daemon_dbus_register_on_bus (CdemuDaemon *self, GBusType bus_type);
@@ -47,6 +53,7 @@ void cdemu_daemon_dbus_cleanup (CdemuDaemon *self);
 void cdemu_daemon_dbus_emit_device_status_changed (CdemuDaemon *self, gint number);
 void cdemu_daemon_dbus_emit_device_option_changed (CdemuDaemon *self, gint number, const gchar *option);
 void cdemu_daemon_dbus_emit_device_mapping_ready (CdemuDaemon *self, gint number);
-
+void cdemu_daemon_dbus_emit_device_added (CdemuDaemon *self);
+void cdemu_daemon_dbus_emit_device_removed (CdemuDaemon *self);
 
 #endif /* __CDEMU_DAEMON_PRIVATE_H__ */

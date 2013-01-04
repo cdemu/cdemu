@@ -278,6 +278,16 @@ static void cdemu_daemon_dbus_handle_method_call (GDBusConnection *connection G_
         /* *** EnumSupportedFileFilters *** */
         ret = g_variant_new("(a(ssa(ss)))", encode_file_filters());
         succeeded = TRUE;
+    } else if (!g_strcmp0(method_name, "AddDevice")) {
+        succeeded = cdemu_daemon_add_device(self);
+        if (!succeeded) {
+            g_set_error(&error, CDEMU_ERROR, CDEMU_ERROR_DAEMON_ERROR, "Failed to add device!");
+        }
+    } else if (!g_strcmp0(method_name, "RemoveDevice")) {
+        succeeded = cdemu_daemon_remove_device(self);
+        if (!succeeded) {
+            g_set_error(&error, CDEMU_ERROR, CDEMU_ERROR_DAEMON_ERROR, "Failed to remove device!");
+        }
     } else {
         g_set_error(&error, CDEMU_ERROR, CDEMU_ERROR_INVALID_ARGUMENT, "Invalid method name '%s'!", method_name);
     }
@@ -451,6 +461,26 @@ void cdemu_daemon_dbus_emit_device_mapping_ready (CdemuDaemon *self, gint number
     }
 }
 
+void cdemu_daemon_dbus_emit_device_added (CdemuDaemon *self)
+{
+    if (self->priv->connection) {
+        g_dbus_connection_emit_signal(self->priv->connection, NULL,
+            "/Daemon", CDEMU_DAEMON_DBUS_NAME,
+            "DeviceAdded", NULL,
+            NULL);
+    }
+}
+
+void cdemu_daemon_dbus_emit_device_removed (CdemuDaemon *self)
+{
+    if (self->priv->connection) {
+        g_dbus_connection_emit_signal(self->priv->connection, NULL,
+            "/Daemon", CDEMU_DAEMON_DBUS_NAME,
+            "DeviceRemoved", NULL,
+            NULL);
+    }
+}
+
 
 /**********************************************************************\
  *                   Embedded introspection data                      *
@@ -514,6 +544,10 @@ static const gchar introspection_xml[] =
     "            <arg name='option_values' type='v' direction='in'/>"
     "        </method>"
 
+    "        <!-- Device management methods -->"
+    "        <method name='AddDevice' />"
+    "        <method name='RemoveDevice' />"
+
     "        <!-- Notification signals -->"
     "        <signal name='DeviceStatusChanged'>"
     "            <arg name='device_number' type='i' direction='out'/>"
@@ -525,5 +559,7 @@ static const gchar introspection_xml[] =
     "        <signal name='DeviceMappingReady'>"
     "            <arg name='device_number' type='i' direction='out'/>"
     "        </signal>"
+    "        <signal name='DeviceAdded' />"
+    "        <signal name='DeviceRemoved' />"
     "    </interface>"
     "</node>";
