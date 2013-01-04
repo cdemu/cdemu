@@ -760,6 +760,26 @@ class CDEmu (object):
 
         return True
 
+    def cmd_add_device (self, arguments):
+        try:
+            self.dbus_iface.AddDevice()
+        except dbus.DBusException as e:
+            self.print_error(_("Failed to add device: %s") % (e))
+            return False
+
+        print(_("Device added successfully."))
+        return True
+
+    def cmd_remove_device (self, arguments):
+        try:
+            self.dbus_iface.RemoveDevice()
+        except dbus.DBusException as e:
+            self.print_error(_("Failed to remove device: %s") % (e))
+            return False
+
+        print(_("Device removed successfuly."))
+        return True
+
     def connect (self):
         try:
             if self.bus_type == "system":
@@ -857,6 +877,16 @@ class CDEmu (object):
             "",
             _("displays the devices' status"),
             cmd_display_status
+        ], [
+            "add-device",
+            "",
+            _("creates another virtual device"),
+            cmd_add_device
+        ], [
+            "remove-device",
+            "",
+            _("removes the last virtual device"),
+            cmd_remove_device
         ], [
             "device-mapping",
             "",

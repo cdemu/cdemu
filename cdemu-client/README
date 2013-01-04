@@ -80,6 +80,12 @@ Unloading first device:
 Displaying device status:
  cdemu status
 
+Adding another device:
+ cdemu add-device
+
+Removing the last device:
+ cdemu remove-device
+
 Displaying device mapping information:
  cdemu device-mapping
 
