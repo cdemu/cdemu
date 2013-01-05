@@ -4,7 +4,7 @@
 # from ~/.cdemu-daemon
 
 # Default settings
-NUM_DEVICES=2
+NUM_DEVICES=1
 AUDIO_DRIVER=pulse
 LOG_FILE=~/.cdemu-daemon.log
 

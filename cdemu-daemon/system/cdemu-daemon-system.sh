@@ -4,7 +4,7 @@
 # from /etc/sysconfig/cdemu-daemon
 
 # Default settings
-NUM_DEVICES=2
+NUM_DEVICES=1
 AUDIO_DRIVER=null
 LOG_FILE=/tmp/cdemu-daemon.log
 
