@@ -947,6 +947,9 @@ class gCDEmuDevice (GObject.GObject):
         self.dialog = Gtk.Dialog("Device #%02d properties" % d, None, 0, (Gtk.STOCK_CLOSE, Gtk.ResponseType.CLOSE))
         self.dialog.set_border_width(5)
         self.dialog.vbox.set_border_width(5)
+        # Hide the dialog when closed
+        self.connect_signal(self.dialog, "delete-event", lambda w, e: w.hide() or True)
+        self.connect_signal(self.dialog, "response", lambda w, e: w.hide() or True)
 
         # Label
         label = Gtk.Label(label="<b><big>" + (_("Device #%02d") % (self.number)) + "</big></b>")
@@ -1129,8 +1132,9 @@ class gCDEmuDevice_Gtk (gCDEmuDevice):
         if event.button == 1:
             # Left click: device dialog
             self.dialog.present() # Make sure the window is always on top
-            self.dialog.run()
-            self.dialog.hide()
+            # Don't "run" the dialog, because we want it to be non-modal
+            #self.dialog.run()
+            #self.dialog.hide()
         else:
             # Right click: quick load/unload
             self.load_unload_device()
@@ -1157,8 +1161,9 @@ class gCDEmuDevice_Indicator (gCDEmuDevice):
     def on_menu_item_activate (self, widget):
         # Left click: device dialog
         self.dialog.present() # Make sure the window is always on top
-        self.dialog.run()
-        self.dialog.hide()
+        # Don't "run" the dialog, because we want it to be non-modal
+        #self.dialog.run()
+        #self.dialog.hide()
 
 
 ########################################################################
