@@ -1672,6 +1672,8 @@ class gCDEMuPasswordDialog (Gtk.Dialog):
 ########################################################################
 #                                Main                                  #
 ########################################################################
+import signal
+
 if __name__ == "__main__":
     # Command-line argument parsing
     parser = argparse.ArgumentParser()
@@ -1711,5 +1713,8 @@ if __name__ == "__main__":
     else:
         # Gtk version
         app = gCDEmu_Gtk()
+
+    # Make Ctrl+C work
+    signal.signal(signal.SIGINT, signal.SIG_DFL)
 
     app.run()
