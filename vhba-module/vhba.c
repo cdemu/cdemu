@@ -120,6 +120,7 @@ struct vhba_host {
     struct vhba_device *devices[VHBA_MAX_ID];
     int num_devices;
     DECLARE_BITMAP(chgmap, VHBA_MAX_ID);
+    int chgtype[VHBA_MAX_ID];
     struct work_struct scan_devices;
 };
 
@@ -241,7 +242,7 @@ static inline void vhba_scan_devices_add (struct vhba_host *vhost, int id)
     if (!sdev) {
         scsi_add_device(vhost->shost, 0, id, 0);
     } else {
-        DPRINTK("tried to add an already-existing device 0:%d:0!\n", id);
+        dev_warn(&vhost->shost->shost_gendev, "tried to add an already-existing device 0:%d:0!\n", id);
         scsi_device_put(sdev);
     }
 }
@@ -255,7 +256,7 @@ static inline void vhba_scan_devices_remove (struct vhba_host *vhost, int id)
         scsi_remove_device(sdev);
         scsi_device_put(sdev);
     } else {
-        DPRINTK("tried to remove non-existing device 0:%d:0!\n", id);
+        dev_warn(&vhost->shost->shost_gendev, "tried to remove non-existing device 0:%d:0!\n", id);
     }
 }
 
@@ -263,26 +264,42 @@ static void vhba_scan_devices (struct work_struct *work)
 {
     struct vhba_host *vhost = container_of(work, struct vhba_host, scan_devices);
     unsigned long flags;
-    int exists;
-    int id;
+    int id, change, exists;
 
     while (1) {
         spin_lock_irqsave(&vhost->dev_lock, flags);
+
         id = find_first_bit(vhost->chgmap, vhost->shost->max_id);
         if (id >= vhost->shost->max_id) {
             spin_unlock_irqrestore(&vhost->dev_lock, flags);
             break;
         }
-        clear_bit(id, vhost->chgmap);
+        change = vhost->chgtype[id];
         exists = vhost->devices[id] != NULL;
+        
+        vhost->chgtype[id] = 0;
+        clear_bit(id, vhost->chgmap);
+
         spin_unlock_irqrestore(&vhost->dev_lock, flags);
 
-        dev_dbg(&vhost->shost->shost_gendev, "try to %s target 0:%d:0\n", (exists) ? "add" : "remove", id);
-
-        if (exists) {
+        if (change < 0) {
+            dev_dbg(&vhost->shost->shost_gendev, "trying to remove target 0:%d:0\n", id);
+            vhba_scan_devices_remove(vhost, id);
+        } else if (change > 0) {
+            dev_dbg(&vhost->shost->shost_gendev, "trying to add target 0:%d:0\n", id);
             vhba_scan_devices_add(vhost, id);
         } else {
-            vhba_scan_devices_remove(vhost, id);
+            /* quick sequence of add/remove or remove/add; we determine 
+               which one it was by checking if device structure exists */
+            if (exists) {
+                /* remove followed by add: remove and (re)add */
+                dev_dbg(&vhost->shost->shost_gendev, "trying to (re)add target 0:%d:0\n", id);
+                vhba_scan_devices_remove(vhost, id);
+                vhba_scan_devices_add(vhost, id);
+            } else {
+                /* add followed by remove: no-op */
+                dev_dbg(&vhost->shost->shost_gendev, "no-op for target 0:%d:0\n", id);
+            }
         }
     }
 }
@@ -310,6 +327,7 @@ static int vhba_add_device (struct vhba_device *vdev)
             vhost->devices[i] = vdev;
             vhost->num_devices++;
             set_bit(vdev->id, vhost->chgmap);
+            vhost->chgtype[vdev->id]++;
             break;
         }
     }
@@ -329,6 +347,7 @@ static int vhba_remove_device (struct vhba_device *vdev)
 
     spin_lock_irqsave(&vhost->dev_lock, flags);
     set_bit(vdev->id, vhost->chgmap);
+    vhost->chgtype[vdev->id]--;
     vhost->devices[vdev->id] = NULL;
     vhost->num_devices--;
     vdev->id = VHBA_INVALID_ID;
