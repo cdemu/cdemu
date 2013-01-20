@@ -233,6 +233,32 @@ static int vhba_device_dequeue (struct vhba_device *vdev, struct scsi_cmnd *cmd)
     return retval;
 }
 
+static inline void vhba_scan_devices_add (struct vhba_host *vhost, int id)
+{
+    struct scsi_device *sdev;
+
+    sdev = scsi_device_lookup(vhost->shost, 0, id, 0);
+    if (!sdev) {
+        scsi_add_device(vhost->shost, 0, id, 0);
+    } else {
+        DPRINTK("tried to add an already-existing device 0:%d:0!\n", id);
+        scsi_device_put(sdev);
+    }
+}
+
+static inline void vhba_scan_devices_remove (struct vhba_host *vhost, int id)
+{
+    struct scsi_device *sdev;
+
+    sdev = scsi_device_lookup(vhost->shost, 0, id, 0);
+    if (sdev) {
+        scsi_remove_device(sdev);
+        scsi_device_put(sdev);
+    } else {
+        DPRINTK("tried to remove non-existing device 0:%d:0!\n", id);
+    }
+}
+
 static void vhba_scan_devices (struct work_struct *work)
 {
     struct vhba_host *vhost = container_of(work, struct vhba_host, scan_devices);
@@ -254,15 +280,9 @@ static void vhba_scan_devices (struct work_struct *work)
         dev_dbg(&vhost->shost->shost_gendev, "try to %s target 0:%d:0\n", (exists) ? "add" : "remove", id);
 
         if (exists) {
-            scsi_add_device(vhost->shost, 0, id, 0);
+            vhba_scan_devices_add(vhost, id);
         } else {
-            struct scsi_device *sdev;
-
-            sdev = scsi_device_lookup(vhost->shost, 0, id, 0);
-            if (sdev) {
-                scsi_remove_device(sdev);
-                scsi_device_put(sdev);
-            }
+            vhba_scan_devices_remove(vhost, id);
         }
     }
 }
