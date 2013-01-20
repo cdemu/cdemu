@@ -53,14 +53,15 @@ struct DaemonDevicePtr {
     CdemuDevice *device;
 };
 
-
-/* Stage 2 of device restart: start */
-static gboolean device_restart_stage2 (struct DaemonDevicePtr *data)
+static gboolean device_restart_callback (struct DaemonDevicePtr *data)
 {
     CdemuDaemon *self = data->daemon;
     CdemuDevice *device = data->device;
 
-    /* Start */
+    /* Properly stop the device (I/O thread clenup) */
+    cdemu_device_stop(device);
+    
+    /* Start the device */
     if (!cdemu_device_start(device, self->priv->ctl_device)) {
         CDEMU_DEBUG(device, DAEMON_DEBUG_WARNING, "%s: failed to restart device!\n", __debug__);
     } else {
@@ -73,24 +74,7 @@ static gboolean device_restart_stage2 (struct DaemonDevicePtr *data)
     return FALSE;
 }
 
-/* Stage 1 of device restart: stop */
-static gboolean device_restart_stage1 (struct DaemonDevicePtr *data)
-{
-    CdemuDevice *device = data->device;
-    gint interval = 5; /* 5 seconds */
-
-    /* Properly stop the device (I/O thread clenup) */
-    cdemu_device_stop(device);
-
-    CDEMU_DEBUG(device, DAEMON_DEBUG_DEVICE, "%s: device stopped; starting in %d seconds...\n", __debug__, interval);
-
-    /* Schedule device to be started after some time has passed */
-    g_timeout_add_seconds(interval, (GSourceFunc)device_restart_stage2, data);
-
-    return FALSE;
-}
-
-/* The actual signal handler; since the signal is emitted from the device's
+/* The signal handler; since the signal is emitted from the device's
    I/O thread, this handler is also executed there... so we need to get
    into our main thread first, which is done by scheduling an idle function */
 static void device_inactive_handler (CdemuDevice *device, CdemuDaemon *self)
@@ -100,7 +84,7 @@ static void device_inactive_handler (CdemuDevice *device, CdemuDaemon *self)
     data->device = device;
 
     CDEMU_DEBUG(device, DAEMON_DEBUG_DEVICE, "%s: restarting device...\n", __debug__);
-    g_idle_add((GSourceFunc)device_restart_stage1, data);
+    g_idle_add((GSourceFunc)device_restart_callback, data);
 }
 
 
