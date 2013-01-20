@@ -236,21 +236,26 @@ static int vhba_device_dequeue (struct vhba_device *vdev, struct scsi_cmnd *cmd)
 static void vhba_scan_devices (struct work_struct *work)
 {
     struct vhba_host *vhost = container_of(work, struct vhba_host, scan_devices);
-    int id;
     unsigned long flags;
+    int exists;
+    int id;
 
-    /* no need to lock here; it'll be scheduled and run again if some device missed */
-    while ((id = find_first_bit(vhost->chgmap, vhost->shost->max_id)) < vhost->shost->max_id) {
-        int remove;
-
+    while (1) {
         spin_lock_irqsave(&vhost->dev_lock, flags);
+        id = find_first_bit(vhost->chgmap, vhost->shost->max_id);
+        if (id >= vhost->shost->max_id) {
+            spin_unlock_irqrestore(&vhost->dev_lock, flags);
+            break;
+        }
         clear_bit(id, vhost->chgmap);
-        remove = !(vhost->devices[id]);
+        exists = vhost->devices[id] != NULL;
         spin_unlock_irqrestore(&vhost->dev_lock, flags);
 
-        dev_dbg(&vhost->shost->shost_gendev, "try to %s target 0:%d:0\n", (remove) ? "remove" : "add", id);
+        dev_dbg(&vhost->shost->shost_gendev, "try to %s target 0:%d:0\n", (exists) ? "add" : "remove", id);
 
-        if (remove) {
+        if (exists) {
+            scsi_add_device(vhost->shost, 0, id, 0);
+        } else {
             struct scsi_device *sdev;
 
             sdev = scsi_device_lookup(vhost->shost, 0, id, 0);
@@ -258,8 +263,6 @@ static void vhba_scan_devices (struct work_struct *work)
                 scsi_remove_device(sdev);
                 scsi_device_put(sdev);
             }
-        } else {
-            scsi_add_device(vhost->shost, 0, id, 0);
         }
     }
 }
