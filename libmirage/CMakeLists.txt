@@ -27,8 +27,6 @@ include (CheckCSourceCompiles)
 include (CheckCCompilerFlag)
 include (GNUInstallDirs)
 
-include (GObjectIntrospection)
-include (GtkDoc)
 include (Utilities)
 include (FileList)
 
@@ -50,10 +48,12 @@ pkg_check_modules (LIBLZMA REQUIRED liblzma>=5.0.0)
 pkg_check_modules (SNDFILE REQUIRED sndfile>=1.0.0)
 
 if (INTROSPECTION_ENABLED)
+    include (GObjectIntrospection)
     pkg_check_modules (INTROSPECTION REQUIRED gobject-introspection-1.0>=1.30.0)
 endif ()
 
 if (GTKDOC_ENABLED)
+    include (GtkDoc)
     pkg_check_modules (GTKDOC REQUIRED gtk-doc>=1.4)
 endif ()
 
