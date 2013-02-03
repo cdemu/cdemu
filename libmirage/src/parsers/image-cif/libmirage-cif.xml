@@ -7,8 +7,7 @@
 
         <glob pattern="*.cif"/>
         <magic priority="50">
-            <match value="RIFF" type="string" offset="0"/>
-            <match value="imag" type="string" offset="8"/>
+            <match value="RIFF\0\0\0\0imag" mask="0xffffffff00000000ffffffff" type="string" offset="0"/>
         </magic>
     </mime-type>
 </mime-info>
