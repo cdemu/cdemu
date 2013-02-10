@@ -20,6 +20,8 @@
 #ifndef __MIRAGE_LANGUAGE_H__
 #define __MIRAGE_LANGUAGE_H__
 
+#include "mirage-types.h"
+
 
 G_BEGIN_DECLS
 
@@ -75,7 +77,6 @@ typedef enum _MirageLanguagePackTypes
 #define MIRAGE_IS_LANGUAGE_CLASS(klass) (G_TYPE_CHECK_CLASS_TYPE((klass), MIRAGE_TYPE_LANGUAGE))
 #define MIRAGE_LANGUAGE_GET_CLASS(obj)  (G_TYPE_INSTANCE_GET_CLASS((obj), MIRAGE_TYPE_LANGUAGE, MirageLanguageClass))
 
-typedef struct _MirageLanguage         MirageLanguage;
 typedef struct _MirageLanguageClass    MirageLanguageClass;
 typedef struct _MirageLanguagePrivate  MirageLanguagePrivate;
 

@@ -20,11 +20,7 @@
 #ifndef __MIRAGE_SECTOR_H__
 #define __MIRAGE_SECTOR_H__
 
-/* Forward declarations */
-#ifndef __GTK_DOC_IGNORE__
-typedef struct _MirageTrack MirageTrack;
-typedef enum _MirageTrackModes MirageTrackModes;
-#endif
+#include "mirage-types.h"
 
 
 G_BEGIN_DECLS
@@ -76,7 +72,6 @@ typedef enum _MirageSectorValidData
 #define MIRAGE_IS_SECTOR_CLASS(klass) (G_TYPE_CHECK_CLASS_TYPE((klass), MIRAGE_TYPE_SECTOR))
 #define MIRAGE_SECTOR_GET_CLASS(obj)  (G_TYPE_INSTANCE_GET_CLASS((obj), MIRAGE_TYPE_SECTOR, MirageSectorClass))
 
-typedef struct _MirageSector           MirageSector;
 typedef struct _MirageSectorClass      MirageSectorClass;
 typedef struct _MirageSectorPrivate    MirageSectorPrivate;
 

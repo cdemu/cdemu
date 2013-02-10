@@ -20,6 +20,8 @@
 #ifndef __MIRAGE_OBJECT_H__
 #define __MIRAGE_OBJECT_H__
 
+#include "mirage-types.h"
+
 
 G_BEGIN_DECLS
 

@@ -31,9 +31,11 @@
 #include <math.h>
 #include <string.h>
 
+#include "mirage-types.h"
+
+#include "mirage-object.h"
 #include "mirage-context.h"
 #include "mirage-contextual.h"
-#include "mirage-object.h"
 
 #include "mirage-cdtext-coder.h"
 #include "mirage-debug.h"

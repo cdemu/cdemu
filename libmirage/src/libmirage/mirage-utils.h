@@ -20,10 +20,7 @@
 #ifndef __MIRAGE_UTILS_H__
 #define __MIRAGE_UTILS_H__
 
-/* Forward declarations */
-#ifndef __GTK_DOC_IGNORE__
-typedef enum _MirageTrackModes MirageTrackModes;
-#endif
+#include "mirage-types.h"
 
 
 G_BEGIN_DECLS

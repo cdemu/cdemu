@@ -20,6 +20,8 @@
 #ifndef __MIRAGE_FILE_FILTER_H__
 #define __MIRAGE_FILE_FILTER_H__
 
+#include "mirage-types.h"
+
 
 G_BEGIN_DECLS
 

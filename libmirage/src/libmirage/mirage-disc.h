@@ -20,12 +20,7 @@
 #ifndef __MIRAGE_DISC_H__
 #define __MIRAGE_DISC_H__
 
-/* Forward declarations */
-#ifndef __GTK_DOC_IGNORE__
-typedef struct _MirageSession MirageSession;
-typedef struct _MirageTrack MirageTrack;
-typedef struct _MirageSector MirageSector;
-#endif
+#include "mirage-types.h"
 
 
 G_BEGIN_DECLS
@@ -79,7 +74,6 @@ typedef gboolean (*MirageEnumSessionCallback) (MirageSession *session, gpointer 
 #define MIRAGE_IS_DISC_CLASS(klass) (G_TYPE_CHECK_CLASS_TYPE((klass), MIRAGE_TYPE_DISC))
 #define MIRAGE_DISC_GET_CLASS(obj)  (G_TYPE_INSTANCE_GET_CLASS((obj), MIRAGE_TYPE_DISC, MirageDiscClass))
 
-typedef struct _MirageDisc         MirageDisc;
 typedef struct _MirageDiscClass    MirageDiscClass;
 typedef struct _MirageDiscPrivate  MirageDiscPrivate;
 

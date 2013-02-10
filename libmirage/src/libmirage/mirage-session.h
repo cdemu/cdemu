@@ -20,11 +20,7 @@
 #ifndef __MIRAGE_SESSION_H__
 #define __MIRAGE_SESSION_H__
 
-/* Forward declarations */
-#ifndef __GTK_DOC_IGNORE__
-typedef struct _MirageTrack MirageTrack;
-typedef struct _MirageLanguage MirageLanguage;
-#endif
+#include "mirage-types.h"
 
 
 G_BEGIN_DECLS
@@ -85,7 +81,6 @@ typedef gboolean (*MirageEnumLanguageCallback) (MirageLanguage *language, gpoint
 #define MIRAGE_IS_SESSION_CLASS(klass) (G_TYPE_CHECK_CLASS_TYPE((klass), MIRAGE_TYPE_SESSION))
 #define MIRAGE_SESSION_GET_CLASS(obj)  (G_TYPE_INSTANCE_GET_CLASS((obj), MIRAGE_TYPE_SESSION, MirageSessionClass))
 
-typedef struct _MirageSession          MirageSession;
 typedef struct _MirageSessionClass     MirageSessionClass;
 typedef struct _MirageSessionPrivate   MirageSessionPrivate;
 

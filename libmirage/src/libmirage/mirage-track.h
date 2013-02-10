@@ -20,13 +20,7 @@
 #ifndef __MIRAGE_TRACK_H__
 #define __MIRAGE_TRACK_H__
 
-/* Forward declarations */
-#ifndef __GTK_DOC_IGNORE__
-typedef struct _MirageFragment MirageFragment;
-typedef struct _MirageIndex MirageIndex;
-typedef struct _MirageLanguage MirageLanguage;
-typedef struct _MirageSector MirageSector;
-#endif
+#include "mirage-types.h"
 
 
 G_BEGIN_DECLS
@@ -52,29 +46,6 @@ typedef enum _MirageTrackFlags
     MIRAGE_TRACK_FLAG_COPYPERMITTED = 0x02,
     MIRAGE_TRACK_FLAG_PREEMPHASIS   = 0x04,
 } MirageTrackFlags;
-
-/**
- * MirageTrackModes:
- * @MIRAGE_MODE_MODE0: Mode 0
- * @MIRAGE_MODE_AUDIO: Audio
- * @MIRAGE_MODE_MODE1: Mode 1
- * @MIRAGE_MODE_MODE2: Mode 2 Formless
- * @MIRAGE_MODE_MODE2_FORM1: Mode 2 Form 1
- * @MIRAGE_MODE_MODE2_FORM2: Mode 2 Form 2
- * @MIRAGE_MODE_MODE2_MIXED: Mode 2 Mixed
- *
- * Track modes.
- */
-typedef enum _MirageTrackModes
-{
-    MIRAGE_MODE_MODE0       = 0x00,
-    MIRAGE_MODE_AUDIO       = 0x01,
-    MIRAGE_MODE_MODE1       = 0x02,
-    MIRAGE_MODE_MODE2       = 0x03,
-    MIRAGE_MODE_MODE2_FORM1 = 0x04,
-    MIRAGE_MODE_MODE2_FORM2 = 0x05,
-    MIRAGE_MODE_MODE2_MIXED = 0x06,
-} MirageTrackModes;
 
 /**
  * MirageTrackConstants:
@@ -127,7 +98,6 @@ typedef gboolean (*MirageEnumFragmentCallback) (MirageFragment *fragment, gpoint
 #define MIRAGE_IS_TRACK_CLASS(klass) (G_TYPE_CHECK_CLASS_TYPE((klass), MIRAGE_TYPE_TRACK))
 #define MIRAGE_TRACK_GET_CLASS(obj)  (G_TYPE_INSTANCE_GET_CLASS((obj), MIRAGE_TYPE_TRACK, MirageTrackClass))
 
-typedef struct _MirageTrack        MirageTrack;
 typedef struct _MirageTrackClass   MirageTrackClass;
 typedef struct _MirageTrackPrivate MirageTrackPrivate;
 

@@ -62,6 +62,7 @@ set (libmirage_HEADERS
     src/libmirage/mirage-sector.h
     src/libmirage/mirage-session.h
     src/libmirage/mirage-track.h
+    src/libmirage/mirage-types.h
     src/libmirage/mirage-utils.h
     ${PROJECT_BINARY_DIR}/src/libmirage/mirage-version.h
 )

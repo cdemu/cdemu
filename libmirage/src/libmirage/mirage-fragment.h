@@ -20,6 +20,8 @@
 #ifndef __MIRAGE_FRAGMENT_H__
 #define __MIRAGE_FRAGMENT_H__
 
+#include "mirage-types.h"
+
 
 G_BEGIN_DECLS
 
@@ -71,7 +73,6 @@ typedef enum _MirageSubchannelDataFormat
 #define MIRAGE_IS_FRAGMENT_CLASS(klass) (G_TYPE_CHECK_CLASS_TYPE((klass), MIRAGE_TYPE_FRAGMENT))
 #define MIRAGE_FRAGMENT_GET_CLASS(obj)  (G_TYPE_INSTANCE_GET_CLASS((obj), MIRAGE_TYPE_FRAGMENT, MirageFragmentClass))
 
-typedef struct _MirageFragment         MirageFragment;
 typedef struct _MirageFragmentClass    MirageFragmentClass;
 typedef struct _MirageFragmentPrivate  MirageFragmentPrivate;
 

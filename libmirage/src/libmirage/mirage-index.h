@@ -20,6 +20,8 @@
 #ifndef __MIRAGE_INDEX_H__
 #define __MIRAGE_INDEX_H__
 
+#include "mirage-types.h"
+
 
 G_BEGIN_DECLS
 
@@ -34,7 +36,6 @@ G_BEGIN_DECLS
 #define MIRAGE_IS_INDEX_CLASS(klass) (G_TYPE_CHECK_CLASS_TYPE((klass), MIRAGE_TYPE_INDEX))
 #define MIRAGE_INDEX_GET_CLASS(obj)  (G_TYPE_INSTANCE_GET_CLASS((obj), MIRAGE_TYPE_INDEX, MirageIndexClass))
 
-typedef struct _MirageIndex        MirageIndex;
 typedef struct _MirageIndexClass   MirageIndexClass;
 typedef struct _MirageIndexPrivate MirageIndexPrivate;
 
