@@ -55,7 +55,6 @@ static gboolean mirage_parser_readcd_is_file_valid (MirageParserReadcd *self, GI
         return FALSE;
     }
 
-
     /* First 4 bytes of TOC are its header; and first 2 bytes of that indicate
        the length */
     g_seekable_seek(G_SEEKABLE(stream), 0, G_SEEK_SET, NULL, NULL);
@@ -70,7 +69,10 @@ static gboolean mirage_parser_readcd_is_file_valid (MirageParserReadcd *self, GI
     g_seekable_seek(G_SEEKABLE(stream), 0, G_SEEK_END, NULL, NULL);
     file_size = g_seekable_tell(G_SEEKABLE(stream));
 
-    if (file_size - 2 == toc_len + 2) {
+    /* readcd from cdrdtools appears to pad odd TOC lengths to make them 
+       even, whereas readcd from cdrkit does not. So we account for both 
+       cases. */
+    if ((file_size == 2 + toc_len + 2) || (file_size == 2 + toc_len + 3)) {
         return TRUE;
     }
 
