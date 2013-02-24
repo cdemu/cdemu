@@ -58,6 +58,7 @@ static gboolean mirage_parser_readcd_is_file_valid (MirageParserReadcd *self, GI
 
     /* First 4 bytes of TOC are its header; and first 2 bytes of that indicate
        the length */
+    g_seekable_seek(G_SEEKABLE(stream), 0, G_SEEK_SET, NULL, NULL);
     if (g_input_stream_read(stream, &toc_len, sizeof(toc_len), NULL, NULL) != sizeof(toc_len)) {
         g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_CANNOT_HANDLE, "Parser cannot handle given image: failed to read 2-byte TOC length!");
         return FALSE;
