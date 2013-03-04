@@ -45,7 +45,7 @@
  * MirageDebugMasks:
  * @MIRAGE_DEBUG_ERROR: error message
  * @MIRAGE_DEBUG_WARNING: warning message
- * @MIRAGE_DEBUG_PARSER: message belonging to disc parser and file stream parser
+ * @MIRAGE_DEBUG_PARSER: message belonging to image parser and file stream parser
  * @MIRAGE_DEBUG_DISC: message belonging to disc
  * @MIRAGE_DEBUG_SESSION: message belonging to session
  * @MIRAGE_DEBUG_TRACK: message belonging to track
@@ -53,6 +53,7 @@
  * @MIRAGE_DEBUG_FRAGMENT: message belonging to fragment
  * @MIRAGE_DEBUG_CDTEXT: message belonging to CD-TEXT encoder/decoder
  * @MIRAGE_DEBUG_FILE_IO: messages belonging to file filter I/O operations
+ * @MIRAGE_DEBUG_IMAGE_ID: messages belonging to image identification part of image parsers
  *
  * Debug message types and debug masks used to control verbosity of various
  * parts of libMirage.
@@ -74,6 +75,7 @@ typedef enum _MirageDebugMasks
     MIRAGE_DEBUG_FRAGMENT = 0x20,
     MIRAGE_DEBUG_CDTEXT = 0x40,
     MIRAGE_DEBUG_FILE_IO = 0x80,
+    MIRAGE_DEBUG_IMAGE_ID = 0x100,
 } MirageDebugMasks;
 
 
