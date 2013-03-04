@@ -323,8 +323,9 @@ static void mirage_parser_iso_init (MirageParserIso *self)
     mirage_parser_generate_info(MIRAGE_PARSER(self),
         "PARSER-ISO",
         "ISO Image Parser",
-        1,
-        "ISO images (*.iso, *.bin, *.img)", "application/x-cd-image"
+        2,
+        "ISO images (*.iso, *.bin, *.img)", "application/x-cd-image",
+        "Macintosh DVD/CD Master images (*.cdr)", "application/x-apple-cdr"
     );
 
     self->priv->needs_padding = FALSE;
