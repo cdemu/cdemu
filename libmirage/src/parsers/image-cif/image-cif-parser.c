@@ -671,18 +671,30 @@ static MirageDisc *mirage_parser_cif_load_image (MirageParser *_self, GInputStre
 
     g_seekable_seek(G_SEEKABLE(self->priv->cif_stream), 0, G_SEEK_SET, NULL, NULL);
 
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_IMAGE_ID, "%s: checking if parser can handle given image...\n", __debug__);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_IMAGE_ID, "%s: veryfing image header...\n", __debug__);
     if (g_input_stream_read(self->priv->cif_stream, &header, sizeof(header), NULL, NULL) != sizeof(header)) {
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_IMAGE_ID, "%s: parser cannot handle given image: failed to read header!\n", __debug__);
         g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_CANNOT_HANDLE, "Parser cannot handle given image: failed to read header!");
         return FALSE;
     }
 
     /* Match "RIFF" at the beginning and "imag" that comes after length
        field. We could probably also match length, since it appears to
-       be fixed, but this should sufficient... */
-    if (memcmp(header.riff, riff_signature, sizeof(riff_signature)) || memcmp(header.type, imag_signature, sizeof(imag_signature))) {
+       be fixed, but this should be sufficient... */
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_IMAGE_ID, "%s: checking if image begins with 'RIFF'...\n", __debug__);
+    if (memcmp(header.riff, riff_signature, sizeof(riff_signature))) {
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_IMAGE_ID, "%s: parser cannot handle given image: image does not begin with 'RIFF'!\n", __debug__);
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_CANNOT_HANDLE, "Parser cannot handle given image: image does not begin with 'RIFF'!");
+        return FALSE;
+    }
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_IMAGE_ID, "%s: checking if first RIFF tag is 'imag'...\n", __debug__);
+    if (memcmp(header.type, imag_signature, sizeof(imag_signature))) {
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_IMAGE_ID, "%s: parser cannot handle given image: first RIFF tag is not 'imag'!\n", __debug__);
         g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_CANNOT_HANDLE, "Parser cannot handle given image: invalid header!");
         return FALSE;
     }
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_IMAGE_ID, "%s: parser can handle given image!\n", __debug__);
 
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: parsing the image...\n", __debug__);
 

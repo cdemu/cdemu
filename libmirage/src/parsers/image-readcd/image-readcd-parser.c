@@ -50,13 +50,16 @@ static gboolean mirage_parser_readcd_is_file_valid (MirageParserReadcd *self, GI
     guint16 toc_len;
 
     /* File must have .toc suffix */
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_IMAGE_ID, "%s: verifying image file's suffix...\n", __debug__);
     if (!mirage_helper_has_suffix(mirage_contextual_get_file_stream_filename(MIRAGE_CONTEXTUAL(self), stream), ".toc")) {
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_IMAGE_ID, "%s: invalid suffix (not a *.toc file!)!\n", __debug__);
         g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_CANNOT_HANDLE, "Parser cannot handle given image: invalid suffix!");
         return FALSE;
     }
 
     /* First 4 bytes of TOC are its header; and first 2 bytes of that indicate
        the length */
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_IMAGE_ID, "%s: reading 4-byte header...\n", __debug__);
     g_seekable_seek(G_SEEKABLE(stream), 0, G_SEEK_SET, NULL, NULL);
     if (g_input_stream_read(stream, &toc_len, sizeof(toc_len), NULL, NULL) != sizeof(toc_len)) {
         g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_CANNOT_HANDLE, "Parser cannot handle given image: failed to read 2-byte TOC length!");
@@ -68,6 +71,10 @@ static gboolean mirage_parser_readcd_is_file_valid (MirageParserReadcd *self, GI
        that indicate sector types) */
     g_seekable_seek(G_SEEKABLE(stream), 0, G_SEEK_END, NULL, NULL);
     file_size = g_seekable_tell(G_SEEKABLE(stream));
+    
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_IMAGE_ID, "%s: verifying file length:\n", __debug__);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_IMAGE_ID, "%s:  expected size (based on header): %d or %d\n", __debug__, 2 + toc_len + 2, 2 + toc_len + 3);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_IMAGE_ID, "%s:  actual data file size: %d\n", __debug__, file_size);
 
     /* readcd from cdrdtools appears to pad odd TOC lengths to make them 
        even, whereas readcd from cdrkit does not. So we account for both 
@@ -77,6 +84,7 @@ static gboolean mirage_parser_readcd_is_file_valid (MirageParserReadcd *self, GI
     }
 
     /* Nope, can't load the file */
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_IMAGE_ID, "%s: parser cannot handle given image: invalid data file size!\n", __debug__);
     g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_CANNOT_HANDLE, "Parser cannot handle given image!");
     return FALSE;
 }
@@ -390,13 +398,17 @@ static MirageDisc *mirage_parser_readcd_load_image (MirageParser *_self, GInputS
     GInputStream *stream;
 
     /* Check if file can be loaded */
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_IMAGE_ID, "%s: checking if parser can handle given image...\n", __debug__);
+
     stream = streams[0];
     g_object_ref(stream);
 
     if (!mirage_parser_readcd_is_file_valid(self, stream, error)) {
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_IMAGE_ID, "%s: parser cannot handle given image: invalid readcd TOC file!\n", __debug__);
         g_object_unref(stream);
         return FALSE;
     }
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_IMAGE_ID, "%s: parser can handle given image!\n", __debug__);
 
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: parsing the image...\n", __debug__);
 

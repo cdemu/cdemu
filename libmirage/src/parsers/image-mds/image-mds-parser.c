@@ -758,10 +758,14 @@ static MirageDisc *mirage_parser_mds_load_image (MirageParser *_self, GInputStre
     stream = streams[0];
     g_object_ref(stream);
 
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_IMAGE_ID, "%s: checking if parser can handle given image...\n", __debug__);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_IMAGE_ID, "%s: veryfing signature at the beginning of the file...\n", __debug__);
+
     /* Read signature and first byte of version */
     g_seekable_seek(G_SEEKABLE(stream), 0, G_SEEK_SET, NULL, NULL);
     if (g_input_stream_read(stream, signature, sizeof(signature), NULL, NULL) != sizeof(signature)) {
         g_object_unref(stream);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_IMAGE_ID, "%s: parser cannot handle given image: failed to read signature and version!\n", __debug__);
         g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_CANNOT_HANDLE, "Parser cannot handle given image: failed to read signature and version!");
         return FALSE;
     }
@@ -769,9 +773,11 @@ static MirageDisc *mirage_parser_mds_load_image (MirageParser *_self, GInputStre
     /* We can handle only v.1.X images (Alcohol 120% format) */
     if (memcmp(signature, mds_signature, sizeof(mds_signature))) {
         g_object_unref(stream);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_IMAGE_ID, "%s: parser cannot handle given image: invalid signature and/or version!\n", __debug__);
         g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_CANNOT_HANDLE, "Parser cannot handle given image: invalid signature and/or version!");
         return FALSE;
     }
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_IMAGE_ID, "%s: parser can handle given image!\n", __debug__);
 
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: parsing the image...\n", __debug__);
 

@@ -490,18 +490,24 @@ static MirageDisc *mirage_parser_c2d_load_image (MirageParser *_self, GInputStre
     self->priv->c2d_stream = streams[0];
     g_object_ref(streams[0]);
 
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_IMAGE_ID, "%s: checking if parser can handle given image...\n", __debug__);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_IMAGE_ID, "%s: verifying 32-byte signature at the beginning of image file...\n", __debug__);
+
     /* Read signature */
     g_seekable_seek(G_SEEKABLE(self->priv->c2d_stream), 0, G_SEEK_SET, NULL, NULL);
     if (g_input_stream_read(self->priv->c2d_stream, sig, sizeof(sig), NULL, NULL) != sizeof(sig)) {
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_IMAGE_ID, "%s: parser cannot handle given image: failed to read signature!\n", __debug__);
         g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_CANNOT_HANDLE, "Parser cannot handle given image: failed to read signature!");
         return FALSE;
     }
 
     if (memcmp(sig, c2d_signature1, sizeof(c2d_signature1))
         && memcmp(sig, c2d_signature2, sizeof(c2d_signature2))) {
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_IMAGE_ID, "%s: parser cannot handle given image: invalid signature!\n", __debug__);
         g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_CANNOT_HANDLE, "Parser cannot handle given image: invalid signature!");
         return FALSE;
     }
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_IMAGE_ID, "%s: parser can handle given image!\n", __debug__);
 
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: parsing the image...\n", __debug__);
 

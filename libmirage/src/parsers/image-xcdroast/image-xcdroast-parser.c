@@ -736,7 +736,9 @@ static gboolean mirage_parser_xcdroast_check_toc_file (MirageParserXcdroast *sel
     GDataInputStream *data_stream;
 
     /* Check suffix - must be .toc */
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_IMAGE_ID, "%s: verifying image file's suffix...\n", __debug__);
     if (!mirage_helper_has_suffix(mirage_contextual_get_file_stream_filename(MIRAGE_CONTEXTUAL(self), stream), ".toc")) {
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_IMAGE_ID, "%s: invalid suffix (not a *.toc file!)!\n", __debug__);
         return FALSE;
     }
 
@@ -744,8 +746,11 @@ static gboolean mirage_parser_xcdroast_check_toc_file (MirageParserXcdroast *sel
        Because cdrdao also uses .toc for its images, we need to make
        sure this one was created by X-CD-Roast... for that, we check for
        of comment containing "X-CD-Roast" */
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_IMAGE_ID, "%s: checking for comment containing \"X-CD-Roast\"...\n", __debug__);
+
     data_stream = mirage_parser_create_text_stream(MIRAGE_PARSER(self), stream, NULL);
     if (!data_stream) {
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_IMAGE_ID, "%s: failed to open text stream on image file!\n", __debug__);
         return FALSE;
     }
 
@@ -776,6 +781,7 @@ static gboolean mirage_parser_xcdroast_check_toc_file (MirageParserXcdroast *sel
 
             /* Search for "X-CD-Roast" in the comment... */
             if (g_strrstr(comment, "X-CD-Roast")) {
+                MIRAGE_DEBUG(self, MIRAGE_DEBUG_IMAGE_ID, "%s: comment found in line #%d!\n", __debug__, line_nr);
                 succeeded = TRUE;
             }
 
@@ -808,10 +814,14 @@ static MirageDisc *mirage_parser_xcdroast_load_image (MirageParser *_self, GInpu
     gboolean succeeded = TRUE;
 
     /* Check if we can load file */
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_IMAGE_ID, "%s: checking if parser can handle given image...\n", __debug__);
+
     if (!mirage_parser_xcdroast_check_toc_file(self, streams[0])) {
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_IMAGE_ID, "%s: parser cannot handle given image: invalid TOC file!\n", __debug__);
         g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_CANNOT_HANDLE, "Parser cannot handle given image: invalid TOC file!");
         return FALSE;
     }
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_IMAGE_ID, "%s: parser can handle given image!\n", __debug__);
 
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: parsing the image...\n", __debug__);
 

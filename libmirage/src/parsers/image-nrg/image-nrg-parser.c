@@ -919,6 +919,9 @@ static MirageDisc *mirage_parser_nrg_load_image (MirageParser *_self, GInputStre
     file_size = g_seekable_tell(G_SEEKABLE(self->priv->nrg_stream));
 
     /* Read signature */
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_IMAGE_ID, "%s: checking if parser can handle given image...\n", __debug__);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_IMAGE_ID, "%s: checking for new Nero image signature (NER5) at 64-bit offset from the end of file!\n", __debug__);
+
     g_seekable_seek(G_SEEKABLE(self->priv->nrg_stream), -12, G_SEEK_END, NULL, NULL);
 
     if (g_input_stream_read(self->priv->nrg_stream, sig, sizeof(sig), NULL, NULL) != sizeof(sig)) {
@@ -931,7 +934,7 @@ static MirageDisc *mirage_parser_nrg_load_image (MirageParser *_self, GInputStre
         guint64 tmp_offset = 0;
         self->priv->old_format = FALSE;
 
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: parsing the image (new format)...\n", __debug__);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_IMAGE_ID, "%s: new Nero image signature (NER5) found!\n", __debug__);
 
         if (g_input_stream_read(self->priv->nrg_stream, &tmp_offset, sizeof(tmp_offset), NULL, NULL) != sizeof(tmp_offset)) {
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read trailer offset (64-bit)!\n", __debug__);
@@ -942,6 +945,8 @@ static MirageDisc *mirage_parser_nrg_load_image (MirageParser *_self, GInputStre
         self->priv->nrg_data_length = (file_size - 12) - trailer_offset;
     } else {
         /* Try old format, with 32-bit offset */
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_IMAGE_ID, "%s: checking for old Nero image signature (NERO) at 32-bit offset from the end of file!\n", __debug__);
+
         g_seekable_seek(G_SEEKABLE(self->priv->nrg_stream), -8, G_SEEK_END, NULL, NULL);
         if (g_input_stream_read(self->priv->nrg_stream, sig, sizeof(sig), NULL, NULL) != sizeof(sig)) {
             g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_CANNOT_HANDLE, "Parser cannot handle given image: failed to read signature!");
@@ -952,7 +957,7 @@ static MirageDisc *mirage_parser_nrg_load_image (MirageParser *_self, GInputStre
             guint32 tmp_offset = 0;
             self->priv->old_format = TRUE;
 
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: parsing the image (old format)...\n", __debug__);
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_IMAGE_ID, "%s: old Nero image signature (NERO) found!\n", __debug__);
 
             if (g_input_stream_read(self->priv->nrg_stream, &tmp_offset, sizeof(tmp_offset), NULL, NULL) != sizeof(tmp_offset)) {
                 MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read trailer offset!\n", __debug__);
@@ -964,12 +969,14 @@ static MirageDisc *mirage_parser_nrg_load_image (MirageParser *_self, GInputStre
             self->priv->nrg_data_length = (file_size - 8) - trailer_offset;
         } else {
             /* Unknown signature, can't handle the file */
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_IMAGE_ID, "%s: parser cannot handle given image: invalid signature!\n", __debug__);
             g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_CANNOT_HANDLE, "Parser cannot handle given image: invalid signature!");
             return FALSE;
         }
     }
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "\n");
-
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_IMAGE_ID, "%s: parser can handle given image!\n", __debug__);
+    
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: parsing the image...\n", __debug__);
 
     /* Create disc */
     self->priv->disc = g_object_new(MIRAGE_TYPE_DISC, NULL);

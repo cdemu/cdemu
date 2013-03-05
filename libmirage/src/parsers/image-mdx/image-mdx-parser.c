@@ -325,18 +325,24 @@ static MirageDisc *mirage_parser_mdx_load_image (MirageParser *_self, GInputStre
     self->priv->stream = streams[0];
     g_object_ref(self->priv->stream);
 
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_IMAGE_ID, "%s: checking if parser can handle given image...\n", __debug__);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_IMAGE_ID, "%s: veryfing signature at the beginning of the file...\n", __debug__);
+
     /* Read signature and version */
     g_seekable_seek(G_SEEKABLE(self->priv->stream), 0, G_SEEK_SET, NULL, NULL);
     if (g_input_stream_read(self->priv->stream, signature, sizeof(signature), NULL, NULL) != sizeof(signature)) {
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_IMAGE_ID, "%s: parser cannot handle given image: invalid signature and/or version!\n", __debug__);
         g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_CANNOT_HANDLE, "Parser cannot handle given image: failed to read signature and version!");
         return FALSE;
     }
 
     /* This parsers handles v.2.X images (new DT format) */
     if (memcmp(signature, mdx_signature, sizeof(mdx_signature))) {
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_IMAGE_ID, "%s: parser cannot handle given image: invalid signature and/or version!\n", __debug__);
         g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_CANNOT_HANDLE, "Parser cannot handle given image: invalid signature and/or version!");
         return FALSE;
     }
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_IMAGE_ID, "%s: parser can handle given image!\n", __debug__);
 
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: parsing the image...\n", __debug__);
 

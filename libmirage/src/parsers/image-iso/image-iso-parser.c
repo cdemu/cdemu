@@ -42,15 +42,18 @@ static gboolean mirage_parser_iso_is_file_valid (MirageParserIso *self, GInputSt
 {
     gsize file_length;
 
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_IMAGE_ID, "%s: verifying file size...\n", __debug__);
+
     /* Get stream length */
     if (!g_seekable_seek(G_SEEKABLE(stream), 0, G_SEEK_END, NULL, error)) {
         return FALSE;
     }
     file_length = g_seekable_tell(G_SEEKABLE(stream));
 
-    /* Make sure the file is large enough to contain at least one sector
+    /* Make sure the file is large enough to contain ISO descriptor
        (also covers the strucutre size of .CDR image check below) */
-    if (file_length < 2048) {
+    if (file_length < 16*2048) {
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_IMAGE_ID, "%s: parser cannot handle given image: file too small!\n", __debug__);
         g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_CANNOT_HANDLE, "Parser cannot handle given image: file too small!");
         return FALSE;
     }
@@ -63,37 +66,35 @@ static gboolean mirage_parser_iso_is_file_valid (MirageParserIso *self, GInputSt
     guint16 mac_sectsize;
     guint32 mac_dev_sectors;
 
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_IMAGE_ID, "%s: checking if image is a Macintosh DVD/CD Master (CDR) image...\n", __debug__);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_IMAGE_ID, "%s: looking for 'ER' signature at the beginning of file\n", __debug__);
+
     if (!g_seekable_seek(G_SEEKABLE(stream), 0, G_SEEK_SET, NULL, NULL)) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to seek to DDM block!\n", __debug__);
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, "Failed to seek to DDM block!");
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to seek to beginning of file!\n", __debug__);
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, "Failed to seek to beginning of file!");
         return FALSE;
     }
 
     if (g_input_stream_read(stream, mac_buf, sizeof(mac_buf), NULL, NULL) != sizeof(mac_buf)) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read DDM block!\n", __debug__);
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, "Failed to read DDM block!");
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read first 512 bytes of file!\n", __debug__);
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, "Failed to read first 512 bytes of file!");
         return FALSE;
     }
 
     if (!memcmp(mac_buf, "ER", 2)) {
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_IMAGE_ID, "%s: 'ER' signature found!\n", __debug__);
+
         mac_sectsize    = GUINT16_FROM_BE(*((guint16 *) mac_buf + 1));
         mac_dev_sectors = GUINT32_FROM_BE(*((guint32 *) mac_buf + 1));
 
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: %u-byte Macintosh GUID partitioned track, Mode 1 assumed\n",
-                     __debug__, mac_sectsize);
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  Reported number of device sectors: %u\n",
-                     __debug__, mac_dev_sectors);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_IMAGE_ID, "%s: image is a CDR image; %d sectors, sector size: %d\n", __debug__, mac_dev_sectors, mac_sectsize);
 
         if (mac_sectsize == 512 || mac_sectsize == 1024) {
-            if (file_length % 2048) {
-                self->priv->needs_padding = TRUE;
-            } else {
-                self->priv->needs_padding = FALSE;
-            }
+            self->priv->needs_padding = file_length % 2048;
         } else if (mac_sectsize == 2048) {
             self->priv->needs_padding = FALSE;
         } else {
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: Parser cannot map this sector size!\n", __debug__);
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: parser cannot map this sector size!\n", __debug__);
             g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_PARSER_ERROR, "Parser cannot map this sector size!");
             return FALSE;
         }
@@ -101,11 +102,17 @@ static gboolean mirage_parser_iso_is_file_valid (MirageParserIso *self, GInputSt
         self->priv->track_mode = MIRAGE_MODE_MODE1;
 
         return TRUE;
+    } else {
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_IMAGE_ID, "%s: 'ER' signature not found!\n", __debug__);
     }
+
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_IMAGE_ID, "%s: checking if image is a standard ISO image...\n", __debug__);
 
     /* 2048-byte standard ISO9660/UDF image check */
     if (file_length % 2048 == 0) {
         guint8 buf[8];
+
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_IMAGE_ID, "%s: image size is a multiple of 2048; looking for CD001 or BEA01 pattern at offset %X...\n", __debug__, 16*2048);
 
         if (!g_seekable_seek(G_SEEKABLE(stream), 16*2048, G_SEEK_SET, NULL, NULL)) {
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to seek to 8-byte pattern!\n", __debug__);
@@ -124,15 +131,19 @@ static gboolean mirage_parser_iso_is_file_valid (MirageParserIso *self, GInputSt
             self->priv->track_sectsize = 2048;
             self->priv->track_mode = MIRAGE_MODE_MODE1;
 
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: standard 2048-byte ISO9660/UDF track, Mode 1 assumed\n", __debug__);
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_IMAGE_ID, "%s: image is a standard 2048-byte ISO9660/UDF image\n", __debug__);
 
             return TRUE;
         }
     }
 
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_IMAGE_ID, "%s: checking if image is a binary image with 2352-byte sectors...\n", __debug__);
+
     /* 2352-byte image check */
     if (file_length % 2352 == 0) {
         guint8 buf[16];
+
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_IMAGE_ID, "%s: image size is a multiple of 2352; determining track type at address 16...\n", __debug__);
 
         if (!g_seekable_seek(G_SEEKABLE(stream), 16*2352, G_SEEK_SET, NULL, NULL)) {
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to seek to 16-byte pattern!\n", __debug__);
@@ -150,30 +161,33 @@ static gboolean mirage_parser_iso_is_file_valid (MirageParserIso *self, GInputSt
         self->priv->track_sectsize = 2352;
         self->priv->track_mode = mirage_helper_determine_sector_type(buf);
 
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: 2352-byte track, track mode: %d\n", __debug__, self->priv->track_mode);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_IMAGE_ID, "%s: assuming image is a binary image with 2352-byte sectors; track mode: %d\n", __debug__, self->priv->track_mode);
 
         return TRUE;
     }
 
     /* 2332/2336-byte image check */
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_IMAGE_ID, "%s: checking if image is a binary image with 2332-byte sectors...\n", __debug__);
     if (file_length % 2332 == 0) {
         self->priv->track_sectsize = 2332;
         self->priv->track_mode = MIRAGE_MODE_MODE2_MIXED;
 
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: 2332-byte track, Mode 2 Mixed assumed (unreliable!)\n", __debug__);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_IMAGE_ID, "%s: assuming image is a binary image with 2332-byte sectors and containing Mode 2 Mixed sectors\n", __debug__);
 
         return TRUE;
     }
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_IMAGE_ID, "%s: checking if image is a binary image with 2336-byte sectors...\n", __debug__);
     if (file_length % 2336 == 0) {
         self->priv->track_sectsize = 2336;
         self->priv->track_mode = MIRAGE_MODE_MODE2_MIXED;
 
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: 2336-byte track, Mode 2 Mixed assumed (unreliable!)\n", __debug__);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_IMAGE_ID, "%s: assuming image is a binary image with 2336-byte sectors and containing Mode 2 Mixed sectors\n", __debug__);
 
         return TRUE;
     }
 
     /* Nope, can't load the file */
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_IMAGE_ID, "%s: parser cannot handle given image!\n", __debug__);
     g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_CANNOT_HANDLE, "Parser cannot handle given image!");
     return FALSE;
 }
@@ -185,6 +199,10 @@ static gboolean mirage_parser_iso_load_track (MirageParserIso *self, GInputStrea
     MirageFragment *fragment;
 
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: loading track...\n", __debug__);
+    
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: track mode: %d\n", __debug__, self->priv->track_mode);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: sector size: %d\n", __debug__, self->priv->track_sectsize);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: padding sector needed: %d\n", __debug__, self->priv->needs_padding);
 
     /* Create data fragment */
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: creating data fragment\n", __debug__);
@@ -203,10 +221,7 @@ static gboolean mirage_parser_iso_load_track (MirageParserIso *self, GInputStrea
 
     /* Add one sector to cover otherwise truncated data */
     if (self->priv->needs_padding) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: applying padding sector!\n", __debug__);
-
         gint cur_length = mirage_fragment_get_length(fragment);
-
         mirage_fragment_set_length(fragment, cur_length + 1);
     }
 
@@ -249,10 +264,12 @@ static MirageDisc *mirage_parser_iso_load_image (MirageParser *_self, GInputStre
     g_object_ref(stream);
     iso_filename = mirage_contextual_get_file_stream_filename(MIRAGE_CONTEXTUAL(self), stream);
 
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_IMAGE_ID, "%s: checking if parser can handle given image...\n", __debug__);
     if (!mirage_parser_iso_is_file_valid(self, stream, error)) {
         g_object_unref(stream);
         return FALSE;
     }
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_IMAGE_ID, "%s: parser can handle given image!\n", __debug__);
 
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: parsing the image...\n", __debug__);
 

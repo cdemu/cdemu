@@ -1197,15 +1197,21 @@ static MirageDisc *mirage_parser_toc_load_image (MirageParser *_self, GInputStre
     const gchar **filenames;
     gboolean succeeded = TRUE;
 
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_IMAGE_ID, "%s: checking if parser can handle given image...\n", __debug__);
+
     /* Determine number of streams */
     for (num_streams = 0; streams[num_streams]; num_streams++);
+
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_IMAGE_ID, "%s: number of files provided: %d\n", __debug__, num_streams);
 
     /* Allocate array of filename pointers */
     filenames = g_new0(const gchar *, num_streams + 1);
 
     /* Check if all streams are valid */
     for (gint i = 0; i < num_streams; i++) {
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_IMAGE_ID, "%s: verifying suffix of file #%d...\n", __debug__, i);
         if (!mirage_parser_toc_check_toc_file(self, streams[i])) {
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_IMAGE_ID, "%s: parser cannot handle given image: file #%d has invalid suffix (not a *.toc file)!\n", __debug__, i);
             g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_CANNOT_HANDLE, "Parser cannot handle given image: invalid TOC file!");
             g_free(filenames);
             return FALSE;
@@ -1213,6 +1219,7 @@ static MirageDisc *mirage_parser_toc_load_image (MirageParser *_self, GInputStre
 
         filenames[i] = mirage_contextual_get_file_stream_filename(MIRAGE_CONTEXTUAL(self), streams[i]);
     }
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_IMAGE_ID, "%s: parser can handle given image!\n", __debug__);
 
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: parsing the image...\n", __debug__);
 

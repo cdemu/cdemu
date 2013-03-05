@@ -1250,20 +1250,26 @@ static MirageDisc *mirage_parser_b6t_load_image (MirageParser *_self, GInputStre
     stream = streams[0];
     g_object_ref(stream);
 
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_IMAGE_ID, "%s: checking if parser can handle given image...\n", __debug__);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_IMAGE_ID, "%s: verifying 16-byte signature at the beginning of image file...\n", __debug__);
+
     /* Read and verify header; we could also check the footer, but I think
        header check only is sufficient */
     g_seekable_seek(G_SEEKABLE(stream), 0, G_SEEK_SET, NULL, NULL);
     if (g_input_stream_read(stream, header, 16, NULL, NULL) != 16) {
         g_object_unref(stream);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_IMAGE_ID, "%s: parser cannot handle given image: failed to read 16 bytes from beginning image file stream!\n", __debug__);
         g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_CANNOT_HANDLE, "Parser cannot handle given image: failed to read 16 bytes from image file stream!");
         return FALSE;
     }
 
     if (memcmp(header, b6t_signature, sizeof(b6t_signature))) {
         g_object_unref(stream);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_IMAGE_ID, "%s: parser cannot handle given image: invalid signature!\n", __debug__);
         g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_CANNOT_HANDLE, "Parser cannot handle given image: invalid signature!");
         return FALSE;
     }
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_IMAGE_ID, "%s: parser can handle given image!\n", __debug__);
 
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: parsing the image...\n", __debug__);
 
