@@ -21,6 +21,9 @@
 
 #define __debug__ "SNDFILE-FileFilter"
 
+/* Number of frames to cache */
+#define NUM_FRAMES 588
+
 
 /**********************************************************************\
  *                          Private structure                         *
@@ -35,7 +38,7 @@ struct _MirageFileFilterSndfilePrivate
     gint buflen;
     guint8 *buffer;
 
-    gint cached_frame;
+    gint cached_block;
 };
 
 
@@ -143,7 +146,7 @@ static gboolean mirage_file_filter_sndfile_can_handle_data_format (MirageFileFil
     mirage_file_filter_set_file_size(MIRAGE_FILE_FILTER(self), length);
 
     /* Allocate read buffer; we wish to hold a single (multichannel) frame */
-    self->priv->buflen = self->priv->format.channels * sizeof(guint16);
+    self->priv->buflen = self->priv->format.channels * sizeof(guint16) * NUM_FRAMES;
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: buffer length: %d bytes\n", __debug__, self->priv->buflen);
     self->priv->buffer = g_try_malloc(self->priv->buflen);
     if (!self->priv->buffer) {
@@ -158,42 +161,42 @@ static gssize mirage_file_filter_sndfile_partial_read (MirageFileFilter *_self, 
 {
     MirageFileFilterSndfile *self = MIRAGE_FILE_FILTER_SNDFILE(_self);
     goffset position = mirage_file_filter_get_position(MIRAGE_FILE_FILTER(self));
-    gint frame;
+    gint block;
 
-    /* Find the frame corresponding to current position */
-    frame = position / self->priv->buflen;
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_FILE_IO, "%s: stream position: %ld (0x%lX) -> frame #%d (cached: #%d)\n", __debug__, position, position, frame, self->priv->cached_frame);
+    /* Find the block of frames corresponding to current position */
+    block = position / self->priv->buflen;
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_FILE_IO, "%s: stream position: %ld (0x%lX) -> block #%d (cached: #%d)\n", __debug__, position, position, block, self->priv->cached_block);
 
-    /* If we do not have block in cache, uncompress it */
-    if (frame != self->priv->cached_frame) {
+    /* If we do not have block in cache, read it */
+    if (block != self->priv->cached_block) {
         gsize read_length;
 
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_FILE_IO, "%s: frame not cached, reading...\n", __debug__);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_FILE_IO, "%s: block not cached, reading...\n", __debug__);
 
-        /* Seek to frame */
-        sf_seek(self->priv->sndfile, frame, SEEK_SET);
+        /* Seek to beginning of block */
+        sf_seek(self->priv->sndfile, block*NUM_FRAMES, SEEK_SET);
 
         /* Read the frame */
-        read_length = sf_readf_short(self->priv->sndfile, (short *)self->priv->buffer, 1);
+        read_length = sf_readf_short(self->priv->sndfile, (short *)self->priv->buffer, NUM_FRAMES);
 
         if (!read_length) {
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_FILE_IO, "%s: frame not read; EOF reached?\n", __debug__);
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_FILE_IO, "%s: block not read; EOF reached?\n", __debug__);
             return 0;
         }
 
         /* Store the number of currently stored block */
-        self->priv->cached_frame = frame;
+        self->priv->cached_block = block;
     } else {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_FILE_IO, "%s: frame already cached\n", __debug__);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_FILE_IO, "%s: block already cached\n", __debug__);
     }
 
     /* Copy data */
-    goffset frame_offset = position % self->priv->buflen;
-    count = MIN(count, self->priv->buflen - frame_offset);
+    goffset block_offset = position % self->priv->buflen;
+    count = MIN(count, self->priv->buflen - block_offset);
 
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_FILE_IO, "%s: offset within frame: %ld, copying %d bytes\n", __debug__, frame_offset, count);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_FILE_IO, "%s: offset within block: %ld, copying %d bytes\n", __debug__, block_offset, count);
 
-    memcpy(buffer, self->priv->buffer + frame_offset, count);
+    memcpy(buffer, self->priv->buffer + block_offset, count);
 
     return count;
 }
@@ -220,7 +223,7 @@ static void mirage_file_filter_sndfile_init (MirageFileFilterSndfile *self)
         0
     );
 
-    self->priv->cached_frame = -1;
+    self->priv->cached_block = -1;
 
     self->priv->sndfile = NULL;
     self->priv->buffer = NULL;
