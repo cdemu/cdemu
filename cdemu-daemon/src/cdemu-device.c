@@ -22,6 +22,8 @@
 
 #define __debug__ "Device"
 
+/* Inactivity threshold; in microseconds */
+#define INACTIVITY_THRESHOLD 15000000
 
 /**********************************************************************\
  *                              Device ID                             *
@@ -49,8 +51,8 @@ static gboolean cdemu_device_io_watchdog (CdemuDevice *self)
 {
     guint64 diff = g_get_monotonic_time() - self->priv->last_io_activity;
 
-    /* The actual threshold is 5 seconds */
-    if (diff > 5000000) {
+    /* The actual threshold */
+    if (diff > INACTIVITY_THRESHOLD) {
         CDEMU_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: device had no I/O activity in last %.2f seconds!\n", __debug__, diff/1000000.0f);
 
         /* Emit signal, which will be picked up by daemon */
