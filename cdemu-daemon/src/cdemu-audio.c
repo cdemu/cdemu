@@ -28,16 +28,25 @@
 \**********************************************************************/
 static gpointer cdemu_audio_playback_thread (CdemuAudio *self)
 {
+    gint audio_driver_id = self->priv->driver_id;
+    
     /* Open audio device */
     CDEMU_DEBUG(self, DAEMON_DEBUG_AUDIOPLAY, "%s: opening audio device\n", __debug__);
-    self->priv->device = ao_open_live(self->priv->driver_id, &self->priv->format, NULL /* no options */);
+    self->priv->device = ao_open_live(audio_driver_id, &self->priv->format, NULL /* no options */);
     if (self->priv->device == NULL) {
-        CDEMU_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: failed to open audio device!\n", __debug__);
-        return NULL;
+        CDEMU_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: failed to open audio device; falling back to null driver!\n", __debug__);
+        
+        /* Retry with null */
+        audio_driver_id = ao_driver_id("null");
+        self->priv->device = ao_open_live(audio_driver_id, &self->priv->format, NULL /* no options */);
+        if (self->priv->device == NULL) {
+            CDEMU_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: failed to open 'null' audio device!\n", __debug__);
+            return NULL;
+        }
     }
 
     /* Activate null driver hack, if needed (otherwise disable it) */
-    if (self->priv->driver_id == ao_driver_id("null")) {
+    if (audio_driver_id == ao_driver_id("null")) {
         self->priv->null_hack = TRUE;
     } else {
         self->priv->null_hack = FALSE;
