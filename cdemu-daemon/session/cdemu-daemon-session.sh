@@ -5,7 +5,7 @@
 
 # Default settings
 NUM_DEVICES=1
-AUDIO_DRIVER=pulse
+AUDIO_DRIVER=default
 LOG_FILE=~/.cdemu-daemon.log
 
 # Read the settings
