@@ -21,8 +21,8 @@
 
 #define __debug__ "SNDFILE-FileFilter"
 
-/* Number of frames to cache */
-#define NUM_FRAMES 588
+/* Number of frames to cache (588 frames/sector, 75 sectors/second) */
+#define NUM_FRAMES 588*75
 
 
 /**********************************************************************\
