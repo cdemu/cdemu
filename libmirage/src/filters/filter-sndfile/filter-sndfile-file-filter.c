@@ -134,9 +134,25 @@ static gboolean mirage_file_filter_sndfile_can_handle_data_format (MirageFileFil
         return FALSE;
     }
 
-    /* Check some additional requirements (two channels and seekable) */
-    if (self->priv->format.channels != 2 || self->priv->format.seekable == 0) {
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_CANNOT_HANDLE, "Filter cannot handle given data: invalid number of channels or non-seekable!");
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: audio file info:\n", __debug__);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  frames: %d\n", __debug__, self->priv->format.frames);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  samplerate: %d\n", __debug__, self->priv->format.samplerate);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  channels: %d\n", __debug__, self->priv->format.channels);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  format: %d\n", __debug__, self->priv->format.format);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  sections: %d\n", __debug__, self->priv->format.sections);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  seekable: %d\n", __debug__, self->priv->format.seekable);
+
+    /* Check some additional requirements (two channels, seekable and samplerate) */
+    if (!self->priv->format.seekable) {
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_DATA_FILE_ERROR, "Audio file is not seekable!");
+        return FALSE;
+    }
+    if (self->priv->format.channels != 2) {
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_DATA_FILE_ERROR, "Invalid number of channels in audio file (%d)! Only two-channel audio files are supported!", self->priv->format.channels);
+        return FALSE;
+    }
+    if (self->priv->format.samplerate != 44100) {
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_DATA_FILE_ERROR, "Invalid samplerate (%d)! Only audio files with samplerate 44.1 kHz are supported!", self->priv->format.samplerate);
         return FALSE;
     }
 
