@@ -25,7 +25,8 @@
 #endif
 
 #include <sndfile.h>
-
+#include <samplerate.h>
+    
 #include "mirage.h"
 #include "filter-sndfile-file-filter.h"
 

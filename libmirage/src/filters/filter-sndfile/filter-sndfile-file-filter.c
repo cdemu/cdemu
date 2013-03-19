@@ -39,6 +39,13 @@ struct _MirageFileFilterSndfilePrivate
     guint8 *buffer;
 
     gint cached_block;
+    
+    /* Resampling */
+    double io_ratio;
+    float *resample_buffer_in;
+    float *resample_buffer_out;
+    SRC_STATE *resampler;
+    SRC_DATA resampler_data;
 };
 
 
@@ -151,23 +158,63 @@ static gboolean mirage_file_filter_sndfile_can_handle_data_format (MirageFileFil
         g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_DATA_FILE_ERROR, "Invalid number of channels in audio file (%d)! Only two-channel audio files are supported!", self->priv->format.channels);
         return FALSE;
     }
-    if (self->priv->format.samplerate != 44100) {
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_DATA_FILE_ERROR, "Invalid samplerate (%d)! Only audio files with samplerate 44.1 kHz are supported!", self->priv->format.samplerate);
-        return FALSE;
-    }
-
+    
     /* Compute length in bytes */
     length = self->priv->format.frames * self->priv->format.channels * sizeof(guint16);
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: raw stream length: %ld (0x%lX) bytes\n", __debug__, length, length);
     mirage_file_filter_set_file_size(MIRAGE_FILE_FILTER(self), length);
 
     /* Allocate read buffer; we wish to hold a single (multichannel) frame */
-    self->priv->buflen = self->priv->format.channels * sizeof(guint16) * NUM_FRAMES;
+    self->priv->buflen = self->priv->format.channels * NUM_FRAMES * sizeof(guint16);
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: buffer length: %d bytes\n", __debug__, self->priv->buflen);
     self->priv->buffer = g_try_malloc(self->priv->buflen);
     if (!self->priv->buffer) {
         g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_PARSER_ERROR, "Failed to allocate read buffer!");
         return FALSE;
+    }
+    
+    /* Initialize resampler, if needed */
+    self->priv->io_ratio = self->priv->format.samplerate / 44100.0;
+    if (self->priv->io_ratio != 1.0) {
+        gint resampler_error;
+        gint buffer_size;
+            
+        /* Initialize resampler */
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: audio stream needs to be resampled to 44.1 kHZ, initializing resampler...\n", __debug__);
+        self->priv->resampler = src_new(SRC_LINEAR, self->priv->format.channels, &resampler_error);
+        if (!self->priv->resampler) {
+            g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_PARSER_ERROR, "Failed to initialize resampler; error code %d!", resampler_error);
+            return FALSE;
+        }
+            
+        /* Allocate resampler's output buffer */
+        buffer_size = self->priv->format.channels * NUM_FRAMES * sizeof(float);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: resampler's output buffer: %d bytes\n", __debug__, buffer_size);
+        self->priv->resample_buffer_out = g_try_malloc(buffer_size);
+        if (!self->priv->resample_buffer_out) {
+            g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_PARSER_ERROR, "Failed to allocate resampler output buffer!");
+            return FALSE;
+        }
+            
+        /* Allocate resampler's input buffer */
+        buffer_size *= self->priv->io_ratio;
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: resampler's input buffer: %d bytes\n", __debug__, buffer_size);
+        self->priv->resample_buffer_in = g_try_malloc(buffer_size);
+        if (!self->priv->resample_buffer_in) {
+            g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_PARSER_ERROR, "Failed to allocate resampler input buffer!");
+            return FALSE;
+        }
+        
+        /* Initialize static fields of resampler's data structure */
+        self->priv->resampler_data.data_in = self->priv->resample_buffer_in;
+        self->priv->resampler_data.data_out = self->priv->resample_buffer_out;
+        self->priv->resampler_data.output_frames = NUM_FRAMES;
+        self->priv->resampler_data.src_ratio = 1/self->priv->io_ratio;
+        
+        /* Adjust stream length */
+        length = round(length/self->priv->io_ratio);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: resampled stream length: %ld (0x%lX) bytes\n", __debug__, length, length);
+        mirage_file_filter_set_file_size(MIRAGE_FILE_FILTER(self), length);
     }
 
     return TRUE;
@@ -179,7 +226,8 @@ static gssize mirage_file_filter_sndfile_partial_read (MirageFileFilter *_self, 
     goffset position = mirage_file_filter_get_position(MIRAGE_FILE_FILTER(self));
     gint block;
 
-    /* Find the block of frames corresponding to current position */
+    /* Find the block of frames corresponding to current position; this
+       is within the final, possibly resampled, stream */
     block = position / self->priv->buflen;
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_FILE_IO, "%s: stream position: %ld (0x%lX) -> block #%d (cached: #%d)\n", __debug__, position, position, block, self->priv->cached_block);
 
@@ -189,15 +237,49 @@ static gssize mirage_file_filter_sndfile_partial_read (MirageFileFilter *_self, 
 
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_FILE_IO, "%s: block not cached, reading...\n", __debug__);
 
-        /* Seek to beginning of block */
-        sf_seek(self->priv->sndfile, block*NUM_FRAMES, SEEK_SET);
-
-        /* Read the frame */
-        read_length = sf_readf_short(self->priv->sndfile, (short *)self->priv->buffer, NUM_FRAMES);
-
-        if (!read_length) {
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_FILE_IO, "%s: block not read; EOF reached?\n", __debug__);
-            return 0;
+        if (self->priv->io_ratio == 1.0) {
+            /* Seek to beginning of block */
+            sf_seek(self->priv->sndfile, block*NUM_FRAMES, SEEK_SET);
+        
+            /* Read frames */
+            read_length = sf_readf_short(self->priv->sndfile, (short *)self->priv->buffer, NUM_FRAMES);
+            if (!read_length) {
+                MIRAGE_DEBUG(self, MIRAGE_DEBUG_FILE_IO, "%s: block not read; EOF reached?\n", __debug__);
+                return 0;
+            }
+        } else {
+            gint resampler_error;
+            
+            /* Seek to beginning of block; this is in original,
+               non-resampled, stream */
+            sf_seek(self->priv->sndfile, block*NUM_FRAMES*self->priv->io_ratio, SEEK_SET);
+            
+            /* Read read frames into resampler's input buffer */
+            read_length = sf_readf_float(self->priv->sndfile, self->priv->resample_buffer_in, NUM_FRAMES*self->priv->io_ratio);
+            if (!read_length) {
+                MIRAGE_DEBUG(self, MIRAGE_DEBUG_FILE_IO, "%s: block not read; EOF reached?\n", __debug__);
+                return 0;
+            }
+            
+            /* Set fields in data structure; most are static and have
+               not changed since initialization */
+            self->priv->resampler_data.input_frames = read_length;
+            self->priv->resampler_data.end_of_input = 1; 
+            
+            /* Reset resampler (assume blocks are unrelated) */
+            src_reset(self->priv->resampler);
+            
+            /* Resample */
+            resampler_error = src_process(self->priv->resampler, &self->priv->resampler_data);
+            if (resampler_error) {
+                MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to resample frames: %s!\n", __debug__, src_strerror(resampler_error));
+                /* Do nothing, though */
+            }
+            
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_FILE_IO, "%s: resampler: read %ld input frames, generated %ld output frames\n", __debug__, self->priv->resampler_data.input_frames_used, self->priv->resampler_data.output_frames_gen);
+            
+            /* Convert generated frames to short */
+            src_float_to_short_array(self->priv->resample_buffer_out, (short *)self->priv->buffer, NUM_FRAMES*self->priv->format.channels);
         }
 
         /* Store the number of currently stored block */
@@ -243,6 +325,10 @@ static void mirage_file_filter_sndfile_init (MirageFileFilterSndfile *self)
 
     self->priv->sndfile = NULL;
     self->priv->buffer = NULL;
+    
+    self->priv->resample_buffer_in = NULL;
+    self->priv->resample_buffer_out = NULL;
+    self->priv->resampler = NULL;
 }
 
 static void mirage_file_filter_sndfile_finalize (GObject *gobject)
@@ -253,9 +339,18 @@ static void mirage_file_filter_sndfile_finalize (GObject *gobject)
     if (self->priv->sndfile) {
         sf_close(self->priv->sndfile);
     }
+    
+    /* Cleanup resampler */
+    if (self->priv->resampler) {
+        src_delete(self->priv->resampler);
+    }
 
     /* Free read buffer */
     g_free(self->priv->buffer);
+    
+    /* Free resampler buffers */
+    g_free(self->priv->resample_buffer_in);
+    g_free(self->priv->resample_buffer_out);
 
     /* Chain up to the parent class */
     return G_OBJECT_CLASS(mirage_file_filter_sndfile_parent_class)->finalize(gobject);
