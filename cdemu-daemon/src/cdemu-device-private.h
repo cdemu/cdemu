@@ -43,8 +43,6 @@ struct _CdemuDevicePrivate
     GMainLoop *main_loop;
     GSource *io_watch;
 
-    guint64 last_io_activity;
-
     /* Device stuff */
     gint number;
     gchar *device_name;

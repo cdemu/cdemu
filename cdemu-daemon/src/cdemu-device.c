@@ -22,8 +22,6 @@
 
 #define __debug__ "Device"
 
-/* Inactivity threshold; in microseconds */
-#define INACTIVITY_THRESHOLD 15000000
 
 /**********************************************************************\
  *                              Device ID                             *
@@ -41,28 +39,6 @@ static void cdemu_device_set_device_id (CdemuDevice *self, const gchar *vendor_i
 
     g_free(self->priv->id_vendor_specific);
     self->priv->id_vendor_specific = g_strndup(vendor_specific, 20);
-}
-
-
-/**********************************************************************\
- *                  Kernel <-> userspace I/O watchdog                 *
-\**********************************************************************/
-static gboolean cdemu_device_io_watchdog (CdemuDevice *self)
-{
-    guint64 diff = g_get_monotonic_time() - self->priv->last_io_activity;
-
-    /* The actual threshold */
-    if (diff > INACTIVITY_THRESHOLD) {
-        CDEMU_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: device had no I/O activity in last %.2f seconds!\n", __debug__, diff/1000000.0f);
-
-        /* Emit signal, which will be picked up by daemon */
-        g_signal_emit_by_name(self, "device-inactive", NULL);
-
-        /* Off-line the device by stopping its main loop */
-        //g_main_loop_quit(self->priv->main_loop);
-    }
-
-    return TRUE;
 }
 
 
@@ -87,12 +63,6 @@ gboolean cdemu_device_initialize (CdemuDevice *self, gint number, const gchar *a
     /* Create GLib main context and main loop for events */
     self->priv->main_context = g_main_context_new();
     self->priv->main_loop = g_main_loop_new(self->priv->main_context, FALSE);
-
-    /* Create I/O watchdog with 1-second granularity */
-    source = g_timeout_source_new_seconds(1);
-    g_source_set_callback(source, (GSourceFunc)cdemu_device_io_watchdog, self, NULL);
-    g_source_attach(source, self->priv->main_context);
-    g_source_unref(source);
 
     /* Create mapping setup timer with 1-second granularity */
     source = g_timeout_source_new_seconds(1);
@@ -437,8 +407,9 @@ static void cdemu_device_class_init (CdemuDeviceClass *klass)
     /* Signals */
     g_signal_new("status-changed", G_OBJECT_CLASS_TYPE(klass), G_SIGNAL_RUN_LAST, 0, NULL, NULL, g_cclosure_marshal_VOID__VOID, G_TYPE_NONE, 0, NULL);
     g_signal_new("option-changed", G_OBJECT_CLASS_TYPE(klass), G_SIGNAL_RUN_LAST, 0, NULL, NULL, g_cclosure_marshal_VOID__STRING, G_TYPE_NONE, 1, G_TYPE_STRING, NULL);
-    g_signal_new("device-inactive", G_OBJECT_CLASS_TYPE(klass), G_SIGNAL_RUN_LAST, 0, NULL, NULL, g_cclosure_marshal_VOID__VOID, G_TYPE_NONE, 0, NULL);
+    g_signal_new("kernel-io-error", G_OBJECT_CLASS_TYPE(klass), G_SIGNAL_RUN_LAST, 0, NULL, NULL, g_cclosure_marshal_VOID__VOID, G_TYPE_NONE, 0, NULL);
     g_signal_new("mapping-ready", G_OBJECT_CLASS_TYPE(klass), G_SIGNAL_RUN_LAST, 0, NULL, NULL, g_cclosure_marshal_VOID__VOID, G_TYPE_NONE, 0, NULL);
+    
 
     /* Register private structure */
     g_type_class_add_private(klass, sizeof(CdemuDevicePrivate));

@@ -155,7 +155,8 @@ static gboolean cdemu_device_io_handler (GIOChannel *source, GIOCondition condit
     ret = read(fd, vreq, BUF_SIZE);
     if (ret < (gssize)sizeof(struct vhba_request)) {
         CDEMU_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: failed to read request from control device (%d bytes; at least %d required)!\n", __debug__, ret, sizeof(struct vhba_request));
-        /* We do not really need to do anything else here; if error is non-recoverable, the watchdog will kick in anyway */
+        /* Signal the kernel I/O error, so daemon can restart the device */
+        g_signal_emit_by_name(self, "kernel-io-error", NULL);
         return TRUE;
     }
 
@@ -187,11 +188,10 @@ static gboolean cdemu_device_io_handler (GIOChannel *source, GIOCondition condit
     ret = write(fd, vres, BUF_SIZE);
     if (ret < (gssize)sizeof(struct vhba_response)) {
         CDEMU_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: failed to write response to control device (%d bytes; at least %d required)!\n", __debug__, ret, sizeof(struct vhba_response));
-        /* We do not really need to do anything else here; if error is non-recoverable, the watchdog will kick in anyway */
+        /* Signal the kernel I/O error, so daemon can restart the device */
+        g_signal_emit_by_name(self, "kernel-io-error", NULL);
         return TRUE;
     }
-
-    self->priv->last_io_activity = g_get_monotonic_time();
 
     CDEMU_DEBUG(self, DAEMON_DEBUG_KERNEL_IO, "%s: I/O handler done\n\n", __debug__);
 
@@ -201,9 +201,6 @@ static gboolean cdemu_device_io_handler (GIOChannel *source, GIOCondition condit
 
 static gpointer cdemu_device_io_thread (CdemuDevice *self)
 {
-    /* Initialize the value, in case watchdog fires before any requests are served */
-    self->priv->last_io_activity = g_get_monotonic_time();
-
 	CDEMU_DEBUG(self, DAEMON_DEBUG_KERNEL_IO, "%s: I/O thread started\n", __debug__);
     g_main_loop_run(self->priv->main_loop);
 	CDEMU_DEBUG(self, DAEMON_DEBUG_KERNEL_IO, "%s: I/O thread finished\n\n", __debug__);

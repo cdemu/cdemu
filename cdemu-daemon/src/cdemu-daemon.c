@@ -77,7 +77,7 @@ static gboolean device_restart_callback (struct DaemonDevicePtr *data)
 /* The signal handler; since the signal is emitted from the device's
    I/O thread, this handler is also executed there... so we need to get
    into our main thread first, which is done by scheduling an idle function */
-static void device_inactive_handler (CdemuDevice *device, CdemuDaemon *self)
+static void device_kernel_io_error_handler (CdemuDevice *device, CdemuDaemon *self)
 {
     struct DaemonDevicePtr *data = g_new(struct DaemonDevicePtr, 1);
     data->daemon = self;
@@ -172,7 +172,7 @@ gboolean cdemu_daemon_add_device (CdemuDaemon *self)
        pass them on via DBUS */
     g_signal_connect(device, "status-changed", (GCallback)device_status_changed_handler, self);
     g_signal_connect(device, "option-changed", (GCallback)device_option_changed_handler, self);
-    g_signal_connect(device, "device-inactive", (GCallback)device_inactive_handler, self);
+    g_signal_connect(device, "kernel-io-error", (GCallback)device_kernel_io_error_handler, self);
     g_signal_connect(device, "mapping-ready", (GCallback)device_mapping_ready_handler, self);
 
     /* Start device */
