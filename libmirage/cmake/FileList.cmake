@@ -5,6 +5,7 @@ set (filters_LIST
     filter-ecm
     filter-gzip
     filter-isz
+    filter-macbinary
     filter-sndfile
     filter-xz
 )
@@ -125,6 +126,11 @@ set (filter-cso_SOURCES
 set (filter-isz_SOURCES
     src/filters/filter-isz/filter-isz-plugin.c
     src/filters/filter-isz/filter-isz-file-filter.c
+)
+
+set (filter-macbinary_SOURCES
+    src/filters/filter-macbinary/filter-macbinary-plugin.c
+    src/filters/filter-macbinary/filter-macbinary-file-filter.c
 )
 
 set (filter-sndfile_SOURCES
