@@ -31,18 +31,22 @@
 G_BEGIN_DECLS
 
 typedef enum {
-    MC_INITED    = 1,
-    MC_CHANGED   = 2,
-    MC_BUSY      = 4,
-    MC_BOZO      = 8,
-    MC_SYSTEM    = 16,
-    MC_BUNDLE    = 32,
-    MC_INVISIBLE = 64,
-    MC_LOCKED    = 128    
+    FF_ISONDESK   = 0x0001,
+    FF_COLOR      = 0x000E,
+    FF_ISHARED    = 0x0040,
+    FF_NOINITS    = 0x0080,
+    FF_INITED     = 0x0100,
+    FF_CHANGED    = 0x0200,
+    FF_CUSTOMICON = 0x0400,
+    FF_STATIONARY = 0x0800,
+    FF_NAMELOCKED = 0x1000,
+    FF_HASBUNDLE  = 0x2000,
+    FF_INVISIBLE  = 0x4000,
+    FF_ISALIAS    = 0x8000
 } finder_flag_t;
 
 typedef enum {
-    MC_PROTECTED = 1
+    MC_PROTECTED = 0x01
 } macbinary_flag_t;
 
 #pragma pack(1)
@@ -53,7 +57,7 @@ typedef struct
     gchar   filename[63];   /* File name (not NUL terminated)     */
     gchar   filetype[4];    /* File type                          */
     gchar   creator[4];     /* File creator                       */
-    guint8  finder_flags;   /* Finder flags (LSB)                 */
+    guint8  finder_flags;   /* Finder flags (MSB)                 */
     guint8  reserved_1;     /* Reserved (always zero)             */
     guint16 vert_pos;       /* Vertical position in window        */
     guint16 horiz_pos;      /* Horizontal position in window      */
@@ -66,7 +70,7 @@ typedef struct
     guint32 modified;       /* Modification date                  */
     guint16 getinfo_len;    /* Length of get info comment         */
     /* The following fields are present only in the v2.0 format   */
-    guint8  finder_flags_2; /* Finder flags (MSB)                 */
+    guint8  finder_flags_2; /* Finder flags (LSB)                 */
     guint16 reserved_4[7];  /* Reserved (always zero)             */
     guint32 unpacked_len;   /* Total uncompressed length          */
     guint16 secondary_len;  /* Length of secondary header         */

@@ -50,12 +50,12 @@ static guint16 *crcinit(guint genpoly)
         guint crc = val << 8;
 
         for (gint i = 0; i < 8; ++i) {
-	    crc <<= 1;
+            crc <<= 1;
 
-	    if (crc & 0x10000) {
-	        crc ^= genpoly;
+            if (crc & 0x10000) {
+                crc ^= genpoly;
             }
-	}
+        }
 
         crctab[val] = crc;
     }
@@ -106,7 +106,7 @@ static gboolean mirage_file_filter_macbinary_can_handle_data_format (MirageFileF
 
     guint16 calculated_crc = 0;
 
-    GString *file_name = NULL;
+    GString *file_name = NULL, *file_type = NULL, *creator = NULL;
 
     /* Read MacBinary header */
     g_seekable_seek(G_SEEKABLE(stream), 0, G_SEEK_SET, NULL, NULL);
@@ -147,8 +147,11 @@ static gboolean mirage_file_filter_macbinary_can_handle_data_format (MirageFileF
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: parsing the underlying stream data...\n", __debug__);
 
     file_name = g_string_new_len(header->filename, header->fn_length);
+    file_type = g_string_new_len(header->filetype, 4);
+    creator   = g_string_new_len(header->creator, 4);
 
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: Original filename: %s\n", __debug__, file_name->str);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: File type: %s creator: %s\n", __debug__, file_type->str, creator->str);
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: Data fork length: %d\n", __debug__, header->datafork_len);
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: Resource fork length: %d\n", __debug__, header->resfork_len);
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: Get info comment length: %d\n", __debug__, header->getinfo_len);
@@ -157,9 +160,16 @@ static gboolean mirage_file_filter_macbinary_can_handle_data_format (MirageFileF
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: Length of total files: %d\n", __debug__, header->unpacked_len);
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: Length of secondary header: %d\n", __debug__, header->secondary_len);
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: CRC16: 0x%04x (calculated: 0x%04x)\n", __debug__, header->crc16, calculated_crc);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: Version used to pack: %d\n", __debug__, header->pack_ver-129);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: Version needed to unpack: %d\n", __debug__, header->unpack_ver-129);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: Finder flags: 0x%04x\n", __debug__, (header->finder_flags << 8) + header->finder_flags_2);
+    } else {
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: Finder flags: 0x%04x\n", __debug__, header->finder_flags << 8);
     }
 
     g_string_free(file_name, TRUE);
+    g_string_free(file_type, TRUE);
+    g_string_free(creator, TRUE);
 
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: parsing completed successfully\n\n", __debug__);
 
@@ -192,11 +202,11 @@ static gssize mirage_file_filter_macbinary_partial_read (MirageFileFilter *_self
     /* Read data into buffer */
     ret = g_input_stream_read(stream, buffer, count, NULL, NULL);
     if (ret == -1) {
-	MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read %d bytes from underlying stream!\n", __debug__, count);
-	return -1;
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read %d bytes from underlying stream!\n", __debug__, count);
+        return -1;
     } else if (ret == 0) {
-	MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: unexpectedly reached EOF!\n", __debug__);
-	return -1;
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: unexpectedly reached EOF!\n", __debug__);
+        return -1;
     }
 
     return count;
