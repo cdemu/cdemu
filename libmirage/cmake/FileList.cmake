@@ -110,6 +110,7 @@ set (filter-daa_SOURCES
 set (filter-dmg_SOURCES
     src/filters/filter-dmg/filter-dmg-file-filter.c
     src/filters/filter-dmg/filter-dmg-plugin.c
+    src/filters/filter-dmg/resource-fork.c
     src/filters/filter-dmg/adc.c
 )
 

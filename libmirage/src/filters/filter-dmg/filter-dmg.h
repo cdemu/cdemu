@@ -25,6 +25,7 @@
 #endif
 
 #include "adc.h"
+#include "resource-fork.h"
 #include <zlib.h>
 #include <bzlib.h>
 
