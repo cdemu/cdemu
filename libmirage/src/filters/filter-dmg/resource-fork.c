@@ -234,9 +234,6 @@ static void xml_text (GMarkupParseContext *context G_GNUC_UNUSED, const gchar *t
             g_string_free(dest_str, TRUE);
         }
     }
-
-    //G_BREAKPOINT();
-    //guint breakage = 0; breakage++;
 }
 
 /* Public API */
@@ -254,7 +251,7 @@ rsrc_fork_t *rsrc_fork_read_xml(const gchar *xml_data, gssize xml_length)
     };
 
     /* Sanity check */
-    if (!xml_data || !xml_length) {
+    if (!xml_data || xml_length < 1) {
         return NULL;
     }
 

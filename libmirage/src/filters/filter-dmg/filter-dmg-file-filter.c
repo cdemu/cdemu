@@ -47,15 +47,8 @@ struct _MirageFileFilterDmgPrivate
     koly_block_t *koly_block;
     gint num_koly_blocks;
 
-    /* rsrc blocks */
-    GArray *rsrc_block;
-    gint num_rsrc_blocks;
-
-    /* rsrc names */
-    gchar *rsrc_name;
-    gint rsrc_name_length;
-
-    GArray *resource;
+    /* resource fork */
+    rsrc_fork_t *rsrc_fork;
 
     /* streams */
     GInputStream **streams;
@@ -77,18 +70,6 @@ struct _MirageFileFilterDmgPrivate
     /* Compression streams */
     z_stream  zlib_stream;
     bz_stream bzip2_stream;
-
-    /* XML parsing state */
-    gboolean in_key;
-    gboolean in_string;
-    gboolean in_data;
-    gboolean in_blkx;
-    gboolean in_plst;
-
-    gint  nesting_level;
-    gchar *last_key;
-
-    rsrc_block_t xml_rsrc_block;
 };
 
 
@@ -168,16 +149,6 @@ static inline void mirage_file_filter_dmg_pme_block_fix_endian (part_map_entry_t
     /* skip reserved1, reserved2 and reserved3 */
 }
 
-static inline void mirage_file_filter_dmg_mish_header_fix_endian (mish_header_t *mish_header)
-{
-    mish_header->mish_header_length = GUINT32_FROM_BE(mish_header->mish_header_length);
-    mish_header->mish_total_length  = GUINT32_FROM_BE(mish_header->mish_total_length);
-    mish_header->mish_blocks_length = GUINT32_FROM_BE(mish_header->mish_blocks_length);
-    mish_header->rsrc_total_length  = GUINT32_FROM_BE(mish_header->rsrc_total_length);
-
-    /* skip reserved */
-}
-
 static inline void mirage_file_filter_dmg_blkx_block_fix_endian (blkx_block_t *blkx_block)
 {
     blkx_block->info_version = GUINT32_FROM_BE(blkx_block->info_version);
@@ -209,34 +180,6 @@ static inline void mirage_file_filter_dmg_blkx_data_fix_endian (blkx_data_t *blk
     blkx_data->sector_count      = GUINT64_FROM_BE(blkx_data->sector_count);
     blkx_data->compressed_offset = GUINT64_FROM_BE(blkx_data->compressed_offset);
     blkx_data->compressed_length = GUINT64_FROM_BE(blkx_data->compressed_length);
-}
-
-static inline void mirage_file_filter_dmg_rsrc_header_fix_endian (rsrc_header_t *rsrc_header)
-{
-    rsrc_header->mish_header_length = GINT32_FROM_BE(rsrc_header->mish_header_length);
-    rsrc_header->mish_total_length  = GINT32_FROM_BE(rsrc_header->mish_total_length);
-    rsrc_header->mish_blocks_length = GINT32_FROM_BE(rsrc_header->mish_blocks_length);
-    rsrc_header->rsrc_total_length = GINT32_FROM_BE(rsrc_header->rsrc_total_length);
-
-    /* skip unknown1 */
-    rsrc_header->mark_offset = GUINT16_FROM_BE(rsrc_header->mark_offset);
-    rsrc_header->rsrc_length = GUINT16_FROM_BE(rsrc_header->rsrc_length);
-
-    rsrc_header->unknown2         = GUINT16_FROM_BE(rsrc_header->unknown2);
-    rsrc_header->last_blkx_rsrc   = GUINT16_FROM_BE(rsrc_header->last_blkx_rsrc);
-    rsrc_header->blkx_rsrc_offset = GUINT16_FROM_BE(rsrc_header->blkx_rsrc_offset);
-    rsrc_header->last_plst_rsrc   = GUINT16_FROM_BE(rsrc_header->last_plst_rsrc);
-    rsrc_header->plst_rsrc_offset = GUINT16_FROM_BE(rsrc_header->plst_rsrc_offset);
-}
-
-static inline void mirage_file_filter_dmg_rsrc_block_fix_endian (rsrc_block_t *rsrc_block)
-{
-    rsrc_block->id             = GINT16_FROM_BE(rsrc_block->id);
-    rsrc_block->rel_offs_name  = GINT16_FROM_BE(rsrc_block->rel_offs_name);
-    rsrc_block->attrs          = GUINT16_FROM_BE(rsrc_block->attrs);
-    rsrc_block->rel_offs_block = GUINT16_FROM_BE(rsrc_block->rel_offs_block);
-
-    /* skip reserved */
 }
 
 
@@ -294,21 +237,10 @@ static void mirage_file_filter_dmg_print_koly_block(MirageFileFilterDmg *self, k
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "\n");
 }
 
-static void mirage_file_filter_dmg_print_mish_header(MirageFileFilterDmg *self, mish_header_t *mish_header)
-{
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "\n");
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: mish header:\n", __debug__);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  mish_header_length: %u\n", __debug__, mish_header->mish_header_length);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  mish_total_length: %u\n", __debug__, mish_header->mish_total_length);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  mish_blocks_length: %u\n", __debug__, mish_header->mish_blocks_length);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  rsrc_total_length: %u\n", __debug__, mish_header->rsrc_total_length);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "\n");
-}
-
 static void mirage_file_filter_dmg_print_blkx_block(MirageFileFilterDmg *self, blkx_block_t *blkx_block)
 {
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "\n");
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: blkx resource:\n", __debug__);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: mish block:\n", __debug__);
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  signature: %.4s\n", __debug__, blkx_block->signature);
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  info_version: %u\n", __debug__, blkx_block->info_version);
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  first_sector_number: %u\n", __debug__, blkx_block->first_sector_number);
@@ -392,453 +324,111 @@ static gchar *create_filename_func (const gchar *main_filename, gint index)
 /**********************************************************************\
  *                         Parsing functions                          *
 \**********************************************************************/
-static gboolean mirage_file_filter_dmg_read_bin_descriptor (MirageFileFilterDmg *self, GInputStream *stream, GError **error)
+static gboolean mirage_file_filter_dmg_read_descriptor (MirageFileFilterDmg *self, GInputStream *stream, GError **error)
 {
     koly_block_t *koly_block = self->priv->koly_block;
+    rsrc_fork_t  *rsrc_fork = NULL;
+    gchar        *rsrc_fork_data = NULL;
 
-    mish_header_t mish_header;
-    rsrc_header_t rsrc_header;
-
-    /* Read mish header */
-    g_seekable_seek(G_SEEKABLE(stream), koly_block->rsrc_fork_offset, G_SEEK_SET, NULL, NULL);
-    if (g_input_stream_read(stream, &mish_header, sizeof(mish_header_t), NULL, NULL) != sizeof(mish_header_t)) {
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, "Failed to read mish header!");
-        return FALSE;
-    }
-
-    mirage_file_filter_dmg_mish_header_fix_endian(&mish_header);
-
-    mirage_file_filter_dmg_print_mish_header(self, &mish_header);
-
-    /* Read rsrc header */
-    g_seekable_seek(G_SEEKABLE(stream), mish_header.mish_blocks_length, G_SEEK_CUR, NULL, NULL);
-    if (g_input_stream_read(stream, &rsrc_header, sizeof(rsrc_header_t), NULL, NULL) != sizeof(rsrc_header_t)) {
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, "Failed to read rsrc header!");
-        return FALSE;
-    }
-    mirage_file_filter_dmg_rsrc_header_fix_endian(&rsrc_header);
-
-    /* Read rsrc blocks */
-    self->priv->num_rsrc_blocks = rsrc_header.last_blkx_rsrc + rsrc_header.last_plst_rsrc + 2;
-    for (gint j = 0; j < self->priv->num_rsrc_blocks; j++) {
-        rsrc_block_t cur_rsrc_block;
-
-        if (g_input_stream_read(stream, &cur_rsrc_block, sizeof(rsrc_block_t), NULL, NULL) != sizeof(rsrc_block_t)) {
-            g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, "Failed to read rsrc block!");
-            return FALSE;
-        }
-        mirage_file_filter_dmg_rsrc_block_fix_endian(&cur_rsrc_block);
-
-        g_array_append_val(self->priv->rsrc_block, cur_rsrc_block);
-    }
-
-    /* Read resource names */
-    self->priv->rsrc_name_length = rsrc_header.rsrc_total_length - rsrc_header.rsrc_length;
-    self->priv->rsrc_name = g_try_malloc(self->priv->rsrc_name_length);
-    if (!self->priv->rsrc_name) {
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, "Failed to allocate memory!");
-        return FALSE;
-    }
-
-    if (g_input_stream_read(stream, self->priv->rsrc_name, self->priv->rsrc_name_length, NULL, NULL) != self->priv->rsrc_name_length) {
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, "Failed to read rsrc names!");
-        return FALSE;
-    }
-
-    /* Read resource blocks */
-    g_seekable_seek(G_SEEKABLE(stream), koly_block->rsrc_fork_offset + mish_header.mish_header_length,
-                    G_SEEK_SET, NULL, NULL);
-    for (gint j = 0; j < self->priv->num_rsrc_blocks; j++) {
-        rsrc_block_t cur_rsrc_block = g_array_index(self->priv->rsrc_block, rsrc_block_t, j);
-        resource_t   resource;
-
-        gchar   *rsrc_name = NULL;
-        GString *temp_str  = NULL;
-
-        /* Read resource length */
-        if (g_input_stream_read(stream, &resource.length, sizeof(guint32), NULL, NULL) != sizeof(guint32)) {
-            g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, "Failed to read resource length!");
-            return FALSE;
-        }
-        resource.length = GUINT32_FROM_BE(resource.length);
-
-        /* Set resource type */
-        if (cur_rsrc_block.rel_offs_name == -1) {
-            resource.type = RT_PLST;
-        } else {
-            resource.type = RT_BLKX;
-        }
-
-        /* Read resource data */
-        resource.data = g_try_malloc(resource.length);
-        if (!resource.data) {
+    /* Read and parse resource-fork */
+    if (koly_block->xml_offset && koly_block->xml_length) {
+        rsrc_fork_data = g_malloc(koly_block->xml_length);
+        if (!rsrc_fork_data) {
             g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, "Failed to allocate memory!");
             return FALSE;
         }
 
-        if (g_input_stream_read(stream, resource.data, resource.length, NULL, NULL) != resource.length) {
-            g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, "Failed to read resource data!");
+        g_seekable_seek(G_SEEKABLE(stream), koly_block->xml_offset, G_SEEK_SET, NULL, NULL);
+        if (g_input_stream_read(stream, rsrc_fork_data, koly_block->xml_length, NULL, NULL) != koly_block->xml_length) {
+            g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, "Failed to read XML resource-fork!");
             return FALSE;
         }
 
-        /* Output resource information */
-        if (resource.type == RT_PLST) {
-            temp_str  = g_string_new("");
-        } else {
-            rsrc_name = &self->priv->rsrc_name[cur_rsrc_block.rel_offs_name];
-            temp_str  = g_string_new_len (rsrc_name + 1, *rsrc_name);
-        }
-
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: ID: %3i Name: %s\n", __debug__, cur_rsrc_block.id, temp_str->str);
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  Attrs: 0x%04hx Offset: 0x%04hx Name offset: 0x%04hx\n", __debug__,
-                     cur_rsrc_block.attrs, cur_rsrc_block.rel_offs_block, cur_rsrc_block.rel_offs_name);
-
-        g_string_free(temp_str, TRUE);
-
-        /* Convert endianness */
-        if (resource.type == RT_PLST) {
-            /* plst resource */
-            driver_descriptor_map_t *ddm_block = resource.data;
-            part_map_entry_t        *part_map  = (part_map_entry_t *) ((guint8 *) resource.data + sizeof(driver_descriptor_map_t) + 8);
-            /* Note: There is 8 unknown bytes appending the DDM */
-
-            mirage_file_filter_dmg_ddm_block_fix_endian(ddm_block);
-
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "\n");
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: plst resource:\n", __debug__);
-
-            mirage_file_filter_dmg_print_ddm_block(self, ddm_block);
-
-            for (gint p = 0;; p++) {
-                mirage_file_filter_dmg_pme_block_fix_endian(&part_map[p]);
-
-                mirage_file_filter_dmg_print_pme_block(self, &part_map[p]);
-
-                if (p + 1 >= part_map[p].map_entries) break;
-            }
-        } else {
-            /* blkx resource */
-            blkx_block_t *cur_blkx_block = resource.data;
-            blkx_data_t  *cur_blkx_data  = (blkx_data_t *) ((guint8 *) resource.data + sizeof(blkx_block_t));
-
-            mirage_file_filter_dmg_blkx_block_fix_endian(cur_blkx_block);
-            for (gint r = 0; r < cur_blkx_block->blocks_run_count; r++) {
-                mirage_file_filter_dmg_blkx_data_fix_endian(&cur_blkx_data[r]);
-
-                /* Update parts count */
-                gint32 block_type = cur_blkx_data[r].block_type;
-
-                if (block_type == ADC || block_type == ZLIB || block_type == BZLIB ||
-                    block_type == ZERO || block_type == RAW || block_type == IGNORE)
-                {
-                    self->priv->num_parts++;
-                }
-            }
-
-            mirage_file_filter_dmg_print_blkx_block(self, cur_blkx_block);
-        }
-
-        g_array_append_val(self->priv->resource, resource);
-    }
-
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: Read %u binary descriptors ...\n\n", __debug__, self->priv->num_rsrc_blocks);
-
-    return TRUE;
-}
-
-static void start_element (GMarkupParseContext *context G_GNUC_UNUSED, const gchar *element_name, const gchar **attribute_names G_GNUC_UNUSED,
-                           const gchar **attribute_values G_GNUC_UNUSED, gpointer user_data, GError **error G_GNUC_UNUSED)
-{
-    MirageFileFilterDmg *self = (MirageFileFilterDmg *) user_data;
-
-    self->priv->nesting_level++;
-
-    if (!strncmp(element_name, "key", strlen(element_name))) {
-        self->priv->in_key = TRUE;
-    } else if (!strncmp(element_name, "string", strlen(element_name))) {
-        self->priv->in_string = TRUE;
-    } else if (!strncmp(element_name, "data", strlen(element_name))) {
-        self->priv->in_data = TRUE;
-    } else if (!strncmp(element_name, "dict", strlen(element_name))) {
-        if (self->priv->nesting_level == 5) {
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: Resource start.\n", __debug__);
-            memset(&self->priv->xml_rsrc_block, 0, sizeof(rsrc_block_t));
-        }
-    }
-
-    /*MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: Start element: %s\n", __debug__, element_name);*/
-}
-
-static void end_element (GMarkupParseContext *context G_GNUC_UNUSED, const gchar *element_name, gpointer user_data, GError **error G_GNUC_UNUSED)
-{
-    MirageFileFilterDmg *self = (MirageFileFilterDmg *) user_data;
-
-    if (!strncmp(element_name, "key", strlen(element_name))) {
-        self->priv->in_key = FALSE;
-    } else if (!strncmp(element_name, "string", strlen(element_name))) {
-        self->priv->in_string = FALSE;
-    } else if (!strncmp(element_name, "data", strlen(element_name))) {
-        self->priv->in_data = FALSE;
-    } else if (!strncmp(element_name, "dict", strlen(element_name))) {
-        if (self->priv->nesting_level == 5) {
-            rsrc_block_t *xml_rsrc_block = &self->priv->xml_rsrc_block;
-
-            gchar   *rsrc_name = &self->priv->rsrc_name[xml_rsrc_block->rel_offs_name];
-            GString *temp_str  = g_string_new_len(rsrc_name + 1, (gchar) *rsrc_name);
-
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: Resource end.\n", __debug__);
-
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: ID: %3i Name: %s\n", __debug__,
-                         xml_rsrc_block->id, temp_str->str);
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  Attrs: 0x%04hx Offset: 0x%04hx Name offset: 0x%04hx\n", __debug__,
-                         xml_rsrc_block->attrs, xml_rsrc_block->rel_offs_block, xml_rsrc_block->rel_offs_name);
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "\n");
-
-            g_string_free(temp_str, TRUE);
-
-            g_array_append_val(self->priv->rsrc_block, *xml_rsrc_block);
-        }
-    }
-
-    self->priv->nesting_level--;
-
-    /*MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: End element: %s\n", __debug__, element_name);*/
-}
-
-static void xml_txt (GMarkupParseContext *context G_GNUC_UNUSED, const gchar *text, gsize text_len, gpointer user_data, GError **error)
-{
-    MirageFileFilterDmg *self = (MirageFileFilterDmg *) user_data;
-
-    rsrc_block_t *xml_rsrc_block = &self->priv->xml_rsrc_block;
-
-    GString *text_str = g_string_new_len(text, text_len);
-
-    gchar *last_key = self->priv->last_key;
-
-    if (!text_str) {
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, "Failed to allocate memory!");
-        return;
-    }
-
-    if (self->priv->in_key) {
-        if (!strncmp(text_str->str, "blkx", text_str->len)) {
-            self->priv->in_blkx = TRUE;
-            self->priv->in_plst = FALSE;
-        } else if (!strncmp(text_str->str, "plst", text_str->len)) {
-            self->priv->in_blkx = FALSE;
-            self->priv->in_plst = TRUE;
-        }
-
-        /*MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: Key: %s nesting level: %u\n", __debug__, text_str->str, nesting_level);*/
-        g_strlcpy(last_key, text_str->str, sizeof(last_key));
-    }
-
-    if (self->priv->in_string) {
-        if (self->priv->nesting_level == 6) {
-            gint res;
-
-            /*MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  %s: %s\n", __debug__, last_key, text_str->str);*/
-            if (!strncmp(last_key, "ID", strlen(last_key))) {
-                res = sscanf(text_str->str, "%hi", &xml_rsrc_block->id);
-                if (res < 1) {
-                    g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, "Failed to convert string to integer!");
-                    return;
-                }
-            } else if (!strncmp(last_key, "Attributes", strlen(last_key))) {
-                res = sscanf(text_str->str, "%hx", &xml_rsrc_block->attrs);
-                if (res < 1) {
-                    g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, "Failed to convert string to integer!");
-                    return;
-                }
-            } else if (!strncmp(last_key, "Name", strlen(last_key))) {
-                if (self->priv->in_blkx) {
-                    gint prev_length = self->priv->rsrc_name_length;
-                    gint new_length = prev_length + text_str->len + 1;
-
-                    self->priv->rsrc_name = g_try_realloc(self->priv->rsrc_name, new_length);
-                    if (!self->priv->rsrc_name) {
-                        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, "Failed to allocate memory!");
-                        return;
-                    }
-                    self->priv->rsrc_name_length = new_length;
-                    self->priv->rsrc_name[prev_length] = (gchar) text_str->len;
-                    memcpy(&self->priv->rsrc_name[prev_length + 1], text_str->str, text_str->len);
-                    xml_rsrc_block->rel_offs_name = prev_length;
-                } else {
-                    xml_rsrc_block->rel_offs_name = -1;
-                }
-            } else if (!strncmp(last_key, "CFName", strlen(last_key))) {
-                /* Duplicate of Name, so ignore it */
-            } else {
-                MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  Unrecognized key: %s value: %s\n", __debug__, last_key, text_str->str);
-            }
-        }
-    }
-
-    if (self->priv->in_data && (self->priv->in_blkx || self->priv->in_plst)) {
-        GString *dest_str = g_string_sized_new(text_str->len);
-
-        blkx_block_t *cur_blkx_block = NULL;
-        blkx_data_t  *cur_blkx_data = NULL;
-
-        driver_descriptor_map_t *ddm_block;
-        part_map_entry_t        *part_map;
-
-        resource_t resource;
-
-        if (!dest_str) {
+        rsrc_fork = self->priv->rsrc_fork = rsrc_fork_read_xml(rsrc_fork_data, koly_block->xml_length);
+    } else if (koly_block->rsrc_fork_offset && koly_block->rsrc_fork_length) {
+        rsrc_fork_data = g_malloc(koly_block->rsrc_fork_length);
+        if (!rsrc_fork_data) {
             g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, "Failed to allocate memory!");
-            return;
+            return FALSE;
         }
 
-        /* Strip data string */
-        for (gchar *source_pos = text_str->str; *source_pos; source_pos++) {
-            switch (*source_pos) {
-                case 0x0a:
-                case 0x0d:
-                case 0x09:
-                case 0x20:
-                    /* Discard CR, LF, TAB and whitespace */
-                    break;
-                default:
-                    /* Save everything else */
-                    g_string_append_c(dest_str, *source_pos);
-            }
+        g_seekable_seek(G_SEEKABLE(stream), koly_block->rsrc_fork_offset, G_SEEK_SET, NULL, NULL);
+        if (g_input_stream_read(stream, rsrc_fork_data, koly_block->rsrc_fork_length, NULL, NULL) != koly_block->rsrc_fork_length) {
+            g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, "Failed to read binary resource-fork!");
+            return FALSE;
         }
 
-        /* Decode Base-64 string to resource data */
-        g_base64_decode_inplace (dest_str->str, &dest_str->len);
-
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: Raw length: %zu Decoded length: %zu\n", __debug__,
-                     text_str->len, dest_str->len);
-
-        /* Update rsrc_block with relative offset */
-        gint16 rel_offs_block = 0;
-
-        for (gint r = 0; r < self->priv->num_rsrc_blocks; r++) {
-            resource_t cur_res = g_array_index(self->priv->resource, resource_t, r);
-
-            rel_offs_block += cur_res.length;
-        }
-
-        xml_rsrc_block->rel_offs_block = rel_offs_block;
-
-        if (self->priv->in_blkx) {
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: Found blkx resource!\n", __debug__);
-
-            /* Locate blkx block + blkx data and fix endianness */
-            cur_blkx_block = (blkx_block_t *) dest_str->str;
-            if (memcmp(cur_blkx_block->signature, mish_signature, 4)) {
-                g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, "Bad signature in blkx block!");
-                return;
-            }
-            mirage_file_filter_dmg_blkx_block_fix_endian(cur_blkx_block);
-
-            mirage_file_filter_dmg_print_blkx_block(self, cur_blkx_block);
-
-            cur_blkx_data = (blkx_data_t *) ((guint8 *) dest_str->str + sizeof(blkx_block_t));
-            for (gint j = 0; j < cur_blkx_block->blocks_run_count; j++) {
-                mirage_file_filter_dmg_blkx_data_fix_endian(&cur_blkx_data[j]);
-
-                /* Update parts count */
-                gint32 block_type = cur_blkx_data[j].block_type;
-
-                if (block_type == ADC || block_type == ZLIB || block_type == BZLIB ||
-                    block_type == ZERO || block_type == RAW || block_type == IGNORE)
-                {
-                    self->priv->num_parts++;
-                }
-            }
-
-            /* Append resource */
-            resource.data   = g_memdup (dest_str->str, dest_str->len + 1);
-            resource.length = dest_str->len;
-            resource.type   = RT_BLKX;
-
-            g_array_append_val(self->priv->resource, resource);
-
-            /* Update counts */
-            self->priv->num_rsrc_blocks++;
-        } else if (self->priv->in_plst) {
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: Found plst resource!\n", __debug__);
-
-            /* Locate blocks and fix endianness */
-            ddm_block = (driver_descriptor_map_t *) dest_str->str;
-            part_map  = (part_map_entry_t *) ((guint8 *) dest_str->str + sizeof(driver_descriptor_map_t) + 8);
-            /* Note: There is 8 unknown bytes appending the DDM */
-
-            mirage_file_filter_dmg_ddm_block_fix_endian(ddm_block);
-
-            mirage_file_filter_dmg_print_ddm_block(self, ddm_block);
-
-            for (gint p = 0;; p++) {
-                mirage_file_filter_dmg_pme_block_fix_endian(&part_map[p]);
-
-                mirage_file_filter_dmg_print_pme_block(self, &part_map[p]);
-
-                if (p + 1 >= part_map[p].map_entries) break;
-            }
-
-            /* Append resource */
-            resource.data   = g_memdup (dest_str->str, dest_str->len + 1);
-            resource.length = dest_str->len;
-            resource.type   = RT_PLST;
-
-            g_array_append_val(self->priv->resource, resource);
-
-            /* Update counts */
-            self->priv->num_rsrc_blocks++;
-        }
-
-        g_string_free(dest_str, TRUE);
-    }
-
-    /*if (text_len < 1024) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: Text: %s\n", __debug__, text_str->str);
+        rsrc_fork = self->priv->rsrc_fork = rsrc_fork_read_binary(rsrc_fork_data);
     } else {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: Text: (text string too long to list...)\n", __debug__);
-    }*/
-
-    g_string_free(text_str, TRUE);
-}
-
-static gboolean mirage_file_filter_dmg_read_xml_descriptor (MirageFileFilterDmg *self, GInputStream *stream, GError **error)
-{
-    koly_block_t *koly_block = self->priv->koly_block;
-
-    const GMarkupParser DMG_XMLParser = {
-        start_element,
-        end_element,
-        xml_txt,
-        NULL,
-        NULL
-    };
-
-    GMarkupParseContext *context = g_markup_parse_context_new (&DMG_XMLParser, 0, self, NULL);
-
-    gchar *plist = g_try_malloc(koly_block->xml_length + 1);
-
-    if (!plist || !context) {
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, "Failed to allocate memory!");
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, "Image lacks either an XML or a binary descriptor!");
         return FALSE;
     }
 
-    /* Read xml descriptor */
-    g_seekable_seek(G_SEEKABLE(stream), koly_block->xml_offset, G_SEEK_SET, NULL, NULL);
-    if (g_input_stream_read(stream, plist, koly_block->xml_length, NULL, NULL) != koly_block->xml_length) {
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, "Failed to read XML descriptor!");
+    /* Did all go well? */
+    if (!rsrc_fork) {
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, "Failed to parse resource-fork!");
         return FALSE;
     }
 
-    /* Terminate xml descriptor buffer */
-    plist[koly_block->xml_length] = '\0';
+    g_free(rsrc_fork_data);
+    rsrc_fork_data = NULL;
 
-    /* Parse the properties list */
-    g_markup_parse_context_parse (context, plist, koly_block->xml_length + 1, NULL);
+    /* Loop through resource types */
+    for (guint t = 0; t < rsrc_fork->num_types; t++) {
+        rsrc_type_t *rsrc_type = &rsrc_fork->type_list[t];
 
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "\n%s: Read %u XML descriptors ...\n\n", __debug__, self->priv->num_rsrc_blocks);
-    g_free(plist);
-    g_markup_parse_context_free(context);
+        /* Loop through resource refs */
+        for (guint r = 0; r < rsrc_type->num_refs; r++) {
+            rsrc_ref_t *rsrc_ref = &rsrc_type->ref_list[r];
+
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: Resource Type: %.4s ID: %i Name: %s\n", __debug__,
+                         rsrc_type->type, rsrc_ref->id, rsrc_ref->name->str);
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  Attrs: 0x%04hx Data length: %i\n", __debug__,
+                         rsrc_ref->attrs, rsrc_ref->data_length);
+
+            /* Convert resource endianness */
+            if (!memcmp(rsrc_type->type, "plst", 4)) {
+                driver_descriptor_map_t *ddm_block = (driver_descriptor_map_t *) rsrc_ref->data;
+                part_map_entry_t        *part_map  = (part_map_entry_t *) (rsrc_ref->data + sizeof(driver_descriptor_map_t) + 8);
+                /* Note: There is 8 unknown bytes appending the DDM */
+
+                mirage_file_filter_dmg_ddm_block_fix_endian(ddm_block);
+
+                mirage_file_filter_dmg_print_ddm_block(self, ddm_block);
+
+                for (gint p = 0;; p++) {
+                    mirage_file_filter_dmg_pme_block_fix_endian(&part_map[p]);
+
+                    mirage_file_filter_dmg_print_pme_block(self, &part_map[p]);
+
+                    if (p + 1 >= part_map[p].map_entries) break;
+                }
+            } else if (!memcmp(rsrc_type->type, "blkx", 4)) {
+                blkx_block_t *blkx_block = (blkx_block_t *) rsrc_ref->data;
+                blkx_data_t  *blkx_data  = (blkx_data_t *) (rsrc_ref->data + sizeof(blkx_block_t));
+
+                mirage_file_filter_dmg_blkx_block_fix_endian(blkx_block);
+                for (gint d = 0; d < blkx_block->blocks_run_count; d++) {
+                    mirage_file_filter_dmg_blkx_data_fix_endian(&blkx_data[d]);
+
+                    /* Update parts count */
+                    gint32 block_type = blkx_data[d].block_type;
+
+                    if (block_type == ADC || block_type == ZLIB || block_type == BZLIB ||
+                        block_type == ZERO || block_type == RAW || block_type == IGNORE)
+                    {
+                        self->priv->num_parts++;
+                    }
+                }
+
+                mirage_file_filter_dmg_print_blkx_block(self, blkx_block);
+            } else {
+                MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: Encountered unknown type: %.4s\n", __debug__, rsrc_type->type);
+            }
+        }
+    }
+
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: Finished reading descriptors ...\n\n", __debug__);
 
     return TRUE;
 }
@@ -849,6 +439,7 @@ static gboolean mirage_file_filter_dmg_read_index (MirageFileFilterDmg *self, GE
     bz_stream *bzip2_stream = &self->priv->bzip2_stream;
 
     koly_block_t *koly_block = self->priv->koly_block;
+    rsrc_fork_t  *rsrc_fork = self->priv->rsrc_fork;
 
     gint cur_part = 0;
     gint ret;
@@ -865,102 +456,64 @@ static gboolean mirage_file_filter_dmg_read_index (MirageFileFilterDmg *self, GE
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: number of parts: %d\n", __debug__, self->priv->num_parts);
 
     /* Loop through resources */
-    for (gint res = 0; res < self->priv->num_rsrc_blocks; res++) {
-        rsrc_block_t cur_rsrc_block = g_array_index (self->priv->rsrc_block, rsrc_block_t, res);
-        resource_t   resource       = g_array_index (self->priv->resource, resource_t, res);
+    for (guint t = 0; t < rsrc_fork->num_types; t++) {
+        rsrc_type_t *rsrc_type = &rsrc_fork->type_list[t];
 
-        /* Is this resource not a blkx block? */
-        if (resource.type != RT_BLKX) {
-            continue;
-        }
+        for (guint r = 0; r < rsrc_type->num_refs; r++) {
+            rsrc_ref_t   *rsrc_ref = &rsrc_type->ref_list[r];
+            blkx_block_t *blkx_block = (blkx_block_t *) rsrc_ref->data;
+            blkx_data_t  *blkx_data  = (blkx_data_t *) (rsrc_ref->data + sizeof(blkx_block_t));
 
-        blkx_block_t *cur_blkx_block = (blkx_block_t *) resource.data;
-        blkx_data_t  *cur_blkx_data  = (blkx_data_t *) ((guint8 *) resource.data + sizeof(blkx_block_t));
-
-        gchar   *rsrc_name = &self->priv->rsrc_name[cur_rsrc_block.rel_offs_name];
-        GString *temp_str  = g_string_new_len(rsrc_name + 1, *rsrc_name);
-
-        /*MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: Resource %3i: %s\n", __debug__, cur_rsrc_block.id, temp_str->str);*/
-
-        g_string_free(temp_str, TRUE);
-
-        /* Loop through blocks */
-        for (gint n = 0; n < cur_blkx_block->blocks_run_count; n++) {
-            DMG_Part temp_part;
-
-            temp_part.type = cur_blkx_data[n].block_type;
-            temp_part.first_sector = cur_blkx_block->first_sector_number + cur_blkx_data[n].sector_offset;
-            temp_part.num_sectors = cur_blkx_data[n].sector_count;
-            temp_part.in_offset = cur_blkx_block->data_start + cur_blkx_data[n].compressed_offset;
-            temp_part.in_length = cur_blkx_data[n].compressed_length;
-
-            /* Find segment belonging to part */
-            temp_part.segment = -1;
-            for (gint s = 0; s < self->priv->num_koly_blocks; s++) {
-                if (temp_part.in_offset >= koly_block[s].running_data_fork_offset) {
-                    temp_part.segment = s;
-                } else {
-                    break;
-                }
+            /* Is this resource not a blkx block? */
+            if (memcmp(rsrc_type->type, "blkx", 4)) {
+                continue;
             }
 
-            /* Does this block have data? If so then append it. */
-            if (temp_part.type == ADC || temp_part.type == ZLIB || temp_part.type == BZLIB ||
-                temp_part.type == ZERO || temp_part.type == RAW || temp_part.type == IGNORE)
-            {
-                self->priv->parts[cur_part] = temp_part;
-                cur_part++;
+            /*MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: Resource %3i: %s\n", __debug__, rsrc_ref->id, rsrc_ref->name->str);*/
 
-                /* Update buffer sizes */
-                if (self->priv->inflate_buffer_size < temp_part.num_sectors * DMG_SECTOR_SIZE) {
-                    self->priv->inflate_buffer_size = temp_part.num_sectors * DMG_SECTOR_SIZE;
+            /* Loop through blocks */
+            for (gint n = 0; n < blkx_block->blocks_run_count; n++) {
+                DMG_Part temp_part;
+
+                temp_part.type = blkx_data[n].block_type;
+                temp_part.first_sector = blkx_block->first_sector_number + blkx_data[n].sector_offset;
+                temp_part.num_sectors = blkx_data[n].sector_count;
+                temp_part.in_offset = blkx_block->data_start + blkx_data[n].compressed_offset;
+                temp_part.in_length = blkx_data[n].compressed_length;
+
+                /* Find segment belonging to part */
+                temp_part.segment = -1;
+                for (gint s = 0; s < self->priv->num_koly_blocks; s++) {
+                    if (temp_part.in_offset >= koly_block[s].running_data_fork_offset) {
+                        temp_part.segment = s;
+                    } else {
+                        break;
+                    }
                 }
 
-                if (temp_part.type == ADC || temp_part.type == ZLIB || temp_part.type == BZLIB)
+                /* Does this block have data? If so then append it. */
+                if (temp_part.type == ADC || temp_part.type == ZLIB || temp_part.type == BZLIB ||
+                    temp_part.type == ZERO || temp_part.type == RAW || temp_part.type == IGNORE)
                 {
-                    if (self->priv->io_buffer_size < temp_part.in_length) {
-                        self->priv->io_buffer_size = temp_part.in_length;
+                    self->priv->parts[cur_part] = temp_part;
+                    cur_part++;
+
+                    /* Update buffer sizes */
+                    if (self->priv->inflate_buffer_size < temp_part.num_sectors * DMG_SECTOR_SIZE) {
+                        self->priv->inflate_buffer_size = temp_part.num_sectors * DMG_SECTOR_SIZE;
+                    }
+
+                    if (temp_part.type == ADC || temp_part.type == ZLIB || temp_part.type == BZLIB)
+                    {
+                        if (self->priv->io_buffer_size < temp_part.in_length) {
+                            self->priv->io_buffer_size = temp_part.in_length;
+                        }
                     }
                 }
             }
 
-            /*MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%u: %u %u %u %u %d ", cur_part-1,
-                         temp_part.first_sector, temp_part.num_sectors,
-                         temp_part.in_offset, temp_part.in_length, temp_part.segment);
-            switch (cur_blkx_data[n].block_type) {
-                case ADC:
-                    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "ADC ");
-                    break;
-                case ZLIB:
-                    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "ZLIB ");
-                    break;
-                case BZLIB:
-                    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "BZLIB ");
-                    break;
-                case ZERO:
-                    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "ZERO ");
-                    break;
-                case RAW:
-                    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "RAW ");
-                    break;
-                case IGNORE:
-                    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "IGNORE ");
-                    break;
-                case COMMENT:
-                    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "COMMENT ");
-                    break;
-                case TERM:
-                    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "TERM ");
-                    break;
-                default:
-                    g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, "Unknown block type: 0x%x (%i)!",
-                                cur_blkx_data[n].block_type, cur_blkx_data[n].block_type);
-                    return FALSE;
-            }*/
         }
-        /*MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "\n");*/
     }
-    /*MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "\n");*/
 
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: IO buffer size: %u\n", __debug__, self->priv->io_buffer_size);
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: Inflate buffer size: %u\n", __debug__, self->priv->inflate_buffer_size);
@@ -1156,17 +709,9 @@ static gboolean mirage_file_filter_dmg_can_handle_data_format (MirageFileFilter 
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: original stream size: %lu\n",
                  __debug__, koly_block->sector_count * DMG_SECTOR_SIZE);
 
-    /* Read descriptors, either the XML or binary one */
-    if (koly_block->xml_offset && koly_block->xml_length) {
-        succeeded = mirage_file_filter_dmg_read_xml_descriptor(self, stream, error);
-        if (!succeeded) goto end;
-    } else if (koly_block->rsrc_fork_offset && koly_block->rsrc_fork_length) {
-        succeeded = mirage_file_filter_dmg_read_bin_descriptor(self, stream, error);
-        if (!succeeded) goto end;
-    } else {
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, "Image lacks either an XML or a binary descriptor!");
-        return FALSE;
-    }
+    /* Read descriptors */
+    succeeded = mirage_file_filter_dmg_read_descriptor(self, stream, error);
+    if (!succeeded) goto end;
 
     succeeded = mirage_file_filter_dmg_read_index (self, error);
 
@@ -1425,15 +970,10 @@ static void mirage_file_filter_dmg_init (MirageFileFilterDmg *self)
 
     self->priv->streams = NULL;
 
-    self->priv->rsrc_block = g_array_new(FALSE, FALSE, sizeof(rsrc_block_t));
-    self->priv->rsrc_name  = NULL;
-
-    self->priv->resource = g_array_new(FALSE, FALSE, sizeof(resource_t));
+    self->priv->rsrc_fork = NULL;
 
     self->priv->num_koly_blocks = 0;
     self->priv->num_streams = 0;
-    self->priv->num_rsrc_blocks = 0;
-    self->priv->rsrc_name_length = 0;
 
     self->priv->num_parts = 0;
     self->priv->parts = NULL;
@@ -1441,16 +981,6 @@ static void mirage_file_filter_dmg_init (MirageFileFilterDmg *self)
     self->priv->cached_part = -1;
     self->priv->inflate_buffer = NULL;
     self->priv->io_buffer = NULL;
-
-    self->priv->in_key = FALSE;
-    self->priv->in_string = FALSE;
-    self->priv->in_data = FALSE;
-    self->priv->in_blkx = FALSE;
-    self->priv->in_plst = FALSE;
-
-    self->priv->nesting_level = 0;
-
-    self->priv->last_key = g_malloc0(1024);
 }
 
 static void mirage_file_filter_dmg_finalize (GObject *gobject)
@@ -1462,21 +992,16 @@ static void mirage_file_filter_dmg_finalize (GObject *gobject)
     }
     g_free(self->priv->streams);
 
-    g_array_free(self->priv->rsrc_block, TRUE);
-    g_free(self->priv->rsrc_name);
-
-    g_array_free(self->priv->resource, TRUE);
-
     g_free(self->priv->parts);
     g_free(self->priv->inflate_buffer);
     g_free(self->priv->io_buffer);
-
-    g_free(self->priv->last_key);
 
     inflateEnd(&self->priv->zlib_stream);
     BZ2_bzDecompressEnd(&self->priv->bzip2_stream);
 
     g_free(self->priv->koly_block);
+
+    rsrc_fork_free(self->priv->rsrc_fork);
 
     /* Chain up to the parent class */
     return G_OBJECT_CLASS(mirage_file_filter_dmg_parent_class)->finalize(gobject);

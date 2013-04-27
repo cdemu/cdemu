@@ -37,12 +37,6 @@ G_BEGIN_DECLS
 
 #define DMG_SECTOR_SIZE 512
 
-/* Resource types */
-typedef enum {
-    RT_BLKX = 1,
-    RT_PLST = 2
-} DMG_res_type;
-
 /* Block types */
 typedef enum {
     ADC     = G_MININT32+4,
@@ -105,14 +99,6 @@ typedef struct {
     guint64    sector_count; /* total number of sectors in image */
     guint32    reserved2[3];
 } koly_block_t; /* length: 512 bytes */
-
-typedef struct {
-    guint32 mish_header_length; /* size of mish header */
-    guint32 mish_total_length;  /* size of mish header and mish blocks (but not rsrc blocks) */
-    guint32 mish_blocks_length; /* size of "blkx" blocks and "plst" blocks */
-    guint32 rsrc_total_length;  /* size of rsrc header, rsrc blocks and rsrc names */
-    guint32 reserved[60]; /* zero padding */
-} mish_header_t; /* length: 256 bytes */
 
 typedef struct {
     gchar      signature[4]; /* "mish" */
@@ -179,41 +165,7 @@ typedef struct {
     guint32 reserved3[62]; /* reserved for future use */
 } part_map_entry_t; /* length: 512 bytes */
 
-typedef struct {
-    /* starts with a duplicate of the mish header */
-    guint32 mish_header_length;
-    guint32 mish_total_length;
-    guint32 mish_blocks_length;
-    guint32 rsrc_total_length;
-    /* then continues ... */
-    guint16 unknown1[4];
-    guint16 mark_offset; /* offset to marker (or length including rsrc_size) */
-    guint16 rsrc_length; /* length of rsrc_header_t + rsrc_block_t * n */
-    /* MARKER: blkx and plst rsrc_block_t offsets start from here */
-    guint16 unknown2; /* info_version? */
-    gchar   blkx_sign[4]; /* "blkx" */
-    guint16 last_blkx_rsrc; /* index of last blkx rsrc_block_t */
-    guint16 blkx_rsrc_offset; /* offset to blkx rsrc_block_t */
-    gchar   plst_sign[4]; /* "plst" */
-    guint16 last_plst_rsrc; /* index of last plst rsrc_block_t */
-    guint16 plst_rsrc_offset; /* offset to plst rsrc_block_t */
-} rsrc_header_t; /* length: 46 bytes */
-
-typedef struct {
-    gint16  id; /* matches mish block descriptor */
-    gint16  rel_offs_name; /* offset after last blocks to name entry (or -1) */
-    guint16 attrs; /* attributes */
-    guint16 rel_offs_block; /* offset after mish header to mish block entry */
-    guint32 reserved; /* zero padding */
-} rsrc_block_t; /* length: 12 bytes */
-
 #pragma pack()
-
-typedef struct {
-    gpointer     data;
-    guint32      length;
-    DMG_res_type type;
-} resource_t;
 
 G_END_DECLS
 
