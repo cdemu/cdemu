@@ -42,26 +42,20 @@ static gboolean mirage_parser_iso_is_file_valid (MirageParserIso *self, GInputSt
 {
     gsize file_length;
 
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_IMAGE_ID, "%s: verifying file size...\n", __debug__);
-
     /* Get stream length */
     if (!g_seekable_seek(G_SEEKABLE(stream), 0, G_SEEK_END, NULL, error)) {
         return FALSE;
     }
     file_length = g_seekable_tell(G_SEEKABLE(stream));
 
-    /* Make sure the file is large enough to contain ISO descriptor
-       (also covers the strucutre size of .CDR image check below) */
-    if (file_length < 16*2048) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_IMAGE_ID, "%s: parser cannot handle given image: file too small!\n", __debug__);
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_CANNOT_HANDLE, "Parser cannot handle given image: file too small!");
-        return FALSE;
-    }
-
     /* Macintosh .CDR image check */
-    /* These are raw images with typical Mac partitioning starting with a
-       Driver Descriptor Map (DDM) and GUID Partition Map Entries following.
-       Each are exactly 512-bytes long and have "ER" and "PM" signatures. */
+    /* These are raw images starting with a 512-byte Driver Descriptor Map (DDM) with an "ER" signature 
+       with one of these following:
+       1) 512-byte Apple (APM) Partition Map entries with a "PM signature".
+       2) 512-byte GUID (GPT) Partition Table Header with a "EFI PART" signature, and 128-byte Partition Map Entries.
+       3) Unpartitioned device.
+       Partitioned images are usually hard-disk images with a HFS/HFS+ filesystem, whereas unpartitioned images
+       are usually optical disc images with an ISO-9660 filesystem. */
     guint8  mac_buf[512];
     guint16 mac_sectsize;
     guint32 mac_dev_sectors;
@@ -104,6 +98,15 @@ static gboolean mirage_parser_iso_is_file_valid (MirageParserIso *self, GInputSt
         return TRUE;
     } else {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_IMAGE_ID, "%s: 'ER' signature not found!\n", __debug__);
+    }
+
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_IMAGE_ID, "%s: verifying file size...\n", __debug__);
+
+    /* Make sure the file is large enough to contain ISO descriptor */
+    if (file_length < 16*2048) {
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_IMAGE_ID, "%s: parser cannot handle given image: file too small!\n", __debug__);
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_CANNOT_HANDLE, "Parser cannot handle given image: file too small!");
+        return FALSE;
     }
 
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_IMAGE_ID, "%s: checking if image is a standard ISO image...\n", __debug__);
