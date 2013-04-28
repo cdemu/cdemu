@@ -50,8 +50,8 @@ static gboolean mirage_parser_hd_is_file_valid (MirageParserHd *self, GInputStre
 
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_IMAGE_ID, "%s: verifying file size...\n", __debug__);
 
-    /* Make sure the file is large enough to contain a DDM */
-    if (file_length < 512) {
+    /* Make sure the file is large enough to contain a DDM or a HFS/HFS+ record */
+    if (file_length < 3*512) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_IMAGE_ID, "%s: parser cannot handle given image: file too small!\n", __debug__);
         g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_CANNOT_HANDLE, "Parser cannot handle given image: file too small!");
         return FALSE;
@@ -104,8 +104,37 @@ static gboolean mirage_parser_hd_is_file_valid (MirageParserHd *self, GInputStre
         self->priv->track_mode = MIRAGE_MODE_MODE1;
 
         return TRUE;
-    } else {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_IMAGE_ID, "%s: 'ER' signature not found!\n", __debug__);
+    }
+
+    /* Macintosh HFS/HFS+ image check */
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_IMAGE_ID, "%s: checking if image is a HFS/HFS+ image...\n", __debug__);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_IMAGE_ID, "%s: looking for 'BD', 'H+' or 'HX' signature at the beginning of sector 3\n", __debug__);
+
+    if (!g_seekable_seek(G_SEEKABLE(stream), 2*512, G_SEEK_SET, NULL, NULL)) {
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to seek to sector 3!\n", __debug__);
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, "Failed to seek to sector 3!");
+        return FALSE;
+    }
+
+    if (g_input_stream_read(stream, mac_buf, sizeof(mac_buf), NULL, NULL) != sizeof(mac_buf)) {
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read third 512 bytes of file!\n", __debug__);
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, "Failed to read third 512 bytes of file!");
+        return FALSE;
+    }
+
+    if (!memcmp(mac_buf, "BD", 2) || !memcmp(mac_buf, "H+", 2) || !memcmp(mac_buf, "HX", 2)) {
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_IMAGE_ID, "%s: HFS/HFS+ signature found!\n", __debug__);
+
+        mac_sectsize    = 512;
+        mac_dev_sectors = file_length / 512;
+
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_IMAGE_ID, "%s: image is a HFS/HFS+ image; %d sectors, sector size: %d\n", __debug__, mac_dev_sectors, mac_sectsize);
+
+        self->priv->needs_padding = file_length % 2048;
+        self->priv->track_sectsize = 2048;
+        self->priv->track_mode = MIRAGE_MODE_MODE1;
+
+        return TRUE;
     }
 
     /* Nope, can't load the file */
@@ -262,8 +291,9 @@ static void mirage_parser_hd_init (MirageParserHd *self)
     mirage_parser_generate_info(MIRAGE_PARSER(self),
         "PARSER-HD",
         "Hard-disk Image Parser",
-        1,
-        "Macintosh DVD/CD Master images (*.cdr)", "application/x-apple-cdr"
+        2,
+        "Macintosh DVD/CD Master images (*.cdr)", "application/x-apple-cdr",
+        "Apple Disk image (*.smi)", "application/x-apple-diskimage"
     );
 
     self->priv->needs_padding = FALSE;
