@@ -33,8 +33,6 @@ struct _MirageParserIsoPrivate
 
     gint track_mode;
     gint track_sectsize;
-
-    gboolean needs_padding;
 };
 
 
@@ -47,58 +45,6 @@ static gboolean mirage_parser_iso_is_file_valid (MirageParserIso *self, GInputSt
         return FALSE;
     }
     file_length = g_seekable_tell(G_SEEKABLE(stream));
-
-    /* Macintosh .CDR image check */
-    /* These are raw images starting with a 512-byte Driver Descriptor Map (DDM) with an "ER" signature 
-       with one of these following:
-       1) 512-byte Apple (APM) Partition Map entries with a "PM signature".
-       2) 512-byte GUID (GPT) Partition Table Header with a "EFI PART" signature, and 128-byte Partition Map Entries.
-       3) Unpartitioned device.
-       Partitioned images are usually hard-disk images with a HFS/HFS+ filesystem, whereas unpartitioned images
-       are usually optical disc images with an ISO-9660 filesystem. */
-    guint8  mac_buf[512];
-    guint16 mac_sectsize;
-    guint32 mac_dev_sectors;
-
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_IMAGE_ID, "%s: checking if image is a Macintosh DVD/CD Master (CDR) image...\n", __debug__);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_IMAGE_ID, "%s: looking for 'ER' signature at the beginning of file\n", __debug__);
-
-    if (!g_seekable_seek(G_SEEKABLE(stream), 0, G_SEEK_SET, NULL, NULL)) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to seek to beginning of file!\n", __debug__);
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, "Failed to seek to beginning of file!");
-        return FALSE;
-    }
-
-    if (g_input_stream_read(stream, mac_buf, sizeof(mac_buf), NULL, NULL) != sizeof(mac_buf)) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read first 512 bytes of file!\n", __debug__);
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, "Failed to read first 512 bytes of file!");
-        return FALSE;
-    }
-
-    if (!memcmp(mac_buf, "ER", 2)) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_IMAGE_ID, "%s: 'ER' signature found!\n", __debug__);
-
-        mac_sectsize    = GUINT16_FROM_BE(*((guint16 *) mac_buf + 1));
-        mac_dev_sectors = GUINT32_FROM_BE(*((guint32 *) mac_buf + 1));
-
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_IMAGE_ID, "%s: image is a CDR image; %d sectors, sector size: %d\n", __debug__, mac_dev_sectors, mac_sectsize);
-
-        if (mac_sectsize == 512 || mac_sectsize == 1024) {
-            self->priv->needs_padding = file_length % 2048;
-        } else if (mac_sectsize == 2048) {
-            self->priv->needs_padding = FALSE;
-        } else {
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: parser cannot map this sector size!\n", __debug__);
-            g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_PARSER_ERROR, "Parser cannot map this sector size!");
-            return FALSE;
-        }
-        self->priv->track_sectsize = 2048;
-        self->priv->track_mode = MIRAGE_MODE_MODE1;
-
-        return TRUE;
-    } else {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_IMAGE_ID, "%s: 'ER' signature not found!\n", __debug__);
-    }
 
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_IMAGE_ID, "%s: verifying file size...\n", __debug__);
 
@@ -222,12 +168,6 @@ static gboolean mirage_parser_iso_load_track (MirageParserIso *self, GInputStrea
         return FALSE;
     }
 
-    /* Add one sector to cover otherwise truncated data */
-    if (self->priv->needs_padding) {
-        gint cur_length = mirage_fragment_get_length(fragment);
-        mirage_fragment_set_length(fragment, cur_length + 1);
-    }
-
     /* Add track */
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: adding track\n", __debug__);
 
@@ -347,8 +287,6 @@ static void mirage_parser_iso_init (MirageParserIso *self)
         "ISO images (*.iso, *.bin, *.img)", "application/x-cd-image",
         "Macintosh DVD/CD Master images (*.cdr)", "application/x-apple-cdr"
     );
-
-    self->priv->needs_padding = FALSE;
 }
 
 static void mirage_parser_iso_class_init (MirageParserIsoClass *klass)
