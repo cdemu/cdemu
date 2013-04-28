@@ -79,8 +79,8 @@ static inline void rsrc_raw_fixup_ref(rsrc_raw_ref_t *rsrc_raw_ref)
     rsrc_raw_ref->handle      = GUINT32_FROM_BE(rsrc_raw_ref->handle);
 
     temp = rsrc_raw_ref->data_offset[0];
-    rsrc_raw_ref->data_offset[0] = rsrc_raw_ref->data_offset[3];
-    rsrc_raw_ref->data_offset[3] = temp;
+    rsrc_raw_ref->data_offset[0] = rsrc_raw_ref->data_offset[2];
+    rsrc_raw_ref->data_offset[2] = temp;
 }
 
 static void xml_start_element (GMarkupParseContext *context G_GNUC_UNUSED, const gchar *element_name, const gchar **attribute_names G_GNUC_UNUSED,
@@ -333,21 +333,29 @@ rsrc_fork_t *rsrc_fork_read_binary(gchar *raw_data)
             ref_list[r].id = rsrc_raw_ref->id;
             ref_list[r].attrs = rsrc_raw_ref->attrs;
 
-            gchar *rsrc_raw_name = (gchar *) (raw_data + rsrc_raw_header->map_offset +
-                                   rsrc_raw_map->name_list_offset + rsrc_raw_ref->name_offset);
+            if (rsrc_raw_ref->name_offset != -1) {
+                gchar *rsrc_raw_name = (gchar *) (raw_data + rsrc_raw_header->map_offset +
+                                       rsrc_raw_map->name_list_offset + rsrc_raw_ref->name_offset);
 
-            ref_list[r].name = g_string_new_len(rsrc_raw_name + 1, *rsrc_raw_name);
+                ref_list[r].name = g_string_new_len(rsrc_raw_name + 1, *rsrc_raw_name);
+            } else {
+                ref_list[r].name = g_string_new("");
+            }
 
-            guint32 *rsrc_raw_data_length = (guint32 *) (raw_data + rsrc_raw_header->data_offset +
-                                            (rsrc_raw_ref->data_offset[0] << 16) +
-                                            (rsrc_raw_ref->data_offset[1] << 8) +
-                                            rsrc_raw_ref->data_offset[2]);
-            gchar *rsrc_raw_data = (gchar *) (rsrc_raw_data_length + 1);
+            guint32 rsrc_data_offset = (rsrc_raw_ref->data_offset[2] << 16) +
+                                       (rsrc_raw_ref->data_offset[1] << 8) +
+                                       rsrc_raw_ref->data_offset[0];
 
-            *rsrc_raw_data_length = GUINT32_FROM_BE(*rsrc_raw_data_length);
-            ref_list[r].data_length = *rsrc_raw_data_length;
+            guint32 *rsrc_data_length = (guint32 *) (raw_data + rsrc_raw_header->data_offset + rsrc_data_offset);
+            gchar   *rsrc_data_ptr = (gchar *) (rsrc_data_length + 1);
 
-            ref_list[r].data = g_memdup(rsrc_raw_data, *rsrc_raw_data_length);
+            *rsrc_data_length = GUINT32_FROM_BE(*rsrc_data_length);
+            ref_list[r].data_length = *rsrc_data_length;
+
+            //g_message("Resource Type: %.4s ID: %i Name: %s", type_list[t].type, ref_list[r].id, ref_list[r].name->str);
+            //g_message(" Attrs: 0x%02x Data length: %u offset: 0x%x", ref_list[r].attrs, *rsrc_data_length, rsrc_data_offset);
+
+            ref_list[r].data = g_memdup(rsrc_data_ptr, *rsrc_data_length);
             if (!ref_list[r].data) return NULL;
         }
     }

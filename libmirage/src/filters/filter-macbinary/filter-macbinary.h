@@ -27,6 +27,7 @@
 
 #include "mirage.h"
 #include "filter-macbinary-file-filter.h"
+#include "../filter-dmg/resource-fork.h"
 
 G_BEGIN_DECLS
 

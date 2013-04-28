@@ -30,6 +30,7 @@
 struct _MirageFileFilterMacBinaryPrivate
 {
     macbinary_header_t header;
+    rsrc_fork_t        *rsrc_fork;
 
     guint16 *crctab;
 };
@@ -139,8 +140,7 @@ static gboolean mirage_file_filter_macbinary_can_handle_data_format (MirageFileF
         #endif
     }
 
-    /* We are only interested in the data fork... */
-    /* Note: All blocks are aligned by 128 bytes. */
+    /* The data fork contains the image data */
     mirage_file_filter_set_file_size(MIRAGE_FILE_FILTER(self), header->datafork_len);
 
     /* Print some info */
@@ -170,6 +170,33 @@ static gboolean mirage_file_filter_macbinary_can_handle_data_format (MirageFileF
     g_string_free(file_name, TRUE);
     g_string_free(file_type, TRUE);
     g_string_free(creator, TRUE);
+
+    /* Read the resource fork if any exists */
+    if (header->resfork_len) {
+        goffset     rsrc_fork_pos = sizeof(macbinary_header_t) * 2 + header->datafork_len - header->datafork_len % 128;
+        gchar       *rsrc_fork_data = NULL;
+        rsrc_fork_t *rsrc_fork = NULL;
+
+        rsrc_fork_data = g_malloc(header->resfork_len);
+        if (!rsrc_fork_data) {
+            g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_CANNOT_HANDLE, "Failed to allocate memory!");
+            return FALSE;
+        }
+
+        g_seekable_seek(G_SEEKABLE(stream), rsrc_fork_pos, G_SEEK_SET, NULL, NULL);
+        if (g_input_stream_read(stream, rsrc_fork_data, header->resfork_len, NULL, NULL) != header->resfork_len) {
+            g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_CANNOT_HANDLE, "Failed to read resource-fork!");
+            return FALSE;
+        }
+
+        rsrc_fork = self->priv->rsrc_fork = rsrc_fork_read_binary(rsrc_fork_data);
+        if (!rsrc_fork) {
+            g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_CANNOT_HANDLE, "Failed to parse resource-fork!");
+            return FALSE;
+        }
+
+        g_free(rsrc_fork_data);
+    }
 
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: parsing completed successfully\n\n", __debug__);
 
@@ -236,11 +263,16 @@ static void mirage_file_filter_macbinary_init (MirageFileFilterMacBinary *self)
     );
 
     self->priv->crctab = NULL;
+    self->priv->rsrc_fork = NULL;
 }
 
 static void mirage_file_filter_macbinary_finalize (GObject *gobject)
 {
     MirageFileFilterMacBinary *self = MIRAGE_FILE_FILTER_MACBINARY(gobject);
+
+    if (self->priv->rsrc_fork) {
+        rsrc_fork_free(self->priv->rsrc_fork);
+    }
 
     g_free(self->priv->crctab);
 

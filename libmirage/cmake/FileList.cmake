@@ -132,6 +132,7 @@ set (filter-isz_SOURCES
 set (filter-macbinary_SOURCES
     src/filters/filter-macbinary/filter-macbinary-plugin.c
     src/filters/filter-macbinary/filter-macbinary-file-filter.c
+    src/filters/filter-dmg/resource-fork.c
 )
 
 set (filter-sndfile_SOURCES
