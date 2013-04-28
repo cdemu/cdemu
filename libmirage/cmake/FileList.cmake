@@ -17,6 +17,7 @@ set (parsers_LIST
     image-cdi
     image-cif
     image-cue
+    image-harddisk
     image-iso
     image-mds
     image-mdx
@@ -37,7 +38,7 @@ set (mimetype_FILES
     src/parsers/image-ccd/libmirage-ccd.xml
     src/parsers/image-cdi/libmirage-cdi.xml
     src/parsers/image-cif/libmirage-cif.xml
-    src/parsers/image-iso/libmirage-cdr.xml
+    src/parsers/image-harddisk/libmirage-cdr.xml
     src/parsers/image-mds/libmirage-mds.xml
     src/parsers/image-mds/libmirage-xmd.xml
     src/parsers/image-mdx/libmirage-mdx.xml
@@ -168,6 +169,11 @@ set (image-nrg_SOURCES
 set (image-iso_SOURCES
     src/parsers/image-iso/image-iso-parser.c
     src/parsers/image-iso/image-iso-plugin.c
+)
+
+set (image-harddisk_SOURCES
+    src/parsers/image-harddisk/image-harddisk-parser.c
+    src/parsers/image-harddisk/image-harddisk-plugin.c
 )
 
 set (image-cdi_SOURCES
