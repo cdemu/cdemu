@@ -174,6 +174,7 @@ set (image-iso_SOURCES
 set (image-harddisk_SOURCES
     src/parsers/image-harddisk/image-harddisk-parser.c
     src/parsers/image-harddisk/image-harddisk-plugin.c
+    src/parsers/image-harddisk/partition-tables.c
 )
 
 set (image-cdi_SOURCES

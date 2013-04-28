@@ -55,20 +55,6 @@ typedef enum {
     CT_CRC32 = 2
 } DMG_checksum_type;
 
-/* Partition Map Flags */
-typedef enum {
-    PME_VALID         = 0x0001,
-    PME_ALLOCATED     = 0x0002,
-    PME_IN_USE        = 0x0004,
-    PME_BOOTABLE      = 0x0008,
-    PME_READABLE      = 0x0010,
-    PME_WRITABLE      = 0x0020,
-    PME_OS_PIC_CODE   = 0x0040,
-    PME_OS_SPECIFIC_2 = 0x0080,
-    PME_OS_SPECIFIC_1 = 0x0100,
-    /* bits 9..31 are reserved */
-} DMG_part_map_flag;
-
 #pragma pack(1)
 
 typedef struct {
@@ -122,51 +108,9 @@ typedef struct {
     guint64 compressed_length; /* input length */
 } blkx_data_t; /* length: 40 bytes */
 
-typedef struct {
-    guint32 block; /* driver's block start, block_size-blocks */
-    guint16 size; /* driver's block count, 512-blocks */
-    guint16 type; /* driver's system type */
-} driver_descriptor_table_t; /* length: 8 bytes */
-
-typedef struct {
-    gchar   signature[2]; /* "ER" */
-    guint16 block_size; /* block size for this device */
-    guint32 block_count; /* block count for this device */
-    guint16 device_type; /* device type */
-    guint16 device_id; /* device id */
-    guint32 driver_data; /* driver data */
-    guint16 driver_count; /* driver descriptor count */
-
-    driver_descriptor_table_t driver_map[8]; /* driver_descriptor_table */
-
-    guint8  reserved[430]; /* reserved for future use */
-} driver_descriptor_map_t; /* length: 512 bytes */
-
-typedef struct {
-    gchar   signature[2]; /* "PM" */
-    guint16 reserved1; /* zero padding */
-    guint32 map_entries; /* number of partition entries */
-    guint32 pblock_start; /* physical block start of partition */
-    guint32 pblock_count; /* physical block count of partition */
-    gchar   part_name[32]; /* name of partition */
-    gchar   part_type[32]; /* type of partition, eg. Apple_HFS */
-    guint32 lblock_start; /* logical block start of partition */
-    guint32 lblock_count; /* logical block count of partition */
-    guint32 flags; /* partition flags (one of DMG_part_map_flag)*/
-    guint32 boot_block; /* logical block start of boot code */
-    guint32 boot_bytes; /* byte count of boot code */
-    guint32 load_address; /* load address in memory of boot code */
-    guint32 load_address2; /* reserved for future use */
-    guint32 goto_address; /* jump address in memory of boot code */
-    guint32 goto_address2; /* reserved for future use */
-    guint32 boot_checksum; /* checksum of boot code */
-    gchar   processor_id[16]; /* processor type */
-    guint32 reserved2[32]; /* reserved for future use */
-    guint32 reserved3[62]; /* reserved for future use */
-} part_map_entry_t; /* length: 512 bytes */
-
 #pragma pack()
 
 G_END_DECLS
 
 #endif /* __FILTER_DMG_H__ */
+

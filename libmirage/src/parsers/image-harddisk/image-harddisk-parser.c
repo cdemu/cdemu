@@ -50,26 +50,17 @@ static gboolean mirage_parser_hd_is_file_valid (MirageParserHd *self, GInputStre
 
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_IMAGE_ID, "%s: verifying file size...\n", __debug__);
 
-    /* Make sure the file is large enough to contain a DDM or a HFS/HFS+ record */
+    /* Make sure the file is large enough to contain a DDM, an APM entry or an MDB */
     if (file_length < 3*512) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_IMAGE_ID, "%s: parser cannot handle given image: file too small!\n", __debug__);
         g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_CANNOT_HANDLE, "Parser cannot handle given image: file too small!");
         return FALSE;
     }
 
-    /* Macintosh .CDR image check */
-    /* These are raw images starting with a 512-byte Driver Descriptor Map (DDM) with an "ER" signature 
-       with one of these following:
-       1) 512-byte Apple (APM) Partition Map entries with a "PM signature".
-       2) 512-byte GUID (GPT) Partition Table Header with a "EFI PART" signature, and 128-byte Partition Map Entries.
-       3) Unpartitioned device.
-     */
-    guint8  mac_buf[512];
-    guint16 mac_sectsize;
-    guint32 mac_dev_sectors;
+    /* Checking if image has a valid Driver Descriptor Map (DDM) */
+    driver_descriptor_map_t ddm;
 
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_IMAGE_ID, "%s: checking if image is a Macintosh DVD/CD Master (CDR) image...\n", __debug__);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_IMAGE_ID, "%s: looking for 'ER' signature at the beginning of file\n", __debug__);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_IMAGE_ID, "%s: checking if image has a valid Driver Descriptor Map (DDM)...\n", __debug__);
 
     if (!g_seekable_seek(G_SEEKABLE(stream), 0, G_SEEK_SET, NULL, NULL)) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to seek to beginning of file!\n", __debug__);
@@ -77,23 +68,49 @@ static gboolean mirage_parser_hd_is_file_valid (MirageParserHd *self, GInputStre
         return FALSE;
     }
 
-    if (g_input_stream_read(stream, mac_buf, sizeof(mac_buf), NULL, NULL) != sizeof(mac_buf)) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read first 512 bytes of file!\n", __debug__);
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, "Failed to read first 512 bytes of file!");
+    if (g_input_stream_read(stream, &ddm, sizeof(driver_descriptor_map_t), NULL, NULL) != sizeof(driver_descriptor_map_t)) {
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read driver descriptor map!\n", __debug__);
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, "Failed to read driver descriptor map!");
         return FALSE;
     }
 
-    if (!memcmp(mac_buf, "ER", 2)) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_IMAGE_ID, "%s: 'ER' signature found!\n", __debug__);
+    mirage_ddm_block_fix_endian (&ddm);
 
-        mac_sectsize    = GUINT16_FROM_BE(*((guint16 *) mac_buf + 1));
-        mac_dev_sectors = GUINT32_FROM_BE(*((guint32 *) mac_buf + 1));
+    if (!memcmp(&ddm.signature, "ER", 2)) {
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_IMAGE_ID, "%s: Image has a valid Driver Descriptor Map!\n", __debug__);
 
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_IMAGE_ID, "%s: image is a CDR image; %d sectors, sector size: %d\n", __debug__, mac_dev_sectors, mac_sectsize);
+        mirage_print_ddm_block(MIRAGE_CONTEXTUAL(self), &ddm);
 
-        if (mac_sectsize == 512 || mac_sectsize == 1024) {
+        /* Check if image has valid Apple Partition Map (APM) entries */
+        part_map_entry_t pme;
+
+        for (guint p = 0;; p++) {
+            if (!g_seekable_seek(G_SEEKABLE(stream), 512 * (p + 1), G_SEEK_SET, NULL, NULL)) {
+                MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to seek to beginning of partition map!\n", __debug__);
+                g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, "Failed to seek to beginning of partition map!");
+                return FALSE;
+            }
+
+            if (g_input_stream_read(stream, &pme, sizeof(part_map_entry_t), NULL, NULL) != sizeof(part_map_entry_t)) {
+                MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read partition map entry!\n", __debug__);
+                g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, "Failed to read partition map entry!");
+                return FALSE;
+            }
+
+            mirage_pme_block_fix_endian (&pme);
+
+            if (!memcmp(&pme.signature, "PM", 2)) {
+                mirage_print_pme_block(MIRAGE_CONTEXTUAL(self), &pme);
+                if (p + 1 >= pme.map_entries) break; /* Last APM entry */
+            } else {
+                break; /* Invalid Partition Map entry */
+            }
+        }
+
+        /* Apply padding if needed */
+        if (ddm.block_size == 512 || ddm.block_size == 1024) {
             self->priv->needs_padding = file_length % 2048;
-        } else if (mac_sectsize == 2048) {
+        } else if (ddm.block_size == 2048) {
             self->priv->needs_padding = FALSE;
         } else {
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: parser cannot map this sector size!\n", __debug__);
@@ -107,26 +124,26 @@ static gboolean mirage_parser_hd_is_file_valid (MirageParserHd *self, GInputStre
     }
 
     /* Macintosh HFS/HFS+ image check */
+    guint8  mac_buf[512];
+    guint16 mac_sectsize = 512;
+    guint32 mac_dev_sectors = file_length / mac_sectsize;
+
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_IMAGE_ID, "%s: checking if image is a HFS/HFS+ image...\n", __debug__);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_IMAGE_ID, "%s: looking for 'BD', 'H+' or 'HX' signature at the beginning of sector 3\n", __debug__);
 
     if (!g_seekable_seek(G_SEEKABLE(stream), 2*512, G_SEEK_SET, NULL, NULL)) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to seek to sector 3!\n", __debug__);
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, "Failed to seek to sector 3!");
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to seek to Master Directory Block (MDB)!\n", __debug__);
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, "Failed to seek to Master Directory Block (MDB)!");
         return FALSE;
     }
 
     if (g_input_stream_read(stream, mac_buf, sizeof(mac_buf), NULL, NULL) != sizeof(mac_buf)) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read third 512 bytes of file!\n", __debug__);
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, "Failed to read third 512 bytes of file!");
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read Master Directory Block (MDB)!\n", __debug__);
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, "Failed to read Master Directory Block (MDB)!");
         return FALSE;
     }
 
     if (!memcmp(mac_buf, "BD", 2) || !memcmp(mac_buf, "H+", 2) || !memcmp(mac_buf, "HX", 2)) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_IMAGE_ID, "%s: HFS/HFS+ signature found!\n", __debug__);
-
-        mac_sectsize    = 512;
-        mac_dev_sectors = file_length / 512;
 
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_IMAGE_ID, "%s: image is a HFS/HFS+ image; %d sectors, sector size: %d\n", __debug__, mac_dev_sectors, mac_sectsize);
 

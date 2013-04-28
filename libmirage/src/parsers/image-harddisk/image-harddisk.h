@@ -26,6 +26,7 @@
 
 #include "mirage.h"
 #include "image-harddisk-parser.h"
+#include "partition-tables.h"
 
 
 G_BEGIN_DECLS
