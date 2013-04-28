@@ -291,9 +291,10 @@ static void mirage_parser_hd_init (MirageParserHd *self)
     mirage_parser_generate_info(MIRAGE_PARSER(self),
         "PARSER-HD",
         "Hard-disk Image Parser",
-        2,
-        "Macintosh DVD/CD Master images (*.cdr)", "application/x-apple-cdr",
-        "Apple Disk image (*.smi)", "application/x-apple-diskimage"
+        3,
+        "Apple Disk image (*.cdr)", "application/x-apple-diskimage",
+        "Apple Disk image (*.smi)", "application/x-apple-diskimage",
+        "Apple Disk image (*.img)", "application/x-apple-diskimage"
     );
 
     self->priv->needs_padding = FALSE;

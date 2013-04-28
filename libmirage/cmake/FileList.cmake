@@ -38,7 +38,7 @@ set (mimetype_FILES
     src/parsers/image-ccd/libmirage-ccd.xml
     src/parsers/image-cdi/libmirage-cdi.xml
     src/parsers/image-cif/libmirage-cif.xml
-    src/parsers/image-harddisk/libmirage-cdr.xml
+    src/parsers/image-harddisk/libmirage-apple.xml
     src/parsers/image-mds/libmirage-mds.xml
     src/parsers/image-mds/libmirage-xmd.xml
     src/parsers/image-mdx/libmirage-mdx.xml

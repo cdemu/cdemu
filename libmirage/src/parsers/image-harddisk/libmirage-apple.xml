@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mime-info xmlns="http://www.freedesktop.org/standards/shared-mime-info">
+    <mime-type type="application/x-apple-diskimage">
+        <sub-class-of type="application/octet-stream"/>
+
+        <comment>Apple Disk image</comment>
+
+        <glob pattern="*.cdr"/>
+        <glob pattern="*.smi"/>
+        <glob pattern="*.img"/>
+        <glob pattern="*.dmg"/>
+        <magic priority="50">
+            <match value="koly" type="string" offset="0"/>
+
+            <match value="ER" type="string" offset="0"/>
+            <match value="PM" type="string" offset="512"/>
+
+            <match value="BD" type="string" offset="1024"/>
+            <match value="H+" type="string" offset="1024"/>
+            <match value="HX" type="string" offset="1024"/>
+        </magic>
+    </mime-type>
+</mime-info>
