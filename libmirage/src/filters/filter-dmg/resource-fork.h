@@ -22,6 +22,22 @@
 
 G_BEGIN_DECLS
 
+typedef enum {
+    map_changed  = 0x20,
+    map_compact  = 0x40,
+    map_readonly = 0x80
+} res_fork_attr_t;
+
+typedef enum {
+    attr_changed   = 0x02,
+    attr_preload   = 0x04,
+    attr_protected = 0x08,
+    attr_locked    = 0x10,
+    attr_purgeable = 0x20,
+    attr_sysheap   = 0x40,
+    attr_sysref    = 0x80
+} rsrc_attr_t;
+
 #pragma pack(1)
 typedef struct {
     guint32 data_offset;

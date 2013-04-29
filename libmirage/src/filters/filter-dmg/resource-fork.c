@@ -355,8 +355,12 @@ rsrc_fork_t *rsrc_fork_read_binary(gchar *raw_data)
             //g_message("Resource Type: %.4s ID: %i Name: %s", type_list[t].type, ref_list[r].id, ref_list[r].name->str);
             //g_message(" Attrs: 0x%02x Data length: %u offset: 0x%x", ref_list[r].attrs, *rsrc_data_length, rsrc_data_offset);
 
-            ref_list[r].data = g_memdup(rsrc_data_ptr, *rsrc_data_length);
-            if (!ref_list[r].data) return NULL;
+            if (*rsrc_data_length > 0) {
+                ref_list[r].data = g_memdup(rsrc_data_ptr, *rsrc_data_length);
+                if (!ref_list[r].data) return NULL;
+            } else {
+                ref_list[r].data = NULL;
+            }
         }
     }
 
@@ -369,7 +373,9 @@ gboolean rsrc_fork_free(rsrc_fork_t *rsrc_fork)
 
     for (guint t = 0; t < rsrc_fork->num_types; t++) {
         for (guint r = 0; r < rsrc_fork->type_list[t].num_refs; r++) {
-            g_free(rsrc_fork->type_list[t].ref_list[r].data);
+            if (rsrc_fork->type_list[t].ref_list[r].data) {
+                g_free(rsrc_fork->type_list[t].ref_list[r].data);
+            }
             g_string_free(rsrc_fork->type_list[t].ref_list[r].name, TRUE);
         }
         g_free(rsrc_fork->type_list[t].ref_list);

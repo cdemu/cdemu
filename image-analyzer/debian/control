@@ -11,7 +11,7 @@ Standards-Version: 3.9.3
 
 Package: image-analyzer
 Architecture: any
-Depends: libmirage7 (>= 2.0.0), gnuplot, ${shlibs:Depends}, ${misc:Depends}
+Depends: libmirage7 (>= 2.0.0), gnuplot-x11, ${shlibs:Depends}, ${misc:Depends}
 Description: Mirage Image Analyzer
  Image Analyzer is a simple Gtk+ application that displays tree structure 
  of disc image created by libMirage.
