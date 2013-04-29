@@ -244,12 +244,12 @@ static void setup_gui (ImageAnalyzerSectorRead *self)
     self->priv->buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(self->priv->text_view));
     gtk_text_buffer_create_tag(self->priv->buffer, "tag_section", "foreground", "#000000", "weight", PANGO_WEIGHT_BOLD, NULL);
 
-    gtk_text_buffer_create_tag(self->priv->buffer, "tag_sync", "foreground", "#CC0033", "font", "fixed", NULL); /* Red */
-    gtk_text_buffer_create_tag(self->priv->buffer, "tag_header", "foreground", "#33CC33", "font", "fixed", NULL); /* Green */
-    gtk_text_buffer_create_tag(self->priv->buffer, "tag_subheader", "foreground", "#990099", "font", "fixed", NULL); /* Purple */
-    gtk_text_buffer_create_tag(self->priv->buffer, "tag_data", "foreground", "#000000", "font", "fixed", NULL); /* Black */
-    gtk_text_buffer_create_tag(self->priv->buffer, "tag_edc_ecc", "foreground", "#FF9933", "font", "fixed", NULL); /* Orange */
-    gtk_text_buffer_create_tag(self->priv->buffer, "tag_subchannel", "foreground", "#0033FF", "font", "fixed", NULL); /* Blue */
+    gtk_text_buffer_create_tag(self->priv->buffer, "tag_sync", "foreground", "#CC0033", "family", "monospace", NULL); /* Red */
+    gtk_text_buffer_create_tag(self->priv->buffer, "tag_header", "foreground", "#33CC33", "family", "monospace", NULL); /* Green */
+    gtk_text_buffer_create_tag(self->priv->buffer, "tag_subheader", "foreground", "#990099", "family", "monospace", NULL); /* Purple */
+    gtk_text_buffer_create_tag(self->priv->buffer, "tag_data", "foreground", "#000000", "family", "monospace", NULL); /* Black */
+    gtk_text_buffer_create_tag(self->priv->buffer, "tag_edc_ecc", "foreground", "#FF9933", "family", "monospace", NULL); /* Orange */
+    gtk_text_buffer_create_tag(self->priv->buffer, "tag_subchannel", "foreground", "#0033FF", "family", "monospace", NULL); /* Blue */
 
     /* HBox */
 #if GTK3_ENABLED
