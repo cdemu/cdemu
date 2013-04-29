@@ -277,6 +277,39 @@ rsrc_fork_t *rsrc_fork_read_xml(const gchar *xml_data, gssize xml_length)
     return rsrc_fork;
 }
 
+rsrc_type_t *rsrc_find_type(rsrc_fork_t *rsrc_fork, const gchar *type)
+{
+    if (!rsrc_fork || !type) return NULL;
+
+    for (guint t = 0; t < rsrc_fork->num_types; t++) {
+        rsrc_type_t *rsrc_type = &rsrc_fork->type_list[t];
+
+        if (!memcmp(rsrc_type->type, type, 4)) {
+            return rsrc_type;
+        }
+    }
+    
+    return NULL;
+}
+
+rsrc_ref_t *rsrc_find_ref_by_type_and_id(rsrc_fork_t *rsrc_fork, const gchar *type, gint16 id)
+{
+    if (!rsrc_fork || !type) return NULL;
+
+    rsrc_type_t *rsrc_type = rsrc_find_type(rsrc_fork, type);
+    if (!rsrc_type) return NULL;
+
+    for (guint r = 0; r < rsrc_type->num_refs; r++) {
+        rsrc_ref_t *rsrc_ref = &rsrc_type->ref_list[r];
+
+        if (rsrc_ref->id == id) {
+            return rsrc_ref;
+        }
+    }
+
+    return NULL;
+}
+
 rsrc_fork_t *rsrc_fork_read_binary(gchar *raw_data)
 {
     rsrc_fork_t       *rsrc_fork = NULL;

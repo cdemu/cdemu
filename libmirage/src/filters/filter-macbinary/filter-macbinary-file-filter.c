@@ -104,10 +104,11 @@ static gboolean mirage_file_filter_macbinary_can_handle_data_format (MirageFileF
     GInputStream *stream = g_filter_input_stream_get_base_stream(G_FILTER_INPUT_STREAM(self));
 
     macbinary_header_t *header = &self->priv->header;
+    rsrc_fork_t        *rsrc_fork = NULL;
 
     guint16 calculated_crc = 0;
 
-    GString *file_name = NULL, *file_type = NULL, *creator = NULL;
+    GString *file_name = NULL;
 
     /* Read MacBinary header */
     g_seekable_seek(G_SEEKABLE(stream), 0, G_SEEK_SET, NULL, NULL);
@@ -140,18 +141,13 @@ static gboolean mirage_file_filter_macbinary_can_handle_data_format (MirageFileF
         #endif
     }
 
-    /* The data fork contains the image data */
-    mirage_file_filter_set_file_size(MIRAGE_FILE_FILTER(self), header->datafork_len);
-
     /* Print some info */
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: parsing the underlying stream data...\n", __debug__);
 
     file_name = g_string_new_len(header->filename, header->fn_length);
-    file_type = g_string_new_len(header->filetype, 4);
-    creator   = g_string_new_len(header->creator, 4);
 
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: Original filename: %s\n", __debug__, file_name->str);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: File type: %s creator: %s\n", __debug__, file_type->str, creator->str);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: File type: %.4s creator: %.4s\n", __debug__, header->filetype, header->creator);
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: Data fork length: %d\n", __debug__, header->datafork_len);
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: Resource fork length: %d\n", __debug__, header->resfork_len);
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: Get info comment length: %d\n", __debug__, header->getinfo_len);
@@ -168,14 +164,16 @@ static gboolean mirage_file_filter_macbinary_can_handle_data_format (MirageFileF
     }
 
     g_string_free(file_name, TRUE);
-    g_string_free(file_type, TRUE);
-    g_string_free(creator, TRUE);
 
     /* Read the resource fork if any exists */
     if (header->resfork_len) {
-        goffset     rsrc_fork_pos = sizeof(macbinary_header_t) * 2 + header->datafork_len - header->datafork_len % 128;
+        goffset     rsrc_fork_pos = 0;
         gchar       *rsrc_fork_data = NULL;
-        rsrc_fork_t *rsrc_fork = NULL;
+
+        rsrc_fork_pos = sizeof(macbinary_header_t) + header->datafork_len;
+        if (header->datafork_len % 128) {
+            rsrc_fork_pos += 128 - (header->datafork_len % 128);
+        }
 
         rsrc_fork_data = g_malloc(header->resfork_len);
         if (!rsrc_fork_data) {
@@ -197,6 +195,27 @@ static gboolean mirage_file_filter_macbinary_can_handle_data_format (MirageFileF
 
         g_free(rsrc_fork_data);
     }
+
+    /* Print some interesting info from the resource-fork */
+    if (rsrc_fork) {
+        rsrc_ref_t *rsrc_ref = rsrc_find_ref_by_type_and_id(rsrc_fork, "bcm#", 128);
+        
+        if (rsrc_ref) {
+            guint16 *part  = (guint16 *) rsrc_ref->data; 
+            guint16 *parts = (guint16 *) (rsrc_ref->data + 2);
+            guint32 *woot  = (guint32 *) (rsrc_ref->data + 20);
+            
+            *part  = GUINT16_FROM_BE(*part);
+            *parts = GUINT16_FROM_BE(*parts);
+            *woot  = GUINT32_FROM_BE(*woot);
+
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: This file is part %u of a set of %u files! Interesting value: 0x%x\n", 
+                         __debug__, *part, *parts, *woot);
+        }
+    }
+
+    /* The data fork contains the image data */
+    mirage_file_filter_set_file_size(MIRAGE_FILE_FILTER(self), header->datafork_len);
 
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: parsing completed successfully\n\n", __debug__);
 

@@ -104,6 +104,9 @@ rsrc_fork_t *rsrc_fork_read_xml(const gchar *xml_data, gssize xml_length);
 rsrc_fork_t *rsrc_fork_read_binary(gchar *raw_data);
 gboolean rsrc_fork_free(rsrc_fork_t *rsrc_fork);
 
+rsrc_type_t *rsrc_find_type(rsrc_fork_t *rsrc_fork, const gchar *type);
+rsrc_ref_t *rsrc_find_ref_by_type_and_id(rsrc_fork_t *rsrc_fork, const gchar *type, gint16 id);
+
 G_END_DECLS
 
 #endif /* __RESOURCE_FORK_H__ */
