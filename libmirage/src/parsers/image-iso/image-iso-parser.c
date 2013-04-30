@@ -31,14 +31,23 @@ struct _MirageParserIsoPrivate
 {
     MirageDisc *disc;
 
+    gint main_data_size;
     gint track_mode;
-    gint track_sectsize;
+
+    gint subchannel_data_size;
+    gint subchannel_format;
 };
 
 
-static gboolean mirage_parser_iso_is_file_valid (MirageParserIso *self, GInputStream *stream, GError **error)
+static gboolean mirage_parser_iso_determine_sector_size (MirageParserIso *self, GInputStream *stream, GError **error)
 {
+    const gint valid_sector_sizes[] = { 2048, 2332, 2336, 2352 };
+    const gint data_offset[] = { 0, 0, 0, 16 };
+    const gint valid_subchannel_sizes[] = { 0, 16, 96 };
+
     gsize file_length;
+
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_IMAGE_ID, "%s: verifying file size...\n", __debug__);
 
     /* Get stream length */
     if (!g_seekable_seek(G_SEEKABLE(stream), 0, G_SEEK_END, NULL, error)) {
@@ -46,99 +55,163 @@ static gboolean mirage_parser_iso_is_file_valid (MirageParserIso *self, GInputSt
     }
     file_length = g_seekable_tell(G_SEEKABLE(stream));
 
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_IMAGE_ID, "%s: verifying file size...\n", __debug__);
-
     /* Make sure the file is large enough to contain ISO descriptor */
-    if (file_length < 16*2048) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_IMAGE_ID, "%s: parser cannot handle given image: file too small!\n", __debug__);
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_CANNOT_HANDLE, "Parser cannot handle given image: file too small!");
+    if (file_length < 17*2448) {
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_IMAGE_ID, "%s: parser cannot handle given image: file is too small!\n", __debug__);
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_CANNOT_HANDLE, "Parser cannot handle given image: file is too small!");
         return FALSE;
     }
 
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_IMAGE_ID, "%s: checking if image is a standard ISO image...\n", __debug__);
+    /* Check all possible combinations of sector data and subchannel sizes */
+    for (gint i = 0; i < G_N_ELEMENTS(valid_subchannel_sizes); i++) {
+        for (gint j = 0; j < G_N_ELEMENTS(valid_sector_sizes); j++) {
+            gint full_sector_size = valid_sector_sizes[j] + valid_subchannel_sizes[i];
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_IMAGE_ID, "%s: cheking %d-byte sector size with %d-byte subchannel...\n", __debug__, valid_sector_sizes[j], valid_subchannel_sizes[i]);
 
-    /* 2048-byte standard ISO9660/UDF image check */
-    if (file_length % 2048 == 0) {
-        guint8 buf[8];
+            /* Check if file size is a multiple of full sector size */
+            if (file_length % full_sector_size != 0) {
+                MIRAGE_DEBUG(self, MIRAGE_DEBUG_IMAGE_ID, "%s: file size is not a multiple of %d!\n", __debug__, full_sector_size);
+                continue;
+            }
 
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_IMAGE_ID, "%s: image size is a multiple of 2048; looking for CD001 or BEA01 pattern at offset %X...\n", __debug__, 16*2048);
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_IMAGE_ID, "%s: file size check passed; looking for CD001/BEA01 pattern at sector 16...\n", __debug__);
 
-        if (!g_seekable_seek(G_SEEKABLE(stream), 16*2048, G_SEEK_SET, NULL, NULL)) {
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to seek to 8-byte pattern!\n", __debug__);
-            g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, "Failed to seek to 8-byte pattern!");
-            return FALSE;
-        }
+            /* Check for CD001 or BEA01 at sector 16 */
+            guint8 buf[8];
+            gsize offset = 16*full_sector_size + data_offset[j];
 
-        if (g_input_stream_read(stream, buf, 8, NULL, NULL) != 8) {
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read 8-byte pattern!\n", __debug__);
-            g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, "Failed to read 8-byte pattern!");
-            return FALSE;
-        }
+            if (!g_seekable_seek(G_SEEKABLE(stream), offset, G_SEEK_SET, NULL, NULL)) {
+                MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to seek to %lXh to read 8-byte pattern!\n", __debug__, offset);
+                g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, "Failed to seek to %lXh to read 8-byte pattern!", offset);
+                return FALSE;
+            }
 
-        if (!memcmp(buf, mirage_pattern_cd001, sizeof(mirage_pattern_cd001))
-            || !memcmp(buf, mirage_pattern_bea01, sizeof(mirage_pattern_bea01))) {
-            self->priv->track_sectsize = 2048;
-            self->priv->track_mode = MIRAGE_MODE_MODE1;
+            if (g_input_stream_read(stream, buf, 8, NULL, NULL) != 8) {
+                MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read 8-byte pattern!\n", __debug__);
+                g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, "Failed to read 8-byte pattern!");
+                return FALSE;
+            }
 
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_IMAGE_ID, "%s: image is a standard 2048-byte ISO9660/UDF image\n", __debug__);
+            if (!memcmp(buf, mirage_pattern_cd001, sizeof(mirage_pattern_cd001))
+                || !memcmp(buf, mirage_pattern_bea01, sizeof(mirage_pattern_bea01))) {
+                self->priv->main_data_size = valid_sector_sizes[j];
+                self->priv->subchannel_data_size = valid_subchannel_sizes[i];
 
-            return TRUE;
+                MIRAGE_DEBUG(self, MIRAGE_DEBUG_IMAGE_ID, "%s: image is an ISO9660/UDF image, with %d-byte sector data and %d-byte subchannel data\n", __debug__, self->priv->main_data_size, self->priv->subchannel_data_size);
+                return TRUE;
+            } else {
+                MIRAGE_DEBUG(self, MIRAGE_DEBUG_IMAGE_ID, "%s: CD001/BEA01 pattern not found!\n", __debug__);
+            }
         }
     }
 
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_IMAGE_ID, "%s: checking if image is a binary image with 2352-byte sectors...\n", __debug__);
-
-    /* 2352-byte image check */
-    if (file_length % 2352 == 0) {
-        guint8 buf[16];
-
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_IMAGE_ID, "%s: image size is a multiple of 2352; determining track type at address 16...\n", __debug__);
-
-        if (!g_seekable_seek(G_SEEKABLE(stream), 16*2352, G_SEEK_SET, NULL, NULL)) {
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to seek to 16-byte pattern!\n", __debug__);
-            g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, "Failed to seek to 16-byte pattern!");
-            return FALSE;
-        }
-
-        if (g_input_stream_read(stream, buf, 16, NULL, NULL) != 16) {
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read 16-byte pattern!\n", __debug__);
-            g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, "Failed to read 16-byte pattern!");
-            return FALSE;
-        }
-
-        /* Determine mode */
-        self->priv->track_sectsize = 2352;
-        self->priv->track_mode = mirage_helper_determine_sector_type(buf);
-
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_IMAGE_ID, "%s: assuming image is a binary image with 2352-byte sectors; track mode: %d\n", __debug__, self->priv->track_mode);
-
-        return TRUE;
-    }
-
-    /* 2332/2336-byte image check */
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_IMAGE_ID, "%s: checking if image is a binary image with 2332-byte sectors...\n", __debug__);
-    if (file_length % 2332 == 0) {
-        self->priv->track_sectsize = 2332;
-        self->priv->track_mode = MIRAGE_MODE_MODE2_MIXED;
-
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_IMAGE_ID, "%s: assuming image is a binary image with 2332-byte sectors and containing Mode 2 Mixed sectors\n", __debug__);
-
-        return TRUE;
-    }
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_IMAGE_ID, "%s: checking if image is a binary image with 2336-byte sectors...\n", __debug__);
-    if (file_length % 2336 == 0) {
-        self->priv->track_sectsize = 2336;
-        self->priv->track_mode = MIRAGE_MODE_MODE2_MIXED;
-
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_IMAGE_ID, "%s: assuming image is a binary image with 2336-byte sectors and containing Mode 2 Mixed sectors\n", __debug__);
-
-        return TRUE;
-    }
-
-    /* Nope, can't load the file */
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_IMAGE_ID, "%s: parser cannot handle given image!\n", __debug__);
-    g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_CANNOT_HANDLE, "Parser cannot handle given image!");
+    /* No supported combination */
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_IMAGE_ID, "%s: parser cannot handle given image: file size does not correspond to any supported combination of sector and subchannel size!\n", __debug__);
+    g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_CANNOT_HANDLE, "Parser cannot handle given image: file size does not correspond to any supported combination of sector and subchannel size!");
     return FALSE;
+}
+
+static gboolean mirage_parser_iso_determine_track_type (MirageParserIso *self, GInputStream *stream, GError **error)
+{
+    /* We try to guess track type from main channel data size */
+    switch (self->priv->main_data_size) {
+        case 2048: {
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: 2048-byte main sector data; assuming Mode 1 track\n", __debug__);
+            self->priv->track_mode = MIRAGE_MODE_MODE1;
+            break;
+        }
+        case 2332:
+        case 2336: {
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: 2332/2336-byte main sector data; assuming Mode 2 track\n", __debug__);
+            self->priv->track_mode = MIRAGE_MODE_MODE2_MIXED;
+            break;
+        }
+        case 2352: {
+            guint8 buf[16];
+            gsize offset = 16 * (self->priv->main_data_size + self->priv->subchannel_data_size);
+
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: 2352-byte main sector data; determining track type at address 16 (offset %lXh)...\n", __debug__, offset);
+
+            if (!g_seekable_seek(G_SEEKABLE(stream), offset, G_SEEK_SET, NULL, NULL)) {
+                MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to seek to offset %lXh to read 16-byte pattern!\n", __debug__, offset);
+                g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, "Failed to seek to offset %lXh to read 16-byte pattern!", offset);
+                return FALSE;
+            }
+
+            if (g_input_stream_read(stream, buf, 16, NULL, NULL) != 16) {
+                MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read 16-byte pattern!\n", __debug__);
+                g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, "Failed to read 16-byte pattern!");
+                return FALSE;
+            }
+
+            self->priv->track_mode = mirage_helper_determine_sector_type(buf);
+            break;
+        }
+        default: {
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: unhalded main sector data size %d!\n", __debug__, self->priv->main_data_size);
+            g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, "Unhalded main sector data size %d!", self->priv->main_data_size);
+            return FALSE;
+        }
+    }
+
+    return TRUE;
+}
+
+static gboolean mirage_parser_iso_determine_subchannel_type (MirageParserIso *self, GInputStream *stream, GError **error)
+{
+    switch (self->priv->subchannel_data_size) {
+        case 0: {
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: no subchannel data found!\n", __debug__);
+            self->priv->subchannel_format = 0;
+            break;
+        }
+        case 16: {
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: 16-byte internal PQ subchannel data found!\n", __debug__);
+            self->priv->subchannel_format = MIRAGE_SUBCHANNEL_INT | MIRAGE_SUBCHANNEL_PQ16;
+            break;
+        }
+        case 96: {
+            guint8 buf[96];
+            gsize offset = 16 * (self->priv->main_data_size + self->priv->subchannel_data_size) + self->priv->main_data_size;
+            
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: 96-byte internal PW subchannel data found!\n", __debug__);
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: determining whether it is linear or interleaved from subchannel data of sector 16 (offset %lXh)...\n", __debug__, offset);
+
+            if (!g_seekable_seek(G_SEEKABLE(stream), offset, G_SEEK_SET, NULL, NULL)) {
+                MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to seek to offset %lXh to read subchannel data!\n", __debug__, offset);
+                g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, "Failed to seek to offset %lXh to read subchannel data!", offset);
+                return FALSE;
+            }
+
+            if (g_input_stream_read(stream, buf, sizeof(buf), NULL, NULL) != sizeof(buf)) {
+                MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read subchannel data!\n", __debug__);
+                g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, "Failed to read subchannel data!");
+                return FALSE;
+            }
+
+            /* Determine whether subchannel data is linear or interleaved;
+               we assume it is linear, and validate CRC over Q-channel 
+               data. An alternative would be to validate address stored in 
+               subchannel data... */
+            guint16 crc = mirage_helper_subchannel_q_calculate_crc(buf+12);
+            if ((buf[22] << 8 | buf[23]) == crc) {
+                MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: subchannel data appears to be linear!\n", __debug__);
+                self->priv->subchannel_format = MIRAGE_SUBCHANNEL_INT | MIRAGE_SUBCHANNEL_PW96_LIN;
+            } else {
+                MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: subchannel data appears to be interleaved!\n", __debug__);
+                self->priv->subchannel_format = MIRAGE_SUBCHANNEL_INT | MIRAGE_SUBCHANNEL_PW96_INT;                
+            }
+            
+            break;
+        }
+        default: {
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: unhalded subchannel data size %d!\n", __debug__, self->priv->subchannel_data_size);
+            g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, "Unhalded subchannel data size %d!", self->priv->subchannel_data_size);
+            return FALSE;
+        }
+    }
+
+    return TRUE;
 }
 
 static gboolean mirage_parser_iso_load_track (MirageParserIso *self, GInputStream *stream, GError **error)
@@ -149,17 +222,16 @@ static gboolean mirage_parser_iso_load_track (MirageParserIso *self, GInputStrea
 
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: loading track...\n", __debug__);
     
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: track mode: %d\n", __debug__, self->priv->track_mode);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: sector size: %d\n", __debug__, self->priv->track_sectsize);
-
     /* Create data fragment */
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: creating data fragment\n", __debug__);
     fragment = g_object_new(MIRAGE_TYPE_FRAGMENT, NULL);
 
     mirage_fragment_main_data_set_stream(fragment, stream);
-    mirage_fragment_main_data_set_size(fragment, self->priv->track_sectsize);
+    mirage_fragment_main_data_set_size(fragment, self->priv->main_data_size);
     mirage_fragment_main_data_set_format(fragment, MIRAGE_MAIN_DATA);
-
+    mirage_fragment_subchannel_data_set_size(fragment, self->priv->subchannel_data_size);
+    mirage_fragment_subchannel_data_set_format(fragment, self->priv->subchannel_format);
+    
     /* Use whole file */
     if (!mirage_fragment_use_the_rest_of_file(fragment, error)) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to use the rest of file!\n", __debug__);
@@ -207,7 +279,7 @@ static MirageDisc *mirage_parser_iso_load_image (MirageParser *_self, GInputStre
     iso_filename = mirage_contextual_get_file_stream_filename(MIRAGE_CONTEXTUAL(self), stream);
 
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_IMAGE_ID, "%s: checking if parser can handle given image...\n", __debug__);
-    if (!mirage_parser_iso_is_file_valid(self, stream, error)) {
+    if (!mirage_parser_iso_determine_sector_size(self, stream, error)) {
         g_object_unref(stream);
         return FALSE;
     }
@@ -215,14 +287,24 @@ static MirageDisc *mirage_parser_iso_load_image (MirageParser *_self, GInputStre
 
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: parsing the image...\n", __debug__);
 
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: ISO filename: %s\n", __debug__, iso_filename);
+
+    /* Determine track and subchannel mode */
+    if (!mirage_parser_iso_determine_track_type(self, stream, error)) {
+        succeeded = FALSE;
+        goto end;
+    }
+    if (!mirage_parser_iso_determine_subchannel_type(self, stream, error)) {
+        succeeded = FALSE;
+        goto end;
+    }
+
     /* Create disc */
     self->priv->disc = g_object_new(MIRAGE_TYPE_DISC, NULL);
     mirage_object_set_parent(MIRAGE_OBJECT(self->priv->disc), self);
 
     /* Set filenames */
     mirage_disc_set_filename(self->priv->disc, iso_filename);
-
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: ISO filename: %s\n", __debug__, iso_filename);
 
     /* Session: one session (with possibly multiple tracks) */
     MirageSession *session = g_object_new(MIRAGE_TYPE_SESSION, NULL);
