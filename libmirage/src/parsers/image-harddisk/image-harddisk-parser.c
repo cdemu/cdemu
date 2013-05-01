@@ -85,7 +85,7 @@ static gboolean mirage_parser_hd_is_file_valid (MirageParserHd *self, GInputStre
         part_map_entry_t pme;
 
         for (guint p = 0;; p++) {
-            if (!g_seekable_seek(G_SEEKABLE(stream), 512 * (p + 1), G_SEEK_SET, NULL, NULL)) {
+            if (!g_seekable_seek(G_SEEKABLE(stream), ddm.block_size * (p + 1), G_SEEK_SET, NULL, NULL)) {
                 MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to seek to beginning of partition map!\n", __debug__);
                 g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, "Failed to seek to beginning of partition map!");
                 return FALSE;
@@ -130,7 +130,7 @@ static gboolean mirage_parser_hd_is_file_valid (MirageParserHd *self, GInputStre
 
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_IMAGE_ID, "%s: checking if image is a HFS/HFS+ image...\n", __debug__);
 
-    if (!g_seekable_seek(G_SEEKABLE(stream), 2*512, G_SEEK_SET, NULL, NULL)) {
+    if (!g_seekable_seek(G_SEEKABLE(stream), 2 * 512, G_SEEK_SET, NULL, NULL)) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to seek to Master Directory Block (MDB)!\n", __debug__);
         g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, "Failed to seek to Master Directory Block (MDB)!");
         return FALSE;

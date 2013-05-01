@@ -127,9 +127,52 @@ static void xml_end_element (GMarkupParseContext *context G_GNUC_UNUSED, const g
         xml_user_data->in_string = FALSE;
     } else if (!strncmp(element_name, "data", strlen("data"))) {
         xml_user_data->in_data = FALSE;
+    } else if (!strncmp(element_name, "dict", strlen("dict"))) {
+        /* End of resource reference */
+        if (xml_user_data->nesting_level == 5) {
+            rsrc_type_t *rsrc_type = NULL;
+            rsrc_ref_t  *rsrc_ref = NULL;
+
+            /* Print out ref information */
+            g_assert(xml_user_data->rsrc_fork);
+            rsrc_type = &xml_user_data->rsrc_fork->type_list[xml_user_data->rsrc_fork->num_types - 1];
+            g_assert(rsrc_type);
+            rsrc_ref = &rsrc_type->ref_list[rsrc_type->num_refs - 1];
+            g_assert(rsrc_ref);
+
+            //g_message("Resource Type: %.4s ID: %i Name: %s", rsrc_type->type, rsrc_ref->id, rsrc_ref->name->str);
+            //g_message(" Attrs: 0x%02x Data length: %u", rsrc_ref->attrs, rsrc_ref->data_length);
+        }
     }
 
     xml_user_data->nesting_level--;
+}
+
+static GString *rsrc_data_strip_and_decode_base64(const gchar *text, gsize text_length)
+{
+    GString *dest_str = g_string_sized_new(text_length);
+
+    if (!text || !dest_str) return NULL;
+
+    /* Strip data string */
+    for (gchar *source_pos = (gchar *) text; source_pos < text + text_length; source_pos++) {
+        switch (*source_pos) {
+            case '\n':
+            case '\r':
+            case '\t':
+            case ' ':
+                /* Discard CR, LF, TAB and whitespace */
+                break;
+            default:
+                /* Save everything else */
+                g_string_append_c(dest_str, *source_pos);
+        }
+    }
+
+    /* Decode Base-64 string to resource data */
+    g_base64_decode_inplace (dest_str->str, &dest_str->len);
+
+    return dest_str;
 }
 
 static void xml_text (GMarkupParseContext *context G_GNUC_UNUSED, const gchar *text, gsize text_len, gpointer user_data, GError **error G_GNUC_UNUSED)
@@ -204,32 +247,21 @@ static void xml_text (GMarkupParseContext *context G_GNUC_UNUSED, const gchar *t
         if (xml_user_data->nesting_level == 6) {
             rsrc_type_t *rsrc_type = &xml_user_data->rsrc_fork->type_list[xml_user_data->rsrc_fork->num_types - 1];
             rsrc_ref_t  *rsrc_ref = &rsrc_type->ref_list[rsrc_type->num_refs - 1];
-            GString     *dest_str = g_string_new("");
+            GString     *dest_str = NULL;
 
-            g_assert(rsrc_type && rsrc_ref && dest_str);
+            g_assert(rsrc_type && rsrc_ref);
 
-            /* Strip data string */
-            for (gchar *source_pos = (gchar *) text; source_pos < text + text_len; source_pos++) {
-                switch (*source_pos) {
-                    case '\n':
-                    case '\r':
-                    case '\t':
-                    case ' ':
-                        /* Discard CR, LF, TAB and whitespace */
-                        break;
-                    default:
-                        /* Save everything else */
-                        g_string_append_c(dest_str, *source_pos);
-                }
-            }
-
-            /* Decode Base-64 string to resource data */
-            g_base64_decode_inplace (dest_str->str, &dest_str->len);
+            dest_str = rsrc_data_strip_and_decode_base64(text, text_len);
+            g_assert(dest_str);
 
             /* Add the data to the ref */
             rsrc_ref->data_length = dest_str->len;
-            rsrc_ref->data = g_memdup(dest_str->str, dest_str->len);
-            g_assert(rsrc_ref->data);
+            if (dest_str->len > 0) {
+                rsrc_ref->data = g_memdup(dest_str->str, dest_str->len);
+                g_assert(rsrc_ref->data);
+            } else {
+                rsrc_ref->data = NULL;
+            }
 
             g_string_free(dest_str, TRUE);
         }

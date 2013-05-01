@@ -64,6 +64,29 @@ typedef struct {
 } checksum_t; /* length: 136 bytes */
 
 typedef struct {
+    guint16 version; /* should be 1 */
+    guint32 type;    /* One of DMG_checksum_type */
+    guint32 data;    /* checksum */
+} csum_block_t; /* length: 10 bytes */
+
+typedef struct {
+    guint16 version;
+    guint32 is_hfs;
+    guint32 unknown1;
+    guint8  data_length;
+    guint8  data[255];
+    guint32 unknown2;
+    guint32 unknown3;
+    guint32 vol_modified;
+    guint32 unknown4;
+    union {
+        gchar   vol_signature[2];
+        guint16 vol_sig_as_int;
+    };
+    guint16 size_present;
+} size_block_t; /* length: 286 bytes */
+
+typedef struct {
     gchar      signature[4]; /* "koly" */
     guint32    version;
     guint32    header_size; /* 512 */
