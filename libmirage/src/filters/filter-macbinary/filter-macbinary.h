@@ -50,6 +50,18 @@ typedef enum {
     MC_PROTECTED = 0x01
 } macbinary_flag_t;
 
+typedef enum {
+    BCEM_UNKNOWN1 = G_MININT8+3,
+    BCEM_TERM     = -1,
+    BCEM_ZERO     = 0,
+    BCEM_RAW      = 2
+} bcem_type_t;
+
+typedef enum {
+    IMAGE_IMG = 0x0b,
+    IMAGE_SMI = 0x0c
+} ndif_image_type_t;
+
 #pragma pack(1)
 typedef struct
 {
@@ -80,6 +92,34 @@ typedef struct
     guint16 crc16;          /* CRC16-XModem of previous 124 bytes */
     guint16 reserved_3;     /* Reserved (always zero)             */
 } macbinary_header_t;       /* Length: 128 bytes                  */
+
+typedef struct {
+    guint16 imagetype; /* one of ndif_image_type_t */
+    guint16 unknown1; /* zero */
+    guint8  imagename_len; /* length of imagename */
+    gchar   imagename[63]; /* name of image */
+    guint32 num_sectors; /* number of sectors in image */
+    guint32 unknown2; /* ? */
+    guint32 unknown3; /* zero */
+    guint32 crc32; /* CRC32 */
+    guint32 is_segmented; /* equals one if the image is segmented */
+    guint32 unknown4[9]; /* zero */
+    guint32 num_blocks; /* Number of bcm_data_t blocks */
+} bcem_block_t; /* length: 128 bytes */
+
+typedef struct {
+    guint8  sector[3]; /* starting sector */
+    gint8   type; /* One of bcem_type_t */
+    guint32 offset; /* data fork offset */
+    guint32 length; /* data fork length */
+} bcem_data_t; /* length: 12 bytes */
+
+typedef struct {
+    guint16 part; /* file number in set making up image */
+    guint16 parts; /* number of files making up image */
+    guint32 unknown1[4]; /* seems to be a constant... */
+    guint32 unknown2; /* seems interesting (changes) */
+} bcm_block_t; /* length: 24 bytes */
 #pragma pack()
 
 G_END_DECLS

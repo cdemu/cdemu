@@ -78,11 +78,11 @@ static guint16 docrc(guchar *buffer, guint length, guint16 *crctab)
 
 
 /**********************************************************************\
- *              MirageFileFilter methods implementations              *
+ *             Endianness conversion and debug functions              *
 \**********************************************************************/
-static void mirage_file_filter_fixup_header(MirageFileFilterMacBinary *self)
+static void mirage_file_filter_macbinary_fixup_header(macbinary_header_t *header)
 {
-    macbinary_header_t *header = &self->priv->header;
+    g_assert(header);
 
     header->vert_pos      = GUINT16_FROM_BE(header->vert_pos);
     header->horiz_pos     = GUINT16_FROM_BE(header->horiz_pos);
@@ -98,6 +98,111 @@ static void mirage_file_filter_fixup_header(MirageFileFilterMacBinary *self)
     header->unpacked_len = GUINT32_FROM_BE(header->unpacked_len);
 }
 
+static void mirage_file_filter_macbinary_fixup_bcem_block(bcem_block_t *bcem_block)
+{
+    g_assert(bcem_block);
+
+    bcem_block->imagetype    = GUINT16_FROM_BE(bcem_block->imagetype);
+    bcem_block->unknown1     = GUINT16_FROM_BE(bcem_block->unknown1);
+    bcem_block->num_sectors  = GUINT32_FROM_BE(bcem_block->num_sectors);
+    bcem_block->unknown2     = GUINT32_FROM_BE(bcem_block->unknown2);
+    bcem_block->unknown3     = GUINT32_FROM_BE(bcem_block->unknown3);
+    bcem_block->crc32        = GUINT32_FROM_BE(bcem_block->crc32);
+    bcem_block->is_segmented = GUINT32_FROM_BE(bcem_block->is_segmented);
+
+    for (guint u = 0; u < 9; u++) {
+        bcem_block->unknown4[u] = GUINT32_FROM_BE(bcem_block->unknown4[u]);
+    }
+
+    bcem_block->num_blocks   = GUINT32_FROM_BE(bcem_block->num_blocks);
+}
+
+static void mirage_file_filter_macbinary_fixup_bcem_data(bcem_data_t *bcem_data)
+{
+    guint8 temp;
+
+    g_assert(bcem_data);
+
+    temp = bcem_data->sector[0];
+    bcem_data->sector[0] = bcem_data->sector[2];
+    bcem_data->sector[2] = temp;
+
+    bcem_data->offset = GUINT32_FROM_BE(bcem_data->offset);
+    bcem_data->length = GUINT32_FROM_BE(bcem_data->length);
+}
+
+static void mirage_file_filter_macbinary_fixup_bcm_block(bcm_block_t *bcm_block)
+{
+    g_assert(bcm_block);
+
+    bcm_block->part     = GUINT16_FROM_BE(bcm_block->part);
+    bcm_block->parts    = GUINT16_FROM_BE(bcm_block->parts);
+    bcm_block->unknown2 = GUINT32_FROM_BE(bcm_block->unknown2);
+}
+
+static void mirage_file_filter_macbinary_print_header(MirageFileFilterMacBinary *self, macbinary_header_t *header, guint16 calculated_crc)
+{
+    GString *filename = NULL;
+
+    g_assert(self && header);
+
+    filename = g_string_new_len(header->filename, header->fn_length);
+    g_assert(filename);
+
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "\n%s: MacBinary header:\n", __debug__);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  Original filename: %s\n", __debug__, filename->str);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  File type: %.4s creator: %.4s\n", __debug__, header->filetype, header->creator);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  Data fork length: %d\n", __debug__, header->datafork_len);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  Resource fork length: %d\n", __debug__, header->resfork_len);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  Get info comment length: %d\n", __debug__, header->getinfo_len);
+
+    if (calculated_crc == header->crc16) {
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  Length of total files: %d\n", __debug__, header->unpacked_len);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  Length of secondary header: %d\n", __debug__, header->secondary_len);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  CRC16: 0x%04x (calculated: 0x%04x)\n", __debug__, header->crc16, calculated_crc);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  Version used to pack: %d\n", __debug__, header->pack_ver-129);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  Version needed to unpack: %d\n", __debug__, header->unpack_ver-129);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  Finder flags: 0x%04x\n", __debug__, (header->finder_flags << 8) + header->finder_flags_2);
+    } else {
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  Finder flags: 0x%04x\n", __debug__, header->finder_flags << 8);
+    }
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "\n");
+
+    g_string_free(filename, TRUE);
+}
+
+static void mirage_file_filter_macbinary_print_bcem_block(MirageFileFilterMacBinary *self, bcem_block_t *bcem_block)
+{
+    GString *imagename = NULL;
+    
+    g_assert(self && bcem_block);
+
+    imagename = g_string_new_len(bcem_block->imagename, bcem_block->imagename_len);
+    g_assert(imagename);
+
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "\n%s: bcem block:\n", __debug__);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  Image type: 0x%x\n", __debug__, bcem_block->imagetype);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  Unknown1: 0x%04x\n", __debug__, bcem_block->unknown1);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  Image name: %s\n", __debug__, imagename->str);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  Number of sectors: %u\n", __debug__, bcem_block->num_sectors);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  Unknown2: 0x%08x\n", __debug__, bcem_block->unknown2);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  Unknown3: 0x%08x\n", __debug__, bcem_block->unknown3);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  CRC32: 0x%08x\n", __debug__, bcem_block->crc32);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  Is segmented: %u\n", __debug__, bcem_block->is_segmented);
+
+    for (guint u = 0; u < 9; u++) {
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  Unknown4[%u]: 0x%08x\n", __debug__, u, bcem_block->unknown4[u]);
+    }
+
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  Number of blocks: %u\n\n", __debug__, bcem_block->num_blocks);
+
+    g_string_free(imagename, TRUE);
+}
+
+
+/**********************************************************************\
+ *              MirageFileFilter methods implementations              *
+\**********************************************************************/
 static gboolean mirage_file_filter_macbinary_can_handle_data_format (MirageFileFilter *_self, GError **error)
 {
     MirageFileFilterMacBinary *self = MIRAGE_FILE_FILTER_MACBINARY(_self);
@@ -107,8 +212,6 @@ static gboolean mirage_file_filter_macbinary_can_handle_data_format (MirageFileF
     rsrc_fork_t        *rsrc_fork = NULL;
 
     guint16 calculated_crc = 0;
-
-    GString *file_name = NULL;
 
     /* Read MacBinary header */
     g_seekable_seek(G_SEEKABLE(stream), 0, G_SEEK_SET, NULL, NULL);
@@ -122,7 +225,7 @@ static gboolean mirage_file_filter_macbinary_can_handle_data_format (MirageFileF
     calculated_crc = docrc((guchar *) header, sizeof(macbinary_header_t) - 4, self->priv->crctab);
 
     /* Fixup header endianness */
-    mirage_file_filter_fixup_header(self);
+    mirage_file_filter_macbinary_fixup_header(header);
 
     /* Validate MacBinary header */
     if (header->version != 0 || header->reserved_1 != 0 || header->reserved_2 != 0 ||
@@ -144,26 +247,7 @@ static gboolean mirage_file_filter_macbinary_can_handle_data_format (MirageFileF
     /* Print some info */
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: parsing the underlying stream data...\n", __debug__);
 
-    file_name = g_string_new_len(header->filename, header->fn_length);
-
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: Original filename: %s\n", __debug__, file_name->str);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: File type: %.4s creator: %.4s\n", __debug__, header->filetype, header->creator);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: Data fork length: %d\n", __debug__, header->datafork_len);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: Resource fork length: %d\n", __debug__, header->resfork_len);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: Get info comment length: %d\n", __debug__, header->getinfo_len);
-
-    if (calculated_crc == header->crc16) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: Length of total files: %d\n", __debug__, header->unpacked_len);
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: Length of secondary header: %d\n", __debug__, header->secondary_len);
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: CRC16: 0x%04x (calculated: 0x%04x)\n", __debug__, header->crc16, calculated_crc);
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: Version used to pack: %d\n", __debug__, header->pack_ver-129);
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: Version needed to unpack: %d\n", __debug__, header->unpack_ver-129);
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: Finder flags: 0x%04x\n", __debug__, (header->finder_flags << 8) + header->finder_flags_2);
-    } else {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: Finder flags: 0x%04x\n", __debug__, header->finder_flags << 8);
-    }
-
-    g_string_free(file_name, TRUE);
+    mirage_file_filter_macbinary_print_header(self, header, calculated_crc);
 
     /* Read the resource fork if any exists */
     if (header->resfork_len) {
@@ -201,16 +285,34 @@ static gboolean mirage_file_filter_macbinary_can_handle_data_format (MirageFileF
         rsrc_ref_t *rsrc_ref = rsrc_find_ref_by_type_and_id(rsrc_fork, "bcm#", 128);
         
         if (rsrc_ref) {
-            guint16 *part  = (guint16 *) rsrc_ref->data; 
-            guint16 *parts = (guint16 *) (rsrc_ref->data + 2);
-            guint32 *woot  = (guint32 *) (rsrc_ref->data + 20);
-            
-            *part  = GUINT16_FROM_BE(*part);
-            *parts = GUINT16_FROM_BE(*parts);
-            *woot  = GUINT32_FROM_BE(*woot);
+            bcm_block_t *bcm_block = (bcm_block_t *) rsrc_ref->data;
+
+            mirage_file_filter_macbinary_fixup_bcm_block(bcm_block);
 
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: This file is part %u of a set of %u files! Interesting value: 0x%x\n", 
-                         __debug__, *part, *parts, *woot);
+                         __debug__, bcm_block->part, bcm_block->parts, bcm_block->unknown2);
+        }
+
+        rsrc_ref = rsrc_find_ref_by_type_and_id(rsrc_fork, "bcem", 128);
+
+        if (rsrc_ref) {
+            bcem_block_t *bcem_block = (bcem_block_t *) rsrc_ref->data;
+            bcem_data_t  *bcem_data = (bcem_data_t *) (rsrc_ref->data + sizeof(bcem_block_t));
+
+            mirage_file_filter_macbinary_fixup_bcem_block(bcem_block);
+
+            mirage_file_filter_macbinary_print_bcem_block(self, bcem_block);
+
+            for (guint b = 0; b < bcem_block->num_blocks; b++) {
+                guint32 sector;
+                mirage_file_filter_macbinary_fixup_bcem_data(&bcem_data[b]);
+
+                sector = (bcem_data[b].sector[2] << 16) + (bcem_data[b].sector[1] << 8) + bcem_data[b].sector[0];
+
+                MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: Block %3u: Sector: %8u Type: %4d Offset: 0x%08x Length: 0x%08x (%u)\n", 
+                             __debug__, b, sector, bcem_data[b].type, bcem_data[b].offset, bcem_data[b].length, bcem_data[b].length);
+            }
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "\n");
         }
     }
 
