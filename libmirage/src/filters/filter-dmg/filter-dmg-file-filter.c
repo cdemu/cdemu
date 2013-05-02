@@ -602,18 +602,30 @@ static gboolean mirage_file_filter_dmg_open_streams (MirageFileFilterDmg *self, 
 
     /* Read the rest of the koly blocks */
     for (guint s = 1; s < self->priv->num_koly_blocks; s++) {
-        g_seekable_seek(G_SEEKABLE(streams[s]), -sizeof(koly_block_t), G_SEEK_END, NULL, NULL);
-        if (g_input_stream_read(streams[s], &self->priv->koly_block[s], sizeof(koly_block_t), NULL, NULL) != sizeof(koly_block_t)) {
-            g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, "Failed to read koly block!");
-            return FALSE;
-        }
+        for (guint try = 0; try < 2; try++) {
+            /* Find koly block either on end (most often) or beginning of file */
+            if (try == 0) {
+                g_seekable_seek(G_SEEKABLE(streams[s]), -sizeof(koly_block_t), G_SEEK_END, NULL, NULL);
+            } else {
+                g_seekable_seek(G_SEEKABLE(streams[s]), 0, G_SEEK_SET, NULL, NULL);
+            }
 
-        mirage_file_filter_dmg_koly_block_fix_endian(&self->priv->koly_block[s]);
+            /* Read koly block */
+            if (g_input_stream_read(streams[s], &self->priv->koly_block[s], sizeof(koly_block_t), NULL, NULL) != sizeof(koly_block_t)) {
+                g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_CANNOT_HANDLE, "Failed to read koly block!");
+                return FALSE;
+            }
 
-        /* Validate koly block */
-        if (memcmp(self->priv->koly_block[s].signature, koly_signature, sizeof(koly_signature))) {
-            g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, "Invalid koly block!");
-            return FALSE;
+            /* Validate koly block */
+            if (memcmp(self->priv->koly_block[s].signature, koly_signature, sizeof(koly_signature))) {
+                if (try == 1) {
+                    g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_CANNOT_HANDLE, "Invalid koly block!");
+                    return FALSE;
+                }
+            } else {
+                mirage_file_filter_dmg_koly_block_fix_endian(&self->priv->koly_block[s]);
+                break;
+            }
         }
 
         /* Output koly block info */
@@ -657,8 +669,6 @@ static gboolean mirage_file_filter_dmg_can_handle_data_format (MirageFileFilter 
             return FALSE;
         }
 
-        mirage_file_filter_dmg_koly_block_fix_endian(koly_block);
-
         /* Validate koly block */
         if (memcmp(koly_block->signature, koly_signature, sizeof(koly_signature))) {
             if (try == 1) {
@@ -666,7 +676,7 @@ static gboolean mirage_file_filter_dmg_can_handle_data_format (MirageFileFilter 
                 return FALSE;
             }
         } else {
-            /* Found signature */
+            mirage_file_filter_dmg_koly_block_fix_endian(koly_block);
             break;
         }
     }
