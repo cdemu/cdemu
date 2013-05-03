@@ -72,7 +72,9 @@ struct _MirageFileFilterMacBinaryPrivate
 /* Call this to init the fast CRC-16 calculation table */
 static guint16 *crcinit(guint genpoly)
 {
-    guint16 *crctab = g_new(guint16, 256);
+    guint16 *crctab = g_try_new(guint16, 256);
+
+    if (!crctab) return NULL;
 
     for (gint val = 0; val <= 255; val++) {
         guint crc = val << 8;
@@ -136,12 +138,9 @@ static void mirage_file_filter_macbinary_fixup_bcem_block(bcem_block_t *bcem_blo
     bcem_block->unknown3     = GUINT32_FROM_BE(bcem_block->unknown3);
     bcem_block->crc32        = GUINT32_FROM_BE(bcem_block->crc32);
     bcem_block->is_segmented = GUINT32_FROM_BE(bcem_block->is_segmented);
-
-    for (guint u = 0; u < 9; u++) {
-        bcem_block->unknown4[u] = GUINT32_FROM_BE(bcem_block->unknown4[u]);
-    }
-
     bcem_block->num_blocks   = GUINT32_FROM_BE(bcem_block->num_blocks);
+    
+    /* ignoring unknown4 */
 }
 
 static void mirage_file_filter_macbinary_fixup_bcem_data(bcem_data_t *bcem_data)
@@ -165,6 +164,10 @@ static void mirage_file_filter_macbinary_fixup_bcm_block(bcm_block_t *bcm_block)
     bcm_block->part     = GUINT16_FROM_BE(bcm_block->part);
     bcm_block->parts    = GUINT16_FROM_BE(bcm_block->parts);
     bcm_block->unknown2 = GUINT32_FROM_BE(bcm_block->unknown2);
+
+    for (guint i = 0; i < 4; i++) {
+        bcm_block->unknown1[i] = GUINT32_FROM_BE(bcm_block->unknown1[i]);
+    }
 }
 
 static void mirage_file_filter_macbinary_print_header(MirageFileFilterMacBinary *self, macbinary_header_t *header, guint16 calculated_crc)
@@ -216,12 +219,11 @@ static void mirage_file_filter_macbinary_print_bcem_block(MirageFileFilterMacBin
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  Unknown3: 0x%08x\n", __debug__, bcem_block->unknown3);
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  CRC32: 0x%08x\n", __debug__, bcem_block->crc32);
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  Is segmented: %u\n", __debug__, bcem_block->is_segmented);
-
-    for (guint u = 0; u < 9; u++) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  Unknown4[%u]: 0x%08x\n", __debug__, u, bcem_block->unknown4[u]);
-    }
-
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  Number of blocks: %u\n\n", __debug__, bcem_block->num_blocks);
+
+    /*for (guint u = 0; u < 9; u++) {
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  Unknown4[%u]: 0x%08x\n", __debug__, u, bcem_block->unknown4[u]);
+    }*/
 
     g_string_free(imagename, TRUE);
 }
@@ -249,6 +251,11 @@ static gboolean mirage_file_filter_macbinary_can_handle_data_format (MirageFileF
 
     /* We need to calculate CRC16 before we fixup the header */
     self->priv->crctab = crcinit(CRC16POLY);
+    if (!self->priv->crctab) {
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_CANNOT_HANDLE, "Failed to allocate memory!");
+        return FALSE;
+    }
+
     calculated_crc = docrc((guchar *) header, sizeof(macbinary_header_t) - 4, self->priv->crctab);
 
     /* Fixup header endianness */
@@ -286,7 +293,7 @@ static gboolean mirage_file_filter_macbinary_can_handle_data_format (MirageFileF
             rsrc_fork_pos += 128 - (header->datafork_len % 128);
         }
 
-        rsrc_fork_data = g_malloc(header->resfork_len);
+        rsrc_fork_data = g_try_malloc(header->resfork_len);
         if (!rsrc_fork_data) {
             g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_CANNOT_HANDLE, "Failed to allocate memory!");
             return FALSE;
@@ -327,8 +334,11 @@ static gboolean mirage_file_filter_macbinary_can_handle_data_format (MirageFileF
 
             /* Construct a part index */
             self->priv->num_parts = bcem_block->num_blocks - 1;
-            self->priv->parts = g_new0(NDIF_Part, self->priv->num_parts);
-            g_assert(self->priv->parts);
+            self->priv->parts = g_try_new0(NDIF_Part, self->priv->num_parts);
+            if (!self->priv->parts) {
+                g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_CANNOT_HANDLE, "Failed to allocate memory!");
+                return FALSE;
+            }
 
             for (guint b = 0; b < bcem_block->num_blocks; b++) {
                 mirage_file_filter_macbinary_fixup_bcem_data(&bcem_data[b]);
@@ -371,6 +381,10 @@ static gboolean mirage_file_filter_macbinary_can_handle_data_format (MirageFileF
                 } else if (bcem_data[b].type == BCEM_TERM) {
                     /* Skip the terminating block */
                     g_assert(start_sector == bcem_block->num_sectors);
+                } else if (bcem_data[b].type == BCEM_KENCODE) {
+                    MIRAGE_DEBUG(self, MIRAGE_DEBUG_ERROR, "%s: KenCode decompression is not supported!\n", __debug__);
+                    g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_CANNOT_HANDLE, "KenCode decompression is not supported!");
+                    return FALSE;
                 } else {
                     MIRAGE_DEBUG(self, MIRAGE_DEBUG_ERROR, "%s: Encountered unknown part type: %d!\n", __debug__, bcem_data[b].type);
                     g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_CANNOT_HANDLE, "Encountered unknown part type: %d!", bcem_data[b].type);
@@ -381,10 +395,15 @@ static gboolean mirage_file_filter_macbinary_can_handle_data_format (MirageFileF
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: IO buffer size: %u\n", __debug__, self->priv->io_buffer_size);
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: Inflate buffer size: %u\n\n", __debug__, self->priv->inflate_buffer_size);
 
-            self->priv->io_buffer = g_malloc(self->priv->io_buffer_size);
-            self->priv->inflate_buffer = g_malloc(self->priv->inflate_buffer_size);
-            
-            if (!self->priv->io_buffer || !self->priv->inflate_buffer) {
+            self->priv->io_buffer = g_try_malloc(self->priv->io_buffer_size);
+            if (!self->priv->io_buffer && self->priv->io_buffer_size) {
+                MIRAGE_DEBUG(self, MIRAGE_DEBUG_ERROR, "%s: Error allocating memory for buffers!\n", __debug__);
+                g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_CANNOT_HANDLE, "Error allocating memory for buffers!");
+                return FALSE;
+            }
+
+            self->priv->inflate_buffer = g_try_malloc(self->priv->inflate_buffer_size);
+            if (!self->priv->inflate_buffer && self->priv->inflate_buffer_size) {
                 MIRAGE_DEBUG(self, MIRAGE_DEBUG_ERROR, "%s: Error allocating memory for buffers!\n", __debug__);
                 g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_CANNOT_HANDLE, "Error allocating memory for buffers!");
                 return FALSE;
@@ -399,8 +418,11 @@ static gboolean mirage_file_filter_macbinary_can_handle_data_format (MirageFileF
 
             mirage_file_filter_macbinary_fixup_bcm_block(bcm_block);
 
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: This file is part %u of a set of %u files! Interesting value: 0x%x\n\n", 
-                         __debug__, bcm_block->part, bcm_block->parts, bcm_block->unknown2);
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: This file is part %u of a set of %u files!\n", 
+                         __debug__, bcm_block->part, bcm_block->parts);
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: Unknown 1&2: 0x%08x 0x%08x 0x%08x 0x%08x - 0x%08x\n\n", __debug__,
+                         bcm_block->unknown1[0], bcm_block->unknown1[1], bcm_block->unknown1[2], bcm_block->unknown1[3],
+                         bcm_block->unknown2);
         }
     }
 
@@ -519,7 +541,7 @@ static gssize mirage_file_filter_macbinary_partial_read (MirageFileFilter *_self
             g_assert (written_bytes == part->num_sectors * 512);
         } else {
             /* We should never get here... */
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: Encountered unknown chunk type %u!\n", __debug__, part->type);
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: Encountered unknown chunk type: %d!\n", __debug__, part->type);
             return -1;
         }
 

@@ -78,6 +78,8 @@ struct _MirageFileFilterDmgPrivate
 \**********************************************************************/
 static inline void mirage_file_filter_dmg_koly_block_fix_endian (koly_block_t *koly_block)
 {
+    g_assert(koly_block);
+
     koly_block->version       = GUINT32_FROM_BE(koly_block->version);
     koly_block->header_size   = GUINT32_FROM_BE(koly_block->header_size);
     koly_block->flags         = GUINT32_FROM_BE(koly_block->flags);
@@ -104,11 +106,11 @@ static inline void mirage_file_filter_dmg_koly_block_fix_endian (koly_block_t *k
     koly_block->master_checksum.type    = GUINT32_FROM_BE(koly_block->master_checksum.type);
     koly_block->master_checksum.size    = GUINT32_FROM_BE(koly_block->master_checksum.size);
 
-    for (guint i = 0; i < koly_block->master_checksum.size; i++) {
+    for (guint i = 0; i < 32; i++) {
         koly_block->master_checksum.data[i] = GUINT32_FROM_BE(koly_block->master_checksum.data[i]);
     }
 
-    for (guint i = 0; i < koly_block->data_fork_checksum.size; i++) {
+    for (guint i = 0; i < 32; i++) {
         koly_block->data_fork_checksum.data[i] = GUINT32_FROM_BE(koly_block->data_fork_checksum.data[i]);
     }
 
@@ -118,6 +120,8 @@ static inline void mirage_file_filter_dmg_koly_block_fix_endian (koly_block_t *k
 
 static inline void mirage_file_filter_dmg_blkx_block_fix_endian (blkx_block_t *blkx_block)
 {
+    g_assert(blkx_block);
+
     blkx_block->info_version = GUINT32_FROM_BE(blkx_block->info_version);
 
     blkx_block->first_sector_number = GUINT64_FROM_BE(blkx_block->first_sector_number);
@@ -131,7 +135,7 @@ static inline void mirage_file_filter_dmg_blkx_block_fix_endian (blkx_block_t *b
     blkx_block->checksum.type     = GUINT32_FROM_BE(blkx_block->checksum.type);
     blkx_block->checksum.size     = GUINT32_FROM_BE(blkx_block->checksum.size);
 
-    for (guint i = 0; i < blkx_block->checksum.size; i++) {
+    for (guint i = 0; i < 32; i++) {
         blkx_block->checksum.data[i] = GUINT32_FROM_BE(blkx_block->checksum.data[i]);
     }
 
@@ -140,8 +144,10 @@ static inline void mirage_file_filter_dmg_blkx_block_fix_endian (blkx_block_t *b
 
 static inline void mirage_file_filter_dmg_blkx_data_fix_endian (blkx_data_t *blkx_data)
 {
+    g_assert(blkx_data);
+
     blkx_data->block_type = GINT32_FROM_BE(blkx_data->block_type);
-    /* skip reserved */
+    blkx_data->reserved   = GINT32_FROM_BE(blkx_data->reserved);
 
     blkx_data->sector_offset     = GUINT64_FROM_BE(blkx_data->sector_offset);
     blkx_data->sector_count      = GUINT64_FROM_BE(blkx_data->sector_count);
@@ -151,6 +157,8 @@ static inline void mirage_file_filter_dmg_blkx_data_fix_endian (blkx_data_t *blk
 
 static inline void mirage_file_filter_dmg_csum_fix_endian (csum_block_t *csum_block)
 {
+    g_assert(csum_block);
+
     csum_block->version = GUINT16_FROM_LE(csum_block->version);
     csum_block->type    = GUINT16_FROM_LE(csum_block->type);
     csum_block->data    = GUINT32_FROM_LE(csum_block->data);
@@ -158,6 +166,8 @@ static inline void mirage_file_filter_dmg_csum_fix_endian (csum_block_t *csum_bl
 
 static inline void mirage_file_filter_dmg_size_fix_endian (size_block_t *size_block)
 {
+    g_assert(size_block);
+
     size_block->version        = GUINT16_FROM_LE(size_block->version);
     size_block->is_hfs         = GUINT32_FROM_LE(size_block->is_hfs);
     size_block->unknown1       = GUINT32_FROM_LE(size_block->unknown1);
@@ -175,6 +185,8 @@ static inline void mirage_file_filter_dmg_size_fix_endian (size_block_t *size_bl
 \**********************************************************************/
 static void mirage_file_filter_dmg_print_koly_block(MirageFileFilterDmg *self, koly_block_t *koly_block)
 {
+    g_assert(self && koly_block);
+
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "\n");
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: DMG trailer:\n", __debug__);
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  signature: %.4s\n", __debug__, koly_block->signature);
@@ -196,14 +208,14 @@ static void mirage_file_filter_dmg_print_koly_block(MirageFileFilterDmg *self, k
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  segment_count: %u\n", __debug__, koly_block->segment_count);
 
     for (guint i = 0; i < 4; i++) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  segment_id[%u]: %u\n", __debug__, i, koly_block->segment_id[i]);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  segment_id[%u]: 0x%08x\n", __debug__, i, koly_block->segment_id[i]);
     }
 
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  data_fork_checksum.type: %u\n", __debug__, koly_block->data_fork_checksum.type);
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  data_fork_checksum.size: %u\n", __debug__, koly_block->data_fork_checksum.size);
 
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  data_fork_checksum.data:\n", __debug__);
-    for (guint c = 0; c < koly_block->data_fork_checksum.size; c ++) {
+    for (guint c = 0; c < 32; c ++) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%08x ", koly_block->data_fork_checksum.data[c]);
         if ((c + 1) % 8 == 0) {
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "\n");
@@ -214,7 +226,7 @@ static void mirage_file_filter_dmg_print_koly_block(MirageFileFilterDmg *self, k
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  master_checksum.size: %u\n", __debug__, koly_block->master_checksum.size);
 
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  master_checksum.data:\n", __debug__);
-    for (guint c = 0; c < koly_block->master_checksum.size; c ++) {
+    for (guint c = 0; c < 32; c ++) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%08x ", koly_block->master_checksum.data[c]);
         if ((c + 1) % 8 == 0) {
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "\n");
@@ -226,6 +238,8 @@ static void mirage_file_filter_dmg_print_koly_block(MirageFileFilterDmg *self, k
 
 static void mirage_file_filter_dmg_print_blkx_block(MirageFileFilterDmg *self, blkx_block_t *blkx_block)
 {
+    g_assert(self && blkx_block);
+
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "\n");
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: mish block:\n", __debug__);
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  signature: %.4s\n", __debug__, blkx_block->signature);
@@ -239,7 +253,7 @@ static void mirage_file_filter_dmg_print_blkx_block(MirageFileFilterDmg *self, b
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  checksum.size: %u\n", __debug__, blkx_block->checksum.size);
 
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  checksum.data:\n", __debug__);
-    for (guint c = 0; c < blkx_block->checksum.size; c ++) {
+    for (guint c = 0; c < 32; c ++) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%08x ", blkx_block->checksum.data[c]);
         if ((c + 1) % 8 == 0) {
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "\n");
@@ -252,6 +266,8 @@ static void mirage_file_filter_dmg_print_blkx_block(MirageFileFilterDmg *self, b
 
 static void mirage_file_filter_dmg_print_csum_block(MirageFileFilterDmg *self, csum_block_t *csum_block)
 {
+    g_assert(self && csum_block);
+
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "\n");
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: cSum block:\n", __debug__);
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  version: %u\n", __debug__, csum_block->version);
@@ -262,16 +278,18 @@ static void mirage_file_filter_dmg_print_csum_block(MirageFileFilterDmg *self, c
 
 static void mirage_file_filter_dmg_print_size_block(MirageFileFilterDmg *self, size_block_t *size_block)
 {
+    g_assert(self && size_block);
+
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "\n");
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: size block:\n", __debug__);
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  version: %u\n", __debug__, size_block->version);
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  is_hfs: %u\n", __debug__, size_block->is_hfs);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  unknown1: %u\n", __debug__, size_block->unknown1);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  unknown1: 0x%08x\n", __debug__, size_block->unknown1);
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  data_length: %u\n", __debug__, size_block->data_length);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  unknown2: %u\n", __debug__, size_block->unknown2);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  unknown3: %u\n", __debug__, size_block->unknown3);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  vol_modified: %u\n", __debug__, size_block->vol_modified);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  unknown4: %u\n", __debug__, size_block->unknown4);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  unknown2: 0x%08x\n", __debug__, size_block->unknown2);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  unknown3: 0x%08x\n", __debug__, size_block->unknown3);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  vol_modified: 0x%08x\n", __debug__, size_block->vol_modified);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  unknown4: 0x%08x\n", __debug__, size_block->unknown4);
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  vol_signature: %.2s\n", __debug__, size_block->vol_signature);
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  size_present: %u\n", __debug__, size_block->size_present);
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "\n");
@@ -283,8 +301,12 @@ static void mirage_file_filter_dmg_print_size_block(MirageFileFilterDmg *self, s
 \**********************************************************************/
 static gchar *create_filename_func (const gchar *main_filename, gint index)
 {
+    if (!main_filename) return NULL;
+
     gint  main_fn_len = strlen(main_filename) - 7;
-    gchar *ret_filename = g_malloc(main_fn_len + 12);
+    gchar *ret_filename = g_try_malloc(main_fn_len + 12);
+
+    if (!ret_filename) return NULL;
 
     /* Copy base filename without 'NNN.dmg' */
     memcpy(ret_filename, main_filename, main_fn_len);
@@ -308,7 +330,7 @@ static gboolean mirage_file_filter_dmg_read_descriptor (MirageFileFilterDmg *sel
 
     /* Read and parse resource-fork */
     if (koly_block->xml_offset && koly_block->xml_length) {
-        rsrc_fork_data = g_malloc(koly_block->xml_length);
+        rsrc_fork_data = g_try_malloc(koly_block->xml_length);
         if (!rsrc_fork_data) {
             g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, "Failed to allocate memory!");
             return FALSE;
@@ -322,7 +344,7 @@ static gboolean mirage_file_filter_dmg_read_descriptor (MirageFileFilterDmg *sel
 
         rsrc_fork = self->priv->rsrc_fork = rsrc_fork_read_xml(rsrc_fork_data, koly_block->xml_length);
     } else if (koly_block->rsrc_fork_offset && koly_block->rsrc_fork_length) {
-        rsrc_fork_data = g_malloc(koly_block->rsrc_fork_length);
+        rsrc_fork_data = g_try_malloc(koly_block->rsrc_fork_length);
         if (!rsrc_fork_data) {
             g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, "Failed to allocate memory!");
             return FALSE;
@@ -541,18 +563,16 @@ static gboolean mirage_file_filter_dmg_read_index (MirageFileFilterDmg *self, GE
 
     /* Allocate inflate buffer */
     self->priv->inflate_buffer = g_try_malloc(self->priv->inflate_buffer_size);
-    if (!self->priv->inflate_buffer) {
+    if (!self->priv->inflate_buffer && self->priv->inflate_buffer_size) {
         g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, "Failed to allocate memory for inflate buffer!");
         return FALSE;
     }
 
     /* Allocate I/O buffer */
-    if (self->priv->io_buffer_size) {
-        self->priv->io_buffer = g_try_malloc(self->priv->io_buffer_size);
-        if (!self->priv->io_buffer) {
-            g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, "Failed to allocate memory for I/O buffer!");
-            return FALSE;
-        }
+    self->priv->io_buffer = g_try_malloc(self->priv->io_buffer_size);
+    if (!self->priv->io_buffer && self->priv->io_buffer_size) {
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, "Failed to allocate memory for I/O buffer!");
+        return FALSE;
     }
 
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: successfully generated index\n\n", __debug__);

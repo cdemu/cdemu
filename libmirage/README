@@ -46,6 +46,7 @@ Currently supported image formats:
 
 Currently supported file filters:
  - Apple Disk Image (DMG) container format
+ - Apple Disk Image (IMG, SMI) via MacBinary container format
  - GZip (GZ) container format
  - XZ (XZ) container format
  - Compressed ISO (CSO) container format

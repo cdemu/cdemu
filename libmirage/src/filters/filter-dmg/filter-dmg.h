@@ -52,14 +52,15 @@ typedef enum {
 /* Checksum types */
 typedef enum {
     CT_NONE  = 0,
-    CT_CRC32 = 2
+    CT_CRC32 = 2,
+    CT_MD5   = 4
 } DMG_checksum_type;
 
 #pragma pack(1)
 
 typedef struct {
     guint32 type; /* One of DMG_checksum_type */
-    guint32 size; /* should be 32 */
+    guint32 size; /* Number of bits in checksum */
     guint32 data[32]; /* checksum */
 } checksum_t; /* length: 136 bytes */
 

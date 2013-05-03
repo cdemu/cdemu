@@ -287,7 +287,7 @@ rsrc_fork_t *rsrc_fork_read_xml(const gchar *xml_data, gssize xml_length)
         return NULL;
     }
 
-    xml_user_data = g_new0(xml_user_data_t, 1);
+    xml_user_data = g_try_new0(xml_user_data_t, 1);
     if (!xml_user_data) return NULL;
 
     GMarkupParseContext *context = g_markup_parse_context_new (&res_fork_xml_parser, 0, xml_user_data, NULL);
@@ -353,7 +353,7 @@ rsrc_fork_t *rsrc_fork_read_binary(gchar *raw_data)
         return NULL;
     }
 
-    rsrc_fork = g_new0(rsrc_fork_t, 1);
+    rsrc_fork = g_try_new0(rsrc_fork_t, 1);
     if (!rsrc_fork) return NULL;
 
     /* Read and fixup header */
@@ -368,11 +368,17 @@ rsrc_fork_t *rsrc_fork_read_binary(gchar *raw_data)
     rsrc_fork->res_fork_attrs = rsrc_raw_map->res_fork_attrs;
     rsrc_fork->num_types = rsrc_raw_map->num_types_minus_one + 1;
 
-    rsrc_fork->type_list = g_new0(rsrc_type_t, rsrc_fork->num_types);
-    if (!rsrc_fork->type_list) return NULL;
+    /* Do we have any types at all? */
+    if (rsrc_fork->num_types) {
+        rsrc_fork->type_list = g_try_new0(rsrc_type_t, rsrc_fork->num_types);
+        if (!rsrc_fork->type_list) return NULL;
+    } else {
+        rsrc_fork->type_list = NULL;
+        return rsrc_fork;
+    }
 
     /* Loop through resource types */
-    for (guint t = 0; t <= rsrc_raw_map->num_types_minus_one; t++) {
+    for (gint t = 0; t <= rsrc_raw_map->num_types_minus_one; t++) {
         rsrc_raw_type_t *rsrc_raw_type = (rsrc_raw_type_t *) (raw_data + rsrc_raw_header->map_offset +
                                          rsrc_raw_map->type_list_offset + 2 /* note: needed */ +
                                          sizeof(rsrc_raw_type_t) * t);
@@ -383,11 +389,17 @@ rsrc_fork_t *rsrc_fork_read_binary(gchar *raw_data)
         type_list[t].type_as_int = rsrc_raw_type->type_as_int;
         type_list[t].num_refs = rsrc_raw_type->num_refs_minus_one + 1;
 
-        type_list[t].ref_list = g_new0(rsrc_ref_t, type_list[t].num_refs);
-        if (!type_list[t].ref_list) return NULL;
+        /* Do we have any refs at all? */
+        if (type_list[t].num_refs) {
+            type_list[t].ref_list = g_try_new0(rsrc_ref_t, type_list[t].num_refs);
+            if (!type_list[t].ref_list) return NULL;
+        } else {
+            type_list[t].ref_list = NULL;
+            continue;
+        }
 
         /* Loop through resource references */
-        for (guint r = 0; r <= rsrc_raw_type->num_refs_minus_one; r++) {
+        for (gint r = 0; r <= rsrc_raw_type->num_refs_minus_one; r++) {
             rsrc_raw_ref_t *rsrc_raw_ref = (rsrc_raw_ref_t *) (raw_data + rsrc_raw_header->map_offset +
                                            rsrc_raw_map->type_list_offset + rsrc_raw_type->ref_offset +
                                            sizeof(rsrc_raw_ref_t) * r);
@@ -443,9 +455,13 @@ gboolean rsrc_fork_free(rsrc_fork_t *rsrc_fork)
             }
             g_string_free(rsrc_fork->type_list[t].ref_list[r].name, TRUE);
         }
-        g_free(rsrc_fork->type_list[t].ref_list);
+        if (rsrc_fork->type_list[t].ref_list) {
+            g_free(rsrc_fork->type_list[t].ref_list);
+        }
     }
-    g_free(rsrc_fork->type_list);
+    if (rsrc_fork->type_list) {
+        g_free(rsrc_fork->type_list);
+    }
 
     g_free(rsrc_fork);
 

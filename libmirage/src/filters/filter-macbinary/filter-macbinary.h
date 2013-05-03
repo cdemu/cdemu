@@ -52,6 +52,7 @@ typedef enum {
 } macbinary_flag_t;
 
 typedef enum {
+    BCEM_KENCODE  = G_MININT8,
     BCEM_ADC      = G_MININT8+3,
     BCEM_TERM     = -1,
     BCEM_ZERO     = 0,

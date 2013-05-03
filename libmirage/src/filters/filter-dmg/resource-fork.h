@@ -54,7 +54,7 @@ typedef struct {
     guint16 res_fork_attrs;
     guint16 type_list_offset;
     guint16 name_list_offset;
-    guint16 num_types_minus_one;
+    gint16  num_types_minus_one;
 } rsrc_raw_map_t; /* length: 30 bytes */
 
 typedef struct {
@@ -62,7 +62,7 @@ typedef struct {
         gchar   type[4];
         guint32 type_as_int;
     };
-    guint16 num_refs_minus_one;
+    gint16  num_refs_minus_one;
     guint16 ref_offset;
 } rsrc_raw_type_t; /* length: 8 bytes */
 
