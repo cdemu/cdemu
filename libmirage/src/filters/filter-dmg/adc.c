@@ -21,6 +21,12 @@
 
 #include "adc.h"
 
+typedef enum {
+    PLAIN     = 1,
+    TWOBYTE   = 2,
+    THREEBYTE = 3
+} ADC_ChunkType;
+
 /* Helper functions */
 static inline ADC_ChunkType adc_chunk_type(guint8 byte)
 {

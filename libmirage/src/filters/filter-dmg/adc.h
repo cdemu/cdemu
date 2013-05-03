@@ -22,12 +22,6 @@
 
 #include <glib.h>
 
-typedef enum {
-    PLAIN     = 1,
-    TWOBYTE   = 2,
-    THREEBYTE = 3
-} ADC_ChunkType;
-
 gsize adc_decompress(gsize in_size, guint8 *input, gsize avail_size, guint8 *output, gsize *bytes_written);
 
 #endif /* __ADC_H__ */

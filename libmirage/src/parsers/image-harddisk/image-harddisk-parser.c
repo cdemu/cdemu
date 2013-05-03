@@ -145,7 +145,7 @@ static gboolean mirage_parser_hd_is_file_valid (MirageParserHd *self, GInputStre
     if (!memcmp(mac_buf, "BD", 2) || !memcmp(mac_buf, "H+", 2) || !memcmp(mac_buf, "HX", 2)) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_IMAGE_ID, "%s: HFS/HFS+ signature found!\n", __debug__);
 
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_IMAGE_ID, "%s: image is a HFS/HFS+ image; %d sectors, sector size: %d\n", __debug__, mac_dev_sectors, mac_sectsize);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: image is a HFS/HFS+ image; %d sectors, sector size: %d\n", __debug__, mac_dev_sectors, mac_sectsize);
 
         self->priv->needs_padding = file_length % 2048;
         self->priv->track_sectsize = 2048;

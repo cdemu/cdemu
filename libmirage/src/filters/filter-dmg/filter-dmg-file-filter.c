@@ -488,15 +488,21 @@ static gboolean mirage_file_filter_dmg_read_index (MirageFileFilterDmg *self, GE
                 cur_part++;
 
                 /* Update buffer sizes */
-                if (self->priv->inflate_buffer_size < temp_part.num_sectors * DMG_SECTOR_SIZE) {
-                    self->priv->inflate_buffer_size = temp_part.num_sectors * DMG_SECTOR_SIZE;
-                }
-
-                if (temp_part.type == ADC || temp_part.type == ZLIB || temp_part.type == BZLIB)
-                {
+                if (temp_part.type == ADC || temp_part.type == ZLIB || temp_part.type == BZLIB) {
                     if (self->priv->io_buffer_size < temp_part.in_length) {
                         self->priv->io_buffer_size = temp_part.in_length;
                     }
+                    if (self->priv->inflate_buffer_size < temp_part.num_sectors * DMG_SECTOR_SIZE) {
+                        self->priv->inflate_buffer_size = temp_part.num_sectors * DMG_SECTOR_SIZE;
+                    }
+                } else if (temp_part.type == RAW) {
+                    if (self->priv->inflate_buffer_size < temp_part.num_sectors * DMG_SECTOR_SIZE) {
+                        self->priv->inflate_buffer_size = temp_part.num_sectors * DMG_SECTOR_SIZE;
+                    }
+                } else if (temp_part.type == ZERO || temp_part.type == IGNORE) {
+                    /* Avoid use of buffer for zeros */
+                } else {
+                    g_assert_not_reached();
                 }
             }
         }
@@ -822,9 +828,7 @@ static gssize mirage_file_filter_dmg_partial_read (MirageFileFilter *_self, void
 
         /* Read a part */
         if (part->type == ZERO || part->type == IGNORE) {
-            /* Return a zero-filled buffer */
-            /* FIXME: Some zero parts can be huge so avoid allocating them */
-            memset (self->priv->inflate_buffer, 0, part->num_sectors * DMG_SECTOR_SIZE);
+            /* We don't use internal buffers for zero data */
         } else if (part->type == RAW) {
             /* Read uncompressed part */
             ret = mirage_file_filter_dmg_read_raw_chunk (self, self->priv->inflate_buffer, part_idx);
@@ -898,7 +902,6 @@ static gssize mirage_file_filter_dmg_partial_read (MirageFileFilter *_self, void
                 return -1;
             }
         } else if (part->type == ADC) {
-            /* FIXME: ADC decompression needs testing */
             gsize written_bytes;
 
             /* Read some compressed data */
@@ -921,7 +924,9 @@ static gssize mirage_file_filter_dmg_partial_read (MirageFileFilter *_self, void
         }
 
         /* Set currently cached part */
-        self->priv->cached_part = part_idx;
+        if (part->type != ZERO && part->type != IGNORE) {
+            self->priv->cached_part = part_idx;
+        }
     } else {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_FILE_IO, "%s: part already cached\n", __debug__);
     }
@@ -935,7 +940,11 @@ static gssize mirage_file_filter_dmg_partial_read (MirageFileFilter *_self, void
 
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_FILE_IO, "%s: offset within part: %ld, copying %d bytes\n", __debug__, part_offset, count);
 
-    memcpy(buffer, &self->priv->inflate_buffer[part_offset], count);
+    if (part->type == ZERO || part->type == IGNORE) {
+        memset(buffer, 0, count);
+    } else {
+        memcpy(buffer, &self->priv->inflate_buffer[part_offset], count);
+    }
 
     return count;
 }

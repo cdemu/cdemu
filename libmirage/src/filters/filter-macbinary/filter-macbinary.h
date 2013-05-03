@@ -28,6 +28,7 @@
 #include "mirage.h"
 #include "filter-macbinary-file-filter.h"
 #include "../filter-dmg/resource-fork.h"
+#include "../filter-dmg/adc.h"
 
 G_BEGIN_DECLS
 
@@ -51,7 +52,7 @@ typedef enum {
 } macbinary_flag_t;
 
 typedef enum {
-    BCEM_UNKNOWN1 = G_MININT8+3,
+    BCEM_ADC      = G_MININT8+3,
     BCEM_TERM     = -1,
     BCEM_ZERO     = 0,
     BCEM_RAW      = 2

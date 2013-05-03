@@ -21,6 +21,16 @@
 
 #define __debug__ "MACBINARY-FileFilter"
 
+typedef struct {
+    bcem_type_t type;
+
+    guint32  first_sector;
+    guint32  num_sectors;
+    gint     segment;
+    goffset  in_offset;
+    gsize    in_length;
+} NDIF_Part;
+
 
 /**********************************************************************\
  *                          Private structure                         *
@@ -29,9 +39,26 @@
 
 struct _MirageFileFilterMacBinaryPrivate
 {
+    /* macbinary header */
     macbinary_header_t header;
-    rsrc_fork_t        *rsrc_fork;
+    
+    /* resource fork */
+    rsrc_fork_t *rsrc_fork;
 
+    /* part list */
+    NDIF_Part *parts;
+    gint num_parts;
+
+    /* Inflate buffer */
+    guint8 *inflate_buffer;
+    guint inflate_buffer_size;
+    gint cached_part;
+
+    /* I/O buffer */
+    guint8 *io_buffer;
+    guint io_buffer_size;
+
+    /* CRC16 polynomial table */
     guint16 *crctab;
 };
 
@@ -280,19 +307,11 @@ static gboolean mirage_file_filter_macbinary_can_handle_data_format (MirageFileF
         g_free(rsrc_fork_data);
     }
 
-    /* Print some interesting info from the resource-fork */
+    /* Search resource-fork for NDIF data */
     if (rsrc_fork) {
-        rsrc_ref_t *rsrc_ref = rsrc_find_ref_by_type_and_id(rsrc_fork, "bcm#", 128);
-        
-        if (rsrc_ref) {
-            bcm_block_t *bcm_block = (bcm_block_t *) rsrc_ref->data;
+        rsrc_ref_t *rsrc_ref = NULL;
 
-            mirage_file_filter_macbinary_fixup_bcm_block(bcm_block);
-
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: This file is part %u of a set of %u files! Interesting value: 0x%x\n", 
-                         __debug__, bcm_block->part, bcm_block->parts, bcm_block->unknown2);
-        }
-
+        /* Look up "bcem" resource */
         rsrc_ref = rsrc_find_ref_by_type_and_id(rsrc_fork, "bcem", 128);
 
         if (rsrc_ref) {
@@ -303,58 +322,228 @@ static gboolean mirage_file_filter_macbinary_can_handle_data_format (MirageFileF
 
             mirage_file_filter_macbinary_print_bcem_block(self, bcem_block);
 
+            /* Set the total image size */
+            mirage_file_filter_set_file_size(MIRAGE_FILE_FILTER(self), bcem_block->num_sectors * 512);
+
+            /* Construct a part index */
+            self->priv->num_parts = bcem_block->num_blocks - 1;
+            self->priv->parts = g_new0(NDIF_Part, self->priv->num_parts);
+            g_assert(self->priv->parts);
+
             for (guint b = 0; b < bcem_block->num_blocks; b++) {
-                guint32 sector;
                 mirage_file_filter_macbinary_fixup_bcem_data(&bcem_data[b]);
-
-                sector = (bcem_data[b].sector[2] << 16) + (bcem_data[b].sector[1] << 8) + bcem_data[b].sector[0];
-
-                MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: Block %3u: Sector: %8u Type: %4d Offset: 0x%08x Length: 0x%08x (%u)\n", 
-                             __debug__, b, sector, bcem_data[b].type, bcem_data[b].offset, bcem_data[b].length, bcem_data[b].length);
             }
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "\n");
+
+            for (guint b = 0; b < bcem_block->num_blocks; b++) {
+                NDIF_Part *cur_part = &self->priv->parts[b];
+                guint32   start_sector, end_sector;
+
+                start_sector  = (bcem_data[b].sector[2] << 16) + (bcem_data[b].sector[1] << 8) + bcem_data[b].sector[0];
+                end_sector    = (bcem_data[b+1].sector[2] << 16) + (bcem_data[b+1].sector[1] << 8) + bcem_data[b+1].sector[0];
+
+                MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: [%3u] Sector: %8u Type: %4d Offset: 0x%08x Length: 0x%08x (%u)\n", 
+                             __debug__, b, start_sector, bcem_data[b].type, bcem_data[b].offset, bcem_data[b].length, bcem_data[b].length);
+
+                if (bcem_data[b].type == BCEM_ADC || bcem_data[b].type == BCEM_ZERO || bcem_data[b].type == BCEM_RAW) {
+                    /* Fill in part table entry */
+                    cur_part->type         = bcem_data[b].type;
+                    cur_part->first_sector = start_sector;
+                    cur_part->num_sectors  = end_sector - start_sector;
+                    cur_part->segment      = -1; /* uninitialized default */
+                    cur_part->in_offset    = bcem_data[b].offset;
+                    cur_part->in_length    = bcem_data[b].length;
+
+                    /* Update buffer sizes */
+                    if (cur_part->type == BCEM_ADC) {
+                        if (self->priv->io_buffer_size < cur_part->in_length) {
+                            self->priv->io_buffer_size = cur_part->in_length;
+                        }
+                        if (self->priv->inflate_buffer_size < cur_part->num_sectors * 512) {
+                            self->priv->inflate_buffer_size = cur_part->num_sectors * 512;
+                        }
+                    } else if (cur_part->type == BCEM_RAW) {
+                        if (self->priv->inflate_buffer_size < cur_part->num_sectors * 512) {
+                            self->priv->inflate_buffer_size = cur_part->num_sectors * 512;
+                        }
+                    } else if (cur_part->type == BCEM_ZERO) {
+                        /* Avoid use of buffer for zeros */
+                    }
+                } else if (bcem_data[b].type == BCEM_TERM) {
+                    /* Skip the terminating block */
+                    g_assert(start_sector == bcem_block->num_sectors);
+                } else {
+                    MIRAGE_DEBUG(self, MIRAGE_DEBUG_ERROR, "%s: Encountered unknown part type: %d!\n", __debug__, bcem_data[b].type);
+                    g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_CANNOT_HANDLE, "Encountered unknown part type: %d!", bcem_data[b].type);
+                    return FALSE;
+                }
+            }
+
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: IO buffer size: %u\n", __debug__, self->priv->io_buffer_size);
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: Inflate buffer size: %u\n\n", __debug__, self->priv->inflate_buffer_size);
+
+            self->priv->io_buffer = g_malloc(self->priv->io_buffer_size);
+            self->priv->inflate_buffer = g_malloc(self->priv->inflate_buffer_size);
+            
+            if (!self->priv->io_buffer || !self->priv->inflate_buffer) {
+                MIRAGE_DEBUG(self, MIRAGE_DEBUG_ERROR, "%s: Error allocating memory for buffers!\n", __debug__);
+                g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_CANNOT_HANDLE, "Error allocating memory for buffers!");
+                return FALSE;
+            }
+        }
+
+        /* Look up "bcm#" resource */
+        rsrc_ref = rsrc_find_ref_by_type_and_id(rsrc_fork, "bcm#", 128);
+
+        if (rsrc_ref) {
+            bcm_block_t *bcm_block = (bcm_block_t *) rsrc_ref->data;
+
+            mirage_file_filter_macbinary_fixup_bcm_block(bcm_block);
+
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: This file is part %u of a set of %u files! Interesting value: 0x%x\n\n", 
+                         __debug__, bcm_block->part, bcm_block->parts, bcm_block->unknown2);
         }
     }
 
-    /* The data fork contains the image data */
-    mirage_file_filter_set_file_size(MIRAGE_FILE_FILTER(self), header->datafork_len);
-
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: parsing completed successfully\n\n", __debug__);
 
-    return TRUE;
-}
-
-
-static gssize mirage_file_filter_macbinary_partial_read (MirageFileFilter *_self, void *buffer, gsize count)
-{
-    MirageFileFilterMacBinary *self = MIRAGE_FILE_FILTER_MACBINARY(_self);
-    GInputStream *stream = g_filter_input_stream_get_base_stream(G_FILTER_INPUT_STREAM(self));
-    goffset position = mirage_file_filter_get_position(MIRAGE_FILE_FILTER(self));
-
-    goffset read_pos = position + sizeof(macbinary_header_t);
-
-    gint ret;
-
-    /* Are we behind end of stream? */
-    if (position >= self->priv->header.datafork_len) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_FILE_IO, "%s: stream position %ld (0x%lX) beyond end of stream, doing nothing!\n", __debug__, position, position);
-        return 0;
+    /* NDIF parts list indicates success */
+    if (self->priv->parts) {
+        return TRUE;
     }
 
+    g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_CANNOT_HANDLE, "%s: NDIF data structures not found!", __debug__);
+    return FALSE;
+}
+
+static gssize mirage_file_filter_macbinary_read_raw_chunk (MirageFileFilterMacBinary *self, guint8 *buffer, gint chunk_num)
+{
+    const NDIF_Part    *part = &self->priv->parts[chunk_num];
+    GInputStream       *stream = g_filter_input_stream_get_base_stream(G_FILTER_INPUT_STREAM(self));
+    macbinary_header_t *header = &self->priv->header;
+
+    gsize   to_read = part->in_length;
+    gsize   have_read = 0;
+    goffset part_offs = sizeof(macbinary_header_t) + part->in_offset;
+    gsize   part_avail = MIN(part->in_length, header->datafork_len - part->in_offset);
+    gint    ret;
+
     /* Seek to the position */
-    if (!g_seekable_seek(G_SEEKABLE(stream), read_pos, G_SEEK_SET, NULL, NULL)) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to seek to %ld in underlying stream!\n", __debug__, read_pos);
+    if (!g_seekable_seek(G_SEEKABLE(stream), part_offs, G_SEEK_SET, NULL, NULL)) {
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to seek to %ld in underlying stream!\n", __debug__, part_offs);
         return -1;
     }
 
-    /* Read data into buffer */
-    ret = g_input_stream_read(stream, buffer, count, NULL, NULL);
-    if (ret == -1) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read %d bytes from underlying stream!\n", __debug__, count);
+    /*MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: raw position: %u\n", __debug__, part_offs);*/
+
+    /* Read raw chunk data */
+    ret = g_input_stream_read(stream, &buffer[have_read], MIN(to_read, part_avail), NULL, NULL);
+    if (ret < 0) {
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read %d bytes from underlying stream!\n", __debug__, to_read);
         return -1;
     } else if (ret == 0) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: unexpectedly reached EOF!\n", __debug__);
         return -1;
+    } else if (ret == to_read) {
+        have_read += ret;
+        to_read -= ret;
+    } else if (ret < to_read) {
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: reading remaining data!\n", __debug__);
+        have_read += ret;
+        to_read -= ret;
+
+        /* FIXME: We don't support segmented images yet! */
+        g_assert_not_reached();
+    }
+
+    g_assert(to_read == 0 && have_read == part->in_length);
+
+    return have_read;
+}
+
+static gssize mirage_file_filter_macbinary_partial_read (MirageFileFilter *_self, void *buffer, gsize count)
+{
+    MirageFileFilterMacBinary *self = MIRAGE_FILE_FILTER_MACBINARY(_self);
+
+    goffset position = mirage_file_filter_get_position(MIRAGE_FILE_FILTER(self));
+    gint    part_idx = -1;
+
+    /* Find part that corresponds to current position */
+    for (gint p = 0; p < self->priv->num_parts; p++) {
+        const NDIF_Part *cur_part = &self->priv->parts[p];
+        gint req_sector = position / 512;
+
+        if ((cur_part->first_sector <= req_sector) && (cur_part->first_sector + cur_part->num_sectors >= req_sector)) {
+            part_idx = p;
+        }
+    }
+
+    if (part_idx == -1) {
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_FILE_IO, "%s: failed to find part!\n", __debug__);
+        return 0;
+    }
+
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_FILE_IO, "%s: stream position: %ld (0x%lX) -> part #%d (cached: #%d)\n", __debug__, position, position, part_idx, self->priv->cached_part);
+
+    /* If we do not have part in cache, uncompress it */
+    if (part_idx != self->priv->cached_part) {
+        const NDIF_Part *part = &self->priv->parts[part_idx];
+        gint ret;
+
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_FILE_IO, "%s: part not cached, reading...\n", __debug__);
+
+        /* Read a part */
+        if (part->type == BCEM_ZERO) {
+            /* We don't use internal buffers for zero data */
+        } else if (part->type == BCEM_RAW) {
+            /* Read uncompressed part */
+            ret = mirage_file_filter_macbinary_read_raw_chunk (self, self->priv->inflate_buffer, part_idx);
+            if (ret != part->in_length) {
+                MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read raw chunk!\n", __debug__);
+                return -1;
+            }
+        } else if (part->type == BCEM_ADC) {
+            gsize written_bytes;
+
+            /* Read some compressed data */
+            ret = mirage_file_filter_macbinary_read_raw_chunk (self, self->priv->io_buffer, part_idx);
+            if (ret != part->in_length) {
+                MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read raw chunk!\n", __debug__);
+                return -1;
+            }
+
+            /* Inflate */
+            ret = (gint) adc_decompress(part->in_length, self->priv->io_buffer, part->num_sectors * 512,
+                           self->priv->inflate_buffer, &written_bytes);
+
+            g_assert (ret == part->in_length);
+            g_assert (written_bytes == part->num_sectors * 512);
+        } else {
+            /* We should never get here... */
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: Encountered unknown chunk type %u!\n", __debug__, part->type);
+            return -1;
+        }
+
+        /* Set currently cached part */
+        if (part->type != BCEM_ZERO) {
+            self->priv->cached_part = part_idx;
+        }
+    } else {
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_FILE_IO, "%s: part already cached\n", __debug__);
+    }
+
+    /* Copy data */
+    const NDIF_Part *part = &self->priv->parts[part_idx];
+
+    gsize   part_size = part->num_sectors * 512;
+    guint64 part_offset = position - (part->first_sector * 512);
+    count = MIN(count, part_size - part_offset);
+
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_FILE_IO, "%s: offset within part: %ld, copying %d bytes\n", __debug__, part_offset, count);
+
+    if (part->type == BCEM_ZERO) {
+        memset(buffer, 0, count);
+    } else {
+        memcpy(buffer, &self->priv->inflate_buffer[part_offset], count);
     }
 
     return count;
@@ -385,6 +574,15 @@ static void mirage_file_filter_macbinary_init (MirageFileFilterMacBinary *self)
 
     self->priv->crctab = NULL;
     self->priv->rsrc_fork = NULL;
+    self->priv->parts = NULL;
+    self->priv->inflate_buffer = NULL;
+    self->priv->io_buffer = NULL;
+
+    self->priv->num_parts = 0;
+    self->priv->inflate_buffer_size = 0;
+    self->priv->io_buffer_size = 0;
+    
+    self->priv->cached_part = -1;
 }
 
 static void mirage_file_filter_macbinary_finalize (GObject *gobject)
@@ -393,6 +591,18 @@ static void mirage_file_filter_macbinary_finalize (GObject *gobject)
 
     if (self->priv->rsrc_fork) {
         rsrc_fork_free(self->priv->rsrc_fork);
+    }
+
+    if (self->priv->parts) {
+        g_free(self->priv->parts);
+    }
+
+    if (self->priv->inflate_buffer) {
+        g_free(self->priv->inflate_buffer);
+    }
+
+    if (self->priv->io_buffer) {
+        g_free(self->priv->io_buffer);
     }
 
     g_free(self->priv->crctab);
