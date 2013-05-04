@@ -62,18 +62,21 @@ be attached to other objects and used to control the amount of verbosity.
 
 2. Requirements:
 ~~~~~~~~~~~~~~~~
- - GLib 2.28 or newer
- - libsndfile 1.0.0 or newer
- - zlib
+ - GLib >= 2.28
+ - libsndfile >= 1.0.0
+ - libsamplerate >= 0.1.0
+ - zlib >= 1.2.0
+ - libbz2 >= 1.0.0
+ - liblzma >= 5.0.0
 
- - gtk-doc (optional)
+ - gtk-doc >= 1.4 (optional)
+ - gobject-introspection >= 1.0 (optional)
 
 
 3. Installation:
 ~~~~~~~~~~~~~~~~
 
-Installation process is generic ./configure, make, make install as described in
-INSTALL file.
+Please read the INSTALL file.
 
 
 4. Contact information:

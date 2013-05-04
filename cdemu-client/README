@@ -28,26 +28,16 @@ retrieving/setting devices' debug masks.
 
 2. Requirements:
 ~~~~~~~~~~~~~~~~
- - Python 2.6 or newer
+ - Python >= 2.6
  - D-BUS Python bindings
- - IntlTool 0.21 or newer
- - GetText 0.15 or newer
+ - IntlTool >= 0.21
+ - GetText >= 0.15
 
 
 3. Installation:
 ~~~~~~~~~~~~~~~~
 
-Installation process is generic ./configure, make, make install as described in
-INSTALL file.
-
-
-Note that if during make, you get the following error:
-    make[1]: Entering directory `/tmp/cdemu-client-2.0.0/po'
-    file=`echo sl | sed 's,.*/,,'`.gmo \
-    && rm -f $file && -o $file sl.po
-    /bin/sh: -o: not found
-    make[1]: *** [sl.gmo] Error 127
-it means you don't have intltool installed.
+Please read the INSTALL file.
 
 
 4. Usage examples:

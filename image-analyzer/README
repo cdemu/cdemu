@@ -24,16 +24,16 @@ handled by libMirage.
 2. Requirements:
 ~~~~~~~~~~~~~~~~
   - Gtk+2 or Gtk+3
-  - libxml
-  - libMirage 2.0.0 or newer
-  - gnuplot (optional)
+  - libxml >= 2.0.0
+  - libMirage >= 2.0.0 (part of the distribution)
+
+  - gnuplot >= 4.0 (optional)
 
 
 3. Installation:
 ~~~~~~~~~~~~~~~~
 
-Installation process is generic ./configure, make, make install as described in
-INSTALL file.
+Please read the INSTALL file.
 
 
 4. Contact information:

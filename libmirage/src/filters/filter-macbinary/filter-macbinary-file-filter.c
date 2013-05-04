@@ -109,6 +109,11 @@ static guint16 docrc(guchar *buffer, guint length, guint16 *crctab)
 /**********************************************************************\
  *             Endianness conversion and debug functions              *
 \**********************************************************************/
+
+/* Classic Mac OS represents time in seconds since 1904, instead of
+   Unix time's 1970 epoch. This is the difference between the two. */
+#define MAC_TIME_OFFSET 2082844800
+
 static void mirage_file_filter_macbinary_fixup_header(macbinary_header_t *header)
 {
     g_assert(header);
@@ -122,8 +127,8 @@ static void mirage_file_filter_macbinary_fixup_header(macbinary_header_t *header
 
     header->datafork_len = GUINT32_FROM_BE(header->datafork_len);
     header->resfork_len  = GUINT32_FROM_BE(header->resfork_len);
-    header->created      = GUINT32_FROM_BE(header->created);
-    header->modified     = GUINT32_FROM_BE(header->modified);
+    header->created      = GUINT32_FROM_BE(header->created) - MAC_TIME_OFFSET;
+    header->modified     = GUINT32_FROM_BE(header->modified) - MAC_TIME_OFFSET;
     header->unpacked_len = GUINT32_FROM_BE(header->unpacked_len);
 }
 
@@ -172,18 +177,35 @@ static void mirage_file_filter_macbinary_fixup_bcm_block(bcm_block_t *bcm_block)
 
 static void mirage_file_filter_macbinary_print_header(MirageFileFilterMacBinary *self, macbinary_header_t *header, guint16 calculated_crc)
 {
-    GString *filename = NULL;
+    GString   *filename = NULL;
+    GDateTime *created = NULL;
+    GDateTime *modified = NULL;
+    gchar     *created_str = NULL;
+    gchar     *modified_str = NULL;
 
     g_assert(self && header);
 
     filename = g_string_new_len(header->filename, header->fn_length);
     g_assert(filename);
 
+    created = g_date_time_new_from_unix_utc(header->created);
+    modified = g_date_time_new_from_unix_utc(header->modified);
+    g_assert(created && modified);
+
+    created_str = g_date_time_format(created, "%Y-%m-%d %H:%M.%S");
+    modified_str = g_date_time_format(modified, "%Y-%m-%d %H:%M.%S");
+    g_assert(created_str && modified_str);
+
+    g_date_time_unref(created);
+    g_date_time_unref(modified);
+
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "\n%s: MacBinary header:\n", __debug__);
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  Original filename: %s\n", __debug__, filename->str);
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  File type: %.4s creator: %.4s\n", __debug__, header->filetype, header->creator);
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  Data fork length: %d\n", __debug__, header->datafork_len);
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  Resource fork length: %d\n", __debug__, header->resfork_len);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  Created: %s\n", __debug__, created_str);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  Modified: %s\n", __debug__, modified_str);
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  Get info comment length: %d\n", __debug__, header->getinfo_len);
 
     if (calculated_crc == header->crc16) {
@@ -199,6 +221,9 @@ static void mirage_file_filter_macbinary_print_header(MirageFileFilterMacBinary 
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "\n");
 
     g_string_free(filename, TRUE);
+
+    g_free(created_str);
+    g_free(modified_str);
 }
 
 static void mirage_file_filter_macbinary_print_bcem_block(MirageFileFilterMacBinary *self, bcem_block_t *bcem_block)

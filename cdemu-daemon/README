@@ -14,11 +14,12 @@ Table of Contents:
 6. CDEmu daemon D-BUS interface
 7. Device options
 8. Debugging
-9. Encrypted images and password supplying
-10. System bus vs. session bus
-11. Deprecation of running on system bus
-12. CDEmu as D-BUS on-demand service (the daemon autostart)
-13. Contact information
+9. Hard-disk images
+10. Encrypted images and password supplying
+11. System bus vs. session bus
+12. Deprecation of running on system bus
+13. CDEmu as D-BUS on-demand service (the daemon autostart)
+14. Contact information
 
 
 1. Introduction
@@ -121,18 +122,18 @@ document that describes the daemon's interface, methods and signals.
 ~~~~~~~~~~~~~~~
 
 CDEmu daemon has the following software requirements:
- - GLib 2.28 or newer
- - libao 0.8.0 or newer
+ - GLib >= 2.28
+ - libao >= 0.8.0
 
- - libMirage 2.0.0 or newer (part of the suite)
- - VHBA module (part of the suite)
+ - libMirage >= 2.0.0 (part of the suite)
+ - VHBA module >= 20110915 (part of the suite)
 
 
 4. Installation and set up
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-The build and installation process is classical ./configure, make, make install.
-However, there are some quirks one should be aware of.
+Please read the INSTALL file. Note however that there are some quirks one should
+be aware of.
 
 
 Make sure you have installed all the required libraries; GLib, D-BUS and libao
@@ -489,7 +490,38 @@ will have to make sure that your user has read and write permissions on the
 control device.
 
 
-9. Encrypted images and password supplying
+9. Hard-disk images
+~~~~~~~~~~~~~~~~~~~~~
+
+CDEmu comes with support for mounting some types of hard-disk images.
+Note that CDEmu does not emulate hard-disks or block-devices, rather
+the data is simply laid out in a fashion according to standard 
+2048-sector data CD-ROMs. Due to the lack of block-device access, you
+may run into some problems when attempting to mount some images.
+
+The mount command may complain that it could not set a sector size of
+512 which is the de-facto standard hard-disk sector size. Mount may
+also complain that it was unable to find filesystem signatures, and
+therefore refuse to mount the CDEmu device.
+
+There is a somewhat simple solution to this: Loopback devices.
+
+Say for instance you've loaded an Apple Disk image (.img.bin) and
+Linux won't mount the CDEmu device (for instance /dev/sr1).
+You can solve this by loopback mounting the device like so:
+
+mount -t hfsplus -o loop /dev/sr1 /mnt/hfsvolume
+
+where /mnt/hfsvolume is your mountpoint. Alternatively you can use
+the losetup program to achieve the same. Losetup also have some
+other neat features like setting the offset and size of the image
+or device to mount, so if you know the size and offset of
+a partitioned image you could for instance choose to loopback mount
+only one single partition. Note that in the case of HFS/HFS+ you can
+also specify the partition number to mount via the -o part=# option.
+
+
+10. Encrypted images and password supplying
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 libMirage offers basic support for encrypted images which is supported by
@@ -527,8 +559,14 @@ cases the ability to simply load them might be useful.
 Therefore, the password is sent from clients to daemon in plain string form,
 with no real protection. Live with it, or don't use it.
 
+10.1. Apple Disk image encryption
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-10. System bus vs. session bus
+CDEmu does not support FileVault encrypted disk images, however you can
+use the vfdecrypt program from the dmg2img package to decrypt such images.
+
+
+11. System bus vs. session bus
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 CDEmu daemon registers a D-BUS interface that can be used by clients to communicate with it;
@@ -548,7 +586,7 @@ no such permissions, but the user running the daemon must have read/write permis
 character control device.
 
 
-11. Deprecation of running on system bus
+12. Deprecation of running on system bus
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Running the daemon on system bus is considered deprecated and should be avoided
@@ -567,7 +605,7 @@ backend. The other example would be GVFS, which might provide the user access to
 filesystems (e.g. via CIFS or SSH).
 
 
-12. CDEmu as D-BUS on-demand service (the daemon autostart)
+13. CDEmu as D-BUS on-demand service (the daemon autostart)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 D-BUS offers on-demand startup of services; when a client attempts to contact a service that is not running,
@@ -608,7 +646,7 @@ NOTE: if system bus service autostart installation is disabled, the D-BUS config
 bus is also not installed.
 
 
-13. Contact information
+14. Contact information
 ~~~~~~~~~~~~~~~~~~~~~~
 
 CDEmu project's web page: http://cdemu.sourceforge.net
