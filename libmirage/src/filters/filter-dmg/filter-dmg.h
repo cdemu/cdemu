@@ -51,10 +51,31 @@ typedef enum {
 
 /* Checksum types */
 typedef enum {
-    CT_NONE  = 0,
-    CT_CRC32 = 2,
-    CT_MD5   = 4
+    CT_NONE   = 0,
+    CT_CRC    = 1,
+    CT_CRC32  = 2,
+    CT_DC42   = 3,
+    CT_MD5    = 4,
+    CT_SHA    = 5,
+    CT_SHA1   = 6,
+    CT_SHA256 = 7,
+    CT_SHA384 = 8,
+    CT_SHA512 = 9
 } DMG_checksum_type;
+
+/* Flags */
+typedef enum {
+    FLAG_FLATTENED        = 0x01,
+    FLAG_RAW_IMAGE        = 0x02,
+    FLAG_INTERNET_ENABLED = 0x04
+} DMG_flag_t;
+
+/* Image variants */
+typedef enum {
+    IT_UDIF_DEVICE         = 1,
+    IT_UDIF_PARTITION      = 2,
+    IT_UDIF_CONVERTED_NDIF = 3
+} DMG_image_variant;
 
 #pragma pack(1)
 
@@ -91,7 +112,7 @@ typedef struct {
     gchar      signature[4]; /* "koly" */
     guint32    version;
     guint32    header_size; /* 512 */
-    guint32    flags;
+    guint32    flags; /* One or more of DMG_flag_t */
     guint64    running_data_fork_offset; /* image data segment start offset */
     guint64    data_fork_offset; /* image data segment */
     guint64    data_fork_length;
@@ -99,13 +120,13 @@ typedef struct {
     guint64    rsrc_fork_length;
     guint32    segment_number; /* this segment (starts at 1) */
     guint32    segment_count; /* total number of segments */
-    guint32    segment_id[4];
+    guint32    segment_id[4]; /* this is a single value */
     checksum_t data_fork_checksum; /* checksum for image data segment (compressed) */
     guint64    xml_offset; /* xml descriptors */
     guint64    xml_length;
     guint32    reserved1[30];
     checksum_t master_checksum; /* checksum of all the blkx_block_t checksums */
-    guint32    image_variant;
+    guint32    image_variant; /* One of DMG_image_variant */
     guint64    sector_count; /* total number of sectors in image */
     guint32    reserved2[3];
 } koly_block_t; /* length: 512 bytes */
@@ -118,14 +139,14 @@ typedef struct {
     guint64    data_start; /* input offset */
     guint32    decompressed_buffer_requested;
     gint32     blocks_descriptor; /* partition ID */
-    guint32    reserved[6];
+    guint32    reserved[6]; /* zero */
     checksum_t checksum; /* checksum of partition data (decompressed) */
     guint32    blocks_run_count; /* number of parts */
 } blkx_block_t; /* length: 204 bytes */
 
 typedef struct {
     gint32  block_type; /* One of DMG_block_type */
-    guint32 reserved; /* zero padding */
+    gchar   comment_type[4]; /* valid if block_type is comment */
     guint64 sector_offset; /* starting sector */
     guint64 sector_count; /* number of sectors */
     guint64 compressed_offset; /* input offset */

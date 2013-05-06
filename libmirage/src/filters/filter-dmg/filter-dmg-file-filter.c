@@ -97,9 +97,7 @@ static inline void mirage_file_filter_dmg_koly_block_fix_endian (koly_block_t *k
     koly_block->segment_number = GUINT32_FROM_BE(koly_block->segment_number);
     koly_block->segment_count  = GUINT32_FROM_BE(koly_block->segment_count);
 
-    for (guint i = 0; i < 4; i++) {
-        koly_block->segment_id[i] = GUINT32_FROM_BE(koly_block->segment_id[i]);
-    }
+    /* Note: It seems segment_id should not be endian converted */
 
     koly_block->data_fork_checksum.type = GUINT32_FROM_BE(koly_block->data_fork_checksum.type);
     koly_block->data_fork_checksum.size = GUINT32_FROM_BE(koly_block->data_fork_checksum.size);
@@ -147,7 +145,6 @@ static inline void mirage_file_filter_dmg_blkx_data_fix_endian (blkx_data_t *blk
     g_assert(blkx_data);
 
     blkx_data->block_type = GINT32_FROM_BE(blkx_data->block_type);
-    blkx_data->reserved   = GINT32_FROM_BE(blkx_data->reserved);
 
     blkx_data->sector_offset     = GUINT64_FROM_BE(blkx_data->sector_offset);
     blkx_data->sector_count      = GUINT64_FROM_BE(blkx_data->sector_count);
@@ -207,9 +204,11 @@ static void mirage_file_filter_dmg_print_koly_block(MirageFileFilterDmg *self, k
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  segment_number: %u\n", __debug__, koly_block->segment_number);
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  segment_count: %u\n", __debug__, koly_block->segment_count);
 
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  segment_id: 0x", __debug__);
     for (guint i = 0; i < 4; i++) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  segment_id[%u]: 0x%08x\n", __debug__, i, koly_block->segment_id[i]);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%08x", koly_block->segment_id[i]);
     }
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "\n");
 
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  data_fork_checksum.type: %u\n", __debug__, koly_block->data_fork_checksum.type);
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  data_fork_checksum.size: %u\n", __debug__, koly_block->data_fork_checksum.size);

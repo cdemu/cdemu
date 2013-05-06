@@ -98,6 +98,8 @@ static guint16 docrc(guchar *buffer, guint length, guint16 *crctab)
 {
     guint16 crc = 0;
 
+    g_assert(buffer && crctab);
+
     while (length-- > 0) {
         crc = (crc << 8) ^ crctab[(crc >> 8) ^ *buffer++];
     }
@@ -136,16 +138,16 @@ static void mirage_file_filter_macbinary_fixup_bcem_block(bcem_block_t *bcem_blo
 {
     g_assert(bcem_block);
 
-    bcem_block->imagetype    = GUINT16_FROM_BE(bcem_block->imagetype);
-    bcem_block->unknown1     = GUINT16_FROM_BE(bcem_block->unknown1);
-    bcem_block->num_sectors  = GUINT32_FROM_BE(bcem_block->num_sectors);
-    bcem_block->unknown2     = GUINT32_FROM_BE(bcem_block->unknown2);
-    bcem_block->unknown3     = GUINT32_FROM_BE(bcem_block->unknown3);
-    bcem_block->crc32        = GUINT32_FROM_BE(bcem_block->crc32);
-    bcem_block->is_segmented = GUINT32_FROM_BE(bcem_block->is_segmented);
-    bcem_block->num_blocks   = GUINT32_FROM_BE(bcem_block->num_blocks);
-    
-    /* ignoring unknown4 */
+    bcem_block->version_major  = GUINT16_FROM_BE(bcem_block->version_major);
+    bcem_block->version_minor  = GUINT16_FROM_BE(bcem_block->version_minor);
+    bcem_block->num_sectors    = GUINT32_FROM_BE(bcem_block->num_sectors);
+    bcem_block->chunk_size     = GUINT32_FROM_BE(bcem_block->chunk_size);
+    bcem_block->bs_zero_offset = GUINT32_FROM_BE(bcem_block->bs_zero_offset);
+    bcem_block->crc32          = GUINT32_FROM_BE(bcem_block->crc32);
+    bcem_block->is_segmented   = GUINT32_FROM_BE(bcem_block->is_segmented);
+    bcem_block->num_blocks     = GUINT32_FROM_BE(bcem_block->num_blocks);
+
+    /* ignoring unknown1 and reserved */
 }
 
 static void mirage_file_filter_macbinary_fixup_bcem_data(bcem_data_t *bcem_data)
@@ -168,10 +170,10 @@ static void mirage_file_filter_macbinary_fixup_bcm_block(bcm_block_t *bcm_block)
 
     bcm_block->part     = GUINT16_FROM_BE(bcm_block->part);
     bcm_block->parts    = GUINT16_FROM_BE(bcm_block->parts);
-    bcm_block->unknown2 = GUINT32_FROM_BE(bcm_block->unknown2);
+    bcm_block->unknown1 = GUINT32_FROM_BE(bcm_block->unknown1);
 
     for (guint i = 0; i < 4; i++) {
-        bcm_block->unknown1[i] = GUINT32_FROM_BE(bcm_block->unknown1[i]);
+        bcm_block->UUID[i] = GUINT32_FROM_BE(bcm_block->UUID[i]);
     }
 }
 
@@ -236,18 +238,17 @@ static void mirage_file_filter_macbinary_print_bcem_block(MirageFileFilterMacBin
     g_assert(imagename);
 
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "\n%s: bcem block:\n", __debug__);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  Image type: 0x%x\n", __debug__, bcem_block->imagetype);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  Unknown1: 0x%04x\n", __debug__, bcem_block->unknown1);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  Version: %u.%u\n", __debug__, bcem_block->version_major, bcem_block->version_minor);
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  Image name: %s\n", __debug__, imagename->str);
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  Number of sectors: %u\n", __debug__, bcem_block->num_sectors);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  Unknown2: 0x%08x\n", __debug__, bcem_block->unknown2);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  Unknown3: 0x%08x\n", __debug__, bcem_block->unknown3);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  Chunk size: %u\n", __debug__, bcem_block->chunk_size);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  BS zero offset: 0x%08x\n", __debug__, bcem_block->bs_zero_offset);
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  CRC32: 0x%08x\n", __debug__, bcem_block->crc32);
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  Is segmented: %u\n", __debug__, bcem_block->is_segmented);
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  Number of blocks: %u\n\n", __debug__, bcem_block->num_blocks);
 
-    /*for (guint u = 0; u < 9; u++) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  Unknown4[%u]: 0x%08x\n", __debug__, u, bcem_block->unknown4[u]);
+    /*for (guint u = 0; u < 2; u++) {
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  Unknown1[%u]: 0x%08x\n", __debug__, u, bcem_block->unknown1[u]);
     }*/
 
     g_string_free(imagename, TRUE);
@@ -270,6 +271,7 @@ static gboolean mirage_file_filter_macbinary_can_handle_data_format (MirageFileF
     /* Read MacBinary header */
     g_seekable_seek(G_SEEKABLE(stream), 0, G_SEEK_SET, NULL, NULL);
     if (g_input_stream_read(stream, header, sizeof(macbinary_header_t), NULL, NULL) != sizeof(macbinary_header_t)) {
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_IMAGE_ID, "%s: Filter cannot handle given data: failed to read MacBinary header!\n", __debug__);
         g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_CANNOT_HANDLE, "Filter cannot handle given data: failed to read MacBinary header!");
         return FALSE;
     }
@@ -277,6 +279,7 @@ static gboolean mirage_file_filter_macbinary_can_handle_data_format (MirageFileF
     /* We need to calculate CRC16 before we fixup the header */
     self->priv->crctab = crcinit(CRC16POLY);
     if (!self->priv->crctab) {
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: Failed to allocate memory!\n", __debug__);
         g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_CANNOT_HANDLE, "Failed to allocate memory!");
         return FALSE;
     }
@@ -289,6 +292,7 @@ static gboolean mirage_file_filter_macbinary_can_handle_data_format (MirageFileF
     /* Validate MacBinary header */
     if (header->version != 0 || header->reserved_1 != 0 || header->reserved_2 != 0 ||
         header->fn_length < 1 || header->fn_length > 63) {
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_IMAGE_ID, "%s: Filter cannot handle given data: invalid header!\n", __debug__);
         g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_CANNOT_HANDLE, "Filter cannot handle given data: invalid header!");
         return FALSE;
     }
@@ -297,7 +301,7 @@ static gboolean mirage_file_filter_macbinary_can_handle_data_format (MirageFileF
     if (calculated_crc != header->crc16) {
         /* Do we have v1.0 then? Hard to say for sure... */
         #ifndef TRUST_UNRELIABLE_V1_CHECK
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: File validates as MacBinary v1.0, however the check is unreliable and therefore disabled!\n", __debug__);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_IMAGE_ID, "%s: File validates as MacBinary v1.0, however the check is unreliable and therefore disabled!\n", __debug__);
         g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_CANNOT_HANDLE, "File validates as MacBinary v1.0, however the check is unreliable and therefore disabled!");
         return FALSE;
         #endif
@@ -320,18 +324,21 @@ static gboolean mirage_file_filter_macbinary_can_handle_data_format (MirageFileF
 
         rsrc_fork_data = g_try_malloc(header->resfork_len);
         if (!rsrc_fork_data) {
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: Failed to allocate memory!\n", __debug__);
             g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_CANNOT_HANDLE, "Failed to allocate memory!");
             return FALSE;
         }
 
         g_seekable_seek(G_SEEKABLE(stream), rsrc_fork_pos, G_SEEK_SET, NULL, NULL);
         if (g_input_stream_read(stream, rsrc_fork_data, header->resfork_len, NULL, NULL) != header->resfork_len) {
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: Failed to read resource-fork!\n", __debug__);
             g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_CANNOT_HANDLE, "Failed to read resource-fork!");
             return FALSE;
         }
 
         rsrc_fork = self->priv->rsrc_fork = rsrc_fork_read_binary(rsrc_fork_data);
         if (!rsrc_fork) {
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: Failed to parse resource-fork!\n", __debug__);
             g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_CANNOT_HANDLE, "Failed to parse resource-fork!");
             return FALSE;
         }
@@ -361,7 +368,8 @@ static gboolean mirage_file_filter_macbinary_can_handle_data_format (MirageFileF
             self->priv->num_parts = bcem_block->num_blocks - 1;
             self->priv->parts = g_try_new0(NDIF_Part, self->priv->num_parts);
             if (!self->priv->parts) {
-                g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_CANNOT_HANDLE, "Failed to allocate memory!");
+                MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: Failed to allocate memory!\n", __debug__);
+                g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, "Failed to allocate memory!");
                 return FALSE;
             }
 
@@ -407,12 +415,12 @@ static gboolean mirage_file_filter_macbinary_can_handle_data_format (MirageFileF
                     /* Skip the terminating block */
                     g_assert(start_sector == bcem_block->num_sectors);
                 } else if (bcem_data[b].type == BCEM_KENCODE) {
-                    MIRAGE_DEBUG(self, MIRAGE_DEBUG_ERROR, "%s: KenCode decompression is not supported!\n", __debug__);
-                    g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_CANNOT_HANDLE, "KenCode decompression is not supported!");
+                    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: KenCode decompression is not supported!\n", __debug__);
+                    g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, "KenCode decompression is not supported!");
                     return FALSE;
                 } else {
-                    MIRAGE_DEBUG(self, MIRAGE_DEBUG_ERROR, "%s: Encountered unknown part type: %d!\n", __debug__, bcem_data[b].type);
-                    g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_CANNOT_HANDLE, "Encountered unknown part type: %d!", bcem_data[b].type);
+                    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: Encountered unknown part type: %d!\n", __debug__, bcem_data[b].type);
+                    g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, "Encountered unknown part type: %d!", bcem_data[b].type);
                     return FALSE;
                 }
             }
@@ -422,15 +430,15 @@ static gboolean mirage_file_filter_macbinary_can_handle_data_format (MirageFileF
 
             self->priv->io_buffer = g_try_malloc(self->priv->io_buffer_size);
             if (!self->priv->io_buffer && self->priv->io_buffer_size) {
-                MIRAGE_DEBUG(self, MIRAGE_DEBUG_ERROR, "%s: Error allocating memory for buffers!\n", __debug__);
-                g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_CANNOT_HANDLE, "Error allocating memory for buffers!");
+                MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: Error allocating memory for buffers!\n", __debug__);
+                g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, "Error allocating memory for buffers!");
                 return FALSE;
             }
 
             self->priv->inflate_buffer = g_try_malloc(self->priv->inflate_buffer_size);
             if (!self->priv->inflate_buffer && self->priv->inflate_buffer_size) {
-                MIRAGE_DEBUG(self, MIRAGE_DEBUG_ERROR, "%s: Error allocating memory for buffers!\n", __debug__);
-                g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_CANNOT_HANDLE, "Error allocating memory for buffers!");
+                MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: Error allocating memory for buffers!\n", __debug__);
+                g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, "Error allocating memory for buffers!");
                 return FALSE;
             }
         }
@@ -445,9 +453,9 @@ static gboolean mirage_file_filter_macbinary_can_handle_data_format (MirageFileF
 
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: This file is part %u of a set of %u files!\n", 
                          __debug__, bcm_block->part, bcm_block->parts);
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: Unknown 1&2: 0x%08x 0x%08x 0x%08x 0x%08x - 0x%08x\n\n", __debug__,
-                         bcm_block->unknown1[0], bcm_block->unknown1[1], bcm_block->unknown1[2], bcm_block->unknown1[3],
-                         bcm_block->unknown2);
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: UUID&Unknown1: 0x%08x 0x%08x 0x%08x 0x%08x - 0x%08x\n\n", __debug__,
+                         bcm_block->UUID[0], bcm_block->UUID[1], bcm_block->UUID[2], bcm_block->UUID[3],
+                         bcm_block->unknown1);
         }
     }
 
@@ -458,7 +466,8 @@ static gboolean mirage_file_filter_macbinary_can_handle_data_format (MirageFileF
         return TRUE;
     }
 
-    g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_CANNOT_HANDLE, "%s: NDIF data structures not found!", __debug__);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_IMAGE_ID, "%s: NDIF data structures not found!\n", __debug__);
+    g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_CANNOT_HANDLE, "NDIF data structures not found!");
     return FALSE;
 }
 
