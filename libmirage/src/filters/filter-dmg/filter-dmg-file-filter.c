@@ -355,7 +355,7 @@ static gboolean mirage_file_filter_dmg_read_descriptor (MirageFileFilterDmg *sel
             return FALSE;
         }
 
-        rsrc_fork = self->priv->rsrc_fork = rsrc_fork_read_binary(rsrc_fork_data);
+        rsrc_fork = self->priv->rsrc_fork = rsrc_fork_read_binary(rsrc_fork_data, koly_block->rsrc_fork_length);
     } else {
         g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, "Image lacks either an XML or a binary descriptor!");
         return FALSE;
@@ -371,12 +371,12 @@ static gboolean mirage_file_filter_dmg_read_descriptor (MirageFileFilterDmg *sel
     rsrc_fork_data = NULL;
 
     /* Loop through resource types */
-    for (guint t = 0; t < rsrc_fork->num_types; t++) {
-        rsrc_type_t *rsrc_type = &rsrc_fork->type_list[t];
+    for (guint t = 0; t < rsrc_fork->type_list->len; t++) {
+        rsrc_type_t *rsrc_type = &g_array_index(rsrc_fork->type_list, rsrc_type_t, t);
 
         /* Loop through resource refs */
-        for (guint r = 0; r < rsrc_type->num_refs; r++) {
-            rsrc_ref_t *rsrc_ref = &rsrc_type->ref_list[r];
+        for (guint r = 0; r < rsrc_type->ref_list->len; r++) {
+            rsrc_ref_t *rsrc_ref = &g_array_index(rsrc_type->ref_list, rsrc_ref_t, r);
 
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: Resource Type: %.4s ID: %i Name: %s\n", __debug__,
                          rsrc_type->type, rsrc_ref->id, rsrc_ref->name->str);
@@ -474,8 +474,8 @@ static gboolean mirage_file_filter_dmg_read_index (MirageFileFilterDmg *self, GE
         return FALSE;
     }
 
-    for (guint r = 0; r < rsrc_type->num_refs; r++) {
-        rsrc_ref_t   *rsrc_ref = &rsrc_type->ref_list[r];
+    for (guint r = 0; r < rsrc_type->ref_list->len; r++) {
+        rsrc_ref_t   *rsrc_ref = &g_array_index(rsrc_type->ref_list, rsrc_ref_t, r);
         blkx_block_t *blkx_block = (blkx_block_t *) rsrc_ref->data;
         blkx_data_t  *blkx_data  = (blkx_data_t *) (rsrc_ref->data + sizeof(blkx_block_t));
 

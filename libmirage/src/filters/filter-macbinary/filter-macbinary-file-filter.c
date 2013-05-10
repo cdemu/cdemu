@@ -41,7 +41,7 @@ struct _MirageFileFilterMacBinaryPrivate
 {
     /* macbinary header */
     macbinary_header_t header;
-    
+
     /* resource fork */
     rsrc_fork_t *rsrc_fork;
 
@@ -231,7 +231,7 @@ static void mirage_file_filter_macbinary_print_header(MirageFileFilterMacBinary 
 static void mirage_file_filter_macbinary_print_bcem_block(MirageFileFilterMacBinary *self, bcem_block_t *bcem_block)
 {
     GString *imagename = NULL;
-    
+
     g_assert(self && bcem_block);
 
     imagename = g_string_new_len(bcem_block->imagename, bcem_block->imagename_len);
@@ -336,7 +336,7 @@ static gboolean mirage_file_filter_macbinary_can_handle_data_format (MirageFileF
             return FALSE;
         }
 
-        rsrc_fork = self->priv->rsrc_fork = rsrc_fork_read_binary(rsrc_fork_data);
+        rsrc_fork = self->priv->rsrc_fork = rsrc_fork_read_binary(rsrc_fork_data, header->resfork_len);
         if (!rsrc_fork) {
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: Failed to parse resource-fork!\n", __debug__);
             g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_CANNOT_HANDLE, "Failed to parse resource-fork!");
@@ -384,7 +384,7 @@ static gboolean mirage_file_filter_macbinary_can_handle_data_format (MirageFileF
                 start_sector  = (bcem_data[b].sector[2] << 16) + (bcem_data[b].sector[1] << 8) + bcem_data[b].sector[0];
                 end_sector    = (bcem_data[b+1].sector[2] << 16) + (bcem_data[b+1].sector[1] << 8) + bcem_data[b+1].sector[0];
 
-                MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: [%3u] Sector: %8u Type: %4d Offset: 0x%08x Length: 0x%08x (%u)\n", 
+                MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: [%3u] Sector: %8u Type: %4d Offset: 0x%08x Length: 0x%08x (%u)\n",
                              __debug__, b, start_sector, bcem_data[b].type, bcem_data[b].offset, bcem_data[b].length, bcem_data[b].length);
 
                 if (bcem_data[b].type == BCEM_ADC || bcem_data[b].type == BCEM_ZERO || bcem_data[b].type == BCEM_RAW) {
@@ -451,7 +451,7 @@ static gboolean mirage_file_filter_macbinary_can_handle_data_format (MirageFileF
 
             mirage_file_filter_macbinary_fixup_bcm_block(bcm_block);
 
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: This file is part %u of a set of %u files!\n", 
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: This file is part %u of a set of %u files!\n",
                          __debug__, bcm_block->part, bcm_block->parts);
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: UUID&Unknown1: 0x%08x 0x%08x 0x%08x 0x%08x - 0x%08x\n\n", __debug__,
                          bcm_block->UUID[0], bcm_block->UUID[1], bcm_block->UUID[2], bcm_block->UUID[3],
@@ -637,7 +637,7 @@ static void mirage_file_filter_macbinary_init (MirageFileFilterMacBinary *self)
     self->priv->num_parts = 0;
     self->priv->inflate_buffer_size = 0;
     self->priv->io_buffer_size = 0;
-    
+
     self->priv->cached_part = -1;
 }
 

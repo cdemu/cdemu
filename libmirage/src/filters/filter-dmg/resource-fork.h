@@ -88,20 +88,18 @@ typedef struct {
         gchar   type[4];
         guint32 type_as_int;
     };
-    guint      num_refs;
-    rsrc_ref_t *ref_list;
+    GArray     *ref_list;
 } rsrc_type_t;
 
 typedef struct {
     guint16     file_ref_num;
     guint16     res_fork_attrs;
-    guint       num_types;
-    rsrc_type_t *type_list;
+    GArray      *type_list;
 } rsrc_fork_t;
 
 /* Forward declarations */
 rsrc_fork_t *rsrc_fork_read_xml(const gchar *xml_data, gssize xml_length);
-rsrc_fork_t *rsrc_fork_read_binary(gchar *raw_data);
+rsrc_fork_t *rsrc_fork_read_binary(const gchar *bin_data, gsize bin_length);
 gboolean rsrc_fork_free(rsrc_fork_t *rsrc_fork);
 
 rsrc_type_t *rsrc_find_type(rsrc_fork_t *rsrc_fork, const gchar *type);

@@ -96,7 +96,7 @@ typedef struct {
     guint8  imagename_len; /* length of imagename */
     gchar   imagename[63]; /* name of image */
     guint32 num_sectors; /* number of sectors in image */
-    guint32 chunk_size; /* chunk size (in sectors?) */
+    guint32 chunk_size; /* chunk size in sectors (more than needed) */
     guint32 bs_zero_offset; /* value added to data offset */
     guint32 crc32; /* CRC32 */
     guint32 is_segmented; /* equals one if the image is segmented */
