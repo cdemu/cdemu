@@ -23,6 +23,8 @@
 
 void mirage_ddm_block_fix_endian (driver_descriptor_map_t *ddm_block)
 {
+    g_assert(ddm_block);
+
     ddm_block->block_size   = GUINT16_FROM_BE(ddm_block->block_size);
     ddm_block->block_count  = GUINT32_FROM_BE(ddm_block->block_count);
     ddm_block->device_type  = GUINT16_FROM_BE(ddm_block->device_type);
@@ -39,8 +41,10 @@ void mirage_ddm_block_fix_endian (driver_descriptor_map_t *ddm_block)
     /* skip reserved */
 }
 
-void mirage_pme_block_fix_endian (part_map_entry_t *pme_block)
+void mirage_apm_entry_block_fix_endian (apm_entry_t *pme_block)
 {
+    g_assert(pme_block);
+
     pme_block->map_entries   = GUINT32_FROM_BE(pme_block->map_entries);
     pme_block->pblock_start  = GUINT32_FROM_BE(pme_block->pblock_start);
     pme_block->pblock_count  = GUINT32_FROM_BE(pme_block->pblock_count);
@@ -58,8 +62,46 @@ void mirage_pme_block_fix_endian (part_map_entry_t *pme_block)
     /* skip reserved1, reserved2 and reserved3 */
 }
 
+void mirage_gpt_header_fix_endian (gpt_header_t *gpt_header)
+{
+    g_assert(gpt_header);
+
+    gpt_header->revision    = GUINT32_FROM_LE(gpt_header->revision);
+    gpt_header->header_size = GUINT32_FROM_LE(gpt_header->header_size);
+    gpt_header->header_crc  = GUINT32_FROM_LE(gpt_header->header_crc);
+    gpt_header->reserved    = GUINT32_FROM_LE(gpt_header->reserved);
+    gpt_header->lba_header  = GUINT64_FROM_LE(gpt_header->lba_header);
+    gpt_header->lba_backup  = GUINT64_FROM_LE(gpt_header->lba_backup);
+    gpt_header->lba_start   = GUINT64_FROM_LE(gpt_header->lba_start);
+    gpt_header->lba_end     = GUINT64_FROM_LE(gpt_header->lba_end);
+
+    gpt_header->guid_as_int[0] = GUINT64_FROM_LE(gpt_header->guid_as_int[0]);
+    gpt_header->guid_as_int[1] = GUINT64_FROM_LE(gpt_header->guid_as_int[1]);
+
+    gpt_header->lba_gpt_table  = GUINT64_FROM_LE(gpt_header->lba_gpt_table);
+    gpt_header->gpt_entries    = GUINT32_FROM_LE(gpt_header->gpt_entries);
+    gpt_header->gpt_entry_size = GUINT32_FROM_LE(gpt_header->gpt_entry_size);
+    gpt_header->crc_gpt_table  = GUINT32_FROM_LE(gpt_header->crc_gpt_table);
+}
+
+void mirage_gpt_entry_fix_endian (gpt_entry_t *gpt_entry)
+{
+    g_assert(gpt_entry);
+
+    gpt_entry->type_as_int[0] = GUINT64_FROM_LE(gpt_entry->type_as_int[0]);
+    gpt_entry->type_as_int[1] = GUINT64_FROM_LE(gpt_entry->type_as_int[1]);
+    gpt_entry->guid_as_int[0] = GUINT64_FROM_LE(gpt_entry->guid_as_int[0]);
+    gpt_entry->guid_as_int[1] = GUINT64_FROM_LE(gpt_entry->guid_as_int[1]);
+
+    gpt_entry->lba_start  = GUINT64_FROM_LE(gpt_entry->lba_start);
+    gpt_entry->lba_end    = GUINT64_FROM_LE(gpt_entry->lba_end);
+    gpt_entry->attributes = GUINT64_FROM_LE(gpt_entry->attributes);
+}
+
 void mirage_print_ddm_block(MirageContextual *self, driver_descriptor_map_t *ddm_block)
 {
+    g_assert(self && ddm_block);
+
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "\n");
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: DDM block:\n", __debug__);
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  signature: %.2s\n", __debug__, ddm_block->signature);
@@ -72,10 +114,12 @@ void mirage_print_ddm_block(MirageContextual *self, driver_descriptor_map_t *ddm
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "\n");
 }
 
-void mirage_print_pme_block(MirageContextual *self, part_map_entry_t *pme_block)
+void mirage_print_apm_entry_block(MirageContextual *self, apm_entry_t *pme_block)
 {
+    g_assert(self && pme_block);
+
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "\n");
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: PME block:\n", __debug__);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: APM entry block:\n", __debug__);
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  signature: %.2s\n", __debug__, pme_block->signature);
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  map_entries: %u\n", __debug__, pme_block->map_entries);
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  pblock_start: %u\n", __debug__, pme_block->pblock_start);
@@ -96,3 +140,53 @@ void mirage_print_pme_block(MirageContextual *self, part_map_entry_t *pme_block)
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "\n");
 }
 
+void mirage_print_gpt_header(MirageContextual *self, gpt_header_t *gpt_header)
+{
+    g_assert(self && gpt_header);
+
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "\n");
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: GPT header:\n", __debug__);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  signature: %.8s\n", __debug__, gpt_header->signature);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  revision: %u\n", __debug__, gpt_header->revision);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  header_size: %u\n", __debug__, gpt_header->header_size);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  header_crc: 0x%08x\n", __debug__, gpt_header->header_crc);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  reserved: %u\n", __debug__, gpt_header->reserved);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  lba_header: %lu\n", __debug__, gpt_header->lba_header);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  lba_backup: %lu\n", __debug__, gpt_header->lba_backup);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  lba_start: %lu\n", __debug__, gpt_header->lba_start);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  lba_end: %lu\n", __debug__, gpt_header->lba_end);
+
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  GUID: 0x%016lx%016lx\n", __debug__,
+                 gpt_header->guid_as_int[0], gpt_header->guid_as_int[1]);
+
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  lba_gpt_table: %lu\n", __debug__, gpt_header->lba_gpt_table);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  gpt_entries: %u\n", __debug__, gpt_header->gpt_entries);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  gpt_entry_size: %u\n", __debug__, gpt_header->gpt_entry_size);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  crc_gpt_table: 0x%08x\n", __debug__, gpt_header->crc_gpt_table);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "\n");
+}
+
+void mirage_print_gpt_entry(MirageContextual *self, gpt_entry_t *gpt_entry)
+{
+    gchar *name_str = NULL;
+    glong items_read = 0, items_written = 0;
+
+    g_assert(self && gpt_entry);
+
+    name_str = g_utf16_to_utf8(gpt_entry->name, 36, &items_read, &items_written, NULL);
+    g_assert(name_str);
+
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "\n");
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: GPT entry:\n", __debug__);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  type: 0x%016lx%016lx\n", __debug__,
+                 gpt_entry->type_as_int[0], gpt_entry->type_as_int[1]);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  guid: 0x%016lx%016lx\n", __debug__,
+                 gpt_entry->guid_as_int[0], gpt_entry->guid_as_int[1]);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  lba_start: %lu\n", __debug__, gpt_entry->lba_start);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  lba_end: %lu\n", __debug__, gpt_entry->lba_end);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  attributes: 0x%016lx\n", __debug__, gpt_entry->attributes);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  name: %s\n", __debug__, name_str);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "\n");
+
+    g_free(name_str);
+}

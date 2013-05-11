@@ -30,19 +30,29 @@
 
 G_BEGIN_DECLS
 
-/* Partition Map Flags */
+/* APM Partition Map Flags */
 typedef enum {
-    PME_VALID         = 0x0001,
-    PME_ALLOCATED     = 0x0002,
-    PME_IN_USE        = 0x0004,
-    PME_BOOTABLE      = 0x0008,
-    PME_READABLE      = 0x0010,
-    PME_WRITABLE      = 0x0020,
-    PME_OS_PIC_CODE   = 0x0040,
-    PME_OS_SPECIFIC_2 = 0x0080,
-    PME_OS_SPECIFIC_1 = 0x0100,
+    APM_VALID         = 0x00000001,
+    APM_ALLOCATED     = 0x00000002,
+    APM_IN_USE        = 0x00000004,
+    APM_BOOTABLE      = 0x00000008,
+    APM_READABLE      = 0x00000010,
+    APM_WRITABLE      = 0x00000020,
+    APM_OS_PIC_CODE   = 0x00000040,
+    APM_OS_SPECIFIC_2 = 0x00000080,
+    APM_OS_SPECIFIC_1 = 0x00000100,
     /* bits 9..31 are reserved */
-} APM_part_map_flag;
+} apm_flag_t;
+
+/* GPT Partition Map Attributes */
+typedef enum {
+    GPT_SYSTEM_PARTITION     = 0x0000000000000001,
+    GPT_LEGACY_BIOS_BOOTABLE = 0x0000000000000004,
+    GPT_READ_ONLY            = 0x1000000000000000,
+    GPT_SHADOW_COPY          = 0x2000000000000000,
+    GPT_HIDDEN               = 0x4000000000000000,
+    GPT_DO_NOT_AUTOMOUNT     = 0x8000000000000000
+} gpt_attr_t;
 
 #pragma pack(1)
 
@@ -76,7 +86,7 @@ typedef struct {
     gchar   part_type[32]; /* type of partition, eg. Apple_HFS */
     guint32 lblock_start; /* logical block start of partition */
     guint32 lblock_count; /* logical block count of partition */
-    guint32 flags; /* partition flags (one of APM_part_map_flag)*/
+    guint32 flags; /* One or more of apm_flag_t */
     guint32 boot_block; /* logical block start of boot code */
     guint32 boot_bytes; /* byte count of boot code */
     guint32 load_address; /* load address in memory of boot code */
@@ -87,16 +97,66 @@ typedef struct {
     gchar   processor_id[16]; /* processor type */
     guint32 reserved2[32]; /* reserved for future use */
     guint32 reserved3[62]; /* reserved for future use */
-} part_map_entry_t; /* length: 512 bytes */
+} apm_entry_t; /* length: 512 bytes */
+
+typedef struct {
+	guint32 time_low;
+	guint16 time_mid;
+	guint16 time_hi_and_version;
+	guint8  clock_seq_hi_and_reserved;
+	guint8  clock_seq_low;
+	guint8  node[6];
+} guid_t; /* length: 16 bytes */
+
+typedef struct {
+	gchar   signature[8]; /* "EFI PART" */
+	guint32 revision;
+	guint32 header_size;
+	guint32 header_crc;
+	guint32 reserved;
+	guint64 lba_header;
+	guint64 lba_backup;
+	guint64 lba_start;
+	guint64 lba_end;
+	union {
+	    guid_t  guid;
+	    guint64 guid_as_int[2];
+    };
+	guint64 lba_gpt_table;
+	guint32 gpt_entries;
+	guint32 gpt_entry_size;
+	guint32 crc_gpt_table;
+} gpt_header_t; /* length: 92 bytes */
+
+typedef struct {
+    union {
+        guid_t  type; /* Zero indicates unused entry */
+        guint64 type_as_int[2];
+    };
+    union {
+    	guid_t  guid;
+    	guint64 guid_as_int[2];
+    };
+	guint64 lba_start;
+	guint64 lba_end;
+	guint64 attributes; /* One or more of gpt_attr_t */
+	guint16 name[36]; /* UTF-16 */
+} gpt_entry_t; /* length: 128 bytes */
 
 #pragma pack()
 
 /* Forward declarations */
 void mirage_ddm_block_fix_endian (driver_descriptor_map_t *ddm_block);
-void mirage_pme_block_fix_endian (part_map_entry_t *pme_block);
+void mirage_apm_entry_block_fix_endian (apm_entry_t *pme_block);
+
+void mirage_gpt_header_fix_endian (gpt_header_t *gpt_header);
+void mirage_gpt_entry_fix_endian (gpt_entry_t *gpt_entry);
 
 void mirage_print_ddm_block(MirageContextual *self, driver_descriptor_map_t *ddm_block);
-void mirage_print_pme_block(MirageContextual *self, part_map_entry_t *pme_block);
+void mirage_print_apm_entry_block(MirageContextual *self, apm_entry_t *pme_block);
+
+void mirage_print_gpt_header(MirageContextual *self, gpt_header_t *gpt_header);
+void mirage_print_gpt_entry(MirageContextual *self, gpt_entry_t *gpt_entry);
 
 G_END_DECLS
 

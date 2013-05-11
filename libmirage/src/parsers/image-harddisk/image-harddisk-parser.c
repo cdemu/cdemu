@@ -50,7 +50,7 @@ static gboolean mirage_parser_hd_is_file_valid (MirageParserHd *self, GInputStre
 
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_IMAGE_ID, "%s: verifying file size...\n", __debug__);
 
-    /* Make sure the file is large enough to contain a DDM, an APM entry or an MDB */
+    /* Make sure the file is large enough to contain APM or GPT headers and a small partition table and a MDB */
     if (file_length < 3*512) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_IMAGE_ID, "%s: parser cannot handle given image: file too small!\n", __debug__);
         g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_CANNOT_HANDLE, "Parser cannot handle given image: file too small!");
@@ -82,25 +82,25 @@ static gboolean mirage_parser_hd_is_file_valid (MirageParserHd *self, GInputStre
         mirage_print_ddm_block(MIRAGE_CONTEXTUAL(self), &ddm);
 
         /* Check if image has valid Apple Partition Map (APM) entries */
-        part_map_entry_t pme;
+        apm_entry_t pme;
 
         for (guint p = 0;; p++) {
             if (!g_seekable_seek(G_SEEKABLE(stream), ddm.block_size * (p + 1), G_SEEK_SET, NULL, NULL)) {
-                MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to seek to beginning of partition map!\n", __debug__);
-                g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, "Failed to seek to beginning of partition map!");
+                MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to seek to beginning of APM entries!\n", __debug__);
+                g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, "Failed to seek to beginning of APM entries!");
                 return FALSE;
             }
 
-            if (g_input_stream_read(stream, &pme, sizeof(part_map_entry_t), NULL, NULL) != sizeof(part_map_entry_t)) {
-                MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read partition map entry!\n", __debug__);
-                g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, "Failed to read partition map entry!");
+            if (g_input_stream_read(stream, &pme, sizeof(apm_entry_t), NULL, NULL) != sizeof(apm_entry_t)) {
+                MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read APM entry!\n", __debug__);
+                g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, "Failed to read APM entry!");
                 return FALSE;
             }
 
-            mirage_pme_block_fix_endian (&pme);
+            mirage_apm_entry_block_fix_endian (&pme);
 
             if (!memcmp(&pme.signature, "PM", 2)) {
-                mirage_print_pme_block(MIRAGE_CONTEXTUAL(self), &pme);
+                mirage_print_apm_entry_block(MIRAGE_CONTEXTUAL(self), &pme);
                 if (p + 1 >= pme.map_entries) break; /* Last APM entry */
             } else {
                 break; /* Invalid Partition Map entry */
@@ -117,6 +117,64 @@ static gboolean mirage_parser_hd_is_file_valid (MirageParserHd *self, GInputStre
             g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_PARSER_ERROR, "Parser cannot map this sector size!");
             return FALSE;
         }
+        self->priv->track_sectsize = 2048;
+        self->priv->track_mode = MIRAGE_MODE_MODE1;
+
+        return TRUE;
+    }
+
+    /* Checking if image has a valid GPT header */
+    gpt_header_t gpt_header;
+
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_IMAGE_ID, "%s: checking if image has a valid GPT header...\n", __debug__);
+
+    if (!g_seekable_seek(G_SEEKABLE(stream), 512, G_SEEK_SET, NULL, NULL)) {
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to seek to GPT header!\n", __debug__);
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, "Failed to seek to GPT header!");
+        return FALSE;
+    }
+
+    if (g_input_stream_read(stream, &gpt_header, sizeof(gpt_header_t), NULL, NULL) != sizeof(gpt_header_t)) {
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read GPT header!\n", __debug__);
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, "Failed to read GPT header!");
+        return FALSE;
+    }
+
+    mirage_gpt_header_fix_endian (&gpt_header);
+
+    if (!memcmp(&gpt_header.signature, "EFI PART", 8)) {
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_IMAGE_ID, "%s: Image has a valid GPT header!\n", __debug__);
+
+        mirage_print_gpt_header(MIRAGE_CONTEXTUAL(self), &gpt_header);
+
+        /* Check if image has valid GPT entries */
+        gpt_entry_t gpt_entry;
+
+        for (guint p = 0; p < gpt_header.gpt_entries; p++) {
+            if (!g_seekable_seek(G_SEEKABLE(stream), (512 * gpt_header.lba_gpt_table) + (gpt_header.gpt_entry_size * p), G_SEEK_SET, NULL, NULL)) {
+                MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to seek to beginning of GPT entries!\n", __debug__);
+                g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, "Failed to seek to beginning of GPT entries!");
+                return FALSE;
+            }
+
+            if (g_input_stream_read(stream, &gpt_entry, sizeof(gpt_entry_t), NULL, NULL) != sizeof(gpt_entry_t)) {
+                MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read GPT entry!\n", __debug__);
+                g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, "Failed to read GPT entry!");
+                return FALSE;
+            }
+
+            mirage_gpt_entry_fix_endian (&gpt_entry);
+
+            if (gpt_entry.type_as_int[0] == 0 && gpt_entry.type_as_int[1] == 0) {
+                continue; /* Unused partition entry */
+            } else {
+                mirage_print_gpt_entry(MIRAGE_CONTEXTUAL(self), &gpt_entry);
+            }
+        }
+
+        /* Apply padding if needed */
+        self->priv->needs_padding = file_length % 2048;
+
         self->priv->track_sectsize = 2048;
         self->priv->track_mode = MIRAGE_MODE_MODE1;
 
@@ -167,7 +225,7 @@ static gboolean mirage_parser_hd_load_track (MirageParserHd *self, GInputStream 
     MirageFragment *fragment;
 
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: loading track...\n", __debug__);
-    
+
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: track mode: %d\n", __debug__, self->priv->track_mode);
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: sector size: %d\n", __debug__, self->priv->track_sectsize);
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: padding sector needed: %d\n", __debug__, self->priv->needs_padding);
