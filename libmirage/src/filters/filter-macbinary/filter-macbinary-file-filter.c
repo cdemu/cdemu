@@ -57,55 +57,7 @@ struct _MirageFileFilterMacBinaryPrivate
     /* I/O buffer */
     guint8 *io_buffer;
     guint io_buffer_size;
-
-    /* CRC16 polynomial table */
-    guint16 *crctab;
 };
-
-
-/**********************************************************************\
- *                         CRC16-CCITT XModem                         *
-\**********************************************************************/
-
-#define CRC16POLY 0x1021 /* Generator polynomial */
-
-/* Call this to init the fast CRC-16 calculation table */
-static guint16 *crcinit(guint genpoly)
-{
-    guint16 *crctab = g_try_new(guint16, 256);
-
-    if (!crctab) return NULL;
-
-    for (gint val = 0; val <= 255; val++) {
-        guint crc = val << 8;
-
-        for (gint i = 0; i < 8; ++i) {
-            crc <<= 1;
-
-            if (crc & 0x10000) {
-                crc ^= genpoly;
-            }
-        }
-
-        crctab[val] = crc;
-    }
-
-    return crctab;
-}
-
-/* Calculate a CRC-16 for length bytes pointed at by buffer */
-static guint16 docrc(guchar *buffer, guint length, guint16 *crctab)
-{
-    guint16 crc = 0;
-
-    g_assert(buffer && crctab);
-
-    while (length-- > 0) {
-        crc = (crc << 8) ^ crctab[(crc >> 8) ^ *buffer++];
-    }
-
-    return crc;
-}
 
 
 /**********************************************************************\
@@ -277,14 +229,7 @@ static gboolean mirage_file_filter_macbinary_can_handle_data_format (MirageFileF
     }
 
     /* We need to calculate CRC16 before we fixup the header */
-    self->priv->crctab = crcinit(CRC16POLY);
-    if (!self->priv->crctab) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: Failed to allocate memory!\n", __debug__);
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_CANNOT_HANDLE, "Failed to allocate memory!");
-        return FALSE;
-    }
-
-    calculated_crc = docrc((guchar *) header, sizeof(macbinary_header_t) - 4, self->priv->crctab);
+    calculated_crc = mirage_helper_calculate_crc16((guchar *) header, sizeof(macbinary_header_t) - 4);
 
     /* Fixup header endianness */
     mirage_file_filter_macbinary_fixup_header(header);
@@ -628,7 +573,6 @@ static void mirage_file_filter_macbinary_init (MirageFileFilterMacBinary *self)
         "MacBinary images (*.bin, *.macbin)", "application/x-macbinary"
     );
 
-    self->priv->crctab = NULL;
     self->priv->rsrc_fork = NULL;
     self->priv->parts = NULL;
     self->priv->inflate_buffer = NULL;
@@ -660,8 +604,6 @@ static void mirage_file_filter_macbinary_finalize (GObject *gobject)
     if (self->priv->io_buffer) {
         g_free(self->priv->io_buffer);
     }
-
-    g_free(self->priv->crctab);
 
     /* Chain up to the parent class */
     return G_OBJECT_CLASS(mirage_file_filter_macbinary_parent_class)->finalize(gobject);

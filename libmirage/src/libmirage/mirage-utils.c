@@ -923,6 +923,32 @@ MirageTrackModes mirage_helper_determine_sector_type (const guint8 *buf)
 
 
 /**********************************************************************\
+ *                         CRC16-CCITT XModem                         *
+\**********************************************************************/
+/**
+ * mirage_helper_calculate_crc16:
+ * @data: (in) (array length=length): buffer containing data
+ * @length: (in): length of data
+ *
+ * Calculates the CRC-16 checksum of the data stored in @data.
+ *
+ * Returns: CRC-16 checksum of data
+ */
+guint16 mirage_helper_calculate_crc16(const guchar *data, guint length)
+{
+    guint16 crc = 0;
+
+    g_assert(data);
+
+    while (length-- > 0) {
+        crc = (crc << 8) ^ q_crc_lut[(crc >> 8) ^ *data++];
+    }
+
+    return crc;
+}
+
+
+/**********************************************************************\
  *                         Text data encoding                         *
 \**********************************************************************/
 static const guint8 bom_utf32be[] = { 0x00, 0x00, 0xFE, 0xFF };

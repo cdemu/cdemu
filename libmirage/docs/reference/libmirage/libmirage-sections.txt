@@ -508,6 +508,7 @@ mirage_helper_subchannel_q_decode_isrc
 mirage_helper_subchannel_q_decode_mcn
 mirage_helper_subchannel_q_encode_isrc
 mirage_helper_subchannel_q_encode_mcn
+mirage_helper_calculate_crc16
 </SECTION>
 
 <SECTION>
