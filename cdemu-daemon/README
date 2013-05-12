@@ -559,12 +559,6 @@ cases the ability to simply load them might be useful.
 Therefore, the password is sent from clients to daemon in plain string form,
 with no real protection. Live with it, or don't use it.
 
-10.1. Apple Disk image encryption
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-CDEmu does not support FileVault encrypted disk images, however you can
-use the vfdecrypt program from the dmg2img package to decrypt such images.
-
 
 11. System bus vs. session bus
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
