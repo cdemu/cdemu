@@ -107,7 +107,9 @@ gchar *dump_medium_type (gint medium_type)
     static DumpValue values[] = {
         { MIRAGE_MEDIUM_CD, "CD-ROM" },
         { MIRAGE_MEDIUM_DVD, "DVD-ROM" },
-        { MIRAGE_MEDIUM_BD, "BD Disc" },
+        { MIRAGE_MEDIUM_BD, "BlueRay Disc" },
+        { MIRAGE_MEDIUM_HD, "HD-DVD Disc" },
+        { MIRAGE_MEDIUM_HDD, "Hard-disk" }
     };
 
     return dump_value(medium_type, values, G_N_ELEMENTS(values));

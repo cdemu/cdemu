@@ -326,12 +326,8 @@ static MirageDisc *mirage_parser_hd_load_image (MirageParser *_self, GInputStrea
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "\n");
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: finishing the layout\n", __debug__);
 
-    /* Now guess medium type and if it's a CD-ROM, add Red Book pregap */
-    gint medium_type = mirage_parser_guess_medium_type(MIRAGE_PARSER(self), self->priv->disc);
-    mirage_disc_set_medium_type(self->priv->disc, medium_type);
-    if (medium_type == MIRAGE_MEDIUM_CD) {
-        mirage_parser_add_redbook_pregap(MIRAGE_PARSER(self), self->priv->disc);
-    }
+    /* Set medium type to harddisk */
+    mirage_disc_set_medium_type(self->priv->disc, MIRAGE_MEDIUM_HDD);
 
 end:
     g_object_unref(stream);

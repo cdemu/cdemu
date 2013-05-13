@@ -38,6 +38,7 @@ G_BEGIN_DECLS
  * @MIRAGE_MEDIUM_DVD: DVD disc
  * @MIRAGE_MEDIUM_BD: BD (Blue-Ray) disc
  * @MIRAGE_MEDIUM_HD: HD-DVD disc
+ * @MIRAGE_MEDIUM_HDD: Hard-disk
  *
  * Medium types.
  */
@@ -47,6 +48,7 @@ typedef enum _MirageMediumTypes
     MIRAGE_MEDIUM_DVD = 0x02,
     MIRAGE_MEDIUM_BD  = 0x03,
     MIRAGE_MEDIUM_HD  = 0x04,
+    MIRAGE_MEDIUM_HDD = 0x05
 } MirageMediumTypes;
 
 
