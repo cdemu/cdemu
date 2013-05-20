@@ -81,6 +81,9 @@ gint mirage_helper_bcd2hex (gint bcd);
 guint8 mirage_helper_ascii2isrc (gchar c);
 gchar mirage_helper_isrc2ascii (guint8 c);
 
+/* CRC-16 utility function */
+guint16 mirage_helper_calculate_crc16(const guint8 *data, guint length, gboolean invert);
+
 /* Subchannel utility functions */
 guint16 mirage_helper_subchannel_q_calculate_crc (const guint8 *data);
 void mirage_helper_subchannel_q_encode_mcn (guint8 *buf, const gchar *mcn);
@@ -121,9 +124,6 @@ void mirage_helper_sector_edc_ecc_compute_edc_block (const guint8 *src, guint16 
 void mirage_helper_sector_edc_ecc_compute_ecc_block (const guint8 *src, guint32 major_count, guint32 minor_count, guint32 major_mult, guint32 minor_inc, guint8 *dest);
 
 MirageTrackModes mirage_helper_determine_sector_type (const guint8 *buf);
-
-/* CRC16 utility function */
-guint16 mirage_helper_calculate_crc16(const guchar *data, guint length);
 
 /* Text data encoding */
 const gchar *mirage_helper_encoding_from_bom (const guint8 *buffer);

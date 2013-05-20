@@ -483,10 +483,11 @@ gchar mirage_helper_isrc2ascii (guint8 c)
     return 0;
 }
 
+
 /**********************************************************************\
- *                    Subchannel utility functions                    *
+ *                         CRC16-CCITT XModem                         *
 \**********************************************************************/
-static const guint16 q_crc_lut[256] = {
+static const guint16 crc16_lut[256] = {
     0x0000, 0x1021, 0x2042, 0x3063, 0x4084, 0x50A5, 0x60C6, 0x70E7, 0x8108,
     0x9129, 0xA14A, 0xB16B, 0xC18C, 0xD1AD, 0xE1CE, 0xF1EF, 0x1231, 0x0210,
     0x3273, 0x2252, 0x52B5, 0x4294, 0x72F7, 0x62D6, 0x9339, 0x8318, 0xB37B,
@@ -519,6 +520,37 @@ static const guint16 q_crc_lut[256] = {
 };
 
 /**
+ * mirage_helper_calculate_crc16:
+ * @data: (in) (array length=length): buffer containing data
+ * @length: (in): length of data
+ * @invert: (in): whether the result should be inverted
+ *
+ * Calculates the CRC-16 checksum of the data stored in @data.
+ *
+ * Returns: CRC-16 checksum of data
+ */
+guint16 mirage_helper_calculate_crc16(const guint8 *data, guint length, gboolean invert)
+{
+    guint16 crc = 0;
+
+    g_assert(data);
+
+    while (length-- > 0) {
+        crc = (crc << 8) ^ crc16_lut[(crc >> 8) ^ *data++];
+    }
+
+    if (invert) {
+        crc = ~crc;
+    }
+
+    return crc;
+}
+
+
+/**********************************************************************\
+ *                    Subchannel utility functions                    *
+\**********************************************************************/
+/**
  * mirage_helper_subchannel_q_calculate_crc:
  * @data: (in) (array fixed-size=10): buffer containing Q subchannel data (10 bytes)
  *
@@ -528,13 +560,7 @@ static const guint16 q_crc_lut[256] = {
  */
 guint16 mirage_helper_subchannel_q_calculate_crc (const guint8 *data)
 {
-    guint16 crc = 0;
-
-    for (gint i = 0; i < 10; i++) {
-        crc = q_crc_lut[(crc >> 8) ^ data[i]] ^ (crc << 8);
-    }
-
-    return ~crc;
+    return mirage_helper_calculate_crc16(data, 10, TRUE);
 }
 
 /**
@@ -546,13 +572,17 @@ guint16 mirage_helper_subchannel_q_calculate_crc (const guint8 *data)
  */
 void mirage_helper_subchannel_q_encode_mcn (guint8 *buf, const gchar *mcn)
 {
-    buf[0] = ((mcn[0] - '0') << 4)  | ((mcn[1] - '0') & 0x0F);
-    buf[1] = ((mcn[2] - '0') << 4)  | ((mcn[3] - '0') & 0x0F);
-    buf[2] = ((mcn[4] - '0') << 4)  | ((mcn[5] - '0') & 0x0F);
-    buf[3] = ((mcn[6] - '0') << 4)  | ((mcn[7] - '0') & 0x0F);
-    buf[4] = ((mcn[8] - '0') << 4)  | ((mcn[9] - '0') & 0x0F);
-    buf[5] = ((mcn[10] - '0') << 4) | ((mcn[11] - '0') & 0x0F);
-    buf[6] = ((mcn[12] - '0') << 4);
+    const gchar *m = mcn;
+
+    for (guint i = 0; i < 6; i++) {
+        guint8 val;
+        
+        val  = (*m++ - '0') << 4;
+        val |= (*m++ - '0') & 0x0F;
+
+        buf[i] = val;
+    }
+    buf[6] = (*m++ - '0') << 4;
 }
 
 /**
@@ -564,19 +594,13 @@ void mirage_helper_subchannel_q_encode_mcn (guint8 *buf, const gchar *mcn)
  */
 void mirage_helper_subchannel_q_decode_mcn (const guint8 *buf, gchar *mcn)
 {
-    mcn[0]  = ((buf[0] >> 4) & 0x0F) + '0';
-    mcn[1]  = (buf[0] & 0x0F) + '0';
-    mcn[2]  = ((buf[1] >> 4) & 0x0F) + '0';
-    mcn[3]  = (buf[1] & 0x0F) + '0';
-    mcn[4]  = ((buf[2] >> 4) & 0x0F) + '0';
-    mcn[5]  = (buf[2] & 0x0F) + '0';
-    mcn[6]  = ((buf[3] >> 4) & 0x0F) + '0';
-    mcn[7]  = (buf[3] & 0x0F) + '0';
-    mcn[8]  = ((buf[4] >> 4) & 0x0F) + '0';
-    mcn[9]  = (buf[4] & 0x0F) + '0';
-    mcn[10] = ((buf[5] >> 4) & 0x0F) + '0';
-    mcn[11] = (buf[5] & 0x0F) + '0';
-    mcn[12] = ((buf[6] >> 4) & 0x0F) + '0';
+    gchar *m = mcn;
+
+    for (guint i = 0; i < 6; i++) {
+        *m++ = (buf[i] >> 4) + '0';
+        *m++ = (buf[i] & 0x0F) + '0';
+    }
+    *m++ = (buf[6] >> 4) + '0';
 }
 
 
@@ -692,7 +716,7 @@ void mirage_helper_subchannel_deinterleave (gint subchan, const guint8 *channel9
 /**********************************************************************\
  *                     EDC/ECC utility functions                      *
 \**********************************************************************/
-/* Following code is based on Neull Corlett's ECM code */
+/* The following code is based on Neill Corlett's ECM code */
 static const guint8 ecc_f_lut[256] = {
     0x00, 0x02, 0x04, 0x06, 0x08, 0x0A, 0x0C, 0x0E, 0x10, 0x12, 0x14, 0x16,
     0x18, 0x1A, 0x1C, 0x1E, 0x20, 0x22, 0x24, 0x26, 0x28, 0x2A, 0x2C, 0x2E,
@@ -824,15 +848,13 @@ static const guint32 edc_lut[256] = {
 void mirage_helper_sector_edc_ecc_compute_edc_block (const guint8 *src, guint16 size, guint8 *dest)
 {
     guint32 edc = 0;
+    guint32 *dest2 = (guint32 *) dest;
 
     while (size--) {
         edc = (edc >> 8) ^ edc_lut[(edc ^ (*src++)) & 0xFF];
     }
 
-    dest[0] = (edc >>  0) & 0xFF;
-    dest[1] = (edc >>  8) & 0xFF;
-    dest[2] = (edc >> 16) & 0xFF;
-    dest[3] = (edc >> 24) & 0xFF;
+    *dest2 = GUINT32_TO_LE(edc);
 }
 
 /**
@@ -919,32 +941,6 @@ MirageTrackModes mirage_helper_determine_sector_type (const guint8 *buf)
 
     /* No sync pattern; assume audio sector */
     return MIRAGE_MODE_AUDIO;
-}
-
-
-/**********************************************************************\
- *                         CRC16-CCITT XModem                         *
-\**********************************************************************/
-/**
- * mirage_helper_calculate_crc16:
- * @data: (in) (array length=length): buffer containing data
- * @length: (in): length of data
- *
- * Calculates the CRC-16 checksum of the data stored in @data.
- *
- * Returns: CRC-16 checksum of data
- */
-guint16 mirage_helper_calculate_crc16(const guchar *data, guint length)
-{
-    guint16 crc = 0;
-
-    g_assert(data);
-
-    while (length-- > 0) {
-        crc = (crc << 8) ^ q_crc_lut[(crc >> 8) ^ *data++];
-    }
-
-    return crc;
 }
 
 
