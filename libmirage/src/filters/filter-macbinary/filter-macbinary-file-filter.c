@@ -229,7 +229,7 @@ static gboolean mirage_file_filter_macbinary_can_handle_data_format (MirageFileF
     }
 
     /* We need to calculate CRC16 before we fixup the header */
-    calculated_crc = mirage_helper_calculate_crc16((guint8 *) header, sizeof(macbinary_header_t) - 4, crc16_1021_lut, FALSE);
+    calculated_crc = mirage_helper_calculate_crc16((guint8 *) header, sizeof(macbinary_header_t) - 4, crc16_1021_lut, FALSE, FALSE);
 
     /* Fixup header endianness */
     mirage_file_filter_macbinary_fixup_header(header);

@@ -585,20 +585,27 @@ const guint32 crc32_d8018001_lut[256] = {
  * @data: (in) (array length=length): buffer containing data
  * @length: (in): length of data
  * @crctab: (in) (array fixed-size=256): pointer to CRC polynomial table
+ * @reflected: (in): whether to use the reflected algorithm
  * @invert: (in): whether the result should be inverted
  *
  * Calculates the CRC-16 checksum of the data stored in @data.
  *
  * Returns: CRC-16 checksum of data
  */
-guint16 mirage_helper_calculate_crc16(const guint8 *data, guint length, const guint16 *crctab, gboolean invert)
+guint16 mirage_helper_calculate_crc16(const guint8 *data, guint length, const guint16 *crctab, gboolean reflected, gboolean invert)
 {
     guint16 crc = 0;
 
     g_assert(data && crctab);
 
-    while (length--) {
-        crc = (crc << 8) ^ crctab[(crc >> 8) ^ *data++];
+    if (!reflected) {
+        while (length--) {
+            crc = (crc << 8) ^ crctab[(crc >> 8) ^ *data++];
+        }
+    } else {
+        while (length--) {
+            crc = (crc >> 8) ^ crctab[(crc & 0xFF) ^ *data++];
+        }
     }
 
     if (invert) {
@@ -613,13 +620,14 @@ guint16 mirage_helper_calculate_crc16(const guint8 *data, guint length, const gu
  * @data: (in) (array length=length): buffer containing data
  * @length: (in): length of data
  * @crctab: (in) (array fixed-size=256): pointer to CRC polynomial table
+ * @reflected: (in): whether to use the reflected algorithm
  * @invert: (in): whether the initial value and result should be inverted
  *
  * Calculates the CRC-32 checksum of the data stored in @data.
  *
  * Returns: CRC-32 checksum of data
  */
-guint32 mirage_helper_calculate_crc32(const guint8 *data, guint length, const guint32 *crctab, gboolean invert)
+guint32 mirage_helper_calculate_crc32(const guint8 *data, guint length, const guint32 *crctab, gboolean reflected, gboolean invert)
 {
     guint32 crc = 0;
 
@@ -629,8 +637,14 @@ guint32 mirage_helper_calculate_crc32(const guint8 *data, guint length, const gu
 
     g_assert(data && crctab);
 
-    while (length--) {
-        crc = (crc >> 8) ^ crctab[(crc & 0xFF) ^ *data++];
+    if (!reflected) {
+        while (length--) {
+            crc = (crc << 8) ^ crctab[(crc >> 24) ^ *data++];
+        }
+    } else {
+        while (length--) {
+            crc = (crc >> 8) ^ crctab[(crc & 0xFF) ^ *data++];
+        }
     }
 
     if (invert) {
@@ -654,7 +668,7 @@ guint32 mirage_helper_calculate_crc32(const guint8 *data, guint length, const gu
  */
 guint16 mirage_helper_subchannel_q_calculate_crc (const guint8 *data)
 {
-    return mirage_helper_calculate_crc16(data, 10, crc16_1021_lut, TRUE);
+    return mirage_helper_calculate_crc16(data, 10, crc16_1021_lut, FALSE, TRUE);
 }
 
 /**
@@ -898,7 +912,7 @@ void mirage_helper_sector_edc_ecc_compute_edc_block (const guint8 *src, guint16 
     guint32 edc;
     guint32 *dest2 = (guint32 *) dest;
 
-    edc = mirage_helper_calculate_crc32(src, size, crc32_d8018001_lut, FALSE);
+    edc = mirage_helper_calculate_crc32(src, size, crc32_d8018001_lut, TRUE, FALSE);
     *dest2 = GUINT32_TO_LE(edc);
 }
 
