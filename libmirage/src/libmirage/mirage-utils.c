@@ -895,7 +895,7 @@ static const guint8 ecc_b_lut[256] = {
  */
 void mirage_helper_sector_edc_ecc_compute_edc_block (const guint8 *src, guint16 size, guint8 *dest)
 {
-    guint   edc;
+    guint32 edc;
     guint32 *dest2 = (guint32 *) dest;
 
     edc = mirage_helper_calculate_crc32(src, size, crc32_d8018001_lut, FALSE);
