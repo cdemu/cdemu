@@ -6,7 +6,7 @@
 
 
 override_dh_strip:
-	dh_strip --dbg-package="libmirage7-dbg"
+	dh_strip --dbg-package="libmirage8-dbg"
 
 override_dh_makeshlibs:
 	dh_makeshlibs --exclude="libmirage-2.0"

@@ -1,4 +1,6 @@
-libmirage.so.7 libmirage7 #MINVER#
+libmirage.so.8 libmirage8 #MINVER#
+ crc16_1021_lut@Base 2.1.0
+ crc32_d8018001_lut@Base 2.1.0
  mirage_cdtext_coder_get_type@Base 2.0.0
  mirage_cdtext_decoder_get_block_info@Base 1.0.0
  mirage_cdtext_decoder_get_data@Base 1.0.0
@@ -116,6 +118,8 @@ libmirage.so.7 libmirage7 #MINVER#
  mirage_get_supported_debug_masks@Base 2.0.0
  mirage_helper_ascii2isrc@Base 1.0.0
  mirage_helper_bcd2hex@Base 1.0.0
+ mirage_helper_calculate_crc16@Base 2.1.0
+ mirage_helper_calculate_crc32@Base 2.1.0
  mirage_helper_determine_sector_type@Base 2.0.0
  mirage_helper_encoding_from_bom@Base 2.0.0
  mirage_helper_find_data_file@Base 1.1.0

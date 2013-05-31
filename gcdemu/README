@@ -1,5 +1,5 @@
 gCDEmu
-2.0.0
+2.1.0
 ~~~~~
 
 Table of Contents:
@@ -190,9 +190,9 @@ Reload the GNOME Shell (press Alt+F2 and enter 'r' or 'gnome-shell --replace').
 
 8. Gtk Application and Ubuntu AppIndicator mode:
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-As of version 2.0.0, gCDEmu can run as Ubuntu AppIndicator, as opposed to
-classic Gtk Application mode. In Gtk Application mode, which is used by
-default, gCDEmu displays a system tray icon, whose appearance depends on
+gCDEmu can run as Ubuntu AppIndicator, as opposed to classic 
+Gtk Application mode. In Gtk Application mode, which is used by default, 
+gCDEmu displays a system tray icon, whose appearance depends on
 the settings of your system (see Section 6).
 
 On systems with AppIndicator support, it is possible to run gCDEmu in

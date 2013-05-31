@@ -2,9 +2,9 @@ Source: vhba-module
 Section: misc
 Priority: optional
 Homepage: http://cdemu.sourceforge.net/
-Maintainer: Henrik Stokseth <henrik@hw0.org>
+Maintainer: Henrik Stokseth <henrik@hshq.net>
 Build-Depends: debhelper (>= 9), dkms
-Standards-Version: 3.9.3
+Standards-Version: 3.9.4
 
 
 Package: vhba-dkms

@@ -40,7 +40,7 @@ from gi.repository import Notify
 
 # *** Globals ***
 app_name = "gcdemu"
-app_version = "2.0.0"
+app_version = "2.1.0"
 supported_daemon_interface_version = 5
 
 # I18n

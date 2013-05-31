@@ -4,7 +4,7 @@ cmake_minimum_required (VERSION 2.8.5)
 project (cdemu-daemon C)
 
 # Versioning
-set (CDEMU_DAEMON_VERSION 2.0.0)
+set (CDEMU_DAEMON_VERSION 2.1.0)
 set (CDEMU_DAEMON_INTERFACE_VERSION 5)
 
 # Additional CMake modules.
@@ -29,7 +29,7 @@ endif()
 # Dependencies
 find_package (PkgConfig 0.16 REQUIRED)
 
-pkg_check_modules (LIBMIRAGE REQUIRED libmirage>=2.0.0)
+pkg_check_modules (LIBMIRAGE REQUIRED libmirage>=${CDEMU_DAEMON_VERSION})
 pkg_check_modules (GLIB REQUIRED glib-2.0>=2.24 gobject-2.0>=2.24 gmodule-2.0>=2.24 gthread-2.0>=2.24 gio-2.0>=2.26)
 pkg_check_modules (AO REQUIRED ao>=0.8.0)
 

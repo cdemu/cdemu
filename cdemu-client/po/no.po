@@ -1,7 +1,7 @@
 # Norwegian translation of cdemu-client.
 # Copyright (C) 2006-2009 Henrik Stokseth
 # This file is distributed under the same license as the cdemu-client package.
-# Henrik Stokseth <henrik AT hw0 DOT org>, 2006-2009.
+# Henrik Stokseth <henrik AT hshq DOT net>, 2006-2009.
 #
 #
 msgid ""
@@ -9,7 +9,7 @@ msgstr ""
 "Project-Id-Version: cdemu-client 1.3.0\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2011-04-22 11:51+0200\n"
-"Last-Translator: Henrik Stokseth <henrik AT hw0 DOT org>\n"
+"Last-Translator: Henrik Stokseth <henrik AT hshq DOT net>\n"
 "Language-Team: Norwegian\n"
 "Language: \n"
 "MIME-Version: 1.0\n"

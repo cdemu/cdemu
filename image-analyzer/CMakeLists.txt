@@ -4,7 +4,7 @@ cmake_minimum_required (VERSION 2.8.5)
 project (image-analyzer C)
 
 # Versioning
-set (IMAGE_ANALYZER_VERSION 2.0.0)
+set (IMAGE_ANALYZER_VERSION 2.1.0)
 
 # Additional CMake modules.
 list (APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
@@ -24,7 +24,7 @@ option (POST_INSTALL_HOOKS "Run post-install hooks" on)
 find_package (PkgConfig 0.16 REQUIRED)
 find_package (Gnuplot 4.0)
 
-pkg_check_modules (LIBMIRAGE REQUIRED libmirage>=2.0.0)
+pkg_check_modules (LIBMIRAGE REQUIRED libmirage>=${IMAGE_ANALYZER_VERSION})
 pkg_check_modules (GLIB REQUIRED glib-2.0>=2.24 gobject-2.0>=2.24)
 pkg_check_modules (LIBXML REQUIRED libxml-2.0>=2.0.0)
 

@@ -1,5 +1,5 @@
 MIRAGE Image Analyzer
-2.0.0
+2.1.0
 ~~~~~
 
 
@@ -25,7 +25,7 @@ handled by libMirage.
 ~~~~~~~~~~~~~~~~
   - Gtk+2 or Gtk+3
   - libxml >= 2.0.0
-  - libMirage >= 2.0.0 (part of the distribution)
+  - libMirage >= 2.1.0 (part of the distribution)
 
   - gnuplot >= 4.0 (optional)
 

@@ -1,5 +1,5 @@
 CDEmu Daemon
-2.0.0
+2.1.0
 ~~~~~
 
 
@@ -125,7 +125,7 @@ CDEmu daemon has the following software requirements:
  - GLib >= 2.28
  - libao >= 0.8.0
 
- - libMirage >= 2.0.0 (part of the suite)
+ - libMirage >= 2.1.0 (part of the suite)
  - VHBA module >= 20110915 (part of the suite)
 
 
@@ -230,7 +230,7 @@ Communication between CDEmu daemon and a client is done via D-BUS. CDEmu daemon
 registers itself on either sytem or session bus, where it exposes the interface
 which can be used by client to control the daemon.
 
-Currently implemented interface version: 4 (since v.2.0.0)
+Currently implemented interface version: 5 (since v.2.1.0)
 
 
 6.1. D-BUS name and object path
