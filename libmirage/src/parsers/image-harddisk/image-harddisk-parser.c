@@ -57,6 +57,30 @@ static gboolean mirage_parser_hd_is_file_valid (MirageParserHd *self, GInputStre
         return FALSE;
     }
 
+    /* Hybrid ISO images are best handled by the ISO parser, so we reject those here */
+    if (file_length >= 17 * 2048) {
+        guint8 buf[8];
+
+        if (!g_seekable_seek(G_SEEKABLE(stream), 16 * 2048, G_SEEK_SET, NULL, NULL)) {
+    	    MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to seek to ISO signature!\n", __debug__);
+            g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, "Failed to seek to ISO signature!");
+            return FALSE;
+        }
+
+        if (g_input_stream_read(stream, &buf, sizeof(buf), NULL, NULL) != sizeof(buf)) {
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read ISO signature!\n", __debug__);
+            g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, "Failed to read ISO signature!");
+            return FALSE;
+        }
+
+        if (!memcmp(buf, mirage_pattern_cd001, sizeof(mirage_pattern_cd001))
+         || !memcmp(buf, mirage_pattern_bea01, sizeof(mirage_pattern_bea01))) {
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_IMAGE_ID, "%s: Image is an ISO image - deferring!\n", __debug__);
+            g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_CANNOT_HANDLE, "Image is an ISO image - deferring!");
+            return FALSE;
+        }
+    }
+
     /* Checking if image has a valid Driver Descriptor Map (DDM) */
     driver_descriptor_map_t ddm;
 
