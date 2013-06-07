@@ -491,28 +491,28 @@ control device.
 
 
 9. Hard-disk images
-~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~
 
-CDEmu comes with support for mounting some types of hard-disk images.
-Note that CDEmu does not emulate hard-disks or block-devices, rather
-the data is simply laid out in a fashion according to standard 
-2048-sector data CD-ROMs. Due to the lack of block-device access, you
-may run into some problems when attempting to mount some images.
+It possible to use CDEmu to mount certain hard-disk images that are
+supported by libMirage. However, hard-disk device emulation is not
+implemented, but rather the data is simply laid out in a fashion 
+according to standard 2048-sector data CD-ROMs. Due to the lack of 
+block-device access, you may run into some problems when attempting to 
+mount some images.
 
 The mount command may complain that it could not set a sector size of
 512 which is the de-facto standard hard-disk sector size. Mount may
 also complain that it was unable to find filesystem signatures, and
-therefore refuse to mount the CDEmu device.
+therefore refuse to mount the CDEmu device. To work around this, a
+loopback device can be used.
 
-There is a somewhat simple solution to this: Loopback devices.
-
-Say for instance you've loaded an Apple Disk image (.img.bin) and
-Linux won't mount the CDEmu device (for instance /dev/sr1).
+Say for instance you have loaded an Apple Disk image (.img.bin) and
+Linux will not mount the CDEmu device (for instance /dev/sr1).
 You can solve this by loopback mounting the device like so:
 
 mount -t hfsplus -o loop /dev/sr1 /mnt/hfsvolume
 
-where /mnt/hfsvolume is your mountpoint. Alternatively you can use
+where /mnt/hfsvolume is your mountpoint. Alternatively, you can use
 the losetup program to achieve the same. Losetup also have some
 other neat features like setting the offset and size of the image
 or device to mount, so if you know the size and offset of
@@ -522,7 +522,7 @@ also specify the partition number to mount via the -o part=# option.
 
 
 10. Encrypted images and password supplying
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 libMirage offers basic support for encrypted images which is supported by
 the CDEmu daemon as well.
