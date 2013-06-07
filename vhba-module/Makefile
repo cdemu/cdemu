@@ -1,4 +1,4 @@
-VHBA_VERSION := $(shell date -r $(PWD)/vhba.c +%Y%m%d)
+VHBA_VERSION := 20130607
 PACKAGE := vhba-module-$(VHBA_VERSION)
 DOCS := AUTHORS ChangeLog COPYING INSTALL NEWS README
 DIST := vhba.c Makefile
