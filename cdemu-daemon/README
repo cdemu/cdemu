@@ -610,8 +610,8 @@ Session bus service autostart installs the cdemu-daemon-session.service file and
 wrapper script. The default parameters (2 devices, PulseAudio as audio driver and ~/.cdemu-daemon.log as logfile)
 can be overridden by specifying variables NUM_DEVICES, AUDIO_DRIVER and LOG_FILE in ~/.cdemu-daemon config file.
 
-Installation of session bus service autostart can be controlled via --enable-session-bus-service and
---disable-session-bus-service switches in daemon's configure script. By default, installation is enabled.
+Installation of session bus service autostart can be controlled via SESSION_BUS_SERVICE option in daemon's CMake 
+script (e.g., by passing -DSESSION_BUS_SERVICE=ON/OFF on command-line). By default, installation is enabled.
 
 System bus service autostart:
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -621,11 +621,10 @@ wrapper script. The default parameters (2 devices, no audio driver and /tmp/cdem
 can be overridden by specifying variables NUM_DEVICES, AUDIO_DRIVER and LOG_FILE in /etc/sysconfig/cdemu-daemon
 config file.
 
-In addition to service file and wrapper script, the D-BUS config file is also installed. As described in
-Section 4, the installation destination for this file can be controlled via --with-dbus-system-dir switch.
+In addition to service file and wrapper script, the D-BUS config file is also installed.
 
-Installation of system bus service autostart can be controlled via --enable-system-bus-service and
---disable-system-bus-service switches in daemon's configure script. By default, installation is enabled.
+Installation of system bus service autostart can be controlled via SYSTEM_BUS_SERVICE option in daemon's CMake
+script (e.g., by passing -DSYSTEM_BUS_SERVICE=ON/OFF on command-line). By default, installation is disabled.
 
 NOTE: if system bus service autostart installation is disabled, the D-BUS config file for running on system
 bus is also not installed.
