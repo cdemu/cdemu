@@ -7,9 +7,10 @@ Table of Contents:
 ~~~~~~~~~~~~~~~~~~
 
 1. Introduction
-2. Requirements
-3. Installation
-4. Contact information
+2. Supported image formats
+3. Requirements
+4. Installation
+5. Contact information
 
 
 1. Introduction
@@ -28,6 +29,15 @@ of generating some of the data that might not be present in image file. For
 instance, ISO image provides only user data from sector, without sync pattern,
 header, ECC/EDC codes or subchannel. When this missing data is requested,
 libMirage will transparently generate it.
+
+libMirage has a plug-in based system, which allows a simple addition of new
+image format parsers or data-file access fragments. It also supports runtime
+debugging via debug traces; there are special debug context objects that can
+be attached to other objects and used to control the amount of verbosity.
+
+
+2. Supported image formats
+~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Currently supported image formats:
  - BlindWrite 5/6 (B5T, B6T) file format
@@ -54,13 +64,27 @@ Currently supported file filters:
  - Error Code Modeller (ECM) container format
  - PowerISO (DAA) image format
 
-libMirage has a plug-in based system, which allows a simple addition of new
-image format parsers or data-file access fragments. It also supports runtime
-debugging via debug traces; there are special debug context objects that can
-be attached to other objects and used to control the amount of verbosity.
+2.1 Note about XZ-compressed images and XZ file filter:
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The support for XZ-compressed images in libMirage is limited to streams 
+with reasonably-sized compressed blocks. This is to allow efficient 
+random access in the image, which requires a whole block to be 
+uncompressed in memory before data it contains can be accessed. A larger 
+block requires more time to be uncompressed and consumes more memory when
+cached, whereas in random access, not all data it contains is necessarilly
+needed. Therefore, for performance reasons, we enforce block size to
+be 10 MB or less.
+
+Unfortunately, xz from xz-utils by default creates an XZ file with a 
+single large block, which cannot be used with libMirage. If you wish to 
+use XZ-compressed images, use "--block-size" switch, for example, 
+"xz --block-size=10M ...". This requires 5.1.1alpha or later version of 
+xz-utils. Note that p7zip/7za cannot create single-file streams with 
+smaller blocks, so it cannot be used with libMirage.
 
 
-2. Requirements:
+3. Requirements:
 ~~~~~~~~~~~~~~~~
  - GLib >= 2.28
  - libsndfile >= 1.0.0
@@ -73,16 +97,16 @@ be attached to other objects and used to control the amount of verbosity.
  - gobject-introspection >= 1.0 (optional)
 
 
-3. Installation:
+4. Installation:
 ~~~~~~~~~~~~~~~~
 
 Please read the INSTALL file.
 
 
-4. Contact information:
+5. Contact information:
 ~~~~~~~~~~~~~~~~~~~~~~~
 
 CDEmu project's web page: http://cdemu.sourceforge.net
 CDEmu project's mailing list: cdemu-devel@lists.sourceforge.net
 
-Author can be directly contacted via e-mail address listed in AUTHORS file.
+Authors can be directly contacted via e-mail address listed in AUTHORS file.
