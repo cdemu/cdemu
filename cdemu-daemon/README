@@ -157,16 +157,7 @@ The daemon can register its interface on either system or session D-BUS' bus. By
 default, session bus is used. To use system bus, use --bus=system when running daemon.
 
 We provide an option to install the daemon as a D-BUS on-demand
-service on both buses. For more information, see Section 12.
-
-If you wish to run CDEmu daemon on system bus, CDEmu daemon's configuration files
-for D-BUS must be installed in appropriate directory. On most systems, this is
-/etc/dbus-1/system.d. However, due to the way autotools are used, /etc gets
-prefixed and therefore config file ends up installed into ${prefix}/etc/. To
-avoid this, you should pass --sysconfdir=/etc to configure, regardless of the
-prefix you are passing to configure. Alternatively, you can specify appropriate
-directory using --with-dbus-system-dir switch. (NOTE: this switch is effective
-only if daemon is set to be installed as system bus on-demand service).
+service on both buses. For more information, see Section 11.
 
 We use a single libao backend to support CD-audio playback. This allows you to
 select from a number of available audio drivers. Valid choices are the driver
