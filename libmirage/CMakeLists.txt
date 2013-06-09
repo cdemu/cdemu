@@ -221,7 +221,7 @@ endif ()
 # *** Introspection ***
 if (INTROSPECTION_ENABLED AND INTROSPECTION_FOUND)
     gobject_introspection (
-        FILENAME libMirage-2.0.gir
+        FILENAME libMirage-${MIRAGE_MAJOR_VERSION}.${MIRAGE_MINOR_VERSION}.gir
         NSVERSION ${MIRAGE_VERSION_SHORT}
         INCLUDES GObject-2.0 Gio-2.0 GLib-2.0 GModule-2.0
         LIBRARY mirage
