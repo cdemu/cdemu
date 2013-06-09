@@ -1,4 +1,4 @@
-vhba-module (20120422-1ubuntu0~raring1~ppa1) raring; urgency=low
+vhba-module (20130607-1ubuntu0~raring1~ppa1) raring; urgency=low
 
   * Initial Release. Closes: (LP: #105452, LP: #184637)
 

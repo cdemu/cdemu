@@ -14,6 +14,8 @@ Package: libmirage8
 Section: libs
 Architecture: any
 Pre-Depends: multiarch-support
+Conflicts: libmirage7
+Replaces: libmirage7
 Depends: ${shlibs:Depends}, ${misc:Depends}
 Description: CD-ROM image access library
  This is libMirage library, a CD-ROM image access library, and part of the
