@@ -47,7 +47,7 @@ configure_file (
 
 # Global definitions
 add_definitions (-std=c99) # We're compiling using C99
-add_definitions (-DHAVE_CONFIG_H -DG_DISABLE_DEPRECATED)
+add_definitions (-DHAVE_CONFIG_H)
 
 if (CMAKE_COMPILER_IS_GNUCC)
     add_definitions (-Wall -Wextra -Wshadow -Wmissing-declarations -Wmissing-prototypes -Wnested-externs -Wpointer-arith -Wcast-align)
