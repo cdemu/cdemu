@@ -494,37 +494,7 @@ gchar mirage_helper_isrc2ascii (guint8 c)
  * Where only the 16 lowest bits are used:
  * 0x11021 & 0xFFFF = 0x1021
  */
-const guint16 crc16_1021_lut[256] = {
-    0x0000, 0x1021, 0x2042, 0x3063, 0x4084, 0x50A5, 0x60C6, 0x70E7, 0x8108,
-    0x9129, 0xA14A, 0xB16B, 0xC18C, 0xD1AD, 0xE1CE, 0xF1EF, 0x1231, 0x0210,
-    0x3273, 0x2252, 0x52B5, 0x4294, 0x72F7, 0x62D6, 0x9339, 0x8318, 0xB37B,
-    0xA35A, 0xD3BD, 0xC39C, 0xF3FF, 0xE3DE, 0x2462, 0x3443, 0x0420, 0x1401,
-    0x64E6, 0x74C7, 0x44A4, 0x5485, 0xA56A, 0xB54B, 0x8528, 0x9509, 0xE5EE,
-    0xF5CF, 0xC5AC, 0xD58D, 0x3653, 0x2672, 0x1611, 0x0630, 0x76D7, 0x66F6,
-    0x5695, 0x46B4, 0xB75B, 0xA77A, 0x9719, 0x8738, 0xF7DF, 0xE7FE, 0xD79D,
-    0xC7BC, 0x48C4, 0x58E5, 0x6886, 0x78A7, 0x0840, 0x1861, 0x2802, 0x3823,
-    0xC9CC, 0xD9ED, 0xE98E, 0xF9AF, 0x8948, 0x9969, 0xA90A, 0xB92B, 0x5AF5,
-    0x4AD4, 0x7AB7, 0x6A96, 0x1A71, 0x0A50, 0x3A33, 0x2A12, 0xDBFD, 0xCBDC,
-    0xFBBF, 0xEB9E, 0x9B79, 0x8B58, 0xBB3B, 0xAB1A, 0x6CA6, 0x7C87, 0x4CE4,
-    0x5CC5, 0x2C22, 0x3C03, 0x0C60, 0x1C41, 0xEDAE, 0xFD8F, 0xCDEC, 0xDDCD,
-    0xAD2A, 0xBD0B, 0x8D68, 0x9D49, 0x7E97, 0x6EB6, 0x5ED5, 0x4EF4, 0x3E13,
-    0x2E32, 0x1E51, 0x0E70, 0xFF9F, 0xEFBE, 0xDFDD, 0xCFFC, 0xBF1B, 0xAF3A,
-    0x9F59, 0x8F78, 0x9188, 0x81A9, 0xB1CA, 0xA1EB, 0xD10C, 0xC12D, 0xF14E,
-    0xE16F, 0x1080, 0x00A1, 0x30C2, 0x20E3, 0x5004, 0x4025, 0x7046, 0x6067,
-    0x83B9, 0x9398, 0xA3FB, 0xB3DA, 0xC33D, 0xD31C, 0xE37F, 0xF35E, 0x02B1,
-    0x1290, 0x22F3, 0x32D2, 0x4235, 0x5214, 0x6277, 0x7256, 0xB5EA, 0xA5CB,
-    0x95A8, 0x8589, 0xF56E, 0xE54F, 0xD52C, 0xC50D, 0x34E2, 0x24C3, 0x14A0,
-    0x0481, 0x7466, 0x6447, 0x5424, 0x4405, 0xA7DB, 0xB7FA, 0x8799, 0x97B8,
-    0xE75F, 0xF77E, 0xC71D, 0xD73C, 0x26D3, 0x36F2, 0x0691, 0x16B0, 0x6657,
-    0x7676, 0x4615, 0x5634, 0xD94C, 0xC96D, 0xF90E, 0xE92F, 0x99C8, 0x89E9,
-    0xB98A, 0xA9AB, 0x5844, 0x4865, 0x7806, 0x6827, 0x18C0, 0x08E1, 0x3882,
-    0x28A3, 0xCB7D, 0xDB5C, 0xEB3F, 0xFB1E, 0x8BF9, 0x9BD8, 0xABBB, 0xBB9A,
-    0x4A75, 0x5A54, 0x6A37, 0x7A16, 0x0AF1, 0x1AD0, 0x2AB3, 0x3A92, 0xFD2E,
-    0xED0F, 0xDD6C, 0xCD4D, 0xBDAA, 0xAD8B, 0x9DE8, 0x8DC9, 0x7C26, 0x6C07,
-    0x5C64, 0x4C45, 0x3CA2, 0x2C83, 0x1CE0, 0x0CC1, 0xEF1F, 0xFF3E, 0xCF5D,
-    0xDF7C, 0xAF9B, 0xBFBA, 0x8FD9, 0x9FF8, 0x6E17, 0x7E36, 0x4E55, 0x5E74,
-    0x2E93, 0x3EB2, 0x0ED1, 0x1EF0
-};
+guint16 *crc16_1021_lut = NULL;
 
 /* The lookup table was generated from the polynomial given as:
  * P(x) = (x^16 + x^15 + x^2 + x^0) * (x^16 + x^2 + x^1 + x^0) =
@@ -534,51 +504,102 @@ const guint16 crc16_1021_lut[256] = {
  * This value is then reflected (reversed bitwise):
  * 0x8001801B -> 0xD8018001
  */
-const guint32 crc32_d8018001_lut[256] = {
-    0x00000000, 0x90910101, 0x91210201, 0x01B00300, 0x92410401, 0x02D00500,
-    0x03600600, 0x93F10701, 0x94810801, 0x04100900, 0x05A00A00, 0x95310B01,
-    0x06C00C00, 0x96510D01, 0x97E10E01, 0x07700F00, 0x99011001, 0x09901100,
-    0x08201200, 0x98B11301, 0x0B401400, 0x9BD11501, 0x9A611601, 0x0AF01700,
-    0x0D801800, 0x9D111901, 0x9CA11A01, 0x0C301B00, 0x9FC11C01, 0x0F501D00,
-    0x0EE01E00, 0x9E711F01, 0x82012001, 0x12902100, 0x13202200, 0x83B12301,
-    0x10402400, 0x80D12501, 0x81612601, 0x11F02700, 0x16802800, 0x86112901,
-    0x87A12A01, 0x17302B00, 0x84C12C01, 0x14502D00, 0x15E02E00, 0x85712F01,
-    0x1B003000, 0x8B913101, 0x8A213201, 0x1AB03300, 0x89413401, 0x19D03500,
-    0x18603600, 0x88F13701, 0x8F813801, 0x1F103900, 0x1EA03A00, 0x8E313B01,
-    0x1DC03C00, 0x8D513D01, 0x8CE13E01, 0x1C703F00, 0xB4014001, 0x24904100,
-    0x25204200, 0xB5B14301, 0x26404400, 0xB6D14501, 0xB7614601, 0x27F04700,
-    0x20804800, 0xB0114901, 0xB1A14A01, 0x21304B00, 0xB2C14C01, 0x22504D00,
-    0x23E04E00, 0xB3714F01, 0x2D005000, 0xBD915101, 0xBC215201, 0x2CB05300,
-    0xBF415401, 0x2FD05500, 0x2E605600, 0xBEF15701, 0xB9815801, 0x29105900,
-    0x28A05A00, 0xB8315B01, 0x2BC05C00, 0xBB515D01, 0xBAE15E01, 0x2A705F00,
-    0x36006000, 0xA6916101, 0xA7216201, 0x37B06300, 0xA4416401, 0x34D06500,
-    0x35606600, 0xA5F16701, 0xA2816801, 0x32106900, 0x33A06A00, 0xA3316B01,
-    0x30C06C00, 0xA0516D01, 0xA1E16E01, 0x31706F00, 0xAF017001, 0x3F907100,
-    0x3E207200, 0xAEB17301, 0x3D407400, 0xADD17501, 0xAC617601, 0x3CF07700,
-    0x3B807800, 0xAB117901, 0xAAA17A01, 0x3A307B00, 0xA9C17C01, 0x39507D00,
-    0x38E07E00, 0xA8717F01, 0xD8018001, 0x48908100, 0x49208200, 0xD9B18301,
-    0x4A408400, 0xDAD18501, 0xDB618601, 0x4BF08700, 0x4C808800, 0xDC118901,
-    0xDDA18A01, 0x4D308B00, 0xDEC18C01, 0x4E508D00, 0x4FE08E00, 0xDF718F01,
-    0x41009000, 0xD1919101, 0xD0219201, 0x40B09300, 0xD3419401, 0x43D09500,
-    0x42609600, 0xD2F19701, 0xD5819801, 0x45109900, 0x44A09A00, 0xD4319B01,
-    0x47C09C00, 0xD7519D01, 0xD6E19E01, 0x46709F00, 0x5A00A000, 0xCA91A101,
-    0xCB21A201, 0x5BB0A300, 0xC841A401, 0x58D0A500, 0x5960A600, 0xC9F1A701,
-    0xCE81A801, 0x5E10A900, 0x5FA0AA00, 0xCF31AB01, 0x5CC0AC00, 0xCC51AD01,
-    0xCDE1AE01, 0x5D70AF00, 0xC301B001, 0x5390B100, 0x5220B200, 0xC2B1B301,
-    0x5140B400, 0xC1D1B501, 0xC061B601, 0x50F0B700, 0x5780B800, 0xC711B901,
-    0xC6A1BA01, 0x5630BB00, 0xC5C1BC01, 0x5550BD00, 0x54E0BE00, 0xC471BF01,
-    0x6C00C000, 0xFC91C101, 0xFD21C201, 0x6DB0C300, 0xFE41C401, 0x6ED0C500,
-    0x6F60C600, 0xFFF1C701, 0xF881C801, 0x6810C900, 0x69A0CA00, 0xF931CB01,
-    0x6AC0CC00, 0xFA51CD01, 0xFBE1CE01, 0x6B70CF00, 0xF501D001, 0x6590D100,
-    0x6420D200, 0xF4B1D301, 0x6740D400, 0xF7D1D501, 0xF661D601, 0x66F0D700,
-    0x6180D800, 0xF111D901, 0xF0A1DA01, 0x6030DB00, 0xF3C1DC01, 0x6350DD00,
-    0x62E0DE00, 0xF271DF01, 0xEE01E001, 0x7E90E100, 0x7F20E200, 0xEFB1E301,
-    0x7C40E400, 0xECD1E501, 0xED61E601, 0x7DF0E700, 0x7A80E800, 0xEA11E901,
-    0xEBA1EA01, 0x7B30EB00, 0xE8C1EC01, 0x7850ED00, 0x79E0EE00, 0xE971EF01,
-    0x7700F000, 0xE791F101, 0xE621F201, 0x76B0F300, 0xE541F401, 0x75D0F500,
-    0x7460F600, 0xE4F1F701, 0xE381F801, 0x7310F900, 0x72A0FA00, 0xE231FB01,
-    0x71C0FC00, 0xE151FD01, 0xE0E1FE01, 0x7070FF00
-};
+guint32 *crc32_d8018001_lut = NULL;
+
+/**
+ * mirage_helper_init_crc16_lut:
+ * @genpoly: (in): generator polynomial
+ *
+ * Calculates a look-up table for CRC16 based on the generator polynomial.
+ *
+ * Returns: Pointer to the CRC16 look-up table or NULL on failure.
+ */
+guint16 *mirage_helper_init_crc16_lut(guint16 genpoly)
+{
+    guint16 *crc16_lut = g_try_new(guint16, 256);
+    if (!crc16_lut) {
+        return NULL;
+    }
+
+    /* Generate look-up table */
+    for (guint i = 0; i < 256; ++i) {
+        guint16 value = 0;
+        guint16 temp = i << 8;
+
+        for(guint j = 0; j < 8; ++j) {
+            if ((value ^ temp) & 0x8000) {
+                value = ((value << 1) ^ genpoly);
+            } else {
+                value <<= 1;
+            }
+            temp <<= 1;
+        }
+
+        crc16_lut[i] = value;
+    }
+
+    return crc16_lut;
+}
+
+#define CRC32_LUT(tab, idx) crc32_lut[(tab) * 256 + (idx)]
+
+/**
+ * mirage_helper_init_crc32_lut:
+ * @genpoly: (in): generator polynomial
+ * @slices: (in): number of bytes to process at once
+ *
+ * Calculates a look-up table for CRC32 based on the generator polynomial.
+ * The size of the lookup table depends on @slices. The standard algorithm
+ * processes 1 byte at a time and has a look-up table size of 1KiB, whereas
+ * The slice-by-4 and slice-by-8 algorithms use 4 and 8 KiB look-up tables that
+ * are derived from the initial look-up table.
+ *
+ * Returns: Pointer to the CRC32 look-up table or NULL on failure.
+ */
+guint32 *mirage_helper_init_crc32_lut(guint32 genpoly, guint slices)
+{
+    /* Check if slices in in the valid range */
+    if (slices < 1 || slices > 8) {
+        return NULL;
+    }
+
+    guint32 *crc32_lut = g_try_new(guint32, slices * 256);
+    if (!crc32_lut) {
+        return NULL;
+    }
+
+    /* Generate look-up table for slice-by-1 */
+    if (slices >= 1) {
+        for (guint i = 0; i < 256; i++) {
+            guint32 crc = i;
+            for (guint j = 0; j < 8; j++) {
+                crc = (crc >> 1) ^ ((crc & 1) * genpoly);
+            }
+            CRC32_LUT(0, i) = crc;
+        }
+    }
+
+    /* Generate look-up tables for slice-by-4 (and slice-by-8) */
+    if (slices >= 4) {
+        for (guint i = 0; i <= 256; i++) {
+            CRC32_LUT(1, i) = (CRC32_LUT(0, i) >> 8) ^ CRC32_LUT(0, CRC32_LUT(0, i) & 0xFF);
+            CRC32_LUT(2, i) = (CRC32_LUT(1, i) >> 8) ^ CRC32_LUT(0, CRC32_LUT(1, i) & 0xFF);
+            CRC32_LUT(3, i) = (CRC32_LUT(2, i) >> 8) ^ CRC32_LUT(0, CRC32_LUT(2, i) & 0xFF);
+        }
+    }
+
+    /* Generate look-up tables for slice-by-8 */
+    if (slices >= 8) {
+        for (guint i = 0; i <= 256; i++) {
+            CRC32_LUT(4, i) = (CRC32_LUT(3, i) >> 8) ^ CRC32_LUT(0, CRC32_LUT(3, i) & 0xFF);
+            CRC32_LUT(5, i) = (CRC32_LUT(4, i) >> 8) ^ CRC32_LUT(0, CRC32_LUT(4, i) & 0xFF);
+            CRC32_LUT(6, i) = (CRC32_LUT(5, i) >> 8) ^ CRC32_LUT(0, CRC32_LUT(5, i) & 0xFF);
+            CRC32_LUT(7, i) = (CRC32_LUT(6, i) >> 8) ^ CRC32_LUT(0, CRC32_LUT(6, i) & 0xFF);
+        }
+    }
+
+    return crc32_lut;
+}
 
 /**
  * mirage_helper_calculate_crc16:
@@ -616,7 +637,7 @@ guint16 mirage_helper_calculate_crc16(const guint8 *data, guint length, const gu
 }
 
 /**
- * mirage_helper_calculate_crc32:
+ * mirage_helper_calculate_crc32f:
  * @data: (in) (array length=length): buffer containing data
  * @length: (in): length of data
  * @crctab: (in) (array fixed-size=256): pointer to CRC polynomial table
@@ -624,10 +645,105 @@ guint16 mirage_helper_calculate_crc16(const guint8 *data, guint length, const gu
  * @invert: (in): whether the initial value and result should be inverted
  *
  * Calculates the CRC-32 checksum of the data stored in @data.
+ * Fast slice-by-8 implementation that processes 8 bytes at a time.
  *
  * Returns: CRC-32 checksum of data
  */
-guint32 mirage_helper_calculate_crc32(const guint8 *data, guint length, const guint32 *crctab, gboolean reflected, gboolean invert)
+guint32 mirage_helper_calculate_crc32f(const guint8 *data, guint length, const guint32 *crctab, gboolean reflected, gboolean invert)
+{
+    guint32 crc = 0;
+
+    const guint32 *crc32_lut = crctab;
+
+    guint32 *current = (guint32*) data;
+    guint8 *current2 = (guint8*) data;
+
+    g_assert(data && crctab);
+
+    if (invert) {
+        crc = ~crc;
+    }
+
+    if (!reflected) {
+        /* FIXME: Implement non-reflected version of slicing-by-8 algorithm */
+        while (length--) {
+            crc = (crc << 8) ^ crctab[(crc >> 24) ^ *data++];
+        }
+    } else {
+        /* Process any initial un-aligned bytes */
+        guint ub = ((gulong) current) % sizeof(guint64);
+
+        if (ub) {
+            guint temp = ub = sizeof(guint64) - ub;
+
+            while (temp--) {
+                crc = (crc >> 8) ^ CRC32_LUT(0, (crc & 0xFF) ^ *current2++);
+            }
+
+            current = (guint32*) ((guint8*) current + ub);
+            length -= ub;
+        }
+
+        /* Make sure we are 64-bit aligned here */
+        g_assert((((gulong) current) % sizeof(guint64)) == 0);
+
+        /* Process eight bytes at once */
+        while (length >= 8) {
+            #if G_BYTE_ORDER == G_LITTLE_ENDIAN
+            guint32 one = *current++ ^ crc;
+            guint32 two = *current++;
+            crc = CRC32_LUT(0, (two >> 24)       ) ^
+                  CRC32_LUT(1, (two >> 16) & 0xFF) ^
+                  CRC32_LUT(2, (two >> 8 ) & 0xFF) ^
+                  CRC32_LUT(3, (two      ) & 0xFF) ^
+                  CRC32_LUT(4, (one >> 24)       ) ^
+                  CRC32_LUT(5, (one >> 16) & 0xFF) ^
+                  CRC32_LUT(6, (one >> 8 ) & 0xFF) ^
+                  CRC32_LUT(7, (one      ) & 0xFF);
+            #else
+            guint32 one = *current++ ^ GUINT32_SWAP_LE_BE(crc);
+            guint32 two = *current++;
+            crc = CRC32_LUT(0, (two      ) & 0xFF) ^
+                  CRC32_LUT(1, (two >> 8 ) & 0xFF) ^
+                  CRC32_LUT(2, (two >> 16) & 0xFF) ^
+                  CRC32_LUT(3, (two    24)       ) ^
+                  CRC32_LUT(4, (one      ) & 0xFF) ^
+                  CRC32_LUT(5, (one >> 8 ) & 0xFF) ^
+                  CRC32_LUT(6, (one >> 16) & 0xFF) ^
+                  CRC32_LUT(7, (one    24)       );
+            #endif
+            length -= 8;
+        }
+
+        current2 = (guint8*) current;
+
+        /* Process remaining 1 to 7 bytes */
+        while (length--) {
+            crc = (crc >> 8) ^ CRC32_LUT(0, (crc & 0xFF) ^ *current2++);
+        }
+    }
+
+    if (invert) {
+        crc = ~crc;
+    }
+
+    return crc;
+}
+
+/**
+ * mirage_helper_calculate_crc32s:
+ * @data: (in) (array length=length): buffer containing data
+ * @length: (in): length of data
+ * @crctab: (in) (array fixed-size=256): pointer to CRC polynomial table
+ * @reflected: (in): whether to use the reflected algorithm
+ * @invert: (in): whether the initial value and result should be inverted
+ *
+ * Calculates the CRC-32 checksum of the data stored in @data.
+ * Standard inplementation that processes 1 byte at a time.
+ *
+ * Returns: CRC-32 checksum of data
+ */
+guint32 mirage_helper_calculate_crc32s(const guint8 *data, guint length, const guint32 *crctab, gboolean reflected, gboolean invert)
 {
     guint32 crc = 0;
 
@@ -684,7 +800,7 @@ void mirage_helper_subchannel_q_encode_mcn (guint8 *buf, const gchar *mcn)
 
     for (guint i = 0; i < 6; i++) {
         guint8 val;
-        
+
         val  = (*m++ - '0') << 4;
         val |= (*m++ - '0') & 0x0F;
 

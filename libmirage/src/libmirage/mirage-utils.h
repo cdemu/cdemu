@@ -82,11 +82,17 @@ guint8 mirage_helper_ascii2isrc (gchar c);
 gchar mirage_helper_isrc2ascii (guint8 c);
 
 /* CRC utility functions */
-const guint16 crc16_1021_lut[256];
-const guint32 crc32_d8018001_lut[256];
+guint16 *crc16_1021_lut;
+guint32 *crc32_d8018001_lut;
+
+guint16 *mirage_helper_init_crc16_lut(guint16 genpoly);
+guint32 *mirage_helper_init_crc32_lut(guint32 genpoly, guint slices);
+
+#define mirage_helper_calculate_crc32 mirage_helper_calculate_crc32f
 
 guint16 mirage_helper_calculate_crc16(const guint8 *data, guint length, const guint16 *crctab, gboolean reflected, gboolean invert);
-guint32 mirage_helper_calculate_crc32(const guint8 *data, guint length, const guint32 *crctab, gboolean reflected, gboolean invert);
+guint32 mirage_helper_calculate_crc32f(const guint8 *data, guint length, const guint32 *crctab, gboolean reflected, gboolean invert);
+guint32 mirage_helper_calculate_crc32s(const guint8 *data, guint length, const guint32 *crctab, gboolean reflected, gboolean invert);
 
 /* Subchannel utility functions */
 guint16 mirage_helper_subchannel_q_calculate_crc (const guint8 *data);

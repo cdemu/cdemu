@@ -165,6 +165,17 @@ gboolean mirage_initialize (GError **error)
     initialize_parsers_list();
     initialize_file_filters_list();
 
+    /* Allocate and initialize CRC look-up tables */
+    crc16_1021_lut = mirage_helper_init_crc16_lut(0x1021);
+    if (!crc16_1021_lut) {
+        return FALSE;
+    }
+
+    crc32_d8018001_lut = mirage_helper_init_crc32_lut(0xd8018001, 8);
+    if (!crc32_d8018001_lut) {
+        return FALSE;
+    }
+
     /* We're officially initialized now */
     libmirage.initialized = TRUE;
 
@@ -202,6 +213,13 @@ gboolean mirage_shutdown (GError **error)
     }
     g_free(libmirage.file_filters_info);
     g_free(libmirage.file_filters);
+
+    /* Free CRC look-up tables */
+    g_free(crc16_1021_lut);
+    crc16_1021_lut = NULL;
+
+    g_free(crc32_d8018001_lut);
+    crc32_d8018001_lut = NULL;
 
     /* We're not initialized anymore */
     libmirage.initialized = FALSE;

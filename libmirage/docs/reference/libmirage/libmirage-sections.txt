@@ -486,12 +486,17 @@ MIRAGE_CAST_PTR
 MirageSubChannel
 mirage_helper_ascii2isrc
 mirage_helper_bcd2hex
+mirage_helper_calculate_crc16
+mirage_helper_calculate_crc32f
+mirage_helper_calculate_crc32s
 mirage_helper_determine_sector_type
 mirage_helper_encoding_from_bom
 mirage_helper_find_data_file
 mirage_helper_get_suffix
 mirage_helper_has_suffix
 mirage_helper_hex2bcd
+mirage_helper_init_crc16_lut
+mirage_helper_init_crc32_lut
 mirage_helper_isrc2ascii
 mirage_helper_lba2msf
 mirage_helper_lba2msf_str
@@ -508,8 +513,6 @@ mirage_helper_subchannel_q_decode_isrc
 mirage_helper_subchannel_q_decode_mcn
 mirage_helper_subchannel_q_encode_isrc
 mirage_helper_subchannel_q_encode_mcn
-mirage_helper_calculate_crc16
-mirage_helper_calculate_crc32
 </SECTION>
 
 <SECTION>
