@@ -100,8 +100,6 @@ void mirage_contextual_debug_messagev (MirageContextual *self, gint level, gchar
     const gchar *domain = NULL;
     gint debug_mask = 0;
 
-    gchar *new_format;
-
     MirageContext *context;
 
     /* Try getting debug context */
@@ -113,22 +111,24 @@ void mirage_contextual_debug_messagev (MirageContextual *self, gint level, gchar
         g_object_unref(context);
     }
 
-    /* If we have a name, prepend it */
-    if (name) {
-        new_format = g_strdup_printf("%s: %s", name, format);
-    } else {
-        new_format = g_strdup(format);
-    }
-
+    /* Error, warning or debug; in any case, if name is set, print it
+       before the actual message */
     if (level == MIRAGE_DEBUG_ERROR) {
-        g_logv(domain, G_LOG_LEVEL_ERROR, new_format, args);
+        if (name) {
+            g_log(domain, G_LOG_LEVEL_ERROR, "%s: ", name);
+        }
+        g_logv(domain, G_LOG_LEVEL_ERROR, format, args);
     } else if (level == MIRAGE_DEBUG_WARNING) {
-        g_logv(domain, G_LOG_LEVEL_WARNING, new_format, args);
+        if (name) {
+            g_log(domain, MIRAGE_DEBUG_WARNING, "%s: ", name);
+        }
+        g_logv(domain, G_LOG_LEVEL_WARNING, format, args);
     } else if (debug_mask & level) {
-        g_logv(domain, G_LOG_LEVEL_DEBUG, new_format, args);
+        if (name) {
+            g_log(domain, G_LOG_LEVEL_DEBUG, "%s: ", name);
+        }
+        g_logv(domain, G_LOG_LEVEL_DEBUG, format, args);
     }
-
-    g_free(new_format);
 }
 
 /**
