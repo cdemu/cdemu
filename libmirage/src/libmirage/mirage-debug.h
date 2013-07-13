@@ -83,11 +83,12 @@ typedef enum _MirageDebugMasks
  * MIRAGE_DEBUG:
  * @obj: (in): object
  * @lvl: (in): debug level
- * @msg...: (in): debug message
+ * @...: (in): debug message
  *
  * Debugging macro, provided for convenience. It performs cast to
  * #MirageContextual interface on @obj and calls mirage_contextual_debug_message()
- * with debug level @lvl and debug message @msg....
+ * with debug level @lvl and debug message, specified by format string and
+ * format arguments.
  */
 #define MIRAGE_DEBUG(obj, lvl, ...) mirage_contextual_debug_message(MIRAGE_CONTEXTUAL(obj), lvl, __VA_ARGS__)
 
