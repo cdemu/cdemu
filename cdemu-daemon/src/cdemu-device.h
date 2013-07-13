@@ -20,10 +20,6 @@
 #ifndef __CDEMU_DEVICE_H__
 #define __CDEMU_DEVICE_H__
 
-/* Forward declarations */
-typedef struct _CdemuAudio CdemuAudio;
-typedef struct _CdemuCommand CdemuCommand;
-
 
 G_BEGIN_DECLS
 
@@ -37,7 +33,6 @@ G_BEGIN_DECLS
 #define CDEMU_IS_DEVICE_CLASS(klass) (G_TYPE_CHECK_CLASS_TYPE((klass), CDEMU_TYPE_DEVICE))
 #define CDEMU_DEVICE_GET_CLASS(obj)  (G_TYPE_INSTANCE_GET_CLASS((obj), CDEMU_TYPE_DEVICE, CdemuDeviceClass))
 
-typedef struct _CdemuDevice           CdemuDevice;
 typedef struct _CdemuDeviceClass      CdemuDeviceClass;
 typedef struct _CdemuDevicePrivate    CdemuDevicePrivate;
 

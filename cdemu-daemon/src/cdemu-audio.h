@@ -29,7 +29,6 @@ G_BEGIN_DECLS
 #define CDEMU_IS_AUDIO_CLASS(klass) (G_TYPE_CHECK_CLASS_TYPE((klass), CDEMU_TYPE_AUDIO))
 #define CDEMU_AUDIO_GET_CLASS(obj)  (G_TYPE_INSTANCE_GET_CLASS((obj), CDEMU_TYPE_AUDIO, CdemuAudioClass))
 
-typedef struct _CdemuAudio        CdemuAudio;
 typedef struct _CdemuAudioClass   CdemuAudioClass;
 typedef struct _CdemuAudioPrivate CdemuAudioPrivate;
 

@@ -20,10 +20,6 @@
 #ifndef __CDEMU_DAEMON_H__
 #define __CDEMU_DAEMON_H__
 
-/* Forward declarations */
-typedef struct _CdemuDevice CdemuDevice;
-
-
 G_BEGIN_DECLS
 
 /**********************************************************************\

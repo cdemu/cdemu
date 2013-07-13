@@ -1,6 +1,6 @@
 /*
- *  CDEmu daemon: Main header
- *  Copyright (C) 2006-2012 Rok Mandeljc
+ *  CDEmu daemon: Type definitions
+ *  Copyright (C) 2013 Rok Mandeljc
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -17,44 +17,18 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
+#ifndef __CDEMU_TYPES_H__
+#define __CDEMU_TYPES_H__
 
-#ifndef __CDEMU_H__
-#define __CDEMU_H__
+/* For now, only definitions that are shared among several headers are
+   listed here, and the rest are kept in their corresponding headers. */
 
-#ifdef HAVE_CONFIG_H
-#include "config.h"
-#endif
+G_BEGIN_DECLS
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <unistd.h>
-#include <math.h>
-#include <errno.h>
-#include <signal.h>
-#include <fcntl.h>
-#include <sys/ioctl.h>
-#include <sys/time.h>
+typedef struct _CdemuAudio CdemuAudio;
+typedef struct _CdemuDevice CdemuDevice;
+typedef struct _CdemuCommand CdemuCommand;
 
-#include <ao/ao.h>
+G_END_DECLS
 
-#include <glib-object.h>
-#include <gio/gio.h>
-
-#include <mirage.h>
-
-#include "cdemu-types.h"
-
-#include "cdemu-audio.h"
-
-#include "cdemu-mmc-features.h"
-#include "cdemu-mode-pages.h"
-#include "cdemu-packet-commands.h"
-#include "cdemu-sense-constants.h"
-
-#include "cdemu-error.h"
-#include "cdemu-debug.h"
-
-#include "cdemu-daemon.h"
-#include "cdemu-device.h"
-
-#endif /* __CDEMU_H__ */
+#endif /* __CDEMU_TYPES_H__ */
