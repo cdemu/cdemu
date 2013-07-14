@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 #
 # gcdemu: Gtk+/AppIndicator CDEmu GUI
-# Copyright (C) 2006-2012 Rok Mandeljc
+# Copyright (C) 2006-2013 Rok Mandeljc
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -379,6 +379,7 @@ class CDEmuDevice (GObject.GObject):
         # Get device options
         self.dpm_emulation = self.proxy.DeviceGetOption(self.number, "dpm-emulation")
         self.tr_emulation = self.proxy.DeviceGetOption(self.number, "tr-emulation")
+        self.bad_sector_emulation = self.proxy.DeviceGetOption(self.number, "bad-sector-emulation")
         self.device_id = self.proxy.DeviceGetOption(self.number, "device-id")
         self.daemon_debug_mask = self.proxy.DeviceGetOption(self.number, "daemon-debug-mask")
         self.library_debug_mask = self.proxy.DeviceGetOption(self.number, "library-debug-mask")
@@ -410,6 +411,9 @@ class CDEmuDevice (GObject.GObject):
         elif option == "tr-emulation":
             self.tr_emulation = self.proxy.DeviceGetOption(self.number, "tr-emulation")
             self.emit("tr-emulation-changed")
+        elif option == "bad-sector-emulation":
+            self.bad_sector_emulation = self.proxy.DeviceGetOption(self.number, "bad-sector-emulation")
+            self.emit("bad-sector-emulation-changed")
         elif option == "daemon-debug-mask":
             self.daemon_debug_mask = self.proxy.DeviceGetOption(self.number, "daemon-debug-mask")
             self.emit("daemon-debug-mask-changed")
@@ -467,6 +471,7 @@ class CDEmuDevice (GObject.GObject):
         except GLib.GError as e:
             self.emit("error", _("Failed to set device ID for device #%02d to %s:\n%s") % (self.number, value, e))
 
+
     def set_dpm_emulation (self, value):
         if self.dpm_emulation == value:
             return
@@ -476,7 +481,6 @@ class CDEmuDevice (GObject.GObject):
         except GLib.GError as e:
             self.emit("error", _("Failed to set DPM emulation for device #%02d to %i:\n%s") % (self.number, value, e))
 
-
     def set_tr_emulation (self, value):
         if self.tr_emulation == value:
             return
@@ -485,6 +489,16 @@ class CDEmuDevice (GObject.GObject):
             self.proxy.DeviceSetOption(self.number, "tr-emulation", GLib.Variant('b', value))
         except GLib.GError as e:
             self.emit("error", _("Failed to set TR emulation for device #%02d to %i:\n%s") % (self.number, value, e))
+
+    def set_bad_sector_emulation (self, value):
+        if self.bad_sector_emulation == value:
+            return
+
+        try:
+            self.proxy.DeviceSetOption(self.number, "bad-sector-emulation", GLib.Variant('b', value))
+        except GLib.GError as e:
+            self.emit("error", _("Failed to set bad sector emulation for device #%02d to %i:\n%s") % (self.number, value, e))
+
 
     def set_daemon_debug_mask (self, value):
         if self.daemon_debug_mask == value:
@@ -522,6 +536,10 @@ GObject.signal_new("dpm-emulation-changed", CDEmuDevice,
     None,
     ())
 GObject.signal_new("tr-emulation-changed", CDEmuDevice,
+    GObject.SignalFlags.RUN_FIRST,
+    None,
+    ())
+GObject.signal_new("bad-sector-emulation-changed", CDEmuDevice,
     GObject.SignalFlags.RUN_FIRST,
     None,
     ())
@@ -978,6 +996,7 @@ class gCDEmuDevice (GObject.GObject):
         self.connect_signal(self.page_options, "device-id-changed", lambda w, id: self.device.set_device_id(id))
         self.connect_signal(self.page_options, "dpm-emulation-changed", lambda w, v: self.device.set_dpm_emulation(v))
         self.connect_signal(self.page_options, "tr-emulation-changed", lambda w, v: self.device.set_tr_emulation(v))
+        self.connect_signal(self.page_options, "bad-sector-emulation-changed", lambda w, v: self.device.set_bad_sector_emulation(v))
 
         # Page: daemon debug mask
         self.page_daemon = gCDEmuDeviceDebugMaskPage(_("Daemon debug mask"), cdemu.daemon_debug_masks)
@@ -995,6 +1014,7 @@ class gCDEmuDevice (GObject.GObject):
         self.connect_signal(self.device, "device-id-changed", lambda w: self.update_device_id(True))
         self.connect_signal(self.device, "dpm-emulation-changed", lambda w: self.update_dpm_emulation(True))
         self.connect_signal(self.device, "tr-emulation-changed", lambda w: self.update_tr_emulation(True))
+        self.connect_signal(self.device, "bad-sector-emulation-changed", lambda w: self.update_bad_sector_emulation(True))
         self.connect_signal(self.device, "daemon-debug-mask-changed", lambda w: self.update_daemon_debug_mask(True))
         self.connect_signal(self.device, "library-debug-mask-changed", lambda w: self.update_library_debug_mask(True))
         self.connect_signal(self.device, "error", lambda w, t: self.show_error(t))
@@ -1008,6 +1028,7 @@ class gCDEmuDevice (GObject.GObject):
         self.update_device_id(False)
         self.update_dpm_emulation(False)
         self.update_tr_emulation(False)
+        self.update_bad_sector_emulation(False)
         self.update_daemon_debug_mask(False)
         self.update_library_debug_mask(False)
 
@@ -1060,6 +1081,11 @@ class gCDEmuDevice (GObject.GObject):
         self.page_options.set_tr_emulation(self.device.tr_emulation)
         if notify:
             self.emit("device-notification", _("Device option change"), _("Device #%02d has been changed its TR emulation option. New value: %s") % (self.device.number, self.device.tr_emulation))
+
+    def update_bad_sector_emulation (self, notify = False):
+        self.page_options.set_bad_sector_emulation(self.device.bad_sector_emulation)
+        if notify:
+            self.emit("device-notification", _("Device option change"), _("Device #%02d has been changed its bad sector emulation option. New value: %s") % (self.device.number, self.device.bad_sector_emulation))
 
     def update_daemon_debug_mask (self, notify = False):
         self.page_daemon.set_debug_mask(self.device.daemon_debug_mask)
@@ -1380,6 +1406,13 @@ class gCDEmuDeviceOptionsPage (Gtk.VBox):
         self.pack_start(checkbutton, expand=False, fill=False, padding=0)
         self.checkbutton_tr = checkbutton
 
+        # Bad sector emulation
+        checkbutton = Gtk.CheckButton(_("Bad sector emulation"), False)
+        checkbutton.show()
+        checkbutton.connect("toggled", self.on_set_bad_sector_emulation_toggled)
+        self.pack_start(checkbutton, expand=False, fill=False, padding=0)
+        self.checkbutton_bad_sector = checkbutton
+
         self.show_all()
 
 
@@ -1408,6 +1441,12 @@ class gCDEmuDeviceOptionsPage (Gtk.VBox):
     def on_set_tr_emulation_toggled (self, togglebutton):
         self.emit("tr-emulation-changed", togglebutton.get_active())
 
+    def set_bad_sector_emulation (self, value):
+        self.checkbutton_bad_sector.set_active(value)
+
+    def on_set_bad_sector_emulation_toggled (self, togglebutton):
+        self.emit("bad-sector-emulation-changed", togglebutton.get_active())
+
 GObject.type_register(gCDEmuDeviceOptionsPage)
 GObject.signal_new("device-id-changed", gCDEmuDeviceOptionsPage,
     GObject.SignalFlags.RUN_FIRST,
@@ -1421,7 +1460,11 @@ GObject.signal_new("tr-emulation-changed", gCDEmuDeviceOptionsPage,
     GObject.SignalFlags.RUN_FIRST,
     None,
     (GObject.TYPE_BOOLEAN,))
-
+GObject.signal_new("bad-sector-emulation-changed", gCDEmuDeviceOptionsPage,
+    GObject.SignalFlags.RUN_FIRST,
+    None,
+    (GObject.TYPE_BOOLEAN,))
+    
 
 ########################################################################
 #             gCDEmuDeviceDebugMaskPage: debug mask page               #
