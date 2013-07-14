@@ -427,6 +427,15 @@ is of type G_TYPE_INT.
    - Transfer rate emulation flag. Determines whether transfer rate emulation is
      performed
 
+* bad-sector-emulation
+   + arguments: enabled (boolean - "b")
+   
+   - Bad sector emulation flag. Determines whether bad sector emulation is
+     performed. This involves reading sector's data, computing error detection
+     code (EDC) over it, and comparing it to stored EDC; if the two do not
+     match, sector is proclaimed as a bad one. Some copy-protection schemes
+     rely on this behavior.
+
 * device-id
    + arguments: vendor_id, product_id, revision, vendor_specific  (tuple of strings:  - "(ssss)"
 

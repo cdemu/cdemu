@@ -677,7 +677,7 @@ static gboolean command_read (CdemuDevice *self, guint8 *raw_cdb)
            Mode Page 1 is not enabled, we report the read error. However, my
            tests indicate this should be done only for Mode 1 or Mode 2 Form 1
            sectors */
-        if (!p_0x01->dcr) {
+        if (self->priv->bad_sector_emulation && !p_0x01->dcr) {
             gint sector_type = mirage_sector_get_sector_type(sector);
 
             if ((sector_type == MIRAGE_MODE_MODE1 || sector_type == MIRAGE_MODE_MODE2_FORM1)
@@ -889,7 +889,7 @@ static gboolean command_read_cd (CdemuDevice *self, guint8 *raw_cdb)
            Mode Page 1 is not enabled, we report the read error. However, my
            tests indicate this should be done only for Mode 1 or Mode 2 Form 1
            sectors */
-        if (!p_0x01->dcr) {
+        if (self->priv->bad_sector_emulation && !p_0x01->dcr) {
             if ((sector_type == MIRAGE_MODE_MODE1 || sector_type == MIRAGE_MODE_MODE2_FORM1)
                 && !mirage_sector_verify_lec(sector)) {
                 CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: bad sector detected, triggering read error!\n", __debug__);

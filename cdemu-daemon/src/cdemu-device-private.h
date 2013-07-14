@@ -90,6 +90,7 @@ struct _CdemuDevicePrivate
 
     gboolean dpm_emulation;
     gboolean tr_emulation;
+    gboolean bad_sector_emulation;
 
     /* Device ID */
     gchar *id_vendor_id;
