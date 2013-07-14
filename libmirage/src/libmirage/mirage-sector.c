@@ -47,10 +47,11 @@ struct _MirageSectorPrivate
     MirageTrackModes type;
     gint address;
 
-    gint valid_data;          /* Which parts of sector data are valid */
+    gint real_data; /* Which parts of sector data were provided by image */
+    gint valid_data; /* Which parts of sector data are valid (either provided by image or generated) */
     guint8 sector_data[2352]; /* Buffer for sector data */
-    guint8 subchan_pw[96];    /* Buffer for interleaved PW subchannel */
-    guint8 subchan_pq[16];    /* Buffer for deinterleaved PQ subchannel */
+    guint8 subchan_pw[96]; /* Buffer for interleaved PW subchannel */
+    guint8 subchan_pq[16]; /* Buffer for deinterleaved PQ subchannel */    
 };
 
 
@@ -282,13 +283,13 @@ gboolean mirage_sector_feed_data (MirageSector *self, gint address, MirageTrack 
                     data_offset = 0; /* Offset: 0 */
 
                     /* Valid */
-                    self->priv->valid_data |= MIRAGE_VALID_DATA;
+                    self->priv->real_data |= MIRAGE_VALID_DATA;
 
                     /* We mark the rest as valid as well, so that we don't need
                        additional checks in fake data generation code */
-                    self->priv->valid_data |= MIRAGE_VALID_SYNC;
-                    self->priv->valid_data |= MIRAGE_VALID_HEADER;
-                    self->priv->valid_data |= MIRAGE_VALID_EDC_ECC;
+                    self->priv->real_data |= MIRAGE_VALID_SYNC;
+                    self->priv->real_data |= MIRAGE_VALID_HEADER;
+                    self->priv->real_data |= MIRAGE_VALID_EDC_ECC;
                     break;
                 }
                 default: {
@@ -313,7 +314,7 @@ gboolean mirage_sector_feed_data (MirageSector *self, gint address, MirageTrack 
                     data_offset = 12 + 4; /* Offset: sync + header */
 
                     /* Valid */
-                    self->priv->valid_data |= MIRAGE_VALID_DATA;
+                    self->priv->real_data |= MIRAGE_VALID_DATA;
 
                     break;
                 }
@@ -322,8 +323,8 @@ gboolean mirage_sector_feed_data (MirageSector *self, gint address, MirageTrack 
                     data_offset = 12; /* Offset: sync */
 
                     /* Valid */
-                    self->priv->valid_data |= MIRAGE_VALID_HEADER;
-                    self->priv->valid_data |= MIRAGE_VALID_DATA;
+                    self->priv->real_data |= MIRAGE_VALID_HEADER;
+                    self->priv->real_data |= MIRAGE_VALID_DATA;
 
                     break;
                 }
@@ -332,9 +333,9 @@ gboolean mirage_sector_feed_data (MirageSector *self, gint address, MirageTrack 
                     data_offset = 0; /* Offset: 0 */
 
                     /* Valid */
-                    self->priv->valid_data |= MIRAGE_VALID_SYNC;
-                    self->priv->valid_data |= MIRAGE_VALID_HEADER;
-                    self->priv->valid_data |= MIRAGE_VALID_DATA;
+                    self->priv->real_data |= MIRAGE_VALID_SYNC;
+                    self->priv->real_data |= MIRAGE_VALID_HEADER;
+                    self->priv->real_data |= MIRAGE_VALID_DATA;
 
                     break;
                 }
@@ -361,7 +362,7 @@ gboolean mirage_sector_feed_data (MirageSector *self, gint address, MirageTrack 
                     data_offset = 12 + 4; /* Offset: sync + header */
 
                     /* Valid */
-                    self->priv->valid_data |= MIRAGE_VALID_DATA;
+                    self->priv->real_data |= MIRAGE_VALID_DATA;
 
                     break;
                 }
@@ -370,8 +371,8 @@ gboolean mirage_sector_feed_data (MirageSector *self, gint address, MirageTrack 
                     data_offset = 12; /* Offset: sync */
 
                     /* Valid */
-                    self->priv->valid_data |= MIRAGE_VALID_HEADER;
-                    self->priv->valid_data |= MIRAGE_VALID_DATA;
+                    self->priv->real_data |= MIRAGE_VALID_HEADER;
+                    self->priv->real_data |= MIRAGE_VALID_DATA;
 
                     break;
                 }
@@ -380,9 +381,9 @@ gboolean mirage_sector_feed_data (MirageSector *self, gint address, MirageTrack 
                     data_offset = 0; /* Offset: 0 */
 
                     /* Valid */
-                    self->priv->valid_data |= MIRAGE_VALID_SYNC;
-                    self->priv->valid_data |= MIRAGE_VALID_HEADER;
-                    self->priv->valid_data |= MIRAGE_VALID_DATA;
+                    self->priv->real_data |= MIRAGE_VALID_SYNC;
+                    self->priv->real_data |= MIRAGE_VALID_HEADER;
+                    self->priv->real_data |= MIRAGE_VALID_DATA;
 
                     break;
                 }
@@ -391,8 +392,8 @@ gboolean mirage_sector_feed_data (MirageSector *self, gint address, MirageTrack 
                     data_offset = 12 + 4; /* Offset: sync + header */
 
                     /* Valid */
-                    self->priv->valid_data |= MIRAGE_VALID_DATA;
-                    self->priv->valid_data |= MIRAGE_VALID_EDC_ECC;
+                    self->priv->real_data |= MIRAGE_VALID_DATA;
+                    self->priv->real_data |= MIRAGE_VALID_EDC_ECC;
 
                     break;
                 }
@@ -401,9 +402,9 @@ gboolean mirage_sector_feed_data (MirageSector *self, gint address, MirageTrack 
                     data_offset = 12; /* Offset: sync */
 
                     /* Valid */
-                    self->priv->valid_data |= MIRAGE_VALID_HEADER;
-                    self->priv->valid_data |= MIRAGE_VALID_DATA;
-                    self->priv->valid_data |= MIRAGE_VALID_EDC_ECC;
+                    self->priv->real_data |= MIRAGE_VALID_HEADER;
+                    self->priv->real_data |= MIRAGE_VALID_DATA;
+                    self->priv->real_data |= MIRAGE_VALID_EDC_ECC;
 
                     break;
                 }
@@ -412,10 +413,10 @@ gboolean mirage_sector_feed_data (MirageSector *self, gint address, MirageTrack 
                     data_offset = 0; /* Offset: 0 */
 
                     /* Valid */
-                    self->priv->valid_data |= MIRAGE_VALID_SYNC;
-                    self->priv->valid_data |= MIRAGE_VALID_HEADER;
-                    self->priv->valid_data |= MIRAGE_VALID_DATA;
-                    self->priv->valid_data |= MIRAGE_VALID_EDC_ECC;
+                    self->priv->real_data |= MIRAGE_VALID_SYNC;
+                    self->priv->real_data |= MIRAGE_VALID_HEADER;
+                    self->priv->real_data |= MIRAGE_VALID_DATA;
+                    self->priv->real_data |= MIRAGE_VALID_EDC_ECC;
 
                     break;
                 }
@@ -442,7 +443,7 @@ gboolean mirage_sector_feed_data (MirageSector *self, gint address, MirageTrack 
                     data_offset = 12 + 4; /* Offset: sync + header */
 
                     /* Valid */
-                    self->priv->valid_data |= MIRAGE_VALID_DATA;
+                    self->priv->real_data |= MIRAGE_VALID_DATA;
 
                     break;
                 }
@@ -451,8 +452,8 @@ gboolean mirage_sector_feed_data (MirageSector *self, gint address, MirageTrack 
                     data_offset = 12; /* Offset: sync */
 
                     /* Valid */
-                    self->priv->valid_data |= MIRAGE_VALID_HEADER;
-                    self->priv->valid_data |= MIRAGE_VALID_DATA;
+                    self->priv->real_data |= MIRAGE_VALID_HEADER;
+                    self->priv->real_data |= MIRAGE_VALID_DATA;
 
                     break;
                 }
@@ -461,9 +462,9 @@ gboolean mirage_sector_feed_data (MirageSector *self, gint address, MirageTrack 
                     data_offset = 0; /* Offset: 0 */
 
                     /* Valid */
-                    self->priv->valid_data |= MIRAGE_VALID_SYNC;
-                    self->priv->valid_data |= MIRAGE_VALID_HEADER;
-                    self->priv->valid_data |= MIRAGE_VALID_DATA;
+                    self->priv->real_data |= MIRAGE_VALID_SYNC;
+                    self->priv->real_data |= MIRAGE_VALID_HEADER;
+                    self->priv->real_data |= MIRAGE_VALID_DATA;
 
                     break;
                 }
@@ -490,7 +491,7 @@ gboolean mirage_sector_feed_data (MirageSector *self, gint address, MirageTrack 
                     data_offset = 12 + 4 + 8; /* Offset: sync + header + subheader */
 
                     /* Valid */
-                    self->priv->valid_data |= MIRAGE_VALID_DATA;
+                    self->priv->real_data |= MIRAGE_VALID_DATA;
 
                     break;
                 }
@@ -499,8 +500,8 @@ gboolean mirage_sector_feed_data (MirageSector *self, gint address, MirageTrack 
                     data_offset = 12 + 4; /* Offset: sync + header */
 
                     /* Valid */
-                    self->priv->valid_data |= MIRAGE_VALID_SUBHEADER;
-                    self->priv->valid_data |= MIRAGE_VALID_DATA;
+                    self->priv->real_data |= MIRAGE_VALID_SUBHEADER;
+                    self->priv->real_data |= MIRAGE_VALID_DATA;
 
                     break;
                 }
@@ -509,9 +510,9 @@ gboolean mirage_sector_feed_data (MirageSector *self, gint address, MirageTrack 
                     data_offset = 12; /* Offset: sync */
 
                     /* Valid */
-                    self->priv->valid_data |= MIRAGE_VALID_HEADER;
-                    self->priv->valid_data |= MIRAGE_VALID_SUBHEADER;
-                    self->priv->valid_data |= MIRAGE_VALID_DATA;
+                    self->priv->real_data |= MIRAGE_VALID_HEADER;
+                    self->priv->real_data |= MIRAGE_VALID_SUBHEADER;
+                    self->priv->real_data |= MIRAGE_VALID_DATA;
 
                     break;
                 }
@@ -520,10 +521,10 @@ gboolean mirage_sector_feed_data (MirageSector *self, gint address, MirageTrack 
                     data_offset = 0; /* Offset: 0 */
 
                     /* Valid */
-                    self->priv->valid_data |= MIRAGE_VALID_SYNC;
-                    self->priv->valid_data |= MIRAGE_VALID_HEADER;
-                    self->priv->valid_data |= MIRAGE_VALID_SUBHEADER;
-                    self->priv->valid_data |= MIRAGE_VALID_DATA;
+                    self->priv->real_data |= MIRAGE_VALID_SYNC;
+                    self->priv->real_data |= MIRAGE_VALID_HEADER;
+                    self->priv->real_data |= MIRAGE_VALID_SUBHEADER;
+                    self->priv->real_data |= MIRAGE_VALID_DATA;
 
                     break;
                 }
@@ -532,8 +533,8 @@ gboolean mirage_sector_feed_data (MirageSector *self, gint address, MirageTrack 
                     data_offset = 12 + 4 + 8; /* Offset: sync + header + subheader */
 
                     /* Valid */
-                    self->priv->valid_data |= MIRAGE_VALID_DATA;
-                    self->priv->valid_data |= MIRAGE_VALID_EDC_ECC;
+                    self->priv->real_data |= MIRAGE_VALID_DATA;
+                    self->priv->real_data |= MIRAGE_VALID_EDC_ECC;
 
                     break;
                 }
@@ -542,9 +543,9 @@ gboolean mirage_sector_feed_data (MirageSector *self, gint address, MirageTrack 
                     data_offset = 12 + 4; /* Offset: sync + header */
 
                     /* Valid */
-                    self->priv->valid_data |= MIRAGE_VALID_SUBHEADER;
-                    self->priv->valid_data |= MIRAGE_VALID_DATA;
-                    self->priv->valid_data |= MIRAGE_VALID_EDC_ECC;
+                    self->priv->real_data |= MIRAGE_VALID_SUBHEADER;
+                    self->priv->real_data |= MIRAGE_VALID_DATA;
+                    self->priv->real_data |= MIRAGE_VALID_EDC_ECC;
 
                     break;
                 }
@@ -553,10 +554,10 @@ gboolean mirage_sector_feed_data (MirageSector *self, gint address, MirageTrack 
                     data_offset = 12; /* Offset: sync */
 
                     /* Valid */
-                    self->priv->valid_data |= MIRAGE_VALID_HEADER;
-                    self->priv->valid_data |= MIRAGE_VALID_SUBHEADER;
-                    self->priv->valid_data |= MIRAGE_VALID_DATA;
-                    self->priv->valid_data |= MIRAGE_VALID_EDC_ECC;
+                    self->priv->real_data |= MIRAGE_VALID_HEADER;
+                    self->priv->real_data |= MIRAGE_VALID_SUBHEADER;
+                    self->priv->real_data |= MIRAGE_VALID_DATA;
+                    self->priv->real_data |= MIRAGE_VALID_EDC_ECC;
 
                     break;
                 }
@@ -565,11 +566,11 @@ gboolean mirage_sector_feed_data (MirageSector *self, gint address, MirageTrack 
                     data_offset = 0; /* Offset: 0 */
 
                     /* Valid */
-                    self->priv->valid_data |= MIRAGE_VALID_SYNC;
-                    self->priv->valid_data |= MIRAGE_VALID_HEADER;
-                    self->priv->valid_data |= MIRAGE_VALID_SUBHEADER;
-                    self->priv->valid_data |= MIRAGE_VALID_DATA;
-                    self->priv->valid_data |= MIRAGE_VALID_EDC_ECC;
+                    self->priv->real_data |= MIRAGE_VALID_SYNC;
+                    self->priv->real_data |= MIRAGE_VALID_HEADER;
+                    self->priv->real_data |= MIRAGE_VALID_SUBHEADER;
+                    self->priv->real_data |= MIRAGE_VALID_DATA;
+                    self->priv->real_data |= MIRAGE_VALID_EDC_ECC;
 
                     break;
                 }
@@ -596,7 +597,7 @@ gboolean mirage_sector_feed_data (MirageSector *self, gint address, MirageTrack 
                     data_offset = 12 + 4 + 8; /* Offset: sync + header + subheader */
 
                     /* Valid */
-                    self->priv->valid_data |= MIRAGE_VALID_DATA;
+                    self->priv->real_data |= MIRAGE_VALID_DATA;
 
                     break;
                 }
@@ -605,8 +606,8 @@ gboolean mirage_sector_feed_data (MirageSector *self, gint address, MirageTrack 
                     data_offset = 12 + 4; /* Offset: sync + header */
 
                     /* Valid */
-                    self->priv->valid_data |= MIRAGE_VALID_SUBHEADER;
-                    self->priv->valid_data |= MIRAGE_VALID_DATA;
+                    self->priv->real_data |= MIRAGE_VALID_SUBHEADER;
+                    self->priv->real_data |= MIRAGE_VALID_DATA;
 
                     break;
                 }
@@ -618,9 +619,9 @@ gboolean mirage_sector_feed_data (MirageSector *self, gint address, MirageTrack 
                     data_offset = 12; /* Offset: sync */
 
                     /* Valid */
-                    self->priv->valid_data |= MIRAGE_VALID_HEADER;
-                    self->priv->valid_data |= MIRAGE_VALID_SUBHEADER;
-                    self->priv->valid_data |= MIRAGE_VALID_DATA;
+                    self->priv->real_data |= MIRAGE_VALID_HEADER;
+                    self->priv->real_data |= MIRAGE_VALID_SUBHEADER;
+                    self->priv->real_data |= MIRAGE_VALID_DATA;
 
                     break;
                 }
@@ -630,10 +631,10 @@ gboolean mirage_sector_feed_data (MirageSector *self, gint address, MirageTrack 
                     data_offset = 0; /* Offset: 0 */
 
                     /* Valid */
-                    self->priv->valid_data |= MIRAGE_VALID_SYNC;
-                    self->priv->valid_data |= MIRAGE_VALID_HEADER;
-                    self->priv->valid_data |= MIRAGE_VALID_SUBHEADER;
-                    self->priv->valid_data |= MIRAGE_VALID_DATA;
+                    self->priv->real_data |= MIRAGE_VALID_SYNC;
+                    self->priv->real_data |= MIRAGE_VALID_HEADER;
+                    self->priv->real_data |= MIRAGE_VALID_SUBHEADER;
+                    self->priv->real_data |= MIRAGE_VALID_DATA;
 
                     break;
                 }
@@ -642,8 +643,8 @@ gboolean mirage_sector_feed_data (MirageSector *self, gint address, MirageTrack 
                     data_offset = 12 + 4 + 8; /* Offset: sync + header + subheader */
 
                     /* Valid */
-                    self->priv->valid_data |= MIRAGE_VALID_DATA;
-                    self->priv->valid_data |= MIRAGE_VALID_EDC_ECC;
+                    self->priv->real_data |= MIRAGE_VALID_DATA;
+                    self->priv->real_data |= MIRAGE_VALID_EDC_ECC;
 
                     break;
                 }
@@ -652,9 +653,9 @@ gboolean mirage_sector_feed_data (MirageSector *self, gint address, MirageTrack 
                     data_offset = 12 + 4; /* Offset: sync + header */
 
                     /* Valid */
-                    self->priv->valid_data |= MIRAGE_VALID_SUBHEADER;
-                    self->priv->valid_data |= MIRAGE_VALID_DATA;
-                    self->priv->valid_data |= MIRAGE_VALID_EDC_ECC;
+                    self->priv->real_data |= MIRAGE_VALID_SUBHEADER;
+                    self->priv->real_data |= MIRAGE_VALID_DATA;
+                    self->priv->real_data |= MIRAGE_VALID_EDC_ECC;
 
                     break;
                 }
@@ -663,10 +664,10 @@ gboolean mirage_sector_feed_data (MirageSector *self, gint address, MirageTrack 
                     data_offset = 12; /* Offset: sync */
 
                     /* Valid */
-                    self->priv->valid_data |= MIRAGE_VALID_HEADER;
-                    self->priv->valid_data |= MIRAGE_VALID_SUBHEADER;
-                    self->priv->valid_data |= MIRAGE_VALID_DATA;
-                    self->priv->valid_data |= MIRAGE_VALID_EDC_ECC;
+                    self->priv->real_data |= MIRAGE_VALID_HEADER;
+                    self->priv->real_data |= MIRAGE_VALID_SUBHEADER;
+                    self->priv->real_data |= MIRAGE_VALID_DATA;
+                    self->priv->real_data |= MIRAGE_VALID_EDC_ECC;
 
                     break;
                 }
@@ -675,11 +676,11 @@ gboolean mirage_sector_feed_data (MirageSector *self, gint address, MirageTrack 
                     data_offset = 0; /* Offset: 0 */
 
                     /* Valid */
-                    self->priv->valid_data |= MIRAGE_VALID_SYNC;
-                    self->priv->valid_data |= MIRAGE_VALID_HEADER;
-                    self->priv->valid_data |= MIRAGE_VALID_SUBHEADER;
-                    self->priv->valid_data |= MIRAGE_VALID_DATA;
-                    self->priv->valid_data |= MIRAGE_VALID_EDC_ECC;
+                    self->priv->real_data |= MIRAGE_VALID_SYNC;
+                    self->priv->real_data |= MIRAGE_VALID_HEADER;
+                    self->priv->real_data |= MIRAGE_VALID_SUBHEADER;
+                    self->priv->real_data |= MIRAGE_VALID_DATA;
+                    self->priv->real_data |= MIRAGE_VALID_EDC_ECC;
 
                     break;
                 }
@@ -715,8 +716,8 @@ gboolean mirage_sector_feed_data (MirageSector *self, gint address, MirageTrack 
                     data_offset = 12 + 4; /* Offset: sync + header */
 
                     /* Valid */
-                    self->priv->valid_data |= MIRAGE_VALID_SUBHEADER;
-                    self->priv->valid_data |= MIRAGE_VALID_DATA;
+                    self->priv->real_data |= MIRAGE_VALID_SUBHEADER;
+                    self->priv->real_data |= MIRAGE_VALID_DATA;
 
                     break;
                 case 2336: {
@@ -724,9 +725,9 @@ gboolean mirage_sector_feed_data (MirageSector *self, gint address, MirageTrack 
                     data_offset = 12 + 4; /* Offset: sync + header */
 
                     /* Valid */
-                    self->priv->valid_data |= MIRAGE_VALID_SUBHEADER;
-                    self->priv->valid_data |= MIRAGE_VALID_DATA;
-                    self->priv->valid_data |= MIRAGE_VALID_EDC_ECC;
+                    self->priv->real_data |= MIRAGE_VALID_SUBHEADER;
+                    self->priv->real_data |= MIRAGE_VALID_DATA;
+                    self->priv->real_data |= MIRAGE_VALID_EDC_ECC;
 
                     break;
                 }
@@ -735,10 +736,10 @@ gboolean mirage_sector_feed_data (MirageSector *self, gint address, MirageTrack 
                     data_offset = 12 + 4; /* Offset: sync */
 
                     /* Valid */
-                    self->priv->valid_data |= MIRAGE_VALID_HEADER;
-                    self->priv->valid_data |= MIRAGE_VALID_SUBHEADER;
-                    self->priv->valid_data |= MIRAGE_VALID_DATA;
-                    self->priv->valid_data |= MIRAGE_VALID_EDC_ECC;
+                    self->priv->real_data |= MIRAGE_VALID_HEADER;
+                    self->priv->real_data |= MIRAGE_VALID_SUBHEADER;
+                    self->priv->real_data |= MIRAGE_VALID_DATA;
+                    self->priv->real_data |= MIRAGE_VALID_EDC_ECC;
 
                     break;
                 }
@@ -747,11 +748,11 @@ gboolean mirage_sector_feed_data (MirageSector *self, gint address, MirageTrack 
                     data_offset = 0; /* Offset: 0 */
 
                     /* Valid */
-                    self->priv->valid_data |= MIRAGE_VALID_SYNC;
-                    self->priv->valid_data |= MIRAGE_VALID_HEADER;
-                    self->priv->valid_data |= MIRAGE_VALID_SUBHEADER;
-                    self->priv->valid_data |= MIRAGE_VALID_DATA;
-                    self->priv->valid_data |= MIRAGE_VALID_EDC_ECC;
+                    self->priv->real_data |= MIRAGE_VALID_SYNC;
+                    self->priv->real_data |= MIRAGE_VALID_HEADER;
+                    self->priv->real_data |= MIRAGE_VALID_SUBHEADER;
+                    self->priv->real_data |= MIRAGE_VALID_DATA;
+                    self->priv->real_data |= MIRAGE_VALID_EDC_ECC;
 
                     break;
                 }
@@ -798,12 +799,18 @@ gboolean mirage_sector_feed_data (MirageSector *self, gint address, MirageTrack 
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_SECTOR, "%s: subchannel sector size: %d\n", __debug__, length);
 
     if (length) {
-        self->priv->valid_data |= MIRAGE_VALID_SUBCHAN;
+        self->priv->real_data |= MIRAGE_VALID_SUBCHAN;
         memcpy(self->priv->subchan_pw, buffer, length);
     }
     g_free(buffer);
 
     g_object_unref(fragment);
+
+    /* At this point, real_data field indicates which parts of sector
+       data were provided by the image file; make a copy of this field
+       in valid_data field, which will be modified when the missing data
+       is generated */
+    self->priv->valid_data = self->priv->real_data;
 
     return TRUE;
 }
@@ -1206,11 +1213,10 @@ gboolean mirage_sector_verify_lec (MirageSector *self)
 {
     gboolean valid = TRUE;
 
-    /* Validation is possible only if EDC/ECC data is present... if it's
-       missing, it would be generated by same algorithm the verification
-       uses. Therefore, if ECD/ECC is missing (and hasn't been generated
-       by our sector code yet), verification automatically succeeds. */
-    if (self->priv->valid_data & MIRAGE_VALID_EDC_ECC) {
+    /* Validation is possible only if EDC/ECC data was provided by the
+       image file; if it is missing, it is generated by same algorithm 
+       as used in verification. */
+    if (self->priv->real_data & MIRAGE_VALID_EDC_ECC) {
         /* I believe calculating EDC suffices for this test; ECC should
            not really be needed, since we won't be doing any corrections */
         guint8 computed_edc[4];
@@ -1266,11 +1272,10 @@ gboolean mirage_sector_verify_subchannel_crc (MirageSector *self)
 {
     gboolean valid = TRUE;
 
-    /* Validation is possible only if subchannel... if it's missing, it
-       would be generated by same algorithm the verification uses. Therefore,
-       if subchannel data is missing (and hasn't been generated by our sector
-       code yet), verification automatically succeeds. */
-    if (self->priv->valid_data & MIRAGE_VALID_SUBCHAN) {
+    /* Validation is possible only if subchannel data was provided by the
+       image file; if it is missing, it is generated by same algorithm 
+       as used in verification. */
+    if (self->priv->real_data & MIRAGE_VALID_SUBCHAN) {
         guint16 computed_crc;
         const guint8 *buf;
         gint buflen;
