@@ -1,4 +1,4 @@
-.TH CDEMU 1 "Jan 4, 2013"
+.TH CDEMU 1 "Jul 14, 2013"
 .SH NAME
 cdemu \- a simple command-line CDEmu client
 .SH SYNOPSIS
@@ -114,6 +114,11 @@ Displays/sets transfer rate emulation flag. \fBdevice\fR is the number of the
 desired device, or \fIall\fR. \fBnew-value\fR is the new value to be set.
 If this argument is ommited, currently set value is displayed.
 .TP
+.B bad-sector-emulation <device> [new-value]
+Displays/sets bad sector emulation flag. \fBdevice\fR is the number of the
+desired device, or \fIall\fR. \fBnew-value\fR is the new value to be set.
+If this argument is ommited, currently set value is displayed.
+.TP
 .B device-id <device> [new-vendor-id] [new-product-id] [new-revision] [new-vendor-specific]
 Displays/sets device ID. \fBdevice\fR is the number of the desired device.
 \fBnew-vendor-id\fR is the new vendor ID string to be set (8 characters max).
@@ -172,6 +177,9 @@ cdemu library-debug-mask 0
 cdemu dpm-emulation all 0
 .TP
 .B Enabling transfer rate emulation on first device:
+cdemu tr-emulation 0 1
+.TP
+.B Enabling bad sector emulation on first device:
 cdemu tr-emulation 0 1
 .TP
 .B Changing device ID of first device:

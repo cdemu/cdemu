@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 #
 # cdemu: command line CDEmu client
-# Copyright (C) 2006-2012 Rok Mandeljc
+# Copyright (C) 2006-2013 Rok Mandeljc
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -554,7 +554,7 @@ class CDEmu (object):
 
                 print(_("Transfer rate emulation flag of device %i: %i") % (device, enabled))
 
-        # Set DPM emulation flag
+        # Set TR emulation flag
         elif len(arguments) == 2:
             try:
                 enabled = int(arguments[1], 0) and True or False
@@ -589,6 +589,80 @@ class CDEmu (object):
                     return False
         else:
             self.print_invalid_number_of_parameters("tr-emulation")
+            return False
+
+        return True
+        
+    def cmd_bad_sector_emulation (self, arguments):
+        # Get bad sector emulation flag
+        if len(arguments) == 1:
+            # Particular device vs. all devices
+            if arguments[0] == "all":
+                try:
+                    nr_devices = self.dbus_iface.GetNumberOfDevices()
+                except dbus.DBusException as e:
+                    self.print_error(_("Failed to get number of devices: %s") % (e))
+                    return False
+
+                print(_("Devices' bad sector emulation flag:"))
+                print("%-5s %-10s" % (_("DEV"), _("ENABLED")))
+
+                for device in range(0, nr_devices):
+                    try:
+                        enabled = self.dbus_iface.DeviceGetOption(device, "bad-sector-emulation")
+                    except dbus.DBusException as e:
+                        self.print_error(_("Failed to get bad sector emulation flag of device %i: %s") % (device, e))
+                        continue
+
+                    print("%-5s %i" % (device, enabled))
+            else:
+                try:
+                    device = int(arguments[0], 0)
+                    enabled = self.dbus_iface.DeviceGetOption(device, "bad-sector-emulation")
+                except dbus.DBusException as e:
+                    self.print_error(_("Failed to get bad sector emulation flag of device %i: %s") % (device, e))
+                    return False
+                except ValueError:
+                    self.print_error(_("String '%s' is not a number") % (arguments[0]))
+                    return False
+
+                print(_("Bad sector emulation flag of device %i: %i") % (device, enabled))
+
+        # Set bad sector emulation flag
+        elif len(arguments) == 2:
+            try:
+                enabled = int(arguments[1], 0) and True or False
+            except ValueError:
+                self.print_error(_("String '%s' is not a number") % (arguments[1]))
+                return False
+            if arguments[0] == "all":
+                try:
+                    nr_devices = self.dbus_iface.GetNumberOfDevices()
+                except dbus.DBusException as e:
+                    self.print_error(_("Failed to get number of devices: %s") % (e))
+                    return False
+
+                print(_("Setting bad sector emulation flag of all devices to %i.") % (enabled))
+                for device in range(0, nr_devices):
+                    try:
+                        self.dbus_iface.DeviceSetOption(device, "bad-sector-emulation", enabled)
+                    except dbus.DBusException as e:
+                        self.print_error(_("Failed to set bad sector emulation flag of device %i to %i: %s") % (device, enabled, e))
+                        continue
+            else:
+                try:
+                    device = int(arguments[0], 0)
+                except ValueError:
+                    self.print_error(_("String '%s' is not a number") % (arguments[0]))
+                    return False
+                print(_("Setting bad sector emulation flag of device %i to %i.") % (device, enabled))
+                try:
+                    self.dbus_iface.DeviceSetOption(device, "bad-sector-emulation", enabled)
+                except dbus.DBusException as e:
+                    self.print_error(_("Failed to set bad sector emulation flag of device %i to %i: %s") % (device, enabled, e))
+                    return False
+        else:
+            self.print_invalid_number_of_parameters("bad-sector-emulation")
             return False
 
         return True
@@ -912,6 +986,11 @@ class CDEmu (object):
             _("<device> [new value]"),
             _("displays/sets transfer rate emulation flag"),
             cmd_tr_emulation
+        ], [
+            "bad-sector-emulation",
+            _("<device> [new value]"),
+            _("displays/sets bad sector emulation flag"),
+            cmd_bad_sector_emulation
         ], [
             "device-id",
             _("<device> [new vendor_id] [new product_id] [new revision] [new vendor_specific]"),

@@ -97,6 +97,9 @@ Disabling DPM emulation on all devices:
 Enabling transfer rate emulation on first device:
  cdemu tr-emulation 0 1
 
+Enabling bad sector emulation on first device:
+ cdemu bad-sector-emulation 0 1
+
 Changing device ID of first device:
  cdemu device-id 0 "MyVendor" "MyProduct" "1.0.0" "Test device ID"
 
