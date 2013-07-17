@@ -7,7 +7,7 @@ Table of Contents:
 ~~~~~~~~~~~~~~~~~~
 
 1. Introduction
-2. Userspace-cdemu suite overview
+2. CDEmu suite overview
 3. Requirements
 4. Installation and set-up
 5. Troubleshooting
@@ -25,19 +25,19 @@ Table of Contents:
 1. Introduction
 ~~~~~~~~~~~~~~~
 
-This is CDEmu daemon, the userspace daemon part of the userspace-cdemu suite, a
-free, GPL CD/DVD-ROM device emulator for linux.
+This is CDEmu daemon, the daemon part of the cdemu suite, a free, 
+GPL CD/DVD-ROM device emulator for linux.
 
-This document describes both the userspace-cdemu suit in general, and the
+This document describes both the cdemu suite in general, and the
 specifics of CDEmu daemon, such as installation quirks, troubleshooting, and
 daemon's D-BUS interface.
 
 
-2. Userspace-cdemu suite overview
+2. CDEmu suite overview
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-The whole userspace-cdemu suite is intended as a rewrite of cdemu kernel module
-and userspace utility that has been written by Robert Penz. But instead of
+The whole cdemu suite is intended as a rewrite of the cdemu kernel module
+and userspace utility that was once written by Robert Penz. But instead of
 providing only block device and linux uniform CD-ROM driver interface, CDEmu
 daemon tries to implement packet command set as specified by MMC-3 and INF-8090,
 thus fully emulating an optical storage device.
@@ -48,20 +48,20 @@ Main features:
      block devices, but as full SCSI devices. Aside from mounting the device,
      you can use dd on it, use it with CD-player, or even copy the loaded image
      using one of linux's CD-ROM burning utilities.
- - multiple image format support: userspace-cdemu is based libMirage, an image
+ - multiple image format support: cdemu utilizes libMirage, an image
      access library, which attempts to provide unified access to various CD-ROM
      image formats (including B6T, CCD, CDI, CUE, ISO, MDS, NRG and TOC)
- - linux HAL support: userspace-cdemu devices are properly detected by HAL, thus
+ - linux HAL support: cdemu devices are properly detected by HAL, thus
      giving you the same benefits as with the real devices; most notable are
      automount and detection in WINE
  - debugging: both CDEmu daemon and underlying libMirage library have debugging
      code that supports changing verbosity of debug messages while daemon is
      running, making it easier to discover and fix problems.
 
-The whole userspace-cdemu suite consists of three major components:
+The whole cdemu suite consists of three major components:
  - kernel module
- - userspace daemon
- - userspace clients
+ - daemon
+ - clients
 
 2.1. Kernel module
 ~~~~~~~~~~~~~~~~~~
@@ -78,7 +78,7 @@ status to kernel, thus completing the request.
 The whole process is very similar to accessing real device, except that requests
 are passed to userspace daemon instead to hardware.
 
-Early, experimental versions of userspace-cdemu used a module that was called
+Early, experimental versions of cdemu used a module that was called
 cdemu-module. This release is based on vhba module, which was written by Chia-I
 Wu. Contrary to cdemu-module, which implemented all the interfaces (i.e. block
 device, uniform CD-ROM driver, etc.) manually, vhba implements virtual SCSI host
@@ -94,7 +94,7 @@ to the kernel.
 
 Daemon implements the actual virtual device; one instance per each device
 registered by kernel module. It uses libMirage, an image access library that is
-part of userspace-cdemu suite, for the image access (e.g. sector reading).
+part of the cdemu suite, for the image access (e.g. sector reading).
 
 Daemon is controlled through methods that are exposed via D-BUS. It is written
 in C and based on GLib (and thus GObjects), but being controlled over D-BUS, it
@@ -109,7 +109,7 @@ checking device(s) status, setting the debug mask, etc.
 
 A client can be written in any language, as long as it has D-BUS bindings; it can
 be either a CLI or a GUI application. For illustration, two clients are included
-as part of userspace-cdemu:
+as part of cdemu:
  - cdemu-client: a simple CLI client
  - gcdemu: a Gtk+ based GUI
 For more information about these particular clients, consult their documentation.
@@ -135,19 +135,18 @@ CDEmu daemon has the following software requirements:
 Please read the INSTALL file. Note however that there are some quirks one should
 be aware of.
 
-
-Make sure you have installed all the required libraries; GLib, D-BUS and libao
-should be provided by most of the modern distributions and should as such be
-detected properly by configure script.
-
-libMirage, which is also part of userspace-cdemu suite, is also required. If you
+libMirage, which is part of the cdemu suite, is also required. If you
 are building and installing it yourself, make sure that its .pc file is visible
 to pkg-config utility; if you are using /usr prefix, you should be fine, but in
 case /usr/local or something else is used and you haven't set up pkg-config to
 look there, you might need to force it to do so.
 
-For example, if libMirage was installed to /usr/local, configure would have to
-be run as "PKG_CONFIG_PATH=/usr/local/lib/pkgconfig ./configure".
+For example, if libMirage was installed to /usr/local, CMake would have to
+be run as this way:
+
+export PKG_CONFIG_PATH="/usr/local/lib/pkgconfig"
+mkdir build && cd build
+ccmake ..
 
 VHBA module is not a build-time dependency, but it might be a good idea to have
 it installed at this point.
