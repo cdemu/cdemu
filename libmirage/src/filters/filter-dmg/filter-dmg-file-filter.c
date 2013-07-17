@@ -172,7 +172,7 @@ static inline void mirage_file_filter_dmg_size_fix_endian (size_block_t *size_bl
     size_block->unknown3       = GUINT32_FROM_LE(size_block->unknown3);
     size_block->vol_modified   = GUINT32_FROM_LE(size_block->vol_modified);
     size_block->unknown4       = GUINT32_FROM_LE(size_block->unknown4);
-    size_block->vol_sig_as_int = GUINT16_FROM_BE(size_block->vol_sig_as_int);
+    size_block->vol_sig.as_int = GUINT16_FROM_BE(size_block->vol_sig.as_int);
     size_block->size_present   = GUINT16_FROM_LE(size_block->size_present);
 }
 
@@ -289,7 +289,7 @@ static void mirage_file_filter_dmg_print_size_block(MirageFileFilterDmg *self, s
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  unknown3: 0x%08x\n", __debug__, size_block->unknown3);
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  vol_modified: 0x%08x\n", __debug__, size_block->vol_modified);
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  unknown4: 0x%08x\n", __debug__, size_block->unknown4);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  vol_signature: %.2s\n", __debug__, size_block->vol_signature);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  vol_signature: %.2s\n", __debug__, size_block->vol_sig.as_array);
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  size_present: %u\n", __debug__, size_block->size_present);
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "\n");
 }
@@ -384,21 +384,21 @@ static gboolean mirage_file_filter_dmg_read_descriptor (MirageFileFilterDmg *sel
                          rsrc_ref->attrs, rsrc_ref->data_length);
 
             /* Convert resource endianness */
-            if (!memcmp(rsrc_type->type, "plst", 4)) {
+            if (!memcmp(rsrc_type->type.as_array, "plst", 4)) {
                 MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "\n%s: This resource contains partition table information.\n\n", __debug__);
-            } else if (!memcmp(rsrc_type->type, "cSum", 4)) {
+            } else if (!memcmp(rsrc_type->type.as_array, "cSum", 4)) {
                 csum_block_t *csum_block = (csum_block_t *) rsrc_ref->data;
 
                 g_assert(rsrc_ref->data_length == sizeof(csum_block_t));
                 mirage_file_filter_dmg_csum_fix_endian(csum_block);
                 mirage_file_filter_dmg_print_csum_block(self, csum_block);
-            } else if (!memcmp(rsrc_type->type, "size", 4)) {
+            } else if (!memcmp(rsrc_type->type.as_array, "size", 4)) {
                 size_block_t *size_block = (size_block_t *) rsrc_ref->data;
 
                 g_assert(rsrc_ref->data_length == sizeof(size_block_t));
                 mirage_file_filter_dmg_size_fix_endian(size_block);
                 mirage_file_filter_dmg_print_size_block(self, size_block);
-            } else if (!memcmp(rsrc_type->type, "nsiz", 4)) {
+            } else if (!memcmp(rsrc_type->type.as_array, "nsiz", 4)) {
                 /* Note: There are the same amount of nsiz and the cSum blocks which have the same checksums */
                 GString *nsiz_data = NULL;
 
@@ -408,7 +408,7 @@ static gboolean mirage_file_filter_dmg_read_descriptor (MirageFileFilterDmg *sel
                 g_printf("\n%s\n", nsiz_data->str);
 
                 g_string_free(nsiz_data, TRUE);
-            } else if (!memcmp(rsrc_type->type, "blkx", 4)) {
+            } else if (!memcmp(rsrc_type->type.as_array, "blkx", 4)) {
                 blkx_block_t *blkx_block = (blkx_block_t *) rsrc_ref->data;
                 blkx_data_t  *blkx_data  = (blkx_data_t *) (rsrc_ref->data + sizeof(blkx_block_t));
 
@@ -434,7 +434,7 @@ static gboolean mirage_file_filter_dmg_read_descriptor (MirageFileFilterDmg *sel
 
                 mirage_file_filter_dmg_print_blkx_block(self, blkx_block);
             } else {
-                MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: Encountered unknown resource type: %.4s\n", __debug__, rsrc_type->type);
+                MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: Encountered unknown resource type: %.4s\n", __debug__, rsrc_type->type.as_array);
             }
         }
     }

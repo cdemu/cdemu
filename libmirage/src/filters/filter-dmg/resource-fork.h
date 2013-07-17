@@ -59,9 +59,9 @@ typedef struct {
 
 typedef struct {
     union {
-        gchar   type[4];
-        guint32 type_as_int;
-    };
+        gchar   as_array[4];
+        guint32 as_int;
+    } type;
     gint16  num_refs_minus_one;
     guint16 ref_offset;
 } rsrc_raw_type_t; /* length: 8 bytes */
@@ -85,9 +85,9 @@ typedef struct {
 
 typedef struct {
     union {
-        gchar   type[4];
-        guint32 type_as_int;
-    };
+        gchar   as_array[4];
+        guint32 as_int;
+    } type;
     GArray     *ref_list;
 } rsrc_type_t;
 

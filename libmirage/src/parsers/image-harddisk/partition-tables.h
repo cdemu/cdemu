@@ -119,9 +119,9 @@ typedef struct {
 	guint64 lba_start;
 	guint64 lba_end;
 	union {
-	    guid_t  guid;
-	    guint64 guid_as_int[2];
-    };
+	    guid_t  as_guid;
+	    guint64 as_int[2];
+    } guid;
 	guint64 lba_gpt_table;
 	guint32 gpt_entries;
 	guint32 gpt_entry_size;
@@ -130,13 +130,13 @@ typedef struct {
 
 typedef struct {
     union {
-        guid_t  type; /* Zero indicates unused entry */
-        guint64 type_as_int[2];
-    };
+        guid_t  as_guid; /* Zero indicates unused entry */
+        guint64 as_int[2];
+    } type;
     union {
-    	guid_t  guid;
-    	guint64 guid_as_int[2];
-    };
+    	guid_t  as_guid;
+    	guint64 as_int[2];
+    } guid;
 	guint64 lba_start;
 	guint64 lba_end;
 	guint64 attributes; /* One or more of gpt_attr_t */

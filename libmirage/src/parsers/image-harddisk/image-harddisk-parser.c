@@ -189,7 +189,7 @@ static gboolean mirage_parser_hd_is_file_valid (MirageParserHd *self, GInputStre
 
             mirage_gpt_entry_fix_endian (&gpt_entry);
 
-            if (gpt_entry.type_as_int[0] == 0 && gpt_entry.type_as_int[1] == 0) {
+            if (gpt_entry.type.as_int[0] == 0 && gpt_entry.type.as_int[1] == 0) {
                 continue; /* Unused partition entry */
             } else {
                 mirage_print_gpt_entry(MIRAGE_CONTEXTUAL(self), &gpt_entry);

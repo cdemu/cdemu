@@ -102,9 +102,9 @@ typedef struct {
     guint32 vol_modified;
     guint32 unknown4;
     union {
-        gchar   vol_signature[2];
-        guint16 vol_sig_as_int;
-    };
+        gchar   as_array[2];
+        guint16 as_int;
+    } vol_sig;
     guint16 size_present;
 } size_block_t; /* length: 286 bytes */
 

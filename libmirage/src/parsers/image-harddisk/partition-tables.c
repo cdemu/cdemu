@@ -75,8 +75,8 @@ void mirage_gpt_header_fix_endian (gpt_header_t *gpt_header)
     gpt_header->lba_start   = GUINT64_FROM_LE(gpt_header->lba_start);
     gpt_header->lba_end     = GUINT64_FROM_LE(gpt_header->lba_end);
 
-    gpt_header->guid_as_int[0] = GUINT64_FROM_LE(gpt_header->guid_as_int[0]);
-    gpt_header->guid_as_int[1] = GUINT64_FROM_LE(gpt_header->guid_as_int[1]);
+    gpt_header->guid.as_int[0] = GUINT64_FROM_LE(gpt_header->guid.as_int[0]);
+    gpt_header->guid.as_int[1] = GUINT64_FROM_LE(gpt_header->guid.as_int[1]);
 
     gpt_header->lba_gpt_table  = GUINT64_FROM_LE(gpt_header->lba_gpt_table);
     gpt_header->gpt_entries    = GUINT32_FROM_LE(gpt_header->gpt_entries);
@@ -88,10 +88,10 @@ void mirage_gpt_entry_fix_endian (gpt_entry_t *gpt_entry)
 {
     g_assert(gpt_entry);
 
-    gpt_entry->type_as_int[0] = GUINT64_FROM_LE(gpt_entry->type_as_int[0]);
-    gpt_entry->type_as_int[1] = GUINT64_FROM_LE(gpt_entry->type_as_int[1]);
-    gpt_entry->guid_as_int[0] = GUINT64_FROM_LE(gpt_entry->guid_as_int[0]);
-    gpt_entry->guid_as_int[1] = GUINT64_FROM_LE(gpt_entry->guid_as_int[1]);
+    gpt_entry->type.as_int[0] = GUINT64_FROM_LE(gpt_entry->type.as_int[0]);
+    gpt_entry->type.as_int[1] = GUINT64_FROM_LE(gpt_entry->type.as_int[1]);
+    gpt_entry->guid.as_int[0] = GUINT64_FROM_LE(gpt_entry->guid.as_int[0]);
+    gpt_entry->guid.as_int[1] = GUINT64_FROM_LE(gpt_entry->guid.as_int[1]);
 
     gpt_entry->lba_start  = GUINT64_FROM_LE(gpt_entry->lba_start);
     gpt_entry->lba_end    = GUINT64_FROM_LE(gpt_entry->lba_end);
@@ -157,7 +157,7 @@ void mirage_print_gpt_header(MirageContextual *self, gpt_header_t *gpt_header)
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  lba_end: %lu\n", __debug__, gpt_header->lba_end);
 
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  GUID: 0x%016lx%016lx\n", __debug__,
-                 gpt_header->guid_as_int[0], gpt_header->guid_as_int[1]);
+                 gpt_header->guid.as_int[0], gpt_header->guid.as_int[1]);
 
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  lba_gpt_table: %lu\n", __debug__, gpt_header->lba_gpt_table);
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  gpt_entries: %u\n", __debug__, gpt_header->gpt_entries);
@@ -179,9 +179,9 @@ void mirage_print_gpt_entry(MirageContextual *self, gpt_entry_t *gpt_entry)
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "\n");
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: GPT entry:\n", __debug__);
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  type: 0x%016lx%016lx\n", __debug__,
-                 gpt_entry->type_as_int[0], gpt_entry->type_as_int[1]);
+                 gpt_entry->type.as_int[0], gpt_entry->type.as_int[1]);
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  guid: 0x%016lx%016lx\n", __debug__,
-                 gpt_entry->guid_as_int[0], gpt_entry->guid_as_int[1]);
+                 gpt_entry->guid.as_int[0], gpt_entry->guid.as_int[1]);
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  lba_start: %lu\n", __debug__, gpt_entry->lba_start);
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  lba_end: %lu\n", __debug__, gpt_entry->lba_end);
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  attributes: 0x%016lx\n", __debug__, gpt_entry->attributes);

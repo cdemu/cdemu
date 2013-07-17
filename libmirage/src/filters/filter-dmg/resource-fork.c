@@ -316,7 +316,7 @@ rsrc_type_t *rsrc_find_type(rsrc_fork_t *rsrc_fork, const gchar *type)
     for (guint t = 0; t < rsrc_fork->type_list->len; t++) {
         rsrc_type_t *rsrc_type = &g_array_index(rsrc_fork->type_list, rsrc_type_t, t);
 
-        if (!memcmp(rsrc_type->type, type, 4)) {
+        if (!memcmp(rsrc_type->type.as_array, type, 4)) {
             return rsrc_type;
         }
     }
@@ -382,7 +382,7 @@ rsrc_fork_t *rsrc_fork_read_binary(const gchar *bin_data, gsize bin_length)
 
         rsrc_raw_fixup_type(rsrc_raw_type);
 
-        type_entry.type_as_int = rsrc_raw_type->type_as_int;
+        type_entry.type.as_int = rsrc_raw_type->type.as_int;
 
         type_entry.ref_list = g_array_sized_new(FALSE, TRUE, sizeof(rsrc_ref_t), rsrc_raw_type->num_refs_minus_one + 1);
         if (!type_entry.ref_list) return NULL;
