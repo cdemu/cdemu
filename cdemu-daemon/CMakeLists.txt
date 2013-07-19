@@ -48,7 +48,6 @@ configure_file (
 )
 
 # Global definitions
-add_definitions (-std=gnu99) #NOTE: Compilation bugs out on using signals and -std=c99
 add_definitions (-DHAVE_CONFIG_H)
 
 if (CMAKE_COMPILER_IS_GNUCC)
@@ -70,9 +69,20 @@ list (APPEND cdemu_daemon_LDFLAGS ${LIBMIRAGE_LDFLAGS} ${GLIB_LDFLAGS} ${AO_LDFL
 to_list_spaces (cdemu_daemon_CFLAGS cdemu_daemon_CFLAGS_STR)
 to_list_spaces (cdemu_daemon_LDFLAGS cdemu_daemon_LDFLAGS_STR)
 
+# Individually set standards conformance level due to signal handling
+foreach (source_file ${cdemu-daemon_SOURCES})
+    if (${source_file} STREQUAL "src/main.c")
+        set_source_files_properties (${source_file} PROPERTIES
+            COMPILE_FLAGS "-std=gnu99 ${cdemu_daemon_CFLAGS_STR}"
+        )
+    else ()
+        set_source_files_properties (${source_file} PROPERTIES
+            COMPILE_FLAGS "-std=c99 ${cdemu_daemon_CFLAGS_STR}"
+        )
+    endif ()
+endforeach ()
+
 set_target_properties (cdemu-daemon PROPERTIES
-    COMPILE_FLAGS "${cdemu_daemon_CFLAGS_STR}"
-    COMPILE_DEFINITIONS "${cdemu_daemon_DEFS}"
     LINK_FLAGS "${cdemu_daemon_LDFLAGS_STR}"
 )
 
