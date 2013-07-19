@@ -110,7 +110,6 @@ add_library (mirage SHARED ${libmirage_SOURCES})
 target_link_libraries (mirage ${GLIB_LIBRARIES})
 
 list (APPEND mirage_CFLAGS ${GLIB_CFLAGS})
-list (APPEND mirage_DEFS MIRAGE_PLUGIN_DIR="${MIRAGE_PLUGIN_DIR}")
 list (APPEND mirage_LDFLAGS ${GLIB_LDFLAGS})
 
 to_list_spaces (mirage_CFLAGS mirage_CFLAGS_STR)
@@ -118,7 +117,6 @@ to_list_spaces (mirage_LDFLAGS mirage_LDFLAGS_STR)
 
 set_target_properties (mirage PROPERTIES
     COMPILE_FLAGS ${mirage_CFLAGS_STR}
-    COMPILE_DEFINITIONS "${mirage_DEFS}"
     LINK_FLAGS ${mirage_LDFLAGS_STR}
     LIBRARY_OUTPUT_NAME mirage
     VERSION ${MIRAGE_SOVERSION}
@@ -141,7 +139,6 @@ foreach (filter ${filters_LIST})
     target_link_libraries (${filter} ${GLIB_LIBRARIES})
 
     list (APPEND ${filter}_CFLAGS ${GLIB_CFLAGS})
-    list (APPEND ${filter}_DEFS "")
     list (APPEND ${filter}_LDFLAGS ${GLIB_LDFLAGS})
 
     if (filter STREQUAL "filter-cso")
@@ -179,7 +176,6 @@ foreach (filter ${filters_LIST})
 
     set_target_properties (${filter} PROPERTIES
         COMPILE_FLAGS "${${filter}_CFLAGS_STR}"
-        COMPILE_DEFINITIONS "${${filter}_DEFS}"
         LINK_FLAGS "${${filter}_LDFLAGS_STR}"
         PREFIX ""
     )
@@ -196,7 +192,6 @@ foreach (parser ${parsers_LIST})
     target_link_libraries (${parser} ${GLIB_LIBRARIES})
 
     list (APPEND ${parser}_CFLAGS ${GLIB_CFLAGS})
-    list (APPEND ${parser}_DEFS "")
     list (APPEND ${parser}_LDFLAGS ${GLIB_LDFLAGS})
 
     to_list_spaces (${parser}_CFLAGS ${parser}_CFLAGS_STR)
@@ -204,7 +199,6 @@ foreach (parser ${parsers_LIST})
 
     set_target_properties (${parser} PROPERTIES
         COMPILE_FLAGS "${${parser}_CFLAGS_STR}"
-        COMPILE_DEFINITIONS "${${parser}_DEFS}"
         LINK_FLAGS "${${parser}_LDFLAGS_STR}"
         PREFIX ""
     )
