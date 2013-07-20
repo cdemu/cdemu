@@ -71,7 +71,6 @@ to_list_spaces (image_analyzer_LDFLAGS image_analyzer_LDFLAGS_STR)
 
 set_target_properties (image-analyzer PROPERTIES
     COMPILE_FLAGS "${image_analyzer_CFLAGS_STR}"
-    COMPILE_DEFINITIONS "${image_analyzer_DEFS}"
     LINK_FLAGS "${image_analyzer_LDFLAGS_STR}"
 )
 
