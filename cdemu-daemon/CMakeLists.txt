@@ -10,8 +10,6 @@ set (CDEMU_DAEMON_INTERFACE_VERSION 5)
 # Additional CMake modules.
 list (APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
 
-include (CheckCSourceCompiles)
-include (CheckCCompilerFlag)
 include (GNUInstallDirs)
 
 include (Utilities)

@@ -9,8 +9,6 @@ set (IMAGE_ANALYZER_VERSION 2.1.0)
 # Additional CMake modules.
 list (APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
 
-include (CheckCSourceCompiles)
-include (CheckCCompilerFlag)
 include (GNUInstallDirs)
 
 include (Utilities)

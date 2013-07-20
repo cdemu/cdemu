@@ -23,8 +23,6 @@ set (MIRAGE_SOVERSION ${MIRAGE_LT_CURRENT}.${MIRAGE_LT_REVISION}.${MIRAGE_LT_AGE
 # Additional CMake modules.
 list (APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
 
-include (CheckCSourceCompiles)
-include (CheckCCompilerFlag)
 include (GNUInstallDirs)
 
 include (Utilities)
