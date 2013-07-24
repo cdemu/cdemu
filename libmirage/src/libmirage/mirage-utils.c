@@ -483,6 +483,40 @@ gchar mirage_helper_isrc2ascii (guint8 c)
     return 0;
 }
 
+/**
+ * mirage_helper_validate_isrc:
+ * @isrc: (in) (array fixed-size=12): An ASCII encoded ISRC string.
+ *
+ * Performs a limited validation of an ISRC string.
+ *
+ * Returns: TRUE or FALSE
+ */
+gboolean mirage_helper_validate_isrc (const gchar *isrc)
+{
+    if (!isrc) return FALSE;
+
+    if (g_ascii_isalpha(isrc[ 0]) &&
+        g_ascii_isalpha(isrc[ 1]) &&
+
+        g_ascii_isalnum(isrc[ 2]) &&
+        g_ascii_isalnum(isrc[ 3]) &&
+        g_ascii_isalnum(isrc[ 4]) &&
+
+        g_ascii_isdigit(isrc[ 5]) &&
+        g_ascii_isdigit(isrc[ 6]) &&
+
+        g_ascii_isdigit(isrc[ 7]) &&
+        g_ascii_isdigit(isrc[ 8]) &&
+        g_ascii_isdigit(isrc[ 9]) &&
+        g_ascii_isdigit(isrc[10]) &&
+        g_ascii_isdigit(isrc[11])) 
+    {
+        return TRUE;
+    }
+
+    return FALSE;
+}
+
 
 /**********************************************************************\
  *               Cyclic Redundancy Check (CRC) routines               *

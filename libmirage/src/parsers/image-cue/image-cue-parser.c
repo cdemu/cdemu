@@ -352,6 +352,10 @@ static gboolean mirage_parser_cue_set_isrc (MirageParserCue *self, const gchar *
         return FALSE;
     }
 
+    if (!mirage_helper_validate_isrc(isrc)) {
+        return FALSE;
+    }
+
     mirage_track_set_isrc(self->priv->cur_track, isrc);
 
     return TRUE;

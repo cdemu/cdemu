@@ -293,12 +293,11 @@ static gboolean mirage_parser_ccd_build_disc_layout (MirageParserCcd *self, GErr
                 mirage_fragment_main_data_set_format(fragment, MIRAGE_MAIN_AUDIO);
             }
 
-            /* ISRC */
-            if (ccd_cur_entry->ISRC) {
+            /* Validate and set ISRC */
+            if (mirage_helper_validate_isrc(ccd_cur_entry->ISRC)) {
                 MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: setting ISRC to %.12s\n", __debug__, ccd_cur_entry->ISRC);
                 mirage_track_set_isrc(track, ccd_cur_entry->ISRC);
             }
-
 
             /* Pregap of current track; note that first track in the session does
                not seem to need Index 0 entry. Another thing to note: Index addresses

@@ -303,8 +303,8 @@ static gboolean mirage_parser_c2d_parse_track_entries (MirageParserC2d *self, GE
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   converted mode: 0x%X\n", __debug__, converted_mode);
         mirage_track_set_mode(cur_track, converted_mode);
 
-        /* Set ISRC */
-        if (track_entry->isrc[0]) {
+        /* Validate and set ISRC */
+        if (mirage_helper_validate_isrc(track_entry->isrc)) {
             mirage_track_set_isrc(cur_track, track_entry->isrc);
         }
 

@@ -666,8 +666,8 @@ static gboolean mirage_parser_nrg_load_session (MirageParserNrg *self, gint sess
             g_object_unref(fragment);
         }
 
-        /* Set ISRC */
-        if (dao_block->isrc) {
+        /* Validate and set ISRC */
+        if (mirage_helper_validate_isrc(dao_block->isrc)){
             mirage_track_set_isrc(track, dao_block->isrc);
         }
 

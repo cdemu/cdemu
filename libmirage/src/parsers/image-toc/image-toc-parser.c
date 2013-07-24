@@ -329,10 +329,16 @@ static void mirage_parser_toc_track_set_flag (MirageParserToc *self, gint flag, 
     mirage_track_set_flags(self->priv->cur_track, flags);
 }
 
-static void mirage_parser_toc_track_set_isrc (MirageParserToc *self, const gchar *isrc)
+static gboolean mirage_parser_toc_track_set_isrc (MirageParserToc *self, const gchar *isrc)
 {
+    if (!mirage_helper_validate_isrc(isrc)) {
+        return FALSE;
+    }
+
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: setting ISRC: <%s>\n", __debug__, isrc);
     mirage_track_set_isrc(self->priv->cur_track, isrc);
+
+    return TRUE;
 }
 
 
@@ -686,15 +692,17 @@ static gboolean mirage_parser_toc_callback_track_flag_channels (MirageParserToc 
 
 static gboolean mirage_parser_toc_callback_track_isrc (MirageParserToc *self, GMatchInfo *match_info, GError **error G_GNUC_UNUSED)
 {
+    gboolean success;
+
     gchar *isrc = g_match_info_fetch_named(match_info, "isrc");
 
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: parsed ISRC: %s\n", __debug__, isrc);
 
-    mirage_parser_toc_track_set_isrc(self, isrc);
+    success = mirage_parser_toc_track_set_isrc(self, isrc);
 
     g_free(isrc);
 
-    return TRUE;
+    return success;
 }
 
 static gboolean mirage_parser_toc_callback_track_index (MirageParserToc *self, GMatchInfo *match_info, GError **error G_GNUC_UNUSED)

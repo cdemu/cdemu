@@ -80,6 +80,7 @@ gint mirage_helper_bcd2hex (gint bcd);
 /* ASCII/ISRC utility functions */
 guint8 mirage_helper_ascii2isrc (gchar c);
 gchar mirage_helper_isrc2ascii (guint8 c);
+gboolean mirage_helper_validate_isrc (const gchar *isrc);
 
 /* CRC utility functions */
 guint16 *crc16_1021_lut;
