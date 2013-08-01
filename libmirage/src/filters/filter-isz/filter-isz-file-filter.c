@@ -98,7 +98,7 @@ static inline void mirage_file_filter_isz_deobfuscate(guint8 *data, gint length)
 {
     /* XOR with the NOT'ed version of the ISZ signature */
     for (gint i = 0; i < length; i++) {
-        data[i] = data[i] ^ ~isz_signature[i % 4];
+        data[i] ^= ~isz_signature[i % 4];
     }
 }
 
