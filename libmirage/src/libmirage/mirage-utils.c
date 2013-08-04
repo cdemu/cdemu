@@ -674,7 +674,7 @@ guint16 mirage_helper_calculate_crc16(const guint8 *data, guint length, const gu
  * mirage_helper_calculate_crc32f:
  * @data: (in) (array length=length): buffer containing data
  * @length: (in): length of data
- * @crctab: (in) (array fixed-size=256): pointer to CRC polynomial table
+ * @crctab: (in) (array fixed-size=2048): pointer to CRC polynomial table
  * @reflected: (in): whether to use the reflected algorithm
  * @invert: (in): whether the initial value and result should be inverted
  *
