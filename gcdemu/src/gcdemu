@@ -569,6 +569,10 @@ class gCDEmu:
             self.logo = None
             return
         logo_filename = icon_info.get_filename()
+        if logo_filename is None:
+            print ("Failed to get icon filename; Do you have the librsvg2 package?")
+            self.logo = None
+            return
 
         # Load
         self.logo = GdkPixbuf.Pixbuf.new_from_file_at_size(logo_filename, 156, 156)
