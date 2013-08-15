@@ -119,13 +119,16 @@ libmirage.so.8 libmirage8 #MINVER#
  mirage_helper_ascii2isrc@Base 1.0.0
  mirage_helper_bcd2hex@Base 1.0.0
  mirage_helper_calculate_crc16@Base 2.1.0
- mirage_helper_calculate_crc32@Base 2.1.0
+ mirage_helper_calculate_crc32f@Base 2.1.0
+ mirage_helper_calculate_crc32s@Base 2.1.0
  mirage_helper_determine_sector_type@Base 2.0.0
  mirage_helper_encoding_from_bom@Base 2.0.0
  mirage_helper_find_data_file@Base 1.1.0
  mirage_helper_get_suffix@Base 1.0.0
  mirage_helper_has_suffix@Base 1.0.0
  mirage_helper_hex2bcd@Base 1.0.0
+ mirage_helper_init_crc16_lut@Base 2.1.0
+ mirage_helper_init_crc32_lut@Base 2.1.0
  mirage_helper_isrc2ascii@Base 1.0.0
  mirage_helper_lba2msf@Base 1.0.0
  mirage_helper_lba2msf_str@Base 1.0.0
@@ -142,6 +145,7 @@ libmirage.so.8 libmirage8 #MINVER#
  mirage_helper_subchannel_q_decode_mcn@Base 1.0.0
  mirage_helper_subchannel_q_encode_isrc@Base 1.0.0
  mirage_helper_subchannel_q_encode_mcn@Base 1.0.0
+ mirage_helper_validate_isrc@Base 2.1.0
  mirage_index_get_address@Base 1.0.0
  mirage_index_get_number@Base 1.0.0
  mirage_index_get_type@Base 1.0.0

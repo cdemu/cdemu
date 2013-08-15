@@ -30,7 +30,7 @@ include (FileList)
 
 # Options
 option (GTKDOC_ENABLED "Use gtk-doc to build documentation" on)
-option (INTROSPECTION_ENABLED "Generate gobject introspection files" on)
+option (INTROSPECTION_ENABLED "Generate gobject introspection files" off)
 option (POST_INSTALL_HOOKS "Run post-install hooks" on)
 
 # Plugin directory
