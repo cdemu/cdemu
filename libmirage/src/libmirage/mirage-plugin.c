@@ -95,7 +95,10 @@ static gboolean mirage_plugin_load_module (GTypeModule *_self)
         return FALSE;
     }
 
-    self->priv->library = g_module_open(self->priv->filename, G_MODULE_BIND_LAZY | G_MODULE_BIND_LOCAL);
+    /* Note: we bind locally to avoid potential name clashes, and we
+       do *not* do lazy bind, because if there are unresolved symbols
+       in the plugin, we want the loading to fail immediately */
+    self->priv->library = g_module_open(self->priv->filename, G_MODULE_BIND_LOCAL);
     if (!self->priv->library) {
         return FALSE;
     }
