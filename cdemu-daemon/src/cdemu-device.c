@@ -58,7 +58,12 @@ gboolean cdemu_device_initialize (CdemuDevice *self, gint number, const gchar *a
     self->priv->device_name = g_strdup_printf("cdemu%i", number);
 
     /* Init device mutex */
+#if !GLIB_CHECK_VERSION(2, 32, 0)
     self->priv->device_mutex = g_mutex_new();
+#else
+    self->priv->device_mutex = g_new(GMutex, 1);
+    g_mutex_init(self->priv->device_mutex);
+#endif
 
     /* Create GLib main context and main loop for events */
     self->priv->main_context = g_main_context_new();
@@ -403,7 +408,12 @@ static void cdemu_device_finalize (GObject *gobject)
     g_free(self->priv->id_vendor_specific);
 
     /* Free mutex */
+#if !GLIB_CHECK_VERSION(2, 32, 0)
     g_mutex_free(self->priv->device_mutex);
+#else
+    g_mutex_clear(self->priv->device_mutex);
+    g_free(self->priv->device_mutex);
+#endif
 
     /* Chain up to the parent class */
     return G_OBJECT_CLASS(cdemu_device_parent_class)->finalize(gobject);
