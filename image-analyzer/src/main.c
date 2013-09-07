@@ -48,8 +48,10 @@ int main (int argc, char **argv)
 
     gchar **open_image = NULL;
 
-    /* Initialize GType */
+    /* Glib type system initialization; needed only in older glib versions */
+#if !GLIB_CHECK_VERSION(2, 36, 0)
     g_type_init();
+#endif
 
     /* libMirage core object */
     if (!mirage_initialize(&error)) {
