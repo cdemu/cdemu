@@ -9,7 +9,6 @@ list (APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
 include (GNUInstallDirs)
 
 # Options
-option (BUILD_NLS "Support for multiple languages" on)
 option (POST_INSTALL_HOOKS "Run post-install hooks" on)
 
 # If install prefix is /usr, override the sysconf dir to be /etc instead of /usr/etc
@@ -28,7 +27,6 @@ if (POST_INSTALL_HOOKS)
 endif ()
 
 # Installation
-
 install (
     PROGRAMS src/cdemu
     DESTINATION ${CMAKE_INSTALL_BINDIR}
@@ -56,8 +54,15 @@ if (POST_INSTALL_HOOKS)
     )
 endif ()
 
-if (BUILD_NLS AND GETTEXT_FOUND)
-    # We use the version provided by our FindIntlTool.cmake instead of the gettext version...
-    intltool_process_po_files(${PROJECT_SOURCE_DIR}/po ${PROJECT_NAME})
-endif ()
+# Translations; we use the version provided by our FindIntlTool.cmake 
+# instead of the gettext version...
+intltool_process_po_files(${PROJECT_SOURCE_DIR}/po ${PROJECT_NAME})
 
+# *** Configuration summary ***
+message(STATUS "")
+message(STATUS "*** CDEmu client configuration summary ***")
+message(STATUS "Installation:")
+message(STATUS " install prefix: " ${CMAKE_INSTALL_PREFIX})
+message(STATUS "Options:")
+message(STATUS " run post-install hooks: " ${POST_INSTALL_HOOKS})
+message(STATUS "")
