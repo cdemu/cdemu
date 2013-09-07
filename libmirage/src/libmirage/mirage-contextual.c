@@ -120,7 +120,7 @@ void mirage_contextual_debug_messagev (MirageContextual *self, gint level, gchar
         g_logv(domain, G_LOG_LEVEL_ERROR, format, args);
     } else if (level == MIRAGE_DEBUG_WARNING) {
         if (name) {
-            g_log(domain, MIRAGE_DEBUG_WARNING, "%s: ", name);
+            g_log(domain, G_LOG_LEVEL_WARNING, "%s: ", name);
         }
         g_logv(domain, G_LOG_LEVEL_WARNING, format, args);
     } else if (debug_mask & level) {
