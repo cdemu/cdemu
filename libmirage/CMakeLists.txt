@@ -25,9 +25,6 @@ list (APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
 
 include (GNUInstallDirs)
 
-include (Utilities)
-include (FileList)
-
 # Options
 option (GTKDOC_ENABLED "Use gtk-doc to build documentation" on)
 option (INTROSPECTION_ENABLED "Generate gobject introspection files" on)
@@ -38,13 +35,8 @@ set (MIRAGE_PLUGIN_DIR "${CMAKE_INSTALL_FULL_LIBDIR}/libmirage-${MIRAGE_VERSION_
 
 # Dependencies
 find_package (PkgConfig 0.16 REQUIRED)
-find_package (BZip2 1.0.0 REQUIRED)
 
 pkg_check_modules (GLIB REQUIRED glib-2.0>=2.24 gobject-2.0>=2.24 gmodule-2.0>=2.24 gio-2.0>=2.24)
-pkg_check_modules (ZLIB REQUIRED zlib>=1.2.0)
-pkg_check_modules (LIBLZMA REQUIRED liblzma>=5.0.0)
-pkg_check_modules (SNDFILE REQUIRED sndfile>=1.0.0)
-pkg_check_modules (SAMPLERATE REQUIRED samplerate>=0.1.0)
 
 if (INTROSPECTION_ENABLED)
     pkg_check_modules (INTROSPECTION gobject-introspection-1.0>=1.30.0)
@@ -71,9 +63,10 @@ else ()
 endif ()
 
 if (POST_INSTALL_HOOKS)
-    find_program (UPDATE_MIME_DATABASE_EXECUTABLE NAMES update-mime-database)
-    mark_as_advanced (UPDATE_MIME_DATABASE_EXECUTABLE)
+    find_program(UPDATE_MIME_DATABASE_EXECUTABLE NAMES update-mime-database)
+    mark_as_advanced(UPDATE_MIME_DATABASE_EXECUTABLE)
 endif ()
+
 
 # Auto-generated files
 configure_file (
@@ -108,121 +101,68 @@ include_directories (${PROJECT_SOURCE_DIR}/src/libmirage)
 include_directories (${PROJECT_BINARY_DIR})
 include_directories (${PROJECT_BINARY_DIR}/src/libmirage)
 
+include_directories (${GLIB_INCLUDE_DIRS})
+
+# Link directories
+link_directories (${GLIB_LIBRARY_DIRS})
 
 # *** libMirage core library ***
+set (libmirage_HEADERS
+    src/libmirage/mirage.h
+    src/libmirage/mirage-cdtext-coder.h
+    src/libmirage/mirage-context.h
+    src/libmirage/mirage-contextual.h
+    src/libmirage/mirage-debug.h
+    src/libmirage/mirage-disc.h
+    src/libmirage/mirage-disc-structures.h
+    src/libmirage/mirage-error.h
+    src/libmirage/mirage-file-filter.h
+    src/libmirage/mirage-fragment.h
+    src/libmirage/mirage-index.h
+    src/libmirage/mirage-language.h
+    src/libmirage/mirage-object.h
+    src/libmirage/mirage-parser.h
+    src/libmirage/mirage-plugin.h
+    src/libmirage/mirage-sector.h
+    src/libmirage/mirage-session.h
+    src/libmirage/mirage-track.h
+    src/libmirage/mirage-types.h
+    src/libmirage/mirage-utils.h
+    ${PROJECT_BINARY_DIR}/src/libmirage/mirage-version.h
+)
+
+set (libmirage_SOURCES
+    src/libmirage/mirage.c
+    src/libmirage/mirage-cdtext-coder.c
+    src/libmirage/mirage-context.c
+    src/libmirage/mirage-contextual.c
+    src/libmirage/mirage-disc.c
+    src/libmirage/mirage-error.c
+    src/libmirage/mirage-file-filter.c
+    src/libmirage/mirage-fragment.c
+    src/libmirage/mirage-index.c
+    src/libmirage/mirage-language.c
+    src/libmirage/mirage-object.c
+    src/libmirage/mirage-parser.c
+    src/libmirage/mirage-plugin.c
+    src/libmirage/mirage-sector.c
+    src/libmirage/mirage-session.c
+    src/libmirage/mirage-track.c
+    src/libmirage/mirage-utils.c
+    src/libmirage/mirage-version.c
+)
+
 add_library (mirage SHARED ${libmirage_SOURCES})
 target_link_libraries (mirage ${GLIB_LIBRARIES})
 
-list (APPEND mirage_CFLAGS ${GLIB_CFLAGS})
-list (APPEND mirage_LDFLAGS ${GLIB_LDFLAGS})
-
-to_list_spaces (mirage_CFLAGS mirage_CFLAGS_STR)
-to_list_spaces (mirage_LDFLAGS mirage_LDFLAGS_STR)
-
 set_target_properties (mirage PROPERTIES
-    COMPILE_FLAGS ${mirage_CFLAGS_STR}
-    LINK_FLAGS ${mirage_LDFLAGS_STR}
     LIBRARY_OUTPUT_NAME mirage
     VERSION ${MIRAGE_SOVERSION}
     SOVERSION ${MIRAGE_LT_CURRENT}
 )
 
-install (
-    TARGETS mirage
-    DESTINATION ${CMAKE_INSTALL_LIBDIR}
-)
-
-install (
-    FILES ${libmirage_HEADERS}
-    DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/libmirage
-)
-
-# *** File filters ***
-foreach (filter ${filters_LIST})
-    add_library (${filter} MODULE ${${filter}_SOURCES})
-    target_link_libraries (${filter} ${GLIB_LIBRARIES})
-
-    list (APPEND ${filter}_CFLAGS ${GLIB_CFLAGS})
-    list (APPEND ${filter}_LDFLAGS ${GLIB_LDFLAGS})
-
-    if (filter STREQUAL "filter-cso")
-        list (APPEND ${filter}_CFLAGS ${ZLIB_CFLAGS})
-        list (APPEND ${filter}_LDFLAGS ${ZLIB_LDFLAGS})
-        target_link_libraries (${filter} ${ZLIB_LIBRARIES})
-    elseif (filter STREQUAL "filter-daa")
-        list (APPEND ${filter}_CFLAGS ${ZLIB_CFLAGS} "-I${PROJECT_SOURCE_DIR}/src/filters/filter-daa/lzma-sdk")
-        list (APPEND ${filter}_LDFLAGS ${ZLIB_LDFLAGS})
-        target_link_libraries (${filter} ${ZLIB_LIBRARIES})
-    elseif (filter STREQUAL "filter-dmg")
-        list (APPEND ${filter}_CFLAGS ${ZLIB_CFLAGS})
-        list (APPEND ${filter}_LDFLAGS ${ZLIB_LDFLAGS})
-        target_link_libraries (${filter} ${ZLIB_LIBRARIES} ${BZIP2_LIBRARIES})
-    elseif (filter STREQUAL "filter-gzip")
-        list (APPEND ${filter}_CFLAGS ${ZLIB_CFLAGS})
-        list (APPEND ${filter}_LDFLAGS ${ZLIB_LDFLAGS})
-        target_link_libraries (${filter} ${ZLIB_LIBRARIES})
-    elseif (filter STREQUAL "filter-isz")
-        list (APPEND ${filter}_CFLAGS ${ZLIB_CFLAGS})
-        list (APPEND ${filter}_LDFLAGS ${ZLIB_LDFLAGS})
-        target_link_libraries (${filter} ${ZLIB_LIBRARIES} ${BZIP2_LIBRARIES})
-    elseif (filter STREQUAL "filter-sndfile")
-        list (APPEND ${filter}_CFLAGS ${SNDFILE_CFLAGS} ${SAMPLERATE_CFLAGS})
-        list (APPEND ${filter}_LDFLAGS ${SNDFILE_LDFLAGS} ${SAMPLERATE_LDFLAGS})
-        target_link_libraries (${filter} ${SNDFILE_LIBRARIES} ${SAMPLERATE_LIBRARIES})
-    elseif (filter STREQUAL "filter-xz")
-        list (APPEND ${filter}_CFLAGS ${LIBLZMA_CFLAGS})
-        list (APPEND ${filter}_LDFLAGS ${LIBLZMA_LDFLAGS})
-        target_link_libraries (${filter} ${LIBLZMA_LIBRARIES})
-    endif ()
-
-    to_list_spaces (${filter}_CFLAGS ${filter}_CFLAGS_STR)
-    to_list_spaces (${filter}_LDFLAGS ${filter}_LDFLAGS_STR)
-
-    set_target_properties (${filter} PROPERTIES
-        COMPILE_FLAGS "${${filter}_CFLAGS_STR}"
-        LINK_FLAGS "${${filter}_LDFLAGS_STR}"
-        PREFIX ""
-    )
-
-    install (
-        TARGETS ${filter}
-        DESTINATION ${MIRAGE_PLUGIN_DIR}
-    )
-endforeach ()
-
-# *** Parsers ***
-foreach (parser ${parsers_LIST})
-    add_library (${parser} MODULE ${${parser}_SOURCES})
-    target_link_libraries (${parser} ${GLIB_LIBRARIES})
-
-    list (APPEND ${parser}_CFLAGS ${GLIB_CFLAGS})
-    list (APPEND ${parser}_LDFLAGS ${GLIB_LDFLAGS})
-
-    to_list_spaces (${parser}_CFLAGS ${parser}_CFLAGS_STR)
-    to_list_spaces (${parser}_LDFLAGS ${parser}_LDFLAGS_STR)
-
-    set_target_properties (${parser} PROPERTIES
-        COMPILE_FLAGS "${${parser}_CFLAGS_STR}"
-        LINK_FLAGS "${${parser}_LDFLAGS_STR}"
-        PREFIX ""
-    )
-
-    install (
-        TARGETS ${parser}
-        DESTINATION ${MIRAGE_PLUGIN_DIR}
-    )
-endforeach ()
-
-# *** Mimetype files ***
-install (
-    FILES ${mimetype_FILES}
-    DESTINATION ${CMAKE_INSTALL_DATADIR}/mime/packages
-)
-if (POST_INSTALL_HOOKS)
-    install (CODE
-        "execute_process (COMMAND ${UPDATE_MIME_DATABASE_EXECUTABLE} ${CMAKE_INSTALL_FULL_DATADIR}/mime)"
-    )
-endif ()
+install (TARGETS mirage DESTINATION ${CMAKE_INSTALL_LIBDIR})
+install (FILES ${libmirage_HEADERS} DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/libmirage)
 
 # *** Introspection ***
 if (INTROSPECTION_ENABLED AND INTROSPECTION_FOUND)
@@ -250,8 +190,8 @@ if (GTKDOC_ENABLED AND GTKDOC_FOUND)
         SOURCES ${libmirage_HEADERS} ${libmirage_SOURCES}
         DOCS_DIR ${PROJECT_SOURCE_DIR}/docs/reference/libmirage
         IGNORE_HFILES mirage-disc-structures.h
-        CFLAGS ${mirage_CFLAGS} -I${PROJECT_SOURCE_DIR}/src/libmirage
-        LDFLAGS ${mirage_LDFLAGS} -L${PROJECT_BINARY_DIR}
+        CFLAGS ${GLIB_CFLAGS} -I${PROJECT_SOURCE_DIR}/src/libmirage
+        LDFLAGS ${GLIB_LDFLAGS} -L${PROJECT_BINARY_DIR}
             -Wl,-rpath,${PROJECT_BINARY_DIR} -l${GTKDOC_LIB}
     )
 endif ()
@@ -261,6 +201,33 @@ install (
     FILES ${PROJECT_BINARY_DIR}/libmirage.pc
     DESTINATION ${CMAKE_INSTALL_LIBDIR}/pkgconfig
 )
+
+# *** File filters ***
+add_subdirectory(src/filters/filter-cso)
+add_subdirectory(src/filters/filter-daa)
+add_subdirectory(src/filters/filter-dmg)
+add_subdirectory(src/filters/filter-ecm)
+add_subdirectory(src/filters/filter-gzip)
+add_subdirectory(src/filters/filter-isz)
+add_subdirectory(src/filters/filter-macbinary)
+add_subdirectory(src/filters/filter-sndfile)
+add_subdirectory(src/filters/filter-xz)
+
+# *** Image parsers ***
+add_subdirectory(src/parsers/image-b6t)
+add_subdirectory(src/parsers/image-c2d)
+add_subdirectory(src/parsers/image-ccd)
+add_subdirectory(src/parsers/image-cdi)
+add_subdirectory(src/parsers/image-cif)
+add_subdirectory(src/parsers/image-cue)
+add_subdirectory(src/parsers/image-harddisk)
+add_subdirectory(src/parsers/image-iso)
+add_subdirectory(src/parsers/image-mds)
+add_subdirectory(src/parsers/image-mdx)
+add_subdirectory(src/parsers/image-nrg)
+add_subdirectory(src/parsers/image-readcd)
+add_subdirectory(src/parsers/image-toc)
+add_subdirectory(src/parsers/image-xcdroast)
 
 # *** Configuration summary ***
 message(STATUS "")
@@ -273,6 +240,12 @@ message(STATUS " build type: " ${CMAKE_BUILD_TYPE})
 message(STATUS "Installation:")
 message(STATUS " install prefix: " ${CMAKE_INSTALL_PREFIX})
 message(STATUS " plugin dir: " ${MIRAGE_PLUGIN_DIR})
+message(STATUS "File filters:")
+message(STATUS " enabled: " ${FILTERS_ENABLED})
+message(STATUS " disabled: " ${FILTERS_DISABLED})
+message(STATUS "Image parsers:")
+message(STATUS " enabled: " ${PARSERS_ENABLED})
+message(STATUS " disabled: " ${PARSERS_DISABLED})
 message(STATUS "Options:")
 message(STATUS " build gtk-doc documentation: " ${GTKDOC_STATUS})
 message(STATUS " build gobject-introspection bindings: " ${INTROSPECTION_STATUS})
