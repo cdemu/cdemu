@@ -11,16 +11,12 @@ list (APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
 
 include (GNUInstallDirs)
 
-include (Utilities)
-include (FileList)
-
 # Options
 option (GTK3_ENABLED "Compile using Gtk3" on)
 option (POST_INSTALL_HOOKS "Run post-install hooks" on)
 
 # Dependencies
 find_package (PkgConfig 0.16 REQUIRED)
-find_package (Gnuplot 4.0)
 
 pkg_check_modules (LIBMIRAGE REQUIRED libmirage>=${IMAGE_ANALYZER_VERSION})
 pkg_check_modules (GLIB REQUIRED glib-2.0>=2.24 gobject-2.0>=2.24)
@@ -55,22 +51,34 @@ endif ()
 
 # Include directories
 include_directories (${PROJECT_BINARY_DIR})
+
 include_directories (SYSTEM ${LIBMIRAGE_INCLUDE_DIRS})
+include_directories (SYSTEM ${GLIB_INCLUDE_DIRS})
+include_directories (SYSTEM ${LIBXML_INCLUDE_DIRS})
+include_directories (SYSTEM ${GTK_INCLUDE_DIRS})
+
+# Link directories
+link_directories (SYSTEM ${LIBMIRAGE_LIBRARY_DIRS})
+link_directories (SYSTEM ${GLIB_LIBRARY_DIRS})
+link_directories (SYSTEM ${LIBXML_LIBRARY_DIRS})
+link_directories (SYSTEM ${GTK_LIBRARY_DIRS})
 
 # *** image-analyzer ***
+set (image-analyzer_SOURCES
+    src/image-analyzer-application.c
+    src/image-analyzer-application-xml-dump.c
+    src/image-analyzer-application-xml-load.c
+    src/image-analyzer-disc-structure.c
+    src/image-analyzer-disc-topology.c
+    src/image-analyzer-dump.c
+    src/image-analyzer-log-window.c
+    src/image-analyzer-sector-analysis.c
+    src/image-analyzer-sector-read.c
+    src/main.c
+)
+
 add_executable (image-analyzer ${image-analyzer_SOURCES})
 target_link_libraries (image-analyzer ${LIBMIRAGE_LIBRARIES} ${GLIB_LIBRARIES} ${LIBXML_LIBRARIES} ${GTK_LIBRARIES})
-
-list (APPEND image_analyzer_CFLAGS ${LIBMIRAGE_CFLAGS} ${GLIB_CFLAGS} ${LIBXML_CFLAGS} ${GTK_CFLAGS})
-list (APPEND image_analyzer_LDFLAGS ${LIBMIRAGE_LDFLAGS} ${GLIB_LDFLAGS} ${LIBXML_LDFLAGS} ${GTK_LDFLAGS})
-
-to_list_spaces (image_analyzer_CFLAGS image_analyzer_CFLAGS_STR)
-to_list_spaces (image_analyzer_LDFLAGS image_analyzer_LDFLAGS_STR)
-
-set_target_properties (image-analyzer PROPERTIES
-    COMPILE_FLAGS "${image_analyzer_CFLAGS_STR}"
-    LINK_FLAGS "${image_analyzer_LDFLAGS_STR}"
-)
 
 # Installation
 install (
@@ -88,3 +96,17 @@ if (POST_INSTALL_HOOKS)
     )
 endif ()
 
+# *** Configuration summary ***
+message(STATUS "")
+message(STATUS "*** Image analyzer v.${IMAGE_ANALYZER_VERSION} configuration summary ***")
+message(STATUS "Compiler and build info:")
+message(STATUS " C compiler: " ${CMAKE_C_COMPILER} ${CMAKE_C_COMPILER_ARG1})
+message(STATUS " C flags (Release): " ${CMAKE_C_FLAGS} ${CMAKE_C_FLAGS_RELEASE})
+message(STATUS " C flags (Debug): " ${CMAKE_C_FLAGS} ${CMAKE_C_FLAGS_DEBUG})
+message(STATUS " build type: " ${CMAKE_BUILD_TYPE})
+message(STATUS "Installation:")
+message(STATUS " install prefix: " ${CMAKE_INSTALL_PREFIX})
+message(STATUS "Options:")
+message(STATUS " gtk3 interface (instead of gtk2): " ${GTK3_ENABLED})
+message(STATUS " run post-install hooks: " ${POST_INSTALL_HOOKS})
+message(STATUS "")
