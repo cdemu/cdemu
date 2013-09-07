@@ -7,13 +7,8 @@ project (cdemu-daemon C)
 set (CDEMU_DAEMON_VERSION 2.1.0)
 set (CDEMU_DAEMON_INTERFACE_VERSION 5)
 
-# Additional CMake modules.
-list (APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
-
+# CMake modules
 include (GNUInstallDirs)
-
-include (Utilities)
-include (FileList)
 
 # Options
 option (SYSTEM_BUS_SERVICE "Install CDEmu daemon as D-Bus system bus service" off)
@@ -54,25 +49,38 @@ if (CMAKE_COMPILER_IS_GNUCC)
     add_definitions (-Wall -Wextra -Wshadow -Wmissing-declarations -Wmissing-prototypes -Wnested-externs -Wpointer-arith -Wcast-align)
 endif ()
 
-
 # Include directories
 include_directories (${PROJECT_BINARY_DIR})
+
 include_directories (SYSTEM ${LIBMIRAGE_INCLUDE_DIRS})
+include_directories (SYSTEM ${GLIB_INCLUDE_DIRS})
+include_directories (SYSTEM ${AO_INCLUDE_DIRS})
+
+# Link directories
+link_directories (SYSTEM ${LIBMIRAGE_LIBRARY_DIRS})
+link_directories (SYSTEM ${GLIB_LIBRARY_DIRS})
+link_directories (SYSTEM ${AO_LIBRARY_DIRS})
+
 
 # *** cdemu-daemon ***
+set (cdemu-daemon_SOURCES
+    src/cdemu-audio.c
+    src/cdemu-daemon.c
+    src/cdemu-daemon-dbus.c
+    src/cdemu-device.c
+    src/cdemu-device-commands.c
+    src/cdemu-device-delay.c
+    src/cdemu-device-features.c
+    src/cdemu-device-kernel-io.c
+    src/cdemu-device-load.c
+    src/cdemu-device-mapping.c
+    src/cdemu-device-mode-pages.c
+    src/cdemu-error.c
+    src/main.c
+)
+
 add_executable (cdemu-daemon ${cdemu-daemon_SOURCES})
 target_link_libraries (cdemu-daemon ${LIBMIRAGE_LIBRARIES} ${GLIB_LIBRARIES} ${AO_LIBRARIES})
-
-list (APPEND cdemu_daemon_CFLAGS ${LIBMIRAGE_CFLAGS} ${GLIB_CFLAGS} ${AO_CFLAGS})
-list (APPEND cdemu_daemon_LDFLAGS ${LIBMIRAGE_LDFLAGS} ${GLIB_LDFLAGS} ${AO_LDFLAGS})
-
-to_list_spaces (cdemu_daemon_CFLAGS cdemu_daemon_CFLAGS_STR)
-to_list_spaces (cdemu_daemon_LDFLAGS cdemu_daemon_LDFLAGS_STR)
-
-set_target_properties (cdemu-daemon PROPERTIES
-    COMPILE_FLAGS ${cdemu_daemon_CFLAGS_STR}
-    LINK_FLAGS ${cdemu_daemon_LDFLAGS_STR}
-)
 
 # Installation
 install (
