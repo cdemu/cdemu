@@ -46,6 +46,8 @@ configure_file (
 )
 
 # Global definitions
+add_definitions (-std=c99) # We're compiling using C99
+add_definitions (-D_POSIX_C_SOURCE) # Enable POSIX extensions, which we need for signal handling
 add_definitions (-DHAVE_CONFIG_H)
 
 if (CMAKE_COMPILER_IS_GNUCC)
@@ -67,21 +69,9 @@ list (APPEND cdemu_daemon_LDFLAGS ${LIBMIRAGE_LDFLAGS} ${GLIB_LDFLAGS} ${AO_LDFL
 to_list_spaces (cdemu_daemon_CFLAGS cdemu_daemon_CFLAGS_STR)
 to_list_spaces (cdemu_daemon_LDFLAGS cdemu_daemon_LDFLAGS_STR)
 
-# Individually set standards conformance level due to signal handling
-foreach (source_file ${cdemu-daemon_SOURCES})
-    if (${source_file} STREQUAL "src/main.c")
-        set_source_files_properties (${source_file} PROPERTIES
-            COMPILE_FLAGS "-std=gnu99 ${cdemu_daemon_CFLAGS_STR}"
-        )
-    else ()
-        set_source_files_properties (${source_file} PROPERTIES
-            COMPILE_FLAGS "-std=c99 ${cdemu_daemon_CFLAGS_STR}"
-        )
-    endif ()
-endforeach ()
-
 set_target_properties (cdemu-daemon PROPERTIES
-    LINK_FLAGS "${cdemu_daemon_LDFLAGS_STR}"
+    COMPILE_FLAGS ${cdemu_daemon_CFLAGS_STR}
+    LINK_FLAGS ${cdemu_daemon_LDFLAGS_STR}
 )
 
 # Installation

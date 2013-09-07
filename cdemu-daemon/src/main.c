@@ -76,7 +76,6 @@ static void setup_signal_trap ()
     action.sa_handler = __unix_signal_handler;
     sigemptyset(&action.sa_mask);
     action.sa_flags = 0;
-    action.sa_flags |= SA_RESTART;
 
     if (sigaction(SIGTERM, &action, 0) > 0) {
         g_warning("Failed to setup unix signal sigaction for SIGTERM!");
