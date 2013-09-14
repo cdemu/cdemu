@@ -4,8 +4,8 @@ cmake_minimum_required (VERSION 2.8.5)
 project (cdemu-daemon C)
 
 # Versioning
-set (CDEMU_DAEMON_VERSION 2.1.0)
-set (CDEMU_DAEMON_INTERFACE_VERSION 5)
+set (CDEMU_DAEMON_VERSION 2.1.1)
+set (CDEMU_DAEMON_INTERFACE_VERSION 6)
 
 # CMake modules
 include (GNUInstallDirs)

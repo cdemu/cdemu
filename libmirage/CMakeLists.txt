@@ -6,18 +6,18 @@ project (libmirage C)
 # Release versioning:
 set (MIRAGE_MAJOR_VERSION 2)
 set (MIRAGE_MINOR_VERSION 1)
-set (MIRAGE_MICRO_VERSION 0)
+set (MIRAGE_MICRO_VERSION 1)
 set (MIRAGE_VERSION_LONG ${MIRAGE_MAJOR_VERSION}.${MIRAGE_MINOR_VERSION}.${MIRAGE_MICRO_VERSION})
 set (MIRAGE_VERSION_SHORT ${MIRAGE_MAJOR_VERSION}.${MIRAGE_MINOR_VERSION})
 
 # Libtool versioning:
 # Increment if the interface has additions, changes, removals.
-set (MIRAGE_LT_CURRENT 8)
+set (MIRAGE_LT_CURRENT 9)
 # Increment any time the source changes; set to 0 if you increment CURRENT
 set (MIRAGE_LT_REVISION 0)
 # Increment if any interfaces have been added; set to 0 if any interfaces have
 # been removed. Removal has precedence over adding, so set to 0 if both happened.
-set (MIRAGE_LT_AGE 1)
+set (MIRAGE_LT_AGE 2)
 set (MIRAGE_SOVERSION ${MIRAGE_LT_CURRENT}.${MIRAGE_LT_REVISION}.${MIRAGE_LT_AGE})
 
 # Additional CMake modules.
