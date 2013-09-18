@@ -9,6 +9,8 @@ if (TRUE)
     add_library(${filter_name} MODULE 
         ${filter_name}-file-filter.c
         ${filter_name}-plugin.c
+        ../filter-dmg/resource-fork.c
+        ../filter-dmg/adc.c
     )
     target_link_libraries(${filter_name} ${GLIB_LIBRARIES})
 
