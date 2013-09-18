@@ -27,8 +27,9 @@
  * checks for builds that have a configure script. It can also be used
  * in applications when displaying underlying system version information.
  *
- * Additionaly, libtool version is also exposed, which is primarily
- * intended to be used in libMirage's plugin system.
+ * Additionaly, <ulink url="http://semver.org">semantic version</ulink> 
+ * is also exposed, which is primarily intended to be used in libMirage's 
+ * plugin system.
  */
 
 #ifdef HAVE_CONFIG_H
@@ -100,7 +101,7 @@ const gchar *mirage_version_short = MIRAGE_VERSION_SHORT;
 /**
  * mirage_soversion_major:
  *
- * The major component of <ulink url="semver.org">semantic version</ulink> 
+ * The major component of <ulink url="http://semver.org">semantic version</ulink> 
  * of the libMirage library. It is intended to be used in libMirage's plugin 
  * system and should not be of much interest to application developers.
  *
@@ -113,7 +114,7 @@ const guint mirage_soversion_major = MIRAGE_SOVERSION_MAJOR;
 /**
  * mirage_soversion_minor:
  *
- * The minor component of <ulink url="semver.org">semantic version</ulink> 
+ * The minor component of <ulink url="http://semver.org">semantic version</ulink> 
  * of the libMirage library. It is intended to be used in libMirage's plugin 
  * system and should not be of much interest to application developers.
  *
@@ -126,7 +127,7 @@ const guint mirage_soversion_minor = MIRAGE_SOVERSION_MINOR;
 /**
  * mirage_soversion_patch:
  *
- * The patch component of <ulink url="semver.org">semantic version</ulink> 
+ * The patch component of <ulink url="http://semver.org">semantic version</ulink> 
  * of the libMirage library. It is intended to be used in libMirage's plugin 
  * system and should not be of much interest to application developers.
  *
