@@ -157,12 +157,12 @@ libmirage.so.9 libmirage9 #MINVER#
  mirage_language_get_type@Base 1.0.0
  mirage_language_set_code@Base 2.0.0
  mirage_language_set_pack_data@Base 1.0.0
- mirage_lt_age@Base 1.2.0
- mirage_lt_current@Base 1.2.0
- mirage_lt_revision@Base 1.2.0
- mirage_major_version@Base 1.2.0
- mirage_micro_version@Base 1.2.0
- mirage_minor_version@Base 1.2.0
+ mirage_soversion_major@Base 2.1.1
+ mirage_soversion_minor@Base 2.1.1
+ mirage_soversion_patch@Base 2.1.1
+ mirage_version_major@Base 2.1.1
+ mirage_version_micro@Base 2.1.1
+ mirage_version_minor@Base 2.1.1
  mirage_object_get_parent@Base 1.0.0
  mirage_object_get_type@Base 1.0.0
  mirage_object_set_parent@Base 1.0.0
