@@ -22,7 +22,7 @@
 G_MODULE_EXPORT void mirage_plugin_load_plugin (MiragePlugin *plugin);
 G_MODULE_EXPORT void mirage_plugin_unload_plugin (MiragePlugin *plugin);
 
-G_MODULE_EXPORT guint mirage_plugin_lt_current = MIRAGE_LT_CURRENT;
+G_MODULE_EXPORT guint mirage_plugin_soversion_major = MIRAGE_SOVERSION_MAJOR;
 
 G_MODULE_EXPORT void mirage_plugin_load_plugin (MiragePlugin *plugin) {
     mirage_parser_ccd_type_register(G_TYPE_MODULE(plugin));

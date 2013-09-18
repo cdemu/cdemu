@@ -38,40 +38,40 @@
 #include "mirage.h"
 
 /**
- * mirage_major_version:
+ * mirage_version_major:
  *
  * The major version number of the libMirage library. (e.g. in libMirage version
  * 1.2.5 this is 1.)
  *
  * This variable is in the library, so it represents the version of libMirage
- * library you have linked against (contrary to %MIRAGE_MAJOR_VERSION macro,
+ * library you have linked against (contrary to %MIRAGE_VERSION_MAJOR macro,
  * which represents the version of the libMirage headers you have included).
  */
-const guint mirage_major_version = MIRAGE_MAJOR_VERSION;
+const guint mirage_version_major = MIRAGE_VERSION_MAJOR;
 
 /**
- * mirage_minor_version:
+ * mirage_version_minor:
  *
  * The minor version number of the libMirage library. (e.g. in libMirage version
  * 1.2.5 this is 2.)
  *
  * This variable is in the library, so it represents the version of libMirage
- * library you have linked against (contrary to %MIRAGE_MINOR_VERSION macro,
+ * library you have linked against (contrary to %MIRAGE_VERSION_MINOR macro,
  * which represents the version of the libMirage headers you have included).
  */
-const guint mirage_minor_version = MIRAGE_MINOR_VERSION;
+const guint mirage_version_minor = MIRAGE_VERSION_MINOR;
 
 /**
- * mirage_micro_version:
+ * mirage_version_micro:
  *
  * The micro version number of the libMirage library. (e.g. in libMirage version
  * 1.2.5 this is 5.)
  *
  * This variable is in the library, so it represents the version of libMirage
- * library you have linked against (contrary to %MIRAGE_MICRO_VERSION macro,
+ * library you have linked against (contrary to %MIRAGE_VERSION_MICRO macro,
  * which represents the version of the libMirage headers you have included).
  */
-const guint mirage_micro_version = MIRAGE_MICRO_VERSION;
+const guint mirage_version_micro = MIRAGE_VERSION_MICRO;
 
 
 /**
@@ -98,40 +98,40 @@ const gchar *mirage_version_short = MIRAGE_VERSION_SHORT;
 
 
 /**
- * mirage_lt_current:
+ * mirage_soversion_major:
  *
- * The current component of libtool version of the libMirage library. It is
- * intended to be used in libMirage's plugin system and should not be of much
- * interest to application developers.
+ * The major component of <ulink url="semver.org">semantic version</ulink> 
+ * of the libMirage library. It is intended to be used in libMirage's plugin 
+ * system and should not be of much interest to application developers.
  *
  * This variable is in the library, so it represents the version of libMirage
- * library you have linked against (contrary to %MIRAGE_LT_CURRENT macro,
+ * library you have linked against (contrary to %MIRAGE_SOVERSION_MAJOR macro,
  * which represents the version of the libMirage headers you have included).
  */
-const guint mirage_lt_current = MIRAGE_LT_CURRENT;
+const guint mirage_soversion_major = MIRAGE_SOVERSION_MAJOR;
 
 /**
- * mirage_lt_revision:
+ * mirage_soversion_minor:
  *
- * The revision component of libtool version of the libMirage library. It is
- * intended to be used in libMirage's plugin system and should not be of much
- * interest to application developers.
+ * The minor component of <ulink url="semver.org">semantic version</ulink> 
+ * of the libMirage library. It is intended to be used in libMirage's plugin 
+ * system and should not be of much interest to application developers.
  *
  * This variable is in the library, so it represents the version of libMirage
- * library you have linked against (contrary to %MIRAGE_LT_REVISION macro,
+ * library you have linked against (contrary to %MIRAGE_SOVERSION_MINOR macro,
  * which represents the version of the libMirage headers you have included).
  */
-const guint mirage_lt_revision = MIRAGE_LT_REVISION;
+const guint mirage_soversion_minor = MIRAGE_SOVERSION_MINOR;
 
 /**
- * mirage_lt_age:
+ * mirage_soversion_patch:
  *
- * The age component of libtool version of the libMirage library. It is
- * intended to be used in libMirage's plugin system and should not be of much
- * interest to application developers.
+ * The patch component of <ulink url="semver.org">semantic version</ulink> 
+ * of the libMirage library. It is intended to be used in libMirage's plugin 
+ * system and should not be of much interest to application developers.
  *
  * This variable is in the library, so it represents the version of libMirage
- * library you have linked against (contrary to %MIRAGE_LT_AGE macro,
+ * library you have linked against (contrary to %MIRAGE_SOVERSION_PATCH macro,
  * which represents the version of the libMirage headers you have included).
  */
-const guint mirage_lt_age = MIRAGE_LT_AGE;
+const guint mirage_soversion_patch = MIRAGE_SOVERSION_PATCH;

@@ -89,7 +89,7 @@ MiragePlugin *mirage_plugin_new (const gchar *filename)
 static gboolean mirage_plugin_load_module (GTypeModule *_self)
 {
     MiragePlugin *self = MIRAGE_PLUGIN(_self);
-    gint *plugin_lt_current;
+    gint *plugin_soversion_major;
 
     if (!self->priv->filename) {
         return FALSE;
@@ -103,17 +103,17 @@ static gboolean mirage_plugin_load_module (GTypeModule *_self)
         return FALSE;
     }
 
-    /* Make sure that the loaded library contains the 'mirage_plugin_lt_current'
+    /* Make sure that the loaded library contains the 'mirage_plugin_soversion_major'
        symbol which represents the ABI version that plugin was built against; make
-       sure it matches ABI used by the lib */
-    if (!g_module_symbol(self->priv->library, "mirage_plugin_lt_current", (gpointer *)&plugin_lt_current)) {
-        g_warning("%s: plugin %s: does not contain 'mirage_plugin_lt_current'!\n", __func__, self->priv->filename);
+       sure it matches ABI version provided by the lib */
+    if (!g_module_symbol(self->priv->library, "mirage_plugin_soversion_major", (gpointer *)&plugin_soversion_major)) {
+        g_warning("%s: plugin %s: does not contain 'mirage_plugin_soversion_major'!\n", __func__, self->priv->filename);
         g_module_close(self->priv->library);
         return FALSE;
     }
 
-    if (*plugin_lt_current != mirage_lt_current) {
-        g_warning("%s: plugin %s: is not built against current ABI (%d vs. %d)!\n", __func__, self->priv->filename, *plugin_lt_current, MIRAGE_LT_CURRENT);
+    if (*plugin_soversion_major != mirage_soversion_major) {
+        g_warning("%s: plugin %s: is not built against current ABI (%d vs. %d)!\n", __func__, self->priv->filename, *plugin_soversion_major, MIRAGE_SOVERSION_MAJOR);
         g_module_close(self->priv->library);
         return FALSE;
     }

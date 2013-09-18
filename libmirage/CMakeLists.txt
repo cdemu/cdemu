@@ -4,21 +4,24 @@ cmake_minimum_required (VERSION 2.8.5)
 project (libmirage C)
 
 # Release versioning:
-set (MIRAGE_MAJOR_VERSION 2)
-set (MIRAGE_MINOR_VERSION 1)
-set (MIRAGE_MICRO_VERSION 1)
-set (MIRAGE_VERSION_LONG ${MIRAGE_MAJOR_VERSION}.${MIRAGE_MINOR_VERSION}.${MIRAGE_MICRO_VERSION})
-set (MIRAGE_VERSION_SHORT ${MIRAGE_MAJOR_VERSION}.${MIRAGE_MINOR_VERSION})
+set (MIRAGE_VERSION_MAJOR 2)
+set (MIRAGE_VERSION_MINOR 1)
+set (MIRAGE_VERSION_MICRO 1)
+set (MIRAGE_VERSION_LONG ${MIRAGE_VERSION_MAJOR}.${MIRAGE_VERSION_MINOR}.${MIRAGE_VERSION_MICRO})
+set (MIRAGE_VERSION_SHORT ${MIRAGE_VERSION_MAJOR}.${MIRAGE_VERSION_MINOR})
 
-# Libtool versioning:
-# Increment if the interface has additions, changes, removals.
-set (MIRAGE_LT_CURRENT 9)
-# Increment any time the source changes; set to 0 if you increment CURRENT
-set (MIRAGE_LT_REVISION 0)
-# Increment if any interfaces have been added; set to 0 if any interfaces have
-# been removed. Removal has precedence over adding, so set to 0 if both happened.
-set (MIRAGE_LT_AGE 2)
-set (MIRAGE_SOVERSION ${MIRAGE_LT_CURRENT}.${MIRAGE_LT_REVISION}.${MIRAGE_LT_AGE})
+# Semantic versioning 2.0.0 (semver.org):
+# MAJOR is increased when backwards-incompatible changes are made to 
+# the API (e.g., removal of interfaces). In this case, MINOR and PATCH 
+# should be reset to zero.
+# MINOR is increased when features are added to the API (e.g., addition 
+# of interfaces). In this case, PATCH should be reset to zero.
+# PATCH is increased for all other changes such as bug-fixes.
+set (MIRAGE_SOVERSION_MAJOR 9)
+set (MIRAGE_SOVERSION_MINOR 0)
+set (MIRAGE_SOVERSION_PATCH 0)
+
+set (MIRAGE_SOVERSION ${MIRAGE_SOVERSION_MAJOR}.${MIRAGE_SOVERSION_MINOR}.${MIRAGE_SOVERSION_PATCH})
 
 # Additional CMake modules.
 list (APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
@@ -158,7 +161,7 @@ target_link_libraries (mirage ${GLIB_LIBRARIES})
 set_target_properties (mirage PROPERTIES
     LIBRARY_OUTPUT_NAME mirage
     VERSION ${MIRAGE_SOVERSION}
-    SOVERSION ${MIRAGE_LT_CURRENT}
+    SOVERSION ${MIRAGE_SOVERSION_MAJOR}
 )
 
 install (TARGETS mirage DESTINATION ${CMAKE_INSTALL_LIBDIR})
@@ -167,7 +170,7 @@ install (FILES ${libmirage_HEADERS} DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/libm
 # *** Introspection ***
 if (INTROSPECTION_ENABLED AND INTROSPECTION_FOUND)
     gobject_introspection (
-        FILENAME libMirage-${MIRAGE_MAJOR_VERSION}.${MIRAGE_MINOR_VERSION}.gir
+        FILENAME libMirage-${MIRAGE_VERSION_MAJOR}.${MIRAGE_VERSION_MINOR}.gir
         NSVERSION ${MIRAGE_VERSION_SHORT}
         INCLUDES GObject-2.0 Gio-2.0 GLib-2.0 GModule-2.0
         LIBRARY mirage
