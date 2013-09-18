@@ -4,7 +4,7 @@ set(filter_name "filter-${filter_short}")
 project(${filter_name} C)
 
 # Dependencies
-pkg_check_modules(LIBLZMA REQUIRED liblzma>=5.0.0)
+pkg_check_modules(LIBLZMA liblzma>=5.0.0)
 
 # Build
 if (${LIBLZMA_FOUND})
