@@ -1,4 +1,4 @@
-libmirage.so.8 libmirage8 #MINVER#
+libmirage.so.9 libmirage9 #MINVER#
  crc16_1021_lut@Base 2.1.0
  crc32_d8018001_lut@Base 2.1.0
  mirage_cdtext_coder_get_type@Base 2.0.0

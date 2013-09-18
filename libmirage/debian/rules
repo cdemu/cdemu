@@ -5,11 +5,8 @@
 #export DH_VERBOSE=1
 
 
-override_dh_auto_configure:
-	dh_auto_configure -- -DINTROSPECTION_ENABLED="on"
-
 override_dh_strip:
-	dh_strip --dbg-package="libmirage8-dbg"
+	dh_strip --dbg-package="libmirage9-dbg"
 
 override_dh_makeshlibs:
 	dh_makeshlibs --exclude="libmirage-2.1"
