@@ -2,6 +2,6 @@
 #ifndef __CONFIG_H__
 #define __CONFIG_H__
 
-#cmakedefine MIRAGE_PLUGIN_DIR "@MIRAGE_PLUGIN_DIR@"
+#define MIRAGE_PLUGIN_DIR "@MIRAGE_PLUGIN_DIR@"
 
 #endif /* __CONFIG_H__ */
