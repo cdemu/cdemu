@@ -285,7 +285,11 @@ static void cdemu_daemon_dbus_handle_method_call (GDBusConnection *connection G_
         g_object_unref(device);
     } else if (!g_strcmp0(method_name, "GetDaemonInterfaceVersion")) {
         /* *** GetDaemonInterfaceVersion *** */
-        ret = g_variant_new("(i)", CDEMU_DAEMON_INTERFACE_VERSION);
+        ret = g_variant_new("(i)", CDEMU_DAEMON_INTERFACE_VERSION_MAJOR);
+        succeeded = TRUE;
+    } else if (!g_strcmp0(method_name, "GetDaemonInterfaceVersion2")) {
+        /* *** GetDaemonInterfaceVersion2 *** */
+        ret = g_variant_new("(ii)", CDEMU_DAEMON_INTERFACE_VERSION_MAJOR, CDEMU_DAEMON_INTERFACE_VERSION_MINOR);
         succeeded = TRUE;
     } else if (!g_strcmp0(method_name, "GetDaemonVersion")) {
         /* *** GetDaemonVersion *** */
@@ -562,6 +566,10 @@ static const gchar introspection_xml[] =
     "        </method>"
     "        <method name='GetDaemonInterfaceVersion'>"
     "            <arg name='version' type='i' direction='out'/>"
+    "        </method>"
+    "        <method name='GetDaemonInterfaceVersion2'>"
+    "            <arg name='major' type='i' direction='out'/>"
+    "            <arg name='minor' type='i' direction='out'/>"
     "        </method>"
     "        <method name='EnumDaemonDebugMasks'>"
     "            <arg name='masks' type='a(si)' direction='out'/>"

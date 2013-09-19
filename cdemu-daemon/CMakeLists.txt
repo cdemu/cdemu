@@ -5,7 +5,8 @@ project (cdemu-daemon C)
 
 # Versioning
 set (CDEMU_DAEMON_VERSION 2.1.1)
-set (CDEMU_DAEMON_INTERFACE_VERSION 6)
+set (CDEMU_DAEMON_INTERFACE_VERSION_MAJOR 7)
+set (CDEMU_DAEMON_INTERFACE_VERSION_MINOR 0)
 
 # CMake modules
 include (GNUInstallDirs)

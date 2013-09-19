@@ -220,7 +220,15 @@ Communication between CDEmu daemon and a client is done via D-BUS. CDEmu daemon
 registers itself on either sytem or session bus, where it exposes the interface
 which can be used by client to control the daemon.
 
-Currently implemented interface version: 5 (since v.2.1.0)
+Up to CDEmu daemon v.2.2.0, the interface was versioned using single-number
+scheme (i.e., 6). This was superseded by a dual-number scheme, where version
+consists of a major and minor component. Such scheme allows interfaces to
+be declared as backwards-compatible. Whenever daemon's interface is changed
+in backwards-compatible way, the minor version is incremented; if changes
+break backwards-compatibility, the major version is incremented and the
+minor version is reset to 0.
+
+Currently implemented interface version: 7.0 (since v.2.2)
 
 
 6.1. D-BUS name and object path
@@ -265,9 +273,18 @@ control the daemon:
 
 * GetDaemonInterfaceVersion (version)
     + version: out; "i"
-        Daemon interface version number
+        Daemon interface (major) version
 
-    - Returns daemon interface version number, which should be used to detect
+    - Returns daemon interface version, which should be used to detect
+      if client can use the interface or not.
+
+* GetDaemonInterfaceVersion2 (version)
+    + major: out; "i"
+        Daemon interface major version
+    + minor: out; "i"
+        Daemon interface minor version
+
+    - Returns daemon interface version, which should be used to detect
       if client can use the interface or not.
 
 * EnumDaemonDebugMasks (type, masks)
