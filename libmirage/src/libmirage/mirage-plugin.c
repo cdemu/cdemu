@@ -90,6 +90,7 @@ static gboolean mirage_plugin_load_module (GTypeModule *_self)
 {
     MiragePlugin *self = MIRAGE_PLUGIN(_self);
     gint *plugin_soversion_major;
+    gint *plugin_soversion_minor;
 
     if (!self->priv->filename) {
         return FALSE;
@@ -104,16 +105,25 @@ static gboolean mirage_plugin_load_module (GTypeModule *_self)
     }
 
     /* Make sure that the loaded library contains the 'mirage_plugin_soversion_major'
-       symbol which represents the ABI version that plugin was built against; make
-       sure it matches ABI version provided by the lib */
+       and 'mirage_plugin_soversion_minor' symbols, which represent the 
+       ABI version that plugin was built against; make sure it is compatible
+       with ABI version provided by the lib */
     if (!g_module_symbol(self->priv->library, "mirage_plugin_soversion_major", (gpointer *)&plugin_soversion_major)) {
         g_warning("%s: plugin %s: does not contain 'mirage_plugin_soversion_major'!\n", __func__, self->priv->filename);
         g_module_close(self->priv->library);
         return FALSE;
     }
+    
+    if (!g_module_symbol(self->priv->library, "mirage_plugin_soversion_minor", (gpointer *)&plugin_soversion_minor)) {
+        g_warning("%s: plugin %s: does not contain 'mirage_plugin_soversion_minor'!\n", __func__, self->priv->filename);
+        g_module_close(self->priv->library);
+        return FALSE;
+    }
 
-    if (*plugin_soversion_major != mirage_soversion_major) {
-        g_warning("%s: plugin %s: is not built against current ABI (%d vs. %d)!\n", __func__, self->priv->filename, *plugin_soversion_major, MIRAGE_SOVERSION_MAJOR);
+    /* Major versions must match, and plugin's minor version must be less
+       or equal to library's minor version */
+    if (*plugin_soversion_major != mirage_soversion_major || *plugin_soversion_minor > mirage_soversion_minor) {
+        g_warning("%s: plugin %s: is built against incompatible ABI (%d.%d vs. %d.%d)!\n", __func__, self->priv->filename, *plugin_soversion_major, *plugin_soversion_minor, mirage_soversion_major, mirage_soversion_minor);
         g_module_close(self->priv->library);
         return FALSE;
     }
