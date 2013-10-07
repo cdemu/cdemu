@@ -91,10 +91,10 @@ typedef struct
 /* Drive identifiers, taken from INQUIRY data */
 typedef struct
 {
-    gchar vendor[8];
-    gchar product[16];
-    gchar revision[4];
-    gchar vendor_specific[20];
+    gchar  vendor[8];
+    gchar  product[16];
+    gchar  revision[4];
+    guint8 vendor_specific[20]; /* note: may not be a valid string */
 } B6T_DriveIdentifiers;
 
 /* Structure that represents data block... I think the idea behind them is similar

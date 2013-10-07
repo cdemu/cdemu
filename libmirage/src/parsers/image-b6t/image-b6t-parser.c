@@ -748,7 +748,6 @@ static gboolean mirage_parser_b6t_parse_disc_blocks (MirageParserB6t *self, GErr
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  vendor: %.8s\n", __debug__, inquiry_id->vendor);
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  product: %.16s\n", __debug__, inquiry_id->product);
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  revision: %.4s\n", __debug__, inquiry_id->revision);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  vendor specific: %.20s\n\n", __debug__, inquiry_id->vendor_specific);
 
 
     /* Then there's 32 bytes of ISO volume descriptor; they represent volume ID,
