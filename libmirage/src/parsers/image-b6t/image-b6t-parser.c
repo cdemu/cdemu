@@ -27,6 +27,7 @@
 
 
 static const guint8 b6t_signature[16] = { 'B', 'W', 'T', '5', ' ', 'S', 'T', 'R', 'E', 'A', 'M', ' ', 'S', 'I', 'G', 'N' } ;
+static const guint8 b6t_footer[16]    = { 'B', 'W', 'T', '5', ' ', 'S', 'T', 'R', 'E', 'A', 'M', ' ', 'F', 'O', 'O', 'T' } ;
 
 
 /**********************************************************************\
@@ -623,52 +624,42 @@ static void mirage_parser_b6t_parse_dvd_structures (MirageParserB6t *self)
 
 static gboolean mirage_parser_b6t_decode_disc_type (MirageParserB6t *self, GError **error)
 {
-    switch (self->priv->disc_block_1->disc_type) {
-        case 0x08: {
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: CD-ROM disc\n", __debug__);
+    B6T_MediaType disc_type = self->priv->disc_block_1->disc_type;
+
+    switch (disc_type) {
+        case CDROM:
+        case CDR:
+        case CDRW:
+        case DDCDROM:
+        case DDCDR:
+        case DDCDRW:
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: CD-ROM disc (0x%x)\n", __debug__, disc_type);
             mirage_disc_set_medium_type(self->priv->disc, MIRAGE_MEDIUM_CD);
             break;
-        }
-        case 0x09: {
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: CD-R disc\n", __debug__);
-            mirage_disc_set_medium_type(self->priv->disc, MIRAGE_MEDIUM_CD);
-            break;
-        }
-        case 0x0A: {
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: CD-RW disc\n", __debug__);
-            mirage_disc_set_medium_type(self->priv->disc, MIRAGE_MEDIUM_CD);
-            break;
-        }
-        case 0x10: {
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: DVD-ROM disc\n", __debug__);
+        case DVDROM:
+        case DVDR:
+        case DVDRAM:
+        case DVDRW:
+        case DVDRWSEQ:
+        case DLDVDR:
+        case DLDVDRJMP:
+        case DVDPLUSRW:
+        case DVDPLUSR:
+        case DLDVDPLUSRW:
+        case DLDVDPLUSR:
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: DVD-ROM disc (0x%x)\n", __debug__, disc_type);
             mirage_disc_set_medium_type(self->priv->disc, MIRAGE_MEDIUM_DVD);
             break;
-        }
-        case 0x11: {
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: DVD-R disc\n", __debug__);
-            mirage_disc_set_medium_type(self->priv->disc, MIRAGE_MEDIUM_DVD);
+        case BDROM:
+        case BDR:
+        case BDRE:
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: Blueray disc (0x%x)\n", __debug__, disc_type);
+            mirage_disc_set_medium_type(self->priv->disc, MIRAGE_MEDIUM_BD);
             break;
-        }
-        case 0x12: {
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: DVD-RAM disc\n", __debug__);
-            mirage_disc_set_medium_type(self->priv->disc, MIRAGE_MEDIUM_DVD);
-            break;
-        }
-        case 0x13: {
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: DVD-RW Restricted Overwrite disc\n", __debug__);
-            mirage_disc_set_medium_type(self->priv->disc, MIRAGE_MEDIUM_DVD);
-            break;
-        }
-        case 0x14: {
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: DVD-RW Sequential Recording disc\n", __debug__);
-            mirage_disc_set_medium_type(self->priv->disc, MIRAGE_MEDIUM_DVD);
-            break;
-        }
-        default: {
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: unknown disc type: 0x%X!\n", __debug__, self->priv->disc_block_1->disc_type);
-            g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_PARSER_ERROR, "Unknown disc type 0x%X!", self->priv->disc_block_1->disc_type);
+        default:
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: unknown or unhandled disc type: 0x%X!\n", __debug__, disc_type);
+            g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_PARSER_ERROR, "Unknown or unhandled disc type 0x%X!", disc_type);
             return FALSE;
-        }
     }
 
     return TRUE;
@@ -1152,11 +1143,12 @@ static gboolean mirage_parser_b6t_parse_footer (MirageParserB6t *self, GError **
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: file footer: %.16s\n", __debug__, footer);
 
     /* Make sure it's correct one */
-    if (memcmp(footer, "BWT5 STREAM FOOT", 16)) {
+    if (memcmp(footer, b6t_footer, 16)) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: invalid footer!\n", __debug__);
         g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_PARSER_ERROR, "Invalid footer!");
         return FALSE;
     }
+
 
     return TRUE;
 }

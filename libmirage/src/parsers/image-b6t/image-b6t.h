@@ -30,6 +30,44 @@
 
 G_BEGIN_DECLS
 
+typedef enum {
+    UNKNOWN     = 0x0000,   /* No Media */
+    NRDISC      = 0x0001,   /* Non removable disc */
+    RMDISC      = 0x0002,   /* Removable Disc */
+    MOE         = 0x0003,   /* Magneto Optical Erasable */
+    OPTICWO     = 0x0004,   /* Optical Write Once */
+    ASMO        = 0x0005,   /* Advanced Storage - Magneto Optical */
+    CDROM       = 0x0008,   /* CD-ROM (not writable) */
+    CDR         = 0x0009,   /* CD-R (Write once) */
+    CDRW        = 0x000A,   /* CD-RW (R/W) */
+    DVDROM      = 0x0010,   /* DVD-ROM (not writable) */
+    DVDR        = 0x0011,   /* DVD-R */
+    DVDRAM      = 0x0012,   /* DVD-RAM */
+    DVDRW       = 0x0013,   /* DVD-RW Restricted overwrite */
+    DVDRWSEQ    = 0x0014,   /* DVD-RW Sequential Recording */
+    DLDVDR      = 0x0015,   /* Dual Layer DVD-R */
+    DLDVDRJMP   = 0x0016,   /* Dual Layer DVD-R Jump Recording */
+    DVDPLUSRW   = 0x001A,   /* DVD+RW */
+    DVDPLUSR    = 0x001B,   /* DVD+R */
+    DDCDROM     = 0x0020,   /* Double Density CD-ROM */
+    DDCDR       = 0x0021,   /* Double Density CD-R (Write once) */
+    DDCDRW      = 0x0022,   /* Double Density CD-RW */
+    DLDVDPLUSRW = 0x002A,   /* Dual Layer DVD+RW */
+    DLDVDPLUSR  = 0x002B,   /* Dual Layer DVD+R */
+    BDROM       = 0x0040,   /* BluRay Disc ROM (not writable) */
+    BDR         = 0x0041,   /* BluRay Disc Sequential Recording */
+    BDRE        = 0x0042,   /* BluRay Disc Random Recording */
+
+    HDBURNCDROM = 0x0080,   /* HDBurn CD-R */
+    HDBURNCDR   = 0x0081,   /* HDBurn CD-R */
+    HDBURNCDRW  = 0x0082,   /* HDBurn CD-RW */
+
+    NODEVICE    = 0xFFFE,
+    CUSTOM      = 0xFFFF   /* doesn't conform to any standard media */
+} B6T_MediaType;
+
+
+
 #pragma pack(1)
 
 /* This is the first chunk of data that follows the signature; it consists of
