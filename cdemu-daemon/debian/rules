@@ -9,5 +9,5 @@ override_dh_strip:
 	dh_strip --dbg-package="cdemu-daemon-dbg"
 
 %:
-	dh $@ --with apport
+	dh $@
 

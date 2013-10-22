@@ -5,8 +5,7 @@ Homepage: http://cdemu.sourceforge.net/
 Maintainer: Henrik Stokseth <henrik@hshq.net>
 Build-Depends: pkg-config (>= 0.14), libglib2.0-dev (>= 2.28), libsndfile1-dev,
  libsamplerate0-dev, zlib1g-dev, libbz2-dev, liblzma-dev, gtk-doc-tools,
- gobject-introspection, libgirepository1.0-dev, debhelper (>= 9), dh-apport,
- cmake (>= 2.8.5)
+ gobject-introspection, libgirepository1.0-dev, debhelper (>= 9), cmake (>= 2.8.5)
 Standards-Version: 3.9.4
 
 

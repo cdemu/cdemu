@@ -1,5 +1,8 @@
+cdemu-client (2.1.1-2) debian; urgency=low
+  * Fixed the override_dh_auto_configure directive.
+  * Removed 'ubuntu' from package name, since the packages are supposed to be generic.
+ -- Rok Mandeljc <rok.mandeljc@gmail.com>  Tue, 22 Oct 2013 12:00:00 +0100
+
 cdemu-client (2.1.1-1ubuntu0~raring1~ppa1) raring; urgency=low
-
   * Initial Release. Closes: (LP: #105452, LP: #184657)
-
  -- Henrik Stokseth <henrik@hshq.net>  Wed, 18 Sep 2013 12:00:00 +0100
