@@ -260,7 +260,7 @@ class CDEmu (object):
         print("%-5s %-10s %s" % (_("DEV"), _("LOADED"), _("FILENAME")))
         for device in range (0, nr_devices):
             try:
-                [loaded, filenames] = self.dbus_iface.DeviceGetStatus(device)
+                [loaded, filenames] = self.dbus_iface.DeviceGetStatus(device, utf8_strings=True)
             except dbus.DBusException as e:
                 self.print_error(_("Failed to get status of device %i: %s") % (device, e))
                 continue
