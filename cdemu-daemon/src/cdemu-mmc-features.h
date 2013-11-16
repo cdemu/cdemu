@@ -61,6 +61,13 @@ struct Profile
     guint8 reserved2;
 };
 
+typedef enum {
+    ProfileIndex_NONE = -1,
+    ProfileIndex_CDROM,
+    ProfileIndex_DVDROM,
+    NumProfiles
+} ProfileIndex;
+
 /* Profile List */
 struct Feature_0x0000
 {
@@ -80,8 +87,9 @@ struct Feature_0x0000
 
     guint8 length;
 
-    /* We support only two profiles; CD-ROM and DVD-ROM (surprise surprise...) */
-    struct Profile  profiles[2];
+    /* We support several profiles, whose indices are declared in the
+       enum above */
+    struct Profile  profiles[NumProfiles];
 };
 
 
@@ -434,12 +442,12 @@ struct Feature_0x0107
     guint8 reserved3[3];
 };
 
-/* Profiles */
+/* Profile codes */
 typedef enum {
     PROFILE_NONE = 0x0000,
     PROFILE_CDROM = 0x0008,
     PROFILE_DVDROM = 0x0010
-} Profile;
+} ProfileCode;
 
 #pragma pack()
 

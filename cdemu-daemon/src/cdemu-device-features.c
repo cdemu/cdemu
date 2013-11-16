@@ -94,16 +94,16 @@ void cdemu_device_features_init (CdemuDevice *self)
     struct FeatureGeneral *general_feature;
 
     /* Feature 0x0000: Profile List */
-    /* IMPLEMENTATION NOTE: persistent; we support two profiles; CD-ROM and
-       DVD-ROM. Version is left at 0x00, as per INF8090 */
+    /* IMPLEMENTATION NOTE: persistent; we support several profiles.
+       Version is left at 0x00, as per INF8090 */
     general_feature = initialize_feature(0x0000, sizeof(struct Feature_0x0000));
     if (general_feature) {
         struct Feature_0x0000 *feature = (struct Feature_0x0000 *)general_feature;
 
         feature->per = 1;
 
-        feature->profiles[0].profile = GUINT16_TO_BE(PROFILE_CDROM);
-        feature->profiles[1].profile = GUINT16_TO_BE(PROFILE_DVDROM);
+        feature->profiles[ProfileIndex_CDROM].profile = GUINT16_TO_BE(PROFILE_CDROM);
+        feature->profiles[ProfileIndex_DVDROM].profile = GUINT16_TO_BE(PROFILE_DVDROM);
     }
     self->priv->features_list = append_feature(self->priv->features_list, general_feature);
 
@@ -281,21 +281,29 @@ void cdemu_device_features_cleanup (CdemuDevice *self)
    certain profile, features get their 'current' bit reset (unless 'persistent'
    bit is set), and then if they are associated with the profile, they are set
    again */
-static guint32 Features_PROFILE_PROFILE_CDROM[] =
+static guint32 ActiveFeatures_CDROM[] =
 {
-    0x0010, /* Random Readable Feature */
-    0x001D, /* Multi-read Feature */
-    0x001E, /* CD Read Feature */
-    0x0103, /* CD External Audio Play Feature */
-    0x0107, /* Real Time Streaming Feature */
+    /* 0x0000: Profile List; persistent */
+    /* 0x0001: Core; persistent */
+    /* 0x0002: Morphing; persistent */
+    /* 0x0003: Removable Medium; persistent */
+    0x0010, /* Random Readable */
+    0x001D, /* Multi-read */
+    0x001E, /* CD Read */
+    0x0103, /* CD External Audio Play */
+    0x0107, /* Real Time Streaming */
 };
 
-static guint32 Features_PROFILE_PROFILE_DVDROM[] =
+static guint32 ActiveFeatures_DVDROM[] =
 {
-    0x0010, /* Random Readable Feature */
-    0x001F, /* DVD Read Feature */
-    0x0106, /* DVD CSS Feature */
-    0x0107, /* Real Time Streaming Feature */
+    /* 0x0000: Profile List; persistent */
+    /* 0x0001: Core; persistent */
+    /* 0x0002: Morphing; persistent */
+    /* 0x0003: Removable Medium; persistent */
+    0x0010, /* Random Readable */
+    0x001F, /* DVD Read */
+    0x0106, /* DVD CSS */
+    0x0107, /* Real Time Streaming */
 };
 
 
@@ -324,39 +332,43 @@ static void cdemu_device_set_current_features (CdemuDevice *self, guint32 *feats
     }
 }
 
-void cdemu_device_set_profile (CdemuDevice *self, Profile profile)
+void cdemu_device_set_profile (CdemuDevice *self, ProfileIndex profile_index)
 {
-    /* Set current profile */
-    self->priv->current_profile = profile;
+    /* Clear 'current' bit on all profiles */
+    struct Feature_0x0000 *f_0x0000 = cdemu_device_get_feature(self, 0x0000);
+    for (guint i = 0; i < G_N_ELEMENTS(f_0x0000->profiles); i++) {
+        f_0x0000->profiles[i].cur = 0;
+    }
 
-    /* Features */
-    switch (profile) {
-        case PROFILE_NONE: {
+    /* Set active features and profile */
+    switch (profile_index) {
+        case ProfileIndex_NONE: {
+            /* Current profile */
+            self->priv->current_profile = PROFILE_NONE;
             /* Current features */
             cdemu_device_set_current_features(self, NULL, 0);
-            /* Profiles */
-            struct Feature_0x0000 *f_0x0000 = cdemu_device_get_feature(self, 0x0000);
-            f_0x0000->profiles[0].cur = 0;
-            f_0x0000->profiles[1].cur = 0;
             break;
         }
-        case PROFILE_CDROM: {
+        case ProfileIndex_CDROM: {
+            /* Current profile */
+            self->priv->current_profile = PROFILE_CDROM;
             /* Current features */
-            cdemu_device_set_current_features(self, Features_PROFILE_PROFILE_CDROM, G_N_ELEMENTS(Features_PROFILE_PROFILE_CDROM));
-            /* Profiles */
-            struct Feature_0x0000 *f_0x0000 = cdemu_device_get_feature(self, 0x0000);
-            f_0x0000->profiles[0].cur = 1;
-            f_0x0000->profiles[1].cur = 0;
+            cdemu_device_set_current_features(self, ActiveFeatures_CDROM, G_N_ELEMENTS(ActiveFeatures_CDROM));
             break;
         }
-        case PROFILE_DVDROM: {
+        case ProfileIndex_DVDROM: {
+            /* Current profile */
+            self->priv->current_profile = PROFILE_DVDROM;
             /* Current features */
-            cdemu_device_set_current_features(self, Features_PROFILE_PROFILE_DVDROM, G_N_ELEMENTS(Features_PROFILE_PROFILE_DVDROM));
-           /* Profiles */
-            struct Feature_0x0000 *f_0x0000 = cdemu_device_get_feature(self, 0x0000);
-            f_0x0000->profiles[0].cur = 0;
-            f_0x0000->profiles[1].cur = 1;
+            cdemu_device_set_current_features(self, ActiveFeatures_DVDROM, G_N_ELEMENTS(ActiveFeatures_DVDROM));
             break;
+        }
+        default: {
+            CDEMU_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: unhandled profile index %d; shouldn't happen!\n", __debug__, profile_index);
+            return;
         }
     }
+    
+    /* Set 'current bit' on current profile */
+    f_0x0000->profiles[profile_index].cur = 1;
 }

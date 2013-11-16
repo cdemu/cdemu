@@ -79,7 +79,7 @@ struct _CdemuDevicePrivate
     GList *mode_pages_list;
 
     /* Current device profile */
-    Profile current_profile;
+    ProfileCode current_profile;
     /* Features */
     GList *features_list;
 
@@ -121,7 +121,7 @@ void cdemu_device_delay_finalize (CdemuDevice *self);
 gpointer cdemu_device_get_feature (CdemuDevice *self, gint feature);
 void cdemu_device_features_init (CdemuDevice *self);
 void cdemu_device_features_cleanup (CdemuDevice *self);
-void cdemu_device_set_profile (CdemuDevice *self, Profile profile);
+void cdemu_device_set_profile (CdemuDevice *self, ProfileIndex profile_index);
 
 /* Kernel <-> userspace I/O */
 gsize cdemu_device_get_kernel_io_buffer_size (CdemuDevice *self);
