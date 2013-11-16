@@ -92,7 +92,7 @@ class CDEmu (object):
 
         # Separate options from arguments
         try:
-            options, arguments = getopt.gnu_getopt(argv, "hvb:", ["help", "version", "bus=", "password=", "encoding=", "dvd-report-css="])
+            options, arguments = getopt.gnu_getopt(argv, "hvb:", ["help", "version", "bus=", "password=", "encoding=", "dvd-report-css=", "create"])
         except getopt.GetoptError:
             self.print_error(_("Unknown option"))
             self.print_full_usage()
@@ -124,6 +124,8 @@ class CDEmu (object):
                     return False
 
                 self.parser_params["dvd-report-css"] = dictionary.get(word)
+            elif opt in ("--create"):
+                self.parser_params["create"] = True
 
 
         if len(arguments) == 0:
