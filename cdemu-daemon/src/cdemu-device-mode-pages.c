@@ -208,6 +208,12 @@ void cdemu_device_mode_pages_init (CdemuDevice *self)
         page->cdrw_read = 1;
         page->cdr_read = 1;
 
+        page->dvdram_write = 1;
+        page->dvdr_write = 1;
+        page->test_write = 1;
+        page->cdrw_write = 1;
+        page->cdr_write = 1;
+
         page->multisession = 1;
         page->mode2_form2 = 1;
         page->mode2_form1 = 1;
