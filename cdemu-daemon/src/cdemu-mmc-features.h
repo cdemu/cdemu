@@ -28,18 +28,18 @@ struct FeatureGeneral
     guint16 code;
 
     #if G_BYTE_ORDER == G_BIG_ENDIAN
-        guint8  __dummy__   : 2;
-        guint8  ver         : 4;
-        guint8  per         : 1;
-        guint8  cur         : 1;
+        guint8 reserved1 : 2;
+        guint8 ver       : 4;
+        guint8 per       : 1;
+        guint8 cur       : 1;
     #else
-        guint8  cur         : 1;
-        guint8  per         : 1;
-        guint8  ver         : 4;
-        guint8  __dummy1__  : 2;
+        guint8 cur       : 1;
+        guint8 per       : 1;
+        guint8 ver       : 4;
+        guint8 reserved1 : 2;
     #endif
 
-    guint8  length;
+    guint8 length;
 };
 
 struct Profile
@@ -47,14 +47,18 @@ struct Profile
     guint16 profile;
 
     #if G_BYTE_ORDER == G_BIG_ENDIAN
-        guint8  __dummy1__  : 7;
-        guint8  cur         : 1;
+        guint8 reserved1 : 2;
+        guint8 ver       : 4;
+        guint8 per       : 1;
+        guint8 cur       : 1;
     #else
-        guint8  cur         : 1;
-        guint8  __dummy1__  : 7;
+        guint8 cur       : 1;
+        guint8 per       : 1;
+        guint8 ver       : 4;
+        guint8 reserved1 : 2;
     #endif
 
-    guint8  __dummy2__;
+    guint8 reserved2;
 };
 
 /* Profile List */
@@ -63,18 +67,18 @@ struct Feature_0x0000
     guint16 code;
 
     #if G_BYTE_ORDER == G_BIG_ENDIAN
-        guint8  __dummy__   : 2;
-        guint8  ver         : 4;
-        guint8  per         : 1;
-        guint8  cur         : 1;
+        guint8 reserved1 : 2;
+        guint8 ver       : 4;
+        guint8 per       : 1;
+        guint8 cur       : 1;
     #else
-        guint8  cur         : 1;
-        guint8  per         : 1;
-        guint8  ver         : 4;
-        guint8  __dummy1__  : 2;
+        guint8 cur       : 1;
+        guint8 per       : 1;
+        guint8 ver       : 4;
+        guint8 reserved1 : 2;
     #endif
 
-    guint8  length;
+    guint8 length;
 
     /* We support only two profiles; CD-ROM and DVD-ROM (surprise surprise...) */
     struct Profile  profiles[2];
@@ -87,32 +91,32 @@ struct Feature_0x0001
     guint16 code;
 
     #if G_BYTE_ORDER == G_BIG_ENDIAN
-        guint8  __dummy__   : 2;
-        guint8  ver         : 4;
-        guint8  per         : 1;
-        guint8  cur         : 1;
+        guint8 reserved1 : 2;
+        guint8 ver       : 4;
+        guint8 per       : 1;
+        guint8 cur       : 1;
     #else
-        guint8  cur         : 1;
-        guint8  per         : 1;
-        guint8  ver         : 4;
-        guint8  __dummy1__  : 2;
+        guint8 cur       : 1;
+        guint8 per       : 1;
+        guint8 ver       : 4;
+        guint8 reserved1 : 2;
     #endif
 
-    guint8  length;
+    guint8 length;
 
     guint32 interface;
 
     #if G_BYTE_ORDER == G_BIG_ENDIAN
-        guint8  __dummy2__  : 6;
-        guint8  inq2        : 1;
-        guint8  dbevent     : 1;
+        guint8 reserved2 : 6;
+        guint8 inq2      : 1;
+        guint8 dbevent   : 1;
     #else
-        guint8  dbevent     : 1;
-        guint8  inq2        : 1;
-        guint8  __dummy2__  : 6;
+        guint8 dbevent   : 1;
+        guint8 inq2      : 1;
+        guint8 reserved2 : 6;
     #endif
 
-    guint8 __dummy3__[3];
+    guint8 reserved3[3];
 };
 
 /* Morphing Feature */
@@ -121,30 +125,30 @@ struct Feature_0x0002
     guint16 code;
 
     #if G_BYTE_ORDER == G_BIG_ENDIAN
-        guint8  __dummy__   : 2;
-        guint8  ver         : 4;
-        guint8  per         : 1;
-        guint8  cur         : 1;
+        guint8 reserved1 : 2;
+        guint8 ver       : 4;
+        guint8 per       : 1;
+        guint8 cur       : 1;
     #else
-        guint8  cur         : 1;
-        guint8  per         : 1;
-        guint8  ver         : 4;
-        guint8  __dummy1__  : 2;
+        guint8 cur       : 1;
+        guint8 per       : 1;
+        guint8 ver       : 4;
+        guint8 reserved1 : 2;
     #endif
 
-    guint8  length;
+    guint8 length;
 
     #if G_BYTE_ORDER == G_BIG_ENDIAN
-        guint8  __dummy2__  : 6;
-        guint8  ocevent     : 1;
-        guint8  async       : 1;
+        guint8 reserved2 : 6;
+        guint8 ocevent   : 1;
+        guint8 async     : 1;
     #else
-        guint8  async       : 1;
-        guint8  ocevent     : 1;
-        guint8  __dummy2__  : 6;
+        guint8 async     : 1;
+        guint8 ocevent   : 1;
+        guint8 reserved2 : 6;
     #endif
 
-    guint8  __dummy3__[3];
+    guint8 reserved3[3];
 };
 
 /* Removable Medium Feature */
@@ -153,36 +157,36 @@ struct Feature_0x0003
     guint16 code;
 
     #if G_BYTE_ORDER == G_BIG_ENDIAN
-        guint8  __dummy__   : 2;
-        guint8  ver         : 4;
-        guint8  per         : 1;
-        guint8  cur         : 1;
+        guint8 reserved1 : 2;
+        guint8 ver       : 4;
+        guint8 per       : 1;
+        guint8 cur       : 1;
     #else
-        guint8  cur         : 1;
-        guint8  per         : 1;
-        guint8  ver         : 4;
-        guint8  __dummy1__  : 2;
+        guint8 cur       : 1;
+        guint8 per       : 1;
+        guint8 ver       : 4;
+        guint8 reserved1 : 2;
     #endif
 
-    guint8  length;
+    guint8 length;
 
     #if G_BYTE_ORDER == G_BIG_ENDIAN
-        guint8  mechanism   : 3;
-        guint8  __dummy2__  : 1;
-        guint8  eject       : 1;
-        guint8  prvnt_jmp   : 1;
-        guint8  __dummy3__  : 1;
-        guint8  lock        : 1;
+        guint8 mechanism : 3;
+        guint8 reserved2 : 1;
+        guint8 eject     : 1;
+        guint8 prvnt_jmp : 1;
+        guint8 reserved3 : 1;
+        guint8 lock      : 1;
     #else
-        guint8  lock        : 1;
-        guint8  __dummy3__  : 1;
-        guint8  prvnt_jmp   : 1;
-        guint8  eject       : 1;
-        guint8  __dummy2__  : 1;
-        guint8  mechanism   : 3;
+        guint8 lock      : 1;
+        guint8 reserved3 : 1;
+        guint8 prvnt_jmp : 1;
+        guint8 eject     : 1;
+        guint8 reserved2 : 1;
+        guint8 mechanism : 3;
     #endif
 
-    guint8  __dummy4__[3];
+    guint8 reserved4[3];
 };
 
 /* Random Readable Feature */
@@ -191,31 +195,31 @@ struct Feature_0x0010
     guint16 code;
 
     #if G_BYTE_ORDER == G_BIG_ENDIAN
-        guint8  __dummy__   : 2;
-        guint8  ver         : 4;
-        guint8  per         : 1;
-        guint8  cur         : 1;
+        guint8 reserved1 : 2;
+        guint8 ver       : 4;
+        guint8 per       : 1;
+        guint8 cur       : 1;
     #else
-        guint8  cur         : 1;
-        guint8  per         : 1;
-        guint8  ver         : 4;
-        guint8  __dummy1__  : 2;
+        guint8 cur       : 1;
+        guint8 per       : 1;
+        guint8 ver       : 4;
+        guint8 reserved1 : 2;
     #endif
 
-    guint8  length;
+    guint8 length;
 
     guint32 block_size;
     guint16 blocking;
 
     #if G_BYTE_ORDER == G_BIG_ENDIAN
-        guint8  __dummy2__  : 7;
-        guint8  pp          : 1;
+        guint8 reserved2 : 7;
+        guint8 pp        : 1;
     #else
-        guint8  pp          : 1;
-        guint8  __dummy2__  : 7;
+        guint8 pp        : 1;
+        guint8 reserved2 : 7;
     #endif
 
-    guint8  __dummy3__;
+    guint8 reserved3;
 };
 
 /* Multi-read Feature */
@@ -224,18 +228,18 @@ struct Feature_0x001D
     guint16 code;
 
     #if G_BYTE_ORDER == G_BIG_ENDIAN
-        guint8  __dummy__   : 2;
-        guint8  ver         : 4;
-        guint8  per         : 1;
-        guint8  cur         : 1;
+        guint8 reserved1 : 2;
+        guint8 ver       : 4;
+        guint8 per       : 1;
+        guint8 cur       : 1;
     #else
-        guint8  cur         : 1;
-        guint8  per         : 1;
-        guint8  ver         : 4;
-        guint8  __dummy1__  : 2;
+        guint8 cur       : 1;
+        guint8 per       : 1;
+        guint8 ver       : 4;
+        guint8 reserved1 : 2;
     #endif
 
-    guint8  length;
+    guint8 length;
 };
 
 /* CD Read Feature */
@@ -244,32 +248,32 @@ struct Feature_0x001E
     guint16 code;
 
     #if G_BYTE_ORDER == G_BIG_ENDIAN
-        guint8  __dummy__   : 2;
-        guint8  ver         : 4;
-        guint8  per         : 1;
-        guint8  cur         : 1;
+        guint8 reserved1 : 2;
+        guint8 ver       : 4;
+        guint8 per       : 1;
+        guint8 cur       : 1;
     #else
-        guint8  cur         : 1;
-        guint8  per         : 1;
-        guint8  ver         : 4;
-        guint8  __dummy1__  : 2;
+        guint8 cur       : 1;
+        guint8 per       : 1;
+        guint8 ver       : 4;
+        guint8 reserved1 : 2;
     #endif
 
-    guint8  length;
+    guint8 length;
 
     #if G_BYTE_ORDER == G_BIG_ENDIAN
-        guint8  dap         : 1;
-        guint8  __dummy2__  : 5;
-        guint8  c2flags     : 1;
-        guint8  cdtext      : 1;
+        guint8 dap       : 1;
+        guint8 reserved2 : 5;
+        guint8 c2flags   : 1;
+        guint8 cdtext    : 1;
     #else
-        guint8  cdtext      : 1;
-        guint8  c2flags     : 1;
-        guint8  __dummy2__  : 5;
-        guint8  dap         : 1;
+        guint8 cdtext    : 1;
+        guint8 c2flags   : 1;
+        guint8 reserved2 : 5;
+        guint8 dap       : 1;
     #endif
 
-    guint8  __dummy3__[3];
+    guint8 reserved3[3];
 };
 
 /* DVD Read Feature */
@@ -278,38 +282,38 @@ struct Feature_0x001F
     guint16 code;
 
     #if G_BYTE_ORDER == G_BIG_ENDIAN
-        guint8  __dummy__   : 2;
-        guint8  ver         : 4;
-        guint8  per         : 1;
-        guint8  cur         : 1;
+        guint8 reserved1 : 2;
+        guint8 ver       : 4;
+        guint8 per       : 1;
+        guint8 cur       : 1;
     #else
-        guint8  cur         : 1;
-        guint8  per         : 1;
-        guint8  ver         : 4;
-        guint8  __dummy1__  : 2;
+        guint8 cur       : 1;
+        guint8 per       : 1;
+        guint8 ver       : 4;
+        guint8 reserved1 : 2;
     #endif
-
-    guint8  length;
+    
+    guint8 length;
 
     #if G_BYTE_ORDER == G_BIG_ENDIAN
-        guint8  __dummy2__  : 7;
-        guint8  multi110    : 1;
+        guint8 reserved2 : 7;
+        guint8 multi110  : 1;
     #else
-        guint8  multi110    : 1;
-        guint8  __dummy2__  : 7;
+        guint8 multi110  : 1;
+        guint8 reserved2 : 7;
     #endif
 
-    guint8  __dummy3__;
+    guint8 reserved3;
 
     #if G_BYTE_ORDER == G_BIG_ENDIAN
-        guint8  __dummy4__  : 7;
-        guint8  dualr       : 1;
+        guint8 reserved4 : 7;
+        guint8 dualr     : 1;
     #else
-        guint8  dualr       : 1;
-        guint8  __dummy4__  : 7;
+        guint8 dualr     : 1;
+        guint8 reserved4 : 7;
     #endif
 
-    guint8  __dummy5__;
+    guint8 reserved5;
 };
 
 /* Power Management Feature */
@@ -318,18 +322,18 @@ struct Feature_0x0100
     guint16 code;
 
     #if G_BYTE_ORDER == G_BIG_ENDIAN
-        guint8  __dummy__   : 2;
-        guint8  ver         : 4;
-        guint8  per         : 1;
-        guint8  cur         : 1;
+        guint8 reserved1 : 2;
+        guint8 ver       : 4;
+        guint8 per       : 1;
+        guint8 cur       : 1;
     #else
-        guint8  cur         : 1;
-        guint8  per         : 1;
-        guint8  ver         : 4;
-        guint8  __dummy1__  : 2;
+        guint8 cur       : 1;
+        guint8 per       : 1;
+        guint8 ver       : 4;
+        guint8 reserved1 : 2;
     #endif
 
-    guint8  length;
+    guint8 length;
 };
 
 /* CD External Audio Play Feature */
@@ -338,32 +342,32 @@ struct Feature_0x0103
     guint16 code;
 
     #if G_BYTE_ORDER == G_BIG_ENDIAN
-        guint8  __dummy__   : 2;
-        guint8  ver         : 4;
-        guint8  per         : 1;
-        guint8  cur         : 1;
+        guint8 reserved1 : 2;
+        guint8 ver       : 4;
+        guint8 per       : 1;
+        guint8 cur       : 1;
     #else
-        guint8  cur         : 1;
-        guint8  per         : 1;
-        guint8  ver         : 4;
-        guint8  __dummy1__  : 2;
+        guint8 cur       : 1;
+        guint8 per       : 1;
+        guint8 ver       : 4;
+        guint8 reserved1 : 2;
     #endif
 
-    guint8  length;
+    guint8 length;
 
     #if G_BYTE_ORDER == G_BIG_ENDIAN
-        guint8  __dummy2__  : 5;
-        guint8  scan        : 1;
-        guint8  scm         : 1;
-        guint8  sv          : 1;
+        guint8 reserved2 : 5;
+        guint8 scan      : 1;
+        guint8 scm       : 1;
+        guint8 sv        : 1;
     #else
-        guint8  sv          : 1;
-        guint8  scm         : 1;
-        guint8  scan        : 1;
-        guint8  __dummy2__  : 5;
+        guint8 sv        : 1;
+        guint8 scm       : 1;
+        guint8 scan      : 1;
+        guint8 reserved2 : 5;
     #endif
 
-    guint8  __dummy3__;
+    guint8 reserved3;
 
     guint16 vol_lvls;
 };
@@ -374,22 +378,22 @@ struct Feature_0x0106
     guint16 code;
 
     #if G_BYTE_ORDER == G_BIG_ENDIAN
-        guint8  __dummy__   : 2;
-        guint8  ver         : 4;
-        guint8  per         : 1;
-        guint8  cur         : 1;
+        guint8 reserved1 : 2;
+        guint8 ver       : 4;
+        guint8 per       : 1;
+        guint8 cur       : 1;
     #else
-        guint8  cur         : 1;
-        guint8  per         : 1;
-        guint8  ver         : 4;
-        guint8  __dummy1__  : 2;
+        guint8 cur       : 1;
+        guint8 per       : 1;
+        guint8 ver       : 4;
+        guint8 reserved1 : 2;
     #endif
 
-    guint8  length;
+    guint8 length;
 
-    guint8  __dummy2__[3];
+    guint8 reserved2[3];
 
-    guint8  css_ver;
+    guint8 css_ver;
 };
 
 /* Real Time Streaming Feature */
@@ -398,36 +402,36 @@ struct Feature_0x0107
     guint16 code;
 
     #if G_BYTE_ORDER == G_BIG_ENDIAN
-        guint8  __dummy__   : 2;
-        guint8  ver         : 4;
-        guint8  per         : 1;
-        guint8  cur         : 1;
+        guint8 reserved1 : 2;
+        guint8 ver       : 4;
+        guint8 per       : 1;
+        guint8 cur       : 1;
     #else
-        guint8  cur         : 1;
-        guint8  per         : 1;
-        guint8  ver         : 4;
-        guint8  __dummy1__  : 2;
+        guint8 cur       : 1;
+        guint8 per       : 1;
+        guint8 ver       : 4;
+        guint8 reserved1 : 2;
     #endif
 
-    guint8  length;
+    guint8 length;
 
     #if G_BYTE_ORDER == G_BIG_ENDIAN
-        guint8  __dummy2__  : 3;
-        guint8  rbcb        : 1;
-        guint8  scs         : 1;
-        guint8  mp2a        : 1;
-        guint8  wspd        : 1;
-        guint8  sw          : 1;
+        guint8 reserved2 : 3;
+        guint8 rbcb      : 1;
+        guint8 scs       : 1;
+        guint8 mp2a      : 1;
+        guint8 wspd      : 1;
+        guint8 sw        : 1;
     #else
-        guint8  sw          : 1;
-        guint8  wspd        : 1;
-        guint8  mp2a        : 1;
-        guint8  scs         : 1;
-        guint8  rbcb        : 1;
-        guint8  __dummy2__  : 3;
+        guint8 sw        : 1;
+        guint8 wspd      : 1;
+        guint8 mp2a      : 1;
+        guint8 scs       : 1;
+        guint8 rbcb      : 1;
+        guint8 reserved2 : 3;
     #endif
 
-    guint8  __dummy3__[3];
+    guint8 reserved3[3];
 };
 
 /* Profiles */
