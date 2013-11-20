@@ -163,7 +163,8 @@ void cdemu_device_mode_pages_init (CdemuDevice *self)
         struct ModePage_0x0E *mask = g_array_index(mode_page, struct ModePage_0x0E *, MODE_PAGE_MASK);
 
         page->immed = 0;
-        page->__dummy4__[4] = 75;
+        page->obsolete1 = 75;
+        page->obsolete2 = 75;
         page->port0csel = 1;
         page->port0vol = 0xFF;
         page->port1csel = 2;

@@ -33,16 +33,16 @@ typedef enum
 struct ModePageGeneral
 {
     #if G_BYTE_ORDER == G_BIG_ENDIAN
-        guint8  ps          : 1;
-        guint8  __dummy1__  : 1;
-        guint8  code        : 6;
+        guint8 ps        : 1;
+        guint8 reserved1 : 1;
+        guint8 code      : 6;
     #else
-        guint8  code        : 6;
-        guint8  __dummy1__  : 1;
-        guint8  ps          : 1;
+        guint8 code      : 6;
+        guint8 reserved1 : 1;
+        guint8 ps        : 1;
     #endif
 
-    guint8  length;
+    guint8 length;
 };
 
 
@@ -50,44 +50,44 @@ struct ModePageGeneral
 struct ModePage_0x01
 {
     #if G_BYTE_ORDER == G_BIG_ENDIAN
-        guint8  ps          : 1;
-        guint8  __dummy1__  : 1;
-        guint8  code        : 6;
+        guint8 ps        : 1;
+        guint8 reserved1 : 1;
+        guint8 code      : 6;
     #else
-        guint8  code        : 6;
-        guint8  __dummy1__  : 1;
-        guint8  ps          : 1;
+        guint8 code      : 6;
+        guint8 reserved1 : 1;
+        guint8 ps        : 1;
     #endif
 
-    guint8  length;
+    guint8 length;
 
     #if G_BYTE_ORDER == G_BIG_ENDIAN
-        guint8  awre        : 1;
-        guint8  arre        : 1;
-        guint8  tb          : 1;
-        guint8  rc          : 1;
-        guint8  __dummy2__  : 1;
-        guint8  per         : 1;
-        guint8  dte         : 1;
-        guint8  dcr         : 1;
+        guint8 awre      : 1;
+        guint8 arre      : 1;
+        guint8 tb        : 1;
+        guint8 rc        : 1;
+        guint8 reserved2 : 1;
+        guint8 per       : 1;
+        guint8 dte       : 1;
+        guint8 dcr       : 1;
     #else
-        guint8  dcr         : 1;
-        guint8  dte         : 1;
-        guint8  per         : 1;
-        guint8  __dummy2__  : 1;
-        guint8  rc          : 1;
-        guint8  tb          : 1;
-        guint8  arre        : 1;
-        guint8  awre        : 1;
+        guint8 dcr       : 1;
+        guint8 dte       : 1;
+        guint8 per       : 1;
+        guint8 reserved2 : 1;
+        guint8 rc        : 1;
+        guint8 tb        : 1;
+        guint8 arre      : 1;
+        guint8 awre      : 1;
     #endif
 
-    guint8  read_retry;
+    guint8 read_retry;
 
-    guint8  __dummy3__[4];
+    guint8 reserved3[4];
 
-    guint8  write_retry;
+    guint8 write_retry;
 
-    guint8  __dummy4__;
+    guint8 reserved4;
 
     guint16 recovery;
 };
@@ -96,25 +96,25 @@ struct ModePage_0x01
 struct ModePage_0x0D
 {
     #if G_BYTE_ORDER == G_BIG_ENDIAN
-        guint8  ps          : 1;
-        guint8  __dummy1__  : 1;
-        guint8  code        : 6;
+        guint8 ps        : 1;
+        guint8 reserved1 : 1;
+        guint8 code      : 6;
     #else
-        guint8  code        : 6;
-        guint8  __dummy1__  : 1;
-        guint8  ps          : 1;
+        guint8 code      : 6;
+        guint8 reserved1 : 1;
+        guint8 ps        : 1;
     #endif
 
-    guint8  length;
+    guint8 length;
 
-    guint8  __dummy2__;
+    guint8 reserved2;
 
     #if G_BYTE_ORDER == G_BIG_ENDIAN
-        guint8  __dummy3__  : 4;
-        guint8  inact_mult  : 4;
+        guint8 reserved3  : 4;
+        guint8 inact_mult : 4;
     #else
-        guint8  inact_mult  : 4;
-        guint8  __dummy3__  : 4;
+        guint8 inact_mult : 4;
+        guint8 reserved3  : 4;
     #endif
 
     guint16 spm;
@@ -126,93 +126,95 @@ struct ModePage_0x0D
 struct ModePage_0x0E
 {
     #if G_BYTE_ORDER == G_BIG_ENDIAN
-        guint8  ps          : 1;
-        guint8  __dummy1__  : 1;
-        guint8  code        : 6;
+        guint8 ps        : 1;
+        guint8 reserved1 : 1;
+        guint8 code      : 6;
     #else
-        guint8  code        : 6;
-        guint8  __dummy1__  : 1;
-        guint8  ps          : 1;
+        guint8 code      : 6;
+        guint8 reserved1 : 1;
+        guint8 ps        : 1;
     #endif
 
-    guint8  length;
+    guint8 length;
 
     #if G_BYTE_ORDER == G_BIG_ENDIAN
-        guint8  __dummy2__  : 5;
-        guint8  immed       : 1;
-        guint8  sotc        : 1;
-        guint8  __dummy3__  : 1;
+        guint8 reserved2 : 5;
+        guint8 immed     : 1;
+        guint8 sotc      : 1;
+        guint8 reserved3 : 1;
     #else
-        guint8  __dummy3__  : 1;
-        guint8  sotc        : 1;
-        guint8  immed       : 1;
-        guint8  __dummy2__  : 5;
+        guint8 reserved3 : 1;
+        guint8 sotc      : 1;
+        guint8 immed     : 1;
+        guint8 reserved2 : 5;
     #endif
 
-    guint8  __dummy4__[5];
-
-    #if G_BYTE_ORDER == G_BIG_ENDIAN
-        guint8  __dummy5__  : 4;
-        guint8  port0csel   : 4;
-    #else
-        guint8  port0csel   : 4;
-        guint8  __dummy5__  : 4;
-    #endif
-    guint8  port0vol;
+    guint8 reserved4[3];
+    guint8 obsolete1;
+    guint8 obsolete2;
 
     #if G_BYTE_ORDER == G_BIG_ENDIAN
-        guint8  __dummy6__  : 4;
-        guint8  port1csel   : 4;
+        guint8 reserved5 : 4;
+        guint8 port0csel : 4;
     #else
-        guint8  port1csel   : 4;
-        guint8  __dummy6__  : 4;
+        guint8 port0csel : 4;
+        guint8 reserved5 : 4;
     #endif
-    guint8  port1vol;
+    guint8 port0vol;
 
     #if G_BYTE_ORDER == G_BIG_ENDIAN
-        guint8  __dummy7__  : 4;
-        guint8  port2csel   : 4;
+        guint8 reserved6 : 4;
+        guint8 port1csel : 4;
     #else
-        guint8  port2csel   : 4;
-        guint8  __dummy7__  : 4;
+        guint8 port1csel : 4;
+        guint8 reserved6 : 4;
     #endif
-    guint8  port2vol;
+    guint8 port1vol;
 
     #if G_BYTE_ORDER == G_BIG_ENDIAN
-        guint8  __dummy8__  : 4;
-        guint8  port3csel   : 4;
+        guint8 reserved7 : 4;
+        guint8 port2csel : 4;
     #else
-        guint8  port3csel   : 4;
-        guint8  __dummy8__  : 4;
+        guint8 port2csel : 4;
+        guint8 reserved7 : 4;
     #endif
-    guint8  port3vol;
+    guint8 port2vol;
+
+    #if G_BYTE_ORDER == G_BIG_ENDIAN
+        guint8 reserved8 : 4;
+        guint8 port3csel : 4;
+    #else
+        guint8 port3csel : 4;
+        guint8 reserved8 : 4;
+    #endif
+    guint8 port3vol;
 };
 
 /* Power Condition Mode Page */
 struct ModePage_0x1A
 {
     #if G_BYTE_ORDER == G_BIG_ENDIAN
-        guint8  ps          : 1;
-        guint8  __dummy1__  : 1;
-        guint8  code        : 6;
+        guint8 ps        : 1;
+        guint8 reserved1 : 1;
+        guint8 code      : 6;
     #else
-        guint8  code        : 6;
-        guint8  __dummy1__  : 1;
-        guint8  ps          : 1;
+        guint8 code      : 6;
+        guint8 reserved1 : 1;
+        guint8 ps        : 1;
     #endif
 
-    guint8  length;
+    guint8 length;
 
-    guint8  __dummy2__;
+    guint8 reserved2;
 
     #if G_BYTE_ORDER == G_BIG_ENDIAN
-        guint8  __dummy3__  : 6;
-        guint8  idle        : 1;
-        guint8  stdby       : 1;
+        guint8 reserved3 : 6;
+        guint8 idle      : 1;
+        guint8 stdby     : 1;
     #else
-        guint8  stdby       : 1;
-        guint8  idle        : 1;
-        guint8  __dummy3__  : 6;
+        guint8 stdby     : 1;
+        guint8 idle      : 1;
+        guint8 reserved3 : 6;
     #endif
 
     guint32 idle_timer;
@@ -225,125 +227,125 @@ struct ModePage_0x1A
 struct ModePage_0x2A
 {
     #if G_BYTE_ORDER == G_BIG_ENDIAN
-        guint8  ps          : 1;
-        guint8  __dummy1__  : 1;
-        guint8  code        : 6;
+        guint8 ps        : 1;
+        guint8 reserved1 : 1;
+        guint8 code      : 6;
     #else
-        guint8  code        : 6;
-        guint8  __dummy1__  : 1;
-        guint8  ps          : 1;
+        guint8 code      : 6;
+        guint8 reserved1 : 1;
+        guint8 ps        : 1;
     #endif
 
-    guint8  length;
+    guint8 length;
 
     #if G_BYTE_ORDER == G_BIG_ENDIAN
-        guint8  __dummy2__  : 2;
-        guint8  dvdram_read : 1;
-        guint8  dvdr_read   : 1;
-        guint8  dvdrom_read : 1;
-        guint8  method2     : 1;
-        guint8  cdrw_read   : 1;
-        guint8  cdr_read    : 1;
+        guint8 reserved2   : 2;
+        guint8 dvdram_read : 1;
+        guint8 dvdr_read   : 1;
+        guint8 dvdrom_read : 1;
+        guint8 method2     : 1;
+        guint8 cdrw_read   : 1;
+        guint8 cdr_read    : 1;
     #else
-        guint8  cdr_read    : 1;
-        guint8  cdrw_read   : 1;
-        guint8  method2     : 1;
-        guint8  dvdrom_read : 1;
-        guint8  dvdr_read   : 1;
-        guint8  dvdram_read : 1;
-        guint8  __dummy2__  : 2;
-    #endif
-
-    #if G_BYTE_ORDER == G_BIG_ENDIAN
-        guint8  __dummy3__  : 2;
-        guint8  dvdram_write    : 1;
-        guint8  dvdr_write  : 1;
-        guint8  __dummy4__  : 1;
-        guint8  test_write  : 1;
-        guint8  cdrw_write  : 1;
-        guint8  cdr_write   : 1;
-    #else
-        guint8  cdr_write   : 1;
-        guint8  cdrw_write  : 1;
-        guint8  test_write  : 1;
-        guint8  __dummy4__  : 1;
-        guint8  dvdr_write  : 1;
-        guint8  dvdram_write    : 1;
-        guint8  __dummy3__  : 2;
+        guint8 cdr_read    : 1;
+        guint8 cdrw_read   : 1;
+        guint8 method2     : 1;
+        guint8 dvdrom_read : 1;
+        guint8 dvdr_read   : 1;
+        guint8 dvdram_read : 1;
+        guint8 reserved2   : 2;
     #endif
 
     #if G_BYTE_ORDER == G_BIG_ENDIAN
-        guint8  buf         : 1;
-        guint8  multisession    : 1;
-        guint8  mode2_form2 : 1;
-        guint8  mode2_form1 : 1;
-        guint8  dport1      : 1;
-        guint8  dport2      : 1;
-        guint8  composite   : 1;
-        guint8  audio_play  : 1;
+        guint8 reserved3    : 2;
+        guint8 dvdram_write : 1;
+        guint8 dvdr_write   : 1;
+        guint8 reserved4    : 1;
+        guint8 test_write   : 1;
+        guint8 cdrw_write   : 1;
+        guint8 cdr_write    : 1;
     #else
-        guint8  audio_play  : 1;
-        guint8  composite   : 1;
-        guint8  dport2      : 1;
-        guint8  dport1      : 1;
-        guint8  mode2_form1 : 1;
-        guint8  mode2_form2 : 1;
-        guint8  multisession    : 1;
-        guint8  buf         : 1;
+        guint8 cdr_write    : 1;
+        guint8 cdrw_write   : 1;
+        guint8 test_write   : 1;
+        guint8 reserved4    : 1;
+        guint8 dvdr_write   : 1;
+        guint8 dvdram_write : 1;
+        guint8 reserved3    : 2;
     #endif
 
     #if G_BYTE_ORDER == G_BIG_ENDIAN
-        guint8  read_barcode    : 1;
-        guint8  upc         : 1;
-        guint8  isrc        : 1;
-        guint8  c2pointers  : 1;
-        guint8  rw_deinterleaved    : 1;
-        guint8  rw_supported    : 1;
-        guint8  cdda_acc_stream : 1;
-        guint8  cdda_cmds   : 1;
+        guint8 buf          : 1;
+        guint8 multisession : 1;
+        guint8 mode2_form2  : 1;
+        guint8 mode2_form1  : 1;
+        guint8 dport1       : 1;
+        guint8 dport2       : 1;
+        guint8 composite    : 1;
+        guint8 audio_play   : 1;
     #else
-        guint8  cdda_cmds   : 1;
-        guint8  cdda_acc_stream : 1;
-        guint8  rw_supported    : 1;
-        guint8  rw_deinterleaved    : 1;
-        guint8  c2pointers  : 1;
-        guint8  isrc        : 1;
-        guint8  upc         : 1;
-        guint8  read_barcode    : 1;
+        guint8 audio_play   : 1;
+        guint8 composite    : 1;
+        guint8 dport2       : 1;
+        guint8 dport1       : 1;
+        guint8 mode2_form1  : 1;
+        guint8 mode2_form2  : 1;
+        guint8 multisession : 1;
+        guint8 buf          : 1;
     #endif
 
     #if G_BYTE_ORDER == G_BIG_ENDIAN
-        guint8  load_mech   : 3;
-        guint8  __dummy5__  : 1;
-        guint8  eject       : 1;
-        guint8  prvnt_jmp   : 1;
-        guint8  lock_state  : 1;
-        guint8  lock        : 1;
+        guint8 read_barcode     : 1;
+        guint8 upc              : 1;
+        guint8 isrc             : 1;
+        guint8 c2pointers       : 1;
+        guint8 rw_deinterleaved : 1;
+        guint8 rw_supported     : 1;
+        guint8 cdda_acc_stream  : 1;
+        guint8 cdda_cmds        : 1;
     #else
-        guint8  lock        : 1;
-        guint8  lock_state  : 1;
-        guint8  prvnt_jmp   : 1;
-        guint8  eject       : 1;
-        guint8  __dummy5__  : 1;
-        guint8  load_mech   : 3;
+        guint8 cdda_cmds        : 1;
+        guint8 cdda_acc_stream  : 1;
+        guint8 rw_supported     : 1;
+        guint8 rw_deinterleaved : 1;
+        guint8 c2pointers       : 1;
+        guint8 isrc             : 1;
+        guint8 upc              : 1;
+        guint8 read_barcode     : 1;
     #endif
 
     #if G_BYTE_ORDER == G_BIG_ENDIAN
-        guint8  __dummy6__  : 2;
-        guint8  rw_in_leadin    : 1;
-        guint8  side_change : 1;
-        guint8  sw_slot     : 1;
-        guint8  discpresent : 1;
-        guint8  sep_mute    : 1;
-        guint8  sep_vol_lvls    : 1;
+        guint8 load_mech  : 3;
+        guint8 reserved5  : 1;
+        guint8 eject      : 1;
+        guint8 prvnt_jmp  : 1;
+        guint8 lock_state : 1;
+        guint8 lock       : 1;
     #else
-        guint8  sep_vol_lvls    : 1;
-        guint8  sep_mute    : 1;
-        guint8  discpresent : 1;
-        guint8  sw_slot     : 1;
-        guint8  side_change : 1;
-        guint8  rw_in_leadin    : 1;
-        guint8  __dummy6__  : 2;
+        guint8 lock       : 1;
+        guint8 lock_state : 1;
+        guint8 prvnt_jmp  : 1;
+        guint8 eject      : 1;
+        guint8 reserved5  : 1;
+        guint8 load_mech  : 3;
+    #endif
+
+    #if G_BYTE_ORDER == G_BIG_ENDIAN
+        guint8  reserved6    : 2;
+        guint8  rw_in_leadin : 1;
+        guint8  side_change  : 1;
+        guint8  sw_slot      : 1;
+        guint8  discpresent  : 1;
+        guint8  sep_mute     : 1;
+        guint8  sep_vol_lvls : 1;
+    #else
+        guint8  sep_vol_lvls : 1;
+        guint8  sep_mute     : 1;
+        guint8  discpresent  : 1;
+        guint8  sw_slot      : 1;
+        guint8  side_change  : 1;
+        guint8  rw_in_leadin : 1;
+        guint8  reserved6    : 2;
     #endif
 
     guint16 max_read_speed; /* According to older standard */
@@ -354,22 +356,22 @@ struct ModePage_0x2A
 
     guint16 cur_read_speed; /* According to older standard */
 
-    guint8  __dummy9__;
+    guint8 reserved7;
 
     #if G_BYTE_ORDER == G_BIG_ENDIAN
-        guint8  __dummy10__ : 2;
-        guint8  word_length : 2;
-        guint8  lsbf        : 1;
-        guint8  rck         : 1;
-        guint8  bckf        : 1;
-        guint8  __dummy11__ : 1;
+        guint8 reserved8   : 2;
+        guint8 word_length : 2;
+        guint8 lsbf        : 1;
+        guint8 rck         : 1;
+        guint8 bckf        : 1;
+        guint8 reserved9   : 1;
     #else
-        guint8  __dummy11__ : 1;
-        guint8  bckf        : 1;
-        guint8  rck         : 1;
-        guint8  lsbf        : 1;
-        guint8  word_length : 2;
-        guint8  __dummy10__ : 2;
+        guint8 reserved9   : 1;
+        guint8 bckf        : 1;
+        guint8 rck         : 1;
+        guint8 lsbf        : 1;
+        guint8 word_length : 2;
+        guint8 reserved8   : 2;
     #endif
 
     guint16 max_write_speed; /* According to older standard */
@@ -378,14 +380,14 @@ struct ModePage_0x2A
 
     guint16 copy_man_rev;
 
-    guint8  __dummy13__[3];
+    guint8 reserved10[3];
 
     #if G_BYTE_ORDER == G_BIG_ENDIAN
-        guint8  __dummy14__ : 6;
-        guint8  rot_ctl_sel : 2;
+        guint8 reserved11  : 6;
+        guint8 rot_ctl_sel : 2;
     #else
-        guint8  rot_ctl_sel : 2;
-        guint8  __dummy14__ : 6;
+        guint8 rot_ctl_sel : 2;
+        guint8 reserved11  : 6;
     #endif
 
     guint16 cur_wspeed;
