@@ -324,6 +324,86 @@ struct Feature_0x001F
     guint8 reserved5;
 };
 
+/* Incremental Streaming Writable Feature */
+struct Feature_0x0021
+{
+    guint16 code;
+
+    #if G_BYTE_ORDER == G_BIG_ENDIAN
+        guint8 reserved1 : 2;
+        guint8 ver       : 4;
+        guint8 per       : 1;
+        guint8 cur       : 1;
+    #else
+        guint8 cur       : 1;
+        guint8 per       : 1;
+        guint8 ver       : 4;
+        guint8 reserved1 : 2;
+    #endif
+
+    guint8 length;
+    
+    guint16 data_block_types_supported;
+    
+    #if G_BYTE_ORDER == G_BIG_ENDIAN
+        guint8 reserved2 : 7;
+        guint8 buf       : 1;
+    #else
+        guint8 buf       : 1;
+        guint8 reserved2 : 7;
+    #endif
+    
+    guint8 num_link_sizes;
+    
+    guint8 link_sizes[1];
+    guint8 pad[3];
+};
+
+
+/* CD Track at Once Feature */
+struct Feature_0x002D
+{
+    guint16 code;
+
+    #if G_BYTE_ORDER == G_BIG_ENDIAN
+        guint8 reserved1 : 2;
+        guint8 ver       : 4;
+        guint8 per       : 1;
+        guint8 cur       : 1;
+    #else
+        guint8 cur       : 1;
+        guint8 per       : 1;
+        guint8 ver       : 4;
+        guint8 reserved1 : 2;
+    #endif
+
+    guint8 length;
+
+    #if G_BYTE_ORDER == G_BIG_ENDIAN
+        guint8 reserved2  : 1;
+        guint8 buf        : 1;
+        guint8 reserved3  : 1;
+        guint8 rw_raw     : 1;
+        guint8 rw_pack    : 1;
+        guint8 test_write : 1;
+        guint8 cd_rw      : 1;
+        guint8 rw_subcode : 1;
+    #else
+        guint8 rw_subcode : 1;
+        guint8 cd_rw      : 1;
+        guint8 test_write : 1;
+        guint8 rw_pack    : 1;
+        guint8 rw_raw     : 1;
+        guint8 reserved3  : 1;
+        guint8 buf        : 1;
+        guint8 reserved2  : 1;
+    #endif
+
+    guint8  reserved4;
+    
+    guint16 data_type_supported;
+};
+
 /* Power Management Feature */
 struct Feature_0x0100
 {
