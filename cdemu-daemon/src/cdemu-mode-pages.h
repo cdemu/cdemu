@@ -92,6 +92,80 @@ struct ModePage_0x01
     guint16 recovery;
 };
 
+/* Write Parameters Mode Page */
+struct ModePage_0x05
+{
+    #if G_BYTE_ORDER == G_BIG_ENDIAN
+        guint8 ps        : 1;
+        guint8 reserved1 : 1;
+        guint8 code      : 6;
+    #else
+        guint8 code      : 6;
+        guint8 reserved1 : 1;
+        guint8 ps        : 1;
+    #endif
+
+    guint8 length;
+    
+    #if G_BYTE_ORDER == G_BIG_ENDIAN
+        guint8 reserved2  : 1;
+        guint8 bufe       : 1;
+        guint8 ls_v       : 1;
+        guint8 test_write : 1;
+        guint8 write_type : 4;
+    #else
+        guint8 write_type : 4;
+        guint8 test_write : 1;
+        guint8 ls_v       : 1;
+        guint8 bufe       : 1;
+        guint8 reserved2  : 1;
+    #endif
+    
+    #if G_BYTE_ORDER == G_BIG_ENDIAN
+        guint8 multisession : 2;
+        guint8 fp           : 1;
+        guint8 copy         : 1;
+        guint8 track_mode   : 4;
+    #else
+        guint8 track_mode   : 4;
+        guint8 copy         : 1;
+        guint8 fp           : 1;
+        guint8 multisession : 2;
+    #endif
+    
+    #if G_BYTE_ORDER == G_BIG_ENDIAN
+        guint8 reserved3       : 4;
+        guint8 data_block_type : 4;
+    #else
+        guint8 data_block_type : 4;
+        guint8 reserved3       : 4;
+    #endif
+    
+    guint8 link_size;
+
+    guint8 reserved4;
+    
+    #if G_BYTE_ORDER == G_BIG_ENDIAN
+        guint8 reserved5                  : 2;
+        guint8 initiator_application_code : 6;
+    #else
+        guint8 initiator_application_code : 6;
+        guint8 reserved5                  : 2;
+    #endif
+
+    guint8 session_format;
+
+    guint8 reserved6;
+    
+    guint32 packet_size;
+    
+    guint16 audio_pause_length;
+    
+    guint8 mcn[16];
+    guint8 isrc[16];
+    guint8 subheader[4];
+};
+
 /* CD Device Parameters Mode Page */
 struct ModePage_0x0D
 {
