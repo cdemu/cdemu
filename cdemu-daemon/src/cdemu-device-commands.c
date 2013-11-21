@@ -1291,9 +1291,9 @@ static gboolean command_read_toc_pma_atip (CdemuDevice *self, guint8 *raw_cdb)
         case 0x00: {
             CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: formatted TOC\n", __debug__);
             /* Formatted TOC */
-            struct READ_TOC_PMA_ATIP_0000_Header *ret_header = (struct READ_TOC_PMA_ATIP_0000_Header *)self->priv->buffer;
-            self->priv->buffer_size = sizeof(struct READ_TOC_PMA_ATIP_0000_Header);
-            struct READ_TOC_PMA_ATIP_0000_Descriptor *ret_desc = (struct READ_TOC_PMA_ATIP_0000_Descriptor *)(self->priv->buffer+self->priv->buffer_size);
+            struct READ_TOC_PMA_ATIP_0_Header *ret_header = (struct READ_TOC_PMA_ATIP_0_Header *)self->priv->buffer;
+            self->priv->buffer_size = sizeof(struct READ_TOC_PMA_ATIP_0_Header);
+            struct READ_TOC_PMA_ATIP_0_Descriptor *ret_desc = (struct READ_TOC_PMA_ATIP_0_Descriptor *)(self->priv->buffer+self->priv->buffer_size);
 
             MirageTrack *cur_track;
 
@@ -1346,7 +1346,7 @@ static gboolean command_read_toc_pma_atip (CdemuDevice *self, guint8 *raw_cdb)
                             ret_desc->lba = GUINT32_TO_BE(start_sector);
                         }
 
-                        self->priv->buffer_size += sizeof(struct READ_TOC_PMA_ATIP_0000_Descriptor);
+                        self->priv->buffer_size += sizeof(struct READ_TOC_PMA_ATIP_0_Descriptor);
                         ret_desc++;    /* next descriptor */
                     }
 
@@ -1374,7 +1374,7 @@ static gboolean command_read_toc_pma_atip (CdemuDevice *self, guint8 *raw_cdb)
             } else {
                 ret_desc->lba = GUINT32_TO_BE(start_sector);
             }
-            self->priv->buffer_size += sizeof(struct READ_TOC_PMA_ATIP_0000_Descriptor);
+            self->priv->buffer_size += sizeof(struct READ_TOC_PMA_ATIP_0_Descriptor);
 
             g_object_unref(cur_track);
 
@@ -1395,8 +1395,8 @@ static gboolean command_read_toc_pma_atip (CdemuDevice *self, guint8 *raw_cdb)
         case 0x01: {
             CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: multisession information\n", __debug__);
             /* Multi-session info */
-            struct READ_TOC_PMA_ATIP_0001_Data *ret_data = (struct READ_TOC_PMA_ATIP_0001_Data *)self->priv->buffer;
-            self->priv->buffer_size += sizeof(struct READ_TOC_PMA_ATIP_0001_Data);
+            struct READ_TOC_PMA_ATIP_1_Data *ret_data = (struct READ_TOC_PMA_ATIP_1_Data *)self->priv->buffer;
+            self->priv->buffer_size += sizeof(struct READ_TOC_PMA_ATIP_1_Data);
 
             MirageSession *lsession;
             MirageTrack *ftrack;
@@ -1436,9 +1436,9 @@ static gboolean command_read_toc_pma_atip (CdemuDevice *self, guint8 *raw_cdb)
         case 0x02: {
             CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: raw TOC\n", __debug__);
             /* Raw TOC */
-            struct READ_TOC_PMA_ATIP_0010_Header *ret_header = (struct READ_TOC_PMA_ATIP_0010_Header *)self->priv->buffer;
-            self->priv->buffer_size = sizeof(struct READ_TOC_PMA_ATIP_0010_Header);
-            struct READ_TOC_PMA_ATIP_0010_Descriptor *ret_desc = (struct READ_TOC_PMA_ATIP_0010_Descriptor *)(self->priv->buffer+self->priv->buffer_size);
+            struct READ_TOC_PMA_ATIP_2_Header *ret_header = (struct READ_TOC_PMA_ATIP_2_Header *)self->priv->buffer;
+            self->priv->buffer_size = sizeof(struct READ_TOC_PMA_ATIP_2_Header);
+            struct READ_TOC_PMA_ATIP_2_Descriptor *ret_desc = (struct READ_TOC_PMA_ATIP_2_Descriptor *)(self->priv->buffer+self->priv->buffer_size);
 
             /* For each session with number above the requested one... */
             gint num_sessions = mirage_disc_get_number_of_sessions(disc);
@@ -1467,7 +1467,7 @@ static gboolean command_read_toc_pma_atip (CdemuDevice *self, guint8 *raw_cdb)
                     ret_desc->pmin = mirage_track_layout_get_track_number(cur_track);
                     ret_desc->psec = mirage_session_get_session_type(cur_session);
 
-                    self->priv->buffer_size += sizeof(struct READ_TOC_PMA_ATIP_0010_Descriptor);
+                    self->priv->buffer_size += sizeof(struct READ_TOC_PMA_ATIP_2_Descriptor);
                     ret_desc++;
 
                     g_object_unref(cur_track);
@@ -1481,7 +1481,7 @@ static gboolean command_read_toc_pma_atip (CdemuDevice *self, guint8 *raw_cdb)
                     ret_desc->point = 0xA1;
                     ret_desc->pmin = mirage_track_layout_get_track_number(cur_track);
 
-                    self->priv->buffer_size += sizeof(struct READ_TOC_PMA_ATIP_0010_Descriptor);
+                    self->priv->buffer_size += sizeof(struct READ_TOC_PMA_ATIP_2_Descriptor);
                     ret_desc++;
 
                     g_object_unref(cur_track);
@@ -1500,7 +1500,7 @@ static gboolean command_read_toc_pma_atip (CdemuDevice *self, guint8 *raw_cdb)
 
                     mirage_helper_lba2msf(leadout_start, TRUE, &ret_desc->pmin, &ret_desc->psec, &ret_desc->pframe);
 
-                    self->priv->buffer_size += sizeof(struct READ_TOC_PMA_ATIP_0010_Descriptor);
+                    self->priv->buffer_size += sizeof(struct READ_TOC_PMA_ATIP_2_Descriptor);
                     ret_desc++;
 
                     g_object_unref(cur_track);
@@ -1527,7 +1527,7 @@ static gboolean command_read_toc_pma_atip (CdemuDevice *self, guint8 *raw_cdb)
 
                         mirage_helper_lba2msf(cur_start, TRUE, &ret_desc->pmin, &ret_desc->psec, &ret_desc->pframe);
 
-                        self->priv->buffer_size += sizeof(struct READ_TOC_PMA_ATIP_0010_Descriptor);
+                        self->priv->buffer_size += sizeof(struct READ_TOC_PMA_ATIP_2_Descriptor);
                         ret_desc++;
 
                         g_object_unref(cur_track);
@@ -1569,7 +1569,7 @@ static gboolean command_read_toc_pma_atip (CdemuDevice *self, guint8 *raw_cdb)
                         ret_desc->psec = 0x3B;
                         ret_desc->pframe = 0x47;
 
-                        self->priv->buffer_size += sizeof(struct READ_TOC_PMA_ATIP_0010_Descriptor);
+                        self->priv->buffer_size += sizeof(struct READ_TOC_PMA_ATIP_2_Descriptor);
                         ret_desc++;
 
                         /* Add up C0 for session 1 */
@@ -1592,7 +1592,7 @@ static gboolean command_read_toc_pma_atip (CdemuDevice *self, guint8 *raw_cdb)
                             ret_desc->psec = 0x00;
                             ret_desc->pframe = 0x00;
 
-                            self->priv->buffer_size += sizeof(struct READ_TOC_PMA_ATIP_0010_Descriptor);
+                            self->priv->buffer_size += sizeof(struct READ_TOC_PMA_ATIP_2_Descriptor);
                             ret_desc++;
                         }
                     }
@@ -1617,8 +1617,8 @@ static gboolean command_read_toc_pma_atip (CdemuDevice *self, guint8 *raw_cdb)
         case 0x04: {
             CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: ATIP\n", __debug__);
             /* ATIP */
-            struct READ_TOC_PMA_ATIP_0100_Header *ret_header = (struct READ_TOC_PMA_ATIP_0100_Header *)self->priv->buffer;
-            self->priv->buffer_size = sizeof(struct READ_TOC_PMA_ATIP_0100_Header);
+            struct READ_TOC_PMA_ATIP_4_Header *ret_header = (struct READ_TOC_PMA_ATIP_4_Header *)self->priv->buffer;
+            self->priv->buffer_size = sizeof(struct READ_TOC_PMA_ATIP_4_Header);
 
             /* Header */
             ret_header->length = GUINT16_TO_BE(self->priv->buffer_size - 2);
@@ -1628,8 +1628,8 @@ static gboolean command_read_toc_pma_atip (CdemuDevice *self, guint8 *raw_cdb)
         case 0x05: {
             CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: CD-Text\n", __debug__);
             /* CD-TEXT */
-            struct READ_TOC_PMA_ATIP_0101_Header *ret_header = (struct READ_TOC_PMA_ATIP_0101_Header *)self->priv->buffer;
-            self->priv->buffer_size = sizeof(struct READ_TOC_PMA_ATIP_0101_Header);
+            struct READ_TOC_PMA_ATIP_5_Header *ret_header = (struct READ_TOC_PMA_ATIP_5_Header *)self->priv->buffer;
+            self->priv->buffer_size = sizeof(struct READ_TOC_PMA_ATIP_5_Header);
 
             guint8 *tmp_data = NULL;
             gint tmp_len  = 0;
@@ -1644,7 +1644,7 @@ static gboolean command_read_toc_pma_atip (CdemuDevice *self, guint8 *raw_cdb)
 
             CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: length of CD-TEXT data: 0x%X\n", __debug__, tmp_len);
 
-            memcpy(self->priv->buffer+sizeof(struct READ_TOC_PMA_ATIP_0101_Header), tmp_data, tmp_len);
+            memcpy(self->priv->buffer+sizeof(struct READ_TOC_PMA_ATIP_5_Header), tmp_data, tmp_len);
             g_free(tmp_data);
             self->priv->buffer_size += tmp_len;
 
@@ -1783,8 +1783,8 @@ static gboolean command_report_key (CdemuDevice *self, guint8 *raw_cdb)
 
     if (cdb->key_format == 0x08) {
         /* RPC */
-        struct REPORT_KEY_001000_Data *data = (struct REPORT_KEY_001000_Data *)self->priv->buffer;
-        self->priv->buffer_size = sizeof(struct REPORT_KEY_001000_Data);
+        struct REPORT_KEY_8_Data *data = (struct REPORT_KEY_8_Data *)self->priv->buffer;
+        self->priv->buffer_size = sizeof(struct REPORT_KEY_8_Data);
 
         data->type_code = 0; /* No region setting */
         data->vendor_resets = 4;
