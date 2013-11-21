@@ -103,6 +103,7 @@ void cdemu_device_features_init (CdemuDevice *self)
         feature->per = 1;
 
         feature->profiles[ProfileIndex_CDROM].profile = GUINT16_TO_BE(PROFILE_CDROM);
+        feature->profiles[ProfileIndex_CDR].profile = GUINT16_TO_BE(PROFILE_CDR);
         feature->profiles[ProfileIndex_DVDROM].profile = GUINT16_TO_BE(PROFILE_DVDROM);
     }
     self->priv->features_list = append_feature(self->priv->features_list, general_feature);
@@ -205,6 +206,44 @@ void cdemu_device_features_init (CdemuDevice *self)
     }
     self->priv->features_list = append_feature(self->priv->features_list, general_feature);
 
+     
+    /* Feature 0x0021: Incremental Streaming Writable Feature */
+    /* IMPLEMENTATION NOTE: non-persistent; version set to 0x01 as per MMC3 */
+    general_feature = initialize_feature(0x0021, sizeof(struct Feature_0x0021));
+    if (general_feature) {
+        struct Feature_0x0021 *feature = (struct Feature_0x0021 *)general_feature;
+
+        feature->ver = 0x01;
+
+        feature->data_block_types_supported = 0xFF; /* Support all */
+
+        feature->buf = 1; /* We support dual-cross linking */
+        
+        feature->num_link_sizes = 1; /* 1 for CD-R */
+        feature->link_sizes[0] = 7; /* As per MMC3 */
+    }
+    self->priv->features_list = append_feature(self->priv->features_list, general_feature);
+
+
+    /* Feature 0x002D: CD Track at Once Feature */
+    /* IMPLEMENTATION NOTE: non-persistent; version set to 0x02 as per MMC3 */
+    general_feature = initialize_feature(0x002D, sizeof(struct Feature_0x002D));
+    if (general_feature) {
+        struct Feature_0x002D *feature = (struct Feature_0x002D *)general_feature;
+
+        feature->ver = 0x02;
+
+        feature->buf = 1; /* We support dual-cross linking */
+        feature->rw_raw = 1;
+        feature->rw_pack = 1;
+        feature->test_write = 1;
+        feature->cd_rw = 1;
+        feature->rw_subcode = 1;
+        
+        feature->data_type_supported = 0xFFFF; /* Support all */
+    }
+    self->priv->features_list = append_feature(self->priv->features_list, general_feature);
+
 
     /* Feature 0x0100: Power Management Feature */
     /* IMPLEMENTATION NOTE: persistent; version left at 0x00. No other content. */
@@ -294,6 +333,21 @@ static guint32 ActiveFeatures_CDROM[] =
     0x0107, /* Real Time Streaming */
 };
 
+static guint32 ActiveFeatures_CDR[] =
+{
+    /* 0x0000: Profile List; persistent */
+    /* 0x0001: Core; persistent */
+    /* 0x0002: Morphing; persistent */
+    /* 0x0003: Removable Medium; persistent */
+    0x0010, /* Random Readable */
+    0x001D, /* Multi-read */
+    0x001E, /* CD Read */
+    0x0021, /* Incremental Streaming Writable */
+    0x002D, /* CD Track at Once */
+    0x0103, /* CD External Audio Play */
+    0x0107, /* Real Time Streaming */
+};
+
 static guint32 ActiveFeatures_DVDROM[] =
 {
     /* 0x0000: Profile List; persistent */
@@ -354,6 +408,18 @@ void cdemu_device_set_profile (CdemuDevice *self, ProfileIndex profile_index)
             self->priv->current_profile = PROFILE_CDROM;
             /* Current features */
             cdemu_device_set_current_features(self, ActiveFeatures_CDROM, G_N_ELEMENTS(ActiveFeatures_CDROM));
+            /* Set 'current bit' on profiles */
+            f_0x0000->profiles[ProfileIndex_CDROM].cur = 1;
+            break;
+        }
+        case ProfileIndex_CDR: {
+            /* Current profile */
+            self->priv->current_profile = PROFILE_CDR;
+            /* Current features */
+            cdemu_device_set_current_features(self, ActiveFeatures_CDR, G_N_ELEMENTS(ActiveFeatures_CDR));
+            /* Set 'current bit' on profiles */
+            f_0x0000->profiles[ProfileIndex_CDR].cur = 1;
+            f_0x0000->profiles[ProfileIndex_CDROM].cur = 1;
             break;
         }
         case ProfileIndex_DVDROM: {
@@ -361,6 +427,8 @@ void cdemu_device_set_profile (CdemuDevice *self, ProfileIndex profile_index)
             self->priv->current_profile = PROFILE_DVDROM;
             /* Current features */
             cdemu_device_set_current_features(self, ActiveFeatures_DVDROM, G_N_ELEMENTS(ActiveFeatures_DVDROM));
+            /* Set 'current bit' on profiles */
+            f_0x0000->profiles[ProfileIndex_DVDROM].cur = 1;
             break;
         }
         default: {
@@ -368,7 +436,4 @@ void cdemu_device_set_profile (CdemuDevice *self, ProfileIndex profile_index)
             return;
         }
     }
-    
-    /* Set 'current bit' on current profile */
-    f_0x0000->profiles[profile_index].cur = 1;
 }

@@ -78,7 +78,7 @@ static inline GArray *initialize_mode_page (gint code, gint size)
     page_default->code   = page_mask->code   = code;
     page_default->length = page_mask->length = size - 2;
 
-    /* Pack pointers into value array */ \
+    /* Pack pointers into value array */
     g_array_append_val(array, page_current); /* MODE_PAGE_CURRENT */
     g_array_append_val(array, page_default); /* MODE_PAGE_DEFAULT */
     g_array_append_val(array, page_mask); /* MODE_PAGE_MASK */
@@ -139,6 +139,63 @@ void cdemu_device_mode_pages_init (CdemuDevice *self)
     }
     self->priv->mode_pages_list = append_mode_page(self->priv->mode_pages_list, mode_page);
 
+    
+    /*** Mode page 0x05: Write Parameters Mode Page ***/
+    /* IMPLEMENTATION NOTE: */
+    mode_page = initialize_mode_page(0x05, sizeof(struct ModePage_0x05));
+    if (mode_page) {
+        struct ModePage_0x05 *page = g_array_index(mode_page, struct ModePage_0x05 *, MODE_PAGE_DEFAULT);
+        struct ModePage_0x05 *mask = g_array_index(mode_page, struct ModePage_0x05 *, MODE_PAGE_MASK);
+        
+        page->bufe = 1; /* Buffer underrun protection; 0 by default as per MMC3 */
+        mask->bufe = 1;
+        
+        page->ls_v = 1; /* Link size is valid */
+        mask->ls_v = 1;
+        
+        page->test_write = 1; /* Off by default */
+        mask->test_write = 1;
+        
+        page->write_type = 0x00; /* Packet/incremental */
+        mask->write_type = 0x0F; 
+        
+        page->multisession = 0x00; /* No multi-session */
+        mask->multisession = 0x03;
+        
+        page->fp = 0; /* Variable packet by default */ 
+        mask->fp = 1;
+        
+        page->copy = 0; /* Not a higher generation copy by default */
+        mask->copy = 1;
+        
+        page->track_mode = 5;
+        mask->track_mode = 0x0F;
+        
+        page->data_block_type = 8; /* Mode1 by default */
+        mask->data_block_type = 0x0F;
+        
+        page->link_size = 7;
+        mask->link_size = 0xFF;
+        
+        page->initiator_application_code = 0;
+        mask->initiator_application_code = 0x3F;
+        
+        page->session_format = 0x00;
+        mask->session_format = 0xFF;
+        
+        page->packet_size = GUINT32_TO_BE(16);
+        mask->packet_size = 0xFFFFFFFF;
+        
+        page->audio_pause_length = GUINT16_TO_BE(150);
+        mask->audio_pause_length = 0xFFFF;
+        
+        memset(mask->mcn, 0xFF, sizeof(mask->mcn));
+        memset(mask->isrc, 0xFF, sizeof(mask->isrc));
+        memset(mask->subheader, 0xFF, sizeof(mask->subheader));
+    }
+    self->priv->mode_pages_list = append_mode_page(self->priv->mode_pages_list, mode_page);
+
+
     /*** Mode Page 0x0D: CD Device Parameters Mode Page ****/
     /* IMPLEMENTATION NOTE: this one is marked as reserved in ATAPI, but all
        my drives return it anyway. We just set seconds per minutes and frames
@@ -151,6 +208,7 @@ void cdemu_device_mode_pages_init (CdemuDevice *self)
         page->fps = GUINT16_TO_BE(75);
     }
     self->priv->mode_pages_list = append_mode_page(self->priv->mode_pages_list, mode_page);
+
 
     /*** Mode Page 0x0E: CD Audio Control Mode Page ***/
     /* IMPLEMENTATION NOTE: IMMED bit is set to 1 in accord with ATAPI, and SOTC
@@ -182,6 +240,7 @@ void cdemu_device_mode_pages_init (CdemuDevice *self)
     }
     self->priv->mode_pages_list = append_mode_page(self->priv->mode_pages_list, mode_page);
 
+
     /*** Mode Page 0x1A: Power Condition Mode Page ***/
     /* IMPLEMENTATION NOTE: No values for timers are set, though they can be */
     mode_page = initialize_mode_page(0x1A, sizeof(struct ModePage_0x1A));
@@ -194,6 +253,7 @@ void cdemu_device_mode_pages_init (CdemuDevice *self)
         mask->stdby_timer = 0xFFFFFFFF;
     }
     self->priv->mode_pages_list = append_mode_page(self->priv->mode_pages_list, mode_page);
+
 
     /*** Mode Page 0x2A: CD/DVD Capabilities and Mechanical Status Mode Page ***/
     /* IMPLEMENTATION NOTE: We claim to do things we can (more or less), and nothing

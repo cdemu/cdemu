@@ -64,6 +64,7 @@ struct Profile
 typedef enum {
     ProfileIndex_NONE = -1,
     ProfileIndex_CDROM,
+    ProfileIndex_CDR,
     ProfileIndex_DVDROM,
     NumProfiles
 } ProfileIndex;
@@ -89,7 +90,7 @@ struct Feature_0x0000
 
     /* We support several profiles, whose indices are declared in the
        enum above */
-    struct Profile  profiles[NumProfiles];
+    struct Profile profiles[NumProfiles];
 };
 
 
@@ -526,6 +527,7 @@ struct Feature_0x0107
 typedef enum {
     PROFILE_NONE = 0x0000,
     PROFILE_CDROM = 0x0008,
+    PROFILE_CDR = 0x0009,
     PROFILE_DVDROM = 0x0010
 } ProfileCode;
 
