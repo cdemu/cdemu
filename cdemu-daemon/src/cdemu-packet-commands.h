@@ -1592,6 +1592,67 @@ struct READ_TOC_PMA_ATIP_4_Header
     guint8 reserved1[2];
 };
 
+struct READ_TOC_PMA_ATIP_4_Descriptor
+{
+    #if G_BYTE_ORDER == G_BIG_ENDIAN
+        guint8 one1      : 1
+        guint8 itwp      : 3;
+        guint8 reserved1 : 1;
+        guint8 ref_speed : 3;
+    #else
+        guint8 ref_speed : 3;
+        guint8 reserved1 : 1;
+        guint8 itwp      : 3;
+        guint8 one1      : 1;
+    #endif
+    
+    #if G_BYTE_ORDER == G_BIG_ENDIAN
+        guint8 zero1     : 1;
+        guint8 uru       : 1;
+        guint8 reserved2 : 6;
+    #else
+        guint8 reserved2 : 6;
+        guint8 uru       : 1;
+        guint8 zero1     : 1;
+    #endif
+    
+    #if G_BYTE_ORDER == G_BIG_ENDIAN
+        guint8 one2         : 1;
+        guint8 disc_type    : 1;
+        guint8 disc_subtype : 3;
+        guint8 a1_valid     : 1;
+        guint8 a2_valid     : 1;
+        guint8 a3_valid     : 1;
+    #else
+        guint8 a3_valid     : 1;
+        guint8 a2_valid     : 1;
+        guint8 a1_valid     : 1;
+        guint8 disc_subtype : 3;
+        guint8 disc_type    : 1;
+        guint8 one2         : 1;
+    #endif
+    
+    guint8 reserved3;
+    guint8 leadin_start_m;
+    guint8 leadin_start_s;
+    guint8 leadin_start_f;
+
+    guint8 reserved4;
+    guint8 last_leadout_m;
+    guint8 last_leadout_s;
+    guint8 last_leadout_f;
+    
+    guint8 reserved5;
+    guint8 additional_values1[3];
+    
+    guint8 reserved6;
+    guint8 additional_values2[3];
+    
+    guint8 reserved7;
+    guint8 additional_values3[3];
+    
+    guint8 reserved8;
+};
 
 struct READ_TOC_PMA_ATIP_5_Header
 {
