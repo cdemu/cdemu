@@ -372,7 +372,7 @@ struct GET_PERFORMANCE_CDB
         guint8 reserved1 : 3;
     #endif
 
-    guint32 lba[4];
+    guint32 lba;
 
     guint8 reserved2[2];
 
@@ -381,6 +381,36 @@ struct GET_PERFORMANCE_CDB
     guint8 type;
 
     guint8 control;
+};
+
+
+struct GET_PERFORMANCE_03_Header
+{
+    guint32 data_length;
+    guint32 reserved1;
+};
+
+struct GET_PERFORMANCE_03_Descriptor
+{
+    #if G_BYTE_ORDER == G_BIG_ENDIAN
+        guint8 reserved1 : 3;
+        guint8 wrc       : 2;
+        guint8 rdd       : 1;
+        guint8 exact     : 1;
+        guint8 mrw       : 1;
+    #else
+        guint8 mrw       : 1;
+        guint8 exact     : 1;
+        guint8 rdd       : 1;
+        guint8 wrc       : 2;
+        guint8 reserved1 : 3;
+    #endif
+    
+    guint8 reserved2[3];
+    
+    guint32 end_lba;
+    guint32 read_speed;
+    guint32 write_speed;
 };
 
 
