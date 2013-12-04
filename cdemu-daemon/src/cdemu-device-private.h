@@ -102,6 +102,12 @@ struct _CdemuDevicePrivate
     gboolean mapping_complete;
     gchar *device_sr;
     gchar *device_sg;
+    
+    /* Burning emulation */
+    gint medium_capacity;
+    gboolean recordable_disc;
+    gboolean rewritable_disc;
+    GList *write_descriptors;
 };
 
 

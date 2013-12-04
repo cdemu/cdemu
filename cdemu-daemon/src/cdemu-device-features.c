@@ -313,6 +313,68 @@ void cdemu_device_features_cleanup (CdemuDevice *self)
 
 }
 
+
+/**********************************************************************\
+ *                       Write Speed Descriptors                      *
+\**********************************************************************/
+static GList *add_write_descriptor (GList *list, guint8 mrw, guint8 exact, guint32 end_lba, guint32 read_speed, guint32 write_speed)
+{
+    struct GET_PERFORMANCE_03_Descriptor *descriptor = g_new0(struct GET_PERFORMANCE_03_Descriptor, 1);
+    
+    descriptor->mrw = mrw;
+    descriptor->exact = exact;
+    descriptor->end_lba = GUINT32_TO_BE(end_lba);
+    descriptor->read_speed = GUINT32_TO_BE(read_speed);
+    descriptor->write_speed = GUINT32_TO_BE(write_speed);
+    
+    return g_list_append(list, descriptor);
+}
+
+static void cdemu_device_set_write_speed_descriptors (CdemuDevice *self, ProfileIndex profile_index)
+{
+    /* Clear old list and its elements */
+    if (self->priv->write_descriptors) {
+        g_list_free_full(self->priv->write_descriptors, g_free);
+        self->priv->write_descriptors = NULL;
+    }
+    
+    switch (profile_index) {
+        case ProfileIndex_CDROM:
+        case ProfileIndex_CDR: {
+            gint capacity = /*mirage_disc_get_medium_capacity(self->priv->disc)*/ self->priv->medium_capacity - 150;
+            self->priv->write_descriptors = add_write_descriptor(self->priv->write_descriptors, 1, 1, capacity, 0x2113, 0x2113); /* 8467/8467 kB/s (56x/56x) */
+            self->priv->write_descriptors = add_write_descriptor(self->priv->write_descriptors, 1, 1, capacity, 0x1B90, 0x1B90); /* 7056/7056 kB/s (48x/48x) */
+            self->priv->write_descriptors = add_write_descriptor(self->priv->write_descriptors, 0, 0, capacity, 0x1B90, 0x160D); /* 7056/5645 kB/s (48x/40x) */
+            self->priv->write_descriptors = add_write_descriptor(self->priv->write_descriptors, 0, 0, capacity, 0x1B90, 0x108A); /* 7056/4234 kB/s (48x/32x) */
+            self->priv->write_descriptors = add_write_descriptor(self->priv->write_descriptors, 0, 0, capacity, 0x0DC8, 0x0B06); /* 3528/2822 kB/s (32x/20x) */
+            self->priv->write_descriptors = add_write_descriptor(self->priv->write_descriptors, 0, 0, capacity, 0x06E4, 0x0583); /* 1764/1411 kB/s (12x/10x) */
+            break;
+        }
+        case ProfileIndex_DVDROM: {
+            gint capacity = /*mirage_disc_get_medium_capacity(self->priv->disc)*/ self->priv->medium_capacity;
+            self->priv->write_descriptors = add_write_descriptor(self->priv->write_descriptors, 0, 0, capacity, 0x5690, 0x6162); /* 22160/24930 kB/s (16x/18x) */
+            self->priv->write_descriptors = add_write_descriptor(self->priv->write_descriptors, 1, 1, capacity, 0x5690, 0x5690); /* 22160/22160 kB/s (16x/16x) */
+            self->priv->write_descriptors = add_write_descriptor(self->priv->write_descriptors, 1, 1, capacity, 0x40EC, 0x40EC); /* 16620/16620 kB/s (12x/12x) */
+            self->priv->write_descriptors = add_write_descriptor(self->priv->write_descriptors, 0, 0, capacity, 0x2B48, 0x2B48); /* 11080/11080 kB/s (8x/8x) */
+            self->priv->write_descriptors = add_write_descriptor(self->priv->write_descriptors, 0, 0, capacity, 0x2B48, 0x2076); /* 11080/8310 kB/s (8x/6x) */
+            self->priv->write_descriptors = add_write_descriptor(self->priv->write_descriptors, 0, 0, capacity, 0x1B0D, 0x15A4); /* 6925/5540 kB/S (5x/4x) */
+            break;
+        }
+        case ProfileIndex_NONE:
+        default: {
+            gint capacity = 0x0006622D; /* My drive returns this when it is empty */
+            self->priv->write_descriptors = add_write_descriptor(self->priv->write_descriptors, 1, 1, capacity, 0x2113, 0x2113); /* 8467/8467 kB/s (56x/56x) */
+            self->priv->write_descriptors = add_write_descriptor(self->priv->write_descriptors, 1, 1, capacity, 0x1B90, 0x1B90); /* 7056/7056 kB/s (48x/48x) */
+            self->priv->write_descriptors = add_write_descriptor(self->priv->write_descriptors, 0, 0, capacity, 0x1B90, 0x160D); /* 7056/5645 kB/s (48x/40x) */
+            self->priv->write_descriptors = add_write_descriptor(self->priv->write_descriptors, 0, 0, capacity, 0x1B90, 0x108A); /* 7056/4234 kB/s (48x/32x) */
+            self->priv->write_descriptors = add_write_descriptor(self->priv->write_descriptors, 0, 0, capacity, 0x0DC8, 0x0B06); /* 3528/2822 kB/s (32x/20x) */
+            self->priv->write_descriptors = add_write_descriptor(self->priv->write_descriptors, 0, 0, capacity, 0x06E4, 0x0583); /* 1764/1411 kB/s (12x/10x) */
+            break;
+        }
+    }
+}
+
+
 /**********************************************************************\
  *                              Profiles                              *
 \**********************************************************************/
@@ -436,4 +498,7 @@ void cdemu_device_set_profile (CdemuDevice *self, ProfileIndex profile_index)
             return;
         }
     }
+    
+    /* Modify write speed descriptors */
+    cdemu_device_set_write_speed_descriptors(self, profile_index);
 }

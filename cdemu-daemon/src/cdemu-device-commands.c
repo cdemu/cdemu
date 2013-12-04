@@ -255,6 +255,53 @@ static gboolean command_get_event_status_notification (CdemuDevice *self, guint8
     return TRUE;
 }
 
+/* GET PERFORMANCE */
+static gboolean command_get_performance (CdemuDevice *self, guint8 *raw_cdb)
+{
+    struct GET_PERFORMANCE_CDB *cdb = (struct GET_PERFORMANCE_CDB *)raw_cdb;
+    guint16 max_descriptors = GUINT16_FROM_BE(cdb->descriptors);
+    
+    switch (cdb->type) {
+        case 0x03: {
+            /* Write Speed */
+            struct GET_PERFORMANCE_03_Header *ret_header = (struct GET_PERFORMANCE_03_Header *)self->priv->buffer;
+            self->priv->buffer_size = sizeof(struct GET_PERFORMANCE_03_Header);
+            
+            CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: returning max %d write speed descriptors\n", __debug__, max_descriptors);
+
+            /* Go over descriptors to count and copy them at the same time */
+            gint num_descriptors = 0;
+            for (GList *list_iter = g_list_first(self->priv->write_descriptors); list_iter; list_iter = g_list_next(list_iter)) {
+                /* Make sure we don't return more descriptors than requested */
+                if (num_descriptors < max_descriptors) {
+                    /* Copy descriptor */
+                    guint8 *desc_ptr = self->priv->buffer + self->priv->buffer_size;
+                    memcpy(desc_ptr, list_iter->data, sizeof(struct GET_PERFORMANCE_03_Descriptor));
+                    self->priv->buffer_size += sizeof(struct GET_PERFORMANCE_03_Descriptor);
+                }            
+                
+                num_descriptors++;
+            }
+            
+            /* INF8090: "[Write Speed Data Length] is not modified when the
+               maximum number of descriptors is insufficient to return all
+               the write speed data available" => hence we return size of
+               all descriptors */
+            ret_header->data_length = GUINT32_TO_BE(4 + num_descriptors*sizeof(struct GET_PERFORMANCE_03_Descriptor));
+            break;
+        }
+        default: {
+            CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: unimplemented data type: %d\n", __debug__, cdb->type);
+            cdemu_device_write_sense(self, ILLEGAL_REQUEST, INVALID_FIELD_IN_CDB);
+            return FALSE;
+        }
+    }
+    
+    /* Write data */
+    cdemu_device_write_buffer(self, self->priv->buffer_size);
+    return TRUE;
+}
+
 /* INQUIRY*/
 static gboolean command_inquiry (CdemuDevice *self, guint8 *raw_cdb)
 {
@@ -738,13 +785,15 @@ static gboolean command_read_capacity (CdemuDevice *self, guint8 *raw_cdb G_GNUC
     MirageTrack *leadout;
 
     lsession = mirage_disc_get_session_by_index(self->priv->disc, -1, NULL);
-    leadout = mirage_session_get_track_by_number(lsession, MIRAGE_TRACK_LEADOUT, NULL);
-    last_sector = mirage_track_layout_get_start_sector(leadout);
+    if (lsession) {
+        leadout = mirage_session_get_track_by_number(lsession, MIRAGE_TRACK_LEADOUT, NULL);
+        last_sector = mirage_track_layout_get_start_sector(leadout);
 
-    g_object_unref(leadout);
-    g_object_unref(lsession);
+        g_object_unref(leadout);
+        g_object_unref(lsession);
 
-    last_sector -= 1;
+        last_sector -= 1;
+    }
 
     ret_data->lba = GUINT32_TO_BE(last_sector);
     ret_data->block_size = GUINT32_TO_BE(2048);
@@ -947,64 +996,96 @@ static gboolean command_read_disc_information (CdemuDevice *self, guint8 *raw_cd
 
             CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: standard disc information\n", __debug__);
 
+            gint first_track_on_disc = 1; /* Always report 1 */
+            gint first_track_in_last_session = 1;
+            gint last_track_in_last_session = 1; /* Always report 1 or more */
+            gint num_sessions;
+            gint last_session_leadin = -1;
+            gint disc_type = 0xFF;
+            
+            /* Initialize some of the variables */
+            num_sessions = mirage_disc_get_number_of_sessions(self->priv->disc);
+            num_sessions = num_sessions ? num_sessions : 1; /* Always report 1 or more */
+            
+            /* First session */
+            MirageSession *session;
+
+            session = mirage_disc_get_session_by_index(self->priv->disc, 0, NULL);
+            if (session) {
+                /* Disc type is determined from first session, as per INF8090 */
+                disc_type = mirage_session_get_session_type(session);
+                g_object_unref(session);
+            }
+
+            /* Last session */
+            session = mirage_disc_get_session_by_index(self->priv->disc, -1, NULL);
+            if (session) {
+                MirageTrack *track;
+
+                /* First track in last session */
+                track = mirage_session_get_track_by_index(session, 0, NULL);
+                if (track) {
+                    first_track_in_last_session = mirage_track_layout_get_track_number(track);
+                    g_object_unref(track);
+                }
+                
+                /* Last track in last session */
+                track = mirage_session_get_track_by_index(session, -1, NULL);
+                if (track) {
+                    last_track_in_last_session = mirage_track_layout_get_track_number(track);
+                    g_object_unref(track);
+                }
+                
+                /* Leadin of last session */
+                track = mirage_session_get_track_by_number(session, MIRAGE_TRACK_LEADIN, NULL);
+                if (track) {
+                    last_session_leadin = mirage_track_layout_get_start_sector(track);
+                    g_object_unref(track);
+                }
+
+                g_object_unref(session);
+            }
+            
+            /* Return gathered information */
             ret_data->length = GUINT16_TO_BE(self->priv->buffer_size - 2);
-            ret_data->lsession_state = 0x03; /* complete */
-            ret_data->disc_status = 0x02; /* complete */
-            ret_data->ftrack_disc = 0x01;
+            
+            ret_data->erasable = self->priv->rewritable_disc;
+            if (self->priv->recordable_disc) {
+                ret_data->lsession_state = 0x00; /* Empty session; set to 0x01 for incomplete */
+                ret_data->disc_status = 0x00; /* Empty; set to 0x01 for appendable */
+            } else {
+                ret_data->lsession_state = 0x03; /* Complete */
+                ret_data->disc_status = 0x02; /* Complete */
+            }
+            
+            ret_data->ftrack_disc = first_track_on_disc;
 
-            MirageDisc *disc = self->priv->disc;
-            gint num_sessions = mirage_disc_get_number_of_sessions(disc);
             ret_data->sessions0 = (num_sessions & 0xFF00) >> 8;
-            ret_data->sessions1 = num_sessions & 0xFF;
-
-            /* First track in last session */
-            MirageSession *lsession;
-            MirageTrack *ftrack;
-            gint ftrack_lsession;
-
-            lsession = mirage_disc_get_session_by_index(disc, -1, NULL);
-            ftrack = mirage_session_get_track_by_index(lsession, 0, NULL);
-            ftrack_lsession = mirage_track_layout_get_track_number(ftrack);
-            g_object_unref(ftrack);
-
-            ret_data->ftrack_lsession0 = (ftrack_lsession & 0xFF00) >> 8;
-            ret_data->ftrack_lsession1 = ftrack_lsession & 0xFF;
-
-            /* Last track in last session */
-            MirageTrack *ltrack;
-            MirageTrack *leadin;
-            gint ltrack_lsession;
-            gint lsession_leadin;
-
-            ltrack = mirage_session_get_track_by_index(lsession, -1, NULL);
-            ltrack_lsession = mirage_track_layout_get_track_number(ltrack);
-            g_object_unref(ltrack);
-
-            leadin = mirage_session_get_track_by_number(lsession, MIRAGE_TRACK_LEADIN, NULL);
-            lsession_leadin = mirage_track_layout_get_start_sector(leadin);
-            g_object_unref(leadin);
-
-            g_object_unref(lsession);
-
-            ret_data->ltrack_lsession0 = (ltrack_lsession & 0xFF00) >> 8;
-            ret_data->ltrack_lsession1 = ltrack_lsession & 0xFF;
-
-
-            /* Disc type; determined from first session, as per INF8090 */
-            gint disc_type = 0;
-            MirageSession *fsession;
-
-            fsession = mirage_disc_get_session_by_index(disc, 0, NULL);
-            disc_type = mirage_session_get_session_type(fsession);
-            g_object_unref(fsession);
+            ret_data->ftrack_lsession0 = (first_track_in_last_session & 0xFF00) >> 8;
+            ret_data->ltrack_lsession0 = (last_track_in_last_session & 0xFF00) >> 8;
 
             ret_data->disc_type = disc_type;
+            
+            ret_data->sessions1 = num_sessions & 0xFF;
+            ret_data->ftrack_lsession1 = first_track_in_last_session & 0xFF;
+            ret_data->ltrack_lsession1 = last_track_in_last_session & 0xFF;
 
-            /* Last session lead-in address (MSF) */
             guint8 *msf_ptr = (guint8 *)&ret_data->lsession_leadin;
-            mirage_helper_lba2msf(lsession_leadin, TRUE, &msf_ptr[1], &msf_ptr[2], &msf_ptr[3]);
+            if (last_session_leadin == -1) {
+                /* Read from a read CD-R */
+                msf_ptr[1] = 0x61;
+                msf_ptr[2] = 0x22;
+                msf_ptr[3] = 0x17;
+            } else {
+                mirage_helper_lba2msf(last_session_leadin, TRUE, &msf_ptr[1], &msf_ptr[2], &msf_ptr[3]);
+            }
 
-            ret_data->last_leadout = 0xFFFFFFFF; /* Not applicable since we're not a writer */
+            if (!self->priv->recordable_disc) {
+                ret_data->last_leadout = 0xFFFFFFFF; /* Not applicable since we're not a writer */
+            } else {
+                msf_ptr = (guint8 *)&ret_data->last_leadout;
+                mirage_helper_lba2msf(self->priv->medium_capacity - 2, FALSE, &msf_ptr[1], &msf_ptr[2], &msf_ptr[3]);                
+            }
 
             break;
         }
@@ -1307,6 +1388,12 @@ static gboolean command_read_toc_pma_atip (CdemuDevice *self, guint8 *raw_cdb)
 
                 /* If track number exceeds last track number, return error */
                 cur_track = mirage_disc_get_track_by_index(disc, -1, NULL);
+                if (!cur_track) {
+                    CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: no track found on disc!\n", __debug__);
+                    cdemu_device_write_sense(self, ILLEGAL_REQUEST, INVALID_FIELD_IN_CDB);
+                    return FALSE;
+                }
+                
                 num_tracks = mirage_track_layout_get_track_number(cur_track);
                 g_object_unref(cur_track);
                 if (cdb->number > num_tracks) {
@@ -1314,7 +1401,6 @@ static gboolean command_read_toc_pma_atip (CdemuDevice *self, guint8 *raw_cdb)
                     cdemu_device_write_sense(self, ILLEGAL_REQUEST, INVALID_FIELD_IN_CDB);
                     return FALSE;
                 }
-
 
                 num_tracks = mirage_disc_get_number_of_tracks(disc);
 
@@ -1356,6 +1442,12 @@ static gboolean command_read_toc_pma_atip (CdemuDevice *self, guint8 *raw_cdb)
 
             /* Lead-Out (of the last session): */
             MirageSession *lsession = mirage_disc_get_session_by_index(disc, -1, NULL);
+            if (!lsession) {
+                CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: no session found on disc!\n", __debug__);
+                cdemu_device_write_sense(self, ILLEGAL_REQUEST, INVALID_FIELD_IN_CDB);
+                return FALSE;
+            }
+            
             cur_track = mirage_session_get_track_by_number(lsession, MIRAGE_TRACK_LEADOUT, NULL);
 
             ret_desc->adr = 0x01;
@@ -1402,6 +1494,11 @@ static gboolean command_read_toc_pma_atip (CdemuDevice *self, guint8 *raw_cdb)
             MirageTrack *ftrack;
 
             lsession = mirage_disc_get_session_by_index(disc, -1, NULL);
+            if (!lsession) {
+                CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: no session found on disc!\n", __debug__);
+                cdemu_device_write_sense(self, ILLEGAL_REQUEST, INVALID_FIELD_IN_CDB);
+                return FALSE;
+            }
 
             /* Header */
             ret_data->length = GUINT16_TO_BE(self->priv->buffer_size - 2);
@@ -1605,6 +1702,11 @@ static gboolean command_read_toc_pma_atip (CdemuDevice *self, guint8 *raw_cdb)
 
             /* Header */
             MirageSession *lsession = mirage_disc_get_session_by_index(disc, -1, NULL);
+            if (!lsession) {
+                CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: no session found on disc!\n", __debug__);
+                cdemu_device_write_sense(self, ILLEGAL_REQUEST, INVALID_FIELD_IN_CDB);
+                return FALSE;
+            }
 
             ret_header->length = GUINT16_TO_BE(self->priv->buffer_size - 2);
             ret_header->fsession = 0x01;
@@ -1619,6 +1721,28 @@ static gboolean command_read_toc_pma_atip (CdemuDevice *self, guint8 *raw_cdb)
             /* ATIP */
             struct READ_TOC_PMA_ATIP_4_Header *ret_header = (struct READ_TOC_PMA_ATIP_4_Header *)self->priv->buffer;
             self->priv->buffer_size = sizeof(struct READ_TOC_PMA_ATIP_4_Header);
+
+            /* ATIP data is available only for recordable/rewritable media */
+            if (self->priv->recordable_disc) {
+                struct READ_TOC_PMA_ATIP_4_Descriptor *ret_descriptor = (struct READ_TOC_PMA_ATIP_4_Descriptor *)(self->priv->buffer + sizeof(struct READ_TOC_PMA_ATIP_4_Header));
+                self->priv->buffer_size += sizeof(struct READ_TOC_PMA_ATIP_4_Descriptor);
+
+                ret_descriptor->one1 = 1;
+                ret_descriptor->itwp = 0x4; /* Copied from real CD-R */
+                
+                ret_descriptor->one2 = 1;
+                ret_descriptor->disc_type = self->priv->rewritable_disc ? 1 : 0; /* CD-R: 0, CD-RW: 1 */
+                ret_descriptor->disc_subtype = 0x3; /* Copied from real CD-R */
+                
+                /* Leadin start; copied from real CD-R */
+                ret_descriptor->leadin_start_m = 0x61;
+                ret_descriptor->leadin_start_s = 0x22;
+                ret_descriptor->leadin_start_f = 0x17;
+                
+                /* Last possible leadout; corresponds to capacity (on
+                   my drive, capacity minus two) */
+                mirage_helper_lba2msf(self->priv->medium_capacity - 2, FALSE, &ret_descriptor->last_leadout_m, &ret_descriptor->last_leadout_s, &ret_descriptor->last_leadout_f);
+            }
 
             /* Header */
             ret_header->length = GUINT16_TO_BE(self->priv->buffer_size - 2);
@@ -1637,6 +1761,12 @@ static gboolean command_read_toc_pma_atip (CdemuDevice *self, guint8 *raw_cdb)
 
             /* FIXME: for the time being, return data for first session */
             session = mirage_disc_get_session_by_index(self->priv->disc, 0, NULL);
+            if (!session) {
+                CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: no session found on disc!\n", __debug__);
+                cdemu_device_write_sense(self, ILLEGAL_REQUEST, INVALID_FIELD_IN_CDB);
+                return FALSE;
+            }
+            
             if (!mirage_session_get_cdtext_data(session, &tmp_data, &tmp_len, NULL)) {
                 CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: failed to get CD-TEXT data!\n", __debug__);
             }
@@ -1675,6 +1805,9 @@ static gboolean command_read_track_information (CdemuDevice *self, guint8 *raw_c
 
     MirageDisc *disc = self->priv->disc;
     MirageTrack *track = NULL;
+    
+    gboolean return_empty_track = FALSE;
+    gboolean return_disc_leadin = FALSE;
 
     if (!self->priv->loaded) {
         CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: medium not present\n", __debug__);
@@ -1684,91 +1817,143 @@ static gboolean command_read_track_information (CdemuDevice *self, guint8 *raw_c
 
     gint number = GUINT32_FROM_BE(cdb->number);
 
-    switch (cdb->type) {
-        case 0x00: {
-            /* LBA */
-            CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: requested track containing sector 0x%X\n", __debug__, number);
-            track = mirage_disc_get_track_by_address(disc, number, NULL);
-            break;
-        }
-        case 0x01: {
-            /* Lead-in/Track/Invisible track */
-            switch (number) {
-                case 0x00: {
-                    /* Lead-in: not supported */
-                    CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: requested lead-in; not supported!\n", __debug__);
-                    cdemu_device_write_sense(self, ILLEGAL_REQUEST, INVALID_FIELD_IN_CDB);
-                    return FALSE;
-                }
-                case 0xFF: {
-                    /* Invisible/Incomplete track: not supported */
-                    CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: requested invisible/incomplete track; not supported!\n", __debug__);
-                    cdemu_device_write_sense(self, ILLEGAL_REQUEST, INVALID_FIELD_IN_CDB);
-                    return FALSE;
-                }
-                default: {
-                    /* Track number */
-                    CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: requested track %i\n", __debug__, number);
-                    track = mirage_disc_get_track_by_number(disc, number, NULL);
-                    break;
-                }
+    if (cdb->type == 0x00) {
+        /* LBA */
+        CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: requested track containing sector 0x%X\n", __debug__, number);
+        track = mirage_disc_get_track_by_address(disc, number, NULL);
+    } else if (cdb->type == 0x01) {
+        /* Track number */
+        CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: requested track %d (%Xh)\n", __debug__, number, number);
+        if (number >= 1 && number <= mirage_disc_get_number_of_tracks(disc)) {
+            /* Existing track */
+            CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: requested existing track\n", __debug__);
+            track = mirage_disc_get_track_by_number(disc, number, NULL);
+        } else if (number == mirage_disc_get_number_of_tracks(disc) + 1) {
+            /* Empty track (N+1); valid only on recordable disc */
+            if (self->priv->recordable_disc) {
+                CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: will return entry for empty track\n", __debug__);
+                return_empty_track = TRUE;
+            } else {
+                CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: empty track cannot be requested on non-recordable disc; will bail out!\n", __debug__);                
             }
-            break;
+        } else if (number == 0x00) {
+            /* Disc lead-in; valid only on recordable disc */
+            CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: requested disc lead-in\n", __debug__);
+            if (self->priv->recordable_disc) {
+                return_disc_leadin = TRUE;
+            } else {
+                CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: disc lead-in cannot be requested on non-recordable disc; will bail out!\n", __debug__);                
+            }
+        } else if (number == 0xFF) {
+            /* Invisible/incomplete track; valid only on recordable disc */
+            CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: requested invisible/incomplete track\n", __debug__);
+            if (self->priv->recordable_disc) {
+                return_empty_track = TRUE;
+            } else {
+                CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: invisible/incomplete track cannot be requested on non-recordable disc; will bail out!\n", __debug__);
+            }
         }
-        case 0x02: {
-            /* Session number */
-            MirageSession *session;
-            CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: requested first track in session %i\n", __debug__, number);
+    } else if (cdb->type == 0x02) {
+        /* Session number */
+        MirageSession *session;
+        CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: requested first track in session %i\n", __debug__, number);
 
-            session = mirage_disc_get_session_by_number(disc, number, NULL);
+        session = mirage_disc_get_session_by_number(disc, number, NULL);
+        if (session) {
             track = mirage_session_get_track_by_index(session, 0, NULL);
             g_object_unref(session);
-            break;
         }
     }
 
+    gint track_number;
+    gint session_number;
+    gint track_mode;
+    gint data_mode;
+    guint32 start_sector = 0x000000;
+    guint32 next_writeable_address = 0x000000;
+    guint32 free_blocks = 0x000000;
+    guint32 fixed_packet_size = 0x000000;
+    guint32 length = 0x000000;
+    guint32 last_recorded_address = 0x000000;
+    gboolean nwa_valid = FALSE;
+    gboolean blank_track = FALSE;
+    
     /* Check if track was found */
-    if (!track) {
+    if (track) {
+        /* If track was found, get its information */
+        track_number = mirage_track_layout_get_track_number(track);
+        session_number = mirage_track_layout_get_session_number(track);
+        
+        track_mode = mirage_track_get_ctl(track);
+        
+        switch (mirage_track_get_mode(track)) {
+            case MIRAGE_MODE_AUDIO:
+            case MIRAGE_MODE_MODE1: {
+                data_mode = 0x01;
+                break;
+            }
+            case MIRAGE_MODE_MODE2:
+            case MIRAGE_MODE_MODE2_FORM1:
+            case MIRAGE_MODE_MODE2_FORM2:
+            case MIRAGE_MODE_MODE2_MIXED: {
+                data_mode = 0x02;
+                break;
+            }
+            default: {
+                data_mode = 0x0F;
+            }
+        }
+        
+        start_sector = mirage_track_layout_get_start_sector(track);
+        length = mirage_track_layout_get_length(track);
+        
+        g_object_unref(track);
+    } else if (return_empty_track) {
+        /* Return information for next empty track */
+        track_number = mirage_disc_get_number_of_tracks(disc) + 1;
+        session_number = mirage_disc_get_number_of_sessions(disc) + 1;
+        data_mode = 0x01;
+        track_mode = 0x07;
+        
+        free_blocks = self->priv->medium_capacity - 150;
+        length = self->priv->medium_capacity - 150;
+        
+        nwa_valid = TRUE;
+        blank_track = TRUE;        
+    } else if (return_disc_leadin) {
+        /* Return information for disc lead-in */
+        track_number = 0;
+        session_number = 0;
+        track_mode = 0x00;
+        data_mode = 0x00;
+        start_sector = 0xFFFFD4BB;      
+    } else {
         CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: couldn't find track!\n", __debug__);
         cdemu_device_write_sense(self, ILLEGAL_REQUEST, INVALID_FIELD_IN_CDB);
         return FALSE;
     }
 
-    gint track_number = mirage_track_layout_get_track_number(track);
-    gint session_number = mirage_track_layout_get_session_number(track);
-    gint ctl = mirage_track_get_ctl(track);
-    gint mode = mirage_track_get_mode(track);
-    gint start_sector = mirage_track_layout_get_start_sector(track);
-    gint length = mirage_track_layout_get_length(track);
-
-    g_object_unref(track);
-
+    /* Write the obtained data */
     ret_data->length = GUINT16_TO_BE(self->priv->buffer_size - 2);
     ret_data->track_number0 = track_number >> 8;
-    ret_data->track_number1 = track_number & 0xFF;
     ret_data->session_number0 = session_number >> 8;
-    ret_data->session_number1 = session_number & 0xFF;
-    ret_data->track_mode = ctl;
 
-    switch (mode) {
-        case MIRAGE_MODE_AUDIO:
-        case MIRAGE_MODE_MODE1: {
-            ret_data->data_mode = 0x01;
-            break;
-        }
-        case MIRAGE_MODE_MODE2:
-        case MIRAGE_MODE_MODE2_FORM1:
-        case MIRAGE_MODE_MODE2_FORM2:
-        case MIRAGE_MODE_MODE2_MIXED: {
-            ret_data->data_mode = 0x02;
-            break;
-        }
-        default:
-            ret_data->data_mode = 0x0F;
-    }
+    ret_data->track_mode = track_mode;
+
+    ret_data->blank = blank_track;
+    ret_data->data_mode = data_mode;   
+
+    ret_data->nwa_v = nwa_valid;
 
     ret_data->start_address = GUINT32_TO_BE(start_sector);
+    ret_data->next_writeable_address = GUINT32_TO_BE(next_writeable_address);
+    ret_data->free_blocks = GUINT32_TO_BE(free_blocks);
+    ret_data->fixed_packet_size = GUINT32_TO_BE(fixed_packet_size);
     ret_data->track_size = GUINT32_TO_BE(length);
+    ret_data->last_recorded_address = GUINT32_TO_BE(last_recorded_address);
+    
+    ret_data->track_number1 = track_number & 0xFF;
+    ret_data->session_number1 = session_number & 0xFF;
 
     /* Write data */
     cdemu_device_write_buffer(self, GUINT16_FROM_BE(cdb->length));
@@ -1956,6 +2141,10 @@ gint cdemu_device_execute_command (CdemuDevice *self, CdemuCommand *cmd)
           "GET CONFIGURATION",
           command_get_configuration,
           TRUE, },
+        { GET_PERFORMANCE,
+          "GET PERFORMANCE",
+          command_get_performance,
+          FALSE, },
         { INQUIRY,
           "INQUIRY",
           command_inquiry,

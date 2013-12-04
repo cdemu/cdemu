@@ -29,6 +29,7 @@
 static gboolean cdemu_device_load_disc_private (CdemuDevice *self, gchar **filenames, GVariant *options, GError **error)
 {
     gint media_type;
+    gboolean blank_disc = FALSE;
 
      /* Well, we won't do anything if we're already loaded */
     if (self->priv->loaded) {
@@ -45,36 +46,71 @@ static gboolean cdemu_device_load_disc_private (CdemuDevice *self, gchar **filen
 
         g_variant_get_child(options, i, "{sv}", &key, &value);
         mirage_context_set_option(self->priv->mirage_context, key, value);
+        
+        /* Check if we are required to create a blank disc */
+        if (!g_strcmp0(key, "create")) {
+            blank_disc = TRUE;
+        }
     }
 
-    /* Load... */
-    self->priv->disc = mirage_context_load_image(self->priv->mirage_context, filenames, error);
+    if (!blank_disc) {
+        /* Load... */
+        self->priv->disc = mirage_context_load_image(self->priv->mirage_context, filenames, error);
 
-    /* Check if loading succeeded */
-    if (!self->priv->disc) {
-        return FALSE;
+        /* Check if loading succeeded */
+        if (!self->priv->disc) {
+            return FALSE;
+        }
+
+        /* Set current profile (and modify feature flags accordingly */
+        media_type = mirage_disc_get_medium_type(self->priv->disc);
+        switch (media_type) {
+            case MIRAGE_MEDIUM_CD: {
+                cdemu_device_set_profile(self, ProfileIndex_CDROM);
+                break;
+            }
+            case MIRAGE_MEDIUM_DVD: {
+                cdemu_device_set_profile(self, ProfileIndex_DVDROM);
+                break;
+            }
+            default: {
+                CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: unknown media type: 0x%X!\n", __debug__, media_type);
+                break;
+            }
+        }
+
+        /* Mark loaded discs as non-writable */
+        self->priv->recordable_disc = FALSE;
+        self->priv->rewritable_disc = FALSE;
+    } else {
+        /* Create blank disc */
+        self->priv->disc = g_object_new(MIRAGE_TYPE_DISC, NULL);
+        
+#if 0
+        /* Even a blank disc has one session and one track */
+        MirageSession *session = g_object_new(MIRAGE_TYPE_SESSION, NULL);
+        mirage_disc_add_session_by_number(self->priv->disc, 1, session, NULL);
+        g_object_unref(session);
+        
+        MirageTrack *track = g_object_new(MIRAGE_TYPE_TRACK, NULL);
+        mirage_disc_add_track_by_number(self->priv->disc, 1, track, NULL);
+        g_object_unref(track);
+#endif
+        
+        /* Set filenames */
+        mirage_disc_set_filenames(self->priv->disc, (const gchar **)filenames);
+        
+        /* Emulate 80-min CD-R for now */
+        self->priv->recordable_disc = TRUE;
+        self->priv->rewritable_disc = FALSE;
+        self->priv->medium_capacity = 80*60*75;
+        
+        cdemu_device_set_profile(self, ProfileIndex_CDR);
     }
 
     /* Loading succeeded */
     self->priv->loaded = TRUE;
     self->priv->media_event = MEDIA_EVENT_NEW_MEDIA;
-
-    /* Set current profile (and modify feature flags accordingly */
-    media_type = mirage_disc_get_medium_type(self->priv->disc);
-    switch (media_type) {
-        case MIRAGE_MEDIUM_CD: {
-            cdemu_device_set_profile(self, ProfileIndex_CDROM);
-            break;
-        }
-        case MIRAGE_MEDIUM_DVD: {
-            cdemu_device_set_profile(self, ProfileIndex_DVDROM);
-            break;
-        }
-        default: {
-            CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: unknown media type: 0x%X!\n", __debug__, media_type);
-            break;
-        }
-    }
 
     /* Send notification */
     g_signal_emit_by_name(self, "status-changed", NULL);
