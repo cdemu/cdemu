@@ -1001,6 +1001,24 @@ struct READ_BUFFER_CAPACITY_CDB
     guint8 control;
 };
 
+struct READ_BUFFER_CAPACITY_Data
+{
+    guint16 data_length;
+    
+    guint8 reserved1;
+    
+    #if G_BYTE_ORDER == G_BIG_ENDIAN
+        guint8 reserved2 : 7;
+        guint8 block     : 1;
+    #else
+        guint8 block     : 1;
+        guint8 reserved2 : 7;
+    #endif
+    
+    guint32 length_of_buffer;
+    guint32 blank_length_of_buffer;
+};
+
 
 /**********************************************************************\
  *                            READ CAPACITY                           *

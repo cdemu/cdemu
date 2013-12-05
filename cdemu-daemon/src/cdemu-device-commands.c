@@ -765,6 +765,39 @@ static gboolean command_read (CdemuDevice *self, guint8 *raw_cdb)
     return TRUE;
 }
 
+/* READ BUFFER CAPACITY */
+static gboolean command_read_buffer_capacity (CdemuDevice *self, guint8 *raw_cdb)
+{
+    struct READ_BUFFER_CAPACITY_CDB *cdb = (struct READ_BUFFER_CAPACITY_CDB *)raw_cdb;
+    struct READ_BUFFER_CAPACITY_Data *ret_data = (struct READ_BUFFER_CAPACITY_Data *)self->priv->buffer;
+    self->priv->buffer_size = sizeof(struct READ_BUFFER_CAPACITY_Data);
+
+    /* Medium must be present */
+    if (!self->priv->loaded) {
+        CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: medium not present\n", __debug__);
+        cdemu_device_write_sense(self, NOT_READY, MEDIUM_NOT_PRESENT);
+        return FALSE;
+    }
+    
+    const gint buffer_size = 866304; /* Emulated buffer; in bytes */
+    
+    /* Buffer capacity data */
+    ret_data->data_length = GUINT16_TO_BE(self->priv->buffer_size - 2);
+    ret_data->block = cdb->block;
+    if (ret_data->block) {
+        ret_data->length_of_buffer = 0x00000000; /* Reserved */
+        ret_data->blank_length_of_buffer = GUINT32_TO_BE(buffer_size/2048); /* In blocks */
+    } else {
+        ret_data->length_of_buffer = GUINT32_TO_BE(buffer_size);
+        ret_data->blank_length_of_buffer = GUINT32_TO_BE(buffer_size);
+    }
+    
+    /* Write data */
+    cdemu_device_write_buffer(self, self->priv->buffer_size);
+
+    return TRUE;
+}
+
 /* READ CAPACITY*/
 static gboolean command_read_capacity (CdemuDevice *self, guint8 *raw_cdb G_GNUC_UNUSED)
 {
@@ -2193,6 +2226,10 @@ gint cdemu_device_execute_command (CdemuDevice *self, CdemuCommand *cmd)
           "READ (12)",
           command_read,
           TRUE },
+        { READ_BUFFER_CAPACITY,
+          "READ BUFFER CAPACITY",
+          command_read_buffer_capacity,
+          FALSE },
         { READ_CAPACITY,
           "READ CAPACITY",
           command_read_capacity,
