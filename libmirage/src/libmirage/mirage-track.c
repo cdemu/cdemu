@@ -461,7 +461,12 @@ const gchar *mirage_track_get_isrc (MirageTrack *self)
  */
 MirageSector *mirage_track_get_sector (MirageTrack *self, gint address, gboolean abs, GError **error)
 {
-    MirageSector *sector = NULL;
+    MirageSector *sector;
+    MirageFragment *fragment;
+    GError *local_error = NULL;
+    gint fragment_start;
+    guint8 *main_buffer, *subchannel_buffer;
+    gint main_length, subchannel_length;
 
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_TRACK, "%s: getting sector for address 0x%X (%d); absolute: %i\n", __debug__, address, address, abs);
 
@@ -472,21 +477,60 @@ MirageSector *mirage_track_get_sector (MirageTrack *self, gint address, gboolean
     }
 
     /* Sector must lie within track boundaries... */
-    if (address >= 0 && address < self->priv->length) {
-        /* Create sector object */
-        sector = g_object_new(MIRAGE_TYPE_SECTOR, NULL);
-        mirage_object_set_parent(MIRAGE_OBJECT(sector), self);
-
-        /* Feed data to sector */
-        if (!mirage_sector_feed_data(sector, address, self, error)) {
-            g_object_unref(sector);
-            return NULL;
-        }
-    } else {
+    if (address < 0 || address >= self->priv->length) {
         g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_TRACK_ERROR, "Sector address out of range!");
         return NULL;
     }
+    
+    /* Get data fragment to feed from */
+    fragment = mirage_track_get_fragment_by_address(self, address, &local_error);
+    if (!fragment) {
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_TRACK_ERROR, "Failed to get fragment to feed sector: %s", local_error->message);
+        g_error_free(local_error);
+        return NULL;
+    }
+    
+    /* Fragments work with fragment-relative addresses, so get fragment's start address */
+    fragment_start = mirage_fragment_get_address(fragment);
+    
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_SECTOR, "%s: got fragment %p for track-relative address 0x%X; fragment relative address: 0x%X\n", __debug__, fragment, address, address - fragment_start);
 
+    /* Main channel data */
+    if (!mirage_fragment_read_main_data(fragment, address - fragment_start, &main_buffer, &main_length, &local_error)) {
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_TRACK_ERROR, "Failed read main channel data: %s", local_error->message);
+        g_error_free(local_error);
+        g_object_unref(fragment);
+        return NULL;
+    }
+
+    /* Subchannel data */
+    if (!mirage_fragment_read_subchannel_data(fragment, address - fragment_start, &subchannel_buffer, &subchannel_length, &local_error)) {
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_TRACK_ERROR, "Failed to read subchannel data: %s", local_error->message);
+        g_error_free(local_error);
+        g_object_unref(fragment);
+        g_free(main_buffer);
+        return NULL;
+    }
+
+    /* Create sector object */
+    sector = g_object_new(MIRAGE_TYPE_SECTOR, NULL);
+    mirage_object_set_parent(MIRAGE_OBJECT(sector), self);
+    
+    /* Feed data to sector; fragment's reading code guarantees that
+       subchannel format is PW96 */
+    if (!mirage_sector_feed_data(sector, address, self->priv->mode, main_buffer, main_length, MIRAGE_SUBCHANNEL_PW, subchannel_buffer, subchannel_length, &local_error)) {
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_TRACK_ERROR, "Failed to feed data: %s", local_error->message);
+        g_error_free(local_error);
+        
+        g_object_unref(sector);
+        sector = NULL;
+    }
+    
+    /* Cleanup */
+    g_free(main_buffer);
+    g_free(subchannel_buffer);
+    g_object_unref(fragment);
+    
     return sector;
 }
 

@@ -105,16 +105,28 @@ struct _MirageSectorClass
 GType mirage_sector_get_type (void);
 
 /* Public API */
-gboolean mirage_sector_feed_data (MirageSector *self, gint address, MirageTrack *track, GError **error);
+gboolean mirage_sector_feed_data (MirageSector *self, gint address, MirageTrackModes type, guint8 *main_data, guint main_data_length, MirageSectorSubchannelFormat subchannel_format, guint8 *subchannel_data, guint subchannel_data_length, GError **error);
 
 MirageTrackModes mirage_sector_get_sector_type (MirageSector *self);
 
 gboolean mirage_sector_get_sync (MirageSector *self, const guint8 **ret_buf, gint *ret_len, GError **error);
+gboolean mirage_sector_set_sync (MirageSector *self, const guint8 *buf, gint len, GError **error);
+
 gboolean mirage_sector_get_header (MirageSector *self, const guint8 **ret_buf, gint *ret_len, GError **error);
+gboolean mirage_sector_set_header (MirageSector *self, const guint8 *buf, gint len, GError **error);
+
 gboolean mirage_sector_get_subheader (MirageSector *self, const guint8 **ret_buf, gint *ret_len, GError **error);
+gboolean mirage_sector_set_subheader (MirageSector *self, const guint8 *buf, gint len, GError **error);
+
 gboolean mirage_sector_get_data (MirageSector *self, const guint8 **ret_buf, gint *ret_len, GError **error);
+gboolean mirage_sector_set_data (MirageSector *self, const guint8 *buf, gint len, GError **error);
+
 gboolean mirage_sector_get_edc_ecc (MirageSector *self, const guint8 **ret_buf, gint *ret_len, GError **error);
+gboolean mirage_sector_set_edc_ecc (MirageSector *self, const guint8 *buf, gint len, GError **error);
+
 gboolean mirage_sector_get_subchannel (MirageSector *self, MirageSectorSubchannelFormat format, const guint8 **ret_buf, gint *ret_len, GError **error);
+gboolean mirage_sector_set_subchannel (MirageSector *self, MirageSectorSubchannelFormat format, const guint8 *buf, gint len, GError **error);
+
 
 gboolean mirage_sector_verify_lec (MirageSector *self);
 gboolean mirage_sector_verify_subchannel_crc (MirageSector *self);

@@ -207,6 +207,132 @@ static void mirage_sector_generate_edc_ecc (MirageSector *self)
 }
 
 
+
+static gboolean mirage_sector_get_sync_offset_and_length (MirageSector *self, gint *offset, gint *length, GError **error)
+{
+    /* Sync is supported by all non-audio sectors */
+    switch (self->priv->type) {
+        case MIRAGE_MODE_MODE0:
+        case MIRAGE_MODE_MODE1:
+        case MIRAGE_MODE_MODE2:
+        case MIRAGE_MODE_MODE2_FORM1:
+        case MIRAGE_MODE_MODE2_FORM2: {
+            *offset = 0;
+            *length = 12;
+            return TRUE;
+        }
+        default: {
+            g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_SECTOR_ERROR, "Sync pattern not available for sector type %d!", self->priv->type);
+            return FALSE;
+        }
+    }
+}
+
+static gboolean mirage_sector_get_header_offset_and_length (MirageSector *self, gint *offset, gint *length, GError **error)
+{
+    /* Header is supported by all non-audio sectors */
+    switch (self->priv->type) {
+        case MIRAGE_MODE_MODE0:
+        case MIRAGE_MODE_MODE1:
+        case MIRAGE_MODE_MODE2:
+        case MIRAGE_MODE_MODE2_FORM1:
+        case MIRAGE_MODE_MODE2_FORM2: {
+            *offset = 12;
+            *length = 4;
+            return TRUE;
+        }
+        default: {
+            g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_SECTOR_ERROR, "Header not available for sector type %d!", self->priv->type);
+            return FALSE;
+        }
+    }
+}
+
+static gboolean mirage_sector_get_subheader_offset_and_length (MirageSector *self, gint *offset, gint *length, GError **error)
+{
+    /* Subheader is supported by formed Mode 2 sectors */
+    switch (self->priv->type) {
+        case MIRAGE_MODE_MODE2_FORM1:
+        case MIRAGE_MODE_MODE2_FORM2: {
+            *offset = 16;
+            *length = 8;
+            return TRUE;
+        }
+        default: {
+            g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_SECTOR_ERROR, "Subheader not available for sector type %d!", self->priv->type);
+            return FALSE;
+        }
+    }
+}
+
+static gboolean mirage_sector_get_data_offset_and_length (MirageSector *self, gint *offset, gint *length, GError **error)
+{
+    /* Data is supported by all sectors */
+    switch (self->priv->type) {
+        case MIRAGE_MODE_AUDIO: {
+            *offset = 0;
+            *length = 2352;
+            return TRUE;
+        }
+        case MIRAGE_MODE_MODE0: {
+            *offset = 16;
+            *length = 2336;
+            return TRUE;
+        }
+        case MIRAGE_MODE_MODE1: {
+            *offset = 16;
+            *length = 2048;
+            return TRUE;
+        }
+        case MIRAGE_MODE_MODE2: {
+            *offset = 16;
+            *length = 2336;
+            return TRUE;
+        }
+        case MIRAGE_MODE_MODE2_FORM1: {
+            *offset = 24;
+            *length = 2048;
+            return TRUE;
+        }
+        case MIRAGE_MODE_MODE2_FORM2: {
+            *offset = 24;
+            *length = 2324;
+            return TRUE;
+        }
+        default: {
+            g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_SECTOR_ERROR, "Data not available for sector type %d!", self->priv->type);
+            return FALSE;
+        }
+    }
+}
+
+static gboolean mirage_sector_get_edc_ecc_offset_and_length (MirageSector *self, gint *offset, gint *length, GError **error)
+{
+    /* EDC/ECC is supported by Mode 1 and formed Mode 2 sectors */
+    switch (self->priv->type) {
+        case MIRAGE_MODE_MODE1: {
+            *offset = 2064;
+            *length = 288;
+            return TRUE;
+        }
+        case MIRAGE_MODE_MODE2_FORM1: {
+            *offset = 2072;
+            *length = 280;
+            return TRUE;
+        }
+        case MIRAGE_MODE_MODE2_FORM2: {
+            *offset = 2348;
+            *length = 4;
+            return TRUE;
+        }
+        default: {
+            g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_SECTOR_ERROR, "EDC/ECC not available for sector type %d!", self->priv->type);
+            return FALSE;
+        }
+    }
+}
+
+
 /**********************************************************************\
  *                             Public API                             *
 \**********************************************************************/
@@ -214,11 +340,15 @@ static void mirage_sector_generate_edc_ecc (MirageSector *self)
  * mirage_sector_feed_data:
  * @self: a #MirageSector
  * @address: (in): address the sector represents. Given in sectors.
- * @track: (in): track the sector belongs to
+ * @type: (in): track type (one of #MirageTrackModes
+ * @main_data: (in): main data buffer
+ * @main_data_length: (in): length of data in main data buffer
+ * @subchannel_format: (in): subchannel data format
+ * @subchannel_data: (in) (allow-none): subchannel data buffer
+ * @subchannel_data_length: (in): length of data in subchannel data buffer
  * @error: (out) (allow-none): location to store error, or %NULL
  *
- * Feeds data to sector. It finds appropriate fragment to feed from, reads data
- * into sector object and sets data validity flags.
+ * Feeds data to sector.
  *
  * <note>
  * Intended for internal use.
@@ -226,54 +356,23 @@ static void mirage_sector_generate_edc_ecc (MirageSector *self)
  *
  * Returns: %TRUE on success, %FALSE on failure
  */
-gboolean mirage_sector_feed_data (MirageSector *self, gint address, MirageTrack *track, GError **error)
+gboolean mirage_sector_feed_data (MirageSector *self, gint address, MirageTrackModes type, guint8 *main_data, guint main_data_length, MirageSectorSubchannelFormat subchannel_format, guint8 *subchannel_data, guint subchannel_data_length, GError **error)
 {
-    GError *local_error = NULL;
-    MirageFragment *fragment;
-    gint mode, data_offset, fragment_start;
-    guint8 *buffer;
-    gint length;
+    gint data_offset;
 
-    /* Get track mode */
-    mode = mirage_track_get_mode(track);
-    /* Set track as sector's parent */
-    mirage_object_set_parent(MIRAGE_OBJECT(self), track);
-    /* Store sector's address */
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_SECTOR, "%s: feeding: address: %Xh (%d), type: %d, main channel data size: %d, subchannel data size: %d\n", __debug__, address, address, type, main_data_length, subchannel_data_length);
+
+    /* Store address and sector type */
     self->priv->address = address;
+    self->priv->type = type;
 
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_SECTOR, "%s: feeding data for sector 0x%X\n", __debug__, self->priv->address);
-
-    /* Get data fragment to feed from */
-    fragment = mirage_track_get_fragment_by_address(track, address, &local_error);
-    if (!fragment) {
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_SECTOR_ERROR, "Failed to get fragment: %s", local_error->message);
-        g_error_free(local_error);
-        return FALSE;
-    }
-
-    /* Fragments work with fragment-relative addresses */
-    fragment_start = mirage_fragment_get_address(fragment);
-    address -= fragment_start;
-
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_SECTOR, "%s: got fragment for track-relative address 0x%X... %p\n", __debug__, address, fragment);
-
-    /* *** Main channel data ***/
-    if (!mirage_fragment_read_main_data(fragment, address, &buffer, &length, &local_error)) {
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_SECTOR_ERROR, "Failed read main channel data: %s", local_error->message);
-        g_error_free(local_error);
-        g_object_unref(fragment);
-        return FALSE;
-    }
-
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_SECTOR, "%s: main channel data size: %d\n", __debug__, length);
-
-    /* Now, calculate offset and valid data based on mode and sector size */
+    /* Now, calculate offset and valid data based on type and main channel data length */
     data_offset = 0;
-    switch (mode) {
+    switch (self->priv->type) {
         case MIRAGE_MODE_AUDIO: {
             /* Audio sector structure:
                 data (2352) */
-            switch (length) {
+            switch (main_data_length) {
                 case 0: {
                     /* Nothing; pregap */
                     break;
@@ -293,9 +392,8 @@ gboolean mirage_sector_feed_data (MirageSector *self, gint address, MirageTrack 
                     break;
                 }
                 default: {
-                    MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: unhandled sector size %d for Audio sector!\n", __debug__, length);
-                    g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_SECTOR_ERROR, "Unhandled sector size %d for Audio sector!", length);
-                    g_free(buffer);
+                    MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: unhandled sector size %d for Audio sector!\n", __debug__, main_data_length);
+                    g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_SECTOR_ERROR, "Unhandled sector size %d for Audio sector!", main_data_length);
                     return FALSE;
                 }
             }
@@ -304,7 +402,7 @@ gboolean mirage_sector_feed_data (MirageSector *self, gint address, MirageTrack 
         case MIRAGE_MODE_MODE0: {
             /* Mode 0 sector structue:
                 sync (12) + header (4) + data (2336) */
-            switch (length) {
+            switch (main_data_length) {
                 case 0: {
                     /* Nothing; pregap */
                     break;
@@ -340,9 +438,8 @@ gboolean mirage_sector_feed_data (MirageSector *self, gint address, MirageTrack 
                     break;
                 }
                 default: {
-                    MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: unhandled sector size %d for Mode 0 sector!\n", __debug__, length);
-                    g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_SECTOR_ERROR, "Unhandled sector size %d for Mode 0 sector!", length);
-                    g_free(buffer);
+                    MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: unhandled sector size %d for Mode 0 sector!\n", __debug__, main_data_length);
+                    g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_SECTOR_ERROR, "Unhandled sector size %d for Mode 0 sector!", main_data_length);
                     return FALSE;
                 }
             }
@@ -352,7 +449,7 @@ gboolean mirage_sector_feed_data (MirageSector *self, gint address, MirageTrack 
         case MIRAGE_MODE_MODE1: {
             /* Mode 1 sector structue:
                 sync (12) + header (4) + data (2048) + EDC/ECC (288) */
-            switch (length) {
+            switch (main_data_length) {
                 case 0: {
                     /* Nothing; pregap */
                     break;
@@ -421,9 +518,8 @@ gboolean mirage_sector_feed_data (MirageSector *self, gint address, MirageTrack 
                     break;
                 }
                 default: {
-                    MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: unhandled sector size %d for Mode 1 sector!\n", __debug__, length);
-                    g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_SECTOR_ERROR, "Unhandled sector size %d for Mode 1 sector!", length);
-                    g_free(buffer);
+                    MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: unhandled sector size %d for Mode 1 sector!\n", __debug__, main_data_length);
+                    g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_SECTOR_ERROR, "Unhandled sector size %d for Mode 1 sector!", main_data_length);
                     return FALSE;
                 }
             }
@@ -433,7 +529,7 @@ gboolean mirage_sector_feed_data (MirageSector *self, gint address, MirageTrack 
         case MIRAGE_MODE_MODE2: {
             /* Mode 2 formless sector structue:
                 sync (12) + header (4) + data (2336) */
-            switch (length) {
+            switch (main_data_length) {
                 case 0: {
                     /* Nothing; pregap */
                     break;
@@ -469,9 +565,8 @@ gboolean mirage_sector_feed_data (MirageSector *self, gint address, MirageTrack 
                     break;
                 }
                 default: {
-                    MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: unhandled sector size %d for Mode 2 Formless sector!\n", __debug__, length);
-                    g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_SECTOR_ERROR, "Unhandled sector size %d for Mode 2 Formless sector!", length);
-                    g_free(buffer);
+                    MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: unhandled sector size %d for Mode 2 Formless sector!\n", __debug__, main_data_length);
+                    g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_SECTOR_ERROR, "Unhandled sector size %d for Mode 2 Formless sector!", main_data_length);
                     return FALSE;
                 }
             }
@@ -481,7 +576,7 @@ gboolean mirage_sector_feed_data (MirageSector *self, gint address, MirageTrack 
         case MIRAGE_MODE_MODE2_FORM1: {
             /* Mode 2 Form 1 sector structue:
                 sync (12) + header (4) + subheader (8) + data (2048) + EDC/ECC (280) */
-            switch (length) {
+            switch (main_data_length) {
                 case 0: {
                     /* Nothing; pregap */
                     break;
@@ -575,9 +670,8 @@ gboolean mirage_sector_feed_data (MirageSector *self, gint address, MirageTrack 
                     break;
                 }
                 default: {
-                    MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: unhandled sector size %d for Mode 2 Form 1 sector!\n", __debug__, length);
-                    g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_SECTOR_ERROR, "Unhandled sector size %d for Mode 2 Form 1 sector!", length);
-                    g_free(buffer);
+                    MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: unhandled sector size %d for Mode 2 Form 1 sector!\n", __debug__, main_data_length);
+                    g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_SECTOR_ERROR, "Unhandled sector size %d for Mode 2 Form 1 sector!", main_data_length);
                     return FALSE;
                 }
             }
@@ -587,7 +681,7 @@ gboolean mirage_sector_feed_data (MirageSector *self, gint address, MirageTrack 
         case MIRAGE_MODE_MODE2_FORM2: {
             /* Mode 2 Form 2 sector structue:
                 sync (12) + header (4) + subheader (8) + data (2324) + EDC/ECC (4) */
-            switch (length) {
+            switch (main_data_length) {
                 case 0: {
                     /* Nothing; pregap */
                     break;
@@ -685,9 +779,8 @@ gboolean mirage_sector_feed_data (MirageSector *self, gint address, MirageTrack 
                     break;
                 }
                 default: {
-                    MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: unhandled sector size %d for Mode 2 Form 2 sector!\n", __debug__, length);
-                    g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_SECTOR_ERROR, "Unhandled sector size %d for Mode 2 Form 2 sector!", length);
-                    g_free(buffer);
+                    MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: unhandled sector size %d for Mode 2 Form 2 sector!\n", __debug__, main_data_length);
+                    g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_SECTOR_ERROR, "Unhandled sector size %d for Mode 2 Form 2 sector!", main_data_length);
                     return FALSE;
                 }
             }
@@ -700,7 +793,7 @@ gboolean mirage_sector_feed_data (MirageSector *self, gint address, MirageTrack 
                having to provide subheader data, both Form 1 and Form 2 sectors
                must be of same size; this is true only if at least subheader,
                data and EDC/ECC are provided */
-            switch (length) {
+            switch (main_data_length) {
                 case 0: {
                     /* Nothing; pregap */
                     break;
@@ -757,9 +850,8 @@ gboolean mirage_sector_feed_data (MirageSector *self, gint address, MirageTrack 
                     break;
                 }
                 default: {
-                    MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: unhandled sector size %d for Mode 2 Mixed sector!\n", __debug__, length);
-                    g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_SECTOR_ERROR, "Unhandled sector size %d for Mode 2 Mixed sector!", length);
-                    g_free(buffer);
+                    MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: unhandled sector size %d for Mode 2 Mixed sector!\n", __debug__, main_data_length);
+                    g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_SECTOR_ERROR, "Unhandled sector size %d for Mode 2 Mixed sector!", main_data_length);
                     return FALSE;
                 }
             }
@@ -769,48 +861,31 @@ gboolean mirage_sector_feed_data (MirageSector *self, gint address, MirageTrack 
     }
 
     /* Copy data from buffer */
-    memcpy(self->priv->sector_data+data_offset, buffer, length);
-    g_free(buffer);
-
+    memcpy(self->priv->sector_data+data_offset, main_data, main_data_length);
 
     /* Now, if we had Mode 2 Mixed, we can determine whether we have
        Mode 2 Form 1 or Mode 2 Form 2 */
-    if (mode == MIRAGE_MODE_MODE2_MIXED) {
+    if (self->priv->type == MIRAGE_MODE_MODE2_MIXED) {
         /* Check the subheader... */
         if (self->priv->sector_data[18] & 0x20) {
-            mode = MIRAGE_MODE_MODE2_FORM2;
+            self->priv->type = MIRAGE_MODE_MODE2_FORM2;
         } else {
-            mode = MIRAGE_MODE_MODE2_FORM1;
+            self->priv->type = MIRAGE_MODE_MODE2_FORM1;
         }
     }
-    /* Set sector type */
-    self->priv->type = mode;
-
-    /* *** Subchannel *** */
-    /* Read subchannel... fragment should *always* return us 96-byte interleaved
-       PW subchannel (or nothing) */
-    if (!mirage_fragment_read_subchannel_data(fragment, address, &buffer, &length, &local_error)) {
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_SECTOR_ERROR, "Failed to read subchannel data: %s", local_error->message);
-        g_error_free(local_error);
-        g_object_unref(fragment);
-        return FALSE;
-    }
-
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_SECTOR, "%s: subchannel sector size: %d\n", __debug__, length);
-
-    if (length) {
-        self->priv->real_data |= MIRAGE_VALID_SUBCHAN;
-        memcpy(self->priv->subchan_pw, buffer, length);
-    }
-    g_free(buffer);
-
-    g_object_unref(fragment);
 
     /* At this point, real_data field indicates which parts of sector
        data were provided by the image file; make a copy of this field
        in valid_data field, which will be modified when the missing data
        is generated */
     self->priv->valid_data = self->priv->real_data;
+
+    /* Subchannel; use sector's function to set it */
+    if (subchannel_data_length && subchannel_data) {
+        if (!mirage_sector_set_subchannel(self, subchannel_format, subchannel_data, subchannel_data_length, error)) {
+            return FALSE;
+        }
+    }
 
     return TRUE;
 }
@@ -848,9 +923,8 @@ MirageTrackModes mirage_sector_get_sector_type (MirageSector *self)
  */
 gboolean mirage_sector_get_sync (MirageSector *self, const guint8 **ret_buf, gint *ret_len, GError **error)
 {
-    gboolean succeeded = TRUE;
-    guint8 *buf = NULL;
-    gint len = 0;
+    gboolean succeeded;
+    gint offset = 0, length = 0;
 
     /* Generate sync if it's not provided; generation routine takes care of
        incompatible sector types */
@@ -858,34 +932,45 @@ gboolean mirage_sector_get_sync (MirageSector *self, const guint8 **ret_buf, gin
         mirage_sector_generate_sync(self);
     }
 
-    /* Sync is supported by all non-audio sectors */
-    switch (self->priv->type) {
-        case MIRAGE_MODE_MODE0:
-        case MIRAGE_MODE_MODE1:
-        case MIRAGE_MODE_MODE2:
-        case MIRAGE_MODE_MODE2_FORM1:
-        case MIRAGE_MODE_MODE2_FORM2: {
-            buf = self->priv->sector_data;
-            len = 12;
-            break;
-        }
-        default: {
-            g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_SECTOR_ERROR, "Sync pattern not available for sector type %d!", self->priv->type);
-            succeeded = FALSE;
-            break;
-        }
-    }
+    /* Get offset and length */
+    succeeded = mirage_sector_get_sync_offset_and_length(self, &offset, &length, error);
 
     /* Return the requested data */
     if (ret_buf) {
-        *ret_buf = buf;
+        *ret_buf = succeeded ? self->priv->sector_data + offset : NULL;
     }
     if (ret_len) {
-        *ret_len = len;
+        *ret_len = succeeded ? length : 0;
     }
 
     return succeeded;
 }
+
+gboolean mirage_sector_set_sync (MirageSector *self, const guint8 *buf, gint len, GError **error)
+{
+    gint offset, expected_length;
+
+    /* Get offset and length */
+    if (!mirage_sector_get_sync_offset_and_length(self, &offset, &expected_length, error)) {
+        return FALSE;
+    }
+
+    /* Validate length */
+    if (len != expected_length) {
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_SECTOR_ERROR, "Expected %d bytes for sync pattern!", expected_length);
+        return FALSE;
+    }
+
+    /* Copy */
+    memcpy(self->priv->sector_data + offset, buf, len);
+
+    /* Mark as both real and valid */
+    self->priv->real_data |= MIRAGE_VALID_SYNC;
+    self->priv->valid_data |= MIRAGE_VALID_SYNC;
+
+    return TRUE;
+}
+
 
 /**
  * mirage_sector_get_header:
@@ -904,9 +989,8 @@ gboolean mirage_sector_get_sync (MirageSector *self, const guint8 **ret_buf, gin
  */
 gboolean mirage_sector_get_header (MirageSector *self, const guint8 **ret_buf, gint *ret_len, GError **error)
 {
-    gboolean succeeded = TRUE;
-    guint8 *buf = NULL;
-    gint len = 0;
+    gboolean succeeded;
+    gint offset = 0, length = 0;
 
     /* Generate header if it's not provided; generation routine takes care of
        incompatible sector types */
@@ -914,34 +998,45 @@ gboolean mirage_sector_get_header (MirageSector *self, const guint8 **ret_buf, g
         mirage_sector_generate_header(self);
     }
 
-    /* Header is supported by all non-audio sectors */
-    switch (self->priv->type) {
-        case MIRAGE_MODE_MODE0:
-        case MIRAGE_MODE_MODE1:
-        case MIRAGE_MODE_MODE2:
-        case MIRAGE_MODE_MODE2_FORM1:
-        case MIRAGE_MODE_MODE2_FORM2: {
-            buf = self->priv->sector_data+12;
-            len = 4;
-            break;
-        }
-        default: {
-            g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_SECTOR_ERROR, "Header not available for sector type %d!", self->priv->type);
-            succeeded = FALSE;
-            break;
-        }
-    }
+    /* Get offset and length */
+    succeeded = mirage_sector_get_header_offset_and_length(self, &offset, &length, error);
 
     /* Return the requested data */
     if (ret_buf) {
-        *ret_buf = buf;
+        *ret_buf = succeeded ? self->priv->sector_data + offset : NULL;
     }
     if (ret_len) {
-        *ret_len = len;
+        *ret_len = succeeded ? length : 0;
     }
 
     return succeeded;
 }
+
+gboolean mirage_sector_set_header (MirageSector *self, const guint8 *buf, gint len, GError **error)
+{
+    gint offset, expected_length;
+
+    /* Get offset and length */
+    if (!mirage_sector_get_header_offset_and_length(self, &offset, &expected_length, error)) {
+        return FALSE;
+    }
+
+    /* Validate length */
+    if (len != expected_length) {
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_SECTOR_ERROR, "Expected %d bytes for header!", expected_length);
+        return FALSE;
+    }
+
+    /* Copy */
+    memcpy(self->priv->sector_data + offset, buf, len);
+
+    /* Mark as both real and valid */
+    self->priv->real_data |= MIRAGE_VALID_HEADER;
+    self->priv->valid_data |= MIRAGE_VALID_HEADER;
+
+    return TRUE;
+}
+
 
 /**
  * mirage_sector_get_subheader:
@@ -960,9 +1055,8 @@ gboolean mirage_sector_get_header (MirageSector *self, const guint8 **ret_buf, g
  */
 gboolean mirage_sector_get_subheader (MirageSector *self, const guint8 **ret_buf, gint *ret_len, GError **error)
 {
-    gboolean succeeded = TRUE;
-    guint8 *buf = NULL;
-    gint len = 0;
+    gboolean succeeded;
+    gint offset = 0, length = 0;
 
     /* Generate subheader if it's not provided; generation routine takes care of
        incompatible sector types */
@@ -970,31 +1064,45 @@ gboolean mirage_sector_get_subheader (MirageSector *self, const guint8 **ret_buf
         mirage_sector_generate_subheader(self);
     }
 
-    /* Subheader is supported by formed Mode 2 sectors */
-    switch (self->priv->type) {
-        case MIRAGE_MODE_MODE2_FORM1:
-        case MIRAGE_MODE_MODE2_FORM2: {
-            buf = self->priv->sector_data+16;
-            len = 8;
-            break;
-        }
-        default: {
-            g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_SECTOR_ERROR, "Subheader not available for sector type %d!", self->priv->type);
-            succeeded = FALSE;
-            break;
-        }
-    }
+    /* Get offset and length */
+    succeeded = mirage_sector_get_subheader_offset_and_length(self, &offset, &length, error);
 
     /* Return the requested data */
     if (ret_buf) {
-        *ret_buf = buf;
+        *ret_buf = succeeded ? self->priv->sector_data + offset : NULL;
     }
     if (ret_len) {
-        *ret_len = len;
+        *ret_len = succeeded ? length : 0;
     }
 
     return succeeded;
 }
+
+gboolean mirage_sector_set_subheader (MirageSector *self, const guint8 *buf, gint len, GError **error)
+{
+    gint offset, expected_length;
+
+    /* Get offset and length */
+    if (!mirage_sector_get_subheader_offset_and_length(self, &offset, &expected_length, error)) {
+        return FALSE;
+    }
+
+    /* Validate length */
+    if (len != expected_length) {
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_SECTOR_ERROR, "Expected %d bytes for subheader!", expected_length);
+        return FALSE;
+    }
+
+    /* Copy */
+    memcpy(self->priv->sector_data + offset, buf, len);
+
+    /* Mark as both real and valid */
+    self->priv->real_data |= MIRAGE_VALID_SUBHEADER;
+    self->priv->valid_data |= MIRAGE_VALID_SUBHEADER;
+
+    return TRUE;
+}
+
 
 /**
  * mirage_sector_get_data:
@@ -1011,62 +1119,46 @@ gboolean mirage_sector_get_subheader (MirageSector *self, const guint8 **ret_buf
  */
 gboolean mirage_sector_get_data (MirageSector *self, const guint8 **ret_buf, gint *ret_len, GError **error)
 {
-    gboolean succeeded = TRUE;
-    guint8 *buf = NULL;
-    gint len = 0;
+    gboolean succeeded;
+    gint offset = 0, length = 0;
 
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_SECTOR, "%s: sector type: %d\n", __debug__, self->priv->type);
-
-    /* Data is supported by all sectors */
-    switch (self->priv->type) {
-        case MIRAGE_MODE_AUDIO: {
-            buf = self->priv->sector_data;
-            len = 2352;
-            break;
-        }
-        case MIRAGE_MODE_MODE0: {
-            buf = self->priv->sector_data+16;
-            len = 2336;
-            break;
-        }
-        case MIRAGE_MODE_MODE1: {
-            buf = self->priv->sector_data+16;
-            len = 2048;
-            break;
-        }
-        case MIRAGE_MODE_MODE2: {
-            buf = self->priv->sector_data+16;
-            len = 2336;
-            break;
-        }
-        case MIRAGE_MODE_MODE2_FORM1: {
-            buf = self->priv->sector_data+24;
-            len = 2048;
-            break;
-        }
-        case MIRAGE_MODE_MODE2_FORM2: {
-            buf = self->priv->sector_data+24;
-            len = 2324;
-            break;
-        }
-        default: {
-            g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_SECTOR_ERROR, "Data not available for sector type %d!", self->priv->type);
-            succeeded = FALSE;
-            break;
-        }
-    }
-
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_SECTOR, "%s: offset: %d length: %d\n", __debug__, buf - self->priv->sector_data, len);
+    /* Get offset and length */
+    succeeded = mirage_sector_get_data_offset_and_length(self, &offset, &length, error);
 
     /* Return the requested data */
     if (ret_buf) {
-        *ret_buf = buf;
+        *ret_buf = succeeded ? self->priv->sector_data + offset : NULL;
     }
     if (ret_len) {
-        *ret_len = len;
+        *ret_len = succeeded ? length : 0;
     }
 
     return succeeded;
+}
+
+gboolean mirage_sector_set_data (MirageSector *self, const guint8 *buf, gint len, GError **error)
+{
+    gint offset, expected_length;
+
+    /* Get offset and length */
+    if (!mirage_sector_get_data_offset_and_length(self, &offset, &expected_length, error)) {
+        return FALSE;
+    }
+
+    /* Validate length */
+    if (len != expected_length) {
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_SECTOR_ERROR, "Expected %d bytes for data!", expected_length);
+        return FALSE;
+    }
+
+    /* Copy */
+    memcpy(self->priv->sector_data + offset, buf, len);
+
+    /* Mark as both real and valid */
+    self->priv->real_data |= MIRAGE_VALID_DATA;
+    self->priv->valid_data |= MIRAGE_VALID_DATA;
+
+    return TRUE;
 }
 
 /**
@@ -1086,9 +1178,8 @@ gboolean mirage_sector_get_data (MirageSector *self, const guint8 **ret_buf, gin
  */
 gboolean mirage_sector_get_edc_ecc (MirageSector *self, const guint8 **ret_buf, gint *ret_len, GError **error)
 {
-    gboolean succeeded = TRUE;
-    guint8 *buf = NULL;
-    gint len = 0;
+    gboolean succeeded;
+    gint offset = 0, length = 0;
 
     /* Generate EDC/ECC if it's not provided; generation routine takes care of
        incompatible sector types */
@@ -1096,39 +1187,43 @@ gboolean mirage_sector_get_edc_ecc (MirageSector *self, const guint8 **ret_buf, 
         mirage_sector_generate_edc_ecc(self);
     }
 
-    /* EDC/ECC is supported by Mode 1 and formed Mode 2 sectors */
-    switch (self->priv->type) {
-        case MIRAGE_MODE_MODE1: {
-            buf = self->priv->sector_data+2064;
-            len = 288;
-            break;
-        }
-        case MIRAGE_MODE_MODE2_FORM1: {
-            buf = self->priv->sector_data+2072;
-            len = 280;
-            break;
-        }
-        case MIRAGE_MODE_MODE2_FORM2: {
-            buf = self->priv->sector_data+2348;
-            len = 4;
-            break;
-        }
-        default: {
-            g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_SECTOR_ERROR, "EDC/ECC not available for sector type %d!", self->priv->type);
-            succeeded = FALSE;
-            break;
-        }
-    }
+    /* Get offset and length */
+    succeeded = mirage_sector_get_edc_ecc_offset_and_length(self, &offset, &length, error);
 
     /* Return the requested data */
     if (ret_buf) {
-        *ret_buf = buf;
+        *ret_buf = succeeded ? self->priv->sector_data + offset : NULL;
     }
     if (ret_len) {
-        *ret_len = len;
+        *ret_len = succeeded ? length : 0;
     }
 
     return succeeded;
+}
+
+gboolean mirage_sector_set_edc_ecc (MirageSector *self, const guint8 *buf, gint len, GError **error)
+{
+    gint offset, expected_length;
+
+    /* Get offset and length */
+    if (!mirage_sector_get_edc_ecc_offset_and_length(self, &offset, &expected_length, error)) {
+        return FALSE;
+    }
+
+    /* Validate length */
+    if (len != expected_length) {
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_SECTOR_ERROR, "Expected %d bytes for EDC/ECC!", expected_length);
+        return FALSE;
+    }
+
+    /* Copy */
+    memcpy(self->priv->sector_data + offset, buf, len);
+
+    /* Mark as both real and valid */
+    self->priv->real_data |= MIRAGE_VALID_EDC_ECC;
+    self->priv->valid_data |= MIRAGE_VALID_EDC_ECC;
+
+    return TRUE;
 }
 
 /**
@@ -1183,6 +1278,55 @@ gboolean mirage_sector_get_subchannel (MirageSector *self, MirageSectorSubchanne
             return FALSE;
         }
     }
+
+    return TRUE;
+}
+
+gboolean mirage_sector_set_subchannel (MirageSector *self, MirageSectorSubchannelFormat format, const guint8 *buf, gint len, GError **error)
+{
+    switch (format) {
+        case MIRAGE_SUBCHANNEL_PW: {
+            /* Interleaved PW subchannel */
+            if (len != 96) {
+                g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_SECTOR_ERROR, "Expected 96 bytes for PW subchannel!");
+                return FALSE;
+            }
+            /* Copy */
+            memcpy(self->priv->subchan_pw, buf, len);
+            break;
+        }
+        case MIRAGE_SUBCHANNEL_Q: {
+            /* De-interleaved Q subchannel */
+            if (len != 16) {
+                g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_SECTOR_ERROR, "Expected 16 bytes for Q subchannel!");
+                return FALSE;
+            }
+            /* Interleave */
+            mirage_helper_subchannel_interleave(SUBCHANNEL_Q, buf, self->priv->subchan_pw);
+            break;
+        }
+        case MIRAGE_SUBCHANNEL_RW: {
+            /* Cooked RW subchannel; same as de-interleaved PW? */
+            if (len != 96) {
+                g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_SECTOR_ERROR, "Expected 96 bytes for RW subchannel!");
+                return FALSE;
+            }
+            /* Interleave */
+            for (gint i = 0; i < 8; i++) {
+                mirage_helper_subchannel_interleave(7 - i, buf + i*12, self->priv->subchan_pw);
+            }
+            break;
+        }
+        default: {
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_SECTOR, "%s: subchannel format %d not supported yet!\n", __debug__, format);
+            g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_SECTOR_ERROR, "Subchannel format %d not supported yet!", format);
+            return FALSE;
+        }
+    }
+
+    /* Mark as both real and valid */
+    self->priv->real_data |= MIRAGE_VALID_SUBCHAN;
+    self->priv->valid_data |= MIRAGE_VALID_SUBCHAN;
 
     return TRUE;
 }
