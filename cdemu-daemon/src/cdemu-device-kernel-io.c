@@ -84,6 +84,10 @@ void cdemu_device_read_buffer (CdemuDevice *self, guint32 length)
 
     len = MIN(self->priv->cmd->in_len, length);
     CDEMU_DEBUG(self, DAEMON_DEBUG_KERNEL_IO, "%s: copying %d bytes from IN buffer\n", __debug__, len);
+    if (len > self->priv->buffer_capacity) {
+        CDEMU_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: IN buffer size (%d) exceeds our cache size (%d); truncating!buffer\n", __debug__, len, self->priv->buffer_capacity);
+        len = self->priv->buffer_capacity;
+    }
     memcpy(self->priv->buffer, self->priv->cmd->in, len);
     self->priv->buffer_size = len;
 }

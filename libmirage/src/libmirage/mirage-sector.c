@@ -362,6 +362,9 @@ gboolean mirage_sector_feed_data (MirageSector *self, gint address, MirageTrackM
 
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_SECTOR, "%s: feeding: address: %Xh (%d), type: %d, main channel data size: %d, subchannel data size: %d\n", __debug__, address, address, type, main_data_length, subchannel_data_length);
 
+    /* Reset data validity flags */
+    self->priv->real_data = self->priv->valid_data = 0;
+
     /* Store address and sector type */
     self->priv->address = address;
     self->priv->type = type;

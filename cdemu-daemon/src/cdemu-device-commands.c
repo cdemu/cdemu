@@ -260,13 +260,13 @@ static gboolean command_get_performance (CdemuDevice *self, guint8 *raw_cdb)
 {
     struct GET_PERFORMANCE_CDB *cdb = (struct GET_PERFORMANCE_CDB *)raw_cdb;
     guint16 max_descriptors = GUINT16_FROM_BE(cdb->descriptors);
-    
+
     switch (cdb->type) {
         case 0x03: {
             /* Write Speed */
             struct GET_PERFORMANCE_03_Header *ret_header = (struct GET_PERFORMANCE_03_Header *)self->priv->buffer;
             self->priv->buffer_size = sizeof(struct GET_PERFORMANCE_03_Header);
-            
+
             CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: returning max %d write speed descriptors\n", __debug__, max_descriptors);
 
             /* Go over descriptors to count and copy them at the same time */
@@ -278,11 +278,11 @@ static gboolean command_get_performance (CdemuDevice *self, guint8 *raw_cdb)
                     guint8 *desc_ptr = self->priv->buffer + self->priv->buffer_size;
                     memcpy(desc_ptr, list_iter->data, sizeof(struct GET_PERFORMANCE_03_Descriptor));
                     self->priv->buffer_size += sizeof(struct GET_PERFORMANCE_03_Descriptor);
-                }            
-                
+                }
+
                 num_descriptors++;
             }
-            
+
             /* INF8090: "[Write Speed Data Length] is not modified when the
                maximum number of descriptors is insufficient to return all
                the write speed data available" => hence we return size of
@@ -296,7 +296,7 @@ static gboolean command_get_performance (CdemuDevice *self, guint8 *raw_cdb)
             return FALSE;
         }
     }
-    
+
     /* Write data */
     cdemu_device_write_buffer(self, self->priv->buffer_size);
     return TRUE;
@@ -778,20 +778,18 @@ static gboolean command_read_buffer_capacity (CdemuDevice *self, guint8 *raw_cdb
         cdemu_device_write_sense(self, NOT_READY, MEDIUM_NOT_PRESENT);
         return FALSE;
     }
-    
-    const gint buffer_size = 866304; /* Emulated buffer; in bytes */
-    
+
     /* Buffer capacity data */
     ret_data->data_length = GUINT16_TO_BE(self->priv->buffer_size - 2);
     ret_data->block = cdb->block;
     if (ret_data->block) {
         ret_data->length_of_buffer = 0x00000000; /* Reserved */
-        ret_data->blank_length_of_buffer = GUINT32_TO_BE(buffer_size/2048); /* In blocks */
+        ret_data->blank_length_of_buffer = GUINT32_TO_BE(self->priv->buffer_capacity/2048); /* In blocks */
     } else {
-        ret_data->length_of_buffer = GUINT32_TO_BE(buffer_size);
-        ret_data->blank_length_of_buffer = GUINT32_TO_BE(buffer_size);
+        ret_data->length_of_buffer = GUINT32_TO_BE(self->priv->buffer_capacity);
+        ret_data->blank_length_of_buffer = GUINT32_TO_BE(self->priv->buffer_capacity);
     }
-    
+
     /* Write data */
     cdemu_device_write_buffer(self, self->priv->buffer_size);
 
@@ -1035,11 +1033,11 @@ static gboolean command_read_disc_information (CdemuDevice *self, guint8 *raw_cd
             gint num_sessions;
             gint last_session_leadin = -1;
             gint disc_type = 0xFF;
-            
+
             /* Initialize some of the variables */
             num_sessions = mirage_disc_get_number_of_sessions(self->priv->disc);
             num_sessions = num_sessions ? num_sessions : 1; /* Always report 1 or more */
-            
+
             /* First session */
             MirageSession *session;
 
@@ -1061,14 +1059,14 @@ static gboolean command_read_disc_information (CdemuDevice *self, guint8 *raw_cd
                     first_track_in_last_session = mirage_track_layout_get_track_number(track);
                     g_object_unref(track);
                 }
-                
+
                 /* Last track in last session */
                 track = mirage_session_get_track_by_index(session, -1, NULL);
                 if (track) {
                     last_track_in_last_session = mirage_track_layout_get_track_number(track);
                     g_object_unref(track);
                 }
-                
+
                 /* Leadin of last session */
                 track = mirage_session_get_track_by_number(session, MIRAGE_TRACK_LEADIN, NULL);
                 if (track) {
@@ -1078,10 +1076,10 @@ static gboolean command_read_disc_information (CdemuDevice *self, guint8 *raw_cd
 
                 g_object_unref(session);
             }
-            
+
             /* Return gathered information */
             ret_data->length = GUINT16_TO_BE(self->priv->buffer_size - 2);
-            
+
             ret_data->erasable = self->priv->rewritable_disc;
             if (self->priv->recordable_disc) {
                 ret_data->lsession_state = 0x00; /* Empty session; set to 0x01 for incomplete */
@@ -1090,7 +1088,7 @@ static gboolean command_read_disc_information (CdemuDevice *self, guint8 *raw_cd
                 ret_data->lsession_state = 0x03; /* Complete */
                 ret_data->disc_status = 0x02; /* Complete */
             }
-            
+
             ret_data->ftrack_disc = first_track_on_disc;
 
             ret_data->sessions0 = (num_sessions & 0xFF00) >> 8;
@@ -1098,7 +1096,7 @@ static gboolean command_read_disc_information (CdemuDevice *self, guint8 *raw_cd
             ret_data->ltrack_lsession0 = (last_track_in_last_session & 0xFF00) >> 8;
 
             ret_data->disc_type = disc_type;
-            
+
             ret_data->sessions1 = num_sessions & 0xFF;
             ret_data->ftrack_lsession1 = first_track_in_last_session & 0xFF;
             ret_data->ltrack_lsession1 = last_track_in_last_session & 0xFF;
@@ -1117,7 +1115,7 @@ static gboolean command_read_disc_information (CdemuDevice *self, guint8 *raw_cd
                 ret_data->last_leadout = 0xFFFFFFFF; /* Not applicable since we're not a writer */
             } else {
                 msf_ptr = (guint8 *)&ret_data->last_leadout;
-                mirage_helper_lba2msf(self->priv->medium_capacity - 2, FALSE, &msf_ptr[1], &msf_ptr[2], &msf_ptr[3]);                
+                mirage_helper_lba2msf(self->priv->medium_capacity - 2, FALSE, &msf_ptr[1], &msf_ptr[2], &msf_ptr[3]);
             }
 
             break;
@@ -1426,7 +1424,7 @@ static gboolean command_read_toc_pma_atip (CdemuDevice *self, guint8 *raw_cdb)
                     cdemu_device_write_sense(self, ILLEGAL_REQUEST, INVALID_FIELD_IN_CDB);
                     return FALSE;
                 }
-                
+
                 num_tracks = mirage_track_layout_get_track_number(cur_track);
                 g_object_unref(cur_track);
                 if (cdb->number > num_tracks) {
@@ -1480,7 +1478,7 @@ static gboolean command_read_toc_pma_atip (CdemuDevice *self, guint8 *raw_cdb)
                 cdemu_device_write_sense(self, ILLEGAL_REQUEST, INVALID_FIELD_IN_CDB);
                 return FALSE;
             }
-            
+
             cur_track = mirage_session_get_track_by_number(lsession, MIRAGE_TRACK_LEADOUT, NULL);
 
             ret_desc->adr = 0x01;
@@ -1762,16 +1760,16 @@ static gboolean command_read_toc_pma_atip (CdemuDevice *self, guint8 *raw_cdb)
 
                 ret_descriptor->one1 = 1;
                 ret_descriptor->itwp = 0x4; /* Copied from real CD-R */
-                
+
                 ret_descriptor->one2 = 1;
                 ret_descriptor->disc_type = self->priv->rewritable_disc ? 1 : 0; /* CD-R: 0, CD-RW: 1 */
                 ret_descriptor->disc_subtype = 0x3; /* Copied from real CD-R */
-                
+
                 /* Leadin start; copied from real CD-R */
                 ret_descriptor->leadin_start_m = 0x61;
                 ret_descriptor->leadin_start_s = 0x22;
                 ret_descriptor->leadin_start_f = 0x17;
-                
+
                 /* Last possible leadout; corresponds to capacity (on
                    my drive, capacity minus two) */
                 mirage_helper_lba2msf(self->priv->medium_capacity - 2, FALSE, &ret_descriptor->last_leadout_m, &ret_descriptor->last_leadout_s, &ret_descriptor->last_leadout_f);
@@ -1799,7 +1797,7 @@ static gboolean command_read_toc_pma_atip (CdemuDevice *self, guint8 *raw_cdb)
                 cdemu_device_write_sense(self, ILLEGAL_REQUEST, INVALID_FIELD_IN_CDB);
                 return FALSE;
             }
-            
+
             if (!mirage_session_get_cdtext_data(session, &tmp_data, &tmp_len, NULL)) {
                 CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: failed to get CD-TEXT data!\n", __debug__);
             }
@@ -1838,7 +1836,7 @@ static gboolean command_read_track_information (CdemuDevice *self, guint8 *raw_c
 
     MirageDisc *disc = self->priv->disc;
     MirageTrack *track = NULL;
-    
+
     gboolean return_empty_track = FALSE;
     gboolean return_disc_leadin = FALSE;
 
@@ -1867,7 +1865,7 @@ static gboolean command_read_track_information (CdemuDevice *self, guint8 *raw_c
                 CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: will return entry for empty track\n", __debug__);
                 return_empty_track = TRUE;
             } else {
-                CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: empty track cannot be requested on non-recordable disc; will bail out!\n", __debug__);                
+                CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: empty track cannot be requested on non-recordable disc; will bail out!\n", __debug__);
             }
         } else if (number == 0x00) {
             /* Disc lead-in; valid only on recordable disc */
@@ -1875,7 +1873,7 @@ static gboolean command_read_track_information (CdemuDevice *self, guint8 *raw_c
             if (self->priv->recordable_disc) {
                 return_disc_leadin = TRUE;
             } else {
-                CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: disc lead-in cannot be requested on non-recordable disc; will bail out!\n", __debug__);                
+                CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: disc lead-in cannot be requested on non-recordable disc; will bail out!\n", __debug__);
             }
         } else if (number == 0xFF) {
             /* Invisible/incomplete track; valid only on recordable disc */
@@ -1910,15 +1908,15 @@ static gboolean command_read_track_information (CdemuDevice *self, guint8 *raw_c
     guint32 last_recorded_address = 0x000000;
     gboolean nwa_valid = FALSE;
     gboolean blank_track = FALSE;
-    
+
     /* Check if track was found */
     if (track) {
         /* If track was found, get its information */
         track_number = mirage_track_layout_get_track_number(track);
         session_number = mirage_track_layout_get_session_number(track);
-        
+
         track_mode = mirage_track_get_ctl(track);
-        
+
         switch (mirage_track_get_mode(track)) {
             case MIRAGE_MODE_AUDIO:
             case MIRAGE_MODE_MODE1: {
@@ -1936,10 +1934,10 @@ static gboolean command_read_track_information (CdemuDevice *self, guint8 *raw_c
                 data_mode = 0x0F;
             }
         }
-        
+
         start_sector = mirage_track_layout_get_start_sector(track);
         length = mirage_track_layout_get_length(track);
-        
+
         g_object_unref(track);
     } else if (return_empty_track) {
         /* Return information for next empty track */
@@ -1947,19 +1945,19 @@ static gboolean command_read_track_information (CdemuDevice *self, guint8 *raw_c
         session_number = mirage_disc_get_number_of_sessions(disc) + 1;
         data_mode = 0x01;
         track_mode = 0x07;
-        
+
         free_blocks = self->priv->medium_capacity - 150;
         length = self->priv->medium_capacity - 150;
-        
+
         nwa_valid = TRUE;
-        blank_track = TRUE;        
+        blank_track = TRUE;
     } else if (return_disc_leadin) {
         /* Return information for disc lead-in */
         track_number = 0;
         session_number = 0;
         track_mode = 0x00;
         data_mode = 0x00;
-        start_sector = 0xFFFFD4BB;      
+        start_sector = 0xFFFFD4BB;
     } else {
         CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: couldn't find track!\n", __debug__);
         cdemu_device_write_sense(self, ILLEGAL_REQUEST, INVALID_FIELD_IN_CDB);
@@ -1974,7 +1972,7 @@ static gboolean command_read_track_information (CdemuDevice *self, guint8 *raw_c
     ret_data->track_mode = track_mode;
 
     ret_data->blank = blank_track;
-    ret_data->data_mode = data_mode;   
+    ret_data->data_mode = data_mode;
 
     ret_data->nwa_v = nwa_valid;
 
@@ -1984,7 +1982,7 @@ static gboolean command_read_track_information (CdemuDevice *self, guint8 *raw_c
     ret_data->fixed_packet_size = GUINT32_TO_BE(fixed_packet_size);
     ret_data->track_size = GUINT32_TO_BE(length);
     ret_data->last_recorded_address = GUINT32_TO_BE(last_recorded_address);
-    
+
     ret_data->track_number1 = track_number & 0xFF;
     ret_data->session_number1 = session_number & 0xFF;
 
@@ -2140,6 +2138,172 @@ static gboolean command_test_unit_ready (CdemuDevice *self, guint8 *raw_cdb G_GN
     return TRUE;
 }
 
+/* WRITE (10) */
+static gboolean command_write (CdemuDevice *self, guint8 *raw_cdb)
+{
+    gint start_address; /* MUST be signed because it may be negative! */
+    gint num_sectors;
+
+    /* WRITE 10 vs WRITE 12 */
+    if (raw_cdb[0] == WRITE_10) {
+        struct WRITE_10_CDB *cdb = (struct WRITE_10_CDB *)raw_cdb;
+        start_address = GUINT32_FROM_BE(cdb->lba);
+        num_sectors  = GUINT16_FROM_BE(cdb->length);
+    } else if (raw_cdb[0] == READ_12) {
+        struct WRITE_12_CDB *cdb = (struct WRITE_12_CDB *)raw_cdb;
+        start_address = GUINT32_FROM_BE(cdb->lba);
+        num_sectors  = GUINT32_FROM_BE(cdb->length);
+    } else {
+        /* Because bad things happen to good people... :/ */
+        CDEMU_DEBUG(self, DAEMON_DEBUG_ERROR, "%s: someone called this function when they shouldn't have :/...\n", __debug__);
+        cdemu_device_write_sense(self, ILLEGAL_REQUEST, INVALID_FIELD_IN_CDB);
+        return FALSE;
+    }
+
+    CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: write request; start sector: 0x%X (%d), number of sectors: %d\n", __debug__, start_address, start_address, num_sectors);
+
+    /* Data format depends on settings in Mode page 0x05 */
+    struct ModePage_0x05 *p_0x05 = cdemu_device_get_mode_page(self, 0x05, MODE_PAGE_CURRENT);
+
+    CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: mode page 0x05 settings:\n", __debug__);
+    CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s:  - BUFE: %X\n", __debug__, p_0x05->bufe);
+    CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s:  - LS_V: %X\n", __debug__, p_0x05->ls_v);
+    CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s:  - Test write: %X\n", __debug__, p_0x05->test_write);
+    CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s:  - Write type: %X\n", __debug__, p_0x05->write_type);
+    CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s:  - Multisession: %X\n", __debug__, p_0x05->multisession);
+    CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s:  - FP: %X\n", __debug__, p_0x05->fp);
+    CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s:  - Copy: %X\n", __debug__, p_0x05->copy);
+    CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s:  - Track mode: %X\n", __debug__, p_0x05->track_mode);
+    CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s:  - Data block type: %X\n", __debug__, p_0x05->data_block_type);
+    CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s:  - Session format: %X\n", __debug__, p_0x05->session_format);
+
+
+    /* Determine total data size to read */
+    gint main_channel_size;
+    gint subchannel_size;
+    MirageSectorSubchannelFormat subchannel_format;
+    gboolean determine_sector_type = FALSE;
+    MirageTrackModes sector_type;
+
+    switch (p_0x05->data_block_type) {
+        case 0: {
+            /* 2352 bytes: raw data */
+            main_channel_size = 2352;
+            subchannel_size = 0;
+            subchannel_format = MIRAGE_SUBCHANNEL_NONE;
+            determine_sector_type = TRUE;
+            break;
+        }
+        case 1: {
+            /* 2368 bytes: raw data with P-Q subchannel */
+            main_channel_size = 2352;
+            subchannel_size = 16;
+            subchannel_format = MIRAGE_SUBCHANNEL_Q;
+            determine_sector_type = TRUE;
+            break;
+        }
+        case 2: {
+            /* 2448 bytes: raw data with cooked R-W subchannel */
+            main_channel_size = 2352;
+            subchannel_size = 96;
+            subchannel_format = MIRAGE_SUBCHANNEL_RW;
+            determine_sector_type = TRUE;
+            break;
+        }
+        case 3: {
+            /* 2448 bytes: raw data with raw P-W subchannel */
+            main_channel_size = 2352;
+            subchannel_size = 96;
+            subchannel_format = MIRAGE_SUBCHANNEL_PW;
+            determine_sector_type = TRUE;
+            break;
+        }
+        case 8: {
+            /* 2048 bytes: Mode 1 user data */
+            main_channel_size = 2048;
+            subchannel_size = 0;
+            subchannel_format = MIRAGE_SUBCHANNEL_NONE;
+            sector_type = MIRAGE_MODE_MODE1;
+            break;
+        }
+        case 9: {
+            /* 2336 bytes: Mode 2 user data */
+            main_channel_size = 2336;
+            subchannel_size = 0;
+            subchannel_format = MIRAGE_SUBCHANNEL_NONE;
+            sector_type = MIRAGE_MODE_MODE2;
+            break;
+        }
+        case 10: {
+            /* 2048 bytes: Mode 2 Form 1 user data */
+            main_channel_size = 2048;
+            subchannel_size = 0;
+            subchannel_format = MIRAGE_SUBCHANNEL_NONE;
+            sector_type = MIRAGE_MODE_MODE2_FORM1;
+            break;
+        }
+        case 11: {
+            /* 2056 bytes: Mode 2 Form 1 with subheader */
+            main_channel_size = 2056;
+            subchannel_size = 0;
+            subchannel_format = MIRAGE_SUBCHANNEL_NONE;
+            sector_type = MIRAGE_MODE_MODE2_FORM1;
+            break;
+        }
+        case 12: {
+            /* 2324 bytes: Mode 2 Form 2 user data */
+            main_channel_size = 2324;
+            subchannel_size = 0;
+            subchannel_format = MIRAGE_SUBCHANNEL_NONE;
+            sector_type = MIRAGE_MODE_MODE2_FORM2;
+            break;
+        }
+        case 13: {
+            /* 2332 bytes: Mode 2 (Form 1, Form 2 or mixed) with subheader */
+            main_channel_size = 2332;
+            subchannel_size = 0;
+            subchannel_format = MIRAGE_SUBCHANNEL_NONE;
+            sector_type = MIRAGE_MODE_MODE2_MIXED;
+            break;
+        }
+        default: {
+            CDEMU_DEBUG(self, DAEMON_DEBUG_ERROR, "%s: invalid data block type %d!\n", __debug__, p_0x05->data_block_type);
+            cdemu_device_write_sense(self, ILLEGAL_REQUEST, INVALID_FIELD_IN_CDB);
+            return FALSE;
+        }
+    }
+
+    /* Read the data */
+    gint block_size = main_channel_size + subchannel_size;
+    cdemu_device_read_buffer(self, block_size * num_sectors);
+
+    /* If we need to guess sector type (we have raw data) do it now that
+       the data has been read */
+    if (determine_sector_type) {
+        sector_type = mirage_helper_determine_sector_type(self->priv->buffer);
+    }
+
+    /* Create sector object for writing */
+    gboolean succeeded = TRUE;
+    MirageSector *sector = g_object_new(MIRAGE_TYPE_SECTOR, NULL);
+
+    for (gint i = 0; i < num_sectors; i++) {
+        guint8 *sector_data_ptr = self->priv->buffer + i*block_size;
+
+        /* Feed sector data */
+        if (!mirage_sector_feed_data(sector, start_address + i, sector_type, sector_data_ptr, main_channel_size, subchannel_format, sector_data_ptr + main_channel_size, subchannel_size, NULL)) {
+            CDEMU_DEBUG(self, DAEMON_DEBUG_ERROR, "%s: failed to feed sector data!\n", __debug__);
+            cdemu_device_write_sense(self, ILLEGAL_REQUEST, INVALID_FIELD_IN_CDB);
+            succeeded = FALSE;
+            break;
+        }
+    }
+
+    g_object_unref(sector);
+
+    return succeeded;
+}
+
 
 /**********************************************************************\
  *                      Packet command switch                         *
@@ -2286,6 +2450,14 @@ gint cdemu_device_execute_command (CdemuDevice *self, CdemuCommand *cmd)
           "TEST UNIT READY",
           command_test_unit_ready,
           FALSE },
+        { WRITE_10,
+          "WRITE (10)",
+          command_write,
+          TRUE },
+        { WRITE_12,
+          "WRITE (12)",
+          command_write,
+          TRUE },
     };
 
     /* Find the command and execute its implementation handler */
