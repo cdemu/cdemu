@@ -1091,13 +1091,17 @@ gboolean mirage_sector_set_subheader (MirageSector *self, const guint8 *buf, gin
     }
 
     /* Validate length */
-    if (len != expected_length) {
+    if (len == expected_length) {
+        /* Copy */
+        memcpy(self->priv->sector_data + offset, buf, len);
+    } else if (expected_length == 8 && len == 4) {
+        /* This is valid as well; make two copies */
+        memcpy(self->priv->sector_data + offset, buf, len);
+        memcpy(self->priv->sector_data + offset + 4, buf, len);
+    } else {
         g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_SECTOR_ERROR, "Expected %d bytes for subheader!", expected_length);
         return FALSE;
     }
-
-    /* Copy */
-    memcpy(self->priv->sector_data + offset, buf, len);
 
     /* Mark as both real and valid */
     self->priv->real_data |= MIRAGE_VALID_SUBHEADER;

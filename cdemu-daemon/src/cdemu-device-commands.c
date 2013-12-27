@@ -2297,6 +2297,12 @@ static gboolean command_write (CdemuDevice *self, guint8 *raw_cdb)
             succeeded = FALSE;
             break;
         }
+
+        /* If we data type is 10 or 12, we need to copy subheader from
+           write parameters */
+        if (p_0x05->data_block_type == 10 || p_0x05->data_block_type == 12) {
+            mirage_sector_set_subheader(sector, p_0x05->subheader, sizeof(p_0x05->subheader), NULL);
+        }
     }
 
     g_object_unref(sector);
