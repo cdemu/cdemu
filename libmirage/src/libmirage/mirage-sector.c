@@ -1257,6 +1257,16 @@ gboolean mirage_sector_get_subchannel (MirageSector *self, MirageSectorSubchanne
     }
 
     switch (format) {
+        case MIRAGE_SUBCHANNEL_NONE: {
+            /* No subchannel */
+            if (ret_buf) {
+                *ret_buf = NULL;
+            }
+            if (ret_len) {
+                *ret_len = 0;
+            }
+            break;
+        }
         case MIRAGE_SUBCHANNEL_PW: {
             /* Interleaved PW subchannel */
             if (ret_buf) {
