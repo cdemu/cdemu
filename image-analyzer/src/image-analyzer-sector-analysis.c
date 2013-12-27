@@ -176,7 +176,7 @@ static void setup_gui (ImageAnalyzerSectorAnalysis *self)
 
 
     self->priv->buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(self->priv->text_view));
-    gtk_text_buffer_create_tag(self->priv->buffer, "tag_section", "foreground", "#000000", "weight", PANGO_WEIGHT_BOLD, NULL);
+    gtk_text_buffer_create_tag(self->priv->buffer, "tag_section", /*"foreground", "#000000",*/ "weight", PANGO_WEIGHT_BOLD, NULL);
 
     /* HBox */
 #if GTK3_ENABLED
