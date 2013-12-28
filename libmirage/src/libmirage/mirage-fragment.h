@@ -46,8 +46,8 @@ typedef enum _MirageMainDataFormat
  * @MIRAGE_SUBCHANNEL_EXT: external subchannel (i.e. provided by separate file)
  * @MIRAGE_SUBCHANNEL_PW96_INT: P-W subchannel, 96 bytes, interleaved
  * @MIRAGE_SUBCHANNEL_PW96_LIN: P-W subchannel, 96 bytes, linear
- * @MIRAGE_SUBCHANNEL_RW96: R-W subchannel, 96 bytes, deinterleaved
- * @MIRAGE_SUBCHANNEL_PQ16: PQ subchannel, 16 bytes
+ * @MIRAGE_SUBCHANNEL_RW96: R-W subchannel, 96 bytes, cooked
+ * @MIRAGE_SUBCHANNEL_Q16: Q subchannel, 16 bytes
  *
  * Subchannel file data formats.
  */
@@ -58,8 +58,8 @@ typedef enum _MirageSubchannelDataFormat
 
     MIRAGE_SUBCHANNEL_PW96_INT = 0x10,
     MIRAGE_SUBCHANNEL_PW96_LIN = 0x20,
-    MIRAGE_SUBCHANNEL_RW96     = 0x40,
-    MIRAGE_SUBCHANNEL_PQ16     = 0x80,
+    MIRAGE_SUBCHANNEL_RW96 = 0x40,
+    MIRAGE_SUBCHANNEL_Q16 = 0x80,
 } MirageSubchannelDataFormat;
 
 

@@ -439,8 +439,8 @@ static gboolean mirage_parser_b6t_setup_track_fragments (MirageParserB6t *self, 
                 MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: subchannel sector size: %i (0x%X)\n", __debug__, subchannel_size, subchannel_size);
                 switch (subchannel_size) {
                     case 16: {
-                        /* Internal subchannel, PQ */
-                        subchannel_format = MIRAGE_SUBCHANNEL_PQ16 | MIRAGE_SUBCHANNEL_INT;
+                        /* Internal subchannel, Q */
+                        subchannel_format = MIRAGE_SUBCHANNEL_Q16 | MIRAGE_SUBCHANNEL_INT;
                         break;
                     }
                     case 96: {

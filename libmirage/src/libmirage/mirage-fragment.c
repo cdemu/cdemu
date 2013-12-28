@@ -678,8 +678,8 @@ gboolean mirage_fragment_read_subchannel_data (MirageFragment *self, gint addres
         } else if (self->priv->subchannel_format & MIRAGE_SUBCHANNEL_PW96_INT) {
             /* 96-byte interleaved PW; just copy it */
             memcpy(data_buffer, raw_buffer, 96);
-        } else if (self->priv->subchannel_format & MIRAGE_SUBCHANNEL_PQ16) {
-            /* 16-byte PQ; interleave it and pretend everything else's 0 */
+        } else if (self->priv->subchannel_format & MIRAGE_SUBCHANNEL_Q16) {
+            /* 16-byte Q; interleave it and pretend everything else's 0 */
             mirage_helper_subchannel_interleave(SUBCHANNEL_Q, raw_buffer, data_buffer);
         }
 

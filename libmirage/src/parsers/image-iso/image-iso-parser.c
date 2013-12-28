@@ -166,14 +166,14 @@ static gboolean mirage_parser_iso_determine_subchannel_type (MirageParserIso *se
             break;
         }
         case 16: {
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: 16-byte internal PQ subchannel data found!\n", __debug__);
-            self->priv->subchannel_format = MIRAGE_SUBCHANNEL_INT | MIRAGE_SUBCHANNEL_PQ16;
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: 16-byte internal Q subchannel data found!\n", __debug__);
+            self->priv->subchannel_format = MIRAGE_SUBCHANNEL_INT | MIRAGE_SUBCHANNEL_Q16;
             break;
         }
         case 96: {
             guint8 buf[96];
             gsize offset = 16 * (self->priv->main_data_size + self->priv->subchannel_data_size) + self->priv->main_data_size;
-            
+
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: 96-byte internal PW subchannel data found!\n", __debug__);
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: determining whether it is linear or interleaved from subchannel data of sector 16 (offset %lXh)...\n", __debug__, offset);
 
@@ -190,8 +190,8 @@ static gboolean mirage_parser_iso_determine_subchannel_type (MirageParserIso *se
             }
 
             /* Determine whether subchannel data is linear or interleaved;
-               we assume it is linear, and validate CRC over Q-channel 
-               data. An alternative would be to validate address stored in 
+               we assume it is linear, and validate CRC over Q-channel
+               data. An alternative would be to validate address stored in
                subchannel data... */
             guint16 crc = mirage_helper_subchannel_q_calculate_crc(buf+12);
             if ((buf[22] << 8 | buf[23]) == crc) {
@@ -199,9 +199,9 @@ static gboolean mirage_parser_iso_determine_subchannel_type (MirageParserIso *se
                 self->priv->subchannel_format = MIRAGE_SUBCHANNEL_INT | MIRAGE_SUBCHANNEL_PW96_LIN;
             } else {
                 MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: subchannel data appears to be interleaved!\n", __debug__);
-                self->priv->subchannel_format = MIRAGE_SUBCHANNEL_INT | MIRAGE_SUBCHANNEL_PW96_INT;                
+                self->priv->subchannel_format = MIRAGE_SUBCHANNEL_INT | MIRAGE_SUBCHANNEL_PW96_INT;
             }
-            
+
             break;
         }
         default: {
@@ -221,7 +221,7 @@ static gboolean mirage_parser_iso_load_track (MirageParserIso *self, GInputStrea
     MirageFragment *fragment;
 
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: loading track...\n", __debug__);
-    
+
     /* Create data fragment */
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: creating data fragment\n", __debug__);
     fragment = g_object_new(MIRAGE_TYPE_FRAGMENT, NULL);
@@ -231,7 +231,7 @@ static gboolean mirage_parser_iso_load_track (MirageParserIso *self, GInputStrea
     mirage_fragment_main_data_set_format(fragment, MIRAGE_MAIN_DATA);
     mirage_fragment_subchannel_data_set_size(fragment, self->priv->subchannel_data_size);
     mirage_fragment_subchannel_data_set_format(fragment, self->priv->subchannel_format);
-    
+
     /* Use whole file */
     if (!mirage_fragment_use_the_rest_of_file(fragment, error)) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to use the rest of file!\n", __debug__);

@@ -153,10 +153,10 @@ static gboolean mirage_parser_cdi_decode_read_mode (MirageParserCdi *self, gint 
             break;
         }
         case 3: {
-            /* 2352+16-byte sectors (any track read raw + PQ subchannel) */
+            /* 2352+16-byte sectors (any track read raw + Q subchannel) */
             *main_size = 2352;
             *subchannel_size = 16;
-            *subchannel_format = MIRAGE_SUBCHANNEL_PQ16 | MIRAGE_SUBCHANNEL_INT; /* PQ, internal */
+            *subchannel_format = MIRAGE_SUBCHANNEL_Q16 | MIRAGE_SUBCHANNEL_INT; /* Q, internal */
             break;
         }
         case 4: {
