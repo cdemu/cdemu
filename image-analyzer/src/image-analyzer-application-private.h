@@ -41,9 +41,6 @@ struct _ImageAnalyzerApplicationPrivate
     /* Window */
     GtkWidget *window;
 
-    /* UI Manager */
-    GtkUIManager *ui_manager;
-
     /* Status bar */
     GtkWidget *statusbar;
     guint context_id;

@@ -514,9 +514,9 @@ static void callback_debug_mask_change_requested (ImageAnalyzerLogWindow *log_wi
 
 
 /**********************************************************************\
- *                           GUI build helpers                        *
+ *                              GUI setup                             *
 \**********************************************************************/
-static GtkWidget *build_dialog_open_image (ImageAnalyzerApplication *self)
+static GtkWidget *build_dialog_open_image (GtkWindow *parent_window)
 {
     GtkWidget *dialog;
     GtkFileFilter *filter_all;
@@ -529,7 +529,7 @@ static GtkWidget *build_dialog_open_image (ImageAnalyzerApplication *self)
 
     dialog = gtk_file_chooser_dialog_new(
         "Open File",
-        GTK_WINDOW(self->priv->window),
+        parent_window,
         GTK_FILE_CHOOSER_ACTION_OPEN,
         GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
         GTK_STOCK_OPEN, GTK_RESPONSE_ACCEPT,
@@ -590,14 +590,14 @@ static GtkWidget *build_dialog_open_image (ImageAnalyzerApplication *self)
     return dialog;
 }
 
-static GtkWidget *build_dialog_open_dump (ImageAnalyzerApplication *self)
+static GtkWidget *build_dialog_open_dump (GtkWindow *parent_window)
 {
     GtkWidget *dialog;
     GtkFileFilter *filter;
 
     dialog = gtk_file_chooser_dialog_new(
         "Open File",
-        GTK_WINDOW(self->priv->window),
+        parent_window,
         GTK_FILE_CHOOSER_ACTION_OPEN,
         GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
         GTK_STOCK_OPEN, GTK_RESPONSE_ACCEPT,
@@ -620,14 +620,14 @@ static GtkWidget *build_dialog_open_dump (ImageAnalyzerApplication *self)
     return dialog;
 }
 
-static GtkWidget *build_dialog_save_dump (ImageAnalyzerApplication *self)
+static GtkWidget *build_dialog_save_dump (GtkWindow *parent_window)
 {
     GtkWidget *dialog;
     GtkFileFilter *filter;
 
     dialog = gtk_file_chooser_dialog_new(
         "Save File",
-        GTK_WINDOW(self->priv->window),
+        parent_window,
         GTK_FILE_CHOOSER_ACTION_SAVE,
         GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
         GTK_STOCK_SAVE, GTK_RESPONSE_ACCEPT,
@@ -651,149 +651,55 @@ static GtkWidget *build_dialog_save_dump (ImageAnalyzerApplication *self)
     return dialog;
 }
 
-static GtkWidget *build_dialog_log (ImageAnalyzerApplication *self)
+static const GtkActionEntry menu_entries[] = {
+    { "FileMenuAction", NULL, "_File", NULL, NULL, NULL },
+    { "ImageMenuAction", NULL, "_Image", NULL, NULL, NULL },
+    { "HelpMenuAction", NULL, "_Help", NULL, NULL, NULL },
+
+    { "OpenImageAction", GTK_STOCK_OPEN, "_Open image", "<control>O", "Open image", G_CALLBACK(ui_callback_open_image) },
+    { "OpenDumpAction", GTK_STOCK_OPEN, "Open _dump", "<control>D", "Open dump", G_CALLBACK(ui_callback_open_dump) },
+    { "SaveDumpAction", GTK_STOCK_SAVE, "_Save dump", "<control>S", "Save dump", G_CALLBACK(ui_callback_save_dump) },
+    { "CloseAction", GTK_STOCK_CLOSE, "_Close", "<control>W", "Close", G_CALLBACK(ui_callback_close) },
+    { "QuitAction", GTK_STOCK_QUIT, "_Quit", "<control>Q", "Quit", G_CALLBACK(ui_callback_quit) },
+
+    { "LogAction", GTK_STOCK_DIALOG_INFO, "libMirage _log", "<control>L", "libMirage log", G_CALLBACK(ui_callback_log_window) },
+    { "SectorAction", GTK_STOCK_EXECUTE, "_Read sector", "<control>R", "Read sector", G_CALLBACK(ui_callback_sector) },
+    { "AnalysisAction", GTK_STOCK_EXECUTE, "Sector _Analysis", "<control>A", "Sector analysis", G_CALLBACK(ui_callback_analysis) },
+    { "TopologyAction", GTK_STOCK_EXECUTE, "Disc _topology", "<control>T", "Disc topology", G_CALLBACK(ui_callback_topology) },
+    { "StructureAction", GTK_STOCK_EXECUTE, "Disc stru_cture", "<control>C", "Disc structures", G_CALLBACK(ui_callback_structure) },
+
+    { "AboutAction", GTK_STOCK_ABOUT, "_About", NULL, "About", G_CALLBACK(ui_callback_about) },
+};
+
+static const gchar menu_xml[] =
+    "<ui>"
+    "   <menubar name='MenuBar'>"
+    "       <menu name='FileMenu' action='FileMenuAction'>"
+    "           <menuitem name='Open image' action='OpenImageAction' />"
+    "           <separator/>"
+    "           <menuitem name='Open dump' action='OpenDumpAction' />"
+    "           <menuitem name='Save dump' action='SaveDumpAction' />"
+    "           <separator/>"
+    "           <menuitem name='Close' action='CloseAction' />"
+    "           <menuitem name='Quit' action='QuitAction' />"
+    "       </menu>"
+    "       <menu name='Image' action='ImageMenuAction'>"
+    "           <menuitem name='libMirage log' action='LogAction' />"
+    "           <menuitem name='Read sector' action='SectorAction' />"
+    "           <menuitem name='Sector analysis' action='AnalysisAction' />"
+    "           <menuitem name='Disc topology' action='TopologyAction' />"
+    "           <menuitem name='Disc structures' action='StructureAction' />"
+    "       </menu>"
+    "       <menu name='HelpMenu' action='HelpMenuAction'>"
+    "           <menuitem name='About' action='AboutAction' />"
+    "       </menu>"
+    "   </menubar>"
+    "</ui>";
+
+
+static void create_gui (ImageAnalyzerApplication *self)
 {
-    GtkWidget *dialog = g_object_new(IMAGE_ANALYZER_TYPE_LOG_WINDOW, NULL);
-    g_signal_connect(dialog, "delete_event", G_CALLBACK(gtk_widget_hide_on_delete), NULL);
-    g_signal_connect(dialog, "debug_to_stdout_change_requested", G_CALLBACK(callback_debug_to_stdout_change_requested), self);
-    g_signal_connect(dialog, "debug_mask_change_requested", G_CALLBACK(callback_debug_mask_change_requested), self);
-    return dialog;
-}
-
-static GtkWidget *build_dialog_sector ()
-{
-    GtkWidget *dialog = g_object_new(IMAGE_ANALYZER_TYPE_SECTOR_READ, NULL);
-    g_signal_connect(dialog, "delete_event", G_CALLBACK(gtk_widget_hide_on_delete), NULL);
-    return dialog;
-}
-
-static GtkWidget *build_dialog_analysis ()
-{
-    GtkWidget *dialog = g_object_new(IMAGE_ANALYZER_TYPE_SECTOR_ANALYSIS, NULL);
-    g_signal_connect(dialog, "delete_event", G_CALLBACK(gtk_widget_hide_on_delete), NULL);
-    return dialog;
-}
-
-static GtkWidget *build_dialog_topology ()
-{
-    GtkWidget *dialog = g_object_new(IMAGE_ANALYZER_TYPE_DISC_TOPOLOGY, NULL);
-    g_signal_connect(dialog, "delete_event", G_CALLBACK(gtk_widget_hide_on_delete), NULL);
-    image_analyzer_disc_topology_set_disc(IMAGE_ANALYZER_DISC_TOPOLOGY(dialog), NULL);
-    return dialog;
-}
-
-static GtkWidget *build_dialog_structure ()
-{
-    GtkWidget *dialog = g_object_new(IMAGE_ANALYZER_TYPE_DISC_STRUCTURE, NULL);
-    g_signal_connect(dialog, "delete_event", G_CALLBACK(gtk_widget_hide_on_delete), NULL);
-    image_analyzer_disc_structure_set_disc(IMAGE_ANALYZER_DISC_STRUCTURE(dialog), NULL);
-    return dialog;
-}
-
-static GtkWidget *build_menu (ImageAnalyzerApplication *self)
-{
-    static GtkActionEntry entries[] = {
-        { "FileMenuAction", NULL, "_File", NULL, NULL, NULL },
-        { "ImageMenuAction", NULL, "_Image", NULL, NULL, NULL },
-        { "HelpMenuAction", NULL, "_Help", NULL, NULL, NULL },
-
-        { "OpenImageAction", GTK_STOCK_OPEN, "_Open image", "<control>O", "Open image", G_CALLBACK(ui_callback_open_image) },
-        { "OpenDumpAction", GTK_STOCK_OPEN, "Open _dump", "<control>D", "Open dump", G_CALLBACK(ui_callback_open_dump) },
-        { "SaveDumpAction", GTK_STOCK_SAVE, "_Save dump", "<control>S", "Save dump", G_CALLBACK(ui_callback_save_dump) },
-        { "CloseAction", GTK_STOCK_CLOSE, "_Close", "<control>W", "Close", G_CALLBACK(ui_callback_close) },
-        { "QuitAction", GTK_STOCK_QUIT, "_Quit", "<control>Q", "Quit", G_CALLBACK(ui_callback_quit) },
-
-        { "LogAction", GTK_STOCK_DIALOG_INFO, "libMirage _log", "<control>L", "libMirage log", G_CALLBACK(ui_callback_log_window) },
-        { "SectorAction", GTK_STOCK_EXECUTE, "_Read sector", "<control>R", "Read sector", G_CALLBACK(ui_callback_sector) },
-        { "AnalysisAction", GTK_STOCK_EXECUTE, "Sector _Analysis", "<control>A", "Sector analysis", G_CALLBACK(ui_callback_analysis) },
-        { "TopologyAction", GTK_STOCK_EXECUTE, "Disc _topology", "<control>T", "Disc topology", G_CALLBACK(ui_callback_topology) },
-        { "StructureAction", GTK_STOCK_EXECUTE, "Disc stru_cture", "<control>C", "Disc structures", G_CALLBACK(ui_callback_structure) },
-
-        { "AboutAction", GTK_STOCK_ABOUT, "_About", NULL, "About", G_CALLBACK(ui_callback_about) },
-    };
-
-    static guint n_entries = G_N_ELEMENTS(entries);
-
-    static gchar *ui_xml = "\
-        <ui> \
-            <menubar name='MenuBar'> \
-                <menu name='FileMenu' action='FileMenuAction'> \
-                    <menuitem name='Open image' action='OpenImageAction' /> \
-                    <separator/> \
-                    <menuitem name='Open dump' action='OpenDumpAction' /> \
-                    <menuitem name='Save dump' action='SaveDumpAction' /> \
-                    <separator/> \
-                    <menuitem name='Close' action='CloseAction' /> \
-                    <menuitem name='Quit' action='QuitAction' /> \
-                </menu> \
-                <menu name='Image' action='ImageMenuAction'> \
-                    <menuitem name='libMirage log' action='LogAction' /> \
-                    <menuitem name='Read sector' action='SectorAction' /> \
-                    <menuitem name='Sector analysis' action='AnalysisAction' /> \
-                    <menuitem name='Disc topology' action='TopologyAction' /> \
-                    <menuitem name='Disc structures' action='StructureAction' /> \
-                </menu> \
-                <menu name='HelpMenu' action='HelpMenuAction'> \
-                    <menuitem name='About' action='AboutAction' /> \
-                </menu> \
-            </menubar> \
-        </ui> \
-        ";
-
-    GtkActionGroup *actiongroup;
-    GError *error = NULL;
-
-    /* Action group */
-    actiongroup = gtk_action_group_new("Image Analyzer");
-    gtk_action_group_add_actions(actiongroup, entries, n_entries, self);
-    gtk_ui_manager_insert_action_group(self->priv->ui_manager, actiongroup, 0);
-
-    gtk_ui_manager_add_ui_from_string(self->priv->ui_manager, ui_xml, strlen(ui_xml), &error);
-    if (error) {
-        g_warning("Building menus failed: %s", error->message);
-        g_error_free(error);
-    }
-
-    return gtk_ui_manager_get_widget(self->priv->ui_manager, "/MenuBar");
-}
-
-static GtkWidget *build_treeview (ImageAnalyzerApplication *self)
-{
-    GtkWidget *treeview;
-
-    GtkTreeViewColumn *column;
-    GtkCellRenderer *renderer;
-
-    /* GtkTreeView */
-    treeview = gtk_tree_view_new();
-    gtk_tree_view_set_headers_visible(GTK_TREE_VIEW(treeview), FALSE);
-
-    /* GktTreeViewColumn */
-    column = gtk_tree_view_column_new();
-    gtk_tree_view_append_column(GTK_TREE_VIEW(treeview), column);
-
-    renderer = gtk_cell_renderer_text_new();
-    gtk_tree_view_column_pack_start(column, renderer, TRUE);
-    gtk_tree_view_column_add_attribute(column, renderer, "text", 0);
-
-    /* GtkTreeStore */
-    self->priv->treestore = gtk_tree_store_new(1, G_TYPE_STRING);
-    gtk_tree_view_set_model(GTK_TREE_VIEW(treeview), GTK_TREE_MODEL(self->priv->treestore));
-
-    return treeview;
-}
-
-
-/**********************************************************************\
- *                              GUI setup                             *
-\**********************************************************************/
-static void setup_gui (ImageAnalyzerApplication *self)
-{
-    GtkWidget *vbox, *menubar, *scrolledwindow, *treeview;
-    GtkAccelGroup *accel_group;
-
-    /* UI manager */
-    self->priv->ui_manager = gtk_ui_manager_new();
+    GtkWidget *vbox;
 
     /* Window */
     self->priv->window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
@@ -810,36 +716,79 @@ static void setup_gui (ImageAnalyzerApplication *self)
 #endif
     gtk_container_add(GTK_CONTAINER(self->priv->window), vbox);
 
-    /* Menu */
-    menubar = build_menu(self);
-    gtk_box_pack_start(GTK_BOX(vbox), menubar, FALSE, FALSE, 0);
+    /* Menubar, actions and accelerators */
+    GtkUIManager *ui_manager = gtk_ui_manager_new();
+    GError *error = NULL;
+
+    gtk_ui_manager_add_ui_from_string(ui_manager, menu_xml, -1, &error);
+    if (error) {
+        g_warning("Building menus failed: %s", error->message);
+        g_error_free(error);
+    }
+
+    GtkActionGroup *actiongroup = gtk_action_group_new("Image Analyzer");
+    gtk_action_group_add_actions(actiongroup, menu_entries, G_N_ELEMENTS(menu_entries), self);
+    gtk_ui_manager_insert_action_group(ui_manager, actiongroup, 0);
+
+    gtk_box_pack_start(GTK_BOX(vbox), gtk_ui_manager_get_widget(ui_manager, "/MenuBar"), FALSE, FALSE, 0);
+
+    gtk_window_add_accel_group(GTK_WINDOW(self->priv->window), gtk_ui_manager_get_accel_group(ui_manager));
+
+    g_object_unref(ui_manager);
 
     /* Scrolled window */
-    scrolledwindow = gtk_scrolled_window_new(NULL, NULL);
-    gtk_box_pack_start(GTK_BOX(vbox), scrolledwindow, TRUE, TRUE, 0);
+    GtkWidget *scrolled_window = gtk_scrolled_window_new(NULL, NULL);
+    gtk_box_pack_start(GTK_BOX(vbox), scrolled_window, TRUE, TRUE, 0);
 
-    /* Tree view widget */
-    treeview = build_treeview(self);
-    gtk_container_add(GTK_CONTAINER(scrolledwindow), treeview);
+    /* Tree store and view widget */
+    self->priv->treestore = gtk_tree_store_new(1, G_TYPE_STRING);
+
+    GtkWidget *treeview = gtk_tree_view_new();
+    gtk_tree_view_set_headers_visible(GTK_TREE_VIEW(treeview), FALSE);
+    gtk_tree_view_set_model(GTK_TREE_VIEW(treeview), GTK_TREE_MODEL(self->priv->treestore));
+
+    gtk_container_add(GTK_CONTAINER(scrolled_window), treeview);
+
+    GtkTreeViewColumn *column = gtk_tree_view_column_new();
+    gtk_tree_view_append_column(GTK_TREE_VIEW(treeview), column);
+
+    GtkCellRenderer *renderer = gtk_cell_renderer_text_new();
+    gtk_tree_view_column_pack_start(column, renderer, TRUE);
+    gtk_tree_view_column_add_attribute(column, renderer, "text", 0);
 
     /* Status bar */
     self->priv->statusbar = gtk_statusbar_new();
     gtk_box_pack_start(GTK_BOX(vbox), self->priv->statusbar, FALSE, FALSE, 0);
     self->priv->context_id = gtk_statusbar_get_context_id(GTK_STATUSBAR(self->priv->statusbar), "Message");
 
-    /* Dialogs */
-    self->priv->dialog_open_image = build_dialog_open_image(self);
-    self->priv->dialog_open_dump = build_dialog_open_dump(self);
-    self->priv->dialog_save_dump = build_dialog_save_dump(self);
-    self->priv->dialog_log = build_dialog_log(self);
-    self->priv->dialog_sector = build_dialog_sector();
-    self->priv->dialog_analysis = build_dialog_analysis();
-    self->priv->dialog_topology = build_dialog_topology();
-    self->priv->dialog_structure = build_dialog_structure();
+    /* Load/save dialogs */
+    self->priv->dialog_open_image = build_dialog_open_image(GTK_WINDOW(self->priv->window));
+    self->priv->dialog_open_dump = build_dialog_open_dump(GTK_WINDOW(self->priv->window));
+    self->priv->dialog_save_dump = build_dialog_save_dump(GTK_WINDOW(self->priv->window));
 
-    /* Accelerator group */
-    accel_group = gtk_ui_manager_get_accel_group(self->priv->ui_manager);
-    gtk_window_add_accel_group(GTK_WINDOW(self->priv->window), accel_group);
+    /* Mirage log dialog */
+    self->priv->dialog_log = g_object_new(IMAGE_ANALYZER_TYPE_LOG_WINDOW, NULL);
+    g_signal_connect(self->priv->dialog_log, "delete_event", G_CALLBACK(gtk_widget_hide_on_delete), NULL);
+    g_signal_connect(self->priv->dialog_log, "debug_to_stdout_change_requested", G_CALLBACK(callback_debug_to_stdout_change_requested), self);
+    g_signal_connect(self->priv->dialog_log, "debug_mask_change_requested", G_CALLBACK(callback_debug_mask_change_requested), self);
+
+    /* Sector read dialog */
+    self->priv->dialog_sector = g_object_new(IMAGE_ANALYZER_TYPE_SECTOR_READ, NULL);
+    g_signal_connect(self->priv->dialog_sector, "delete_event", G_CALLBACK(gtk_widget_hide_on_delete), NULL);
+
+    /* Sector analysis dialog */
+    self->priv->dialog_analysis = g_object_new(IMAGE_ANALYZER_TYPE_SECTOR_ANALYSIS, NULL);
+    g_signal_connect(self->priv->dialog_analysis, "delete_event", G_CALLBACK(gtk_widget_hide_on_delete), NULL);
+
+    /* Disc topology dialog */
+    self->priv->dialog_topology = g_object_new(IMAGE_ANALYZER_TYPE_DISC_TOPOLOGY, NULL);
+    g_signal_connect(self->priv->dialog_topology, "delete_event", G_CALLBACK(gtk_widget_hide_on_delete), NULL);
+    image_analyzer_disc_topology_set_disc(IMAGE_ANALYZER_DISC_TOPOLOGY(self->priv->dialog_topology), NULL);
+
+    /* Disc structures dialog */
+    self->priv->dialog_structure = g_object_new(IMAGE_ANALYZER_TYPE_DISC_STRUCTURE, NULL);
+    g_signal_connect(self->priv->dialog_structure, "delete_event", G_CALLBACK(gtk_widget_hide_on_delete), NULL);
+    image_analyzer_disc_structure_set_disc(IMAGE_ANALYZER_DISC_STRUCTURE(self->priv->dialog_structure), NULL);
 }
 
 
@@ -890,7 +839,7 @@ static void image_analyzer_application_init (ImageAnalyzerApplication *self)
     mirage_context_set_password_function(self->priv->mirage_context, (MiragePasswordFunction)image_analyzer_application_get_password, self);
 
     /* Setup GUI */
-    setup_gui(self);
+    create_gui(self);
 
     /* Setup log handler */
     g_log_set_handler("libMirage", G_LOG_LEVEL_MASK, (GLogFunc)capture_log, self);
