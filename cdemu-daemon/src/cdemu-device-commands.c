@@ -352,16 +352,11 @@ static gboolean command_mode_select (CdemuDevice *self, guint8 *raw_cdb)
         /*sp = cdb->sp;
         pf = cdb->pf;*/
         transfer_len = cdb->length;
-    } else if (raw_cdb[0] == MODE_SELECT_10) {
+    } else {
         struct MODE_SELECT_10_CDB *cdb = (struct MODE_SELECT_10_CDB *)raw_cdb;
         /*sp = cdb->sp;
         pf = cdb->pf;*/
         transfer_len = GUINT16_FROM_BE(cdb->length);
-    } else {
-        /* Because bad things happen to good people... :/ */
-        CDEMU_DEBUG(self, DAEMON_DEBUG_ERROR, "%s: someone called this function when they shouldn't have :/...\n", __debug__);
-        cdemu_device_write_sense(self, ILLEGAL_REQUEST, INVALID_FIELD_IN_CDB);
-        return FALSE;
     }
 
     /* Read the parameter list */
@@ -467,7 +462,7 @@ static gboolean command_mode_sense (CdemuDevice *self, guint8 *raw_cdb)
         transfer_len = cdb->length;
 
         self->priv->buffer_size = sizeof(struct MODE_SENSE_6_Header);
-    } else if (raw_cdb[0] == MODE_SENSE_10) {
+    } else {
         struct MODE_SENSE_10_CDB *cdb = (struct MODE_SENSE_10_CDB *)raw_cdb;
 
         pc = cdb->pc;
@@ -475,12 +470,8 @@ static gboolean command_mode_sense (CdemuDevice *self, guint8 *raw_cdb)
         transfer_len = GUINT16_FROM_BE(cdb->length);
 
         self->priv->buffer_size = sizeof(struct MODE_SENSE_10_Header);
-    } else {
-        /* Because bad things happen to good people... :/ */
-        CDEMU_DEBUG(self, DAEMON_DEBUG_ERROR, "%s: someone called this function when they shouldn't have :/...\n", __debug__);
-        cdemu_device_write_sense(self, ILLEGAL_REQUEST, INVALID_FIELD_IN_CDB);
-        return FALSE;
     }
+
     guint8 *ret_data = self->priv->buffer+self->priv->buffer_size;
 
     /* We don't support saving mode pages */
@@ -615,16 +606,11 @@ static gboolean command_play_audio (CdemuDevice *self, guint8 *raw_cdb)
 
         start_sector = GUINT32_FROM_BE(cdb->lba);
         end_sector = GUINT32_FROM_BE(cdb->lba) + GUINT32_FROM_BE(cdb->play_len);
-    } else if (raw_cdb[0] == PLAY_AUDIO_MSF) {
+    } else {
         struct PLAY_AUDIO_MSF_CDB *cdb = (struct PLAY_AUDIO_MSF_CDB *)raw_cdb;
 
         start_sector = mirage_helper_msf2lba(cdb->start_m, cdb->start_s, cdb->start_f, TRUE);
         end_sector = mirage_helper_msf2lba(cdb->end_m, cdb->end_s, cdb->end_f, TRUE);
-    } else {
-        /* Because bad things happen to good people... :/ */
-        CDEMU_DEBUG(self, DAEMON_DEBUG_ERROR, "%s: someone called this function when they shouldn't have :/...\n", __debug__);
-        cdemu_device_write_sense(self, ILLEGAL_REQUEST, INVALID_FIELD_IN_CDB);
-        return FALSE;
     }
 
      /* Check if we have medium loaded */
@@ -681,15 +667,10 @@ static gboolean command_read (CdemuDevice *self, guint8 *raw_cdb)
         struct READ_10_CDB *cdb = (struct READ_10_CDB *)raw_cdb;
         start_address = GUINT32_FROM_BE(cdb->lba);
         num_sectors  = GUINT16_FROM_BE(cdb->length);
-    } else if (raw_cdb[0] == READ_12) {
+    } else {
         struct READ_12_CDB *cdb = (struct READ_12_CDB *)raw_cdb;
         start_address = GUINT32_FROM_BE(cdb->lba);
         num_sectors  = GUINT32_FROM_BE(cdb->length);
-    } else {
-        /* Because bad things happen to good people... :/ */
-        CDEMU_DEBUG(self, DAEMON_DEBUG_ERROR, "%s: someone called this function when they shouldn't have :/...\n", __debug__);
-        cdemu_device_write_sense(self, ILLEGAL_REQUEST, INVALID_FIELD_IN_CDB);
-        return FALSE;
     }
 
     CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: read request; start sector: 0x%X, number of sectors: %d\n", __debug__, start_address, num_sectors);
@@ -854,7 +835,7 @@ static gboolean command_read_cd (CdemuDevice *self, guint8 *raw_cdb)
 
         exp_sect_type = map_expected_sector_type(cdb->sect_type);
         subchannel_mode = cdb->subchan;
-    } else if (raw_cdb[0] == READ_CD_MSF) {
+    } else {
         struct READ_CD_MSF_CDB *cdb = (struct READ_CD_MSF_CDB *)raw_cdb;
         gint32 end_address = 0;
 
@@ -864,11 +845,6 @@ static gboolean command_read_cd (CdemuDevice *self, guint8 *raw_cdb)
 
         exp_sect_type = map_expected_sector_type(cdb->sect_type);
         subchannel_mode = cdb->subchan;
-    } else {
-        /* Because bad things happen to good people... :/ */
-        CDEMU_DEBUG(self, DAEMON_DEBUG_ERROR, "%s: someone called this function when they shouldn't have :/...\n", __debug__);
-        cdemu_device_write_sense(self, ILLEGAL_REQUEST, INVALID_FIELD_IN_CDB);
-        return FALSE;
     }
 
     CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: READ CD:\n-> Address: 0x%08X\n-> Length: %i\n-> Expected sector (in libMirage type): 0x%X\n-> MCSB: 0x%X\n-> SubChannel: 0x%X\n",
@@ -2149,15 +2125,10 @@ static gboolean command_write (CdemuDevice *self, guint8 *raw_cdb)
         struct WRITE_10_CDB *cdb = (struct WRITE_10_CDB *)raw_cdb;
         start_address = GUINT32_FROM_BE(cdb->lba);
         num_sectors  = GUINT16_FROM_BE(cdb->length);
-    } else if (raw_cdb[0] == READ_12) {
+    } else {
         struct WRITE_12_CDB *cdb = (struct WRITE_12_CDB *)raw_cdb;
         start_address = GUINT32_FROM_BE(cdb->lba);
         num_sectors  = GUINT32_FROM_BE(cdb->length);
-    } else {
-        /* Because bad things happen to good people... :/ */
-        CDEMU_DEBUG(self, DAEMON_DEBUG_ERROR, "%s: someone called this function when they shouldn't have :/...\n", __debug__);
-        cdemu_device_write_sense(self, ILLEGAL_REQUEST, INVALID_FIELD_IN_CDB);
-        return FALSE;
     }
 
     CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: write request; start sector: 0x%X (%d), number of sectors: %d\n", __debug__, start_address, start_address, num_sectors);
