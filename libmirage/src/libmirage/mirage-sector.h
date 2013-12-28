@@ -28,15 +28,15 @@ G_BEGIN_DECLS
 /**
  * MirageSectorSubchannelFormat:
  * @MIRAGE_SUBCHANNEL_PW: PW subchannel; 96 bytes, interleaved P-W
- * @MIRAGE_SUBCHANNEL_PQ: PQ subchannel; 16 bytes, Q subchannel
- * @MIRAGE_SUBCHANNEL_RW: RW subchannel; 96 bytes, deinterleaved R-W
+ * @MIRAGE_SUBCHANNEL_Q: Q subchannel; 16 bytes, Q subchannel
+ * @MIRAGE_SUBCHANNEL_RW: RW subchannel; 96 bytes, cooked R-W
  *
  * Subchannel selection flags.
  */
 typedef enum _MirageSectorSubchannelFormat
 {
     MIRAGE_SUBCHANNEL_PW = 0x01,
-    MIRAGE_SUBCHANNEL_PQ = 0x02,
+    MIRAGE_SUBCHANNEL_Q = 0x02,
     MIRAGE_SUBCHANNEL_RW = 0x03
 } MirageSectorSubchannelFormat;
 

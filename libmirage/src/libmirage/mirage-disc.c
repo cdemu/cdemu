@@ -132,8 +132,8 @@ static gboolean mirage_disc_check_for_encoded_mcn (MirageDisc *self)
                 continue;
             }
 
-            /* Get PQ subchannel */
-            if (!mirage_sector_get_subchannel(sector, MIRAGE_SUBCHANNEL_PQ, &buf, &buflen, NULL)) {
+            /* Get Q subchannel */
+            if (!mirage_sector_get_subchannel(sector, MIRAGE_SUBCHANNEL_Q, &buf, &buflen, NULL)) {
                 g_object_unref(sector);
                 continue;
             }

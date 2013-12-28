@@ -124,14 +124,14 @@ static gint read_sector_data (MirageSector *sector, MirageDisc *disc, gint addre
         read_length += tmp_len;
     }
 
-    /* Subchannel: we support only RAW and PQ */
+    /* Subchannel: we support only RAW and Q */
     switch (subchannel) {
         case 0x01: {
             mirage_sector_get_subchannel(sector, MIRAGE_SUBCHANNEL_PW, &tmp_buf, &tmp_len, NULL);
             break;
         }
         case 0x02: {
-            mirage_sector_get_subchannel(sector, MIRAGE_SUBCHANNEL_PQ, &tmp_buf, &tmp_len, NULL);
+            mirage_sector_get_subchannel(sector, MIRAGE_SUBCHANNEL_Q, &tmp_buf, &tmp_len, NULL);
             break;
         }
         default: {
@@ -1099,9 +1099,9 @@ static gboolean command_read_subchannel (CdemuDevice *self, guint8 *raw_cdb)
                 CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: current position (sector 0x%X)\n", __debug__, current_address);
                 ret_data->fmt_code = 0x01;
 
-                /* Read current sector's PQ subchannel */
+                /* Read current sector's Q subchannel */
                 guint8 tmp_buf[16];
-                if (read_sector_data(NULL, disc, current_address, 0x00 /* MCSB: empty */, 0x02 /* Subchannel: PQ */, tmp_buf, NULL) != 16) {
+                if (read_sector_data(NULL, disc, current_address, 0x00 /* MCSB: empty */, 0x02 /* Subchannel: Q */, tmp_buf, NULL) != 16) {
                     CDEMU_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: failed to read subchannel of sector 0x%X!\n", __debug__, current_address);
                 }
 
@@ -1127,7 +1127,7 @@ static gboolean command_read_subchannel (CdemuDevice *self, guint8 *raw_cdb)
                     CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: got a sector that's not Mode-1 Q; taking next one (0x%X)!\n", __debug__, current_address+correction);
 
                     /* Read from next sector */
-                    if (read_sector_data(NULL, disc, current_address+correction, 0x00 /* MCSB: empty */, 0x02 /* Subchannel: PQ */, tmp_buf, NULL) != 16) {
+                    if (read_sector_data(NULL, disc, current_address+correction, 0x00 /* MCSB: empty */, 0x02 /* Subchannel: Q */, tmp_buf, NULL) != 16) {
                         CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: failed to read subchannel of sector 0x%X!\n", __debug__, current_address+correction);
                         break;
                     }
@@ -1167,7 +1167,7 @@ static gboolean command_read_subchannel (CdemuDevice *self, guint8 *raw_cdb)
                 for (gint sector = 0; sector < 100; sector++) {
                     guint8 tmp_buf[16];
 
-                    if (read_sector_data(NULL, disc, sector, 0x00 /* MSCB: empty */, 0x02 /* Subchannel: PQ */, tmp_buf, NULL) != 16) {
+                    if (read_sector_data(NULL, disc, sector, 0x00 /* MSCB: empty */, 0x02 /* Subchannel: Q */, tmp_buf, NULL) != 16) {
                         CDEMU_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: failed to read subchannel of sector 0x%X!\n", __debug__, sector);
                         continue;
                     }
@@ -1211,7 +1211,7 @@ static gboolean command_read_subchannel (CdemuDevice *self, guint8 *raw_cdb)
                     }
 
                     /* Read sector */
-                    if (read_sector_data(sector, NULL, 0, 0x00 /* MCSB: empty*/, 0x02 /* Subchannel: PQ */, tmp_buf, NULL) != 16) {
+                    if (read_sector_data(sector, NULL, 0, 0x00 /* MCSB: empty*/, 0x02 /* Subchannel: Q */, tmp_buf, NULL) != 16) {
                         CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: failed to read subchannel of sector 0x%X\n", __debug__, address);
                         continue;
                     }
