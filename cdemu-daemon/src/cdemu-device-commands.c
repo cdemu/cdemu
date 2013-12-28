@@ -2175,11 +2175,14 @@ static gboolean command_write (CdemuDevice *self, guint8 *raw_cdb)
         }
         case 2: {
             /* 2448 bytes: raw data with cooked R-W subchannel */
-            main_channel_size = 2352;
+            /*main_channel_size = 2352;
             subchannel_size = 96;
             subchannel_format = MIRAGE_SUBCHANNEL_RW;
             determine_sector_type = TRUE;
-            break;
+            break;*/
+            CDEMU_DEBUG(self, DAEMON_DEBUG_ERROR, "%s: block data type %d (raw data with cooked RW subchannel) not supported!\n", __debug__);
+            cdemu_device_write_sense(self, ILLEGAL_REQUEST, INVALID_FIELD_IN_CDB);
+            return FALSE;
         }
         case 3: {
             /* 2448 bytes: raw data with raw P-W subchannel */
