@@ -766,6 +766,7 @@ static GtkWidget *build_treeview (ImageAnalyzerApplication *self)
 
     /* GtkTreeView */
     treeview = gtk_tree_view_new();
+    gtk_tree_view_set_headers_visible(GTK_TREE_VIEW(treeview), FALSE);
 
     /* GktTreeViewColumn */
     column = gtk_tree_view_column_new();
