@@ -131,18 +131,16 @@ struct CLOSE_TRACK_SESSION_CDB
     #endif
 
     #if G_BYTE_ORDER == G_BIG_ENDIAN
-        guint8 reserved2 : 6;
-        guint8 session   : 1;
-        guint8 track     : 1;
+        guint8 reserved2 : 5;
+        guint8 function  : 3;
     #else
-        guint8 track     : 1;
-        guint8 session   : 1;
-        guint8 reserved2 : 7;
+        guint8 function  : 3;
+        guint8 reserved2 : 5;
     #endif
 
     guint8 reserved3;
 
-    guint8 number[2];
+    guint16 number;
 
     guint8 reserved4[3];
 
@@ -405,9 +403,9 @@ struct GET_PERFORMANCE_03_Descriptor
         guint8 wrc       : 2;
         guint8 reserved1 : 3;
     #endif
-    
+
     guint8 reserved2[3];
-    
+
     guint32 end_lba;
     guint32 read_speed;
     guint32 write_speed;
@@ -1004,9 +1002,9 @@ struct READ_BUFFER_CAPACITY_CDB
 struct READ_BUFFER_CAPACITY_Data
 {
     guint16 data_length;
-    
+
     guint8 reserved1;
-    
+
     #if G_BYTE_ORDER == G_BIG_ENDIAN
         guint8 reserved2 : 7;
         guint8 block     : 1;
@@ -1014,7 +1012,7 @@ struct READ_BUFFER_CAPACITY_Data
         guint8 block     : 1;
         guint8 reserved2 : 7;
     #endif
-    
+
     guint32 length_of_buffer;
     guint32 blank_length_of_buffer;
 };
@@ -1653,7 +1651,7 @@ struct READ_TOC_PMA_ATIP_4_Descriptor
         guint8 itwp      : 3;
         guint8 one1      : 1;
     #endif
-    
+
     #if G_BYTE_ORDER == G_BIG_ENDIAN
         guint8 zero1     : 1;
         guint8 uru       : 1;
@@ -1663,7 +1661,7 @@ struct READ_TOC_PMA_ATIP_4_Descriptor
         guint8 uru       : 1;
         guint8 zero1     : 1;
     #endif
-    
+
     #if G_BYTE_ORDER == G_BIG_ENDIAN
         guint8 one2         : 1;
         guint8 disc_type    : 1;
@@ -1679,7 +1677,7 @@ struct READ_TOC_PMA_ATIP_4_Descriptor
         guint8 disc_type    : 1;
         guint8 one2         : 1;
     #endif
-    
+
     guint8 reserved3;
     guint8 leadin_start_m;
     guint8 leadin_start_s;
@@ -1689,16 +1687,16 @@ struct READ_TOC_PMA_ATIP_4_Descriptor
     guint8 last_leadout_m;
     guint8 last_leadout_s;
     guint8 last_leadout_f;
-    
+
     guint8 reserved5;
     guint8 additional_values1[3];
-    
+
     guint8 reserved6;
     guint8 additional_values2[3];
-    
+
     guint8 reserved7;
     guint8 additional_values3[3];
-    
+
     guint8 reserved8;
 };
 

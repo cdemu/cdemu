@@ -153,10 +153,32 @@ static gint read_sector_data (MirageSector *sector, MirageDisc *disc, gint addre
 /**********************************************************************\
  *                     Packet command implementations                 *
 \**********************************************************************/
+/* CLOSE TRACK/SESSION */
+static gboolean command_close_track_session (CdemuDevice *self, guint8 *raw_cdb)
+{
+    struct CLOSE_TRACK_SESSION_CDB *cdb = (struct CLOSE_TRACK_SESSION_CDB *)raw_cdb;
+
+    CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: close function: %d, track/session: %d\n", __debug__, cdb->function, cdb->number);
+
+    if (cdb->function == 1) {
+        /* Track */
+        CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: closing track %d\n", __debug__, cdb->number);
+    } else if (cdb->function == 2) {
+        /* Session */
+        CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: closing last session\n", __debug__);
+    } else {
+        CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: unimplemented close function: %d\n", __debug__, cdb->function);
+        cdemu_device_write_sense(self, ILLEGAL_REQUEST, INVALID_FIELD_IN_CDB);
+        return FALSE;
+    }
+
+    return TRUE;
+}
+
 /* GET CONFIGURATION*/
 static gboolean command_get_configuration (CdemuDevice *self, guint8 *raw_cdb)
 {
-    struct GET_CONFIGURATION_CDB *cdb = (struct GET_CONFIGURATION_CDB*)raw_cdb;
+    struct GET_CONFIGURATION_CDB *cdb = (struct GET_CONFIGURATION_CDB *)raw_cdb;
     struct GET_CONFIGURATION_Header *ret_header = (struct GET_CONFIGURATION_Header *)self->priv->buffer;
     self->priv->buffer_size = sizeof(struct GET_CONFIGURATION_Header);
     guint8 *ret_data = self->priv->buffer+self->priv->buffer_size;
@@ -2323,6 +2345,10 @@ gint cdemu_device_execute_command (CdemuDevice *self, CdemuCommand *cmd)
         gboolean (*implementation)(CdemuDevice *, guint8 *);
         gboolean disturbs_audio_play;
     } packet_commands[] = {
+        { CLOSE_TRACK_SESSION,
+          "CLOSE TRACK/SESSION",
+          command_close_track_session,
+          TRUE },
         { GET_EVENT_STATUS_NOTIFICATION,
           "GET EVENT/STATUS NOTIFICATION",
           command_get_event_status_notification,
