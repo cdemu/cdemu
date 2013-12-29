@@ -986,7 +986,9 @@ gboolean mirage_disc_add_track_by_index (MirageDisc *self, gint index, MirageTra
     /* If disc layout is empty (if there are no sessions), we should create
        a session... and then track will be added to this one */
     if (!mirage_disc_get_number_of_sessions(self)) {
-        mirage_disc_add_session_by_index(self, 0, NULL);
+        MirageSession *session = g_object_new(MIRAGE_TYPE_SESSION, NULL);
+        mirage_disc_add_session_by_index(self, 0, session);
+        g_object_unref(session);
     }
 
     /* First track, last track... allow negative indexes to go from behind */
