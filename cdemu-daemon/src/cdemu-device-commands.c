@@ -2088,6 +2088,19 @@ static gboolean command_start_stop_unit (CdemuDevice *self, guint8 *raw_cdb)
     return TRUE;
 }
 
+static gboolean command_synchronize_cache (CdemuDevice *self, guint8 *raw_cdb)
+{
+    struct SYNCHRONIZE_CACHE_CDB *cdb = (struct SYNCHRONIZE_CACHE_CDB *)raw_cdb;
+    guint32 lba = GUINT32_FROM_BE(cdb->lba);
+    guint16 blocks = GUINT16_FROM_BE(cdb->blocks);
+
+    /* There is nothing for us to do because our WRITE implementation
+       writes immediately */
+    CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: request for cache sync from LBA %Xh (%d), num blocks: %d; nothing to do\n", __debug__, lba, lba, blocks);
+
+    return TRUE;
+}
+
 
 /* TEST UNIT READY*/
 static gboolean command_test_unit_ready (CdemuDevice *self, guint8 *raw_cdb G_GNUC_UNUSED)
@@ -2425,6 +2438,10 @@ gint cdemu_device_execute_command (CdemuDevice *self, CdemuCommand *cmd)
         { START_STOP_UNIT,
           "START/STOP UNIT",
           command_start_stop_unit,
+          TRUE },
+        { SYNCHRONIZE_CACHE,
+          "SYNCHRONIZE CACHE",
+          command_synchronize_cache,
           TRUE },
         { TEST_UNIT_READY,
           "TEST UNIT READY",
