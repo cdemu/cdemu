@@ -136,7 +136,7 @@ gchar *dump_binary_fragment_subchannel_format (gint format)
         { MIRAGE_SUBCHANNEL_PW96_INT, "PW96 interleaved" },
         { MIRAGE_SUBCHANNEL_PW96_LIN, "PW96 linear" },
         { MIRAGE_SUBCHANNEL_RW96, "RW96" },
-        { MIRAGE_SUBCHANNEL_PQ16, "PQ16" },
+        { MIRAGE_SUBCHANNEL_Q16, "Q16" },
     };
 
     return dump_flags(format, values, G_N_ELEMENTS(values));

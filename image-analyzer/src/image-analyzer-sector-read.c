@@ -151,9 +151,9 @@ static void image_analyzer_sector_read_ui_callback_read (GtkWidget *button G_GNU
         image_analyzer_read_sector_append_text(self, NULL, "\n");
     }
 
-     /* PQ subchannel */
-    image_analyzer_read_sector_append_text(self, "tag_section", "PQ subchannel:\n");
-    mirage_sector_get_subchannel(sector, MIRAGE_SUBCHANNEL_PQ, &tmp_buf, &tmp_len, NULL);
+     /* Q subchannel */
+    image_analyzer_read_sector_append_text(self, "tag_section", "Q subchannel:\n");
+    mirage_sector_get_subchannel(sector, MIRAGE_SUBCHANNEL_Q, &tmp_buf, &tmp_len, NULL);
     image_analyzer_read_sector_append_sector_data(self, tmp_buf, tmp_len, NULL);
     image_analyzer_read_sector_append_text(self, NULL, "\n");
 
