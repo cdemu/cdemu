@@ -1780,7 +1780,7 @@ struct READ_TRACK_INFORMATION_Data
     #endif
 
     guint32 start_address;
-    guint32 next_writeable_address;
+    guint32 next_writable_address;
     guint32 free_blocks;
     guint32 fixed_packet_size;
     guint32 track_size;

@@ -1899,7 +1899,7 @@ static gboolean command_read_track_information (CdemuDevice *self, guint8 *raw_c
     gint track_mode;
     gint data_mode;
     guint32 start_sector = 0x000000;
-    guint32 next_writeable_address = 0x000000;
+    guint32 next_writable_address = 0x000000;
     guint32 free_blocks = 0x000000;
     guint32 fixed_packet_size = 0x000000;
     guint32 length = 0x000000;
@@ -1949,6 +1949,8 @@ static gboolean command_read_track_information (CdemuDevice *self, guint8 *raw_c
 
         nwa_valid = TRUE;
         blank_track = TRUE;
+
+        next_writable_address = self->priv->next_writable_address;
     } else if (return_disc_leadin) {
         /* Return information for disc lead-in */
         track_number = 0;
@@ -1975,7 +1977,7 @@ static gboolean command_read_track_information (CdemuDevice *self, guint8 *raw_c
     ret_data->nwa_v = nwa_valid;
 
     ret_data->start_address = GUINT32_TO_BE(start_sector);
-    ret_data->next_writeable_address = GUINT32_TO_BE(next_writeable_address);
+    ret_data->next_writable_address = GUINT32_TO_BE(next_writable_address);
     ret_data->free_blocks = GUINT32_TO_BE(free_blocks);
     ret_data->fixed_packet_size = GUINT32_TO_BE(fixed_packet_size);
     ret_data->track_size = GUINT32_TO_BE(length);
@@ -2116,9 +2118,20 @@ static gboolean command_synchronize_cache (CdemuDevice *self, guint8 *raw_cdb)
     guint32 lba = GUINT32_FROM_BE(cdb->lba);
     guint16 blocks = GUINT16_FROM_BE(cdb->blocks);
 
-    /* There is nothing for us to do because our WRITE implementation
-       writes immediately */
-    CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: request for cache sync from LBA %Xh (%d), num blocks: %d; nothing to do\n", __debug__, lba, lba, blocks);
+    CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: request for cache sync from LBA %Xh (%d), num blocks: %d\n", __debug__, lba, lba, blocks);
+
+    if (self->priv->open_track) {
+        CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: closing the opened track!\n", __debug__);
+
+        /* Officially add track to the disc */
+        mirage_disc_add_track_by_index(self->priv->disc, -1, self->priv->open_track, NULL);
+
+        /* Release the reference we hold */
+        g_object_unref(self->priv->open_track);
+        self->priv->open_track = NULL;
+    } else {
+        CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: nothing to do!\n", __debug__);
+    }
 
     return TRUE;
 }
@@ -2166,7 +2179,7 @@ static gboolean command_write (CdemuDevice *self, guint8 *raw_cdb)
         num_sectors  = GUINT32_FROM_BE(cdb->length);
     }
 
-    CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: write request; start sector: 0x%X (%d), number of sectors: %d\n", __debug__, start_address, start_address, num_sectors);
+    CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: write request; start sector: 0x%X (%d), number of sectors: %d; NWA is 0x%X\n", __debug__, start_address, start_address, num_sectors, self->priv->next_writable_address);
 
     /* Data format depends on settings in Mode page 0x05 */
     struct ModePage_0x05 *p_0x05 = cdemu_device_get_mode_page(self, 0x05, MODE_PAGE_CURRENT);
@@ -2292,6 +2305,25 @@ static gboolean command_write (CdemuDevice *self, guint8 *raw_cdb)
         sector_type = mirage_helper_determine_sector_type(self->priv->buffer);
     }
 
+    /* If there is no opened track, open one */
+    if (!self->priv->open_track) {
+        CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: no track opened; creating one!\n", __debug__);
+
+        self->priv->open_track = g_object_new(MIRAGE_TYPE_TRACK, NULL);
+
+        /* Determine the start address from disc, but do not add track to
+           the layout yet */
+        mirage_track_layout_set_track_number(self->priv->open_track, mirage_disc_get_number_of_tracks(self->priv->disc) + 1);
+        mirage_track_layout_set_start_sector(self->priv->open_track, mirage_disc_layout_get_start_sector(self->priv->disc) + mirage_disc_layout_get_length(self->priv->disc));
+
+        CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: opened track #%d; start sector: %d!\n", __debug__, mirage_track_layout_get_track_number(self->priv->open_track), mirage_track_layout_get_start_sector(self->priv->open_track));
+
+        MirageFragment *fragment = g_object_new(MIRAGE_TYPE_FRAGMENT, NULL);
+        mirage_track_add_fragment(self->priv->open_track, -1, fragment);
+        g_object_unref(fragment);
+    }
+
+
     /* Create sector object for writing */
     gboolean succeeded = TRUE;
     MirageSector *sector = g_object_new(MIRAGE_TYPE_SECTOR, NULL);
@@ -2312,6 +2344,15 @@ static gboolean command_write (CdemuDevice *self, guint8 *raw_cdb)
         if (p_0x05->data_block_type == 10 || p_0x05->data_block_type == 12) {
             mirage_sector_set_subheader(sector, p_0x05->subheader, sizeof(p_0x05->subheader), NULL);
         }
+
+        /* Increment NWA */
+        self->priv->next_writable_address++;
+
+        /* Fragment is now longer by one; FIXME: this should be handled
+           by write_sector() function! */
+        MirageFragment *fragment = mirage_track_get_fragment_by_index(self->priv->open_track, -1, NULL);
+        mirage_fragment_set_length(fragment, mirage_fragment_get_length(fragment) + 1);
+        g_object_unref(fragment);
     }
 
     g_object_unref(sector);
