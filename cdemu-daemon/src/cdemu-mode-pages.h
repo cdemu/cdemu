@@ -106,7 +106,7 @@ struct ModePage_0x05
     #endif
 
     guint8 length;
-    
+
     #if G_BYTE_ORDER == G_BIG_ENDIAN
         guint8 reserved2  : 1;
         guint8 bufe       : 1;
@@ -120,7 +120,7 @@ struct ModePage_0x05
         guint8 bufe       : 1;
         guint8 reserved2  : 1;
     #endif
-    
+
     #if G_BYTE_ORDER == G_BIG_ENDIAN
         guint8 multisession : 2;
         guint8 fp           : 1;
@@ -132,7 +132,7 @@ struct ModePage_0x05
         guint8 fp           : 1;
         guint8 multisession : 2;
     #endif
-    
+
     #if G_BYTE_ORDER == G_BIG_ENDIAN
         guint8 reserved3       : 4;
         guint8 data_block_type : 4;
@@ -140,11 +140,11 @@ struct ModePage_0x05
         guint8 data_block_type : 4;
         guint8 reserved3       : 4;
     #endif
-    
+
     guint8 link_size;
 
     guint8 reserved4;
-    
+
     #if G_BYTE_ORDER == G_BIG_ENDIAN
         guint8 reserved5                  : 2;
         guint8 initiator_application_code : 6;
@@ -156,11 +156,11 @@ struct ModePage_0x05
     guint8 session_format;
 
     guint8 reserved6;
-    
+
     guint32 packet_size;
-    
+
     guint16 audio_pause_length;
-    
+
     guint8 mcn[16];
     guint8 isrc[16];
     guint8 subheader[4];
@@ -466,7 +466,20 @@ struct ModePage_0x2A
 
     guint16 cur_wspeed;
 
-    guint16 wsp_descriptors;
+    guint16 num_wsp_descriptors;
+};
+
+struct ModePage_0x2A_WriteSpeedPerformanceDescriptor
+{
+    guint8 reserved1;
+    #if G_BYTE_ORDER == G_BIG_ENDIAN
+        guint8 reserved12 : 7;
+        guint8 rc         : 1;
+    #else
+        guint8 rc         : 1;
+        guint8 reserved12 : 7;
+    #endif
+    guint16 write_speed;
 };
 
 #pragma pack()

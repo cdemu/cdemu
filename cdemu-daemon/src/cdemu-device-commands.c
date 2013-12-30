@@ -2226,6 +2226,14 @@ static gboolean command_set_cd_speed (CdemuDevice *self, guint8 *raw_cdb)
         p_0x2A->cur_read_speed = cdb->read_speed;
     }
 
+    if (cdb->write_speed == 0xFFFF) {
+        CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: setting read write to max\n", __debug__);
+        p_0x2A->cur_write_speed = p_0x2A->cur_wspeed = p_0x2A->max_write_speed;
+    } else {
+        CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: setting read write to %i kB/s\n", __debug__, GUINT16_FROM_BE(cdb->write_speed));
+        p_0x2A->cur_write_speed = p_0x2A->cur_wspeed = cdb->write_speed;
+    }
+
     return TRUE;
 }
 

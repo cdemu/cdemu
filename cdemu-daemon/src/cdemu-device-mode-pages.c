@@ -139,56 +139,56 @@ void cdemu_device_mode_pages_init (CdemuDevice *self)
     }
     self->priv->mode_pages_list = append_mode_page(self->priv->mode_pages_list, mode_page);
 
-    
+
     /*** Mode page 0x05: Write Parameters Mode Page ***/
     /* IMPLEMENTATION NOTE: */
     mode_page = initialize_mode_page(0x05, sizeof(struct ModePage_0x05));
     if (mode_page) {
         struct ModePage_0x05 *page = g_array_index(mode_page, struct ModePage_0x05 *, MODE_PAGE_DEFAULT);
         struct ModePage_0x05 *mask = g_array_index(mode_page, struct ModePage_0x05 *, MODE_PAGE_MASK);
-        
+
         page->bufe = 1; /* Buffer underrun protection; 0 by default as per MMC3 */
         mask->bufe = 1;
-        
+
         page->ls_v = 1; /* Link size is valid */
         mask->ls_v = 1;
-        
+
         page->test_write = 1; /* Off by default */
         mask->test_write = 1;
-        
+
         page->write_type = 0x00; /* Packet/incremental */
-        mask->write_type = 0x0F; 
-        
+        mask->write_type = 0x0F;
+
         page->multisession = 0x00; /* No multi-session */
         mask->multisession = 0x03;
-        
-        page->fp = 0; /* Variable packet by default */ 
+
+        page->fp = 0; /* Variable packet by default */
         mask->fp = 1;
-        
+
         page->copy = 0; /* Not a higher generation copy by default */
         mask->copy = 1;
-        
+
         page->track_mode = 5;
         mask->track_mode = 0x0F;
-        
+
         page->data_block_type = 8; /* Mode1 by default */
         mask->data_block_type = 0x0F;
-        
+
         page->link_size = 7;
         mask->link_size = 0xFF;
-        
+
         page->initiator_application_code = 0;
         mask->initiator_application_code = 0x3F;
-        
+
         page->session_format = 0x00;
         mask->session_format = 0xFF;
-        
+
         page->packet_size = GUINT32_TO_BE(16);
         mask->packet_size = 0xFFFFFFFF;
-        
+
         page->audio_pause_length = GUINT16_TO_BE(150);
         mask->audio_pause_length = 0xFFFF;
-        
+
         memset(mask->mcn, 0xFF, sizeof(mask->mcn));
         memset(mask->isrc, 0xFF, sizeof(mask->isrc));
         memset(mask->subheader, 0xFF, sizeof(mask->subheader));
@@ -257,7 +257,8 @@ void cdemu_device_mode_pages_init (CdemuDevice *self)
 
     /*** Mode Page 0x2A: CD/DVD Capabilities and Mechanical Status Mode Page ***/
     /* IMPLEMENTATION NOTE: We claim to do things we can (more or less), and nothing
-       can be changed, just like INF8090 says */
+       can be changed, just like INF8090 says. We also have 6 Write Speed Performance
+       Descriptors, which are appended at the end of the page */
     mode_page = initialize_mode_page(0x2A, sizeof(struct ModePage_0x2A));
     if (mode_page) {
         struct ModePage_0x2A *page = g_array_index(mode_page, struct ModePage_0x2A *, MODE_PAGE_DEFAULT);
@@ -298,13 +299,42 @@ void cdemu_device_mode_pages_init (CdemuDevice *self)
 
         page->vol_lvls = GUINT16_TO_BE(0x0100);
 
-        page->max_read_speed = GUINT16_TO_BE(0x1B90); /* 40X */
+        page->max_read_speed = GUINT16_TO_BE(0x2113); /* 56x */
         page->buf_size = GUINT16_TO_BE(0x0100); /* 256 kB */
         page->cur_read_speed = page->max_read_speed; /* Max by default */
 
+        page->max_write_speed = GUINT16_TO_BE(0x2113); /* 56x */
+        page->cur_write_speed = page->max_write_speed; /* Max by default */
+
         page->copy_man_rev = GUINT16_TO_BE(0x01);
+
+        page->rot_ctl_sel = 1; /* Rotation control selected */
+        page->cur_wspeed = page->cur_write_speed; /* Copy */
+
+        page->num_wsp_descriptors = GUINT16_TO_BE(0); /* NOTE: write speed performance descriptors are initialized separately! */
     }
     self->priv->mode_pages_list = append_mode_page(self->priv->mode_pages_list, mode_page);
+
+    if (1) {
+        /* A hack; we need to resize the "current" Mode Page 0x2A to accept
+           write speed performance descriptors */
+        GArray *mode_pages_array = g_list_last(self->priv->mode_pages_list)->data;
+        struct ModePage_0x2A *old_page = g_array_index(mode_pages_array, gpointer, MODE_PAGE_CURRENT);
+        struct ModePage_0x2A *page = g_realloc(old_page, sizeof(struct ModePage_0x2A) + 6*sizeof(struct ModePage_0x2A_WriteSpeedPerformanceDescriptor));
+
+        if (page != old_page) {
+            g_array_remove_index(mode_pages_array, MODE_PAGE_CURRENT);
+            g_array_prepend_val(mode_pages_array, page);
+        }
+
+        /* Modify page size */
+        page->length += 6*sizeof(struct ModePage_0x2A_WriteSpeedPerformanceDescriptor);
+
+        page->num_wsp_descriptors = GUINT16_TO_BE(6);
+
+        /* NOTE: the actual write speed performance descriptors are initialized when profile changes! */
+        memset((page+1), 0, 6*sizeof(struct ModePage_0x2A_WriteSpeedPerformanceDescriptor));
+    }
 };
 
 void cdemu_device_mode_pages_cleanup (CdemuDevice *self)

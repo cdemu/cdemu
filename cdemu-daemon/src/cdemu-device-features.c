@@ -206,7 +206,7 @@ void cdemu_device_features_init (CdemuDevice *self)
     }
     self->priv->features_list = append_feature(self->priv->features_list, general_feature);
 
-     
+
     /* Feature 0x0021: Incremental Streaming Writable Feature */
     /* IMPLEMENTATION NOTE: non-persistent; version set to 0x01 as per MMC3 */
     general_feature = initialize_feature(0x0021, sizeof(struct Feature_0x0021));
@@ -218,7 +218,7 @@ void cdemu_device_features_init (CdemuDevice *self)
         feature->data_block_types_supported = 0xFF; /* Support all */
 
         feature->buf = 1; /* We support dual-cross linking */
-        
+
         feature->num_link_sizes = 1; /* 1 for CD-R */
         feature->link_sizes[0] = 7; /* As per MMC3 */
     }
@@ -239,7 +239,7 @@ void cdemu_device_features_init (CdemuDevice *self)
         feature->test_write = 1;
         feature->cd_rw = 1;
         feature->rw_subcode = 1;
-        
+
         feature->data_type_supported = 0xFFFF; /* Support all */
     }
     self->priv->features_list = append_feature(self->priv->features_list, general_feature);
@@ -317,18 +317,35 @@ void cdemu_device_features_cleanup (CdemuDevice *self)
 /**********************************************************************\
  *                       Write Speed Descriptors                      *
 \**********************************************************************/
-static GList *add_write_descriptor (GList *list, guint8 mrw, guint8 exact, guint32 end_lba, guint32 read_speed, guint32 write_speed)
+struct PerformanceDescriptor
 {
-    struct GET_PERFORMANCE_03_Descriptor *descriptor = g_new0(struct GET_PERFORMANCE_03_Descriptor, 1);
-    
-    descriptor->mrw = mrw;
-    descriptor->exact = exact;
-    descriptor->end_lba = GUINT32_TO_BE(end_lba);
-    descriptor->read_speed = GUINT32_TO_BE(read_speed);
-    descriptor->write_speed = GUINT32_TO_BE(write_speed);
-    
-    return g_list_append(list, descriptor);
-}
+    gboolean mrw;
+    gboolean exact;
+    gint wrc;
+    gint rc; /* Rotation control value, for Mode Page 0x2A (seems to differ from WRC from GET PERFORMANCE) */
+    gint read_speed;
+    gint write_speed;
+};
+
+/* The values below are taken from my drive; NOTE: the amount of items
+   in this list must match the size of descriptor list in Mode Page 0x2A! */
+static struct PerformanceDescriptor WriteDescriptors_CD[6] = {
+    { TRUE,  TRUE,  0, 1, 0x2113, 0x2113 }, /* 8467/8467 kB/s (56x/56x) */
+    { TRUE,  TRUE,  0, 1, 0x1B90, 0x1B90 }, /* 7056/7056 kB/s (48x/48x) */
+    { FALSE, FALSE, 0, 1, 0x1B90, 0x160D }, /* 7056/5645 kB/s (48x/40x) */
+    { FALSE, FALSE, 0, 1, 0x1B90, 0x108A }, /* 7056/4234 kB/s (48x/32x) */
+    { FALSE, FALSE, 0, 0, 0x0DC8, 0x0B06 }, /* 3528/2822 kB/s (32x/20x) */
+    { FALSE, FALSE, 0, 0, 0x06E4, 0x0583 }, /* 1764/1411 kB/s (12x/10x) */
+};
+
+static struct PerformanceDescriptor WriteDescriptors_DVD[6] = {
+    { FALSE, FALSE, 0, 1, 0x5690, 0x6162 }, /* 22160/24930 kB/s (16x/18x) */
+    { TRUE,  TRUE,  0, 1, 0x5690, 0x5690 }, /* 22160/22160 kB/s (16x/16x) */
+    { TRUE,  TRUE,  0, 1, 0x40EC, 0x40EC }, /* 16620/16620 kB/s (12x/12x) */
+    { FALSE, FALSE, 0, 0, 0x2B48, 0x2B48 }, /* 11080/11080 kB/s (8x/8x) */
+    { FALSE, FALSE, 0, 0, 0x2B48, 0x2076 }, /* 11080/ 8310 kB/s (8x/6x) */
+    { FALSE, FALSE, 0, 0, 0x1B0D, 0x15A4 }, /*  6925/ 5540 kB/s (5x/4x) */
+};
 
 static void cdemu_device_set_write_speed_descriptors (CdemuDevice *self, ProfileIndex profile_index)
 {
@@ -337,40 +354,57 @@ static void cdemu_device_set_write_speed_descriptors (CdemuDevice *self, Profile
         g_list_free_full(self->priv->write_descriptors, g_free);
         self->priv->write_descriptors = NULL;
     }
-    
+
+    /* Select performance list descriptor */
+    const struct PerformanceDescriptor *descriptors;
+    gint num_descriptors;
+
+    gint end_sector;
+
     switch (profile_index) {
         case ProfileIndex_CDROM:
         case ProfileIndex_CDR: {
-            gint capacity = /*mirage_disc_get_medium_capacity(self->priv->disc)*/ self->priv->medium_capacity - 150;
-            self->priv->write_descriptors = add_write_descriptor(self->priv->write_descriptors, 1, 1, capacity, 0x2113, 0x2113); /* 8467/8467 kB/s (56x/56x) */
-            self->priv->write_descriptors = add_write_descriptor(self->priv->write_descriptors, 1, 1, capacity, 0x1B90, 0x1B90); /* 7056/7056 kB/s (48x/48x) */
-            self->priv->write_descriptors = add_write_descriptor(self->priv->write_descriptors, 0, 0, capacity, 0x1B90, 0x160D); /* 7056/5645 kB/s (48x/40x) */
-            self->priv->write_descriptors = add_write_descriptor(self->priv->write_descriptors, 0, 0, capacity, 0x1B90, 0x108A); /* 7056/4234 kB/s (48x/32x) */
-            self->priv->write_descriptors = add_write_descriptor(self->priv->write_descriptors, 0, 0, capacity, 0x0DC8, 0x0B06); /* 3528/2822 kB/s (32x/20x) */
-            self->priv->write_descriptors = add_write_descriptor(self->priv->write_descriptors, 0, 0, capacity, 0x06E4, 0x0583); /* 1764/1411 kB/s (12x/10x) */
+            descriptors = WriteDescriptors_CD;
+            num_descriptors = sizeof(WriteDescriptors_CD)/sizeof(WriteDescriptors_CD[0]);
+            end_sector = self->priv->medium_capacity - 150;
             break;
         }
         case ProfileIndex_DVDROM: {
-            gint capacity = /*mirage_disc_get_medium_capacity(self->priv->disc)*/ self->priv->medium_capacity;
-            self->priv->write_descriptors = add_write_descriptor(self->priv->write_descriptors, 0, 0, capacity, 0x5690, 0x6162); /* 22160/24930 kB/s (16x/18x) */
-            self->priv->write_descriptors = add_write_descriptor(self->priv->write_descriptors, 1, 1, capacity, 0x5690, 0x5690); /* 22160/22160 kB/s (16x/16x) */
-            self->priv->write_descriptors = add_write_descriptor(self->priv->write_descriptors, 1, 1, capacity, 0x40EC, 0x40EC); /* 16620/16620 kB/s (12x/12x) */
-            self->priv->write_descriptors = add_write_descriptor(self->priv->write_descriptors, 0, 0, capacity, 0x2B48, 0x2B48); /* 11080/11080 kB/s (8x/8x) */
-            self->priv->write_descriptors = add_write_descriptor(self->priv->write_descriptors, 0, 0, capacity, 0x2B48, 0x2076); /* 11080/8310 kB/s (8x/6x) */
-            self->priv->write_descriptors = add_write_descriptor(self->priv->write_descriptors, 0, 0, capacity, 0x1B0D, 0x15A4); /* 6925/5540 kB/S (5x/4x) */
+            descriptors = WriteDescriptors_DVD;
+            num_descriptors = sizeof(WriteDescriptors_DVD)/sizeof(WriteDescriptors_DVD[0]);
+            end_sector = self->priv->medium_capacity;
             break;
         }
         case ProfileIndex_NONE:
         default: {
-            gint capacity = 0x0006622D; /* My drive returns this when it is empty */
-            self->priv->write_descriptors = add_write_descriptor(self->priv->write_descriptors, 1, 1, capacity, 0x2113, 0x2113); /* 8467/8467 kB/s (56x/56x) */
-            self->priv->write_descriptors = add_write_descriptor(self->priv->write_descriptors, 1, 1, capacity, 0x1B90, 0x1B90); /* 7056/7056 kB/s (48x/48x) */
-            self->priv->write_descriptors = add_write_descriptor(self->priv->write_descriptors, 0, 0, capacity, 0x1B90, 0x160D); /* 7056/5645 kB/s (48x/40x) */
-            self->priv->write_descriptors = add_write_descriptor(self->priv->write_descriptors, 0, 0, capacity, 0x1B90, 0x108A); /* 7056/4234 kB/s (48x/32x) */
-            self->priv->write_descriptors = add_write_descriptor(self->priv->write_descriptors, 0, 0, capacity, 0x0DC8, 0x0B06); /* 3528/2822 kB/s (32x/20x) */
-            self->priv->write_descriptors = add_write_descriptor(self->priv->write_descriptors, 0, 0, capacity, 0x06E4, 0x0583); /* 1764/1411 kB/s (12x/10x) */
+            descriptors = WriteDescriptors_CD;
+            num_descriptors = sizeof(WriteDescriptors_CD)/sizeof(WriteDescriptors_CD[0]);
+            end_sector = 0x0006622D; /* This is what my drive reports when emtpy */
             break;
         }
+    }
+
+    /* Build/populate the descriptor list(s) */
+    struct ModePage_0x2A_WriteSpeedPerformanceDescriptor *p_0x2A_descs = (struct ModePage_0x2A_WriteSpeedPerformanceDescriptor *)(((struct ModePage_0x2A *)cdemu_device_get_mode_page(self, 0x2A, MODE_PAGE_CURRENT)) + 1);
+
+    for (gint i = 0; i < num_descriptors; i++) {
+        const struct PerformanceDescriptor *source_descriptor = &descriptors[i];
+
+        /* List of descriptors for GET PERFORMANCE */
+        struct GET_PERFORMANCE_03_Descriptor *perf_descriptor = g_new0(struct GET_PERFORMANCE_03_Descriptor, 1);
+
+        perf_descriptor->wrc = source_descriptor->wrc;
+        perf_descriptor->mrw = source_descriptor->mrw;
+        perf_descriptor->exact = source_descriptor->exact;
+        perf_descriptor->end_lba = GUINT32_TO_BE(end_sector);
+        perf_descriptor->read_speed = GUINT32_TO_BE(source_descriptor->read_speed);
+        perf_descriptor->write_speed = GUINT32_TO_BE(source_descriptor->write_speed);
+
+        self->priv->write_descriptors = g_list_append(self->priv->write_descriptors, perf_descriptor);
+
+        /* List of descriptors for Mode Page 0x2A */
+        p_0x2A_descs[i].rc = source_descriptor->rc;
+        p_0x2A_descs[i].write_speed = GUINT16_TO_BE(source_descriptor->write_speed);
     }
 }
 
@@ -498,7 +532,7 @@ void cdemu_device_set_profile (CdemuDevice *self, ProfileIndex profile_index)
             return;
         }
     }
-    
+
     /* Modify write speed descriptors */
     cdemu_device_set_write_speed_descriptors(self, profile_index);
 }
