@@ -111,7 +111,11 @@ struct _CdemuDevicePrivate
     GList *write_descriptors;
 
     gint next_writable_address;
+
+    MirageSession *open_session;
     MirageTrack *open_track;
+    gboolean last_session_closed;
+    gboolean disc_closed;
 };
 
 

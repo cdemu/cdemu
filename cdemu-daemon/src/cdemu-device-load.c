@@ -106,6 +106,7 @@ static gboolean cdemu_device_load_disc_private (CdemuDevice *self, gchar **filen
         self->priv->medium_capacity = 80*60*75;
 
         self->priv->next_writable_address = 0;
+        self->priv->open_session = NULL;
         self->priv->open_track = NULL;
 
         cdemu_device_set_profile(self, ProfileIndex_CDR);

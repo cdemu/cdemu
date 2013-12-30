@@ -151,6 +151,106 @@ static gint read_sector_data (MirageSector *sector, MirageDisc *disc, gint addre
 
 
 /**********************************************************************\
+ *                          Burning helpers                           *
+\**********************************************************************/
+static gboolean cdemu_device_burning_open_session (CdemuDevice *self)
+{
+    /* Create new session */
+    self->priv->open_session = g_object_new(MIRAGE_TYPE_SESSION, NULL);
+
+    /* Determine session number and start sector from the disc; but do
+       not add the session to the layout yet (do this when session is
+       closed) */
+    gint session_number = mirage_disc_layout_get_first_session(self->priv->disc) + mirage_disc_get_number_of_sessions(self->priv->disc);
+    gint start_sector = mirage_disc_layout_get_start_sector(self->priv->disc) + mirage_disc_layout_get_length(self->priv->disc);
+    gint first_track = mirage_disc_layout_get_first_track(self->priv->disc) + mirage_disc_get_number_of_tracks(self->priv->disc);
+
+    mirage_session_layout_set_session_number(self->priv->open_session, session_number);
+    mirage_session_layout_set_start_sector(self->priv->open_session, start_sector);
+    mirage_session_layout_set_first_track(self->priv->open_session, first_track);
+
+    CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: opened session #%d; start sector: %d, first track: %d!\n", __debug__, mirage_session_layout_get_session_number(self->priv->open_session), mirage_session_layout_get_start_sector(self->priv->open_session), mirage_session_layout_get_first_track(self->priv->open_session));
+
+    return TRUE;
+}
+
+static gboolean cdemu_device_burning_close_session (CdemuDevice *self)
+{
+    /* Add session to our disc */
+    mirage_disc_add_session_by_index(self->priv->disc, -1, self->priv->open_session);
+
+    /* Release the reference we hold */
+    g_object_unref(self->priv->open_session);
+    self->priv->open_session = NULL;
+
+    /* Should we finalize the disc, as well? */
+    const struct ModePage_0x05 *p_0x05 = cdemu_device_get_mode_page(self, 0x05, MODE_PAGE_CURRENT);
+    if (!p_0x05->multisession) {
+        self->priv->disc_closed = TRUE;
+    }
+
+    return TRUE;
+}
+
+static gboolean cdemu_device_burning_open_track (CdemuDevice *self, MirageTrackModes track_mode)
+{
+    /* Open session if one is not opened yet */
+    if (!self->priv->open_session) {
+        CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: no open session found; opening a new one...\n", __debug__);
+        if (!cdemu_device_burning_open_session(self)) {
+            CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: failed to open a new session!\n", __debug__);
+            return FALSE;
+        }
+    }
+
+    /* Create new track */
+    self->priv->open_track = g_object_new(MIRAGE_TYPE_TRACK, NULL);
+
+    /* Determine track number and start sector from open session; but do
+       not add track to the layout yet (do this when track is closed) */
+    gint track_number = mirage_session_layout_get_first_track(self->priv->open_session) + mirage_session_get_number_of_tracks(self->priv->open_session);
+    gint start_sector = mirage_session_layout_get_start_sector(self->priv->open_session) + mirage_session_layout_get_length(self->priv->open_session);
+    mirage_track_layout_set_track_number(self->priv->open_track, track_number);
+    mirage_track_layout_set_start_sector(self->priv->open_track, start_sector);
+
+    mirage_track_set_mode(self->priv->open_track, track_mode);
+
+    CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: opened track #%d; start sector: %d!\n", __debug__, mirage_track_layout_get_track_number(self->priv->open_track), mirage_track_layout_get_start_sector(self->priv->open_track));
+
+    /* If we are burning in TAO mode, we need to create a pregap */
+    const struct ModePage_0x05 *p_0x05 = cdemu_device_get_mode_page(self, 0x05, MODE_PAGE_CURRENT);
+    if (p_0x05->write_type == 0x01) {
+        MirageFragment *fragment = g_object_new(MIRAGE_TYPE_FRAGMENT, NULL);
+        mirage_fragment_set_length(fragment, 150);
+        mirage_track_add_fragment(self->priv->open_track, -1, fragment);
+        g_object_unref(fragment);
+
+        self->priv->next_writable_address += 150;
+        mirage_track_set_track_start(self->priv->open_track, 150);
+    }
+
+    /* Create dummy fragment; FIXME: this should be done by image writer */
+    MirageFragment *fragment = g_object_new(MIRAGE_TYPE_FRAGMENT, NULL);
+    mirage_track_add_fragment(self->priv->open_track, -1, fragment);
+    g_object_unref(fragment);
+
+    return TRUE;
+}
+
+static gboolean cdemu_device_burning_close_track (CdemuDevice *self)
+{
+    /* Add track to our open session */
+    mirage_session_add_track_by_index(self->priv->open_session, -1, self->priv->open_track);
+
+    /* Release the reference we hold */
+    g_object_unref(self->priv->open_track);
+    self->priv->open_track = NULL;
+
+    return TRUE;
+}
+
+
+/**********************************************************************\
  *                     Packet command implementations                 *
 \**********************************************************************/
 /* CLOSE TRACK/SESSION */
@@ -163,9 +263,11 @@ static gboolean command_close_track_session (CdemuDevice *self, guint8 *raw_cdb)
     if (cdb->function == 1) {
         /* Track */
         CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: closing track %d\n", __debug__, cdb->number);
+        return cdemu_device_burning_close_track(self);
     } else if (cdb->function == 2) {
         /* Session */
         CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: closing last session\n", __debug__);
+        return cdemu_device_burning_close_session(self);
     } else {
         CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: unimplemented close function: %d\n", __debug__, cdb->function);
         cdemu_device_write_sense(self, ILLEGAL_REQUEST, INVALID_FIELD_IN_CDB);
@@ -1032,9 +1134,12 @@ static gboolean command_read_disc_information (CdemuDevice *self, guint8 *raw_cd
             gint last_session_leadin = -1;
             gint disc_type = 0xFF;
 
+            gint disc_status;
+            gint last_session_status;
+
             /* Initialize some of the variables */
             num_sessions = mirage_disc_get_number_of_sessions(self->priv->disc);
-            num_sessions = num_sessions ? num_sessions : 1; /* Always report 1 or more */
+            num_sessions = num_sessions + !self->priv->disc_closed; /* Unless disc is closed, there's always an additional incomplete/empty session */
 
             /* First session */
             MirageSession *session;
@@ -1044,10 +1149,28 @@ static gboolean command_read_disc_information (CdemuDevice *self, guint8 *raw_cd
                 /* Disc type is determined from first session, as per INF8090 */
                 disc_type = mirage_session_get_session_type(session);
                 g_object_unref(session);
+            } else if (self->priv->recordable_disc && self->priv->open_session) {
+                /* If the only session on disc is incomplete, get disc type from it */
+                disc_type = mirage_session_get_session_type(self->priv->open_session);
             }
 
             /* Last session */
-            session = mirage_disc_get_session_by_index(self->priv->disc, -1, NULL);
+            if (self->priv->recordable_disc && !self->priv->disc_closed) {
+                /* Recordable, non-closed disc */
+                if (!self->priv->open_session) {
+                    last_session_status = 0x00; /* Empty */
+                } else {
+                    last_session_status = 0x01; /* Incomplete */
+
+                    /* Return for further data extraction */
+                    session = self->priv->open_session;
+                    g_object_ref(session);
+                }
+            } else {
+                session = mirage_disc_get_session_by_index(self->priv->disc, -1, NULL);
+                last_session_status = 0x03; /* Complete */
+            }
+
             if (session) {
                 MirageTrack *track;
 
@@ -1065,27 +1188,46 @@ static gboolean command_read_disc_information (CdemuDevice *self, guint8 *raw_cd
                     g_object_unref(track);
                 }
 
-                /* Leadin of last session */
-                track = mirage_session_get_track_by_number(session, MIRAGE_TRACK_LEADIN, NULL);
-                if (track) {
-                    last_session_leadin = mirage_track_layout_get_start_sector(track);
-                    g_object_unref(track);
+                /* Lead-in of last session */
+                if (mirage_session_layout_get_session_number(session) != 1) {
+                    track = mirage_session_get_track_by_number(session, MIRAGE_TRACK_LEADIN, NULL);
+                    if (track) {
+                        last_session_leadin = mirage_track_layout_get_start_sector(track);
+                        g_object_unref(track);
+                    }
+                } else {
+                    /* For first session, we have a fixed, emulated, lead-in */
+                    last_session_leadin = -1; /* FIXME: set real address here, and modify MSF conversion to handle it! */
                 }
 
                 g_object_unref(session);
             }
 
-            /* Return gathered information */
+
+            /* Disc status */
+            if (self->priv->recordable_disc) {
+                if (self->priv->disc_closed) {
+                    disc_status = 0x02; /* Complete */
+                } else {
+                    if (!mirage_disc_get_number_of_sessions(self->priv->disc) && !self->priv->open_session) {
+                        /* No sessions on disc, and no open session empty */
+                        disc_status = 0x00; /* Empty */
+                    } else {
+                        /* At least one finished session, or an open session */
+                        disc_status = 0x01; /* Incomplete disc */
+                    }
+                }
+            } else {
+                disc_status = 0x02; /* Complete */
+            }
+
+
+            /* Write gathered information */
             ret_data->length = GUINT16_TO_BE(self->priv->buffer_size - 2);
 
             ret_data->erasable = self->priv->rewritable_disc;
-            if (self->priv->recordable_disc) {
-                ret_data->lsession_state = 0x00; /* Empty session; set to 0x01 for incomplete */
-                ret_data->disc_status = 0x00; /* Empty; set to 0x01 for appendable */
-            } else {
-                ret_data->lsession_state = 0x03; /* Complete */
-                ret_data->disc_status = 0x02; /* Complete */
-            }
+            ret_data->disc_status = disc_status;
+            ret_data->lsession_state = last_session_status;
 
             ret_data->ftrack_disc = first_track_on_disc;
 
@@ -2112,6 +2254,7 @@ static gboolean command_start_stop_unit (CdemuDevice *self, guint8 *raw_cdb)
     return TRUE;
 }
 
+/* SYNCHRONIZE CACHE */
 static gboolean command_synchronize_cache (CdemuDevice *self, guint8 *raw_cdb)
 {
     struct SYNCHRONIZE_CACHE_CDB *cdb = (struct SYNCHRONIZE_CACHE_CDB *)raw_cdb;
@@ -2123,12 +2266,7 @@ static gboolean command_synchronize_cache (CdemuDevice *self, guint8 *raw_cdb)
     if (self->priv->open_track) {
         CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: closing the opened track!\n", __debug__);
 
-        /* Officially add track to the disc */
-        mirage_disc_add_track_by_index(self->priv->disc, -1, self->priv->open_track, NULL);
-
-        /* Release the reference we hold */
-        g_object_unref(self->priv->open_track);
-        self->priv->open_track = NULL;
+        return cdemu_device_burning_close_track(self);
     } else {
         CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: nothing to do!\n", __debug__);
     }
@@ -2309,18 +2447,10 @@ static gboolean command_write (CdemuDevice *self, guint8 *raw_cdb)
     if (!self->priv->open_track) {
         CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: no track opened; creating one!\n", __debug__);
 
-        self->priv->open_track = g_object_new(MIRAGE_TYPE_TRACK, NULL);
-
-        /* Determine the start address from disc, but do not add track to
-           the layout yet */
-        mirage_track_layout_set_track_number(self->priv->open_track, mirage_disc_get_number_of_tracks(self->priv->disc) + 1);
-        mirage_track_layout_set_start_sector(self->priv->open_track, mirage_disc_layout_get_start_sector(self->priv->disc) + mirage_disc_layout_get_length(self->priv->disc));
-
-        CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: opened track #%d; start sector: %d!\n", __debug__, mirage_track_layout_get_track_number(self->priv->open_track), mirage_track_layout_get_start_sector(self->priv->open_track));
-
-        MirageFragment *fragment = g_object_new(MIRAGE_TYPE_FRAGMENT, NULL);
-        mirage_track_add_fragment(self->priv->open_track, -1, fragment);
-        g_object_unref(fragment);
+        if (!cdemu_device_burning_open_track(self, sector_type)) {
+            CDEMU_DEBUG(self, DAEMON_DEBUG_ERROR, "%s: failed to open new track!\n", __debug__);
+            return FALSE;
+        }
     }
 
 
