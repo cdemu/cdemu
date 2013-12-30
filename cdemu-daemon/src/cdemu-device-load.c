@@ -159,6 +159,23 @@ gboolean cdemu_device_unload_disc_private (CdemuDevice *self, gboolean force, GE
         /* We're not loaded anymore, and media got changed */
         self->priv->loaded = FALSE;
         self->priv->media_event = MEDIA_EVENT_MEDIA_REMOVAL;
+
+        /* Clear burning emulation stuff */
+        if (self->priv->open_track) {
+            g_object_unref(self->priv->open_track);
+            self->priv->open_track = NULL;
+        }
+
+        if (self->priv->open_session) {
+            g_object_unref(self->priv->open_session);
+            self->priv->open_session = NULL;
+        }
+
+        self->priv->disc_closed = FALSE;
+        self->priv->recordable_disc = FALSE;
+        self->priv->rewritable_disc = FALSE;
+        self->priv->next_writable_address = 0;
+
         /* Current profile: None */
         cdemu_device_set_profile(self, ProfileIndex_NONE);
 

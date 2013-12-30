@@ -155,6 +155,8 @@ static gint read_sector_data (MirageSector *sector, MirageDisc *disc, gint addre
 \**********************************************************************/
 static gboolean cdemu_device_burning_open_session (CdemuDevice *self)
 {
+    const struct ModePage_0x05 *p_0x05 = cdemu_device_get_mode_page(self, 0x05, MODE_PAGE_CURRENT);
+
     /* Create new session */
     self->priv->open_session = g_object_new(MIRAGE_TYPE_SESSION, NULL);
 
@@ -171,11 +173,23 @@ static gboolean cdemu_device_burning_open_session (CdemuDevice *self)
 
     CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: opened session #%d; start sector: %d, first track: %d!\n", __debug__, mirage_session_layout_get_session_number(self->priv->open_session), mirage_session_layout_get_start_sector(self->priv->open_session), mirage_session_layout_get_first_track(self->priv->open_session));
 
+    /* If we are burning in TAO mode, read MCN from Mode Page 0x05 */
+    if (p_0x05->write_type == 0x01) {
+        if (p_0x05->mcn[0]) {
+            /* We can get away with this because MCN data fields are
+               followed by a ZERO field*/
+            CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: Mode Page 0x05 MCN: %s\n", __debug__, &p_0x05->mcn[1]);
+            mirage_session_set_mcn(self->priv->open_session, (gchar *)&p_0x05->mcn[1]);
+        }
+    }
+
     return TRUE;
 }
 
 static gboolean cdemu_device_burning_close_session (CdemuDevice *self)
 {
+    const struct ModePage_0x05 *p_0x05 = cdemu_device_get_mode_page(self, 0x05, MODE_PAGE_CURRENT);
+
     /* Add session to our disc */
     mirage_disc_add_session_by_index(self->priv->disc, -1, self->priv->open_session);
 
@@ -184,7 +198,6 @@ static gboolean cdemu_device_burning_close_session (CdemuDevice *self)
     self->priv->open_session = NULL;
 
     /* Should we finalize the disc, as well? */
-    const struct ModePage_0x05 *p_0x05 = cdemu_device_get_mode_page(self, 0x05, MODE_PAGE_CURRENT);
     if (!p_0x05->multisession) {
         self->priv->disc_closed = TRUE;
     }
@@ -194,6 +207,8 @@ static gboolean cdemu_device_burning_close_session (CdemuDevice *self)
 
 static gboolean cdemu_device_burning_open_track (CdemuDevice *self, MirageTrackModes track_mode)
 {
+    const struct ModePage_0x05 *p_0x05 = cdemu_device_get_mode_page(self, 0x05, MODE_PAGE_CURRENT);
+
     /* Open session if one is not opened yet */
     if (!self->priv->open_session) {
         CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: no open session found; opening a new one...\n", __debug__);
@@ -206,6 +221,10 @@ static gboolean cdemu_device_burning_open_track (CdemuDevice *self, MirageTrackM
     /* Create new track */
     self->priv->open_track = g_object_new(MIRAGE_TYPE_TRACK, NULL);
 
+    /* Set parent, because libMirage sector code expects to be able to
+       chain up all the way to disc */
+    mirage_object_set_parent(MIRAGE_OBJECT(self->priv->open_track), self->priv->open_session);
+
     /* Determine track number and start sector from open session; but do
        not add track to the layout yet (do this when track is closed) */
     gint track_number = mirage_session_layout_get_first_track(self->priv->open_session) + mirage_session_get_number_of_tracks(self->priv->open_session);
@@ -217,8 +236,17 @@ static gboolean cdemu_device_burning_open_track (CdemuDevice *self, MirageTrackM
 
     CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: opened track #%d; start sector: %d!\n", __debug__, mirage_track_layout_get_track_number(self->priv->open_track), mirage_track_layout_get_start_sector(self->priv->open_track));
 
+    /* If we are burning in TAO mode, read ISRC from Mode Page 0x05 */
+    if (p_0x05->write_type == 0x01 && track_mode == MIRAGE_MODE_AUDIO) {
+        if (p_0x05->isrc[0]) {
+            /* We can get away with this because ISRC data fields are
+               followed by a ZERO field*/
+            CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: Mode Page 0x05 ISRC: %s\n", __debug__, &p_0x05->isrc[1]);
+            mirage_track_set_isrc(self->priv->open_track, (gchar *)&p_0x05->isrc[1]);
+        }
+    }
+
     /* If we are burning in TAO mode, we need to create a pregap */
-    const struct ModePage_0x05 *p_0x05 = cdemu_device_get_mode_page(self, 0x05, MODE_PAGE_CURRENT);
     if (p_0x05->write_type == 0x01) {
         MirageFragment *fragment = g_object_new(MIRAGE_TYPE_FRAGMENT, NULL);
         mirage_fragment_set_length(fragment, 150);
