@@ -2402,7 +2402,7 @@ static gboolean command_write (CdemuDevice *self, guint8 *raw_cdb)
             subchannel_format = MIRAGE_SUBCHANNEL_RW;
             determine_sector_type = TRUE;
             break;*/
-            CDEMU_DEBUG(self, DAEMON_DEBUG_ERROR, "%s: block data type %d (raw data with cooked RW subchannel) not supported!\n", __debug__);
+            CDEMU_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: block data type 2 (raw data with cooked RW subchannel) not supported!\n", __debug__);
             cdemu_device_write_sense(self, ILLEGAL_REQUEST, INVALID_FIELD_IN_CDB);
             return FALSE;
         }
