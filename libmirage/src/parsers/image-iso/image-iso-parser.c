@@ -109,7 +109,7 @@ static gboolean mirage_parser_iso_determine_sector_size (MirageParserIso *self, 
                 || !memcmp(buf, mirage_pattern_bea01, sizeof(mirage_pattern_bea01))) {
                 file_info->main_data_size = valid_sector_sizes[j];
                 file_info->subchannel_data_size = valid_subchannel_sizes[i];
-                file_info->main_data_format = MIRAGE_MAIN_DATA;
+                file_info->main_data_format = MIRAGE_MAIN_DATA_FORMAT_DATA;
 
                 MIRAGE_DEBUG(self, MIRAGE_DEBUG_IMAGE_ID, "%s: image is an ISO9660/UDF image, with %d-byte sector data and %d-byte subchannel data\n", __debug__, file_info->main_data_size, file_info->subchannel_data_size);
                 return TRUE;
@@ -126,7 +126,7 @@ static gboolean mirage_parser_iso_determine_sector_size (MirageParserIso *self, 
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_IMAGE_ID, "%s: file size is multiple of 2352; assuming file contains audio track data...\n", __debug__);
         file_info->main_data_size = 2352;
         file_info->subchannel_data_size = 0;
-        file_info->main_data_format = MIRAGE_MAIN_AUDIO;
+        file_info->main_data_format = MIRAGE_MAIN_DATA_FORMAT_AUDIO;
         return TRUE;
     }
 
@@ -196,7 +196,7 @@ static gboolean mirage_parser_iso_determine_subchannel_type (MirageParserIso *se
         }
         case 16: {
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: 16-byte internal Q subchannel data found!\n", __debug__);
-            file_info->subchannel_format = MIRAGE_SUBCHANNEL_INT | MIRAGE_SUBCHANNEL_Q16;
+            file_info->subchannel_format = MIRAGE_SUBCHANNEL_DATA_FORMAT_INTERNAL | MIRAGE_SUBCHANNEL_DATA_FORMAT_Q16;
             break;
         }
         case 96: {
@@ -225,10 +225,10 @@ static gboolean mirage_parser_iso_determine_subchannel_type (MirageParserIso *se
             guint16 crc = mirage_helper_subchannel_q_calculate_crc(buf+12);
             if ((buf[22] << 8 | buf[23]) == crc) {
                 MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: subchannel data appears to be linear!\n", __debug__);
-                file_info->subchannel_format = MIRAGE_SUBCHANNEL_INT | MIRAGE_SUBCHANNEL_PW96_LIN;
+                file_info->subchannel_format = MIRAGE_SUBCHANNEL_DATA_FORMAT_INTERNAL | MIRAGE_SUBCHANNEL_DATA_FORMAT_PW96_LINEAR;
             } else {
                 MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: subchannel data appears to be interleaved!\n", __debug__);
-                file_info->subchannel_format = MIRAGE_SUBCHANNEL_INT | MIRAGE_SUBCHANNEL_PW96_INT;
+                file_info->subchannel_format = MIRAGE_SUBCHANNEL_DATA_FORMAT_INTERNAL | MIRAGE_SUBCHANNEL_DATA_FORMAT_PW96_INTERLEAVED;
             }
 
             break;

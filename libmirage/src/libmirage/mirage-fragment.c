@@ -204,7 +204,7 @@ gboolean mirage_fragment_use_the_rest_of_file (MirageFragment *self, GError **er
 
     /* Use all data from offset on... */
     full_size = self->priv->main_size;
-    if (self->priv->subchannel_format & MIRAGE_SUBCHANNEL_INT) {
+    if (self->priv->subchannel_format & MIRAGE_SUBCHANNEL_DATA_FORMAT_INTERNAL) {
         full_size += self->priv->subchannel_size;
     }
 
@@ -357,7 +357,7 @@ static guint64 mirage_fragment_main_data_get_position (MirageFragment *self, gin
     */
 
     size_full = self->priv->main_size;
-    if (self->priv->subchannel_format & MIRAGE_SUBCHANNEL_INT) {
+    if (self->priv->subchannel_format & MIRAGE_SUBCHANNEL_DATA_FORMAT_INTERNAL) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_FRAGMENT, "%s: internal subchannel, adding %d to sector size %d\n", __debug__, self->priv->subchannel_size, size_full);
         size_full += self->priv->subchannel_size;
     }
@@ -426,7 +426,7 @@ gboolean mirage_fragment_read_main_data (MirageFragment *self, gint address, gui
         }*/
 
         /* Binary audio files may need to be swapped from BE to LE */
-        if (self->priv->main_format == MIRAGE_MAIN_AUDIO_SWAP) {
+        if (self->priv->main_format == MIRAGE_MAIN_DATA_FORMAT_AUDIO_SWAP) {
             for (gint i = 0; i < read_len; i+=2) {
                 guint16 *ptr = (guint16 *)&data_buffer[i];
                 *ptr = GUINT16_SWAP_LE_BE(*ptr);
@@ -575,13 +575,13 @@ static guint64 mirage_fragment_subchannel_data_get_position (MirageFragment *sel
     guint64 offset = 0;
 
     /* Either we have internal or external subchannel */
-    if (self->priv->subchannel_format & MIRAGE_SUBCHANNEL_INT) {
+    if (self->priv->subchannel_format & MIRAGE_SUBCHANNEL_DATA_FORMAT_INTERNAL) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_FRAGMENT, "%s: internal subchannel, position is at end of main channel data\n", __debug__);
         /* Subchannel is contained in track file; get position in track file
            for that sector, and add to it length of track data sector */
         offset = mirage_fragment_main_data_get_position(self, address);
         offset += self->priv->main_size;
-    } else if (self->priv->subchannel_format & MIRAGE_SUBCHANNEL_EXT) {
+    } else if (self->priv->subchannel_format & MIRAGE_SUBCHANNEL_DATA_FORMAT_EXTERNAL) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_FRAGMENT, "%s: external subchannel, calculating position\n", __debug__);
         /* We assume address is relative address */
         /* guint64 casts are required so that the product us 64-bit; product of two
@@ -628,7 +628,7 @@ gboolean mirage_fragment_read_subchannel_data (MirageFragment *self, gint addres
 
     /* We need file to read data from... but if it's missing, we don't read
        anything and this is not considered an error */
-    if (self->priv->subchannel_format & MIRAGE_SUBCHANNEL_INT) {
+    if (self->priv->subchannel_format & MIRAGE_SUBCHANNEL_DATA_FORMAT_INTERNAL) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_FRAGMENT, "%s: internal subchannel, using track file handle\n", __debug__);
         stream = self->priv->main_stream;
     } else {
@@ -669,16 +669,16 @@ gboolean mirage_fragment_read_subchannel_data (MirageFragment *self, gint addres
 
         /* If we happen to deal with anything that's not RAW 96-byte interleaved PW,
            we transform it into that here... less fuss for upper level stuff this way */
-        if (self->priv->subchannel_format & MIRAGE_SUBCHANNEL_PW96_LIN) {
+        if (self->priv->subchannel_format & MIRAGE_SUBCHANNEL_DATA_FORMAT_PW96_LINEAR) {
             /* 96-byte deinterleaved PW; grab each subchannel and interleave it
                into destination buffer */
             for (gint i = 0; i < 8; i++) {
                 mirage_helper_subchannel_interleave(7 - i, raw_buffer + i*12, data_buffer);
             }
-        } else if (self->priv->subchannel_format & MIRAGE_SUBCHANNEL_PW96_INT) {
+        } else if (self->priv->subchannel_format & MIRAGE_SUBCHANNEL_DATA_FORMAT_PW96_INTERLEAVED) {
             /* 96-byte interleaved PW; just copy it */
             memcpy(data_buffer, raw_buffer, 96);
-        } else if (self->priv->subchannel_format & MIRAGE_SUBCHANNEL_Q16) {
+        } else if (self->priv->subchannel_format & MIRAGE_SUBCHANNEL_DATA_FORMAT_Q16) {
             /* 16-byte Q; interleave it and pretend everything else's 0 */
             mirage_helper_subchannel_interleave(SUBCHANNEL_Q, raw_buffer, data_buffer);
         }

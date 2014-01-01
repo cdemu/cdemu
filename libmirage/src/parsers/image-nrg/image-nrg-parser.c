@@ -602,9 +602,9 @@ static gboolean mirage_parser_nrg_load_session (MirageParserNrg *self, gint sess
             main_size = main_sectsize; /* We use the one from decoded mode code */
             main_offset = dao_block->pregap_offset;
             if (mode == MIRAGE_MODE_AUDIO) {
-                main_format = MIRAGE_MAIN_AUDIO;
+                main_format = MIRAGE_MAIN_DATA_FORMAT_AUDIO;
             } else {
-                main_format = MIRAGE_MAIN_DATA;
+                main_format = MIRAGE_MAIN_DATA_FORMAT_DATA;
             }
 
             mirage_fragment_set_length(fragment, fragment_len);
@@ -617,7 +617,7 @@ static gboolean mirage_parser_nrg_load_session (MirageParserNrg *self, gint sess
             /* Subchannel */
             if (sub_sectsize) {
                 subchannel_size = sub_sectsize; /* We use the one from decoded mode code */
-                subchannel_format = MIRAGE_SUBCHANNEL_PW96_INT | MIRAGE_SUBCHANNEL_INT; /* PW96 interleaved, internal */
+                subchannel_format = MIRAGE_SUBCHANNEL_DATA_FORMAT_PW96_INTERLEAVED | MIRAGE_SUBCHANNEL_DATA_FORMAT_INTERNAL; /* PW96 interleaved, internal */
 
                 mirage_fragment_subchannel_data_set_size(fragment, subchannel_size);
                 mirage_fragment_subchannel_data_set_format(fragment, subchannel_format);
@@ -640,9 +640,9 @@ static gboolean mirage_parser_nrg_load_session (MirageParserNrg *self, gint sess
             main_size = main_sectsize; /* We use the one from decoded mode code */
             main_offset = dao_block->start_offset;
             if (mode == MIRAGE_MODE_AUDIO) {
-                main_format = MIRAGE_MAIN_AUDIO;
+                main_format = MIRAGE_MAIN_DATA_FORMAT_AUDIO;
             } else {
-                main_format = MIRAGE_MAIN_DATA;
+                main_format = MIRAGE_MAIN_DATA_FORMAT_DATA;
             }
 
             mirage_fragment_set_length(fragment, fragment_len);
@@ -655,7 +655,7 @@ static gboolean mirage_parser_nrg_load_session (MirageParserNrg *self, gint sess
             /* Subchannel */
             if (sub_sectsize) {
                 subchannel_size = sub_sectsize; /* We use the one from decoded mode code */
-                subchannel_format = MIRAGE_SUBCHANNEL_PW96_INT | MIRAGE_SUBCHANNEL_INT; /* PW96 interleaved, internal */
+                subchannel_format = MIRAGE_SUBCHANNEL_DATA_FORMAT_PW96_INTERLEAVED | MIRAGE_SUBCHANNEL_DATA_FORMAT_INTERNAL; /* PW96 interleaved, internal */
 
                 mirage_fragment_subchannel_data_set_size(fragment, subchannel_size);
                 mirage_fragment_subchannel_data_set_format(fragment, subchannel_format);
@@ -823,9 +823,9 @@ static gboolean mirage_parser_nrg_load_session_tao (MirageParserNrg *self, gint 
             main_size = main_sectsize; /* We use the one from decoded mode code */
             main_offset = etn_block->offset;
             if (mode == MIRAGE_MODE_AUDIO) {
-                main_format = MIRAGE_MAIN_AUDIO;
+                main_format = MIRAGE_MAIN_DATA_FORMAT_AUDIO;
             } else {
-                main_format = MIRAGE_MAIN_DATA;
+                main_format = MIRAGE_MAIN_DATA_FORMAT_DATA;
             }
 
             mirage_fragment_set_length(fragment, fragment_len);
@@ -838,7 +838,7 @@ static gboolean mirage_parser_nrg_load_session_tao (MirageParserNrg *self, gint 
             /* Subchannel */
             if (sub_sectsize) {
                 subchannel_size = sub_sectsize; /* We use the one from decoded mode code */
-                subchannel_format = MIRAGE_SUBCHANNEL_PW96_INT | MIRAGE_SUBCHANNEL_INT; /* PW96 interleaved, internal */
+                subchannel_format = MIRAGE_SUBCHANNEL_DATA_FORMAT_PW96_INTERLEAVED | MIRAGE_SUBCHANNEL_DATA_FORMAT_INTERNAL; /* PW96 interleaved, internal */
 
                 mirage_fragment_subchannel_data_set_size(fragment, subchannel_size);
                 mirage_fragment_subchannel_data_set_format(fragment, subchannel_format);
@@ -975,7 +975,7 @@ static MirageDisc *mirage_parser_nrg_load_image (MirageParser *_self, GInputStre
         }
     }
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_IMAGE_ID, "%s: parser can handle given image!\n", __debug__);
-    
+
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: parsing the image...\n", __debug__);
 
     /* Create disc */

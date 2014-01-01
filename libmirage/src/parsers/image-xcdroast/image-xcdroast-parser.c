@@ -129,7 +129,7 @@ static gboolean mirage_parser_xcdroast_add_track (MirageParserXcdroast *self, TO
             mirage_fragment_main_data_set_stream(fragment, data_stream);
             mirage_fragment_main_data_set_size(fragment, 2048);
             mirage_fragment_main_data_set_offset(fragment, 0);
-            mirage_fragment_main_data_set_format(fragment, MIRAGE_MAIN_DATA);
+            mirage_fragment_main_data_set_format(fragment, MIRAGE_MAIN_DATA_FORMAT_DATA);
 
             mirage_fragment_use_the_rest_of_file(fragment, NULL);
 
@@ -163,7 +163,7 @@ static gboolean mirage_parser_xcdroast_add_track (MirageParserXcdroast *self, TO
             mirage_fragment_main_data_set_stream(fragment, data_stream);
             mirage_fragment_main_data_set_size(fragment, 2352);
             mirage_fragment_main_data_set_offset(fragment, 0);
-            mirage_fragment_main_data_set_format(fragment, MIRAGE_MAIN_AUDIO);
+            mirage_fragment_main_data_set_format(fragment, MIRAGE_MAIN_DATA_FORMAT_AUDIO);
 
             mirage_fragment_use_the_rest_of_file(fragment, NULL);
 

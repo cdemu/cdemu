@@ -71,13 +71,13 @@ static gboolean mirage_parser_readcd_is_file_valid (MirageParserReadcd *self, GI
        that indicate sector types) */
     g_seekable_seek(G_SEEKABLE(stream), 0, G_SEEK_END, NULL, NULL);
     file_size = g_seekable_tell(G_SEEKABLE(stream));
-    
+
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_IMAGE_ID, "%s: verifying file length:\n", __debug__);
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_IMAGE_ID, "%s:  expected size (based on header): %d or %d\n", __debug__, 2 + toc_len + 2, 2 + toc_len + 3);
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_IMAGE_ID, "%s:  actual data file size: %d\n", __debug__, file_size);
 
-    /* readcd from cdrdtools appears to pad odd TOC lengths to make them 
-       even, whereas readcd from cdrkit does not. So we account for both 
+    /* readcd from cdrdtools appears to pad odd TOC lengths to make them
+       even, whereas readcd from cdrkit does not. So we account for both
        cases. */
     if ((file_size == 2 + toc_len + 2) || (file_size == 2 + toc_len + 3)) {
         return TRUE;
@@ -212,10 +212,10 @@ static gboolean mirage_parser_readcd_parse_toc_entry (MirageParserReadcd *self, 
         mirage_fragment_main_data_set_stream(fragment, self->priv->data_stream);
         mirage_fragment_main_data_set_size(fragment, 2352);
         mirage_fragment_main_data_set_offset(fragment, track_lba*2448);
-        mirage_fragment_main_data_set_format(fragment, MIRAGE_MAIN_DATA);
+        mirage_fragment_main_data_set_format(fragment, MIRAGE_MAIN_DATA_FORMAT_DATA);
 
         mirage_fragment_subchannel_data_set_size(fragment, 96);
-        mirage_fragment_subchannel_data_set_format(fragment, MIRAGE_SUBCHANNEL_PW96_INT | MIRAGE_SUBCHANNEL_INT);
+        mirage_fragment_subchannel_data_set_format(fragment, MIRAGE_SUBCHANNEL_DATA_FORMAT_PW96_INTERLEAVED | MIRAGE_SUBCHANNEL_DATA_FORMAT_INTERNAL);
 
         mirage_track_add_fragment(MIRAGE_TRACK(self->priv->cur_track), -1, fragment);
         g_object_unref(fragment);
@@ -253,10 +253,10 @@ static gboolean mirage_parser_readcd_parse_toc_entry (MirageParserReadcd *self, 
                 mirage_fragment_main_data_set_stream(fragment, self->priv->data_stream);
                 mirage_fragment_main_data_set_size(fragment, 2352);
                 mirage_fragment_main_data_set_offset(fragment, (track_lba - 150)*2448);
-                mirage_fragment_main_data_set_format(fragment, MIRAGE_MAIN_DATA);
+                mirage_fragment_main_data_set_format(fragment, MIRAGE_MAIN_DATA_FORMAT_DATA);
 
                 mirage_fragment_subchannel_data_set_size(fragment, 96);
-                mirage_fragment_subchannel_data_set_format(fragment, MIRAGE_SUBCHANNEL_PW96_INT | MIRAGE_SUBCHANNEL_INT);
+                mirage_fragment_subchannel_data_set_format(fragment, MIRAGE_SUBCHANNEL_DATA_FORMAT_PW96_INTERLEAVED | MIRAGE_SUBCHANNEL_DATA_FORMAT_INTERNAL);
 
                 mirage_fragment_set_length(fragment, 150);
 

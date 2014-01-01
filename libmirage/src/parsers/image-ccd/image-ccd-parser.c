@@ -274,12 +274,12 @@ static gboolean mirage_parser_ccd_build_disc_layout (MirageParserCcd *self, GErr
             mirage_fragment_main_data_set_stream(fragment, self->priv->img_stream);
             mirage_fragment_main_data_set_size(fragment, 2352);
             mirage_fragment_main_data_set_offset(fragment, self->priv->offset*2352);
-            mirage_fragment_main_data_set_format(fragment, MIRAGE_MAIN_DATA);
+            mirage_fragment_main_data_set_format(fragment, MIRAGE_MAIN_DATA_FORMAT_DATA);
 
             mirage_fragment_subchannel_data_set_stream(fragment, self->priv->sub_stream);
             mirage_fragment_subchannel_data_set_size(fragment, 96);
             mirage_fragment_subchannel_data_set_offset(fragment, self->priv->offset*96);
-            mirage_fragment_subchannel_data_set_format(fragment, MIRAGE_SUBCHANNEL_PW96_LIN | MIRAGE_SUBCHANNEL_EXT);
+            mirage_fragment_subchannel_data_set_format(fragment, MIRAGE_SUBCHANNEL_DATA_FORMAT_PW96_LINEAR | MIRAGE_SUBCHANNEL_DATA_FORMAT_EXTERNAL);
 
             mirage_track_add_fragment(track, -1, fragment);
 
@@ -290,7 +290,7 @@ static gboolean mirage_parser_ccd_build_disc_layout (MirageParserCcd *self, GErr
 
             /* If track mode is determined to be audio, set fragment's format accordingly */
             if (mirage_track_get_mode(track) == MIRAGE_MODE_AUDIO) {
-                mirage_fragment_main_data_set_format(fragment, MIRAGE_MAIN_AUDIO);
+                mirage_fragment_main_data_set_format(fragment, MIRAGE_MAIN_DATA_FORMAT_AUDIO);
             }
 
             /* Validate and set ISRC */

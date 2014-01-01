@@ -328,9 +328,9 @@ static gboolean mirage_parser_c2d_parse_track_entries (MirageParserC2d *self, GE
         gint main_format = 0;
 
         if (converted_mode == MIRAGE_MODE_AUDIO) {
-            main_format = MIRAGE_MAIN_AUDIO;
+            main_format = MIRAGE_MAIN_DATA_FORMAT_AUDIO;
         } else {
-            main_format = MIRAGE_MAIN_DATA;
+            main_format = MIRAGE_MAIN_DATA_FORMAT_DATA;
         }
 
         gint fragment_len = track_last_sector - track_first_sector + 1;
@@ -348,7 +348,7 @@ static gboolean mirage_parser_c2d_parse_track_entries (MirageParserC2d *self, GE
         switch (track_entry->sector_size) {
             case 2448: {
                 gint subchannel_size = 96;
-                gint subchannel_format = MIRAGE_SUBCHANNEL_PW96_INT | MIRAGE_SUBCHANNEL_INT;
+                gint subchannel_format = MIRAGE_SUBCHANNEL_DATA_FORMAT_PW96_INTERLEAVED | MIRAGE_SUBCHANNEL_DATA_FORMAT_INTERNAL;
 
                 MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   subchannel found; interleaved PW96\n", __debug__);
 

@@ -110,17 +110,17 @@ static gboolean mirage_parser_cdi_decode_track_mode (MirageParserCdi *self, gint
     switch (raw_mode) {
         case 0: {
             *decoded_mode = MIRAGE_MODE_AUDIO;
-            *main_format = MIRAGE_MAIN_AUDIO;
+            *main_format = MIRAGE_MAIN_DATA_FORMAT_AUDIO;
             break;
         }
         case 1: {
             *decoded_mode = MIRAGE_MODE_MODE1;
-            *main_format = MIRAGE_MAIN_DATA;
+            *main_format = MIRAGE_MAIN_DATA_FORMAT_DATA;
             break;
         }
         case 2: {
             *decoded_mode = MIRAGE_MODE_MODE2_MIXED;
-            *main_format = MIRAGE_MAIN_DATA;
+            *main_format = MIRAGE_MAIN_DATA_FORMAT_DATA;
             break;
         }
         default: {
@@ -156,14 +156,14 @@ static gboolean mirage_parser_cdi_decode_read_mode (MirageParserCdi *self, gint 
             /* 2352+16-byte sectors (any track read raw + Q subchannel) */
             *main_size = 2352;
             *subchannel_size = 16;
-            *subchannel_format = MIRAGE_SUBCHANNEL_Q16 | MIRAGE_SUBCHANNEL_INT; /* Q, internal */
+            *subchannel_format = MIRAGE_SUBCHANNEL_DATA_FORMAT_Q16 | MIRAGE_SUBCHANNEL_DATA_FORMAT_INTERNAL; /* Q, internal */
             break;
         }
         case 4: {
             /* 2352+96-byte sectors (any track read raw + PW subchannel) */
             *main_size = 2352;
             *subchannel_size = 96;
-            *subchannel_format = MIRAGE_SUBCHANNEL_PW96_INT | MIRAGE_SUBCHANNEL_INT; /* PW96 interleaved, internal */
+            *subchannel_format = MIRAGE_SUBCHANNEL_DATA_FORMAT_PW96_INTERLEAVED | MIRAGE_SUBCHANNEL_DATA_FORMAT_INTERNAL; /* PW96 interleaved, internal */
             break;
         }
         default: {

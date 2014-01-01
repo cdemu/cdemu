@@ -151,15 +151,15 @@ static gboolean mirage_parser_cue_add_track (MirageParserCue *self, gint number,
         gint sectsize;
         gint format;
     } track_modes[] = {
-        {"AUDIO",      MIRAGE_MODE_AUDIO, 2352, MIRAGE_MAIN_AUDIO},
-        {"CDG",        MIRAGE_MODE_AUDIO, 2448, MIRAGE_MAIN_AUDIO},
-        {"MODE1/2048", MIRAGE_MODE_MODE1, 2048, MIRAGE_MAIN_DATA},
-        {"MODE1/2352", MIRAGE_MODE_MODE1, 2352, MIRAGE_MAIN_DATA},
+        {"AUDIO",      MIRAGE_MODE_AUDIO, 2352, MIRAGE_MAIN_DATA_FORMAT_AUDIO},
+        {"CDG",        MIRAGE_MODE_AUDIO, 2448, MIRAGE_MAIN_DATA_FORMAT_AUDIO},
+        {"MODE1/2048", MIRAGE_MODE_MODE1, 2048, MIRAGE_MAIN_DATA_FORMAT_DATA},
+        {"MODE1/2352", MIRAGE_MODE_MODE1, 2352, MIRAGE_MAIN_DATA_FORMAT_DATA},
         /* Not sure about the following ones, but MIXED should take care of them */
-        {"MODE2/2336", MIRAGE_MODE_MODE2_MIXED, 2336, MIRAGE_MAIN_DATA},
-        {"MODE2/2352", MIRAGE_MODE_MODE2_MIXED, 2352, MIRAGE_MAIN_DATA},
-        {"CDI/2336",   MIRAGE_MODE_MODE2_MIXED, 2336, MIRAGE_MAIN_DATA},
-        {"CDI/2352",   MIRAGE_MODE_MODE2_MIXED, 2352, MIRAGE_MAIN_DATA},
+        {"MODE2/2336", MIRAGE_MODE_MODE2_MIXED, 2336, MIRAGE_MAIN_DATA_FORMAT_DATA},
+        {"MODE2/2352", MIRAGE_MODE_MODE2_MIXED, 2352, MIRAGE_MAIN_DATA_FORMAT_DATA},
+        {"CDI/2336",   MIRAGE_MODE_MODE2_MIXED, 2336, MIRAGE_MAIN_DATA_FORMAT_DATA},
+        {"CDI/2352",   MIRAGE_MODE_MODE2_MIXED, 2352, MIRAGE_MAIN_DATA_FORMAT_DATA},
     };
 
     for (i = 0; i < G_N_ELEMENTS(track_modes); i++) {
@@ -299,7 +299,7 @@ static gboolean mirage_parser_cue_add_index (MirageParserCue *self, gint number,
                 if (subchannel_size) {
                     mirage_fragment_subchannel_data_set_size(fragment, subchannel_size);
                     /* FIXME: what format of subchannel is there anyway? */
-                    mirage_fragment_subchannel_data_set_format(fragment, MIRAGE_SUBCHANNEL_PW96_INT | MIRAGE_SUBCHANNEL_INT);
+                    mirage_fragment_subchannel_data_set_format(fragment, MIRAGE_SUBCHANNEL_DATA_FORMAT_PW96_INTERLEAVED | MIRAGE_SUBCHANNEL_DATA_FORMAT_INTERNAL);
                 }
             } else {
                 /* Audio data */
@@ -308,7 +308,7 @@ static gboolean mirage_parser_cue_add_index (MirageParserCue *self, gint number,
                 mirage_fragment_main_data_set_stream(fragment, data_stream);
                 mirage_fragment_main_data_set_size(fragment, 2352);
                 mirage_fragment_main_data_set_offset(fragment, address*2352); /* Offset is equivalent to the address in CUE, times sector size */
-                mirage_fragment_main_data_set_format(fragment, MIRAGE_MAIN_AUDIO);
+                mirage_fragment_main_data_set_format(fragment, MIRAGE_MAIN_DATA_FORMAT_AUDIO);
             }
 
             mirage_track_add_fragment(self->priv->cur_track, -1, fragment);

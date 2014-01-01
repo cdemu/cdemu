@@ -27,39 +27,39 @@ G_BEGIN_DECLS
 
 /**
  * MirageMainDataFormat:
- * @MIRAGE_MAIN_DATA: binary data
- * @MIRAGE_MAIN_AUDIO: audio data
- * @MIRAGE_MAIN_AUDIO_SWAP: audio data that needs to be swapped
+ * @MIRAGE_MAIN_DATA_FORMAT_DATA: binary data
+ * @MIRAGE_MAIN_DATA_FORMAT_AUDIO: audio data
+ * @MIRAGE_MAIN_DATA_FORMAT_AUDIO_SWAP: audio data that needs to be swapped
  *
  * Track file data formats.
  */
 typedef enum _MirageMainDataFormat
 {
-    MIRAGE_MAIN_DATA  = 0x01,
-    MIRAGE_MAIN_AUDIO = 0x02,
-    MIRAGE_MAIN_AUDIO_SWAP = 0x04,
+    MIRAGE_MAIN_DATA_FORMAT_DATA  = 0x01,
+    MIRAGE_MAIN_DATA_FORMAT_AUDIO = 0x02,
+    MIRAGE_MAIN_DATA_FORMAT_AUDIO_SWAP = 0x04,
 } MirageMainDataFormat;
 
 /**
  * MirageSubchannelDataFormat:
- * @MIRAGE_SUBCHANNEL_INT: internal subchannel (i.e. included in track file)
- * @MIRAGE_SUBCHANNEL_EXT: external subchannel (i.e. provided by separate file)
- * @MIRAGE_SUBCHANNEL_PW96_INT: P-W subchannel, 96 bytes, interleaved
- * @MIRAGE_SUBCHANNEL_PW96_LIN: P-W subchannel, 96 bytes, linear
- * @MIRAGE_SUBCHANNEL_RW96: R-W subchannel, 96 bytes, cooked
- * @MIRAGE_SUBCHANNEL_Q16: Q subchannel, 16 bytes
+ * @MIRAGE_SUBCHANNEL_DATA_FORMAT_INTERNAL: internal subchannel (i.e. included in track file)
+ * @MIRAGE_SUBCHANNEL_DATA_FORMAT_EXTERNAL: external subchannel (i.e. provided by separate file)
+ * @MIRAGE_SUBCHANNEL_DATA_FORMAT_PW96_INTERLEAVED: P-W subchannel, 96 bytes, interleaved
+ * @MIRAGE_SUBCHANNEL_DATA_FORMAT_PW96_LINEAR: P-W subchannel, 96 bytes, linear
+ * @MIRAGE_SUBCHANNEL_DATA_FORMAT_RW96: R-W subchannel, 96 bytes, cooked
+ * @MIRAGE_SUBCHANNEL_DATA_FORMAT_Q16: Q subchannel, 16 bytes
  *
  * Subchannel file data formats.
  */
 typedef enum _MirageSubchannelDataFormat
 {
-    MIRAGE_SUBCHANNEL_INT = 0x01,
-    MIRAGE_SUBCHANNEL_EXT = 0x02,
+    MIRAGE_SUBCHANNEL_DATA_FORMAT_INTERNAL = 0x01,
+    MIRAGE_SUBCHANNEL_DATA_FORMAT_EXTERNAL = 0x02,
 
-    MIRAGE_SUBCHANNEL_PW96_INT = 0x10,
-    MIRAGE_SUBCHANNEL_PW96_LIN = 0x20,
-    MIRAGE_SUBCHANNEL_RW96 = 0x40,
-    MIRAGE_SUBCHANNEL_Q16 = 0x80,
+    MIRAGE_SUBCHANNEL_DATA_FORMAT_PW96_INTERLEAVED = 0x10,
+    MIRAGE_SUBCHANNEL_DATA_FORMAT_PW96_LINEAR = 0x20,
+    MIRAGE_SUBCHANNEL_DATA_FORMAT_RW96 = 0x40,
+    MIRAGE_SUBCHANNEL_DATA_FORMAT_Q16 = 0x80,
 } MirageSubchannelDataFormat;
 
 

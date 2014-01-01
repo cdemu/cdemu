@@ -147,8 +147,8 @@ static void mirage_parser_toc_add_track (MirageParserToc *self, gchar *mode_stri
             gint format;
             gint sectsize;
         } subchan_modes[] = {
-            {"RW_RAW", MIRAGE_SUBCHANNEL_PW96_INT | MIRAGE_SUBCHANNEL_INT, 96 },
-            {"RW", MIRAGE_SUBCHANNEL_RW96 | MIRAGE_SUBCHANNEL_INT, 96 },
+            {"RW_RAW", MIRAGE_SUBCHANNEL_DATA_FORMAT_PW96_INTERLEAVED | MIRAGE_SUBCHANNEL_DATA_FORMAT_INTERNAL, 96 },
+            {"RW", MIRAGE_SUBCHANNEL_DATA_FORMAT_RW96 | MIRAGE_SUBCHANNEL_DATA_FORMAT_INTERNAL, 96 },
         };
 
         for (gint i = 0; i < G_N_ELEMENTS(subchan_modes); i++) {
@@ -215,9 +215,9 @@ static gboolean mirage_parser_toc_track_add_fragment (MirageParserToc *self, gin
                we simply check whether we have an audio track or not... */
             gint mode = mirage_track_get_mode(self->priv->cur_track);
             if (mode == MIRAGE_MODE_AUDIO) {
-                main_format = MIRAGE_MAIN_AUDIO_SWAP;
+                main_format = MIRAGE_MAIN_DATA_FORMAT_AUDIO_SWAP;
             } else {
-                main_format = MIRAGE_MAIN_DATA;
+                main_format = MIRAGE_MAIN_DATA_FORMAT_DATA;
             }
 
             /* Some TOC files don't seem to contain #base_offset entries that
@@ -269,7 +269,7 @@ static gboolean mirage_parser_toc_track_add_fragment (MirageParserToc *self, gin
             mirage_fragment_main_data_set_stream(fragment, stream);
             mirage_fragment_main_data_set_size(fragment, 2352);
             mirage_fragment_main_data_set_offset(fragment, start*2352);
-            mirage_fragment_main_data_set_format(fragment, MIRAGE_MAIN_AUDIO);
+            mirage_fragment_main_data_set_format(fragment, MIRAGE_MAIN_DATA_FORMAT_AUDIO);
         }
 
         g_free(filename);

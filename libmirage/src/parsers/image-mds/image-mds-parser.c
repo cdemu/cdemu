@@ -535,16 +535,16 @@ static gboolean mirage_parser_mds_parse_track_entries (MirageParserMds *self, MD
                 }
 
                 if (converted_mode == MIRAGE_MODE_AUDIO) {
-                    main_format = MIRAGE_MAIN_AUDIO;
+                    main_format = MIRAGE_MAIN_DATA_FORMAT_AUDIO;
                 } else {
-                    main_format = MIRAGE_MAIN_DATA;
+                    main_format = MIRAGE_MAIN_DATA_FORMAT_DATA;
                 }
 
                 /* Subchannel */
                 switch (block->subchannel) {
                     case PW_INTERLEAVED: {
                         subchannel_size = 96;
-                        subchannel_format = MIRAGE_SUBCHANNEL_PW96_INT | MIRAGE_SUBCHANNEL_INT;
+                        subchannel_format = MIRAGE_SUBCHANNEL_DATA_FORMAT_PW96_INTERLEAVED | MIRAGE_SUBCHANNEL_DATA_FORMAT_INTERNAL;
 
                         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: subchannel found; interleaved PW96\n", __debug__);
 

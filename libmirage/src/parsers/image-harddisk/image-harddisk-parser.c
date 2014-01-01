@@ -260,7 +260,7 @@ static gboolean mirage_parser_hd_load_track (MirageParserHd *self, GInputStream 
 
     mirage_fragment_main_data_set_stream(fragment, stream);
     mirage_fragment_main_data_set_size(fragment, self->priv->track_sectsize);
-    mirage_fragment_main_data_set_format(fragment, MIRAGE_MAIN_DATA);
+    mirage_fragment_main_data_set_format(fragment, MIRAGE_MAIN_DATA_FORMAT_DATA);
 
     /* Use whole file */
     if (!mirage_fragment_use_the_rest_of_file(fragment, error)) {

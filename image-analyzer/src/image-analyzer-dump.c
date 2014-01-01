@@ -119,9 +119,9 @@ gchar *dump_medium_type (gint medium_type)
 gchar *dump_binary_fragment_main_format (gint format)
 {
     static DumpValue values[] = {
-        { MIRAGE_MAIN_DATA, "Binary data" },
-        { MIRAGE_MAIN_AUDIO, "Audio data" },
-        { MIRAGE_MAIN_AUDIO_SWAP, "Audio data (swapped)" },
+        { MIRAGE_MAIN_DATA_FORMAT_DATA, "Binary data" },
+        { MIRAGE_MAIN_DATA_FORMAT_AUDIO, "Audio data" },
+        { MIRAGE_MAIN_DATA_FORMAT_AUDIO_SWAP, "Audio data (swapped)" },
     };
 
     return dump_flags(format, values, G_N_ELEMENTS(values));
@@ -130,13 +130,13 @@ gchar *dump_binary_fragment_main_format (gint format)
 gchar *dump_binary_fragment_subchannel_format (gint format)
 {
     static DumpValue values[] = {
-        { MIRAGE_SUBCHANNEL_INT, "internal" },
-        { MIRAGE_SUBCHANNEL_EXT, "external" },
+        { MIRAGE_SUBCHANNEL_DATA_FORMAT_INTERNAL, "internal" },
+        { MIRAGE_SUBCHANNEL_DATA_FORMAT_EXTERNAL, "external" },
 
-        { MIRAGE_SUBCHANNEL_PW96_INT, "PW96 interleaved" },
-        { MIRAGE_SUBCHANNEL_PW96_LIN, "PW96 linear" },
-        { MIRAGE_SUBCHANNEL_RW96, "RW96" },
-        { MIRAGE_SUBCHANNEL_Q16, "Q16" },
+        { MIRAGE_SUBCHANNEL_DATA_FORMAT_PW96_INTERLEAVED, "PW96 interleaved" },
+        { MIRAGE_SUBCHANNEL_DATA_FORMAT_PW96_LINEAR, "PW96 linear" },
+        { MIRAGE_SUBCHANNEL_DATA_FORMAT_RW96, "RW96" },
+        { MIRAGE_SUBCHANNEL_DATA_FORMAT_Q16, "Q16" },
     };
 
     return dump_flags(format, values, G_N_ELEMENTS(values));

@@ -259,14 +259,14 @@ static MirageTrack *mirage_parser_cif_parse_track_descriptor (MirageParserCif *s
     mirage_fragment_main_data_set_size(fragment, sector_size);
 
     if (descriptor->type == AUDIO) {
-        mirage_fragment_main_data_set_format(fragment, MIRAGE_MAIN_AUDIO);
+        mirage_fragment_main_data_set_format(fragment, MIRAGE_MAIN_DATA_FORMAT_AUDIO);
 
         /* Validate and set ISRC */
         if (mirage_helper_validate_isrc(audio_descriptor->isrc)) {
             mirage_track_set_isrc(track, audio_descriptor->isrc);
         }
     } else {
-        mirage_fragment_main_data_set_format(fragment, MIRAGE_MAIN_DATA);
+        mirage_fragment_main_data_set_format(fragment, MIRAGE_MAIN_DATA_FORMAT_DATA);
     }
 
     mirage_fragment_set_length(fragment, track_length);

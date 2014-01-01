@@ -440,12 +440,12 @@ static gboolean mirage_parser_b6t_setup_track_fragments (MirageParserB6t *self, 
                 switch (subchannel_size) {
                     case 16: {
                         /* Internal subchannel, Q */
-                        subchannel_format = MIRAGE_SUBCHANNEL_Q16 | MIRAGE_SUBCHANNEL_INT;
+                        subchannel_format = MIRAGE_SUBCHANNEL_DATA_FORMAT_Q16 | MIRAGE_SUBCHANNEL_DATA_FORMAT_INTERNAL;
                         break;
                     }
                     case 96: {
                         /* Internal subchannel, linear PW96 */
-                        subchannel_format = MIRAGE_SUBCHANNEL_PW96_LIN | MIRAGE_SUBCHANNEL_INT;
+                        subchannel_format = MIRAGE_SUBCHANNEL_DATA_FORMAT_PW96_LINEAR | MIRAGE_SUBCHANNEL_DATA_FORMAT_INTERNAL;
                         break;
                     }
                     default: {
@@ -458,10 +458,10 @@ static gboolean mirage_parser_b6t_setup_track_fragments (MirageParserB6t *self, 
             /* Data format */
             if ((data_block->type & 0x00008000) == 0x00008000) {
                 MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: data block is for audio data\n", __debug__);
-                main_format = MIRAGE_MAIN_AUDIO;
+                main_format = MIRAGE_MAIN_DATA_FORMAT_AUDIO;
             } else {
                 MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: data block is for data track\n", __debug__);
-                main_format = MIRAGE_MAIN_DATA;
+                main_format = MIRAGE_MAIN_DATA_FORMAT_DATA;
             }
 
             /* Create fragment object */
