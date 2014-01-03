@@ -312,6 +312,11 @@ void mirage_helper_lba2msf (gint lba, gboolean diff, guint8 *m, guint8 *s, guint
     if (diff) {
         lba += 150;
     }
+
+    if (lba < 0) {
+        lba += 450000;
+    }
+
     if (m) *m = lba/(75*60);
     if (s) *s = (lba /75) % 60;
     if (f) *f = lba % 75;
@@ -341,6 +346,10 @@ gchar *mirage_helper_lba2msf_str (gint lba, gboolean diff)
         lba += 150;
     }
 
+    if (lba < 0) {
+        lba += 450000;
+    }
+
     ret = g_strdup_printf("%02d:%02d:%02d", lba/(75*60), (lba/75) % 60, lba % 75);
     return ret;
 }
@@ -366,6 +375,10 @@ gint mirage_helper_msf2lba (guint8 m, guint8 s, guint8 f, gboolean diff)
 
     if (diff) {
         lba -= 150;
+    }
+
+    if (m >= 90) {
+        lba -= 450000;
     }
 
     return lba;
@@ -509,7 +522,7 @@ gboolean mirage_helper_validate_isrc (const gchar *isrc)
         g_ascii_isdigit(isrc[ 8]) &&
         g_ascii_isdigit(isrc[ 9]) &&
         g_ascii_isdigit(isrc[10]) &&
-        g_ascii_isdigit(isrc[11])) 
+        g_ascii_isdigit(isrc[11]))
     {
         return TRUE;
     }
