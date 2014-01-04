@@ -36,5 +36,6 @@ typedef enum
 
 /* Debug macro */
 #define CDEMU_DEBUG(obj, lvl, ...) MIRAGE_DEBUG(obj, lvl, __VA_ARGS__)
+#define CDEMU_DEBUG_ON(obj, lvl) MIRAGE_DEBUG_ON(obj, lvl)
 
 #endif /* __CDEMU_DEBUG_H__ */
