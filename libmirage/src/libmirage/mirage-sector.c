@@ -1610,8 +1610,13 @@ static gint subchannel_generate_q (MirageSector *self, guint8 *buf)
             }
             buf[2] = mirage_helper_hex2bcd(buf[2]);
 
-            /* Relative M/S/F */
-            mirage_helper_lba2msf(ABS(address - track_start), FALSE /* Don't add 2 sec here (because it's relative address)! */, &buf[3], &buf[4], &buf[5]);
+            /* Relative M/S/F; when converting, we do not add 2 seconds */
+            if (address < track_start) {
+                /* Pregap */
+                mirage_helper_lba2msf(track_start - address - 1, FALSE, &buf[3], &buf[4], &buf[5]);
+            } else {
+                mirage_helper_lba2msf(address - track_start, FALSE, &buf[3], &buf[4], &buf[5]);
+            }
             buf[3] = mirage_helper_hex2bcd(buf[3]);
             buf[4] = mirage_helper_hex2bcd(buf[4]);
             buf[5] = mirage_helper_hex2bcd(buf[5]);
