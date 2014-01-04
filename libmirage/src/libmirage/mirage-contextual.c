@@ -152,6 +152,39 @@ void mirage_contextual_debug_message (MirageContextual *self, gint level, gchar 
 }
 
 
+/**
+ * mirage_contextual_debug_is_active:
+ * @self: a #MirageContextual
+ * @level: (in): debug level
+ *
+ * Checks whether debug messages at debug level @level are currently
+ * active or not.
+ *
+ * Returns: a boolean indicating whether debug messages at debug level
+ * @level are currently active or not.
+ */
+gboolean mirage_contextual_debug_is_active (MirageContextual *self, gint level)
+{
+    gint debug_mask = 0;
+
+    MirageContext *context;
+
+    /* Always on for error and warning levels */
+    if (level == MIRAGE_DEBUG_ERROR || level == MIRAGE_DEBUG_WARNING) {
+        return TRUE;
+    }
+
+    /* Try getting debug context */
+    context = mirage_contextual_get_context(self);
+    if (context) {
+        debug_mask = mirage_context_get_debug_mask(context);
+        g_object_unref(context);
+    }
+
+    return debug_mask & level;
+}
+
+
 /**********************************************************************\
  *        Convenience functions, passthrough to MirageContext         *
 \**********************************************************************/

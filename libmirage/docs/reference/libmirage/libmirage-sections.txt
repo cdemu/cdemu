@@ -77,6 +77,7 @@ MirageContextualInterface
 mirage_contextual_create_file_stream
 mirage_contextual_debug_message
 mirage_contextual_debug_messagev
+mirage_contextual_debug_is_active
 mirage_contextual_get_context
 mirage_contextual_get_file_stream_filename
 mirage_contextual_get_option
@@ -93,6 +94,7 @@ mirage_contextual_get_type
 <SECTION>
 <FILE>mirage-debug</FILE>
 MIRAGE_DEBUG
+MIRAGE_DEBUG_ON
 MirageDebugMasks
 </SECTION>
 
