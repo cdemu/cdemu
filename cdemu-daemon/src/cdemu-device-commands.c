@@ -2236,6 +2236,30 @@ static gboolean command_seek (CdemuDevice *self, guint8 *raw_cdb G_GNUC_UNUSED)
     return TRUE;
 }
 
+/* SEND CUE SHEET */
+static gboolean command_send_cue_sheet (CdemuDevice *self, guint8 *raw_cdb)
+{
+    struct SEND_CUE_SHEET_CDB *cdb = (struct SEND_CUE_SHEET_CDB *)raw_cdb;
+    struct ModePage_0x05 *p_0x05 = cdemu_device_get_mode_page(self, 0x05, MODE_PAGE_CURRENT);
+    gint cue_sheet_size = GUINT24_FROM_BE(cdb->cue_sheet_size);
+
+    /* Verify that we are in SAO/DAO mode */
+    if (p_0x05->write_type != 2) {
+        CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: CUE sheet sent when write type is not set to Session-at-Once!\n", __debug__);
+        cdemu_device_write_sense(self, CHECK_CONDITION, COMMAND_SEQUENCE_ERROR);
+        return FALSE;
+    }
+
+    /* Read CUE sheet */
+    CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: reading CUE sheet (%d bytes)\n", __debug__, cue_sheet_size);
+
+    guint8 *cue_sheet_data = g_malloc0(cue_sheet_size);
+
+    g_free(cue_sheet_data);
+
+    return TRUE;
+}
+
 /* SET CD SPEED*/
 static gboolean command_set_cd_speed (CdemuDevice *self, guint8 *raw_cdb)
 {
@@ -2664,6 +2688,10 @@ gint cdemu_device_execute_command (CdemuDevice *self, CdemuCommand *cmd)
           "SEEK (10)",
           command_seek,
           FALSE },
+        { SEND_CUE_SHEET,
+          "SEND CUE SHEET",
+          command_send_cue_sheet,
+          TRUE },
         { SET_CD_SPEED,
           "SET CD SPEED",
           command_set_cd_speed,

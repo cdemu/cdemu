@@ -2029,7 +2029,7 @@ struct SEND_CUE_SHEET_CDB
 
     guint8 reserved1[5];
 
-    guint8 length[3];
+    guint32 cue_sheet_size : 24;
 
     guint8 control;
 };
