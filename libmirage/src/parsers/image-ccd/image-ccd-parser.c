@@ -179,11 +179,6 @@ static gboolean mirage_parser_ccd_build_disc_layout (MirageParserCcd *self, GErr
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "\n");
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: building disc layout\n", __debug__);
 
-    if (self->priv->disc_data->Catalog) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: setting disc catalog to %.13s\n", __debug__, self->priv->disc_data->Catalog);
-        mirage_disc_set_mcn(self->priv->disc, self->priv->disc_data->Catalog);
-    }
-
     mirage_parser_ccd_sort_entries(self);
 
     /* Go over stored entries and build the layout */
@@ -207,6 +202,11 @@ static gboolean mirage_parser_ccd_build_disc_layout (MirageParserCcd *self, GErr
                 return FALSE;
             }
             mirage_session_set_session_type(session, ccd_cur_entry->PSec); /* PSEC = Disc Type */
+
+            if (self->priv->disc_data->Catalog) {
+                MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: setting catalog to %.13s\n", __debug__, self->priv->disc_data->Catalog);
+                mirage_session_set_mcn(session, self->priv->disc_data->Catalog);
+            }
 
             g_object_unref(session);
         } else if (ccd_cur_entry->Point == 0xA2) {

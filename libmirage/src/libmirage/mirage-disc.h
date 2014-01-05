@@ -26,13 +26,6 @@
 G_BEGIN_DECLS
 
 /**
- * MIRAGE_MCN_SIZE:
- *
- * Length of MCN string.
- */
-#define MIRAGE_MCN_SIZE 13
-
-/**
  * MirageMediumTypes:
  * @MIRAGE_MEDIUM_CD: CD disc
  * @MIRAGE_MEDIUM_DVD: DVD disc
@@ -117,10 +110,6 @@ MirageMediumTypes mirage_disc_get_medium_type (MirageDisc *self);
 void mirage_disc_set_filenames (MirageDisc *self, const gchar **filenames);
 void mirage_disc_set_filename (MirageDisc *self, const gchar *filename);
 const gchar **mirage_disc_get_filenames (MirageDisc *self);
-
-/* MCN */
-void mirage_disc_set_mcn (MirageDisc *self, const gchar *mcn);
-const gchar *mirage_disc_get_mcn (MirageDisc *self);
 
 /* Layout */
 void mirage_disc_layout_set_first_session (MirageDisc *self, gint first_session);

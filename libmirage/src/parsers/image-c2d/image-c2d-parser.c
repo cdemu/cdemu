@@ -410,6 +410,24 @@ static gboolean mirage_parser_c2d_load_cdtext (MirageParserC2d *self, GError **e
     return TRUE;
 }
 
+static gboolean mirage_parser_c2d_set_mcn (MirageParserC2d *self, const gchar *mcn, GError **error)
+{
+    MirageSession *session;
+
+    /* Get session */
+    session = mirage_disc_get_session_by_index(self->priv->disc, 0, error);
+    if (!session) {
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to get session!\n", __debug__);
+        return FALSE;
+    }
+
+    mirage_session_set_mcn(session, mcn);
+
+    g_object_unref(session);
+
+    return TRUE;
+}
+
 static gboolean mirage_parser_c2d_load_disc (MirageParserC2d *self, GError **error)
 {
     C2D_HeaderBlock *hb;
@@ -439,11 +457,8 @@ static gboolean mirage_parser_c2d_load_disc (MirageParserC2d *self, GError **err
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   Dummy1: 0x%X\n", __debug__, hb->dummy1);
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   Dummy2: 0x%X\n", __debug__, hb->dummy2);
 #endif
-
-    /* Set disc's MCN */
     if (hb->has_upc_ean) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   UPC / EAN: %.13s\n", __debug__, &hb->upc_ean);
-        mirage_disc_set_mcn(self->priv->disc, hb->upc_ean);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   UPC / EAN: %.13s\n", __debug__, hb->upc_ean);
     }
 
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, ":\n");
@@ -462,6 +477,16 @@ static gboolean mirage_parser_c2d_load_disc (MirageParserC2d *self, GError **err
         return FALSE;
     }
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: finished parsing track entries\n\n", __debug__);
+
+    /* Set MCN */
+    if (hb->has_upc_ean) {
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: setting MCN...\n", __debug__);
+        if (!mirage_parser_c2d_set_mcn(self, hb->upc_ean, error)) {
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to set MCN!\n", __debug__);
+            return FALSE;
+        }
+    }
+
 
     /* Load CD-Text */
     if (hb->size_cdtext) {

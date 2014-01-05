@@ -26,8 +26,8 @@
  *
  * #MirageSession object represents a session in the disc layout. It
  * provides functions for manipulating session layout; setting session
- * type, adding and removing tracks and languages, setting CD-TEXT data,
- * etc.
+ * type, adding and removing tracks and languages, setting CD-TEXT data
+ * and MCN, etc.
  */
 
 #ifdef HAVE_CONFIG_H
@@ -46,6 +46,10 @@
 
 struct _MirageSessionPrivate
 {
+    /* MCN */
+    gchar *mcn;
+    gboolean mcn_encoded; /* Is MCN encoded in one of track's fragment's subchannel? */
+
     /* Layout settings */
     gint session_number; /* Session number */
     gint start_sector; /* Start sector */
@@ -66,6 +70,81 @@ struct _MirageSessionPrivate
 /**********************************************************************\
  *                          Private functions                         *
 \**********************************************************************/
+static gboolean mirage_session_check_for_encoded_mcn (MirageSession *self)
+{
+    MirageTrack *track = NULL;
+    gint start_address = 0;
+    gint num_tracks = mirage_session_get_number_of_tracks(self);
+
+    /* Go over all tracks, and find the first one with fragment that contains
+       subchannel... */
+    for (gint i = 0; i < num_tracks; i++) {
+        track = mirage_session_get_track_by_index(self, i, NULL);
+        if (track) {
+            MirageFragment *fragment = mirage_track_find_fragment_with_subchannel(track, NULL);
+            if (fragment) {
+                MIRAGE_DEBUG(self, MIRAGE_DEBUG_SESSION, "%s: track %i contains subchannel\n", __debug__, i);
+                start_address = mirage_fragment_get_address(fragment);
+                g_object_unref(fragment);
+                break;
+            } else {
+                /* Unref the track we just checked */
+                g_object_unref(track);
+                track = NULL;
+            }
+        }
+    }
+
+    if (track) {
+        gint end_address = start_address + 100;
+
+        self->priv->mcn_encoded = TRUE; /* It is, even if it may not be present... */
+
+        /* Reset MCN */
+        g_free(self->priv->mcn);
+        self->priv->mcn = NULL;
+
+        /* According to INF8090, MCN, if present, must be encoded in at least
+           one sector in 100 consequtive sectors. So we read first hundred
+           sectors' subchannel, and extract MCN if we find it. */
+        for (gint address = start_address; address < end_address; address++) {
+            MirageSector *sector;
+            const guint8 *buf;
+            gint buflen;
+
+            /* Get sector */
+            sector = mirage_track_get_sector(track, address, FALSE, NULL);
+            if (!sector) {
+                continue;
+            }
+
+            /* Get Q subchannel */
+            if (!mirage_sector_get_subchannel(sector, MIRAGE_SUBCHANNEL_Q, &buf, &buflen, NULL)) {
+                g_object_unref(sector);
+                continue;
+            }
+
+            if ((buf[0] & 0x0F) == 0x02) {
+                /* Mode-2 Q found */
+                gchar tmp_mcn[13];
+
+                mirage_helper_subchannel_q_decode_mcn(&buf[1], tmp_mcn);
+
+                MIRAGE_DEBUG(self, MIRAGE_DEBUG_TRACK, "%s: found MCN: <%s>\n", __debug__, tmp_mcn);
+
+                /* Set MCN */
+                self->priv->mcn = g_strndup(tmp_mcn, 13);
+            }
+
+            g_object_unref(sector);
+        }
+
+        g_object_unref(track);
+    }
+
+    return TRUE;
+}
+
 static void mirage_session_commit_topdown_change (MirageSession *self)
 {
     /* Rearrange tracks: set numbers, set start sectors */
@@ -99,6 +178,9 @@ static void mirage_session_commit_bottomup_change (MirageSession *self)
         MirageTrack *track = entry->data;
         self->priv->length += mirage_track_layout_get_length(track);
     }
+
+    /* Bottom-up change = eventual change in fragments, so MCN could've changed... */
+    mirage_session_check_for_encoded_mcn(self);
 
     /* Signal session change */
     g_signal_emit_by_name(self, "layout-changed", NULL);
@@ -209,6 +291,50 @@ MirageSessionTypes mirage_session_get_session_type (MirageSession *self)
 {
     /* Return session number */
     return self->priv->session_type;
+}
+
+
+/**
+ * mirage_session_set_mcn:
+ * @self: a #MirageSession
+ * @mcn: (in): MCN
+ *
+ * Sets MCN (Media Catalogue Number).
+ *
+ * Because MCN is stored in subchannel data, this function silently
+ * fails if any of session's tracks contains fragments with subchannel
+ * data provided.
+ *
+ * <note>
+ * Intended for internal use only.
+ * </note>
+ */
+void mirage_session_set_mcn (MirageSession *self, const gchar *mcn)
+{
+    /* MCN can be set only if none of the tracks have fragments that contain
+       subchannel; this is because MCN is encoded in the subchannel, and cannot
+       be altered... */
+    if (self->priv->mcn_encoded) {
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_SESSION, "%s: MCN is already encoded in subchannel!\n", __debug__);
+    } else {
+        g_free(self->priv->mcn);
+        self->priv->mcn = g_strndup(mcn, 13);
+    }
+}
+
+/**
+ * mirage_session_get_mcn:
+ * @self: a #MirageSession
+ *
+ * Retrieves MCN.
+ *
+ * Returns: (transfer none): pointer to MCN string, or %NULL. The string
+ * belongs to the object and should not be modified.
+ */
+const gchar *mirage_session_get_mcn (MirageSession *self)
+{
+    /* Return pointer to MCN */
+    return self->priv->mcn;
 }
 
 
@@ -1357,6 +1483,8 @@ static void mirage_session_init (MirageSession *self)
 
     self->priv = MIRAGE_SESSION_GET_PRIVATE(self);
 
+    self->priv->mcn = NULL;
+
     self->priv->tracks_list = NULL;
     self->priv->languages_list = NULL;
 
@@ -1407,6 +1535,8 @@ static void mirage_session_dispose (GObject *gobject)
 static void mirage_session_finalize (GObject *gobject)
 {
     MirageSession *self = MIRAGE_SESSION(gobject);
+
+    g_free(self->priv->mcn);
 
     g_list_free(self->priv->tracks_list);
     g_list_free(self->priv->languages_list);

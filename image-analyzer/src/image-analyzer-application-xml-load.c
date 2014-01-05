@@ -325,6 +325,10 @@ static void treestore_add_session (GtkTreeStore *treestore, GtkTreeIter *parent,
         if (!g_ascii_strcasecmp((gchar *)cur_node->name, TAG_SESSION_TYPE)) {
             gint session_type = xml_node_get_double(cur_node);
             treestore_add_node(treestore, &node, NULL, "Session type: 0x%X (%s)", session_type, dump_session_type(session_type));
+        } else if (!g_ascii_strcasecmp((gchar *)cur_node->name, TAG_MCN)) {
+            gchar *mcn = xml_node_get_string(cur_node);
+            treestore_add_node(treestore, &node, NULL, "MCN: %s", mcn);
+            g_free(mcn);
         } else if (!g_ascii_strcasecmp((gchar *)cur_node->name, TAG_SESSION_NUMBER)) {
             gint session_number = xml_node_get_double(cur_node);
             treestore_add_node(treestore, &node, NULL, "Session number: %d", session_number);
@@ -442,10 +446,6 @@ static void treestore_add_disc (GtkTreeStore *treestore, GtkTreeIter *parent, xm
                     g_free(filename);
                 }
             }
-        } else if (!g_ascii_strcasecmp((gchar *)cur_node->name, TAG_MCN)) {
-            gchar *mcn = xml_node_get_string(cur_node);
-            treestore_add_node(treestore, &node, NULL, "MCN: %s", mcn);
-            g_free(mcn);
         } else if (!g_ascii_strcasecmp((gchar *)cur_node->name, TAG_FIRST_SESSION)) {
             gint first_session = xml_node_get_double(cur_node);
             treestore_add_node(treestore, &node, NULL, "Layout: First session: %d", first_session);

@@ -254,6 +254,7 @@ static gboolean xml_dump_track (MirageTrack *track, xmlNodePtr parent)
 static gboolean xml_dump_session (MirageSession *session, xmlNodePtr parent)
 {
     gint session_type, session_number;
+    const gchar *mcn;
     gint first_track;
     gint start_sector, length;
     gint leadout_length;
@@ -264,6 +265,9 @@ static gboolean xml_dump_session (MirageSession *session, xmlNodePtr parent)
 
     session_type = mirage_session_get_session_type(session);
     xml_add_node_with_content(parent, TAG_SESSION_TYPE, "0x%X", session_type);
+
+    mcn = mirage_session_get_mcn(session);
+    if (mcn) xml_add_node_with_content(parent, TAG_MCN, "%s", mcn);
 
     session_number = mirage_session_layout_get_session_number(session);
     xml_add_node_with_content(parent, TAG_SESSION_NUMBER, "%d", session_number);
@@ -305,7 +309,6 @@ static gboolean xml_dump_disc (MirageDisc *disc, xmlNodePtr parent)
 {
     gint medium_type;
     const gchar **filenames;
-    const gchar *mcn;
     gint first_session, first_track;
     gint start_sector, length;
     gint num_sessions, num_tracks;
@@ -326,9 +329,6 @@ static gboolean xml_dump_disc (MirageDisc *disc, xmlNodePtr parent)
     for (gint i = 0; filenames[i]; i++) {
         xml_add_node_with_content(node, TAG_FILENAME, "%s", filenames[i]);
     }
-
-    mcn = mirage_disc_get_mcn(disc);
-    if (mcn) xml_add_node_with_content(parent, TAG_MCN, "%s", mcn);
 
     first_session = mirage_disc_layout_get_first_session(disc);
     xml_add_node_with_content(parent, TAG_FIRST_SESSION, "%d", first_session);

@@ -1519,18 +1519,15 @@ static gint subchannel_generate_q (MirageSector *self, guint8 *buf)
         case 25: {
             /* MCN is to be returned; check if we actually have it */
             MirageSession *session;
-            MirageDisc *disc;
 
             session = mirage_object_get_parent(MIRAGE_OBJECT(track));
-            disc = mirage_object_get_parent(MIRAGE_OBJECT(session));
 
-            if (!mirage_disc_get_mcn(disc)) {
+            if (!mirage_session_get_mcn(session)) {
                 mode_switch = 0x01;
             } else {
                 mode_switch = 0x02;
             }
 
-            g_object_unref(disc);
             g_object_unref(session);
 
             break;
@@ -1620,16 +1617,13 @@ static gint subchannel_generate_q (MirageSector *self, guint8 *buf)
 
             /* MCN */
             MirageSession *session;
-            MirageDisc *disc;
 
             const gchar *mcn;
 
             session = mirage_object_get_parent(MIRAGE_OBJECT(track));
-            disc = mirage_object_get_parent(MIRAGE_OBJECT(session));
 
-            mcn = mirage_disc_get_mcn(disc);
+            mcn = mirage_session_get_mcn(session);
 
-            g_object_unref(disc);
             g_object_unref(session);
 
             mirage_helper_subchannel_q_encode_mcn(&buf[1], mcn);

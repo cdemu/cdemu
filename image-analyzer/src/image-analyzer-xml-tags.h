@@ -28,7 +28,6 @@
 #define TAG_MEDIUM_TYPE "medium-type"
 #define TAG_FILENAMES "filenames"
 #define TAG_FILENAME "filename"
-#define TAG_MCN "mcn"
 #define TAG_FIRST_SESSION "first-session"
 #define TAG_FIRST_TRACK "first-track"
 #define TAG_START_SECTOR "start-sector"
@@ -45,6 +44,7 @@
 
 #define TAG_SESSION "session"
 #define TAG_SESSION_TYPE "session-type"
+#define TAG_MCN "mcn"
 #define TAG_SESSION_NUMBER "session-number"
 #define TAG_FIRST_TRACK "first-track"
 #define TAG_START_SECTOR "start-sector"

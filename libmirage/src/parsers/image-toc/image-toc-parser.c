@@ -614,7 +614,7 @@ static gboolean mirage_parser_toc_callback_catalog (MirageParserToc *self, GMatc
 
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: parsed CATALOG: %.13s\n", __debug__, catalog);
 
-    mirage_disc_set_mcn(self->priv->disc, catalog);
+    mirage_session_set_mcn(self->priv->cur_session, catalog);
 
     g_free(catalog);
 

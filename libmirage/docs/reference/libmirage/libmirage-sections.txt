@@ -99,7 +99,6 @@ MirageDebugMasks
 <SECTION>
 <FILE>mirage-disc</FILE>
 <TITLE>MirageDisc</TITLE>
-MIRAGE_MCN_SIZE
 MirageDisc
 MirageDiscClass
 MirageEnumSessionCallback
@@ -113,7 +112,6 @@ mirage_disc_get_disc_structure
 mirage_disc_get_dpm_data
 mirage_disc_get_dpm_data_for_sector
 mirage_disc_get_filenames
-mirage_disc_get_mcn
 mirage_disc_get_medium_type
 mirage_disc_get_number_of_sessions
 mirage_disc_get_number_of_tracks
@@ -143,7 +141,6 @@ mirage_disc_set_disc_structure
 mirage_disc_set_dpm_data
 mirage_disc_set_filename
 mirage_disc_set_filenames
-mirage_disc_set_mcn
 mirage_disc_set_medium_type
 <SUBSECTION Standard>
 MIRAGE_DISC
@@ -369,6 +366,7 @@ mirage_sector_get_type
 <SECTION>
 <FILE>mirage-session</FILE>
 <TITLE>MirageSession</TITLE>
+MIRAGE_MCN_SIZE
 MirageEnumLanguageCallback
 MirageEnumTrackCallback
 MirageSession
@@ -383,6 +381,7 @@ mirage_session_get_cdtext_data
 mirage_session_get_language_by_code
 mirage_session_get_language_by_index
 mirage_session_get_leadout_length
+mirage_session_get_mcn
 mirage_session_get_next
 mirage_session_get_number_of_languages
 mirage_session_get_number_of_tracks
@@ -408,6 +407,7 @@ mirage_session_remove_track_by_number
 mirage_session_remove_track_by_object
 mirage_session_set_cdtext_data
 mirage_session_set_leadout_length
+mirage_session_set_mcn
 mirage_session_set_session_type
 <SUBSECTION Standard>
 MIRAGE_IS_SESSION

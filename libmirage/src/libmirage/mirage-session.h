@@ -26,6 +26,13 @@
 G_BEGIN_DECLS
 
 /**
+ * MIRAGE_MCN_SIZE:
+ *
+ * Length of MCN string.
+ */
+#define MIRAGE_MCN_SIZE 13
+
+/**
  * MirageSessionTypes:
  * @MIRAGE_SESSION_CD_DA: CD AUDIO
  * @MIRAGE_SESSION_CD_ROM: CD-ROM
@@ -116,6 +123,10 @@ GType mirage_session_get_type (void);
 /* Session type */
 void mirage_session_set_session_type (MirageSession *self, MirageSessionTypes type);
 MirageSessionTypes mirage_session_get_session_type (MirageSession *self);
+
+/* MCN */
+void mirage_session_set_mcn (MirageSession *self, const gchar *mcn);
+const gchar *mirage_session_get_mcn (MirageSession *self);
 
 /* Layout */
 void mirage_session_layout_set_session_number (MirageSession *self, gint number);
