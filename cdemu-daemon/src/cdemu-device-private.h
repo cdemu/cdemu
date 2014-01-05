@@ -117,6 +117,8 @@ struct _CdemuDevicePrivate
     MirageTrack *open_track;
     gboolean last_session_closed;
     gboolean disc_closed;
+
+    MirageSession *cue_sheet;
 };
 
 

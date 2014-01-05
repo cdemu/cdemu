@@ -309,6 +309,192 @@ static gboolean cdemu_device_burning_get_next_writable_address (CdemuDevice *sel
 }
 
 
+static void cdemu_device_sao_burning_create_cue_sheet (CdemuDevice *self)
+{
+    /* Clear old CUE sheet model and create new session for it */
+    if (self->priv->cue_sheet) {
+        g_object_unref(self->priv->cue_sheet);
+    }
+    self->priv->cue_sheet = g_object_new(MIRAGE_TYPE_SESSION, NULL);
+
+    /* Set session number, start sector and first track number */
+    gint session_number = mirage_disc_layout_get_first_session(self->priv->disc) + mirage_disc_get_number_of_sessions(self->priv->disc);
+    gint start_sector = mirage_disc_layout_get_start_sector(self->priv->disc) + mirage_disc_layout_get_length(self->priv->disc);
+    gint first_track = mirage_disc_layout_get_first_track(self->priv->disc) + mirage_disc_get_number_of_tracks(self->priv->disc);
+
+    mirage_session_layout_set_session_number(self->priv->cue_sheet, session_number);
+    mirage_session_layout_set_start_sector(self->priv->cue_sheet, start_sector);
+    mirage_session_layout_set_first_track(self->priv->cue_sheet, first_track);
+
+    /* Grab session type from Mode Page 0x05 */
+    struct ModePage_0x05 *p_0x05 = cdemu_device_get_mode_page(self, 0x05, MODE_PAGE_CURRENT);
+    switch (p_0x05->session_format) {
+        case 0x00: {
+            mirage_session_set_session_type(self->priv->cue_sheet, MIRAGE_SESSION_CD_ROM);
+            break;
+        }
+        case 0x10: {
+            mirage_session_set_session_type(self->priv->cue_sheet, MIRAGE_SESSION_CD_I);
+            break;
+        }
+        case 0x20: {
+            mirage_session_set_session_type(self->priv->cue_sheet, MIRAGE_SESSION_CD_ROM_XA);
+            break;
+        }
+    }
+}
+
+static gboolean cdemu_device_sao_burning_parse_cue_sheet (CdemuDevice *self, const guint8 *cue_sheet, gint cue_sheet_size)
+{
+    gint num_entries = cue_sheet_size / 8;
+
+    CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: number of CUE sheet entries: %d\n", __debug__, num_entries);
+
+    /* We build our internal representation of a CUE sheet inside a
+       MirageSession object. In order to minimize necessary book-keeping,
+       we process CUE sheet in several passes:
+       1. create all tracks
+       2. determine tracks' lengths and pregaps
+       3. determine indices and set MCN and ISRCs */
+
+    cdemu_device_sao_burning_create_cue_sheet(self);
+
+    /* First pass */
+    CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: first pass: creating tracks...\n", __debug__);
+    for (gint i = 0; i < num_entries; i++) {
+        const guint8 *cue_entry = cue_sheet + i*8;
+
+        gint adr = (cue_entry[0] & 0x0F);
+        gint tno = cue_entry[1];
+        gint idx = cue_entry[2];
+
+        /* Here we are interested only in ADR 1 entries */
+        if (adr != 1) {
+            continue;
+        }
+
+        /* Skip lead-in and lead-out */
+        if (cue_entry[1] == 0 || cue_entry[1] == 0xAA) {
+            continue;
+        }
+
+        /* Ignore index entries */
+        if (idx > 1) {
+            continue;
+        }
+
+        MirageTrack *track = mirage_session_get_track_by_number(self->priv->cue_sheet, tno, NULL);
+        if (!track) {
+            CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: creating track #%d\n", __debug__, tno);
+            track = g_object_new(MIRAGE_TYPE_TRACK, NULL);
+            mirage_session_add_track_by_number(self->priv->cue_sheet, tno, track, NULL);
+        }
+        g_object_unref(track);
+    }
+
+    /* Second pass; this one goes backwards, because it's easier to
+       compute lengths that way */
+    CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: second pass: setting lengths and data formats...\n", __debug__);
+    gint last_address = 0;
+    for (gint i = num_entries - 1; i >= 0; i--) {
+        const guint8 *cue_entry = cue_sheet + i*8;
+
+        gint adr = (cue_entry[0] & 0x0F);
+        gint tno = cue_entry[1];
+        gint idx = cue_entry[2];
+
+        /* Here we are interested only in ADR 1 entries */
+        if (adr != 1) {
+            continue;
+        }
+
+        /* Skip lead-in */
+        if (cue_entry[1] == 0) {
+            continue;
+        }
+
+        /* Convert MSF to address */
+        gint address = mirage_helper_msf2lba(cue_entry[5], cue_entry[6], cue_entry[7], TRUE);
+
+        if (cue_entry[1] != 0xAA) {
+            CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: track #%d index #%d has length of %d sectors; data format: %02hX\n", __debug__, tno, idx, (last_address - address), cue_entry[3]);
+
+            MirageTrack *track = mirage_session_get_track_by_number(self->priv->cue_sheet, tno, NULL);
+
+            MirageFragment *fragment = g_object_new(MIRAGE_TYPE_FRAGMENT, NULL);
+            mirage_fragment_set_length(fragment, last_address - address);
+            mirage_fragment_main_data_set_format(fragment, cue_entry[3]); /* We abuse fragment's main channel format to store the data form supplied by CUE sheet */
+            mirage_track_add_fragment(track, 0, fragment);
+
+            g_object_unref(fragment);
+            g_object_unref(track);
+        }
+        last_address = address;
+    }
+
+    /* Final pass: ISRC, MCN and indices */
+    CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: final pass: ISRC, MCN and indices...\n", __debug__);
+    for (gint i = 0; i < num_entries; i++) {
+        const guint8 *cue_entry = cue_sheet + i*8;
+
+        gint adr = (cue_entry[0] & 0x0F);
+        gint tno = cue_entry[1];
+        gint idx = cue_entry[2];
+
+        if (adr == 1) {
+            gint address = mirage_helper_msf2lba(cue_entry[5], cue_entry[6], cue_entry[7], TRUE);
+
+            if (idx == 1) {
+                last_address = address;
+            } else if (idx > 1) {
+                CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: adding track #%d, index #%d\n", __debug__, tno, idx);
+
+                MirageTrack *track = mirage_session_get_track_by_number(self->priv->cue_sheet, tno, NULL);
+                mirage_track_add_index(track, address - last_address, NULL);
+                g_object_unref(track);
+            }
+        } else if (adr == 2 || adr == 3) {
+            /* MCN or ISRC; this means next entry must be valid, and must have same adr! */
+            if (i + 1 >= num_entries) {
+                CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: missing next CUE entry for MCN/ISRC; skipping!\n", __debug__, i);
+                continue;
+            }
+
+            const guint8 *next_cue_entry = cue_sheet + (i + 1)*8;
+            if ((next_cue_entry[0] & 0x0F) != adr) {
+                continue;
+            }
+
+            if (adr == 2) {
+                /* MCN */
+                gchar *mcn = g_malloc0(13 + 1);
+                memcpy(mcn, cue_entry+1, 7);
+                memcpy(mcn+7, next_cue_entry+1, 6);
+                CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: MCN: %s\n", __debug__, mcn);
+                mirage_session_set_mcn(self->priv->cue_sheet, mcn);
+                g_free(mcn);
+            } else {
+                /* ISRC */
+                gchar *isrc = g_malloc0(12 + 1);
+                memcpy(isrc, cue_entry+2, 6);
+                memcpy(isrc+6, next_cue_entry+2, 6);
+                CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: ISRC for track #%d: %s\n", __debug__, cue_entry[1], isrc);
+
+                MirageTrack *track = mirage_session_get_track_by_number(self->priv->cue_sheet, tno, NULL);
+                mirage_track_set_isrc(track, isrc);
+                g_object_unref(track);
+
+                g_free(isrc);
+            }
+
+            i++;
+        }
+    }
+
+    return TRUE;
+}
+
+
 /**********************************************************************\
  *                          Buffer dump function                      *
 \**********************************************************************/
@@ -2315,6 +2501,14 @@ static gboolean command_send_cue_sheet (CdemuDevice *self, guint8 *raw_cdb)
     /* Dump CUE sheet */
     CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: received CUE sheet:\n", __debug__);
     cdemu_device_dump_buffer(self, DAEMON_DEBUG_MMC, __debug__, 8, self->priv->buffer, cue_sheet_size);
+
+    /* Parse CUE sheet */
+    if (!cdemu_device_sao_burning_parse_cue_sheet(self, self->priv->buffer, cue_sheet_size)) {
+        CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: failed to parse CUE sheet!\n", __debug__);
+        return FALSE;
+    }
+
+    CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: successfully parsed CUE sheet!\n", __debug__);
 
     return TRUE;
 }
