@@ -106,11 +106,12 @@ struct _CdemuDevicePrivate
 
     /* Burning emulation */
     gint medium_capacity;
+    gint medium_leadin;
     gboolean recordable_disc;
     gboolean rewritable_disc;
     GList *write_descriptors;
 
-    gint next_writable_address;
+    gint num_written_sectors;
 
     MirageSession *open_session;
     MirageTrack *open_track;

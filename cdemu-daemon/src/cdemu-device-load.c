@@ -105,7 +105,9 @@ static gboolean cdemu_device_load_disc_private (CdemuDevice *self, gchar **filen
         self->priv->rewritable_disc = FALSE;
         self->priv->medium_capacity = 80*60*75;
 
-        self->priv->next_writable_address = 0;
+        self->priv->medium_leadin = -11077;
+        self->priv->num_written_sectors = 0;
+
         self->priv->open_session = NULL;
         self->priv->open_track = NULL;
 
@@ -174,7 +176,7 @@ gboolean cdemu_device_unload_disc_private (CdemuDevice *self, gboolean force, GE
         self->priv->disc_closed = FALSE;
         self->priv->recordable_disc = FALSE;
         self->priv->rewritable_disc = FALSE;
-        self->priv->next_writable_address = 0;
+        self->priv->num_written_sectors = 0;
 
         /* Current profile: None */
         cdemu_device_set_profile(self, ProfileIndex_NONE);

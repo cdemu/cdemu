@@ -202,6 +202,8 @@ static gboolean cdemu_device_burning_close_session (CdemuDevice *self)
         self->priv->disc_closed = TRUE;
     }
 
+    self->priv->num_written_sectors = 0; /* Reset */
+
     return TRUE;
 }
 
@@ -253,7 +255,6 @@ static gboolean cdemu_device_burning_open_track (CdemuDevice *self, MirageTrackM
         mirage_track_add_fragment(self->priv->open_track, -1, fragment);
         g_object_unref(fragment);
 
-        self->priv->next_writable_address += 150;
         mirage_track_set_track_start(self->priv->open_track, 150);
     }
 
@@ -276,6 +277,37 @@ static gboolean cdemu_device_burning_close_track (CdemuDevice *self)
 
     return TRUE;
 }
+
+static gboolean cdemu_device_burning_get_next_writable_address (CdemuDevice *self)
+{
+    struct ModePage_0x05 *p_0x05 = cdemu_device_get_mode_page(self, 0x05, MODE_PAGE_CURRENT);
+    gint nwa_base = 0;
+
+    switch (p_0x05->write_type) {
+        case 1: {
+            /* TAO; NWA base is at the beginning of first track */
+            nwa_base = 0;
+            break;
+        }
+        case 2: {
+            /* SAO; NWA base is at the beginning of first-track's pregap */
+            nwa_base = -150;
+            break;
+        }
+        case 3: {
+            /* Raw; NWA base is at the beginning of lead-in */
+            nwa_base = self->priv->medium_leadin;
+            break;
+        }
+        default: {
+            CDEMU_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: unhandled write type %d; using NWA base 0!\n", __debug__, p_0x05->write_type);
+            break;
+        }
+    }
+
+    return nwa_base + self->priv->num_written_sectors;
+}
+
 
 /**********************************************************************\
  *                          Buffer dump function                      *
@@ -1301,13 +1333,9 @@ static gboolean command_read_disc_information (CdemuDevice *self, guint8 *raw_cd
 
             guint8 *msf_ptr = (guint8 *)&ret_data->lsession_leadin;
             if (last_session_leadin == -1) {
-                /* Read from a read CD-R */
-                msf_ptr[1] = 0x61;
-                msf_ptr[2] = 0x22;
-                msf_ptr[3] = 0x17;
-            } else {
-                mirage_helper_lba2msf(last_session_leadin, TRUE, &msf_ptr[1], &msf_ptr[2], &msf_ptr[3]);
+                last_session_leadin = self->priv->medium_leadin;
             }
+            mirage_helper_lba2msf(last_session_leadin, TRUE, &msf_ptr[1], &msf_ptr[2], &msf_ptr[3]);
 
             if (!self->priv->recordable_disc) {
                 ret_data->last_leadout = 0xFFFFFFFF; /* Not applicable since we're not a writer */
@@ -2150,14 +2178,14 @@ static gboolean command_read_track_information (CdemuDevice *self, guint8 *raw_c
         nwa_valid = TRUE;
         blank_track = TRUE;
 
-        next_writable_address = self->priv->next_writable_address;
+        next_writable_address = cdemu_device_burning_get_next_writable_address(self);
     } else if (return_disc_leadin) {
         /* Return information for disc lead-in */
         track_number = 0;
         session_number = 0;
         track_mode = 0x00;
         data_mode = 0x00;
-        start_sector = 0xFFFFD4BB;
+        start_sector = self->priv->medium_leadin;
     } else {
         CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: couldn't find track!\n", __debug__);
         cdemu_device_write_sense(self, ILLEGAL_REQUEST, INVALID_FIELD_IN_CDB);
@@ -2408,7 +2436,7 @@ static gboolean command_write (CdemuDevice *self, guint8 *raw_cdb)
         num_sectors  = GUINT32_FROM_BE(cdb->length);
     }
 
-    CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: write request; start sector: 0x%X (%d), number of sectors: %d; NWA is 0x%X\n", __debug__, start_address, start_address, num_sectors, self->priv->next_writable_address);
+    CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: write request; start sector: 0x%X (%d), number of sectors: %d; NWA is 0x%X\n", __debug__, start_address, start_address, num_sectors, cdemu_device_burning_get_next_writable_address(self));
 
     /* Data format depends on settings in Mode page 0x05 */
     struct ModePage_0x05 *p_0x05 = cdemu_device_get_mode_page(self, 0x05, MODE_PAGE_CURRENT);
@@ -2566,8 +2594,8 @@ static gboolean command_write (CdemuDevice *self, guint8 *raw_cdb)
             mirage_sector_set_subheader(sector, p_0x05->subheader, sizeof(p_0x05->subheader), NULL);
         }
 
-        /* Increment NWA */
-        self->priv->next_writable_address++;
+        /* Increment number of written sectors */
+        self->priv->num_written_sectors++;
 
         /* Fragment is now longer by one; FIXME: this should be handled
            by write_sector() function! */
