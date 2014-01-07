@@ -308,6 +308,84 @@ static gboolean cdemu_device_burning_get_next_writable_address (CdemuDevice *sel
     return nwa_base + self->priv->num_written_sectors;
 }
 
+/**********************************************************************\
+ *                    Session-at-once (SAO) burning                   *
+\**********************************************************************/
+static gboolean cdemu_device_sao_burning_write_sectors (CdemuDevice *self, gint start_address, gint num_sectors)
+{
+    /* We need a valid CUE sheet */
+    if (!self->priv->cue_sheet) {
+        CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: CUE sheet not set!\n", __debug__);
+        cdemu_device_write_sense(self, CHECK_CONDITION, COMMAND_SEQUENCE_ERROR);
+        return FALSE;
+    }
+
+    MirageTrack *cue_track = NULL;
+    MirageFragment *cue_fragment = NULL;
+    gint track_start = 0;
+
+    gboolean succeeded = TRUE;
+
+    /* Write all sectors */
+    for (gint address = start_address; address < start_address + num_sectors; address++) {
+        CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: sector %d\n", __debug__, address);
+
+        /* Grab track entry from CUE sheet, if necessary */
+        if (!cue_track || !mirage_track_layout_contains_address(cue_track, address)) {
+            CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: getting track entry from CUE sheet for sector %d...\n", __debug__, address);
+
+            if (cue_track) {
+                g_object_unref(cue_track);
+            }
+
+            cue_track = mirage_session_get_track_by_address(self->priv->cue_sheet, address, NULL);
+            if (!cue_track) {
+                CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: failed to find track entry in CUE sheet for address %d!\n", __debug__, address);
+                cdemu_device_write_sense(self, CHECK_CONDITION, COMMAND_SEQUENCE_ERROR);
+                succeeded = FALSE;
+                goto finish;
+            }
+
+            track_start = mirage_track_layout_get_start_sector(cue_track);
+
+            if (cue_fragment) {
+                g_object_unref(cue_fragment);
+                cue_fragment = NULL;
+            }
+        }
+
+        /* Grab fragment entry from CUE sheet, if necessary */
+        if (!cue_fragment || !mirage_fragment_contains_address(cue_fragment, address - track_start)) {
+            CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: getting fragment entry from CUE track entry for sector %d...\n", __debug__, address);
+
+            if (cue_fragment) {
+                g_object_unref(cue_fragment);
+            }
+
+            cue_fragment = mirage_track_get_fragment_by_address(cue_track, address - track_start, NULL);
+            if (!cue_fragment) {
+                CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: failed to find fragment entry in CUE track entry for address %d!\n", __debug__, address);
+                cdemu_device_write_sense(self, CHECK_CONDITION, COMMAND_SEQUENCE_ERROR);
+                succeeded = FALSE;
+                goto finish;
+            }
+
+            CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: data type for subsequent sectors: %X!\n", __debug__, mirage_fragment_main_data_get_format(cue_fragment));
+        }
+
+    }
+
+finish:
+    if (cue_track) {
+        g_object_unref(cue_track);
+    }
+
+    if (cue_fragment) {
+        g_object_unref(cue_fragment);
+    }
+
+    return succeeded;
+}
 
 static void cdemu_device_sao_burning_create_cue_sheet (CdemuDevice *self)
 {
@@ -2618,6 +2696,7 @@ static gboolean command_write (CdemuDevice *self, guint8 *raw_cdb)
 {
     gint start_address; /* MUST be signed because it may be negative! */
     gint num_sectors;
+    gboolean succeeded = TRUE;
 
     /* WRITE 10 vs WRITE 12 */
     if (raw_cdb[0] == WRITE_10) {
@@ -2630,8 +2709,49 @@ static gboolean command_write (CdemuDevice *self, guint8 *raw_cdb)
         num_sectors  = GUINT32_FROM_BE(cdb->length);
     }
 
-    CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: write request; start sector: 0x%X (%d), number of sectors: %d; NWA is 0x%X\n", __debug__, start_address, start_address, num_sectors, cdemu_device_burning_get_next_writable_address(self));
+    /* Grab mode page 0x05 to determine what kind of writing are we
+       supposed to be doing */
+    struct ModePage_0x05 *p_0x05 = cdemu_device_get_mode_page(self, 0x05, MODE_PAGE_CURRENT);
 
+    CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: write request (write type: %d): start sector: 0x%X (%d), number of sectors: %d; NWA is 0x%X\n", __debug__, p_0x05->write_type, start_address, start_address, num_sectors, cdemu_device_burning_get_next_writable_address(self));
+
+    switch (p_0x05->write_type) {
+        case 0: {
+            /* Packet/incremental recording */
+            CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: packet/incremental recording not supported yet!\n", __debug__);
+            succeeded = FALSE;
+            cdemu_device_write_sense(self, ILLEGAL_REQUEST, INVALID_FIELD_IN_CDB);
+            break;
+        }
+        case 1: {
+            /* Track-at-once recording */
+            CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: track-at-once recording not supported yet!\n", __debug__);
+            succeeded = FALSE;
+            cdemu_device_write_sense(self, ILLEGAL_REQUEST, INVALID_FIELD_IN_CDB);
+            break;
+        }
+        case 2: {
+            /* Session-at-once/Disc-at-once */
+            CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: session-at-once recording\n", __debug__);
+            succeeded = cdemu_device_sao_burning_write_sectors(self, start_address, num_sectors);
+            break;
+        }
+        case 3: {
+            /* Raw recording */
+            CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: raw recording not supported yet!\n", __debug__);
+            succeeded = FALSE;
+            cdemu_device_write_sense(self, ILLEGAL_REQUEST, INVALID_FIELD_IN_CDB);
+            break;
+        }
+        default: {
+            CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: write type %d not supported yet!\n", __debug__, p_0x05->write_type);
+            succeeded = FALSE;
+            cdemu_device_write_sense(self, ILLEGAL_REQUEST, INVALID_FIELD_IN_CDB);
+            break;
+        }
+    }
+
+#if 0
     /* Data format depends on settings in Mode page 0x05 */
     struct ModePage_0x05 *p_0x05 = cdemu_device_get_mode_page(self, 0x05, MODE_PAGE_CURRENT);
 
@@ -2799,6 +2919,7 @@ static gboolean command_write (CdemuDevice *self, guint8 *raw_cdb)
     }
 
     g_object_unref(sector);
+#endif
 
     return succeeded;
 }

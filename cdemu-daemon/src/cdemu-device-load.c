@@ -105,6 +105,8 @@ static gboolean cdemu_device_load_disc_private (CdemuDevice *self, gchar **filen
         self->priv->rewritable_disc = FALSE;
         self->priv->medium_capacity = 80*60*75;
 
+        mirage_disc_layout_set_start_sector(self->priv->disc, -150);
+
         self->priv->medium_leadin = -11077;
         self->priv->num_written_sectors = 0;
 
