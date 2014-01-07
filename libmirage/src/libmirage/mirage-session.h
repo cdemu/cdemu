@@ -137,6 +137,8 @@ void mirage_session_layout_set_start_sector (MirageSession *self, gint start_sec
 gint mirage_session_layout_get_start_sector (MirageSession *self);
 gint mirage_session_layout_get_length (MirageSession *self);
 
+gboolean mirage_session_layout_contains_address (MirageSession *self, gint address);
+
 /* Convenience functions for setting/getting length of session's lead-out */
 void mirage_session_set_leadout_length (MirageSession *self, gint length);
 gint mirage_session_get_leadout_length (MirageSession *self);

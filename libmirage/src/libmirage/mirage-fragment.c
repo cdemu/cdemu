@@ -217,6 +217,20 @@ gboolean mirage_fragment_use_the_rest_of_file (MirageFragment *self, GError **er
 }
 
 
+/**
+ * mirage_fragment_contains_address:
+ * @self: a #MirageFragment
+ * @address: address to be checked
+ *
+ * Checks whether the fragment contains the given address or not.
+ *
+ * Returns: %TRUE if @address falls inside fragment, %FALSE if it does not
+ */
+gboolean mirage_fragment_contains_address (MirageFragment *self, gint address)
+{
+    return address >= self->priv->address && address < self->priv->address + self->priv->length;
+}
+
 
 /**********************************************************************\
  *                           Main data functions                      *

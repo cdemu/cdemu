@@ -474,6 +474,21 @@ gint mirage_disc_layout_get_length (MirageDisc *self)
 
 
 /**
+ * mirage_disc_layout_contains_address:
+ * @self: a #MirageDisc
+ * @address: address to be checked
+ *
+ * Checks whether the disc contains the given address or not.
+ *
+ * Returns: %TRUE if @address falls inside disc, %FALSE if it does not
+ */
+gboolean mirage_disc_layout_contains_address (MirageDisc *self, gint address)
+{
+    return address >= self->priv->start_sector && address < self->priv->start_sector + self->priv->length;
+}
+
+
+/**
  * mirage_disc_get_number_of_sessions:
  * @self: a #MirageDisc
  *
@@ -769,23 +784,17 @@ MirageSession *mirage_disc_get_session_by_address (MirageDisc *self, gint addres
 {
     MirageSession *session = NULL;
 
-    if ((address < self->priv->start_sector) || (address >= self->priv->start_sector + self->priv->length)) {
+    if (!mirage_disc_layout_contains_address(self, address)) {
         g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_DISC_ERROR, "Session address %d (0x%X) out of range!", address, address);
         return FALSE;
     }
 
     /* Go over all sessions */
     for (GList *entry = self->priv->sessions_list; entry; entry = entry->next) {
-        gint start_sector;
-        gint length;
-
         session = entry->data;
 
-        start_sector = mirage_session_layout_get_start_sector(session);
-        length = mirage_session_layout_get_length(session);
-
         /* Break the loop if address lies within session boundaries */
-        if (address >= start_sector && address < start_sector + length) {
+        if (mirage_session_layout_contains_address(session, address)) {
             break;
         } else {
             session = NULL;

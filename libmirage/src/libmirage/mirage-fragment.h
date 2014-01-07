@@ -114,6 +114,8 @@ gint mirage_fragment_get_length (MirageFragment *self);
 
 gboolean mirage_fragment_use_the_rest_of_file (MirageFragment *self, GError **error);
 
+gboolean mirage_fragment_contains_address (MirageFragment *self, gint address);
+
 /* Main data */
 void mirage_fragment_main_data_set_stream (MirageFragment *self, GInputStream *stream);
 const gchar *mirage_fragment_main_data_get_filename (MirageFragment *self);

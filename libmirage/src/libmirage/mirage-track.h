@@ -159,6 +159,8 @@ void mirage_track_layout_set_start_sector (MirageTrack *self, gint start_sector)
 gint mirage_track_layout_get_start_sector (MirageTrack *self);
 gint mirage_track_layout_get_length (MirageTrack *self);
 
+gboolean mirage_track_layout_contains_address (MirageTrack *self, gint address);
+
 /* Data fragments handling */
 gint mirage_track_get_number_of_fragments (MirageTrack *self);
 void mirage_track_add_fragment (MirageTrack *self, gint index, MirageFragment *fragment);

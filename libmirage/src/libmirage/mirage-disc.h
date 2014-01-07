@@ -120,6 +120,8 @@ void mirage_disc_layout_set_start_sector (MirageDisc *self, gint start_sector);
 gint mirage_disc_layout_get_start_sector (MirageDisc *self);
 gint mirage_disc_layout_get_length (MirageDisc *self);
 
+gboolean mirage_disc_layout_contains_address (MirageDisc *self, gint address);
+
 /* Session handling */
 gint mirage_disc_get_number_of_sessions (MirageDisc *self);
 void mirage_disc_add_session_by_index (MirageDisc *self, gint index, MirageSession *session);

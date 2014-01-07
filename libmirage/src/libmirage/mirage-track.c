@@ -481,7 +481,7 @@ MirageSector *mirage_track_get_sector (MirageTrack *self, gint address, gboolean
         g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_TRACK_ERROR, "Sector address out of range!");
         return NULL;
     }
-    
+
     /* Get data fragment to feed from */
     fragment = mirage_track_get_fragment_by_address(self, address, &local_error);
     if (!fragment) {
@@ -489,10 +489,10 @@ MirageSector *mirage_track_get_sector (MirageTrack *self, gint address, gboolean
         g_error_free(local_error);
         return NULL;
     }
-    
+
     /* Fragments work with fragment-relative addresses, so get fragment's start address */
     fragment_start = mirage_fragment_get_address(fragment);
-    
+
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_SECTOR, "%s: got fragment %p for track-relative address 0x%X; fragment relative address: 0x%X\n", __debug__, fragment, address, address - fragment_start);
 
     /* Main channel data */
@@ -515,22 +515,22 @@ MirageSector *mirage_track_get_sector (MirageTrack *self, gint address, gboolean
     /* Create sector object */
     sector = g_object_new(MIRAGE_TYPE_SECTOR, NULL);
     mirage_object_set_parent(MIRAGE_OBJECT(sector), self);
-    
+
     /* Feed data to sector; fragment's reading code guarantees that
        subchannel format is PW96 */
     if (!mirage_sector_feed_data(sector, address, self->priv->mode, main_buffer, main_length, MIRAGE_SUBCHANNEL_PW, subchannel_buffer, subchannel_length, &local_error)) {
         g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_TRACK_ERROR, "Failed to feed data: %s", local_error->message);
         g_error_free(local_error);
-        
+
         g_object_unref(sector);
         sector = NULL;
     }
-    
+
     /* Cleanup */
     g_free(main_buffer);
     g_free(subchannel_buffer);
     g_object_unref(fragment);
-    
+
     return sector;
 }
 
@@ -639,6 +639,21 @@ gint mirage_track_layout_get_length (MirageTrack *self)
 {
     /* Return track's real length */
     return self->priv->length;
+}
+
+
+/**
+ * mirage_track_layout_contains_address:
+ * @self: a #MirageTrack
+ * @address: address to be checked
+ *
+ * Checks whether the track contains the given address or not.
+ *
+ * Returns: %TRUE if @address falls inside track, %FALSE if it does not
+ */
+gboolean mirage_track_layout_contains_address (MirageTrack *self, gint address)
+{
+    return address >= self->priv->start_sector && address < self->priv->start_sector + self->priv->length;
 }
 
 
@@ -829,16 +844,10 @@ MirageFragment *mirage_track_get_fragment_by_address (MirageTrack *self, gint ad
 
     /* Go over all fragments */
     for (GList *entry = self->priv->fragments_list; entry; entry = entry->next) {
-        gint cur_address;
-        gint cur_length;
-
         fragment = entry->data;
 
-        cur_address = mirage_fragment_get_address(fragment);
-        cur_length = mirage_fragment_get_length(fragment);
-
         /* Break the loop if address lies within fragment boundaries */
-        if (address >= cur_address && address < cur_address + cur_length) {
+        if (mirage_fragment_contains_address(fragment, address)) {
             break;
         } else {
             fragment = NULL;

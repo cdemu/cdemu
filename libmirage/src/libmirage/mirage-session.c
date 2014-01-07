@@ -471,6 +471,21 @@ gint mirage_session_layout_get_length (MirageSession *self)
 
 
 /**
+ * mirage_session_layout_contains_address:
+ * @self: a #MirageSession
+ * @address: address to be checked
+ *
+ * Checks whether the session contains the given address or not.
+ *
+ * Returns: %TRUE if @address falls inside session, %FALSE if it does not
+ */
+gboolean mirage_session_layout_contains_address (MirageSession *self, gint address)
+{
+    return address >= self->priv->start_sector && address < self->priv->start_sector + self->priv->length;
+}
+
+
+/**
  * mirage_session_set_leadout_length:
  * @self: a #MirageSession
  * @length: (in): leadout length
@@ -850,23 +865,17 @@ MirageTrack *mirage_session_get_track_by_address (MirageSession *self, gint addr
 {
     MirageTrack *track = NULL;
 
-    if ((address < self->priv->start_sector) || (address >= (self->priv->start_sector + self->priv->length))) {
+    if (!mirage_session_layout_contains_address(self, address)) {
         g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_SESSION_ERROR, "Track address %d out of range!", address);
         return NULL;
     }
 
     /* Go over all tracks */
     for (GList *entry = self->priv->tracks_list; entry; entry = entry->next) {
-        gint start_sector;
-        gint length;
-
         track = entry->data;
 
-        start_sector = mirage_track_layout_get_start_sector(track);
-        length = mirage_track_layout_get_length(track);
-
         /* Break the loop if address lies within track boundaries */
-        if (address >= start_sector && address < start_sector + length) {
+        if (mirage_track_layout_contains_address(track, address)) {
             break;
         } else {
             track = NULL;
