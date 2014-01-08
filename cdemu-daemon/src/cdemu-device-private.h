@@ -51,6 +51,7 @@ struct _CdemuDevicePrivate
     /* Command */
     CdemuCommand *cmd;
     guint cmd_out_buffer_pos;
+    guint cmd_in_buffer_pos;
 
     /* Kernel I/O buffer */
     guint8 *kernel_io_buffer;

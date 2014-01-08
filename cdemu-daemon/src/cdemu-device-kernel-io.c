@@ -65,7 +65,10 @@ void cdemu_device_write_buffer (CdemuDevice *self, guint32 length)
 
     CDEMU_DEBUG(self, DAEMON_DEBUG_KERNEL_IO, "%s: write data from cache (%d bytes)\n", __debug__, length);
 
+    /* Minimum of requested write length and actual data in our cache */
     len = MIN(self->priv->buffer_size, length);
+
+    /* Make sure there is enough space in (remaining) command output buffer */
     if (self->priv->cmd_out_buffer_pos + len > self->priv->cmd->out_len) {
         CDEMU_DEBUG(self, DAEMON_DEBUG_KERNEL_IO, "%s: OUT buffer too small, truncating!\n", __debug__);
         len = self->priv->cmd->out_len - self->priv->cmd_out_buffer_pos;
@@ -82,14 +85,19 @@ void cdemu_device_read_buffer (CdemuDevice *self, guint32 length)
 
     CDEMU_DEBUG(self, DAEMON_DEBUG_KERNEL_IO, "%s: read data to cache (%d bytes)\n", __debug__, length);
 
-    len = MIN(self->priv->cmd->in_len, length);
-    CDEMU_DEBUG(self, DAEMON_DEBUG_KERNEL_IO, "%s: copying %d bytes from IN buffer\n", __debug__, len);
+    /* Minimum of requested read length and (remaining) data in command input buffer */
+    len = MIN(self->priv->cmd->in_len - self->priv->cmd_in_buffer_pos, length);
+
+    /* Make sure there is enough space in our cache */
     if (len > self->priv->buffer_capacity) {
-        CDEMU_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: IN buffer size (%d) exceeds our cache size (%d); truncating!buffer\n", __debug__, len, self->priv->buffer_capacity);
+        CDEMU_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: copy request size (%d) exceeds our cache size (%d); truncating!buffer\n", __debug__, len, self->priv->buffer_capacity);
         len = self->priv->buffer_capacity;
     }
-    memcpy(self->priv->buffer, self->priv->cmd->in, len);
+
+    CDEMU_DEBUG(self, DAEMON_DEBUG_KERNEL_IO, "%s: copying %d bytes from IN buffer at offset %d\n", __debug__, len, self->priv->cmd_in_buffer_pos);
+    memcpy(self->priv->buffer, self->priv->cmd->in + self->priv->cmd_in_buffer_pos, len);
     self->priv->buffer_size = len;
+    self->priv->cmd_in_buffer_pos += len;
 }
 
 
@@ -184,7 +192,7 @@ static gboolean cdemu_device_io_handler (GIOChannel *source, GIOCondition condit
     /* Reset command in/out buffer positions */
     self->priv->cmd = &cmd;
     self->priv->cmd_out_buffer_pos = 0;
-    /*self->priv->cmd_in_buffer_pos = 0;*/
+    self->priv->cmd_in_buffer_pos = 0;
 
     /* Note that vreq and vres share buffer */
     vres->tag = vreq->tag;
