@@ -50,7 +50,7 @@ struct _CdemuDevicePrivate
 
     /* Command */
     CdemuCommand *cmd;
-    guint cur_len;
+    guint cmd_out_buffer_pos;
 
     /* Kernel I/O buffer */
     guint8 *kernel_io_buffer;
@@ -128,7 +128,7 @@ struct _CdemuDevicePrivate
 
 
 /* Commands */
-gint cdemu_device_execute_command (CdemuDevice *self, CdemuCommand *cmd);
+gint cdemu_device_execute_command (CdemuDevice *self, const guint8 *cdb);
 
 /* Delay emulation */
 void cdemu_device_delay_begin (CdemuDevice *self, gint address, gint num_sectors);

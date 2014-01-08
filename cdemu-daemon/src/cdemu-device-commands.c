@@ -697,7 +697,7 @@ static void cdemu_device_dump_buffer (CdemuDevice *self, gint debug_level, const
  *                     Packet command implementations                 *
 \**********************************************************************/
 /* CLOSE TRACK/SESSION */
-static gboolean command_close_track_session (CdemuDevice *self, guint8 *raw_cdb)
+static gboolean command_close_track_session (CdemuDevice *self, const guint8 *raw_cdb)
 {
     struct CLOSE_TRACK_SESSION_CDB *cdb = (struct CLOSE_TRACK_SESSION_CDB *)raw_cdb;
 
@@ -721,7 +721,7 @@ static gboolean command_close_track_session (CdemuDevice *self, guint8 *raw_cdb)
 }
 
 /* GET CONFIGURATION*/
-static gboolean command_get_configuration (CdemuDevice *self, guint8 *raw_cdb)
+static gboolean command_get_configuration (CdemuDevice *self, const guint8 *raw_cdb)
 {
     struct GET_CONFIGURATION_CDB *cdb = (struct GET_CONFIGURATION_CDB *)raw_cdb;
     struct GET_CONFIGURATION_Header *ret_header = (struct GET_CONFIGURATION_Header *)self->priv->buffer;
@@ -775,7 +775,7 @@ static gboolean command_get_configuration (CdemuDevice *self, guint8 *raw_cdb)
 }
 
 /* GET EVENT/STATUS NOTIFICATION*/
-static gboolean command_get_event_status_notification (CdemuDevice *self, guint8 *raw_cdb)
+static gboolean command_get_event_status_notification (CdemuDevice *self, const guint8 *raw_cdb)
 {
     struct GET_EVENT_STATUS_NOTIFICATION_CDB *cdb = (struct GET_EVENT_STATUS_NOTIFICATION_CDB*)raw_cdb;
     struct GET_EVENT_STATUS_NOTIFICATION_Header *ret_header = (struct GET_EVENT_STATUS_NOTIFICATION_Header *)self->priv->buffer;
@@ -823,7 +823,7 @@ static gboolean command_get_event_status_notification (CdemuDevice *self, guint8
 }
 
 /* GET PERFORMANCE */
-static gboolean command_get_performance (CdemuDevice *self, guint8 *raw_cdb)
+static gboolean command_get_performance (CdemuDevice *self, const guint8 *raw_cdb)
 {
     struct GET_PERFORMANCE_CDB *cdb = (struct GET_PERFORMANCE_CDB *)raw_cdb;
     guint16 max_descriptors = GUINT16_FROM_BE(cdb->descriptors);
@@ -870,7 +870,7 @@ static gboolean command_get_performance (CdemuDevice *self, guint8 *raw_cdb)
 }
 
 /* INQUIRY*/
-static gboolean command_inquiry (CdemuDevice *self, guint8 *raw_cdb)
+static gboolean command_inquiry (CdemuDevice *self, const guint8 *raw_cdb)
 {
     struct INQUIRY_CDB *cdb = (struct INQUIRY_CDB *)raw_cdb;
 
@@ -907,7 +907,7 @@ static gboolean command_inquiry (CdemuDevice *self, guint8 *raw_cdb)
 }
 
 /* MODE SELECT*/
-static gboolean command_mode_select (CdemuDevice *self, guint8 *raw_cdb)
+static gboolean command_mode_select (CdemuDevice *self, const guint8 *raw_cdb)
 {
     gint transfer_len = 0;
     /*gint sp;
@@ -1007,7 +1007,7 @@ static gboolean command_mode_select (CdemuDevice *self, guint8 *raw_cdb)
 }
 
 /* MODE SENSE*/
-static gboolean command_mode_sense (CdemuDevice *self, guint8 *raw_cdb)
+static gboolean command_mode_sense (CdemuDevice *self, const guint8 *raw_cdb)
 {
     gint page_code = 0;
     gint transfer_len = 0;
@@ -1106,7 +1106,7 @@ static gboolean command_mode_sense (CdemuDevice *self, guint8 *raw_cdb)
 }
 
 /* PAUSE/RESUME*/
-static gboolean command_pause_resume (CdemuDevice *self, guint8 *raw_cdb)
+static gboolean command_pause_resume (CdemuDevice *self, const guint8 *raw_cdb)
 {
     struct PAUSE_RESUME_CDB *cdb = (struct PAUSE_RESUME_CDB *)raw_cdb;
     gint audio_status = cdemu_audio_get_status(CDEMU_AUDIO(self->priv->audio_play));
@@ -1150,7 +1150,7 @@ static gboolean command_pause_resume (CdemuDevice *self, guint8 *raw_cdb)
 }
 
 /* PLAY AUDIO*/
-static gboolean command_play_audio (CdemuDevice *self, guint8 *raw_cdb)
+static gboolean command_play_audio (CdemuDevice *self, const guint8 *raw_cdb)
 {
     guint32 start_sector = 0;
     guint32 end_sector = 0;
@@ -1193,7 +1193,7 @@ static gboolean command_play_audio (CdemuDevice *self, guint8 *raw_cdb)
 }
 
 /* PREVENT/ALLOW MEDIUM REMOVAL*/
-static gboolean command_prevent_allow_medium_removal (CdemuDevice *self, guint8 *raw_cdb)
+static gboolean command_prevent_allow_medium_removal (CdemuDevice *self, const guint8 *raw_cdb)
 {
     struct PREVENT_ALLOW_MEDIUM_REMOVAL_CDB *cdb = (struct PREVENT_ALLOW_MEDIUM_REMOVAL_CDB*)raw_cdb;
     struct ModePage_0x2A *p_0x2A = cdemu_device_get_mode_page(self, 0x2A, MODE_PAGE_CURRENT);
@@ -1215,7 +1215,7 @@ static gboolean command_prevent_allow_medium_removal (CdemuDevice *self, guint8 
 }
 
 /* READ (10) and READ (12)*/
-static gboolean command_read (CdemuDevice *self, guint8 *raw_cdb)
+static gboolean command_read (CdemuDevice *self, const guint8 *raw_cdb)
 {
     gint start_address; /* MUST be signed because it may be negative! */
     gint num_sectors;
@@ -1307,7 +1307,7 @@ static gboolean command_read (CdemuDevice *self, guint8 *raw_cdb)
 }
 
 /* READ BUFFER CAPACITY */
-static gboolean command_read_buffer_capacity (CdemuDevice *self, guint8 *raw_cdb)
+static gboolean command_read_buffer_capacity (CdemuDevice *self, const guint8 *raw_cdb)
 {
     struct READ_BUFFER_CAPACITY_CDB *cdb = (struct READ_BUFFER_CAPACITY_CDB *)raw_cdb;
     struct READ_BUFFER_CAPACITY_Data *ret_data = (struct READ_BUFFER_CAPACITY_Data *)self->priv->buffer;
@@ -1338,7 +1338,7 @@ static gboolean command_read_buffer_capacity (CdemuDevice *self, guint8 *raw_cdb
 }
 
 /* READ CAPACITY*/
-static gboolean command_read_capacity (CdemuDevice *self, guint8 *raw_cdb G_GNUC_UNUSED)
+static gboolean command_read_capacity (CdemuDevice *self, const guint8 *raw_cdb G_GNUC_UNUSED)
 {
     /*struct READ_CAPACITY_CDB *cdb = (struct READ_CAPACITY_CDB *)raw_cdb;*/
     struct READ_CAPACITY_Data *ret_data = (struct READ_CAPACITY_Data *)self->priv->buffer;
@@ -1377,7 +1377,7 @@ static gboolean command_read_capacity (CdemuDevice *self, guint8 *raw_cdb G_GNUC
 }
 
 /* READ CD and READ CD MSF*/
-static gboolean command_read_cd (CdemuDevice *self, guint8 *raw_cdb)
+static gboolean command_read_cd (CdemuDevice *self, const guint8 *raw_cdb)
 {
     gint start_address; /* MUST be signed because it may be negative! */
     gint num_sectors;
@@ -1545,7 +1545,7 @@ static gboolean command_read_cd (CdemuDevice *self, guint8 *raw_cdb)
 }
 
 /* READ DISC INFORMATION*/
-static gboolean command_read_disc_information (CdemuDevice *self, guint8 *raw_cdb)
+static gboolean command_read_disc_information (CdemuDevice *self, const guint8 *raw_cdb)
 {
     struct READ_DISC_INFORMATION_CDB *cdb = (struct READ_DISC_INFORMATION_CDB *)raw_cdb;
 
@@ -1706,7 +1706,7 @@ static gboolean command_read_disc_information (CdemuDevice *self, guint8 *raw_cd
 }
 
 /* READ DVD STRUCTURE*/
-static gboolean command_read_dvd_structure (CdemuDevice *self, guint8 *raw_cdb)
+static gboolean command_read_dvd_structure (CdemuDevice *self, const guint8 *raw_cdb)
 {
     struct READ_DVD_STRUCTURE_CDB *cdb = (struct READ_DVD_STRUCTURE_CDB *)raw_cdb;
     struct READ_DVD_STRUCTURE_Header *head = (struct READ_DVD_STRUCTURE_Header *)self->priv->buffer;
@@ -1749,7 +1749,7 @@ static gboolean command_read_dvd_structure (CdemuDevice *self, guint8 *raw_cdb)
 }
 
 /* READ SUB-CHANNEL*/
-static gboolean command_read_subchannel (CdemuDevice *self, guint8 *raw_cdb)
+static gboolean command_read_subchannel (CdemuDevice *self, const guint8 *raw_cdb)
 {
     struct READ_SUBCHANNEL_CDB *cdb = (struct READ_SUBCHANNEL_CDB *)raw_cdb;
     struct READ_SUBCHANNEL_Header *ret_header = (struct READ_SUBCHANNEL_Header *)self->priv->buffer;
@@ -1938,7 +1938,7 @@ static gboolean command_read_subchannel (CdemuDevice *self, guint8 *raw_cdb)
 }
 
 /* READ TOC/PMA/ATIP*/
-static gboolean command_read_toc_pma_atip (CdemuDevice *self, guint8 *raw_cdb)
+static gboolean command_read_toc_pma_atip (CdemuDevice *self, const guint8 *raw_cdb)
 {
     struct READ_TOC_PMA_ATIP_CDB *cdb = (struct READ_TOC_PMA_ATIP_CDB *)raw_cdb;
 
@@ -2400,7 +2400,7 @@ static gboolean command_read_toc_pma_atip (CdemuDevice *self, guint8 *raw_cdb)
 }
 
 /* READ TRACK INFORMATION*/
-static gboolean command_read_track_information (CdemuDevice *self, guint8 *raw_cdb)
+static gboolean command_read_track_information (CdemuDevice *self, const guint8 *raw_cdb)
 {
     struct READ_TRACK_INFORMATION_CDB *cdb = (struct READ_TRACK_INFORMATION_CDB *)raw_cdb;
     struct READ_TRACK_INFORMATION_Data *ret_data = (struct READ_TRACK_INFORMATION_Data *)self->priv->buffer;
@@ -2567,7 +2567,7 @@ static gboolean command_read_track_information (CdemuDevice *self, guint8 *raw_c
 }
 
 /* REPORT KEY*/
-static gboolean command_report_key (CdemuDevice *self, guint8 *raw_cdb)
+static gboolean command_report_key (CdemuDevice *self, const guint8 *raw_cdb)
 {
     struct REPORT_KEY_CDB *cdb = (struct REPORT_KEY_CDB *)raw_cdb;
 
@@ -2603,7 +2603,7 @@ static gboolean command_report_key (CdemuDevice *self, guint8 *raw_cdb)
 }
 
 /* REQUEST SENSE*/
-static gboolean command_request_sense (CdemuDevice *self, guint8 *raw_cdb)
+static gboolean command_request_sense (CdemuDevice *self, const guint8 *raw_cdb)
 {
     struct REQUEST_SENSE_CDB *cdb = (struct REQUEST_SENSE_CDB *)raw_cdb;
     struct REQUEST_SENSE_SenseFixed *sense = (struct REQUEST_SENSE_SenseFixed *)self->priv->buffer;
@@ -2633,7 +2633,7 @@ static gboolean command_request_sense (CdemuDevice *self, guint8 *raw_cdb)
 }
 
 /* SEEK (10)*/
-static gboolean command_seek (CdemuDevice *self, guint8 *raw_cdb G_GNUC_UNUSED)
+static gboolean command_seek (CdemuDevice *self, const guint8 *raw_cdb G_GNUC_UNUSED)
 {
     /*struct SET_CD_SPEED_CDB *cdb = (struct SET_CD_SPEED_CDB *)raw_cdb;*/
     CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: nothing to do here yet...\n", __debug__);
@@ -2641,7 +2641,7 @@ static gboolean command_seek (CdemuDevice *self, guint8 *raw_cdb G_GNUC_UNUSED)
 }
 
 /* SEND CUE SHEET */
-static gboolean command_send_cue_sheet (CdemuDevice *self, guint8 *raw_cdb)
+static gboolean command_send_cue_sheet (CdemuDevice *self, const guint8 *raw_cdb)
 {
     struct SEND_CUE_SHEET_CDB *cdb = (struct SEND_CUE_SHEET_CDB *)raw_cdb;
     struct ModePage_0x05 *p_0x05 = cdemu_device_get_mode_page(self, 0x05, MODE_PAGE_CURRENT);
@@ -2674,7 +2674,7 @@ static gboolean command_send_cue_sheet (CdemuDevice *self, guint8 *raw_cdb)
 }
 
 /* SET CD SPEED*/
-static gboolean command_set_cd_speed (CdemuDevice *self, guint8 *raw_cdb)
+static gboolean command_set_cd_speed (CdemuDevice *self, const guint8 *raw_cdb)
 {
     struct SET_CD_SPEED_CDB *cdb = (struct SET_CD_SPEED_CDB *)raw_cdb;
     struct ModePage_0x2A *p_0x2A = cdemu_device_get_mode_page(self, 0x2A, MODE_PAGE_CURRENT);
@@ -2704,7 +2704,7 @@ static gboolean command_set_cd_speed (CdemuDevice *self, guint8 *raw_cdb)
 
 
 /* START/STOP UNIT */
-static gboolean command_start_stop_unit (CdemuDevice *self, guint8 *raw_cdb)
+static gboolean command_start_stop_unit (CdemuDevice *self, const guint8 *raw_cdb)
 {
     struct START_STOP_UNIT_CDB *cdb = (struct START_STOP_UNIT_CDB *)raw_cdb;
 
@@ -2728,7 +2728,7 @@ static gboolean command_start_stop_unit (CdemuDevice *self, guint8 *raw_cdb)
 }
 
 /* SYNCHRONIZE CACHE */
-static gboolean command_synchronize_cache (CdemuDevice *self, guint8 *raw_cdb)
+static gboolean command_synchronize_cache (CdemuDevice *self, const guint8 *raw_cdb)
 {
     struct SYNCHRONIZE_CACHE_CDB *cdb = (struct SYNCHRONIZE_CACHE_CDB *)raw_cdb;
     guint32 lba = GUINT32_FROM_BE(cdb->lba);
@@ -2749,7 +2749,7 @@ static gboolean command_synchronize_cache (CdemuDevice *self, guint8 *raw_cdb)
 
 
 /* TEST UNIT READY*/
-static gboolean command_test_unit_ready (CdemuDevice *self, guint8 *raw_cdb G_GNUC_UNUSED)
+static gboolean command_test_unit_ready (CdemuDevice *self, const guint8 *raw_cdb G_GNUC_UNUSED)
 {
     /*struct TEST_UNIT_READY_CDB *cdb = (struct TEST_UNIT_READY_CDB *)raw_cdb;*/
 
@@ -2774,7 +2774,7 @@ static gboolean command_test_unit_ready (CdemuDevice *self, guint8 *raw_cdb G_GN
 }
 
 /* WRITE (10) */
-static gboolean command_write (CdemuDevice *self, guint8 *raw_cdb)
+static gboolean command_write (CdemuDevice *self, const guint8 *raw_cdb)
 {
     gint start_address; /* MUST be signed because it may be negative! */
     gint num_sectors;
@@ -3010,26 +3010,23 @@ static gboolean command_write (CdemuDevice *self, guint8 *raw_cdb)
 /**********************************************************************\
  *                      Packet command switch                         *
 \**********************************************************************/
-gint cdemu_device_execute_command (CdemuDevice *self, CdemuCommand *cmd)
+gint cdemu_device_execute_command (CdemuDevice *self, const guint8 *cdb)
 {
     SenseStatus status = CHECK_CONDITION;
-
-    self->priv->cmd = cmd;
-    self->priv->cur_len = 0;
 
     /* Flush buffer */
     cdemu_device_flush_buffer(self);
 
     CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "\n");
     CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: %02X %02X %02X %02X %02X %02X %02X %02X %02X %02X %02X %02X\n", __debug__,
-        cmd->cdb[0], cmd->cdb[1], cmd->cdb[2], cmd->cdb[3], cmd->cdb[4], cmd->cdb[5],
-        cmd->cdb[6], cmd->cdb[7], cmd->cdb[8], cmd->cdb[9], cmd->cdb[10], cmd->cdb[11]);
+        cdb[0], cdb[1], cdb[2], cdb[3], cdb[4], cdb[5],
+        cdb[6], cdb[7], cdb[8], cdb[9], cdb[10], cdb[11]);
 
     /* Packet command table */
     static struct {
         PacketCommand cmd;
         gchar *debug_name;
-        gboolean (*implementation)(CdemuDevice *, guint8 *);
+        gboolean (*implementation)(CdemuDevice *, const guint8 *);
         gboolean disturbs_audio_play;
     } packet_commands[] = {
         { CLOSE_TRACK_SESSION,
@@ -3176,7 +3173,7 @@ gint cdemu_device_execute_command (CdemuDevice *self, CdemuCommand *cmd)
 
     /* Find the command and execute its implementation handler */
     for (guint i = 0; i < G_N_ELEMENTS(packet_commands); i++) {
-        if (packet_commands[i].cmd == cmd->cdb[0]) {
+        if (packet_commands[i].cmd == cdb[0]) {
             gboolean succeeded = FALSE;
 
             CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: command: %s\n", __debug__, packet_commands[i].debug_name);
@@ -3195,9 +3192,8 @@ gint cdemu_device_execute_command (CdemuDevice *self, CdemuCommand *cmd)
                 }
             }
             /* Execute the command */
-            succeeded = packet_commands[i].implementation(self, cmd->cdb);
+            succeeded = packet_commands[i].implementation(self, cdb);
             status = (succeeded) ? GOOD : CHECK_CONDITION;
-            self->priv->cmd->out_len = self->priv->cur_len;
 
             /* Unlock */
             g_mutex_unlock(self->priv->device_mutex);
@@ -3209,9 +3205,8 @@ gint cdemu_device_execute_command (CdemuDevice *self, CdemuCommand *cmd)
     }
 
     /* Command not found */
-    CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: packet command %02Xh not implemented yet!\n", __debug__, cmd->cdb[0]);
+    CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: packet command %02Xh not implemented yet!\n", __debug__, cdb[0]);
     cdemu_device_write_sense(self, ILLEGAL_REQUEST, INVALID_COMMAND_OPERATION_CODE);
-    self->priv->cmd->out_len = self->priv->cur_len;
 
     return status;
 }

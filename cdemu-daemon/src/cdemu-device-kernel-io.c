@@ -66,14 +66,14 @@ void cdemu_device_write_buffer (CdemuDevice *self, guint32 length)
     CDEMU_DEBUG(self, DAEMON_DEBUG_KERNEL_IO, "%s: write data from cache (%d bytes)\n", __debug__, length);
 
     len = MIN(self->priv->buffer_size, length);
-    if (self->priv->cur_len + len > self->priv->cmd->out_len) {
+    if (self->priv->cmd_out_buffer_pos + len > self->priv->cmd->out_len) {
         CDEMU_DEBUG(self, DAEMON_DEBUG_KERNEL_IO, "%s: OUT buffer too small, truncating!\n", __debug__);
-        len = self->priv->cmd->out_len - self->priv->cur_len;
+        len = self->priv->cmd->out_len - self->priv->cmd_out_buffer_pos;
     }
 
-    CDEMU_DEBUG(self, DAEMON_DEBUG_KERNEL_IO, "%s: copying %d bytes to OUT buffer at offset %d\n", __debug__, len, self->priv->cur_len);
-    memcpy(self->priv->cmd->out + self->priv->cur_len, self->priv->buffer, len);
-    self->priv->cur_len += len;
+    CDEMU_DEBUG(self, DAEMON_DEBUG_KERNEL_IO, "%s: copying %d bytes to OUT buffer at offset %d\n", __debug__, len, self->priv->cmd_out_buffer_pos);
+    memcpy(self->priv->cmd->out + self->priv->cmd_out_buffer_pos, self->priv->buffer, len);
+    self->priv->cmd_out_buffer_pos += len;
 }
 
 void cdemu_device_read_buffer (CdemuDevice *self, guint32 length)
@@ -129,8 +129,9 @@ void cdemu_device_write_sense_full (CdemuDevice *self, SenseKey sense_key, guint
 
     CDEMU_DEBUG(self, DAEMON_DEBUG_KERNEL_IO, "%s: writing sense (%d bytes) to OUT buffer\n", __debug__, sizeof(struct REQUEST_SENSE_SenseFixed));
 
+    /* Write sense directly into command's output buffer */
     memcpy(self->priv->cmd->out, &sense, sizeof(struct REQUEST_SENSE_SenseFixed));
-    self->priv->cur_len = sizeof(struct REQUEST_SENSE_SenseFixed);
+    self->priv->cmd_out_buffer_pos = sizeof(struct REQUEST_SENSE_SenseFixed);
 }
 
 void cdemu_device_write_sense (CdemuDevice *self, SenseKey sense_key, guint16 asc_ascq)
@@ -180,11 +181,16 @@ static gboolean cdemu_device_io_handler (GIOChannel *source, GIOCondition condit
         cmd.out_len = BUF_SIZE - sizeof(struct vhba_response);
     }
 
+    /* Reset command in/out buffer positions */
+    self->priv->cmd = &cmd;
+    self->priv->cmd_out_buffer_pos = 0;
+    /*self->priv->cmd_in_buffer_pos = 0;*/
+
     /* Note that vreq and vres share buffer */
     vres->tag = vreq->tag;
-    vres->status = cdemu_device_execute_command(self, &cmd);
+    vres->status = cdemu_device_execute_command(self, cmd.cdb);
 
-    vres->data_len = cmd.out_len;
+    vres->data_len = self->priv->cmd_out_buffer_pos;
 
     /* Write response */
     CDEMU_DEBUG(self, DAEMON_DEBUG_KERNEL_IO, "%s: writing response\n", __debug__);
