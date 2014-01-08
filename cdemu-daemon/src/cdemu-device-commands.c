@@ -311,6 +311,50 @@ static gboolean cdemu_device_burning_get_next_writable_address (CdemuDevice *sel
 /**********************************************************************\
  *                    Session-at-once (SAO) burning                   *
 \**********************************************************************/
+struct SAO_MainFormat {
+    gint format;
+    MirageTrackModes mode;
+    gint data_size;
+    gint ignore_data;
+};
+struct SAO_SubchannelFormat {
+    gint format;
+    MirageSectorSubchannelFormat mode;
+    gint data_size;
+};
+
+static const struct SAO_MainFormat sao_main_formats[] = {
+    /* CD-DA */
+    { 0x00, MIRAGE_MODE_AUDIO, 2352, 0 },
+    { 0x01, MIRAGE_MODE_AUDIO,    0, 0 },
+    /* CD-ROM Mode 1 */
+    { 0x10, MIRAGE_MODE_MODE1, 2048, 0 },
+    { 0x11, MIRAGE_MODE_MODE1, 2352, MIRAGE_VALID_SYNC | MIRAGE_VALID_HEADER | MIRAGE_VALID_EDC_ECC },
+    { 0x12, MIRAGE_MODE_MODE1, 2048, MIRAGE_VALID_DATA },
+    { 0x13, MIRAGE_MODE_MODE1, 2352, MIRAGE_VALID_SYNC | MIRAGE_VALID_HEADER | MIRAGE_VALID_DATA | MIRAGE_VALID_EDC_ECC },
+    { 0x14, MIRAGE_MODE_MODE1,    0, 0 },
+    /* CD-ROM XA, CD-I */
+    { 0x20, MIRAGE_MODE_MODE2_MIXED, 2336, MIRAGE_VALID_EDC_ECC },
+    { 0x21, MIRAGE_MODE_MODE2_MIXED, 2352, MIRAGE_VALID_SYNC | MIRAGE_VALID_HEADER | MIRAGE_VALID_EDC_ECC },
+    { 0x22, MIRAGE_MODE_MODE2_MIXED, 2336, MIRAGE_VALID_DATA | MIRAGE_VALID_EDC_ECC },
+    { 0x23, MIRAGE_MODE_MODE2_MIXED, 2352, MIRAGE_VALID_SYNC | MIRAGE_VALID_HEADER | MIRAGE_VALID_DATA | MIRAGE_VALID_EDC_ECC },
+    { 0x24, MIRAGE_MODE_MODE2_FORM2,    0, 0 },
+    /* CD-ROM Mode 2*/
+    { 0x30, MIRAGE_MODE_MODE2, 2336, 0 },
+    { 0x31, MIRAGE_MODE_MODE2, 2352, MIRAGE_VALID_SYNC | MIRAGE_VALID_HEADER },
+    { 0x32, MIRAGE_MODE_MODE2, 2336, MIRAGE_VALID_DATA },
+    { 0x33, MIRAGE_MODE_MODE2, 2352, MIRAGE_VALID_SYNC | MIRAGE_VALID_HEADER | MIRAGE_VALID_DATA },
+    { 0x34, MIRAGE_MODE_MODE2,    0, 0 },
+};
+
+static const struct SAO_SubchannelFormat sao_subchannel_formats[] = {
+    { 0x00, MIRAGE_SUBCHANNEL_NONE,  0 },
+    { 0x01, MIRAGE_SUBCHANNEL_PW,   96 },
+    { 0x03, MIRAGE_SUBCHANNEL_RW,   96 },
+};
+
+        static void cdemu_device_dump_buffer (CdemuDevice *self, gint debug_level, const gchar *prefix, gint width, const guint8 *buffer, gint length);
+
 static gboolean cdemu_device_sao_burning_write_sectors (CdemuDevice *self, gint start_address, gint num_sectors)
 {
     /* We need a valid CUE sheet */
@@ -323,6 +367,9 @@ static gboolean cdemu_device_sao_burning_write_sectors (CdemuDevice *self, gint 
     MirageTrack *cue_track = NULL;
     MirageFragment *cue_fragment = NULL;
     gint track_start = 0;
+
+    const struct SAO_MainFormat *main_format_ptr = NULL;
+    const struct SAO_SubchannelFormat *subchannel_format_ptr = NULL;
 
     gboolean succeeded = TRUE;
 
@@ -370,9 +417,44 @@ static gboolean cdemu_device_sao_burning_write_sectors (CdemuDevice *self, gint 
                 goto finish;
             }
 
-            CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: data type for subsequent sectors: %X!\n", __debug__, mirage_fragment_main_data_get_format(cue_fragment));
+            /* Get data format for this fragment */
+            gint format = mirage_fragment_main_data_get_format(cue_fragment);
+            gint main_format = format & 0x3F;
+            gint subchannel_format = format >> 6;
+
+            CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: data type for subsequent sectors: main: 0x%X, sub: 0x%X)!\n", __debug__, main_format, subchannel_format);
+
+            /* Find corresponding main data format descriptor */
+            main_format_ptr = NULL;
+            for (guint i = 0; i < G_N_ELEMENTS(sao_main_formats); i++) {
+                if (sao_main_formats[i].format == main_format) {
+                    main_format_ptr = &sao_main_formats[i];
+                    break;
+                }
+            }
+
+            /* Find corresponding subchannel data format descriptor */
+            subchannel_format_ptr = NULL;
+            for (guint i = 0; i < G_N_ELEMENTS(sao_subchannel_formats); i++) {
+                if (sao_subchannel_formats[i].format == subchannel_format) {
+                    subchannel_format_ptr = &sao_subchannel_formats[i];
+                    break;
+                }
+            }
         }
 
+        /* Make sure we have data format descriptors set */
+        if (!main_format_ptr|| !subchannel_format_ptr) {
+            CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: data format not set!\n", __debug__);
+            cdemu_device_write_sense(self, CHECK_CONDITION, COMMAND_SEQUENCE_ERROR);
+            succeeded = FALSE;
+            goto finish;
+        }
+
+        /* Read data from host */
+        cdemu_device_read_buffer(self, main_format_ptr->data_size + subchannel_format_ptr->data_size);
+
+        cdemu_device_dump_buffer(self, DAEMON_DEBUG_MMC, __debug__, 16, self->priv->buffer, 16);
     }
 
 finish:
