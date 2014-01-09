@@ -58,156 +58,6 @@ struct _MirageSectorPrivate
 /**********************************************************************\
  *                          Private functions                         *
 \**********************************************************************/
-static void mirage_sector_generate_subchannel (MirageSector *self);
-
-static void mirage_sector_generate_sync (MirageSector *self)
-{
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_SECTOR, "%s: generating sync\n", __debug__);
-
-    switch (self->priv->type) {
-        case MIRAGE_MODE_MODE0:
-        case MIRAGE_MODE_MODE1:
-        case MIRAGE_MODE_MODE2:
-        case MIRAGE_MODE_MODE2_FORM1:
-        case MIRAGE_MODE_MODE2_FORM2: {
-            memcpy(self->priv->sector_data, mirage_pattern_sync, 12);
-            break;
-        }
-        default: {
-            return;
-        }
-    }
-
-    self->priv->valid_data |= MIRAGE_VALID_SYNC;
-}
-
-static void mirage_sector_generate_header (MirageSector *self)
-{
-    MirageTrack *track;
-    gint start_sector;
-    guint8 *header = self->priv->sector_data+12;
-
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_SECTOR, "%s: generating header\n", __debug__);
-
-    /* Set mode */
-    switch (self->priv->type) {
-        case MIRAGE_MODE_MODE0: {
-            header[3] = 0; /* Mode = 0 */
-            break;
-        }
-        case MIRAGE_MODE_MODE1: {
-            header[3] = 1; /* Mode = 1 */
-            break;
-        }
-        case MIRAGE_MODE_MODE2:
-        case MIRAGE_MODE_MODE2_FORM1:
-        case MIRAGE_MODE_MODE2_FORM2: {
-            header[3] = 2; /* Mode = 2 */
-            break;
-        }
-        default: {
-            return;
-        }
-    }
-
-    /* We need to convert track-relative address into disc-relative one */
-    track = mirage_object_get_parent(MIRAGE_OBJECT(self));
-    if (!track) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to get sector's parent!\n", __debug__);
-        return;
-    }
-    start_sector = mirage_track_layout_get_start_sector(track);
-    g_object_unref(track);
-
-    /* Address */
-    mirage_helper_lba2msf(self->priv->address + start_sector, TRUE, &header[0], &header[1], &header[2]);
-    header[0] = mirage_helper_hex2bcd(header[0]);
-    header[1] = mirage_helper_hex2bcd(header[1]);
-    header[2] = mirage_helper_hex2bcd(header[2]);
-
-    self->priv->valid_data |= MIRAGE_VALID_HEADER;
-}
-
-static void mirage_sector_generate_subheader (MirageSector *self)
-{
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_SECTOR, "%s: generating subheader\n", __debug__);
-
-    switch (self->priv->type) {
-        case MIRAGE_MODE_MODE2_FORM1: {
-            guint8 *subheader = self->priv->sector_data+16;
-            subheader[2] |= (0 << 5); /* Form 1 */
-            subheader[5] = subheader[2];
-            break;
-        }
-        case MIRAGE_MODE_MODE2_FORM2: {
-            guint8 *subheader = self->priv->sector_data+16;
-            subheader[2] |= (1 << 5); /* Form 2 */
-            subheader[5] = subheader[2];
-            break;
-        }
-        default: {
-            return;
-        }
-    }
-
-    self->priv->valid_data |= MIRAGE_VALID_SUBHEADER;
-}
-
-static void mirage_sector_generate_edc_ecc (MirageSector *self)
-{
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_SECTOR, "%s: generating EDC/ECC\n", __debug__);
-
-    switch (self->priv->type) {
-        case MIRAGE_MODE_MODE1: {
-            /* EDC/ECC are generated over sync, header and data in Mode 1 sectors...
-               so make sure we have those */
-            if (!(self->priv->valid_data & MIRAGE_VALID_SYNC)) {
-                mirage_sector_generate_sync(self);
-            }
-            if (!(self->priv->valid_data & MIRAGE_VALID_HEADER)) {
-                mirage_sector_generate_header(self);
-            }
-
-            /* Generate EDC */
-            mirage_helper_sector_edc_ecc_compute_edc_block(self->priv->sector_data+0x00, 0x810, self->priv->sector_data+0x810);
-            /* Generate ECC P/Q codes */
-            mirage_helper_sector_edc_ecc_compute_ecc_block(self->priv->sector_data+0xC, 86, 24, 2, 86, self->priv->sector_data+0x81C); /* P */
-            mirage_helper_sector_edc_ecc_compute_ecc_block(self->priv->sector_data+0xC, 52, 43, 86, 88, self->priv->sector_data+0x8C8); /* Q */
-
-            break;
-        }
-        case MIRAGE_MODE_MODE2_FORM1: {
-            guint8 tmp_header[4];
-            /* Zero the header, because it is not supposed to be included in the
-               calculation; copy, calculate, then copy back */
-            memcpy(tmp_header, self->priv->sector_data+12, 4);
-            memset(self->priv->sector_data+12, 0, 4);
-            /* Generate EDC */
-            mirage_helper_sector_edc_ecc_compute_edc_block(self->priv->sector_data+0x10, 0x808, self->priv->sector_data+0x818);
-            /* Generate ECC P/Q codes */
-            mirage_helper_sector_edc_ecc_compute_ecc_block(self->priv->sector_data+0xC, 86, 24, 2, 86, self->priv->sector_data+0x81C); /* P */
-            mirage_helper_sector_edc_ecc_compute_ecc_block(self->priv->sector_data+0xC, 52, 43, 86, 88, self->priv->sector_data+0x8C8); /* Q */
-            /* Unzero */
-            memcpy(self->priv->sector_data+12, tmp_header, 4);
-
-            break;
-        }
-        case MIRAGE_MODE_MODE2_FORM2: {
-            /* Compute EDC */
-            mirage_helper_sector_edc_ecc_compute_edc_block(self->priv->sector_data+0x10, 0x91C, self->priv->sector_data+0x92C);
-
-            break;
-        }
-        default: {
-            return;
-        }
-    }
-
-    self->priv->valid_data |= MIRAGE_VALID_EDC_ECC;
-}
-
-
-
 static gboolean mirage_sector_get_sync_offset_and_length (MirageSector *self, gint *offset, gint *length, GError **error)
 {
     /* Sync is supported by all non-audio sectors */
@@ -330,6 +180,174 @@ static gboolean mirage_sector_get_edc_ecc_offset_and_length (MirageSector *self,
             return FALSE;
         }
     }
+}
+
+
+
+static void mirage_sector_generate_subchannel (MirageSector *self);
+
+static void mirage_sector_generate_sync (MirageSector *self)
+{
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_SECTOR, "%s: generating sync\n", __debug__);
+
+    switch (self->priv->type) {
+        case MIRAGE_MODE_MODE0:
+        case MIRAGE_MODE_MODE1:
+        case MIRAGE_MODE_MODE2:
+        case MIRAGE_MODE_MODE2_FORM1:
+        case MIRAGE_MODE_MODE2_FORM2: {
+            memcpy(self->priv->sector_data, mirage_pattern_sync, 12);
+            break;
+        }
+        default: {
+            return;
+        }
+    }
+
+    self->priv->valid_data |= MIRAGE_VALID_SYNC;
+}
+
+static void mirage_sector_generate_header (MirageSector *self)
+{
+    MirageTrack *track;
+    gint start_sector;
+    guint8 *header = self->priv->sector_data+12;
+
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_SECTOR, "%s: generating header\n", __debug__);
+
+    /* Set mode */
+    switch (self->priv->type) {
+        case MIRAGE_MODE_MODE0: {
+            header[3] = 0; /* Mode = 0 */
+            break;
+        }
+        case MIRAGE_MODE_MODE1: {
+            header[3] = 1; /* Mode = 1 */
+            break;
+        }
+        case MIRAGE_MODE_MODE2:
+        case MIRAGE_MODE_MODE2_FORM1:
+        case MIRAGE_MODE_MODE2_FORM2: {
+            header[3] = 2; /* Mode = 2 */
+            break;
+        }
+        default: {
+            return;
+        }
+    }
+
+    /* We need to convert track-relative address into disc-relative one */
+    track = mirage_object_get_parent(MIRAGE_OBJECT(self));
+    if (!track) {
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to get sector's parent!\n", __debug__);
+        return;
+    }
+    start_sector = mirage_track_layout_get_start_sector(track);
+    g_object_unref(track);
+
+    /* Address */
+    mirage_helper_lba2msf(self->priv->address + start_sector, TRUE, &header[0], &header[1], &header[2]);
+    header[0] = mirage_helper_hex2bcd(header[0]);
+    header[1] = mirage_helper_hex2bcd(header[1]);
+    header[2] = mirage_helper_hex2bcd(header[2]);
+
+    self->priv->valid_data |= MIRAGE_VALID_HEADER;
+}
+
+static void mirage_sector_generate_subheader (MirageSector *self)
+{
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_SECTOR, "%s: generating subheader\n", __debug__);
+
+    switch (self->priv->type) {
+        case MIRAGE_MODE_MODE2_FORM1: {
+            guint8 *subheader = self->priv->sector_data+16;
+            subheader[2] |= (0 << 5); /* Form 1 */
+            subheader[5] = subheader[2];
+            break;
+        }
+        case MIRAGE_MODE_MODE2_FORM2: {
+            guint8 *subheader = self->priv->sector_data+16;
+            subheader[2] |= (1 << 5); /* Form 2 */
+            subheader[5] = subheader[2];
+            break;
+        }
+        default: {
+            return;
+        }
+    }
+
+    self->priv->valid_data |= MIRAGE_VALID_SUBHEADER;
+}
+
+static void mirage_sector_generate_data (MirageSector *self)
+{
+    gint offset = 0;
+    gint length = 0;
+
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_SECTOR, "%s: \"generating\" (clearing) user data\n", __debug__);
+
+    mirage_sector_get_data_offset_and_length(self, &offset, &length, NULL);
+    memset(self->priv->sector_data + offset, 0, length);
+
+    self->priv->valid_data |= MIRAGE_VALID_DATA;
+}
+
+static void mirage_sector_generate_edc_ecc (MirageSector *self)
+{
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_SECTOR, "%s: generating EDC/ECC\n", __debug__);
+
+    /* If user data is not set, make sure we have cleared it! */
+    if (!(self->priv->valid_data & MIRAGE_VALID_DATA)) {
+        mirage_sector_generate_data(self);
+    }
+
+    switch (self->priv->type) {
+        case MIRAGE_MODE_MODE1: {
+            /* EDC/ECC are generated over sync, header and data in Mode 1 sectors...
+               so make sure we have those */
+            if (!(self->priv->valid_data & MIRAGE_VALID_SYNC)) {
+                mirage_sector_generate_sync(self);
+            }
+            if (!(self->priv->valid_data & MIRAGE_VALID_HEADER)) {
+                mirage_sector_generate_header(self);
+            }
+
+            /* Generate EDC */
+            mirage_helper_sector_edc_ecc_compute_edc_block(self->priv->sector_data+0x00, 0x810, self->priv->sector_data+0x810);
+            /* Generate ECC P/Q codes */
+            mirage_helper_sector_edc_ecc_compute_ecc_block(self->priv->sector_data+0xC, 86, 24, 2, 86, self->priv->sector_data+0x81C); /* P */
+            mirage_helper_sector_edc_ecc_compute_ecc_block(self->priv->sector_data+0xC, 52, 43, 86, 88, self->priv->sector_data+0x8C8); /* Q */
+
+            break;
+        }
+        case MIRAGE_MODE_MODE2_FORM1: {
+            guint8 tmp_header[4];
+            /* Zero the header, because it is not supposed to be included in the
+               calculation; copy, calculate, then copy back */
+            memcpy(tmp_header, self->priv->sector_data+12, 4);
+            memset(self->priv->sector_data+12, 0, 4);
+            /* Generate EDC */
+            mirage_helper_sector_edc_ecc_compute_edc_block(self->priv->sector_data+0x10, 0x808, self->priv->sector_data+0x818);
+            /* Generate ECC P/Q codes */
+            mirage_helper_sector_edc_ecc_compute_ecc_block(self->priv->sector_data+0xC, 86, 24, 2, 86, self->priv->sector_data+0x81C); /* P */
+            mirage_helper_sector_edc_ecc_compute_ecc_block(self->priv->sector_data+0xC, 52, 43, 86, 88, self->priv->sector_data+0x8C8); /* Q */
+            /* Unzero */
+            memcpy(self->priv->sector_data+12, tmp_header, 4);
+
+            break;
+        }
+        case MIRAGE_MODE_MODE2_FORM2: {
+            /* Compute EDC */
+            mirage_helper_sector_edc_ecc_compute_edc_block(self->priv->sector_data+0x10, 0x91C, self->priv->sector_data+0x92C);
+
+            break;
+        }
+        default: {
+            return;
+        }
+    }
+
+    self->priv->valid_data |= MIRAGE_VALID_EDC_ECC;
 }
 
 
@@ -1133,6 +1151,11 @@ gboolean mirage_sector_get_data (MirageSector *self, const guint8 **ret_buf, gin
 {
     gboolean succeeded;
     gint offset = 0, length = 0;
+
+    /* If user data is not available, make sure that it is blank */
+    if (!(self->priv->valid_data & MIRAGE_VALID_DATA)) {
+        mirage_sector_generate_data(self);
+    }
 
     /* Get offset and length */
     succeeded = mirage_sector_get_data_offset_and_length(self, &offset, &length, error);
