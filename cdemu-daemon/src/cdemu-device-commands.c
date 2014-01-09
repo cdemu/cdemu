@@ -373,6 +373,9 @@ static gboolean cdemu_device_sao_burning_write_sectors (CdemuDevice *self, gint 
 
     gboolean succeeded = TRUE;
 
+    MirageSector *sector = g_object_new(MIRAGE_TYPE_SECTOR, NULL);
+    GError *local_error = NULL;
+
     /* Write all sectors */
     for (gint address = start_address; address < start_address + num_sectors; address++) {
         CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: sector %d\n", __debug__, address);
@@ -454,10 +457,23 @@ static gboolean cdemu_device_sao_burning_write_sectors (CdemuDevice *self, gint 
         /* Read data from host */
         cdemu_device_read_buffer(self, main_format_ptr->data_size + subchannel_format_ptr->data_size);
 
-        cdemu_device_dump_buffer(self, DAEMON_DEBUG_MMC, __debug__, 16, self->priv->buffer, 16);
+        /* Feed the sector */
+        if (!mirage_sector_feed_data(sector, address, main_format_ptr->mode, self->priv->buffer, main_format_ptr->data_size, subchannel_format_ptr->mode, self->priv->buffer + main_format_ptr->data_size, subchannel_format_ptr->data_size, main_format_ptr->ignore_data, &local_error)) {
+            CDEMU_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: failed to feed sector for writing: %s!\n", __debug__, local_error->message);
+            g_error_free(local_error);
+            local_error = NULL;
+        }
+
+        /* Dump user data */
+        const guint8 *data_buf;
+        if (mirage_sector_get_data(sector, &data_buf, NULL, NULL)) {
+            cdemu_device_dump_buffer(self, DAEMON_DEBUG_MMC, __debug__, 16, data_buf, 16);
+        }
     }
 
 finish:
+    g_object_unref(sector);
+
     if (cue_track) {
         g_object_unref(cue_track);
     }
