@@ -518,7 +518,7 @@ MirageSector *mirage_track_get_sector (MirageTrack *self, gint address, gboolean
 
     /* Feed data to sector; fragment's reading code guarantees that
        subchannel format is PW96 */
-    if (!mirage_sector_feed_data(sector, address, self->priv->mode, main_buffer, main_length, MIRAGE_SUBCHANNEL_PW, subchannel_buffer, subchannel_length, &local_error)) {
+    if (!mirage_sector_feed_data(sector, address, self->priv->mode, main_buffer, main_length, MIRAGE_SUBCHANNEL_PW, subchannel_buffer, subchannel_length, 0, &local_error)) {
         g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_TRACK_ERROR, "Failed to feed data: %s", local_error->message);
         g_error_free(local_error);
 

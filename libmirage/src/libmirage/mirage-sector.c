@@ -346,6 +346,7 @@ static gboolean mirage_sector_get_edc_ecc_offset_and_length (MirageSector *self,
  * @subchannel_format: (in): subchannel data format
  * @subchannel_data: (in) (allow-none): subchannel data buffer
  * @subchannel_data_length: (in): length of data in subchannel data buffer
+ * @ignore_data_mask: (in): a mask of #MirageSectorValidData values, indicating which parts of main channel sector data, if any, should be ignored and regerated even though they are provided by the data feed
  * @error: (out) (allow-none): location to store error, or %NULL
  *
  * Feeds data to sector.
@@ -356,7 +357,7 @@ static gboolean mirage_sector_get_edc_ecc_offset_and_length (MirageSector *self,
  *
  * Returns: %TRUE on success, %FALSE on failure
  */
-gboolean mirage_sector_feed_data (MirageSector *self, gint address, MirageTrackModes type, guint8 *main_data, guint main_data_length, MirageSectorSubchannelFormat subchannel_format, guint8 *subchannel_data, guint subchannel_data_length, GError **error)
+gboolean mirage_sector_feed_data (MirageSector *self, gint address, MirageTrackModes type, guint8 *main_data, guint main_data_length, MirageSectorSubchannelFormat subchannel_format, guint8 *subchannel_data, guint subchannel_data_length, gint ignore_data_mask, GError **error)
 {
     gint data_offset;
 
@@ -876,6 +877,10 @@ gboolean mirage_sector_feed_data (MirageSector *self, gint address, MirageTrackM
             self->priv->type = MIRAGE_MODE_MODE2_FORM1;
         }
     }
+
+    /* Mask the real_data with ignore_data_mask, to force re-generation
+       of masked parts of sector data */
+    self->priv->real_data &= ~ignore_data_mask;
 
     /* At this point, real_data field indicates which parts of sector
        data were provided by the image file; make a copy of this field
