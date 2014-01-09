@@ -151,6 +151,44 @@ static gint read_sector_data (MirageSector *sector, MirageDisc *disc, gint addre
 
 
 /**********************************************************************\
+ *                          Buffer dump function                      *
+\**********************************************************************/
+static void cdemu_device_dump_buffer (CdemuDevice *self, gint debug_level, const gchar *prefix, gint width, const guint8 *buffer, gint length)
+{
+    if (!CDEMU_DEBUG_ON(self, debug_level)) {
+        return;
+    }
+
+    const gint num_lines = (length + width - 1) / width; /* Number of lines */
+    const gint num_chars = width*3 + 1; /* Max. number of characters per line */
+    gchar *line_str = g_malloc(num_chars); /* Three characters per element, plus terminating NULL */
+
+    const guint8 *buffer_ptr = buffer;
+
+    for (gint l = 0; l < num_lines; l++) {
+        gchar *ptr = line_str;
+        gint num = MIN(width, length);
+
+        memset(ptr, 0, num_chars);
+
+        for (gint i = 0; i < num; i++) {
+            ptr += g_sprintf(ptr, "%02hX ", *buffer_ptr);
+            buffer_ptr++;
+            length--;
+        }
+
+        if (prefix) {
+            CDEMU_DEBUG(self, debug_level, "%s: %s\n", prefix, line_str);
+        } else {
+            CDEMU_DEBUG(self, debug_level, "%s\n", line_str);
+        }
+    }
+
+    g_free(line_str);
+}
+
+
+/**********************************************************************\
  *                          Burning helpers                           *
 \**********************************************************************/
 static gboolean cdemu_device_burning_open_session (CdemuDevice *self)
@@ -352,8 +390,6 @@ static const struct SAO_SubchannelFormat sao_subchannel_formats[] = {
     { 0x01, MIRAGE_SUBCHANNEL_PW,   96 },
     { 0x03, MIRAGE_SUBCHANNEL_RW,   96 },
 };
-
-        static void cdemu_device_dump_buffer (CdemuDevice *self, gint debug_level, const gchar *prefix, gint width, const guint8 *buffer, gint length);
 
 static gboolean cdemu_device_sao_burning_write_sectors (CdemuDevice *self, gint start_address, gint num_sectors)
 {
@@ -668,44 +704,6 @@ static gboolean cdemu_device_sao_burning_parse_cue_sheet (CdemuDevice *self, con
     }
 
     return TRUE;
-}
-
-
-/**********************************************************************\
- *                          Buffer dump function                      *
-\**********************************************************************/
-static void cdemu_device_dump_buffer (CdemuDevice *self, gint debug_level, const gchar *prefix, gint width, const guint8 *buffer, gint length)
-{
-    if (!CDEMU_DEBUG_ON(self, debug_level)) {
-        return;
-    }
-
-    const gint num_lines = (length + width - 1) / width; /* Number of lines */
-    const gint num_chars = width*3 + 1; /* Max. number of characters per line */
-    gchar *line_str = g_malloc(num_chars); /* Three characters per element, plus terminating NULL */
-
-    const guint8 *buffer_ptr = buffer;
-
-    for (gint l = 0; l < num_lines; l++) {
-        gchar *ptr = line_str;
-        gint num = MIN(width, length);
-
-        memset(ptr, 0, num_chars);
-
-        for (gint i = 0; i < num; i++) {
-            ptr += g_sprintf(ptr, "%02hX ", *buffer_ptr);
-            buffer_ptr++;
-            length--;
-        }
-
-        if (prefix) {
-            CDEMU_DEBUG(self, debug_level, "%s: %s\n", prefix, line_str);
-        } else {
-            CDEMU_DEBUG(self, debug_level, "%s\n", line_str);
-        }
-    }
-
-    g_free(line_str);
 }
 
 
