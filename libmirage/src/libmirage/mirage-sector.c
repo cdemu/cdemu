@@ -1296,6 +1296,7 @@ gboolean mirage_sector_get_subchannel (MirageSector *self, MirageSectorSubchanne
         }
         case MIRAGE_SUBCHANNEL_Q: {
             /* De-interleaved Q subchannel */
+            memset(self->priv->subchan_q, 0, sizeof(self->priv->subchan_q));
             mirage_helper_subchannel_deinterleave(SUBCHANNEL_Q, self->priv->subchan_pw, self->priv->subchan_q);
             if (ret_buf) {
                 *ret_buf = self->priv->subchan_q;
@@ -1741,8 +1742,11 @@ static gint subchannel_generate_w (MirageSector *self G_GNUC_UNUSED, guint8 *buf
 static void mirage_sector_generate_subchannel (MirageSector *self)
 {
     guint8 tmp_buf[12];
+
     /* Generate subchannel: only P/Q can be generated at the moment
        (other subchannels are set to 0) */
+
+    memset(self->priv->subchan_pw, 0, sizeof(self->priv->subchan_pw));
 
     /* Read P subchannel into temporary buffer, then interleave it */
     subchannel_generate_p(self, tmp_buf);
