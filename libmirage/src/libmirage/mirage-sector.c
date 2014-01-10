@@ -45,7 +45,7 @@
 struct _MirageSectorPrivate
 {
     MirageTrackModes type;
-    gint address;
+    gint address; /* Absolute address of sector */
 
     gint real_data; /* Which parts of sector data were provided by image */
     gint valid_data; /* Which parts of sector data are valid (either provided by image or generated) */
@@ -209,8 +209,6 @@ static void mirage_sector_generate_sync (MirageSector *self)
 
 static void mirage_sector_generate_header (MirageSector *self)
 {
-    MirageTrack *track;
-    gint start_sector;
     guint8 *header = self->priv->sector_data+12;
 
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_SECTOR, "%s: generating header\n", __debug__);
@@ -236,17 +234,8 @@ static void mirage_sector_generate_header (MirageSector *self)
         }
     }
 
-    /* We need to convert track-relative address into disc-relative one */
-    track = mirage_object_get_parent(MIRAGE_OBJECT(self));
-    if (!track) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to get sector's parent!\n", __debug__);
-        return;
-    }
-    start_sector = mirage_track_layout_get_start_sector(track);
-    g_object_unref(track);
-
     /* Address */
-    mirage_helper_lba2msf(self->priv->address + start_sector, TRUE, &header[0], &header[1], &header[2]);
+    mirage_helper_lba2msf(self->priv->address, TRUE, &header[0], &header[1], &header[2]);
     header[0] = mirage_helper_hex2bcd(header[0]);
     header[1] = mirage_helper_hex2bcd(header[1]);
     header[2] = mirage_helper_hex2bcd(header[2]);
@@ -357,7 +346,7 @@ static void mirage_sector_generate_edc_ecc (MirageSector *self)
 /**
  * mirage_sector_feed_data:
  * @self: a #MirageSector
- * @address: (in): address the sector represents. Given in sectors.
+ * @address: (in): absolute disc address the sector represents. Given in sectors.
  * @type: (in): track type (one of #MirageTrackModes
  * @main_data: (in): main data buffer
  * @main_data_length: (in): length of data in main data buffer
@@ -1509,10 +1498,9 @@ static void mirage_sector_class_init (MirageSectorClass *klass)
 \**********************************************************************/
 static gint subchannel_generate_p (MirageSector *self, guint8 *buf)
 {
-    gint address = self->priv->address;
-
     MirageTrack *track;
     gint track_start;
+    gint relative_address;
 
     /* Get sector's parent track */
     track = mirage_object_get_parent(MIRAGE_OBJECT(self));
@@ -1521,10 +1509,11 @@ static gint subchannel_generate_p (MirageSector *self, guint8 *buf)
         return 12;
     }
 
+    relative_address = self->priv->address - mirage_track_layout_get_start_sector(track);
     track_start = mirage_track_get_track_start(track);
 
     /* P subchannel being 0xFF indicates we're in the pregap */
-    if (address < track_start) {
+    if (relative_address < track_start) {
         memset(buf, 0xFF, 12);
     } else {
         memset(buf, 0, 12);
@@ -1538,12 +1527,10 @@ static gint subchannel_generate_p (MirageSector *self, guint8 *buf)
 
 static gint subchannel_generate_q (MirageSector *self, guint8 *buf)
 {
-    gint address = self->priv->address;
-
     MirageTrack *track;
 
     gint mode_switch;
-    gint start_sector;
+    gint relative_address, absolute_address;
     guint16 crc;
 
     /* Get sector's parent track */
@@ -1553,6 +1540,9 @@ static gint subchannel_generate_q (MirageSector *self, guint8 *buf)
         return 12;
     }
 
+    absolute_address = self->priv->address;
+    relative_address = self->priv->address - mirage_track_layout_get_start_sector(track);
+
     /* We support Mode-1, Mode-2 and Mode-3 Q; according to INF8090 and MMC-3,
        "if used, they shall exist in at least one out of 100 consecutive sectors".
        So we put MCN in every 25th sector and ISRC in every 50th sector */
@@ -1560,7 +1550,7 @@ static gint subchannel_generate_q (MirageSector *self, guint8 *buf)
     /* Track number, index, absolute and relative track adresses are converted
        from HEX to BCD */
 
-    switch (address % 100) {
+    switch (relative_address % 100) {
         case 25: {
             /* MCN is to be returned; check if we actually have it */
             MirageSession *session;
@@ -1599,8 +1589,6 @@ static gint subchannel_generate_q (MirageSector *self, guint8 *buf)
         }
     }
 
-    start_sector = mirage_track_layout_get_start_sector(track);
-
     switch (mode_switch) {
         case 0x01: {
             /* Mode-1: Current position */
@@ -1620,37 +1608,37 @@ static gint subchannel_generate_q (MirageSector *self, guint8 *buf)
 
             /* Index: try getting index object by address; if it's not found, we
                check if sector lies before track start... */
-            index = mirage_track_get_index_by_address(track, address, NULL);
+            index = mirage_track_get_index_by_address(track, relative_address, NULL);
             if (index) {
                 gint index_number = mirage_index_get_number(index);
-                MIRAGE_DEBUG(self, MIRAGE_DEBUG_SECTOR, "%s: address 0x%X belongs to index with number: %d\n", __debug__, address, index_number);
+                MIRAGE_DEBUG(self, MIRAGE_DEBUG_SECTOR, "%s: relative address 0x%X belongs to index with number: %d\n", __debug__, relative_address, index_number);
                 buf[2] = index_number;
                 g_object_unref(index);
             } else {
                 /* No index... check if address is in a pregap (strictly less than track start) */
-                if (address < track_start) {
-                    MIRAGE_DEBUG(self, MIRAGE_DEBUG_SECTOR, "%s: address 0x%X is part of a pregap\n", __debug__, address);
+                if (relative_address < track_start) {
+                    MIRAGE_DEBUG(self, MIRAGE_DEBUG_SECTOR, "%s: relative address 0x%X is part of a pregap\n", __debug__, relative_address);
                     buf[2] = 0;
                 } else {
-                    MIRAGE_DEBUG(self, MIRAGE_DEBUG_SECTOR, "%s: address 0x%X belongs to index 1\n", __debug__, address);
+                    MIRAGE_DEBUG(self, MIRAGE_DEBUG_SECTOR, "%s: relative address 0x%X belongs to index 1\n", __debug__, relative_address);
                     buf[2] = 1;
                 }
             }
             buf[2] = mirage_helper_hex2bcd(buf[2]);
 
             /* Relative M/S/F; when converting, we do not add 2 seconds */
-            if (address < track_start) {
+            if (relative_address < track_start) {
                 /* Pregap */
-                mirage_helper_lba2msf(track_start - address - 1, FALSE, &buf[3], &buf[4], &buf[5]);
+                mirage_helper_lba2msf(track_start - relative_address - 1, FALSE, &buf[3], &buf[4], &buf[5]);
             } else {
-                mirage_helper_lba2msf(address - track_start, FALSE, &buf[3], &buf[4], &buf[5]);
+                mirage_helper_lba2msf(relative_address - track_start, FALSE, &buf[3], &buf[4], &buf[5]);
             }
             buf[3] = mirage_helper_hex2bcd(buf[3]);
             buf[4] = mirage_helper_hex2bcd(buf[4]);
             buf[5] = mirage_helper_hex2bcd(buf[5]);
             buf[6] = 0; /* Zero */
             /* Absolute M/S/F */
-            mirage_helper_lba2msf(address + start_sector, TRUE, &buf[7], &buf[8], &buf[9]);
+            mirage_helper_lba2msf(absolute_address, TRUE, &buf[7], &buf[8], &buf[9]);
             buf[7] = mirage_helper_hex2bcd(buf[7]);
             buf[8] = mirage_helper_hex2bcd(buf[8]);
             buf[9] = mirage_helper_hex2bcd(buf[9]);
@@ -1679,7 +1667,7 @@ static gint subchannel_generate_q (MirageSector *self, guint8 *buf)
             mirage_helper_subchannel_q_encode_mcn(&buf[1], mcn);
             buf[8] = 0; /* zero */
             /* AFRAME */
-            mirage_helper_lba2msf(address + start_sector, TRUE, NULL, NULL, &buf[9]);
+            mirage_helper_lba2msf(absolute_address, TRUE, NULL, NULL, &buf[9]);
             buf[9] = mirage_helper_hex2bcd(buf[9]);
             break;
         }
@@ -1697,7 +1685,7 @@ static gint subchannel_generate_q (MirageSector *self, guint8 *buf)
             mirage_helper_subchannel_q_encode_isrc(&buf[1], isrc);
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_SECTOR, "%s: ISRC string: %s bytes: %02X %02X %02X %02X %02X %02X %02X %02X\n", __debug__, isrc, buf[1], buf[2], buf[3], buf[4], buf[5], buf[6], buf[7], buf[8]);
             /* AFRAME */
-            mirage_helper_lba2msf(address + start_sector, TRUE, NULL, NULL, &buf[9]);
+            mirage_helper_lba2msf(absolute_address, TRUE, NULL, NULL, &buf[9]);
             buf[9] = mirage_helper_hex2bcd(buf[9]);
             break;
         }
