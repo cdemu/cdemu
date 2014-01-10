@@ -120,6 +120,7 @@ struct _CdemuDevicePrivate
     gboolean disc_closed;
 
     MirageSession *cue_sheet;
+    MirageTrack *cue_entry;
 };
 
 

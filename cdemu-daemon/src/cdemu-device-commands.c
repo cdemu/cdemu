@@ -189,12 +189,13 @@ static void cdemu_device_dump_buffer (CdemuDevice *self, gint debug_level, const
 
 
 /**********************************************************************\
- *                          Burning helpers                           *
+ *                          Generic burning                           *
 \**********************************************************************/
 static gboolean cdemu_device_burning_open_session (CdemuDevice *self)
 {
-    const struct ModePage_0x05 *p_0x05 = cdemu_device_get_mode_page(self, 0x05, MODE_PAGE_CURRENT);
-
+#if 0
+    //const struct ModePage_0x05 *p_0x05 = cdemu_device_get_mode_page(self, 0x05, MODE_PAGE_CURRENT);
+#endif
     /* Create new session */
     self->priv->open_session = g_object_new(MIRAGE_TYPE_SESSION, NULL);
 
@@ -211,6 +212,7 @@ static gboolean cdemu_device_burning_open_session (CdemuDevice *self)
 
     CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: opened session #%d; start sector: %d, first track: %d!\n", __debug__, mirage_session_layout_get_session_number(self->priv->open_session), mirage_session_layout_get_start_sector(self->priv->open_session), mirage_session_layout_get_first_track(self->priv->open_session));
 
+#if 0
     /* If we are burning in TAO mode, read MCN from Mode Page 0x05 */
     if (p_0x05->write_type == 0x01) {
         if (p_0x05->mcn[0]) {
@@ -220,6 +222,7 @@ static gboolean cdemu_device_burning_open_session (CdemuDevice *self)
             mirage_session_set_mcn(self->priv->open_session, (gchar *)&p_0x05->mcn[1]);
         }
     }
+#endif
 
     return TRUE;
 }
@@ -247,8 +250,9 @@ static gboolean cdemu_device_burning_close_session (CdemuDevice *self)
 
 static gboolean cdemu_device_burning_open_track (CdemuDevice *self, MirageTrackModes track_mode)
 {
+#if 0
     const struct ModePage_0x05 *p_0x05 = cdemu_device_get_mode_page(self, 0x05, MODE_PAGE_CURRENT);
-
+#endif
     /* Open session if one is not opened yet */
     if (!self->priv->open_session) {
         CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: no open session found; opening a new one...\n", __debug__);
@@ -276,6 +280,7 @@ static gboolean cdemu_device_burning_open_track (CdemuDevice *self, MirageTrackM
 
     CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: opened track #%d; start sector: %d!\n", __debug__, mirage_track_layout_get_track_number(self->priv->open_track), mirage_track_layout_get_start_sector(self->priv->open_track));
 
+#if 0
     /* If we are burning in TAO mode, read ISRC from Mode Page 0x05 */
     if (p_0x05->write_type == 0x01 && track_mode == MIRAGE_MODE_AUDIO) {
         if (p_0x05->isrc[0]) {
@@ -300,6 +305,7 @@ static gboolean cdemu_device_burning_open_track (CdemuDevice *self, MirageTrackM
     MirageFragment *fragment = g_object_new(MIRAGE_TYPE_FRAGMENT, NULL);
     mirage_track_add_fragment(self->priv->open_track, -1, fragment);
     g_object_unref(fragment);
+#endif
 
     return TRUE;
 }
@@ -391,6 +397,59 @@ static const struct SAO_SubchannelFormat sao_subchannel_formats[] = {
     { 0x03, MIRAGE_SUBCHANNEL_RW,   96 },
 };
 
+static gboolean cdemu_device_sao_burning_open_session (CdemuDevice *self)
+{
+    /* Generic open session */
+    if (!cdemu_device_burning_open_session(self)) {
+        return FALSE;
+    }
+
+    /* Copy MCN from CUE sheet */
+    mirage_session_set_mcn(self->priv->open_session, mirage_session_get_mcn(self->priv->cue_sheet));
+
+    return TRUE;
+}
+
+static gboolean cdemu_device_sao_burning_open_track (CdemuDevice *self)
+{
+    /* Generic open track */
+    if (!cdemu_device_burning_open_track(self, mirage_track_get_mode(self->priv->cue_entry))) {
+        return FALSE;
+    }
+
+    /* Setup fragments */
+    gint num_fragments = mirage_track_get_number_of_fragments(self->priv->cue_entry);
+
+    for (gint i = 0; i < num_fragments; i++) {
+        MirageFragment *entry_fragment = mirage_track_get_fragment_by_index(self->priv->cue_entry, i, NULL);
+        MirageFragment *track_fragment = g_object_new(MIRAGE_TYPE_FRAGMENT, NULL); /* FIXME: have image writer create this! */
+
+        mirage_fragment_set_length(track_fragment, mirage_fragment_get_length(entry_fragment));
+
+        mirage_track_add_fragment(self->priv->open_track, -1, track_fragment);
+
+        g_object_unref(entry_fragment);
+        g_object_unref(track_fragment);
+    }
+
+
+    /* Setup the properties from CUE entry */
+    mirage_track_set_flags(self->priv->open_track, mirage_track_get_flags(self->priv->cue_entry));
+    mirage_track_set_isrc(self->priv->open_track, mirage_track_get_isrc(self->priv->cue_entry));
+
+    /* Start and indices */
+    mirage_track_set_track_start(self->priv->open_track, mirage_track_get_track_start(self->priv->cue_entry));
+
+    gint num_indices = mirage_track_get_number_of_indices(self->priv->cue_entry);
+    for (gint i = 0; i < num_indices; i++) {
+        MirageIndex *index = mirage_track_get_index_by_number(self->priv->cue_entry, i, NULL);
+        mirage_track_add_index(self->priv->open_track, mirage_index_get_address(index), NULL);
+        g_object_unref(index);
+    }
+
+    return TRUE;
+}
+
 static gboolean cdemu_device_sao_burning_write_sectors (CdemuDevice *self, gint start_address, gint num_sectors)
 {
     /* We need a valid CUE sheet */
@@ -400,12 +459,10 @@ static gboolean cdemu_device_sao_burning_write_sectors (CdemuDevice *self, gint 
         return FALSE;
     }
 
-    MirageTrack *cue_track = NULL;
-    MirageFragment *cue_fragment = NULL;
-    gint track_start = 0;
-
     const struct SAO_MainFormat *main_format_ptr = NULL;
     const struct SAO_SubchannelFormat *subchannel_format_ptr = NULL;
+
+    MirageFragment *cue_fragment = NULL;
 
     gboolean succeeded = TRUE;
 
@@ -417,30 +474,35 @@ static gboolean cdemu_device_sao_burning_write_sectors (CdemuDevice *self, gint 
         CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: sector %d\n", __debug__, address);
 
         /* Grab track entry from CUE sheet, if necessary */
-        if (!cue_track || !mirage_track_layout_contains_address(cue_track, address)) {
+        if (!self->priv->cue_entry || !mirage_track_layout_contains_address(self->priv->cue_entry, address)) {
             CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: getting track entry from CUE sheet for sector %d...\n", __debug__, address);
 
-            if (cue_track) {
-                g_object_unref(cue_track);
+            if (self->priv->cue_entry) {
+                g_object_unref(self->priv->cue_entry);
             }
 
-            cue_track = mirage_session_get_track_by_address(self->priv->cue_sheet, address, NULL);
-            if (!cue_track) {
+            self->priv->cue_entry = mirage_session_get_track_by_address(self->priv->cue_sheet, address, NULL);
+            if (!self->priv->cue_entry) {
                 CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: failed to find track entry in CUE sheet for address %d!\n", __debug__, address);
                 cdemu_device_write_sense(self, CHECK_CONDITION, COMMAND_SEQUENCE_ERROR);
                 succeeded = FALSE;
                 goto finish;
             }
 
-            track_start = mirage_track_layout_get_start_sector(cue_track);
-
             if (cue_fragment) {
                 g_object_unref(cue_fragment);
                 cue_fragment = NULL;
             }
+
+            /* Open new track for writing */
+            if (self->priv->open_track) {
+                cdemu_device_burning_close_track(self);
+            }
+            cdemu_device_sao_burning_open_track(self);
         }
 
         /* Grab fragment entry from CUE sheet, if necessary */
+        gint track_start = mirage_track_layout_get_start_sector(self->priv->cue_entry);
         if (!cue_fragment || !mirage_fragment_contains_address(cue_fragment, address - track_start)) {
             CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: getting fragment entry from CUE track entry for sector %d...\n", __debug__, address);
 
@@ -448,7 +510,7 @@ static gboolean cdemu_device_sao_burning_write_sectors (CdemuDevice *self, gint 
                 g_object_unref(cue_fragment);
             }
 
-            cue_fragment = mirage_track_get_fragment_by_address(cue_track, address - track_start, NULL);
+            cue_fragment = mirage_track_get_fragment_by_address(self->priv->cue_entry, address - track_start, NULL);
             if (!cue_fragment) {
                 CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: failed to find fragment entry in CUE track entry for address %d!\n", __debug__, address);
                 cdemu_device_write_sense(self, CHECK_CONDITION, COMMAND_SEQUENCE_ERROR);
@@ -494,6 +556,7 @@ static gboolean cdemu_device_sao_burning_write_sectors (CdemuDevice *self, gint 
         cdemu_device_read_buffer(self, main_format_ptr->data_size + subchannel_format_ptr->data_size);
 
         /* Feed the sector */
+        mirage_object_set_parent(MIRAGE_OBJECT(sector), self->priv->open_track);
         if (!mirage_sector_feed_data(sector, address, main_format_ptr->mode, self->priv->buffer, main_format_ptr->data_size, subchannel_format_ptr->mode, self->priv->buffer + main_format_ptr->data_size, subchannel_format_ptr->data_size, main_format_ptr->ignore_data, &local_error)) {
             CDEMU_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: failed to feed sector for writing: %s!\n", __debug__, local_error->message);
             g_error_free(local_error);
@@ -505,14 +568,13 @@ static gboolean cdemu_device_sao_burning_write_sectors (CdemuDevice *self, gint 
         if (mirage_sector_get_data(sector, &data_buf, NULL, NULL)) {
             cdemu_device_dump_buffer(self, DAEMON_DEBUG_MMC, __debug__, 16, data_buf, 16);
         }
+        if (mirage_sector_get_subchannel(sector, MIRAGE_SUBCHANNEL_Q, &data_buf, NULL, NULL)) {
+            cdemu_device_dump_buffer(self, DAEMON_DEBUG_MMC, __debug__, 16, data_buf, 16);
+        }
     }
 
 finish:
     g_object_unref(sector);
-
-    if (cue_track) {
-        g_object_unref(cue_track);
-    }
 
     if (cue_fragment) {
         g_object_unref(cue_fragment);
@@ -586,7 +648,7 @@ static gboolean cdemu_device_sao_burning_parse_cue_sheet (CdemuDevice *self, con
         }
 
         /* Skip lead-in and lead-out */
-        if (cue_entry[1] == 0 || cue_entry[1] == 0xAA) {
+        if (tno == 0 || tno == 0xAA) {
             continue;
         }
 
@@ -621,14 +683,19 @@ static gboolean cdemu_device_sao_burning_parse_cue_sheet (CdemuDevice *self, con
         }
 
         /* Skip lead-in */
-        if (cue_entry[1] == 0) {
+        if (tno == 0) {
+            continue;
+        }
+
+        /* Ignore index entries */
+        if (idx > 1) {
             continue;
         }
 
         /* Convert MSF to address */
         gint address = mirage_helper_msf2lba(cue_entry[5], cue_entry[6], cue_entry[7], TRUE);
 
-        if (cue_entry[1] != 0xAA) {
+        if (tno != 0xAA) {
             CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: track #%d index #%d has length of %d sectors; data format: %02hX\n", __debug__, tno, idx, (last_address - address), cue_entry[3]);
 
             MirageTrack *track = mirage_session_get_track_by_number(self->priv->cue_sheet, tno, NULL);
@@ -637,6 +704,11 @@ static gboolean cdemu_device_sao_burning_parse_cue_sheet (CdemuDevice *self, con
             mirage_fragment_set_length(fragment, last_address - address);
             mirage_fragment_main_data_set_format(fragment, cue_entry[3]); /* We abuse fragment's main channel format to store the data form supplied by CUE sheet */
             mirage_track_add_fragment(track, 0, fragment);
+
+            /* Pregap */
+            if (idx == 0) {
+                mirage_track_set_track_start(track, last_address - address);
+            }
 
             g_object_unref(fragment);
             g_object_unref(track);
