@@ -1337,6 +1337,7 @@ gboolean mirage_sector_set_subchannel (MirageSector *self, MirageSectorSubchanne
                 return FALSE;
             }
             /* Interleave */
+            memset(self->priv->subchan_pw, 0, sizeof(self->priv->subchan_pw));
             mirage_helper_subchannel_interleave(SUBCHANNEL_Q, buf, self->priv->subchan_pw);
             break;
         }
@@ -1347,6 +1348,7 @@ gboolean mirage_sector_set_subchannel (MirageSector *self, MirageSectorSubchanne
                 return FALSE;
             }
             /* Interleave */
+            memset(self->priv->subchan_pw, 0, sizeof(self->priv->subchan_pw));
             for (gint i = 0; i < 8; i++) {
                 mirage_helper_subchannel_interleave(7 - i, buf + i*12, self->priv->subchan_pw);
             }
