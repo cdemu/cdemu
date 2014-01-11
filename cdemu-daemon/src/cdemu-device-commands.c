@@ -352,16 +352,20 @@ static gboolean cdemu_device_burning_get_next_writable_address (CdemuDevice *sel
     return nwa_base + self->priv->num_written_sectors;
 }
 
+
 /**********************************************************************\
  *                    Session-at-once (SAO) burning                   *
 \**********************************************************************/
-struct SAO_MainFormat {
+struct SAO_MainFormat
+{
     gint format;
     MirageTrackModes mode;
     gint data_size;
     gint ignore_data;
 };
-struct SAO_SubchannelFormat {
+
+struct SAO_SubchannelFormat
+{
     gint format;
     MirageSectorSubchannelFormat mode;
     gint data_size;
@@ -776,6 +780,93 @@ static gboolean cdemu_device_sao_burning_parse_cue_sheet (CdemuDevice *self, con
     }
 
     return TRUE;
+}
+
+
+/**********************************************************************\
+ *                            Raw burning                             *
+\**********************************************************************/
+struct BURNING_DataFormat
+{
+    gint main_size;
+    gint subchannel_size;
+    gint subchannel_format;
+    gint sector_type;
+};
+
+static const struct BURNING_DataFormat burning_data_formats[] = {
+    /* 0: 2352 bytes - raw data */
+    { 2352, 0, MIRAGE_SUBCHANNEL_NONE, -1 },
+    /* 1: 2368 bytes - raw data with P-Q subchannel */
+    { 2352, 16, MIRAGE_SUBCHANNEL_Q, -1 },
+    /* 2: 2448 bytes - raw data with cooked R-W subchannel */
+    { 2352, 96, MIRAGE_SUBCHANNEL_RW, -1 },
+    /* 3: 2448 bytes - raw data with raw P-W subchannel */
+    { 2352, 96, MIRAGE_SUBCHANNEL_PW, -1 },
+    /* 4-7: reserved */
+    { 0, 0, MIRAGE_SUBCHANNEL_NONE, -1 },
+    { 0, 0, MIRAGE_SUBCHANNEL_NONE, -1 },
+    { 0, 0, MIRAGE_SUBCHANNEL_NONE, -1 },
+    { 0, 0, MIRAGE_SUBCHANNEL_NONE, -1 },
+    /* 8: 2048 bytes - Mode 1 user data */
+    { 2048, 0, MIRAGE_SUBCHANNEL_NONE, MIRAGE_MODE_MODE1 },
+    /* 9: 2336 bytes - Mode 2 user data */
+    { 2336, 0, MIRAGE_SUBCHANNEL_NONE, MIRAGE_MODE_MODE2 },
+    /* 10: 2048 bytes - Mode 2 Form 1 user data */
+    { 2048, 0, MIRAGE_SUBCHANNEL_NONE, MIRAGE_MODE_MODE2_FORM1 },
+    /* 11: 2056 bytes - Mode 2 Form 1 with subheader */
+    { 2056, 0, MIRAGE_SUBCHANNEL_NONE, MIRAGE_MODE_MODE2_FORM1 },
+    /* 2324 bytes - Mode 2 Form 2 user data */
+    { 2324, 0, MIRAGE_SUBCHANNEL_NONE, MIRAGE_MODE_MODE2_FORM2 },
+    /* 2332 bytes - Mode 2 (Form 1, Form 2 or mixed) with subheader */
+    { 2332, 0, MIRAGE_SUBCHANNEL_NONE, MIRAGE_MODE_MODE2_MIXED },
+};
+
+static gboolean cdemu_device_raw_burning_write_sectors (CdemuDevice *self, gint start_address, gint num_sectors)
+{
+    MirageSector *sector = g_object_new(MIRAGE_TYPE_SECTOR, NULL);
+    gint sector_type;
+    const guint8 *subchannel;
+
+    GError *local_error = NULL;
+    gboolean succeeded = TRUE;
+
+    const struct ModePage_0x05 *p_0x05 = cdemu_device_get_mode_page(self, 0x05, MODE_PAGE_CURRENT);
+    const struct BURNING_DataFormat *format = &burning_data_formats[p_0x05->data_block_type]; /* FIXME: we should force validity of this with mode page validation! */
+
+    /* Write all sectors */
+    for (gint address = start_address; address < start_address + num_sectors; address++) {
+        CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: sector %d\n", __debug__, address);
+
+        /* Read data from host */
+        cdemu_device_read_buffer(self, format->main_size + format->subchannel_size);
+
+        /* Raw sector data means we need to determine mode ourselves */
+        sector_type = mirage_helper_determine_sector_type(self->priv->buffer);
+
+        /* Feed the sector */
+        //mirage_object_set_parent(MIRAGE_OBJECT(sector), self->priv->open_track);
+        if (!mirage_sector_feed_data(sector, address, sector_type, self->priv->buffer, format->main_size, format->subchannel_format, self->priv->buffer + format->main_size, format->subchannel_size, 0, &local_error)) {
+            CDEMU_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: failed to feed sector for writing: %s!\n", __debug__, local_error->message);
+            g_error_free(local_error);
+            local_error = NULL;
+        }
+
+        /* In raw burning, sectors are scrambled, so we need to unscramble them */
+        mirage_sector_scramble(sector);
+
+        /* Analyze subchannel to determine when tracks begin/end */
+        mirage_sector_get_data(sector, &subchannel, NULL, NULL);
+        cdemu_device_dump_buffer(self, DAEMON_DEBUG_MMC, __debug__, 16, subchannel, 16);
+
+        mirage_sector_get_subchannel(sector, MIRAGE_SUBCHANNEL_Q, &subchannel, NULL, NULL);
+        cdemu_device_dump_buffer(self, DAEMON_DEBUG_MMC, __debug__, 16, subchannel, 16);
+    }
+
+finish:
+    g_object_unref(sector);
+
+    return succeeded;
 }
 
 
@@ -2906,9 +2997,8 @@ static gboolean command_write (CdemuDevice *self, const guint8 *raw_cdb)
         }
         case 3: {
             /* Raw recording */
-            CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: raw recording not supported yet!\n", __debug__);
-            succeeded = FALSE;
-            cdemu_device_write_sense(self, ILLEGAL_REQUEST, INVALID_FIELD_IN_CDB);
+            CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: raw recording\n", __debug__);
+            succeeded = cdemu_device_raw_burning_write_sectors(self, start_address, num_sectors);
             break;
         }
         default: {
