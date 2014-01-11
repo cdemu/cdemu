@@ -121,6 +121,10 @@ struct _CdemuDevicePrivate
 
     MirageSession *cue_sheet;
     MirageTrack *cue_entry;
+
+    /* Raw burning emulation */
+    guint8 last_recorded_tno;
+    guint8 last_recorded_idx;
 };
 
 

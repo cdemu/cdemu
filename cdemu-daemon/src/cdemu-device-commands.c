@@ -191,6 +191,43 @@ static void cdemu_device_dump_buffer (CdemuDevice *self, gint debug_level, const
 /**********************************************************************\
  *                          Generic burning                           *
 \**********************************************************************/
+static gboolean cdemu_device_burning_close_track (CdemuDevice *self)
+{
+    /* Add track to our open session */
+    mirage_session_add_track_by_index(self->priv->open_session, -1, self->priv->open_track);
+
+    /* Release the reference we hold */
+    g_object_unref(self->priv->open_track);
+    self->priv->open_track = NULL;
+
+    return TRUE;
+}
+
+static gboolean cdemu_device_burning_close_session (CdemuDevice *self)
+{
+    const struct ModePage_0x05 *p_0x05 = cdemu_device_get_mode_page(self, 0x05, MODE_PAGE_CURRENT);
+
+    if (self->priv->open_track) {
+        cdemu_device_burning_close_track(self);
+    }
+
+    /* Add session to our disc */
+    mirage_disc_add_session_by_index(self->priv->disc, -1, self->priv->open_session);
+
+    /* Release the reference we hold */
+    g_object_unref(self->priv->open_session);
+    self->priv->open_session = NULL;
+
+    /* Should we finalize the disc, as well? */
+    if (!p_0x05->multisession) {
+        self->priv->disc_closed = TRUE;
+    }
+
+    self->priv->num_written_sectors = 0; /* Reset */
+
+    return TRUE;
+}
+
 static gboolean cdemu_device_burning_open_session (CdemuDevice *self)
 {
 #if 0
@@ -223,27 +260,6 @@ static gboolean cdemu_device_burning_open_session (CdemuDevice *self)
         }
     }
 #endif
-
-    return TRUE;
-}
-
-static gboolean cdemu_device_burning_close_session (CdemuDevice *self)
-{
-    const struct ModePage_0x05 *p_0x05 = cdemu_device_get_mode_page(self, 0x05, MODE_PAGE_CURRENT);
-
-    /* Add session to our disc */
-    mirage_disc_add_session_by_index(self->priv->disc, -1, self->priv->open_session);
-
-    /* Release the reference we hold */
-    g_object_unref(self->priv->open_session);
-    self->priv->open_session = NULL;
-
-    /* Should we finalize the disc, as well? */
-    if (!p_0x05->multisession) {
-        self->priv->disc_closed = TRUE;
-    }
-
-    self->priv->num_written_sectors = 0; /* Reset */
 
     return TRUE;
 }
@@ -310,17 +326,6 @@ static gboolean cdemu_device_burning_open_track (CdemuDevice *self, MirageTrackM
     return TRUE;
 }
 
-static gboolean cdemu_device_burning_close_track (CdemuDevice *self)
-{
-    /* Add track to our open session */
-    mirage_session_add_track_by_index(self->priv->open_session, -1, self->priv->open_track);
-
-    /* Release the reference we hold */
-    g_object_unref(self->priv->open_track);
-    self->priv->open_track = NULL;
-
-    return TRUE;
-}
 
 static gboolean cdemu_device_burning_get_next_writable_address (CdemuDevice *self)
 {
@@ -822,11 +827,141 @@ static const struct BURNING_DataFormat burning_data_formats[] = {
     { 2332, 0, MIRAGE_SUBCHANNEL_NONE, MIRAGE_MODE_MODE2_MIXED },
 };
 
+static gboolean cdemu_device_raw_burning_write_sector (CdemuDevice *self, gint address, MirageSector *sector)
+{
+    const guint8 *subchannel;
+
+    /* Analyze subchannel to determine when tracks begin/end */
+    mirage_sector_get_subchannel(sector, MIRAGE_SUBCHANNEL_Q, &subchannel, NULL, NULL);
+    cdemu_device_dump_buffer(self, DAEMON_DEBUG_MMC, __debug__, 16, subchannel, 16);
+
+    guint8 ctl = subchannel[0] & 0x0F;
+    guint8 tno = subchannel[1];
+    guint8 idx = subchannel[2];
+    gint track_relative_address = mirage_helper_msf2lba(mirage_helper_bcd2hex(subchannel[3]), mirage_helper_bcd2hex(subchannel[4]), mirage_helper_bcd2hex(subchannel[5]), FALSE);
+    gint absolute_address = mirage_helper_msf2lba(mirage_helper_bcd2hex(subchannel[7]), mirage_helper_bcd2hex(subchannel[8]), mirage_helper_bcd2hex(subchannel[9]), TRUE);
+
+    /* Lead-in; contains TOC in Q and CD-TEXT in RW subchannel.
+       Unfortunately, the TOC is not detailed enough for our needs,
+       therefore we will infer session layout from sectors' data. */
+    if (tno == 0x00) {
+        if (!self->priv->open_session) {
+            CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: first lead-in sector; opening session\n", __debug__);
+            cdemu_device_burning_open_session(self);
+
+            self->priv->last_recorded_tno = 0;
+            self->priv->last_recorded_idx = 0;
+        } else {
+            CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: lead-in sector; ignoring\n", __debug__);
+        }
+
+        /* FIXME: parse CD-TEXT from RW subchannel */
+
+        return TRUE;
+    }
+
+    /* Lead-out; contains no useful data. It tells us when to officially
+       close the session, though */
+    if (tno == 0xAA) {
+        if (self->priv->open_session) {
+            CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: first lead-out sector; closing session\n", __debug__);
+            cdemu_device_burning_close_session(self);
+        } else {
+            CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: lead-out sector; ignoring\n", __debug__);
+        }
+
+        return TRUE;
+    }
+
+
+    /* At this point, make sure we have an open session; if not, we are in
+       leadout, and probably trying to write sector containing MCN... */
+    if (!self->priv->open_session) {
+        return TRUE;
+    }
+
+
+    /* Track data */
+    if (ctl == 1) {
+        /* Validate address */
+        if (absolute_address != address) {
+            CDEMU_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: command LBA %d does not match LBA encoded in sector %d\n", __debug__, address, absolute_address);
+        }
+
+        if (tno != self->priv->last_recorded_tno) {
+            CDEMU_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: TNO changed; open new track (mode: %d)\n", __debug__, mirage_sector_get_sector_type(sector));
+
+            if (self->priv->open_track) {
+                cdemu_device_burning_close_track(self);
+            }
+
+            cdemu_device_burning_open_track(self, mirage_sector_get_sector_type(sector));
+
+            if (idx == 0) {
+                CDEMU_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: track has a pregap with length: %d\n", __debug__, track_relative_address);
+                mirage_track_set_track_start(self->priv->open_track, track_relative_address);
+
+                /* Create pregap fragment */
+                MirageFragment *fragment = g_object_new(MIRAGE_TYPE_FRAGMENT, NULL);
+                mirage_track_add_fragment(self->priv->open_track, -1, fragment);
+                    g_object_unref(fragment);
+            } else {
+                /* Create data fragment */
+                MirageFragment *fragment = g_object_new(MIRAGE_TYPE_FRAGMENT, NULL);
+                mirage_track_add_fragment(self->priv->open_track, -1, fragment);
+                g_object_unref(fragment);
+            }
+
+            self->priv->last_recorded_tno = tno;
+            self->priv->last_recorded_idx = idx;
+        } else if (idx != self->priv->last_recorded_idx) {
+            CDEMU_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: index changed: %d -> %d\n", __debug__, self->priv->last_recorded_idx, idx);
+            if (idx == 1) {
+                CDEMU_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: end of pregap\n", __debug__);
+
+                /* Create data fragment */
+                MirageFragment *fragment = g_object_new(MIRAGE_TYPE_FRAGMENT, NULL);
+                mirage_track_add_fragment(self->priv->open_track, -1, fragment);
+                g_object_unref(fragment);
+            } else {
+                CDEMU_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: adding index at track-relative address: %d\n", __debug__, track_relative_address);
+                mirage_track_add_index(self->priv->open_track, track_relative_address, NULL);
+            }
+
+            self->priv->last_recorded_idx = idx;
+        }
+    } else if (ctl == 2) {
+        /* MCN */
+        if (self->priv->open_session && !mirage_session_get_mcn(self->priv->open_session)) {
+            gchar mcn[13] = "";
+            mirage_helper_subchannel_q_decode_mcn(&subchannel[1], mcn);
+            CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: setting MCN: %s\n", __debug__, mcn);
+            mirage_session_set_mcn(self->priv->open_session, mcn);
+        }
+    } else if (ctl == 3) {
+        /* ISRC */
+        if (self->priv->open_track && !mirage_track_get_isrc(self->priv->open_track)) {
+            gchar isrc[12] = "";
+            mirage_helper_subchannel_q_decode_isrc(&subchannel[1], isrc);
+            CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: setting ISRC: %s\n", __debug__, isrc);
+            mirage_track_set_isrc(self->priv->open_track, isrc);
+        }
+    }
+
+    /* Increase the size of the last track's fragment */
+    MirageFragment *fragment = mirage_track_get_fragment_by_index(self->priv->open_track, -1, NULL);
+    mirage_fragment_set_length(fragment, mirage_fragment_get_length(fragment) + 1);
+    g_object_unref(fragment);
+
+    /* FIXME: write sector */
+
+    return TRUE;
+}
+
 static gboolean cdemu_device_raw_burning_write_sectors (CdemuDevice *self, gint start_address, gint num_sectors)
 {
     MirageSector *sector = g_object_new(MIRAGE_TYPE_SECTOR, NULL);
     gint sector_type;
-    const guint8 *subchannel;
 
     GError *local_error = NULL;
     gboolean succeeded = TRUE;
@@ -855,15 +990,13 @@ static gboolean cdemu_device_raw_burning_write_sectors (CdemuDevice *self, gint 
         /* In raw burning, sectors are scrambled, so we need to unscramble them */
         mirage_sector_scramble(sector);
 
-        /* Analyze subchannel to determine when tracks begin/end */
-        mirage_sector_get_data(sector, &subchannel, NULL, NULL);
-        cdemu_device_dump_buffer(self, DAEMON_DEBUG_MMC, __debug__, 16, subchannel, 16);
-
-        mirage_sector_get_subchannel(sector, MIRAGE_SUBCHANNEL_Q, &subchannel, NULL, NULL);
-        cdemu_device_dump_buffer(self, DAEMON_DEBUG_MMC, __debug__, 16, subchannel, 16);
+        /* Write sector */
+        succeeded = cdemu_device_raw_burning_write_sector(self, address, sector);
+        if (!succeeded) {
+            break;
+        }
     }
 
-finish:
     g_object_unref(sector);
 
     return succeeded;
