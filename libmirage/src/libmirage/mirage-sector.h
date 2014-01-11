@@ -133,6 +133,9 @@ gboolean mirage_sector_set_subchannel (MirageSector *self, MirageSectorSubchanne
 gboolean mirage_sector_verify_lec (MirageSector *self);
 gboolean mirage_sector_verify_subchannel_crc (MirageSector *self);
 
+
+void mirage_sector_scramble (MirageSector *self);
+
 G_END_DECLS
 
 #endif /* __MIRAGE_SECTOR_H__ */

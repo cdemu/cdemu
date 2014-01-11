@@ -1473,6 +1473,28 @@ gboolean mirage_sector_verify_subchannel_crc (MirageSector *self)
 }
 
 
+/**
+ * mirage_sector_scramble:
+ * @self: a #MirageSector
+ *
+ * Scrambles 2340 bytes of sector data after sync pattern, using scrambler
+ * from ECMA-130 Annex B. Running this function on already-scrambled
+ * sector results in unscrambling.
+ */
+void mirage_sector_scramble (MirageSector *self)
+{
+    /* Make sure scrambler LUT is initialized */
+    if (!ecma_130_scrambler_lut) {
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: cannot scramble sector - scrambler LUT not initialized!\n", __debug__);
+        return;
+    }
+
+    for (gint i = 0; i < 2340; i++) {
+        *(self->priv->sector_data + 12 + i) ^= ecma_130_scrambler_lut[i];
+    }
+}
+
+
 /**********************************************************************\
  *                             Object init                            *
 \**********************************************************************/

@@ -140,6 +140,11 @@ MirageTrackModes mirage_helper_determine_sector_type (const guint8 *buf);
 const gchar *mirage_helper_encoding_from_bom (const guint8 *buffer);
 
 
+/* ECMA-130 Annex B sector data scrambler */
+guint8 *ecma_130_scrambler_lut;
+
+guint8 *mirage_helper_init_ecma_130b_scrambler_lut (void);
+
 G_END_DECLS
 
 #endif /* __MIRAGE_UTILS_H__ */

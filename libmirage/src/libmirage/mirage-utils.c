@@ -1209,3 +1209,54 @@ const gchar *mirage_helper_encoding_from_bom (const guint8 *buffer)
 
     return NULL;
 }
+
+
+/**********************************************************************\
+ *               ECMA-130 Annex B sector data scrambler               *
+\**********************************************************************/
+guint8 *ecma_130_scrambler_lut = NULL;
+
+/**
+ * mirage_helper_init_ecma_130b_scrambler_lut:
+ *
+ * Calculates a look-up table for sector data scrambler from ECMA-130,
+ * Annex B. The look-up table consists of 2340 entries, each being a
+ * scramble byte for corresponding byte in sector data.
+ *
+ * Returns: Pointer to the generated scrambler look-up table or NULL on failure.
+ */
+guint8 *mirage_helper_init_ecma_130b_scrambler_lut (void)
+{
+    guint8 *lut = g_try_new(guint8, 2340);
+    if (!lut) {
+        return lut;
+    }
+
+    /* Get scramble bytes for all input bytes */
+    guint16 fsr = 1; /* Initial feedback shift register value */
+
+    for (gint i = 0; i < 2340; i++) {
+        guint8 value = 0;
+
+        /* Feedback shift register */
+        for (gint j = 0; j < 8; j++) {
+            /* Output of FSR is its least significant bit */
+            guint8 lsb = fsr & 1;
+            value |= lsb << j;
+
+            /* Shift */
+            fsr = fsr >> 1;
+
+            /* Most significant bit x^15 is XOR of x^0 and x^1 (which is the new lsb) */
+            if ((fsr & 1) ^ lsb) {
+                fsr |= 0x4000;
+            } else {
+                fsr &= 0x3FFF;
+            }
+        }
+
+        lut[i] = value;
+    }
+
+    return lut;
+}

@@ -176,6 +176,12 @@ gboolean mirage_initialize (GError **error)
         return FALSE;
     }
 
+    /* Allocate LUT for ECMA-130 sector scrambler */
+    ecma_130_scrambler_lut = mirage_helper_init_ecma_130b_scrambler_lut();
+    if (!ecma_130_scrambler_lut) {
+        return FALSE;
+    }
+
     /* We're officially initialized now */
     libmirage.initialized = TRUE;
 
@@ -220,6 +226,10 @@ gboolean mirage_shutdown (GError **error)
 
     g_free(crc32_d8018001_lut);
     crc32_d8018001_lut = NULL;
+
+    /* Free ECMA-130 sector scrambler LUT */
+    g_free(ecma_130_scrambler_lut);
+    ecma_130_scrambler_lut = NULL;
 
     /* We're not initialized anymore */
     libmirage.initialized = FALSE;

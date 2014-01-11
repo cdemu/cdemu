@@ -356,6 +356,7 @@ mirage_sector_get_sync
 mirage_sector_set_sync
 mirage_sector_verify_lec
 mirage_sector_verify_subchannel_crc
+mirage_sector_scramble
 <SUBSECTION Standard>
 MIRAGE_IS_SECTOR
 MIRAGE_IS_SECTOR_CLASS
@@ -510,6 +511,7 @@ mirage_helper_has_suffix
 mirage_helper_hex2bcd
 mirage_helper_init_crc16_lut
 mirage_helper_init_crc32_lut
+mirage_helper_init_ecma_130b_scrambler_lut
 mirage_helper_isrc2ascii
 mirage_helper_lba2msf
 mirage_helper_lba2msf_str
