@@ -180,6 +180,7 @@ gboolean cdemu_device_unload_disc_private (CdemuDevice *self, gboolean force, GE
 gpointer cdemu_device_get_mode_page (CdemuDevice *self, gint page, ModePageType type);
 void cdemu_device_mode_pages_init (CdemuDevice *self);
 void cdemu_device_mode_pages_cleanup (CdemuDevice *self);
+gboolean cdemu_device_modify_mode_page (CdemuDevice *self, const guint8 *new_data, gint page_size);
 
 /* Recording */
 gboolean cdemu_device_sao_recording_parse_cue_sheet (CdemuDevice *self, const guint8 *cue_sheet, gint cue_sheet_size);

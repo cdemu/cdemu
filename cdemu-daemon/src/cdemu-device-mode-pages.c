@@ -348,3 +348,50 @@ void cdemu_device_mode_pages_cleanup (CdemuDevice *self)
     g_list_free(self->priv->mode_pages_list);
 }
 
+gboolean cdemu_device_modify_mode_page (CdemuDevice *self, const guint8 *new_data, gint page_size)
+{
+    struct ModePageGeneral *page_new = (struct ModePageGeneral *)(new_data);
+
+    /* Get page's entry */
+    GList *raw_entry = g_list_find_custom(self->priv->mode_pages_list, GINT_TO_POINTER(page_new->code), (GCompareFunc)find_mode_page);
+    if (!raw_entry) {
+        CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: we don't have mode page 0x%X\n", __debug__, page_new->code);
+        return FALSE;
+    }
+
+    /* Validate page size */
+    struct ModePageEntry *page_entry = raw_entry->data;
+    struct ModePageGeneral *page_current = page_entry->page_current;
+
+    if (page_size - 2 != page_current->length) {
+        CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: declared page size doesn't match length of data we were given!\n", __debug__);
+        return FALSE;
+    }
+
+    if (page_new->length != page_current->length) {
+        CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: invalid page size!\n", __debug__);
+        return FALSE;
+    }
+
+    /* Make sure that only masked values are changed */
+    const guint8 *raw_ptr_new = new_data;
+    const guint8 *raw_ptr_current = page_entry->page_current;
+    const guint8 *raw_ptr_mask = page_entry->page_mask;
+
+    raw_ptr_new += 2; /* Skip code and length */
+    raw_ptr_current += 2;
+    raw_ptr_mask += 2;
+
+    for (gint i = 0; i < page_new->length; i++) {
+        /* Compare every byte against the mask */
+        if ((raw_ptr_current[i] ^ raw_ptr_new[i]) & ~raw_ptr_mask[i]) {
+            CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: attempting to change unchangeable value in byte %i!\n", __debug__, i);
+            return FALSE;
+        }
+    }
+
+    /* And finally, copy the page */
+    memcpy(page_current, page_new, page_new->length + 2);
+
+    return TRUE;
+}

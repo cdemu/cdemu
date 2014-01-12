@@ -466,50 +466,14 @@ static gboolean command_mode_select (CdemuDevice *self, const guint8 *raw_cdb)
     gint page_size = transfer_len - offset;
 
     if (page_size) {
-        struct ModePageGeneral *mode_page_new  = (struct ModePageGeneral *)(self->priv->buffer+offset);
-        struct ModePageGeneral *mode_page_mask = NULL;
-        struct ModePageGeneral *mode_page_cur  = NULL;
+        gint page_code = ((struct ModePageGeneral *)(self->priv->buffer + offset))->code;
+        CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: modifying mode page 0x%X (%d bytes)\n", __debug__, page_code, page_size);
 
-        CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: mode page 0x%X\n", __debug__, mode_page_new->code);
-
-        /* Get pointer to current data */
-        mode_page_cur = cdemu_device_get_mode_page(self, mode_page_new->code, MODE_PAGE_CURRENT);
-        if (!mode_page_cur) {
-            CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: we don't have mode page 0x%X\n", __debug__, mode_page_new->code);
+        if (!cdemu_device_modify_mode_page(self, self->priv->buffer + offset, page_size)) {
+            CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: failed to modify code page 0x%X!\n", __debug__, page_code);
             cdemu_device_write_sense(self, ILLEGAL_REQUEST, INVALID_FIELD_IN_PARAMETER_LIST);
             return FALSE;
         }
-
-        /* Some length checking */
-        if (page_size - 2 != mode_page_cur->length) {
-            CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: declared page size doesn't match length of data we were given!\n", __debug__);
-            cdemu_device_write_sense(self, ILLEGAL_REQUEST, INVALID_FIELD_IN_PARAMETER_LIST);
-            return FALSE;
-        }
-
-        /* Some more length checking */
-        if (mode_page_new->length != mode_page_cur->length) {
-            CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: invalid page size!\n", __debug__);
-            cdemu_device_write_sense(self, ILLEGAL_REQUEST, INVALID_FIELD_IN_PARAMETER_LIST);
-            return FALSE;
-        }
-
-        /* Now we need to check if only values that can be changed are set */
-        mode_page_mask = cdemu_device_get_mode_page(self, mode_page_new->code, MODE_PAGE_MASK);
-        guint8 *raw_data_new  = ((guint8 *)mode_page_new) + 2;
-        guint8 *raw_data_mask = ((guint8 *)mode_page_mask) + 2;
-
-        for (gint i = 1; i < mode_page_new->length; i++) {
-            /* Compare every byte against the mask (except first byte) */
-            if (raw_data_new[i] & ~raw_data_mask[i]) {
-                CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: invalid value set on byte %i!\n", __debug__, i);
-                cdemu_device_write_sense(self, ILLEGAL_REQUEST, INVALID_FIELD_IN_PARAMETER_LIST);
-                return FALSE;
-            }
-        }
-
-        /* And finally, copy the page */
-        memcpy(mode_page_cur, mode_page_new, mode_page_new->length + 2);
     }
 
     return TRUE;
