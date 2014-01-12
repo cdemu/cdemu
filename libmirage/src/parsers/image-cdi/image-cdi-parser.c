@@ -109,17 +109,17 @@ static gboolean mirage_parser_cdi_decode_track_mode (MirageParserCdi *self, gint
        what the data format will be? */
     switch (raw_mode) {
         case 0: {
-            *decoded_mode = MIRAGE_MODE_AUDIO;
+            *decoded_mode = MIRAGE_SECTOR_AUDIO;
             *main_format = MIRAGE_MAIN_DATA_FORMAT_AUDIO;
             break;
         }
         case 1: {
-            *decoded_mode = MIRAGE_MODE_MODE1;
+            *decoded_mode = MIRAGE_SECTOR_MODE1;
             *main_format = MIRAGE_MAIN_DATA_FORMAT_DATA;
             break;
         }
         case 2: {
-            *decoded_mode = MIRAGE_MODE_MODE2_MIXED;
+            *decoded_mode = MIRAGE_SECTOR_MODE2_MIXED;
             *main_format = MIRAGE_MAIN_DATA_FORMAT_DATA;
             break;
         }
@@ -660,7 +660,7 @@ static gboolean mirage_parser_cdi_load_track (MirageParserCdi *self, GError **er
     mirage_session_add_track_by_index(session, -1, track);
 
     /* Set track mode */
-    mirage_track_set_mode(track, decoded_mode);
+    mirage_track_set_sector_type(track, decoded_mode);
 
     /* Create BINARY fragment */
     fragment = g_object_new(MIRAGE_TYPE_FRAGMENT, NULL);

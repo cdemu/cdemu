@@ -134,9 +134,9 @@ GType mirage_track_get_type (void);
 void mirage_track_set_flags (MirageTrack *self, gint flags);
 gint mirage_track_get_flags (MirageTrack *self);
 
-/* Track mode */
-void mirage_track_set_mode (MirageTrack *self, MirageTrackModes mode);
-MirageTrackModes mirage_track_get_mode (MirageTrack *self);
+/* Sector type */
+void mirage_track_set_sector_type (MirageTrack *self, MirageSectorType sector_type);
+MirageSectorType mirage_track_get_sector_type (MirageTrack *self);
 
 /* Adr/Ctl */
 gint mirage_track_get_adr (MirageTrack *self);

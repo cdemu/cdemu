@@ -246,7 +246,7 @@ static void mirage_parser_nrg_decode_mode (MirageParserNrg *self, gint code, gin
         case 0x00: {
             /* Mode 1, user data only */
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: Mode 1, user data only\n", __debug__, code);
-            *mode = MIRAGE_MODE_MODE1;
+            *mode = MIRAGE_SECTOR_MODE1;
             *main_sectsize = 2048;
             *sub_sectsize = 0;
             break;
@@ -254,7 +254,7 @@ static void mirage_parser_nrg_decode_mode (MirageParserNrg *self, gint code, gin
         case 0x02: {
             /* Mode 2 Form 1, user data only */
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: Mode 2 Form 1, user data only\n", __debug__, code);
-            *mode = MIRAGE_MODE_MODE2_FORM1;
+            *mode = MIRAGE_SECTOR_MODE2_FORM1;
             *main_sectsize = 2048;
             *sub_sectsize = 0;
             break;
@@ -262,7 +262,7 @@ static void mirage_parser_nrg_decode_mode (MirageParserNrg *self, gint code, gin
         case 0x03: {
             /* Mode 2 Form 2, user data only */
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: Mode 2 Form 2, user data only\n", __debug__, code);
-            *mode = MIRAGE_MODE_MODE2_FORM2;
+            *mode = MIRAGE_SECTOR_MODE2_FORM2;
             *main_sectsize = 2336;
             *sub_sectsize = 0;
             break;
@@ -270,7 +270,7 @@ static void mirage_parser_nrg_decode_mode (MirageParserNrg *self, gint code, gin
         case 0x05: {
             /* Mode 1, full sector */
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: Mode 1, full sector\n", __debug__, code);
-            *mode = MIRAGE_MODE_MODE1;
+            *mode = MIRAGE_SECTOR_MODE1;
             *main_sectsize = 2352;
             *sub_sectsize = 0;
             break;
@@ -278,7 +278,7 @@ static void mirage_parser_nrg_decode_mode (MirageParserNrg *self, gint code, gin
         case 0x06: {
             /* Mode 2 Form 1 or Mode 2 Form 2, full sector */
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: Mode 2 Form 1/2, full sector\n", __debug__, code);
-            *mode = MIRAGE_MODE_MODE2_MIXED;
+            *mode = MIRAGE_SECTOR_MODE2_MIXED;
             *main_sectsize = 2352;
             *sub_sectsize = 0;
             break;
@@ -286,7 +286,7 @@ static void mirage_parser_nrg_decode_mode (MirageParserNrg *self, gint code, gin
         case 0x07: {
             /* Audio, full sector */
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: Audio, full sector\n", __debug__, code);
-            *mode = MIRAGE_MODE_AUDIO;
+            *mode = MIRAGE_SECTOR_AUDIO;
             *main_sectsize = 2352;
             *sub_sectsize = 0;
             break;
@@ -294,7 +294,7 @@ static void mirage_parser_nrg_decode_mode (MirageParserNrg *self, gint code, gin
         case 0x0F: {
              /* Mode 1, full sector with subchannel */
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: Mode 1, full sector with subchannel\n", __debug__, code);
-            *mode = MIRAGE_MODE_MODE1;
+            *mode = MIRAGE_SECTOR_MODE1;
             *main_sectsize = 2352;
             *sub_sectsize = 96;
             break;
@@ -302,7 +302,7 @@ static void mirage_parser_nrg_decode_mode (MirageParserNrg *self, gint code, gin
         case 0x10: {
             /* Audio, full sector with subchannel */
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: Audio, full sector with subchannel\n", __debug__, code);
-            *mode = MIRAGE_MODE_AUDIO;
+            *mode = MIRAGE_SECTOR_AUDIO;
             *main_sectsize = 2352;
             *sub_sectsize = 96;
             break;
@@ -310,14 +310,14 @@ static void mirage_parser_nrg_decode_mode (MirageParserNrg *self, gint code, gin
         case 0x11: {
             /* Mode 2 Form 1 or Mode 2 Form 2, full sector with subchannel */
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: Mode 2 Form 1/2, full sector with subchannel\n", __debug__, code);
-            *mode = MIRAGE_MODE_MODE2_MIXED;
+            *mode = MIRAGE_SECTOR_MODE2_MIXED;
             *main_sectsize = 2352;
             *sub_sectsize = 96;
             break;
         }
         default: {
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: unknown mode code: %d! Assuming sector size 2352 and no subchannel!\n", __debug__, code);
-            *mode = MIRAGE_MODE_AUDIO;
+            *mode = MIRAGE_SECTOR_AUDIO;
             *main_sectsize = 2352;
             *sub_sectsize = 0;
             break;
@@ -567,7 +567,7 @@ static gboolean mirage_parser_nrg_load_session (MirageParserNrg *self, gint sess
 
         /* Decode mode */
         mirage_parser_nrg_decode_mode(self, dao_block->mode_code, &mode, &main_sectsize, &sub_sectsize);
-        mirage_track_set_mode(track, mode);
+        mirage_track_set_sector_type(track, mode);
 
         /* Shouldn't happen, but just in case I misinterpreted something */
         if (main_sectsize + sub_sectsize != dao_block->sector_size) {
@@ -601,7 +601,7 @@ static gboolean mirage_parser_nrg_load_session (MirageParserNrg *self, gint sess
             /* Main channel data */
             main_size = main_sectsize; /* We use the one from decoded mode code */
             main_offset = dao_block->pregap_offset;
-            if (mode == MIRAGE_MODE_AUDIO) {
+            if (mode == MIRAGE_SECTOR_AUDIO) {
                 main_format = MIRAGE_MAIN_DATA_FORMAT_AUDIO;
             } else {
                 main_format = MIRAGE_MAIN_DATA_FORMAT_DATA;
@@ -639,7 +639,7 @@ static gboolean mirage_parser_nrg_load_session (MirageParserNrg *self, gint sess
             /* Main channel data */
             main_size = main_sectsize; /* We use the one from decoded mode code */
             main_offset = dao_block->start_offset;
-            if (mode == MIRAGE_MODE_AUDIO) {
+            if (mode == MIRAGE_SECTOR_AUDIO) {
                 main_format = MIRAGE_MAIN_DATA_FORMAT_AUDIO;
             } else {
                 main_format = MIRAGE_MAIN_DATA_FORMAT_DATA;
@@ -784,7 +784,7 @@ static gboolean mirage_parser_nrg_load_session_tao (MirageParserNrg *self, gint 
 
         /* Decode mode */
         mirage_parser_nrg_decode_mode(self, etn_block->mode, &mode, &main_sectsize, &sub_sectsize);
-        mirage_track_set_mode(track, mode);
+        mirage_track_set_sector_type(track, mode);
 
         /* Prepare data fragment: we use two fragments, one for pregap and one
            for track itself; we could use only one that spans across both, but
@@ -822,7 +822,7 @@ static gboolean mirage_parser_nrg_load_session_tao (MirageParserNrg *self, gint 
             /* Main channel data */
             main_size = main_sectsize; /* We use the one from decoded mode code */
             main_offset = etn_block->offset;
-            if (mode == MIRAGE_MODE_AUDIO) {
+            if (mode == MIRAGE_SECTOR_AUDIO) {
                 main_format = MIRAGE_MAIN_DATA_FORMAT_AUDIO;
             } else {
                 main_format = MIRAGE_MAIN_DATA_FORMAT_DATA;

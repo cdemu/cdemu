@@ -121,7 +121,7 @@ static gboolean mirage_parser_xcdroast_add_track (MirageParserXcdroast *self, TO
     switch (track_info->type) {
         case DATA: {
             /* Data (Mode 1) track */
-            mirage_track_set_mode(track, MIRAGE_MODE_MODE1);
+            mirage_track_set_sector_type(track, MIRAGE_SECTOR_MODE1);
 
             /* Create and add binary fragment, using whole file */
             fragment = g_object_new(MIRAGE_TYPE_FRAGMENT, NULL);
@@ -155,7 +155,7 @@ static gboolean mirage_parser_xcdroast_add_track (MirageParserXcdroast *self, TO
         }
         case AUDIO: {
             /* Audio track */
-            mirage_track_set_mode(track, MIRAGE_MODE_AUDIO);
+            mirage_track_set_sector_type(track, MIRAGE_SECTOR_AUDIO);
 
             /* Create and add audio fragment, using whole file */
             fragment = g_object_new(MIRAGE_TYPE_FRAGMENT, NULL);

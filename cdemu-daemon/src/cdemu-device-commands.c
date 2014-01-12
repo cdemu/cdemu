@@ -30,11 +30,11 @@ static gint map_expected_sector_type (gint type)
 {
     switch (type) {
         case 0: return 0; /* All types */
-        case 1: return MIRAGE_MODE_AUDIO; /* CD-DA */
-        case 2: return MIRAGE_MODE_MODE1; /* Mode 1 */
-        case 3: return MIRAGE_MODE_MODE2; /* Mode 2 Formless */
-        case 4: return MIRAGE_MODE_MODE2_FORM1; /* Mode 2 Form 1 */
-        case 5: return MIRAGE_MODE_MODE2_FORM2; /* Mode 2 Form 2 */
+        case 1: return MIRAGE_SECTOR_AUDIO; /* CD-DA */
+        case 2: return MIRAGE_SECTOR_MODE1; /* Mode 1 */
+        case 3: return MIRAGE_SECTOR_MODE2; /* Mode 2 Formless */
+        case 4: return MIRAGE_SECTOR_MODE2_FORM1; /* Mode 2 Form 1 */
+        case 5: return MIRAGE_SECTOR_MODE2_FORM2; /* Mode 2 Form 2 */
         default: return -1;
     }
 }
@@ -267,7 +267,7 @@ static gboolean cdemu_device_burning_open_session (CdemuDevice *self)
     return TRUE;
 }
 
-static gboolean cdemu_device_burning_open_track (CdemuDevice *self, MirageTrackModes track_mode)
+static gboolean cdemu_device_burning_open_track (CdemuDevice *self, MirageSectorType sector_type)
 {
     /* Close old track, if it is opened */
     if (self->priv->open_track) {
@@ -288,7 +288,7 @@ static gboolean cdemu_device_burning_open_track (CdemuDevice *self, MirageTrackM
     mirage_track_layout_set_track_number(self->priv->open_track, track_number);
     mirage_track_layout_set_start_sector(self->priv->open_track, start_sector);
 
-    mirage_track_set_mode(self->priv->open_track, track_mode);
+    mirage_track_set_sector_type(self->priv->open_track, sector_type);
 
     CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: opened track #%d; start sector: %d!\n", __debug__, mirage_track_layout_get_track_number(self->priv->open_track), mirage_track_layout_get_start_sector(self->priv->open_track));
 
@@ -332,7 +332,7 @@ static gboolean cdemu_device_burning_get_next_writable_address (CdemuDevice *sel
 struct SAO_MainFormat
 {
     gint format;
-    MirageTrackModes mode;
+    MirageSectorType sector_type;
     gint data_size;
     gint ignore_data;
 };
@@ -346,26 +346,26 @@ struct SAO_SubchannelFormat
 
 static const struct SAO_MainFormat sao_main_formats[] = {
     /* CD-DA */
-    { 0x00, MIRAGE_MODE_AUDIO, 2352, 0 },
-    { 0x01, MIRAGE_MODE_AUDIO,    0, 0 },
+    { 0x00, MIRAGE_SECTOR_AUDIO, 2352, 0 },
+    { 0x01, MIRAGE_SECTOR_AUDIO,    0, 0 },
     /* CD-ROM Mode 1 */
-    { 0x10, MIRAGE_MODE_MODE1, 2048, 0 },
-    { 0x11, MIRAGE_MODE_MODE1, 2352, MIRAGE_VALID_SYNC | MIRAGE_VALID_HEADER | MIRAGE_VALID_EDC_ECC },
-    { 0x12, MIRAGE_MODE_MODE1, 2048, MIRAGE_VALID_DATA },
-    { 0x13, MIRAGE_MODE_MODE1, 2352, MIRAGE_VALID_SYNC | MIRAGE_VALID_HEADER | MIRAGE_VALID_DATA | MIRAGE_VALID_EDC_ECC },
-    { 0x14, MIRAGE_MODE_MODE1,    0, 0 },
+    { 0x10, MIRAGE_SECTOR_MODE1, 2048, 0 },
+    { 0x11, MIRAGE_SECTOR_MODE1, 2352, MIRAGE_VALID_SYNC | MIRAGE_VALID_HEADER | MIRAGE_VALID_EDC_ECC },
+    { 0x12, MIRAGE_SECTOR_MODE1, 2048, MIRAGE_VALID_DATA },
+    { 0x13, MIRAGE_SECTOR_MODE1, 2352, MIRAGE_VALID_SYNC | MIRAGE_VALID_HEADER | MIRAGE_VALID_DATA | MIRAGE_VALID_EDC_ECC },
+    { 0x14, MIRAGE_SECTOR_MODE1,    0, 0 },
     /* CD-ROM XA, CD-I */
-    { 0x20, MIRAGE_MODE_MODE2_MIXED, 2336, MIRAGE_VALID_EDC_ECC },
-    { 0x21, MIRAGE_MODE_MODE2_MIXED, 2352, MIRAGE_VALID_SYNC | MIRAGE_VALID_HEADER | MIRAGE_VALID_EDC_ECC },
-    { 0x22, MIRAGE_MODE_MODE2_MIXED, 2336, MIRAGE_VALID_DATA | MIRAGE_VALID_EDC_ECC },
-    { 0x23, MIRAGE_MODE_MODE2_MIXED, 2352, MIRAGE_VALID_SYNC | MIRAGE_VALID_HEADER | MIRAGE_VALID_DATA | MIRAGE_VALID_EDC_ECC },
-    { 0x24, MIRAGE_MODE_MODE2_FORM2,    0, 0 },
+    { 0x20, MIRAGE_SECTOR_MODE2_MIXED, 2336, MIRAGE_VALID_EDC_ECC },
+    { 0x21, MIRAGE_SECTOR_MODE2_MIXED, 2352, MIRAGE_VALID_SYNC | MIRAGE_VALID_HEADER | MIRAGE_VALID_EDC_ECC },
+    { 0x22, MIRAGE_SECTOR_MODE2_MIXED, 2336, MIRAGE_VALID_DATA | MIRAGE_VALID_EDC_ECC },
+    { 0x23, MIRAGE_SECTOR_MODE2_MIXED, 2352, MIRAGE_VALID_SYNC | MIRAGE_VALID_HEADER | MIRAGE_VALID_DATA | MIRAGE_VALID_EDC_ECC },
+    { 0x24, MIRAGE_SECTOR_MODE2_FORM2,    0, 0 },
     /* CD-ROM Mode 2*/
-    { 0x30, MIRAGE_MODE_MODE2, 2336, 0 },
-    { 0x31, MIRAGE_MODE_MODE2, 2352, MIRAGE_VALID_SYNC | MIRAGE_VALID_HEADER },
-    { 0x32, MIRAGE_MODE_MODE2, 2336, MIRAGE_VALID_DATA },
-    { 0x33, MIRAGE_MODE_MODE2, 2352, MIRAGE_VALID_SYNC | MIRAGE_VALID_HEADER | MIRAGE_VALID_DATA },
-    { 0x34, MIRAGE_MODE_MODE2,    0, 0 },
+    { 0x30, MIRAGE_SECTOR_MODE2, 2336, 0 },
+    { 0x31, MIRAGE_SECTOR_MODE2, 2352, MIRAGE_VALID_SYNC | MIRAGE_VALID_HEADER },
+    { 0x32, MIRAGE_SECTOR_MODE2, 2336, MIRAGE_VALID_DATA },
+    { 0x33, MIRAGE_SECTOR_MODE2, 2352, MIRAGE_VALID_SYNC | MIRAGE_VALID_HEADER | MIRAGE_VALID_DATA },
+    { 0x34, MIRAGE_SECTOR_MODE2,    0, 0 },
 };
 
 static const struct SAO_SubchannelFormat sao_subchannel_formats[] = {
@@ -390,7 +390,7 @@ static gboolean cdemu_device_sao_burning_open_session (CdemuDevice *self)
 static gboolean cdemu_device_sao_burning_open_track (CdemuDevice *self)
 {
     /* Use generic function first */
-    if (!cdemu_device_burning_open_track(self, mirage_track_get_mode(self->priv->cue_entry))) {
+    if (!cdemu_device_burning_open_track(self, mirage_track_get_sector_type(self->priv->cue_entry))) {
         return FALSE;
     }
 
@@ -533,7 +533,7 @@ static gboolean cdemu_device_sao_burning_write_sectors (CdemuDevice *self, gint 
         cdemu_device_read_buffer(self, main_format_ptr->data_size + subchannel_format_ptr->data_size);
 
         /* Feed the sector */
-        if (!mirage_sector_feed_data(sector, address, main_format_ptr->mode, self->priv->buffer, main_format_ptr->data_size, subchannel_format_ptr->mode, self->priv->buffer + main_format_ptr->data_size, subchannel_format_ptr->data_size, main_format_ptr->ignore_data, &local_error)) {
+        if (!mirage_sector_feed_data(sector, address, main_format_ptr->sector_type, self->priv->buffer, main_format_ptr->data_size, subchannel_format_ptr->mode, self->priv->buffer + main_format_ptr->data_size, subchannel_format_ptr->data_size, main_format_ptr->ignore_data, &local_error)) {
             CDEMU_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: failed to feed sector for writing: %s!\n", __debug__, local_error->message);
             g_error_free(local_error);
             local_error = NULL;
@@ -763,30 +763,30 @@ struct BURNING_DataFormat
 
 static const struct BURNING_DataFormat burning_data_formats[] = {
     /* 0: 2352 bytes - raw data */
-    { 2352, 0, MIRAGE_SUBCHANNEL_NONE, -1 },
+    { 2352, 0, MIRAGE_SUBCHANNEL_NONE, MIRAGE_SECTOR_RAW },
     /* 1: 2368 bytes - raw data with P-Q subchannel */
-    { 2352, 16, MIRAGE_SUBCHANNEL_Q, -1 },
+    { 2352, 16, MIRAGE_SUBCHANNEL_Q, MIRAGE_SECTOR_RAW },
     /* 2: 2448 bytes - raw data with cooked R-W subchannel */
-    { 2352, 96, MIRAGE_SUBCHANNEL_RW, -1 },
+    { 2352, 96, MIRAGE_SUBCHANNEL_RW, MIRAGE_SECTOR_RAW },
     /* 3: 2448 bytes - raw data with raw P-W subchannel */
-    { 2352, 96, MIRAGE_SUBCHANNEL_PW, -1 },
+    { 2352, 96, MIRAGE_SUBCHANNEL_PW, MIRAGE_SECTOR_RAW },
     /* 4-7: reserved */
-    { 0, 0, MIRAGE_SUBCHANNEL_NONE, -1 },
-    { 0, 0, MIRAGE_SUBCHANNEL_NONE, -1 },
-    { 0, 0, MIRAGE_SUBCHANNEL_NONE, -1 },
-    { 0, 0, MIRAGE_SUBCHANNEL_NONE, -1 },
+    { 0, 0, MIRAGE_SUBCHANNEL_NONE, MIRAGE_SECTOR_RAW },
+    { 0, 0, MIRAGE_SUBCHANNEL_NONE, MIRAGE_SECTOR_RAW },
+    { 0, 0, MIRAGE_SUBCHANNEL_NONE, MIRAGE_SECTOR_RAW },
+    { 0, 0, MIRAGE_SUBCHANNEL_NONE, MIRAGE_SECTOR_RAW },
     /* 8: 2048 bytes - Mode 1 user data */
-    { 2048, 0, MIRAGE_SUBCHANNEL_NONE, MIRAGE_MODE_MODE1 },
+    { 2048, 0, MIRAGE_SUBCHANNEL_NONE, MIRAGE_SECTOR_MODE1 },
     /* 9: 2336 bytes - Mode 2 user data */
-    { 2336, 0, MIRAGE_SUBCHANNEL_NONE, MIRAGE_MODE_MODE2 },
+    { 2336, 0, MIRAGE_SUBCHANNEL_NONE, MIRAGE_SECTOR_MODE2 },
     /* 10: 2048 bytes - Mode 2 Form 1 user data */
-    { 2048, 0, MIRAGE_SUBCHANNEL_NONE, MIRAGE_MODE_MODE2_FORM1 },
+    { 2048, 0, MIRAGE_SUBCHANNEL_NONE, MIRAGE_SECTOR_MODE2_FORM1 },
     /* 11: 2056 bytes - Mode 2 Form 1 with subheader */
-    { 2056, 0, MIRAGE_SUBCHANNEL_NONE, MIRAGE_MODE_MODE2_FORM1 },
+    { 2056, 0, MIRAGE_SUBCHANNEL_NONE, MIRAGE_SECTOR_MODE2_FORM1 },
     /* 2324 bytes - Mode 2 Form 2 user data */
-    { 2324, 0, MIRAGE_SUBCHANNEL_NONE, MIRAGE_MODE_MODE2_FORM2 },
+    { 2324, 0, MIRAGE_SUBCHANNEL_NONE, MIRAGE_SECTOR_MODE2_FORM2 },
     /* 2332 bytes - Mode 2 (Form 1, Form 2 or mixed) with subheader */
-    { 2332, 0, MIRAGE_SUBCHANNEL_NONE, MIRAGE_MODE_MODE2_MIXED },
+    { 2332, 0, MIRAGE_SUBCHANNEL_NONE, MIRAGE_SECTOR_MODE2_MIXED },
 };
 
 static gboolean cdemu_device_raw_burning_write_sector (CdemuDevice *self, gint address, MirageSector *sector)
@@ -921,7 +921,6 @@ static gboolean cdemu_device_raw_burning_write_sector (CdemuDevice *self, gint a
 static gboolean cdemu_device_raw_burning_write_sectors (CdemuDevice *self, gint start_address, gint num_sectors)
 {
     MirageSector *sector = g_object_new(MIRAGE_TYPE_SECTOR, NULL);
-    gint sector_type;
 
     GError *local_error = NULL;
     gboolean succeeded = TRUE;
@@ -936,19 +935,13 @@ static gboolean cdemu_device_raw_burning_write_sectors (CdemuDevice *self, gint 
         /* Read data from host */
         cdemu_device_read_buffer(self, format->main_size + format->subchannel_size);
 
-        /* Raw sector data means we need to determine mode ourselves */
-        sector_type = mirage_helper_determine_sector_type(self->priv->buffer);
-
-        /* Feed the sector */
-        if (!mirage_sector_feed_data(sector, address, sector_type, self->priv->buffer, format->main_size, format->subchannel_format, self->priv->buffer + format->main_size, format->subchannel_size, 0, &local_error)) {
+        /* Feed the sector; in raw burning, sectors are scrambled and raw */
+        if (!mirage_sector_feed_data(sector, address, MIRAGE_SECTOR_RAW_SCRAMBLED, self->priv->buffer, format->main_size, format->subchannel_format, self->priv->buffer + format->main_size, format->subchannel_size, 0, &local_error)) {
             CDEMU_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: failed to feed sector for writing: %s!\n", __debug__, local_error->message);
             g_error_free(local_error);
             local_error = NULL;
             break;
         }
-
-        /* In raw burning, sectors are scrambled, so we need to unscramble them */
-        mirage_sector_scramble(sector);
 
         /* Write sector */
         succeeded = cdemu_device_raw_burning_write_sector(self, address, sector);
@@ -984,10 +977,10 @@ static gboolean cdemu_device_sequential_burning_open_session (CdemuDevice *self)
     return TRUE;
 }
 
-static gboolean cdemu_device_sequential_burning_open_track (CdemuDevice *self, MirageTrackModes track_mode)
+static gboolean cdemu_device_sequential_burning_open_track (CdemuDevice *self, MirageSectorType sector_type)
 {
     /* Use generic function first */
-    if (!cdemu_device_burning_open_track(self, track_mode)) {
+    if (!cdemu_device_burning_open_track(self, sector_type)) {
         return FALSE;
     }
 
@@ -1070,15 +1063,10 @@ static gboolean cdemu_device_sequential_burning_write_sectors (CdemuDevice *self
         /* Read data from host */
         cdemu_device_read_buffer(self, format->main_size + format->subchannel_size);
 
-        /* Do we need to determine sector type ourselves? */
-        if (sector_type == -1) {
-            if (self->priv->open_track) {
-                /* We already did this once, so just copy it */
-                sector_type = mirage_track_get_mode(self->priv->open_track);
-            } else {
-                /* We need to determine it */
-                sector_type = mirage_helper_determine_sector_type(self->priv->buffer);
-            }
+        /* If we have a track open, we have already determined sector
+           type and do not have to do it again */
+        if (sector_type == MIRAGE_SECTOR_RAW && self->priv->open_track) {
+            sector_type = mirage_track_get_sector_type(self->priv->open_track);
         }
 
         /* Feed sector data */
@@ -1683,7 +1671,7 @@ static gboolean command_read (CdemuDevice *self, const guint8 *raw_cdb)
         if (self->priv->bad_sector_emulation && !p_0x01->dcr) {
             gint sector_type = mirage_sector_get_sector_type(sector);
 
-            if ((sector_type == MIRAGE_MODE_MODE1 || sector_type == MIRAGE_MODE_MODE2_FORM1)
+            if ((sector_type == MIRAGE_SECTOR_MODE1 || sector_type == MIRAGE_SECTOR_MODE2_FORM1)
                 && !mirage_sector_verify_lec(sector)) {
                 CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: bad sector detected, triggering read error!\n", __debug__);
                 g_object_unref(sector);
@@ -1921,7 +1909,7 @@ static gboolean command_read_cd (CdemuDevice *self, const guint8 *raw_cdb)
            tests indicate this should be done only for Mode 1 or Mode 2 Form 1
            sectors */
         if (self->priv->bad_sector_emulation && !p_0x01->dcr) {
-            if ((sector_type == MIRAGE_MODE_MODE1 || sector_type == MIRAGE_MODE_MODE2_FORM1)
+            if ((sector_type == MIRAGE_SECTOR_MODE1 || sector_type == MIRAGE_SECTOR_MODE2_FORM1)
                 && !mirage_sector_verify_lec(sector)) {
                 CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: bad sector detected, triggering read error!\n", __debug__);
                 g_object_unref(sector);
@@ -2904,16 +2892,16 @@ static gboolean command_read_track_information (CdemuDevice *self, const guint8 
 
         track_mode = mirage_track_get_ctl(track);
 
-        switch (mirage_track_get_mode(track)) {
-            case MIRAGE_MODE_AUDIO:
-            case MIRAGE_MODE_MODE1: {
+        switch (mirage_track_get_sector_type(track)) {
+            case MIRAGE_SECTOR_AUDIO:
+            case MIRAGE_SECTOR_MODE1: {
                 data_mode = 0x01;
                 break;
             }
-            case MIRAGE_MODE_MODE2:
-            case MIRAGE_MODE_MODE2_FORM1:
-            case MIRAGE_MODE_MODE2_FORM2:
-            case MIRAGE_MODE_MODE2_MIXED: {
+            case MIRAGE_SECTOR_MODE2:
+            case MIRAGE_SECTOR_MODE2_FORM1:
+            case MIRAGE_SECTOR_MODE2_FORM2:
+            case MIRAGE_SECTOR_MODE2_MIXED: {
                 data_mode = 0x02;
                 break;
             }

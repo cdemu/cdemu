@@ -90,10 +90,10 @@ static gint mirage_parser_c2d_convert_track_mode (MirageParserC2d *self, C2D_Mod
     if ((mode == AUDIO) || (mode == AUDIO2)) {
         switch (sector_size) {
             case 2352: {
-                return MIRAGE_MODE_AUDIO;
+                return MIRAGE_SECTOR_AUDIO;
             }
             case 2448: {
-                return MIRAGE_MODE_AUDIO;
+                return MIRAGE_SECTOR_AUDIO;
             }
             default: {
                 MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: unknown sector size %i!\n", __debug__, sector_size);
@@ -103,10 +103,10 @@ static gint mirage_parser_c2d_convert_track_mode (MirageParserC2d *self, C2D_Mod
     } else if (mode == MODE1) {
         switch (sector_size) {
             case 2048: {
-                return MIRAGE_MODE_MODE1;
+                return MIRAGE_SECTOR_MODE1;
             }
             case 2448: {
-                return MIRAGE_MODE_MODE2_MIXED; /* HACK to support sector size */
+                return MIRAGE_SECTOR_MODE2_MIXED; /* HACK to support sector size */
             }
             default: {
                 MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: unknown sector size %i!\n", __debug__, sector_size);
@@ -116,19 +116,19 @@ static gint mirage_parser_c2d_convert_track_mode (MirageParserC2d *self, C2D_Mod
     } else if (mode == MODE2) {
         switch (sector_size) {
             case 2048: {
-                return MIRAGE_MODE_MODE2_FORM1;
+                return MIRAGE_SECTOR_MODE2_FORM1;
             }
             case 2324: {
-                return MIRAGE_MODE_MODE2_FORM2;
+                return MIRAGE_SECTOR_MODE2_FORM2;
             }
             case 2336: {
-                return MIRAGE_MODE_MODE2;
+                return MIRAGE_SECTOR_MODE2;
             }
             case 2352: {
-                return MIRAGE_MODE_MODE2_MIXED;
+                return MIRAGE_SECTOR_MODE2_MIXED;
             }
             case 2448: {
-                return MIRAGE_MODE_MODE2_MIXED;
+                return MIRAGE_SECTOR_MODE2_MIXED;
             }
             default: {
                 MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: unknown sector size %i!\n", __debug__, sector_size);
@@ -301,7 +301,7 @@ static gboolean mirage_parser_c2d_parse_track_entries (MirageParserC2d *self, GE
         gint converted_mode = 0;
         converted_mode = mirage_parser_c2d_convert_track_mode(self, track_entry->mode, track_entry->sector_size);
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:   converted mode: 0x%X\n", __debug__, converted_mode);
-        mirage_track_set_mode(cur_track, converted_mode);
+        mirage_track_set_sector_type(cur_track, converted_mode);
 
         /* Validate and set ISRC */
         if (mirage_helper_validate_isrc(track_entry->isrc)) {
@@ -327,7 +327,7 @@ static gboolean mirage_parser_c2d_parse_track_entries (MirageParserC2d *self, GE
         gint main_size = track_entry->sector_size;
         gint main_format = 0;
 
-        if (converted_mode == MIRAGE_MODE_AUDIO) {
+        if (converted_mode == MIRAGE_SECTOR_AUDIO) {
             main_format = MIRAGE_MAIN_DATA_FORMAT_AUDIO;
         } else {
             main_format = MIRAGE_MAIN_DATA_FORMAT_DATA;

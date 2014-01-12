@@ -102,7 +102,7 @@ static inline const gchar *debug_track_type (CIF_Track type)
 static inline gboolean gap_between_tracks (gint mode_prev, gint mode_cur)
 {
     /* We create gaps on transitions between audio and data tracks */
-    return (mode_prev == MIRAGE_MODE_AUDIO && mode_cur != MIRAGE_MODE_AUDIO)  || (mode_prev != MIRAGE_MODE_AUDIO && mode_cur == MIRAGE_MODE_AUDIO);
+    return (mode_prev == MIRAGE_SECTOR_AUDIO && mode_cur != MIRAGE_SECTOR_AUDIO)  || (mode_prev != MIRAGE_SECTOR_AUDIO && mode_cur == MIRAGE_SECTOR_AUDIO);
 }
 
 
@@ -208,22 +208,22 @@ static MirageTrack *mirage_parser_cif_parse_track_descriptor (MirageParserCif *s
     /* Set track mode */
     switch (descriptor->type) {
         case AUDIO: {
-            track_mode = MIRAGE_MODE_AUDIO;
+            track_mode = MIRAGE_SECTOR_AUDIO;
             sector_size = 2352;
             break;
         }
         case MODE1: {
-            track_mode = MIRAGE_MODE_MODE1;
+            track_mode = MIRAGE_SECTOR_MODE1;
             sector_size = 2048;
             break;
         }
         case MODE2_FORM1: {
-            track_mode = MIRAGE_MODE_MODE2_FORM1;
+            track_mode = MIRAGE_SECTOR_MODE2_FORM1;
             sector_size = 2056;
             break;
         }
         case MODE2_MIXED: {
-            track_mode = MIRAGE_MODE_MODE2_MIXED;
+            track_mode = MIRAGE_SECTOR_MODE2_MIXED;
             sector_size = 2332;
             break;
         }
@@ -248,7 +248,7 @@ static MirageTrack *mirage_parser_cif_parse_track_descriptor (MirageParserCif *s
     /* Create new track */
     track = g_object_new(MIRAGE_TYPE_TRACK, NULL);
 
-    mirage_track_set_mode(track, track_mode);
+    mirage_track_set_sector_type(track, track_mode);
 
     /* Create data fragment */
     fragment = g_object_new(MIRAGE_TYPE_FRAGMENT, NULL);
@@ -355,7 +355,7 @@ static MirageSession *mirage_parser_cif_parse_session_descriptor (MirageParserCi
             return NULL;
         }
 
-        track_mode = mirage_track_get_mode(track);
+        track_mode = mirage_track_get_sector_type(track);
 
         /* If it is a first track in session, or if track mode has changed,
            add 150-sector pregap. */

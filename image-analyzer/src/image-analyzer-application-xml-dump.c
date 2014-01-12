@@ -182,7 +182,7 @@ static gboolean xml_dump_language (MirageLanguage *language, xmlNodePtr parent)
 
 static gboolean xml_dump_track (MirageTrack *track, xmlNodePtr parent)
 {
-    gint flags, mode;
+    gint flags, sector_type;
     gint adr, ctl;
     const gchar *isrc;
     gint session_number, track_number;
@@ -197,8 +197,8 @@ static gboolean xml_dump_track (MirageTrack *track, xmlNodePtr parent)
     flags = mirage_track_get_flags(track);
     xml_add_node_with_content(parent, TAG_FLAGS, "0x%X", flags);
 
-    mode = mirage_track_get_mode(track);
-    xml_add_node_with_content(parent, TAG_MODE, "0x%X", mode);
+    sector_type = mirage_track_get_sector_type(track);
+    xml_add_node_with_content(parent, TAG_SECTOR_TYPE, "0x%X", sector_type);
 
     adr = mirage_track_get_adr(track);
     xml_add_node_with_content(parent, TAG_ADR, "%d", adr);

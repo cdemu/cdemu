@@ -38,7 +38,7 @@ gchar *dump_value (gint val, const DumpValue *values, gint num_values);
 gchar *dump_flags (gint val, const DumpValue *values, gint num_values);
 
 gchar *dump_track_flags (gint track_flags);
-gchar *dump_track_mode (gint track_mode);
+gchar *dump_track_sector_type (gint sector_type);
 gchar *dump_session_type (gint session_type);
 gchar *dump_medium_type (gint medium_type);
 gchar *dump_binary_fragment_main_format (gint format);

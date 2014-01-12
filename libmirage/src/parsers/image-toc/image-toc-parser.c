@@ -116,14 +116,14 @@ static void mirage_parser_toc_add_track (MirageParserToc *self, gchar *mode_stri
         gint mode;
         gint sectsize;
     } track_modes[] = {
-        {"AUDIO", MIRAGE_MODE_AUDIO, 2352},
-        {"MODE1", MIRAGE_MODE_MODE1, 2048},
-        {"MODE1_RAW", MIRAGE_MODE_MODE1, 2352},
-        {"MODE2", MIRAGE_MODE_MODE2, 2336},
-        {"MODE2_FORM1", MIRAGE_MODE_MODE2_FORM1, 2048},
-        {"MODE2_FORM2", MIRAGE_MODE_MODE2_FORM2, 2324},
-        {"MODE2_FORM_MIX", MIRAGE_MODE_MODE2_MIXED, 2336},
-        {"MODE2_RAW", MIRAGE_MODE_MODE2_MIXED, 2352},
+        {"AUDIO", MIRAGE_SECTOR_AUDIO, 2352},
+        {"MODE1", MIRAGE_SECTOR_MODE1, 2048},
+        {"MODE1_RAW", MIRAGE_SECTOR_MODE1, 2352},
+        {"MODE2", MIRAGE_SECTOR_MODE2, 2336},
+        {"MODE2_FORM1", MIRAGE_SECTOR_MODE2_FORM1, 2048},
+        {"MODE2_FORM2", MIRAGE_SECTOR_MODE2_FORM2, 2324},
+        {"MODE2_FORM_MIX", MIRAGE_SECTOR_MODE2_MIXED, 2336},
+        {"MODE2_RAW", MIRAGE_SECTOR_MODE2_MIXED, 2352},
 
     };
 
@@ -132,7 +132,7 @@ static void mirage_parser_toc_add_track (MirageParserToc *self, gchar *mode_stri
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: track mode: %s\n", __debug__, track_modes[i].str);
 
             /* Set track mode */
-            mirage_track_set_mode(self->priv->cur_track, track_modes[i].mode);
+            mirage_track_set_sector_type(self->priv->cur_track, track_modes[i].mode);
             /* Store sector size */
             self->priv->cur_main_size = track_modes[i].sectsize;
 
@@ -213,8 +213,8 @@ static gboolean mirage_parser_toc_track_add_fragment (MirageParserToc *self, gin
                apparently when .bin file contains subchannel data, it automatically
                gets listed as DATAFILE (hence type = TOC_DATA_TYPE_DATA); thus,
                we simply check whether we have an audio track or not... */
-            gint mode = mirage_track_get_mode(self->priv->cur_track);
-            if (mode == MIRAGE_MODE_AUDIO) {
+            gint mode = mirage_track_get_sector_type(self->priv->cur_track);
+            if (mode == MIRAGE_SECTOR_AUDIO) {
                 main_format = MIRAGE_MAIN_DATA_FORMAT_AUDIO_SWAP;
             } else {
                 main_format = MIRAGE_MAIN_DATA_FORMAT_DATA;

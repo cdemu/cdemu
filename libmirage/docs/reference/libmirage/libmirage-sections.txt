@@ -338,6 +338,7 @@ mirage_plugin_get_type
 <TITLE>MirageSector</TITLE>
 MirageSector
 MirageSectorClass
+MirageSectorType
 MirageSectorSubchannelFormat
 MirageSectorValidData
 mirage_sector_feed_data
@@ -436,7 +437,6 @@ MirageTrack
 MirageTrackClass
 MirageTrackConstants
 MirageTrackFlags
-MirageTrackModes
 mirage_track_add_fragment
 mirage_track_add_index
 mirage_track_add_language
@@ -454,13 +454,13 @@ mirage_track_get_index_by_number
 mirage_track_get_isrc
 mirage_track_get_language_by_code
 mirage_track_get_language_by_index
-mirage_track_get_mode
 mirage_track_get_next
 mirage_track_get_number_of_fragments
 mirage_track_get_number_of_indices
 mirage_track_get_number_of_languages
 mirage_track_get_prev
 mirage_track_get_sector
+mirage_track_get_sector_type
 mirage_track_get_track_start
 mirage_track_layout_contains_address
 mirage_track_layout_get_length
@@ -479,7 +479,7 @@ mirage_track_remove_language_by_object
 mirage_track_set_ctl
 mirage_track_set_flags
 mirage_track_set_isrc
-mirage_track_set_mode
+mirage_track_set_sector_type
 mirage_track_set_track_start
 <SUBSECTION Standard>
 MIRAGE_IS_TRACK

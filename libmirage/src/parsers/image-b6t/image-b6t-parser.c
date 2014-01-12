@@ -996,32 +996,32 @@ static gboolean mirage_parser_b6t_parse_track_entry (MirageParserB6t *self, GErr
     switch (track_entry->type) {
         case 1: {
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: Audio track\n", __debug__);
-            mirage_track_set_mode(track, MIRAGE_MODE_AUDIO);
+            mirage_track_set_sector_type(track, MIRAGE_SECTOR_AUDIO);
             break;
         }
         case 2: {
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: Mode 1 track\n", __debug__);
-            mirage_track_set_mode(track, MIRAGE_MODE_MODE1);
+            mirage_track_set_sector_type(track, MIRAGE_SECTOR_MODE1);
             break;
         }
         case 3: {
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: Mode 2 track\n", __debug__);
-            mirage_track_set_mode(track, MIRAGE_MODE_MODE2_MIXED);
+            mirage_track_set_sector_type(track, MIRAGE_SECTOR_MODE2_MIXED);
             break;
         }
         case 4: {
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: Mode 2 Form 1 track\n", __debug__);
-            mirage_track_set_mode(track, MIRAGE_MODE_MODE2_FORM1);
+            mirage_track_set_sector_type(track, MIRAGE_SECTOR_MODE2_FORM1);
             break;
         }
         case 5: {
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: Mode 2 Form 2 track\n", __debug__);
-            mirage_track_set_mode(track, MIRAGE_MODE_MODE2_FORM2);
+            mirage_track_set_sector_type(track, MIRAGE_SECTOR_MODE2_FORM2);
             break;
         }
         case 6: {
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: DVD track\n", __debug__);
-            mirage_track_set_mode(track, MIRAGE_MODE_MODE1);
+            mirage_track_set_sector_type(track, MIRAGE_SECTOR_MODE1);
             break;
         }
         default: {

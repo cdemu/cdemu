@@ -1151,20 +1151,20 @@ void mirage_helper_sector_edc_ecc_compute_ecc_block (const guint8 *src, guint32 
  * This function is intened to be used in image parsers, for determining
  * track mode in cases when full (2352-byte) sector data is available.
  *
- * Returns: sector type (one of %MirageTrackModes)
+ * Returns: sector type (one of %MirageSectorType)
  */
-MirageTrackModes mirage_helper_determine_sector_type (const guint8 *buf)
+MirageSectorType mirage_helper_determine_sector_type (const guint8 *buf)
 {
     if (!memcmp(buf, mirage_pattern_sync, sizeof(mirage_pattern_sync))) {
         switch (buf[15]) {
-            case 0: return MIRAGE_MODE_MODE0;
-            case 1: return MIRAGE_MODE_MODE1;
-            case 2: return MIRAGE_MODE_MODE2_MIXED;
+            case 0: return MIRAGE_SECTOR_MODE0;
+            case 1: return MIRAGE_SECTOR_MODE1;
+            case 2: return MIRAGE_SECTOR_MODE2_MIXED;
         }
     }
 
     /* No sync pattern; assume audio sector */
-    return MIRAGE_MODE_AUDIO;
+    return MIRAGE_SECTOR_AUDIO;
 }
 
 

@@ -151,14 +151,14 @@ static gint mirage_parser_mds_convert_track_mode (MirageParserMds *self, gint mo
         gint mds_mode;
         gint mirage_mode;
     } modes[] = {
-        {0x00, MIRAGE_MODE_MODE2},
-        {0x01, MIRAGE_MODE_AUDIO},
-        {0x02, MIRAGE_MODE_MODE1},
-        {0x03, MIRAGE_MODE_MODE2},
-        {0x04, MIRAGE_MODE_MODE2_FORM1},
-        {0x05, MIRAGE_MODE_MODE2_FORM2},
-        /*{0x06, MIRAGE_MODE_UNKNOWN},*/
-        {0x07, MIRAGE_MODE_MODE2},
+        {0x00, MIRAGE_SECTOR_MODE2},
+        {0x01, MIRAGE_SECTOR_AUDIO},
+        {0x02, MIRAGE_SECTOR_MODE1},
+        {0x03, MIRAGE_SECTOR_MODE2},
+        {0x04, MIRAGE_SECTOR_MODE2_FORM1},
+        {0x05, MIRAGE_SECTOR_MODE2_FORM2},
+        /*{0x06, MIRAGE_SECTOR_UNKNOWN},*/
+        {0x07, MIRAGE_SECTOR_MODE2},
     };
 
     /* Basically, do the test twice; once for value, and once for value + 8 */
@@ -491,7 +491,7 @@ static gboolean mirage_parser_mds_parse_track_entries (MirageParserMds *self, MD
 
             gint converted_mode = mirage_parser_mds_convert_track_mode(self, block->mode);
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: track mode: 0x%X\n", __debug__, converted_mode);
-            mirage_track_set_mode(track, converted_mode);
+            mirage_track_set_sector_type(track, converted_mode);
 
             /* Flags: decoded from Ctl */
             mirage_track_set_ctl(track, block->adr_ctl & 0x0F);
@@ -534,7 +534,7 @@ static gboolean mirage_parser_mds_parse_track_entries (MirageParserMds *self, MD
                     main_offset = block->start_offset;
                 }
 
-                if (converted_mode == MIRAGE_MODE_AUDIO) {
+                if (converted_mode == MIRAGE_SECTOR_AUDIO) {
                     main_format = MIRAGE_MAIN_DATA_FORMAT_AUDIO;
                 } else {
                     main_format = MIRAGE_MAIN_DATA_FORMAT_DATA;

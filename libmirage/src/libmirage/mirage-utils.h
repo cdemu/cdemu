@@ -134,7 +134,7 @@ void mirage_helper_subchannel_deinterleave (gint subchan, const guint8 *channel9
 void mirage_helper_sector_edc_ecc_compute_edc_block (const guint8 *src, guint16 size, guint8 *dest);
 void mirage_helper_sector_edc_ecc_compute_ecc_block (const guint8 *src, guint32 major_count, guint32 minor_count, guint32 major_mult, guint32 minor_inc, guint8 *dest);
 
-MirageTrackModes mirage_helper_determine_sector_type (const guint8 *buf);
+MirageSectorType mirage_helper_determine_sector_type (const guint8 *buf);
 
 /* Text data encoding */
 const gchar *mirage_helper_encoding_from_bom (const guint8 *buffer);

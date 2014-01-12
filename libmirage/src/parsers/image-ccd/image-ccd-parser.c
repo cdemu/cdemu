@@ -142,7 +142,7 @@ static gboolean mirage_parser_ccd_determine_track_mode (MirageParserCcd *self, M
     /* Determine track mode*/
     track_mode = mirage_helper_determine_sector_type(buffer);
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: track mode determined to be: %d\n", __debug__, track_mode);
-    mirage_track_set_mode(track, track_mode);
+    mirage_track_set_sector_type(track, track_mode);
 
     g_free(buffer);
 
@@ -289,7 +289,7 @@ static gboolean mirage_parser_ccd_build_disc_layout (MirageParserCcd *self, GErr
             mirage_parser_ccd_determine_track_mode(self, track, NULL);
 
             /* If track mode is determined to be audio, set fragment's format accordingly */
-            if (mirage_track_get_mode(track) == MIRAGE_MODE_AUDIO) {
+            if (mirage_track_get_sector_type(track) == MIRAGE_SECTOR_AUDIO) {
                 mirage_fragment_main_data_set_format(fragment, MIRAGE_MAIN_DATA_FORMAT_AUDIO);
             }
 

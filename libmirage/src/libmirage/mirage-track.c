@@ -55,7 +55,7 @@ struct _MirageTrackPrivate
 
     /* Track mode and flags */
     gint flags; /* Track flags */
-    MirageTrackModes mode;  /* Track mode */
+    MirageSectorType sector_type;  /* Type of sectors that comprise track */
 
     gchar *isrc; /* ISRC */
     gboolean isrc_encoded; /* Is ISRC encoded in one of track's fragment's subchannel? */
@@ -303,30 +303,30 @@ gint mirage_track_get_flags (MirageTrack *self)
 
 
 /**
- * mirage_track_set_mode:
+ * mirage_track_set_sector_type:
  * @self: a #MirageTrack
- * @mode: (in): track mode
+ * @sector_type: (in): type of sectors comprising the track
  *
- * Sets track mode. @mode must be one of #MirageTrackModes.
+ * Sets sector type. @mode must be one of #MirageSectorType.
  */
-void mirage_track_set_mode (MirageTrack *self, MirageTrackModes mode)
+void mirage_track_set_sector_type (MirageTrack *self, MirageSectorType sector_type)
 {
-    /* Set mode */
-    self->priv->mode = mode;
+    /* Set sector type */
+    self->priv->sector_type = sector_type;
 }
 
 /**
- * mirage_track_get_mode:
+ * mirage_track_get_sector_type:
  * @self: a #MirageTrack
  *
- * Retrieves track mode.
+ * Retrieves type of sectors comprising the track.
  *
- * Returns: track mode
+ * Returns: sector type
  */
-MirageTrackModes mirage_track_get_mode (MirageTrack *self)
+MirageSectorType mirage_track_get_sector_type (MirageTrack *self)
 {
-    /* Return mode */
-    return self->priv->mode;
+    /* Return sector type */
+    return self->priv->sector_type;
 }
 
 
@@ -386,8 +386,8 @@ gint mirage_track_get_ctl (MirageTrack *self)
     gint ctl = 0;
 
     /* If data (= non-audio) track, ctl = 0x4 */
-    gint mode = mirage_track_get_mode(self);
-    if (mode != MIRAGE_MODE_AUDIO) {
+    gint mode = mirage_track_get_sector_type(self);
+    if (mode != MIRAGE_SECTOR_AUDIO) {
         ctl |= 0x4;
     }
 
@@ -522,7 +522,7 @@ MirageSector *mirage_track_get_sector (MirageTrack *self, gint address, gboolean
 
     /* Feed data to sector; fragment's reading code guarantees that
        subchannel format is PW96 */
-    if (!mirage_sector_feed_data(sector, absolute_address, self->priv->mode, main_buffer, main_length, MIRAGE_SUBCHANNEL_PW, subchannel_buffer, subchannel_length, 0, &local_error)) {
+    if (!mirage_sector_feed_data(sector, absolute_address, self->priv->sector_type, main_buffer, main_length, MIRAGE_SUBCHANNEL_PW, subchannel_buffer, subchannel_length, 0, &local_error)) {
         g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_TRACK_ERROR, "Failed to feed data: %s", local_error->message);
         g_error_free(local_error);
 

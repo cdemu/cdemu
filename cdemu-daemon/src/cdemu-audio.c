@@ -29,13 +29,13 @@
 static gpointer cdemu_audio_playback_thread (CdemuAudio *self)
 {
     gint audio_driver_id = self->priv->driver_id;
-    
+
     /* Open audio device */
     CDEMU_DEBUG(self, DAEMON_DEBUG_AUDIOPLAY, "%s: opening audio device\n", __debug__);
     self->priv->device = ao_open_live(audio_driver_id, &self->priv->format, NULL /* no options */);
     if (self->priv->device == NULL) {
         CDEMU_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: failed to open audio device; falling back to null driver!\n", __debug__);
-        
+
         /* Retry with null */
         audio_driver_id = ao_driver_id("null");
         self->priv->device = ao_open_live(audio_driver_id, &self->priv->format, NULL /* no options */);
@@ -96,7 +96,7 @@ static gpointer cdemu_audio_playback_thread (CdemuAudio *self)
         /* This one covers both sector not being an audio one and sector changing
            from audio to data one */
         type = mirage_sector_get_sector_type(sector);
-        if (type != MIRAGE_MODE_AUDIO) {
+        if (type != MIRAGE_SECTOR_AUDIO) {
             CDEMU_DEBUG(self, DAEMON_DEBUG_AUDIOPLAY, "%s: non-audio sector!\n", __debug__);
             g_object_unref(sector); /* Unref here; we won't need it anymore... */
             self->priv->status = AUDIO_STATUS_ERROR; /* Audio operation stopped due to error */

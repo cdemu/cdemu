@@ -59,7 +59,7 @@ static gboolean mirage_parser_mdx_determine_track_mode (MirageParserMdx *self, G
 
         if (!memcmp(buf, mirage_pattern_cd001, sizeof(mirage_pattern_cd001))
             || !memcmp(buf, mirage_pattern_bea01, sizeof(mirage_pattern_bea01))) {
-            *track_mode = MIRAGE_MODE_MODE1;
+            *track_mode = MIRAGE_SECTOR_MODE1;
             *sector_size = 2048;
 
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: standard 2048-byte ISO9660/UDF track, Mode 1 assumed\n", __debug__);
@@ -90,7 +90,7 @@ static gboolean mirage_parser_mdx_determine_track_mode (MirageParserMdx *self, G
 
     /* 2332/2336-byte image check */
     if (length % 2332 == 0) {
-        *track_mode = MIRAGE_MODE_MODE2_MIXED;
+        *track_mode = MIRAGE_SECTOR_MODE2_MIXED;
         *sector_size = 2332;
 
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: 2332-byte track, Mode 2 Mixed assumed (unreliable!)\n", __debug__);
@@ -98,7 +98,7 @@ static gboolean mirage_parser_mdx_determine_track_mode (MirageParserMdx *self, G
         return TRUE;
     }
     if (length % 2336 == 0) {
-        *track_mode = MIRAGE_MODE_MODE2_MIXED;
+        *track_mode = MIRAGE_SECTOR_MODE2_MIXED;
         *sector_size = 2336;
 
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: 2336-byte track, Mode 2 Mixed assumed (unreliable!)\n", __debug__);
@@ -240,7 +240,7 @@ static MirageTrack *mirage_parser_mdx_get_track (MirageParserMdx *self, GError *
 
     /* Create and prepare track */
     track = g_object_new(MIRAGE_TYPE_TRACK, NULL);
-    mirage_track_set_mode(track, track_mode);
+    mirage_track_set_sector_type(track, track_mode);
 
     /* Create data fragment */
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: creating data fragment\n", __debug__);

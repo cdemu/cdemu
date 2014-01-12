@@ -36,12 +36,12 @@
 static gchar *dump_sector_type (gint sector_type)
 {
     static DumpValue values[] = {
-        VAL(MIRAGE_MODE_MODE0),
-        VAL(MIRAGE_MODE_AUDIO),
-        VAL(MIRAGE_MODE_MODE1),
-        VAL(MIRAGE_MODE_MODE2),
-        VAL(MIRAGE_MODE_MODE2_FORM1),
-        VAL(MIRAGE_MODE_MODE2_FORM2),
+        VAL(MIRAGE_SECTOR_MODE0),
+        VAL(MIRAGE_SECTOR_AUDIO),
+        VAL(MIRAGE_SECTOR_MODE1),
+        VAL(MIRAGE_SECTOR_MODE2),
+        VAL(MIRAGE_SECTOR_MODE2_FORM1),
+        VAL(MIRAGE_SECTOR_MODE2_FORM2),
     };
 
     return dump_value(sector_type, values, G_N_ELEMENTS(values));

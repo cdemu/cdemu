@@ -35,27 +35,31 @@ typedef struct _MirageTrack MirageTrack;
 
 
 /**
- * MirageTrackModes:
- * @MIRAGE_MODE_MODE0: Mode 0
- * @MIRAGE_MODE_AUDIO: Audio
- * @MIRAGE_MODE_MODE1: Mode 1
- * @MIRAGE_MODE_MODE2: Mode 2 Formless
- * @MIRAGE_MODE_MODE2_FORM1: Mode 2 Form 1
- * @MIRAGE_MODE_MODE2_FORM2: Mode 2 Form 2
- * @MIRAGE_MODE_MODE2_MIXED: Mode 2 Mixed
+ * MirageSectorType:
+ * @MIRAGE_SECTOR_MODE0: Mode 0 sector
+ * @MIRAGE_SECTOR_AUDIO: Audio sector
+ * @MIRAGE_SECTOR_MODE1: Mode 1 sector
+ * @MIRAGE_SECTOR_MODE2: Mode 2 Formless sector
+ * @MIRAGE_SECTOR_MODE2_FORM1: Mode 2 Form 1 sector
+ * @MIRAGE_SECTOR_MODE2_FORM2: Mode 2 Form 2 sector
+ * @MIRAGE_SECTOR_MODE2_MIXED: Mode 2 Mixed sector
+ * @MIRAGE_SECTOR_RAW: raw sector (automatic sector type detection)
+ * @MIRAGE_SECTOR_RAW_SCRAMBLED: scrambled raw sector (automatic sector type detection)
  *
- * Track modes.
+ * Sector type. Also implies track mode.
  */
-typedef enum _MirageTrackModes
+typedef enum _MirageSectorType
 {
-    MIRAGE_MODE_MODE0       = 0x00,
-    MIRAGE_MODE_AUDIO       = 0x01,
-    MIRAGE_MODE_MODE1       = 0x02,
-    MIRAGE_MODE_MODE2       = 0x03,
-    MIRAGE_MODE_MODE2_FORM1 = 0x04,
-    MIRAGE_MODE_MODE2_FORM2 = 0x05,
-    MIRAGE_MODE_MODE2_MIXED = 0x06,
-} MirageTrackModes;
+    MIRAGE_SECTOR_MODE0,
+    MIRAGE_SECTOR_AUDIO,
+    MIRAGE_SECTOR_MODE1,
+    MIRAGE_SECTOR_MODE2,
+    MIRAGE_SECTOR_MODE2_FORM1,
+    MIRAGE_SECTOR_MODE2_FORM2,
+    MIRAGE_SECTOR_MODE2_MIXED,
+    MIRAGE_SECTOR_RAW,
+    MIRAGE_SECTOR_RAW_SCRAMBLED,
+} MirageSectorType;
 
 
 G_END_DECLS

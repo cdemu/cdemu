@@ -144,13 +144,13 @@ static gboolean mirage_parser_iso_determine_track_type (MirageParserIso *self, s
     switch (file_info->main_data_size) {
         case 2048: {
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: 2048-byte main sector data; assuming Mode 1 track\n", __debug__);
-            file_info->track_mode = MIRAGE_MODE_MODE1;
+            file_info->track_mode = MIRAGE_SECTOR_MODE1;
             break;
         }
         case 2332:
         case 2336: {
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: 2332/2336-byte main sector data; assuming Mode 2 track\n", __debug__);
-            file_info->track_mode = MIRAGE_MODE_MODE2_MIXED;
+            file_info->track_mode = MIRAGE_SECTOR_MODE2_MIXED;
             break;
         }
         case 2352: {
@@ -259,7 +259,7 @@ static gboolean mirage_parser_iso_load_track (MirageParserIso *self, const struc
     g_object_unref(session);
 
     /* Set track mode */
-    mirage_track_set_mode(track, file_info->track_mode);
+    mirage_track_set_sector_type(track, file_info->track_mode);
 
     /* Create pregap fragment */
     if (add_pregap) {

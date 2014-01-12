@@ -57,7 +57,7 @@
 
 #define TAG_TRACK "track"
 #define TAG_FLAGS "flags"
-#define TAG_MODE "mode"
+#define TAG_SECTOR_TYPE "sector_type"
 #define TAG_ADR "adr"
 #define TAG_CTL "ctl"
 #define TAG_ISRC "isrc"

@@ -229,9 +229,9 @@ static void treestore_add_track (GtkTreeStore *treestore, GtkTreeIter *parent, x
         if (!g_ascii_strcasecmp((gchar *)cur_node->name, TAG_FLAGS)) {
             gint flags = xml_node_get_double(cur_node);
             treestore_add_node(treestore, &node, NULL, "Flags: 0x%X (%s)", flags, dump_track_flags(flags));
-        } else if (!g_ascii_strcasecmp((gchar *)cur_node->name, TAG_MODE)) {
-            gint mode = xml_node_get_double(cur_node);
-            treestore_add_node(treestore, &node, NULL, "Mode: 0x%X (%s)", mode, dump_track_mode(mode));
+        } else if (!g_ascii_strcasecmp((gchar *)cur_node->name, TAG_SECTOR_TYPE)) {
+            gint sector_type = xml_node_get_double(cur_node);
+            treestore_add_node(treestore, &node, NULL, "Sector type: 0x%X (%s)", sector_type, dump_track_sector_type(sector_type));
         } else if (!g_ascii_strcasecmp((gchar *)cur_node->name, TAG_ADR)) {
             gint adr = xml_node_get_double(cur_node);
             treestore_add_node(treestore, &node, NULL, "ADR: %d", adr);

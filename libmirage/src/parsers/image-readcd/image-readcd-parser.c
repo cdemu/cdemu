@@ -114,7 +114,7 @@ static gboolean mirage_parser_readcd_determine_track_mode (MirageParserReadcd *s
     /* Determine track mode*/
     track_mode = mirage_helper_determine_sector_type(buffer);
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: track mode determined to be: %d\n", __debug__, track_mode);
-    mirage_track_set_mode(track, track_mode);
+    mirage_track_set_sector_type(track, track_mode);
 
     g_free(buffer);
 
@@ -224,11 +224,11 @@ static gboolean mirage_parser_readcd_parse_toc_entry (MirageParserReadcd *self, 
         mirage_parser_readcd_determine_track_mode(self, self->priv->cur_track, NULL);
 
         /* Store track mode for comparison */
-        gint track_mode = mirage_track_get_mode(self->priv->cur_track);
+        gint track_mode = mirage_track_get_sector_type(self->priv->cur_track);
 
         if (self->priv->prev_mode != -1) {
             /* Check if track mode has changed from/to audio track */
-            if (track_mode != self->priv->prev_mode && (track_mode == MIRAGE_MODE_AUDIO || self->priv->prev_mode == MIRAGE_MODE_AUDIO)) {
+            if (track_mode != self->priv->prev_mode && (track_mode == MIRAGE_SECTOR_AUDIO || self->priv->prev_mode == MIRAGE_SECTOR_AUDIO)) {
                 MirageTrack *prev_track;
                 MirageFragment *prev_fragment;
                 gint prev_fragment_len;

@@ -142,7 +142,7 @@ static gboolean mirage_parser_hd_is_file_valid (MirageParserHd *self, GInputStre
             return FALSE;
         }
         self->priv->track_sectsize = 2048;
-        self->priv->track_mode = MIRAGE_MODE_MODE1;
+        self->priv->track_mode = MIRAGE_SECTOR_MODE1;
 
         return TRUE;
     }
@@ -200,7 +200,7 @@ static gboolean mirage_parser_hd_is_file_valid (MirageParserHd *self, GInputStre
         self->priv->needs_padding = file_length % 2048;
 
         self->priv->track_sectsize = 2048;
-        self->priv->track_mode = MIRAGE_MODE_MODE1;
+        self->priv->track_mode = MIRAGE_SECTOR_MODE1;
 
         return TRUE;
     }
@@ -231,7 +231,7 @@ static gboolean mirage_parser_hd_is_file_valid (MirageParserHd *self, GInputStre
 
         self->priv->needs_padding = file_length % 2048;
         self->priv->track_sectsize = 2048;
-        self->priv->track_mode = MIRAGE_MODE_MODE1;
+        self->priv->track_mode = MIRAGE_SECTOR_MODE1;
 
         return TRUE;
     }
@@ -285,7 +285,7 @@ static gboolean mirage_parser_hd_load_track (MirageParserHd *self, GInputStream 
     g_object_unref(session);
 
     /* Set track mode */
-    mirage_track_set_mode(track, self->priv->track_mode);
+    mirage_track_set_sector_type(track, self->priv->track_mode);
 
     /* Add fragment to track */
     mirage_track_add_fragment(track, -1, fragment);

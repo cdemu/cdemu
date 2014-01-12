@@ -151,22 +151,22 @@ static gboolean mirage_parser_cue_add_track (MirageParserCue *self, gint number,
         gint sectsize;
         gint format;
     } track_modes[] = {
-        {"AUDIO",      MIRAGE_MODE_AUDIO, 2352, MIRAGE_MAIN_DATA_FORMAT_AUDIO},
-        {"CDG",        MIRAGE_MODE_AUDIO, 2448, MIRAGE_MAIN_DATA_FORMAT_AUDIO},
-        {"MODE1/2048", MIRAGE_MODE_MODE1, 2048, MIRAGE_MAIN_DATA_FORMAT_DATA},
-        {"MODE1/2352", MIRAGE_MODE_MODE1, 2352, MIRAGE_MAIN_DATA_FORMAT_DATA},
+        {"AUDIO",      MIRAGE_SECTOR_AUDIO, 2352, MIRAGE_MAIN_DATA_FORMAT_AUDIO},
+        {"CDG",        MIRAGE_SECTOR_AUDIO, 2448, MIRAGE_MAIN_DATA_FORMAT_AUDIO},
+        {"MODE1/2048", MIRAGE_SECTOR_MODE1, 2048, MIRAGE_MAIN_DATA_FORMAT_DATA},
+        {"MODE1/2352", MIRAGE_SECTOR_MODE1, 2352, MIRAGE_MAIN_DATA_FORMAT_DATA},
         /* Not sure about the following ones, but MIXED should take care of them */
-        {"MODE2/2336", MIRAGE_MODE_MODE2_MIXED, 2336, MIRAGE_MAIN_DATA_FORMAT_DATA},
-        {"MODE2/2352", MIRAGE_MODE_MODE2_MIXED, 2352, MIRAGE_MAIN_DATA_FORMAT_DATA},
-        {"CDI/2336",   MIRAGE_MODE_MODE2_MIXED, 2336, MIRAGE_MAIN_DATA_FORMAT_DATA},
-        {"CDI/2352",   MIRAGE_MODE_MODE2_MIXED, 2352, MIRAGE_MAIN_DATA_FORMAT_DATA},
+        {"MODE2/2336", MIRAGE_SECTOR_MODE2_MIXED, 2336, MIRAGE_MAIN_DATA_FORMAT_DATA},
+        {"MODE2/2352", MIRAGE_SECTOR_MODE2_MIXED, 2352, MIRAGE_MAIN_DATA_FORMAT_DATA},
+        {"CDI/2336",   MIRAGE_SECTOR_MODE2_MIXED, 2336, MIRAGE_MAIN_DATA_FORMAT_DATA},
+        {"CDI/2352",   MIRAGE_SECTOR_MODE2_MIXED, 2352, MIRAGE_MAIN_DATA_FORMAT_DATA},
     };
 
     for (i = 0; i < G_N_ELEMENTS(track_modes); i++) {
         if (!g_strcmp0(track_modes[i].str, mode_string)) {
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: track mode: %s\n", __debug__, track_modes[i].str);
             /* Set track mode */
-            mirage_track_set_mode(self->priv->cur_track, track_modes[i].mode);
+            mirage_track_set_sector_type(self->priv->cur_track, track_modes[i].mode);
             /* Set current sector size and format */
             self->priv->cur_data_sectsize = track_modes[i].sectsize;
             self->priv->cur_data_format = track_modes[i].format;

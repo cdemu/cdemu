@@ -76,16 +76,16 @@ gchar *dump_track_flags (gint track_flags)
     return dump_flags(track_flags, values, G_N_ELEMENTS(values));
 }
 
-gchar *dump_track_mode (gint track_mode)
+gchar *dump_track_sector_type (gint track_mode)
 {
     static DumpValue values[] = {
-        { MIRAGE_MODE_MODE0, "Mode 0" },
-        { MIRAGE_MODE_AUDIO, "Audio" },
-        { MIRAGE_MODE_MODE1, "Mode 1" },
-        { MIRAGE_MODE_MODE2, "Mode 2 Formless" },
-        { MIRAGE_MODE_MODE2_FORM1, "Mode 2 Form 1" },
-        { MIRAGE_MODE_MODE2_FORM2, "Mode 2 Form 2" },
-        { MIRAGE_MODE_MODE2_MIXED, "Mode 2 Mixed" },
+        { MIRAGE_SECTOR_MODE0, "Mode 0" },
+        { MIRAGE_SECTOR_AUDIO, "Audio" },
+        { MIRAGE_SECTOR_MODE1, "Mode 1" },
+        { MIRAGE_SECTOR_MODE2, "Mode 2 Formless" },
+        { MIRAGE_SECTOR_MODE2_FORM1, "Mode 2 Form 1" },
+        { MIRAGE_SECTOR_MODE2_FORM2, "Mode 2 Form 2" },
+        { MIRAGE_SECTOR_MODE2_MIXED, "Mode 2 Mixed" },
     };
 
     return dump_value(track_mode, values, G_N_ELEMENTS(values));
