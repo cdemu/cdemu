@@ -855,8 +855,8 @@ static gboolean cdemu_device_raw_burning_write_sector (CdemuDevice *self, gint a
             cdemu_device_burning_open_track(self, mirage_sector_get_sector_type(sector));
 
             if (idx == 0) {
-                CDEMU_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: track has a pregap with length: %d\n", __debug__, track_relative_address);
-                mirage_track_set_track_start(self->priv->open_track, track_relative_address);
+                CDEMU_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: track has a pregap with length: %d\n", __debug__, track_relative_address + 1);
+                mirage_track_set_track_start(self->priv->open_track, track_relative_address + 1);
 
                 /* Create pregap fragment */
                 MirageFragment *fragment = g_object_new(MIRAGE_TYPE_FRAGMENT, NULL); /* FIXME: need image writer to allocate this properly! */
