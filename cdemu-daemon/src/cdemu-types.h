@@ -28,6 +28,7 @@ G_BEGIN_DECLS
 typedef struct _CdemuAudio CdemuAudio;
 typedef struct _CdemuDevice CdemuDevice;
 typedef struct _CdemuCommand CdemuCommand;
+typedef struct _CdemuRecording CdemuRecording;
 
 G_END_DECLS
 

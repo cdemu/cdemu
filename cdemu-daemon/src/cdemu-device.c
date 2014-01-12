@@ -114,7 +114,7 @@ gboolean cdemu_device_initialize (CdemuDevice *self, gint number, const gchar *a
     /* Set up default device ID */
     cdemu_device_set_device_id(self, "CDEmu   ", "Virt. CD/DVD-ROM", "1.10", "    cdemu.sf.net    ");
 
-    /* Initialize mode pages and features and set profile */    
+    /* Initialize mode pages and features and set profile */
     cdemu_device_mode_pages_init(self);
     cdemu_device_features_init(self);
     cdemu_device_set_profile(self, ProfileIndex_NONE);
@@ -340,8 +340,10 @@ static void cdemu_device_init (CdemuDevice *self)
 
     self->priv->device_sg = NULL;
     self->priv->device_sr = NULL;
-    
+
     self->priv->write_descriptors = NULL;
+
+    self->priv->recording = NULL;
 }
 
 static void cdemu_device_dispose (GObject *gobject)
@@ -439,7 +441,7 @@ static void cdemu_device_class_init (CdemuDeviceClass *klass)
     g_signal_new("option-changed", G_OBJECT_CLASS_TYPE(klass), G_SIGNAL_RUN_LAST, 0, NULL, NULL, g_cclosure_marshal_VOID__STRING, G_TYPE_NONE, 1, G_TYPE_STRING, NULL);
     g_signal_new("kernel-io-error", G_OBJECT_CLASS_TYPE(klass), G_SIGNAL_RUN_LAST, 0, NULL, NULL, g_cclosure_marshal_VOID__VOID, G_TYPE_NONE, 0, NULL);
     g_signal_new("mapping-ready", G_OBJECT_CLASS_TYPE(klass), G_SIGNAL_RUN_LAST, 0, NULL, NULL, g_cclosure_marshal_VOID__VOID, G_TYPE_NONE, 0, NULL);
-    
+
 
     /* Register private structure */
     g_type_class_add_private(klass, sizeof(CdemuDevicePrivate));

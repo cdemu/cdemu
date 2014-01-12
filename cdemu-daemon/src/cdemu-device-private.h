@@ -105,7 +105,9 @@ struct _CdemuDevicePrivate
     gchar *device_sr;
     gchar *device_sg;
 
-    /* Burning emulation */
+    /* Recording emulation */
+    const CdemuRecording *recording;
+
     gint medium_capacity;
     gint medium_leadin;
     gboolean recordable_disc;
@@ -127,14 +129,21 @@ struct _CdemuDevicePrivate
     guint8 last_recorded_idx;
 };
 
+struct _CdemuRecording
+{
+    gint (*get_next_writable_address) (CdemuDevice *self);
+    gint (*close_track) (CdemuDevice *self);
+    gint (*close_session) (CdemuDevice *self);
+    gint (*write_sectors) (CdemuDevice *self, gint start_address, gint num_sectors);
+};
 
 /* Some fields are of 3-byte size... */
 #define GUINT24_FROM_BE(x) (GUINT32_FROM_BE(x) >> 8)
 #define GUINT24_TO_BE(x)   (GUINT32_TO_BE(x) >> 8)
 
-
 /* Commands */
 gint cdemu_device_execute_command (CdemuDevice *self, const guint8 *cdb);
+void cdemu_device_dump_buffer (CdemuDevice *self, gint debug_level, const gchar *prefix, gint width, const guint8 *buffer, gint length);
 
 /* Delay emulation */
 void cdemu_device_delay_begin (CdemuDevice *self, gint address, gint num_sectors);
@@ -164,6 +173,9 @@ gpointer cdemu_device_get_mode_page (CdemuDevice *self, gint page, gint type);
 void cdemu_device_mode_pages_init (CdemuDevice *self);
 void cdemu_device_mode_pages_cleanup (CdemuDevice *self);
 
+/* Recording */
+gboolean cdemu_device_sao_recording_parse_cue_sheet (CdemuDevice *self, const guint8 *cue_sheet, gint cue_sheet_size);
+void cdemu_device_recording_set_mode (CdemuDevice *self, gint mode);
 
 
 #endif /* __CDEMU_DEVICE_PRIVATE_H__ */

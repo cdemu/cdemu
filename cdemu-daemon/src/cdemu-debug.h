@@ -32,6 +32,7 @@ typedef enum
     DAEMON_DEBUG_DELAY = 0x0004,
     DAEMON_DEBUG_AUDIOPLAY = 0x0008,
     DAEMON_DEBUG_KERNEL_IO = 0x0010,
+    DAEMON_DEBUG_RECORDING = 0x0020,
 } CdemuDeviceDebugMasks;
 
 /* Debug macro */

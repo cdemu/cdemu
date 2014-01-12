@@ -75,6 +75,7 @@ set (cdemu-daemon_SOURCES
     src/cdemu-device-load.c
     src/cdemu-device-mapping.c
     src/cdemu-device-mode-pages.c
+    src/cdemu-device-recording.c
     src/cdemu-error.c
     src/main.c
 )
