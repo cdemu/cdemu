@@ -137,6 +137,14 @@ struct _CdemuRecording
     gint (*write_sectors) (CdemuDevice *self, gint start_address, gint num_sectors);
 };
 
+struct ModePageEntry
+{
+    gpointer page_current;
+    gpointer page_default;
+    gpointer page_mask;
+};
+
+
 /* Some fields are of 3-byte size... */
 #define GUINT24_FROM_BE(x) (GUINT32_FROM_BE(x) >> 8)
 #define GUINT24_TO_BE(x)   (GUINT32_TO_BE(x) >> 8)
@@ -169,7 +177,7 @@ void cdemu_device_write_sense (CdemuDevice *self, SenseKey sense_key, guint16 as
 gboolean cdemu_device_unload_disc_private (CdemuDevice *self, gboolean force, GError **error);
 
 /* Mode pages */
-gpointer cdemu_device_get_mode_page (CdemuDevice *self, gint page, gint type);
+gpointer cdemu_device_get_mode_page (CdemuDevice *self, gint page, ModePageType type);
 void cdemu_device_mode_pages_init (CdemuDevice *self);
 void cdemu_device_mode_pages_cleanup (CdemuDevice *self);
 

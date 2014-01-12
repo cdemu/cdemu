@@ -25,38 +25,34 @@
 
 /* Mode pages: we initialize three instances of each supported page; one to
    store current values, one to store default values, and one to store mask
-   which indicates which values can be changed. We pack the pointers into
-   GValue array for easier access (if they were an array we'd have to calculate
-   offsets for generic struct access all the time) */
+   which indicates which values can be changed. */
 
 
 /**********************************************************************\
  *                    Mode page declaration helpers                   *
 \**********************************************************************/
-
-
-static inline gint compare_mode_pages (GArray *mode_page1_ptr, GArray *mode_page2_ptr)
+static inline gint compare_mode_pages (struct ModePageEntry *entry1, struct ModePageEntry *entry2)
 {
-    struct ModePageGeneral *mode_page1 = g_array_index(mode_page1_ptr, struct ModePageGeneral *, MODE_PAGE_DEFAULT);
-    struct ModePageGeneral *mode_page2 = g_array_index(mode_page2_ptr, struct ModePageGeneral *, MODE_PAGE_DEFAULT);
+    struct ModePageGeneral *page1 = entry1->page_default;
+    struct ModePageGeneral *page2 = entry2->page_default;
 
-    if (mode_page1->code < mode_page2->code) {
+    if (page1->code < page2->code) {
         return -1;
-    } else if (mode_page1->code > mode_page2->code) {
+    } else if (page1->code > page2->code) {
         return 1;
     } else {
         return 0;
     }
 }
 
-static inline gint find_mode_page (GArray *mode_page_ptr, gconstpointer code_ptr)
+static inline gint find_mode_page (struct ModePageEntry *entry, gconstpointer code_ptr)
 {
-    struct ModePageGeneral *mode_page = g_array_index(mode_page_ptr, struct ModePageGeneral *, MODE_PAGE_DEFAULT);
+    struct ModePageGeneral *page = entry->page_default;
     gint code = GPOINTER_TO_INT(code_ptr);
 
-    if (mode_page->code < code) {
+    if (page->code < code) {
         return -1;
-    } else if (mode_page->code > code) {
+    } else if (page->code > code) {
         return 1;
     } else {
         return 0;
@@ -64,38 +60,33 @@ static inline gint find_mode_page (GArray *mode_page_ptr, gconstpointer code_ptr
 }
 
 
-static inline GArray *initialize_mode_page (gint code, gint size)
+static inline struct ModePageEntry *initialize_mode_page (gint code, gint size)
 {
-    GArray *array = g_array_sized_new(FALSE, TRUE, sizeof(struct ModePageGeneral *), 3);
-    g_assert(array != NULL);
+    struct ModePageEntry *entry = g_new0(struct ModePageEntry, 1);
 
-    struct ModePageGeneral *page_current = g_malloc0(size);
-    struct ModePageGeneral *page_default = g_malloc0(size);
-    struct ModePageGeneral *page_mask = g_malloc0(size);
+    /* Allocate */
+    entry->page_current = g_malloc0(size);
+    entry->page_default = g_malloc0(size);
+    entry->page_mask = g_malloc0(size);
 
     /* Initialize default page and mask; current page is initialized in
        append_mode_page() function */
-    page_default->code   = page_mask->code   = code;
+    struct ModePageGeneral *page_default = entry->page_default;
+    struct ModePageGeneral *page_mask = entry->page_mask;
+
+    page_default->code = page_mask->code = code;
     page_default->length = page_mask->length = size - 2;
 
-    /* Pack pointers into value array */
-    g_array_append_val(array, page_current); /* MODE_PAGE_CURRENT */
-    g_array_append_val(array, page_default); /* MODE_PAGE_DEFAULT */
-    g_array_append_val(array, page_mask); /* MODE_PAGE_MASK */
-
-    return array;
+    return entry;
 }
 
-static inline GList *append_mode_page (GList *list, GArray *mode_page)
+static inline GList *append_mode_page (GList *list, struct ModePageEntry *entry)
 {
-    struct ModePageGeneral *page_default = g_array_index(mode_page, struct ModePageGeneral *, MODE_PAGE_DEFAULT);
-    struct ModePageGeneral *page_current = g_array_index(mode_page, struct ModePageGeneral *, MODE_PAGE_CURRENT);
-
     /* Make a copy of MODE_PAGE_DEFAULT to MODE_PAGE_CURRENT */
-    memcpy(page_current, page_default, page_default->length + 2);
+    memcpy(entry->page_current, entry->page_default, ((struct ModePageGeneral *)entry->page_default)->length + 2);
 
-    /* Append mode page array to the list */
-    return g_list_insert_sorted(list, mode_page, (GCompareFunc)compare_mode_pages);
+    /* Append mode page entry to the list */
+    return g_list_insert_sorted(list, entry, (GCompareFunc)compare_mode_pages);
 }
 
 
@@ -103,14 +94,24 @@ static inline GList *append_mode_page (GList *list, GArray *mode_page)
 /**********************************************************************\
  *                    Mode pages public API                           *
 \**********************************************************************/
-gpointer cdemu_device_get_mode_page (CdemuDevice *self, gint page, gint type)
+gpointer cdemu_device_get_mode_page (CdemuDevice *self, gint page, ModePageType type)
 {
-    GList *entry = NULL;
-    entry = g_list_find_custom(self->priv->mode_pages_list, GINT_TO_POINTER(page), (GCompareFunc)find_mode_page);
+    GList *entry = g_list_find_custom(self->priv->mode_pages_list, GINT_TO_POINTER(page), (GCompareFunc)find_mode_page);
+    if (!entry) {
+        return NULL;
+    }
 
-    if (entry) {
-        GArray *array = entry->data;
-        return g_array_index(array, gpointer, type);
+    struct ModePageEntry *page_entry = entry->data;
+    switch (type) {
+        case MODE_PAGE_CURRENT: {
+            return page_entry->page_current;
+        }
+        case MODE_PAGE_DEFAULT: {
+            return page_entry->page_default;
+        }
+        case MODE_PAGE_MASK: {
+            return page_entry->page_mask;
+        }
     }
 
     return NULL;
@@ -119,7 +120,7 @@ gpointer cdemu_device_get_mode_page (CdemuDevice *self, gint page, gint type)
 
 void cdemu_device_mode_pages_init (CdemuDevice *self)
 {
-    GArray *mode_page;
+    struct ModePageEntry *mode_page;
 
     /*** Mode page 0x01: Read/Write Error Recovery Parameters Mode Page ***/
     /* IMPLEMENTATION NOTE: read retry is set to 1, because we're a virtual
@@ -129,8 +130,8 @@ void cdemu_device_mode_pages_init (CdemuDevice *self)
        too, because according to INF8020 it affects the way subchannel is read */
     mode_page = initialize_mode_page(0x01, sizeof(struct ModePage_0x01));
     if (mode_page) {
-        struct ModePage_0x01 *page = g_array_index(mode_page, struct ModePage_0x01 *, MODE_PAGE_DEFAULT);
-        struct ModePage_0x01 *mask = g_array_index(mode_page, struct ModePage_0x01 *, MODE_PAGE_MASK);
+        struct ModePage_0x01 *page = mode_page->page_default;
+        struct ModePage_0x01 *mask = mode_page->page_mask;
 
         page->read_retry = 0x01;
 
@@ -144,8 +145,8 @@ void cdemu_device_mode_pages_init (CdemuDevice *self)
     /* IMPLEMENTATION NOTE: */
     mode_page = initialize_mode_page(0x05, sizeof(struct ModePage_0x05));
     if (mode_page) {
-        struct ModePage_0x05 *page = g_array_index(mode_page, struct ModePage_0x05 *, MODE_PAGE_DEFAULT);
-        struct ModePage_0x05 *mask = g_array_index(mode_page, struct ModePage_0x05 *, MODE_PAGE_MASK);
+        struct ModePage_0x05 *page = mode_page->page_default;
+        struct ModePage_0x05 *mask = mode_page->page_mask;
 
         page->bufe = 1; /* Buffer underrun protection; 0 by default as per MMC3 */
         mask->bufe = 1;
@@ -202,7 +203,7 @@ void cdemu_device_mode_pages_init (CdemuDevice *self)
        per second values, with no option of changing anything */
     mode_page = initialize_mode_page(0x0D, sizeof(struct ModePage_0x0D));
     if (mode_page) {
-        struct ModePage_0x0D *page = g_array_index(mode_page, struct ModePage_0x0D *, MODE_PAGE_DEFAULT);
+        struct ModePage_0x0D *page = mode_page->page_default;
 
         page->spm = GUINT16_TO_BE(60);
         page->fps = GUINT16_TO_BE(75);
@@ -217,8 +218,8 @@ void cdemu_device_mode_pages_init (CdemuDevice *self)
        but SOTC can be changed, and so can all port-related fields */
     mode_page = initialize_mode_page(0x0E, sizeof(struct ModePage_0x0E));
     if (mode_page) {
-        struct ModePage_0x0E *page = g_array_index(mode_page, struct ModePage_0x0E *, MODE_PAGE_DEFAULT);
-        struct ModePage_0x0E *mask = g_array_index(mode_page, struct ModePage_0x0E *, MODE_PAGE_MASK);
+        struct ModePage_0x0E *page = mode_page->page_default;
+        struct ModePage_0x0E *mask = mode_page->page_mask;
 
         page->immed = 0;
         page->obsolete1 = 75;
@@ -245,7 +246,7 @@ void cdemu_device_mode_pages_init (CdemuDevice *self)
     /* IMPLEMENTATION NOTE: No values for timers are set, though they can be */
     mode_page = initialize_mode_page(0x1A, sizeof(struct ModePage_0x1A));
     if (mode_page) {
-        struct ModePage_0x1A *mask = g_array_index(mode_page, struct ModePage_0x1A *, MODE_PAGE_MASK);
+        struct ModePage_0x1A *mask = mode_page->page_mask;
 
         mask->idle  = 1;
         mask->stdby = 1;
@@ -261,7 +262,7 @@ void cdemu_device_mode_pages_init (CdemuDevice *self)
        Descriptors, which are appended at the end of the page */
     mode_page = initialize_mode_page(0x2A, sizeof(struct ModePage_0x2A));
     if (mode_page) {
-        struct ModePage_0x2A *page = g_array_index(mode_page, struct ModePage_0x2A *, MODE_PAGE_DEFAULT);
+        struct ModePage_0x2A *page = mode_page->page_default;
 
         page->dvdr_read = 1;
         page->dvdrom_read = 1;
@@ -318,16 +319,10 @@ void cdemu_device_mode_pages_init (CdemuDevice *self)
     if (1) {
         /* A hack; we need to resize the "current" Mode Page 0x2A to accept
            write speed performance descriptors */
-        GArray *mode_pages_array = g_list_last(self->priv->mode_pages_list)->data;
-        struct ModePage_0x2A *old_page = g_array_index(mode_pages_array, gpointer, MODE_PAGE_CURRENT);
-        struct ModePage_0x2A *page = g_realloc(old_page, sizeof(struct ModePage_0x2A) + 6*sizeof(struct ModePage_0x2A_WriteSpeedPerformanceDescriptor));
-
-        if (page != old_page) {
-            g_array_remove_index(mode_pages_array, MODE_PAGE_CURRENT);
-            g_array_prepend_val(mode_pages_array, page);
-        }
+        mode_page->page_current = g_realloc(mode_page->page_current, sizeof(struct ModePage_0x2A) + 6*sizeof(struct ModePage_0x2A_WriteSpeedPerformanceDescriptor));
 
         /* Modify page size */
+        struct ModePage_0x2A *page = mode_page->page_current;
         page->length += 6*sizeof(struct ModePage_0x2A_WriteSpeedPerformanceDescriptor);
 
         page->num_wsp_descriptors = GUINT16_TO_BE(6);
@@ -341,13 +336,13 @@ void cdemu_device_mode_pages_cleanup (CdemuDevice *self)
 {
     for (GList *entry = self->priv->mode_pages_list; entry; entry = entry->next) {
         if (entry->data) {
-            GArray *array = entry->data;
+            struct ModePageEntry *mode_page = entry->data;
 
-            g_free(g_array_index(array, gpointer, 0));
-            g_free(g_array_index(array, gpointer, 1));
-            g_free(g_array_index(array, gpointer, 2));
+            g_free(mode_page->page_current);
+            g_free(mode_page->page_default);
+            g_free(mode_page->page_mask);
 
-            g_array_free(array, TRUE);
+            g_free(mode_page);
         }
     }
     g_list_free(self->priv->mode_pages_list);

@@ -554,24 +554,25 @@ static gboolean command_mode_sense (CdemuDevice *self, const guint8 *raw_cdb)
        copy just the one we've got request for and break the loop */
     gboolean page_found = FALSE;
     for (GList *entry = self->priv->mode_pages_list; entry; entry = entry->next) {
-        struct ModePageGeneral *mode_page = g_array_index((GArray *)entry->data, struct ModePageGeneral *, 0);
+        struct ModePageEntry *page_entry = entry->data;
+        struct ModePageGeneral *mode_page = page_entry->page_current;
 
         /* Check if we want this page copied */
         if (page_code == 0x3F || (page_code == mode_page->code)) {
             switch (pc) {
                 case 0x00: {
                     /* Current values */
-                    mode_page = g_array_index((GArray *)entry->data, struct ModePageGeneral *, MODE_PAGE_CURRENT);
+                    mode_page = page_entry->page_current;
                     break;
                 }
                 case 0x01: {
                     /* Changeable values */
-                    mode_page = g_array_index((GArray *)entry->data, struct ModePageGeneral *, MODE_PAGE_MASK);
+                    mode_page = page_entry->page_mask;
                     break;
                 }
                 case 0x02: {
                     /* Default value */
-                    mode_page = g_array_index((GArray *)entry->data, struct ModePageGeneral *, MODE_PAGE_DEFAULT);
+                    mode_page = page_entry->page_default;
                     break;
                 }
                 default: {
