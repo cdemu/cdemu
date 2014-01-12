@@ -45,42 +45,46 @@ static gboolean cdemu_device_recording_write_sector (CdemuDevice *self, MirageSe
 
 static gboolean cdemu_device_recording_close_track (CdemuDevice *self)
 {
-    CDEMU_DEBUG(self, DAEMON_DEBUG_RECORDING, "%s: closing track (adding to layout)\n", __debug__);
+    if (self->priv->open_track) {
+        CDEMU_DEBUG(self, DAEMON_DEBUG_RECORDING, "%s: closing track (adding to layout)\n", __debug__);
 
-    /* Add track to our open session */
-    mirage_session_add_track_by_index(self->priv->open_session, -1, self->priv->open_track);
+        /* Add track to our open session */
+        mirage_session_add_track_by_index(self->priv->open_session, -1, self->priv->open_track);
 
-    /* Release the reference we hold */
-    g_object_unref(self->priv->open_track);
-    self->priv->open_track = NULL;
+        /* Release the reference we hold */
+        g_object_unref(self->priv->open_track);
+        self->priv->open_track = NULL;
+    }
 
     return TRUE;
 }
 
 static gboolean cdemu_device_recording_close_session (CdemuDevice *self)
 {
-    const struct ModePage_0x05 *p_0x05 = cdemu_device_get_mode_page(self, 0x05, MODE_PAGE_CURRENT);
+    if (self->priv->open_session) {
+        const struct ModePage_0x05 *p_0x05 = cdemu_device_get_mode_page(self, 0x05, MODE_PAGE_CURRENT);
 
-    CDEMU_DEBUG(self, DAEMON_DEBUG_RECORDING, "%s: closing session (adding to layout)\n", __debug__);
+        CDEMU_DEBUG(self, DAEMON_DEBUG_RECORDING, "%s: closing session (adding to layout)\n", __debug__);
 
-    /* If we have an open track, close it */
-    if (self->priv->open_track) {
-        cdemu_device_recording_close_track(self);
+        /* If we have an open track, close it */
+        if (self->priv->open_track) {
+            cdemu_device_recording_close_track(self);
+        }
+
+        /* Add session to our disc */
+        mirage_disc_add_session_by_index(self->priv->disc, -1, self->priv->open_session);
+
+        /* Release the reference we hold */
+        g_object_unref(self->priv->open_session);
+        self->priv->open_session = NULL;
+
+        /* Should we finalize the disc, as well? */
+        if (!p_0x05->multisession) {
+            self->priv->disc_closed = TRUE;
+        }
+
+        self->priv->num_written_sectors = 0; /* Reset */
     }
-
-    /* Add session to our disc */
-    mirage_disc_add_session_by_index(self->priv->disc, -1, self->priv->open_session);
-
-    /* Release the reference we hold */
-    g_object_unref(self->priv->open_session);
-    self->priv->open_session = NULL;
-
-    /* Should we finalize the disc, as well? */
-    if (!p_0x05->multisession) {
-        self->priv->disc_closed = TRUE;
-    }
-
-    self->priv->num_written_sectors = 0; /* Reset */
 
     return TRUE;
 }
@@ -1006,6 +1010,9 @@ static const CdemuRecording recording_commands_sao = {
 /**********************************************************************\
  *                        Recording mode switch                       *
 \**********************************************************************/
+#undef __debug__
+#define __debug__ "Recording"
+
 void cdemu_device_recording_set_mode (CdemuDevice *self, gint mode)
 {
     /* Activate mode */

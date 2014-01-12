@@ -25,7 +25,8 @@
 
 /* Mode pages: we initialize three instances of each supported page; one to
    store current values, one to store default values, and one to store mask
-   which indicates which values can be changed. */
+   which indicates which values can be changed. Plus, we optionally define
+   a validator for validating mode page data set via MODE SELECT command */
 
 
 /**********************************************************************\
@@ -59,8 +60,7 @@ static inline gint find_mode_page (struct ModePageEntry *entry, gconstpointer co
     }
 }
 
-
-static inline struct ModePageEntry *initialize_mode_page (gint code, gint size)
+static inline struct ModePageEntry *initialize_mode_page (gint code, gint size, gboolean (*validator) (CdemuDevice *, const guint8 *))
 {
     struct ModePageEntry *entry = g_new0(struct ModePageEntry, 1);
 
@@ -68,6 +68,8 @@ static inline struct ModePageEntry *initialize_mode_page (gint code, gint size)
     entry->page_current = g_malloc0(size);
     entry->page_default = g_malloc0(size);
     entry->page_mask = g_malloc0(size);
+
+    entry->validate_new_data = validator;
 
     /* Initialize default page and mask; current page is initialized in
        append_mode_page() function */
@@ -91,7 +93,25 @@ static inline GList *append_mode_page (GList *list, struct ModePageEntry *entry)
 
 
 /**********************************************************************\
- *                    Mode pages public API                           *
+ *                        Mode page validators                        *
+\**********************************************************************/
+static gboolean mode_page_0x05_validator (CdemuDevice *self, const guint8 *new_data)
+{
+    const struct ModePage_0x05 *new_page = (const struct ModePage_0x05 *)new_data;
+    const struct ModePage_0x05 *old_page = cdemu_device_get_mode_page(self, 0x05, MODE_PAGE_CURRENT);
+
+    /* Change of write type */
+    if (new_page->write_type != old_page->write_type) {
+        CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: changing recording type from %d to %d!\n", __debug__, old_page->write_type, new_page->write_type);
+        cdemu_device_recording_set_mode(self, new_page->write_type);
+    }
+
+    return TRUE;
+}
+
+
+/**********************************************************************\
+ *                        Mode pages public API                       *
 \**********************************************************************/
 gpointer cdemu_device_get_mode_page (CdemuDevice *self, gint page, ModePageType type)
 {
@@ -127,7 +147,7 @@ void cdemu_device_mode_pages_init (CdemuDevice *self)
        Alchohol 120% virtual device reports as well). We allow it to be changed,
        though, since it makes no difference. We do allow DCR bit to be changed,
        too, because according to INF8020 it affects the way subchannel is read */
-    mode_page = initialize_mode_page(0x01, sizeof(struct ModePage_0x01));
+    mode_page = initialize_mode_page(0x01, sizeof(struct ModePage_0x01), NULL);
     if (mode_page) {
         struct ModePage_0x01 *page = mode_page->page_default;
         struct ModePage_0x01 *mask = mode_page->page_mask;
@@ -142,12 +162,12 @@ void cdemu_device_mode_pages_init (CdemuDevice *self)
 
     /*** Mode page 0x05: Write Parameters Mode Page ***/
     /* IMPLEMENTATION NOTE: */
-    mode_page = initialize_mode_page(0x05, sizeof(struct ModePage_0x05));
+    mode_page = initialize_mode_page(0x05, sizeof(struct ModePage_0x05), &mode_page_0x05_validator);
     if (mode_page) {
         struct ModePage_0x05 *page = mode_page->page_default;
         struct ModePage_0x05 *mask = mode_page->page_mask;
 
-        page->bufe = 1; /* Buffer underrun protection; 0 by default as per MMC3 */
+        page->bufe = 0; /* Buffer underrun protection; 0 by default as per MMC3 */
         mask->bufe = 1;
 
         page->ls_v = 1; /* Link size is valid */
@@ -200,7 +220,7 @@ void cdemu_device_mode_pages_init (CdemuDevice *self)
     /* IMPLEMENTATION NOTE: this one is marked as reserved in ATAPI, but all
        my drives return it anyway. We just set seconds per minutes and frames
        per second values, with no option of changing anything */
-    mode_page = initialize_mode_page(0x0D, sizeof(struct ModePage_0x0D));
+    mode_page = initialize_mode_page(0x0D, sizeof(struct ModePage_0x0D), NULL);
     if (mode_page) {
         struct ModePage_0x0D *page = mode_page->page_default;
 
@@ -215,7 +235,7 @@ void cdemu_device_mode_pages_init (CdemuDevice *self)
        to 0. There is an obsolete field that is set to 75 according to ATAPI,
        and two unmuted audio ports (1 and 2). We don't support changing of IMMED,
        but SOTC can be changed, and so can all port-related fields */
-    mode_page = initialize_mode_page(0x0E, sizeof(struct ModePage_0x0E));
+    mode_page = initialize_mode_page(0x0E, sizeof(struct ModePage_0x0E), NULL);
     if (mode_page) {
         struct ModePage_0x0E *page = mode_page->page_default;
         struct ModePage_0x0E *mask = mode_page->page_mask;
@@ -243,7 +263,7 @@ void cdemu_device_mode_pages_init (CdemuDevice *self)
 
     /*** Mode Page 0x1A: Power Condition Mode Page ***/
     /* IMPLEMENTATION NOTE: No values for timers are set, though they can be */
-    mode_page = initialize_mode_page(0x1A, sizeof(struct ModePage_0x1A));
+    mode_page = initialize_mode_page(0x1A, sizeof(struct ModePage_0x1A), NULL);
     if (mode_page) {
         struct ModePage_0x1A *mask = mode_page->page_mask;
 
@@ -259,7 +279,7 @@ void cdemu_device_mode_pages_init (CdemuDevice *self)
     /* IMPLEMENTATION NOTE: We claim to do things we can (more or less), and nothing
        can be changed, just like INF8090 says. We also have 6 Write Speed Performance
        Descriptors, which are appended at the end of the page */
-    mode_page = initialize_mode_page(0x2A, sizeof(struct ModePage_0x2A));
+    mode_page = initialize_mode_page(0x2A, sizeof(struct ModePage_0x2A), NULL);
     if (mode_page) {
         struct ModePage_0x2A *page = mode_page->page_default;
 
@@ -390,7 +410,7 @@ gboolean cdemu_device_modify_mode_page (CdemuDevice *self, const guint8 *new_dat
     }
 
     /* Use validator function, if provided */
-    if (page_entry->validate_new_data && !page_entry->validate_new_data(new_data)) {
+    if (page_entry->validate_new_data && !page_entry->validate_new_data(self, new_data)) {
         return FALSE;
     }
 

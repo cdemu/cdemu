@@ -142,7 +142,7 @@ struct ModePageEntry
     gpointer page_current;
     gpointer page_default;
     gpointer page_mask;
-    gboolean (*validate_new_data) (const guint8 *new_page);
+    gboolean (*validate_new_data) (CdemuDevice *, const guint8 *);
 };
 
 
