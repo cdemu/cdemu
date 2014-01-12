@@ -191,6 +191,23 @@ static void cdemu_device_dump_buffer (CdemuDevice *self, gint debug_level, const
 /**********************************************************************\
  *                          Generic burning                           *
 \**********************************************************************/
+static gboolean cdemu_device_burning_write_sector (CdemuDevice *self, MirageSector *sector)
+{
+    const guint8 *data;
+
+    /* Dump sector data for now */
+    CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: dumping sector data to be written:\n", __debug__);
+
+    /* First 32 bytes of main channel and 16-byte Q subchannel */
+    mirage_sector_get_data(sector, &data, NULL, NULL);
+    cdemu_device_dump_buffer(self, DAEMON_DEBUG_MMC, __debug__, 16, data, 32);
+    CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: ...\n", __debug__);
+    mirage_sector_get_subchannel(sector, MIRAGE_SUBCHANNEL_Q, &data, NULL, NULL);
+    cdemu_device_dump_buffer(self, DAEMON_DEBUG_MMC, __debug__, 16, data, 16);
+
+    return TRUE;
+}
+
 static gboolean cdemu_device_burning_close_track (CdemuDevice *self)
 {
     /* Add track to our open session */
@@ -207,6 +224,7 @@ static gboolean cdemu_device_burning_close_session (CdemuDevice *self)
 {
     const struct ModePage_0x05 *p_0x05 = cdemu_device_get_mode_page(self, 0x05, MODE_PAGE_CURRENT);
 
+    /* If we have an open track, close it */
     if (self->priv->open_track) {
         cdemu_device_burning_close_track(self);
     }
@@ -230,9 +248,6 @@ static gboolean cdemu_device_burning_close_session (CdemuDevice *self)
 
 static gboolean cdemu_device_burning_open_session (CdemuDevice *self)
 {
-#if 0
-    //const struct ModePage_0x05 *p_0x05 = cdemu_device_get_mode_page(self, 0x05, MODE_PAGE_CURRENT);
-#endif
     /* Create new session */
     self->priv->open_session = g_object_new(MIRAGE_TYPE_SESSION, NULL);
 
@@ -249,33 +264,14 @@ static gboolean cdemu_device_burning_open_session (CdemuDevice *self)
 
     CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: opened session #%d; start sector: %d, first track: %d!\n", __debug__, mirage_session_layout_get_session_number(self->priv->open_session), mirage_session_layout_get_start_sector(self->priv->open_session), mirage_session_layout_get_first_track(self->priv->open_session));
 
-#if 0
-    /* If we are burning in TAO mode, read MCN from Mode Page 0x05 */
-    if (p_0x05->write_type == 0x01) {
-        if (p_0x05->mcn[0]) {
-            /* We can get away with this because MCN data fields are
-               followed by a ZERO field*/
-            CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: Mode Page 0x05 MCN: %s\n", __debug__, &p_0x05->mcn[1]);
-            mirage_session_set_mcn(self->priv->open_session, (gchar *)&p_0x05->mcn[1]);
-        }
-    }
-#endif
-
     return TRUE;
 }
 
 static gboolean cdemu_device_burning_open_track (CdemuDevice *self, MirageTrackModes track_mode)
 {
-#if 0
-    const struct ModePage_0x05 *p_0x05 = cdemu_device_get_mode_page(self, 0x05, MODE_PAGE_CURRENT);
-#endif
-    /* Open session if one is not opened yet */
-    if (!self->priv->open_session) {
-        CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: no open session found; opening a new one...\n", __debug__);
-        if (!cdemu_device_burning_open_session(self)) {
-            CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: failed to open a new session!\n", __debug__);
-            return FALSE;
-        }
+    /* Close old track, if it is opened */
+    if (self->priv->open_track) {
+        cdemu_device_burning_close_track(self);
     }
 
     /* Create new track */
@@ -296,36 +292,8 @@ static gboolean cdemu_device_burning_open_track (CdemuDevice *self, MirageTrackM
 
     CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: opened track #%d; start sector: %d!\n", __debug__, mirage_track_layout_get_track_number(self->priv->open_track), mirage_track_layout_get_start_sector(self->priv->open_track));
 
-#if 0
-    /* If we are burning in TAO mode, read ISRC from Mode Page 0x05 */
-    if (p_0x05->write_type == 0x01 && track_mode == MIRAGE_MODE_AUDIO) {
-        if (p_0x05->isrc[0]) {
-            /* We can get away with this because ISRC data fields are
-               followed by a ZERO field*/
-            CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: Mode Page 0x05 ISRC: %s\n", __debug__, &p_0x05->isrc[1]);
-            mirage_track_set_isrc(self->priv->open_track, (gchar *)&p_0x05->isrc[1]);
-        }
-    }
-
-    /* If we are burning in TAO mode, we need to create a pregap */
-    if (p_0x05->write_type == 0x01) {
-        MirageFragment *fragment = g_object_new(MIRAGE_TYPE_FRAGMENT, NULL);
-        mirage_fragment_set_length(fragment, 150);
-        mirage_track_add_fragment(self->priv->open_track, -1, fragment);
-        g_object_unref(fragment);
-
-        mirage_track_set_track_start(self->priv->open_track, 150);
-    }
-
-    /* Create dummy fragment; FIXME: this should be done by image writer */
-    MirageFragment *fragment = g_object_new(MIRAGE_TYPE_FRAGMENT, NULL);
-    mirage_track_add_fragment(self->priv->open_track, -1, fragment);
-    g_object_unref(fragment);
-#endif
-
     return TRUE;
 }
-
 
 static gboolean cdemu_device_burning_get_next_writable_address (CdemuDevice *self)
 {
@@ -408,7 +376,7 @@ static const struct SAO_SubchannelFormat sao_subchannel_formats[] = {
 
 static gboolean cdemu_device_sao_burning_open_session (CdemuDevice *self)
 {
-    /* Generic open session */
+    /* Use generic function first */
     if (!cdemu_device_burning_open_session(self)) {
         return FALSE;
     }
@@ -421,7 +389,7 @@ static gboolean cdemu_device_sao_burning_open_session (CdemuDevice *self)
 
 static gboolean cdemu_device_sao_burning_open_track (CdemuDevice *self)
 {
-    /* Generic open track */
+    /* Use generic function first */
     if (!cdemu_device_burning_open_track(self, mirage_track_get_mode(self->priv->cue_entry))) {
         return FALSE;
     }
@@ -431,7 +399,7 @@ static gboolean cdemu_device_sao_burning_open_track (CdemuDevice *self)
 
     for (gint i = 0; i < num_fragments; i++) {
         MirageFragment *entry_fragment = mirage_track_get_fragment_by_index(self->priv->cue_entry, i, NULL);
-        MirageFragment *track_fragment = g_object_new(MIRAGE_TYPE_FRAGMENT, NULL); /* FIXME: have image writer create this! */
+        MirageFragment *track_fragment = g_object_new(MIRAGE_TYPE_FRAGMENT, NULL); /* FIXME: need image writer to allocate this properly! */
 
         mirage_fragment_set_length(track_fragment, mirage_fragment_get_length(entry_fragment));
 
@@ -504,8 +472,8 @@ static gboolean cdemu_device_sao_burning_write_sectors (CdemuDevice *self, gint 
             }
 
             /* Open new track for writing */
-            if (self->priv->open_track) {
-                cdemu_device_burning_close_track(self);
+            if (!self->priv->open_session) {
+                cdemu_device_sao_burning_open_session(self);
             }
             cdemu_device_sao_burning_open_track(self);
         }
@@ -565,21 +533,15 @@ static gboolean cdemu_device_sao_burning_write_sectors (CdemuDevice *self, gint 
         cdemu_device_read_buffer(self, main_format_ptr->data_size + subchannel_format_ptr->data_size);
 
         /* Feed the sector */
-        mirage_object_set_parent(MIRAGE_OBJECT(sector), self->priv->open_track);
         if (!mirage_sector_feed_data(sector, address, main_format_ptr->mode, self->priv->buffer, main_format_ptr->data_size, subchannel_format_ptr->mode, self->priv->buffer + main_format_ptr->data_size, subchannel_format_ptr->data_size, main_format_ptr->ignore_data, &local_error)) {
             CDEMU_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: failed to feed sector for writing: %s!\n", __debug__, local_error->message);
             g_error_free(local_error);
             local_error = NULL;
         }
 
-        /* Dump user data */
-        const guint8 *data_buf;
-        if (mirage_sector_get_data(sector, &data_buf, NULL, NULL)) {
-            cdemu_device_dump_buffer(self, DAEMON_DEBUG_MMC, __debug__, 16, data_buf, 16);
-        }
-        if (mirage_sector_get_subchannel(sector, MIRAGE_SUBCHANNEL_Q, &data_buf, NULL, NULL)) {
-            cdemu_device_dump_buffer(self, DAEMON_DEBUG_MMC, __debug__, 16, data_buf, 16);
-        }
+        /* FIXME: write sector on libMirage's side */
+        mirage_object_set_parent(MIRAGE_OBJECT(sector), self->priv->open_track);
+        cdemu_device_burning_write_sector(self, sector);
     }
 
 finish:
@@ -833,7 +795,6 @@ static gboolean cdemu_device_raw_burning_write_sector (CdemuDevice *self, gint a
 
     /* Analyze subchannel to determine when tracks begin/end */
     mirage_sector_get_subchannel(sector, MIRAGE_SUBCHANNEL_Q, &subchannel, NULL, NULL);
-    cdemu_device_dump_buffer(self, DAEMON_DEBUG_MMC, __debug__, 16, subchannel, 16);
 
     guint8 ctl = subchannel[0] & 0x0F;
     guint8 tno = subchannel[1];
@@ -851,8 +812,6 @@ static gboolean cdemu_device_raw_burning_write_sector (CdemuDevice *self, gint a
 
             self->priv->last_recorded_tno = 0;
             self->priv->last_recorded_idx = 0;
-        } else {
-            CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: lead-in sector; ignoring\n", __debug__);
         }
 
         /* FIXME: parse CD-TEXT from RW subchannel */
@@ -866,8 +825,6 @@ static gboolean cdemu_device_raw_burning_write_sector (CdemuDevice *self, gint a
         if (self->priv->open_session) {
             CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: first lead-out sector; closing session\n", __debug__);
             cdemu_device_burning_close_session(self);
-        } else {
-            CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: lead-out sector; ignoring\n", __debug__);
         }
 
         return TRUE;
@@ -902,12 +859,12 @@ static gboolean cdemu_device_raw_burning_write_sector (CdemuDevice *self, gint a
                 mirage_track_set_track_start(self->priv->open_track, track_relative_address);
 
                 /* Create pregap fragment */
-                MirageFragment *fragment = g_object_new(MIRAGE_TYPE_FRAGMENT, NULL);
+                MirageFragment *fragment = g_object_new(MIRAGE_TYPE_FRAGMENT, NULL); /* FIXME: need image writer to allocate this properly! */
                 mirage_track_add_fragment(self->priv->open_track, -1, fragment);
-                    g_object_unref(fragment);
+                g_object_unref(fragment);
             } else {
                 /* Create data fragment */
-                MirageFragment *fragment = g_object_new(MIRAGE_TYPE_FRAGMENT, NULL);
+                MirageFragment *fragment = g_object_new(MIRAGE_TYPE_FRAGMENT, NULL); /* FIXME: need image writer to allocate this properly! */
                 mirage_track_add_fragment(self->priv->open_track, -1, fragment);
                 g_object_unref(fragment);
             }
@@ -920,7 +877,7 @@ static gboolean cdemu_device_raw_burning_write_sector (CdemuDevice *self, gint a
                 CDEMU_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: end of pregap\n", __debug__);
 
                 /* Create data fragment */
-                MirageFragment *fragment = g_object_new(MIRAGE_TYPE_FRAGMENT, NULL);
+                MirageFragment *fragment = g_object_new(MIRAGE_TYPE_FRAGMENT, NULL); /* FIXME: need image writer to allocate this properly! */
                 mirage_track_add_fragment(self->priv->open_track, -1, fragment);
                 g_object_unref(fragment);
             } else {
@@ -948,12 +905,15 @@ static gboolean cdemu_device_raw_burning_write_sector (CdemuDevice *self, gint a
         }
     }
 
+    /* FIXME: write sector on libMirage's side */
+    mirage_object_set_parent(MIRAGE_OBJECT(sector), self->priv->open_track);
+
     /* Increase the size of the last track's fragment */
     MirageFragment *fragment = mirage_track_get_fragment_by_index(self->priv->open_track, -1, NULL);
     mirage_fragment_set_length(fragment, mirage_fragment_get_length(fragment) + 1);
     g_object_unref(fragment);
 
-    /* FIXME: write sector */
+    cdemu_device_burning_write_sector(self, sector);
 
     return TRUE;
 }
@@ -980,11 +940,11 @@ static gboolean cdemu_device_raw_burning_write_sectors (CdemuDevice *self, gint 
         sector_type = mirage_helper_determine_sector_type(self->priv->buffer);
 
         /* Feed the sector */
-        //mirage_object_set_parent(MIRAGE_OBJECT(sector), self->priv->open_track);
         if (!mirage_sector_feed_data(sector, address, sector_type, self->priv->buffer, format->main_size, format->subchannel_format, self->priv->buffer + format->main_size, format->subchannel_size, 0, &local_error)) {
             CDEMU_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: failed to feed sector for writing: %s!\n", __debug__, local_error->message);
             g_error_free(local_error);
             local_error = NULL;
+            break;
         }
 
         /* In raw burning, sectors are scrambled, so we need to unscramble them */
@@ -992,6 +952,151 @@ static gboolean cdemu_device_raw_burning_write_sectors (CdemuDevice *self, gint 
 
         /* Write sector */
         succeeded = cdemu_device_raw_burning_write_sector(self, address, sector);
+        if (!succeeded) {
+            break;
+        }
+    }
+
+    g_object_unref(sector);
+
+    return succeeded;
+}
+
+
+/**********************************************************************\
+ *               Sequential/track-at-once (TAO) burning               *
+\**********************************************************************/
+static gboolean cdemu_device_sequential_burning_open_session (CdemuDevice *self)
+{
+    /* Use generic function first */
+    if (!cdemu_device_burning_open_session(self)) {
+        return FALSE;
+    }
+
+    /* Set MCN from write parameters mode page */
+    const struct ModePage_0x05 *p_0x05 = cdemu_device_get_mode_page(self, 0x05, MODE_PAGE_CURRENT);
+    if (p_0x05->mcn[0]) {
+        /* We can get away with this because MCN data fields are followed by a ZERO field */
+        CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: setting MCN from write parameters mode page: %s\n", __debug__, &p_0x05->mcn[1]);
+        mirage_session_set_mcn(self->priv->open_session, (gchar *)&p_0x05->mcn[1]);
+    }
+
+    return TRUE;
+}
+
+static gboolean cdemu_device_sequential_burning_open_track (CdemuDevice *self, MirageTrackModes track_mode)
+{
+    /* Use generic function first */
+    if (!cdemu_device_burning_open_track(self, track_mode)) {
+        return FALSE;
+    }
+
+    /* Set ISRC from write parameters mode page */
+    const struct ModePage_0x05 *p_0x05 = cdemu_device_get_mode_page(self, 0x05, MODE_PAGE_CURRENT);
+    if (p_0x05->isrc[0]) {
+        /* We can get away with this because ISRC data fields are followed by a ZERO field*/
+        CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: setting ISRC from write parameters mode page: %s\n", __debug__, &p_0x05->isrc[1]);
+        mirage_track_set_isrc(self->priv->open_track, (gchar *)&p_0x05->isrc[1]);
+    }
+
+    /* The track needs a pregap */
+    MirageFragment *fragment = g_object_new(MIRAGE_TYPE_FRAGMENT, NULL); /* FIXME: need image writer to allocate this properly! */
+    mirage_fragment_set_length(fragment, 150);
+    mirage_track_add_fragment(self->priv->open_track, -1, fragment);
+    g_object_unref(fragment);
+
+    mirage_track_set_track_start(self->priv->open_track, 150);
+
+    self->priv->num_written_sectors += 150;
+
+    /* Data fragment */
+    fragment = g_object_new(MIRAGE_TYPE_FRAGMENT, NULL); /* FIXME: need image writer to allocate this properly! */
+    mirage_track_add_fragment(self->priv->open_track, -1, fragment);
+    g_object_unref(fragment);
+
+    return TRUE;
+}
+
+static gboolean cdemu_device_sequential_burning_write_sector (CdemuDevice *self, MirageSector *sector)
+{
+    /* If there is no opened session, open one */
+    if (!self->priv->open_session) {
+        CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: no session opened; opening one!\n", __debug__);
+
+        if (!cdemu_device_sequential_burning_open_session(self)) {
+            CDEMU_DEBUG(self, DAEMON_DEBUG_ERROR, "%s: failed to open new session!\n", __debug__);
+            return FALSE;
+        }
+    }
+
+    /* If there is no opened track, open one */
+    if (!self->priv->open_track) {
+        CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: no track opened; opening one!\n", __debug__);
+
+        if (!cdemu_device_sequential_burning_open_track(self, mirage_sector_get_sector_type(sector))) {
+            CDEMU_DEBUG(self, DAEMON_DEBUG_ERROR, "%s: failed to open new track!\n", __debug__);
+            return FALSE;
+        }
+    }
+
+    /* FIXME: write sector on libMirage's side */
+    mirage_object_set_parent(MIRAGE_OBJECT(sector), self->priv->open_track);
+
+    /* Increase the size of the last track's fragment */
+    MirageFragment *fragment = mirage_track_get_fragment_by_index(self->priv->open_track, -1, NULL);
+    mirage_fragment_set_length(fragment, mirage_fragment_get_length(fragment) + 1);
+    g_object_unref(fragment);
+
+    cdemu_device_burning_write_sector(self, sector);
+
+    return TRUE;
+}
+
+static gboolean cdemu_device_sequential_burning_write_sectors (CdemuDevice *self, gint start_address, gint num_sectors)
+{
+    const struct ModePage_0x05 *p_0x05 = cdemu_device_get_mode_page(self, 0x05, MODE_PAGE_CURRENT);
+    const struct BURNING_DataFormat *format = &burning_data_formats[p_0x05->data_block_type]; /* FIXME: we should force validity of this with mode page validation! */
+    gint sector_type = format->sector_type;
+
+    MirageSector *sector = g_object_new(MIRAGE_TYPE_SECTOR, NULL);
+
+    GError *local_error = NULL;
+    gboolean succeeded = TRUE;
+
+    /* Write all sectors */
+    for (gint address = start_address; address < start_address + num_sectors; address++) {
+        CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: sector %d\n", __debug__, address);
+
+        /* Read data from host */
+        cdemu_device_read_buffer(self, format->main_size + format->subchannel_size);
+
+        /* Do we need to determine sector type ourselves? */
+        if (sector_type == -1) {
+            if (self->priv->open_track) {
+                /* We already did this once, so just copy it */
+                sector_type = mirage_track_get_mode(self->priv->open_track);
+            } else {
+                /* We need to determine it */
+                sector_type = mirage_helper_determine_sector_type(self->priv->buffer);
+            }
+        }
+
+        /* Feed sector data */
+        if (!mirage_sector_feed_data(sector, address, sector_type, self->priv->buffer, format->main_size, format->subchannel_format, self->priv->buffer + format->main_size, format->subchannel_size, 0, &local_error)) {
+            CDEMU_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: failed to feed sector for writing: %s!\n", __debug__, local_error->message);
+            g_error_free(local_error);
+            local_error = NULL;
+            break;
+        }
+
+        /* If data type is 10 or 12, we need to copy subheader from
+           write parameters page */
+        if (p_0x05->data_block_type == 10 || p_0x05->data_block_type == 12) {
+            mirage_sector_set_subheader(sector, p_0x05->subheader, sizeof(p_0x05->subheader), NULL);
+        }
+
+        /* Write sector */
+        succeeded = cdemu_device_sequential_burning_write_sector(self, sector);
         if (!succeeded) {
             break;
         }
@@ -3117,9 +3222,8 @@ static gboolean command_write (CdemuDevice *self, const guint8 *raw_cdb)
         }
         case 1: {
             /* Track-at-once recording */
-            CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: track-at-once recording not supported yet!\n", __debug__);
-            succeeded = FALSE;
-            cdemu_device_write_sense(self, ILLEGAL_REQUEST, INVALID_FIELD_IN_CDB);
+            CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: track-at-once recording\n", __debug__);
+            succeeded = cdemu_device_sequential_burning_write_sectors(self, start_address, num_sectors);
             break;
         }
         case 2: {
@@ -3142,175 +3246,8 @@ static gboolean command_write (CdemuDevice *self, const guint8 *raw_cdb)
         }
     }
 
-#if 0
-    /* Data format depends on settings in Mode page 0x05 */
-    struct ModePage_0x05 *p_0x05 = cdemu_device_get_mode_page(self, 0x05, MODE_PAGE_CURRENT);
-
-    CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: mode page 0x05 settings:\n", __debug__);
-    CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s:  - BUFE: %X\n", __debug__, p_0x05->bufe);
-    CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s:  - LS_V: %X\n", __debug__, p_0x05->ls_v);
-    CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s:  - Test write: %X\n", __debug__, p_0x05->test_write);
-    CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s:  - Write type: %X\n", __debug__, p_0x05->write_type);
-    CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s:  - Multisession: %X\n", __debug__, p_0x05->multisession);
-    CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s:  - FP: %X\n", __debug__, p_0x05->fp);
-    CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s:  - Copy: %X\n", __debug__, p_0x05->copy);
-    CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s:  - Track mode: %X\n", __debug__, p_0x05->track_mode);
-    CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s:  - Data block type: %X\n", __debug__, p_0x05->data_block_type);
-    CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s:  - Session format: %X\n", __debug__, p_0x05->session_format);
-
-
-    /* Determine total data size to read */
-    gint main_channel_size;
-    gint subchannel_size;
-    MirageSectorSubchannelFormat subchannel_format;
-    gboolean determine_sector_type = FALSE;
-    MirageTrackModes sector_type;
-
-    switch (p_0x05->data_block_type) {
-        case 0: {
-            /* 2352 bytes: raw data */
-            main_channel_size = 2352;
-            subchannel_size = 0;
-            subchannel_format = MIRAGE_SUBCHANNEL_NONE;
-            determine_sector_type = TRUE;
-            break;
-        }
-        case 1: {
-            /* 2368 bytes: raw data with P-Q subchannel */
-            main_channel_size = 2352;
-            subchannel_size = 16;
-            subchannel_format = MIRAGE_SUBCHANNEL_Q;
-            determine_sector_type = TRUE;
-            break;
-        }
-        case 2: {
-            /* 2448 bytes: raw data with cooked R-W subchannel */
-            /*main_channel_size = 2352;
-            subchannel_size = 96;
-            subchannel_format = MIRAGE_SUBCHANNEL_RW;
-            determine_sector_type = TRUE;
-            break;*/
-            CDEMU_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: block data type 2 (raw data with cooked RW subchannel) not supported!\n", __debug__);
-            cdemu_device_write_sense(self, ILLEGAL_REQUEST, INVALID_FIELD_IN_CDB);
-            return FALSE;
-        }
-        case 3: {
-            /* 2448 bytes: raw data with raw P-W subchannel */
-            main_channel_size = 2352;
-            subchannel_size = 96;
-            subchannel_format = MIRAGE_SUBCHANNEL_PW;
-            determine_sector_type = TRUE;
-            break;
-        }
-        case 8: {
-            /* 2048 bytes: Mode 1 user data */
-            main_channel_size = 2048;
-            subchannel_size = 0;
-            subchannel_format = MIRAGE_SUBCHANNEL_NONE;
-            sector_type = MIRAGE_MODE_MODE1;
-            break;
-        }
-        case 9: {
-            /* 2336 bytes: Mode 2 user data */
-            main_channel_size = 2336;
-            subchannel_size = 0;
-            subchannel_format = MIRAGE_SUBCHANNEL_NONE;
-            sector_type = MIRAGE_MODE_MODE2;
-            break;
-        }
-        case 10: {
-            /* 2048 bytes: Mode 2 Form 1 user data */
-            main_channel_size = 2048;
-            subchannel_size = 0;
-            subchannel_format = MIRAGE_SUBCHANNEL_NONE;
-            sector_type = MIRAGE_MODE_MODE2_FORM1;
-            break;
-        }
-        case 11: {
-            /* 2056 bytes: Mode 2 Form 1 with subheader */
-            main_channel_size = 2056;
-            subchannel_size = 0;
-            subchannel_format = MIRAGE_SUBCHANNEL_NONE;
-            sector_type = MIRAGE_MODE_MODE2_FORM1;
-            break;
-        }
-        case 12: {
-            /* 2324 bytes: Mode 2 Form 2 user data */
-            main_channel_size = 2324;
-            subchannel_size = 0;
-            subchannel_format = MIRAGE_SUBCHANNEL_NONE;
-            sector_type = MIRAGE_MODE_MODE2_FORM2;
-            break;
-        }
-        case 13: {
-            /* 2332 bytes: Mode 2 (Form 1, Form 2 or mixed) with subheader */
-            main_channel_size = 2332;
-            subchannel_size = 0;
-            subchannel_format = MIRAGE_SUBCHANNEL_NONE;
-            sector_type = MIRAGE_MODE_MODE2_MIXED;
-            break;
-        }
-        default: {
-            CDEMU_DEBUG(self, DAEMON_DEBUG_ERROR, "%s: invalid data block type %d!\n", __debug__, p_0x05->data_block_type);
-            cdemu_device_write_sense(self, ILLEGAL_REQUEST, INVALID_FIELD_IN_CDB);
-            return FALSE;
-        }
-    }
-
-    /* Read the data */
-    gint block_size = main_channel_size + subchannel_size;
-    cdemu_device_read_buffer(self, block_size * num_sectors);
-
-    /* If we need to guess sector type (we have raw data) do it now that
-       the data has been read */
-    if (determine_sector_type) {
-        sector_type = mirage_helper_determine_sector_type(self->priv->buffer);
-    }
-
-    /* If there is no opened track, open one */
-    if (!self->priv->open_track) {
-        CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: no track opened; creating one!\n", __debug__);
-
-        if (!cdemu_device_burning_open_track(self, sector_type)) {
-            CDEMU_DEBUG(self, DAEMON_DEBUG_ERROR, "%s: failed to open new track!\n", __debug__);
-            return FALSE;
-        }
-    }
-
-
-    /* Create sector object for writing */
-    gboolean succeeded = TRUE;
-    MirageSector *sector = g_object_new(MIRAGE_TYPE_SECTOR, NULL);
-
-    for (gint i = 0; i < num_sectors; i++) {
-        guint8 *sector_data_ptr = self->priv->buffer + i*block_size;
-
-        /* Feed sector data */
-        if (!mirage_sector_feed_data(sector, start_address + i, sector_type, sector_data_ptr, main_channel_size, subchannel_format, sector_data_ptr + main_channel_size, subchannel_size, NULL)) {
-            CDEMU_DEBUG(self, DAEMON_DEBUG_ERROR, "%s: failed to feed sector data!\n", __debug__);
-            cdemu_device_write_sense(self, ILLEGAL_REQUEST, INVALID_FIELD_IN_CDB);
-            succeeded = FALSE;
-            break;
-        }
-
-        /* If we data type is 10 or 12, we need to copy subheader from
-           write parameters */
-        if (p_0x05->data_block_type == 10 || p_0x05->data_block_type == 12) {
-            mirage_sector_set_subheader(sector, p_0x05->subheader, sizeof(p_0x05->subheader), NULL);
-        }
-
-        /* Increment number of written sectors */
-        self->priv->num_written_sectors++;
-
-        /* Fragment is now longer by one; FIXME: this should be handled
-           by write_sector() function! */
-        MirageFragment *fragment = mirage_track_get_fragment_by_index(self->priv->open_track, -1, NULL);
-        mirage_fragment_set_length(fragment, mirage_fragment_get_length(fragment) + 1);
-        g_object_unref(fragment);
-    }
-
-    g_object_unref(sector);
-#endif
+    /* We need to update this for next writable address to be updated */
+    self->priv->num_written_sectors += num_sectors;
 
     return succeeded;
 }
