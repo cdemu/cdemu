@@ -210,6 +210,8 @@ static gboolean cdemu_device_burning_write_sector (CdemuDevice *self, MirageSect
 
 static gboolean cdemu_device_burning_close_track (CdemuDevice *self)
 {
+    CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: closing track (adding to layout)\n", __debug__);
+
     /* Add track to our open session */
     mirage_session_add_track_by_index(self->priv->open_session, -1, self->priv->open_track);
 
@@ -223,6 +225,8 @@ static gboolean cdemu_device_burning_close_track (CdemuDevice *self)
 static gboolean cdemu_device_burning_close_session (CdemuDevice *self)
 {
     const struct ModePage_0x05 *p_0x05 = cdemu_device_get_mode_page(self, 0x05, MODE_PAGE_CURRENT);
+
+    CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: closing session (adding to layout)\n", __debug__);
 
     /* If we have an open track, close it */
     if (self->priv->open_track) {
@@ -290,7 +294,7 @@ static gboolean cdemu_device_burning_open_track (CdemuDevice *self, MirageSector
 
     mirage_track_set_sector_type(self->priv->open_track, sector_type);
 
-    CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: opened track #%d; start sector: %d!\n", __debug__, mirage_track_layout_get_track_number(self->priv->open_track), mirage_track_layout_get_start_sector(self->priv->open_track));
+    CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: opened track #%d; sector type: %d; start sector: %d!\n", __debug__, mirage_track_layout_get_track_number(self->priv->open_track), sector_type, mirage_track_layout_get_start_sector(self->priv->open_track));
 
     return TRUE;
 }
@@ -374,6 +378,38 @@ static const struct SAO_SubchannelFormat sao_subchannel_formats[] = {
     { 0x03, MIRAGE_SUBCHANNEL_RW,   96 },
 };
 
+static const struct SAO_MainFormat *sao_main_formats_find (gint format)
+{
+    const struct SAO_MainFormat *descriptor = NULL;
+
+    format &= 0x3F;
+
+    for (guint i = 0; i < G_N_ELEMENTS(sao_main_formats); i++) {
+        if (sao_main_formats[i].format == format) {
+            descriptor = &sao_main_formats[i];
+            break;
+        }
+    }
+
+    return descriptor;
+}
+
+static const struct SAO_SubchannelFormat *sao_subchannel_formats_find (gint format)
+{
+    const struct SAO_SubchannelFormat *descriptor = NULL;
+
+    format >>= 6;
+
+    for (guint i = 0; i < G_N_ELEMENTS(sao_main_formats); i++) {
+        if (sao_subchannel_formats[i].format == format) {
+            descriptor = &sao_subchannel_formats[i];
+            break;
+        }
+    }
+
+    return descriptor;
+}
+
 static gboolean cdemu_device_sao_burning_open_session (CdemuDevice *self)
 {
     /* Use generic function first */
@@ -400,6 +436,8 @@ static gboolean cdemu_device_sao_burning_open_track (CdemuDevice *self)
     for (gint i = 0; i < num_fragments; i++) {
         MirageFragment *entry_fragment = mirage_track_get_fragment_by_index(self->priv->cue_entry, i, NULL);
         MirageFragment *track_fragment = g_object_new(MIRAGE_TYPE_FRAGMENT, NULL); /* FIXME: need image writer to allocate this properly! */
+
+        CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: constructing fragment #%d from CUE sheet - length %d\n", __debug__, i, mirage_fragment_get_length(entry_fragment));
 
         mirage_fragment_set_length(track_fragment, mirage_fragment_get_length(entry_fragment));
 
@@ -497,28 +535,12 @@ static gboolean cdemu_device_sao_burning_write_sectors (CdemuDevice *self, gint 
 
             /* Get data format for this fragment */
             gint format = mirage_fragment_main_data_get_format(cue_fragment);
-            gint main_format = format & 0x3F;
-            gint subchannel_format = format >> 6;
 
-            CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: data type for subsequent sectors: main: 0x%X, sub: 0x%X)!\n", __debug__, main_format, subchannel_format);
+            CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: data type for subsequent sectors: 0x%X)!\n", __debug__, format);
 
-            /* Find corresponding main data format descriptor */
-            main_format_ptr = NULL;
-            for (guint i = 0; i < G_N_ELEMENTS(sao_main_formats); i++) {
-                if (sao_main_formats[i].format == main_format) {
-                    main_format_ptr = &sao_main_formats[i];
-                    break;
-                }
-            }
-
-            /* Find corresponding subchannel data format descriptor */
-            subchannel_format_ptr = NULL;
-            for (guint i = 0; i < G_N_ELEMENTS(sao_subchannel_formats); i++) {
-                if (sao_subchannel_formats[i].format == subchannel_format) {
-                    subchannel_format_ptr = &sao_subchannel_formats[i];
-                    break;
-                }
-            }
+            /* Find corresponding format descriptors */
+            main_format_ptr = sao_main_formats_find(format);
+            subchannel_format_ptr = sao_subchannel_formats_find(format);
         }
 
         /* Make sure we have data format descriptors set */
@@ -545,6 +567,13 @@ static gboolean cdemu_device_sao_burning_write_sectors (CdemuDevice *self, gint 
     }
 
 finish:
+
+    /* Check if we have reached end of session */
+    if (start_address + num_sectors >= mirage_session_layout_get_start_sector(self->priv->cue_sheet) + mirage_session_layout_get_length(self->priv->cue_sheet)) {
+        CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: end of session reached; closing\n", __debug__);
+        cdemu_device_burning_close_session(self);
+    }
+
     g_object_unref(sector);
 
     if (cue_fragment) {
@@ -631,8 +660,18 @@ static gboolean cdemu_device_sao_burning_parse_cue_sheet (CdemuDevice *self, con
         MirageTrack *track = mirage_session_get_track_by_number(self->priv->cue_sheet, tno, NULL);
         if (!track) {
             CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: creating track #%d\n", __debug__, tno);
+
+            /* Create track entry */
             track = g_object_new(MIRAGE_TYPE_TRACK, NULL);
             mirage_session_add_track_by_number(self->priv->cue_sheet, tno, track, NULL);
+
+            /* Determine track's sector type from format */
+            const struct SAO_MainFormat *main_format_ptr = sao_main_formats_find(cue_entry[3]);
+            if (main_format_ptr) {
+                mirage_track_set_sector_type(track, main_format_ptr->sector_type);
+            } else {
+                CDEMU_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: invalid format 0x%X for TNO %d in CUE sheet!\n", __debug__, cue_entry[3], tno);
+            }
         }
         g_object_unref(track);
     }
