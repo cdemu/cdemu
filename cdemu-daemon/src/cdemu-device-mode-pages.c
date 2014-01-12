@@ -20,7 +20,7 @@
 #include "cdemu.h"
 #include "cdemu-device-private.h"
 
-#define __debug__ "MMC-3"
+#define __debug__ "Mode page"
 
 
 /* Mode pages: we initialize three instances of each supported page; one to
