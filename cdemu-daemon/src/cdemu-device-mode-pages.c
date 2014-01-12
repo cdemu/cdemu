@@ -90,7 +90,6 @@ static inline GList *append_mode_page (GList *list, struct ModePageEntry *entry)
 }
 
 
-
 /**********************************************************************\
  *                    Mode pages public API                           *
 \**********************************************************************/
@@ -388,6 +387,11 @@ gboolean cdemu_device_modify_mode_page (CdemuDevice *self, const guint8 *new_dat
             CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: attempting to change unchangeable value in byte %i!\n", __debug__, i);
             return FALSE;
         }
+    }
+
+    /* Use validator function, if provided */
+    if (page_entry->validate_new_data && !page_entry->validate_new_data(new_data)) {
+        return FALSE;
     }
 
     /* And finally, copy the page */
