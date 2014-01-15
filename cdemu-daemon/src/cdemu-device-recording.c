@@ -684,9 +684,18 @@ static gboolean cdemu_device_sao_recording_write_sectors (CdemuDevice *self, gin
     MirageSector *sector = g_object_new(MIRAGE_TYPE_SECTOR, NULL);
     GError *local_error = NULL;
 
+    gboolean set_track_sector_type = FALSE; /* Needed in RAW SAO mode */
+
     /* Write all sectors */
     for (gint address = start_address; address < start_address + num_sectors; address++) {
         CDEMU_DEBUG(self, DAEMON_DEBUG_RECORDING, "%s: sector %d\n", __debug__, address);
+
+        /* In RAW SAO mode, the host sends us lead-in, as well... which
+           we ignore here */
+        if (address < -150 && self->priv->raw_sao_recording) {
+            CDEMU_DEBUG(self, DAEMON_DEBUG_RECORDING, "%s: lead-in sector for RAW SAO; ignoring\n", __debug__, address);
+            continue;
+        }
 
         /* Grab track entry from CUE sheet, if necessary */
         if (!self->priv->cue_entry || !mirage_track_layout_contains_address(self->priv->cue_entry, address)) {
@@ -714,6 +723,12 @@ static gboolean cdemu_device_sao_recording_write_sectors (CdemuDevice *self, gin
                 cdemu_device_sao_recording_open_session(self);
             }
             cdemu_device_sao_recording_open_track(self);
+
+            /* If in RAW SAO recording mode, we will need to determine
+               track's sector type */
+            if (self->priv->raw_sao_recording) {
+                set_track_sector_type = TRUE;
+            }
         }
 
         /* Grab fragment entry from CUE sheet, if necessary */
@@ -755,10 +770,25 @@ static gboolean cdemu_device_sao_recording_write_sectors (CdemuDevice *self, gin
         cdemu_device_read_buffer(self, main_format_ptr->data_size + subchannel_format_ptr->data_size);
 
         /* Feed the sector */
-        if (!mirage_sector_feed_data(sector, address, main_format_ptr->sector_type, self->priv->buffer, main_format_ptr->data_size, subchannel_format_ptr->mode, self->priv->buffer + main_format_ptr->data_size, subchannel_format_ptr->data_size, main_format_ptr->ignore_data, &local_error)) {
+        if (!mirage_sector_feed_data(sector, address, self->priv->raw_sao_recording ? MIRAGE_SECTOR_RAW_SCRAMBLED : main_format_ptr->sector_type, self->priv->buffer, main_format_ptr->data_size, subchannel_format_ptr->mode, self->priv->buffer + main_format_ptr->data_size, subchannel_format_ptr->data_size, main_format_ptr->ignore_data, &local_error)) {
             CDEMU_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: failed to feed sector for writing: %s!\n", __debug__, local_error->message);
             g_error_free(local_error);
             local_error = NULL;
+        }
+
+        /* If we are recording in RAW SAO mode and have just opened a track,
+           we need to set its sector type from the sector we just fed */
+        if (self->priv->raw_sao_recording && set_track_sector_type) {
+            gint sector_type = mirage_sector_get_sector_type(sector);
+
+            /* Just to be on the safe side... */
+            if (sector_type == MIRAGE_SECTOR_MODE2_FORM1 || sector_type == MIRAGE_SECTOR_MODE2_FORM2) {
+                sector_type = MIRAGE_SECTOR_MODE2_MIXED;
+            }
+
+            /* Set sector type */
+            mirage_track_set_sector_type(self->priv->open_track, sector_type);
+            set_track_sector_type = FALSE;
         }
 
         /* FIXME: write sector on libMirage's side */
@@ -896,6 +926,13 @@ gboolean cdemu_device_sao_recording_parse_cue_sheet (CdemuDevice *self, const gu
 
         /* Skip lead-in */
         if (tno == 0) {
+            if (cue_entry[3] == 0x41) {
+                CDEMU_DEBUG(self, DAEMON_DEBUG_RECORDING, "%s: lead-in data format: %02hX; enabling RAW SAO recording\n", __debug__, cue_entry[3]);
+                self->priv->raw_sao_recording = TRUE;
+            } else {
+                CDEMU_DEBUG(self, DAEMON_DEBUG_RECORDING, "%s: lead-in data format: %02hX; enabling non-RAW SAO recording\n", __debug__, cue_entry[3]);
+                self->priv->raw_sao_recording = FALSE;
+            }
             continue;
         }
 
