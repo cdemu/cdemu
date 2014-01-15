@@ -458,6 +458,11 @@ static gboolean cdemu_device_raw_recording_write_sector (CdemuDevice *self, gint
         }
     }
 
+    if (!self->priv->open_track) {
+        CDEMU_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: no track opened to write sector!\n", __debug__);
+        return FALSE;
+    }
+
     /* FIXME: write sector on libMirage's side */
     mirage_object_set_parent(MIRAGE_OBJECT(sector), self->priv->open_track);
 
