@@ -1366,9 +1366,18 @@ gboolean mirage_sector_set_subchannel (MirageSector *self, MirageSectorSubchanne
                 g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_SECTOR_ERROR, "Expected 16 bytes for Q subchannel!");
                 return FALSE;
             }
-            /* Interleave */
+            /* Interleave Q (first 12 bytes) */
             memset(self->priv->subchan_pw, 0, sizeof(self->priv->subchan_pw));
             mirage_helper_subchannel_interleave(SUBCHANNEL_Q, buf, self->priv->subchan_pw);
+
+            /* Byte 15 actually has P state in its most-significant bit
+               (but only if sectors are fed from recording code; when
+               reading, P bit is not returned) */
+            if (buf[15]) {
+                const guint8 p_subchannel[12] = { 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF };
+                mirage_helper_subchannel_interleave(SUBCHANNEL_P, p_subchannel, self->priv->subchan_pw);
+            }
+
             break;
         }
         case MIRAGE_SUBCHANNEL_RW: {
