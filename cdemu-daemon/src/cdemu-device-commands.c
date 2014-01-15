@@ -2267,8 +2267,7 @@ static gboolean command_write (CdemuDevice *self, const guint8 *raw_cdb)
     }
 
     /* Write */
-    struct ModePage_0x05 *p_0x05 = cdemu_device_get_mode_page(self, 0x05, MODE_PAGE_CURRENT);
-    CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: write request: start sector: 0x%X (%d), number of sectors: %d\n", __debug__, p_0x05->write_type, start_address, start_address, num_sectors);
+    CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: write request: start sector: 0x%X (%d), number of sectors: %d\n", __debug__, start_address, start_address, num_sectors);
 
     if (!self->priv->recording) {
         CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: no recording mode set!\n", __debug__);
