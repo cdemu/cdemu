@@ -391,13 +391,20 @@ gboolean mirage_sector_feed_data (MirageSector *self, gint address, MirageSector
         /* Copy data from buffer */
         memcpy(self->priv->sector_data, main_data, main_data_length);
 
-        /* Unscramble, if necessary */
-        if (type == MIRAGE_SECTOR_RAW_SCRAMBLED) {
-            mirage_sector_scramble(self);
-        }
+        /* We can easily recognise an audio sector by the lack of sync
+           pattern at the beginning */
+        if (!memcmp(self->priv->sector_data, mirage_pattern_sync, sizeof(mirage_pattern_sync))) {
+            /* Data sector; unscramble if necessary */
+            if (type == MIRAGE_SECTOR_RAW_SCRAMBLED) {
+                mirage_sector_scramble(self);
+            }
 
-        /* Determine sector type */
-        self->priv->type = mirage_helper_determine_sector_type(self->priv->sector_data);
+            /* Determine sector type */
+            self->priv->type = mirage_helper_determine_sector_type(self->priv->sector_data);
+        } else {
+            /* Audio sector */
+            self->priv->type = MIRAGE_SECTOR_AUDIO;
+        }
     }
 
     /* Now, calculate offset and valid data based on type and main channel data length */
