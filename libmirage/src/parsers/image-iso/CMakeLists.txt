@@ -8,7 +8,8 @@ if (TRUE)
     # Parser
     add_library(${parser_name} MODULE
         ${parser_name}-parser.c
-        ${parser_name}-plugin.c 
+        ${parser_name}-plugin.c
+        ${parser_name}-writer.c
     )
     target_link_libraries(${parser_name} ${GLIB_LIBRARIES})
 
@@ -17,7 +18,7 @@ if (TRUE)
 
     # Install
     install(TARGETS ${parser_name} DESTINATION ${MIRAGE_PLUGIN_DIR})
-    
+
     # Add to list of enabled parsers
     set(PARSERS_ENABLED "${PARSERS_ENABLED} ${parser_short}" PARENT_SCOPE)
 else ()

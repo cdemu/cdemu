@@ -26,6 +26,7 @@
 
 #include "mirage.h"
 #include "image-iso-parser.h"
+#include "image-iso-writer.h"
 
 
 G_BEGIN_DECLS
