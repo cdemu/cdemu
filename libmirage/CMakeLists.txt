@@ -11,10 +11,10 @@ set (MIRAGE_VERSION_LONG ${MIRAGE_VERSION_MAJOR}.${MIRAGE_VERSION_MINOR}.${MIRAG
 set (MIRAGE_VERSION_SHORT ${MIRAGE_VERSION_MAJOR}.${MIRAGE_VERSION_MINOR})
 
 # Semantic versioning 2.0.0 (semver.org):
-# MAJOR is increased when backwards-incompatible changes are made to 
-# the API (e.g., removal of interfaces). In this case, MINOR and PATCH 
+# MAJOR is increased when backwards-incompatible changes are made to
+# the API (e.g., removal of interfaces). In this case, MINOR and PATCH
 # should be reset to zero.
-# MINOR is increased when features are added to the API (e.g., addition 
+# MINOR is increased when features are added to the API (e.g., addition
 # of interfaces). In this case, PATCH should be reset to zero.
 # PATCH is increased for all other changes such as bug-fixes.
 set (MIRAGE_SOVERSION_MAJOR 9)
@@ -131,6 +131,7 @@ set (libmirage_HEADERS
     src/libmirage/mirage-track.h
     src/libmirage/mirage-types.h
     src/libmirage/mirage-utils.h
+    src/libmirage/mirage-writer.h
     ${PROJECT_BINARY_DIR}/src/libmirage/mirage-version.h
 )
 
@@ -153,6 +154,7 @@ set (libmirage_SOURCES
     src/libmirage/mirage-track.c
     src/libmirage/mirage-utils.c
     src/libmirage/mirage-version.c
+    src/libmirage/mirage-writer.c
 )
 
 add_library (mirage SHARED ${libmirage_SOURCES})

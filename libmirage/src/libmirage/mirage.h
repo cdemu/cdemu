@@ -53,6 +53,7 @@
 #include "mirage-track.h"
 #include "mirage-utils.h"
 #include "mirage-version.h"
+#include "mirage-writer.h"
 
 G_BEGIN_DECLS
 
