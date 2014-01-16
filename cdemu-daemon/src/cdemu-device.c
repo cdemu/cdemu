@@ -343,6 +343,7 @@ static void cdemu_device_init (CdemuDevice *self)
 
     self->priv->write_descriptors = NULL;
 
+    self->priv->image_writer = NULL;
     self->priv->recording = NULL;
 }
 

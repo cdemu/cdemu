@@ -106,6 +106,7 @@ struct _CdemuDevicePrivate
     gchar *device_sg;
 
     /* Recording emulation */
+    MirageWriter *image_writer;
     const CdemuRecording *recording;
 
     gint medium_capacity;

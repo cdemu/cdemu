@@ -83,19 +83,22 @@ static gboolean cdemu_device_load_disc_private (CdemuDevice *self, gchar **filen
         self->priv->recordable_disc = FALSE;
         self->priv->rewritable_disc = FALSE;
     } else {
+        /* FIXME: move this to libMirage */
+        guint num_writers;
+        GType *writers = g_type_children(MIRAGE_TYPE_WRITER, &num_writers);
+
+        if (!num_writers) {
+            CDEMU_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: no image writer found!\n", __debug__);
+            g_set_error(error, CDEMU_ERROR, CDEMU_ERROR_DAEMON_ERROR, "No image writer found!");
+            return FALSE;
+        }
+
+        self->priv->image_writer = g_object_new(writers[0], NULL);
+
+        g_free(writers);
+
         /* Create blank disc */
-        self->priv->disc = g_object_new(MIRAGE_TYPE_DISC, NULL);
-
-#if 0
-        /* Even a blank disc has one session and one track */
-        MirageSession *session = g_object_new(MIRAGE_TYPE_SESSION, NULL);
-        mirage_disc_add_session_by_number(self->priv->disc, 1, session, NULL);
-        g_object_unref(session);
-
-        MirageTrack *track = g_object_new(MIRAGE_TYPE_TRACK, NULL);
-        mirage_disc_add_track_by_number(self->priv->disc, 1, track, NULL);
-        g_object_unref(track);
-#endif
+        self->priv->disc = mirage_writer_open_image(self->priv->image_writer, filenames[0], NULL);
 
         /* Set filenames */
         mirage_disc_set_filenames(self->priv->disc, (const gchar **)filenames);
@@ -173,6 +176,11 @@ gboolean cdemu_device_unload_disc_private (CdemuDevice *self, gboolean force, GE
         if (self->priv->open_session) {
             g_object_unref(self->priv->open_session);
             self->priv->open_session = NULL;
+        }
+
+        if (self->priv->image_writer) {
+            g_object_unref(self->priv->image_writer);
+            self->priv->image_writer = NULL;
         }
 
         self->priv->disc_closed = FALSE;

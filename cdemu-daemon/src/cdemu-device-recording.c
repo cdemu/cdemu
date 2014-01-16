@@ -81,6 +81,8 @@ static gboolean cdemu_device_recording_close_session (CdemuDevice *self)
         /* Should we finalize the disc, as well? */
         if (!p_0x05->multisession) {
             self->priv->disc_closed = TRUE;
+
+            mirage_writer_finalize_image(self->priv->image_writer);
         }
 
         self->priv->num_written_sectors = 0; /* Reset */
@@ -215,8 +217,14 @@ static gboolean cdemu_device_tao_recording_open_track (CdemuDevice *self, Mirage
         mirage_track_set_isrc(self->priv->open_track, (gchar *)&p_0x05->isrc[1]);
     }
 
+    /* We need session and track number for requesting fragment from writer */
+    gint session_number = mirage_session_layout_get_session_number(self->priv->open_session);
+    gint track_number = mirage_track_layout_get_track_number(self->priv->open_track);
+    gboolean audio_fragment = mirage_track_get_sector_type(self->priv->open_track) == MIRAGE_SECTOR_AUDIO;
+
     /* The track needs a pregap */
-    MirageFragment *fragment = g_object_new(MIRAGE_TYPE_FRAGMENT, NULL); /* FIXME: need image writer to allocate this properly! */
+    MirageFragment *fragment = mirage_writer_create_fragment(self->priv->image_writer, session_number, track_number, MIRAGE_FRAGMENT_PREGAP, NULL);
+
     mirage_fragment_set_length(fragment, 150);
     mirage_track_add_fragment(self->priv->open_track, -1, fragment);
     g_object_unref(fragment);
@@ -226,7 +234,7 @@ static gboolean cdemu_device_tao_recording_open_track (CdemuDevice *self, Mirage
     self->priv->num_written_sectors += 150;
 
     /* Data fragment */
-    fragment = g_object_new(MIRAGE_TYPE_FRAGMENT, NULL); /* FIXME: need image writer to allocate this properly! */
+    mirage_writer_create_fragment(self->priv->image_writer, session_number, track_number, audio_fragment ? MIRAGE_FRAGMENT_AUDIO : MIRAGE_FRAGMENT_DATA, NULL);
     mirage_track_add_fragment(self->priv->open_track, -1, fragment);
     g_object_unref(fragment);
 
@@ -349,7 +357,7 @@ static gboolean cdemu_device_raw_recording_write_sector (CdemuDevice *self, gint
     /* Analyze subchannel to determine when tracks begin/end */
     mirage_sector_get_subchannel(sector, MIRAGE_SUBCHANNEL_Q, &subchannel, NULL, NULL);
 
-    guint8 ctl = subchannel[0] & 0x0F;
+    guint8 adr = subchannel[0] & 0x0F;
     guint8 tno = subchannel[1];
     guint8 idx = subchannel[2];
     gint track_relative_address = mirage_helper_msf2lba(mirage_helper_bcd2hex(subchannel[3]), mirage_helper_bcd2hex(subchannel[4]), mirage_helper_bcd2hex(subchannel[5]), FALSE);
@@ -392,7 +400,7 @@ static gboolean cdemu_device_raw_recording_write_sector (CdemuDevice *self, gint
 
 
     /* Track data */
-    if (ctl == 1) {
+    if (adr == 1) {
         /* Validate address */
         if (absolute_address != address) {
             CDEMU_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: command LBA %d does not match LBA encoded in sector %d\n", __debug__, address, absolute_address);
@@ -407,17 +415,21 @@ static gboolean cdemu_device_raw_recording_write_sector (CdemuDevice *self, gint
 
             cdemu_device_recording_open_track(self, mirage_sector_get_sector_type(sector));
 
+            gint session_number = mirage_session_layout_get_session_number(self->priv->open_session);
+            gint track_number = mirage_track_layout_get_session_number(self->priv->open_track);
+            gboolean audio_fragment = !((subchannel[0] >> 4) & 0x04); /* CTL field indicates whether track is audio or not */
+
             if (idx == 0) {
                 CDEMU_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: track has a pregap with length: %d\n", __debug__, track_relative_address + 1);
                 mirage_track_set_track_start(self->priv->open_track, track_relative_address + 1);
 
                 /* Create pregap fragment */
-                MirageFragment *fragment = g_object_new(MIRAGE_TYPE_FRAGMENT, NULL); /* FIXME: need image writer to allocate this properly! */
+                MirageFragment *fragment = mirage_writer_create_fragment(self->priv->image_writer, session_number, track_number, MIRAGE_FRAGMENT_PREGAP, NULL);
                 mirage_track_add_fragment(self->priv->open_track, -1, fragment);
                 g_object_unref(fragment);
             } else {
                 /* Create data fragment */
-                MirageFragment *fragment = g_object_new(MIRAGE_TYPE_FRAGMENT, NULL); /* FIXME: need image writer to allocate this properly! */
+                MirageFragment *fragment = mirage_writer_create_fragment(self->priv->image_writer, session_number, track_number, audio_fragment ? MIRAGE_FRAGMENT_AUDIO : MIRAGE_FRAGMENT_DATA, NULL);
                 mirage_track_add_fragment(self->priv->open_track, -1, fragment);
                 g_object_unref(fragment);
             }
@@ -430,7 +442,11 @@ static gboolean cdemu_device_raw_recording_write_sector (CdemuDevice *self, gint
                 CDEMU_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: end of pregap\n", __debug__);
 
                 /* Create data fragment */
-                MirageFragment *fragment = g_object_new(MIRAGE_TYPE_FRAGMENT, NULL); /* FIXME: need image writer to allocate this properly! */
+                gint session_number = mirage_session_layout_get_session_number(self->priv->open_session);
+                gint track_number = mirage_track_layout_get_session_number(self->priv->open_track);
+                gboolean audio_fragment = !((subchannel[0] >> 4) & 0x04); /* CTL field indicates whether track is audio or not */
+
+                MirageFragment *fragment = mirage_writer_create_fragment(self->priv->image_writer, session_number, track_number, audio_fragment ? MIRAGE_FRAGMENT_AUDIO : MIRAGE_FRAGMENT_DATA, NULL);
                 mirage_track_add_fragment(self->priv->open_track, -1, fragment);
                 g_object_unref(fragment);
             } else {
@@ -440,7 +456,7 @@ static gboolean cdemu_device_raw_recording_write_sector (CdemuDevice *self, gint
 
             self->priv->last_recorded_idx = idx;
         }
-    } else if (ctl == 2) {
+    } else if (adr == 2) {
         /* MCN */
         if (self->priv->open_session && !mirage_session_get_mcn(self->priv->open_session)) {
             gchar mcn[13] = "";
@@ -448,7 +464,7 @@ static gboolean cdemu_device_raw_recording_write_sector (CdemuDevice *self, gint
             CDEMU_DEBUG(self, DAEMON_DEBUG_RECORDING, "%s: setting MCN: %s\n", __debug__, mcn);
             mirage_session_set_mcn(self->priv->open_session, mcn);
         }
-    } else if (ctl == 3) {
+    } else if (adr == 3) {
         /* ISRC */
         if (self->priv->open_track && !mirage_track_get_isrc(self->priv->open_track)) {
             gchar isrc[12] = "";
@@ -635,14 +651,28 @@ static gboolean cdemu_device_sao_recording_open_track (CdemuDevice *self)
         return FALSE;
     }
 
+    gint session_number = mirage_session_layout_get_session_number(self->priv->open_session);
+    gint track_number = mirage_track_layout_get_track_number(self->priv->open_track);
+
     /* Setup fragments */
     gint num_fragments = mirage_track_get_number_of_fragments(self->priv->cue_entry);
 
     for (gint i = 0; i < num_fragments; i++) {
         MirageFragment *entry_fragment = mirage_track_get_fragment_by_index(self->priv->cue_entry, i, NULL);
-        MirageFragment *track_fragment = g_object_new(MIRAGE_TYPE_FRAGMENT, NULL); /* FIXME: need image writer to allocate this properly! */
+        MirageFragment *track_fragment;
+        MirageFragmentRole role;
 
         CDEMU_DEBUG(self, DAEMON_DEBUG_RECORDING, "%s: constructing fragment #%d from CUE sheet - length %d\n", __debug__, i, mirage_fragment_get_length(entry_fragment));
+
+        /* Create fragment */
+        if (mirage_fragment_get_address(entry_fragment) < mirage_track_get_track_start(self->priv->cue_entry)) {
+            role = MIRAGE_FRAGMENT_PREGAP;
+            CDEMU_DEBUG(self, DAEMON_DEBUG_RECORDING, "%s: pregap fragment\n", __debug__);
+        } else {
+            role = (mirage_track_get_sector_type(self->priv->cue_entry) == MIRAGE_SECTOR_AUDIO) ? MIRAGE_FRAGMENT_AUDIO : MIRAGE_FRAGMENT_DATA;
+            CDEMU_DEBUG(self, DAEMON_DEBUG_RECORDING, "%s: %s fragment\n", __debug__, (role == MIRAGE_FRAGMENT_AUDIO) ? "audio" : "data");
+        }
+        track_fragment = mirage_writer_create_fragment(self->priv->image_writer, session_number, track_number, role, NULL);
 
         mirage_fragment_set_length(track_fragment, mirage_fragment_get_length(entry_fragment));
 
