@@ -33,6 +33,7 @@
 
 struct _MirageWriterPrivate
 {
+    gpointer dummy;
 };
 
 

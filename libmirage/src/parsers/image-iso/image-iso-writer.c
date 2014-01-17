@@ -29,6 +29,7 @@
 
 struct _MirageWriterIsoPrivate
 {
+    gpointer dummy;
 };
 
 
@@ -38,7 +39,7 @@ struct _MirageWriterIsoPrivate
 static MirageDisc *mirage_writer_iso_open_image (MirageWriter *self, const gchar *filename, GError **error)
 {
     MirageDisc *disc = g_object_new(MIRAGE_TYPE_DISC, NULL);
-    return NULL;
+    return disc;
 }
 
 static MirageFragment *mirage_writer_iso_create_fragment (MirageWriter *self, gint session, gint track, MirageFragmentRole role, GError **error)
