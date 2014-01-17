@@ -1358,9 +1358,21 @@ gboolean mirage_sector_get_subchannel (MirageSector *self, MirageSectorSubchanne
             break;
         }
         case MIRAGE_SUBCHANNEL_RW: {
-            /* FIXME: Cooked RW subchannel; can't do yet */
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_SECTOR, "%s: cooked RW subchannel not supported yet!\n", __debug__);
-            g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_SECTOR_ERROR, "Cooked RW subchannel not supported yet!");
+            /* Cooked RW subchannel contains P and Q subchannel data
+               interleaved in bits 7 and 6, and bits 5-0 contain R-W
+               data packets. For now, we pretend there is no data in
+               R-W, and therefore we can return raw PW subchannel here */
+            if (ret_buf) {
+                *ret_buf = self->priv->subchan_pw;
+            }
+            if (ret_len) {
+                *ret_len = 96;
+            }
+            break;
+        }
+        default: {
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_SECTOR, "%s: subchannel format %d not supported yet!\n", __debug__, format);
+            g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_SECTOR_ERROR, "Subchannel format %d not supported yet!", format);
             return FALSE;
         }
     }
@@ -1402,15 +1414,20 @@ gboolean mirage_sector_set_subchannel (MirageSector *self, MirageSectorSubchanne
             break;
         }
         case MIRAGE_SUBCHANNEL_RW: {
-            /* Cooked RW subchannel; same as de-interleaved PW? */
+            /* Cooked RW subchannel */
             if (len != 96) {
                 g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_SECTOR_ERROR, "Expected 96 bytes for RW subchannel!");
                 return FALSE;
             }
-            /* Interleave */
-            memset(self->priv->subchan_pw, 0, sizeof(self->priv->subchan_pw));
-            for (gint i = 0; i < 8; i++) {
-                mirage_helper_subchannel_interleave(7 - i, buf + i*12, self->priv->subchan_pw);
+
+            /* Cooked RW subchannel contains P and Q subchannel data
+               interleaved in bits 7 and 6, and bits 5-0 contain R-W
+               data packets. For now, we are interested only in P-Q data,
+               which we could deinterleave out of RW buffer and interleave
+               it back into our PW buffer; but if its more efficient if
+               we copy it directly */
+            for (gint i = 0; i < 96; i++) {
+                self->priv->subchan_pw[i] = buf[i] & 0xC0;
             }
             break;
         }
