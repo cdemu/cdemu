@@ -254,7 +254,7 @@ static gboolean cdemu_device_tao_recording_open_track (CdemuDevice *self, Mirage
     self->priv->num_written_sectors += 150;
 
     /* Data fragment */
-    mirage_writer_create_fragment(self->priv->image_writer, session_number, track_number, audio_fragment ? MIRAGE_FRAGMENT_AUDIO : MIRAGE_FRAGMENT_DATA, NULL);
+    fragment = mirage_writer_create_fragment(self->priv->image_writer, session_number, track_number, audio_fragment ? MIRAGE_FRAGMENT_AUDIO : MIRAGE_FRAGMENT_DATA, NULL);
     mirage_track_add_fragment(self->priv->open_track, -1, fragment);
     g_object_unref(fragment);
 
