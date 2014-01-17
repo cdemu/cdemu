@@ -110,6 +110,7 @@ GType mirage_sector_get_type (void);
 gboolean mirage_sector_feed_data (MirageSector *self, gint address, MirageSectorType type, const guint8 *main_data, guint main_data_length, MirageSectorSubchannelFormat subchannel_format, const guint8 *subchannel_data, guint subchannel_data_length, gint ignore_data_mask, GError **error);
 
 MirageSectorType mirage_sector_get_sector_type (MirageSector *self);
+gint mirage_sector_get_address (MirageSector *self);
 
 gboolean mirage_sector_get_sync (MirageSector *self, const guint8 **ret_buf, gint *ret_len, GError **error);
 gboolean mirage_sector_set_sync (MirageSector *self, const guint8 *buf, gint len, GError **error);

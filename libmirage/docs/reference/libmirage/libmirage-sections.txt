@@ -342,6 +342,7 @@ MirageSectorType
 MirageSectorSubchannelFormat
 MirageSectorValidData
 mirage_sector_feed_data
+mirage_sector_get_address
 mirage_sector_get_data
 mirage_sector_set_data
 mirage_sector_get_edc_ecc

@@ -28,17 +28,37 @@
 
 static gboolean cdemu_device_recording_write_sector (CdemuDevice *self, MirageSector *sector)
 {
+    GError *local_error = NULL;
     const guint8 *data;
+    gint data_length;
 
-    /* Dump sector data for now */
-    CDEMU_DEBUG(self, DAEMON_DEBUG_RECORDING, "%s: dumping sector data to be written:\n", __debug__);
+    /* Dump sector data */
+    if (CDEMU_DEBUG_ON(self, DAEMON_DEBUG_RECORDING)) {
+        CDEMU_DEBUG(self, DAEMON_DEBUG_RECORDING, "%s: sector data to be written:\n", __debug__);
 
-    /* First 32 bytes of main channel and 16-byte Q subchannel */
-    mirage_sector_get_data(sector, &data, NULL, NULL);
-    cdemu_device_dump_buffer(self, DAEMON_DEBUG_RECORDING, __debug__, 16, data, 32);
-    CDEMU_DEBUG(self, DAEMON_DEBUG_RECORDING, "%s: ...\n", __debug__);
-    mirage_sector_get_subchannel(sector, MIRAGE_SUBCHANNEL_Q, &data, NULL, NULL);
-    cdemu_device_dump_buffer(self, DAEMON_DEBUG_RECORDING, __debug__, 16, data, 16);
+        /* Sync, header, subheader, first 32 bytes of user data and 16-byte Q subchannel */
+        if (mirage_sector_get_sync(sector, &data, &data_length, NULL)) {
+            cdemu_device_dump_buffer(self, DAEMON_DEBUG_RECORDING, __debug__, 16, data, data_length);
+        }
+        if (mirage_sector_get_header(sector, &data, &data_length, NULL)) {
+            cdemu_device_dump_buffer(self, DAEMON_DEBUG_RECORDING, __debug__, 16, data, data_length);
+        }
+        if (mirage_sector_get_subheader(sector, &data, &data_length, NULL)) {
+            cdemu_device_dump_buffer(self, DAEMON_DEBUG_RECORDING, __debug__, 16, data, data_length);
+        }
+        mirage_sector_get_data(sector, &data, NULL, NULL);
+        cdemu_device_dump_buffer(self, DAEMON_DEBUG_RECORDING, __debug__, 16, data, 32);
+        CDEMU_DEBUG(self, DAEMON_DEBUG_RECORDING, "%s: ...\n", __debug__);
+        mirage_sector_get_subchannel(sector, MIRAGE_SUBCHANNEL_Q, &data, NULL, NULL);
+        cdemu_device_dump_buffer(self, DAEMON_DEBUG_RECORDING, __debug__, 16, data, 16);
+    }
+
+    /* Put sector to track */
+    if (!mirage_track_put_sector(self->priv->open_track, sector, &local_error)) {
+        CDEMU_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: failed to write sector to track: %s!\n", __debug__, local_error->message);
+        g_error_free(local_error);
+        return FALSE;
+    }
 
     return TRUE;
 }
@@ -263,13 +283,9 @@ static gboolean cdemu_device_tao_recording_write_sector (CdemuDevice *self, Mira
         }
     }
 
-    /* FIXME: write sector on libMirage's side */
+    /* Make sure sector has currently opened track set as a parent, in
+       case any of sector data needs to be generated */
     mirage_object_set_parent(MIRAGE_OBJECT(sector), self->priv->open_track);
-
-    /* Increase the size of the last track's fragment */
-    MirageFragment *fragment = mirage_track_get_fragment_by_index(self->priv->open_track, -1, NULL);
-    mirage_fragment_set_length(fragment, mirage_fragment_get_length(fragment) + 1);
-    g_object_unref(fragment);
 
     cdemu_device_recording_write_sector(self, sector);
 
@@ -479,14 +495,11 @@ static gboolean cdemu_device_raw_recording_write_sector (CdemuDevice *self, gint
         return FALSE;
     }
 
-    /* FIXME: write sector on libMirage's side */
+    /* Make sure sector has currently opened track set as a parent, in
+       case any of sector data needs to be generated */
     mirage_object_set_parent(MIRAGE_OBJECT(sector), self->priv->open_track);
 
-    /* Increase the size of the last track's fragment */
-    MirageFragment *fragment = mirage_track_get_fragment_by_index(self->priv->open_track, -1, NULL);
-    mirage_fragment_set_length(fragment, mirage_fragment_get_length(fragment) + 1);
-    g_object_unref(fragment);
-
+    /* Write */
     cdemu_device_recording_write_sector(self, sector);
 
     return TRUE;
@@ -828,8 +841,11 @@ static gboolean cdemu_device_sao_recording_write_sectors (CdemuDevice *self, gin
             mirage_track_set_sector_type(self->priv->open_track, sector_type);
         }
 
-        /* FIXME: write sector on libMirage's side */
+        /* Make sure sector has currently opened track set as a parent, in
+           case any of sector data needs to be generated */
         mirage_object_set_parent(MIRAGE_OBJECT(sector), self->priv->open_track);
+
+        /* Write */
         cdemu_device_recording_write_sector(self, sector);
 
         self->priv->num_written_sectors++;

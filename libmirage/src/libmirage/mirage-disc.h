@@ -153,6 +153,7 @@ gboolean mirage_disc_get_disc_structure (MirageDisc *self, gint layer, gint type
 
 /* Direct sector access */
 MirageSector *mirage_disc_get_sector (MirageDisc *self, gint address, GError **error);
+gboolean mirage_disc_put_sector (MirageDisc *self, MirageSector *sector, GError **error);
 
 /* DPM */
 void mirage_disc_set_dpm_data (MirageDisc *self, gint start, gint resolution, gint num_entries, const guint32 *data);

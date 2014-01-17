@@ -539,6 +539,60 @@ MirageSector *mirage_track_get_sector (MirageTrack *self, gint address, gboolean
 }
 
 
+gboolean mirage_track_put_sector (MirageTrack *self, MirageSector *sector, GError **error)
+{
+    gint relative_address = mirage_sector_get_address(sector) - mirage_track_layout_get_start_sector(self);
+    MirageFragment *fragment;
+    gint fragment_start;
+    GError *local_error = NULL;
+
+    /* Note that we check only if relative_address is greater than track's
+       length. This accounts for the case when sector's address is one
+       more than track's length, in which case we will append the sector
+       to track */
+    if (relative_address < 0 || relative_address > self->priv->length) {
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_TRACK_ERROR, "Sector address out of range!");
+        return FALSE;
+    }
+
+    /* We allow appending of sector to the track only if relative address
+       matches track's length, and if there is no track following this one */
+    if (relative_address == self->priv->length) {
+        MirageTrack *next_track = mirage_track_get_next(self, NULL);
+        if (next_track) {
+            g_object_unref(next_track);
+            g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_TRACK_ERROR, "Cannot append sector to track that is not last in the layout!");
+            return FALSE;
+        }
+    }
+
+    /* Get fragment */
+    if (relative_address == self->priv->length) {
+        fragment = mirage_track_get_fragment_by_index(self, -1, &local_error);
+        if (!fragment) {
+            g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_TRACK_ERROR, "Failed to get last fragment to append sector: %s", local_error->message);
+            g_error_free(local_error);
+            return FALSE;
+        }
+        /* Extend fragment so that we can write into it */
+        mirage_fragment_set_length(fragment, mirage_fragment_get_length(fragment) + 1);
+    } else {
+        fragment = mirage_track_get_fragment_by_address(self, relative_address, &local_error);
+        if (!fragment) {
+            g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_TRACK_ERROR, "Failed to get fragment to write sector: %s", local_error->message);
+            g_error_free(local_error);
+            return FALSE;
+        }
+    }
+
+    /* FIXME: implement data extraction in sector */
+    /* FIXME: implement data writing in fragment */
+
+    g_object_unref(fragment);
+
+    return TRUE;
+}
+
 /**
  * mirage_track_layout_get_session_number:
  * @self: a #MirageTrack

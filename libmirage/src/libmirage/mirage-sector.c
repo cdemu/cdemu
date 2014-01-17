@@ -957,6 +957,20 @@ MirageSectorType mirage_sector_get_sector_type (MirageSector *self)
     return self->priv->type;
 }
 
+/**
+ * mirage_sector_get_address:
+ * @self: a #MirageSector
+ *
+ * Retrieves absolute disc address of the sector.
+ *
+ * Returns: sector address
+ */
+gint mirage_sector_get_address (MirageSector *self)
+{
+    /* Return sector address */
+    return self->priv->address;
+}
+
 
 /**
  * mirage_sector_get_sync:

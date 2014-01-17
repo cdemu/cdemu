@@ -146,10 +146,11 @@ gint mirage_track_get_ctl (MirageTrack *self);
 
 /* ISRC */
 void mirage_track_set_isrc (MirageTrack *self, const gchar *isrc);
-const gchar * mirage_track_get_isrc (MirageTrack *self);
+const gchar *mirage_track_get_isrc (MirageTrack *self);
 
-/* Read and get sector */
+/* Get/put sector */
 MirageSector *mirage_track_get_sector (MirageTrack *self, gint address, gboolean abs, GError **error);
+gboolean mirage_track_put_sector (MirageTrack *self, MirageSector *sector, GError **error);
 
 /* Layout */
 gint mirage_track_layout_get_session_number (MirageTrack *self);

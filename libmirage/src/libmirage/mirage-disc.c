@@ -1451,6 +1451,33 @@ MirageSector *mirage_disc_get_sector (MirageDisc *self, gint address, GError **e
 }
 
 
+gboolean mirage_disc_put_sector (MirageDisc *self, MirageSector *sector, GError **error)
+{
+    MirageTrack *track;
+    gint address = mirage_sector_get_address(sector);
+    gboolean succeeded = TRUE;
+
+    /* Fetch the right track */
+    track = mirage_disc_get_track_by_address(self, address, NULL);
+    if (!track) {
+        /* We also allow data to be appended to the last track; for this,
+           however, the sector's address is allowed to be one more than
+           the last valid address of the last layout... */
+        track = mirage_disc_get_track_by_address(self, address - 1, error);
+        if (!track) {
+            return FALSE;
+        }
+    }
+
+    /* Put the sector in the track */
+    succeeded = mirage_track_put_sector(track, sector, error);
+
+    g_object_unref(track);
+
+    return succeeded;
+}
+
+
 /**
  * mirage_disc_set_dpm_data:
  * @self: a #MirageDisc
