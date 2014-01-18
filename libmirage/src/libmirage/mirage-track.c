@@ -545,6 +545,8 @@ gboolean mirage_track_put_sector (MirageTrack *self, MirageSector *sector, GErro
     MirageFragment *fragment;
     gint fragment_start;
     GError *local_error = NULL;
+    const guint8 *main_buffer, *subchannel_buffer;
+    gint main_length, subchannel_length;
 
     /* Note that we check only if relative_address is greater than track's
        length. This accounts for the case when sector's address is one
@@ -585,7 +587,19 @@ gboolean mirage_track_put_sector (MirageTrack *self, MirageSector *sector, GErro
         }
     }
 
-    /* FIXME: implement data extraction in sector */
+    /* Get expected main channel data size from the fragment; if fragment
+       expects subchannel, we always feed 96-byte raw interleaved PW */
+    main_length = mirage_fragment_main_data_get_size(fragment);
+    subchannel_length = mirage_fragment_subchannel_data_get_size(fragment);
+
+    /* Extract data from sector */
+    if (!mirage_sector_extract_data(sector, &main_buffer, main_length, MIRAGE_SUBCHANNEL_PW, &subchannel_buffer, 96, &local_error)) {
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_TRACK_ERROR, "Failed to extract data from sector: %s", local_error->message);
+        g_error_free(local_error);
+        g_object_unref(fragment);
+        return FALSE;
+    }
+
     /* FIXME: implement data writing in fragment */
 
     g_object_unref(fragment);
