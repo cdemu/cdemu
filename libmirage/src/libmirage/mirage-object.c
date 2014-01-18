@@ -178,7 +178,9 @@ static void mirage_object_dispose (GObject *gobject)
 
     /* Remove weak reference pointer to parent */
     if (self->priv->parent) {
+        g_signal_handlers_disconnect_by_func(self->priv->parent, mirage_object_parent_context_changed_handler, self);
         g_object_remove_weak_pointer(G_OBJECT(self->priv->parent), &self->priv->parent);
+        self->priv->parent = NULL;
     }
 
     /* Unref context */
