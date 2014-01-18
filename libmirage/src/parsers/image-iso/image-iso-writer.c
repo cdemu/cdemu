@@ -29,26 +29,73 @@
 
 struct _MirageWriterIsoPrivate
 {
-    gpointer dummy;
+    gchar *image_file_basename;
 };
 
 
 /**********************************************************************\
  *                MirageWriter methods implementation                 *
 \**********************************************************************/
-static MirageDisc *mirage_writer_iso_open_image (MirageWriter *self, const gchar *filename, GError **error)
+static MirageDisc *mirage_writer_iso_open_image (MirageWriter *self_, const gchar *filename, GError **error G_GNUC_UNUSED)
 {
+    MirageWriterIso *self = MIRAGE_WRITER_ISO(self_);
+
     MirageDisc *disc = g_object_new(MIRAGE_TYPE_DISC, NULL);
+
+    /* For now, assume that we are given only prefix */
+    self->priv->image_file_basename = g_strdup(filename);
+
     return disc;
 }
 
-static MirageFragment *mirage_writer_iso_create_fragment (MirageWriter *self, gint session, gint track, MirageFragmentRole role, GError **error)
+static MirageFragment *mirage_writer_iso_create_fragment (MirageWriter *self_, gint session, gint track, MirageFragmentRole role, GError **error)
 {
+    MirageWriterIso *self = MIRAGE_WRITER_ISO(self_);
+
     MirageFragment *fragment = g_object_new(MIRAGE_TYPE_FRAGMENT, NULL);
+    gchar *filename;
+    GOutputStream *output_stream;
+    GInputStream *input_stream;
+
+    if (role == MIRAGE_FRAGMENT_PREGAP) {
+        return fragment;
+    }
+
+    const gchar *extension;
+    if (role == MIRAGE_FRAGMENT_DATA) {
+        extension = "iso";
+
+        mirage_fragment_main_data_set_size(fragment, 2048);
+    } else {
+        extension = "cdr";
+
+        mirage_fragment_main_data_set_size(fragment, 2352);
+    }
+
+    filename = g_strdup_printf("%s-%d-%d.%s", self->priv->image_file_basename, session, track, extension);
+
+    /* Output stream */
+    output_stream = mirage_contextual_create_output_stream(MIRAGE_CONTEXTUAL(self), filename, error);
+    if (!output_stream) {
+        g_object_unref(fragment);
+        return NULL;
+    }
+    mirage_fragment_main_data_set_output_stream(fragment, output_stream);
+    g_object_unref(output_stream);
+
+    /* Input stream */
+    input_stream = mirage_contextual_create_input_stream(MIRAGE_CONTEXTUAL(self), filename, error);
+    if (!input_stream) {
+        g_object_unref(fragment);
+        return NULL;
+    }
+    mirage_fragment_main_data_set_input_stream(fragment, input_stream);
+    g_object_unref(input_stream);
+
     return fragment;
 }
 
-static gboolean mirage_writer_iso_finalize_image (MirageWriter *self)
+static gboolean mirage_writer_iso_finalize_image (MirageWriter *self_ G_GNUC_UNUSED)
 {
     return TRUE;
 }
@@ -69,11 +116,26 @@ void mirage_writer_iso_type_register (GTypeModule *type_module)
 static void mirage_writer_iso_init (MirageWriterIso *self)
 {
     self->priv = MIRAGE_WRITER_ISO_GET_PRIVATE(self);
+
+    self->priv->image_file_basename = NULL;
+}
+
+static void mirage_writer_iso_finalize (GObject *gobject)
+{
+    MirageWriterIso *self = MIRAGE_WRITER_ISO(gobject);
+
+    g_free(self->priv->image_file_basename);
+
+    /* Chain up to the parent class */
+    return G_OBJECT_CLASS(mirage_writer_iso_parent_class)->finalize(gobject);
 }
 
 static void mirage_writer_iso_class_init (MirageWriterIsoClass *klass)
 {
+    GObjectClass *gobject_class = G_OBJECT_CLASS(klass);
     MirageWriterClass *writer_class = MIRAGE_WRITER_CLASS(klass);
+
+    gobject_class->finalize = mirage_writer_iso_finalize;
 
     writer_class->open_image = mirage_writer_iso_open_image;
     writer_class->create_fragment = mirage_writer_iso_create_fragment;
