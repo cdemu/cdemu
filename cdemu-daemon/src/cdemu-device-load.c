@@ -94,6 +94,7 @@ static gboolean cdemu_device_load_disc_private (CdemuDevice *self, gchar **filen
         }
 
         self->priv->image_writer = g_object_new(writers[0], NULL);
+        mirage_contextual_set_context(MIRAGE_CONTEXTUAL(self->priv->image_writer), self->priv->mirage_context);
 
         g_free(writers);
 

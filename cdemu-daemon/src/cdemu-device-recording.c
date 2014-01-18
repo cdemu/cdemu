@@ -116,6 +116,9 @@ static gboolean cdemu_device_recording_open_session (CdemuDevice *self)
     /* Create new session */
     self->priv->open_session = g_object_new(MIRAGE_TYPE_SESSION, NULL);
 
+    /* Set context, so we can debug... */
+    mirage_contextual_set_context(MIRAGE_CONTEXTUAL(self->priv->open_session), self->priv->mirage_context);
+
     /* Determine session number and start sector from the disc; but do
        not add the session to the layout yet (do this when session is
        closed) */
