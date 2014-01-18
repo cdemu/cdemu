@@ -963,19 +963,20 @@ gboolean mirage_sector_extract_data (MirageSector *self, const guint8 **main_dat
     }
 
     /* Ensure that all required data is available */
-    if (required_data & MIRAGE_VALID_SYNC) {
+    gint need_to_generate = (required_data ^ self->priv->valid_data) & required_data;
+    if (need_to_generate & MIRAGE_VALID_SYNC) {
         mirage_sector_generate_sync(self);
     }
-    if (required_data & MIRAGE_VALID_HEADER) {
+    if (need_to_generate & MIRAGE_VALID_HEADER) {
         mirage_sector_generate_header(self);
     }
-    if (required_data & MIRAGE_VALID_SUBHEADER) {
+    if (need_to_generate & MIRAGE_VALID_SUBHEADER) {
         mirage_sector_generate_subheader(self);
     }
-    if (required_data & MIRAGE_VALID_DATA) {
+    if (need_to_generate & MIRAGE_VALID_DATA) {
         mirage_sector_generate_data(self);
     }
-    if (required_data & MIRAGE_VALID_EDC_ECC) {
+    if (need_to_generate & MIRAGE_VALID_EDC_ECC) {
         mirage_sector_generate_edc_ecc(self);
     }
 
