@@ -590,7 +590,7 @@ gboolean mirage_track_put_sector (MirageTrack *self, MirageSector *sector, GErro
     /* Fragments work with fragment-relative addresses, so get fragment's start address */
     fragment_start = mirage_fragment_get_address(fragment);
 
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_SECTOR, "%s: got fragment %p for track-relative address 0x%X; fragment relative address: 0x%X\n", __debug__, fragment, relative_address, relative_address - fragment_start);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_TRACK, "%s: got fragment %p for track-relative address 0x%X; fragment relative address: 0x%X\n", __debug__, fragment, relative_address, relative_address - fragment_start);
 
     /* Get expected main channel data size from the fragment; if fragment
        expects subchannel, we always feed 96-byte raw interleaved PW */

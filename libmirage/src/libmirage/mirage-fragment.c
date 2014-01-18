@@ -515,7 +515,7 @@ gboolean mirage_fragment_write_main_data (MirageFragment *self, gint address, co
     position = mirage_fragment_main_data_get_position(self, address);
 
     /* Write */
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_FRAGMENT, "%s: writing at position 0x%llX\n", __debug__, position);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_FRAGMENT, "%s: writing %d bytes at position 0x%llX\n", __debug__, self->priv->main_size, position);
 
     g_seekable_seek(G_SEEKABLE(self->priv->main_output_stream), position, G_SEEK_SET, NULL, NULL);
     if (g_seekable_tell(G_SEEKABLE(self->priv->main_output_stream)) != position) {
@@ -850,7 +850,7 @@ gboolean mirage_fragment_write_subchannel_data (MirageFragment *self, gint addre
     position = mirage_fragment_subchannel_data_get_position(self, address);
 
     /* Write */
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_FRAGMENT, "%s: writing at position 0x%llX\n", __debug__, position);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_FRAGMENT, "%s: writing %d bytes at position 0x%llX\n", __debug__, self->priv->subchannel_size, position);
 
     g_seekable_seek(G_SEEKABLE(stream), position, G_SEEK_SET, NULL, NULL);
     if (g_seekable_tell(G_SEEKABLE(stream)) != position) {
