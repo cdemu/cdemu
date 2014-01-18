@@ -958,7 +958,7 @@ gboolean mirage_sector_extract_data (MirageSector *self, const guint8 **main_dat
     gint actual_subchannel_length;
 
     /* Determine offset and real data flags based on type and main channel data length */
-    if (mirage_sector_get_info_for_feed_or_extract(self, main_data_length, &data_offset, &required_data, error)) {
+    if (!mirage_sector_get_info_for_feed_or_extract(self, main_data_length, &data_offset, &required_data, error)) {
         return FALSE;
     }
 
