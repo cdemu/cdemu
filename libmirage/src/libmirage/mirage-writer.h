@@ -30,7 +30,6 @@ typedef enum _MirageFragmentRole
 {
     MIRAGE_FRAGMENT_PREGAP,
     MIRAGE_FRAGMENT_DATA,
-    MIRAGE_FRAGMENT_AUDIO
 } MirageFragmentRole;
 
 
@@ -76,7 +75,7 @@ struct _MirageWriterClass
 
     /* Class members */
     MirageDisc *(*open_image) (MirageWriter *self, const gchar *filename, GError **error);
-    MirageFragment *(*create_fragment) (MirageWriter *self, gint session, gint track, MirageFragmentRole role, GError **error);
+    MirageFragment *(*create_fragment) (MirageWriter *self, MirageTrack *track, MirageFragmentRole role, GError **error);
     gboolean (*finalize_image) (MirageWriter *self);
 };
 
@@ -84,7 +83,7 @@ struct _MirageWriterClass
 GType mirage_writer_get_type (void);
 
 MirageDisc *mirage_writer_open_image (MirageWriter *self, const gchar *filename, GError **error);
-MirageFragment *mirage_writer_create_fragment (MirageWriter *self, gint session, gint track, MirageFragmentRole role, GError **error);
+MirageFragment *mirage_writer_create_fragment (MirageWriter *self, MirageTrack *track, MirageFragmentRole role, GError **error);
 gboolean mirage_writer_finalize_image (MirageWriter *self);
 
 G_END_DECLS

@@ -48,7 +48,7 @@ static MirageDisc *mirage_writer_iso_open_image (MirageWriter *self_, const gcha
     return disc;
 }
 
-static MirageFragment *mirage_writer_iso_create_fragment (MirageWriter *self_, gint session, gint track, MirageFragmentRole role, GError **error)
+static MirageFragment *mirage_writer_iso_create_fragment (MirageWriter *self_, MirageTrack *track, MirageFragmentRole role, GError **error)
 {
     MirageWriterIso *self = MIRAGE_WRITER_ISO(self_);
 
@@ -62,17 +62,17 @@ static MirageFragment *mirage_writer_iso_create_fragment (MirageWriter *self_, g
     }
 
     const gchar *extension;
-    if (role == MIRAGE_FRAGMENT_DATA) {
-        extension = "iso";
-
-        mirage_fragment_main_data_set_size(fragment, 2048);
-    } else {
+    if (mirage_track_get_sector_type(track) == MIRAGE_SECTOR_AUDIO) {
         extension = "cdr";
 
         mirage_fragment_main_data_set_size(fragment, 2352);
+    } else {
+        extension = "iso";
+
+        mirage_fragment_main_data_set_size(fragment, 2048);
     }
 
-    filename = g_strdup_printf("%s-%d-%d.%s", self->priv->image_file_basename, session, track, extension);
+    filename = g_strdup_printf("%s-%d-%d.%s", self->priv->image_file_basename, mirage_track_layout_get_session_number(track), mirage_track_layout_get_track_number(track), extension);
 
     /* Output stream */
     output_stream = mirage_contextual_create_output_stream(MIRAGE_CONTEXTUAL(self), filename, error);

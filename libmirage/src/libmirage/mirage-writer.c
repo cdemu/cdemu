@@ -45,9 +45,9 @@ MirageDisc *mirage_writer_open_image (MirageWriter *self, const gchar *filename,
     return MIRAGE_WRITER_GET_CLASS(self)->open_image(self, filename, error);
 }
 
-MirageFragment *mirage_writer_create_fragment (MirageWriter *self, gint session, gint track, MirageFragmentRole role, GError **error)
+MirageFragment *mirage_writer_create_fragment (MirageWriter *self, MirageTrack *track, MirageFragmentRole role, GError **error)
 {
-    return MIRAGE_WRITER_GET_CLASS(self)->create_fragment(self, session, track, role, error);
+    return MIRAGE_WRITER_GET_CLASS(self)->create_fragment(self, track, role, error);
 }
 
 gboolean mirage_writer_finalize_image (MirageWriter *self)
