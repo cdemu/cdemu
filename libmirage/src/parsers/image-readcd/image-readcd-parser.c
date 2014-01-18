@@ -301,7 +301,7 @@ static gboolean mirage_parser_readcd_parse_toc (MirageParserReadcd *self, GInput
         return FALSE;
     }
 
-    self->priv->data_stream = mirage_contextual_create_file_stream(MIRAGE_CONTEXTUAL(self), self->priv->data_filename, error);
+    self->priv->data_stream = mirage_contextual_create_input_stream(MIRAGE_CONTEXTUAL(self), self->priv->data_filename, error);
     if (!self->priv->data_stream) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to open data file '%s'!\n", __debug__, self->priv->data_filename);
         g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_DATA_FILE_ERROR, "Failed to create stream on data file!");

@@ -108,7 +108,7 @@ static gboolean mirage_parser_xcdroast_add_track (MirageParserXcdroast *self, TO
     }
 
     /* Open stream */
-    GInputStream *data_stream = mirage_contextual_create_file_stream(MIRAGE_CONTEXTUAL(self), data_file, error);
+    GInputStream *data_stream = mirage_contextual_create_input_stream(MIRAGE_CONTEXTUAL(self), data_file, error);
     if (!data_stream) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to create stream on data file '%s'!\n", __debug__, data_file);
         g_free(data_file);
@@ -191,7 +191,7 @@ static gboolean mirage_parser_xcdroast_add_track (MirageParserXcdroast *self, TO
     gchar *xinf_filename = create_xinf_filename(track_info->file);
     gchar *real_xinf_filename = mirage_helper_find_data_file(xinf_filename, self->priv->toc_filename);
 
-    GInputStream *xinf_stream = mirage_contextual_create_file_stream(MIRAGE_CONTEXTUAL(self), real_xinf_filename, error);
+    GInputStream *xinf_stream = mirage_contextual_create_input_stream(MIRAGE_CONTEXTUAL(self), real_xinf_filename, error);
 
     if (xinf_stream) {
         if (mirage_parser_xcdroast_parse_xinf_file(self, xinf_stream, NULL)) {

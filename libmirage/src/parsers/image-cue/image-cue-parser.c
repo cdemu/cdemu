@@ -268,7 +268,7 @@ static gboolean mirage_parser_cue_add_index (MirageParserCue *self, gint number,
 
             /* Now current track; we only create fragment here and set its offset */
             MirageFragment *fragment;
-            GInputStream *data_stream = mirage_contextual_create_file_stream(MIRAGE_CONTEXTUAL(self), self->priv->cur_data_filename, error);
+            GInputStream *data_stream = mirage_contextual_create_input_stream(MIRAGE_CONTEXTUAL(self), self->priv->cur_data_filename, error);
             if (!data_stream) {
                 MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to create data stream on data file: %s!\n", __debug__, self->priv->cur_data_filename);
                 return FALSE;

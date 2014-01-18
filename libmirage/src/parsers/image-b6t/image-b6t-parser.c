@@ -194,7 +194,7 @@ static gboolean mirage_parser_b6t_load_bwa_file (MirageParserB6t *self, GError *
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: found BWA file: '%s'\n", __debug__, bwa_fullpath);
 
         /* Open BWA file */
-        stream = mirage_contextual_create_file_stream(MIRAGE_CONTEXTUAL(self), bwa_fullpath, error);
+        stream = mirage_contextual_create_input_stream(MIRAGE_CONTEXTUAL(self), bwa_fullpath, error);
         g_free(bwa_fullpath);
 
         if (!stream) {
@@ -405,7 +405,7 @@ static gboolean mirage_parser_b6t_setup_track_fragments (MirageParserB6t *self, 
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: using data file: %s\n", __debug__, filename);
 
             /* Create stream */
-            stream = mirage_contextual_create_file_stream(MIRAGE_CONTEXTUAL(self), filename, error);
+            stream = mirage_contextual_create_input_stream(MIRAGE_CONTEXTUAL(self), filename, error);
             if (!stream) {
                 MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to create stream on data file '%s'\n", __debug__, filename);
                 g_free(filename);

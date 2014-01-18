@@ -45,7 +45,8 @@ MirageContext
 MirageContextClass
 MiragePasswordFunction
 mirage_context_clear_options
-mirage_context_create_file_stream
+mirage_context_create_input_stream
+mirage_context_create_output_stream
 mirage_context_get_debug_domain
 mirage_context_get_debug_mask
 mirage_context_get_debug_name
@@ -74,7 +75,8 @@ mirage_context_get_type
 <TITLE>MirageContextual</TITLE>
 MirageContextual
 MirageContextualInterface
-mirage_contextual_create_file_stream
+mirage_contextual_create_input_stream
+mirage_contextual_create_output_stream
 mirage_contextual_debug_message
 mirage_contextual_debug_messagev
 mirage_contextual_debug_is_active

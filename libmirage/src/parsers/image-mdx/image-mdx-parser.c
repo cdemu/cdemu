@@ -196,7 +196,7 @@ static MirageTrack *mirage_parser_mdx_get_track (MirageParserMdx *self, GError *
 
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: MDS file; corresponding MDF: %s\n", __debug__, data_file);
 
-        data_stream = mirage_contextual_create_file_stream(MIRAGE_CONTEXTUAL(self), data_file, error);
+        data_stream = mirage_contextual_create_input_stream(MIRAGE_CONTEXTUAL(self), data_file, error);
         g_free(data_file);
         if (!data_stream) {
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: could not open MDF file!\n", __debug__);

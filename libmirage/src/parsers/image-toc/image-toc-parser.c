@@ -183,7 +183,7 @@ static gboolean mirage_parser_toc_track_add_fragment (MirageParserToc *self, gin
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: using data file: %s\n", __debug__, filename);
 
         /* Create strean */
-        GInputStream *stream = mirage_contextual_create_file_stream(MIRAGE_CONTEXTUAL(self), filename, error);
+        GInputStream *stream = mirage_contextual_create_input_stream(MIRAGE_CONTEXTUAL(self), filename, error);
         if (!stream) {
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to create stream on data file!\n", __debug__);
             return FALSE;

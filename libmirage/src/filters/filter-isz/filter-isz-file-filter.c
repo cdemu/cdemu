@@ -305,7 +305,7 @@ static gboolean mirage_file_filter_isz_open_streams (MirageFileFilterIsz *self, 
     for (gint s = 1; s < self->priv->num_segments; s++) {
         gchar *filename = create_filename_func(original_filename, s);
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  %s\n", __debug__, filename);
-        streams[s] = mirage_contextual_create_file_stream (MIRAGE_CONTEXTUAL(self), filename, error);
+        streams[s] = mirage_contextual_create_input_stream (MIRAGE_CONTEXTUAL(self), filename, error);
         if (!streams[s]) {
             g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, "Failed to create stream!");
             return FALSE;

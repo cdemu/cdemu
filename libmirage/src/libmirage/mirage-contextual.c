@@ -250,17 +250,17 @@ gchar *mirage_contextual_obtain_password (MirageContextual *self, GError **error
 
 
 /**
- * mirage_contextual_create_file_stream:
+ * mirage_contextual_create_input_stream:
  * @self: a #MirageContextual
- * @filename: (in): filename to create stream on
+ * @filename: (in): filename to create input stream on
  * @error: (out) (allow-none): location to store error, or %NULL
  *
- * Opens a file pointed to by @filename and creates a chain of file filters
- * on top of it.
+ * Opens a file pointed to by @filename and creates a chain of input
+ * stream filters on top of it.
  *
  * <note>
  * This is a convenience function that retrieves a #MirageContext from
- * @self and calls mirage_context_create_file_stream().
+ * @self and calls mirage_context_create_input_stream().
  * </note>
  *
  * Returns: (transfer full): on success, an object inheriting #GFilterInputStream (and therefore
@@ -269,7 +269,7 @@ gchar *mirage_contextual_obtain_password (MirageContextual *self, GError **error
  * The reference to the object should be released using g_object_unref()
  * when no longer needed.
  */
-GInputStream *mirage_contextual_create_file_stream (MirageContextual *self, const gchar *filename, GError **error)
+GInputStream *mirage_contextual_create_input_stream (MirageContextual *self, const gchar *filename, GError **error)
 {
     MirageContext *context = mirage_contextual_get_context(self);
     GInputStream *stream = NULL;
@@ -277,7 +277,43 @@ GInputStream *mirage_contextual_create_file_stream (MirageContextual *self, cons
     if (!context) {
         g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_LIBRARY_ERROR, "Context not set!");
     } else {
-        stream = mirage_context_create_file_stream(context, filename, error);
+        stream = mirage_context_create_input_stream(context, filename, error);
+        g_object_unref(context);
+    }
+
+    return stream;
+}
+
+
+/**
+ * mirage_contextual_create_output_stream:
+ * @self: a #MirageContextual
+ * @filename: (in): filename to create output stream on
+ * @error: (out) (allow-none): location to store error, or %NULL
+ *
+ * Opens a file pointed to by @filename and creates a chain of output
+ * stream filters on top of it.
+ *
+ * <note>
+ * This is a convenience function that retrieves a #MirageContext from
+ * @self and calls mirage_context_create_output_stream().
+ * </note>
+ *
+ * Returns: (transfer full): on success, an object inheriting #GFilterOutputStream (and therefore
+ * #GOutputStream) and implementing #GSeekable interface is returned, which
+ * can be used to write data to file. On failure, %NULL is returned.
+ * The reference to the object should be released using g_object_unref()
+ * when no longer needed.
+ */
+GOutputStream *mirage_contextual_create_output_stream (MirageContextual *self, const gchar *filename, GError **error)
+{
+    MirageContext *context = mirage_contextual_get_context(self);
+    GOutputStream *stream = NULL;
+
+    if (!context) {
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_LIBRARY_ERROR, "Context not set!");
+    } else {
+        stream = mirage_context_create_output_stream(context, filename, error);
         g_object_unref(context);
     }
 

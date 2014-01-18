@@ -68,24 +68,25 @@ struct _MirageContextPrivate
     MiragePasswordFunction password_function;
     gpointer password_data;
 
-    /* Data stream cache */
-    GHashTable *stream_cache;
+    /* Stream cache */
+    GHashTable *input_stream_cache;
+    GHashTable *output_stream_cache;
 
-    /* GFileInputStream -> filename mapping */
+    /* Stream -> filename mapping */
     GHashTable *file_streams_map;
 };
 
 
 /**********************************************************************\
- *                          Stream cache                              *
+ *                       Input stream cache                           *
 \**********************************************************************/
-static inline void mirage_context_stream_cache_remove (MirageContext *self, gpointer stream)
+static inline void mirage_context_input_stream_cache_remove (MirageContext *self, gpointer stream)
 {
     GHashTableIter iter;
     gpointer key, value;
 
     /* Iterate over table and remove the entry corresponding to stream */
-    g_hash_table_iter_init(&iter, self->priv->stream_cache);
+    g_hash_table_iter_init(&iter, self->priv->input_stream_cache);
 
     while (g_hash_table_iter_next(&iter, &key, &value)) {
         if (value == stream) {
@@ -95,18 +96,47 @@ static inline void mirage_context_stream_cache_remove (MirageContext *self, gpoi
     }
 }
 
-static inline void mirage_context_stream_cache_add (MirageContext *self, const gchar *filename, gpointer stream)
+static inline void mirage_context_input_stream_cache_add (MirageContext *self, const gchar *filename, gpointer stream)
 {
     /* Insert into the table */
-    g_hash_table_insert(self->priv->stream_cache, g_strdup(filename), stream);
+    g_hash_table_insert(self->priv->input_stream_cache, g_strdup(filename), stream);
 
     /* Cleanup when stream is destroyed */
-    g_object_weak_ref(stream, (GWeakNotify)mirage_context_stream_cache_remove, self);
+    g_object_weak_ref(stream, (GWeakNotify)mirage_context_input_stream_cache_remove, self);
 }
 
 
 /**********************************************************************\
- *          GFileInputStream -> filename mapping management           *
+ *                       Output stream cache                          *
+\**********************************************************************/
+static inline void mirage_context_output_stream_cache_remove (MirageContext *self, gpointer stream)
+{
+    GHashTableIter iter;
+    gpointer key, value;
+
+    /* Iterate over table and remove the entry corresponding to stream */
+    g_hash_table_iter_init(&iter, self->priv->output_stream_cache);
+
+    while (g_hash_table_iter_next(&iter, &key, &value)) {
+        if (value == stream) {
+            g_hash_table_iter_remove(&iter);
+            break;
+        }
+    }
+}
+
+static inline void mirage_context_output_stream_cache_add (MirageContext *self, const gchar *filename, gpointer stream)
+{
+    /* Insert into the table */
+    g_hash_table_insert(self->priv->output_stream_cache, g_strdup(filename), stream);
+
+    /* Cleanup when stream is destroyed */
+    g_object_weak_ref(stream, (GWeakNotify)mirage_context_output_stream_cache_remove, self);
+}
+
+
+/**********************************************************************\
+ *               Stream -> filename mapping management                *
 \**********************************************************************/
 static inline void mirage_context_file_streams_map_remove (MirageContext *self, gpointer stream)
 {
@@ -350,7 +380,7 @@ MirageDisc *mirage_context_load_image (MirageContext *self, gchar **filenames, G
     /* Create streams */
     streams = g_new0(GInputStream *, g_strv_length(filenames)+1);
     for (gint i = 0; filenames[i]; i++) {
-        streams[i] = mirage_context_create_file_stream(self, filenames[i], error);
+        streams[i] = mirage_context_create_input_stream(self, filenames[i], error);
         if (!streams[i]) {
             goto end;
         }
@@ -407,13 +437,13 @@ end:
  *                 Public API: file stream creation                   *
 \**********************************************************************/
 /**
- * mirage_context_create_file_stream:
+ * mirage_context_create_input_stream:
  * @self: a #MirageContext
- * @filename: (in): filename to create stream on
+ * @filename: (in): filename to create input stream on
  * @error: (out) (allow-none): location to store error, or %NULL
  *
- * Opens a file pointed to by @filename and creates a chain of file filters
- * on top of it.
+ * Opens a file pointed to by @filename and creates a chain of input
+ * stream filters on top of it.
  *
  * Returns: (transfer full): on success, an object inheriting #GFilterInputStream (and therefore
  * #GInputStream) and implementing #GSeekable interface is returned, which
@@ -421,7 +451,7 @@ end:
  * The reference to the object should be released using g_object_unref()
  * when no longer needed.
  */
-GInputStream *mirage_context_create_file_stream (MirageContext *self, const gchar *filename, GError **error)
+GInputStream *mirage_context_create_input_stream (MirageContext *self, const gchar *filename, GError **error)
 {
     GInputStream *stream;
     GFile *file;
@@ -432,7 +462,7 @@ GInputStream *mirage_context_create_file_stream (MirageContext *self, const gcha
     const GType *file_filter_types;
 
     /* Check if we are already caching the stream */
-    stream = g_hash_table_lookup(self->priv->stream_cache, filename);
+    stream = g_hash_table_lookup(self->priv->input_stream_cache, filename);
     if (stream) {
         g_object_ref(stream);
         return stream;
@@ -460,7 +490,7 @@ GInputStream *mirage_context_create_file_stream (MirageContext *self, const gcha
     g_object_unref(file);
 
     if (!stream) {
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_DATA_FILE_ERROR, "Failed to open file stream on data file: %s!", local_error->message);
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_DATA_FILE_ERROR, "Failed to open file input stream on data file: %s!", local_error->message);
         g_error_free(local_error);
         return NULL;
     }
@@ -518,7 +548,63 @@ GInputStream *mirage_context_create_file_stream (MirageContext *self, const gcha
     g_seekable_seek(G_SEEKABLE(stream), 0, G_SEEK_SET, NULL, NULL);
 
     /* Add to file stream cache */
-    mirage_context_stream_cache_add(self, filename, stream);
+    mirage_context_input_stream_cache_add(self, filename, stream);
+
+    return stream;
+}
+
+/**
+ * mirage_context_create_output_stream:
+ * @self: a #MirageContext
+ * @filename: (in): filename to create output stream on
+ * @error: (out) (allow-none): location to store error, or %NULL
+ *
+ * Opens a file pointed to by @filename and creates a chain of output
+ * stream filters on top of it.
+ *
+ * Returns: (transfer full): on success, an object inheriting #GFilterOutputStream (and therefore
+ * #GOutputStream) and implementing #GSeekable interface is returned, which
+ * can be used to write data to file. On failure, %NULL is returned.
+ * The reference to the object should be released using g_object_unref()
+ * when no longer needed.
+ */
+GOutputStream *mirage_context_create_output_stream (MirageContext *self, const gchar *filename, GError **error)
+{
+    GOutputStream *stream;
+    GFile *file;
+    GError *local_error = NULL;
+
+    /* Check if we are already caching the stream */
+    stream = g_hash_table_lookup(self->priv->output_stream_cache, filename);
+    if (stream) {
+        g_object_ref(stream);
+        return stream;
+    }
+
+    /* Open file; at the bottom of the chain, there's always a GFileStream */
+    file = g_file_new_for_path(filename);
+
+    /* Create stream */
+    stream = G_OUTPUT_STREAM(g_file_append_to(file, G_FILE_CREATE_PRIVATE, NULL, &local_error));
+
+    g_object_unref(file);
+
+    if (!stream) {
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_DATA_FILE_ERROR, "Failed to open file output stream on data file: %s!", local_error->message);
+        g_error_free(local_error);
+        return NULL;
+    }
+
+    /* Store the stream -> filename mapping */
+    mirage_context_file_streams_map_add(self, stream, filename);
+
+    /* FIXME: implement chain of filters */
+
+    /* Make sure that the stream we're returning is rewound to the beginning */
+    g_seekable_seek(G_SEEKABLE(stream), 0, G_SEEK_SET, NULL, NULL);
+
+    /* Add to file stream cache */
+    mirage_context_output_stream_cache_add(self, filename, stream);
 
     return stream;
 }
@@ -527,25 +613,34 @@ GInputStream *mirage_context_create_file_stream (MirageContext *self, const gcha
 /**
  * mirage_context_get_file_stream_filename:
  * @self: a #MirageContext
- * @stream: (in): a #GInputStream
+ * @stream: (in): a stream - either a #GInputStream or a #GOutputStream
  *
  * Traverses the chain of file filters and retrieves the filename on which
- * the #GFileInputStream, located at the bottom of the chain, was opened.
+ * the file input or output stream, located at the bottom of the chain,
+ * was opened.
  *
  * Returns: (transfer none): on success, a pointer to filename on which
  * the underyling file stream was opened. On failure, %NULL is returned.
  */
-const gchar *mirage_context_get_file_stream_filename (MirageContext *self, GInputStream *stream)
+const gchar *mirage_context_get_file_stream_filename (MirageContext *self, gpointer stream)
 {
     if (G_IS_FILTER_INPUT_STREAM(stream)) {
         /* Recursively traverse the filter stream chain */
-        GInputStream *base_stream = g_filter_input_stream_get_base_stream(G_FILTER_INPUT_STREAM(stream));
+        gpointer base_stream = g_filter_input_stream_get_base_stream(G_FILTER_INPUT_STREAM(stream));
         if (!base_stream) {
             return NULL;
         } else {
             return mirage_context_get_file_stream_filename(self, base_stream);
         }
-    } else if (G_IS_FILE_INPUT_STREAM(stream)) {
+    } else if (G_IS_FILTER_OUTPUT_STREAM(stream)) {
+        /* Recursively traverse the filter stream chain */
+        gpointer base_stream = g_filter_output_stream_get_base_stream(G_FILTER_OUTPUT_STREAM(stream));
+        if (!base_stream) {
+            return NULL;
+        } else {
+            return mirage_context_get_file_stream_filename(self, base_stream);
+        }
+    } else if (G_IS_FILE_INPUT_STREAM(stream) || G_IS_FILE_OUTPUT_STREAM(stream)) {
         /* We are at the bottom; get filename from our mapping table */
         return g_hash_table_lookup(self->priv->file_streams_map, stream);
     }
@@ -572,9 +667,10 @@ static void mirage_context_init (MirageContext *self)
     self->priv->options = g_hash_table_new_full(g_str_hash, g_str_equal, g_free, (GDestroyNotify)g_variant_unref);
 
     /* Stream cache */
-    self->priv->stream_cache = g_hash_table_new_full(g_str_hash, g_str_equal, g_free, NULL);
+    self->priv->input_stream_cache = g_hash_table_new_full(g_str_hash, g_str_equal, g_free, NULL);
+    self->priv->output_stream_cache = g_hash_table_new_full(g_str_hash, g_str_equal, g_free, NULL);
 
-    /* GFileInputStream -> filename map */
+    /* Stream -> filename map */
     self->priv->file_streams_map = g_hash_table_new_full(g_direct_hash, g_direct_equal, NULL, g_free);
 }
 
@@ -589,9 +685,10 @@ static void mirage_context_finalize (GObject *gobject)
     g_hash_table_unref(self->priv->options);
 
     /* Free stream cache */
-    g_hash_table_unref(self->priv->stream_cache);
+    g_hash_table_unref(self->priv->input_stream_cache);
+    g_hash_table_unref(self->priv->output_stream_cache);
 
-    /* Free GFileInputStream -> filename map */
+    /* Stream -> filename map */
     g_hash_table_unref(self->priv->file_streams_map);
 
     /* Chain up to the parent class */

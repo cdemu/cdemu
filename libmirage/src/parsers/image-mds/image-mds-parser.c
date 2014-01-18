@@ -576,7 +576,7 @@ static gboolean mirage_parser_mds_parse_track_entries (MirageParserMds *self, MD
                 }
 
                 /* Data stream */
-                GInputStream *data_stream = mirage_contextual_create_file_stream(MIRAGE_CONTEXTUAL(self), mdf_filename, error);
+                GInputStream *data_stream = mirage_contextual_create_input_stream(MIRAGE_CONTEXTUAL(self), mdf_filename, error);
                 if (!data_stream) {
                     MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to open stream on data file: %s!\n", __debug__, mdf_filename);
                     g_free(mdf_filename);
