@@ -247,7 +247,7 @@ static MirageTrack *mirage_parser_mdx_get_track (MirageParserMdx *self, GError *
     data_fragment = g_object_new(MIRAGE_TYPE_FRAGMENT, NULL);
 
     /* Set stream */
-    mirage_fragment_main_data_set_stream(data_fragment, data_stream);
+    mirage_fragment_main_data_set_input_stream(data_fragment, data_stream);
     g_object_unref(data_stream);
 
     mirage_fragment_main_data_set_format(data_fragment, MIRAGE_MAIN_DATA_FORMAT_DATA);

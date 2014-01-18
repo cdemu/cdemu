@@ -254,7 +254,7 @@ static MirageTrack *mirage_parser_cif_parse_track_descriptor (MirageParserCif *s
     fragment = g_object_new(MIRAGE_TYPE_FRAGMENT, NULL);
 
     /* Set file */
-    mirage_fragment_main_data_set_stream(fragment, self->priv->cif_stream);
+    mirage_fragment_main_data_set_input_stream(fragment, self->priv->cif_stream);
     mirage_fragment_main_data_set_offset(fragment, offset_entry->offset);
     mirage_fragment_main_data_set_size(fragment, sector_size);
 

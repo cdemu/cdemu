@@ -667,7 +667,7 @@ static gboolean mirage_parser_cdi_load_track (MirageParserCdi *self, GError **er
 
     mirage_fragment_set_length(fragment, fragment_len);
 
-    mirage_fragment_main_data_set_stream(fragment, self->priv->cdi_stream);
+    mirage_fragment_main_data_set_input_stream(fragment, self->priv->cdi_stream);
     mirage_fragment_main_data_set_offset(fragment, main_offset);
     mirage_fragment_main_data_set_size(fragment, main_size);
     mirage_fragment_main_data_set_format(fragment, main_format);

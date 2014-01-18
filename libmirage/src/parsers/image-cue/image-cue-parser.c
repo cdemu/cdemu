@@ -291,7 +291,7 @@ static gboolean mirage_parser_cue_add_index (MirageParserCue *self, gint number,
 
                 fragment = g_object_new(MIRAGE_TYPE_FRAGMENT, NULL);
 
-                mirage_fragment_main_data_set_stream(fragment, data_stream);
+                mirage_fragment_main_data_set_input_stream(fragment, data_stream);
                 mirage_fragment_main_data_set_size(fragment, main_size);
                 mirage_fragment_main_data_set_offset(fragment, self->priv->binary_offset);
                 mirage_fragment_main_data_set_format(fragment, self->priv->cur_data_format);
@@ -305,7 +305,7 @@ static gboolean mirage_parser_cue_add_index (MirageParserCue *self, gint number,
                 /* Audio data */
                 fragment = g_object_new(MIRAGE_TYPE_FRAGMENT, NULL);
 
-                mirage_fragment_main_data_set_stream(fragment, data_stream);
+                mirage_fragment_main_data_set_input_stream(fragment, data_stream);
                 mirage_fragment_main_data_set_size(fragment, 2352);
                 mirage_fragment_main_data_set_offset(fragment, address*2352); /* Offset is equivalent to the address in CUE, times sector size */
                 mirage_fragment_main_data_set_format(fragment, MIRAGE_MAIN_DATA_FORMAT_AUDIO);

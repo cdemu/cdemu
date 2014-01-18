@@ -610,7 +610,7 @@ static gboolean mirage_parser_mds_parse_track_entries (MirageParserMds *self, MD
                 mirage_fragment_set_length(fragment, fragment_len);
 
                 /* Set stream */
-                mirage_fragment_main_data_set_stream(fragment, data_stream);
+                mirage_fragment_main_data_set_input_stream(fragment, data_stream);
                 g_object_unref(data_stream);
 
                 mirage_fragment_main_data_set_offset(fragment, main_offset);

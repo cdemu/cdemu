@@ -468,7 +468,7 @@ static gboolean mirage_parser_b6t_setup_track_fragments (MirageParserB6t *self, 
             fragment = g_object_new(MIRAGE_TYPE_FRAGMENT, NULL);
 
             /* Set stream */
-            mirage_fragment_main_data_set_stream(fragment, stream);
+            mirage_fragment_main_data_set_input_stream(fragment, stream);
             g_object_unref(stream);
 
             mirage_fragment_main_data_set_size(fragment, main_size);

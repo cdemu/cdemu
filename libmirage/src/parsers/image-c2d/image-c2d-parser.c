@@ -339,7 +339,7 @@ static gboolean mirage_parser_c2d_parse_track_entries (MirageParserC2d *self, GE
         mirage_fragment_set_length(data_fragment, fragment_len);
 
         /* Set stream */
-        mirage_fragment_main_data_set_stream(data_fragment, self->priv->c2d_stream);
+        mirage_fragment_main_data_set_input_stream(data_fragment, self->priv->c2d_stream);
         mirage_fragment_main_data_set_offset(data_fragment, main_offset);
         mirage_fragment_main_data_set_size(data_fragment, main_size);
         mirage_fragment_main_data_set_format(data_fragment, main_format);

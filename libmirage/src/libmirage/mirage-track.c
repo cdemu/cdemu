@@ -587,20 +587,41 @@ gboolean mirage_track_put_sector (MirageTrack *self, MirageSector *sector, GErro
         }
     }
 
+    /* Fragments work with fragment-relative addresses, so get fragment's start address */
+    fragment_start = mirage_fragment_get_address(fragment);
+
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_SECTOR, "%s: got fragment %p for track-relative address 0x%X; fragment relative address: 0x%X\n", __debug__, fragment, relative_address, relative_address - fragment_start);
+
     /* Get expected main channel data size from the fragment; if fragment
        expects subchannel, we always feed 96-byte raw interleaved PW */
     main_length = mirage_fragment_main_data_get_size(fragment);
     subchannel_length = mirage_fragment_subchannel_data_get_size(fragment);
 
     /* Extract data from sector */
-    if (!mirage_sector_extract_data(sector, &main_buffer, main_length, MIRAGE_SUBCHANNEL_PW, &subchannel_buffer, 96, &local_error)) {
+    if (!mirage_sector_extract_data(sector, &main_buffer, main_length, subchannel_length ? MIRAGE_SUBCHANNEL_PW : MIRAGE_SUBCHANNEL_NONE, &subchannel_buffer, subchannel_length ? 96 : 0, &local_error)) {
         g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_TRACK_ERROR, "Failed to extract data from sector: %s", local_error->message);
         g_error_free(local_error);
         g_object_unref(fragment);
         return FALSE;
     }
 
-    /* FIXME: implement data writing in fragment */
+    /* Write main channel data */
+    if (!mirage_fragment_write_main_data(fragment, relative_address - fragment_start, main_buffer, main_length, &local_error)) {
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_TRACK_ERROR, "Failed write main channel data: %s", local_error->message);
+        g_error_free(local_error);
+        g_object_unref(fragment);
+        return FALSE;
+    }
+
+    /* Write subchannel data */
+    if (subchannel_length) {
+        if (!mirage_fragment_write_subchannel_data(fragment, relative_address - fragment_start, subchannel_buffer, subchannel_length, &local_error)) {
+            g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_TRACK_ERROR, "Failed to write subchannel data: %s", local_error->message);
+            g_error_free(local_error);
+            g_object_unref(fragment);
+            return FALSE;
+        }
+    }
 
     g_object_unref(fragment);
 

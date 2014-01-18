@@ -276,7 +276,7 @@ static gboolean mirage_parser_iso_load_track (MirageParserIso *self, const struc
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: creating data fragment\n", __debug__);
     fragment = g_object_new(MIRAGE_TYPE_FRAGMENT, NULL);
 
-    mirage_fragment_main_data_set_stream(fragment, file_info->stream);
+    mirage_fragment_main_data_set_input_stream(fragment, file_info->stream);
     mirage_fragment_main_data_set_size(fragment, file_info->main_data_size);
     mirage_fragment_main_data_set_format(fragment, file_info->main_data_format);
     mirage_fragment_subchannel_data_set_size(fragment, file_info->subchannel_data_size);

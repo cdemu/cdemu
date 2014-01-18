@@ -209,7 +209,7 @@ static gboolean mirage_parser_readcd_parse_toc_entry (MirageParserReadcd *self, 
         /* Data fragment */
         MirageFragment *fragment = g_object_new(MIRAGE_TYPE_FRAGMENT, NULL);
 
-        mirage_fragment_main_data_set_stream(fragment, self->priv->data_stream);
+        mirage_fragment_main_data_set_input_stream(fragment, self->priv->data_stream);
         mirage_fragment_main_data_set_size(fragment, 2352);
         mirage_fragment_main_data_set_offset(fragment, track_lba*2448);
         mirage_fragment_main_data_set_format(fragment, MIRAGE_MAIN_DATA_FORMAT_DATA);
@@ -250,7 +250,7 @@ static gboolean mirage_parser_readcd_parse_toc_entry (MirageParserReadcd *self, 
                 /* Current track: add 150-frame pregap with data from data file */
                 fragment = g_object_new(MIRAGE_TYPE_FRAGMENT, NULL);
 
-                mirage_fragment_main_data_set_stream(fragment, self->priv->data_stream);
+                mirage_fragment_main_data_set_input_stream(fragment, self->priv->data_stream);
                 mirage_fragment_main_data_set_size(fragment, 2352);
                 mirage_fragment_main_data_set_offset(fragment, (track_lba - 150)*2448);
                 mirage_fragment_main_data_set_format(fragment, MIRAGE_MAIN_DATA_FORMAT_DATA);

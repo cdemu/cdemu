@@ -253,7 +253,7 @@ static gboolean mirage_parser_toc_track_add_fragment (MirageParserToc *self, gin
             subchannel_format = self->priv->cur_subchannel_format;
 
             /* Set stream */
-            mirage_fragment_main_data_set_stream(fragment, stream);
+            mirage_fragment_main_data_set_input_stream(fragment, stream);
             mirage_fragment_main_data_set_size(fragment, main_size);
             mirage_fragment_main_data_set_offset(fragment, main_offset);
             mirage_fragment_main_data_set_format(fragment, main_format);
@@ -266,7 +266,7 @@ static gboolean mirage_parser_toc_track_add_fragment (MirageParserToc *self, gin
             fragment = g_object_new(MIRAGE_TYPE_FRAGMENT, NULL);
 
             /* Set stream */
-            mirage_fragment_main_data_set_stream(fragment, stream);
+            mirage_fragment_main_data_set_input_stream(fragment, stream);
             mirage_fragment_main_data_set_size(fragment, 2352);
             mirage_fragment_main_data_set_offset(fragment, start*2352);
             mirage_fragment_main_data_set_format(fragment, MIRAGE_MAIN_DATA_FORMAT_AUDIO);

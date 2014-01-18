@@ -258,7 +258,7 @@ static gboolean mirage_parser_hd_load_track (MirageParserHd *self, GInputStream 
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: creating data fragment\n", __debug__);
     fragment = g_object_new(MIRAGE_TYPE_FRAGMENT, NULL);
 
-    mirage_fragment_main_data_set_stream(fragment, stream);
+    mirage_fragment_main_data_set_input_stream(fragment, stream);
     mirage_fragment_main_data_set_size(fragment, self->priv->track_sectsize);
     mirage_fragment_main_data_set_format(fragment, MIRAGE_MAIN_DATA_FORMAT_DATA);
 
