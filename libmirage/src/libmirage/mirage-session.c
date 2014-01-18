@@ -48,7 +48,8 @@ struct _MirageSessionPrivate
 {
     /* MCN */
     gchar *mcn;
-    gboolean mcn_encoded; /* Is MCN encoded in one of track's fragment's subchannel? */
+    gboolean mcn_fixed; /* Is MCN fixed due to one of track's fragments having subchannel? */
+    gboolean mcn_scan_complete; /* Have we performed scan for MCN in track's fragments' subchannel? */
 
     /* Layout settings */
     gint session_number; /* Session number */
@@ -70,21 +71,19 @@ struct _MirageSessionPrivate
 /**********************************************************************\
  *                          Private functions                         *
 \**********************************************************************/
-static gboolean mirage_session_check_for_encoded_mcn (MirageSession *self)
+static MirageTrack *mirage_session_find_track_with_subchannel (MirageSession *self)
 {
     MirageTrack *track = NULL;
-    gint start_address = 0;
-    gint num_tracks = mirage_session_get_number_of_tracks(self);
 
     /* Go over all tracks, and find the first one with fragment that contains
        subchannel... */
+    gint num_tracks = mirage_session_get_number_of_tracks(self);
     for (gint i = 0; i < num_tracks; i++) {
         track = mirage_session_get_track_by_index(self, i, NULL);
         if (track) {
             MirageFragment *fragment = mirage_track_find_fragment_with_subchannel(track, NULL);
             if (fragment) {
                 MIRAGE_DEBUG(self, MIRAGE_DEBUG_SESSION, "%s: track %i contains subchannel\n", __debug__, i);
-                start_address = mirage_fragment_get_address(fragment);
                 g_object_unref(fragment);
                 break;
             } else {
@@ -95,54 +94,64 @@ static gboolean mirage_session_check_for_encoded_mcn (MirageSession *self)
         }
     }
 
-    if (track) {
-        gint end_address = start_address + 100;
+    return track;
+}
 
-        self->priv->mcn_encoded = TRUE; /* It is, even if it may not be present... */
+static gchar *mirage_session_scan_for_mcn (MirageSession *self)
+{
+    MirageTrack *track = mirage_session_find_track_with_subchannel(self);
+    gchar *mcn = NULL;
 
-        /* Reset MCN */
-        g_free(self->priv->mcn);
-        self->priv->mcn = NULL;
-
-        /* According to INF8090, MCN, if present, must be encoded in at least
-           one sector in 100 consequtive sectors. So we read first hundred
-           sectors' subchannel, and extract MCN if we find it. */
-        for (gint address = start_address; address < end_address; address++) {
-            MirageSector *sector;
-            const guint8 *buf;
-            gint buflen;
-
-            /* Get sector */
-            sector = mirage_track_get_sector(track, address, FALSE, NULL);
-            if (!sector) {
-                continue;
-            }
-
-            /* Get Q subchannel */
-            if (!mirage_sector_get_subchannel(sector, MIRAGE_SUBCHANNEL_Q, &buf, &buflen, NULL)) {
-                g_object_unref(sector);
-                continue;
-            }
-
-            if ((buf[0] & 0x0F) == 0x02) {
-                /* Mode-2 Q found */
-                gchar tmp_mcn[13];
-
-                mirage_helper_subchannel_q_decode_mcn(&buf[1], tmp_mcn);
-
-                MIRAGE_DEBUG(self, MIRAGE_DEBUG_TRACK, "%s: found MCN: <%s>\n", __debug__, tmp_mcn);
-
-                /* Set MCN */
-                self->priv->mcn = g_strndup(tmp_mcn, 13);
-            }
-
-            g_object_unref(sector);
-        }
-
-        g_object_unref(track);
+    if (!track) {
+        return mcn;
     }
 
-    return TRUE;
+    /* According to INF8090, MCN, if present, must be encoded in at least
+       one sector in 100 consequtive sectors. So we read first hundred
+       sectors' subchannel, and extract MCN if we find it. */
+    MirageFragment *fragment = mirage_track_find_fragment_with_subchannel(track, NULL);
+    gint start_address = mirage_fragment_get_address(fragment);
+    g_object_unref(fragment);
+
+    for (gint address = start_address; address < start_address+100; address++) {
+        MirageSector *sector;
+        const guint8 *buf;
+        gint buflen;
+
+        /* Get sector */
+        sector = mirage_track_get_sector(track, address, FALSE, NULL);
+        if (!sector) {
+            break;
+        }
+
+        /* Get Q subchannel */
+        if (!mirage_sector_get_subchannel(sector, MIRAGE_SUBCHANNEL_Q, &buf, &buflen, NULL)) {
+            g_object_unref(sector);
+            break;
+        }
+
+        if ((buf[0] & 0x0F) == 0x02) {
+            /* Mode-2 Q found */
+            gchar tmp_mcn[13];
+
+            mirage_helper_subchannel_q_decode_mcn(&buf[1], tmp_mcn);
+
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_TRACK, "%s: found MCN: <%s>\n", __debug__, tmp_mcn);
+
+            /* Set MCN */
+            mcn = g_strndup(tmp_mcn, 13);
+        }
+
+        g_object_unref(sector);
+
+        if (mcn) {
+            break;
+        }
+    }
+
+    g_object_unref(track);
+
+    return mcn;
 }
 
 static void mirage_session_commit_topdown_change (MirageSession *self)
@@ -180,7 +189,14 @@ static void mirage_session_commit_bottomup_change (MirageSession *self)
     }
 
     /* Bottom-up change = eventual change in fragments, so MCN could've changed... */
-    mirage_session_check_for_encoded_mcn(self);
+    MirageTrack *track = mirage_session_find_track_with_subchannel(self);
+    if (track) {
+        self->priv->mcn_fixed = TRUE;
+        self->priv->mcn_scan_complete = FALSE; /* Will trigger scan in mirage_session_get_mcn() */
+        g_object_unref(track);
+    } else {
+        self->priv->mcn_fixed = FALSE;
+    }
 
     /* Signal session change */
     g_signal_emit_by_name(self, "layout-changed", NULL);
@@ -314,7 +330,7 @@ void mirage_session_set_mcn (MirageSession *self, const gchar *mcn)
     /* MCN can be set only if none of the tracks have fragments that contain
        subchannel; this is because MCN is encoded in the subchannel, and cannot
        be altered... */
-    if (self->priv->mcn_encoded) {
+    if (self->priv->mcn_fixed) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_SESSION, "%s: MCN is already encoded in subchannel!\n", __debug__);
     } else {
         g_free(self->priv->mcn);
@@ -333,6 +349,14 @@ void mirage_session_set_mcn (MirageSession *self, const gchar *mcn)
  */
 const gchar *mirage_session_get_mcn (MirageSession *self)
 {
+    /* Do we need to scan for MCN first? */
+    if (self->priv->mcn_fixed && !self->priv->mcn_scan_complete) {
+        g_free(self->priv->mcn);
+        self->priv->mcn = mirage_session_scan_for_mcn(self);
+
+        self->priv->mcn_scan_complete = TRUE;
+    }
+
     /* Return pointer to MCN */
     return self->priv->mcn;
 }
@@ -1493,6 +1517,8 @@ static void mirage_session_init (MirageSession *self)
     self->priv = MIRAGE_SESSION_GET_PRIVATE(self);
 
     self->priv->mcn = NULL;
+    self->priv->mcn_fixed = FALSE;
+    self->priv->mcn_scan_complete = TRUE;
 
     self->priv->tracks_list = NULL;
     self->priv->languages_list = NULL;

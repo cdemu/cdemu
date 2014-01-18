@@ -58,7 +58,8 @@ struct _MirageTrackPrivate
     MirageSectorType sector_type;  /* Type of sectors that comprise track */
 
     gchar *isrc; /* ISRC */
-    gboolean isrc_encoded; /* Is ISRC encoded in one of track's fragment's subchannel? */
+    gboolean isrc_fixed; /* Is ISRC fixed due to one of track's fragments having subchannel? */
+    gboolean isrc_scan_complete; /* Have we performed scan for ISRC in track's fragments' subchannel? */
 
     /* List of index changes (indexes > 1) */
     GList *indices_list;
@@ -74,63 +75,58 @@ struct _MirageTrackPrivate
 /**********************************************************************\
  *                          Private functions                         *
 \**********************************************************************/
-static gboolean mirage_track_check_for_encoded_isrc (MirageTrack *self)
+static gchar *mirage_track_scan_for_isrc (MirageTrack *self)
 {
-    /* Check if we have fragment with subchannel */
     MirageFragment *fragment = mirage_track_find_fragment_with_subchannel(self, NULL);
+    gchar *isrc = NULL;
 
-    if (fragment) {
-        gint start_address, end_address;
-
-        /* According to INF8090, ISRC, if present, must be encoded in at least
-           one sector in 100 consequtive sectors. So we read first hundred
-           sectors' subchannel, and extract ISRC if we find it. */
-        start_address = mirage_fragment_get_address(fragment);
-        end_address = start_address + 100;
-
-        g_object_unref(fragment);
-
-        self->priv->isrc_encoded = TRUE; /* It is, even if it may not be present... */
-        /* Reset ISRC */
-        g_free(self->priv->isrc);
-        self->priv->isrc = NULL;
-
-        for (gint address = start_address; address < end_address; address++) {
-            MirageSector *sector;
-            const guint8 *buf;
-            gint buflen;
-
-            /* Get sector */
-            sector = mirage_track_get_sector(self, address, FALSE, NULL);
-            if (!sector) {
-                continue;
-            }
-
-            /* Get Q subchannel */
-            if (!mirage_sector_get_subchannel(sector, MIRAGE_SUBCHANNEL_Q, &buf, &buflen, NULL)) {
-                g_object_unref(sector);
-                continue;
-            }
-
-            if ((buf[0] & 0x0F) == 0x03) {
-                /* Mode-3 Q found */
-                gchar tmp_isrc[12];
-
-                mirage_helper_subchannel_q_decode_isrc(&buf[1], tmp_isrc);
-                MIRAGE_DEBUG(self, MIRAGE_DEBUG_TRACK, "%s: found ISRC: <%s>\n", __debug__, tmp_isrc);
-
-                /* Set ISRC */
-                self->priv->isrc = g_strndup(tmp_isrc, 12);
-            }
-
-            g_object_unref(sector);
-        }
-    } else {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_TRACK, "%s: no fragments with subchannel found\n", __debug__);
-        self->priv->isrc_encoded = FALSE;
+    if (!fragment) {
+        return isrc;
     }
 
-    return TRUE;
+    /* According to INF8090, ISRC, if present, must be encoded in at least
+       one sector in 100 consequtive sectors. So we read first hundred
+       sectors' subchannel, and extract ISRC if we find it. */
+    gint start_address = mirage_fragment_get_address(fragment);
+
+    g_object_unref(fragment);
+
+    for (gint address = start_address; address < start_address + 100; address++) {
+        MirageSector *sector;
+        const guint8 *buf;
+        gint buflen;
+
+        /* Get sector */
+        sector = mirage_track_get_sector(self, address, FALSE, NULL);
+        if (!sector) {
+            break;
+        }
+
+        /* Get Q subchannel */
+        if (!mirage_sector_get_subchannel(sector, MIRAGE_SUBCHANNEL_Q, &buf, &buflen, NULL)) {
+            g_object_unref(sector);
+            break;
+        }
+
+        if ((buf[0] & 0x0F) == 0x03) {
+            /* Mode-3 Q found */
+            gchar tmp_isrc[12];
+
+            mirage_helper_subchannel_q_decode_isrc(&buf[1], tmp_isrc);
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_TRACK, "%s: found ISRC: <%s>\n", __debug__, tmp_isrc);
+
+            /* Set ISRC */
+            isrc = g_strndup(tmp_isrc, 12);
+        }
+
+        g_object_unref(sector);
+
+        if (isrc) {
+            break;
+        }
+    }
+
+    return isrc;
 }
 
 
@@ -190,7 +186,14 @@ static void mirage_track_commit_bottomup_change (MirageTrack *self)
     }
 
     /* Bottom-up change = change in fragments, so ISRC could've changed... */
-    mirage_track_check_for_encoded_isrc(self);
+    MirageFragment *fragment = mirage_track_find_fragment_with_subchannel(self, NULL);
+    if (fragment) {
+        self->priv->isrc_fixed = TRUE;
+        self->priv->isrc_scan_complete = FALSE; /* Will trigger scan in mirage_track_get_isrc() */
+        g_object_unref(fragment);
+    } else {
+        self->priv->isrc_fixed = FALSE;
+    }
 
     /* Signal track change */
     g_signal_emit_by_name(self, "layout-changed", NULL);
@@ -417,7 +420,7 @@ void mirage_track_set_isrc (MirageTrack *self, const gchar *isrc)
        provided by one of track's fragments (and therefore won't be generated by
        libMirage), ISRC shouldn't be settable... */
 
-    if (self->priv->isrc_encoded) {
+    if (self->priv->isrc_fixed) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_TRACK, "%s: ISRC is already encoded in subchannel!\n", __debug__);
     } else {
         g_free(self->priv->isrc);
@@ -437,6 +440,13 @@ void mirage_track_set_isrc (MirageTrack *self, const gchar *isrc)
  */
 const gchar *mirage_track_get_isrc (MirageTrack *self)
 {
+    if (self->priv->isrc_fixed && !self->priv->isrc_scan_complete) {
+        g_free(self->priv->isrc);
+        self->priv->isrc = mirage_track_scan_for_isrc(self);
+
+        self->priv->isrc_scan_complete = TRUE;
+    }
+
     /* Return ISRC */
     return self->priv->isrc;
 }
@@ -1005,11 +1015,9 @@ MirageFragment *mirage_track_find_fragment_with_subchannel (MirageTrack *self, G
 
     /* Go over all fragments */
     for (GList *entry = self->priv->fragments_list; entry; entry = entry->next) {
-        gint subchan_sectsize = 0;
         fragment = entry->data;
 
-        mirage_fragment_read_subchannel_data(fragment, 0, NULL, &subchan_sectsize, NULL);
-        if (subchan_sectsize) {
+        if (mirage_fragment_subchannel_data_get_size(fragment)) {
             break;
         } else {
             fragment = NULL;
@@ -1565,7 +1573,9 @@ static void mirage_track_init (MirageTrack *self)
     self->priv->indices_list = NULL;
     self->priv->languages_list = NULL;
 
-    g_free(self->priv->isrc);
+    self->priv->isrc = NULL;
+    self->priv->isrc_fixed = FALSE;
+    self->priv->isrc_scan_complete = TRUE;
 
     self->priv->track_number = 1;
 }
