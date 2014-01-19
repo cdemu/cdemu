@@ -54,6 +54,7 @@
  * @MIRAGE_DEBUG_CDTEXT: message belonging to CD-TEXT encoder/decoder
  * @MIRAGE_DEBUG_FILE_IO: messages belonging to file filter I/O operations
  * @MIRAGE_DEBUG_IMAGE_ID: messages belonging to image identification part of image parsers
+ * @MIRAGE_DEBUG_WRITER: messages belonging to image writer
  *
  * Debug message types and debug masks used to control verbosity of various
  * parts of libMirage.
@@ -76,6 +77,7 @@ typedef enum _MirageDebugMasks
     MIRAGE_DEBUG_CDTEXT = 0x40,
     MIRAGE_DEBUG_FILE_IO = 0x80,
     MIRAGE_DEBUG_IMAGE_ID = 0x100,
+    MIRAGE_DEBUG_WRITER = 0x200,
 } MirageDebugMasks;
 
 
