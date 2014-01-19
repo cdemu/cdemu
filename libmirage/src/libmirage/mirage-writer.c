@@ -33,16 +33,23 @@
 
 struct _MirageWriterPrivate
 {
-    gpointer dummy;
+    MirageDisc *disc;
 };
 
 
 /**********************************************************************\
  *                             Public API                             *
 \**********************************************************************/
-MirageDisc *mirage_writer_open_image (MirageWriter *self, const gchar *filename, GError **error)
+gboolean mirage_writer_open_image (MirageWriter *self, MirageDisc *disc, GError **error)
 {
-    return MIRAGE_WRITER_GET_CLASS(self)->open_image(self, filename, error);
+    if (self->priv->disc) {
+        g_object_unref(self->priv->disc);
+        self->priv->disc = NULL;
+    }
+
+    self->priv->disc = g_object_ref(disc);
+
+    return MIRAGE_WRITER_GET_CLASS(self)->open_image(self, disc, error);
 }
 
 MirageFragment *mirage_writer_create_fragment (MirageWriter *self, MirageTrack *track, MirageFragmentRole role, GError **error)
@@ -52,7 +59,20 @@ MirageFragment *mirage_writer_create_fragment (MirageWriter *self, MirageTrack *
 
 gboolean mirage_writer_finalize_image (MirageWriter *self)
 {
-    return MIRAGE_WRITER_GET_CLASS(self)->finalize_image(self);
+    gboolean succeeded = MIRAGE_WRITER_GET_CLASS(self)->finalize_image(self);
+
+    if (self->priv->disc) {
+        g_object_unref(self->priv->disc);
+        self->priv->disc = NULL;
+    }
+
+    return succeeded;
+}
+
+
+MirageDisc *mirage_writer_get_disc (MirageWriter *self)
+{
+    return g_object_ref(self->priv->disc);
 }
 
 
@@ -65,6 +85,21 @@ G_DEFINE_ABSTRACT_TYPE(MirageWriter, mirage_writer, MIRAGE_TYPE_OBJECT);
 static void mirage_writer_init (MirageWriter *self)
 {
     self->priv = MIRAGE_WRITER_GET_PRIVATE(self);
+
+    self->priv->disc = NULL;
+}
+
+static void mirage_writer_dispose (GObject *gobject)
+{
+    MirageWriter *self = MIRAGE_WRITER(gobject);
+
+    if (self->priv->disc) {
+        g_object_unref(self->priv->disc);
+        self->priv->disc = NULL;
+    }
+
+    /* Chain up to the parent class */
+    return G_OBJECT_CLASS(mirage_writer_parent_class)->dispose(gobject);
 }
 
 static void mirage_writer_finalize (GObject *gobject)
@@ -79,6 +114,7 @@ static void mirage_writer_class_init (MirageWriterClass *klass)
 {
     GObjectClass *gobject_class = G_OBJECT_CLASS(klass);
 
+    gobject_class->dispose = mirage_writer_dispose;
     gobject_class->finalize = mirage_writer_finalize;
 
     klass->open_image = NULL;

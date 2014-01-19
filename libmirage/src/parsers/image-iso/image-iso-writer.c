@@ -36,16 +36,15 @@ struct _MirageWriterIsoPrivate
 /**********************************************************************\
  *                MirageWriter methods implementation                 *
 \**********************************************************************/
-static MirageDisc *mirage_writer_iso_open_image (MirageWriter *self_, const gchar *filename, GError **error G_GNUC_UNUSED)
+static gboolean mirage_writer_iso_open_image (MirageWriter *self_, MirageDisc *disc, GError **error G_GNUC_UNUSED)
 {
     MirageWriterIso *self = MIRAGE_WRITER_ISO(self_);
 
-    MirageDisc *disc = g_object_new(MIRAGE_TYPE_DISC, NULL);
-
     /* For now, assume that we are given only prefix */
-    self->priv->image_file_basename = g_strdup(filename);
+    const gchar **filenames = mirage_disc_get_filenames(disc);
+    self->priv->image_file_basename = g_strdup(filenames[0]);
 
-    return disc;
+    return TRUE;
 }
 
 static MirageFragment *mirage_writer_iso_create_fragment (MirageWriter *self_, MirageTrack *track, MirageFragmentRole role, GError **error)

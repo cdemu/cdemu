@@ -99,7 +99,7 @@ static gboolean cdemu_device_load_disc_private (CdemuDevice *self, gchar **filen
         g_free(writers);
 
         /* Create blank disc */
-        self->priv->disc = mirage_writer_open_image(self->priv->image_writer, filenames[0], NULL);
+        self->priv->disc = g_object_new(MIRAGE_TYPE_DISC, NULL);
 
         mirage_contextual_set_context(MIRAGE_CONTEXTUAL(self->priv->disc), self->priv->mirage_context);
 
@@ -112,6 +112,17 @@ static gboolean cdemu_device_load_disc_private (CdemuDevice *self, gchar **filen
         self->priv->medium_capacity = 80*60*75;
 
         mirage_disc_layout_set_start_sector(self->priv->disc, -150);
+
+        /* Initialize image writer with this disc */
+        if (!mirage_writer_open_image(self->priv->image_writer, self->priv->disc, error)) {
+            g_object_unref(self->priv->disc);
+            self->priv->disc = NULL;
+
+            g_object_unref(self->priv->image_writer);
+            self->priv->image_writer = NULL;
+
+            return FALSE;
+        }
 
         self->priv->medium_leadin = -11077;
         self->priv->num_written_sectors = 0;
@@ -166,6 +177,8 @@ gboolean cdemu_device_unload_disc_private (CdemuDevice *self, gboolean force, GE
     if (self->priv->loaded) {
         /* Delete disc */
         g_object_unref(self->priv->disc);
+        self->priv->disc = NULL;
+
         /* We're not loaded anymore, and media got changed */
         self->priv->loaded = FALSE;
         self->priv->media_event = MEDIA_EVENT_MEDIA_REMOVAL;
