@@ -253,8 +253,7 @@ void mirage_fragment_main_data_set_input_stream (MirageFragment *self, GInputStr
     }
 
     /* Set new stream */
-    self->priv->main_input_stream = stream;
-    g_object_ref(stream);
+    self->priv->main_input_stream = g_object_ref(stream);
 }
 
 /**
@@ -273,8 +272,7 @@ void mirage_fragment_main_data_set_output_stream (MirageFragment *self, GOutputS
     }
 
     /* Set new stream */
-    self->priv->main_output_stream = stream;
-    g_object_ref(stream);
+    self->priv->main_output_stream = g_object_ref(stream);
 }
 
 /**
@@ -554,8 +552,7 @@ void mirage_fragment_subchannel_data_set_input_stream (MirageFragment *self, GIn
     }
 
     /* Set new stream */
-    self->priv->subchannel_input_stream = stream;
-    g_object_ref(stream);
+    self->priv->subchannel_input_stream = g_object_ref(stream);
 }
 
 /**
@@ -574,8 +571,7 @@ void mirage_fragment_subchannel_data_set_output_stream (MirageFragment *self, GO
     }
 
     /* Set new stream */
-    self->priv->subchannel_output_stream = stream;
-    g_object_ref(stream);
+    self->priv->subchannel_output_stream = g_object_ref(stream);
 }
 
 /**

@@ -923,8 +923,7 @@ MirageFragment *mirage_track_get_fragment_by_index (MirageTrack *self, gint inde
         return FALSE;
     }
 
-    g_object_ref(fragment);
-    return fragment;
+    return g_object_ref(fragment);
 }
 
 /**
@@ -963,8 +962,7 @@ MirageFragment *mirage_track_get_fragment_by_address (MirageTrack *self, gint ad
         return FALSE;
     }
 
-    g_object_ref(fragment);
-    return fragment;
+    return g_object_ref(fragment);
 }
 
 /**
@@ -1030,8 +1028,7 @@ MirageFragment *mirage_track_find_fragment_with_subchannel (MirageTrack *self, G
         return FALSE;
     }
 
-    g_object_ref(fragment);
-    return fragment;
+    return g_object_ref(fragment);
 }
 
 
@@ -1203,8 +1200,7 @@ MirageIndex *mirage_track_get_index_by_number (MirageTrack *self, gint number, G
         return NULL;
     }
 
-    g_object_ref(index);
-    return index;
+    return g_object_ref(index);
 }
 
 /**
@@ -1243,8 +1239,7 @@ MirageIndex *mirage_track_get_index_by_address (MirageTrack *self, gint address,
         return FALSE;
     }
 
-    g_object_ref(index);
-    return index;
+    return g_object_ref(index);
 }
 
 /**
@@ -1433,8 +1428,7 @@ MirageLanguage *mirage_track_get_language_by_index (MirageTrack *self, gint inde
         return NULL;
     }
 
-    g_object_ref(language);
-    return language;
+    return g_object_ref(language);
 }
 
 /**
@@ -1471,8 +1465,7 @@ MirageLanguage *mirage_track_get_language_by_code (MirageTrack *self, gint code,
         return NULL;
     }
 
-    g_object_ref(language);
-    return language;
+    return g_object_ref(language);
 }
 
 /**

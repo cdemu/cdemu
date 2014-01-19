@@ -672,8 +672,7 @@ static MirageDisc *mirage_parser_cif_load_image (MirageParser *_self, GInputStre
     CIF_Header header;
 
     /* Check file signature */
-    self->priv->cif_stream = streams[0];
-    g_object_ref(self->priv->cif_stream);
+    self->priv->cif_stream = g_object_ref(streams[0]);
 
     g_seekable_seek(G_SEEKABLE(self->priv->cif_stream), 0, G_SEEK_SET, NULL, NULL);
 

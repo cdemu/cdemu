@@ -464,8 +464,7 @@ GInputStream *mirage_context_create_input_stream (MirageContext *self, const gch
     /* Check if we are already caching the stream */
     stream = g_hash_table_lookup(self->priv->input_stream_cache, filename);
     if (stream) {
-        g_object_ref(stream);
-        return stream;
+        return g_object_ref(stream);
     }
 
     /* Get the list of supported file filters */
@@ -577,8 +576,7 @@ GOutputStream *mirage_context_create_output_stream (MirageContext *self, const g
     /* Check if we are already caching the stream */
     stream = g_hash_table_lookup(self->priv->output_stream_cache, filename);
     if (stream) {
-        g_object_ref(stream);
-        return stream;
+        return g_object_ref(stream);
     }
 
     /* Open file; at the bottom of the chain, there's always a GFileStream */

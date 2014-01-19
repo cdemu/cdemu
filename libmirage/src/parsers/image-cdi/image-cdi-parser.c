@@ -943,8 +943,7 @@ static MirageDisc *mirage_parser_cdi_load_image (MirageParser *_self, GInputStre
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: parsing the image...\n", __debug__);
 
     /* Add reference to stream */
-    self->priv->cdi_stream = streams[0];
-    g_object_ref(self->priv->cdi_stream);
+    self->priv->cdi_stream = g_object_ref(streams[0]);
 
     /* Create disc */
     self->priv->disc = g_object_new(MIRAGE_TYPE_DISC, NULL);

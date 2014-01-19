@@ -295,8 +295,7 @@ static gboolean mirage_file_filter_isz_open_streams (MirageFileFilterIsz *self, 
     }
 
     /* Fill in existing stream */
-    streams[0] = g_filter_input_stream_get_base_stream(G_FILTER_INPUT_STREAM(self));
-    g_object_ref(streams[0]);
+    streams[0] = g_object_ref(g_filter_input_stream_get_base_stream(G_FILTER_INPUT_STREAM(self)));
 
     const gchar *original_filename = mirage_contextual_get_file_stream_filename (MIRAGE_CONTEXTUAL(self), streams[0]);
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  %s\n", __debug__, original_filename);

@@ -181,12 +181,12 @@ void image_analyzer_disc_structure_set_disc (ImageAnalyzerDiscStructure *self, M
     /* Release old disc */
     if (self->priv->disc) {
         g_object_unref(self->priv->disc);
+        self->priv->disc = NULL;
     }
 
     /* Set new disc */
-    self->priv->disc = disc;
     if (disc) {
-        g_object_ref(disc);
+        self->priv->disc = g_object_ref(disc);
     }
 }
 

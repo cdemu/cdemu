@@ -724,8 +724,7 @@ MirageSession *mirage_disc_get_session_by_index (MirageDisc *self, gint index, G
         return NULL;
     }
 
-    g_object_ref(session);
-    return session;
+    return g_object_ref(session);
 }
 
 /**
@@ -762,8 +761,7 @@ MirageSession *mirage_disc_get_session_by_number (MirageDisc *self, gint session
         return FALSE;
     }
 
-    g_object_ref(session);
-    return session;
+    return g_object_ref(session);
 }
 
 /**
@@ -807,8 +805,7 @@ MirageSession *mirage_disc_get_session_by_address (MirageDisc *self, gint addres
         return FALSE;
     }
 
-    g_object_ref(session);
-    return session;
+    return g_object_ref(session);
 }
 
 /**
@@ -852,8 +849,7 @@ MirageSession *mirage_disc_get_session_by_track (MirageDisc *self, gint track_nu
         return FALSE;
     }
 
-    g_object_ref(session);
-    return session;
+    return g_object_ref(session);
 }
 
 /**

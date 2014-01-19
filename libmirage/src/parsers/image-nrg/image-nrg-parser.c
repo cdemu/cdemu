@@ -911,8 +911,7 @@ static MirageDisc *mirage_parser_nrg_load_image (MirageParser *_self, GInputStre
     gchar sig[4];
 
     /* Open file */
-    self->priv->nrg_stream = streams[0];
-    g_object_ref(self->priv->nrg_stream);
+    self->priv->nrg_stream = g_object_ref(streams[0]);
 
     /* Get file size */
     g_seekable_seek(G_SEEKABLE(self->priv->nrg_stream), 0, G_SEEK_END, NULL, NULL);

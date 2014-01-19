@@ -1047,8 +1047,7 @@ static gboolean mirage_file_filter_daa_build_part_table (MirageFileFilterDaa *se
 
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: creating part for main file\n\n", __debug__);
 
-    part->stream = stream;
-    g_object_ref(part->stream);
+    part->stream = g_object_ref(part->stream);
 
     part->offset = self->priv->chunk_data_offset;
     part->start = tmp_offset;

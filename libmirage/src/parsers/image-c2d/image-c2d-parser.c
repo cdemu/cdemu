@@ -512,8 +512,7 @@ static MirageDisc *mirage_parser_c2d_load_image (MirageParser *_self, GInputStre
     gchar sig[32] = "";
 
     /* Check if we can load the image */
-    self->priv->c2d_stream = streams[0];
-    g_object_ref(streams[0]);
+    self->priv->c2d_stream = g_object_ref(streams[0]);
 
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_IMAGE_ID, "%s: checking if parser can handle given image...\n", __debug__);
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_IMAGE_ID, "%s: verifying 32-byte signature at the beginning of image file...\n", __debug__);

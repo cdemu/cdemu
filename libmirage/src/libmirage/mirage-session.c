@@ -829,8 +829,7 @@ MirageTrack *mirage_session_get_track_by_index (MirageSession *self, gint index,
         return NULL;
     }
 
-    g_object_ref(track);
-    return track;
+    return g_object_ref(track);
 }
 
 /**
@@ -867,8 +866,7 @@ MirageTrack *mirage_session_get_track_by_number (MirageSession *self, gint track
         return NULL;
     }
 
-    g_object_ref(track);
-    return track;
+    return g_object_ref(track);
 }
 
 /**
@@ -912,8 +910,7 @@ MirageTrack *mirage_session_get_track_by_address (MirageSession *self, gint addr
         return NULL;
     }
 
-    g_object_ref(track);
-    return track;
+    return g_object_ref(track);
 }
 
 /**
@@ -1170,8 +1167,7 @@ MirageLanguage *mirage_session_get_language_by_index (MirageSession *self, gint 
         return NULL;
     }
 
-    g_object_ref(language);
-    return language;
+    return g_object_ref(language);
 }
 
 /**
@@ -1208,8 +1204,7 @@ MirageLanguage *mirage_session_get_language_by_code (MirageSession *self, gint c
         return FALSE;
     }
 
-    g_object_ref(language);
-    return language;
+    return g_object_ref(language);
 }
 
 /**

@@ -370,12 +370,12 @@ static void mirage_file_filter_set_context (MirageContextual *_self, MirageConte
     /* If context is already set, free it */
     if (self->priv->context) {
         g_object_unref(self->priv->context);
+        self->priv->context = NULL;
     }
 
     /* Set context and ref it */
-    self->priv->context = context;
-    if (self->priv->context) {
-        g_object_ref(self->priv->context);
+    if (context) {
+        self->priv->context = g_object_ref(context);
     }
 }
 

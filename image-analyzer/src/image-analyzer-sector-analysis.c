@@ -201,12 +201,12 @@ void image_analyzer_sector_analysis_set_disc (ImageAnalyzerSectorAnalysis *self,
     /* Release old disc */
     if (self->priv->disc) {
         g_object_unref(self->priv->disc);
+        self->priv->disc = NULL;
     }
 
     /* Set new disc */
-    self->priv->disc = disc;
     if (disc) {
-        g_object_ref(disc);
+        self->priv->disc = g_object_ref(disc);
     }
 }
 

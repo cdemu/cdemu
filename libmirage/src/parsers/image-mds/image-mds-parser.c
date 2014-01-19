@@ -755,8 +755,7 @@ static MirageDisc *mirage_parser_mds_load_image (MirageParser *_self, GInputStre
     gchar signature[17];
 
     /* Check if we can load the image */
-    stream = streams[0];
-    g_object_ref(stream);
+    stream = g_object_ref(streams[0]);
 
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_IMAGE_ID, "%s: checking if parser can handle given image...\n", __debug__);
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_IMAGE_ID, "%s: veryfing signature at the beginning of the file...\n", __debug__);

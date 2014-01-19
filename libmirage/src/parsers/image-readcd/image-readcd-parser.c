@@ -400,8 +400,7 @@ static MirageDisc *mirage_parser_readcd_load_image (MirageParser *_self, GInputS
     /* Check if file can be loaded */
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_IMAGE_ID, "%s: checking if parser can handle given image...\n", __debug__);
 
-    stream = streams[0];
-    g_object_ref(stream);
+    stream = g_object_ref(streams[0]);
 
     if (!mirage_parser_readcd_is_file_valid(self, stream, error)) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_IMAGE_ID, "%s: parser cannot handle given image: invalid readcd TOC file!\n", __debug__);

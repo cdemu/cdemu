@@ -1073,8 +1073,7 @@ static gboolean command_read_disc_information (CdemuDevice *self, const guint8 *
                     last_session_status = 0x01; /* Incomplete */
 
                     /* Return for further data extraction */
-                    session = self->priv->open_session;
-                    g_object_ref(session);
+                    session = g_object_ref(self->priv->open_session);
                 }
             } else {
                 session = mirage_disc_get_session_by_index(self->priv->disc, -1, NULL);

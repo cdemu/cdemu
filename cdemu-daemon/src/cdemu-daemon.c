@@ -60,7 +60,7 @@ static gboolean device_restart_callback (struct DaemonDevicePtr *data)
 
     /* Properly stop the device (I/O thread clenup) */
     cdemu_device_stop(device);
-    
+
     /* Start the device */
     if (!cdemu_device_start(device, self->priv->ctl_device)) {
         CDEMU_DEBUG(device, DAEMON_DEBUG_WARNING, "%s: failed to restart device!\n", __debug__);
@@ -214,12 +214,11 @@ gboolean cdemu_daemon_remove_device (CdemuDaemon *self)
 CdemuDevice *cdemu_daemon_get_device (CdemuDaemon *self, gint device_number, GError **error)
 {
     CdemuDevice *device = g_list_nth_data(self->priv->devices, device_number);
-    if (device) {
-        g_object_ref(device);
-    } else {
+    if (!device) {
         g_set_error(error, CDEMU_ERROR, CDEMU_ERROR_INVALID_ARGUMENT, "Invalid device number!");
+        return NULL;
     }
-    return device;
+    return g_object_ref(device);
 }
 
 

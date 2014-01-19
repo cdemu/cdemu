@@ -158,8 +158,7 @@ static MirageTrack *mirage_parser_mdx_get_track (MirageParserMdx *self, GError *
         MDX_Header header;
 
         /* Reuse the already-opened stream */
-        data_stream = self->priv->stream;
-        g_object_ref(data_stream);
+        data_stream = g_object_ref(self->priv->stream);
 
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: MDX file; reading header...\n", __debug__);
 
@@ -322,8 +321,7 @@ static MirageDisc *mirage_parser_mdx_load_image (MirageParser *_self, GInputStre
     gchar signature[17];
 
     /* Check if we can load the image */
-    self->priv->stream = streams[0];
-    g_object_ref(self->priv->stream);
+    self->priv->stream = g_object_ref(streams[0]);
 
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_IMAGE_ID, "%s: checking if parser can handle given image...\n", __debug__);
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_IMAGE_ID, "%s: veryfing signature at the beginning of the file...\n", __debug__);

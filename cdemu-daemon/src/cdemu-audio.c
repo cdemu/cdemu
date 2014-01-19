@@ -218,10 +218,7 @@ gboolean cdemu_audio_start (CdemuAudio *self, gint start, gint end, MirageDisc *
            before, which means we don't have to unref the previous disc reference */
         self->priv->cur_sector = start;
         self->priv->end_sector = end;
-        self->priv->disc = disc;
-
-        /* Reference disc for the time of playing */
-        g_object_ref(self->priv->disc);
+        self->priv->disc = g_object_ref(disc); /* Reference disc for the time of playing */
 
         CDEMU_DEBUG(self, DAEMON_DEBUG_AUDIOPLAY, "%s: starting playback (0x%X->0x%X)...\n", __debug__, self->priv->cur_sector, self->priv->end_sector);
         cdemu_audio_start_playing(self);

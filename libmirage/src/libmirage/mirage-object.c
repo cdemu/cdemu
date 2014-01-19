@@ -132,12 +132,12 @@ static void mirage_object_set_context (MirageContextual *_self, MirageContext *c
     /* If context is already set, free it */
     if (self->priv->context) {
         g_object_unref(self->priv->context);
+        self->priv->context = NULL;
     }
 
     /* Set context and ref it */
-    self->priv->context = context;
-    if (self->priv->context) {
-        g_object_ref(self->priv->context);
+    if (context) {
+        self->priv->context = g_object_ref(context);
     }
 
     /* Signal change, so that children object can pick it up */
