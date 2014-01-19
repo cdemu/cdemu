@@ -585,7 +585,7 @@ GOutputStream *mirage_context_create_output_stream (MirageContext *self, const g
     file = g_file_new_for_path(filename);
 
     /* Create stream */
-    stream = G_OUTPUT_STREAM(g_file_append_to(file, G_FILE_CREATE_PRIVATE, NULL, &local_error));
+    stream = G_OUTPUT_STREAM(g_file_replace(file, NULL, FALSE, G_FILE_CREATE_PRIVATE | G_FILE_CREATE_REPLACE_DESTINATION, NULL, &local_error));
 
     g_object_unref(file);
 
