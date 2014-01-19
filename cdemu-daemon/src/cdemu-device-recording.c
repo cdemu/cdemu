@@ -38,19 +38,19 @@ static gboolean cdemu_device_recording_write_sector (CdemuDevice *self, MirageSe
 
         /* Sync, header, subheader, first 32 bytes of user data and 16-byte Q subchannel */
         if (mirage_sector_get_sync(sector, &data, &data_length, NULL)) {
-            cdemu_device_dump_buffer(self, DAEMON_DEBUG_RECORDING, __debug__, 16, data, data_length);
+            CDEMU_DEBUG_PRINT_BUFFER(self, DAEMON_DEBUG_RECORDING, __debug__, 16, data, data_length);
         }
         if (mirage_sector_get_header(sector, &data, &data_length, NULL)) {
-            cdemu_device_dump_buffer(self, DAEMON_DEBUG_RECORDING, __debug__, 16, data, data_length);
+            CDEMU_DEBUG_PRINT_BUFFER(self, DAEMON_DEBUG_RECORDING, __debug__, 16, data, data_length);
         }
         if (mirage_sector_get_subheader(sector, &data, &data_length, NULL)) {
-            cdemu_device_dump_buffer(self, DAEMON_DEBUG_RECORDING, __debug__, 16, data, data_length);
+            CDEMU_DEBUG_PRINT_BUFFER(self, DAEMON_DEBUG_RECORDING, __debug__, 16, data, data_length);
         }
         mirage_sector_get_data(sector, &data, NULL, NULL);
-        cdemu_device_dump_buffer(self, DAEMON_DEBUG_RECORDING, __debug__, 16, data, 32);
+        CDEMU_DEBUG_PRINT_BUFFER(self, DAEMON_DEBUG_RECORDING, __debug__, 16, data, 32);
         CDEMU_DEBUG(self, DAEMON_DEBUG_RECORDING, "%s: ...\n", __debug__);
         mirage_sector_get_subchannel(sector, MIRAGE_SUBCHANNEL_Q, &data, NULL, NULL);
-        cdemu_device_dump_buffer(self, DAEMON_DEBUG_RECORDING, __debug__, 16, data, 16);
+        CDEMU_DEBUG_PRINT_BUFFER(self, DAEMON_DEBUG_RECORDING, __debug__, 16, data, 16);
     }
 
     /* Put sector to track */

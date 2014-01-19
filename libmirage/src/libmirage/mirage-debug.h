@@ -105,4 +105,20 @@ typedef enum _MirageDebugMasks
  */
 #define MIRAGE_DEBUG_ON(obj, lvl) mirage_contextual_debug_is_active(MIRAGE_CONTEXTUAL(obj), lvl)
 
+
+/**
+ * MIRAGE_DEBUG_PRINT_BUFFER:
+ * @obj: (in): object
+ * @lvl: (in): debug level
+ * @prefix: (in) (allow-none): prefix, or none
+ * @width: (in): output width
+ * @buffer: (in) (array length=buffer_length): buffer to print
+ * @buffer_length: (in): buffer length
+ *
+ * Debugging macro, provided for convenience. It performs cast to
+ * #MirageContextual interface on @obj and calls mirage_contextual_debug_print_buffer()
+ * with given arguments.
+ */
+#define MIRAGE_DEBUG_PRINT_BUFFER(obj, lvl, prefix, width, buffer, buffer_length) mirage_contextual_debug_print_buffer(MIRAGE_CONTEXTUAL(obj), lvl, prefix, width, buffer, buffer_length)
+
 #endif /* __MIRAGE_DEBUG_H__ */

@@ -185,6 +185,57 @@ gboolean mirage_contextual_debug_is_active (MirageContextual *self, gint level)
 }
 
 
+/**
+ * mirage_contextual_debug_print_buffer:
+ * @self: a #MirageContextual
+ * @level: (in): debug level
+ * @prefix: (in) (allow-none): prefix, or none
+ * @width: (in): output width
+ * @buffer: (in) (array length=buffer_length): buffer to print
+ * @buffer_length: (in): buffer length
+ *
+ * Prints contents of @buffer as a sequence of @buffer_length two-digit
+ * hexadecimal numbers, arranged in lines of @width numbers. Each line
+ * is optionally prefixed by @prefix. If specified debug @level is not
+ * active (masked by context), this function does nothing.
+ */
+void mirage_contextual_debug_print_buffer (MirageContextual *self, gint level, const gchar *prefix, gint width, const guint8 *buffer, gint buffer_length)
+{
+    /* No-op if specified debug level is not active */
+    if (!MIRAGE_DEBUG_ON(self, level)) {
+        return;
+    }
+
+    const gint num_lines = (buffer_length + width - 1) / width; /* Number of lines */
+    const gint num_chars = width*3 + 1; /* Max. number of characters per line */
+    gchar *line_str = g_malloc(num_chars); /* Three characters per element, plus terminating NULL */
+
+    const guint8 *buffer_ptr = buffer;
+
+    for (gint l = 0; l < num_lines; l++) {
+        gchar *ptr = line_str;
+        gint num = MIN(width, buffer_length);
+
+        memset(ptr, 0, num_chars);
+
+        for (gint i = 0; i < num; i++) {
+            ptr += g_sprintf(ptr, "%02hX ", *buffer_ptr);
+            buffer_ptr++;
+            buffer_length--;
+        }
+
+        if (prefix) {
+            MIRAGE_DEBUG(self, level, "%s: %s\n", prefix, line_str);
+        } else {
+            MIRAGE_DEBUG(self, level, "%s\n", line_str);
+        }
+    }
+
+    g_free(line_str);
+}
+
+
+
 /**********************************************************************\
  *        Convenience functions, passthrough to MirageContext         *
 \**********************************************************************/

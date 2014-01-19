@@ -151,44 +151,6 @@ static gint read_sector_data (MirageSector *sector, MirageDisc *disc, gint addre
 
 
 /**********************************************************************\
- *                          Buffer dump function                      *
-\**********************************************************************/
-void cdemu_device_dump_buffer (CdemuDevice *self, gint debug_level, const gchar *prefix, gint width, const guint8 *buffer, gint length)
-{
-    if (!CDEMU_DEBUG_ON(self, debug_level)) {
-        return;
-    }
-
-    const gint num_lines = (length + width - 1) / width; /* Number of lines */
-    const gint num_chars = width*3 + 1; /* Max. number of characters per line */
-    gchar *line_str = g_malloc(num_chars); /* Three characters per element, plus terminating NULL */
-
-    const guint8 *buffer_ptr = buffer;
-
-    for (gint l = 0; l < num_lines; l++) {
-        gchar *ptr = line_str;
-        gint num = MIN(width, length);
-
-        memset(ptr, 0, num_chars);
-
-        for (gint i = 0; i < num; i++) {
-            ptr += g_sprintf(ptr, "%02hX ", *buffer_ptr);
-            buffer_ptr++;
-            length--;
-        }
-
-        if (prefix) {
-            CDEMU_DEBUG(self, debug_level, "%s: %s\n", prefix, line_str);
-        } else {
-            CDEMU_DEBUG(self, debug_level, "%s\n", line_str);
-        }
-    }
-
-    g_free(line_str);
-}
-
-
-/**********************************************************************\
  *                     Packet command implementations                 *
 \**********************************************************************/
 /* CLOSE TRACK/SESSION */
@@ -440,7 +402,7 @@ static gboolean command_mode_select (CdemuDevice *self, const guint8 *raw_cdb)
 
     /* Dump the parameter list */
     CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: received parameters:\n", __debug__);
-    cdemu_device_dump_buffer(self, DAEMON_DEBUG_MMC, __debug__, 16, self->priv->buffer, transfer_len);
+    CDEMU_DEBUG_PRINT_BUFFER(self, DAEMON_DEBUG_MMC, __debug__, 16, self->priv->buffer, transfer_len);
 
     /* Try to decipher mode select data... MODE SENSE (6) vs MODE SENSE (10) */
     gint blkdesc_len = 0;
@@ -2138,7 +2100,7 @@ static gboolean command_send_cue_sheet (CdemuDevice *self, const guint8 *raw_cdb
 
     /* Dump CUE sheet */
     CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: received CUE sheet:\n", __debug__);
-    cdemu_device_dump_buffer(self, DAEMON_DEBUG_MMC, __debug__, 8, self->priv->buffer, cue_sheet_size);
+    CDEMU_DEBUG_PRINT_BUFFER(self, DAEMON_DEBUG_MMC, __debug__, 8, self->priv->buffer, cue_sheet_size);
 
     /* Parse CUE sheet */
     if (!cdemu_device_sao_recording_parse_cue_sheet(self, self->priv->buffer, cue_sheet_size)) {

@@ -69,6 +69,7 @@ MirageContext *mirage_contextual_get_context (MirageContextual *self);
 void mirage_contextual_debug_message (MirageContextual *self, gint level, gchar *format, ...);
 void mirage_contextual_debug_messagev (MirageContextual *self, gint level, gchar *format, va_list args);
 gboolean mirage_contextual_debug_is_active (MirageContextual *self, gint level);
+void mirage_contextual_debug_print_buffer (MirageContextual *self, gint level, const gchar *prefix, gint width, const guint8 *buffer, gint buffer_length);
 
 GVariant *mirage_contextual_get_option (MirageContextual *self, const gchar *name);
 
