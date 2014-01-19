@@ -1897,6 +1897,9 @@ static gboolean command_read_track_information (CdemuDevice *self, const guint8 
         /* LBA */
         CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: requested track containing sector 0x%X\n", __debug__, number);
         track = mirage_disc_get_track_by_address(disc, number, NULL);
+        if (!track && self->priv->recordable_disc) {
+            return_empty_track = TRUE;
+        }
     } else if (cdb->type == 0x01) {
         /* Track number */
         CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: requested track %d (%Xh)\n", __debug__, number, number);
