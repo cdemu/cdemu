@@ -101,6 +101,8 @@ static gboolean cdemu_device_load_disc_private (CdemuDevice *self, gchar **filen
         /* Create blank disc */
         self->priv->disc = mirage_writer_open_image(self->priv->image_writer, filenames[0], NULL);
 
+        mirage_contextual_set_context(MIRAGE_CONTEXTUAL(self->priv->disc), self->priv->mirage_context);
+
         /* Set filenames */
         mirage_disc_set_filenames(self->priv->disc, (const gchar **)filenames);
 
