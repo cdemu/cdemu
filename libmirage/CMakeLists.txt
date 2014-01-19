@@ -81,8 +81,8 @@ configure_file (
     ${PROJECT_BINARY_DIR}/src/libmirage/mirage-version.h
 )
 configure_file (
-    ${PROJECT_SOURCE_DIR}/docs/reference/libmirage/version.xml.in
-    ${PROJECT_BINARY_DIR}/docs/reference/libmirage/version.xml
+    ${PROJECT_SOURCE_DIR}/reference/version.xml.in
+    ${PROJECT_BINARY_DIR}/reference/version.xml
 )
 configure_file (
     ${PROJECT_SOURCE_DIR}/libmirage.pc.in
@@ -193,7 +193,7 @@ if (GTKDOC_ENABLED AND GTKDOC_FOUND)
         MAIN_SGML_FILE ${PROJECT_NAME}-docs.sgml
         SOURCE_DIR ${PROJECT_SOURCE_DIR}/src/libmirage ${PROJECT_BINARY_DIR}/src/libmirage
         SOURCES ${libmirage_HEADERS} ${libmirage_SOURCES}
-        DOCS_DIR ${PROJECT_SOURCE_DIR}/docs/reference/libmirage
+        DOCS_DIR ${PROJECT_SOURCE_DIR}/reference
         IGNORE_HFILES mirage-disc-structures.h
         CFLAGS ${GLIB_CFLAGS} -I${PROJECT_SOURCE_DIR}/src/libmirage
         LDFLAGS ${GLIB_LDFLAGS} -L${PROJECT_BINARY_DIR}
