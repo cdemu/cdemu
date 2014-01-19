@@ -66,10 +66,7 @@ static gboolean cdemu_device_recording_write_sector (CdemuDevice *self, MirageSe
 static gboolean cdemu_device_recording_close_track (CdemuDevice *self)
 {
     if (self->priv->open_track) {
-        CDEMU_DEBUG(self, DAEMON_DEBUG_RECORDING, "%s: closing track (adding to layout)\n", __debug__);
-
-        /* Add track to our open session */
-        mirage_session_add_track_by_index(self->priv->open_session, -1, self->priv->open_track);
+        CDEMU_DEBUG(self, DAEMON_DEBUG_RECORDING, "%s: closing track\n", __debug__);
 
         /* Release the reference we hold */
         g_object_unref(self->priv->open_track);
@@ -84,15 +81,12 @@ static gboolean cdemu_device_recording_close_session (CdemuDevice *self)
     if (self->priv->open_session) {
         const struct ModePage_0x05 *p_0x05 = cdemu_device_get_mode_page(self, 0x05, MODE_PAGE_CURRENT);
 
-        CDEMU_DEBUG(self, DAEMON_DEBUG_RECORDING, "%s: closing session (adding to layout)\n", __debug__);
+        CDEMU_DEBUG(self, DAEMON_DEBUG_RECORDING, "%s: closing session\n", __debug__);
 
         /* If we have an open track, close it */
         if (self->priv->open_track) {
             cdemu_device_recording_close_track(self);
         }
-
-        /* Add session to our disc */
-        mirage_disc_add_session_by_index(self->priv->disc, -1, self->priv->open_session);
 
         /* Release the reference we hold */
         g_object_unref(self->priv->open_session);
@@ -116,19 +110,7 @@ static gboolean cdemu_device_recording_open_session (CdemuDevice *self)
     /* Create new session */
     self->priv->open_session = g_object_new(MIRAGE_TYPE_SESSION, NULL);
 
-    /* Set context, so we can debug... */
-    mirage_contextual_set_context(MIRAGE_CONTEXTUAL(self->priv->open_session), self->priv->mirage_context);
-
-    /* Determine session number and start sector from the disc; but do
-       not add the session to the layout yet (do this when session is
-       closed) */
-    gint session_number = mirage_disc_layout_get_first_session(self->priv->disc) + mirage_disc_get_number_of_sessions(self->priv->disc);
-    gint start_sector = mirage_disc_layout_get_start_sector(self->priv->disc) + mirage_disc_layout_get_length(self->priv->disc);
-    gint first_track = mirage_disc_layout_get_first_track(self->priv->disc) + mirage_disc_get_number_of_tracks(self->priv->disc);
-
-    mirage_session_layout_set_session_number(self->priv->open_session, session_number);
-    mirage_session_layout_set_start_sector(self->priv->open_session, start_sector);
-    mirage_session_layout_set_first_track(self->priv->open_session, first_track);
+    mirage_disc_add_session_by_index(self->priv->disc, -1, self->priv->open_session);
 
     CDEMU_DEBUG(self, DAEMON_DEBUG_RECORDING, "%s: opened session #%d; start sector: %d, first track: %d!\n", __debug__, mirage_session_layout_get_session_number(self->priv->open_session), mirage_session_layout_get_start_sector(self->priv->open_session), mirage_session_layout_get_first_track(self->priv->open_session));
 
@@ -145,18 +127,9 @@ static gboolean cdemu_device_recording_open_track (CdemuDevice *self, MirageSect
     /* Create new track */
     self->priv->open_track = g_object_new(MIRAGE_TYPE_TRACK, NULL);
 
-    /* Set parent, because libMirage sector code expects to be able to
-       chain up all the way to disc */
-    mirage_object_set_parent(MIRAGE_OBJECT(self->priv->open_track), self->priv->open_session);
-
-    /* Determine track number and start sector from open session; but do
-       not add track to the layout yet (do this when track is closed) */
-    gint track_number = mirage_session_layout_get_first_track(self->priv->open_session) + mirage_session_get_number_of_tracks(self->priv->open_session);
-    gint start_sector = mirage_session_layout_get_start_sector(self->priv->open_session) + mirage_session_layout_get_length(self->priv->open_session);
-    mirage_track_layout_set_track_number(self->priv->open_track, track_number);
-    mirage_track_layout_set_start_sector(self->priv->open_track, start_sector);
-
     mirage_track_set_sector_type(self->priv->open_track, sector_type);
+
+    mirage_session_add_track_by_index(self->priv->open_session, -1, self->priv->open_track);
 
     CDEMU_DEBUG(self, DAEMON_DEBUG_RECORDING, "%s: opened track #%d; sector type: %d; start sector: %d!\n", __debug__, mirage_track_layout_get_track_number(self->priv->open_track), sector_type, mirage_track_layout_get_start_sector(self->priv->open_track));
 
