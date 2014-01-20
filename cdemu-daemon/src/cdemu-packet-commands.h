@@ -2203,14 +2203,16 @@ struct SET_STREAMING_CDB
     guint8 code;
 
     #if G_BYTE_ORDER == G_BIG_ENDIAN
-        guint8 reserved1 : 3;
-        guint8 reserved2 : 5;
+        guint8 obsolete  : 3;
+        guint8 reserved1 : 5;
     #else
-        guint8 reserved2 : 5;
-        guint8 reserved1 : 3;
+        guint8 reserved1 : 5;
+        guint8 obsolete  : 3;
     #endif
 
-    guint8 reserved3[7];
+    guint8 reserved2[6];
+
+    guint8 type;
 
     guint16 length;
 

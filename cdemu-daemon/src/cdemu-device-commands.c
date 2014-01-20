@@ -2142,6 +2142,22 @@ static gboolean command_set_cd_speed (CdemuDevice *self, const guint8 *raw_cdb)
     return TRUE;
 }
 
+/* SET STREAMING */
+static gboolean command_set_streaming (CdemuDevice *self, const guint8 *raw_cdb)
+{
+    struct SET_STREAMING_CDB *cdb = (struct SET_STREAMING_CDB *)raw_cdb;
+    guint16 length = GUINT16_FROM_BE(cdb->length);
+
+    CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: performance descriptor type %d, length: %d\n", __debug__, cdb->type, length);
+
+    /* Read descriptors */
+    cdemu_device_read_buffer(self, length);
+
+    /* Dump descriptors */
+    CDEMU_DEBUG_PRINT_BUFFER(self, DAEMON_DEBUG_MMC, __debug__, 16, self->priv->buffer, length);
+
+    return TRUE;
+}
 
 /* START/STOP UNIT */
 static gboolean command_start_stop_unit (CdemuDevice *self, const guint8 *raw_cdb)
@@ -2386,6 +2402,10 @@ gint cdemu_device_execute_command (CdemuDevice *self, const guint8 *cdb)
         { SET_CD_SPEED,
           "SET CD SPEED",
           command_set_cd_speed,
+          TRUE },
+        { SET_STREAMING,
+          "SET STREAMING",
+          command_set_streaming,
           TRUE },
         { START_STOP_UNIT,
           "START/STOP UNIT",
