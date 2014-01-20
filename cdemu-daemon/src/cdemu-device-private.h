@@ -134,9 +134,10 @@ struct _CdemuDevicePrivate
 struct _CdemuRecording
 {
     gint (*get_next_writable_address) (CdemuDevice *self);
-    gint (*close_track) (CdemuDevice *self);
-    gint (*close_session) (CdemuDevice *self);
-    gint (*write_sectors) (CdemuDevice *self, gint start_address, gint num_sectors);
+    gboolean (*close_track) (CdemuDevice *self);
+    gboolean (*close_session) (CdemuDevice *self);
+    gboolean (*write_sectors) (CdemuDevice *self, gint start_address, gint num_sectors);
+    gboolean (*reserve_track) (CdemuDevice *self, guint length);
 };
 
 struct ModePageEntry

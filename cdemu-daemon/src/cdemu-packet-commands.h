@@ -1973,6 +1973,18 @@ struct RESERVE_TRACK_CDB
     guint8 control;
 };
 
+struct RESERVE_TRACK_SizeParameter
+{
+    guint8 reserved[3];
+    guint32 reservation_size;
+};
+
+struct RESERVE_TRACK_AddressParameter
+{
+    guint32 reservation_lba;
+    guint8 reserved[3];
+};
+
 
 /**********************************************************************\
  *                                SCAN                                *

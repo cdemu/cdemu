@@ -2076,12 +2076,41 @@ static gboolean command_request_sense (CdemuDevice *self, const guint8 *raw_cdb)
 static gboolean command_reserve_track (CdemuDevice *self, const guint8 *raw_cdb)
 {
     struct RESERVE_TRACK_CDB *cdb = (struct RESERVE_TRACK_CDB *)raw_cdb;
+    guint track_length;
 
     CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: reserve track: ARSV: %d RMZ: %d\n", __debug__, cdb->arsv, cdb->rmz);
-    CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: parameters:\n", __debug__);
-    CDEMU_DEBUG_PRINT_BUFFER(self, DAEMON_DEBUG_MMC, __debug__, 8, cdb->parameter, sizeof(cdb->parameter));
 
-    return TRUE;
+    /* Make sure we have recording mode set */
+    if (!self->priv->recording) {
+        CDEMU_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: RESERVE TRACK called without recording mode set\n", __debug__);
+        cdemu_device_write_sense(self, CHECK_CONDITION, COMMAND_SEQUENCE_ERROR);
+        return FALSE;
+    }
+
+    /* Make sure set recording mode implementes reserve track */
+    if (!self->priv->recording->reserve_track) {
+        CDEMU_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: RESERVE TRACK called in recoding mode that does not implement it (yet?)\n", __debug__);
+        cdemu_device_write_sense(self, CHECK_CONDITION, COMMAND_SEQUENCE_ERROR);
+        return FALSE;
+    }
+
+    if (!cdb->arsv) {
+        /* Reservation size format */
+        struct RESERVE_TRACK_SizeParameter *param = (struct RESERVE_TRACK_SizeParameter *)cdb->parameter;
+        guint32 reservation_size = GUINT32_FROM_BE(param->reservation_size);
+        CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: reservation size format: %d (%X)\n", __debug__, reservation_size, reservation_size);
+        track_length = reservation_size;
+    } else {
+        /* Reservation LBA format */
+        struct RESERVE_TRACK_AddressParameter *param = (struct RESERVE_TRACK_AddressParameter *)cdb->parameter;
+        guint32 reservation_lba = GUINT32_FROM_BE(param->reservation_lba);
+        CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: reservation LBA format: %d (%X)\n", __debug__, reservation_lba, reservation_lba);
+
+        /* Is this correct? */
+        track_length = reservation_lba - self->priv->recording->get_next_writable_address(self);
+    }
+
+    return self->priv->recording->reserve_track(self, track_length);
 }
 
 

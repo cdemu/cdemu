@@ -340,6 +340,7 @@ static const CdemuRecording recording_commands_tao = {
     .close_track = cdemu_device_recording_close_track, /* Use generic function */
     .close_session = cdemu_device_recording_close_session, /* Use generic function */
     .write_sectors = cdemu_device_tao_recording_write_sectors,
+    .reserve_track = NULL, /* No support for RESERVE TRACK */
 };
 
 
@@ -548,6 +549,7 @@ static const CdemuRecording recording_commands_raw = {
     .close_track = cdemu_device_recording_close_track, /* Use generic function */
     .close_session = cdemu_device_recording_close_session, /* Use generic function */
     .write_sectors = cdemu_device_raw_recording_write_sectors,
+    .reserve_track = NULL, /* No support for RESERVE TRACK */
 };
 
 
@@ -1112,6 +1114,116 @@ static const CdemuRecording recording_commands_sao = {
     .close_track = cdemu_device_recording_close_track, /* Use generic function */
     .close_session = cdemu_device_recording_close_session, /* Use generic function */
     .write_sectors = cdemu_device_sao_recording_write_sectors,
+    .reserve_track = NULL, /* No support for RESERVE TRACK */
+};
+
+
+/**********************************************************************\
+ *                  Disc-at-once (DAO) recording (DVD)                *
+\**********************************************************************/
+#undef __debug__
+#define __debug__ "DAO recording"
+
+static gboolean cdemu_device_dao_recording_reserve_track (CdemuDevice *self, guint length)
+{
+    /* Open session if necessary */
+    if (!self->priv->open_session) {
+        CDEMU_DEBUG(self, DAEMON_DEBUG_RECORDING, "%s: no session opened; opening one!\n", __debug__);
+
+        if (!cdemu_device_recording_open_session(self)) {
+            CDEMU_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: failed to open new session!\n", __debug__);
+            return FALSE;
+        }
+    }
+
+    /* Use generic function first */
+    if (!cdemu_device_recording_open_track(self, MIRAGE_SECTOR_MODE1)) {
+        return FALSE;
+    }
+
+    /* Data fragment */
+    GError *local_error = NULL;
+    MirageFragment *fragment = mirage_writer_create_fragment(self->priv->image_writer, self->priv->open_track, MIRAGE_FRAGMENT_DATA, &local_error);
+    if (!fragment) {
+        CDEMU_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: failed to create data fragment for track: %s\n", __debug__, local_error->message);
+        g_error_free(local_error);
+        return FALSE;
+    }
+
+    mirage_fragment_set_length(fragment, length);
+
+    mirage_track_add_fragment(self->priv->open_track, -1, fragment);
+    g_object_unref(fragment);
+
+    return TRUE;
+}
+
+static gboolean cdemu_device_dao_recording_write_sectors (CdemuDevice *self, gint start_address, gint num_sectors)
+{
+    /* At this point, the track should already be open due to a call to
+       RESERVE TRACK */
+    if (!self->priv->open_track) {
+        CDEMU_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: no open track; there should be one opened by a call to RESERVE TRACK!\n", __debug__);
+        return FALSE;
+    }
+
+    /* DVD recording has only Mode 1 data, so data block type in mode
+       page 0x05 must be 8! */
+    const struct ModePage_0x05 *p_0x05 = cdemu_device_get_mode_page(self, 0x05, MODE_PAGE_CURRENT);
+    if (p_0x05->data_block_type != 8) {
+        CDEMU_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: data block type in mode page 0x05 is not 8!\n", __debug__);
+        return FALSE;
+    }
+
+    MirageSector *sector = g_object_new(MIRAGE_TYPE_SECTOR, NULL);
+
+    GError *local_error = NULL;
+    gboolean succeeded = TRUE;
+
+    /* Write all sectors */
+    for (gint address = start_address; address < start_address + num_sectors; address++) {
+        CDEMU_DEBUG(self, DAEMON_DEBUG_RECORDING, "%s: sector %d\n", __debug__, address);
+
+        /* Read data from host */
+        cdemu_device_read_buffer(self, 2048);
+
+        /* Feed sector data */
+        if (!mirage_sector_feed_data(sector, address, MIRAGE_SECTOR_MODE1, self->priv->buffer, 2048, MIRAGE_SUBCHANNEL_NONE, NULL, 0, 0, &local_error)) {
+            CDEMU_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: failed to feed sector for writing: %s!\n", __debug__, local_error->message);
+            g_error_free(local_error);
+            local_error = NULL;
+            break;
+        }
+
+        /* Write sector */
+        mirage_object_set_parent(MIRAGE_OBJECT(sector), self->priv->open_track);
+        succeeded = cdemu_device_recording_write_sector(self, sector);
+        if (!succeeded) {
+            break;
+        }
+
+        self->priv->num_written_sectors++;
+    }
+
+    g_object_unref(sector);
+
+    return succeeded;
+}
+
+static gint cdemu_device_dao_recording_get_next_writable_address (CdemuDevice *self)
+{
+    /* NWA base is at the beginning of first track */
+    gint nwa_base = 0;
+    return nwa_base + self->priv->num_written_sectors;
+}
+
+/* Commands structure */
+static const CdemuRecording recording_commands_dao = {
+    .get_next_writable_address = cdemu_device_dao_recording_get_next_writable_address,
+    .close_track = cdemu_device_recording_close_track, /* Use generic function */
+    .close_session = cdemu_device_recording_close_session, /* Use generic function */
+    .write_sectors = cdemu_device_dao_recording_write_sectors,
+    .reserve_track = cdemu_device_dao_recording_reserve_track,
 };
 
 
@@ -1131,8 +1243,13 @@ void cdemu_device_recording_set_mode (CdemuDevice *self, gint mode)
             break;
         }
         case 2: {
-            CDEMU_DEBUG(self, DAEMON_DEBUG_RECORDING, "%s: activating session-at-once recording\n", __debug__);
-            self->priv->recording = &recording_commands_sao;
+            if (mirage_disc_get_medium_type(self->priv->disc) == MIRAGE_MEDIUM_DVD) {
+                CDEMU_DEBUG(self, DAEMON_DEBUG_RECORDING, "%s: activating disc-at-once recording (DVD)\n", __debug__);
+                self->priv->recording = &recording_commands_dao;
+            } else {
+                CDEMU_DEBUG(self, DAEMON_DEBUG_RECORDING, "%s: activating session-at-once recording\n", __debug__);
+                self->priv->recording = &recording_commands_sao;
+            }
             break;
         }
         case 3: {
