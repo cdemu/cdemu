@@ -2072,6 +2072,19 @@ static gboolean command_request_sense (CdemuDevice *self, const guint8 *raw_cdb)
     return TRUE;
 }
 
+/* RESERVE TRACK */
+static gboolean command_reserve_track (CdemuDevice *self, const guint8 *raw_cdb)
+{
+    struct RESERVE_TRACK_CDB *cdb = (struct RESERVE_TRACK_CDB *)raw_cdb;
+
+    CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: reserve track: ARSV: %d RMZ: %d\n", __debug__, cdb->arsv, cdb->rmz);
+    CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: parameters:\n", __debug__);
+    CDEMU_DEBUG_PRINT_BUFFER(self, DAEMON_DEBUG_MMC, __debug__, 8, cdb->parameter, sizeof(cdb->parameter));
+
+    return TRUE;
+}
+
+
 /* SEEK (10)*/
 static gboolean command_seek (CdemuDevice *self, const guint8 *raw_cdb G_GNUC_UNUSED)
 {
@@ -2391,6 +2404,10 @@ gint cdemu_device_execute_command (CdemuDevice *self, const guint8 *cdb)
           "REQUEST SENSE",
           command_request_sense,
           FALSE },
+        { RESERVE_TRACK,
+          "RESERVE TRACK",
+          command_reserve_track,
+          TRUE },
         { SEEK_10,
           "SEEK (10)",
           command_seek,

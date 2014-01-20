@@ -1958,9 +1958,17 @@ struct RESERVE_TRACK_CDB
 {
     guint8 code;
 
-    guint8 reserved1[4];
+    #if G_BYTE_ORDER == G_BIG_ENDIAN
+        guint8 reserved : 6;
+        guint8 rmz      : 1;
+        guint8 arsv     : 1;
+    #else
+        guint8 arsv     : 1;
+        guint8 rmz      : 1;
+        guint8 reserved : 6;
+    #endif
 
-    guint32 size;
+    guint8 parameter[7];
 
     guint8 control;
 };
