@@ -30,6 +30,7 @@ static gboolean cdemu_device_load_disc_private (CdemuDevice *self, gchar **filen
 {
     gint media_type;
     gboolean blank_disc = FALSE;
+    gint blank_disc_type = MIRAGE_MEDIUM_CD;
 
      /* Well, we won't do anything if we're already loaded */
     if (self->priv->loaded) {
@@ -50,6 +51,14 @@ static gboolean cdemu_device_load_disc_private (CdemuDevice *self, gchar **filen
         /* Check if we are required to create a blank disc */
         if (!g_strcmp0(key, "create")) {
             blank_disc = TRUE;
+        }
+
+        if (!g_strcmp0(key, "medium")) {
+            if (!g_strcmp0(g_variant_get_string(value, NULL), "cd")) {
+                blank_disc_type = MIRAGE_MEDIUM_CD;
+            } else if (!g_strcmp0(g_variant_get_string(value, NULL), "dvd")) {
+                blank_disc_type = MIRAGE_MEDIUM_DVD;
+            }
         }
     }
 
@@ -106,12 +115,22 @@ static gboolean cdemu_device_load_disc_private (CdemuDevice *self, gchar **filen
         /* Set filenames */
         mirage_disc_set_filenames(self->priv->disc, (const gchar **)filenames);
 
-        /* Emulate 80-min CD-R for now */
+        /* Emulate 80-min CD-R or DVD+R SL for now */
         self->priv->recordable_disc = TRUE;
         self->priv->rewritable_disc = FALSE;
-        self->priv->medium_capacity = 80*60*75;
 
-        mirage_disc_layout_set_start_sector(self->priv->disc, -150);
+        mirage_disc_set_medium_type(self->priv->disc, blank_disc_type);
+        if (blank_disc_type == MIRAGE_MEDIUM_CD) {
+            self->priv->medium_capacity = 80*60*75;
+            self->priv->medium_leadin = -11077;
+
+            mirage_disc_layout_set_start_sector(self->priv->disc, -150);
+        } else {
+            self->priv->medium_capacity = 2295104; /* DVD+R SL */
+            self->priv->medium_leadin = 0;
+
+            mirage_disc_layout_set_start_sector(self->priv->disc, 0);
+        }
 
         /* Initialize image writer with this disc */
         if (!mirage_writer_open_image(self->priv->image_writer, self->priv->disc, error)) {
@@ -124,13 +143,12 @@ static gboolean cdemu_device_load_disc_private (CdemuDevice *self, gchar **filen
             return FALSE;
         }
 
-        self->priv->medium_leadin = -11077;
         self->priv->num_written_sectors = 0;
 
         self->priv->open_session = NULL;
         self->priv->open_track = NULL;
 
-        cdemu_device_set_profile(self, ProfileIndex_CDR);
+        cdemu_device_set_profile(self, (blank_disc_type == MIRAGE_MEDIUM_CD) ? ProfileIndex_CDR : ProfileIndex_DVDPLUSR);
     }
 
     /* Loading succeeded */

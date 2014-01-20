@@ -92,7 +92,7 @@ class CDEmu (object):
 
         # Separate options from arguments
         try:
-            options, arguments = getopt.gnu_getopt(argv, "hvb:", ["help", "version", "bus=", "password=", "encoding=", "dvd-report-css=", "create"])
+            options, arguments = getopt.gnu_getopt(argv, "hvb:", ["help", "version", "bus=", "password=", "encoding=", "dvd-report-css=", "create", "medium="])
         except getopt.GetoptError:
             self.print_error(_("Unknown option"))
             self.print_full_usage()
@@ -126,6 +126,8 @@ class CDEmu (object):
                 self.parser_params["dvd-report-css"] = dictionary.get(word)
             elif opt in ("--create"):
                 self.parser_params["create"] = True
+            elif opt in ("--medium"):
+                self.parser_params["medium"] = arg
 
 
         if len(arguments) == 0:
@@ -594,7 +596,7 @@ class CDEmu (object):
             return False
 
         return True
-        
+
     def cmd_bad_sector_emulation (self, arguments):
         # Get bad sector emulation flag
         if len(arguments) == 1:
