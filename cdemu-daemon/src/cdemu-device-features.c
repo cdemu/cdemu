@@ -105,6 +105,7 @@ void cdemu_device_features_init (CdemuDevice *self)
         feature->profiles[ProfileIndex_CDROM].profile = GUINT16_TO_BE(PROFILE_CDROM);
         feature->profiles[ProfileIndex_CDR].profile = GUINT16_TO_BE(PROFILE_CDR);
         feature->profiles[ProfileIndex_DVDROM].profile = GUINT16_TO_BE(PROFILE_DVDROM);
+        feature->profiles[ProfileIndex_DVDPLUSR].profile = GUINT16_TO_BE(PROFILE_DVDPLUSR);
     }
     self->priv->features_list = append_feature(self->priv->features_list, general_feature);
 
@@ -224,6 +225,18 @@ void cdemu_device_features_init (CdemuDevice *self)
     }
     self->priv->features_list = append_feature(self->priv->features_list, general_feature);
 
+    /* Feature 0x002B: DVD+R Feature */
+    /* IMPLEMENTATION NOTE: non-persistent; version set to 0x00 as per MMC5 */
+    general_feature = initialize_feature(0x002B, sizeof(struct Feature_0x002B));
+    if (general_feature) {
+        struct Feature_0x002B *feature = (struct Feature_0x002B *)general_feature;
+
+        feature->ver = 0x00;
+
+        feature->write = 1; /* We support DVD+R writing */
+    }
+    self->priv->features_list = append_feature(self->priv->features_list, general_feature);
+
 
     /* Feature 0x002D: CD Track at Once Feature */
     /* IMPLEMENTATION NOTE: non-persistent; version set to 0x02 as per MMC3 */
@@ -286,9 +299,7 @@ void cdemu_device_features_init (CdemuDevice *self)
 
     /* Feature 0x0107: Real Time Streaming Feature */
     /* IMPLEMENTATION NOTE: non-persistent; version is set to 0x03 as per INF8090.
-       We claim we support READ BUFFER CAPACITY and we do support SET CD SPEED. We
-       don't support mode page 0x2A with write speed performance descriptors and
-       we don't support the rest of write-related functions. */
+       We claim to support pretty much everything here. */
     general_feature = initialize_feature(0x0107, sizeof(struct Feature_0x0107));
     if (general_feature) {
         struct Feature_0x0107 *feature = (struct Feature_0x0107 *)general_feature;
@@ -297,6 +308,42 @@ void cdemu_device_features_init (CdemuDevice *self)
 
         feature->rbcb = 1;
         feature->scs = 1;
+        feature->mp2a = 1;
+        feature->wspd = 1;
+        feature->sw = 1;
+    }
+    self->priv->features_list = append_feature(self->priv->features_list, general_feature);
+
+    /* Feature 0x010A: Disc Control Blocks Feature */
+    /* IMPLEMENTATION NOTE: non-persistent; version is set to 0x00 as per MMC3.
+       We return same three DCB descriptors as my drive does. */
+    general_feature = initialize_feature(0x010A, sizeof(struct Feature_0x010A) + 3*4);
+    if (general_feature) {
+        struct Feature_0x0107 *feature = (struct Feature_0x0107 *)general_feature;
+
+        feature->ver = 0x00;
+
+        /* Set descriptors */
+        guint8 *descriptor = (guint8 *)(feature + 1);
+
+        descriptor[0] = 0x46; /* F */
+        descriptor[1] = 0x44; /* D */
+        descriptor[2] = 0x43; /* C */
+        descriptor[3] = 0x00; /* ver. 0 */
+
+        descriptor += 4;
+
+        descriptor[0] = 0x53; /* S */
+        descriptor[1] = 0x44; /* D */
+        descriptor[2] = 0x43; /* C */
+        descriptor[3] = 0x00; /* ver. 0 */
+
+        descriptor += 4;
+
+        descriptor[0] = 0x54; /* T */
+        descriptor[1] = 0x4F; /* O */
+        descriptor[2] = 0x43; /* C */
+        descriptor[3] = 0x00; /* ver. 0 */
     }
     self->priv->features_list = append_feature(self->priv->features_list, general_feature);
 }
@@ -369,7 +416,8 @@ static void cdemu_device_set_write_speed_descriptors (CdemuDevice *self, Profile
             end_sector = self->priv->medium_capacity - 150;
             break;
         }
-        case ProfileIndex_DVDROM: {
+        case ProfileIndex_DVDROM:
+        case ProfileIndex_DVDPLUSR: {
             descriptors = WriteDescriptors_DVD;
             num_descriptors = sizeof(WriteDescriptors_DVD)/sizeof(WriteDescriptors_DVD[0]);
             end_sector = self->priv->medium_capacity;
@@ -456,6 +504,20 @@ static guint32 ActiveFeatures_DVDROM[] =
     0x0107, /* Real Time Streaming */
 };
 
+static guint32 ActiveFeatures_DVDPLUSR[] =
+{
+    /* 0x0000: Profile List; persistent */
+    /* 0x0001: Core; persistent */
+    /* 0x0002: Morphing; persistent */
+    /* 0x0003: Removable Medium; persistent */
+    0x0010, /* Random Readable */
+    0x001F, /* DVD Read */
+    0x002B, /* DVD+R */
+    0x0106, /* DVD CSS */
+    0x0107, /* Real Time Streaming */
+    0x010A, /* DCBs */
+};
+
 
 static void cdemu_device_set_current_features (CdemuDevice *self, guint32 *feats, gint feats_len)
 {
@@ -525,6 +587,15 @@ void cdemu_device_set_profile (CdemuDevice *self, ProfileIndex profile_index)
             cdemu_device_set_current_features(self, ActiveFeatures_DVDROM, G_N_ELEMENTS(ActiveFeatures_DVDROM));
             /* Set 'current bit' on profiles */
             f_0x0000->profiles[ProfileIndex_DVDROM].cur = 1;
+            break;
+        }
+        case ProfileIndex_DVDPLUSR: {
+            /* Current profile */
+            self->priv->current_profile = PROFILE_DVDPLUSR;
+            /* Current features */
+            cdemu_device_set_current_features(self, ActiveFeatures_DVDPLUSR, G_N_ELEMENTS(ActiveFeatures_DVDPLUSR));
+            /* Set 'current bit' on profiles */
+            f_0x0000->profiles[ProfileIndex_DVDPLUSR].cur = 1;
             break;
         }
         default: {

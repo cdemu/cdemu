@@ -66,6 +66,7 @@ typedef enum {
     ProfileIndex_CDROM,
     ProfileIndex_CDR,
     ProfileIndex_DVDROM,
+    ProfileIndex_DVDPLUSR,
     NumProfiles
 } ProfileIndex;
 
@@ -301,7 +302,7 @@ struct Feature_0x001F
         guint8 ver       : 4;
         guint8 reserved1 : 2;
     #endif
-    
+
     guint8 length;
 
     #if G_BYTE_ORDER == G_BIG_ENDIAN
@@ -343,9 +344,9 @@ struct Feature_0x0021
     #endif
 
     guint8 length;
-    
+
     guint16 data_block_types_supported;
-    
+
     #if G_BYTE_ORDER == G_BIG_ENDIAN
         guint8 reserved2 : 7;
         guint8 buf       : 1;
@@ -353,11 +354,42 @@ struct Feature_0x0021
         guint8 buf       : 1;
         guint8 reserved2 : 7;
     #endif
-    
+
     guint8 num_link_sizes;
-    
+
     guint8 link_sizes[1];
     guint8 pad[3];
+};
+
+
+/* DVD+R Feature */
+struct Feature_0x002B
+{
+    guint16 code;
+
+    #if G_BYTE_ORDER == G_BIG_ENDIAN
+        guint8 reserved1 : 2;
+        guint8 ver       : 4;
+        guint8 per       : 1;
+        guint8 cur       : 1;
+    #else
+        guint8 cur       : 1;
+        guint8 per       : 1;
+        guint8 ver       : 4;
+        guint8 reserved1 : 2;
+    #endif
+
+    guint8 length;
+
+    #if G_BYTE_ORDER == G_BIG_ENDIAN
+        guint8 reserved2  : 7;
+        guint8 write      : 1;
+    #else
+        guint8 write      : 1;
+        guint8 reserved2  : 7;
+    #endif
+
+    guint8 reserved3[3];
 };
 
 
@@ -401,7 +433,7 @@ struct Feature_0x002D
     #endif
 
     guint8  reserved4;
-    
+
     guint16 data_type_supported;
 };
 
@@ -523,12 +555,34 @@ struct Feature_0x0107
     guint8 reserved3[3];
 };
 
+/* Disc Control Blocks Feature */
+struct Feature_0x010A
+{
+    guint16 code;
+
+    #if G_BYTE_ORDER == G_BIG_ENDIAN
+        guint8 reserved1 : 2;
+        guint8 ver       : 4;
+        guint8 per       : 1;
+        guint8 cur       : 1;
+    #else
+        guint8 cur       : 1;
+        guint8 per       : 1;
+        guint8 ver       : 4;
+        guint8 reserved1 : 2;
+    #endif
+
+    guint8 length;
+};
+
+
 /* Profile codes */
 typedef enum {
     PROFILE_NONE = 0x0000,
     PROFILE_CDROM = 0x0008,
     PROFILE_CDR = 0x0009,
-    PROFILE_DVDROM = 0x0010
+    PROFILE_DVDROM = 0x0010,
+    PROFILE_DVDPLUSR = 0x001B,
 } ProfileCode;
 
 #pragma pack()
