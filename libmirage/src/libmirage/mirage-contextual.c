@@ -306,8 +306,8 @@ gchar *mirage_contextual_obtain_password (MirageContextual *self, GError **error
  * @filename: (in): filename to create input stream on
  * @error: (out) (allow-none): location to store error, or %NULL
  *
- * Opens a file pointed to by @filename and creates a chain of input
- * stream filters on top of it.
+ * Opens a file pointed to by @filename and creates a chain of filter
+ * streams on top of it.
  *
  * <note>
  * This is a convenience function that retrieves a #MirageContext from
@@ -339,10 +339,11 @@ MirageStream *mirage_contextual_create_input_stream (MirageContextual *self, con
  * mirage_contextual_create_output_stream:
  * @self: a #MirageContextual
  * @filename: (in): filename to create output stream on
+ * @filter_chain: (in) (allow-none) (array zero-terminated=1): NULL-terminated array of strings describing types of filters to include in the filter chain, or %NULL
  * @error: (out) (allow-none): location to store error, or %NULL
  *
- * Opens a file pointed to by @filename and creates a chain of output
- * stream filters on top of it.
+ * Opens a file pointed to by @filename and creates a chain of filter
+ * streams on top of it.
  *
  * <note>
  * This is a convenience function that retrieves a #MirageContext from
@@ -354,7 +355,7 @@ MirageStream *mirage_contextual_create_input_stream (MirageContextual *self, con
  * On failure, %NULL is returned. The reference to the object should be
  * released using g_object_unref() when no longer needed.
  */
-MirageStream *mirage_contextual_create_output_stream (MirageContextual *self, const gchar *filename, GError **error)
+MirageStream *mirage_contextual_create_output_stream (MirageContextual *self, const gchar *filename, const gchar **filter_chain, GError **error)
 {
     MirageContext *context = mirage_contextual_get_context(self);
     MirageStream *stream = NULL;
@@ -362,7 +363,7 @@ MirageStream *mirage_contextual_create_output_stream (MirageContextual *self, co
     if (!context) {
         g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_LIBRARY_ERROR, "Context not set!");
     } else {
-        stream = mirage_context_create_output_stream(context, filename, error);
+        stream = mirage_context_create_output_stream(context, filename, filter_chain, error);
         g_object_unref(context);
     }
 

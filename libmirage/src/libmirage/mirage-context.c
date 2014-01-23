@@ -421,8 +421,8 @@ end:
  * @filename: (in): filename to create input stream on
  * @error: (out) (allow-none): location to store error, or %NULL
  *
- * Opens a file pointed to by @filename and creates a chain of input
- * stream filters on top of it.
+ * Opens a file pointed to by @filename and creates a chain of filter
+ * streams on top of it.
  *
  * Returns: (transfer full): on success, an object implementing #MirageStream
  * interface is returned, which can be used to access data stored in file.
@@ -444,21 +444,21 @@ MirageStream *mirage_context_create_input_stream (MirageContext *self, const gch
         return g_object_ref(stream);
     }
 
-    /* Open MirageFileStream on the file */
-    file_stream = g_object_new(MIRAGE_TYPE_FILE_STREAM, NULL);
-    if (!mirage_file_stream_open(file_stream, filename, FALSE, &local_error)) {
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_DATA_FILE_ERROR, "Failed to open read-only file stream on data file: %s!", local_error->message);
-        g_error_free(local_error);
-        return NULL;
-    }
-
     /* Get the list of supported file filters */
     if (!mirage_get_filter_streams_type(&filter_stream_types, &num_filter_streams, error)) {
         return NULL;
     }
 
+    /* Open MirageFileStream on the file */
+    file_stream = g_object_new(MIRAGE_TYPE_FILE_STREAM, NULL);
+    if (!mirage_file_stream_open(file_stream, filename, FALSE, &local_error)) {
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_DATA_FILE_ERROR, "Failed to open read-only file stream on data file: %s!", local_error->message);
+        g_error_free(local_error);
+        g_object_unref(file_stream);
+        return NULL;
+    }
+
     /* Construct a chain of filter streams */
-    MirageFilterStream *filter_stream;
     gboolean found_new;
 
     stream = MIRAGE_STREAM(file_stream);
@@ -467,10 +467,8 @@ MirageStream *mirage_context_create_input_stream (MirageContext *self, const gch
         found_new = FALSE;
 
         for (gint i = 0; i < num_filter_streams; i++) {
-            local_error = NULL;
-
             /* Try opening filter stream on top of underlying stream */
-            filter_stream = g_object_new(filter_stream_types[i], NULL);
+            MirageFilterStream *filter_stream = g_object_new(filter_stream_types[i], NULL);
             mirage_contextual_set_context(MIRAGE_CONTEXTUAL(filter_stream), self);
 
             if (!mirage_filter_stream_open(filter_stream, stream, FALSE, &local_error)) {
@@ -482,6 +480,7 @@ MirageStream *mirage_context_create_input_stream (MirageContext *self, const gch
                    attempted to handle underlying stream and failed */
                 if (local_error->code == MIRAGE_ERROR_CANNOT_HANDLE) {
                     g_error_free(local_error);
+                    local_error = NULL;
                 } else {
                     g_propagate_error(error, local_error);
                     g_object_unref(stream);
@@ -514,18 +513,26 @@ MirageStream *mirage_context_create_input_stream (MirageContext *self, const gch
  * mirage_context_create_output_stream:
  * @self: a #MirageContext
  * @filename: (in): filename to create output stream on
+ * @filter_chain: (in) (allow-none) (array zero-terminated=1): NULL-terminated array of strings describing types of filters to include in the filter chain, or %NULL
  * @error: (out) (allow-none): location to store error, or %NULL
  *
- * Opens a file pointed to by @filename and creates a chain of output
- * stream filters on top of it.
+ * Opens a file pointed to by @filename and optionally creates a chain
+ * of filter streams on top of it.
  *
- * Returns: (transfer full): on success, an object inheriting #GFilterOutputStream (and therefore
- * #GOutputStream) and implementing #GSeekable interface is returned, which
- * can be used to write data to file. On failure, %NULL is returned.
- * The reference to the object should be released using g_object_unref()
- * when no longer needed.
+ * The chain of filters is described by @filter-chain, which is a
+ * NULL-terminated array of strings corresponding to type names of
+ * filters, with the last filter being the one on the top. Filters are
+ * passed by their name types because their actual type values are
+ * determined when the plugins are loaded. If invalid filter is specified
+ * in the chain, this function will fail. It is the caller's responsibility
+ * to construct a valid filter chain.
+ *
+ * Returns: (transfer full): on success, an object implementing #MirageStream
+ * interface is returned, which can be used to write data to file.
+ * On failure, %NULL is returned. The reference to the object should be
+ * released using g_object_unref() when no longer needed.
  */
-MirageStream *mirage_context_create_output_stream (MirageContext *self, const gchar *filename, GError **error)
+MirageStream *mirage_context_create_output_stream (MirageContext *self, const gchar *filename, const gchar **filter_chain, GError **error)
 {
     MirageFileStream *file_stream;
     MirageStream *stream;
@@ -542,10 +549,42 @@ MirageStream *mirage_context_create_output_stream (MirageContext *self, const gc
     if (!mirage_file_stream_open(file_stream, filename, TRUE, &local_error)) {
         g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_DATA_FILE_ERROR, "Failed to open read-write file stream on data file: %s!", local_error->message);
         g_error_free(local_error);
+        g_object_unref(file_stream);
         return NULL;
     }
 
-    /* FIXME: implement chain of filters */
+    /* Construct filter chain */
+    stream = MIRAGE_STREAM(file_stream);
+
+    if (filter_chain) {
+        for (gint i = 0; filter_chain[i]; i++) {
+            /* Look-up the filter type */
+            GType filter_type = g_type_from_name(filter_chain[i]);
+            if (!filter_type) {
+                g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, "Invalid filter type '%s' in filter chain!", filter_chain[i]);
+                g_object_unref(stream);
+                return NULL;
+            }
+
+            /* Try opening filter stream on top of underlying stream */
+            MirageFilterStream *filter_stream = g_object_new(filter_type, NULL);
+            mirage_contextual_set_context(MIRAGE_CONTEXTUAL(filter_stream), self);
+
+            if (!mirage_filter_stream_open(filter_stream, stream, TRUE, &local_error)) {
+                g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, "Failed to create filter type '%s': %s!", filter_chain[i], local_error->message);
+                g_error_free(local_error);
+                g_object_unref(filter_stream);
+                g_object_unref(stream);
+                return NULL;
+            } else {
+                /* Release reference to (now) underlying stream */
+                g_object_unref(stream);
+
+                /* Filter stream becomes new underlying stream */
+                stream = MIRAGE_STREAM(filter_stream);
+            }
+        }
+    }
 
     /* Make sure that the stream we're returning is rewound to the beginning */
     mirage_stream_seek(stream, 0, G_SEEK_SET, NULL);

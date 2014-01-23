@@ -76,7 +76,7 @@ GVariant *mirage_contextual_get_option (MirageContextual *self, const gchar *nam
 gchar *mirage_contextual_obtain_password (MirageContextual *self, GError **error);
 
 MirageStream *mirage_contextual_create_input_stream (MirageContextual *self, const gchar *filename, GError **error);
-MirageStream *mirage_contextual_create_output_stream (MirageContextual *self, const gchar *filename, GError **error);
+MirageStream *mirage_contextual_create_output_stream (MirageContextual *self, const gchar *filename, const gchar **filter_chain, GError **error);
 
 G_END_DECLS
 

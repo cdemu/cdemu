@@ -104,7 +104,7 @@ gchar *mirage_context_obtain_password (MirageContext *self, GError **error);
 MirageDisc *mirage_context_load_image (MirageContext *self, gchar **filenames, GError **error);
 
 MirageStream *mirage_context_create_input_stream (MirageContext *self, const gchar *filename, GError **error);
-MirageStream *mirage_context_create_output_stream (MirageContext *self, const gchar *filename, GError **error);
+MirageStream *mirage_context_create_output_stream (MirageContext *self, const gchar *filename, const gchar **filter_chain, GError **error);
 
 G_END_DECLS
 
