@@ -446,7 +446,7 @@ MirageStream *mirage_context_create_input_stream (MirageContext *self, const gch
 
     /* Open MirageFileStream on the file */
     file_stream = g_object_new(MIRAGE_TYPE_FILE_STREAM, NULL);
-    if (!mirage_file_stream_open_readonly(file_stream, filename, &local_error)) {
+    if (!mirage_file_stream_open(file_stream, filename, &local_error)) {
         g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_DATA_FILE_ERROR, "Failed to open read-only file stream on data file: %s!", local_error->message);
         g_error_free(local_error);
         return NULL;
@@ -539,7 +539,7 @@ MirageStream *mirage_context_create_output_stream (MirageContext *self, const gc
 
     /* Open MirageFileStream on the file */
     file_stream = g_object_new(MIRAGE_TYPE_FILE_STREAM, NULL);
-    if (!mirage_file_stream_open_readwrite(file_stream, filename, &local_error)) {
+    if (!mirage_file_stream_create(file_stream, filename, &local_error)) {
         g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_DATA_FILE_ERROR, "Failed to open read-write file stream on data file: %s!", local_error->message);
         g_error_free(local_error);
         return NULL;

@@ -59,7 +59,7 @@ struct _MirageFileStreamPrivate
 /**********************************************************************\
  *                             Public API                             *
 \**********************************************************************/
-static gboolean mirage_file_stream_open (MirageFileStream *self, const gchar *filename, gboolean readonly, GError **error)
+static gboolean mirage_file_stream_open_impl (MirageFileStream *self, const gchar *filename, gboolean readonly, GError **error)
 {
     GFile *file;
     GFileType file_type;
@@ -119,14 +119,14 @@ static gboolean mirage_file_stream_open (MirageFileStream *self, const gchar *fi
     return TRUE;
 }
 
-gboolean mirage_file_stream_open_readonly (MirageFileStream *self, const gchar *filename, GError **error)
+gboolean mirage_file_stream_open (MirageFileStream *self, const gchar *filename, GError **error)
 {
-    return mirage_file_stream_open(self, filename, TRUE, error);
+    return mirage_file_stream_open_impl(self, filename, TRUE, error);
 }
 
-gboolean mirage_file_stream_open_readwrite (MirageFileStream *self, const gchar *filename, GError **error)
+gboolean mirage_file_stream_create (MirageFileStream *self, const gchar *filename, GError **error)
 {
-    return mirage_file_stream_open(self, filename, FALSE, error);
+    return mirage_file_stream_open_impl(self, filename, FALSE, error);
 }
 
 

@@ -69,8 +69,8 @@ struct _MirageFileStreamClass
 /* Used by MIRAGE_TYPE_FILE_STREAM */
 GType mirage_file_stream_get_type (void);
 
-gboolean mirage_file_stream_open_readonly (MirageFileStream *self, const gchar *filename, GError **error);
-gboolean mirage_file_stream_open_readwrite (MirageFileStream *self, const gchar *filename, GError **error);
+gboolean mirage_file_stream_open (MirageFileStream *self, const gchar *filename, GError **error);
+gboolean mirage_file_stream_create (MirageFileStream *self, const gchar *filename, GError **error);
 
 
 G_END_DECLS

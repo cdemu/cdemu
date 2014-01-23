@@ -1,12 +1,12 @@
 <SECTION>
 <FILE>mirage</FILE>
 MirageDebugMask
-MirageEnumFileFilterInfoCallback
+MirageEnumFilterStreamInfoCallback
 MirageEnumParserInfoCallback
-mirage_enumerate_file_filters
+mirage_enumerate_filter_streams
 mirage_enumerate_parsers
-mirage_get_file_filters_info
-mirage_get_file_filters_type
+mirage_get_filter_streams_info
+mirage_get_filter_streams_type
 mirage_get_parsers_info
 mirage_get_parsers_type
 mirage_get_supported_debug_masks
@@ -50,7 +50,6 @@ mirage_context_create_output_stream
 mirage_context_get_debug_domain
 mirage_context_get_debug_mask
 mirage_context_get_debug_name
-mirage_context_get_file_stream_filename
 mirage_context_get_option
 mirage_context_load_image
 mirage_context_obtain_password
@@ -82,7 +81,6 @@ mirage_contextual_debug_messagev
 mirage_contextual_debug_is_active
 mirage_contextual_debug_print_buffer
 mirage_contextual_get_context
-mirage_contextual_get_file_stream_filename
 mirage_contextual_get_option
 mirage_contextual_obtain_password
 mirage_contextual_set_context
@@ -171,27 +169,46 @@ mirage_error_get_type
 </SECTION>
 
 <SECTION>
-<FILE>mirage-file-filter</FILE>
-<TITLE>MirageFileFilter</TITLE>
-MirageFileFilter
-MirageFileFilterClass
-MirageFileFilterInfo
-mirage_file_filter_can_handle_data_format
-mirage_file_filter_generate_info
-mirage_file_filter_get_info
-mirage_file_filter_get_position
-mirage_file_filter_info_copy
-mirage_file_filter_info_free
-mirage_file_filter_set_file_size
+<FILE>mirage-file-stream</FILE>
+<TITLE>MirageFileStream</TITLE>
+MirageFileStream
+MirageFileStreamClass
+mirage_file_stream_open
+mirage_file_stream_create
 <SUBSECTION Standard>
-MIRAGE_FILE_FILTER
-MIRAGE_FILE_FILTER_CLASS
-MIRAGE_FILE_FILTER_GET_CLASS
-MIRAGE_IS_FILE_FILTER
-MIRAGE_IS_FILE_FILTER_CLASS
-MIRAGE_TYPE_FILE_FILTER
-MirageFileFilterPrivate
-mirage_file_filter_get_type
+MIRAGE_FILE_STREAM
+MIRAGE_FILE_STREAM_CLASS
+MIRAGE_FILE_STREAM_GET_CLASS
+MIRAGE_IS_FILE_STREAM
+MIRAGE_IS_FILE_STREAM_CLASS
+MIRAGE_TYPE_FILE_STREAM
+MirageFileStreamPrivate
+mirage_file_stream_get_type
+</SECTION>
+
+<SECTION>
+<FILE>mirage-filter-stream</FILE>
+<TITLE>MirageFilterStream</TITLE>
+MirageFilterStream
+MirageFilterStreamClass
+MirageFilterStreamInfo
+mirage_filter_stream_open
+mirage_filter_stream_generate_info
+mirage_filter_stream_get_info
+mirage_filter_stream_get_position
+mirage_filter_stream_get_underlying_stream
+mirage_filter_stream_info_copy
+mirage_filter_stream_info_free
+mirage_filter_stream_set_stream_length
+<SUBSECTION Standard>
+MIRAGE_FILTER_STREAM
+MIRAGE_FILTER_STREAM_CLASS
+MIRAGE_FILTER_STREAM_GET_CLASS
+MIRAGE_IS_FILTER_STREAM
+MIRAGE_IS_FILTER_STREAM_CLASS
+MIRAGE_TYPE_FILTER_STREAM
+MirageFilterStreamPrivate
+mirage_filter_stream_get_type
 </SECTION>
 
 <SECTION>
@@ -211,8 +228,7 @@ mirage_fragment_main_data_get_size
 mirage_fragment_main_data_set_format
 mirage_fragment_main_data_set_offset
 mirage_fragment_main_data_set_size
-mirage_fragment_main_data_set_input_stream
-mirage_fragment_main_data_set_output_stream
+mirage_fragment_main_data_set_stream
 mirage_fragment_read_main_data
 mirage_fragment_write_main_data
 mirage_fragment_read_subchannel_data
@@ -226,8 +242,7 @@ mirage_fragment_subchannel_data_get_size
 mirage_fragment_subchannel_data_set_format
 mirage_fragment_subchannel_data_set_offset
 mirage_fragment_subchannel_data_set_size
-mirage_fragment_subchannel_data_set_input_stream
-mirage_fragment_subchannel_data_set_output_stream
+mirage_fragment_subchannel_data_set_stream
 mirage_fragment_use_the_rest_of_file
 <SUBSECTION Standard>
 MIRAGE_FRAGMENT
@@ -434,6 +449,26 @@ MIRAGE_SESSION_GET_CLASS
 MIRAGE_TYPE_SESSION
 MirageSessionPrivate
 mirage_session_get_type
+</SECTION>
+
+<SECTION>
+<FILE>mirage-stream</FILE>
+<TITLE>MirageStream</TITLE>
+MirageStream
+MirageStreamInterface
+mirage_stream_get_filename
+mirage_stream_is_writable
+mirage_stream_read
+mirage_stream_write
+mirage_stream_seek
+mirage_stream_tell
+mirage_stream_get_g_input_stream
+<SUBSECTION Standard>
+MIRAGE_STREAM
+MIRAGE_STREAM_GET_INTERFACE
+MIRAGE_IS_STREAM
+MIRAGE_TYPE_STREAM
+mirage_stream_get_type
 </SECTION>
 
 <SECTION>

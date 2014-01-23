@@ -20,7 +20,8 @@
         <xi:include href="xml/mirage-context.xml"/>
         <xi:include href="xml/mirage-contextual.xml"/>
         <xi:include href="xml/mirage-disc.xml"/>
-        <xi:include href="xml/mirage-file-filter.xml"/>
+        <xi:include href="xml/mirage-file-stream.xml"/>
+        <xi:include href="xml/mirage-filter-stream.xml"/>
         <xi:include href="xml/mirage-fragment.xml"/>
         <xi:include href="xml/mirage-index.xml"/>
         <xi:include href="xml/mirage-language.xml"/>
@@ -29,6 +30,7 @@
         <xi:include href="xml/mirage-plugin.xml"/>
         <xi:include href="xml/mirage-sector.xml"/>
         <xi:include href="xml/mirage-session.xml"/>
+        <xi:include href="xml/mirage-stream.xml"/>
         <xi:include href="xml/mirage-track.xml"/>
 
         <xi:include href="xml/mirage-debug.xml"/>
