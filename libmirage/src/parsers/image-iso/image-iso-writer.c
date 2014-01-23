@@ -34,6 +34,11 @@ struct _MirageWriterIsoPrivate
     gboolean write_subchannel;
 };
 
+static const gchar *audio_filter_chain[] = {
+    "MirageFilterStreamSndfile",
+    NULL
+};
+
 
 /**********************************************************************\
  *                MirageWriter methods implementation                 *
@@ -70,6 +75,7 @@ static MirageFragment *mirage_writer_iso_create_fragment (MirageWriter *self_, M
     }
 
     const gchar *extension;
+    const gchar **filter_chain = NULL;
 
     if (self->priv->write_subchannel || self->priv->write_raw) {
         /* Raw mode (also implied by subchannel) */
@@ -79,8 +85,9 @@ static MirageFragment *mirage_writer_iso_create_fragment (MirageWriter *self_, M
         /* Cooked mode */
         switch (mirage_track_get_sector_type(track)) {
             case MIRAGE_SECTOR_AUDIO: {
-                extension = "cdr";
+                extension = "wav";
                 mirage_fragment_main_data_set_size(fragment, 2352);
+                filter_chain = audio_filter_chain;
                 break;
             }
             case MIRAGE_SECTOR_MODE1:
@@ -114,7 +121,7 @@ static MirageFragment *mirage_writer_iso_create_fragment (MirageWriter *self_, M
     filename = g_strdup_printf("%s-%d-%d.%s", self->priv->image_basename, mirage_track_layout_get_session_number(track), mirage_track_layout_get_track_number(track), extension);
 
     /* I/O stream */
-    stream = mirage_contextual_create_output_stream(MIRAGE_CONTEXTUAL(self), filename, error);
+    stream = mirage_contextual_create_output_stream(MIRAGE_CONTEXTUAL(self), filename, filter_chain, error);
     if (!stream) {
         g_object_unref(fragment);
         return NULL;
