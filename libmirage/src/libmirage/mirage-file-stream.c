@@ -82,7 +82,7 @@ gboolean mirage_file_stream_open (MirageFileStream *self, const gchar *filename,
 
     if (writable) {
         /* Create GFileIOStream */
-        self->priv->stream = g_file_replace(file, NULL, FALSE, G_FILE_CREATE_PRIVATE | G_FILE_CREATE_REPLACE_DESTINATION, NULL, &local_error);
+        self->priv->stream = g_file_replace_readwrite(file, NULL, FALSE, G_FILE_CREATE_PRIVATE | G_FILE_CREATE_REPLACE_DESTINATION, NULL, &local_error);
 
         if (self->priv->stream) {
             self->priv->input_stream = g_io_stream_get_input_stream(G_IO_STREAM(self->priv->stream));
