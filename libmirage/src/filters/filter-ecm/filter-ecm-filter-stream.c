@@ -225,7 +225,7 @@ static gboolean mirage_filter_stream_ecm_build_index (MirageFilterStreamEcm *sel
 /**********************************************************************\
  *              MirageFilterStream methods implementations            *
 \**********************************************************************/
-static gboolean mirage_filter_stream_ecm_open (MirageFilterStream *_self, MirageStream *stream, GError **error)
+static gboolean mirage_filter_stream_ecm_open (MirageFilterStream *_self, MirageStream *stream, gboolean writable G_GNUC_UNUSED, GError **error)
 {
     MirageFilterStreamEcm *self = MIRAGE_FILTER_STREAM_ECM(_self);
 

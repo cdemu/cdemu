@@ -96,7 +96,7 @@ struct _MirageFilterStreamClass
     MirageObjectClass parent_class;
 
     /* Class members */
-    gboolean (*open) (MirageFilterStream *self, MirageStream *stream, GError **error);
+    gboolean (*open) (MirageFilterStream *self, MirageStream *stream, gboolean writable, GError **error);
 
     /* Functions implemented for MirageStream: */
     gssize (*read) (MirageFilterStream *self, void *buffer, gsize count, GError **error);
@@ -116,7 +116,7 @@ const MirageFilterStreamInfo *mirage_filter_stream_get_info (MirageFilterStream 
 
 MirageStream *mirage_filter_stream_get_underlying_stream (MirageFilterStream *self);
 
-gboolean mirage_filter_stream_open (MirageFilterStream *self, MirageStream *stream, GError **error);
+gboolean mirage_filter_stream_open (MirageFilterStream *self, MirageStream *stream, gboolean writable, GError **error);
 
 void mirage_filter_stream_set_stream_length (MirageFilterStream *self, gsize length);
 goffset mirage_filter_stream_get_position (MirageFilterStream *self);

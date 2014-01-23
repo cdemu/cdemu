@@ -661,7 +661,7 @@ static gboolean mirage_filter_stream_dmg_open_streams (MirageFilterStreamDmg *se
     return TRUE;
 }
 
-static gboolean mirage_filter_stream_dmg_open (MirageFilterStream *_self, MirageStream *stream, GError **error)
+static gboolean mirage_filter_stream_dmg_open (MirageFilterStream *_self, MirageStream *stream, gboolean writable G_GNUC_UNUSED, GError **error)
 {
     MirageFilterStreamDmg *self = MIRAGE_FILTER_STREAM_DMG(_self);
 

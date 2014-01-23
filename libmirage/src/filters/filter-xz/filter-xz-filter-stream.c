@@ -249,7 +249,7 @@ static gboolean mirage_filter_stream_xz_parse_stream (MirageFilterStreamXz *self
 /**********************************************************************\
  *              MirageFilterStream methods implementations            *
 \**********************************************************************/
-static gboolean mirage_filter_stream_xz_open (MirageFilterStream *_self, MirageStream *stream, GError **error)
+static gboolean mirage_filter_stream_xz_open (MirageFilterStream *_self, MirageStream *stream, gboolean writable G_GNUC_UNUSED, GError **error)
 {
     MirageFilterStreamXz *self = MIRAGE_FILTER_STREAM_XZ(_self);
 

@@ -278,7 +278,7 @@ static gboolean mirage_filter_stream_gzip_build_index (MirageFilterStreamGzip *s
 /**********************************************************************\
  *              MirageFilterStream methods implementations            *
 \**********************************************************************/
-static gboolean mirage_filter_stream_gzip_open (MirageFilterStream *_self, MirageStream *stream, GError **error)
+static gboolean mirage_filter_stream_gzip_open (MirageFilterStream *_self, MirageStream *stream, gboolean writable G_GNUC_UNUSED, GError **error)
 {
     MirageFilterStreamGzip *self = MIRAGE_FILTER_STREAM_GZIP(_self);
 

@@ -105,6 +105,11 @@ static sf_count_t sndfile_io_read (void *ptr, sf_count_t count, MirageStream *st
     return mirage_stream_read(stream, ptr, count, NULL);
 }
 
+static sf_count_t sndfile_io_write (const void *ptr, sf_count_t count, MirageStream *stream)
+{
+    return mirage_stream_write(stream, ptr, count, NULL);
+}
+
 static  sf_count_t sndfile_io_tell (MirageStream *stream)
 {
     return mirage_stream_tell(stream);
@@ -114,7 +119,7 @@ static SF_VIRTUAL_IO sndfile_io_bridge = {
     .get_filelen = (sf_vio_get_filelen)sndfile_io_get_filelen,
     .seek = (sf_vio_seek)sndfile_io_seek,
     .read = (sf_vio_read)sndfile_io_read,
-    .write = NULL,
+    .write = (sf_vio_write)sndfile_io_write,
     .tell = (sf_vio_tell)sndfile_io_tell,
 };
 
@@ -122,13 +127,36 @@ static SF_VIRTUAL_IO sndfile_io_bridge = {
 /**********************************************************************\
  *              MirageFilterStream methods implementations            *
 \**********************************************************************/
-static gboolean mirage_filter_stream_sndfile_open (MirageFilterStream *_self, MirageStream *stream, GError **error)
+static gboolean mirage_filter_stream_sndfile_open (MirageFilterStream *_self, MirageStream *stream, gboolean writable, GError **error)
 {
     MirageFilterStreamSndfile *self = MIRAGE_FILTER_STREAM_SNDFILE(_self);
     gsize length;
 
     /* Clear the format */
     memset(&self->priv->format, 0, sizeof(self->priv->format));
+
+    if (writable) {
+        /* If we are creating the stream (read/write mode), we need to
+           provide format data ourselves */
+        const gchar *filename = mirage_stream_get_filename(stream);
+        const gchar *suffix = mirage_helper_get_suffix(filename);
+
+        self->priv->format.samplerate = 2;
+        self->priv->format.channels = 44100;
+
+        if (g_ascii_strcasecmp(suffix, ".wav")) {
+            self->priv->format.format = SF_FORMAT_WAV;
+        } else if (g_ascii_strcasecmp(suffix, ".aiff")) {
+            self->priv->format.format = SF_FORMAT_AIFF;
+        } else if (g_ascii_strcasecmp(suffix, ".flac")) {
+            self->priv->format.format = SF_FORMAT_FLAC;
+        } else if (g_ascii_strcasecmp(suffix, ".ogg")) {
+            self->priv->format.format = SF_FORMAT_OGG;
+        } else {
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: unknown file suffix '%s'; storing as raw PCM data!\n", __debug__, suffix);
+            self->priv->format.format = SF_FORMAT_RAW;
+        }
+    }
 
     /* Seek to beginning */
     mirage_stream_seek(stream, 0, G_SEEK_SET, NULL);
@@ -222,7 +250,7 @@ static gboolean mirage_filter_stream_sndfile_open (MirageFilterStream *_self, Mi
 static gssize mirage_filter_stream_sndfile_partial_read (MirageFilterStream *_self, void *buffer, gsize count)
 {
     MirageFilterStreamSndfile *self = MIRAGE_FILTER_STREAM_SNDFILE(_self);
-    goffset position = mirage_filter_stream_get_position(MIRAGE_FILTER_STREAM(self));
+    goffset position = mirage_filter_stream_get_position(_self);
     gint block;
 
     /* Find the block of frames corresponding to current position; this
@@ -298,6 +326,26 @@ static gssize mirage_filter_stream_sndfile_partial_read (MirageFilterStream *_se
     return count;
 }
 
+static gssize mirage_filter_stream_sndfile_write (MirageFilterStream *_self, const void *buffer, gsize count, GError **error G_GNUC_UNUSED)
+{
+    MirageFilterStreamSndfile *self = MIRAGE_FILTER_STREAM_SNDFILE(_self);
+    goffset position = mirage_filter_stream_get_position(_self);
+    gsize write_length;
+
+    /* Seek to position */
+    sf_seek(self->priv->sndfile, position/(self->priv->format.channels * sizeof(guint16)), SEEK_SET);
+
+    /* Write */
+    write_length = sf_writef_short(self->priv->sndfile, (const short *)buffer, count/(self->priv->format.channels * sizeof(guint16)));
+
+    /* Update stream length */
+    gint length = self->priv->format.frames * self->priv->format.channels * sizeof(guint16);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: stream length after write: %ld (0x%lX) bytes\n", __debug__, length, length);
+    mirage_filter_stream_set_stream_length(MIRAGE_FILTER_STREAM(self), length);
+
+    return write_length * self->priv->format.channels * sizeof(guint16);
+}
+
 
 /**********************************************************************\
  *                             Object init                            *
@@ -366,6 +414,7 @@ static void mirage_filter_stream_sndfile_class_init (MirageFilterStreamSndfileCl
     filter_stream_class->open = mirage_filter_stream_sndfile_open;
 
     filter_stream_class->partial_read = mirage_filter_stream_sndfile_partial_read;
+    filter_stream_class->write = mirage_filter_stream_sndfile_write;
 
     /* Register private structure */
     g_type_class_add_private(klass, sizeof(MirageFilterStreamSndfilePrivate));

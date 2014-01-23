@@ -59,7 +59,7 @@ struct _MirageFileStreamPrivate
 /**********************************************************************\
  *                             Public API                             *
 \**********************************************************************/
-static gboolean mirage_file_stream_open_impl (MirageFileStream *self, const gchar *filename, gboolean readonly, GError **error)
+gboolean mirage_file_stream_open (MirageFileStream *self, const gchar *filename, gboolean writable, GError **error)
 {
     GFile *file;
     GFileType file_type;
@@ -80,7 +80,15 @@ static gboolean mirage_file_stream_open_impl (MirageFileStream *self, const gcha
     /* Open file; at the bottom of the chain, there's always a GFileStream */
     file = g_file_new_for_path(filename);
 
-    if (readonly) {
+    if (writable) {
+        /* Create GFileIOStream */
+        self->priv->stream = g_file_replace(file, NULL, FALSE, G_FILE_CREATE_PRIVATE | G_FILE_CREATE_REPLACE_DESTINATION, NULL, &local_error);
+
+        if (self->priv->stream) {
+            self->priv->input_stream = g_io_stream_get_input_stream(G_IO_STREAM(self->priv->stream));
+            self->priv->output_stream = g_io_stream_get_output_stream(G_IO_STREAM(self->priv->stream));
+        }
+    } else {
         /* If opening in readonly mode, file must exist */
         file_type = g_file_query_file_type(file, G_FILE_QUERY_INFO_NONE, NULL);
         if (!(file_type == G_FILE_TYPE_REGULAR || file_type == G_FILE_TYPE_SYMBOLIC_LINK || file_type == G_FILE_TYPE_SHORTCUT)) {
@@ -95,20 +103,12 @@ static gboolean mirage_file_stream_open_impl (MirageFileStream *self, const gcha
         if (self->priv->stream) {
             self->priv->input_stream = G_INPUT_STREAM(self->priv->stream);
         }
-    } else {
-        /* Create GFileIOStream */
-        self->priv->stream = g_file_replace(file, NULL, FALSE, G_FILE_CREATE_PRIVATE | G_FILE_CREATE_REPLACE_DESTINATION, NULL, &local_error);
-
-        if (self->priv->stream) {
-            self->priv->input_stream = g_io_stream_get_input_stream(G_IO_STREAM(self->priv->stream));
-            self->priv->output_stream = g_io_stream_get_output_stream(G_IO_STREAM(self->priv->stream));
-        }
     }
 
     g_object_unref(file);
 
     if (!self->priv->stream) {
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, "Failed to open file %s stream on data file '%s': %s!", readonly ? "input" : "input/output", filename, local_error->message);
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, "Failed to open file %s stream on data file '%s': %s!", writable ? "input/output" : "input", filename, local_error->message);
         g_error_free(local_error);
         return FALSE;
     }
@@ -117,16 +117,6 @@ static gboolean mirage_file_stream_open_impl (MirageFileStream *self, const gcha
     self->priv->filename = g_strdup(filename);
 
     return TRUE;
-}
-
-gboolean mirage_file_stream_open (MirageFileStream *self, const gchar *filename, GError **error)
-{
-    return mirage_file_stream_open_impl(self, filename, TRUE, error);
-}
-
-gboolean mirage_file_stream_create (MirageFileStream *self, const gchar *filename, GError **error)
-{
-    return mirage_file_stream_open_impl(self, filename, FALSE, error);
 }
 
 

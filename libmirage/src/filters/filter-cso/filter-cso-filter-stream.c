@@ -179,7 +179,7 @@ static void mirage_filter_stream_fixup_header(MirageFilterStreamCso *self)
     header->block_size  = GUINT32_FROM_LE(header->block_size);
 }
 
-static gboolean mirage_filter_stream_cso_open (MirageFilterStream *_self, MirageStream *stream, GError **error)
+static gboolean mirage_filter_stream_cso_open (MirageFilterStream *_self, MirageStream *stream, gboolean writable G_GNUC_UNUSED, GError **error)
 {
     MirageFilterStreamCso *self = MIRAGE_FILTER_STREAM_CSO(_self);
 

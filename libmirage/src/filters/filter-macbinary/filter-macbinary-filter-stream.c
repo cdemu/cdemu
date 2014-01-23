@@ -210,7 +210,7 @@ static void mirage_filter_stream_macbinary_print_bcem_block(MirageFilterStreamMa
 /**********************************************************************\
  *             MirageFilterStream methods implementations             *
 \**********************************************************************/
-static gboolean mirage_filter_stream_macbinary_open (MirageFilterStream *_self, MirageStream *stream, GError **error)
+static gboolean mirage_filter_stream_macbinary_open (MirageFilterStream *_self, MirageStream *stream, gboolean writable G_GNUC_UNUSED, GError **error)
 {
     MirageFilterStreamMacBinary *self = MIRAGE_FILTER_STREAM_MACBINARY(_self);
 

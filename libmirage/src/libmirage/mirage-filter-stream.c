@@ -190,13 +190,14 @@ MirageStream *mirage_filter_stream_get_underlying_stream (MirageFilterStream *se
  * mirage_filter_stream_open:
  * @self: a #MirageFilterStream
  * @stream: (in): an underlying stream
+ * @writable: (in): a flag indicating whether the stream should be opened in read/write mode or not
  * @error: (out) (allow-none): location to store error, or %NULL
  *
  * Opens stream on top of provided underlying stream.
  *
  * Returns: %TRUE on success, %FALSE on failure
  */
-gboolean mirage_filter_stream_open (MirageFilterStream *self, MirageStream *stream, GError **error)
+gboolean mirage_filter_stream_open (MirageFilterStream *self, MirageStream *stream, gboolean writable, GError **error)
 {
     gboolean succeeded = TRUE;
 
@@ -205,7 +206,7 @@ gboolean mirage_filter_stream_open (MirageFilterStream *self, MirageStream *stre
     self->priv->underlying_stream = g_object_ref(stream);
 
     /* Provided by implementation */
-    succeeded = MIRAGE_FILTER_STREAM_GET_CLASS(self)->open(self, stream, error);
+    succeeded = MIRAGE_FILTER_STREAM_GET_CLASS(self)->open(self, stream, writable, error);
 
     /* If opening failed, release our reference to underlying stream */
     if (!succeeded) {

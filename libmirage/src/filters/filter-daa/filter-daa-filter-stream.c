@@ -1269,7 +1269,7 @@ static gboolean mirage_filter_stream_daa_parse_daa_file (MirageFilterStreamDaa *
 /**********************************************************************\
  *              MirageFilterStream methods implementations            *
 \**********************************************************************/
-static gboolean mirage_filter_stream_daa_open (MirageFilterStream *_self, MirageStream *stream, GError **error)
+static gboolean mirage_filter_stream_daa_open (MirageFilterStream *_self, MirageStream *stream, gboolean writable G_GNUC_UNUSED, GError **error)
 {
     MirageFilterStreamDaa *self = MIRAGE_FILTER_STREAM_DAA(_self);
 
