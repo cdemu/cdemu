@@ -1,5 +1,5 @@
 /*
- *  libMirage: Apple Data Compression (ADC) decompression.
+ *  libMirage: DMG filter: Apple Data Compression (ADC) decompression.
  *  Copyright (C) 2012 Henrik Stokseth
  *
  *  This program is free software; you can redistribute it and/or modify

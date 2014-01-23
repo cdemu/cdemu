@@ -52,7 +52,7 @@
  * @MIRAGE_DEBUG_SECTOR: message belonging to sector
  * @MIRAGE_DEBUG_FRAGMENT: message belonging to fragment
  * @MIRAGE_DEBUG_CDTEXT: message belonging to CD-TEXT encoder/decoder
- * @MIRAGE_DEBUG_FILE_IO: messages belonging to file filter I/O operations
+ * @MIRAGE_DEBUG_STREAM: messages belonging to file and filter stream I/O operations
  * @MIRAGE_DEBUG_IMAGE_ID: messages belonging to image identification part of image parsers
  * @MIRAGE_DEBUG_WRITER: messages belonging to image writer
  *
@@ -75,7 +75,7 @@ typedef enum _MirageDebugMasks
     MIRAGE_DEBUG_SECTOR = 0x10,
     MIRAGE_DEBUG_FRAGMENT = 0x20,
     MIRAGE_DEBUG_CDTEXT = 0x40,
-    MIRAGE_DEBUG_FILE_IO = 0x80,
+    MIRAGE_DEBUG_STREAM = 0x80,
     MIRAGE_DEBUG_IMAGE_ID = 0x100,
     MIRAGE_DEBUG_WRITER = 0x200,
 } MirageDebugMasks;

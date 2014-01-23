@@ -1,5 +1,5 @@
 /*
- *  libMirage: SNDFILE file filter
+ *  libMirage: SNDFILE filter
  *  Copyright (C) 2012 Rok Mandeljc
  *
  *  This program is free software; you can redistribute it and/or modify
@@ -26,9 +26,9 @@
 
 #include <sndfile.h>
 #include <samplerate.h>
-    
+
 #include "mirage.h"
-#include "filter-sndfile-file-filter.h"
+#include "filter-sndfile-filter-stream.h"
 
 G_BEGIN_DECLS
 

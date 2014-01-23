@@ -183,7 +183,7 @@ static gboolean mirage_parser_toc_track_add_fragment (MirageParserToc *self, gin
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: using data file: %s\n", __debug__, filename);
 
         /* Create strean */
-        GInputStream *stream = mirage_contextual_create_input_stream(MIRAGE_CONTEXTUAL(self), filename, error);
+        MirageStream *stream = mirage_contextual_create_input_stream(MIRAGE_CONTEXTUAL(self), filename, error);
         if (!stream) {
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to create stream on data file!\n", __debug__);
             return FALSE;
@@ -253,7 +253,7 @@ static gboolean mirage_parser_toc_track_add_fragment (MirageParserToc *self, gin
             subchannel_format = self->priv->cur_subchannel_format;
 
             /* Set stream */
-            mirage_fragment_main_data_set_input_stream(fragment, stream);
+            mirage_fragment_main_data_set_stream(fragment, stream);
             mirage_fragment_main_data_set_size(fragment, main_size);
             mirage_fragment_main_data_set_offset(fragment, main_offset);
             mirage_fragment_main_data_set_format(fragment, main_format);
@@ -266,7 +266,7 @@ static gboolean mirage_parser_toc_track_add_fragment (MirageParserToc *self, gin
             fragment = g_object_new(MIRAGE_TYPE_FRAGMENT, NULL);
 
             /* Set stream */
-            mirage_fragment_main_data_set_input_stream(fragment, stream);
+            mirage_fragment_main_data_set_stream(fragment, stream);
             mirage_fragment_main_data_set_size(fragment, 2352);
             mirage_fragment_main_data_set_offset(fragment, start*2352);
             mirage_fragment_main_data_set_format(fragment, MIRAGE_MAIN_DATA_FORMAT_AUDIO);
@@ -978,7 +978,7 @@ static void mirage_parser_toc_cleanup_regex_parser (MirageParserToc *self)
 }
 
 
-static gboolean mirage_parser_toc_parse_toc_file (MirageParserToc *self, GInputStream *stream, GError **error)
+static gboolean mirage_parser_toc_parse_toc_file (MirageParserToc *self, MirageStream *stream, GError **error)
 {
     GDataInputStream *data_stream;
     gboolean succeeded = TRUE;
@@ -1134,13 +1134,13 @@ static void mirage_parser_toc_cleanup_session_data (MirageParserToc *self)
     self->priv->mixed_mode_offset = 0;
 }
 
-static gboolean mirage_parser_toc_check_toc_file (MirageParserToc *self, GInputStream *stream)
+static gboolean mirage_parser_toc_check_toc_file (MirageParserToc *self, MirageStream *stream)
 {
     gboolean succeeded = FALSE;
     GDataInputStream *data_stream;
 
     /* Check suffix - must be .toc */
-    if (!mirage_helper_has_suffix(mirage_contextual_get_file_stream_filename(MIRAGE_CONTEXTUAL(self), stream), ".toc")) {
+    if (!mirage_helper_has_suffix(mirage_stream_get_filename(stream), ".toc")) {
         return FALSE;
     }
 
@@ -1198,7 +1198,7 @@ static gboolean mirage_parser_toc_check_toc_file (MirageParserToc *self, GInputS
 /**********************************************************************\
  *                 MirageParser methods implementation               *
 \**********************************************************************/
-static MirageDisc *mirage_parser_toc_load_image (MirageParser *_self, GInputStream **streams, GError **error)
+static MirageDisc *mirage_parser_toc_load_image (MirageParser *_self, MirageStream **streams, GError **error)
 {
     MirageParserToc *self = MIRAGE_PARSER_TOC(_self);
     gint num_streams;
@@ -1225,7 +1225,7 @@ static MirageDisc *mirage_parser_toc_load_image (MirageParser *_self, GInputStre
             return FALSE;
         }
 
-        filenames[i] = mirage_contextual_get_file_stream_filename(MIRAGE_CONTEXTUAL(self), streams[i]);
+        filenames[i] = mirage_stream_get_filename(streams[i]);
     }
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_IMAGE_ID, "%s: parser can handle given image!\n", __debug__);
 
@@ -1241,7 +1241,7 @@ static MirageDisc *mirage_parser_toc_load_image (MirageParser *_self, GInputStre
     /* Each TOC/BIN is one session, so we load all given filenames */
     for (gint i = 0; i < num_streams; i++) {
         /* Store the TOC filename */
-        self->priv->toc_filename = mirage_contextual_get_file_stream_filename(MIRAGE_CONTEXTUAL(self), streams[i]);
+        self->priv->toc_filename = mirage_stream_get_filename(streams[i]);
 
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: loading session #%i: TOC file '%s'!\n", __debug__, i, self->priv->toc_filename);
         mirage_parser_toc_init_session_data(self);

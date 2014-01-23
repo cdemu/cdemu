@@ -1,5 +1,5 @@
 /*
- *  libMirage: MacBinary file filter: File filter object
+ *  libMirage: MacBinary filter: Filter stream object
  *  Copyright (C) 2013 Henrik Stokseth
  *
  *  This program is free software; you can redistribute it and/or modify
@@ -19,7 +19,7 @@
 
 #include "filter-macbinary.h"
 
-#define __debug__ "MACBINARY-FileFilter"
+#define __debug__ "MACBINARY-FilterStream"
 
 typedef struct {
     bcem_type_t type;
@@ -35,9 +35,9 @@ typedef struct {
 /**********************************************************************\
  *                          Private structure                         *
 \**********************************************************************/
-#define MIRAGE_FILE_FILTER_MACBINARY_GET_PRIVATE(obj) (G_TYPE_INSTANCE_GET_PRIVATE((obj), MIRAGE_TYPE_FILE_FILTER_MACBINARY, MirageFileFilterMacBinaryPrivate))
+#define MIRAGE_FILTER_STREAM_MACBINARY_GET_PRIVATE(obj) (G_TYPE_INSTANCE_GET_PRIVATE((obj), MIRAGE_TYPE_FILTER_STREAM_MACBINARY, MirageFilterStreamMacBinaryPrivate))
 
-struct _MirageFileFilterMacBinaryPrivate
+struct _MirageFilterStreamMacBinaryPrivate
 {
     /* macbinary header */
     macbinary_header_t header;
@@ -68,7 +68,7 @@ struct _MirageFileFilterMacBinaryPrivate
    Unix time's 1970 epoch. This is the difference between the two. */
 #define MAC_TIME_OFFSET 2082844800
 
-static void mirage_file_filter_macbinary_fixup_header(macbinary_header_t *header)
+static void mirage_filter_stream_macbinary_fixup_header(macbinary_header_t *header)
 {
     g_assert(header);
 
@@ -86,7 +86,7 @@ static void mirage_file_filter_macbinary_fixup_header(macbinary_header_t *header
     header->unpacked_len = GUINT32_FROM_BE(header->unpacked_len);
 }
 
-static void mirage_file_filter_macbinary_fixup_bcem_block(bcem_block_t *bcem_block)
+static void mirage_filter_stream_macbinary_fixup_bcem_block(bcem_block_t *bcem_block)
 {
     g_assert(bcem_block);
 
@@ -102,7 +102,7 @@ static void mirage_file_filter_macbinary_fixup_bcem_block(bcem_block_t *bcem_blo
     /* ignoring unknown1 and reserved */
 }
 
-static void mirage_file_filter_macbinary_fixup_bcem_data(bcem_data_t *bcem_data)
+static void mirage_filter_stream_macbinary_fixup_bcem_data(bcem_data_t *bcem_data)
 {
     guint8 temp;
 
@@ -116,7 +116,7 @@ static void mirage_file_filter_macbinary_fixup_bcem_data(bcem_data_t *bcem_data)
     bcem_data->length = GUINT32_FROM_BE(bcem_data->length);
 }
 
-static void mirage_file_filter_macbinary_fixup_bcm_block(bcm_block_t *bcm_block)
+static void mirage_filter_stream_macbinary_fixup_bcm_block(bcm_block_t *bcm_block)
 {
     g_assert(bcm_block);
 
@@ -129,7 +129,7 @@ static void mirage_file_filter_macbinary_fixup_bcm_block(bcm_block_t *bcm_block)
     }
 }
 
-static void mirage_file_filter_macbinary_print_header(MirageFileFilterMacBinary *self, macbinary_header_t *header, guint16 calculated_crc)
+static void mirage_filter_stream_macbinary_print_header(MirageFilterStreamMacBinary *self, macbinary_header_t *header, guint16 calculated_crc)
 {
     GString   *filename = NULL;
     GDateTime *created = NULL;
@@ -180,7 +180,7 @@ static void mirage_file_filter_macbinary_print_header(MirageFileFilterMacBinary 
     g_free(modified_str);
 }
 
-static void mirage_file_filter_macbinary_print_bcem_block(MirageFileFilterMacBinary *self, bcem_block_t *bcem_block)
+static void mirage_filter_stream_macbinary_print_bcem_block(MirageFilterStreamMacBinary *self, bcem_block_t *bcem_block)
 {
     GString *imagename = NULL;
 
@@ -208,12 +208,11 @@ static void mirage_file_filter_macbinary_print_bcem_block(MirageFileFilterMacBin
 
 
 /**********************************************************************\
- *              MirageFileFilter methods implementations              *
+ *             MirageFilterStream methods implementations             *
 \**********************************************************************/
-static gboolean mirage_file_filter_macbinary_can_handle_data_format (MirageFileFilter *_self, GError **error)
+static gboolean mirage_filter_stream_macbinary_open (MirageFilterStream *_self, MirageStream *stream, GError **error)
 {
-    MirageFileFilterMacBinary *self = MIRAGE_FILE_FILTER_MACBINARY(_self);
-    GInputStream *stream = g_filter_input_stream_get_base_stream(G_FILTER_INPUT_STREAM(self));
+    MirageFilterStreamMacBinary *self = MIRAGE_FILTER_STREAM_MACBINARY(_self);
 
     macbinary_header_t *header = &self->priv->header;
     rsrc_fork_t        *rsrc_fork = NULL;
@@ -221,8 +220,8 @@ static gboolean mirage_file_filter_macbinary_can_handle_data_format (MirageFileF
     guint16 calculated_crc = 0;
 
     /* Read MacBinary header */
-    g_seekable_seek(G_SEEKABLE(stream), 0, G_SEEK_SET, NULL, NULL);
-    if (g_input_stream_read(stream, header, sizeof(macbinary_header_t), NULL, NULL) != sizeof(macbinary_header_t)) {
+    mirage_stream_seek(stream, 0, G_SEEK_SET, NULL);
+    if (mirage_stream_read(stream, header, sizeof(macbinary_header_t), NULL) != sizeof(macbinary_header_t)) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_IMAGE_ID, "%s: Filter cannot handle given data: failed to read MacBinary header!\n", __debug__);
         g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_CANNOT_HANDLE, "Filter cannot handle given data: failed to read MacBinary header!");
         return FALSE;
@@ -232,7 +231,7 @@ static gboolean mirage_file_filter_macbinary_can_handle_data_format (MirageFileF
     calculated_crc = mirage_helper_calculate_crc16((guint8 *) header, sizeof(macbinary_header_t) - 4, crc16_1021_lut, FALSE, FALSE);
 
     /* Fixup header endianness */
-    mirage_file_filter_macbinary_fixup_header(header);
+    mirage_filter_stream_macbinary_fixup_header(header);
 
     /* Validate MacBinary header */
     if (header->version != 0 || header->reserved_1 != 0 || header->reserved_2 != 0 ||
@@ -255,7 +254,7 @@ static gboolean mirage_file_filter_macbinary_can_handle_data_format (MirageFileF
     /* Print some info */
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: parsing the underlying stream data...\n", __debug__);
 
-    mirage_file_filter_macbinary_print_header(self, header, calculated_crc);
+    mirage_filter_stream_macbinary_print_header(self, header, calculated_crc);
 
     /* Read the resource fork if any exists */
     if (header->resfork_len) {
@@ -274,8 +273,8 @@ static gboolean mirage_file_filter_macbinary_can_handle_data_format (MirageFileF
             return FALSE;
         }
 
-        g_seekable_seek(G_SEEKABLE(stream), rsrc_fork_pos, G_SEEK_SET, NULL, NULL);
-        if (g_input_stream_read(stream, rsrc_fork_data, header->resfork_len, NULL, NULL) != header->resfork_len) {
+        mirage_stream_seek(stream, rsrc_fork_pos, G_SEEK_SET, NULL);
+        if (mirage_stream_read(stream, rsrc_fork_data, header->resfork_len, NULL) != header->resfork_len) {
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: Failed to read resource-fork!\n", __debug__);
             g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_CANNOT_HANDLE, "Failed to read resource-fork!");
             return FALSE;
@@ -302,12 +301,12 @@ static gboolean mirage_file_filter_macbinary_can_handle_data_format (MirageFileF
             bcem_block_t *bcem_block = (bcem_block_t *) rsrc_ref->data;
             bcem_data_t  *bcem_data = (bcem_data_t *) (rsrc_ref->data + sizeof(bcem_block_t));
 
-            mirage_file_filter_macbinary_fixup_bcem_block(bcem_block);
+            mirage_filter_stream_macbinary_fixup_bcem_block(bcem_block);
 
-            mirage_file_filter_macbinary_print_bcem_block(self, bcem_block);
+            mirage_filter_stream_macbinary_print_bcem_block(self, bcem_block);
 
             /* Set the total image size */
-            mirage_file_filter_set_file_size(MIRAGE_FILE_FILTER(self), bcem_block->num_sectors * 512);
+            mirage_filter_stream_set_stream_length(MIRAGE_FILTER_STREAM(self), bcem_block->num_sectors * 512);
 
             /* Construct a part index */
             self->priv->num_parts = bcem_block->num_blocks - 1;
@@ -319,7 +318,7 @@ static gboolean mirage_file_filter_macbinary_can_handle_data_format (MirageFileF
             }
 
             for (guint b = 0; b < bcem_block->num_blocks; b++) {
-                mirage_file_filter_macbinary_fixup_bcem_data(&bcem_data[b]);
+                mirage_filter_stream_macbinary_fixup_bcem_data(&bcem_data[b]);
             }
 
             for (guint b = 0; b < bcem_block->num_blocks; b++) {
@@ -394,7 +393,7 @@ static gboolean mirage_file_filter_macbinary_can_handle_data_format (MirageFileF
         if (rsrc_ref) {
             bcm_block_t *bcm_block = (bcm_block_t *) rsrc_ref->data;
 
-            mirage_file_filter_macbinary_fixup_bcm_block(bcm_block);
+            mirage_filter_stream_macbinary_fixup_bcm_block(bcm_block);
 
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: This file is part %u of a set of %u files!\n",
                          __debug__, bcm_block->part, bcm_block->parts);
@@ -416,10 +415,10 @@ static gboolean mirage_file_filter_macbinary_can_handle_data_format (MirageFileF
     return FALSE;
 }
 
-static gssize mirage_file_filter_macbinary_read_raw_chunk (MirageFileFilterMacBinary *self, guint8 *buffer, gint chunk_num)
+static gssize mirage_filter_stream_macbinary_read_raw_chunk (MirageFilterStreamMacBinary *self, guint8 *buffer, gint chunk_num)
 {
     const NDIF_Part    *part = &self->priv->parts[chunk_num];
-    GInputStream       *stream = g_filter_input_stream_get_base_stream(G_FILTER_INPUT_STREAM(self));
+    MirageStream       *stream = mirage_filter_stream_get_underlying_stream(MIRAGE_FILTER_STREAM(self));
     macbinary_header_t *header = &self->priv->header;
 
     gsize   to_read = part->in_length;
@@ -429,7 +428,7 @@ static gssize mirage_file_filter_macbinary_read_raw_chunk (MirageFileFilterMacBi
     gint    ret;
 
     /* Seek to the position */
-    if (!g_seekable_seek(G_SEEKABLE(stream), part_offs, G_SEEK_SET, NULL, NULL)) {
+    if (!mirage_stream_seek(stream, part_offs, G_SEEK_SET, NULL)) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to seek to %ld in underlying stream!\n", __debug__, part_offs);
         return -1;
     }
@@ -437,7 +436,7 @@ static gssize mirage_file_filter_macbinary_read_raw_chunk (MirageFileFilterMacBi
     /*MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: raw position: %u\n", __debug__, part_offs);*/
 
     /* Read raw chunk data */
-    ret = g_input_stream_read(stream, &buffer[have_read], MIN(to_read, part_avail), NULL, NULL);
+    ret = mirage_stream_read(stream, &buffer[have_read], MIN(to_read, part_avail), NULL);
     if (ret < 0) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read %d bytes from underlying stream!\n", __debug__, to_read);
         return -1;
@@ -461,11 +460,11 @@ static gssize mirage_file_filter_macbinary_read_raw_chunk (MirageFileFilterMacBi
     return have_read;
 }
 
-static gssize mirage_file_filter_macbinary_partial_read (MirageFileFilter *_self, void *buffer, gsize count)
+static gssize mirage_filter_stream_macbinary_partial_read (MirageFilterStream *_self, void *buffer, gsize count)
 {
-    MirageFileFilterMacBinary *self = MIRAGE_FILE_FILTER_MACBINARY(_self);
+    MirageFilterStreamMacBinary *self = MIRAGE_FILTER_STREAM_MACBINARY(_self);
 
-    goffset position = mirage_file_filter_get_position(MIRAGE_FILE_FILTER(self));
+    goffset position = mirage_filter_stream_get_position(MIRAGE_FILTER_STREAM(self));
     gint    part_idx = -1;
 
     /* Find part that corresponds to current position */
@@ -479,25 +478,25 @@ static gssize mirage_file_filter_macbinary_partial_read (MirageFileFilter *_self
     }
 
     if (part_idx == -1) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_FILE_IO, "%s: failed to find part!\n", __debug__);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_STREAM, "%s: failed to find part!\n", __debug__);
         return 0;
     }
 
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_FILE_IO, "%s: stream position: %ld (0x%lX) -> part #%d (cached: #%d)\n", __debug__, position, position, part_idx, self->priv->cached_part);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_STREAM, "%s: stream position: %ld (0x%lX) -> part #%d (cached: #%d)\n", __debug__, position, position, part_idx, self->priv->cached_part);
 
     /* If we do not have part in cache, uncompress it */
     if (part_idx != self->priv->cached_part) {
         const NDIF_Part *part = &self->priv->parts[part_idx];
         gint ret;
 
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_FILE_IO, "%s: part not cached, reading...\n", __debug__);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_STREAM, "%s: part not cached, reading...\n", __debug__);
 
         /* Read a part */
         if (part->type == BCEM_ZERO) {
             /* We don't use internal buffers for zero data */
         } else if (part->type == BCEM_RAW) {
             /* Read uncompressed part */
-            ret = mirage_file_filter_macbinary_read_raw_chunk (self, self->priv->inflate_buffer, part_idx);
+            ret = mirage_filter_stream_macbinary_read_raw_chunk (self, self->priv->inflate_buffer, part_idx);
             if (ret != part->in_length) {
                 MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read raw chunk!\n", __debug__);
                 return -1;
@@ -506,7 +505,7 @@ static gssize mirage_file_filter_macbinary_partial_read (MirageFileFilter *_self
             gsize written_bytes;
 
             /* Read some compressed data */
-            ret = mirage_file_filter_macbinary_read_raw_chunk (self, self->priv->io_buffer, part_idx);
+            ret = mirage_filter_stream_macbinary_read_raw_chunk (self, self->priv->io_buffer, part_idx);
             if (ret != part->in_length) {
                 MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read raw chunk!\n", __debug__);
                 return -1;
@@ -529,7 +528,7 @@ static gssize mirage_file_filter_macbinary_partial_read (MirageFileFilter *_self
             self->priv->cached_part = part_idx;
         }
     } else {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_FILE_IO, "%s: part already cached\n", __debug__);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_STREAM, "%s: part already cached\n", __debug__);
     }
 
     /* Copy data */
@@ -539,7 +538,7 @@ static gssize mirage_file_filter_macbinary_partial_read (MirageFileFilter *_self
     guint64 part_offset = position - (part->first_sector * 512);
     count = MIN(count, part_size - part_offset);
 
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_FILE_IO, "%s: offset within part: %ld, copying %d bytes\n", __debug__, part_offset, count);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_STREAM, "%s: offset within part: %ld, copying %d bytes\n", __debug__, part_offset, count);
 
     if (part->type == BCEM_ZERO) {
         memset(buffer, 0, count);
@@ -554,21 +553,22 @@ static gssize mirage_file_filter_macbinary_partial_read (MirageFileFilter *_self
 /**********************************************************************\
  *                             Object init                            *
 \**********************************************************************/
-G_DEFINE_DYNAMIC_TYPE(MirageFileFilterMacBinary, mirage_file_filter_macbinary, MIRAGE_TYPE_FILE_FILTER);
+G_DEFINE_DYNAMIC_TYPE(MirageFilterStreamMacBinary, mirage_filter_stream_macbinary, MIRAGE_TYPE_FILTER_STREAM);
 
-void mirage_file_filter_macbinary_type_register (GTypeModule *type_module)
+void mirage_filter_stream_macbinary_type_register (GTypeModule *type_module)
 {
-    return mirage_file_filter_macbinary_register_type(type_module);
+    return mirage_filter_stream_macbinary_register_type(type_module);
 }
 
 
-static void mirage_file_filter_macbinary_init (MirageFileFilterMacBinary *self)
+static void mirage_filter_stream_macbinary_init (MirageFilterStreamMacBinary *self)
 {
-    self->priv = MIRAGE_FILE_FILTER_MACBINARY_GET_PRIVATE(self);
+    self->priv = MIRAGE_FILTER_STREAM_MACBINARY_GET_PRIVATE(self);
 
-    mirage_file_filter_generate_info(MIRAGE_FILE_FILTER(self),
+    mirage_filter_stream_generate_info(MIRAGE_FILTER_STREAM(self),
         "FILTER-MACBINARY",
         "MACBINARY File Filter",
+        FALSE,
         1,
         "MacBinary images (*.bin, *.macbin)", "application/x-macbinary"
     );
@@ -585,9 +585,9 @@ static void mirage_file_filter_macbinary_init (MirageFileFilterMacBinary *self)
     self->priv->cached_part = -1;
 }
 
-static void mirage_file_filter_macbinary_finalize (GObject *gobject)
+static void mirage_filter_stream_macbinary_finalize (GObject *gobject)
 {
-    MirageFileFilterMacBinary *self = MIRAGE_FILE_FILTER_MACBINARY(gobject);
+    MirageFilterStreamMacBinary *self = MIRAGE_FILTER_STREAM_MACBINARY(gobject);
 
     if (self->priv->rsrc_fork) {
         rsrc_fork_free(self->priv->rsrc_fork);
@@ -606,25 +606,25 @@ static void mirage_file_filter_macbinary_finalize (GObject *gobject)
     }
 
     /* Chain up to the parent class */
-    return G_OBJECT_CLASS(mirage_file_filter_macbinary_parent_class)->finalize(gobject);
+    return G_OBJECT_CLASS(mirage_filter_stream_macbinary_parent_class)->finalize(gobject);
 }
 
-static void mirage_file_filter_macbinary_class_init (MirageFileFilterMacBinaryClass *klass)
+static void mirage_filter_stream_macbinary_class_init (MirageFilterStreamMacBinaryClass *klass)
 {
     GObjectClass *gobject_class = G_OBJECT_CLASS(klass);
-    MirageFileFilterClass *file_filter_class = MIRAGE_FILE_FILTER_CLASS(klass);
+    MirageFilterStreamClass *filter_stream_class = MIRAGE_FILTER_STREAM_CLASS(klass);
 
-    gobject_class->finalize = mirage_file_filter_macbinary_finalize;
+    gobject_class->finalize = mirage_filter_stream_macbinary_finalize;
 
-    file_filter_class->can_handle_data_format = mirage_file_filter_macbinary_can_handle_data_format;
+    filter_stream_class->open = mirage_filter_stream_macbinary_open;
 
-    file_filter_class->partial_read = mirage_file_filter_macbinary_partial_read;
+    filter_stream_class->partial_read = mirage_filter_stream_macbinary_partial_read;
 
     /* Register private structure */
-    g_type_class_add_private(klass, sizeof(MirageFileFilterMacBinaryPrivate));
+    g_type_class_add_private(klass, sizeof(MirageFilterStreamMacBinaryPrivate));
 }
 
-static void mirage_file_filter_macbinary_class_finalize (MirageFileFilterMacBinaryClass *klass G_GNUC_UNUSED)
+static void mirage_filter_stream_macbinary_class_finalize (MirageFilterStreamMacBinaryClass *klass G_GNUC_UNUSED)
 {
 }
 

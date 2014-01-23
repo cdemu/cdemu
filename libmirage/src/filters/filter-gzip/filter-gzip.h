@@ -1,5 +1,5 @@
 /*
- *  libMirage: GZIP file filter
+ *  libMirage: GZIP filter
  *  Copyright (C) 2012 Rok Mandeljc
  *
  *  This program is free software; you can redistribute it and/or modify
@@ -27,7 +27,7 @@
 #include <zlib.h>
 
 #include "mirage.h"
-#include "filter-gzip-file-filter.h"
+#include "filter-gzip-filter-stream.h"
 
 G_BEGIN_DECLS
 

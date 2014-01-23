@@ -38,15 +38,15 @@ struct _MirageParserHdPrivate
 };
 
 
-static gboolean mirage_parser_hd_is_file_valid (MirageParserHd *self, GInputStream *stream, GError **error)
+static gboolean mirage_parser_hd_is_file_valid (MirageParserHd *self, MirageStream *stream, GError **error)
 {
     gsize file_length;
 
     /* Get stream length */
-    if (!g_seekable_seek(G_SEEKABLE(stream), 0, G_SEEK_END, NULL, error)) {
+    if (!mirage_stream_seek(stream, 0, G_SEEK_END, error)) {
         return FALSE;
     }
-    file_length = g_seekable_tell(G_SEEKABLE(stream));
+    file_length = mirage_stream_tell(stream);
 
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_IMAGE_ID, "%s: verifying file size...\n", __debug__);
 
@@ -61,13 +61,13 @@ static gboolean mirage_parser_hd_is_file_valid (MirageParserHd *self, GInputStre
     if (file_length >= 17 * 2048) {
         guint8 buf[8];
 
-        if (!g_seekable_seek(G_SEEKABLE(stream), 16 * 2048, G_SEEK_SET, NULL, NULL)) {
+        if (!mirage_stream_seek(stream, 16 * 2048, G_SEEK_SET, NULL)) {
     	    MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to seek to ISO signature!\n", __debug__);
             g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, "Failed to seek to ISO signature!");
             return FALSE;
         }
 
-        if (g_input_stream_read(stream, &buf, sizeof(buf), NULL, NULL) != sizeof(buf)) {
+        if (mirage_stream_read(stream, &buf, sizeof(buf), NULL) != sizeof(buf)) {
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read ISO signature!\n", __debug__);
             g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, "Failed to read ISO signature!");
             return FALSE;
@@ -86,13 +86,13 @@ static gboolean mirage_parser_hd_is_file_valid (MirageParserHd *self, GInputStre
 
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_IMAGE_ID, "%s: checking if image has a valid Driver Descriptor Map (DDM)...\n", __debug__);
 
-    if (!g_seekable_seek(G_SEEKABLE(stream), 0, G_SEEK_SET, NULL, NULL)) {
+    if (!mirage_stream_seek(stream, 0, G_SEEK_SET, NULL)) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to seek to beginning of file!\n", __debug__);
         g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, "Failed to seek to beginning of file!");
         return FALSE;
     }
 
-    if (g_input_stream_read(stream, &ddm, sizeof(driver_descriptor_map_t), NULL, NULL) != sizeof(driver_descriptor_map_t)) {
+    if (mirage_stream_read(stream, &ddm, sizeof(driver_descriptor_map_t), NULL) != sizeof(driver_descriptor_map_t)) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read driver descriptor map!\n", __debug__);
         g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, "Failed to read driver descriptor map!");
         return FALSE;
@@ -109,13 +109,13 @@ static gboolean mirage_parser_hd_is_file_valid (MirageParserHd *self, GInputStre
         apm_entry_t pme;
 
         for (guint p = 0;; p++) {
-            if (!g_seekable_seek(G_SEEKABLE(stream), ddm.block_size * (p + 1), G_SEEK_SET, NULL, NULL)) {
+            if (!mirage_stream_seek(stream, ddm.block_size * (p + 1), G_SEEK_SET, NULL)) {
                 MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to seek to beginning of APM entries!\n", __debug__);
                 g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, "Failed to seek to beginning of APM entries!");
                 return FALSE;
             }
 
-            if (g_input_stream_read(stream, &pme, sizeof(apm_entry_t), NULL, NULL) != sizeof(apm_entry_t)) {
+            if (mirage_stream_read(stream, &pme, sizeof(apm_entry_t), NULL) != sizeof(apm_entry_t)) {
                 MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read APM entry!\n", __debug__);
                 g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, "Failed to read APM entry!");
                 return FALSE;
@@ -152,13 +152,13 @@ static gboolean mirage_parser_hd_is_file_valid (MirageParserHd *self, GInputStre
 
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_IMAGE_ID, "%s: checking if image has a valid GPT header...\n", __debug__);
 
-    if (!g_seekable_seek(G_SEEKABLE(stream), 512, G_SEEK_SET, NULL, NULL)) {
+    if (!mirage_stream_seek(stream, 512, G_SEEK_SET, NULL)) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to seek to GPT header!\n", __debug__);
         g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, "Failed to seek to GPT header!");
         return FALSE;
     }
 
-    if (g_input_stream_read(stream, &gpt_header, sizeof(gpt_header_t), NULL, NULL) != sizeof(gpt_header_t)) {
+    if (mirage_stream_read(stream, &gpt_header, sizeof(gpt_header_t), NULL) != sizeof(gpt_header_t)) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read GPT header!\n", __debug__);
         g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, "Failed to read GPT header!");
         return FALSE;
@@ -175,13 +175,13 @@ static gboolean mirage_parser_hd_is_file_valid (MirageParserHd *self, GInputStre
         gpt_entry_t gpt_entry;
 
         for (guint p = 0; p < gpt_header.gpt_entries; p++) {
-            if (!g_seekable_seek(G_SEEKABLE(stream), (512 * gpt_header.lba_gpt_table) + (gpt_header.gpt_entry_size * p), G_SEEK_SET, NULL, NULL)) {
+            if (!mirage_stream_seek(stream, (512 * gpt_header.lba_gpt_table) + (gpt_header.gpt_entry_size * p), G_SEEK_SET, NULL)) {
                 MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to seek to beginning of GPT entries!\n", __debug__);
                 g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, "Failed to seek to beginning of GPT entries!");
                 return FALSE;
             }
 
-            if (g_input_stream_read(stream, &gpt_entry, sizeof(gpt_entry_t), NULL, NULL) != sizeof(gpt_entry_t)) {
+            if (mirage_stream_read(stream, &gpt_entry, sizeof(gpt_entry_t), NULL) != sizeof(gpt_entry_t)) {
                 MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read GPT entry!\n", __debug__);
                 g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, "Failed to read GPT entry!");
                 return FALSE;
@@ -212,13 +212,13 @@ static gboolean mirage_parser_hd_is_file_valid (MirageParserHd *self, GInputStre
 
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_IMAGE_ID, "%s: checking if image is a HFS/HFS+ image...\n", __debug__);
 
-    if (!g_seekable_seek(G_SEEKABLE(stream), 2 * 512, G_SEEK_SET, NULL, NULL)) {
+    if (!mirage_stream_seek(stream, 2 * 512, G_SEEK_SET, NULL)) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to seek to Master Directory Block (MDB)!\n", __debug__);
         g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, "Failed to seek to Master Directory Block (MDB)!");
         return FALSE;
     }
 
-    if (g_input_stream_read(stream, mac_buf, sizeof(mac_buf), NULL, NULL) != sizeof(mac_buf)) {
+    if (mirage_stream_read(stream, mac_buf, sizeof(mac_buf), NULL) != sizeof(mac_buf)) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read Master Directory Block (MDB)!\n", __debug__);
         g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, "Failed to read Master Directory Block (MDB)!");
         return FALSE;
@@ -242,7 +242,7 @@ static gboolean mirage_parser_hd_is_file_valid (MirageParserHd *self, GInputStre
     return FALSE;
 }
 
-static gboolean mirage_parser_hd_load_track (MirageParserHd *self, GInputStream *stream, GError **error)
+static gboolean mirage_parser_hd_load_track (MirageParserHd *self, MirageStream *stream, GError **error)
 {
     MirageSession *session;
     MirageTrack *track;
@@ -258,7 +258,7 @@ static gboolean mirage_parser_hd_load_track (MirageParserHd *self, GInputStream 
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: creating data fragment\n", __debug__);
     fragment = g_object_new(MIRAGE_TYPE_FRAGMENT, NULL);
 
-    mirage_fragment_main_data_set_input_stream(fragment, stream);
+    mirage_fragment_main_data_set_stream(fragment, stream);
     mirage_fragment_main_data_set_size(fragment, self->priv->track_sectsize);
     mirage_fragment_main_data_set_format(fragment, MIRAGE_MAIN_DATA_FORMAT_DATA);
 
@@ -302,16 +302,16 @@ static gboolean mirage_parser_hd_load_track (MirageParserHd *self, GInputStream 
 /**********************************************************************\
  *                MirageParser methods implementation                *
 \**********************************************************************/
-static MirageDisc *mirage_parser_hd_load_image (MirageParser *_self, GInputStream **streams, GError **error)
+static MirageDisc *mirage_parser_hd_load_image (MirageParser *_self, MirageStream **streams, GError **error)
 {
     MirageParserHd *self = MIRAGE_PARSER_HD(_self);
     const gchar *hd_filename;
-    GInputStream *stream;
+    MirageStream *stream;
     gboolean succeeded = TRUE;
 
     /* Check if file can be loaded */
     stream = g_object_ref(streams[0]);
-    hd_filename = mirage_contextual_get_file_stream_filename(MIRAGE_CONTEXTUAL(self), stream);
+    hd_filename = mirage_stream_get_filename(stream);
 
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_IMAGE_ID, "%s: checking if parser can handle given image...\n", __debug__);
     if (!mirage_parser_hd_is_file_valid(self, stream, error)) {

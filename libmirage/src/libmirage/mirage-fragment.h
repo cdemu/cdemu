@@ -117,8 +117,7 @@ gboolean mirage_fragment_use_the_rest_of_file (MirageFragment *self, GError **er
 gboolean mirage_fragment_contains_address (MirageFragment *self, gint address);
 
 /* Main data */
-void mirage_fragment_main_data_set_input_stream (MirageFragment *self, GInputStream *stream);
-void mirage_fragment_main_data_set_output_stream (MirageFragment *self, GOutputStream *stream);
+void mirage_fragment_main_data_set_stream (MirageFragment *self, MirageStream *stream);
 const gchar *mirage_fragment_main_data_get_filename (MirageFragment *self);
 void mirage_fragment_main_data_set_offset (MirageFragment *self, guint64 offset);
 guint64 mirage_fragment_main_data_get_offset (MirageFragment *self);
@@ -131,8 +130,7 @@ gboolean mirage_fragment_read_main_data (MirageFragment *self, gint address, gui
 gboolean mirage_fragment_write_main_data (MirageFragment *self, gint address, const guint8 *buffer, gint length, GError **error);
 
 /* Subchannel */
-void mirage_fragment_subchannel_data_set_input_stream (MirageFragment *self, GInputStream *stream);
-void mirage_fragment_subchannel_data_set_output_stream (MirageFragment *self, GOutputStream *stream);
+void mirage_fragment_subchannel_data_set_stream (MirageFragment *self, MirageStream *stream);
 const gchar *mirage_fragment_subchannel_data_get_filename (MirageFragment *self);
 void mirage_fragment_subchannel_data_set_offset (MirageFragment *self, guint64 offset);
 guint64 mirage_fragment_subchannel_data_get_offset (MirageFragment *self);

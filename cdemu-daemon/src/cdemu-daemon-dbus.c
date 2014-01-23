@@ -102,8 +102,8 @@ static GVariantBuilder *encode_parsers ()
 }
 
 
-/* Helper that encodes the list of supported file filters */
-static gboolean append_filter_to_builder (MirageFileFilterInfo *info, GVariantBuilder *builder)
+/* Helper that encodes the list of supported filter streams */
+static gboolean append_filter_stream_to_builder (MirageFilterStreamInfo *info, GVariantBuilder *builder)
 {
     GVariantBuilder types_builder;
     GVariant *types;
@@ -118,10 +118,10 @@ static gboolean append_filter_to_builder (MirageFileFilterInfo *info, GVariantBu
     return TRUE;
 }
 
-static GVariantBuilder *encode_file_filters ()
+static GVariantBuilder *encode_filter_streams ()
 {
     GVariantBuilder *builder = g_variant_builder_new(G_VARIANT_TYPE("a(ssa(ss))"));
-    mirage_enumerate_file_filters((MirageEnumFileFilterInfoCallback)append_filter_to_builder, builder, NULL);
+    mirage_enumerate_filter_streams((MirageEnumFilterStreamInfoCallback)append_filter_stream_to_builder, builder, NULL);
     return builder;
 }
 
@@ -275,9 +275,9 @@ static void cdemu_daemon_dbus_handle_method_call (GDBusConnection *connection G_
         /* *** EnumSupportedParsers *** */
         ret = g_variant_new("(a(ssa(ss)))", encode_parsers());
         succeeded = TRUE;
-    } else if (!g_strcmp0(method_name, "EnumSupportedFileFilters")) {
-        /* *** EnumSupportedFileFilters *** */
-        ret = g_variant_new("(a(ssa(ss)))", encode_file_filters());
+    } else if (!g_strcmp0(method_name, "EnumSupportedFilterStreams")) {
+        /* *** EnumSupportedFilterStreams *** */
+        ret = g_variant_new("(a(ssa(ss)))", encode_filter_streams());
         succeeded = TRUE;
     } else if (!g_strcmp0(method_name, "AddDevice")) {
         succeeded = cdemu_daemon_add_device(self);
@@ -508,8 +508,8 @@ static const gchar introspection_xml[] =
     "        <method name='EnumSupportedParsers'>"
     "            <arg name='parsers' type='a(ssa(ss))' direction='out'/>"
     "        </method>"
-    "        <method name='EnumSupportedFileFilters'>"
-    "            <arg name='filters' type='a(ssa(ss))' direction='out'/>"
+    "        <method name='EnumSupportedFilterStreams'>"
+    "            <arg name='filter_streams' type='a(ssa(ss))' direction='out'/>"
     "        </method>"
 
     "        <!-- Device control methods -->"

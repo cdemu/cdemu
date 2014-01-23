@@ -1,5 +1,5 @@
 /*
- *  libMirage: ISZ file filter: File filter object
+ *  libMirage: ISZ filter: Filter stream object
  *  Copyright (C) 2012 Henrik Stokseth
  *
  *  This program is free software; you can redistribute it and/or modify
@@ -19,7 +19,7 @@
 
 #include "filter-isz.h"
 
-#define __debug__ "ISZ-FileFilter"
+#define __debug__ "ISZ-FilterStream"
 
 
 static const guint8 isz_signature[4] = { 'I', 's', 'Z', '!' };
@@ -28,9 +28,9 @@ static const guint8 isz_signature[4] = { 'I', 's', 'Z', '!' };
 /**********************************************************************\
  *                          Private structure                         *
 \**********************************************************************/
-#define MIRAGE_FILE_FILTER_ISZ_GET_PRIVATE(obj) (G_TYPE_INSTANCE_GET_PRIVATE((obj), MIRAGE_TYPE_FILE_FILTER_ISZ, MirageFileFilterIszPrivate))
+#define MIRAGE_FILTER_STREAM_ISZ_GET_PRIVATE(obj) (G_TYPE_INSTANCE_GET_PRIVATE((obj), MIRAGE_TYPE_FILTER_STREAM_ISZ, MirageFilterStreamIszPrivate))
 
-struct _MirageFileFilterIszPrivate
+struct _MirageFilterStreamIszPrivate
 {
     ISZ_Header header;
 
@@ -38,7 +38,7 @@ struct _MirageFileFilterIszPrivate
     ISZ_Segment *segments;
     gint num_segments;
 
-    GInputStream **streams;
+    MirageStream **streams;
 
     /* Part list */
     ISZ_Chunk *parts;
@@ -62,7 +62,7 @@ struct _MirageFileFilterIszPrivate
 /**********************************************************************\
  *                      Data conversion routines                      *
 \**********************************************************************/
-static void mirage_file_filter_isz_fixup_header(ISZ_Header *header)
+static void mirage_filter_stream_isz_fixup_header(ISZ_Header *header)
 {
     header->vol_sn        = GUINT32_FROM_LE(header->vol_sn);
     header->total_sectors = GUINT32_FROM_LE(header->total_sectors);
@@ -84,7 +84,7 @@ static void mirage_file_filter_isz_fixup_header(ISZ_Header *header)
     }
 }
 
-static void mirage_file_filter_isz_fixup_segment(ISZ_Segment *segment)
+static void mirage_filter_stream_isz_fixup_segment(ISZ_Segment *segment)
 {
     segment->size            = GUINT64_FROM_LE(segment->size);
 
@@ -94,7 +94,7 @@ static void mirage_file_filter_isz_fixup_segment(ISZ_Segment *segment)
     segment->left_size       = GUINT32_FROM_LE(segment->left_size);
 }
 
-static inline void mirage_file_filter_isz_deobfuscate(guint8 *data, gint length)
+static inline void mirage_filter_stream_isz_deobfuscate(guint8 *data, gint length)
 {
     /* XOR with the NOT'ed version of the ISZ signature */
     for (gint i = 0; i < length; i++) {
@@ -123,9 +123,9 @@ static gchar *create_filename_func (const gchar *main_filename, gint index)
 /**********************************************************************\
  *                           Part indexing                            *
 \**********************************************************************/
-static gboolean mirage_file_filter_isz_read_segments (MirageFileFilterIsz *self, GError **error)
+static gboolean mirage_filter_stream_isz_read_segments (MirageFilterStreamIsz *self, GError **error)
 {
-    GInputStream *stream = g_filter_input_stream_get_base_stream(G_FILTER_INPUT_STREAM(self));
+    MirageStream *stream = mirage_filter_stream_get_underlying_stream(MIRAGE_FILTER_STREAM(self));
 
     ISZ_Header *header = &self->priv->header;
 
@@ -135,7 +135,7 @@ static gboolean mirage_file_filter_isz_read_segments (MirageFileFilterIsz *self,
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: reading segments\n", __debug__);
 
     /* Position at the beginning of the segment table */
-    if (!g_seekable_seek(G_SEEKABLE(stream), header->seg_offs, G_SEEK_SET, NULL, NULL)) {
+    if (!mirage_stream_seek(stream, header->seg_offs, G_SEEK_SET, NULL)) {
         g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, "Failed to seek to the beginning of segment table!");
         return FALSE;
     }
@@ -146,16 +146,16 @@ static gboolean mirage_file_filter_isz_read_segments (MirageFileFilterIsz *self,
         ISZ_Segment cur_segment;
 
         /* Read segment */
-        ret = g_input_stream_read(stream, &cur_segment, sizeof(ISZ_Segment), NULL, NULL);
+        ret = mirage_stream_read(stream, &cur_segment, sizeof(ISZ_Segment), NULL);
         if (ret != sizeof(ISZ_Segment)) {
             g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, "Failed to read segment!");
             return FALSE;
         }
 
         /* De-obfuscate segment */
-        mirage_file_filter_isz_deobfuscate((guint8 *) &cur_segment, sizeof(ISZ_Segment));
+        mirage_filter_stream_isz_deobfuscate((guint8 *)&cur_segment, sizeof(ISZ_Segment));
 
-        mirage_file_filter_isz_fixup_segment(&cur_segment);
+        mirage_filter_stream_isz_fixup_segment(&cur_segment);
 
         /* Are we done? */
         if (cur_segment.size == 0) {
@@ -173,7 +173,7 @@ static gboolean mirage_file_filter_isz_read_segments (MirageFileFilterIsz *self,
                 }
 
                 /* Position at the beginning of the segment table */
-                if (!g_seekable_seek(G_SEEKABLE(stream), header->seg_offs, G_SEEK_SET, NULL, NULL)) {
+                if (!mirage_stream_seek(stream, header->seg_offs, G_SEEK_SET, NULL)) {
                     g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, "Failed to seek to the beginning of segment table!");
                     return FALSE;
                 }
@@ -199,7 +199,7 @@ static gboolean mirage_file_filter_isz_read_segments (MirageFileFilterIsz *self,
     return TRUE;
 }
 
-static gboolean mirage_file_filter_isz_create_new_segment_table (MirageFileFilterIsz *self, GError **error)
+static gboolean mirage_filter_stream_isz_create_new_segment_table (MirageFilterStreamIsz *self, GError **error)
 {
     ISZ_Header *header = &self->priv->header;
 
@@ -281,14 +281,14 @@ static gboolean mirage_file_filter_isz_create_new_segment_table (MirageFileFilte
     return TRUE;
 }
 
-static gboolean mirage_file_filter_isz_open_streams (MirageFileFilterIsz *self, GError **error)
+static gboolean mirage_filter_stream_isz_open_streams (MirageFilterStreamIsz *self, GError **error)
 {
-    GInputStream **streams;
+    MirageStream **streams;
 
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: opening streams\n", __debug__);
 
     /* Allocate space for streams */
-    self->priv->streams = streams = g_try_new(GInputStream *, self->priv->num_segments);
+    self->priv->streams = streams = g_try_new(MirageStream *, self->priv->num_segments);
     if (!streams) {
         g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, "Failed to allocate memory for streams!");
         return FALSE;
@@ -297,7 +297,7 @@ static gboolean mirage_file_filter_isz_open_streams (MirageFileFilterIsz *self, 
     /* Fill in existing stream */
     streams[0] = g_object_ref(g_filter_input_stream_get_base_stream(G_FILTER_INPUT_STREAM(self)));
 
-    const gchar *original_filename = mirage_contextual_get_file_stream_filename (MIRAGE_CONTEXTUAL(self), streams[0]);
+    const gchar *original_filename = mirage_stream_get_filename(streams[0]);
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  %s\n", __debug__, original_filename);
 
     /* Create the rest of the streams */
@@ -317,7 +317,7 @@ static gboolean mirage_file_filter_isz_open_streams (MirageFileFilterIsz *self, 
     return TRUE;
 }
 
-static inline void mirage_file_filter_isz_decode_chunk_ptr(guint8 *chunk_ptr, guint8 ptr_len, guint8 *type, guint32 *length)
+static inline void mirage_filter_stream_isz_decode_chunk_ptr(guint8 *chunk_ptr, guint8 ptr_len, guint8 *type, guint32 *length)
 {
     guint8  temp_buf[sizeof(guint32)] = {0};
     guint32 *temp_ptr = (guint32 *) temp_buf;
@@ -338,9 +338,9 @@ static inline void mirage_file_filter_isz_decode_chunk_ptr(guint8 *chunk_ptr, gu
     *type   = (*temp_ptr >> chunk_len_bits) & chunk_type_mask;
 }
 
-static gboolean mirage_file_filter_isz_read_index (MirageFileFilterIsz *self, GError **error)
+static gboolean mirage_filter_stream_isz_read_index (MirageFilterStreamIsz *self, GError **error)
 {
-    GInputStream *stream = g_filter_input_stream_get_base_stream(G_FILTER_INPUT_STREAM(self));
+    MirageStream *stream = mirage_filter_stream_get_underlying_stream(MIRAGE_FILTER_STREAM(self));
     z_stream  *zlib_stream  = &self->priv->zlib_stream;
     bz_stream *bzip2_stream = &self->priv->bzip2_stream;
 
@@ -354,11 +354,10 @@ static gboolean mirage_file_filter_isz_read_index (MirageFileFilterIsz *self, GE
     self->priv->num_parts = header->num_blocks;
     original_size = header->total_sectors * header->sect_size;
 
-    mirage_file_filter_set_file_size(MIRAGE_FILE_FILTER(self), original_size);
+    mirage_filter_stream_set_stream_length(MIRAGE_FILTER_STREAM(self), original_size);
 
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: number of parts: %d\n", __debug__, self->priv->num_parts);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: original stream size: %ld\n",
-                 __debug__, original_size);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: original stream size: %ld\n", __debug__, original_size);
 
     /* At least one part must be present */
     if (!self->priv->num_parts) {
@@ -395,14 +394,14 @@ static gboolean mirage_file_filter_isz_read_index (MirageFileFilterIsz *self, GE
         }
 
         /* Position at the beginning of the chunk table */
-        if (!g_seekable_seek(G_SEEKABLE(stream), header->chunk_offs, G_SEEK_SET, NULL, NULL)) {
+        if (!mirage_stream_seek(stream, header->chunk_offs, G_SEEK_SET, NULL)) {
             g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, "Failed to seek to the beginning of chunk table!");
             g_free (chunk_buffer);
             return FALSE;
         }
 
         /* Read chunk table */
-        ret = g_input_stream_read(stream, chunk_buffer, chunk_buf_size, NULL, NULL);
+        ret = mirage_stream_read(stream, chunk_buffer, chunk_buf_size, NULL);
         if (ret != chunk_buf_size) {
             g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, "Failed to read index!");
             g_free (chunk_buffer);
@@ -410,7 +409,7 @@ static gboolean mirage_file_filter_isz_read_index (MirageFileFilterIsz *self, GE
         }
 
         /* De-obfuscate chunk table */
-        mirage_file_filter_isz_deobfuscate(chunk_buffer, chunk_buf_size);
+        mirage_filter_stream_isz_deobfuscate(chunk_buffer, chunk_buf_size);
 
         /* Compute index from chunk table */
         for (gint i = 0; i < self->priv->num_parts; i++) {
@@ -418,7 +417,7 @@ static gboolean mirage_file_filter_isz_read_index (MirageFileFilterIsz *self, GE
             ISZ_Chunk *cur_part  = &self->priv->parts[i];
 
             /* Calculate index entry */
-            mirage_file_filter_isz_decode_chunk_ptr(chunk_ptr, header->ptr_len, &cur_part->type, &cur_part->length);
+            mirage_filter_stream_isz_decode_chunk_ptr(chunk_ptr, header->ptr_len, &cur_part->type, &cur_part->length);
         }
 
         g_free(chunk_buffer);
@@ -522,24 +521,23 @@ static gboolean mirage_file_filter_isz_read_index (MirageFileFilterIsz *self, GE
 
 
 /**********************************************************************\
- *              MirageFileFilter methods implementations              *
+ *             MirageFilterStream methods implementations             *
 \**********************************************************************/
-static gboolean mirage_file_filter_isz_can_handle_data_format (MirageFileFilter *_self, GError **error)
+static gboolean mirage_filter_stream_isz_open (MirageFilterStream *_self, MirageStream *stream, GError **error)
 {
-    MirageFileFilterIsz *self = MIRAGE_FILE_FILTER_ISZ(_self);
-    GInputStream *stream = g_filter_input_stream_get_base_stream(G_FILTER_INPUT_STREAM(self));
+    MirageFilterStreamIsz *self = MIRAGE_FILTER_STREAM_ISZ(_self);
 
     ISZ_Header *header = &self->priv->header;
 
     /* Read ISZ header */
-    g_seekable_seek(G_SEEKABLE(stream), 0, G_SEEK_SET, NULL, NULL);
-    if (g_input_stream_read(stream, header, sizeof(ISZ_Header), NULL, NULL) != sizeof(ISZ_Header)) {
+    mirage_stream_seek(stream, 0, G_SEEK_SET, NULL);
+    if (mirage_stream_read(stream, header, sizeof(ISZ_Header), NULL) != sizeof(ISZ_Header)) {
         g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_CANNOT_HANDLE, "Filter cannot handle given data: failed to read ISZ header!");
         return FALSE;
     }
 
     /* Fixup header endianness */
-    mirage_file_filter_isz_fixup_header(header);
+    mirage_filter_stream_isz_fixup_header(header);
 
     /* Validate ISZ header */
     if (memcmp(&header->signature, isz_signature, sizeof(isz_signature)) || header->version > 1) {
@@ -550,7 +548,7 @@ static gboolean mirage_file_filter_isz_can_handle_data_format (MirageFileFilter 
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: parsing the underlying stream data...\n", __debug__);
 
     /* Only perform parsing on the first file in a set */
-    const gchar *original_filename = mirage_contextual_get_file_stream_filename(MIRAGE_CONTEXTUAL(self), stream);
+    const gchar *original_filename = mirage_stream_get_filename(stream);
     if (!mirage_helper_has_suffix(original_filename, ".isz")) {
         g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, "File is not the first file of a set!");
         return FALSE;
@@ -586,25 +584,25 @@ static gboolean mirage_file_filter_isz_can_handle_data_format (MirageFileFilter 
 
     /* Read segment table if one exists */
     if (header->seg_offs) {
-        if (!mirage_file_filter_isz_read_segments(self, error)) {
+        if (!mirage_filter_stream_isz_read_segments(self, error)) {
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: parsing segments failed!\n\n", __debug__);
             return FALSE;
         }
     } else {
-        if (!mirage_file_filter_isz_create_new_segment_table(self, error)) {
+        if (!mirage_filter_stream_isz_create_new_segment_table(self, error)) {
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: creating a new segment failed!\n\n", __debug__);
             return FALSE;
         }
     }
 
     /* Stream like you've never streamed before! */
-    if (!mirage_file_filter_isz_open_streams(self, error)) {
+    if (!mirage_filter_stream_isz_open_streams(self, error)) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: opening streams failed!\n\n", __debug__);
         return FALSE;
     }
 
     /* Read chunk table */
-    if (!mirage_file_filter_isz_read_index(self, error)) {
+    if (!mirage_filter_stream_isz_read_index(self, error)) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: parsing chunks failed!\n\n", __debug__);
         return FALSE;
     }
@@ -614,11 +612,11 @@ static gboolean mirage_file_filter_isz_can_handle_data_format (MirageFileFilter 
     return TRUE;
 }
 
-static gssize mirage_file_filter_isz_read_raw_chunk (MirageFileFilterIsz *self, guint8 *buffer, gint chunk_num)
+static gssize mirage_filter_stream_isz_read_raw_chunk (MirageFilterStreamIsz *self, guint8 *buffer, gint chunk_num)
 {
     const ISZ_Chunk *part = &self->priv->parts[chunk_num];
     ISZ_Segment *segment = &self->priv->segments[part->segment];
-    GInputStream *stream = self->priv->streams[part->segment];
+    MirageStream *stream = self->priv->streams[part->segment];
 
     gsize   to_read = part->length;
     gsize   have_read = 0;
@@ -628,13 +626,13 @@ static gssize mirage_file_filter_isz_read_raw_chunk (MirageFileFilterIsz *self, 
     gint    ret;
 
     /* Seek to the position */
-    if (!g_seekable_seek(G_SEEKABLE(stream), part_offs, G_SEEK_SET, NULL, NULL)) {
+    if (!mirage_stream_seek(stream, part_offs, G_SEEK_SET, NULL)) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to seek to %ld in underlying stream!\n", __debug__, part_offs);
         return -1;
     }
 
     /* Read raw chunk data */
-    ret = g_input_stream_read(stream, &buffer[have_read], MIN(to_read, part_avail), NULL, NULL);
+    ret = mirage_stream_read(stream, &buffer[have_read], MIN(to_read, part_avail), NULL);
     if (ret < 0) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read %d bytes from underlying stream!\n", __debug__, to_read);
         return -1;
@@ -655,13 +653,13 @@ static gssize mirage_file_filter_isz_read_raw_chunk (MirageFileFilterIsz *self, 
         part_offs = segment->chunk_offs - to_read;
 
         /* Seek to the position */
-        if (!g_seekable_seek(G_SEEKABLE(stream), part_offs, G_SEEK_SET, NULL, NULL)) {
+        if (!mirage_stream_seek(stream, part_offs, G_SEEK_SET, NULL)) {
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to seek to %ld in underlying stream!\n", __debug__, part_offs);
             return -1;
         }
 
         /* Read raw chunk data */
-        ret = g_input_stream_read(stream, &buffer[have_read], to_read, NULL, NULL);
+        ret = mirage_stream_read(stream, &buffer[have_read], to_read, NULL);
         if (ret < 0) {
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read %d bytes from underlying stream!\n", __debug__, to_read);
             return -1;
@@ -679,21 +677,21 @@ static gssize mirage_file_filter_isz_read_raw_chunk (MirageFileFilterIsz *self, 
     return have_read;
 }
 
-static gssize mirage_file_filter_isz_partial_read (MirageFileFilter *_self, void *buffer, gsize count)
+static gssize mirage_filter_stream_isz_partial_read (MirageFilterStream *_self, void *buffer, gsize count)
 {
-    MirageFileFilterIsz *self = MIRAGE_FILE_FILTER_ISZ(_self);
-    goffset position = mirage_file_filter_get_position(MIRAGE_FILE_FILTER(self));
+    MirageFilterStreamIsz *self = MIRAGE_FILTER_STREAM_ISZ(_self);
+    goffset position = mirage_filter_stream_get_position(MIRAGE_FILTER_STREAM(self));
     gint part_idx;
 
     /* Find part that corresponds to current position */
     part_idx = position / self->priv->header.block_size;
 
     if (part_idx >= self->priv->num_parts) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_FILE_IO, "%s: stream position %ld (0x%lX) beyond end of stream, doing nothing!\n", __debug__, position, position);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_STREAM, "%s: stream position %ld (0x%lX) beyond end of stream, doing nothing!\n", __debug__, position, position);
         return 0;
     }
 
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_FILE_IO, "%s: stream position: %ld (0x%lX) -> part #%d (cached: #%d)\n", __debug__, position, position, part_idx, self->priv->cached_part);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_STREAM, "%s: stream position: %ld (0x%lX) -> part #%d (cached: #%d)\n", __debug__, position, position, part_idx, self->priv->cached_part);
 
     /* If we do not have part in cache, uncompress it */
     if (part_idx != self->priv->cached_part) {
@@ -703,7 +701,7 @@ static gssize mirage_file_filter_isz_partial_read (MirageFileFilter *_self, void
 
         gint ret;
 
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_FILE_IO, "%s: part not cached, reading...\n", __debug__);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_STREAM, "%s: part not cached, reading...\n", __debug__);
 
         /* Read a part, either zero, raw or compressed */
         if (part->type == ZERO) {
@@ -711,7 +709,7 @@ static gssize mirage_file_filter_isz_partial_read (MirageFileFilter *_self, void
             memset (self->priv->inflate_buffer, 0, self->priv->inflate_buffer_size);
         } else if (part->type == DATA) {
             /* Read uncompressed part */
-            ret = mirage_file_filter_isz_read_raw_chunk (self, self->priv->inflate_buffer, part_idx);
+            ret = mirage_filter_stream_isz_read_raw_chunk (self, self->priv->inflate_buffer, part_idx);
             if (ret != part->length) {
                 MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read raw chunk!\n", __debug__);
                 return -1;
@@ -731,7 +729,7 @@ static gssize mirage_file_filter_isz_partial_read (MirageFileFilter *_self, void
             zlib_stream->next_out  = self->priv->inflate_buffer;
 
             /* Read some compressed data */
-            ret = mirage_file_filter_isz_read_raw_chunk (self, self->priv->io_buffer, part_idx);
+            ret = mirage_filter_stream_isz_read_raw_chunk (self, self->priv->io_buffer, part_idx);
             if (ret != part->length) {
                 MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read raw chunk!\n", __debug__);
                 return -1;
@@ -760,7 +758,7 @@ static gssize mirage_file_filter_isz_partial_read (MirageFileFilter *_self, void
             bzip2_stream->next_out  = (gchar *) self->priv->inflate_buffer;
 
             /* Read some compressed data */
-            ret = mirage_file_filter_isz_read_raw_chunk (self, self->priv->io_buffer, part_idx);
+            ret = mirage_filter_stream_isz_read_raw_chunk (self, self->priv->io_buffer, part_idx);
             if (ret != part->length) {
                 MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read raw chunk!\n", __debug__);
                 return -1;
@@ -793,14 +791,14 @@ static gssize mirage_file_filter_isz_partial_read (MirageFileFilter *_self, void
         /* Set currently cached part */
         self->priv->cached_part = part_idx;
     } else {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_FILE_IO, "%s: part already cached\n", __debug__);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_STREAM, "%s: part already cached\n", __debug__);
     }
 
     /* Copy data */
     goffset part_offset = position % self->priv->header.block_size;
     count = MIN(count, self->priv->header.block_size - part_offset);
 
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_FILE_IO, "%s: offset within part: %ld, copying %d bytes\n", __debug__, part_offset, count);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_STREAM, "%s: offset within part: %ld, copying %d bytes\n", __debug__, part_offset, count);
 
     memcpy(buffer, &self->priv->inflate_buffer[part_offset], count);
 
@@ -811,21 +809,22 @@ static gssize mirage_file_filter_isz_partial_read (MirageFileFilter *_self, void
 /**********************************************************************\
  *                             Object init                            *
 \**********************************************************************/
-G_DEFINE_DYNAMIC_TYPE(MirageFileFilterIsz, mirage_file_filter_isz, MIRAGE_TYPE_FILE_FILTER);
+G_DEFINE_DYNAMIC_TYPE(MirageFilterStreamIsz, mirage_filter_stream_isz, MIRAGE_TYPE_FILTER_STREAM);
 
-void mirage_file_filter_isz_type_register (GTypeModule *type_module)
+void mirage_filter_stream_isz_type_register (GTypeModule *type_module)
 {
-    return mirage_file_filter_isz_register_type(type_module);
+    return mirage_filter_stream_isz_register_type(type_module);
 }
 
 
-static void mirage_file_filter_isz_init (MirageFileFilterIsz *self)
+static void mirage_filter_stream_isz_init (MirageFilterStreamIsz *self)
 {
-    self->priv = MIRAGE_FILE_FILTER_ISZ_GET_PRIVATE(self);
+    self->priv = MIRAGE_FILTER_STREAM_ISZ_GET_PRIVATE(self);
 
-    mirage_file_filter_generate_info(MIRAGE_FILE_FILTER(self),
+    mirage_filter_stream_generate_info(MIRAGE_FILTER_STREAM(self),
         "FILTER-ISZ",
         "ISZ File Filter",
+        FALSE,
         1,
         "Compressed ISO images (*.isz)", "application/x-isz"
     );
@@ -843,9 +842,9 @@ static void mirage_file_filter_isz_init (MirageFileFilterIsz *self)
     self->priv->io_buffer = NULL;
 }
 
-static void mirage_file_filter_isz_finalize (GObject *gobject)
+static void mirage_filter_stream_isz_finalize (GObject *gobject)
 {
-    MirageFileFilterIsz *self = MIRAGE_FILE_FILTER_ISZ(gobject);
+    MirageFilterStreamIsz *self = MIRAGE_FILTER_STREAM_ISZ(gobject);
 
     for (gint s = 0; s < self->priv->num_segments; s++) {
         g_object_unref(self->priv->streams[s]);
@@ -861,24 +860,24 @@ static void mirage_file_filter_isz_finalize (GObject *gobject)
     BZ2_bzDecompressEnd(&self->priv->bzip2_stream);
 
     /* Chain up to the parent class */
-    return G_OBJECT_CLASS(mirage_file_filter_isz_parent_class)->finalize(gobject);
+    return G_OBJECT_CLASS(mirage_filter_stream_isz_parent_class)->finalize(gobject);
 }
 
-static void mirage_file_filter_isz_class_init (MirageFileFilterIszClass *klass)
+static void mirage_filter_stream_isz_class_init (MirageFilterStreamIszClass *klass)
 {
     GObjectClass *gobject_class = G_OBJECT_CLASS(klass);
-    MirageFileFilterClass *file_filter_class = MIRAGE_FILE_FILTER_CLASS(klass);
+    MirageFilterStreamClass *filter_stream_class = MIRAGE_FILTER_STREAM_CLASS(klass);
 
-    gobject_class->finalize = mirage_file_filter_isz_finalize;
+    gobject_class->finalize = mirage_filter_stream_isz_finalize;
 
-    file_filter_class->can_handle_data_format = mirage_file_filter_isz_can_handle_data_format;
+    filter_stream_class->open = mirage_filter_stream_isz_open;
 
-    file_filter_class->partial_read = mirage_file_filter_isz_partial_read;
+    filter_stream_class->partial_read = mirage_filter_stream_isz_partial_read;
 
     /* Register private structure */
-    g_type_class_add_private(klass, sizeof(MirageFileFilterIszPrivate));
+    g_type_class_add_private(klass, sizeof(MirageFilterStreamIszPrivate));
 }
 
-static void mirage_file_filter_isz_class_finalize (MirageFileFilterIszClass *klass G_GNUC_UNUSED)
+static void mirage_filter_stream_isz_class_finalize (MirageFilterStreamIszClass *klass G_GNUC_UNUSED)
 {
 }

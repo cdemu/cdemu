@@ -1,5 +1,5 @@
 /*
- *  libMirage: MacBinary file filter
+ *  libMirage: MacBinary filter
  *  Copyright (C) 2013 Henrik Stokseth
  *
  *  This program is free software; you can redistribute it and/or modify
@@ -26,7 +26,7 @@
 
 
 #include "mirage.h"
-#include "filter-macbinary-file-filter.h"
+#include "filter-macbinary-filter-stream.h"
 #include "../filter-dmg/resource-fork.h"
 #include "../filter-dmg/adc.h"
 

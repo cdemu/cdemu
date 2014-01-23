@@ -25,7 +25,7 @@ Table of Contents:
 1. Introduction
 ~~~~~~~~~~~~~~~
 
-This is CDEmu daemon, the daemon part of the cdemu suite, a free, 
+This is CDEmu daemon, the daemon part of the cdemu suite, a free,
 GPL CD/DVD-ROM device emulator for linux.
 
 This document describes both the cdemu suite in general, and the
@@ -295,14 +295,15 @@ control the daemon:
 
     - Returns supported image parsers.
 
-* EnumSupportedFileFilters (filters)
-    + filters: out; "a(ssa(ss))"
-        Array of structures containing information about supported file filters.
-        Each structure has multiple fields; filter ID (string), filter name
-        (string), and array of supported file types, each comprising a file
-        type description (string) and file type MIME type (string).
+* EnumSupportedFilterStreams (filter_streams)
+    + filter_streams: out; "a(ssa(ss))"
+        Array of structures containing information about supported filter
+        streams. Each structure has multiple fields; filter stream ID
+        (string), filter stream name (string), and array of supported
+        file types, each comprising a file type description (string)
+        and file type MIME type (string).
 
-    - Returns supported image parsers.
+    - Returns supported filter streams.
 
 * GetNumberOfDevices (number_of_devices)
     + number_of_devices: out; "i"
@@ -429,7 +430,7 @@ is of type G_TYPE_INT.
 
 * bad-sector-emulation
    + arguments: enabled (boolean - "b")
-   
+
    - Bad sector emulation flag. Determines whether bad sector emulation is
      performed. This involves reading sector's data, computing error detection
      code (EDC) over it, and comparing it to stored EDC; if the two do not
@@ -494,9 +495,9 @@ control device.
 
 It possible to use CDEmu to mount certain hard-disk images that are
 supported by libMirage. However, hard-disk device emulation is not
-implemented, but rather the data is simply laid out in a fashion 
-according to standard 2048-sector data CD-ROMs. Due to the lack of 
-block-device access, you may run into some problems when attempting to 
+implemented, but rather the data is simply laid out in a fashion
+according to standard 2048-sector data CD-ROMs. Due to the lack of
+block-device access, you may run into some problems when attempting to
 mount some images.
 
 The mount command may complain that it could not set a sector size of
@@ -618,7 +619,7 @@ Session bus service autostart installs the cdemu-daemon-session.service file and
 wrapper script. The default parameters (2 devices, PulseAudio as audio driver and ~/.cdemu-daemon.log as logfile)
 can be overridden by specifying variables NUM_DEVICES, AUDIO_DRIVER and LOG_FILE in ~/.cdemu-daemon config file.
 
-Installation of session bus service autostart can be controlled via SESSION_BUS_SERVICE option in daemon's CMake 
+Installation of session bus service autostart can be controlled via SESSION_BUS_SERVICE option in daemon's CMake
 script (e.g., by passing -DSESSION_BUS_SERVICE=ON/OFF on command-line). By default, installation is enabled.
 
 System bus service autostart:

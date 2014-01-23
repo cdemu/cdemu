@@ -524,8 +524,8 @@ static GtkWidget *build_dialog_open_image (GtkWindow *parent_window)
     const MirageParserInfo *parsers;
     gint num_parsers;
 
-    const MirageFileFilterInfo *file_filters;
-    gint num_file_filters;
+    const MirageFilterStreamInfo *filter_streams;
+    gint num_filter_streams;
 
     dialog = gtk_file_chooser_dialog_new(
         "Open File",
@@ -569,9 +569,9 @@ static GtkWidget *build_dialog_open_image (GtkWindow *parent_window)
     }
 
     /* Get list of supported file filters */
-    mirage_get_file_filters_info(&file_filters, &num_file_filters, NULL);
-    for (gint i = 0; i < num_file_filters; i++) {
-        const MirageFileFilterInfo *info = &file_filters[i];
+    mirage_get_filter_streams_info(&filter_streams, &num_filter_streams, NULL);
+    for (gint i = 0; i < num_filter_streams; i++) {
+        const MirageFilterStreamInfo *info = &filter_streams[i];
         GtkFileFilter *filter;
 
         /* Go over all types (NULL-terminated list) */

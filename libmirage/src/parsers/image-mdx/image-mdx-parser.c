@@ -35,11 +35,11 @@ struct _MirageParserMdxPrivate
     MirageDisc *disc;
 
     const gchar *mdx_filename;
-    GInputStream *stream;
+    MirageStream *stream;
 };
 
 
-static gboolean mirage_parser_mdx_determine_track_mode (MirageParserMdx *self, GInputStream *stream, guint64 offset, guint64 length, gint *track_mode,  gint *sector_size, gint *subchannel_type, gint *subchannel_size, GError **error)
+static gboolean mirage_parser_mdx_determine_track_mode (MirageParserMdx *self, MirageStream *stream, guint64 offset, guint64 length, gint *track_mode,  gint *sector_size, gint *subchannel_type, gint *subchannel_size, GError **error)
 {
     /* FIXME: add subchannel support */
     *subchannel_type = 0;
@@ -49,9 +49,9 @@ static gboolean mirage_parser_mdx_determine_track_mode (MirageParserMdx *self, G
     if (length % 2048 == 0) {
         guint8 buf[8];
 
-        g_seekable_seek(G_SEEKABLE(stream), offset + 16*2048, G_SEEK_SET, NULL, NULL);
+        mirage_stream_seek(stream, offset + 16*2048, G_SEEK_SET, NULL);
 
-        if (g_input_stream_read(stream, buf, sizeof(buf), NULL, NULL) != sizeof(buf)) {
+        if (mirage_stream_read(stream, buf, sizeof(buf), NULL) != sizeof(buf)) {
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read 8-byte pattern!\n", __debug__);
             g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, "Failed to read 8-byte pattern!");
             return FALSE;
@@ -72,9 +72,9 @@ static gboolean mirage_parser_mdx_determine_track_mode (MirageParserMdx *self, G
     if (length % 2352 == 0) {
         guint8 buf[16];
 
-        g_seekable_seek(G_SEEKABLE(stream), offset + 16*2352, G_SEEK_SET, NULL, NULL);
+        mirage_stream_seek(stream, offset + 16*2352, G_SEEK_SET, NULL);
 
-        if (g_input_stream_read(stream, buf, sizeof(buf), NULL, NULL) != sizeof(buf)) {
+        if (mirage_stream_read(stream, buf, sizeof(buf), NULL) != sizeof(buf)) {
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read sync pattern!\n", __debug__);
             g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, "Failed to read sync pattern!");
             return FALSE;
@@ -145,7 +145,7 @@ static MirageTrack *mirage_parser_mdx_get_track (MirageParserMdx *self, GError *
 {
     gboolean succeeded = TRUE;
 
-    GInputStream *data_stream;
+    MirageStream *data_stream;
     guint64 offset;
     guint64 length;
 
@@ -163,10 +163,10 @@ static MirageTrack *mirage_parser_mdx_get_track (MirageParserMdx *self, GError *
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: MDX file; reading header...\n", __debug__);
 
         /* Seek to beginning */
-        g_seekable_seek(G_SEEKABLE(data_stream), 0, G_SEEK_SET, NULL, NULL);
+        mirage_stream_seek(data_stream, 0, G_SEEK_SET, NULL);
 
         /* Read header */
-        if (g_input_stream_read(data_stream, &header, sizeof(header), NULL, NULL) != sizeof(header)) {
+        if (mirage_stream_read(data_stream, &header, sizeof(header), NULL) != sizeof(header)) {
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read MDX header!\n", __debug__);
             g_object_unref(data_stream);
             g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, "Failed to read header!");
@@ -185,7 +185,7 @@ static MirageTrack *mirage_parser_mdx_get_track (MirageParserMdx *self, GError *
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "\n");
 
         /* Offset: end of header */
-        offset = g_seekable_tell(G_SEEKABLE(data_stream));
+        offset = mirage_stream_tell(data_stream);
 
         /* Length: between header and footer */
         length = header.footer_offset - offset;
@@ -206,8 +206,8 @@ static MirageTrack *mirage_parser_mdx_get_track (MirageParserMdx *self, GError *
         offset = 0;
 
         /* Get file length */
-        g_seekable_seek(G_SEEKABLE(data_stream), 0, G_SEEK_END, NULL, NULL);
-        length = g_seekable_tell(G_SEEKABLE(data_stream));
+        mirage_stream_seek(data_stream, 0, G_SEEK_END, NULL);
+        length = mirage_stream_tell(data_stream);
     } else {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: invalid filename suffix; only 'mdx' and 'mds' are supported!\n", __debug__);
         g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_PARSER_ERROR, "Invalid filename suffix; only 'mdx' and 'mds' are supported!");
@@ -246,7 +246,7 @@ static MirageTrack *mirage_parser_mdx_get_track (MirageParserMdx *self, GError *
     data_fragment = g_object_new(MIRAGE_TYPE_FRAGMENT, NULL);
 
     /* Set stream */
-    mirage_fragment_main_data_set_input_stream(data_fragment, data_stream);
+    mirage_fragment_main_data_set_stream(data_fragment, data_stream);
     g_object_unref(data_stream);
 
     mirage_fragment_main_data_set_format(data_fragment, MIRAGE_MAIN_DATA_FORMAT_DATA);
@@ -313,7 +313,7 @@ static gboolean mirage_parser_mdx_load_disc (MirageParserMdx *self, GError **err
 /**********************************************************************\
  *                MirageParser methods implementation                *
 \**********************************************************************/
-static MirageDisc *mirage_parser_mdx_load_image (MirageParser *_self, GInputStream **streams, GError **error)
+static MirageDisc *mirage_parser_mdx_load_image (MirageParser *_self, MirageStream **streams, GError **error)
 {
     MirageParserMdx *self = MIRAGE_PARSER_MDX(_self);
 
@@ -327,8 +327,8 @@ static MirageDisc *mirage_parser_mdx_load_image (MirageParser *_self, GInputStre
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_IMAGE_ID, "%s: veryfing signature at the beginning of the file...\n", __debug__);
 
     /* Read signature and version */
-    g_seekable_seek(G_SEEKABLE(self->priv->stream), 0, G_SEEK_SET, NULL, NULL);
-    if (g_input_stream_read(self->priv->stream, signature, sizeof(signature), NULL, NULL) != sizeof(signature)) {
+    mirage_stream_seek(self->priv->stream, 0, G_SEEK_SET, NULL);
+    if (mirage_stream_read(self->priv->stream, signature, sizeof(signature), NULL) != sizeof(signature)) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_IMAGE_ID, "%s: parser cannot handle given image: invalid signature and/or version!\n", __debug__);
         g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_CANNOT_HANDLE, "Parser cannot handle given image: failed to read signature and version!");
         return FALSE;
@@ -349,7 +349,7 @@ static MirageDisc *mirage_parser_mdx_load_image (MirageParser *_self, GInputStre
     mirage_object_set_parent(MIRAGE_OBJECT(self->priv->disc), self);
 
     /* Set filenames */
-    self->priv->mdx_filename = mirage_contextual_get_file_stream_filename(MIRAGE_CONTEXTUAL(self), self->priv->stream);
+    self->priv->mdx_filename = mirage_stream_get_filename(self->priv->stream);
     mirage_disc_set_filename(self->priv->disc, self->priv->mdx_filename);
 
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: MDX filename: %s\n", __debug__, self->priv->mdx_filename);

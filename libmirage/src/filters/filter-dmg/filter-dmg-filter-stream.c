@@ -1,5 +1,5 @@
 /*
- *  libMirage: DMG file filter: File filter object
+ *  libMirage: DMG filter: Filter stream object
  *  Copyright (C) 2012 Henrik Stokseth
  *
  *  This program is free software; you can redistribute it and/or modify
@@ -19,7 +19,7 @@
 
 #include "filter-dmg.h"
 
-#define __debug__ "DMG-FileFilter"
+#define __debug__ "DMG-FilterStream"
 
 
 static const guint8 koly_signature[4] = { 'k', 'o', 'l', 'y' };
@@ -39,9 +39,9 @@ typedef struct {
 /**********************************************************************\
  *                          Private structure                         *
 \**********************************************************************/
-#define MIRAGE_FILE_FILTER_DMG_GET_PRIVATE(obj) (G_TYPE_INSTANCE_GET_PRIVATE((obj), MIRAGE_TYPE_FILE_FILTER_DMG, MirageFileFilterDmgPrivate))
+#define MIRAGE_FILTER_STREAM_DMG_GET_PRIVATE(obj) (G_TYPE_INSTANCE_GET_PRIVATE((obj), MIRAGE_TYPE_FILTER_STREAM_DMG, MirageFilterStreamDmgPrivate))
 
-struct _MirageFileFilterDmgPrivate
+struct _MirageFilterStreamDmgPrivate
 {
     /* koly blocks */
     koly_block_t *koly_block;
@@ -51,7 +51,7 @@ struct _MirageFileFilterDmgPrivate
     rsrc_fork_t *rsrc_fork;
 
     /* streams */
-    GInputStream **streams;
+    MirageStream **streams;
     guint num_streams;
 
     /* Part list */
@@ -76,7 +76,7 @@ struct _MirageFileFilterDmgPrivate
 /**********************************************************************\
  *                    Endian-conversion functions                     *
 \**********************************************************************/
-static inline void mirage_file_filter_dmg_koly_block_fix_endian (koly_block_t *koly_block)
+static inline void mirage_filter_stream_dmg_koly_block_fix_endian (koly_block_t *koly_block)
 {
     g_assert(koly_block);
 
@@ -116,7 +116,7 @@ static inline void mirage_file_filter_dmg_koly_block_fix_endian (koly_block_t *k
 }
 
 
-static inline void mirage_file_filter_dmg_blkx_block_fix_endian (blkx_block_t *blkx_block)
+static inline void mirage_filter_stream_dmg_blkx_block_fix_endian (blkx_block_t *blkx_block)
 {
     g_assert(blkx_block);
 
@@ -140,7 +140,7 @@ static inline void mirage_file_filter_dmg_blkx_block_fix_endian (blkx_block_t *b
     /* skip reserved */
 }
 
-static inline void mirage_file_filter_dmg_blkx_data_fix_endian (blkx_data_t *blkx_data)
+static inline void mirage_filter_stream_dmg_blkx_data_fix_endian (blkx_data_t *blkx_data)
 {
     g_assert(blkx_data);
 
@@ -152,7 +152,7 @@ static inline void mirage_file_filter_dmg_blkx_data_fix_endian (blkx_data_t *blk
     blkx_data->compressed_length = GUINT64_FROM_BE(blkx_data->compressed_length);
 }
 
-static inline void mirage_file_filter_dmg_csum_fix_endian (csum_block_t *csum_block)
+static inline void mirage_filter_stream_dmg_csum_fix_endian (csum_block_t *csum_block)
 {
     g_assert(csum_block);
 
@@ -161,7 +161,7 @@ static inline void mirage_file_filter_dmg_csum_fix_endian (csum_block_t *csum_bl
     csum_block->data    = GUINT32_FROM_LE(csum_block->data);
 }
 
-static inline void mirage_file_filter_dmg_size_fix_endian (size_block_t *size_block)
+static inline void mirage_filter_stream_dmg_size_fix_endian (size_block_t *size_block)
 {
     g_assert(size_block);
 
@@ -180,7 +180,7 @@ static inline void mirage_file_filter_dmg_size_fix_endian (size_block_t *size_bl
 /**********************************************************************\
  *                         Debug functions                            *
 \**********************************************************************/
-static void mirage_file_filter_dmg_print_koly_block(MirageFileFilterDmg *self, koly_block_t *koly_block)
+static void mirage_filter_stream_dmg_print_koly_block(MirageFilterStreamDmg *self, koly_block_t *koly_block)
 {
     g_assert(self && koly_block);
 
@@ -235,7 +235,7 @@ static void mirage_file_filter_dmg_print_koly_block(MirageFileFilterDmg *self, k
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "\n");
 }
 
-static void mirage_file_filter_dmg_print_blkx_block(MirageFileFilterDmg *self, blkx_block_t *blkx_block)
+static void mirage_filter_stream_dmg_print_blkx_block(MirageFilterStreamDmg *self, blkx_block_t *blkx_block)
 {
     g_assert(self && blkx_block);
 
@@ -263,7 +263,7 @@ static void mirage_file_filter_dmg_print_blkx_block(MirageFileFilterDmg *self, b
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "\n");
 }
 
-static void mirage_file_filter_dmg_print_csum_block(MirageFileFilterDmg *self, csum_block_t *csum_block)
+static void mirage_filter_stream_dmg_print_csum_block(MirageFilterStreamDmg *self, csum_block_t *csum_block)
 {
     g_assert(self && csum_block);
 
@@ -275,7 +275,7 @@ static void mirage_file_filter_dmg_print_csum_block(MirageFileFilterDmg *self, c
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "\n");
 }
 
-static void mirage_file_filter_dmg_print_size_block(MirageFileFilterDmg *self, size_block_t *size_block)
+static void mirage_filter_stream_dmg_print_size_block(MirageFilterStreamDmg *self, size_block_t *size_block)
 {
     g_assert(self && size_block);
 
@@ -321,7 +321,7 @@ static gchar *create_filename_func (const gchar *main_filename, gint index)
 /**********************************************************************\
  *                         Parsing functions                          *
 \**********************************************************************/
-static gboolean mirage_file_filter_dmg_read_descriptor (MirageFileFilterDmg *self, GInputStream *stream, GError **error)
+static gboolean mirage_filter_stream_dmg_read_descriptor (MirageFilterStreamDmg *self, MirageStream *stream, GError **error)
 {
     koly_block_t *koly_block = self->priv->koly_block;
     rsrc_fork_t  *rsrc_fork = NULL;
@@ -335,8 +335,8 @@ static gboolean mirage_file_filter_dmg_read_descriptor (MirageFileFilterDmg *sel
             return FALSE;
         }
 
-        g_seekable_seek(G_SEEKABLE(stream), koly_block->xml_offset, G_SEEK_SET, NULL, NULL);
-        if (g_input_stream_read(stream, rsrc_fork_data, koly_block->xml_length, NULL, NULL) != koly_block->xml_length) {
+        mirage_stream_seek(stream, koly_block->xml_offset, G_SEEK_SET, NULL);
+        if (mirage_stream_read(stream, rsrc_fork_data, koly_block->xml_length, NULL) != koly_block->xml_length) {
             g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, "Failed to read XML resource-fork!");
             return FALSE;
         }
@@ -349,8 +349,8 @@ static gboolean mirage_file_filter_dmg_read_descriptor (MirageFileFilterDmg *sel
             return FALSE;
         }
 
-        g_seekable_seek(G_SEEKABLE(stream), koly_block->rsrc_fork_offset, G_SEEK_SET, NULL, NULL);
-        if (g_input_stream_read(stream, rsrc_fork_data, koly_block->rsrc_fork_length, NULL, NULL) != koly_block->rsrc_fork_length) {
+        mirage_stream_seek(stream, koly_block->rsrc_fork_offset, G_SEEK_SET, NULL);
+        if (mirage_stream_read(stream, rsrc_fork_data, koly_block->rsrc_fork_length, NULL) != koly_block->rsrc_fork_length) {
             g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, "Failed to read binary resource-fork!");
             return FALSE;
         }
@@ -390,14 +390,14 @@ static gboolean mirage_file_filter_dmg_read_descriptor (MirageFileFilterDmg *sel
                 csum_block_t *csum_block = (csum_block_t *) rsrc_ref->data;
 
                 g_assert(rsrc_ref->data_length == sizeof(csum_block_t));
-                mirage_file_filter_dmg_csum_fix_endian(csum_block);
-                mirage_file_filter_dmg_print_csum_block(self, csum_block);
+                mirage_filter_stream_dmg_csum_fix_endian(csum_block);
+                mirage_filter_stream_dmg_print_csum_block(self, csum_block);
             } else if (!memcmp(rsrc_type->type.as_array, "size", 4)) {
                 size_block_t *size_block = (size_block_t *) rsrc_ref->data;
 
                 g_assert(rsrc_ref->data_length == sizeof(size_block_t));
-                mirage_file_filter_dmg_size_fix_endian(size_block);
-                mirage_file_filter_dmg_print_size_block(self, size_block);
+                mirage_filter_stream_dmg_size_fix_endian(size_block);
+                mirage_filter_stream_dmg_print_size_block(self, size_block);
             } else if (!memcmp(rsrc_type->type.as_array, "nsiz", 4)) {
                 /* Note: There are the same amount of nsiz and the cSum blocks which have the same checksums */
                 GString *nsiz_data = NULL;
@@ -412,9 +412,9 @@ static gboolean mirage_file_filter_dmg_read_descriptor (MirageFileFilterDmg *sel
                 blkx_block_t *blkx_block = (blkx_block_t *) rsrc_ref->data;
                 blkx_data_t  *blkx_data  = (blkx_data_t *) (rsrc_ref->data + sizeof(blkx_block_t));
 
-                mirage_file_filter_dmg_blkx_block_fix_endian(blkx_block);
+                mirage_filter_stream_dmg_blkx_block_fix_endian(blkx_block);
                 for (guint d = 0; d < blkx_block->blocks_run_count; d++) {
-                    mirage_file_filter_dmg_blkx_data_fix_endian(&blkx_data[d]);
+                    mirage_filter_stream_dmg_blkx_data_fix_endian(&blkx_data[d]);
 
                     /* Update parts count */
                     gint32 block_type = blkx_data[d].block_type;
@@ -432,7 +432,7 @@ static gboolean mirage_file_filter_dmg_read_descriptor (MirageFileFilterDmg *sel
                     }
                 }
 
-                mirage_file_filter_dmg_print_blkx_block(self, blkx_block);
+                mirage_filter_stream_dmg_print_blkx_block(self, blkx_block);
             } else {
                 MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: Encountered unknown resource type: %.4s\n", __debug__, rsrc_type->type.as_array);
             }
@@ -444,7 +444,7 @@ static gboolean mirage_file_filter_dmg_read_descriptor (MirageFileFilterDmg *sel
     return TRUE;
 }
 
-static gboolean mirage_file_filter_dmg_read_index (MirageFileFilterDmg *self, GError **error)
+static gboolean mirage_filter_stream_dmg_read_index (MirageFilterStreamDmg *self, GError **error)
 {
     z_stream  *zlib_stream  = &self->priv->zlib_stream;
     bz_stream *bzip2_stream = &self->priv->bzip2_stream;
@@ -581,16 +581,16 @@ static gboolean mirage_file_filter_dmg_read_index (MirageFileFilterDmg *self, GE
 
 
 /**********************************************************************\
- *                MirageFileFilter methods implementation             *
+ *               MirageFilterStream methods implementation            *
 \**********************************************************************/
-static gboolean mirage_file_filter_dmg_open_streams (MirageFileFilterDmg *self, GError **error)
+static gboolean mirage_filter_stream_dmg_open_streams (MirageFilterStreamDmg *self, GError **error)
 {
-    GInputStream **streams;
+    MirageStream **streams;
 
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: opening streams\n", __debug__);
 
     /* Allocate space for streams */
-    self->priv->streams = streams = g_try_new(GInputStream *, self->priv->koly_block->segment_count);
+    self->priv->streams = streams = g_try_new(MirageStream *, self->priv->koly_block->segment_count);
     if (!streams) {
         g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, "Failed to allocate memory for streams!");
         return FALSE;
@@ -600,7 +600,7 @@ static gboolean mirage_file_filter_dmg_open_streams (MirageFileFilterDmg *self, 
     streams[0] = g_object_ref(g_filter_input_stream_get_base_stream(G_FILTER_INPUT_STREAM(self)));
     self->priv->num_streams++;
 
-    const gchar *original_filename = mirage_contextual_get_file_stream_filename (MIRAGE_CONTEXTUAL(self), streams[0]);
+    const gchar *original_filename = mirage_stream_get_filename(streams[0]);
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  %s\n", __debug__, original_filename);
 
     /* Create the rest of the streams */
@@ -629,13 +629,13 @@ static gboolean mirage_file_filter_dmg_open_streams (MirageFileFilterDmg *self, 
         for (guint try = 0; try < 2; try++) {
             /* Find koly block either on end (most often) or beginning of file */
             if (try == 0) {
-                g_seekable_seek(G_SEEKABLE(streams[s]), -sizeof(koly_block_t), G_SEEK_END, NULL, NULL);
+                mirage_stream_seek(streams[s], -sizeof(koly_block_t), G_SEEK_END, NULL);
             } else {
-                g_seekable_seek(G_SEEKABLE(streams[s]), 0, G_SEEK_SET, NULL, NULL);
+                mirage_stream_seek(streams[s], 0, G_SEEK_SET, NULL);
             }
 
             /* Read koly block */
-            if (g_input_stream_read(streams[s], &self->priv->koly_block[s], sizeof(koly_block_t), NULL, NULL) != sizeof(koly_block_t)) {
+            if (mirage_stream_read(streams[s], &self->priv->koly_block[s], sizeof(koly_block_t), NULL) != sizeof(koly_block_t)) {
                 g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_CANNOT_HANDLE, "Failed to read koly block!");
                 return FALSE;
             }
@@ -647,13 +647,13 @@ static gboolean mirage_file_filter_dmg_open_streams (MirageFileFilterDmg *self, 
                     return FALSE;
                 }
             } else {
-                mirage_file_filter_dmg_koly_block_fix_endian(&self->priv->koly_block[s]);
+                mirage_filter_stream_dmg_koly_block_fix_endian(&self->priv->koly_block[s]);
                 break;
             }
         }
 
         /* Output koly block info */
-        mirage_file_filter_dmg_print_koly_block(self, &self->priv->koly_block[s]);
+        mirage_filter_stream_dmg_print_koly_block(self, &self->priv->koly_block[s]);
     }
 
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: sucessfully opened streams\n\n", __debug__);
@@ -661,10 +661,9 @@ static gboolean mirage_file_filter_dmg_open_streams (MirageFileFilterDmg *self, 
     return TRUE;
 }
 
-static gboolean mirage_file_filter_dmg_can_handle_data_format (MirageFileFilter *_self, GError **error)
+static gboolean mirage_filter_stream_dmg_open (MirageFilterStream *_self, MirageStream *stream, GError **error)
 {
-    MirageFileFilterDmg *self = MIRAGE_FILE_FILTER_DMG(_self);
-    GInputStream *stream = g_filter_input_stream_get_base_stream(G_FILTER_INPUT_STREAM(self));
+    MirageFilterStreamDmg *self = MIRAGE_FILTER_STREAM_DMG(_self);
 
     koly_block_t *koly_block = NULL;
 
@@ -682,25 +681,25 @@ static gboolean mirage_file_filter_dmg_can_handle_data_format (MirageFileFilter 
     for (guint try = 0; try < 2; try++) {
         /* Find koly block either on end (most often) or beginning of file */
         if (try == 0) {
-            g_seekable_seek(G_SEEKABLE(stream), -sizeof(koly_block_t), G_SEEK_END, NULL, NULL);
+            mirage_stream_seek(stream, -sizeof(koly_block_t), G_SEEK_END, NULL);
         } else {
-            g_seekable_seek(G_SEEKABLE(stream), 0, G_SEEK_SET, NULL, NULL);
+            mirage_stream_seek(stream, 0, G_SEEK_SET, NULL);
         }
 
         /* Read koly block */
-        if (g_input_stream_read(stream, koly_block, sizeof(koly_block_t), NULL, NULL) != sizeof(koly_block_t)) {
-            g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_CANNOT_HANDLE, "File filter cannot handle given image: failed to read koly block!");
+        if (mirage_stream_read(stream, koly_block, sizeof(koly_block_t), NULL) != sizeof(koly_block_t)) {
+            g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_CANNOT_HANDLE, "Filter stream cannot handle given image: failed to read koly block!");
             return FALSE;
         }
 
         /* Validate koly block */
         if (memcmp(koly_block->signature, koly_signature, sizeof(koly_signature))) {
             if (try == 1) {
-                g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_CANNOT_HANDLE, "File filter cannot handle given image: invalid koly block!");
+                g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_CANNOT_HANDLE, "Filter stream cannot handle given image: invalid koly block!");
                 return FALSE;
             }
         } else {
-            mirage_file_filter_dmg_koly_block_fix_endian(koly_block);
+            mirage_filter_stream_dmg_koly_block_fix_endian(koly_block);
             break;
         }
     }
@@ -714,10 +713,10 @@ static gboolean mirage_file_filter_dmg_can_handle_data_format (MirageFileFilter 
     }
 
     /* Output koly block info */
-    mirage_file_filter_dmg_print_koly_block(self, koly_block);
+    mirage_filter_stream_dmg_print_koly_block(self, koly_block);
 
     /* Open streams */
-    ret = mirage_file_filter_dmg_open_streams (self, error);
+    ret = mirage_filter_stream_dmg_open_streams(self, error);
     if (!ret) {
         g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, "Failed to open streams!");
         return FALSE;
@@ -726,15 +725,16 @@ static gboolean mirage_file_filter_dmg_can_handle_data_format (MirageFileFilter 
     koly_block = self->priv->koly_block;
 
     /* Set file size */
-    mirage_file_filter_set_file_size(MIRAGE_FILE_FILTER(self), koly_block->sector_count * DMG_SECTOR_SIZE);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: original stream size: %lu\n",
-                 __debug__, koly_block->sector_count * DMG_SECTOR_SIZE);
+    mirage_filter_stream_set_stream_length(_self, koly_block->sector_count * DMG_SECTOR_SIZE);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: original stream size: %lu\n", __debug__, koly_block->sector_count * DMG_SECTOR_SIZE);
 
     /* Read descriptors */
-    succeeded = mirage_file_filter_dmg_read_descriptor(self, stream, error);
-    if (!succeeded) goto end;
+    succeeded = mirage_filter_stream_dmg_read_descriptor(self, stream, error);
+    if (!succeeded) {
+        goto end;
+    }
 
-    succeeded = mirage_file_filter_dmg_read_index (self, error);
+    succeeded = mirage_filter_stream_dmg_read_index (self, error);
 
 end:
     /* Return result */
@@ -747,10 +747,10 @@ end:
     }
 }
 
-static gssize mirage_file_filter_dmg_read_raw_chunk (MirageFileFilterDmg *self, guint8 *buffer, gint chunk_num)
+static gssize mirage_filter_stream_dmg_read_raw_chunk (MirageFilterStreamDmg *self, guint8 *buffer, gint chunk_num)
 {
     const DMG_Part *part = &self->priv->parts[chunk_num];
-    GInputStream   *stream = self->priv->streams[part->segment];
+    MirageStream   *stream = self->priv->streams[part->segment];
     koly_block_t   *koly_block = &self->priv->koly_block[part->segment];
 
     gsize   to_read = part->in_length;
@@ -760,7 +760,7 @@ static gssize mirage_file_filter_dmg_read_raw_chunk (MirageFileFilterDmg *self, 
     gint    ret;
 
     /* Seek to the position */
-    if (!g_seekable_seek(G_SEEKABLE(stream), part_offs, G_SEEK_SET, NULL, NULL)) {
+    if (!mirage_stream_seek(stream, part_offs, G_SEEK_SET, NULL)) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to seek to %ld in underlying stream!\n", __debug__, part_offs);
         return -1;
     }
@@ -768,7 +768,7 @@ static gssize mirage_file_filter_dmg_read_raw_chunk (MirageFileFilterDmg *self, 
     /*MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: raw position: %u\n", __debug__, part_offs);*/
 
     /* Read raw chunk data */
-    ret = g_input_stream_read(stream, &buffer[have_read], MIN(to_read, part_avail), NULL, NULL);
+    ret = mirage_stream_read(stream, &buffer[have_read], MIN(to_read, part_avail), NULL);
     if (ret < 0) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read %d bytes from underlying stream!\n", __debug__, to_read);
         return -1;
@@ -788,13 +788,13 @@ static gssize mirage_file_filter_dmg_read_raw_chunk (MirageFileFilterDmg *self, 
         part_offs = koly_block->data_fork_offset;
 
         /* Seek to the position */
-        if (!g_seekable_seek(G_SEEKABLE(stream), part_offs, G_SEEK_SET, NULL, NULL)) {
+        if (!mirage_stream_seek(stream, part_offs, G_SEEK_SET, NULL)) {
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to seek to %ld in underlying stream!\n", __debug__, part_offs);
             return -1;
         }
 
         /* Read raw chunk data */
-        ret = g_input_stream_read(stream, &buffer[have_read], to_read, NULL, NULL);
+        ret = mirage_stream_read(stream, &buffer[have_read], to_read, NULL);
         if (ret < 0) {
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read %d bytes from underlying stream!\n", __debug__, to_read);
             return -1;
@@ -812,10 +812,10 @@ static gssize mirage_file_filter_dmg_read_raw_chunk (MirageFileFilterDmg *self, 
     return have_read;
 }
 
-static gssize mirage_file_filter_dmg_partial_read (MirageFileFilter *_self, void *buffer, gsize count)
+static gssize mirage_filter_stream_dmg_partial_read (MirageFilterStream *_self, void *buffer, gsize count)
 {
-    MirageFileFilterDmg *self = MIRAGE_FILE_FILTER_DMG(_self);
-    goffset position = mirage_file_filter_get_position(MIRAGE_FILE_FILTER(self));
+    MirageFilterStreamDmg *self = MIRAGE_FILTER_STREAM_DMG(_self);
+    goffset position = mirage_filter_stream_get_position(MIRAGE_FILTER_STREAM(self));
     gint part_idx = -1;
 
     /* Find part that corresponds to current position */
@@ -829,11 +829,11 @@ static gssize mirage_file_filter_dmg_partial_read (MirageFileFilter *_self, void
     }
 
     if (part_idx == -1) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_FILE_IO, "%s: failed to find part!\n", __debug__);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_STREAM, "%s: failed to find part!\n", __debug__);
         return 0;
     }
 
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_FILE_IO, "%s: stream position: %ld (0x%lX) -> part #%d (cached: #%d)\n", __debug__, position, position, part_idx, self->priv->cached_part);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_STREAM, "%s: stream position: %ld (0x%lX) -> part #%d (cached: #%d)\n", __debug__, position, position, part_idx, self->priv->cached_part);
 
     /* If we do not have part in cache, uncompress it */
     if (part_idx != self->priv->cached_part) {
@@ -842,14 +842,14 @@ static gssize mirage_file_filter_dmg_partial_read (MirageFileFilter *_self, void
         bz_stream *bzip2_stream = &self->priv->bzip2_stream;
         gint ret;
 
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_FILE_IO, "%s: part not cached, reading...\n", __debug__);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_STREAM, "%s: part not cached, reading...\n", __debug__);
 
         /* Read a part */
         if (part->type == ZERO || part->type == IGNORE) {
             /* We don't use internal buffers for zero data */
         } else if (part->type == RAW) {
             /* Read uncompressed part */
-            ret = mirage_file_filter_dmg_read_raw_chunk (self, self->priv->inflate_buffer, part_idx);
+            ret = mirage_filter_stream_dmg_read_raw_chunk (self, self->priv->inflate_buffer, part_idx);
             if (ret != part->in_length) {
                 MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read raw chunk!\n", __debug__);
                 return -1;
@@ -869,7 +869,7 @@ static gssize mirage_file_filter_dmg_partial_read (MirageFileFilter *_self, void
             zlib_stream->next_out  = self->priv->inflate_buffer;
 
             /* Read some compressed data */
-            ret = mirage_file_filter_dmg_read_raw_chunk (self, self->priv->io_buffer, part_idx);
+            ret = mirage_filter_stream_dmg_read_raw_chunk (self, self->priv->io_buffer, part_idx);
             if (ret != part->in_length) {
                 MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read raw chunk!\n", __debug__);
                 return -1;
@@ -898,7 +898,7 @@ static gssize mirage_file_filter_dmg_partial_read (MirageFileFilter *_self, void
             bzip2_stream->next_out  = (gchar *) self->priv->inflate_buffer;
 
             /* Read some compressed data */
-            ret = mirage_file_filter_dmg_read_raw_chunk (self, self->priv->io_buffer, part_idx);
+            ret = mirage_filter_stream_dmg_read_raw_chunk (self, self->priv->io_buffer, part_idx);
             if (ret != part->in_length) {
                 MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read raw chunk!\n", __debug__);
                 return -1;
@@ -923,7 +923,7 @@ static gssize mirage_file_filter_dmg_partial_read (MirageFileFilter *_self, void
             gsize written_bytes;
 
             /* Read some compressed data */
-            ret = mirage_file_filter_dmg_read_raw_chunk (self, self->priv->io_buffer, part_idx);
+            ret = mirage_filter_stream_dmg_read_raw_chunk (self, self->priv->io_buffer, part_idx);
             if (ret != part->in_length) {
                 MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read raw chunk!\n", __debug__);
                 return -1;
@@ -946,7 +946,7 @@ static gssize mirage_file_filter_dmg_partial_read (MirageFileFilter *_self, void
             self->priv->cached_part = part_idx;
         }
     } else {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_FILE_IO, "%s: part already cached\n", __debug__);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_STREAM, "%s: part already cached\n", __debug__);
     }
 
     /* Copy data */
@@ -956,7 +956,7 @@ static gssize mirage_file_filter_dmg_partial_read (MirageFileFilter *_self, void
     guint64 part_offset = position - (part->first_sector * DMG_SECTOR_SIZE);
     count = MIN(count, part_size - part_offset);
 
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_FILE_IO, "%s: offset within part: %ld, copying %d bytes\n", __debug__, part_offset, count);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_STREAM, "%s: offset within part: %ld, copying %d bytes\n", __debug__, part_offset, count);
 
     if (part->type == ZERO || part->type == IGNORE) {
         memset(buffer, 0, count);
@@ -971,21 +971,22 @@ static gssize mirage_file_filter_dmg_partial_read (MirageFileFilter *_self, void
 /**********************************************************************\
  *                             Object init                            *
 \**********************************************************************/
-G_DEFINE_DYNAMIC_TYPE(MirageFileFilterDmg, mirage_file_filter_dmg, MIRAGE_TYPE_FILE_FILTER);
+G_DEFINE_DYNAMIC_TYPE(MirageFilterStreamDmg, mirage_filter_stream_dmg, MIRAGE_TYPE_FILTER_STREAM);
 
-void mirage_file_filter_dmg_type_register (GTypeModule *type_module)
+void mirage_filter_stream_dmg_type_register (GTypeModule *type_module)
 {
-    return mirage_file_filter_dmg_register_type(type_module);
+    return mirage_filter_stream_dmg_register_type(type_module);
 }
 
 
-static void mirage_file_filter_dmg_init (MirageFileFilterDmg *self)
+static void mirage_filter_stream_dmg_init (MirageFilterStreamDmg *self)
 {
-    self->priv = MIRAGE_FILE_FILTER_DMG_GET_PRIVATE(self);
+    self->priv = MIRAGE_FILTER_STREAM_DMG_GET_PRIVATE(self);
 
-    mirage_file_filter_generate_info(MIRAGE_FILE_FILTER(self),
+    mirage_filter_stream_generate_info(MIRAGE_FILTER_STREAM(self),
         "FILTER-DMG",
         "DMG File Filter",
+        FALSE,
         1,
         "Apple Disk Image (*.dmg)", "application/x-apple-diskimage"
     );
@@ -1007,9 +1008,9 @@ static void mirage_file_filter_dmg_init (MirageFileFilterDmg *self)
     self->priv->io_buffer = NULL;
 }
 
-static void mirage_file_filter_dmg_finalize (GObject *gobject)
+static void mirage_filter_stream_dmg_finalize (GObject *gobject)
 {
-    MirageFileFilterDmg *self = MIRAGE_FILE_FILTER_DMG(gobject);
+    MirageFilterStreamDmg *self = MIRAGE_FILTER_STREAM_DMG(gobject);
 
     for (gint s = 0; s < self->priv->num_streams; s++) {
         g_object_unref(self->priv->streams[s]);
@@ -1028,24 +1029,24 @@ static void mirage_file_filter_dmg_finalize (GObject *gobject)
     rsrc_fork_free(self->priv->rsrc_fork);
 
     /* Chain up to the parent class */
-    return G_OBJECT_CLASS(mirage_file_filter_dmg_parent_class)->finalize(gobject);
+    return G_OBJECT_CLASS(mirage_filter_stream_dmg_parent_class)->finalize(gobject);
 }
 
-static void mirage_file_filter_dmg_class_init (MirageFileFilterDmgClass *klass)
+static void mirage_filter_stream_dmg_class_init (MirageFilterStreamDmgClass *klass)
 {
     GObjectClass *gobject_class = G_OBJECT_CLASS(klass);
-    MirageFileFilterClass *file_filter_class = MIRAGE_FILE_FILTER_CLASS(klass);
+    MirageFilterStreamClass *filter_stream_class = MIRAGE_FILTER_STREAM_CLASS(klass);
 
-    gobject_class->finalize = mirage_file_filter_dmg_finalize;
+    gobject_class->finalize = mirage_filter_stream_dmg_finalize;
 
-    file_filter_class->can_handle_data_format = mirage_file_filter_dmg_can_handle_data_format;
+    filter_stream_class->open = mirage_filter_stream_dmg_open;
 
-    file_filter_class->partial_read = mirage_file_filter_dmg_partial_read;
+    filter_stream_class->partial_read = mirage_filter_stream_dmg_partial_read;
 
     /* Register private structure */
-    g_type_class_add_private(klass, sizeof(MirageFileFilterDmgPrivate));
+    g_type_class_add_private(klass, sizeof(MirageFilterStreamDmgPrivate));
 }
 
-static void mirage_file_filter_dmg_class_finalize (MirageFileFilterDmgClass *klass G_GNUC_UNUSED)
+static void mirage_filter_stream_dmg_class_finalize (MirageFilterStreamDmgClass *klass G_GNUC_UNUSED)
 {
 }

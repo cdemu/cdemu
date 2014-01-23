@@ -764,22 +764,22 @@ class CDEmu (object):
 
         return True
 
-    def cmd_enum_file_filters (self, arguments):
-        # Display supported file filters
+    def cmd_enum_filter_streams (self, arguments):
+        # Display supported filter streams
         try:
-            filters = self.dbus_iface.EnumSupportedFileFilters()
+            filter_streams = self.dbus_iface.EnumSupportedFilterStreams()
         except dbus.DBusException as e:
-            self.print_error(_("Failed to enumerate supported file filters: %s") % (e))
+            self.print_error(_("Failed to enumerate supported filter streams: %s") % (e))
             return False
 
         if len(arguments) == 0:
-            # Print all file filters
-            self.print_header (_("Supported file filters:"))
-            for info in filters:
+            # Print all filter streams
+            self.print_header (_("Supported filter streams:"))
+            for info in filter_streams:
                 for description, mime_type in info[2]:
                     print("  %s: %s: %s" % (info[0], mime_type, description))
         else:
-            self.print_invalid_number_of_parameters("enum-file-filters")
+            self.print_invalid_number_of_parameters("enum-filter-streams")
             return False
 
         return True
@@ -1006,10 +1006,10 @@ class CDEmu (object):
             _("enumerates supported parsers"),
             cmd_enum_parsers
         ], [
-            "enum-file-filters",
+            "enum-filter-streams",
             "",
-            _("enumerates supported file filters"),
-            cmd_enum_file_filters
+            _("enumerates supported filter streams"),
+            cmd_enum_filter_streams
         ], [
             "enum-daemon-debug-masks",
             "",

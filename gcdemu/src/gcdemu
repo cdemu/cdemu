@@ -133,8 +133,8 @@ class CDEmuDaemonProxy (GObject.GObject):
     def EnumSupportedParsers (self):
         return self.proxy.EnumSupportedParsers()
 
-    def EnumSupportedFileFilters (self):
-        return self.proxy.EnumSupportedFileFilters()
+    def EnumSupportedFilterStreams (self):
+        return self.proxy.EnumSupportedFilterStreams()
 
 
     def GetNumberOfDevices (self):
@@ -284,8 +284,8 @@ class CDEmu (GObject.GObject):
         # Get supported parsers
         self.supported_parsers = self.daemon_proxy.EnumSupportedParsers()
 
-        # Get supported file filters
-        self.supported_file_filters = self.daemon_proxy.EnumSupportedFileFilters()
+        # Get supported filter streams
+        self.supported_filter_streams = self.daemon_proxy.EnumSupportedFilterStreamss()
 
         # Get number of devices
         num_devices = self.daemon_proxy.GetNumberOfDevices()
@@ -959,7 +959,7 @@ class gCDEmuDevice (GObject.GObject):
         # because Gtk and AppIndicator versions handle different signals
 
         # Create file chooser dialog
-        self.file_chooser = gCDEMuFileChooserDialog(cdemu.supported_parsers, cdemu.supported_file_filters)
+        self.file_chooser = gCDEMuFileChooserDialog(cdemu.supported_parsers, cdemu.supported_filter_streams)
 
         # Create password dialog
         self.password_dialog = gCDEMuPasswordDialog()
@@ -1468,7 +1468,7 @@ GObject.signal_new("bad-sector-emulation-changed", gCDEmuDeviceOptionsPage,
     GObject.SignalFlags.RUN_FIRST,
     None,
     (GObject.TYPE_BOOLEAN,))
-    
+
 
 ########################################################################
 #             gCDEmuDeviceDebugMaskPage: debug mask page               #
@@ -1527,7 +1527,7 @@ GObject.signal_new("debug-mask-changed", gCDEmuDeviceDebugMaskPage,
 #           gCDEMuFileChooserDialog: file chooser dialog               #
 ########################################################################
 class gCDEMuFileChooserDialog (Gtk.FileChooserDialog):
-    def __init__ (self, parsers, file_filters):
+    def __init__ (self, parsers, filter_streams):
         Gtk.FileChooserDialog.__init__(self, _("Open file"), None, Gtk.FileChooserAction.OPEN, (Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL, Gtk.STOCK_OPEN, Gtk.ResponseType.ACCEPT))
 
         self.set_select_multiple(True)
@@ -1554,7 +1554,7 @@ class gCDEMuFileChooserDialog (Gtk.FileChooserDialog):
 
                 self.add_filter(filter_entry)
 
-        for info in file_filters:
+        for info in filter_streams:
             for description, mime_type in info[2]:
                 filter_entry = Gtk.FileFilter()
 

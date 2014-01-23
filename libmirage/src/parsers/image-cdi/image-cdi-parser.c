@@ -31,7 +31,7 @@ struct _MirageParserCdiPrivate
 {
     MirageDisc *disc;
 
-    GInputStream *cdi_stream;
+    MirageStream *cdi_stream;
 
     gboolean medium_type_set;
 
@@ -667,7 +667,7 @@ static gboolean mirage_parser_cdi_load_track (MirageParserCdi *self, GError **er
 
     mirage_fragment_set_length(fragment, fragment_len);
 
-    mirage_fragment_main_data_set_input_stream(fragment, self->priv->cdi_stream);
+    mirage_fragment_main_data_set_stream(fragment, self->priv->cdi_stream);
     mirage_fragment_main_data_set_offset(fragment, main_offset);
     mirage_fragment_main_data_set_size(fragment, main_size);
     mirage_fragment_main_data_set_format(fragment, main_format);
@@ -919,7 +919,7 @@ end:
 /**********************************************************************\
  *                MirageParser methods implementation                *
 \**********************************************************************/
-static MirageDisc *mirage_parser_cdi_load_image (MirageParser *_self, GInputStream **streams, GError **error)
+static MirageDisc *mirage_parser_cdi_load_image (MirageParser *_self, MirageStream **streams, GError **error)
 {
     MirageParserCdi *self = MIRAGE_PARSER_CDI(_self);
     const gchar *cdi_filename;
@@ -928,7 +928,7 @@ static MirageDisc *mirage_parser_cdi_load_image (MirageParser *_self, GInputStre
     gint32 descriptor_length;
 
     /* Check if we can load the file; we check the suffix */
-    cdi_filename = mirage_contextual_get_file_stream_filename(MIRAGE_CONTEXTUAL(self), streams[0]);
+    cdi_filename = mirage_stream_get_filename(streams[0]);
 
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_IMAGE_ID, "%s: checking if parser can handle given image...\n", __debug__);
 
@@ -956,8 +956,8 @@ static MirageDisc *mirage_parser_cdi_load_image (MirageParser *_self, GInputStre
     /* The descriptor is stored at the end of CDI image; I'm quite positive that
        last four bytes represent length of descriptor data */
     offset = -(guint64)(sizeof(descriptor_length));
-    g_seekable_seek(G_SEEKABLE(self->priv->cdi_stream), offset, G_SEEK_END, NULL, NULL);
-    if (g_input_stream_read(self->priv->cdi_stream, &descriptor_length, sizeof(descriptor_length), NULL, NULL) != sizeof(descriptor_length)) {
+    mirage_stream_seek(self->priv->cdi_stream, offset, G_SEEK_END, NULL);
+    if (mirage_stream_read(self->priv->cdi_stream, &descriptor_length, sizeof(descriptor_length), NULL) != sizeof(descriptor_length)) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read descriptor length!\n", __debug__);
         g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, "Failed to read descriptor length!");
         succeeded = FALSE;
@@ -969,8 +969,8 @@ static MirageDisc *mirage_parser_cdi_load_image (MirageParser *_self, GInputStre
     /* Allocate descriptor data and read it */
     self->priv->cur_ptr = self->priv->cdi_data = g_malloc(descriptor_length);
     offset = -(guint64)(descriptor_length);
-    g_seekable_seek(G_SEEKABLE(self->priv->cdi_stream), offset, G_SEEK_END, NULL, NULL);
-    if (g_input_stream_read(self->priv->cdi_stream, self->priv->cdi_data, descriptor_length, NULL, NULL) != descriptor_length) {
+    mirage_stream_seek(self->priv->cdi_stream, offset, G_SEEK_END, NULL);
+    if (mirage_stream_read(self->priv->cdi_stream, self->priv->cdi_data, descriptor_length, NULL) != descriptor_length) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read descriptor!\n", __debug__);
         g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, "Failed to read descriptor!");
         succeeded = FALSE;

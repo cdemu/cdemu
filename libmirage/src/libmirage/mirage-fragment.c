@@ -56,14 +56,12 @@ struct _MirageFragmentPrivate
     gint address; /* Address (relative to track start) */
     gint length; /* Length, in sectors */
 
-    GInputStream *main_input_stream; /* Main data input stream */
-    GOutputStream *main_output_stream; /* Main data output stream */
+    MirageStream *main_stream; /* Main data stream */
     gint main_size; /* Main data sector size */
     gint main_format; /* Main data format */
     guint64 main_offset; /* Offset in main data file */
 
-    GInputStream *subchannel_input_stream; /* Subchannel data input stream */
-    GOutputStream *subchannel_output_stream; /* Subchannel data output stream */
+    MirageStream *subchannel_stream; /* Subchannel data stream */
     gint subchannel_size; /* Subchannel data sector size*/
     gint subchannel_format; /* Subchannel data format */
     guint64 subchannel_offset; /* Offset in subchannel data file */
@@ -189,20 +187,20 @@ gboolean mirage_fragment_use_the_rest_of_file (MirageFragment *self, GError **er
     gint full_size;
     gint fragment_len;
 
-    if (!self->priv->main_input_stream) {
+    if (!self->priv->main_stream) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: main channel data input stream not set!\n", __debug__);
         g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_FRAGMENT_ERROR, "Main channel data input stream not set!");
         return FALSE;
     }
 
     /* Get file length */
-    if (!g_seekable_seek(G_SEEKABLE(self->priv->main_input_stream), 0, G_SEEK_END, NULL, &local_error)) {
+    if (!mirage_stream_seek(self->priv->main_stream, 0, G_SEEK_END, &local_error)) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to seek to the end of main channel data input stream: %s\n", __debug__, local_error->message);
         g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_FRAGMENT_ERROR, "Failed to seek to the end of main channel data input stream: %s", local_error->message);
         g_error_free(local_error);
         return FALSE;
     }
-    file_size = g_seekable_tell(G_SEEKABLE(self->priv->main_input_stream));
+    file_size = mirage_stream_tell(self->priv->main_stream);
 
     /* Use all data from offset on... */
     full_size = self->priv->main_size;
@@ -238,56 +236,40 @@ gboolean mirage_fragment_contains_address (MirageFragment *self, gint address)
  *                           Main data functions                      *
 \**********************************************************************/
 /**
- * mirage_fragment_main_data_set_input_stream:
+ * mirage_fragment_main_data_set_stream:
  * @self: a #MirageFragment
- * @stream: (in) (transfer full): a #GInputStream on main channel data file
+ * @stream: (in) (transfer full): a #MirageStream on main channel data file
  *
- * Sets main channel data input stream.
+ * Sets main channel data stream.
  */
-void mirage_fragment_main_data_set_input_stream (MirageFragment *self, GInputStream *stream)
+void mirage_fragment_main_data_set_stream (MirageFragment *self, MirageStream *stream)
 {
     /* Release old stream */
-    if (self->priv->main_input_stream) {
-        g_object_unref(self->priv->main_input_stream);
-        self->priv->main_input_stream = NULL;
+    if (self->priv->main_stream) {
+        g_object_unref(self->priv->main_stream);
+        self->priv->main_stream = NULL;
     }
 
     /* Set new stream */
-    self->priv->main_input_stream = g_object_ref(stream);
-}
-
-/**
- * mirage_fragment_main_data_set_output_stream:
- * @self: a #MirageFragment
- * @stream: (in) (transfer full): a #GOutputStream on main channel data file
- *
- * Sets main channel data output stream.
- */
-void mirage_fragment_main_data_set_output_stream (MirageFragment *self, GOutputStream *stream)
-{
-    /* Release old stream */
-    if (self->priv->main_output_stream) {
-        g_object_unref(self->priv->main_output_stream);
-        self->priv->main_output_stream = NULL;
-    }
-
-    /* Set new stream */
-    self->priv->main_output_stream = g_object_ref(stream);
+    self->priv->main_stream = g_object_ref(stream);
 }
 
 /**
  * mirage_fragment_main_data_get_filename:
  * @self: a #MirageFragment
  *
- * Retrieves filename of main channel data input stream.
+ * Retrieves filename of main channel data stream.
  *
  * Returns: (transfer none): pointer to main channel data file name string.
  * The string belongs to object and should not be modified.
  */
 const gchar *mirage_fragment_main_data_get_filename (MirageFragment *self)
 {
-    /* Return file name */
-    return mirage_contextual_get_file_stream_filename(MIRAGE_CONTEXTUAL(self), self->priv->main_input_stream);
+    /* Return stream's file name */
+    if (!self->priv->main_stream) {
+        return NULL;
+    }
+    return mirage_stream_get_filename(self->priv->main_stream);
 }
 
 /**
@@ -430,9 +412,9 @@ gboolean mirage_fragment_read_main_data (MirageFragment *self, gint address, gui
         *buffer = NULL;
     }
 
-    /* We need an input stream to read data from... but if it's missing,
-       we don't read anything and this is not considered an error */
-    if (!self->priv->main_input_stream) {
+    /* We need a stream to read data from... but if it's missing, we
+       don't read anything and this is not considered an error */
+    if (!self->priv->main_stream) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_FRAGMENT, "%s: no main channel data input stream!\n", __debug__);
         return TRUE;
     }
@@ -450,12 +432,12 @@ gboolean mirage_fragment_read_main_data (MirageFragment *self, gint address, gui
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_FRAGMENT, "%s: reading from position 0x%llX\n", __debug__, position);
 
         /* Note: we ignore all errors here in order to be able to cope with truncated mini images */
-        g_seekable_seek(G_SEEKABLE(self->priv->main_input_stream), position, G_SEEK_SET, NULL, NULL);
-        read_len = g_input_stream_read(self->priv->main_input_stream, data_buffer, self->priv->main_size, NULL, NULL);
+        mirage_stream_seek(self->priv->main_stream, position, G_SEEK_SET, NULL);
+        read_len = mirage_stream_read(self->priv->main_stream, data_buffer, self->priv->main_size, NULL);
 
         /*if (read_len != self->priv->main_size) {
             mirage_error(MIRAGE_E_READFAILED, error);
-            g_fre(data_buffer);
+            g_free(data_buffer);
             return FALSE;
         }*/
 
@@ -493,9 +475,9 @@ gboolean mirage_fragment_write_main_data (MirageFragment *self, gint address, co
         return FALSE;
     }
 
-    /* We need an output stream to write data... but if it's missing,
-       we don't write anything and this is not considered an error */
-    if (!self->priv->main_output_stream) {
+    /* We need a stream to write data... but if it's missing, we don't
+       write anything and this is not considered an error */
+    if (!self->priv->main_stream) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_FRAGMENT, "%s: no main channel data output stream!\n", __debug__);
         return TRUE;
     }
@@ -515,14 +497,14 @@ gboolean mirage_fragment_write_main_data (MirageFragment *self, gint address, co
     /* Write */
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_FRAGMENT, "%s: writing %d bytes at position 0x%llX\n", __debug__, self->priv->main_size, position);
 
-    g_seekable_seek(G_SEEKABLE(self->priv->main_output_stream), position, G_SEEK_SET, NULL, NULL);
-    if (g_seekable_tell(G_SEEKABLE(self->priv->main_output_stream)) != position) {
+    mirage_stream_seek(self->priv->main_stream, position, G_SEEK_SET, NULL);
+    if (mirage_stream_tell(self->priv->main_stream) != position) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_FRAGMENT, "%s: failed to seek to position 0x%zX\n", __debug__, position);
         g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_FRAGMENT_ERROR, "Failed to seek to position 0x%zX\n", position);
         return FALSE;
     }
 
-    if (!g_output_stream_write_all(self->priv->main_output_stream, buffer, self->priv->main_size, NULL, NULL, &local_error)) {
+    if (mirage_stream_write(self->priv->main_stream, buffer, self->priv->main_size, &local_error) != self->priv->main_size) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_FRAGMENT, "%s: failed to write data: %s\n", __debug__, local_error->message);
         g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_FRAGMENT_ERROR, "Failed to write data: %s\n", local_error->message);
         g_error_free(local_error);
@@ -537,41 +519,22 @@ gboolean mirage_fragment_write_main_data (MirageFragment *self, gint address, co
  *                        Subchannel data functions                   *
 \**********************************************************************/
 /**
- * mirage_fragment_subchannel_data_set_input_stream:
+ * mirage_fragment_subchannel_data_set_stream:
  * @self: a #MirageFragment
- * @stream: (in) (transfer full): a #GInputStream on subchannel data file
+ * @stream: (in) (transfer full): a #MirageStream on subchannel data file
  *
- * Sets subchannel data input stream.
+ * Sets subchannel data stream.
  */
-void mirage_fragment_subchannel_data_set_input_stream (MirageFragment *self, GInputStream *stream)
+void mirage_fragment_subchannel_data_set_stream (MirageFragment *self, MirageStream *stream)
 {
     /* Release old stream */
-    if (self->priv->subchannel_input_stream) {
-        g_object_unref(self->priv->subchannel_input_stream);
-        self->priv->subchannel_input_stream = NULL;
+    if (self->priv->subchannel_stream) {
+        g_object_unref(self->priv->subchannel_stream);
+        self->priv->subchannel_stream = NULL;
     }
 
     /* Set new stream */
-    self->priv->subchannel_input_stream = g_object_ref(stream);
-}
-
-/**
- * mirage_fragment_subchannel_data_set_output_stream:
- * @self: a #MirageFragment
- * @stream: (in) (transfer full): a #GOutputStream on subchannel data file
- *
- * Sets subchannel data output stream.
- */
-void mirage_fragment_subchannel_data_set_output_stream (MirageFragment *self, GOutputStream *stream)
-{
-    /* Release old stream */
-    if (self->priv->subchannel_output_stream) {
-        g_object_unref(self->priv->subchannel_output_stream);
-        self->priv->subchannel_output_stream = NULL;
-    }
-
-    /* Set new stream */
-    self->priv->subchannel_output_stream = g_object_ref(stream);
+    self->priv->subchannel_stream = g_object_ref(stream);
 }
 
 /**
@@ -585,8 +548,11 @@ void mirage_fragment_subchannel_data_set_output_stream (MirageFragment *self, GO
  */
 const gchar *mirage_fragment_subchannel_data_get_filename (MirageFragment *self)
 {
-    /* Return file name */
-    return mirage_contextual_get_file_stream_filename(MIRAGE_CONTEXTUAL(self), self->priv->subchannel_input_stream);
+    /* Return stream's file name */
+    if (!self->priv->subchannel_stream) {
+        return NULL;
+    }
+    return mirage_stream_get_filename(self->priv->subchannel_stream);
 }
 
 /**
@@ -721,7 +687,7 @@ static guint64 mirage_fragment_subchannel_data_get_position (MirageFragment *sel
  */
 gboolean mirage_fragment_read_subchannel_data (MirageFragment *self, gint address, guint8 **buffer, gint *length, GError **error G_GNUC_UNUSED)
 {
-    GInputStream *stream;
+    MirageStream *stream;
     guint64 position;
     gint read_len;
 
@@ -737,14 +703,14 @@ gboolean mirage_fragment_read_subchannel_data (MirageFragment *self, gint addres
         return TRUE;
     }
 
-    /* We need an input stream to read data from... but if it's missing,
-       we don't read anything and this is not considered an error */
+    /* We need a stream to read data from... but if it's missing, we
+       don't read anything and this is not considered an error */
     if (self->priv->subchannel_format & MIRAGE_SUBCHANNEL_DATA_FORMAT_INTERNAL) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_FRAGMENT, "%s: internal subchannel, using main channel input stream\n", __debug__);
-        stream = self->priv->main_input_stream;
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_FRAGMENT, "%s: internal subchannel, using main channel stream\n", __debug__);
+        stream = self->priv->main_stream;
     } else {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_FRAGMENT, "%s: external subchannel, using subchannel input stream\n", __debug__);
-        stream = self->priv->subchannel_input_stream;
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_FRAGMENT, "%s: external subchannel, using subchannel stream\n", __debug__);
+        stream = self->priv->subchannel_stream;
     }
 
     if (!stream) {
@@ -768,8 +734,8 @@ gboolean mirage_fragment_read_subchannel_data (MirageFragment *self, gint addres
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_FRAGMENT, "%s: reading from position 0x%llX\n", __debug__, position);
         /* We read into temporary buffer, because we might need to perform some
            magic on the data */
-        g_seekable_seek(G_SEEKABLE(stream), position, G_SEEK_SET, NULL, NULL);
-        read_len = g_input_stream_read(stream, raw_buffer, self->priv->subchannel_size, NULL, NULL);
+        mirage_stream_seek(stream, position, G_SEEK_SET, NULL);
+        read_len = mirage_stream_read(stream, raw_buffer, self->priv->subchannel_size, NULL);
 
         if (read_len != self->priv->subchannel_size) {
             /*mirage_error(MIRAGE_E_READFAILED, error);
@@ -804,7 +770,7 @@ gboolean mirage_fragment_read_subchannel_data (MirageFragment *self, gint addres
 
 gboolean mirage_fragment_write_subchannel_data (MirageFragment *self, gint address, const guint8 *buffer, gint length, GError **error)
 {
-    GOutputStream *stream;
+    MirageStream *stream;
     guint64 position;
     GError *local_error = NULL;
 
@@ -822,14 +788,14 @@ gboolean mirage_fragment_write_subchannel_data (MirageFragment *self, gint addre
         return FALSE;
     }
 
-    /* We need an input stream to read data from... but if it's missing,
-       we don't read anything and this is not considered an error */
+    /* We need a stream to write data to... but if it's missing, we
+       don't write anything and this is not considered an error */
     if (self->priv->subchannel_format & MIRAGE_SUBCHANNEL_DATA_FORMAT_INTERNAL) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_FRAGMENT, "%s: internal subchannel, using main channel output stream\n", __debug__);
-        stream = self->priv->main_output_stream;
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_FRAGMENT, "%s: internal subchannel, using main channel stream\n", __debug__);
+        stream = self->priv->main_stream;
     } else {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_FRAGMENT, "%s: external subchannel, using subchannel output stream\n", __debug__);
-        stream = self->priv->subchannel_output_stream;
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_FRAGMENT, "%s: external subchannel, using subchannel stream\n", __debug__);
+        stream = self->priv->subchannel_stream;
     }
 
     if (!stream) {
@@ -848,14 +814,14 @@ gboolean mirage_fragment_write_subchannel_data (MirageFragment *self, gint addre
     /* Write */
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_FRAGMENT, "%s: writing %d bytes at position 0x%llX\n", __debug__, self->priv->subchannel_size, position);
 
-    g_seekable_seek(G_SEEKABLE(stream), position, G_SEEK_SET, NULL, NULL);
-    if (g_seekable_tell(G_SEEKABLE(stream)) != position) {
+    mirage_stream_seek(stream, position, G_SEEK_SET, NULL);
+    if (mirage_stream_tell(stream) != position) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_FRAGMENT, "%s: failed to seek to position 0x%zX\n", __debug__, position);
         g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_FRAGMENT_ERROR, "Failed to seek to position 0x%zX\n", position);
         return FALSE;
     }
 
-    if (!g_output_stream_write_all(stream, buffer, self->priv->subchannel_size, NULL, NULL, &local_error)) {
+    if (mirage_stream_write(stream, buffer, self->priv->subchannel_size, &local_error) != self->priv->subchannel_size) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_FRAGMENT, "%s: failed to write data: %s\n", __debug__, local_error->message);
         g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_FRAGMENT_ERROR, "Failed to write data: %s\n", local_error->message);
         g_error_free(local_error);
@@ -876,14 +842,12 @@ static void mirage_fragment_init (MirageFragment *self)
 {
     self->priv = MIRAGE_FRAGMENT_GET_PRIVATE(self);
 
-    self->priv->main_input_stream = NULL;
-    self->priv->main_output_stream = NULL;
+    self->priv->main_stream = NULL;
     self->priv->main_size = 0;
     self->priv->main_format = 0;
     self->priv->main_offset = 0;
 
-    self->priv->subchannel_input_stream = NULL;
-    self->priv->subchannel_output_stream = NULL;
+    self->priv->subchannel_stream = NULL;
     self->priv->subchannel_size = 0;
     self->priv->subchannel_format = 0;
     self->priv->subchannel_offset = 0;
@@ -893,22 +857,14 @@ static void mirage_fragment_dispose (GObject *gobject)
 {
     MirageFragment*self = MIRAGE_FRAGMENT(gobject);
 
-    if (self->priv->main_input_stream) {
-        g_object_unref(self->priv->main_input_stream);
-        self->priv->main_input_stream = NULL;
-    }
-    if (self->priv->main_output_stream) {
-        g_object_unref(self->priv->main_output_stream);
-        self->priv->main_output_stream = NULL;
+    if (self->priv->main_stream) {
+        g_object_unref(self->priv->main_stream);
+        self->priv->main_stream = NULL;
     }
 
-    if (self->priv->subchannel_input_stream) {
-        g_object_unref(self->priv->subchannel_input_stream);
-        self->priv->subchannel_input_stream = NULL;
-    }
-    if (self->priv->subchannel_output_stream) {
-        g_object_unref(self->priv->subchannel_output_stream);
-        self->priv->subchannel_output_stream = NULL;
+    if (self->priv->subchannel_stream) {
+        g_object_unref(self->priv->subchannel_stream);
+        self->priv->subchannel_stream = NULL;
     }
 
     /* Chain up to the parent class */

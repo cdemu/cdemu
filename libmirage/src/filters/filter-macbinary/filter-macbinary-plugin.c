@@ -1,5 +1,5 @@
 /*
- *  libMirage: MacBinary file filter: Plugin exports
+ *  libMirage: MacBinary filter: Plugin exports
  *  Copyright (C) 2013 Henrik Stokseth
  *
  *  This program is free software; you can redistribute it and/or modify
@@ -27,7 +27,7 @@ G_MODULE_EXPORT guint mirage_plugin_soversion_minor = MIRAGE_SOVERSION_MINOR;
 
 G_MODULE_EXPORT void mirage_plugin_load_plugin (MiragePlugin *plugin)
 {
-    mirage_file_filter_macbinary_type_register(G_TYPE_MODULE(plugin));
+    mirage_filter_stream_macbinary_type_register(G_TYPE_MODULE(plugin));
 }
 
 G_MODULE_EXPORT void mirage_plugin_unload_plugin (MiragePlugin *plugin G_GNUC_UNUSED)

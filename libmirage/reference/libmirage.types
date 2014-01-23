@@ -3,7 +3,8 @@ mirage_context_get_type
 mirage_contextual_get_type
 mirage_disc_get_type
 mirage_error_get_type
-mirage_file_filter_get_type
+mirage_file_stream_get_type
+mirage_filter_stream_get_type
 mirage_fragment_get_type
 mirage_index_get_type
 mirage_language_get_type
@@ -12,4 +13,5 @@ mirage_parser_get_type
 mirage_plugin_get_type
 mirage_sector_get_type
 mirage_session_get_type
+mirage_stream_get_type
 mirage_track_get_type

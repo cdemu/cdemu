@@ -10,13 +10,13 @@ pkg_check_modules(ZLIB zlib>=1.2.0)
 if (${ZLIB_FOUND})
     # Include directories
     include_directories(${ZLIB_INCLUDE_DIRS})
-    
+
     # Link directories
     link_directories(${ZLIB_LIBRARY_DIRS})
 
     # Filter
-    add_library(${filter_name} MODULE 
-        ${filter_name}-file-filter.c
+    add_library(${filter_name} MODULE
+        ${filter_name}-filter-stream.c
         ${filter_name}-plugin.c
     )
     target_link_libraries(${filter_name} ${GLIB_LIBRARIES} ${ZLIB_LIBRARIES})

@@ -113,13 +113,15 @@ link_directories (${GLIB_LIBRARY_DIRS})
 set (libmirage_HEADERS
     src/libmirage/mirage.h
     src/libmirage/mirage-cdtext-coder.h
+#    src/libmirage/mirage-compat-input-stream.h
     src/libmirage/mirage-context.h
     src/libmirage/mirage-contextual.h
     src/libmirage/mirage-debug.h
     src/libmirage/mirage-disc.h
     src/libmirage/mirage-disc-structures.h
     src/libmirage/mirage-error.h
-    src/libmirage/mirage-file-filter.h
+    src/libmirage/mirage-file-stream.h
+    src/libmirage/mirage-filter-stream.h
     src/libmirage/mirage-fragment.h
     src/libmirage/mirage-index.h
     src/libmirage/mirage-language.h
@@ -128,6 +130,7 @@ set (libmirage_HEADERS
     src/libmirage/mirage-plugin.h
     src/libmirage/mirage-sector.h
     src/libmirage/mirage-session.h
+    src/libmirage/mirage-stream.h
     src/libmirage/mirage-track.h
     src/libmirage/mirage-types.h
     src/libmirage/mirage-utils.h
@@ -138,11 +141,13 @@ set (libmirage_HEADERS
 set (libmirage_SOURCES
     src/libmirage/mirage.c
     src/libmirage/mirage-cdtext-coder.c
+    src/libmirage/mirage-compat-input-stream.c
     src/libmirage/mirage-context.c
     src/libmirage/mirage-contextual.c
     src/libmirage/mirage-disc.c
     src/libmirage/mirage-error.c
-    src/libmirage/mirage-file-filter.c
+    src/libmirage/mirage-file-stream.c
+    src/libmirage/mirage-filter-stream.c
     src/libmirage/mirage-fragment.c
     src/libmirage/mirage-index.c
     src/libmirage/mirage-language.c
@@ -151,6 +156,7 @@ set (libmirage_SOURCES
     src/libmirage/mirage-plugin.c
     src/libmirage/mirage-sector.c
     src/libmirage/mirage-session.c
+    src/libmirage/mirage-stream.c
     src/libmirage/mirage-track.c
     src/libmirage/mirage-utils.c
     src/libmirage/mirage-version.c

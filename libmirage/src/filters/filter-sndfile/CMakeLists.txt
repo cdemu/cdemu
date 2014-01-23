@@ -12,14 +12,14 @@ if (${SNDFILE_FOUND} AND ${SAMPLERATE_FOUND})
     # Include directories
     include_directories(${SNDFILE_INCLUDE_DIRS})
     include_directories(${SAMPLERATE_INCLUDE_DIRS})
-    
+
     # Link directories
     link_directories(${SNDFILE_LIBRARY_DIRS})
     link_directories(${SAMPLERATE_LIBRARY_DIRS})
-    
+
     # Filter
-    add_library(${filter_name} MODULE 
-        ${filter_name}-file-filter.c
+    add_library(${filter_name} MODULE
+        ${filter_name}-filter-stream.c
         ${filter_name}-plugin.c
     )
     target_link_libraries(${filter_name} ${GLIB_LIBRARIES} ${SNDFILE_LIBRARIES} ${SAMPLERATE_LIBRARIES})
@@ -29,7 +29,7 @@ if (${SNDFILE_FOUND} AND ${SAMPLERATE_FOUND})
 
     # Install
     install(TARGETS ${filter_name} DESTINATION ${MIRAGE_PLUGIN_DIR})
-    
+
     # Add to list of enabled filters
     set(FILTERS_ENABLED "${FILTERS_ENABLED} ${filter_short}" PARENT_SCOPE)
 else ()

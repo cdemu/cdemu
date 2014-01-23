@@ -187,7 +187,7 @@ static gboolean mirage_parser_b6t_load_bwa_file (MirageParserB6t *self, GError *
     g_free(bwa_filename);
 
     if (bwa_fullpath) {
-        GInputStream *stream;
+        MirageStream *stream;
         guint64 bwa_length, read_length;
         guint8 *bwa_data;
 
@@ -203,13 +203,13 @@ static gboolean mirage_parser_b6t_load_bwa_file (MirageParserB6t *self, GError *
         }
 
         /* Read whole BWA file */
-        g_seekable_seek(G_SEEKABLE(stream), 0, G_SEEK_END, NULL, NULL);
-        bwa_length = g_seekable_tell(G_SEEKABLE(stream));
+        mirage_stream_seek(stream, 0, G_SEEK_END, NULL);
+        bwa_length = mirage_stream_tell(stream);
 
         bwa_data = g_malloc(bwa_length);
 
-        g_seekable_seek(G_SEEKABLE(stream), 0, G_SEEK_SET, NULL, NULL);
-        read_length = g_input_stream_read(stream, bwa_data, bwa_length, NULL, NULL);
+        mirage_stream_seek(stream, 0, G_SEEK_SET, NULL);
+        read_length = mirage_stream_read(stream, bwa_data, bwa_length, NULL);
 
         g_object_unref(stream);
 
@@ -388,7 +388,7 @@ static gboolean mirage_parser_b6t_setup_track_fragments (MirageParserB6t *self, 
             gint tmp_length;
             gchar *filename;
             MirageFragment *fragment;
-            GInputStream *stream;
+            MirageStream *stream;
 
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: found a block %i\n", __debug__, g_list_position(self->priv->data_blocks_list, entry));
 
@@ -468,7 +468,7 @@ static gboolean mirage_parser_b6t_setup_track_fragments (MirageParserB6t *self, 
             fragment = g_object_new(MIRAGE_TYPE_FRAGMENT, NULL);
 
             /* Set stream */
-            mirage_fragment_main_data_set_input_stream(fragment, stream);
+            mirage_fragment_main_data_set_stream(fragment, stream);
             g_object_unref(stream);
 
             mirage_fragment_main_data_set_size(fragment, main_size);
@@ -1228,12 +1228,12 @@ static gboolean mirage_parser_b6t_load_disc (MirageParserB6t *self, GError **err
 /**********************************************************************\
  *                 MirageParser methods implementation               *
 \**********************************************************************/
-static MirageDisc *mirage_parser_b6t_load_image (MirageParser *_self, GInputStream **streams, GError **error)
+static MirageDisc *mirage_parser_b6t_load_image (MirageParser *_self, MirageStream **streams, GError **error)
 {
     MirageParserB6t *self = MIRAGE_PARSER_B6T(_self);
 
     gboolean succeeded = TRUE;
-    GInputStream *stream;
+    MirageStream *stream;
     guint64 read_length;
     guint8 header[16];
 
@@ -1245,8 +1245,8 @@ static MirageDisc *mirage_parser_b6t_load_image (MirageParser *_self, GInputStre
 
     /* Read and verify header; we could also check the footer, but I think
        header check only is sufficient */
-    g_seekable_seek(G_SEEKABLE(stream), 0, G_SEEK_SET, NULL, NULL);
-    if (g_input_stream_read(stream, header, 16, NULL, NULL) != 16) {
+    mirage_stream_seek(stream, 0, G_SEEK_SET, NULL);
+    if (mirage_stream_read(stream, header, 16, NULL) != 16) {
         g_object_unref(stream);
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_IMAGE_ID, "%s: parser cannot handle given image: failed to read 16 bytes from beginning image file stream!\n", __debug__);
         g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_CANNOT_HANDLE, "Parser cannot handle given image: failed to read 16 bytes from image file stream!");
@@ -1267,22 +1267,22 @@ static MirageDisc *mirage_parser_b6t_load_image (MirageParser *_self, GInputStre
     self->priv->disc = g_object_new(MIRAGE_TYPE_DISC, NULL);
     mirage_object_set_parent(MIRAGE_OBJECT(self->priv->disc), self);
 
-    self->priv->b6t_filename = mirage_contextual_get_file_stream_filename(MIRAGE_CONTEXTUAL(self), stream);
+    self->priv->b6t_filename = mirage_stream_get_filename(stream);
     mirage_disc_set_filename(self->priv->disc, self->priv->b6t_filename);
 
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: B6T filename: %s\n", __debug__, self->priv->b6t_filename);
 
     /* Get file size */
-    g_seekable_seek(G_SEEKABLE(stream), 0, G_SEEK_END, NULL, NULL);
-    self->priv->b6t_length = g_seekable_tell(G_SEEKABLE(stream));
+    mirage_stream_seek(stream, 0, G_SEEK_END, NULL);
+    self->priv->b6t_length = mirage_stream_tell(stream);
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: B6T length: %lld bytes\n", __debug__, self->priv->b6t_length);
 
     /* Allocate buffer */
     self->priv->b6t_data = g_malloc(self->priv->b6t_length);
 
     /* Read whole file */
-    g_seekable_seek(G_SEEKABLE(stream), 0, G_SEEK_SET, NULL, NULL);
-    read_length = g_input_stream_read(stream, self->priv->b6t_data, self->priv->b6t_length, NULL, NULL);
+    mirage_stream_seek(stream, 0, G_SEEK_SET, NULL);
+    read_length = mirage_stream_read(stream, self->priv->b6t_data, self->priv->b6t_length, NULL);
 
     g_object_unref(stream);
 

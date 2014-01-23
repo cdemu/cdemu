@@ -26,12 +26,12 @@
  *
  * These functions represent the core of the libMirage API. Before the
  * library can be used, it must be initialized using mirage_initialize(),
- * which loads the plugins containing image parsers and file filters.
- * When library is no longer needed, it can be shut down using
+ * which loads the plugins containing image parsers, writers and filter
+ * streams. When library is no longer needed, it can be shut down using
  * mirage_shutdown(), which unloads the plugins.
  *
  * The core functions listed in this section enable enumeration of
- * supported parsers and file filters. Most of the core functionality
+ * supported parsers, writers and filter streams. Most of the core functionality
  * of libMirage, such as loading images, is encapsulated in #MirageContext
  * object, which can be obtained using GLib's g_object_new().
  */
@@ -51,9 +51,9 @@ static struct
     GType *parsers;
     MirageParserInfo *parsers_info;
 
-    guint num_file_filters;
-    GType *file_filters;
-    MirageFileFilterInfo *file_filters_info;
+    guint num_filter_streams;
+    GType *filter_streams;
+    MirageFilterStreamInfo *filter_streams_info;
 } libmirage;
 
 
@@ -65,14 +65,14 @@ static const MirageDebugMask dbg_masks[] = {
     { "MIRAGE_DEBUG_SECTOR", MIRAGE_DEBUG_SECTOR },
     { "MIRAGE_DEBUG_FRAGMENT", MIRAGE_DEBUG_FRAGMENT },
     { "MIRAGE_DEBUG_CDTEXT", MIRAGE_DEBUG_CDTEXT },
-    { "MIRAGE_DEBUG_FILE_IO", MIRAGE_DEBUG_FILE_IO },
+    { "MIRAGE_DEBUG_STREAM", MIRAGE_DEBUG_STREAM },
     { "MIRAGE_DEBUG_IMAGE_ID", MIRAGE_DEBUG_IMAGE_ID },
     { "MIRAGE_DEBUG_WRITER", MIRAGE_DEBUG_WRITER },
 };
 
 
 /**********************************************************************\
- *            Parsers, fragments and file filters list                *
+ *                   Parsers and filter streams                       *
 \**********************************************************************/
 static void initialize_parsers_list ()
 {
@@ -86,22 +86,16 @@ static void initialize_parsers_list ()
     }
 }
 
-static void initialize_file_filters_list ()
+static void initialize_filter_streams_list ()
 {
-    /* Create a dummy stream - because at gio 2.32, unreferencing the
-       GFilterInputStream apparently tries to unref the underlying stream */
-    GInputStream *dummy_stream = g_memory_input_stream_new();
+    libmirage.filter_streams = g_type_children(MIRAGE_TYPE_FILTER_STREAM, &libmirage.num_filter_streams);
 
-    libmirage.file_filters = g_type_children(MIRAGE_TYPE_FILE_FILTER, &libmirage.num_file_filters);
-
-    libmirage.file_filters_info = g_new0(MirageFileFilterInfo, libmirage.num_file_filters);
-    for (gint i = 0; i < libmirage.num_file_filters; i++) {
-        MirageFileFilter *file_filter = g_object_new(libmirage.file_filters[i], "base-stream", dummy_stream, "close-base-stream", FALSE, NULL);
-        mirage_file_filter_info_copy(mirage_file_filter_get_info(file_filter), &libmirage.file_filters_info[i]);
-        g_object_unref(file_filter);
+    libmirage.filter_streams_info = g_new0(MirageFilterStreamInfo, libmirage.num_filter_streams);
+    for (gint i = 0; i < libmirage.num_filter_streams; i++) {
+        MirageFilterStream *filter_stream = g_object_new(libmirage.filter_streams[i], NULL);
+        mirage_filter_stream_info_copy(mirage_filter_stream_get_info(filter_stream), &libmirage.filter_streams_info[i]);
+        g_object_unref(filter_stream);
     }
-
-    g_object_unref(dummy_stream);
 }
 
 
@@ -162,9 +156,9 @@ gboolean mirage_initialize (GError **error)
 
     g_dir_close(plugins_dir);
 
-    /* *** Get parsers and file filters *** */
+    /* *** Get parsers and filter streams *** */
     initialize_parsers_list();
-    initialize_file_filters_list();
+    initialize_filter_streams_list();
 
     /* Allocate and initialize CRC look-up tables */
     crc16_1021_lut = mirage_helper_init_crc16_lut(0x1021);
@@ -214,12 +208,12 @@ gboolean mirage_shutdown (GError **error)
     g_free(libmirage.parsers_info);
     g_free(libmirage.parsers);
 
-    /* Free file filter info */
-    for (gint i = 0; i < libmirage.num_file_filters; i++) {
-        mirage_file_filter_info_free(&libmirage.file_filters_info[i]);
+    /* Free filter stream info */
+    for (gint i = 0; i < libmirage.num_filter_streams; i++) {
+        mirage_filter_stream_info_free(&libmirage.filter_streams_info[i]);
     }
-    g_free(libmirage.file_filters_info);
-    g_free(libmirage.file_filters);
+    g_free(libmirage.filter_streams_info);
+    g_free(libmirage.filter_streams);
 
     /* Free CRC look-up tables */
     g_free(crc16_1021_lut);
@@ -320,16 +314,16 @@ gboolean mirage_enumerate_parsers (MirageEnumParserInfoCallback func, gpointer u
 
 
 /**
- * mirage_get_file_filters_type:
- * @types: (out) (array length=num_file_filters) (transfer none): array of file filters' #GType values
- * @num_file_filters: (out): number of supported file filters
+ * mirage_get_filter_streams_type:
+ * @types: (out) (array length=num_filter_streams) (transfer none): array of filter streams' #GType values
+ * @num_filter_streams: (out): number of supported filter streams
  * @error: (out) (allow-none): location to store error, or %NULL
  *
- * Retrieves #GType values for supported file filters.
+ * Retrieves #GType values for supported filter streams.
  *
  * Returns: %TRUE on success, %FALSE on failure
  */
-gboolean mirage_get_file_filters_type (const GType **types, gint *num_file_filters, GError **error)
+gboolean mirage_get_filter_streams_type (const GType **types, gint *num_filter_streams, GError **error)
 {
     /* Make sure libMirage is initialized */
     if (!libmirage.initialized) {
@@ -337,23 +331,23 @@ gboolean mirage_get_file_filters_type (const GType **types, gint *num_file_filte
         return FALSE;
     }
 
-    *types = libmirage.file_filters;
-    *num_file_filters = libmirage.num_file_filters;
+    *types = libmirage.filter_streams;
+    *num_filter_streams = libmirage.num_filter_streams;
 
     return TRUE;
 }
 
 /**
- * mirage_get_file_filters_info:
- * @info: (out) (array length=num_file_filters) (transfer none): array of file filters' information structures
- * @num_file_filters: (out): number of supported file filters
+ * mirage_get_filter_streams_info:
+ * @info: (out) (array length=num_filter_streams) (transfer none): array of filter streams' information structures
+ * @num_filter_streams: (out): number of supported filter streams
  * @error: (out) (allow-none): location to store error, or %NULL
  *
- * Retrieves information structures for supported file filters.
+ * Retrieves information structures for supported filter streams.
  *
  * Returns: %TRUE on success, %FALSE on failure
  */
-gboolean mirage_get_file_filters_info (const MirageFileFilterInfo **info, gint *num_file_filters, GError **error)
+gboolean mirage_get_filter_streams_info (const MirageFilterStreamInfo **info, gint *num_filter_streams, GError **error)
 {
     /* Make sure libMirage is initialized */
     if (!libmirage.initialized) {
@@ -361,25 +355,25 @@ gboolean mirage_get_file_filters_info (const MirageFileFilterInfo **info, gint *
         return FALSE;
     }
 
-    *info = libmirage.file_filters_info;
-    *num_file_filters = libmirage.num_file_filters;
+    *info = libmirage.filter_streams_info;
+    *num_filter_streams = libmirage.num_filter_streams;
 
     return TRUE;
 }
 
 /**
- * mirage_enumerate_file_filters:
+ * mirage_enumerate_filter_streams:
  * @func: (in) (scope call): callback function
  * @user_data: (in) (closure): data to be passed to callback function
  * @error: (out) (allow-none): location to store error, or %NULL
  *
- * Iterates over list of supported file filters, calling @func for each file filter.
+ * Iterates over list of supported filter streams, calling @func for each filter stream.
  *
  * If @func returns %FALSE, the function immediately returns %FALSE.
  *
  * Returns: %TRUE on success, %FALSE on failure
  */
-gboolean mirage_enumerate_file_filters (MirageEnumFileFilterInfoCallback func, gpointer user_data, GError **error)
+gboolean mirage_enumerate_filter_streams (MirageEnumFilterStreamInfoCallback func, gpointer user_data, GError **error)
 {
     /* Make sure libMirage is initialized */
     if (!libmirage.initialized) {
@@ -387,9 +381,9 @@ gboolean mirage_enumerate_file_filters (MirageEnumFileFilterInfoCallback func, g
         return FALSE;
     }
 
-    /* Go over all file filters */
-    for (gint i = 0; i < libmirage.num_file_filters; i++) {
-        if (!(*func)(&libmirage.file_filters_info[i], user_data)) {
+    /* Go over all filter streams */
+    for (gint i = 0; i < libmirage.num_filter_streams; i++) {
+        if (!(*func)(&libmirage.filter_streams_info[i], user_data)) {
             g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_LIBRARY_ERROR, "Iteration has been cancelled!");
             return FALSE;
         }

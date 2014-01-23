@@ -1,5 +1,5 @@
 /*
- *  libMirage: Apple Resource Fork routines.
+ *  libMirage: DMG filter: Apple Resource Fork routines.
  *  Copyright (C) 2013 Henrik Stokseth
  *
  *  This program is free software; you can redistribute it and/or modify

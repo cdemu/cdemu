@@ -12,13 +12,13 @@ if (${ZLIB_FOUND} AND ${BZIP2_FOUND})
     # Include directories
     include_directories(${ZLIB_INCLUDE_DIRS})
     include_directories(${BZIP2_INCLUDE_DIRS})
-    
+
     # Link directories
     link_directories(${ZLIB_LIBRARY_DIRS})
 
     # Filter
-    add_library(${filter_name} MODULE 
-        ${filter_name}-file-filter.c
+    add_library(${filter_name} MODULE
+        ${filter_name}-filter-stream.c
         ${filter_name}-plugin.c
     )
     target_link_libraries(${filter_name} ${GLIB_LIBRARIES} ${ZLIB_LIBRARIES} ${BZIP2_LIBRARIES})
@@ -34,7 +34,7 @@ if (${ZLIB_FOUND} AND ${BZIP2_FOUND})
     if (POST_INSTALL_HOOKS)
         install(CODE "execute_process (COMMAND ${UPDATE_MIME_DATABASE_EXECUTABLE} ${CMAKE_INSTALL_FULL_DATADIR}/mime)")
     endif ()
-    
+
     # Add to list of enabled filters
     set(FILTERS_ENABLED "${FILTERS_ENABLED} ${filter_short}" PARENT_SCOPE)
 else ()

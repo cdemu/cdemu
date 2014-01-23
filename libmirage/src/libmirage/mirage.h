@@ -34,6 +34,7 @@
 #include "mirage-types.h"
 
 #include "mirage-object.h"
+#include "mirage-stream.h"
 #include "mirage-context.h"
 #include "mirage-contextual.h"
 
@@ -42,7 +43,8 @@
 #include "mirage-disc.h"
 #include "mirage-disc-structures.h"
 #include "mirage-error.h"
-#include "mirage-file-filter.h"
+#include "mirage-file-stream.h"
+#include "mirage-filter-stream.h"
 #include "mirage-fragment.h"
 #include "mirage-index.h"
 #include "mirage-language.h"
@@ -73,18 +75,18 @@ G_BEGIN_DECLS
 typedef gboolean (*MirageEnumParserInfoCallback) (const MirageParserInfo *info, gpointer user_data);
 
 /**
- * MirageEnumFileFilterInfoCallback:
- * @info: (in): file filter info
+ * MirageEnumFilterStreamInfoCallback:
+ * @info: (in): filter stream info
  * @user_data: (in) (closure): user data passed to enumeration function
  *
- * Callback function type used with mirage_enumerate_file_filters().
- * A pointer to file filter information structure is stored in @info; the
- * structure belongs to the file filter object and should not be modified.
+ * Callback function type used with mirage_enumerate_filter_streams().
+ * A pointer to filter stream information structure is stored in @info; the
+ * structure belongs to the filter stream object and should not be modified.
  * @user_data is user data passed to enumeration function.
  *
  * Returns: %TRUE on success, otherwise %FALSE
  */
-typedef gboolean (*MirageEnumFileFilterInfoCallback) (const MirageFileFilterInfo *info, gpointer user_data);
+typedef gboolean (*MirageEnumFilterStreamInfoCallback) (const MirageFilterStreamInfo *info, gpointer user_data);
 
 
 /**
@@ -108,9 +110,9 @@ gboolean mirage_get_parsers_type (const GType **types, gint *num_parsers, GError
 gboolean mirage_get_parsers_info (const MirageParserInfo **info, gint *num_parsers, GError **error);
 gboolean mirage_enumerate_parsers (MirageEnumParserInfoCallback func, gpointer user_data, GError **error);
 
-gboolean mirage_get_file_filters_type (const GType **types, gint *num_file_filters, GError **error);
-gboolean mirage_get_file_filters_info (const MirageFileFilterInfo **info, gint *num_file_filters, GError **error);
-gboolean mirage_enumerate_file_filters (MirageEnumFileFilterInfoCallback func, gpointer user_data, GError **error);
+gboolean mirage_get_filter_streams_type (const GType **types, gint *num_filter_streams, GError **error);
+gboolean mirage_get_filter_streams_info (const MirageFilterStreamInfo **info, gint *num_filter_streams, GError **error);
+gboolean mirage_enumerate_filter_streams (MirageEnumFilterStreamInfoCallback func, gpointer user_data, GError **error);
 
 gboolean mirage_get_supported_debug_masks (const MirageDebugMask **masks, gint *num_masks, GError **error);
 

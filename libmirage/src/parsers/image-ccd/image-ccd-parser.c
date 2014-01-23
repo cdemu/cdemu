@@ -33,10 +33,10 @@ struct _MirageParserCcdPrivate
 
     /* Data and subchannel filenames */
     gchar *img_filename;
-    GInputStream *img_stream;
+    MirageStream *img_stream;
 
     gchar *sub_filename;
-    GInputStream *sub_stream;
+    MirageStream *sub_stream;
 
     /* Offset within data/subchannel file */
     gint offset;
@@ -271,12 +271,12 @@ static gboolean mirage_parser_ccd_build_disc_layout (MirageParserCcd *self, GErr
             /* Data fragment */
             fragment = g_object_new(MIRAGE_TYPE_FRAGMENT, NULL);
 
-            mirage_fragment_main_data_set_input_stream(fragment, self->priv->img_stream);
+            mirage_fragment_main_data_set_stream(fragment, self->priv->img_stream);
             mirage_fragment_main_data_set_size(fragment, 2352);
             mirage_fragment_main_data_set_offset(fragment, self->priv->offset*2352);
             mirage_fragment_main_data_set_format(fragment, MIRAGE_MAIN_DATA_FORMAT_DATA);
 
-            mirage_fragment_subchannel_data_set_input_stream(fragment, self->priv->sub_stream);
+            mirage_fragment_subchannel_data_set_stream(fragment, self->priv->sub_stream);
             mirage_fragment_subchannel_data_set_size(fragment, 96);
             mirage_fragment_subchannel_data_set_offset(fragment, self->priv->offset*96);
             mirage_fragment_subchannel_data_set_format(fragment, MIRAGE_SUBCHANNEL_DATA_FORMAT_PW96_LINEAR | MIRAGE_SUBCHANNEL_DATA_FORMAT_EXTERNAL);
@@ -993,7 +993,7 @@ static void mirage_parser_ccd_cleanup_regex_parser (MirageParserCcd *self)
 }
 
 
-static gboolean mirage_parser_ccd_parse_ccd_file (MirageParserCcd *self, GInputStream *stream, GError **error)
+static gboolean mirage_parser_ccd_parse_ccd_file (MirageParserCcd *self, MirageStream *stream, GError **error)
 {
     GDataInputStream *data_stream;
     gboolean succeeded = TRUE;
@@ -1102,12 +1102,12 @@ static gboolean mirage_parser_ccd_parse_ccd_file (MirageParserCcd *self, GInputS
 /**********************************************************************\
  *                 MirageParser methods implementation               *
 \**********************************************************************/
-static MirageDisc *mirage_parser_ccd_load_image (MirageParser *_self, GInputStream **streams, GError **error)
+static MirageDisc *mirage_parser_ccd_load_image (MirageParser *_self, MirageStream **streams, GError **error)
 {
     MirageParserCcd *self = MIRAGE_PARSER_CCD(_self);
 
     gboolean succeeded = TRUE;
-    const gchar *ccd_filename = mirage_contextual_get_file_stream_filename(MIRAGE_CONTEXTUAL(self), streams[0]);
+    const gchar *ccd_filename = mirage_stream_get_filename(streams[0]);
 
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_IMAGE_ID, "%s: checking if parser can handle given image...\n", __debug__);
 

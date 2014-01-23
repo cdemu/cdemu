@@ -6,8 +6,8 @@ project(${filter_name} C)
 # Build
 if (TRUE)
     # Filter
-    add_library(${filter_name} MODULE 
-        ${filter_name}-file-filter.c
+    add_library(${filter_name} MODULE
+        ${filter_name}-filter-stream.c
         ${filter_name}-plugin.c
         ../filter-dmg/resource-fork.c
         ../filter-dmg/adc.c
@@ -19,7 +19,7 @@ if (TRUE)
 
     # Install
     install(TARGETS ${filter_name} DESTINATION ${MIRAGE_PLUGIN_DIR})
-    
+
     # Add to list of enabled filters
     set(FILTERS_ENABLED "${FILTERS_ENABLED} ${filter_short}" PARENT_SCOPE)
 else ()

@@ -35,7 +35,7 @@
  * mirage_contextual_debug_messagev(), which print debug messages depending
  * on the settings of the attached context.
  *
- * Furthermore, for convenience of parser and file filter implementations,
+ * Furthermore, for convenience of parser and filter stream implementations,
  * passthrough is provided for some functions of #MirageContext. Using these
  * functions is equivalent to getting and verifying the attached context,
  * calling its function directly, and releasing the reference.
@@ -314,16 +314,15 @@ gchar *mirage_contextual_obtain_password (MirageContextual *self, GError **error
  * @self and calls mirage_context_create_input_stream().
  * </note>
  *
- * Returns: (transfer full): on success, an object inheriting #GFilterInputStream (and therefore
- * #GInputStream) and implementing #GSeekable interface is returned, which
- * can be used to access data stored in file. On failure, %NULL is returned.
- * The reference to the object should be released using g_object_unref()
- * when no longer needed.
+ * Returns: (transfer full): on success, an object implementing #MirageStream
+ * interface is returned, which can be used to access data stored in file.
+ * On failure, %NULL is returned. The reference to the object should be
+ * released using g_object_unref() when no longer needed.
  */
-GInputStream *mirage_contextual_create_input_stream (MirageContextual *self, const gchar *filename, GError **error)
+MirageStream *mirage_contextual_create_input_stream (MirageContextual *self, const gchar *filename, GError **error)
 {
     MirageContext *context = mirage_contextual_get_context(self);
-    GInputStream *stream = NULL;
+    MirageStream *stream = NULL;
 
     if (!context) {
         g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_LIBRARY_ERROR, "Context not set!");
@@ -350,16 +349,15 @@ GInputStream *mirage_contextual_create_input_stream (MirageContextual *self, con
  * @self and calls mirage_context_create_output_stream().
  * </note>
  *
- * Returns: (transfer full): on success, an object inheriting #GFilterOutputStream (and therefore
- * #GOutputStream) and implementing #GSeekable interface is returned, which
- * can be used to write data to file. On failure, %NULL is returned.
- * The reference to the object should be released using g_object_unref()
- * when no longer needed.
+ * Returns: (transfer full): on success, an object implementing #MirageStream
+ * interface is returned, which can be used to write data to file.
+ * On failure, %NULL is returned. The reference to the object should be
+ * released using g_object_unref() when no longer needed.
  */
-GOutputStream *mirage_contextual_create_output_stream (MirageContextual *self, const gchar *filename, GError **error)
+MirageStream *mirage_contextual_create_output_stream (MirageContextual *self, const gchar *filename, GError **error)
 {
     MirageContext *context = mirage_contextual_get_context(self);
-    GOutputStream *stream = NULL;
+    MirageStream *stream = NULL;
 
     if (!context) {
         g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_LIBRARY_ERROR, "Context not set!");
@@ -369,36 +367,6 @@ GOutputStream *mirage_contextual_create_output_stream (MirageContextual *self, c
     }
 
     return stream;
-}
-
-
-/**
- * mirage_contextual_get_file_stream_filename:
- * @self: a #MirageContextual
- * @stream: (in): a #GInputStream
- *
- * Traverses the chain of file filters and retrieves the filename on which
- * the #GFileInputStream, located at the bottom of the chain, was opened.
- *
- * <note>
- * This is a convenience function that retrieves a #MirageContext from
- * @self and calls mirage_context_get_file_stream_filename().
- * </note>
- *
- * Returns: (transfer none): on success, a pointer to filename on which
- * the underyling file stream was opened. On failure, %NULL is returned.
- */
-const gchar *mirage_contextual_get_file_stream_filename (MirageContextual *self, GInputStream *stream)
-{
-    MirageContext *context = mirage_contextual_get_context(self);
-    const gchar *filename = NULL;
-
-    if (context) {
-        filename = mirage_context_get_file_stream_filename(context, stream);
-        g_object_unref(context);
-    }
-
-    return filename;
 }
 
 

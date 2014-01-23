@@ -6,8 +6,8 @@ project(${filter_name} C)
 # Build
 if (TRUE)
     # Filter
-    add_library(${filter_name} MODULE 
-        ${filter_name}-file-filter.c
+    add_library(${filter_name} MODULE
+        ${filter_name}-filter-stream.c
         ${filter_name}-plugin.c
     )
     target_link_libraries(${filter_name} ${GLIB_LIBRARIES})
@@ -23,7 +23,7 @@ if (TRUE)
     if (POST_INSTALL_HOOKS)
         install(CODE "execute_process (COMMAND ${UPDATE_MIME_DATABASE_EXECUTABLE} ${CMAKE_INSTALL_FULL_DATADIR}/mime)")
     endif ()
-    
+
     # Add to list of enabled filters
     set(FILTERS_ENABLED "${FILTERS_ENABLED} ${filter_short}" PARENT_SCOPE)
 else ()

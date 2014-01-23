@@ -37,7 +37,7 @@ struct _MirageParserNrgPrivate
 {
     MirageDisc *disc;
 
-    GInputStream *nrg_stream;
+    MirageStream *nrg_stream;
 
     GList *block_index;
     gint  block_index_entries;
@@ -609,7 +609,7 @@ static gboolean mirage_parser_nrg_load_session (MirageParserNrg *self, gint sess
 
             mirage_fragment_set_length(fragment, fragment_len);
 
-            mirage_fragment_main_data_set_input_stream(fragment, self->priv->nrg_stream);
+            mirage_fragment_main_data_set_stream(fragment, self->priv->nrg_stream);
             mirage_fragment_main_data_set_offset(fragment, main_offset);
             mirage_fragment_main_data_set_size(fragment, main_size);
             mirage_fragment_main_data_set_format(fragment, main_format);
@@ -647,7 +647,7 @@ static gboolean mirage_parser_nrg_load_session (MirageParserNrg *self, gint sess
 
             mirage_fragment_set_length(fragment, fragment_len);
 
-            mirage_fragment_main_data_set_input_stream(fragment, self->priv->nrg_stream);
+            mirage_fragment_main_data_set_stream(fragment, self->priv->nrg_stream);
             mirage_fragment_main_data_set_offset(fragment, main_offset);
             mirage_fragment_main_data_set_size(fragment, main_size);
             mirage_fragment_main_data_set_format(fragment, main_format);
@@ -830,7 +830,7 @@ static gboolean mirage_parser_nrg_load_session_tao (MirageParserNrg *self, gint 
 
             mirage_fragment_set_length(fragment, fragment_len);
 
-            mirage_fragment_main_data_set_input_stream(fragment, self->priv->nrg_stream);
+            mirage_fragment_main_data_set_stream(fragment, self->priv->nrg_stream);
             mirage_fragment_main_data_set_offset(fragment, main_offset);
             mirage_fragment_main_data_set_size(fragment, main_size);
             mirage_fragment_main_data_set_format(fragment, main_format);
@@ -901,7 +901,7 @@ static gboolean mirage_parser_nrg_load_cdtext (MirageParserNrg *self, GError **e
 /**********************************************************************\
  *                MirageParser methods implementation                *
 \**********************************************************************/
-static MirageDisc *mirage_parser_nrg_load_image (MirageParser *_self, GInputStream **streams, GError **error)
+static MirageDisc *mirage_parser_nrg_load_image (MirageParser *_self, MirageStream **streams, GError **error)
 {
     MirageParserNrg *self = MIRAGE_PARSER_NRG(_self);
     const gchar *nrg_filename;
@@ -914,16 +914,16 @@ static MirageDisc *mirage_parser_nrg_load_image (MirageParser *_self, GInputStre
     self->priv->nrg_stream = g_object_ref(streams[0]);
 
     /* Get file size */
-    g_seekable_seek(G_SEEKABLE(self->priv->nrg_stream), 0, G_SEEK_END, NULL, NULL);
-    file_size = g_seekable_tell(G_SEEKABLE(self->priv->nrg_stream));
+    mirage_stream_seek(self->priv->nrg_stream, 0, G_SEEK_END, NULL);
+    file_size = mirage_stream_tell(self->priv->nrg_stream);
 
     /* Read signature */
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_IMAGE_ID, "%s: checking if parser can handle given image...\n", __debug__);
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_IMAGE_ID, "%s: checking for new Nero image signature (NER5) at 64-bit offset from the end of file!\n", __debug__);
 
-    g_seekable_seek(G_SEEKABLE(self->priv->nrg_stream), -12, G_SEEK_END, NULL, NULL);
+    mirage_stream_seek(self->priv->nrg_stream, -12, G_SEEK_END, NULL);
 
-    if (g_input_stream_read(self->priv->nrg_stream, sig, sizeof(sig), NULL, NULL) != sizeof(sig)) {
+    if (mirage_stream_read(self->priv->nrg_stream, sig, sizeof(sig), NULL) != sizeof(sig)) {
         g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_CANNOT_HANDLE, "Parser cannot handle given image: failed to read signature!");
         return FALSE;
     }
@@ -935,7 +935,7 @@ static MirageDisc *mirage_parser_nrg_load_image (MirageParser *_self, GInputStre
 
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_IMAGE_ID, "%s: new Nero image signature (NER5) found!\n", __debug__);
 
-        if (g_input_stream_read(self->priv->nrg_stream, &tmp_offset, sizeof(tmp_offset), NULL, NULL) != sizeof(tmp_offset)) {
+        if (mirage_stream_read(self->priv->nrg_stream, &tmp_offset, sizeof(tmp_offset), NULL) != sizeof(tmp_offset)) {
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read trailer offset (64-bit)!\n", __debug__);
             g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, "Failed to read trailer offset!");
             return FALSE;
@@ -946,8 +946,8 @@ static MirageDisc *mirage_parser_nrg_load_image (MirageParser *_self, GInputStre
         /* Try old format, with 32-bit offset */
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_IMAGE_ID, "%s: checking for old Nero image signature (NERO) at 32-bit offset from the end of file!\n", __debug__);
 
-        g_seekable_seek(G_SEEKABLE(self->priv->nrg_stream), -8, G_SEEK_END, NULL, NULL);
-        if (g_input_stream_read(self->priv->nrg_stream, sig, sizeof(sig), NULL, NULL) != sizeof(sig)) {
+        mirage_stream_seek(self->priv->nrg_stream, -8, G_SEEK_END, NULL);
+        if (mirage_stream_read(self->priv->nrg_stream, sig, sizeof(sig), NULL) != sizeof(sig)) {
             g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_CANNOT_HANDLE, "Parser cannot handle given image: failed to read signature!");
             return FALSE;
         }
@@ -958,7 +958,7 @@ static MirageDisc *mirage_parser_nrg_load_image (MirageParser *_self, GInputStre
 
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_IMAGE_ID, "%s: old Nero image signature (NERO) found!\n", __debug__);
 
-            if (g_input_stream_read(self->priv->nrg_stream, &tmp_offset, sizeof(tmp_offset), NULL, NULL) != sizeof(tmp_offset)) {
+            if (mirage_stream_read(self->priv->nrg_stream, &tmp_offset, sizeof(tmp_offset), NULL) != sizeof(tmp_offset)) {
                 MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read trailer offset!\n", __debug__);
                 g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, "Failed to seek to trailer offset (32-bit)!");
                 return FALSE;
@@ -981,7 +981,7 @@ static MirageDisc *mirage_parser_nrg_load_image (MirageParser *_self, GInputStre
     self->priv->disc = g_object_new(MIRAGE_TYPE_DISC, NULL);
     mirage_object_set_parent(MIRAGE_OBJECT(self->priv->disc), self);
 
-    nrg_filename = mirage_contextual_get_file_stream_filename(MIRAGE_CONTEXTUAL(self), self->priv->nrg_stream);
+    nrg_filename = mirage_stream_get_filename(self->priv->nrg_stream);
     mirage_disc_set_filename(self->priv->disc, nrg_filename);
 
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: NRG filename: %s\n", __debug__, nrg_filename);
@@ -992,8 +992,8 @@ static MirageDisc *mirage_parser_nrg_load_image (MirageParser *_self, GInputStre
 
     /* Read descriptor data */
     self->priv->nrg_data = g_malloc(self->priv->nrg_data_length);
-    g_seekable_seek(G_SEEKABLE(self->priv->nrg_stream), trailer_offset, G_SEEK_SET, NULL, NULL);
-    if (g_input_stream_read(self->priv->nrg_stream, self->priv->nrg_data, self->priv->nrg_data_length, NULL, NULL) != self->priv->nrg_data_length) {
+    mirage_stream_seek(self->priv->nrg_stream, trailer_offset, G_SEEK_SET, NULL);
+    if (mirage_stream_read(self->priv->nrg_stream, self->priv->nrg_data, self->priv->nrg_data_length, NULL) != self->priv->nrg_data_length) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read descriptor!\n", __debug__);
         g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, "Failed to read descriptor!");
         succeeded = FALSE;

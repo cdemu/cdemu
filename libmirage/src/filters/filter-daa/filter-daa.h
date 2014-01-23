@@ -1,5 +1,5 @@
 /*
- *  libMirage: DAA image plugin
+ *  libMirage: DAA filter
  *  Copyright (C) 2008-2012 Rok Mandeljc
  *
  *  Derived from code of GPLed utility daa2iso, written by Luigi Auriemma:
@@ -30,7 +30,7 @@
 #include <errno.h>
 
 #include "mirage.h"
-#include "filter-daa-file-filter.h"
+#include "filter-daa-filter-stream.h"
 
 
 G_BEGIN_DECLS

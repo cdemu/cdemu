@@ -1,5 +1,5 @@
 /*
- *  libMirage: ECM file filter
+ *  libMirage: ECM filter
  *  Copyright (C) 2012 Rok Mandeljc
  *
  *  This program is free software; you can redistribute it and/or modify
@@ -25,7 +25,7 @@
 #endif
 
 #include "mirage.h"
-#include "filter-ecm-file-filter.h"
+#include "filter-ecm-filter-stream.h"
 
 G_BEGIN_DECLS
 

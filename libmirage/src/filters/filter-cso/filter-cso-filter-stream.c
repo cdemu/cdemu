@@ -1,5 +1,5 @@
 /*
- *  libMirage: CSO file filter: File filter object
+ *  libMirage: CSO filter: Filter stream object
  *  Copyright (C) 2012 Henrik Stokseth
  *
  *  This program is free software; you can redistribute it and/or modify
@@ -19,7 +19,7 @@
 
 #include "filter-cso.h"
 
-#define __debug__ "CSO-FileFilter"
+#define __debug__ "CSO-FilterStream"
 
 typedef struct
 {
@@ -34,9 +34,9 @@ static const guint8 ciso_signature[4] = { 'C', 'I', 'S', 'O' };
 /**********************************************************************\
  *                          Private structure                         *
 \**********************************************************************/
-#define MIRAGE_FILE_FILTER_CSO_GET_PRIVATE(obj) (G_TYPE_INSTANCE_GET_PRIVATE((obj), MIRAGE_TYPE_FILE_FILTER_CSO, MirageFileFilterCsoPrivate))
+#define MIRAGE_FILTER_STREAM_CSO_GET_PRIVATE(obj) (G_TYPE_INSTANCE_GET_PRIVATE((obj), MIRAGE_TYPE_FILTER_STREAM_CSO, MirageFilterStreamCsoPrivate))
 
-struct _MirageFileFilterCsoPrivate
+struct _MirageFilterStreamCsoPrivate
 {
     ciso_header_t header;
 
@@ -62,9 +62,9 @@ struct _MirageFileFilterCsoPrivate
 /**********************************************************************\
  *                           Part indexing                            *
 \**********************************************************************/
-static gboolean mirage_file_filter_cso_read_index (MirageFileFilterCso *self, GError **error)
+static gboolean mirage_filter_stream_cso_read_index (MirageFilterStreamCso *self, GError **error)
 {
-    GInputStream *stream = g_filter_input_stream_get_base_stream(G_FILTER_INPUT_STREAM(self));
+    MirageStream *stream = mirage_filter_stream_get_underlying_stream(MIRAGE_FILTER_STREAM(self));
     z_stream *zlib_stream = &self->priv->zlib_stream;
 
     ciso_header_t *header = &self->priv->header;
@@ -94,7 +94,7 @@ static gboolean mirage_file_filter_cso_read_index (MirageFileFilterCso *self, GE
     }
 
     /* Position at the beginning of the index */
-    if (!g_seekable_seek(G_SEEKABLE(stream), sizeof(ciso_header_t), G_SEEK_SET, NULL, NULL)) {
+    if (!mirage_stream_seek(stream, sizeof(ciso_header_t), G_SEEK_SET, NULL)) {
         g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, "Failed to seek to the beginning of index!");
         return FALSE;
     }
@@ -106,7 +106,7 @@ static gboolean mirage_file_filter_cso_read_index (MirageFileFilterCso *self, GE
         CSO_Part *cur_part = &self->priv->parts[i];
 
         /* Read index entry */
-        ret = g_input_stream_read(stream, &buf, sizeof(buf), NULL, NULL);
+        ret = mirage_stream_read(stream, &buf, sizeof(buf), NULL);
         if (ret != sizeof(guint32)) {
             g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, "Failed to read from index!");
             return FALSE;
@@ -159,7 +159,7 @@ static gboolean mirage_file_filter_cso_read_index (MirageFileFilterCso *self, GE
     }
 
     /* Set file size */
-    mirage_file_filter_set_file_size(MIRAGE_FILE_FILTER(self), header->total_bytes);
+    mirage_filter_stream_set_stream_length(MIRAGE_FILTER_STREAM(self), header->total_bytes);
 
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: successfully read index\n\n", __debug__);
 
@@ -168,9 +168,9 @@ static gboolean mirage_file_filter_cso_read_index (MirageFileFilterCso *self, GE
 
 
 /**********************************************************************\
- *              MirageFileFilter methods implementations             *
+ *              MirageFilterStream methods implementations            *
 \**********************************************************************/
-static void mirage_file_filter_fixup_header(MirageFileFilterCso *self)
+static void mirage_filter_stream_fixup_header(MirageFilterStreamCso *self)
 {
     ciso_header_t *header = &self->priv->header;
 
@@ -179,22 +179,21 @@ static void mirage_file_filter_fixup_header(MirageFileFilterCso *self)
     header->block_size  = GUINT32_FROM_LE(header->block_size);
 }
 
-static gboolean mirage_file_filter_cso_can_handle_data_format (MirageFileFilter *_self, GError **error)
+static gboolean mirage_filter_stream_cso_open (MirageFilterStream *_self, MirageStream *stream, GError **error)
 {
-    MirageFileFilterCso *self = MIRAGE_FILE_FILTER_CSO(_self);
-    GInputStream *stream = g_filter_input_stream_get_base_stream(G_FILTER_INPUT_STREAM(self));
+    MirageFilterStreamCso *self = MIRAGE_FILTER_STREAM_CSO(_self);
 
     ciso_header_t *header = &self->priv->header;
 
     /* Read CISO header */
-    g_seekable_seek(G_SEEKABLE(stream), 0, G_SEEK_SET, NULL, NULL);
-    if (g_input_stream_read(stream, header, sizeof(ciso_header_t), NULL, NULL) != sizeof(ciso_header_t)) {
+    mirage_stream_seek(stream, 0, G_SEEK_SET, NULL);
+    if (mirage_stream_read(stream, header, sizeof(ciso_header_t), NULL) != sizeof(ciso_header_t)) {
         g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_CANNOT_HANDLE, "Filter cannot handle given data: failed to read CISO header!");
         return FALSE;
     }
 
     /* Fixup header endianness */
-    mirage_file_filter_fixup_header(self);
+    mirage_filter_stream_fixup_header(self);
 
     /* Validate CISO header */
     if (memcmp(&header->magic, ciso_signature, sizeof(ciso_signature)) || header->version > 1 ||
@@ -207,7 +206,7 @@ static gboolean mirage_file_filter_cso_can_handle_data_format (MirageFileFilter 
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: CISO file alignment: %d.\n", __debug__, 1 << header->idx_align);
 
     /* Read index */
-    if (!mirage_file_filter_cso_read_index(self, error)) {
+    if (!mirage_filter_stream_cso_read_index(self, error)) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: parsing failed!\n\n", __debug__);
         return FALSE;
     }
@@ -218,22 +217,22 @@ static gboolean mirage_file_filter_cso_can_handle_data_format (MirageFileFilter 
 }
 
 
-static gssize mirage_file_filter_cso_partial_read (MirageFileFilter *_self, void *buffer, gsize count)
+static gssize mirage_filter_stream_cso_partial_read (MirageFilterStream *_self, void *buffer, gsize count)
 {
-    MirageFileFilterCso *self = MIRAGE_FILE_FILTER_CSO(_self);
-    GInputStream *stream = g_filter_input_stream_get_base_stream(G_FILTER_INPUT_STREAM(self));
-    goffset position = mirage_file_filter_get_position(MIRAGE_FILE_FILTER(self));
+    MirageFilterStreamCso *self = MIRAGE_FILTER_STREAM_CSO(_self);
+    MirageStream *stream = mirage_filter_stream_get_underlying_stream(_self);
+    goffset position = mirage_filter_stream_get_position(_self);
     gint part_idx;
 
     /* Find part that corresponds tho current position */
     part_idx = position / self->priv->header.block_size;
 
     if (part_idx >= self->priv->num_parts) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_FILE_IO, "%s: stream position %ld (0x%lX) beyond end of stream, doing nothing!\n", __debug__, position, position);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_STREAM, "%s: stream position %ld (0x%lX) beyond end of stream, doing nothing!\n", __debug__, position, position);
         return 0;
     }
 
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_FILE_IO, "%s: stream position: %ld (0x%lX) -> part #%d (cached: #%d)\n", __debug__, position, part_idx, self->priv->cached_part);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_STREAM, "%s: stream position: %ld (0x%lX) -> part #%d (cached: #%d)\n", __debug__, position, part_idx, self->priv->cached_part);
 
     /* If we do not have part in cache, uncompress it */
     if (part_idx != self->priv->cached_part) {
@@ -241,10 +240,10 @@ static gssize mirage_file_filter_cso_partial_read (MirageFileFilter *_self, void
         z_stream *zlib_stream = &self->priv->zlib_stream;
         gint ret;
 
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_FILE_IO, "%s: part not cached, reading...\n", __debug__);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_STREAM, "%s: part not cached, reading...\n", __debug__);
 
         /* Seek to the position */
-        if (!g_seekable_seek(G_SEEKABLE(stream), part->offset, G_SEEK_SET, NULL, NULL)) {
+        if (!mirage_stream_seek(stream, part->offset, G_SEEK_SET, NULL)) {
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to seek to %ld in underlying stream!\n", __debug__, part->offset);
             return -1;
         }
@@ -252,7 +251,7 @@ static gssize mirage_file_filter_cso_partial_read (MirageFileFilter *_self, void
         /* Read a part, either raw or compressed */
         if (part->raw) {
             /* Read uncompressed part */
-            ret = g_input_stream_read(stream, self->priv->inflate_buffer, self->priv->inflate_buffer_size, NULL, NULL);
+            ret = mirage_stream_read(stream, self->priv->inflate_buffer, self->priv->inflate_buffer_size, NULL);
             if (ret == -1) {
                 MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read %d bytes from underlying stream!\n", __debug__, self->priv->inflate_buffer_size);
                 return -1;
@@ -277,7 +276,7 @@ static gssize mirage_file_filter_cso_partial_read (MirageFileFilter *_self, void
                 /* Read */
                 if (!zlib_stream->avail_in) {
                     /* Read some compressed data */
-                    ret = g_input_stream_read(stream, self->priv->io_buffer, part->comp_size, NULL, NULL);
+                    ret = mirage_stream_read(stream, self->priv->io_buffer, part->comp_size, NULL);
                     if (ret == -1) {
                         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read %d bytes from underlying stream!\n", __debug__, self->priv->io_buffer_size);
                         return -1;
@@ -301,7 +300,7 @@ static gssize mirage_file_filter_cso_partial_read (MirageFileFilter *_self, void
         /* Set currently cached part */
         self->priv->cached_part = part_idx;
     } else {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_FILE_IO, "%s: part already cached\n", __debug__);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_STREAM, "%s: part already cached\n", __debug__);
     }
 
 
@@ -309,7 +308,7 @@ static gssize mirage_file_filter_cso_partial_read (MirageFileFilter *_self, void
     goffset part_offset = position % self->priv->header.block_size;
     count = MIN(count, self->priv->header.block_size - part_offset);
 
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_FILE_IO, "%s: offset within part: %ld, copying %d bytes\n", __debug__, part_offset, count);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_STREAM, "%s: offset within part: %ld, copying %d bytes\n", __debug__, part_offset, count);
 
     memcpy(buffer, &self->priv->inflate_buffer[part_offset], count);
 
@@ -320,21 +319,22 @@ static gssize mirage_file_filter_cso_partial_read (MirageFileFilter *_self, void
 /**********************************************************************\
  *                             Object init                            *
 \**********************************************************************/
-G_DEFINE_DYNAMIC_TYPE(MirageFileFilterCso, mirage_file_filter_cso, MIRAGE_TYPE_FILE_FILTER);
+G_DEFINE_DYNAMIC_TYPE(MirageFilterStreamCso, mirage_filter_stream_cso, MIRAGE_TYPE_FILTER_STREAM);
 
-void mirage_file_filter_cso_type_register (GTypeModule *type_module)
+void mirage_filter_stream_cso_type_register (GTypeModule *type_module)
 {
-    return mirage_file_filter_cso_register_type(type_module);
+    return mirage_filter_stream_cso_register_type(type_module);
 }
 
 
-static void mirage_file_filter_cso_init (MirageFileFilterCso *self)
+static void mirage_filter_stream_cso_init (MirageFilterStreamCso *self)
 {
-    self->priv = MIRAGE_FILE_FILTER_CSO_GET_PRIVATE(self);
+    self->priv = MIRAGE_FILTER_STREAM_CSO_GET_PRIVATE(self);
 
-    mirage_file_filter_generate_info(MIRAGE_FILE_FILTER(self),
+    mirage_filter_stream_generate_info(MIRAGE_FILTER_STREAM(self),
         "FILTER-CSO",
         "CSO File Filter",
+        FALSE,
         1,
         "Compressed ISO images (*.ciso, *.cso)", "application/x-cso"
     );
@@ -347,9 +347,9 @@ static void mirage_file_filter_cso_init (MirageFileFilterCso *self)
     self->priv->io_buffer = NULL;
 }
 
-static void mirage_file_filter_cso_finalize (GObject *gobject)
+static void mirage_filter_stream_cso_finalize (GObject *gobject)
 {
-    MirageFileFilterCso *self = MIRAGE_FILE_FILTER_CSO(gobject);
+    MirageFilterStreamCso *self = MIRAGE_FILTER_STREAM_CSO(gobject);
 
     g_free(self->priv->parts);
     g_free(self->priv->inflate_buffer);
@@ -358,24 +358,24 @@ static void mirage_file_filter_cso_finalize (GObject *gobject)
     inflateEnd(&self->priv->zlib_stream);
 
     /* Chain up to the parent class */
-    return G_OBJECT_CLASS(mirage_file_filter_cso_parent_class)->finalize(gobject);
+    return G_OBJECT_CLASS(mirage_filter_stream_cso_parent_class)->finalize(gobject);
 }
 
-static void mirage_file_filter_cso_class_init (MirageFileFilterCsoClass *klass)
+static void mirage_filter_stream_cso_class_init (MirageFilterStreamCsoClass *klass)
 {
     GObjectClass *gobject_class = G_OBJECT_CLASS(klass);
-    MirageFileFilterClass *file_filter_class = MIRAGE_FILE_FILTER_CLASS(klass);
+    MirageFilterStreamClass *filter_stream_class = MIRAGE_FILTER_STREAM_CLASS(klass);
 
-    gobject_class->finalize = mirage_file_filter_cso_finalize;
+    gobject_class->finalize = mirage_filter_stream_cso_finalize;
 
-    file_filter_class->can_handle_data_format = mirage_file_filter_cso_can_handle_data_format;
+    filter_stream_class->open = mirage_filter_stream_cso_open;
 
-    file_filter_class->partial_read = mirage_file_filter_cso_partial_read;
+    filter_stream_class->partial_read = mirage_filter_stream_cso_partial_read;
 
     /* Register private structure */
-    g_type_class_add_private(klass, sizeof(MirageFileFilterCsoPrivate));
+    g_type_class_add_private(klass, sizeof(MirageFilterStreamCsoPrivate));
 }
 
-static void mirage_file_filter_cso_class_finalize (MirageFileFilterCsoClass *klass G_GNUC_UNUSED)
+static void mirage_filter_stream_cso_class_finalize (MirageFilterStreamCsoClass *klass G_GNUC_UNUSED)
 {
 }

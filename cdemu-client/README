@@ -106,8 +106,8 @@ Changing device ID of first device:
 Enumerating supported parsers:
  cdemu enum-parsers
 
-Enumerating supported file filters:
- cdemu enum-file-filters
+Enumerating supported filter streams:
+ cdemu enum-filter-streams
 
 Displaying daemon and library version:
  cdemu version

@@ -268,7 +268,7 @@ static gboolean mirage_parser_cue_add_index (MirageParserCue *self, gint number,
 
             /* Now current track; we only create fragment here and set its offset */
             MirageFragment *fragment;
-            GInputStream *data_stream = mirage_contextual_create_input_stream(MIRAGE_CONTEXTUAL(self), self->priv->cur_data_filename, error);
+            MirageStream *data_stream = mirage_contextual_create_input_stream(MIRAGE_CONTEXTUAL(self), self->priv->cur_data_filename, error);
             if (!data_stream) {
                 MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to create data stream on data file: %s!\n", __debug__, self->priv->cur_data_filename);
                 return FALSE;
@@ -291,7 +291,7 @@ static gboolean mirage_parser_cue_add_index (MirageParserCue *self, gint number,
 
                 fragment = g_object_new(MIRAGE_TYPE_FRAGMENT, NULL);
 
-                mirage_fragment_main_data_set_input_stream(fragment, data_stream);
+                mirage_fragment_main_data_set_stream(fragment, data_stream);
                 mirage_fragment_main_data_set_size(fragment, main_size);
                 mirage_fragment_main_data_set_offset(fragment, self->priv->binary_offset);
                 mirage_fragment_main_data_set_format(fragment, self->priv->cur_data_format);
@@ -305,7 +305,7 @@ static gboolean mirage_parser_cue_add_index (MirageParserCue *self, gint number,
                 /* Audio data */
                 fragment = g_object_new(MIRAGE_TYPE_FRAGMENT, NULL);
 
-                mirage_fragment_main_data_set_input_stream(fragment, data_stream);
+                mirage_fragment_main_data_set_stream(fragment, data_stream);
                 mirage_fragment_main_data_set_size(fragment, 2352);
                 mirage_fragment_main_data_set_offset(fragment, address*2352); /* Offset is equivalent to the address in CUE, times sector size */
                 mirage_fragment_main_data_set_format(fragment, MIRAGE_MAIN_DATA_FORMAT_AUDIO);
@@ -817,7 +817,7 @@ static void mirage_parser_cue_cleanup_regex_parser (MirageParserCue *self)
     g_list_free(self->priv->regex_rules);
 }
 
-static gboolean mirage_parser_cue_parse_cue_file (MirageParserCue *self, GInputStream *stream, GError **error)
+static gboolean mirage_parser_cue_parse_cue_file (MirageParserCue *self, MirageStream *stream, GError **error)
 {
     GDataInputStream *data_stream;
     gboolean succeeded = TRUE;
@@ -901,14 +901,14 @@ static gboolean mirage_parser_cue_parse_cue_file (MirageParserCue *self, GInputS
 /**********************************************************************\
  *                 MirageParser methods implementation               *
 \**********************************************************************/
-static MirageDisc *mirage_parser_cue_load_image (MirageParser *_self, GInputStream **streams, GError **error)
+static MirageDisc *mirage_parser_cue_load_image (MirageParser *_self, MirageStream **streams, GError **error)
 {
     MirageParserCue *self = MIRAGE_PARSER_CUE(_self);
 
     gboolean succeeded = TRUE;
 
     /* Check if we can load the file; we check the suffix */
-    self->priv->cue_filename = mirage_contextual_get_file_stream_filename(MIRAGE_CONTEXTUAL(self), streams[0]);
+    self->priv->cue_filename = mirage_stream_get_filename(streams[0]);
 
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_IMAGE_ID, "%s: checking if parser can handle given image...\n", __debug__);
 

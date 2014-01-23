@@ -1,5 +1,5 @@
 /*
- *  libMirage: XZ file filter
+ *  libMirage: XZ filter
  *  Copyright (C) 2012 Rok Mandeljc
  *
  *  This program is free software; you can redistribute it and/or modify
@@ -27,7 +27,7 @@
 #include <lzma.h>
 
 #include "mirage.h"
-#include "filter-xz-file-filter.h"
+#include "filter-xz-filter-stream.h"
 
 G_BEGIN_DECLS
 

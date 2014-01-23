@@ -1,5 +1,5 @@
 /*
- *  libMirage: DMG file filter.
+ *  libMirage: DMG filter
  *  Copyright (C) 2012 Henrik Stokseth
  *
  *  This program is free software; you can redistribute it and/or modify
@@ -30,7 +30,7 @@
 #include <bzlib.h>
 
 #include "mirage.h"
-#include "filter-dmg-file-filter.h"
+#include "filter-dmg-filter-stream.h"
 
 
 G_BEGIN_DECLS

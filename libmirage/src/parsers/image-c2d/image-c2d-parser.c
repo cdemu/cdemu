@@ -35,7 +35,7 @@ struct _MirageParserC2dPrivate
 {
     MirageDisc *disc;
 
-    GInputStream *c2d_stream;
+    MirageStream *c2d_stream;
 
     C2D_HeaderBlock *header_block;
     C2D_CDTextBlock *cdtext_block;
@@ -148,10 +148,10 @@ static gboolean mirage_parser_c2d_parse_compressed_track (MirageParserC2d *self,
     C2D_Z_Info_Header header;
     C2D_Z_Info zinfo;
 
-    g_seekable_seek(G_SEEKABLE(self->priv->c2d_stream), offset, G_SEEK_SET, NULL, NULL);
+    mirage_stream_seek(self->priv->c2d_stream, offset, G_SEEK_SET, NULL);
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: compression info blocks!\n", __debug__);
 
-    if (g_input_stream_read(self->priv->c2d_stream, &header, sizeof(C2D_Z_Info_Header), NULL, NULL) != sizeof(C2D_Z_Info_Header)) {
+    if (mirage_stream_read(self->priv->c2d_stream, &header, sizeof(C2D_Z_Info_Header), NULL) != sizeof(C2D_Z_Info_Header)) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read Z info header!\n", __debug__);
         g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, "Failed to read Z info header!");
         return FALSE;
@@ -160,7 +160,7 @@ static gboolean mirage_parser_c2d_parse_compressed_track (MirageParserC2d *self,
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: dummy: 0x%X\n", __debug__, header.dummy);
 
     do {
-        if (g_input_stream_read(self->priv->c2d_stream, &zinfo, sizeof(C2D_Z_Info), NULL, NULL) != sizeof(C2D_Z_Info)) {
+        if (mirage_stream_read(self->priv->c2d_stream, &zinfo, sizeof(C2D_Z_Info), NULL) != sizeof(C2D_Z_Info)) {
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read Z info!\n", __debug__);
             g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, "Failed to read Z info!");
             return FALSE;
@@ -339,7 +339,7 @@ static gboolean mirage_parser_c2d_parse_track_entries (MirageParserC2d *self, GE
         mirage_fragment_set_length(data_fragment, fragment_len);
 
         /* Set stream */
-        mirage_fragment_main_data_set_input_stream(data_fragment, self->priv->c2d_stream);
+        mirage_fragment_main_data_set_stream(data_fragment, self->priv->c2d_stream);
         mirage_fragment_main_data_set_offset(data_fragment, main_offset);
         mirage_fragment_main_data_set_size(data_fragment, main_size);
         mirage_fragment_main_data_set_format(data_fragment, main_format);
@@ -504,7 +504,7 @@ static gboolean mirage_parser_c2d_load_disc (MirageParserC2d *self, GError **err
 /**********************************************************************\
  *                 MirageParser methods implementation               *
 \**********************************************************************/
-static MirageDisc *mirage_parser_c2d_load_image (MirageParser *_self, GInputStream **streams, GError **error)
+static MirageDisc *mirage_parser_c2d_load_image (MirageParser *_self, MirageStream **streams, GError **error)
 {
     MirageParserC2d *self = MIRAGE_PARSER_C2D(_self);
     const gchar *c2d_filename;
@@ -518,8 +518,8 @@ static MirageDisc *mirage_parser_c2d_load_image (MirageParser *_self, GInputStre
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_IMAGE_ID, "%s: verifying 32-byte signature at the beginning of image file...\n", __debug__);
 
     /* Read signature */
-    g_seekable_seek(G_SEEKABLE(self->priv->c2d_stream), 0, G_SEEK_SET, NULL, NULL);
-    if (g_input_stream_read(self->priv->c2d_stream, sig, sizeof(sig), NULL, NULL) != sizeof(sig)) {
+    mirage_stream_seek(self->priv->c2d_stream, 0, G_SEEK_SET, NULL);
+    if (mirage_stream_read(self->priv->c2d_stream, sig, sizeof(sig), NULL) != sizeof(sig)) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_IMAGE_ID, "%s: parser cannot handle given image: failed to read signature!\n", __debug__);
         g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_CANNOT_HANDLE, "Parser cannot handle given image: failed to read signature!");
         return FALSE;
@@ -536,13 +536,13 @@ static MirageDisc *mirage_parser_c2d_load_image (MirageParser *_self, GInputStre
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: parsing the image...\n", __debug__);
 
     /* Reset position */
-    g_seekable_seek(G_SEEKABLE(self->priv->c2d_stream), 0, G_SEEK_SET, NULL, NULL);
+    mirage_stream_seek(self->priv->c2d_stream, 0, G_SEEK_SET, NULL);
 
     /* Create disc */
     self->priv->disc = g_object_new(MIRAGE_TYPE_DISC, NULL);
     mirage_object_set_parent(MIRAGE_OBJECT(self->priv->disc), self);
 
-    c2d_filename = mirage_contextual_get_file_stream_filename(MIRAGE_CONTEXTUAL(self), self->priv->c2d_stream);
+    c2d_filename = mirage_stream_get_filename(self->priv->c2d_stream);
     mirage_disc_set_filename(self->priv->disc, c2d_filename);
 
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: C2D filename: %s\n", __debug__, c2d_filename);
@@ -556,7 +556,7 @@ static MirageDisc *mirage_parser_c2d_load_image (MirageParser *_self, GInputStre
         goto end;
     }
 
-    if (g_input_stream_read(self->priv->c2d_stream, self->priv->c2d_data, sizeof(C2D_HeaderBlock), NULL, NULL) != sizeof(C2D_HeaderBlock)) {
+    if (mirage_stream_read(self->priv->c2d_stream, self->priv->c2d_data, sizeof(C2D_HeaderBlock), NULL) != sizeof(C2D_HeaderBlock)) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read header!\n", __debug__);
         g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, "Failed to read header!");
         succeeded = FALSE;
@@ -577,8 +577,8 @@ static MirageDisc *mirage_parser_c2d_load_image (MirageParser *_self, GInputStre
         goto end;
     }
 
-    g_seekable_seek(G_SEEKABLE(self->priv->c2d_stream), 0, G_SEEK_SET, NULL, NULL);
-    if (g_input_stream_read(self->priv->c2d_stream, self->priv->c2d_data, self->priv->c2d_data_length, NULL, NULL) != self->priv->c2d_data_length) {
+    mirage_stream_seek(self->priv->c2d_stream, 0, G_SEEK_SET, NULL);
+    if (mirage_stream_read(self->priv->c2d_stream, self->priv->c2d_data, self->priv->c2d_data_length, NULL) != self->priv->c2d_data_length) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to read descriptor!\n", __debug__);
         g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, "Failed to read descriptor!");
         succeeded = FALSE;

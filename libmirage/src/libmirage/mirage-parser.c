@@ -159,7 +159,7 @@ const MirageParserInfo *mirage_parser_get_info (MirageParser *self)
  *
  * Returns: (transfer full): a #MirageDisc object representing image on success, %NULL on failure
  */
-MirageDisc *mirage_parser_load_image (MirageParser *self, GInputStream **streams, GError **error)
+MirageDisc *mirage_parser_load_image (MirageParser *self, MirageStream **streams, GError **error)
 {
     return MIRAGE_PARSER_GET_CLASS(self)->load_image(self, streams, error);
 }
@@ -272,7 +272,7 @@ void mirage_parser_add_redbook_pregap (MirageParser *self, MirageDisc *disc)
 /**
  * mirage_parser_create_text_stream:
  * @self: a #MirageParser
- * @stream: (in) (transfer full): a #GInputStream
+ * @stream: (in) (transfer full): a #MirageStream
  * @error: (out) (allow-none): location to store error, or %NULL
  *
  * Constructs a filter chain for reading text files on top of provided
@@ -284,7 +284,7 @@ void mirage_parser_add_redbook_pregap (MirageParser *self, MirageDisc *disc)
  * Returns: (transfer full): a #GDataInputStream object on success,
  * or %NULL on failure.
  */
-GDataInputStream *mirage_parser_create_text_stream (MirageParser *self, GInputStream *stream, GError **error)
+GDataInputStream *mirage_parser_create_text_stream (MirageParser *self, MirageStream *stream, GError **error)
 {
     GDataInputStream *data_stream;
     GVariant *encoding_value;
@@ -303,8 +303,8 @@ GDataInputStream *mirage_parser_create_text_stream (MirageParser *self, GInputSt
         /* Detect encoding */
         guint8 bom[4] = { 0 };
 
-        g_seekable_seek(G_SEEKABLE(stream), 0, G_SEEK_SET, NULL, NULL);
-        g_input_stream_read(stream, bom, sizeof(bom), NULL, NULL);
+        mirage_stream_seek(stream, 0, G_SEEK_SET, NULL);
+        mirage_stream_read(stream, bom, sizeof(bom), NULL);
 
         encoding = mirage_helper_encoding_from_bom(bom);
 
@@ -312,7 +312,10 @@ GDataInputStream *mirage_parser_create_text_stream (MirageParser *self, GInputSt
     }
 
     /* Reset stream position, just in case */
-    g_seekable_seek(G_SEEKABLE(stream), 0, G_SEEK_SET, NULL, NULL);
+    mirage_stream_seek(stream, 0, G_SEEK_SET, NULL);
+
+    /* Create MirageStream -> GInputStream bridge */
+    GInputStream *input_stream = mirage_stream_get_g_input_stream(stream);
 
     /* If needed, set up charset converter */
     if (encoding) {
@@ -323,33 +326,33 @@ GDataInputStream *mirage_parser_create_text_stream (MirageParser *self, GInputSt
         converter = g_charset_converter_new("UTF-8", encoding, error);
         if (!converter) {
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to create converter from '%s'!\n", __debug__, encoding);
-            g_object_unref(stream);
+            g_object_unref(input_stream);
             return FALSE;
         }
 
         /* Create converter stream */
-        converter_stream = g_converter_input_stream_new(stream, G_CONVERTER(converter));
-        g_filter_input_stream_set_close_base_stream(G_FILTER_INPUT_STREAM(converter_stream), FALSE);
+        converter_stream = g_converter_input_stream_new(input_stream, G_CONVERTER(converter));
+        g_filter_input_stream_set_close_base_stream(G_FILTER_INPUT_STREAM(converter_stream), TRUE);
 
         g_object_unref(converter);
 
         /* Switch the stream */
-        g_object_unref(stream);
-        stream = converter_stream;
+        g_object_unref(input_stream);
+        input_stream = converter_stream;
     }
 
     /* Create data stream */
-    data_stream = g_data_input_stream_new(stream);
+    data_stream = g_data_input_stream_new(input_stream);
     if (!data_stream) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to create data stream!\n", __debug__);
         g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_PARSER_ERROR, "Failed to create data stream!");
         g_object_unref(stream);
         return FALSE;
     }
-    g_filter_input_stream_set_close_base_stream(G_FILTER_INPUT_STREAM(data_stream), FALSE);
+    g_filter_input_stream_set_close_base_stream(G_FILTER_INPUT_STREAM(data_stream), TRUE);
     g_data_input_stream_set_newline_type(data_stream, G_DATA_STREAM_NEWLINE_TYPE_ANY);
 
-    g_object_unref(stream);
+    g_object_unref(input_stream);
 
     return data_stream;
 }

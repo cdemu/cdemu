@@ -63,8 +63,7 @@ static MirageFragment *mirage_writer_iso_create_fragment (MirageWriter *self_, M
 
     MirageFragment *fragment = g_object_new(MIRAGE_TYPE_FRAGMENT, NULL);
     gchar *filename;
-    GOutputStream *output_stream;
-    GInputStream *input_stream;
+    MirageStream *stream;
 
     if (role == MIRAGE_FRAGMENT_PREGAP) {
         return fragment;
@@ -114,23 +113,14 @@ static MirageFragment *mirage_writer_iso_create_fragment (MirageWriter *self_, M
 
     filename = g_strdup_printf("%s-%d-%d.%s", self->priv->image_basename, mirage_track_layout_get_session_number(track), mirage_track_layout_get_track_number(track), extension);
 
-    /* Output stream */
-    output_stream = mirage_contextual_create_output_stream(MIRAGE_CONTEXTUAL(self), filename, error);
-    if (!output_stream) {
+    /* I/O stream */
+    stream = mirage_contextual_create_output_stream(MIRAGE_CONTEXTUAL(self), filename, error);
+    if (!stream) {
         g_object_unref(fragment);
         return NULL;
     }
-    mirage_fragment_main_data_set_output_stream(fragment, output_stream);
-    g_object_unref(output_stream);
-
-    /* Input stream */
-    input_stream = mirage_contextual_create_input_stream(MIRAGE_CONTEXTUAL(self), filename, error);
-    if (!input_stream) {
-        g_object_unref(fragment);
-        return NULL;
-    }
-    mirage_fragment_main_data_set_input_stream(fragment, input_stream);
-    g_object_unref(input_stream);
+    mirage_fragment_main_data_set_stream(fragment, stream);
+    g_object_unref(stream);
 
     return fragment;
 }
