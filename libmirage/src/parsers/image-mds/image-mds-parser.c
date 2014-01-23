@@ -587,7 +587,7 @@ static gboolean mirage_parser_mds_parse_track_entries (MirageParserMds *self, MD
                 g_free(mdf_filename);
 
                 /* Determine fragment's length */
-                gint fragment_len = 0;
+                gint64 fragment_len = 0;
                 if (medium_type == MIRAGE_MEDIUM_CD) {
                     /* For CDs, track lengths are stored in extra block... and we assume
                        this is the same as fragment's length */
