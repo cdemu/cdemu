@@ -131,6 +131,7 @@ static gboolean mirage_filter_stream_sndfile_open (MirageFilterStream *_self, Mi
 {
     MirageFilterStreamSndfile *self = MIRAGE_FILTER_STREAM_SNDFILE(_self);
     gsize length;
+    gint open_mode = SFM_READ;
 
     /* Clear the format */
     memset(&self->priv->format, 0, sizeof(self->priv->format));
@@ -141,30 +142,33 @@ static gboolean mirage_filter_stream_sndfile_open (MirageFilterStream *_self, Mi
         const gchar *filename = mirage_stream_get_filename(stream);
         const gchar *suffix = mirage_helper_get_suffix(filename);
 
-        self->priv->format.samplerate = 2;
-        self->priv->format.channels = 44100;
+        self->priv->format.samplerate = 44100;
+        self->priv->format.channels = 2;
 
-        if (g_ascii_strcasecmp(suffix, ".wav")) {
+        if (!g_ascii_strcasecmp(suffix, ".wav")) {
             self->priv->format.format = SF_FORMAT_WAV;
-        } else if (g_ascii_strcasecmp(suffix, ".aiff")) {
+        } else if (!g_ascii_strcasecmp(suffix, ".aiff")) {
             self->priv->format.format = SF_FORMAT_AIFF;
-        } else if (g_ascii_strcasecmp(suffix, ".flac")) {
+        } else if (!g_ascii_strcasecmp(suffix, ".flac")) {
             self->priv->format.format = SF_FORMAT_FLAC;
-        } else if (g_ascii_strcasecmp(suffix, ".ogg")) {
+        } else if (!g_ascii_strcasecmp(suffix, ".ogg")) {
             self->priv->format.format = SF_FORMAT_OGG;
         } else {
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: unknown file suffix '%s'; storing as raw PCM data!\n", __debug__, suffix);
             self->priv->format.format = SF_FORMAT_RAW;
         }
+        self->priv->format.format |= SF_FORMAT_PCM_16; /* Minor format */
+
+        open_mode = SFM_RDWR;
     }
 
     /* Seek to beginning */
     mirage_stream_seek(stream, 0, G_SEEK_SET, NULL);
 
     /* Try opening sndfile on top of stream */
-    self->priv->sndfile = sf_open_virtual(&sndfile_io_bridge, SFM_READ, &self->priv->format, stream);
+    self->priv->sndfile = sf_open_virtual(&sndfile_io_bridge, open_mode, &self->priv->format, stream);
     if (!self->priv->sndfile) {
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_CANNOT_HANDLE, "Filter cannot handle given data: failed to open sndfile!");
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_CANNOT_HANDLE, "Filter cannot handle given data: failed to open sndfile: %s", sf_strerror(self->priv->sndfile));
         return FALSE;
     }
 
@@ -379,19 +383,29 @@ static void mirage_filter_stream_sndfile_init (MirageFilterStreamSndfile *self)
     self->priv->resampler = NULL;
 }
 
-static void mirage_filter_stream_sndfile_finalize (GObject *gobject)
+static void mirage_filter_stream_sndfile_dispose (GObject *gobject)
 {
     MirageFilterStreamSndfile *self = MIRAGE_FILTER_STREAM_SNDFILE(gobject);
 
     /* Close sndfile */
     if (self->priv->sndfile) {
         sf_close(self->priv->sndfile);
+        self->priv->sndfile = NULL;
     }
 
     /* Cleanup resampler */
     if (self->priv->resampler) {
         src_delete(self->priv->resampler);
+        self->priv->resampler = NULL;
     }
+
+    return G_OBJECT_CLASS(mirage_filter_stream_sndfile_parent_class)->dispose(gobject);
+}
+
+
+static void mirage_filter_stream_sndfile_finalize (GObject *gobject)
+{
+    MirageFilterStreamSndfile *self = MIRAGE_FILTER_STREAM_SNDFILE(gobject);
 
     /* Free read buffer */
     g_free(self->priv->buffer);
@@ -409,6 +423,7 @@ static void mirage_filter_stream_sndfile_class_init (MirageFilterStreamSndfileCl
     GObjectClass *gobject_class = G_OBJECT_CLASS(klass);
     MirageFilterStreamClass *filter_stream_class = MIRAGE_FILTER_STREAM_CLASS(klass);
 
+    gobject_class->dispose = mirage_filter_stream_sndfile_dispose;
     gobject_class->finalize = mirage_filter_stream_sndfile_finalize;
 
     filter_stream_class->open = mirage_filter_stream_sndfile_open;
