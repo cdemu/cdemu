@@ -443,7 +443,7 @@ static gboolean cdemu_device_raw_recording_write_sector (CdemuDevice *self, gint
         } else if (idx != self->priv->last_recorded_idx) {
             CDEMU_DEBUG(self, DAEMON_DEBUG_RECORDING, "%s: index changed: %d -> %d\n", __debug__, self->priv->last_recorded_idx, idx);
             if (idx == 1) {
-                CDEMU_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: end of pregap\n", __debug__);
+                CDEMU_DEBUG(self, DAEMON_DEBUG_RECORDING, "%s: end of pregap\n", __debug__);
 
                 /* Create data fragment */
                 GError *local_error = NULL;
