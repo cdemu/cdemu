@@ -405,6 +405,9 @@ static gssize mirage_filter_stream_write_impl (MirageFilterStream *self, const v
     }
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_STREAM, "%s: write complete\n", __debug__);
 
+    /* Update stream length */
+    self->priv->stream_length = MAX(self->priv->stream_length, self->priv->position);
+
     return total_write;
 }
 

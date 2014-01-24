@@ -330,7 +330,7 @@ static gssize mirage_filter_stream_sndfile_partial_read (MirageFilterStream *_se
     return count;
 }
 
-static gssize mirage_filter_stream_sndfile_write (MirageFilterStream *_self, const void *buffer, gsize count, GError **error G_GNUC_UNUSED)
+static gssize mirage_filter_stream_sndfile_partial_write (MirageFilterStream *_self, const void *buffer, gsize count)
 {
     MirageFilterStreamSndfile *self = MIRAGE_FILTER_STREAM_SNDFILE(_self);
     goffset position = mirage_filter_stream_simplified_get_position(_self);
@@ -341,11 +341,6 @@ static gssize mirage_filter_stream_sndfile_write (MirageFilterStream *_self, con
 
     /* Write */
     write_length = sf_writef_short(self->priv->sndfile, (const short *)buffer, count/(self->priv->format.channels * sizeof(guint16)));
-
-    /* Update stream length */
-    gint length = self->priv->format.frames * self->priv->format.channels * sizeof(guint16);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: stream length after write: %ld (0x%lX) bytes\n", __debug__, length, length);
-    mirage_filter_stream_simplified_set_stream_length(MIRAGE_FILTER_STREAM(self), length);
 
     return write_length * self->priv->format.channels * sizeof(guint16);
 }
@@ -369,7 +364,7 @@ static void mirage_filter_stream_sndfile_init (MirageFilterStreamSndfile *self)
     mirage_filter_stream_generate_info(MIRAGE_FILTER_STREAM(self),
         "FILTER-SNDFILE",
         "SNDFILE File Filter",
-        FALSE,
+        TRUE,
         0
     );
 
@@ -429,7 +424,7 @@ static void mirage_filter_stream_sndfile_class_init (MirageFilterStreamSndfileCl
     filter_stream_class->open = mirage_filter_stream_sndfile_open;
 
     filter_stream_class->simplified_partial_read = mirage_filter_stream_sndfile_partial_read;
-    filter_stream_class->write = mirage_filter_stream_sndfile_write;
+    filter_stream_class->simplified_partial_write = mirage_filter_stream_sndfile_partial_write;
 
     /* Register private structure */
     g_type_class_add_private(klass, sizeof(MirageFilterStreamSndfilePrivate));
