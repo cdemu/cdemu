@@ -175,7 +175,7 @@ static gboolean mirage_filter_stream_xz_read_index (MirageFilterStreamXz *self, 
     /* Store file size */
     guint64 file_size = lzma_index_uncompressed_size(self->priv->index);
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: file size: %lld (0x%llX)\n", __debug__, file_size, file_size);
-    mirage_filter_stream_set_stream_length(MIRAGE_FILTER_STREAM(self), file_size);
+    mirage_filter_stream_simplified_set_stream_length(MIRAGE_FILTER_STREAM(self), file_size);
 
     return TRUE;
 }
@@ -285,7 +285,7 @@ static gssize mirage_filter_stream_xz_partial_read (MirageFilterStream *_self, v
 {
     MirageFilterStreamXz *self = MIRAGE_FILTER_STREAM_XZ(_self);
     MirageStream *stream = mirage_filter_stream_get_underlying_stream(_self);
-    goffset position = mirage_filter_stream_get_position(_self);
+    goffset position = mirage_filter_stream_simplified_get_position(_self);
     lzma_index_iter index_iter;
 
     /* Find block that corresponds to current position */
@@ -447,7 +447,7 @@ static void mirage_filter_stream_xz_class_init (MirageFilterStreamXzClass *klass
 
     filter_stream_class->open = mirage_filter_stream_xz_open;
 
-    filter_stream_class->partial_read = mirage_filter_stream_xz_partial_read;
+    filter_stream_class->simplified_partial_read = mirage_filter_stream_xz_partial_read;
 
     /* Register private structure */
     g_type_class_add_private(klass, sizeof(MirageFilterStreamXzPrivate));

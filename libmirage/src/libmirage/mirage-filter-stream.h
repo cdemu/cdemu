@@ -87,7 +87,8 @@ struct _MirageFilterStream
  * @write: wrties data to stream
  * @tell: tells the current location within stream
  * @seek: seeks to a location within stream
- * @partial_read: reads a chunk of requested data from stream
+ * @simplified_partial_read: reads a chunk of requested data from stream (part of simplified interface)
+ * @simplified_partial_write: writes a chunk of requested data to stream (part of simplified interface)
  *
  * The class structure for the <structname>MirageFilterStream</structname> type.
  */
@@ -104,8 +105,9 @@ struct _MirageFilterStreamClass
     gboolean (*seek) (MirageFilterStream *self, goffset offset, GSeekType type, GError **error);
     goffset (*tell) (MirageFilterStream *self);
 
-    /* Simplified read interface */
-    gssize (*partial_read) (MirageFilterStream *self, void *buffer, gsize count);
+    /* Simplified read/write interface */
+    gssize (*simplified_partial_read) (MirageFilterStream *self, void *buffer, gsize count);
+    gssize (*simplified_partial_write) (MirageFilterStream *self, const void *buffer, gsize count);
 };
 
 /* Used by MIRAGE_TYPE_FILTER_STREAM */
@@ -118,8 +120,8 @@ MirageStream *mirage_filter_stream_get_underlying_stream (MirageFilterStream *se
 
 gboolean mirage_filter_stream_open (MirageFilterStream *self, MirageStream *stream, gboolean writable, GError **error);
 
-void mirage_filter_stream_set_stream_length (MirageFilterStream *self, gsize length);
-goffset mirage_filter_stream_get_position (MirageFilterStream *self);
+void mirage_filter_stream_simplified_set_stream_length (MirageFilterStream *self, gsize length);
+goffset mirage_filter_stream_simplified_get_position (MirageFilterStream *self);
 
 
 G_END_DECLS

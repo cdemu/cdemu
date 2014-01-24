@@ -306,7 +306,7 @@ static gboolean mirage_filter_stream_macbinary_open (MirageFilterStream *_self, 
             mirage_filter_stream_macbinary_print_bcem_block(self, bcem_block);
 
             /* Set the total image size */
-            mirage_filter_stream_set_stream_length(MIRAGE_FILTER_STREAM(self), bcem_block->num_sectors * 512);
+            mirage_filter_stream_simplified_set_stream_length(MIRAGE_FILTER_STREAM(self), bcem_block->num_sectors * 512);
 
             /* Construct a part index */
             self->priv->num_parts = bcem_block->num_blocks - 1;
@@ -464,7 +464,7 @@ static gssize mirage_filter_stream_macbinary_partial_read (MirageFilterStream *_
 {
     MirageFilterStreamMacBinary *self = MIRAGE_FILTER_STREAM_MACBINARY(_self);
 
-    goffset position = mirage_filter_stream_get_position(MIRAGE_FILTER_STREAM(self));
+    goffset position = mirage_filter_stream_simplified_get_position(MIRAGE_FILTER_STREAM(self));
     gint    part_idx = -1;
 
     /* Find part that corresponds to current position */
@@ -618,7 +618,7 @@ static void mirage_filter_stream_macbinary_class_init (MirageFilterStreamMacBina
 
     filter_stream_class->open = mirage_filter_stream_macbinary_open;
 
-    filter_stream_class->partial_read = mirage_filter_stream_macbinary_partial_read;
+    filter_stream_class->simplified_partial_read = mirage_filter_stream_macbinary_partial_read;
 
     /* Register private structure */
     g_type_class_add_private(klass, sizeof(MirageFilterStreamMacBinaryPrivate));

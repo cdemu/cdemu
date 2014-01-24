@@ -42,9 +42,9 @@
  * management and reading logic, and requires that filter stream implements
  * partial_read function. Additionally, it requires that filter stream
  * implementation sets the file stream size using
- * mirage_filter_stream_set_stream_length() function. In partial_read, the
- * current position in the stream, which is managed by the framework, can
- * be obtained using mirage_filter_stream_get_position().
+ * mirage_filter_stream_simplified_set_stream_length() function. In
+ * simplified_partial_read, the current position in the stream, which is
+ * managed by the framework, can be obtained using mirage_filter_simplified_stream_get_position().
  */
 
 #ifdef HAVE_CONFIG_H
@@ -219,7 +219,7 @@ gboolean mirage_filter_stream_open (MirageFilterStream *self, MirageStream *stre
 
 
 /**
- * mirage_filter_stream_set_stream_length:
+ * mirage_filter_stream_simplified_set_stream_length:
  * @self: a #MirageFilterStream
  * @length: (in): length of the stream
  *
@@ -231,25 +231,25 @@ gboolean mirage_filter_stream_open (MirageFilterStream *self, MirageStream *stre
  * stream size is then used by the read function that is implemented by
  * the simplified interface.
  */
-void mirage_filter_stream_set_stream_length (MirageFilterStream *self, gsize length)
+void mirage_filter_stream_simplified_set_stream_length (MirageFilterStream *self, gsize length)
 {
     self->priv->stream_length = length;
 }
 
 /**
- * mirage_filter_stream_get_position:
+ * mirage_filter_stream_simplified_get_position:
  * @self: a #MirageFilterStream
  *
  * Retrieves position in the stream.
  *
  * This function is intented for use in filter stream implementations that
  * are based on the simplified interface. It should be used by the
- * implementation's partial_read function to determine position to
+ * implementation's simplified_partial_read function to determine position to
  * read from without having to worry about position management and update.
  *
  * Returns: position in the stream
  */
-goffset mirage_filter_stream_get_position (MirageFilterStream *self)
+goffset mirage_filter_stream_simplified_get_position (MirageFilterStream *self)
 {
     return self->priv->position;
 }
@@ -322,6 +322,13 @@ static gssize mirage_filter_stream_read_impl (MirageFilterStream *self, void *bu
 
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_STREAM, "%s: read %ld (0x%lX) bytes from position %ld (0x%lX)!\n", __debug__, count, count, self->priv->position, self->priv->position);
 
+    /* Make sure simplified_partial_read is provided */
+    if (!MIRAGE_FILTER_STREAM_GET_CLASS(self)->simplified_partial_read) {
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: simplified partial read function is not implemented!\n", __debug__);
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, "Simplified partial read function is not implemented!");
+        return -1;
+    }
+
     /* Read until all is read */
     total_read = 0;
 
@@ -333,7 +340,7 @@ static gssize mirage_filter_stream_read_impl (MirageFilterStream *self, void *bu
         }
 
         /* Do a partial read using implementation's function */
-        read_len = MIRAGE_FILTER_STREAM_GET_CLASS(self)->partial_read(self, ptr, count);
+        read_len = MIRAGE_FILTER_STREAM_GET_CLASS(self)->simplified_partial_read(self, ptr, count);
         if (read_len == -1) {
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to do a partial read!\n", __debug__);
             g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, "Failed to do a partial read.");
@@ -354,10 +361,51 @@ static gssize mirage_filter_stream_read_impl (MirageFilterStream *self, void *bu
     return total_read;
 }
 
-static gssize mirage_filter_stream_write_impl (MirageFilterStream *self G_GNUC_UNUSED, const void *buffer G_GNUC_UNUSED, gsize count G_GNUC_UNUSED, GError **error)
+static gssize mirage_filter_stream_write_impl (MirageFilterStream *self, const void *buffer, gsize count, GError **error)
 {
-    g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, "Write operation not implemented!");
-    return -1;
+    gssize total_write, write_len;
+    const guint8 *ptr = buffer;
+
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_STREAM, "%s: write %ld (0x%lX) bytes at position %ld (0x%lX)!\n", __debug__, count, count, self->priv->position, self->priv->position);
+
+    /* Make sure stream is writable */
+    if (!mirage_stream_is_writable(MIRAGE_STREAM(self))) {
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: stream is not writable!\n", __debug__);
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, "Stream is not writable!");
+        return -1;
+    }
+
+    /* Make sure simplified_partial_write is provided */
+    if (!MIRAGE_FILTER_STREAM_GET_CLASS(self)->simplified_partial_write) {
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: simplified partial write function is not implemented!\n", __debug__);
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, "Simplified partial write function is not implemented!");
+        return -1;
+    }
+
+    /* Write until all is written */
+    total_write = 0;
+
+    while (count > 0) {
+        /* Do a partial write using implementation's function */
+        write_len = MIRAGE_FILTER_STREAM_GET_CLASS(self)->simplified_partial_write(self, ptr, count);
+        if (write_len == -1) {
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to do a partial write!\n", __debug__);
+            g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, "Failed to do a partial write.");
+            return -1;
+        }
+
+        ptr += write_len;
+        total_write += write_len;
+        count -= write_len;
+
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_STREAM, "%s: written %ld (0x%lX) bytes... %ld (0x%lX) remaining\n", __debug__, write_len, write_len, count, count);
+
+        /* Update position */
+        self->priv->position += write_len;
+    }
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_STREAM, "%s: write complete\n", __debug__);
+
+    return total_write;
 }
 
 static gboolean mirage_filter_stream_seek_impl (MirageFilterStream *self, goffset offset, GSeekType type, GError **error)

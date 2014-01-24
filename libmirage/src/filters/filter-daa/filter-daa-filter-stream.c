@@ -1145,7 +1145,7 @@ static gboolean mirage_filter_stream_daa_parse_daa_file (MirageFilterStreamDaa *
     }
 
     /* Set stream size */
-    mirage_filter_stream_set_stream_length(MIRAGE_FILTER_STREAM(self), self->priv->header.iso_size);
+    mirage_filter_stream_simplified_set_stream_length(MIRAGE_FILTER_STREAM(self), self->priv->header.iso_size);
 
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "\n");
 
@@ -1314,7 +1314,7 @@ static gboolean mirage_filter_stream_daa_open (MirageFilterStream *_self, Mirage
 static gssize mirage_filter_stream_daa_partial_read (MirageFilterStream *_self, void *buffer, gsize count)
 {
     MirageFilterStreamDaa *self = MIRAGE_FILTER_STREAM_DAA(_self);
-    goffset position = mirage_filter_stream_get_position(MIRAGE_FILTER_STREAM(self));
+    goffset position = mirage_filter_stream_simplified_get_position(MIRAGE_FILTER_STREAM(self));
     gint chunk_index;
 
     /* Find chunk that corresponds to current position */
@@ -1474,7 +1474,7 @@ static void mirage_filter_stream_daa_class_init (MirageFilterStreamDaaClass *kla
 
     filter_stream_class->open = mirage_filter_stream_daa_open;
 
-    filter_stream_class->partial_read = mirage_filter_stream_daa_partial_read;
+    filter_stream_class->simplified_partial_read = mirage_filter_stream_daa_partial_read;
 
     /* Register private structure */
     g_type_class_add_private(klass, sizeof(MirageFilterStreamDaaPrivate));

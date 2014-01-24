@@ -725,7 +725,7 @@ static gboolean mirage_filter_stream_dmg_open (MirageFilterStream *_self, Mirage
     koly_block = self->priv->koly_block;
 
     /* Set file size */
-    mirage_filter_stream_set_stream_length(_self, koly_block->sector_count * DMG_SECTOR_SIZE);
+    mirage_filter_stream_simplified_set_stream_length(_self, koly_block->sector_count * DMG_SECTOR_SIZE);
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: original stream size: %lu\n", __debug__, koly_block->sector_count * DMG_SECTOR_SIZE);
 
     /* Read descriptors */
@@ -815,7 +815,7 @@ static gssize mirage_filter_stream_dmg_read_raw_chunk (MirageFilterStreamDmg *se
 static gssize mirage_filter_stream_dmg_partial_read (MirageFilterStream *_self, void *buffer, gsize count)
 {
     MirageFilterStreamDmg *self = MIRAGE_FILTER_STREAM_DMG(_self);
-    goffset position = mirage_filter_stream_get_position(MIRAGE_FILTER_STREAM(self));
+    goffset position = mirage_filter_stream_simplified_get_position(MIRAGE_FILTER_STREAM(self));
     gint part_idx = -1;
 
     /* Find part that corresponds to current position */
@@ -1041,7 +1041,7 @@ static void mirage_filter_stream_dmg_class_init (MirageFilterStreamDmgClass *kla
 
     filter_stream_class->open = mirage_filter_stream_dmg_open;
 
-    filter_stream_class->partial_read = mirage_filter_stream_dmg_partial_read;
+    filter_stream_class->simplified_partial_read = mirage_filter_stream_dmg_partial_read;
 
     /* Register private structure */
     g_type_class_add_private(klass, sizeof(MirageFilterStreamDmgPrivate));

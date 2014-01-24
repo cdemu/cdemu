@@ -267,7 +267,7 @@ static gboolean mirage_filter_stream_gzip_build_index (MirageFilterStreamGzip *s
 
     /* Store file size (= totalOut) */
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: file size: %lld (0x%llX)\n", __debug__, totalOut, totalOut);
-    mirage_filter_stream_set_stream_length(MIRAGE_FILTER_STREAM(self), totalOut);
+    mirage_filter_stream_simplified_set_stream_length(MIRAGE_FILTER_STREAM(self), totalOut);
 
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: index building completed\n", __debug__);
 
@@ -369,7 +369,7 @@ static gssize mirage_filter_stream_gzip_partial_read (MirageFilterStream *_self,
 {
     MirageFilterStreamGzip *self = MIRAGE_FILTER_STREAM_GZIP(_self);
     MirageStream *stream = mirage_filter_stream_get_underlying_stream(_self);
-    goffset position = mirage_filter_stream_get_position(_self);
+    goffset position = mirage_filter_stream_simplified_get_position(_self);
     const GZIP_Part *part;
     gint part_idx;
 
@@ -529,7 +529,7 @@ static void mirage_filter_stream_gzip_class_init (MirageFilterStreamGzipClass *k
 
     filter_stream_class->open = mirage_filter_stream_gzip_open;
 
-    filter_stream_class->partial_read = mirage_filter_stream_gzip_partial_read;
+    filter_stream_class->simplified_partial_read = mirage_filter_stream_gzip_partial_read;
 
     /* Register private structure */
     g_type_class_add_private(klass, sizeof(MirageFilterStreamGzipPrivate));

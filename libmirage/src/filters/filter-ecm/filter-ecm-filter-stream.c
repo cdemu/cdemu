@@ -214,7 +214,7 @@ static gboolean mirage_filter_stream_ecm_build_index (MirageFilterStreamEcm *sel
 
     /* Store file size */
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: file size: %lld (0x%llX)\n", __debug__, file_size, file_size);
-    mirage_filter_stream_set_stream_length(MIRAGE_FILTER_STREAM(self), file_size);
+    mirage_filter_stream_simplified_set_stream_length(MIRAGE_FILTER_STREAM(self), file_size);
 
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: index building completed\n", __debug__);
 
@@ -316,7 +316,7 @@ static gssize mirage_filter_stream_ecm_partial_read (MirageFilterStream *_self, 
 {
     MirageFilterStreamEcm *self = MIRAGE_FILTER_STREAM_ECM(_self);
     MirageStream *stream = mirage_filter_stream_get_underlying_stream(_self);
-    goffset position = mirage_filter_stream_get_position(_self);
+    goffset position = mirage_filter_stream_simplified_get_position(_self);
     const ECM_Part *part;
     gint part_idx;
 
@@ -549,7 +549,7 @@ static void mirage_filter_stream_ecm_class_init (MirageFilterStreamEcmClass *kla
 
     filter_stream_class->open = mirage_filter_stream_ecm_open;
 
-    filter_stream_class->partial_read = mirage_filter_stream_ecm_partial_read;
+    filter_stream_class->simplified_partial_read = mirage_filter_stream_ecm_partial_read;
 
     /* Register private structure */
     g_type_class_add_private(klass, sizeof(MirageFilterStreamEcmPrivate));
