@@ -335,6 +335,7 @@ static gssize mirage_filter_stream_sndfile_partial_write (MirageFilterStream *_s
     MirageFilterStreamSndfile *self = MIRAGE_FILTER_STREAM_SNDFILE(_self);
     goffset position = mirage_filter_stream_simplified_get_position(_self);
     gsize write_length;
+    gssize bytes_written;
 
     /* Seek to position */
     sf_seek(self->priv->sndfile, position/(self->priv->format.channels * sizeof(guint16)), SEEK_SET);
@@ -342,7 +343,17 @@ static gssize mirage_filter_stream_sndfile_partial_write (MirageFilterStream *_s
     /* Write */
     write_length = sf_writef_short(self->priv->sndfile, (const short *)buffer, count/(self->priv->format.channels * sizeof(guint16)));
 
-    return write_length * self->priv->format.channels * sizeof(guint16);
+    bytes_written = write_length * self->priv->format.channels * sizeof(guint16);
+
+    /* If we happen to cache a block for reading and we just overwrote
+       it, we should not be caching it anymore */
+    gint start_block = position / self->priv->buflen;
+    gint end_block = (position + bytes_written) / self->priv->buflen;
+    if (self->priv->cached_block >= start_block && self->priv->cached_block < end_block) {
+        self->priv->cached_block = -1;
+    }
+
+    return bytes_written;
 }
 
 
