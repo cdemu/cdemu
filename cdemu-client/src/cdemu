@@ -29,9 +29,10 @@ try:
 except ImportError:
     import ConfigParser as configparser
 
+import xml.etree.ElementTree as elementtree
+
 from gettext import gettext as _
 from gettext import bindtextdomain, textdomain
-
 
 # *** Globals ***
 app_name = "cdemu-client"
@@ -836,9 +837,50 @@ class CDEmu (object):
             self.print_error(_("Failed to enumerate supported library debug masks: %s") % (e))
             return False
 
-        self.print_header (_("Supported library debug masks:"))
+        self.print_header(_("Supported library debug masks:"))
         for debug_mask in debug_masks:
             print("  %-25s: 0x%04X" % (debug_mask[0], debug_mask[1]))
+
+        return True
+
+    def cmd_enum_writer_parameters (self, arguments):
+        if len(arguments) != 1:
+            self.print_invalid_number_of_parameters("enum-writer-params")
+            return False
+
+        # Enumerate supported writers to get their parameter sheets
+        try:
+            writers = self.dbus_iface.EnumSupportedWriters()
+        except dbus.DBusException as e:
+            self.print_error(_("Failed to enumerate supported writers: %s") % (e))
+            return False
+
+        for writer in writers:
+            if writer[0] == arguments[0]:
+                break
+        else:
+            self.print_error(_("Unsupported writer: %s") % (arguments[0]))
+            return False
+
+        try:
+            # Parse XML parameter sheet
+            parameters = elementtree.fromstring(writer[2])
+        except Exception as e:
+            self.print_error(_("Failed to parse parameter sheet: %s") % (e))
+            return False
+
+        self.print_header(_("Parameters for %s:" % (writer[1])))
+
+        for parameter in parameters.iter("parameter"):
+            print("")
+            self.print_header("%s:" % (parameter.find('name').text))
+            print(_("  ID: %s") % (parameter.find('id').text))
+            print(_("  Description: %s") % (parameter.find('description').text))
+            print(_("  Type: %s") % (parameter.find('type').text))
+            print(_("  Default value: %s") % (parameter.find('default').text))
+
+            for enum_value in parameter.iter("enum"):
+                print(_("  Possible value: %s") % (enum_value.text))
 
         return True
 
@@ -1047,6 +1089,11 @@ class CDEmu (object):
             "",
             _("enumerates valid library debug masks"),
             cmd_enum_library_debug_masks
+        ], [
+            "enum-writer-params",
+            "",
+            _("prints the list of writer's parameters"),
+            cmd_enum_writer_parameters
         ], [
             "version",
             "",
