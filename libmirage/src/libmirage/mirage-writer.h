@@ -33,6 +33,27 @@ typedef enum _MirageFragmentRole
 } MirageFragmentRole;
 
 
+/**
+ * MirageWriterInfo:
+ * @id: writer ID
+ * @name: writer name
+ * @parameter_sheet: an XML describing parser's parameters
+ *
+ * A structure containing writer information. It can be obtained with call to
+ * mirage_writer_get_info().
+ */
+typedef struct _MirageWriterInfo MirageWriterInfo;
+struct _MirageWriterInfo
+{
+    gchar *id;
+    gchar *name;
+    gchar *parameter_sheet;
+};
+
+void mirage_writer_info_copy (const MirageWriterInfo *info, MirageWriterInfo *dest);
+void mirage_writer_info_free (MirageWriterInfo *info);
+
+
 /**********************************************************************\
  *                         MirageWriter object                        *
 \**********************************************************************/
@@ -76,15 +97,18 @@ struct _MirageWriterClass
     /* Class members */
     gboolean (*open_image) (MirageWriter *self, MirageDisc *disc, GError **error);
     MirageFragment *(*create_fragment) (MirageWriter *self, MirageTrack *track, MirageFragmentRole role, GError **error);
-    gboolean (*finalize_image) (MirageWriter *self);
+    gboolean (*finalize_image) (MirageWriter *self, MirageDisc *disc, GError **error);
 };
 
 /* Used by MIRAGE_TYPE_WRITER */
 GType mirage_writer_get_type (void);
 
+void mirage_writer_generate_info (MirageWriter *self, const gchar *id, const gchar *name, const gchar *parameter_sheet);
+const MirageWriterInfo *mirage_writer_get_info (MirageWriter *self);
+
 gboolean mirage_writer_open_image (MirageWriter *self, MirageDisc *disc, GError **error);
 MirageFragment *mirage_writer_create_fragment (MirageWriter *self, MirageTrack *track, MirageFragmentRole role, GError **error);
-gboolean mirage_writer_finalize_image (MirageWriter *self);
+gboolean mirage_writer_finalize_image (MirageWriter *self, MirageDisc *disc, GError **error);
 
 MirageDisc *mirage_writer_get_disc (MirageWriter *self);
 

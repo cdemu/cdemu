@@ -33,22 +33,89 @@
 
 struct _MirageWriterPrivate
 {
-    MirageDisc *disc;
+    MirageWriterInfo info;
 };
+
+
+/**********************************************************************\
+ *                           Writer info API                          *
+\**********************************************************************/
+static void mirage_writer_info_generate (MirageWriterInfo *info, const gchar *id, const gchar *name, const gchar *parameter_sheet)
+{
+    /* Free old fields */
+    mirage_writer_info_free(info);
+
+    /* Copy ID and name */
+    info->id = g_strdup(id);
+    info->name = g_strdup(name);
+
+    /* Copy parameter sheet */
+    info->parameter_sheet = g_strdup(parameter_sheet);
+}
+
+/**
+ * mirage_writer_info_copy:
+ * @info: (in): a #MirageWriterInfo to copy data from
+ * @dest: (in): a #MirageWriterInfo to copy data to
+ *
+ * Copies parser information from @info to @dest.
+ */
+void mirage_writer_info_copy (const MirageWriterInfo *info, MirageWriterInfo *dest)
+{
+    dest->id = g_strdup(info->id);
+    dest->name = g_strdup(info->name);
+    dest->parameter_sheet = g_strdup(info->parameter_sheet);
+}
+
+/**
+ * mirage_writer_info_free:
+ * @info: (in): a #MirageWriterInfo to free
+ *
+ * Frees the allocated fields in @info (but not the structure itself!).
+ */
+void mirage_writer_info_free (MirageWriterInfo *info)
+{
+    g_free(info->id);
+    g_free(info->name);
+    g_free(info->parameter_sheet);
+}
 
 
 /**********************************************************************\
  *                             Public API                             *
 \**********************************************************************/
+/**
+ * mirage_writer_generate_info:
+ * @self: a #MirageWriter
+ * @id: (in): writer ID
+ * @name: (in): writer name
+ * @parameter_sheet: (in): XML parameter sheet, describing writer's parameters
+ *
+ * Generates writer information from the input fields. It is intended as a function
+ * for creating writer information in writer implementations.
+ */
+void mirage_writer_generate_info (MirageWriter *self, const gchar *id, const gchar *name, const gchar *parameter_sheet)
+{
+    mirage_writer_info_generate(&self->priv->info, id, name, parameter_sheet);
+}
+
+/**
+ * mirage_writer_get_info:
+ * @self: a #MirageWriter
+ *
+ * Retrieves writer information.
+ *
+ * Returns: (transfer none): a pointer to writer information structure.  The
+ * structure belongs to object and should not be modified.
+ */
+const MirageWriterInfo *mirage_writer_get_info (MirageWriter *self)
+{
+    return &self->priv->info;
+}
+
+
 gboolean mirage_writer_open_image (MirageWriter *self, MirageDisc *disc, GError **error)
 {
-    if (self->priv->disc) {
-        g_object_unref(self->priv->disc);
-        self->priv->disc = NULL;
-    }
-
-    self->priv->disc = g_object_ref(disc);
-
     return MIRAGE_WRITER_GET_CLASS(self)->open_image(self, disc, error);
 }
 
@@ -57,22 +124,9 @@ MirageFragment *mirage_writer_create_fragment (MirageWriter *self, MirageTrack *
     return MIRAGE_WRITER_GET_CLASS(self)->create_fragment(self, track, role, error);
 }
 
-gboolean mirage_writer_finalize_image (MirageWriter *self)
+gboolean mirage_writer_finalize_image (MirageWriter *self, MirageDisc *disc, GError **error)
 {
-    gboolean succeeded = MIRAGE_WRITER_GET_CLASS(self)->finalize_image(self);
-
-    if (self->priv->disc) {
-        g_object_unref(self->priv->disc);
-        self->priv->disc = NULL;
-    }
-
-    return succeeded;
-}
-
-
-MirageDisc *mirage_writer_get_disc (MirageWriter *self)
-{
-    return g_object_ref(self->priv->disc);
+    return MIRAGE_WRITER_GET_CLASS(self)->finalize_image(self, disc, error);
 }
 
 
@@ -86,25 +140,16 @@ static void mirage_writer_init (MirageWriter *self)
 {
     self->priv = MIRAGE_WRITER_GET_PRIVATE(self);
 
-    self->priv->disc = NULL;
-}
-
-static void mirage_writer_dispose (GObject *gobject)
-{
-    MirageWriter *self = MIRAGE_WRITER(gobject);
-
-    if (self->priv->disc) {
-        g_object_unref(self->priv->disc);
-        self->priv->disc = NULL;
-    }
-
-    /* Chain up to the parent class */
-    return G_OBJECT_CLASS(mirage_writer_parent_class)->dispose(gobject);
+    /* Make sure all fields are empty */
+    memset(&self->priv->info, 0, sizeof(self->priv->info));
 }
 
 static void mirage_writer_finalize (GObject *gobject)
 {
-    /*MirageWriter *self = MIRAGE_WRITER(gobject);*/
+    MirageWriter *self = MIRAGE_WRITER(gobject);
+
+    /* Free info structure */
+    mirage_writer_info_free(&self->priv->info);
 
     /* Chain up to the parent class */
     return G_OBJECT_CLASS(mirage_writer_parent_class)->finalize(gobject);
@@ -114,7 +159,6 @@ static void mirage_writer_class_init (MirageWriterClass *klass)
 {
     GObjectClass *gobject_class = G_OBJECT_CLASS(klass);
 
-    gobject_class->dispose = mirage_writer_dispose;
     gobject_class->finalize = mirage_writer_finalize;
 
     klass->open_image = NULL;

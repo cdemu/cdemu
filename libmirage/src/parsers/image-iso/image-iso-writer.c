@@ -29,7 +29,9 @@
 
 struct _MirageWriterIsoPrivate
 {
-    gchar *image_basename;
+    gchar *image_file_format;
+    gchar *image_file_basename;
+    gchar *audio_file_suffix;
     gboolean write_raw;
     gboolean write_subchannel;
 };
@@ -39,6 +41,20 @@ static const gchar *audio_filter_chain[] = {
     NULL
 };
 
+static const gchar parameter_sheet[];
+
+
+static void mirage_writer_iso_clear_options (MirageWriterIso *self)
+{
+    g_free(self->priv->image_file_format);
+    self->priv->image_file_format = NULL;
+
+    g_free(self->priv->image_file_basename);
+    self->priv->image_file_basename = NULL;
+
+    g_free(self->priv->audio_file_suffix);
+    self->priv->audio_file_suffix = NULL;
+}
 
 /**********************************************************************\
  *                MirageWriter methods implementation                 *
@@ -46,18 +62,58 @@ static const gchar *audio_filter_chain[] = {
 static gboolean mirage_writer_iso_open_image (MirageWriter *self_, MirageDisc *disc, GError **error G_GNUC_UNUSED)
 {
     MirageWriterIso *self = MIRAGE_WRITER_ISO(self_);
+    GVariant *option;
 
-    /* For now, assume that we are given only prefix */
+    /* Clear options */
+    mirage_writer_iso_clear_options(self);
+
+    /* Determine image file basename */
     const gchar *filename = mirage_disc_get_filenames(disc)[0];
     const gchar *suffix = mirage_helper_get_suffix(filename);
 
     if (!suffix) {
-        self->priv->image_basename = g_strdup(filename);
+        self->priv->image_file_basename = g_strdup(filename);
     } else {
-        self->priv->image_basename = g_strndup(filename, suffix - filename);
+        self->priv->image_file_basename = g_strndup(filename, suffix - filename);
     }
 
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_WRITER, "%s: image basename: '%s'\n", __debug__, self->priv->image_basename);
+    /* Option: image file format */
+    option = mirage_contextual_get_option(MIRAGE_CONTEXTUAL(self), "writer.image_file_format");
+    if (option) {
+        self->priv->image_file_format = g_variant_dup_string(option, NULL);
+    } else {
+        self->priv->image_file_format = g_strdup("%b-%s-%t.%e");
+    }
+
+    /* Option: audio file suffix */
+    option = mirage_contextual_get_option(MIRAGE_CONTEXTUAL(self), "writer.audio_file_suffix");
+    if (option) {
+        self->priv->audio_file_suffix = g_variant_dup_string(option, NULL);
+    } else {
+        self->priv->audio_file_suffix = g_strdup("wav");
+    }
+
+    /* Option: write raw */
+    option = mirage_contextual_get_option(MIRAGE_CONTEXTUAL(self), "writer.write_raw");
+    if (option) {
+        self->priv->write_raw = g_variant_get_boolean(option);
+    } else {
+        self->priv->write_raw = FALSE;
+    }
+
+    /* Option: write subchannel */
+    option = mirage_contextual_get_option(MIRAGE_CONTEXTUAL(self), "writer.write_subchannel");
+    if (option) {
+        self->priv->write_subchannel = g_variant_get_boolean(option);
+    } else {
+        self->priv->write_subchannel = FALSE;
+    }
+
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_WRITER, "%s: image file format: '%s'\n", __debug__, self->priv->image_file_format);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_WRITER, "%s: image file basename: '%s'\n", __debug__, self->priv->image_file_basename);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_WRITER, "%s: audio file suffix: '%s'\n", __debug__, self->priv->audio_file_suffix);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_WRITER, "%s: write raw: %d\n", __debug__, self->priv->write_raw);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_WRITER, "%s: write subchannel: %d\n", __debug__, self->priv->write_subchannel);
 
     return TRUE;
 }
@@ -85,7 +141,7 @@ static MirageFragment *mirage_writer_iso_create_fragment (MirageWriter *self_, M
         /* Cooked mode */
         switch (mirage_track_get_sector_type(track)) {
             case MIRAGE_SECTOR_AUDIO: {
-                extension = "wav";
+                extension = self->priv->audio_file_suffix;
                 mirage_fragment_main_data_set_size(fragment, 2352);
                 filter_chain = audio_filter_chain;
                 break;
@@ -118,7 +174,11 @@ static MirageFragment *mirage_writer_iso_create_fragment (MirageWriter *self_, M
         mirage_fragment_subchannel_data_set_size(fragment, 0);
     }
 
-    filename = g_strdup_printf("%s-%d-%d.%s", self->priv->image_basename, mirage_track_layout_get_session_number(track), mirage_track_layout_get_track_number(track), extension);
+    filename = mirage_helper_format_string(self->priv->image_file_format,
+        "b", g_variant_new_string(self->priv->image_file_basename),
+        "s", g_variant_new_int16(mirage_track_layout_get_session_number(track)),
+        "t", g_variant_new_int16(mirage_track_layout_get_track_number(track)),
+        "e", g_variant_new_string(extension), NULL);
 
     /* I/O stream */
     stream = mirage_contextual_create_output_stream(MIRAGE_CONTEXTUAL(self), filename, filter_chain, error);
@@ -132,10 +192,8 @@ static MirageFragment *mirage_writer_iso_create_fragment (MirageWriter *self_, M
     return fragment;
 }
 
-static gboolean mirage_writer_iso_finalize_image (MirageWriter *self_)
+static gboolean mirage_writer_iso_finalize_image (MirageWriter *self_ G_GNUC_UNUSED, MirageDisc *disc, GError **error G_GNUC_UNUSED)
 {
-    MirageDisc *disc = mirage_writer_get_disc(self_);
-
     /* Go over disc, and gather the names of track files */
     gint num_tracks = mirage_disc_get_number_of_tracks(disc);
     const gchar **filenames = g_new0(const gchar *, num_tracks + 1);
@@ -177,7 +235,6 @@ static gboolean mirage_writer_iso_finalize_image (MirageWriter *self_)
 }
 
 
-
 /**********************************************************************\
  *                             Object init                            *
 \**********************************************************************/
@@ -193,7 +250,16 @@ static void mirage_writer_iso_init (MirageWriterIso *self)
 {
     self->priv = MIRAGE_WRITER_ISO_GET_PRIVATE(self);
 
-    self->priv->image_basename = NULL;
+    mirage_writer_generate_info(MIRAGE_WRITER(self),
+        "WRITER-ISO",
+        "ISO Image Writer",
+        parameter_sheet
+    );
+
+    self->priv->image_file_format = NULL;
+    self->priv->image_file_basename = NULL;
+    self->priv->audio_file_suffix = NULL;
+
     self->priv->write_raw = FALSE;
     self->priv->write_subchannel = FALSE;
 }
@@ -202,7 +268,8 @@ static void mirage_writer_iso_finalize (GObject *gobject)
 {
     MirageWriterIso *self = MIRAGE_WRITER_ISO(gobject);
 
-    g_free(self->priv->image_basename);
+    /* Clear options */
+    mirage_writer_iso_clear_options(self);
 
     /* Chain up to the parent class */
     return G_OBJECT_CLASS(mirage_writer_iso_parent_class)->finalize(gobject);
@@ -226,3 +293,43 @@ static void mirage_writer_iso_class_init (MirageWriterIsoClass *klass)
 static void mirage_writer_iso_class_finalize (MirageWriterIsoClass *klass G_GNUC_UNUSED)
 {
 }
+
+/**********************************************************************\
+ *                        Writer parameter sheet                      *
+\**********************************************************************/
+static const gchar parameter_sheet[] =
+"<parameters>"
+"  <parameter>"
+"    <id>writer.image_file_format</id>"
+"    <name>Image file format</name>"
+"    <description></description>"
+"    <type>string</type>"
+"    <default></default>"
+"  </parameter>"
+"  <parameter>"
+"    <id>writer.audio_file_suffix</id>"
+"    <name>Image file format</name>"
+"    <description></description>"
+"    <type>enum</type>"
+"    <enum>wav</enum>"
+"    <enum>aiff</enum>"
+"    <enum>ogg</enum>"
+"    <enum>flac</enum>"
+"    <enum>cdr</enum>"
+"    <default>wav</default>"
+"  </parameter>"
+"  <parameter>"
+"    <id>writer.write_raw</id>"
+"    <name>Write raw</name>"
+"    <description></description>"
+"    <type>boolean</type>"
+"    <default></default>"
+"  </parameter>"
+"  <parameter>"
+"    <id>writer.write_subchannel</id>"
+"    <name>Write subchannel</name>"
+"    <description></description>"
+"    <type>string</type>"
+"    <default></default>"
+"  </parameter>"
+"</parameters>";
