@@ -6,7 +6,7 @@ _cdemu()
     prev2="${words[cword - 2]}"
 
     opts="-h --help -v --version -b --bus"
-    cmds="load unload status device-mapping daemon-debug-mask library-debug-mask dpm-emulation tr-emulation device-id enum-parsers enum-fragments enum-file-filters enum-daemon-debug-masks enum-library-debug-masks version"
+    cmds="load unload status device-mapping daemon-debug-mask library-debug-mask dpm-emulation tr-emulation device-id enum-parsers enum-writers enum-fragments enum-filter-streams enum-daemon-debug-masks enum-library-debug-masks version"
     parms="--password --encoding --dvd-report-css"
 
     case "${prev}" in
