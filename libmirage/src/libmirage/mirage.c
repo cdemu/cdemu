@@ -47,10 +47,17 @@ static struct
 {
     gboolean initialized;
 
+    /* Parsers */
     guint num_parsers;
     GType *parsers;
     MirageParserInfo *parsers_info;
 
+    /* Writers */
+    guint num_writers;
+    GType *writers;
+    MirageWriterInfo *writers_info;
+
+    /* Filter streams */
     guint num_filter_streams;
     GType *filter_streams;
     MirageFilterStreamInfo *filter_streams_info;
@@ -83,6 +90,18 @@ static void initialize_parsers_list ()
         MirageParser *parser = g_object_new(libmirage.parsers[i], NULL);
         mirage_parser_info_copy(mirage_parser_get_info(parser), &libmirage.parsers_info[i]);
         g_object_unref(parser);
+    }
+}
+
+static void initialize_writers_list ()
+{
+    libmirage.writers = g_type_children(MIRAGE_TYPE_WRITER, &libmirage.num_writers);
+
+    libmirage.writers_info = g_new0(MirageWriterInfo, libmirage.num_writers);
+    for (gint i = 0; i < libmirage.num_writers; i++) {
+        MirageWriter *writer = g_object_new(libmirage.writers[i], NULL);
+        mirage_writer_info_copy(mirage_writer_get_info(writer), &libmirage.writers_info[i]);
+        g_object_unref(writer);
     }
 }
 
@@ -158,6 +177,7 @@ gboolean mirage_initialize (GError **error)
 
     /* *** Get parsers and filter streams *** */
     initialize_parsers_list();
+    initialize_writers_list();
     initialize_filter_streams_list();
 
     /* Allocate and initialize CRC look-up tables */
@@ -207,6 +227,13 @@ gboolean mirage_shutdown (GError **error)
     }
     g_free(libmirage.parsers_info);
     g_free(libmirage.parsers);
+
+    /* Free writer info */
+    for (gint i = 0; i < libmirage.num_writers; i++) {
+        mirage_writer_info_free(&libmirage.writers_info[i]);
+    }
+    g_free(libmirage.writers_info);
+    g_free(libmirage.writers);
 
     /* Free filter stream info */
     for (gint i = 0; i < libmirage.num_filter_streams; i++) {
@@ -304,6 +331,86 @@ gboolean mirage_enumerate_parsers (MirageEnumParserInfoCallback func, gpointer u
     /* Go over all parsers */
     for (gint i = 0; i < libmirage.num_parsers; i++) {
         if (!(*func)(&libmirage.parsers_info[i], user_data)) {
+            g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_LIBRARY_ERROR, "Iteration has been cancelled!");
+            return FALSE;
+        }
+    }
+
+    return TRUE;
+}
+
+
+/**
+ * mirage_get_writers_type:
+ * @types: (out) (array length=num_writers) (transfer none): array of writers' #GType values
+ * @num_writers: (out): number of supported writers
+ * @error: (out) (allow-none): location to store error, or %NULL
+ *
+ * Retrieves #GType values for supported writers.
+ *
+ * Returns: %TRUE on success, %FALSE on failure
+ */
+gboolean mirage_get_writers_type (const GType **types, gint *num_writers, GError **error)
+{
+    /* Make sure libMirage is initialized */
+    if (!libmirage.initialized) {
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_LIBRARY_ERROR, "Library not initialized!");
+        return FALSE;
+    }
+
+    *types = libmirage.writers;
+    *num_writers = libmirage.num_writers;
+
+    return TRUE;
+}
+
+/**
+ * mirage_get_writers_info:
+ * @info: (out) (array length=num_writers) (transfer none): array of writers' information structures
+ * @num_writers: (out): number of supported writers
+ * @error: (out) (allow-none): location to store error, or %NULL
+ *
+ * Retrieves information structures for supported parsers.
+ *
+ * Returns: %TRUE on success, %FALSE on failure
+ */
+gboolean mirage_get_writers_info (const MirageWriterInfo **info, gint *num_writers, GError **error)
+{
+    /* Make sure libMirage is initialized */
+    if (!libmirage.initialized) {
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_LIBRARY_ERROR, "Library not initialized!");
+        return FALSE;
+    }
+
+    *info = libmirage.writers_info;
+    *num_writers = libmirage.num_writers;
+
+    return TRUE;
+}
+
+/**
+ * mirage_enumerate_writers:
+ * @func: (in) (scope call): callback function
+ * @user_data: (in) (closure): data to be passed to callback function
+ * @error: (out) (allow-none): location to store error, or %NULL
+ *
+ * Iterates over list of supported writers, calling @func for each writers.
+ *
+ * If @func returns %FALSE, the function immediately returns %FALSE.
+ *
+ * Returns: %TRUE on success, %FALSE on failure
+ */
+gboolean mirage_enumerate_writers (MirageEnumWriterInfoCallback func, gpointer user_data, GError **error)
+{
+    /* Make sure libMirage is initialized */
+    if (!libmirage.initialized) {
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_LIBRARY_ERROR, "Library not initialized!");
+        return FALSE;
+    }
+
+    /* Go over all writers */
+    for (gint i = 0; i < libmirage.num_writers; i++) {
+        if (!(*func)(&libmirage.writers_info[i], user_data)) {
             g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_LIBRARY_ERROR, "Iteration has been cancelled!");
             return FALSE;
         }

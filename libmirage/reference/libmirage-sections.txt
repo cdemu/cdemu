@@ -3,13 +3,17 @@
 MirageDebugMask
 MirageEnumFilterStreamInfoCallback
 MirageEnumParserInfoCallback
+MirageEnumWriterInfoCallback
 mirage_enumerate_filter_streams
 mirage_enumerate_parsers
+mirage_enumerate_writers
 mirage_get_filter_streams_info
 mirage_get_filter_streams_type
 mirage_get_parsers_info
 mirage_get_parsers_type
 mirage_get_supported_debug_masks
+mirage_get_writers_info
+mirage_get_writers_type
 mirage_initialize
 mirage_shutdown
 </SECTION>

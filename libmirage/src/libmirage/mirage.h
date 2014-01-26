@@ -75,6 +75,21 @@ G_BEGIN_DECLS
 typedef gboolean (*MirageEnumParserInfoCallback) (const MirageParserInfo *info, gpointer user_data);
 
 /**
+ * MirageEnumWriterInfoCallback:
+ * @info: (in): writer info
+ * @user_data: (in) (closure): user data passed to enumeration function
+ *
+ * Callback function type used with mirage_enumerate_writers().
+ * A pointer to writer information structure is stored in @info; the
+ * structure belongs to the writer object and should not be modified.
+ * @user_data is user data passed to enumeration function.
+ *
+ * Returns: %TRUE on success, otherwise %FALSE
+ */
+typedef gboolean (*MirageEnumWriterInfoCallback) (const MirageWriterInfo *info, gpointer user_data);
+
+
+/**
  * MirageEnumFilterStreamInfoCallback:
  * @info: (in): filter stream info
  * @user_data: (in) (closure): user data passed to enumeration function
@@ -109,6 +124,10 @@ gboolean mirage_shutdown (GError **error);
 gboolean mirage_get_parsers_type (const GType **types, gint *num_parsers, GError **error);
 gboolean mirage_get_parsers_info (const MirageParserInfo **info, gint *num_parsers, GError **error);
 gboolean mirage_enumerate_parsers (MirageEnumParserInfoCallback func, gpointer user_data, GError **error);
+
+gboolean mirage_get_writers_type (const GType **types, gint *num_writers, GError **error);
+gboolean mirage_get_writers_info (const MirageWriterInfo **info, gint *num_writers, GError **error);
+gboolean mirage_enumerate_writers (MirageEnumWriterInfoCallback func, gpointer user_data, GError **error);
 
 gboolean mirage_get_filter_streams_type (const GType **types, gint *num_filter_streams, GError **error);
 gboolean mirage_get_filter_streams_info (const MirageFilterStreamInfo **info, gint *num_filter_streams, GError **error);
