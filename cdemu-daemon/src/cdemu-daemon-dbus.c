@@ -129,13 +129,13 @@ static gboolean append_filter_stream_to_builder (MirageFilterStreamInfo *info, G
     }
     types = g_variant_builder_end(&types_builder);
 
-    g_variant_builder_add(builder, "(ss@a(ss))", info->id, info->name, types);
+    g_variant_builder_add(builder, "(ssb@a(ss))", info->id, info->name, info->writable, types);
     return TRUE;
 }
 
 static GVariantBuilder *encode_filter_streams ()
 {
-    GVariantBuilder *builder = g_variant_builder_new(G_VARIANT_TYPE("a(ssa(ss))"));
+    GVariantBuilder *builder = g_variant_builder_new(G_VARIANT_TYPE("a(ssba(ss))"));
     mirage_enumerate_filter_streams((MirageEnumFilterStreamInfoCallback)append_filter_stream_to_builder, builder, NULL);
     return builder;
 }
@@ -296,7 +296,7 @@ static void cdemu_daemon_dbus_handle_method_call (GDBusConnection *connection G_
         succeeded = TRUE;
     } else if (!g_strcmp0(method_name, "EnumSupportedFilterStreams")) {
         /* *** EnumSupportedFilterStreams *** */
-        ret = g_variant_new("(a(ssa(ss)))", encode_filter_streams());
+        ret = g_variant_new("(a(ssba(ss)))", encode_filter_streams());
         succeeded = TRUE;
     } else if (!g_strcmp0(method_name, "AddDevice")) {
         succeeded = cdemu_daemon_add_device(self);
@@ -531,7 +531,7 @@ static const gchar introspection_xml[] =
     "            <arg name='writers' type='a(sss)' direction='out'/>"
     "        </method>"
     "        <method name='EnumSupportedFilterStreams'>"
-    "            <arg name='filter_streams' type='a(ssa(ss))' direction='out'/>"
+    "            <arg name='filter_streams' type='a(ssba(ss))' direction='out'/>"
     "        </method>"
 
     "        <!-- Device control methods -->"

@@ -1555,7 +1555,7 @@ class gCDEMuFileChooserDialog (Gtk.FileChooserDialog):
                 self.add_filter(filter_entry)
 
         for info in filter_streams:
-            for description, mime_type in info[2]:
+            for description, mime_type in info[3]:
                 filter_entry = Gtk.FileFilter()
 
                 filter_entry.set_name(description)

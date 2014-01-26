@@ -295,11 +295,21 @@ control the daemon:
 
     - Returns supported image parsers.
 
+* EnumSupportedWriters (writers)
+    + writers: out; "a(sss)"
+        Array of structures containing information about supported writers.
+        Each structure has multiple fields; writer ID (string), writer name
+        (string), and a writer's parameter sheet XML, which describes the
+        writer's parameters.
+
+    - Returns supported image writers.
+
 * EnumSupportedFilterStreams (filter_streams)
-    + filter_streams: out; "a(ssa(ss))"
+    + filter_streams: out; "a(ssba(ss))"
         Array of structures containing information about supported filter
         streams. Each structure has multiple fields; filter stream ID
-        (string), filter stream name (string), and array of supported
+        (string), filter stream name (string), a flag indicating whether
+        filter stream supports writing, and an array of supported
         file types, each comprising a file type description (string)
         and file type MIME type (string).
 
