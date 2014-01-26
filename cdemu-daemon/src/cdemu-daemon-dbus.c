@@ -102,6 +102,21 @@ static GVariantBuilder *encode_parsers ()
 }
 
 
+/* Helper that encodes the list of supported writers */
+static gboolean append_writer_to_builder (MirageWriterInfo *info, GVariantBuilder *builder)
+{
+    g_variant_builder_add(builder, "(sss)", info->id, info->name, info->parameter_sheet);
+    return TRUE;
+}
+
+static GVariantBuilder *encode_writers ()
+{
+    GVariantBuilder *builder = g_variant_builder_new(G_VARIANT_TYPE("a(sss)"));
+    mirage_enumerate_writers((MirageEnumWriterInfoCallback)append_writer_to_builder, builder, NULL);
+    return builder;
+}
+
+
 /* Helper that encodes the list of supported filter streams */
 static gboolean append_filter_stream_to_builder (MirageFilterStreamInfo *info, GVariantBuilder *builder)
 {
@@ -274,6 +289,10 @@ static void cdemu_daemon_dbus_handle_method_call (GDBusConnection *connection G_
     } else if (!g_strcmp0(method_name, "EnumSupportedParsers")) {
         /* *** EnumSupportedParsers *** */
         ret = g_variant_new("(a(ssa(ss)))", encode_parsers());
+        succeeded = TRUE;
+    } else if (!g_strcmp0(method_name, "EnumSupportedWriters")) {
+        /* *** EnumSupportedWriters *** */
+        ret = g_variant_new("(a(sss))", encode_writers());
         succeeded = TRUE;
     } else if (!g_strcmp0(method_name, "EnumSupportedFilterStreams")) {
         /* *** EnumSupportedFilterStreams *** */
@@ -507,6 +526,9 @@ static const gchar introspection_xml[] =
     "        </method>"
     "        <method name='EnumSupportedParsers'>"
     "            <arg name='parsers' type='a(ssa(ss))' direction='out'/>"
+    "        </method>"
+    "        <method name='EnumSupportedWriters'>"
+    "            <arg name='writers' type='a(sss)' direction='out'/>"
     "        </method>"
     "        <method name='EnumSupportedFilterStreams'>"
     "            <arg name='filter_streams' type='a(ssa(ss))' direction='out'/>"
