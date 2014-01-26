@@ -145,6 +145,11 @@ guint8 *ecma_130_scrambler_lut;
 
 guint8 *mirage_helper_init_ecma_130b_scrambler_lut (void);
 
+
+/* General-purpose string formatter */
+gchar *mirage_helper_format_string (const gchar *format, ...);
+gchar *mirage_helper_format_stringv (const gchar *format, va_list args);
+
 G_END_DECLS
 
 #endif /* __MIRAGE_UTILS_H__ */

@@ -1260,3 +1260,102 @@ guint8 *mirage_helper_init_ecma_130b_scrambler_lut (void)
 
     return lut;
 }
+
+
+/**********************************************************************\
+ *                   General-purpose string formatter                 *
+\**********************************************************************/
+gchar *mirage_helper_format_string (const gchar *format, ...)
+{
+    gchar *result;
+
+    va_list args;
+    va_start(args, format);
+    result = mirage_helper_format_stringv(format, args);
+    va_end(args);
+
+    return result;
+}
+
+static gboolean format_string_cb (const GMatchInfo *match_info, GString *result, GHashTable *dictionary)
+{
+    GVariant *replacement;
+    gchar *str;
+
+    /* Grab token part of the match */
+    str = g_match_info_fetch(match_info, 2);
+    replacement = g_hash_table_lookup(dictionary, str);
+    g_free(str);
+
+    if (replacement) {
+        GString *replacement_format = g_string_new("%");
+
+        /* Grab format part of the match */
+        str = g_match_info_fetch(match_info, 1);
+        g_string_append(replacement_format, str);
+        g_free(str);
+
+        if (g_variant_is_of_type(replacement, G_VARIANT_TYPE_STRING)) {
+            g_string_append(replacement_format, "s");
+            g_string_append_printf(result, replacement_format->str, g_variant_get_string(replacement, NULL));
+        } else if (g_variant_is_of_type(replacement, G_VARIANT_TYPE_INT16)) {
+            g_string_append(replacement_format, G_GINT16_FORMAT);
+            g_string_append_printf(result, replacement_format->str, g_variant_get_int16(replacement));
+        } else if (g_variant_is_of_type(replacement, G_VARIANT_TYPE_INT16)) {
+            g_string_append(replacement_format, G_GINT16_FORMAT);
+            g_string_append_printf(result, replacement_format->str, g_variant_get_int16(replacement));
+        } else if (g_variant_is_of_type(replacement, G_VARIANT_TYPE_INT32)) {
+            g_string_append(replacement_format, G_GINT32_FORMAT);
+            g_string_append_printf(result, replacement_format->str, g_variant_get_int32(replacement));
+        } else if (g_variant_is_of_type(replacement, G_VARIANT_TYPE_INT64)) {
+            g_string_append(replacement_format, G_GINT64_FORMAT);
+            g_string_append_printf(result, replacement_format->str, g_variant_get_int64(replacement));
+        } else if (g_variant_is_of_type(replacement, G_VARIANT_TYPE_UINT16)) {
+            g_string_append(replacement_format, G_GUINT16_FORMAT);
+            g_string_append_printf(result, replacement_format->str, g_variant_get_uint16(replacement));
+        } else if (g_variant_is_of_type(replacement, G_VARIANT_TYPE_UINT32)) {
+            g_string_append(replacement_format, G_GUINT32_FORMAT);
+            g_string_append_printf(result, replacement_format->str, g_variant_get_uint32(replacement));
+        } else if (g_variant_is_of_type(replacement, G_VARIANT_TYPE_UINT64)) {
+            g_string_append(replacement_format, G_GUINT64_FORMAT);
+            g_string_append_printf(result, replacement_format->str, g_variant_get_uint64(replacement));
+        } else if (g_variant_is_of_type(replacement, G_VARIANT_TYPE_BOOLEAN)) {
+            g_string_append(replacement_format, G_GINT32_FORMAT);
+            g_string_append_printf(result, replacement_format->str, g_variant_get_boolean(replacement));
+        }
+
+        /* Free the format string */
+        g_string_free(replacement_format, TRUE);
+    } else {
+        /* Passthrough */
+        str = g_match_info_fetch(match_info, 0);
+        g_string_append(result, str);
+        g_free(str);
+    }
+
+    return FALSE;
+}
+
+gchar *mirage_helper_format_stringv (const gchar *format, va_list args)
+{
+    /* Gather tokens and their replacement values into a hash table */
+    GHashTable *dictionary = g_hash_table_new_full(g_str_hash, g_str_equal, NULL, (GDestroyNotify)g_variant_unref);
+
+    while (TRUE) {
+        /* Get token; break if NULL */
+        gchar *token = va_arg(args, gchar *);
+        if (!token) {
+            break;
+        }
+        g_hash_table_insert(dictionary, token, g_variant_ref_sink(va_arg(args, GVariant *)));
+    }
+
+    /* Now, use regex to replace the tokens with their replacement values */
+    GRegex *regex = g_regex_new("%(?<format>\\w+)?(?<token>\\w)", 0, 0, NULL);
+    gchar *result = g_regex_replace_eval(regex, format, -1, 0, 0, (GRegexEvalCallback)format_string_cb, dictionary, NULL);
+
+    g_hash_table_destroy(dictionary);
+    g_regex_unref(regex);
+
+    return result;
+}
