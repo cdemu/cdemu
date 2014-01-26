@@ -146,13 +146,14 @@ class CDEmu (object):
             if command[0] == arguments[0]:
                 if print_usage:
                     self.print_command_usage(command[0])
+                    return True
                 else:
                     return command[3](self, arguments[1:])
+        else:
+            self.print_error(_("Unknown command: %s") % (arguments[0]))
+            self.print_full_usage()
 
-        self.print_error(_("Unknown command: %s") % (arguments[0]))
-        self.print_full_usage()
-
-        return False
+            return False
 
     # Device loading with password query support
     def load_device (self, device, filenames, params={}):
