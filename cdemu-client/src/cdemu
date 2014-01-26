@@ -764,6 +764,25 @@ class CDEmu (object):
 
         return True
 
+    def cmd_enum_writers (self, arguments):
+        # Display supported writers
+        try:
+            writers = self.dbus_iface.EnumSupportedWriters()
+        except dbus.DBusException as e:
+            self.print_error(_("Failed to enumerate supported writers: %s") % (e))
+            return False
+
+        if len(arguments) == 0:
+            # Print all writers
+            self.print_header (_("Supported writers:"))
+            for info in writers:
+                print("  %s: %s" % (info[0], info[1]))
+        else:
+            self.print_invalid_number_of_parameters("enum-writers")
+            return False
+
+        return True
+
     def cmd_enum_filter_streams (self, arguments):
         # Display supported filter streams
         try:
@@ -1005,6 +1024,11 @@ class CDEmu (object):
             "",
             _("enumerates supported parsers"),
             cmd_enum_parsers
+        ], [
+            "enum-writers",
+            "",
+            _("enumerates supported writers"),
+            cmd_enum_writers
         ], [
             "enum-filter-streams",
             "",
