@@ -376,7 +376,11 @@ static void mirage_filter_stream_sndfile_init (MirageFilterStreamSndfile *self)
         "FILTER-SNDFILE",
         "SNDFILE File Filter",
         TRUE,
-        0
+        4,
+        "WAV audio files (*.wav)", "audio/wav",
+        "AIFF audio files (*.aiff)", "audio/x-aiff",
+        "FLAC audio files (*.flac)", "audio/x-flac",
+        "OGG audio files (*.ogg)", "audio/x-ogg"
     );
 
     self->priv->cached_block = -1;
