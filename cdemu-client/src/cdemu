@@ -81,7 +81,7 @@ class CDEmuParserError (Exception): pass
 ########################################################################
 #                              Load device                             #
 ########################################################################
-class cmd_load_device (object):
+class cmd_load (object):
     def __init__ (self, subparsers):
         name = "load"
         description_msg = _("")
@@ -156,11 +156,86 @@ class cmd_load_device (object):
                 raise CDEmuError(_("Failed to load image: %s") % (e))
 
 
+########################################################################
+#                              Create blank                            #
+########################################################################
+class cmd_create_blank (object):
+    def __init__ (self, subparsers):
+        name = "create-blank"
+        description_msg = _("")
+        help_msg = _("load blank/recordable image to the device")
+
+        parser = subparsers.add_parser(name, description=description_msg, help=help_msg, formatter_class=argparse.ArgumentDefaultsHelpFormatter, argument_default=argparse.SUPPRESS)
+        parser.set_defaults(command_function=self)
+
+        parser.add_argument("device", type=str, help=_("device"))
+        parser.add_argument("image_file", type=str, nargs="+", help=_("image file(s)"))
+        parser.add_argument("--writer-id", type=str, nargs="?", required=True, help=_("ID of image writer to use"))
+        parser.add_argument("--medium-type", type=str, nargs="?", choices=['cd', 'dvd'], help=_("medium type"))
+        parser.add_argument("--param", type=str, nargs="?", action='append', help=_("additional writer parameter(s)"))
+
+    def __call__ (self, dbus_iface, arguments):
+        # We need to pass absolute filenames to daemon
+        filenames = map(os.path.abspath, arguments.image_file)
+
+        print(arguments)
+
+        # Gather parser parameters into a dictionary
+        writer_params = {}
+        if hasattr(arguments, "writer_id"):
+            writer_params["writer-id"] = arguments.writer_id
+        if hasattr(arguments, "medium_type"):
+            writer_params["medium-type"] = arguments.medium_type
+        if hasattr(arguments, "param"):
+            print_warning("FIXME: writer parameter handling!")
+            print(arguments)
+
+        # Particular device vs. any device
+        if arguments.device == "any":
+            try:
+                num_devices = dbus_iface.GetNumberOfDevices()
+            except dbus.DBusException as e:
+                raise CDEmuError(_("Failed to get number of devices: %s") % (e))
+
+            for device in range(0, num_devices):
+                # Device's status
+                try:
+                    status = dbus_iface.DeviceGetStatus(device)
+                except dbus.DBusException as e:
+                    print_warning(_("Failed to get status of device %i: %s") % (device, e))
+                    continue
+
+                # If device is already loaded, skip it
+                if status[0]:
+                    continue
+
+                # Load device
+                return self.load_device(dbus_iface, device, filenames, writer_params)
+            else:
+                # If we're here, it means we didn't get an empty device
+                raise CDEmuError(_("No empty device found"))
+        else:
+            try:
+                device = int(arguments.device, 0)
+            except ValueError:
+                raise CDEmuError(_("String '%s' is not a number") % (arguments.device))
+
+            return self.load_device(dbus_iface, device, filenames, writer_params)
+
+    # Device loading
+    def load_device (self, dbus_iface, device, filenames, params={}):
+        print(params)
+        # Try to load it
+        try:
+            dbus_iface.DeviceCreateBlank(device, filenames, params)
+        except dbus.DBusException as e:
+            raise CDEmuError(_("Failed to load blank image: %s") % (e))
+
 
 ########################################################################
 #                             Unload device                            #
 ########################################################################
-class cmd_unload_device (object):
+class cmd_unload (object):
     def __init__ (self, subparsers):
         name = "unload"
         description_msg = _("")
@@ -1011,8 +1086,9 @@ def create_parser ():
     subparsers = parser.add_subparsers(title=_("valid commands"), metavar="command", help=_("command help"))
 
     # Command sub-parsers
-    cmd_load_device(subparsers) # Load
-    cmd_unload_device(subparsers) # Unload
+    cmd_load(subparsers) # Load
+    cmd_create_blank(subparsers) # Create blank
+    cmd_unload(subparsers) # Unload
     cmd_display_status(subparsers) # Status
     cmd_add_device(subparsers) # Add device
     cmd_remove_device(subparsers) # Remove device
