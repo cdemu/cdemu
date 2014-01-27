@@ -28,11 +28,9 @@
 \**********************************************************************/
 static gboolean cdemu_device_load_disc_private (CdemuDevice *self, gchar **filenames, GVariant *options, GError **error)
 {
-    gint media_type;
-    gboolean blank_disc = FALSE;
-    gint blank_disc_type = MIRAGE_MEDIUM_CD;
+    gint medium_type;
 
-     /* Well, we won't do anything if we're already loaded */
+    /* Well, we won't do anything if we're already loaded */
     if (self->priv->loaded) {
         CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: device already loaded\n", __debug__);
         g_set_error(error, CDEMU_ERROR, CDEMU_ERROR_ALREADY_LOADED, "Device is already loaded!");
@@ -47,109 +45,36 @@ static gboolean cdemu_device_load_disc_private (CdemuDevice *self, gchar **filen
 
         g_variant_get_child(options, i, "{sv}", &key, &value);
         mirage_context_set_option(self->priv->mirage_context, key, value);
+    }
 
-        /* Check if we are required to create a blank disc */
-        if (!g_strcmp0(key, "create")) {
-            blank_disc = TRUE;
+    /* Load... */
+    self->priv->disc = mirage_context_load_image(self->priv->mirage_context, filenames, error);
+
+    /* Check if loading succeeded */
+    if (!self->priv->disc) {
+        return FALSE;
+    }
+
+    /* Set current profile (and modify feature flags accordingly */
+    medium_type = mirage_disc_get_medium_type(self->priv->disc);
+    switch (medium_type) {
+        case MIRAGE_MEDIUM_CD: {
+            cdemu_device_set_profile(self, ProfileIndex_CDROM);
+            break;
         }
-
-        if (!g_strcmp0(key, "medium")) {
-            if (!g_strcmp0(g_variant_get_string(value, NULL), "cd")) {
-                blank_disc_type = MIRAGE_MEDIUM_CD;
-            } else if (!g_strcmp0(g_variant_get_string(value, NULL), "dvd")) {
-                blank_disc_type = MIRAGE_MEDIUM_DVD;
-            }
+        case MIRAGE_MEDIUM_DVD: {
+            cdemu_device_set_profile(self, ProfileIndex_DVDROM);
+            break;
+        }
+        default: {
+            CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: unknown media type: 0x%X!\n", __debug__, medium_type);
+            break;
         }
     }
 
-    if (!blank_disc) {
-        /* Load... */
-        self->priv->disc = mirage_context_load_image(self->priv->mirage_context, filenames, error);
-
-        /* Check if loading succeeded */
-        if (!self->priv->disc) {
-            return FALSE;
-        }
-
-        /* Set current profile (and modify feature flags accordingly */
-        media_type = mirage_disc_get_medium_type(self->priv->disc);
-        switch (media_type) {
-            case MIRAGE_MEDIUM_CD: {
-                cdemu_device_set_profile(self, ProfileIndex_CDROM);
-                break;
-            }
-            case MIRAGE_MEDIUM_DVD: {
-                cdemu_device_set_profile(self, ProfileIndex_DVDROM);
-                break;
-            }
-            default: {
-                CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: unknown media type: 0x%X!\n", __debug__, media_type);
-                break;
-            }
-        }
-
-        /* Mark loaded discs as non-writable */
-        self->priv->recordable_disc = FALSE;
-        self->priv->rewritable_disc = FALSE;
-    } else {
-        /* FIXME: move this to libMirage */
-        guint num_writers;
-        GType *writers = g_type_children(MIRAGE_TYPE_WRITER, &num_writers);
-
-        if (!num_writers) {
-            CDEMU_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: no image writer found!\n", __debug__);
-            g_set_error(error, CDEMU_ERROR, CDEMU_ERROR_DAEMON_ERROR, "No image writer found!");
-            return FALSE;
-        }
-
-        self->priv->image_writer = g_object_new(writers[0], NULL);
-        mirage_contextual_set_context(MIRAGE_CONTEXTUAL(self->priv->image_writer), self->priv->mirage_context);
-
-        g_free(writers);
-
-        /* Create blank disc */
-        self->priv->disc = g_object_new(MIRAGE_TYPE_DISC, NULL);
-
-        mirage_contextual_set_context(MIRAGE_CONTEXTUAL(self->priv->disc), self->priv->mirage_context);
-
-        /* Set filenames */
-        mirage_disc_set_filenames(self->priv->disc, (const gchar **)filenames);
-
-        /* Emulate 80-min CD-R or DVD+R SL for now */
-        self->priv->recordable_disc = TRUE;
-        self->priv->rewritable_disc = FALSE;
-
-        mirage_disc_set_medium_type(self->priv->disc, blank_disc_type);
-        if (blank_disc_type == MIRAGE_MEDIUM_CD) {
-            self->priv->medium_capacity = 80*60*75;
-            self->priv->medium_leadin = -11077;
-
-            mirage_disc_layout_set_start_sector(self->priv->disc, -150);
-        } else {
-            self->priv->medium_capacity = 2295104; /* DVD+R SL */
-            self->priv->medium_leadin = 0;
-
-            mirage_disc_layout_set_start_sector(self->priv->disc, 0);
-        }
-
-        /* Initialize image writer with this disc */
-        if (!mirage_writer_open_image(self->priv->image_writer, self->priv->disc, error)) {
-            g_object_unref(self->priv->disc);
-            self->priv->disc = NULL;
-
-            g_object_unref(self->priv->image_writer);
-            self->priv->image_writer = NULL;
-
-            return FALSE;
-        }
-
-        self->priv->num_written_sectors = 0;
-
-        self->priv->open_session = NULL;
-        self->priv->open_track = NULL;
-
-        cdemu_device_set_profile(self, (blank_disc_type == MIRAGE_MEDIUM_CD) ? ProfileIndex_CDR : ProfileIndex_DVDPLUSR);
-    }
+    /* Mark loaded discs as non-writable */
+    self->priv->recordable_disc = FALSE;
+    self->priv->rewritable_disc = FALSE;
 
     /* Loading succeeded */
     self->priv->loaded = TRUE;
@@ -168,6 +93,137 @@ gboolean cdemu_device_load_disc (CdemuDevice *self, gchar **filenames, GVariant 
     /* Load */
     g_mutex_lock(self->priv->device_mutex);
     succeeded = cdemu_device_load_disc_private(self, filenames, options, error);
+    g_mutex_unlock(self->priv->device_mutex);
+
+    return succeeded;
+}
+
+/**********************************************************************\
+ *                         Create (blank) disc                        *
+\**********************************************************************/
+static gboolean cdemu_device_create_blank_disc_private (CdemuDevice *self, gchar **filenames, GVariant *options, GError **error)
+{
+    const gchar *writer_id = NULL;
+    gint medium_type = MIRAGE_MEDIUM_CD;
+
+    /* Well, we won't do anything if we're already loaded */
+    if (self->priv->loaded) {
+        CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: device already loaded\n", __debug__);
+        g_set_error(error, CDEMU_ERROR, CDEMU_ERROR_ALREADY_LOADED, "Device is already loaded!");
+        return FALSE;
+    }
+
+    /* Extract and parse some of options */
+    GHashTable *writer_parameters = g_hash_table_new(g_str_hash, g_str_equal);
+
+    for (guint i = 0; i < g_variant_n_children(options); i++) {
+        gchar *key;
+        GVariant *value;
+
+        g_variant_get_child(options, i, "{sv}", &key, &value);
+
+        if (!g_ascii_strcasecmp(key, "writer-id")) {
+            writer_id = g_variant_get_string(value, NULL);
+        } else if (!g_ascii_strcasecmp(key, "medium-type")) {
+            const gchar *medium = g_variant_get_string(value, NULL);
+            if (!g_ascii_strcasecmp(medium, "cd")) {
+                medium_type = MIRAGE_MEDIUM_CD;
+            } else if (!g_ascii_strcasecmp(medium, "dvd")) {
+                medium_type = MIRAGE_MEDIUM_DVD;
+            } else if (g_str_has_prefix(key, "writer.")) {
+                g_hash_table_insert(writer_parameters, key, value);
+            }
+        }
+    }
+
+    /* Image writer ID must be provided in parameters */
+    if (!writer_id) {
+        CDEMU_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: no image writer ID provided in parameters!\n", __debug__);
+        g_set_error(error, CDEMU_ERROR, CDEMU_ERROR_DAEMON_ERROR, "no image writer ID provided in parameters!");
+        g_hash_table_unref(writer_parameters);
+        return FALSE;
+    }
+
+    /* FIXME: move this to libMirage */
+    guint num_writers;
+    GType *writers = g_type_children(MIRAGE_TYPE_WRITER, &num_writers);
+
+    if (!num_writers) {
+        CDEMU_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: no image writer found!\n", __debug__);
+        g_set_error(error, CDEMU_ERROR, CDEMU_ERROR_DAEMON_ERROR, "No image writer found!");
+        g_hash_table_unref(writer_parameters);
+        return FALSE;
+    }
+
+    self->priv->image_writer = g_object_new(writers[0], NULL);
+    mirage_contextual_set_context(MIRAGE_CONTEXTUAL(self->priv->image_writer), self->priv->mirage_context);
+
+    g_free(writers);
+
+    /* Create blank disc */
+    self->priv->disc = g_object_new(MIRAGE_TYPE_DISC, NULL);
+    mirage_contextual_set_context(MIRAGE_CONTEXTUAL(self->priv->disc), self->priv->mirage_context);
+
+    /* Set filenames */
+    mirage_disc_set_filenames(self->priv->disc, (const gchar **)filenames);
+
+    /* Emulate 80-min CD-R or DVD+R SL for now */
+    self->priv->recordable_disc = TRUE;
+    self->priv->rewritable_disc = FALSE;
+
+    mirage_disc_set_medium_type(self->priv->disc, medium_type);
+    if (medium_type == MIRAGE_MEDIUM_CD) {
+        self->priv->medium_capacity = 80*60*75;
+        self->priv->medium_leadin = -11077;
+
+        mirage_disc_layout_set_start_sector(self->priv->disc, -150);
+    } else {
+        self->priv->medium_capacity = 2295104; /* DVD+R SL */
+        self->priv->medium_leadin = 0;
+
+        mirage_disc_layout_set_start_sector(self->priv->disc, 0);
+    }
+
+    /* Initialize image writer with this disc */
+    if (!mirage_writer_open_image(self->priv->image_writer, self->priv->disc, writer_parameters, error)) {
+        g_object_unref(self->priv->disc);
+        self->priv->disc = NULL;
+
+        g_object_unref(self->priv->image_writer);
+        self->priv->image_writer = NULL;
+
+        g_hash_table_unref(writer_parameters);
+
+        return FALSE;
+    }
+    g_hash_table_unref(writer_parameters);
+
+
+    self->priv->num_written_sectors = 0;
+
+    self->priv->open_session = NULL;
+    self->priv->open_track = NULL;
+
+    cdemu_device_set_profile(self, (medium_type == MIRAGE_MEDIUM_CD) ? ProfileIndex_CDR : ProfileIndex_DVDPLUSR);
+
+    /* Loading succeeded */
+    self->priv->loaded = TRUE;
+    self->priv->media_event = MEDIA_EVENT_NEW_MEDIA;
+
+    /* Send notification */
+    g_signal_emit_by_name(self, "status-changed", NULL);
+
+    return TRUE;
+}
+
+
+gboolean cdemu_device_create_blank_disc (CdemuDevice *self, gchar **filenames, GVariant *options, GError **error)
+{
+    gboolean succeeded = TRUE;
+
+    /* Create */
+    g_mutex_lock(self->priv->device_mutex);
+    succeeded = cdemu_device_create_blank_disc_private(self, filenames, options, error);
     g_mutex_unlock(self->priv->device_mutex);
 
     return succeeded;

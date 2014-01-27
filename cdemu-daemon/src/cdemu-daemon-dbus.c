@@ -164,6 +164,22 @@ static void cdemu_daemon_dbus_handle_method_call (GDBusConnection *connection G_
 
         g_object_unref(device);
         g_strfreev(filenames);
+    } else if (!g_strcmp0(method_name, "DeviceCreateBlank")) {
+        /* *** DeviceCreateBlank *** */
+        gint device_number;
+        gchar **filenames;
+        GVariant *options;
+
+        CdemuDevice *device;
+
+        g_variant_get(parameters, "(i^as@a{sv})", &device_number, &filenames, &options);
+        device = cdemu_daemon_get_device(self, device_number, &error);
+        if (device) {
+            succeeded = cdemu_device_create_blank_disc(device, filenames, options, &error);
+        }
+
+        g_object_unref(device);
+        g_strfreev(filenames);
     } else if (!g_strcmp0(method_name, "DeviceUnload")) {
         /* *** DeviceUnload *** */
         gint device_number;
@@ -549,6 +565,11 @@ static const gchar introspection_xml[] =
     "            <arg name='file_names' type='as' direction='out'/>"
     "        </method>"
     "        <method name='DeviceLoad'>"
+    "            <arg name='device_number' type='i' direction='in'/>"
+    "            <arg name='file_names' type='as' direction='in'/>"
+    "            <arg name='parameters' type='a{sv}' direction='in'/>"
+    "        </method>"
+    "        <method name='DeviceCreateBlank'>"
     "            <arg name='device_number' type='i' direction='in'/>"
     "            <arg name='file_names' type='as' direction='in'/>"
     "            <arg name='parameters' type='a{sv}' direction='in'/>"
