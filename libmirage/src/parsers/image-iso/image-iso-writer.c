@@ -59,7 +59,7 @@ static void mirage_writer_iso_clear_options (MirageWriterIso *self)
 /**********************************************************************\
  *                MirageWriter methods implementation                 *
 \**********************************************************************/
-static gboolean mirage_writer_iso_open_image (MirageWriter *self_, MirageDisc *disc, GError **error G_GNUC_UNUSED)
+static gboolean mirage_writer_iso_open_image (MirageWriter *self_, MirageDisc *disc, GHashTable *options, GError **error G_GNUC_UNUSED)
 {
     MirageWriterIso *self = MIRAGE_WRITER_ISO(self_);
     GVariant *option;
@@ -78,7 +78,7 @@ static gboolean mirage_writer_iso_open_image (MirageWriter *self_, MirageDisc *d
     }
 
     /* Option: image file format */
-    option = mirage_contextual_get_option(MIRAGE_CONTEXTUAL(self), "writer.image_file_format");
+    option = g_hash_table_lookup(options, "writer.image_file_format");
     if (option) {
         self->priv->image_file_format = g_variant_dup_string(option, NULL);
     } else {
@@ -86,7 +86,7 @@ static gboolean mirage_writer_iso_open_image (MirageWriter *self_, MirageDisc *d
     }
 
     /* Option: audio file suffix */
-    option = mirage_contextual_get_option(MIRAGE_CONTEXTUAL(self), "writer.audio_file_suffix");
+    option = g_hash_table_lookup(options, "writer.audio_file_suffix");
     if (option) {
         self->priv->audio_file_suffix = g_variant_dup_string(option, NULL);
     } else {
@@ -94,7 +94,7 @@ static gboolean mirage_writer_iso_open_image (MirageWriter *self_, MirageDisc *d
     }
 
     /* Option: write raw */
-    option = mirage_contextual_get_option(MIRAGE_CONTEXTUAL(self), "writer.write_raw");
+    option = g_hash_table_lookup(options, "writer.write_raw");
     if (option) {
         self->priv->write_raw = g_variant_get_boolean(option);
     } else {
@@ -102,7 +102,7 @@ static gboolean mirage_writer_iso_open_image (MirageWriter *self_, MirageDisc *d
     }
 
     /* Option: write subchannel */
-    option = mirage_contextual_get_option(MIRAGE_CONTEXTUAL(self), "writer.write_subchannel");
+    option = g_hash_table_lookup(options, "writer.write_subchannel");
     if (option) {
         self->priv->write_subchannel = g_variant_get_boolean(option);
     } else {
@@ -228,8 +228,6 @@ static gboolean mirage_writer_iso_finalize_image (MirageWriter *self_ G_GNUC_UNU
     }
 
     mirage_disc_set_filenames(disc, filenames);
-
-    g_object_unref(disc);
 
     return TRUE;
 }

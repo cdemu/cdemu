@@ -114,9 +114,9 @@ const MirageWriterInfo *mirage_writer_get_info (MirageWriter *self)
 }
 
 
-gboolean mirage_writer_open_image (MirageWriter *self, MirageDisc *disc, GError **error)
+gboolean mirage_writer_open_image (MirageWriter *self, MirageDisc *disc, GHashTable *options, GError **error)
 {
-    return MIRAGE_WRITER_GET_CLASS(self)->open_image(self, disc, error);
+    return MIRAGE_WRITER_GET_CLASS(self)->open_image(self, disc, options, error);
 }
 
 MirageFragment *mirage_writer_create_fragment (MirageWriter *self, MirageTrack *track, MirageFragmentRole role, GError **error)

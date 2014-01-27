@@ -95,7 +95,7 @@ struct _MirageWriterClass
     MirageObjectClass parent_class;
 
     /* Class members */
-    gboolean (*open_image) (MirageWriter *self, MirageDisc *disc, GError **error);
+    gboolean (*open_image) (MirageWriter *self, MirageDisc *disc, GHashTable *options, GError **error);
     MirageFragment *(*create_fragment) (MirageWriter *self, MirageTrack *track, MirageFragmentRole role, GError **error);
     gboolean (*finalize_image) (MirageWriter *self, MirageDisc *disc, GError **error);
 };
@@ -106,7 +106,7 @@ GType mirage_writer_get_type (void);
 void mirage_writer_generate_info (MirageWriter *self, const gchar *id, const gchar *name, const gchar *parameter_sheet);
 const MirageWriterInfo *mirage_writer_get_info (MirageWriter *self);
 
-gboolean mirage_writer_open_image (MirageWriter *self, MirageDisc *disc, GError **error);
+gboolean mirage_writer_open_image (MirageWriter *self, MirageDisc *disc, GHashTable *options, GError **error);
 MirageFragment *mirage_writer_create_fragment (MirageWriter *self, MirageTrack *track, MirageFragmentRole role, GError **error);
 gboolean mirage_writer_finalize_image (MirageWriter *self, MirageDisc *disc, GError **error);
 
