@@ -46,6 +46,9 @@ bindtextdomain(app_name)
 textdomain(app_name)
 
 
+def str2bool (value):
+    return value.lower() in ("yes", "true", "t", "1")
+
 ########################################################################
 #                            Terminal colors                           #
 ########################################################################
@@ -178,17 +181,19 @@ class cmd_create_blank (object):
         # We need to pass absolute filenames to daemon
         filenames = map(os.path.abspath, arguments.image_file)
 
-        print(arguments)
-
-        # Gather parser parameters into a dictionary
-        writer_params = {}
+        # Gather writer parameters into a dictionary
+        parameters = {}
         if hasattr(arguments, "writer_id"):
-            writer_params["writer-id"] = arguments.writer_id
+            parameters["writer-id"] = arguments.writer_id
         if hasattr(arguments, "medium_type"):
-            writer_params["medium-type"] = arguments.medium_type
+            parameters["medium-type"] = arguments.medium_type
         if hasattr(arguments, "param"):
-            print_warning("FIXME: writer parameter handling!")
-            print(arguments)
+            # Process parameters
+            writer_parameters = self.process_writer_parameters(arguments.param)
+            # Validate parameters using writer's parameter sheet
+            writer_parameters = self.validate_writer_parameters(dbus_iface, arguments.writer_id, writer_parameters)
+            # Set to parameters dictionary that we will send to daemon
+            parameters.update(writer_parameters)
 
         # Particular device vs. any device
         if arguments.device == "any":
@@ -210,7 +215,7 @@ class cmd_create_blank (object):
                     continue
 
                 # Load device
-                return self.load_device(dbus_iface, device, filenames, writer_params)
+                return self.load_device(dbus_iface, device, filenames, parameters)
             else:
                 # If we're here, it means we didn't get an empty device
                 raise CDEmuError(_("No empty device found"))
@@ -220,16 +225,86 @@ class cmd_create_blank (object):
             except ValueError:
                 raise CDEmuError(_("String '%s' is not a number") % (arguments.device))
 
-            return self.load_device(dbus_iface, device, filenames, writer_params)
+            return self.load_device(dbus_iface, device, filenames, parameters)
 
     # Device loading
     def load_device (self, dbus_iface, device, filenames, params={}):
-        print(params)
         # Try to load it
         try:
             dbus_iface.DeviceCreateBlank(device, filenames, params)
         except dbus.DBusException as e:
             raise CDEmuError(_("Failed to load blank image: %s") % (e))
+
+    # Image writer parameter processing
+    def process_writer_parameters (self, parameter_strings):
+        parameters = {}
+
+        # In general, we can be given multiple strings, one for each
+        # command-line argument...
+        for parameter_string in parameter_strings:
+            # ... and to make things interesting, each string can
+            # contain several "key=value" pairs, separated by semi-colon
+            parameter_tokens = parameter_string.split(";")
+
+            for parameter_token in parameter_tokens:
+                # Split into key and value
+                try:
+                    (key, value) = parameter_token.split("=")
+                except ValueError as e:
+                    raise CDEmuError(_("Parameter token '%s' is not a key=value pair!") % parameter_token)
+
+                # Strip whitespaces and insert into dictionary
+                parameters[key.strip()] = value.strip()
+
+        return parameters
+
+    # Writer parameter validation
+    def validate_writer_parameters (self, dbus_iface, writer_id, parameters):
+        # Grab writer's parameter sheet
+        parameter_sheet = fetch_and_parse_writer_parameter_sheet(dbus_iface, writer_id)
+
+        # Convert the XML tree into a dictionary for convenience
+        valid_parameters = {}
+        for node in parameter_sheet.iter("parameter"):
+            valid_parameters[node.find("id").text.strip()] = node
+
+        # Now, go over given parameters and validate them
+        for key,value in parameters.items():
+            try:
+                node = valid_parameters[key]
+            except KeyError as e:
+                print_warning(_("Parameter '%s' not found in writer's parameter sheet!") % (key))
+                continue
+
+            # Determine type
+            parameter_type = node.find("type").text.strip()
+
+            if parameter_type == "bool":
+                # Convert string value to boolean
+                parameters[key] = str2bool(value)
+            elif parameter_type == "int":
+                # Convert string value to integer
+                try:
+                    parameters[key] = int(value, 0)
+                except ValueError:
+                    raise CDEmuError(_("String '%s' given as value for parameter '%s' is not a number!") % (value, key))
+            elif parameter_type == "string":
+                # Nothing to do here
+                continue
+            elif parameter_type == "enum":
+                # No conversion to be done; but check if value is on the
+                # list of valid values, and if not, print a warning
+                for enum_value_node in node.iter("enum"):
+                    valid_value = enum_value_node.text.strip()
+                    if value == valid_value:
+                        break
+                else:
+                    print_warning(_("Invalid value '%s' given for parameter '%s'!") % (value, key))
+            else:
+                print_warning(_("Unhandled parameter type '%s' declared for parameter '%s'!") % (parameter_type, key))
+                continue
+
+        return parameters
 
 
 ########################################################################
@@ -517,7 +592,7 @@ class cmd_dpm_emulation (object):
         # Set DPM emulation flag
         if hasattr(arguments, "new_value"):
             try:
-                enabled = arguments.new_value.lower() in ("yes", "true", "t", "1")
+                enabled = str2bool(arguments.new_value)
             except ValueError:
                 raise CDEmuError(_("String '%s' is not a number") % (arguments.new_value))
 
@@ -590,8 +665,6 @@ class cmd_tr_emulation (object):
         parser = subparsers.add_parser(name, description=description_msg, help=help_msg, formatter_class=argparse.ArgumentDefaultsHelpFormatter, argument_default=argparse.SUPPRESS)
         parser.set_defaults(command_function=self)
 
-        parser.register("type", "string_boolean", lambda v: v.lower() in ("yes", "true", "t", "1"))
-
         parser.add_argument("device", type=str, help=_("device"))
         parser.add_argument("new_value", nargs="?", type=str, help=_("new value"))
 
@@ -599,7 +672,7 @@ class cmd_tr_emulation (object):
         # Set TR emulation flag
         if hasattr(arguments, "new_value"):
             try:
-                enabled = arguments.new_value.lower() in ("yes", "true", "t", "1")
+                enabled = str2bool(arguments.new_value)
             except ValueError:
                 raise CDEmuError(_("String '%s' is not a number") % (arguments[1]))
 
@@ -679,7 +752,7 @@ class cmd_bad_sector_emulation (object):
         # Set bad sector emulation flag
         if hasattr(arguments, "new_value"):
             try:
-                enabled = arguments.new_value.lower() in ("yes", "true", "t", "1")
+                enabled = str2bool(arguments.new_value)
             except ValueError:
                 raise CDEmuError(_("String '%s' is not a number") % (arguments[1]))
 
@@ -954,7 +1027,7 @@ class cmd_enum_library_debug_masks (object):
 ########################################################################
 class cmd_enum_writer_parameters (object):
     def __init__ (self, subparsers):
-        name = "enum-writer-params"
+        name = "enum-writer-parameters"
         description_msg = _("")
         help_msg = _("prints the list of writer's parameters")
 
@@ -964,36 +1037,47 @@ class cmd_enum_writer_parameters (object):
         parser.add_argument("writer", type=str, help=_("writer ID"))
 
     def __call__ (self, dbus_iface, arguments):
-        # Enumerate supported writers to get their parameter sheets
-        try:
-            writers = dbus_iface.EnumSupportedWriters()
-        except dbus.DBusException as e:
-            raise CDEmuError(_("Failed to enumerate supported writers: %s") % (e))
+        # Get parameter sheet for the specified writer
+        parameter_nodes = fetch_and_parse_writer_parameter_sheet(dbus_iface, arguments.writer)
 
-        for writer in writers:
-            if writer[0] == arguments.writer:
-                break
-        else:
-            raise CDEmuError(_("Unsupported writer: %s") % (arguments.writer))
+        # Print the sheet
+        print_header(_("Writer's parameter sheet:"))
 
-        try:
-            # Parse XML parameter sheet
-            parameters = elementtree.fromstring(writer[2])
-        except Exception as e:
-            raise CDEmuError(_("Failed to parse parameter sheet: %s") % (e))
-
-        print_header(_("Parameters for %s:" % (writer[1])))
-
-        for parameter in parameters.iter("parameter"):
+        for parameter_node in parameter_nodes.iter("parameter"):
             print("")
-            print_header("%s:" % (parameter.find("name").text))
-            print(_("  ID: %s") % (parameter.find("id").text))
-            print(_("  Description: %s") % (parameter.find("description").text))
-            print(_("  Type: %s") % (parameter.find("type").text))
-            print(_("  Default value: %s") % (parameter.find("default").text))
+            print_header("%s" % (parameter_node.find("id").text))
+            print(_("  Name: %s") % (parameter_node.find("name").text))
+            print(_("  Description: %s") % (parameter_node.find("description").text))
+            print(_("  Type: %s") % (parameter_node.find("type").text))
+            print(_("  Default value: %s") % (parameter_node.find("default").text))
 
-            for enum_value in parameter.iter("enum"):
-                print(_("  Possible value: %s") % (enum_value.text))
+            for enum_value_node in parameter_node.iter("enum"):
+                print(_("  Possible value: %s") % (enum_value_node.text))
+
+
+# This is a stand-alone function because it is shared between
+# enum-writer-parameters and create-blank implementations
+def fetch_and_parse_writer_parameter_sheet (dbus_iface, writer_id):
+    # Enumerate all supported writers
+    try:
+        writers = dbus_iface.EnumSupportedWriters()
+    except dbus.DBusException as e:
+        raise CDEmuError(_("Failed to enumerate supported writers: %s") % (e))
+
+    # Find the one we want
+    for writer in writers:
+        if writer[0] == writer_id:
+            break
+    else:
+        raise CDEmuError(_("Unsupported writer: %s") % (arguments.writer))
+
+    # Parse XML parameter sheet
+    try:
+        parameters = elementtree.fromstring(writer[2])
+    except Exception as e:
+        raise CDEmuError(_("Failed to parse parameter sheet: %s") % (e))
+
+    return parameters
 
 
 ########################################################################
