@@ -961,6 +961,8 @@ class cmd_enum_writer_parameters (object):
         parser = subparsers.add_parser(name, description=description_msg, help=help_msg, formatter_class=argparse.ArgumentDefaultsHelpFormatter, argument_default=argparse.SUPPRESS)
         parser.set_defaults(command_function=self)
 
+        parser.add_argument("writer", type=str, help=_("writer ID"))
+
     def __call__ (self, dbus_iface, arguments):
         # Enumerate supported writers to get their parameter sheets
         try:
@@ -980,11 +982,11 @@ class cmd_enum_writer_parameters (object):
         except Exception as e:
             raise CDEmuError(_("Failed to parse parameter sheet: %s") % (e))
 
-        self.print_header(_("Parameters for %s:" % (writer[1])))
+        print_header(_("Parameters for %s:" % (writer[1])))
 
         for parameter in parameters.iter("parameter"):
             print("")
-            self.print_header("%s:" % (parameter.find("name").text))
+            print_header("%s:" % (parameter.find("name").text))
             print(_("  ID: %s") % (parameter.find("id").text))
             print(_("  Description: %s") % (parameter.find("description").text))
             print(_("  Type: %s") % (parameter.find("type").text))
