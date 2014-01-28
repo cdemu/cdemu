@@ -171,7 +171,7 @@ static MirageFragment *mirage_writer_iso_create_fragment (MirageWriter *self_, M
     /* Subchannel; only internal PW96 interleaved is supported */
     if (self->priv->write_subchannel) {
         mirage_fragment_subchannel_data_set_format(fragment, MIRAGE_SUBCHANNEL_DATA_FORMAT_PW96_INTERLEAVED | MIRAGE_SUBCHANNEL_DATA_FORMAT_INTERNAL);
-        mirage_fragment_subchannel_data_set_size(fragment, 0);
+        mirage_fragment_subchannel_data_set_size(fragment, 96);
     }
 
     filename = mirage_helper_format_string(self->priv->image_file_format,
