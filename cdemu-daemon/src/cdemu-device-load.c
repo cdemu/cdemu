@@ -130,9 +130,9 @@ static gboolean cdemu_device_create_blank_disc_private (CdemuDevice *self, gchar
                 medium_type = MIRAGE_MEDIUM_CD;
             } else if (!g_ascii_strcasecmp(medium, "dvd")) {
                 medium_type = MIRAGE_MEDIUM_DVD;
-            } else if (g_str_has_prefix(key, "writer.")) {
-                g_hash_table_insert(writer_parameters, key, value);
             }
+        } else if (g_str_has_prefix(key, "writer.")) {
+            g_hash_table_insert(writer_parameters, key, value);
         }
     }
 
