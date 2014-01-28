@@ -285,7 +285,7 @@ class CDEmu (GObject.GObject):
         self.supported_parsers = self.daemon_proxy.EnumSupportedParsers()
 
         # Get supported filter streams
-        self.supported_filter_streams = self.daemon_proxy.EnumSupportedFilterStreamss()
+        self.supported_filter_streams = self.daemon_proxy.EnumSupportedFilterStreams()
 
         # Get number of devices
         num_devices = self.daemon_proxy.GetNumberOfDevices()
