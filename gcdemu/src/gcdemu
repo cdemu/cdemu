@@ -1240,9 +1240,15 @@ class gCDEmuDeviceStatusPage (Gtk.VBox):
 
         button = Gtk.Button(_("Load"))
         button.show()
-        table.attach(button, 0, 2, 3, 4, Gtk.AttachOptions.EXPAND, 0)
+        table.attach(button, 0, 1, 3, 4, Gtk.AttachOptions.FILL|Gtk.AttachOptions.EXPAND, 0)
         button.connect("clicked", self.on_load_device_clicked)
         self.button_load = button
+
+        button = Gtk.Button(_("Create blank"))
+        button.show()
+        table.attach(button, 1, 2, 3, 4, Gtk.AttachOptions.FILL|Gtk.AttachOptions.EXPAND, 0)
+        button.connect("clicked", self.on_create_blank_clicked)
+        self.button_create_blank = button
 
         # *** Frame: mapping ***
         frame = Gtk.Frame.new(_("Device mapping"))
@@ -1301,14 +1307,20 @@ class gCDEmuDeviceStatusPage (Gtk.VBox):
             self.label_loaded.set_label(_("Yes"))
             self.label_filename.set_label(text)
             self.button_load.set_label(_("Unload"))
+
+            self.button_create_blank.set_sensitive(False)
         else:
             self.label_loaded.set_label(_("No"))
             self.label_filename.set_label("")
             self.button_load.set_label(_("Load"))
 
+            self.button_create_blank.set_sensitive(True)
 
     def on_load_device_clicked (self, button):
         self.emit("load-unload-device")
+
+    def on_create_blank_clicked (self, button):
+        self.emit("create-blank-disc")
 
     def on_remove_device_clicked (self, button):
         self.emit("remove-device")
@@ -1319,6 +1331,10 @@ class gCDEmuDeviceStatusPage (Gtk.VBox):
 
 GObject.type_register(gCDEmuDeviceStatusPage)
 GObject.signal_new("load-unload-device", gCDEmuDeviceStatusPage,
+    GObject.SignalFlags.RUN_FIRST,
+    None,
+    ())
+GObject.signal_new("create-blank-disc", gCDEmuDeviceStatusPage,
     GObject.SignalFlags.RUN_FIRST,
     None,
     ())
