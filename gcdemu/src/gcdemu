@@ -1241,13 +1241,13 @@ class gCDEmuDeviceStatusPage (Gtk.VBox):
         button = Gtk.Button(_("Load"))
         button.show()
         table.attach(button, 0, 1, 3, 4, Gtk.AttachOptions.FILL|Gtk.AttachOptions.EXPAND, 0)
-        button.connect("clicked", self.on_load_device_clicked)
+        button.connect("clicked", lambda b: self.emit("load-unload-device"))
         self.button_load = button
 
         button = Gtk.Button(_("Create blank"))
         button.show()
         table.attach(button, 1, 2, 3, 4, Gtk.AttachOptions.FILL|Gtk.AttachOptions.EXPAND, 0)
-        button.connect("clicked", self.on_create_blank_clicked)
+        button.connect("clicked", lambda b: self.emit("create-blank-disc"))
         self.button_create_blank = button
 
         # *** Frame: mapping ***
@@ -1290,7 +1290,7 @@ class gCDEmuDeviceStatusPage (Gtk.VBox):
         button = Gtk.Button(_("Remove device"))
         button.show()
         align.add(button)
-        button.connect("clicked", self.on_remove_device_clicked)
+        button.connect("clicked", lambda b: self.emit("remove-device"))
         self.button_remove = button
 
         self.show_all()
@@ -1315,15 +1315,6 @@ class gCDEmuDeviceStatusPage (Gtk.VBox):
             self.button_load.set_label(_("Load"))
 
             self.button_create_blank.set_sensitive(True)
-
-    def on_load_device_clicked (self, button):
-        self.emit("load-unload-device")
-
-    def on_create_blank_clicked (self, button):
-        self.emit("create-blank-disc")
-
-    def on_remove_device_clicked (self, button):
-        self.emit("remove-device")
 
     def set_removable (self, value):
         self.button_remove.set_sensitive(value)
@@ -1415,21 +1406,21 @@ class gCDEmuDeviceOptionsPage (Gtk.VBox):
         # DPM emulation
         checkbutton = Gtk.CheckButton(_("DPM emulation"), False)
         checkbutton.show()
-        checkbutton.connect("toggled", self.on_set_dpm_emulation_toggled)
+        checkbutton.connect("toggled", lambda t: self.emit("dpm-emulation-changed", t.get_active()))
         self.pack_start(checkbutton, expand=False, fill=False, padding=0)
         self.checkbutton_dpm = checkbutton
 
         # Transfer rate emulation
         checkbutton = Gtk.CheckButton(_("Transfer rate emulation"), False)
         checkbutton.show()
-        checkbutton.connect("toggled", self.on_set_tr_emulation_toggled)
+        checkbutton.connect("toggled", lambda t: self.emit("tr-emulation-changed", t.get_active()))
         self.pack_start(checkbutton, expand=False, fill=False, padding=0)
         self.checkbutton_tr = checkbutton
 
         # Bad sector emulation
         checkbutton = Gtk.CheckButton(_("Bad sector emulation"), False)
         checkbutton.show()
-        checkbutton.connect("toggled", self.on_set_bad_sector_emulation_toggled)
+        checkbutton.connect("toggled", lambda t: self.emit("bad-sector-emulation-changed", togglebutton.get_active()))
         self.pack_start(checkbutton, expand=False, fill=False, padding=0)
         self.checkbutton_bad_sector = checkbutton
 
@@ -1452,20 +1443,12 @@ class gCDEmuDeviceOptionsPage (Gtk.VBox):
     def set_dpm_emulation (self, value):
         self.checkbutton_dpm.set_active(value)
 
-    def on_set_dpm_emulation_toggled (self, togglebutton):
-        self.emit("dpm-emulation-changed", togglebutton.get_active())
-
     def set_tr_emulation (self, value):
         self.checkbutton_tr.set_active(value)
-
-    def on_set_tr_emulation_toggled (self, togglebutton):
-        self.emit("tr-emulation-changed", togglebutton.get_active())
 
     def set_bad_sector_emulation (self, value):
         self.checkbutton_bad_sector.set_active(value)
 
-    def on_set_bad_sector_emulation_toggled (self, togglebutton):
-        self.emit("bad-sector-emulation-changed", togglebutton.get_active())
 
 GObject.type_register(gCDEmuDeviceOptionsPage)
 GObject.signal_new("device-id-changed", gCDEmuDeviceOptionsPage,
