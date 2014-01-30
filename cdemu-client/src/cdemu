@@ -172,14 +172,14 @@ class cmd_create_blank (object):
         parser.set_defaults(command_function=self)
 
         parser.add_argument("device", type=str, help=_("device"))
-        parser.add_argument("image_file", type=str, nargs="+", help=_("image file(s)"))
+        parser.add_argument("image_file", type=str, help=_("image filename/basename"))
         parser.add_argument("--writer-id", type=str, nargs="?", required=True, help=_("ID of image writer to use"))
         parser.add_argument("--medium-type", type=str, nargs="?", choices=['cd', 'dvd'], help=_("medium type"))
         parser.add_argument("--param", type=str, nargs="?", action='append', help=_("additional writer parameter(s)"))
 
     def __call__ (self, dbus_iface, arguments):
-        # We need to pass absolute filenames to daemon
-        filenames = map(os.path.abspath, arguments.image_file)
+        # We need to pass absolute filename/basename to daemon
+        filename = os.path.abspath(arguments.image_file)
 
         # Gather writer parameters into a dictionary
         parameters = {}
@@ -215,7 +215,7 @@ class cmd_create_blank (object):
                     continue
 
                 # Load device
-                return self.load_device(dbus_iface, device, filenames, parameters)
+                return self.load_device(dbus_iface, device, filename, parameters)
             else:
                 # If we're here, it means we didn't get an empty device
                 raise CDEmuError(_("No empty device found"))
@@ -225,7 +225,7 @@ class cmd_create_blank (object):
             except ValueError:
                 raise CDEmuError(_("String '%s' is not a number") % (arguments.device))
 
-            return self.load_device(dbus_iface, device, filenames, parameters)
+            return self.load_device(dbus_iface, device, filename, parameters)
 
     # Device loading
     def load_device (self, dbus_iface, device, filenames, params={}):
