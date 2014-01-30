@@ -140,6 +140,11 @@ static gboolean mode_page_0x05_validator (CdemuDevice *self, const guint8 *new_d
     CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s:  subheader: %02hX %02hX %02hX %02hX\n", __debug__, new_page->subheader[0], new_page->subheader[1], new_page->subheader[2], new_page->subheader[3]);
     CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "\n");
 
+    /* At the moment, we do not support incremental/packet recording */
+    if (new_page->write_type == 0x00) {
+        return FALSE;
+    }
+
     /* Change of write type */
     if (new_page->write_type != old_page->write_type) {
         CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: changing recording type from %d to %d!\n", __debug__, old_page->write_type, new_page->write_type);
@@ -216,7 +221,7 @@ void cdemu_device_mode_pages_init (CdemuDevice *self)
         page->test_write = 1; /* Off by default */
         mask->test_write = 1;
 
-        page->write_type = 0x00; /* Packet/incremental */
+        page->write_type = 0x02; /* SAO/DAO by default */
         mask->write_type = 0x0F;
 
         page->multisession = 0x00; /* No multi-session */
