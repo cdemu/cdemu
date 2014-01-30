@@ -101,7 +101,7 @@ gboolean cdemu_device_load_disc (CdemuDevice *self, gchar **filenames, GVariant 
 /**********************************************************************\
  *                         Create (blank) disc                        *
 \**********************************************************************/
-static gboolean cdemu_device_create_blank_disc_private (CdemuDevice *self, gchar **filenames, GVariant *options, GError **error)
+static gboolean cdemu_device_create_blank_disc_private (CdemuDevice *self, const gchar *filename, GVariant *options, GError **error)
 {
     const gchar *writer_id = NULL;
     gint medium_type = MIRAGE_MEDIUM_CD;
@@ -165,7 +165,7 @@ static gboolean cdemu_device_create_blank_disc_private (CdemuDevice *self, gchar
     mirage_contextual_set_context(MIRAGE_CONTEXTUAL(self->priv->disc), self->priv->mirage_context);
 
     /* Set filenames */
-    mirage_disc_set_filenames(self->priv->disc, (const gchar **)filenames);
+    mirage_disc_set_filename(self->priv->disc, filename);
 
     /* Emulate 80-min CD-R or DVD+R SL for now */
     self->priv->recordable_disc = TRUE;
@@ -217,13 +217,13 @@ static gboolean cdemu_device_create_blank_disc_private (CdemuDevice *self, gchar
 }
 
 
-gboolean cdemu_device_create_blank_disc (CdemuDevice *self, gchar **filenames, GVariant *options, GError **error)
+gboolean cdemu_device_create_blank_disc (CdemuDevice *self, const gchar *filename, GVariant *options, GError **error)
 {
     gboolean succeeded = TRUE;
 
     /* Create */
     g_mutex_lock(self->priv->device_mutex);
-    succeeded = cdemu_device_create_blank_disc_private(self, filenames, options, error);
+    succeeded = cdemu_device_create_blank_disc_private(self, filename, options, error);
     g_mutex_unlock(self->priv->device_mutex);
 
     return succeeded;

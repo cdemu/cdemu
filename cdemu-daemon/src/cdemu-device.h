@@ -58,10 +58,10 @@ gboolean cdemu_device_initialize (CdemuDevice *self, gint number, const gchar *a
 
 gint cdemu_device_get_device_number (CdemuDevice *self);
 
-gboolean cdemu_device_get_status (CdemuDevice *self, gchar ***file_names);
+gboolean cdemu_device_get_status (CdemuDevice *self, gchar ***filenames);
 
-gboolean cdemu_device_load_disc (CdemuDevice *self, gchar **file_names, GVariant *options, GError **error);
-gboolean cdemu_device_create_blank_disc (CdemuDevice *self, gchar **file_names, GVariant *options, GError **error);
+gboolean cdemu_device_load_disc (CdemuDevice *self, gchar **filenames, GVariant *options, GError **error);
+gboolean cdemu_device_create_blank_disc (CdemuDevice *self, const gchar *filename, GVariant *options, GError **error);
 gboolean cdemu_device_unload_disc (CdemuDevice *self, GError **error);
 
 GVariant *cdemu_device_get_option (CdemuDevice *self, gchar *option_name, GError **error);

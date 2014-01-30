@@ -167,19 +167,18 @@ static void cdemu_daemon_dbus_handle_method_call (GDBusConnection *connection G_
     } else if (!g_strcmp0(method_name, "DeviceCreateBlank")) {
         /* *** DeviceCreateBlank *** */
         gint device_number;
-        gchar **filenames;
+        gchar *filename;
         GVariant *options;
 
         CdemuDevice *device;
 
-        g_variant_get(parameters, "(i^as@a{sv})", &device_number, &filenames, &options);
+        g_variant_get(parameters, "(i&s@a{sv})", &device_number, &filename, &options);
         device = cdemu_daemon_get_device(self, device_number, &error);
         if (device) {
-            succeeded = cdemu_device_create_blank_disc(device, filenames, options, &error);
+            succeeded = cdemu_device_create_blank_disc(device, filename, options, &error);
         }
 
         g_object_unref(device);
-        g_strfreev(filenames);
     } else if (!g_strcmp0(method_name, "DeviceUnload")) {
         /* *** DeviceUnload *** */
         gint device_number;
@@ -201,11 +200,11 @@ static void cdemu_daemon_dbus_handle_method_call (GDBusConnection *connection G_
         device = cdemu_daemon_get_device(self, device_number, &error);
         if (device) {
             gboolean loaded;
-            gchar **file_names;
+            gchar **filenames;
 
-            loaded = cdemu_device_get_status(device, &file_names);
-            ret = g_variant_new("(b^as)", loaded, file_names);
-            g_strfreev(file_names);
+            loaded = cdemu_device_get_status(device, &filenames);
+            ret = g_variant_new("(b^as)", loaded, filenames);
+            g_strfreev(filenames);
 
             succeeded = TRUE;
         }
@@ -562,16 +561,16 @@ static const gchar introspection_xml[] =
     "        <method name='DeviceGetStatus'>"
     "            <arg name='device_number' type='i' direction='in'/>"
     "            <arg name='loaded' type='b' direction='out'/>"
-    "            <arg name='file_names' type='as' direction='out'/>"
+    "            <arg name='filenames' type='as' direction='out'/>"
     "        </method>"
     "        <method name='DeviceLoad'>"
     "            <arg name='device_number' type='i' direction='in'/>"
-    "            <arg name='file_names' type='as' direction='in'/>"
+    "            <arg name='filenames' type='as' direction='in'/>"
     "            <arg name='parameters' type='a{sv}' direction='in'/>"
     "        </method>"
     "        <method name='DeviceCreateBlank'>"
     "            <arg name='device_number' type='i' direction='in'/>"
-    "            <arg name='file_names' type='as' direction='in'/>"
+    "            <arg name='filename' type='s' direction='in'/>"
     "            <arg name='parameters' type='a{sv}' direction='in'/>"
     "        </method>"
     "        <method name='DeviceUnload'>"
