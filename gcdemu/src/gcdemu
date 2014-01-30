@@ -36,6 +36,8 @@ from gi.repository import Gtk
 from gi.repository import Gio
 from gi.repository import Notify
 
+import xml.etree.ElementTree as elementtree
+
 # Note: AppIndicator is loaded on-demand in main function
 
 # *** Globals ***
@@ -46,6 +48,10 @@ supported_daemon_interface_version = 6
 # I18n
 bindtextdomain(app_name)
 textdomain(app_name)
+
+
+def str2bool (value):
+    return value.lower() in ("yes", "true", "t", "1")
 
 
 ########################################################################
@@ -133,6 +139,9 @@ class CDEmuDaemonProxy (GObject.GObject):
     def EnumSupportedParsers (self):
         return self.proxy.EnumSupportedParsers()
 
+    def EnumSupportedWriters (self):
+        return self.proxy.EnumSupportedWriters()
+
     def EnumSupportedFilterStreams (self):
         return self.proxy.EnumSupportedFilterStreams()
 
@@ -147,8 +156,11 @@ class CDEmuDaemonProxy (GObject.GObject):
     def DeviceGetStatus (self, device_number):
         return self.proxy.DeviceGetStatus('(i)', device_number)
 
-    def DeviceLoad (self, device_number, file_names, parameters):
-        return self.proxy.DeviceLoad('(iasa{sv})', device_number, file_names, parameters)
+    def DeviceLoad (self, device_number, filenames, parameters):
+        return self.proxy.DeviceLoad('(iasa{sv})', device_number, filenames, parameters)
+
+    def DeviceCreateBlank (self, device_number, filename, parameters):
+        return self.proxy.DeviceCreateBlank('(isa{sv})', device_number, filename, parameters)
 
     def DeviceUnload (self, device_number):
         return self.proxy.DeviceUnload('(i)', device_number)
@@ -283,6 +295,9 @@ class CDEmu (GObject.GObject):
 
         # Get supported parsers
         self.supported_parsers = self.daemon_proxy.EnumSupportedParsers()
+
+        # Get supported writers
+        self.supported_writers = self.daemon_proxy.EnumSupportedWriters()
 
         # Get supported filter streams
         self.supported_filter_streams = self.daemon_proxy.EnumSupportedFilterStreams()
@@ -460,6 +475,12 @@ class CDEmuDevice (GObject.GObject):
                 raise CDEmuNeedPassword()
             else:
                 self.emit("error", _("Failed to load image %s to device #%02d:\n%s") % (";".join(filenames), self.number, e))
+
+    def create_blank_disc (self, filename, params = {}):
+        try:
+            self.proxy.DeviceCreateBlank(self.number, filename, params)
+        except GLib.GError as e:
+            self.emit("error", _("Failed to create blank disc on device #%02d:\n%s") % (self.number, e))
 
 
     def set_device_id (self, value):
@@ -961,6 +982,9 @@ class gCDEmuDevice (GObject.GObject):
         # Create file chooser dialog
         self.file_chooser = gCDEMuFileChooserDialog(cdemu.supported_parsers, cdemu.supported_filter_streams)
 
+        # Create blank image creation dialog
+        self.blank_disc_creation_dialog = gCDEMuCreateBlankImageDialog(cdemu.supported_writers)
+
         # Create password dialog
         self.password_dialog = gCDEMuPasswordDialog()
 
@@ -992,6 +1016,7 @@ class gCDEmuDevice (GObject.GObject):
         notebook.append_page(self.page_status, Gtk.Label(label=_("Status")))
 
         self.connect_signal(self.page_status, "load-unload-device", lambda w: self.load_unload_device())
+        self.connect_signal(self.page_status, "create-blank-disc", lambda w: self.create_blank_disc())
         self.connect_signal(self.page_status, "remove-device", lambda w: cdemu.remove_device())
 
         # Page: options
@@ -1124,6 +1149,14 @@ class gCDEmuDevice (GObject.GObject):
                         # Try loading with overriden password
                         parameters["password"] = GLib.Variant("s", password)
                         self.device.load_device(filenames, parameters)
+
+    def create_blank_disc (self):
+        result = self.blank_disc_creation_dialog.run()
+        self.blank_disc_creation_dialog.hide()
+        if result == Gtk.ResponseType.ACCEPT:
+            filename = self.blank_disc_creation_dialog.get_filename()
+            writer_parameters = self.blank_disc_creation_dialog.get_writer_parameters()
+            self.device.create_blank_disc(filename, writer_parameters)
 
     def refresh_pages (self):
         # Some pages have fields that can be altered without applying the
@@ -1718,6 +1751,276 @@ class gCDEMuPasswordDialog (Gtk.Dialog):
 
         # Chain to parent
         return super(gCDEMuPasswordDialog, self).run()
+
+
+########################################################################
+#   gCDEMuCreateBlankImageDialog: blank disc image creation dialog     #
+########################################################################
+class gCDEMuCreateBlankImageDialog (Gtk.Dialog):
+    class ValidationError (Exception): pass
+
+    def __init__ (self, writers):
+        Gtk.Dialog.__init__(self, _("Create blank disc image"), None, 0, (Gtk.STOCK_OK, Gtk.ResponseType.ACCEPT, Gtk.STOCK_CANCEL, Gtk.ResponseType.REJECT))
+
+        self.writers = writers
+
+        # Frame: image settings
+        frame = Gtk.Frame.new(_("Image"))
+        frame.set_label_align(0.50, 0.50)
+        frame.set_border_width(2)
+        self.vbox.pack_start(frame, expand=False, fill=False, padding=0)
+
+        table = Gtk.Table()
+        frame.add(table)
+        table.set_border_width(5)
+        table.set_row_spacings(5)
+
+        row = 0
+
+        # Filename
+        label = Gtk.Label(label=_("Filename: "))
+        table.attach(label, 0, 1, row, row+1, Gtk.AttachOptions.FILL, 0)
+
+        entry = Gtk.Entry()
+        self.entry_filename = entry
+        table.attach(entry, 1, 2, row, row+1, Gtk.AttachOptions.FILL|Gtk.AttachOptions.EXPAND, 0)
+
+        button = Gtk.Button(_("Choose"))
+        table.attach(button, 2, 3, row, row+1, Gtk.AttachOptions.FILL, 0)
+        button.connect("clicked", lambda b: self.choose_file())
+
+        row += 1
+
+        # Medium type
+        label = Gtk.Label(label=_("Medium type: "))
+        table.attach(label, 0, 1, row, row+1, Gtk.AttachOptions.FILL, 0)
+
+        liststore = Gtk.ListStore(GObject.TYPE_STRING, GObject.TYPE_STRING)
+        liststore.append( ("CD-R", "cd") )
+        liststore.append( ("DVD+R SL", "dvd") )
+
+        combobox = Gtk.ComboBox.new_with_model_and_entry(liststore)
+        combobox.set_entry_text_column(0)
+        combobox.set_active(0)
+        table.attach(combobox, 1, 3, row, row+1, Gtk.AttachOptions.FILL|Gtk.AttachOptions.EXPAND, 0)
+        self.combobox_medium = combobox
+
+        completion = Gtk.EntryCompletion()
+        completion.set_model(liststore)
+        completion.set_text_column(0)
+        combobox.get_child().set_completion(completion)
+
+        row += 1
+
+        # Writer
+        label = Gtk.Label(label=_("Writer: "))
+        table.attach(label, 0, 1, row, row+1, Gtk.AttachOptions.FILL, 0)
+
+        liststore = Gtk.ListStore(GObject.TYPE_STRING, GObject.TYPE_INT)
+        for i in range(0, len(self.writers)):
+            liststore.append( (self.writers[i][0], i) )
+
+        combobox = Gtk.ComboBox.new_with_model_and_entry(liststore)
+        combobox.set_entry_text_column(0)
+        table.attach(combobox, 1, 3, row, row+1, Gtk.AttachOptions.FILL|Gtk.AttachOptions.EXPAND, 0)
+        combobox.connect("changed", lambda c: self.build_writer_options())
+        self.combobox_writer = combobox
+
+        completion = Gtk.EntryCompletion()
+        completion.set_model(liststore)
+        completion.set_text_column(0)
+        combobox.get_child().set_completion(completion)
+
+        row += 1
+
+        # Frame: writer options
+        frame = Gtk.Frame.new(_("Writer options"))
+        frame.set_label_align(0.50, 0.50)
+        frame.set_border_width(2)
+        self.vbox.pack_start(frame, expand=False, fill=False, padding=0)
+
+        self.frame_writer = frame
+
+        self.writer_options_ui = None
+        self.writer_options_widgets = None
+
+        self.vbox.show_all()
+        self.frame_writer.hide()
+
+    def choose_file (self):
+        dialog = Gtk.FileChooserDialog(_("Choose file"), self, Gtk.FileChooserAction.SAVE, (Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL, Gtk.STOCK_SAVE, Gtk.ResponseType.ACCEPT))
+        dialog.set_local_only(False)
+        dialog.set_do_overwrite_confirmation(True)
+
+        if dialog.run() == Gtk.ResponseType.ACCEPT:
+            self.entry_filename.set_text(dialog.get_filename())
+
+        dialog.destroy()
+
+    def build_writer_options (self):
+        # Destroy old GUI and widgets map
+        if self.writer_options_ui is not None:
+            self.writer_options_ui.destroy()
+            self.writer_options_ui = None
+
+        if self.writer_options_widgets is not None:
+            self.writer_options_widgets = None
+
+        # Hide Writer frame
+        self.frame_writer.hide()
+
+        # Get selected writer
+        i = self.combobox_writer.get_active_iter()
+        if i is None:
+            return
+        writer_idx = self.combobox_writer.get_model().get_value(i, 1)
+        writer = self.writers[writer_idx]
+
+        # Parse XML parameter sheet
+        try:
+            parameter_nodes = elementtree.fromstring(writer[2])
+        except Exception as e:
+            print("Failed to parse parameter page: %s" % (e))
+            return
+
+        # Create GUI
+        table = Gtk.Table()
+        self.frame_writer.add(table)
+        table.set_border_width(5)
+        table.set_row_spacings(5)
+
+        self.writer_options_ui = table # Store so we can destroy it
+        self.writer_options_widgets = {} # ID -> widget map
+
+        row = 0
+
+        for node in parameter_nodes.iter("parameter"):
+            parameter_id = node.find("id").text.strip()
+            parameter_type = node.find("type").text.strip()
+            parameter_name = node.find("name").text.strip()
+            parameter_description = node.find("description").text.strip()
+            parameter_default = node.find("default").text.strip()
+
+            needs_label = True
+
+            if parameter_type == "bool":
+                # Check button
+                widget = Gtk.CheckButton(parameter_name)
+                widget.set_tooltip_text(parameter_description)
+                needs_label = False
+                # Default value
+                widget.set_active(str2bool(parameter_default))
+            elif parameter_type == "int":
+                # Spin button
+                widget = Gtk.SpinButton()
+                # Default value
+                widget.set_value(int(parameter_default, 0))
+            elif parameter_type == "string":
+                # Text entry
+                widget = Gtk.Entry()
+                # Default value
+                widget.set_text(parameter_default)
+            elif parameter_type == "enum":
+                # Store for combo box
+                liststore = Gtk.ListStore(GObject.TYPE_STRING, GObject.TYPE_STRING)
+                for enum_value_node in node.iter("enum"):
+                    value = enum_value_node.text.strip()
+                    liststore.append( (value, value) )
+
+                # Combo box
+                widget = Gtk.ComboBox.new_with_model_and_entry(liststore)
+                widget.set_entry_text_column(0)
+
+                completion = Gtk.EntryCompletion()
+                completion.set_model(liststore)
+                completion.set_text_column(0)
+                widget.get_child().set_completion(completion)
+
+                # Default value
+                for entry in liststore:
+                    if entry[1] == parameter_default:
+                        widget.set_active_iter(entry.iter)
+                        break
+            else:
+                continue
+
+            if needs_label:
+                label = Gtk.Label("%s: " % parameter_name)
+                label.set_tooltip_text(parameter_description)
+                table.attach(label, 0, 1, row, row+1, Gtk.AttachOptions.FILL, 0)
+                table.attach(widget, 1, 2, row, row+1, Gtk.AttachOptions.FILL|Gtk.AttachOptions.EXPAND, 0)
+            else:
+                table.attach(widget, 0, 2, row, row+1, Gtk.AttachOptions.FILL|Gtk.AttachOptions.EXPAND, 0)
+
+            self.writer_options_widgets[parameter_id] = widget
+
+            row += 1
+
+        # Show Writer frame
+        self.frame_writer.show_all()
+
+    def get_filename (self):
+        return self.entry_filename.get_text()
+
+    def get_writer_parameters (self):
+        parameters = {}
+
+        # Writer ID
+        i = self.combobox_writer.get_active_iter()
+        writer_idx = self.combobox_writer.get_model().get_value(i, 1)
+        parameters["writer-id"] = GLib.Variant("s", self.writers[writer_idx][0])
+
+        # Medium type
+        i = self.combobox_medium.get_active_iter()
+        parameters["medium-type"] = GLib.Variant("s", self.combobox_medium.get_model().get_value(i, 1))
+
+        # Writer parameters
+        for parameter_id, widget in self.writer_options_widgets.items():
+            if isinstance(widget, Gtk.Entry):
+                # Text entry
+                value = GLib.Variant("s", widget.get_text())
+            elif isinstance(widget, Gtk.SpinButton):
+                # Spin button
+                value = GLib.Variant("i", widget.get_value())
+            elif isinstance(widget, Gtk.CheckButton):
+                # Check button
+                value = GLib.Variant("b", widget.get_active())
+            elif isinstance(widget, Gtk.ComboBox):
+                # Combo box
+                i = widget.get_active_iter()
+                value = GLib.Variant("s", widget.get_model().get_value(i, 1))
+            else:
+                continue
+
+            parameters[parameter_id] = value
+
+        return parameters
+
+    def run (self):
+        # Run in loop and validate when user clicks OK
+        while True:
+            # Chain to parent
+            result = super(gCDEMuCreateBlankImageDialog, self).run()
+            if result == Gtk.ResponseType.ACCEPT:
+                # Validate
+                try:
+                    # Image filename must be set
+                    if self.entry_filename.get_text() == "":
+                        raise self.ValidationError(_("Image filename/basename not set!"))
+                    # Writer must be chosen
+                    if self.combobox_writer.get_active_iter() is None:
+                        raise self.ValidationError(_("No image writer is chosen!"))
+                    break
+                except self.ValidationError as e:
+                    # Show error dialog
+                    message = Gtk.MessageDialog(self, 0, Gtk.MessageType.ERROR, Gtk.ButtonsType.CLOSE, e)
+                    message.set_title(_("Invalid option"))
+                    message.run()
+                    message.destroy()
+            else:
+                break
+
+        return result
 
 
 ########################################################################
