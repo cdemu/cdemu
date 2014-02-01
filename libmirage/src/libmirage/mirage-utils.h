@@ -149,6 +149,7 @@ guint8 *mirage_helper_init_ecma_130b_scrambler_lut (void);
 /* General-purpose string formatter */
 gchar *mirage_helper_format_string (const gchar *format, ...);
 gchar *mirage_helper_format_stringv (const gchar *format, va_list args);
+gchar *mirage_helper_format_stringd (const gchar *format, GHashTable *dictionary);
 
 G_END_DECLS
 

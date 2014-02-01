@@ -1265,18 +1265,6 @@ guint8 *mirage_helper_init_ecma_130b_scrambler_lut (void)
 /**********************************************************************\
  *                   General-purpose string formatter                 *
 \**********************************************************************/
-gchar *mirage_helper_format_string (const gchar *format, ...)
-{
-    gchar *result;
-
-    va_list args;
-    va_start(args, format);
-    result = mirage_helper_format_stringv(format, args);
-    va_end(args);
-
-    return result;
-}
-
 static gboolean format_string_cb (const GMatchInfo *match_info, GString *result, GHashTable *dictionary)
 {
     GVariant *replacement;
@@ -1336,8 +1324,22 @@ static gboolean format_string_cb (const GMatchInfo *match_info, GString *result,
     return FALSE;
 }
 
+gchar *mirage_helper_format_string (const gchar *format, ...)
+{
+    gchar *result;
+
+    va_list args;
+    va_start(args, format);
+    result = mirage_helper_format_stringv(format, args);
+    va_end(args);
+
+    return result;
+}
+
 gchar *mirage_helper_format_stringv (const gchar *format, va_list args)
 {
+    gchar *result;
+
     /* Gather tokens and their replacement values into a hash table */
     GHashTable *dictionary = g_hash_table_new_full(g_str_hash, g_str_equal, NULL, (GDestroyNotify)g_variant_unref);
 
@@ -1350,12 +1352,18 @@ gchar *mirage_helper_format_stringv (const gchar *format, va_list args)
         g_hash_table_insert(dictionary, token, g_variant_ref_sink(va_arg(args, GVariant *)));
     }
 
-    /* Now, use regex to replace the tokens with their replacement values */
+    result = mirage_helper_format_stringd(format, dictionary);
+
+    g_hash_table_unref(dictionary);
+
+    return result;
+}
+
+gchar *mirage_helper_format_stringd (const gchar *format, GHashTable *dictionary)
+{
+    /* Use regex to replace the tokens with their replacement values */
     GRegex *regex = g_regex_new("(?<prefix>\\W\\w*)?%(?<format>\\w+)?(?<token>\\w)", 0, 0, NULL);
     gchar *result = g_regex_replace_eval(regex, format, -1, 0, 0, (GRegexEvalCallback)format_string_cb, dictionary, NULL);
-
-    g_hash_table_destroy(dictionary);
     g_regex_unref(regex);
-
     return result;
 }
