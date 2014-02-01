@@ -33,6 +33,8 @@ struct _MirageWriterIsoPrivate
     gchar *audio_file_suffix;
     gboolean write_raw;
     gboolean write_subchannel;
+
+    GList *image_file_streams;
 };
 
 static const gchar *audio_filter_chain[] = {
@@ -51,6 +53,97 @@ static void mirage_writer_iso_clear_options (MirageWriterIso *self)
 
     g_free(self->priv->audio_file_suffix);
     self->priv->audio_file_suffix = NULL;
+}
+
+
+/**********************************************************************\
+ *                          Helper functions                          *
+\**********************************************************************/
+static void mirage_writer_iso_rename_track_image_files (MirageWriterIso *self, MirageDisc *disc)
+{
+    gint num_sessions = mirage_disc_get_number_of_sessions(disc);
+    gint num_tracks = mirage_disc_get_number_of_tracks(disc);
+
+    if (num_tracks > 1) {
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WRITER, "%s: renaming track files...\n", __debug__);
+
+        const gchar *original_filename, *extension;
+        gchar *new_filename;
+
+        gint track = 1;
+        GList *iter = g_list_first(self->priv->image_file_streams);
+
+        while (iter) {
+            /* Construct new filename */
+            original_filename = mirage_stream_get_filename(iter->data);
+            extension = mirage_helper_get_suffix(original_filename) + 1; /* +1 to skip the '.' */
+
+            if (num_sessions == 1) {
+                new_filename = mirage_helper_format_string(image_file_format,
+                    "b", g_variant_new_string(self->priv->image_file_basename),
+                    "t", g_variant_new_int16(track),
+                    "e", g_variant_new_string(extension), NULL);
+            } else {
+                new_filename = mirage_helper_format_string(image_file_format,
+                    "b", g_variant_new_string(self->priv->image_file_basename),
+                    "s", g_variant_new_int16(1),
+                    "t", g_variant_new_int16(track),
+                    "e", g_variant_new_string(extension), NULL);
+            }
+
+            /* Move */
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_WRITER, "%s: '%s' -> '%s'\n", __debug__, original_filename, new_filename);
+            if (!mirage_stream_move_file(iter->data, new_filename, NULL)) {
+                MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: failed to rename file for track #%d to '%s'!\n", __debug__, track, new_filename);
+            }
+            g_free(new_filename);
+
+            /* If we have only one session, nreak after first iteration */
+            if (num_sessions == 1) {
+                break;
+            }
+
+            track++;
+            iter = g_list_next(iter);
+        }
+    }
+}
+
+static void mirage_writer_iso_update_disc_filenames (MirageWriterIso *self G_GNUC_UNUSED, MirageDisc *disc)
+{
+    gint num_tracks = mirage_disc_get_number_of_tracks(disc);
+    const gchar **filenames = g_new0(const gchar *, num_tracks + 1);
+
+    for (gint i = 0; i < num_tracks; i++) {
+        MirageTrack *track = mirage_disc_get_track_by_index(disc, i, NULL);
+        if (!track) {
+            continue;
+        }
+
+        gint num_fragments = mirage_track_get_number_of_fragments(track);
+        for (gint f = num_fragments - 1; f >= 0; f--) {
+            MirageFragment *fragment = mirage_track_get_fragment_by_index(track, f, NULL);
+            if (!fragment) {
+                continue;
+            }
+
+            filenames[i] = mirage_fragment_main_data_get_filename(fragment);
+
+            g_object_unref(fragment);
+
+            if (filenames[i]) {
+                break;
+            }
+        }
+
+        g_object_unref(track);
+
+        if (!filenames[i]) {
+            filenames[i] = "<ERROR>";
+        }
+    }
+
+    mirage_disc_set_filenames(disc, filenames);
 }
 
 
@@ -194,48 +287,29 @@ static MirageFragment *mirage_writer_iso_create_fragment (MirageWriter *self_, M
         g_object_unref(fragment);
         return NULL;
     }
+
     mirage_fragment_main_data_set_stream(fragment, stream);
+
+    /* We keep a list of streams for images of tracks in first session,
+       because we might need to rename them */
+    if (session_number == 1) {
+        self->priv->image_file_streams = g_list_append(self->priv->image_file_streams, g_object_ref(stream));
+    }
+
     g_object_unref(stream);
 
     return fragment;
 }
 
-static gboolean mirage_writer_iso_finalize_image (MirageWriter *self_ G_GNUC_UNUSED, MirageDisc *disc, GError **error G_GNUC_UNUSED)
+static gboolean mirage_writer_iso_finalize_image (MirageWriter *self_, MirageDisc *disc, GError **error G_GNUC_UNUSED)
 {
+    MirageWriterIso *self = MIRAGE_WRITER_ISO(self_);
+
+    /* Rename some of image files, if necessary */
+    mirage_writer_iso_rename_track_image_files(self, disc);
+
     /* Go over disc, and gather the names of track files */
-    gint num_tracks = mirage_disc_get_number_of_tracks(disc);
-    const gchar **filenames = g_new0(const gchar *, num_tracks + 1);
-
-    for (gint i = 0; i < num_tracks; i++) {
-        MirageTrack *track = mirage_disc_get_track_by_index(disc, i, NULL);
-        if (!track) {
-            continue;
-        }
-
-        gint num_fragments = mirage_track_get_number_of_fragments(track);
-        for (gint f = num_fragments - 1; f >= 0; f--) {
-            MirageFragment *fragment = mirage_track_get_fragment_by_index(track, f, NULL);
-            if (!fragment) {
-                continue;
-            }
-
-            filenames[i] = mirage_fragment_main_data_get_filename(fragment);
-
-            g_object_unref(fragment);
-
-            if (filenames[i]) {
-                break;
-            }
-        }
-
-        g_object_unref(track);
-
-        if (!filenames[i]) {
-            filenames[i] = "<ERROR>";
-        }
-    }
-
-    mirage_disc_set_filenames(disc, filenames);
+    mirage_writer_iso_update_disc_filenames(self, disc);
 
     return TRUE;
 }
@@ -267,6 +341,20 @@ static void mirage_writer_iso_init (MirageWriterIso *self)
 
     self->priv->write_raw = FALSE;
     self->priv->write_subchannel = FALSE;
+
+    self->priv->image_file_streams = NULL;
+}
+
+static void mirage_writer_iso_dispose (GObject *gobject)
+{
+    MirageWriterIso *self = MIRAGE_WRITER_ISO(gobject);
+
+    /* Clear the list of image file streams */
+    g_list_free_full(self->priv->image_file_streams, (GDestroyNotify)g_object_unref);
+    self->priv->image_file_streams = NULL;
+
+    /* Chain up to the parent class */
+    return G_OBJECT_CLASS(mirage_writer_iso_parent_class)->dispose(gobject);
 }
 
 static void mirage_writer_iso_finalize (GObject *gobject)
@@ -285,6 +373,7 @@ static void mirage_writer_iso_class_init (MirageWriterIsoClass *klass)
     GObjectClass *gobject_class = G_OBJECT_CLASS(klass);
     MirageWriterClass *writer_class = MIRAGE_WRITER_CLASS(klass);
 
+    gobject_class->dispose = mirage_writer_iso_dispose;
     gobject_class->finalize = mirage_writer_iso_finalize;
 
     writer_class->open_image = mirage_writer_iso_open_image;
