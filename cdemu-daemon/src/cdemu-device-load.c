@@ -144,21 +144,13 @@ static gboolean cdemu_device_create_blank_disc_private (CdemuDevice *self, const
         return FALSE;
     }
 
-    /* FIXME: move this to libMirage */
-    guint num_writers;
-    GType *writers = g_type_children(MIRAGE_TYPE_WRITER, &num_writers);
-
-    if (!num_writers) {
-        CDEMU_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: no image writer found!\n", __debug__);
-        g_set_error(error, CDEMU_ERROR, CDEMU_ERROR_DAEMON_ERROR, "No image writer found!");
+    /* Create writer and attach our context to it */
+    self->priv->image_writer = mirage_create_writer(writer_id, error);
+    if (!self->priv->image_writer) {
         g_hash_table_unref(writer_parameters);
         return FALSE;
     }
-
-    self->priv->image_writer = g_object_new(writers[0], NULL);
     mirage_contextual_set_context(MIRAGE_CONTEXTUAL(self->priv->image_writer), self->priv->mirage_context);
-
-    g_free(writers);
 
     /* Create blank disc */
     self->priv->disc = g_object_new(MIRAGE_TYPE_DISC, NULL);

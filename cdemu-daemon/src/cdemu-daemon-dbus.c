@@ -105,13 +105,13 @@ static GVariantBuilder *encode_parsers ()
 /* Helper that encodes the list of supported writers */
 static gboolean append_writer_to_builder (MirageWriterInfo *info, GVariantBuilder *builder)
 {
-    g_variant_builder_add(builder, "(sss)", info->id, info->name, info->parameter_sheet);
+    g_variant_builder_add(builder, "(ss)", info->id, info->name);
     return TRUE;
 }
 
 static GVariantBuilder *encode_writers ()
 {
-    GVariantBuilder *builder = g_variant_builder_new(G_VARIANT_TYPE("a(sss)"));
+    GVariantBuilder *builder = g_variant_builder_new(G_VARIANT_TYPE("a(ss)"));
     mirage_enumerate_writers((MirageEnumWriterInfoCallback)append_writer_to_builder, builder, NULL);
     return builder;
 }
@@ -137,6 +137,22 @@ static GVariantBuilder *encode_filter_streams ()
 {
     GVariantBuilder *builder = g_variant_builder_new(G_VARIANT_TYPE("a(ssba(ss))"));
     mirage_enumerate_filter_streams((MirageEnumFilterStreamInfoCallback)append_filter_stream_to_builder, builder, NULL);
+    return builder;
+}
+
+/* Helper that encodes writer's parameter sheet */
+static GVariantBuilder *encode_writer_parameter_sheet (MirageWriter *writer)
+{
+    GVariantBuilder *builder = g_variant_builder_new(G_VARIANT_TYPE("a(sssvas)"));
+
+    GList *parameters = mirage_writer_lookup_parameter_ids(writer);
+    for (GList *iter = g_list_first(parameters); iter; iter = iter->next) {
+        const gchar *id = iter->data;
+        const MirageWriterParameter *info = mirage_writer_lookup_parameter_info(writer, id);
+
+        g_variant_builder_add(builder, "(sssv@as)", id, info->name, info->description, info->default_value, info->enum_values ? info->enum_values : g_variant_new("as", NULL));
+    }
+
     return builder;
 }
 
@@ -307,21 +323,35 @@ static void cdemu_daemon_dbus_handle_method_call (GDBusConnection *connection G_
         succeeded = TRUE;
     } else if (!g_strcmp0(method_name, "EnumSupportedWriters")) {
         /* *** EnumSupportedWriters *** */
-        ret = g_variant_new("(a(sss))", encode_writers());
+        ret = g_variant_new("(a(ss))", encode_writers());
         succeeded = TRUE;
     } else if (!g_strcmp0(method_name, "EnumSupportedFilterStreams")) {
         /* *** EnumSupportedFilterStreams *** */
         ret = g_variant_new("(a(ssba(ss)))", encode_filter_streams());
         succeeded = TRUE;
     } else if (!g_strcmp0(method_name, "AddDevice")) {
+        /* *** AddDevice *** */
         succeeded = cdemu_daemon_add_device(self);
         if (!succeeded) {
             g_set_error(&error, CDEMU_ERROR, CDEMU_ERROR_DAEMON_ERROR, "Failed to add device!");
         }
     } else if (!g_strcmp0(method_name, "RemoveDevice")) {
+        /* *** RemoveDevice *** */
         succeeded = cdemu_daemon_remove_device(self);
         if (!succeeded) {
             g_set_error(&error, CDEMU_ERROR, CDEMU_ERROR_DAEMON_ERROR, "Failed to remove device!");
+        }
+    } else if (!g_strcmp0(method_name, "EnumWriterParameters")) {
+        /* *** EnumWriterParameters *** */
+        const gchar *writer_id;
+        MirageWriter *writer;
+
+        g_variant_get(parameters, "(s)", &writer_id);
+        writer = mirage_create_writer(writer_id, &error);
+        if (writer) {
+            ret = g_variant_new("(a(sssvas))", encode_writer_parameter_sheet(writer));
+            g_object_unref(writer);
+            succeeded = TRUE;
         }
     } else {
         g_set_error(&error, CDEMU_ERROR, CDEMU_ERROR_INVALID_ARGUMENT, "Invalid method name '%s'!", method_name);
@@ -543,10 +573,14 @@ static const gchar introspection_xml[] =
     "            <arg name='parsers' type='a(ssa(ss))' direction='out'/>"
     "        </method>"
     "        <method name='EnumSupportedWriters'>"
-    "            <arg name='writers' type='a(sss)' direction='out'/>"
+    "            <arg name='writers' type='a(ss)' direction='out'/>"
     "        </method>"
     "        <method name='EnumSupportedFilterStreams'>"
     "            <arg name='filter_streams' type='a(ssba(ss))' direction='out'/>"
+    "        </method>"
+    "        <method name='EnumWriterParameters'>"
+    "            <arg name='writer_id' type='s' direction='in'/>"
+    "            <arg name='parameter_sheet' type='a(sssvas)' direction='out'/>"
     "        </method>"
 
     "        <!-- Device control methods -->"
