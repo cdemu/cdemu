@@ -526,3 +526,23 @@ gboolean mirage_get_supported_debug_masks (const MirageDebugMask **masks, gint *
 
     return TRUE;
 }
+
+
+MirageWriter *mirage_create_writer (const gchar *writer_id, GError **error)
+{
+    /* Make sure libMirage is initialized */
+    if (!libmirage.initialized) {
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_LIBRARY_ERROR, "Library not initialized!");
+        return NULL;
+    }
+
+    for (gint i = 0; i < libmirage.num_writers; i++) {
+        if (!g_ascii_strcasecmp(writer_id, libmirage.writers_info[i].id)) {
+            return g_object_new(libmirage.writers[i], NULL);
+        }
+    }
+
+    g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_LIBRARY_ERROR, "Writer '%s' not found!", writer_id);
+    return NULL;
+}
+

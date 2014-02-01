@@ -135,6 +135,8 @@ gboolean mirage_enumerate_filter_streams (MirageEnumFilterStreamInfoCallback fun
 
 gboolean mirage_get_supported_debug_masks (const MirageDebugMask **masks, gint *num_masks, GError **error);
 
+MirageWriter *mirage_create_writer (const gchar *writer_id, GError **error);
+
 G_END_DECLS
 
 #endif /* __MIRAGE_H__ */
