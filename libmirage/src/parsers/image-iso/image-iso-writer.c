@@ -29,7 +29,6 @@
 
 struct _MirageWriterIsoPrivate
 {
-    gchar *image_file_format;
     gchar *image_file_basename;
     gchar *audio_file_suffix;
     gboolean write_raw;
@@ -42,19 +41,18 @@ static const gchar *audio_filter_chain[] = {
 };
 
 static const gchar parameter_sheet[];
+static const gchar image_file_format[] = "%b-%02s-%02t.%e";
 
 
 static void mirage_writer_iso_clear_options (MirageWriterIso *self)
 {
-    g_free(self->priv->image_file_format);
-    self->priv->image_file_format = NULL;
-
     g_free(self->priv->image_file_basename);
     self->priv->image_file_basename = NULL;
 
     g_free(self->priv->audio_file_suffix);
     self->priv->audio_file_suffix = NULL;
 }
+
 
 /**********************************************************************\
  *                MirageWriter methods implementation                 *
@@ -75,14 +73,6 @@ static gboolean mirage_writer_iso_open_image (MirageWriter *self_, MirageDisc *d
         self->priv->image_file_basename = g_strdup(filename);
     } else {
         self->priv->image_file_basename = g_strndup(filename, suffix - filename);
-    }
-
-    /* Option: image file format */
-    option = g_hash_table_lookup(options, "writer.image_file_format");
-    if (option) {
-        self->priv->image_file_format = g_variant_dup_string(option, NULL);
-    } else {
-        self->priv->image_file_format = g_strdup("%b-%s-%t.%e");
     }
 
     /* Option: audio file suffix */
@@ -109,7 +99,6 @@ static gboolean mirage_writer_iso_open_image (MirageWriter *self_, MirageDisc *d
         self->priv->write_subchannel = FALSE;
     }
 
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_WRITER, "%s: image file format: '%s'\n", __debug__, self->priv->image_file_format);
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_WRITER, "%s: image file basename: '%s'\n", __debug__, self->priv->image_file_basename);
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_WRITER, "%s: audio file suffix: '%s'\n", __debug__, self->priv->audio_file_suffix);
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_WRITER, "%s: write raw: %d\n", __debug__, self->priv->write_raw);
@@ -174,11 +163,30 @@ static MirageFragment *mirage_writer_iso_create_fragment (MirageWriter *self_, M
         mirage_fragment_subchannel_data_set_size(fragment, 96);
     }
 
-    filename = mirage_helper_format_string(self->priv->image_file_format,
-        "b", g_variant_new_string(self->priv->image_file_basename),
-        "s", g_variant_new_int16(mirage_track_layout_get_session_number(track)),
-        "t", g_variant_new_int16(mirage_track_layout_get_track_number(track)),
-        "e", g_variant_new_string(extension), NULL);
+    /* Format filename */
+    gint session_number = mirage_track_layout_get_session_number(track);
+    gint track_number = mirage_track_layout_get_track_number(track);
+
+    if (session_number > 1) {
+        /* If session number is greater than one, we need to specify
+           both session and track number */
+        filename = mirage_helper_format_string(image_file_format,
+            "b", g_variant_new_string(self->priv->image_file_basename),
+            "s", g_variant_new_int16(session_number),
+            "t", g_variant_new_int16(track_number),
+            "e", g_variant_new_string(extension), NULL);
+    } else if (track_number > 1) {
+        /* If track number is greater than one, we need to specify it */
+        filename = mirage_helper_format_string(image_file_format,
+            "b", g_variant_new_string(self->priv->image_file_basename),
+            "t", g_variant_new_int16(track_number),
+            "e", g_variant_new_string(extension), NULL);
+    } else {
+        /* First track of first session; specify only basename and extension */
+        filename = mirage_helper_format_string(image_file_format,
+            "b", g_variant_new_string(self->priv->image_file_basename),
+            "e", g_variant_new_string(extension), NULL);
+    }
 
     /* I/O stream */
     stream = mirage_contextual_create_output_stream(MIRAGE_CONTEXTUAL(self), filename, filter_chain, error);
@@ -254,7 +262,6 @@ static void mirage_writer_iso_init (MirageWriterIso *self)
         parameter_sheet
     );
 
-    self->priv->image_file_format = NULL;
     self->priv->image_file_basename = NULL;
     self->priv->audio_file_suffix = NULL;
 
@@ -297,13 +304,6 @@ static void mirage_writer_iso_class_finalize (MirageWriterIsoClass *klass G_GNUC
 \**********************************************************************/
 static const gchar parameter_sheet[] =
 "<parameters>"
-"  <parameter>"
-"    <id>writer.image_file_format</id>"
-"    <name>Image file format</name>"
-"    <description>Filename format of image file. Syntax: %b = image basename, %s = session number, %t = track number, %e = extension</description>"
-"    <type>string</type>"
-"    <default>%b-%02s-%02t.%e</default>"
-"  </parameter>"
 "  <parameter>"
 "    <id>writer.audio_file_suffix</id>"
 "    <name>Audio file suffix</name>"
