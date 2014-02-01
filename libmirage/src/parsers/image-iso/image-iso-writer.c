@@ -21,6 +21,10 @@
 
 #define __debug__ "ISO-Writer"
 
+#define PARAM_AUDIO_FILE_SUFFIX "writer.audio_file_suffix"
+#define PARAM_WRITE_RAW "writer.write_raw"
+#define PARAM_WRITE_SUBCHANNEL "writer.write_subchannel"
+
 
 /**********************************************************************\
  *                          Private structure                         *
@@ -30,9 +34,6 @@
 struct _MirageWriterIsoPrivate
 {
     gchar *image_file_basename;
-    gchar *audio_file_suffix;
-    gboolean write_raw;
-    gboolean write_subchannel;
 
     GList *image_file_streams;
 };
@@ -42,18 +43,7 @@ static const gchar *audio_filter_chain[] = {
     NULL
 };
 
-static const gchar parameter_sheet[];
 static const gchar image_file_format[] = "%b-%02s-%02t.%e";
-
-
-static void mirage_writer_iso_clear_options (MirageWriterIso *self)
-{
-    g_free(self->priv->image_file_basename);
-    self->priv->image_file_basename = NULL;
-
-    g_free(self->priv->audio_file_suffix);
-    self->priv->audio_file_suffix = NULL;
-}
 
 
 /**********************************************************************\
@@ -150,13 +140,9 @@ static void mirage_writer_iso_update_disc_filenames (MirageWriterIso *self G_GNU
 /**********************************************************************\
  *                MirageWriter methods implementation                 *
 \**********************************************************************/
-static gboolean mirage_writer_iso_open_image (MirageWriter *self_, MirageDisc *disc, GHashTable *options, GError **error G_GNUC_UNUSED)
+static gboolean mirage_writer_iso_open_image (MirageWriter *_self, MirageDisc *disc, GError **error G_GNUC_UNUSED)
 {
-    MirageWriterIso *self = MIRAGE_WRITER_ISO(self_);
-    GVariant *option;
-
-    /* Clear options */
-    mirage_writer_iso_clear_options(self);
+    MirageWriterIso *self = MIRAGE_WRITER_ISO(_self);
 
     /* Determine image file basename */
     const gchar *filename = mirage_disc_get_filenames(disc)[0];
@@ -168,41 +154,18 @@ static gboolean mirage_writer_iso_open_image (MirageWriter *self_, MirageDisc *d
         self->priv->image_file_basename = g_strndup(filename, suffix - filename);
     }
 
-    /* Option: audio file suffix */
-    option = g_hash_table_lookup(options, "writer.audio_file_suffix");
-    if (option) {
-        self->priv->audio_file_suffix = g_variant_dup_string(option, NULL);
-    } else {
-        self->priv->audio_file_suffix = g_strdup("wav");
-    }
-
-    /* Option: write raw */
-    option = g_hash_table_lookup(options, "writer.write_raw");
-    if (option) {
-        self->priv->write_raw = g_variant_get_boolean(option);
-    } else {
-        self->priv->write_raw = FALSE;
-    }
-
-    /* Option: write subchannel */
-    option = g_hash_table_lookup(options, "writer.write_subchannel");
-    if (option) {
-        self->priv->write_subchannel = g_variant_get_boolean(option);
-    } else {
-        self->priv->write_subchannel = FALSE;
-    }
-
+    /* Print parameters */
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_WRITER, "%s: image file basename: '%s'\n", __debug__, self->priv->image_file_basename);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_WRITER, "%s: audio file suffix: '%s'\n", __debug__, self->priv->audio_file_suffix);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_WRITER, "%s: write raw: %d\n", __debug__, self->priv->write_raw);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_WRITER, "%s: write subchannel: %d\n", __debug__, self->priv->write_subchannel);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_WRITER, "%s: audio file suffix: '%s'\n", __debug__, mirage_writer_get_parameter_string(_self, PARAM_AUDIO_FILE_SUFFIX));
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_WRITER, "%s: write raw: %d\n", __debug__, mirage_writer_get_parameter_boolean(_self, PARAM_WRITE_RAW));
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_WRITER, "%s: write subchannel: %d\n", __debug__, mirage_writer_get_parameter_boolean(_self, PARAM_WRITE_SUBCHANNEL));
 
     return TRUE;
 }
 
-static MirageFragment *mirage_writer_iso_create_fragment (MirageWriter *self_, MirageTrack *track, MirageFragmentRole role, GError **error)
+static MirageFragment *mirage_writer_iso_create_fragment (MirageWriter *_self, MirageTrack *track, MirageFragmentRole role, GError **error)
 {
-    MirageWriterIso *self = MIRAGE_WRITER_ISO(self_);
+    MirageWriterIso *self = MIRAGE_WRITER_ISO(_self);
 
     MirageFragment *fragment = g_object_new(MIRAGE_TYPE_FRAGMENT, NULL);
     gchar *filename;
@@ -212,10 +175,13 @@ static MirageFragment *mirage_writer_iso_create_fragment (MirageWriter *self_, M
         return fragment;
     }
 
+    gboolean write_raw = mirage_writer_get_parameter_boolean(_self, PARAM_WRITE_RAW);
+    gboolean write_subchannel = mirage_writer_get_parameter_boolean(_self, PARAM_WRITE_SUBCHANNEL);
+
     const gchar *extension;
     const gchar **filter_chain = NULL;
 
-    if (self->priv->write_subchannel || self->priv->write_raw) {
+    if (write_subchannel || write_raw) {
         /* Raw mode (also implied by subchannel) */
         extension = "bin";
         mirage_fragment_main_data_set_size(fragment, 2352);
@@ -223,7 +189,7 @@ static MirageFragment *mirage_writer_iso_create_fragment (MirageWriter *self_, M
         /* Cooked mode */
         switch (mirage_track_get_sector_type(track)) {
             case MIRAGE_SECTOR_AUDIO: {
-                extension = self->priv->audio_file_suffix;
+                extension = mirage_writer_get_parameter_string(_self, PARAM_AUDIO_FILE_SUFFIX);
                 mirage_fragment_main_data_set_size(fragment, 2352);
                 filter_chain = audio_filter_chain;
                 break;
@@ -251,7 +217,7 @@ static MirageFragment *mirage_writer_iso_create_fragment (MirageWriter *self_, M
     }
 
     /* Subchannel; only internal PW96 interleaved is supported */
-    if (self->priv->write_subchannel) {
+    if (write_subchannel) {
         mirage_fragment_subchannel_data_set_format(fragment, MIRAGE_SUBCHANNEL_DATA_FORMAT_PW96_INTERLEAVED | MIRAGE_SUBCHANNEL_DATA_FORMAT_INTERNAL);
         mirage_fragment_subchannel_data_set_size(fragment, 96);
     }
@@ -301,9 +267,9 @@ static MirageFragment *mirage_writer_iso_create_fragment (MirageWriter *self_, M
     return fragment;
 }
 
-static gboolean mirage_writer_iso_finalize_image (MirageWriter *self_, MirageDisc *disc, GError **error G_GNUC_UNUSED)
+static gboolean mirage_writer_iso_finalize_image (MirageWriter *_self, MirageDisc *disc, GError **error G_GNUC_UNUSED)
 {
-    MirageWriterIso *self = MIRAGE_WRITER_ISO(self_);
+    MirageWriterIso *self = MIRAGE_WRITER_ISO(_self);
 
     /* Rename some of image files, if necessary */
     mirage_writer_iso_rename_track_image_files(self, disc);
@@ -325,24 +291,37 @@ void mirage_writer_iso_type_register (GTypeModule *type_module)
     return mirage_writer_iso_register_type(type_module);
 }
 
-
 static void mirage_writer_iso_init (MirageWriterIso *self)
 {
     self->priv = MIRAGE_WRITER_ISO_GET_PRIVATE(self);
 
     mirage_writer_generate_info(MIRAGE_WRITER(self),
         "WRITER-ISO",
-        "ISO Image Writer",
-        parameter_sheet
+        "ISO Image Writer"
     );
 
     self->priv->image_file_basename = NULL;
-    self->priv->audio_file_suffix = NULL;
-
-    self->priv->write_raw = FALSE;
-    self->priv->write_subchannel = FALSE;
-
     self->priv->image_file_streams = NULL;
+
+    /* Create parameter sheet */
+    mirage_writer_add_parameter_enum(MIRAGE_WRITER(self),
+        PARAM_AUDIO_FILE_SUFFIX,
+        "Audio file suffix",
+        "Suffix to use for image files of audio tracks. Applicable only when in raw write is disabled.",
+        "wav",
+        "wav", "aiff", "ogg", "flac", "cdr", NULL);
+
+    mirage_writer_add_parameter_boolean(MIRAGE_WRITER(self),
+        PARAM_WRITE_RAW,
+        "Write raw",
+        "A flag indicating whether to write full 2352-byte sector data or only user data part of it (e.g., 2048 bytes for Mode 1)",
+        FALSE);
+
+    mirage_writer_add_parameter_boolean(MIRAGE_WRITER(self),
+        PARAM_WRITE_SUBCHANNEL,
+        "Write subchannel",
+        "A flag indicating whether to write subchannel data or not. If set, it implies raw writing.",
+        FALSE);
 }
 
 static void mirage_writer_iso_dispose (GObject *gobject)
@@ -357,24 +336,12 @@ static void mirage_writer_iso_dispose (GObject *gobject)
     return G_OBJECT_CLASS(mirage_writer_iso_parent_class)->dispose(gobject);
 }
 
-static void mirage_writer_iso_finalize (GObject *gobject)
-{
-    MirageWriterIso *self = MIRAGE_WRITER_ISO(gobject);
-
-    /* Clear options */
-    mirage_writer_iso_clear_options(self);
-
-    /* Chain up to the parent class */
-    return G_OBJECT_CLASS(mirage_writer_iso_parent_class)->finalize(gobject);
-}
-
 static void mirage_writer_iso_class_init (MirageWriterIsoClass *klass)
 {
     GObjectClass *gobject_class = G_OBJECT_CLASS(klass);
     MirageWriterClass *writer_class = MIRAGE_WRITER_CLASS(klass);
 
     gobject_class->dispose = mirage_writer_iso_dispose;
-    gobject_class->finalize = mirage_writer_iso_finalize;
 
     writer_class->open_image = mirage_writer_iso_open_image;
     writer_class->create_fragment = mirage_writer_iso_create_fragment;
@@ -387,36 +354,3 @@ static void mirage_writer_iso_class_init (MirageWriterIsoClass *klass)
 static void mirage_writer_iso_class_finalize (MirageWriterIsoClass *klass G_GNUC_UNUSED)
 {
 }
-
-/**********************************************************************\
- *                        Writer parameter sheet                      *
-\**********************************************************************/
-static const gchar parameter_sheet[] =
-"<parameters>"
-"  <parameter>"
-"    <id>writer.audio_file_suffix</id>"
-"    <name>Audio file suffix</name>"
-"    <description>Suffix to use for image files of audio tracks. Applicable only when in raw write is disabled.</description>"
-"    <type>enum</type>"
-"    <enum>wav</enum>"
-"    <enum>aiff</enum>"
-"    <enum>ogg</enum>"
-"    <enum>flac</enum>"
-"    <enum>cdr</enum>"
-"    <default>wav</default>"
-"  </parameter>"
-"  <parameter>"
-"    <id>writer.write_raw</id>"
-"    <name>Write raw</name>"
-"    <description>A flag indicating whether to write full 2352-byte sector data or only user data part of it (e.g., 2048 bytes for Mode 1)</description>"
-"    <type>bool</type>"
-"    <default>false</default>"
-"  </parameter>"
-"  <parameter>"
-"    <id>writer.write_subchannel</id>"
-"    <name>Write subchannel</name>"
-"    <description>A flag indicating whether to write subchannel data or not. If set, it implies raw writing.</description>"
-"    <type>bool</type>"
-"    <default>false</default>"
-"  </parameter>"
-"</parameters>";

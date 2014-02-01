@@ -37,7 +37,6 @@ typedef enum _MirageFragmentRole
  * MirageWriterInfo:
  * @id: writer ID
  * @name: writer name
- * @parameter_sheet: an XML describing parser's parameters
  *
  * A structure containing writer information. It can be obtained with call to
  * mirage_writer_get_info().
@@ -47,11 +46,21 @@ struct _MirageWriterInfo
 {
     gchar *id;
     gchar *name;
-    gchar *parameter_sheet;
 };
 
 void mirage_writer_info_copy (const MirageWriterInfo *info, MirageWriterInfo *dest);
 void mirage_writer_info_free (MirageWriterInfo *info);
+
+typedef struct _MirageWriterParameter MirageWriterParameter;
+struct _MirageWriterParameter
+{
+    gchar *name;
+    gchar *description;
+
+    GVariant *default_value;
+
+    GVariant *enum_values;
+};
 
 
 /**********************************************************************\
@@ -95,7 +104,7 @@ struct _MirageWriterClass
     MirageObjectClass parent_class;
 
     /* Class members */
-    gboolean (*open_image) (MirageWriter *self, MirageDisc *disc, GHashTable *options, GError **error);
+    gboolean (*open_image) (MirageWriter *self, MirageDisc *disc, GError **error);
     MirageFragment *(*create_fragment) (MirageWriter *self, MirageTrack *track, MirageFragmentRole role, GError **error);
     gboolean (*finalize_image) (MirageWriter *self, MirageDisc *disc, GError **error);
 };
@@ -103,10 +112,20 @@ struct _MirageWriterClass
 /* Used by MIRAGE_TYPE_WRITER */
 GType mirage_writer_get_type (void);
 
-void mirage_writer_generate_info (MirageWriter *self, const gchar *id, const gchar *name, const gchar *parameter_sheet);
+void mirage_writer_generate_info (MirageWriter *self, const gchar *id, const gchar *name);
 const MirageWriterInfo *mirage_writer_get_info (MirageWriter *self);
 
-gboolean mirage_writer_open_image (MirageWriter *self, MirageDisc *disc, GHashTable *options, GError **error);
+void mirage_writer_add_parameter_boolean (MirageWriter *self, const gchar *id, const gchar *name, const gchar *description, gboolean default_value);
+void mirage_writer_add_parameter_string (MirageWriter *self, const gchar *id, const gchar *name, const gchar *description, const gchar *default_value);
+void mirage_writer_add_parameter_int (MirageWriter *self, const gchar *id, const gchar *name, const gchar *description, gint default_value);
+void mirage_writer_add_parameter_enum (MirageWriter *self, const gchar *id, const gchar *name, const gchar *description, const gchar *default_value, ...);
+
+gboolean mirage_writer_get_parameter_boolean (MirageWriter *self, const gchar *id);
+const gchar *mirage_writer_get_parameter_string (MirageWriter *self, const gchar *id);
+gint mirage_writer_get_parameter_int (MirageWriter *self, const gchar *id);
+const gchar *mirage_writer_get_parameter_enum (MirageWriter *self, const gchar *id);
+
+gboolean mirage_writer_open_image (MirageWriter *self, MirageDisc *disc, GHashTable *parameters, GError **error);
 MirageFragment *mirage_writer_create_fragment (MirageWriter *self, MirageTrack *track, MirageFragmentRole role, GError **error);
 gboolean mirage_writer_finalize_image (MirageWriter *self, MirageDisc *disc, GError **error);
 

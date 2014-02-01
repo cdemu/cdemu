@@ -34,13 +34,20 @@
 struct _MirageWriterPrivate
 {
     MirageWriterInfo info;
+
+    /* Parameters, given by user */
+    GHashTable *parameters;
+
+    /* Parameter sheet, specified by writer implementation */
+    GHashTable *parameter_sheet;
+    GList *parameter_sheet_list; /* For keeping order */
 };
 
 
 /**********************************************************************\
  *                           Writer info API                          *
 \**********************************************************************/
-static void mirage_writer_info_generate (MirageWriterInfo *info, const gchar *id, const gchar *name, const gchar *parameter_sheet)
+static void mirage_writer_info_generate (MirageWriterInfo *info, const gchar *id, const gchar *name)
 {
     /* Free old fields */
     mirage_writer_info_free(info);
@@ -48,9 +55,6 @@ static void mirage_writer_info_generate (MirageWriterInfo *info, const gchar *id
     /* Copy ID and name */
     info->id = g_strdup(id);
     info->name = g_strdup(name);
-
-    /* Copy parameter sheet */
-    info->parameter_sheet = g_strdup(parameter_sheet);
 }
 
 /**
@@ -64,7 +68,6 @@ void mirage_writer_info_copy (const MirageWriterInfo *info, MirageWriterInfo *de
 {
     dest->id = g_strdup(info->id);
     dest->name = g_strdup(info->name);
-    dest->parameter_sheet = g_strdup(info->parameter_sheet);
 }
 
 /**
@@ -77,7 +80,120 @@ void mirage_writer_info_free (MirageWriterInfo *info)
 {
     g_free(info->id);
     g_free(info->name);
-    g_free(info->parameter_sheet);
+}
+
+
+
+/**********************************************************************\
+ *                         Parameter sheet API                        *
+\**********************************************************************/
+static void free_parameter_sheet_entry (MirageWriterParameter *parameter)
+{
+    g_free(parameter->name);
+    g_free(parameter->description);
+
+    g_variant_unref(parameter->default_value);
+
+    if (parameter->enum_values) {
+        g_variant_unref(parameter->enum_values);
+    }
+
+    g_free(parameter);
+}
+
+static void mirage_writer_add_parameter (MirageWriter *self, const gchar *id, const gchar *name, const gchar *description, GVariant *default_value, GVariant *enum_values)
+{
+    MirageWriterParameter *parameter = g_new0(MirageWriterParameter, 1);
+
+    parameter->name = g_strdup(name);
+    parameter->description = g_strdup(description);
+
+    parameter->default_value = g_variant_ref_sink(default_value);
+
+    if (enum_values) {
+        parameter->enum_values = g_variant_ref_sink(enum_values);
+    }
+
+    /* Insert into hash table for quick lookup */
+    g_hash_table_insert(self->priv->parameter_sheet, (gpointer)id, parameter);
+
+    /* Insert into list for ordered access */
+    self->priv->parameter_sheet_list = g_list_append(self->priv->parameter_sheet_list, g_strdup(id));
+}
+
+void mirage_writer_add_parameter_boolean (MirageWriter *self, const gchar *id, const gchar *name, const gchar *description, gboolean default_value)
+{
+    mirage_writer_add_parameter(self, id, name, description, g_variant_new("b", default_value), NULL);
+}
+
+void mirage_writer_add_parameter_string (MirageWriter *self, const gchar *id, const gchar *name, const gchar *description, const gchar *default_value)
+{
+    mirage_writer_add_parameter(self, id, name, description, g_variant_new("s", default_value), NULL);
+}
+
+void mirage_writer_add_parameter_int (MirageWriter *self, const gchar *id, const gchar *name, const gchar *description, gint default_value)
+{
+    mirage_writer_add_parameter(self, id, name, description, g_variant_new("i", default_value), NULL);
+}
+
+void mirage_writer_add_parameter_enum (MirageWriter *self, const gchar *id, const gchar *name, const gchar *description, const gchar *default_value, ...)
+{
+    GVariantBuilder builder;
+    g_variant_builder_init(&builder, G_VARIANT_TYPE_STRING_ARRAY);
+
+    va_list args;
+    va_start(args, default_value);
+    while (TRUE) {
+        const gchar *value = va_arg(args, const gchar *);
+        if (!value) {
+            break;
+        }
+        g_variant_builder_add(&builder, "s", value);
+    }
+    va_end(args);
+
+    mirage_writer_add_parameter(self, id, name, description, g_variant_new("s", default_value), g_variant_builder_end(&builder));
+}
+
+
+/**********************************************************************\
+ *                       Parameter retrieval API                      *
+\**********************************************************************/
+static GVariant *mirage_writer_get_parameter (MirageWriter *self, const gchar *id)
+{
+    GVariant *value;
+
+    /* First, try to get it from user-set parameters */
+    value = g_hash_table_lookup(self->priv->parameters, id);
+
+    if (!value) {
+        const MirageWriterParameter *parameter = g_hash_table_lookup(self->priv->parameter_sheet, id);
+        value = parameter->default_value;
+    }
+
+    g_assert(value != NULL); /* If we fail here, there's bug in the code */
+
+    return value;
+}
+
+gboolean mirage_writer_get_parameter_boolean (MirageWriter *self, const gchar *id)
+{
+    return g_variant_get_boolean(mirage_writer_get_parameter(self, id));
+}
+
+const gchar *mirage_writer_get_parameter_string (MirageWriter *self, const gchar *id)
+{
+    return g_variant_get_string(mirage_writer_get_parameter(self, id), NULL);
+}
+
+gint mirage_writer_get_parameter_int (MirageWriter *self, const gchar *id)
+{
+    return g_variant_get_int32(mirage_writer_get_parameter(self, id));
+}
+
+const gchar *mirage_writer_get_parameter_enum (MirageWriter *self, const gchar *id)
+{
+    return g_variant_get_string(mirage_writer_get_parameter(self, id), NULL);
 }
 
 
@@ -89,14 +205,13 @@ void mirage_writer_info_free (MirageWriterInfo *info)
  * @self: a #MirageWriter
  * @id: (in): writer ID
  * @name: (in): writer name
- * @parameter_sheet: (in): XML parameter sheet, describing writer's parameters
  *
  * Generates writer information from the input fields. It is intended as a function
  * for creating writer information in writer implementations.
  */
-void mirage_writer_generate_info (MirageWriter *self, const gchar *id, const gchar *name, const gchar *parameter_sheet)
+void mirage_writer_generate_info (MirageWriter *self, const gchar *id, const gchar *name)
 {
-    mirage_writer_info_generate(&self->priv->info, id, name, parameter_sheet);
+    mirage_writer_info_generate(&self->priv->info, id, name);
 }
 
 /**
@@ -114,9 +229,19 @@ const MirageWriterInfo *mirage_writer_get_info (MirageWriter *self)
 }
 
 
-gboolean mirage_writer_open_image (MirageWriter *self, MirageDisc *disc, GHashTable *options, GError **error)
+gboolean mirage_writer_open_image (MirageWriter *self, MirageDisc *disc, GHashTable *parameters, GError **error)
 {
-    return MIRAGE_WRITER_GET_CLASS(self)->open_image(self, disc, options, error);
+    /* Store parameters */
+    if (self->priv->parameters) {
+        g_hash_table_unref(self->priv->parameters);
+        self->priv->parameters = NULL;
+    }
+    if (parameters) {
+        self->priv->parameters = g_hash_table_ref(parameters);
+    }
+
+    /* Provided by implementation */
+    return MIRAGE_WRITER_GET_CLASS(self)->open_image(self, disc, error);
 }
 
 MirageFragment *mirage_writer_create_fragment (MirageWriter *self, MirageTrack *track, MirageFragmentRole role, GError **error)
@@ -126,7 +251,16 @@ MirageFragment *mirage_writer_create_fragment (MirageWriter *self, MirageTrack *
 
 gboolean mirage_writer_finalize_image (MirageWriter *self, MirageDisc *disc, GError **error)
 {
-    return MIRAGE_WRITER_GET_CLASS(self)->finalize_image(self, disc, error);
+    /* Provided by implementation */
+    gboolean succeeded = MIRAGE_WRITER_GET_CLASS(self)->finalize_image(self, disc, error);
+
+    /* Free parameters */
+    if (self->priv->parameters) {
+        g_hash_table_unref(self->priv->parameters);
+        self->priv->parameters = NULL;
+    }
+
+    return succeeded;
 }
 
 
@@ -142,11 +276,37 @@ static void mirage_writer_init (MirageWriter *self)
 
     /* Make sure all fields are empty */
     memset(&self->priv->info, 0, sizeof(self->priv->info));
+
+    /* Initialize parameter sheet */
+    self->priv->parameter_sheet = g_hash_table_new_full(g_str_hash, g_str_equal, NULL, (GDestroyNotify)free_parameter_sheet_entry);
+}
+
+static void mirage_writer_dispose (GObject *gobject)
+{
+    MirageWriter *self = MIRAGE_WRITER(gobject);
+
+    /* Free user-set parameters */
+    if (self->priv->parameters) {
+        g_hash_table_unref(self->priv->parameters);
+        self->priv->parameters = NULL;
+    }
+
+    /* Chain up to the parent class */
+    return G_OBJECT_CLASS(mirage_writer_parent_class)->dispose(gobject);
 }
 
 static void mirage_writer_finalize (GObject *gobject)
 {
     MirageWriter *self = MIRAGE_WRITER(gobject);
+
+    /* Free parameter sheet */
+    if (self->priv->parameter_sheet) {
+        g_hash_table_unref(self->priv->parameter_sheet);
+        self->priv->parameter_sheet = NULL;
+    }
+
+    g_list_free_full(self->priv->parameter_sheet_list, (GDestroyNotify)g_free);
+    self->priv->parameter_sheet_list = NULL;
 
     /* Free info structure */
     mirage_writer_info_free(&self->priv->info);
@@ -159,6 +319,7 @@ static void mirage_writer_class_init (MirageWriterClass *klass)
 {
     GObjectClass *gobject_class = G_OBJECT_CLASS(klass);
 
+    gobject_class->dispose = mirage_writer_dispose;
     gobject_class->finalize = mirage_writer_finalize;
 
     klass->open_image = NULL;
