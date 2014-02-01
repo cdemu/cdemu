@@ -156,6 +156,17 @@ void mirage_writer_add_parameter_enum (MirageWriter *self, const gchar *id, cons
 }
 
 
+GList *mirage_writer_lookup_parameter_ids (MirageWriter *self)
+{
+    return self->priv->parameter_sheet_list;
+}
+
+const MirageWriterParameter *mirage_writer_lookup_parameter_info (MirageWriter *self, const gchar *id)
+{
+    return g_hash_table_lookup(self->priv->parameter_sheet, id);
+}
+
+
 /**********************************************************************\
  *                       Parameter retrieval API                      *
 \**********************************************************************/

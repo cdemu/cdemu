@@ -120,6 +120,9 @@ void mirage_writer_add_parameter_string (MirageWriter *self, const gchar *id, co
 void mirage_writer_add_parameter_int (MirageWriter *self, const gchar *id, const gchar *name, const gchar *description, gint default_value);
 void mirage_writer_add_parameter_enum (MirageWriter *self, const gchar *id, const gchar *name, const gchar *description, const gchar *default_value, ...);
 
+GList *mirage_writer_lookup_parameter_ids (MirageWriter *self);
+const MirageWriterParameter *mirage_writer_lookup_parameter_info (MirageWriter *self, const gchar *id);
+
 gboolean mirage_writer_get_parameter_boolean (MirageWriter *self, const gchar *id);
 const gchar *mirage_writer_get_parameter_string (MirageWriter *self, const gchar *id);
 gint mirage_writer_get_parameter_int (MirageWriter *self, const gchar *id);
