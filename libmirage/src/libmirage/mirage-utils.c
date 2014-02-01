@@ -1283,15 +1283,20 @@ static gboolean format_string_cb (const GMatchInfo *match_info, GString *result,
     gchar *str;
 
     /* Grab token part of the match */
-    str = g_match_info_fetch(match_info, 2);
+    str = g_match_info_fetch_named(match_info, "token");
     replacement = g_hash_table_lookup(dictionary, str);
     g_free(str);
 
     if (replacement) {
         GString *replacement_format = g_string_new("%");
 
+        /* Grab and prepend prefix */
+        str = g_match_info_fetch_named(match_info, "prefix");
+        g_string_prepend(replacement_format, str);
+        g_free(str);
+
         /* Grab format part of the match */
-        str = g_match_info_fetch(match_info, 1);
+        str = g_match_info_fetch_named(match_info, "format");
         g_string_append(replacement_format, str);
         g_free(str);
 
@@ -1326,11 +1331,6 @@ static gboolean format_string_cb (const GMatchInfo *match_info, GString *result,
 
         /* Free the format string */
         g_string_free(replacement_format, TRUE);
-    } else {
-        /* Passthrough */
-        str = g_match_info_fetch(match_info, 0);
-        g_string_append(result, str);
-        g_free(str);
     }
 
     return FALSE;
@@ -1351,7 +1351,7 @@ gchar *mirage_helper_format_stringv (const gchar *format, va_list args)
     }
 
     /* Now, use regex to replace the tokens with their replacement values */
-    GRegex *regex = g_regex_new("%(?<format>\\w+)?(?<token>\\w)", 0, 0, NULL);
+    GRegex *regex = g_regex_new("(?<prefix>\\W\\w*)?%(?<format>\\w+)?(?<token>\\w)", 0, 0, NULL);
     gchar *result = g_regex_replace_eval(regex, format, -1, 0, 0, (GRegexEvalCallback)format_string_cb, dictionary, NULL);
 
     g_hash_table_destroy(dictionary);
