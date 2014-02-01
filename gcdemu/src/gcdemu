@@ -36,8 +36,6 @@ from gi.repository import Gtk
 from gi.repository import Gio
 from gi.repository import Notify
 
-import xml.etree.ElementTree as elementtree
-
 # Note: AppIndicator is loaded on-demand in main function
 
 # *** Globals ***
@@ -48,10 +46,6 @@ supported_daemon_interface_version = 6
 # I18n
 bindtextdomain(app_name)
 textdomain(app_name)
-
-
-def str2bool (value):
-    return value.lower() in ("yes", "true", "t", "1")
 
 
 ########################################################################
@@ -144,6 +138,9 @@ class CDEmuDaemonProxy (GObject.GObject):
 
     def EnumSupportedFilterStreams (self):
         return self.proxy.EnumSupportedFilterStreams()
+
+    def EnumWriterParameters (self, writer_id):
+        return self.proxy.EnumWriterParameters('(s)', writer_id)
 
 
     def GetNumberOfDevices (self):
@@ -297,7 +294,13 @@ class CDEmu (GObject.GObject):
         self.supported_parsers = self.daemon_proxy.EnumSupportedParsers()
 
         # Get supported writers
-        self.supported_writers = self.daemon_proxy.EnumSupportedWriters()
+        self.supported_writers = []
+        writers = self.daemon_proxy.EnumSupportedWriters()
+        for writer in writers:
+            writer_id = writer[0]
+            writer_name = writer[1]
+            parameter_sheet = self.daemon_proxy.EnumWriterParameters(writer_id)
+            self.supported_writers.append((writer[0], writer[1], parameter_sheet))
 
         # Get supported filter streams
         self.supported_filter_streams = self.daemon_proxy.EnumSupportedFilterStreams()
@@ -1877,11 +1880,7 @@ class gCDEMuCreateBlankImageDialog (Gtk.Dialog):
         writer = self.writers[writer_idx]
 
         # Parse XML parameter sheet
-        try:
-            parameter_nodes = elementtree.fromstring(writer[2])
-        except Exception as e:
-            print("Failed to parse parameter page: %s" % (e))
-            return
+        parameter_sheet = writer[2]
 
         # Create GUI
         table = Gtk.Table()
@@ -1894,38 +1893,21 @@ class gCDEMuCreateBlankImageDialog (Gtk.Dialog):
 
         row = 0
 
-        for node in parameter_nodes.iter("parameter"):
-            parameter_id = node.find("id").text.strip()
-            parameter_type = node.find("type").text.strip()
-            parameter_name = node.find("name").text.strip()
-            parameter_description = node.find("description").text.strip()
-            parameter_default = node.find("default").text.strip()
+        for parameter_entry in parameter_sheet:
+            parameter_id = parameter_entry[0]
+            parameter_name = parameter_entry[1]
+            parameter_description = parameter_entry[2]
+            parameter_default = parameter_entry[3]
+            parameter_enum = parameter_entry[4]
 
             needs_label = True
 
-            if parameter_type == "bool":
-                # Check button
-                widget = Gtk.CheckButton(parameter_name)
-                widget.set_tooltip_text(parameter_description)
-                needs_label = False
-                # Default value
-                widget.set_active(str2bool(parameter_default))
-            elif parameter_type == "int":
-                # Spin button
-                widget = Gtk.SpinButton()
-                # Default value
-                widget.set_value(int(parameter_default, 0))
-            elif parameter_type == "string":
-                # Text entry
-                widget = Gtk.Entry()
-                # Default value
-                widget.set_text(parameter_default)
-            elif parameter_type == "enum":
-                # Store for combo box
+            if len(parameter_enum):
+                # Enum; create a combo box
+                # Store
                 liststore = Gtk.ListStore(GObject.TYPE_STRING, GObject.TYPE_STRING)
-                for enum_value_node in node.iter("enum"):
-                    value = enum_value_node.text.strip()
-                    liststore.append( (value, value) )
+                for enum_value in parameter_enum:
+                    liststore.append( (enum_value, enum_value) )
 
                 # Combo box
                 widget = Gtk.ComboBox.new_with_model_and_entry(liststore)
@@ -1941,6 +1923,23 @@ class gCDEMuCreateBlankImageDialog (Gtk.Dialog):
                     if entry[1] == parameter_default:
                         widget.set_active_iter(entry.iter)
                         break
+            elif isinstance(parameter_default, str):
+                # String; create a text entry
+                widget = Gtk.Entry()
+                # Default value
+                widget.set_text(parameter_default)
+            elif isinstance(parameter_default, bool):
+                # Boolean; create a heck button
+                widget = Gtk.CheckButton(parameter_name)
+                widget.set_tooltip_text(parameter_description)
+                needs_label = False
+                # Default value
+                widget.set_active(parameter_default)
+            elif isinstance(parameter_default, int):
+                # Integer; create a pin button
+                widget = Gtk.SpinButton()
+                # Default value
+                widget.set_value(parameter_default)
             else:
                 continue
 

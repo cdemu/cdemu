@@ -31,8 +31,6 @@ try:
 except ImportError:
     import ConfigParser as configparser
 
-import xml.etree.ElementTree as elementtree
-
 from gettext import gettext as _
 from gettext import bindtextdomain, textdomain
 
@@ -261,47 +259,47 @@ class cmd_create_blank (object):
     # Writer parameter validation
     def validate_writer_parameters (self, dbus_iface, writer_id, parameters):
         # Grab writer's parameter sheet
-        parameter_sheet = fetch_and_parse_writer_parameter_sheet(dbus_iface, writer_id)
+        try:
+            parameter_sheet = dbus_iface.EnumWriterParameters(writer_id)
+        except dbus.DBusException as e:
+            raise CDEmuError(_("Failed to get parameter sheet for writer: %s") % (e))
 
         # Convert the XML tree into a dictionary for convenience
         valid_parameters = {}
-        for node in parameter_sheet.iter("parameter"):
-            valid_parameters[node.find("id").text.strip()] = node
+        for parameter_entry in parameter_sheet:
+            valid_parameters[parameter_entry[0]] = parameter_entry
 
         # Now, go over given parameters and validate them
         for key,value in parameters.items():
             try:
-                node = valid_parameters[key]
+                parameter_entry = valid_parameters[key]
             except KeyError as e:
                 print_warning(_("Parameter '%s' not found in writer's parameter sheet!") % (key))
                 continue
 
             # Determine type
-            parameter_type = node.find("type").text.strip()
-
-            if parameter_type == "bool":
-                # Convert string value to boolean
+            if len(parameter_entry[4]):
+                # Enum; no conversion to be done, but check if value is
+                # on the list of valid values, and if not, print a warning
+                for enum_value in parameter_entry[4]:
+                    if value == enum_value:
+                        break
+                else:
+                    print_warning(_("Invalid value '%s' given for parameter '%s'!") % (value, key))
+            elif isinstance(parameter_entry[3], dbus.String):
+                # String; nothing to do here
+                continue
+            elif isinstance(parameter_entry[3], dbus.Boolean):
+                # Boolean; convert string value to boolean
                 parameters[key] = str2bool(value)
-            elif parameter_type == "int":
+            elif isinstance(parameter_entry[3], dbus.Int32):
                 # Convert string value to integer
                 try:
                     parameters[key] = int(value, 0)
                 except ValueError:
                     raise CDEmuError(_("String '%s' given as value for parameter '%s' is not a number!") % (value, key))
-            elif parameter_type == "string":
-                # Nothing to do here
-                continue
-            elif parameter_type == "enum":
-                # No conversion to be done; but check if value is on the
-                # list of valid values, and if not, print a warning
-                for enum_value_node in node.iter("enum"):
-                    valid_value = enum_value_node.text.strip()
-                    if value == valid_value:
-                        break
-                else:
-                    print_warning(_("Invalid value '%s' given for parameter '%s'!") % (value, key))
             else:
-                print_warning(_("Unhandled parameter type '%s' declared for parameter '%s'!") % (parameter_type, key))
+                print_warning(_("Unhandled parameter type '%s' declared for parameter '%s'!") % (type(parameter[3]), key))
                 continue
 
         return parameters
@@ -1038,21 +1036,36 @@ class cmd_enum_writer_parameters (object):
 
     def __call__ (self, dbus_iface, arguments):
         # Get parameter sheet for the specified writer
-        parameter_nodes = fetch_and_parse_writer_parameter_sheet(dbus_iface, arguments.writer)
+        try:
+            parameter_sheet = dbus_iface.EnumWriterParameters(arguments.writer)
+        except dbus.DBusException as e:
+            raise CDEmuError(_("Failed to get parameter sheet for writer: %s") % (e))
 
         # Print the sheet
         print_header(_("Writer's parameter sheet:"))
 
-        for parameter_node in parameter_nodes.iter("parameter"):
+        for parameter in parameter_sheet:
             print("")
-            print_header("%s" % (parameter_node.find("id").text))
-            print(_("  Name: %s") % (parameter_node.find("name").text))
-            print(_("  Description: %s") % (parameter_node.find("description").text))
-            print(_("  Type: %s") % (parameter_node.find("type").text))
-            print(_("  Default value: %s") % (parameter_node.find("default").text))
+            print_header("%s" % (parameter[0]))
+            print(_("  Name: %s") % (parameter[1]))
+            print(_("  Description: %s") % (parameter[2]))
+            print(_("  Type: %s") % (self.parameter_type_name(parameter)))
+            print(_("  Default value: %s") % (parameter[3]))
 
-            for enum_value_node in parameter_node.iter("enum"):
-                print(_("  Possible value: %s") % (enum_value_node.text))
+            for enum_value in parameter[4]:
+                print(_("  Possible value: %s") % (enum_value))
+
+    def parameter_type_name (self, parameter):
+        if len(parameter[4]):
+            return _("enum")
+        elif isinstance(parameter[3], dbus.String):
+            return _("string")
+        elif isinstance(parameter[3], dbus.Boolean):
+            return _("boolean")
+        elif isinstance(parameter[3], dbus.Int32):
+            return _("integer")
+        else:
+            return _("unknown")
 
 
 # This is a stand-alone function because it is shared between
@@ -1060,9 +1073,11 @@ class cmd_enum_writer_parameters (object):
 def fetch_and_parse_writer_parameter_sheet (dbus_iface, writer_id):
     # Enumerate all supported writers
     try:
-        writers = dbus_iface.EnumSupportedWriters()
+        parameter_sheet = dbus_iface.EnumWriterParameters(writer_id)
     except dbus.DBusException as e:
-        raise CDEmuError(_("Failed to enumerate supported writers: %s") % (e))
+        raise CDEmuError(_("Failed to get parameter sheet for writer: %s") % (e))
+
+    print(parameter_sheet)
 
     # Find the one we want
     for writer in writers:
