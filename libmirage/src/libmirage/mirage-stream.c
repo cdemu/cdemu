@@ -72,6 +72,13 @@ goffset mirage_stream_tell (MirageStream *self)
     return MIRAGE_STREAM_GET_INTERFACE(self)->tell(self);
 }
 
+
+gboolean mirage_stream_move_file (MirageStream *self, const gchar *new_filename, GError **error)
+{
+    return MIRAGE_STREAM_GET_INTERFACE(self)->move_file(self, new_filename, error);
+}
+
+
 GInputStream *mirage_stream_get_g_input_stream (MirageStream *self)
 {
     return g_object_new(MIRAGE_TYPE_COMPAT_INPUT_STREAM, "stream", self, NULL);

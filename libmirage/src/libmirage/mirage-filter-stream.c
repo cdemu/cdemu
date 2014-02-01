@@ -312,6 +312,21 @@ static goffset mirage_filter_stream_tell (MirageStream *_self)
 }
 
 
+static gboolean mirage_filter_stream_move_file (MirageStream *_self, const gchar *new_filename, GError **error)
+{
+    MirageFilterStream *self = MIRAGE_FILTER_STREAM(_self);
+
+    /* We need an underlying stream, because only the file stream at
+       the bottom of filter chain can perform a move */
+    if (!self->priv->underlying_stream) {
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, "No underlying stream!");
+        return FALSE;
+    }
+
+    return mirage_stream_move_file(self->priv->underlying_stream, new_filename, error);
+}
+
+
 /**********************************************************************\
  *   Default implementation of I/O functions (simplified interface)   *
 \**********************************************************************/
@@ -529,8 +544,11 @@ static void mirage_filter_stream_stream_init (MirageStreamInterface *iface)
 {
     iface->get_filename = mirage_filter_stream_get_filename;
     iface->is_writable = mirage_filter_stream_is_writable;
+
     iface->read = mirage_filter_stream_read;
     iface->write = mirage_filter_stream_write;
     iface->seek = mirage_filter_stream_seek;
     iface->tell = mirage_filter_stream_tell;
+
+    iface->move_file = mirage_filter_stream_move_file;
 }

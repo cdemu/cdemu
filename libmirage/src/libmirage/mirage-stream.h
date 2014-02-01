@@ -55,6 +55,8 @@ struct _MirageStreamInterface
     const gchar *(*get_filename) (MirageStream *self);
     gboolean (*is_writable) (MirageStream *self);
 
+    gboolean (*move_file) (MirageStream *self, const gchar *new_filename, GError **error);
+
     gssize (*read) (MirageStream *self, void *buffer, gsize count, GError **error);
     gssize (*write) (MirageStream *self, const void *buffer, gsize count, GError **error);
     gboolean (*seek) (MirageStream *self, goffset offset, GSeekType type, GError **error);
@@ -72,6 +74,8 @@ gssize mirage_stream_read (MirageStream *self, void *buffer, gsize count, GError
 gssize mirage_stream_write (MirageStream *self, const void *buffer, gsize count, GError **error);
 gboolean mirage_stream_seek (MirageStream *self, goffset offset, GSeekType type, GError **error);
 goffset mirage_stream_tell (MirageStream *self);
+
+gboolean mirage_stream_move_file (MirageStream *self, const gchar *new_filename, GError **error);
 
 GInputStream *mirage_stream_get_g_input_stream (MirageStream *self);
 

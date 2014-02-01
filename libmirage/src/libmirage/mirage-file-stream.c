@@ -189,6 +189,72 @@ static goffset mirage_file_stream_tell (MirageStream *_self)
 }
 
 
+static gboolean mirage_file_stream_move_file (MirageStream *_self, const gchar *new_filename, GError **error)
+{
+    MirageFileStream *self = MIRAGE_FILE_STREAM(_self);
+
+    /* Rename is possible only on a writable stream */
+    if (!mirage_stream_is_writable(_self)) {
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, "Cannot move file for non-writable stream!");
+        return FALSE;
+    }
+
+    /* We implement move using g_file_move(), which uses either native
+       move operation (if supported) or copy + delete fallback. Thus,
+       just to be sure, we close the original stream, move the file,
+       and then open the new stream again, restoring the original's
+       stream position */
+    GFile *original_file = g_file_new_for_path(self->priv->filename);
+    GFile *new_file = g_file_new_for_path(new_filename);
+
+    goffset original_position = g_seekable_tell(G_SEEKABLE(self->priv->stream));
+
+    /* Close old stream */
+    g_free(self->priv->filename);
+    self->priv->filename = NULL;
+
+    self->priv->input_stream = NULL;
+    self->priv->output_stream = NULL;
+
+    g_object_unref(self->priv->stream);
+    self->priv->stream = NULL;
+
+    /* Move file */
+    GError *local_error = NULL;
+
+    if (!g_file_move(original_file, new_file, G_FILE_COPY_OVERWRITE, NULL, NULL, NULL, &local_error)) {
+        g_object_unref(original_file);
+        g_object_unref(new_file);
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, "Failed to move file: %s", local_error->message);
+        g_error_free(local_error);
+        return FALSE;
+    }
+
+    /* Open stream again */
+    self->priv->stream = g_file_replace_readwrite(new_file, NULL, FALSE, G_FILE_CREATE_PRIVATE | G_FILE_CREATE_REPLACE_DESTINATION, NULL, &local_error);
+
+    g_object_unref(original_file);
+    g_object_unref(new_file);
+
+    if (self->priv->stream) {
+        self->priv->input_stream = g_io_stream_get_input_stream(G_IO_STREAM(self->priv->stream));
+        self->priv->output_stream = g_io_stream_get_output_stream(G_IO_STREAM(self->priv->stream));
+    } else {
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, "Failed to re-open move file: %s", local_error->message);
+        g_error_free(local_error);
+        return FALSE;
+    }
+
+    /* Restore old stream position */
+    g_seekable_seek(G_SEEKABLE(self->priv->stream), original_position, G_SEEK_SET, NULL, NULL);
+
+    /* Store filename */
+    self->priv->filename = g_strdup(new_filename);
+
+    return TRUE;
+}
+
+
 /**********************************************************************\
  *                             Object init                            *
 \**********************************************************************/
@@ -251,8 +317,11 @@ static void mirage_file_stream_stream_init (MirageStreamInterface *iface)
 {
     iface->get_filename = mirage_file_stream_get_filename;
     iface->is_writable = mirage_file_stream_is_writable;
+
     iface->read = mirage_file_stream_read;
     iface->write = mirage_file_stream_write;
     iface->seek = mirage_file_stream_seek;
     iface->tell = mirage_file_stream_tell;
+
+    iface->move_file = mirage_file_stream_move_file;
 }
