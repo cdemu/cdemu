@@ -88,7 +88,6 @@ static inline void mirage_context_input_stream_cache_remove (MirageContext *self
     while (g_hash_table_iter_next(&iter, &key, &value)) {
         if (value == stream) {
             g_hash_table_iter_remove(&iter);
-            break;
         }
     }
 }
@@ -117,7 +116,6 @@ static inline void mirage_context_output_stream_cache_remove (MirageContext *sel
     while (g_hash_table_iter_next(&iter, &key, &value)) {
         if (value == stream) {
             g_hash_table_iter_remove(&iter);
-            break;
         }
     }
 }
