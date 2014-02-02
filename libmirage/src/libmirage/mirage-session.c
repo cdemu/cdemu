@@ -58,7 +58,7 @@ struct _MirageSessionPrivate
     gint length; /* Length of session (sum of tracks' length) */
 
     /* Session type */
-    MirageSessionTypes session_type;
+    MirageSessionType session_type;
 
     /* Tracks list */
     GList *tracks_list;
@@ -289,7 +289,7 @@ static gint sort_tracks_by_number (MirageTrack *track1, MirageTrack *track2)
  *
  * Sets session type. @type must be one of #MirageSessionTypes.
  */
-void mirage_session_set_session_type (MirageSession *self, MirageSessionTypes type)
+void mirage_session_set_session_type (MirageSession *self, MirageSessionType type)
 {
     /* Set session type */
     self->priv->session_type =type;
@@ -303,7 +303,7 @@ void mirage_session_set_session_type (MirageSession *self, MirageSessionTypes ty
  *
  * Returns: session type
  */
-MirageSessionTypes mirage_session_get_session_type (MirageSession *self)
+MirageSessionType mirage_session_get_session_type (MirageSession *self)
 {
     /* Return session number */
     return self->priv->session_type;
@@ -1514,6 +1514,8 @@ static void mirage_session_init (MirageSession *self)
     self->priv->mcn = NULL;
     self->priv->mcn_fixed = FALSE;
     self->priv->mcn_scan_complete = TRUE;
+
+    self->priv->session_type = MIRAGE_SESSION_CD_ROM;
 
     self->priv->tracks_list = NULL;
     self->priv->languages_list = NULL;

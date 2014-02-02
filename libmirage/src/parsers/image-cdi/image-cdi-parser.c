@@ -184,8 +184,8 @@ static gint mirage_parser_cdi_decode_session_type (MirageParserCdi *self, gint r
         case 2: return MIRAGE_SESSION_CD_ROM_XA; /* CD-ROM XA */
     }
 
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: invalid session type: %d: returning CD-DA!\n", __debug__, raw_session_type);
-    return MIRAGE_SESSION_CD_DA;
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: invalid session type: %d: returning CD-ROM!\n", __debug__, raw_session_type);
+    return MIRAGE_SESSION_CD_ROM;
 }
 
 /* Function for parsing header that appears at the beginning of every track block

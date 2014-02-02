@@ -405,7 +405,7 @@ MirageEnumLanguageCallback
 MirageEnumTrackCallback
 MirageSession
 MirageSessionClass
-MirageSessionTypes
+MirageSessionType
 mirage_session_add_language
 mirage_session_add_track_by_index
 mirage_session_add_track_by_number

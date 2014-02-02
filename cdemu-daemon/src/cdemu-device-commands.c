@@ -39,6 +39,16 @@ static gint map_expected_sector_type (gint type)
     }
 }
 
+static gint map_session_type (MirageSessionType type)
+{
+    switch (type) {
+        case MIRAGE_SESSION_CD_DA:
+        case MIRAGE_SESSION_CD_ROM: return 0;
+        case MIRAGE_SESSION_CD_I: return 0x10;
+        case MIRAGE_SESSION_CD_ROM_XA: return 0x20;
+    }
+}
+
 static gint read_sector_data (MirageSector *sector, MirageDisc *disc, gint address, guint8 mcsb_byte, gint subchannel, guint8 *buffer, GError **error)
 {
     guint8 *ptr = buffer;
@@ -1019,11 +1029,11 @@ static gboolean command_read_disc_information (CdemuDevice *self, const guint8 *
             session = mirage_disc_get_session_by_index(self->priv->disc, 0, NULL);
             if (session) {
                 /* Disc type is determined from first session, as per INF8090 */
-                disc_type = mirage_session_get_session_type(session);
+                disc_type = map_session_type(mirage_session_get_session_type(session));
                 g_object_unref(session);
             } else if (self->priv->recordable_disc && self->priv->open_session) {
                 /* If the only session on disc is incomplete, get disc type from it */
-                disc_type = mirage_session_get_session_type(self->priv->open_session);
+                disc_type = map_session_type(mirage_session_get_session_type(self->priv->open_session));
             }
 
             /* Last session */
@@ -1600,7 +1610,7 @@ static gboolean command_read_toc_pma_atip (CdemuDevice *self, const guint8 *raw_
                     ret_desc->ctl = mirage_track_get_ctl(cur_track);
                     ret_desc->point = 0xA0;
                     ret_desc->pmin = mirage_track_layout_get_track_number(cur_track);
-                    ret_desc->psec = mirage_session_get_session_type(cur_session);
+                    ret_desc->psec = map_session_type(mirage_session_get_session_type(cur_session));
 
                     self->priv->buffer_size += sizeof(struct READ_TOC_PMA_ATIP_2_Descriptor);
                     ret_desc++;

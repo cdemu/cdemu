@@ -33,21 +33,21 @@ G_BEGIN_DECLS
 #define MIRAGE_MCN_SIZE 13
 
 /**
- * MirageSessionTypes:
+ * MirageSessionType:
  * @MIRAGE_SESSION_CD_DA: CD AUDIO
  * @MIRAGE_SESSION_CD_ROM: CD-ROM
  * @MIRAGE_SESSION_CD_I: CD-I
  * @MIRAGE_SESSION_CD_ROM_XA: CD-ROM XA
  *
- * Session types
+ * Session type.
  */
 typedef enum _MirageSessionTypes
 {
-    MIRAGE_SESSION_CD_DA     = 0x00,
-    MIRAGE_SESSION_CD_ROM    = 0x00,
-    MIRAGE_SESSION_CD_I      = 0x10,
-    MIRAGE_SESSION_CD_ROM_XA = 0x20,
-} MirageSessionTypes;
+    MIRAGE_SESSION_CD_DA,
+    MIRAGE_SESSION_CD_ROM,
+    MIRAGE_SESSION_CD_I,
+    MIRAGE_SESSION_CD_ROM_XA,
+} MirageSessionType;
 
 
 /**
@@ -121,8 +121,8 @@ struct _MirageSessionClass
 GType mirage_session_get_type (void);
 
 /* Session type */
-void mirage_session_set_session_type (MirageSession *self, MirageSessionTypes type);
-MirageSessionTypes mirage_session_get_session_type (MirageSession *self);
+void mirage_session_set_session_type (MirageSession *self, MirageSessionType type);
+MirageSessionType mirage_session_get_session_type (MirageSession *self);
 
 /* MCN */
 void mirage_session_set_mcn (MirageSession *self, const gchar *mcn);

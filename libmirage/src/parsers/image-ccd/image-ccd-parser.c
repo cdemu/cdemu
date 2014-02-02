@@ -201,7 +201,25 @@ static gboolean mirage_parser_ccd_build_disc_layout (MirageParserCcd *self, GErr
                 g_object_unref(session);
                 return FALSE;
             }
-            mirage_session_set_session_type(session, ccd_cur_entry->PSec); /* PSEC = Disc Type */
+            /* Disc/session type */
+            switch (ccd_cur_entry->PSec) {
+                case 0x00: {
+                    mirage_session_set_session_type(session, MIRAGE_SESSION_CD_ROM);
+                    break;
+                }
+                case 0x10: {
+                    mirage_session_set_session_type(session, MIRAGE_SESSION_CD_I);
+                    break;
+                }
+                case 0x20: {
+                    mirage_session_set_session_type(session, MIRAGE_SESSION_CD_ROM_XA);
+                    break;
+                }
+                default: {
+                    mirage_session_set_session_type(session, MIRAGE_SESSION_CD_ROM);
+                    break;
+                }
+            }
 
             if (self->priv->disc_data->Catalog) {
                 MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: setting catalog to %.13s\n", __debug__, self->priv->disc_data->Catalog);
