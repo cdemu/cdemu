@@ -1,6 +1,6 @@
 <SECTION>
 <FILE>mirage</FILE>
-MirageDebugMask
+MirageDebugMaskInfo
 MirageEnumFilterStreamInfoCallback
 MirageEnumParserInfoCallback
 MirageEnumWriterInfoCallback
@@ -101,7 +101,7 @@ mirage_contextual_get_type
 MIRAGE_DEBUG
 MIRAGE_DEBUG_ON
 MIRAGE_DEBUG_PRINT_BUFFER
-MirageDebugMasks
+MirageDebugMask
 </SECTION>
 
 <SECTION>
@@ -110,7 +110,7 @@ MirageDebugMasks
 MirageDisc
 MirageDiscClass
 MirageEnumSessionCallback
-MirageMediumTypes
+MirageMediumType
 mirage_disc_add_session_by_index
 mirage_disc_add_session_by_number
 mirage_disc_add_track_by_index
@@ -164,7 +164,7 @@ mirage_disc_get_type
 
 <SECTION>
 <FILE>mirage-error</FILE>
-MirageErrorCodes
+MirageErrorCode
 mirage_error_quark
 <SUBSECTION Standard>
 MIRAGE_ERROR
@@ -284,7 +284,7 @@ mirage_index_get_type
 <TITLE>MirageLanguage</TITLE>
 MirageLanguage
 MirageLanguageClass
-MirageLanguagePackTypes
+MirageLanguagePackType
 mirage_language_get_code
 mirage_language_get_pack_data
 mirage_language_set_code
@@ -483,8 +483,8 @@ MirageEnumFragmentCallback
 MirageEnumIndexCallback
 MirageTrack
 MirageTrackClass
-MirageTrackConstants
-MirageTrackFlags
+MirageTrackConstant
+MirageTrackFlag
 mirage_track_add_fragment
 mirage_track_add_index
 mirage_track_add_language

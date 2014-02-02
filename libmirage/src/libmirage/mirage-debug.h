@@ -42,7 +42,7 @@
  */
 
 /**
- * MirageDebugMasks:
+ * MirageDebugMask:
  * @MIRAGE_DEBUG_ERROR: error message
  * @MIRAGE_DEBUG_WARNING: warning message
  * @MIRAGE_DEBUG_PARSER: message belonging to image parser and file stream parser
@@ -62,7 +62,7 @@
  * All masks except %MIRAGE_DEBUG_ERROR and %MIRAGE_DEBUG_WARNING can be combined
  * together to control verbosity of libMirage.
  */
-typedef enum _MirageDebugMasks
+typedef enum _MirageDebugMask
 {
     /* Debug types */
     MIRAGE_DEBUG_ERROR    = -1,
@@ -78,7 +78,7 @@ typedef enum _MirageDebugMasks
     MIRAGE_DEBUG_STREAM = 0x80,
     MIRAGE_DEBUG_IMAGE_ID = 0x100,
     MIRAGE_DEBUG_WRITER = 0x200,
-} MirageDebugMasks;
+} MirageDebugMask;
 
 
 /**

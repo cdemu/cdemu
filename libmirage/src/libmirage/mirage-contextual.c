@@ -21,7 +21,7 @@
  * SECTION: mirage-contextual
  * @title: MirageContextual
  * @short_description: Interface for attaching context to objects.
- * @see_also: #MirageContext, #MirageObject, #MirageFileFilter
+ * @see_also: #MirageContext, #MirageObject
  * @include: mirage-contextual.h
  *
  * #MirageContextual provides an interface that allows attachment of a

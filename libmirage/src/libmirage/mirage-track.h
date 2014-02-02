@@ -33,32 +33,32 @@ G_BEGIN_DECLS
 #define MIRAGE_ISRC_SIZE 12
 
 /**
- * MirageTrackFlags:
+ * MirageTrackFlag:
  * @MIRAGE_TRACK_FLAG_FOURCHANNEL: four channel audio
  * @MIRAGE_TRACK_FLAG_COPYPERMITTED: copy permitted
  * @MIRAGE_TRACK_FLAG_PREEMPHASIS: pre-emphasis
  *
  * Track flags.
  */
-typedef enum _MirageTrackFlags
+typedef enum _MirageTrackFlag
 {
     MIRAGE_TRACK_FLAG_FOURCHANNEL   = 0x01,
     MIRAGE_TRACK_FLAG_COPYPERMITTED = 0x02,
     MIRAGE_TRACK_FLAG_PREEMPHASIS   = 0x04,
-} MirageTrackFlags;
+} MirageTrackFlag;
 
 /**
- * MirageTrackConstants:
+ * MirageTrackConstant:
  * @MIRAGE_TRACK_LEADIN: Lead-in track
  * @MIRAGE_TRACK_LEADOUT: Lead-out track
  *
  * Track constants.
  */
-typedef enum _MirageTrackConstants
+typedef enum _MirageTrackConstant
 {
     MIRAGE_TRACK_LEADIN  = 0x00,
     MIRAGE_TRACK_LEADOUT = 0xAA,
-} MirageTrackConstants;
+} MirageTrackConstant;
 
 
 /**

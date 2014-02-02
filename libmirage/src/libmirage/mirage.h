@@ -105,7 +105,7 @@ typedef gboolean (*MirageEnumFilterStreamInfoCallback) (const MirageFilterStream
 
 
 /**
- * MirageDebugMask:
+ * MirageDebugMaskInfo:
  * @name: name
  * @value: value
  *
@@ -114,7 +114,7 @@ typedef gboolean (*MirageEnumFilterStreamInfoCallback) (const MirageFilterStream
 typedef struct {
     gchar *name;
     gint value;
-} MirageDebugMask;
+} MirageDebugMaskInfo;
 
 
 /* *** libMirage API *** */
@@ -133,7 +133,7 @@ gboolean mirage_get_filter_streams_type (const GType **types, gint *num_filter_s
 gboolean mirage_get_filter_streams_info (const MirageFilterStreamInfo **info, gint *num_filter_streams, GError **error);
 gboolean mirage_enumerate_filter_streams (MirageEnumFilterStreamInfoCallback func, gpointer user_data, GError **error);
 
-gboolean mirage_get_supported_debug_masks (const MirageDebugMask **masks, gint *num_masks, GError **error);
+gboolean mirage_get_supported_debug_masks (const MirageDebugMaskInfo **masks, gint *num_masks, GError **error);
 
 MirageWriter *mirage_create_writer (const gchar *writer_id, GError **error);
 

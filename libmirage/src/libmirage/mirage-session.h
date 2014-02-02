@@ -41,7 +41,7 @@ G_BEGIN_DECLS
  *
  * Session type.
  */
-typedef enum _MirageSessionTypes
+typedef enum _MirageSessionType
 {
     MIRAGE_SESSION_CD_DA,
     MIRAGE_SESSION_CD_ROM,

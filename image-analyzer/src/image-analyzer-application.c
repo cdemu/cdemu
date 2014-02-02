@@ -90,7 +90,7 @@ static void image_analyzer_application_change_debug_mask (ImageAnalyzerApplicati
     GtkWidget **entries = NULL;
     gint mask;
 
-    const MirageDebugMask *valid_masks;
+    const MirageDebugMaskInfo *valid_masks;
     gint num_valid_masks;
 
     /* Get list of supported debug masks */

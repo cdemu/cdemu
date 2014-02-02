@@ -67,7 +67,7 @@ static void register_error_domain (const gchar *prefix, GType code_enum)
  *                     D-Bus interface implementation                 *
 \**********************************************************************/
 /* Helper that encodes the list of masks */
-static GVariantBuilder *encode_masks (const MirageDebugMask *masks, gint num_masks)
+static GVariantBuilder *encode_masks (const MirageDebugMaskInfo *masks, gint num_masks)
 {
     GVariantBuilder *builder = g_variant_builder_new(G_VARIANT_TYPE("a(si)"));
 
@@ -297,7 +297,7 @@ static void cdemu_daemon_dbus_handle_method_call (GDBusConnection *connection G_
         succeeded = TRUE;
     } else if (!g_strcmp0(method_name, "EnumDaemonDebugMasks")) {
         /* *** EnumDaemonDebugMasks *** */
-        static const MirageDebugMask dbg_masks[] = {
+        static const MirageDebugMaskInfo dbg_masks[] = {
             { "DAEMON_DEBUG_DEVICE", DAEMON_DEBUG_DEVICE },
             { "DAEMON_DEBUG_MMC", DAEMON_DEBUG_MMC },
             { "DAEMON_DEBUG_DELAY", DAEMON_DEBUG_DELAY },
@@ -310,7 +310,7 @@ static void cdemu_daemon_dbus_handle_method_call (GDBusConnection *connection G_
         succeeded = TRUE;
     } else if (!g_strcmp0(method_name, "EnumLibraryDebugMasks")) {
         /* *** EnumLibraryDebugMasks *** */
-        const MirageDebugMask *dbg_masks;
+        const MirageDebugMaskInfo *dbg_masks;
         gint num_dbg_masks;
 
         succeeded = mirage_get_supported_debug_masks(&dbg_masks, &num_dbg_masks, &error);

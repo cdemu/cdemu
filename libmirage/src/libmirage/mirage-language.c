@@ -65,7 +65,7 @@ struct _MirageLanguagePrivate
 \**********************************************************************/
 static MirageLanguage_Pack *mirage_language_get_pack_by_type (MirageLanguage *self, gint pack_type)
 {
-    static const MirageLanguagePackTypes pack_types[] = {
+    static const MirageLanguagePackType pack_types[] = {
         MIRAGE_LANGUAGE_PACK_TITLE,
         MIRAGE_LANGUAGE_PACK_PERFORMER,
         MIRAGE_LANGUAGE_PACK_SONGWRITER,
@@ -132,11 +132,11 @@ gint mirage_language_get_code (MirageLanguage *self)
  * @error: (out) (allow-none): location to store error, or %NULL
  *
  * Sets pack data of type @pack_type to data in @pack_data. @length is length of
- * data in @pack_data. @pack_type must be one of #MirageLanguagePackTypes.
+ * data in @pack_data. @pack_type must be one of #MirageLanguagePackType.
  *
  * Returns: %TRUE on success, %FALSE on failure
  */
-gboolean mirage_language_set_pack_data (MirageLanguage *self, MirageLanguagePackTypes pack_type, const gchar *pack_data, gint length, GError **error)
+gboolean mirage_language_set_pack_data (MirageLanguage *self, MirageLanguagePackType pack_type, const gchar *pack_data, gint length, GError **error)
 {
     MirageLanguage_Pack *pack = mirage_language_get_pack_by_type(self, pack_type);
 
@@ -174,7 +174,7 @@ gboolean mirage_language_set_pack_data (MirageLanguage *self, MirageLanguagePack
  *
  * Returns: %TRUE on success, %FALSE on failure
  */
-gboolean mirage_language_get_pack_data (MirageLanguage *self, MirageLanguagePackTypes pack_type, const gchar **pack_data, gint *length, GError **error)
+gboolean mirage_language_get_pack_data (MirageLanguage *self, MirageLanguagePackType pack_type, const gchar **pack_data, gint *length, GError **error)
 {
     MirageLanguage_Pack *pack = mirage_language_get_pack_by_type(self, pack_type);
 

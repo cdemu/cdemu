@@ -64,7 +64,7 @@ static struct
 } libmirage;
 
 
-static const MirageDebugMask dbg_masks[] = {
+static const MirageDebugMaskInfo dbg_masks[] = {
     { "MIRAGE_DEBUG_PARSER", MIRAGE_DEBUG_PARSER },
     { "MIRAGE_DEBUG_DISC", MIRAGE_DEBUG_DISC },
     { "MIRAGE_DEBUG_SESSION", MIRAGE_DEBUG_SESSION },
@@ -507,13 +507,13 @@ gboolean mirage_enumerate_filter_streams (MirageEnumFilterStreamInfoCallback fun
  * @error: (out) (allow-none): location to store error, or %NULL
  *
  * Retrieves the pointer to array of supported debug masks and stores it in @masks.
- * The array consists of one or more structures of type #MirageDebugMask. The
+ * The array consists of one or more structures of type #MirageDebugMaskInfo. The
  * number of elements in the array is stored in @num_masks. The array belongs to
  * libMirage and should not be altered or freed.
  *
  * Returns: %TRUE on success, %FALSE on failure
  */
-gboolean mirage_get_supported_debug_masks (const MirageDebugMask **masks, gint *num_masks, GError **error)
+gboolean mirage_get_supported_debug_masks (const MirageDebugMaskInfo **masks, gint *num_masks, GError **error)
 {
     /* Make sure libMirage is initialized */
     if (!libmirage.initialized) {

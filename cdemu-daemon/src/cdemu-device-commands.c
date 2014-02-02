@@ -47,6 +47,8 @@ static gint map_session_type (MirageSessionType type)
         case MIRAGE_SESSION_CD_I: return 0x10;
         case MIRAGE_SESSION_CD_ROM_XA: return 0x20;
     }
+
+    return 0;
 }
 
 static gint read_sector_data (MirageSector *sector, MirageDisc *disc, gint address, guint8 mcsb_byte, gint subchannel, guint8 *buffer, GError **error)

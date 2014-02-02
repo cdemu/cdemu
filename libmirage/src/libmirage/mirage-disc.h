@@ -26,7 +26,7 @@
 G_BEGIN_DECLS
 
 /**
- * MirageMediumTypes:
+ * MirageMediumType:
  * @MIRAGE_MEDIUM_CD: CD disc
  * @MIRAGE_MEDIUM_DVD: DVD disc
  * @MIRAGE_MEDIUM_BD: BD (Blue-Ray) disc
@@ -35,14 +35,14 @@ G_BEGIN_DECLS
  *
  * Medium types.
  */
-typedef enum _MirageMediumTypes
+typedef enum _MirageMediumType
 {
     MIRAGE_MEDIUM_CD  = 0x01,
     MIRAGE_MEDIUM_DVD = 0x02,
     MIRAGE_MEDIUM_BD  = 0x03,
     MIRAGE_MEDIUM_HD  = 0x04,
     MIRAGE_MEDIUM_HDD = 0x05
-} MirageMediumTypes;
+} MirageMediumType;
 
 
 /**
@@ -103,8 +103,8 @@ struct _MirageDiscClass
 GType mirage_disc_get_type (void);
 
 /* Medium type */
-void mirage_disc_set_medium_type (MirageDisc *self, MirageMediumTypes medium_type);
-MirageMediumTypes mirage_disc_get_medium_type (MirageDisc *self);
+void mirage_disc_set_medium_type (MirageDisc *self, MirageMediumType medium_type);
+MirageMediumType mirage_disc_get_medium_type (MirageDisc *self);
 
 /* Filename */
 void mirage_disc_set_filenames (MirageDisc *self, const gchar **filenames);

@@ -21,7 +21,7 @@
  * SECTION: mirage-plugin
  * @title: MiragePlugin
  * @short_description: Plugin object.
- * @see_also: #MirageParser, #MirageFragment, #MirageFileFilter
+ * @see_also: #MirageParser, #MirageWriter, #MirageFilterStream
  * @include: mirage-plugin.h
  *
  * #MiragePlugin object is a base object of libMirage's plugin system

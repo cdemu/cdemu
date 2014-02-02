@@ -53,7 +53,7 @@ struct _MirageDiscPrivate
 {
     gchar **filenames;
 
-    MirageMediumTypes medium_type;
+    MirageMediumType medium_type;
 
     /* Layout settings */
     gint start_sector;  /* Start sector */
@@ -248,13 +248,13 @@ static gint sort_sessions_by_number (MirageSession *session1, MirageSession *ses
  * @self: a #MirageDisc
  * @medium_type: (in): medium type
  *
- * Sets medium type. @medium_type must be one of #MirageMediumTypes.
+ * Sets medium type. @medium_type must be one of #MirageMediumType.
  *
  * <note>
  * Intended for internal use only.
  * </note>
  */
-void mirage_disc_set_medium_type (MirageDisc *self, MirageMediumTypes medium_type)
+void mirage_disc_set_medium_type (MirageDisc *self, MirageMediumType medium_type)
 {
     /* Set medium type */
     self->priv->medium_type = medium_type;
@@ -268,7 +268,7 @@ void mirage_disc_set_medium_type (MirageDisc *self, MirageMediumTypes medium_typ
  *
  * Returns: medium type
  */
-MirageMediumTypes mirage_disc_get_medium_type (MirageDisc *self)
+MirageMediumType mirage_disc_get_medium_type (MirageDisc *self)
 {
     /* Return medium type */
     return self->priv->medium_type;

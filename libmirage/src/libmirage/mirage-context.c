@@ -21,7 +21,7 @@
  * SECTION: mirage-context
  * @title: MirageContext
  * @short_description: Context object.
- * @see_also: #MirageContextual, #MirageObject, #MirageFileFilter
+ * @see_also: #MirageContextual, #MirageObject
  * @include: mirage-context.h
  *
  * #MirageContext provides a context, which is attached to libMirage's

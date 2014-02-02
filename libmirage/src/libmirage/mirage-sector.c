@@ -1002,7 +1002,7 @@ gboolean mirage_sector_extract_data (MirageSector *self, const guint8 **main_dat
  * mirage_sector_get_sector_type:
  * @self: a #MirageSector
  *
- * Retrieves sector type (track mode); one of #MirageTrackModes.
+ * Retrieves sector type (track mode); one of #MirageSectorType.
  *
  * Returns: sector type (track mode)
  */

@@ -26,7 +26,7 @@
 G_BEGIN_DECLS
 
 /**
- * MirageLanguagePackTypes:
+ * MirageLanguagePackType:
  * @MIRAGE_LANGUAGE_PACK_TITLE: Album name and Track titles
  * @MIRAGE_LANGUAGE_PACK_PERFORMER: Singer/player/conductor/orchestra
  * @MIRAGE_LANGUAGE_PACK_SONGWRITER: Name of the songwriter
@@ -44,9 +44,9 @@ G_BEGIN_DECLS
  * @MIRAGE_LANGUAGE_PACK_UPC_ISRC: UPC/EAN code of album and ISRC for tracks
  * @MIRAGE_LANGUAGE_PACK_SIZE: Size information of the block
  *
- * CD-TEXT pack types
+ * CD-TEXT pack types.
  */
-typedef enum _MirageLanguagePackTypes
+typedef enum _MirageLanguagePackType
 {
     MIRAGE_LANGUAGE_PACK_TITLE       = 0x80,
     MIRAGE_LANGUAGE_PACK_PERFORMER   = 0x81,
@@ -64,7 +64,7 @@ typedef enum _MirageLanguagePackTypes
     MIRAGE_LANGUAGE_PACK_CLOSED_INFO = 0x8D,
     MIRAGE_LANGUAGE_PACK_UPC_ISRC    = 0x8E,
     MIRAGE_LANGUAGE_PACK_SIZE        = 0x8F,
-} MirageLanguagePackTypes;
+} MirageLanguagePackType;
 
 
 /**********************************************************************\
@@ -114,8 +114,8 @@ void mirage_language_set_code (MirageLanguage *self, gint code);
 gint mirage_language_get_code (MirageLanguage *self);
 
 /* Field: set/get */
-gboolean mirage_language_set_pack_data (MirageLanguage *self, MirageLanguagePackTypes pack_type, const gchar *pack_data, gint length, GError **error);
-gboolean mirage_language_get_pack_data (MirageLanguage *self, MirageLanguagePackTypes pack_type, const gchar **pack_data, gint *length, GError **error);
+gboolean mirage_language_set_pack_data (MirageLanguage *self, MirageLanguagePackType pack_type, const gchar *pack_data, gint length, GError **error);
+gboolean mirage_language_get_pack_data (MirageLanguage *self, MirageLanguagePackType pack_type, const gchar **pack_data, gint *length, GError **error);
 
 G_END_DECLS
 
