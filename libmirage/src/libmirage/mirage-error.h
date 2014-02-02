@@ -43,8 +43,9 @@ GType  mirage_error_get_type (void);
  * @MIRAGE_ERROR_STREAM_ERROR: error in stream code
  * @MIRAGE_ERROR_IMAGE_FILE_ERROR: error related to image file
  * @MIRAGE_ERROR_DATA_FILE_ERROR: error related to data file
- * @MIRAGE_ERROR_CANNOT_HANDLE: parser/fragment/file filter cannot handle given file
+ * @MIRAGE_ERROR_CANNOT_HANDLE: parser/writer/filter stream cannot handle given file
  * @MIRAGE_ERROR_ENCRYPTED_IMAGE: image is encrypted and password needs to be provided
+ * @MIRAGE_ERROR_WRITER_ERROR: error in image writer code
  *
  * Error codes for libMirage library.
  */
@@ -63,6 +64,7 @@ typedef enum _MirageErrorCodes
     MIRAGE_ERROR_DATA_FILE_ERROR,
     MIRAGE_ERROR_CANNOT_HANDLE,
     MIRAGE_ERROR_ENCRYPTED_IMAGE,
+    MIRAGE_ERROR_WRITER_ERROR,
 } MirageErrorCodes;
 
 G_END_DECLS
