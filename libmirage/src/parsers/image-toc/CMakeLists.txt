@@ -8,7 +8,8 @@ if (TRUE)
     # Parser
     add_library(${parser_name} MODULE
         ${parser_name}-parser.c
-        ${parser_name}-plugin.c 
+        ${parser_name}-plugin.c
+        ${parser_name}-writer.c
     )
     target_link_libraries(${parser_name} ${GLIB_LIBRARIES})
 
