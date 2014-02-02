@@ -167,6 +167,53 @@ const MirageWriterParameter *mirage_writer_lookup_parameter_info (MirageWriter *
 }
 
 
+static gboolean mirage_writer_validate_parameters (MirageWriter *self, GHashTable *parameters, GError **error)
+{
+    GHashTableIter iter;
+    gpointer key, value;
+
+    /* Iterate over user-supplied parameters */
+    g_hash_table_iter_init(&iter, parameters);
+    while (g_hash_table_iter_next(&iter, &key, &value)) {
+        /* Look up the parameter in writer's parameter sheet */
+        MirageWriterParameter *sheet_entry = g_hash_table_lookup(self->priv->parameter_sheet, key);
+
+        /* For now, we just skip unhandled parameters */
+        if (!sheet_entry) {
+            continue;
+        }
+
+        /* Validate the type */
+        if (!g_variant_is_of_type(value, g_variant_get_type(sheet_entry->default_value))) {
+            g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_WRITER_ERROR, "Parameter '%s' has invalid type (expected '%s', got '%s')!", (const gchar *)key, g_variant_get_type_string(value), g_variant_get_type_string(sheet_entry->default_value));
+            return FALSE;
+        }
+
+        /* If parameter is an enum, validate the value */
+        if (sheet_entry->enum_values) {
+            gboolean valid = FALSE;
+
+            for (guint i = 0; i < g_variant_n_children(sheet_entry->enum_values); i++) {
+                GVariant *enum_value = g_variant_get_child_value(sheet_entry->enum_values, i);
+                valid = g_variant_equal(value, enum_value);
+                g_variant_unref(enum_value);
+
+                if (valid) {
+                    break;
+                }
+            }
+
+            if (!valid) {
+                g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_WRITER_ERROR, "Parameter '%s' has invalid value!", (const gchar *)key);
+                return FALSE;
+            }
+        }
+    }
+
+    return TRUE;
+}
+
+
 /**********************************************************************\
  *                       Parameter retrieval API                      *
 \**********************************************************************/
@@ -242,12 +289,20 @@ const MirageWriterInfo *mirage_writer_get_info (MirageWriter *self)
 
 gboolean mirage_writer_open_image (MirageWriter *self, MirageDisc *disc, GHashTable *parameters, GError **error)
 {
-    /* Store parameters */
+    /* Clear old parameters */
     if (self->priv->parameters) {
         g_hash_table_unref(self->priv->parameters);
         self->priv->parameters = NULL;
     }
+
+    /* Store new parameters */
     if (parameters) {
+        /* Validate parameters */
+        if (!mirage_writer_validate_parameters(self, parameters, error)) {
+            return FALSE;
+        }
+
+        /* Store pointer and ref */
         self->priv->parameters = g_hash_table_ref(parameters);
     }
 
