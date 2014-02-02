@@ -231,7 +231,7 @@ static gboolean mirage_file_stream_move_file (MirageStream *_self, const gchar *
     }
 
     /* Open stream again */
-    self->priv->stream = g_file_replace_readwrite(new_file, NULL, FALSE, G_FILE_CREATE_PRIVATE | G_FILE_CREATE_REPLACE_DESTINATION, NULL, &local_error);
+    self->priv->stream = g_file_open_readwrite(new_file, NULL, &local_error);
 
     g_object_unref(original_file);
     g_object_unref(new_file);
@@ -240,7 +240,7 @@ static gboolean mirage_file_stream_move_file (MirageStream *_self, const gchar *
         self->priv->input_stream = g_io_stream_get_input_stream(G_IO_STREAM(self->priv->stream));
         self->priv->output_stream = g_io_stream_get_output_stream(G_IO_STREAM(self->priv->stream));
     } else {
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, "Failed to re-open move file: %s", local_error->message);
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_STREAM_ERROR, "Failed to re-open moved file: %s", local_error->message);
         g_error_free(local_error);
         return FALSE;
     }
