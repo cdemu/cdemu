@@ -1879,7 +1879,6 @@ class gCDEMuCreateBlankImageDialog (Gtk.Dialog):
         writer_idx = self.combobox_writer.get_model().get_value(i, 1)
         writer = self.writers[writer_idx]
 
-        # Parse XML parameter sheet
         parameter_sheet = writer[2]
 
         # Create GUI
