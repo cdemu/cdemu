@@ -1015,7 +1015,7 @@ MirageFragment *mirage_track_find_fragment_with_subchannel (MirageTrack *self, G
     for (GList *entry = self->priv->fragments_list; entry; entry = entry->next) {
         fragment = entry->data;
 
-        if (mirage_fragment_subchannel_data_get_size(fragment)) {
+        if (mirage_fragment_subchannel_data_get_size(fragment) && !mirage_fragment_is_writable(fragment)) {
             break;
         } else {
             fragment = NULL;

@@ -142,6 +142,7 @@ gint mirage_fragment_subchannel_data_get_format (MirageFragment *self);
 gboolean mirage_fragment_read_subchannel_data (MirageFragment *self, gint address, guint8 **buffer, gint *length, GError **error);
 gboolean mirage_fragment_write_subchannel_data (MirageFragment *self, gint address, const guint8 *buffer, gint length, GError **error);
 
+gboolean mirage_fragment_is_writable (MirageFragment *self);
 
 G_END_DECLS
 

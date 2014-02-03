@@ -832,6 +832,12 @@ gboolean mirage_fragment_write_subchannel_data (MirageFragment *self, gint addre
 }
 
 
+gboolean mirage_fragment_is_writable (MirageFragment *self)
+{
+    return (self->priv->main_stream != NULL && mirage_stream_is_writable(self->priv->main_stream));
+}
+
+
 /**********************************************************************\
  *                             Object init                            *
 \**********************************************************************/
