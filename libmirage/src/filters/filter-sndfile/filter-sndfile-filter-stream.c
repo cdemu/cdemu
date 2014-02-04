@@ -172,6 +172,9 @@ static gboolean mirage_filter_stream_sndfile_open (MirageFilterStream *_self, Mi
         return FALSE;
     }
 
+    /* Turn on auto-header update */
+    sf_command(self->priv->sndfile, SFC_SET_UPDATE_HEADER_AUTO, NULL, SF_TRUE);
+
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: audio file info:\n", __debug__);
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  frames: %d\n", __debug__, self->priv->format.frames);
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  samplerate: %d\n", __debug__, self->priv->format.samplerate);
