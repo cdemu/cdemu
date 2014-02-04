@@ -442,15 +442,34 @@ static void ui_callback_convert_image (GtkAction *action G_GNUC_UNUSED, ImageAna
         }
     }
 
+    /* Hide the dialog */
+    gtk_widget_hide(GTK_WIDGET(self->priv->dialog_image_writer));
+
+    /* Do conversion */
     if (response == GTK_RESPONSE_ACCEPT) {
-        g_print("FIXME: image conversion: %s, %p, %p\n", filename, writer, writer_parameters);
+        GError *local_error = NULL;
+
+        /* Make sure writer has our context */
+        mirage_contextual_set_context(MIRAGE_CONTEXTUAL(writer), self->priv->mirage_context);
+
+        /* Convert */
+        if (!mirage_writer_convert_image(writer, filename, self->priv->disc, writer_parameters, &local_error)) {
+            GtkWidget *error_dialog = gtk_message_dialog_new(
+                    GTK_WINDOW(self->priv->window),
+                    GTK_DIALOG_DESTROY_WITH_PARENT,
+                    GTK_MESSAGE_ERROR,
+                    GTK_BUTTONS_CLOSE,
+                    local_error->message);
+
+            gtk_dialog_run(GTK_DIALOG(error_dialog));
+            gtk_widget_destroy(error_dialog);
+
+            g_error_free(local_error);
+        }
 
         g_object_unref(writer);
         g_hash_table_unref(writer_parameters);
     }
-
-    /* Hide the dialog */
-    gtk_widget_hide(GTK_WIDGET(self->priv->dialog_image_writer));
 }
 
 static void ui_callback_open_dump (GtkAction *action G_GNUC_UNUSED, ImageAnalyzerApplication *self)
