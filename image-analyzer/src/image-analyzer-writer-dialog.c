@@ -193,6 +193,29 @@ GHashTable *image_analyzer_writer_dialog_get_writer_parameters (ImageAnalyzerWri
 {
     GHashTable *writer_parameters = g_hash_table_new_full(g_str_hash, g_str_equal, NULL, (GDestroyNotify)g_variant_unref);
 
+    /* Iterate over our writer options widgets and collect their values */
+    GHashTableIter iter;
+    gpointer parameter_id, widget;
+
+    g_hash_table_iter_init(&iter, self->priv->writer_options_widgets);
+    while (g_hash_table_iter_next(&iter, &parameter_id, &widget)) {
+        GVariant *value;
+
+        if (GTK_IS_ENTRY(widget)) {
+            value = g_variant_new("s", gtk_entry_get_text(GTK_ENTRY(widget)));
+        } else if (GTK_IS_SPIN_BUTTON(widget)) {
+            value = g_variant_new("i", gtk_spin_button_get_value(GTK_SPIN_BUTTON(widget)));
+        } else if (GTK_IS_CHECK_BUTTON(widget)) {
+            value = g_variant_new("b", gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(widget)));
+        } else if (GTK_IS_COMBO_BOX_TEXT(widget)) {
+            value = g_variant_new("s", gtk_combo_box_text_get_active_text(GTK_COMBO_BOX_TEXT(widget)));
+        } else {
+            continue;
+        }
+
+        g_hash_table_insert(writer_parameters, parameter_id, value);
+    }
+
     return writer_parameters;
 }
 
