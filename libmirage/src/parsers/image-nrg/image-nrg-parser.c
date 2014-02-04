@@ -544,8 +544,8 @@ static gboolean mirage_parser_nrg_load_session (MirageParserNrg *self, gint sess
     session = g_object_new(MIRAGE_TYPE_SESSION, NULL);
     mirage_disc_add_session_by_index(self->priv->disc, -1, session);
 
-    /* Set parser's MCN */
-    if (self->priv->dao_header->mcn) {
+    /* Set MCN */
+    if (strlen(self->priv->dao_header->mcn)) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: MCN: %.13s\n", __debug__, self->priv->dao_header->mcn);
         mirage_session_set_mcn(session, self->priv->dao_header->mcn);
     }
