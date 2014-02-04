@@ -252,6 +252,13 @@ static GString *mirage_writer_toc_create_toc_file (MirageWriterToc *self G_GNUC_
                 }
             } else {
                 /* Pregap fragment */
+                if (i == 0 && j == 0) {
+                    /* TOC does not list first track's pregap. Unless it
+                       is greater than standard 150? But the first fragment
+                       (j == 0) always model the standard pregap */
+                    continue;
+                }
+
                 if (sector_type == MIRAGE_SECTOR_AUDIO && !write_subchannel) {
                     g_string_append_printf(toc_contents, "SILENCE %s\n", length_msf);
                 } else {
@@ -264,6 +271,16 @@ static GString *mirage_writer_toc_create_toc_file (MirageWriterToc *self G_GNUC_
 
         /* Track start */
         if (track_start) {
+            if (i == 0) {
+                /* First track is a special case, since TOC does not list
+                   its standard 150-sector pregap */
+                if (track_start <= 150) {
+                    continue;
+                } else {
+                    track_start -= 150;
+                }
+            }
+
             gchar *track_start_msf = mirage_helper_lba2msf_str(track_start, FALSE);
             g_string_append_printf(toc_contents, "START %s\n", track_start_msf);
             g_free(track_start_msf);
