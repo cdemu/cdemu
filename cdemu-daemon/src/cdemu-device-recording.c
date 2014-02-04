@@ -1252,7 +1252,7 @@ void cdemu_device_recording_set_mode (CdemuDevice *self, gint mode)
             break;
         }
         case 2: {
-            if (mirage_disc_get_medium_type(self->priv->disc) == MIRAGE_MEDIUM_DVD) {
+            if (self->priv->disc && mirage_disc_get_medium_type(self->priv->disc) == MIRAGE_MEDIUM_DVD) {
                 CDEMU_DEBUG(self, DAEMON_DEBUG_RECORDING, "%s: activating disc-at-once recording (DVD)\n", __debug__);
                 self->priv->recording = &recording_commands_dao;
             } else {
