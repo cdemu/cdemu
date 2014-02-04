@@ -213,6 +213,9 @@ static gboolean cdemu_device_tao_recording_open_track (CdemuDevice *self, Mirage
         mirage_track_set_isrc(self->priv->open_track, (gchar *)&p_0x05->isrc[1]);
     }
 
+    /* Set flags from CTL stored in write parameters mode page*/
+    mirage_track_set_ctl(self->priv->open_track, p_0x05->track_mode);
+
     /* The track needs a pregap */
     GError *local_error = NULL;
     MirageFragment *fragment = mirage_writer_create_fragment(self->priv->image_writer, self->priv->open_track, MIRAGE_FRAGMENT_PREGAP, &local_error);
@@ -358,6 +361,7 @@ static gboolean cdemu_device_raw_recording_write_sector (CdemuDevice *self, gint
     mirage_sector_get_subchannel(sector, MIRAGE_SUBCHANNEL_Q, &subchannel, NULL, NULL);
 
     guint8 adr = subchannel[0] & 0x0F;
+    guint8 ctl = subchannel[0] >> 4;
     guint8 tno = subchannel[1];
     guint8 idx = subchannel[2];
     gint track_relative_address = mirage_helper_msf2lba(mirage_helper_bcd2hex(subchannel[3]), mirage_helper_bcd2hex(subchannel[4]), mirage_helper_bcd2hex(subchannel[5]), FALSE);
@@ -414,6 +418,8 @@ static gboolean cdemu_device_raw_recording_write_sector (CdemuDevice *self, gint
             }
 
             cdemu_device_recording_open_track(self, mirage_sector_get_sector_type(sector));
+
+            mirage_track_set_ctl(self->priv->open_track, ctl);
 
             GError *local_error = NULL;
             MirageFragment *fragment;
@@ -965,6 +971,9 @@ gboolean cdemu_device_sao_recording_parse_cue_sheet (CdemuDevice *self, const gu
             /* Create track entry */
             track = g_object_new(MIRAGE_TYPE_TRACK, NULL);
             mirage_session_add_track_by_number(self->priv->cue_sheet, tno, track, NULL);
+
+            /* Set track flags from CTL */
+            mirage_track_set_ctl(track, ctl);
 
             if (self->priv->raw_sao_recording) {
                 /* In raw SAO, we set track's sector type to MIRAGE_SECTOR_RAW_SCRAMBLED;
