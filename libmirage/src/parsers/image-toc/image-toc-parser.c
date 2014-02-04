@@ -646,9 +646,9 @@ static gboolean mirage_parser_toc_callback_track_flag_copy (MirageParserToc *sel
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: parsed %s COPY track flag\n", __debug__, no ? no : "");
 
     if (!g_strcmp0(no, "NO")) {
-        mirage_parser_toc_track_set_flag(self, MIRAGE_TRACK_FLAG_COPYPERMITTED, TRUE);
-    } else {
         mirage_parser_toc_track_set_flag(self, MIRAGE_TRACK_FLAG_COPYPERMITTED, FALSE);
+    } else {
+        mirage_parser_toc_track_set_flag(self, MIRAGE_TRACK_FLAG_COPYPERMITTED, TRUE);
     }
 
     g_free(no);
@@ -663,9 +663,9 @@ static gboolean mirage_parser_toc_callback_track_flag_preemphasis (MirageParserT
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: parsed %s PRE_EMPHASIS track flag\n", __debug__, no ? no : "");
 
     if (!g_strcmp0(no, "NO")) {
-        mirage_parser_toc_track_set_flag(self, MIRAGE_TRACK_FLAG_PREEMPHASIS, TRUE);
-    } else {
         mirage_parser_toc_track_set_flag(self, MIRAGE_TRACK_FLAG_PREEMPHASIS, FALSE);
+    } else {
+        mirage_parser_toc_track_set_flag(self, MIRAGE_TRACK_FLAG_PREEMPHASIS, TRUE);
     }
 
     g_free(no);
