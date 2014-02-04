@@ -74,6 +74,7 @@ set (image-analyzer_SOURCES
     src/image-analyzer-log-window.c
     src/image-analyzer-sector-analysis.c
     src/image-analyzer-sector-read.c
+    src/image-analyzer-writer-dialog.c
     src/main.c
 )
 

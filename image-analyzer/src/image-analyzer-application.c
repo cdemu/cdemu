@@ -35,6 +35,7 @@
 #include "image-analyzer-sector-read.h"
 #include "image-analyzer-disc-structure.h"
 #include "image-analyzer-disc-topology.h"
+#include "image-analyzer-writer-dialog.h"
 
 #include "image-analyzer-dump.h"
 #include "image-analyzer-xml-tags.h"
@@ -384,6 +385,74 @@ static void ui_callback_open_image (GtkAction *action G_GNUC_UNUSED, ImageAnalyz
     gtk_widget_hide(GTK_WIDGET(self->priv->dialog_open_image));
 }
 
+static void ui_callback_convert_image (GtkAction *action G_GNUC_UNUSED, ImageAnalyzerApplication *self)
+{
+    /* We need an opened image for this */
+    if (!self->priv->disc) {
+        return;
+    }
+
+    /* Run the image writer dialog */
+    MirageWriter *writer;
+    GHashTable *writer_parameters;
+    const gchar *filename;
+
+    gint response;
+
+    while (TRUE) {
+        response = gtk_dialog_run(GTK_DIALOG(self->priv->dialog_image_writer));
+
+        if (response == GTK_RESPONSE_ACCEPT) {
+            /* Validate filename */
+            filename = image_analyzer_writer_dialog_get_filename(IMAGE_ANALYZER_WRITER_DIALOG(self->priv->dialog_image_writer));
+            if (!filename || !strlen(filename)) {
+                GtkWidget *message_dialog = gtk_message_dialog_new(
+                    GTK_WINDOW(self->priv->dialog_image_writer),
+                    GTK_DIALOG_DESTROY_WITH_PARENT,
+                    GTK_MESSAGE_ERROR,
+                    GTK_BUTTONS_CLOSE,
+                    "Image filename/basename not set!");
+
+                gtk_dialog_run(GTK_DIALOG(message_dialog));
+                gtk_widget_destroy(message_dialog);
+                continue;
+            }
+
+            /* Validate writer */
+            writer = image_analyzer_writer_dialog_get_writer(IMAGE_ANALYZER_WRITER_DIALOG(self->priv->dialog_image_writer));
+            if (!writer) {
+                GtkWidget *message_dialog = gtk_message_dialog_new(
+                    GTK_WINDOW(self->priv->dialog_image_writer),
+                    GTK_DIALOG_DESTROY_WITH_PARENT,
+                    GTK_MESSAGE_ERROR,
+                    GTK_BUTTONS_CLOSE,
+                    "No image writer is chosen!");
+
+                gtk_dialog_run(GTK_DIALOG(message_dialog));
+                gtk_widget_destroy(message_dialog);
+                continue;
+            }
+
+            /* Get writer parameters */
+            writer_parameters = image_analyzer_writer_dialog_get_writer_parameters(IMAGE_ANALYZER_WRITER_DIALOG(self->priv->dialog_image_writer));
+
+            break;
+        } else {
+            break;
+        }
+    }
+
+    if (response == GTK_RESPONSE_ACCEPT) {
+        g_print("FIXME: image conversion: %s, %p, %p\n", filename, writer, writer_parameters);
+
+        g_object_unref(writer);
+        g_hash_table_unref(writer_parameters);
+    }
+
+    /* Hide the dialog */
+    gtk_widget_hide(GTK_WIDGET(self->priv->dialog_image_writer));
+}
+
 static void ui_callback_open_dump (GtkAction *action G_GNUC_UNUSED, ImageAnalyzerApplication *self)
 {
     /* Run the dialog */
@@ -657,6 +726,7 @@ static const GtkActionEntry menu_entries[] = {
     { "HelpMenuAction", NULL, "_Help", NULL, NULL, NULL },
 
     { "OpenImageAction", GTK_STOCK_OPEN, "_Open image", "<control>O", "Open image", G_CALLBACK(ui_callback_open_image) },
+    { "ConvertImageAction", GTK_STOCK_SAVE, "_Convert image", "<control>C", "Convert image", G_CALLBACK(ui_callback_convert_image) },
     { "OpenDumpAction", GTK_STOCK_OPEN, "Open _dump", "<control>D", "Open dump", G_CALLBACK(ui_callback_open_dump) },
     { "SaveDumpAction", GTK_STOCK_SAVE, "_Save dump", "<control>S", "Save dump", G_CALLBACK(ui_callback_save_dump) },
     { "CloseAction", GTK_STOCK_CLOSE, "_Close", "<control>W", "Close", G_CALLBACK(ui_callback_close) },
@@ -676,6 +746,7 @@ static const gchar menu_xml[] =
     "   <menubar name='MenuBar'>"
     "       <menu name='FileMenu' action='FileMenuAction'>"
     "           <menuitem name='Open image' action='OpenImageAction' />"
+    "           <menuitem name='Convert image' action='ConvertImageAction' />"
     "           <separator/>"
     "           <menuitem name='Open dump' action='OpenDumpAction' />"
     "           <menuitem name='Save dump' action='SaveDumpAction' />"
@@ -765,6 +836,9 @@ static void create_gui (ImageAnalyzerApplication *self)
     self->priv->dialog_open_image = build_dialog_open_image(GTK_WINDOW(self->priv->window));
     self->priv->dialog_open_dump = build_dialog_open_dump(GTK_WINDOW(self->priv->window));
     self->priv->dialog_save_dump = build_dialog_save_dump(GTK_WINDOW(self->priv->window));
+
+    /* Image writer dialog */
+    self->priv->dialog_image_writer = g_object_new(IMAGE_ANALYZER_TYPE_WRITER_DIALOG, NULL);
 
     /* Mirage log dialog */
     self->priv->dialog_log = g_object_new(IMAGE_ANALYZER_TYPE_LOG_WINDOW, NULL);
@@ -859,6 +933,7 @@ static void image_analyzer_application_finalize (GObject *gobject)
     gtk_widget_destroy(self->priv->window);
 
     gtk_widget_destroy(self->priv->dialog_open_image);
+    gtk_widget_destroy(self->priv->dialog_image_writer);
     gtk_widget_destroy(self->priv->dialog_open_dump);
     gtk_widget_destroy(self->priv->dialog_save_dump);
     gtk_widget_destroy(self->priv->dialog_log);

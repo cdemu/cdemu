@@ -30,6 +30,7 @@ struct _ImageAnalyzerApplicationPrivate
 
     /* Dialogs */
     GtkWidget *dialog_open_image;
+    GtkWidget *dialog_image_writer;
     GtkWidget *dialog_open_dump;
     GtkWidget *dialog_save_dump;
     GtkWidget *dialog_log;
