@@ -132,7 +132,7 @@ gboolean mirage_writer_open_image (MirageWriter *self, MirageDisc *disc, GHashTa
 MirageFragment *mirage_writer_create_fragment (MirageWriter *self, MirageTrack *track, MirageFragmentRole role, GError **error);
 gboolean mirage_writer_finalize_image (MirageWriter *self, MirageDisc *disc, GError **error);
 
-MirageDisc *mirage_writer_get_disc (MirageWriter *self);
+gboolean mirage_writer_convert_image (MirageWriter *self, const gchar *filename, MirageDisc *original_disc, GHashTable *parameters, GError **error);
 
 G_END_DECLS
 

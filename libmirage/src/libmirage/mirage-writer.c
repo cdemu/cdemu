@@ -330,6 +330,189 @@ gboolean mirage_writer_finalize_image (MirageWriter *self, MirageDisc *disc, GEr
 }
 
 
+gboolean mirage_writer_convert_image (MirageWriter *self, const gchar *filename, MirageDisc *original_disc, GHashTable *parameters, GError **error)
+{
+    /* Create disc */
+    MirageDisc *new_disc = g_object_new(MIRAGE_TYPE_DISC, NULL);
+    mirage_object_set_parent(MIRAGE_OBJECT(new_disc), self);
+    mirage_disc_set_filename(new_disc, filename);
+
+    /* Copy properties from original disc */
+    mirage_disc_set_medium_type(new_disc, mirage_disc_get_medium_type(original_disc));
+
+    mirage_disc_layout_set_first_session(new_disc, mirage_disc_layout_get_first_session(original_disc));
+    mirage_disc_layout_set_first_track(new_disc, mirage_disc_layout_get_first_track(original_disc));
+    mirage_disc_layout_set_start_sector(new_disc, mirage_disc_layout_get_start_sector(original_disc));
+
+    /* FIXME: copy disc structures */
+
+    /* Copy DPM data, if available */
+    gint start, resolution, num_entries;
+    const guint32 *data;
+    mirage_disc_get_dpm_data(original_disc, &start, &resolution, &num_entries, &data);
+    if (num_entries) {
+        mirage_disc_set_dpm_data(new_disc, start, resolution, num_entries, data);
+    }
+
+    /* Open image */
+    if (!mirage_writer_open_image(self, new_disc, parameters, error)) {
+        g_object_unref(new_disc);
+        return FALSE;
+    }
+
+    /* Iterate over sessions and tracks, and copy them */
+    gint num_sessions = mirage_disc_get_number_of_sessions(original_disc);
+
+    for (gint i = 0; i < num_sessions; i++) {
+        /* Create and add session */
+        MirageSession *original_session = mirage_disc_get_session_by_index(original_disc, i, NULL);
+        MirageSession *new_session = g_object_new(MIRAGE_TYPE_SESSION, NULL);
+
+        gint num_languages;
+        gint num_tracks;
+
+        mirage_disc_add_session_by_index(new_disc, i, new_session);
+
+        /* Copy session properties */
+        mirage_session_set_session_type(new_session, mirage_session_get_session_type(original_session));
+        mirage_session_set_mcn(new_session, mirage_session_get_mcn(original_session));
+
+        /* Languages */
+        num_languages = mirage_session_get_number_of_languages(original_session);
+        for (gint j = 0; j < num_languages; j++) {
+            MirageLanguage *language = mirage_session_get_language_by_index(original_session, j, NULL);
+            gint language_code = mirage_language_get_code(language);
+
+            mirage_session_add_language(new_session, language_code, language, NULL);
+
+            g_object_unref(language);
+        }
+
+        /* Tracks */
+        num_tracks = mirage_session_get_number_of_tracks(original_session);
+        for (gint j = 0; j < num_tracks; j++) {
+            gint num_indices;
+            gint num_fragments;
+
+            gint track_start;
+            gint num_sectors;
+
+            /* Create and add track */
+            MirageTrack *original_track = mirage_session_get_track_by_index(original_session, j, NULL);
+            MirageTrack *new_track = g_object_new(MIRAGE_TYPE_TRACK, NULL);
+
+            /* Copy track properties */
+            mirage_track_set_flags(new_track, mirage_track_get_flags(original_track));
+            mirage_track_set_sector_type(new_track, mirage_track_get_sector_type(original_track));
+            mirage_track_set_isrc(new_track, mirage_track_get_isrc(original_track));
+
+            /* Track start (also needed for fragments) */
+            track_start = mirage_track_get_track_start(original_track);
+            mirage_track_set_track_start(new_track, track_start);
+
+            /* Indices */
+            num_indices = mirage_track_get_number_of_indices(original_track);
+            for (gint k = 0; k < num_indices; k++) {
+                MirageIndex *index = mirage_track_get_index_by_number(original_track, k, NULL);
+                gint index_address = mirage_index_get_number(index);
+
+                mirage_track_add_index(new_track, index_address, NULL);
+
+                g_object_unref(index);
+            }
+
+            /* Languages */
+            num_languages = mirage_track_get_number_of_languages(original_track);
+            for (gint k = 0; k < num_languages; k++) {
+                MirageLanguage *language = mirage_track_get_language_by_index(original_track, k, NULL);
+                gint language_code = mirage_language_get_code(language);
+
+                mirage_track_add_language(new_track, language_code, language, NULL);
+
+                g_object_unref(language);
+            }
+
+            /* Fragments */
+            num_fragments = mirage_track_get_number_of_fragments(original_track);
+            for (gint k = 0; k < num_fragments; k++) {
+                /* Get original fragment, its address and length */
+                MirageFragment *fragment = mirage_track_get_fragment_by_index(original_track, k, NULL);
+                gint fragment_addess = mirage_fragment_get_address(fragment);
+                gint fragment_length = mirage_fragment_get_length(fragment);
+                g_object_unref(fragment);
+
+                /* Request new fragment from writer */
+                fragment = NULL;
+                if (fragment_addess < track_start) {
+                    /* Pregap fragment */
+                    fragment = mirage_writer_create_fragment(self, new_track, MIRAGE_FRAGMENT_PREGAP, error);
+                } else {
+                    fragment = mirage_writer_create_fragment(self, new_track, MIRAGE_FRAGMENT_DATA, error);
+                }
+
+                if (!fragment) {
+                    g_object_unref(new_track);
+                    g_object_unref(original_track);
+                    g_object_unref(new_session);
+                    g_object_unref(original_session);
+                    g_object_unref(new_disc);
+                    return FALSE;
+                }
+
+                /* Set fragment length */
+                mirage_fragment_set_length(fragment, fragment_length);
+
+                /* Add to track */
+                mirage_track_add_fragment(new_track, k, fragment);
+
+                g_object_unref(fragment);
+            }
+
+            /* Now, copy sectors, one by one */
+            num_sectors = mirage_track_layout_get_length(original_track);
+            for (gint sector_address = 0; sector_address < num_sectors; sector_address++) {
+                gboolean succeeded = TRUE;
+
+                /* Get sector from original track using track-relative address... */
+                MirageSector *sector = mirage_track_get_sector(original_track, sector_address, FALSE, error);
+                if (sector) {
+                    /* ... and put it into new track */
+                    succeeded = mirage_track_put_sector(new_track, sector, error);
+
+                    g_object_unref(sector);
+                } else {
+                    succeeded = FALSE;
+                }
+
+                if (!succeeded) {
+                    g_object_unref(new_track);
+                    g_object_unref(original_track);
+                    g_object_unref(new_session);
+                    g_object_unref(original_session);
+                    g_object_unref(new_disc);
+                    return FALSE;
+                }
+            }
+
+            g_object_unref(new_track);
+            g_object_unref(original_track);
+        }
+
+        g_object_unref(new_session);
+        g_object_unref(original_session);
+    }
+
+    /* Finalize image */
+    if (!mirage_writer_finalize_image(self, new_disc, error)) {
+        g_object_unref(new_disc);
+        return FALSE;
+    }
+
+    g_object_unref(new_disc);
+    return TRUE;
+}
+
+
 /**********************************************************************\
  *                             Object init                            *
 \**********************************************************************/
