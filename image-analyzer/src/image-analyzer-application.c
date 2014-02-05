@@ -347,6 +347,68 @@ static void image_analyzer_application_save_dump (ImageAnalyzerApplication *self
 
 
 /**********************************************************************\
+ *                          Image conversion                          *
+\**********************************************************************/
+static void update_conversion_progress (GtkProgressBar *progress_bar, guint progress, gpointer unused G_GNUC_UNUSED)
+{
+    /* Update progress bar */
+    gtk_progress_bar_set_fraction(progress_bar, progress/100.0);
+
+    /* Process events */
+    while (gtk_events_pending()) {
+        gtk_main_iteration();
+    }
+}
+
+static void image_analyzer_application_convert_image (ImageAnalyzerApplication *self, MirageWriter *writer, const gchar *filename, GHashTable *writer_parameters)
+{
+    GError *local_error = NULL;
+    gboolean succeeded;
+
+    /* Make sure writer has our context */
+    mirage_contextual_set_context(MIRAGE_CONTEXTUAL(writer), self->priv->mirage_context);
+
+    /* Create progess dialog */
+    GtkWidget *progress_dialog = gtk_dialog_new();
+    GtkWidget *content_area = gtk_dialog_get_content_area(GTK_DIALOG(progress_dialog));
+    GtkWidget *progress_bar = gtk_progress_bar_new();
+    gtk_progress_bar_set_text(GTK_PROGRESS_BAR(progress_bar), "Converting image...");
+    gtk_window_set_title(GTK_WINDOW(progress_dialog), "Converting image...");
+    gtk_container_add(GTK_CONTAINER(content_area), progress_bar);
+    gtk_container_set_border_width(GTK_CONTAINER(progress_dialog), 5);
+    gtk_dialog_add_button(GTK_DIALOG(progress_dialog), GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL);
+    gtk_widget_show_all(progress_dialog);
+
+    /* Set up writer's conversion progress reporting */
+    mirage_writer_set_conversion_progress_step(writer, 5);
+    g_signal_connect_swapped(writer, "conversion-progress", G_CALLBACK(update_conversion_progress), progress_bar);
+
+    /* Convert */
+    succeeded = mirage_writer_convert_image(writer, filename, self->priv->disc, writer_parameters, &local_error);
+
+    /* Destroy progress dialog */
+    gtk_widget_destroy(progress_dialog);
+
+    /* Display success/error message */
+    if (!succeeded) {
+        GtkWidget *error_dialog = gtk_message_dialog_new(
+            GTK_WINDOW(self->priv->window),
+            GTK_DIALOG_DESTROY_WITH_PARENT,
+            GTK_MESSAGE_ERROR,
+            GTK_BUTTONS_CLOSE,
+            local_error->message);
+
+        gtk_dialog_run(GTK_DIALOG(error_dialog));
+        gtk_widget_destroy(error_dialog);
+
+        g_error_free(local_error);
+    } else {
+    }
+
+}
+
+
+/**********************************************************************\
  *                             UI callbacks                           *
 \**********************************************************************/
 static void ui_callback_open_image (GtkAction *action G_GNUC_UNUSED, ImageAnalyzerApplication *self)
@@ -445,28 +507,11 @@ static void ui_callback_convert_image (GtkAction *action G_GNUC_UNUSED, ImageAna
     /* Hide the dialog */
     gtk_widget_hide(GTK_WIDGET(self->priv->dialog_image_writer));
 
-    /* Do conversion */
+    /* Conversion */
     if (response == GTK_RESPONSE_ACCEPT) {
-        GError *local_error = NULL;
-
-        /* Make sure writer has our context */
-        mirage_contextual_set_context(MIRAGE_CONTEXTUAL(writer), self->priv->mirage_context);
-
         /* Convert */
-        if (!mirage_writer_convert_image(writer, filename, self->priv->disc, writer_parameters, &local_error)) {
-            GtkWidget *error_dialog = gtk_message_dialog_new(
-                    GTK_WINDOW(self->priv->window),
-                    GTK_DIALOG_DESTROY_WITH_PARENT,
-                    GTK_MESSAGE_ERROR,
-                    GTK_BUTTONS_CLOSE,
-                    local_error->message);
-
-            gtk_dialog_run(GTK_DIALOG(error_dialog));
-            gtk_widget_destroy(error_dialog);
-
-            g_error_free(local_error);
-        }
-
+        image_analyzer_application_convert_image(self, writer, filename, writer_parameters);
+        /* Cleanup */
         g_object_unref(writer);
         g_hash_table_unref(writer_parameters);
     }
