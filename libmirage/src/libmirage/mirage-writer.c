@@ -343,7 +343,7 @@ void mirage_writer_set_conversion_progress_step (MirageWriter *self, guint step)
     self->priv->progress_step = step;
 }
 
-gboolean mirage_writer_convert_image (MirageWriter *self, const gchar *filename, MirageDisc *original_disc, GHashTable *parameters, GError **error)
+gboolean mirage_writer_convert_image (MirageWriter *self, const gchar *filename, MirageDisc *original_disc, GHashTable *parameters, GCancellable *cancellable, GError **error)
 {
     /* Conversion progress tracking */
     gint num_all_sectors = mirage_disc_layout_get_length(original_disc);
@@ -529,6 +529,9 @@ gboolean mirage_writer_convert_image (MirageWriter *self, const gchar *filename,
                 } else {
                     succeeded = FALSE;
                 }
+
+                /* Check if conversion is to be cancelled at user's request */
+                succeeded &= !g_cancellable_set_error_if_cancelled(cancellable, error);
 
                 if (!succeeded) {
                     g_object_unref(new_track);

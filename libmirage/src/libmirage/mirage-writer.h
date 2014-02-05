@@ -134,7 +134,7 @@ gboolean mirage_writer_finalize_image (MirageWriter *self, MirageDisc *disc, GEr
 
 guint mirage_writer_get_conversion_progress_step (MirageWriter *self);
 void mirage_writer_set_conversion_progress_step (MirageWriter *self, guint step);
-gboolean mirage_writer_convert_image (MirageWriter *self, const gchar *filename, MirageDisc *original_disc, GHashTable *parameters, GError **error);
+gboolean mirage_writer_convert_image (MirageWriter *self, const gchar *filename, MirageDisc *original_disc, GHashTable *parameters, GCancellable *cancellable, GError **error);
 
 G_END_DECLS
 
