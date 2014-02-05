@@ -41,6 +41,9 @@ struct _MirageWriterPrivate
     /* Parameter sheet, specified by writer implementation */
     GHashTable *parameter_sheet;
     GList *parameter_sheet_list; /* For keeping order */
+
+    /* Progress signalling */
+    guint progress_step;
 };
 
 
@@ -330,8 +333,24 @@ gboolean mirage_writer_finalize_image (MirageWriter *self, MirageDisc *disc, GEr
 }
 
 
+guint mirage_writer_get_conversion_progress_step (MirageWriter *self)
+{
+    return self->priv->progress_step;
+}
+
+void mirage_writer_set_conversion_progress_step (MirageWriter *self, guint step)
+{
+    self->priv->progress_step = step;
+}
+
 gboolean mirage_writer_convert_image (MirageWriter *self, const gchar *filename, MirageDisc *original_disc, GHashTable *parameters, GError **error)
 {
+    /* Conversion progress tracking */
+    gint num_all_sectors = mirage_disc_layout_get_length(original_disc);
+    gint disc_layout_start = mirage_disc_layout_get_start_sector(original_disc);
+    guint progress_step_size = num_all_sectors*self->priv->progress_step/100;
+    guint conversion_progress = 0;
+
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_WRITER, "%s: image conversion; filename '%s', original disc: %p\n", __debug__, filename, original_disc);
 
     /* Create disc */
@@ -494,6 +513,15 @@ gboolean mirage_writer_convert_image (MirageWriter *self, const gchar *filename,
                 /* Get sector from original track using track-relative address... */
                 MirageSector *sector = mirage_track_get_sector(original_track, sector_address, FALSE, error);
                 if (sector) {
+                    if (progress_step_size) {
+                        gint sector_count = mirage_sector_get_address(sector) - disc_layout_start;
+
+                        if (sector_count >= conversion_progress*progress_step_size) {
+                            g_signal_emit_by_name(self, "conversion-progress", conversion_progress*self->priv->progress_step, NULL);
+                            conversion_progress++;
+                        }
+                    }
+
                     /* ... and put it into new track */
                     succeeded = mirage_track_put_sector(new_track, sector, error);
 
@@ -546,6 +574,9 @@ static void mirage_writer_init (MirageWriter *self)
 
     /* Initialize parameter sheet */
     self->priv->parameter_sheet = g_hash_table_new_full(g_str_hash, g_str_equal, NULL, (GDestroyNotify)free_parameter_sheet_entry);
+
+    /* Conversion progress; disabled by default */
+    self->priv->progress_step = 0;
 }
 
 static void mirage_writer_dispose (GObject *gobject)
@@ -595,4 +626,14 @@ static void mirage_writer_class_init (MirageWriterClass *klass)
 
     /* Register private structure */
     g_type_class_add_private(klass, sizeof(MirageWriterPrivate));
+
+    /* Signals */
+    /**
+     * MirageWriter::conversion-progress:
+     * @object: a #MirageWriter
+     * @progress: percentual image conversion progress
+     *
+     * Emitted when the image conversion progress reaches a new progress mark.
+     */
+    g_signal_new("conversion-progress", G_OBJECT_CLASS_TYPE(klass), G_SIGNAL_RUN_LAST, 0, NULL, NULL, g_cclosure_marshal_VOID__UINT, G_TYPE_NONE, 1, G_TYPE_UINT, NULL);
 }
