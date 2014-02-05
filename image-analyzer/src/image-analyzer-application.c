@@ -349,7 +349,7 @@ static void image_analyzer_application_save_dump (ImageAnalyzerApplication *self
 /**********************************************************************\
  *                          Image conversion                          *
 \**********************************************************************/
-static void update_conversion_progress (GtkProgressBar *progress_bar, guint progress, gpointer unused G_GNUC_UNUSED)
+static void update_conversion_progress (GtkProgressBar *progress_bar, guint progress, MirageWriter *writer G_GNUC_UNUSED)
 {
     /* Update progress bar */
     gtk_progress_bar_set_fraction(progress_bar, progress/100.0);
@@ -359,6 +359,14 @@ static void update_conversion_progress (GtkProgressBar *progress_bar, guint prog
         gtk_main_iteration();
     }
 }
+
+static void cancel_conversion (GCancellable *cancellable, gint response, GtkButton *button G_GNUC_UNUSED)
+{
+    if (response == GTK_RESPONSE_CANCEL || response == GTK_RESPONSE_DELETE_EVENT) {
+        g_cancellable_cancel(cancellable);
+    }
+}
+
 
 static void image_analyzer_application_convert_image (ImageAnalyzerApplication *self, MirageWriter *writer, const gchar *filename, GHashTable *writer_parameters)
 {
@@ -372,39 +380,53 @@ static void image_analyzer_application_convert_image (ImageAnalyzerApplication *
     GtkWidget *progress_dialog = gtk_dialog_new();
     GtkWidget *content_area = gtk_dialog_get_content_area(GTK_DIALOG(progress_dialog));
     GtkWidget *progress_bar = gtk_progress_bar_new();
-    gtk_progress_bar_set_text(GTK_PROGRESS_BAR(progress_bar), "Converting image...");
-    gtk_window_set_title(GTK_WINDOW(progress_dialog), "Converting image...");
-    gtk_container_add(GTK_CONTAINER(content_area), progress_bar);
+
+    g_signal_connect(progress_dialog, "delete-event", G_CALLBACK(gtk_widget_hide_on_delete), NULL); /* We need this because we don't do "run" on the dialog */
+    gtk_window_set_title(GTK_WINDOW(progress_dialog), "Image conversion progress");
+    gtk_window_set_transient_for(GTK_WINDOW(progress_dialog), GTK_WINDOW(self->priv->window));
+    gtk_window_set_modal(GTK_WINDOW(progress_dialog), TRUE);
     gtk_container_set_border_width(GTK_CONTAINER(progress_dialog), 5);
     gtk_dialog_add_button(GTK_DIALOG(progress_dialog), GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL);
+    gtk_container_add(GTK_CONTAINER(content_area), progress_bar);
     gtk_widget_show_all(progress_dialog);
+
+    /* Conversion cancelling support */
+    GCancellable *cancellable = g_cancellable_new();
+    g_signal_connect_object(progress_dialog, "response", G_CALLBACK(cancel_conversion), cancellable, G_CONNECT_SWAPPED);
 
     /* Set up writer's conversion progress reporting */
     mirage_writer_set_conversion_progress_step(writer, 5);
-    g_signal_connect_swapped(writer, "conversion-progress", G_CALLBACK(update_conversion_progress), progress_bar);
+    g_signal_connect_object(writer, "conversion-progress", G_CALLBACK(update_conversion_progress), progress_bar, G_CONNECT_SWAPPED);
 
     /* Convert */
-    succeeded = mirage_writer_convert_image(writer, filename, self->priv->disc, writer_parameters, &local_error);
+    succeeded = mirage_writer_convert_image(writer, filename, self->priv->disc, writer_parameters, cancellable, &local_error);
+    g_object_unref(cancellable);
 
     /* Destroy progress dialog */
     gtk_widget_destroy(progress_dialog);
 
     /* Display success/error message */
+    GtkWidget *message_dialog;
     if (!succeeded) {
-        GtkWidget *error_dialog = gtk_message_dialog_new(
+        message_dialog = gtk_message_dialog_new(
             GTK_WINDOW(self->priv->window),
             GTK_DIALOG_DESTROY_WITH_PARENT,
             GTK_MESSAGE_ERROR,
             GTK_BUTTONS_CLOSE,
             local_error->message);
 
-        gtk_dialog_run(GTK_DIALOG(error_dialog));
-        gtk_widget_destroy(error_dialog);
-
         g_error_free(local_error);
     } else {
+        message_dialog = gtk_message_dialog_new(
+            GTK_WINDOW(self->priv->window),
+            GTK_DIALOG_DESTROY_WITH_PARENT,
+            GTK_MESSAGE_INFO,
+            GTK_BUTTONS_CLOSE,
+            "Image conversion succeeded.");
     }
 
+    gtk_dialog_run(GTK_DIALOG(message_dialog));
+    gtk_widget_destroy(message_dialog);
 }
 
 
