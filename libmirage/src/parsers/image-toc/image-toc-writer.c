@@ -100,6 +100,39 @@ static void mirage_writer_toc_rename_track_image_files (MirageWriterToc *self, M
     }
 }
 
+static void dump_language (GString *toc_contents, gint index, MirageLanguage *language)
+{
+    static struct {
+        gchar *pack_id;
+        gint pack_type;
+    } packs[] = {
+        { "TITLE", MIRAGE_LANGUAGE_PACK_TITLE },
+        { "PERFORMER", MIRAGE_LANGUAGE_PACK_PERFORMER },
+        { "SONGWRITER", MIRAGE_LANGUAGE_PACK_SONGWRITER },
+        { "COMPOSER", MIRAGE_LANGUAGE_PACK_COMPOSER },
+        { "ARRANGER", MIRAGE_LANGUAGE_PACK_ARRANGER },
+        { "MESSAGE", MIRAGE_LANGUAGE_PACK_MESSAGE },
+        { "DISC_ID", MIRAGE_LANGUAGE_PACK_DISC_ID },
+        /*{ "GENRE", MIRAGE_LANGUAGE_PACK_GENRE },*/
+        /*{ "TOC_INFO1", MIRAGE_LANGUAGE_PACK_TOC },*/
+        /*{ "TOC_INFO2", MIRAGE_LANGUAGE_PACK_TOC2 },*/
+        { "UPC_EAN", MIRAGE_LANGUAGE_PACK_UPC_ISRC },
+        /*{ "SIZE_INFO", MIRAGE_LANGUAGE_PACK_SIZE },*/
+    };
+
+    g_string_append_printf(toc_contents, "  LANGUAGE %d {\n", index);
+
+    for (gint i = 0; i < G_N_ELEMENTS(packs); i++) {
+        const gchar *pack_data;
+        gint pack_length = 0;
+        if (mirage_language_get_pack_data(language, packs[i].pack_type, &pack_data, &pack_length, NULL)) {
+            g_string_append_printf(toc_contents, "    %s \"%.*s\"\n", packs[i].pack_id, pack_length, pack_data);
+        }
+    }
+
+    g_string_append_printf(toc_contents, "  }\n");
+}
+
 static GString *mirage_writer_toc_create_toc_file (MirageWriterToc *self G_GNUC_UNUSED, MirageSession *session)
 {
     GString *toc_contents = g_string_new(NULL);
@@ -122,7 +155,7 @@ static GString *mirage_writer_toc_create_toc_file (MirageWriterToc *self G_GNUC_
             break;
         }
         case MIRAGE_SESSION_CD_ROM_XA: {
-            g_string_append_printf(toc_contents, "CD_ROM_XA\n\n");
+            g_string_append_printf(toc_contents, "CD_ROM_XA\n");
             break;
         }
     }
@@ -130,7 +163,31 @@ static GString *mirage_writer_toc_create_toc_file (MirageWriterToc *self G_GNUC_
     /* Catalog */
     const gchar *mcn = mirage_session_get_mcn(session);
     if (mcn) {
-        g_string_append_printf(toc_contents, "CATALOG \"%s\"\n\n", mcn);
+        g_string_append_printf(toc_contents, "\nCATALOG \"%s\"\n", mcn);
+    }
+
+    /* Languages (CD-TEXT) */
+    gint num_languages = mirage_session_get_number_of_languages(session);
+    if (num_languages) {
+        g_string_append_printf(toc_contents, "\nCD_TEXT {\n");
+
+        /* First pass: language map */
+        g_string_append_printf(toc_contents, "  LANGUAGE_MAP {\n");
+        for (gint i = 0; i < num_languages; i++) {
+            MirageLanguage *language = mirage_session_get_language_by_index(session, i, NULL);
+            g_string_append_printf(toc_contents, "    %d: %d\n", i, mirage_language_get_code(language));
+            g_object_unref(language);
+        }
+        g_string_append_printf(toc_contents, "  }\n");
+
+        /* Second pass: dump session's languages */
+        for (gint i = 0; i < num_languages; i++) {
+            MirageLanguage *language = mirage_session_get_language_by_index(session, i, NULL);
+            dump_language(toc_contents, i, language);
+            g_object_unref(language);
+        }
+
+        g_string_append_printf(toc_contents, "}\n");
     }
 
     /* Tracks */
@@ -143,7 +200,7 @@ static GString *mirage_writer_toc_create_toc_file (MirageWriterToc *self G_GNUC_
         gint track_start = mirage_track_get_track_start(track);
         gint num_fragments = mirage_track_get_number_of_fragments(track);
 
-        g_string_append_printf(toc_contents, "// Track %d\n", track_number);
+        g_string_append_printf(toc_contents, "\n// Track %d\n", track_number);
 
         /* Track type */
         g_string_append_printf(toc_contents, "TRACK ");
@@ -235,6 +292,21 @@ static GString *mirage_writer_toc_create_toc_file (MirageWriterToc *self G_GNUC_
             }
         }
 
+        /* Languages (CD-TEXT) */
+        num_languages = mirage_track_get_number_of_languages(track);
+        if (num_languages) {
+            g_string_append_printf(toc_contents, "CD_TEXT {\n");
+
+            /* Dump track's languages */
+            for (gint j = 0; j < num_languages; j++) {
+                MirageLanguage *language = mirage_track_get_language_by_index(track, j, NULL);
+                dump_language(toc_contents, j, language);
+                g_object_unref(language);
+            }
+
+            g_string_append_printf(toc_contents, "}\n");
+        }
+
         /* List fragments */
         for (gint j = 0; j < num_fragments; j++) {
             MirageFragment *fragment = mirage_track_get_fragment_by_index(track, j, NULL);
@@ -285,8 +357,6 @@ static GString *mirage_writer_toc_create_toc_file (MirageWriterToc *self G_GNUC_
             g_string_append_printf(toc_contents, "START %s\n", track_start_msf);
             g_free(track_start_msf);
         }
-
-        g_string_append_printf(toc_contents, "\n");
 
         g_object_unref(track);
     }
