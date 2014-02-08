@@ -129,6 +129,9 @@ static gboolean cdemu_device_recording_close_session (CdemuDevice *self)
             self->priv->disc_closed = TRUE;
 
             mirage_writer_finalize_image(self->priv->image_writer, self->priv->disc, NULL);
+
+            /* Send notification */
+            g_signal_emit_by_name(self, "status-changed", NULL);
         }
 
         self->priv->num_written_sectors = 0; /* Reset */
