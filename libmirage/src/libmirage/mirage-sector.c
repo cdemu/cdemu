@@ -1412,19 +1412,6 @@ gboolean mirage_sector_get_subchannel (MirageSector *self, MirageSectorSubchanne
             }
             break;
         }
-        case MIRAGE_SUBCHANNEL_RW: {
-            /* Cooked RW subchannel contains P and Q subchannel data
-               interleaved in bits 7 and 6, and bits 5-0 contain R-W
-               data packets. For now, we pretend there is no data in
-               R-W, and therefore we can return raw PW subchannel here */
-            if (ret_buf) {
-                *ret_buf = self->priv->subchan_pw;
-            }
-            if (ret_len) {
-                *ret_len = 96;
-            }
-            break;
-        }
         default: {
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_SECTOR, "%s: subchannel format %d not supported yet!\n", __debug__, format);
             g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_SECTOR_ERROR, "Subchannel format %d not supported yet!", format);
@@ -1466,24 +1453,6 @@ gboolean mirage_sector_set_subchannel (MirageSector *self, MirageSectorSubchanne
                 mirage_helper_subchannel_interleave(SUBCHANNEL_P, p_subchannel, self->priv->subchan_pw);
             }
 
-            break;
-        }
-        case MIRAGE_SUBCHANNEL_RW: {
-            /* Cooked RW subchannel */
-            if (len != 96) {
-                g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_SECTOR_ERROR, "Expected 96 bytes for RW subchannel!");
-                return FALSE;
-            }
-
-            /* Cooked RW subchannel contains P and Q subchannel data
-               interleaved in bits 7 and 6, and bits 5-0 contain R-W
-               data packets. For now, we are interested only in P-Q data,
-               which we could deinterleave out of RW buffer and interleave
-               it back into our PW buffer; but if its more efficient if
-               we copy it directly */
-            for (gint i = 0; i < 96; i++) {
-                self->priv->subchan_pw[i] = buf[i] & 0xC0;
-            }
             break;
         }
         default: {
@@ -1854,42 +1823,6 @@ static gint subchannel_generate_q (MirageSector *self, guint8 *buf)
     return 12;
 }
 
-static gint subchannel_generate_r (MirageSector *self G_GNUC_UNUSED, guint8 *buf)
-{
-    memset(buf, 0, 12);
-    return 12;
-}
-
-static gint subchannel_generate_s (MirageSector *self G_GNUC_UNUSED, guint8 *buf)
-{
-    memset(buf, 0, 12);
-    return 12;
-}
-
-static gint subchannel_generate_t (MirageSector *self G_GNUC_UNUSED, guint8 *buf)
-{
-    memset(buf, 0, 12);
-    return 12;
-}
-
-static gint subchannel_generate_u (MirageSector *self G_GNUC_UNUSED, guint8 *buf)
-{
-    memset(buf, 0, 12);
-    return 12;
-}
-
-static gint subchannel_generate_v (MirageSector *self G_GNUC_UNUSED, guint8 *buf)
-{
-    memset(buf, 0, 12);
-    return 12;
-}
-
-static gint subchannel_generate_w (MirageSector *self G_GNUC_UNUSED, guint8 *buf)
-{
-    memset(buf, 0, 12);
-    return 12;
-}
-
 static void mirage_sector_generate_subchannel (MirageSector *self)
 {
     guint8 tmp_buf[12];
@@ -1905,22 +1838,4 @@ static void mirage_sector_generate_subchannel (MirageSector *self)
     /* Read Q subchannel into temporary buffer, then interleave it */
     subchannel_generate_q(self, tmp_buf);
     mirage_helper_subchannel_interleave(SUBCHANNEL_Q, tmp_buf, self->priv->subchan_pw);
-    /* Read R subchannel into temporary buffer, then interleave it */
-    subchannel_generate_r(self, tmp_buf);
-    mirage_helper_subchannel_interleave(SUBCHANNEL_R, tmp_buf, self->priv->subchan_pw);
-    /* Read S subchannel into temporary buffer, then interleave it */
-    subchannel_generate_s(self, tmp_buf);
-    mirage_helper_subchannel_interleave(SUBCHANNEL_S, tmp_buf, self->priv->subchan_pw);
-    /* Read T subchannel into temporary buffer, then interleave it */
-    subchannel_generate_t(self, tmp_buf);
-    mirage_helper_subchannel_interleave(SUBCHANNEL_T, tmp_buf, self->priv->subchan_pw);
-    /* Read U subchannel into temporary buffer, then interleave it */
-    subchannel_generate_v(self, tmp_buf);
-    mirage_helper_subchannel_interleave(SUBCHANNEL_U, tmp_buf, self->priv->subchan_pw);
-    /* Read V subchannel into temporary buffer, then interleave it */
-    subchannel_generate_u(self, tmp_buf);
-    mirage_helper_subchannel_interleave(SUBCHANNEL_V, tmp_buf, self->priv->subchan_pw);
-    /* Read W subchannel into temporary buffer, then interleave it */
-    subchannel_generate_w(self, tmp_buf);
-    mirage_helper_subchannel_interleave(SUBCHANNEL_W, tmp_buf, self->priv->subchan_pw);
 }
