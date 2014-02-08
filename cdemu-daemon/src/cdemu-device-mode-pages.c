@@ -145,6 +145,12 @@ static gboolean mode_page_0x05_validator (CdemuDevice *self, const guint8 *new_d
         return FALSE;
     }
 
+    /* We do not support cooked R-W subchannel data */
+    if (new_page->data_block_type == 2) {
+        CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: raw data with pack-form R-W subchannel not supported!\n", __debug__);
+        return FALSE;
+    }
+
     /* Change of write type */
     if (new_page->write_type != old_page->write_type) {
         CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: changing recording type from %d to %d!\n", __debug__, old_page->write_type, new_page->write_type);
@@ -349,7 +355,7 @@ void cdemu_device_mode_pages_init (CdemuDevice *self)
         page->upc = 1;
         page->isrc = 1;
         page->c2pointers = 1;
-        page->rw_deinterleaved = 1;
+        page->rw_deinterleaved = 0;
         page->rw_supported = 1;
         page->cdda_acc_stream = 1;
         page->cdda_cmds = 1;
