@@ -769,14 +769,16 @@ static gboolean command_read_buffer_capacity (CdemuDevice *self, const guint8 *r
     }
 
     /* Buffer capacity data */
+    gint buffer_capacity = cdemu_device_get_kernel_io_buffer_size(self);
+
     ret_data->data_length = GUINT16_TO_BE(self->priv->buffer_size - 2);
     ret_data->block = cdb->block;
     if (ret_data->block) {
         ret_data->length_of_buffer = 0x00000000; /* Reserved */
-        ret_data->blank_length_of_buffer = GUINT32_TO_BE(self->priv->buffer_capacity/2048); /* In blocks */
+        ret_data->blank_length_of_buffer = GUINT32_TO_BE(buffer_capacity/2048); /* In blocks */
     } else {
-        ret_data->length_of_buffer = GUINT32_TO_BE(self->priv->buffer_capacity);
-        ret_data->blank_length_of_buffer = GUINT32_TO_BE(self->priv->buffer_capacity);
+        ret_data->length_of_buffer = GUINT32_TO_BE(buffer_capacity);
+        ret_data->blank_length_of_buffer = GUINT32_TO_BE(buffer_capacity);
     }
 
     /* Write data */

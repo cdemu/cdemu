@@ -90,8 +90,8 @@ gboolean cdemu_device_initialize (CdemuDevice *self, gint number, const gchar *a
         return FALSE;
     }
 
-    /* Allocate buffer/"cache" */
-    buffer_size = 866304; /* 846 kB, also reported by READ BUFFER CAPACITY */
+    /* Allocate buffer/"cache"; 4kB should be enough for everything, I think */
+    buffer_size = 4096;
     self->priv->buffer_capacity = buffer_size;
     self->priv->buffer = g_try_malloc0(buffer_size);
     if (!self->priv->buffer) {
