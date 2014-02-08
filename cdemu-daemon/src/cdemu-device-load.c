@@ -105,6 +105,7 @@ static gboolean cdemu_device_create_blank_disc_private (CdemuDevice *self, const
 {
     const gchar *writer_id = NULL;
     gint medium_type = MIRAGE_MEDIUM_CD;
+    gint medium_capacity = 80*60*75; /* 80 min */
 
     /* Well, we won't do anything if we're already loaded */
     if (self->priv->loaded) {
@@ -125,11 +126,30 @@ static gboolean cdemu_device_create_blank_disc_private (CdemuDevice *self, const
         if (!g_ascii_strcasecmp(key, "writer-id")) {
             writer_id = g_variant_get_string(value, NULL);
         } else if (!g_ascii_strcasecmp(key, "medium-type")) {
-            const gchar *medium = g_variant_get_string(value, NULL);
-            if (!g_ascii_strcasecmp(medium, "cd")) {
+            const gchar *medium_string = g_variant_get_string(value, NULL);
+            if (!g_ascii_strcasecmp(medium_string, "cdr74")) {
+                /* 74-minute CD-R (650 MB) */
                 medium_type = MIRAGE_MEDIUM_CD;
-            } else if (!g_ascii_strcasecmp(medium, "dvd")) {
+                medium_capacity = 74*60*75;
+            } else if (!g_ascii_strcasecmp(medium_string, "cdr80")) {
+                /* 80-minute CD-R (700 MB) */
+                medium_type = MIRAGE_MEDIUM_CD;
+                medium_capacity = 80*60*75;
+            } else if (!g_ascii_strcasecmp(medium_string, "cdr90")) {
+                /* 90-minute CD-R (800 MB) */
+                medium_type = MIRAGE_MEDIUM_CD;
+                medium_capacity = 90*60*75;
+            } else if (!g_ascii_strcasecmp(medium_string, "cdr90")) {
+                /* 99-minute CD-R (900 MB) */
+                medium_type = MIRAGE_MEDIUM_CD;
+                medium_capacity = 80*60*75;
+            } else if (!g_ascii_strcasecmp(medium_string, "dvd+r")) {
+                /* DVD+R Single-Layer */
                 medium_type = MIRAGE_MEDIUM_DVD;
+                medium_capacity = 2295104;
+            } else {
+                g_set_error(error, CDEMU_ERROR, CDEMU_ERROR_INVALID_ARGUMENT, "Invalid medium type '%s'!", medium_string);
+                return FALSE;
             }
         } else if (g_str_has_prefix(key, "writer.")) {
             g_hash_table_insert(writer_parameters, key, value);
@@ -164,15 +184,12 @@ static gboolean cdemu_device_create_blank_disc_private (CdemuDevice *self, const
     self->priv->rewritable_disc = FALSE;
 
     mirage_disc_set_medium_type(self->priv->disc, medium_type);
+    self->priv->medium_capacity = medium_capacity;
     if (medium_type == MIRAGE_MEDIUM_CD) {
-        self->priv->medium_capacity = 80*60*75;
         self->priv->medium_leadin = -11077;
-
         mirage_disc_layout_set_start_sector(self->priv->disc, -150);
     } else {
-        self->priv->medium_capacity = 2295104; /* DVD+R SL */
         self->priv->medium_leadin = 0;
-
         mirage_disc_layout_set_start_sector(self->priv->disc, 0);
     }
 

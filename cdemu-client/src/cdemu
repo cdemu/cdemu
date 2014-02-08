@@ -172,7 +172,7 @@ class cmd_create_blank (object):
         parser.add_argument("device", type=str, help=_("device"))
         parser.add_argument("image_file", type=str, help=_("image filename/basename"))
         parser.add_argument("--writer-id", type=str, nargs="?", required=True, help=_("ID of image writer to use"))
-        parser.add_argument("--medium-type", type=str, nargs="?", choices=['cd', 'dvd'], help=_("medium type"))
+        parser.add_argument("--medium-type", type=str, nargs="?", choices=['cdr74', 'cdr80', 'cdr90', 'cdr99', 'dvd+r'], help=_("medium type"))
         parser.add_argument("--param", type=str, nargs="?", action='append', help=_("additional writer parameter(s)"))
 
     def __call__ (self, dbus_iface, arguments):

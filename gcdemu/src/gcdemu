@@ -1799,8 +1799,11 @@ class gCDEMuCreateBlankImageDialog (Gtk.Dialog):
         table.attach(label, 0, 1, row, row+1, Gtk.AttachOptions.FILL, 0)
 
         liststore = Gtk.ListStore(GObject.TYPE_STRING, GObject.TYPE_STRING)
-        liststore.append( ("CD-R", "cd") )
-        liststore.append( ("DVD+R SL", "dvd") )
+        liststore.append( ("CD-R 74 min (650 MB)", "cdr74") )
+        liststore.append( ("CD-R 80 min (700 MB)", "cdr80") )
+        liststore.append( ("CD-R 90 min (800 MB)", "cdr90") )
+        liststore.append( ("CD-R 99 min (900 MB)", "cdr99") )
+        liststore.append( ("DVD+R SL", "dvd+r") )
 
         combobox = Gtk.ComboBox.new_with_model_and_entry(liststore)
         combobox.set_entry_text_column(0)
