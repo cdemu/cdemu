@@ -88,6 +88,38 @@ static gboolean cdemu_device_recording_close_session (CdemuDevice *self)
             cdemu_device_recording_close_track(self);
         }
 
+        /* CD-TEXT */
+        if (self->priv->leadin_cdtext_packs) {
+            GError *local_error = NULL;
+
+            CDEMU_DEBUG(self, DAEMON_DEBUG_RECORDING, "%s: processing CD-TEXT (%d packs)\n", __debug__, self->priv->num_leadin_cdtext_packs);
+
+            /* Copy all packs' data into single buffer, and decode it
+               into session */
+            gint cdtext_data_len = self->priv->num_leadin_cdtext_packs * 18;
+            guint8 *cdtext_data = g_malloc0(cdtext_data_len);
+            guint8 *ptr = cdtext_data;
+
+            self->priv->leadin_cdtext_packs = g_slist_reverse(self->priv->leadin_cdtext_packs);
+
+            for (GSList *iter = self->priv->leadin_cdtext_packs; iter; iter = g_slist_next(iter)) {
+                memcpy(ptr, iter->data, 18);
+                ptr += 18;
+            }
+
+            if (!mirage_session_set_cdtext_data(self->priv->open_session, cdtext_data, cdtext_data_len, &local_error)) {
+                CDEMU_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: failed to set CD-TEXT data: %s\n", __debug__, local_error->message);
+                g_error_free(local_error);
+            }
+
+            g_free(cdtext_data);
+
+            /* Free CD-TEXT packs data */
+            g_slist_free_full(self->priv->leadin_cdtext_packs, (GDestroyNotify)g_free);
+            self->priv->leadin_cdtext_packs = NULL;
+            self->priv->leadin_cdtext_packs = 0;
+        }
+
         /* Release the reference we hold */
         g_object_unref(self->priv->open_session);
         self->priv->open_session = NULL;
@@ -132,6 +164,47 @@ static gboolean cdemu_device_recording_open_track (CdemuDevice *self, MirageSect
     mirage_session_add_track_by_index(self->priv->open_session, -1, self->priv->open_track);
 
     CDEMU_DEBUG(self, DAEMON_DEBUG_RECORDING, "%s: opened track #%d; sector type: %d; start sector: %d!\n", __debug__, mirage_track_layout_get_track_number(self->priv->open_track), sector_type, mirage_track_layout_get_start_sector(self->priv->open_track));
+
+    return TRUE;
+}
+
+static gboolean cdemu_device_recording_process_leadin_sector (CdemuDevice *self, MirageSector *sector)
+{
+    /* Get raw PW subchannel */
+    const guint8 *subchannel;
+    mirage_sector_get_subchannel(sector, MIRAGE_SUBCHANNEL_PW, &subchannel, NULL, NULL);
+
+    /* Extract CD-TEXT data from PW subchannel */
+    guint8 cdtext_data[72];
+    guint8 *ptr = cdtext_data;
+
+    for (gint i = 0; i < 96; i += 4) {
+        ptr[0] = ((subchannel[i] << 2) & 0xFC)     | ((subchannel[i + 1] >> 4) & 0x03);
+        ptr[1] = ((subchannel[i + 1] << 4) & 0xF0) | ((subchannel[i + 2] >> 2) & 0x0F);
+        ptr[2] = ((subchannel[i + 2] << 6) & 0xC0) | (subchannel[i + 3] & 0x3F);
+        ptr += 3;
+    }
+
+    /* Process CD-TEXT packs */
+    ptr = cdtext_data;
+    for (gint i = 0; i < 4; i++) {
+        /* Make sure data is CD-TEXT pack */
+        if ((ptr[0] & 0x80) != 0x80) {
+            continue;
+        }
+
+        /* This assumes that CD-TEXT packs are ordered, which is hopefully
+           reasonable */
+        if (ptr[2] >= self->priv->num_leadin_cdtext_packs) {
+            self->priv->leadin_cdtext_packs = g_slist_prepend(self->priv->leadin_cdtext_packs, g_memdup(ptr, 18));
+            self->priv->num_leadin_cdtext_packs++;
+        }
+
+        ptr += 18;
+    }
+
+    CDEMU_DEBUG(self, DAEMON_DEBUG_RECORDING, "%s: lead-in CD-TEXT:\n", __debug__);
+    CDEMU_DEBUG_PRINT_BUFFER(self, DAEMON_DEBUG_RECORDING, __debug__, 18, cdtext_data, 72);
 
     return TRUE;
 }
@@ -379,9 +452,8 @@ static gboolean cdemu_device_raw_recording_write_sector (CdemuDevice *self, gint
             self->priv->last_recorded_idx = 0;
         }
 
-        /* FIXME: parse CD-TEXT from RW subchannel */
-
-        return TRUE;
+        /* Process lead-in sector for subchannel */
+        return cdemu_device_recording_process_leadin_sector(self, sector);
     }
 
     /* Lead-out; contains no useful data. It tells us when to officially
@@ -741,15 +813,25 @@ static gboolean cdemu_device_sao_recording_write_sectors (CdemuDevice *self, gin
     for (gint address = start_address; address < start_address + num_sectors; address++) {
         CDEMU_DEBUG(self, DAEMON_DEBUG_RECORDING, "%s: sector %d\n", __debug__, address);
 
-        /* In RAW SAO mode, the host sends us lead-in, as well... which
-           we ignore here */
-        if (address < -150 && self->priv->raw_sao_recording) {
-            CDEMU_DEBUG(self, DAEMON_DEBUG_RECORDING, "%s: lead-in sector for RAW SAO; ignoring\n", __debug__, address);
-            /* NOTE: technically, we should read the subchannel data from
-               the device. But typically, we are given lead-in data in a
-               separate sequence of write commands than the program area
-               data, so we can get away without reading it (otherwise,
-               we'd have to do it to move buffer pointer!). */
+        /* In RAW SAO mode, the host sends us lead-in */
+        if (address < -150 && self->priv->sao_leadin_format != 0x01) {
+            CDEMU_DEBUG(self, DAEMON_DEBUG_RECORDING, "%s: lead-in sector for RAW SAO\n", __debug__, address);
+
+            main_format_ptr = sao_main_formats_find(self->priv->sao_leadin_format);
+            subchannel_format_ptr = sao_subchannel_formats_find(self->priv->sao_leadin_format);
+
+            cdemu_device_read_buffer(self, main_format_ptr->data_size + subchannel_format_ptr->data_size);
+
+            /* Feed the sector */
+            if (!mirage_sector_feed_data(sector, address, MIRAGE_SECTOR_AUDIO, self->priv->buffer, main_format_ptr->data_size, subchannel_format_ptr->mode, self->priv->buffer + main_format_ptr->data_size, subchannel_format_ptr->data_size, main_format_ptr->ignore_data, &local_error)) {
+                CDEMU_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: failed to feed sector for writing: %s!\n", __debug__, local_error->message);
+                g_error_free(local_error);
+                local_error = NULL;
+            }
+
+            /* Process lead-in sector */
+            cdemu_device_recording_process_leadin_sector(self, sector);
+
             continue;
         }
 
@@ -943,14 +1025,8 @@ gboolean cdemu_device_sao_recording_parse_cue_sheet (CdemuDevice *self, const gu
 
         /* Use lead-in to detect RAW SAO mode */
         if (tno == 0) {
-            if (cue_entry[3] == 0x41) {
-                CDEMU_DEBUG(self, DAEMON_DEBUG_RECORDING, "%s: lead-in data format: %02hX; enabling RAW SAO recording\n", __debug__, cue_entry[3]);
-                self->priv->raw_sao_recording = TRUE;
-            } else {
-                CDEMU_DEBUG(self, DAEMON_DEBUG_RECORDING, "%s: lead-in data format: %02hX; enabling non-RAW SAO recording\n", __debug__, cue_entry[3]);
-                self->priv->raw_sao_recording = FALSE;
-            }
-
+            CDEMU_DEBUG(self, DAEMON_DEBUG_RECORDING, "%s: lead-in data format: %02hX\n", __debug__, cue_entry[3]);
+            self->priv->sao_leadin_format = cue_entry[3];
             continue;
         }
 
@@ -975,7 +1051,7 @@ gboolean cdemu_device_sao_recording_parse_cue_sheet (CdemuDevice *self, const gu
             /* Set track flags from CTL */
             mirage_track_set_ctl(track, ctl);
 
-            if (self->priv->raw_sao_recording) {
+            if (self->priv->sao_leadin_format != 0x01) {
                 /* In raw SAO, we set track's sector type to MIRAGE_SECTOR_RAW_SCRAMBLED;
                    however, we can use CTL field to deduce if a track is
                    an audio track and set MIRAGE_SECTOR_AUDIO directly */

@@ -345,6 +345,9 @@ static void cdemu_device_init (CdemuDevice *self)
 
     self->priv->image_writer = NULL;
     self->priv->recording = NULL;
+
+    self->priv->leadin_cdtext_packs = NULL;
+    self->priv->num_leadin_cdtext_packs = 0;
 }
 
 static void cdemu_device_dispose (GObject *gobject)

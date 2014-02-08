@@ -124,7 +124,10 @@ struct _CdemuDevicePrivate
 
     MirageSession *cue_sheet;
     MirageTrack *cue_entry;
-    gboolean raw_sao_recording;
+    gint sao_leadin_format;
+
+    gint num_leadin_cdtext_packs;
+    GSList *leadin_cdtext_packs;
 
     /* Raw burning emulation */
     guint8 last_recorded_tno;
