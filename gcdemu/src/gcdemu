@@ -41,7 +41,7 @@ from gi.repository import Notify
 # *** Globals ***
 app_name = "gcdemu"
 app_version = "2.1.1"
-supported_daemon_interface_version = 6
+supported_daemon_interface_version = [ 7, 0 ]
 
 # I18n
 bindtextdomain(app_name)
@@ -121,8 +121,8 @@ class CDEmuDaemonProxy (GObject.GObject):
     def GetLibraryVersion (self):
         return self.proxy.GetLibraryVersion()
 
-    def GetDaemonInterfaceVersion (self):
-        return self.proxy.GetDaemonInterfaceVersion()
+    def GetDaemonInterfaceVersion2 (self):
+        return self.proxy.GetDaemonInterfaceVersion2()
 
     def EnumDaemonDebugMasks (self):
         return self.proxy.EnumDaemonDebugMasks()
@@ -269,11 +269,11 @@ class CDEmu (GObject.GObject):
 
     def establish_connection (self):
         # Get the daemon interface version
-        self.interface_version = self.daemon_proxy.GetDaemonInterfaceVersion()
+        self.interface_version = self.daemon_proxy.GetDaemonInterfaceVersion2()
 
         # Validate the daemon interface version
-        if self.interface_version != supported_daemon_interface_version:
-            self.emit("error", _("Incompatible daemon interface"), _("CDEmu daemon interface version %i detected, but version %i is required!") % (self.interface_version, supported_daemon_interface_version))
+        if self.interface_version[0] != supported_daemon_interface_version[0] or self.interface_version[1] < supported_daemon_interface_version[1]:
+            self.emit("error", _("Incompatible daemon interface"), _("CDEmu daemon interface version %i.%i detected, but version %i.%i is required!") % (self.interface_version[0], self.interface_version[1], supported_daemon_interface_version[0], supported_daemon_interface_version[1]))
             # Cleanup
             self.cleanup()
             return

@@ -37,7 +37,7 @@ from gettext import bindtextdomain, textdomain
 # *** Globals ***
 app_name = "cdemu-client"
 app_version = "2.1.1"
-supported_daemon_interface_version = 6
+supported_daemon_interface_version = [ 7, 0 ]
 
 # I18n
 bindtextdomain(app_name)
@@ -1231,13 +1231,14 @@ def connect_to_daemon (bus_type):
 
     # Get daemon interface version
     try:
-        interface_version = dbus_iface.GetDaemonInterfaceVersion()
+        interface_version = dbus_iface.GetDaemonInterfaceVersion2()
     except dbus.DBusException as e:
         raise CDEmuError(_("Failed to acquire daemon interface version (this most likely means your daemon is out-of-date): %s") % (e))
 
     # Check daemon interface version
-    if interface_version != supported_daemon_interface_version:
-        raise CDEMuError(_("CDEmu daemon interface version %i detected, but version %i is required!") % (interface_version, supported_daemon_interface_version))
+    if interface_version[0] != supported_daemon_interface_version[0] or interface_version[1] < supported_daemon_interface_version[1]:
+        raise CDEmuError(_("CDEmu daemon interface version %i.%i detected, but version %i.%i is required!") % (interface_version[0], interface_version[1], supported_daemon_interface_version[0], supported_daemon_interface_version[1]))
+
 
     return dbus_iface
 
