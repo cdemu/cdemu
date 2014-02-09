@@ -24,9 +24,11 @@ if (TRUE)
         install(CODE "execute_process (COMMAND ${UPDATE_MIME_DATABASE_EXECUTABLE} ${CMAKE_INSTALL_FULL_DATADIR}/mime)")
     endif ()
 
-    # Add to list of enabled parsers
-    set(IMAGE_FORMATS_ENABLED "${IMAGE_FORMATS_ENABLED} ${image_short}" PARENT_SCOPE)
+    # Add to list of enabled image formats
+    list(APPEND IMAGE_FORMATS_ENABLED ${image_short})
+    set(IMAGE_FORMATS_ENABLED ${IMAGE_FORMATS_ENABLED} PARENT_SCOPE)
 else ()
-    # Add to list of disabled parsers
-    set(IMAGE_FORMATS_DISABLED "${IMAGE_FORMATS_DISABLED} ${image_short}" PARENT_SCOPE)
+    # Add to list of disabled image formats
+    list(APPEND IMAGE_FORMATS_DISABLED ${image_short})
+    set(IMAGE_FORMATS_DISABLED ${IMAGE_FORMATS_DISABLED} PARENT_SCOPE)
 endif ()

@@ -7,7 +7,7 @@ project(${filter_name} C)
 pkg_check_modules(ZLIB zlib>=1.2.0)
 
 # Build
-if (${ZLIB_FOUND})
+if (ZLIB_FOUND)
     # Include directories
     include_directories(${ZLIB_INCLUDE_DIRS})
 
@@ -28,8 +28,10 @@ if (${ZLIB_FOUND})
     install(TARGETS ${filter_name} DESTINATION ${MIRAGE_PLUGIN_DIR})
 
     # Add to list of enabled filters
-    set(FILTERS_ENABLED "${FILTERS_ENABLED} ${filter_short}" PARENT_SCOPE)
+    list(APPEND FILTERS_ENABLED ${filter_short})
+    set(FILTERS_ENABLED ${FILTERS_ENABLED} PARENT_SCOPE)
 else ()
     # Add to list of disabled filters
-    set(FILTERS_DISABLED "${FILTERS_DISABLED} ${filter_short}" PARENT_SCOPE)
+    list(APPEND FILTERS_DISABLED ${filter_short})
+    set(FILTERS_DISABLED ${FILTERS_DISABLED} PARENT_SCOPE)
 endif ()

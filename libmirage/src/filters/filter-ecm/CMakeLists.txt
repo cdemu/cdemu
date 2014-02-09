@@ -25,8 +25,10 @@ if (TRUE)
     endif ()
 
     # Add to list of enabled filters
-    set(FILTERS_ENABLED "${FILTERS_ENABLED} ${filter_short}" PARENT_SCOPE)
+    list(APPEND FILTERS_ENABLED ${filter_short})
+    set(FILTERS_ENABLED ${FILTERS_ENABLED} PARENT_SCOPE)
 else ()
     # Add to list of disabled filters
-    set(FILTERS_DISABLED "${FILTERS_DISABLED} ${filter_short}" PARENT_SCOPE)
+    list(APPEND FILTERS_DISABLED ${filter_short})
+    set(FILTERS_DISABLED ${FILTERS_DISABLED} PARENT_SCOPE)
 endif ()

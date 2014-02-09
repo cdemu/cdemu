@@ -8,7 +8,7 @@ pkg_check_modules(SNDFILE sndfile>=1.0.0)
 pkg_check_modules(SAMPLERATE samplerate>=0.1.0)
 
 # Build
-if (${SNDFILE_FOUND} AND ${SAMPLERATE_FOUND})
+if (SNDFILE_FOUND AND SAMPLERATE_FOUND)
     # Include directories
     include_directories(${SNDFILE_INCLUDE_DIRS})
     include_directories(${SAMPLERATE_INCLUDE_DIRS})
@@ -31,8 +31,10 @@ if (${SNDFILE_FOUND} AND ${SAMPLERATE_FOUND})
     install(TARGETS ${filter_name} DESTINATION ${MIRAGE_PLUGIN_DIR})
 
     # Add to list of enabled filters
-    set(FILTERS_ENABLED "${FILTERS_ENABLED} ${filter_short}" PARENT_SCOPE)
+    list(APPEND FILTERS_ENABLED ${filter_short})
+    set(FILTERS_ENABLED ${FILTERS_ENABLED} PARENT_SCOPE)
 else ()
     # Add to list of disabled filters
-    set(FILTERS_DISABLED "${FILTERS_DISABLED} ${filter_short}" PARENT_SCOPE)
+    list(APPEND FILTERS_DISABLED ${filter_short})
+    set(FILTERS_DISABLED ${FILTERS_DISABLED} PARENT_SCOPE)
 endif ()

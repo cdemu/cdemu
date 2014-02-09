@@ -7,7 +7,7 @@ project(${filter_name} C)
 pkg_check_modules(LIBLZMA liblzma>=5.0.0)
 
 # Build
-if (${LIBLZMA_FOUND})
+if (LIBLZMA_FOUND)
     # Include directories
     include_directories(${LIBLZMA_INCLUDE_DIRS})
 
@@ -28,8 +28,10 @@ if (${LIBLZMA_FOUND})
     install(TARGETS ${filter_name} DESTINATION ${MIRAGE_PLUGIN_DIR})
 
     # Add to list of enabled filters
-    set(FILTERS_ENABLED "${FILTERS_ENABLED} ${filter_short}" PARENT_SCOPE)
+    list(APPEND FILTERS_ENABLED ${filter_short})
+    set(FILTERS_ENABLED ${FILTERS_ENABLED} PARENT_SCOPE)
 else ()
     # Add to list of disabled filters
-    set(FILTERS_DISABLED "${FILTERS_DISABLED} ${filter_short}" PARENT_SCOPE)
+    list(APPEND FILTERS_DISABLED ${filter_short})
+    set(FILTERS_DISABLED ${FILTERS_DISABLED} PARENT_SCOPE)
 endif ()

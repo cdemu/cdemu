@@ -8,7 +8,7 @@ pkg_check_modules(ZLIB zlib>=1.2.0)
 find_package(BZip2 1.0.0)
 
 # Build
-if (${ZLIB_FOUND} AND ${BZIP2_FOUND})
+if (ZLIB_FOUND AND BZIP2_FOUND)
     # Include directories
     include_directories(${ZLIB_INCLUDE_DIRS})
     include_directories(${BZIP2_INCLUDE_DIRS})
@@ -36,8 +36,10 @@ if (${ZLIB_FOUND} AND ${BZIP2_FOUND})
     endif ()
 
     # Add to list of enabled filters
-    set(FILTERS_ENABLED "${FILTERS_ENABLED} ${filter_short}" PARENT_SCOPE)
+    list(APPEND FILTERS_ENABLED ${filter_short})
+    set(FILTERS_ENABLED ${FILTERS_ENABLED} PARENT_SCOPE)
 else ()
     # Add to list of disabled filters
-    set(FILTERS_DISABLED "${FILTERS_DISABLED} ${filter_short}" PARENT_SCOPE)
+    list(APPEND FILTERS_DISABLED ${filter_short})
+    set(FILTERS_DISABLED ${FILTERS_DISABLED} PARENT_SCOPE)
 endif ()
