@@ -24,6 +24,7 @@
 #define PARAM_AUDIO_FILE_SUFFIX "writer.audio_file_suffix"
 #define PARAM_WRITE_RAW "writer.write_raw"
 #define PARAM_WRITE_SUBCHANNEL "writer.write_subchannel"
+#define PARAM_SWAP_RAW_AUDIO_DATA "writer.swap_raw_audio"
 
 
 /**********************************************************************\
@@ -159,6 +160,7 @@ static gboolean mirage_writer_iso_open_image (MirageWriter *_self, MirageDisc *d
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_WRITER, "%s: audio file suffix: '%s'\n", __debug__, mirage_writer_get_parameter_string(_self, PARAM_AUDIO_FILE_SUFFIX));
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_WRITER, "%s: write raw: %d\n", __debug__, mirage_writer_get_parameter_boolean(_self, PARAM_WRITE_RAW));
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_WRITER, "%s: write subchannel: %d\n", __debug__, mirage_writer_get_parameter_boolean(_self, PARAM_WRITE_SUBCHANNEL));
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_WRITER, "%s: swap raw audio data: %d\n", __debug__, mirage_writer_get_parameter_boolean(_self, PARAM_SWAP_RAW_AUDIO_DATA));
 
     return TRUE;
 }
@@ -177,6 +179,7 @@ static MirageFragment *mirage_writer_iso_create_fragment (MirageWriter *_self, M
 
     gboolean write_raw = mirage_writer_get_parameter_boolean(_self, PARAM_WRITE_RAW);
     gboolean write_subchannel = mirage_writer_get_parameter_boolean(_self, PARAM_WRITE_SUBCHANNEL);
+    gboolean swap_raw_audio_data = mirage_writer_get_parameter_boolean(_self, PARAM_SWAP_RAW_AUDIO_DATA);
 
     const gchar *extension;
     const gchar **filter_chain = NULL;
@@ -185,12 +188,23 @@ static MirageFragment *mirage_writer_iso_create_fragment (MirageWriter *_self, M
         /* Raw mode (also implied by subchannel) */
         extension = "bin";
         mirage_fragment_main_data_set_size(fragment, 2352);
+
+        if (mirage_track_get_sector_type(track) == MIRAGE_SECTOR_AUDIO) {
+            if (swap_raw_audio_data) {
+                mirage_fragment_main_data_set_format(fragment, MIRAGE_MAIN_DATA_FORMAT_AUDIO_SWAP);
+            } else {
+                mirage_fragment_main_data_set_format(fragment, MIRAGE_MAIN_DATA_FORMAT_AUDIO);
+            }
+        } else {
+            mirage_fragment_main_data_set_format(fragment, MIRAGE_MAIN_DATA_FORMAT_DATA);
+        }
     } else {
         /* Cooked mode */
         switch (mirage_track_get_sector_type(track)) {
             case MIRAGE_SECTOR_AUDIO: {
                 extension = mirage_writer_get_parameter_string(_self, PARAM_AUDIO_FILE_SUFFIX);
                 mirage_fragment_main_data_set_size(fragment, 2352);
+                mirage_fragment_main_data_set_format(fragment, MIRAGE_MAIN_DATA_FORMAT_AUDIO);
                 filter_chain = audio_filter_chain;
                 break;
             }
@@ -198,6 +212,7 @@ static MirageFragment *mirage_writer_iso_create_fragment (MirageWriter *_self, M
             case MIRAGE_SECTOR_MODE2_FORM1: {
                 extension = "iso";
                 mirage_fragment_main_data_set_size(fragment, 2048);
+                mirage_fragment_main_data_set_format(fragment, MIRAGE_MAIN_DATA_FORMAT_DATA);
                 break;
             }
             case MIRAGE_SECTOR_MODE2:
@@ -205,12 +220,14 @@ static MirageFragment *mirage_writer_iso_create_fragment (MirageWriter *_self, M
             case MIRAGE_SECTOR_MODE2_MIXED: {
                 extension = "bin";
                 mirage_fragment_main_data_set_size(fragment, 2336);
+                mirage_fragment_main_data_set_format(fragment, MIRAGE_MAIN_DATA_FORMAT_DATA);
                 break;
             }
             default: {
                 /* Should not happen, but just in case */
                 extension = "bin";
                 mirage_fragment_main_data_set_size(fragment, 2352);
+                mirage_fragment_main_data_set_format(fragment, MIRAGE_MAIN_DATA_FORMAT_DATA);
                 break;
             }
         }
@@ -321,6 +338,12 @@ static void mirage_writer_iso_init (MirageWriterIso *self)
         PARAM_WRITE_SUBCHANNEL,
         "Write subchannel",
         "A flag indicating whether to write subchannel data or not. If set, it implies raw writing.",
+        FALSE);
+
+    mirage_writer_add_parameter_boolean(MIRAGE_WRITER(self),
+        PARAM_SWAP_RAW_AUDIO_DATA,
+        "Swap raw audio data",
+        "A flag indicating whether to swap audio data. Applicable only to raw writing.",
         FALSE);
 }
 
