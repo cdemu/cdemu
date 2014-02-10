@@ -483,12 +483,19 @@ gboolean mirage_fragment_write_main_data (MirageFragment *self, gint address, co
     }
 
     /* Binary audio files may need to be swapped from BE to LE */
+    guint8 *swapped_buffer;
     if (self->priv->main_format == MIRAGE_MAIN_DATA_FORMAT_AUDIO_SWAP) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_FRAGMENT, "%s: FIXME: audio data swapping on write not implemented yet!\n", __debug__);
-        /*for (gint i = 0; i < self->priv->main_size; i += 2) {
-            guint16 *ptr = (guint16 *)&buffer[i];
-            *ptr = GUINT16_SWAP_LE_BE(*ptr);
-        }*/
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_FRAGMENT, "%s: swapping audio data...\n", __debug__);
+
+        swapped_buffer = g_malloc(length);
+
+        for (gint i = 0; i < self->priv->main_size; i += 2) {
+            guint16 *in_ptr = (guint16 *)&buffer[i];
+            guint16 *out_ptr = (guint16 *)&swapped_buffer[i];
+            *out_ptr = GUINT16_SWAP_LE_BE(*in_ptr);
+        }
+    } else {
+        swapped_buffer = NULL;
     }
 
     /* Determine position within file */
@@ -501,16 +508,19 @@ gboolean mirage_fragment_write_main_data (MirageFragment *self, gint address, co
     if (mirage_stream_tell(self->priv->main_stream) != position) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_FRAGMENT, "%s: failed to seek to position 0x%zX\n", __debug__, position);
         g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_FRAGMENT_ERROR, "Failed to seek to position 0x%zX\n", position);
+        g_free(swapped_buffer);
         return FALSE;
     }
 
-    if (mirage_stream_write(self->priv->main_stream, buffer, self->priv->main_size, &local_error) != self->priv->main_size) {
+    if (mirage_stream_write(self->priv->main_stream, swapped_buffer ? swapped_buffer : buffer, self->priv->main_size, &local_error) != self->priv->main_size) {
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_FRAGMENT, "%s: failed to write data: %s\n", __debug__, local_error->message);
         g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_FRAGMENT_ERROR, "Failed to write data: %s\n", local_error->message);
         g_error_free(local_error);
+        g_free(swapped_buffer);
         return FALSE;
     }
 
+    g_free(swapped_buffer);
     return TRUE;
 }
 
