@@ -44,8 +44,16 @@ typedef struct _MirageStreamInterface    MirageStreamInterface;
 
 /**
  * MirageStreamInterface:
+ * @parent_iface: the parent interface
+ * @get_filename: retrieves the filename of the underlying file
+ * @is_writable: determines whether the stream (chain) is writable
+ * @move_file: moves the underlying file
+ * @read: reads from stream
+ * @write: writes to stream
+ * @seek: seeks to specified position in stream
+ * @tell: retrieves current position in stream
  *
- * Provides an interface for implementing stream objects.
+ * Provides an interface for implementing I/O streams.
  */
 struct _MirageStreamInterface
 {

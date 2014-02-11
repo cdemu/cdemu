@@ -4,6 +4,7 @@ MirageDebugMaskInfo
 MirageEnumFilterStreamInfoCallback
 MirageEnumParserInfoCallback
 MirageEnumWriterInfoCallback
+mirage_create_writer
 mirage_enumerate_filter_streams
 mirage_enumerate_parsers
 mirage_enumerate_writers
@@ -141,6 +142,7 @@ mirage_disc_layout_get_start_sector
 mirage_disc_layout_set_first_session
 mirage_disc_layout_set_first_track
 mirage_disc_layout_set_start_sector
+mirage_disc_put_sector
 mirage_disc_remove_session_by_index
 mirage_disc_remove_session_by_number
 mirage_disc_remove_session_by_object
@@ -178,7 +180,6 @@ mirage_error_get_type
 MirageFileStream
 MirageFileStreamClass
 mirage_file_stream_open
-mirage_file_stream_create
 <SUBSECTION Standard>
 MIRAGE_FILE_STREAM
 MIRAGE_FILE_STREAM_CLASS
@@ -225,6 +226,7 @@ MirageSubchannelDataFormat
 mirage_fragment_contains_address
 mirage_fragment_get_address
 mirage_fragment_get_length
+mirage_fragment_is_writable
 mirage_fragment_main_data_get_filename
 mirage_fragment_main_data_get_format
 mirage_fragment_main_data_get_offset
@@ -369,6 +371,7 @@ MirageSectorType
 MirageSectorSubchannelFormat
 MirageSectorValidData
 mirage_sector_feed_data
+mirage_sector_extract_data
 mirage_sector_get_address
 mirage_sector_get_data
 mirage_sector_set_data
@@ -462,6 +465,7 @@ MirageStream
 MirageStreamInterface
 mirage_stream_get_filename
 mirage_stream_is_writable
+mirage_stream_move_file
 mirage_stream_read
 mirage_stream_write
 mirage_stream_seek
@@ -517,6 +521,7 @@ mirage_track_layout_get_start_sector
 mirage_track_layout_get_track_number
 mirage_track_layout_set_start_sector
 mirage_track_layout_set_track_number
+mirage_track_put_sector
 mirage_track_remove_fragment_by_index
 mirage_track_remove_fragment_by_object
 mirage_track_remove_index_by_number
@@ -538,6 +543,45 @@ MIRAGE_TRACK_GET_CLASS
 MIRAGE_TYPE_TRACK
 MirageTrackPrivate
 mirage_track_get_type
+</SECTION>
+
+<SECTION>
+<FILE>mirage-writer</FILE>
+<TITLE>MirageWriter</TITLE>
+MirageFragmentRole
+MirageWriterInfo
+MirageWriterParameter
+MirageWriter
+MirageWriterClass
+mirage_writer_add_parameter_boolean
+mirage_writer_add_parameter_enum
+mirage_writer_add_parameter_int
+mirage_writer_add_parameter_string
+mirage_writer_convert_image
+mirage_writer_create_fragment
+mirage_writer_finalize_image
+mirage_writer_generate_info
+mirage_writer_get_conversion_progress_step
+mirage_writer_get_info
+mirage_writer_get_parameter_boolean
+mirage_writer_get_parameter_enum
+mirage_writer_get_parameter_int
+mirage_writer_get_parameter_string
+mirage_writer_info_copy
+mirage_writer_info_free
+mirage_writer_lookup_parameter_ids
+mirage_writer_lookup_parameter_info
+mirage_writer_open_image
+mirage_writer_set_conversion_progress_step
+<SUBSECTION Standard>
+MIRAGE_IS_WRITER
+MIRAGE_IS_WRITER_CLASS
+MIRAGE_WRITER
+MIRAGE_WRITER_CLASS
+MIRAGE_WRITER_GET_CLASS
+MIRAGE_TYPE_WRITER
+MirageWriterPrivate
+mirage_writer_get_type
 </SECTION>
 
 <SECTION>
@@ -569,6 +613,9 @@ mirage_helper_sector_edc_ecc_compute_ecc_block
 mirage_helper_sector_edc_ecc_compute_edc_block
 mirage_helper_strcasecmp
 mirage_helper_strncasecmp
+mirage_helper_format_string
+mirage_helper_format_stringd
+mirage_helper_format_stringv
 mirage_helper_subchannel_deinterleave
 mirage_helper_subchannel_interleave
 mirage_helper_subchannel_q_calculate_crc

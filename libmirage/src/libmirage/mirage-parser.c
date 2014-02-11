@@ -20,7 +20,7 @@
 /**
  * SECTION: mirage-parser
  * @title: MirageParser
- * @short_description: Base object for parsers implementation.
+ * @short_description: Base object for image parser implementations.
  * @see_also: #MirageDisc, #MirageContext
  * @include: mirage-parser.h
  *

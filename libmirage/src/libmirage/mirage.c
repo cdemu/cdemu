@@ -528,6 +528,17 @@ gboolean mirage_get_supported_debug_masks (const MirageDebugMaskInfo **masks, gi
 }
 
 
+/**
+ * mirage_create_writer:
+ * @writer_id: (in): ID of writer to create
+ * @error: (out) (allow-none): location to store error, or %NULL
+ *
+ * Attempts to create an instance of image writer whose ID is @writer_id.
+ *
+ * Returns: (transfer full): newly-created writer object on success, %NULL
+ * on failure. The reference to the object should be released using
+ * g_object_unref() when no longer needed.
+ */
 MirageWriter *mirage_create_writer (const gchar *writer_id, GError **error)
 {
     /* Make sure libMirage is initialized */

@@ -26,6 +26,13 @@
 G_BEGIN_DECLS
 
 
+/**
+ * MirageFragmentRole:
+ * @MIRAGE_FRAGMENT_PREGAP: pregap fragment
+ * @MIRAGE_FRAGMENT_DATA: data fragment
+ *
+ * Fragment roles.
+ */
 typedef enum _MirageFragmentRole
 {
     MIRAGE_FRAGMENT_PREGAP,
@@ -51,6 +58,17 @@ struct _MirageWriterInfo
 void mirage_writer_info_copy (const MirageWriterInfo *info, MirageWriterInfo *dest);
 void mirage_writer_info_free (MirageWriterInfo *info);
 
+
+/**
+ * MirageWriterParameter:
+ * @name: parameter name
+ * @description: description of parameter
+ * @default_value: default value for parameter. Also determines parameter type.
+ * @enum_values: if parameter is an enum, this field contains all possible values. The variant has a signature "as".
+ *
+ * A structure encapsulating information about image writer parameters,
+ * using in writer's parameter sheet.
+ */
 typedef struct _MirageWriterParameter MirageWriterParameter;
 struct _MirageWriterParameter
 {
@@ -95,7 +113,9 @@ struct _MirageWriter
 /**
  * MirageWriterClass:
  * @parent_class: the parent class
- * @load_image: loads image
+ * @open_image: initializes writer on specified image
+ * @create_fragment: creates a fragment of specified role for the given track
+ * @finalize_image: finalizes image
  *
  * The class structure for the <structname>MirageWriter</structname> type.
  */

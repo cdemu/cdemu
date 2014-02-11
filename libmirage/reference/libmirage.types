@@ -15,3 +15,4 @@ mirage_sector_get_type
 mirage_session_get_type
 mirage_stream_get_type
 mirage_track_get_type
+mirage_writer_get_type

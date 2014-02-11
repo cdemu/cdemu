@@ -17,6 +17,16 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
+/**
+ * SECTION: mirage-writer
+ * @title: MirageWriter
+ * @short_description: Base object for image writer implementations.
+ * @see_also: #MirageDisc
+ * @include: mirage-writer.h
+ *
+ * TODO
+ */
+
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
@@ -124,21 +134,65 @@ static void mirage_writer_add_parameter (MirageWriter *self, const gchar *id, co
     self->priv->parameter_sheet_list = g_list_append(self->priv->parameter_sheet_list, g_strdup(id));
 }
 
+
+/**
+ * mirage_writer_add_parameter_boolean:
+ * @self: a #MirageWriter
+ * @id: (in): parameter ID
+ * @name: (in): parameter name
+ * @description: (in): parameter description
+ * @default_value: (in): default value
+ *
+ * Adds a boolean parameter to writer's parameter sheet.
+ */
 void mirage_writer_add_parameter_boolean (MirageWriter *self, const gchar *id, const gchar *name, const gchar *description, gboolean default_value)
 {
     mirage_writer_add_parameter(self, id, name, description, g_variant_new("b", default_value), NULL);
 }
 
+/**
+ * mirage_writer_add_parameter_string:
+ * @self: a #MirageWriter
+ * @id: (in): parameter ID
+ * @name: (in): parameter name
+ * @description: (in): parameter description
+ * @default_value: (in): default value
+ *
+ * Adds a string parameter to writer's parameter sheet.
+ */
 void mirage_writer_add_parameter_string (MirageWriter *self, const gchar *id, const gchar *name, const gchar *description, const gchar *default_value)
 {
     mirage_writer_add_parameter(self, id, name, description, g_variant_new("s", default_value), NULL);
 }
 
+/**
+ * mirage_writer_add_parameter_int:
+ * @self: a #MirageWriter
+ * @id: (in): parameter ID
+ * @name: (in): parameter name
+ * @description: (in): parameter description
+ * @default_value: (in): default value
+ *
+ * Adds an integer parameter to writer's parameter sheet.
+ */
 void mirage_writer_add_parameter_int (MirageWriter *self, const gchar *id, const gchar *name, const gchar *description, gint default_value)
 {
     mirage_writer_add_parameter(self, id, name, description, g_variant_new("i", default_value), NULL);
 }
 
+/**
+ * mirage_writer_add_parameter_enum:
+ * @self: a #MirageWriter
+ * @id: (in): parameter ID
+ * @name: (in): parameter name
+ * @description: (in): parameter description
+ * @default_value: (in): default value
+ * @...: (in): %NULL-terminated list of valid string values
+ *
+ * Adds an enum parameter to writer's parameter sheet. The enum parameters
+ * are treated as string parameters, except they have a pre-defined set
+ * of valid values.
+ */
 void mirage_writer_add_parameter_enum (MirageWriter *self, const gchar *id, const gchar *name, const gchar *description, const gchar *default_value, ...)
 {
     GVariantBuilder builder;
@@ -159,11 +213,35 @@ void mirage_writer_add_parameter_enum (MirageWriter *self, const gchar *id, cons
 }
 
 
+/**
+ * mirage_writer_lookup_parameter_ids:
+ * @self: a #MirageWriter
+ *
+ * Retrieves the list of parameter ID strings from writer's parameter
+ * sheet. The IDs are ordered in the same way as they were inserted into
+ * the parameter sheet.
+ *
+ * Returns: (transfer none) (element-type gchar*): the list of parameter
+ * IDs. The list and its elements belong to the writer and should not be
+ * modified.
+ */
 GList *mirage_writer_lookup_parameter_ids (MirageWriter *self)
 {
     return self->priv->parameter_sheet_list;
 }
 
+/**
+ * mirage_writer_lookup_parameter_info:
+ * @self: a #MirageWriter
+ * @id: parameter ID string
+ *
+ * Looks up the parameter with specified @id in writer's parameter sheet
+ * and retrieves the parameter's information structure.
+ *
+ * Returns: the pointer to parameter's information structure on success,
+ * %NULL on failure. The information structure belong to the writer and
+ * should not be modified.
+ */
 const MirageWriterParameter *mirage_writer_lookup_parameter_info (MirageWriter *self, const gchar *id)
 {
     return g_hash_table_lookup(self->priv->parameter_sheet, id);
@@ -237,21 +315,66 @@ static GVariant *mirage_writer_get_parameter (MirageWriter *self, const gchar *i
     return value;
 }
 
+
+/**
+ * mirage_writer_get_parameter_boolean:
+ * @self: a #MirageWriter
+ * @id: parameter ID string
+ *
+ * Looks up the boolean parameter with specified @id from user-supplied
+ * writer parameters and returns its value. If user did not supply the
+ * parameter, its default value is returned instead.
+ *
+ * Returns: user-supplied parameter value.
+ */
 gboolean mirage_writer_get_parameter_boolean (MirageWriter *self, const gchar *id)
 {
     return g_variant_get_boolean(mirage_writer_get_parameter(self, id));
 }
 
+/**
+ * mirage_writer_get_parameter_string:
+ * @self: a #MirageWriter
+ * @id: parameter ID string
+ *
+ * Looks up the string parameter with specified @id from user-supplied
+ * writer parameters and returns its value. If user did not supply the
+ * parameter, its default value is returned instead.
+ *
+ * Returns: user-supplied parameter value.
+ */
 const gchar *mirage_writer_get_parameter_string (MirageWriter *self, const gchar *id)
 {
     return g_variant_get_string(mirage_writer_get_parameter(self, id), NULL);
 }
 
+/**
+ * mirage_writer_get_parameter_int:
+ * @self: a #MirageWriter
+ * @id: parameter ID string
+ *
+ * Looks up the string parameter with specified @id from user-supplied
+ * writer parameters and returns its value. If user did not supply the
+ * parameter, its default value is returned instead.
+ *
+ * Returns: user-supplied parameter value.
+ */
 gint mirage_writer_get_parameter_int (MirageWriter *self, const gchar *id)
 {
     return g_variant_get_int32(mirage_writer_get_parameter(self, id));
 }
 
+/**
+ * mirage_writer_get_parameter_enum:
+ * @self: a #MirageWriter
+ * @id: parameter ID string
+ *
+ * Looks up the enum parameter with specified @id from user-supplied
+ * writer parameters and returns its value. If user did not supply the
+ * parameter, its default value is returned instead.
+ *
+ * Returns: user-supplied parameter value.
+ */
 const gchar *mirage_writer_get_parameter_enum (MirageWriter *self, const gchar *id)
 {
     return g_variant_get_string(mirage_writer_get_parameter(self, id), NULL);
@@ -290,6 +413,19 @@ const MirageWriterInfo *mirage_writer_get_info (MirageWriter *self)
 }
 
 
+/**
+ * mirage_writer_open_image:
+ * @self: a #MirageWriter
+ * @disc: (in): disc object for which the image will be created
+ * @parameters: (in): writer parameters
+ * @error: (out) (allow-none): location to store error, or %NULL
+ *
+ * Initializes the image writer to start the writing process for @disc.
+ * The latter should have set the image filename(s) and medium type, but
+ * does not have to have disc layout (sessions, tracks) built yet.
+ *
+ * Returns: %TRUE on success, %FALSE on failure
+ */
 gboolean mirage_writer_open_image (MirageWriter *self, MirageDisc *disc, GHashTable *parameters, GError **error)
 {
     /* Clear old parameters */
@@ -313,11 +449,39 @@ gboolean mirage_writer_open_image (MirageWriter *self, MirageDisc *disc, GHashTa
     return MIRAGE_WRITER_GET_CLASS(self)->open_image(self, disc, error);
 }
 
+/**
+ * mirage_writer_create_fragment:
+ * @self: a #MirageWriter
+ * @track: (in): track for which the fragment is to be created
+ * @role: (in): fragment role
+ * @error: (out) (allow-none): location to store error, or %NULL
+ *
+ * Creates a fragment with specified @role for given @track. The latter
+ * needs to already be part of disc's layout.
+ *
+ * The role helps writer implementation determine what kind of fragment
+ * to create; for example, some writer implementations create dummy
+ * fragments for pregaps.
+ *
+ * Returns: (transfer full): pointer to created fragment object on success, %NULL on failure
+ */
 MirageFragment *mirage_writer_create_fragment (MirageWriter *self, MirageTrack *track, MirageFragmentRole role, GError **error)
 {
     return MIRAGE_WRITER_GET_CLASS(self)->create_fragment(self, track, role, error);
 }
 
+
+/**
+ * mirage_writer_finalize_image:
+ * @self: a #MirageWriter
+ * @disc: (in): disc object for which the image is being written
+ * @error: (out) (allow-none): location to store error, or %NULL
+ *
+ * Finalizes the image, possibly creating the image descriptor file if
+ * necessary.
+ *
+ * Returns: %TRUE on success, %FALSE on failure
+ */
 gboolean mirage_writer_finalize_image (MirageWriter *self, MirageDisc *disc, GError **error)
 {
     /* Provided by implementation */
@@ -333,16 +497,50 @@ gboolean mirage_writer_finalize_image (MirageWriter *self, MirageDisc *disc, GEr
 }
 
 
+/**
+ * mirage_writer_get_conversion_progress_step:
+ * @self: a #MirageWriter
+ *
+ * Retrieves conversion progress step setting.
+ *
+ * Returns: the value of conversion progress step.
+ */
 guint mirage_writer_get_conversion_progress_step (MirageWriter *self)
 {
     return self->priv->progress_step;
 }
 
+/**
+ * mirage_writer_set_conversion_progress_step:
+ * @self: a #MirageWriter
+ * @step: new conversion progress step value
+ *
+ * Sets conversion progress step. Setting @step to 0 disables conversion
+ * progress reporting.
+ */
 void mirage_writer_set_conversion_progress_step (MirageWriter *self, guint step)
 {
     self->priv->progress_step = step;
 }
 
+
+/**
+ * mirage_writer_convert_image:
+ * @self: a #MirageWriter
+ * @filename: (in): filename of output image
+ * @original_disc: (in): disc layout obtained from original image
+ * @parameters: (in): writer parameters
+ * @cancellable: (in) (allow-none): optional %GCancellable object, NULL to ignore.
+ * @error: (out) (allow-none): location to store error, or %NULL
+ *
+ * Convenience function that converts an already-opened image stored in
+ * @original_disc and writes it to @filename. If conversion progress
+ * reporting is enabled via mirage_writer_set_conversion_progress_step(),
+ * the #MirageWriter::conversion-progress signal is emitted at specified
+ * time intervals during conversion.
+ *
+ * Returns: %TRUE on success, %FALSE on failure
+ */
 gboolean mirage_writer_convert_image (MirageWriter *self, const gchar *filename, MirageDisc *original_disc, GHashTable *parameters, GCancellable *cancellable, GError **error)
 {
     /* Conversion progress tracking */
