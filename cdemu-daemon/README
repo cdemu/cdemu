@@ -332,11 +332,32 @@ control the daemon:
 
     - Returns supported filter streams.
 
+* EnumWriterParameters (writer_id, parameter_sheet)
+    + writer_id: in; "s"
+        Writer ID string.
+    + parameter_sheet: out; "a(sssvas)"
+        Array of structures containing information about image writer's
+        parameters. Each structure has multiple fields: parameter ID (string),
+        parameter name (string), parameter description (string), default
+        value for parameter (variant) - this one also determines parameter
+        value type, and array of valid enum values (array of strings) -
+        if this field is non-empty, then the parameter is of enum type.
+
+    - Retrieves parameter sheet for image writer with specified ID.
+
 * GetNumberOfDevices (number_of_devices)
     + number_of_devices: out; "i"
         Number of devices (int).
 
     - Returns number of virtual devices.
+
+* DeviceGetMapping (device_number, sr_device, sg_device)
+    + device_number: in; "i"
+        Device you are requesting mapping for (int).
+    + sr_device: out; "s"
+        /dev/srX device node for specified device (string)
+    + sg_device: out; "s"
+        /dev/sgY device node for specified device (string)
 
 * DeviceGetStatus (device_number, loaded, file_names)
     + device_number: in; "i"
@@ -349,21 +370,44 @@ control the daemon:
 
     - Returns the status of specified device.
 
-* DeviceLoad (device_number, file_names, parameters)
+* DeviceLoad (device_number, filenames, parameters)
     + device_number: in; "i"
         Device that is to be loaded (int).
-    + file_names: in; "as"
+    + filenames: in; "as"
         File name(s) of the image to be loaded (array of strings).
     + parameters: in; "a{sv}"
         Additional (optional) parameters, stored in a D-BUS dictionary type. If
         no parameters are needed, empty dictionary should be sent.
         Currently supported parameters:
-            - "password":"password_string"; password for encrypted images
+            - "password": password for encrypted images (string)
+            - "encoding": encoding for text-based images (string)
+            - "dvd-report-css": boolean indicating whether DVD image should report CSS or not
 
     - Attempts to load the image into specified device.
     - The client might wish to detect MIRAGE_E_NEEDPASSWORD error, which
       indicates that the image is encrypted and needs a password provided via
       parameters.
+
+* DeviceCreateBlank (device_number, filename, parameters)
+    + device_number: in; "i"
+        Device on which blank disc should be created (int).
+    + filename: in; "s"
+        Filename/basename for image file to be created.
+    + parameters: in; "a{sv}"
+        Image writer parameters, stored in a D-BUS dictionary type. The
+        following parameters are supported directly:
+            - "writer-id": image writer ID (string); MANDATORY
+            - "medium-type": medium type (string): optional; valid values:
+                + "cdr74": CD-R 74 min (650 MB)
+                + "cdr80": CD-R 80 min (700 MB)
+                + "cdr90": CD-R 90 min (800 MB)
+                + "cdr99": CD-R 99 min (900 MB)
+                + "dvd+r": DVD+R, Single-Layer
+        Additionally, the parameters from writer's parameter sheet may
+        be passed, but they need to be prefixed with "writer.", i.e.:
+            - "writer.writer_parameter_id": parameter value
+
+    - Creates blank recordable disc in the specified device.
 
 * DeviceUnload (device_number)
     + device_number: in; "i"
@@ -392,6 +436,12 @@ control the daemon:
 
     - This method sets the value(s) of specified option for specified device.
       For more information on supported options, see Section 7.
+
+* AddDevice ()
+    - Creates additional virtual device
+
+* RemoveDevice ()
+    - Removes the last-created virtual device
 
 6.3. Signals
 ~~~~~~~~~~~~
