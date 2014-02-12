@@ -139,7 +139,7 @@ static gboolean cdemu_device_create_blank_disc_private (CdemuDevice *self, const
                 /* 90-minute CD-R (800 MB) */
                 medium_type = MIRAGE_MEDIUM_CD;
                 medium_capacity = 90*60*75;
-            } else if (!g_ascii_strcasecmp(medium_string, "cdr90")) {
+            } else if (!g_ascii_strcasecmp(medium_string, "cdr99")) {
                 /* 99-minute CD-R (900 MB) */
                 medium_type = MIRAGE_MEDIUM_CD;
                 medium_capacity = 80*60*75;
