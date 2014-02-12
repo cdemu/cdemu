@@ -200,7 +200,7 @@ if (GTKDOC_ENABLED AND GTKDOC_FOUND)
         SOURCE_DIR ${PROJECT_SOURCE_DIR}/src/libmirage ${PROJECT_BINARY_DIR}/src/libmirage
         SOURCES ${libmirage_HEADERS} ${libmirage_SOURCES}
         DOCS_DIR ${PROJECT_SOURCE_DIR}/reference
-        IGNORE_HFILES mirage-disc-structures.h
+        IGNORE_HFILES "mirage-compat-input-stream.h mirage-disc-structures.h"
         CFLAGS ${GLIB_CFLAGS} -I${PROJECT_SOURCE_DIR}/src/libmirage
         LDFLAGS ${GLIB_LDFLAGS} -L${PROJECT_BINARY_DIR}
             -Wl,-rpath,${PROJECT_BINARY_DIR} -l${GTKDOC_LIB}
