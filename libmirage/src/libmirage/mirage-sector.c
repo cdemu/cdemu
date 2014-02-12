@@ -851,7 +851,7 @@ static void mirage_sector_generate_edc_ecc (MirageSector *self)
  * mirage_sector_feed_data:
  * @self: a #MirageSector
  * @address: (in): absolute disc address the sector represents. Given in sectors.
- * @type: (in): track type (one of #MirageSectorType
+ * @type: (in): track type (one of #MirageSectorType)
  * @main_data: (in): main data buffer
  * @main_data_length: (in): length of data in main data buffer
  * @subchannel_format: (in): subchannel data format
@@ -952,6 +952,25 @@ gboolean mirage_sector_feed_data (MirageSector *self, gint address, MirageSector
     return TRUE;
 }
 
+/**
+ * mirage_sector_extract_data:
+ * @self: a #MirageSector
+ * @main_data: (out) (transfer none): location to store pointer to main data buffer
+ * @main_data_length: (in): requested length of data in main data buffer
+ * @subchannel_format: (out): requested subchannel data format
+ * @subchannel_data: (in) (transfer none) (allow-none): location to store pointer to subchannel data buffer, or %NULL
+ * @subchannel_data_length: (in): requested length of data in subchannel data buffer
+ * @error: (out) (allow-none): location to store error, or %NULL
+ *
+ * Extracts data from sector. Which parts of main channel data are extracted
+ * depends on provided @main_data_length.
+ *
+ * <note>
+ * Intended for internal use.
+ * </note>
+ *
+ * Returns: %TRUE on success, %FALSE on failure
+ */
 gboolean mirage_sector_extract_data (MirageSector *self, const guint8 **main_data, guint main_data_length, MirageSectorSubchannelFormat subchannel_format, const guint8 **subchannel_data, guint subchannel_data_length, GError **error)
 {
     gint data_offset, required_data;
@@ -1067,6 +1086,17 @@ gboolean mirage_sector_get_sync (MirageSector *self, const guint8 **ret_buf, gin
     return succeeded;
 }
 
+/**
+ * mirage_sector_set_sync:
+ * @self: a #MirageSector
+ * @buf: (in) (array length=len): buffer containing sync pattern
+ * @len: (in): length of sync pattern
+ * @error: (out) (allow-none): location to store error, or %NULL
+ *
+ * Sets sector's sync pattern to that stored in @buf.
+ *
+ * Returns: %TRUE on success, %FALSE on failure
+ */
 gboolean mirage_sector_set_sync (MirageSector *self, const guint8 *buf, gint len, GError **error)
 {
     gint offset, expected_length;
@@ -1133,6 +1163,17 @@ gboolean mirage_sector_get_header (MirageSector *self, const guint8 **ret_buf, g
     return succeeded;
 }
 
+/**
+ * mirage_sector_set_header:
+ * @self: a #MirageSector
+ * @buf: (in) (array length=len): buffer containing header
+ * @len: (in): length of header
+ * @error: (out) (allow-none): location to store error, or %NULL
+ *
+ * Sets sector's header to that stored in @buf.
+ *
+ * Returns: %TRUE on success, %FALSE on failure
+ */
 gboolean mirage_sector_set_header (MirageSector *self, const guint8 *buf, gint len, GError **error)
 {
     gint offset, expected_length;
@@ -1199,6 +1240,17 @@ gboolean mirage_sector_get_subheader (MirageSector *self, const guint8 **ret_buf
     return succeeded;
 }
 
+/**
+ * mirage_sector_set_subheader:
+ * @self: a #MirageSector
+ * @buf: (in) (array length=len): buffer containing subheader
+ * @len: (in): length of subheader
+ * @error: (out) (allow-none): location to store error, or %NULL
+ *
+ * Sets sector's subheader to that stored in @buf.
+ *
+ * Returns: %TRUE on success, %FALSE on failure
+ */
 gboolean mirage_sector_set_subheader (MirageSector *self, const guint8 *buf, gint len, GError **error)
 {
     gint offset, expected_length;
@@ -1266,6 +1318,17 @@ gboolean mirage_sector_get_data (MirageSector *self, const guint8 **ret_buf, gin
     return succeeded;
 }
 
+/**
+ * mirage_sector_set_data:
+ * @self: a #MirageSector
+ * @buf: (in) (array length=len): buffer containing user data
+ * @len: (in): length of user data
+ * @error: (out) (allow-none): location to store error, or %NULL
+ *
+ * Sets sector's user data to that stored in @buf.
+ *
+ * Returns: %TRUE on success, %FALSE on failure
+ */
 gboolean mirage_sector_set_data (MirageSector *self, const guint8 *buf, gint len, GError **error)
 {
     gint offset, expected_length;
@@ -1331,6 +1394,17 @@ gboolean mirage_sector_get_edc_ecc (MirageSector *self, const guint8 **ret_buf, 
     return succeeded;
 }
 
+/**
+ * mirage_sector_set_edc_ecc:
+ * @self: a #MirageSector
+ * @buf: (in) (array length=len): buffer containing EDC/ECC data
+ * @len: (in): length of EDC/ECC data
+ * @error: (out) (allow-none): location to store error, or %NULL
+ *
+ * Sets sector's EDC/ECC data to that stored in @buf.
+ *
+ * Returns: %TRUE on success, %FALSE on failure
+ */
 gboolean mirage_sector_set_edc_ecc (MirageSector *self, const guint8 *buf, gint len, GError **error)
 {
     gint offset, expected_length;
@@ -1422,6 +1496,19 @@ gboolean mirage_sector_get_subchannel (MirageSector *self, MirageSectorSubchanne
     return TRUE;
 }
 
+/**
+ * mirage_sector_set_subchannel:
+ * @self: a #MirageSector
+ * @format: (in): subchannel format
+ * @buf: (in) (array length=len): buffer containing subchannel data
+ * @len: (in): length of subchannel data
+ * @error: (out) (allow-none): location to store error, or %NULL
+ *
+ * Sets sector's subchannel data to that stored in @buf. @format must be
+ * one of #MirageSectorSubchannelFormat.
+ *
+ * Returns: %TRUE on success, %FALSE on failure
+ */
 gboolean mirage_sector_set_subchannel (MirageSector *self, MirageSectorSubchannelFormat format, const guint8 *buf, gint len, GError **error)
 {
     switch (format) {

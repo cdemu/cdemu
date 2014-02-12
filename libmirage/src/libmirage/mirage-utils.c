@@ -561,7 +561,7 @@ guint32 *crc32_d8018001_lut = NULL;
  *
  * Returns: Pointer to the CRC16 look-up table or NULL on failure.
  */
-guint16 *mirage_helper_init_crc16_lut(guint16 genpoly)
+guint16 *mirage_helper_init_crc16_lut (guint16 genpoly)
 {
     guint16 *crc16_lut = g_try_new(guint16, 256);
     if (!crc16_lut) {
@@ -603,7 +603,7 @@ guint16 *mirage_helper_init_crc16_lut(guint16 genpoly)
  *
  * Returns: Pointer to the CRC32 look-up table or NULL on failure.
  */
-guint32 *mirage_helper_init_crc32_lut(guint32 genpoly, guint slices)
+guint32 *mirage_helper_init_crc32_lut (guint32 genpoly, guint slices)
 {
     /* Check if slices in in the valid range */
     if (slices < 1 || slices > 8) {
@@ -660,7 +660,7 @@ guint32 *mirage_helper_init_crc32_lut(guint32 genpoly, guint slices)
  *
  * Returns: CRC-16 checksum of data
  */
-guint16 mirage_helper_calculate_crc16(const guint8 *data, guint length, const guint16 *crctab, gboolean reflected, gboolean invert)
+guint16 mirage_helper_calculate_crc16 (const guint8 *data, guint length, const guint16 *crctab, gboolean reflected, gboolean invert)
 {
     guint16 crc = 0;
 
@@ -696,7 +696,7 @@ guint16 mirage_helper_calculate_crc16(const guint8 *data, guint length, const gu
  *
  * Returns: CRC-32 checksum of data
  */
-guint32 mirage_helper_calculate_crc32f(const guint8 *data, guint length, const guint32 *crctab, gboolean reflected, gboolean invert)
+guint32 mirage_helper_calculate_crc32f (const guint8 *data, guint length, const guint32 *crctab, gboolean reflected, gboolean invert)
 {
     guint32 crc = 0;
 
@@ -792,7 +792,7 @@ guint32 mirage_helper_calculate_crc32f(const guint8 *data, guint length, const g
  *
  * Returns: CRC-32 checksum of data
  */
-guint32 mirage_helper_calculate_crc32s(const guint8 *data, guint length, const guint32 *crctab, gboolean reflected, gboolean invert)
+guint32 mirage_helper_calculate_crc32s (const guint8 *data, guint length, const guint32 *crctab, gboolean reflected, gboolean invert)
 {
     guint32 crc = 0;
 
@@ -1324,6 +1324,49 @@ static gboolean format_string_cb (const GMatchInfo *match_info, GString *result,
     return FALSE;
 }
 
+/**
+ * mirage_helper_format_string:
+ * @format: (in): format string
+ * @...: (in): %NULL-terminated list of replacement token/value pairs
+ *
+ * General-purpose string formatter with token replacement. Similarly to
+ * sprintf, the tokens begin with percent character, but instead of denoting
+ * format type, the tokens denote placeholders for user-defined replacements.
+ * Sprintf-like field width and precision modifiers are supported for formatting
+ * the replacements. If replacement is not specified for a replacement token
+ * found in format, then the token is removed in the output string.
+ *
+ * If replacement does not exist and the token to be replaced is preceded
+ * by other word-caracters (see #GRegex documentation for details), in
+ * addition to the replacement token, all those word characters are removed
+ * together with the leading non-word character.
+ *
+ * <informalexample>
+ * <programlisting>
+ * // Example: formatting a filename
+ * output = mirage_helper_format_string("%b-%02s-track%t.%e",
+ *     "b", g_variant_new_string("some_image"),
+ *     "s", g_variant_new_int16(1),
+ *     "t", g_variant_new_int16(3),
+ *     "e", g_variant_new_string("iso"), NULL);
+ * // output = "some_image-01-track3.iso"
+ *
+ * // Example: removal of preceding characters when replacement does not exist
+ * output = mirage_helper_format_string("%b-%02s-track%t.%e",
+ *     "b", g_variant_new_string("some_image"),
+ *     "s", g_variant_new_int16(1),
+ *     "e", g_variant_new_string("iso"), NULL);
+ * // output = "some_image-01.iso"
+ * </programlisting>
+ * </informalexample>
+ *
+ * @Varargs is a %NULL-terminated list of replacement token/value pairs,
+ * where a replacement token/value pair is a pair of string and a #GVariant.
+ *
+ * Returns: (transfer full): string with all replacement tokens either
+ * replaced or removed. The string should be freed using g_free() when
+ * no longer needed.
+ */
 gchar *mirage_helper_format_string (const gchar *format, ...)
 {
     gchar *result;
@@ -1336,6 +1379,21 @@ gchar *mirage_helper_format_string (const gchar *format, ...)
     return result;
 }
 
+
+/**
+ * mirage_helper_format_stringv:
+ * @format: (in): format string
+ * @args: (in): %NULL-terminated list of replacement token/value pairs
+ *
+ * Variable-argument-list-version of mirage_helper_format_string().
+ *
+ * @args is a %NULL-terminated list of replacement token/value pairs,
+ * where a replacement token/value pair is a pair of string and a #GVariant.
+ *
+ * Returns: (transfer full): string with all replacement tokens either
+ * replaced or removed. The string should be freed using g_free() when
+ * no longer needed.
+ */
 gchar *mirage_helper_format_stringv (const gchar *format, va_list args)
 {
     gchar *result;
@@ -1359,6 +1417,21 @@ gchar *mirage_helper_format_stringv (const gchar *format, va_list args)
     return result;
 }
 
+/**
+ * mirage_helper_format_stringd:
+ * @format: (in): format string
+ * @dictionary: (in): a #GHashTable containing replacement token/value pairs
+ *
+ * Dictionary-version of mirage_helper_format_string().
+ *
+ * @dictionary is a #GHashTable where keys are replacement token strings
+ * and each value is a #GVariant containing corresponding token replacement
+ * value.
+ *
+ * Returns: (transfer full): string with all replacement tokens either
+ * replaced or removed. The string should be freed using g_free() when
+ * no longer needed.
+ */
 gchar *mirage_helper_format_stringd (const gchar *format, GHashTable *dictionary)
 {
     /* Use regex to replace the tokens with their replacement values */

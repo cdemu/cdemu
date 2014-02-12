@@ -1446,7 +1446,22 @@ MirageSector *mirage_disc_get_sector (MirageDisc *self, gint address, GError **e
     return sector;
 }
 
-
+/**
+ * mirage_disc_put_sector:
+ * @self: a #MirageDisc
+ * @sector: (in): a #MirageSector representing sector to be written
+ * @error: (out) (allow-none): location to store error, or %NULL
+ *
+ * Writes the @sector to disc.
+ *
+ * This function attempts to retrieve appropriate track using
+ * mirage_disc_get_track_by_address(),
+ * then writes sector object using mirage_track_put_sector(); therefore,
+ * same restrictions regarding sector address apply as when putting sector
+ * directly to track.
+ *
+ * Returns: %TRUE on success, %FALSE on failure.
+ */
 gboolean mirage_disc_put_sector (MirageDisc *self, MirageSector *sector, GError **error)
 {
     MirageTrack *track;

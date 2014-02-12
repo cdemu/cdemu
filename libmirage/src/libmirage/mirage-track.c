@@ -464,7 +464,8 @@ const gchar *mirage_track_get_isrc (MirageTrack *self)
  * is absolute or relative; if %TRUE, @address is absolute (i.e. relative to start
  * of the disc), if %FALSE, it is relative (i.e. relative to start of the track).
  *
- * A reference to sector is stored in @sector; it
+ * A reference to sector is stored in @sector; it should be released with
+ * g_object_unref() when no longer needed.
  *
  * Returns: (transfer full): sector object on success, %NULL on failure. The sector object
  * should be released with g_object_unref() when no longer needed.
@@ -549,6 +550,23 @@ MirageSector *mirage_track_get_sector (MirageTrack *self, gint address, gboolean
 }
 
 
+/**
+ * mirage_track_put_sector:
+ * @self: a #MirageTrack
+ * @sector: (in): a #MirageSector representing sector to be written
+ * @error: (out) (allow-none): location to store error, or %NULL
+ *
+ * Writes the @sector to track. The address at which sector is written
+ * is retrieved from sector's property; for this function to succeed,
+ * the address must either fall within track's layout (i.e., the track's
+ * fragment(s) must have sufficient length "reserved" to accept sector),
+ * or, alternatively, the sector address is allowed to equal track's
+ * current lenght plus one. In the latter case, the track's length is
+ * incremented when the sector is written (i.e., the corresponding track's
+ * fragment is extended before data is written to it).
+ *
+ * Returns: %TRUE on success, %FALSE on failure.
+ */
 gboolean mirage_track_put_sector (MirageTrack *self, MirageSector *sector, GError **error)
 {
     gint relative_address = mirage_sector_get_address(sector) - mirage_track_layout_get_start_sector(self);
