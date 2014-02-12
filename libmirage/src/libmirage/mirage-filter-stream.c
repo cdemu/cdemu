@@ -44,7 +44,7 @@
  * implementation sets the file stream size using
  * mirage_filter_stream_simplified_set_stream_length() function. In
  * simplified_partial_read, the current position in the stream, which is
- * managed by the framework, can be obtained using mirage_filter_simplified_stream_get_position().
+ * managed by the framework, can be obtained using mirage_filter_stream_simplified_get_position().
  */
 
 #ifdef HAVE_CONFIG_H
