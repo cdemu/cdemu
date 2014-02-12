@@ -10,11 +10,11 @@ cdemu \- a simple command-line CDEmu client
 This is cdemu, a command-line client for controlling CDEmu daemon. It is
 part of the userspace-cdemu suite, a free, GPL CD/DVD-ROM device emulator
 for linux.
-
+.PP
 It provides a way to perform the key tasks related to controlling the CDEmu
 daemon, such as loading and unloading devices, displaying devices' status and
 retrieving/setting devices' debug masks.
-
+.PP
 When connecting to daemon, cdemu client can use either session or system bus. By
 hard-coded default, it uses system bus. The default bus to be used can be specified
 via /etc/cdemu-client.conf or ~/.cdemu-client file; for more information, please
@@ -25,7 +25,7 @@ option.
 CDEmu daemon offers support for encrypted images. When password
 is required to load an image (and it hasn't been provided via commandline using
 --password), cdemu-client will prompt for it and then send it to daemon.
-
+.PP
 NOTE, HOWEVER, THAT THE PASSWORD IS SENT OVER D-BUS IN A PLAIN STRING FORM, WITHOUT
 ANY PROTECTION. DEPENDING ON YOUR PRIVACY CONCERNS YOU MIGHT WISH TO AVOID LOADING
 SUCH IMAGES.
@@ -41,23 +41,28 @@ Prints version info and exits.
 .B -b --bus
 Sets the D-BUS bus type to use for connection. Valid values are \fIsession\fR
 and \fIsystem\fR. If no bus is specified, the default bus is used.
-.SH PARSER PARAMETERS (used only with 'load' command)
-Parser parameters can be passed to the image parsers when
-trying to load the image. Parameters are optional; whether they are supported
-by a particular parser or not depends on the parser implementation.
-
-The following parameters are valid:
+.SH COMMANDS
 .TP
+.B load [parser-parameters] <device> <filename> [...]
+Loads the device; \fBdevice\fR is the number of the desired device, or \fIany\fR.
+If \fIany\fR is used, then the client will attempt to load the image into the
+first empty device it finds (provided there is one available). \fBfilename\fR is
+the image filename. For multi-file images, multiple filenames can be provided.
+
+The following optional parser parameters can be passed when trying to load the
+image (whether they are supported by a particular parser or not depends on the
+parser implementation):
+
 .B --password <string>
 Allows a password for an encrypted image to be specified via commandline; however,
 if an image requires password and it hasn't been specified via commandline, then
 the client will prompt for it using standard input without echo.
-.TP
+
 .B --encoding <string>
 Allows an encoding for text-based image format (such as CUE) to be specified. This
 might be needed if the image descriptor file contains non-ASCII characters and does
 not use Unicode.
-.TP
+
 .B --dvd-report-css <true/false>
 Mark the DVD image as CSS-encrypted. This influences the generation of fake
 Disc Structure 0x01, and as such works only with images of DVD videos that do
@@ -65,13 +70,20 @@ not provide this information (most images, with exception of perhaps mds/mdf, do
 Enabling this option allows images of CSS-encrypted DVDs (e.g. created using 'dd'
 or 'readcd' without running through a CSS decryption step when creating the image)
 to be played by a deCSS-enabled Linux media player.
-.SH COMMANDS
 .TP
-.B load <device> <filename> [...]
-Loads the device; \fBdevice\fR is the number of the desired device, or \fIany\fR.
-If \fIany\fR is used, then the client will attempt to load the image into the
-first empty device it finds (provided there is one available). \fBfilename\fR is
-the image filename. For multi-file images, multiple filenames can be provided.
+.B create-blank [options] --writer_id=<writer-id> <device> <image_file>
+Creates blank recordable disc in the specified device. \fBdevice\fR is the number
+of the desired device, or \fIany\fR. If \fIany\fR is used, then the client will attempt
+to load the image into the first empty device it finds (provided there is one available).
+\fBimage_file\fR is the image filename/basename. A valid \fBwriter-id\fR must also be
+provided. Other valid options are:
+
+.B --medium-type <type>
+Sets the blank medium type. Valid values are: cdr74, cdr80, cdr90, cdr99 and dvd+r.
+
+.B --param="writer.parameter_id=parameter_value"
+Allows user to pass additional image writer parameters. \fIparameter_id\fR must
+be a valid parameter ID from image writer's parameter sheet, prefixed by "writer.".
 .TP
 .B unload <device>
 Unloads the device; \fBdevice\fR is the number of the desired device, or \fIall\fR.
@@ -128,7 +140,10 @@ Displays/sets device ID. \fBdevice\fR is the number of the desired device.
 If new values are ommitted, currently set values are displayed.
 .TP
 .B enum-parsers
-Enumerates supported parsers.
+Enumerates supported image parsers.
+.TP
+.B enum-writers
+Enumerates supported image writers.
 .TP
 .B enum-filter-streams
 Enumerates supported filter streams.
@@ -138,6 +153,9 @@ Enumerates supported daemon debug masks.
 .TP
 .B enum-library-debug-masks
 Enumerates supported library debug masks.
+.TP
+.B enum-writer-parameters <writer-id>
+Retrieves and displays parameters sheet for specified image writer.
 .TP
 .B version
 Displays version information
@@ -158,11 +176,23 @@ cdemu load 0 ~/session1.toc ~/session2.toc ~/session3.toc
 .B Loading a raw image of a CSS-encrypted DVD created by 'dd', so it can be played by mplayer:
  cdemu load 0 ~/image.iso --dvd-report-css=true
 .TP
+.B Creating a blank recordable disc: DVD+R SL with ISO image writer:
+cdemu create-blank --writer-id=WRITER-ISO --medium-type=dvd+r 0 ~/output-image.iso
+.TP
+.B Creating a blank recordable disc: 80-minute CD-R with TOC image writer, with additional writer parameters:
+cdemu create-blank --writer-id=WRITER-TOC --medium-type=cdr80 --param="writer.write_raw=1" --param="writer.write_subchannel=1" 0 ~/output-image.toc
+.TP
 .B Unloading first device:
 cdemu unload 0
 .TP
 .B Displaying device status:
 cdemu status
+.TP
+.B Adding another device:
+cdemu add-device
+.TP
+.B Removing the last device:
+cdemu remove-device
 .TP
 .B Displaying device mapping information:
 cdemu device-mapping
@@ -185,8 +215,11 @@ cdemu tr-emulation 0 1
 .B Changing device ID of first device:
 cdemu device-id 0 "MyVendor" "MyProduct" "1.0.0" "Test device ID"
 .TP
-.B Enumerating supported parsers:
+.B Enumerating supported image parsers:
 cdemu enum-parsers
+.TP
+.B Enumerating supported image writers:
+cdemu enum-writers
 .TP
 .B Enumerating supported filter streams:
 cdemu enum-filter-streams
@@ -196,6 +229,9 @@ cdemu enum-daemon-debug-masks
 .TP
 .B Enumerating supported library debug masks:
 cdemu enum-library-debug-masks
+.TP
+.B Obtaining parameter sheet for TOC image writer:
+cdemu enum-writer-parameters WRITER-TOC
 .TP
 .B Displaying daemon and library version:
 cdemu version

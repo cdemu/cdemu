@@ -64,6 +64,12 @@ the password using standard input without echo)
 Loading a raw image of a CSS-encrypted DVD created by 'dd', so it can be played by mplayer:
  cdemu load 0 ~/image.iso --dvd-report-css=true
 
+Creating a blank recordable disc: DVD+R SL with ISO image writer:
+ cdemu create-blank --writer-id=WRITER-ISO --medium-type=dvd+r 0 ~/output-image.iso
+
+Creating a blank recordable disc: 80-minute CD-R with TOC image writer, with additional writer parameters:
+ cdemu create-blank --writer-id=WRITER-TOC --medium-type=cdr80 --param="writer.write_raw=1" --param="writer.write_subchannel=1" 0 ~/output-image.toc
+
 Unloading first device:
  cdemu unload 0
 
@@ -103,11 +109,17 @@ Enabling bad sector emulation on first device:
 Changing device ID of first device:
  cdemu device-id 0 "MyVendor" "MyProduct" "1.0.0" "Test device ID"
 
-Enumerating supported parsers:
+Enumerating supported image parsers:
  cdemu enum-parsers
+
+Enumerating supported image writers:
+ cdemu enum-writers
 
 Enumerating supported filter streams:
  cdemu enum-filter-streams
+
+Obtaining parameter sheet for TOC image writer:
+ cdemu enum-writer-parameters WRITER-TOC
 
 Displaying daemon and library version:
  cdemu version
