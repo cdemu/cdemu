@@ -21,18 +21,20 @@
  * SECTION: mirage-fragment
  * @title: MirageFragment
  * @short_description: Fragment object.
+ * @see_also: #MirageStream, #MirageTrack
  * @include: mirage-fragment.h
  *
  * #MirageFragment object represents an interface between a #MirageTrack
- * and data stream(s) containing the data. It allows tracks to read main
- * and subchannel data from the streams, which is then fed to sectors.
- * When constructing a track, a parser will typically create and append
- * at least one fragment.
+ * and I/O stream(s) containing the data. It allows tracks to read and/or
+ * write both sectors' main channel and subchannel data. When constructing
+ * a track, an image parser will typically create and append at least one
+ * fragment. Similarly, during image conversion and writing process, at
+ * least one fragment will be requested from image writer and written to.
  *
  * A #MirageFragment object is obtained using g_object_new() function.
- * Both main data file stream and subchannel data file stream can be set
+ * Both main channel and subchannel data I/O streams can be set
  * using mirage_fragment_main_data_set_stream() and mirage_fragment_subchannel_data_set_stream()
- * functions. If no streams are set, a fragment acts as a "NULL" fragment,
+ * functions. If no streams are set, the fragment acts as a "NULL" fragment,
  * and can be used to represent zero-filled pregaps and postgaps in
  * tracks.
  */

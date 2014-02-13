@@ -27,8 +27,7 @@
  * #MirageContext provides a context, which is attached to libMirage's
  * objects. This way, it allows sharing and propagation of settings, such
  * as debug verbosity, parser options, password function, etc. It also
- * provides file stream caching and #GInputStream to filename resolution,
- * which is used by image parsers.
+ * provides I/O stream caching, which is used by image parsers and writers.
  *
  * Due to all the properties it holds, #MirageContext is designed as the
  * core object of libMirage and provides the library's main functionality,

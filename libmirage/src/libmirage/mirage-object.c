@@ -27,8 +27,8 @@
  * #MirageObject is used as a base object class throughout libMirage. It
  * implements #MirageContextual interface, which allows attachment of
  * #MirageContext. It also implements support for constructing parent-child
- * hierarchy, which allows propagation of the #MirageContext from parent
- * to the child objects.
+ * hierarchy, which allows propagation of the #MirageContext and its changes
+ * from parent to the child objects.
  */
 
 #ifdef HAVE_CONFIG_H

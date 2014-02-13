@@ -26,8 +26,8 @@
  *
  * #MiragePlugin object is a base object of libMirage's plugin system
  * and derives from #GTypeModule. It provides support for loadable
- * modules that contain implementations of image parsers, data fragments
- * or file filters.
+ * modules that contain implementations of image parsers, image writers
+ * and/or filter streams.
  *
  * The plugin system is used internally by libMirage, and should
  * generally not be used elsewhere.
@@ -105,7 +105,7 @@ static gboolean mirage_plugin_load_module (GTypeModule *_self)
     }
 
     /* Make sure that the loaded library contains the 'mirage_plugin_soversion_major'
-       and 'mirage_plugin_soversion_minor' symbols, which represent the 
+       and 'mirage_plugin_soversion_minor' symbols, which represent the
        ABI version that plugin was built against; make sure it is compatible
        with ABI version provided by the lib */
     if (!g_module_symbol(self->priv->library, "mirage_plugin_soversion_major", (gpointer *)&plugin_soversion_major)) {
@@ -113,7 +113,7 @@ static gboolean mirage_plugin_load_module (GTypeModule *_self)
         g_module_close(self->priv->library);
         return FALSE;
     }
-    
+
     if (!g_module_symbol(self->priv->library, "mirage_plugin_soversion_minor", (gpointer *)&plugin_soversion_minor)) {
         g_warning("%s: plugin %s: does not contain 'mirage_plugin_soversion_minor'!\n", __func__, self->priv->filename);
         g_module_close(self->priv->library);

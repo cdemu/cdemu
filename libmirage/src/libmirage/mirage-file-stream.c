@@ -20,11 +20,15 @@
 /**
  * SECTION: mirage-file-stream
  * @title: MirageFileStream
- * @short_description: File stream object.
+ * @short_description: File I/O stream object.
  * @see_also: #MirageStream, #MirageFilterStream
  * @include: mirage-file-stream.h
  *
- * TODO
+ * #MirageFileStream is a basic unit of file access abstraction used in
+ * libMirage. It implements #MirageStream interface to perform I/O operations.
+ *
+ * A #MirageFileStream is found at the bottom of all filter chains used
+ * by libMirage's image parsers and writers.
  */
 
 #ifdef HAVE_CONFIG_H

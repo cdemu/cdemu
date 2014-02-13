@@ -21,7 +21,7 @@
  * SECTION: mirage-disc
  * @title: MirageDisc
  * @short_description: Object representing an optical disc.
- * @see_also: #MirageSession, #MirageTrack, #MirageObject, #MirageParser, #MirageContext
+ * @see_also: #MirageSession, #MirageTrack, #MirageObject, #MirageParser, #MirageWriter, #MirageContext
  * @include: mirage-disc.h
  *
  * #MirageDisc object is a top-level object in the disc layout

@@ -24,7 +24,14 @@
  * @see_also: #MirageFileStream, #MirageFilterStream
  * @include: mirage-stream.h
  *
- * TODO
+ * #MirageStream is a basic unit of file access abstraction used in
+ * libMirage. It supports basic I/O operations, such as read, write,
+ * seek and tell.
+ *
+ * Streams in libMirage are designed around the idea of filter stream
+ * chains, where several filter streams (#MirageFilterStream) can be
+ * chained on top of a stream that abstracts direct access to the file
+ * (#MirageFileStream).
  */
 
 #ifdef HAVE_CONFIG_H

@@ -20,7 +20,7 @@
 /**
  * SECTION: mirage-filter-stream
  * @title: MirageFilterStream
- * @short_description: Filter stream object.
+ * @short_description: Filter I/O stream object.
  * @see_also: #MirageStream, #MirageFileStream
  * @include: mirage-filter-stream.h
  *

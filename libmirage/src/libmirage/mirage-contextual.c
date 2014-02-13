@@ -35,7 +35,7 @@
  * mirage_contextual_debug_messagev(), which print debug messages depending
  * on the settings of the attached context.
  *
- * Furthermore, for convenience of parser and filter stream implementations,
+ * Furthermore, for convenience of image parser and filter stream implementations,
  * passthrough is provided for some functions of #MirageContext. Using these
  * functions is equivalent to getting and verifying the attached context,
  * calling its function directly, and releasing the reference.

@@ -27,7 +27,7 @@
  * #MirageTrack object represents a track in the disc layout. It provides
  * functions for manipulating track data and layout; setting track type
  * and flags, adding and removing fragments, indices and languages,
- * accessing and reading of sectors, etc.
+ * read/write access to sectors, etc.
  */
 
 #ifdef HAVE_CONFIG_H

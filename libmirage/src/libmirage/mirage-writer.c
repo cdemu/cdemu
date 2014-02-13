@@ -21,10 +21,39 @@
  * SECTION: mirage-writer
  * @title: MirageWriter
  * @short_description: Base object for image writer implementations.
- * @see_also: #MirageDisc
+ * @see_also: #MirageDisc, #MirageParser
  * @include: mirage-writer.h
  *
- * TODO
+ * #MirageWriter object is a base object for image writer implementations.
+ *
+ * In contrast to image loading process, which is done by a single
+ * function call, the image writing process is designed to be interactive:
+ * first, the user creates a #MirageDisc object. On created disc, the
+ * medium type should be set, and the filename should be changed to the
+ * desired output filename, before passing the disc object to
+ * mirage_writer_open_image(), which initializes the writer. Afterwards,
+ * the disc layout should be populated with session(s) and track(s), and
+ * tracks with fragments. Fragments for tracks are requested from writer
+ * using mirage_writer_create_fragment() function. After the fragment
+ * is set up for the track, sectors can be written to it using mirage_track_put_sector(),
+ * or mirage_disc_put_sector(). To finish image writing, call mirage_writer_finalize_image(),
+ * which might write the image descriptor file and rename image data files,
+ * if necessary.
+ *
+ * The above-outlined process makes image writing flexible enough to
+ * accomodate both scenarios where all image data to be written is given
+ * in advance (e.g., from another image) and cases where image data is
+ * arriving incrementally, sector-by-sector.
+ *
+ * A #MirageWriter provides mirage_writer_convert_image() function, which
+ * allows writer to be used for converting an existing image by copying
+ * all relevant data from it. In addition, conversion progress reporting
+ * can be controlled using mirage_writer_set_conversion_progress_step()
+ * and followed using #MirageWriter::conversion-progress.
+ *
+ * To control image writer parameters, #MirageWriter implements parameter
+ * sheet with API for defining parameters and validation/retrieval of
+ * user-supplied values.
  */
 
 #ifdef HAVE_CONFIG_H
