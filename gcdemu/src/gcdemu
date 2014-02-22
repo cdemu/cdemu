@@ -1403,7 +1403,7 @@ class gCDEmuDevice (GObject.GObject):
         self.device = cdemu.devices[d]
 
         # Create menu item
-        self.menu_item = Gtk.ImageMenuItem()
+        self.menu_item = Gtk.MenuItem()
         self.menu_item.show()
         # Note: signal for menu item is connected in the child class,
         # because Gtk and AppIndicator versions handle different signals
@@ -1787,7 +1787,7 @@ class gCDEmuTray (GObject.GObject):
         self.menu.append(Gtk.SeparatorMenuItem())
 
         # About
-        item = Gtk.ImageMenuItem.new_from_stock(Gtk.STOCK_ABOUT, None)
+        item = Gtk.MenuItem.new_with_label(_("About"))
         item.connect("activate", self.on_about_activated)
         self.menu.append(item)
 
@@ -1795,7 +1795,7 @@ class gCDEmuTray (GObject.GObject):
         self.menu.append(Gtk.SeparatorMenuItem())
 
         # Quit
-        item = Gtk.ImageMenuItem.new_from_stock(Gtk.STOCK_QUIT, None)
+        item = Gtk.MenuItem.new_with_label(_("Quit"))
         item.connect("activate", self.on_quit_activated)
         self.menu.append(item)
 
