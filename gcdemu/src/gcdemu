@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 #
 # gcdemu: Gtk+/AppIndicator CDEmu GUI
-# Copyright (C) 2006-2013 Rok Mandeljc
+# Copyright (C) 2006-2014 Rok Mandeljc
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -20,6 +20,7 @@
 
 import argparse
 import os
+import signal
 import subprocess
 import sys
 import weakref
@@ -36,7 +37,18 @@ from gi.repository import Gtk
 from gi.repository import Gio
 from gi.repository import Notify
 
-# Note: AppIndicator is loaded on-demand in main function
+# AppIndicator
+try:
+    from gi.repository import AppIndicator3 as AppIndicator
+    have_app_indicator = True
+except ImportError:
+    try:
+        from gi.repository import AppIndicator
+        have_app_indicator = True
+    except ImportError:
+        have_app_indicator = False
+        pass
+
 
 # *** Globals ***
 app_name = "gcdemu"
@@ -579,657 +591,6 @@ GObject.signal_new("error", CDEmuDevice,
     GObject.SignalFlags.RUN_FIRST,
     None,
     (GObject.TYPE_STRING, ))
-
-
-########################################################################
-#                               gCDEmu                                 #
-########################################################################
-class gCDEmu:
-    def load_logo (self):
-        # Lookup "icon" in standard paths
-        icon_info = Gtk.IconTheme().lookup_icon("gcdemu", 0, 0)
-        if icon_info is None:
-            print ("Pixmap '%s' not found in standard pixmap paths!" % ("gcdemu"))
-            self.logo = None
-            return
-        logo_filename = icon_info.get_filename()
-        if logo_filename is None:
-            print ("Failed to get icon filename; Do you have the librsvg2 package?")
-            self.logo = None
-            return
-
-        # Load
-        self.logo = GdkPixbuf.Pixbuf.new_from_file_at_size(logo_filename, 156, 156)
-
-
-    def cleanup (self):
-        # Default state: disconnected
-        self.connected = False
-        self.update_icon()
-
-        self.item_new_device.set_sensitive(False)
-
-        # Clean signals handlers
-        for signal in self.signals:
-            signal.remove()
-
-        # Remove devices
-        num_devices = len(self.devices)
-        for i in range(num_devices, 0, -1):
-            self.remove_device(i-1)
-
-    def connect_to_daemon (self):
-        # Cleanup
-        self.cleanup()
-
-        # Establish connection
-        self.cdemu.connect_to_daemon(self.use_system_bus)
-
-
-    def __init__ (self):
-        self.connected = False
-        self.devices = []
-
-        self.signals = []
-
-        # *** Configuration ***
-        self.settings = Gio.Settings("net.sf.cdemu.gcdemu")
-
-        # Watch over our settings
-        self.settings.connect("changed", lambda s, k: self.on_settings_changed(k))
-
-        # Notifications
-        if Notify.init(app_name):
-            self.show_notifications = self.settings.get_boolean("show-notifications")
-        else:
-            # Disable because pynotify initialization failed
-            self.show_notifications = False
-
-        # Which bus to use
-        self.use_system_bus = self.settings.get_boolean("use-system-bus")
-
-        # Daemon autostart
-        self.daemon_autostart = self.settings.get_boolean("daemon-autostart")
-
-        # Icon policy
-        self.icon_policy = self.settings.get_string("icon-policy")
-
-        # Icon names
-        self.icon_connected = self.settings.get_string("icon-connected")
-        self.icon_disconnected = self.settings.get_string("icon-disconnected")
-
-        # Load logo
-        self.load_logo()
-
-        # *** The About dialog ***
-        self.about = Gtk.AboutDialog()
-        self.about.set_name(app_name)
-        self.about.set_version(app_version)
-        self.about.set_copyright("Copyright (C) 2006-2012 Rok Mandeljc")
-        self.about.set_comments(_("A GUI for controlling CDEmu devices."))
-        self.about.set_website("http://cdemu.sf.net")
-        self.about.set_website_label(_("The CDEmu project website"))
-        self.about.set_authors([ "Rok Mandeljc <rok.mandeljc@gmail.com>" ])
-        self.about.set_artists([ "Rômulo Fernandes <abra185@gmail.com>" ])
-        self.about.set_translator_credits(_("translator-credits"))
-        self.about.set_logo(self.logo)
-
-        # *** Menu ***
-        self.menu = Gtk.Menu()
-
-        # Devices
-        item = Gtk.MenuItem.new_with_label(_("Devices"))
-        item.set_sensitive(False)
-        self.menu.append(item)
-
-        item = Gtk.MenuItem.new_with_label(_("New device..."))
-        item.set_sensitive(False)
-        item.connect("activate", self.on_new_device_activate)
-        self.menu.append(item)
-        self.item_new_device = item
-
-        # Separator
-        self.menu.append(Gtk.SeparatorMenuItem())
-
-        # Use system bus
-        item = Gtk.CheckMenuItem.new_with_mnemonic(_("Use _system bus"))
-        item.set_active(self.use_system_bus)
-        item.connect("toggled", self.on_use_system_bus_toggled)
-        self.menu.append(item)
-        self.item_use_system_bus = item
-
-        # Show notifications
-        item = Gtk.CheckMenuItem.new_with_mnemonic(_("Show _notifications"))
-        item.set_active(self.show_notifications)
-        item.connect("toggled", self.on_show_notifications_toggled)
-        self.menu.append(item)
-        self.item_show_notifications = item
-
-        # Separator
-        self.menu.append(Gtk.SeparatorMenuItem())
-
-        # About
-        item = Gtk.ImageMenuItem.new_from_stock(Gtk.STOCK_ABOUT, None)
-        item.connect("activate", self.on_about_activate)
-        self.menu.append(item)
-
-        # Separator
-        self.menu.append(Gtk.SeparatorMenuItem())
-
-        # Quit
-        item = Gtk.ImageMenuItem.new_from_stock(Gtk.STOCK_QUIT, None)
-        item.connect("activate", Gtk.main_quit)
-        self.menu.append(item)
-
-        self.menu.show_all()
-
-        # *** Create the CDEmu object ***
-        self.cdemu = CDEmu()
-        self.cdemu.connect("daemon-started", self.on_daemon_started)
-        self.cdemu.connect("daemon-stopped", self.on_daemon_stopped)
-        self.cdemu.connect("connection-established", self.on_connection_established)
-        self.cdemu.connect("connection-lost", self.on_connection_lost)
-        self.cdemu.connect("error", lambda c, t, m: self.show_error(t, m))
-        self.cdemu.connect("device-added", lambda c, d: self.on_device_added(d))
-        self.cdemu.connect("device-removed", lambda c, d: self.on_device_removed(d))
-
-    def run (self):
-        # Connect to daemon
-        self.cdemu.connect_to_bus(self.use_system_bus, self.daemon_autostart)
-
-        # *** Main loop ***
-        Gtk.main()
-
-    def on_settings_changed (self, key):
-        if key == "use-system-bus":
-            self.use_system_bus = self.settings.get_boolean(key)
-            print ("New setting: use system bus: %d" % self.use_system_bus)
-            self.item_use_system_bus.set_active(self.use_system_bus)
-            self.cdemu.connect_to_bus(self.use_system_bus, self.daemon_autostart)
-        elif key == "show-notifications":
-            self.show_notifications = self.settings.get_boolean(key)
-            self.item_show_notifications.set_active(self.show_notifications)
-            print ("New setting: show notifications: %d" % self.show_notifications)
-        elif key == "icon-connected":
-            self.icon_connected = self.settings.get_string(key)
-            self.update_icon()
-        elif key == "icon-disconnected":
-            self.icon_disconnected = self.settings.get_string(key)
-            self.update_icon()
-        elif key == "daemon-autostart":
-            self.daemon_autostart = self.settings.get_boolean(key)
-            print ("New setting: daemon autostart: %d" % self.daemon_autostart)
-        elif key == "icon-policy":
-            self.icon_policy = self.settings.get_string(key)
-            self.update_icon()
-        else:
-            print ("Unknown setting key: %s!" % key)
-
-    def on_about_activate (self, menuitem):
-        self.about.run()
-        self.about.hide()
-
-    def on_use_system_bus_toggled (self, checkmenuitem):
-        self.settings.set_boolean("use-system-bus", checkmenuitem.get_active())
-        return
-
-    def on_show_notifications_toggled (self, checkmenuitem):
-        self.settings.set_boolean("show-notifications", checkmenuitem.get_active())
-        return
-
-
-    def on_connection_established (self, cdemu, num_devices):
-        self.connected = True
-        self.update_icon()
-
-        self.item_new_device.set_sensitive(True)
-
-        # Create devices GUI
-        for i in range(0, num_devices):
-            # Add device
-            self.add_device(i)
-
-    def on_connection_lost (self, cdemu):
-        self.cleanup()
-
-    def on_daemon_started (self, cdemu):
-        self.show_notification(_("Daemon started"), _("CDEmu daemon has been started."), "dialog-information")
-
-    def on_daemon_stopped (self, cdemu):
-        self.show_notification(_("Daemon stopped"), _("CDEmu daemon has been stopped."), "dialog-information")
-
-    def on_device_notification (self, device, summary, body):
-        self.show_notification(summary, body, "dialog-information")
-
-
-    def show_notification (self, summary, body, icon = None):
-        if self.show_notifications:
-            n = Notify.Notification.new(summary, body, icon)
-            n.show()
-
-    def show_error (self, title, text):
-         # Show error dialog
-        message = Gtk.MessageDialog(None, 0, Gtk.MessageType.ERROR, Gtk.ButtonsType.CLOSE, text)
-        message.set_title(title)
-        message.run()
-        message.destroy()
-
-
-    def on_new_device_activate (self, menuitem):
-        self.cdemu.add_device()
-
-
-    def on_device_added (self, num):
-        self.add_device(num)
-        self.show_notification(_("Device added"), _("Device #%02d has been created.") % num, "dialog-information")
-
-    def on_device_removed (self, num):
-        self.remove_device(num)
-        self.show_notification(_("Device removed"), _("Device #%02d has been removed.") % num, "dialog-information")
-
-    def add_device (self, num):
-        # Create device dialog
-        device = self.create_device(self.cdemu, num)
-        self.devices.append(device)
-
-        # Add device's menu item to the devices menu
-        self.menu.insert(device.menu_item, 1+num)
-        # Connect signal
-        device.connect("device-notification", self.on_device_notification)
-
-        # Set the just-added device as "removable", and mark the one
-        # before it as "non-removable"...
-        self.devices[-1].set_removable(True)
-        if len(self.devices) > 1:
-            self.devices[-2].set_removable(False)
-
-    def remove_device (self, num):
-        # Remove from list
-        device = self.devices.pop(num)
-        # Cleanup the device
-        device.cleanup()
-
-        # Mark the last device in the list as "removable"
-        if len(self.devices) > 0:
-            self.devices[-1].set_removable(True)
-
-
-class gCDEmu_Gtk (gCDEmu):
-    def __init__ (self):
-        gCDEmu.__init__(self)
-
-        # *** The status icon ***
-        self.tray_icon = Gtk.StatusIcon()
-
-        self.tray_icon.set_visible(True)
-        self.tray_icon.connect('activate', self.on_activate)
-        self.tray_icon.connect('popup-menu', self.on_popup_menu)
-
-        # Update icon
-        self.update_icon()
-
-    def create_device (self, cdemu, d):
-        return gCDEmuDevice_Gtk(cdemu, d)
-
-
-    def on_activate (self, status_icon):
-        # Popup the devices menu (simulate the 1st button click)
-        self.menu.popup(None, None, status_icon.position_menu, self.tray_icon, 1, Gtk.get_current_event_time())
-
-    def on_popup_menu (self, status_icon, button, activate_time):
-        # Popup the menu
-        self.menu.popup(None, None, status_icon.position_menu, self.tray_icon, button, activate_time)
-
-    def update_icon (self):
-        # Show/hide icon
-        if self.icon_policy == "always":
-            visible = True
-        elif self.icon_policy == "never":
-            visible = False
-        elif self.icon_policy in [ "when_connected", "when-connected" ]:
-            if self.connected:
-                visible = True
-            else:
-                visible = False
-        else:
-            # Fix invalid setting...
-            print ("Unknown icon policy '%s'! Using 'always' by default!" % (self.icon_policy))
-            self.icon_policy = "always"
-            visible = True
-        self.tray_icon.set_visible(visible)
-
-        # Set icon
-        if self.connected:
-            icon_name = self.icon_connected
-            tooltip_text = _('gCDEmu - connected')
-        else:
-            icon_name = self.icon_disconnected
-            tooltip_text = _('gCDEmu - disconnected')
-
-        if icon_name is None:
-            icon_name = "image-missing" # Fallback icon
-
-        self.tray_icon.set_from_icon_name(icon_name)
-        self.tray_icon.set_tooltip_text(tooltip_text)
-
-
-class gCDEmu_Indicator (gCDEmu):
-    def __init__ (self):
-        gCDEmu.__init__(self)
-
-        # AppIndicator
-        self.indicator = AppIndicator.Indicator.new(app_name, "gcdemu", AppIndicator.IndicatorCategory.HARDWARE)
-        self.indicator.set_status(AppIndicator.IndicatorStatus.ACTIVE)
-        self.indicator.set_menu(self.menu)
-
-        # Update icon
-        self.update_icon()
-
-    def create_device (self, cdemu, d):
-        return gCDEmuDevice_Indicator(cdemu, d)
-
-    def update_icon (self):
-        # Set icons
-        self.indicator.set_icon_full(self.icon_connected, "Connected")
-        self.indicator.set_attention_icon_full(self.icon_disconnected, "Disconnected")
-
-        # Show/hide icon
-        if self.icon_policy == "always":
-            visible = True
-        elif self.icon_policy == "never":
-            visible = False
-        elif self.icon_policy in [ "when_connected", "when-connected" ]:
-            if self.connected:
-                visible = True
-            else:
-                visible = False
-        else:
-            # Fix invalid setting...
-            print ("Unknown icon policy '%s'! Using 'always' by default!" % (self.icon_policy))
-            self.icon_policy = "always"
-            visible = True
-
-        # Set the status (change icon)
-        if visible:
-            if self.connected:
-                self.indicator.set_status(AppIndicator.IndicatorStatus.ACTIVE)
-            else:
-                self.indicator.set_status(AppIndicator.IndicatorStatus.ATTENTION)
-        else:
-            self.indicator.set_status(AppIndicator.IndicatorStatus.PASSIVE)
-
-
-########################################################################
-#                            gCDEmuDevice                              #
-########################################################################
-class gCDEmuDevice (GObject.GObject):
-    def connect_signal (self, obj, sig, callback):
-        signal = obj.connect(sig, callback)
-        self.signals.append((obj, signal))
-
-
-    def __init__ (self, cdemu, d):
-        GObject.GObject.__init__(self)
-
-        self.signals = []
-
-        self.number = d
-        self.device = cdemu.devices[d]
-
-        # Create menu item
-        self.menu_item = Gtk.ImageMenuItem()
-        self.menu_item.show()
-        # Note: signal for menu item is connected in the child class,
-        # because Gtk and AppIndicator versions handle different signals
-
-        # Create file chooser dialog
-        self.file_chooser = gCDEMuFileChooserDialog(cdemu.supported_parsers, cdemu.supported_filter_streams)
-
-        # Create blank image creation dialog
-        self.blank_disc_creation_dialog = gCDEMuCreateBlankImageDialog(cdemu.supported_writers)
-
-        # Create password dialog
-        self.password_dialog = gCDEMuPasswordDialog()
-
-        # *** GUI ***
-        # Create dialog
-        self.dialog = Gtk.Dialog("Device #%02d properties" % d, None, 0, (Gtk.STOCK_CLOSE, Gtk.ResponseType.CLOSE))
-        self.dialog.set_border_width(5)
-        self.dialog.vbox.set_border_width(5)
-        # Hide the dialog when closed
-        self.connect_signal(self.dialog, "delete-event", lambda w, e: w.hide() or True)
-        self.connect_signal(self.dialog, "response", lambda w, e: w.hide() or True)
-
-        # Label
-        label = Gtk.Label(label="<b><big>" + (_("Device #%02d") % (self.number)) + "</big></b>")
-        label.show()
-        label.set_use_markup(True)
-        self.dialog.vbox.pack_start(label, expand=False, fill=False, padding=0)
-
-        # Notebook
-        notebook = Gtk.Notebook()
-        notebook.show()
-        notebook.set_tab_pos(Gtk.PositionType.LEFT)
-        notebook.set_border_width(5)
-        self.dialog.vbox.pack_start(notebook, expand=True, fill=True, padding=0)
-
-        # Page: status
-        self.page_status = gCDEmuDeviceStatusPage()
-        self.page_status.set_device_mapping(self.device.sg_path, self.device.sr_path)
-        notebook.append_page(self.page_status, Gtk.Label(label=_("Status")))
-
-        self.connect_signal(self.page_status, "load-unload-device", lambda w: self.load_unload_device())
-        self.connect_signal(self.page_status, "create-blank-disc", lambda w: self.create_blank_disc())
-        self.connect_signal(self.page_status, "remove-device", lambda w: cdemu.remove_device())
-
-        # Page: options
-        self.page_options = gCDEmuDeviceOptionsPage()
-        notebook.append_page(self.page_options, Gtk.Label(label=_("Options")))
-        self.connect_signal(self.page_options, "device-id-changed", lambda w, id: self.device.set_device_id(id))
-        self.connect_signal(self.page_options, "dpm-emulation-changed", lambda w, v: self.device.set_dpm_emulation(v))
-        self.connect_signal(self.page_options, "tr-emulation-changed", lambda w, v: self.device.set_tr_emulation(v))
-        self.connect_signal(self.page_options, "bad-sector-emulation-changed", lambda w, v: self.device.set_bad_sector_emulation(v))
-
-        # Page: daemon debug mask
-        self.page_daemon = gCDEmuDeviceDebugMaskPage(_("Daemon debug mask"), cdemu.daemon_debug_masks)
-        notebook.append_page(self.page_daemon, Gtk.Label(label=_("Daemon")))
-        self.connect_signal(self.page_daemon, "debug-mask-changed", lambda w, v: self.device.set_daemon_debug_mask(v))
-
-        # Page: library debug mask
-        self.page_library = gCDEmuDeviceDebugMaskPage(_("Library debug mask"), cdemu.library_debug_masks)
-        notebook.append_page(self.page_library, Gtk.Label(label=_("Library")))
-        self.connect_signal(self.page_library, "debug-mask-changed", lambda w, v: self.device.set_library_debug_mask(v))
-
-        # Connect device signals
-        self.connect_signal(self.device, "mapping-changed", lambda w: self.page_status.set_device_mapping(self.device.sg_path, self.device.sr_path))
-        self.connect_signal(self.device, "status-changed", lambda w: self.update_status(True))
-        self.connect_signal(self.device, "device-id-changed", lambda w: self.update_device_id(True))
-        self.connect_signal(self.device, "dpm-emulation-changed", lambda w: self.update_dpm_emulation(True))
-        self.connect_signal(self.device, "tr-emulation-changed", lambda w: self.update_tr_emulation(True))
-        self.connect_signal(self.device, "bad-sector-emulation-changed", lambda w: self.update_bad_sector_emulation(True))
-        self.connect_signal(self.device, "daemon-debug-mask-changed", lambda w: self.update_daemon_debug_mask(True))
-        self.connect_signal(self.device, "library-debug-mask-changed", lambda w: self.update_library_debug_mask(True))
-        self.connect_signal(self.device, "error", lambda w, t: self.show_error(t))
-
-        # Some pages require refresh when they are shown...
-        self.connect_signal(notebook, "switch-page", lambda n, p, pp: self.refresh_pages())
-        self.connect_signal(self.dialog, "show", lambda w: self.refresh_pages())
-
-        # Manually perform the initial update...
-        self.update_status(False)
-        self.update_device_id(False)
-        self.update_dpm_emulation(False)
-        self.update_tr_emulation(False)
-        self.update_bad_sector_emulation(False)
-        self.update_daemon_debug_mask(False)
-        self.update_library_debug_mask(False)
-
-
-    def cleanup (self):
-        # Release reference to device
-        self.device = None
-
-        # Cleanup signal handlers
-        for (obj, handler) in self.signals:
-            obj.disconnect(handler)
-
-        # Explicitly destroy dialogs, because they might still be running
-        self.dialog.destroy()
-        self.file_chooser.destroy()
-        self.menu_item.destroy()
-        self.password_dialog.destroy()
-
-    def update_status (self, notify = False):
-        # Menu item
-        if self.device.loaded:
-            images = os.path.basename(self.device.filenames[0]) # Make it short
-            if len(self.device.filenames) > 1:
-                images += ", ..." # Indicate there's more than one file
-            self.menu_item.set_label("%s #%02d: %s" % (_("Device"), self.device.number, images))
-        else:
-            self.menu_item.set_label("%s #%02d: %s" % (_("Device"), self.device.number, _("Empty")))
-
-        # Status page in the device dialog
-        self.page_status.set_status(self.device.loaded, self.device.filenames)
-
-        # Notification
-        if notify:
-            if self.device.loaded:
-                self.emit("device-notification", _("Device status change"), _("Device #%02d has been loaded.") % (self.device.number))
-            else:
-                self.emit("device-notification", _("Device status change"), _("Device #%02d has been emptied.") % (self.device.number))
-
-    def update_device_id (self, notify = False):
-        self.page_options.set_device_id(self.device.device_id)
-        if notify:
-            self.emit("device-notification", _("Device option change"), _("Device #%02d has been changed its device ID:\n  Vendor ID: '%s'\n  Product ID: '%s'\n  Revision: '%s'\n  Vendor-specific: '%s'") % (self.device.number, self.device.device_id[0], self.device.device_id[1], self.device.device_id[2], self.device.device_id[3]))
-
-    def update_dpm_emulation (self, notify = False):
-        self.page_options.set_dpm_emulation(self.device.dpm_emulation)
-        if notify:
-            self.emit("device-notification", _("Device option change"), _("Device #%02d has been changed its DPM emulation option. New value: %s") % (self.device.number, self.device.dpm_emulation))
-
-    def update_tr_emulation (self, notify = False):
-        self.page_options.set_tr_emulation(self.device.tr_emulation)
-        if notify:
-            self.emit("device-notification", _("Device option change"), _("Device #%02d has been changed its TR emulation option. New value: %s") % (self.device.number, self.device.tr_emulation))
-
-    def update_bad_sector_emulation (self, notify = False):
-        self.page_options.set_bad_sector_emulation(self.device.bad_sector_emulation)
-        if notify:
-            self.emit("device-notification", _("Device option change"), _("Device #%02d has been changed its bad sector emulation option. New value: %s") % (self.device.number, self.device.bad_sector_emulation))
-
-    def update_daemon_debug_mask (self, notify = False):
-        self.page_daemon.set_debug_mask(self.device.daemon_debug_mask)
-        if notify:
-            self.emit("device-notification", _("Device option change"), _("Device #%02d has been changed its daemon debug mask. New value: 0x%X") % (self.device.number, self.device.daemon_debug_mask))
-
-    def update_library_debug_mask (self, notify = False):
-        self.page_library.set_debug_mask(self.device.library_debug_mask)
-        if notify:
-            self.emit("device-notification", _("Device option change"), _("Device #%02d has been changed its library debug mask. New value: 0x%X") % (self.device.number, self.device.library_debug_mask))
-
-    def load_unload_device (self):
-        if self.device.loaded:
-            self.device.unload_device()
-        else:
-            result = self.file_chooser.run()
-            self.file_chooser.hide()
-            if result == Gtk.ResponseType.ACCEPT:
-                # Get filename and parameters
-                filenames = self.file_chooser.get_filenames()
-                parameters = self.file_chooser.get_parameters()
-
-                # Try loading
-                try:
-                    self.device.load_device(filenames, parameters)
-                except CDEmuNeedPassword as c:
-                    # Get password
-                    result = self.password_dialog.run()
-                    self.password_dialog.hide()
-                    if result == Gtk.ResponseType.OK:
-                        password = self.password_dialog.get_password()
-                        # Try loading with overriden password
-                        parameters["password"] = GLib.Variant("s", password)
-                        self.device.load_device(filenames, parameters)
-
-    def create_blank_disc (self):
-        result = self.blank_disc_creation_dialog.run()
-        self.blank_disc_creation_dialog.hide()
-        if result == Gtk.ResponseType.ACCEPT:
-            filename = self.blank_disc_creation_dialog.get_filename()
-            writer_parameters = self.blank_disc_creation_dialog.get_writer_parameters()
-            self.device.create_blank_disc(filename, writer_parameters)
-
-    def refresh_pages (self):
-        # Some pages have fields that can be altered without applying the
-        # change. We want to reset those changes when a page is changed
-        # or when the dialog is shown...
-        self.update_device_id(False)
-        self.update_daemon_debug_mask(False)
-        self.update_library_debug_mask(False)
-
-
-    def show_error (self, text):
-         # Show error dialog
-        message = Gtk.MessageDialog(None, 0, Gtk.MessageType.ERROR, Gtk.ButtonsType.CLOSE, text)
-        message.set_title(_("Device error"))
-        message.run()
-        message.destroy()
-
-    def set_removable (self, value):
-        # Forward to status page
-        self.page_status.set_removable(value)
-
-GObject.type_register(gCDEmuDevice)
-GObject.signal_new("device-notification", gCDEmuDevice,
-    GObject.SignalFlags.RUN_FIRST,
-    None,
-    (GObject.TYPE_STRING, GObject.TYPE_STRING))
-
-
-class gCDEmuDevice_Gtk (gCDEmuDevice):
-    def __init__ (self, cdemu, d):
-        gCDEmuDevice.__init__(self, cdemu, d)
-
-        self.connect_signal(self.menu_item, "button-press-event", self.on_menu_item_button_press_event)
-
-    def on_menu_item_button_press_event (self, widget, event):
-        if event.button == 1:
-            # Left click: device dialog
-            self.dialog.present() # Make sure the window is always on top
-            # Don't "run" the dialog, because we want it to be non-modal
-            #self.dialog.run()
-            #self.dialog.hide()
-        else:
-            # Right click: quick load/unload
-            self.load_unload_device()
-
-    def update_status (self, notify = False):
-        gCDEmuDevice.update_status(self, notify)
-
-        if self.device.loaded:
-            self.menu_item.set_image(Gtk.Image.new_from_stock(Gtk.STOCK_YES, Gtk.IconSize.MENU))
-            self.menu_item.set_tooltip_text(_("Left click for Property Dialog, right click to unload."))
-        else:
-            self.menu_item.set_image(Gtk.Image.new_from_stock(Gtk.STOCK_NO, Gtk.IconSize.MENU))
-            self.menu_item.set_tooltip_text(_("Left click for Property Dialog, right click to load."))
-
-
-class gCDEmuDevice_Indicator (gCDEmuDevice):
-    def __init__ (self, cdemu, d):
-        gCDEmuDevice.__init__(self, cdemu, d)
-
-        self.menu_item.set_tooltip_text(_("Click for Property Dialog"))
-
-        self.connect_signal(self.menu_item, "activate", self.on_menu_item_activate)
-
-    def on_menu_item_activate (self, widget):
-        # Left click: device dialog
-        self.dialog.present() # Make sure the window is always on top
-        # Don't "run" the dialog, because we want it to be non-modal
-        #self.dialog.run()
-        #self.dialog.hide()
 
 
 ########################################################################
@@ -2025,51 +1386,734 @@ class gCDEMuCreateBlankImageDialog (Gtk.Dialog):
 
 
 ########################################################################
+#                            gCDEmuDevice                              #
+########################################################################
+class gCDEmuDevice (GObject.GObject):
+    def connect_signal (self, obj, sig, callback):
+        signal = obj.connect(sig, callback)
+        self.signals.append((obj, signal))
+
+
+    def __init__ (self, cdemu, d):
+        GObject.GObject.__init__(self)
+
+        self.signals = []
+
+        self.number = d
+        self.device = cdemu.devices[d]
+
+        # Create menu item
+        self.menu_item = Gtk.ImageMenuItem()
+        self.menu_item.show()
+        # Note: signal for menu item is connected in the child class,
+        # because Gtk and AppIndicator versions handle different signals
+
+        # Create file chooser dialog
+        self.file_chooser = gCDEMuFileChooserDialog(cdemu.supported_parsers, cdemu.supported_filter_streams)
+
+        # Create blank image creation dialog
+        self.blank_disc_creation_dialog = gCDEMuCreateBlankImageDialog(cdemu.supported_writers)
+
+        # Create password dialog
+        self.password_dialog = gCDEMuPasswordDialog()
+
+        # *** GUI ***
+        # Create dialog
+        self.dialog = Gtk.Dialog("Device #%02d properties" % d, None, 0, (Gtk.STOCK_CLOSE, Gtk.ResponseType.CLOSE))
+        self.dialog.set_border_width(5)
+        self.dialog.vbox.set_border_width(5)
+        # Hide the dialog when closed
+        self.connect_signal(self.dialog, "delete-event", lambda w, e: w.hide() or True)
+        self.connect_signal(self.dialog, "response", lambda w, e: w.hide() or True)
+
+        # Label
+        label = Gtk.Label(label="<b><big>" + (_("Device #%02d") % (self.number)) + "</big></b>")
+        label.show()
+        label.set_use_markup(True)
+        self.dialog.vbox.pack_start(label, expand=False, fill=False, padding=0)
+
+        # Notebook
+        notebook = Gtk.Notebook()
+        notebook.show()
+        notebook.set_tab_pos(Gtk.PositionType.LEFT)
+        notebook.set_border_width(5)
+        self.dialog.vbox.pack_start(notebook, expand=True, fill=True, padding=0)
+
+        # Page: status
+        self.page_status = gCDEmuDeviceStatusPage()
+        self.page_status.set_device_mapping(self.device.sg_path, self.device.sr_path)
+        notebook.append_page(self.page_status, Gtk.Label(label=_("Status")))
+
+        self.connect_signal(self.page_status, "load-unload-device", lambda w: self.load_unload_device())
+        self.connect_signal(self.page_status, "create-blank-disc", lambda w: self.create_blank_disc())
+        self.connect_signal(self.page_status, "remove-device", lambda w: cdemu.remove_device())
+
+        # Page: options
+        self.page_options = gCDEmuDeviceOptionsPage()
+        notebook.append_page(self.page_options, Gtk.Label(label=_("Options")))
+        self.connect_signal(self.page_options, "device-id-changed", lambda w, id: self.device.set_device_id(id))
+        self.connect_signal(self.page_options, "dpm-emulation-changed", lambda w, v: self.device.set_dpm_emulation(v))
+        self.connect_signal(self.page_options, "tr-emulation-changed", lambda w, v: self.device.set_tr_emulation(v))
+        self.connect_signal(self.page_options, "bad-sector-emulation-changed", lambda w, v: self.device.set_bad_sector_emulation(v))
+
+        # Page: daemon debug mask
+        self.page_daemon = gCDEmuDeviceDebugMaskPage(_("Daemon debug mask"), cdemu.daemon_debug_masks)
+        notebook.append_page(self.page_daemon, Gtk.Label(label=_("Daemon")))
+        self.connect_signal(self.page_daemon, "debug-mask-changed", lambda w, v: self.device.set_daemon_debug_mask(v))
+
+        # Page: library debug mask
+        self.page_library = gCDEmuDeviceDebugMaskPage(_("Library debug mask"), cdemu.library_debug_masks)
+        notebook.append_page(self.page_library, Gtk.Label(label=_("Library")))
+        self.connect_signal(self.page_library, "debug-mask-changed", lambda w, v: self.device.set_library_debug_mask(v))
+
+        # Connect device signals
+        self.connect_signal(self.device, "mapping-changed", lambda w: self.page_status.set_device_mapping(self.device.sg_path, self.device.sr_path))
+        self.connect_signal(self.device, "status-changed", lambda w: self.update_status(True))
+        self.connect_signal(self.device, "device-id-changed", lambda w: self.update_device_id(True))
+        self.connect_signal(self.device, "dpm-emulation-changed", lambda w: self.update_dpm_emulation(True))
+        self.connect_signal(self.device, "tr-emulation-changed", lambda w: self.update_tr_emulation(True))
+        self.connect_signal(self.device, "bad-sector-emulation-changed", lambda w: self.update_bad_sector_emulation(True))
+        self.connect_signal(self.device, "daemon-debug-mask-changed", lambda w: self.update_daemon_debug_mask(True))
+        self.connect_signal(self.device, "library-debug-mask-changed", lambda w: self.update_library_debug_mask(True))
+        self.connect_signal(self.device, "error", lambda w, t: self.show_error(t))
+
+        # Some pages require refresh when they are shown...
+        self.connect_signal(notebook, "switch-page", lambda n, p, pp: self.refresh_pages())
+        self.connect_signal(self.dialog, "show", lambda w: self.refresh_pages())
+
+        # Manually perform the initial update...
+        self.update_status(False)
+        self.update_device_id(False)
+        self.update_dpm_emulation(False)
+        self.update_tr_emulation(False)
+        self.update_bad_sector_emulation(False)
+        self.update_daemon_debug_mask(False)
+        self.update_library_debug_mask(False)
+
+
+    def cleanup (self):
+        # Release reference to device
+        self.device = None
+
+        # Cleanup signal handlers
+        for (obj, handler) in self.signals:
+            obj.disconnect(handler)
+
+        # Explicitly destroy dialogs, because they might still be running
+        self.dialog.destroy()
+        self.file_chooser.destroy()
+        self.menu_item.destroy()
+        self.password_dialog.destroy()
+
+    def update_status (self, notify = False):
+        # Menu item
+        if self.device.loaded:
+            images = os.path.basename(self.device.filenames[0]) # Make it short
+            if len(self.device.filenames) > 1:
+                images += ", ..." # Indicate there's more than one file
+            self.menu_item.set_label("%s #%02d: %s" % (_("Device"), self.device.number, images))
+        else:
+            self.menu_item.set_label("%s #%02d: %s" % (_("Device"), self.device.number, _("Empty")))
+
+        # Status page in the device dialog
+        self.page_status.set_status(self.device.loaded, self.device.filenames)
+
+        # Notification
+        if notify:
+            if self.device.loaded:
+                self.emit("device-notification", _("Device status change"), _("Device #%02d has been loaded.") % (self.device.number))
+            else:
+                self.emit("device-notification", _("Device status change"), _("Device #%02d has been emptied.") % (self.device.number))
+
+    def update_device_id (self, notify = False):
+        self.page_options.set_device_id(self.device.device_id)
+        if notify:
+            self.emit("device-notification", _("Device option change"), _("Device #%02d has been changed its device ID:\n  Vendor ID: '%s'\n  Product ID: '%s'\n  Revision: '%s'\n  Vendor-specific: '%s'") % (self.device.number, self.device.device_id[0], self.device.device_id[1], self.device.device_id[2], self.device.device_id[3]))
+
+    def update_dpm_emulation (self, notify = False):
+        self.page_options.set_dpm_emulation(self.device.dpm_emulation)
+        if notify:
+            self.emit("device-notification", _("Device option change"), _("Device #%02d has been changed its DPM emulation option. New value: %s") % (self.device.number, self.device.dpm_emulation))
+
+    def update_tr_emulation (self, notify = False):
+        self.page_options.set_tr_emulation(self.device.tr_emulation)
+        if notify:
+            self.emit("device-notification", _("Device option change"), _("Device #%02d has been changed its TR emulation option. New value: %s") % (self.device.number, self.device.tr_emulation))
+
+    def update_bad_sector_emulation (self, notify = False):
+        self.page_options.set_bad_sector_emulation(self.device.bad_sector_emulation)
+        if notify:
+            self.emit("device-notification", _("Device option change"), _("Device #%02d has been changed its bad sector emulation option. New value: %s") % (self.device.number, self.device.bad_sector_emulation))
+
+    def update_daemon_debug_mask (self, notify = False):
+        self.page_daemon.set_debug_mask(self.device.daemon_debug_mask)
+        if notify:
+            self.emit("device-notification", _("Device option change"), _("Device #%02d has been changed its daemon debug mask. New value: 0x%X") % (self.device.number, self.device.daemon_debug_mask))
+
+    def update_library_debug_mask (self, notify = False):
+        self.page_library.set_debug_mask(self.device.library_debug_mask)
+        if notify:
+            self.emit("device-notification", _("Device option change"), _("Device #%02d has been changed its library debug mask. New value: 0x%X") % (self.device.number, self.device.library_debug_mask))
+
+    def load_unload_device (self):
+        if self.device.loaded:
+            self.device.unload_device()
+        else:
+            result = self.file_chooser.run()
+            self.file_chooser.hide()
+            if result == Gtk.ResponseType.ACCEPT:
+                # Get filename and parameters
+                filenames = self.file_chooser.get_filenames()
+                parameters = self.file_chooser.get_parameters()
+
+                # Try loading
+                try:
+                    self.device.load_device(filenames, parameters)
+                except CDEmuNeedPassword as c:
+                    # Get password
+                    result = self.password_dialog.run()
+                    self.password_dialog.hide()
+                    if result == Gtk.ResponseType.OK:
+                        password = self.password_dialog.get_password()
+                        # Try loading with overriden password
+                        parameters["password"] = GLib.Variant("s", password)
+                        self.device.load_device(filenames, parameters)
+
+    def create_blank_disc (self):
+        result = self.blank_disc_creation_dialog.run()
+        self.blank_disc_creation_dialog.hide()
+        if result == Gtk.ResponseType.ACCEPT:
+            filename = self.blank_disc_creation_dialog.get_filename()
+            writer_parameters = self.blank_disc_creation_dialog.get_writer_parameters()
+            self.device.create_blank_disc(filename, writer_parameters)
+
+    def refresh_pages (self):
+        # Some pages have fields that can be altered without applying the
+        # change. We want to reset those changes when a page is changed
+        # or when the dialog is shown...
+        self.update_device_id(False)
+        self.update_daemon_debug_mask(False)
+        self.update_library_debug_mask(False)
+
+
+    def show_error (self, text):
+         # Show error dialog
+        message = Gtk.MessageDialog(None, 0, Gtk.MessageType.ERROR, Gtk.ButtonsType.CLOSE, text)
+        message.set_title(_("Device error"))
+        message.run()
+        message.destroy()
+
+    def set_removable (self, value):
+        # Forward to status page
+        self.page_status.set_removable(value)
+
+GObject.type_register(gCDEmuDevice)
+GObject.signal_new("device-notification", gCDEmuDevice,
+    GObject.SignalFlags.RUN_FIRST,
+    None,
+    (GObject.TYPE_STRING, GObject.TYPE_STRING))
+
+
+class gCDEmuDevice_Gtk (gCDEmuDevice):
+    def __init__ (self, cdemu, d):
+        gCDEmuDevice.__init__(self, cdemu, d)
+
+        self.connect_signal(self.menu_item, "button-press-event", self.on_menu_item_button_press_event)
+
+    def on_menu_item_button_press_event (self, widget, event):
+        if event.button == 1:
+            # Left click: device dialog
+            self.dialog.present() # Make sure the window is always on top
+            # Don't "run" the dialog, because we want it to be non-modal
+            #self.dialog.run()
+            #self.dialog.hide()
+        else:
+            # Right click: quick load/unload
+            self.load_unload_device()
+
+    def update_status (self, notify = False):
+        gCDEmuDevice.update_status(self, notify)
+
+        if self.device.loaded:
+            self.menu_item.set_image(Gtk.Image.new_from_stock(Gtk.STOCK_YES, Gtk.IconSize.MENU))
+            self.menu_item.set_tooltip_text(_("Left click for Property Dialog, right click to unload."))
+        else:
+            self.menu_item.set_image(Gtk.Image.new_from_stock(Gtk.STOCK_NO, Gtk.IconSize.MENU))
+            self.menu_item.set_tooltip_text(_("Left click for Property Dialog, right click to load."))
+
+
+class gCDEmuDevice_Indicator (gCDEmuDevice):
+    def __init__ (self, cdemu, d):
+        gCDEmuDevice.__init__(self, cdemu, d)
+
+        self.menu_item.set_tooltip_text(_("Click for Property Dialog"))
+
+        self.connect_signal(self.menu_item, "activate", self.on_menu_item_activate)
+
+    def on_menu_item_activate (self, widget):
+        # Left click: device dialog
+        self.dialog.present() # Make sure the window is always on top
+        # Don't "run" the dialog, because we want it to be non-modal
+        #self.dialog.run()
+        #self.dialog.hide()
+
+########################################################################
+#                               gCDEmu                                 #
+########################################################################
+class gCDEmuTray (GObject.GObject):
+    def load_logo (self):
+        # Lookup "icon" in standard paths
+        icon_info = Gtk.IconTheme().lookup_icon("gcdemu", 0, 0)
+        if icon_info is None:
+            print ("Pixmap '%s' not found in standard pixmap paths!" % ("gcdemu"))
+            self.logo = None
+            return
+        logo_filename = icon_info.get_filename()
+        if logo_filename is None:
+            print ("Failed to get icon filename; Do you have the librsvg2 package?")
+            self.logo = None
+            return
+
+        # Load
+        self.logo = GdkPixbuf.Pixbuf.new_from_file_at_size(logo_filename, 156, 156)
+
+
+    def cleanup (self):
+        # Default state: disconnected
+        self.connected = False
+        self.update_icon()
+
+        self.item_new_device.set_sensitive(False)
+
+        # Clean signals handlers
+        for signal in self.signals:
+            signal.remove()
+
+        # Remove devices
+        num_devices = len(self.devices)
+        for i in range(num_devices, 0, -1):
+            self.remove_device(i-1)
+
+    def connect_to_daemon (self):
+        # Cleanup
+        self.cleanup()
+
+        # Establish connection
+        self.cdemu.connect_to_bus(self.use_system_bus, self.daemon_autostart)
+
+
+    def __init__ (self):
+        GObject.GObject.__init__(self)
+
+        self.connected = False
+        self.devices = []
+
+        self.signals = []
+
+        # *** Configuration ***
+        self.settings = Gio.Settings("net.sf.cdemu.gcdemu")
+
+        # Watch over our settings
+        self.settings.connect("changed", lambda s, k: self.on_settings_changed(k))
+
+        # Notifications
+        if Notify.init(app_name):
+            self.show_notifications = self.settings.get_boolean("show-notifications")
+        else:
+            # Disable because pynotify initialization failed
+            self.show_notifications = False
+
+        # Which bus to use
+        self.use_system_bus = self.settings.get_boolean("use-system-bus")
+
+        # Daemon autostart
+        self.daemon_autostart = self.settings.get_boolean("daemon-autostart")
+
+        # Icon policy
+        self.icon_policy = self.settings.get_string("icon-policy")
+
+        # Icon names
+        self.icon_connected = self.settings.get_string("icon-connected")
+        self.icon_disconnected = self.settings.get_string("icon-disconnected")
+
+        # Load logo
+        self.load_logo()
+
+        # *** The About dialog ***
+        self.about = Gtk.AboutDialog()
+        self.about.set_name(app_name)
+        self.about.set_version(app_version)
+        self.about.set_copyright("Copyright (C) 2006-2014 Rok Mandeljc")
+        self.about.set_comments(_("A GUI for controlling CDEmu devices."))
+        self.about.set_website("http://cdemu.sf.net")
+        self.about.set_website_label(_("The CDEmu project website"))
+        self.about.set_authors([ "Rok Mandeljc <rok.mandeljc@gmail.com>" ])
+        self.about.set_artists([ "Rômulo Fernandes <abra185@gmail.com>" ])
+        self.about.set_translator_credits(_("translator-credits"))
+        self.about.set_logo(self.logo)
+
+        # *** Menu ***
+        self.menu = Gtk.Menu()
+
+        # Devices
+        item = Gtk.MenuItem.new_with_label(_("Devices"))
+        item.set_sensitive(False)
+        self.menu.append(item)
+
+        item = Gtk.MenuItem.new_with_label(_("New device..."))
+        item.set_sensitive(False)
+        item.connect("activate", self.on_new_device_activate)
+        self.menu.append(item)
+        self.item_new_device = item
+
+        # Separator
+        self.menu.append(Gtk.SeparatorMenuItem())
+
+        # Use system bus
+        item = Gtk.CheckMenuItem.new_with_mnemonic(_("Use _system bus"))
+        item.set_active(self.use_system_bus)
+        item.connect("toggled", self.on_use_system_bus_toggled)
+        self.menu.append(item)
+        self.item_use_system_bus = item
+
+        # Show notifications
+        item = Gtk.CheckMenuItem.new_with_mnemonic(_("Show _notifications"))
+        item.set_active(self.show_notifications)
+        item.connect("toggled", self.on_show_notifications_toggled)
+        self.menu.append(item)
+        self.item_show_notifications = item
+
+        # Separator
+        self.menu.append(Gtk.SeparatorMenuItem())
+
+        # About
+        item = Gtk.ImageMenuItem.new_from_stock(Gtk.STOCK_ABOUT, None)
+        item.connect("activate", self.on_about_activated)
+        self.menu.append(item)
+
+        # Separator
+        self.menu.append(Gtk.SeparatorMenuItem())
+
+        # Quit
+        item = Gtk.ImageMenuItem.new_from_stock(Gtk.STOCK_QUIT, None)
+        item.connect("activate", self.on_quit_activated)
+        self.menu.append(item)
+
+        self.menu.show_all()
+
+        # *** Create the CDEmu object ***
+        self.cdemu = CDEmu()
+        self.cdemu.connect("daemon-started", self.on_daemon_started)
+        self.cdemu.connect("daemon-stopped", self.on_daemon_stopped)
+        self.cdemu.connect("connection-established", self.on_connection_established)
+        self.cdemu.connect("connection-lost", self.on_connection_lost)
+        self.cdemu.connect("error", lambda c, t, m: self.show_error(t, m))
+        self.cdemu.connect("device-added", lambda c, d: self.on_device_added(d))
+        self.cdemu.connect("device-removed", lambda c, d: self.on_device_removed(d))
+
+
+    def on_settings_changed (self, key):
+        if key == "use-system-bus":
+            self.use_system_bus = self.settings.get_boolean(key)
+            print ("New setting: use system bus: %d" % self.use_system_bus)
+            self.item_use_system_bus.set_active(self.use_system_bus)
+            self.cdemu.connect_to_bus(self.use_system_bus, self.daemon_autostart)
+        elif key == "show-notifications":
+            self.show_notifications = self.settings.get_boolean(key)
+            self.item_show_notifications.set_active(self.show_notifications)
+            print ("New setting: show notifications: %d" % self.show_notifications)
+        elif key == "icon-connected":
+            self.icon_connected = self.settings.get_string(key)
+            self.update_icon()
+        elif key == "icon-disconnected":
+            self.icon_disconnected = self.settings.get_string(key)
+            self.update_icon()
+        elif key == "daemon-autostart":
+            self.daemon_autostart = self.settings.get_boolean(key)
+            print ("New setting: daemon autostart: %d" % self.daemon_autostart)
+        elif key == "icon-policy":
+            self.icon_policy = self.settings.get_string(key)
+            self.update_icon()
+        else:
+            print ("Unknown setting key: %s!" % key)
+
+    def on_about_activated (self, menuitem):
+        self.about.run()
+        self.about.hide()
+
+    def on_quit_activated (self, menuitem):
+        self.emit("quit")
+
+    def on_use_system_bus_toggled (self, checkmenuitem):
+        self.settings.set_boolean("use-system-bus", checkmenuitem.get_active())
+        return
+
+    def on_show_notifications_toggled (self, checkmenuitem):
+        self.settings.set_boolean("show-notifications", checkmenuitem.get_active())
+        return
+
+
+    def on_connection_established (self, cdemu, num_devices):
+        self.connected = True
+        self.update_icon()
+
+        self.item_new_device.set_sensitive(True)
+
+        # Create devices GUI
+        for i in range(0, num_devices):
+            # Add device
+            self.add_device(i)
+
+    def on_connection_lost (self, cdemu):
+        self.cleanup()
+
+    def on_daemon_started (self, cdemu):
+        self.show_notification(_("Daemon started"), _("CDEmu daemon has been started."), "dialog-information")
+
+    def on_daemon_stopped (self, cdemu):
+        self.show_notification(_("Daemon stopped"), _("CDEmu daemon has been stopped."), "dialog-information")
+
+    def on_device_notification (self, device, summary, body):
+        self.show_notification(summary, body, "dialog-information")
+
+
+    def show_notification (self, summary, body, icon = None):
+        if self.show_notifications:
+            n = Notify.Notification.new(summary, body, icon)
+            n.show()
+
+    def show_error (self, title, text):
+         # Show error dialog
+        message = Gtk.MessageDialog(None, 0, Gtk.MessageType.ERROR, Gtk.ButtonsType.CLOSE, text)
+        message.set_title(title)
+        message.run()
+        message.destroy()
+
+
+    def on_new_device_activate (self, menuitem):
+        self.cdemu.add_device()
+
+
+    def on_device_added (self, num):
+        self.add_device(num)
+        self.show_notification(_("Device added"), _("Device #%02d has been created.") % num, "dialog-information")
+
+    def on_device_removed (self, num):
+        self.remove_device(num)
+        self.show_notification(_("Device removed"), _("Device #%02d has been removed.") % num, "dialog-information")
+
+    def add_device (self, num):
+        # Create device dialog
+        device = self.create_device(self.cdemu, num)
+        self.devices.append(device)
+
+        # Add device's menu item to the devices menu
+        self.menu.insert(device.menu_item, 1+num)
+        # Connect signal
+        device.connect("device-notification", self.on_device_notification)
+
+        # Set the just-added device as "removable", and mark the one
+        # before it as "non-removable"...
+        self.devices[-1].set_removable(True)
+        if len(self.devices) > 1:
+            self.devices[-2].set_removable(False)
+
+    def remove_device (self, num):
+        # Remove from list
+        device = self.devices.pop(num)
+        # Cleanup the device
+        device.cleanup()
+
+        # Mark the last device in the list as "removable"
+        if len(self.devices) > 0:
+            self.devices[-1].set_removable(True)
+
+
+GObject.type_register(gCDEmuTray)
+GObject.signal_new("quit", gCDEmuTray,
+    GObject.SignalFlags.RUN_FIRST,
+    None,
+    ())
+
+
+class gCDEmuTray_Gtk (gCDEmuTray):
+    def __init__ (self):
+        gCDEmuTray.__init__(self)
+
+        # *** The status icon ***
+        self.tray_icon = Gtk.StatusIcon()
+
+        self.tray_icon.set_visible(True)
+        self.tray_icon.connect('activate', self.on_activate)
+        self.tray_icon.connect('popup-menu', self.on_popup_menu)
+
+        # Update icon
+        self.update_icon()
+
+    def create_device (self, cdemu, d):
+        return gCDEmuDevice_Gtk(cdemu, d)
+
+
+    def on_activate (self, status_icon):
+        # Popup the devices menu (simulate the 1st button click)
+        self.menu.popup(None, None, status_icon.position_menu, self.tray_icon, 1, Gtk.get_current_event_time())
+
+    def on_popup_menu (self, status_icon, button, activate_time):
+        # Popup the menu
+        self.menu.popup(None, None, status_icon.position_menu, self.tray_icon, button, activate_time)
+
+    def update_icon (self):
+        # Show/hide icon
+        if self.icon_policy == "always":
+            visible = True
+        elif self.icon_policy == "never":
+            visible = False
+        elif self.icon_policy in [ "when_connected", "when-connected" ]:
+            if self.connected:
+                visible = True
+            else:
+                visible = False
+        else:
+            # Fix invalid setting...
+            print ("Unknown icon policy '%s'! Using 'always' by default!" % (self.icon_policy))
+            self.icon_policy = "always"
+            visible = True
+        self.tray_icon.set_visible(visible)
+
+        # Set icon
+        if self.connected:
+            icon_name = self.icon_connected
+            tooltip_text = _('gCDEmu - connected')
+        else:
+            icon_name = self.icon_disconnected
+            tooltip_text = _('gCDEmu - disconnected')
+
+        if icon_name is None:
+            icon_name = "image-missing" # Fallback icon
+
+        self.tray_icon.set_from_icon_name(icon_name)
+        self.tray_icon.set_tooltip_text(tooltip_text)
+
+
+class gCDEmuTray_Indicator (gCDEmuTray):
+    def __init__ (self):
+        gCDEmuTray.__init__(self)
+
+        # AppIndicator
+        self.indicator = AppIndicator.Indicator.new(app_name, "gcdemu", AppIndicator.IndicatorCategory.HARDWARE)
+        self.indicator.set_status(AppIndicator.IndicatorStatus.ACTIVE)
+        self.indicator.set_menu(self.menu)
+
+        # Update icon
+        self.update_icon()
+
+    def create_device (self, cdemu, d):
+        return gCDEmuDevice_Indicator(cdemu, d)
+
+    def update_icon (self):
+        # Set icons
+        self.indicator.set_icon_full(self.icon_connected, "Connected")
+        self.indicator.set_attention_icon_full(self.icon_disconnected, "Disconnected")
+
+        # Show/hide icon
+        if self.icon_policy == "always":
+            visible = True
+        elif self.icon_policy == "never":
+            visible = False
+        elif self.icon_policy in [ "when_connected", "when-connected" ]:
+            if self.connected:
+                visible = True
+            else:
+                visible = False
+        else:
+            # Fix invalid setting...
+            print ("Unknown icon policy '%s'! Using 'always' by default!" % (self.icon_policy))
+            self.icon_policy = "always"
+            visible = True
+
+        # Set the status (change icon)
+        if visible:
+            if self.connected:
+                self.indicator.set_status(AppIndicator.IndicatorStatus.ACTIVE)
+            else:
+                self.indicator.set_status(AppIndicator.IndicatorStatus.ATTENTION)
+        else:
+            self.indicator.set_status(AppIndicator.IndicatorStatus.PASSIVE)
+
+
+
+########################################################################
 #                                Main                                  #
 ########################################################################
-import signal
+class gCDEmuApplication (Gtk.Application):
+    def __init__ (self):
+        Gtk.Application.__init__(self, application_id="net.sf.cdemu.GCDEmu", flags=Gio.ApplicationFlags.HANDLES_COMMAND_LINE)
+        self.arguments = None
+        self.tray = None
 
-if __name__ == "__main__":
-    # Command-line argument parsing
-    parser = argparse.ArgumentParser()
-    parser.add_argument('--indicator', action="store_true", default=False, help='run gCDEmu in AppIndicator mode')
-    parser.add_argument('--app', action="store_true", default=False, help='run gCDEmu in Application mode')
-    args = parser.parse_args()
+    def do_activate (self):
+        if self.tray:
+            # If tray already exists, do nothing...
+            return
 
-    # Attempt to autodetect running Desktop Environment
-    if not args.indicator and not args.app:
-        if "XDG_CURRENT_DESKTOP" in os.environ:
-            desktop = os.environ["XDG_CURRENT_DESKTOP"]
-        else:
-            desktop = ""
+        # Create hidden window to keep GtkApplication happy
+        window = Gtk.Window(type=Gtk.WindowType.TOPLEVEL)
+        window.set_title("gCDEmu")
+        self.add_window(window)
 
-        if desktop == "Unity": # Unity for Ubuntu 11.10 or newer
-            args.indicator = True
-        elif desktop == "GNOME": # Gnome newer than 3.4
-            args.app = True
-        else:
-            args.app = True
-
-    if args.indicator:
-        # AppIndicator version
-        try:
-            from gi.repository import AppIndicator3 as AppIndicator
-        except ImportError:
-            try:
-                from gi.repository import AppIndicator
-            except ImportError:
+        # Create tray
+        if self.args.tray_mode == "gtk":
+            # Gtk tray icon
+            self.tray = gCDEmuTray_Gtk()
+        elif self.args.tray_mode == "indicator":
+            # AppIndicator
+            if not have_app_indicator:
                 message = Gtk.MessageDialog(None, 0, Gtk.MessageType.ERROR, Gtk.ButtonsType.CLOSE, _("Failed to load AppIndicator library!"))
                 message.set_title(_("AppIndicator not available"))
                 message.run()
                 message.destroy()
                 sys.exit(-1)
 
-        app = gCDEmu_Indicator()
-    else:
-        # Gtk version
-        app = gCDEmu_Gtk()
+            self.tray = gCDEmuTray_Indicator()
+        else:
+            # Autodetect: if AppIndicator is available, prefer it over
+            # Gtk tray
+            if have_app_indicator:
+                print("AppIndicator tray icon mode")
+                self.tray = gCDEmuTray_Indicator()
+            else:
+                print("Gtk tray icon mode")
+                self.tray = gCDEmuTray_Gtk()
 
-    # Make Ctrl+C work
-    signal.signal(signal.SIGINT, signal.SIG_DFL)
+        self.tray.connect("quit", lambda o: self.quit())
 
-    app.run()
+        # Connect to daemon
+        self.tray.connect_to_daemon()
+
+    def do_command_line (self, args):
+        # Default command-line handler
+        Gtk.Application.do_command_line(self, args)
+
+        # We parse arguments only if they are local, as it would be very
+        # inconvenient for command-line parser to blow up in our face for
+        # a secondary-instance (which does nothing in our case, anyway)
+        # and bring down the primary instance as well. Now, in an ideal
+        # world, we would take care of this in do_local_command_line(),
+        # however as of GIO 2.38, overriding that one causes a segfault...
+        if not args.get_is_remote():
+            # Command-line parser
+            parser = argparse.ArgumentParser(prog="gcdemu", formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+            parser.add_argument("--tray-mode", type=str, nargs="?", choices=["gtk", "indicator", "auto"], default="auto", help=_("gCDEmu tray mode"))
+
+            self.args = parser.parse_args(args.get_arguments()[1:])
+
+            # Activate the app
+            self.do_activate()
+
+        return False
+
+if __name__ == "__main__":
+    app = gCDEmuApplication()
+    signal.signal(signal.SIGINT, signal.SIG_DFL) # Make Ctrl+C work
+    status = app.run(sys.argv)
+    sys.exit(status)
