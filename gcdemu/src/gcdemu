@@ -392,8 +392,6 @@ class CDEmuDevice (GObject.GObject):
     def __init__ (self, d, proxy):
         GObject.GObject.__init__(self)
 
-        self.dbus_signals = []
-
         # Device number
         self.number = d
 
@@ -1456,7 +1454,6 @@ class gCDEmuDevice (GObject.GObject):
         notebook.show()
         notebook.set_tab_pos(Gtk.PositionType.LEFT)
         notebook.set_border_width(5)
-        #self.dialog.vbox.pack_start(notebook, expand=True, fill=True, padding=0)
         self.dialog.vbox.add(notebook)
 
         # Page: status
@@ -1703,10 +1700,6 @@ class gCDEmuTray (GObject.GObject):
 
         self.item_new_device.set_sensitive(False)
 
-        # Clean signals handlers
-        for signal in self.signals:
-            signal.remove()
-
         # Remove devices
         num_devices = len(self.devices)
         for i in range(num_devices, 0, -1):
@@ -1725,8 +1718,6 @@ class gCDEmuTray (GObject.GObject):
 
         self.connected = False
         self.devices = []
-
-        self.signals = []
 
         # *** Configuration ***
         self.settings = Gio.Settings("net.sf.cdemu.gcdemu")
