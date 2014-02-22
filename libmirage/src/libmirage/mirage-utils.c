@@ -684,26 +684,28 @@ guint16 mirage_helper_calculate_crc16 (const guint8 *data, guint length, const g
 }
 
 /**
- * mirage_helper_calculate_crc32f:
+ * mirage_helper_calculate_crc32_fast:
  * @data: (in) (array length=length): buffer containing data
  * @length: (in): length of data
  * @crctab: (in) (array fixed-size=2048): pointer to CRC polynomial table
  * @reflected: (in): whether to use the reflected algorithm
  * @invert: (in): whether the initial value and result should be inverted
  *
- * Calculates the CRC-32 checksum of the data stored in @data.
- * Fast slice-by-8 implementation that processes 8 bytes at a time.
+ * Calculates the CRC-32 checksum of the data stored in @data. This is
+ * fast slice-by-8 implementation that processes 8 bytes at a time, and
+ * requires @crctab to be allocating using mirage_helper_init_crc32_lut()
+ * with slice parameter set to 8.
  *
  * Returns: CRC-32 checksum of data
  */
-guint32 mirage_helper_calculate_crc32f (const guint8 *data, guint length, const guint32 *crctab, gboolean reflected, gboolean invert)
+guint32 mirage_helper_calculate_crc32_fast (const guint8 *data, guint length, const guint32 *crctab, gboolean reflected, gboolean invert)
 {
     guint32 crc = 0;
 
     const guint32 *crc32_lut = crctab;
 
-    guint32 *current = (guint32*) data;
-    guint8 *current2 = (guint8*) data;
+    guint32 *current = (guint32 *)data;
+    guint8 *current2 = (guint8 *)data;
 
     g_assert(data && crctab);
 
@@ -764,7 +766,7 @@ guint32 mirage_helper_calculate_crc32f (const guint8 *data, guint length, const 
             length -= 8;
         }
 
-        current2 = (guint8*) current;
+        current2 = (guint8 *)current;
 
         /* Process remaining 1 to 7 bytes */
         while (length--) {
@@ -780,19 +782,21 @@ guint32 mirage_helper_calculate_crc32f (const guint8 *data, guint length, const 
 }
 
 /**
- * mirage_helper_calculate_crc32s:
+ * mirage_helper_calculate_crc32_standard:
  * @data: (in) (array length=length): buffer containing data
  * @length: (in): length of data
  * @crctab: (in) (array fixed-size=256): pointer to CRC polynomial table
  * @reflected: (in): whether to use the reflected algorithm
  * @invert: (in): whether the initial value and result should be inverted
  *
- * Calculates the CRC-32 checksum of the data stored in @data.
- * Standard inplementation that processes 1 byte at a time.
+ * Calculates the CRC-32 checksum of the data stored in @data. This is
+ * standard inplementation that processes 1 byte at a time, and requires
+ * @crctab to be allocated using mirage_helper_init_crc32_lut() with slice
+ * parameter set to 1.
  *
  * Returns: CRC-32 checksum of data
  */
-guint32 mirage_helper_calculate_crc32s (const guint8 *data, guint length, const guint32 *crctab, gboolean reflected, gboolean invert)
+guint32 mirage_helper_calculate_crc32_standard (const guint8 *data, guint length, const guint32 *crctab, gboolean reflected, gboolean invert)
 {
     guint32 crc = 0;
 
@@ -1077,7 +1081,7 @@ void mirage_helper_sector_edc_ecc_compute_edc_block (const guint8 *src, guint16 
     guint32 edc;
     guint32 *dest2 = (guint32 *) dest;
 
-    edc = mirage_helper_calculate_crc32(src, size, crc32_d8018001_lut, TRUE, FALSE);
+    edc = mirage_helper_calculate_crc32_fast(src, size, crc32_d8018001_lut, TRUE, FALSE);
     *dest2 = GUINT32_TO_LE(edc);
 }
 
