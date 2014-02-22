@@ -601,6 +601,7 @@ class gCDEmuDeviceStatusPage (Gtk.Grid):
         Gtk.Grid.__init__(self)
         self.set_orientation(Gtk.Orientation.VERTICAL)
         self.set_row_spacing(5)
+        self.set_column_spacing(5)
 
         # *** Frame: status ***
         frame = Gtk.Frame.new(_("Status"))
@@ -610,6 +611,7 @@ class gCDEmuDeviceStatusPage (Gtk.Grid):
 
         grid = Gtk.Grid()
         grid.set_border_width(5)
+        grid.set_column_spacing(5)
         grid.set_row_spacing(5)
 
         frame.add(grid)
@@ -662,6 +664,7 @@ class gCDEmuDeviceStatusPage (Gtk.Grid):
         grid = Gtk.Grid()
         frame.add(grid)
         grid.set_border_width(5)
+        grid.set_column_spacing(5)
         grid.set_row_spacing(2)
 
         # SCSI CD-ROM device
@@ -754,6 +757,7 @@ class gCDEmuDeviceOptionsPage (Gtk.Grid):
 
         grid = Gtk.Grid()
         grid.set_border_width(5)
+        grid.set_column_spacing(5)
         grid.set_row_spacing(5)
 
         frame.add(grid)
@@ -941,7 +945,7 @@ GObject.signal_new("debug-mask-changed", gCDEmuDeviceDebugMaskPage,
 ########################################################################
 class gCDEMuFileChooserDialog (Gtk.FileChooserDialog):
     def __init__ (self, parsers, filter_streams):
-        Gtk.FileChooserDialog.__init__(self, _("Open file"), None, Gtk.FileChooserAction.OPEN, (Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL, Gtk.STOCK_OPEN, Gtk.ResponseType.ACCEPT))
+        Gtk.FileChooserDialog.__init__(self, _("Open file"), None, Gtk.FileChooserAction.OPEN, (_("Cancel"), Gtk.ResponseType.CANCEL, _("Open"), Gtk.ResponseType.ACCEPT))
 
         self.set_select_multiple(True)
         self.set_local_only(False)
@@ -1094,7 +1098,7 @@ class gCDEMuFileChooserDialog (Gtk.FileChooserDialog):
 ########################################################################
 class gCDEMuPasswordDialog (Gtk.Dialog):
     def __init__ (self):
-        Gtk.Dialog.__init__(self, _("Enter password"), None, 0, (Gtk.STOCK_OK, Gtk.ResponseType.OK, Gtk.STOCK_CANCEL, Gtk.ResponseType.REJECT))
+        Gtk.Dialog.__init__(self, _("Enter password"), None, 0, (_("OK"), Gtk.ResponseType.OK, _("Cancel"), Gtk.ResponseType.REJECT))
 
         self.set_default_response(Gtk.ResponseType.OK)
 
@@ -1140,7 +1144,7 @@ class gCDEMuCreateBlankImageDialog (Gtk.Dialog):
     class ValidationError (Exception): pass
 
     def __init__ (self, writers):
-        Gtk.Dialog.__init__(self, _("Create blank disc image"), None, 0, (Gtk.STOCK_OK, Gtk.ResponseType.ACCEPT, Gtk.STOCK_CANCEL, Gtk.ResponseType.REJECT))
+        Gtk.Dialog.__init__(self, _("Create blank disc image"), None, 0, (_("OK"), Gtk.ResponseType.ACCEPT, _("Cancel"), Gtk.ResponseType.REJECT))
 
         self.writers = writers
 
@@ -1152,6 +1156,7 @@ class gCDEMuCreateBlankImageDialog (Gtk.Dialog):
 
         grid = Gtk.Grid()
         grid.set_border_width(5)
+        grid.set_column_spacing(5)
         grid.set_row_spacing(5)
         frame.add(grid)
 
@@ -1226,7 +1231,7 @@ class gCDEMuCreateBlankImageDialog (Gtk.Dialog):
         self.frame_writer.hide()
 
     def choose_file (self):
-        dialog = Gtk.FileChooserDialog(_("Choose file"), self, Gtk.FileChooserAction.SAVE, (Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL, Gtk.STOCK_SAVE, Gtk.ResponseType.ACCEPT))
+        dialog = Gtk.FileChooserDialog(_("Choose file"), self, Gtk.FileChooserAction.SAVE, (_("Cancel"), Gtk.ResponseType.CANCEL, _("Choose"), Gtk.ResponseType.ACCEPT))
         dialog.set_local_only(False)
         dialog.set_do_overwrite_confirmation(True)
 
@@ -1259,6 +1264,7 @@ class gCDEMuCreateBlankImageDialog (Gtk.Dialog):
         # Create GUI
         grid = Gtk.Grid()
         grid.set_border_width(5)
+        grid.set_column_spacing(5)
         grid.set_row_spacing(5)
         self.frame_writer.add(grid)
 
@@ -1432,7 +1438,7 @@ class gCDEmuDevice (GObject.GObject):
 
         # *** GUI ***
         # Create dialog
-        self.dialog = Gtk.Dialog("Device #%02d properties" % d, None, 0, (Gtk.STOCK_CLOSE, Gtk.ResponseType.CLOSE))
+        self.dialog = Gtk.Dialog("Device #%02d properties" % d, None, 0, (_("Close"), Gtk.ResponseType.CLOSE))
         self.dialog.set_border_width(5)
         self.dialog.vbox.set_border_width(5)
         # Hide the dialog when closed
@@ -1649,10 +1655,8 @@ class gCDEmuDevice_Gtk (gCDEmuDevice):
         gCDEmuDevice.update_status(self, notify)
 
         if self.device.loaded:
-            self.menu_item.set_image(Gtk.Image.new_from_stock(Gtk.STOCK_YES, Gtk.IconSize.MENU))
             self.menu_item.set_tooltip_text(_("Left click for Property Dialog, right click to unload."))
         else:
-            self.menu_item.set_image(Gtk.Image.new_from_stock(Gtk.STOCK_NO, Gtk.IconSize.MENU))
             self.menu_item.set_tooltip_text(_("Left click for Property Dialog, right click to load."))
 
 
