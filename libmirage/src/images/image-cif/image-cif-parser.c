@@ -314,15 +314,15 @@ static MirageSession *mirage_parser_cif_parse_session_descriptor (MirageParserCi
     /* Set session type */
     switch (descriptor->session_type) {
         case CDDA: {
-            mirage_session_set_session_type(session, MIRAGE_SESSION_CD_DA);
+            mirage_session_set_session_type(session, MIRAGE_SESSION_CDDA);
             break;
         }
         case CDROM: {
-            mirage_session_set_session_type(session, MIRAGE_SESSION_CD_ROM);
+            mirage_session_set_session_type(session, MIRAGE_SESSION_CDROM);
             break;
         }
         case CDROMXA: {
-            mirage_session_set_session_type(session, MIRAGE_SESSION_CD_ROM_XA);
+            mirage_session_set_session_type(session, MIRAGE_SESSION_CDROM_XA);
             break;
         }
         default: {

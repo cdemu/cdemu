@@ -343,7 +343,7 @@ static MirageDisc *mirage_parser_iso_load_image (MirageParser *_self, MirageStre
     mirage_disc_add_session_by_index(self->priv->disc, 0, session);
 
     /* ISO image parser assumes single-session image, so we're dealing with regular CD-ROM session */
-    mirage_session_set_session_type(session, MIRAGE_SESSION_CD_ROM);
+    mirage_session_set_session_type(session, MIRAGE_SESSION_CDROM);
     g_object_unref(session);
 
     /* Go over all files and create tracks */

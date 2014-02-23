@@ -204,19 +204,19 @@ static gboolean mirage_parser_ccd_build_disc_layout (MirageParserCcd *self, GErr
             /* Disc/session type */
             switch (ccd_cur_entry->PSec) {
                 case 0x00: {
-                    mirage_session_set_session_type(session, MIRAGE_SESSION_CD_ROM);
+                    mirage_session_set_session_type(session, MIRAGE_SESSION_CDROM);
                     break;
                 }
                 case 0x10: {
-                    mirage_session_set_session_type(session, MIRAGE_SESSION_CD_I);
+                    mirage_session_set_session_type(session, MIRAGE_SESSION_CDI);
                     break;
                 }
                 case 0x20: {
-                    mirage_session_set_session_type(session, MIRAGE_SESSION_CD_ROM_XA);
+                    mirage_session_set_session_type(session, MIRAGE_SESSION_CDROM_XA);
                     break;
                 }
                 default: {
-                    mirage_session_set_session_type(session, MIRAGE_SESSION_CD_ROM);
+                    mirage_session_set_session_type(session, MIRAGE_SESSION_CDROM);
                     break;
                 }
             }

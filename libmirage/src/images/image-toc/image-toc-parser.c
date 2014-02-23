@@ -83,10 +83,10 @@ static void mirage_parser_toc_set_session_type (MirageParserToc *self, gchar *ty
         gchar *str;
         gint type;
     } session_types[] = {
-        {"CD_DA", MIRAGE_SESSION_CD_DA},
-        {"CD_ROM", MIRAGE_SESSION_CD_ROM},
-        {"CD_ROM_XA", MIRAGE_SESSION_CD_ROM_XA},
-        {"CD_I", MIRAGE_SESSION_CD_I},
+        {"CD_DA", MIRAGE_SESSION_CDDA},
+        {"CD_ROM", MIRAGE_SESSION_CDROM},
+        {"CD_ROM_XA", MIRAGE_SESSION_CDROM_XA},
+        {"CD_I", MIRAGE_SESSION_CDI},
     };
 
     for (gint i = 0; i < G_N_ELEMENTS(session_types); i++) {

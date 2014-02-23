@@ -982,15 +982,15 @@ static void cdemu_device_sao_recording_create_cue_sheet (CdemuDevice *self)
     struct ModePage_0x05 *p_0x05 = cdemu_device_get_mode_page(self, 0x05, MODE_PAGE_CURRENT);
     switch (p_0x05->session_format) {
         case 0x00: {
-            mirage_session_set_session_type(self->priv->cue_sheet, MIRAGE_SESSION_CD_ROM);
+            mirage_session_set_session_type(self->priv->cue_sheet, MIRAGE_SESSION_CDROM);
             break;
         }
         case 0x10: {
-            mirage_session_set_session_type(self->priv->cue_sheet, MIRAGE_SESSION_CD_I);
+            mirage_session_set_session_type(self->priv->cue_sheet, MIRAGE_SESSION_CDI);
             break;
         }
         case 0x20: {
-            mirage_session_set_session_type(self->priv->cue_sheet, MIRAGE_SESSION_CD_ROM_XA);
+            mirage_session_set_session_type(self->priv->cue_sheet, MIRAGE_SESSION_CDROM_XA);
             break;
         }
     }

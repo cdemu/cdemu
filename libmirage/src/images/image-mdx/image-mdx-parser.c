@@ -287,7 +287,7 @@ static gboolean mirage_parser_mdx_load_disc (MirageParserMdx *self, GError **err
     mirage_disc_add_session_by_index(self->priv->disc, 0, session);
 
     /* MDX image parser assumes single-track image, so we're dealing with regular CD-ROM session */
-    mirage_session_set_session_type(session, MIRAGE_SESSION_CD_ROM);
+    mirage_session_set_session_type(session, MIRAGE_SESSION_CDROM);
 
     /* Add track */
     track = g_object_new(MIRAGE_TYPE_TRACK, NULL);

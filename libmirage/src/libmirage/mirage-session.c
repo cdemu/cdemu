@@ -1515,7 +1515,7 @@ static void mirage_session_init (MirageSession *self)
     self->priv->mcn_fixed = FALSE;
     self->priv->mcn_scan_complete = TRUE;
 
-    self->priv->session_type = MIRAGE_SESSION_CD_ROM;
+    self->priv->session_type = MIRAGE_SESSION_CDROM;
 
     self->priv->tracks_list = NULL;
     self->priv->languages_list = NULL;

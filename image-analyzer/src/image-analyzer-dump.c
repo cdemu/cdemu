@@ -94,9 +94,9 @@ gchar *dump_track_sector_type (gint track_mode)
 gchar *dump_session_type (gint session_type)
 {
     static DumpValue values[] = {
-        { MIRAGE_SESSION_CD_ROM, "CD-DA/CD-ROM" },
-        { MIRAGE_SESSION_CD_I, "CD-I" },
-        { MIRAGE_SESSION_CD_ROM_XA, "CD-ROM XA" },
+        { MIRAGE_SESSION_CDROM, "CD-DA/CD-ROM" },
+        { MIRAGE_SESSION_CDI, "CD-I" },
+        { MIRAGE_SESSION_CDROM_XA, "CD-ROM XA" },
     };
 
     return dump_value(session_type, values, G_N_ELEMENTS(values));

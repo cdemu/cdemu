@@ -179,13 +179,13 @@ static gboolean mirage_parser_cdi_decode_read_mode (MirageParserCdi *self, gint 
 static gint mirage_parser_cdi_decode_session_type (MirageParserCdi *self, gint raw_session_type)
 {
     switch (raw_session_type) {
-        case 0: return MIRAGE_SESSION_CD_DA; /* CD-DA */
-        case 1: return MIRAGE_SESSION_CD_ROM; /* CD-ROM */
-        case 2: return MIRAGE_SESSION_CD_ROM_XA; /* CD-ROM XA */
+        case 0: return MIRAGE_SESSION_CDDA; /* CD-DA */
+        case 1: return MIRAGE_SESSION_CDROM; /* CD-ROM */
+        case 2: return MIRAGE_SESSION_CDROM_XA; /* CD-ROM XA */
     }
 
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: invalid session type: %d: returning CD-ROM!\n", __debug__, raw_session_type);
-    return MIRAGE_SESSION_CD_ROM;
+    return MIRAGE_SESSION_CDROM;
 }
 
 /* Function for parsing header that appears at the beginning of every track block

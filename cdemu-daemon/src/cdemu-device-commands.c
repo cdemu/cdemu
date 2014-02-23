@@ -42,10 +42,10 @@ static gint map_expected_sector_type (gint type)
 static gint map_session_type (MirageSessionType type)
 {
     switch (type) {
-        case MIRAGE_SESSION_CD_DA:
-        case MIRAGE_SESSION_CD_ROM: return 0;
-        case MIRAGE_SESSION_CD_I: return 0x10;
-        case MIRAGE_SESSION_CD_ROM_XA: return 0x20;
+        case MIRAGE_SESSION_CDDA:
+        case MIRAGE_SESSION_CDROM: return 0;
+        case MIRAGE_SESSION_CDI: return 0x10;
+        case MIRAGE_SESSION_CDROM_XA: return 0x20;
     }
 
     return 0;

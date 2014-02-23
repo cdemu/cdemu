@@ -143,19 +143,19 @@ static GString *mirage_writer_toc_create_toc_file (MirageWriterToc *self G_GNUC_
 
     /* Session type */
     switch (mirage_session_get_session_type(session)) {
-        case MIRAGE_SESSION_CD_DA: {
+        case MIRAGE_SESSION_CDDA: {
             g_string_append_printf(toc_contents, "CD_DA\n\n");
             break;
         }
-        case MIRAGE_SESSION_CD_ROM: {
+        case MIRAGE_SESSION_CDROM: {
             g_string_append_printf(toc_contents, "CD_ROM\n\n");
             break;
         }
-        case MIRAGE_SESSION_CD_I: {
+        case MIRAGE_SESSION_CDI: {
             g_string_append_printf(toc_contents, "CD_I\n\n");
             break;
         }
-        case MIRAGE_SESSION_CD_ROM_XA: {
+        case MIRAGE_SESSION_CDROM_XA: {
             g_string_append_printf(toc_contents, "CD_ROM_XA\n");
             break;
         }
