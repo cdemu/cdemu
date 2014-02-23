@@ -114,8 +114,8 @@ void mirage_language_set_code (MirageLanguage *self, gint code);
 gint mirage_language_get_code (MirageLanguage *self);
 
 /* Field: set/get */
-gboolean mirage_language_set_pack_data (MirageLanguage *self, MirageLanguagePackType pack_type, const gchar *pack_data, gint length, GError **error);
-gboolean mirage_language_get_pack_data (MirageLanguage *self, MirageLanguagePackType pack_type, const gchar **pack_data, gint *length, GError **error);
+gboolean mirage_language_set_pack_data (MirageLanguage *self, MirageLanguagePackType pack_type, const guint8 *pack_data, gint length, GError **error);
+gboolean mirage_language_get_pack_data (MirageLanguage *self, MirageLanguagePackType pack_type, const guint8 **pack_data, gint *length, GError **error);
 
 G_END_DECLS
 

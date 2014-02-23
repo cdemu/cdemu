@@ -124,7 +124,7 @@ static void dump_language (GString *toc_contents, gint index, MirageLanguage *la
     g_string_append_printf(toc_contents, "  LANGUAGE %d {\n", index);
 
     for (gint i = 0; i < G_N_ELEMENTS(packs); i++) {
-        const gchar *pack_data;
+        const guint8 *pack_data;
         gint pack_length = 0;
         if (mirage_language_get_pack_data(language, packs[i].pack_type, &pack_data, &pack_length, NULL)) {
             g_string_append_printf(toc_contents, "    %s \"%.*s\"\n", packs[i].pack_id, pack_length, pack_data);

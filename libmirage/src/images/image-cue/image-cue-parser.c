@@ -470,7 +470,7 @@ static gboolean mirage_parser_cue_set_pack_data (MirageParserCue *self, gint pac
         }
     }
 
-    mirage_language_set_pack_data(language, pack_type, data, strlen(data)+1, NULL);
+    mirage_language_set_pack_data(language, pack_type, (const guint8 *)data, strlen(data)+1, NULL);
     g_object_unref(language);
 
     return TRUE;

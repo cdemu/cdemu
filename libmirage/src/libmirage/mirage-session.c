@@ -1268,7 +1268,7 @@ static gboolean set_cdtext_data (gint code, gint type, gint track_number, guint8
         g_object_unref(track);
     }
 
-    succeeded = mirage_language_set_pack_data(language, type, (gchar *)data, len, NULL);
+    succeeded = mirage_language_set_pack_data(language, type, data, len, NULL);
 
     g_object_unref(language);
 
@@ -1392,7 +1392,7 @@ gboolean mirage_session_get_cdtext_data (MirageSession *self, guint8 **data, gin
             const guint8 *session_language_data = NULL;
             gint session_language_len = 0;
 
-            if (mirage_language_get_pack_data(session_language, pack_type, (const gchar **)&session_language_data, &session_language_len, NULL)) {
+            if (mirage_language_get_pack_data(session_language, pack_type, &session_language_data, &session_language_len, NULL)) {
                 MIRAGE_DEBUG(self, MIRAGE_DEBUG_SESSION, "%s: adding pack for session; pack type: %02Xh; pack len: %i; pack data: <%s>\n", __debug__, pack_type, session_language_len, session_language_data);
                 mirage_cdtext_encoder_add_data(encoder, code, pack_type, 0, session_language_data, session_language_len);
             }
@@ -1416,7 +1416,7 @@ gboolean mirage_session_get_cdtext_data (MirageSession *self, guint8 **data, gin
                     continue;
                 }
 
-                if (mirage_language_get_pack_data(track_language, pack_type, (const gchar **)&track_language_data, &track_language_len, NULL)) {
+                if (mirage_language_get_pack_data(track_language, pack_type, &track_language_data, &track_language_len, NULL)) {
                     MIRAGE_DEBUG(self, MIRAGE_DEBUG_SESSION, "%s: adding pack for track %i; pack type: %02Xh; pack len: %i; pack data: <%s>\n", __debug__, number, pack_type, track_language_len, track_language_data);
                     mirage_cdtext_encoder_add_data(encoder, code, pack_type, number, track_language_data, track_language_len);
                 }

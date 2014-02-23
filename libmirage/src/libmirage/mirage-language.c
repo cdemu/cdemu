@@ -46,7 +46,7 @@
 typedef struct
 {
     gboolean set;
-    gchar *data;
+    guint8 *data;
     gint length;
 } MirageLanguage_Pack;
 
@@ -136,7 +136,7 @@ gint mirage_language_get_code (MirageLanguage *self)
  *
  * Returns: %TRUE on success, %FALSE on failure
  */
-gboolean mirage_language_set_pack_data (MirageLanguage *self, MirageLanguagePackType pack_type, const gchar *pack_data, gint length, GError **error)
+gboolean mirage_language_set_pack_data (MirageLanguage *self, MirageLanguagePackType pack_type, const guint8 *pack_data, gint length, GError **error)
 {
     MirageLanguage_Pack *pack = mirage_language_get_pack_by_type(self, pack_type);
 
@@ -174,7 +174,7 @@ gboolean mirage_language_set_pack_data (MirageLanguage *self, MirageLanguagePack
  *
  * Returns: %TRUE on success, %FALSE on failure
  */
-gboolean mirage_language_get_pack_data (MirageLanguage *self, MirageLanguagePackType pack_type, const gchar **pack_data, gint *length, GError **error)
+gboolean mirage_language_get_pack_data (MirageLanguage *self, MirageLanguagePackType pack_type, const guint8 **pack_data, gint *length, GError **error)
 {
     MirageLanguage_Pack *pack = mirage_language_get_pack_by_type(self, pack_type);
 
