@@ -104,8 +104,8 @@ static void image_analyzer_application_change_debug_mask (ImageAnalyzerApplicati
     dialog = gtk_dialog_new_with_buttons("Debug mask",
                                          GTK_WINDOW(self->priv->dialog_log),
                                          GTK_DIALOG_MODAL,
-                                         GTK_STOCK_OK, GTK_RESPONSE_ACCEPT,
-                                         GTK_STOCK_CANCEL, GTK_RESPONSE_REJECT,
+                                         "OK", GTK_RESPONSE_ACCEPT,
+                                         "Cancel", GTK_RESPONSE_REJECT,
                                          NULL);
 
     /* Create the mask widgets */
@@ -180,8 +180,8 @@ static gchar *image_analyzer_application_get_password (ImageAnalyzerApplication 
         "Enter password",
         GTK_WINDOW(self->priv->window),
         GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT,
-        GTK_STOCK_OK, GTK_RESPONSE_OK,
-        GTK_STOCK_CANCEL, GTK_RESPONSE_REJECT,
+        "OK", GTK_RESPONSE_OK,
+        "Cancel", GTK_RESPONSE_REJECT,
         NULL));
     gtk_dialog_set_default_response(GTK_DIALOG(dialog), GTK_RESPONSE_ACCEPT);
 
@@ -378,7 +378,7 @@ static void image_analyzer_application_convert_image (ImageAnalyzerApplication *
     gtk_window_set_transient_for(GTK_WINDOW(progress_dialog), GTK_WINDOW(self->priv->window));
     gtk_window_set_modal(GTK_WINDOW(progress_dialog), TRUE);
     gtk_container_set_border_width(GTK_CONTAINER(progress_dialog), 5);
-    gtk_dialog_add_button(GTK_DIALOG(progress_dialog), GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL);
+    gtk_dialog_add_button(GTK_DIALOG(progress_dialog), "Cancel", GTK_RESPONSE_CANCEL);
     gtk_container_add(GTK_CONTAINER(content_area), progress_bar);
     gtk_widget_show_all(progress_dialog);
 
@@ -678,8 +678,8 @@ static GtkWidget *build_dialog_open_image (GtkWindow *parent_window)
         "Open File",
         parent_window,
         GTK_FILE_CHOOSER_ACTION_OPEN,
-        GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
-        GTK_STOCK_OPEN, GTK_RESPONSE_ACCEPT,
+        "Cancel", GTK_RESPONSE_CANCEL,
+        "Open", GTK_RESPONSE_ACCEPT,
         NULL);
 
     gtk_file_chooser_set_select_multiple(GTK_FILE_CHOOSER(dialog), TRUE);
@@ -746,8 +746,8 @@ static GtkWidget *build_dialog_open_dump (GtkWindow *parent_window)
         "Open File",
         parent_window,
         GTK_FILE_CHOOSER_ACTION_OPEN,
-        GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
-        GTK_STOCK_OPEN, GTK_RESPONSE_ACCEPT,
+        "Cancel", GTK_RESPONSE_CANCEL,
+        "Open", GTK_RESPONSE_ACCEPT,
         NULL);
 
     gtk_file_chooser_set_local_only(GTK_FILE_CHOOSER(dialog), FALSE);
@@ -776,8 +776,8 @@ static GtkWidget *build_dialog_save_dump (GtkWindow *parent_window)
         "Save File",
         parent_window,
         GTK_FILE_CHOOSER_ACTION_SAVE,
-        GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
-        GTK_STOCK_SAVE, GTK_RESPONSE_ACCEPT,
+        "Cancel", GTK_RESPONSE_CANCEL,
+        "Save", GTK_RESPONSE_ACCEPT,
         NULL);
 
     gtk_file_chooser_set_local_only(GTK_FILE_CHOOSER(dialog), FALSE);
