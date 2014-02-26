@@ -21,9 +21,9 @@
 #define __IMAGE_ANALYZER_SECTOR_READ_PRIVATE_H__
 
 
-#define IMAGE_ANALYZER_SECTOR_READ_GET_PRIVATE(obj) (G_TYPE_INSTANCE_GET_PRIVATE((obj), IMAGE_ANALYZER_TYPE_SECTOR_READ, ImageAnalyzerSectorReadPrivate))
+#define IA_SECTOR_READ_GET_PRIVATE(obj) (G_TYPE_INSTANCE_GET_PRIVATE((obj), IA_TYPE_SECTOR_READ, IaSectorReadPrivate))
 
-struct _ImageAnalyzerSectorReadPrivate
+struct _IaSectorReadPrivate
 {
     /* Text entry */
     GtkWidget *text_view;

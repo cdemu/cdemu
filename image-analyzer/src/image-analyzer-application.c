@@ -44,10 +44,10 @@
 /**********************************************************************\
  *                      Debug and logging redirection                 *
 \**********************************************************************/
-static void capture_log (const gchar *log_domain G_GNUC_UNUSED, GLogLevelFlags log_level, const gchar *message, ImageAnalyzerApplication *self)
+static void capture_log (const gchar *log_domain G_GNUC_UNUSED, GLogLevelFlags log_level, const gchar *message, IaApplication *self)
 {
     /* Append to log */
-    image_analyzer_log_window_append_to_log(IMAGE_ANALYZER_LOG_WINDOW(self->priv->dialog_log), message);
+    ia_log_window_append_to_log(IA_LOG_WINDOW(self->priv->dialog_log), message);
 
     /* Errors, critical errors and warnings are always printed to stdout */
     if (log_level & G_LOG_LEVEL_ERROR) {
@@ -69,22 +69,22 @@ static void capture_log (const gchar *log_domain G_GNUC_UNUSED, GLogLevelFlags l
     }
 }
 
-static void image_analyzer_application_set_debug_to_stdout (ImageAnalyzerApplication *self, gboolean enabled)
+static void ia_application_set_debug_to_stdout (IaApplication *self, gboolean enabled)
 {
     /* Debug flag */
     self->priv->debug_to_stdout = enabled;
 
     /* Set to GUI (libMirage log window) */
-    image_analyzer_log_window_set_debug_to_stdout(IMAGE_ANALYZER_LOG_WINDOW(self->priv->dialog_log), enabled);
+    ia_log_window_set_debug_to_stdout(IA_LOG_WINDOW(self->priv->dialog_log), enabled);
 }
 
-static void image_analyzer_application_set_debug_mask (ImageAnalyzerApplication *self, gint debug_mask)
+static void ia_application_set_debug_mask (IaApplication *self, gint debug_mask)
 {
     /* Debug mask */
     mirage_context_set_debug_mask(self->priv->mirage_context, debug_mask);
 }
 
-static void image_analyzer_application_change_debug_mask (ImageAnalyzerApplication *self)
+static void ia_application_change_debug_mask (IaApplication *self)
 {
     GtkWidget *dialog, *content_area;
     GtkWidget *vbox;
@@ -146,7 +146,7 @@ static void image_analyzer_application_change_debug_mask (ImageAnalyzerApplicati
 /**********************************************************************\
  *                              Status message                        *
 \**********************************************************************/
-static void image_analyzer_application_message (ImageAnalyzerApplication *self, gchar *format, ...)
+static void ia_application_message (IaApplication *self, gchar *format, ...)
 {
     gchar *message;
     va_list args;
@@ -169,7 +169,7 @@ static void image_analyzer_application_message (ImageAnalyzerApplication *self, 
 /**********************************************************************\
  *                           Open/close image                         *
 \**********************************************************************/
-static gchar *image_analyzer_application_get_password (ImageAnalyzerApplication *self)
+static gchar *ia_application_get_password (IaApplication *self)
 {
     gchar *password;
     GtkDialog *dialog;
@@ -217,13 +217,13 @@ static gchar *image_analyzer_application_get_password (ImageAnalyzerApplication 
     return password;
 }
 
-static gboolean image_analyzer_application_close_image_or_dump (ImageAnalyzerApplication *self)
+static gboolean ia_application_close_image_or_dump (IaApplication *self)
 {
     /* Clear disc reference in child windows */
-    image_analyzer_disc_structure_set_disc(IMAGE_ANALYZER_DISC_STRUCTURE(self->priv->dialog_structure), NULL);
-    image_analyzer_disc_topology_set_disc(IMAGE_ANALYZER_DISC_TOPOLOGY(self->priv->dialog_topology), NULL);
-    image_analyzer_sector_read_set_disc(IMAGE_ANALYZER_SECTOR_READ(self->priv->dialog_sector), NULL);
-    image_analyzer_sector_analysis_set_disc(IMAGE_ANALYZER_SECTOR_ANALYSIS(self->priv->dialog_analysis), NULL);
+    ia_disc_structure_set_disc(IA_DISC_STRUCTURE(self->priv->dialog_structure), NULL);
+    ia_disc_topology_set_disc(IA_DISC_TOPOLOGY(self->priv->dialog_topology), NULL);
+    ia_sector_read_set_disc(IA_SECTOR_READ(self->priv->dialog_sector), NULL);
+    ia_sector_analysis_set_disc(IA_SECTOR_ANALYSIS(self->priv->dialog_analysis), NULL);
 
     /* Clear TreeStore */
     gtk_tree_store_clear(self->priv->treestore);
@@ -242,76 +242,76 @@ static gboolean image_analyzer_application_close_image_or_dump (ImageAnalyzerApp
 
     /* Print message only if something was loaded */
     if (self->priv->loaded) {
-        image_analyzer_application_message(self, "Image/dump closed.");
+        ia_application_message(self, "Image/dump closed.");
     }
 
     /* Clear the log */
-    image_analyzer_log_window_clear_log(IMAGE_ANALYZER_LOG_WINDOW(self->priv->dialog_log));
+    ia_log_window_clear_log(IA_LOG_WINDOW(self->priv->dialog_log));
 
     self->priv->loaded = FALSE;
 
     return TRUE;
 }
 
-static gboolean image_analyzer_application_open_image (ImageAnalyzerApplication *self, gchar **filenames)
+static gboolean ia_application_open_image (IaApplication *self, gchar **filenames)
 {
     GError *error = NULL;
 
     /* Close any opened image or dump */
-    image_analyzer_application_close_image_or_dump(self);
+    ia_application_close_image_or_dump(self);
 
     /* Load image */
     self->priv->disc = mirage_context_load_image(self->priv->mirage_context, filenames, &error);
     if (!self->priv->disc) {
         g_warning("Failed to create disc: %s\n", error->message);
-        image_analyzer_application_message(self, "Failed to open image: %s", error->message);
+        ia_application_message(self, "Failed to open image: %s", error->message);
         g_error_free(error);
         return FALSE;
     }
 
     /* Set disc reference in child windows */
-    image_analyzer_disc_structure_set_disc(IMAGE_ANALYZER_DISC_STRUCTURE(self->priv->dialog_structure), self->priv->disc);
-    image_analyzer_disc_topology_set_disc(IMAGE_ANALYZER_DISC_TOPOLOGY(self->priv->dialog_topology), self->priv->disc);
-    image_analyzer_sector_read_set_disc(IMAGE_ANALYZER_SECTOR_READ(self->priv->dialog_sector), self->priv->disc);
-    image_analyzer_sector_analysis_set_disc(IMAGE_ANALYZER_SECTOR_ANALYSIS(self->priv->dialog_analysis), self->priv->disc);
+    ia_disc_structure_set_disc(IA_DISC_STRUCTURE(self->priv->dialog_structure), self->priv->disc);
+    ia_disc_topology_set_disc(IA_DISC_TOPOLOGY(self->priv->dialog_topology), self->priv->disc);
+    ia_sector_read_set_disc(IA_SECTOR_READ(self->priv->dialog_sector), self->priv->disc);
+    ia_sector_analysis_set_disc(IA_SECTOR_ANALYSIS(self->priv->dialog_analysis), self->priv->disc);
 
     /* Make XML dump */
-    image_analyzer_application_create_xml_dump(self);
+    ia_application_create_xml_dump(self);
 
     /* Display XML */
-    image_analyzer_application_display_xml_data(self);
+    ia_application_display_xml_data(self);
 
     self->priv->loaded = TRUE;
 
-    image_analyzer_application_message(self, "Image successfully opened.");
+    ia_application_message(self, "Image successfully opened.");
 
     return TRUE;
 }
 
-static gboolean image_analyzer_application_open_dump (ImageAnalyzerApplication *self, gchar *filename)
+static gboolean ia_application_open_dump (IaApplication *self, gchar *filename)
 {
     /* Close any opened image or dump */
-    image_analyzer_application_close_image_or_dump(self);
+    ia_application_close_image_or_dump(self);
 
     /* Load XML */
     self->priv->xml_doc = xmlReadFile(filename, NULL, 0);
     if (!self->priv->xml_doc) {
         g_warning("Failed to dump disc!\n");
-        image_analyzer_application_message(self, "Failed to load dump!");
+        ia_application_message(self, "Failed to load dump!");
         return FALSE;
     }
 
     /* Display XML */
-    image_analyzer_application_display_xml_data(self);
+    ia_application_display_xml_data(self);
 
     self->priv->loaded = TRUE;
 
-    image_analyzer_application_message(self, "Dump successfully opened.");
+    ia_application_message(self, "Dump successfully opened.");
 
     return TRUE;
 }
 
-static void image_analyzer_application_save_dump (ImageAnalyzerApplication *self, gchar *filename)
+static void ia_application_save_dump (IaApplication *self, gchar *filename)
 {
     /* Create a copy of XML dump */
     xmlDocPtr output_xml = xmlCopyDoc(self->priv->xml_doc, 1);
@@ -319,21 +319,21 @@ static void image_analyzer_application_save_dump (ImageAnalyzerApplication *self
     if (output_xml) {
         /* Append the log */
         xmlNodePtr root_node = xmlDocGetRootElement(output_xml);
-        gchar *log = image_analyzer_log_window_get_log_text(IMAGE_ANALYZER_LOG_WINDOW(self->priv->dialog_log));
+        gchar *log = ia_log_window_get_log_text(IA_LOG_WINDOW(self->priv->dialog_log));
         xmlNewTextChild(root_node, NULL, BAD_CAST TAG_LIBMIRAGE_LOG, BAD_CAST log);
         g_free(log);
 
         /* Save the XML tree */
         if (xmlSaveFormatFileEnc(filename, output_xml, "UTF-8", 1) == -1) {
-            image_analyzer_application_message(self, "Saving to dump file failed!");
+            ia_application_message(self, "Saving to dump file failed!");
         } else {
-            image_analyzer_application_message(self, "Dump successfully saved.");
+            ia_application_message(self, "Dump successfully saved.");
         }
 
         /* Free */
         xmlFreeDoc(output_xml);
     } else {
-        image_analyzer_application_message(self, "Failed to create dump!");
+        ia_application_message(self, "Failed to create dump!");
     }
 }
 
@@ -360,7 +360,7 @@ static void cancel_conversion (GCancellable *cancellable, gint response, GtkButt
 }
 
 
-static void image_analyzer_application_convert_image (ImageAnalyzerApplication *self, MirageWriter *writer, const gchar *filename, GHashTable *writer_parameters)
+static void ia_application_convert_image (IaApplication *self, MirageWriter *writer, const gchar *filename, GHashTable *writer_parameters)
 {
     GError *local_error = NULL;
     gboolean succeeded;
@@ -425,7 +425,7 @@ static void image_analyzer_application_convert_image (ImageAnalyzerApplication *
 /**********************************************************************\
  *                             UI callbacks                           *
 \**********************************************************************/
-static void ui_callback_open_image (GtkAction *action G_GNUC_UNUSED, ImageAnalyzerApplication *self)
+static void ui_callback_open_image (GtkAction *action G_GNUC_UNUSED, IaApplication *self)
 {
     /* Run the dialog */
     if (gtk_dialog_run(GTK_DIALOG(self->priv->dialog_open_image)) == GTK_RESPONSE_ACCEPT) {
@@ -450,7 +450,7 @@ static void ui_callback_open_image (GtkAction *action G_GNUC_UNUSED, ImageAnalyz
         }
 
         /* Open image */
-        image_analyzer_application_open_image(self, filenames);
+        ia_application_open_image(self, filenames);
 
         /* Free filenames list */
         g_slist_free(filenames_list);
@@ -461,7 +461,7 @@ static void ui_callback_open_image (GtkAction *action G_GNUC_UNUSED, ImageAnalyz
     gtk_widget_hide(GTK_WIDGET(self->priv->dialog_open_image));
 }
 
-static void ui_callback_convert_image (GtkAction *action G_GNUC_UNUSED, ImageAnalyzerApplication *self)
+static void ui_callback_convert_image (GtkAction *action G_GNUC_UNUSED, IaApplication *self)
 {
     /* We need an opened image for this */
     if (!self->priv->disc) {
@@ -480,7 +480,7 @@ static void ui_callback_convert_image (GtkAction *action G_GNUC_UNUSED, ImageAna
 
         if (response == GTK_RESPONSE_ACCEPT) {
             /* Validate filename */
-            filename = image_analyzer_writer_dialog_get_filename(IMAGE_ANALYZER_WRITER_DIALOG(self->priv->dialog_image_writer));
+            filename = ia_writer_dialog_get_filename(IA_WRITER_DIALOG(self->priv->dialog_image_writer));
             if (!filename || !strlen(filename)) {
                 GtkWidget *message_dialog = gtk_message_dialog_new(
                     GTK_WINDOW(self->priv->dialog_image_writer),
@@ -495,7 +495,7 @@ static void ui_callback_convert_image (GtkAction *action G_GNUC_UNUSED, ImageAna
             }
 
             /* Validate writer */
-            writer = image_analyzer_writer_dialog_get_writer(IMAGE_ANALYZER_WRITER_DIALOG(self->priv->dialog_image_writer));
+            writer = ia_writer_dialog_get_writer(IA_WRITER_DIALOG(self->priv->dialog_image_writer));
             if (!writer) {
                 GtkWidget *message_dialog = gtk_message_dialog_new(
                     GTK_WINDOW(self->priv->dialog_image_writer),
@@ -510,7 +510,7 @@ static void ui_callback_convert_image (GtkAction *action G_GNUC_UNUSED, ImageAna
             }
 
             /* Get writer parameters */
-            writer_parameters = image_analyzer_writer_dialog_get_writer_parameters(IMAGE_ANALYZER_WRITER_DIALOG(self->priv->dialog_image_writer));
+            writer_parameters = ia_writer_dialog_get_writer_parameters(IA_WRITER_DIALOG(self->priv->dialog_image_writer));
 
             break;
         } else {
@@ -524,14 +524,14 @@ static void ui_callback_convert_image (GtkAction *action G_GNUC_UNUSED, ImageAna
     /* Conversion */
     if (response == GTK_RESPONSE_ACCEPT) {
         /* Convert */
-        image_analyzer_application_convert_image(self, writer, filename, writer_parameters);
+        ia_application_convert_image(self, writer, filename, writer_parameters);
         /* Cleanup */
         g_object_unref(writer);
         g_hash_table_unref(writer_parameters);
     }
 }
 
-static void ui_callback_open_dump (GtkAction *action G_GNUC_UNUSED, ImageAnalyzerApplication *self)
+static void ui_callback_open_dump (GtkAction *action G_GNUC_UNUSED, IaApplication *self)
 {
     /* Run the dialog */
     if (gtk_dialog_run(GTK_DIALOG(self->priv->dialog_open_dump)) == GTK_RESPONSE_ACCEPT) {
@@ -541,7 +541,7 @@ static void ui_callback_open_dump (GtkAction *action G_GNUC_UNUSED, ImageAnalyze
         filename = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(self->priv->dialog_open_dump));
 
         /* Open dump */
-        image_analyzer_application_open_dump(self, filename);
+        ia_application_open_dump(self, filename);
 
         /* Free filename */
         g_free(filename);
@@ -550,7 +550,7 @@ static void ui_callback_open_dump (GtkAction *action G_GNUC_UNUSED, ImageAnalyze
     gtk_widget_hide(GTK_WIDGET(self->priv->dialog_open_dump));
 }
 
-static void ui_callback_save_dump (GtkAction *action G_GNUC_UNUSED, ImageAnalyzerApplication *self)
+static void ui_callback_save_dump (GtkAction *action G_GNUC_UNUSED, IaApplication *self)
 {
     /* We need an opened image or dump for this */
     if (!self->priv->loaded) {
@@ -565,7 +565,7 @@ static void ui_callback_save_dump (GtkAction *action G_GNUC_UNUSED, ImageAnalyze
         filename = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(self->priv->dialog_save_dump));
 
         /* Save */
-        image_analyzer_application_save_dump(self, filename);
+        ia_application_save_dump(self, filename);
 
         /* Free filename */
         g_free(filename);
@@ -574,9 +574,9 @@ static void ui_callback_save_dump (GtkAction *action G_GNUC_UNUSED, ImageAnalyze
     gtk_widget_hide(GTK_WIDGET(self->priv->dialog_save_dump));
 }
 
-static void ui_callback_close (GtkAction *action G_GNUC_UNUSED, ImageAnalyzerApplication *self)
+static void ui_callback_close (GtkAction *action G_GNUC_UNUSED, IaApplication *self)
 {
-    image_analyzer_application_close_image_or_dump(self);
+    ia_application_close_image_or_dump(self);
 }
 
 static void ui_callback_quit (GtkAction *action G_GNUC_UNUSED, gpointer user_data G_GNUC_UNUSED)
@@ -585,42 +585,42 @@ static void ui_callback_quit (GtkAction *action G_GNUC_UNUSED, gpointer user_dat
 }
 
 
-static void ui_callback_log_window (GtkAction *action G_GNUC_UNUSED, ImageAnalyzerApplication *self)
+static void ui_callback_log_window (GtkAction *action G_GNUC_UNUSED, IaApplication *self)
 {
     /* Make window (re)appear by first hiding, then showing it */
     gtk_widget_hide(self->priv->dialog_log);
     gtk_widget_show_all(self->priv->dialog_log);
 }
 
-static void ui_callback_sector (GtkAction *action G_GNUC_UNUSED, ImageAnalyzerApplication *self)
+static void ui_callback_sector (GtkAction *action G_GNUC_UNUSED, IaApplication *self)
 {
     /* Make window (re)appear by first hiding, then showing it */
     gtk_widget_hide(self->priv->dialog_sector);
     gtk_widget_show_all(self->priv->dialog_sector);
 }
 
-static void ui_callback_analysis (GtkAction *action G_GNUC_UNUSED, ImageAnalyzerApplication *self)
+static void ui_callback_analysis (GtkAction *action G_GNUC_UNUSED, IaApplication *self)
 {
     /* Make window (re)appear by first hiding, then showing it */
     gtk_widget_hide(self->priv->dialog_analysis);
     gtk_widget_show_all(self->priv->dialog_analysis);
 }
 
-static void ui_callback_topology (GtkAction *action G_GNUC_UNUSED, ImageAnalyzerApplication *self)
+static void ui_callback_topology (GtkAction *action G_GNUC_UNUSED, IaApplication *self)
 {
     /* Make window (re)appear by first hiding, then showing it */
     gtk_widget_hide(self->priv->dialog_topology);
     gtk_widget_show_all(self->priv->dialog_topology);
 }
 
-static void ui_callback_structure (GtkAction *action G_GNUC_UNUSED, ImageAnalyzerApplication *self)
+static void ui_callback_structure (GtkAction *action G_GNUC_UNUSED, IaApplication *self)
 {
     /* Make window (re)appear by first hiding, then showing it */
     gtk_widget_hide(self->priv->dialog_structure);
     gtk_widget_show_all(self->priv->dialog_structure);
 }
 
-static void ui_callback_about (GtkAction *action G_GNUC_UNUSED, ImageAnalyzerApplication *self)
+static void ui_callback_about (GtkAction *action G_GNUC_UNUSED, IaApplication *self)
 {
     gchar *authors[] = { "Rok Mandeljc <rok.mandeljc@gmail.com>", NULL };
 
@@ -647,16 +647,16 @@ static gboolean cb_window_delete_event (GtkWidget *widget G_GNUC_UNUSED, GdkEven
 
 
 
-static void callback_debug_to_stdout_change_requested (ImageAnalyzerLogWindow *log_window G_GNUC_UNUSED, gboolean value, ImageAnalyzerApplication *self)
+static void callback_debug_to_stdout_change_requested (IaLogWindow *log_window G_GNUC_UNUSED, gboolean value, IaApplication *self)
 {
     /* Set the new value */
-    image_analyzer_application_set_debug_to_stdout(self, value);
+    ia_application_set_debug_to_stdout(self, value);
 }
 
-static void callback_debug_mask_change_requested (ImageAnalyzerLogWindow *log_window G_GNUC_UNUSED, ImageAnalyzerApplication *self)
+static void callback_debug_mask_change_requested (IaLogWindow *log_window G_GNUC_UNUSED, IaApplication *self)
 {
     /* Propagate to helper function */
-    image_analyzer_application_change_debug_mask(self);
+    ia_application_change_debug_mask(self);
 }
 
 
@@ -846,7 +846,7 @@ static const gchar menu_xml[] =
     "</ui>";
 
 
-static void create_gui (ImageAnalyzerApplication *self)
+static void create_gui (IaApplication *self)
 {
     GtkWidget *vbox;
 
@@ -912,50 +912,50 @@ static void create_gui (ImageAnalyzerApplication *self)
     self->priv->dialog_save_dump = build_dialog_save_dump(GTK_WINDOW(self->priv->window));
 
     /* Image writer dialog */
-    self->priv->dialog_image_writer = g_object_new(IMAGE_ANALYZER_TYPE_WRITER_DIALOG, NULL);
+    self->priv->dialog_image_writer = g_object_new(IA_TYPE_WRITER_DIALOG, NULL);
 
     /* Mirage log dialog */
-    self->priv->dialog_log = g_object_new(IMAGE_ANALYZER_TYPE_LOG_WINDOW, NULL);
+    self->priv->dialog_log = g_object_new(IA_TYPE_LOG_WINDOW, NULL);
     g_signal_connect(self->priv->dialog_log, "delete_event", G_CALLBACK(gtk_widget_hide_on_delete), NULL);
     g_signal_connect(self->priv->dialog_log, "debug_to_stdout_change_requested", G_CALLBACK(callback_debug_to_stdout_change_requested), self);
     g_signal_connect(self->priv->dialog_log, "debug_mask_change_requested", G_CALLBACK(callback_debug_mask_change_requested), self);
 
     /* Sector read dialog */
-    self->priv->dialog_sector = g_object_new(IMAGE_ANALYZER_TYPE_SECTOR_READ, NULL);
+    self->priv->dialog_sector = g_object_new(IA_TYPE_SECTOR_READ, NULL);
     g_signal_connect(self->priv->dialog_sector, "delete_event", G_CALLBACK(gtk_widget_hide_on_delete), NULL);
 
     /* Sector analysis dialog */
-    self->priv->dialog_analysis = g_object_new(IMAGE_ANALYZER_TYPE_SECTOR_ANALYSIS, NULL);
+    self->priv->dialog_analysis = g_object_new(IA_TYPE_SECTOR_ANALYSIS, NULL);
     g_signal_connect(self->priv->dialog_analysis, "delete_event", G_CALLBACK(gtk_widget_hide_on_delete), NULL);
 
     /* Disc topology dialog */
-    self->priv->dialog_topology = g_object_new(IMAGE_ANALYZER_TYPE_DISC_TOPOLOGY, NULL);
+    self->priv->dialog_topology = g_object_new(IA_TYPE_DISC_TOPOLOGY, NULL);
     g_signal_connect(self->priv->dialog_topology, "delete_event", G_CALLBACK(gtk_widget_hide_on_delete), NULL);
-    image_analyzer_disc_topology_set_disc(IMAGE_ANALYZER_DISC_TOPOLOGY(self->priv->dialog_topology), NULL);
+    ia_disc_topology_set_disc(IA_DISC_TOPOLOGY(self->priv->dialog_topology), NULL);
 
     /* Disc structures dialog */
-    self->priv->dialog_structure = g_object_new(IMAGE_ANALYZER_TYPE_DISC_STRUCTURE, NULL);
+    self->priv->dialog_structure = g_object_new(IA_TYPE_DISC_STRUCTURE, NULL);
     g_signal_connect(self->priv->dialog_structure, "delete_event", G_CALLBACK(gtk_widget_hide_on_delete), NULL);
-    image_analyzer_disc_structure_set_disc(IMAGE_ANALYZER_DISC_STRUCTURE(self->priv->dialog_structure), NULL);
+    ia_disc_structure_set_disc(IA_DISC_STRUCTURE(self->priv->dialog_structure), NULL);
 }
 
 
 /**********************************************************************\
  *                             Public API                             *
 \**********************************************************************/
-gboolean image_analyzer_application_run (ImageAnalyzerApplication *self, gchar **open_image, gboolean debug_to_stdout, gint debug_mask_initial)
+gboolean ia_application_run (IaApplication *self, gchar **open_image, gboolean debug_to_stdout, gint debug_mask_initial)
 {
     /* Set the debug flags and masks */
-    image_analyzer_application_set_debug_to_stdout(self, debug_to_stdout);
-    image_analyzer_application_set_debug_mask(self, debug_mask_initial);
+    ia_application_set_debug_to_stdout(self, debug_to_stdout);
+    ia_application_set_debug_mask(self, debug_mask_initial);
 
     /* Open image, if provided */
     if (g_strv_length(open_image)) {
         /* If it ends with .xml, we treat it as a dump file */
         if (mirage_helper_has_suffix(open_image[0], ".xml")) {
-            image_analyzer_application_open_dump(self, open_image[0]);
+            ia_application_open_dump(self, open_image[0]);
         } else {
-            image_analyzer_application_open_image(self, open_image);
+            ia_application_open_image(self, open_image);
         }
     }
 
@@ -972,11 +972,11 @@ gboolean image_analyzer_application_run (ImageAnalyzerApplication *self, gchar *
 /**********************************************************************\
  *                             Object init                            *
 \**********************************************************************/
-G_DEFINE_TYPE(ImageAnalyzerApplication, image_analyzer_application, G_TYPE_OBJECT);
+G_DEFINE_TYPE(IaApplication, ia_application, G_TYPE_OBJECT);
 
-static void image_analyzer_application_init (ImageAnalyzerApplication *self)
+static void ia_application_init (IaApplication *self)
 {
-    self->priv = IMAGE_ANALYZER_APPLICATION_GET_PRIVATE(self);
+    self->priv = IA_APPLICATION_GET_PRIVATE(self);
 
     self->priv->disc = NULL;
 
@@ -984,7 +984,7 @@ static void image_analyzer_application_init (ImageAnalyzerApplication *self)
     self->priv->mirage_context = g_object_new(MIRAGE_TYPE_CONTEXT, NULL);
     mirage_context_set_debug_domain(self->priv->mirage_context, "libMirage");
     mirage_context_set_debug_mask(self->priv->mirage_context, MIRAGE_DEBUG_PARSER);
-    mirage_context_set_password_function(self->priv->mirage_context, (MiragePasswordFunction)image_analyzer_application_get_password, self);
+    mirage_context_set_password_function(self->priv->mirage_context, (MiragePasswordFunction)ia_application_get_password, self);
 
     /* Setup GUI */
     create_gui(self);
@@ -993,12 +993,12 @@ static void image_analyzer_application_init (ImageAnalyzerApplication *self)
     g_log_set_handler("libMirage", G_LOG_LEVEL_MASK, (GLogFunc)capture_log, self);
 }
 
-static void image_analyzer_application_finalize (GObject *gobject)
+static void ia_application_finalize (GObject *gobject)
 {
-    ImageAnalyzerApplication *self = IMAGE_ANALYZER_APPLICATION(gobject);
+    IaApplication *self = IA_APPLICATION(gobject);
 
     /* Close image */
-    image_analyzer_application_close_image_or_dump(self);
+    ia_application_close_image_or_dump(self);
 
     if (self->priv->mirage_context) {
         g_object_unref(self->priv->mirage_context);
@@ -1017,15 +1017,15 @@ static void image_analyzer_application_finalize (GObject *gobject)
     gtk_widget_destroy(self->priv->dialog_structure);
 
     /* Chain up to the parent class */
-    return G_OBJECT_CLASS(image_analyzer_application_parent_class)->finalize(gobject);
+    return G_OBJECT_CLASS(ia_application_parent_class)->finalize(gobject);
 }
 
-static void image_analyzer_application_class_init (ImageAnalyzerApplicationClass *klass)
+static void ia_application_class_init (IaApplicationClass *klass)
 {
     GObjectClass *gobject_class = G_OBJECT_CLASS(klass);
 
-    gobject_class->finalize = image_analyzer_application_finalize;
+    gobject_class->finalize = ia_application_finalize;
 
     /* Register private structure */
-    g_type_class_add_private(klass, sizeof(ImageAnalyzerApplicationPrivate));
+    g_type_class_add_private(klass, sizeof(IaApplicationPrivate));
 }

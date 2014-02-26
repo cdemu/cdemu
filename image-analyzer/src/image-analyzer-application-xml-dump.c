@@ -375,14 +375,14 @@ static gboolean xml_dump_disc (MirageDisc *disc, xmlNodePtr parent)
 /**********************************************************************\
  *                          Public function                           *
 \**********************************************************************/
-void image_analyzer_application_create_xml_dump (ImageAnalyzerApplication *self)
+void ia_application_create_xml_dump (IaApplication *self)
 {
     xmlNodePtr root_node;
     xmlDocPtr doc;
 
     /* Create new XML tree */
     doc = xmlNewDoc(BAD_CAST "1.0");
-    root_node = xmlNewNode(NULL, BAD_CAST TAG_IMAGE_ANALYZER_DUMP);
+    root_node = xmlNewNode(NULL, BAD_CAST TAG_IA_DUMP);
     xmlDocSetRootElement(doc, root_node);
 
     /* Dump disc to XML tree */

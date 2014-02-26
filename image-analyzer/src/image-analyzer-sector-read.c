@@ -50,13 +50,13 @@ static gchar *dump_sector_type (gint sector_type)
 /**********************************************************************\
  *                      Text buffer manipulation                      *
 \**********************************************************************/
-static gboolean image_analyzer_read_sector_clear_text (ImageAnalyzerSectorRead *self)
+static gboolean ia_read_sector_clear_text (IaSectorRead *self)
 {
     gtk_text_buffer_set_text(self->priv->buffer, "", -1);
     return TRUE;
 }
 
-static gboolean image_analyzer_read_sector_append_text (ImageAnalyzerSectorRead *self, const gchar *tag_name, const gchar *format, ...)
+static gboolean ia_read_sector_append_text (IaSectorRead *self, const gchar *tag_name, const gchar *format, ...)
 {
     GtkTextIter iter;
     gchar *string;
@@ -79,10 +79,10 @@ static gboolean image_analyzer_read_sector_append_text (ImageAnalyzerSectorRead 
     return TRUE;
 }
 
-static gboolean image_analyzer_read_sector_append_sector_data (ImageAnalyzerSectorRead *self, const guint8 *data, gint data_len, const gchar *tag_name)
+static gboolean ia_read_sector_append_sector_data (IaSectorRead *self, const guint8 *data, gint data_len, const gchar *tag_name)
 {
     for (gint i = 0; i < data_len; i++) {
-        image_analyzer_read_sector_append_text(self, tag_name, "%02hhX ", data[i]);
+        ia_read_sector_append_text(self, tag_name, "%02hhX ", data[i]);
     }
     return TRUE;
 }
@@ -91,7 +91,7 @@ static gboolean image_analyzer_read_sector_append_sector_data (ImageAnalyzerSect
 /**********************************************************************\
  *                             UI callbacks                           *
 \**********************************************************************/
-static void image_analyzer_sector_read_ui_callback_read (GtkWidget *button G_GNUC_UNUSED, ImageAnalyzerSectorRead *self)
+static void ia_sector_read_ui_callback_read (GtkWidget *button G_GNUC_UNUSED, IaSectorRead *self)
 {
     MirageSector *sector;
     GError *error = NULL;
@@ -107,97 +107,97 @@ static void image_analyzer_sector_read_ui_callback_read (GtkWidget *button G_GNU
     address = gtk_spin_button_get_value(GTK_SPIN_BUTTON(self->priv->spinbutton));
 
     /* Clear buffer */
-    image_analyzer_read_sector_clear_text(self);
+    ia_read_sector_clear_text(self);
 
     /* Get image */
     if (!self->priv->disc) {
-        image_analyzer_read_sector_append_text(self, NULL, "No image loaded!\n");
+        ia_read_sector_append_text(self, NULL, "No image loaded!\n");
         return;
     }
 
     /* Get sector from disc */
     sector = mirage_disc_get_sector(self->priv->disc, address, &error);
     if (!sector) {
-        image_analyzer_read_sector_append_text(self, NULL, "Failed to get sector: %s\n", error->message);
+        ia_read_sector_append_text(self, NULL, "Failed to get sector: %s\n", error->message);
         g_error_free(error);
         return;
     }
 
     /* Sector address */
-    image_analyzer_read_sector_append_text(self, "tag_section", "Sector address: ");
-    image_analyzer_read_sector_append_text(self, NULL, "0x%X (%d)\n", address, address);
+    ia_read_sector_append_text(self, "tag_section", "Sector address: ");
+    ia_read_sector_append_text(self, NULL, "0x%X (%d)\n", address, address);
 
     /* Sector address MSF */
     address_msf = mirage_helper_lba2msf_str(address, TRUE);
-    image_analyzer_read_sector_append_text(self, "tag_section", "Sector address MSF: ");
-    image_analyzer_read_sector_append_text(self, NULL, "%s\n", address_msf);
+    ia_read_sector_append_text(self, "tag_section", "Sector address MSF: ");
+    ia_read_sector_append_text(self, NULL, "%s\n", address_msf);
     g_free(address_msf);
 
     /* Sector type */
     sector_type = mirage_sector_get_sector_type(sector);
-    image_analyzer_read_sector_append_text(self, "tag_section", "Sector type: ");
-    image_analyzer_read_sector_append_text(self, NULL, "0x%X (%s)\n", sector_type, dump_sector_type(sector_type));
+    ia_read_sector_append_text(self, "tag_section", "Sector type: ");
+    ia_read_sector_append_text(self, NULL, "0x%X (%s)\n", sector_type, dump_sector_type(sector_type));
 
-    image_analyzer_read_sector_append_text(self, NULL, "\n");
+    ia_read_sector_append_text(self, NULL, "\n");
 
     /* DPM */
     if (mirage_disc_get_dpm_data_for_sector(self->priv->disc, address, &dpm_angle, &dpm_density, NULL)) {
-        image_analyzer_read_sector_append_text(self, "tag_section", "Sector angle: ");
-        image_analyzer_read_sector_append_text(self, NULL, "%f rotations\n", dpm_angle);
+        ia_read_sector_append_text(self, "tag_section", "Sector angle: ");
+        ia_read_sector_append_text(self, NULL, "%f rotations\n", dpm_angle);
 
-        image_analyzer_read_sector_append_text(self, "tag_section", "Sector density: ");
-        image_analyzer_read_sector_append_text(self, NULL, "%f degrees per sector\n", dpm_density);
+        ia_read_sector_append_text(self, "tag_section", "Sector density: ");
+        ia_read_sector_append_text(self, NULL, "%f degrees per sector\n", dpm_density);
 
-        image_analyzer_read_sector_append_text(self, NULL, "\n");
+        ia_read_sector_append_text(self, NULL, "\n");
     }
 
      /* Q subchannel */
-    image_analyzer_read_sector_append_text(self, "tag_section", "Q subchannel:\n");
+    ia_read_sector_append_text(self, "tag_section", "Q subchannel:\n");
     mirage_sector_get_subchannel(sector, MIRAGE_SUBCHANNEL_Q, &tmp_buf, &tmp_len, NULL);
-    image_analyzer_read_sector_append_sector_data(self, tmp_buf, tmp_len, NULL);
-    image_analyzer_read_sector_append_text(self, NULL, "\n");
+    ia_read_sector_append_sector_data(self, tmp_buf, tmp_len, NULL);
+    ia_read_sector_append_text(self, NULL, "\n");
 
     /* Subchannel CRC verification */
-    image_analyzer_read_sector_append_text(self, "tag_section", "Subchannel CRC verification: ");
+    ia_read_sector_append_text(self, "tag_section", "Subchannel CRC verification: ");
     if (mirage_sector_verify_subchannel_crc(sector)) {
-        image_analyzer_read_sector_append_text(self, NULL, "passed\n");
+        ia_read_sector_append_text(self, NULL, "passed\n");
     } else {
-        image_analyzer_read_sector_append_text(self, NULL, "bad CRC\n");
+        ia_read_sector_append_text(self, NULL, "bad CRC\n");
     }
-    image_analyzer_read_sector_append_text(self, NULL, "\n");
+    ia_read_sector_append_text(self, NULL, "\n");
 
 
     /* L-EC verification */
-    image_analyzer_read_sector_append_text(self, "tag_section", "Sector data L-EC verification: ");
+    ia_read_sector_append_text(self, "tag_section", "Sector data L-EC verification: ");
     if (mirage_sector_verify_lec(sector)) {
-        image_analyzer_read_sector_append_text(self, NULL, "passed\n");
+        ia_read_sector_append_text(self, NULL, "passed\n");
     } else {
-        image_analyzer_read_sector_append_text(self, NULL, "bad sector\n");
+        ia_read_sector_append_text(self, NULL, "bad sector\n");
     }
-    image_analyzer_read_sector_append_text(self, NULL, "\n");
+    ia_read_sector_append_text(self, NULL, "\n");
 
 
     /* All sector data */
-    image_analyzer_read_sector_append_text(self, "tag_section", "Sector data dump:\n", address);
+    ia_read_sector_append_text(self, "tag_section", "Sector data dump:\n", address);
 
     /* Sync */
     mirage_sector_get_sync(sector, &tmp_buf, &tmp_len, NULL);
-    image_analyzer_read_sector_append_sector_data(self, tmp_buf, tmp_len, "tag_sync");
+    ia_read_sector_append_sector_data(self, tmp_buf, tmp_len, "tag_sync");
     /* Header */
     mirage_sector_get_header(sector, &tmp_buf, &tmp_len, NULL);
-    image_analyzer_read_sector_append_sector_data(self, tmp_buf, tmp_len, "tag_header");
+    ia_read_sector_append_sector_data(self, tmp_buf, tmp_len, "tag_header");
     /* Subheader */
     mirage_sector_get_subheader(sector, &tmp_buf, &tmp_len, NULL);
-    image_analyzer_read_sector_append_sector_data(self, tmp_buf, tmp_len, "tag_subheader");
+    ia_read_sector_append_sector_data(self, tmp_buf, tmp_len, "tag_subheader");
     /* Data */
     mirage_sector_get_data(sector, &tmp_buf, &tmp_len, NULL);
-    image_analyzer_read_sector_append_sector_data(self, tmp_buf, tmp_len, "tag_data");
+    ia_read_sector_append_sector_data(self, tmp_buf, tmp_len, "tag_data");
     /* EDC/ECC */
     mirage_sector_get_edc_ecc(sector, &tmp_buf, &tmp_len, NULL);
-    image_analyzer_read_sector_append_sector_data(self, tmp_buf, tmp_len, "tag_edc_ecc");
+    ia_read_sector_append_sector_data(self, tmp_buf, tmp_len, "tag_edc_ecc");
     /* Subchannel */
     mirage_sector_get_subchannel(sector, MIRAGE_SUBCHANNEL_PW, &tmp_buf, &tmp_len, NULL);
-    image_analyzer_read_sector_append_sector_data(self, tmp_buf, tmp_len, "tag_subchannel");
+    ia_read_sector_append_sector_data(self, tmp_buf, tmp_len, "tag_subchannel");
 
     g_object_unref(sector);
 
@@ -208,7 +208,7 @@ static void image_analyzer_sector_read_ui_callback_read (GtkWidget *button G_GNU
 /**********************************************************************\
  *                              GUI setup                             *
 \**********************************************************************/
-static void setup_gui (ImageAnalyzerSectorRead *self)
+static void setup_gui (IaSectorRead *self)
 {
     GtkWidget *vbox, *scrolledwindow, *hbox, *button;
     GtkAdjustment *adjustment;
@@ -254,7 +254,7 @@ static void setup_gui (ImageAnalyzerSectorRead *self)
 
     /* Button */
     button = gtk_button_new_with_label("Read");
-    g_signal_connect(button, "clicked", G_CALLBACK(image_analyzer_sector_read_ui_callback_read), self);
+    g_signal_connect(button, "clicked", G_CALLBACK(ia_sector_read_ui_callback_read), self);
     gtk_box_pack_start(GTK_BOX(hbox), button, FALSE, FALSE, 0);
 }
 
@@ -262,7 +262,7 @@ static void setup_gui (ImageAnalyzerSectorRead *self)
 /**********************************************************************\
  *                              Disc set                              *
 \**********************************************************************/
-void image_analyzer_sector_read_set_disc (ImageAnalyzerSectorRead *self, MirageDisc *disc)
+void ia_sector_read_set_disc (IaSectorRead *self, MirageDisc *disc)
 {
     /* Release old disc */
     if (self->priv->disc) {
@@ -280,20 +280,20 @@ void image_analyzer_sector_read_set_disc (ImageAnalyzerSectorRead *self, MirageD
 /**********************************************************************\
  *                             Object init                            *
 \**********************************************************************/
-G_DEFINE_TYPE(ImageAnalyzerSectorRead, image_analyzer_sector_read, GTK_TYPE_WINDOW);
+G_DEFINE_TYPE(IaSectorRead, ia_sector_read, GTK_TYPE_WINDOW);
 
-static void image_analyzer_sector_read_init (ImageAnalyzerSectorRead *self)
+static void ia_sector_read_init (IaSectorRead *self)
 {
-    self->priv = IMAGE_ANALYZER_SECTOR_READ_GET_PRIVATE(self);
+    self->priv = IA_SECTOR_READ_GET_PRIVATE(self);
 
     self->priv->disc = NULL;
 
     setup_gui(self);
 }
 
-static void image_analyzer_sector_read_dispose (GObject *gobject)
+static void ia_sector_read_dispose (GObject *gobject)
 {
-    ImageAnalyzerSectorRead *self = IMAGE_ANALYZER_SECTOR_READ(gobject);
+    IaSectorRead *self = IA_SECTOR_READ(gobject);
 
     /* Unref disc */
     if (self->priv->disc) {
@@ -302,15 +302,15 @@ static void image_analyzer_sector_read_dispose (GObject *gobject)
     }
 
     /* Chain up to the parent class */
-    return G_OBJECT_CLASS(image_analyzer_sector_read_parent_class)->dispose(gobject);
+    return G_OBJECT_CLASS(ia_sector_read_parent_class)->dispose(gobject);
 }
 
-static void image_analyzer_sector_read_class_init (ImageAnalyzerSectorReadClass *klass)
+static void ia_sector_read_class_init (IaSectorReadClass *klass)
 {
     GObjectClass *gobject_class = G_OBJECT_CLASS(klass);
 
-    gobject_class->dispose = image_analyzer_sector_read_dispose;
+    gobject_class->dispose = ia_sector_read_dispose;
 
     /* Register private structure */
-    g_type_class_add_private(klass, sizeof(ImageAnalyzerSectorReadPrivate));
+    g_type_class_add_private(klass, sizeof(IaSectorReadPrivate));
 }

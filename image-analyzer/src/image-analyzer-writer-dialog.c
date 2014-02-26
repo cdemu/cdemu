@@ -28,7 +28,7 @@
 #include "image-analyzer-writer-dialog.h"
 #include "image-analyzer-writer-dialog-private.h"
 
-static void cb_choose_file_clicked (ImageAnalyzerWriterDialog *self, GtkButton *button G_GNUC_UNUSED)
+static void cb_choose_file_clicked (IaWriterDialog *self, GtkButton *button G_GNUC_UNUSED)
 {
     GtkWidget *dialog = gtk_file_chooser_dialog_new(
         "Select output image file",
@@ -50,7 +50,7 @@ static void cb_choose_file_clicked (ImageAnalyzerWriterDialog *self, GtkButton *
     gtk_widget_destroy(dialog);
 }
 
-static void cb_writer_changed (ImageAnalyzerWriterDialog *self, GtkComboBox *combobox)
+static void cb_writer_changed (IaWriterDialog *self, GtkComboBox *combobox)
 {
     /* Destroy old writer UI */
     if (self->priv->writer_options_ui) {
@@ -176,12 +176,12 @@ static void cb_writer_changed (ImageAnalyzerWriterDialog *self, GtkComboBox *com
 }
 
 
-const gchar *image_analyzer_writer_dialog_get_filename (ImageAnalyzerWriterDialog *self)
+const gchar *ia_writer_dialog_get_filename (IaWriterDialog *self)
 {
     return gtk_entry_get_text(GTK_ENTRY(self->priv->entry_filename));
 }
 
-MirageWriter *image_analyzer_writer_dialog_get_writer (ImageAnalyzerWriterDialog *self)
+MirageWriter *ia_writer_dialog_get_writer (IaWriterDialog *self)
 {
     if (self->priv->image_writer) {
         return g_object_ref(self->priv->image_writer);
@@ -189,7 +189,7 @@ MirageWriter *image_analyzer_writer_dialog_get_writer (ImageAnalyzerWriterDialog
     return NULL;
 }
 
-GHashTable *image_analyzer_writer_dialog_get_writer_parameters (ImageAnalyzerWriterDialog *self)
+GHashTable *ia_writer_dialog_get_writer_parameters (IaWriterDialog *self)
 {
     GHashTable *writer_parameters = g_hash_table_new_full(g_str_hash, g_str_equal, NULL, (GDestroyNotify)g_variant_unref);
 
@@ -220,7 +220,7 @@ GHashTable *image_analyzer_writer_dialog_get_writer_parameters (ImageAnalyzerWri
 }
 
 
-static void setup_gui (ImageAnalyzerWriterDialog *self)
+static void setup_gui (IaWriterDialog *self)
 {
     GtkWidget *vbox;
     GtkWidget *frame;
@@ -300,18 +300,18 @@ static void setup_gui (ImageAnalyzerWriterDialog *self)
 /**********************************************************************\
  *                             Object init                            *
 \**********************************************************************/
-G_DEFINE_TYPE(ImageAnalyzerWriterDialog, image_analyzer_writer_dialog, GTK_TYPE_DIALOG);
+G_DEFINE_TYPE(IaWriterDialog, ia_writer_dialog, GTK_TYPE_DIALOG);
 
-static void image_analyzer_writer_dialog_init (ImageAnalyzerWriterDialog *self)
+static void ia_writer_dialog_init (IaWriterDialog *self)
 {
-    self->priv = IMAGE_ANALYZER_WRITER_DIALOG_GET_PRIVATE(self);
+    self->priv = IA_WRITER_DIALOG_GET_PRIVATE(self);
 
     setup_gui(self);
 }
 
-static void image_analyzer_writer_dialog_dispose (GObject *gobject)
+static void ia_writer_dialog_dispose (GObject *gobject)
 {
-    ImageAnalyzerWriterDialog *self = IMAGE_ANALYZER_WRITER_DIALOG(gobject);
+    IaWriterDialog *self = IA_WRITER_DIALOG(gobject);
 
     if (self->priv->image_writer) {
         g_object_unref(self->priv->image_writer);
@@ -319,26 +319,26 @@ static void image_analyzer_writer_dialog_dispose (GObject *gobject)
     }
 
     /* Chain up to the parent class */
-    return G_OBJECT_CLASS(image_analyzer_writer_dialog_parent_class)->dispose(gobject);
+    return G_OBJECT_CLASS(ia_writer_dialog_parent_class)->dispose(gobject);
 }
 
-static void image_analyzer_writer_dialog_finalize (GObject *gobject)
+static void ia_writer_dialog_finalize (GObject *gobject)
 {
-    ImageAnalyzerWriterDialog *self = IMAGE_ANALYZER_WRITER_DIALOG(gobject);
+    IaWriterDialog *self = IA_WRITER_DIALOG(gobject);
 
     g_hash_table_destroy(self->priv->writer_options_widgets);
 
     /* Chain up to the parent class */
-    return G_OBJECT_CLASS(image_analyzer_writer_dialog_parent_class)->finalize(gobject);
+    return G_OBJECT_CLASS(ia_writer_dialog_parent_class)->finalize(gobject);
 }
 
-static void image_analyzer_writer_dialog_class_init (ImageAnalyzerWriterDialogClass *klass)
+static void ia_writer_dialog_class_init (IaWriterDialogClass *klass)
 {
     GObjectClass *gobject_class = G_OBJECT_CLASS(klass);
 
-    gobject_class->dispose = image_analyzer_writer_dialog_dispose;
-    gobject_class->finalize = image_analyzer_writer_dialog_finalize;
+    gobject_class->dispose = ia_writer_dialog_dispose;
+    gobject_class->finalize = ia_writer_dialog_finalize;
 
     /* Register private structure */
-    g_type_class_add_private(klass, sizeof(ImageAnalyzerWriterDialogPrivate));
+    g_type_class_add_private(klass, sizeof(IaWriterDialogPrivate));
 }

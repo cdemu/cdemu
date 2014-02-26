@@ -34,7 +34,7 @@
 /**********************************************************************\
  *                               Helpers                              *
 \**********************************************************************/
-static gboolean image_analyzer_disc_topology_run_gnuplot (ImageAnalyzerDiscTopology *self, GError **error)
+static gboolean ia_disc_topology_run_gnuplot (IaDiscTopology *self, GError **error)
 {
     gchar *argv[] = { "gnuplot", NULL };
     gboolean ret;
@@ -79,7 +79,7 @@ static gboolean image_analyzer_disc_topology_run_gnuplot (ImageAnalyzerDiscTopol
     return TRUE;
 }
 
-static gboolean image_analyzer_disc_topology_refresh (ImageAnalyzerDiscTopology *self, MirageDisc *disc)
+static gboolean ia_disc_topology_refresh (IaDiscTopology *self, MirageDisc *disc)
 {
     gboolean dpm_valid = FALSE;
     gint dpm_start, dpm_entries, dpm_resolution;
@@ -186,17 +186,17 @@ static gboolean image_analyzer_disc_topology_refresh (ImageAnalyzerDiscTopology 
 /**********************************************************************\
  *                             Public API                             *
 \**********************************************************************/
-void image_analyzer_disc_topology_set_disc (ImageAnalyzerDiscTopology *self, MirageDisc *disc)
+void ia_disc_topology_set_disc (IaDiscTopology *self, MirageDisc *disc)
 {
     /* Just refresh; we don't need disc reference */
-    image_analyzer_disc_topology_refresh(self, disc);
+    ia_disc_topology_refresh(self, disc);
 }
 
 
 /**********************************************************************\
  *                              GUI setup                             *
 \**********************************************************************/
-static void setup_gui (ImageAnalyzerDiscTopology *self)
+static void setup_gui (IaDiscTopology *self)
 {
     /* Window */
     gtk_window_set_title(GTK_WINDOW(self), "Disc topology");
@@ -208,24 +208,24 @@ static void setup_gui (ImageAnalyzerDiscTopology *self)
     gtk_container_add(GTK_CONTAINER(self), self->priv->socket);
 
     /* Run gnuplot */
-    image_analyzer_disc_topology_run_gnuplot(self, NULL);
+    ia_disc_topology_run_gnuplot(self, NULL);
 }
 
 
 /**********************************************************************\
  *                             Object init                            *
 \**********************************************************************/
-G_DEFINE_TYPE(ImageAnalyzerDiscTopology, image_analyzer_disc_topology, GTK_TYPE_WINDOW);
+G_DEFINE_TYPE(IaDiscTopology, ia_disc_topology, GTK_TYPE_WINDOW);
 
-static void image_analyzer_disc_topology_init (ImageAnalyzerDiscTopology *self)
+static void ia_disc_topology_init (IaDiscTopology *self)
 {
-    self->priv = IMAGE_ANALYZER_DISC_TOPOLOGY_GET_PRIVATE(self);
+    self->priv = IA_DISC_TOPOLOGY_GET_PRIVATE(self);
 
     setup_gui(self);
 }
 
-static void image_analyzer_disc_topology_class_init (ImageAnalyzerDiscTopologyClass *klass)
+static void ia_disc_topology_class_init (IaDiscTopologyClass *klass)
 {
     /* Register private structure */
-    g_type_class_add_private(klass, sizeof(ImageAnalyzerDiscTopologyPrivate));
+    g_type_class_add_private(klass, sizeof(IaDiscTopologyPrivate));
 }

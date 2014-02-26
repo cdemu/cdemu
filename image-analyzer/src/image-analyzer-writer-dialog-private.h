@@ -21,9 +21,9 @@
 #define __IMAGE_ANALYZER_WRITER_DIALOG_PRIVATE_H__
 
 
-#define IMAGE_ANALYZER_WRITER_DIALOG_GET_PRIVATE(obj) (G_TYPE_INSTANCE_GET_PRIVATE((obj), IMAGE_ANALYZER_TYPE_WRITER_DIALOG, ImageAnalyzerWriterDialogPrivate))
+#define IA_WRITER_DIALOG_GET_PRIVATE(obj) (G_TYPE_INSTANCE_GET_PRIVATE((obj), IA_TYPE_WRITER_DIALOG, IaWriterDialogPrivate))
 
-struct _ImageAnalyzerWriterDialogPrivate
+struct _IaWriterDialogPrivate
 {
     GtkWidget *entry_filename;
 

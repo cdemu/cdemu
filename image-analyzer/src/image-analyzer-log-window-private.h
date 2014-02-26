@@ -20,9 +20,9 @@
 #ifndef __IMAGE_ANALYZER_LOG_WINDOW_PRIVATE_H__
 #define __IMAGE_ANALYZER_LOG_WINDOW_PRIVATE_H__
 
-#define IMAGE_ANALYZER_LOG_WINDOW_GET_PRIVATE(obj) (G_TYPE_INSTANCE_GET_PRIVATE((obj), IMAGE_ANALYZER_TYPE_LOG_WINDOW, ImageAnalyzerLogWindowPrivate))
+#define IA_LOG_WINDOW_GET_PRIVATE(obj) (G_TYPE_INSTANCE_GET_PRIVATE((obj), IA_TYPE_LOG_WINDOW, IaLogWindowPrivate))
 
-struct _ImageAnalyzerLogWindowPrivate
+struct _IaLogWindowPrivate
 {
     /* Text entry */
     GtkWidget *text_view;

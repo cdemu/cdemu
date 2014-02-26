@@ -21,7 +21,7 @@
 #define __IMAGE_ANALYZER_XML_TAGS_H__
 
 
-#define TAG_IMAGE_ANALYZER_DUMP "image-analyzer-dump"
+#define TAG_IA_DUMP "image-analyzer-dump"
 #define TAG_LIBMIRAGE_LOG "libmirage-log"
 
 #define TAG_DISC "disc"

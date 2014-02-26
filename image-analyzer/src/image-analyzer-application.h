@@ -23,36 +23,36 @@
 
 G_BEGIN_DECLS
 
-#define IMAGE_ANALYZER_TYPE_APPLICATION            (image_analyzer_application_get_type())
-#define IMAGE_ANALYZER_APPLICATION(obj)            (G_TYPE_CHECK_INSTANCE_CAST((obj), IMAGE_ANALYZER_TYPE_APPLICATION, ImageAnalyzerApplication))
-#define IMAGE_ANALYZER_APPLICATION_CLASS(klass)    (G_TYPE_CHECK_CLASS_CAST((klass), IMAGE_ANALYZER_TYPE_APPLICATION, ImageAnalyzerApplicationClass))
-#define IMAGE_ANALYZER_IS_APPLICATION(obj)         (G_TYPE_CHECK_INSTANCE_TYPE((obj), IMAGE_ANALYZER_TYPE_APPLICATION))
-#define IMAGE_ANALYZER_IS_APPLICATION_CLASS(klass) (G_TYPE_CHECK_CLASS_TYPE((klass), IMAGE_ANALYZER_TYPE_APPLICATION))
-#define IMAGE_ANALYZER_APPLICATION_GET_CLASS(obj)  (G_TYPE_INSTANCE_GET_CLASS((obj), IMAGE_ANALYZER_TYPE_APPLICATION, ImageAnalyzerApplicationClass))
+#define IA_TYPE_APPLICATION            (ia_application_get_type())
+#define IA_APPLICATION(obj)            (G_TYPE_CHECK_INSTANCE_CAST((obj), IA_TYPE_APPLICATION, IaApplication))
+#define IA_APPLICATION_CLASS(klass)    (G_TYPE_CHECK_CLASS_CAST((klass), IA_TYPE_APPLICATION, IaApplicationClass))
+#define IA_IS_APPLICATION(obj)         (G_TYPE_CHECK_INSTANCE_TYPE((obj), IA_TYPE_APPLICATION))
+#define IA_IS_APPLICATION_CLASS(klass) (G_TYPE_CHECK_CLASS_TYPE((klass), IA_TYPE_APPLICATION))
+#define IA_APPLICATION_GET_CLASS(obj)  (G_TYPE_INSTANCE_GET_CLASS((obj), IA_TYPE_APPLICATION, IaApplicationClass))
 
-typedef struct _ImageAnalyzerApplication ImageAnalyzerApplication;
-typedef struct _ImageAnalyzerApplicationClass ImageAnalyzerApplicationClass;
-typedef struct _ImageAnalyzerApplicationPrivate ImageAnalyzerApplicationPrivate;
+typedef struct _IaApplication IaApplication;
+typedef struct _IaApplicationClass IaApplicationClass;
+typedef struct _IaApplicationPrivate IaApplicationPrivate;
 
-struct _ImageAnalyzerApplication
+struct _IaApplication
 {
     GObject parent_instance;
 
     /*< private >*/
-    ImageAnalyzerApplicationPrivate *priv;
+    IaApplicationPrivate *priv;
 };
 
-struct _ImageAnalyzerApplicationClass {
+struct _IaApplicationClass {
     GObjectClass parent_class;
 };
 
 
-/* Used by IMAGE_ANALYZER_TYPE_APPLICATION */
-GType image_analyzer_application_get_type (void);
+/* Used by IA_TYPE_APPLICATION */
+GType ia_application_get_type (void);
 
 
 /* Public API */
-gboolean image_analyzer_application_run (ImageAnalyzerApplication *self, gchar **open_image, gboolean debug_to_stdout, gint debug_mask_initial);
+gboolean ia_application_run (IaApplication *self, gchar **open_image, gboolean debug_to_stdout, gint debug_mask_initial);
 
 G_END_DECLS
 

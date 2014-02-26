@@ -24,35 +24,35 @@
 G_BEGIN_DECLS
 
 
-#define IMAGE_ANALYZER_TYPE_WRITER_DIALOG            (image_analyzer_writer_dialog_get_type())
-#define IMAGE_ANALYZER_WRITER_DIALOG(obj)            (G_TYPE_CHECK_INSTANCE_CAST((obj), IMAGE_ANALYZER_TYPE_WRITER_DIALOG, ImageAnalyzerWriterDialog))
-#define IMAGE_ANALYZER_WRITER_DIALOG_CLASS(klass)    (G_TYPE_CHECK_CLASS_CAST((klass), IMAGE_ANALYZER_TYPE_WRITER_DIALOG, ImageAnalyzerWriterDialogClass))
-#define IMAGE_ANALYZER_IS_WRITER_DIALOG(obj)         (G_TYPE_CHECK_INSTANCE_TYPE((obj), IMAGE_ANALYZER_TYPE_WRITER_DIALOG))
-#define IMAGE_ANALYZER_IS_WRITER_DIALOG_CLASS(klass) (G_TYPE_CHECK_CLASS_TYPE((klass), IMAGE_ANALYZER_TYPE_WRITER_DIALOG))
-#define IMAGE_ANALYZER_WRITER_DIALOG_GET_CLASS(obj)  (G_TYPE_INSTANCE_GET_CLASS((obj), IMAGE_ANALYZER_TYPE_WRITER_DIALOG, ImageAnalyzerWriterDialogClass))
+#define IA_TYPE_WRITER_DIALOG            (ia_writer_dialog_get_type())
+#define IA_WRITER_DIALOG(obj)            (G_TYPE_CHECK_INSTANCE_CAST((obj), IA_TYPE_WRITER_DIALOG, IaWriterDialog))
+#define IA_WRITER_DIALOG_CLASS(klass)    (G_TYPE_CHECK_CLASS_CAST((klass), IA_TYPE_WRITER_DIALOG, IaWriterDialogClass))
+#define IA_IS_WRITER_DIALOG(obj)         (G_TYPE_CHECK_INSTANCE_TYPE((obj), IA_TYPE_WRITER_DIALOG))
+#define IA_IS_WRITER_DIALOG_CLASS(klass) (G_TYPE_CHECK_CLASS_TYPE((klass), IA_TYPE_WRITER_DIALOG))
+#define IA_WRITER_DIALOG_GET_CLASS(obj)  (G_TYPE_INSTANCE_GET_CLASS((obj), IA_TYPE_WRITER_DIALOG, IaWriterDialogClass))
 
-typedef struct _ImageAnalyzerWriterDialog           ImageAnalyzerWriterDialog;
-typedef struct _ImageAnalyzerWriterDialogClass      ImageAnalyzerWriterDialogClass;
-typedef struct _ImageAnalyzerWriterDialogPrivate    ImageAnalyzerWriterDialogPrivate;
+typedef struct _IaWriterDialog           IaWriterDialog;
+typedef struct _IaWriterDialogClass      IaWriterDialogClass;
+typedef struct _IaWriterDialogPrivate    IaWriterDialogPrivate;
 
-struct _ImageAnalyzerWriterDialog {
+struct _IaWriterDialog {
     GtkDialog parent_instance;
 
     /*< private >*/
-    ImageAnalyzerWriterDialogPrivate *priv;
+    IaWriterDialogPrivate *priv;
 };
 
-struct _ImageAnalyzerWriterDialogClass {
+struct _IaWriterDialogClass {
     GtkDialogClass parent_class;
 };
 
 
-/* Used by IMAGE_ANALYZER_TYPE_WRITER_DIALOG */
-GType image_analyzer_writer_dialog_get_type (void);
+/* Used by IA_TYPE_WRITER_DIALOG */
+GType ia_writer_dialog_get_type (void);
 
-const gchar *image_analyzer_writer_dialog_get_filename (ImageAnalyzerWriterDialog *self);
-MirageWriter *image_analyzer_writer_dialog_get_writer (ImageAnalyzerWriterDialog *self);
-GHashTable *image_analyzer_writer_dialog_get_writer_parameters (ImageAnalyzerWriterDialog *self);
+const gchar *ia_writer_dialog_get_filename (IaWriterDialog *self);
+MirageWriter *ia_writer_dialog_get_writer (IaWriterDialog *self);
+GHashTable *ia_writer_dialog_get_writer_parameters (IaWriterDialog *self);
 
 G_END_DECLS
 

@@ -24,34 +24,34 @@
 G_BEGIN_DECLS
 
 
-#define IMAGE_ANALYZER_TYPE_DISC_STRUCTURE            (image_analyzer_disc_structure_get_type())
-#define IMAGE_ANALYZER_DISC_STRUCTURE(obj)            (G_TYPE_CHECK_INSTANCE_CAST((obj), IMAGE_ANALYZER_TYPE_DISC_STRUCTURE, ImageAnalyzerDiscStructure))
-#define IMAGE_ANALYZER_DISC_STRUCTURE_CLASS(klass)    (G_TYPE_CHECK_CLASS_CAST((klass), IMAGE_ANALYZER_TYPE_DISC_STRUCTURE, ImageAnalyzerDiscStructureClass))
-#define IMAGE_ANALYZER_IS_DISC_STRUCTURE(obj)         (G_TYPE_CHECK_INSTANCE_TYPE((obj), IMAGE_ANALYZER_TYPE_DISC_STRUCTURE))
-#define IMAGE_ANALYZER_IS_DISC_STRUCTURE_CLASS(klass) (G_TYPE_CHECK_CLASS_TYPE((klass), IMAGE_ANALYZER_TYPE_DISC_STRUCTURE))
-#define IMAGE_ANALYZER_DISC_STRUCTURE_GET_CLASS(obj)  (G_TYPE_INSTANCE_GET_CLASS((obj), IMAGE_ANALYZER_TYPE_DISC_STRUCTURE, ImageAnalyzerDiscStructureClass))
+#define IA_TYPE_DISC_STRUCTURE            (ia_disc_structure_get_type())
+#define IA_DISC_STRUCTURE(obj)            (G_TYPE_CHECK_INSTANCE_CAST((obj), IA_TYPE_DISC_STRUCTURE, IaDiscStructure))
+#define IA_DISC_STRUCTURE_CLASS(klass)    (G_TYPE_CHECK_CLASS_CAST((klass), IA_TYPE_DISC_STRUCTURE, IaDiscStructureClass))
+#define IA_IS_DISC_STRUCTURE(obj)         (G_TYPE_CHECK_INSTANCE_TYPE((obj), IA_TYPE_DISC_STRUCTURE))
+#define IA_IS_DISC_STRUCTURE_CLASS(klass) (G_TYPE_CHECK_CLASS_TYPE((klass), IA_TYPE_DISC_STRUCTURE))
+#define IA_DISC_STRUCTURE_GET_CLASS(obj)  (G_TYPE_INSTANCE_GET_CLASS((obj), IA_TYPE_DISC_STRUCTURE, IaDiscStructureClass))
 
-typedef struct _ImageAnalyzerDiscStructure           ImageAnalyzerDiscStructure;
-typedef struct _ImageAnalyzerDiscStructureClass      ImageAnalyzerDiscStructureClass;
-typedef struct _ImageAnalyzerDiscStructurePrivate    ImageAnalyzerDiscStructurePrivate;
+typedef struct _IaDiscStructure           IaDiscStructure;
+typedef struct _IaDiscStructureClass      IaDiscStructureClass;
+typedef struct _IaDiscStructurePrivate    IaDiscStructurePrivate;
 
-struct _ImageAnalyzerDiscStructure {
+struct _IaDiscStructure {
     GtkWindow parent_instance;
 
     /*< private >*/
-    ImageAnalyzerDiscStructurePrivate *priv;
+    IaDiscStructurePrivate *priv;
 };
 
-struct _ImageAnalyzerDiscStructureClass {
+struct _IaDiscStructureClass {
     GtkWindowClass parent_class;
 };
 
 
-/* Used by IMAGE_ANALYZER_TYPE_DISC_STRUCTURE */
-GType image_analyzer_disc_structure_get_type (void);
+/* Used by IA_TYPE_DISC_STRUCTURE */
+GType ia_disc_structure_get_type (void);
 
 /* Public API */
-void image_analyzer_disc_structure_set_disc (ImageAnalyzerDiscStructure *self, MirageDisc *disc);
+void ia_disc_structure_set_disc (IaDiscStructure *self, MirageDisc *disc);
 
 
 G_END_DECLS

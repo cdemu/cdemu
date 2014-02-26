@@ -24,36 +24,36 @@
 G_BEGIN_DECLS
 
 
-#define IMAGE_ANALYZER_TYPE_SECTOR_ANALYSIS            (image_analyzer_sector_analysis_get_type())
-#define IMAGE_ANALYZER_SECTOR_ANALYSIS(obj)            (G_TYPE_CHECK_INSTANCE_CAST((obj), IMAGE_ANALYZER_TYPE_SECTOR_ANALYSIS, ImageAnalyzerSectorAnalysis))
-#define IMAGE_ANALYZER_SECTOR_ANALYSIS_CLASS(klass)    (G_TYPE_CHECK_CLASS_CAST((klass), IMAGE_ANALYZER_TYPE_SECTOR_ANALYSIS, ImageAnalyzerSectorAnalysisClass))
-#define IMAGE_ANALYZER_IS_SECTOR_ANALYSIS(obj)         (G_TYPE_CHECK_INSTANCE_TYPE((obj), IMAGE_ANALYZER_TYPE_SECTOR_ANALYSIS))
-#define IMAGE_ANALYZER_IS_SECTOR_ANALYSIS_CLASS(klass) (G_TYPE_CHECK_CLASS_TYPE((klass), IMAGE_ANALYZER_TYPE_SECTOR_ANALYSIS))
-#define IMAGE_ANALYZER_SECTOR_ANALYSIS_GET_CLASS(obj)  (G_TYPE_INSTANCE_GET_CLASS((obj), IMAGE_ANALYZER_TYPE_SECTOR_ANALYSIS, ImageAnalyzerSectorAnalysisClass))
+#define IA_TYPE_SECTOR_ANALYSIS            (ia_sector_analysis_get_type())
+#define IA_SECTOR_ANALYSIS(obj)            (G_TYPE_CHECK_INSTANCE_CAST((obj), IA_TYPE_SECTOR_ANALYSIS, IaSectorAnalysis))
+#define IA_SECTOR_ANALYSIS_CLASS(klass)    (G_TYPE_CHECK_CLASS_CAST((klass), IA_TYPE_SECTOR_ANALYSIS, IaSectorAnalysisClass))
+#define IA_IS_SECTOR_ANALYSIS(obj)         (G_TYPE_CHECK_INSTANCE_TYPE((obj), IA_TYPE_SECTOR_ANALYSIS))
+#define IA_IS_SECTOR_ANALYSIS_CLASS(klass) (G_TYPE_CHECK_CLASS_TYPE((klass), IA_TYPE_SECTOR_ANALYSIS))
+#define IA_SECTOR_ANALYSIS_GET_CLASS(obj)  (G_TYPE_INSTANCE_GET_CLASS((obj), IA_TYPE_SECTOR_ANALYSIS, IaSectorAnalysisClass))
 
-typedef struct _ImageAnalyzerSectorAnalysis           ImageAnalyzerSectorAnalysis;
-typedef struct _ImageAnalyzerSectorAnalysisClass      ImageAnalyzerSectorAnalysisClass;
-typedef struct _ImageAnalyzerSectorAnalysisPrivate    ImageAnalyzerSectorAnalysisPrivate;
+typedef struct _IaSectorAnalysis           IaSectorAnalysis;
+typedef struct _IaSectorAnalysisClass      IaSectorAnalysisClass;
+typedef struct _IaSectorAnalysisPrivate    IaSectorAnalysisPrivate;
 
-struct _ImageAnalyzerSectorAnalysis
+struct _IaSectorAnalysis
 {
     GtkWindow parent_instance;
 
     /*< private >*/
-    ImageAnalyzerSectorAnalysisPrivate *priv;
+    IaSectorAnalysisPrivate *priv;
 };
 
-struct _ImageAnalyzerSectorAnalysisClass
+struct _IaSectorAnalysisClass
 {
     GtkWindowClass parent_class;
 };
 
 
-/* Used by IMAGE_ANALYZER_TYPE_SECTOR_ANALYSIS */
-GType image_analyzer_sector_analysis_get_type (void);
+/* Used by IA_TYPE_SECTOR_ANALYSIS */
+GType ia_sector_analysis_get_type (void);
 
 /* Public API */
-void image_analyzer_sector_analysis_set_disc (ImageAnalyzerSectorAnalysis *self, MirageDisc *disc);
+void ia_sector_analysis_set_disc (IaSectorAnalysis *self, MirageDisc *disc);
 
 
 G_END_DECLS

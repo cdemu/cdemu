@@ -81,10 +81,10 @@ int main (int argc, char **argv)
     }
 
     /* Create application object */
-    application = g_object_new(IMAGE_ANALYZER_TYPE_APPLICATION, NULL);
+    application = g_object_new(IA_TYPE_APPLICATION, NULL);
 
     /* Run application */
-    if (!image_analyzer_application_run(IMAGE_ANALYZER_APPLICATION(application), open_image, debug_to_stdout, debug_mask_initial)) {
+    if (!ia_application_run(IA_APPLICATION(application), open_image, debug_to_stdout, debug_mask_initial)) {
         g_warning("Failed to run application!\n");
     }
 

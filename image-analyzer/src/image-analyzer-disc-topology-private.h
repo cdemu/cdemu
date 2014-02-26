@@ -20,9 +20,9 @@
 #ifndef __IMAGE_ANALYZER_DISC_TOPOLOGY_PRIVATE_H__
 #define __IMAGE_ANALYZER_DISC_TOPOLOGY_PRIVATE_H__
 
-#define IMAGE_ANALYZER_DISC_TOPOLOGY_GET_PRIVATE(obj) (G_TYPE_INSTANCE_GET_PRIVATE((obj), IMAGE_ANALYZER_TYPE_DISC_TOPOLOGY, ImageAnalyzerDiscTopologyPrivate))
+#define IA_DISC_TOPOLOGY_GET_PRIVATE(obj) (G_TYPE_INSTANCE_GET_PRIVATE((obj), IA_TYPE_DISC_TOPOLOGY, IaDiscTopologyPrivate))
 
-struct _ImageAnalyzerDiscTopologyPrivate
+struct _IaDiscTopologyPrivate
 {
     /* GtkSocket */
     GtkWidget *socket;

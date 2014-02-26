@@ -487,7 +487,7 @@ static void treestore_add_disc (GtkTreeStore *treestore, GtkTreeIter *parent, xm
 /**********************************************************************\
  *                             XML Data Display                       *
 \**********************************************************************/
-gboolean image_analyzer_application_display_xml_data (ImageAnalyzerApplication *self)
+gboolean ia_application_display_xml_data (IaApplication *self)
 {
     xmlNodePtr root_node;
 
@@ -498,7 +498,7 @@ gboolean image_analyzer_application_display_xml_data (ImageAnalyzerApplication *
 
     /* Get root element and verify it */
     root_node = xmlDocGetRootElement(self->priv->xml_doc);
-    if (!root_node || root_node->type != XML_ELEMENT_NODE || g_ascii_strcasecmp((gchar *)root_node->name, TAG_IMAGE_ANALYZER_DUMP)) {
+    if (!root_node || root_node->type != XML_ELEMENT_NODE || g_ascii_strcasecmp((gchar *)root_node->name, TAG_IA_DUMP)) {
         g_warning("Invalid XML tree!\n");
         return FALSE;
     }
@@ -514,7 +514,7 @@ gboolean image_analyzer_application_display_xml_data (ImageAnalyzerApplication *
             treestore_add_disc(self->priv->treestore, NULL, cur_node);
         } else if (!g_ascii_strcasecmp((gchar *)cur_node->name, TAG_LIBMIRAGE_LOG)) {
             gchar *log = xml_node_get_string(cur_node);
-            image_analyzer_log_window_append_to_log(IMAGE_ANALYZER_LOG_WINDOW(self->priv->dialog_log), log);
+            ia_log_window_append_to_log(IA_LOG_WINDOW(self->priv->dialog_log), log);
             g_free(log);
         }
     }

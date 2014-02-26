@@ -21,9 +21,9 @@
 #define __IMAGE_ANALYZER_DISC_STRUCTURE_PRIVATE_H__
 
 
-#define IMAGE_ANALYZER_DISC_STRUCTURE_GET_PRIVATE(obj) (G_TYPE_INSTANCE_GET_PRIVATE((obj), IMAGE_ANALYZER_TYPE_DISC_STRUCTURE, ImageAnalyzerDiscStructurePrivate))
+#define IA_DISC_STRUCTURE_GET_PRIVATE(obj) (G_TYPE_INSTANCE_GET_PRIVATE((obj), IA_TYPE_DISC_STRUCTURE, IaDiscStructurePrivate))
 
-struct _ImageAnalyzerDiscStructurePrivate
+struct _IaDiscStructurePrivate
 {
     /* Text entry */
     GtkWidget *text_view;

@@ -24,41 +24,41 @@
 G_BEGIN_DECLS
 
 
-#define IMAGE_ANALYZER_TYPE_LOG_WINDOW            (image_analyzer_log_window_get_type())
-#define IMAGE_ANALYZER_LOG_WINDOW(obj)            (G_TYPE_CHECK_INSTANCE_CAST((obj), IMAGE_ANALYZER_TYPE_LOG_WINDOW, ImageAnalyzerLogWindow))
-#define IMAGE_ANALYZER_LOG_WINDOW_CLASS(klass)    (G_TYPE_CHECK_CLASS_CAST((klass), IMAGE_ANALYZER_TYPE_LOG_WINDOW, ImageAnalyzerLogWindowClass))
-#define IMAGE_ANALYZER_IS_LOG_WINDOW(obj)         (G_TYPE_CHECK_INSTANCE_TYPE((obj), IMAGE_ANALYZER_TYPE_LOG_WINDOW))
-#define IMAGE_ANALYZER_IS_LOG_WINDOW_CLASS(klass) (G_TYPE_CHECK_CLASS_TYPE((klass), IMAGE_ANALYZER_TYPE_LOG_WINDOW))
-#define IMAGE_ANALYZER_LOG_WINDOW_GET_CLASS(obj)  (G_TYPE_INSTANCE_GET_CLASS((obj), IMAGE_ANALYZER_TYPE_LOG_WINDOW, ImageAnalyzerLogWindowClass))
+#define IA_TYPE_LOG_WINDOW            (ia_log_window_get_type())
+#define IA_LOG_WINDOW(obj)            (G_TYPE_CHECK_INSTANCE_CAST((obj), IA_TYPE_LOG_WINDOW, IaLogWindow))
+#define IA_LOG_WINDOW_CLASS(klass)    (G_TYPE_CHECK_CLASS_CAST((klass), IA_TYPE_LOG_WINDOW, IaLogWindowClass))
+#define IA_IS_LOG_WINDOW(obj)         (G_TYPE_CHECK_INSTANCE_TYPE((obj), IA_TYPE_LOG_WINDOW))
+#define IA_IS_LOG_WINDOW_CLASS(klass) (G_TYPE_CHECK_CLASS_TYPE((klass), IA_TYPE_LOG_WINDOW))
+#define IA_LOG_WINDOW_GET_CLASS(obj)  (G_TYPE_INSTANCE_GET_CLASS((obj), IA_TYPE_LOG_WINDOW, IaLogWindowClass))
 
-typedef struct _ImageAnalyzerLogWindow        ImageAnalyzerLogWindow;
-typedef struct _ImageAnalyzerLogWindowClass   ImageAnalyzerLogWindowClass;
-typedef struct _ImageAnalyzerLogWindowPrivate ImageAnalyzerLogWindowPrivate;
+typedef struct _IaLogWindow        IaLogWindow;
+typedef struct _IaLogWindowClass   IaLogWindowClass;
+typedef struct _IaLogWindowPrivate IaLogWindowPrivate;
 
-struct _ImageAnalyzerLogWindow
+struct _IaLogWindow
 {
     GtkWindow parent_instance;
 
     /*< private >*/
-    ImageAnalyzerLogWindowPrivate *priv;
+    IaLogWindowPrivate *priv;
 };
 
-struct _ImageAnalyzerLogWindowClass
+struct _IaLogWindowClass
 {
     GtkWindowClass parent_class;
 };
 
 
-/* Used by IMAGE_ANALYZER_TYPE_LOG_WINDOW */
-GType image_analyzer_log_window_get_type (void);
+/* Used by IA_TYPE_LOG_WINDOW */
+GType ia_log_window_get_type (void);
 
 /* Public API */
-void image_analyzer_log_window_clear_log (ImageAnalyzerLogWindow *self);
-void image_analyzer_log_window_append_to_log (ImageAnalyzerLogWindow *self, const gchar *message);
+void ia_log_window_clear_log (IaLogWindow *self);
+void ia_log_window_append_to_log (IaLogWindow *self, const gchar *message);
 
-gchar *image_analyzer_log_window_get_log_text (ImageAnalyzerLogWindow *self);
+gchar *ia_log_window_get_log_text (IaLogWindow *self);
 
-void image_analyzer_log_window_set_debug_to_stdout (ImageAnalyzerLogWindow *self, gboolean enabled);
+void ia_log_window_set_debug_to_stdout (IaLogWindow *self, gboolean enabled);
 
 G_END_DECLS
 
