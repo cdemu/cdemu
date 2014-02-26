@@ -25,8 +25,8 @@
 #include <gtk/gtk.h>
 #include <mirage.h>
 
-#include "image-analyzer-writer-dialog.h"
-#include "image-analyzer-writer-dialog-private.h"
+#include "writer-dialog.h"
+#include "writer-dialog-private.h"
 
 static void cb_choose_file_clicked (IaWriterDialog *self, GtkButton *button G_GNUC_UNUSED)
 {

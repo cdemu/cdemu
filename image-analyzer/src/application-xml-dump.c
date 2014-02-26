@@ -27,10 +27,10 @@
 #include <libxml/parser.h>
 #include <libxml/tree.h>
 
-#include "image-analyzer-application.h"
-#include "image-analyzer-application-private.h"
+#include "application.h"
+#include "application-private.h"
 
-#include "image-analyzer-xml-tags.h"
+#include "xml-tags.h"
 
 
 /**********************************************************************\

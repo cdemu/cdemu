@@ -25,20 +25,20 @@
 #include <gtk/gtk.h>
 #include <mirage.h>
 
-#include "image-analyzer-dump.h"
-#include "image-analyzer-sector-analysis.h"
-#include "image-analyzer-sector-analysis-private.h"
+#include "dump.h"
+#include "sector-analysis-window.h"
+#include "sector-analysis-window-private.h"
 
 
 /**********************************************************************\
  *                      Text buffer manipulation                      *
 \**********************************************************************/
-static void ia_sector_analysis_clear_text (IaSectorAnalysis *self)
+static void ia_sector_analysis_window_clear_text (IaSectorAnalysisWindow *self)
 {
     gtk_text_buffer_set_text(self->priv->buffer, "", -1);
 }
 
-static void ia_sector_analysis_append_text (IaSectorAnalysis *self, const gchar *tag_name, const gchar *format, ...)
+static void ia_sector_analysis_window_append_text (IaSectorAnalysisWindow *self, const gchar *tag_name, const gchar *format, ...)
 {
     GtkTextIter iter;
     gchar *string;
@@ -64,7 +64,7 @@ static void ia_sector_analysis_append_text (IaSectorAnalysis *self, const gchar 
 /**********************************************************************\
  *                             UI callbacks                           *
 \**********************************************************************/
-static void ia_sector_analysis_ui_callback_analyze (GtkWidget *button G_GNUC_UNUSED, IaSectorAnalysis *self)
+static void ia_sector_analysis_window_ui_callback_analyze (GtkWidget *button G_GNUC_UNUSED, IaSectorAnalysisWindow *self)
 {
     MirageSession *session;
     MirageTrack *track;
@@ -74,15 +74,15 @@ static void ia_sector_analysis_ui_callback_analyze (GtkWidget *button G_GNUC_UNU
     gint track_number, track_start, track_length;
 
     /* Clear buffer */
-    ia_sector_analysis_clear_text(self);
+    ia_sector_analysis_window_clear_text(self);
 
     /* Get image */
     if (!self->priv->disc) {
-        ia_sector_analysis_append_text(self, NULL, "No image loaded!\n");
+        ia_sector_analysis_window_append_text(self, NULL, "No image loaded!\n");
         return;
     }
 
-    ia_sector_analysis_append_text(self, NULL, "Performing sector analysis...\n\n");
+    ia_sector_analysis_window_append_text(self, NULL, "Performing sector analysis...\n\n");
 
     /* Go over sessions */
     num_sessions = mirage_disc_get_number_of_sessions(self->priv->disc);
@@ -94,8 +94,8 @@ static void ia_sector_analysis_ui_callback_analyze (GtkWidget *button G_GNUC_UNU
         session_length = mirage_session_layout_get_length(session);
         num_tracks = mirage_session_get_number_of_tracks(session);
 
-        ia_sector_analysis_append_text(self, "tag_section", "Session #%d: ", session_number);
-        ia_sector_analysis_append_text(self, NULL, "start: %d, length %d, %d tracks\n\n", session_start, session_length, num_tracks);
+        ia_sector_analysis_window_append_text(self, "tag_section", "Session #%d: ", session_number);
+        ia_sector_analysis_window_append_text(self, NULL, "start: %d, length %d, %d tracks\n\n", session_start, session_length, num_tracks);
 
         for (gint j = 0; j < num_tracks; j++) {
             /* Get track and its properties */
@@ -104,32 +104,32 @@ static void ia_sector_analysis_ui_callback_analyze (GtkWidget *button G_GNUC_UNU
             track_start = mirage_track_layout_get_start_sector(track);
             track_length = mirage_track_layout_get_length(track);
 
-            ia_sector_analysis_append_text(self, "tag_section", "Track #%d: ", track_number);
-            ia_sector_analysis_append_text(self, NULL, "start: %d, length %d\n\n", track_start, track_length);
+            ia_sector_analysis_window_append_text(self, "tag_section", "Track #%d: ", track_number);
+            ia_sector_analysis_window_append_text(self, NULL, "start: %d, length %d\n\n", track_start, track_length);
 
             for (gint address = track_start; address < track_start + track_length; address++) {
                 /* Get sector */
                 sector = mirage_track_get_sector(track, address, TRUE, NULL);
                 if (!sector) {
-                    ia_sector_analysis_append_text(self, "tag_section", "Sector %d (0x%X): ", address, address);
-                    ia_sector_analysis_append_text(self, NULL, "FAILED TO GET SECTOR!\n");
+                    ia_sector_analysis_window_append_text(self, "tag_section", "Sector %d (0x%X): ", address, address);
+                    ia_sector_analysis_window_append_text(self, NULL, "FAILED TO GET SECTOR!\n");
                     continue;
                 }
 
                 if (!mirage_sector_verify_lec(sector)) {
-                    ia_sector_analysis_append_text(self, "tag_section", "Sector %d (0x%X): ", address, address);
-                    ia_sector_analysis_append_text(self, NULL, "L-EC error\n");
+                    ia_sector_analysis_window_append_text(self, "tag_section", "Sector %d (0x%X): ", address, address);
+                    ia_sector_analysis_window_append_text(self, NULL, "L-EC error\n");
                 }
 
                  if (!mirage_sector_verify_subchannel_crc(sector)) {
-                    ia_sector_analysis_append_text(self, "tag_section", "Sector %d (0x%X): ", address, address);
-                    ia_sector_analysis_append_text(self, NULL, "Subchannel CRC error\n");
+                    ia_sector_analysis_window_append_text(self, "tag_section", "Sector %d (0x%X): ", address, address);
+                    ia_sector_analysis_window_append_text(self, NULL, "Subchannel CRC error\n");
                 }
 
                 g_object_unref(sector);
             }
 
-            ia_sector_analysis_append_text(self, NULL, "\n");
+            ia_sector_analysis_window_append_text(self, NULL, "\n");
 
             g_object_unref(track);
         }
@@ -137,7 +137,7 @@ static void ia_sector_analysis_ui_callback_analyze (GtkWidget *button G_GNUC_UNU
         g_object_unref(session);
     }
 
-    ia_sector_analysis_append_text(self, NULL, "Sector analysis complete!\n");
+    ia_sector_analysis_window_append_text(self, NULL, "Sector analysis complete!\n");
 
     return;
 }
@@ -146,7 +146,7 @@ static void ia_sector_analysis_ui_callback_analyze (GtkWidget *button G_GNUC_UNU
 /**********************************************************************\
  *                              GUI setup                             *
 \**********************************************************************/
-static void setup_gui (IaSectorAnalysis *self)
+static void setup_gui (IaSectorAnalysisWindow *self)
 {
     GtkWidget *vbox, *scrolledwindow, *hbox, *button;
 
@@ -180,7 +180,7 @@ static void setup_gui (IaSectorAnalysis *self)
 
     /* Button */
     button = gtk_button_new_with_label("Analyze");
-    g_signal_connect(button, "clicked", G_CALLBACK(ia_sector_analysis_ui_callback_analyze), self);
+    g_signal_connect(button, "clicked", G_CALLBACK(ia_sector_analysis_window_ui_callback_analyze), self);
     gtk_box_pack_start(GTK_BOX(hbox), button, FALSE, FALSE, 0);
 }
 
@@ -188,7 +188,7 @@ static void setup_gui (IaSectorAnalysis *self)
 /**********************************************************************\
  *                              Disc set                              *
 \**********************************************************************/
-void ia_sector_analysis_set_disc (IaSectorAnalysis *self, MirageDisc *disc)
+void ia_sector_analysis_window_set_disc (IaSectorAnalysisWindow *self, MirageDisc *disc)
 {
     /* Release old disc */
     if (self->priv->disc) {
@@ -206,19 +206,19 @@ void ia_sector_analysis_set_disc (IaSectorAnalysis *self, MirageDisc *disc)
 /******************************************************************************\
  *                                 Object init                                *
 \******************************************************************************/
-G_DEFINE_TYPE(IaSectorAnalysis, ia_sector_analysis, GTK_TYPE_WINDOW);
+G_DEFINE_TYPE(IaSectorAnalysisWindow, ia_sector_analysis_window, GTK_TYPE_WINDOW);
 
-static void ia_sector_analysis_init (IaSectorAnalysis *self)
+static void ia_sector_analysis_window_init (IaSectorAnalysisWindow *self)
 {
-    self->priv = IA_SECTOR_ANALYSIS_GET_PRIVATE(self);
+    self->priv = IA_SECTOR_ANALYSIS_WINDOW_GET_PRIVATE(self);
 
     self->priv->disc = NULL;
 
     setup_gui(self);
 }
 
-static void ia_sector_analysis_class_init (IaSectorAnalysisClass *klass)
+static void ia_sector_analysis_window_class_init (IaSectorAnalysisWindowClass *klass)
 {
     /* Register private structure */
-    g_type_class_add_private(klass, sizeof(IaSectorAnalysisPrivate));
+    g_type_class_add_private(klass, sizeof(IaSectorAnalysisWindowPrivate));
 }

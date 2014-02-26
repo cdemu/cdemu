@@ -1,5 +1,5 @@
 /*
- *  Image Analyzer: Disc topology window - private
+ *  Image Analyzer: Sector analysis window - private
  *  Copyright (C) 2012 Rok Mandeljc
  *
  *  This program is free software; you can redistribute it and/or modify
@@ -17,21 +17,18 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef __IMAGE_ANALYZER_DISC_TOPOLOGY_PRIVATE_H__
-#define __IMAGE_ANALYZER_DISC_TOPOLOGY_PRIVATE_H__
+#ifndef __IMAGE_ANALYZER_SECTOR_ANALYSIS_WINDOW_PRIVATE_H__
+#define __IMAGE_ANALYZER_SECTOR_ANALYSIS_WINDOW_PRIVATE_H__
 
-#define IA_DISC_TOPOLOGY_GET_PRIVATE(obj) (G_TYPE_INSTANCE_GET_PRIVATE((obj), IA_TYPE_DISC_TOPOLOGY, IaDiscTopologyPrivate))
+#define IA_SECTOR_ANALYSIS_WINDOW_GET_PRIVATE(obj) (G_TYPE_INSTANCE_GET_PRIVATE((obj), IA_TYPE_SECTOR_ANALYSIS_WINDOW, IaSectorAnalysisWindowPrivate))
 
-struct _IaDiscTopologyPrivate
-{
-    /* GtkSocket */
-    GtkWidget *socket;
+struct _IaSectorAnalysisWindowPrivate {
+    /* Text entry */
+    GtkWidget *text_view;
+    GtkTextBuffer *buffer;
 
-    /* gnuplot */
-    gboolean gnuplot_works;
-
-    GPid pid;
-    gint fd_in;
+    /* Disc */
+    MirageDisc *disc;
 };
 
-#endif /* __IMAGE_ANALYZER_DISC_TOPOLOGY_PRIVATE_H__ */
+#endif /* __IMAGE_ANALYZER_SECTOR_ANALYSIS_WINDOW_PRIVATE_H__ */

@@ -25,20 +25,20 @@
 #include <gtk/gtk.h>
 #include <mirage.h>
 
-#include "image-analyzer-disc-structure.h"
-#include "image-analyzer-disc-structure-private.h"
+#include "disc-structure-window.h"
+#include "disc-structure-window-private.h"
 
 
 /**********************************************************************\
  *                      Text buffer manipulation                      *
 \**********************************************************************/
-static gboolean ia_disc_structure_clear_text (IaDiscStructure *self)
+static gboolean ia_disc_structure_window_clear_text (IaDiscStructure *self)
 {
     gtk_text_buffer_set_text(self->priv->buffer, "", -1);
     return TRUE;
 }
 
-static gboolean ia_disc_structure_append_text (IaDiscStructure *self, const gchar *tag_name, const gchar *format, ...)
+static gboolean ia_disc_structure_window_append_text (IaDiscStructure *self, const gchar *tag_name, const gchar *format, ...)
 {
     GtkTextIter iter;
     gchar *string;
@@ -65,7 +65,7 @@ static gboolean ia_disc_structure_append_text (IaDiscStructure *self, const gcha
 /**********************************************************************\
  *                             UI callbacks                           *
 \**********************************************************************/
-static void ia_disc_structure_ui_callback_get_structure (GtkWidget *button G_GNUC_UNUSED, IaDiscStructure *self)
+static void ia_disc_structure_window_ui_callback_get_structure (GtkWidget *button G_GNUC_UNUSED, IaDiscStructure *self)
 {
     GError *error = NULL;
     gboolean succeeded;
@@ -79,25 +79,25 @@ static void ia_disc_structure_ui_callback_get_structure (GtkWidget *button G_GNU
     layer = gtk_spin_button_get_value(GTK_SPIN_BUTTON(self->priv->spinbutton_layer));
 
     /* Clear buffer */
-    ia_disc_structure_clear_text(self);
+    ia_disc_structure_window_clear_text(self);
 
     /* Get image */
     if (!self->priv->disc) {
-        ia_disc_structure_append_text(self, NULL, "No image loaded!\n");
+        ia_disc_structure_window_append_text(self, NULL, "No image loaded!\n");
         return;
     }
 
     /* Get structure from disc */
     succeeded = mirage_disc_get_disc_structure(self->priv->disc, layer, type, &tmp_buf, &tmp_len, &error);
     if (!succeeded) {
-        ia_disc_structure_append_text(self, NULL, "Failed to get structure: %s\n", error->message);
+        ia_disc_structure_window_append_text(self, NULL, "Failed to get structure: %s\n", error->message);
         g_error_free(error);
         return;
     }
 
     /* Dump structure */
     for (gint i = 0; i < tmp_len; i++) {
-        ia_disc_structure_append_text(self, NULL, "%02hhX ", tmp_buf[i]);
+        ia_disc_structure_window_append_text(self, NULL, "%02hhX ", tmp_buf[i]);
     }
 }
 
@@ -156,7 +156,7 @@ static void setup_gui (IaDiscStructure *self)
 
     /* Button */
     button = gtk_button_new_with_label("Get structure");
-    g_signal_connect(button, "clicked", G_CALLBACK(ia_disc_structure_ui_callback_get_structure), self);
+    g_signal_connect(button, "clicked", G_CALLBACK(ia_disc_structure_window_ui_callback_get_structure), self);
     gtk_box_pack_start(GTK_BOX(hbox), button, FALSE, FALSE, 0);
 }
 
@@ -164,7 +164,7 @@ static void setup_gui (IaDiscStructure *self)
 /**********************************************************************\
  *                              Disc set                              *
 \**********************************************************************/
-void ia_disc_structure_set_disc (IaDiscStructure *self, MirageDisc *disc)
+void ia_disc_structure_window_set_disc (IaDiscStructure *self, MirageDisc *disc)
 {
     /* Release old disc */
     if (self->priv->disc) {
@@ -182,20 +182,20 @@ void ia_disc_structure_set_disc (IaDiscStructure *self, MirageDisc *disc)
 /**********************************************************************\
  *                             Object init                            *
 \**********************************************************************/
-G_DEFINE_TYPE(IaDiscStructure, ia_disc_structure, GTK_TYPE_WINDOW);
+G_DEFINE_TYPE(IaDiscStructure, ia_disc_structure_window, GTK_TYPE_WINDOW);
 
-static void ia_disc_structure_init (IaDiscStructure *self)
+static void ia_disc_structure_window_init (IaDiscStructure *self)
 {
-    self->priv = IA_DISC_STRUCTURE_GET_PRIVATE(self);
+    self->priv = IA_DISC_STRUCTURE_WINDOW_GET_PRIVATE(self);
 
     self->priv->disc = NULL;
 
     setup_gui(self);
 }
 
-static void ia_disc_structure_dispose (GObject *gobject)
+static void ia_disc_structure_window_dispose (GObject *gobject)
 {
-    IaDiscStructure *self = IA_DISC_STRUCTURE(gobject);
+    IaDiscStructure *self = IA_DISC_STRUCTURE_WINDOW(gobject);
 
     /* Unref disc */
     if (self->priv->disc) {
@@ -204,14 +204,14 @@ static void ia_disc_structure_dispose (GObject *gobject)
     }
 
     /* Chain up to the parent class */
-    return G_OBJECT_CLASS(ia_disc_structure_parent_class)->dispose(gobject);
+    return G_OBJECT_CLASS(ia_disc_structure_window_parent_class)->dispose(gobject);
 }
 
-static void ia_disc_structure_class_init (IaDiscStructureClass *klass)
+static void ia_disc_structure_window_class_init (IaDiscStructureClass *klass)
 {
     GObjectClass *gobject_class = G_OBJECT_CLASS(klass);
 
-    gobject_class->dispose = ia_disc_structure_dispose;
+    gobject_class->dispose = ia_disc_structure_window_dispose;
 
     /* Register private structure */
     g_type_class_add_private(klass, sizeof(IaDiscStructurePrivate));

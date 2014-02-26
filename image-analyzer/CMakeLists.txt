@@ -39,7 +39,7 @@ add_definitions (-DHAVE_CONFIG_H)
 
 if (CMAKE_COMPILER_IS_GNUCC)
     add_definitions (-Wall -Wextra -Wshadow -Wmissing-declarations -Wmissing-prototypes -Wnested-externs -Wpointer-arith -Wcast-align)
-    add_definitions (-Wno-sign-compare)
+    add_definitions (-Wno-sign-compare -Wno-deprecated-declarations)
 endif ()
 
 
@@ -59,17 +59,17 @@ link_directories (SYSTEM ${GTK_LIBRARY_DIRS})
 
 # *** image-analyzer ***
 set (image-analyzer_SOURCES
-    src/image-analyzer-application.c
-    src/image-analyzer-application-xml-dump.c
-    src/image-analyzer-application-xml-load.c
-    src/image-analyzer-disc-structure.c
-    src/image-analyzer-disc-topology.c
-    src/image-analyzer-dump.c
-    src/image-analyzer-log-window.c
-    src/image-analyzer-sector-analysis.c
-    src/image-analyzer-sector-read.c
-    src/image-analyzer-writer-dialog.c
+    src/application.c
+    src/application-xml-dump.c
+    src/application-xml-load.c
+    src/disc-structure-window.c
+    src/disc-topology-window.c
+    src/dump.c
+    src/log-window.c
     src/main.c
+    src/sector-analysis-window.c
+    src/sector-read-window.c
+    src/writer-dialog.c
 )
 
 add_executable (image-analyzer ${image-analyzer_SOURCES})

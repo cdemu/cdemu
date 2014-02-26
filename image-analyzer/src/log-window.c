@@ -24,8 +24,8 @@
 #include <glib.h>
 #include <gtk/gtk.h>
 
-#include "image-analyzer-log-window.h"
-#include "image-analyzer-log-window-private.h"
+#include "log-window.h"
+#include "log-window-private.h"
 
 
 /**********************************************************************\

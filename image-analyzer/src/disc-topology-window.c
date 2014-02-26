@@ -27,14 +27,14 @@
 #include <gtk/gtkx.h>
 #include <mirage.h>
 
-#include "image-analyzer-disc-topology.h"
-#include "image-analyzer-disc-topology-private.h"
+#include "disc-topology-window.h"
+#include "disc-topology-window-private.h"
 
 
 /**********************************************************************\
  *                               Helpers                              *
 \**********************************************************************/
-static gboolean ia_disc_topology_run_gnuplot (IaDiscTopology *self, GError **error)
+static gboolean ia_disc_topology_window_run_gnuplot (IaDiscTopologyWindow *self, GError **error)
 {
     gchar *argv[] = { "gnuplot", NULL };
     gboolean ret;
@@ -79,7 +79,7 @@ static gboolean ia_disc_topology_run_gnuplot (IaDiscTopology *self, GError **err
     return TRUE;
 }
 
-static gboolean ia_disc_topology_refresh (IaDiscTopology *self, MirageDisc *disc)
+static gboolean ia_disc_topology_window_refresh (IaDiscTopologyWindow *self, MirageDisc *disc)
 {
     gboolean dpm_valid = FALSE;
     gint dpm_start, dpm_entries, dpm_resolution;
@@ -186,17 +186,17 @@ static gboolean ia_disc_topology_refresh (IaDiscTopology *self, MirageDisc *disc
 /**********************************************************************\
  *                             Public API                             *
 \**********************************************************************/
-void ia_disc_topology_set_disc (IaDiscTopology *self, MirageDisc *disc)
+void ia_disc_topology_window_set_disc (IaDiscTopologyWindow *self, MirageDisc *disc)
 {
     /* Just refresh; we don't need disc reference */
-    ia_disc_topology_refresh(self, disc);
+    ia_disc_topology_window_refresh(self, disc);
 }
 
 
 /**********************************************************************\
  *                              GUI setup                             *
 \**********************************************************************/
-static void setup_gui (IaDiscTopology *self)
+static void setup_gui (IaDiscTopologyWindow *self)
 {
     /* Window */
     gtk_window_set_title(GTK_WINDOW(self), "Disc topology");
@@ -208,24 +208,24 @@ static void setup_gui (IaDiscTopology *self)
     gtk_container_add(GTK_CONTAINER(self), self->priv->socket);
 
     /* Run gnuplot */
-    ia_disc_topology_run_gnuplot(self, NULL);
+    ia_disc_topology_window_run_gnuplot(self, NULL);
 }
 
 
 /**********************************************************************\
  *                             Object init                            *
 \**********************************************************************/
-G_DEFINE_TYPE(IaDiscTopology, ia_disc_topology, GTK_TYPE_WINDOW);
+G_DEFINE_TYPE(IaDiscTopologyWindow, ia_disc_topology_window, GTK_TYPE_WINDOW);
 
-static void ia_disc_topology_init (IaDiscTopology *self)
+static void ia_disc_topology_window_init (IaDiscTopologyWindow *self)
 {
-    self->priv = IA_DISC_TOPOLOGY_GET_PRIVATE(self);
+    self->priv = IA_DISC_TOPOLOGY_WINDOW_GET_PRIVATE(self);
 
     setup_gui(self);
 }
 
-static void ia_disc_topology_class_init (IaDiscTopologyClass *klass)
+static void ia_disc_topology_window_class_init (IaDiscTopologyWindowClass *klass)
 {
     /* Register private structure */
-    g_type_class_add_private(klass, sizeof(IaDiscTopologyPrivate));
+    g_type_class_add_private(klass, sizeof(IaDiscTopologyWindowPrivate));
 }

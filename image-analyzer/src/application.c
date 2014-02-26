@@ -27,18 +27,18 @@
 #include <libxml/parser.h>
 #include <libxml/tree.h>
 
-#include "image-analyzer-application.h"
-#include "image-analyzer-application-private.h"
+#include "application.h"
+#include "application-private.h"
 
-#include "image-analyzer-log-window.h"
-#include "image-analyzer-sector-analysis.h"
-#include "image-analyzer-sector-read.h"
-#include "image-analyzer-disc-structure.h"
-#include "image-analyzer-disc-topology.h"
-#include "image-analyzer-writer-dialog.h"
+#include "log-window.h"
+#include "sector-analysis-window.h"
+#include "sector-read-window.h"
+#include "disc-structure-window.h"
+#include "disc-topology-window.h"
+#include "writer-dialog.h"
 
-#include "image-analyzer-dump.h"
-#include "image-analyzer-xml-tags.h"
+#include "dump.h"
+#include "xml-tags.h"
 
 
 /**********************************************************************\
@@ -220,10 +220,10 @@ static gchar *ia_application_get_password (IaApplication *self)
 static gboolean ia_application_close_image_or_dump (IaApplication *self)
 {
     /* Clear disc reference in child windows */
-    ia_disc_structure_set_disc(IA_DISC_STRUCTURE(self->priv->dialog_structure), NULL);
-    ia_disc_topology_set_disc(IA_DISC_TOPOLOGY(self->priv->dialog_topology), NULL);
-    ia_sector_read_set_disc(IA_SECTOR_READ(self->priv->dialog_sector), NULL);
-    ia_sector_analysis_set_disc(IA_SECTOR_ANALYSIS(self->priv->dialog_analysis), NULL);
+    ia_disc_structure_window_set_disc(IA_DISC_STRUCTURE_WINDOW(self->priv->dialog_structure), NULL);
+    ia_disc_topology_window_set_disc(IA_DISC_TOPOLOGY_WINDOW(self->priv->dialog_topology), NULL);
+    ia_sector_read_window_set_disc(IA_SECTOR_READ_WINDOW(self->priv->dialog_sector), NULL);
+    ia_sector_analysis_window_set_disc(IA_SECTOR_ANALYSIS_WINDOW(self->priv->dialog_analysis), NULL);
 
     /* Clear TreeStore */
     gtk_tree_store_clear(self->priv->treestore);
@@ -270,10 +270,10 @@ static gboolean ia_application_open_image (IaApplication *self, gchar **filename
     }
 
     /* Set disc reference in child windows */
-    ia_disc_structure_set_disc(IA_DISC_STRUCTURE(self->priv->dialog_structure), self->priv->disc);
-    ia_disc_topology_set_disc(IA_DISC_TOPOLOGY(self->priv->dialog_topology), self->priv->disc);
-    ia_sector_read_set_disc(IA_SECTOR_READ(self->priv->dialog_sector), self->priv->disc);
-    ia_sector_analysis_set_disc(IA_SECTOR_ANALYSIS(self->priv->dialog_analysis), self->priv->disc);
+    ia_disc_structure_window_set_disc(IA_DISC_STRUCTURE_WINDOW(self->priv->dialog_structure), self->priv->disc);
+    ia_disc_topology_window_set_disc(IA_DISC_TOPOLOGY_WINDOW(self->priv->dialog_topology), self->priv->disc);
+    ia_sector_read_window_set_disc(IA_SECTOR_READ_WINDOW(self->priv->dialog_sector), self->priv->disc);
+    ia_sector_analysis_window_set_disc(IA_SECTOR_ANALYSIS_WINDOW(self->priv->dialog_analysis), self->priv->disc);
 
     /* Make XML dump */
     ia_application_create_xml_dump(self);
@@ -921,22 +921,22 @@ static void create_gui (IaApplication *self)
     g_signal_connect(self->priv->dialog_log, "debug_mask_change_requested", G_CALLBACK(callback_debug_mask_change_requested), self);
 
     /* Sector read dialog */
-    self->priv->dialog_sector = g_object_new(IA_TYPE_SECTOR_READ, NULL);
+    self->priv->dialog_sector = g_object_new(IA_TYPE_SECTOR_READ_WINDOW, NULL);
     g_signal_connect(self->priv->dialog_sector, "delete_event", G_CALLBACK(gtk_widget_hide_on_delete), NULL);
 
     /* Sector analysis dialog */
-    self->priv->dialog_analysis = g_object_new(IA_TYPE_SECTOR_ANALYSIS, NULL);
+    self->priv->dialog_analysis = g_object_new(IA_TYPE_SECTOR_ANALYSIS_WINDOW, NULL);
     g_signal_connect(self->priv->dialog_analysis, "delete_event", G_CALLBACK(gtk_widget_hide_on_delete), NULL);
 
     /* Disc topology dialog */
-    self->priv->dialog_topology = g_object_new(IA_TYPE_DISC_TOPOLOGY, NULL);
+    self->priv->dialog_topology = g_object_new(IA_TYPE_DISC_TOPOLOGY_WINDOW, NULL);
     g_signal_connect(self->priv->dialog_topology, "delete_event", G_CALLBACK(gtk_widget_hide_on_delete), NULL);
-    ia_disc_topology_set_disc(IA_DISC_TOPOLOGY(self->priv->dialog_topology), NULL);
+    ia_disc_topology_window_set_disc(IA_DISC_TOPOLOGY_WINDOW(self->priv->dialog_topology), NULL);
 
     /* Disc structures dialog */
-    self->priv->dialog_structure = g_object_new(IA_TYPE_DISC_STRUCTURE, NULL);
+    self->priv->dialog_structure = g_object_new(IA_TYPE_DISC_STRUCTURE_WINDOW, NULL);
     g_signal_connect(self->priv->dialog_structure, "delete_event", G_CALLBACK(gtk_widget_hide_on_delete), NULL);
-    ia_disc_structure_set_disc(IA_DISC_STRUCTURE(self->priv->dialog_structure), NULL);
+    ia_disc_structure_window_set_disc(IA_DISC_STRUCTURE_WINDOW(self->priv->dialog_structure), NULL);
 }
 
 

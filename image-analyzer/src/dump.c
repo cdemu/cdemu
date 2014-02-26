@@ -23,7 +23,7 @@
 
 #include <glib.h>
 #include <mirage.h>
-#include "image-analyzer-dump.h"
+#include "dump.h"
 
 
 /**********************************************************************\

@@ -24,7 +24,7 @@
 #include <glib.h>
 #include <gtk/gtk.h>
 #include "mirage.h"
-#include "image-analyzer-application.h"
+#include "application.h"
 
 
 /******************************************************************************\
