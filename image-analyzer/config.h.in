@@ -4,6 +4,4 @@
 
 #define IMAGE_ANALYZER_VERSION "@IMAGE_ANALYZER_VERSION@"
 
-#cmakedefine01 GTK3_ENABLED
-
 #endif /* __CONFIG_H__ */

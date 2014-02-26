@@ -101,11 +101,7 @@ static void setup_gui (ImageAnalyzerLogWindow *self)
     gtk_container_set_border_width(GTK_CONTAINER(self), 5);
 
     /* VBox */
-#if GTK3_ENABLED
     vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
-#else
-    vbox = gtk_vbox_new(FALSE, 5);
-#endif
     gtk_container_add(GTK_CONTAINER(self), vbox);
 
     /* Scrolled window */
@@ -118,11 +114,7 @@ static void setup_gui (ImageAnalyzerLogWindow *self)
     gtk_container_add(GTK_CONTAINER(scrolledwindow), self->priv->text_view);
 
     /* HBox for buttons */
-#if GTK3_ENABLED
     hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5);
-#else
-    hbox = gtk_hbox_new(FALSE, 5);
-#endif
 
     gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, FALSE, 0);
 

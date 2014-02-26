@@ -12,7 +12,6 @@ list (APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
 include (GNUInstallDirs)
 
 # Options
-option (GTK3_ENABLED "Compile using Gtk3" on)
 option (POST_INSTALL_HOOKS "Run post-install hooks" on)
 
 # Dependencies
@@ -21,12 +20,7 @@ find_package (PkgConfig 0.16 REQUIRED)
 pkg_check_modules (LIBMIRAGE REQUIRED libmirage>=${IMAGE_ANALYZER_VERSION})
 pkg_check_modules (GLIB REQUIRED glib-2.0>=2.24 gobject-2.0>=2.24)
 pkg_check_modules (LIBXML REQUIRED libxml-2.0>=2.0.0)
-
-if (GTK3_ENABLED)
-    pkg_check_modules (GTK REQUIRED gtk+-3.0>=3.0)
-else ()
-    pkg_check_modules (GTK REQUIRED gtk+-2.0>=2.20)
-endif ()
+pkg_check_modules (GTK REQUIRED gtk+-3.0>=3.0)
 
 if (POST_INSTALL_HOOKS)
     find_program (UPDATE_DESKTOP_DATABASE_EXECUTABLE NAMES update-desktop-database)
@@ -108,6 +102,5 @@ message(STATUS " build type: " ${CMAKE_BUILD_TYPE})
 message(STATUS "Installation:")
 message(STATUS " install prefix: " ${CMAKE_INSTALL_PREFIX})
 message(STATUS "Options:")
-message(STATUS " gtk3 interface (instead of gtk2): " ${GTK3_ENABLED})
 message(STATUS " run post-install hooks: " ${POST_INSTALL_HOOKS})
 message(STATUS "")
