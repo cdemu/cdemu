@@ -1,6 +1,6 @@
 /*
  *  Image Analyzer: Main
- *  Copyright (C) 2007-2012 Rok Mandeljc
+ *  Copyright (C) 2007-2014 Rok Mandeljc
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -21,15 +21,14 @@
 #include "config.h"
 #endif
 
-#include <glib.h>
 #include <gtk/gtk.h>
-#include "mirage.h"
+
 #include "application.h"
 
-
-/******************************************************************************\
- *                                Main function                               *
-\******************************************************************************/
+#if 0
+/**********************************************************************\
+ *                            Main function                           *
+\**********************************************************************/
 static gboolean debug_to_stdout = FALSE;
 static gint debug_mask_initial = MIRAGE_DEBUG_PARSER;
 
@@ -94,4 +93,24 @@ int main (int argc, char **argv)
     mirage_shutdown(NULL);
 
     return 0;
+}
+#endif
+
+int main (int argc, char **argv)
+{
+    IaApplication *application;
+    int status;
+
+    g_set_application_name("Image analyzer");
+
+    application = g_object_new(IA_TYPE_APPLICATION,
+        //"application-id", "net.sf.cdemu.ImageAnalyzer",
+        //"flags", G_APPLICATION_HANDLES_COMMAND_LINE,
+        NULL);
+
+    status = g_application_run(G_APPLICATION(application), argc, argv);
+
+    g_object_unref(application);
+
+    return status;
 }

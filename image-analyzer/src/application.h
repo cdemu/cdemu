@@ -1,6 +1,6 @@
 /*
- *  Image Analyzer: Application object
- *  Copyright (C) 2007-2012 Rok Mandeljc
+ *  Image Analyzer: Application
+ *  Copyright (C) 2007-2014 Rok Mandeljc
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -36,23 +36,19 @@ typedef struct _IaApplicationPrivate IaApplicationPrivate;
 
 struct _IaApplication
 {
-    GObject parent_instance;
+    GtkApplication parent_instance;
 
     /*< private >*/
     IaApplicationPrivate *priv;
 };
 
 struct _IaApplicationClass {
-    GObjectClass parent_class;
+    GtkApplicationClass parent_class;
 };
 
 
 /* Used by IA_TYPE_APPLICATION */
 GType ia_application_get_type (void);
-
-
-/* Public API */
-gboolean ia_application_run (IaApplication *self, gchar **open_image, gboolean debug_to_stdout, gint debug_mask_initial);
 
 G_END_DECLS
 
