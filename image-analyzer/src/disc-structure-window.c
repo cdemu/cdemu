@@ -26,7 +26,25 @@
 #include <mirage.h>
 
 #include "disc-structure-window.h"
-#include "disc-structure-window-private.h"
+
+
+/**********************************************************************\
+ *                            Private structure                       *
+\**********************************************************************/
+#define IA_DISC_STRUCTURE_WINDOW_GET_PRIVATE(obj) (G_TYPE_INSTANCE_GET_PRIVATE((obj), IA_TYPE_DISC_STRUCTURE_WINDOW, IaDiscStructurePrivate))
+
+struct _IaDiscStructurePrivate
+{
+    /* Text entry */
+    GtkWidget *text_view;
+    GtkTextBuffer *buffer;
+
+    GtkWidget *spinbutton_layer;
+    GtkWidget *spinbutton_type;
+
+    /* Disc */
+    MirageDisc *disc;
+};
 
 
 /**********************************************************************\

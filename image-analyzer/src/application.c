@@ -24,13 +24,10 @@
 #include <glib.h>
 #include <gtk/gtk.h>
 #include <mirage.h>
-#include <libxml/parser.h>
-#include <libxml/tree.h>
-
-#include "disc-tree-dump.h"
 
 #include "application.h"
-#include "application-private.h"
+
+#include "disc-tree-dump.h"
 
 #include "log-window.h"
 #include "sector-analysis-window.h"
@@ -39,7 +36,43 @@
 #include "disc-topology-window.h"
 #include "writer-dialog.h"
 
-#include "dump.h"
+
+/**********************************************************************\
+ *                            Private structure                       *
+\**********************************************************************/
+#define IA_APPLICATION_GET_PRIVATE(obj) (G_TYPE_INSTANCE_GET_PRIVATE((obj), IA_TYPE_APPLICATION, IaApplicationPrivate))
+
+struct _IaApplicationPrivate
+{
+    /* Disc */
+    gboolean loaded;
+    MirageDisc *disc; /* Disc */
+
+    /* Dump tree */
+    IaDiscTreeDump *disc_dump;
+
+    /* Dialogs */
+    GtkWidget *dialog_open_image;
+    GtkWidget *dialog_image_writer;
+    GtkWidget *dialog_open_dump;
+    GtkWidget *dialog_save_dump;
+    GtkWidget *dialog_log;
+    GtkWidget *dialog_sector;
+    GtkWidget *dialog_analysis;
+    GtkWidget *dialog_topology;
+    GtkWidget *dialog_structure;
+
+    /* Window */
+    GtkWidget *window;
+
+    /* Status bar */
+    GtkWidget *statusbar;
+    guint context_id;
+
+    /* Debug */
+    MirageContext *mirage_context;
+    gboolean debug_to_stdout;
+};
 
 
 /**********************************************************************\

@@ -28,7 +28,24 @@
 #include <mirage.h>
 
 #include "disc-topology-window.h"
-#include "disc-topology-window-private.h"
+
+
+/**********************************************************************\
+ *                            Private structure                       *
+\**********************************************************************/
+#define IA_DISC_TOPOLOGY_WINDOW_GET_PRIVATE(obj) (G_TYPE_INSTANCE_GET_PRIVATE((obj), IA_TYPE_DISC_TOPOLOGY_WINDOW, IaDiscTopologyWindowPrivate))
+
+struct _IaDiscTopologyWindowPrivate
+{
+    /* GtkSocket */
+    GtkWidget *socket;
+
+    /* gnuplot */
+    gboolean gnuplot_works;
+
+    GPid pid;
+    gint fd_in;
+};
 
 
 /**********************************************************************\

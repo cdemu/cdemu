@@ -27,7 +27,21 @@
 
 #include "dump.h"
 #include "sector-analysis-window.h"
-#include "sector-analysis-window-private.h"
+
+
+/**********************************************************************\
+ *                            Private structure                       *
+\**********************************************************************/
+#define IA_SECTOR_ANALYSIS_WINDOW_GET_PRIVATE(obj) (G_TYPE_INSTANCE_GET_PRIVATE((obj), IA_TYPE_SECTOR_ANALYSIS_WINDOW, IaSectorAnalysisWindowPrivate))
+
+struct _IaSectorAnalysisWindowPrivate {
+    /* Text entry */
+    GtkWidget *text_view;
+    GtkTextBuffer *buffer;
+
+    /* Disc */
+    MirageDisc *disc;
+};
 
 
 /**********************************************************************\

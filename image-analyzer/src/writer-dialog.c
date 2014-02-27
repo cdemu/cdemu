@@ -26,8 +26,28 @@
 #include <mirage.h>
 
 #include "writer-dialog.h"
-#include "writer-dialog-private.h"
 
+
+/**********************************************************************\
+ *                            Private structure                       *
+\**********************************************************************/
+#define IA_WRITER_DIALOG_GET_PRIVATE(obj) (G_TYPE_INSTANCE_GET_PRIVATE((obj), IA_TYPE_WRITER_DIALOG, IaWriterDialogPrivate))
+
+struct _IaWriterDialogPrivate
+{
+    GtkWidget *entry_filename;
+
+    GtkWidget *frame_writer;
+    GtkWidget *writer_options_ui;
+    GHashTable *writer_options_widgets;
+
+    MirageWriter *image_writer;
+};
+
+
+/**********************************************************************\
+ *                             Callbacks                              *
+\**********************************************************************/
 static void cb_choose_file_clicked (IaWriterDialog *self, GtkButton *button G_GNUC_UNUSED)
 {
     GtkWidget *dialog = gtk_file_chooser_dialog_new(
@@ -176,6 +196,9 @@ static void cb_writer_changed (IaWriterDialog *self, GtkComboBox *combobox)
 }
 
 
+/**********************************************************************\
+ *                             Public API                             *
+\**********************************************************************/
 const gchar *ia_writer_dialog_get_filename (IaWriterDialog *self)
 {
     return gtk_entry_get_text(GTK_ENTRY(self->priv->entry_filename));

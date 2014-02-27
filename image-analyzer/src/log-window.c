@@ -25,7 +25,21 @@
 #include <gtk/gtk.h>
 
 #include "log-window.h"
-#include "log-window-private.h"
+
+
+/**********************************************************************\
+ *                            Private structure                       *
+\**********************************************************************/
+#define IA_LOG_WINDOW_GET_PRIVATE(obj) (G_TYPE_INSTANCE_GET_PRIVATE((obj), IA_TYPE_LOG_WINDOW, IaLogWindowPrivate))
+
+struct _IaLogWindowPrivate
+{
+    /* Text entry */
+    GtkWidget *text_view;
+
+    /* Mirror to stdout check button */
+    GtkWidget *checkbutton_stdout;
+};
 
 
 /**********************************************************************\

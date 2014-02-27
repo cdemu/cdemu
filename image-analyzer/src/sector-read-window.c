@@ -27,7 +27,24 @@
 
 #include "dump.h"
 #include "sector-read-window.h"
-#include "sector-read-window-private.h"
+
+
+/**********************************************************************\
+ *                            Private structure                       *
+\**********************************************************************/
+#define IA_SECTOR_READ_WINDOW_GET_PRIVATE(obj) (G_TYPE_INSTANCE_GET_PRIVATE((obj), IA_TYPE_SECTOR_READ_WINDOW, IaSectorReadWindowPrivate))
+
+struct _IaSectorReadWindowPrivate
+{
+    /* Text entry */
+    GtkWidget *text_view;
+    GtkTextBuffer *buffer;
+
+    GtkWidget *spinbutton;
+
+    /* Disc */
+    MirageDisc *disc;
+};
 
 
 /**********************************************************************\
