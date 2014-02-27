@@ -103,7 +103,10 @@ static void cb_writer_changed (IaWriterDialog *self, GtkComboBox *combobox)
     }
 
     /* Build writer options GUI */
-    GtkWidget *table = gtk_table_new(0, 0, FALSE);
+    GtkWidget *grid = gtk_grid_new();
+    gtk_container_set_border_width(GTK_CONTAINER(grid), 5);
+    gtk_grid_set_column_spacing(GTK_GRID(grid), 5);
+    gtk_grid_set_row_spacing(GTK_GRID(grid), 5);
 
     gint row = 0;
 
@@ -176,10 +179,13 @@ static void cb_writer_changed (IaWriterDialog *self, GtkComboBox *combobox)
             g_free(label_text);
 
             gtk_widget_set_tooltip_text(label, info->description);
-            gtk_table_attach(GTK_TABLE(table), label, 0, 1, row, row + 1, GTK_FILL, 0, 2, 2);
-            gtk_table_attach(GTK_TABLE(table), widget, 1, 2, row, row + 1, GTK_FILL|GTK_EXPAND, 0, 2, 2);
+            gtk_grid_attach(GTK_GRID(grid), label, 0, row, 1, 1);
+
+            gtk_widget_set_hexpand(widget, TRUE);
+            gtk_grid_attach_next_to(GTK_GRID(grid), widget, label, GTK_POS_RIGHT, 1, 1);
         } else {
-            gtk_table_attach(GTK_TABLE(table), widget, 0, 2, row, row + 1, GTK_FILL|GTK_EXPAND, 0, 2, 2);
+            gtk_widget_set_hexpand(widget, TRUE);
+            gtk_grid_attach(GTK_GRID(grid), widget, 0, row, 2, 1);
         }
 
         /* Add widget to our list */
@@ -189,8 +195,8 @@ static void cb_writer_changed (IaWriterDialog *self, GtkComboBox *combobox)
     }
 
     /* Set and display writer options GUI */
-    gtk_container_add(GTK_CONTAINER(self->priv->frame_writer), table);
-    self->priv->writer_options_ui = table;
+    gtk_container_add(GTK_CONTAINER(self->priv->frame_writer), grid);
+    self->priv->writer_options_ui = grid;
 
     gtk_widget_show_all(self->priv->frame_writer);
 }
