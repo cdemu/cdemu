@@ -27,6 +27,8 @@
 #include <libxml/parser.h>
 #include <libxml/tree.h>
 
+#include "disc-tree-dump.h"
+
 #include "application.h"
 #include "application-private.h"
 
@@ -38,7 +40,6 @@
 #include "writer-dialog.h"
 
 #include "dump.h"
-#include "xml-tags.h"
 
 
 /**********************************************************************\
@@ -219,20 +220,14 @@ static gchar *ia_application_get_password (IaApplication *self)
 
 static gboolean ia_application_close_image_or_dump (IaApplication *self)
 {
+    /* Clear disc tree dump */
+    ia_disc_tree_dump_clear(self->priv->disc_dump);
+
     /* Clear disc reference in child windows */
     ia_disc_structure_window_set_disc(IA_DISC_STRUCTURE_WINDOW(self->priv->dialog_structure), NULL);
     ia_disc_topology_window_set_disc(IA_DISC_TOPOLOGY_WINDOW(self->priv->dialog_topology), NULL);
     ia_sector_read_window_set_disc(IA_SECTOR_READ_WINDOW(self->priv->dialog_sector), NULL);
     ia_sector_analysis_window_set_disc(IA_SECTOR_ANALYSIS_WINDOW(self->priv->dialog_analysis), NULL);
-
-    /* Clear TreeStore */
-    gtk_tree_store_clear(self->priv->treestore);
-
-    /* Free XML doc */
-    if (self->priv->xml_doc) {
-        xmlFreeDoc(self->priv->xml_doc);
-        self->priv->xml_doc = NULL;
-    }
 
     /* Release disc reference */
     if (self->priv->disc) {
@@ -269,17 +264,14 @@ static gboolean ia_application_open_image (IaApplication *self, gchar **filename
         return FALSE;
     }
 
+    /* Dump disc */
+    ia_disc_tree_dump_create_from_disc(self->priv->disc_dump, self->priv->disc);
+
     /* Set disc reference in child windows */
     ia_disc_structure_window_set_disc(IA_DISC_STRUCTURE_WINDOW(self->priv->dialog_structure), self->priv->disc);
     ia_disc_topology_window_set_disc(IA_DISC_TOPOLOGY_WINDOW(self->priv->dialog_topology), self->priv->disc);
     ia_sector_read_window_set_disc(IA_SECTOR_READ_WINDOW(self->priv->dialog_sector), self->priv->disc);
     ia_sector_analysis_window_set_disc(IA_SECTOR_ANALYSIS_WINDOW(self->priv->dialog_analysis), self->priv->disc);
-
-    /* Make XML dump */
-    ia_application_create_xml_dump(self);
-
-    /* Display XML */
-    ia_application_display_xml_data(self);
 
     self->priv->loaded = TRUE;
 
@@ -288,52 +280,32 @@ static gboolean ia_application_open_image (IaApplication *self, gchar **filename
     return TRUE;
 }
 
-static gboolean ia_application_open_dump (IaApplication *self, gchar *filename)
+static void ia_application_open_dump (IaApplication *self, gchar *filename)
 {
+    GError *error = NULL;
+
     /* Close any opened image or dump */
     ia_application_close_image_or_dump(self);
 
-    /* Load XML */
-    self->priv->xml_doc = xmlReadFile(filename, NULL, 0);
-    if (!self->priv->xml_doc) {
-        g_warning("Failed to dump disc!\n");
+    /* Load XML to dump */
+    if (!ia_disc_tree_dump_load_xml_dump(self->priv->disc_dump, filename, &error)) {
+        g_warning("Failed to dump disc: %s!\n", error->message);
         ia_application_message(self, "Failed to load dump!");
-        return FALSE;
+        g_error_free(error);
+    } else {
+        self->priv->loaded = TRUE;
+        ia_application_message(self, "Dump successfully opened.");
     }
-
-    /* Display XML */
-    ia_application_display_xml_data(self);
-
-    self->priv->loaded = TRUE;
-
-    ia_application_message(self, "Dump successfully opened.");
-
-    return TRUE;
 }
 
 static void ia_application_save_dump (IaApplication *self, gchar *filename)
 {
-    /* Create a copy of XML dump */
-    xmlDocPtr output_xml = xmlCopyDoc(self->priv->xml_doc, 1);
+    GError *error = NULL;
 
-    if (output_xml) {
-        /* Append the log */
-        xmlNodePtr root_node = xmlDocGetRootElement(output_xml);
-        gchar *log = ia_log_window_get_log_text(IA_LOG_WINDOW(self->priv->dialog_log));
-        xmlNewTextChild(root_node, NULL, BAD_CAST TAG_LIBMIRAGE_LOG, BAD_CAST log);
-        g_free(log);
-
-        /* Save the XML tree */
-        if (xmlSaveFormatFileEnc(filename, output_xml, "UTF-8", 1) == -1) {
-            ia_application_message(self, "Saving to dump file failed!");
-        } else {
-            ia_application_message(self, "Dump successfully saved.");
-        }
-
-        /* Free */
-        xmlFreeDoc(output_xml);
-    } else {
+    if (!ia_disc_tree_dump_save_xml_dump(self->priv->disc_dump, filename, &error)) {
+        g_warning("Failed to create dump: %s\n", error->message);
         ia_application_message(self, "Failed to create dump!");
+        g_error_free(error);
     }
 }
 
@@ -885,12 +857,10 @@ static void create_gui (IaApplication *self)
     GtkWidget *scrolled_window = gtk_scrolled_window_new(NULL, NULL);
     gtk_box_pack_start(GTK_BOX(vbox), scrolled_window, TRUE, TRUE, 0);
 
-    /* Tree store and view widget */
-    self->priv->treestore = gtk_tree_store_new(1, G_TYPE_STRING);
-
+    /* Tree view */
     GtkWidget *treeview = gtk_tree_view_new();
     gtk_tree_view_set_headers_visible(GTK_TREE_VIEW(treeview), FALSE);
-    gtk_tree_view_set_model(GTK_TREE_VIEW(treeview), GTK_TREE_MODEL(self->priv->treestore));
+    gtk_tree_view_set_model(GTK_TREE_VIEW(treeview), GTK_TREE_MODEL(ia_disc_tree_dump_get_treestore(self->priv->disc_dump)));
 
     gtk_container_add(GTK_CONTAINER(scrolled_window), treeview);
 
@@ -986,6 +956,9 @@ static void ia_application_init (IaApplication *self)
     mirage_context_set_debug_mask(self->priv->mirage_context, MIRAGE_DEBUG_PARSER);
     mirage_context_set_password_function(self->priv->mirage_context, (MiragePasswordFunction)ia_application_get_password, self);
 
+    /* Disc tree dump */
+    self->priv->disc_dump = g_object_new(IA_TYPE_DISC_TREE_DUMP, NULL);
+
     /* Setup GUI */
     create_gui(self);
 
@@ -993,16 +966,30 @@ static void ia_application_init (IaApplication *self)
     g_log_set_handler("libMirage", G_LOG_LEVEL_MASK, (GLogFunc)capture_log, self);
 }
 
-static void ia_application_finalize (GObject *gobject)
+static void ia_application_dispose (GObject *gobject)
 {
     IaApplication *self = IA_APPLICATION(gobject);
 
     /* Close image */
     ia_application_close_image_or_dump(self);
 
+    if (self->priv->disc_dump) {
+        g_object_unref(self->priv->disc_dump);
+        self->priv->disc_dump = NULL;
+    }
+
     if (self->priv->mirage_context) {
         g_object_unref(self->priv->mirage_context);
+        self->priv->mirage_context = NULL;
     }
+
+    /* Chain up to the parent class */
+    return G_OBJECT_CLASS(ia_application_parent_class)->dispose(gobject);
+}
+
+static void ia_application_finalize (GObject *gobject)
+{
+    IaApplication *self = IA_APPLICATION(gobject);
 
     gtk_widget_destroy(self->priv->window);
 
@@ -1024,6 +1011,7 @@ static void ia_application_class_init (IaApplicationClass *klass)
 {
     GObjectClass *gobject_class = G_OBJECT_CLASS(klass);
 
+    gobject_class->dispose = ia_application_dispose;
     gobject_class->finalize = ia_application_finalize;
 
     /* Register private structure */

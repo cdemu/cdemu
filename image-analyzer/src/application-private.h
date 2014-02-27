@@ -22,11 +22,16 @@
 
 #define IA_APPLICATION_GET_PRIVATE(obj) (G_TYPE_INSTANCE_GET_PRIVATE((obj), IA_TYPE_APPLICATION, IaApplicationPrivate))
 
+typedef struct _IaDiscTreeDump         IaDiscTreeDump;
+
 struct _IaApplicationPrivate
 {
     /* Disc */
     gboolean loaded;
     MirageDisc *disc; /* Disc */
+
+    /* Dump tree */
+    IaDiscTreeDump *disc_dump;
 
     /* Dialogs */
     GtkWidget *dialog_open_image;
@@ -45,10 +50,6 @@ struct _IaApplicationPrivate
     /* Status bar */
     GtkWidget *statusbar;
     guint context_id;
-
-    /* Model */
-    GtkTreeStore *treestore;
-    xmlDocPtr xml_doc;
 
     /* Debug */
     MirageContext *mirage_context;

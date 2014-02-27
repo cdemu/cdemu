@@ -60,10 +60,9 @@ link_directories (SYSTEM ${GTK_LIBRARY_DIRS})
 # *** image-analyzer ***
 set (image-analyzer_SOURCES
     src/application.c
-    src/application-xml-dump.c
-    src/application-xml-load.c
     src/disc-structure-window.c
     src/disc-topology-window.c
+    src/disc-tree-dump.c
     src/dump.c
     src/log-window.c
     src/main.c
