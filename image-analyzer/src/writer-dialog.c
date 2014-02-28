@@ -54,8 +54,8 @@ static void cb_choose_file_clicked (IaWriterDialog *self, GtkButton *button G_GN
         "Select output image file",
         GTK_WINDOW(self),
         GTK_FILE_CHOOSER_ACTION_SAVE,
-        GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
-        GTK_STOCK_SAVE, GTK_RESPONSE_ACCEPT,
+        "Cancel", GTK_RESPONSE_CANCEL,
+        "Save", GTK_RESPONSE_ACCEPT,
         NULL);
 
     gtk_file_chooser_set_do_overwrite_confirmation(GTK_FILE_CHOOSER(dialog), TRUE);
@@ -251,57 +251,49 @@ GHashTable *ia_writer_dialog_get_writer_parameters (IaWriterDialog *self)
 
 static void setup_gui (IaWriterDialog *self)
 {
-    GtkWidget *vbox;
     GtkWidget *frame;
-    GtkWidget *table;
+    GtkWidget *grid;
     GtkWidget *label, *entry, *button;
     GtkWidget *combobox;
     GtkWidget *content_area = gtk_dialog_get_content_area(GTK_DIALOG(self));
-
-    gint row;
 
     /* Window */
     gtk_window_set_title(GTK_WINDOW(self), "Convert image");
     gtk_container_set_border_width(GTK_CONTAINER(self), 5);
 
     /* Buttons */
-    gtk_dialog_add_buttons(GTK_DIALOG(self), GTK_STOCK_OK, GTK_RESPONSE_ACCEPT, GTK_STOCK_CANCEL, GTK_RESPONSE_REJECT, NULL);
-
-    /* VBox */
-    vbox = gtk_vbox_new(FALSE, 5);
-    gtk_container_add(GTK_CONTAINER(content_area), vbox);
+    gtk_dialog_add_buttons(GTK_DIALOG(self), "OK", GTK_RESPONSE_ACCEPT, "Cancel", GTK_RESPONSE_REJECT, NULL);
 
     /* Frame: image settings */
     frame = gtk_frame_new("Output image");
-    gtk_box_pack_start(GTK_BOX(vbox), frame, FALSE, TRUE, 0);
+    gtk_container_add(GTK_CONTAINER(content_area), frame);
 
-    table = gtk_table_new(2, 3, FALSE);
-    gtk_container_set_border_width(GTK_CONTAINER(table), 5);
-    gtk_container_add(GTK_CONTAINER(frame), table);
-
-    row = 0;
+    grid = gtk_grid_new();
+    gtk_container_set_border_width(GTK_CONTAINER(grid), 5);
+    gtk_grid_set_column_spacing(GTK_GRID(grid), 5);
+    gtk_grid_set_row_spacing(GTK_GRID(grid), 5);
+    gtk_container_add(GTK_CONTAINER(frame), grid);
 
     /* Filename */
     label = gtk_label_new("Filename: ");
-    gtk_table_attach(GTK_TABLE(table), label, 0, 1, row, row + 1, GTK_FILL, 0, 2, 2);
+    gtk_grid_attach(GTK_GRID(grid), label, 0, 0, 1, 1);
 
     entry = gtk_entry_new();
-    gtk_table_attach(GTK_TABLE(table), entry, 1, 2, row, row + 1, GTK_FILL|GTK_EXPAND, 0, 2, 2);
+    gtk_widget_set_hexpand(entry, TRUE);
+    gtk_grid_attach_next_to(GTK_GRID(grid), entry, label, GTK_POS_RIGHT, 1, 1);
     self->priv->entry_filename = entry;
 
     button = gtk_button_new_with_label("Choose");
-    gtk_table_attach(GTK_TABLE(table), button, 2, 3, row, row + 1, GTK_FILL, 0, 2, 2);
+    gtk_grid_attach_next_to(GTK_GRID(grid), button, entry, GTK_POS_RIGHT, 1, 1);
     g_signal_connect_swapped(button, "clicked", G_CALLBACK(cb_choose_file_clicked), self);
-
-    row += 1;
 
     /* Writer */
     label = gtk_label_new("Writer: ");
-    gtk_table_attach(GTK_TABLE(table), label, 0, 1, row, row + 1, GTK_FILL, 0, 2, 2);
+    gtk_grid_attach(GTK_GRID(grid), label, 0, 1, 1, 1);
 
     combobox = gtk_combo_box_text_new();
     g_signal_connect_swapped(combobox, "changed", G_CALLBACK(cb_writer_changed), self);
-    gtk_table_attach(GTK_TABLE(table), combobox, 1, 3, row, row + 1, GTK_FILL|GTK_EXPAND, 0, 2, 2);
+    gtk_grid_attach_next_to(GTK_GRID(grid), combobox, label, GTK_POS_RIGHT, 2, 1);
 
     /* Populate combo box */
     gint num_writers;
@@ -315,13 +307,13 @@ static void setup_gui (IaWriterDialog *self)
 
     /* Frame: writer options */
     frame = gtk_frame_new("Writer options");
-    gtk_box_pack_start(GTK_BOX(vbox), frame, FALSE, TRUE, 0);
+    gtk_container_add(GTK_CONTAINER(content_area), frame);
 
     self->priv->frame_writer = frame;
     self->priv->writer_options_ui = NULL;
     self->priv->writer_options_widgets = g_hash_table_new(g_str_hash, g_str_equal);
 
-    gtk_widget_show_all(vbox);
+    gtk_widget_show_all(GTK_WIDGET(content_area));
     gtk_widget_hide(self->priv->frame_writer);
 }
 
