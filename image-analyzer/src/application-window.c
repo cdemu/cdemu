@@ -60,10 +60,6 @@ struct _IaApplicationWindowPrivate
     GtkWidget *disc_topology_window;
     GtkWidget *disc_structure_window;
 
-    /* Status bar */
-    GtkWidget *statusbar;
-    guint context_id;
-
     /* Debug */
     MirageContext *mirage_context;
     gboolean debug_to_stdout;
@@ -173,29 +169,6 @@ static void ia_application_window_change_debug_mask (IaApplicationWindow *self)
 
 
 /**********************************************************************\
- *                              Status message                        *
-\**********************************************************************/
-static void ia_application_window_message (IaApplicationWindow *self, gchar *format, ...)
-{
-    gchar *message;
-    va_list args;
-
-    /* Pop message (so that anything set previously will be removed */
-    gtk_statusbar_pop(GTK_STATUSBAR(self->priv->statusbar), self->priv->context_id);
-
-    /* Push message */
-    va_start(args, format);
-    message = g_strdup_vprintf(format, args);
-    va_end(args);
-
-    gtk_statusbar_pop(GTK_STATUSBAR(self->priv->statusbar), self->priv->context_id);
-    gtk_statusbar_push(GTK_STATUSBAR(self->priv->statusbar), self->priv->context_id, message);
-
-    g_free(message);
-}
-
-
-/**********************************************************************\
  *                           Open/close image                         *
 \**********************************************************************/
 static gchar *ia_application_window_get_password (IaApplicationWindow *self)
@@ -263,11 +236,6 @@ static gboolean ia_application_window_close_image_or_dump (IaApplicationWindow *
         self->priv->disc = NULL;
     }
 
-    /* Print message only if something was loaded */
-    if (self->priv->loaded) {
-        ia_application_window_message(self, "Image/dump closed.");
-    }
-
     /* Clear the log */
     ia_log_window_clear_log(IA_LOG_WINDOW(self->priv->log_window));
 
@@ -286,9 +254,19 @@ static gboolean ia_application_window_open_image (IaApplicationWindow *self, gch
     /* Load image */
     self->priv->disc = mirage_context_load_image(self->priv->mirage_context, filenames, &error);
     if (!self->priv->disc) {
-        g_warning("Failed to create disc: %s\n", error->message);
-        ia_application_window_message(self, "Failed to open image: %s", error->message);
+        GtkWidget *message_dialog = gtk_message_dialog_new(
+            GTK_WINDOW(self),
+            GTK_DIALOG_DESTROY_WITH_PARENT,
+            GTK_MESSAGE_ERROR,
+            GTK_BUTTONS_CLOSE,
+            error->message);
+
+        gtk_window_set_title(GTK_WINDOW(message_dialog), "Failed to load image");
+        gtk_dialog_run(GTK_DIALOG(message_dialog));
+        gtk_widget_destroy(message_dialog);
+
         g_error_free(error);
+
         return FALSE;
     }
 
@@ -303,8 +281,6 @@ static gboolean ia_application_window_open_image (IaApplicationWindow *self, gch
 
     self->priv->loaded = TRUE;
 
-    ia_application_window_message(self, "Image successfully opened.");
-
     return TRUE;
 }
 
@@ -317,12 +293,18 @@ static void ia_application_window_open_dump (IaApplicationWindow *self, gchar *f
 
     /* Load XML to dump */
     if (!ia_disc_tree_dump_load_xml_dump(self->priv->disc_dump, filename, &error)) {
-        g_warning("Failed to dump disc: %s!\n", error->message);
-        ia_application_window_message(self, "Failed to load dump!");
+        GtkWidget *message_dialog = gtk_message_dialog_new(
+            GTK_WINDOW(self),
+            GTK_DIALOG_DESTROY_WITH_PARENT,
+            GTK_MESSAGE_ERROR,
+            GTK_BUTTONS_CLOSE,
+            error->message);
+
+        gtk_window_set_title(GTK_WINDOW(message_dialog), "Failed to load dump");
+        gtk_dialog_run(GTK_DIALOG(message_dialog));
+        gtk_widget_destroy(message_dialog);
+
         g_error_free(error);
-    } else {
-        self->priv->loaded = TRUE;
-        ia_application_window_message(self, "Dump successfully opened.");
     }
 }
 
@@ -331,8 +313,17 @@ static void ia_application_window_save_dump (IaApplicationWindow *self, gchar *f
     GError *error = NULL;
 
     if (!ia_disc_tree_dump_save_xml_dump(self->priv->disc_dump, filename, &error)) {
-        g_warning("Failed to create dump: %s\n", error->message);
-        ia_application_window_message(self, "Failed to create dump!");
+        GtkWidget *message_dialog = gtk_message_dialog_new(
+            GTK_WINDOW(self),
+            GTK_DIALOG_DESTROY_WITH_PARENT,
+            GTK_MESSAGE_ERROR,
+            GTK_BUTTONS_CLOSE,
+            error->message);
+
+        gtk_window_set_title(GTK_WINDOW(message_dialog), "Failed to create dump");
+        gtk_dialog_run(GTK_DIALOG(message_dialog));
+        gtk_widget_destroy(message_dialog);
+
         g_error_free(error);
     }
 }
@@ -825,11 +816,6 @@ static void create_gui (IaApplicationWindow *self)
     GtkCellRenderer *renderer = gtk_cell_renderer_text_new();
     gtk_tree_view_column_pack_start(column, renderer, TRUE);
     gtk_tree_view_column_add_attribute(column, renderer, "text", 0);
-
-    /* Status bar */
-    self->priv->statusbar = gtk_statusbar_new();
-    gtk_box_pack_start(GTK_BOX(vbox), self->priv->statusbar, FALSE, FALSE, 0);
-    self->priv->context_id = gtk_statusbar_get_context_id(GTK_STATUSBAR(self->priv->statusbar), "Message");
 
     /* Load/save dialogs */
     self->priv->open_image_dialog = build_dialog_open_image(GTK_WINDOW(self));
