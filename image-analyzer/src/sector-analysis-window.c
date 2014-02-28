@@ -162,20 +162,24 @@ static void ia_sector_analysis_window_ui_callback_analyze (GtkWidget *button G_G
 \**********************************************************************/
 static void setup_gui (IaSectorAnalysisWindow *self)
 {
-    GtkWidget *vbox, *scrolledwindow, *hbox, *button;
+    GtkWidget *grid, *scrolledwindow, *button;
 
     /* Window */
     gtk_window_set_title(GTK_WINDOW(self), "Sector analysis");
     gtk_window_set_default_size(GTK_WINDOW(self), 600, 400);
     gtk_container_set_border_width(GTK_CONTAINER(self), 5);
 
-    /* VBox */
-    vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
-    gtk_container_add(GTK_CONTAINER(self), vbox);
+    /* Grid */
+    grid = gtk_grid_new();
+    gtk_grid_set_row_spacing(GTK_GRID(grid), 5);
+    gtk_grid_set_column_spacing(GTK_GRID(grid), 5);
+    gtk_container_add(GTK_CONTAINER(self), grid);
 
     /* Scrolled window */
     scrolledwindow = gtk_scrolled_window_new(NULL, NULL);
-    gtk_box_pack_start(GTK_BOX(vbox), scrolledwindow, TRUE, TRUE, 0);
+    gtk_widget_set_hexpand(scrolledwindow, TRUE);
+    gtk_widget_set_vexpand(scrolledwindow, TRUE);
+    gtk_grid_attach(GTK_GRID(grid), scrolledwindow, 0, 0, 1, 1);
     gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(scrolledwindow), GTK_POLICY_NEVER, GTK_POLICY_ALWAYS);
 
     /* Text */
@@ -184,18 +188,13 @@ static void setup_gui (IaSectorAnalysisWindow *self)
     gtk_text_view_set_wrap_mode(GTK_TEXT_VIEW(self->priv->text_view), GTK_WRAP_WORD_CHAR);
     gtk_text_view_set_editable(GTK_TEXT_VIEW(self->priv->text_view), FALSE);
 
-
     self->priv->buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(self->priv->text_view));
     gtk_text_buffer_create_tag(self->priv->buffer, "tag_section", /*"foreground", "#000000",*/ "weight", PANGO_WEIGHT_BOLD, NULL);
-
-    /* HBox */
-    hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5);
-    gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, FALSE, 0);
 
     /* Button */
     button = gtk_button_new_with_label("Analyze");
     g_signal_connect(button, "clicked", G_CALLBACK(ia_sector_analysis_window_ui_callback_analyze), self);
-    gtk_box_pack_start(GTK_BOX(hbox), button, FALSE, FALSE, 0);
+    gtk_grid_attach(GTK_GRID(grid), button, 0, 1, 1, 1);
 }
 
 

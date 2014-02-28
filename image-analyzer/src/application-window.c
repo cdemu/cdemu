@@ -27,13 +27,12 @@
 
 #include "application-window.h"
 
-#include "disc-tree-dump.h"
-
-#include "log-window.h"
-#include "sector-analysis-window.h"
-#include "sector-read-window.h"
 #include "disc-structure-window.h"
 #include "disc-topology-window.h"
+#include "disc-tree-dump.h"
+#include "log-window.h"
+#include "read-sector-window.h"
+#include "sector-analysis-window.h"
 #include "writer-dialog.h"
 
 
@@ -111,7 +110,7 @@ static void ia_application_window_set_debug_mask (IaApplicationWindow *self, gin
 static void ia_application_window_change_debug_mask (IaApplicationWindow *self)
 {
     GtkWidget *dialog, *content_area;
-    GtkWidget *vbox;
+    GtkWidget *grid;
     GtkWidget **entries = NULL;
     gint mask;
 
@@ -133,19 +132,21 @@ static void ia_application_window_change_debug_mask (IaApplicationWindow *self)
                                          NULL);
 
     /* Create the mask widgets */
-    vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 2);
+    grid = gtk_grid_new();
+    gtk_grid_set_row_spacing(GTK_GRID(grid), 2);
+    gtk_orientable_set_orientation(GTK_ORIENTABLE(grid), GTK_ORIENTATION_VERTICAL);
 
     content_area = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
-    gtk_container_add(GTK_CONTAINER(content_area), vbox);
+    gtk_container_add(GTK_CONTAINER(content_area), grid);
 
     entries = g_new(GtkWidget *, num_valid_masks);
     for (gint i = 0; i < num_valid_masks; i++) {
         entries[i] = gtk_check_button_new_with_label(valid_masks[i].name);
         gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(entries[i]), mask & valid_masks[i].value);
-        gtk_box_pack_start(GTK_BOX(vbox), entries[i], FALSE, FALSE, 0);
+        gtk_container_add(GTK_CONTAINER(grid), entries[i]);
     }
 
-    gtk_widget_show_all(vbox);
+    gtk_widget_show_all(grid);
 
     /* Run the dialog */
     if (gtk_dialog_run(GTK_DIALOG(dialog)) == GTK_RESPONSE_ACCEPT) {
@@ -174,7 +175,7 @@ static gchar *ia_application_window_get_password (IaApplicationWindow *self)
 {
     gchar *password;
     GtkDialog *dialog;
-    GtkWidget *hbox, *entry, *label;
+    GtkWidget *grid, *entry, *label;
     gint result;
 
     dialog = GTK_DIALOG(gtk_dialog_new_with_buttons(
@@ -186,19 +187,25 @@ static gchar *ia_application_window_get_password (IaApplicationWindow *self)
         NULL));
     gtk_dialog_set_default_response(GTK_DIALOG(dialog), GTK_RESPONSE_ACCEPT);
 
-    gtk_box_set_spacing(GTK_BOX(gtk_dialog_get_content_area(dialog)), 5);
+
+    /* Grid */
+    grid = gtk_grid_new();
+    gtk_grid_set_row_spacing(GTK_GRID(grid), 5);
+    gtk_grid_set_column_spacing(GTK_GRID(grid), 5);
+    gtk_container_add(GTK_CONTAINER(gtk_dialog_get_content_area(dialog)), grid);
 
     label = gtk_label_new("The image you are trying to load is encrypted.");
-    gtk_box_pack_start(GTK_BOX(gtk_dialog_get_content_area(dialog)), label, TRUE, TRUE, 0);
+    gtk_widget_set_hexpand(label, TRUE);
+    gtk_widget_set_vexpand(label, TRUE);
+    gtk_grid_attach(GTK_GRID(grid), label, 0, 0, 2, 1);
+
+    label = gtk_label_new("Password: ");
+    gtk_grid_attach(GTK_GRID(grid), label, 0, 1, 1, 1);
 
     entry = gtk_entry_new();
+    gtk_widget_set_hexpand(entry, TRUE);
     gtk_entry_set_visibility(GTK_ENTRY(entry), FALSE);
-
-    hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5);
-    gtk_box_pack_start(GTK_BOX(hbox), gtk_label_new("Password: "), FALSE, FALSE, 0);
-    gtk_box_pack_start(GTK_BOX(hbox), entry, TRUE, TRUE, 0);
-
-    gtk_box_pack_start(GTK_BOX(gtk_dialog_get_content_area(dialog)), hbox, FALSE, FALSE, 0);
+    gtk_grid_attach_next_to(GTK_GRID(grid), entry, label, GTK_POS_RIGHT, 1, 1);
 
     /* Run dialog */
     gtk_widget_show_all(GTK_WIDGET(dialog));
@@ -226,7 +233,7 @@ static gboolean ia_application_window_close_image_or_dump (IaApplicationWindow *
     /* Clear disc reference in child windows */
     ia_disc_structure_window_set_disc(IA_DISC_STRUCTURE_WINDOW(self->priv->disc_structure_window), NULL);
     ia_disc_topology_window_set_disc(IA_DISC_TOPOLOGY_WINDOW(self->priv->disc_topology_window), NULL);
-    ia_sector_read_window_set_disc(IA_SECTOR_READ_WINDOW(self->priv->read_sector_window), NULL);
+    ia_read_sector_window_set_disc(IA_READ_SECTOR_WINDOW(self->priv->read_sector_window), NULL);
     ia_sector_analysis_window_set_disc(IA_SECTOR_ANALYSIS_WINDOW(self->priv->sector_analysis_window), NULL);
 
     /* Release disc reference */
@@ -273,7 +280,7 @@ static gboolean ia_application_window_open_image (IaApplicationWindow *self, gch
     /* Set disc reference in child windows */
     ia_disc_structure_window_set_disc(IA_DISC_STRUCTURE_WINDOW(self->priv->disc_structure_window), self->priv->disc);
     ia_disc_topology_window_set_disc(IA_DISC_TOPOLOGY_WINDOW(self->priv->disc_topology_window), self->priv->disc);
-    ia_sector_read_window_set_disc(IA_SECTOR_READ_WINDOW(self->priv->read_sector_window), self->priv->disc);
+    ia_read_sector_window_set_disc(IA_READ_SECTOR_WINDOW(self->priv->read_sector_window), self->priv->disc);
     ia_sector_analysis_window_set_disc(IA_SECTOR_ANALYSIS_WINDOW(self->priv->sector_analysis_window), self->priv->disc);
 
     return TRUE;
@@ -780,7 +787,7 @@ static GActionEntry win_entries[] = {
 
 static void create_gui (IaApplicationWindow *self)
 {
-    GtkWidget *vbox;
+    GtkWidget *grid;
 
     /* Window */
     gtk_window_set_title(GTK_WINDOW(self), "Image analyzer");
@@ -790,13 +797,17 @@ static void create_gui (IaApplicationWindow *self)
     /* Actions */
     g_action_map_add_action_entries(G_ACTION_MAP(self), win_entries, G_N_ELEMENTS(win_entries), self);
 
-    /* VBox */
-    vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
-    gtk_container_add(GTK_CONTAINER(self), vbox);
+    /* Grid */
+    grid = gtk_grid_new();
+    gtk_grid_set_row_spacing(GTK_GRID(grid), 5);
+    gtk_orientable_set_orientation(GTK_ORIENTABLE(grid), GTK_ORIENTATION_VERTICAL);
+    gtk_container_add(GTK_CONTAINER(self), grid);
 
     /* Scrolled window */
     GtkWidget *scrolled_window = gtk_scrolled_window_new(NULL, NULL);
-    gtk_box_pack_start(GTK_BOX(vbox), scrolled_window, TRUE, TRUE, 0);
+    gtk_widget_set_hexpand(GTK_WIDGET(scrolled_window), TRUE);
+    gtk_widget_set_vexpand(GTK_WIDGET(scrolled_window), TRUE);
+    gtk_container_add(GTK_CONTAINER(grid), scrolled_window);
 
     /* Tree view */
     GtkWidget *treeview = gtk_tree_view_new();
@@ -827,7 +838,7 @@ static void create_gui (IaApplicationWindow *self)
     g_signal_connect(self->priv->log_window, "debug_mask_change_requested", G_CALLBACK(callback_debug_mask_change_requested), self);
 
     /* Read sector window */
-    self->priv->read_sector_window = g_object_new(IA_TYPE_SECTOR_READ_WINDOW, NULL);
+    self->priv->read_sector_window = g_object_new(IA_TYPE_READ_SECTOR_WINDOW, NULL);
     g_signal_connect(self->priv->read_sector_window, "delete_event", G_CALLBACK(gtk_widget_hide_on_delete), NULL);
 
     /* Sector analysis window */

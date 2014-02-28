@@ -107,46 +107,45 @@ static void ui_callback_debug_mask_button_clicked (GtkButton *button G_GNUC_UNUS
 \**********************************************************************/
 static void setup_gui (IaLogWindow *self)
 {
-    GtkWidget *vbox, *hbox, *scrolledwindow;
-    GtkWidget *widget;
+    GtkWidget *grid, *scrolledwindow;
+    GtkWidget *checkbutton, *button1, *button2;
 
     gtk_window_set_title(GTK_WINDOW(self), "libMirage log");
     gtk_window_set_default_size(GTK_WINDOW(self), 600, 400);
     gtk_container_set_border_width(GTK_CONTAINER(self), 5);
 
-    /* VBox */
-    vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
-    gtk_container_add(GTK_CONTAINER(self), vbox);
+    /* Grid */
+    grid = gtk_grid_new();
+    gtk_grid_set_row_spacing(GTK_GRID(grid), 5);
+    gtk_grid_set_column_spacing(GTK_GRID(grid), 5);
+    gtk_container_add(GTK_CONTAINER(self), grid);
 
     /* Scrolled window */
     scrolledwindow = gtk_scrolled_window_new(NULL, NULL);
-    gtk_box_pack_start(GTK_BOX(vbox), scrolledwindow, TRUE, TRUE, 0);
+    gtk_widget_set_hexpand(scrolledwindow, TRUE);
+    gtk_widget_set_vexpand(scrolledwindow, TRUE);
+    gtk_grid_attach(GTK_GRID(grid), scrolledwindow, 0, 0, 3, 1);
 
     /* Text */
     self->priv->text_view = gtk_text_view_new();
     gtk_text_view_set_editable(GTK_TEXT_VIEW(self->priv->text_view), FALSE);
     gtk_container_add(GTK_CONTAINER(scrolledwindow), self->priv->text_view);
 
-    /* HBox for buttons */
-    hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5);
-
-    gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, FALSE, 0);
-
     /* Mirror to stdout checkbox */
-    widget = gtk_check_button_new_with_label("Mirror to stdout");
-    gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, FALSE, 0);
-    self->priv->checkbutton_stdout = widget;
-    g_signal_connect(widget, "toggled", G_CALLBACK(ui_callback_debug_to_stdout_button_toggled), self);
+    checkbutton = gtk_check_button_new_with_label("Mirror to stdout");
+    gtk_grid_attach(GTK_GRID(grid), checkbutton, 0, 1, 1, 1);
+    self->priv->checkbutton_stdout = checkbutton;
+    g_signal_connect(checkbutton, "toggled", G_CALLBACK(ui_callback_debug_to_stdout_button_toggled), self);
 
     /* Clear button */
-    widget = gtk_button_new_with_label("Clear");
-    gtk_box_pack_start(GTK_BOX(hbox), widget, TRUE, FALSE, 0);
-    g_signal_connect(widget, "clicked", G_CALLBACK(ui_callback_clear_button_clicked), self);
+    button1 = gtk_button_new_with_label("Clear");
+    gtk_grid_attach_next_to(GTK_GRID(grid), button1, checkbutton, GTK_POS_RIGHT, 1, 1);
+    g_signal_connect(button1, "clicked", G_CALLBACK(ui_callback_clear_button_clicked), self);
 
     /* Debug mask button */
-    widget = gtk_button_new_with_label("Debug mask");
-    gtk_box_pack_start(GTK_BOX(hbox), widget, FALSE, FALSE, 0);
-    g_signal_connect(widget, "clicked", G_CALLBACK(ui_callback_debug_mask_button_clicked), self);
+    button2 = gtk_button_new_with_label("Debug mask");
+    gtk_grid_attach_next_to(GTK_GRID(grid), button2, button1, GTK_POS_RIGHT, 1, 1);
+    g_signal_connect(button2, "clicked", G_CALLBACK(ui_callback_debug_mask_button_clicked), self);
 }
 
 

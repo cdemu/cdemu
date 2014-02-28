@@ -125,7 +125,7 @@ static void ia_disc_structure_window_ui_callback_get_structure (GtkWidget *butto
 \**********************************************************************/
 static void setup_gui (IaDiscStructure *self)
 {
-    GtkWidget *vbox, *scrolledwindow, *hbox, *button, *label;
+    GtkWidget *grid, *scrolledwindow, *button, *label;
     GtkAdjustment *adjustment;
 
     /* Window */
@@ -133,13 +133,17 @@ static void setup_gui (IaDiscStructure *self)
     gtk_window_set_default_size(GTK_WINDOW(self), 600, 400);
     gtk_container_set_border_width(GTK_CONTAINER(self), 5);
 
-    /* VBox */
-    vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
-    gtk_container_add(GTK_CONTAINER(self), vbox);
+    /* Grid */
+    grid = gtk_grid_new();
+    gtk_grid_set_row_spacing(GTK_GRID(grid), 5);
+    gtk_grid_set_column_spacing(GTK_GRID(grid), 5);
+    gtk_container_add(GTK_CONTAINER(self), grid);
 
     /* Scrolled window */
     scrolledwindow = gtk_scrolled_window_new(NULL, NULL);
-    gtk_box_pack_start(GTK_BOX(vbox), scrolledwindow, TRUE, TRUE, 0);
+    gtk_widget_set_hexpand(scrolledwindow, TRUE);
+    gtk_widget_set_vexpand(scrolledwindow, TRUE);
+    gtk_grid_attach(GTK_GRID(grid), scrolledwindow, 0, 0, 5, 1);
     gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(scrolledwindow), GTK_POLICY_NEVER, GTK_POLICY_ALWAYS);
 
     /* Text */
@@ -150,32 +154,30 @@ static void setup_gui (IaDiscStructure *self)
 
     self->priv->buffer = gtk_text_view_get_buffer(GTK_TEXT_VIEW(self->priv->text_view));
 
-    /* HBox */
-    hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5);
-    gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, FALSE, 0);
-
     /* Label: Layer */
     label = gtk_label_new("Layer: ");
-    gtk_box_pack_start(GTK_BOX(hbox), label, FALSE, FALSE, 0);
+    gtk_grid_attach(GTK_GRID(grid), label, 0, 1, 1, 1);
 
     /* Spin button: Layer */
     adjustment = gtk_adjustment_new(0, 0, 1, 1, 75, 0);
     self->priv->spinbutton_layer = gtk_spin_button_new(GTK_ADJUSTMENT(adjustment), 1, 0);
-    gtk_box_pack_start(GTK_BOX(hbox), self->priv->spinbutton_layer, TRUE, TRUE, 0);
+    gtk_widget_set_hexpand(self->priv->spinbutton_layer, TRUE);
+    gtk_grid_attach_next_to(GTK_GRID(grid), self->priv->spinbutton_layer, label, GTK_POS_RIGHT, 1, 1);
 
     /* Label: Type */
     label = gtk_label_new("Type: ");
-    gtk_box_pack_start(GTK_BOX(hbox), label, FALSE, FALSE, 0);
+    gtk_grid_attach_next_to(GTK_GRID(grid), label, self->priv->spinbutton_layer, GTK_POS_RIGHT, 1, 1);
 
     /* Spin button: Type */
     adjustment = gtk_adjustment_new(0, G_MININT64, G_MAXINT64, 1, 75, 0);
     self->priv->spinbutton_type = gtk_spin_button_new(GTK_ADJUSTMENT(adjustment), 1, 0);
-    gtk_box_pack_start(GTK_BOX(hbox), self->priv->spinbutton_type, TRUE, TRUE, 0);
+    gtk_widget_set_hexpand(self->priv->spinbutton_type, TRUE);
+    gtk_grid_attach_next_to(GTK_GRID(grid), self->priv->spinbutton_type, label, GTK_POS_RIGHT, 1, 1);
 
     /* Button */
     button = gtk_button_new_with_label("Get structure");
     g_signal_connect(button, "clicked", G_CALLBACK(ia_disc_structure_window_ui_callback_get_structure), self);
-    gtk_box_pack_start(GTK_BOX(hbox), button, FALSE, FALSE, 0);
+    gtk_grid_attach_next_to(GTK_GRID(grid), button, self->priv->spinbutton_type, GTK_POS_RIGHT, 1, 1);
 }
 
 

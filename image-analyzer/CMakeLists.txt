@@ -67,8 +67,8 @@ set (image-analyzer_SOURCES
     src/dump.c
     src/log-window.c
     src/main.c
+    src/read-sector-window.c
     src/sector-analysis-window.c
-    src/sector-read-window.c
     src/writer-dialog.c
 )
 

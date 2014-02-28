@@ -1,5 +1,5 @@
 /*
- *  Image Analyzer: Sector read window
+ *  Image Analyzer: Read sector window
  *  Copyright (C) 2007-2014 Rok Mandeljc
  *
  *  This program is free software; you can redistribute it and/or modify
@@ -26,15 +26,15 @@
 #include <mirage.h>
 
 #include "dump.h"
-#include "sector-read-window.h"
+#include "read-sector-window.h"
 
 
 /**********************************************************************\
  *                            Private structure                       *
 \**********************************************************************/
-#define IA_SECTOR_READ_WINDOW_GET_PRIVATE(obj) (G_TYPE_INSTANCE_GET_PRIVATE((obj), IA_TYPE_SECTOR_READ_WINDOW, IaSectorReadWindowPrivate))
+#define IA_READ_SECTOR_WINDOW_GET_PRIVATE(obj) (G_TYPE_INSTANCE_GET_PRIVATE((obj), IA_TYPE_READ_SECTOR_WINDOW, IaReadSectorWindowPrivate))
 
-struct _IaSectorReadWindowPrivate
+struct _IaReadSectorWindowPrivate
 {
     /* Text entry */
     GtkWidget *text_view;
@@ -67,13 +67,13 @@ static gchar *dump_sector_type (gint sector_type)
 /**********************************************************************\
  *                      Text buffer manipulation                      *
 \**********************************************************************/
-static gboolean ia_read_sector_clear_text (IaSectorReadWindow *self)
+static gboolean ia_read_sector_clear_text (IaReadSectorWindow *self)
 {
     gtk_text_buffer_set_text(self->priv->buffer, "", -1);
     return TRUE;
 }
 
-static gboolean ia_read_sector_append_text (IaSectorReadWindow *self, const gchar *tag_name, const gchar *format, ...)
+static gboolean ia_read_sector_append_text (IaReadSectorWindow *self, const gchar *tag_name, const gchar *format, ...)
 {
     GtkTextIter iter;
     gchar *string;
@@ -96,7 +96,7 @@ static gboolean ia_read_sector_append_text (IaSectorReadWindow *self, const gcha
     return TRUE;
 }
 
-static gboolean ia_read_sector_append_sector_data (IaSectorReadWindow *self, const guint8 *data, gint data_len, const gchar *tag_name)
+static gboolean ia_read_sector_append_sector_data (IaReadSectorWindow *self, const guint8 *data, gint data_len, const gchar *tag_name)
 {
     for (gint i = 0; i < data_len; i++) {
         ia_read_sector_append_text(self, tag_name, "%02hhX ", data[i]);
@@ -108,7 +108,7 @@ static gboolean ia_read_sector_append_sector_data (IaSectorReadWindow *self, con
 /**********************************************************************\
  *                             UI callbacks                           *
 \**********************************************************************/
-static void ia_sector_read_window_ui_callback_read (GtkWidget *button G_GNUC_UNUSED, IaSectorReadWindow *self)
+static void ia_read_sector_window_ui_callback_read (GtkWidget *button G_GNUC_UNUSED, IaReadSectorWindow *self)
 {
     MirageSector *sector;
     GError *error = NULL;
@@ -225,9 +225,9 @@ static void ia_sector_read_window_ui_callback_read (GtkWidget *button G_GNUC_UNU
 /**********************************************************************\
  *                              GUI setup                             *
 \**********************************************************************/
-static void setup_gui (IaSectorReadWindow *self)
+static void setup_gui (IaReadSectorWindow *self)
 {
-    GtkWidget *vbox, *scrolledwindow, *hbox, *button;
+    GtkWidget *grid, *scrolledwindow, *button;
     GtkAdjustment *adjustment;
 
     /* Window */
@@ -235,13 +235,17 @@ static void setup_gui (IaSectorReadWindow *self)
     gtk_window_set_default_size(GTK_WINDOW(self), 600, 400);
     gtk_container_set_border_width(GTK_CONTAINER(self), 5);
 
-    /* VBox */
-    vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
-    gtk_container_add(GTK_CONTAINER(self), vbox);
+    /* Grid */
+    grid = gtk_grid_new();
+    gtk_grid_set_row_spacing(GTK_GRID(grid), 5);
+    gtk_grid_set_column_spacing(GTK_GRID(grid), 5);
+    gtk_container_add(GTK_CONTAINER(self), grid);
 
     /* Scrolled window */
     scrolledwindow = gtk_scrolled_window_new(NULL, NULL);
-    gtk_box_pack_start(GTK_BOX(vbox), scrolledwindow, TRUE, TRUE, 0);
+    gtk_widget_set_hexpand(scrolledwindow, TRUE);
+    gtk_widget_set_vexpand(scrolledwindow, TRUE);
+    gtk_grid_attach(GTK_GRID(grid), scrolledwindow, 0, 0, 2, 1);
     gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(scrolledwindow), GTK_POLICY_NEVER, GTK_POLICY_ALWAYS);
 
     /* Text */
@@ -260,26 +264,23 @@ static void setup_gui (IaSectorReadWindow *self)
     gtk_text_buffer_create_tag(self->priv->buffer, "tag_edc_ecc", "foreground", "#FF9933", "family", "monospace", NULL); /* Orange */
     gtk_text_buffer_create_tag(self->priv->buffer, "tag_subchannel", "foreground", "#0033FF", "family", "monospace", NULL); /* Blue */
 
-    /* HBox */
-    hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5);
-    gtk_box_pack_start(GTK_BOX(vbox), hbox, FALSE, FALSE, 0);
-
     /* Spin button */
     adjustment = gtk_adjustment_new(0, G_MININT64, G_MAXINT64, 1, 75, 0);
     self->priv->spinbutton = gtk_spin_button_new(GTK_ADJUSTMENT(adjustment), 1, 0);
-    gtk_box_pack_start(GTK_BOX(hbox), self->priv->spinbutton, TRUE, TRUE, 0);
+    gtk_widget_set_hexpand(self->priv->spinbutton, TRUE);
+    gtk_grid_attach(GTK_GRID(grid), self->priv->spinbutton, 0, 1, 1, 1);
 
     /* Button */
     button = gtk_button_new_with_label("Read");
-    g_signal_connect(button, "clicked", G_CALLBACK(ia_sector_read_window_ui_callback_read), self);
-    gtk_box_pack_start(GTK_BOX(hbox), button, FALSE, FALSE, 0);
+    g_signal_connect(button, "clicked", G_CALLBACK(ia_read_sector_window_ui_callback_read), self);
+    gtk_grid_attach_next_to(GTK_GRID(grid), button, self->priv->spinbutton, GTK_POS_RIGHT, 1, 1);
 }
 
 
 /**********************************************************************\
  *                              Disc set                              *
 \**********************************************************************/
-void ia_sector_read_window_set_disc (IaSectorReadWindow *self, MirageDisc *disc)
+void ia_read_sector_window_set_disc (IaReadSectorWindow *self, MirageDisc *disc)
 {
     /* Release old disc */
     if (self->priv->disc) {
@@ -297,20 +298,20 @@ void ia_sector_read_window_set_disc (IaSectorReadWindow *self, MirageDisc *disc)
 /**********************************************************************\
  *                             Object init                            *
 \**********************************************************************/
-G_DEFINE_TYPE(IaSectorReadWindow, ia_sector_read_window, GTK_TYPE_WINDOW);
+G_DEFINE_TYPE(IaReadSectorWindow, ia_read_sector_window, GTK_TYPE_WINDOW);
 
-static void ia_sector_read_window_init (IaSectorReadWindow *self)
+static void ia_read_sector_window_init (IaReadSectorWindow *self)
 {
-    self->priv = IA_SECTOR_READ_WINDOW_GET_PRIVATE(self);
+    self->priv = IA_READ_SECTOR_WINDOW_GET_PRIVATE(self);
 
     self->priv->disc = NULL;
 
     setup_gui(self);
 }
 
-static void ia_sector_read_window_dispose (GObject *gobject)
+static void ia_read_sector_window_dispose (GObject *gobject)
 {
-    IaSectorReadWindow *self = IA_SECTOR_READ_WINDOW(gobject);
+    IaReadSectorWindow *self = IA_READ_SECTOR_WINDOW(gobject);
 
     /* Unref disc */
     if (self->priv->disc) {
@@ -319,15 +320,15 @@ static void ia_sector_read_window_dispose (GObject *gobject)
     }
 
     /* Chain up to the parent class */
-    return G_OBJECT_CLASS(ia_sector_read_window_parent_class)->dispose(gobject);
+    return G_OBJECT_CLASS(ia_read_sector_window_parent_class)->dispose(gobject);
 }
 
-static void ia_sector_read_window_class_init (IaSectorReadWindowClass *klass)
+static void ia_read_sector_window_class_init (IaReadSectorWindowClass *klass)
 {
     GObjectClass *gobject_class = G_OBJECT_CLASS(klass);
 
-    gobject_class->dispose = ia_sector_read_window_dispose;
+    gobject_class->dispose = ia_read_sector_window_dispose;
 
     /* Register private structure */
-    g_type_class_add_private(klass, sizeof(IaSectorReadWindowPrivate));
+    g_type_class_add_private(klass, sizeof(IaReadSectorWindowPrivate));
 }
