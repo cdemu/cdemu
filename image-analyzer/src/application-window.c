@@ -45,7 +45,6 @@
 struct _IaApplicationWindowPrivate
 {
     /* Disc */
-    gboolean loaded;
     MirageDisc *disc;
     IaDiscTreeDump *disc_dump;
 
@@ -239,8 +238,6 @@ static gboolean ia_application_window_close_image_or_dump (IaApplicationWindow *
     /* Clear the log */
     ia_log_window_clear_log(IA_LOG_WINDOW(self->priv->log_window));
 
-    self->priv->loaded = FALSE;
-
     return TRUE;
 }
 
@@ -278,8 +275,6 @@ static gboolean ia_application_window_open_image (IaApplicationWindow *self, gch
     ia_disc_topology_window_set_disc(IA_DISC_TOPOLOGY_WINDOW(self->priv->disc_topology_window), self->priv->disc);
     ia_sector_read_window_set_disc(IA_SECTOR_READ_WINDOW(self->priv->read_sector_window), self->priv->disc);
     ia_sector_analysis_window_set_disc(IA_SECTOR_ANALYSIS_WINDOW(self->priv->sector_analysis_window), self->priv->disc);
-
-    self->priv->loaded = TRUE;
 
     return TRUE;
 }
@@ -553,7 +548,7 @@ static void save_dump_activated (GSimpleAction *action G_GNUC_UNUSED, GVariant *
     IaApplicationWindow *self = IA_APPLICATION_WINDOW(user_data);
 
     /* We need an opened image or dump for this */
-    if (!self->priv->loaded) {
+    if (!self->priv->disc) {
         return;
     }
 
