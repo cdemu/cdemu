@@ -50,15 +50,15 @@ struct _IaApplicationWindowPrivate
     IaDiscTreeDump *disc_dump;
 
     /* Dialogs and windows */
-    GtkWidget *dialog_open_image;
-    GtkWidget *dialog_image_writer;
-    GtkWidget *dialog_open_dump;
-    GtkWidget *dialog_save_dump;
-    GtkWidget *dialog_log;
-    GtkWidget *dialog_sector;
-    GtkWidget *dialog_analysis;
-    GtkWidget *dialog_topology;
-    GtkWidget *dialog_structure;
+    GtkWidget *open_image_dialog;
+    GtkWidget *image_writer_dialog;
+    GtkWidget *open_dump_dialog;
+    GtkWidget *save_dump_dialog;
+    GtkWidget *log_window;
+    GtkWidget *read_sector_window;
+    GtkWidget *sector_analysis_window;
+    GtkWidget *disc_topology_window;
+    GtkWidget *disc_structure_window;
 
     /* Status bar */
     GtkWidget *statusbar;
@@ -76,7 +76,7 @@ struct _IaApplicationWindowPrivate
 static void capture_log (const gchar *log_domain G_GNUC_UNUSED, GLogLevelFlags log_level, const gchar *message, IaApplicationWindow *self)
 {
     /* Append to log */
-    ia_log_window_append_to_log(IA_LOG_WINDOW(self->priv->dialog_log), message);
+    ia_log_window_append_to_log(IA_LOG_WINDOW(self->priv->log_window), message);
 
     /* Errors, critical errors and warnings are always printed to stdout */
     if (log_level & G_LOG_LEVEL_ERROR) {
@@ -104,7 +104,7 @@ static void ia_application_window_set_debug_to_stdout (IaApplicationWindow *self
     self->priv->debug_to_stdout = enabled;
 
     /* Set to GUI (libMirage log window) */
-    ia_log_window_set_debug_to_stdout(IA_LOG_WINDOW(self->priv->dialog_log), enabled);
+    ia_log_window_set_debug_to_stdout(IA_LOG_WINDOW(self->priv->log_window), enabled);
 }
 
 static void ia_application_window_set_debug_mask (IaApplicationWindow *self, gint debug_mask)
@@ -131,7 +131,7 @@ static void ia_application_window_change_debug_mask (IaApplicationWindow *self)
 
     /* Construct dialog */
     dialog = gtk_dialog_new_with_buttons("Debug mask",
-                                         GTK_WINDOW(self->priv->dialog_log),
+                                         GTK_WINDOW(self->priv->log_window),
                                          GTK_DIALOG_MODAL,
                                          "OK", GTK_RESPONSE_ACCEPT,
                                          "Cancel", GTK_RESPONSE_REJECT,
@@ -252,10 +252,10 @@ static gboolean ia_application_window_close_image_or_dump (IaApplicationWindow *
     ia_disc_tree_dump_clear(self->priv->disc_dump);
 
     /* Clear disc reference in child windows */
-    ia_disc_structure_window_set_disc(IA_DISC_STRUCTURE_WINDOW(self->priv->dialog_structure), NULL);
-    ia_disc_topology_window_set_disc(IA_DISC_TOPOLOGY_WINDOW(self->priv->dialog_topology), NULL);
-    ia_sector_read_window_set_disc(IA_SECTOR_READ_WINDOW(self->priv->dialog_sector), NULL);
-    ia_sector_analysis_window_set_disc(IA_SECTOR_ANALYSIS_WINDOW(self->priv->dialog_analysis), NULL);
+    ia_disc_structure_window_set_disc(IA_DISC_STRUCTURE_WINDOW(self->priv->disc_structure_window), NULL);
+    ia_disc_topology_window_set_disc(IA_DISC_TOPOLOGY_WINDOW(self->priv->disc_topology_window), NULL);
+    ia_sector_read_window_set_disc(IA_SECTOR_READ_WINDOW(self->priv->read_sector_window), NULL);
+    ia_sector_analysis_window_set_disc(IA_SECTOR_ANALYSIS_WINDOW(self->priv->sector_analysis_window), NULL);
 
     /* Release disc reference */
     if (self->priv->disc) {
@@ -269,7 +269,7 @@ static gboolean ia_application_window_close_image_or_dump (IaApplicationWindow *
     }
 
     /* Clear the log */
-    ia_log_window_clear_log(IA_LOG_WINDOW(self->priv->dialog_log));
+    ia_log_window_clear_log(IA_LOG_WINDOW(self->priv->log_window));
 
     self->priv->loaded = FALSE;
 
@@ -296,10 +296,10 @@ static gboolean ia_application_window_open_image (IaApplicationWindow *self, gch
     ia_disc_tree_dump_create_from_disc(self->priv->disc_dump, self->priv->disc);
 
     /* Set disc reference in child windows */
-    ia_disc_structure_window_set_disc(IA_DISC_STRUCTURE_WINDOW(self->priv->dialog_structure), self->priv->disc);
-    ia_disc_topology_window_set_disc(IA_DISC_TOPOLOGY_WINDOW(self->priv->dialog_topology), self->priv->disc);
-    ia_sector_read_window_set_disc(IA_SECTOR_READ_WINDOW(self->priv->dialog_sector), self->priv->disc);
-    ia_sector_analysis_window_set_disc(IA_SECTOR_ANALYSIS_WINDOW(self->priv->dialog_analysis), self->priv->disc);
+    ia_disc_structure_window_set_disc(IA_DISC_STRUCTURE_WINDOW(self->priv->disc_structure_window), self->priv->disc);
+    ia_disc_topology_window_set_disc(IA_DISC_TOPOLOGY_WINDOW(self->priv->disc_topology_window), self->priv->disc);
+    ia_sector_read_window_set_disc(IA_SECTOR_READ_WINDOW(self->priv->read_sector_window), self->priv->disc);
+    ia_sector_analysis_window_set_disc(IA_SECTOR_ANALYSIS_WINDOW(self->priv->sector_analysis_window), self->priv->disc);
 
     self->priv->loaded = TRUE;
 
@@ -425,10 +425,12 @@ static void ia_application_window_convert_image (IaApplicationWindow *self, Mira
 /**********************************************************************\
  *                             UI callbacks                           *
 \**********************************************************************/
-static void ui_callback_open_image (GtkAction *action G_GNUC_UNUSED, IaApplicationWindow *self)
+static void open_image_activated (GSimpleAction *action G_GNUC_UNUSED, GVariant *parameter G_GNUC_UNUSED, gpointer user_data)
 {
+    IaApplicationWindow *self = IA_APPLICATION_WINDOW(user_data);
+
     /* Run the dialog */
-    if (gtk_dialog_run(GTK_DIALOG(self->priv->dialog_open_image)) == GTK_RESPONSE_ACCEPT) {
+    if (gtk_dialog_run(GTK_DIALOG(self->priv->open_image_dialog)) == GTK_RESPONSE_ACCEPT) {
         GSList *filenames_list;
         GSList *entry;
         gint num_filenames;
@@ -436,7 +438,7 @@ static void ui_callback_open_image (GtkAction *action G_GNUC_UNUSED, IaApplicati
         gint i = 0;
 
         /* Get filenames from dialog */
-        filenames_list = gtk_file_chooser_get_filenames(GTK_FILE_CHOOSER(self->priv->dialog_open_image));
+        filenames_list = gtk_file_chooser_get_filenames(GTK_FILE_CHOOSER(self->priv->open_image_dialog));
 
         /* Create strings array */
         num_filenames = g_slist_length(filenames_list);
@@ -458,11 +460,13 @@ static void ui_callback_open_image (GtkAction *action G_GNUC_UNUSED, IaApplicati
         g_strfreev(filenames);
     }
 
-    gtk_widget_hide(GTK_WIDGET(self->priv->dialog_open_image));
+    gtk_widget_hide(GTK_WIDGET(self->priv->open_image_dialog));
 }
 
-static void ui_callback_convert_image (GtkAction *action G_GNUC_UNUSED, IaApplicationWindow *self)
+static void convert_image_activated (GSimpleAction *action G_GNUC_UNUSED, GVariant *parameter G_GNUC_UNUSED, gpointer user_data)
 {
+    IaApplicationWindow *self = IA_APPLICATION_WINDOW(user_data);
+
     /* We need an opened image for this */
     if (!self->priv->disc) {
         return;
@@ -476,14 +480,14 @@ static void ui_callback_convert_image (GtkAction *action G_GNUC_UNUSED, IaApplic
     gint response;
 
     while (TRUE) {
-        response = gtk_dialog_run(GTK_DIALOG(self->priv->dialog_image_writer));
+        response = gtk_dialog_run(GTK_DIALOG(self->priv->image_writer_dialog));
 
         if (response == GTK_RESPONSE_ACCEPT) {
             /* Validate filename */
-            filename = ia_writer_dialog_get_filename(IA_WRITER_DIALOG(self->priv->dialog_image_writer));
+            filename = ia_writer_dialog_get_filename(IA_WRITER_DIALOG(self->priv->image_writer_dialog));
             if (!filename || !strlen(filename)) {
                 GtkWidget *message_dialog = gtk_message_dialog_new(
-                    GTK_WINDOW(self->priv->dialog_image_writer),
+                    GTK_WINDOW(self->priv->image_writer_dialog),
                     GTK_DIALOG_DESTROY_WITH_PARENT,
                     GTK_MESSAGE_ERROR,
                     GTK_BUTTONS_CLOSE,
@@ -495,10 +499,10 @@ static void ui_callback_convert_image (GtkAction *action G_GNUC_UNUSED, IaApplic
             }
 
             /* Validate writer */
-            writer = ia_writer_dialog_get_writer(IA_WRITER_DIALOG(self->priv->dialog_image_writer));
+            writer = ia_writer_dialog_get_writer(IA_WRITER_DIALOG(self->priv->image_writer_dialog));
             if (!writer) {
                 GtkWidget *message_dialog = gtk_message_dialog_new(
-                    GTK_WINDOW(self->priv->dialog_image_writer),
+                    GTK_WINDOW(self->priv->image_writer_dialog),
                     GTK_DIALOG_DESTROY_WITH_PARENT,
                     GTK_MESSAGE_ERROR,
                     GTK_BUTTONS_CLOSE,
@@ -510,7 +514,7 @@ static void ui_callback_convert_image (GtkAction *action G_GNUC_UNUSED, IaApplic
             }
 
             /* Get writer parameters */
-            writer_parameters = ia_writer_dialog_get_writer_parameters(IA_WRITER_DIALOG(self->priv->dialog_image_writer));
+            writer_parameters = ia_writer_dialog_get_writer_parameters(IA_WRITER_DIALOG(self->priv->image_writer_dialog));
 
             break;
         } else {
@@ -519,7 +523,7 @@ static void ui_callback_convert_image (GtkAction *action G_GNUC_UNUSED, IaApplic
     }
 
     /* Hide the dialog */
-    gtk_widget_hide(GTK_WIDGET(self->priv->dialog_image_writer));
+    gtk_widget_hide(GTK_WIDGET(self->priv->image_writer_dialog));
 
     /* Conversion */
     if (response == GTK_RESPONSE_ACCEPT) {
@@ -531,14 +535,16 @@ static void ui_callback_convert_image (GtkAction *action G_GNUC_UNUSED, IaApplic
     }
 }
 
-static void ui_callback_open_dump (GtkAction *action G_GNUC_UNUSED, IaApplicationWindow *self)
+static void open_dump_activated (GSimpleAction *action G_GNUC_UNUSED, GVariant *parameter G_GNUC_UNUSED, gpointer user_data)
 {
+    IaApplicationWindow *self = IA_APPLICATION_WINDOW(user_data);
+
     /* Run the dialog */
-    if (gtk_dialog_run(GTK_DIALOG(self->priv->dialog_open_dump)) == GTK_RESPONSE_ACCEPT) {
+    if (gtk_dialog_run(GTK_DIALOG(self->priv->open_dump_dialog)) == GTK_RESPONSE_ACCEPT) {
         gchar *filename;
 
         /* Get filenames from dialog */
-        filename = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(self->priv->dialog_open_dump));
+        filename = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(self->priv->open_dump_dialog));
 
         /* Open dump */
         ia_application_window_open_dump(self, filename);
@@ -547,22 +553,25 @@ static void ui_callback_open_dump (GtkAction *action G_GNUC_UNUSED, IaApplicatio
         g_free(filename);
     }
 
-    gtk_widget_hide(GTK_WIDGET(self->priv->dialog_open_dump));
+    gtk_widget_hide(GTK_WIDGET(self->priv->open_dump_dialog));
 }
 
-static void ui_callback_save_dump (GtkAction *action G_GNUC_UNUSED, IaApplicationWindow *self)
+
+static void save_dump_activated (GSimpleAction *action G_GNUC_UNUSED, GVariant *parameter G_GNUC_UNUSED, gpointer user_data)
 {
+    IaApplicationWindow *self = IA_APPLICATION_WINDOW(user_data);
+
     /* We need an opened image or dump for this */
     if (!self->priv->loaded) {
         return;
     }
 
     /* Run the dialog */
-    if (gtk_dialog_run(GTK_DIALOG(self->priv->dialog_save_dump)) == GTK_RESPONSE_ACCEPT) {
+    if (gtk_dialog_run(GTK_DIALOG(self->priv->save_dump_dialog)) == GTK_RESPONSE_ACCEPT) {
         gchar *filename;
 
         /* Get filenames from dialog */
-        filename = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(self->priv->dialog_save_dump));
+        filename = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(self->priv->save_dump_dialog));
 
         /* Save */
         ia_application_window_save_dump(self, filename);
@@ -571,70 +580,51 @@ static void ui_callback_save_dump (GtkAction *action G_GNUC_UNUSED, IaApplicatio
         g_free(filename);
     }
 
-    gtk_widget_hide(GTK_WIDGET(self->priv->dialog_save_dump));
+    gtk_widget_hide(GTK_WIDGET(self->priv->save_dump_dialog));
 }
 
-static void ui_callback_close (GtkAction *action G_GNUC_UNUSED, IaApplicationWindow *self)
+
+static void close_activated (GSimpleAction *action G_GNUC_UNUSED, GVariant *parameter G_GNUC_UNUSED, gpointer user_data)
 {
-    ia_application_window_close_image_or_dump(self);
+    IaApplicationWindow *self = IA_APPLICATION_WINDOW(user_data);
+    gtk_widget_destroy(GTK_WIDGET(self));
 }
 
-static void ui_callback_quit (GtkAction *action G_GNUC_UNUSED, gpointer user_data G_GNUC_UNUSED)
+static void log_window_activated (GSimpleAction *action G_GNUC_UNUSED, GVariant *parameter G_GNUC_UNUSED, gpointer user_data)
 {
-    gtk_main_quit();
+    IaApplicationWindow *self = IA_APPLICATION_WINDOW(user_data);
+    gtk_widget_show_all(GTK_WIDGET(self->priv->log_window));
+    gtk_window_present(GTK_WINDOW(self->priv->log_window));
 }
 
-
-static void ui_callback_log_window (GtkAction *action G_GNUC_UNUSED, IaApplicationWindow *self)
+static void read_sector_window_activated (GSimpleAction *action G_GNUC_UNUSED, GVariant *parameter G_GNUC_UNUSED, gpointer user_data)
 {
-    /* Make window (re)appear by first hiding, then showing it */
-    gtk_widget_hide(self->priv->dialog_log);
-    gtk_widget_show_all(self->priv->dialog_log);
+    IaApplicationWindow *self = IA_APPLICATION_WINDOW(user_data);
+    gtk_widget_show_all(GTK_WIDGET(self->priv->read_sector_window));
+    gtk_window_present(GTK_WINDOW(self->priv->read_sector_window));
 }
 
-static void ui_callback_sector (GtkAction *action G_GNUC_UNUSED, IaApplicationWindow *self)
+static void sector_analysis_window_activated (GSimpleAction *action G_GNUC_UNUSED, GVariant *parameter G_GNUC_UNUSED, gpointer user_data)
 {
-    /* Make window (re)appear by first hiding, then showing it */
-    gtk_widget_hide(self->priv->dialog_sector);
-    gtk_widget_show_all(self->priv->dialog_sector);
+    IaApplicationWindow *self = IA_APPLICATION_WINDOW(user_data);
+    gtk_widget_show_all(GTK_WIDGET(self->priv->sector_analysis_window));
+    gtk_window_present(GTK_WINDOW(self->priv->sector_analysis_window));
 }
 
-static void ui_callback_analysis (GtkAction *action G_GNUC_UNUSED, IaApplicationWindow *self)
+static void disc_topology_window_activated (GSimpleAction *action G_GNUC_UNUSED, GVariant *parameter G_GNUC_UNUSED, gpointer user_data)
 {
-    /* Make window (re)appear by first hiding, then showing it */
-    gtk_widget_hide(self->priv->dialog_analysis);
-    gtk_widget_show_all(self->priv->dialog_analysis);
+    IaApplicationWindow *self = IA_APPLICATION_WINDOW(user_data);
+    gtk_widget_show_all(GTK_WIDGET(self->priv->disc_topology_window));
+    gtk_window_present(GTK_WINDOW(self->priv->disc_topology_window));
 }
 
-static void ui_callback_topology (GtkAction *action G_GNUC_UNUSED, IaApplicationWindow *self)
+static void disc_structure_window_activated (GSimpleAction *action G_GNUC_UNUSED, GVariant *parameter G_GNUC_UNUSED, gpointer user_data)
 {
-    /* Make window (re)appear by first hiding, then showing it */
-    gtk_widget_hide(self->priv->dialog_topology);
-    gtk_widget_show_all(self->priv->dialog_topology);
+    IaApplicationWindow *self = IA_APPLICATION_WINDOW(user_data);
+    gtk_widget_show_all(GTK_WIDGET(self->priv->disc_structure_window));
+    gtk_window_present(GTK_WINDOW(self->priv->disc_structure_window));
 }
 
-static void ui_callback_structure (GtkAction *action G_GNUC_UNUSED, IaApplicationWindow *self)
-{
-    /* Make window (re)appear by first hiding, then showing it */
-    gtk_widget_hide(self->priv->dialog_structure);
-    gtk_widget_show_all(self->priv->dialog_structure);
-}
-
-static void ui_callback_about (GtkAction *action G_GNUC_UNUSED, IaApplicationWindow *self)
-{
-    gchar *authors[] = { "Rok Mandeljc <rok.mandeljc@gmail.com>", NULL };
-
-    gtk_show_about_dialog(
-        GTK_WINDOW(self),
-        "name", "Image Analyzer",
-        "comments", "Image Analyzer displays tree structure of disc image created by libMirage.",
-        "version", IMAGE_ANALYZER_VERSION,
-        "authors", authors,
-        "copyright", "Copyright (C) 2007-2012 Rok Mandeljc",
-        NULL);
-
-    return;
-}
 
 static void callback_debug_to_stdout_change_requested (IaLogWindow *log_window G_GNUC_UNUSED, gboolean value, IaApplicationWindow *self)
 {
@@ -787,53 +777,20 @@ static GtkWidget *build_dialog_save_dump (GtkWindow *parent_window)
     return dialog;
 }
 
-static const GtkActionEntry menu_entries[] = {
-    { "FileMenuAction", NULL, "_File", NULL, NULL, NULL },
-    { "ImageMenuAction", NULL, "_Image", NULL, NULL, NULL },
-    { "HelpMenuAction", NULL, "_Help", NULL, NULL, NULL },
-
-    { "OpenImageAction", GTK_STOCK_OPEN, "_Open image", "<control>O", "Open image", G_CALLBACK(ui_callback_open_image) },
-    { "ConvertImageAction", GTK_STOCK_SAVE, "_Convert image", "<control>C", "Convert image", G_CALLBACK(ui_callback_convert_image) },
-    { "OpenDumpAction", GTK_STOCK_OPEN, "Open _dump", "<control>D", "Open dump", G_CALLBACK(ui_callback_open_dump) },
-    { "SaveDumpAction", GTK_STOCK_SAVE, "_Save dump", "<control>S", "Save dump", G_CALLBACK(ui_callback_save_dump) },
-    { "CloseAction", GTK_STOCK_CLOSE, "_Close", "<control>W", "Close", G_CALLBACK(ui_callback_close) },
-    { "QuitAction", GTK_STOCK_QUIT, "_Quit", "<control>Q", "Quit", G_CALLBACK(ui_callback_quit) },
-
-    { "LogAction", GTK_STOCK_DIALOG_INFO, "libMirage _log", "<control>L", "libMirage log", G_CALLBACK(ui_callback_log_window) },
-    { "SectorAction", GTK_STOCK_EXECUTE, "_Read sector", "<control>R", "Read sector", G_CALLBACK(ui_callback_sector) },
-    { "AnalysisAction", GTK_STOCK_EXECUTE, "Sector _Analysis", "<control>A", "Sector analysis", G_CALLBACK(ui_callback_analysis) },
-    { "TopologyAction", GTK_STOCK_EXECUTE, "Disc _topology", "<control>T", "Disc topology", G_CALLBACK(ui_callback_topology) },
-    { "StructureAction", GTK_STOCK_EXECUTE, "Disc stru_cture", "<control>C", "Disc structures", G_CALLBACK(ui_callback_structure) },
-
-    { "AboutAction", GTK_STOCK_ABOUT, "_About", NULL, "About", G_CALLBACK(ui_callback_about) },
+static GActionEntry win_entries[] = {
+    /* Image actions */
+    { "open_image", open_image_activated, NULL, NULL, NULL, {0} },
+    { "convert_image", convert_image_activated, NULL, NULL, NULL, {0} },
+    { "open_dump", open_dump_activated, NULL, NULL, NULL, {0} },
+    { "save_dump", save_dump_activated, NULL, NULL, NULL, {0} },
+    { "close", close_activated, NULL, NULL, NULL, {0} },
+    /* Tools actions */
+    { "log_window", log_window_activated, NULL, NULL, NULL, {0} },
+    { "read_sector_window", read_sector_window_activated, NULL, NULL, NULL, {0} },
+    { "sector_analysis_window", sector_analysis_window_activated, NULL, NULL, NULL, {0} },
+    { "disc_topology_window", disc_topology_window_activated, NULL, NULL, NULL, {0} },
+    { "disc_structure_window", disc_structure_window_activated, NULL, NULL, NULL, {0} },
 };
-
-static const gchar menu_xml[] =
-    "<ui>"
-    "   <menubar name='MenuBar'>"
-    "       <menu name='FileMenu' action='FileMenuAction'>"
-    "           <menuitem name='Open image' action='OpenImageAction' />"
-    "           <menuitem name='Convert image' action='ConvertImageAction' />"
-    "           <separator/>"
-    "           <menuitem name='Open dump' action='OpenDumpAction' />"
-    "           <menuitem name='Save dump' action='SaveDumpAction' />"
-    "           <separator/>"
-    "           <menuitem name='Close' action='CloseAction' />"
-    "           <menuitem name='Quit' action='QuitAction' />"
-    "       </menu>"
-    "       <menu name='Image' action='ImageMenuAction'>"
-    "           <menuitem name='libMirage log' action='LogAction' />"
-    "           <menuitem name='Read sector' action='SectorAction' />"
-    "           <menuitem name='Sector analysis' action='AnalysisAction' />"
-    "           <menuitem name='Disc topology' action='TopologyAction' />"
-    "           <menuitem name='Disc structures' action='StructureAction' />"
-    "       </menu>"
-    "       <menu name='HelpMenu' action='HelpMenuAction'>"
-    "           <menuitem name='About' action='AboutAction' />"
-    "       </menu>"
-    "   </menubar>"
-    "</ui>";
-
 
 static void create_gui (IaApplicationWindow *self)
 {
@@ -843,6 +800,9 @@ static void create_gui (IaApplicationWindow *self)
     gtk_window_set_title(GTK_WINDOW(self), "Image analyzer");
     gtk_window_set_default_size(GTK_WINDOW(self), 300, 400);
     gtk_container_set_border_width(GTK_CONTAINER(self), 5);
+
+    /* Actions */
+    g_action_map_add_action_entries(G_ACTION_MAP(self), win_entries, G_N_ELEMENTS(win_entries), self);
 
     /* VBox */
     vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
@@ -872,36 +832,36 @@ static void create_gui (IaApplicationWindow *self)
     self->priv->context_id = gtk_statusbar_get_context_id(GTK_STATUSBAR(self->priv->statusbar), "Message");
 
     /* Load/save dialogs */
-    self->priv->dialog_open_image = build_dialog_open_image(GTK_WINDOW(self));
-    self->priv->dialog_open_dump = build_dialog_open_dump(GTK_WINDOW(self));
-    self->priv->dialog_save_dump = build_dialog_save_dump(GTK_WINDOW(self));
+    self->priv->open_image_dialog = build_dialog_open_image(GTK_WINDOW(self));
+    self->priv->open_dump_dialog = build_dialog_open_dump(GTK_WINDOW(self));
+    self->priv->save_dump_dialog = build_dialog_save_dump(GTK_WINDOW(self));
 
     /* Image writer dialog */
-    self->priv->dialog_image_writer = g_object_new(IA_TYPE_WRITER_DIALOG, NULL);
+    self->priv->image_writer_dialog = g_object_new(IA_TYPE_WRITER_DIALOG, NULL);
 
-    /* Mirage log dialog */
-    self->priv->dialog_log = g_object_new(IA_TYPE_LOG_WINDOW, NULL);
-    g_signal_connect(self->priv->dialog_log, "delete_event", G_CALLBACK(gtk_widget_hide_on_delete), NULL);
-    g_signal_connect(self->priv->dialog_log, "debug_to_stdout_change_requested", G_CALLBACK(callback_debug_to_stdout_change_requested), self);
-    g_signal_connect(self->priv->dialog_log, "debug_mask_change_requested", G_CALLBACK(callback_debug_mask_change_requested), self);
+    /* Log window */
+    self->priv->log_window = g_object_new(IA_TYPE_LOG_WINDOW, NULL);
+    g_signal_connect(self->priv->log_window, "delete_event", G_CALLBACK(gtk_widget_hide_on_delete), NULL);
+    g_signal_connect(self->priv->log_window, "debug_to_stdout_change_requested", G_CALLBACK(callback_debug_to_stdout_change_requested), self);
+    g_signal_connect(self->priv->log_window, "debug_mask_change_requested", G_CALLBACK(callback_debug_mask_change_requested), self);
 
-    /* Sector read dialog */
-    self->priv->dialog_sector = g_object_new(IA_TYPE_SECTOR_READ_WINDOW, NULL);
-    g_signal_connect(self->priv->dialog_sector, "delete_event", G_CALLBACK(gtk_widget_hide_on_delete), NULL);
+    /* Read sector window */
+    self->priv->read_sector_window = g_object_new(IA_TYPE_SECTOR_READ_WINDOW, NULL);
+    g_signal_connect(self->priv->read_sector_window, "delete_event", G_CALLBACK(gtk_widget_hide_on_delete), NULL);
 
-    /* Sector analysis dialog */
-    self->priv->dialog_analysis = g_object_new(IA_TYPE_SECTOR_ANALYSIS_WINDOW, NULL);
-    g_signal_connect(self->priv->dialog_analysis, "delete_event", G_CALLBACK(gtk_widget_hide_on_delete), NULL);
+    /* Sector analysis window */
+    self->priv->sector_analysis_window = g_object_new(IA_TYPE_SECTOR_ANALYSIS_WINDOW, NULL);
+    g_signal_connect(self->priv->sector_analysis_window, "delete_event", G_CALLBACK(gtk_widget_hide_on_delete), NULL);
 
     /* Disc topology dialog */
-    self->priv->dialog_topology = g_object_new(IA_TYPE_DISC_TOPOLOGY_WINDOW, NULL);
-    g_signal_connect(self->priv->dialog_topology, "delete_event", G_CALLBACK(gtk_widget_hide_on_delete), NULL);
-    ia_disc_topology_window_set_disc(IA_DISC_TOPOLOGY_WINDOW(self->priv->dialog_topology), NULL);
+    self->priv->disc_topology_window = g_object_new(IA_TYPE_DISC_TOPOLOGY_WINDOW, NULL);
+    g_signal_connect(self->priv->disc_topology_window, "delete_event", G_CALLBACK(gtk_widget_hide_on_delete), NULL);
+    ia_disc_topology_window_set_disc(IA_DISC_TOPOLOGY_WINDOW(self->priv->disc_topology_window), NULL);
 
-    /* Disc structures dialog */
-    self->priv->dialog_structure = g_object_new(IA_TYPE_DISC_STRUCTURE_WINDOW, NULL);
-    g_signal_connect(self->priv->dialog_structure, "delete_event", G_CALLBACK(gtk_widget_hide_on_delete), NULL);
-    ia_disc_structure_window_set_disc(IA_DISC_STRUCTURE_WINDOW(self->priv->dialog_structure), NULL);
+    /* Disc structure dialog */
+    self->priv->disc_structure_window = g_object_new(IA_TYPE_DISC_STRUCTURE_WINDOW, NULL);
+    g_signal_connect(self->priv->disc_structure_window, "delete_event", G_CALLBACK(gtk_widget_hide_on_delete), NULL);
+    ia_disc_structure_window_set_disc(IA_DISC_STRUCTURE_WINDOW(self->priv->disc_structure_window), NULL);
 }
 
 
@@ -988,15 +948,15 @@ static void ia_application_window_finalize (GObject *gobject)
 {
     IaApplicationWindow *self = IA_APPLICATION_WINDOW(gobject);
 
-    gtk_widget_destroy(self->priv->dialog_open_image);
-    gtk_widget_destroy(self->priv->dialog_image_writer);
-    gtk_widget_destroy(self->priv->dialog_open_dump);
-    gtk_widget_destroy(self->priv->dialog_save_dump);
-    gtk_widget_destroy(self->priv->dialog_log);
-    gtk_widget_destroy(self->priv->dialog_sector);
-    gtk_widget_destroy(self->priv->dialog_analysis);
-    gtk_widget_destroy(self->priv->dialog_topology);
-    gtk_widget_destroy(self->priv->dialog_structure);
+    gtk_widget_destroy(self->priv->open_image_dialog);
+    gtk_widget_destroy(self->priv->image_writer_dialog);
+    gtk_widget_destroy(self->priv->open_dump_dialog);
+    gtk_widget_destroy(self->priv->save_dump_dialog);
+    gtk_widget_destroy(self->priv->log_window);
+    gtk_widget_destroy(self->priv->read_sector_window);
+    gtk_widget_destroy(self->priv->sector_analysis_window);
+    gtk_widget_destroy(self->priv->disc_topology_window);
+    gtk_widget_destroy(self->priv->disc_structure_window);
 
     /* Chain up to the parent class */
     return G_OBJECT_CLASS(ia_application_window_parent_class)->finalize(gobject);
