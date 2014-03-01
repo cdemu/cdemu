@@ -309,9 +309,9 @@ static void ia_read_sector_window_init (IaReadSectorWindow *self)
     setup_gui(self);
 }
 
-static void ia_read_sector_window_dispose (GObject *gobject)
+static void ia_read_sector_window_dispose (GObject *object)
 {
-    IaReadSectorWindow *self = IA_READ_SECTOR_WINDOW(gobject);
+    IaReadSectorWindow *self = IA_READ_SECTOR_WINDOW(object);
 
     /* Unref disc */
     if (self->priv->disc) {
@@ -320,7 +320,7 @@ static void ia_read_sector_window_dispose (GObject *gobject)
     }
 
     /* Chain up to the parent class */
-    return G_OBJECT_CLASS(ia_read_sector_window_parent_class)->dispose(gobject);
+    return G_OBJECT_CLASS(ia_read_sector_window_parent_class)->dispose(object);
 }
 
 static void ia_read_sector_window_class_init (IaReadSectorWindowClass *klass)

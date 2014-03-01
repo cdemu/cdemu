@@ -59,6 +59,7 @@ void ia_log_window_append_to_log (IaLogWindow *self, const gchar *message);
 gchar *ia_log_window_get_log_text (IaLogWindow *self);
 
 void ia_log_window_set_debug_to_stdout (IaLogWindow *self, gboolean enabled);
+gboolean ia_log_window_get_debug_to_stdout (IaLogWindow *self);
 
 G_END_DECLS
 

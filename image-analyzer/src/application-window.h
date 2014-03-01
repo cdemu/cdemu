@@ -50,6 +50,8 @@ struct _IaApplicationWindowClass {
 /* Used by IA_TYPE_APPLICATION_WINDOW */
 GType ia_application_window_get_type (void);
 
+void ia_application_window_setup_logger (IaApplicationWindow *self);
+
 G_END_DECLS
 
 #endif /* __IMAGE_ANALYZER_APPLICATION_WINDOW_H__ */

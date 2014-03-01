@@ -60,111 +60,31 @@ struct _IaApplicationWindowPrivate
 
     /* Debug */
     MirageContext *mirage_context;
-    gboolean debug_to_stdout;
+    guint logger_id;
 };
 
 
 /**********************************************************************\
  *                      Debug and logging redirection                 *
 \**********************************************************************/
-static void capture_log (const gchar *log_domain G_GNUC_UNUSED, GLogLevelFlags log_level, const gchar *message, IaApplicationWindow *self)
+/* This handler makes use of the fact that we set different log domain
+   for each application window's context, based on the window ID. */
+static void ia_application_window_logger (const gchar *log_domain, GLogLevelFlags log_level, const gchar *message, IaApplicationWindow *self)
 {
     /* Append to log */
     ia_log_window_append_to_log(IA_LOG_WINDOW(self->priv->log_window), message);
 
     /* Errors, critical errors and warnings are always printed to stdout */
     if (log_level & G_LOG_LEVEL_ERROR) {
-        g_print("ERROR: %s", message);
-        return;
+        g_print("%s: ERROR: %s", log_domain, message);
+    } else if (log_level & G_LOG_LEVEL_CRITICAL) {
+        g_print("%s: CRITICAL: %s", log_domain, message);
+    } else if (log_level & G_LOG_LEVEL_WARNING) {
+        g_print("%s: WARNING: %s", log_domain, message);
+    } else if (ia_log_window_get_debug_to_stdout(IA_LOG_WINDOW(self->priv->log_window))) {
+        /* Debug messages are printed to stdout only if user requested so */
+        g_print("%s: %s", log_domain, message);
     }
-    if (log_level & G_LOG_LEVEL_CRITICAL) {
-        g_print("CRITICAL: %s", message);
-        return;
-    }
-    if (log_level & G_LOG_LEVEL_WARNING) {
-        g_print("WARNING: %s", message);
-        return;
-    }
-
-    /* Debug messages are printed to stdout only if user requested so */
-    if (self->priv->debug_to_stdout) {
-        g_print("%s", message);
-    }
-}
-
-static void ia_application_window_set_debug_to_stdout (IaApplicationWindow *self, gboolean enabled)
-{
-    /* Debug flag */
-    self->priv->debug_to_stdout = enabled;
-
-    /* Set to GUI (libMirage log window) */
-    ia_log_window_set_debug_to_stdout(IA_LOG_WINDOW(self->priv->log_window), enabled);
-}
-
-static void ia_application_window_set_debug_mask (IaApplicationWindow *self, gint debug_mask)
-{
-    /* Debug mask */
-    mirage_context_set_debug_mask(self->priv->mirage_context, debug_mask);
-}
-
-static void ia_application_window_change_debug_mask (IaApplicationWindow *self)
-{
-    GtkWidget *dialog, *content_area;
-    GtkWidget *grid;
-    GtkWidget **entries = NULL;
-    gint mask;
-
-    const MirageDebugMaskInfo *valid_masks;
-    gint num_valid_masks;
-
-    /* Get list of supported debug masks */
-    mirage_get_supported_debug_masks(&valid_masks, &num_valid_masks, NULL);
-
-    /* Get mask from debug context */
-    mask = mirage_context_get_debug_mask(self->priv->mirage_context);
-
-    /* Construct dialog */
-    dialog = gtk_dialog_new_with_buttons("Debug mask",
-                                         GTK_WINDOW(self->priv->log_window),
-                                         GTK_DIALOG_MODAL,
-                                         "OK", GTK_RESPONSE_ACCEPT,
-                                         "Cancel", GTK_RESPONSE_REJECT,
-                                         NULL);
-
-    /* Create the mask widgets */
-    grid = gtk_grid_new();
-    gtk_grid_set_row_spacing(GTK_GRID(grid), 2);
-    gtk_orientable_set_orientation(GTK_ORIENTABLE(grid), GTK_ORIENTATION_VERTICAL);
-
-    content_area = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
-    gtk_container_add(GTK_CONTAINER(content_area), grid);
-
-    entries = g_new(GtkWidget *, num_valid_masks);
-    for (gint i = 0; i < num_valid_masks; i++) {
-        entries[i] = gtk_check_button_new_with_label(valid_masks[i].name);
-        gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(entries[i]), mask & valid_masks[i].value);
-        gtk_container_add(GTK_CONTAINER(grid), entries[i]);
-    }
-
-    gtk_widget_show_all(grid);
-
-    /* Run the dialog */
-    if (gtk_dialog_run(GTK_DIALOG(dialog)) == GTK_RESPONSE_ACCEPT) {
-        mask = 0;
-
-        for (gint i = 0; i < num_valid_masks; i++) {
-            if (gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(entries[i]))) {
-                mask |= valid_masks[i].value;
-            }
-        }
-
-        /* Set the mask */
-        mirage_context_set_debug_mask(self->priv->mirage_context, mask);
-    }
-
-    /* Destroy dialog */
-    gtk_widget_destroy(dialog);
-    g_free(entries);
 }
 
 
@@ -286,6 +206,10 @@ static gboolean ia_application_window_open_image (IaApplicationWindow *self, gch
     return TRUE;
 }
 
+
+/**********************************************************************\
+ *                            Open/save dump                          *
+\**********************************************************************/
 static void ia_application_window_open_dump (IaApplicationWindow *self, gchar *filename)
 {
     GError *error = NULL;
@@ -416,7 +340,7 @@ static void ia_application_window_convert_image (IaApplicationWindow *self, Mira
 
 
 /**********************************************************************\
- *                             UI callbacks                           *
+ *                      Application window actions                    *
 \**********************************************************************/
 static void open_image_activated (GSimpleAction *action G_GNUC_UNUSED, GVariant *parameter G_GNUC_UNUSED, gpointer user_data)
 {
@@ -549,7 +473,6 @@ static void open_dump_activated (GSimpleAction *action G_GNUC_UNUSED, GVariant *
     gtk_widget_hide(GTK_WIDGET(self->priv->open_dump_dialog));
 }
 
-
 static void save_dump_activated (GSimpleAction *action G_GNUC_UNUSED, GVariant *parameter G_GNUC_UNUSED, gpointer user_data)
 {
     IaApplicationWindow *self = IA_APPLICATION_WINDOW(user_data);
@@ -576,12 +499,12 @@ static void save_dump_activated (GSimpleAction *action G_GNUC_UNUSED, GVariant *
     gtk_widget_hide(GTK_WIDGET(self->priv->save_dump_dialog));
 }
 
-
 static void close_activated (GSimpleAction *action G_GNUC_UNUSED, GVariant *parameter G_GNUC_UNUSED, gpointer user_data)
 {
     IaApplicationWindow *self = IA_APPLICATION_WINDOW(user_data);
     gtk_widget_destroy(GTK_WIDGET(self));
 }
+
 
 static void log_window_activated (GSimpleAction *action G_GNUC_UNUSED, GVariant *parameter G_GNUC_UNUSED, gpointer user_data)
 {
@@ -619,23 +542,10 @@ static void disc_structure_window_activated (GSimpleAction *action G_GNUC_UNUSED
 }
 
 
-static void callback_debug_to_stdout_change_requested (IaLogWindow *log_window G_GNUC_UNUSED, gboolean value, IaApplicationWindow *self)
-{
-    /* Set the new value */
-    ia_application_window_set_debug_to_stdout(self, value);
-}
-
-static void callback_debug_mask_change_requested (IaLogWindow *log_window G_GNUC_UNUSED, IaApplicationWindow *self)
-{
-    /* Propagate to helper function */
-    ia_application_window_change_debug_mask(self);
-}
-
-
 /**********************************************************************\
  *                              GUI setup                             *
 \**********************************************************************/
-static GtkWidget *build_dialog_open_image (GtkWindow *parent_window)
+static GtkWidget *build_open_image_dialog (GtkWindow *parent_window)
 {
     GtkWidget *dialog;
     GtkFileFilter *filter_all;
@@ -709,7 +619,7 @@ static GtkWidget *build_dialog_open_image (GtkWindow *parent_window)
     return dialog;
 }
 
-static GtkWidget *build_dialog_open_dump (GtkWindow *parent_window)
+static GtkWidget *build_open_dump_dialog (GtkWindow *parent_window)
 {
     GtkWidget *dialog;
     GtkFileFilter *filter;
@@ -739,7 +649,7 @@ static GtkWidget *build_dialog_open_dump (GtkWindow *parent_window)
     return dialog;
 }
 
-static GtkWidget *build_dialog_save_dump (GtkWindow *parent_window)
+static GtkWidget *build_save_dump_dialog (GtkWindow *parent_window)
 {
     GtkWidget *dialog;
     GtkFileFilter *filter;
@@ -824,18 +734,16 @@ static void create_gui (IaApplicationWindow *self)
     gtk_tree_view_column_add_attribute(column, renderer, "text", 0);
 
     /* Load/save dialogs */
-    self->priv->open_image_dialog = build_dialog_open_image(GTK_WINDOW(self));
-    self->priv->open_dump_dialog = build_dialog_open_dump(GTK_WINDOW(self));
-    self->priv->save_dump_dialog = build_dialog_save_dump(GTK_WINDOW(self));
+    self->priv->open_image_dialog = build_open_image_dialog(GTK_WINDOW(self));
+    self->priv->open_dump_dialog = build_open_dump_dialog(GTK_WINDOW(self));
+    self->priv->save_dump_dialog = build_save_dump_dialog(GTK_WINDOW(self));
 
     /* Image writer dialog */
     self->priv->image_writer_dialog = g_object_new(IA_TYPE_WRITER_DIALOG, NULL);
 
     /* Log window */
-    self->priv->log_window = g_object_new(IA_TYPE_LOG_WINDOW, NULL);
+    self->priv->log_window = g_object_new(IA_TYPE_LOG_WINDOW, "mirage-context", self->priv->mirage_context, NULL);
     g_signal_connect(self->priv->log_window, "delete_event", G_CALLBACK(gtk_widget_hide_on_delete), NULL);
-    g_signal_connect(self->priv->log_window, "debug_to_stdout_change_requested", G_CALLBACK(callback_debug_to_stdout_change_requested), self);
-    g_signal_connect(self->priv->log_window, "debug_mask_change_requested", G_CALLBACK(callback_debug_mask_change_requested), self);
 
     /* Read sector window */
     self->priv->read_sector_window = g_object_new(IA_TYPE_READ_SECTOR_WINDOW, NULL);
@@ -860,6 +768,25 @@ static void create_gui (IaApplicationWindow *self)
 /**********************************************************************\
  *                             Public API                             *
 \**********************************************************************/
+void ia_application_window_setup_logger (IaApplicationWindow *self)
+{
+    /* Debug domain; the trick here is that each instance gets its own
+       domain, which allows us to set up handler callbacks with different
+       user data, this capturing messages in corresponding instance */
+    gchar *debug_domain = g_strdup_printf("Analyzer-%02d", gtk_application_window_get_id(GTK_APPLICATION_WINDOW(self)));
+
+    /* Set debug domain to context */
+    mirage_context_set_debug_domain(self->priv->mirage_context, debug_domain);
+
+    /* Set up log handler with our debug domain */
+    self->priv->logger_id = g_log_set_handler(mirage_context_get_debug_domain(
+        self->priv->mirage_context),
+        G_LOG_LEVEL_MASK | G_LOG_FLAG_FATAL | G_LOG_FLAG_RECURSION,
+        (GLogFunc)ia_application_window_logger, self);
+
+    g_free(debug_domain);
+}
+
 #if 0
 gboolean ia_application_window_run (IaApplicationWindow *self, gchar **open_image, gboolean debug_to_stdout, gint debug_mask_initial)
 {
@@ -898,18 +825,19 @@ static void ia_application_window_init (IaApplicationWindow *self)
 
     /* Setup libMirage context */
     self->priv->mirage_context = g_object_new(MIRAGE_TYPE_CONTEXT, NULL);
-    mirage_context_set_debug_domain(self->priv->mirage_context, "libMirage");
     mirage_context_set_debug_mask(self->priv->mirage_context, MIRAGE_DEBUG_PARSER);
     mirage_context_set_password_function(self->priv->mirage_context, (MiragePasswordFunction)ia_application_window_get_password, self);
+
+    /* Logging is set up by call ia_application_window_setup_logger(),
+       which must be performed after application added us to its list
+       of windows (so that we know our ID) */
+    self->priv->logger_id = 0;
 
     /* Disc tree dump */
     self->priv->disc_dump = g_object_new(IA_TYPE_DISC_TREE_DUMP, NULL);
 
     /* Setup GUI */
     create_gui(self);
-
-    /* Setup log handler */
-    g_log_set_handler("libMirage", G_LOG_LEVEL_MASK, (GLogFunc)capture_log, self);
 }
 
 static void ia_application_window_dispose (GObject *gobject)
@@ -925,6 +853,11 @@ static void ia_application_window_dispose (GObject *gobject)
     if (self->priv->disc_dump) {
         g_object_unref(self->priv->disc_dump);
         self->priv->disc_dump = NULL;
+    }
+
+    if (self->priv->logger_id) {
+        g_log_remove_handler(mirage_context_get_debug_domain(self->priv->mirage_context), self->priv->logger_id);
+        self->priv->logger_id = 0;
     }
 
     if (self->priv->mirage_context) {

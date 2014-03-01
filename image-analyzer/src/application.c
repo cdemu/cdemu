@@ -43,35 +43,8 @@ G_DEFINE_TYPE(IaApplication, ia_application, GTK_TYPE_APPLICATION);
 
 
 /**********************************************************************\
- *                      Debug and logging redirection                 *
+ *                      Application-wide actions                      *
 \**********************************************************************/
-#if 0
-static void capture_log (const gchar *log_domain G_GNUC_UNUSED, GLogLevelFlags log_level, const gchar *message, IaApplication *self)
-{
-    /* Append to log */
-    ia_log_window_append_to_log(IA_LOG_WINDOW(self->priv->dialog_log), message);
-
-    /* Errors, critical errors and warnings are always printed to stdout */
-    if (log_level & G_LOG_LEVEL_ERROR) {
-        g_print("ERROR: %s", message);
-        return;
-    }
-    if (log_level & G_LOG_LEVEL_CRITICAL) {
-        g_print("CRITICAL: %s", message);
-        return;
-    }
-    if (log_level & G_LOG_LEVEL_WARNING) {
-        g_print("WARNING: %s", message);
-        return;
-    }
-
-    /* Debug messages are printed to stdout only if user requested so */
-    if (self->priv->debug_to_stdout) {
-        g_print("%s", message);
-    }
-}
-#endif
-
 static void new_window_activated (GSimpleAction *action G_GNUC_UNUSED, GVariant *parameter G_GNUC_UNUSED, gpointer user_data)
 {
     g_application_activate(G_APPLICATION(user_data));
@@ -107,6 +80,9 @@ static void ia_application_activate (GApplication *self)
     IaApplicationWindow *window = g_object_new(IA_TYPE_APPLICATION_WINDOW, NULL);
     gtk_application_add_window(GTK_APPLICATION(self), GTK_WINDOW(window));
     gtk_widget_show_all(GTK_WIDGET(window));
+
+    /* Setup log handler; must be done after gtk_application_add_window() */
+    ia_application_window_setup_logger(window);
 }
 
 static GActionEntry app_entries[] = {
