@@ -77,8 +77,8 @@ configure_file (
     ${PROJECT_BINARY_DIR}/config.h
 )
 configure_file (
-    ${PROJECT_SOURCE_DIR}/src/libmirage/version.h.in
-    ${PROJECT_BINARY_DIR}/src/libmirage/version.h
+    ${PROJECT_SOURCE_DIR}/mirage/version.h.in
+    ${PROJECT_BINARY_DIR}/mirage/version.h
 )
 configure_file (
     ${PROJECT_SOURCE_DIR}/reference/version.xml.in
@@ -100,9 +100,8 @@ if (CMAKE_COMPILER_IS_GNUCC)
 endif ()
 
 # Global include directories
-include_directories (${PROJECT_SOURCE_DIR}/src/libmirage)
+include_directories (${PROJECT_SOURCE_DIR})
 include_directories (${PROJECT_BINARY_DIR})
-include_directories (${PROJECT_BINARY_DIR}/src/libmirage)
 
 include_directories (${GLIB_INCLUDE_DIRS})
 
@@ -111,56 +110,56 @@ link_directories (${GLIB_LIBRARY_DIRS})
 
 # *** libMirage core library ***
 set (libmirage_HEADERS
-    src/libmirage/mirage.h
-    src/libmirage/cdtext-coder.h
-#    src/libmirage/compat-input-stream.h
-    src/libmirage/context.h
-    src/libmirage/contextual.h
-    src/libmirage/debug.h
-    src/libmirage/disc.h
-    src/libmirage/disc-structures.h
-    src/libmirage/error.h
-    src/libmirage/file-stream.h
-    src/libmirage/filter-stream.h
-    src/libmirage/fragment.h
-    src/libmirage/index.h
-    src/libmirage/language.h
-    src/libmirage/object.h
-    src/libmirage/parser.h
-    src/libmirage/plugin.h
-    src/libmirage/sector.h
-    src/libmirage/session.h
-    src/libmirage/stream.h
-    src/libmirage/track.h
-    src/libmirage/types.h
-    src/libmirage/utils.h
-    src/libmirage/writer.h
-    ${PROJECT_BINARY_DIR}/src/libmirage/version.h
+    mirage/mirage.h
+    mirage/cdtext-coder.h
+#    mirage/compat-input-stream.h
+    mirage/context.h
+    mirage/contextual.h
+    mirage/debug.h
+    mirage/disc.h
+    mirage/disc-structures.h
+    mirage/error.h
+    mirage/file-stream.h
+    mirage/filter-stream.h
+    mirage/fragment.h
+    mirage/index.h
+    mirage/language.h
+    mirage/object.h
+    mirage/parser.h
+    mirage/plugin.h
+    mirage/sector.h
+    mirage/session.h
+    mirage/stream.h
+    mirage/track.h
+    mirage/types.h
+    mirage/utils.h
+    mirage/writer.h
+    ${PROJECT_BINARY_DIR}/mirage/version.h
 )
 
 set (libmirage_SOURCES
-    src/libmirage/mirage.c
-    src/libmirage/cdtext-coder.c
-    src/libmirage/compat-input-stream.c
-    src/libmirage/context.c
-    src/libmirage/contextual.c
-    src/libmirage/disc.c
-    src/libmirage/error.c
-    src/libmirage/file-stream.c
-    src/libmirage/filter-stream.c
-    src/libmirage/fragment.c
-    src/libmirage/index.c
-    src/libmirage/language.c
-    src/libmirage/object.c
-    src/libmirage/parser.c
-    src/libmirage/plugin.c
-    src/libmirage/sector.c
-    src/libmirage/session.c
-    src/libmirage/stream.c
-    src/libmirage/track.c
-    src/libmirage/utils.c
-    src/libmirage/version.c
-    src/libmirage/writer.c
+    mirage/mirage.c
+    mirage/cdtext-coder.c
+    mirage/compat-input-stream.c
+    mirage/context.c
+    mirage/contextual.c
+    mirage/disc.c
+    mirage/error.c
+    mirage/file-stream.c
+    mirage/filter-stream.c
+    mirage/fragment.c
+    mirage/index.c
+    mirage/language.c
+    mirage/object.c
+    mirage/parser.c
+    mirage/plugin.c
+    mirage/sector.c
+    mirage/session.c
+    mirage/stream.c
+    mirage/track.c
+    mirage/utils.c
+    mirage/version.c
+    mirage/writer.c
 )
 
 add_library (mirage SHARED ${libmirage_SOURCES})
@@ -173,7 +172,7 @@ set_target_properties (mirage PROPERTIES
 )
 
 install (TARGETS mirage DESTINATION ${CMAKE_INSTALL_LIBDIR})
-install (FILES ${libmirage_HEADERS} DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/libmirage)
+install (FILES ${libmirage_HEADERS} DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/libmirage-${MIRAGE_VERSION_MAJOR}.${MIRAGE_VERSION_MINOR}/mirage)
 
 # *** Introspection ***
 if (INTROSPECTION_ENABLED AND INTROSPECTION_FOUND)
@@ -197,11 +196,11 @@ if (GTKDOC_ENABLED AND GTKDOC_FOUND)
     gtk_doc (
         MODULE ${PROJECT_NAME}
         MAIN_SGML_FILE ${PROJECT_NAME}-docs.sgml
-        SOURCE_DIR ${PROJECT_SOURCE_DIR}/src/libmirage ${PROJECT_BINARY_DIR}/src/libmirage
+        SOURCE_DIR ${PROJECT_SOURCE_DIR}/mirage ${PROJECT_BINARY_DIR}/mirage
         SOURCES ${libmirage_HEADERS} ${libmirage_SOURCES}
         DOCS_DIR ${PROJECT_SOURCE_DIR}/reference
         IGNORE_HFILES "compat-input-stream.h disc-structures.h"
-        CFLAGS ${GLIB_CFLAGS} -I${PROJECT_SOURCE_DIR}/src/libmirage
+        CFLAGS ${GLIB_CFLAGS} -I${PROJECT_SOURCE_DIR}/mirage
         LDFLAGS ${GLIB_LDFLAGS} -L${PROJECT_BINARY_DIR}
             -Wl,-rpath,${PROJECT_BINARY_DIR} -l${GTKDOC_LIB}
     )
@@ -214,12 +213,12 @@ install (
 )
 
 # *** Filters ***
-file(GLOB filters RELATIVE ${PROJECT_SOURCE_DIR}/src/filters/ ${PROJECT_SOURCE_DIR}/src/filters/*)
+file(GLOB filters RELATIVE ${PROJECT_SOURCE_DIR}/filters/ ${PROJECT_SOURCE_DIR}/filters/*)
 foreach (filter ${filters})
     string(REGEX REPLACE "^filter-" "" filter_name ${filter})
     list(FIND FILTERS_DISABLED ${filter_name} filter_disabled)
     if (filter_disabled EQUAL -1)
-        add_subdirectory(src/filters/filter-${filter_name})
+        add_subdirectory(filters/filter-${filter_name})
     endif ()
 endforeach ()
 if (FILTERS_ENABLED)
@@ -230,12 +229,12 @@ if (FILTERS_DISABLED)
 endif()
 
 # *** Images ***
-file(GLOB images RELATIVE ${PROJECT_SOURCE_DIR}/src/images/ ${PROJECT_SOURCE_DIR}/src/images/*)
+file(GLOB images RELATIVE ${PROJECT_SOURCE_DIR}/images/ ${PROJECT_SOURCE_DIR}/images/*)
 foreach (image ${images})
     string(REGEX REPLACE "^image-" "" image_name ${image})
     list(FIND IMAGE_FORMATS_DISABLED ${image_name} image_disabled)
     if (image_disabled EQUAL -1)
-        add_subdirectory(src/images/image-${image_name})
+        add_subdirectory(images/image-${image_name})
     endif ()
 endforeach ()
 if (IMAGE_FORMATS_ENABLED)
