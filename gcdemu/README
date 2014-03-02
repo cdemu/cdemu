@@ -21,7 +21,7 @@ Table of Contents:
 1. Introduction
 ~~~~~~~~~~~~~~~
 
-This is gCDEmu, a Gtk+ based GUI for controlling CDEmu daemon. It is part of the
+This is gCDEmu, a Gtk3-based GUI for controlling CDEmu daemon. It is part of the
 userspace-cdemu suite, a free, GPL CD/DVD-ROM device emulator for linux.
 
 It provides a graphic interface that allows performing the key tasks related to
@@ -196,7 +196,7 @@ gCDEmu displays a system tray icon, whose appearance depends on
 the settings of your system (see Section 7).
 
 On systems with AppIndicator support, it is possible to run gCDEmu in
-AppIndicator mode, by specifying '--indicator' command-line switch.
+AppIndicator mode, by specifying '--tray-mode=indicator' command-line switch.
 
 Note that some GUI features, in particular right-click device load/unload
 shortcut, are not supported in AppIndicator mode.
