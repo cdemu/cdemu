@@ -64,7 +64,6 @@ set (image-analyzer_SOURCES
     src/disc-structure-window.c
     src/disc-topology-window.c
     src/disc-tree-dump.c
-    src/dump.c
     src/log-window.c
     src/main.c
     src/read-sector-window.c

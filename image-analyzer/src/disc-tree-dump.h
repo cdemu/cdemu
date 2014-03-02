@@ -155,6 +155,27 @@ void ia_disc_tree_dump_create_from_disc (IaDiscTreeDump *self, MirageDisc *disc)
 #define TAG_SUBCHANNEL_FORMAT "subchannel-format"
 
 
+/* Generic dump functions */
+typedef struct _DumpValue
+{
+    gint value;
+    gchar *name;
+} DumpValue;
+
+
+#define VAL(x) { x, #x }
+
+gchar *dump_value (gint val, const DumpValue *values, gint num_values);
+gchar *dump_flags (gint val, const DumpValue *values, gint num_values);
+
+gchar *dump_track_flags (gint track_flags);
+gchar *dump_track_sector_type (gint sector_type);
+gchar *dump_session_type (gint session_type);
+gchar *dump_medium_type (gint medium_type);
+gchar *dump_binary_fragment_main_format (gint format);
+gchar *dump_binary_fragment_subchannel_format (gint format);
+
+
 G_END_DECLS
 
 #endif /* __IMAGE_ANALYZER_DISC_TREE_DUMP_H__ */

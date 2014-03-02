@@ -25,8 +25,8 @@
 #include <gtk/gtk.h>
 #include <mirage.h>
 
-#include "dump.h"
 #include "read-sector-window.h"
+#include "disc-tree-dump.h"
 
 
 /**********************************************************************\
