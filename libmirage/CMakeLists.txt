@@ -177,7 +177,7 @@ install (FILES ${libmirage_HEADERS} DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/libm
 # *** Introspection ***
 if (INTROSPECTION_ENABLED AND INTROSPECTION_FOUND)
     gobject_introspection (
-        FILENAME libMirage-${MIRAGE_VERSION_MAJOR}.${MIRAGE_VERSION_MINOR}.gir
+        FILENAME Mirage-${MIRAGE_VERSION_MAJOR}.${MIRAGE_VERSION_MINOR}.gir
         NSVERSION ${MIRAGE_VERSION_SHORT}
         INCLUDES GObject-2.0 Gio-2.0 GLib-2.0 GModule-2.0
         LIBRARY mirage
