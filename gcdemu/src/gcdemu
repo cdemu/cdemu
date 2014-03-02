@@ -1779,11 +1779,11 @@ class gCDEmuTray (GObject.GObject):
         self.menu.append(Gtk.SeparatorMenuItem())
 
         # Use system bus
-        item = Gtk.CheckMenuItem.new_with_mnemonic(_("Use _system bus"))
-        item.set_active(self.use_system_bus)
-        item.connect("toggled", self.on_use_system_bus_toggled)
-        self.menu.append(item)
-        self.item_use_system_bus = item
+        #item = Gtk.CheckMenuItem.new_with_mnemonic(_("Use _system bus"))
+        #item.set_active(self.use_system_bus)
+        #item.connect("toggled", self.on_use_system_bus_toggled)
+        #self.menu.append(item)
+        #self.item_use_system_bus = item
 
         # Show notifications
         item = Gtk.CheckMenuItem.new_with_mnemonic(_("Show _notifications"))
