@@ -306,7 +306,7 @@ static MirageDisc *mirage_parser_iso_load_image (MirageParser *_self, MirageStre
 {
     MirageParserIso *self = MIRAGE_PARSER_ISO(_self);
     struct IsoFileInfo *file_info;
-    const gchar **filenames;
+    gchar **filenames;
     gint num_files;
 
     gboolean succeeded = TRUE;
@@ -314,18 +314,18 @@ static MirageDisc *mirage_parser_iso_load_image (MirageParser *_self, MirageStre
     /* Determine number of streams */
     for (num_files = 0; streams[num_files]; num_files++);
     file_info = g_new0(struct IsoFileInfo, num_files);
-    filenames = g_new0(const gchar *, num_files + 1);
+    filenames = g_new0(gchar *, num_files + 1);
 
     /* Check if all files can be loaded */
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_IMAGE_ID, "%s: checking if parser can handle given image...\n", __debug__);
     for (gint i = 0; i < num_files; i++) {
         file_info[i].stream = streams[i];
-        filenames[i] = mirage_stream_get_filename(streams[i]);
+        filenames[i] = g_strdup(mirage_stream_get_filename(streams[i]));
 
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_IMAGE_ID, "%s: checking file #%d: '%s'\n", __debug__, i, filenames[i]);
         if (!mirage_parser_iso_determine_sector_size(self, &file_info[i], error)) {
             g_free(file_info);
-            g_free(filenames);
+            g_strfreev(filenames);
             return FALSE;
         }
     }
@@ -388,7 +388,7 @@ static MirageDisc *mirage_parser_iso_load_image (MirageParser *_self, MirageStre
 
     /* Cleanup */
     g_free(file_info);
-    g_free(filenames);
+    g_strfreev(filenames);
 
     /* Return disc */
     if (succeeded) {

@@ -103,7 +103,7 @@ static void mirage_writer_iso_rename_track_image_files (MirageWriterIso *self, M
 static void mirage_writer_iso_update_disc_filenames (MirageWriterIso *self G_GNUC_UNUSED, MirageDisc *disc)
 {
     gint num_tracks = mirage_disc_get_number_of_tracks(disc);
-    const gchar **filenames = g_new0(const gchar *, num_tracks + 1);
+    gchar **filenames = g_new0(gchar *, num_tracks + 1);
 
     for (gint i = 0; i < num_tracks; i++) {
         MirageTrack *track = mirage_disc_get_track_by_index(disc, i, NULL);
@@ -118,7 +118,7 @@ static void mirage_writer_iso_update_disc_filenames (MirageWriterIso *self G_GNU
                 continue;
             }
 
-            filenames[i] = mirage_fragment_main_data_get_filename(fragment);
+            filenames[i] = g_strdup(mirage_fragment_main_data_get_filename(fragment));
 
             g_object_unref(fragment);
 
@@ -135,6 +135,8 @@ static void mirage_writer_iso_update_disc_filenames (MirageWriterIso *self G_GNU
     }
 
     mirage_disc_set_filenames(disc, filenames);
+
+    g_strfreev(filenames);
 }
 
 

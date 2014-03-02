@@ -119,7 +119,7 @@ static gboolean ia_disc_topology_window_refresh (IaDiscTopologyWindow *self, Mir
             "reset \n"
         );
     } else {
-        const gchar **filenames = mirage_disc_get_filenames(disc);
+        gchar **filenames = mirage_disc_get_filenames(disc);
         gchar *basename = g_path_get_basename(filenames[0]);
 
         mirage_disc_get_dpm_data(disc, &dpm_start, &dpm_entries, &dpm_resolution, NULL);

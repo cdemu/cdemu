@@ -150,8 +150,8 @@ gboolean cdemu_device_get_status (CdemuDevice *self, gchar ***file_names)
     if (loaded) {
         MirageDisc *disc = self->priv->disc;
         if (file_names) {
-            const gchar **tmp_filenames = mirage_disc_get_filenames(disc);
-            *file_names = g_strdupv((gchar **)tmp_filenames);
+            gchar **tmp_filenames = mirage_disc_get_filenames(disc);
+            *file_names = g_strdupv(tmp_filenames);
         }
     } else {
         if (file_names) {

@@ -415,7 +415,7 @@ static gboolean mirage_writer_toc_create_toc_files (MirageWriterToc *self, Mirag
     }
 
     /* Set disc filenames */
-    mirage_disc_set_filenames(disc, (const gchar **)filenames);
+    mirage_disc_set_filenames(disc, filenames);
 
     g_strfreev(filenames);
 

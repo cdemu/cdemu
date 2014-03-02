@@ -1202,7 +1202,7 @@ static MirageDisc *mirage_parser_toc_load_image (MirageParser *_self, MirageStre
 {
     MirageParserToc *self = MIRAGE_PARSER_TOC(_self);
     gint num_streams;
-    const gchar **filenames;
+    gchar **filenames;
     gboolean succeeded = TRUE;
 
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_IMAGE_ID, "%s: checking if parser can handle given image...\n", __debug__);
@@ -1213,7 +1213,7 @@ static MirageDisc *mirage_parser_toc_load_image (MirageParser *_self, MirageStre
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_IMAGE_ID, "%s: number of files provided: %d\n", __debug__, num_streams);
 
     /* Allocate array of filename pointers */
-    filenames = g_new0(const gchar *, num_streams + 1);
+    filenames = g_new0(gchar *, num_streams + 1);
 
     /* Check if all streams are valid */
     for (gint i = 0; i < num_streams; i++) {
@@ -1221,11 +1221,11 @@ static MirageDisc *mirage_parser_toc_load_image (MirageParser *_self, MirageStre
         if (!mirage_parser_toc_check_toc_file(self, streams[i])) {
             MIRAGE_DEBUG(self, MIRAGE_DEBUG_IMAGE_ID, "%s: parser cannot handle given image: file #%d has invalid suffix (not a *.toc file)!\n", __debug__, i);
             g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_CANNOT_HANDLE, "Parser cannot handle given image: invalid TOC file!");
-            g_free(filenames);
+            g_strfreev(filenames);
             return FALSE;
         }
 
-        filenames[i] = mirage_stream_get_filename(streams[i]);
+        filenames[i] = g_strdup(mirage_stream_get_filename(streams[i]));
     }
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_IMAGE_ID, "%s: parser can handle given image!\n", __debug__);
 
@@ -1236,7 +1236,7 @@ static MirageDisc *mirage_parser_toc_load_image (MirageParser *_self, MirageStre
     mirage_object_set_parent(MIRAGE_OBJECT(self->priv->disc), self);
 
     mirage_disc_set_filenames(self->priv->disc, filenames);
-    g_free(filenames);
+    g_strfreev(filenames);
 
     /* Each TOC/BIN is one session, so we load all given filenames */
     for (gint i = 0; i < num_streams; i++) {

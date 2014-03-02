@@ -286,12 +286,12 @@ MirageMediumType mirage_disc_get_medium_type (MirageDisc *self)
  * Intended for internal use only, in image parser implementations.
  * </note>
  */
-void mirage_disc_set_filenames (MirageDisc *self, const gchar **filenames)
+void mirage_disc_set_filenames (MirageDisc *self, gchar **filenames)
 {
     /* Free old filenames */
     g_strfreev(self->priv->filenames);
     /* Set filenames */
-    self->priv->filenames = g_strdupv((gchar **)filenames);
+    self->priv->filenames = g_strdupv(filenames);
 }
 
 /**
@@ -312,7 +312,7 @@ void mirage_disc_set_filename (MirageDisc *self, const gchar *filename)
     /* Free old filenames */
     g_strfreev(self->priv->filenames);
     /* Set filenames */
-    self->priv->filenames = g_new0(gchar*, 2);
+    self->priv->filenames = g_new0(gchar *, 2);
     self->priv->filenames[0] = g_strdup(filename);
 }
 
@@ -325,10 +325,10 @@ void mirage_disc_set_filename (MirageDisc *self, const gchar *filename)
  * Returns: (transfer none) (array zero-terminated=1): pointer to %NULL-terminated
  * array of filenames. The array belongs to the object and should not be modified.
  */
-const gchar **mirage_disc_get_filenames (MirageDisc *self)
+gchar **mirage_disc_get_filenames (MirageDisc *self)
 {
     /* Return filenames */
-    return (const gchar **)self->priv->filenames;
+    return self->priv->filenames;
 }
 
 

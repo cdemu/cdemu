@@ -439,7 +439,7 @@ static gboolean xml_dump_session (MirageSession *session, xmlNodePtr parent)
 static gboolean xml_dump_disc (MirageDisc *disc, xmlNodePtr parent)
 {
     gint medium_type;
-    const gchar **filenames;
+    gchar **filenames;
     gint first_session, first_track;
     gint start_sector, length;
     gint num_sessions, num_tracks;
