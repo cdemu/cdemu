@@ -843,6 +843,29 @@ void ia_application_window_update_window_title (IaApplicationWindow *self)
 }
 
 
+static void append_id_to_title (GtkWindow *window, gint id)
+{
+    gchar *new_title = g_strdup_printf("%s (#%02d)", gtk_window_get_title(window), id);
+    gtk_window_set_title(window, new_title);
+    g_free(new_title);
+}
+
+void ia_application_window_display_instance_id (IaApplicationWindow *self)
+{
+    gint id = gtk_application_window_get_id(GTK_APPLICATION_WINDOW(self));
+
+    /* Update tool windows; grab their current titles, and append instance ID */
+    append_id_to_title(GTK_WINDOW(self->priv->disc_structure_window), id);
+    append_id_to_title(GTK_WINDOW(self->priv->disc_topology_window), id);
+    append_id_to_title(GTK_WINDOW(self->priv->log_window), id);
+    append_id_to_title(GTK_WINDOW(self->priv->read_sector_window), id);
+    append_id_to_title(GTK_WINDOW(self->priv->sector_analysis_window), id);
+
+    /* Update self */
+    ia_application_window_update_window_title(self);
+}
+
+
 /**********************************************************************\
  *                             Object init                            *
 \**********************************************************************/
