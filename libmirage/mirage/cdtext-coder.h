@@ -20,7 +20,7 @@
 #ifndef __MIRAGE_CDTEXT_CODER_H__
 #define __MIRAGE_CDTEXT_CODER_H__
 
-#include "types.h"
+#include <mirage/types.h>
 
 
 G_BEGIN_DECLS

@@ -20,7 +20,7 @@
 #ifndef __MIRAGE_COMPAT_INPUT_STREAM_H__
 #define __MIRAGE_COMPAT_INPUT_STREAM_H__
 
-#include "mirage.h"
+#include <mirage/mirage.h>
 
 
 G_BEGIN_DECLS
