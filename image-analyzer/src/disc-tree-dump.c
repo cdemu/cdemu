@@ -30,7 +30,7 @@
 #include <libxml/parser.h>
 #include <libxml/tree.h>
 
-#include <mirage.h>
+#include <mirage/mirage.h>
 
 #include "disc-tree-dump.h"
 

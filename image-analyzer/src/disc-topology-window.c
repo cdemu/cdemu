@@ -25,7 +25,7 @@
 #include <glib.h>
 #include <gtk/gtk.h>
 #include <gtk/gtkx.h>
-#include <mirage.h>
+#include <mirage/mirage.h>
 
 #include "disc-topology-window.h"
 

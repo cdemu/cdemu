@@ -23,7 +23,7 @@
 
 #include <glib.h>
 #include <gtk/gtk.h>
-#include <mirage.h>
+#include <mirage/mirage.h>
 
 #include "sector-analysis-window.h"
 #include "disc-tree-dump.h"

@@ -23,7 +23,7 @@
 
 #include <glib.h>
 #include <gtk/gtk.h>
-#include <mirage.h>
+#include <mirage/mirage.h>
 
 #include "log-window.h"
 

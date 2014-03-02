@@ -40,7 +40,7 @@
 #include <glib-object.h>
 #include <gio/gio.h>
 
-#include <mirage.h>
+#include <mirage/mirage.h>
 
 #include "types.h"
 
