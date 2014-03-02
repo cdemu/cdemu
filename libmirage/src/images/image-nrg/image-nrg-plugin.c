@@ -1,6 +1,6 @@
 /*
- *  libMirage: NRG image parser: Plugin exports
- *  Copyright (C) 2006-2012 Rok Mandeljc
+ *  libMirage: NRG image: plugin exports
+ *  Copyright (C) 2006-2014 Rok Mandeljc
  *
  *  Reverse-engineering work in March, 2005 by Henrik Stokseth.
  *

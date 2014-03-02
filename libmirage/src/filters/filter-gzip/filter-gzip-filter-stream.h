@@ -1,6 +1,6 @@
 /*
- *  libMirage: GZIP filter: Filter stream object
- *  Copyright (C) 2012 Rok Mandeljc
+ *  libMirage: GZIP filter: filter stream
+ *  Copyright (C) 2012-2014 Rok Mandeljc
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by

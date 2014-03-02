@@ -1,6 +1,6 @@
 /*
- *  libMirage: CDI image plugin
- *  Copyright (C) 2007-2012 Rok Mandeljc
+ *  libMirage: CDI image
+ *  Copyright (C) 2007-2014 Rok Mandeljc
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by

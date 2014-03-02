@@ -1,6 +1,6 @@
 /*
- *  libMirage: Main library functions
- *  Copyright (C) 2008-2012 Rok Mandeljc
+ *  libMirage: main library functions
+ *  Copyright (C) 2008-2014 Rok Mandeljc
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by

@@ -1,6 +1,6 @@
 /*
- *  libMirage: Library version
- *  Copyright (C) 2008-2012 Rok Mandeljc
+ *  libMirage: version
+ *  Copyright (C) 2008-2014 Rok Mandeljc
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -27,8 +27,8 @@
  * checks for builds that have a configure script. It can also be used
  * in applications when displaying underlying system version information.
  *
- * Additionaly, <ulink url="http://semver.org">semantic version</ulink> 
- * is also exposed, which is primarily intended to be used in libMirage's 
+ * Additionaly, <ulink url="http://semver.org">semantic version</ulink>
+ * is also exposed, which is primarily intended to be used in libMirage's
  * plugin system.
  */
 
@@ -101,8 +101,8 @@ const gchar *mirage_version_short = MIRAGE_VERSION_SHORT;
 /**
  * mirage_soversion_major:
  *
- * The major component of <ulink url="http://semver.org">semantic version</ulink> 
- * of the libMirage library. It is intended to be used in libMirage's plugin 
+ * The major component of <ulink url="http://semver.org">semantic version</ulink>
+ * of the libMirage library. It is intended to be used in libMirage's plugin
  * system and should not be of much interest to application developers.
  *
  * This variable is in the library, so it represents the version of libMirage
@@ -114,8 +114,8 @@ const guint mirage_soversion_major = MIRAGE_SOVERSION_MAJOR;
 /**
  * mirage_soversion_minor:
  *
- * The minor component of <ulink url="http://semver.org">semantic version</ulink> 
- * of the libMirage library. It is intended to be used in libMirage's plugin 
+ * The minor component of <ulink url="http://semver.org">semantic version</ulink>
+ * of the libMirage library. It is intended to be used in libMirage's plugin
  * system and should not be of much interest to application developers.
  *
  * This variable is in the library, so it represents the version of libMirage
@@ -127,8 +127,8 @@ const guint mirage_soversion_minor = MIRAGE_SOVERSION_MINOR;
 /**
  * mirage_soversion_patch:
  *
- * The patch component of <ulink url="http://semver.org">semantic version</ulink> 
- * of the libMirage library. It is intended to be used in libMirage's plugin 
+ * The patch component of <ulink url="http://semver.org">semantic version</ulink>
+ * of the libMirage library. It is intended to be used in libMirage's plugin
  * system and should not be of much interest to application developers.
  *
  * This variable is in the library, so it represents the version of libMirage

@@ -1,6 +1,6 @@
 /*
- *  libMirage: CUE image parser: Parser object
- *  Copyright (C) 2006-2012 Rok Mandeljc
+ *  libMirage: CUE image: parser
+ *  Copyright (C) 2006-2014 Rok Mandeljc
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by

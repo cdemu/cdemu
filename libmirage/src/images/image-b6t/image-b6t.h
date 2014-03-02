@@ -1,6 +1,6 @@
 /*
- *  libMirage: B6T image plugin
- *  Copyright (C) 2007-2012 Rok Mandeljc
+ *  libMirage: B6T image
+ *  Copyright (C) 2007-2014 Rok Mandeljc
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -71,7 +71,7 @@ typedef enum {
 #pragma pack(1)
 
 /* This is the first chunk of data that follows the signature; it consists of
-   112 bytes that are more or less undeciphered, but it seems to contain lengths 
+   112 bytes that are more or less undeciphered, but it seems to contain lengths
    of other blocks at the end */
 typedef struct
 {
@@ -79,19 +79,19 @@ typedef struct
     guint32 __dummy2__; /* Default value: 0x00000002 */
     guint32 __dummy3__; /* Default value: 0x00000006 */
     guint32 __dummy4__; /* Default value: 0x00000000 */
-    
+
     guint32 __dummy5__; /* Default value: 0x00000000 */
     guint32 __dummy6__; /* Default value: 0x00000000 */
     guint32 __dummy7__; /* Default value: 0x00000000 */
     guint32 __dummy8__; /* Default value: 0x00000000 */
-    
-    guint16 disc_type; /* 0x08 is CD-ROM, 0x10 is DVD-ROM; it seems to be 
+
+    guint16 disc_type; /* 0x08 is CD-ROM, 0x10 is DVD-ROM; it seems to be
                           equivalent to current profile from GET CONFIGURATION */
     guint16 num_sessions; /* Number of sessions */
     guint32 __dummy9__; /* Default value: 0x00000002 */
     guint32 __dummy10__; /* Default value: 0x00000000 */
     guint32 __dummy11__; /* Default value: 0x00000000 */
-    
+
     guint8 mcn_valid;
     gchar mcn[13];
     guint8 __dummy12__;
@@ -101,7 +101,7 @@ typedef struct
     guint32 __dummy15__; /* Default value: 0x00000000 */
     guint32 __dummy16__; /* Default value: 0x00000000 */
     guint32 __dummy17__; /* Default value: 0x00000000 */
-    
+
     guint16 pma_data_length; /* PMA data length, as read by READ TOC/PMA/ATIP, format 3 */
     guint16 atip_data_length; /* ATIP data length, as read by READ TOC/PMA/ATIP, format 4 */
     guint16 cdtext_data_length; /* CD-TEXT data length; read by READ TOC/PMA/ATIP, format 5 */
@@ -152,7 +152,7 @@ typedef struct
     gint32 start_sector; /* First sector for which the block holds data (signed integer!) */
     gint32 length_sectors; /* Length of data block, in sectors (also signed due to arithmetics!) */
     guint32 filename_length; /* Filename length */
-    
+
     /* Fields below will have to be read separately */
     gchar *filename; /* Original filename is UTF-16, but we'll convert it... */
     guint32 __dummy8__;
@@ -164,11 +164,11 @@ typedef struct
     guint16 number; /* Session number */
     guint8 num_entries; /* Number of entries */
     guint8 __dummy1__; /* Not sure... seems to be fixed at 3... */
-    
+
     gint32 session_start; /* Session start address */
-    
+
     gint32 session_end; /* Session end address */
-    
+
     guint16 first_track; /* First track in session */
     guint16 last_track; /* Last track in session */
 } B6T_Session;
@@ -181,41 +181,41 @@ typedef struct
     guint8 __dummy1__; /* Unknown; seems to be set to 1 for data and 0 to audio tracks */
     guint8 __dummy2__; /* Unknown; seems to be set to 1 for data and 0 to audio tracks */
     guint8 __dummy3__; /* Unknown; seems to be set to 1 for data and 0 to audio tracks */
-    
+
     guint32 __dummy4__;
 
     guint8 subchannel; /* If set to 4, it means subchannel is present */
     guint8 __dummy5__;
     guint8 ctl;
     guint8 adr;
-        
+
     guint8 point; /* Point */
     guint8 __dummy6__;
     guint8 min;
     guint8 sec;
-    
+
     guint8 frame;
     guint8 zero;
     guint8 pmin;
     guint8 psec;
-    
+
     guint8 pframe;
     guint8 __dummy7__;
-    
+
     guint32 pregap; /* Pregap length */
-    
+
     guint32 __dummy8__;
     guint32 __dummy9__;
     guint32 __dummy10__;
     guint32 __dummy11__;
-    
+
     gint32 start_sector;
     gint32 length;
 
     guint32 __dummy12__;
     guint32 __dummy13__;
     guint32 session_number;
-    
+
     guint16 __dummy14__;
 } B6T_Track;
 

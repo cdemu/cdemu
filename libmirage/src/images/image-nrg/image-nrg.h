@@ -1,7 +1,7 @@
 /*
- *  libMirage: NRG image plugin
- *  Copyright (C) 2006-2012 Rok Mandeljc
- * 
+ *  libMirage: NRG image
+ *  Copyright (C) 2006-2014 Rok Mandeljc
+ *
  *  Reverse-engineering work in March, 2005 by Henrik Stokseth.
  *
  *  This program is free software; you can redistribute it and/or modify
@@ -121,7 +121,7 @@ typedef enum
     MEDIA_FPACKET   = 0x08000, /* Fixed Packetwriting */
     MEDIA_VPACKET   = 0x10000, /* Variable Packetwriting */
     MEDIA_PACKETW   = MEDIA_MRW|MEDIA_FPACKET|MEDIA_VPACKET, /* a bit mask for packetwriting */
-    
+
     /* NeroAPI >= 5.5.10.4 */
     MEDIA_HDB = 0x20000, /* HD-Burn */
 

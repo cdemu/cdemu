@@ -1,6 +1,6 @@
 /*
- *  libMirage: CIF image parser: Parser object
- *  Copyright (C) 2008-2012 Henrik Stokseth
+ *  libMirage: CIF image: parser
+ *  Copyright (C) 2008-2014 Henrik Stokseth
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by

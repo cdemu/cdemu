@@ -1,6 +1,6 @@
 /*
- *  libMirage: DAA filter: Filter stream object
- *  Copyright (C) 2008-2012 Rok Mandeljc
+ *  libMirage: DAA filter: filter stream
+ *  Copyright (C) 2008-2014 Rok Mandeljc
  *
  *  Derived from code of GPLed utility daa2iso, written by Luigi Auriemma:
  *  http://aluigi.altervista.org/mytoolz.htm

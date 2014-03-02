@@ -1,6 +1,6 @@
 /*
- *  libMirage: MDS image parser
- *  Copyright (C) 2006-2012 Rok Mandeljc
+ *  libMirage: MDS image
+ *  Copyright (C) 2006-2014 Rok Mandeljc
  *
  *  Reverse-engineering work in March, 2005 by Henrik Stokseth.
  *

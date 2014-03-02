@@ -1,6 +1,6 @@
 /*
- *  libMirage: Hard-disk image parser: Parser object
- *  Copyright (C) 2013 Henrik Stokseth
+ *  libMirage: hard-disk image parser: parser
+ *  Copyright (C) 2013-2014 Henrik Stokseth
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by

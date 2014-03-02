@@ -1,6 +1,6 @@
 /*
- *  libMirage: DAA filter: Plugin exports
- *  Copyright (C) 2008-2012 Rok Mandeljc
+ *  libMirage: DAA filter: plugin exports
+ *  Copyright (C) 2008-2014 Rok Mandeljc
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by

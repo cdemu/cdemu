@@ -1,6 +1,6 @@
 /*
- *  libMirage: CCD image parser
- *  Copyright (C) 2006-2012 Rok Mandeljc
+ *  libMirage: CCD image
+ *  Copyright (C) 2006-2014 Rok Mandeljc
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -44,7 +44,7 @@ typedef struct
     gint Sessions;
     gint DataTracksScrambled;
     gint CDTextLength;
-    
+
     /* Optional */
     gchar *Catalog;
 } CCD_Disc;
@@ -52,7 +52,7 @@ typedef struct
 typedef struct
 {
     gint number;
-    
+
     /* [Session] */
     gint PreGapMode;
     gint PreGapSubC;
@@ -61,7 +61,7 @@ typedef struct
 typedef struct
 {
     gint number;
-        
+
     /* [Entry] */
     gint Session;
     gint Point;
@@ -77,7 +77,7 @@ typedef struct
     gint PSec;
     gint PFrame;
     gint PLBA;
-    
+
     /* [Track] */
     gint Mode;
     gint Index0;

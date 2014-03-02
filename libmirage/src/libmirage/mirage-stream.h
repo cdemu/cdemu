@@ -1,5 +1,5 @@
 /*
- *  libMirage: Stream interface
+ *  libMirage: stream interface
  *  Copyright (C) 2014 Rok Mandeljc
  *
  *  This program is free software; you can redistribute it and/or modify
