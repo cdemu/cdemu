@@ -59,12 +59,12 @@ const gchar *ia_disc_tree_dump_get_log (IaDiscTreeDump *self);
 void ia_disc_tree_dump_clear (IaDiscTreeDump *self);
 gboolean ia_disc_tree_dump_save_xml_dump (IaDiscTreeDump *self, const gchar *filename);
 gboolean ia_disc_tree_dump_load_xml_dump (IaDiscTreeDump *self, const gchar *filename);
-void ia_disc_tree_dump_create_from_disc (IaDiscTreeDump *self, MirageDisc *disc);
+void ia_disc_tree_dump_create_from_disc (IaDiscTreeDump *self, MirageDisc *disc, const gchar *log);
 
 
 /* XML dump tags */
 #define TAG_IMAGE_ANALYZER_DUMP "image-analyzer-dump"
-#define TAG_LIBMIRAGE_LOG "libmirage-log"
+#define TAG_PARSER_LOG "parser-log"
 
 #define TAG_DISC "disc"
 #define TAG_MEDIUM_TYPE "medium-type"

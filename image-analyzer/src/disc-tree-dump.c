@@ -958,7 +958,7 @@ static void ia_disc_tree_dump_treestore_from_xml (IaDiscTreeDump *self)
 
         if (!g_ascii_strcasecmp((gchar *)cur_node->name, TAG_DISC)) {
             treestore_add_disc(self->priv->treestore, NULL, cur_node);
-        } else if (!g_ascii_strcasecmp((gchar *)cur_node->name, TAG_LIBMIRAGE_LOG)) {
+        } else if (!g_ascii_strcasecmp((gchar *)cur_node->name, TAG_PARSER_LOG)) {
             self->priv->log = xml_node_get_string(cur_node);
         }
     }
@@ -1019,7 +1019,7 @@ gboolean ia_disc_tree_dump_load_xml_dump (IaDiscTreeDump *self, const gchar *fil
     return TRUE;
 }
 
-void ia_disc_tree_dump_create_from_disc (IaDiscTreeDump *self, MirageDisc *disc)
+void ia_disc_tree_dump_create_from_disc (IaDiscTreeDump *self, MirageDisc *disc, const gchar *log)
 {
     xmlNodePtr root_node;
 
@@ -1035,7 +1035,7 @@ void ia_disc_tree_dump_create_from_disc (IaDiscTreeDump *self, MirageDisc *disc)
     xml_dump_disc(disc, root_node);
 
     /* Append log */
-    g_print("FIXME: append log to dump!\n");
+    xmlNewTextChild(root_node, NULL, BAD_CAST TAG_PARSER_LOG, BAD_CAST log);
 
     /* Fill tree store */
     ia_disc_tree_dump_treestore_from_xml(self);

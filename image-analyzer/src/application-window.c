@@ -195,7 +195,9 @@ static gboolean ia_application_window_open_image (IaApplicationWindow *self, gch
     }
 
     /* Dump disc */
-    ia_disc_tree_dump_create_from_disc(self->priv->disc_dump, self->priv->disc);
+    gchar *parser_log = ia_log_window_get_log_text(IA_LOG_WINDOW(self->priv->log_window));
+    ia_disc_tree_dump_create_from_disc(self->priv->disc_dump, self->priv->disc, parser_log);
+    g_free(parser_log);
 
     /* Set disc reference in child windows */
     ia_disc_structure_window_set_disc(IA_DISC_STRUCTURE_WINDOW(self->priv->disc_structure_window), self->priv->disc);
@@ -226,6 +228,9 @@ static void ia_application_window_open_dump (IaApplicationWindow *self, gchar *f
 
         gtk_dialog_run(GTK_DIALOG(message_dialog));
         gtk_widget_destroy(message_dialog);
+    } else {
+        /* Display log from the dump */
+        ia_log_window_append_to_log(IA_LOG_WINDOW(self->priv->log_window), ia_disc_tree_dump_get_log(self->priv->disc_dump));
     }
 }
 
