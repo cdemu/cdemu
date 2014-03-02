@@ -15,19 +15,25 @@ Table of Contents:
 1. Introduction
 ~~~~~~~~~~~~~~~
 
-This is MIRAGE Image Analyzer, a simple Gtk+ application that displays tree
-structure of disc image created by libMirage. It is mostly intended as a demonstration
-of libMirage API use, although it can be also used to verify that an image is correctly
-handled by libMirage.
+Image Analyzer is a Gtk3-based utility for CD/DVD image analysis
+and manipulation, with following functionality:
+- disc image layout visualization
+- reading of sector data from image
+- analysis of error correction and detection codes in sector main and
+  subchannel data
+- retrieval of disc (DVD) structures, if available
+- visualization of disc topology (DPM) data, if available
+- image format conversion
+- logging facilities for debugging
 
 
 2. Requirements:
 ~~~~~~~~~~~~~~~~
-  - Gtk+2 or Gtk+3
+  - Gtk+3 >= 3.6
   - libxml >= 2.0.0
   - libMirage >= 2.1.0 (part of the distribution)
 
-  - gnuplot >= 4.0 (optional)
+  - gnuplot >= 4.0 (optional, run-time dependency)
 
 
 3. Installation:
