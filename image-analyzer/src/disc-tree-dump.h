@@ -56,6 +56,8 @@ GType ia_disc_tree_dump_get_type (void);
 GtkTreeStore *ia_disc_tree_dump_get_treestore (IaDiscTreeDump *self);
 const gchar *ia_disc_tree_dump_get_log (IaDiscTreeDump *self);
 
+const gchar *ia_disc_tree_dump_get_filename (IaDiscTreeDump *self);
+
 void ia_disc_tree_dump_clear (IaDiscTreeDump *self);
 gboolean ia_disc_tree_dump_save_xml_dump (IaDiscTreeDump *self, const gchar *filename);
 gboolean ia_disc_tree_dump_load_xml_dump (IaDiscTreeDump *self, const gchar *filename);

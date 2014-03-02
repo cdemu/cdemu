@@ -165,6 +165,9 @@ static gboolean ia_application_window_close_image_or_dump (IaApplicationWindow *
     /* Clear the log */
     ia_log_window_clear_log(IA_LOG_WINDOW(self->priv->log_window));
 
+    /* Update window title */
+    ia_application_window_update_window_title(self);
+
     return TRUE;
 }
 
@@ -205,6 +208,9 @@ static gboolean ia_application_window_open_image (IaApplicationWindow *self, gch
     ia_read_sector_window_set_disc(IA_READ_SECTOR_WINDOW(self->priv->read_sector_window), self->priv->disc);
     ia_sector_analysis_window_set_disc(IA_SECTOR_ANALYSIS_WINDOW(self->priv->sector_analysis_window), self->priv->disc);
 
+    /* Update window title */
+    ia_application_window_update_window_title(self);
+
     return TRUE;
 }
 
@@ -231,6 +237,9 @@ static void ia_application_window_open_dump (IaApplicationWindow *self, gchar *f
     } else {
         /* Display log from the dump */
         ia_log_window_append_to_log(IA_LOG_WINDOW(self->priv->log_window), ia_disc_tree_dump_get_log(self->priv->disc_dump));
+
+        /* Update window title */
+        ia_application_window_update_window_title(self);
     }
 }
 
@@ -799,6 +808,38 @@ void ia_application_window_apply_command_line_options (IaApplicationWindow *self
             ia_application_window_open_image(self, filenames);
         }
     }
+}
+
+void ia_application_window_update_window_title (IaApplicationWindow *self)
+{
+    GString *window_title = g_string_new(NULL);
+
+    g_string_append_printf(window_title, "Image Analyzer #%02d", gtk_application_window_get_id(GTK_APPLICATION_WINDOW(self)));
+
+    if (self->priv->disc) {
+        gchar **filenames = mirage_disc_get_filenames(self->priv->disc);
+        GFile *file = g_file_new_for_path(filenames[0]);
+        gchar *basename = g_file_get_basename(file);
+
+        g_string_append_printf(window_title, ": %s", basename);
+        if (g_strv_length(filenames) > 1) {
+            g_string_append_printf(window_title, " ...");
+        }
+
+        g_free(basename);
+        g_object_unref(file);
+    } else if (ia_disc_tree_dump_get_filename(self->priv->disc_dump)) {
+        GFile *file = g_file_new_for_path(ia_disc_tree_dump_get_filename(self->priv->disc_dump));
+        gchar *basename = g_file_get_basename(file);
+
+        g_string_append_printf(window_title, ": (%s)", basename);
+
+        g_free(basename);
+        g_object_unref(file);
+    }
+
+    gtk_window_set_title(GTK_WINDOW(self), window_title->str);
+    g_string_free(window_title, TRUE);
 }
 
 

@@ -46,6 +46,8 @@ struct _IaDiscTreeDumpPrivate
 
     xmlDocPtr xml_doc;
     gchar *log;
+
+    gchar *filename;
 };
 
 
@@ -978,6 +980,11 @@ const gchar *ia_disc_tree_dump_get_log (IaDiscTreeDump *self)
     return self->priv->log;
 }
 
+const gchar *ia_disc_tree_dump_get_filename (IaDiscTreeDump *self)
+{
+    return self->priv->filename;
+}
+
 
 void ia_disc_tree_dump_clear (IaDiscTreeDump *self)
 {
@@ -986,10 +993,13 @@ void ia_disc_tree_dump_clear (IaDiscTreeDump *self)
         self->priv->xml_doc = NULL;
     }
 
-    if (self->priv->log) {
-        g_free(self->priv->log);
-        self->priv->log = NULL;
-    }
+    gtk_tree_store_clear(self->priv->treestore);
+
+    g_free(self->priv->log);
+    self->priv->log = NULL;
+
+    g_free(self->priv->filename);
+    self->priv->filename = NULL;
 }
 
 gboolean ia_disc_tree_dump_save_xml_dump (IaDiscTreeDump *self, const gchar *filename)
@@ -1012,6 +1022,9 @@ gboolean ia_disc_tree_dump_load_xml_dump (IaDiscTreeDump *self, const gchar *fil
     if (!self->priv->xml_doc) {
         return FALSE;
     }
+
+    /* Store filename */
+    self->priv->filename = g_strdup(filename);
 
     /* Fill tree store */
     ia_disc_tree_dump_treestore_from_xml(self);
@@ -1065,6 +1078,7 @@ static void ia_disc_tree_dump_init (IaDiscTreeDump *self)
 
     self->priv->xml_doc = NULL;
     self->priv->log = NULL;
+    self->priv->filename = NULL;
 
     self->priv->treestore = gtk_tree_store_new(1, G_TYPE_STRING);
 }

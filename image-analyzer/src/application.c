@@ -81,6 +81,9 @@ static IaApplicationWindow *ia_application_create_window (IaApplication *self)
     /* Setup log handler; must be done after gtk_application_add_window() */
     ia_application_window_setup_logger(window);
 
+    /* Update window title */
+    ia_application_window_update_window_title(window);
+
     return window;
 }
 
