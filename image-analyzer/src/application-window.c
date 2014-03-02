@@ -349,9 +349,13 @@ static void ia_application_window_convert_image (IaApplicationWindow *self, Mira
 static void open_image_activated (GSimpleAction *action G_GNUC_UNUSED, GVariant *parameter G_GNUC_UNUSED, gpointer user_data)
 {
     IaApplicationWindow *self = IA_APPLICATION_WINDOW(user_data);
+    gint response;
 
     /* Run the dialog */
-    if (gtk_dialog_run(GTK_DIALOG(self->priv->open_image_dialog)) == GTK_RESPONSE_ACCEPT) {
+    response = gtk_dialog_run(GTK_DIALOG(self->priv->open_image_dialog));
+    gtk_widget_hide(GTK_WIDGET(self->priv->open_image_dialog));
+
+    if (response == GTK_RESPONSE_ACCEPT) {
         GSList *filenames_list;
         GSList *entry;
         gint num_filenames;
@@ -380,8 +384,6 @@ static void open_image_activated (GSimpleAction *action G_GNUC_UNUSED, GVariant 
         /* Free filenames array */
         g_strfreev(filenames);
     }
-
-    gtk_widget_hide(GTK_WIDGET(self->priv->open_image_dialog));
 }
 
 static void convert_image_activated (GSimpleAction *action G_GNUC_UNUSED, GVariant *parameter G_GNUC_UNUSED, gpointer user_data)
@@ -459,9 +461,13 @@ static void convert_image_activated (GSimpleAction *action G_GNUC_UNUSED, GVaria
 static void open_dump_activated (GSimpleAction *action G_GNUC_UNUSED, GVariant *parameter G_GNUC_UNUSED, gpointer user_data)
 {
     IaApplicationWindow *self = IA_APPLICATION_WINDOW(user_data);
+    gint response;
 
     /* Run the dialog */
-    if (gtk_dialog_run(GTK_DIALOG(self->priv->open_dump_dialog)) == GTK_RESPONSE_ACCEPT) {
+    response = gtk_dialog_run(GTK_DIALOG(self->priv->open_dump_dialog));
+    gtk_widget_hide(GTK_WIDGET(self->priv->open_dump_dialog));
+
+    if (response == GTK_RESPONSE_ACCEPT) {
         gchar *filename;
 
         /* Get filenames from dialog */
@@ -473,13 +479,12 @@ static void open_dump_activated (GSimpleAction *action G_GNUC_UNUSED, GVariant *
         /* Free filename */
         g_free(filename);
     }
-
-    gtk_widget_hide(GTK_WIDGET(self->priv->open_dump_dialog));
 }
 
 static void save_dump_activated (GSimpleAction *action G_GNUC_UNUSED, GVariant *parameter G_GNUC_UNUSED, gpointer user_data)
 {
     IaApplicationWindow *self = IA_APPLICATION_WINDOW(user_data);
+    gint response;
 
     /* We need an opened image or dump for this */
     if (!self->priv->disc) {
@@ -487,7 +492,10 @@ static void save_dump_activated (GSimpleAction *action G_GNUC_UNUSED, GVariant *
     }
 
     /* Run the dialog */
-    if (gtk_dialog_run(GTK_DIALOG(self->priv->save_dump_dialog)) == GTK_RESPONSE_ACCEPT) {
+    response = gtk_dialog_run(GTK_DIALOG(self->priv->save_dump_dialog));
+    gtk_widget_hide(GTK_WIDGET(self->priv->save_dump_dialog));
+
+    if (response == GTK_RESPONSE_ACCEPT) {
         gchar *filename;
 
         /* Get filenames from dialog */
@@ -499,8 +507,6 @@ static void save_dump_activated (GSimpleAction *action G_GNUC_UNUSED, GVariant *
         /* Free filename */
         g_free(filename);
     }
-
-    gtk_widget_hide(GTK_WIDGET(self->priv->save_dump_dialog));
 }
 
 static void close_activated (GSimpleAction *action G_GNUC_UNUSED, GVariant *parameter G_GNUC_UNUSED, gpointer user_data)
