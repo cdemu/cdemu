@@ -212,45 +212,35 @@ static gboolean ia_application_window_open_image (IaApplicationWindow *self, gch
 \**********************************************************************/
 static void ia_application_window_open_dump (IaApplicationWindow *self, gchar *filename)
 {
-    GError *error = NULL;
-
     /* Close any opened image or dump */
     ia_application_window_close_image_or_dump(self);
 
     /* Load XML to dump */
-    if (!ia_disc_tree_dump_load_xml_dump(self->priv->disc_dump, filename, &error)) {
+    if (!ia_disc_tree_dump_load_xml_dump(self->priv->disc_dump, filename)) {
         GtkWidget *message_dialog = gtk_message_dialog_new(
             GTK_WINDOW(self),
             GTK_DIALOG_DESTROY_WITH_PARENT,
             GTK_MESSAGE_ERROR,
             GTK_BUTTONS_CLOSE,
-            error->message);
+            "Failed to load/parse XML dump!");
 
-        gtk_window_set_title(GTK_WINDOW(message_dialog), "Failed to load dump");
         gtk_dialog_run(GTK_DIALOG(message_dialog));
         gtk_widget_destroy(message_dialog);
-
-        g_error_free(error);
     }
 }
 
 static void ia_application_window_save_dump (IaApplicationWindow *self, gchar *filename)
 {
-    GError *error = NULL;
-
-    if (!ia_disc_tree_dump_save_xml_dump(self->priv->disc_dump, filename, &error)) {
+    if (!ia_disc_tree_dump_save_xml_dump(self->priv->disc_dump, filename)) {
         GtkWidget *message_dialog = gtk_message_dialog_new(
             GTK_WINDOW(self),
             GTK_DIALOG_DESTROY_WITH_PARENT,
             GTK_MESSAGE_ERROR,
             GTK_BUTTONS_CLOSE,
-            error->message);
+            "Failed to save XML dump!");
 
-        gtk_window_set_title(GTK_WINDOW(message_dialog), "Failed to create dump");
         gtk_dialog_run(GTK_DIALOG(message_dialog));
         gtk_widget_destroy(message_dialog);
-
-        g_error_free(error);
     }
 }
 

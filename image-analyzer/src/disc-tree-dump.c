@@ -992,18 +992,17 @@ void ia_disc_tree_dump_clear (IaDiscTreeDump *self)
     }
 }
 
-gboolean ia_disc_tree_dump_save_xml_dump (IaDiscTreeDump *self, const gchar *filename, GError **error G_GNUC_UNUSED)
+gboolean ia_disc_tree_dump_save_xml_dump (IaDiscTreeDump *self, const gchar *filename)
 {
     /* Save the XML tree */
     if (xmlSaveFormatFileEnc(filename, self->priv->xml_doc, "UTF-8", 1) == -1) {
-        g_warning("Failed to save XML dump!\n");
         return FALSE;
     }
 
     return TRUE;
 }
 
-gboolean ia_disc_tree_dump_load_xml_dump (IaDiscTreeDump *self, const gchar *filename, GError **error G_GNUC_UNUSED)
+gboolean ia_disc_tree_dump_load_xml_dump (IaDiscTreeDump *self, const gchar *filename)
 {
     /* Make sure tree is clear */
     ia_disc_tree_dump_clear(self);
@@ -1011,7 +1010,6 @@ gboolean ia_disc_tree_dump_load_xml_dump (IaDiscTreeDump *self, const gchar *fil
     /* Load XML */
     self->priv->xml_doc = xmlReadFile(filename, NULL, 0);
     if (!self->priv->xml_doc) {
-        g_warning("Failed to load XML dump!\n");
         return FALSE;
     }
 
