@@ -71,10 +71,7 @@ static void quit_activated (GSimpleAction *action G_GNUC_UNUSED, GVariant *param
 }
 
 
-/**********************************************************************\
- *                          Gtk/GApplication                          *
-\**********************************************************************/
-static void ia_application_activate (GApplication *self)
+static IaApplicationWindow *ia_application_create_window (IaApplication *self)
 {
     /* Create new application window */
     IaApplicationWindow *window = g_object_new(IA_TYPE_APPLICATION_WINDOW, NULL);
@@ -83,6 +80,17 @@ static void ia_application_activate (GApplication *self)
 
     /* Setup log handler; must be done after gtk_application_add_window() */
     ia_application_window_setup_logger(window);
+
+    return window;
+}
+
+
+/**********************************************************************\
+ *                          Gtk/GApplication                          *
+\**********************************************************************/
+static void ia_application_activate (GApplication *self)
+{
+    ia_application_create_window(IA_APPLICATION(self));
 }
 
 static GActionEntry app_entries[] = {
@@ -223,6 +231,81 @@ static void ia_application_shutdown (GApplication *self)
 }
 
 
+static int ia_application_command_line (GApplication *self, GApplicationCommandLine *cmdline)
+{
+    gint status = 0;
+
+    /* Get args from GApplicationCommandLine; we have to make extra copy
+       of the array, because g_option_context_parse() assumes it can
+       remove strings from the array without freeing them */
+    gint argc;
+    gchar **args = g_application_command_line_get_arguments (cmdline, &argc);
+
+    gchar **argv = g_new(gchar *, argc + 1);
+    for (gint i = 0; i <= argc; i++) {
+        argv[i] = args[i];
+    }
+
+    /* Command-line parser */
+    gboolean debug_to_stdout = FALSE;
+    gint debug_mask = MIRAGE_DEBUG_PARSER;
+    gchar **filenames = NULL;
+    gboolean help = FALSE;
+
+    GOptionEntry entries[] = {
+        { "debug-to-stdout", 's', 0, G_OPTION_ARG_NONE, &debug_to_stdout, "Print libMirage debug to stdout.", NULL },
+        { "debug-mask", 'd', 0, G_OPTION_ARG_INT, &debug_mask, "libMirage debug mask.", NULL },
+        { "help", '?', 0, G_OPTION_ARG_NONE, &help, NULL, NULL },
+        { NULL, 0, 0, G_OPTION_ARG_NONE, NULL, NULL, NULL }
+    };
+
+    GOptionContext *context = context = g_option_context_new (NULL);
+    GError *error = NULL;
+
+    g_option_context_set_help_enabled(context, FALSE);
+    g_option_context_add_main_entries(context, entries, NULL);
+
+    if (!g_option_context_parse(context, &argc, &argv, &error)) {
+        g_application_command_line_printerr(cmdline, "%s\n", error->message);
+        g_error_free(error);
+        status = -1;
+    } else if (help) {
+        gchar *text = g_option_context_get_help(context, FALSE, NULL);
+        g_application_command_line_print(cmdline, "%s",  text);
+        g_free(text);
+        status = 1;
+    }
+
+    /* Copy filenames */
+    filenames = g_new0(gchar *, argc); /* App name + filenames = filenames + NULL */
+    for (gint i = 0; i < argc; i++) {
+        filenames[i] = g_strdup(argv[i+1]);
+    }
+
+    /* Cleanup */
+    g_free(argv);
+    g_strfreev(args);
+
+    g_option_context_free(context);
+
+    /* If we successfully parsed command-line, create application window */
+    if (!status) {
+        /* Create new application window */
+        IaApplicationWindow *window = ia_application_create_window(IA_APPLICATION(self));
+
+        /* Set command-line options */
+        ia_application_window_apply_command_line_options(window, debug_to_stdout, debug_mask, filenames);
+    }
+
+    g_strfreev(filenames);
+
+    /* Return exit code */
+    g_application_command_line_set_exit_status(cmdline, status);
+
+    return status;
+}
+
+
 
 /**********************************************************************\
  *                             Object init                            *
@@ -230,6 +313,8 @@ static void ia_application_shutdown (GApplication *self)
 static void ia_application_init (IaApplication *self)
 {
     self->priv = IA_APPLICATION_GET_PRIVATE(self);
+
+    g_signal_connect(self, "command-line", G_CALLBACK(ia_application_command_line), NULL);
 }
 
 static void ia_application_class_init (IaApplicationClass *class)

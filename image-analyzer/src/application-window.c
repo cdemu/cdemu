@@ -787,29 +787,24 @@ void ia_application_window_setup_logger (IaApplicationWindow *self)
     g_free(debug_domain);
 }
 
-#if 0
-gboolean ia_application_window_run (IaApplicationWindow *self, gchar **open_image, gboolean debug_to_stdout, gint debug_mask_initial)
+void ia_application_window_apply_command_line_options (IaApplicationWindow *self, gboolean debug_to_stdout, gint debug_mask, gchar **filenames)
 {
-    /* Set the debug flags and masks */
-    ia_application_window_set_debug_to_stdout(self, debug_to_stdout);
-    ia_application_window_set_debug_mask(self, debug_mask_initial);
+    /* Set debug mask to context */
+    mirage_context_set_debug_mask(self->priv->mirage_context, debug_mask);
+
+    /* Set debug message mirroring */
+    ia_log_window_set_debug_to_stdout(IA_LOG_WINDOW(self->priv->log_window), debug_to_stdout);
 
     /* Open image, if provided */
-    if (g_strv_length(open_image)) {
+    if (g_strv_length(filenames)) {
         /* If it ends with .xml, we treat it as a dump file */
-        if (mirage_helper_has_suffix(open_image[0], ".xml")) {
-            ia_application_window_open_dump(self, open_image[0]);
+        if (mirage_helper_has_suffix(filenames[0], ".xml")) {
+            ia_application_window_open_dump(self, filenames[0]);
         } else {
-            ia_application_window_open_image(self, open_image);
+            ia_application_window_open_image(self, filenames);
         }
     }
-
-    /* Show window */
-    gtk_widget_show_all(self);
-
-    return TRUE;
 }
-#endif
 
 
 /**********************************************************************\

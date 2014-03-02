@@ -51,6 +51,7 @@ struct _IaApplicationWindowClass {
 GType ia_application_window_get_type (void);
 
 void ia_application_window_setup_logger (IaApplicationWindow *self);
+void ia_application_window_apply_command_line_options (IaApplicationWindow *self, gboolean debug_to_stdout, gint debug_mask, gchar **filenames);
 
 G_END_DECLS
 
