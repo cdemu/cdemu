@@ -290,7 +290,16 @@ void ia_read_sector_window_set_disc (IaReadSectorWindow *self, MirageDisc *disc)
 
     /* Set new disc */
     if (disc) {
+        gint start_sector, length;
+
         self->priv->disc = g_object_ref(disc);
+
+        start_sector = mirage_disc_layout_get_start_sector(self->priv->disc);
+        length = mirage_disc_layout_get_length(self->priv->disc);
+
+        gtk_spin_button_set_range(GTK_SPIN_BUTTON(self->priv->spinbutton), start_sector, start_sector + length - 1);
+    } else {
+        gtk_spin_button_set_range(GTK_SPIN_BUTTON(self->priv->spinbutton), G_MININT64, G_MAXINT64);
     }
 }
 
