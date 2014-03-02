@@ -1,5 +1,5 @@
- /*
- *  CDEmu daemon: Device object - Delay emulation
+/*
+ *  CDEmu daemon: device - delay emulation
  *  Copyright (C) 2006-2012 Rok Mandeljc
  *
  *  This program is free software; you can redistribute it and/or modify
@@ -18,7 +18,7 @@
  */
 
 #include "cdemu.h"
-#include "cdemu-device-private.h"
+#include "device-private.h"
 
 #define __debug__ "Delay Emulation"
 

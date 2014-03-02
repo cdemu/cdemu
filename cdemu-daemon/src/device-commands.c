@@ -1,6 +1,6 @@
 /*
- *  CDEmu daemon: Device object - packet commands
- *  Copyright (C) 2006-2012 Rok Mandeljc
+ *  CDEmu daemon: device - packet commands
+ *  Copyright (C) 2006-2014 Rok Mandeljc
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -18,7 +18,7 @@
  */
 
 #include "cdemu.h"
-#include "cdemu-device-private.h"
+#include "device-private.h"
 
 #define __debug__ "MMC-3"
 

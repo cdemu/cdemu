@@ -1,6 +1,6 @@
 /*
- *  CDEmu daemon: Type definitions
- *  Copyright (C) 2013 Rok Mandeljc
+ *  CDEmu daemon: type definitions
+ *  Copyright (C) 2013-2014 Rok Mandeljc
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by

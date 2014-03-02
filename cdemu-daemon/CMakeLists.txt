@@ -65,19 +65,19 @@ link_directories (SYSTEM ${AO_LIBRARY_DIRS})
 
 # *** cdemu-daemon ***
 set (cdemu-daemon_SOURCES
-    src/cdemu-audio.c
-    src/cdemu-daemon.c
-    src/cdemu-daemon-dbus.c
-    src/cdemu-device.c
-    src/cdemu-device-commands.c
-    src/cdemu-device-delay.c
-    src/cdemu-device-features.c
-    src/cdemu-device-kernel-io.c
-    src/cdemu-device-load.c
-    src/cdemu-device-mapping.c
-    src/cdemu-device-mode-pages.c
-    src/cdemu-device-recording.c
-    src/cdemu-error.c
+    src/audio.c
+    src/daemon.c
+    src/daemon-dbus.c
+    src/device.c
+    src/device-commands.c
+    src/device-delay.c
+    src/device-features.c
+    src/device-kernel-io.c
+    src/device-load.c
+    src/device-mapping.c
+    src/device-mode-pages.c
+    src/device-recording.c
+    src/error.c
     src/main.c
 )
 

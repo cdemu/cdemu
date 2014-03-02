@@ -1,5 +1,5 @@
 /*
- *  CDEmu daemon: Device object - recording implementation
+ *  CDEmu daemon: device - recording implementation
  *  Copyright (C) 2013-2014 Rok Mandeljc
  *
  *  This program is free software; you can redistribute it and/or modify
@@ -18,7 +18,7 @@
  */
 
 #include "cdemu.h"
-#include "cdemu-device-private.h"
+#include "device-private.h"
 
 
 /**********************************************************************\

@@ -1,6 +1,6 @@
 /*
- *  CDEmu daemon: Audio play object
- *  Copyright (C) 2006-2012 Rok Mandeljc
+ *  CDEmu daemon: audio
+ *  Copyright (C) 2006-2014 Rok Mandeljc
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -18,7 +18,7 @@
  */
 
 #include "cdemu.h"
-#include "cdemu-audio-private.h"
+#include "audio-private.h"
 
 #define __debug__ "AudioPlay"
 

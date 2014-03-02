@@ -1,6 +1,6 @@
 /*
  *  CDEmu daemon: main
- *  Copyright (C) 2006-2012 Rok Mandeljc
+ *  Copyright (C) 2006-2014 Rok Mandeljc
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -97,7 +97,7 @@ static void setup_signal_trap ()
 \******************************************************************************/
 int main (int argc, char **argv)
 {
-    /* Glib type system and threading system initialization; needed 
+    /* Glib type system and threading system initialization; needed
        only in older glib versions */
 #if !GLIB_CHECK_VERSION(2, 36, 0)
     g_type_init();

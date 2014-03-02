@@ -1,6 +1,6 @@
 /*
- *  CDEmu daemon: Device object - private
- *  Copyright (C) 2012 Rok Mandeljc
+ *  CDEmu daemon: device - private
+ *  Copyright (C) 2012-2014 Rok Mandeljc
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by

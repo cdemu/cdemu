@@ -1,6 +1,6 @@
 /*
- *  CDEmu daemon: Daemon object
- *  Copyright (C) 2006-2012 Rok Mandeljc
+ *  CDEmu daemon: daemon
+ *  Copyright (C) 2006-2014 Rok Mandeljc
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -18,7 +18,7 @@
  */
 
 #include "cdemu.h"
-#include "cdemu-daemon-private.h"
+#include "daemon-private.h"
 
 #define __debug__ "Daemon"
 

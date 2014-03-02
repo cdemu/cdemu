@@ -1,6 +1,6 @@
 /*
- *  CDEmu daemon: Main header
- *  Copyright (C) 2006-2012 Rok Mandeljc
+ *  CDEmu daemon: main header
+ *  Copyright (C) 2006-2014 Rok Mandeljc
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -42,19 +42,19 @@
 
 #include <mirage.h>
 
-#include "cdemu-types.h"
+#include "types.h"
 
-#include "cdemu-audio.h"
+#include "audio.h"
 
-#include "cdemu-mmc-features.h"
-#include "cdemu-mode-pages.h"
-#include "cdemu-packet-commands.h"
-#include "cdemu-sense-constants.h"
+#include "mmc-features.h"
+#include "mmc-mode-pages.h"
+#include "mmc-packet-commands.h"
+#include "mmc-sense-constants.h"
 
-#include "cdemu-error.h"
-#include "cdemu-debug.h"
+#include "error.h"
+#include "debug.h"
 
-#include "cdemu-daemon.h"
-#include "cdemu-device.h"
+#include "daemon.h"
+#include "device.h"
 
 #endif /* __CDEMU_H__ */
