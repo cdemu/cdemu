@@ -181,7 +181,7 @@ static void ia_application_startup (GApplication *self)
         "        </item>"
         "        <item>"
         "          <attribute name='label' translatable='yes'>Disc structures</attribute>"
-        "          <attribute name='action'>win.disc_structure_window</attribute>"
+        "          <attribute name='action'>win.disc_structures_window</attribute>"
         "          <attribute name='accel'>&lt;Primary&gt;c</attribute>"
         "        </item>"
         "      </section>"

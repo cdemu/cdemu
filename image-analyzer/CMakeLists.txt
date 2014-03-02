@@ -61,7 +61,7 @@ link_directories (SYSTEM ${GTK_LIBRARY_DIRS})
 set (image-analyzer_SOURCES
     src/application.c
     src/application-window.c
-    src/disc-structure-window.c
+    src/disc-structures-window.c
     src/disc-topology-window.c
     src/disc-tree-dump.c
     src/log-window.c

@@ -27,7 +27,7 @@
 
 #include "application-window.h"
 
-#include "disc-structure-window.h"
+#include "disc-structures-window.h"
 #include "disc-topology-window.h"
 #include "disc-tree-dump.h"
 #include "log-window.h"
@@ -56,7 +56,7 @@ struct _IaApplicationWindowPrivate
     GtkWidget *read_sector_window;
     GtkWidget *sector_analysis_window;
     GtkWidget *disc_topology_window;
-    GtkWidget *disc_structure_window;
+    GtkWidget *disc_structures_window;
 
     /* Debug */
     MirageContext *mirage_context;
@@ -151,7 +151,7 @@ static gboolean ia_application_window_close_image_or_dump (IaApplicationWindow *
     ia_disc_tree_dump_clear(self->priv->disc_dump);
 
     /* Clear disc reference in child windows */
-    ia_disc_structure_window_set_disc(IA_DISC_STRUCTURE_WINDOW(self->priv->disc_structure_window), NULL);
+    ia_disc_structures_window_set_disc(IA_DISC_STRUCTURES_WINDOW(self->priv->disc_structures_window), NULL);
     ia_disc_topology_window_set_disc(IA_DISC_TOPOLOGY_WINDOW(self->priv->disc_topology_window), NULL);
     ia_read_sector_window_set_disc(IA_READ_SECTOR_WINDOW(self->priv->read_sector_window), NULL);
     ia_sector_analysis_window_set_disc(IA_SECTOR_ANALYSIS_WINDOW(self->priv->sector_analysis_window), NULL);
@@ -203,7 +203,7 @@ static gboolean ia_application_window_open_image (IaApplicationWindow *self, gch
     g_free(parser_log);
 
     /* Set disc reference in child windows */
-    ia_disc_structure_window_set_disc(IA_DISC_STRUCTURE_WINDOW(self->priv->disc_structure_window), self->priv->disc);
+    ia_disc_structures_window_set_disc(IA_DISC_STRUCTURES_WINDOW(self->priv->disc_structures_window), self->priv->disc);
     ia_disc_topology_window_set_disc(IA_DISC_TOPOLOGY_WINDOW(self->priv->disc_topology_window), self->priv->disc);
     ia_read_sector_window_set_disc(IA_READ_SECTOR_WINDOW(self->priv->read_sector_window), self->priv->disc);
     ia_sector_analysis_window_set_disc(IA_SECTOR_ANALYSIS_WINDOW(self->priv->sector_analysis_window), self->priv->disc);
@@ -538,11 +538,11 @@ static void disc_topology_window_activated (GSimpleAction *action G_GNUC_UNUSED,
     gtk_window_present(GTK_WINDOW(self->priv->disc_topology_window));
 }
 
-static void disc_structure_window_activated (GSimpleAction *action G_GNUC_UNUSED, GVariant *parameter G_GNUC_UNUSED, gpointer user_data)
+static void disc_structures_window_activated (GSimpleAction *action G_GNUC_UNUSED, GVariant *parameter G_GNUC_UNUSED, gpointer user_data)
 {
     IaApplicationWindow *self = IA_APPLICATION_WINDOW(user_data);
-    gtk_widget_show_all(GTK_WIDGET(self->priv->disc_structure_window));
-    gtk_window_present(GTK_WINDOW(self->priv->disc_structure_window));
+    gtk_widget_show_all(GTK_WIDGET(self->priv->disc_structures_window));
+    gtk_window_present(GTK_WINDOW(self->priv->disc_structures_window));
 }
 
 
@@ -696,7 +696,7 @@ static GActionEntry win_entries[] = {
     { "read_sector_window", read_sector_window_activated, NULL, NULL, NULL, {0} },
     { "sector_analysis_window", sector_analysis_window_activated, NULL, NULL, NULL, {0} },
     { "disc_topology_window", disc_topology_window_activated, NULL, NULL, NULL, {0} },
-    { "disc_structure_window", disc_structure_window_activated, NULL, NULL, NULL, {0} },
+    { "disc_structures_window", disc_structures_window_activated, NULL, NULL, NULL, {0} },
 };
 
 static void create_gui (IaApplicationWindow *self)
@@ -763,9 +763,9 @@ static void create_gui (IaApplicationWindow *self)
     ia_disc_topology_window_set_disc(IA_DISC_TOPOLOGY_WINDOW(self->priv->disc_topology_window), NULL);
 
     /* Disc structure dialog */
-    self->priv->disc_structure_window = g_object_new(IA_TYPE_DISC_STRUCTURE_WINDOW, NULL);
-    g_signal_connect(self->priv->disc_structure_window, "delete_event", G_CALLBACK(gtk_widget_hide_on_delete), NULL);
-    ia_disc_structure_window_set_disc(IA_DISC_STRUCTURE_WINDOW(self->priv->disc_structure_window), NULL);
+    self->priv->disc_structures_window = g_object_new(IA_TYPE_DISC_STRUCTURES_WINDOW, NULL);
+    g_signal_connect(self->priv->disc_structures_window, "delete_event", G_CALLBACK(gtk_widget_hide_on_delete), NULL);
+    ia_disc_structures_window_set_disc(IA_DISC_STRUCTURES_WINDOW(self->priv->disc_structures_window), NULL);
 }
 
 
@@ -855,7 +855,7 @@ void ia_application_window_display_instance_id (IaApplicationWindow *self)
     gint id = gtk_application_window_get_id(GTK_APPLICATION_WINDOW(self));
 
     /* Update tool windows; grab their current titles, and append instance ID */
-    append_id_to_title(GTK_WINDOW(self->priv->disc_structure_window), id);
+    append_id_to_title(GTK_WINDOW(self->priv->disc_structures_window), id);
     append_id_to_title(GTK_WINDOW(self->priv->disc_topology_window), id);
     append_id_to_title(GTK_WINDOW(self->priv->log_window), id);
     append_id_to_title(GTK_WINDOW(self->priv->read_sector_window), id);
@@ -935,7 +935,7 @@ static void ia_application_window_finalize (GObject *gobject)
     gtk_widget_destroy(self->priv->read_sector_window);
     gtk_widget_destroy(self->priv->sector_analysis_window);
     gtk_widget_destroy(self->priv->disc_topology_window);
-    gtk_widget_destroy(self->priv->disc_structure_window);
+    gtk_widget_destroy(self->priv->disc_structures_window);
 
     /* Chain up to the parent class */
     return G_OBJECT_CLASS(ia_application_window_parent_class)->finalize(gobject);
