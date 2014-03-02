@@ -219,7 +219,7 @@ void mirage_contextual_debug_print_buffer (MirageContextual *self, gint level, c
         memset(ptr, 0, num_chars);
 
         for (gint i = 0; i < num; i++) {
-            ptr += g_sprintf(ptr, "%02hX ", *buffer_ptr);
+            ptr += g_sprintf(ptr, "%02hhX ", *buffer_ptr);
             buffer_ptr++;
             buffer_length--;
         }
