@@ -178,6 +178,8 @@ static void setup_gui (IaDiscStructuresWindow *self)
     button = gtk_button_new_with_label("Get structure");
     g_signal_connect(button, "clicked", G_CALLBACK(ia_disc_structures_window_ui_callback_get_structure), self);
     gtk_grid_attach_next_to(GTK_GRID(grid), button, self->priv->spinbutton_type, GTK_POS_RIGHT, 1, 1);
+
+    gtk_widget_show_all(grid);
 }
 
 

@@ -313,7 +313,7 @@ static void setup_gui (IaWriterDialog *self)
     self->priv->writer_options_ui = NULL;
     self->priv->writer_options_widgets = g_hash_table_new(g_str_hash, g_str_equal);
 
-    gtk_widget_show_all(GTK_WIDGET(content_area));
+    gtk_widget_show_all(content_area);
     gtk_widget_hide(self->priv->frame_writer);
 }
 

@@ -274,6 +274,8 @@ static void setup_gui (IaReadSectorWindow *self)
     button = gtk_button_new_with_label("Read");
     g_signal_connect(button, "clicked", G_CALLBACK(ia_read_sector_window_ui_callback_read), self);
     gtk_grid_attach_next_to(GTK_GRID(grid), button, self->priv->spinbutton, GTK_POS_RIGHT, 1, 1);
+
+    gtk_widget_show_all(grid);
 }
 
 

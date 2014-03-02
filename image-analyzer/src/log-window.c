@@ -203,6 +203,8 @@ static void setup_gui (IaLogWindow *self)
     button2 = gtk_button_new_with_label("Debug mask");
     gtk_grid_attach_next_to(GTK_GRID(grid), button2, button1, GTK_POS_RIGHT, 1, 1);
     g_signal_connect(button2, "clicked", G_CALLBACK(debug_mask_button_clicked), self);
+
+    gtk_widget_show_all(grid);
 }
 
 

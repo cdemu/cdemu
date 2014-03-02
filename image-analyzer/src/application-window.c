@@ -519,35 +519,30 @@ static void close_activated (GSimpleAction *action G_GNUC_UNUSED, GVariant *para
 static void log_window_activated (GSimpleAction *action G_GNUC_UNUSED, GVariant *parameter G_GNUC_UNUSED, gpointer user_data)
 {
     IaApplicationWindow *self = IA_APPLICATION_WINDOW(user_data);
-    gtk_widget_show_all(GTK_WIDGET(self->priv->log_window));
     gtk_window_present(GTK_WINDOW(self->priv->log_window));
 }
 
 static void read_sector_window_activated (GSimpleAction *action G_GNUC_UNUSED, GVariant *parameter G_GNUC_UNUSED, gpointer user_data)
 {
     IaApplicationWindow *self = IA_APPLICATION_WINDOW(user_data);
-    gtk_widget_show_all(GTK_WIDGET(self->priv->read_sector_window));
     gtk_window_present(GTK_WINDOW(self->priv->read_sector_window));
 }
 
 static void sector_analysis_window_activated (GSimpleAction *action G_GNUC_UNUSED, GVariant *parameter G_GNUC_UNUSED, gpointer user_data)
 {
     IaApplicationWindow *self = IA_APPLICATION_WINDOW(user_data);
-    gtk_widget_show_all(GTK_WIDGET(self->priv->sector_analysis_window));
     gtk_window_present(GTK_WINDOW(self->priv->sector_analysis_window));
 }
 
 static void disc_topology_window_activated (GSimpleAction *action G_GNUC_UNUSED, GVariant *parameter G_GNUC_UNUSED, gpointer user_data)
 {
     IaApplicationWindow *self = IA_APPLICATION_WINDOW(user_data);
-    gtk_widget_show_all(GTK_WIDGET(self->priv->disc_topology_window));
     gtk_window_present(GTK_WINDOW(self->priv->disc_topology_window));
 }
 
 static void disc_structures_window_activated (GSimpleAction *action G_GNUC_UNUSED, GVariant *parameter G_GNUC_UNUSED, gpointer user_data)
 {
     IaApplicationWindow *self = IA_APPLICATION_WINDOW(user_data);
-    gtk_widget_show_all(GTK_WIDGET(self->priv->disc_structures_window));
     gtk_window_present(GTK_WINDOW(self->priv->disc_structures_window));
 }
 
