@@ -1,5 +1,5 @@
 /*
- *  Image Analyzer: Disc topology window
+ *  Image analyzer: disc topology window
  *  Copyright (C) 2008-2014 Rok Mandeljc
  *
  *  This program is free software; you can redistribute it and/or modify

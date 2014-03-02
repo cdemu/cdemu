@@ -1,5 +1,5 @@
 /*
- *  Image Analyzer: Application
+ *  Image analyzer: application
  *  Copyright (C) 2007-2014 Rok Mandeljc
  *
  *  This program is free software; you can redistribute it and/or modify

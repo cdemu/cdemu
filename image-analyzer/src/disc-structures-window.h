@@ -1,5 +1,5 @@
 /*
- *  Image Analyzer: Disc structures window
+ *  Image analyzer: disc structures window
  *  Copyright (C) 2014 Rok Mandeljc
  *
  *  This program is free software; you can redistribute it and/or modify

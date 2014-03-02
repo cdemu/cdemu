@@ -1,5 +1,5 @@
 /*
- *  Image Analyzer: Disc tree dump
+ *  Image analyzer: disc tree dump
  *  Copyright (C) 2007-2014 Rok Mandeljc
  *
  *  This program is free software; you can redistribute it and/or modify
