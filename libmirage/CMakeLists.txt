@@ -77,8 +77,8 @@ configure_file (
     ${PROJECT_BINARY_DIR}/config.h
 )
 configure_file (
-    ${PROJECT_SOURCE_DIR}/src/libmirage/mirage-version.h.in
-    ${PROJECT_BINARY_DIR}/src/libmirage/mirage-version.h
+    ${PROJECT_SOURCE_DIR}/src/libmirage/version.h.in
+    ${PROJECT_BINARY_DIR}/src/libmirage/version.h
 )
 configure_file (
     ${PROJECT_SOURCE_DIR}/reference/version.xml.in
@@ -112,55 +112,55 @@ link_directories (${GLIB_LIBRARY_DIRS})
 # *** libMirage core library ***
 set (libmirage_HEADERS
     src/libmirage/mirage.h
-    src/libmirage/mirage-cdtext-coder.h
-#    src/libmirage/mirage-compat-input-stream.h
-    src/libmirage/mirage-context.h
-    src/libmirage/mirage-contextual.h
-    src/libmirage/mirage-debug.h
-    src/libmirage/mirage-disc.h
-    src/libmirage/mirage-disc-structures.h
-    src/libmirage/mirage-error.h
-    src/libmirage/mirage-file-stream.h
-    src/libmirage/mirage-filter-stream.h
-    src/libmirage/mirage-fragment.h
-    src/libmirage/mirage-index.h
-    src/libmirage/mirage-language.h
-    src/libmirage/mirage-object.h
-    src/libmirage/mirage-parser.h
-    src/libmirage/mirage-plugin.h
-    src/libmirage/mirage-sector.h
-    src/libmirage/mirage-session.h
-    src/libmirage/mirage-stream.h
-    src/libmirage/mirage-track.h
-    src/libmirage/mirage-types.h
-    src/libmirage/mirage-utils.h
-    src/libmirage/mirage-writer.h
-    ${PROJECT_BINARY_DIR}/src/libmirage/mirage-version.h
+    src/libmirage/cdtext-coder.h
+#    src/libmirage/compat-input-stream.h
+    src/libmirage/context.h
+    src/libmirage/contextual.h
+    src/libmirage/debug.h
+    src/libmirage/disc.h
+    src/libmirage/disc-structures.h
+    src/libmirage/error.h
+    src/libmirage/file-stream.h
+    src/libmirage/filter-stream.h
+    src/libmirage/fragment.h
+    src/libmirage/index.h
+    src/libmirage/language.h
+    src/libmirage/object.h
+    src/libmirage/parser.h
+    src/libmirage/plugin.h
+    src/libmirage/sector.h
+    src/libmirage/session.h
+    src/libmirage/stream.h
+    src/libmirage/track.h
+    src/libmirage/types.h
+    src/libmirage/utils.h
+    src/libmirage/writer.h
+    ${PROJECT_BINARY_DIR}/src/libmirage/version.h
 )
 
 set (libmirage_SOURCES
     src/libmirage/mirage.c
-    src/libmirage/mirage-cdtext-coder.c
-    src/libmirage/mirage-compat-input-stream.c
-    src/libmirage/mirage-context.c
-    src/libmirage/mirage-contextual.c
-    src/libmirage/mirage-disc.c
-    src/libmirage/mirage-error.c
-    src/libmirage/mirage-file-stream.c
-    src/libmirage/mirage-filter-stream.c
-    src/libmirage/mirage-fragment.c
-    src/libmirage/mirage-index.c
-    src/libmirage/mirage-language.c
-    src/libmirage/mirage-object.c
-    src/libmirage/mirage-parser.c
-    src/libmirage/mirage-plugin.c
-    src/libmirage/mirage-sector.c
-    src/libmirage/mirage-session.c
-    src/libmirage/mirage-stream.c
-    src/libmirage/mirage-track.c
-    src/libmirage/mirage-utils.c
-    src/libmirage/mirage-version.c
-    src/libmirage/mirage-writer.c
+    src/libmirage/cdtext-coder.c
+    src/libmirage/compat-input-stream.c
+    src/libmirage/context.c
+    src/libmirage/contextual.c
+    src/libmirage/disc.c
+    src/libmirage/error.c
+    src/libmirage/file-stream.c
+    src/libmirage/filter-stream.c
+    src/libmirage/fragment.c
+    src/libmirage/index.c
+    src/libmirage/language.c
+    src/libmirage/object.c
+    src/libmirage/parser.c
+    src/libmirage/plugin.c
+    src/libmirage/sector.c
+    src/libmirage/session.c
+    src/libmirage/stream.c
+    src/libmirage/track.c
+    src/libmirage/utils.c
+    src/libmirage/version.c
+    src/libmirage/writer.c
 )
 
 add_library (mirage SHARED ${libmirage_SOURCES})
@@ -200,7 +200,7 @@ if (GTKDOC_ENABLED AND GTKDOC_FOUND)
         SOURCE_DIR ${PROJECT_SOURCE_DIR}/src/libmirage ${PROJECT_BINARY_DIR}/src/libmirage
         SOURCES ${libmirage_HEADERS} ${libmirage_SOURCES}
         DOCS_DIR ${PROJECT_SOURCE_DIR}/reference
-        IGNORE_HFILES "mirage-compat-input-stream.h mirage-disc-structures.h"
+        IGNORE_HFILES "compat-input-stream.h disc-structures.h"
         CFLAGS ${GLIB_CFLAGS} -I${PROJECT_SOURCE_DIR}/src/libmirage
         LDFLAGS ${GLIB_LDFLAGS} -L${PROJECT_BINARY_DIR}
             -Wl,-rpath,${PROJECT_BINARY_DIR} -l${GTKDOC_LIB}

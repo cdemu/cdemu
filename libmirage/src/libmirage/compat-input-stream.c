@@ -21,8 +21,8 @@
 #include "config.h"
 #endif
 
-#include "mirage-compat-input-stream.h"
-#include "mirage-stream.h"
+#include "compat-input-stream.h"
+#include "stream.h"
 
 
 /**********************************************************************\

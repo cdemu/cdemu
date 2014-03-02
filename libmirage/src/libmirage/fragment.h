@@ -20,7 +20,7 @@
 #ifndef __MIRAGE_FRAGMENT_H__
 #define __MIRAGE_FRAGMENT_H__
 
-#include "mirage-types.h"
+#include "types.h"
 
 
 G_BEGIN_DECLS

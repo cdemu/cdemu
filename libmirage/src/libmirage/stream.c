@@ -39,7 +39,7 @@
 #endif
 
 #include "mirage.h"
-#include "mirage-compat-input-stream.h"
+#include "compat-input-stream.h"
 
 
 /**********************************************************************\
