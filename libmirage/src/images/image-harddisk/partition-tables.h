@@ -18,8 +18,8 @@
  */
 
 
-#ifndef __PARTITION_TABLE_H__
-#define __PARTITION_TABLE_H__
+#ifndef __IMAGE_HD_PARTITION_TABLE_H__
+#define __IMAGE_HD_PARTITION_TABLE_H__
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -160,5 +160,5 @@ void mirage_print_gpt_entry(MirageContextual *self, gpt_entry_t *gpt_entry);
 
 G_END_DECLS
 
-#endif /* __PARTITION_TABLE_H__ */
+#endif /* __IMAGE_HD_PARTITION_TABLE_H__ */
 

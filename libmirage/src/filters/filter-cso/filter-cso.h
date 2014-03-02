@@ -27,7 +27,7 @@
 #include <zlib.h>
 
 #include "mirage.h"
-#include "filter-cso-filter-stream.h"
+#include "filter-stream.h"
 
 G_BEGIN_DECLS
 

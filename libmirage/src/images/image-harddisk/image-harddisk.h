@@ -25,7 +25,7 @@
 #endif
 
 #include "mirage.h"
-#include "image-harddisk-parser.h"
+#include "parser.h"
 #include "partition-tables.h"
 
 

@@ -24,13 +24,14 @@
 #include "config.h"
 #endif
 
-#include "adc.h"
-#include "resource-fork.h"
 #include <zlib.h>
 #include <bzlib.h>
 
+#include "adc.h"
+#include "resource-fork.h"
+
 #include "mirage.h"
-#include "filter-dmg-filter-stream.h"
+#include "filter-stream.h"
 
 
 G_BEGIN_DECLS

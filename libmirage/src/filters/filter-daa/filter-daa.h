@@ -30,7 +30,7 @@
 #include <errno.h>
 
 #include "mirage.h"
-#include "filter-daa-filter-stream.h"
+#include "filter-stream.h"
 
 
 G_BEGIN_DECLS

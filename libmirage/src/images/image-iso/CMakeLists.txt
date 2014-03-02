@@ -5,11 +5,10 @@ project(${image_name} C)
 
 # Build
 if (TRUE)
-    # Parser
     add_library(${image_name} MODULE
-        ${image_name}-parser.c
-        ${image_name}-plugin.c
-        ${image_name}-writer.c
+        parser.c
+        plugin.c
+        writer.c
     )
     target_link_libraries(${image_name} ${GLIB_LIBRARIES})
 

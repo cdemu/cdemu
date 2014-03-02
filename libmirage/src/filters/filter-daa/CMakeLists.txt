@@ -20,8 +20,8 @@ if (ZLIB_FOUND)
 
     # Filter
     add_library(${filter_name} MODULE
-        ${filter_name}-filter-stream.c
-        ${filter_name}-plugin.c
+        filter-stream.c
+        plugin.c
         lzma-sdk/Bra86.c
         lzma-sdk/LzmaDec.c
     )

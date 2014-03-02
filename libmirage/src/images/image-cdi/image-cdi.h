@@ -25,6 +25,6 @@
 #endif
 
 #include "mirage.h"
-#include "image-cdi-parser.h"
+#include "parser.h"
 
 #endif /* __IMAGE_CDI_H__ */

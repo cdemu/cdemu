@@ -17,11 +17,11 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef __ADC_H__
-#define __ADC_H__
+#ifndef __FILTER_DMG_ADC_H__
+#define __FILTER_DMG_ADC_H__
 
 #include <glib.h>
 
 gsize adc_decompress(gsize in_size, guint8 *input, gsize avail_size, guint8 *output, gsize *bytes_written);
 
-#endif /* __ADC_H__ */
+#endif /* __FILTER_DMG_ADC_H__ */

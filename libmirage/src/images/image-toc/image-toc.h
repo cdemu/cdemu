@@ -27,8 +27,8 @@
 #include <stdlib.h>
 
 #include "mirage.h"
-#include "image-toc-parser.h"
-#include "image-toc-writer.h"
+#include "parser.h"
+#include "writer.h"
 
 
 G_BEGIN_DECLS

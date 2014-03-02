@@ -28,7 +28,7 @@
 #include <samplerate.h>
 
 #include "mirage.h"
-#include "filter-sndfile-filter-stream.h"
+#include "filter-stream.h"
 
 G_BEGIN_DECLS
 

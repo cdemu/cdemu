@@ -27,7 +27,7 @@
 #include <lzma.h>
 
 #include "mirage.h"
-#include "filter-xz-filter-stream.h"
+#include "filter-stream.h"
 
 G_BEGIN_DECLS
 

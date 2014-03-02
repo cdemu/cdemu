@@ -26,7 +26,7 @@
 
 
 #include "mirage.h"
-#include "filter-macbinary-filter-stream.h"
+#include "filter-stream.h"
 #include "../filter-dmg/resource-fork.h"
 #include "../filter-dmg/adc.h"
 

@@ -25,8 +25,8 @@
 #endif
 
 #include "mirage.h"
-#include "image-iso-parser.h"
-#include "image-iso-writer.h"
+#include "parser.h"
+#include "writer.h"
 
 
 G_BEGIN_DECLS

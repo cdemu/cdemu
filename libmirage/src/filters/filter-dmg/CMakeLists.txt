@@ -18,9 +18,9 @@ if (ZLIB_FOUND AND BZIP2_FOUND)
 
     # Filter
     add_library(${filter_name} MODULE
-        ${filter_name}-filter-stream.c
-        ${filter_name}-plugin.c
         adc.c
+        filter-stream.c
+        plugin.c
         resource-fork.c
     )
     target_link_libraries(${filter_name} ${GLIB_LIBRARIES} ${ZLIB_LIBRARIES} ${BZIP2_LIBRARIES})

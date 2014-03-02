@@ -17,8 +17,8 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
 
-#ifndef __RESOURCE_FORK_H__
-#define __RESOURCE_FORK_H__
+#ifndef __FILTER_DMG_RESOURCE_FORK_H__
+#define __FILTER_DMG_RESOURCE_FORK_H__
 
 G_BEGIN_DECLS
 
@@ -107,4 +107,4 @@ rsrc_ref_t *rsrc_find_ref_by_type_and_id(rsrc_fork_t *rsrc_fork, const gchar *ty
 
 G_END_DECLS
 
-#endif /* __RESOURCE_FORK_H__ */
+#endif /* __FILTER_DMG_RESOURCE_FORK_H__ */

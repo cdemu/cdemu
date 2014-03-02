@@ -25,7 +25,7 @@
 #endif
 
 #include "mirage.h"
-#include "image-cif-parser.h"
+#include "parser.h"
 
 
 G_BEGIN_DECLS

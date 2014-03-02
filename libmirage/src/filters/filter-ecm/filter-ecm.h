@@ -25,7 +25,7 @@
 #endif
 
 #include "mirage.h"
-#include "filter-ecm-filter-stream.h"
+#include "filter-stream.h"
 
 G_BEGIN_DECLS
 

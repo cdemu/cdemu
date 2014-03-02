@@ -27,7 +27,7 @@
 #endif
 
 #include "mirage.h"
-#include "image-mds-parser.h"
+#include "parser.h"
 
 
 G_BEGIN_DECLS

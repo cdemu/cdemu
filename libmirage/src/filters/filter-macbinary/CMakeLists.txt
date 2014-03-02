@@ -7,8 +7,8 @@ project(${filter_name} C)
 if (TRUE)
     # Filter
     add_library(${filter_name} MODULE
-        ${filter_name}-filter-stream.c
-        ${filter_name}-plugin.c
+        filter-stream.c
+        plugin.c
         ../filter-dmg/resource-fork.c
         ../filter-dmg/adc.c
     )

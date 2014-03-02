@@ -27,7 +27,7 @@
 #include <stdlib.h>
 
 #include "mirage.h"
-#include "image-xcdroast-parser.h"
+#include "parser.h"
 
 
 G_BEGIN_DECLS
