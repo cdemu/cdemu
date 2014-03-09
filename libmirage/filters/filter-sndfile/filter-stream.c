@@ -175,13 +175,17 @@ static gboolean mirage_filter_stream_sndfile_open (MirageFilterStream *_self, Mi
     /* Turn on auto-header update */
     sf_command(self->priv->sndfile, SFC_SET_UPDATE_HEADER_AUTO, NULL, SF_TRUE);
 
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: audio file info:\n", __debug__);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  frames: %d\n", __debug__, self->priv->format.frames);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  samplerate: %d\n", __debug__, self->priv->format.samplerate);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  channels: %d\n", __debug__, self->priv->format.channels);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  format: %d\n", __debug__, self->priv->format.format);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  sections: %d\n", __debug__, self->priv->format.sections);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  seekable: %d\n", __debug__, self->priv->format.seekable);
+    /* Print audio file info, but only if we are not opening in write
+       mode (because then we already know) */
+    if (!writable) {
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: audio file info:\n", __debug__);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  frames: %d\n", __debug__, self->priv->format.frames);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  samplerate: %d\n", __debug__, self->priv->format.samplerate);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  channels: %d\n", __debug__, self->priv->format.channels);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  format: %d\n", __debug__, self->priv->format.format);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  sections: %d\n", __debug__, self->priv->format.sections);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  seekable: %d\n", __debug__, self->priv->format.seekable);
+    }
 
     /* Check some additional requirements (two channels, seekable and samplerate) */
     if (!self->priv->format.seekable) {
@@ -195,12 +199,16 @@ static gboolean mirage_filter_stream_sndfile_open (MirageFilterStream *_self, Mi
 
     /* Compute length in bytes */
     length = self->priv->format.frames * self->priv->format.channels * sizeof(guint16);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: raw stream length: %ld (0x%lX) bytes\n", __debug__, length, length);
+    if (!writable) {
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: raw stream length: %ld (0x%lX) bytes\n", __debug__, length, length);
+    }
     mirage_filter_stream_simplified_set_stream_length(MIRAGE_FILTER_STREAM(self), length);
 
     /* Allocate read buffer; we wish to hold a single (multichannel) frame */
     self->priv->buflen = self->priv->format.channels * NUM_FRAMES * sizeof(guint16);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: buffer length: %d bytes\n", __debug__, self->priv->buflen);
+    if (!writable) {
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: buffer length: %d bytes\n", __debug__, self->priv->buflen);
+    }
     self->priv->buffer = g_try_malloc(self->priv->buflen);
     if (!self->priv->buffer) {
         g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_PARSER_ERROR, "Failed to allocate read buffer!");
