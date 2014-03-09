@@ -316,13 +316,19 @@ static GString *mirage_writer_toc_create_toc_file (MirageWriterToc *self G_GNUC_
             gchar *length_msf = mirage_helper_lba2msf_str(length, FALSE);
 
             if (filename) {
+                GFile *tmp_file = g_file_new_for_path(filename);
+                gchar *short_filename = g_file_get_basename(tmp_file);
+
                 /* Data fragment */
                 if (sector_type == MIRAGE_SECTOR_AUDIO && !write_subchannel) {
-                    g_string_append_printf(toc_contents, "FILE \"%s\" %d %s\n", filename, 0, length_msf);
+                    g_string_append_printf(toc_contents, "FILE \"%s\" %d %s\n", short_filename, 0, length_msf);
                 } else {
                     gint length_bytes = length * (mirage_fragment_main_data_get_size(fragment) + mirage_fragment_subchannel_data_get_size(fragment));
-                    g_string_append_printf(toc_contents, "DATAFILE \"%s\" %s // length in bytes: %d\n", filename, length_msf, length_bytes);
+                    g_string_append_printf(toc_contents, "DATAFILE \"%s\" %s // length in bytes: %d\n", short_filename, length_msf, length_bytes);
                 }
+
+                g_free(short_filename);
+                g_object_unref(tmp_file);
             } else {
                 /* Pregap fragment */
                 if (i == 0 && j == 0) {
