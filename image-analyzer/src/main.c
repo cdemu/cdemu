@@ -33,6 +33,10 @@ int main (int argc, char **argv)
     IaApplication *application;
     int status;
 
+#if !GLIB_CHECK_VERSION(2,36,0)
+    g_type_init();
+#endif
+
     g_set_application_name("Image analyzer");
 
     application = g_object_new(IA_TYPE_APPLICATION,
