@@ -20,7 +20,7 @@ find_package (PkgConfig 0.16 REQUIRED)
 pkg_check_modules (LIBMIRAGE REQUIRED libmirage>=${IMAGE_ANALYZER_VERSION})
 pkg_check_modules (GLIB REQUIRED glib-2.0>=2.24 gobject-2.0>=2.24)
 pkg_check_modules (LIBXML REQUIRED libxml-2.0>=2.0.0)
-pkg_check_modules (GTK REQUIRED gtk+-3.0>=3.6)
+pkg_check_modules (GTK REQUIRED gtk+-3.0>=3.2)
 
 if (POST_INSTALL_HOOKS)
     find_program (UPDATE_DESKTOP_DATABASE_EXECUTABLE NAMES update-desktop-database)

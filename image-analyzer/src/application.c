@@ -78,12 +78,6 @@ static IaApplicationWindow *ia_application_create_window (IaApplication *self)
     gtk_application_add_window(GTK_APPLICATION(self), GTK_WINDOW(window));
     gtk_widget_show_all(GTK_WIDGET(window));
 
-    /* Setup log handler; must be done after gtk_application_add_window() */
-    ia_application_window_setup_logger(window);
-
-    /* Display instance ID in window and its subwindows */
-    ia_application_window_display_instance_id(window);
-
     return window;
 }
 

@@ -43,6 +43,8 @@
 
 struct _IaApplicationWindowPrivate
 {
+    guint instance_id;
+
     /* Disc */
     MirageDisc *disc;
     IaDiscTreeDump *disc_dump;
@@ -85,6 +87,42 @@ static void ia_application_window_logger (const gchar *log_domain, GLogLevelFlag
         /* Debug messages are printed to stdout only if user requested so */
         g_print("%s: %s", log_domain, message);
     }
+}
+
+
+/**********************************************************************\
+ *                             Window title                           *
+\**********************************************************************/
+static void ia_application_window_update_window_title (IaApplicationWindow *self)
+{
+    GString *window_title = g_string_new(NULL);
+
+    g_string_append_printf(window_title, "Image Analyzer #%02d", self->priv->instance_id);
+
+    if (self->priv->disc) {
+        gchar **filenames = mirage_disc_get_filenames(self->priv->disc);
+        GFile *file = g_file_new_for_path(filenames[0]);
+        gchar *basename = g_file_get_basename(file);
+
+        g_string_append_printf(window_title, ": %s", basename);
+        if (g_strv_length(filenames) > 1) {
+            g_string_append_printf(window_title, " ...");
+        }
+
+        g_free(basename);
+        g_object_unref(file);
+    } else if (ia_disc_tree_dump_get_filename(self->priv->disc_dump)) {
+        GFile *file = g_file_new_for_path(ia_disc_tree_dump_get_filename(self->priv->disc_dump));
+        gchar *basename = g_file_get_basename(file);
+
+        g_string_append_printf(window_title, ": (%s)", basename);
+
+        g_free(basename);
+        g_object_unref(file);
+    }
+
+    gtk_window_set_title(GTK_WINDOW(self), window_title->str);
+    g_string_free(window_title, TRUE);
 }
 
 
@@ -699,12 +737,19 @@ static GActionEntry win_entries[] = {
     { "disc_structures_window", disc_structures_window_activated, NULL, NULL, NULL, {0} },
 };
 
+static inline void append_id_to_title (GtkWindow *window, gint id)
+{
+    gchar *new_title = g_strdup_printf("%s (#%02d)", gtk_window_get_title(window), id);
+    gtk_window_set_title(window, new_title);
+    g_free(new_title);
+}
+
 static void create_gui (IaApplicationWindow *self)
 {
     GtkWidget *grid;
 
     /* Window */
-    gtk_window_set_title(GTK_WINDOW(self), "Image analyzer");
+    ia_application_window_update_window_title(self);
     gtk_window_set_default_size(GTK_WINDOW(self), 300, 400);
     gtk_container_set_border_width(GTK_CONTAINER(self), 5);
 
@@ -748,49 +793,35 @@ static void create_gui (IaApplicationWindow *self)
     /* Log window */
     self->priv->log_window = g_object_new(IA_TYPE_LOG_WINDOW, "mirage-context", self->priv->mirage_context, NULL);
     g_signal_connect(self->priv->log_window, "delete_event", G_CALLBACK(gtk_widget_hide_on_delete), NULL);
+    append_id_to_title(GTK_WINDOW(self->priv->log_window), self->priv->instance_id);
 
     /* Read sector window */
     self->priv->read_sector_window = g_object_new(IA_TYPE_READ_SECTOR_WINDOW, NULL);
     g_signal_connect(self->priv->read_sector_window, "delete_event", G_CALLBACK(gtk_widget_hide_on_delete), NULL);
+    append_id_to_title(GTK_WINDOW(self->priv->read_sector_window), self->priv->instance_id);
 
     /* Sector analysis window */
     self->priv->sector_analysis_window = g_object_new(IA_TYPE_SECTOR_ANALYSIS_WINDOW, NULL);
     g_signal_connect(self->priv->sector_analysis_window, "delete_event", G_CALLBACK(gtk_widget_hide_on_delete), NULL);
+    append_id_to_title(GTK_WINDOW(self->priv->sector_analysis_window), self->priv->instance_id);
 
     /* Disc topology dialog */
     self->priv->disc_topology_window = g_object_new(IA_TYPE_DISC_TOPOLOGY_WINDOW, NULL);
     g_signal_connect(self->priv->disc_topology_window, "delete_event", G_CALLBACK(gtk_widget_hide_on_delete), NULL);
     ia_disc_topology_window_set_disc(IA_DISC_TOPOLOGY_WINDOW(self->priv->disc_topology_window), NULL);
+    append_id_to_title(GTK_WINDOW(self->priv->disc_topology_window), self->priv->instance_id);
 
     /* Disc structure dialog */
     self->priv->disc_structures_window = g_object_new(IA_TYPE_DISC_STRUCTURES_WINDOW, NULL);
     g_signal_connect(self->priv->disc_structures_window, "delete_event", G_CALLBACK(gtk_widget_hide_on_delete), NULL);
     ia_disc_structures_window_set_disc(IA_DISC_STRUCTURES_WINDOW(self->priv->disc_structures_window), NULL);
+    append_id_to_title(GTK_WINDOW(self->priv->disc_structures_window), self->priv->instance_id);
 }
 
 
 /**********************************************************************\
  *                             Public API                             *
 \**********************************************************************/
-void ia_application_window_setup_logger (IaApplicationWindow *self)
-{
-    /* Debug domain; the trick here is that each instance gets its own
-       domain, which allows us to set up handler callbacks with different
-       user data, this capturing messages in corresponding instance */
-    gchar *debug_domain = g_strdup_printf("Analyzer-%02d", gtk_application_window_get_id(GTK_APPLICATION_WINDOW(self)));
-
-    /* Set debug domain to context */
-    mirage_context_set_debug_domain(self->priv->mirage_context, debug_domain);
-
-    /* Set up log handler with our debug domain */
-    self->priv->logger_id = g_log_set_handler(mirage_context_get_debug_domain(
-        self->priv->mirage_context),
-        G_LOG_LEVEL_MASK | G_LOG_FLAG_FATAL | G_LOG_FLAG_RECURSION,
-        (GLogFunc)ia_application_window_logger, self);
-
-    g_free(debug_domain);
-}
-
 void ia_application_window_apply_command_line_options (IaApplicationWindow *self, gboolean debug_to_stdout, gint debug_mask, gchar **filenames)
 {
     /* Set debug mask to context */
@@ -810,70 +841,19 @@ void ia_application_window_apply_command_line_options (IaApplicationWindow *self
     }
 }
 
-void ia_application_window_update_window_title (IaApplicationWindow *self)
-{
-    GString *window_title = g_string_new(NULL);
-
-    g_string_append_printf(window_title, "Image Analyzer #%02d", gtk_application_window_get_id(GTK_APPLICATION_WINDOW(self)));
-
-    if (self->priv->disc) {
-        gchar **filenames = mirage_disc_get_filenames(self->priv->disc);
-        GFile *file = g_file_new_for_path(filenames[0]);
-        gchar *basename = g_file_get_basename(file);
-
-        g_string_append_printf(window_title, ": %s", basename);
-        if (g_strv_length(filenames) > 1) {
-            g_string_append_printf(window_title, " ...");
-        }
-
-        g_free(basename);
-        g_object_unref(file);
-    } else if (ia_disc_tree_dump_get_filename(self->priv->disc_dump)) {
-        GFile *file = g_file_new_for_path(ia_disc_tree_dump_get_filename(self->priv->disc_dump));
-        gchar *basename = g_file_get_basename(file);
-
-        g_string_append_printf(window_title, ": (%s)", basename);
-
-        g_free(basename);
-        g_object_unref(file);
-    }
-
-    gtk_window_set_title(GTK_WINDOW(self), window_title->str);
-    g_string_free(window_title, TRUE);
-}
-
-
-static void append_id_to_title (GtkWindow *window, gint id)
-{
-    gchar *new_title = g_strdup_printf("%s (#%02d)", gtk_window_get_title(window), id);
-    gtk_window_set_title(window, new_title);
-    g_free(new_title);
-}
-
-void ia_application_window_display_instance_id (IaApplicationWindow *self)
-{
-    gint id = gtk_application_window_get_id(GTK_APPLICATION_WINDOW(self));
-
-    /* Update tool windows; grab their current titles, and append instance ID */
-    append_id_to_title(GTK_WINDOW(self->priv->disc_structures_window), id);
-    append_id_to_title(GTK_WINDOW(self->priv->disc_topology_window), id);
-    append_id_to_title(GTK_WINDOW(self->priv->log_window), id);
-    append_id_to_title(GTK_WINDOW(self->priv->read_sector_window), id);
-    append_id_to_title(GTK_WINDOW(self->priv->sector_analysis_window), id);
-
-    /* Update self */
-    ia_application_window_update_window_title(self);
-}
-
 
 /**********************************************************************\
  *                             Object init                            *
 \**********************************************************************/
 G_DEFINE_TYPE(IaApplicationWindow, ia_application_window, GTK_TYPE_APPLICATION_WINDOW);
 
+static guint num_instances = 0;
+
 static void ia_application_window_init (IaApplicationWindow *self)
 {
     self->priv = IA_APPLICATION_WINDOW_GET_PRIVATE(self);
+
+    self->priv->instance_id = ++num_instances;
 
     self->priv->disc = NULL;
 
@@ -882,10 +862,21 @@ static void ia_application_window_init (IaApplicationWindow *self)
     mirage_context_set_debug_mask(self->priv->mirage_context, MIRAGE_DEBUG_PARSER);
     mirage_context_set_password_function(self->priv->mirage_context, (MiragePasswordFunction)ia_application_window_get_password, self);
 
-    /* Logging is set up by call ia_application_window_setup_logger(),
-       which must be performed after application added us to its list
-       of windows (so that we know our ID) */
-    self->priv->logger_id = 0;
+    /* Debug domain; the trick here is that each instance gets its own
+       domain, which allows us to set up handler callbacks with different
+       user data, this capturing messages in corresponding instance */
+    gchar *debug_domain = g_strdup_printf("Analyzer-%02d", self->priv->instance_id);
+
+    /* Set debug domain to context */
+    mirage_context_set_debug_domain(self->priv->mirage_context, debug_domain);
+
+    /* Set up log handler with our debug domain */
+    self->priv->logger_id = g_log_set_handler(mirage_context_get_debug_domain(
+        self->priv->mirage_context),
+        G_LOG_LEVEL_MASK | G_LOG_FLAG_FATAL | G_LOG_FLAG_RECURSION,
+        (GLogFunc)ia_application_window_logger, self);
+
+    g_free(debug_domain);
 
     /* Disc tree dump */
     self->priv->disc_dump = g_object_new(IA_TYPE_DISC_TREE_DUMP, NULL);
