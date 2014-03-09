@@ -186,9 +186,8 @@ static gboolean ia_application_window_open_image (IaApplicationWindow *self, gch
             GTK_DIALOG_DESTROY_WITH_PARENT,
             GTK_MESSAGE_ERROR,
             GTK_BUTTONS_CLOSE,
-            error->message);
+            "Failed to load image: %s", error->message);
 
-        gtk_window_set_title(GTK_WINDOW(message_dialog), "Failed to load image");
         gtk_dialog_run(GTK_DIALOG(message_dialog));
         gtk_widget_destroy(message_dialog);
 
@@ -326,7 +325,7 @@ static void ia_application_window_convert_image (IaApplicationWindow *self, Mira
             GTK_DIALOG_DESTROY_WITH_PARENT,
             GTK_MESSAGE_ERROR,
             GTK_BUTTONS_CLOSE,
-            local_error->message);
+            "Image conversion failed: %s", local_error->message);
 
         g_error_free(local_error);
     } else {
