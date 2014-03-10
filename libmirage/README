@@ -1,5 +1,5 @@
 libMirage
-2.1.1
+3.0.0
 ~~~~~
 
 
@@ -67,20 +67,20 @@ Currently supported file filters:
 2.1 Note about XZ-compressed images and XZ file filter:
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-The support for XZ-compressed images in libMirage is limited to streams 
-with reasonably-sized compressed blocks. This is to allow efficient 
-random access in the image, which requires a whole block to be 
-uncompressed in memory before data it contains can be accessed. A larger 
+The support for XZ-compressed images in libMirage is limited to streams
+with reasonably-sized compressed blocks. This is to allow efficient
+random access in the image, which requires a whole block to be
+uncompressed in memory before data it contains can be accessed. A larger
 block requires more time to be uncompressed and consumes more memory when
 cached, whereas in random access, not all data it contains is necessarilly
 needed. Therefore, for performance reasons, we enforce block size to
 be 10 MB or less.
 
-Unfortunately, xz from xz-utils by default creates an XZ file with a 
-single large block, which cannot be used with libMirage. If you wish to 
-use XZ-compressed images, use "--block-size" switch, for example, 
-"xz --block-size=10M ...". This requires 5.1.1alpha or later version of 
-xz-utils. Note that p7zip/7za cannot create single-file streams with 
+Unfortunately, xz from xz-utils by default creates an XZ file with a
+single large block, which cannot be used with libMirage. If you wish to
+use XZ-compressed images, use "--block-size" switch, for example,
+"xz --block-size=10M ...". This requires 5.1.1alpha or later version of
+xz-utils. Note that p7zip/7za cannot create single-file streams with
 smaller blocks, so it cannot be used with libMirage.
 
 

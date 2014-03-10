@@ -4,9 +4,9 @@ cmake_minimum_required (VERSION 2.8.5)
 project (libmirage C)
 
 # Release versioning:
-set (MIRAGE_VERSION_MAJOR 2)
-set (MIRAGE_VERSION_MINOR 1)
-set (MIRAGE_VERSION_MICRO 1)
+set (MIRAGE_VERSION_MAJOR 3)
+set (MIRAGE_VERSION_MINOR 0)
+set (MIRAGE_VERSION_MICRO 0)
 set (MIRAGE_VERSION_LONG ${MIRAGE_VERSION_MAJOR}.${MIRAGE_VERSION_MINOR}.${MIRAGE_VERSION_MICRO})
 set (MIRAGE_VERSION_SHORT ${MIRAGE_VERSION_MAJOR}.${MIRAGE_VERSION_MINOR})
 
@@ -17,7 +17,7 @@ set (MIRAGE_VERSION_SHORT ${MIRAGE_VERSION_MAJOR}.${MIRAGE_VERSION_MINOR})
 # MINOR is increased when features are added to the API (e.g., addition
 # of interfaces). In this case, PATCH should be reset to zero.
 # PATCH is increased for all other changes such as bug-fixes.
-set (MIRAGE_SOVERSION_MAJOR 9)
+set (MIRAGE_SOVERSION_MAJOR 10)
 set (MIRAGE_SOVERSION_MINOR 0)
 set (MIRAGE_SOVERSION_PATCH 0)
 
@@ -39,7 +39,7 @@ set (MIRAGE_PLUGIN_DIR "${CMAKE_INSTALL_FULL_LIBDIR}/libmirage-${MIRAGE_VERSION_
 # Dependencies
 find_package (PkgConfig 0.16 REQUIRED)
 
-pkg_check_modules (GLIB REQUIRED glib-2.0>=2.24 gobject-2.0>=2.24 gmodule-2.0>=2.24 gio-2.0>=2.24)
+pkg_check_modules (GLIB REQUIRED glib-2.0>=2.28 gobject-2.0>=2.28 gmodule-2.0>=2.28 gio-2.0>=2.28)
 
 if (INTROSPECTION_ENABLED)
     pkg_check_modules (INTROSPECTION gobject-introspection-1.0>=1.30.0)

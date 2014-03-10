@@ -4,7 +4,7 @@ cmake_minimum_required (VERSION 2.8.5)
 project (image-analyzer C)
 
 # Versioning
-set (IMAGE_ANALYZER_VERSION 2.1.1)
+set (IMAGE_ANALYZER_VERSION 3.0.0)
 
 # Additional CMake modules.
 list (APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
