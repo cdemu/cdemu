@@ -31,7 +31,7 @@ and manipulation, with following functionality:
 ~~~~~~~~~~~~~~~~
   - Gtk+3 >= 3.2
   - libxml >= 2.0.0
-  - libMirage >= 2.1.0 (part of the distribution)
+  - libMirage >= 3.0.0 (part of the distribution)
 
   - gnuplot >= 4.0 (optional, run-time dependency)
 

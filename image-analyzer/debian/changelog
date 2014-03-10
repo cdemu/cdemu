@@ -1,3 +1,7 @@
+image-analyzer (3.0.0-1) debian; urgency=low
+  * Updated to 3.0.0
+ -- Rok Mandeljc <rok.mandeljc@gmail.com>  Tue, 11 Mar 2014 12:00:00 +0100
+
 image-analyzer (2.1.1-2) debian; urgency=low
   * Removed apport in order to keep make packaging scripts ubuntu-agnostic.
   * Fixed the override_dh_auto_configure directive.

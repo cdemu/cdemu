@@ -1,6 +1,7 @@
-libmirage.so.9 libmirage9 #MINVER#
+libmirage.so.10 libmirage10 #MINVER#
  crc16_1021_lut@Base 2.1.0
  crc32_d8018001_lut@Base 2.1.0
+ ecma_130_scrambler_lut@Base 3.0.0
  mirage_cdtext_coder_get_type@Base 2.0.0
  mirage_cdtext_decoder_get_block_info@Base 1.0.0
  mirage_cdtext_decoder_get_data@Base 1.0.0
@@ -9,12 +10,13 @@ libmirage.so.9 libmirage9 #MINVER#
  mirage_cdtext_encoder_encode@Base 1.0.0
  mirage_cdtext_encoder_init@Base 1.0.0
  mirage_cdtext_encoder_set_block_info@Base 1.0.0
+ mirage_compat_input_stream_get_type@Base 3.0.0
  mirage_context_clear_options@Base 2.0.0
- mirage_context_create_file_stream@Base 2.0.0
+ mirage_context_create_input_stream@Base 3.0.0
+ mirage_context_create_output_stream@Base 3.0.0
  mirage_context_get_debug_domain@Base 2.0.0
  mirage_context_get_debug_mask@Base 2.0.0
  mirage_context_get_debug_name@Base 2.0.0
- mirage_context_get_file_stream_filename@Base 2.0.0
  mirage_context_get_option@Base 2.0.0
  mirage_context_get_type@Base 2.0.0
  mirage_context_load_image@Base 2.0.0
@@ -24,15 +26,18 @@ libmirage.so.9 libmirage9 #MINVER#
  mirage_context_set_debug_name@Base 2.0.0
  mirage_context_set_option@Base 2.0.0
  mirage_context_set_password_function@Base 2.0.0
- mirage_contextual_create_file_stream@Base 2.0.0
+ mirage_contextual_create_input_stream@Base 3.0.0
+ mirage_contextual_create_output_stream@Base 3.0.0
+ mirage_contextual_debug_is_active@Base 3.0.0
  mirage_contextual_debug_message@Base 2.0.0
  mirage_contextual_debug_messagev@Base 2.0.0
+ mirage_contextual_debug_print_buffer@Base 3.0.0
  mirage_contextual_get_context@Base 2.0.0
- mirage_contextual_get_file_stream_filename@Base 2.0.0
  mirage_contextual_get_option@Base 2.0.0
  mirage_contextual_get_type@Base 2.0.0
  mirage_contextual_obtain_password@Base 2.0.0
  mirage_contextual_set_context@Base 2.0.0
+ mirage_create_writer@Base 3.0.0
  mirage_disc_add_session_by_index@Base 1.0.0
  mirage_disc_add_session_by_number@Base 1.0.0
  mirage_disc_add_track_by_index@Base 1.0.0
@@ -42,7 +47,6 @@ libmirage.so.9 libmirage9 #MINVER#
  mirage_disc_get_dpm_data@Base 1.1.0
  mirage_disc_get_dpm_data_for_sector@Base 1.1.0
  mirage_disc_get_filenames@Base 1.0.0
- mirage_disc_get_mcn@Base 1.0.0
  mirage_disc_get_medium_type@Base 1.0.0
  mirage_disc_get_number_of_sessions@Base 1.0.0
  mirage_disc_get_number_of_tracks@Base 1.0.0
@@ -57,6 +61,7 @@ libmirage.so.9 libmirage9 #MINVER#
  mirage_disc_get_track_by_index@Base 1.0.0
  mirage_disc_get_track_by_number@Base 1.0.0
  mirage_disc_get_type@Base 1.0.0
+ mirage_disc_layout_contains_address@Base 3.0.0
  mirage_disc_layout_get_first_session@Base 1.0.0
  mirage_disc_layout_get_first_track@Base 1.0.0
  mirage_disc_layout_get_length@Base 1.0.0
@@ -64,6 +69,7 @@ libmirage.so.9 libmirage9 #MINVER#
  mirage_disc_layout_set_first_session@Base 1.0.0
  mirage_disc_layout_set_first_track@Base 1.0.0
  mirage_disc_layout_set_start_sector@Base 1.0.0
+ mirage_disc_put_sector@Base 3.0.0
  mirage_disc_remove_session_by_index@Base 1.0.0
  mirage_disc_remove_session_by_number@Base 1.0.0
  mirage_disc_remove_session_by_object@Base 1.0.0
@@ -73,23 +79,28 @@ libmirage.so.9 libmirage9 #MINVER#
  mirage_disc_set_dpm_data@Base 1.1.0
  mirage_disc_set_filename@Base 1.2.0
  mirage_disc_set_filenames@Base 1.0.0
- mirage_disc_set_mcn@Base 1.0.0
  mirage_disc_set_medium_type@Base 1.0.0
- mirage_enumerate_file_filters@Base 2.0.0
+ mirage_enumerate_filter_streams@Base 3.0.0
  mirage_enumerate_parsers@Base 2.0.0
+ mirage_enumerate_writers@Base 3.0.0
  mirage_error_get_type@Base 1.4.0
  mirage_error_quark@Base 1.0.0
- mirage_file_filter_can_handle_data_format@Base 2.0.0
- mirage_file_filter_generate_info@Base 2.0.0
- mirage_file_filter_get_info@Base 2.0.0
- mirage_file_filter_get_position@Base 2.0.0
- mirage_file_filter_get_type@Base 2.0.0
- mirage_file_filter_info_copy@Base 2.0.0
- mirage_file_filter_info_free@Base 2.0.0
- mirage_file_filter_set_file_size@Base 2.0.0
+ mirage_file_stream_get_type@Base 3.0.0
+ mirage_file_stream_open@Base 3.0.0
+ mirage_filter_stream_generate_info@Base 3.0.0
+ mirage_filter_stream_get_info@Base 3.0.0
+ mirage_filter_stream_get_type@Base 3.0.0
+ mirage_filter_stream_get_underlying_stream@Base 3.0.0
+ mirage_filter_stream_info_copy@Base 3.0.0
+ mirage_filter_stream_info_free@Base 3.0.0
+ mirage_filter_stream_open@Base 3.0.0
+ mirage_filter_stream_simplified_get_position@Base 3.0.0
+ mirage_filter_stream_simplified_set_stream_length@Base 3.0.0
+ mirage_fragment_contains_address@Base 3.0.0
  mirage_fragment_get_address@Base 1.0.0
  mirage_fragment_get_length@Base 1.0.0
  mirage_fragment_get_type@Base 1.0.0
+ mirage_fragment_is_writable@Base 3.0.0
  mirage_fragment_main_data_get_filename@Base 2.0.0
  mirage_fragment_main_data_get_format@Base 2.0.0
  mirage_fragment_main_data_get_offset@Base 2.0.0
@@ -111,24 +122,32 @@ libmirage.so.9 libmirage9 #MINVER#
  mirage_fragment_subchannel_data_set_size@Base 2.0.0
  mirage_fragment_subchannel_data_set_stream@Base 2.0.0
  mirage_fragment_use_the_rest_of_file@Base 1.0.0
- mirage_get_file_filters_info@Base 2.0.0
- mirage_get_file_filters_type@Base 2.0.0
+ mirage_fragment_write_main_data@Base 3.0.0
+ mirage_fragment_write_subchannel_data@Base 3.0.0
+ mirage_get_filter_streams_info@Base 3.0.0
+ mirage_get_filter_streams_type@Base 3.0.0
  mirage_get_parsers_info@Base 2.0.0
  mirage_get_parsers_type@Base 2.0.0
  mirage_get_supported_debug_masks@Base 2.0.0
+ mirage_get_writers_info@Base 3.0.0
+ mirage_get_writers_type@Base 3.0.0
  mirage_helper_ascii2isrc@Base 1.0.0
  mirage_helper_bcd2hex@Base 1.0.0
  mirage_helper_calculate_crc16@Base 2.1.0
- mirage_helper_calculate_crc32f@Base 2.1.0
- mirage_helper_calculate_crc32s@Base 2.1.0
+ mirage_helper_calculate_crc32_fast@Base 3.0.0
+ mirage_helper_calculate_crc32_standard@Base 3.0.0
  mirage_helper_determine_sector_type@Base 2.0.0
  mirage_helper_encoding_from_bom@Base 2.0.0
  mirage_helper_find_data_file@Base 1.1.0
+ mirage_helper_format_string@Base 3.0.0
+ mirage_helper_format_stringd@Base 3.0.0
+ mirage_helper_format_stringv@Base 3.0.0
  mirage_helper_get_suffix@Base 1.0.0
  mirage_helper_has_suffix@Base 1.0.0
  mirage_helper_hex2bcd@Base 1.0.0
  mirage_helper_init_crc16_lut@Base 2.1.0
  mirage_helper_init_crc32_lut@Base 2.1.0
+ mirage_helper_init_ecma_130b_scrambler_lut@Base 3.0.0
  mirage_helper_isrc2ascii@Base 1.0.0
  mirage_helper_lba2msf@Base 1.0.0
  mirage_helper_lba2msf_str@Base 1.0.0
@@ -157,12 +176,6 @@ libmirage.so.9 libmirage9 #MINVER#
  mirage_language_get_type@Base 1.0.0
  mirage_language_set_code@Base 2.0.0
  mirage_language_set_pack_data@Base 1.0.0
- mirage_soversion_major@Base 2.1.1
- mirage_soversion_minor@Base 2.1.1
- mirage_soversion_patch@Base 2.1.1
- mirage_version_major@Base 2.1.1
- mirage_version_micro@Base 2.1.1
- mirage_version_minor@Base 2.1.1
  mirage_object_get_parent@Base 1.0.0
  mirage_object_get_type@Base 1.0.0
  mirage_object_set_parent@Base 1.0.0
@@ -180,7 +193,9 @@ libmirage.so.9 libmirage9 #MINVER#
  mirage_pattern_sync@Base 2.0.0
  mirage_plugin_get_type@Base 1.0.0
  mirage_plugin_new@Base 1.0.0
+ mirage_sector_extract_data@Base 3.0.0
  mirage_sector_feed_data@Base 1.0.0
+ mirage_sector_get_address@Base 3.0.0
  mirage_sector_get_data@Base 1.0.0
  mirage_sector_get_edc_ecc@Base 1.0.0
  mirage_sector_get_header@Base 1.0.0
@@ -189,6 +204,13 @@ libmirage.so.9 libmirage9 #MINVER#
  mirage_sector_get_subheader@Base 1.0.0
  mirage_sector_get_sync@Base 1.0.0
  mirage_sector_get_type@Base 1.0.0
+ mirage_sector_scramble@Base 3.0.0
+ mirage_sector_set_data@Base 3.0.0
+ mirage_sector_set_edc_ecc@Base 3.0.0
+ mirage_sector_set_header@Base 3.0.0
+ mirage_sector_set_subchannel@Base 3.0.0
+ mirage_sector_set_subheader@Base 3.0.0
+ mirage_sector_set_sync@Base 3.0.0
  mirage_sector_verify_lec@Base 1.3.0
  mirage_sector_verify_subchannel_crc@Base 1.4.0
  mirage_session_add_language@Base 1.0.0
@@ -200,6 +222,7 @@ libmirage.so.9 libmirage9 #MINVER#
  mirage_session_get_language_by_code@Base 1.0.0
  mirage_session_get_language_by_index@Base 1.0.0
  mirage_session_get_leadout_length@Base 1.0.0
+ mirage_session_get_mcn@Base 3.0.0
  mirage_session_get_next@Base 1.0.0
  mirage_session_get_number_of_languages@Base 1.0.0
  mirage_session_get_number_of_tracks@Base 1.0.0
@@ -211,6 +234,7 @@ libmirage.so.9 libmirage9 #MINVER#
  mirage_session_get_track_by_index@Base 1.0.0
  mirage_session_get_track_by_number@Base 1.0.0
  mirage_session_get_type@Base 1.0.0
+ mirage_session_layout_contains_address@Base 3.0.0
  mirage_session_layout_get_first_track@Base 1.0.0
  mirage_session_layout_get_length@Base 1.0.0
  mirage_session_layout_get_session_number@Base 1.0.0
@@ -226,8 +250,21 @@ libmirage.so.9 libmirage9 #MINVER#
  mirage_session_remove_track_by_object@Base 1.0.0
  mirage_session_set_cdtext_data@Base 1.0.0
  mirage_session_set_leadout_length@Base 1.0.0
+ mirage_session_set_mcn@Base 3.0.0
  mirage_session_set_session_type@Base 1.0.0
  mirage_shutdown@Base 2.0.0
+ mirage_soversion_major@Base 2.1.1
+ mirage_soversion_minor@Base 2.1.1
+ mirage_soversion_patch@Base 2.1.1
+ mirage_stream_get_filename@Base 3.0.0
+ mirage_stream_get_g_input_stream@Base 3.0.0
+ mirage_stream_get_type@Base 3.0.0
+ mirage_stream_is_writable@Base 3.0.0
+ mirage_stream_move_file@Base 3.0.0
+ mirage_stream_read@Base 3.0.0
+ mirage_stream_seek@Base 3.0.0
+ mirage_stream_tell@Base 3.0.0
+ mirage_stream_write@Base 3.0.0
  mirage_track_add_fragment@Base 1.0.0
  mirage_track_add_index@Base 1.0.0
  mirage_track_add_language@Base 1.0.0
@@ -245,21 +282,23 @@ libmirage.so.9 libmirage9 #MINVER#
  mirage_track_get_isrc@Base 1.0.0
  mirage_track_get_language_by_code@Base 1.0.0
  mirage_track_get_language_by_index@Base 1.0.0
- mirage_track_get_mode@Base 1.0.0
  mirage_track_get_next@Base 1.0.0
  mirage_track_get_number_of_fragments@Base 1.0.0
  mirage_track_get_number_of_indices@Base 1.0.0
  mirage_track_get_number_of_languages@Base 1.0.0
  mirage_track_get_prev@Base 1.0.0
  mirage_track_get_sector@Base 1.0.0
+ mirage_track_get_sector_type@Base 3.0.0
  mirage_track_get_track_start@Base 1.0.0
  mirage_track_get_type@Base 1.0.0
+ mirage_track_layout_contains_address@Base 3.0.0
  mirage_track_layout_get_length@Base 1.0.0
  mirage_track_layout_get_session_number@Base 1.0.0
  mirage_track_layout_get_start_sector@Base 1.0.0
  mirage_track_layout_get_track_number@Base 1.0.0
  mirage_track_layout_set_start_sector@Base 1.0.0
  mirage_track_layout_set_track_number@Base 1.0.0
+ mirage_track_put_sector@Base 3.0.0
  mirage_track_remove_fragment_by_index@Base 1.0.0
  mirage_track_remove_fragment_by_object@Base 1.0.0
  mirage_track_remove_index_by_number@Base 1.0.0
@@ -270,7 +309,31 @@ libmirage.so.9 libmirage9 #MINVER#
  mirage_track_set_ctl@Base 1.0.0
  mirage_track_set_flags@Base 1.0.0
  mirage_track_set_isrc@Base 1.0.0
- mirage_track_set_mode@Base 1.0.0
+ mirage_track_set_sector_type@Base 3.0.0
  mirage_track_set_track_start@Base 1.0.0
  mirage_version_long@Base 1.2.0
+ mirage_version_major@Base 2.1.1
+ mirage_version_micro@Base 2.1.1
+ mirage_version_minor@Base 2.1.1
  mirage_version_short@Base 1.2.0
+ mirage_writer_add_parameter_boolean@Base 3.0.0
+ mirage_writer_add_parameter_enum@Base 3.0.0
+ mirage_writer_add_parameter_int@Base 3.0.0
+ mirage_writer_add_parameter_string@Base 3.0.0
+ mirage_writer_convert_image@Base 3.0.0
+ mirage_writer_create_fragment@Base 3.0.0
+ mirage_writer_finalize_image@Base 3.0.0
+ mirage_writer_generate_info@Base 3.0.0
+ mirage_writer_get_conversion_progress_step@Base 3.0.0
+ mirage_writer_get_info@Base 3.0.0
+ mirage_writer_get_parameter_boolean@Base 3.0.0
+ mirage_writer_get_parameter_enum@Base 3.0.0
+ mirage_writer_get_parameter_int@Base 3.0.0
+ mirage_writer_get_parameter_string@Base 3.0.0
+ mirage_writer_get_type@Base 3.0.0
+ mirage_writer_info_copy@Base 3.0.0
+ mirage_writer_info_free@Base 3.0.0
+ mirage_writer_lookup_parameter_ids@Base 3.0.0
+ mirage_writer_lookup_parameter_info@Base 3.0.0
+ mirage_writer_open_image@Base 3.0.0
+ mirage_writer_set_conversion_progress_step@Base 3.0.0

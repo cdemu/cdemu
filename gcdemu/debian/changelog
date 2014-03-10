@@ -1,3 +1,7 @@
+gcdemu (3.0.0-1) debian; urgency=low
+  * Updated to 3.0.0
+ -- Rok Mandeljc <rok.mandeljc@gmail.com>  Tue, 11 Mar 2014 12:00:00 +0100
+ 
 gcdemu (2.1.1-2) debian; urgency=low
   * Fixed the override_dh_auto_configure directive.
   * Removed 'ubuntu' from package name, since the packages are supposed to be generic.
