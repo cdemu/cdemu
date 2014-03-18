@@ -1,5 +1,4 @@
 usr/bin/*
 usr/share/*
 usr/libexec/*
-debian/cdemu-daemon-crashdb.conf /etc/apport/crashdb.conf.d/
 
