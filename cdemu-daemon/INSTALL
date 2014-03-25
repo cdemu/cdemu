@@ -1,32 +1,32 @@
 Installation instructions:
 ===========================
 
-To install this program you will need to have CMake installed. To make 
-configuration a little more enjoyable you should also install a frontend.
-CCMake is a ncurses frontend. There exists graphical frontends too.
+To build and install this package, you will need to have CMake installed.
+You can also install and use a frontend, such as ccmake or cmake-gui; the
+instructions below assume you are using plain command-line interface.
 
-1. First you will need to create a build directory. If your sourcecode is
-   installed in ~/cdemu/package/ then create a sub-directory called
-   'build' and change into it.
+1. Unpack the source and create a build directory inside it; i.e., if you
+   unpacked the source into ~/cdemu/package/, create a sub-directory called
+   'build' and change into it:
 
    cd ~/cdemu/package/
    mkdir build && cd build
 
-2. Now start ccmake to configure the software. You need to specify on its
-   command line the path to where your package is located. Since you
-   are now in ~/cdemu/package/build/ your software is installed in
-   ~/cdemu/package/ which is the parent directory, in other words ".."
+2. Now start cmake to configure the software; the required argument is
+   the path to the source, which, in this example, is the parent folder:
 
-   ccmake ..
+   cmake ..
 
-3. Press 'C' to bring up the configuration screen. Here you can change any
-   settings that you want. When you are ready press 'C' once and then 'G'.
+   You can also specify additional options, such as installation prefix
+   and build type:
 
-4. Now you are ready to compile and install.
+   cmake -DCMAKE_INSTALL_PREFIX=/usr -DCMAKE_BUILD_TYPE=Release ..
+
+3. Now you are ready to compile and install:
 
    make
    sudo make install
 
-If you need any help feel free to ask on our mailinglist or our 
+If you need any help feel free to ask on our mailinglist or our
 support tracker. Good luck!
 

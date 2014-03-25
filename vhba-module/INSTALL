@@ -1,7 +1,7 @@
 Installation Instructions
 *************************
 
-Copyright (C) 2008 The CDEMU Project.
+Copyright (C) 2008-2014 The CDEMU Project.
 
 This file is free documentation; the CDEmu project gives
 unlimited permission to copy, distribute and modify it.
@@ -15,11 +15,11 @@ The simplest way to compile this package is:
 
   2. Type `make' to compile the package.
 
-  4. Type `make install' to install the kernel module and other files. 
+  4. Type `make install' to install the kernel module and other files.
      (Needs root permission)
 
   5. You can remove the program binaries and object files from the
-     source code directory by typing `make clean'.  
+     source code directory by typing `make clean'.
 
 Compilers and Options
 =====================
@@ -28,7 +28,7 @@ You can explicitly specify the kernel for which to compile the module for
 by setting the environment variable KERNELRELEASE. The default if it is not
 specified is 'uname -r' in other words your running kernel.
 
-It is also possible to set extra compiler flags through the EXTRA_CFLAGS 
+It is also possible to set extra compiler flags through the EXTRA_CFLAGS
 environment variable.
 
 Compiling For Multiple Architectures
