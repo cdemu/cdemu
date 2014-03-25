@@ -9,13 +9,9 @@ Table of Contents:
 2. Requirements
 3. Installation
 4. Configuration
-5. Troubleshooting
-6. A note on encrypted images and password supplying
-7. On gCDEmu and Unity/GNOME Shell
- 7.1 Unity
- 7.2 GNOME Shell
-8. Gtk Application and Ubuntu AppIndicator mode
-9. Contact information
+5. GtkApplication and AppIndicator mode
+6. Troubleshooting
+7. Contact information
 
 
 1. Introduction
@@ -32,8 +28,6 @@ In addition, it listens to signals emitted by CDEmu daemon and provides
 notifications via libnotify (provided that python bindings are installed).
 
 
-
-
 2. Requirements:
 ~~~~~~~~~~~~~~~~
 
@@ -42,8 +36,8 @@ notifications via libnotify (provided that python bindings are installed).
  - IntlTool >= 0.21
  - GetText >= 0.15
 
- - libnotify GIR files (optional)
- - AppIndicator GIR files (optional)
+ - libnotify GIR files (optional; for notifications)
+ - AppIndicator GIR files (optional; for AppIndicator mode)
 
 
 3. Installation:
@@ -66,8 +60,7 @@ The configuration keys are:
     menu. Default value: true
 
  * use-system-bus: a boolean value indicating whether gCDEmu should use the
-    system bus to connect to the daemon. This option can be altered from
-    the application's context menu. Default value: false
+    system bus instead of session bus to connect to the daemon. Default value: false
 
  * icon-connected: a string containing the name of the icon to show in the
     system tray when gCDEmu is connected to the CDEmu daemon. The string can
@@ -93,10 +86,10 @@ The configuration keys are:
     for missing image will be shown. Default value: gcdemu-connected
 
  * daemon-autostart: a boolean value indicating whether gCDEmu should, after
-    connecting to the bus, attempt to start the CDEmu daemon (if it's not
+    connecting to the bus, attempt to start the CDEmu daemon (if it is not
     already running). This is done using D-BUS service facility and requires
     the daemon's .service files to be installed for the appropriate bus.
-    Default value: True
+    Default value: true
 
  * icon-policy: a string value indicating the gCDEmu's icon display policy. Valid
     values are 'always', 'never' and 'when_connected'. With, 'always', icon
@@ -105,7 +98,33 @@ The configuration keys are:
     when gCDEmu is connected to the CDEmu daemon.
 
 
-5. Troubleshooting
+5. Gtk Application and AppIndicator mode:
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+gCDEmu can run in either GtkApplication mode or as AppIndicator. The
+latter is available only if corresponding GIR files are installed.
+
+GtkApplication mode:
+* GtkStatusIcon is used to display gCDEmu icon
++ right-click device load/unload shortcut is supported
+- does not implement the new systray specification, so it might not work
+  in enviroments that require it, such as the new notification area on
+  Cairo dock
+
+AppIndicator mode:
+* AppIndicator is used to display gCDEmu icon
+- does not support right-click device load/unload shortcut
++ supports new systray specification, so it works with, for example, the
+  new notification area on Cairo dock
+
+Due to lack of support for the new systray specification in Gtk, the
+AppIndicator mode is preferred, if available; gCDEmu attempts to load
+AppIndicator libraries, and if it succeeds, it starts in AppIndicator
+mode. Otherwise, GtkApplication mode is used.
+
+This can be overriden using '--tray-mode=' command-line switch.
+
+
+6. Troubleshooting
 ~~~~~~~~~~~~~~~~~~
 
 Q: gCDEmu's tray icon is greyed and the applet does nothing!
@@ -114,95 +133,7 @@ A: Greyed-out icon means that the applet failed to connect to the CDEmu daemon.
    appropriate bus.
 
 
-6. A note on encrypted images and password supplying:
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-CDEmu daemon offers support for encrypted images. When password
-is required to load an image, gCDEmu will prompt for it and then send it to daemon.
-
-NOTE, HOWEVER, THAT THE PASSWORD IS SENT OVER D-BUS IN A PLAIN STRING FORM, WITHOUT
-ANY PROTECTION. DEPENDING ON YOUR PRIVACY CONCERNS YOU MIGHT WISH TO AVOID LOADING
-SUCH IMAGES.
-
-
-7. On gCDEmu and Unity/GNOME Shell:
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-NOTE: This applies only when running gCDEmu in Gtk application mode (see
-next Section).
-
-Both Unity and GNOME Shell by default put only icons from a selected few
-applications in the system tray on the top panel, while the rest of the icons
-end up in the so called message tray on the bottom panel.
-
-If you wish to put the gCDEmu icon in the top panel's system tray, follow the
-instructions below. Note that the instructions are not applicable only to gCDEmu,
-but to any application with systray icon.
-
-
-7.1 Unity:
-----------
-In Unity, you need to whitelist the gCDEmu icon. This can be done either by adding
-'gcdemu' to the list of applications that are whitelisted by default:
-
-gsettings set com.canonical.Unity.Panel systray-whitelist "['JavaEmbeddedFrame', 'Mumble', 'Wine', 'Skype', 'hp-systray', 'gcdemu']"
-
-or whitelisting all the applications:
-
-gsettings set com.canonical.Unity.Panel systray-whitelist "['all']"
-
-Restart Unity (Press ALT+F2 and enter 'unity').
-
-Alternatively see chapter 8 for AppIndicator information.
-
-7.2 GNOME Shell:
-----------------
-Moving the gCDEmu icon to system tray in GNOME Shell requires a bit more work.
-
-First, get and install the IconManager shell extension written by Jakub Krajniak.
-The git source tree can be found at:
-https://github.com/MrTheodor/gnome-shell-ext-icon-manager
-Make sure you get version that's compatible with your GNOME Shell version! At
-the time of writing, the repository's head is compatible with GNOME Shell 3.2;
-if you are using an older version, find the appropriate version in the history.
-Or, if possible, find the packaged version for your distribution (e.g. in Fedora,
-the package is called gnome-shell-extension-icon-manager).
-
-If using GNOME Shell 3.2 or newer, you must enable the extension before it can be used.
-Either use gnome-tweak-tool, or use the following command:
-
-gsettings set org.gnome.shell enabled-extensions "['icon-manager@krajniak.info']"
-
-(Please note that the above command overwrites the currently enabled extensions,
-so you should first get the list, add the above mentioned extension to it, and
-then set it. It is generally easier to use gnome-tweak-tool...)
-
-Now, similarly as with Unity, you need to add gcdemu to the list of applications
-that should have their icons displayed in the system tray:
-
-gsettings set org.gnome.shell.extensions.icon-manager top-bar "['gcdemu']"
-
-Alternatively, you can install dconf-editor and use it to edit the key:
-'/org/gnome/shell/extensions/icon-manager/top-bar'
-
-Reload the GNOME Shell (press Alt+F2 and enter 'r' or 'gnome-shell --replace').
-
-
-8. Gtk Application and Ubuntu AppIndicator mode:
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-gCDEmu can run as Ubuntu AppIndicator, as opposed to classic
-Gtk Application mode. In Gtk Application mode, which is used by default,
-gCDEmu displays a system tray icon, whose appearance depends on
-the settings of your system (see Section 7).
-
-On systems with AppIndicator support, it is possible to run gCDEmu in
-AppIndicator mode, by specifying '--tray-mode=indicator' command-line switch.
-
-Note that some GUI features, in particular right-click device load/unload
-shortcut, are not supported in AppIndicator mode.
-
-
-9. Contact information:
+7. Contact information:
 ~~~~~~~~~~~~~~~~~~~~~~~
 
 CDEmu project's web page: http://cdemu.sourceforge.net
