@@ -9,9 +9,7 @@ Table of Contents:
 2. Requirements
 3. Installation
 4. Usage examples
-5. System vs. session bus
-6. A note on encrypted images and password supplying
-7. Contact information
+5. Contact information
 
 
 1. Introduction
@@ -125,41 +123,7 @@ Displaying daemon and library version:
  cdemu version
 
 
-5. System vs. session bus:
-~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-When connecting to daemon, cdemu client can use either session or system bus. By
-hard-coded default, it uses system bus. The default bus to be used can be specified
-via /etc/cdemu-client.conf or ~/.cdemu-client file, in following format:
-
-# This is example cdemu client config file.
-# Save it as /etc/cdemu-client.conf or ~/.cdemu-client
-
-[defaults]
-#bus=system
-bus=session
-
-# End of config file
-
-The default can be overriden by using --bus option. E.g.:
- cdemu --bus=session status
-or
- cdemu --bus=system status
-
-
-6. A note on encrypted images and password supplying:
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-CDEmu daemon offers support for encrypted images. When password
-is required to load an image (and it hasn't been provided via commandline using
---password), cdemu-client will prompt for it and then send it to daemon.
-
-NOTE, HOWEVER, THAT THE PASSWORD IS SENT OVER D-BUS IN A PLAIN STRING FORM, WITHOUT
-ANY PROTECTION. DEPENDING ON YOUR PRIVACY CONCERNS YOU MIGHT WISH TO AVOID LOADING
-SUCH IMAGES.
-
-
-7. Contact information:
+5. Contact information:
 ~~~~~~~~~~~~~~~~~~~~~~~
 
 CDEmu project's web page: http://cdemu.sourceforge.net
