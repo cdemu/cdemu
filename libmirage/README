@@ -31,7 +31,7 @@ header, ECC/EDC codes or subchannel. When this missing data is requested,
 libMirage will transparently generate it.
 
 libMirage has a plug-in based system, which allows a simple addition of new
-image format parsers or data-file access fragments. It also supports runtime
+image format parsers/writers or filter streams. It also supports runtime
 debugging via debug traces; there are special debug context objects that can
 be attached to other objects and used to control the amount of verbosity.
 
@@ -40,29 +40,30 @@ be attached to other objects and used to control the amount of verbosity.
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Currently supported image formats:
- - BlindWrite 5/6 (B5T, B6T) file format
- - Roxio / WinOnCD (C2D) file format
- - CloneCD (CCD, SUB, IMG) image format
- - DiscJuggler (CDI) file format
- - Easy CD Creator (CIF) file format
- - CDRwin (CUE, BIN) image format
- - Raw track loader (ISO, UDF etc.) image format
- - Alcohol 120% (MDS) image format
- - Daemon Tools (MDX) image format
- - Nero Burning ROM (NRG) image format
- - ReadCD (TOC, BIN) image format
- - Cdrdao's (TOC, BIN) image format
- - XCDRoast (TOC, BIN) image format
+ - BlindWrite 5/6 (B5T, B6T) file format (readonly)
+ - Roxio / WinOnCD (C2D) file format (readonly)
+ - CloneCD (CCD, SUB, IMG) image format (readonly)
+ - DiscJuggler (CDI) file format (readonly)
+ - Easy CD Creator (CIF) file format (readonly)
+ - CDRwin (CUE, BIN) image format (readonly)
+ - Raw track loader (ISO, UDF etc.) image format (read-write)
+ - Alcohol 120% (MDS) image format (readonly)
+ - Daemon Tools (MDX) image format (readonly)
+ - Nero Burning ROM (NRG) image format (readonly)
+ - ReadCD (TOC, BIN) image format (readonly)
+ - Cdrdao's (TOC, BIN) image format (read-write)
+ - XCDRoast (TOC, BIN) image format (readonly)
 
-Currently supported file filters:
- - Apple Disk Image (DMG) container format
- - Apple Disk Image (IMG, SMI) via MacBinary container format
- - GZip (GZ) container format
- - XZ (XZ) container format
- - Compressed ISO (CSO) container format
- - Compressed ISO (ISZ) container format
- - Error Code Modeller (ECM) container format
- - PowerISO (DAA) image format
+Currently supported filter streams:
+ - Apple Disk Image (DMG) container format (readonly)
+ - Apple Disk Image (IMG, SMI) via MacBinary container format (readonly)
+ - GZip (GZ) container format (readonly)
+ - XZ (XZ) container format (readonly)
+ - Compressed ISO (CSO) container format (readonly)
+ - Compressed ISO (ISZ) container format (readonly)
+ - Error Code Modeller (ECM) container format (readonly)
+ - PowerISO (DAA) image format (readonly)
+ - SNDFILE audio files (read-write)
 
 2.1 Note about XZ-compressed images and XZ file filter:
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
