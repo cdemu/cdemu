@@ -227,7 +227,7 @@ void cdemu_device_mode_pages_init (CdemuDevice *self)
         page->test_write = 1; /* Off by default */
         mask->test_write = 1;
 
-        page->write_type = 0x02; /* SAO/DAO by default */
+        page->write_type = 0x01; /* TAO by default */
         mask->write_type = 0x0F;
 
         page->multisession = 0x00; /* No multi-session */

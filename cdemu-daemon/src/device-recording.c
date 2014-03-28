@@ -1349,9 +1349,14 @@ void cdemu_device_recording_set_mode (CdemuDevice *self, gint mode)
             break;
         }
         default: {
-            CDEMU_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: unhandled recording mode: %d\n", __debug__, mode);
-            self->priv->recording = NULL;
-            break;
+            /* Unhandled mode; reset to TAO */
+            CDEMU_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: unhandled recording mode: %d; resetting to TAO!\n", __debug__, mode);
+            mode = 1;
+            self->priv->recording = &recording_commands_tao;
         }
     }
+
+    /* Update mode page 0x05 (in case this is called programmatically) */
+    struct ModePage_0x05 *p_0x05 = cdemu_device_get_mode_page(self, 0x05, MODE_PAGE_CURRENT);
+    p_0x05->write_type = mode;
 }

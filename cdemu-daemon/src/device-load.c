@@ -215,6 +215,9 @@ static gboolean cdemu_device_create_blank_disc_private (CdemuDevice *self, const
 
     cdemu_device_set_profile(self, (medium_type == MIRAGE_MEDIUM_CD) ? ProfileIndex_CDR : ProfileIndex_DVDPLUSR);
 
+    /* Set default recording mode */
+    cdemu_device_recording_set_mode(self, 1); /* TAO */
+
     /* Loading succeeded */
     self->priv->loaded = TRUE;
     self->priv->media_event = MEDIA_EVENT_NEW_MEDIA;
