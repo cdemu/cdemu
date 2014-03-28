@@ -382,6 +382,32 @@ struct GET_PERFORMANCE_CDB
 };
 
 
+struct GET_PERFORMANCE_00_Header
+{
+    guint32 data_length;
+
+    #if G_BYTE_ORDER == G_BIG_ENDIAN
+        guint8 reserved1 : 6;
+        guint8 write     : 1;
+        guint8 except    : 1;
+    #else
+        guint8 except    : 1;
+        guint8 write     : 1;
+        guint8 reserved1 : 6;
+    #endif
+
+    guint8 reserved2[3];
+};
+
+struct GET_PERFORMANCE_00_Descriptor
+{
+    guint32 start_lba;
+    guint32 start_performance;
+    guint32 end_lba;
+    guint32 end_performance;
+};
+
+
 struct GET_PERFORMANCE_03_Header
 {
     guint32 data_length;
