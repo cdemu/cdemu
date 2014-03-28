@@ -194,6 +194,17 @@ static gboolean command_close_track_session (CdemuDevice *self, const guint8 *ra
         }
 
         return self->priv->recording->close_session(self);
+    } else if (cdb->function == 5 || cdb->function == 6) {
+        /* Finalize disc/finalize disc with minimal radius (DVD+R) */
+        CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: finalizing DVD+R disc... same as closing session\n", __debug__);
+
+        if (!self->priv->recording) {
+            CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: no recording mode set!\n", __debug__);
+            cdemu_device_write_sense(self, ILLEGAL_REQUEST, COMMAND_SEQUENCE_ERROR);
+            return FALSE;
+        }
+
+        return self->priv->recording->close_session(self);
     } else {
         CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: unimplemented close function: %d\n", __debug__, cdb->function);
         cdemu_device_write_sense(self, ILLEGAL_REQUEST, INVALID_FIELD_IN_CDB);
