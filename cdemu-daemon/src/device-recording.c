@@ -292,22 +292,25 @@ static gboolean cdemu_device_tao_recording_open_track (CdemuDevice *self, Mirage
     /* Set flags from CTL stored in write parameters mode page*/
     mirage_track_set_ctl(self->priv->open_track, p_0x05->track_mode);
 
-    /* The track needs a pregap */
+    /* If we are burning a CD-ROM, then the track needs a pregap */
     GError *local_error = NULL;
-    MirageFragment *fragment = mirage_writer_create_fragment(self->priv->image_writer, self->priv->open_track, MIRAGE_FRAGMENT_PREGAP, &local_error);
-    if (!fragment) {
-        CDEMU_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: failed to create pregap fragment for track: %s\n", __debug__, local_error->message);
-        g_error_free(local_error);
-        return FALSE;
+    MirageFragment *fragment;
+    if (mirage_disc_get_medium_type(self->priv->disc) == MIRAGE_MEDIUM_CD) {
+        fragment = mirage_writer_create_fragment(self->priv->image_writer, self->priv->open_track, MIRAGE_FRAGMENT_PREGAP, &local_error);
+        if (!fragment) {
+            CDEMU_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: failed to create pregap fragment for track: %s\n", __debug__, local_error->message);
+            g_error_free(local_error);
+            return FALSE;
+        }
+
+        mirage_fragment_set_length(fragment, 150);
+        mirage_track_add_fragment(self->priv->open_track, -1, fragment);
+        g_object_unref(fragment);
+
+        mirage_track_set_track_start(self->priv->open_track, 150);
+
+        self->priv->num_written_sectors += 150;
     }
-
-    mirage_fragment_set_length(fragment, 150);
-    mirage_track_add_fragment(self->priv->open_track, -1, fragment);
-    g_object_unref(fragment);
-
-    mirage_track_set_track_start(self->priv->open_track, 150);
-
-    self->priv->num_written_sectors += 150;
 
     /* Data fragment */
     fragment = mirage_writer_create_fragment(self->priv->image_writer, self->priv->open_track, MIRAGE_FRAGMENT_DATA, &local_error);
