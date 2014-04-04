@@ -4,7 +4,7 @@ Priority: optional
 Homepage: http://cdemu.sourceforge.net/
 Maintainer: Henrik Stokseth <henrik@hshq.net>
 Build-Depends: debhelper (>= 9), dkms
-Standards-Version: 3.9.4
+Standards-Version: 3.9.5
 
 
 Package: vhba-dkms
