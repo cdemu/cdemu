@@ -6,14 +6,14 @@ Maintainer: Henrik Stokseth <henrik@hshq.net>
 Build-Depends: debhelper (>= 9)
 Build-Depends-Indep: python (>= 2.6.6-3), libglib2.0-dev, intltool, cmake (>= 2.8.5)
 X-Python-Version: >= 2.6.6
-Standards-Version: 3.9.4
+Standards-Version: 3.9.5
 
 
 Package: gcdemu
 Architecture: all
 Depends: python (>= 2.6.6-3), python-gi (>= 3.0.0), gir1.2-glib-2.0, 
- gir1.2-gtk-3.0, gir1.2-notify-0.7, cdemu-daemon (>= 2.1.0), 
- librsvg2-2, ${python:Depends}, ${misc:Depends}
+ gir1.2-gtk-3.0, gir1.2-appindicator3-0.1, gir1.2-notify-0.7,
+ cdemu-daemon (>= 2.1.0), librsvg2-2, ${python:Depends}, ${misc:Depends}
 Recommends: cdemu-client (>= 2.1.0)
 Description: GNOME application to control CDEmu daemon
  This is gCDEmu, a GNOME application for controlling CDEmu daemon. It is part of
