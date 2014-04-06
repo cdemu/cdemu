@@ -27,7 +27,7 @@ Description: CD-ROM image access library
 
 
 Package: gir1.2-mirage-3.0
-Section: libs
+Section: introspection
 Architecture: any
 Depends: libmirage10 (= ${binary:Version}), ${gir:Depends}, ${misc:Depends}
 Description: CD-ROM image access library (typelib files)
