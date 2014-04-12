@@ -1,336 +1,654 @@
 # Slovenian translation of cdemu-client.
-# Copyright (C) 2006-2009 Rok Mandeljc
+# Copyright (C) 2006-2014 Rok Mandeljc
 # This file is distributed under the same license as the cdemu-client package.
-# Rok Mandeljc <rok.mandeljc@gmail.com>, 2006-2009.
+# Rok Mandeljc <rok.mandeljc@gmail.com>, 2006-2014.
 #
-#
+#: ../src/cdemu:88 ../src/cdemu:166 ../src/cdemu:314 ../src/cdemu:352
+#: ../src/cdemu:389 ../src/cdemu:420 ../src/cdemu:501 ../src/cdemu:580
+#: ../src/cdemu:660 ../src/cdemu:740 ../src/cdemu:820 ../src/cdemu:903
+#: ../src/cdemu:931 ../src/cdemu:956 ../src/cdemu:984 ../src/cdemu:1008
+#: ../src/cdemu:1032 ../src/cdemu:1135 ../src/cdemu:1156
 msgid ""
 msgstr ""
-"Project-Id-Version: cdemu-client 1.3.0\n"
+"Project-Id-Version: cdemu-client 3.0.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2011-04-23 22:16+0200\n"
-"PO-Revision-Date: 2009-06-20 21:53+0200\n"
+"POT-Creation-Date: 2014-04-12 22:03+0200\n"
+"PO-Revision-Date: 2014-04-12 22:01+0200\n"
 "Last-Translator: Rok Mandeljc <rok.mandeljc@gmail.com>\n"
-"Language-Team: Slovenian\n"
-"Language: \n"
+"Language-Team: Slovenian <>\n"
+"Language: sl\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n"
+"%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
+"X-Generator: Gtranslator 2.91.6\n"
 
-#: ../src/cdemu:77
+#: ../src/cdemu:67
 #, c-format
-msgid "Failed to load configuration from file '%s': %s"
-msgstr "Napaka pri nalaganju nastavitvene datoteke '%s': %s"
+msgid "ERROR: %s"
+msgstr "NAPAKA: %s"
+
+#: ../src/cdemu:72
+#, c-format
+msgid "WARNING: %s"
+msgstr "OPOZORILO: %s"
 
 #: ../src/cdemu:89
-msgid "Unknown option"
-msgstr "Neznana možnost"
+msgid "loads an image to the device"
+msgstr "naloži sliko v napravo"
 
-#: ../src/cdemu:117
-#, c-format
-msgid "Failed to connect to daemon (bus: '%s')!"
-msgstr "Napaka pri povezovanju z demonom (vodilo: '%s')!"
+#: ../src/cdemu:94 ../src/cdemu:172 ../src/cdemu:320 ../src/cdemu:426
+#: ../src/cdemu:507 ../src/cdemu:586 ../src/cdemu:666 ../src/cdemu:746
+#: ../src/cdemu:826
+msgid "device"
+msgstr "naprava"
 
-#: ../src/cdemu:128
-#, c-format
-msgid "Unknown command: %s"
-msgstr "Neznan ukaz: %s"
+#: ../src/cdemu:95
+msgid "image file(s)"
+msgstr "datoteke s podatki o sliki"
 
-#: ../src/cdemu:142
-msgid "The image you are trying to load is encrypted."
-msgstr "Slika, ki jo poskušate naložiti, je zaščitena z geslom."
+#: ../src/cdemu:96
+msgid "password for encrypted images"
+msgstr "geslo za zaščitene slike"
 
-#: ../src/cdemu:143
-msgid "Password: "
-msgstr "Geslo: "
+#: ../src/cdemu:97
+msgid "encoding for text-based images"
+msgstr "kodna tabela za besedilne slike"
 
-#: ../src/cdemu:146
-#, c-format
-msgid "Failed to load image: %s"
-msgstr "Napaka pri nalaganju slike: %s"
+#: ../src/cdemu:98
+msgid "flag the DVD disc as CSS-encoded"
+msgstr "označi DVD disk kot zaščiten s CSS"
 
-#: ../src/cdemu:168 ../src/cdemu:205 ../src/cdemu:234 ../src/cdemu:261
-#: ../src/cdemu:285 ../src/cdemu:318 ../src/cdemu:350 ../src/cdemu:383
-#: ../src/cdemu:415 ../src/cdemu:446 ../src/cdemu:478 ../src/cdemu:509
-#: ../src/cdemu:541 ../src/cdemu:579
+#: ../src/cdemu:118 ../src/cdemu:201 ../src/cdemu:328 ../src/cdemu:363
+#: ../src/cdemu:400 ../src/cdemu:442 ../src/cdemu:470 ../src/cdemu:522
+#: ../src/cdemu:550 ../src/cdemu:601 ../src/cdemu:629 ../src/cdemu:681
+#: ../src/cdemu:709 ../src/cdemu:761 ../src/cdemu:789 ../src/cdemu:841
+#: ../src/cdemu:870
 #, c-format
 msgid "Failed to get number of devices: %s"
 msgstr "Napaka pri pridobivanju števila naprav: %s"
 
-#: ../src/cdemu:176 ../src/cdemu:243
+#: ../src/cdemu:125 ../src/cdemu:208 ../src/cdemu:371
 #, c-format
 msgid "Failed to get status of device %i: %s"
 msgstr "Napaka pri pridobivanju podatkov o stanju naprave %i: %s"
 
-#: ../src/cdemu:187
+#: ../src/cdemu:136 ../src/cdemu:219
 msgid "No empty device found"
 msgstr "Ne najdem nobene prazne naprave"
 
-#: ../src/cdemu:213 ../src/cdemu:224
+#: ../src/cdemu:141 ../src/cdemu:224 ../src/cdemu:343 ../src/cdemu:436
+#: ../src/cdemu:455 ../src/cdemu:490 ../src/cdemu:516 ../src/cdemu:535
+#: ../src/cdemu:569 ../src/cdemu:595 ../src/cdemu:614 ../src/cdemu:649
+#: ../src/cdemu:675 ../src/cdemu:694 ../src/cdemu:729 ../src/cdemu:755
+#: ../src/cdemu:774 ../src/cdemu:809 ../src/cdemu:854 ../src/cdemu:892
+#, c-format
+msgid "String '%s' is not a number"
+msgstr "Nit '%s' ni število"
+
+#: ../src/cdemu:153
+msgid "The image you are trying to load is encrypted."
+msgstr "Slika, ki jo poskušate naložiti, je zaščitena z geslom."
+
+#: ../src/cdemu:154
+msgid "Password: "
+msgstr "Geslo: "
+
+#: ../src/cdemu:157
+#, c-format
+msgid "Failed to load image: %s"
+msgstr "Napaka pri nalaganju slike: %s"
+
+#: ../src/cdemu:167
+msgid "load blank/recordable image to the device"
+msgstr "naloži prazno/zapisljivo sliko v napravo"
+
+#: ../src/cdemu:173
+msgid "image filename/basename"
+msgstr "ime slike"
+
+#: ../src/cdemu:174
+msgid "ID of image writer to use"
+msgstr "ID uporabljenega zapisovalnika"
+
+#: ../src/cdemu:175
+msgid "medium type"
+msgstr "vrsta medija"
+
+#: ../src/cdemu:176
+msgid "additional writer parameter(s)"
+msgstr "dodatni parametri zapisovalnika"
+
+#: ../src/cdemu:234
+#, c-format
+msgid "Failed to load blank image: %s"
+msgstr "Napaka pri ustvarjanju prazne slike: %s"
+
+#: ../src/cdemu:252
+#, c-format
+msgid "Parameter token '%s' is not a key=value pair!"
+msgstr "Podani parameter '%s' ni v obliki para ključ=vrednost!"
+
+#: ../src/cdemu:265 ../src/cdemu:1045 ../src/cdemu:1081
+#, c-format
+msgid "Failed to get parameter sheet for writer: %s"
+msgstr "Napaka pri pridobivanju seznama parametrov za zapisovalnik: %s"
+
+#: ../src/cdemu:277
+#, c-format
+msgid "Parameter '%s' not found in writer's parameter sheet!"
+msgstr ""
+"Parameter '%s' ne obstaja v seznamu parametrov izbranega zapisovalnika!"
+
+#: ../src/cdemu:288
+#, c-format
+msgid "Invalid value '%s' given for parameter '%s'!"
+msgstr "Neveljavno vrednost '%s' za parameter '%s'!"
+
+#: ../src/cdemu:300
+#, c-format
+msgid "String '%s' given as value for parameter '%s' is not a number!"
+msgstr "Znakovni niz '%s' podan kot vrednost parametra '%s' ni število!"
+
+#: ../src/cdemu:302
+#, c-format
+msgid "Unhandled parameter type '%s' declared for parameter '%s'!"
+msgstr "Neznan tip parametra '%s' pri parametru '%s'!"
+
+#: ../src/cdemu:315
+msgid "unloads the device"
+msgstr "izprazni napravo"
+
+#: ../src/cdemu:334 ../src/cdemu:341
 #, c-format
 msgid "Failed to unload device %i: %s"
 msgstr "Naprava pri praznjenju naprave %i: %s"
 
-#: ../src/cdemu:237
+#: ../src/cdemu:353
+msgid "displays the devices' status"
+msgstr "prikaže stanje naprav(e)"
+
+#: ../src/cdemu:365
 msgid "Devices' status:"
 msgstr "Stanje naprav:"
 
-#: ../src/cdemu:238 ../src/cdemu:265 ../src/cdemu:289 ../src/cdemu:354
-#: ../src/cdemu:419 ../src/cdemu:482 ../src/cdemu:545
+#: ../src/cdemu:366 ../src/cdemu:403 ../src/cdemu:473 ../src/cdemu:553
+#: ../src/cdemu:632 ../src/cdemu:712 ../src/cdemu:792 ../src/cdemu:873
 msgid "DEV"
 msgstr "NPR"
 
-#: ../src/cdemu:238
+#: ../src/cdemu:366
 msgid "LOADED"
 msgstr "NALOŽENA"
 
-#: ../src/cdemu:238
+#: ../src/cdemu:366
 msgid "FILENAME"
 msgstr "IME DATOTEKE"
 
-#: ../src/cdemu:264
+#: ../src/cdemu:390
+msgid "displays the device mapping information"
+msgstr "prikaže podatke o preslikavah naprav"
+
+#: ../src/cdemu:402
 msgid "Device mapping:"
 msgstr "Preslikave naprav:"
 
-#: ../src/cdemu:265
+#: ../src/cdemu:403
 msgid "SCSI CD-ROM"
 msgstr "SCSI CD-ROM"
 
-#: ../src/cdemu:265
+#: ../src/cdemu:403
 msgid "SCSI generic"
 msgstr "SCSI generična"
 
-#: ../src/cdemu:270
+#: ../src/cdemu:408
 #, c-format
 msgid "Failed to get device mapping of device %i: %s"
 msgstr "Napaka pri pridobivanju podatkov o preslikavi naprave %i: %s"
 
-#: ../src/cdemu:288
-msgid "Devices' daemon debug masks:"
-msgstr "Razhroščevalne maske naprav:"
+#: ../src/cdemu:421
+msgid "displays/sets daemon debug mask"
+msgstr "prikaže/nastavi demonovo razhroščevalno masko"
 
-#: ../src/cdemu:289 ../src/cdemu:354
-msgid "DEBUG MASK"
-msgstr "MASKA"
+#: ../src/cdemu:427 ../src/cdemu:508 ../src/cdemu:587 ../src/cdemu:667
+#: ../src/cdemu:747
+msgid "new value"
+msgstr "nova vrednost"
 
-#: ../src/cdemu:296 ../src/cdemu:306
-#, c-format
-msgid "Failed to get daemon debug mask of device %i: %s"
-msgstr "Napaka pri pridobivanju demonove maske za napravo %i: %s"
-
-#: ../src/cdemu:309
-#, c-format
-msgid "Daemon debug mask of device %i: 0x%X"
-msgstr "Demonova maska  naprave %i: 0x%X"
-
-#: ../src/cdemu:321
+#: ../src/cdemu:444
 #, c-format
 msgid "Setting daemon debug mask of all devices to 0x%X."
 msgstr "Nastavljam demonovo masko vseh naprav na 0x%X."
 
-#: ../src/cdemu:326 ../src/cdemu:334
+#: ../src/cdemu:449 ../src/cdemu:461
 #, c-format
 msgid "Failed to set daemon debug mask of device %i to 0x%X: %s"
 msgstr "Napaka pri nastavljanju demonove maske naprave %i na 0x%X: %s"
 
-#: ../src/cdemu:330
+#: ../src/cdemu:457
 #, c-format
 msgid "Setting daemon debug mask of device %i to 0x%X."
 msgstr "Nastavljam demonovo masko naprave %i na 0x%X."
 
-#: ../src/cdemu:353
-msgid "Devices' library debug masks:"
-msgstr "Knjižničine maske naprav:"
+#: ../src/cdemu:472
+msgid "Devices' daemon debug masks:"
+msgstr "Razhroščevalne maske naprav:"
 
-#: ../src/cdemu:361 ../src/cdemu:371
+#: ../src/cdemu:473 ../src/cdemu:553
+msgid "DEBUG MASK"
+msgstr "MASKA"
+
+#: ../src/cdemu:479 ../src/cdemu:488
 #, c-format
-msgid "Failed to get library debug mask of device %i: %s"
-msgstr "Napaka pri pridobivanju knjižničine maske za napravo %i: %s"
+msgid "Failed to get daemon debug mask of device %i: %s"
+msgstr "Napaka pri pridobivanju demonove maske za napravo %i: %s"
 
-#: ../src/cdemu:374
+#: ../src/cdemu:492
 #, c-format
-msgid "Library debug mask of device %i: 0x%X"
-msgstr "Knjižničina maska naprave %i: 0x%X"
+msgid "Daemon debug mask of device %i: 0x%X"
+msgstr "Demonova maska  naprave %i: 0x%X"
 
-#: ../src/cdemu:386
+#: ../src/cdemu:502
+msgid "displays/sets library debug mask"
+msgstr "prikaže/nastavi knjižničino razhroščevalno masko"
+
+#: ../src/cdemu:524
 #, c-format
 msgid "Setting library debug mask of all devices to 0x%X."
 msgstr "Nastavljam knjižničino masko vseh naprav na 0x%X."
 
-#: ../src/cdemu:391 ../src/cdemu:399
+#: ../src/cdemu:529 ../src/cdemu:541
 #, c-format
 msgid "Failed to set library debug mask of device %i to 0x%X: %s"
 msgstr "Napaka pri nastavljanju knjižničine maske naprave %i na 0x%X: %s"
 
-#: ../src/cdemu:395
+#: ../src/cdemu:537
 #, c-format
 msgid "Setting library debug mask of device %i to 0x%X."
 msgstr "Nastavljam knjižničino masko naprave %i na 0x%X."
 
-#: ../src/cdemu:418
-msgid "Devices' DPM emulation flag:"
-msgstr "Nastavitev DPM emulacije naprav:"
+#: ../src/cdemu:552
+msgid "Devices' library debug masks:"
+msgstr "Knjižničine maske naprav:"
 
-#: ../src/cdemu:419 ../src/cdemu:482
-msgid "ENABLED"
-msgstr "VKLJUČENO"
-
-#: ../src/cdemu:425 ../src/cdemu:434
+#: ../src/cdemu:559 ../src/cdemu:567
 #, c-format
-msgid "Failed to get DPM emulation flag of device %i: %s"
-msgstr "Napaka pri pridobivanju nastavitve DPM emulacije naprave %i: %s"
+msgid "Failed to get library debug mask of device %i: %s"
+msgstr "Napaka pri pridobivanju knjižničine maske za napravo %i: %s"
 
-#: ../src/cdemu:437
+#: ../src/cdemu:571
 #, c-format
-msgid "DPM emulation flag of device %i: %i"
-msgstr "Nastavitev DPM emulacije naprave %i: %i"
+msgid "Library debug mask of device %i: 0x%X"
+msgstr "Knjižničina maska naprave %i: 0x%X"
 
-#: ../src/cdemu:449
+#: ../src/cdemu:581
+msgid "displays/sets DPM emulation flag"
+msgstr "prikaže/nastavi DPM emulacijo"
+
+#: ../src/cdemu:603
 #, c-format
 msgid "Setting DPM emulation flag of all devices to %i."
 msgstr "Nastavljam DPM emulacijo vseh naprav na %i."
 
-#: ../src/cdemu:454 ../src/cdemu:462
+#: ../src/cdemu:608 ../src/cdemu:620
 #, c-format
 msgid "Failed to set DPM emulation flag of device %i to %i: %s"
 msgstr "Napaka pri nastavljanju DPM emulacije naprave %i na %i: %s"
 
-#: ../src/cdemu:458
+#: ../src/cdemu:616
 #, c-format
 msgid "Setting DPM emulation flag of device %i to %i."
 msgstr "Nastavljam DPM emulacijo naprave %i na %i."
 
-#: ../src/cdemu:481
-msgid "Devices' transfer rate emulation flag:"
-msgstr "Nastavitve emulacije hitrosti prenosa naprav:"
+#: ../src/cdemu:631
+msgid "Devices' DPM emulation flag:"
+msgstr "Nastavitev DPM emulacije naprav:"
 
-#: ../src/cdemu:488 ../src/cdemu:497
+#: ../src/cdemu:632 ../src/cdemu:712 ../src/cdemu:792
+msgid "ENABLED"
+msgstr "VKLJUČENO"
+
+#: ../src/cdemu:638 ../src/cdemu:647
 #, c-format
-msgid "Failed to get transfer rate emulation flag of device %i: %s"
-msgstr ""
-"Napaka pri pridobivanju nastavitve emulacije hitrosti prenosa naprave %i: %s"
+msgid "Failed to get DPM emulation flag of device %i: %s"
+msgstr "Napaka pri pridobivanju nastavitve DPM emulacije naprave %i: %s"
 
-#: ../src/cdemu:500
+#: ../src/cdemu:651
 #, c-format
-msgid "Transfer rate emulation flag of device %i: %i"
-msgstr "Nastavitev emulacije hitrosti prenosa naprave %i: %i"
+msgid "DPM emulation flag of device %i: %i"
+msgstr "Nastavitev DPM emulacije naprave %i: %i"
 
-#: ../src/cdemu:512
+#: ../src/cdemu:661
+msgid "displays/sets transfer rate emulation flag"
+msgstr "prikaže/nastavi emulacijo hitrosti prenosa"
+
+#: ../src/cdemu:683
 #, c-format
 msgid "Setting transfer rate emulation flag of all devices to %i."
 msgstr "Nastavljam emulacijo hitrosti prenosa vseh naprav na %i."
 
-#: ../src/cdemu:517 ../src/cdemu:525
+#: ../src/cdemu:688 ../src/cdemu:700
 #, c-format
 msgid "Failed to set transfer rate emulation flag of device %i to %i: %s"
 msgstr ""
 "Napaka pri nastavljanju emulacije hitrosti prenosa naprave %i na %i: %s"
 
-#: ../src/cdemu:521
+#: ../src/cdemu:696
 #, c-format
 msgid "Setting transfer rate emulation flag of device %i to %i."
 msgstr "Nastavljam emulacijo hitrosti prenosa naprave %i na %i."
 
-#: ../src/cdemu:544
-msgid "Devices' IDs:"
-msgstr "ID naprav:"
+#: ../src/cdemu:711
+msgid "Devices' transfer rate emulation flag:"
+msgstr "Nastavitve emulacije hitrosti prenosa naprav:"
 
-#: ../src/cdemu:545
-msgid "DEVICE ID"
-msgstr "ID NAPRAVE"
-
-#: ../src/cdemu:554 ../src/cdemu:566
+#: ../src/cdemu:718 ../src/cdemu:727
 #, c-format
-msgid "Failed to get device ID of device %i: %s"
-msgstr "Napaka pri pridobivanju ID naprave %i: %s"
+msgid "Failed to get transfer rate emulation flag of device %i: %s"
+msgstr ""
+"Napaka pri pridobivanju nastavitve emulacije hitrosti prenosa naprave %i: %s"
 
-#: ../src/cdemu:569
+#: ../src/cdemu:731
 #, c-format
-msgid "Device ID of device %i: %s"
-msgstr "ID naprave %i: %s"
+msgid "Transfer rate emulation flag of device %i: %i"
+msgstr "Nastavitev emulacije hitrosti prenosa naprave %i: %i"
 
-#: ../src/cdemu:582
+#: ../src/cdemu:741
+msgid "displays/sets bad sector emulation flag"
+msgstr "prikaže/nastavi emulacijo slabih sektorjev"
+
+#: ../src/cdemu:763
+#, c-format
+msgid "Setting bad sector emulation flag of all devices to %i."
+msgstr "Nastavljam emulacijo slabih sektorjev vseh naprav na %i."
+
+#: ../src/cdemu:768 ../src/cdemu:780
+#, c-format
+msgid "Failed to set bad sector emulation flag of device %i to %i: %s"
+msgstr ""
+"Napaka pri nastavljanju emulacije slabih sektorjev naprave %i na %i: %s"
+
+#: ../src/cdemu:776
+#, c-format
+msgid "Setting bad sector emulation flag of device %i to %i."
+msgstr "Nastavljam emulacijo slabih sektorjev naprave %i na %i."
+
+#: ../src/cdemu:791
+msgid "Devices' bad sector emulation flag:"
+msgstr "Nastavitve emulacije slabih sektorjev naprav:"
+
+#: ../src/cdemu:798 ../src/cdemu:807
+#, c-format
+msgid "Failed to get bad sector emulation flag of device %i: %s"
+msgstr ""
+"Napaka pri pridobivanju nastavitve emulacije slabih sektorjev naprave %i: %s"
+
+#: ../src/cdemu:811
+#, c-format
+msgid "Bad sector emulation flag of device %i: %i"
+msgstr "Nastavitev emulacije slabih sektorjev naprave %i: %i"
+
+#: ../src/cdemu:821
+msgid "displays/sets device ID"
+msgstr "prikaže/nastavi ID naprave"
+
+#: ../src/cdemu:827
+msgid ""
+"new device ID: vendor ID, product ID, revision and vendor-specific string"
+msgstr "nov ID naprave: proizvajalec, model, revizija, proizvajalčev niz"
+
+#: ../src/cdemu:835
+msgid "New device ID must consist of exactly four strings!"
+msgstr "Novi ID naprave mora biti podan v obliki štirih znakovnih nizov!"
+
+#: ../src/cdemu:843
 #, c-format
 msgid "Setting device ID of all devices to %s."
 msgstr "Nastavljam ID vseh naprav na %s."
 
-#: ../src/cdemu:587 ../src/cdemu:595
+#: ../src/cdemu:848 ../src/cdemu:860
 #, c-format
 msgid "Failed to set device ID of device %i to %s: %s"
 msgstr "Napaka pri nastavljanju ID naprave %i na %s: %s"
 
-#: ../src/cdemu:591
+#: ../src/cdemu:856
 #, c-format
 msgid "Setting device ID of device %i to %s."
 msgstr "Nastavljam ID naprave %i na %s."
 
-#: ../src/cdemu:608
+#: ../src/cdemu:872
+msgid "Devices' IDs:"
+msgstr "ID naprav:"
+
+#: ../src/cdemu:873
+msgid "DEVICE ID"
+msgstr "ID NAPRAVE"
+
+#: ../src/cdemu:880 ../src/cdemu:890
+#, c-format
+msgid "Failed to get device ID of device %i: %s"
+msgstr "Napaka pri pridobivanju ID naprave %i: %s"
+
+#: ../src/cdemu:894
+#, c-format
+msgid "Device ID of device %i: %s"
+msgstr "ID naprave %i: %s"
+
+#: ../src/cdemu:904
+msgid "enumerates supported parsers"
+msgstr "našteje podprte parserje"
+
+#: ../src/cdemu:914
 #, c-format
 msgid "Failed to enumerate supported parsers: %s"
 msgstr "Napaka pri pridobivanju seznama podprtih parserjev: %s"
 
-#: ../src/cdemu:613
+#: ../src/cdemu:918
 msgid "Supported parsers:"
 msgstr "Podprti parserji:"
 
-#: ../src/cdemu:627
+#: ../src/cdemu:932
+msgid "enumerates supported writers"
+msgstr "našteje podprte zapisovalnike"
+
+#: ../src/cdemu:942
 #, c-format
-msgid "Failed to enumerate supported fragments: %s"
-msgstr "Napaka pri pridobivanju seznama podprtih fragmentov: %s"
+msgid "Failed to enumerate supported writers: %s"
+msgstr "Napaka pri pridobivanju seznama podprtih zapisovlanikov: %s"
 
-#: ../src/cdemu:632
-msgid "Supported fragments:"
-msgstr "Podprti fragmenti:"
+#: ../src/cdemu:945
+msgid "Supported writers:"
+msgstr "Podprti zapisovalniki:"
 
-#: ../src/cdemu:650
+#: ../src/cdemu:957
+msgid "enumerates supported filter streams"
+msgstr "našteje podprte filter streame"
+
+#: ../src/cdemu:967
+#, c-format
+msgid "Failed to enumerate supported filter streams: %s"
+msgstr "Napaka pri pridobivanju seznama podprtih filter streamov: %s"
+
+#: ../src/cdemu:970
+msgid "Supported filter streams:"
+msgstr "Podprti filter streami:"
+
+#: ../src/cdemu:973
+#, c-format
+msgid "    write support: %d"
+msgstr "    podpora zapisovanja: %d"
+
+#: ../src/cdemu:985
+msgid "enumerates valid daemon debug masks"
+msgstr "našteje veljavne demonove maske"
+
+#: ../src/cdemu:995
 #, c-format
 msgid "Failed to enumerate supported daemon debug masks: %s"
 msgstr "Napaka pri pridobivanju seznama podprtih demonovih mask: %s"
 
-#: ../src/cdemu:653
+#: ../src/cdemu:997
 msgid "Supported daemon debug masks:"
 msgstr "Podprte demonove maske:"
 
-#: ../src/cdemu:668
+#: ../src/cdemu:1009
+msgid "enumerates valid library debug masks"
+msgstr "našteje veljavne knjižničine maske"
+
+#: ../src/cdemu:1019
 #, c-format
 msgid "Failed to enumerate supported library debug masks: %s"
 msgstr "Napaka pri pridobivanju seznama podprtih knjižničinih mask: %s"
 
-#: ../src/cdemu:671
+#: ../src/cdemu:1021
 msgid "Supported library debug masks:"
 msgstr "Podprte knjižničine maske:"
 
-#: ../src/cdemu:684
+#: ../src/cdemu:1033
+msgid "prints the list of writer's parameters"
+msgstr "izpiše seznam parametrov za zapisovalnik"
+
+#: ../src/cdemu:1038
+msgid "writer ID"
+msgstr "ID zapisovalnika"
+
+#: ../src/cdemu:1048
+msgid "Writer's parameter sheet:"
+msgstr "Parametri zapisovalnika:"
+
+#: ../src/cdemu:1053
+#, c-format
+msgid "  Name: %s"
+msgstr "  Ime: %s"
+
+#: ../src/cdemu:1054
+#, c-format
+msgid "  Description: %s"
+msgstr "  Opis: %s"
+
+#: ../src/cdemu:1055
+#, c-format
+msgid "  Type: %s"
+msgstr "  Vrsta: %s"
+
+#: ../src/cdemu:1056
+#, c-format
+msgid "  Default value: %s"
+msgstr "  Privzeta vrednost: %s"
+
+#: ../src/cdemu:1059
+#, c-format
+msgid "  Possible value: %s"
+msgstr "  Možna vrednost: %s"
+
+#: ../src/cdemu:1063
+msgid "enum"
+msgstr "enum"
+
+#: ../src/cdemu:1065
+msgid "string"
+msgstr "znakovni niz"
+
+#: ../src/cdemu:1067
+msgid "boolean"
+msgstr "boolean"
+
+#: ../src/cdemu:1069
+msgid "integer"
+msgstr "število"
+
+#: ../src/cdemu:1071
+msgid "unknown"
+msgstr "neznan"
+
+#: ../src/cdemu:1090
+#, c-format
+msgid "Unsupported writer: %s"
+msgstr "Nepodprt zapisovalnik: %s"
+
+#: ../src/cdemu:1096
+#, c-format
+msgid "Failed to parse parameter sheet: %s"
+msgstr "Napaka pri branju seznama parametrov: %s"
+
+#: ../src/cdemu:1108
+msgid "displays version information"
+msgstr "prikaže podatke o različicah"
+
+#: ../src/cdemu:1118
 #, c-format
 msgid "Failed to get library version: %s"
 msgstr "Napaka pri pridobivanju različice knjižnice: %s"
 
-#: ../src/cdemu:689
+#: ../src/cdemu:1123
 #, c-format
 msgid "Failed to get daemon version: %s"
 msgstr "Napaka pri pridobivanju različice demona: %s"
 
-#: ../src/cdemu:692
+#: ../src/cdemu:1125
 #, c-format
 msgid "Library version: %s"
 msgstr "Različica knjižnice: %s"
 
-#: ../src/cdemu:693
+#: ../src/cdemu:1126
 #, c-format
 msgid "Daemon version: %s"
 msgstr "Različica demona: %s"
 
-#: ../src/cdemu:704
+#: ../src/cdemu:1136
+msgid "creates another virtual device"
+msgstr "ustvari novo navidezno napravo"
+
+#: ../src/cdemu:1145
+#, c-format
+msgid "Failed to add device: %s"
+msgstr "Naprava pri ustvarjanju naprave: %s"
+
+#: ../src/cdemu:1147
+msgid "Device added successfully."
+msgstr "Dodajanje naprave je uspelo."
+
+#: ../src/cdemu:1157
+msgid "removes the last virtual device"
+msgstr "odstrani zadnjo navidezno napravo"
+
+#: ../src/cdemu:1166
+#, c-format
+msgid "Failed to remove device: %s"
+msgstr "Napaka pri odstranjevanju naprave: %s"
+
+#: ../src/cdemu:1168
+msgid "Device removed successfuly."
+msgstr "Naprava je bila uspešno odstranjena."
+
+#: ../src/cdemu:1186
+msgid "Command-line CDEmu client."
+msgstr "CDEmu odjemalec za uporabo v ukazni vrstici"
+
+#: ../src/cdemu:1187
+msgid "sets D-BUS bus type to use"
+msgstr "nastavi D-BUS vodilo, ki naj bo uporabljeno"
+
+#: ../src/cdemu:1190
+msgid "valid commands"
+msgstr "veljavni ukazi"
+
+#: ../src/cdemu:1190
+msgid "command help"
+msgstr "pomoč za ukaz"
+
+#: ../src/cdemu:1227
 #, c-format
 msgid "Invalid bus parameter '%s', using default!"
-msgstr "Neveljaven parameter za vodilo '%s'; uporabljam privzeto vodilo!"
+msgstr "Neveljavno vodilo '%s'; uporabljam privzeto vodilo!"
 
-#: ../src/cdemu:712
+#: ../src/cdemu:1233
 #, c-format
 msgid "Failed to connect to CDEmu daemon: %s"
 msgstr "Napaka pri povezovanju s CDEmu demonom: %s"
 
-#: ../src/cdemu:719
+#: ../src/cdemu:1239
 #, c-format
 msgid ""
 "Failed to acquire daemon interface version (this most likely means your "
@@ -339,143 +657,23 @@ msgstr ""
 "Napaka pri pridobivanju različice CDEmu demon vmesnika (najverjetneje "
 "uporabljate zastarelo različico demona): %s"
 
-#: ../src/cdemu:724
+#: ../src/cdemu:1243
 #, c-format
-msgid "CDEmu daemon interface version %i detected, but version %i is required!"
-msgstr ""
-"Zaznal sem CDEmu demon vmesnik različice %i, potrebna pa je različica %i!"
-
-#: ../src/cdemu:734
-#, c-format
-msgid "Usage: %s %s %s"
-msgstr "Uporaba: %s %s %s"
-
-#: ../src/cdemu:739
-#, c-format
-msgid "Usage: %s [options] <command> <command parameters>"
-msgstr "Uporaba: %s [možnosti] <ukaz> <parametri ukaza>"
-
-#: ../src/cdemu:741
-msgid "Commands:"
-msgstr "Ukazi:"
-
-#: ../src/cdemu:745
-msgid "Options:"
-msgstr "Možnosti:"
-
-#: ../src/cdemu:746
-msgid "displays help message"
-msgstr "prikaže sporočilo s pomočjo"
-
-#: ../src/cdemu:747
-msgid "displays program version"
-msgstr "prikaže različico programa"
-
-#: ../src/cdemu:748
-msgid "sets D-BUS bus type to use; valid values are 'session' and 'system'"
-msgstr ""
-"nastavi vrsto D-BUS vodila, ki naj bo uporabljeno; veljavni vrednosti sta "
-"'session' in 'system'"
-
-#: ../src/cdemu:750
-msgid "Optional parser parameters (valid only for 'load' command):"
-msgstr "Dodatni parametri za parser (veljavno samo za ukaz 'load'):"
-
-#: ../src/cdemu:751
-msgid "password for encrypted images"
-msgstr "geslo za zaščitene slike"
-
-#: ../src/cdemu:752
-msgid "encoding for text-based images"
-msgstr "kodna tabela za besedilne slike"
-
-#: ../src/cdemu:757
-#, c-format
-msgid "Invalid number of parameters for command '%s'!"
-msgstr "Neveljavno število parametrov za ukaz '%s'!"
-
-#: ../src/cdemu:766
-#, c-format
-msgid "ERROR: %s"
-msgstr "NAPAKA: %s"
-
-#: ../src/cdemu:770
-#, c-format
-msgid "WARNING: %s"
-msgstr "OPOZORILO: %s"
-
-#: ../src/cdemu:778
-msgid "<device> <image file> [...]"
-msgstr "<naprava> <ime datoteke> [...]"
-
-#: ../src/cdemu:779
-msgid "loads the device"
-msgstr "naloži napravo"
-
-#: ../src/cdemu:785
-msgid "<device>"
-msgstr "<naprava>"
-
-#: ../src/cdemu:786
-msgid "unloads the device"
-msgstr "izprazni napravo"
-
-#: ../src/cdemu:793
-msgid "displays the devices' status"
-msgstr "prikaže stanje naprav(e)"
-
-#: ../src/cdemu:800
-msgid "displays the device mapping information"
-msgstr "prikaže podatke o preslikavah naprav"
-
-#: ../src/cdemu:806 ../src/cdemu:813 ../src/cdemu:820 ../src/cdemu:827
-msgid "<device> [new value]"
-msgstr "<naprava> [nova vrednost]"
-
-#: ../src/cdemu:807
-msgid "displays/sets daemon debug mask"
-msgstr "prikaže/nastavi demonovo razhroščevalno masko"
-
-#: ../src/cdemu:814
-msgid "displays/sets library debug mask"
-msgstr "prikaže/nastavi knjižničino razhroščevalno masko"
-
-#: ../src/cdemu:821
-msgid "displays/sets DPM emulation flag"
-msgstr "prikaže/nastavi DPM emulacijo"
-
-#: ../src/cdemu:828
-msgid "displays/sets transfer rate emulation flag"
-msgstr "prikaže/nastavi emulacijo hitrosti prenosa"
-
-#: ../src/cdemu:834
 msgid ""
-"<device> [new vendor_id] [new product_id] [new revision] [new "
-"vendor_specific]"
+"CDEmu daemon interface version %i.%i detected, but version %i.%i is required!"
 msgstr ""
-"<naprava> [nov vendor_id] [nov product_id] [nov revision] [nov "
-"vendor_specific]"
+"Zaznal sem CDEmu demon vmesnik različice %i.%i, potrebna pa je različica %i."
+"%i!"
 
-#: ../src/cdemu:835
-msgid "displays/sets device ID"
-msgstr "prikaže/nastavi ID naprave"
+#: ../src/cdemu:1274
+#, c-format
+msgid "Failed to load configuration from file '%s': %s"
+msgstr "Napaka pri nalaganju nastavitvene datoteke '%s': %s"
 
-#: ../src/cdemu:842
-msgid "enumerates supported parsers"
-msgstr "našteje podprte parserje"
+#: ../data/cdemu-client.desktop.in.h:1
+msgid "CDEmu client"
+msgstr "CDEmu odjemalec"
 
-#: ../src/cdemu:849
-msgid "enumerates supported fragments"
-msgstr "našteje podprte fragmente"
-
-#: ../src/cdemu:856
-msgid "enumerates valid daemon debug masks"
-msgstr "našteje veljavne demonove maske"
-
-#: ../src/cdemu:863
-msgid "enumerates valid library debug masks"
-msgstr "našteje veljavne knjižničine maske"
-
-#: ../src/cdemu:870
-msgid "displays version information"
-msgstr "prikaže podatke o različicah"
+#: ../data/cdemu-client.desktop.in.h:2
+msgid "Client for handling optical media (CD/DVD) images"
+msgstr "Odjemalec za delo s slikami optičnih medijev (CD/DVD)"
