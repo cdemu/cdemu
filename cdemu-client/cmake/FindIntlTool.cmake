@@ -58,15 +58,25 @@ function (intltool_process_po_files po_dir catalog_name)
 endfunction ()
 
 function (intltool_merge options po_dir in_filename out_filename)
-    if (options EQUAL "-x")
-        set (options2 "--no-translations")
+    string(FIND ${options} "--no-translations" no_translations)
+    string(REPLACE " " ";" options ${options})
+    if (${no_translations} EQUAL -1)
+        add_custom_command (
+            OUTPUT ${out_filename}
+            COMMAND ${INTLTOOL_MERGE_EXECUTABLE} ${options} -u ${PROJECT_SOURCE_DIR}/${po_dir}
+                ${PROJECT_SOURCE_DIR}/${in_filename} ${out_filename}
+            DEPENDS ${in_filename}
+        )
+    else ()
+        # The --no-translations version should not be given the po dir
+        add_custom_command (
+            OUTPUT ${out_filename}
+            COMMAND ${INTLTOOL_MERGE_EXECUTABLE} ${options} -u
+                ${PROJECT_SOURCE_DIR}/${in_filename} ${out_filename}
+            DEPENDS ${in_filename}
+        )
     endif ()
-    add_custom_command (
-        OUTPUT ${out_filename}
-        COMMAND ${INTLTOOL_MERGE_EXECUTABLE} ${options} ${options2} -u ${PROJECT_SOURCE_DIR}/${po_dir}
-            ${PROJECT_SOURCE_DIR}/${in_filename} ${out_filename}
-        DEPENDS ${in_filename}
-    )
+
     set (intltool-merge-target "intltool-merge ${out_filename}")
     add_custom_target (${intltool-merge-target} ALL DEPENDS ${out_filename})
 endfunction ()

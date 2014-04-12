@@ -31,7 +31,7 @@ install (
     DESTINATION ${CMAKE_INSTALL_BINDIR}
 )
 
-intltool_merge ("-x" po data/net.sf.cdemu.gcdemu.gschema.xml.in net.sf.cdemu.gcdemu.gschema.xml)
+intltool_merge("-x --no-translations" po data/net.sf.cdemu.gcdemu.gschema.xml.in net.sf.cdemu.gcdemu.gschema.xml)
 install (
     FILES ${PROJECT_BINARY_DIR}/net.sf.cdemu.gcdemu.gschema.xml
     DESTINATION ${CMAKE_INSTALL_DATADIR}/glib-2.0/schemas
@@ -58,7 +58,7 @@ install (
     DESTINATION ${CMAKE_INSTALL_DATADIR}/pixmaps
 )
 
-# Translations; we use the version provided by our FindIntlTool.cmake 
+# Translations; we use the version provided by our FindIntlTool.cmake
 # instead of the gettext version...
 intltool_process_po_files(${PROJECT_SOURCE_DIR}/po ${PROJECT_NAME})
 
