@@ -40,8 +40,8 @@ app_version = "3.0.0"
 supported_daemon_interface_version = [ 7, 0 ]
 
 # I18n
-bindtextdomain(app_name)
-textdomain(app_name)
+bindtextdomain("cdemu")
+textdomain("cdemu")
 
 
 def str2bool (value):
