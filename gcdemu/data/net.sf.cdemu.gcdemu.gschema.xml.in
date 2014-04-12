@@ -17,17 +17,17 @@
     </key>
     <key name="icon-connected" type="s">
       <default>'gcdemu-icon'</default>
-      <summary>Icon name (connected)</summary>
+      <_summary>Icon name (connected)</_summary>
       <_description>Name of icon to display in the tray when connected to daemon. It should be either a valid stock name or filename of a pixmap that can be found in a standard pixmaps directory (e.g. /usr/share/pixmaps).</_description>
     </key>
     <key name="icon-disconnected" type="s">
       <default>'gcdemu-icon-gray'</default>
-      <summary>Icon name (disconnected)</summary>
+      <_summary>Icon name (disconnected)</_summary>
       <_description>Name of icon to display in the tray when disconnected from daemon. It should be either a valid stock name or filename of a pixmap that can be found in a standard pixmaps directory (e.g. /usr/share/pixmaps).</_description>
     </key>
     <key name="icon-policy" type="s">
       <default>'always'</default>
-      <summary>Icon display policy.</summary>
+      <_summary>Icon display policy.</_summary>
       <_description>Icon display policy. Valid options are "always", "never" and "when_connected". If set to "always", the icon is always shown. If set to "never", the icon is never shown. If set to "when_connected", the icon is shown only when gCDEmu is connected to a daemon.</_description>
     </key>
   </schema>
