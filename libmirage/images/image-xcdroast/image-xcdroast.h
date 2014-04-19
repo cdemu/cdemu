@@ -18,7 +18,7 @@
  */
 
 #ifndef __IMAGE_XCDROAST_H__
-#define __IMAGE_XDCROAST_H__
+#define __IMAGE_XCDROAST_H__
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -80,4 +80,4 @@ typedef struct
 
 G_END_DECLS
 
-#endif /* __IMAGE_XDCROAST_H__ */
+#endif /* __IMAGE_XCDROAST_H__ */
