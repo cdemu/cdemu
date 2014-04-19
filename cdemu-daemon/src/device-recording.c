@@ -801,7 +801,7 @@ static gboolean cdemu_device_sao_recording_write_sectors (CdemuDevice *self, gin
     /* We need a valid CUE sheet */
     if (!self->priv->cue_sheet) {
         CDEMU_DEBUG(self, DAEMON_DEBUG_RECORDING, "%s: CUE sheet not set!\n", __debug__);
-        cdemu_device_write_sense(self, CHECK_CONDITION, COMMAND_SEQUENCE_ERROR);
+        cdemu_device_write_sense(self, ILLEGAL_REQUEST, COMMAND_SEQUENCE_ERROR);
         return FALSE;
     }
 
@@ -852,7 +852,7 @@ static gboolean cdemu_device_sao_recording_write_sectors (CdemuDevice *self, gin
             self->priv->cue_entry = mirage_session_get_track_by_address(self->priv->cue_sheet, address, NULL);
             if (!self->priv->cue_entry) {
                 CDEMU_DEBUG(self, DAEMON_DEBUG_RECORDING, "%s: failed to find track entry in CUE sheet for address %d!\n", __debug__, address);
-                cdemu_device_write_sense(self, CHECK_CONDITION, COMMAND_SEQUENCE_ERROR);
+                cdemu_device_write_sense(self, ILLEGAL_REQUEST, COMMAND_SEQUENCE_ERROR);
                 succeeded = FALSE;
                 goto finish;
             }
@@ -884,7 +884,7 @@ static gboolean cdemu_device_sao_recording_write_sectors (CdemuDevice *self, gin
             cue_fragment = mirage_track_get_fragment_by_address(self->priv->cue_entry, address - track_start, NULL);
             if (!cue_fragment) {
                 CDEMU_DEBUG(self, DAEMON_DEBUG_RECORDING, "%s: failed to find fragment entry in CUE track entry for address %d!\n", __debug__, address);
-                cdemu_device_write_sense(self, CHECK_CONDITION, COMMAND_SEQUENCE_ERROR);
+                cdemu_device_write_sense(self, ILLEGAL_REQUEST, COMMAND_SEQUENCE_ERROR);
                 succeeded = FALSE;
                 goto finish;
             }
@@ -902,7 +902,7 @@ static gboolean cdemu_device_sao_recording_write_sectors (CdemuDevice *self, gin
         /* Make sure we have data format descriptors set */
         if (!main_format_ptr|| !subchannel_format_ptr) {
             CDEMU_DEBUG(self, DAEMON_DEBUG_RECORDING, "%s: data format not set!\n", __debug__);
-            cdemu_device_write_sense(self, CHECK_CONDITION, COMMAND_SEQUENCE_ERROR);
+            cdemu_device_write_sense(self, ILLEGAL_REQUEST, COMMAND_SEQUENCE_ERROR);
             succeeded = FALSE;
             goto finish;
         }

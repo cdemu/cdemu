@@ -2202,14 +2202,14 @@ static gboolean command_reserve_track (CdemuDevice *self, const guint8 *raw_cdb)
     /* Make sure we have recording mode set */
     if (!self->priv->recording) {
         CDEMU_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: RESERVE TRACK called without recording mode set\n", __debug__);
-        cdemu_device_write_sense(self, CHECK_CONDITION, COMMAND_SEQUENCE_ERROR);
+        cdemu_device_write_sense(self, ILLEGAL_REQUEST, COMMAND_SEQUENCE_ERROR);
         return FALSE;
     }
 
     /* Make sure set recording mode implementes reserve track */
     if (!self->priv->recording->reserve_track) {
         CDEMU_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: RESERVE TRACK called in recoding mode that does not implement it (yet?)\n", __debug__);
-        cdemu_device_write_sense(self, CHECK_CONDITION, COMMAND_SEQUENCE_ERROR);
+        cdemu_device_write_sense(self, ILLEGAL_REQUEST, COMMAND_SEQUENCE_ERROR);
         return FALSE;
     }
 
@@ -2251,7 +2251,7 @@ static gboolean command_send_cue_sheet (CdemuDevice *self, const guint8 *raw_cdb
     /* Verify that we are in SAO/DAO mode */
     if (p_0x05->write_type != 2) {
         CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: CUE sheet sent when write type is not set to Session-at-Once!\n", __debug__);
-        cdemu_device_write_sense(self, CHECK_CONDITION, COMMAND_SEQUENCE_ERROR);
+        cdemu_device_write_sense(self, ILLEGAL_REQUEST, COMMAND_SEQUENCE_ERROR);
         return FALSE;
     }
 
