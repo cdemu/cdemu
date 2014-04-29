@@ -12,8 +12,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: cdemu-client 3.0.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2014-04-12 22:03+0200\n"
-"PO-Revision-Date: 2014-04-12 22:01+0200\n"
+"POT-Creation-Date: 2014-04-29 23:29+0200\n"
+"PO-Revision-Date: 2014-04-29 23:30+0200\n"
 "Last-Translator: Rok Mandeljc <rok.mandeljc@gmail.com>\n"
 "Language-Team: Slovenian <>\n"
 "Language: sl\n"
@@ -619,7 +619,7 @@ msgid "Failed to remove device: %s"
 msgstr "Napaka pri odstranjevanju naprave: %s"
 
 #: ../src/cdemu:1168
-msgid "Device removed successfuly."
+msgid "Device removed successfully."
 msgstr "Naprava je bila uspešno odstranjena."
 
 #: ../src/cdemu:1186

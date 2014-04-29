@@ -1165,7 +1165,7 @@ class cmd_remove_device (object):
         except dbus.DBusException as e:
             raise CDEmuError(_("Failed to remove device: %s") % (e))
 
-        print(_("Device removed successfuly."))
+        print(_("Device removed successfully."))
 
 
 ########################################################################
