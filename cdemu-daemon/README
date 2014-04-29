@@ -173,17 +173,28 @@ A: Try running 'depmod -a' after you have installed the module.
 
 
 Q: Daemon fails to start with the following message:
-    'cdemud: cdemud_daemon_initialize: failed to open control device /dev/vhba_ctl!
-     Daemon initialization failed: Failed to open control device.'
+    'cdemu0: Kernel I/O: failed to open control device /dev/vhba_ctl: No such file or directory!
+     cdemu: Daemon: failed to start device #0!
+     cdemu: Daemon: failed to create device!
+     Daemon initialization and start failed!'
 
-A: The message indicates that either vhba module is not inserted or you don't
-   have read/write permissions for /dev/vhba_ctl. Please make sure that module
-   is inserted, that /dev/vhba_ctl exists and that you have proper read/write
-   permissions.
+A: The message indicates that vhba module is not loaded. Please make
+   sure that vhba module is installed and loaded.
 
 
 Q: Daemon fails to start with the following message:
-    'cdemud: cdemud_daemon_initialize: failed to get name on system bus!
+    'cdemu0: Kernel I/O: failed to open control device /dev/vhba_ctl: Permission denied!
+     cdemu: Daemon: failed to start device #0!
+     cdemu: Daemon: failed to create device!
+     Daemon initialization and start failed!'
+
+A: The message indicates that you don't have read/write permissions for
+   /dev/vhba_ctl. You need to set read/write permissions on vhba control
+   device for your username - either manually, or by means of a udev rule.
+
+
+Q: Daemon fails to start with the following message:
+    'cdemu: cdemud_daemon_initialize: failed to get name on system bus!
      Daemon initialization failed: Name request on D-BUS failed.'
 
 A: The message indicates that name registration on the system bus has failed.
@@ -194,6 +205,7 @@ A: The message indicates that name registration on the system bus has failed.
    as the user who owns the (X11) session. Running from Virtual Terminals (VTs) with
    session bus might also fail (depending on your configuration), because by default,
    D-BUS' session bus is tied to the X11 log-in session.
+
 
 Q: Daemon fails to start with the following message:
    cdemu0: cdemud_audio_initialize: failed to open audio device

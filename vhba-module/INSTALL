@@ -21,6 +21,9 @@ The simplest way to compile this package is:
   5. You can remove the program binaries and object files from the
      source code directory by typing `make clean'.
 
+To properly set permissions on VHBA control device and/or set up module
+auto-load, see the corresponding sections below.
+
 Compilers and Options
 =====================
 
@@ -31,10 +34,25 @@ specified is 'uname -r' in other words your running kernel.
 It is also possible to set extra compiler flags through the EXTRA_CFLAGS
 environment variable.
 
-Compiling For Multiple Architectures
-====================================
+Setting Permissions on VHBA Control Device
+==========================================
 
-This device driver was initially developed for use on 32 bit intel compatible
-processor architectures but may with differing levels of success be compiled
-for other kinds of processor architectures.
+In order to use VHBA control device, a user must have read-write permissions
+on /dev/vhba_ctl. Typically, this is achieved by a udev rule:
 
+KERNEL=="vhba_ctl", MODE="0660", OWNER="root", GROUP="cdrom"
+
+The rule should be stored in a .rule file (for example, 40-vhba.rules) in either
+/lib/udev/rules.d or /etc/udev/rules.d directory.
+
+In the above example, the user needs to be part of 'cdrom' group.
+
+Automatic Module Loading
+========================
+
+At the moment, automatic module loading can be enabled in a distribution-specific way.
+
+On debian- and ubuntu-based systems, 'vhba' should be added to the /etc/modules file.
+
+On fedora-based systems, a file called vhba.conf and containing a line 'vhba'
+should be created in /etc/modules-load.d directory.
