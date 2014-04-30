@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gCDEmu 3.0.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2014-04-12 22:03+0200\n"
-"PO-Revision-Date: 2014-04-12 21:36+0200\n"
+"POT-Creation-Date: 2014-04-30 18:53+0200\n"
+"PO-Revision-Date: 2014-04-30 18:54+0200\n"
 "Last-Translator: Rok Mandeljc <rok.mandeljc@gmail.com>\n"
 "Language-Team: Slovenian <>\n"
 "Language: sl\n"
@@ -478,7 +478,7 @@ msgstr "Sprememba nastavitev naprave"
 #: ../src/gcdemu:1548
 #, c-format
 msgid ""
-"Device #%02d has been changed its device ID:\n"
+"Device #%02d has had its device ID changed:\n"
 "  Vendor ID: '%s'\n"
 "  Product ID: '%s'\n"
 "  Revision: '%s'\n"
@@ -492,34 +492,34 @@ msgstr ""
 
 #: ../src/gcdemu:1553
 #, c-format
-msgid "Device #%02d has been changed its DPM emulation option. New value: %s"
+msgid "Device #%02d has had its DPM emulation option changed. New value: %s"
 msgstr ""
 "Napravi #%02d je bila spremenjena nastavitev DPM emulacije. Nova vrednost: %s"
 
 #: ../src/gcdemu:1558
 #, c-format
-msgid "Device #%02d has been changed its TR emulation option. New value: %s"
+msgid "Device #%02d has had its TR emulation option changed. New value: %s"
 msgstr ""
 "Napravi #%02d je bila spremenjena nastavitev TR emulacije. Nova vrednost: %s"
 
 #: ../src/gcdemu:1563
 #, c-format
 msgid ""
-"Device #%02d has been changed its bad sector emulation option. New value: %s"
+"Device #%02d has had its bad sector emulation option changed. New value: %s"
 msgstr ""
 "Napravi #%02d je bila spremenjena nastavitev emulacije slabih sektorjev. "
 "Nova vrednost: %s"
 
 #: ../src/gcdemu:1568
 #, c-format
-msgid "Device #%02d has been changed its daemon debug mask. New value: 0x%X"
+msgid "Device #%02d has had its daemon debug mask changed. New value: 0x%X"
 msgstr ""
 "Napravi #%02d je bila spremenjena demonova razhroščevalna maska. Nova "
 "vrednost: 0x%X"
 
 #: ../src/gcdemu:1573
 #, c-format
-msgid "Device #%02d has been changed its library debug mask. New value: 0x%X"
+msgid "Device #%02d has had its library debug mask changed. New value: 0x%X"
 msgstr ""
 "Napravi #%02d je bila spremenjena knjižničina razhroščevalna maska. Nova "
 "vrednost: 0x%X"

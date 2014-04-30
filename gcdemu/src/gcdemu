@@ -1545,32 +1545,32 @@ class gCDEmuDevice (GObject.GObject):
     def update_device_id (self, notify = False):
         self.page_options.set_device_id(self.device.device_id)
         if notify:
-            self.emit("device-notification", _("Device option change"), _("Device #%02d has been changed its device ID:\n  Vendor ID: '%s'\n  Product ID: '%s'\n  Revision: '%s'\n  Vendor-specific: '%s'") % (self.device.number, self.device.device_id[0], self.device.device_id[1], self.device.device_id[2], self.device.device_id[3]))
+            self.emit("device-notification", _("Device option change"), _("Device #%02d has had its device ID changed:\n  Vendor ID: '%s'\n  Product ID: '%s'\n  Revision: '%s'\n  Vendor-specific: '%s'") % (self.device.number, self.device.device_id[0], self.device.device_id[1], self.device.device_id[2], self.device.device_id[3]))
 
     def update_dpm_emulation (self, notify = False):
         self.page_options.set_dpm_emulation(self.device.dpm_emulation)
         if notify:
-            self.emit("device-notification", _("Device option change"), _("Device #%02d has been changed its DPM emulation option. New value: %s") % (self.device.number, self.device.dpm_emulation))
+            self.emit("device-notification", _("Device option change"), _("Device #%02d has had its DPM emulation option changed. New value: %s") % (self.device.number, self.device.dpm_emulation))
 
     def update_tr_emulation (self, notify = False):
         self.page_options.set_tr_emulation(self.device.tr_emulation)
         if notify:
-            self.emit("device-notification", _("Device option change"), _("Device #%02d has been changed its TR emulation option. New value: %s") % (self.device.number, self.device.tr_emulation))
+            self.emit("device-notification", _("Device option change"), _("Device #%02d has had its TR emulation option changed. New value: %s") % (self.device.number, self.device.tr_emulation))
 
     def update_bad_sector_emulation (self, notify = False):
         self.page_options.set_bad_sector_emulation(self.device.bad_sector_emulation)
         if notify:
-            self.emit("device-notification", _("Device option change"), _("Device #%02d has been changed its bad sector emulation option. New value: %s") % (self.device.number, self.device.bad_sector_emulation))
+            self.emit("device-notification", _("Device option change"), _("Device #%02d has had its bad sector emulation option changed. New value: %s") % (self.device.number, self.device.bad_sector_emulation))
 
     def update_daemon_debug_mask (self, notify = False):
         self.page_daemon.set_debug_mask(self.device.daemon_debug_mask)
         if notify:
-            self.emit("device-notification", _("Device option change"), _("Device #%02d has been changed its daemon debug mask. New value: 0x%X") % (self.device.number, self.device.daemon_debug_mask))
+            self.emit("device-notification", _("Device option change"), _("Device #%02d has had its daemon debug mask changed. New value: 0x%X") % (self.device.number, self.device.daemon_debug_mask))
 
     def update_library_debug_mask (self, notify = False):
         self.page_library.set_debug_mask(self.device.library_debug_mask)
         if notify:
-            self.emit("device-notification", _("Device option change"), _("Device #%02d has been changed its library debug mask. New value: 0x%X") % (self.device.number, self.device.library_debug_mask))
+            self.emit("device-notification", _("Device option change"), _("Device #%02d has had its library debug mask changed. New value: 0x%X") % (self.device.number, self.device.library_debug_mask))
 
     def load_unload_device (self):
         if self.device.loaded:
