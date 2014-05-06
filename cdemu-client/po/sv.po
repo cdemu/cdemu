@@ -7,506 +7,732 @@ msgid ""
 msgstr ""
 "Project-Id-Version: cdemu-client 1.3.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2011-04-22 11:51+0200\n"
-"PO-Revision-Date: 2009-08-12 03:57+0100\n"
-"Last-Translator: Niklas 'Nille' Åkerström <nille.kungen@gmail.com>\n"
+"POT-Creation-Date: 2014-04-30 00:08+0200\n"
+"PO-Revision-Date: 2014-05-06 13:20+0100\n"
+"Last-Translator: Anders Jonsson <anders.jonsson@norsjovallen.se>\n"
 "Language-Team: Swedish <tp-sv@listor.tp-sv.se>\n"
 "Language: sv\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
+"X-Generator: Poedit 1.6.4\n"
 
-#: ../src/cdemu:77
+#: ../src/cdemu:67
 #, c-format
-msgid "Failed to load configuration from file '%s': %s"
-msgstr "Misslyckades att ladda konfiguration från filen '%s': %s"
+msgid "ERROR: %s"
+msgstr "FEL: %s"
+
+#: ../src/cdemu:72
+#, c-format
+msgid "WARNING: %s"
+msgstr "VARNING: %s"
 
 #: ../src/cdemu:89
-msgid "Unknown option"
-msgstr "Okänt val"
+msgid "loads an image to the device"
+msgstr "läser in en avbild till enheten"
 
-#: ../src/cdemu:117
-#, c-format
-msgid "Failed to connect to daemon (bus: '%s')!"
-msgstr "Misslyckades med att ansluta till bakgrundsprocessen (buss: '%s')!"
+#: ../src/cdemu:94 ../src/cdemu:172 ../src/cdemu:320 ../src/cdemu:426
+#: ../src/cdemu:507 ../src/cdemu:586 ../src/cdemu:666 ../src/cdemu:746
+#: ../src/cdemu:826
+msgid "device"
+msgstr "enhet"
 
-#: ../src/cdemu:128
-#, c-format
-msgid "Unknown command: %s"
-msgstr "Okänt kommando: %s"
+#: ../src/cdemu:95
+msgid "image file(s)"
+msgstr "avbildsfil(er)"
 
-#: ../src/cdemu:142
-msgid "The image you are trying to load is encrypted."
-msgstr "Avbildsfilen du försöker ladda är krypterad."
+#: ../src/cdemu:96
+msgid "password for encrypted images"
+msgstr "lösenord för krypterade avbildsfiler"
 
-#: ../src/cdemu:143
-msgid "Password: "
-msgstr "Lösenord:"
+#: ../src/cdemu:97
+msgid "encoding for text-based images"
+msgstr "teckenkodning för textbaserade avbildsfiler"
 
-#: ../src/cdemu:146
-#, c-format
-msgid "Failed to load image: %s"
-msgstr "Misslyckades med att montera avbildsfil: %s"
+#: ../src/cdemu:98
+msgid "flag the DVD disc as CSS-encoded"
+msgstr "flagga DVD-skivan som CSS-kodad"
 
-#: ../src/cdemu:168 ../src/cdemu:205 ../src/cdemu:234 ../src/cdemu:261
-#: ../src/cdemu:285 ../src/cdemu:318 ../src/cdemu:350 ../src/cdemu:383
-#: ../src/cdemu:415 ../src/cdemu:446 ../src/cdemu:478 ../src/cdemu:509
-#: ../src/cdemu:541 ../src/cdemu:579
+#: ../src/cdemu:118 ../src/cdemu:201 ../src/cdemu:328 ../src/cdemu:363
+#: ../src/cdemu:400 ../src/cdemu:442 ../src/cdemu:470 ../src/cdemu:522
+#: ../src/cdemu:550 ../src/cdemu:601 ../src/cdemu:629 ../src/cdemu:681
+#: ../src/cdemu:709 ../src/cdemu:761 ../src/cdemu:789 ../src/cdemu:841
+#: ../src/cdemu:870
 #, c-format
 msgid "Failed to get number of devices: %s"
-msgstr "Misslyckades att erhålla antal enheter: %s"
+msgstr "Misslyckades med att erhålla antal enheter: %s"
 
-#: ../src/cdemu:176 ../src/cdemu:243
+#: ../src/cdemu:125 ../src/cdemu:208 ../src/cdemu:371
 #, c-format
 msgid "Failed to get status of device %i: %s"
 msgstr "Misslyckades med att erhålla status för enhet %i: %s"
 
-#: ../src/cdemu:187
+#: ../src/cdemu:136 ../src/cdemu:219
 msgid "No empty device found"
 msgstr "Hittade ingen tom enhet"
 
-#: ../src/cdemu:213 ../src/cdemu:224
+#: ../src/cdemu:141 ../src/cdemu:224 ../src/cdemu:343 ../src/cdemu:436
+#: ../src/cdemu:455 ../src/cdemu:490 ../src/cdemu:516 ../src/cdemu:535
+#: ../src/cdemu:569 ../src/cdemu:595 ../src/cdemu:614 ../src/cdemu:649
+#: ../src/cdemu:675 ../src/cdemu:694 ../src/cdemu:729 ../src/cdemu:755
+#: ../src/cdemu:774 ../src/cdemu:809 ../src/cdemu:854 ../src/cdemu:892
+#, c-format
+msgid "String '%s' is not a number"
+msgstr "Strängen \"%s\" är inte ett tal"
+
+#: ../src/cdemu:153
+msgid "The image you are trying to load is encrypted."
+msgstr "Avbildsfilen du försöker ladda är krypterad."
+
+#: ../src/cdemu:154
+msgid "Password: "
+msgstr "Lösenord:"
+
+#: ../src/cdemu:157
+#, c-format
+msgid "Failed to load image: %s"
+msgstr "Misslyckades med att läsa in avbild: %s"
+
+#: ../src/cdemu:167
+msgid "load blank/recordable image to the device"
+msgstr "läs in tom/inspelningsbar avbild till enheten"
+
+#: ../src/cdemu:173
+msgid "image filename/basename"
+msgstr "filnamn/basnamn för avbild"
+
+#: ../src/cdemu:174
+msgid "ID of image writer to use"
+msgstr "ID för avbildsskrivare att använda"
+
+#: ../src/cdemu:175
+msgid "medium type"
+msgstr "mediatyp"
+
+#: ../src/cdemu:176
+msgid "additional writer parameter(s)"
+msgstr "ytterligare skrivarparametrar"
+
+#: ../src/cdemu:234
+#, c-format
+msgid "Failed to load blank image: %s"
+msgstr "Misslyckades med att läsa in tom avbild: %s"
+
+#: ../src/cdemu:252
+#, c-format
+msgid "Parameter token '%s' is not a key=value pair!"
+msgstr "Parametersymbolen \"%s\" är inte ett par på formen nyckel=värde!"
+
+#: ../src/cdemu:265 ../src/cdemu:1045 ../src/cdemu:1081
+#, c-format
+msgid "Failed to get parameter sheet for writer: %s"
+msgstr "Misslyckades med att erhålla parameterlista för skrivare: %s"
+
+#: ../src/cdemu:277
+#, c-format
+msgid "Parameter '%s' not found in writer's parameter sheet!"
+msgstr "Parametern \"%s\" hittades inte i skrivarens parameterlista!"
+
+#: ../src/cdemu:288
+#, c-format
+msgid "Invalid value '%s' given for parameter '%s'!"
+msgstr "Felaktigt värde \"%s\" givet för parametern \"%s\"!"
+
+#: ../src/cdemu:300
+#, c-format
+msgid "String '%s' given as value for parameter '%s' is not a number!"
+msgstr ""
+"Strängen \"%s\" som gavs som värde för parametern \"%s\" är inte ett tal!"
+
+#: ../src/cdemu:302
+#, c-format
+msgid "Unhandled parameter type '%s' declared for parameter '%s'!"
+msgstr "Ohanterad parametertyp \"%s\" angavs för parametern \"%s\"!"
+
+#: ../src/cdemu:315
+msgid "unloads the device"
+msgstr "frigör enheten"
+
+#: ../src/cdemu:334 ../src/cdemu:341
 #, c-format
 msgid "Failed to unload device %i: %s"
-msgstr "misslyckades med att frigöra enhet %i: %s"
+msgstr "Misslyckades med att frigöra enhet %i: %s"
 
-#: ../src/cdemu:237
+#: ../src/cdemu:353
+msgid "displays the devices' status"
+msgstr "visar enheternas status"
+
+#: ../src/cdemu:365
 msgid "Devices' status:"
-msgstr "Enhetsstaus:"
+msgstr "Enhetsstatus:"
 
-#: ../src/cdemu:238 ../src/cdemu:265 ../src/cdemu:289 ../src/cdemu:354
-#: ../src/cdemu:419 ../src/cdemu:482 ../src/cdemu:545
+#: ../src/cdemu:366 ../src/cdemu:403 ../src/cdemu:473 ../src/cdemu:553
+#: ../src/cdemu:632 ../src/cdemu:712 ../src/cdemu:792 ../src/cdemu:873
 msgid "DEV"
 msgstr "ENHET"
 
-#: ../src/cdemu:238
+#: ../src/cdemu:366
 msgid "LOADED"
-msgstr "Laddad"
+msgstr "INLÄST"
 
-#: ../src/cdemu:238
+#: ../src/cdemu:366
 msgid "FILENAME"
 msgstr "FILNAMN"
 
-#: ../src/cdemu:264
-msgid "Device mapping:"
-msgstr "Enhets tilldelning:"
+#: ../src/cdemu:390
+msgid "displays the device mapping information"
+msgstr "visar information om enhetstilldelning"
 
-#: ../src/cdemu:265
+#: ../src/cdemu:402
+msgid "Device mapping:"
+msgstr "Enhetstilldelning:"
+
+#: ../src/cdemu:403
 msgid "SCSI CD-ROM"
 msgstr "SCSI CD-ROM"
 
-#: ../src/cdemu:265
+#: ../src/cdemu:403
 msgid "SCSI generic"
 msgstr "SCSI generisk"
 
-#: ../src/cdemu:270
+#: ../src/cdemu:408
 #, c-format
 msgid "Failed to get device mapping of device %i: %s"
-msgstr "Misslyckades att erhålla enhets-tilldelning från enhet %i: %s"
+msgstr "Misslyckades med att erhålla enhetstilldelning för enhet %i: %s"
 
-#: ../src/cdemu:288
-msgid "Devices' daemon debug masks:"
-msgstr "Avlusnings-maskar för enheternas bakgrundsprocess:"
+#: ../src/cdemu:421
+msgid "displays/sets daemon debug mask"
+msgstr "visa/ställ in bakgrundsprocessens avlusningsmask"
 
-#: ../src/cdemu:289 ../src/cdemu:354
-msgid "DEBUG MASK"
-msgstr "AVLUSNINGS-MASK"
+#: ../src/cdemu:427 ../src/cdemu:508 ../src/cdemu:587 ../src/cdemu:667
+#: ../src/cdemu:747
+msgid "new value"
+msgstr "nytt värde"
 
-#: ../src/cdemu:296 ../src/cdemu:306
-#, c-format
-msgid "Failed to get daemon debug mask of device %i: %s"
-msgstr ""
-"Misslyckades att erhålla bakgrundsprocessens avlusnings-mask för enhet %i: %s"
-
-#: ../src/cdemu:309
-#, c-format
-msgid "Daemon debug mask of device %i: 0x%X"
-msgstr "Bakgrundsprocessens avlusnings-mask för enhet %i: 0x%X"
-
-#: ../src/cdemu:321
+#: ../src/cdemu:444
 #, c-format
 msgid "Setting daemon debug mask of all devices to 0x%X."
 msgstr ""
-"Ställer in bakgrundsprocessens avlusnings-mask för samtliga enheter till 0x"
-"%X."
+"Ställer in bakgrundsprocessens avlusningsmask för samtliga enheter till 0x%X."
 
-#: ../src/cdemu:326 ../src/cdemu:334
+#: ../src/cdemu:449 ../src/cdemu:461
 #, c-format
 msgid "Failed to set daemon debug mask of device %i to 0x%X: %s"
 msgstr ""
-"Misslyckades att ställa in bakgrundsprocessens avlusnings-mask för enhet %i "
-"till 0x%X: %s"
+"Misslyckades med att ställa in bakgrundsprocessens avlusningsmask för enhet "
+"%i till 0x%X: %s"
 
-#: ../src/cdemu:330
+#: ../src/cdemu:457
 #, c-format
 msgid "Setting daemon debug mask of device %i to 0x%X."
-msgstr "Ställer in bakgrundsprocessens avlusnings-mask för enhet %i till 0x%X."
+msgstr "Ställer in bakgrundsprocessens avlusningsmask för enhet %i till 0x%X."
 
-#: ../src/cdemu:353
-msgid "Devices' library debug masks:"
-msgstr "Enheternas biblioteks-avlusnings-maskar:"
+#: ../src/cdemu:472
+msgid "Devices' daemon debug masks:"
+msgstr "Avlusningsmaskar för enheternas bakgrundsprocess:"
 
-#: ../src/cdemu:361 ../src/cdemu:371
+#: ../src/cdemu:473 ../src/cdemu:553
+msgid "DEBUG MASK"
+msgstr "AVLUSNINGSMASK"
+
+#: ../src/cdemu:479 ../src/cdemu:488
 #, c-format
-msgid "Failed to get library debug mask of device %i: %s"
-msgstr "Misslyckades att erhålla bibliotekets avlusnings-mask för enhet %i: %s"
+msgid "Failed to get daemon debug mask of device %i: %s"
+msgstr ""
+"Misslyckades med att erhålla bakgrundsprocessens avlusningsmask för enhet "
+"%i: %s"
 
-#: ../src/cdemu:374
+#: ../src/cdemu:492
 #, c-format
-msgid "Library debug mask of device %i: 0x%X"
-msgstr "Bibliotekets avlusnings-mask för enhet %i: 0x%X"
+msgid "Daemon debug mask of device %i: 0x%X"
+msgstr "Bakgrundsprocessens avlusningsmask för enhet %i: 0x%X"
 
-#: ../src/cdemu:386
+#: ../src/cdemu:502
+msgid "displays/sets library debug mask"
+msgstr "visar/ställer in bibliotekets avlusningsmask"
+
+#: ../src/cdemu:524
 #, c-format
 msgid "Setting library debug mask of all devices to 0x%X."
-msgstr ""
-"Ställer in bibliotekets avlusnings-mask för samtliga enheter till 0x%X."
+msgstr "Ställer in bibliotekets avlusningsmask för samtliga enheter till 0x%X."
 
-#: ../src/cdemu:391 ../src/cdemu:399
+#: ../src/cdemu:529 ../src/cdemu:541
 #, c-format
 msgid "Failed to set library debug mask of device %i to 0x%X: %s"
 msgstr ""
-"Misslyckades att ställa in bibliotekets avlusnings-mask för enhet %i till 0x"
-"%X: %s"
+"Misslyckades med att ställa in bibliotekets avlusningsmask för enhet %i till "
+"0x%X: %s"
 
-#: ../src/cdemu:395
+#: ../src/cdemu:537
 #, c-format
 msgid "Setting library debug mask of device %i to 0x%X."
-msgstr "Ställer in bibliotekets avlusnings-mask för enhet %i till 0x%X."
+msgstr "Ställer in bibliotekets avlusningsmask för enhet %i till 0x%X."
 
-#: ../src/cdemu:418
+#: ../src/cdemu:552
+msgid "Devices' library debug masks:"
+msgstr "Enheternas biblioteks-avlusningsmaskar:"
+
+#: ../src/cdemu:559 ../src/cdemu:567
+#, c-format
+msgid "Failed to get library debug mask of device %i: %s"
+msgstr ""
+"Misslyckades med att erhålla bibliotekets avlusningsmask för enhet %i: %s"
+
+#: ../src/cdemu:571
+#, c-format
+msgid "Library debug mask of device %i: 0x%X"
+msgstr "Bibliotekets avlusningsmask för enhet %i: 0x%X"
+
+#: ../src/cdemu:581
+msgid "displays/sets DPM emulation flag"
+msgstr "visar/ställer in DPM-emuleringsflagga"
+
+#: ../src/cdemu:603
+#, c-format
+msgid "Setting DPM emulation flag of all devices to %i."
+msgstr "Ställer in DPM-emuleringsflagga för samtliga enheter till %i."
+
+#: ../src/cdemu:608 ../src/cdemu:620
+#, c-format
+msgid "Failed to set DPM emulation flag of device %i to %i: %s"
+msgstr ""
+"Misslyckades med att ställa in DPM-emuleringsflagga för enhet %i till %i: %s"
+
+#: ../src/cdemu:616
+#, c-format
+msgid "Setting DPM emulation flag of device %i to %i."
+msgstr "Ställer in DPM-emuleringsflagga för enhet %i till %i."
+
+#: ../src/cdemu:631
 msgid "Devices' DPM emulation flag:"
-msgstr "Enheternas DPM emulerings-flagga:"
+msgstr "Enheternas DPM-emuleringsflagga:"
 
-#: ../src/cdemu:419 ../src/cdemu:482
+#: ../src/cdemu:632 ../src/cdemu:712 ../src/cdemu:792
 msgid "ENABLED"
 msgstr "AKTIVERAD"
 
-#: ../src/cdemu:425 ../src/cdemu:434
+#: ../src/cdemu:638 ../src/cdemu:647
 #, c-format
 msgid "Failed to get DPM emulation flag of device %i: %s"
-msgstr "Misslyckades erhålla DPM emulerings-flagga av enhet %i: %s"
+msgstr "Misslyckades med att erhålla DPM-emuleringsflagga för enhet %i: %s"
 
-#: ../src/cdemu:437
+#: ../src/cdemu:651
 #, c-format
 msgid "DPM emulation flag of device %i: %i"
-msgstr "DPM emulerings-flagga för enhet %i: %i"
+msgstr "DPM-emuleringsflagga för enhet %i: %i"
 
-#: ../src/cdemu:449
-#, c-format
-msgid "Setting DPM emulation flag of all devices to %i."
-msgstr "Ställ in DPM emulerings-flagga för samtliga enheter till %i."
+#: ../src/cdemu:661
+msgid "displays/sets transfer rate emulation flag"
+msgstr "visar/ställer in flagga för emulering av överföringshastighet"
 
-#: ../src/cdemu:454 ../src/cdemu:462
-#, c-format
-msgid "Failed to set DPM emulation flag of device %i to %i: %s"
-msgstr "Misslyckades ställa in DPM emulerings-flagga av enhet %i till %i: %s"
-
-#: ../src/cdemu:458
-#, c-format
-msgid "Setting DPM emulation flag of device %i to %i."
-msgstr "Ställer in DPM emulerings-flagga för enhet %i till %i."
-
-#: ../src/cdemu:481
-msgid "Devices' transfer rate emulation flag:"
-msgstr "Enheternas överföringshastighets flagga:"
-
-#: ../src/cdemu:488 ../src/cdemu:497
-#, c-format
-msgid "Failed to get transfer rate emulation flag of device %i: %s"
-msgstr "Misslyckades att erhålla överföringshastighets flagga för enhet %i: %s"
-
-#: ../src/cdemu:500
-#, c-format
-msgid "Transfer rate emulation flag of device %i: %i"
-msgstr "Överföringshastighetens emulerings-flagga för enhet %i: %i"
-
-#: ../src/cdemu:512
+#: ../src/cdemu:683
 #, c-format
 msgid "Setting transfer rate emulation flag of all devices to %i."
 msgstr ""
-"Ställer in överföringshastighetens emulerings-flagga samtliga enheter till "
-"%i."
+"Ställer in flagga för emulering av överföringshastighet till %i för samtliga "
+"enheter."
 
-#: ../src/cdemu:517 ../src/cdemu:525
+#: ../src/cdemu:688 ../src/cdemu:700
 #, c-format
 msgid "Failed to set transfer rate emulation flag of device %i to %i: %s"
 msgstr ""
-"Misslyckades att ställa in överföringshastighetens emulerings-flagga för "
-"enhet %i till %i: %s"
+"Misslyckades med att ställa in flagga för emulering av överföringshastighet "
+"för enhet %i till %i: %s"
 
-#: ../src/cdemu:521
+#: ../src/cdemu:696
 #, c-format
 msgid "Setting transfer rate emulation flag of device %i to %i."
 msgstr ""
-"Ställer in överföringshastighetens emulerings-flagga för enhet %i till %i."
+"Ställer in flagga för emulering av överföringshastighet för enhet %i till %i."
 
-#: ../src/cdemu:544
-msgid "Devices' IDs:"
-msgstr "Enhets ID:n"
+#: ../src/cdemu:711
+msgid "Devices' transfer rate emulation flag:"
+msgstr "Enheternas flagga för emulering av överföringshastighet:"
 
-#: ../src/cdemu:545
-msgid "DEVICE ID"
-msgstr "ENHETS ID"
-
-#: ../src/cdemu:554 ../src/cdemu:566
+#: ../src/cdemu:718 ../src/cdemu:727
 #, c-format
-msgid "Failed to get device ID of device %i: %s"
-msgstr "Misslyckades att erhålla enhets-ID för enhet %i: %s"
+msgid "Failed to get transfer rate emulation flag of device %i: %s"
+msgstr ""
+"Misslyckades med att erhålla flagga för emulering av överföringshastighet "
+"för enhet %i: %s"
 
-#: ../src/cdemu:569
+#: ../src/cdemu:731
 #, c-format
-msgid "Device ID of device %i: %s"
-msgstr "Enhets ID för enhet %i: %s"
+msgid "Transfer rate emulation flag of device %i: %i"
+msgstr "Flagga för emulering av överföringshastighet för enhet %i: %i"
 
-#: ../src/cdemu:582
+#: ../src/cdemu:741
+msgid "displays/sets bad sector emulation flag"
+msgstr "visar/ställer in flagga för emulering av trasiga sektorer"
+
+#: ../src/cdemu:763
+#, c-format
+msgid "Setting bad sector emulation flag of all devices to %i."
+msgstr ""
+"Ställer in flagga för emulering av trasiga sektorer för samtliga enheter "
+"till %i."
+
+#: ../src/cdemu:768 ../src/cdemu:780
+#, c-format
+msgid "Failed to set bad sector emulation flag of device %i to %i: %s"
+msgstr ""
+"Misslyckades med att ställa in flagga för emulering av trasiga sektorer för "
+"enhet %i till %i: %s"
+
+#: ../src/cdemu:776
+#, c-format
+msgid "Setting bad sector emulation flag of device %i to %i."
+msgstr ""
+"Ställer in flagga för emulering av trasiga sektorer för enhet %i till %i."
+
+#: ../src/cdemu:791
+msgid "Devices' bad sector emulation flag:"
+msgstr "Enheternas flagga för emulering av trasiga sektorer:"
+
+#: ../src/cdemu:798 ../src/cdemu:807
+#, c-format
+msgid "Failed to get bad sector emulation flag of device %i: %s"
+msgstr ""
+"Misslyckades med att erhålla flagga för emulering av trasiga sektorer för "
+"enhet %i: %s"
+
+#: ../src/cdemu:811
+#, c-format
+msgid "Bad sector emulation flag of device %i: %i"
+msgstr "Flagga för emulering av trasiga sektorer för enhet %i: %i"
+
+#: ../src/cdemu:821
+msgid "displays/sets device ID"
+msgstr "visar/ställer in enhets-ID"
+
+#: ../src/cdemu:827
+msgid ""
+"new device ID: vendor ID, product ID, revision and vendor-specific string"
+msgstr ""
+"nytt enhets-ID: tillverkare-ID, produkt-ID, revidering och "
+"tillverkarspecifik sträng"
+
+#: ../src/cdemu:835
+msgid "New device ID must consist of exactly four strings!"
+msgstr "Nytt enhets-ID måste bestå av exakt fyra strängar!"
+
+#: ../src/cdemu:843
 #, c-format
 msgid "Setting device ID of all devices to %s."
 msgstr "Ställer in enhets-ID för samtliga enheter till %s."
 
-#: ../src/cdemu:587 ../src/cdemu:595
+#: ../src/cdemu:848 ../src/cdemu:860
 #, c-format
 msgid "Failed to set device ID of device %i to %s: %s"
-msgstr "Misslyckades att ställa in enhets-ID för enhet %i till %s: %s"
+msgstr "Misslyckades med att ställa in enhets-ID för enhet %i till %s: %s"
 
-#: ../src/cdemu:591
+#: ../src/cdemu:856
 #, c-format
 msgid "Setting device ID of device %i to %s."
-msgstr "Ställer in enhets ID för enhet %i till %s."
+msgstr "Ställer in enhets-ID för enhet %i till %s."
 
-#: ../src/cdemu:608
+#: ../src/cdemu:872
+msgid "Devices' IDs:"
+msgstr "Enheternas ID:n"
+
+#: ../src/cdemu:873
+msgid "DEVICE ID"
+msgstr "ENHETS-ID"
+
+#: ../src/cdemu:880 ../src/cdemu:890
+#, c-format
+msgid "Failed to get device ID of device %i: %s"
+msgstr "Misslyckades med att erhålla enhets-ID för enhet %i: %s"
+
+#: ../src/cdemu:894
+#, c-format
+msgid "Device ID of device %i: %s"
+msgstr "Enhets-ID för enhet %i: %s"
+
+#: ../src/cdemu:904
+msgid "enumerates supported parsers"
+msgstr "Räknar upp stödda avbildstolkar"
+
+#: ../src/cdemu:914
 #, c-format
 msgid "Failed to enumerate supported parsers: %s"
-msgstr "Misslyckades att erhålla en lista med stödda avbilds-tolkar: %s"
+msgstr "Misslyckades med att räkna upp stödda avbildstolkar: %s"
 
-#: ../src/cdemu:613
+#: ../src/cdemu:918
 msgid "Supported parsers:"
-msgstr "Stödda avbilds-tolkare:"
+msgstr "Stödda avbildstolkar:"
 
-#: ../src/cdemu:627
+#: ../src/cdemu:932
+msgid "enumerates supported writers"
+msgstr "räknar upp stödda skrivare"
+
+#: ../src/cdemu:942
 #, c-format
-msgid "Failed to enumerate supported fragments: %s"
-msgstr "Misslyckades att erhålla en lista med stödda fragment: %s"
+msgid "Failed to enumerate supported writers: %s"
+msgstr "Misslyckades med att räkna upp stödda skrivare: %s"
 
-#: ../src/cdemu:632
-msgid "Supported fragments:"
-msgstr "Fragments-stöd:"
+#: ../src/cdemu:945
+msgid "Supported writers:"
+msgstr "Stödda skrivare:"
 
-#: ../src/cdemu:650
+#: ../src/cdemu:957
+msgid "enumerates supported filter streams"
+msgstr "räknar upp stödda filterströmmar"
+
+#: ../src/cdemu:967
+#, c-format
+msgid "Failed to enumerate supported filter streams: %s"
+msgstr "Misslyckades med att räkna upp stödda filterströmmar: %s"
+
+#: ../src/cdemu:970
+msgid "Supported filter streams:"
+msgstr "Stödda filterströmmar:"
+
+#: ../src/cdemu:973
+#, c-format
+msgid "    write support: %d"
+msgstr "    skrivstöd: %d"
+
+#: ../src/cdemu:985
+msgid "enumerates valid daemon debug masks"
+msgstr "Räknar upp giltiga avlusningsmaskar för bakgrundsprocessen"
+
+#: ../src/cdemu:995
 #, c-format
 msgid "Failed to enumerate supported daemon debug masks: %s"
 msgstr ""
-"Misslyckades att erhålla en lista med stödda avlusnings-maskar för "
+"Misslyckades med att räkna upp stödda avlusningsmaskar för "
 "bakgrundsprocessen: %s"
 
-#: ../src/cdemu:653
+#: ../src/cdemu:997
 msgid "Supported daemon debug masks:"
-msgstr "Stödda avlusningas-maskar för bakgrundsprocessen:"
+msgstr "Stödda avlusningsmaskar för bakgrundsprocessen:"
 
-#: ../src/cdemu:668
+#: ../src/cdemu:1009
+msgid "enumerates valid library debug masks"
+msgstr "Räknar upp giltiga avlusningsmaskar för bibliotek"
+
+#: ../src/cdemu:1019
 #, c-format
 msgid "Failed to enumerate supported library debug masks: %s"
-msgstr ""
-"Misslyckades att erhålla en lista med stödda biblioteks-avlusnings-maskar: %s"
+msgstr "Misslyckades med att räkna upp stödda biblioteks-avlusningsmaskar: %s"
 
-#: ../src/cdemu:671
+#: ../src/cdemu:1021
 msgid "Supported library debug masks:"
-msgstr "Stödda biblioteks-avlusnings-maskar:"
+msgstr "Stödda biblioteks-avlusningsmaskar:"
 
-#: ../src/cdemu:684
+#: ../src/cdemu:1033
+msgid "prints the list of writer's parameters"
+msgstr "skriver ut listan över skrivarens parametrar"
+
+#: ../src/cdemu:1038
+msgid "writer ID"
+msgstr "skrivar-ID"
+
+#: ../src/cdemu:1048
+msgid "Writer's parameter sheet:"
+msgstr "Parameterlista för skrivare:"
+
+#: ../src/cdemu:1053
+#, c-format
+msgid "  Name: %s"
+msgstr "  Namn: %s"
+
+#: ../src/cdemu:1054
+#, c-format
+msgid "  Description: %s"
+msgstr "  Beskrivning: %s"
+
+#: ../src/cdemu:1055
+#, c-format
+msgid "  Type: %s"
+msgstr "  Typ: %s"
+
+#: ../src/cdemu:1056
+#, c-format
+msgid "  Default value: %s"
+msgstr "  Standardvärde: %s"
+
+#: ../src/cdemu:1059
+#, c-format
+msgid "  Possible value: %s"
+msgstr "  Möjligt värde: %s"
+
+#: ../src/cdemu:1063
+msgid "enum"
+msgstr "enum"
+
+#: ../src/cdemu:1065
+msgid "string"
+msgstr "sträng"
+
+#: ../src/cdemu:1067
+msgid "boolean"
+msgstr "boolesk"
+
+#: ../src/cdemu:1069
+msgid "integer"
+msgstr "heltal"
+
+#: ../src/cdemu:1071
+msgid "unknown"
+msgstr "okänd"
+
+#: ../src/cdemu:1090
+#, c-format
+msgid "Unsupported writer: %s"
+msgstr "Ej stödd skrivare: %s"
+
+#: ../src/cdemu:1096
+#, c-format
+msgid "Failed to parse parameter sheet: %s"
+msgstr "Misslyckades med att tolka parameterlista: %s"
+
+#: ../src/cdemu:1108
+msgid "displays version information"
+msgstr "visar versionsinformation"
+
+#: ../src/cdemu:1118
 #, c-format
 msgid "Failed to get library version: %s"
-msgstr "Misslyckades att erhålla biblioteks-version: %s"
+msgstr "Misslyckades med att erhålla biblioteksversion: %s"
 
-#: ../src/cdemu:689
+#: ../src/cdemu:1123
 #, c-format
 msgid "Failed to get daemon version: %s"
-msgstr "Misslyckades att erhålla bagrundsprocess-version: %s"
+msgstr "Misslyckades med att erhålla bakgrundsprocessversion: %s"
 
-#: ../src/cdemu:692
+#: ../src/cdemu:1125
 #, c-format
 msgid "Library version: %s"
 msgstr "Biblioteksversion: %s"
 
-#: ../src/cdemu:693
+#: ../src/cdemu:1126
 #, c-format
 msgid "Daemon version: %s"
-msgstr "Bakgrundsprocess-version: %s"
+msgstr "Bakgrundsprocessversion: %s"
 
-#: ../src/cdemu:704
+#: ../src/cdemu:1136
+msgid "creates another virtual device"
+msgstr "skapar en till virtuell enhet"
+
+#: ../src/cdemu:1145
+#, c-format
+msgid "Failed to add device: %s"
+msgstr "Misslyckades med att lägga till enhet: %s"
+
+#: ../src/cdemu:1147
+msgid "Device added successfully."
+msgstr "Enheten lades till."
+
+#: ../src/cdemu:1157
+msgid "removes the last virtual device"
+msgstr "tar bort den sista virtuella enheten"
+
+#: ../src/cdemu:1166
+#, c-format
+msgid "Failed to remove device: %s"
+msgstr "Misslyckades med att ta bort enhet: %s"
+
+#: ../src/cdemu:1168
+msgid "Device removed successfully."
+msgstr "Enheten togs bort."
+
+#: ../src/cdemu:1186
+msgid "Command-line CDEmu client."
+msgstr "CDEmu-klient för kommandoraden."
+
+#: ../src/cdemu:1187
+msgid "sets D-BUS bus type to use"
+msgstr "ställer in busstyp att använda för D-BUS"
+
+#: ../src/cdemu:1190
+msgid "valid commands"
+msgstr "giltiga kommandon"
+
+#: ../src/cdemu:1190
+msgid "command help"
+msgstr "kommandohjälp"
+
+#: ../src/cdemu:1227
 #, c-format
 msgid "Invalid bus parameter '%s', using default!"
-msgstr "Felaktig buss parameter '%s', använder standard!"
+msgstr "Felaktig bussparameter \"%s\", använder standard!"
 
-#: ../src/cdemu:712
+#: ../src/cdemu:1233
 #, c-format
 msgid "Failed to connect to CDEmu daemon: %s"
-msgstr "Misslyckades att ansluta till CDEmu bakgrundsprocessen: %s"
+msgstr "Misslyckades med att ansluta till CDEmu-bakgrundsprocessen: %s"
 
-#: ../src/cdemu:719
+#: ../src/cdemu:1239
 #, c-format
 msgid ""
 "Failed to acquire daemon interface version (this most likely means your "
 "daemon is out-of-date): %s"
 msgstr ""
-"Misslyckades att erhålla bakgrundsprocessens gränssnitts-version (detta "
+"Misslyckades med att erhålla bakgrundsprocessens gränssnittsversion (detta "
 "betyder med största sannolikhet att din bakgrundsprocess är av för gammal "
 "version): %s"
 
-#: ../src/cdemu:724
+#: ../src/cdemu:1243
 #, c-format
-msgid "CDEmu daemon interface version %i detected, but version %i is required!"
-msgstr ""
-"CDEmu bakgrundsprocess av version %i upptäcktes, med det krävs minst version "
-"%i"
-
-#: ../src/cdemu:734
-#, c-format
-msgid "Usage: %s %s %s"
-msgstr "Användning: %s %s %s"
-
-#: ../src/cdemu:739
-#, c-format
-msgid "Usage: %s [options] <command> <command parameters>"
-msgstr "Användning: %s [Val] <kommando> <kommando parametrar>"
-
-#: ../src/cdemu:741
-msgid "Commands:"
-msgstr "Kommandon:"
-
-#: ../src/cdemu:745
-msgid "Options:"
-msgstr "Val:"
-
-#: ../src/cdemu:746
-msgid "displays help message"
-msgstr "visa hjälpmeddelande"
-
-#: ../src/cdemu:747
-msgid "displays program version"
-msgstr "visa program-version"
-
-#: ../src/cdemu:748
-msgid "sets D-BUS bus type to use; valid values are 'session' and 'system'"
-msgstr ""
-"ställ in vilken typ av D-BUS buss som ska användas; giltiga värden är "
-"'session' och 'system'"
-
-#: ../src/cdemu:750
-msgid "Optional parser parameters (valid only for 'load' command):"
-msgstr ""
-"Valfria avbilds-tolkningsparametrar (endast giltig för 'load' kommandot):"
-
-#: ../src/cdemu:751
-msgid "password for encrypted images"
-msgstr "lösenord för krypterade avbildsfiler"
-
-#: ../src/cdemu:752
-msgid "encoding for text-based images"
-msgstr "teckenkodning för text-baserade avbildsfiler"
-
-#: ../src/cdemu:757
-#, c-format
-msgid "Invalid number of parameters for command '%s'!"
-msgstr "Felaktigt antal parametrar för kommandot '%s'!"
-
-#: ../src/cdemu:766
-#, c-format
-msgid "ERROR: %s"
-msgstr "FEL: %s"
-
-#: ../src/cdemu:770
-#, c-format
-msgid "WARNING: %s"
-msgstr "VARNING: %s"
-
-#: ../src/cdemu:778
-msgid "<device> <image file> [...]"
-msgstr "<enhet> <avbildsfil> [...]"
-
-#: ../src/cdemu:779
-msgid "loads the device"
-msgstr "laddar enheten"
-
-#: ../src/cdemu:785
-msgid "<device>"
-msgstr "<enhet>"
-
-#: ../src/cdemu:786
-msgid "unloads the device"
-msgstr "frigör enheten"
-
-#: ../src/cdemu:793
-msgid "displays the devices' status"
-msgstr "visar enheternas status"
-
-#: ../src/cdemu:800
-msgid "displays the device mapping information"
-msgstr "visa information om enhets-tilldelning"
-
-#: ../src/cdemu:806 ../src/cdemu:813 ../src/cdemu:820 ../src/cdemu:827
-msgid "<device> [new value]"
-msgstr "<enhet> [nytt värde]"
-
-#: ../src/cdemu:807
-msgid "displays/sets daemon debug mask"
-msgstr "visa/ställ in bakgrundsprocessens avlusnings-mask"
-
-#: ../src/cdemu:814
-msgid "displays/sets library debug mask"
-msgstr "visa/ställ in bibliotekets avlusnings-mask"
-
-#: ../src/cdemu:821
-msgid "displays/sets DPM emulation flag"
-msgstr "visar/ställer in DPM emulerings-flagga"
-
-#: ../src/cdemu:828
-msgid "displays/sets transfer rate emulation flag"
-msgstr "visar/ställer in överförfingshastighets emulerings-flagga"
-
-#: ../src/cdemu:834
 msgid ""
-"<device> [new vendor_id] [new product_id] [new revision] [new "
-"vendor_specific]"
+"CDEmu daemon interface version %i.%i detected, but version %i.%i is required!"
 msgstr ""
-"<enhet> [ny tillverkare_id] [ny produkt_id] [ny omarbetningsversion] [ny "
-"tillverkare_specifik]"
+"CDEmu-bakgrundsprocess med gränssnittsversion %i.%i upptäcktes, men version "
+"%i.%i krävs!"
 
-#: ../src/cdemu:835
-msgid "displays/sets device ID"
-msgstr "visar/ställer in enhets ID"
+#: ../src/cdemu:1274
+#, c-format
+msgid "Failed to load configuration from file '%s': %s"
+msgstr "Misslyckades med att läsa in konfiguration från filen \"%s\": %s"
 
-#: ../src/cdemu:842
-msgid "enumerates supported parsers"
-msgstr "Visar en lista över stödda avbilds-tolkare"
+#: ../data/cdemu-client.desktop.in.h:1
+msgid "CDEmu client"
+msgstr "CDEmu-klient"
 
-#: ../src/cdemu:849
-msgid "enumerates supported fragments"
-msgstr "visar en lista över stödda fragment"
+#: ../data/cdemu-client.desktop.in.h:2
+msgid "Client for handling optical media (CD/DVD) images"
+msgstr "Klient för att hantera avbilder av optiska media (CD/DVD)"
 
-#: ../src/cdemu:856
-msgid "enumerates valid daemon debug masks"
-msgstr "visar en lista över giltiga avlusnings-maskar för bakgrundsprocessen"
+#~ msgid "Unknown option"
+#~ msgstr "Okänt val"
 
-#: ../src/cdemu:863
-msgid "enumerates valid library debug masks"
-msgstr "visar en lista över giltiga avlusnings-maskar för bibliotek"
+#~ msgid "Failed to connect to daemon (bus: '%s')!"
+#~ msgstr "Misslyckades med att ansluta till bakgrundsprocessen (buss: '%s')!"
 
-#: ../src/cdemu:870
-msgid "displays version information"
-msgstr "visa versionsinformation"
+#~ msgid "Unknown command: %s"
+#~ msgstr "Okänt kommando: %s"
 
-#~ msgid " - Name: %s"
-#~ msgstr " - Namn: %s"
+#~ msgid "Usage: %s %s %s"
+#~ msgstr "Användning: %s %s %s"
 
-#~ msgid " - Version: %s"
-#~ msgstr " - Version: %s"
+#~ msgid "Usage: %s [options] <command> <command parameters>"
+#~ msgstr "Användning: %s [Val] <kommando> <kommando parametrar>"
+
+#~ msgid "Options:"
+#~ msgstr "Val:"
+
+#~ msgid "displays help message"
+#~ msgstr "visa hjälpmeddelande"
+
+#~ msgid "displays program version"
+#~ msgstr "visa program-version"
+
+#~ msgid "sets D-BUS bus type to use; valid values are 'session' and 'system'"
+#~ msgstr ""
+#~ "ställ in vilken typ av D-BUS buss som ska användas; giltiga värden är "
+#~ "'session' och 'system'"
+
+#~ msgid "Optional parser parameters (valid only for 'load' command):"
+#~ msgstr ""
+#~ "Valfria avbilds-tolkningsparametrar (endast giltig för 'load' kommandot):"
+
+#~ msgid "<device> <image file> [...]"
+#~ msgstr "<enhet> <avbildsfil> [...]"
 
 #~ msgid " - Author: %s"
 #~ msgstr " - Upphovsman: %s"
-
-#~ msgid " - Multiple files support: %i"
-#~ msgstr " - Stöd för flera samtida filer: %i"
 
 #~ msgid " - Image files description: %s"
 #~ msgstr " - Beskrivning av avbildfiler: %s"
