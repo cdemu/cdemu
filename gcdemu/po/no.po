@@ -1,362 +1,641 @@
 # Norwegian translation of gCDEmu.
-# Copyright (C) 2006-2009 Henrik Stokseth
+# Copyright (C) 2006-2014 Henrik Stokseth
 # This file is distributed under the same license as the gCDEmu package.
-# Henrik Stokseth <henrik AT hshq DOT net>, 2006-2009.
+# Henrik Stokseth <hstokset AT users DOT sourceforge DOT net>, 2006-2014.
 #
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: gCDEmu 1.3.0\n"
+"Project-Id-Version: gCDEmu 3.0.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2011-04-23 10:44+0200\n"
-"Last-Translator: Henrik Stokseth <henrik AT hshq DOT net>\n"
+"POT-Creation-Date: 2014-05-08 17:31+0200\n"
+"Last-Translator: Henrik Stokseth <hstokset AT users DOT sourceforge DOT net>\n"
 "Language-Team: Norwegian\n"
 "Language: \n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "PO-Creation-Date: 2008-06-13 22:00+0100\n"
-"POT-Revision-Date: 2009-07-25 22:48+0200\n"
+"POT-Revision-Date: 2014-05-08 17:31+0200\n"
 
 #: ../data/gcdemu.desktop.in.h:1
-msgid "CDEmu GUI"
-msgstr ""
+msgid "gCDEmu"
+msgstr "gCDEmu"
 
 #: ../data/gcdemu.desktop.in.h:2
-msgid "gCDEmu"
+msgid "gCDEmu GUI"
+msgstr "gCDEmu GUI"
+
+#: ../data/net.sf.cdemu.gcdemu.gschema.xml.in.h:1
+#, fuzzy
+msgid "Show notifications"
+msgstr "Vise beskjeder"
+
+#: ../data/net.sf.cdemu.gcdemu.gschema.xml.in.h:2
+msgid ""
+"Whether to show notifications on events such as daemon start/stop and device "
+"state changes."
 msgstr ""
+"Hvorvidt beskjeder fra hendinger skal vises. F.eks. at demonen starter/stopper og"
+"enhetens tilstand forandres."
 
-#: ../data/gcdemu.schemas.in.h:1
-msgid "Icon name"
+#: ../data/net.sf.cdemu.gcdemu.gschema.xml.in.h:3
+#, fuzzy
+msgid "Use system bus"
+msgstr "Benytt system buss"
+
+#: ../data/net.sf.cdemu.gcdemu.gschema.xml.in.h:4
+#, fuzzy
+msgid "Whether system bus should be used instead of session one."
+msgstr "Hvorvidt system buss skal benyttes is stedet for sesjons buss."
+
+#: ../data/net.sf.cdemu.gcdemu.gschema.xml.in.h:5
+msgid "Use D-Bus service activation facility"
+msgstr "Bruke D-Bus tjeneste aktiverings-ordning"
+
+#: ../data/net.sf.cdemu.gcdemu.gschema.xml.in.h:6
+msgid ""
+"Whether to use D-Bus service activation facility or not. If enabled, D-Bus "
+"will attempt to autostart the daemon when gCDEmu tries to establish "
+"connection with it."
 msgstr ""
+"Hvorvidt D-Bus tjeneste aktiverings-ordning skal benyttes eller ikke. Hvis aktivert, "
+"så vil D-Bus forsøke å starte demonen automatisk når gCDEmu forsøker å etablere "
+"forbindelse til den."
 
-#: ../data/gcdemu.schemas.in.h:2
-msgid "Show notifications?"
-msgstr "Vis beskjeder?"
+#: ../data/net.sf.cdemu.gcdemu.gschema.xml.in.h:7
+msgid "Icon name (connected)"
+msgstr "Icon navn (tilkoblet)"
 
-#: ../data/gcdemu.schemas.in.h:3
-msgid "Use system bus (instead of session bus)?"
-msgstr "Benytt system buss (i stedet for sesjons buss)?"
-
-#: ../src/gcdemu:129
-#, c-format
-msgid "CDEmu daemon interface version %i detected, but version %i is required!"
+#: ../data/net.sf.cdemu.gcdemu.gschema.xml.in.h:8
+msgid ""
+"Name of icon to display in the tray when connected to daemon. It should be "
+"either a valid stock name or filename of a pixmap that can be found in a "
+"standard pixmaps directory (e.g. /usr/share/pixmaps)."
 msgstr ""
-"CDEmu demon grensesnitt versjon %i er detektert, men versjon %i er påkrevd!"
+"Navn på ikon for å vise i statusfelt når tilkoblet demonen. Det bør være "
+"enten et gyldig standardikon navn eller filnavn til en pixmap som finnes i en "
+"standard pixmaps folder (f.eks./usr/share/pixmaps)."
 
-#: ../src/gcdemu:267
+#: ../data/net.sf.cdemu.gcdemu.gschema.xml.in.h:9
+msgid "Icon name (disconnected)"
+msgstr "Ikon navn (frakoblet)"
+
+#: ../data/net.sf.cdemu.gcdemu.gschema.xml.in.h:10
+msgid ""
+"Name of icon to display in the tray when disconnected from daemon. It should "
+"be either a valid stock name or filename of a pixmap that can be found in a "
+"standard pixmaps directory (e.g. /usr/share/pixmaps)."
+msgstr ""
+"Navn på ikon for å vise i statusfelt når frakoblet demonen. Det bør være "
+"enten et gyldig standardikon navn eller filnavn til en pixmap som finnes i en "
+"standard pixmaps folder (f.eks./usr/share/pixmaps)."
+
+#: ../data/net.sf.cdemu.gcdemu.gschema.xml.in.h:11
+msgid "Icon display policy."
+msgstr "Ikon visnings bestemmelse."
+
+#: ../data/net.sf.cdemu.gcdemu.gschema.xml.in.h:12
+msgid ""
+"Icon display policy. Valid options are \"always\", \"never\" and "
+"\"when_connected\". If set to \"always\", the icon is always shown. If set "
+"to \"never\", the icon is never shown. If set to \"when_connected\", the "
+"icon is shown only when gCDEmu is connected to a daemon."
+msgstr ""
+"Ikon visnings bestemmelse. Gyldige valg er \"alltid\", \"aldri\" og "
+"\"når tilkoblet\". Hvis satt til \"alltid\", vises alltid ikonet. Hvis satt "
+"til \"aldri\" vises aldri ikonet. Hvis satt til \"når tilkoblet\" vises "
+"ikonet kun når gCDEmu er tilkoblet demonen."
+
+#: ../src/gcdemu:279
+#, fuzzy
+msgid "Daemon autostart error"
+msgstr "Feil ved automatisk start av demon"
+
+#: ../src/gcdemu:279
 #, c-format
 msgid ""
-"Failed to unload device %i:\n"
+"Daemon autostart failed. Error:\n"
 "%s"
 msgstr ""
-"Mislyktes i å løse ut enhet %i:\n"
+"Feil ved automatisk start av demon. Feil:\n"
 "%s"
 
-#: ../src/gcdemu:278
+#: ../src/gcdemu:288
+msgid "Incompatible daemon interface"
+msgstr "Inkompatibelt demon grensesnitt"
+
+#: ../src/gcdemu:288
+#, fuzzy, c-format
+msgid ""
+"CDEmu daemon interface version %i.%i detected, but version %i.%i is required!"
+msgstr ""
+"CDEmu demon grensesnitt versjon %i.%i detektert, men versjon %i.%i er påkrevd!"
+
+#: ../src/gcdemu:345
+#, fuzzy
+msgid "Failed to add device"
+msgstr "Mislyktes i å legge til enhet"
+
+#: ../src/gcdemu:345
+#, fuzzy, c-format
+msgid ""
+"Failed to add new device. Error:\n"
+"%s"
+msgstr ""
+"Mislyktes i å legge til ny enhet. Feil:\n"
+"%s"
+
+#: ../src/gcdemu:351
+#, fuzzy
+msgid "Failed to remove device"
+msgstr "Mislyktes i å fjerne enhet"
+"%s"
+
+#: ../src/gcdemu:351
+#, fuzzy, c-format
+msgid ""
+"Failed to remove device. Error:\n"
+"%s"
+msgstr ""
+"Mislyktes i å fjerne enhet. Feil:\n"
+"%s"
+
+#: ../src/gcdemu:479
+#, fuzzy, c-format
+msgid ""
+"Failed to unload device #%02d:\n"
+"%s"
+msgstr ""
+"Mislyktes i å løse ut enhet #%02d:\n"
+"%s"
+
+#: ../src/gcdemu:490
 #, fuzzy, c-format
 msgid ""
 "Failed to load image %s to device #%02d:\n"
 "%s"
 msgstr ""
-"Mislyktes i å laste bilde %s til enhet %i:\n"
+"Mislyktes i å laste bilde %s til enhet #%02d:\n"
 "%s"
 
-#: ../src/gcdemu:288
+#: ../src/gcdemu:496
+#, fuzzy, c-format
+msgid ""
+"Failed to create blank disc on device #%02d:\n"
+"%s"
+msgstr ""
+"Mislyktes i å opprette blank skive på enhet #%02d:\n"
+"%s"
+
+#: ../src/gcdemu:506
 #, fuzzy, c-format
 msgid ""
 "Failed to set device ID for device #%02d to %s:\n"
 "%s"
 msgstr ""
-"Mislyktes i å sette enhets ID for enhet %i til %s:\n"
+"Mislyktes i å sette ID for enhet #%02d til %s:\n"
 "%s"
 
-#: ../src/gcdemu:297
+#: ../src/gcdemu:516
 #, fuzzy, c-format
 msgid ""
 "Failed to set DPM emulation for device #%02d to %i:\n"
 "%s"
 msgstr ""
-"Mislyktes i å sette DPM emulering for enhet %i til %i:\n"
+"Mislyktes i å sette DPM emulering for enhet #%02d til %i:\n"
 "%s"
 
-#: ../src/gcdemu:307
+#: ../src/gcdemu:525
 #, fuzzy, c-format
 msgid ""
 "Failed to set TR emulation for device #%02d to %i:\n"
 "%s"
 msgstr ""
-"Mislyktes i å sette DPM emulering for enhet %i til %i:\n"
+"Mislyktes i å sette TR emulering for enhet #%02d til %i:\n"
 "%s"
 
-#: ../src/gcdemu:316
-#, c-format
-msgid ""
-"Failed to set daemon debug mask for device %i to 0x%X:\n"
-"%s"
-msgstr ""
-"Mislyktes i å sette demonens avlusnings-maske for enhet %i til 0x%X:\n"
-"%s"
-
-#: ../src/gcdemu:325
-#, c-format
-msgid ""
-"Failed to set library debug mask for device %i to 0x%X:\n"
-"%s"
-msgstr ""
-"Mislyktes i å sette bibliotek avlusnings-maske for enhet %i til 0x%X:\n"
-"%s"
-
-#: ../src/gcdemu:485
-#, fuzzy
-msgid "A GUI for controlling CDEmu devices."
-msgstr ""
-"gCDEmu er en applet for å kontrollere CDEmu\n"
-"enheter via CDEmu demonen."
-
-#: ../src/gcdemu:487
-msgid "The CDEmu project website"
-msgstr "CDEmu prosjektet sin nettside"
-
-#: ../src/gcdemu:490
-msgid "translator-credits"
-msgstr "Henrik Stokseth <henrik AT hshq DOT net>"
-
-#: ../src/gcdemu:497
-#, fuzzy
-msgid "Use system bus"
-msgstr "Benytt _system buss"
-
-#: ../src/gcdemu:504
-#, fuzzy
-msgid "Show notifications"
-msgstr "Vis beskjeder?"
-
-#: ../src/gcdemu:533
-#, fuzzy
-msgid "Devices"
-msgstr "Enhet"
-
-#: ../src/gcdemu:616
-msgid "Daemon started"
-msgstr "Demon startet"
-
-#: ../src/gcdemu:616
-msgid "CDEmu daemon has been started."
-msgstr "CDEmu demon har blitt startet."
-
-#: ../src/gcdemu:619
-msgid "Daemon stopped"
-msgstr "Demon stoppet"
-
-#: ../src/gcdemu:619
-msgid "CDEmu daemon has been stopped."
-msgstr "CDEmu demon har blitt stoppet."
-
-#: ../src/gcdemu:633
-msgid "Error"
-msgstr "Feil"
-
-#: ../src/gcdemu:677
+#: ../src/gcdemu:534
 #, fuzzy, c-format
-msgid "Device #%02d"
-msgstr "Enhet %i"
+msgid ""
+"Failed to set bad sector emulation for device #%02d to %i:\n"
+"%s"
+msgstr ""
+"Mislyktes i å sette dårlig sektor emulering for enhet #%02d til %i:\n"
+"%s"
 
-#: ../src/gcdemu:692 ../src/gcdemu:863
+#: ../src/gcdemu:544
+#, fuzzy, c-format
+msgid ""
+"Failed to set daemon debug mask for device #%02d to 0x%X:\n"
+"%s"
+msgstr ""
+"Mislyktes i å sette demonens avlusnings-maske for enhet #%02d til 0x%X:\n"
+"%s"
+
+#: ../src/gcdemu:553
+#, fuzzy, c-format
+msgid ""
+"Failed to set library debug mask for device #%02d to 0x%X:\n"
+"%s"
+msgstr ""
+"Mislyktes i å sette bibliotek avlusnings-maske for enhet #%02d til 0x%X:\n"
+"%s"
+
+#: ../src/gcdemu:605 ../src/gcdemu:1462
 msgid "Status"
 msgstr "Status"
 
-#: ../src/gcdemu:698
+#: ../src/gcdemu:618
+msgid "Loaded: "
+msgstr "Lastet: "
+
+#: ../src/gcdemu:628
+msgid "File name(s): "
+msgstr "Fil navn: "
+
+#: ../src/gcdemu:644 ../src/gcdemu:718
+msgid "Load"
+msgstr "Last inn"
+
+#: ../src/gcdemu:650
+msgid "Create blank"
+msgstr "Opprett blank"
+
+#: ../src/gcdemu:657
+msgid "Device mapping"
+msgstr "Enhets tilordning"
+
+#: ../src/gcdemu:669
+msgid "SCSI CD-ROM device: "
+msgstr "SCSI CD-ROM enhet: "
+
+#: ../src/gcdemu:679
+msgid "SCSI generic device: "
+msgstr "SCSI generisk enhet: "
+
+#: ../src/gcdemu:694
+#, fuzzy
+msgid "Remove device"
+msgstr "Fjerne enhet"
+
+#: ../src/gcdemu:710
+msgid "Yes"
+msgstr "Ja"
+
+#: ../src/gcdemu:712
+msgid "Unload"
+msgstr "Løs ut"
+
+#: ../src/gcdemu:716
+msgid "No"
+msgstr "Nei"
+
+#: ../src/gcdemu:751
+msgid "Device ID"
+msgstr "Enhets ID"
+
+#: ../src/gcdemu:764
+msgid "Vendor ID: "
+msgstr "Fabrikant ID: "
+
+#: ../src/gcdemu:775
+msgid "Product ID: "
+msgstr "Produkt ID: "
+
+#: ../src/gcdemu:786
+msgid "Revision: "
+msgstr "Revisjon: "
+
+#: ../src/gcdemu:797
+msgid "Vendor-specific: "
+msgstr "Fabrikant-spesifikt: "
+
+#: ../src/gcdemu:812
+msgid "Set device ID"
+msgstr "Sett enhets ID"
+
+#: ../src/gcdemu:818
+msgid "DPM emulation"
+msgstr "DPM emulering"
+
+#: ../src/gcdemu:824
+msgid "Transfer rate emulation"
+msgstr "Overførings-hastighet emulering"
+
+#: ../src/gcdemu:830
+#, fuzzy
+msgid "Bad sector emulation"
+msgstr "Dårlig sektor emulering"
+
+#: ../src/gcdemu:914
+msgid "Set debug mask"
+msgstr "Sett avlusnings-maske"
+
+#: ../src/gcdemu:946
+msgid "Open file"
+msgstr "Åpne fil"
+
+#: ../src/gcdemu:946 ../src/gcdemu:1099 ../src/gcdemu:1145 ../src/gcdemu:1232
+msgid "Cancel"
+msgstr "Avbryt"
+
+#: ../src/gcdemu:946
+#, fuzzy
+msgid "Open"
+msgstr "Åpne"
+
+#: ../src/gcdemu:953
+msgid "All files"
+msgstr "Alle filer"
+
+#: ../src/gcdemu:958
+msgid "All image files"
+msgstr "Alle bilde filer"
+
+#: ../src/gcdemu:1019
+#, fuzzy
+msgid "Extra Options"
+msgstr "Ekstra valg"
+
+#: ../src/gcdemu:1028
+msgid "Encoding: "
+msgstr "Tegnsett: "
+
+#: ../src/gcdemu:1047 ../src/gcdemu:1115
+msgid "Password: "
+msgstr "Passord: "
+
+#: ../src/gcdemu:1058
+msgid "Raw image of CSS-encrypted DVD"
+msgstr "Rått bilde av CSS-kryptert DVD"
+
+#: ../src/gcdemu:1099
+msgid "Enter password"
+msgstr "Oppgi passord"
+
+#: ../src/gcdemu:1099 ../src/gcdemu:1145
+msgid "OK"
+msgstr "OK"
+
+#: ../src/gcdemu:1111
+msgid "The image you are trying to load is encrypted."
+msgstr "Bilde-filen du prøver å laste er kryptert."
+
+#: ../src/gcdemu:1145
+msgid "Create blank disc image"
+msgstr "Opprett blank skive"
+
+#: ../src/gcdemu:1150
+msgid "Image"
+msgstr "Bilde"
+
+#: ../src/gcdemu:1162
+#, fuzzy
+msgid "Filename: "
+msgstr "Fil navn: "
+
+#: ../src/gcdemu:1170 ../src/gcdemu:1232
+msgid "Choose"
+msgstr "Velg"
+
+#: ../src/gcdemu:1175
+msgid "Medium type: "
+msgstr "Medium type: "
+
+#: ../src/gcdemu:1198
+msgid "Writer: "
+msgstr "Skriver: "
+
+#: ../src/gcdemu:1218
+msgid "Writer options"
+msgstr "Valg for skriver"
+
+#: ../src/gcdemu:1232
+#, fuzzy
+msgid "Choose file"
+msgstr "Velg fil"
+
+#: ../src/gcdemu:1388
+msgid "Image filename/basename not set!"
+msgstr "Bilde filnavn ikke satt!"
+
+#: ../src/gcdemu:1391
+msgid "No image writer is chosen!"
+msgstr "Ingen bilde skriver er valgt!"
+
+#: ../src/gcdemu:1396
+msgid "Invalid option"
+msgstr "Ugyldig valg"
+
+#: ../src/gcdemu:1439
+msgid "Close"
+msgstr "Steng"
+
+#: ../src/gcdemu:1447
+#, fuzzy, c-format
+msgid "Device #%02d"
+msgstr "Enhet #%02d"
+
+#: ../src/gcdemu:1470
 msgid "Options"
 msgstr "Valg"
 
-#: ../src/gcdemu:704
+#: ../src/gcdemu:1477
 msgid "Daemon debug mask"
 msgstr "Demon avlusnings-maske"
 
-#: ../src/gcdemu:705
+#: ../src/gcdemu:1478
 msgid "Daemon"
 msgstr "Demon"
 
-#: ../src/gcdemu:709
+#: ../src/gcdemu:1482
 msgid "Library debug mask"
 msgstr "Bibliotek avlusnings-maske"
 
-#: ../src/gcdemu:710
+#: ../src/gcdemu:1483
 msgid "Library"
 msgstr "Bibliotek"
 
-#: ../src/gcdemu:756 ../src/gcdemu:758
+#: ../src/gcdemu:1531 ../src/gcdemu:1533
 msgid "Device"
 msgstr "Enhet"
 
-#: ../src/gcdemu:758
+#: ../src/gcdemu:1533
 msgid "Empty"
 msgstr "Tom"
 
-#: ../src/gcdemu:767 ../src/gcdemu:769
+#: ../src/gcdemu:1541 ../src/gcdemu:1543
 #, fuzzy
 msgid "Device status change"
-msgstr "Enhets-bytte"
+msgstr "Enhetens status forandret"
 
-#: ../src/gcdemu:767
+#: ../src/gcdemu:1541
 #, fuzzy, c-format
 msgid "Device #%02d has been loaded."
-msgstr "Enhet %i har blitt lastet."
+msgstr "Enhet #%02d har blitt lastet."
 
-#: ../src/gcdemu:769
+#: ../src/gcdemu:1543
 #, fuzzy, c-format
 msgid "Device #%02d has been emptied."
-msgstr "Enhet %i har blitt løst ut."
+msgstr "Enhet #%02d har blitt løst ut."
 
-#: ../src/gcdemu:774 ../src/gcdemu:779 ../src/gcdemu:784 ../src/gcdemu:789
-#: ../src/gcdemu:794
+#: ../src/gcdemu:1548 ../src/gcdemu:1553 ../src/gcdemu:1558 ../src/gcdemu:1563
+#: ../src/gcdemu:1568 ../src/gcdemu:1573
 #, fuzzy
 msgid "Device option change"
-msgstr "Enhets-bytte"
+msgstr "Enhetens valg forandret"
 
-#: ../src/gcdemu:774
+#: ../src/gcdemu:1548
 #, c-format
 msgid ""
-"Device #%02d has been changed its device ID:\n"
+"Device #%02d has had its device ID changed:\n"
 "  Vendor ID: '%s'\n"
 "  Product ID: '%s'\n"
 "  Revision: '%s'\n"
 "  Vendor-specific: '%s'"
 msgstr ""
+"Enhet #%02d har fått sin ID skiftet:\n"
+"  Fabrikat ID: '%s'\n"
+"  Produkt ID: '%s'\n"
+"  Revisjon: '%s'\n"
+"  Fabrikat-spesifikt: '%s'"
 
-#: ../src/gcdemu:779
+#: ../src/gcdemu:1553
 #, fuzzy, c-format
-msgid "Device #%02d has been changed its DPM emulation option. New value: %s"
-msgstr ""
-"Enhet %i har fått byttet sitt valg:\n"
-"%s."
+msgid "Device #%02d has had its DPM emulation option changed. New value: %s"
+msgstr "Enhet #%02d har fått forandret sitt DPM emulerings valg. Ny verdi: %s"
 
-#: ../src/gcdemu:784
+#: ../src/gcdemu:1558
 #, fuzzy, c-format
-msgid "Device #%02d has been changed its TR emulation option. New value: %s"
-msgstr ""
-"Enhet %i har fått byttet sitt valg:\n"
-"%s."
+msgid "Device #%02d has had its TR emulation option changed. New value: %s"
+msgstr "Enhet #%02d har fått forandret sitt TR emulerings valg. Ny verdi: %s"
 
-#: ../src/gcdemu:789
+#: ../src/gcdemu:1563
 #, fuzzy, c-format
-msgid "Device #%02d has been changed its daemon debug mask. New value: 0x%X"
+msgid ""
+"Device #%02d has had its bad sector emulation option changed. New value: %s"
 msgstr ""
-"Enhet %i har fått byttet sitt valg:\n"
-"%s."
+"Enhet #%02d har fått forandret sitt dårlig sektor emulerings valg. Ny verdi: %s"
 
-#: ../src/gcdemu:794
-#, c-format
-msgid "Device #%02d has been changed its library debug mask. New value: 0x%X"
-msgstr ""
+#: ../src/gcdemu:1568
+#, fuzzy, c-format
+msgid "Device #%02d has had its daemon debug mask changed. New value: 0x%X"
+msgstr "Enhet #%02d har fått forandret sitt demon avlusnings-maske valg. Ny verdi: 0x%X"
 
-#: ../src/gcdemu:842
+#: ../src/gcdemu:1573
+#, fuzzy, c-format
+msgid "Device #%02d has had its library debug mask changed. New value: 0x%X"
+msgstr "Enhet #%02d har fått foradret sitt bibliotek avlusnings-maske valg. Ny verdi: 0x%X"
+
+#: ../src/gcdemu:1619
 #, fuzzy
 msgid "Device error"
-msgstr "Enhet %i"
+msgstr "Feil ved enhet"
 
-#: ../src/gcdemu:875
-msgid "Loaded: "
-msgstr "Lastet: "
+#: ../src/gcdemu:1655
+msgid "Left click for Property Dialog, right click to unload."
+msgstr "Venstre-klikk for egenskaper, høyre-klikk for å løse ut."
 
-#: ../src/gcdemu:884
-msgid "File name(s): "
-msgstr "Fil navn: "
+#: ../src/gcdemu:1657
+msgid "Left click for Property Dialog, right click to load."
+msgstr "Venstre-klikk for egenskaper, høyre-klikk for å laste bilde."
 
-#: ../src/gcdemu:897 ../src/gcdemu:954
-msgid "Load"
-msgstr "Last inn"
+#: ../src/gcdemu:1664
+msgid "Click for Property Dialog"
+msgstr "Klikk for egenskaper"
 
-#: ../src/gcdemu:904
-msgid "Device mapping"
-msgstr "Enhets tilordning"
+#: ../src/gcdemu:1756
+#, fuzzy
+msgid "A GUI for controlling CDEmu devices."
+msgstr "Et grafisk grensesnitt for å styre CDEmu enheter."
 
-#: ../src/gcdemu:916
-msgid "SCSI CD-ROM device: "
-msgstr "SCSI CD-ROM enhet: "
+#: ../src/gcdemu:1758
+msgid "The CDEmu project website"
+msgstr "CDEmu prosjektet sin nettside"
 
-#: ../src/gcdemu:925
-msgid "SCSI generic device: "
-msgstr "SCSI generisk enhet: "
+#: ../src/gcdemu:1761
+msgid "translator-credits"
+msgstr "Henrik Stokseth <hstokset AT users DOT sourceforge DOT net>"
 
-#: ../src/gcdemu:948
-msgid "Yes"
-msgstr "Ja"
+#: ../src/gcdemu:1768
+#, fuzzy
+msgid "Devices"
+msgstr "Enheter"
 
-#: ../src/gcdemu:950
-msgid "Unload"
-msgstr "Løs ut"
+#: ../src/gcdemu:1772
+#, fuzzy
+msgid "New device..."
+msgstr "Ny enhet..."
 
-#: ../src/gcdemu:952
-msgid "No"
-msgstr "Nei"
+#: ../src/gcdemu:1789
+msgid "Show _notifications"
+msgstr "Vis _beskjeder"
 
-#: ../src/gcdemu:975
-msgid "Device ID"
-msgstr "Enhets ID"
+#: ../src/gcdemu:1799
+#, fuzzy
+msgid "About"
+msgstr "_Om"
 
-#: ../src/gcdemu:987
-msgid "Vendor ID: "
-msgstr "Fabrikant ID: "
+#: ../src/gcdemu:1807
+msgid "Quit"
+msgstr "Avslutt"
 
-#: ../src/gcdemu:997
-msgid "Product ID: "
-msgstr "Produkt ID: "
+#: ../src/gcdemu:1880
+msgid "Daemon started"
+msgstr "Demon startet"
 
-#: ../src/gcdemu:1007
-msgid "Revision: "
-msgstr "Revisjon: "
+#: ../src/gcdemu:1880
+msgid "CDEmu daemon has been started."
+msgstr "CDEmu demon har blitt startet."
 
-#: ../src/gcdemu:1017
-msgid "Vendor-specific: "
-msgstr "Fabrikant-spesifikt: "
+#: ../src/gcdemu:1883
+msgid "Daemon stopped"
+msgstr "Demon stoppet"
 
-#: ../src/gcdemu:1031
-msgid "Set device ID"
-msgstr "Sett enhets ID"
+#: ../src/gcdemu:1883
+msgid "CDEmu daemon has been stopped."
+msgstr "CDEmu demon har blitt stoppet."
 
-#: ../src/gcdemu:1037
-msgid "DPM emulation"
-msgstr "DPM emulering"
+#: ../src/gcdemu:1908
+#, fuzzy
+msgid "Device added"
+msgstr "Enhet lagt til"
 
-#: ../src/gcdemu:1044
-msgid "Transfer rate emulation"
-msgstr "Overførings-hastighet emulering"
+#: ../src/gcdemu:1908
+#, fuzzy, c-format
+msgid "Device #%02d has been created."
+msgstr "Enhet #%02d har blitt opprettet."
 
-#: ../src/gcdemu:1117
-msgid "Set debug mask"
-msgstr "Sett avlusnings-maske"
+#: ../src/gcdemu:1912
+#, fuzzy
+msgid "Device removed"
+msgstr "Enhet fjernet"
 
-#: ../src/gcdemu:1149
-msgid "Open file"
-msgstr "Åpne fil"
+#: ../src/gcdemu:1912
+#, fuzzy, c-format
+msgid "Device #%02d has been removed."
+msgstr "Enhet #%02d har blitt fjernet."
 
-#: ../src/gcdemu:1154
-msgid "All files"
-msgstr "Alle filer"
+#: ../src/gcdemu:2080
+#, fuzzy
+msgid "Failed to load AppIndicator library!"
+msgstr "Mislyktes i å laste AppIndikator bibliotek!"
+"%s"
 
-#: ../src/gcdemu:1159
-msgid "All image files"
-msgstr "Alle bilde filer"
+#: ../src/gcdemu:2081
+msgid "AppIndicator not available"
+msgstr "AppIndikator er ikke tilgjengelig"
 
-#: ../src/gcdemu:1178
-msgid "Enter password"
-msgstr "Oppgi passord"
+#: ../src/gcdemu:2115
+msgid "gCDEmu tray mode"
+msgstr "gCDEmu statusfelt modus"
 
-#: ../src/gcdemu:1183
-msgid "The image you are trying to load is encrypted."
-msgstr "Bilde-filen du prøver å laste er kryptert."
+#~ msgid "Show notifications?"
+#~ msgstr "Vis beskjeder?"
 
-#: ../src/gcdemu:1194
-msgid "Password: "
-msgstr "Passord: "
-
-#~ msgid "Show _notifications"
-#~ msgstr "Vis _beskjeder"
-
-#~ msgid "_About"
-#~ msgstr "_Om"
+#~ msgid "Error"
+#~ msgstr "Feil"
 
 #~ msgid "_Help"
 #~ msgstr "_Hjelp"
