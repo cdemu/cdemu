@@ -202,7 +202,7 @@ msgstr "Misslyckades med att erhålla enhetstilldelning för enhet %i: %s"
 
 #: ../src/cdemu:421
 msgid "displays/sets daemon debug mask"
-msgstr "visa/ställ in bakgrundsprocessens avlusningsmask"
+msgstr "visa/ställ in bakgrundsprocessens felsökningsmask"
 
 #: ../src/cdemu:427 ../src/cdemu:508 ../src/cdemu:587 ../src/cdemu:667
 #: ../src/cdemu:747
@@ -213,75 +213,75 @@ msgstr "nytt värde"
 #, c-format
 msgid "Setting daemon debug mask of all devices to 0x%X."
 msgstr ""
-"Ställer in bakgrundsprocessens avlusningsmask för samtliga enheter till 0x%X."
+"Ställer in bakgrundsprocessens felsökningsmask för samtliga enheter till 0x%X."
 
 #: ../src/cdemu:449 ../src/cdemu:461
 #, c-format
 msgid "Failed to set daemon debug mask of device %i to 0x%X: %s"
 msgstr ""
-"Misslyckades med att ställa in bakgrundsprocessens avlusningsmask för enhet "
+"Misslyckades med att ställa in bakgrundsprocessens felsökningsmask för enhet "
 "%i till 0x%X: %s"
 
 #: ../src/cdemu:457
 #, c-format
 msgid "Setting daemon debug mask of device %i to 0x%X."
-msgstr "Ställer in bakgrundsprocessens avlusningsmask för enhet %i till 0x%X."
+msgstr "Ställer in bakgrundsprocessens felsökningsmask för enhet %i till 0x%X."
 
 #: ../src/cdemu:472
 msgid "Devices' daemon debug masks:"
-msgstr "Avlusningsmaskar för enheternas bakgrundsprocess:"
+msgstr "felsökningsmaskar för enheternas bakgrundsprocess:"
 
 #: ../src/cdemu:473 ../src/cdemu:553
 msgid "DEBUG MASK"
-msgstr "AVLUSNINGSMASK"
+msgstr "FELSÖKNINGSMASK"
 
 #: ../src/cdemu:479 ../src/cdemu:488
 #, c-format
 msgid "Failed to get daemon debug mask of device %i: %s"
 msgstr ""
-"Misslyckades med att erhålla bakgrundsprocessens avlusningsmask för enhet "
+"Misslyckades med att erhålla bakgrundsprocessens felsökningsmask för enhet "
 "%i: %s"
 
 #: ../src/cdemu:492
 #, c-format
 msgid "Daemon debug mask of device %i: 0x%X"
-msgstr "Bakgrundsprocessens avlusningsmask för enhet %i: 0x%X"
+msgstr "Bakgrundsprocessens felsökningsmask för enhet %i: 0x%X"
 
 #: ../src/cdemu:502
 msgid "displays/sets library debug mask"
-msgstr "visar/ställer in bibliotekets avlusningsmask"
+msgstr "visar/ställer in bibliotekets felsökningsmask"
 
 #: ../src/cdemu:524
 #, c-format
 msgid "Setting library debug mask of all devices to 0x%X."
-msgstr "Ställer in bibliotekets avlusningsmask för samtliga enheter till 0x%X."
+msgstr "Ställer in bibliotekets felsökningsmask för samtliga enheter till 0x%X."
 
 #: ../src/cdemu:529 ../src/cdemu:541
 #, c-format
 msgid "Failed to set library debug mask of device %i to 0x%X: %s"
 msgstr ""
-"Misslyckades med att ställa in bibliotekets avlusningsmask för enhet %i till "
+"Misslyckades med att ställa in bibliotekets felsökningsmask för enhet %i till "
 "0x%X: %s"
 
 #: ../src/cdemu:537
 #, c-format
 msgid "Setting library debug mask of device %i to 0x%X."
-msgstr "Ställer in bibliotekets avlusningsmask för enhet %i till 0x%X."
+msgstr "Ställer in bibliotekets felsökningsmask för enhet %i till 0x%X."
 
 #: ../src/cdemu:552
 msgid "Devices' library debug masks:"
-msgstr "Enheternas biblioteks-avlusningsmaskar:"
+msgstr "Enheternas biblioteks-felsökningsmaskar:"
 
 #: ../src/cdemu:559 ../src/cdemu:567
 #, c-format
 msgid "Failed to get library debug mask of device %i: %s"
 msgstr ""
-"Misslyckades med att erhålla bibliotekets avlusningsmask för enhet %i: %s"
+"Misslyckades med att erhålla bibliotekets felsökningsmask för enhet %i: %s"
 
 #: ../src/cdemu:571
 #, c-format
 msgid "Library debug mask of device %i: 0x%X"
-msgstr "Bibliotekets avlusningsmask för enhet %i: 0x%X"
+msgstr "Bibliotekets felsökningsmask för enhet %i: 0x%X"
 
 #: ../src/cdemu:581
 msgid "displays/sets DPM emulation flag"
@@ -495,31 +495,31 @@ msgstr "    skrivstöd: %d"
 
 #: ../src/cdemu:985
 msgid "enumerates valid daemon debug masks"
-msgstr "Räknar upp giltiga avlusningsmaskar för bakgrundsprocessen"
+msgstr "Räknar upp giltiga felsökningsmaskar för bakgrundsprocessen"
 
 #: ../src/cdemu:995
 #, c-format
 msgid "Failed to enumerate supported daemon debug masks: %s"
 msgstr ""
-"Misslyckades med att räkna upp stödda avlusningsmaskar för "
+"Misslyckades med att räkna upp stödda felsökningsmaskar för "
 "bakgrundsprocessen: %s"
 
 #: ../src/cdemu:997
 msgid "Supported daemon debug masks:"
-msgstr "Stödda avlusningsmaskar för bakgrundsprocessen:"
+msgstr "Stödda felsökningsmaskar för bakgrundsprocessen:"
 
 #: ../src/cdemu:1009
 msgid "enumerates valid library debug masks"
-msgstr "Räknar upp giltiga avlusningsmaskar för bibliotek"
+msgstr "Räknar upp giltiga felsökningsmaskar för bibliotek"
 
 #: ../src/cdemu:1019
 #, c-format
 msgid "Failed to enumerate supported library debug masks: %s"
-msgstr "Misslyckades med att räkna upp stödda biblioteks-avlusningsmaskar: %s"
+msgstr "Misslyckades med att räkna upp stödda biblioteks-felsökningsmaskar: %s"
 
 #: ../src/cdemu:1021
 msgid "Supported library debug masks:"
-msgstr "Stödda biblioteks-avlusningsmaskar:"
+msgstr "Stödda biblioteks-felsökningsmaskar:"
 
 #: ../src/cdemu:1033
 msgid "prints the list of writer's parameters"

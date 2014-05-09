@@ -209,7 +209,7 @@ msgstr "Mislyktes i å innhente tilordning for enhet %i: %s"
 
 #: ../src/cdemu:421
 msgid "displays/sets daemon debug mask"
-msgstr "viser/setter demonens avlusnings-maske"
+msgstr "viser/setter demonens feilsøkings-maske"
 
 #: ../src/cdemu:427 ../src/cdemu:508 ../src/cdemu:587 ../src/cdemu:667
 #: ../src/cdemu:747
@@ -220,70 +220,70 @@ msgstr "ny verdi"
 #: ../src/cdemu:444
 #, c-format
 msgid "Setting daemon debug mask of all devices to 0x%X."
-msgstr "Setter demonens avlusnings-maske for alle enheter til 0x%X."
+msgstr "Setter demonens feilsøkings-maske for alle enheter til 0x%X."
 
 #: ../src/cdemu:449 ../src/cdemu:461
 #, c-format
 msgid "Failed to set daemon debug mask of device %i to 0x%X: %s"
 msgstr ""
-"Mislyktes i å sette demonens avlusnings-maske for enhet %i til 0x%X: %s"
+"Mislyktes i å sette demonens feilsøkings-maske for enhet %i til 0x%X: %s"
 
 #: ../src/cdemu:457
 #, c-format
 msgid "Setting daemon debug mask of device %i to 0x%X."
-msgstr "Setter demonens avlusnings-maske for enhet %i til 0x%X."
+msgstr "Setter demonens feilsøkings-maske for enhet %i til 0x%X."
 
 #: ../src/cdemu:472
 msgid "Devices' daemon debug masks:"
-msgstr "Enhetenes demon avlusnings-masker:"
+msgstr "Enhetenes demon feilsøkings-masker:"
 
 #: ../src/cdemu:473 ../src/cdemu:553
 msgid "DEBUG MASK"
-msgstr "AVLUSNINGS-MASKE"
+msgstr "FEILSØKINGS-MASKE"
 
 #: ../src/cdemu:479 ../src/cdemu:488
 #, c-format
 msgid "Failed to get daemon debug mask of device %i: %s"
-msgstr "Mislyktes i å innhente demon avlusnings-maske for enhet %i: %s"
+msgstr "Mislyktes i å innhente demon feilsøkings-maske for enhet %i: %s"
 
 #: ../src/cdemu:492
 #, c-format
 msgid "Daemon debug mask of device %i: 0x%X"
-msgstr "Demon avlusnings-maske for enhet %i: 0x%X"
+msgstr "Demon feilsøkings-maske for enhet %i: 0x%X"
 
 #: ../src/cdemu:502
 msgid "displays/sets library debug mask"
-msgstr "viser/setter bibliotek avlusnings-maske"
+msgstr "viser/setter bibliotek feilsøkings-maske"
 
 #: ../src/cdemu:524
 #, c-format
 msgid "Setting library debug mask of all devices to 0x%X."
-msgstr "Setter bibliotek avlusnings-maske for alle enheter til 0x%X."
+msgstr "Setter bibliotek feilsøkings-maske for alle enheter til 0x%X."
 
 #: ../src/cdemu:529 ../src/cdemu:541
 #, c-format
 msgid "Failed to set library debug mask of device %i to 0x%X: %s"
 msgstr ""
-"Mislyktes i å sette bibliotek avlusnings-maske for enhet %i til 0x%X: %s"
+"Mislyktes i å sette bibliotek feilsøkings-maske for enhet %i til 0x%X: %s"
 
 #: ../src/cdemu:537
 #, c-format
 msgid "Setting library debug mask of device %i to 0x%X."
-msgstr "Setter bibliotek avlusnings-maske for enhet %i til 0x%X."
+msgstr "Setter bibliotek feilsøkings-maske for enhet %i til 0x%X."
 
 #: ../src/cdemu:552
 msgid "Devices' library debug masks:"
-msgstr "Enhetenes bibliotek avlusnings-masker:"
+msgstr "Enhetenes bibliotek feilsøkings-masker:"
 
 #: ../src/cdemu:559 ../src/cdemu:567
 #, c-format
 msgid "Failed to get library debug mask of device %i: %s"
-msgstr "Mislyktes i å innhente bibliotek avlusnings-maske for enhet %i: %s"
+msgstr "Mislyktes i å innhente bibliotek feilsøkings-maske for enhet %i: %s"
 
 #: ../src/cdemu:571
 #, c-format
 msgid "Library debug mask of device %i: 0x%X"
-msgstr "Bibliotek avlusnings-maske for enhet %i: 0x%X"
+msgstr "Bibliotek feilsøkings-maske for enhet %i: 0x%X"
 
 #: ../src/cdemu:581
 msgid "displays/sets DPM emulation flag"
@@ -492,30 +492,30 @@ msgstr "    skriver støtte: %d"
 
 #: ../src/cdemu:985
 msgid "enumerates valid daemon debug masks"
-msgstr "viser listen over gyldige demon avlusnings-masker"
+msgstr "viser listen over gyldige demon feilsøkings-masker"
 
 #: ../src/cdemu:995
 #, c-format
 msgid "Failed to enumerate supported daemon debug masks: %s"
-msgstr "Mislyktes i å innhente liste over støttede demon avlusnings-masker: %s"
+msgstr "Mislyktes i å innhente liste over støttede demon feilsøkings-masker: %s"
 
 #: ../src/cdemu:997
 msgid "Supported daemon debug masks:"
-msgstr "Støttede demon avlusnings-masker:"
+msgstr "Støttede demon feilsøkings-masker:"
 
 #: ../src/cdemu:1009
 msgid "enumerates valid library debug masks"
-msgstr "viser listen over gyldige bibliotek avlusnings-masker"
+msgstr "viser listen over gyldige bibliotek feilsøkings-masker"
 
 #: ../src/cdemu:1019
 #, c-format
 msgid "Failed to enumerate supported library debug masks: %s"
 msgstr ""
-"Mislyktes i å innhente liste over støttede bibliotek avlusnings-masker: %s"
+"Mislyktes i å innhente liste over støttede bibliotek feilsøkings-masker: %s"
 
 #: ../src/cdemu:1021
 msgid "Supported library debug masks:"
-msgstr "Støttede bibliotek avlusnings-masker:"
+msgstr "Støttede bibliotek feilsøkings-masker:"
 
 #: ../src/cdemu:1033
 msgid "prints the list of writer's parameters"

@@ -230,7 +230,7 @@ msgid ""
 "Failed to set daemon debug mask for device #%02d to 0x%X:\n"
 "%s"
 msgstr ""
-"Mislyktes i å sette demonens avlusnings-maske for enhet #%02d til 0x%X:\n"
+"Mislyktes i å sette demonens feilsøkings-maske for enhet #%02d til 0x%X:\n"
 "%s"
 
 #: ../src/gcdemu:553
@@ -239,7 +239,7 @@ msgid ""
 "Failed to set library debug mask for device #%02d to 0x%X:\n"
 "%s"
 msgstr ""
-"Mislyktes i å sette bibliotek avlusnings-maske for enhet #%02d til 0x%X:\n"
+"Mislyktes i å sette bibliotek feilsøkings-maske for enhet #%02d til 0x%X:\n"
 "%s"
 
 #: ../src/gcdemu:605 ../src/gcdemu:1462
@@ -330,7 +330,7 @@ msgstr "Dårlig sektor emulering"
 
 #: ../src/gcdemu:914
 msgid "Set debug mask"
-msgstr "Sett avlusnings-maske"
+msgstr "Sett feilsøkings-maske"
 
 #: ../src/gcdemu:946
 msgid "Open file"
@@ -443,7 +443,7 @@ msgstr "Valg"
 
 #: ../src/gcdemu:1477
 msgid "Daemon debug mask"
-msgstr "Demon avlusnings-maske"
+msgstr "Demon feilsøkings-maske"
 
 #: ../src/gcdemu:1478
 msgid "Daemon"
@@ -451,7 +451,7 @@ msgstr "Demon"
 
 #: ../src/gcdemu:1482
 msgid "Library debug mask"
-msgstr "Bibliotek avlusnings-maske"
+msgstr "Bibliotek feilsøkings-maske"
 
 #: ../src/gcdemu:1483
 msgid "Library"
@@ -521,12 +521,12 @@ msgstr ""
 #: ../src/gcdemu:1568
 #, fuzzy, c-format
 msgid "Device #%02d has had its daemon debug mask changed. New value: 0x%X"
-msgstr "Enhet #%02d har fått forandret sitt demon avlusnings-maske valg. Ny verdi: 0x%X"
+msgstr "Enhet #%02d har fått forandret sitt demon feilsøkings-maske valg. Ny verdi: 0x%X"
 
 #: ../src/gcdemu:1573
 #, fuzzy, c-format
 msgid "Device #%02d has had its library debug mask changed. New value: 0x%X"
-msgstr "Enhet #%02d har fått foradret sitt bibliotek avlusnings-maske valg. Ny verdi: 0x%X"
+msgstr "Enhet #%02d har fått foradret sitt bibliotek feilsøkings-maske valg. Ny verdi: 0x%X"
 
 #: ../src/gcdemu:1619
 #, fuzzy
