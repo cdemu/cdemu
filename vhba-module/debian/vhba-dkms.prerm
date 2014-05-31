@@ -19,7 +19,7 @@ case "$1" in
 	remove|upgrade|deconfigure)
 		# try to unload the module
 		if test -d "/sys/module/vhba"; then
-			modprobe -r "vhba" || myerror "Failed to unload module."
+			modprobe -r "vhba" || mywarning "Failed to unload module."
 		else
 			mywarning "Module was not running."
 		fi
