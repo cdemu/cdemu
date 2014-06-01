@@ -1941,7 +1941,7 @@ static gboolean command_read_toc_pma_atip (CdemuDevice *self, const guint8 *raw_
             break;
         }
         default: {
-            CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: format %X not suppoted yet\n", __debug__, cdb->format);
+            CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: format %X not supported yet\n", __debug__, cdb->format);
             cdemu_device_write_sense(self, ILLEGAL_REQUEST, INVALID_FIELD_IN_CDB);
             return FALSE;
         }
@@ -2206,7 +2206,7 @@ static gboolean command_reserve_track (CdemuDevice *self, const guint8 *raw_cdb)
         return FALSE;
     }
 
-    /* Make sure set recording mode implementes reserve track */
+    /* Make sure set recording mode implements reserve track */
     if (!self->priv->recording->reserve_track) {
         CDEMU_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: RESERVE TRACK called in recoding mode that does not implement it (yet?)\n", __debug__);
         cdemu_device_write_sense(self, ILLEGAL_REQUEST, COMMAND_SEQUENCE_ERROR);

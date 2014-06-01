@@ -154,7 +154,7 @@ static void mirage_disc_remove_session (MirageDisc *self, MirageSession *session
     g_object_unref(session);
 
     /* Bottom-up change */
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_DISC, "%s: commiting bottom-up change\n", __debug__);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_DISC, "%s: committing bottom-up change\n", __debug__);
     mirage_disc_commit_bottomup_change(self);
 
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_DISC, "%s: end\n", __debug__);

@@ -656,7 +656,7 @@ static gboolean mirage_filter_stream_dmg_open_streams (MirageFilterStreamDmg *se
         mirage_filter_stream_dmg_print_koly_block(self, &self->priv->koly_block[s]);
     }
 
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: sucessfully opened streams\n\n", __debug__);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: successfully opened streams\n\n", __debug__);
 
     return TRUE;
 }

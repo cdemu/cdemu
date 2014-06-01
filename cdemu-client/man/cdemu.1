@@ -18,7 +18,7 @@ retrieving/setting devices' debug masks.
 When connecting to daemon, cdemu client can use either session or system bus. By
 hard-coded default, it uses system bus. The default bus to be used can be specified
 via /etc/cdemu-client.conf or ~/.cdemu-client file; for more information, please
-read README file. The default can be overriden using
+read README file. The default can be overridden using
 .B --bus
 option.
 .SH ENCRYPTED IMAGES SUPPORT
@@ -119,17 +119,17 @@ command.
 .B dpm-emulation <device> [new-value]
 Displays/sets DPM emulation flag. \fBdevice\fR is the number of the desired
 device, or \fIall\fR. \fBnew-value\fR is the new value to be set. If this
-argument is ommited, currently set value is displayed.
+argument is omitted, currently set value is displayed.
 .TP
 .B tr-emulation <device> [new-value]
 Displays/sets transfer rate emulation flag. \fBdevice\fR is the number of the
 desired device, or \fIall\fR. \fBnew-value\fR is the new value to be set.
-If this argument is ommited, currently set value is displayed.
+If this argument is omitted, currently set value is displayed.
 .TP
 .B bad-sector-emulation <device> [new-value]
 Displays/sets bad sector emulation flag. \fBdevice\fR is the number of the
 desired device, or \fIall\fR. \fBnew-value\fR is the new value to be set.
-If this argument is ommited, currently set value is displayed.
+If this argument is omitted, currently set value is displayed.
 .TP
 .B device-id <device> [new-vendor-id] [new-product-id] [new-revision] [new-vendor-specific]
 Displays/sets device ID. \fBdevice\fR is the number of the desired device.
@@ -137,7 +137,7 @@ Displays/sets device ID. \fBdevice\fR is the number of the desired device.
 \fBnew-product-id\fR is the new product ID string to be set (16 characters max).
 \fBnew-revision\fR is the new revision string to be set (4 characters max).
 \fBnew-vendor-specific\fR is the new vendor-specific string to be set (20 characters max).
-If new values are ommitted, currently set values are displayed.
+If new values are omitted, currently set values are displayed.
 .TP
 .B enum-parsers
 Enumerates supported image parsers.

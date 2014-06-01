@@ -312,7 +312,7 @@ static gboolean mirage_filter_stream_isz_open_streams (MirageFilterStreamIsz *se
         g_free(filename);
     }
 
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: sucessfully opened streams\n\n", __debug__);
+    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: successfully opened streams\n\n", __debug__);
 
     return TRUE;
 }
