@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gCDEmu 3.0.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2014-04-30 18:53+0200\n"
-"PO-Revision-Date: 2014-04-30 18:54+0200\n"
+"POT-Creation-Date: 2014-06-14 15:12+0200\n"
+"PO-Revision-Date: 2014-06-14 15:12+0200\n"
 "Last-Translator: Rok Mandeljc <rok.mandeljc@gmail.com>\n"
 "Language-Team: Slovenian <>\n"
 "Language: sl\n"
@@ -418,6 +418,11 @@ msgstr "Izbran ni noben zapisovalec!"
 #: ../src/gcdemu:1396
 msgid "Invalid option"
 msgstr "Neveljavna možnost"
+
+#: ../src/gcdemu:1439
+#, c-format
+msgid "Device #%02d: properties"
+msgstr "Naprava #%02d: lastnosti"
 
 #: ../src/gcdemu:1439
 msgid "Close"
