@@ -7,8 +7,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gcdemu 3.0.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2014-06-01 22:04+0200\n"
-"PO-Revision-Date: 2014-06-08 00:37+0100\n"
+"POT-Creation-Date: 2014-06-14 16:34+0200\n"
+"PO-Revision-Date: 2014-06-14 16:35+0100\n"
 "Last-Translator: Anders Jonsson <anders.jonsson@norsjovallen.se>\n"
 "Language-Team: Swedish <tp-sv@listor.tp-sv.se>\n"
 "Language: sv\n"
@@ -246,11 +246,11 @@ msgstr "Status"
 
 #: ../src/gcdemu:618
 msgid "Loaded: "
-msgstr "Inläst:"
+msgstr "Inläst: "
 
 #: ../src/gcdemu:628
 msgid "File name(s): "
-msgstr "Filnamn:"
+msgstr "Filnamn: "
 
 #: ../src/gcdemu:644 ../src/gcdemu:718
 msgid "Load"
@@ -294,19 +294,19 @@ msgstr "Enhets-ID"
 
 #: ../src/gcdemu:764
 msgid "Vendor ID: "
-msgstr "Tillverkar-ID:"
+msgstr "Tillverkar-ID: "
 
 #: ../src/gcdemu:775
 msgid "Product ID: "
-msgstr "Produkt-ID:"
+msgstr "Produkt-ID: "
 
 #: ../src/gcdemu:786
 msgid "Revision: "
-msgstr "Revidering:"
+msgstr "Revidering: "
 
 #: ../src/gcdemu:797
 msgid "Vendor-specific: "
-msgstr "Tillverkarspecifik:"
+msgstr "Tillverkarspecifik: "
 
 #: ../src/gcdemu:812
 msgid "Set device ID"
@@ -354,11 +354,11 @@ msgstr "Extra alternativ"
 
 #: ../src/gcdemu:1028
 msgid "Encoding: "
-msgstr "Teckenkodning:"
+msgstr "Teckenkodning: "
 
 #: ../src/gcdemu:1047 ../src/gcdemu:1115
 msgid "Password: "
-msgstr "Lösenord:"
+msgstr "Lösenord: "
 
 #: ../src/gcdemu:1058
 msgid "Raw image of CSS-encrypted DVD"
@@ -386,7 +386,7 @@ msgstr "Avbild"
 
 #: ../src/gcdemu:1162
 msgid "Filename: "
-msgstr "Filnamn:"
+msgstr "Filnamn: "
 
 #: ../src/gcdemu:1170 ../src/gcdemu:1232
 msgid "Choose"
@@ -394,11 +394,11 @@ msgstr "Välj"
 
 #: ../src/gcdemu:1175
 msgid "Medium type: "
-msgstr "Mediatyp:"
+msgstr "Mediatyp: "
 
 #: ../src/gcdemu:1198
 msgid "Writer: "
-msgstr "Skrivare:"
+msgstr "Skrivare: "
 
 #: ../src/gcdemu:1218
 msgid "Writer options"
@@ -419,6 +419,11 @@ msgstr "Ingen avbildsskrivare är vald!"
 #: ../src/gcdemu:1396
 msgid "Invalid option"
 msgstr "Ogiltigt alternativ"
+
+#: ../src/gcdemu:1439
+#, c-format
+msgid "Device #%02d: properties"
+msgstr "Egenskaper för enhet #%02d"
 
 #: ../src/gcdemu:1439
 msgid "Close"
