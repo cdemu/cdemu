@@ -8,15 +8,16 @@ msgid ""
 msgstr ""
 "Project-Id-Version: gCDEmu 3.0.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2014-05-08 17:31+0200\n"
-"Last-Translator: Henrik Stokseth <hstokset AT users DOT sourceforge DOT net>\n"
+"POT-Creation-Date: 2014-06-19 12:00+0100\n"
+"Last-Translator: Henrik Stokseth <hstokset AT users DOT sourceforge DOT "
+"net>\n"
 "Language-Team: Norwegian\n"
 "Language: \n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "PO-Creation-Date: 2008-06-13 22:00+0100\n"
-"POT-Revision-Date: 2014-05-08 17:31+0200\n"
+"POT-Revision-Date: 2014-06-19 12:00+0100\n"
 
 #: ../data/gcdemu.desktop.in.h:1
 msgid "gCDEmu"
@@ -36,8 +37,8 @@ msgid ""
 "Whether to show notifications on events such as daemon start/stop and device "
 "state changes."
 msgstr ""
-"Hvorvidt beskjeder fra hendinger skal vises. F.eks. at demonen starter/stopper og"
-"enhetens tilstand forandres."
+"Hvorvidt beskjeder fra hendinger skal vises. F.eks. at demonen starter/"
+"stopper og enhetens tilstand forandres."
 
 #: ../data/net.sf.cdemu.gcdemu.gschema.xml.in.h:3
 #, fuzzy
@@ -59,9 +60,9 @@ msgid ""
 "will attempt to autostart the daemon when gCDEmu tries to establish "
 "connection with it."
 msgstr ""
-"Hvorvidt D-Bus tjeneste aktiverings-ordning skal benyttes eller ikke. Hvis aktivert, "
-"så vil D-Bus forsøke å starte demonen automatisk når gCDEmu forsøker å etablere "
-"forbindelse til den."
+"Hvorvidt D-Bus tjeneste aktiverings-ordning skal benyttes eller ikke. Hvis "
+"aktivert, så vil D-Bus forsøke å starte demonen automatisk når gCDEmu "
+"forsøker å etablere forbindelse til den."
 
 #: ../data/net.sf.cdemu.gcdemu.gschema.xml.in.h:7
 msgid "Icon name (connected)"
@@ -74,8 +75,8 @@ msgid ""
 "standard pixmaps directory (e.g. /usr/share/pixmaps)."
 msgstr ""
 "Navn på ikon for å vise i statusfelt når tilkoblet demonen. Det bør være "
-"enten et gyldig standardikon navn eller filnavn til en pixmap som finnes i en "
-"standard pixmaps folder (f.eks./usr/share/pixmaps)."
+"enten et gyldig standardikon navn eller filnavn til en pixmap som finnes i "
+"en standard pixmaps folder (f.eks./usr/share/pixmaps)."
 
 #: ../data/net.sf.cdemu.gcdemu.gschema.xml.in.h:9
 msgid "Icon name (disconnected)"
@@ -88,8 +89,8 @@ msgid ""
 "standard pixmaps directory (e.g. /usr/share/pixmaps)."
 msgstr ""
 "Navn på ikon for å vise i statusfelt når frakoblet demonen. Det bør være "
-"enten et gyldig standardikon navn eller filnavn til en pixmap som finnes i en "
-"standard pixmaps folder (f.eks./usr/share/pixmaps)."
+"enten et gyldig standardikon navn eller filnavn til en pixmap som finnes i "
+"en standard pixmaps folder (f.eks./usr/share/pixmaps)."
 
 #: ../data/net.sf.cdemu.gcdemu.gschema.xml.in.h:11
 msgid "Icon display policy."
@@ -102,10 +103,10 @@ msgid ""
 "to \"never\", the icon is never shown. If set to \"when_connected\", the "
 "icon is shown only when gCDEmu is connected to a daemon."
 msgstr ""
-"Ikon visnings bestemmelse. Gyldige valg er \"alltid\", \"aldri\" og "
-"\"når tilkoblet\". Hvis satt til \"alltid\", vises alltid ikonet. Hvis satt "
-"til \"aldri\" vises aldri ikonet. Hvis satt til \"når tilkoblet\" vises "
-"ikonet kun når gCDEmu er tilkoblet demonen."
+"Ikon visnings bestemmelse. Gyldige valg er \"alltid\", \"aldri\" og \"når "
+"tilkoblet\". Hvis satt til \"alltid\", vises alltid ikonet. Hvis satt til "
+"\"aldri\" vises aldri ikonet. Hvis satt til \"når tilkoblet\" vises ikonet "
+"kun når gCDEmu er tilkoblet demonen."
 
 #: ../src/gcdemu:279
 #, fuzzy
@@ -130,7 +131,8 @@ msgstr "Inkompatibelt demon grensesnitt"
 msgid ""
 "CDEmu daemon interface version %i.%i detected, but version %i.%i is required!"
 msgstr ""
-"CDEmu demon grensesnitt versjon %i.%i detektert, men versjon %i.%i er påkrevd!"
+"CDEmu demon grensesnitt versjon %i.%i detektert, men versjon %i.%i er "
+"påkrevd!"
 
 #: ../src/gcdemu:345
 #, fuzzy
@@ -150,7 +152,6 @@ msgstr ""
 #, fuzzy
 msgid "Failed to remove device"
 msgstr "Mislyktes i å fjerne enhet"
-"%s"
 
 #: ../src/gcdemu:351
 #, fuzzy, c-format
@@ -429,6 +430,11 @@ msgid "Invalid option"
 msgstr "Ugyldig valg"
 
 #: ../src/gcdemu:1439
+#, fuzzy, c-format
+msgid "Device #%02d: properties"
+msgstr "Enhet #%02d: egenskaper"
+
+#: ../src/gcdemu:1439
 msgid "Close"
 msgstr "Steng"
 
@@ -516,17 +522,22 @@ msgstr "Enhet #%02d har fått forandret sitt TR emulerings valg. Ny verdi: %s"
 msgid ""
 "Device #%02d has had its bad sector emulation option changed. New value: %s"
 msgstr ""
-"Enhet #%02d har fått forandret sitt dårlig sektor emulerings valg. Ny verdi: %s"
+"Enhet #%02d har fått forandret sitt dårlig sektor emulerings valg. Ny verdi: "
+"%s"
 
 #: ../src/gcdemu:1568
 #, fuzzy, c-format
 msgid "Device #%02d has had its daemon debug mask changed. New value: 0x%X"
-msgstr "Enhet #%02d har fått forandret sitt demon feilsøkings-maske valg. Ny verdi: 0x%X"
+msgstr ""
+"Enhet #%02d har fått forandret sitt demon feilsøkings-maske valg. Ny verdi: "
+"0x%X"
 
 #: ../src/gcdemu:1573
 #, fuzzy, c-format
 msgid "Device #%02d has had its library debug mask changed. New value: 0x%X"
-msgstr "Enhet #%02d har fått foradret sitt bibliotek feilsøkings-maske valg. Ny verdi: 0x%X"
+msgstr ""
+"Enhet #%02d har fått foradret sitt bibliotek feilsøkings-maske valg. Ny "
+"verdi: 0x%X"
 
 #: ../src/gcdemu:1619
 #, fuzzy
@@ -621,7 +632,6 @@ msgstr "Enhet #%02d har blitt fjernet."
 #, fuzzy
 msgid "Failed to load AppIndicator library!"
 msgstr "Mislyktes i å laste AppIndikator bibliotek!"
-"%s"
 
 #: ../src/gcdemu:2081
 msgid "AppIndicator not available"
@@ -631,38 +641,3 @@ msgstr "AppIndikator er ikke tilgjengelig"
 msgid "gCDEmu tray mode"
 msgstr "gCDEmu statusfelt modus"
 
-#~ msgid "Show notifications?"
-#~ msgstr "Vis beskjeder?"
-
-#~ msgid "Error"
-#~ msgstr "Feil"
-
-#~ msgid "_Help"
-#~ msgstr "_Hjelp"
-
-#~ msgid "Failed to connect: %s"
-#~ msgstr "Mislyktes i å koble til: %s"
-
-#~ msgid ""
-#~ "Failed to acquire daemon interface version (this most likely means your "
-#~ "daemon is out-of-date): %s"
-#~ msgstr ""
-#~ "Mislyktes i å innhente demon grensesnitt versjon (Dette betyr mest "
-#~ "sannsynligat demonen har gått ut på dato): %s"
-
-#~ msgid "Failed to acquire number of devices: %s"
-#~ msgstr "Mislyktes i å innhente antall enheter: %s"
-
-#~ msgid "Device %i properties"
-#~ msgstr "Enhet %i sine egenskaper"
-
-#~ msgid ""
-#~ "Failed to set transfer rate emulation for device %i to %i:\n"
-#~ "%s"
-#~ msgstr ""
-#~ "Mislyktes i å sette overførings-hastighet emulering for enhet %i til %i:\n"
-#~ "%s"
-
-#~ msgid "Name of icon to use (relative to gCDEmu's pixmap dir)"
-#~ msgstr ""
-#~ "Navn på ikonet som skal brukes (relativt til gCDEmu sin pixmap folder)"
