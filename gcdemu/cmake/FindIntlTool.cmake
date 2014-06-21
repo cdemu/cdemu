@@ -35,7 +35,17 @@ find_package_handle_standard_args (IntlTool
 
 function (intltool_process_po_files po_dir catalog_name)
     set (gmo_files)
-    file (GLOB po_files ${po_dir}/*.po)
+
+    # If list of languages was explicitly given, use it; otherwise, use
+    # all files in the PO dir
+    if (${ARGC} GREATER 2)
+        set (po_files)
+        foreach (whitelisted_language ${ARGN})
+            set (po_files ${po_files} ${po_dir}/${whitelisted_language}.po)
+        endforeach ()
+    else ()
+        file (GLOB po_files ${po_dir}/*.po)
+    endif ()
 
     foreach (po_file ${po_files})
         get_filename_component (lang ${po_file} NAME_WE)

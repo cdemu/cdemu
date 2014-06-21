@@ -54,9 +54,11 @@ if (POST_INSTALL_HOOKS)
     )
 endif ()
 
-# Translations; we use the version provided by our FindIntlTool.cmake 
-# instead of the gettext version...
-intltool_process_po_files(${PROJECT_SOURCE_DIR}/po ${PROJECT_NAME})
+# Translations; we use the version provided by our FindIntlTool.cmake
+# instead of the gettext version... Note: first two arguments are mandatory,
+# the rest is an optional list of languages to process. If no languages
+# are given, all POs are processed.
+intltool_process_po_files(${PROJECT_SOURCE_DIR}/po ${PROJECT_NAME} no sl sv)
 
 # *** Configuration summary ***
 message(STATUS "")
