@@ -43,6 +43,11 @@ install (
     RENAME cdemu-client
 )
 
+install (
+    FILES data/cdemu-client.svg
+    DESTINATION ${CMAKE_INSTALL_DATADIR}/pixmaps
+)
+
 intltool_merge ("-d" po data/cdemu-client.desktop.in cdemu-client.desktop)
 install (
     FILES ${PROJECT_BINARY_DIR}/cdemu-client.desktop
