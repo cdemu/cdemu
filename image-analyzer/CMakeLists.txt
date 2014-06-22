@@ -81,6 +81,11 @@ install (
 )
 
 install (
+    FILES data/image-analyzer.svg
+    DESTINATION ${CMAKE_INSTALL_DATADIR}/pixmaps
+)
+
+install (
     FILES ${PROJECT_SOURCE_DIR}/data/image-analyzer.desktop
     DESTINATION ${CMAKE_INSTALL_DATADIR}/applications
 )
