@@ -38,9 +38,8 @@ install (
 )
 
 install (
-    FILES data/cdemu-bashcomp
+    FILES data/cdemu-bash-completion.sh
     DESTINATION ${CMAKE_INSTALL_SYSCONFDIR}/bash_completion.d
-    RENAME cdemu-client
 )
 
 install (
