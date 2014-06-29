@@ -1,4 +1,4 @@
-VHBA_VERSION := 20140405
+VHBA_VERSION := 20140609
 PACKAGE := vhba-module-$(VHBA_VERSION)
 DOCS := AUTHORS ChangeLog COPYING INSTALL NEWS README
 DIST := vhba.c Makefile
@@ -37,7 +37,7 @@ dist-gzip: dist-dir
 	rm -rf $(PACKAGE)
 
 dist-bzip2: dist-dir
-	tar -c $(PACKAGE) | bzip2 > $(PACKAGE).tar.bz2 
+	tar -c $(PACKAGE) | bzip2 > $(PACKAGE).tar.bz2
 	rm -rf $(PACKAGE)
 
 dist-xz: dist-dir
