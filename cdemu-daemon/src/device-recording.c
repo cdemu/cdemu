@@ -820,7 +820,7 @@ static gboolean cdemu_device_sao_recording_write_sectors (CdemuDevice *self, gin
         CDEMU_DEBUG(self, DAEMON_DEBUG_RECORDING, "%s: sector %d\n", __debug__, address);
 
         /* In RAW SAO mode, the host sends us lead-in */
-        if (address < -150 && self->priv->sao_leadin_format != 0x01) {
+        if (address < -150 && self->priv->sao_leadin_format & 0xC0) {
             CDEMU_DEBUG(self, DAEMON_DEBUG_RECORDING, "%s: lead-in sector for RAW SAO\n", __debug__, address);
 
             main_format_ptr = sao_main_formats_find(self->priv->sao_leadin_format);
@@ -1057,7 +1057,7 @@ gboolean cdemu_device_sao_recording_parse_cue_sheet (CdemuDevice *self, const gu
             /* Set track flags from CTL */
             mirage_track_set_ctl(track, ctl);
 
-            if (self->priv->sao_leadin_format != 0x01) {
+            if (self->priv->sao_leadin_format & 0xC0) {
                 /* In raw SAO, we set track's sector type to MIRAGE_SECTOR_RAW_SCRAMBLED;
                    however, we can use CTL field to deduce if a track is
                    an audio track and set MIRAGE_SECTOR_AUDIO directly */
