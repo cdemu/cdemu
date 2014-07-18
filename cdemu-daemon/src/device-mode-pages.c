@@ -140,8 +140,9 @@ static gboolean mode_page_0x05_validator (CdemuDevice *self, const guint8 *new_d
     CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s:  subheader: %02hX %02hX %02hX %02hX\n", __debug__, new_page->subheader[0], new_page->subheader[1], new_page->subheader[2], new_page->subheader[3]);
     CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "\n");
 
-    /* At the moment, we do not support incremental/packet recording */
-    if (new_page->write_type == 0x00) {
+    /* At the moment, we do not support incremental/packet recording, nor
+       layer-jump recording */
+    if (new_page->write_type == 0x00 || new_page->write_type == 0x04) {
         return FALSE;
     }
 
