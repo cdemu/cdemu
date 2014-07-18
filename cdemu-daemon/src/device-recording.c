@@ -1252,10 +1252,12 @@ static gboolean cdemu_device_dao_recording_reserve_track (CdemuDevice *self, gui
 static gboolean cdemu_device_dao_recording_write_sectors (CdemuDevice *self, gint start_address, gint num_sectors)
 {
     /* At this point, the track should already be open due to a call to
-       RESERVE TRACK */
+       RESERVE TRACK... if not, open one by reserving a track of length 0 */
     if (!self->priv->open_track) {
-        CDEMU_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: no open track; there should be one opened by a call to RESERVE TRACK!\n", __debug__);
-        return FALSE;
+        if (!cdemu_device_dao_recording_reserve_track(self, 0)) {
+            CDEMU_DEBUG(self, DAEMON_DEBUG_WARNING, "%s: failed to open track!\n", __debug__);
+            return FALSE;
+        }
     }
 
     /* DVD recording has only Mode 1 data, so data block type in mode
