@@ -35,6 +35,7 @@ if (ZLIB_FOUND)
 
     # Install MIME type
     install(FILES "libmirage-${filter_short}.xml" DESTINATION ${CMAKE_INSTALL_DATADIR}/mime/packages)
+    install(FILES "libmirage-gbi.xml" DESTINATION ${CMAKE_INSTALL_DATADIR}/mime/packages)
     if (POST_INSTALL_HOOKS)
         install(CODE "execute_process (COMMAND ${UPDATE_MIME_DATABASE_EXECUTABLE} ${CMAKE_INSTALL_FULL_DATADIR}/mime)")
     endif ()
