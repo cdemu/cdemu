@@ -335,6 +335,7 @@ static GString *mirage_writer_toc_create_toc_file (MirageWriterToc *self G_GNUC_
                     /* TOC does not list first track's pregap. Unless it
                        is greater than standard 150? But the first fragment
                        (j == 0) always model the standard pregap */
+                    g_object_unref(fragment);
                     continue;
                 }
 
@@ -354,6 +355,7 @@ static GString *mirage_writer_toc_create_toc_file (MirageWriterToc *self G_GNUC_
                 /* First track is a special case, since TOC does not list
                    its standard 150-sector pregap */
                 if (track_start <= 150) {
+                    g_object_unref(track);
                     continue;
                 } else {
                     track_start -= 150;
@@ -399,21 +401,22 @@ static gboolean mirage_writer_toc_create_toc_files (MirageWriterToc *self, Mirag
 
         /* Open stream on TOC file */
         MirageStream *toc_stream = mirage_contextual_create_output_stream(MIRAGE_CONTEXTUAL(self), filename, NULL, error);
-        if (!toc_stream) {
+        if (toc_stream) {
+            /* Generate TOC file contents */
+            GString *toc_contents = mirage_writer_toc_create_toc_file(self, session);
+
+            /* Write */
+            if (mirage_stream_write(toc_stream, toc_contents->str, toc_contents->len, error) != (toc_contents->len)) {
+                succeeded = FALSE;
+            }
+
+            g_object_unref(toc_stream);
+            g_string_free(toc_contents, TRUE);
+        } else {
             succeeded = FALSE;
-            break;
         }
 
-        /* Generate TOC file contents */
-        GString *toc_contents = mirage_writer_toc_create_toc_file(self, session);
-
-        /* Write */
-        if (mirage_stream_write(toc_stream, toc_contents->str, toc_contents->len, error) != (toc_contents->len)) {
-            succeeded = FALSE;
-        }
-
-        g_object_unref(toc_stream);
-        g_string_free(toc_contents, TRUE);
+        g_object_unref(session);
 
         if (!succeeded) {
             break;
