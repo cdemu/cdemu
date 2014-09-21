@@ -1231,16 +1231,20 @@ static gboolean command_read_disc_information (CdemuDevice *self, const guint8 *
             ret_data->ftrack_lsession1 = first_track_in_last_session & 0xFF;
             ret_data->ltrack_lsession1 = last_track_in_last_session & 0xFF;
 
-            guint8 *msf_ptr = (guint8 *)&ret_data->lsession_leadin;
-            if (last_session_leadin == -1) {
-                last_session_leadin = self->priv->medium_leadin;
+            if (!self->priv->recordable_disc || self->priv->disc_closed) {
+                ret_data->lsession_leadin = 0xFFFFFFFF;
+            } else {
+                guint8 *msf_ptr = (guint8 *)&ret_data->lsession_leadin;
+                if (last_session_leadin == -1) {
+                    last_session_leadin = self->priv->medium_leadin;
+                }
+                mirage_helper_lba2msf(last_session_leadin, TRUE, &msf_ptr[1], &msf_ptr[2], &msf_ptr[3]);
             }
-            mirage_helper_lba2msf(last_session_leadin, TRUE, &msf_ptr[1], &msf_ptr[2], &msf_ptr[3]);
 
-            if (!self->priv->recordable_disc) {
+            if (!self->priv->recordable_disc || self->priv->disc_closed) {
                 ret_data->last_leadout = 0xFFFFFFFF; /* Not applicable since we're not a writer */
             } else {
-                msf_ptr = (guint8 *)&ret_data->last_leadout;
+                guint8 *msf_ptr = (guint8 *)&ret_data->last_leadout;
                 mirage_helper_lba2msf(self->priv->medium_capacity - 2, FALSE, &msf_ptr[1], &msf_ptr[2], &msf_ptr[3]);
             }
 
