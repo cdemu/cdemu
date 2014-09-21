@@ -293,8 +293,8 @@ gboolean cdemu_device_unload_disc_private (CdemuDevice *self, gboolean force, GE
         if (self->priv->leadin_cdtext_packs) {
             g_slist_free_full(self->priv->leadin_cdtext_packs, (GDestroyNotify)g_free);
             self->priv->leadin_cdtext_packs = NULL;
-            self->priv->leadin_cdtext_packs = 0;
         }
+        self->priv->num_leadin_cdtext_packs = 0;
 
         /* Current profile: None */
         cdemu_device_set_profile(self, ProfileIndex_NONE);

@@ -117,7 +117,7 @@ static gboolean cdemu_device_recording_close_session (CdemuDevice *self)
             /* Free CD-TEXT packs data */
             g_slist_free_full(self->priv->leadin_cdtext_packs, (GDestroyNotify)g_free);
             self->priv->leadin_cdtext_packs = NULL;
-            self->priv->leadin_cdtext_packs = 0;
+            self->priv->num_leadin_cdtext_packs = 0;
         }
 
         /* Release the reference we hold */
