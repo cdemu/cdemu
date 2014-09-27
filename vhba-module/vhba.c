@@ -583,14 +583,19 @@ static ssize_t do_response (struct scsi_cmnd *cmd, const char __user *buf, size_
          cmd->serial_number, res->status, res->data_len, scsi_sg_count(cmd));
 
     if (res->status) {
+        unsigned char sense_stack[SCSI_SENSE_BUFFERSIZE];
+
         if (res->data_len > SCSI_SENSE_BUFFERSIZE) {
             scmd_warn(cmd, "truncate sense (%d < %d)", SCSI_SENSE_BUFFERSIZE, res->data_len);
             res->data_len = SCSI_SENSE_BUFFERSIZE;
         }
 
-        if (copy_from_user(cmd->sense_buffer, buf, res->data_len)) {
+        /* Copy via temporary buffer on stack in order to avoid problems
+           with PAX on grsecurity-enabled kernels */
+        if (copy_from_user(sense_stack, buf, res->data_len)) {
             return -EFAULT;
         }
+        memcpy(cmd->sense_buffer, sense_stack, res->data_len);
 
         cmd->result = res->status;
 
