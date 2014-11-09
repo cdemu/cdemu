@@ -628,7 +628,7 @@ guint32 *mirage_helper_init_crc32_lut (guint32 genpoly, guint slices)
 
     /* Generate look-up tables for slice-by-4 (and slice-by-8) */
     if (slices >= 4) {
-        for (guint i = 0; i <= 256; i++) {
+        for (guint i = 0; i < 256; i++) {
             CRC32_LUT(1, i) = (CRC32_LUT(0, i) >> 8) ^ CRC32_LUT(0, CRC32_LUT(0, i) & 0xFF);
             CRC32_LUT(2, i) = (CRC32_LUT(1, i) >> 8) ^ CRC32_LUT(0, CRC32_LUT(1, i) & 0xFF);
             CRC32_LUT(3, i) = (CRC32_LUT(2, i) >> 8) ^ CRC32_LUT(0, CRC32_LUT(2, i) & 0xFF);
@@ -637,7 +637,7 @@ guint32 *mirage_helper_init_crc32_lut (guint32 genpoly, guint slices)
 
     /* Generate look-up tables for slice-by-8 */
     if (slices >= 8) {
-        for (guint i = 0; i <= 256; i++) {
+        for (guint i = 0; i < 256; i++) {
             CRC32_LUT(4, i) = (CRC32_LUT(3, i) >> 8) ^ CRC32_LUT(0, CRC32_LUT(3, i) & 0xFF);
             CRC32_LUT(5, i) = (CRC32_LUT(4, i) >> 8) ^ CRC32_LUT(0, CRC32_LUT(4, i) & 0xFF);
             CRC32_LUT(6, i) = (CRC32_LUT(5, i) >> 8) ^ CRC32_LUT(0, CRC32_LUT(5, i) & 0xFF);
