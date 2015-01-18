@@ -27,7 +27,7 @@ gboolean cdemu_device_setup_mapping (CdemuDevice *self)
 {
     gboolean try_again = FALSE;
     gint ioctl_ret;
-    gint32 id[4];
+    gint32 id[4] = {0};
 
     /* Perform IOCTL */
     ioctl_ret = ioctl(g_io_channel_unix_get_fd(self->priv->io_channel), 0xBEEF001, id);
