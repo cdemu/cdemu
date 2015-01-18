@@ -872,6 +872,7 @@ static gboolean mirage_parser_cue_parse_cue_file (MirageParserCue *self, MirageS
 
             /* Must be freed in any case */
             g_match_info_free(match_info);
+            match_info = NULL;
 
             /* Break if we had a match */
             if (matched) {
