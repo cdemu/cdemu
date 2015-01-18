@@ -319,7 +319,7 @@ void cdemu_device_features_init (CdemuDevice *self)
        We return same three DCB descriptors as my drive does. */
     general_feature = initialize_feature(0x010A, sizeof(struct Feature_0x010A) + 3*4);
     if (general_feature) {
-        struct Feature_0x0107 *feature = (struct Feature_0x0107 *)general_feature;
+        struct Feature_0x010A *feature = (struct Feature_0x010A *)general_feature;
 
         feature->ver = 0x00;
 
