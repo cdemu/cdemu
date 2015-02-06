@@ -620,6 +620,7 @@ static gboolean mirage_parser_xcdroast_parse_xinf_file (MirageParserXcdroast *se
 
             /* Must be freed in any case */
             g_match_info_free(match_info);
+            match_info = NULL;
 
             /* Break if we had a match */
             if (matched) {
@@ -702,6 +703,7 @@ static gboolean mirage_parser_xcdroast_parse_toc_file (MirageParserXcdroast *sel
 
             /* Must be freed in any case */
             g_match_info_free(match_info);
+            match_info = NULL;
 
             /* Break if we had a match */
             if (matched) {

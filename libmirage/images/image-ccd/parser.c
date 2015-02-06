@@ -1067,6 +1067,7 @@ static gboolean mirage_parser_ccd_parse_ccd_file (MirageParserCcd *self, MirageS
 
                 /* Must be freed in any case */
                 g_match_info_free(match_info);
+                match_info = NULL;
 
                 /* Break if we had a match */
                 if (matched) {
@@ -1090,6 +1091,7 @@ static gboolean mirage_parser_ccd_parse_ccd_file (MirageParserCcd *self, MirageS
 
                 /* Must be freed in any case */
                 g_match_info_free(match_info);
+                match_info = NULL;
 
                 /* Break if we had a match */
                 if (matched) {

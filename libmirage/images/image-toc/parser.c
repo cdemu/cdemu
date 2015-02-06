@@ -1039,6 +1039,7 @@ static gboolean mirage_parser_toc_parse_toc_file (MirageParserToc *self, MirageS
 
                 /* Must be freed in any case */
                 g_match_info_free(match_info);
+                match_info = NULL;
 
                 /* Break if we had a match */
                 if (matched) {
@@ -1057,6 +1058,7 @@ static gboolean mirage_parser_toc_parse_toc_file (MirageParserToc *self, MirageS
                     matched = TRUE;
                 }
                 g_match_info_free(match_info);
+                match_info = NULL;
             }
         } else {
             /* Append the line to CDTEXT string */
@@ -1081,6 +1083,7 @@ static gboolean mirage_parser_toc_parse_toc_file (MirageParserToc *self, MirageS
             }
 
             g_match_info_free(match_info);
+            match_info = NULL;
         }
 
         /* Complain if we failed to match the line (should it be fatal?) */
