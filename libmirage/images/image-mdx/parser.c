@@ -128,10 +128,10 @@ static gchar *__helper_find_binary_file (const gchar *declared_filename, const g
 
         g_regex_unref(mds_regex);
         g_free(ext);
-        g_match_info_free(match_info);
     } else {
         bin_filename = g_strdup(declared_filename);
     }
+    g_match_info_free(match_info);
     g_regex_unref(ext_regex);
 
     bin_fullpath = mirage_helper_find_data_file(bin_filename, mds_filename);
