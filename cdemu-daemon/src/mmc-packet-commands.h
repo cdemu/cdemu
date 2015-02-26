@@ -1667,7 +1667,7 @@ struct READ_TOC_PMA_ATIP_4_Header
 struct READ_TOC_PMA_ATIP_4_Descriptor
 {
     #if G_BYTE_ORDER == G_BIG_ENDIAN
-        guint8 one1      : 1
+        guint8 one1      : 1;
         guint8 itwp      : 3;
         guint8 reserved1 : 1;
         guint8 ref_speed : 3;
