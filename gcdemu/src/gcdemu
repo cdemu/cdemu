@@ -828,7 +828,7 @@ class gCDEmuDeviceOptionsPage (Gtk.Grid):
 
         # *** Bad sector emulation ***
         checkbutton = Gtk.CheckButton(_("Bad sector emulation"), False)
-        checkbutton.connect("toggled", lambda t: self.emit("bad-sector-emulation-changed", togglebutton.get_active()))
+        checkbutton.connect("toggled", lambda t: self.emit("bad-sector-emulation-changed", t.get_active()))
         self.add(checkbutton)
         self.checkbutton_bad_sector = checkbutton
 
