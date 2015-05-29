@@ -23,7 +23,7 @@
 
 
 static const guint8 riff_signature[4] = { 'R', 'I', 'F', 'F' };
-static const guint8 imag_signature[4] = { 'I', 'M', 'A', 'G' };
+static const guint8 imag_signature[4] = { 'i', 'm', 'a', 'g' };
 static const guint8  ofs_signature[4] = { 'o', 'f', 's', ' ' };
 static const guint8 disc_signature[4] = { 'd', 'i', 's', 'c' };
 
