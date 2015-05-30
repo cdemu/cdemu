@@ -188,14 +188,22 @@ static MirageTrack *mirage_parser_cif_parse_track_descriptor (MirageParserCif *s
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  - sector data size: %d (0x%X)\n", __debug__, descriptor->sector_data_size, descriptor->sector_data_size);
 
     if ((CIF_Track) descriptor->type == AUDIO) {
-        audio_descriptor->fadein_length = GUINT16_FROM_LE(audio_descriptor->fadein_length);
-        audio_descriptor->fadeout_length = GUINT16_FROM_LE(audio_descriptor->fadeout_length);
+        gchar *fadeinlen, *fadeoutlen;
+
+        audio_descriptor->fadein_length = GUINT32_FROM_LE(audio_descriptor->fadein_length);
+        audio_descriptor->fadeout_length = GUINT32_FROM_LE(audio_descriptor->fadeout_length);
+
+        fadeinlen = mirage_helper_lba2msf_str(audio_descriptor->fadein_length, FALSE);
+        fadeoutlen = mirage_helper_lba2msf_str(audio_descriptor->fadeout_length, FALSE);
 
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: Audio track descriptor:\n", __debug__);
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  - ISRC: %.12s\n", __debug__, audio_descriptor->isrc);
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  - fade-out length: %d (0x%X)\n", __debug__, audio_descriptor->fadeout_length, audio_descriptor->fadeout_length);
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  - fade-in length: %d (0x%X)\n", __debug__, audio_descriptor->fadein_length, audio_descriptor->fadein_length);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  - fade-out length: %s (%d)\n", __debug__, fadeoutlen, audio_descriptor->fadeout_length);
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  - fade-in length: %s (%d)\n", __debug__, fadeinlen, audio_descriptor->fadein_length);
         MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s:  - title: \"%s\"\n", __debug__, audio_descriptor->title);
+
+        g_free(fadeinlen);
+        g_free(fadeoutlen);
     }
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "\n");
 

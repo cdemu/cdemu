@@ -67,7 +67,7 @@ http://en.wikipedia.org/wiki/Resource_Interchange_File_Format
 typedef struct
 {
     gchar riff[4]; /* "RIFF" */
-    guint32 length; /* Length of block (including this field) */
+    guint32 length; /* Length of block (including the type field) */
     gchar type[4];
 } CIF_Header; /* length: 12 bytes */
 
@@ -127,10 +127,10 @@ typedef struct
     guint8 dummy1[205];
     gchar isrc[12]; /* ISRC */
     guint8 dummy2[28];
-    guint16 fadein_length;
-    guint16 dummy3[5];
-    guint16 fadeout_length;
-    guint16 dummy4[5];
+    guint32 fadein_length; /* Measured in frames */
+    guint32 dummy3[2];
+    guint32 fadeout_length; /* Measured in frames */
+    guint32 dummy4[2];
     gchar title[]; /* Zero-terminated string. */
 } CIF_AudioTrackDescriptor; /* length: 269 bytes + variable title */
 
