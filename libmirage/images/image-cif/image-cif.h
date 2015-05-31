@@ -62,6 +62,8 @@ Resource Interchange File Format (RIFF) standard of 1991, see references:
 http://en.wikipedia.org/wiki/Resource_Interchange_File_Format
 */
 
+#define CIF_MIN_TRACK_LEN 300 /* Minimum amount of frames per track */
+
 #pragma pack(1)
 
 typedef struct
@@ -74,7 +76,7 @@ typedef struct
 typedef struct
 {
     gchar riff[4]; /* "RIFF" */
-    guint32 length; /* Length of block this entry points to (plus four bytes) */
+    guint32 length; /* Length of block this entry points to */
     gchar type[4]; /* "adio", "info" */
     guint32 offset; /* Offset of track block in image */
     guint8 dummy[6]; /* (unknown) */

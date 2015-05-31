@@ -243,15 +243,15 @@ static MirageTrack *mirage_parser_cif_parse_track_descriptor (MirageParserCif *s
     }
 
     /* Compute the actual track length */
-    if (offset_entry->length % sector_size) {
-        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: declared data chunk length (%d) not divisible by sector size (%d)!\n", __debug__, offset_entry->length, sector_size);
-        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_PARSER_ERROR, "Declared data chunk length (%d) not divisible by sector size (%d)!\n", offset_entry->length, sector_size);
-        return NULL;
-    }
-    track_length = offset_entry->length / sector_size;
+    track_length = MAX(descriptor->num_sectors, CIF_MIN_TRACK_LEN);
     MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: computed track length: %d (0x%X)\n", __debug__, track_length, track_length);
-    MIRAGE_DEBUG(self, MIRAGE_DEBUG_PARSER, "%s: difference between declared and computed track length: %d (0x%X)\n", __debug__, descriptor->num_sectors - track_length, descriptor->num_sectors - track_length);
 
+    /* Sanity check */
+    if (track_length * sector_size > offset_entry->length) {
+        MIRAGE_DEBUG(self, MIRAGE_DEBUG_WARNING, "%s: sanity check failed!\n", __debug__);
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_PARSER_ERROR, "Sanity check failed!");
+        return FALSE;
+    }
 
     /* Create new track */
     track = g_object_new(MIRAGE_TYPE_TRACK, NULL);
