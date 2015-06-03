@@ -114,7 +114,7 @@ function (gtk_doc)
     )
 
     # Actual target
-    add_custom_target ("gtkdoc ${GTKDOC_MODULE}" ALL
+    add_custom_target ("gtkdoc-${GTKDOC_MODULE}" ALL
         DEPENDS ${GTKDOC_DOCS_BUILDDIR}/scan.stamp
         ${GTKDOC_DOCS_BUILDDIR}/sgml.stamp
         ${GTKDOC_DOCS_BUILDDIR}/html.stamp)

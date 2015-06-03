@@ -224,7 +224,7 @@ function(gobject_introspection)
     )
 
     # Actual target
-    add_custom_target("${GIR_LIBRARY} typelib" ALL DEPENDS ${GIR_LIBRARY} ${GIR_FILENAME} ${GIR_TYPELIB})
+    add_custom_target("${GIR_LIBRARY}-typelib" ALL DEPENDS ${GIR_LIBRARY} ${GIR_FILENAME} ${GIR_TYPELIB})
     install(
         FILES ${CMAKE_CURRENT_BINARY_DIR}/${GIR_TYPELIB}
         DESTINATION ${GIR_TYPELIBDIR}
