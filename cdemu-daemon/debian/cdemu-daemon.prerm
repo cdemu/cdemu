@@ -18,7 +18,7 @@ case "$1" in
 		# Kill any session instances of cdemu-daemon running.
 		pkill -KILL "^cdemu-daemon$" && mywarning "Killed running daemon instances."
 
-		# Unset GID on cdemu daemon
+		# Unset permissions on cdemu daemon
 		dpkg-statoverride --remove "/usr/bin/cdemu-daemon" || myerror "Removing statoverride failed."
 	;;
 
