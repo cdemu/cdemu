@@ -247,11 +247,6 @@ gboolean cdemu_device_create_blank_disc (CdemuDevice *self, const gchar *filenam
 \**********************************************************************/
 gboolean cdemu_device_unload_disc_private (CdemuDevice *self, gboolean force, GError **error)
 {
-    /* We have to report eject request, even if it doesn't actually get carried
-       out, for example because device is locked. However, this should give
-       HAL a clue that it might be good idea to unlock the device... */
-    self->priv->media_event = MEDIA_EVENT_EJECTREQUEST;
-
     /* Check if the door is locked */
     if (!force && self->priv->locked) {
         CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: device is locked\n", __debug__);
@@ -311,15 +306,24 @@ gboolean cdemu_device_unload_disc (CdemuDevice *self, GError **error)
     gboolean succeeded;
 
     g_mutex_lock(self->priv->device_mutex);
+
+    /* This call is the equivalent of the user pressing the mechanical
+       switch on the logical unit to eject the disc, so it needs to
+       generate the media eject request event. The actual unload will
+       likely not happen at this point, due to device being locked;
+       instead, HAL/udev/udisksd2 may pick up the request, unlock the
+       device, and proceed with ejection again... */
+    self->priv->media_event = MEDIA_EVENT_EJECTREQUEST;
+
+    /* Attempt the actual unload */
     succeeded = cdemu_device_unload_disc_private(self, FALSE, error);
+
     g_mutex_unlock(self->priv->device_mutex);
 
-    /* Currently, the only case of unload command failing is when device is
-       locked. However, in that case, the unload attempt is reported, and if
-       HAL daemon is running, it will try to unlock the device and unload it
-       again. So in order not to bother clients with device locked error when
-       device will most likely get unloaded anyway, we ignore the command's
-       return status here... */
+    /* Ignore the command's return value to avoid bothering the clients
+       with errors when device is most likely locked, and will be
+       unloaded by HAL/udev/udisksd2 upon reception of the above-set
+       eject request event ...*/
     succeeded = TRUE;
     return succeeded;
 }
