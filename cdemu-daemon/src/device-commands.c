@@ -2335,7 +2335,7 @@ static gboolean command_start_stop_unit (CdemuDevice *self, const guint8 *raw_cd
         if (!cdb->start) {
 
             CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: unloading disc...\n", __debug__);
-            if (!cdemu_device_unload_disc_private(self, FALSE, NULL)) {
+            if (!cdemu_device_unload_disc_private(self, NULL)) {
                 CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: failed to unload disc\n", __debug__);
                 cdemu_device_write_sense(self, NOT_READY, MEDIUM_REMOVAL_PREVENTED);
                 return FALSE;

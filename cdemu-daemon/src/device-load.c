@@ -245,10 +245,10 @@ gboolean cdemu_device_create_blank_disc (CdemuDevice *self, const gchar *filenam
 /**********************************************************************\
  *                              Unload disc                           *
 \**********************************************************************/
-gboolean cdemu_device_unload_disc_private (CdemuDevice *self, gboolean force, GError **error)
+gboolean cdemu_device_unload_disc_private (CdemuDevice *self, GError **error)
 {
     /* Check if the door is locked */
-    if (!force && self->priv->locked) {
+    if (self->priv->locked) {
         CDEMU_DEBUG(self, DAEMON_DEBUG_MMC, "%s: device is locked\n", __debug__);
         g_set_error(error, CDEMU_ERROR, CDEMU_ERROR_DEVICE_LOCKED, "Device is locked!");
         return FALSE;
@@ -316,7 +316,7 @@ gboolean cdemu_device_unload_disc (CdemuDevice *self, GError **error)
     self->priv->media_event = MEDIA_EVENT_EJECTREQUEST;
 
     /* Attempt the actual unload */
-    succeeded = cdemu_device_unload_disc_private(self, FALSE, error);
+    succeeded = cdemu_device_unload_disc_private(self, error);
 
     g_mutex_unlock(self->priv->device_mutex);
 

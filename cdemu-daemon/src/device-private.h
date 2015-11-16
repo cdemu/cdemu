@@ -181,7 +181,7 @@ void cdemu_device_write_sense_full (CdemuDevice *self, SenseKey sense_key, guint
 void cdemu_device_write_sense (CdemuDevice *self, SenseKey sense_key, guint16 asc_ascq);
 
 /* Load/unload */
-gboolean cdemu_device_unload_disc_private (CdemuDevice *self, gboolean force, GError **error);
+gboolean cdemu_device_unload_disc_private (CdemuDevice *self, GError **error);
 
 /* Mode pages */
 gpointer cdemu_device_get_mode_page (CdemuDevice *self, gint page, ModePageType type);
