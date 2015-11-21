@@ -4,7 +4,7 @@ cmake_minimum_required (VERSION 2.8.5)
 project (cdemu-daemon C)
 
 # Versioning
-set (CDEMU_DAEMON_VERSION 3.0.2)
+set (CDEMU_DAEMON_VERSION 3.0.3)
 set (CDEMU_DAEMON_INTERFACE_VERSION_MAJOR 7)
 set (CDEMU_DAEMON_INTERFACE_VERSION_MINOR 0)
 

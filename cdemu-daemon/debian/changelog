@@ -1,3 +1,8 @@
+cdemu-daemon (3.0.3-1) debian; urgency=low
+  * Updated to 3.0.3
+  * Discontinue setting GID on the executable.
+ -- Rok Mandeljc <rok.mandeljc@gmail.com>  Sat, 21 Nov 2015 12:00:00 +0100
+
 cdemu-daemon (3.0.2-1) debian; urgency=low
   * 01-dbus-config.diff: Patch D-BUS configuration.
   * Initial Release. Closes: #705409
