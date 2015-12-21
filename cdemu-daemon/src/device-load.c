@@ -75,6 +75,7 @@ static gboolean cdemu_device_load_disc_private (CdemuDevice *self, gchar **filen
     /* Mark loaded discs as non-writable */
     self->priv->recordable_disc = FALSE;
     self->priv->rewritable_disc = FALSE;
+    self->priv->disc_closed = TRUE;
 
     /* Loading succeeded */
     self->priv->loaded = TRUE;
@@ -182,6 +183,7 @@ static gboolean cdemu_device_create_blank_disc_private (CdemuDevice *self, const
     /* Emulate 80-min CD-R or DVD+R SL for now */
     self->priv->recordable_disc = TRUE;
     self->priv->rewritable_disc = FALSE;
+    self->priv->disc_closed = FALSE;
 
     mirage_disc_set_medium_type(self->priv->disc, medium_type);
     self->priv->medium_capacity = medium_capacity;
