@@ -1,3 +1,7 @@
+cdemu-daemon (3.0.4-1) debian; urgency=low
+  * Updated to 3.0.4
+ -- Rok Mandeljc <rok.mandeljc@gmail.com>  Mon, 21 Dec 2015 12:00:00 +0100
+
 cdemu-daemon (3.0.3-1) debian; urgency=low
   * Updated to 3.0.3
   * Discontinue setting GID on the executable.
