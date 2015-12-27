@@ -1188,6 +1188,7 @@ def create_parser ():
     parser.add_argument("--version", action="version", version="%s %s - (C) Rok Mandeljc" % (app_name, app_version))
 
     subparsers = parser.add_subparsers(title=_("valid commands"), metavar="command", help=_("command help"))
+    subparsers.required = True
 
     # Command sub-parsers
     cmd_load(subparsers) # Load
