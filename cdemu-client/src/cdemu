@@ -366,7 +366,13 @@ class cmd_display_status (object):
         print("%-5s %-10s %s" % (_("DEV"), _("LOADED"), _("FILENAME")))
         for device in range (0, num_devices):
             try:
-                [loaded, filenames] = dbus_iface.DeviceGetStatus(device, utf8_strings=True)
+                # With python2, we need to use utf8_strings to work around
+                # bug #71; in python3, this argument is neither supported,
+                # nor actually required anymore
+                if sys.version_info >= (3, 0):
+                    [loaded, filenames] = dbus_iface.DeviceGetStatus(device)
+                else:
+                    [loaded, filenames] = dbus_iface.DeviceGetStatus(device, utf8_strings=True)
             except dbus.DBusException as e:
                 print_warning(_("Failed to get status of device %i: %s") % (device, e))
                 continue
