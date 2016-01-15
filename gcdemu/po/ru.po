@@ -1,5 +1,5 @@
 # Russian translation of gCDEmu.
-# Copyright (C) 2006-2015 
+# Copyright (C) 2006-2015
 # This file is distributed under the same license as the gCDEmu package.
 # Grigorii Chirkov <ridgentsailor TYPE_AT_HERE gmail AND_DOT_HERE com>, 2006-2015.
 #
@@ -9,14 +9,15 @@ msgstr ""
 "Project-Id-Version: gCDEmu 3.0.0\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2016-01-05 12:00+0100\n"
-"Last-Translator: Grigorii Chirkov <ridgentsailor TYPE_AT_HERE gmail AND_DOT_HERE com>"
-"net>\n"
+"Last-Translator: Grigorii Chirkov <ridgentsailor TYPE_AT_HERE gmail "
+"AND_DOT_HERE com>\n"
 "Language-Team: Russian\n"
 "Language: ru\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"PO-Revision-Date: 2016-01-05 12:00+0100\n"
+"PO-Revision-Date: 2016-01-15 04:57+0300\n"
+"X-Generator: Poedit 1.8.4\n"
 
 #: ../data/gcdemu.desktop.in.h:1
 msgid "gCDEmu"
@@ -27,7 +28,6 @@ msgid "gCDEmu GUI"
 msgstr "Графический интерфейс gCDEmu"
 
 #: ../data/net.sf.cdemu.gcdemu.gschema.xml.in.h:1
-#, fuzzy
 msgid "Show notifications"
 msgstr "Показывать уведомления"
 
@@ -36,16 +36,14 @@ msgid ""
 "Whether to show notifications on events such as daemon start/stop and device "
 "state changes."
 msgstr ""
-"Показывать уведомления о событиях (например, запуск/остановка демона или"
+"Показывать уведомления о событиях (например, запуск/остановка демона или "
 "изменение состояния накопителя)."
 
 #: ../data/net.sf.cdemu.gcdemu.gschema.xml.in.h:3
-#, fuzzy
 msgid "Use system bus"
 msgstr "Использовать системную шину"
 
 #: ../data/net.sf.cdemu.gcdemu.gschema.xml.in.h:4
-#, fuzzy
 msgid "Whether system bus should be used instead of session one."
 msgstr "Использовать системную шину вместо шины сессии."
 
@@ -59,8 +57,9 @@ msgid ""
 "will attempt to autostart the daemon when gCDEmu tries to establish "
 "connection with it."
 msgstr ""
-"Использовать активацию D-Bus для запускаемых служб. Если эта настройка включена,"
-"D-Bus будет автоматически запускать демон при попытке gCDEmu подключиться к нему."
+"Использовать активацию D-Bus для запускаемых служб. Если эта настройка "
+"включена, D-Bus будет автоматически запускать демон при попытке gCDEmu "
+"подключиться к нему."
 
 #: ../data/net.sf.cdemu.gcdemu.gschema.xml.in.h:7
 msgid "Icon name (connected)"
@@ -73,8 +72,8 @@ msgid ""
 "standard pixmaps directory (e.g. /usr/share/pixmaps)."
 msgstr ""
 "Название иконки, отображаемое в области уведомлений при подключении к демону."
-"В качестве него можно выбрать подходящее стандартное имя или имя пиктограммы"
-"из стандартной директории (например /usr/share/pixmaps)."
+"В качестве него можно выбрать подходящее стандартное имя или имя пиктограммы "
+"из стандартной директории (например, /usr/share/pixmaps)."
 
 #: ../data/net.sf.cdemu.gcdemu.gschema.xml.in.h:9
 msgid "Icon name (disconnected)"
@@ -86,9 +85,9 @@ msgid ""
 "be either a valid stock name or filename of a pixmap that can be found in a "
 "standard pixmaps directory (e.g. /usr/share/pixmaps)."
 msgstr ""
-"Название иконки, отображаемое в области уведомлений при отключении от демона."
-"В качестве него можно выбрать подходящее стандартное имя или имя пиктограммы"
-"из стандартной директории (например /usr/share/pixmaps)."
+"Название иконки, отображаемое в области уведомлений при отключении от "
+"демона. В качестве него можно выбрать подходящее стандартное имя или имя "
+"пиктограммы из стандартной директории (например /usr/share/pixmaps)."
 
 #: ../data/net.sf.cdemu.gcdemu.gschema.xml.in.h:11
 msgid "Icon display policy."
@@ -101,15 +100,13 @@ msgid ""
 "to \"never\", the icon is never shown. If set to \"when_connected\", the "
 "icon is shown only when gCDEmu is connected to a daemon."
 msgstr ""
-"Правила отображения иконки на панели задач."
-"Возможные атрибуты — \"всегда\", \"никогда\" и \"при_подключении\"."
-"При установке атрибута \"всегда\" иконка отображается постоянно. Hvis satt til "
-"При установке атрибута \"никогда\" иконка никогда не отображается."
-"При установке атрибута \"при_подключении\" иконка отображается"
-"только в том случае, когда gCDEmu подключен к демону."
+"Правила отображения иконки на панели задач.Возможные атрибуты — \"всегда\", "
+"\"никогда\" и \"при_подключении\". При установке атрибута \"всегда\" иконка "
+"отображается постоянно. Hvis satt til При установке атрибута \"никогда\" "
+"иконка никогда не отображается.При установке атрибута \"при_подключении\" "
+"иконка отображается только в том случае, когда gCDEmu подключен к демону."
 
 #: ../src/gcdemu:279
-#, fuzzy
 msgid "Daemon autostart error"
 msgstr "Ошибка автозапуска демона"
 
@@ -127,19 +124,17 @@ msgid "Incompatible daemon interface"
 msgstr "Несовместимый интерфейс демона"
 
 #: ../src/gcdemu:288
-#, fuzzy, c-format
+#, c-format
 msgid ""
 "CDEmu daemon interface version %i.%i detected, but version %i.%i is required!"
-msgstr ""
-"Версия демона CDEmu — %i.%i. Необходима версия %i.%i."
+msgstr "Версия демона CDEmu — %i.%i. Необходима версия %i.%i."
 
 #: ../src/gcdemu:345
-#, fuzzy
 msgid "Failed to add device"
 msgstr "Не удалось добавить накопитель"
 
 #: ../src/gcdemu:345
-#, fuzzy, c-format
+#, c-format
 msgid ""
 "Failed to add new device. Error:\n"
 "%s"
@@ -148,12 +143,11 @@ msgstr ""
 "%s"
 
 #: ../src/gcdemu:351
-#, fuzzy
 msgid "Failed to remove device"
 msgstr "Не удалось удалить накопитель"
 
 #: ../src/gcdemu:351
-#, fuzzy, c-format
+#, c-format
 msgid ""
 "Failed to remove device. Error:\n"
 "%s"
@@ -162,7 +156,7 @@ msgstr ""
 "%s"
 
 #: ../src/gcdemu:479
-#, fuzzy, c-format
+#, c-format
 msgid ""
 "Failed to unload device #%02d:\n"
 "%s"
@@ -171,7 +165,7 @@ msgstr ""
 "%s"
 
 #: ../src/gcdemu:490
-#, fuzzy, c-format
+#, c-format
 msgid ""
 "Failed to load image %s to device #%02d:\n"
 "%s"
@@ -180,7 +174,7 @@ msgstr ""
 "%s"
 
 #: ../src/gcdemu:496
-#, fuzzy, c-format
+#, c-format
 msgid ""
 "Failed to create blank disc on device #%02d:\n"
 "%s"
@@ -189,57 +183,59 @@ msgstr ""
 "%s"
 
 #: ../src/gcdemu:506
-#, fuzzy, c-format
+#, c-format
 msgid ""
 "Failed to set device ID for device #%02d to %s:\n"
 "%s"
 msgstr ""
-"Не удалось установить идентификатор %s:\n для накопителя #%02d"
+"Не удалось установить идентификатор для накопителя #%02d в значение %s:\n"
 "%s"
 
 #: ../src/gcdemu:516
-#, fuzzy, c-format
+#, c-format
 msgid ""
 "Failed to set DPM emulation for device #%02d to %i:\n"
 "%s"
 msgstr ""
-"Не удалось установить эмуляцию местоположения данных (DPM) %i:\n для накопителя #%02d"
-"%s"
+"Не удалось установить эмуляцию местоположения данных (DPM) %i:\n"
+" для накопителя #%02d%s"
 
 #: ../src/gcdemu:525
-#, fuzzy, c-format
+#, c-format
 msgid ""
 "Failed to set TR emulation for device #%02d to %i:\n"
 "%s"
 msgstr ""
-"Не удалось установить эмуляцию скорости считывания данных (TR) %i:\n для накопитля #%02d"
-"%s"
+"Не удалось установить эмуляцию скорости считывания данных (TR) %i:\n"
+" для накопителя #%02d%s"
 
 #: ../src/gcdemu:534
-#, fuzzy, c-format
+#, c-format
 msgid ""
 "Failed to set bad sector emulation for device #%02d to %i:\n"
 "%s"
 msgstr ""
-"Не удалось установить эмуляцию плохих секторов %i:\n для накопителя #%02d"
-"%s"
+"Не удалось установить эмуляцию плохих секторов %i:\n"
+" для накопителя #%02d%s"
 
 #: ../src/gcdemu:544
-#, fuzzy, c-format
+#, c-format
 msgid ""
 "Failed to set daemon debug mask for device #%02d to 0x%X:\n"
 "%s"
 msgstr ""
-"Не удалось установить отладочную маску демона 0x%X:\n для накопителя #%02d"
+"Не удалось установить отладочную маску демона  для накопителя #%02d в "
+"значение 0x%X:\n"
 "%s"
 
 #: ../src/gcdemu:553
-#, fuzzy, c-format
+#, c-format
 msgid ""
 "Failed to set library debug mask for device #%02d to 0x%X:\n"
 "%s"
 msgstr ""
-"Не удалось установить отладочную маску библиотеки 0x%X:\n для накопителя #%02d"
+"Не удалось установить отладочную маску библиотеки для накопителя #%02d в "
+"значение 0x%X:\n"
 "%s"
 
 #: ../src/gcdemu:605 ../src/gcdemu:1462
@@ -264,7 +260,7 @@ msgstr "Создать пустой образ диска"
 
 #: ../src/gcdemu:657
 msgid "Device mapping"
-msgstr "Device mapping"
+msgstr "Карта накопителя"
 
 #: ../src/gcdemu:669
 msgid "SCSI CD-ROM device: "
@@ -275,7 +271,6 @@ msgid "SCSI generic device: "
 msgstr "Общий накопитель SCSI: "
 
 #: ../src/gcdemu:694
-#, fuzzy
 msgid "Remove device"
 msgstr "Удалить накопитель"
 
@@ -309,7 +304,7 @@ msgstr "Версия: "
 
 #: ../src/gcdemu:797
 msgid "Vendor-specific: "
-msgstr "Заданный производителем: "
+msgstr "Атрибут производителя: "
 
 #: ../src/gcdemu:812
 msgid "Set device ID"
@@ -324,7 +319,6 @@ msgid "Transfer rate emulation"
 msgstr "Эмуляция скорости считывания данных (TR)"
 
 #: ../src/gcdemu:830
-#, fuzzy
 msgid "Bad sector emulation"
 msgstr "Эмуляция плохих секторов"
 
@@ -341,7 +335,6 @@ msgid "Cancel"
 msgstr "Отмена"
 
 #: ../src/gcdemu:946
-#, fuzzy
 msgid "Open"
 msgstr "Открыть"
 
@@ -354,7 +347,6 @@ msgid "All image files"
 msgstr "Все файлы образа диска"
 
 #: ../src/gcdemu:1019
-#, fuzzy
 msgid "Extra Options"
 msgstr "Дополнительные настройки"
 
@@ -391,7 +383,6 @@ msgid "Image"
 msgstr "Образ"
 
 #: ../src/gcdemu:1162
-#, fuzzy
 msgid "Filename: "
 msgstr "Имя файла: "
 
@@ -405,14 +396,13 @@ msgstr "Тип содержимого: "
 
 #: ../src/gcdemu:1198
 msgid "Writer: "
-msgstr "Накопитель: "
+msgstr "Образ: "
 
 #: ../src/gcdemu:1218
 msgid "Writer options"
-msgstr "Настройки накопителя"
+msgstr "Настройки образа"
 
 #: ../src/gcdemu:1232
-#, fuzzy
 msgid "Choose file"
 msgstr "Выбрать файл"
 
@@ -422,14 +412,14 @@ msgstr "Не задано имя файла образа!"
 
 #: ../src/gcdemu:1391
 msgid "No image writer is chosen!"
-msgstr "Не выбран накопитель!"
+msgstr "Не выбран тип образа!"
 
 #: ../src/gcdemu:1396
 msgid "Invalid option"
-msgstr "Недействительные настройки"
+msgstr "Неверные настройки"
 
 #: ../src/gcdemu:1439
-#, fuzzy, c-format
+#, c-format
 msgid "Device #%02d: properties"
 msgstr "Свойства накопителя #%02d:"
 
@@ -438,7 +428,7 @@ msgid "Close"
 msgstr "Закрыть"
 
 #: ../src/gcdemu:1447
-#, fuzzy, c-format
+#, c-format
 msgid "Device #%02d"
 msgstr "Накопитель #%02d"
 
@@ -471,23 +461,21 @@ msgid "Empty"
 msgstr "Пусто"
 
 #: ../src/gcdemu:1541 ../src/gcdemu:1543
-#, fuzzy
 msgid "Device status change"
 msgstr "Изменение состояния накопителя"
 
 #: ../src/gcdemu:1541
-#, fuzzy, c-format
+#, c-format
 msgid "Device #%02d has been loaded."
 msgstr "Образ смонтирован в накопитель #%02d."
 
 #: ../src/gcdemu:1543
-#, fuzzy, c-format
+#, c-format
 msgid "Device #%02d has been emptied."
 msgstr "Образ демонтирован из накопителя #%02d."
 
 #: ../src/gcdemu:1548 ../src/gcdemu:1553 ../src/gcdemu:1558 ../src/gcdemu:1563
 #: ../src/gcdemu:1568 ../src/gcdemu:1573
-#, fuzzy
 msgid "Device option change"
 msgstr "Изменить настройки накопителя"
 
@@ -507,57 +495,65 @@ msgstr ""
 "  Атрибут производителя: '%s'"
 
 #: ../src/gcdemu:1553
-#, fuzzy, c-format
+#, c-format
 msgid "Device #%02d has had its DPM emulation option changed. New value: %s"
-msgstr "Настройки эмуляции местоположения данных (DPM) накопителя #%02d были изменены. Новое значение: %s"
+msgstr ""
+"Настройки эмуляции местоположения данных (DPM) накопителя #%02d были "
+"изменены. Новое значение: %s"
 
 #: ../src/gcdemu:1558
-#, fuzzy, c-format
+#, c-format
 msgid "Device #%02d has had its TR emulation option changed. New value: %s"
-msgstr "Настройки эмуляции скорости считывания данных (TR) накопителя #%02d были изменены. Новое значение: %s"
+msgstr ""
+"Настройки эмуляции скорости считывания данных (TR) накопителя #%02d были "
+"изменены. Новое значение: %s"
 
 #: ../src/gcdemu:1563
-#, fuzzy, c-format
+#, c-format
 msgid ""
 "Device #%02d has had its bad sector emulation option changed. New value: %s"
 msgstr ""
-"Настройки эмуляции плохих секторов накопителя #%02d были изменены. Новое значение: "
-"%s"
+"Настройки эмуляции плохих секторов накопителя #%02d были изменены. Новое "
+"значение: %s"
 
 #: ../src/gcdemu:1568
-#, fuzzy, c-format
+#, c-format
 msgid "Device #%02d has had its daemon debug mask changed. New value: 0x%X"
 msgstr ""
-"Отладочная маска демона накопителя #%02d была изменена. Новое значение: "
-"0x%X"
+"Отладочная маска демона накопителя #%02d была изменена. Новое значение: 0x%X"
 
 #: ../src/gcdemu:1573
-#, fuzzy, c-format
+#, c-format
 msgid "Device #%02d has had its library debug mask changed. New value: 0x%X"
 msgstr ""
-"Отладочная маски библиотеки накопителя #%02d была изменена. Новое значение: 0x%X"
+"Отладочная маски библиотеки накопителя #%02d была изменена. Новое значение: "
+"0x%X"
 
 #: ../src/gcdemu:1619
-#, fuzzy
 msgid "Device error"
 msgstr "Ошибка накопителя"
 
 #: ../src/gcdemu:1655
 msgid "Left click for Property Dialog, right click to unload."
-msgstr "Щелкните левой кнопкой мыши, чтобы открыть свойства, правой — демонтировать образ."
+msgstr ""
+"Щелкните левой кнопкой мыши, чтобы открыть свойства, правой — демонтировать "
+"образ."
 
 #: ../src/gcdemu:1657
 msgid "Left click for Property Dialog, right click to load."
-msgstr "Щелкните левой кнопкой мыши, чтобы открыть свойства, правой — смонтировать образ."
+msgstr ""
+"Щелкните левой кнопкой мыши, чтобы открыть свойства, правой — смонтировать "
+"образ."
 
 #: ../src/gcdemu:1664
 msgid "Click for Property Dialog"
 msgstr "Щелкните, чтобы открыть свойства."
 
 #: ../src/gcdemu:1756
-#, fuzzy
 msgid "A GUI for controlling CDEmu devices."
-msgstr "Графический интерфейс программу CDEmu для управления дисковыми накопителями."
+msgstr ""
+"Графический интерфейс программы CDEmu\n"
+"для управления дисковыми накопителями."
 
 #: ../src/gcdemu:1758
 msgid "The CDEmu project website"
@@ -568,12 +564,10 @@ msgid "translator-credits"
 msgstr "Grigorii Chirkov <grig.chirkov TYPE_AT_HERE gmail AND_DOT_HERE com>"
 
 #: ../src/gcdemu:1768
-#, fuzzy
 msgid "Devices"
 msgstr "Накопители"
 
 #: ../src/gcdemu:1772
-#, fuzzy
 msgid "New device..."
 msgstr "Добавить новый накопитель"
 
@@ -582,7 +576,6 @@ msgid "Show _notifications"
 msgstr "Показывать уведомления"
 
 #: ../src/gcdemu:1799
-#, fuzzy
 msgid "About"
 msgstr "О программе..."
 
@@ -607,27 +600,24 @@ msgid "CDEmu daemon has been stopped."
 msgstr "Демон CDEmu остановлен."
 
 #: ../src/gcdemu:1908
-#, fuzzy
 msgid "Device added"
 msgstr "Накопитель создан"
 
 #: ../src/gcdemu:1908
-#, fuzzy, c-format
+#, c-format
 msgid "Device #%02d has been created."
 msgstr "Накопитель #%02d создан."
 
 #: ../src/gcdemu:1912
-#, fuzzy
 msgid "Device removed"
 msgstr "Накопитель удален"
 
 #: ../src/gcdemu:1912
-#, fuzzy, c-format
+#, c-format
 msgid "Device #%02d has been removed."
 msgstr "Накопитель #%02d удален."
 
 #: ../src/gcdemu:2080
-#, fuzzy
 msgid "Failed to load AppIndicator library!"
 msgstr "Не удалось загрузить библиотеку AppIndicator!"
 
@@ -638,4 +628,3 @@ msgstr "AppIndicator недоступен"
 #: ../src/gcdemu:2115
 msgid "gCDEmu tray mode"
 msgstr "Режим области уведомлений gCDEmu"
-
