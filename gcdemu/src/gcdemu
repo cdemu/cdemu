@@ -49,13 +49,8 @@ try:
 
     from gi.repository import AppIndicator3 as AppIndicator
     have_app_indicator = True
-except ImportError:
-    try:
-        from gi.repository import AppIndicator
-        have_app_indicator = True
-    except ImportError:
-        have_app_indicator = False
-        pass
+except:
+    have_app_indicator = False
 
 
 # *** Globals ***
