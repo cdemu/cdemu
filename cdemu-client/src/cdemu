@@ -24,7 +24,11 @@ import argparse
 import sys
 import os.path
 import getpass
-import dbus
+
+import gi
+from gi.repository import GLib
+from gi.repository import Gio
+
 
 try:
     import configparser
@@ -97,31 +101,31 @@ class cmd_load (object):
         parser.add_argument("--encoding", type=str, help=_("encoding for text-based images"))
         parser.add_argument("--dvd-report-css", action="store_true", help=_("flag the DVD disc as CSS-encoded"))
 
-    def __call__ (self, dbus_iface, arguments):
+    def __call__ (self, proxy, arguments):
         # We need to pass absolute filenames to daemon
         filenames = map(os.path.abspath, arguments.image_file)
 
         # Gather parser parameters into a dictionary
         parser_params = {}
         if hasattr(arguments, "encoding"):
-            parser_params["encoding"] = arguments.encoding
+            parser_params["encoding"] = GLib.Variant("s", arguments.encoding)
         if hasattr(arguments, "password"):
-            parser_params["password"] = arguments.password
+            parser_params["password"] = GLib.Variant("s", arguments.password)
         if hasattr(arguments, "dvd_report_css"):
-            parser_params["dvd-report-css"] = arguments.dvd_report_css
+            parser_params["dvd-report-css"] = GLib.Variant("b", arguments.dvd_report_css)
 
         # Particular device vs. any device
         if arguments.device == "any":
             try:
-                num_devices = dbus_iface.GetNumberOfDevices()
-            except dbus.DBusException as e:
+                num_devices = proxy.GetNumberOfDevices()
+            except GLib.GError as e:
                 raise CDEmuError(_("Failed to get number of devices: %s") % (e))
 
             for device in range(0, num_devices):
                 # Device's status
                 try:
-                    status = dbus_iface.DeviceGetStatus(device)
-                except dbus.DBusException as e:
+                    status = proxy.DeviceGetStatus(device)
+                except GLib.GError as e:
                     print_warning(_("Failed to get status of device %i: %s") % (device, e))
                     continue
 
@@ -130,7 +134,7 @@ class cmd_load (object):
                     continue
 
                 # Load device
-                return self.load_device(dbus_iface, device, filenames, parser_params)
+                return self.load_device(proxy, device, filenames, parser_params)
             else:
                 # If we're here, it means we didn't get an empty device
                 raise CDEmuError(_("No empty device found"))
@@ -140,18 +144,19 @@ class cmd_load (object):
             except ValueError:
                 raise CDEmuError(_("String '%s' is not a number") % (arguments.device))
 
-            return self.load_device(dbus_iface, device, filenames, parser_params)
+            return self.load_device(proxy, device, filenames, parser_params)
 
     # Device loading with password query support
-    def load_device (self, dbus_iface, device, filenames, params={}):
+    def load_device (self, proxy, device, filenames, params={}):
         # Try to load it
         try:
-            dbus_iface.DeviceLoad(device, filenames, params)
-        except dbus.DBusException as e:
-            if e.get_dbus_name() == "net.sf.cdemu.CDEmuDaemon.errorMirage.EncryptedImage":
+            proxy.DeviceLoad(device, filenames, params)
+        except GLib.GError as e:
+            if "net.sf.cdemu.CDEmuDaemon.errorMirage.EncryptedImage" in str(e):
                 # We need password
                 print(_("The image you are trying to load is encrypted."))
-                params["password"] = getpass.getpass(_("Password: ")) # Append password to params
+                password = getpass.getpass(_("Password: ")) # Append password to params
+                params["password"] = GLib.Variant("s", password)
                 return load_device(device, filenames, params)
             else:
                 raise CDEmuError(_("Failed to load image: %s") % (e))
@@ -175,36 +180,36 @@ class cmd_create_blank (object):
         parser.add_argument("--medium-type", type=str, nargs="?", choices=['cdr74', 'cdr80', 'cdr90', 'cdr99', 'dvd+r'], help=_("medium type"))
         parser.add_argument("--param", type=str, nargs="?", action='append', help=_("additional writer parameter(s)"))
 
-    def __call__ (self, dbus_iface, arguments):
+    def __call__ (self, proxy, arguments):
         # We need to pass absolute filename/basename to daemon
         filename = os.path.abspath(arguments.image_file)
 
         # Gather writer parameters into a dictionary
         parameters = {}
         if hasattr(arguments, "writer_id"):
-            parameters["writer-id"] = arguments.writer_id
+            parameters["writer-id"] = GLib.Variant("s", arguments.writer_id)
         if hasattr(arguments, "medium_type"):
-            parameters["medium-type"] = arguments.medium_type
+            parameters["medium-type"] = GLib.Variant("s", arguments.medium_type)
         if hasattr(arguments, "param"):
             # Process parameters
             writer_parameters = self.process_writer_parameters(arguments.param)
             # Validate parameters using writer's parameter sheet
-            writer_parameters = self.validate_writer_parameters(dbus_iface, arguments.writer_id, writer_parameters)
+            writer_parameters = self.validate_writer_parameters(proxy, arguments.writer_id, writer_parameters)
             # Set to parameters dictionary that we will send to daemon
             parameters.update(writer_parameters)
 
         # Particular device vs. any device
         if arguments.device == "any":
             try:
-                num_devices = dbus_iface.GetNumberOfDevices()
-            except dbus.DBusException as e:
+                num_devices = proxy.GetNumberOfDevices()
+            except GLib.GError as e:
                 raise CDEmuError(_("Failed to get number of devices: %s") % (e))
 
             for device in range(0, num_devices):
                 # Device's status
                 try:
-                    status = dbus_iface.DeviceGetStatus(device)
-                except dbus.DBusException as e:
+                    status = proxy.DeviceGetStatus(device)
+                except GLib.GError as e:
                     print_warning(_("Failed to get status of device %i: %s") % (device, e))
                     continue
 
@@ -213,7 +218,7 @@ class cmd_create_blank (object):
                     continue
 
                 # Load device
-                return self.load_device(dbus_iface, device, filename, parameters)
+                return self.load_device(proxy, device, filename, parameters)
             else:
                 # If we're here, it means we didn't get an empty device
                 raise CDEmuError(_("No empty device found"))
@@ -223,14 +228,14 @@ class cmd_create_blank (object):
             except ValueError:
                 raise CDEmuError(_("String '%s' is not a number") % (arguments.device))
 
-            return self.load_device(dbus_iface, device, filename, parameters)
+            return self.load_device(proxy, device, filename, parameters)
 
     # Device loading
-    def load_device (self, dbus_iface, device, filenames, params={}):
+    def load_device (self, proxy, device, filenames, params={}):
         # Try to load it
         try:
-            dbus_iface.DeviceCreateBlank(device, filenames, params)
-        except dbus.DBusException as e:
+            proxy.DeviceCreateBlank(device, filenames, params)
+        except GLib.GError as e:
             raise CDEmuError(_("Failed to load blank image: %s") % (e))
 
     # Image writer parameter processing
@@ -257,11 +262,11 @@ class cmd_create_blank (object):
         return parameters
 
     # Writer parameter validation
-    def validate_writer_parameters (self, dbus_iface, writer_id, parameters):
+    def validate_writer_parameters (self, proxy, writer_id, parameters):
         # Grab writer's parameter sheet
         try:
-            parameter_sheet = dbus_iface.EnumWriterParameters(writer_id)
-        except dbus.DBusException as e:
+            parameter_sheet = proxy.EnumWriterParameters(writer_id)
+        except GLib.GError as e:
             raise CDEmuError(_("Failed to get parameter sheet for writer: %s") % (e))
 
         # Convert the XML tree into a dictionary for convenience
@@ -275,6 +280,7 @@ class cmd_create_blank (object):
                 parameter_entry = valid_parameters[key]
             except KeyError as e:
                 print_warning(_("Parameter '%s' not found in writer's parameter sheet!") % (key))
+                parameters.pop(key, '') # Remove from dictionary
                 continue
 
             # Determine type
@@ -283,19 +289,20 @@ class cmd_create_blank (object):
                 # on the list of valid values, and if not, print a warning
                 for enum_value in parameter_entry[4]:
                     if value == enum_value:
+                        parameters[key] = GLib.Variant("s", value)
                         break
                 else:
                     print_warning(_("Invalid value '%s' given for parameter '%s'!") % (value, key))
-            elif isinstance(parameter_entry[3], dbus.String):
-                # String; nothing to do here
-                continue
-            elif isinstance(parameter_entry[3], dbus.Boolean):
+            elif isinstance(parameter_entry[3], str):
+                # String
+                parameters[key] = GLib.Variant("s", value)
+            elif isinstance(parameter_entry[3], bool):
                 # Boolean; convert string value to boolean
-                parameters[key] = str2bool(value)
-            elif isinstance(parameter_entry[3], dbus.Int32):
+                parameters[key] = GLib.Variant("b", str2bool(value))
+            elif isinstance(parameter_entry[3], int):
                 # Convert string value to integer
                 try:
-                    parameters[key] = int(value, 0)
+                    parameters[key] = GLib.Variant("i", int(value, 0))
                 except ValueError:
                     raise CDEmuError(_("String '%s' given as value for parameter '%s' is not a number!") % (value, key))
             else:
@@ -319,25 +326,25 @@ class cmd_unload (object):
 
         parser.add_argument("device", type=str, help=_("device"))
 
-    def __call__ (self, dbus_iface, arguments):
+    def __call__ (self, proxy, arguments):
         # Particular device vs. all devices
         if arguments.device == "all":
             try:
-                num_devices = dbus_iface.GetNumberOfDevices()
-            except dbus.DBusException as e:
+                num_devices = proxy.GetNumberOfDevices()
+            except GLib.GError as e:
                 raise CDEmuError(_("Failed to get number of devices: %s") % (e))
 
             for device in range(0, num_devices):
                 try:
-                    dbus_iface.DeviceUnload(device)
-                except dbus.DBusException as e:
+                    proxy.DeviceUnload(device)
+                except GLib.GError as e:
                     print_warning(_("Failed to unload device %i: %s") % (device, e))
                     continue
         else:
             try:
                 device = int(arguments.device, 0)
-                dbus_iface.DeviceUnload(device)
-            except dbus.DBusException as e:
+                proxy.DeviceUnload(device)
+            except GLib.GError as e:
                 raise CDEmuError(_("Failed to unload device %i: %s") % (device, e))
             except ValueError:
                 raise CDEmuError(_("String '%s' is not a number") % (arguments.device))
@@ -355,25 +362,19 @@ class cmd_display_status (object):
         parser = subparsers.add_parser(name, description=description_msg, help=help_msg, formatter_class=argparse.ArgumentDefaultsHelpFormatter, argument_default=argparse.SUPPRESS)
         parser.set_defaults(command_function=self)
 
-    def __call__ (self, dbus_iface, arguments):
+    def __call__ (self, proxy, arguments):
         # Print status for all devices
         try:
-            num_devices = dbus_iface.GetNumberOfDevices()
-        except dbus.DBusException as e:
+            num_devices = proxy.GetNumberOfDevices()
+        except GLib.GError as e:
             raise CDEmuError(_("Failed to get number of devices: %s") % (e))
 
         print_header(_("Devices' status:"))
         print("%-5s %-10s %s" % (_("DEV"), _("LOADED"), _("FILENAME")))
         for device in range (0, num_devices):
             try:
-                # With python2, we need to use utf8_strings to work around
-                # bug #71; in python3, this argument is neither supported,
-                # nor actually required anymore
-                if sys.version_info >= (3, 0):
-                    [loaded, filenames] = dbus_iface.DeviceGetStatus(device)
-                else:
-                    [loaded, filenames] = dbus_iface.DeviceGetStatus(device, utf8_strings=True)
-            except dbus.DBusException as e:
+                [loaded, filenames] = proxy.DeviceGetStatus(device)
+            except GLib.GError as e:
                 print_warning(_("Failed to get status of device %i: %s") % (device, e))
                 continue
 
@@ -398,19 +399,19 @@ class cmd_device_mapping (object):
         parser = subparsers.add_parser(name, description=description_msg, help=help_msg, formatter_class=argparse.ArgumentDefaultsHelpFormatter, argument_default=argparse.SUPPRESS)
         parser.set_defaults(command_function=self)
 
-    def __call__ (self, dbus_iface, arguments):
+    def __call__ (self, proxy, arguments):
         # Print device mapping for all devices
         try:
-            num_devices = dbus_iface.GetNumberOfDevices()
-        except dbus.DBusException as e:
+            num_devices = proxy.GetNumberOfDevices()
+        except GLib.GError as e:
             raise CDEmuError(_("Failed to get number of devices: %s") % (e))
 
         print_header(_("Device mapping:"))
         print("%-5s %-15s %-15s" % (_("DEV"), _("SCSI CD-ROM"), _("SCSI generic")))
         for device in range (0, num_devices):
             try:
-                [dev_sr, dev_sg] = dbus_iface.DeviceGetMapping(device)
-            except dbus.DBusException as e:
+                [dev_sr, dev_sg] = proxy.DeviceGetMapping(device)
+            except GLib.GError as e:
                 print_warning(_("Failed to get device mapping of device %i: %s") % (device, e))
                 continue
 
@@ -433,7 +434,7 @@ class cmd_daemon_debug_mask (object):
         parser.add_argument("new_value", nargs="?", type=str, help=_("new value"))
         parser.set_defaults(command_function=self)
 
-    def __call__ (self, dbus_iface, arguments):
+    def __call__ (self, proxy, arguments):
         # Set daemon debug mask
         if hasattr(arguments, "new_value"):
             try:
@@ -443,15 +444,15 @@ class cmd_daemon_debug_mask (object):
 
             if arguments.device == "all":
                 try:
-                    num_devices = dbus_iface.GetNumberOfDevices()
-                except dbus.DBusException as e:
+                    num_devices = proxy.GetNumberOfDevices()
+                except GLib.GError as e:
                     raise CDEmuError(_("Failed to get number of devices: %s") % (e))
 
                 print(_("Setting daemon debug mask of all devices to 0x%X.") % (mask))
                 for device in range(0, num_devices):
                     try:
-                        dbus_iface.DeviceSetOption(device, "daemon-debug-mask", mask)
-                    except dbus.DBusException as e:
+                        proxy.DeviceSetOption(device, "daemon-debug-mask", GLib.Variant("i", mask))
+                    except GLib.GError as e:
                         print_warning(_("Failed to set daemon debug mask of device %i to 0x%X: %s") % (device, mask, e))
                         continue
             else:
@@ -462,8 +463,8 @@ class cmd_daemon_debug_mask (object):
 
                 print(_("Setting daemon debug mask of device %i to 0x%X.") % (device, mask))
                 try:
-                    dbus_iface.DeviceSetOption(device, "daemon-debug-mask", mask)
-                except dbus.DBusException as e:
+                    proxy.DeviceSetOption(device, "daemon-debug-mask", GLib.Variant("i", mask))
+                except GLib.GError as e:
                     raise CDEmuError(_("Failed to set daemon debug mask of device %i to 0x%X: %s") % (device, mask, e))
 
         # Get daemon debug mask
@@ -471,8 +472,8 @@ class cmd_daemon_debug_mask (object):
             # Particular device vs. all devices
             if arguments.device == "all":
                 try:
-                    num_devices = dbus_iface.GetNumberOfDevices()
-                except dbus.DBusException as e:
+                    num_devices = proxy.GetNumberOfDevices()
+                except GLib.GError as e:
                     raise CDEmuError(_("Failed to get number of devices: %s") % (e))
 
                 print_header(_("Devices' daemon debug masks:"))
@@ -480,8 +481,8 @@ class cmd_daemon_debug_mask (object):
 
                 for device in range(0, num_devices):
                     try:
-                        mask = dbus_iface.DeviceGetOption(device, "daemon-debug-mask")
-                    except dbus.DBusException as e:
+                        mask = proxy.DeviceGetOption(device, "daemon-debug-mask")
+                    except GLib.GError as e:
                         print_warning(_("Failed to get daemon debug mask of device %i: %s") % (device, e))
                         continue
 
@@ -489,8 +490,8 @@ class cmd_daemon_debug_mask (object):
             else:
                 try:
                     device = int(arguments.device, 0)
-                    mask = dbus_iface.DeviceGetOption(device, "daemon-debug-mask")
-                except dbus.DBusException as e:
+                    mask = proxy.DeviceGetOption(device, "daemon-debug-mask")
+                except GLib.GError as e:
                     raise CDEmuError(_("Failed to get daemon debug mask of device %i: %s") % (device, e))
                 except ValueError:
                     raise CDEmuError(_("String '%s' is not a number") % (arguments.device))
@@ -513,7 +514,7 @@ class cmd_library_debug_mask (object):
         parser.add_argument("device", type=str, help=_("device"))
         parser.add_argument("new_value", nargs="?", type=str, help=_("new value"))
 
-    def __call__ (self, dbus_iface, arguments):
+    def __call__ (self, proxy, arguments):
         # Set debug mask
         if hasattr(arguments, "new_value"):
             try:
@@ -523,15 +524,15 @@ class cmd_library_debug_mask (object):
 
             if arguments.device == "all":
                 try:
-                    num_devices = dbus_iface.GetNumberOfDevices()
-                except dbus.DBusException as e:
+                    num_devices = proxy.GetNumberOfDevices()
+                except GLib.GError as e:
                     raise CDEmuError(_("Failed to get number of devices: %s") % (e))
 
                 print(_("Setting library debug mask of all devices to 0x%X.") % (mask))
                 for device in range(0, num_devices):
                     try:
-                        dbus_iface.DeviceSetOption(device, "library-debug-mask", mask)
-                    except dbus.DBusException as e:
+                        proxy.DeviceSetOption(device, "library-debug-mask", GLib.Variant("i", mask))
+                    except GLib.GError as e:
                         print_warning(_("Failed to set library debug mask of device %i to 0x%X: %s") % (device, mask, e))
                         continue
             else:
@@ -542,8 +543,8 @@ class cmd_library_debug_mask (object):
 
                 print(_("Setting library debug mask of device %i to 0x%X.") % (device, mask))
                 try:
-                    dbus_iface.DeviceSetOption(device, "library-debug-mask", mask)
-                except dbus.DBusException as e:
+                    proxy.DeviceSetOption(device, "library-debug-mask", GLib.Variant("i", mask))
+                except GLib.GError as e:
                     raise CDEmuError(_("Failed to set library debug mask of device %i to 0x%X: %s") % (device, mask, e))
 
         # Get debug mask
@@ -551,8 +552,8 @@ class cmd_library_debug_mask (object):
             # Particular device vs. all devices
             if arguments.device == "all":
                 try:
-                    num_devices = dbus_iface.GetNumberOfDevices()
-                except dbus.DBusException as e:
+                    num_devices = proxy.GetNumberOfDevices()
+                except GLib.GError as e:
                     raise CDEmuError(_("Failed to get number of devices: %s") % (e))
 
                 print_header(_("Devices' library debug masks:"))
@@ -560,16 +561,16 @@ class cmd_library_debug_mask (object):
 
                 for device in range(0, num_devices):
                     try:
-                        mask = dbus_iface.DeviceGetOption(device, "library-debug-mask")
-                    except dbus.DBusException as e:
+                        mask = proxy.DeviceGetOption(device, "library-debug-mask")
+                    except GLib.GError as e:
                         print_warning(_("Failed to get library debug mask of device %i: %s") % (device, e))
 
                     print("%-5s 0x%08X" % (device, mask))
             else:
                 try:
                     device = int(arguments.device, 0)
-                    mask = dbus_iface.DeviceGetOption(device, "library-debug-mask")
-                except dbus.DBusException as e:
+                    mask = proxy.DeviceGetOption(device, "library-debug-mask")
+                except GLib.GError as e:
                     raise CDEmuError(_("Failed to get library debug mask of device %i: %s") % (device, e))
                 except ValueError:
                     raise CDEmuError(_("String '%s' is not a number") % (mask))
@@ -592,7 +593,7 @@ class cmd_dpm_emulation (object):
         parser.add_argument("device", type=str, help=_("device"))
         parser.add_argument("new_value", nargs="?", type=str, help=_("new value"))
 
-    def __call__ (self, dbus_iface, arguments):
+    def __call__ (self, proxy, arguments):
         # Set DPM emulation flag
         if hasattr(arguments, "new_value"):
             try:
@@ -602,15 +603,15 @@ class cmd_dpm_emulation (object):
 
             if arguments.device == "all":
                 try:
-                    num_devices = dbus_iface.GetNumberOfDevices()
-                except dbus.DBusException as e:
+                    num_devices = proxy.GetNumberOfDevices()
+                except GLib.GError as e:
                     raise CDEmuError(_("Failed to get number of devices: %s") % (e))
 
                 print(_("Setting DPM emulation flag of all devices to %i.") % (enabled))
                 for device in range(0, num_devices):
                     try:
-                        dbus_iface.DeviceSetOption(device, "dpm-emulation", enabled)
-                    except dbus.DBusException as e:
+                        proxy.DeviceSetOption(device, "dpm-emulation", GLib.Variant("b", enabled))
+                    except GLib.GError as e:
                         print_warning(_("Failed to set DPM emulation flag of device %i to %i: %s") % (device, enabled, e))
                         continue
             else:
@@ -621,8 +622,8 @@ class cmd_dpm_emulation (object):
 
                 print(_("Setting DPM emulation flag of device %i to %i.") % (device, enabled))
                 try:
-                    dbus_iface.DeviceSetOption(device, "dpm-emulation", enabled)
-                except dbus.DBusException as e:
+                    proxy.DeviceSetOption(device, "dpm-emulation", GLib.Variant("b", enabled))
+                except GLib.GError as e:
                     raise CDEmuError(_("Failed to set DPM emulation flag of device %i to %i: %s") % (device, enabled, e))
 
         # Get DPM emulation flag
@@ -630,8 +631,8 @@ class cmd_dpm_emulation (object):
             # Particular device vs. all devices
             if arguments.device == "all":
                 try:
-                    num_devices = dbus_iface.GetNumberOfDevices()
-                except dbus.DBusException as e:
+                    num_devices = proxy.GetNumberOfDevices()
+                except GLib.GError as e:
                     raise CDEmuError(_("Failed to get number of devices: %s") % (e))
 
                 print_header(_("Devices' DPM emulation flag:"))
@@ -639,8 +640,8 @@ class cmd_dpm_emulation (object):
 
                 for device in range(0, num_devices):
                     try:
-                        enabled = dbus_iface.DeviceGetOption(device, "dpm-emulation")
-                    except dbus.DBusException as e:
+                        enabled = proxy.DeviceGetOption(device, "dpm-emulation")
+                    except GLib.GError as e:
                         print_warning(_("Failed to get DPM emulation flag of device %i: %s") % (device, e))
                         continue
 
@@ -648,8 +649,8 @@ class cmd_dpm_emulation (object):
             else:
                 try:
                     device = int(arguments.device, 0)
-                    enabled = dbus_iface.DeviceGetOption(device, "dpm-emulation")
-                except dbus.DBusException as e:
+                    enabled = proxy.DeviceGetOption(device, "dpm-emulation")
+                except GLib.GError as e:
                     raise CDEmuError(_("Failed to get DPM emulation flag of device %i: %s") % (device, e))
                 except ValueError:
                     raise CDEmuError(_("String '%s' is not a number") % (arguments.device))
@@ -672,7 +673,7 @@ class cmd_tr_emulation (object):
         parser.add_argument("device", type=str, help=_("device"))
         parser.add_argument("new_value", nargs="?", type=str, help=_("new value"))
 
-    def __call__ (self, dbus_iface, arguments):
+    def __call__ (self, proxy, arguments):
         # Set TR emulation flag
         if hasattr(arguments, "new_value"):
             try:
@@ -682,15 +683,15 @@ class cmd_tr_emulation (object):
 
             if arguments.device == "all":
                 try:
-                    num_devices = dbus_iface.GetNumberOfDevices()
-                except dbus.DBusException as e:
+                    num_devices = proxy.GetNumberOfDevices()
+                except GLib.GError as e:
                     raise CDEmuError(_("Failed to get number of devices: %s") % (e))
 
                 print(_("Setting transfer rate emulation flag of all devices to %i.") % (enabled))
                 for device in range(0, num_devices):
                     try:
-                        dbus_iface.DeviceSetOption(device, "tr-emulation", enabled)
-                    except dbus.DBusException as e:
+                        proxy.DeviceSetOption(device, "tr-emulation", GLib.Variant("b", enabled))
+                    except GLib.GError as e:
                         print_warning(_("Failed to set transfer rate emulation flag of device %i to %i: %s") % (device, enabled, e))
                         continue
             else:
@@ -701,8 +702,8 @@ class cmd_tr_emulation (object):
 
                 print(_("Setting transfer rate emulation flag of device %i to %i.") % (device, enabled))
                 try:
-                    dbus_iface.DeviceSetOption(device, "tr-emulation", enabled)
-                except dbus.DBusException as e:
+                    proxy.DeviceSetOption(device, "tr-emulation", GLib.Variant("b", enabled))
+                except GLib.GError as e:
                     raise CDEmuError(_("Failed to set transfer rate emulation flag of device %i to %i: %s") % (device, enabled, e))
 
         # Get TR emulation flag
@@ -710,8 +711,8 @@ class cmd_tr_emulation (object):
             # Particular device vs. all devices
             if arguments.device == "all":
                 try:
-                    num_devices = dbus_iface.GetNumberOfDevices()
-                except dbus.DBusException as e:
+                    num_devices = proxy.GetNumberOfDevices()
+                except GLib.GError as e:
                     raise CDEmuError(_("Failed to get number of devices: %s") % (e))
 
                 print(_("Devices' transfer rate emulation flag:"))
@@ -719,8 +720,8 @@ class cmd_tr_emulation (object):
 
                 for device in range(0, num_devices):
                     try:
-                        enabled = dbus_iface.DeviceGetOption(device, "tr-emulation")
-                    except dbus.DBusException as e:
+                        enabled = proxy.DeviceGetOption(device, "tr-emulation")
+                    except GLib.GError as e:
                         print_warning(_("Failed to get transfer rate emulation flag of device %i: %s") % (device, e))
                         continue
 
@@ -728,8 +729,8 @@ class cmd_tr_emulation (object):
             else:
                 try:
                     device = int(arguments.device, 0)
-                    enabled = dbus_iface.DeviceGetOption(device, "tr-emulation")
-                except dbus.DBusException as e:
+                    enabled = proxy.DeviceGetOption(device, "tr-emulation")
+                except GLib.GError as e:
                     raise CDEmuError(_("Failed to get transfer rate emulation flag of device %i: %s") % (device, e))
                 except ValueError:
                     raise CDEmuError(_("String '%s' is not a number") % (arguments.device))
@@ -752,7 +753,7 @@ class cmd_bad_sector_emulation (object):
         parser.add_argument("device", type=str, help=_("device"))
         parser.add_argument("new_value", nargs="?", type=str, help=_("new value"))
 
-    def __call__ (self, dbus_iface, arguments):
+    def __call__ (self, proxy, arguments):
         # Set bad sector emulation flag
         if hasattr(arguments, "new_value"):
             try:
@@ -762,15 +763,15 @@ class cmd_bad_sector_emulation (object):
 
             if arguments.device == "all":
                 try:
-                    num_devices = dbus_iface.GetNumberOfDevices()
-                except dbus.DBusException as e:
+                    num_devices = proxy.GetNumberOfDevices()
+                except GLib.GError as e:
                     raise CDEmuError(_("Failed to get number of devices: %s") % (e))
 
                 print(_("Setting bad sector emulation flag of all devices to %i.") % (enabled))
                 for device in range(0, num_devices):
                     try:
-                        dbus_iface.DeviceSetOption(device, "bad-sector-emulation", enabled)
-                    except dbus.DBusException as e:
+                        proxy.DeviceSetOption(device, "bad-sector-emulation", GLib.Variant("b", enabled))
+                    except GLib.GError as e:
                         print_warning(_("Failed to set bad sector emulation flag of device %i to %i: %s") % (device, enabled, e))
                         continue
             else:
@@ -781,8 +782,8 @@ class cmd_bad_sector_emulation (object):
 
                 print(_("Setting bad sector emulation flag of device %i to %i.") % (device, enabled))
                 try:
-                    dbus_iface.DeviceSetOption(device, "bad-sector-emulation", enabled)
-                except dbus.DBusException as e:
+                    proxy.DeviceSetOption(device, "bad-sector-emulation", GLib.Variant("b", enabled))
+                except GLib.GError as e:
                     raise CDEmuError(_("Failed to set bad sector emulation flag of device %i to %i: %s") % (device, enabled, e))
 
         # Get bad sector emulation flag
@@ -790,8 +791,8 @@ class cmd_bad_sector_emulation (object):
             # Particular device vs. all devices
             if arguments.device == "all":
                 try:
-                    num_devices = dbus_iface.GetNumberOfDevices()
-                except dbus.DBusException as e:
+                    num_devices = proxy.GetNumberOfDevices()
+                except GLib.GError as e:
                     raise CDEmuError(_("Failed to get number of devices: %s") % (e))
 
                 print_header(_("Devices' bad sector emulation flag:"))
@@ -799,8 +800,8 @@ class cmd_bad_sector_emulation (object):
 
                 for device in range(0, num_devices):
                     try:
-                        enabled = dbus_iface.DeviceGetOption(device, "bad-sector-emulation")
-                    except dbus.DBusException as e:
+                        enabled = proxy.DeviceGetOption(device, "bad-sector-emulation")
+                    except GLib.GError as e:
                         print_warning(_("Failed to get bad sector emulation flag of device %i: %s") % (device, e))
                         continue
 
@@ -808,8 +809,8 @@ class cmd_bad_sector_emulation (object):
             else:
                 try:
                     device = int(arguments.device, 0)
-                    enabled = dbus_iface.DeviceGetOption(device, "bad-sector-emulation")
-                except dbus.DBusException as e:
+                    enabled = proxy.DeviceGetOption(device, "bad-sector-emulation")
+                except GLib.GError as e:
                     raise CDEmuError(_("Failed to get bad sector emulation flag of device %i: %s") % (device, e))
                 except ValueError:
                     raise CDEmuError(_("String '%s' is not a number") % (arguments.device))
@@ -832,7 +833,7 @@ class cmd_device_id (object):
         parser.add_argument("device", type=str, help=_("device"))
         parser.add_argument("new_id", nargs='*', type=str, help=_("new device ID: vendor ID, product ID, revision and vendor-specific string"))
 
-    def __call__ (self, dbus_iface, arguments):
+    def __call__ (self, proxy, arguments):
         # Set device ID
         if hasattr(arguments, "new_id"):
             device_id = tuple(arguments.new_id)
@@ -842,15 +843,15 @@ class cmd_device_id (object):
 
             if arguments.device == "all":
                 try:
-                    num_devices = dbus_iface.GetNumberOfDevices()
-                except dbus.DBusException as e:
+                    num_devices = proxy.GetNumberOfDevices()
+                except GLib.GError as e:
                     raise CDEmuError(_("Failed to get number of devices: %s") % (e))
 
                 print(_("Setting device ID of all devices to %s.") % (device_id))
                 for device in range(0, num_devices):
                     try:
-                        dbus_iface.DeviceSetOption(device, "device-id", device_id)
-                    except dbus.DBusException as e:
+                        proxy.DeviceSetOption(device, "device-id", GLib.Variant("(ssss)", device_id))
+                    except GLib.GError as e:
                         print_warning(_("Failed to set device ID of device %i to %s: %s") % (device, device_id, e))
                         continue
             else:
@@ -861,8 +862,8 @@ class cmd_device_id (object):
 
                 print(_("Setting device ID of device %i to %s.") % (device, device_id))
                 try:
-                    dbus_iface.DeviceSetOption(device, "device-id", device_id)
-                except dbus.DBusException as e:
+                    proxy.DeviceSetOption(device, "device-id", GLib.Variant("(ssss)", device_id))
+                except GLib.GError as e:
                     raise CDEmuError(_("Failed to set device ID of device %i to %s: %s") % (device, device_id, e))
 
 
@@ -871,8 +872,8 @@ class cmd_device_id (object):
             # Particular device vs. all devices
             if arguments.device == "all":
                 try:
-                    num_devices = dbus_iface.GetNumberOfDevices()
-                except dbus.DBusException as e:
+                    num_devices = proxy.GetNumberOfDevices()
+                except GLib.GError as e:
                     raise CDEmuError(_("Failed to get number of devices: %s") % (e))
 
                 print_header(_("Devices' IDs:"))
@@ -880,9 +881,9 @@ class cmd_device_id (object):
 
                 for device in range(0, num_devices):
                     try:
-                        values = dbus_iface.DeviceGetOption(device, "device-id")
+                        values = proxy.DeviceGetOption(device, "device-id")
                         device_id = map(str, values)
-                    except dbus.DBusException as e:
+                    except GLib.GError as e:
                         print_warning(_("Failed to get device ID of device %i: %s") % (device, e))
                         continue
 
@@ -890,9 +891,9 @@ class cmd_device_id (object):
             else:
                 try:
                     device = int(arguments.device, 0)
-                    values = dbus_iface.DeviceGetOption(device, "device-id")
+                    values = proxy.DeviceGetOption(device, "device-id")
                     device_id = map (str, values)
-                except dbus.DBusException as e:
+                except GLib.GError as e:
                     raise CDEmuError(_("Failed to get device ID of device %i: %s") % (device, e))
                 except ValueError:
                     raise CDEmuError(_("String '%s' is not a number") % (arguments.device))
@@ -912,11 +913,11 @@ class cmd_enum_parsers (object):
         parser = subparsers.add_parser(name, description=description_msg, help=help_msg, formatter_class=argparse.ArgumentDefaultsHelpFormatter, argument_default=argparse.SUPPRESS)
         parser.set_defaults(command_function=self)
 
-    def __call__ (self, dbus_iface, arguments):
+    def __call__ (self, proxy, arguments):
         # Display supported parsers
         try:
-            parsers = dbus_iface.EnumSupportedParsers()
-        except dbus.DBusException as e:
+            parsers = proxy.EnumSupportedParsers()
+        except GLib.GError as e:
             raise CDEmuError(_("Failed to enumerate supported parsers: %s") % (e))
             return False
 
@@ -940,11 +941,11 @@ class cmd_enum_writers (object):
         parser = subparsers.add_parser(name, description=description_msg, help=help_msg, formatter_class=argparse.ArgumentDefaultsHelpFormatter, argument_default=argparse.SUPPRESS)
         parser.set_defaults(command_function=self)
 
-    def __call__ (self, dbus_iface, arguments):
+    def __call__ (self, proxy, arguments):
         # Display supported writers
         try:
-            writers = dbus_iface.EnumSupportedWriters()
-        except dbus.DBusException as e:
+            writers = proxy.EnumSupportedWriters()
+        except GLib.GError as e:
             raise CDEmuError(_("Failed to enumerate supported writers: %s") % (e))
 
         # Print all writers
@@ -965,11 +966,11 @@ class cmd_enum_filter_streams (object):
         parser = subparsers.add_parser(name, description=description_msg, help=help_msg, formatter_class=argparse.ArgumentDefaultsHelpFormatter, argument_default=argparse.SUPPRESS)
         parser.set_defaults(command_function=self)
 
-    def __call__ (self, dbus_iface, arguments):
+    def __call__ (self, proxy, arguments):
         # Display supported filter streams
         try:
-            filter_streams = dbus_iface.EnumSupportedFilterStreams()
-        except dbus.DBusException as e:
+            filter_streams = proxy.EnumSupportedFilterStreams()
+        except GLib.GError as e:
             raise CDEmuError(_("Failed to enumerate supported filter streams: %s") % (e))
 
         # Print all filter streams
@@ -993,11 +994,11 @@ class cmd_enum_daemon_debug_masks (object):
         parser = subparsers.add_parser(name, description=description_msg, help=help_msg, formatter_class=argparse.ArgumentDefaultsHelpFormatter, argument_default=argparse.SUPPRESS)
         parser.set_defaults(command_function=self)
 
-    def __call__ (self, dbus_iface, arguments):
+    def __call__ (self, proxy, arguments):
         # Print module's debug masks
         try:
-            debug_masks = dbus_iface.EnumDaemonDebugMasks()
-        except dbus.DBusException as e:
+            debug_masks = proxy.EnumDaemonDebugMasks()
+        except GLib.GError as e:
             raise CDEmuError(_("Failed to enumerate supported daemon debug masks: %s") % (e))
 
         print_header(_("Supported daemon debug masks:"))
@@ -1017,11 +1018,11 @@ class cmd_enum_library_debug_masks (object):
         parser = subparsers.add_parser(name, description=description_msg, help=help_msg, formatter_class=argparse.ArgumentDefaultsHelpFormatter, argument_default=argparse.SUPPRESS)
         parser.set_defaults(command_function=self)
 
-    def __call__ (self, dbus_iface, arguments):
+    def __call__ (self, proxy, arguments):
         # Print module's debug masks
         try:
-            debug_masks = dbus_iface.EnumLibraryDebugMasks()
-        except dbus.DBusException as e:
+            debug_masks = proxy.EnumLibraryDebugMasks()
+        except GLib.GError as e:
             raise CDEmuError(_("Failed to enumerate supported library debug masks: %s") % (e))
 
         print_header(_("Supported library debug masks:"))
@@ -1043,11 +1044,11 @@ class cmd_enum_writer_parameters (object):
 
         parser.add_argument("writer", type=str, help=_("writer ID"))
 
-    def __call__ (self, dbus_iface, arguments):
+    def __call__ (self, proxy, arguments):
         # Get parameter sheet for the specified writer
         try:
-            parameter_sheet = dbus_iface.EnumWriterParameters(arguments.writer)
-        except dbus.DBusException as e:
+            parameter_sheet = proxy.EnumWriterParameters(arguments.writer)
+        except GLib.GError as e:
             raise CDEmuError(_("Failed to get parameter sheet for writer: %s") % (e))
 
         # Print the sheet
@@ -1067,11 +1068,11 @@ class cmd_enum_writer_parameters (object):
     def parameter_type_name (self, parameter):
         if len(parameter[4]):
             return _("enum")
-        elif isinstance(parameter[3], dbus.String):
+        elif isinstance(parameter[3], str):
             return _("string")
-        elif isinstance(parameter[3], dbus.Boolean):
+        elif isinstance(parameter[3], bool):
             return _("boolean")
-        elif isinstance(parameter[3], dbus.Int32):
+        elif isinstance(parameter[3], int):
             return _("integer")
         else:
             return _("unknown")
@@ -1079,14 +1080,12 @@ class cmd_enum_writer_parameters (object):
 
 # This is a stand-alone function because it is shared between
 # enum-writer-parameters and create-blank implementations
-def fetch_and_parse_writer_parameter_sheet (dbus_iface, writer_id):
+def fetch_and_parse_writer_parameter_sheet (proxy, writer_id):
     # Enumerate all supported writers
     try:
-        parameter_sheet = dbus_iface.EnumWriterParameters(writer_id)
-    except dbus.DBusException as e:
+        parameter_sheet = proxy.EnumWriterParameters(writer_id)
+    except GLib.GError as e:
         raise CDEmuError(_("Failed to get parameter sheet for writer: %s") % (e))
-
-    print(parameter_sheet)
 
     # Find the one we want
     for writer in writers:
@@ -1116,16 +1115,16 @@ class cmd_version (object):
         parser = subparsers.add_parser(name, description=description_msg, help=help_msg, formatter_class=argparse.ArgumentDefaultsHelpFormatter, argument_default=argparse.SUPPRESS)
         parser.set_defaults(command_function=self)
 
-    def __call__ (self, dbus_iface, arguments):
+    def __call__ (self, proxy, arguments):
         # Print version information
         try:
-            library_version = dbus_iface.GetLibraryVersion()
-        except dbus.DBusException as e:
+            library_version = proxy.GetLibraryVersion()
+        except GLib.GError as e:
             raise CDEmuError(_("Failed to get library version: %s") % (e))
 
         try:
-            daemon_version = dbus_iface.GetDaemonVersion()
-        except dbus.DBusException as e:
+            daemon_version = proxy.GetDaemonVersion()
+        except GLib.GError as e:
             raise CDEmuError(_("Failed to get daemon version: %s") % (e))
 
         print(_("Library version: %s") % (str(library_version)))
@@ -1144,10 +1143,10 @@ class cmd_add_device (object):
         parser = subparsers.add_parser(name, description=description_msg, help=help_msg, formatter_class=argparse.ArgumentDefaultsHelpFormatter, argument_default=argparse.SUPPRESS)
         parser.set_defaults(command_function=self)
 
-    def __call__ (self, dbus_iface, arguments):
+    def __call__ (self, proxy, arguments):
         try:
-            dbus_iface.AddDevice()
-        except dbus.DBusException as e:
+            proxy.AddDevice()
+        except GLib.GError as e:
             raise CDEmuError(_("Failed to add device: %s") % (e))
 
         print(_("Device added successfully."))
@@ -1165,10 +1164,10 @@ class cmd_remove_device (object):
         parser = subparsers.add_parser(name, description=description_msg, help=help_msg, formatter_class=argparse.ArgumentDefaultsHelpFormatter, argument_default=argparse.SUPPRESS)
         parser.set_defaults(command_function=self)
 
-    def __call__ (self, dbus_iface, arguments):
+    def __call__ (self, proxy, arguments):
         try:
-            dbus_iface.RemoveDevice()
-        except dbus.DBusException as e:
+            proxy.RemoveDevice()
+        except GLib.GError as e:
             raise CDEmuError(_("Failed to remove device: %s") % (e))
 
         print(_("Device removed successfully."))
@@ -1222,35 +1221,95 @@ def create_parser ():
 
 
 ########################################################################
-#                          D-Bus connection                            #
+#               CDEmuDaemonProxy: Daemon proxy object                  #
 ########################################################################
-def connect_to_daemon (bus_type):
-    try:
-        if bus_type == "system":
-            dbus_bus = dbus.SystemBus()
-        elif bus_type == "session":
-            dbus_bus = dbus.SessionBus()
-        else:
-            print_warning(_("Invalid bus parameter '%s', using default!") % (bus_type))
-            dbus_bus = dbus.SessionBus() # Use session bus by default
+class CDEmuDaemonProxy ():
+    _name = 'net.sf.cdemu.CDEmuDaemon'
+    _object_path = '/Daemon'
 
-        dbus_proxy = dbus_bus.get_object("net.sf.cdemu.CDEmuDaemon", "/Daemon")
-        dbus_iface = dbus.Interface(dbus_proxy, "net.sf.cdemu.CDEmuDaemon")
-    except dbus.DBusException as e:
-        raise CDEmuError(_("Failed to connect to CDEmu daemon: %s") % (e))
+    def __init__ (self, bus_type):
+        try:
+            if bus_type == "system":
+                bus = Gio.bus_get_sync(Gio.BusType.SYSTEM, None)
+            elif bus_type == "session":
+                bus = Gio.bus_get_sync(Gio.BusType.SESSION, None)
+            else:
+                print_warning(_("Invalid bus parameter '%s', using default!") % (bus_type))
+                bus = Gio.bus_get_sync(Gio.BusType.SESSION, None) # Use session bus by default
 
-    # Get daemon interface version
-    try:
-        interface_version = dbus_iface.GetDaemonInterfaceVersion2()
-    except dbus.DBusException as e:
-        raise CDEmuError(_("Failed to acquire daemon interface version (this most likely means your daemon is out-of-date): %s") % (e))
+            self.proxy = Gio.DBusProxy.new_sync(bus, 0, None, "net.sf.cdemu.CDEmuDaemon", "/Daemon", "net.sf.cdemu.CDEmuDaemon", None)
+        except GLib.GError as e:
+            raise CDEmuError(_("Failed to connect to CDEmu daemon: %s") % (e))
 
-    # Check daemon interface version
-    if interface_version[0] != supported_daemon_interface_version[0] or interface_version[1] < supported_daemon_interface_version[1]:
-        raise CDEmuError(_("CDEmu daemon interface version %i.%i detected, but version %i.%i is required!") % (interface_version[0], interface_version[1], supported_daemon_interface_version[0], supported_daemon_interface_version[1]))
+        # Get daemon interface version
+        try:
+            interface_version = self.GetDaemonInterfaceVersion2()
+        except GLib.GError as e:
+            raise CDEmuError(_("Failed to acquire daemon interface version (this most likely means your daemon is out-of-date): %s") % (e))
+
+        # Check daemon interface version
+        if interface_version[0] != supported_daemon_interface_version[0] or interface_version[1] < supported_daemon_interface_version[1]:
+            raise CDEmuError(_("CDEmu daemon interface version %i.%i detected, but version %i.%i is required!") % (interface_version[0], interface_version[1], supported_daemon_interface_version[0], supported_daemon_interface_version[1]))
+
+    def GetDaemonVersion (self):
+        return self.proxy.GetDaemonVersion()
+
+    def GetLibraryVersion (self):
+        return self.proxy.GetLibraryVersion()
+
+    def GetDaemonInterfaceVersion2 (self):
+        return self.proxy.GetDaemonInterfaceVersion2()
+
+    def EnumDaemonDebugMasks (self):
+        return self.proxy.EnumDaemonDebugMasks()
+
+    def EnumLibraryDebugMasks (self):
+        return self.proxy.EnumLibraryDebugMasks()
+
+    def EnumSupportedParsers (self):
+        return self.proxy.EnumSupportedParsers()
+
+    def EnumSupportedWriters (self):
+        return self.proxy.EnumSupportedWriters()
+
+    def EnumSupportedFilterStreams (self):
+        return self.proxy.EnumSupportedFilterStreams()
+
+    def EnumWriterParameters (self, writer_id):
+        return self.proxy.EnumWriterParameters('(s)', writer_id)
 
 
-    return dbus_iface
+    def GetNumberOfDevices (self):
+        return self.proxy.GetNumberOfDevices()
+
+
+    def DeviceGetMapping (self, device_number):
+        return self.proxy.DeviceGetMapping('(i)', device_number)
+
+    def DeviceGetStatus (self, device_number):
+        return self.proxy.DeviceGetStatus('(i)', device_number)
+
+    def DeviceLoad (self, device_number, filenames, parameters):
+        return self.proxy.DeviceLoad('(iasa{sv})', device_number, filenames, parameters)
+
+    def DeviceCreateBlank (self, device_number, filename, parameters):
+        return self.proxy.DeviceCreateBlank('(isa{sv})', device_number, filename, parameters)
+
+    def DeviceUnload (self, device_number):
+        return self.proxy.DeviceUnload('(i)', device_number)
+
+    def DeviceGetOption (self, device_number, option_name):
+        return self.proxy.DeviceGetOption('(is)', device_number, option_name)
+
+    def DeviceSetOption (self, device_number, option_name, option_value):
+        return self.proxy.DeviceSetOption('(isv)', device_number, option_name, option_value)
+
+
+    def AddDevice (self):
+        return self.proxy.AddDevice()
+
+    def RemoveDevice (self):
+        return self.proxy.RemoveDevice()
 
 
 ########################################################################
@@ -1288,10 +1347,10 @@ def main ():
         bus_type = arguments.bus
 
     # *** Connect to daemon ***
-    dbus_iface = connect_to_daemon(bus_type)
+    proxy = CDEmuDaemonProxy(bus_type)
 
     # *** Execute command ***
-    arguments.command_function(dbus_iface, arguments)
+    arguments.command_function(proxy, arguments)
 
 if __name__ == "__main__":
     try:

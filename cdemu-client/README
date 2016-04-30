@@ -27,7 +27,7 @@ retrieving/setting devices' debug masks.
 2. Requirements:
 ~~~~~~~~~~~~~~~~
  - Python >= 2.6
- - D-BUS Python bindings
+ - PyGObject >= 3.0.0 (glib and gio modules are required)
  - IntlTool >= 0.21
  - GetText >= 0.15
 
