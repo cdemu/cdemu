@@ -348,14 +348,21 @@ MirageDisc *mirage_context_load_image (MirageContext *self, gchar **filenames, G
     gint num_parsers;
     const GType *parser_types;
 
+    gint num_filenames = g_strv_length(filenames);
+
+    if (!num_filenames) {
+        g_set_error(error, MIRAGE_ERROR, MIRAGE_ERROR_IMAGE_FILE_ERROR, "No image files given!");
+        return NULL;
+    }
+
     /* Get the list of supported parsers */
     if (!mirage_get_parsers_type(&parser_types, &num_parsers, error)) {
         return NULL;
     }
 
     /* Create streams */
-    streams = g_new0(MirageStream *, g_strv_length(filenames)+1);
-    for (gint i = 0; filenames[i]; i++) {
+    streams = g_new0(MirageStream *, num_filenames+1);
+    for (gint i = 0; i < num_filenames; i++) {
         streams[i] = mirage_context_create_input_stream(self, filenames[i], error);
         if (!streams[i]) {
             goto end;
