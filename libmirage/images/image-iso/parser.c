@@ -79,7 +79,7 @@ static gboolean mirage_parser_iso_determine_sector_size (MirageParserIso *self, 
     for (gint i = 0; i < G_N_ELEMENTS(valid_subchannel_sizes); i++) {
         for (gint j = 0; j < G_N_ELEMENTS(valid_sector_sizes); j++) {
             gint full_sector_size = valid_sector_sizes[j] + valid_subchannel_sizes[i];
-            MIRAGE_DEBUG(self, MIRAGE_DEBUG_IMAGE_ID, "%s: cheking %d-byte sector size with %d-byte subchannel...\n", __debug__, valid_sector_sizes[j], valid_subchannel_sizes[i]);
+            MIRAGE_DEBUG(self, MIRAGE_DEBUG_IMAGE_ID, "%s: checking %d-byte sector size with %d-byte subchannel...\n", __debug__, valid_sector_sizes[j], valid_subchannel_sizes[i]);
 
             /* Check if file size is a multiple of full sector size */
             if (file_length % full_sector_size != 0) {
