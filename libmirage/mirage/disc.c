@@ -1526,7 +1526,7 @@ void mirage_disc_set_dpm_data (MirageDisc *self, gint start, gint resolution, gi
  * @start: (out) (allow-none): location to store DPM start sector, or %NULL
  * @resolution: (out) (allow-none): location to store DPM data resolution, or %NULL
  * @num_entries: (out) (allow-none): location to store number of DPM entries, or %NULL
- * @data: (out) (allow-none) (array length=num_entries): location to store pointer to buffer containing DPM data, or %NULL
+ * @data: (out) (allow-none) (array length=num_entries) (transfer none): location to store pointer to buffer containing DPM data, or %NULL
  *
  * Retrieves DPM data for disc. The pointer to buffer containing DPM data entries
  * is stored in @data; the buffer belongs to object and therefore should not be
