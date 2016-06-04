@@ -19,6 +19,7 @@
 # 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 
 import argparse
+import datetime
 import os
 import signal
 import subprocess
@@ -1766,7 +1767,7 @@ class gCDEmuTray (GObject.GObject):
         self.about = Gtk.AboutDialog()
         self.about.set_name(app_name)
         self.about.set_version(app_version)
-        self.about.set_copyright("Copyright (C) 2006-2014 Rok Mandeljc")
+        self.about.set_copyright("Copyright (C) 2006-%d Rok Mandeljc"  % (datetime.date.today().year))
         self.about.set_comments(_("A GUI for controlling CDEmu devices."))
         self.about.set_website("http://cdemu.sf.net")
         self.about.set_website_label(_("The CDEmu project website"))
