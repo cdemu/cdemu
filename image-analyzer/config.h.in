@@ -1,7 +1,0 @@
-/* config.h - configuration file */
-#ifndef __CONFIG_H__
-#define __CONFIG_H__
-
-#define IMAGE_ANALYZER_VERSION "@IMAGE_ANALYZER_VERSION@"
-
-#endif /* __CONFIG_H__ */

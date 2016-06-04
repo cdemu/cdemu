@@ -1,10 +1,7 @@
 cmake_minimum_required (VERSION 2.8.5)
 
 # Project name
-project (image-analyzer C)
-
-# Versioning
-set (IMAGE_ANALYZER_VERSION 3.0.0)
+project (image-analyzer NONE)
 
 # Additional CMake modules.
 list (APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
@@ -15,78 +12,24 @@ include (GNUInstallDirs)
 option (POST_INSTALL_HOOKS "Run post-install hooks" on)
 
 # Dependencies
-find_package (PkgConfig 0.16 REQUIRED)
-
-pkg_check_modules (LIBMIRAGE REQUIRED libmirage>=${IMAGE_ANALYZER_VERSION})
-pkg_check_modules (GLIB REQUIRED glib-2.0>=2.24 gobject-2.0>=2.24)
-pkg_check_modules (LIBXML REQUIRED libxml-2.0>=2.0.0)
-pkg_check_modules (GTK REQUIRED gtk+-3.0>=3.2)
+find_package (IntlTool 0.21 REQUIRED)
+find_package (Gettext 0.15 REQUIRED)
+find_package (PythonInterp 2.6 REQUIRED)
 
 if (POST_INSTALL_HOOKS)
     find_program (UPDATE_DESKTOP_DATABASE_EXECUTABLE NAMES update-desktop-database)
     mark_as_advanced (UPDATE_DESKTOP_DATABASE_EXECUTABLE)
 endif ()
 
-# AUto-generated files
-configure_file (
-    ${PROJECT_SOURCE_DIR}/config.h.in
-    ${PROJECT_BINARY_DIR}/config.h
-)
-
-# Global definitions
-add_definitions (-std=c99) # We're compiling using C99
-add_definitions (-DHAVE_CONFIG_H)
-
-if (CMAKE_COMPILER_IS_GNUCC)
-    add_definitions (-Wall -Wextra -Wshadow -Wmissing-declarations -Wmissing-prototypes -Wnested-externs -Wpointer-arith -Wcast-align)
-    add_definitions (-Wno-sign-compare)
-endif ()
-
-
-# Include directories
-include_directories (${PROJECT_BINARY_DIR})
-
-include_directories (SYSTEM ${LIBMIRAGE_INCLUDE_DIRS})
-include_directories (SYSTEM ${GLIB_INCLUDE_DIRS})
-include_directories (SYSTEM ${LIBXML_INCLUDE_DIRS})
-include_directories (SYSTEM ${GTK_INCLUDE_DIRS})
-
-# Link directories
-link_directories (SYSTEM ${LIBMIRAGE_LIBRARY_DIRS})
-link_directories (SYSTEM ${GLIB_LIBRARY_DIRS})
-link_directories (SYSTEM ${LIBXML_LIBRARY_DIRS})
-link_directories (SYSTEM ${GTK_LIBRARY_DIRS})
-
-# *** image-analyzer ***
-set (image-analyzer_SOURCES
-    src/application.c
-    src/application-window.c
-    src/disc-structures-window.c
-    src/disc-topology-window.c
-    src/disc-tree-dump.c
-    src/log-window.c
-    src/main.c
-    src/read-sector-window.c
-    src/sector-analysis-window.c
-    src/writer-dialog.c
-)
-
-add_executable (image-analyzer ${image-analyzer_SOURCES})
-target_link_libraries (image-analyzer ${LIBMIRAGE_LIBRARIES} ${GLIB_LIBRARIES} ${LIBXML_LIBRARIES} ${GTK_LIBRARIES})
-
 # Installation
 install (
-    TARGETS image-analyzer
+    PROGRAMS src/image-analyzer
     DESTINATION ${CMAKE_INSTALL_BINDIR}
 )
 
+intltool_merge ("-d" po data/image-analyzer.desktop.in image-analyzer.desktop)
 install (
-    FILES data/image-analyzer.svg
-    DESTINATION ${CMAKE_INSTALL_DATADIR}/pixmaps
-)
-
-install (
-    FILES ${PROJECT_SOURCE_DIR}/data/image-analyzer.desktop
+    FILES ${PROJECT_BINARY_DIR}/image-analyzer.desktop
     DESTINATION ${CMAKE_INSTALL_DATADIR}/applications
 )
 if (POST_INSTALL_HOOKS)
@@ -95,14 +38,20 @@ if (POST_INSTALL_HOOKS)
     )
 endif ()
 
+install (
+    FILES data/image-analyzer.svg
+    DESTINATION ${CMAKE_INSTALL_DATADIR}/pixmaps
+)
+
+# Translations; we use the version provided by our FindIntlTool.cmake
+# instead of the gettext version... Note: first two arguments are mandatory,
+# the rest is an optional list of languages to process. If no languages
+# are given, all POs are processed.
+intltool_process_po_files(${PROJECT_SOURCE_DIR}/po ${PROJECT_NAME})
+
 # *** Configuration summary ***
 message(STATUS "")
-message(STATUS "*** Image analyzer v.${IMAGE_ANALYZER_VERSION} configuration summary ***")
-message(STATUS "Compiler and build info:")
-message(STATUS " C compiler: " ${CMAKE_C_COMPILER} ${CMAKE_C_COMPILER_ARG1})
-message(STATUS " C flags (Release): " ${CMAKE_C_FLAGS} ${CMAKE_C_FLAGS_RELEASE})
-message(STATUS " C flags (Debug): " ${CMAKE_C_FLAGS} ${CMAKE_C_FLAGS_DEBUG})
-message(STATUS " build type: " ${CMAKE_BUILD_TYPE})
+message(STATUS "*** Image analyzer configuration summary ***")
 message(STATUS "Installation:")
 message(STATUS " install prefix: " ${CMAKE_INSTALL_PREFIX})
 message(STATUS "Options:")

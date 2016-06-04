@@ -1,5 +1,5 @@
-MIRAGE Image Analyzer
-3.0.0
+Image Analyzer
+3.0.1
 ~~~~~
 
 
@@ -29,11 +29,14 @@ and manipulation, with following functionality:
 
 2. Requirements:
 ~~~~~~~~~~~~~~~~
-  - Gtk+3 >= 3.2
-  - libxml >= 2.0.0
-  - libMirage >= 3.0.0 (part of the distribution)
 
-  - gnuplot >= 4.0 (optional, run-time dependency)
+ - Python >= 2.6
+ - PyGObject >= 3.0.0 (gtk-3, gobject and glib modules are required)
+ - libMirage >= 3.0.0, and its GIR bindings
+ - IntlTool >= 0.21
+ - GetText >= 0.15
+
+ - Matplotlib with Gtk3 support
 
 
 3. Installation:
