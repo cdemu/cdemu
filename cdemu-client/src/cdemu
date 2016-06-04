@@ -21,6 +21,7 @@
 from __future__ import print_function
 
 import argparse
+import datetime
 import sys
 import os.path
 import getpass
@@ -1202,7 +1203,7 @@ class ActionDeviceId (argparse.Action):
 def create_parser ():
     parser = CDEmuCommandLineParser(description=_("Command-line CDEmu client."), formatter_class=argparse.ArgumentDefaultsHelpFormatter, argument_default=argparse.SUPPRESS)
     parser.add_argument("--bus", metavar="BUS", choices=["system", "session"], help=_("sets D-BUS bus type to use"))
-    parser.add_argument("--version", action="version", version="%s %s - (C) Rok Mandeljc" % (app_name, app_version))
+    parser.add_argument("--version", action="version", version="%s %s - (C) 2006-%d Rok Mandeljc" % (app_name, app_version, datetime.date.today().year))
 
     subparsers = parser.add_subparsers(title=_("valid commands"), metavar="command", help=_("command help"))
     subparsers.required = True
