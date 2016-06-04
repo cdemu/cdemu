@@ -98,7 +98,7 @@ void mirage_context_clear_options (MirageContext *self);
 void mirage_context_set_option (MirageContext *self, const gchar *name, GVariant *value);
 GVariant *mirage_context_get_option (MirageContext *self, const gchar *name);
 
-void mirage_context_set_password_function (MirageContext *self, MiragePasswordFunction func, gpointer user_data);
+void mirage_context_set_password_function (MirageContext *self, MiragePasswordFunction func, gpointer user_data, GDestroyNotify destroy);
 gchar *mirage_context_obtain_password (MirageContext *self, GError **error);
 
 MirageDisc *mirage_context_load_image (MirageContext *self, gchar **filenames, GError **error);

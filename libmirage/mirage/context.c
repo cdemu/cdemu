@@ -66,6 +66,7 @@ struct _MirageContextPrivate
     /* Password function */
     MiragePasswordFunction password_function;
     gpointer password_data;
+    GDestroyNotify password_data_destroy;
 
     /* Stream cache */
     GHashTable *input_stream_cache;
@@ -272,8 +273,9 @@ GVariant *mirage_context_get_option (MirageContext *self, const gchar *name)
 /**
  * mirage_context_set_password_function:
  * @self: a #MirageContext
- * @func: (in) (allow-none) (scope call): a password function pointer
+ * @func: (in) (allow-none) (scope notified): a password function pointer
  * @user_data: (in) (closure): pointer to user data to be passed to the password function
+ * @destroy: (in) (allow-none): destroy notify for @user_data, or %NULL
  *
  * Sets the password function to context. The function is used by parsers
  * that support encrypted images to obtain password for unlocking such images.
@@ -281,11 +283,17 @@ GVariant *mirage_context_get_option (MirageContext *self, const gchar *name)
  * Both @func and @user_data can be %NULL; in that case the appropriate setting
  * will be reset.
  */
-void mirage_context_set_password_function (MirageContext *self, MiragePasswordFunction func, gpointer user_data)
+void mirage_context_set_password_function (MirageContext *self, MiragePasswordFunction func, gpointer user_data, GDestroyNotify destroy)
 {
+    /* Destroy old password function's data, if necessary */
+    if (self->priv->password_data_destroy) {
+        self->priv->password_data_destroy(self->priv->password_data);
+    }
+
     /* Store the pointers */
     self->priv->password_function = func;
     self->priv->password_data = user_data;
+    self->priv->password_data_destroy = destroy;
 }
 
 /**
@@ -613,6 +621,10 @@ static void mirage_context_init (MirageContext *self)
     self->priv->domain = NULL;
     self->priv->name = NULL;
 
+    self->priv->password_function = NULL;
+    self->priv->password_data = NULL;
+    self->priv->password_data_destroy = NULL;
+
     /* Options */
     self->priv->options = g_hash_table_new_full(g_str_hash, g_str_equal, g_free, (GDestroyNotify)g_variant_unref);
 
@@ -627,6 +639,11 @@ static void mirage_context_finalize (GObject *gobject)
 
     g_free(self->priv->domain);
     g_free(self->priv->name);
+
+    /* Destroy password function's data, if necessary */
+    if (self->priv->password_data_destroy) {
+        self->priv->password_data_destroy(self->priv->password_data);
+    }
 
     /* Free options */
     g_hash_table_unref(self->priv->options);
