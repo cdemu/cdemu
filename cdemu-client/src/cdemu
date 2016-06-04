@@ -39,15 +39,27 @@ from gettext import gettext as _
 from gettext import bindtextdomain, textdomain
 
 # *** Globals ***
-app_name = "cdemu-client"
+app_name = "cdemu"
 app_version = "3.0.1"
 supported_daemon_interface_version = [ 7, 0 ]
 
 # I18n
-bindtextdomain("cdemu")
-textdomain("cdemu")
+bindtextdomain(app_name)
+textdomain(app_name)
 
 
+# Set process name
+if sys.platform == "linux2":
+    # Set process name.  Only works on Linux >= 2.1.57.
+    try:
+        import ctypes
+        libc = ctypes.CDLL("libc.so.6")
+        libc.prctl(15, app_name, 0, 0, 0) # 15 = PR_SET_NAME
+    except Exception:
+        pass
+
+
+# String to boolean conversion helper
 def str2bool (value):
     return value.lower() in ("yes", "true", "t", "1")
 
