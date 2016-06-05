@@ -290,7 +290,7 @@ class CDEmu (GObject.GObject):
         self.initial = True
         try:
             self.daemon_proxy.connect_to_bus(use_system, autostart_daemon)
-        except GLib.GError as e:
+        except GLib.Error as e:
             self.emit("error", _("Daemon autostart error"), _("Daemon autostart failed. Error:\n%s") % (e))
 
 
@@ -356,13 +356,13 @@ class CDEmu (GObject.GObject):
     def add_device (self):
         try:
             self.daemon_proxy.AddDevice()
-        except GLib.GError as e:
+        except GLib.Error as e:
             self.emit("error", _("Failed to add device"), _("Failed to add new device. Error:\n%s") % (e))
 
     def remove_device (self):
         try:
             self.daemon_proxy.RemoveDevice()
-        except GLib.GError as e:
+        except GLib.Error as e:
             self.emit("error", _("Failed to remove device"), _("Failed to remove device. Error:\n%s") % (e))
 
 GObject.type_register(CDEmu)
@@ -490,14 +490,14 @@ class CDEmuDevice (GObject.GObject):
     def unload_device (self):
         try:
             self.proxy.DeviceUnload(self.number)
-        except GLib.GError as e:
+        except GLib.Error as e:
             self.emit("error", _("Failed to unload device #%02d:\n%s") % (self.number, e))
 
 
     def load_device (self, filenames, params = {}):
         try:
             self.proxy.DeviceLoad(self.number, filenames, params)
-        except GLib.GError as e:
+        except GLib.Error as e:
             if "net.sf.cdemu.CDEmuDaemon.errorMirage.EncryptedImage" in str(e):
                 # Need password, raise proper exception...
                 raise CDEmuNeedPassword()
@@ -507,7 +507,7 @@ class CDEmuDevice (GObject.GObject):
     def create_blank_disc (self, filename, params = {}):
         try:
             self.proxy.DeviceCreateBlank(self.number, filename, params)
-        except GLib.GError as e:
+        except GLib.Error as e:
             self.emit("error", _("Failed to create blank disc on device #%02d:\n%s") % (self.number, e))
 
 
@@ -517,7 +517,7 @@ class CDEmuDevice (GObject.GObject):
 
         try:
             self.proxy.DeviceSetOption(self.number, "device-id", GLib.Variant('(ssss)', value))
-        except GLib.GError as e:
+        except GLib.Error as e:
             self.emit("error", _("Failed to set device ID for device #%02d to %s:\n%s") % (self.number, value, e))
 
 
@@ -527,7 +527,7 @@ class CDEmuDevice (GObject.GObject):
 
         try:
             self.proxy.DeviceSetOption(self.number, "dpm-emulation", GLib.Variant('b', value))
-        except GLib.GError as e:
+        except GLib.Error as e:
             self.emit("error", _("Failed to set DPM emulation for device #%02d to %i:\n%s") % (self.number, value, e))
 
     def set_tr_emulation (self, value):
@@ -536,7 +536,7 @@ class CDEmuDevice (GObject.GObject):
 
         try:
             self.proxy.DeviceSetOption(self.number, "tr-emulation", GLib.Variant('b', value))
-        except GLib.GError as e:
+        except GLib.Error as e:
             self.emit("error", _("Failed to set TR emulation for device #%02d to %i:\n%s") % (self.number, value, e))
 
     def set_bad_sector_emulation (self, value):
@@ -545,7 +545,7 @@ class CDEmuDevice (GObject.GObject):
 
         try:
             self.proxy.DeviceSetOption(self.number, "bad-sector-emulation", GLib.Variant('b', value))
-        except GLib.GError as e:
+        except GLib.Error as e:
             self.emit("error", _("Failed to set bad sector emulation for device #%02d to %i:\n%s") % (self.number, value, e))
 
 
@@ -555,7 +555,7 @@ class CDEmuDevice (GObject.GObject):
 
         try:
             self.proxy.DeviceSetOption(self.number, "daemon-debug-mask", GLib.Variant('i', value))
-        except GLib.GError as e:
+        except GLib.Error as e:
             self.emit("error", _("Failed to set daemon debug mask for device #%02d to 0x%X:\n%s") % (self.number, value, e))
 
     def set_library_debug_mask (self, value):
@@ -564,7 +564,7 @@ class CDEmuDevice (GObject.GObject):
 
         try:
             self.proxy.DeviceSetOption(self.number, "library-debug-mask", GLib.Variant('i', value))
-        except GLib.GError as e:
+        except GLib.Error as e:
             self.emit("error", _("Failed to set library debug mask for device #%02d to 0x%X:\n%s") % (self.number, value, e))
 
 GObject.type_register(CDEmuDevice)

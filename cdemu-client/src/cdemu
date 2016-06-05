@@ -131,14 +131,14 @@ class cmd_load (object):
         if arguments.device == "any":
             try:
                 num_devices = proxy.GetNumberOfDevices()
-            except GLib.GError as e:
+            except GLib.Error as e:
                 raise CDEmuError(_("Failed to get number of devices: %s") % (e))
 
             for device in range(0, num_devices):
                 # Device's status
                 try:
                     status = proxy.DeviceGetStatus(device)
-                except GLib.GError as e:
+                except GLib.Error as e:
                     print_warning(_("Failed to get status of device %i: %s") % (device, e))
                     continue
 
@@ -164,7 +164,7 @@ class cmd_load (object):
         # Try to load it
         try:
             proxy.DeviceLoad(device, filenames, params)
-        except GLib.GError as e:
+        except GLib.Error as e:
             if "net.sf.cdemu.CDEmuDaemon.errorMirage.EncryptedImage" in str(e):
                 # We need password
                 print(_("The image you are trying to load is encrypted."))
@@ -173,7 +173,6 @@ class cmd_load (object):
                 return load_device(device, filenames, params)
             else:
                 raise CDEmuError(_("Failed to load image: %s") % (e))
-
 
 ########################################################################
 #                              Create blank                            #
@@ -215,14 +214,14 @@ class cmd_create_blank (object):
         if arguments.device == "any":
             try:
                 num_devices = proxy.GetNumberOfDevices()
-            except GLib.GError as e:
+            except GLib.Error as e:
                 raise CDEmuError(_("Failed to get number of devices: %s") % (e))
 
             for device in range(0, num_devices):
                 # Device's status
                 try:
                     status = proxy.DeviceGetStatus(device)
-                except GLib.GError as e:
+                except GLib.Error as e:
                     print_warning(_("Failed to get status of device %i: %s") % (device, e))
                     continue
 
@@ -248,7 +247,7 @@ class cmd_create_blank (object):
         # Try to load it
         try:
             proxy.DeviceCreateBlank(device, filenames, params)
-        except GLib.GError as e:
+        except GLib.Error as e:
             raise CDEmuError(_("Failed to load blank image: %s") % (e))
 
     # Image writer parameter processing
@@ -279,7 +278,7 @@ class cmd_create_blank (object):
         # Grab writer's parameter sheet
         try:
             parameter_sheet = proxy.EnumWriterParameters(writer_id)
-        except GLib.GError as e:
+        except GLib.Error as e:
             raise CDEmuError(_("Failed to get parameter sheet for writer: %s") % (e))
 
         # Convert the XML tree into a dictionary for convenience
@@ -344,20 +343,20 @@ class cmd_unload (object):
         if arguments.device == "all":
             try:
                 num_devices = proxy.GetNumberOfDevices()
-            except GLib.GError as e:
+            except GLib.Error as e:
                 raise CDEmuError(_("Failed to get number of devices: %s") % (e))
 
             for device in range(0, num_devices):
                 try:
                     proxy.DeviceUnload(device)
-                except GLib.GError as e:
+                except GLib.Error as e:
                     print_warning(_("Failed to unload device %i: %s") % (device, e))
                     continue
         else:
             try:
                 device = int(arguments.device, 0)
                 proxy.DeviceUnload(device)
-            except GLib.GError as e:
+            except GLib.Error as e:
                 raise CDEmuError(_("Failed to unload device %i: %s") % (device, e))
             except ValueError:
                 raise CDEmuError(_("String '%s' is not a number") % (arguments.device))
@@ -379,7 +378,7 @@ class cmd_display_status (object):
         # Print status for all devices
         try:
             num_devices = proxy.GetNumberOfDevices()
-        except GLib.GError as e:
+        except GLib.Error as e:
             raise CDEmuError(_("Failed to get number of devices: %s") % (e))
 
         print_header(_("Devices' status:"))
@@ -387,7 +386,7 @@ class cmd_display_status (object):
         for device in range (0, num_devices):
             try:
                 [loaded, filenames] = proxy.DeviceGetStatus(device)
-            except GLib.GError as e:
+            except GLib.Error as e:
                 print_warning(_("Failed to get status of device %i: %s") % (device, e))
                 continue
 
@@ -416,7 +415,7 @@ class cmd_device_mapping (object):
         # Print device mapping for all devices
         try:
             num_devices = proxy.GetNumberOfDevices()
-        except GLib.GError as e:
+        except GLib.Error as e:
             raise CDEmuError(_("Failed to get number of devices: %s") % (e))
 
         print_header(_("Device mapping:"))
@@ -424,7 +423,7 @@ class cmd_device_mapping (object):
         for device in range (0, num_devices):
             try:
                 [dev_sr, dev_sg] = proxy.DeviceGetMapping(device)
-            except GLib.GError as e:
+            except GLib.Error as e:
                 print_warning(_("Failed to get device mapping of device %i: %s") % (device, e))
                 continue
 
@@ -458,14 +457,14 @@ class cmd_daemon_debug_mask (object):
             if arguments.device == "all":
                 try:
                     num_devices = proxy.GetNumberOfDevices()
-                except GLib.GError as e:
+                except GLib.Error as e:
                     raise CDEmuError(_("Failed to get number of devices: %s") % (e))
 
                 print(_("Setting daemon debug mask of all devices to 0x%X.") % (mask))
                 for device in range(0, num_devices):
                     try:
                         proxy.DeviceSetOption(device, "daemon-debug-mask", GLib.Variant("i", mask))
-                    except GLib.GError as e:
+                    except GLib.Error as e:
                         print_warning(_("Failed to set daemon debug mask of device %i to 0x%X: %s") % (device, mask, e))
                         continue
             else:
@@ -477,7 +476,7 @@ class cmd_daemon_debug_mask (object):
                 print(_("Setting daemon debug mask of device %i to 0x%X.") % (device, mask))
                 try:
                     proxy.DeviceSetOption(device, "daemon-debug-mask", GLib.Variant("i", mask))
-                except GLib.GError as e:
+                except GLib.Error as e:
                     raise CDEmuError(_("Failed to set daemon debug mask of device %i to 0x%X: %s") % (device, mask, e))
 
         # Get daemon debug mask
@@ -486,7 +485,7 @@ class cmd_daemon_debug_mask (object):
             if arguments.device == "all":
                 try:
                     num_devices = proxy.GetNumberOfDevices()
-                except GLib.GError as e:
+                except GLib.Error as e:
                     raise CDEmuError(_("Failed to get number of devices: %s") % (e))
 
                 print_header(_("Devices' daemon debug masks:"))
@@ -495,7 +494,7 @@ class cmd_daemon_debug_mask (object):
                 for device in range(0, num_devices):
                     try:
                         mask = proxy.DeviceGetOption(device, "daemon-debug-mask")
-                    except GLib.GError as e:
+                    except GLib.Error as e:
                         print_warning(_("Failed to get daemon debug mask of device %i: %s") % (device, e))
                         continue
 
@@ -504,7 +503,7 @@ class cmd_daemon_debug_mask (object):
                 try:
                     device = int(arguments.device, 0)
                     mask = proxy.DeviceGetOption(device, "daemon-debug-mask")
-                except GLib.GError as e:
+                except GLib.Error as e:
                     raise CDEmuError(_("Failed to get daemon debug mask of device %i: %s") % (device, e))
                 except ValueError:
                     raise CDEmuError(_("String '%s' is not a number") % (arguments.device))
@@ -538,14 +537,14 @@ class cmd_library_debug_mask (object):
             if arguments.device == "all":
                 try:
                     num_devices = proxy.GetNumberOfDevices()
-                except GLib.GError as e:
+                except GLib.Error as e:
                     raise CDEmuError(_("Failed to get number of devices: %s") % (e))
 
                 print(_("Setting library debug mask of all devices to 0x%X.") % (mask))
                 for device in range(0, num_devices):
                     try:
                         proxy.DeviceSetOption(device, "library-debug-mask", GLib.Variant("i", mask))
-                    except GLib.GError as e:
+                    except GLib.Error as e:
                         print_warning(_("Failed to set library debug mask of device %i to 0x%X: %s") % (device, mask, e))
                         continue
             else:
@@ -557,7 +556,7 @@ class cmd_library_debug_mask (object):
                 print(_("Setting library debug mask of device %i to 0x%X.") % (device, mask))
                 try:
                     proxy.DeviceSetOption(device, "library-debug-mask", GLib.Variant("i", mask))
-                except GLib.GError as e:
+                except GLib.Error as e:
                     raise CDEmuError(_("Failed to set library debug mask of device %i to 0x%X: %s") % (device, mask, e))
 
         # Get debug mask
@@ -566,7 +565,7 @@ class cmd_library_debug_mask (object):
             if arguments.device == "all":
                 try:
                     num_devices = proxy.GetNumberOfDevices()
-                except GLib.GError as e:
+                except GLib.Error as e:
                     raise CDEmuError(_("Failed to get number of devices: %s") % (e))
 
                 print_header(_("Devices' library debug masks:"))
@@ -575,7 +574,7 @@ class cmd_library_debug_mask (object):
                 for device in range(0, num_devices):
                     try:
                         mask = proxy.DeviceGetOption(device, "library-debug-mask")
-                    except GLib.GError as e:
+                    except GLib.Error as e:
                         print_warning(_("Failed to get library debug mask of device %i: %s") % (device, e))
 
                     print("%-5s 0x%08X" % (device, mask))
@@ -583,7 +582,7 @@ class cmd_library_debug_mask (object):
                 try:
                     device = int(arguments.device, 0)
                     mask = proxy.DeviceGetOption(device, "library-debug-mask")
-                except GLib.GError as e:
+                except GLib.Error as e:
                     raise CDEmuError(_("Failed to get library debug mask of device %i: %s") % (device, e))
                 except ValueError:
                     raise CDEmuError(_("String '%s' is not a number") % (mask))
@@ -617,14 +616,14 @@ class cmd_dpm_emulation (object):
             if arguments.device == "all":
                 try:
                     num_devices = proxy.GetNumberOfDevices()
-                except GLib.GError as e:
+                except GLib.Error as e:
                     raise CDEmuError(_("Failed to get number of devices: %s") % (e))
 
                 print(_("Setting DPM emulation flag of all devices to %i.") % (enabled))
                 for device in range(0, num_devices):
                     try:
                         proxy.DeviceSetOption(device, "dpm-emulation", GLib.Variant("b", enabled))
-                    except GLib.GError as e:
+                    except GLib.Error as e:
                         print_warning(_("Failed to set DPM emulation flag of device %i to %i: %s") % (device, enabled, e))
                         continue
             else:
@@ -636,7 +635,7 @@ class cmd_dpm_emulation (object):
                 print(_("Setting DPM emulation flag of device %i to %i.") % (device, enabled))
                 try:
                     proxy.DeviceSetOption(device, "dpm-emulation", GLib.Variant("b", enabled))
-                except GLib.GError as e:
+                except GLib.Error as e:
                     raise CDEmuError(_("Failed to set DPM emulation flag of device %i to %i: %s") % (device, enabled, e))
 
         # Get DPM emulation flag
@@ -645,7 +644,7 @@ class cmd_dpm_emulation (object):
             if arguments.device == "all":
                 try:
                     num_devices = proxy.GetNumberOfDevices()
-                except GLib.GError as e:
+                except GLib.Error as e:
                     raise CDEmuError(_("Failed to get number of devices: %s") % (e))
 
                 print_header(_("Devices' DPM emulation flag:"))
@@ -654,7 +653,7 @@ class cmd_dpm_emulation (object):
                 for device in range(0, num_devices):
                     try:
                         enabled = proxy.DeviceGetOption(device, "dpm-emulation")
-                    except GLib.GError as e:
+                    except GLib.Error as e:
                         print_warning(_("Failed to get DPM emulation flag of device %i: %s") % (device, e))
                         continue
 
@@ -663,7 +662,7 @@ class cmd_dpm_emulation (object):
                 try:
                     device = int(arguments.device, 0)
                     enabled = proxy.DeviceGetOption(device, "dpm-emulation")
-                except GLib.GError as e:
+                except GLib.Error as e:
                     raise CDEmuError(_("Failed to get DPM emulation flag of device %i: %s") % (device, e))
                 except ValueError:
                     raise CDEmuError(_("String '%s' is not a number") % (arguments.device))
@@ -697,14 +696,14 @@ class cmd_tr_emulation (object):
             if arguments.device == "all":
                 try:
                     num_devices = proxy.GetNumberOfDevices()
-                except GLib.GError as e:
+                except GLib.Error as e:
                     raise CDEmuError(_("Failed to get number of devices: %s") % (e))
 
                 print(_("Setting transfer rate emulation flag of all devices to %i.") % (enabled))
                 for device in range(0, num_devices):
                     try:
                         proxy.DeviceSetOption(device, "tr-emulation", GLib.Variant("b", enabled))
-                    except GLib.GError as e:
+                    except GLib.Error as e:
                         print_warning(_("Failed to set transfer rate emulation flag of device %i to %i: %s") % (device, enabled, e))
                         continue
             else:
@@ -716,7 +715,7 @@ class cmd_tr_emulation (object):
                 print(_("Setting transfer rate emulation flag of device %i to %i.") % (device, enabled))
                 try:
                     proxy.DeviceSetOption(device, "tr-emulation", GLib.Variant("b", enabled))
-                except GLib.GError as e:
+                except GLib.Error as e:
                     raise CDEmuError(_("Failed to set transfer rate emulation flag of device %i to %i: %s") % (device, enabled, e))
 
         # Get TR emulation flag
@@ -725,7 +724,7 @@ class cmd_tr_emulation (object):
             if arguments.device == "all":
                 try:
                     num_devices = proxy.GetNumberOfDevices()
-                except GLib.GError as e:
+                except GLib.Error as e:
                     raise CDEmuError(_("Failed to get number of devices: %s") % (e))
 
                 print(_("Devices' transfer rate emulation flag:"))
@@ -734,7 +733,7 @@ class cmd_tr_emulation (object):
                 for device in range(0, num_devices):
                     try:
                         enabled = proxy.DeviceGetOption(device, "tr-emulation")
-                    except GLib.GError as e:
+                    except GLib.Error as e:
                         print_warning(_("Failed to get transfer rate emulation flag of device %i: %s") % (device, e))
                         continue
 
@@ -743,7 +742,7 @@ class cmd_tr_emulation (object):
                 try:
                     device = int(arguments.device, 0)
                     enabled = proxy.DeviceGetOption(device, "tr-emulation")
-                except GLib.GError as e:
+                except GLib.Error as e:
                     raise CDEmuError(_("Failed to get transfer rate emulation flag of device %i: %s") % (device, e))
                 except ValueError:
                     raise CDEmuError(_("String '%s' is not a number") % (arguments.device))
@@ -777,14 +776,14 @@ class cmd_bad_sector_emulation (object):
             if arguments.device == "all":
                 try:
                     num_devices = proxy.GetNumberOfDevices()
-                except GLib.GError as e:
+                except GLib.Error as e:
                     raise CDEmuError(_("Failed to get number of devices: %s") % (e))
 
                 print(_("Setting bad sector emulation flag of all devices to %i.") % (enabled))
                 for device in range(0, num_devices):
                     try:
                         proxy.DeviceSetOption(device, "bad-sector-emulation", GLib.Variant("b", enabled))
-                    except GLib.GError as e:
+                    except GLib.Error as e:
                         print_warning(_("Failed to set bad sector emulation flag of device %i to %i: %s") % (device, enabled, e))
                         continue
             else:
@@ -796,7 +795,7 @@ class cmd_bad_sector_emulation (object):
                 print(_("Setting bad sector emulation flag of device %i to %i.") % (device, enabled))
                 try:
                     proxy.DeviceSetOption(device, "bad-sector-emulation", GLib.Variant("b", enabled))
-                except GLib.GError as e:
+                except GLib.Error as e:
                     raise CDEmuError(_("Failed to set bad sector emulation flag of device %i to %i: %s") % (device, enabled, e))
 
         # Get bad sector emulation flag
@@ -805,7 +804,7 @@ class cmd_bad_sector_emulation (object):
             if arguments.device == "all":
                 try:
                     num_devices = proxy.GetNumberOfDevices()
-                except GLib.GError as e:
+                except GLib.Error as e:
                     raise CDEmuError(_("Failed to get number of devices: %s") % (e))
 
                 print_header(_("Devices' bad sector emulation flag:"))
@@ -814,7 +813,7 @@ class cmd_bad_sector_emulation (object):
                 for device in range(0, num_devices):
                     try:
                         enabled = proxy.DeviceGetOption(device, "bad-sector-emulation")
-                    except GLib.GError as e:
+                    except GLib.Error as e:
                         print_warning(_("Failed to get bad sector emulation flag of device %i: %s") % (device, e))
                         continue
 
@@ -823,7 +822,7 @@ class cmd_bad_sector_emulation (object):
                 try:
                     device = int(arguments.device, 0)
                     enabled = proxy.DeviceGetOption(device, "bad-sector-emulation")
-                except GLib.GError as e:
+                except GLib.Error as e:
                     raise CDEmuError(_("Failed to get bad sector emulation flag of device %i: %s") % (device, e))
                 except ValueError:
                     raise CDEmuError(_("String '%s' is not a number") % (arguments.device))
@@ -857,14 +856,14 @@ class cmd_device_id (object):
             if arguments.device == "all":
                 try:
                     num_devices = proxy.GetNumberOfDevices()
-                except GLib.GError as e:
+                except GLib.Error as e:
                     raise CDEmuError(_("Failed to get number of devices: %s") % (e))
 
                 print(_("Setting device ID of all devices to %s.") % (device_id))
                 for device in range(0, num_devices):
                     try:
                         proxy.DeviceSetOption(device, "device-id", GLib.Variant("(ssss)", device_id))
-                    except GLib.GError as e:
+                    except GLib.Error as e:
                         print_warning(_("Failed to set device ID of device %i to %s: %s") % (device, device_id, e))
                         continue
             else:
@@ -876,7 +875,7 @@ class cmd_device_id (object):
                 print(_("Setting device ID of device %i to %s.") % (device, device_id))
                 try:
                     proxy.DeviceSetOption(device, "device-id", GLib.Variant("(ssss)", device_id))
-                except GLib.GError as e:
+                except GLib.Error as e:
                     raise CDEmuError(_("Failed to set device ID of device %i to %s: %s") % (device, device_id, e))
 
 
@@ -886,7 +885,7 @@ class cmd_device_id (object):
             if arguments.device == "all":
                 try:
                     num_devices = proxy.GetNumberOfDevices()
-                except GLib.GError as e:
+                except GLib.Error as e:
                     raise CDEmuError(_("Failed to get number of devices: %s") % (e))
 
                 print_header(_("Devices' IDs:"))
@@ -896,7 +895,7 @@ class cmd_device_id (object):
                     try:
                         values = proxy.DeviceGetOption(device, "device-id")
                         device_id = map(str, values)
-                    except GLib.GError as e:
+                    except GLib.Error as e:
                         print_warning(_("Failed to get device ID of device %i: %s") % (device, e))
                         continue
 
@@ -906,7 +905,7 @@ class cmd_device_id (object):
                     device = int(arguments.device, 0)
                     values = proxy.DeviceGetOption(device, "device-id")
                     device_id = map (str, values)
-                except GLib.GError as e:
+                except GLib.Error as e:
                     raise CDEmuError(_("Failed to get device ID of device %i: %s") % (device, e))
                 except ValueError:
                     raise CDEmuError(_("String '%s' is not a number") % (arguments.device))
@@ -930,7 +929,7 @@ class cmd_enum_parsers (object):
         # Display supported parsers
         try:
             parsers = proxy.EnumSupportedParsers()
-        except GLib.GError as e:
+        except GLib.Error as e:
             raise CDEmuError(_("Failed to enumerate supported parsers: %s") % (e))
             return False
 
@@ -958,7 +957,7 @@ class cmd_enum_writers (object):
         # Display supported writers
         try:
             writers = proxy.EnumSupportedWriters()
-        except GLib.GError as e:
+        except GLib.Error as e:
             raise CDEmuError(_("Failed to enumerate supported writers: %s") % (e))
 
         # Print all writers
@@ -983,7 +982,7 @@ class cmd_enum_filter_streams (object):
         # Display supported filter streams
         try:
             filter_streams = proxy.EnumSupportedFilterStreams()
-        except GLib.GError as e:
+        except GLib.Error as e:
             raise CDEmuError(_("Failed to enumerate supported filter streams: %s") % (e))
 
         # Print all filter streams
@@ -1011,7 +1010,7 @@ class cmd_enum_daemon_debug_masks (object):
         # Print module's debug masks
         try:
             debug_masks = proxy.EnumDaemonDebugMasks()
-        except GLib.GError as e:
+        except GLib.Error as e:
             raise CDEmuError(_("Failed to enumerate supported daemon debug masks: %s") % (e))
 
         print_header(_("Supported daemon debug masks:"))
@@ -1035,7 +1034,7 @@ class cmd_enum_library_debug_masks (object):
         # Print module's debug masks
         try:
             debug_masks = proxy.EnumLibraryDebugMasks()
-        except GLib.GError as e:
+        except GLib.Error as e:
             raise CDEmuError(_("Failed to enumerate supported library debug masks: %s") % (e))
 
         print_header(_("Supported library debug masks:"))
@@ -1061,7 +1060,7 @@ class cmd_enum_writer_parameters (object):
         # Get parameter sheet for the specified writer
         try:
             parameter_sheet = proxy.EnumWriterParameters(arguments.writer)
-        except GLib.GError as e:
+        except GLib.Error as e:
             raise CDEmuError(_("Failed to get parameter sheet for writer: %s") % (e))
 
         # Print the sheet
@@ -1097,7 +1096,7 @@ def fetch_and_parse_writer_parameter_sheet (proxy, writer_id):
     # Enumerate all supported writers
     try:
         parameter_sheet = proxy.EnumWriterParameters(writer_id)
-    except GLib.GError as e:
+    except GLib.Error as e:
         raise CDEmuError(_("Failed to get parameter sheet for writer: %s") % (e))
 
     # Find the one we want
@@ -1132,12 +1131,12 @@ class cmd_version (object):
         # Print version information
         try:
             library_version = proxy.GetLibraryVersion()
-        except GLib.GError as e:
+        except GLib.Error as e:
             raise CDEmuError(_("Failed to get library version: %s") % (e))
 
         try:
             daemon_version = proxy.GetDaemonVersion()
-        except GLib.GError as e:
+        except GLib.Error as e:
             raise CDEmuError(_("Failed to get daemon version: %s") % (e))
 
         print(_("Library version: %s") % (str(library_version)))
@@ -1159,7 +1158,7 @@ class cmd_add_device (object):
     def __call__ (self, proxy, arguments):
         try:
             proxy.AddDevice()
-        except GLib.GError as e:
+        except GLib.Error as e:
             raise CDEmuError(_("Failed to add device: %s") % (e))
 
         print(_("Device added successfully."))
@@ -1180,7 +1179,7 @@ class cmd_remove_device (object):
     def __call__ (self, proxy, arguments):
         try:
             proxy.RemoveDevice()
-        except GLib.GError as e:
+        except GLib.Error as e:
             raise CDEmuError(_("Failed to remove device: %s") % (e))
 
         print(_("Device removed successfully."))
@@ -1251,13 +1250,13 @@ class CDEmuDaemonProxy ():
                 bus = Gio.bus_get_sync(Gio.BusType.SESSION, None) # Use session bus by default
 
             self.proxy = Gio.DBusProxy.new_sync(bus, 0, None, "net.sf.cdemu.CDEmuDaemon", "/Daemon", "net.sf.cdemu.CDEmuDaemon", None)
-        except GLib.GError as e:
+        except GLib.Error as e:
             raise CDEmuError(_("Failed to connect to CDEmu daemon: %s") % (e))
 
         # Get daemon interface version
         try:
             interface_version = self.GetDaemonInterfaceVersion2()
-        except GLib.GError as e:
+        except GLib.Error as e:
             raise CDEmuError(_("Failed to acquire daemon interface version (this most likely means your daemon is out-of-date): %s") % (e))
 
         # Check daemon interface version
