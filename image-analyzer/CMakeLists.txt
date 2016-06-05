@@ -14,7 +14,6 @@ option (POST_INSTALL_HOOKS "Run post-install hooks" on)
 # Dependencies
 find_package (IntlTool 0.21 REQUIRED)
 find_package (Gettext 0.15 REQUIRED)
-find_package (PythonInterp 2.6 REQUIRED)
 
 if (POST_INSTALL_HOOKS)
     find_program (UPDATE_DESKTOP_DATABASE_EXECUTABLE NAMES update-desktop-database)
