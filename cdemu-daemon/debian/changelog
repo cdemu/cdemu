@@ -10,4 +10,4 @@ cdemu-daemon (3.0.3-1) debian; urgency=low
 cdemu-daemon (3.0.2-1) debian; urgency=low
   * 01-dbus-config.diff: Patch D-BUS configuration.
   * Initial Release. Closes: #705409
- -- Henrik Stokseth <henrik@hshq.net>  Sat, 05 Apr 2014 12:00:00 +0100
+ -- Henrik Stokseth <hstokset@users.sourceforge.net>  Sat, 05 Apr 2014 12:00:00 +0100

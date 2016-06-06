@@ -2,7 +2,7 @@ Source: gcdemu
 Section: utils
 Priority: optional
 Homepage: http://cdemu.sourceforge.net/
-Maintainer: Henrik Stokseth <henrik@hshq.net>
+Maintainer: Henrik Stokseth <hstokset@users.sourceforge.net>
 Build-Depends: debhelper (>= 9)
 Build-Depends-Indep: python (>= 2.6.6-3), libglib2.0-dev, intltool, cmake (>= 2.8.5)
 X-Python-Version: >= 2.6.6

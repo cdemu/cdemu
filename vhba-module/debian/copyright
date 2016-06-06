@@ -1,4 +1,4 @@
-This package was debianized by Henrik Stokseth <henrik AT hw0 DOT org> on
+This package was debianized by Henrik Stokseth <hstokset@users.sourceforge.net> on
 Mon, 24 Des 2007 12:00:00 +0100.
 
 It was downloaded from: http://cdemu.sourceforge.net/
@@ -32,6 +32,6 @@ License:
 On Debian systems, the complete text of the GNU General
 Public License can be found in `/usr/share/common-licenses/GPL'.
 
-The Debian packaging is (C) 2007, Henrik Stokseth <henrik AT hw0 DOT org> and
+The Debian packaging is (C) 2007, Henrik Stokseth <hstokset@users.sourceforge.net> and
 is licensed under the GPL, see above.
 
