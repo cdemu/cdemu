@@ -3,15 +3,19 @@ Section: utils
 Priority: optional
 Homepage: http://cdemu.sourceforge.net/
 Maintainer: Henrik Stokseth <hstokset@users.sourceforge.net>
-Build-Depends: libglib2.0-dev (>= 2.28), libgtk-3-dev (>= 3.2),
- libmirage10-dev (>= 3.0.0), libxml2-dev, debhelper (>= 9),
- cmake (>= 2.8.5)
-Standards-Version: 3.9.5
+Build-Depends: debhelper (>= 9)
+Build-Depends-Indep: python (>= 2.6.6-3), intltool, cmake (>= 2.8.5)
+X-Python-Version: >= 2.6.6
+Standards-Version: 3.9.7
 
 
 Package: image-analyzer
-Architecture: any
-Depends: libmirage10 (>= 3.0.0), gnuplot-x11, ${shlibs:Depends}, ${misc:Depends}
+Architecture: all
+Depends: python (>= 2.6.6-3), python-gi (>= 3.0.0), gir1.2-glib-2.0,
+ gir1.2-gtk-3.0, gir1.2-pango-1.0, gir1.2-mirage-3.0 (>= 3.0.0), python-matplotlib,
+ ${python:Depends}, ${misc:Depends}
+Conflicts: image-analyzer-dbg
+Replaces: image-analyzer-dbg
 Description: Mirage Image Analyzer
  Image Analyzer is a Gtk3-based utility for CD/DVD image analysis
  and manipulation, with following functionality:
@@ -23,13 +27,4 @@ Description: Mirage Image Analyzer
   - visualization of disc topology (DPM) data, if available
   - image format conversion
   - logging facilities for debugging
-
-
-Package: image-analyzer-dbg
-Architecture: any
-Section: debug
-Priority: extra
-Depends: image-analyzer (= ${binary:Version}), ${shlibs:Depends}, ${misc:Depends}
-Description: Mirage Image Analyzer (debugging symbols)
- This package provides detached debugging symbols.
 

@@ -8,9 +8,6 @@
 override_dh_auto_configure:
 	dh_auto_configure -- "-DPOST_INSTALL_HOOKS:BOOL=OFF"
 
-override_dh_strip:
-	dh_strip --dbg-package="image-analyzer-dbg"
-
 %:
-	dh $@
+	dh $@ --with python2
 

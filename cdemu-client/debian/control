@@ -6,12 +6,12 @@ Maintainer: Henrik Stokseth <hstokset@users.sourceforge.net>
 Build-Depends: debhelper (>= 9)
 Build-Depends-Indep: python (>= 2.6.6-3), intltool, cmake (>= 2.8.5)
 X-Python-Version: >= 2.6.6
-Standards-Version: 3.9.5
+Standards-Version: 3.9.7
 
 
 Package: cdemu-client
 Architecture: all
-Depends: python (>= 2.6.6-3), python-dbus, cdemu-daemon (>= 3.0.0), ${python:Depends}, ${misc:Depends}
+Depends: python (>= 2.6.6-3), python-gi (>= 3.0.0), gir1.2-glib-2.0, cdemu-daemon (>= 3.0.0), ${python:Depends}, ${misc:Depends}
 Recommends: bash-completion, gcdemu (>= 3.0.0)
 Description: Command-line client to control CDEmu daemon
  This is cdemu-client, a command-line client for controlling the
