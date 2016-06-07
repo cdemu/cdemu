@@ -17,21 +17,16 @@ case "$1" in
 	remove|upgrade|deconfigure)
 		# Kill any session instances of cdemu-daemon running.
 		pkill -KILL "^cdemu-daemon$" && mywarning "Killed running daemon instances."
-
-		# Unset permissions on cdemu daemon
-		dpkg-statoverride --remove "/usr/bin/cdemu-daemon" || myerror "Removing statoverride failed."
 	;;
 
 	failed-upgrade)
 	;;
 
 	*)
-		echo "prerm called with unknown argument \`$1'" >&2
-		exit 1
+		myerror "prerm called with unknown argument '$1'"
 	;;
 esac
 
 #DEBHELPER#
 
 exit 0
-

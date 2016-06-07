@@ -1,2 +1,1 @@
-KERNEL=="vhba_ctl", MODE="0660", OWNER="root", GROUP="cdrom"
-
+KERNEL=="vhba_ctl", SUBSYSTEM=="misc", TAG+="uaccess"

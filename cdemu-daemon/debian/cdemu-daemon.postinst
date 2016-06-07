@@ -14,21 +14,14 @@ mywarning ()
 }
 
 case "$1" in
-	configure)
-		# Set permissions on cdemu daemon
-		dpkg-statoverride --update --add root cdrom 755 "/usr/bin/cdemu-daemon" || myerror "Adding statoverride failed."
-	;;
-
-	abort-upgrade|abort-remove|abort-deconfigure)
+	configure|abort-upgrade|abort-remove|abort-deconfigure)
 	;;
 
 	*)
-		echo "postinst called with unknown argument \`$1'" >&2
-		exit 1
+		myerror "postinst called with unknown argument '$1'"
 	;;
 esac
 
 #DEBHELPER#
 
 exit 0
-
