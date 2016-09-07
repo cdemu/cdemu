@@ -290,9 +290,6 @@ GDataInputStream *mirage_parser_create_text_stream (MirageParser *self, MirageSt
     GVariant *encoding_value;
     const gchar *encoding;
 
-    /* Add reference to provided input stream */
-    g_object_ref(stream);
-
     /* If provided, use the specified encoding; otherwise, try to detect it */
     encoding_value = mirage_contextual_get_option(MIRAGE_CONTEXTUAL(self), "encoding");;
     if (encoding_value) {
