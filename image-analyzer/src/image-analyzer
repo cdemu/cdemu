@@ -2002,19 +2002,19 @@ class MainWindow (Gtk.ApplicationWindow):
         self.disc_structures_window.connect("delete-event", lambda w, e: w.hide() or True)
 
         # Setup actions
-        action = Gio.SimpleAction.new("open_image", None)
+        action = Gio.SimpleAction.new("open-image", None)
         action.connect("activate", self.on_open_image)
         self.add_action(action)
 
-        action = Gio.SimpleAction.new("convert_image", None)
+        action = Gio.SimpleAction.new("convert-image", None)
         action.connect("activate", self.on_convert_image)
         self.add_action(action)
 
-        action = Gio.SimpleAction.new("open_dump", None)
+        action = Gio.SimpleAction.new("open-dump", None)
         action.connect("activate", self.on_open_dump)
         self.add_action(action)
 
-        action = Gio.SimpleAction.new("save_dump", None)
+        action = Gio.SimpleAction.new("save-dump", None)
         action.connect("activate", self.on_save_dump)
         self.add_action(action)
 
@@ -2023,23 +2023,23 @@ class MainWindow (Gtk.ApplicationWindow):
         self.add_action(action)
 
 
-        action = Gio.SimpleAction.new("log_window", None)
+        action = Gio.SimpleAction.new("log-window", None)
         action.connect("activate", lambda a, p: self.log_window.present())
         self.add_action(action)
 
-        action = Gio.SimpleAction.new("read_sector_window", None)
+        action = Gio.SimpleAction.new("read-sector-window", None)
         action.connect("activate", lambda a, p: self.read_sector_window.present())
         self.add_action(action)
 
-        action = Gio.SimpleAction.new("sector_analysis_window", None)
+        action = Gio.SimpleAction.new("sector-analysis-window", None)
         action.connect("activate", lambda a, p: self.sector_analysis_window.present())
         self.add_action(action)
 
-        action = Gio.SimpleAction.new("disc_topology_window", None)
+        action = Gio.SimpleAction.new("disc-topology-window", None)
         action.connect("activate", lambda a, p: self.disc_topology_window.present())
         self.add_action(action)
 
-        action = Gio.SimpleAction.new("disc_structures_window", None)
+        action = Gio.SimpleAction.new("disc-structures-window", None)
         action.connect("activate", lambda a, p: self.disc_structures_window.present())
         self.add_action(action)
 
@@ -2396,26 +2396,26 @@ MENU_XML = """
                 <section>
                     <item>
                         <attribute name="label" translatable="yes">Open image</attribute>
-                        <attribute name="action">win.open_image</attribute>
+                        <attribute name="action">win.open-image</attribute>
                         <attribute name="accel">&lt;Primary&gt;o</attribute>
                     </item>
                 </section>
                 <section>
                     <item>
                         <attribute name="label" translatable="yes">Convert image</attribute>
-                        <attribute name="action">win.convert_image</attribute>
+                        <attribute name="action">win.convert-image</attribute>
                         <attribute name="accel">&lt;Primary&gt;x</attribute>
                     </item>
                 </section>
                 <section>
                     <item>
                         <attribute name="label" translatable="yes">Open dump</attribute>
-                        <attribute name="action">win.open_dump</attribute>
+                        <attribute name="action">win.open-dump</attribute>
                         <attribute name="accel">&lt;Primary&gt;d</attribute>
                     </item>
                     <item>
                         <attribute name="label" translatable="yes">Save dump</attribute>
-                        <attribute name="action">win.save_dump</attribute>
+                        <attribute name="action">win.save-dump</attribute>
                         <attribute name="accel">&lt;Primary&gt;s</attribute>
                     </item>
                 </section>
@@ -2432,25 +2432,25 @@ MENU_XML = """
                   <section>
                       <item>
                           <attribute name="label" translatable="yes">Log</attribute>
-                          <attribute name="action">win.log_window</attribute>
+                          <attribute name="action">win.log-window</attribute>
                           <attribute name="accel">&lt;Primary&gt;l</attribute>
                       </item>
                       <item>
                           <attribute name="label" translatable="yes">Read sector</attribute>
-                          <attribute name="action">win.read_sector_window</attribute>
+                          <attribute name="action">win.read-sector-window</attribute>
                           <attribute name="accel">&lt;Primary&gt;r</attribute>
                       </item>
                       <item>
                           <attribute name="label" translatable="yes">Sector analysis</attribute>
-                          <attribute name="action">win.sector_analysis_window</attribute>
+                          <attribute name="action">win.sector-analysis-window</attribute>
                       </item>
                       <item>
                           <attribute name="label" translatable="yes">Disc topology</attribute>
-                          <attribute name="action">win.disc_topology_window</attribute>
+                          <attribute name="action">win.disc-topology-window</attribute>
                       </item>
                       <item>
                           <attribute name="label" translatable="yes">Disc structures</attribute>
-                          <attribute name="action">win.disc_structures_window</attribute>
+                          <attribute name="action">win.disc-structures-window</attribute>
                       </item>
                   </section>
               </submenu>
