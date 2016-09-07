@@ -730,7 +730,7 @@ static gboolean mirage_parser_cue_callback_flags (MirageParserCue *self, GMatchI
     gint flags = 0;
 
     flags_dcp = g_match_info_fetch_named(match_info, "dcp");
-    flags_4ch = g_match_info_fetch_named(match_info, "4ch");
+    flags_4ch = g_match_info_fetch_named(match_info, "fourch");
     flags_pre = g_match_info_fetch_named(match_info, "pre");
     flags_scms = g_match_info_fetch_named(match_info, "scms");
 
@@ -802,7 +802,7 @@ static void mirage_parser_cue_init_regex_parser (MirageParserCue *self)
     append_regex_rule(&self->priv->regex_rules, "PREGAP\\s+(?<msf>[\\d]+:[\\d]+:[\\d]+)$", mirage_parser_cue_callback_pregap);
     append_regex_rule(&self->priv->regex_rules, "POSTGAP\\s+(?<msf>[\\d]+:[\\d]+:[\\d]+)$", mirage_parser_cue_callback_postgap);
 
-    append_regex_rule(&self->priv->regex_rules, "FLAGS\\+(((?<dcp>DCP)|(?<4ch>4CH)|(?<pre>PRE)|(?<scms>SCMS))\\s*)+$", mirage_parser_cue_callback_flags);
+    append_regex_rule(&self->priv->regex_rules, "FLAGS\\+(((?<dcp>DCP)|(?<fourch>4CH)|(?<pre>PRE)|(?<scms>SCMS))\\s*)+$", mirage_parser_cue_callback_flags);
 
     return;
 }
