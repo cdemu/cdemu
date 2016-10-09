@@ -1,7 +1,7 @@
 cmake_minimum_required (VERSION 2.8.5)
 
 # Project name
-project (cdemu-client NONE)
+project (cdemu NONE)
 
 # Additional CMake modules.
 list (APPEND CMAKE_MODULE_PATH ${CMAKE_SOURCE_DIR}/cmake)
