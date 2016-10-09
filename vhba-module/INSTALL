@@ -1,7 +1,7 @@
 Installation Instructions
 *************************
 
-Copyright (C) 2008-2014 The CDEMU Project.
+Copyright (C) 2008-2016 The CDEMU Project.
 
 This file is free documentation; the CDEmu project gives
 unlimited permission to copy, distribute and modify it.
@@ -38,7 +38,20 @@ Setting Permissions on VHBA Control Device
 ==========================================
 
 In order to use VHBA control device, a user must have read-write permissions
-on /dev/vhba_ctl. Typically, this is achieved by a udev rule:
+on /dev/vhba_ctl. Typically, this is achieved by using udev's "uaccess" tag,
+by creating the following rule:
+
+KERNEL=="vhba_ctl", SUBSYSTEM=="misc", TAG+="uaccess"
+
+The rule should be stored in a .rule file in either /lib/udev/rules.d or
+/etc/udev/rules.d directory. For the "uaccess" tag to be applied properly,
+the rule must be executed before the uaccess rule. Therefore, if the uaccess
+rule is contained by /lib/udev/rules.d/70-uaccess.rules, the rule above
+must be stored in a file with number smaller than 70.
+
+
+The alternative and now obsolete approach is to create a udev rule that
+explicitly sets the read/write permissions on the control device:
 
 KERNEL=="vhba_ctl", MODE="0660", OWNER="root", GROUP="cdrom"
 
